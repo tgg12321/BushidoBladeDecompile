@@ -90,14 +90,13 @@ out:
 }
 /* kengo:MED  |  my_rob/rob_life_ctrl_2  |  96i  |  x2 size collision */
 void mot_data_set(s32 *a0, s32 *a1) {
-    s32 r, g;
-    register s32 b asm("$6");
+    s32 r, g, b;
     s32 max_val, min_val;
     s32 chroma;
     s32 sat;
     s32 hue;
     s32 dR, dG, dB;
-    register s32 max_pin asm("$11");
+    s32 max_pin;
 
     r = a0[0];
     g = a0[1];
@@ -133,25 +132,12 @@ void mot_data_set(s32 *a0, s32 *a1) {
         }
     }
 
-    /* INLINE_MOVE_ALIASING: pure-C failed
-     * - technique=plain_copy: `max_pin = max_val;` per dump-text — CSE collapses
-     *   to $a0 throughout; target's `addu $t3,$a0,$zero` @ idx 25 missing.
-     * - technique=pin_only: `register max_pin asm("$11") = max_val;` — pin ignored,
-     *   $11 never assigned per dump-text (no materialization need).
-     * - technique=intermediate_var: `s32 tmp = max_val; max_pin = tmp;` —
-     *   value-tracker proves equality, same elision. (see feedback_inline_move_aliasing.md) */
-    __asm__ volatile ("move %0, %1" : "=r"(max_pin) : "r"(max_val));
-
     chroma = max_val - min_val;
+    max_pin = max_val;
 
     if (max_pin != 0) {
         sat = (chroma << 12) / max_pin;
     } else {
-        /* Launder max_pin's value so GCC's value-tracker forgets max_pin==0
-         * (learned from `if (max_pin != 0)`); otherwise GCC reuses $t3 for the
-         * `sat=0` assignment, emitting `addu $t4,$t3,$zero` instead of target's
-         * `addu $t4,$zero,$zero` at idx 51. */
-        __asm__ volatile ("" : "=r"(max_pin));
         sat = 0;
     }
 

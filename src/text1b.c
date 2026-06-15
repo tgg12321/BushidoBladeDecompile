@@ -11571,12 +11571,11 @@ void single_game_SetStatusUpData(s32 arg0, s32 arg1, s32 arg2) {
 extern u16 D_80099D88;
 
 s32 func_80055948(u8 *arg0) {
-    register u8 *p asm("a2");
+    u8 *p;
     u8 ctr;
     s32 t;
     s32 mask;
     s32 dx, dy, dz;
-    register s32 sentinel asm("t0");
 
     ctr = arg0[0x3B8];
     p = *(u8 **)(arg0 + 0x3B4);
@@ -11611,15 +11610,13 @@ s32 func_80055948(u8 *arg0) {
             dx = *(s32 *)(other + 0xF4) - *(s16 *)(arg0 + 0x40E);
             dy = *(s32 *)(other + 0xFC) - *(s16 *)(arg0 + 0x410);
             dz = *(s16 *)(arg0 + 0x412);
-            sentinel = 0x80;
-            if ((dz * dz) >= ((dx * dx) + (dy * dy))) goto loop_init;
+            if ((dz * dz) >= ((dx * dx) + (dy * dy))) goto loop;
         }
     }
     goto reset_ret_neg1;
 check_loop:
-    if (arg0[0x3BC] != 1) goto loop_init;
+    if (arg0[0x3BC] != 1) goto loop;
     if (*(s32 *)(arg0 + 0x430) & 0x800) {
-        sentinel = 0x80;
         goto loop;
     }
 reset_ret_neg1:
@@ -11628,14 +11625,12 @@ reset_ret_neg1:
 sentinel_reset:
     *(s32 *)(arg0 + 0x3B4) = 0;
     goto ret_3c8;
-loop_init:
-    sentinel = 0x80;
 loop:
     while (1) {
         t = *p;
         p += 1;
         if (t & 0x80) {
-            if (t == sentinel) goto sentinel_reset;
+            if (t == 0x80) goto sentinel_reset;
             *(s32 *)(arg0 + 0x3B4) = (s32)p;
             arg0[0x3B8] = (t & 0x7F) - 1;
             goto ret_3c8;
@@ -13671,35 +13666,31 @@ extern s32 D_800F1178;
 extern s32 D_800F1180;
 s32 func_8006133C(s32 *a0) {
     s32 *v1 = (s32 *)&D_800F116C;
-    register s32 t asm("$2");
-    register s32 mask asm("$3");
+    s32 *p = a0;
     D_800A3468 = (s32)v1;
     D_800F1178 = (s32)a0;
     D_800F1180 = (s32)&D_800F1154;
     *v1 = 0x210004;
     func_80060A68();
-    t = a0[0]; D_800F1140 = t;
-    t = a0[1]; D_800F1144 = t;
-    mask = 0x8080FF;
-    D_800A3464 = mask;
-    t = a0[2]; D_800F1148 = t;
+    D_800F1140 = *p++;
+    D_800F1144 = *p++;
+    D_800F1148 = *p;
+    D_800A3464 = 0x8080FF;
     return 1;
 }
 extern u8 D_800F115B;
 s32 func_800613C8(s32 *a0) {
     s32 *v1 = (s32 *)&D_800F116C;
-    register s32 t asm("$2");
-    register s32 mask asm("$3");
+    s32 *ap = a0;
     D_800A3468 = (s32)v1;
     D_800F1178 = (s32)a0;
     D_800F1180 = (s32)&D_800F115B;
     *v1 = 0x21000B;
     func_80060A68();
-    t = a0[0]; D_800F1140 = t;
-    t = a0[1]; D_800F1144 = t;
-    mask = 0x8080FF;
-    D_800A3464 = mask;
-    t = a0[2]; D_800F1148 = t;
+    D_800F1140 = *ap++;
+    D_800F1144 = *ap++;
+    D_800F1148 = *ap++;
+    D_800A3464 = 0x8080FF;
     return 16;
 }
 extern u8 D_800F115B;
@@ -13710,34 +13701,30 @@ extern s32 D_800F1178;
 extern s32 D_800F1180;
 s32 func_80061454(s32 *a0) {
     s32 *v1 = (s32 *)&D_800F116C;
-    register s32 t asm("$2");
-    register s32 mask asm("$3");
+    s32 *p = a0;
     D_800A3468 = (s32)v1;
     D_800F1178 = (s32)a0;
     D_800F1180 = (s32)&D_800F115B;
     *v1 = 0x29000B;
     func_80060A68();
-    t = a0[0]; D_800F1140 = t;
-    t = a0[1]; D_800F1144 = t;
-    mask = 0x8080FF;
-    D_800A3464 = mask;
-    t = a0[2]; D_800F1148 = t;
+    D_800F1140 = *p++;
+    D_800F1144 = *p++;
+    D_800F1148 = *p;
+    D_800A3464 = 0x8080FF;
     return 8;
 }
 s32 func_800614E0(s32 *a0) {
     s32 *v1 = (s32 *)&D_800F116C;
-    register s32 t asm("$2");
-    register s32 mask asm("$3");
+    s32 *p = a0;
     D_800A3468 = (s32)v1;
     D_800F1178 = (s32)a0;
     D_800F1180 = (s32)&D_800F115B;
     *v1 = 0x31000B;
     func_80060A68();
-    t = a0[0]; D_800F1140 = t;
-    t = a0[1]; D_800F1144 = t;
-    mask = 0x8080FF;
-    D_800A3464 = mask;
-    t = a0[2]; D_800F1148 = t;
+    D_800F1140 = *p++;
+    D_800F1144 = *p++;
+    D_800F1148 = *p;
+    D_800A3464 = 0x8080FF;
     return 5;
 }
 extern u8 D_800F1154;
@@ -14569,16 +14556,18 @@ extern s32 D_800F0D4C;
 extern s32 D_800F0D50;
 extern s32 D_800F1110;
 void func_8006517C(void) {
-    register volatile s32 *p asm("$3") = (volatile s32 *)D_800A347C;
-    register s32 t asm("$2");
-    t = p[0]; D_800F0D30 = t;
-    t = p[1]; D_800F0D34 = t;
-    t = p[2];
+    s32 *p = (s32 *)D_800A347C;
+    s32 *ap = p;
+    s32 *bp = p;
+    s32 t;
+    D_800F0D30 = *ap++;
+    D_800F0D34 = *ap++;
+    t = *ap;
     D_800F0BC0 = 0;
     D_800F0D38 = t;
-    t = p[0]; D_800F0D48 = t;
-    t = p[1]; D_800F0D4C = t;
-    p = (volatile s32 *)p[2];
+    D_800F0D48 = *bp++;
+    D_800F0D4C = *bp++;
+    p = (s32 *)*bp;
     D_800F1110 = 1;
     D_800F0BC4 = 0;
     D_800F0D50 = (s32)p;

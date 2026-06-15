@@ -2896,9 +2896,6 @@ func_800550E8: subst "sb\s+\$2,0\(\$3\)" "sb	$2,1045($3)" @ 13
 # RETIRED (targeted-permuter): func_8005509C: subst "la\s+\$3,D_80101EC8\+1044" "la	$3,D_80101EC8" @ 8
 # RETIRED (targeted-permuter): func_8005509C: subst "sb\s+\$0,1\(\$3\)" "sb	$0,1045($3)" @ 10
 # RETIRED (targeted-permuter): func_8005509C: subst "sb\s+\$0,0\(\$3\)" "sb	$0,1044($3)" @ 11
-func_8006517C: reorder 16,12,13,14,15 @ 12-16
-func_8006517C: subst "\$4" "$2" @ 13
-func_8006517C: subst "\$4" "$2" @ 14
 func_800651F0: reorder 16,12,13,14,15 @ 12-16
 func_800651F0: subst "\$4" "$2" @ 13
 func_800651F0: subst "\$4" "$2" @ 14

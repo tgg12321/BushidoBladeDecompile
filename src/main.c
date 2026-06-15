@@ -1603,19 +1603,11 @@ s32 spu_TransferDirect(s32 a0, s32 a1) {
     return a1;
 }
 void spu_WriteReg(s32 arg0, u32 arg1, s32 arg2) {
-    register s32 temp_v0 asm("v0");
-    register s32 temp_a0 asm("a0");
-    s32 temp_v1;
-
-    temp_v0 = arg0 * 2;
     if (arg2 == 0) {
-        *(u16 *)(temp_v0 + g_spu_base_addr) = arg1;
-        __asm__("" ::: "memory");
+        *(volatile u16 *)(arg0 * 2 + g_spu_base_addr) = arg1;
         return;
     }
-    temp_a0 = g_spu_base_addr;
-    temp_v1 = g_spu_addr_shift;
-    *(u16 *)(temp_v0 + temp_a0) = arg1 >> temp_v1;
+    *(volatile u16 *)(arg0 * 2 + g_spu_base_addr) = arg1 >> g_spu_addr_shift;
 }
 s32 saTan1SyuryoDraw(s32 mode, s32 val) {
     s32 aligned;

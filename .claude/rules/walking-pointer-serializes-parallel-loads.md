@@ -84,10 +84,28 @@ pointers, inline reorder); **only the walking-pointer form scored 0**. Applied,
 The per-element-temp and operand-swap forms did NOT help (≥10) — the post-increment
 pointer dependence is the load-bearing part, not just "split into statements".
 
+## Confirmed case — func_800613C8 (text1b.c, 2026-06-14)
+
+Same mechanism, but the cheat was **`register s32 t asm("$2")` pins** (not memory
+barriers) on a `D_800F1140/44/48 = a0[i]` parallel-store cluster (a "ChangeXxx"
+sprite-setup sibling family — func_800611A4/61250/6133C/61454 all share the pin
+pattern). Honest full-build diff (the masked sandbox score is unreliable here —
+register pins make `--disable all` read a flat 12; build the .o and diff with
+`engine.score.normalized_insns(..., mask=False)` instead): walking pointers
+(`s32 *ap=a0; D=*ap++;`) dropped 13→5. The residual 5 was an **independent
+constant store** (`D_800A3464 = 0x8080FF;`) that GCC hoisted its `lui`
+materialization too early; **moving that store to AFTER the last `*ap++` load**
+(it's a different global, so reorder is semantics-preserving) let GCC schedule
+the `lui`/`ori` into the later loads' delay slots → score 0, SHA1 == oracle,
+COMPLETED-C. Lesson: after walking-pointers serialize the loads, an interleaved
+independent constant/global store may still need to move PAST the loads so its
+materialization lands in the freed delay slots.
+
 ## When it applies / when it doesn't
 
 - Applies to **straight-line** independent parallel-array element writes guarded by
-  per-element memory barriers. The walking-pointer dependence is what serializes.
+  per-element memory barriers, OR the same cluster cheated with per-load
+  `register asm("$N")` pins. The walking-pointer dependence is what serializes.
 - If the block is a **loop** whose barrier blocks a delay-slot *steal* off a
   loop-exit branch, that's a different mechanism — see
   [[loop-note-fixes-delay-slot-steal]] (fix the loop *form*, not pointer walking).
