@@ -16,6 +16,8 @@
 [CmdletBinding()]
 param(
     [string]$Model = 'opus',
+    [string]$CheapModel = 'sonnet',   # active backlog decomp, re-audit patrol, overseer
+    [string]$StrongModel = 'opus',    # blocked no-quit grind, forward merge-gate, adjudicator
     [int]$Workers = 2,            # number of backlog-worker lanes
     [switch]$NoBlocked,           # drop the blocked-worker lane
     [switch]$NoAdjudicator,       # drop the adjudicator lane
@@ -40,7 +42,7 @@ if (Test-Path $pidf) {
 }
 
 Write-Host "Launching fleet supervisor (detached) ..."
-$fleetArgs = @('-NoProfile','-File',"`"$fleet`"",'-Model',$Model,'-Workers',$Workers)
+$fleetArgs = @('-NoProfile','-File',"`"$fleet`"",'-Model',$Model,'-CheapModel',$CheapModel,'-StrongModel',$StrongModel,'-Workers',$Workers)
 if ($NoBlocked)     { $fleetArgs += '-NoBlocked' }
 if ($NoAdjudicator) { $fleetArgs += '-NoAdjudicator' }
 if ($NoReaudit)     { $fleetArgs += '-NoReaudit' }

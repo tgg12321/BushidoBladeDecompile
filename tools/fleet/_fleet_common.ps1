@@ -68,14 +68,29 @@ function Get-MainDirtyLines {
     })
 }
 
+function Clean-MainContamination([object[]]$DirtyLines) {
+    # Surgically revert ONLY the contaminated paths (porcelain lines from
+    # Get-MainDirtyLines, which already excludes fleet-operational scratch). Do NOT
+    # `git checkout -- .` — that would also revert uncommitted docs/fleet findings.
+    $main = Get-MainRoot
+    foreach ($line in $DirtyLines) {
+        if ($line.Length -lt 4) { continue }
+        $code = $line.Substring(0, 2)
+        $path = $line.Substring(3).Trim().Trim('"')
+        if ($path -match ' -> ') { $path = ($path -split ' -> ')[-1].Trim().Trim('"') }  # rename
+        if ($code -match '\?') { git -C "$main" clean -fdq -- "$path" 2>&1 | Out-Null }   # untracked
+        else                   { git -C "$main" checkout -- "$path" 2>&1 | Out-Null }     # tracked
+    }
+}
+
 function Assert-MainClean {
     # Maj-8: agents run with bypassPermissions and cwd=main; they must only edit their
-    # worktrees. If an agent dirtied main's tracked tree (beyond telemetry), discard it
-    # (agents never legitimately edit main) and report it. Returns $true if clean.
-    $main = Get-MainRoot
+    # worktrees. If an agent dirtied main's tracked tree (beyond fleet-operational
+    # scratch), surgically discard just those paths (agents never legitimately edit
+    # main) and report it. Returns $true if clean.
     $dirty = Get-MainDirtyLines
     if ($dirty.Count -eq 0) { return $true }
-    git -C "$main" checkout -- . 2>&1 | Out-Null
+    Clean-MainContamination $dirty
     Append-FleetLog 'main-contamination-cleaned' @{ detail = ($dirty | Select-Object -First 8) }
     return $false
 }

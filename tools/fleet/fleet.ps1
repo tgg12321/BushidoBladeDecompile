@@ -28,7 +28,13 @@
 #>
 [CmdletBinding()]
 param(
-    [string]$Model = 'opus',
+    [string]$Model = 'opus',              # fallback / drill modes
+    # Per-role model tiers (cost control). cheap = high-volume / lower-stakes roles
+    # (active backlog decomp, the re-audit patrol, overseer); strong = the hard /
+    # highest-stakes / deepest-reasoning roles (blocked no-quit grind, forward
+    # merge-gate review + verifier, adjudicator). See Get-LaneModel + Auditor-Cycle.
+    [string]$CheapModel = 'sonnet',
+    [string]$StrongModel = 'opus',
     [int]$MaxMinutes = 0,                 # 0 = run forever
     [int]$OracleBackstopMinutes = 30,
     [int]$LaneTimeoutMinutes = 120,       # heartbeat-stale kill threshold
@@ -58,6 +64,16 @@ if (-not $NoAdjudicator) { $ProducerLanes += @{ id = 'fleet-adj'; role = 'adjudi
 
 $script:LastGreen = $null
 
+function Get-LaneModel([string]$role) {
+    # Per-role model tier. Blocked (hard tail) + adjudicator (deep) = StrongModel;
+    # backlog (easy-tier active decomp) = CheapModel.
+    switch ($role) {
+        'blocked-worker' { return $StrongModel }
+        'adjudicator'    { return $StrongModel }
+        default          { return $CheapModel }
+    }
+}
+
 function Invoke-BoardAudit {
     # Best-effort board tracking for the historical cheat-audit campaign. NEVER throws
     # (board updates must not stall or fail an audit). Calls tools/fleet/board_audit.py
@@ -82,7 +98,8 @@ function Merge-Candidate([string]$Func, [string]$Sha) {
     git -C "$main" cat-file -e "$Sha^{commit}" 2>$null
     if ($LASTEXITCODE -ne 0) { return @{ ok = $false; reason = "candidate sha $Sha not found" } }
 
-    if ((Get-MainDirtyLines).Count) { git -C "$main" checkout -- . 2>&1 | Out-Null }   # discard stray (agents never edit main; telemetry ignored)
+    $preDirty = Get-MainDirtyLines
+    if ($preDirty.Count) { Clean-MainContamination $preDirty }   # surgically discard stray (agents never edit main; preserves docs/fleet)
     $script:_mcPreHead = (git -C "$main" rev-parse HEAD | Out-String).Trim()
 
     & $ReintLock acquire -Label "fleet-merge $Func" 2>&1 | Out-Null
@@ -236,9 +253,12 @@ function Auditor-Cycle {
 
 function Auditor-Cycle-Body($pkt, $func, $mode) {
     Write-Host "[auditor] $func (mode=$mode)"
+    # reaudit patrol (bulk, lower stakes, surfaced-not-merged) = cheap; forward
+    # in-review merge-gate (rare, a miss puts new code on main) = strong.
+    $auditModel = if ($mode -eq 'reaudit') { $CheapModel } else { $StrongModel }
     $precheck = if ($mode -ne 'reaudit') { Get-ReviewerPrecheck $func ([string]$pkt.candidate_sha) } else { '' }
     $task = Build-AuditorTask $pkt 'first' $precheck
-    $outcome = Invoke-RoleAgent -Role auditor -Lane fleet-aud -TaskText $task -Model $Model
+    $outcome = Invoke-RoleAgent -Role auditor -Lane fleet-aud -TaskText $task -Model $auditModel
     Assert-MainClean | Out-Null   # Maj-8: the review agent must not have edited main
 
     if (-not $outcome -or -not $outcome.outcome) {
@@ -253,7 +273,7 @@ function Auditor-Cycle-Body($pkt, $func, $mode) {
             # B1: mandatory INDEPENDENT second-layer review before any merge.
             Write-Host "[auditor] $func passed layer 1; running independent second-layer verifier ..."
             $task2 = Build-AuditorTask $pkt 'second' $precheck
-            $v = Invoke-RoleAgent -Role verifier -Lane fleet-aud2 -TaskText $task2 -Model $Model
+            $v = Invoke-RoleAgent -Role verifier -Lane fleet-aud2 -TaskText $task2 -Model $StrongModel   # forward gate layer-2: strong
             Assert-MainClean | Out-Null
             $v2 = if ($v) { [string]$v.outcome } else { '' }
             if ($v2 -ne 'pass') {
@@ -324,7 +344,7 @@ Last known green commit: $script:LastGreen
 Investigate (read-only): & tools/wteng.ps1 main verify-oracle --rebuild ; git -C "$main" status ; git -C "$main" log --oneline -6 ; inspect tmp/fleet/state.json.
 Diagnose, then emit your decision (resume | revert-and-resume | clean-and-resume | rebuild-worktree | halt) with revert_to / worktrees / report fields per your role.
 "@
-    $d = Invoke-RoleAgent -Role overseer -Lane fleet-ovr -TaskText $task -Model $Model
+    $d = Invoke-RoleAgent -Role overseer -Lane fleet-ovr -TaskText $task -Model $CheapModel
     $decision = if ($d) { [string]$d.outcome } else { 'halt' }
     Append-FleetLog 'overseer-decision' @{ incident = $Reason; decision = $decision; report = ($d.report) }
     Write-Host "[overseer] decision: $decision" -ForegroundColor Cyan
@@ -380,7 +400,7 @@ function Start-Lane($lane) {
     $logErr = Join-Path $LogDir "$($lane.id).err.log"
     $laneScript = Join-Path $PSScriptRoot 'lane.ps1'
     $p = Start-Process pwsh -PassThru -WindowStyle Hidden -RedirectStandardOutput $logOut -RedirectStandardError $logErr `
-        -ArgumentList @('-NoProfile','-File',"`"$laneScript`"",'-Role',$lane.role,'-Lane',$lane.id,'-Model',$Model)
+        -ArgumentList @('-NoProfile','-File',"`"$laneScript`"",'-Role',$lane.role,'-Lane',$lane.id,'-Model',(Get-LaneModel $lane.role))
     $lane.proc = $p
     $lane.started = (Get-Date)
     Write-Host "[supervisor] launched lane $($lane.id) ($($lane.role)) pid=$($p.Id)"

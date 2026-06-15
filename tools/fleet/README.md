@@ -84,10 +84,16 @@ The supervisor refuses to start unless `main` builds byte-identical to the oracl
 
 ## Tuning
 
-- `pwsh tools/fleet/launch.ps1 -Model opus` — model for all agents (default opus).
+- **Model tiers (cost control):** `launch.ps1 -CheapModel sonnet -StrongModel opus`.
+  - `CheapModel` (default `sonnet`) → backlog/active decomp, the re-audit patrol, overseer.
+  - `StrongModel` (default `opus`) → blocked no-quit grind, forward merge-gate review +
+    verifier, adjudicator.
+  - The auditor is tiered *by mode*: re-audit patrol = cheap; forward in-review gate = strong.
+  - `-CheapModel haiku` for even cheaper active decomp (riskier match rate).
 - `coord.ps1` constants: `$BLOCKED_ROTATE_AT` (10), `$REJECT_ADJUDICATE_AT` (3),
   `$LANE_STALE_MINUTES` (120).
-- `fleet.ps1 -OracleBackstopMinutes` (30), `-LaneTimeoutMinutes` (120).
+- `fleet.ps1 -OracleBackstopMinutes` (30), `-LaneTimeoutMinutes` (120), `-Workers N`,
+  `-NoBlocked`, `-NoAdjudicator`, `-NoReaudit`.
 
 For maximum durability across a full Windows logoff, register the supervisor as a
 Scheduled Task (`schtasks /create /tn bb2fleet /tr "pwsh -File <abs>\tools\fleet\fleet.ps1" /sc onlogon /ru <you> /it`)
