@@ -77,6 +77,42 @@ $s3,$s4,0xA` paired — the target order. prologue_fix (config entry present) mo
 `prologue_config.json` entry → `sandbox --disable all` 2→0; `retire` dropped the
 rule; SHA1 == oracle. Pure C, zero source edits.
 
+## The OTHER direction — regfix `reorder` with NO config entry → ADD one (sanctioned)
+
+The redundant-circular case above is when a config entry ALREADY exists and cc1
+already matches. The opposite, equally common, case: a prologue `reorder` regfix
+rule exists with **NO** `prologue_config.json` entry, and cc1's natural prologue
+GENUINELY does NOT match the target (a real `mips.c save_restore_insns`
+iteration-order difference that source reordering can't flip — the saves of two
+INDEPENDENT param→sreg pairs come out in the wrong order). Here the regfix
+`reorder` is the cheat and the fix is to **MIGRATE it to prologue_config.json**
+(the sanctioned action-based mechanism), not delete it:
+
+1. Add the function's TARGET prologue (named-register asm strings, from
+   `asm/funcs/<func>.s`) as a `prologue_config.json` entry. prologue_fix permutes
+   GCC's own emitted save/move insns by semantic ACTION to match — it invents no
+   bytes and changes no registers, so it is NOT a cheat (the whole prologue_config
+   population uses it; `queue done` + `check_completion_integrity.py` accept it).
+2. Remove the regfix `reorder` rule. `make` SHA1 == oracle is the proof.
+
+**FOOTGUN (cost me a build, 2026-06-14):** write the config entry from a `.py`
+FILE, never a WSL `<<EOF` heredoc — an unquoted heredoc EXPANDS `$s0`/`$sp`/`$a1`
+as empty shell vars, silently writing `"sw\t, 0x30()"` (registers gone). The
+symptom is `PROLOGUE_FIX: 0 reordered, N unchanged` (it found the func but
+`build_target_actions` classified every stripped insn as `('other', …)` so
+`action_matches` never fired). Verify with `python3 -c "import json;
+print(json.load(open('tools/prologue_config.json'))['<func>'])"` — the strings
+MUST still contain `$s0`, `$sp`, etc.
+
+### Confirmed case — func_8007C4B8 (display.c, 2026-06-14)
+Single `reorder 3,4,1,2 @ 1-4` regfix, NO config entry. cc1 natural prologue
+`sw s1;move s1,a0;sw s0;move s0,a1`; target `sw s0;move s0,a1;sw s1;move s1,a0`
+(saves the SECOND param a1→s0 first). Source-order levers don't flip it (9 tested
+on twin func_8007C2A0 — the iteration-order wall). Added the 6-line target
+prologue to `prologue_config.json`, removed the regfix rule → sandbox 4→0, full
+SHA1 == oracle, COMPLETED-C. **Twin func_8007C2A0 (display.c) is the identical
+pattern — same signature `(s32 *out, Rect *r)`, same wall — close it the same way.**
+
 ## Related
 - [[sandbox-zero-retire-fails]] — the inverse coupling (a *source* cheat-asm barrier
   the rules undo); here the coupling is between a *config-stage* and regfix

@@ -2912,16 +2912,6 @@
       "park_reason": "Pure-C floor at sandbox-distance 4. Single 4-insn prologue reorder rule (regfix.txt:3753) flips save+def pairing from cc1's natural [sw s1; move s1,a0; sw s0; move s0,a1] to target's [sw s0; move s0,a1; sw s1; move s1,a0]. Mechanism: cc1's mips.c save_restore_insns iterates GP_REG_LAST->FIRST (3000a) and expand_function_start creates pseudos in DECL_ARGUMENTS order (out=72->s1, r=73->s0). Save-order is structurally fixed by mips machdep + ABI param order. Tried 9 distinct C source levers: early r-temps (3 forms), local alias, K&R-style decl, K&R-with-reversed-decl-order, var_a3=7 init, 3rd-callee-save force, all-temp-stores-at-end - all either CSE'd back or regressed. Sibling func_8007C4B8 has identical issue (twin function, same rule shape). Per [[no-compiler-divergence]] mips.c is frozen; per ABI param swap would break the asm callers. Either accept prologue_config.json as infrastructure (policy decision) or authorize ASM-region for the prologue-only debt."
     },
     {
-      "func": "func_8007C4B8",
-      "file": "display",
-      "distance": 4,
-      "verdict": "C",
-      "rules": 1,
-      "status": "parked",
-      "scorable": false,
-      "park_reason": "prologue save-order structural \u2014 twin of just-parked func_8007C2A0 (2b3ccfe). Single 4-insn regfix reorder 3,4,1,2 @ 1-4 swaps cc1's natural [sw s1,52; move s1,a0; sw s0,48; move s0,a1] to target's [sw s0,48; move s0,a1; sw s1,52; move s1,a0]. Same identical mips.c save_restore_insns iteration-order wall, same identical C signature (s32 *out, Rect *r), same identical body shape. Honest sandbox=4 verified fixed across the 9 levers tested on the sibling + 1 additional probe (s16 rx,ry locals + tmp_v0 call-result temp) this session: same 4-distance floor. Path to COMPLETED-C identical to sibling: requires either function-scope canonical-asm wrapping of the prologue 4-insn block, treating regfix reorder as canonical infrastructure (like prologue_config.json's AddTbpOfst_80047EE8 family), or a novel C lever spanning the mips.c scheduling space the explored levers don't cover."
-    },
-    {
       "func": "spu_DmaTransfer",
       "file": "main",
       "distance": 4,
@@ -3463,11 +3453,11 @@
     }
   ],
   "counts": {
-    "total": 420,
+    "total": 419,
     "active": 333,
     "by_status": {
       "active": 333,
-      "parked": 87
+      "parked": 86
     },
     "by_verdict": {
       "C": 158,
