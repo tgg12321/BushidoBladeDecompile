@@ -1,0 +1,47 @@
+{
+  "function": "func_80069AE4",
+  "file": "text1b",
+  "scores": {
+    "head_floor": 2,
+    "candidate_floor": 2,
+    "metric": "sandbox --disable all (masked) = 2 (now SCORABLE in a private worktree build; the prior 'sandbox unmeasurable' sibling-label-collision did NOT reproduce here). The 2 diffs are the loop-top hoist of `addiu a0,sp,24`. Full-build SHA1 is the real gate.",
+    "build_insns": 205,
+    "target_insns": 205
+  },
+  "sessions": [
+    {
+      "date": "2026-06-14",
+      "lever": "blocked-lane triage — 3 more rules-removed full-build loop variants, all DIFF",
+      "lever_rule": "loop-exit-work-inside-loop-sched-fence",
+      "floor_was": 2,
+      "floor_now": 2,
+      "session_id": "orch0614b-1"
+    }
+  ],
+  "reviewer": {
+    "verdict": null,
+    "date": "2026-06-14",
+    "evidence": "No improving candidate — candidate.c is HEAD's loop region (matches only with the 3 rules). No new cheat introduced."
+  },
+  "remaining_gap": {
+    "summary": "2-insn loop scheduling plateau. Target hoists `addiu a0,sp,24` (= &s.sp18, the func_8007352C call arg, loop-invariant) to the LOOP TOP at 0x80069c5c — it is the bnez branch target. GCC's list scheduler instead emits the address computation late (right before the jal). The 3 regfix rules physically reorder the 3-insn window (94,92,93), insert a stable loop-top label, and retarget the bnez to it.",
+    "rule_count_at_head": 3,
+    "rules_required_for_full_match": "func_80069AE4 in regfix.txt: `reorder 94,92,93 @92-94`, `insert_label .L_LOOP_TOP: @93`, `subst .L\\d+ .L_LOOP_TOP @104`. All 3 must go for COMPLETED-C. No pure-C source found that schedules the invariant `addiu a0,sp,24` to the loop head."
+  },
+  "next_hypotheses": [
+    "INSTRUMENTED .sched DUMP (named next step): build tmp/gccdbg/cc1 with BB2_SCHED_DEBUG (register-alloc-deep-dive.md recipe) on an isolated standalone, dump the loop's scheduling DAG, and learn why GCC places the loop-invariant `addiu a0,sp,24` last in its 3-insn ready window instead of at the block head. The target's placement = the address is the branch target (computed once at loop top, live across the body).",
+    "Loop-invariant hoist: GCC 2.7.2 loop.c MIGHT hoist `&s.sp18` if it sees it as a loop-invariant giv/biv-independent expression. Try forms that present the address as a pure loop-invariant the loop optimizer pulls to the preheader/header (e.g. a `volatile`-free invariant that survives to the header). Caution: the address must remain RE-materialized at the header (target recomputes `addiu a0,sp,24` each iteration as the branch target), not spilled to a callee-save.",
+    "Directed permuter from this structural seed (random masked-loop-scheduling search needs the seed) — PERM_* on the loop body only."
+  ],
+  "rejected_forms": [
+    {"form": "HEAD loop, rules removed (control)", "score": 2, "reason": "DIFF (sha cebf6fc4) — proves the 3 rules load-bearing."},
+    {"form": "pre-materialize `s32 *p=&s.sp18` INSIDE the loop, route stores+arg through p", "score": 2, "reason": "DIFF — retire failed in prior session (sha e207b1e7, from card)."},
+    {"form": "before-loop `s32 *sp=&s.sp18`, sp[0..2] stores + (s32)sp call arg", "score": 2, "reason": "DIFF (sha 2cf4b042) — does not place addiu at loop top."},
+    {"form": "before-loop `s32 sp18_addr=(s32)&s.sp18`, struct-member stores + sp18_addr call arg", "score": 2, "reason": "DIFF (sha 8a540cd5)."},
+    {"form": "before-loop `s32 *sp`, q++ moved to bottom (after the call)", "score": 2, "reason": "DIFF (sha 9a671107)."}
+  ],
+  "memory_notes": [
+    ".claude/rules/loop-exit-work-inside-loop-sched-fence.md",
+    "memory/project/register-alloc-deep-dive.md"
+  ]
+}
