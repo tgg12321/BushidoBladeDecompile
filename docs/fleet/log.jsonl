@@ -63,3 +63,15 @@
 {"ts":"2026-06-15T20:12:39.6323085Z","kind":"main-contamination-cleaned","detail":[" M docs/tooling_incidents.md"," M tools/hooks/main_reintegration_lock.py"]}
 {"ts":"2026-06-15T20:12:39.6875812Z","kind":"lane-cycle","outcome":"blocked","func":"func_80045294","role":"backlog-worker","lane":"fleet-bw1"}
 {"ts":"2026-06-15T20:20:31.9850869Z","kind":"lane-cycle","outcome":"blocked","func":"func_8007C4B8","role":"backlog-worker","lane":"fleet-bw1"}
+{"ts":"2026-06-15T21:14:18.7918855Z","kind":"lane-cycle","outcome":"blocked","func":"tslPolyF4Init","role":"backlog-worker","lane":"fleet-bw1"}
+{"ts":"2026-06-15T22:02:11.7877542Z","kind":"reaudit-clean","func":"AllocRobRmd"}
+{"ts":"2026-06-15T22:07:57.5750957Z","kind":"reaudit-regressed","reason":"Function-scope `s32 s0;` is used in cases 1 and 3 ONLY to hold the constant 1 in a callee-save register ($s0) across intervening jal calls (cpu_set_move_command_and_dir_for_no_action in case 1; func_80033DF4 in case 3) so the second u8 store can reuse it. The clean spec form `D_80102781 = 1; ...; D_800A3768 = 1;` is behaviorally identical; the only purpose of the local + (u8)-cast is to defeat GCC's natural re-materialization of `1` at the second store by forcing allocation to a callee-save register. This is constant-in-local-for-callee-save-persistence coercion — a cheat by any spelling, not on the SOTN-sanctioned list. Distinguish from the legitimate `s0` in sibling func_80032854 (line 3108), which IS the SOTN-sanctioned variable-reuse-for-codegen pattern (s0 = 0; s0 = arg0*40; s0 += ...; two unrelated values + accumulation). next_action: revert DispSamnailWindow to INCOMPLETE; redo cases 1 and 3 with inline literal `1` (no local) and search for the genuine pure-C lever that pins `1` to a callee-save across the call — likely register-allocation steering via the surrounding statement structure, not a function-scope constant-holder.","func":"DispSamnailWindow"}
+{"ts":"2026-06-15T22:09:53.5614803Z","kind":"reaudit-clean","func":"FadeOut_8003FFA8"}
+{"ts":"2026-06-15T22:11:40.8119068Z","kind":"reaudit-clean","func":"FadeOut_8003FFC4"}
+{"ts":"2026-06-15T22:14:28.8601871Z","kind":"reaudit-clean","func":"GetAllocPacketSize"}
+{"ts":"2026-06-15T22:14:57.1611718Z","kind":"lane-cycle","lane":"fleet-bw1","func":"func_8003B10C","outcome":"needs-decision","role":"backlog-worker"}
+{"ts":"2026-06-15T22:17:46.8022356Z","kind":"reaudit-clean","func":"InitHiraRmd_80041AC8"}
+{"ts":"2026-06-15T22:19:23.6514617Z","kind":"reaudit-clean","func":"LWCard_SetAccessData"}
+{"ts":"2026-06-15T22:20:40.2625507Z","kind":"reaudit-clean","func":"ReturnVSMode"}
+{"ts":"2026-06-15T22:26:39.2191044Z","kind":"reaudit-clean","func":"SetBloodSpot"}
+{"ts":"2026-06-15T22:28:03.9721366Z","kind":"reaudit-clean","func":"Vu0SetLightColMatrix_800801E8"}
