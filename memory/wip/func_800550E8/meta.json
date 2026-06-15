@@ -1,0 +1,42 @@
+{
+  "function": "func_800550E8",
+  "file": "text1b",
+  "scores": {
+    "head_floor": 3,
+    "candidate_floor": 3,
+    "metric": "sandbox --disable all (masked). 3 diffs = the la-addend fold + the 2 (lbu/sb) offset re-encodings. Full-build SHA1 is the real gate.",
+    "build_insns": 20,
+    "target_insns": 20
+  },
+  "sessions": [
+    {
+      "date": "2026-06-14",
+      "lever": "blocked-lane triage — 2 more rules-removed full-build variants, both DIFF",
+      "lever_rule": "no-compiler-divergence",
+      "floor_was": 3,
+      "floor_now": 3,
+      "session_id": "orch0614b-1"
+    }
+  ],
+  "reviewer": {"verdict": null, "date": "2026-06-14", "evidence": "No improving candidate — candidate.c is HEAD's body (matches only with the 3 rules). No new cheat."},
+  "remaining_gap": {
+    "summary": "cc1 combine-pass single-displacement addressing fold. Target encodes the 0x415 displacement in the load/store OFFSET (`la(D_80101EC8)` + `lbu/sb 1045(reg)`); cc1 folds &D_80101EC8 + 0x415 into the `la` symbol+addend (`la(D_80101EC8+1045)` + `lbu/sb 0(reg)`). Identical runtime memory access, different MIPS operand encoding. The function has exactly ONE displacement (0x415) so cc1's combine has no degree of freedom to keep base + offset separate — proven by the SIBLING func_8005509C which MATCHES because it has TWO displacements (0x414+0x415) forcing base separation.",
+    "rule_count_at_head": 3,
+    "rules_required_for_full_match": "func_800550E8 in regfix.txt:2897-2899 (3 reciprocal substs: la addend strip @8, lbu offset re-add @10, sb offset re-add @13). All 3 must go for COMPLETED-C; no single-displacement pure-C form found that stops cc1 folding 0x415 into the la."
+  },
+  "next_hypotheses": [
+    "Struct-field access: if D_80101EC8 has a known struct type with a u8 field at +0x415, accessing `obj[arg0].field` may make cc1 emit member-offset addressing (`lbu off(base)`) instead of folding the symbol+addend. Requires recovering the struct layout (0x44C stride suggests a per-entry struct). HIGH-value untried lever — needs the type.",
+    "Read GCC 2.7.2 combine.c symbol+offset fold (`PLUS (SYMBOL_REF) (CONST_INT)` -> `SYMBOL_REF+addend`): find the predicate that the sibling's two-displacement form fails (keeping base separate). Determine if a single-displacement C shape can fail the same predicate (e.g. a base whose runtime component the combine can't prove constant-foldable with the symbol).",
+    "If no pure-C form exists (single-displacement = genuinely no degree of freedom, as the analysis strongly suggests), this is a cc1-determinism wall — NOT canonical-asm (hand-coded scan LOW 0/8, ordinary byte loop) and compiler-patch is forbidden ([[no-compiler-divergence]]). Surface as a policy question: is a reciprocal-reencoding regfix (same bytes, operand-form only) acceptable here, or does it stay parked indefinitely?"
+  ],
+  "rejected_forms": [
+    {"form": "HEAD body, rules removed (control)", "score": 3, "reason": "DIFF (sha 2221357f) — proves the 3 rules load-bearing."},
+    {"form": "fold +0x415 into p (`p = base + ... + 0x415`, access *p)", "score": 3, "reason": "DIFF (sha 24a6570f) — moves the +0x415 out of the loop offset entirely; wrong (target applies it per-iteration in the offset)."},
+    {"form": "subscript form p[0x415]", "score": 3, "reason": "DIFF, == HEAD-no-rules (2221357f) — identical to *(p+0x415)."},
+    {"form": "uninit dual-pointer trick (sibling's 2-displacement form, faked)", "score": 9, "reason": "REGRESSED — only one real displacement; faking a second is a cheat AND worse codegen (from prior card)."},
+    {"form": "split base+offset into 2 statements", "score": 12, "reason": "REGRESSED (prior card)."},
+    {"form": "for-loop variant", "score": 3, "reason": "equal at 3, DIFF (prior card)."},
+    {"form": "step-based p[step + 0x415] index", "score": 10, "reason": "REGRESSED, extra addu (prior card)."}
+  ],
+  "memory_notes": [".claude/rules/no-compiler-divergence.md", ".claude/rules/strength-reduce-defeat.md"]
+}
