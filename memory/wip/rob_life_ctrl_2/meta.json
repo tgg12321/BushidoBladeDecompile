@@ -1,0 +1,48 @@
+{
+  "function": "rob_life_ctrl_2",
+  "file": "text1a_c",
+  "scores": {
+    "head_floor": 2,
+    "candidate_floor": 2,
+    "metric": "sandbox --disable all (masked) — masked score is 2 with rules dropped; the 2 diffs are the 5th-mflo dest reg + dependent sra. Full-build SHA1 is the real gate.",
+    "build_insns": 96,
+    "target_insns": 96
+  },
+  "sessions": [
+    {
+      "date": "2026-06-14",
+      "lever": "blocked-lane triage — 4 more rules-removed full-build variants, all DIFF",
+      "lever_rule": "register-alloc-pure-c",
+      "floor_was": 2,
+      "floor_now": 2,
+      "session_id": "orch0614b-1"
+    }
+  ],
+  "reviewer": {
+    "verdict": null,
+    "date": "2026-06-14",
+    "evidence": "No improving candidate to review — candidate.c is HEAD's body (matches only with the 2 regfix rules). No new cheat introduced."
+  },
+  "remaining_gap": {
+    "summary": "2-insn register-allocation plateau on the 5th mflo. The computation `t = (v * (0x1000 - ((s * (0x1000 - f)) >> 12))) >> 12` produces a mult whose result GCC RA places in $8 (t0); TARGET places it in $5 (a1) — the SAME register that held the 0x1000 (`li a1,4096`) constant, reused after its last `subu a1,...` minuend use dies. The dependent `sra` then reads $5 in target vs $8 in our build. 2 regfix subst rules paper over exactly this (mflo dest + sra src).",
+    "rule_count_at_head": 2,
+    "rules_required_for_full_match": "The 2 rob_life_ctrl_2 subst rules in regfix.txt:517-521 (mflo \\$8->$5 @49, sra $5,\\$8,12 -> $5,$5,12 @51). Both must be removed for COMPLETED-C; no pure-C source found that makes GCC reuse the dying a1(=0x1000) for the t-mult result."
+  },
+  "next_hypotheses": [
+    "INSTRUMENTED ALLOCNO DUMP (the named next modality): build tmp/gccdbg/cc1 with BB2_ALLOC_DEBUG / BB2_PRIO_DEBUG (see register-alloc-deep-dive.md) on an isolated standalone of rob_life_ctrl_2 to read the allocno-priority table. Determine why the t-mult pseudo (104 in the prior dump) is NOT given a1 despite no conflict with the 0x1000-constant pseudo at the mflo point. The whole question is liveness: a1(0x1000) must die exactly at t's subu so the mflo can reuse it.",
+    "Make the 0x1000 constant's LAST textual use be inside t's subexpression so its live range ends precisely at t's mult (target reuses the dying minuend reg). Care: q also uses 0x1000; the constant must remain CSE'd to one pseudo (a separate `s32 k=0x1000` local risks splitting it).",
+    "Try narrowing/retyping the intermediate (s*(0x1000-f))>>12 temp, or hoisting it to a named s32 used once, to change pseudo 104's conflict graph (Lever A/B from register-alloc-pure-c).",
+    "If the allocno dump shows the wall is GCC global.c:624 priority tiebreaker (same class as cpu_side_move_dir_4 / marionation_Exec), this is a genuine pure-C wall -> escalate for canonical-asm-vs-park policy. It is NOT obviously hand-coded asm (ordinary HSV->RGB arithmetic), so canonical-asm is unlikely correct."
+  ],
+  "rejected_forms": [
+    {"form": "HEAD body, rules removed (control)", "score": 2, "reason": "DIFF (sha 99ee75aa) — proves the 2 rules are load-bearing."},
+    {"form": "split t mult and >>12 into 2 statements (t=...; t=t>>12; and t>>=12;)", "score": 2, "reason": "DIFF (sha 6d4e7ac0). Already in card's negative list; re-confirmed."},
+    {"form": "collapse p into single `p=(v*(0x1000-s))>>12` statement", "score": 2, "reason": "DIFF (sha a2f90405) — different bytes, does not fix the t-mflo."},
+    {"form": "register asm() pin on t", "score": 2, "reason": "IGNORED by GCC: binds named pseudo 81 (already correct) not the unnamed mult-result pseudo 104. Also a cheat. (from prior card.)"},
+    {"form": "reorder t after bounds check / local fc=0x1000-f / swap q-t order / decl-order swap", "score": 2, "reason": "All DIFF (from prior card's documented negative levers 1-5)."}
+  ],
+  "memory_notes": [
+    ".claude/rules/register-alloc-pure-c.md",
+    "memory/project/register-alloc-deep-dive.md"
+  ]
+}
