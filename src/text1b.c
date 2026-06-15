@@ -13473,16 +13473,10 @@ s32 func_80060CB8(s32 arg0, s32 arg1)
 }
 extern s32 D_800A3420;
 extern s32 D_800A3424;
-extern volatile s32 D_800A37D4;
+extern s32 D_800A37D4;
 extern s32 D_800A3720;
 void gnd_get_fog(s32 arg0) {
-    s32 v0;
-    if (arg0 != 0) {
-        v0 = D_800A3424;
-    } else {
-        v0 = D_800A3420;
-    }
-    D_800A37D4 = v0;
+    D_800A37D4 = arg0 != 0 ? D_800A3424 : D_800A3420;
     D_800A3720 = D_800A37D4;
 }
 extern s32 D_800A3468;
