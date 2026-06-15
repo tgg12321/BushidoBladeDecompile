@@ -2713,15 +2713,6 @@
       "park_reason": "Same file-scope-volatile-extern pattern: function body is clean pure-C but blocked by 2 file-scope cheats in text1b.c. Needs coordinated file-wide volatile-decl cleanup."
     },
     {
-      "func": "func_80072BC4",
-      "file": "text1b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "File-scope volatile-extern cheat pattern: body is clean pure-C but blocked by file-scope cheats in src/text1b.c. Speed-parked during batch grind."
-    },
-    {
       "func": "mario_getMarioVoiceData_8005BE84",
       "file": "text1b",
       "distance": 0,
@@ -3490,11 +3481,11 @@
     }
   ],
   "counts": {
-    "total": 423,
+    "total": 422,
     "active": 333,
     "by_status": {
       "active": 333,
-      "parked": 90
+      "parked": 89
     },
     "by_verdict": {
       "C": 158,
