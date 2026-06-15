@@ -9,14 +9,15 @@
     "build_insns": 47,
     "target_insns": 47
   },
+  "prior_sessions_summary": "2026-06-07 (s1): inlined D_800A3844 = arr[arg0], dropped the register-asm pin + dead-local alias -> established honest pure-C floor 6 (cheat-clean form; HEAD scores 5 only because the strip misses the new_var alias). Rejected: explicit arg0-reassign (9), func_8003AE5C(arg0) local-instead-of-reload (14).",
   "sessions": [
     {
-      "date": "2026-06-07",
-      "lever": "inline D_800A3844 = arr[arg0]; drop pin + dead-local alias",
-      "lever_rule": null,
-      "floor_was": 5,
+      "date": "2026-06-14",
+      "session_id": "orch0614b-2",
+      "lever": "NO_PROGRESS — confirmed next_hypotheses #3 (const file-scope alias) NEGATIVE",
+      "floor_was": 6,
       "floor_now": 6,
-      "session_id": null
+      "session_notes": "Tested the explicitly-untried resume avenue #3: file-scope `static s32 *const D_900EC_tbl = (s32 *)&D_800900EC;` with `D_800A3844 = D_900EC_tbl[arg0];`. Sandbox HELD at 6 (47/47 insns, same 6-position array-load-vs-byte-store swap) — combine folds the const pointer back to the symbol-ref exactly like the session-2 local-pointer form, so the load's LUID/priority anchor is unchanged. This closes hypothesis #3. Remaining un-mined avenues: instrumented cc1 INSN_PRIORITY dump (#1/#2 in next_hypotheses) and directed PERM_GENERAL statement-permutation (#2 here). Confirmed this is the same sched.c INSN_PRIORITY hoist family as saEft00Add_sub (where BOTH decompals cc1 AND PsyQ cc1psx agree on the reorder — calibration worth repeating here)."
     },
     {
       "date": "2026-06-08",
@@ -46,6 +47,11 @@
     "SOTN/COMMUNITY CROSS-REFERENCE — search SOTN and other PSX decomp projects for similar `byte-stores-then-array-load-then-call` patterns. The mechanism is generic (sched.c INSN_PRIORITY priorities longer chains later) so other decomps must have encountered it. Look for: SOTN's overlay-load functions in `src/main/`, `src/dra/`, `src/st/*/`. If they used a specific structural lever, transplant it."
   ],
   "rejected_forms": [
+    {
+      "form": "file-scope `static s32 *const D_900EC_tbl = (s32 *)&D_800900EC;` then `D_800A3844 = D_900EC_tbl[arg0];` (next_hypotheses #3, never attempted before)",
+      "score": 6,
+      "reason": "Tested 2026-06-14 (orch0614b-2). HELD at 6. GCC combine folds the file-scope const pointer back to the symbol-ref form — identical asm to the session-2 LOCAL const-pointer form. The load's LUID/scheduling anchor is unchanged; the array load still hoists past the byte stores. Hypothesis #3 is now CLOSED-NEGATIVE."
+    },
     {
       "form": "explicit `arg0 = ((s32*)&D_800900EC)[arg0]` reassignment, source order matches target",
       "score": 9,
