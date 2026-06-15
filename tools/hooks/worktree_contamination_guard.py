@@ -93,6 +93,24 @@ def eng_invocation(cmd: str) -> str | None:
     return None
 
 
+def _real_invocation(rx: re.Pattern, cmd: str) -> bool:
+    """True iff rx matches an actual INVOCATION, not a MENTION. A match is a
+    mention (skipped) when a reader command (git/cat/grep/...) precedes it, it
+    follows a -m/-F/-c message flag, or it sits inside a quoted arg (a commit
+    message / -Label value / pathspec in `git add`). Mirrors eng_invocation's
+    mention logic, so `git add tools/prologue_fix.py`,
+    `commit -m '...sweep_variants...'`, and `-Label "...prologue_fix..."` no
+    longer false-block."""
+    for m in rx.finditer(cmd):
+        before = cmd[: m.start()]
+        if READER_RE.search(before) or FLAG_MENTION_RE.search(before):
+            continue
+        if before.count('"') % 2 == 1 or before.count("'") % 2 == 1:
+            continue
+        return True
+    return False
+
+
 def reasons_for_cmd(cmd: str) -> list[str]:
     out: list[str] = []
 
@@ -105,18 +123,18 @@ def reasons_for_cmd(cmd: str) -> list[str]:
 
     has_wteng = bool(WTENG_RE.search(cmd))
 
-    if not has_wteng and MAKE_RE.search(cmd) and not CD_ABS_PIN_RE.search(cmd):
+    if not has_wteng and _real_invocation(MAKE_RE, cmd) and not CD_ABS_PIN_RE.search(cmd):
         out.append(
             "`make` with no pinned target — no `wteng.ps1` and no absolute "
             "`cd '/mnt/.../<repo>'` in the same command. A cwd-relative build runs "
             "against MAIN (corrupts its build/oracle).")
 
-    if not has_wteng and SWEEP_RE.search(cmd):
+    if not has_wteng and _real_invocation(SWEEP_RE, cmd):
         out.append(
             "An in-place src-mutating tool (sweep_variants/prologue_fix) with no "
             "`wteng.ps1` pin — would edit MAIN's src. Run it via wteng.")
 
-    if not has_wteng and RAW_ENGINE_RE.search(cmd):
+    if not has_wteng and _real_invocation(RAW_ENGINE_RE, cmd):
         out.append(
             "Hand-rolled engine invocation (`engine.cli` / `from engine import`) with "
             "no `wteng.ps1` pin — runs against the shell cwd (= MAIN).")
