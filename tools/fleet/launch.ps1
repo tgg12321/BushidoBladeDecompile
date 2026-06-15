@@ -14,7 +14,13 @@
   and an ended agent session but not a logoff.
 #>
 [CmdletBinding()]
-param([string]$Model = 'opus')
+param(
+    [string]$Model = 'opus',
+    [int]$Workers = 2,            # number of backlog-worker lanes
+    [switch]$NoBlocked,           # drop the blocked-worker lane
+    [switch]$NoAdjudicator,       # drop the adjudicator lane
+    [switch]$NoReaudit            # auditor only gates IN_REVIEW (no idle reaudit patrol)
+)
 $ErrorActionPreference = 'Stop'
 $root   = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $logDir = Join-Path $root 'tmp\fleet\logs'
@@ -34,9 +40,14 @@ if (Test-Path $pidf) {
 }
 
 Write-Host "Launching fleet supervisor (detached) ..."
+$fleetArgs = @('-NoProfile','-File',"`"$fleet`"",'-Model',$Model,'-Workers',$Workers)
+if ($NoBlocked)     { $fleetArgs += '-NoBlocked' }
+if ($NoAdjudicator) { $fleetArgs += '-NoAdjudicator' }
+if ($NoReaudit)     { $fleetArgs += '-NoReaudit' }
+Write-Host "  config: $($fleetArgs -join ' ')"
 $p = Start-Process pwsh -PassThru -WindowStyle Hidden `
     -RedirectStandardOutput $out -RedirectStandardError $err `
-    -ArgumentList @('-NoProfile','-File',"`"$fleet`"",'-Model',$Model)
+    -ArgumentList $fleetArgs
 $p.Id | Set-Content -Path $pidf -Encoding ascii
 Write-Host "  supervisor pid: $($p.Id)  (written to tmp/fleet/supervisor.pid)"
 Write-Host "  log: tmp/fleet/logs/supervisor.out.log"

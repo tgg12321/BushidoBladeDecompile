@@ -57,7 +57,7 @@ function Run-Cycle {
     try { $pkt = $pktRaw | ConvertFrom-Json } catch { }
     if (-not $pkt -or -not $pkt.func) {
         if ($pkt.paused) { Write-Host "[$Lane] circuit $($pkt.circuit); idling." }
-        return $false   # nothing claimed
+        return 'empty'   # nothing to claim
     }
     $func = $pkt.func
     Write-Host "[$Lane/$Role] claimed $func ($($pkt.file)); syncing worktree..."
@@ -66,7 +66,7 @@ function Run-Cycle {
     catch {
         Write-Host "[$Lane] worktree bootstrap FAILED: $_" -ForegroundColor Yellow
         Coord release -Lane $Lane | Out-Null
-        return $true
+        return 'noop'
     }
 
     $task = Build-WorkerTask $pkt $Lane
@@ -75,9 +75,12 @@ function Run-Cycle {
     Assert-MainClean | Out-Null   # Maj-8: producers edit only their worktree; never main
 
     if (-not $outcome -or -not $outcome.outcome) {
-        Write-Host "[$Lane] agent produced no valid outcome for $func -> no-op." -ForegroundColor Yellow
+        # Agent produced no outcome — almost always a degraded environment (usage
+        # limit, transient API/toolchain failure). Return 'noop' so the loop BACKS OFF
+        # instead of tight-looping fail-fast spawns on the same function.
+        Write-Host "[$Lane] agent produced no valid outcome for $func -> no-op (will back off)." -ForegroundColor Yellow
         Coord submit -Lane $Lane -Outcome no-op -Func $func | Out-Null
-        return $true
+        return 'noop'
     }
 
     $o = [string]$outcome.outcome
@@ -111,10 +114,11 @@ function Run-Cycle {
         Add-Content -Path $adj -Value "- $ts  **$func** -> $o (verdict: $([string]$outcome.verdict)). $([string]$outcome.rationale)" -Encoding utf8
     }
     Append-FleetLog 'lane-cycle' @{ lane = $Lane; role = $Role; func = $func; outcome = $o }
-    return $true
+    return 'ok'
 }
 
 Write-Host "[$Lane/$Role] lane runner starting (poll ${PollSeconds}s, once=$Once)."
+$failStreak = 0
 do {
     # honor the circuit breaker
     $circuit = $null
@@ -125,10 +129,21 @@ do {
         continue
     }
     Coord heartbeat -Lane $Lane | Out-Null
-    $did = $false
-    try { $did = Run-Cycle }
-    catch { Write-Host "[$Lane] cycle error: $_" -ForegroundColor Red; try { Coord release -Lane $Lane | Out-Null } catch {} }
+    $status = 'noop'
+    try { $status = Run-Cycle }
+    catch { Write-Host "[$Lane] cycle error: $_" -ForegroundColor Red; try { Coord release -Lane $Lane | Out-Null } catch {}; $status = 'noop' }
     if ($Once) { break }
-    if (-not $did) { Start-Sleep -Seconds $PollSeconds }
+    switch ($status) {
+        'ok'    { $failStreak = 0 }
+        'empty' { $failStreak = 0; Start-Sleep -Seconds $PollSeconds }
+        default {
+            # 'noop' — agent failed / degraded env. Escalating backoff (30s,60s,... cap 10m)
+            # so a usage-limit or toolchain outage can't tight-loop fail-fast spawns.
+            $failStreak++
+            $backoff = [Math]::Min(600, 30 * $failStreak)
+            Write-Host "[$Lane] no-outcome streak=$failStreak; backing off ${backoff}s." -ForegroundColor Yellow
+            Start-Sleep -Seconds $backoff
+        }
+    }
 } while ($true)
 Write-Host "[$Lane/$Role] lane runner exiting."

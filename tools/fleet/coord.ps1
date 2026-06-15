@@ -62,7 +62,8 @@ param(
     [string]$Verdict,
     [string]$Rationale,
     [string]$Set,
-    [string]$File
+    [string]$File,
+    [switch]$NoReaudit
 )
 
 $ErrorActionPreference = 'Stop'
@@ -266,7 +267,7 @@ switch ($Command) {
                                -and -not ($_.candidate_sha -and $st.gate_failed[$_.candidate_sha]) } |
                 Sort-Object { $_.review_ts })
             if ($cands.Count -gt 0) { $pick = $cands[0] }
-            else {
+            elseif (-not $NoReaudit) {
                 # 2) idle -> re-audit a completed function (historical seed worklist)
                 if ($st.reaudit.pending.Count -gt 0) {
                     $c = [int]$st.reaudit.cursor
@@ -326,7 +327,20 @@ switch ($Command) {
         if (-not $f -and $st.lanes[$Lane]) { $f = [string]$st.lanes[$Lane].current_func }
         if (-not $f) { throw "submit: no function (pass -Func, or lane '$Lane' has no current claim)" }
         $e = $st.functions[$f]
-        if (-not $e) { throw "submit: function '$f' not tracked" }
+        if (-not $e) {
+            # The only outcome valid for an UNTRACKED function is 'regressed' — the
+            # re-audit patrol found a cheat in an already-COMPLETED function (which is
+            # not in the queue). Record it for the owner; do NOT auto-re-open (re-auditing
+            # questions established work, where a false-positive would churn workers).
+            if ($Outcome -eq 'regressed') {
+                $st.regressions = @($st.regressions | Where-Object { $_.func -ne $f }) + @(@{ func = $f; reason = $Reason; sha = $Sha; ts = (Now-Iso) })
+                $st.reaudit.pending = @($st.reaudit.pending | Where-Object { $_ -ne $f })  # stop re-flagging it
+                if ($st.lanes[$Lane]) { $st.lanes[$Lane].current_func = $null }
+                Save-State $st
+                return ([pscustomobject]@{ ok = $true; func = $f; new_state = 'regression-recorded' } | ConvertTo-Json -Compress)
+            }
+            throw "submit: function '$f' not tracked"
+        }
         if (-not $e.home) { $e.home = 'backlog' }
         $origin = $e.home   # the function's stable tier (backlog vs blocked), not who worked it
         $hist = @{ ts = (Now-Iso); lane = $Lane; event = "submit:$Outcome" }
@@ -423,16 +437,13 @@ switch ($Command) {
             }
             'regressed' {
                 # B5: re-audit found a cheat in an already-committed COMPLETED function.
-                # Re-open for a clean redo; main keeps the (byte-correct) cheat until a
-                # pure-C replacement lands (reverting now would break the oracle). Record
-                # it in the owner-facing ledger and stop re-flagging it via reaudit.
-                $e.lane_state = 'backlog'
-                $e.claimed_by = $null
+                # RECORD it for the owner (a false-positive here would churn workers on a
+                # clean, established completion), and stop re-flagging it. Do NOT auto-re-open;
+                # the owner reviews docs/fleet/regressions.md and decides which to re-do. The
+                # byte-correct cheat stays on main until that clean replacement lands.
                 $e.regression = $true
-                $e.order = (Min-Order $st) - 1.0
-                if ($Reason) { $e.last_feedback = "REGRESSION: this committed function carries a cheat ($Reason). Produce a clean pure-C replacement." }
                 $st.regressions = @($st.regressions | Where-Object { $_.func -ne $f }) + @(@{ func = $f; reason = $Reason; sha = $Sha; ts = (Now-Iso) })
-                $st.reaudit.pending = @($st.reaudit.pending | Where-Object { $_ -ne $f })  # don't re-flag while open
+                $st.reaudit.pending = @($st.reaudit.pending | Where-Object { $_ -ne $f })  # stop re-flagging
             }
             # ---- adjudicator outcomes ----
             'to-review' {

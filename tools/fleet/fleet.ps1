@@ -32,6 +32,10 @@ param(
     [int]$MaxMinutes = 0,                 # 0 = run forever
     [int]$OracleBackstopMinutes = 30,
     [int]$LaneTimeoutMinutes = 120,       # heartbeat-stale kill threshold
+    [int]$Workers = 2,                    # number of backlog-worker lanes
+    [switch]$NoBlocked,                   # drop the blocked-worker lane
+    [switch]$NoAdjudicator,               # drop the adjudicator lane
+    [switch]$NoReaudit,                   # auditor only gates IN_REVIEW work (no idle reaudit patrol)
     [switch]$DryRun,
     [switch]$NoLanes,                     # supervisor-only (drill: drive auditor by hand)
     [switch]$AuditOnce,                   # drill: run exactly one Auditor-Cycle then exit
@@ -45,12 +49,12 @@ $LogDir = Join-Path $RepoRoot 'tmp\fleet\logs'
 if (-not (Test-Path $LogDir)) { New-Item -ItemType Directory -Path $LogDir -Force | Out-Null }
 $ReintLock = Join-Path $RepoRoot 'tools\reintegrate_lock.ps1'
 
-$ProducerLanes = @(
-    @{ id = 'fleet-bw1'; role = 'backlog-worker' },
-    @{ id = 'fleet-bw2'; role = 'backlog-worker' },
-    @{ id = 'fleet-blk'; role = 'blocked-worker' },
-    @{ id = 'fleet-adj'; role = 'adjudicator'    }
-)
+# Build the producer-lane set from the knobs (lets us run a single agent for tests
+# to conserve usage). Default = 2 backlog + 1 blocked + 1 adjudicator.
+$ProducerLanes = @()
+for ($w = 1; $w -le $Workers; $w++) { $ProducerLanes += @{ id = "fleet-bw$w"; role = 'backlog-worker' } }
+if (-not $NoBlocked)     { $ProducerLanes += @{ id = 'fleet-blk'; role = 'blocked-worker' } }
+if (-not $NoAdjudicator) { $ProducerLanes += @{ id = 'fleet-adj'; role = 'adjudicator'    } }
 
 $script:LastGreen = $null
 
@@ -187,7 +191,10 @@ re-runs the full oracle gate — so PASS means COMPLETED. Mean it.
 
 function Auditor-Cycle {
     $pkt = $null
-    try { $pkt = Coord claim -Role auditor -Lane fleet-aud | ConvertFrom-Json } catch { }
+    try {
+        if ($NoReaudit) { $pkt = Coord claim -Role auditor -Lane fleet-aud -NoReaudit | ConvertFrom-Json }
+        else            { $pkt = Coord claim -Role auditor -Lane fleet-aud | ConvertFrom-Json }
+    } catch { }
     if (-not $pkt -or -not $pkt.func) { return $false }
     $func = [string]$pkt.func
     $mode = [string]$pkt.mode
@@ -257,13 +264,15 @@ function Auditor-Cycle-Body($pkt, $func, $mode) {
         'needs-adjudication' { Coord submit -Lane fleet-aud -Outcome to-adjudicator -Func $func | Out-Null }
         'reaudit-clean'      { Append-FleetLog 'reaudit-clean' @{ func = $func } }
         'reaudit-regressed'  {
-            Coord submit -Lane fleet-aud -Outcome regressed -Func $func -Sha ([string]$script:LastGreen) -Reason ([string]$outcome.reason) | Out-Null
-            Append-FleetLog 'reaudit-regressed' @{ func = $func; reason = ([string]$outcome.reason) }
-            # B5: owner-facing committed ledger of a cheat found on main.
+            # Record FIRST (so the finding persists even if the coord call has an issue),
+            # then tell the coordinator (which records it for status + stops re-flagging).
+            # NOT auto-re-opened — surfaced for the owner to review and decide.
             $reg = Join-Path $RepoRoot 'docs\fleet\regressions.md'
-            $line = "- $((Get-Date).ToUniversalTime().ToString('o'))  **$func** — $([string]$outcome.reason) (re-opened for clean pure-C redo; the byte-correct cheat remains on main until the clean version lands)"
+            $line = "- $((Get-Date).ToUniversalTime().ToString('o'))  **$func** — $([string]$outcome.reason)  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
             Add-Content -Path $reg -Value $line -Encoding utf8
-            Write-Host "[auditor] REGRESSION on committed $func — logged to docs/fleet/regressions.md, re-opened for clean redo." -ForegroundColor Red
+            Append-FleetLog 'reaudit-regressed' @{ func = $func; reason = ([string]$outcome.reason) }
+            Coord submit -Lane fleet-aud -Outcome regressed -Func $func -Sha ([string]$script:LastGreen) -Reason ([string]$outcome.reason) | Out-Null
+            Write-Host "[auditor] REGRESSION flagged on committed $func — logged to docs/fleet/regressions.md for your review." -ForegroundColor Red
         }
         default { Write-Host "[auditor] unknown outcome '$o'." -ForegroundColor Yellow }
     }
