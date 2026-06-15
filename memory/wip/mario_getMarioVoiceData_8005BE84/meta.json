@@ -1,0 +1,26 @@
+{
+  "func": "mario_getMarioVoiceData_8005BE84",
+  "file": "src/text1b.c",
+  "address": "0x8005be84",
+  "verdict": "C",
+  "status": "wip-progress",
+  "scores": {
+    "head_cheat_form": 0,
+    "head_clean_floor": 21,
+    "candidate_floor": 4,
+    "metric": "sandbox --disable all (masked objdump insn distance)"
+  },
+  "reviewer": {
+    "verdict": "PASS",
+    "basis": "candidate is pure C: array indexing + arithmetic only; zero regfix/asmfix rules, zero __asm__, zero register asm() pins, zero volatile/alias coercion. audit_asm_cheats.py --func reports nothing."
+  },
+  "rejected_forms": [
+    "s16[][2] indexing without cached base -> recomputes lui/addu per access (score 16-21)",
+    "shift arg0 in place + temp_a0 late (variant e/i/j) -> score 15-17 (breaks bltz delay-slot fill AND addu operand order)",
+    "char* base + arg0*4 cast (variant g) -> bi=47 extra insn, score 16",
+    "precompute temp_a0 WITHOUT base-first ptr -> score 8 (wrong addu operand order)"
+  ],
+  "sessions": [
+    {"id": "orch0614b-2", "date": "2026-06-14", "note": "Lowered floor 21->4. base=&D_8009AD1C[0][0] computed BEFORE index fixes addu operand order (v0=index,v1=base). Remaining 4: target keeps s0=arg0 unshifted through lh/bltz, shifts in bltz DELAY SLOT, computes +1 late; GCC schedules the full (arg0<<1)+1 together early instead. Register-pin (asm($16)) wall."}
+  ]
+}
