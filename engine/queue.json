@@ -2737,7 +2737,7 @@
       "verdict": "C",
       "rules": 0,
       "status": "parked",
-      "park_reason": "File-scope volatile-extern cheat pattern: body is clean pure-C but blocked by file-scope cheats in src/text1b.c. Speed-parked during batch grind."
+      "park_reason": "RE-EVALUATED 2026-06-14 (worker orch0614b-3): the arg0=0 dead store IS load-bearing \u2014 removing it breaks the build (clean worktree make SHA1 3b429046 != oracle 62efab4f). Matches ONLY via the now-FORBIDDEN dead-param-assign lever (register-alloc-pure-c Lever D). Deleting the dead store does NOT reach target RA (base's loop-spanning live range alone is insufficient for the $s4-vs-$a0 split). Genuine pure-C wall: needs a real Lever A/B/C reaching that allocation, or canonical-asm review. Prior in-session over-claim (commit reverted)."
     },
     {
       "func": "func_8003D7B4",
@@ -2774,15 +2774,6 @@
       "rules": 3,
       "status": "parked",
       "park_reason": "FALSE-branch lbu schedule diff at 3 independent loads (idx 68/69/70). Registers + OR-tree match; only cc1's load order differs (r/g/b vs target b/r/g). Mechanism: b's INSN_PRIORITY < r/g's (chain depth 1 vs 2), so sched.c picks r/g first. All clean pure-C levers tried (source reorder, inline, bit-descending, named intermediate) either no-op or regress. Remaining levers (OR-operand permute, chain-extender, dead store) forbidden by no-new-park-categories. Standing search avenue: directed permuter targeting idx 68-70."
-    },
-    {
-      "func": "func_80045294",
-      "file": "text1a_c",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 3,
-      "status": "parked",
-      "park_reason": "Pure-C floor distance 2 (1 nop in first loop load-delay slot). 3 regfix rules move addu i++ between lw and addu sum to fill the slot. cc1's MIPS sched.c places addiu i++ at loop top regardless of source form (4 forms tried). See memory/wip/func_80045294/ for the form-sweep negative + resume hypotheses (instrumented-cc1 INSN_PRIORITY probe, pointer-iter form, sibling RTL diff)."
     },
     {
       "func": "rob_life_ctrl_2",
@@ -3481,11 +3472,11 @@
     }
   ],
   "counts": {
-    "total": 422,
+    "total": 421,
     "active": 333,
     "by_status": {
       "active": 333,
-      "parked": 89
+      "parked": 88
     },
     "by_verdict": {
       "C": 158,
