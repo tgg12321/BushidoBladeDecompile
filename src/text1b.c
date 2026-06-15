@@ -16661,7 +16661,7 @@ extern s32 initPolyG4(GameObj *);
 extern s32 ot_Link(s32, GameObj *);
 extern void *D_800A35C4;
 s32 func_80072BC4(s32 arg0, GameObj *arg1) {
-    register u8 var_v0 asm("$2");
+    u8 var_v0;
     int fc_const;
 
     initPolyG4(arg1);

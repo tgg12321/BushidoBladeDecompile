@@ -1603,9 +1603,10 @@ void func_80045294(s32 a0, s32 a1) {
 
     if (i < count) {
         do {
-            sum += *(s32 *)((u8 *)&D_800EED18 + v1);
-            i += 1;
+            s32 val = *(s32 *)((u8 *)&D_800EED18 + v1);
             v1 += 0x10;
+            i += 1;
+            sum += val;
         } while (i < count);
     }
 
