@@ -84,6 +84,47 @@ pointers, inline reorder); **only the walking-pointer form scored 0**. Applied,
 The per-element-temp and operand-swap forms did NOT help (≥10) — the post-increment
 pointer dependence is the load-bearing part, not just "split into statements".
 
+## Confirmed case — func_8006517C (text1b.c, 2026-06-14; rule adopted 2026-06-15)
+
+Extends the pattern to a **re-read** cluster + an **interleaved const halfword
+store**. Body reads p[0..2] -> globals, then RE-READS p[0],p[1] -> more globals,
+then chases p=p[2]. HEAD cheated with `register volatile s32 *p asm("$3")` +
+`register s32 t asm("$2")` pins (the `volatile` was a CSE-defeat coercion) + 3
+regfix rules (reorder + two $4->$2 subst). Two pure-C extensions made it score 0:
+
+- **A SECOND walking pointer for the re-read batch.** `s32 *ap=p, *bp=p;` — `ap`
+  walks the first three reads, `bp` walks the re-reads, `p=(s32*)*bp` chases. GCC
+  re-reads naturally (the intervening global stores block CSE — NO volatile
+  needed; the volatile was pure cheat). One walking pointer alone left the re-read
+  batch in scattered regs (dist 8); the second pointer serialized it. (Direct
+  refinement of the base technique — a re-read is just another parallel-load
+  cluster.)
+- **Explicit temp to drop an independent const store into a LOAD-delay slot.**
+  The `D_800F0BC0 = 0;` (a real, always-required `sh zero`) had to land BETWEEN
+  the `p[2]` load and its store (target fills the load-delay slot with it).
+  Writing `t = *ap; D_800F0BC0 = 0; D_800F0D38 = t;` — load into a named temp,
+  then the independent const store, then the global store — places `sh zero`
+  exactly there. Inlining as `D_800F0D38 = *ap;` with `BC0=0` before/after
+  scheduled the `sh` one slot off (dist 4-5).
+
+`retire` dropped all 3 rules, SHA1 == oracle, COMPLETED-C.
+
+**Why the explicit-temp bullet is legitimate (not a codegen-steer-by-spelling).**
+It is the **load-delay-slot analog of the already-sanctioned
+[[defer-store-past-later-compute-into-jal-delay]]** technique: hoist the stored
+value into a named local, then move the `GLOBAL = val;` store statement AFTER an
+**independent, already-required** operation, so the scheduler fills the
+(jal- there, load- here) delay slot. The decisive legitimacy test is the same:
+the interleaved op (`D_800F0BC0 = 0;`) is a **real instruction the function
+already needs** — NOT a manufactured/dead store inserted to steer scheduling.
+Both the load-into-temp and the statement-reorder have a plain reading a human
+would write; only the ORDER is chosen, and it is semantics-preserving (distinct
+globals). Contrast the FORBIDDEN func_80062020 epilogue (same session), which
+wrote the **same lvalue two different ways** purely to force two addressing modes
+— that has no semantic content and IS a steer. Independent cheat-reviewer +
+user sign-off 2026-06-15 (the technique was NOT shipped in the func_8006517C
+match commit; held for review per [[review-discipline-before-commit]] rule 2).
+
 ## Confirmed case — func_800613C8 (text1b.c, 2026-06-14)
 
 Same mechanism, but the cheat was **`register s32 t asm("$2")` pins** (not memory
