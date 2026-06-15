@@ -1,0 +1,52 @@
+{
+  "function": "func_8006156C",
+  "file": "text1b",
+  "scores": {
+    "head_floor": 11,
+    "candidate_floor": 6,
+    "metric": "sandbox --disable all (masked Levenshtein)",
+    "build_insns": 59,
+    "target_insns": 59
+  },
+  "sessions": [
+    {
+      "date": "2026-06-14",
+      "lever": "remove $2/$3 register-asm pins; reuse one local 't' for the 3 tail loads + mask-first store",
+      "lever_rule": "register-alloc-pure-c",
+      "floor_was": 11,
+      "floor_now": 6
+    }
+  ],
+  "reviewer": {
+    "verdict": "PASS",
+    "date": "2026-06-14",
+    "evidence": "Candidate has ZERO regfix/asmfix rules and ZERO cheat-asm (both forbidden register-asm pins removed). The reused 't' is a genuine value-holding local; mask is a plain const store. Not byte-identical (floor 6) so NOT committed to src/ — clean WIP only."
+  },
+  "remaining_gap": {
+    "summary": "Tail control flow + the 3 arg0[i] coord loads now match (all reuse one reg). Residual 6 diffs are purely the 0xFF8080 mask: target builds it in $v1 (lui $v1 early, ori $v1+sw later) INTERLEAVED into the loads' delay slots, keeping the const live in $v1 across the loads. My build hoists the whole lui+ori+sw mask ahead of the loads (in $v0). No C statement ordering controls this intra-basic-block scheduler choice.",
+    "rule_count_at_head": 0,
+    "rules_required_for_full_match": "HEAD reached byte-match only via 2 cheat-asm pins (register s32 t asm(\"$2\"), register s32 mask asm(\"$3\")) — both forbidden. No legal rule/source form found that reproduces the mask-in-$v1 interleave."
+  },
+  "next_hypotheses": [
+    "decomp-permuter scheduling search from this candidate base (residual is pure scheduler slot-fill of the lui/ori mask split — the permuter's specialty). Verify any find with engine sandbox + retire (faithful), not the isolated permuter score.",
+    "If permuter plateaus too, this is a genuine scheduler-coupling -> escalate for canonical-asm authorization (the 2-pin form is its only known byte-match) or accept as a documented plateau."
+  ],
+  "rejected_forms": [
+    {
+      "form": "register s32 t asm(\"$2\"); register s32 mask asm(\"$3\"); (HEAD's committed form)",
+      "score": 0,
+      "reason": "FORBIDDEN cheat-asm register-asm pins — see .claude/rules/register-asm-pins / register-alloc-pure-c Lever D and inline-asm-policy. Byte-matches but is not COMPLETED-C."
+    },
+    {
+      "form": "mask stored mid (between arg0[1] and arg0[2]) — any of: plain const, separate var m, m live across loads",
+      "score": 9,
+      "reason": "Not a cheat, just worse: floor 9. Mask-FIRST (floor 6) is strictly better. Do not re-derive the mid-store variants."
+    },
+    {
+      "form": "three separate load locals x0/x1/x2 (no reuse), mask mid",
+      "score": 11,
+      "reason": "Not a cheat, worse (floor 11). Separate locals let GCC hoist all 3 loads into distinct regs — the opposite of target. Single reused 't' is required."
+    }
+  ],
+  "memory_notes": []
+}

@@ -1,0 +1,43 @@
+{
+  "function": "func_80045878",
+  "file": "text1a_c",
+  "scores": {
+    "head_floor": 10,
+    "candidate_floor": 10,
+    "metric": "sandbox --disable all (masked Levenshtein); build_insns 107 vs target 108 (1 short = lost-codegen insert)",
+    "build_insns": 107,
+    "target_insns": 108
+  },
+  "sessions": [
+    {
+      "date": "2026-06-14",
+      "lever": "diagnosis + base-copy alias attempt (s16 *p = s1) — did not materialize the copy",
+      "lever_rule": "param-reuse-base-copy-cse-canon",
+      "floor_was": 10,
+      "floor_now": 10
+    }
+  ],
+  "reviewer": {
+    "verdict": "NEEDS_USER",
+    "date": "2026-06-14",
+    "evidence": "10 regfix rules (1 lost-codegen insert + 9-rule tail-store subst cluster). No pure-C form found. Two coupled gaps: (A) a folded `s3=a0+3` recompute, (B) a materialized base copy s1->$v0 for the tail stores. The single-set pointer alias gets copy-propagated (s1 dead after), so the copy doesn't materialize."
+  },
+  "remaining_gap": {
+    "summary": "Tail store block must emit through a COPY of s1 in $v0 (addu v0,s1,zero) with $v1 scratch (a0+3 then 0x8000); and an extra `addiu s3,s2,3` recompute that GCC folds. build_insns 107 vs target 108. The 9 tail substs + 1 insert encode exactly this.",
+    "rule_count_at_head": 10,
+    "rules_required_for_full_match": "All 10 rules are the cheat; HEAD only matches with them. No pure-C lever found that materializes the base copy AND restores the folded recompute."
+  },
+  "next_hypotheses": [
+    "Materialize the s1->$v0 base copy: per param-reuse-base-copy-cse-canon, a single-set alias folds when the original is dead — instead keep s1 live past the copy, OR reuse the PARAMETER as a cursor, OR name the copy as a value GCC must keep. Verify via full build (sandbox build_insns must hit 108 AND registers match — masked sandbox won't show the v0 vs s1 base).",
+    "Restore the folded `a0+3` recompute: the top `s3=a0+3` and else `s3=a0 - -3` fold to one. Try a structural change so the else-branch recompute survives (shared-end-label family / distinct value path).",
+    "If pure-C plateaus, escalate canonical-asm or document plateau. This is the same hard register/scheduling-cluster class as motion_SetMotion / func_8006156C in this batch."
+  ],
+  "rejected_forms": [
+    {
+      "form": "s16 *p = s1; tail stores via p",
+      "score": 10,
+      "reason": "Not a cheat, no effect: GCC copy-propagates the single-set alias (s1 dead after the block), so no `addu v0,s1,zero` materializes. build stayed 107. Need a form that keeps the copy live."
+    }
+  ],
+  "memory_notes": []
+}

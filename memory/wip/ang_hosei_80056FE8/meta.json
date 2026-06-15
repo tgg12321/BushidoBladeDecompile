@@ -1,0 +1,53 @@
+{
+  "function": "ang_hosei_80056FE8",
+  "file": "text1b",
+  "scores": {
+    "head_floor": 10,
+    "candidate_floor": 10,
+    "metric": "sandbox --disable all (masked Levenshtein); build_insns 42 vs target 43",
+    "build_insns": 42,
+    "target_insns": 43
+  },
+  "sessions": [
+    {
+      "date": "2026-06-14",
+      "lever": "remove $5 pin + asm barrier; named `partial` intermediate; swept addition-order + base-position variants",
+      "lever_rule": "register-alloc-pure-c",
+      "floor_was": 10,
+      "floor_now": 10
+    }
+  ],
+  "reviewer": {
+    "verdict": "PASS",
+    "date": "2026-06-14",
+    "evidence": "Candidate is clean (0 rules, 0 cheat-asm; pin + barrier removed). Not byte-identical (full build SHA1 mismatch 650213f4...) so NOT committed to src. The residual is a register-allocation tie, not a cheat."
+  },
+  "remaining_gap": {
+    "summary": "Target holds `base` (a3*40) in $a1 and `var_v0` in $v0 throughout, then `addu a1,a1,v0` (partial) BEFORE the final `lh` (so the lh's delay slot is a nop). My build allocates base->$a3 (var_v0's test `lh a1,94(a0)` claims $a1 first), so the partial-add fills the lh delay slot instead (build 1 insn SHORT, 42 vs 43). It's a base<->var_v0 register swap + a delay-slot-fill consequence.",
+    "rule_count_at_head": 0,
+    "rules_required_for_full_match": "HEAD byte-matches only via the $5 pin + asm barrier (both cheat-asm). No pure-C lever found to push base into $a1 / var_v0 into $v0."
+  },
+  "next_hypotheses": [
+    "Get var_v0 to live in $v0 (target) instead of $a1: the `(var_v0 = *(s16*)(arg0+0x5E))` test-assignment claims $a1. Try a block-local for the test value distinct from var_v0's result so var_v0's pseudo prefers $v0 — but a naive split scored 14 (the test value IS reused as the discarded load). Needs a form where the test reads into $v0 and is discarded, AND var_v0 results also land in $v0, freeing $a1 for base.",
+    "decomp-permuter (40-insn fn, pure RA/scheduling residual — its specialty). Verify any find with the FULL build SHA1 (the masked sandbox shows 10 regardless of the a1/a3 choice; full build proves it — confirmed mismatch 650213f4).",
+    "If pure-C plateaus, canonical-asm auth or documented plateau. Same RA-coupling class as this batch's other masked-10 backlog items."
+  ],
+  "rejected_forms": [
+    {
+      "form": "drop the `var_v0 =` test-assignment (test the load directly)",
+      "score": 14,
+      "reason": "Worse: target reuses the loaded value, so removing the assignment changes the load. Keep `(var_v0 = *(s16*)(arg0+0x5E))`."
+    },
+    {
+      "form": "compute base = a3*40 AFTER the if/else / inline at use",
+      "score": 27,
+      "reason": "Much worse (build 39): moves the multiply past the load. base must be computed early (as target does)."
+    },
+    {
+      "form": "base += var_v0 in place / partial += 0x12C / group const",
+      "score": "15-16",
+      "reason": "Addition reordering does not force partial before the load; all worse than the named-partial floor 10."
+    }
+  ],
+  "memory_notes": []
+}

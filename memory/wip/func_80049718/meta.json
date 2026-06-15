@@ -1,0 +1,49 @@
+{
+  "function": "func_80049718",
+  "file": "text1b",
+  "scores": {
+    "head_floor": 11,
+    "candidate_floor": 6,
+    "metric": "sandbox --disable all (masked Levenshtein)",
+    "build_insns": 197,
+    "target_insns": 197
+  },
+  "sessions": [
+    {
+      "date": "2026-06-14",
+      "lever": "removed no-op `do{...}while(0)` + empty `if(0){}` cheat-by-spelling scheduling perturbers (floor 11->6); operand-order/scheduling residual remains",
+      "lever_rule": "prologue-fix-redundant-reorder",
+      "floor_was": 11,
+      "floor_now": 6
+    }
+  ],
+  "reviewer": {
+    "verdict": "PASS",
+    "date": "2026-06-14",
+    "evidence": "Candidate removes two semantically-empty constructs (do-while(0) wrapper + empty if(0){}) — that REDUCES coercion, a strict cleanup. ZERO cheat-asm. Still carries the 2 regfix reorder rules and is not byte-identical (retire SHA1 mismatch 3fd1338c). Clean WIP, not committed to src."
+  },
+  "remaining_gap": {
+    "summary": "Two residual diff clusters after the no-op cleanup (floor 6): (1) the `p_anim = &D_800EF980[arg0]` address compute — target does lui/addiu(base) THEN sll(index) and `addu s0,v1(index),v0(base)`; mine does sll first so index lands in $v0, base in $v1 (operands swapped). (2) one `sh v0,4(s2)` store reordered (the second regfix `reorder 168,169,167 @167-169`).",
+    "rule_count_at_head": 2,
+    "rules_required_for_full_match": "The 2 regfix reorder rules (16-insn prologue reorder @3-18 + 3-insn store reorder @167-169). The no-op removal closed 5 of 11 diffs; the remaining 6 are the operand-order + store-scheduling the reorders encode."
+  },
+  "next_hypotheses": [
+    "s0 operand order: get the global BASE computed before the index so base->$v0, index->$v1, `addu s0,v1,v0`. `D_800EF980 + arg0` made it WORSE (11). Try other addressing spellings or compute-order nudges; see compare-operand-order-register.",
+    "the `sh v0,4(s2)` store reorder (idx 167-169) is a sched1 store-position diff — try reordering the corresponding source stores in the `var_s3 != 1` block.",
+    "decomp-permuter from this floor-6 base (pure operand-order + store-scheduling residual — its specialty). Verify with retire (full SHA1).",
+    "If pure-C plateaus, canonical or documented plateau."
+  ],
+  "rejected_forms": [
+    {
+      "form": "p_anim = D_800EF980 + arg0;  (pointer-add spelling)",
+      "score": 11,
+      "reason": "WORSE than &D_800EF980[arg0] (floor 6). Keep the array-index spelling."
+    },
+    {
+      "form": "p_anim = (s16*)((s32)&D_800EF980[0] + arg0*2);",
+      "score": 6,
+      "reason": "No change (still 6); the addu operand order didn't flip. Not worth re-deriving."
+    }
+  ],
+  "memory_notes": []
+}

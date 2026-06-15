@@ -28,6 +28,7 @@ difficult-is-not-impossible — still auto-load and are not listed here.)
 - **drop-param-alias-local** — param→local alias pins → drop the alias so the param register frees up for reuse.
 - **exit-path-return-set-cse-join** — shared finish label where a copy into `$v0` feeds an op → set the return value in EACH exit path, not at the join.
 - **divmod-coalesce-reuse-var** (memory/reference/) — GCC's quotient→move→var divmod allocation.
+- **cache-subtrahend-load-order** — `$6<->$7` swap cluster + first two loads of a block reordered (target loads the SECOND operand of each `x - (y - x)` reflection before `x`) → cache the high/second operands (`hiN = *(p+off)`) into named locals declared in target's load order; minuends inline. Frees the a2/a3 pairing pure-C.
 
 ## Cross-jump / merged-tail diffs (target has MORE instructions than you)
 
