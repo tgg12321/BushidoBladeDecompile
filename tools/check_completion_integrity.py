@@ -75,6 +75,7 @@ def main() -> int:
                      + len(cheats.func_rule_lines(func, cheats.REGFIX2))
                      + len(cheats.func_rule_lines(func, cheats.ASMFIX)))
             cheat_count = inlineasm.file_func_cheat_asm_count(stem, func)
+            prologue = cheats.func_prologue_count(func)
             is_canon = func in canon
 
             if is_canon:
@@ -83,13 +84,22 @@ def main() -> int:
                     violations.append(
                         f"{func} ({stem}.c): COMPLETED-INLINE-ASM-CANONICAL "
                         f"but carries {rules} regfix/asmfix rule(s)")
+                if prologue > 0:
+                    violations.append(
+                        f"{func} ({stem}.c): COMPLETED-INLINE-ASM-CANONICAL but carries "
+                        f"{prologue} prologue_fix entry(ies)")
                 continue
 
-            # COMPLETED-C invariants: no rules, no cheat constructs.
+            # COMPLETED-C invariants: no rules, no cheat constructs, no prologue_fix.
             if rules > 0:
                 violations.append(
                     f"{func} ({stem}.c): NOT in queue and NOT canonical, but carries "
                     f"{rules} regfix/asmfix rule(s) — should be INCOMPLETE")
+            elif prologue > 0:
+                violations.append(
+                    f"{func} ({stem}.c): NOT in queue and NOT canonical, but carries "
+                    f"{prologue} prologue_fix entry(ies) — should be INCOMPLETE "
+                    f"(prologue_fix reorders cc1's prologue; audit 2026-06-15)")
             elif cheat_count > 0:
                 violations.append(
                     f"{func} ({stem}.c): NOT in queue and NOT canonical, but has "
