@@ -12,52 +12,49 @@
   },
   "sessions": [
     {
-      "date": "2026-06-12",
-      "git_head_at_measurement": "fcbde9da",
-      "lever": "structural variant sweep (14 forms) + RTL diagnosis",
-      "lever_rule": "register-alloc-pure-c",
-      "floor_was": 21,
-      "floor_now": 21,
-      "session_id": null
-    },
-    {
       "date": "2026-06-13",
       "git_head_at_measurement": "e8bab6f4",
-      "lever": "directed permuter campaign (orchestrator modality change, user-authorized) — ~43k iters, 4 workers, from clean candidate.c base",
+      "lever": "directed permuter campaign (orchestrator modality change, user-authorized) \u2014 ~43k iters, 4 workers, from clean candidate.c base",
       "lever_rule": "difficult-is-not-impossible",
       "floor_was": 21,
       "floor_now": 21,
       "session_id": null,
-      "evidence": "permuter/cpu_get_dist workspace (base.c=cgd_iso.c, target.o at offset 0). Found a permuter-score-0 (byte-match) form BUT it is a CHEAT-FORM — REJECTED per cheats-by-any-spelling. The 0-form's closing constructs: (1) `rz++; rz--;` dead no-op pair inside the `if (v48<0)` block (extends rz live range — zero semantic purpose, same intent as HEAD's original liveness cheats); (2) `s32 vx;` declared but unused (load inlined); (3) `new_var=(u8*)a0;` alias used for ONLY the 2nd store (asymmetric drop-param-alias). Clean forms plateaued at permuter-~310 (output-310-1/), none reached 0. KEY: target's allocation IS reachable but only via rz-liveness coercion in the mutation space explored — no natural C use of rz exists in the v48 block. The clean sandbox floor stays 21. FOLLOW-UP (same session): re-seeded the permuter from the clean permuter-310 base (= candidate + `long sin_val`, the one clean improving lever); it reached sandbox-0 fast (iter 385) but the 0-form is AGAIN a cheat (inline duplicate-read of a0+0x44 instead of caching vx + dead `s32 vx` + `long sin_val`) — cheat-reviewer FAIL (orchestrator-confirmed), saved to rejected/reseed-inline-reread-long-sinval-cheat.c. ALSO ran the INSN_PRIORITY deep-dive: lw vx (insn 42) and lh cos_val (insn 59) both priority=2 (shared nearest mult), so the lever is structurally blocked; operand-order sweep (cgd_v3) all 21. Net: TWO permuter campaigns + INSN_PRIORITY + operand-order all exhausted; every 0-form is a coercion. Clean floor = 21."
+      "evidence": "permuter/cpu_get_dist workspace (base.c=cgd_iso.c, target.o at offset 0). Found a permuter-score-0 (byte-match) form BUT it is a CHEAT-FORM \u2014 REJECTED per cheats-by-any-spelling. The 0-form's closing constructs: (1) `rz++; rz--;` dead no-op pair inside the `if (v48<0)` block (extends rz live range \u2014 zero semantic purpose, same intent as HEAD's original liveness cheats); (2) `s32 vx;` declared but unused (load inlined); (3) `new_var=(u8*)a0;` alias used for ONLY the 2nd store (asymmetric drop-param-alias). Clean forms plateaued at permuter-~310 (output-310-1/), none reached 0. KEY: target's allocation IS reachable but only via rz-liveness coercion in the mutation space explored \u2014 no natural C use of rz exists in the v48 block. The clean sandbox floor stays 21. FOLLOW-UP (same session): re-seeded the permuter from the clean permuter-310 base (= candidate + `long sin_val`, the one clean improving lever); it reached sandbox-0 fast (iter 385) but the 0-form is AGAIN a cheat (inline duplicate-read of a0+0x44 instead of caching vx + dead `s32 vx` + `long sin_val`) \u2014 cheat-reviewer FAIL (orchestrator-confirmed), saved to rejected/reseed-inline-reread-long-sinval-cheat.c. ALSO ran the INSN_PRIORITY deep-dive: lw vx (insn 42) and lh cos_val (insn 59) both priority=2 (shared nearest mult), so the lever is structurally blocked; operand-order sweep (cgd_v3) all 21. Net: TWO permuter campaigns + INSN_PRIORITY + operand-order all exhausted; every 0-form is a coercion. Clean floor = 21."
     },
     {
       "date": "2026-06-13",
       "git_head_at_measurement": "410a8714",
-      "lever": "algebraic-factoring sweep (orchestrator deep-dive, 50-item-goal session) — rz-before-rx statement order + vz*cos-first addend swap",
+      "lever": "algebraic-factoring sweep (orchestrator deep-dive, 50-item-goal session) \u2014 rz-before-rx statement order + vz*cos-first addend swap",
       "lever_rule": "register-alloc-pure-c",
       "floor_was": 21,
       "floor_now": 15,
       "session_id": null,
-      "evidence": "NEW CLEAN LEVER — refutes the prior 'clean floor = 21' conclusion. Sweep tmp/cgd_alg + tmp/cgd2 (sweep_variants). The score-21 natural form computes rx first (vx*cos lead). Computing rz FIRST with rz's inner sum written vz*cos-first ((vz*cos)+((-vx)*sin)) drops the masked floor to 15 (build_insns 63 vs target 62). Decomposed: rz-first ALONE (rx unchanged) = the lever; swapping rx's addends too regresses (24-28); store swaps regress (24-26); the (-vx)*sin -> -(vx*sin) sub form gives 61 insns/score 17. Best clean = 15 (tmp/cgd2/r6_base15.c, == candidate.c). cheat-reviewer PASS (pure reassociation+stmt-order, no dead/unused/uninit/asm/pin). Unmasked diff (tmp/cgd_diff.py) confirms target's mult order is vx*cos,vz*sin,(-vx)*sin,vz*cos with vz loaded LATE; my form front-loads vz*cos so the residual 15 is sched1 register-allocation, not instruction-set. GENUINELY UNTRIED next: directed permuter re-seeded from THIS 15-floor base (candidate.c) — the prior 2 campaigns seeded from the 21 base."
+      "evidence": "NEW CLEAN LEVER \u2014 refutes the prior 'clean floor = 21' conclusion. Sweep tmp/cgd_alg + tmp/cgd2 (sweep_variants). The score-21 natural form computes rx first (vx*cos lead). Computing rz FIRST with rz's inner sum written vz*cos-first ((vz*cos)+((-vx)*sin)) drops the masked floor to 15 (build_insns 63 vs target 62). Decomposed: rz-first ALONE (rx unchanged) = the lever; swapping rx's addends too regresses (24-28); store swaps regress (24-26); the (-vx)*sin -> -(vx*sin) sub form gives 61 insns/score 17. Best clean = 15 (tmp/cgd2/r6_base15.c, == candidate.c). cheat-reviewer PASS (pure reassociation+stmt-order, no dead/unused/uninit/asm/pin). Unmasked diff (tmp/cgd_diff.py) confirms target's mult order is vx*cos,vz*sin,(-vx)*sin,vz*cos with vz loaded LATE; my form front-loads vz*cos so the residual 15 is sched1 register-allocation, not instruction-set. GENUINELY UNTRIED next: directed permuter re-seeded from THIS 15-floor base (candidate.c) \u2014 the prior 2 campaigns seeded from the 21 base."
+    },
+    {
+      "date": "2026-06-14",
+      "lever": "orch0614b-4 blocked-lane sweep: resumed candidate.c, re-confirmed clean floor 15 (build_insns 63 vs target 62). 2 fresh load-ordering levers (v48-early, vx-after-sin) both 15 \u2014 confirms statement order does NOT break the sched1 rank_for_schedule tie. HEAD's honest-8 is CHEATED (do-while-0 fence + uninit-vz dead read + double-rx + 4 regfix); true cheat-free floor is 15. Re-blocked; candidate.c (reviewer PASS) preserved. src untouched.",
+      "floor_was": 15,
+      "floor_now": 15
     }
   ],
   "reviewer": {
     "verdict": "PASS",
     "date": "2026-06-13",
-    "evidence": "Score-15 candidate.c reviewed by fresh adversarial cheat-reviewer (50-item-goal session): PASS. All 6 tests clear — every var has semantic purpose, meaningful names, no forbidden family, no dead/unused/uninit/asm/pin/volatile. rz-before-rx statement order + commutative vz*cos-first addend swap are SOTN-accepted (statement-order/named-intermediate biasing). Pure reassociation of the same computation."
+    "evidence": "Score-15 candidate.c reviewed by fresh adversarial cheat-reviewer (50-item-goal session): PASS. All 6 tests clear \u2014 every var has semantic purpose, meaningful names, no forbidden family, no dead/unused/uninit/asm/pin/volatile. rz-before-rx statement order + commutative vz*cos-first addend swap are SOTN-accepted (statement-order/named-intermediate biasing). Pure reassociation of the same computation."
   },
   "remaining_gap": {
-    "summary": "sched1 (sched.c:2399 rank_for_schedule) schedules `lw vx` BEFORE `lh cos_val` in the post-call basic block. The class-tie-break (class 3 'independent of last_scheduled' beats class 1 'data-dependent') picks lw vx after the sll(cos_idx). This delays the lh until after lw vx commits to $a0, so vx cannot reuse $v1 (the freshly-dead cos_idx scratch reg). The cascade shifts vx ($v1 -> $a0), cos_val ($a1 -> $a2), and downstream pseudos by one register position. Target's allocation requires lh BEFORE lw vx, which requires either (a) lh having strictly higher INSN_PRIORITY (longer chain to exit) — equal in all measured forms; or (b) lh being class 3 not class 1 — only possible if last_scheduled is NOT the sll(cos_idx) — would require restructuring so the addiu/andi/sll cos_idx chain is broken by an independent insn from outside the cos_idx chain that itself doesn't read $v1 (no natural-C structure produces this without a coercion).",
+    "summary": "sched1 (sched.c:2399 rank_for_schedule) schedules `lw vx` BEFORE `lh cos_val` in the post-call basic block. The class-tie-break (class 3 'independent of last_scheduled' beats class 1 'data-dependent') picks lw vx after the sll(cos_idx). This delays the lh until after lw vx commits to $a0, so vx cannot reuse $v1 (the freshly-dead cos_idx scratch reg). The cascade shifts vx ($v1 -> $a0), cos_val ($a1 -> $a2), and downstream pseudos by one register position. Target's allocation requires lh BEFORE lw vx, which requires either (a) lh having strictly higher INSN_PRIORITY (longer chain to exit) \u2014 equal in all measured forms; or (b) lh being class 3 not class 1 \u2014 only possible if last_scheduled is NOT the sll(cos_idx) \u2014 would require restructuring so the addiu/andi/sll cos_idx chain is broken by an independent insn from outside the cos_idx chain that itself doesn't read $v1 (no natural-C structure produces this without a coercion).",
     "rule_count_at_head": 4,
     "rules_required_for_full_match": "HEAD currently uses: cpu_get_dist: $4 <-> $3 @ 8-9, @ 11, @ 14 (three register-name swaps on cos_idx scratch) + reorder 11,13,14,15,10,16,17,12 @ 10-17. These post-process the sched1 output to look like target. A pure-C close would retire ALL four."
   },
   "next_hypotheses": [
-    "EXHAUSTED 2026-06-13: two permuter campaigns (vanilla from candidate, and re-seeded from the clean long-sin_val/310 base) — both reach sandbox-0 ONLY via cheat-forms (rz-liveness / inline-duplicate-read coercions); cheat-reviewer FAIL on both. Do not just re-run the permuter expecting a clean 0 — it keeps finding the coercion levers because those ARE the allocation knobs and they're all cheats.",
-    "EXHAUSTED 2026-06-13: INSN_PRIORITY lever — lw vx and lh cos_val both priority=2 (shared nearest mult), structurally cannot be differentiated; operand/association-order sweep all 21.",
+    "EXHAUSTED 2026-06-13: two permuter campaigns (vanilla from candidate, and re-seeded from the clean long-sin_val/310 base) \u2014 both reach sandbox-0 ONLY via cheat-forms (rz-liveness / inline-duplicate-read coercions); cheat-reviewer FAIL on both. Do not just re-run the permuter expecting a clean 0 \u2014 it keeps finding the coercion levers because those ARE the allocation knobs and they're all cheats.",
+    "EXHAUSTED 2026-06-13: INSN_PRIORITY lever \u2014 lw vx and lh cos_val both priority=2 (shared nearest mult), structurally cannot be differentiated; operand/association-order sweep all 21.",
     "GENUINELY UNTRIED: a fundamentally different ALGEBRAIC FACTORING of the 2D rotation (e.g. factor out a common sub-product, or compute the four output products in a different grouping) that changes the dependency DAG so cos_val's nearest successor is deeper than vx's WITHOUT a duplicate-read. This is the only remaining clean direction.",
-    "Try declaring single_game_getEnemyCharId return type narrower (s16) — would change angle's RTL shape and may bias sched1 (untried).",
-    "Investigate whether maspsx is hiding a load-delay slot opportunity that target had: target's `lh $a1, %lo(Judge)($at)` followed by `lw $v1, ...` has the lw IN the lh's load-delay slot. Our build emits the same pair but maspsx inserts a nop. Check whether a maspsx-level adjustment (per-function maspsx_label_nop opt-out?) would let sched1's natural inverse ordering still match — though this would only matter if our sched1 PRODUCED the target ordering, which it doesn't.",
-    "Read sched.c rank_for_schedule's class definitions more carefully and check whether an additional REG_DEP_LINK between lh and lw (impossible naturally) is the only path, or whether the priority calculation has a tunable input (cos_val's REF_COUNT — 4 in target, 4 in mine — but priority may not match)."
+    "Try declaring single_game_getEnemyCharId return type narrower (s16) \u2014 would change angle's RTL shape and may bias sched1 (untried).",
+    "Investigate whether maspsx is hiding a load-delay slot opportunity that target had: target's `lh $a1, %lo(Judge)($at)` followed by `lw $v1, ...` has the lw IN the lh's load-delay slot. Our build emits the same pair but maspsx inserts a nop. Check whether a maspsx-level adjustment (per-function maspsx_label_nop opt-out?) would let sched1's natural inverse ordering still match \u2014 though this would only matter if our sched1 PRODUCED the target ordering, which it doesn't.",
+    "Read sched.c rank_for_schedule's class definitions more carefully and check whether an additional REG_DEP_LINK between lh and lw (impossible naturally) is the only path, or whether the priority calculation has a tunable input (cos_val's REF_COUNT \u2014 4 in target, 4 in mine \u2014 but priority may not match)."
   ],
   "rejected_forms": [
     {
@@ -173,7 +170,10 @@
     {
       "form": "v24_baseline (literal candidate.c, sanity check)",
       "score": 21,
-      "reason": "baseline confirmation — no semantic change"
+      "reason": "baseline confirmation \u2014 no semantic change"
     }
+  ],
+  "prior_sessions_summary": [
+    "2026-06-12: structural variant sweep (14 forms) + RTL diagnosis (floor 21->21)"
   ]
 }

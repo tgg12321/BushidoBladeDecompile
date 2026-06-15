@@ -1,6 +1,13 @@
 # cpu_get_dist (code6cac_b.c) — pure-C wall analysis
 
-## TL;DR (updated 2026-06-13 — floor 21 -> 15, NEW clean lever)
+## TL;DR (re-confirmed 2026-06-14 floor 15; breakthrough 2026-06-13 floor 21 -> 15)
+
+> 2026-06-14 (orch0614b-4): resumed candidate.c, re-verified clean floor **15**
+> (build_insns 63 vs target 62). 2 fresh load-ordering levers (v48-early,
+> vx-after-sin) both 15 — statement order does NOT break the sched1 tie (consistent
+> with the INSN_PRIORITY deep-dive below). Next modality unchanged: directed
+> permuter RE-SEEDED from the score-15 candidate.c. Resume from candidate.c, not HEAD.
+
 
 - **BREAKTHROUGH 2026-06-13: clean floor lowered 21 -> 15** via the "fundamentally different algebraic factoring" the prior notes flagged as the ONE untried clean direction. candidate.c is now the score-15 form: **rz computed BEFORE rx, with rz's inner sum written vz*cos-first `((vz*cos)+((-vx)*sin))`** (rx unchanged). Pure reassociation + statement order; cheat-reviewer PASS. So the prior "clean floor = 21 / matching C outside every structural dimension" conclusion was WRONG — statement-emission order of the products was the untested dimension.
 - **Decomposition** (tmp/cgd_alg + tmp/cgd2 sweeps): rz-first-with-vz*cos-lead = 15. Swapping rx's addends too regresses (24-28). Store-operand swaps regress (24-26). `(-vx)*sin -> -(vx*sin)` sub form = 61 insns / score 17. Best clean = 15 (== tmp/cgd2/r6_base15.c).

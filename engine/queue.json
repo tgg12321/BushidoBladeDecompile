@@ -2713,6 +2713,15 @@
       "park_reason": "Same file-scope-volatile-extern pattern: function body is clean pure-C but blocked by 2 file-scope cheats in text1b.c. Needs coordinated file-wide volatile-decl cleanup."
     },
     {
+      "func": "func_80072BC4",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "File-scope volatile-extern cheat pattern: body is clean pure-C but blocked by file-scope cheats in src/text1b.c. Speed-parked during batch grind."
+    },
+    {
       "func": "mario_getMarioVoiceData_8005BE84",
       "file": "text1b",
       "distance": 0,
@@ -2722,22 +2731,22 @@
       "park_reason": "File-scope volatile-extern cheat pattern: body is clean pure-C but blocked by file-scope cheats in src/text1b.c. Speed-parked during batch grind."
     },
     {
-      "func": "func_80077B30",
-      "file": "text1b_b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "File-scope volatile-extern cheat pattern: body is clean pure-C but blocked by file-scope cheats in src/text1b_b.c. Speed-parked during batch grind."
-    },
-    {
       "func": "InitHiraRmd_80047FBC",
       "file": "text1b",
       "distance": 1,
       "verdict": "C",
       "rules": 0,
       "status": "parked",
-      "park_reason": "RE-EVALUATED 2026-06-14 (worker orch0614b-3): the arg0=0 dead store IS load-bearing \u2014 removing it breaks the build (clean worktree make SHA1 3b429046 != oracle 62efab4f). Matches ONLY via the now-FORBIDDEN dead-param-assign lever (register-alloc-pure-c Lever D). Deleting the dead store does NOT reach target RA (base's loop-spanning live range alone is insufficient for the $s4-vs-$a0 split). Genuine pure-C wall: needs a real Lever A/B/C reaching that allocation, or canonical-asm review. Prior in-session over-claim (commit reverted)."
+      "park_reason": "File-scope volatile-extern cheat pattern: body is clean pure-C but blocked by file-scope cheats in src/text1b.c. Speed-parked during batch grind."
+    },
+    {
+      "func": "func_8003D7B4",
+      "file": "code6cac_c2",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "File-scope volatile-extern cheat pattern: body is clean pure-C but blocked by file-scope cheats in src/code6cac_c2.c. Speed-parked during batch grind."
     },
     {
       "func": "func_8003D9A0",
@@ -2749,15 +2758,6 @@
       "park_reason": "Prologue-fix coupled cheat: register asm pin + asm barrier on s1 force EARLY materialization (move s1,a2 at insn 4 in prologue). Without them GCC defers to insn 12 (after early-exit check). prologue_config.json entry can't fix missing-early-mat. Need deeper rework per prologue-fix-redundant-reorder.md to retire both cheats together. Pure-C floor 2 (verified score=2 with pins removed)."
     },
     {
-      "func": "tslPolyF4Init",
-      "file": "system",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 4,
-      "status": "parked",
-      "park_reason": "Re-derivation 2026-06-02: pure-C without forbidden DImode chain bottoms at sandbox distance 9 (build_insns 81 matches target, but 9 register-rotation+scheduling diffs persist). HEAD's source uses 'unsigned long long new_var2; new_var2 = new_var; count = new_var2;' DImode chain which is FORBIDDEN per the 2026-06-02 policy (same family as combine-foldable chain-extender in register-alloc-pure-c.md, classified cheat-by-spelling \u2014 zero semantic purpose, exists solely to bump count's RTL refs and shift cc1's allocno priority). The 4 regfix substs at @50/@56 (\u0007ddiu->addu, zero,-1->0,zero, \beq->bne, s0,v0->v0,zero) themselves manufacture the FORBIDDEN goto-end+ret_val accumulator pattern (per goto-end-prologue-delay-slot.md archive): the cheat-free source's natural 'if (count == -1) return 0' is semantically equivalent to target's accumulator-based 'v0=0; goto check; v0=-1; check: if (v0!=0) return 0' but produces different bytes (li v0,-1 in the beqz delay slot + beq s0,v0 post-loop). Tried levers (all measured negative from baseline 9): decl order swaps (idx/saved/elem/count permutations: 9-18), init-line ordering (count first vs last: 9), for-loop form (24, build_insns 85), inline success path (28), removing prologue_config entry (11), register-asm pins on idx/saved as diagnostic (still 9 \u2014 pins ignored, confirming strong RA preference). The target allocation needs idx@s3+arg0@s4 but cc1 naturally produces saved@s3+idx@s4+arg0@s5 \u2014 flipping requires either (a) a cheat-class lever to bump idx's RTL ref count without emitting bytes, (b) the FORBIDDEN DImode chain, or (c) source-level changes that all measured worse. Sibling func_80080258 and func_80080390 in same file have the IDENTICAL DImode chain + register-asm pin \u2014 they're also committed cheats under the new policy and need their own re-derivation. Resume avenues: (1) directed permuter from clean target (similar to cpu_side_move_dir_4 session 10) \u2014 high effort, low expected yield given the prior allocation-tie evidence on cpu_side_move_dir_4/marionation_Exec; (2) project-wide rodata layout change if the function's data adjacency suggests TU re-attribution (per jtbl-rodata-split-infrastructure evidence checklist); (3) instrumented cc1 (tmp/gccdbg with ALLOCDBG) probe to identify the SPECIFIC priority-flip C lever needed \u2014 same approach as cpu_side_move_dir_4 sessions 5-9 with the chain-extender finding (legitimate-form unclear). For now, function stays INCOMPLETE with the 4 regfix rules + DImode chain that build to oracle-matching SHA1; user/orchestrator policy call on whether/when to clean up the sibling cluster (func_80080258, func_80080390, tslPolyF4Init) together via canonical-asm authorization or further pure-C derivation."
-    },
-    {
       "func": "gnd_init_80041688",
       "file": "text1a",
       "distance": 2,
@@ -2765,6 +2765,15 @@
       "rules": 3,
       "status": "parked",
       "park_reason": "FALSE-branch lbu schedule diff at 3 independent loads (idx 68/69/70). Registers + OR-tree match; only cc1's load order differs (r/g/b vs target b/r/g). Mechanism: b's INSN_PRIORITY < r/g's (chain depth 1 vs 2), so sched.c picks r/g first. All clean pure-C levers tried (source reorder, inline, bit-descending, named intermediate) either no-op or regress. Remaining levers (OR-operand permute, chain-extender, dead store) forbidden by no-new-park-categories. Standing search avenue: directed permuter targeting idx 68-70."
+    },
+    {
+      "func": "func_80045294",
+      "file": "text1a_c",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 3,
+      "status": "parked",
+      "park_reason": "Pure-C floor distance 2 (1 nop in first loop load-delay slot). 3 regfix rules move addu i++ between lw and addu sum to fill the slot. cc1's MIPS sched.c places addiu i++ at loop top regardless of source form (4 forms tried). See memory/wip/func_80045294/ for the form-sweep negative + resume hypotheses (instrumented-cc1 INSN_PRIORITY probe, pointer-iter form, sibling RTL diff)."
     },
     {
       "func": "rob_life_ctrl_2",
@@ -2821,13 +2830,13 @@
       "park_reason": "Delay-slot fill choice: cc1 reorg.c::fill_simple_delay_slots moves sh \u00071,8(v1) into the outer beqz delay slot; target instead fills with andi v0,a2,0x10 (eager-fill from THEN block's first insn). cc1 raw output already places sh in the slot, so the choice is in cc1 itself not maspsx. Tested store-order swap, array-index form ((s16*)base)[2]/[4], and narrow s16 arg1 \u2014 all still score 2. Permuter from clean single-function target is the named untried avenue. Single regfix: reorder 12,11 @ 11-12."
     },
     {
-      "func": "func_80078B3C",
+      "func": "func_80078B70",
       "file": "text1b_b",
       "distance": 2,
       "verdict": "C",
       "rules": 1,
       "status": "parked",
-      "park_reason": "Same mechanism as func_80078A68 (parked 2026-06-05 in 882c8c05) \u2014 cc1 reorg's fill_simple_delay_slots picks the sw (sw v1,4(a1)) to fill the jr ra delay slot; target keeps nop and emits the sw before jr (the single regfix is drain_delay @ 9). Pure-C distance 2. Levers tried this session: precompute return into a local (return-value var folded by GCC, score 2); *(base+1) instead of base[1] (same codegen, score 2); split via mask local (regressed to 4). The dbr fill choice is made inside cc1 before maspsx; no known pure-C lever flips it without forbidden coercion (volatile cast on game-state global, __asm__ memory barrier, dead self-assign, register pin) per the expanded cheat catalog. File has 8 drain_delay regfix rules following the same pattern \u2014 this is a recurring cc1 reorg behavior in text1b_b.c. Resume avenues (inherited from func_80078A68 park): directed permuter on a clean single-function target; reorg.c::fill_simple_delay_slots eligibility predicates (look for a C construct that disqualifies the sw via macro-form addressing without volatile)."
+      "park_reason": "drain_delay jr-slot fill, mirrors func_80078A68/B3C parked yesterday (882c8c05/e29303d9). Honest pure-C distance 2, one asmfix rule (drain_delay @ 10). Same root cause: cc1 reorg's fill_simple_delay_slots picks the final 'sw v1, 4(a1)' to fill the 'jr ra' delay slot; target keeps a nop there and emits the sw before the jr. The sandbox-stripped objdump confirms identical instructions, only the sw/nop order differs. Levers inherited as exhausted from B3C session (precompute return local: folded; *(base+1) deref form: same codegen; split mask local: regressed to 4) plus this session: compound assignment '&=' form: identical RTL, score 2. Forbidden alternatives per expanded cheat catalog: volatile coercion on D_8009BD68/D_8009BD70, asm barrier, register pin, dead self-assign. Resume avenues (inherited): directed permuter from clean single-function target; read cc1 reorg.c::fill_simple_delay_slots eligibility predicates for a pure-C disqualifier on the single-insn sw."
     },
     {
       "func": "func_80078E58",
@@ -2901,16 +2910,6 @@
       "status": "parked",
       "scorable": false,
       "park_reason": "Pure-C floor at sandbox-distance 4. Single 4-insn prologue reorder rule (regfix.txt:3753) flips save+def pairing from cc1's natural [sw s1; move s1,a0; sw s0; move s0,a1] to target's [sw s0; move s0,a1; sw s1; move s1,a0]. Mechanism: cc1's mips.c save_restore_insns iterates GP_REG_LAST->FIRST (3000a) and expand_function_start creates pseudos in DECL_ARGUMENTS order (out=72->s1, r=73->s0). Save-order is structurally fixed by mips machdep + ABI param order. Tried 9 distinct C source levers: early r-temps (3 forms), local alias, K&R-style decl, K&R-with-reversed-decl-order, var_a3=7 init, 3rd-callee-save force, all-temp-stores-at-end - all either CSE'd back or regressed. Sibling func_8007C4B8 has identical issue (twin function, same rule shape). Per [[no-compiler-divergence]] mips.c is frozen; per ABI param swap would break the asm callers. Either accept prologue_config.json as infrastructure (policy decision) or authorize ASM-region for the prologue-only debt."
-    },
-    {
-      "func": "func_8007C4B8",
-      "file": "display",
-      "distance": 4,
-      "verdict": "C",
-      "rules": 1,
-      "status": "parked",
-      "scorable": false,
-      "park_reason": "prologue save-order structural \u2014 twin of just-parked func_8007C2A0 (2b3ccfe). Single 4-insn regfix reorder 3,4,1,2 @ 1-4 swaps cc1's natural [sw s1,52; move s1,a0; sw s0,48; move s0,a1] to target's [sw s0,48; move s0,a1; sw s1,52; move s1,a0]. Same identical mips.c save_restore_insns iteration-order wall, same identical C signature (s32 *out, Rect *r), same identical body shape. Honest sandbox=4 verified fixed across the 9 levers tested on the sibling + 1 additional probe (s16 rx,ry locals + tmp_v0 call-result temp) this session: same 4-distance floor. Path to COMPLETED-C identical to sibling: requires either function-scope canonical-asm wrapping of the prologue 4-insn block, treating regfix reorder as canonical infrastructure (like prologue_config.json's AddTbpOfst_80047EE8 family), or a novel C lever spanning the mips.c scheduling space the explored levers don't cover."
     },
     {
       "func": "spu_DmaTransfer",
@@ -3454,11 +3453,11 @@
     }
   ],
   "counts": {
-    "total": 421,
+    "total": 419,
     "active": 333,
     "by_status": {
       "active": 333,
-      "parked": 88
+      "parked": 86
     },
     "by_verdict": {
       "C": 158,

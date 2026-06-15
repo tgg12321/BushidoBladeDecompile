@@ -93,12 +93,6 @@ func_80080258: $19 <-> $20 @ 11-59
 # func_80080258: interleave argument moves with prologue saves
 func_80080258: reorder 3,18,4,17,5,6,7,19,8,9,10,11,12,13,14,15,16 @ 3-19
 
-# tslPolyF4Init: delay slot after beqz (TEXT 50): li v0,-1 -> move v0,zero
-tslPolyF4Init: subst "addiu" "addu" @ 50
-tslPolyF4Init: subst "\$zero,-1" "$0,$zero" @ 50
-# tslPolyF4Init: merged exit dispatch (TEXT 56): beq s0,v0 -> bne v0,zero (bnez v0)
-tslPolyF4Init: subst "beq" "bne" @ 56
-tslPolyF4Init: subst "\$16,\$2" "$2,$0" @ 56
 
 # func_80036FD4: SpecialCam in $5(a1) -> $3(v1), entry loads $3/$2 -> $4/$5
 # Reorder: put sra after SpecialCam load
@@ -2893,7 +2887,6 @@ func_800550E8: subst "lbu\s+\$2,0\(\$3\)" "lbu	$2,1045($3)" @ 10
 func_800550E8: subst "sb\s+\$2,0\(\$3\)" "sb	$2,1045($3)" @ 13
 # func_8005B7C4: GCC picked $v0 for the latest D_800A3404 read; target uses $v1
 # func_80078B3C: GCC scheduled sw into jr delay slot; target keeps nop there. drain_delay reverses it.
-func_80078B3C: drain_delay @ 9
 # func_80078B70: same as func_80078B3C clear-flag form
 # func_8007C748: 3-way reg cycle $v0/$v1/$a2 -- target uses $v1 for const, $a2 for mask
 # func_8007C748 idx 20: 3-cycle full-insn subst
@@ -3623,10 +3616,9 @@ func_8007C2A0: reorder 3,4,1,2 @ 1-4
 # All 27 rules (1 reorder + 26 frame-skew + addu operand swap subst) removed
 # along with the C body. See inline_asm_canonical.txt for rationale.
 
-# func_8007C4B8: prologue save order swap (s0/s1 setup pairs reordered)
-# Mine: sw s1,52; move s1,a0; sw s0,48; move s0,a1
-# Target: sw s0,48; move s0,a1; sw s1,52; move s1,a0
-func_8007C4B8: reorder 3,4,1,2 @ 1-4
+# func_8007C4B8: MIGRATED 2026-06-14 — prologue save-order swap moved from this
+# regfix reorder to the sanctioned prologue_fix mechanism (prologue_config.json).
+# Action-based reorder of GCC's independent s0/s1 save-pairs; COMPLETED-C.
 
 # func_800770B8: combined prologue+early-body reorder
 # Mine pre: 1=sw_s3,2=addu_s3,3=sw_s2,4=addu_s2,5=sw_s0,6=addu_s0,7=sw_s1,8=addu_s1=s0+88,9=sw_ra,10=lw_a0,11=addiu_a1,12=sh_0

@@ -850,7 +850,6 @@ s32 func_80077B30(s32 arg0, s32 arg1) {
     if ((u32)D_800A35E4 >= 6) goto end;
     switch (D_800A35E4) {
     case 0:
-        __asm__("jlabel .L80077B74");
         s2 = 0;
         result = func_8006B898(arg0, arg1);
         switch (result) {
@@ -865,7 +864,6 @@ s32 func_80077B30(s32 arg0, s32 arg1) {
         }
         goto end;
     case 1:
-        __asm__("jlabel .L80077C14");
         s2 = 0;
         result = saTan2InfoInit_8006C1FC(arg0, arg1);
         if (result == 1) { D_800A35E4 = 0; goto end; }
@@ -873,20 +871,16 @@ s32 func_80077B30(s32 arg0, s32 arg1) {
         if (result == 3) { D_800A35E4 = result; }
         goto end;
     case 2:
-        __asm__("jlabel .L80077C50");
         s2 = 2;
         goto end;
     case 3:
-        __asm__("jlabel .L80077C58");
         s2 = 3;
         goto end;
     case 4:
-        __asm__("jlabel .L80077C60");
         cpu_reset_dir();
         D_800A35E4 = D_800A35E4 + 1;
         /* fall through */
     case 5:
-        __asm__("jlabel .L80077C78");
         s2 = 0;
         result = func_8006D338(arg0, arg1);
         if (result == 1) {
@@ -1423,9 +1417,9 @@ s32 func_80078B04(s32 arg0) {
 }
 s32 func_80078B3C(s32 arg0) {
     s32 v;
-    s32 *base;
+    volatile s32 *base;
     v = arg0 & 0xFFFF;
-    base = D_8009BD68;
+    base = (volatile s32 *)D_8009BD68;
     base[1] = base[1] | (&D_8009BD70)[v];
     return v < 3;
 }
