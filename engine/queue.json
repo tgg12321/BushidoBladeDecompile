@@ -124,14 +124,6 @@
       "status": "active"
     },
     {
-      "func": "func_8007E35C",
-      "file": "display",
-      "distance": 11,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_80048530",
       "file": "text1b",
       "distance": 11,
@@ -404,14 +396,6 @@
       "status": "active"
     },
     {
-      "func": "func_8007E3BC",
-      "file": "display",
-      "distance": 15,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_800871D4",
       "file": "main",
       "distance": 15,
@@ -561,22 +545,6 @@
       "distance": 18,
       "verdict": "C",
       "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_8007E24C",
-      "file": "display",
-      "distance": 18,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_8007E2D4",
-      "file": "display",
-      "distance": 18,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
       "status": "active"
     },
     {
@@ -3522,15 +3490,15 @@
     }
   ],
   "counts": {
-    "total": 427,
-    "active": 337,
+    "total": 423,
+    "active": 333,
     "by_status": {
-      "active": 337,
+      "active": 333,
       "parked": 90
     },
     "by_verdict": {
       "C": 158,
-      "ASM-PARTIAL": 61,
+      "ASM-PARTIAL": 57,
       "ASM-SUSPECT": 118
     }
   }
