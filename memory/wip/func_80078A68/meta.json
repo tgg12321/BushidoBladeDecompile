@@ -1,0 +1,40 @@
+{
+  "function": "func_80078A68",
+  "file": "text1b_b",
+  "scores": {
+    "head_floor": 2,
+    "candidate_floor": 2,
+    "metric": "sandbox --disable all (masked) = 2, scorable. The 2 diffs are the outer-beqz delay-slot fill + the displaced store. Full-build SHA1 is the real gate.",
+    "build_insns": 39,
+    "target_insns": 39
+  },
+  "sessions": [
+    {
+      "date": "2026-06-14",
+      "lever": "blocked-lane triage — 3 more rules-removed full-build variants (incl. branch-sense flip), all DIFF",
+      "lever_rule": "switch-vs-ifchain-branch-sense",
+      "floor_was": 2,
+      "floor_now": 2,
+      "session_id": "orch0614b-1"
+    }
+  ],
+  "reviewer": {"verdict": null, "date": "2026-06-14", "evidence": "No improving candidate — candidate.c is HEAD's body (matches only with the 1 rule). No new cheat."},
+  "remaining_gap": {
+    "summary": "cc1-internal delay-slot fill choice. Target eager-fills the outer `beqz v0` (the `(u32)t0 < 2` test) delay slot with `andi v0,a2,0x10` (the then-block's first insn), keeping `sh a1,8(v1)` before the branch. cc1's reorg.c::fill_simple_delay_slots instead moves `sh a1,8(v1)` DOWN into the slot. Confirmed cc1-internal (raw cc1 output before maspsx already mis-fills).",
+    "rule_count_at_head": 1,
+    "rules_required_for_full_match": "func_80078A68 in regfix.txt:2935 `reorder 12,11 @11-12`. Must go for COMPLETED-C. No pure-C source found that flips cc1's delay-slot heuristic to eager-fill from the then-block."
+  },
+  "next_hypotheses": [
+    "DIRECTED PERMUTER (the named untried avenue) — PERM_* on this single function from the clean (rule-removed) base. Random masked search won't help; needs the delay-slot structural seed. Mirror functions func_80078B3C / func_80078B70 share this exact fill choice; func_80078B04 (same file) was a 7-session wall finally closed 2026-06-12 (commit 03c07363) — check what lever closed B04 and whether it transfers.",
+    "Make `sh a1,8(v1)` unmovable into the slot: present arg1's store value so cc1 can't legally hoist the store past the branch into the delay slot (e.g. a data dependency that ties the store to a post-branch value), forcing eager-fill from the then-block. Must not change emitted bytes elsewhere.",
+    "Read cc1 reorg.c fill_simple_delay_slots / fill_eager_delay_slots: identify the exact tiebreak (probably eligible-insn count / probability) and find a C shape that makes the then-block insn the only fill candidate."
+  ],
+  "rejected_forms": [
+    {"form": "HEAD body, rule removed (control)", "score": 2, "reason": "DIFF (sha 8d77b358) — proves the rule load-bearing."},
+    {"form": "v0 = arg2 & 0x10 named-temp before the inner if", "score": 2, "reason": "DIFF, identical to HEAD-no-rules (8d77b358) — rename changed nothing."},
+    {"form": "duplicate `sh a1,8` store into both branch arms", "score": 2, "reason": "DIFF (sha 65bcc033) — store no longer single before branch; wrong shape (target keeps it before)."},
+    {"form": "flip outer condition to (u32)t0 >= 2U (swap then/else, branch sense)", "score": 2, "reason": "DIFF (sha 721513b6) — different fill, still not target."},
+    {"form": "store-order swap / ((s16*)base)[2]/[4] array-index / narrow s16 arg1", "score": 2, "reason": "All score 2 / DIFF (from prior card's documented negatives)."}
+  ],
+  "memory_notes": [".claude/rules/switch-vs-ifchain-branch-sense.md", ".claude/rules/goto-end-prologue-delay-slot.md"]
+}
