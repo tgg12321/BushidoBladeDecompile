@@ -16,6 +16,7 @@ address of X into $s2" — and match those actions between GCC and target.
 Then we reorder GCC's instructions to match the target's action sequence.
 """
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -723,9 +724,14 @@ def apply_frame_fix(lines, func_name, target_frame):
 
 def main():
     script_dir = Path(__file__).parent
-    config_path = script_dir / "prologue_config.json"
-    delay_slot_ra_path = script_dir / "delay_slot_ra_funcs.txt"
-    frame_fix_path = script_dir / "frame_fix_funcs.txt"
+    # Config paths are env-overridable so the cheat-invisible sandbox can pass
+    # FILTERED copies (one function's entry removed, or all entries removed).
+    # This makes prologue_fix a TRACKED cheat like regfix: stripping it in the
+    # sandbox reveals the honest pure-C distance. Defaults are the committed
+    # files, so the faithful (oracle) build is byte-identical.
+    config_path = Path(os.environ.get("PROLOGUE_CONFIG") or (script_dir / "prologue_config.json"))
+    delay_slot_ra_path = Path(os.environ.get("DELAY_SLOT_RA_FUNCS") or (script_dir / "delay_slot_ra_funcs.txt"))
+    frame_fix_path = Path(os.environ.get("FRAME_FIX_FUNCS") or (script_dir / "frame_fix_funcs.txt"))
 
     if not config_path.exists() and not delay_slot_ra_path.exists() and not frame_fix_path.exists():
         sys.stdout.write(sys.stdin.read())

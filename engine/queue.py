@@ -118,6 +118,7 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
             continue
         for func in score._o_func_table(ref_o):
             rules = _rule_count(func)
+            prologue = cheats.func_prologue_count(func)
             try:
                 dist = score.score_func(purec_o, ref_o, func)["score"]
                 scorable = True
@@ -132,12 +133,12 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
                 # honest distance here. Distance is recorded as -1 to indicate
                 # unscored.
                 cheats_unscored = inlineasm.file_func_cheat_asm_count(stem, func)
-                if rules == 0 and (cheats_unscored <= 0 or func in canon_funcs):
+                if rules == 0 and prologue == 0 and (cheats_unscored <= 0 or func in canon_funcs):
                     continue  # nothing to track
                 dist = -1
                 scorable = False
             cheat_count = inlineasm.file_func_cheat_asm_count(stem, func)
-            if rules == 0:
+            if rules == 0 and prologue == 0:
                 # COMPLETED-INLINE-ASM-CANONICAL: function is in inline_asm_canonical.txt
                 # and carries 0 rules. The inline asm IS the accepted finished form,
                 # so masked sandbox distance is meaningless here (the cheat-strip removes
@@ -165,6 +166,8 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
                 status = "authorize" if verdict in _AUTHORIZE else "active"
             entry = {"func": func, "file": stem, "distance": dist,
                      "verdict": verdict, "rules": rules, "status": status}
+            if prologue:
+                entry["prologue_fix"] = prologue
             if not scorable:
                 entry["scorable"] = False
             items.append(entry)
@@ -203,6 +206,15 @@ def mark_done(func: str) -> dict:
         return {"ok": False, "func": func,
                 "reason": (f"{rules} regfix/asmfix rule(s) still keyed to {func} — "
                            f"not COMPLETED-C")}
+    pcount = cheats.func_prologue_count(func)
+    if pcount > 0:
+        return {"ok": False, "func": func,
+                "reason": (f"{pcount} prologue_fix entry(ies) keyed to {func} "
+                           f"(prologue_config/frame_fix/delay_slot_ra) — prologue_fix "
+                           f"reorders cc1's OWN prologue into a target order it did NOT "
+                           f"compile (a cheat; audit 2026-06-15). Delete the entry: if "
+                           f"cc1 then byte-matches it is COMPLETED-C, else find the C "
+                           f"lever or authorize canonical-asm.")}
     if func not in cheats.canonical_asm_funcs():
         cheat_count = inlineasm.file_func_cheat_asm_count(item["file"], func)
         if cheat_count > 0:

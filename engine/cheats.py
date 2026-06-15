@@ -16,6 +16,7 @@ edits C.
 """
 from __future__ import annotations
 
+import json
 import re
 from pathlib import Path
 
@@ -23,6 +24,16 @@ REGFIX = "regfix.txt"
 REGFIX2 = "regfix_stage2.txt"
 ASMFIX = "asmfix.txt"
 INLINE_ASM_CANONICAL = "inline_asm_canonical.txt"
+
+# prologue_fix per-function configs. A function with an entry here relies on
+# prologue_fix reordering cc1's OWN emitted prologue insns (or altering its
+# frame size / delay slot) into the target order — a per-function cheat the
+# cheat-invisible sandbox must STRIP, exactly like a regfix rule, so the honest
+# pure-C distance is real and a prologue-reordered function cannot pass as
+# COMPLETED-C (audit 2026-06-15: prologue_fix is a cheat by any spelling).
+PROLOGUE_CONFIG = "tools/prologue_config.json"
+DELAY_SLOT_RA = "tools/delay_slot_ra_funcs.txt"
+FRAME_FIX = "tools/frame_fix_funcs.txt"
 
 
 def canonical_asm_funcs(path: str = INLINE_ASM_CANONICAL) -> set[str]:
@@ -126,6 +137,76 @@ def all_keyed_functions() -> set[str]:
     return funcs
 
 
+def _prologue_txt_funcs(path: str) -> set[str]:
+    """Function names in a one-name-per-line prologue list (delay_slot_ra /
+    frame_fix); first whitespace token, '#'/blank lines ignored."""
+    p = Path(path)
+    if not p.exists():
+        return set()
+    out: set[str] = set()
+    for ln in p.read_text().splitlines():
+        tok = ln.strip().split()
+        if tok and not tok[0].startswith("#"):
+            out.add(tok[0])
+    return out
+
+
+def prologue_fix_funcs() -> set[str]:
+    """Every function that relies on prologue_fix (a prologue_config.json entry,
+    a delay_slot_ra entry, or a frame_fix entry) — each is a tracked cheat."""
+    pc = Path(PROLOGUE_CONFIG)
+    cfg = json.loads(pc.read_text()) if pc.exists() else {}
+    return set(cfg.keys()) | _prologue_txt_funcs(DELAY_SLOT_RA) | _prologue_txt_funcs(FRAME_FIX)
+
+
+def func_prologue_count(func: str) -> int:
+    """Number of prologue_fix entries keyed to `func` across the 3 configs
+    (0..3). Nonzero == the function carries a prologue_fix cheat."""
+    pc = Path(PROLOGUE_CONFIG)
+    cfg = json.loads(pc.read_text()) if pc.exists() else {}
+    n = 1 if func in cfg else 0
+    n += 1 if func in _prologue_txt_funcs(DELAY_SLOT_RA) else 0
+    n += 1 if func in _prologue_txt_funcs(FRAME_FIX) else 0
+    return n
+
+
+def _write_prologue_overrides(sd: Path, drop_func: str | None) -> dict:
+    """Write FILTERED prologue configs into sd so the sandbox build strips
+    prologue_fix. drop_func=None -> remove ALL entries (empty: prologue_fix is a
+    no-op for the whole file); a name -> remove only that function's entries.
+    Returns {prologue_config_path, delay_slot_ra_path, frame_fix_path,
+    dropped_prologue}."""
+    sd = Path(sd)
+    sd.mkdir(parents=True, exist_ok=True)
+    out: dict = {}
+    dropped = 0
+    pc = Path(PROLOGUE_CONFIG)
+    cfg = json.loads(pc.read_text()) if pc.exists() else {}
+    if drop_func is None:
+        dropped += len(cfg)
+        cfg = {}
+    elif drop_func in cfg:
+        del cfg[drop_func]
+        dropped += 1
+    (sd / "prologue_config.json").write_text(json.dumps(cfg))
+    out["prologue_config_path"] = str(sd / "prologue_config.json")
+    for label, src in (("delay_slot_ra_path", DELAY_SLOT_RA), ("frame_fix_path", FRAME_FIX)):
+        sp = Path(src)
+        lines = sp.read_text().splitlines(keepends=True) if sp.exists() else []
+        kept = []
+        for ln in lines:
+            tok = ln.strip().split()
+            name = tok[0] if (tok and not tok[0].startswith("#")) else None
+            if name and (drop_func is None or name == drop_func):
+                dropped += 1
+                continue
+            kept.append(ln)
+        (sd / Path(src).name).write_text("".join(kept))
+        out[label] = str(sd / Path(src).name)
+    out["dropped_prologue"] = dropped
+    return out
+
+
 def empty_overrides(sandbox_dir: str) -> dict:
     """Override dict pointing every config at an EMPTY file. Building a file
     this way disables ALL rules at once; since rules are function-scoped, each
@@ -139,6 +220,9 @@ def empty_overrides(sandbox_dir: str) -> dict:
         p = sd / Path(src).name
         p.write_text("")
         ov[label] = str(p)
+    # Strip prologue_fix for the whole file too (empty configs) so the honest
+    # pure-C distance excludes the prologue reorder/frame/delay cheat.
+    ov.update(_write_prologue_overrides(sd, None))
     return ov
 
 
@@ -159,4 +243,8 @@ def make_overrides(func: str, disable: str, sandbox_dir: str) -> dict:
         ov[label] = str(p)
         ov[f"dropped_{key}"] = dropped
     ov["dropped"] = ov["dropped_regfix"] + ov["dropped_regfix2"] + ov["dropped_asmfix"]
+    # The honest pure-C ("all") mode also strips this function's prologue_fix
+    # entry; "lost-codegen" is regfix-scoped and leaves prologue_fix untouched.
+    if disable == "all":
+        ov.update(_write_prologue_overrides(sd, func))
     return ov

@@ -66,10 +66,22 @@ def c_pipeline_cmd(stem: str, out_o: str, cheat_overrides=None) -> str:
     src_override = (cheat_overrides or {}).get("src_override")
     src_file = src_override or f"src/{stem}.c"
     cpp_extra = " -Isrc" if src_override else ""
+    # prologue_fix is a TRACKED cheat: when the sandbox passes FILTERED prologue
+    # configs (a function's entry / all entries removed), point prologue_fix at
+    # them via env so its reorder/frame/delay fix is stripped and the honest
+    # pure-C distance is real. cheat_overrides=None -> faithful (oracle) build.
+    prologue_fix = cfg.PROLOGUE_FIX
+    if cheat_overrides and cheat_overrides.get("prologue_config_path"):
+        prologue_fix = (
+            f"PROLOGUE_CONFIG={cheat_overrides['prologue_config_path']} "
+            f"DELAY_SLOT_RA_FUNCS={cheat_overrides['delay_slot_ra_path']} "
+            f"FRAME_FIX_FUNCS={cheat_overrides['frame_fix_path']} "
+            f"{cfg.PROLOGUE_FIX}"
+        )
     stages = [
         f"{cfg.CPP} {cfg.CPP_FLAGS}{cpp_extra} {cfg.CPP_DEFS} {src_file}",
         f"{cfg.CC1} {cc_flags}",
-        cfg.PROLOGUE_FIX,
+        prologue_fix,
         f"{cfg.MASPSX} {maspsx_flags}",
     ]
     if stem in cfg.FIX_LWL_FILES:

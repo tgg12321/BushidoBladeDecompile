@@ -1024,11 +1024,64 @@ def test_canonical_build() -> None:
     eq("scan_all: zero NO-TARGET", len(no_target), 0)
 
 
+def test_prologue_cheat() -> None:
+    """prologue_fix is a TRACKED cheat (audit 2026-06-15): the cheat-invisible
+    sandbox STRIPS it (empty / per-function-filtered configs) so the honest
+    distance is real, and func_prologue_count flags entry-carrying functions so
+    a prologue-reordered function cannot pass `queue done` as COMPLETED-C."""
+    with tempfile.TemporaryDirectory() as d:
+        dp = Path(d)
+        pc = dp / "prologue_config.json"
+        pc.write_text(json.dumps({"funcP": ["sw\t$s0,0x30($sp)"], "funcQ": ["x"]}))
+        dl = dp / "delay_slot_ra_funcs.txt"; dl.write_text("# hdr\nfuncP\nfuncR\n")
+        ff = dp / "frame_fix_funcs.txt"; ff.write_text("funcS 56\n")
+        orig = (cheats.PROLOGUE_CONFIG, cheats.DELAY_SLOT_RA, cheats.FRAME_FIX)
+        cheats.PROLOGUE_CONFIG, cheats.DELAY_SLOT_RA, cheats.FRAME_FIX = (str(pc), str(dl), str(ff))
+        try:
+            eq("prologue_fix_funcs: union of the 3 lists", cheats.prologue_fix_funcs(),
+               {"funcP", "funcQ", "funcR", "funcS"})
+            eq("func_prologue_count: config+delay", cheats.func_prologue_count("funcP"), 2)
+            eq("func_prologue_count: config-only", cheats.func_prologue_count("funcQ"), 1)
+            eq("func_prologue_count: frame-only", cheats.func_prologue_count("funcS"), 1)
+            eq("func_prologue_count: none", cheats.func_prologue_count("funcZ"), 0)
+            # strip ALL (sandbox file-wide / build_stripped_object): prologue_fix off everywhere
+            ov_all = cheats._write_prologue_overrides(dp / "ovA", None)
+            eq("strip-all: prologue_config emptied",
+               json.loads(Path(ov_all["prologue_config_path"]).read_text()), {})
+            check("strip-all: delay list emptied of funcs",
+                  "funcP" not in Path(ov_all["delay_slot_ra_path"]).read_text()
+                  and "funcR" not in Path(ov_all["delay_slot_ra_path"]).read_text())
+            check("strip-all: dropped count >= 4", ov_all["dropped_prologue"] >= 4)
+            # strip ONE func: only its entries removed
+            ov_p = cheats._write_prologue_overrides(dp / "ovP", "funcP")
+            cfg_p = json.loads(Path(ov_p["prologue_config_path"]).read_text())
+            check("strip-funcP: funcP removed", "funcP" not in cfg_p)
+            check("strip-funcP: funcQ kept", "funcQ" in cfg_p)
+            check("strip-funcP: delay funcP removed, funcR kept",
+                  "funcP" not in Path(ov_p["delay_slot_ra_path"]).read_text()
+                  and "funcR" in Path(ov_p["delay_slot_ra_path"]).read_text())
+            # make_overrides('all') wires the prologue strip; 'lost-codegen' does NOT
+            mo = cheats.make_overrides("funcP", "all", str(dp / "mo"))
+            check("make_overrides(all): prologue path present", "prologue_config_path" in mo)
+            check("make_overrides(all): funcP stripped",
+                  "funcP" not in json.loads(Path(mo["prologue_config_path"]).read_text()))
+            mol = cheats.make_overrides("funcP", "lost-codegen", str(dp / "mol"))
+            check("make_overrides(lost-codegen): prologue UNtouched",
+                  "prologue_config_path" not in mol)
+            # empty_overrides (build_stripped_object) strips prologue too
+            eo = cheats.empty_overrides(str(dp / "eo"))
+            eq("empty_overrides: prologue emptied",
+               json.loads(Path(eo["prologue_config_path"]).read_text()), {})
+        finally:
+            cheats.PROLOGUE_CONFIG, cheats.DELAY_SLOT_RA, cheats.FRAME_FIX = orig
+
+
 def main() -> int:
     test_canonical()
     test_score()
     test_inlineasm()
     test_cheats()
+    test_prologue_cheat()
     test_addr_coerced_locals()
     test_volatile_extern_allowlist()
     test_lowercase_asm_cheats()
