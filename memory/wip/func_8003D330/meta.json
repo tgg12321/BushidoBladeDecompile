@@ -1,0 +1,35 @@
+{
+  "function": "func_8003D330",
+  "file": "code6cac_c2",
+  "scores": {
+    "head_floor": 14,
+    "candidate_floor": 13,
+    "metric": "full-build unmasked Levenshtein vs pristine code6cac_c2.o (clean pin-free + named-const body)",
+    "build_insns": 27,
+    "target_insns": 27
+  },
+  "sessions": [
+    {"date": "2026-06-14", "lever": "pin-free addPrim body + 6 decl/structure orderings", "lever_rule": "register-alloc-pure-c", "floor_was": 14, "floor_now": 13}
+  ],
+  "reviewer": {
+    "verdict": "PASS",
+    "date": "2026-06-14",
+    "evidence": "candidate.c is clean pure C (named-const addPrim form; zero rules, zero asm — also removes HEAD's bogus `ori %0,%0,0xFFFF :: r(base)` coercion). Not committable only because of a register-allocation tie (non-matching), not a cheat."
+  },
+  "remaining_gap": {
+    "summary": "Register-allocation tie in a 27-insn no-arg GPU OT-link (addPrim). Target assigns the three constants to $a1(code)/$a2(mask_lo)/$a3(mask_hi), keeping $a0 free for the *(u32*)p temp; GCC packs code->$a0 and swaps the masks ($a2<->$a3), and reorders the two *ot reads in the final RMW pair. The constants are independent in a no-arg function so GCC has full allocation freedom and its ascending-preference tiebreaker differs from target's arg-register layout.",
+    "rule_count_at_head": 0,
+    "rules_required_for_full_match": "HEAD uses 4 register-asm pins (code a1, mask_lo a2, mask_hi a3, p v1) + a phantom ori-asm. No pure-C lever lands the no-arg constants on a1/a2/a3 with a0-as-temp (6 measured)."
+  },
+  "next_hypotheses": [
+    "decomp-permuter from the pin-free base (27 insns, few relocations -> isolated score MORE faithful here than the larger walls; reasonable odds).",
+    "greg -da: confirm the constants' pseudos and why a0 isn't skipped; a liveness trick that forces a0-as-temp-first might cascade the constants up to a1-a3.",
+    "If walls: canonical-asm review (the a1/a2/a3 arg-register layout in a no-arg fn is a hand-asm hallmark)."
+  ],
+  "rejected_forms": [
+    {"form": "clean inline-mask form (no named temps)", "score": 19, "reason": "re-materializes masks per use; worse"},
+    {"form": "p_first / code_first_use orderings", "score": 16, "reason": "shifts p/const live ranges; worse"},
+    {"form": "temps / ordered / inline_const (named consts, various orders)", "score": 13, "reason": "best clean floor; does not land constants on a1/a2/a3"}
+  ],
+  "memory_notes": [".claude/rules/register-alloc-pure-c.md"]
+}

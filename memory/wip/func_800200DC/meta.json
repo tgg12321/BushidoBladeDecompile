@@ -1,0 +1,54 @@
+{
+  "function": "func_800200DC",
+  "file": "code6cac",
+  "scores": {
+    "head_floor": 14,
+    "candidate_floor": 14,
+    "metric": "sandbox --disable all (masked Levenshtein)",
+    "build_insns": 168,
+    "target_insns": 168
+  },
+  "sessions": [
+    {
+      "date": "2026-06-14",
+      "lever": "statement-reorder levers (a2-before-sqrt, disc operand order, dy hoist) all measured-negative",
+      "lever_rule": "register-alloc-pure-c",
+      "floor_was": 14,
+      "floor_now": 14
+    }
+  ],
+  "prior_sessions_summary": [],
+  "reviewer": {
+    "verdict": null,
+    "date": "2026-06-14",
+    "evidence": "No candidate saved (no floor improvement); nothing to review."
+  },
+  "remaining_gap": {
+    "summary": "Pure register-rotation: both builds are 168 insns (structure already correct), the 14 regfix rules are ALL `subst` register renames with NO insert/delete/reorder. The diff is a dense coupled $v0/$v1/$t1/$a1/$a2 rotation across the projectile-angle compute chain (dy, disc=arg2^2+arg3*dy2, sq=func_8007E11C(disc<<10), a0=((a2+/-sq)*dist)/dy2/32, then a0*dx/dist & a0*dz/dist). A mid-function CALL (func_8007E11C, the sqrt) forces callee-save decisions that couple the whole allocation.",
+    "rule_count_at_head": 14,
+    "rules_required_for_full_match": "All 14 are register-rename substs; the rotation is a fixpoint (each lever tried makes it worse, not better)."
+  },
+  "next_hypotheses": [
+    "Instrumented cc1 ALLOCDBG/PRIODBG ([[register-alloc-deep-dive]]) to read the allocno-priority tiebreak driving the $v0/$v1 swap at the `dy` subu and the disc mflo pair — hand levers cascade because of the mid-function sqrt call's callee-save coupling.",
+    "The dy result ($v0 target / $v1 mine) is the FIRST diff and may be the rotation root; a lever that flips ONLY dy without disturbing the call's save/restore (not yet found) could cascade-fix.",
+    "Likely the register-alloc-pure-c 'confirmed limits' class (coupled rotation at matched insn count, like marionation_Exec) -> canonical-asm review candidate if clean levers stay negative."
+  ],
+  "rejected_forms": [
+    {
+      "form": "compute a2 = arg2<<5 BEFORE sq=func_8007E11C(...) (across the call)",
+      "score": 15,
+      "reason": "Forces a2 callee-save across the call; +1 worse."
+    },
+    {
+      "form": "disc = arg3*dy2 + arg2*arg2 (operand order swap)",
+      "score": 38,
+      "reason": "Reassociates the mult/add chain; insn count drops to 167, large divergence."
+    },
+    {
+      "form": "hoist dy = arg1[1]-arg0[1] before the dist==0 early-return",
+      "score": 72,
+      "reason": "dy must survive the func_8007E11C(dx*dx+dz*dz) call -> callee-save cascade, -5 insns, severe divergence."
+    }
+  ],
+  "memory_notes": []
+}

@@ -1,0 +1,33 @@
+{
+  "function": "func_800481E8",
+  "file": "text1b",
+  "scores": {
+    "head_floor": 14,
+    "candidate_floor": null,
+    "metric": "sandbox --disable all (12 rules + cheat-asm stripped); frame-floor residual",
+    "build_insns": 55,
+    "target_insns": 56
+  },
+  "sessions": [
+    {"date": "2026-06-14", "lever": "identified forbidden dead-frame floor (target 72B vs GCC 40B); 12 rules patch frame+offsets", "lever_rule": "dead-vars-local-array", "floor_was": 14, "floor_now": 14}
+  ],
+  "reviewer": {
+    "verdict": "NEEDS_USER",
+    "date": "2026-06-14",
+    "evidence": "Forbidden dead-frame floor: matching the 72-byte target frame (GCC produces 40) requires s32 pad[8] (forbidden dead local array) or register pins + frame-size regfix (cheats). No semantically-recoverable local accounts for the 32 dead bytes. Per dead-vars-local-array this is park/canonical-asm, not COMPLETED-C."
+  },
+  "remaining_gap": {
+    "summary": "Target frame 72 bytes vs GCC 40; the 12 rules patch the frame size and all 8 register save/restore offsets + a prologue reorder + an INLINE_MOVE_ALIASING. The ~32 extra frame bytes have no recoverable semantic local (register-only body + one stacked 5th call arg). HEAD also carries a register asm($16) pin + __asm__(move %0,%1).",
+    "rule_count_at_head": 12,
+    "rules_required_for_full_match": "frame-size subst (40->72) + 8 save/restore offset substs + prologue reorder + addu $16 INLINE_MOVE_ALIASING — i.e. the dead-frame cheat, forbidden by dead-vars-local-array."
+  },
+  "next_hypotheses": [
+    "Canonical-asm authorization (genuinely hand-written prologue / unrecoverable frame).",
+    "If a future agent can identify what the 32 frame bytes semantically held in the ORIGINAL (a named buffer used by the call-loop), reconstruct it with a meaningful name — but the asm shows no stack-buffer use, so this is unlikely.",
+    "Sibling AddTbpOfst_80047EE8 was parked for the identical floor — resolve together."
+  ],
+  "rejected_forms": [
+    {"form": "s32 pad[8] / register pins + frame-size regfix", "score": 0, "reason": "FORBIDDEN dead-frame coercion per dead-vars-local-array; engine refuses completion."}
+  ],
+  "memory_notes": [".claude/rules/dead-vars-local-array.md", ".claude/rules/inline-asm-injection.md"]
+}

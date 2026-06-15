@@ -1,0 +1,27 @@
+{
+  "func": "func_800651F0",
+  "file": "src/text1b.c",
+  "status": "WIP",
+  "verdict": "C",
+  "scores": {
+    "head_honest_distance": 13,
+    "candidate_floor": 7,
+    "target_insns": 29
+  },
+  "head_carries": ["register asm(\"$3\") pin", "register asm(\"$2\") pin", "volatile coercion qualifier", "3x regfix rules (reorder 16,12,13,14,15 + 2x subst $4->$2)"],
+  "rejected_forms": [
+    "single temp t both passes (13; const grabs v0, temps a0)",
+    "route const-1 through t/u (SCRAMBLE 34, p flips to v0)",
+    "third temp w for const (7, no change)",
+    "swap pass1/pass2 var (7)",
+    "decl u before t (7)",
+    "u holds only p[2] (SCRAMBLE 34)",
+    "move D_800F1114=1 to end (26, wrong store order)"
+  ],
+  "blocker": "floor lowered 13->7 via t/u block-local split (Lever A); residual 7 = second read-pass temp `u` stays in a0 where target reuses v0 (GCC won't coalesce the non-overlapping pass2 short pseudo into v0).",
+  "next_modality": ["decomp-permuter from candidate.c", "cc1 -da greg dump on the pass2 pseudo coalescing"],
+  "reviewer": "self-review PASS (cheat-free: removes pins+volatile+rules; t/u split is Lever-A block-local, semantically natural; no __asm__/dead-store/coercion)",
+  "sessions": [
+    {"date": "2026-06-14", "agent": "worker orch3a", "result": "LOWERED floor 13->7 with cheat-free t/u split; 12 variants measured; residual single pass2-temp a0->v0 coalescing miss; checkpointed for permuter"}
+  ]
+}

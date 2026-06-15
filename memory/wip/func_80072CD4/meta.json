@@ -1,0 +1,55 @@
+{
+  "function": "func_80072CD4",
+  "file": "text1b",
+  "scores": {
+    "head_floor": 12,
+    "candidate_floor": 12,
+    "metric": "sandbox --disable all (masked Levenshtein)",
+    "build_insns": 79,
+    "target_insns": 79
+  },
+  "sessions": [
+    {
+      "date": "2026-06-14",
+      "lever": "register-alloc-pure-c levers (store reorder, new_var-early, narrow/wide type, +4-first); none flipped var_v0 off $v1",
+      "lever_rule": "register-alloc-pure-c",
+      "floor_was": 12,
+      "floor_now": 12
+    }
+  ],
+  "prior_sessions_summary": [],
+  "reviewer": {
+    "verdict": "FAIL",
+    "date": "2026-06-14",
+    "evidence": "The only forms that touched the floor (11) carry two empty `do { } while(0)` scheduler barriers (test #1: no semantic purpose). Clean-C form with do-while removed scored 16 (worse). No clean candidate below HEAD's 12 was found, so candidate.c is NOT saved; the cheat-carrying best form is preserved under rejected/plus4_first_dowhile.c."
+  },
+  "remaining_gap": {
+    "summary": "Coupled register-rotation: target carries var_v0 (0x46/0x32) in $v0 and the 0xFC constant in $v1 (preset into the inner-if beqz delay slot, re-materialized for +0x14). GCC's global allocator glues var_v0 to $v1 (pseudo 74 -> reg 3 in the .greg) because it is assigned right after the `andi $2` condition test while $v0 is reused by the inner byte-store constants. Plus a 10-store reorder in the arg0>=4 ELSE block.",
+    "rule_count_at_head": 9,
+    "rules_required_for_full_match": "6 `subst` (rename $2<->$3 + store-offset rewrites), 1 `delete` (redundant 0xFC reload), 1 `insert_after` (lost-codegen var_v0=0x46), 1 `reorder` (ELSE 10-store permutation). All 9 are the register-swap + store-order the clean-C levers could not reproduce."
+  },
+  "next_hypotheses": [
+    "Instrumented cc1 (BB2_ALLOC_DEBUG / register-alloc-deep-dive recipe) to read the allocno priority that pins var_v0 to $v1 — the .greg confirms pseudo 74 in reg 3 but not WHY it outranks $v0 for var_v0.",
+    "Try making the inner byte-store constants (0xC3/0x1E/0xC8) share ONE local so they stop monopolizing $v0, freeing $v0 for var_v0 (Lever A live-range shrink on the OTHER pseudo).",
+    "Cross-ref the matched simpler family (func_8006133C et al.) — those were single-store; this is the same $v0/$v1 tie but coupled across a branch merge + ELSE reorder, likely the register-alloc-pure-c 'confirmed limits' class.",
+    "If clean levers stay measured-negative, this is a candidate for canonical-asm review (user decision), like marionation_Exec's register-rotation wall."
+  ],
+  "rejected_forms": [
+    {
+      "form": "Drop do-while barriers + new_var, write 0xFC/var_v0 literals, reorder THEN+ELSE stores to target order",
+      "score": 16,
+      "reason": "Removing the barriers drops insn count to 77 (target 79) and diverges structurally; clean-C is FARTHER, not closer."
+    },
+    {
+      "form": "new_var = 0xFC assigned BEFORE the inner if (to occupy $v1 early)",
+      "score": 14,
+      "reason": "GCC re-materializes 0xFC anyway; var_v0 stays in $v1. Worse, not a cheat per se but measured-negative."
+    },
+    {
+      "form": "+4-before-0x14 store order + two do { } while(0) barriers",
+      "score": 11,
+      "reason": "Best measured, but carries empty do-while scheduler barriers (cheat-reviewer test #1 FAIL). Preserved under rejected/plus4_first_dowhile.c."
+    }
+  ],
+  "memory_notes": []
+}

@@ -1,0 +1,49 @@
+{
+  "function": "func_80017FA0",
+  "file": "code6cac",
+  "scores": {
+    "head_floor": 13,
+    "candidate_floor": 16,
+    "metric": "full-build unmasked Levenshtein vs pristine code6cac.o (rules NEUTRALIZED); sandbox --disable all reads 13 but masking is unreliable here",
+    "build_insns": 60,
+    "target_insns": 61
+  },
+  "sessions": [
+    {
+      "date": "2026-06-14",
+      "lever": "fixed-write base[index] fold + keep inner full-const-addr writes (hybrid)",
+      "lever_rule": "scratchpad-gte",
+      "floor_was": 13,
+      "floor_now": 16
+    }
+  ],
+  "reviewer": {
+    "verdict": "FAIL",
+    "date": "2026-06-14",
+    "evidence": "HEAD form carries 6 regfix subst/delete rules + asm volatile barriers (val coercion, _frame dead-frame). All are cheat-asm/cheat-regfix per inline-asm-policy expanded catalog and the ARCHIVED scratchpad-gte rule. No committable form found."
+  },
+  "remaining_gap": {
+    "summary": "Two irreducible non-pure-C gaps after the inner loop is made to match: (1) the two FIXED scratchpad writes 0x1F8000B8 / 0x1F800060 emit lui+ori+sw 0(reg) (3 insns) where target folds to lui+sw offset(at) (2 insns) — GCC 2.7.2 does not reliably fold a 32-bit constant store address into the sw displacement; the 6 regfix subst/delete rules manufacture the fold. (2) target reserves an UNUSED 8-byte stack frame (addiu sp,-8 / +8 with nothing stored) — GCC emits no frame for this body; HEAD forces it with `s32 _frame; asm volatile(\"\":: \"m\"(_frame))` which is a dead-var+barrier cheat.",
+    "rule_count_at_head": 6,
+    "rules_required_for_full_match": "the existing 6 regfix rules (subst $3->$1, fold 0($3)->0xb8($1), delete the ori, two more subst for the 0x60/0xac writes) plus the asm barriers — exactly the recipe the ARCHIVED scratchpad-gte rule forbids."
+  },
+  "next_hypotheses": [
+    "CANONICAL-ASM authorization (user decision): the unused frame + the constant-address store fold are both hallmarks the original was hand-written asm / a different cc1 fold behavior. This is the documented endpoint per scratchpad-gte.md path (b).",
+    "If ever revisited in pure C: would need a GCC 2.7.2 idiom that folds a constant 32-bit store address into lui+sw offset — none found across this and the cpu_check_tubazeri family; archived rule says no pure-C path."
+  ],
+  "rejected_forms": [
+    {
+      "form": "idx_base: all scratchpad writes via ((volatile s32*)0x1F800000)[idx], early `return`",
+      "score": 33,
+      "reason": "LICM-hoists the inner-loop lui 0x1f80 out of the loop (target re-materializes it each iteration); also drops the frame. Worse than hybrid."
+    },
+    {
+      "form": "HEAD committed form (6 regfix rules + asm barriers)",
+      "score": 0,
+      "reason": "byte-matches but ONLY via cheat-regfix (scratchpad fold subst/delete) + cheat-asm (_frame dead-frame barrier, val coercion barrier). inline-asm-policy + scratchpad-gte ARCHIVED forbid it."
+    }
+  ],
+  "memory_notes": [
+    ".claude/rules/scratchpad-gte.md"
+  ]
+}

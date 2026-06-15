@@ -1,0 +1,31 @@
+{
+  "function": "func_8002BC68",
+  "file": "code6cac_b",
+  "scores": {
+    "head_floor": 14,
+    "candidate_floor": null,
+    "metric": "not re-measured — sibling func_8002BEA0 (identical structure) fully diagnosed 2026-06-13",
+    "build_insns": 130,
+    "target_insns": 130
+  },
+  "sessions": [
+    {"date": "2026-06-14", "lever": "identified as direct GTE-LZCS sibling of func_8002BEA0; deferred to that function's documented diagnosis", "lever_rule": "register-alloc-pure-c", "floor_was": 14, "floor_now": 14}
+  ],
+  "reviewer": {
+    "verdict": "NEEDS_USER",
+    "date": "2026-06-14",
+    "evidence": "GTE-LZCS sibling of func_8002BEA0. Carries raw .word GTE ops + register asm(t4) pin (canonical-asm, needs authorization) AND the (a-b)*c/100 magic-const ordering wall (sibling proved random permuter exhausted, 24k iters, zero improvement). Canonical-asm authorization + directed-permuter/RTL lever are user/orchestrator decisions."
+  },
+  "remaining_gap": {
+    "summary": "Identical to func_8002BEA0: 6 rules cluster around the (X - var_t0)*0x50/100 scaling — the /100 reciprocal magic-const and the subtraction const materialize in swapped order vs target (GCC's fixed RTL for (a-b)*c/d locks the order), plus the coupled mfhi register-pressure choice. The GTE-LZCS block is canonical-asm.",
+    "rule_count_at_head": 6,
+    "rules_required_for_full_match": "insert srl/delete (shift codegen), reorder, mfhi rename, $2<->$3 reg-swap — the magic-const-ordering + register-pressure residual; plus canonical-asm authorization of the GTE .word block."
+  },
+  "next_hypotheses": [
+    "Resolve func_8002BEA0 FIRST (simpler 0x44C-const variant with full RTL diagnosis); its solution transfers to this arg0 variant.",
+    "DIRECTED permuter (PERM_* around the /100 expression) — random space is exhausted per the sibling's 24k-iter run.",
+    "Canonical-asm authorization of the GTE-LZCS .word block (3rd LZCS sibling per func_8002BEA0 plan)."
+  ],
+  "rejected_forms": [],
+  "memory_notes": ["memory/wip/func_8002BEA0/notes.md", ".claude/rules/register-alloc-pure-c.md"]
+}

@@ -1,0 +1,22 @@
+{
+  "func": "func_800600C8",
+  "file": "src/text1b.c",
+  "status": "WIP",
+  "verdict": "C",
+  "scores": {
+    "head_honest_distance": 13,
+    "candidate_floor": null,
+    "target_insns": 121
+  },
+  "head_carries": [
+    "6x regfix subst rules (addu/sw scheduling swap x2 sites, sh 72/74 store-order swap)",
+    "source: if ((!hi) && (!hi)) {} empty-if dead-read of uninitialised hi",
+    "source: s.zero1C = 0 & 0xFFFFu masked-zero coercion"
+  ],
+  "blocker": "121-insn function with ~8 coupled register+scheduling+store-order diffs at honest distance 13; no single structural lever; empty-if dead-read is load-bearing for current cheated allocation. Multi-session / orchestrator grade.",
+  "next_modality": ["clean re-derivation of digit-render loop without source cheats", "decomp-permuter on full body from a cheat-free base"],
+  "reviewer": "n/a (no commit; blocked)",
+  "sessions": [
+    {"date": "2026-06-14", "agent": "worker orch3a", "result": "analysed; 6 rules + 2 source cheats identified; honest distance 13 with multiple coupled clusters; blocked as multi-session, not closed"}
+  ]
+}

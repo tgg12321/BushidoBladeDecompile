@@ -1,0 +1,32 @@
+{
+  "function": "func_80052B44",
+  "file": "text1b",
+  "scores": {
+    "head_floor": 13,
+    "candidate_floor": 13,
+    "metric": "full-build unmasked Levenshtein vs pristine text1b.o (pins + fill_delay rule neutralized)",
+    "build_insns": 16,
+    "target_insns": 14
+  },
+  "sessions": [
+    {"date": "2026-06-14", "lever": "clean ctc2-wrapper, no pins/rule; canonical gate confirms ASM-PARTIAL", "lever_rule": "inline-asm-allowed", "floor_was": 13, "floor_now": 13}
+  ],
+  "reviewer": {
+    "verdict": "NEEDS_USER",
+    "date": "2026-06-14",
+    "evidence": "GTE leaf wrapper (cop2 ctc2 body). Residual is register-rotation into $t0-$t4 (target uses HIGHER regs than GCC's ascending preference) + a jr-delay-slot fill — both non-pure-C, hand-asm hallmarks. Canonical-asm authorization is a user/orchestrator decision."
+  },
+  "remaining_gap": {
+    "summary": "Target loads matrix[0..4] into $t0..$t4 (regs 8-12) then ctc2 to GTE $0-$4; GCC naturally packs into lower $v0/$v1/$a1/$a2 (ascending-reg preference) — opposite of target, no pure-C lever forces higher regs. Plus the final ctc2 zero,$7 must land in the jr-ra delay slot (fill_delay rule); GCC won't fill it.",
+    "rule_count_at_head": 1,
+    "rules_required_for_full_match": "5 register-asm pins ($8-$12) + 1 fill_delay regfix rule — the canonical-asm wrapper form."
+  },
+  "next_hypotheses": [
+    "Authorize as COMPLETED-INLINE-ASM-CANONICAL (GTE leaf wrapper) per orchestrator/user policy — the documented endpoint for this class.",
+    "Cross-check the 2026-05-11 'Retired to pure C' siblings (func_80052A88/B7C/B00, func_8007ED6C) — verify they are genuinely COMPLETED-C and not carrying the same pin+fill_delay debt."
+  ],
+  "rejected_forms": [
+    {"form": "clean plain-locals + ctc2 %0 constraints, no pins/rule", "score": 13, "reason": "GCC picks lower regs ($v0/$v1/$a1/$a2) not target's $t0-$t4, and won't fill the jr delay slot — not a cheat, just non-matching; the gap is hand-asm register choice + delay fill."}
+  ],
+  "memory_notes": [".claude/rules/inline-asm-allowed.md", ".claude/rules/gte-wrapper-misroute-park.md"]
+}

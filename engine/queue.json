@@ -172,46 +172,6 @@
       "status": "active"
     },
     {
-      "func": "func_80055948",
-      "file": "text1b",
-      "distance": 12,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_8006133C",
-      "file": "text1b",
-      "distance": 12,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_800613C8",
-      "file": "text1b",
-      "distance": 12,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_80061454",
-      "file": "text1b",
-      "distance": 12,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_800614E0",
-      "file": "text1b",
-      "distance": 12,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_80062020",
       "file": "text1b",
       "distance": 12,
@@ -276,14 +236,6 @@
       "status": "active"
     },
     {
-      "func": "mot_data_set",
-      "file": "text1a_c",
-      "distance": 13,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_80052B44",
       "file": "text1b",
       "distance": 13,
@@ -297,14 +249,6 @@
       "distance": 13,
       "verdict": "C",
       "rules": 6,
-      "status": "active"
-    },
-    {
-      "func": "func_8006517C",
-      "file": "text1b",
-      "distance": 13,
-      "verdict": "C",
-      "rules": 3,
       "status": "active"
     },
     {
@@ -366,14 +310,6 @@
     {
       "func": "file_LoadSectors",
       "file": "ings",
-      "distance": 14,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "spu_WriteReg",
-      "file": "main",
       "distance": 14,
       "verdict": "C",
       "rules": 0,
@@ -3417,14 +3353,14 @@
     }
   ],
   "counts": {
-    "total": 415,
-    "active": 333,
+    "total": 407,
+    "active": 325,
     "by_status": {
-      "active": 333,
+      "active": 325,
       "parked": 82
     },
     "by_verdict": {
-      "C": 158,
+      "C": 150,
       "ASM-PARTIAL": 57,
       "ASM-SUSPECT": 118
     }

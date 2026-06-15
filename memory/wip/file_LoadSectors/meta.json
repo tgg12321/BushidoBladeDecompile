@@ -1,0 +1,21 @@
+{
+  "func": "file_LoadSectors",
+  "file": "src/ings.c",
+  "status": "BLOCKED",
+  "verdict": "C",
+  "scores": {
+    "head_honest_distance": 14,
+    "candidate_floor": 14,
+    "target_insns": 51
+  },
+  "head_carries": ["s32 _pad[2] vestigial frame-padding array (DCE'd; contributes nothing)"],
+  "rejected_forms": [
+    "_pad[4] instead of _pad[2] (frame still 40; array is DCE'd, no effect)"
+  ],
+  "blocker": "BODY matches target byte-for-byte; the ONLY 14 diffs are a uniform +8 stack-frame-size gap (target 48 vs ours 40). No non-cheat pure-C closes it: an unused 8-byte local is DCE'd, a used one would regress the matching body, and address-taken/volatile is a forbidden frame-coercion. Likely a cc1-vs-cc1psx frame-sizing divergence OR an unrecoverable original local.",
+  "next_modality": ["cc1psx calibration on the clean source (confirm/deny compiler frame divergence -> escalate)", "sibling ings.c loaders for evidence of a real original local"],
+  "reviewer": "n/a (no commit; blocked)",
+  "sessions": [
+    {"date": "2026-06-14", "agent": "worker orch3a", "result": "body matches perfectly; sole diff is +8 frame size; _pad[2]/[4] both DCE'd; blocked as compiler-frame-divergence / unrecoverable-local, not worker-closable"}
+  ]
+}

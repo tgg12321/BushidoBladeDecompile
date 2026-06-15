@@ -1,0 +1,24 @@
+{
+  "func": "func_80044098",
+  "file": "src/text1a_c.c",
+  "status": "WIP",
+  "verdict": "C",
+  "scores": {
+    "head_honest_distance": 13,
+    "candidate_floor": 13,
+    "target_insns": 26
+  },
+  "head_carries": ["register asm(\"v1\") pin", "register asm(\"a0\") pin"],
+  "rejected_forms": [
+    "reorder a6 before a4 (14, unchanged)",
+    "v1[-1] indexing + --a4 in while-cond (14, unchanged)",
+    "explicit base local copy (base elided, 14 unchanged)",
+    "split header into hdr var for the 0x8000 test (WORSE: 20, hdr->a1, beqz exit, +stack adjust)"
+  ],
+  "blocker": "single clean v1<->a0 register rename: pointer should get the lower preferred reg v1 but counter a4 out-prioritises it (near-tied loop refs; pointer's longer live range => lower priority). Same tied-priority-rename class as func_80037A20.",
+  "next_modality": ["decomp-permuter from candidate.c (clean single swap)", "cc1 -da greg dump + live-range lever to raise pointer priority for v1"],
+  "reviewer": "n/a (no commit; candidate carries zero cheats but does not match)",
+  "sessions": [
+    {"date": "2026-06-14", "agent": "worker orch3a", "result": "pin-free candidate at floor 13; 5 structural variants measured; single v1<->a0 rename uncracked; blocked for permuter/cc1-da modality"}
+  ]
+}

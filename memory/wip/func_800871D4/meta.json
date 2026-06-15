@@ -1,0 +1,22 @@
+{
+  "func": "func_800871D4",
+  "file": "src/main.c",
+  "status": "BLOCKED",
+  "verdict": "C",
+  "scores": {
+    "head_honest_distance": 15,
+    "candidate_floor": 18,
+    "target_insns": 52
+  },
+  "head_carries": ["2x __asm__(\"andi %0,%1,0xffff\") general-purpose-opcode cheat-asm", "__asm__(\"\" : : \"r\"(var_a1)) empty scheduling barrier"],
+  "rejected_forms": [
+    "one-expr var_v1 = temp_a0 & 0xFFFF (v1): GCC FOLDS the redundant andi away (19 diffs)",
+    "two-stmt var_v1 = temp_a0; var_v1 &= 0xFFFF (v2): andi appears but as move+andi, not single andi v1,a0 (18 diffs)"
+  ],
+  "blocker": "redundant andi-after-u16-lhu fold: no pure-C form yields the target's single `andi v1,a0` from a u16-bounded source (one-expr folds, two-stmt adds a move). Likely cc1-vs-cc1psx fold divergence. Plus coupled load-register, if/else branch scheduling, and a1<->a2 swap (the empty-asm barrier was defeating that).",
+  "next_modality": ["cc1psx calibration on candidate.c (confirm/deny the andi-fold divergence -> escalate)", "pure-C hunt for the andi + a1/a2 ordering if cc1psx also folds"],
+  "reviewer": "n/a (no commit; blocked)",
+  "sessions": [
+    {"date": "2026-06-14", "agent": "worker orch3a", "result": "analysed; 2 andi cheat-asm + empty barrier; redundant-andi fold is the core blocker (likely compiler divergence); candidate floor 18>15; blocked for cc1psx calibration"}
+  ]
+}

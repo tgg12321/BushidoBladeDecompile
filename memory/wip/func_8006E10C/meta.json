@@ -1,0 +1,34 @@
+{
+  "function": "func_8006E10C",
+  "file": "text1b",
+  "scores": {
+    "head_floor": 13,
+    "candidate_floor": 13,
+    "metric": "full-build unmasked Levenshtein vs pristine text1b.o (clean pin-free body)",
+    "build_insns": 103,
+    "target_insns": 103
+  },
+  "sessions": [
+    {"date": "2026-06-14", "lever": "pin-free clean body + 5 ff0/base ordering variants", "lever_rule": "register-alloc-pure-c", "floor_was": 13, "floor_now": 13}
+  ],
+  "reviewer": {
+    "verdict": "PASS",
+    "date": "2026-06-14",
+    "evidence": "candidate.c is clean pure C: zero rules, zero asm, no pins/dead-stores/volatile. Not committable only because it does not byte-match (coupled s0/s1 register swap + delay-slot scheduling), not because it cheats."
+  },
+  "remaining_gap": {
+    "summary": "Coupled register-allocation + scheduling tie in a 103-insn display-init function. Target: base(&D_800F7438) in $s0, ff0(0xF0) in $s1, with `li s1,240` scheduled into the func_80036EA8 jal delay slot. GCC: base in $s1, ff0 in $s0, with a nop in the jal delay slot and ff0 materialized later. The s0/s1 swap and the delay-slot fill appear coupled.",
+    "rule_count_at_head": 0,
+    "rules_required_for_full_match": "HEAD matches via 5 register-asm pins (ff0 $17, temp_s3 $19, a0v $4, a1v $5). No pure-C lever flips the s0/s1 tie (5 measured)."
+  },
+  "next_hypotheses": [
+    "decomp-permuter from the pin-free base (NOTE: 103 insns + many jal relocations -> isolated permuter scores are unreliable per register-alloc-pure-c; verify any find with full SHA1).",
+    "greg -da diagnosis to find which pseudo blocks $s0 for base; if it's the ff0-live-across-calls pseudo claiming $s0 first, a liveness reshape might flip it — none of 5 orderings did.",
+    "If walls: canonical-asm review (register rotation GCC 2.7.2 won't emit for this structure)."
+  ],
+  "rejected_forms": [
+    {"form": "base computed at top of function (base_top)", "score": 21, "reason": "moves the lui s0 base materialization too early; worse"},
+    {"form": "base_first / ff0_then_base / base_before_ff0_after orderings", "score": 13, "reason": "do not flip the s0/s1 tie or the jal-delay-slot fill"}
+  ],
+  "memory_notes": [".claude/rules/register-alloc-pure-c.md"]
+}

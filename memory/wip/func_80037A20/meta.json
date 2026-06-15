@@ -1,0 +1,24 @@
+{
+  "func": "func_80037A20",
+  "file": "src/code6cac_c.c",
+  "status": "WIP",
+  "verdict": "C",
+  "scores": {
+    "head_honest_distance": 13,
+    "candidate_floor": 13,
+    "target_insns": 33
+  },
+  "head_carries": ["register asm(\"s0\") pin", "register asm(\"s1\") pin", "__asm__(\"\") opt-barrier (block constant prop)"],
+  "rejected_forms": [
+    "do-while no-entry-increment (wrong count, off-by-one)",
+    "nextfile-in-if-condition (34 insns, +nop)",
+    "decl reorder var_s1-first / var_s0-first (allocation unchanged)",
+    "firstfile inlined to v0_val temp (13, unchanged)"
+  ],
+  "blocker": "coupled s0<->s1 tied-priority register rename (~12 diffs, global.c allocno tiebreaker) + GCC constant-folds entry `var_s1=0; var_s1++` to `li 1` where target emits `addiu` (the fold the cheat opt-barrier suppressed)",
+  "next_modality": ["decomp-permuter from candidate.c", "cc1 -da greg dump priority analysis", "cc1psx calibration on the li-1 fold (possible compiler divergence)"],
+  "reviewer": "n/a (no commit; candidate carries zero cheats but does not match)",
+  "sessions": [
+    {"date": "2026-06-14", "agent": "worker orch3a", "result": "pin/barrier-free candidate at floor 13; 8 structural variants measured; no pure-C close; blocked for permuter/deep modality"}
+  ]
+}

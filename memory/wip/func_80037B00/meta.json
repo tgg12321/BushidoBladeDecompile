@@ -1,0 +1,21 @@
+{
+  "func": "func_80037B00",
+  "file": "src/code6cac_c.c",
+  "status": "BLOCKED",
+  "verdict": "C",
+  "scores": {
+    "head_honest_distance": 15,
+    "candidate_floor": 23,
+    "target_insns": 36
+  },
+  "head_carries": ["9x register asm() pins (t1,t3,t2,a3,a1,a2,t0,v1,v0)", "s32 sp_dummy[2] frame-padding cheat"],
+  "rejected_forms": [
+    "pin-free + no-dummy (23; whole-function register-rotation cascade + loop scheduling shift + absent 8-byte frame)"
+  ],
+  "blocker": "removing the 9 pins triggers a coupled multi-register rotation (t1->t0, a1->v1, a2->a1, ...) + inner-loop scheduling divergence + an 8-byte frame gap (DCE'd sp_dummy can't supply). pin-free floor 23 >> HEAD's cheated 15. Orchestrator/multi-session grade.",
+  "next_modality": ["decomp-permuter from candidate.c (may plateau like marionation_Exec)", "cc1psx frame calibration -- shared +8 frame anomaly with func_80037AA4 and file_LoadSectors"],
+  "reviewer": "n/a (no commit; blocked)",
+  "sessions": [
+    {"date": "2026-06-14", "agent": "worker orch3a", "result": "analysed; 9 pins + frame dummy; pin-free floor 23>15 (register rotation + scheduling + frame); blocked as multi-session, part of a 3-fn +8-frame cluster"}
+  ]
+}

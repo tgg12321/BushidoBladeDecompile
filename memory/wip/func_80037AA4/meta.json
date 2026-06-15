@@ -1,0 +1,22 @@
+{
+  "func": "func_80037AA4",
+  "file": "src/code6cac_c.c",
+  "status": "BLOCKED",
+  "verdict": "C",
+  "scores": {
+    "head_honest_distance": 14,
+    "candidate_floor": 16,
+    "target_insns": 23
+  },
+  "head_carries": ["register asm(\"a2\") pin", "register asm(\"a0\") pin", "register asm(\"v0\") pin", "s32 sp_dummy[2] unused frame-padding array (dead-vars-local-array cheat)"],
+  "rejected_forms": [
+    "no-dummy pin-free (16; absent 8-byte frame costs 2 sp-adjust insns)",
+    "decl reorder var_a0 first (16; swap+frame unchanged)"
+  ],
+  "blocker": "TWO coupled: (1) target has an 8-byte UNUSED stack frame reconstructible only via a forbidden coercion (sp_dummy array) -- original stack local content unrecoverable; (2) a0<->v1 tied-priority register rename. Frame is a policy question, not worker-closable.",
+  "next_modality": ["recover original stack local from sibling/caller evidence", "escalate reconstruct-unused-frame policy question", "permuter for the a0<->v1 rename after frame resolved"],
+  "reviewer": "n/a (no commit; blocked)",
+  "sessions": [
+    {"date": "2026-06-14", "agent": "worker orch3a", "result": "analysed; 3 pins + frame-padding dummy; clean form short the unused frame (16>14) + a0<->v1 rename; blocked on frame-reconstruction policy"}
+  ]
+}

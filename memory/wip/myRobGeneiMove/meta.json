@@ -1,0 +1,50 @@
+{
+  "function": "myRobGeneiMove",
+  "file": "code6cac",
+  "scores": {
+    "head_floor": 14,
+    "candidate_floor": 14,
+    "metric": "sandbox --disable all (masked Levenshtein)",
+    "build_insns": 134,
+    "target_insns": 134
+  },
+  "sessions": [
+    {
+      "date": "2026-06-14",
+      "lever": "far-direct + val-decl-first; neither coalesces `val` into $s0 (stays $a0 pre-call)",
+      "lever_rule": "register-alloc-pure-c",
+      "floor_was": 14,
+      "floor_now": 14
+    }
+  ],
+  "prior_sessions_summary": [],
+  "reviewer": {
+    "verdict": null,
+    "date": "2026-06-14",
+    "evidence": "No candidate saved (no floor improvement); nothing to review."
+  },
+  "remaining_gap": {
+    "summary": "Pure register-PROMOTION/coalescing. Both builds 134 insns (structure correct); 13 of the 15 regfix rules are `subst $4 -> $16` (i.e. `val` should be in $s0 (callee-saved) but GCC keeps the PRE-CALL portions of val in $a0 ($4); the cross-call portion DOES go to $s0 — confirmed via .greg pseudo 113 in reg 16). The remaining 2 rules are `$5 -> $4`/`$16` (a coupled neighbour). Target coalesces ALL of val's reassignments (val=expr; val=0x200; val=*(obj+0x184); val+=...; val=(result*...)>>10) into one $s0 pseudo; GCC fragments them, giving the no-call branches $a0.",
+    "rule_count_at_head": 15,
+    "rules_required_for_full_match": "13 `subst $4->$16` (val coalescing into $s0) + 2 `$5->$4`/`$16` neighbour renames. The $a0/$s0 coalescing decision is the wall."
+  },
+  "next_hypotheses": [
+    "This is a COALESCING problem, not a simple swap: GCC splits val's lifetime at the call boundary, putting no-call portions in $a0. Lever to try: a structural change that makes val's value flow through a SINGLE definition point per path so global.c coalesces the pseudos into one (e.g. compute each branch's val into a block-local then ONE `val = blocklocal;` at the join).",
+    "Instrumented cc1 ALLOCDBG to see whether val is one pseudo split by the allocator or multiple pseudos the coalescer declined to merge.",
+    "Increase register pressure legitimately (more cross-call live values) so $a0 is unavailable for the pre-call val — but only if a natural restructure does it, not a dead var.",
+    "register-alloc-pure-c confirmed-limits class if levers stay negative -> canonical-asm review."
+  ],
+  "rejected_forms": [
+    {
+      "form": "far = (expr) >= 0x391 directly (drop the throwaway early `val =`)",
+      "score": 14,
+      "reason": "No change — the early throwaway val was not the blocker; the no-call val portions still take $a0."
+    },
+    {
+      "form": "declare val/far/a2 before obj/s2 (pseudo-number / coalescing nudge)",
+      "score": 14,
+      "reason": "No change — allocation of val to $a0 vs $s0 is robust to declaration order."
+    }
+  ],
+  "memory_notes": []
+}
