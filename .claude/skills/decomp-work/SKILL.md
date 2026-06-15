@@ -57,8 +57,18 @@ of cwd:
 & tools/wteng.ps1 <id> queue done <func>
 & tools/wteng.ps1 <id> make                     # raw full-build SHA1 gate (the authoritative check)
 ```
-`board.py` / `git` / `Read`/`Edit` (absolute worktree paths) are unaffected — only the
-ENGINE/build wrapper needs pinning. (`board.py` is intentionally main-shared.)
+**Edit/Write + git must ALSO stay in your worktree (cwd is main!).** Capture your
+worktree's ABSOLUTE path ONCE and use it for every file + git op:
+```
+$wt = (Resolve-Path ../bb2-work-<id>).Path     # do this once; <id> is yours
+```
+- **Edit/Write** the file at `$wt\src\...` / `$wt\memory\wip\...` — NEVER the main repo
+  path (`...\Bushido Blade 2 Decompile\...`). Bare relative paths and the main path both
+  hit MAIN. A guard blocks edits to MAIN's build inputs while worktrees are live, but
+  it can't read your intent — always edit your own `$wt\...`.
+- **git** every call as `git -C $wt …` (commit/add/checkout/status). A bare `git` from the
+  Bash/PowerShell tool runs on MAIN (cwd) and would commit/stage onto main.
+- `board.py` IS intentionally main-shared (claims/queue coordinate there) — run it normally.
 
 ## 3. The loop — repeat until you have done N items
 ```

@@ -100,7 +100,7 @@ Invoking WSL through a Windows-side agent nests multiple shells (Git Bash → ws
 PowerShell → wsl → bash); every `$`, quote, and backslash is parsed at each layer, which silently
 breaks inline `awk`/`sed`, shell-function definitions, heredocs, and hand-escaped quotes. Standards:
 
-- **Run engine commands through `tools/eng.ps1`** (PowerShell): `& tools/eng.ps1 queue next`. Zero
+- **Run engine commands through `tools/eng.ps1`** (PowerShell): `& tools/wteng.ps1 main queue next`. Zero
   quoting; it builds the `wsl bash -c '…'` string internally.
 - **Anything beyond one simple command** (awk/sed, multi-statement pipelines, heredocs) → **write a
   `.py`/`.sh`/`.ps1` file and run that file**, not an inline `-c` string. A Python script is more

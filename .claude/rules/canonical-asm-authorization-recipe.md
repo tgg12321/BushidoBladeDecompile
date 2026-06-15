@@ -153,7 +153,7 @@ Match the existing entries. Include a 1-2 line rationale citing:
 ## Verification gate (mandatory before commit)
 
 ```pwsh
-& tools/eng.ps1 verify-oracle --rebuild
+& tools/wteng.ps1 main verify-oracle --rebuild
 ```
 
 Must return `build_matches: True` with SHA1 ==
@@ -162,7 +162,7 @@ Must return `build_matches: True` with SHA1 ==
 ## Then queue done + commit
 
 ```pwsh
-& tools/eng.ps1 queue done <func>
+& tools/wteng.ps1 main queue done <func>
 git commit -F tmp/msg.txt  # subject: auth: <func> (<file>.c) — COMPLETED-INLINE-ASM-CANONICAL
 ```
 

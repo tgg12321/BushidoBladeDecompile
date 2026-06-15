@@ -62,7 +62,7 @@ engine.cli…'`** — that nests three shells and the quoting eats awk/sed/hered
 
 - **Engine commands → the PowerShell tool + `tools/eng.ps1`** (zero quoting):
   ```
-  & tools/eng.ps1 queue next | queue status | canonical <f> | sandbox <f> --disable all
+  & tools/wteng.ps1 main queue next | queue status | canonical <f> | sandbox <f> --disable all
                  | retire <f> | queue done <f> | queue park <f> --reason "…" | verify-oracle --rebuild | test
   ```
 - **Anything beyond ONE simple command** (awk/sed, multi-statement, shell funcs,
@@ -240,7 +240,7 @@ high-value codegen + workflow rules: `sandbox-zero-retire-fails`,
 
 | Tool | Purpose |
 |---|---|
-| `& tools/eng.ps1 <cmd>` | engine CLI via PowerShell (queue/canonical/sandbox/retire/verify-oracle/test) |
+| `& tools/wteng.ps1 main <cmd>` | engine CLI via PowerShell (queue/canonical/sandbox/retire/verify-oracle/test) |
 | `pwsh tools/headless_loop.ps1 -MaxIterations N` | launch + self-review headless workers |
 | `python3 tools/headless_review.py --latest` | per-run orchestrator packet (ACCEPT/ESCALATE) |
 | `python3 tools/headless_audit.py --all` | efficiency dashboard from transcripts |

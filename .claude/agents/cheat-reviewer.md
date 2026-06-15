@@ -229,7 +229,7 @@ You may invoke the engine detectors as a backstop:
   `python3 -c "import sys; sys.path.insert(0, 'engine'); from
   volatile_cheats import find_all_cheats; print(find_all_cheats(open('<file>').read()))"`
 
-Or run `& tools/eng.ps1 sandbox <func> --disable all` to see the
+Or run `& tools/wteng.ps1 main sandbox <func> --disable all` to see the
 cheat-invisible distance. But remember: detectors catch what they were
 designed to catch. A PASS from a detector means "this specific family
 not detected," NOT "this is clean." Your semantic review is the

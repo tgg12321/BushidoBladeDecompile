@@ -30,6 +30,15 @@
         ]
       },
       {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/tools/hooks/worktree_contamination_guard.py\""
+          }
+        ]
+      },
+      {
         "matcher": "Read|Glob|Grep|Bash|PowerShell",
         "hooks": [
           {

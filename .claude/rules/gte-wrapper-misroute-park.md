@@ -82,7 +82,7 @@ The finished form is **pin-removed canonical inline asm GTE**, NOT a glabel bloc
    non-load-bearing).
 3. **Add the function to `inline_asm_canonical.txt`** (the canonical-asm registry)
    with a one-line GTE justification.
-4. **`& tools/eng.ps1 queue done <func>`** (0 rules + SHA1 match → done).
+4. **`& tools/wteng.ps1 main queue done <func>`** (0 rules + SHA1 match → done).
 
 Confirmed: `func_8007F10C` (avsz3) + `func_8007F12C` (avsz4) auto-authorized this
 way 2026-05-26 — pins removed, SHA1 == oracle, both in `inline_asm_canonical.txt`,

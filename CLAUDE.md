@@ -17,8 +17,13 @@ match. By construction, cheating can't help and asm functions aren't pure-C-grin
 The engine runs under WSL, but hand-authored `wsl bash -c 'cd … && source .venv && python3 -m
 engine.cli …'` nests three shells and the quoting silently eats awk/sed/heredocs — the PreToolUse
 guard BLOCKS that form and the footguns below.
-- **Engine/build commands → PowerShell tool + `tools/eng.ps1 <cmd>`** (zero quoting; stamps
-  `CLAUDE_SESSION_ID` for metrics) — e.g. `& tools/eng.ps1 sandbox func_X --disable all`.
+- **Engine/build commands → PowerShell tool + `tools/wteng.ps1 <target> <cmd>`** (zero quoting;
+  stamps `CLAUDE_SESSION_ID`) where `<target>` = `main` (solo-on-main) or a worker's `<id>` —
+  e.g. `& tools/wteng.ps1 main sandbox func_X --disable all`. **`wteng` pins the repo explicitly so
+  the engine can't resolve to the wrong worktree** (the 2026-06-14 contamination fix; a subagent's
+  cwd is ALWAYS main, so a relative `& tools/eng.ps1` silently builds/mutates MAIN — `worktree_
+  contamination_guard.py` BLOCKS that form and bare `make`). To edit MAIN's build inputs while
+  worker worktrees are live, drop the sentinel `tmp/.allow_main_edits` (orchestrator override).
 - **Anything beyond ONE simple command** (awk/sed, multi-statement pipelines, heredocs) → **write
   a `.py`/`.sh`/`.ps1` file to `tmp/` and run that file** (more robust AND readable than inline).
 - **Multi-line commit messages → `git commit -F tmp/msg.txt`.** Never heredocs or quote-escape dances.

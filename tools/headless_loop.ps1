@@ -109,7 +109,7 @@ $PROMPT = @'
 You are running the Bushido Blade 2 decomp engine loop HEADLESS. Work the TOP
 queue item to COMPLETED-C (100% pure C, zero regfix/asmfix/pins/cheat-asm)
 following the loop in CLAUDE.md, then STOP. Run every engine command through the
-PowerShell wrapper: `& tools/eng.ps1 <subcommand>` (queue next | canonical <f> |
+PowerShell wrapper: `& tools/wteng.ps1 main <subcommand>` (queue next | canonical <f> |
 sandbox <f> --disable all | retire <f> | queue done <f> |
 queue park <f> --reason "...").
 
@@ -117,9 +117,9 @@ Steps for the single top function:
   0. If `queue next` returns a `wip` block, READ memory/wip/<func>/meta.json +
      notes.md FIRST, apply candidate.c to src/, confirm the documented floor
      with sandbox, and CONTINUE from there (not from HEAD).
-  1. & tools/eng.ps1 queue next            (identify the function + file)
-  2. & tools/eng.ps1 canonical <func>      (C -> continue; ASM-* -> park it, do not grind)
-  3. & tools/eng.ps1 sandbox <func> --disable all   (honest pure-C distance)
+  1. & tools/wteng.ps1 main queue next            (identify the function + file)
+  2. & tools/wteng.ps1 main canonical <func>      (C -> continue; ASM-* -> park it, do not grind)
+  3. & tools/wteng.ps1 main sandbox <func> --disable all   (honest pure-C distance)
   4. Edit src/<file>.c toward 0 in pure C (re-run step 3 as your gradient). If
      retire fails with a cheat-asm hint, strip the source __asm__ barrier it names.
      Exploring MORE THAN ~3 candidate forms? Write each form to a file under
@@ -127,8 +127,8 @@ Steps for the single top function:
        python3 tools/sweep_variants.py --func <f> --file <stem> --variants tmp/<func>_variants/
      (one tool call scores N forms and restores src; 10-20 per-edit sandbox
      round-trips per session was the #1 measured turn sink).
-  5. & tools/eng.ps1 retire <func>         (drops rules + full SHA1 gate)
-  6. & tools/eng.ps1 queue done <func>
+  5. & tools/wteng.ps1 main retire <func>         (drops rules + full SHA1 gate)
+  6. & tools/wteng.ps1 main queue done <func>
   7. Register a finding if reusable (.claude/rules/ or memory/), then commit with
      git commit -F tmp/msg.txt (write the message file first; never a heredoc).
 
