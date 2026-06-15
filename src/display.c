@@ -1270,7 +1270,7 @@ __asm__(
     "    .set at\n"
 );
 s32 func_8007E24C(s32 *a0, s32 *a1, s32 a2, s32 a3, s32 *out) {
-    register s32 v0 asm("v0");
+    s32 v0;
     __asm__ volatile (".word 0x8C880000" :: "r"(a0));  /* lw $t0, 0($a0) */
     __asm__ volatile (".word 0x8C8A0004" :: "r"(a0));  /* lw $t2, 4($a0) */
     __asm__ volatile (".word 0x00084C03");             /* sra $t1, $t0, 16 */
@@ -1318,7 +1318,7 @@ __asm__(
     "    .set at\n"
 );
 s32 func_8007E2D4(s32 *a0, s32 *a1, s32 a2, s32 a3, s32 *out) {
-    register s32 v0 asm("v0");
+    s32 v0;
     __asm__ volatile (".word 0x8C880000" :: "r"(a0));  /* lw $t0, 0($a0) */
     __asm__ volatile (".word 0x8C8A0004" :: "r"(a0));  /* lw $t2, 4($a0) */
     __asm__ volatile (".word 0x00084C03");             /* sra $t1, $t0, 16 */
@@ -1355,7 +1355,7 @@ s32 func_8007E2D4(s32 *a0, s32 *a1, s32 a2, s32 a3, s32 *out) {
     return v0;
 }
 s32 func_8007E35C(u8 *a0, u8 *a1, s32 a2, s32 a3, u8 *out) {
-    register s32 v0 asm("v0");
+    s32 v0;
     __asm__ volatile (".word 0x90880000" :: "r"(a0));  /* lbu $t0, 0($a0) */
     __asm__ volatile (".word 0x90890001" :: "r"(a0));  /* lbu $t1, 1($a0) */
     __asm__ volatile (".word 0x48864000" :: "r"(a2));  /* mtc2 $a2, $8 */
@@ -1382,7 +1382,7 @@ s32 func_8007E35C(u8 *a0, u8 *a1, s32 a2, s32 a3, u8 *out) {
     return v0;
 }
 s32 func_8007E3BC(u8 *a0, u8 *a1, s32 a2, s32 a3, u8 *out) {
-    register s32 v0 asm("v0");
+    s32 v0;
     __asm__ volatile (".word 0x90880000" :: "r"(a0));  /* lbu $t0, 0($a0) */
     __asm__ volatile (".word 0x90890001" :: "r"(a0));  /* lbu $t1, 1($a0) */
     __asm__ volatile (".word 0x908A0002" :: "r"(a0));  /* lbu $t2, 2($a0) */
