@@ -363,7 +363,7 @@ Diagnose, then emit your decision (resume | revert-and-resume | clean-and-resume
             'rebuild-worktree' {
                 foreach ($wid in @($d.worktrees)) {
                     if ($wid) {
-                        $wt = Join-Path (Split-Path $main) "bb2-work-$wid"
+                        $wt = Get-WorktreeDir $wid
                         $safe = Join-Path $RepoRoot 'tools\safe_remove_worktree.ps1'
                         if (Test-Path $safe) { & $safe $wt -Force 2>&1 | Out-Null }
                         Ensure-Worktree $wid | Out-Null
@@ -422,7 +422,9 @@ function Run-SelfTest {
 
     Write-Host "=== SELF-TEST 1: merge gate rollback (a non-matching candidate must NOT survive; main stays green) ===" -ForegroundColor Cyan
     $pre = (git -C "$main" rev-parse HEAD | Out-String).Trim()
-    $bad = Join-Path (Split-Path $main) 'bb2-drill-bad'
+    $badContainer = Join-Path (Split-Path $main) 'bb2-worktrees'
+    if (-not (Test-Path $badContainer)) { New-Item -ItemType Directory -Path $badContainer -Force | Out-Null }
+    $bad = Join-Path $badContainer 'bb2-drill-bad'
     git -C "$main" worktree remove --force "$bad" 2>&1 | Out-Null
     git -C "$main" branch -D fleet-drill-bad 2>&1 | Out-Null
     git -C "$main" worktree add -b fleet-drill-bad "$bad" $pre 2>&1 | Out-Null

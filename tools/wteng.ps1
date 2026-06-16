@@ -80,7 +80,7 @@ if ($target -ieq 'main') {
         }
     }
     if (-not $root) {
-        $cand = Join-Path (Split-Path $mainPath) "bb2-work-$target"
+        $cand = Join-Path (Join-Path (Split-Path $mainPath) 'bb2-worktrees') "bb2-work-$target"
         if (Test-Path $cand) { $root = (Resolve-Path $cand).Path }
     }
     if (-not $root) {

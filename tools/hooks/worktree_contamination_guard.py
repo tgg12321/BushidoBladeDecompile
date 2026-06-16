@@ -196,7 +196,7 @@ def reasons_for_edit(file_path: str) -> list[str]:
         return [
             f"Editing a MAIN-repo build input ({os.path.basename(fp)}) while worker "
             f"worktrees are live. If you are a worker, you almost certainly meant your "
-            f"OWN worktree — edit  ..\\bb2-work-<id>\\... , not the main repo. (If you "
+            f"OWN worktree — edit  ..\\bb2-worktrees\\bb2-work-<id>\\... , not the main repo. (If you "
             f"are the orchestrator and this is intentional, edit via git or remove the "
             f"worktrees first.)"]
     return []
@@ -206,7 +206,7 @@ SAFE = (
     "\nPin the target so it can't hit the wrong repo regardless of shell cwd:\n"
     "  - worker worktree:  & tools/wteng.ps1 <your-id> <subcmd>   (e.g. sandbox <func> --disable all ; make)\n"
     "  - main repo:        & tools/wteng.ps1 main <subcmd>\n"
-    "  - edits: use your worktree's ABSOLUTE path  ..\\bb2-work-<id>\\src\\... — never the main repo path.\n"
+    "  - edits: use your worktree's ABSOLUTE path  ..\\bb2-worktrees\\bb2-work-<id>\\src\\... — never the main repo path.\n"
     "Why: a subagent's cwd is ALWAYS main; a relative engine/make/edit hits MAIN, "
     "not your worktree (the 2026-06-14 contamination incident). See tools/wteng.ps1.")
 

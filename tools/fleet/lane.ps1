@@ -35,7 +35,7 @@ function Build-WorkerTask($pkt, $wtId) {
     if ($pkt.last_feedback) { $fbHint = "Most recent reviewer feedback (address it directly): $($pkt.last_feedback)" }
 @"
 You are fleet lane '$Lane' (role: $Role) in the autonomous decomp fleet.
-Worktree id: '$wtId'  (its directory is ..\bb2-work-$wtId ; the lane runner has
+Worktree id: '$wtId'  (its directory is ..\bb2-worktrees\bb2-work-$wtId ; the lane runner has
 already created + HEAD-synced it to current main for you).
 
 ASSIGNED FUNCTION (work ONLY this one): $($pkt.func)
@@ -46,7 +46,7 @@ $fbHint
 $rule
 
 Follow your role definition exactly. Use & tools/wteng.ps1 $wtId <cmd> for every
-engine/build command. Edit only ..\bb2-work-$wtId\src and the worktree's build
+engine/build command. Edit only ..\bb2-worktrees\bb2-work-$wtId\src and the worktree's build
 inputs. Do NOT touch main, do NOT run 'queue done', do NOT merge, do NOT push.
 "@
 }

@@ -17,6 +17,17 @@ function Get-MainRoot {
     return $script:RepoRoot
 }
 
+function Get-WorktreeDir([string]$Id) {
+    # All fleet worktrees live in a single container dir beside main
+    # (`..\bb2-worktrees\bb2-work-<id>`) so the desktop stays uncluttered
+    # (2026-06-15 — previously every worktree was a bare desktop sibling).
+    # Ensures the container exists. Resolution by `wteng`/guards is by the
+    # `bb2-work-<id>` LEAF, so the deeper nesting is transparent to them.
+    $container = Join-Path (Split-Path (Get-MainRoot)) 'bb2-worktrees'
+    if (-not (Test-Path $container)) { New-Item -ItemType Directory -Path $container -Force | Out-Null }
+    return (Join-Path $container "bb2-work-$Id")
+}
+
 function Coord {
     # paramless: $args captures every token verbatim (incl. -Set/-Reason/...) so they
     # pass through to coord.ps1's own parameters instead of binding to this wrapper.
@@ -123,7 +134,7 @@ function Invoke-RoleAgent {
       Spawn one role agent (claude -p) with the role's system prompt appended,
       wait for it, and return its parsed outcome hashtable (or $null if it wrote
       no/invalid outcome file). cwd is the MAIN repo (matches the decomp-work
-      contract: agents edit ..\bb2-work-<id> via explicit paths + wteng <id>).
+      contract: agents edit ..\bb2-worktrees\bb2-work-<id> via explicit paths + wteng <id>).
     #>
     param(
         [string]$Role,
@@ -163,8 +174,7 @@ function Ensure-Worktree([string]$Id) {
     # Create the worktree if absent and bootstrap it (private build/, junctioned
     # deps, HEAD-sync to main). Idempotent. Returns the worktree path.
     $main = Get-MainRoot
-    $parent = Split-Path $main
-    $wt = Join-Path $parent "bb2-work-$Id"
+    $wt = Get-WorktreeDir $Id
     if (-not (Test-Path $wt)) {
         $branch = "work/$Id"
         $head = Get-MainHead

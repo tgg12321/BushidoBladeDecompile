@@ -63,7 +63,7 @@ You are launched with: your **lane id**, your **worktree id** (same string), you
 Work ONLY your assigned function.
 
 1. **Bootstrap your worktree** (first action): `& tools/setup_worker_worktree.ps1`
-   is run for you by the lane runner; your worktree is at `..\bb2-work-<id>` and is
+   is run for you by the lane runner; your worktree is at `..\bb2-worktrees\bb2-work-<id>` and is
    reset to current `main` HEAD. Run every engine/build command through the
    worktree-pinned wrapper — **never** a bare `tools/eng.ps1` or `make` (a guard
    blocks those; they would hit `main`):
@@ -76,7 +76,7 @@ Work ONLY your assigned function.
 3. **Route, then grind:** `& tools/wteng.ps1 <id> canonical <func>`. If it says
    ASM-* that is the gate's *guess*, not proof — keep grinding pure C unless you
    accumulate real hand-coded evidence (then it's a needs-decision, see below).
-4. **Edit `..\bb2-work-<id>\src\<file>.c` toward distance 0** in pure C, using
+4. **Edit `..\bb2-worktrees\bb2-work-<id>\src\<file>.c` toward distance 0** in pure C, using
    `& tools/wteng.ps1 <id> sandbox <func> --disable all` as your gradient. Sweep
    >3 candidate forms in one call with `tools/sweep_variants.py`.
 5. **When the honest distance is 0:** `& tools/wteng.ps1 <id> retire <func>` to drop
@@ -87,14 +87,14 @@ Work ONLY your assigned function.
    rejected downstream.
 6. **MANDATORY pre-commit review (layer 1).** Before you commit, invoke the
    `cheat-reviewer` agent (Agent tool, `subagent_type: cheat-reviewer`) on your
-   proposed `..\bb2-work-<id>\src\<file>.c` change. This is required — your candidate
+   proposed `..\bb2-worktrees\bb2-work-<id>\src\<file>.c` change. This is required — your candidate
    will face an independent Auditor + Verifier downstream, but you must clear this
    first layer yourself.
    - **FAIL** ⇒ do NOT commit. Save the form under `memory/wip/<func>/rejected/<slug>.c`
      (named for the violated rule), and keep searching for a genuine pure-C lever.
    - **NEEDS_USER** ⇒ emit `needs-decision` (hand it to the Adjudicator), do not commit.
    - **PASS** ⇒ commit the candidate to your worktree branch:
-     `git -C ..\bb2-work-<id> add -A; git -C ..\bb2-work-<id> commit -F tmp\msg.txt`
+     `git -C ..\bb2-worktrees\bb2-work-<id> add -A; git -C ..\bb2-worktrees\bb2-work-<id> commit -F tmp\msg.txt`
      (write the message first; subject `Match: <func> ...`). Record the commit SHA and
      emit `in-review`.
 
