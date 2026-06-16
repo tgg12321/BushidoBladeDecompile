@@ -1209,3 +1209,17 @@
 {"ts":"2026-06-16T22:55:47.1542991Z","kind":"reaudit-clean","func":"game_Cleanup"}
 {"ts":"2026-06-16T23:00:46.2875353Z","kind":"reaudit-clean","func":"game_DisablePause"}
 {"ts":"2026-06-16T23:02:37.5581365Z","kind":"reaudit-clean","func":"game_EffCleanup"}
+{"ts":"2026-06-16T23:05:02.1000915Z","kind":"reaudit-clean","func":"game_EffCleanup2"}
+{"ts":"2026-06-16T23:07:16.2456451Z","kind":"reaudit-clean","func":"game_EffInit"}
+{"ts":"2026-06-16T23:09:06.4590064Z","kind":"reaudit-clean","func":"game_EffInit2"}
+{"ts":"2026-06-16T23:10:47.1076556Z","kind":"reaudit-clean","func":"game_EffStart"}
+{"ts":"2026-06-16T23:13:48.1157327Z","kind":"reaudit-clean","func":"game_EffStop"}
+{"ts":"2026-06-16T23:16:28.0316528Z","kind":"lane-cycle","role":"blocked-worker","outcome":"blocked","lane":"fleet-blk","func":"file_LoadSectors"}
+{"ts":"2026-06-16T23:16:58.1179771Z","kind":"reaudit-clean","func":"game_FrameInit"}
+{"ts":"2026-06-16T23:22:19.5902874Z","kind":"reaudit-clean","func":"game_FrameLoop"}
+{"ts":"2026-06-16T23:24:55.7947419Z","kind":"reaudit-clean","func":"game_GetCharData"}
+{"ts":"2026-06-16T23:26:08.2093473Z","kind":"reaudit-clean","func":"game_GetDummyFlag"}
+{"ts":"2026-06-16T23:27:58.4035243Z","kind":"reaudit-clean","func":"game_GetMode"}
+{"ts":"2026-06-16T23:30:56.8950709Z","kind":"lane-cycle","role":"blocked-worker","outcome":"blocked","lane":"fleet-blk","func":"file_LoadSectors"}
+{"ts":"2026-06-16T23:31:12.6075515Z","kind":"reaudit-clean","func":"game_GetPause"}
+{"ts":"2026-06-16T23:35:16.8750110Z","kind":"reaudit-clean","func":"game_GetPlayerBase"}
