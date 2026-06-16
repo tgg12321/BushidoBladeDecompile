@@ -204,3 +204,13 @@
 {"ts":"2026-06-16T15:36:04.3521208Z","kind":"reaudit-clean","func":"func_800788B0"}
 {"ts":"2026-06-16T15:41:07.3518692Z","kind":"reaudit-clean","func":"func_80078B04"}
 {"ts":"2026-06-16T15:46:27.8441537Z","kind":"reaudit-clean","func":"func_80078B3C"}
+{"ts":"2026-06-16T15:53:22.1988606Z","kind":"reaudit-clean","func":"func_80078B70"}
+{"ts":"2026-06-16T15:58:05.4014865Z","kind":"reaudit-clean","func":"func_80078BA8"}
+{"ts":"2026-06-16T15:59:48.3227558Z","kind":"reaudit-clean","func":"func_80078BE0"}
+{"ts":"2026-06-16T16:01:29.9157592Z","kind":"reaudit-clean","func":"func_80078BF0"}
+{"ts":"2026-06-16T16:02:58.4519561Z","kind":"reaudit-clean","func":"func_80078C00"}
+{"ts":"2026-06-16T16:03:56.3962165Z","kind":"lane-cycle","role":"backlog-worker","outcome":"needs-decision","lane":"fleet-bw2","func":"file_LoadSectors"}
+{"ts":"2026-06-16T16:04:37.3737570Z","kind":"reaudit-clean","func":"func_80078C9C"}
+{"ts":"2026-06-16T16:05:50.0770703Z","kind":"reaudit-clean","func":"func_80078D38"}
+{"ts":"2026-06-16T16:12:23.7637780Z","kind":"reaudit-clean","func":"func_80078DA0"}
+{"ts":"2026-06-16T16:16:58.8930603Z","kind":"reaudit-clean","func":"func_80078E20"}
