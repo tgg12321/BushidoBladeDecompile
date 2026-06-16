@@ -120,3 +120,14 @@
 {"ts":"2026-06-16T08:30:15.9959449Z","kind":"reaudit-clean","func":"func_800194F4"}
 {"ts":"2026-06-16T08:31:26.4518316Z","kind":"reaudit-clean","func":"func_80019534"}
 {"ts":"2026-06-16T08:35:35.8178774Z","kind":"reaudit-clean","func":"func_8001A484"}
+{"ts":"2026-06-16T08:37:07.7966717Z","kind":"reaudit-clean","func":"func_8001A4F0"}
+{"ts":"2026-06-16T08:38:44.5389203Z","kind":"reaudit-clean","func":"func_8001A538"}
+{"ts":"2026-06-16T08:43:36.3013003Z","kind":"reaudit-clean","func":"func_8001A62C"}
+{"ts":"2026-06-16T08:54:52.6072585Z","kind":"reaudit-clean","func":"func_8001B138"}
+{"ts":"2026-06-16T08:56:34.4581074Z","kind":"lane-cycle","outcome":"needs-decision","func":"func_80057CC8","role":"backlog-worker","lane":"fleet-bw1"}
+{"ts":"2026-06-16T08:57:14.5099084Z","kind":"reaudit-clean","func":"func_8001B690"}
+{"ts":"2026-06-16T08:58:31.7375872Z","kind":"reaudit-clean","func":"func_8001B6F4"}
+{"ts":"2026-06-16T09:02:12.7972318Z","kind":"reaudit-clean","func":"func_8001BAE4"}
+{"ts":"2026-06-16T09:04:09.4836444Z","kind":"lane-cycle","lane":"fleet-adj","outcome":"needs-owner","func":"func_80057CC8","role":"adjudicator"}
+{"ts":"2026-06-16T09:05:28.9516869Z","kind":"reaudit-clean","func":"func_8001BBD8"}
+{"ts":"2026-06-16T09:12:13.7724970Z","kind":"reaudit-clean","func":"func_8001BCF0"}
