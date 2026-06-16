@@ -242,3 +242,9 @@
 {"ts":"2026-06-16T18:12:29.7413595Z","kind":"reaudit-clean","func":"func_8007DB20"}
 {"ts":"2026-06-16T18:24:48.8901795Z","kind":"reaudit-clean","func":"func_8007DE08"}
 {"ts":"2026-06-16T18:29:26.3363435Z","kind":"reaudit-clean","func":"func_8007FF7C"}
+{"ts":"2026-06-16T18:42:00.9623619Z","kind":"merge-gate-failed","func":"func_800611A4","reason":"oracle-gate-failed"}
+{"ts":"2026-06-16T18:43:21.3642715Z","kind":"reaudit-clean","func":"func_80080600"}
+{"ts":"2026-06-16T18:46:20.0150551Z","kind":"reaudit-clean","func":"func_80080620"}
+{"ts":"2026-06-16T18:53:10.0970448Z","kind":"reaudit-regressed","func":"func_800827D0","reason":"Function-pointer-cast to void(*)(s32,s32) used to call a void(void) function with fake args — the callee Vu0SetLightColMatrix_80080208 ignores both arguments, so the cast's only effect is forcing GCC to emit '$a0=1' in the bnez delay slot and '$a1=$s3' in the jal delay slot to match target bytes. This is delay-slot coercion by type-system hack, not sanctioned by the SOTN standard. Clean fix: redeclare Vu0SetLightColMatrix_80080208 as void(s32, s32) (matching the original signature implied by the call site) and call it as Vu0SetLightColMatrix_80080208(1, a1) without the cast; the wrapper's own generated code is unaffected by the parameter change since the args are unused inside it."}
+{"ts":"2026-06-16T18:58:25.3456289Z","kind":"reaudit-clean","func":"func_800832A0"}
+{"ts":"2026-06-16T19:06:27.7476169Z","kind":"reaudit-clean","func":"func_80083BE4"}
