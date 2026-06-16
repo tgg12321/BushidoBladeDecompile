@@ -86,7 +86,26 @@ The supervisor refuses to start unless `main` builds byte-identical to the oracl
 | `list_completed.py` / `seed_reaudit.ps1` | seed the re-audit patrol with the committed functions |
 | `board_audit.py` | board cheat-audit tracker (Done-populate / clean+archive / flag) |
 | `reshuffle.ps1` | re-tier the active backlog toward the most-tractable items first |
+| `_jobobject.ps1` | Win32 kill-on-close Job Object — fleet descendants die with the supervisor even on crash (`-SelfTest` to verify) |
 | `drill.ps1` / `launch.ps1` / `stop.ps1` / `status.ps1` | operate the fleet |
+
+## Orphan cleanup (Claude / Codex / Omnara / fleet leaks)
+
+Agent harnesses sometimes leak detached child processes that outlive their run and eat
+RAM. Three layers guard against this:
+
+1. **Source fix (fleet):** the supervisor enters a kill-on-close Job Object at startup
+   (`_jobobject.ps1`), so lanes / `claude -p` agents / `wsl` relays die automatically if
+   the supervisor exits **or crashes** — the fleet cannot leave orphans.
+2. **Graceful:** `stop.ps1` tears the running fleet down explicitly.
+3. **Catch-all (any harness, incl. third-party Codex/Omnara we can't fix at source):**
+   **`pwsh tools/reap_orphans.ps1`** (repo `tools/`). Dry-run by default; add `-Execute`
+   to reap. It is default-deny, classifies orphans by cmdline+ancestry (never image name),
+   dynamically protects the live session + interactive sessions + harness launchers, and
+   needs `-KillInteractivePids <pid>` to ever touch an interactive session. **If the host
+   looks RAM-bloated by old agent runs, run the dry-run first, then `-Execute`.** It does
+   NOT shut down the Codex/Omnara *apps* themselves (those launchers are protected) — that
+   is a deliberate, separate user decision.
 
 ## Tuning
 

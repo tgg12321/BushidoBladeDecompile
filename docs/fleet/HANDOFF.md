@@ -100,6 +100,11 @@ vindicated; if it's a cheat (caught), and a pattern forms, revert active to opus
   `tools/safe_remove_worktree.ps1` (junction-follow hazard — never `git worktree remove --force`).
 - **gh token** had a transient 401 mid-campaign (board updates retry it now); if it
   fully lapses, `gh auth refresh` — the audit + `regressions.md` keep working without it.
+- **Orphaned agent processes / RAM bloat:** harness leaks (Claude/Codex/Omnara) are
+  cleaned by `pwsh tools/reap_orphans.ps1` (dry-run default; `-Execute` to reap). The
+  fleet itself is crash-safe via a kill-on-close Job Object (`tools/fleet/_jobobject.ps1`,
+  armed in `fleet.ps1` startup). No scheduled auto-reaper (user's choice 2026-06-15) — run
+  it on demand when the host looks RAM-bloated. See [[orphan-process-reaper]].
 
 ## Build history (this session)
 

@@ -492,6 +492,15 @@ if ($DryRun) {
     exit 0
 }
 
+# Crash-resilient orphan prevention: put the supervisor (and therefore every lane,
+# `claude -p` agent, and `wsl.exe` relay it spawns — children inherit job membership)
+# into a Win32 kill-on-close Job Object. If the supervisor exits OR crashes, the kernel
+# terminates the whole tree, so a dead fleet can never leave orphaned harnesses behind.
+# Fail-open: if unavailable we rely on stop.ps1 + tools/reap_orphans.ps1. (See _jobobject.ps1.)
+. (Join-Path $PSScriptRoot '_jobobject.ps1')
+if (Enter-KillOnCloseJob) { Write-Host "[supervisor] kill-on-close job armed; descendants cannot orphan." -ForegroundColor Green }
+else { Write-Host "[supervisor] kill-on-close job unavailable; relying on stop.ps1 + reap_orphans.ps1." -ForegroundColor Yellow }
+
 # provision + launch producer lanes
 if (-not $NoLanes) {
     foreach ($lane in $ProducerLanes) {
