@@ -1196,3 +1196,16 @@
 {"ts":"2026-06-16T22:26:09.2036825Z","kind":"reaudit-clean","func":"func_8008BE04"}
 {"ts":"2026-06-16T22:28:37.2311306Z","kind":"reaudit-clean","func":"func_8008BE4C"}
 {"ts":"2026-06-16T22:31:13.0587282Z","kind":"reaudit-clean","func":"func_8008BE9C"}
+{"ts":"2026-06-16T22:34:21.8482516Z","kind":"reaudit-regressed","reason":"Dead-code coercion block `if ((flag && flag) && flag) { do { } while (0); }` fails tests 1, 2, and 5. `flag = &D_800F1AFC` is a non-null pointer (address of a global), so the condition is always-true — semantically identical to `if (1)`. The body is an empty do-while loop with zero observable effect. The do-while-zero exception does NOT apply: (a) no `/* FAKE */` annotation is present (mandatory per policy), (b) no lever-exhaustion ledger exists (batch commit of 5 functions, no WIP), (c) wrapping `do{}while(0)` inside `if (always-true)` is the explicitly-forbidden `if (1) { }` form, not the sanctioned bare construct. Next action: a worker must find a pure-C structural form that matches target bytes without this dead block, then re-commit as a clean replacement (the current bytes must stay in main until a clean replacement passes review).","func":"func_8008BEA4"}
+{"ts":"2026-06-16T22:38:33.5307511Z","kind":"reaudit-clean","func":"g_data_start"}
+{"ts":"2026-06-16T22:39:49.5055438Z","kind":"lane-cycle","role":"blocked-worker","outcome":"blocked","lane":"fleet-blk","func":"file_LoadSectors"}
+{"ts":"2026-06-16T22:42:17.4936293Z","kind":"reaudit-clean","func":"g_module_func_tbl"}
+{"ts":"2026-06-16T22:45:55.4847251Z","kind":"reaudit-clean","func":"g_module_type_tbl"}
+{"ts":"2026-06-16T22:48:48.4754264Z","kind":"reaudit-clean","func":"game_AnimCleanup"}
+{"ts":"2026-06-16T22:51:04.4224754Z","kind":"reaudit-clean","func":"game_AnimInit"}
+{"ts":"2026-06-16T22:52:46.8810146Z","kind":"reaudit-clean","func":"game_AnimStart"}
+{"ts":"2026-06-16T22:54:03.9790704Z","kind":"reaudit-clean","func":"game_AnimStop"}
+{"ts":"2026-06-16T22:55:18.0371188Z","kind":"lane-cycle","role":"blocked-worker","outcome":"blocked","lane":"fleet-blk","func":"file_LoadSectors"}
+{"ts":"2026-06-16T22:55:47.1542991Z","kind":"reaudit-clean","func":"game_Cleanup"}
+{"ts":"2026-06-16T23:00:46.2875353Z","kind":"reaudit-clean","func":"game_DisablePause"}
+{"ts":"2026-06-16T23:02:37.5581365Z","kind":"reaudit-clean","func":"game_EffCleanup"}
