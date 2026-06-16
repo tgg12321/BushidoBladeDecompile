@@ -195,3 +195,5 @@
 {"ts":"2026-06-16T13:55:33.8384808Z","kind":"reaudit-clean","func":"func_80033898"}
 {"ts":"2026-06-16T14:01:55.3776351Z","kind":"reaudit-clean","func":"func_80033FE4"}
 {"ts":"2026-06-16T14:12:01.6008425Z","kind":"reaudit-clean","func":"func_800340A0"}
+{"ts":"2026-06-16T14:23:02.8411324Z","kind":"reaudit-regressed","func":"func_800342A0","reason":"Duplicate file-scope extern declarations immediately before the function (src/code6cac_b.c:3910-3917) are a DECL_UID/LUID codegen coercion cheat. The same four symbols (func_80034200, func_800372C0, D_801027A0, D_801027D8) are declared twice in identical sequence; a refactor commit (f75aea09) removed some duplicates from the larger set but intentionally preserved this core duplicate pair, confirming they are load-bearing. A worker should attempt to remove them and verify the oracle still holds; if removal breaks the match, the function needs a clean pure-C redo that matches without the duplicate-declaration lever."}
+{"ts":"2026-06-16T14:24:37.8365111Z","kind":"reaudit-clean","func":"func_80035430"}
