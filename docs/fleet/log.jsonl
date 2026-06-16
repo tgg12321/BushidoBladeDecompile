@@ -83,3 +83,9 @@
 {"ts":"2026-06-15T23:59:59.9536681Z","kind":"reaudit-regressed","func":"cdrom_GetCmdName","reason":"goto-end-with-ret-val accumulator pattern (void *ret; ... goto done; ... done: return ret;) is explicitly listed as a FORBIDDEN FAMILY in the cheat catalog — slipped through the mechanical gates because it uses entirely normal C syntax. Worker must redo with two direct return statements (if/return/return) or an equivalent pure-C form that has no goto+accumulator; the simpler form is the natural target."}
 {"ts":"2026-06-16T00:03:05.6219535Z","kind":"reaudit-clean","func":"cdrom_GetReadyFlag"}
 {"ts":"2026-06-16T00:06:17.9035638Z","kind":"reaudit-clean","func":"cdrom_GetReadyFlag2"}
+{"ts":"2026-06-16T00:16:05.9571950Z","kind":"reaudit-regressed","func":"cdrom_GetResultName","reason":"goto-done + void*ret accumulator (src/system.c:103-113) matches forbidden family 'goto-end-with-ret-val accumulator + shared label'; fails tests #1 and #5. Worker should attempt the two-direct-return form: if (idx < 0x7) { return (void *)g_cd_result_table[idx]; } return &g_str_none; — for this simple no-saved-register leaf, GCC 2.7.2 + find_cross_jump produces a single shared jr-ra epilogue naturally, so the simple form is highly likely byte-identical. If sandbox shows it isn't, record the specific diff and seek a clean structural lever (not goto-done)."}
+{"ts":"2026-06-16T00:25:32.4810460Z","kind":"reaudit-clean","func":"cdrom_IrqHandler"}
+{"ts":"2026-06-16T00:28:54.7124943Z","kind":"main-contamination-cleaned","detail":" M docs/tooling_incidents.md"}
+{"ts":"2026-06-16T00:28:54.7168858Z","kind":"reaudit-clean","func":"cdrom_SendCmd"}
+{"ts":"2026-06-16T00:32:17.7375557Z","kind":"reaudit-clean","func":"cdrom_SetCallbackA"}
+{"ts":"2026-06-16T00:37:38.4111603Z","kind":"reaudit-clean","func":"cdrom_SetCallbackB"}
