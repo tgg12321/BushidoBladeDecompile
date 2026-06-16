@@ -176,3 +176,10 @@
 {"ts":"2026-06-16T12:19:48.3507384Z","kind":"reaudit-clean","func":"func_8002738C"}
 {"ts":"2026-06-16T12:24:30.6865801Z","kind":"reaudit-clean","func":"func_80027438"}
 {"ts":"2026-06-16T12:32:09.0262031Z","kind":"reaudit-clean","func":"func_8002798C"}
+{"ts":"2026-06-16T12:36:30.3599715Z","kind":"main-contamination-cleaned","detail":" M src/main.c"}
+{"ts":"2026-06-16T12:36:30.3620974Z","kind":"reaudit-clean","func":"func_80027A58"}
+{"ts":"2026-06-16T12:44:53.9479775Z","kind":"reaudit-clean","func":"func_8002872C"}
+{"ts":"2026-06-16T12:47:39.5972457Z","kind":"reaudit-clean","func":"func_8002906C"}
+{"ts":"2026-06-16T12:51:30.2509995Z","kind":"reaudit-clean","func":"func_8002EECC"}
+{"ts":"2026-06-16T12:59:37.7306288Z","kind":"reaudit-clean","func":"func_80030208"}
+{"ts":"2026-06-16T13:03:29.5573612Z","kind":"reaudit-clean","func":"func_8003043C"}
