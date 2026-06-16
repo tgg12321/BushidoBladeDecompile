@@ -1,22 +1,38 @@
 {
-  "func": "func_800871D4",
-  "file": "src/main.c",
-  "status": "BLOCKED",
-  "verdict": "C",
-  "scores": {
-    "head_honest_distance": 15,
-    "candidate_floor": 18,
-    "target_insns": 52
-  },
-  "head_carries": ["2x __asm__(\"andi %0,%1,0xffff\") general-purpose-opcode cheat-asm", "__asm__(\"\" : : \"r\"(var_a1)) empty scheduling barrier"],
-  "rejected_forms": [
-    "one-expr var_v1 = temp_a0 & 0xFFFF (v1): GCC FOLDS the redundant andi away (19 diffs)",
-    "two-stmt var_v1 = temp_a0; var_v1 &= 0xFFFF (v2): andi appears but as move+andi, not single andi v1,a0 (18 diffs)"
-  ],
-  "blocker": "redundant andi-after-u16-lhu fold: no pure-C form yields the target's single `andi v1,a0` from a u16-bounded source (one-expr folds, two-stmt adds a move). Likely cc1-vs-cc1psx fold divergence. Plus coupled load-register, if/else branch scheduling, and a1<->a2 swap (the empty-asm barrier was defeating that).",
-  "next_modality": ["cc1psx calibration on candidate.c (confirm/deny the andi-fold divergence -> escalate)", "pure-C hunt for the andi + a1/a2 ordering if cc1psx also folds"],
-  "reviewer": "n/a (no commit; blocked)",
-  "sessions": [
-    {"date": "2026-06-14", "agent": "worker orch3a", "result": "analysed; 2 andi cheat-asm + empty barrier; redundant-andi fold is the core blocker (likely compiler divergence); candidate floor 18>15; blocked for cc1psx calibration"}
-  ]
+    "func": "func_800871D4",
+    "file": "src/main.c",
+    "status": "BLOCKED",
+    "verdict": "C",
+    "scores": {
+        "head_honest_distance": 15,
+        "candidate_floor": 10,
+        "target_insns": 52
+    },
+    "head_carries": [
+        "2x __asm__(\"andi %0,%1,0xffff\") general-purpose-opcode cheat-asm",
+        "__asm__(\"\" : : \"r\"(var_a1)) empty scheduling barrier"
+    ],
+    "rejected_forms": [
+        "one-expr var_v1 = temp_a0 & 0xFFFF: GCC FOLDS the redundant andi (higher score)",
+        "two-stmt var_v1 = temp_a0; var_v1 &= 0xFFFF: andi appears but with extra move",
+        "declaration-order swap (var_a1 before var_a2): no effect on register assignment (score stays 10)"
+    ],
+    "blocker": "CONFIRMED cc1-vs-cc1psx andi-fold divergence: cc1psx generates andi ,,0xffff from (temp_a0 & 0xFFFF) without folding; our cc1 folds it. Direct form (var_v1 = D_8010280A) gives score=10 \u2014 2 missing andi instructions (1 delete each from oracle) + 2 load-register diffs (lui/lhu a0 vs v1) + 6 a1/a2 register swap diffs = 10. No pure-C form can reproduce the oracle without the cc1psx-specific andi behavior.",
+    "next_modality": [
+        "Park with confirmed cc1psx divergence (Adjudicator decision)",
+        "If Adjudicator finds another avenue, try: cc1psx full context diff to see if any pure-C form closes the gap"
+    ],
+    "reviewer": "PASS (cheat-reviewer 2026-06-16; direct form is cheat-free; score-10 is honest)",
+    "sessions": [
+        {
+            "date": "2026-06-14",
+            "agent": "worker orch3a",
+            "result": "analysed; 2 andi cheat-asm + empty barrier; redundant-andi fold is the core blocker; candidate floor 18; blocked for cc1psx calibration"
+        },
+        {
+            "date": "2026-06-16",
+            "agent": "worker fleet-bw1",
+            "result": "CONFIRMED cc1psx divergence via calibration; direct form (var_v1=D_8010280A, no mask) gives score=10 (new floor); cc1psx does NOT fold andi from u16-bounded source; our cc1 does; 10-diff gap = 2 andi + 2 load-reg + 6 a1/a2 swap; emitting needs-decision"
+        }
+    ]
 }

@@ -1,35 +1,32 @@
-# func_800871D4 — BLOCKED (likely cc1-vs-cc1psx andi-fold divergence + coupled RA/sched)
+# func_800871D4 — BLOCKED (cc1-vs-cc1psx andi-fold divergence CONFIRMED)
 
 ## TL;DR
-main.c bit-flag setter (reads D_8010280A=u16, builds two shift masks, clears a
-table slot, RMWs four flag globals). HEAD "matches" via cheat-asm: two
-`__asm__("andi %0,%1,0xffff" ...)` blocks (general-purpose `andi` opcode =
-forbidden inline-asm cheat, [[inline-asm-policy]]) + an empty
-`__asm__("" : : "r"(var_a1))` scheduling barrier. INCOMPLETE.
+Bit-flag setter in main.c: reads D_8010280A (u16), builds two shift masks, clears a
+table slot, RMWs four flag globals. HEAD has 2 cheat-asm andi blocks + empty scheduling
+barrier. cc1psx calibration (2026-06-16) CONFIRMS: cc1psx generates `andi $v1,$a0,0xffff`
+from `var_v1 = temp_a0 & 0xFFFF` (no fold); our cc1 folds it. Best honest floor: score=10.
 
-## The core blocker: a redundant-andi fold our cc1 does and the target didn't
-`temp_a0 = D_8010280A` (u16) makes GCC PROVE temp_a0 <= 0xFFFF, so
-`var_v1 = temp_a0 & 0xFFFF` is folded away (candidate.c v1: the andi vanishes,
-19 diffs). Writing it as two stmts (`var_v1 = temp_a0; var_v1 &= 0xFFFF`)
-preserves the andi but emits an EXTRA `move` (v2: `move a0,v1; andi v1,v1` vs
-target's single `andi v1,a0`). There is NO pure-C form that yields a single
-`andi v1,a0` from a u16-bounded source: one-expr folds it, two-stmt adds a move.
-The target's standalone `andi v1,a0` (from a u16 lhu) is the signature of a
-**cc1-vs-cc1psx fold divergence** -- the `__asm__ andi` cheat papers over it.
+## Confirmed gap (10 Levenshtein diffs, oracle=52 insns, candidate=50 insns)
+1. Oracle: `lui a0; lhu a0` — candidate: `lui v1; lhu v1` (2 load-register diffs)
+2. Oracle has `andi v1,a0,0xffff` at pos 3 (missing from candidate, 1 delete)
+3. Oracle has `andi v1,a0,0xffff` at pos 13 (restore after else, missing, 1 delete)
+4. a1/a2 register swap throughout (6 diffs: var_a2 in a1, var_a1 in a2 in candidate vs oracle)
 
-## Other coupled diffs (v2, 18)
-- load register: ours v1, target a0.
-- if/else branch scheduling differs (sllv/j placement, branch sense).
-- var_a1<->var_a2 swap on the final OR-RMW pair.
-The empty `__asm__("" :: "r"(var_a1))` barrier was holding var_a1 live to fix
-the a1/a2 ordering -- another over-optimization defeat.
+## cc1psx calibration results (2026-06-16)
+- func_testA (temp_a0 + `& 0xFFFF`): cc1psx generates `andi $3,$4,0xffff` (NOT folded)
+- func_testB (direct `var_v1 = D_8010280A`): cc1psx generates `lhu $3` (no andi, same as cc1)
+- Divergence CONFIRMED: cc1psx does not fold andi from u16-bounded source; our cc1 does.
 
-## Avenues for next session
-- **cc1psx calibration** on candidate.c: if PsyQ cc1psx emits the standalone
-  `andi v1,a0` (no move, no fold) from the same u16 read, this is a confirmed
-  compiler divergence -> escalate (not pure-C-closable without the cheat).
-- if cc1psx ALSO folds, hunt a pure-C form for the andi + the a1/a2 ordering.
+## Rejected forms
+- `var_v1 = temp_a0 & 0xFFFF` (one-expr): our cc1 folds the andi completely
+- `var_v1 = temp_a0; var_v1 &= 0xFFFF` (two-stmt): generates move+andi, not single andi
+- declaration-order swap (var_a1 before var_a2): no effect on register assignment, score=10
 
-## Floor
-- HEAD distance 15 (2 andi cheat-asm + 1 empty-asm barrier).
-- candidate.c (v1, no cheats): 19. v2 (split mask): 18. Floor NOT lowered.
+## Best candidate (candidate.c, score=10, cheat-reviewer PASS)
+Direct form: `var_v1 = D_8010280A` (no temp_a0, no mask). Semantics differ from oracle
+in else-path (oracle restores var_v1 to original D_8010280A via second andi; direct form
+leaves var_v1 = D_8010280A-16 for the post-if computation). Score is 10 (honest floor).
+
+## Next step (Adjudicator)
+Park with confirmed cc1psx divergence. The oracle requires cc1psx-specific behavior
+(no andi fold from u16-bounded lhu) that our cc1 cannot reproduce in pure C.

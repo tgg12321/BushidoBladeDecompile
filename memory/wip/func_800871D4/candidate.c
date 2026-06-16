@@ -1,6 +1,5 @@
 void func_800871D4(s32 a0_arg)
 {
-  u32 temp_a0;
   u32 var_v1;
   s32 var_a2;
   s32 var_a1;
@@ -10,8 +9,7 @@ void func_800871D4(s32 a0_arg)
   u16 temp_v0_1b10;
   u16 temp_v0_1b12;
 
-  temp_a0 = D_8010280A;
-  var_v1 = temp_a0 & 0xFFFF;
+  var_v1 = D_8010280A;
   if (var_v1 < 0x10U)
   {
     var_a2 = 1 << var_v1;
@@ -20,8 +18,8 @@ void func_800871D4(s32 a0_arg)
   else
   {
     var_a2 = 0;
-    var_a1 = 1 << (var_v1 - 0x10);
-    var_v1 = temp_a0 & 0xFFFF;
+    var_v1 -= 0x10;
+    var_a1 = 1 << var_v1;
   }
   temp_v0 = ((((var_v1 * 8) - var_v1) * 4) - var_v1) * 2;
   *((s8 *)((u8 *)&D_800F4E35 + temp_v0)) = 0;
