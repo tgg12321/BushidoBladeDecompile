@@ -171,3 +171,8 @@
 {"ts":"2026-06-16T11:56:51.6332607Z","kind":"reaudit-clean","func":"func_80023D28"}
 {"ts":"2026-06-16T12:00:33.3381289Z","kind":"lane-cycle","lane":"fleet-adj","outcome":"needs-owner","func":"motion_SetMotion","role":"adjudicator"}
 {"ts":"2026-06-16T12:01:05.5753336Z","kind":"reaudit-clean","func":"func_80023DB8"}
+{"ts":"2026-06-16T12:15:09.7545071Z","kind":"merge-gate-failed","func":"func_800611A4","reason":"oracle-gate-failed"}
+{"ts":"2026-06-16T12:17:03.3447282Z","kind":"reaudit-clean","func":"func_800272FC"}
+{"ts":"2026-06-16T12:19:48.3507384Z","kind":"reaudit-clean","func":"func_8002738C"}
+{"ts":"2026-06-16T12:24:30.6865801Z","kind":"reaudit-clean","func":"func_80027438"}
+{"ts":"2026-06-16T12:32:09.0262031Z","kind":"reaudit-clean","func":"func_8002798C"}
