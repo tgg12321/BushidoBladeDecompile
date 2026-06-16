@@ -81,9 +81,22 @@ pins, cheat-asm `__asm__` blocks, scheduling barriers — are NEVER an end state
    grind it in pure C. Genuine no-C-form constructs get authorized inline asm; never recreate target
    bytes via hardcoded-`$N` `__asm__` injection.
 
-## Workflow: a single focused agent, on main
-Decomp work runs **directly on `main`** — one focused agent, end-to-end. No worktrees, no
-subagents, no orchestrator/worker split: the engine is a toolkit the agent drives itself.
+## Workflow: the Autonomous Decomp Fleet (default)
+The **default** way to work the backlog is the **Autonomous Decomp Fleet** (`tools/fleet/`) —
+a standing multi-agent system that works the card states continuously: backlog workers, a
+no-quit blocked worker, an Adjudicator, an Auditor+Verifier promotion gate (the ONLY path to
+COMPLETED on `main`), and an Overseer circuit-breaker. **Invoke the `decomp-fleet` skill** to
+operate it on demand (orient → status → drill → launch → report). Operator docs:
+[docs/fleet/RUNBOOK.md](docs/fleet/RUNBOOK.md) (quickstart/lifecycle), `tools/fleet/README.md`
+(reference), `docs/fleet/HANDOFF.md` (live campaign state), and [[autonomous-decomp-fleet]].
+Each fleet worker runs the per-function engine loop below in its own isolated worktree; only
+the supervisor mutates `main`, and every promotion is oracle-gated + triple-reviewed.
+
+### Fallback: a single focused agent, on main
+For driving ONE function by hand (or a headless single-agent loop), decomp work can still run
+**directly on `main`** — one focused agent, end-to-end, the engine as a toolkit it drives
+itself (the `decomp-orchestrate` skill). This is the per-function loop the fleet workers run;
+it's the fallback/manual path, no longer the primary orchestration.
 **Build files (`src/*.c`, `*.h`, `*.s`, `Makefile`, `*.ld`, pipeline `*.txt`) MUST use LF line
 endings** — edit via WSL or an LF-enforcing editor (the Write tool produces LF on this machine).
 
