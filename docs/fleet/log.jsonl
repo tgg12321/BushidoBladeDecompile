@@ -102,3 +102,9 @@
 {"ts":"2026-06-16T07:29:00.7394888Z","kind":"reaudit-clean","func":"disp_CalcFov"}
 {"ts":"2026-06-16T07:31:24.6195592Z","kind":"reaudit-clean","func":"disp_Init"}
 {"ts":"2026-06-16T07:31:46.4922732Z","kind":"lane-cycle","role":"backlog-worker","outcome":"blocked","lane":"fleet-bw2","func":"func_8001924C"}
+{"ts":"2026-06-16T07:43:43.2755695Z","kind":"reaudit-regressed","func":"disp_SetFramebufferMode","reason":"Four inline volatile casts '*(vu8 *)' (= '*(volatile u8 *)') on game RAM globals g_disp_fb_flag and g_disp_fb_base fall in the forbidden 'Inline volatile casts on game-state globals' family (inline-asm-policy expanded catalog, 2026-05-31). The volatile_cheats detector misses them because it looks for spelled-out '*(volatile T *)' and skips the vu8 typedef. Tests 1, 3, and 5 all FAIL. Next action: (1) Try removing the vu8 casts (plain u8 * stores) and run sandbox/verify-oracle — if match holds, clean removal finishes the job as still-COMPLETED-C. If match breaks: the volatile was coercing reorg.c's delay-slot scheduler (delay slot contains the offset increment; without volatile, the scheduler may hoist ptr+= or an sb into that slot) and the function needs a clean pure-C structural fix to achieve the correct delay-slot ordering without volatile coercion."}
+{"ts":"2026-06-16T07:50:58.8329051Z","kind":"reaudit-clean","func":"efc_buki_draw_zanzou"}
+{"ts":"2026-06-16T07:53:58.9279489Z","kind":"reaudit-clean","func":"efc_rob_Close"}
+{"ts":"2026-06-16T07:57:58.9055619Z","kind":"reaudit-clean","func":"efc_rob_Init"}
+{"ts":"2026-06-16T08:00:20.9905192Z","kind":"reaudit-clean","func":"file_GetFlag0"}
+{"ts":"2026-06-16T08:02:55.0704255Z","kind":"reaudit-clean","func":"file_GetFlag1"}
