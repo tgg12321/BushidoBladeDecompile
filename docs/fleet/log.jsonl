@@ -214,3 +214,14 @@
 {"ts":"2026-06-16T16:05:50.0770703Z","kind":"reaudit-clean","func":"func_80078D38"}
 {"ts":"2026-06-16T16:12:23.7637780Z","kind":"reaudit-clean","func":"func_80078DA0"}
 {"ts":"2026-06-16T16:16:58.8930603Z","kind":"reaudit-clean","func":"func_80078E20"}
+{"ts":"2026-06-16T16:20:07.0180435Z","kind":"lane-cycle","lane":"fleet-adj","outcome":"go-back","func":"file_LoadSectors","role":"adjudicator"}
+{"ts":"2026-06-16T16:21:20.9349861Z","kind":"reaudit-clean","func":"func_80079154"}
+{"ts":"2026-06-16T16:23:43.1109430Z","kind":"reaudit-clean","func":"func_80079184"}
+{"ts":"2026-06-16T16:25:21.6752789Z","kind":"reaudit-clean","func":"func_80079194"}
+{"ts":"2026-06-16T16:27:28.5215372Z","kind":"reaudit-clean","func":"func_800791D8"}
+{"ts":"2026-06-16T16:30:58.0026720Z","kind":"reaudit-clean","func":"func_800798CC"}
+{"ts":"2026-06-16T16:32:51.2111146Z","kind":"reaudit-clean","func":"func_800798FC"}
+{"ts":"2026-06-16T16:37:55.3705473Z","kind":"reaudit-clean","func":"func_8007992C"}
+{"ts":"2026-06-16T16:41:16.4907722Z","kind":"reaudit-clean","func":"func_8007997C"}
+{"ts":"2026-06-16T16:44:48.9068745Z","kind":"reaudit-clean","func":"func_8007A318"}
+{"ts":"2026-06-16T16:51:08.4544732Z","kind":"reaudit-clean","func":"func_8007A370"}
