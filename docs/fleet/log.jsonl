@@ -138,3 +138,11 @@
 {"ts":"2026-06-16T09:35:54.5976761Z","kind":"reaudit-clean","func":"func_8001DA2C"}
 {"ts":"2026-06-16T09:39:33.8894234Z","kind":"reaudit-clean","func":"func_8001DB58"}
 {"ts":"2026-06-16T09:47:33.3739495Z","kind":"reaudit-regressed","func":"func_8001E800","reason":"volatile u8 *ptr = (volatile u8 *)(&D_80101EC8 + v * 1100) is in the forbidden *(volatile T *)&G family (inline-asm-policy 2026-05-31 expansion); D_80101EC8 is game-state RAM (0x80101EC8, not MMIO), not in volatile_extern_allowlist.txt, and the narrow carve-out explicitly excludes volatile-pointer casts. The volatile prevents GCC CSE from merging the two lbu loads of ptr[0x62] (target asm F038 + F050) but changes codegen only, not program semantics. Committed 2026-03-26 before the policy was codified — a historical slip-through. Fix: try u8 *ptr = (u8 *)(&D_80101EC8 + v * 1100); run sandbox --disable all; if score stays 0 the function trivially achieves clean COMPLETED-C; if score rises, find a pure-C CSE-defeat lever or verify IRQ-writer + obtain allowlist entry."}
+{"ts":"2026-06-16T09:51:33.3700980Z","kind":"reaudit-clean","func":"func_8001EA04"}
+{"ts":"2026-06-16T10:01:04.0525350Z","kind":"reaudit-clean","func":"func_8001EEB4"}
+{"ts":"2026-06-16T10:03:14.9481381Z","kind":"lane-cycle","role":"backlog-worker","outcome":"blocked","lane":"fleet-bw2","func":"func_80044098"}
+{"ts":"2026-06-16T10:04:14.8168092Z","kind":"reaudit-clean","func":"func_8001EFA0"}
+{"ts":"2026-06-16T10:09:30.2414358Z","kind":"reaudit-clean","func":"func_8001F1C4"}
+{"ts":"2026-06-16T10:11:46.2623150Z","kind":"reaudit-clean","func":"func_8001F860"}
+{"ts":"2026-06-16T10:14:56.6514241Z","kind":"reaudit-clean","func":"func_8001F888"}
+{"ts":"2026-06-16T10:23:52.4916948Z","kind":"reaudit-clean","func":"func_8001FAE4"}
