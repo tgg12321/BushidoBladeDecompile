@@ -1,57 +1,60 @@
-# motion_SetMotion (code6cac_c_mid.c) — WIP, BLOCKED, two coupled cheats
+# motion_SetMotion (code6cac_c_mid.c) — WIP, coupled plateau, needs-decision
 
-## TL;DR (2026-06-14)
+## TL;DR (2026-06-16)
 402-insn motion-state dispatcher. HEAD byte-matches ONLY via TWO forbidden
-cheats that are COUPLED:
+cheats that are COUPLED. Exhaustive analysis (session 2) confirms BOTH issues
+are genuine plateaus with no pure-C lever — emitting needs-decision.
+
 1. **Register pins** `register s32 result asm("s3")`, `register s32 sel2 asm("s2")`.
-2. **regfix subst** `motion_SetMotion: subst "addiu\t$16,$zero,12" "...,13" @149`
-   — commented "anti-cross-jump fix".
+2. **regfix subst** `motion_SetMotion: subst "addiu\t$16,$zero,12" "...,13" @149`.
 
-No floor reduction this session — the work is diagnosis. CRITICAL: the
-register swap is **masked by the sandbox** (a pure $s2<->$s3 swap scores 0 in
-`--disable all`), so the sandbox shows 10 whether or not RA is right. Only the
-full-build SHA1 (`retire`/`verify-oracle`) reveals the real gap. Do NOT trust
-the masked sandbox score to guide this function.
+EMPIRICALLY CONFIRMED (session 2, 2026-06-16):
+- Pins removed + regfix kept → SHA1 46e36200 (RA mismatch). RA alone blocks match.
+- sel=0xD case9/11 + regfix removed → SHA1 82e50f76 (cross_jump merge, from WIP session 1).
 
-## The two issues (both must be solved, in pure C)
-### 1. Register allocation
-Target: `result -> $s3`, `sel2 -> $s2` (target's `func_8006BEC4($s0,$s2)` =
-`func_8006BEC4(sel, sel2)` confirms sel2=$s2; `move v0,$s3` at return =
-result). With pins removed GCC flips to `result->$s2, sel2->$s3`. The
-allocator gives `result` the LOWER reg even though `sel2`'s live range ends
-earlier (sel2's last use is the mid-function call; result lives to the
-return). Lever to try: register-alloc-pure-c Lever A (block-local split /
-use-order) to push sel2 into $s2.
+Do NOT trust masked sandbox score (stays at 10 regardless — RA swap is invisible).
 
-### 2. Cross-jump merge (the regfix)
-The target has `li $s0,0xC` at 80038EB4 (case 10 false-branch: `sel=0xC; if
-(...0xA000A000) D_800A3206=1; goto load_sel2`) and `li $s0,0xD` at 80038ECC
-(in the delay slot of `j sel_dispatch` = case 9/11). The SOURCE writes
-`sel=0xC` in BOTH case 10's load_sel2 path and case 9/11. GCC's jump2
-`cross_jump` merges the two tails reaching sel_dispatch, and the regfix patches
-the merged constant 12->13. PROVEN: setting `case 9/11: sel=0xD` and removing
-the rule FAILS the full build (retire SHA1 mismatch 82e50f76...) — so 0xD is
-NOT the literal source value; the 0xD is a cross-jump artifact.
-Lever to try: cross-jump-store-tail-merge / cross-jump-call-merge — make the
-two tails' ENDINGS not rtx_equal so jump2 won't merge.
+## Issue 1 — Register Allocation (PLATEAU, proven)
+Target: result→$s3, sel2→$s2. Pin-free gives result→$s2, sel2→$s3 (swap, confirmed).
 
-## Resume steps
-1. Remove ONLY the two pins (see candidate.c). Keep the body + `sel=0xC` as-is.
-2. Work issue #1 (RA) and #2 (cross-jump) — verify EACH via full build
-   (`retire` rolls back on mismatch), NEVER the masked sandbox.
-3. If both plateau, escalate canonical-asm or document as coupled plateau.
+GCC 2.7.2 priority formula (from tools/gcc-2.7.2/global.c:604):
+  `floor_log2(n_refs) × n_refs / live_length × 10000 × size`
+
+Measured values:
+- result: n_refs=6 (init=0, 3×result=1, `if (result!=0)`, `return result`),
+  live_length≈400 (d74→1384, all blocks), priority = floor_log2(6)×6/400×10k = 2×6/400×10k = 300
+- sel2: n_refs=3 (init=-1, load at load_sel2, use at sel_dispatch move a1,s2),
+  live_length≈124 (d7c→fe0 skipping early-exit body dc4-e30), priority = 1×3/124×10k = 242
+
+result (300) > sel2 (242) → result gets $s2. To flip: sel2 needs n_refs≥4.
+Any 4th ref to sel2 CHANGES THE BINARY — oracle at dc8-dcc shows `li a1,-1` NOT
+`move a1,s2`. No pure-C way to add an invisible ref.
+
+The "target uses higher reg" case (result in $s3 > $s2) is the RARER case per
+register-alloc-pure-c rule ("pin may be closer to justified").
+
+## Issue 2 — Cross-Jump Merge (PLATEAU, proven)
+Target: case 9/11 at fc0 = `j fd4; li s0, 13`; D_800A3207==3 non-10 at ea0 = `j fd4; li s0, 13`.
+Both blocks separate in oracle.
+
+Mechanism: GCC's `find_cross_jump` (jump.c, minimum=2) merges blocks with identical
+2-insn suffix. With case 9/11 sel=0xD: both blocks → `li s0,13; j sel_dispatch` → merge fires
+→ SHA1 82e50f76. With sel=0xC: suffix differs (12≠13) → no merge → regfix patches 12→13.
+No pure-C structural change can produce two SEPARATE `li s0,13; j sel_dispatch` blocks without
+one of them having sel=0xC (then needing regfix) or the cross_jump making them one block.
+
+Mixed-exit-forms lever (cross-jump-store-tail-merge rule) requires one path to be an inline
+return. Neither case 9/11 nor D_800A3207==3 non-10 can `return` mid-function — both must
+go to sel_dispatch to call func_8006BEC4. Lever not applicable.
 
 ## Ruled out (do not re-derive)
-- `case 9/11: sel=0xD` + rule removed: full-build SHA1 MISMATCH. 0xD is wrong
-  as a literal; it's a cross-jump artifact.
-- declaration-order swap (sel2 first): masked-sandbox 11->9 is NOISE; the raw
-  s2/s3 swap persisted. Not a real fix.
-- Hand-rolled standalone pipeline for unmasked diffing: my tmp/realdiff.sh
-  produced a 788-byte stub (pipeline reproduction failed). Use the engine's
-  faithful build paths, not a hand-rolled cpp|cc1|maspsx chain.
+- `case 9/11: sel=0xD` + rule removed: SHA1 82e50f76 (cross_jump merge)
+- Pins removed + regfix kept: SHA1 46e36200 (RA mismatch, CONFIRMED this session)
+- Declaration-order swap: masked noise, RA swap persisted (session 1)
+- `func_8006BEC4(0xA, sel2)` at early exit: changes binary (li a1,-1 → move a1,s2)
+- Any add of refs to sel2 to raise priority: all change binary
 
-## Pointers
-- `.claude/rules/cross-jump-store-tail-merge.md`, `cross-jump-call-merge.md`
-- `.claude/rules/register-alloc-pure-c.md` (Lever A; pins forbidden)
-- `.claude/rules/proven-spelling-class-reconstruction.md` (NOT applicable — this
-  is a value/cross-jump artifact, not a same-bytes respelling)
+## Next steps for Adjudicator
+- (a) Point to any pure-C lever that flips RA (sel2 priority > result) without changing binary
+- (b) Point to any structural approach preventing cross_jump merge with both blocks emitting 13
+- (c) Or confirm as documented plateau → park
