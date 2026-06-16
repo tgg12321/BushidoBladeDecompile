@@ -1177,3 +1177,13 @@
 {"ts":"2026-06-16T21:20:25.4843077Z","kind":"reaudit-clean","func":"func_80088058"}
 {"ts":"2026-06-16T21:25:04.8167394Z","kind":"reaudit-clean","func":"func_800884C4"}
 {"ts":"2026-06-16T21:26:27.1766465Z","kind":"reaudit-clean","func":"func_80088584"}
+{"ts":"2026-06-16T21:28:36.4860985Z","kind":"reaudit-clean","func":"func_80089178"}
+{"ts":"2026-06-16T21:33:35.7098220Z","kind":"reaudit-clean","func":"func_800891B4"}
+{"ts":"2026-06-16T21:34:50.1576443Z","kind":"lane-cycle","lane":"fleet-bw1","func":"func_8003D330","outcome":"blocked","role":"backlog-worker"}
+{"ts":"2026-06-16T21:35:30.2874301Z","kind":"lane-cycle","role":"blocked-worker","outcome":"blocked","lane":"fleet-blk","func":"file_LoadSectors"}
+{"ts":"2026-06-16T21:40:39.3143233Z","kind":"reaudit-regressed","reason":"Two forbidden cheat constructs in main (both attributable to this function's completion commit 6b94c89f). REMOVE BOTH and redo the match in pure C: (1) remove the `volatile` keyword from `extern volatile s32 g_spu_init_flag;` at src/main.c:23; (2) reduce the three `extern s32 g_spu_timer;` declarations at lines 1663/1665/1667 to one. The clean match requires finding a C structure that produces the scheduler-hoisted `addu $a0,$zero,$zero` ahead of the two SW stores without volatile or repeat-extern inflation — look at the DEFER-STORE-PAST-LATER-COMPUTE technique or reorder the statement sequence so the argument expression is computed earlier in the C.","func":"func_800892F8"}
+{"ts":"2026-06-16T21:44:34.2974813Z","kind":"reaudit-clean","func":"func_8008A434"}
+{"ts":"2026-06-16T21:46:05.6969959Z","kind":"reaudit-clean","func":"func_8008A904"}
+{"ts":"2026-06-16T21:50:49.4276616Z","kind":"reaudit-clean","func":"func_8008ACD0"}
+{"ts":"2026-06-16T21:58:56.6344472Z","kind":"lane-cycle","role":"blocked-worker","outcome":"blocked","lane":"fleet-blk","func":"file_LoadSectors"}
+{"ts":"2026-06-16T21:59:12.2423883Z","kind":"reaudit-clean","func":"func_8008AD64"}
