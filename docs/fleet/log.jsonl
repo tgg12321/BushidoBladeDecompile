@@ -89,3 +89,5 @@
 {"ts":"2026-06-16T00:28:54.7168858Z","kind":"reaudit-clean","func":"cdrom_SendCmd"}
 {"ts":"2026-06-16T00:32:17.7375557Z","kind":"reaudit-clean","func":"cdrom_SetCallbackA"}
 {"ts":"2026-06-16T00:37:38.4111603Z","kind":"reaudit-clean","func":"cdrom_SetCallbackB"}
+{"ts":"2026-06-16T00:39:43.1586396Z","kind":"reaudit-clean","func":"cdrom_SetDebugLevel"}
+{"ts":"2026-06-16T00:41:23.9744361Z","kind":"reaudit-clean","func":"cdrom_SetErrorCallback"}

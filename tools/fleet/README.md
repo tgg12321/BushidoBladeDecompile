@@ -6,6 +6,10 @@ backlog continuously. Specialized role-agents run nonstop in isolated git worktr
 
 Full design + rationale: `docs/superpowers/specs/2026-06-15-autonomous-decomp-fleet-design.md`.
 
+> **Picking this up?** Read **`docs/fleet/HANDOFF.md`** first — current state, what the
+> re-audit campaign has found, how to resume vs start fresh, pending owner decisions,
+> and known gotchas.
+
 ## Prime directive
 
 No cheat, workaround, or reward-hack ever reaches `main`. Throughput is secondary;
@@ -79,7 +83,9 @@ The supervisor refuses to start unless `main` builds byte-identical to the oracl
 | `lane.ps1` | one producer lane (backlog/blocked/adjudicator) |
 | `roles/*.md` | the role system-prompts (mindset + contract per role) |
 | `_fleet_common.ps1` | shared helpers (agent spawn, oracle check, worktree bootstrap) |
-| `list_completed.py` / `seed_reaudit.ps1` | seed the re-audit patrol with the 910 committed functions |
+| `list_completed.py` / `seed_reaudit.ps1` | seed the re-audit patrol with the committed functions |
+| `board_audit.py` | board cheat-audit tracker (Done-populate / clean+archive / flag) |
+| `reshuffle.ps1` | re-tier the active backlog toward the most-tractable items first |
 | `drill.ps1` / `launch.ps1` / `stop.ps1` / `status.ps1` | operate the fleet |
 
 ## Tuning
