@@ -108,3 +108,15 @@
 {"ts":"2026-06-16T07:57:58.9055619Z","kind":"reaudit-clean","func":"efc_rob_Init"}
 {"ts":"2026-06-16T08:00:20.9905192Z","kind":"reaudit-clean","func":"file_GetFlag0"}
 {"ts":"2026-06-16T08:02:55.0704255Z","kind":"reaudit-clean","func":"file_GetFlag1"}
+{"ts":"2026-06-16T08:05:49.3830585Z","kind":"reaudit-clean","func":"file_GetFlag2"}
+{"ts":"2026-06-16T08:07:52.8259416Z","kind":"reaudit-clean","func":"file_LoadAll"}
+{"ts":"2026-06-16T08:09:51.5449026Z","kind":"reaudit-clean","func":"file_LoadOverlay"}
+{"ts":"2026-06-16T08:12:12.1338180Z","kind":"reaudit-clean","func":"file_LoadSoundData"}
+{"ts":"2026-06-16T08:13:34.1124524Z","kind":"reaudit-clean","func":"file_ResetDmaFlag"}
+{"ts":"2026-06-16T08:19:33.8342398Z","kind":"reaudit-clean","func":"func_80016A8C"}
+{"ts":"2026-06-16T08:22:21.5172017Z","kind":"reaudit-clean","func":"func_8001945C"}
+{"ts":"2026-06-16T08:26:07.6281492Z","kind":"reaudit-clean","func":"func_80019488"}
+{"ts":"2026-06-16T08:27:44.9622016Z","kind":"reaudit-clean","func":"func_800194C0"}
+{"ts":"2026-06-16T08:30:15.9959449Z","kind":"reaudit-clean","func":"func_800194F4"}
+{"ts":"2026-06-16T08:31:26.4518316Z","kind":"reaudit-clean","func":"func_80019534"}
+{"ts":"2026-06-16T08:35:35.8178774Z","kind":"reaudit-clean","func":"func_8001A484"}
