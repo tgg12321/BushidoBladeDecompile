@@ -162,3 +162,12 @@
 {"ts":"2026-06-16T11:15:13.5333143Z","kind":"reaudit-clean","func":"func_80021D10"}
 {"ts":"2026-06-16T11:20:59.2723933Z","kind":"reaudit-clean","func":"func_80022224"}
 {"ts":"2026-06-16T11:28:20.6586114Z","kind":"reaudit-clean","func":"func_80022408"}
+{"ts":"2026-06-16T11:36:11.0521948Z","kind":"reaudit-clean","func":"func_800224E0"}
+{"ts":"2026-06-16T11:39:04.5204770Z","kind":"lane-cycle","role":"backlog-worker","outcome":"needs-decision","lane":"fleet-bw2","func":"motion_SetMotion"}
+{"ts":"2026-06-16T11:44:53.4275945Z","kind":"lane-cycle","outcome":"blocked","func":"func_80061EC0","role":"backlog-worker","lane":"fleet-bw1"}
+{"ts":"2026-06-16T11:48:34.6663645Z","kind":"reaudit-regressed","func":"func_800233AC","reason":"Two constructs fail the 6-test checklist: (1) PackedPair_233AC typedef with __attribute__((packed)) is the sole use of packed in all of src/, has the function address in its name, and forces lwl/lwr/swl/swr on stack data (out1 at sp+0x38) that is verifiably 4-byte aligned — packed is inert for correctness here, its only purpose is instruction selection coercion; (2) judge_ptr 'direct then cache' pattern — first access through (&Judge)[angle] uses $at as a temporary (3-instruction form), then judge_ptr = &Judge is assigned right after to steer $s1 = &Judge for all subsequent loads across function calls — a human writing from a spec would never split a single base address into two different C spellings; both constructs fail Tests 1/2/3. A clean redo must find a form where the Judge lookups use a consistent C spelling and where the PackedPair copy is done via element-by-element or memcpy (and if the target still requires lwl/lwr, identify which original struct field was genuinely packed and use that struct type)."}
+{"ts":"2026-06-16T11:53:10.5205474Z","kind":"reaudit-clean","func":"func_80023CB4"}
+{"ts":"2026-06-16T11:54:49.2041854Z","kind":"reaudit-clean","func":"func_80023D08"}
+{"ts":"2026-06-16T11:56:51.6332607Z","kind":"reaudit-clean","func":"func_80023D28"}
+{"ts":"2026-06-16T12:00:33.3381289Z","kind":"lane-cycle","lane":"fleet-adj","outcome":"needs-owner","func":"motion_SetMotion","role":"adjudicator"}
+{"ts":"2026-06-16T12:01:05.5753336Z","kind":"reaudit-clean","func":"func_80023DB8"}
