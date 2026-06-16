@@ -1,0 +1,72 @@
+{
+  "func": "func_8007C4B8",
+  "file": "display",
+  "verdict": "C",
+  "scores": {
+    "head_floor": 4,
+    "candidate_floor": 4,
+    "metric": "sandbox --disable all (cheat-invisible honest distance)"
+  },
+  "wall": "prologue save+def pair flip (HIGH-to-LOW vs LOW-to-HIGH)",
+  "rules_at_head": ["regfix.txt:3619  func_8007C4B8: reorder 3,4,1,2 @ 1-4"],
+  "rejected_forms": [
+    {
+      "form": "param-local-alias literal-rename (`Rect *_r = r; s32 *_out = out;` declared in target's pair order)",
+      "first_tried": "af10dc8d (2026-06-01)",
+      "reverted_by": "a7302887",
+      "verdict": "FORBIDDEN per [[param-local-alias-prologue-pair-flip]] + [[no-new-park-categories]] — literal renames with no semantic purpose, declaration order manipulates cc1's expand_function_start LUID assignment"
+    },
+    {
+      "form": "migrate regfix `reorder 3,4,1,2 @ 1-4` to a per-function entry in tools/prologue_config.json",
+      "first_tried": "91fc0d90 (2026-06-15, orch0614b)",
+      "reverted_by": "d925b85c (2026-06-15)",
+      "verdict": "FORBIDDEN — mechanically identical cheat relocated to a different stage; prologue_fix is per-function allowlisted, not a general toolchain-faithful stage; cheats-by-any-spelling. User ruled today (2026-06-15)."
+    },
+    {
+      "form": "cache r->flag into a local at function entry (s32 flag = r->flag; ...; if (flag != 0))",
+      "first_tried": "fleet-blk session 2026-06-15 (variant tmp/c4b8_variants/v1_flag_cache.c)",
+      "measured_score": 52,
+      "build_insns_delta": "+1 (165 vs target 164)",
+      "verdict": "DISPROVEN — adding any body-level early reference to r adds an extra `lbu r->flag` load instruction (target loads it lazily right before the if). Body codegen sensitivity rules out cache-early-then-use-later as a lever. Also, structurally, this doesn't shift the move-sN-aN LUIDs because those are emitted at expand_function_start BEFORE body RTL — so even if it didn't add an instruction, it wouldn't flip the prologue pair order. Confirms the wall is purely at the prologue surface."
+    }
+  ],
+  "rtl_mechanism": "cc1's save_restore_insns iterates saved callee-save regs and emits each `sw $sN` paired with its first def. For params, param LUIDs are assigned by expand_function_start in declaration order: arg0 (`out` -> s1) gets LUID L, arg1 (`r` -> s0) gets LUID L+1. cc1 emits the pair with the lower LUID first => sw s1 + move s1,a0, then sw s0 + move s0,a1. Target wants the opposite: sw s0 + move s0,a1, then sw s1 + move s1,a0. The 4-insn diff is exactly these two pairs interchanged. Same RA on both sides (out->s1, r->s0); only pair-emit order differs. CONFIRMED via objdump: sandbox prologue = [sw s1,52 / move s1,a0 / sw s0,48 / move s0,a1 / sw ra,56]; target prologue = [sw s0,48 / move s0,a1 / sw s1,52 / move s1,a0 / sw ra,56]. Pure pair flip, identical RA. KEY: the `move sN,aN` LUIDs are set DURING expand_function_start (before any body RTL), so body-level reordering / early-reference cannot shift them.",
+  "twin": "func_8007C2A0 (same wall, same floor=4, same regfix rule, same RA)",
+  "policy_classification": "Documented twin-wall in .claude/rules/no-new-park-categories.md — NOT a sanctioned park category; path forward is (a) novel C lever, (b) canonical-asm authorization with user sign-off, (c) keep parked. User declined (b) on 2026-06-15 via d925b85c revert; current posture is (c) keep parked / search continues.",
+  "untried_levers_for_next_agent": [
+    "Directed permuter run scoped to BODY mutations only (NOT prologue rewrites / literal renames / dead-store categories) — sweep_variants is single-shot; a full permuter run with PERM_* macros targeting body restructures may reveal a non-obvious form (low expected probability since the WALL is the prologue, not the body)",
+    "Instrumented cc1 with explicit BB2_ALLOC_DEBUG / BB2_PRIO_DEBUG dumps on a minimal standalone reduction to confirm whether ANY cc1 internal hook can be triggered to flip the LUID of the move-sN-aN insns (the genuine pure-C-lever search) — note: cc1 source is read-only per [[no-compiler-divergence]], but the dumps may reveal whether a SCHEDULING pass can be coerced via flags. LOW expected probability.",
+    "Cross-check siblings in COMPLETED-C with similar 2-pointer-param signature in the SAME file (display.c) that DID match without a prologue reorder — diff RA and use-frequency to identify what distinguishes them; if `r`/`out` use-count ratios differ from those siblings, propose a body restructure that shifts the ratio."
+  ],
+  "sessions": [
+    {
+      "agent": "fleet-bw2 (backlog worker)",
+      "date": "2026-06-15",
+      "git_head_at_measurement": "1024f909",
+      "outcome": "blocked",
+      "evidence": "Verified head distance is 4 via `sandbox --disable all`. Compared sandbox disassembly to target asm: the 4 differing insns are exactly the prologue pair flip described above (RA identical). Reviewed git history: af10dc8d (param-local-alias) and 91fc0d90 (prologue_fix migration) both reverted as cheats. Reviewed .claude/rules/no-new-park-categories.md / param-local-alias-prologue-pair-flip.md / prologue-fix-redundant-reorder.md — both forbidden forms are explicitly enumerated. No new C lever identified this turn."
+    },
+    {
+      "agent": "fleet-blk (blocked worker)",
+      "date": "2026-06-15",
+      "git_head_at_measurement": "1024f909",
+      "outcome": "blocked",
+      "modality_this_turn": "structural restructure — early-cache of r->flag (variant v1_flag_cache.c)",
+      "evidence": "(1) Confirmed HEAD floor=4 unchanged via sandbox --disable all. (2) Captured sandbox objdump prologue + target asm prologue side-by-side, confirming the 4-insn diff is EXACTLY the prologue save+def pair flip (identical RA, only emit order differs). (3) Tested a NEW structural variant: `s32 flag = r->flag;` at function entry (semantically valid: caching a value used later). Measured score 52 with build_insns=165 (+1 vs target 164). DISPROOF: cache-early-then-use-later adds an extra `lbu` for r->flag that target lacks (target loads it lazily just before the if-test), and structurally cannot shift the LUID of move-sN-aN insns anyway because those LUIDs are assigned in expand_function_start BEFORE body RTL. (4) This is a new measured datapoint: any body-level structural variant that introduces an early r reference will either add a load target lacks, or have no effect on prologue LUID. Both branches are dead-ends. The wall is genuinely confined to the prologue surface. New rejected_forms entry added.",
+      "candidate_floor_unchanged": true,
+      "wip_files_touched": ["meta.json (added session + rejected_form)", "notes.md (added measurement note)", "rejected/v1_flag_cache.c"]
+    },
+    {
+      "agent": "fleet-bw1 (backlog worker)",
+      "date": "2026-06-15",
+      "git_head_at_measurement": "44770b81",
+      "outcome": "blocked",
+      "modality_this_turn": "sibling cross-check in display.c (untried_levers_for_next_agent #3)",
+      "evidence": "(1) Confirmed HEAD floor=4 via sandbox --disable all (score=4, target_insns=164, build_insns=164 — only emit ORDER differs). (2) Sibling diff: enumerated 2-pointer-param signatures in display.c — func_8007B3A8(u8*, s16*), func_8007C2A0(s32*, Rect*) [twin], func_8007C4B8 (this), func_8007CE0C(_GpuChunkHdr*, s32*). Of these, only B3A8 has NO prologue regfix rule; C2A0 has the same `reorder 3,4,1,2 @ 1-4` (twin wall), CE0C has many prologue substitutions. (3) Inspected B3A8's target asm prologue: cc1 saves ONLY $s0 (one callee-save pair), with arg0 (`str`) moved to $t0 (temporary). Reason: B3A8's `str` lifetime is short — used only in two narrow `g_gpu_debug_func(..., str)` error-path calls, and one of those is the FINAL use, so cc1's RA can keep str in a temp. (4) Contrast with C4B8/C2A0: both `out` and `r` are used as targets/args across SIX JAL calls in straight-line code (C7A0, C86C, C938, C748, C97C, then the if-block calls). Both lifetimes are forced to span all JALs → both MUST go to callee-saved regs → two save+def pairs are mandatory → the pair-flip surface is unavoidable in this allocation class. The B3A8 structural template (avoid one save by shortening one arg's lifetime) DOES NOT translate to C4B8 because shortening `out`'s lifetime is impossible (it's the function's sole output, used at every step) and shortening `r`'s lifetime would require either dropping fields or duplicating loads (target uses `r` directly throughout). (5) No new C lever identified — the sibling cross-check confirms there's no analogous 2-saved-regs sibling in display.c that matched cleanly. The wall remains genuinely confined to the prologue surface, and the lever space for THIS allocation class is empty within the worker scope (body changes proven ineffective by fleet-blk; param renames + prologue_fix migration ruled cheats; cc1 source is read-only per [[no-compiler-divergence]]).",
+      "candidate_floor_unchanged": true,
+      "wip_files_touched": ["meta.json (added session)", "notes.md (recorded sibling-diff outcome)"]
+    }
+  ],
+  "reviewer": null,
+  "note_to_blocked_worker": "Resume from HEAD (no candidate.c stored — candidate floor equals HEAD floor). Three rejected forms catalogued, do NOT re-try. The three untried_levers were: (#1 directed body permuter, low-yield per measured mechanism), (#2 instrumented cc1 RTL dumps, not actionable in worker scope since cc1 is read-only), (#3 sibling cross-check in display.c — NOW DONE 2026-06-15 by fleet-bw1, no analogous matched sibling exists because B3A8 only avoids the wall by virtue of one-arg-fits-in-temp, which is structurally impossible for C4B8 where both args are used across 6+ JALs). Future agents: if all you have is body-level structural variants, the floor will not move (mechanism-proven). The path forward per [[no-new-park-categories]] is (a) novel C lever NOT at the body surface — must touch what expand_function_start sees, which means the parameter declaration; the obvious moves there are all cataloged cheats; (b) canonical-asm authorization — user declined 2026-06-15; (c) keep parked — current posture."
+}

@@ -6,7 +6,10 @@
     "candidate_floor": 11,
     "metric": "sandbox --disable all (masked Levenshtein)",
     "build_insns": 107,
-    "target_insns": 107
+    "target_insns": 107,
+    "best_rejected_floor": 2,
+    "best_rejected_build_insns": 108,
+    "best_matched_count_rejected_floor": 4
   },
   "sessions": [
     {
@@ -14,23 +17,42 @@
       "lever": "triage only — identified the branch-generation + $3/$5 swap coupling; no edit attempted (complex, 27-commit history)",
       "floor_was": 11,
       "floor_now": 11
+    },
+    {
+      "date": "2026-06-15",
+      "git_head_at_measurement": "7c42e312",
+      "lever": "Variant sweep: 41 forms tested. Best matched-count (bi=107) reached floor 4 via `kind_full=lhu; kind = kind_full & 0xFFFFU` split + if/else `t = (s32)*((u16*)+0x270) << 16` (else lui-folded). Best overall floor 2 (bi=108) reached via the kind-split + dual-typed read at +0x270 (`s32 probe=s16-read; s32 v=u16-read; if(probe>=4) v=3; t=v<<16`) yielding target's exact `lhu $a1; andi $v1, $a1, 0xFFFF; ...; addiu $v1,3; sll` shape — but with 1 extra `andi $v1,$v0,0xFFFF` insn at the ternary (because GCC CSE'd the u16 read into the s16-load value and materialized u16 via andi rather than emitting a separate lhu).",
+      "floor_was": 11,
+      "floor_now": 11
     }
   ],
   "reviewer": {
-    "verdict": "NEEDS_USER",
-    "date": "2026-06-14",
-    "evidence": "13 regfix rules: $3<->$5 reg-swap x4 + a folded andi mask insert + a 7-rule subst/delete/insert_label cluster that rewrites the saturating-ternary branch generation (synthesizes slt;bne .LfuncF938_join;sll + join label). Pure-C distance 11. A hard branch-sense + RA coupling; no edit attempted this session."
+    "verdict": "FAIL",
+    "date": "2026-06-15",
+    "evidence": "Cheat-reviewer FAILED v36 form (the floor-2 candidate). Deciding construct: unconditional dual-typed read of same address at +0x270 (`s32 probe = *((s16*)(arg0+0x270)); s32 v = *((u16*)(arg0+0x270));`) — fails Tests 1 (no semantic purpose; one variable would suffice) and 2 (human-programmer). Not covered by SOTN-accepted list nor split-init-accumulation sanctioning. Saved to `rejected/dual-type-probe-load.c`. Caveat: HEAD's pure-C body ALSO contains a dual-typed read at +0x270 (s16 probe for guard + u16 read INSIDE the ternary for the value when guard holds); the reviewer flagged the unconditional split-into-separate-variables form here but did not opine on HEAD's guarded form. The `kind_full & 0xFFFFU` split (used to provoke target's `lhu;andi` kind-load shape) was noted as codegen-steering but secondary; reviewer treated it as dual-use with split-init-accumulation."
   },
   "remaining_gap": {
-    "summary": "Two saturating ternaries — `raw_or_3=(probe<4)?(u16)*p:3; idx=((raw_or_3<<16)>>15)` and `sum_or_3=(sum<4)?sum:3; idx=sum_or_3*2` — compile to a different compare/branch shape than target (target: slt;bne to a shared join label; sll for the sign-extend). Coupled with a $3<->$5 register-pair swap across idx 1-15. The regfix delete+insert_label synthesizes target's join.",
+    "summary": "13 regfix rules: $3<->$5 reg-pair swap (4 places) + insert `andi $3,$5,0xFFFF` (kind narrow) + 7-rule subst/delete/insert_label cluster rewriting the saturating-ternary branch generation. The kind narrow (insert `andi`) AND the ternary's `addiu+sll` pattern CAN both be provoked from pure C via `kind = kind_full & 0xFFFFU` + dual-typed read at +0x270 — but the cheat-reviewer FAILS the dual-typed read. Without dual-typed read, GCC reuses the s16 load and emits `move $v1,$v0` (not the target's `lhu $v1`), keeping the floor at >=4.",
     "rule_count_at_head": 13,
-    "rules_required_for_full_match": "All 13 rules are the cheat; HEAD matches only with them. No pure-C form attempted."
+    "rules_required_for_full_match": "All 13. HEAD matches only with them. Best pure-C floor 4 (matched count) or 2 (extra-insn); neither close enough for byte-match."
   },
   "next_hypotheses": [
-    "Branch generation: rewrite the `(probe < 4) ? (u16)*p : 3` ternary so GCC emits target's `slt $2,$2,4; bne $2,$0,join; sll` shape (it currently emits a different compare/branch). See switch-vs-ifchain-branch-sense + compare-operand-order-register. Try an explicit `if (probe < 4) raw = (u16)*p; else raw = 3;` and operand-order variants.",
-    "The $3<->$5 swap is likely a CONSEQUENCE of the branch shape (the idx-pseudo lands in the other reg). Fix the branch first, then re-check the swap.",
-    "If pure-C plateaus, escalate. 27-commit history; was 'retired' 2026-05-14 leaving these rules (a stabilizer, not COMPLETED-C)."
+    "USER DECISION REQUIRED: Is the dual-typed read at same address (s16+u16 at +0x270) — already in HEAD's pure-C body as a guarded form — a sanctioned technique for this function? If yes, ship v36 form (rejected/dual-type-probe-load.c) as candidate.c with rule retirement. If no, this function is structurally not closable in pure-C and warrants parking or canonical-asm authorization.",
+    "Alternative single-read variant (`s32 v = *((s16*)(+0x270)); if (v >= 4) v = 3; t = v<<16;` — no u16 read) was tried (v41) and scored 8 vs head 11; the simplification removes too many insns (bi=104) and diverges from target. Target genuinely uses both lh and lhu separately.",
+    "Volatile-qualified u16 read to defeat CSE was tried (v38) and scored 5 (worse than v30's 4); volatile changes load semantics and adds work elsewhere.",
+    "Two-pointer alias (`const s16 *p_s; const u16 *p_u; *p_s; *p_u`) was tried (v37); same as v36 — GCC's old-school CSE still merges. No alias-breaking technique in pure C reaches target without codegen-steering.",
+    "27-commit history; was 'retired' 2026-05-14 leaving these rules (a stabilizer, not COMPLETED-C). This session adds adversarial-review data: the dual-typed read appears load-bearing for matching."
   ],
-  "rejected_forms": [],
+  "rejected_forms": [
+    {
+      "slug": "dual-type-probe-load",
+      "file": "rejected/dual-type-probe-load.c",
+      "floor": 2,
+      "build_insns": 108,
+      "reviewer_verdict": "FAIL",
+      "construct": "s32 probe = *((s16*)(arg0+0x270)); s32 v = *((u16*)(arg0+0x270)); if (probe>=4) v=3; t=v<<16;",
+      "why": "Unconditional dual-typed read at same address — codegen-steering with no semantic purpose. Cheat-reviewer default-FAIL."
+    }
+  ],
   "memory_notes": []
 }
