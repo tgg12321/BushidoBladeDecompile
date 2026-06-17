@@ -1276,3 +1276,5 @@
 {"ts":"2026-06-17T03:47:30.8201474Z","kind":"lane-cycle","role":"backlog-worker","lane":"fleet-bw2","outcome":"in-review","func":"func_80045878"}
 {"ts":"2026-06-17T03:50:13.9431918Z","kind":"reaudit-clean","func":"func_80044F30"}
 {"ts":"2026-06-17T03:54:34.6622921Z","kind":"main-contamination-cleaned","detail":"?? test.o"}
+{"ts":"2026-06-17T04:22:47.1491968Z","kind":"merge-gate-failed","reason":"oracle-gate-failed","func":"func_800611A4"}
+{"ts":"2026-06-17T04:25:10.1145919Z","kind":"reaudit-clean","func":"func_800451A0"}
