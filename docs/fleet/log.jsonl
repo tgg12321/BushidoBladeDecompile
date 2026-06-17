@@ -1287,3 +1287,11 @@
 {"ts":"2026-06-17T04:52:16.5084107Z","kind":"reaudit-clean","func":"func_800457DC"}
 {"ts":"2026-06-17T04:54:24.5217614Z","kind":"reaudit-clean","func":"func_800457E8"}
 {"ts":"2026-06-17T04:57:01.7334263Z","kind":"reaudit-clean","func":"func_800457FC"}
+{"ts":"2026-06-17T06:06:03.8311092Z","kind":"reaudit-clean","func":"func_80065344"}
+{"ts":"2026-06-17T06:10:24.3958277Z","kind":"reaudit-clean","func":"func_80065394"}
+{"ts":"2026-06-17T06:19:13.9155935Z","kind":"reaudit-clean","func":"func_800653E4"}
+{"ts":"2026-06-17T06:20:58.3415101Z","kind":"reaudit-clean","func":"func_80065434"}
+{"ts":"2026-06-17T06:27:41.1888820Z","kind":"lane-cycle","role":"blocked-worker","outcome":"blocked","lane":"fleet-blk","func":"func_8007C4B8"}
+{"ts":"2026-06-17T06:31:09.4832099Z","kind":"main-contamination-cleaned","detail":" M tools/hooks/main_reintegration_lock.py"}
+{"ts":"2026-06-17T06:31:09.5690758Z","kind":"lane-cycle","role":"backlog-worker","lane":"fleet-bw2","outcome":"in-review","func":"func_800611A4"}
+{"ts":"2026-06-17T06:38:44.3841352Z","kind":"reaudit-clean","func":"func_80065484"}
