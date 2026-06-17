@@ -1278,3 +1278,12 @@
 {"ts":"2026-06-17T03:54:34.6622921Z","kind":"main-contamination-cleaned","detail":"?? test.o"}
 {"ts":"2026-06-17T04:22:47.1491968Z","kind":"merge-gate-failed","reason":"oracle-gate-failed","func":"func_800611A4"}
 {"ts":"2026-06-17T04:25:10.1145919Z","kind":"reaudit-clean","func":"func_800451A0"}
+{"ts":"2026-06-17T04:30:22.5977326Z","kind":"reaudit-clean","func":"func_800451D0"}
+{"ts":"2026-06-17T04:40:13.1418866Z","kind":"reaudit-regressed","reason":"The construct `s16 (*new_var)[]; new_var = &D_800EED10;` with subsequent `(*new_var)` uses has no semantic purpose, fails Tests 1/2/3, and was inherited from the prior cheated form without explicit justification. Worker action: (1) strip new_var and use D_800EED10 directly; (2) run sandbox --disable all to verify score stays 0; (3) if it does, recommit the clean form — no cheat needed; if score goes non-zero, escalate: the construct is arguably named-intermediate (SOTN-accepted) but must be explicitly annotated `/* FAKE: named-intermediate, LUID bias for D_800EED10 address */` and adjudicated before commit.","func":"func_800455AC"}
+{"ts":"2026-06-17T04:40:55.9898082Z","kind":"lane-cycle","role":"blocked-worker","outcome":"blocked","lane":"fleet-blk","func":"func_8007C4B8"}
+{"ts":"2026-06-17T04:45:17.9466537Z","kind":"reaudit-clean","func":"func_8004574C"}
+{"ts":"2026-06-17T04:48:52.0987137Z","kind":"reaudit-clean","func":"func_800457A0"}
+{"ts":"2026-06-17T04:50:02.1941427Z","kind":"reaudit-clean","func":"func_800457D4"}
+{"ts":"2026-06-17T04:52:16.5084107Z","kind":"reaudit-clean","func":"func_800457DC"}
+{"ts":"2026-06-17T04:54:24.5217614Z","kind":"reaudit-clean","func":"func_800457E8"}
+{"ts":"2026-06-17T04:57:01.7334263Z","kind":"reaudit-clean","func":"func_800457FC"}
