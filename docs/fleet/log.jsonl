@@ -1223,3 +1223,12 @@
 {"ts":"2026-06-16T23:30:56.8950709Z","kind":"lane-cycle","role":"blocked-worker","outcome":"blocked","lane":"fleet-blk","func":"file_LoadSectors"}
 {"ts":"2026-06-16T23:31:12.6075515Z","kind":"reaudit-clean","func":"game_GetPause"}
 {"ts":"2026-06-16T23:35:16.8750110Z","kind":"reaudit-clean","func":"game_GetPlayerBase"}
+{"ts":"2026-06-16T23:38:04.2459856Z","kind":"reaudit-clean","func":"game_GetPlayerCount"}
+{"ts":"2026-06-16T23:42:03.4592449Z","kind":"reaudit-clean","func":"game_GetPlayerData"}
+{"ts":"2026-06-16T23:47:22.8474413Z","kind":"reaudit-regressed","reason":"Three constructs in the body are admitted register-allocation coercion cheats (commit 779bc356 says 'permuter-found register allocation trick — unsigned int new_var and do{}while(0) barrier force v0=1, v1=2 allocation'). Worker must redo with a pure-C structural form that produces the target allocation without dead locals or a do-while-zero barrier.","func":"game_Init"}
+{"ts":"2026-06-16T23:48:58.3790054Z","kind":"reaudit-clean","func":"game_ResetTimer"}
+{"ts":"2026-06-16T23:49:48.7160390Z","kind":"lane-cycle","role":"blocked-worker","outcome":"blocked","lane":"fleet-blk","func":"file_LoadSectors"}
+{"ts":"2026-06-16T23:51:16.2862282Z","kind":"reaudit-clean","func":"game_SetControllerPorts"}
+{"ts":"2026-06-16T23:52:00.0442900Z","kind":"lane-cycle","lane":"fleet-bw1","func":"func_800871D4","outcome":"needs-decision","role":"backlog-worker"}
+{"ts":"2026-06-16T23:53:44.0017235Z","kind":"reaudit-clean","func":"game_SetPause"}
+{"ts":"2026-06-16T23:57:07.1680580Z","kind":"reaudit-clean","func":"game_SetPlayerCount"}
