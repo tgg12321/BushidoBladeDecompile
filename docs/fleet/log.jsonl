@@ -1251,3 +1251,10 @@
 {"ts":"2026-06-17T02:14:25.2326419Z","kind":"reaudit-clean","func":"func_80042ED8"}
 {"ts":"2026-06-17T02:15:56.6844113Z","kind":"lane-cycle","role":"blocked-worker","outcome":"needs-decision","lane":"fleet-blk","func":"func_8007C4B8"}
 {"ts":"2026-06-17T02:19:18.5227532Z","kind":"reaudit-clean","func":"func_80042F10"}
+{"ts":"2026-06-17T02:24:20.7185237Z","kind":"lane-cycle","role":"adjudicator","lane":"fleet-adj","func":"func_8007C4B8","outcome":"go-back"}
+{"ts":"2026-06-17T02:28:00.8912052Z","kind":"reaudit-clean","func":"func_80042FA0"}
+{"ts":"2026-06-17T02:30:10.7062060Z","kind":"reaudit-clean","func":"func_80043244"}
+{"ts":"2026-06-17T02:34:18.0136677Z","kind":"reaudit-clean","func":"func_80043278"}
+{"ts":"2026-06-17T02:36:34.7328477Z","kind":"reaudit-clean","func":"func_80043398"}
+{"ts":"2026-06-17T02:40:18.6683360Z","kind":"reaudit-clean","func":"func_800433E4"}
+{"ts":"2026-06-17T02:50:08.2459975Z","kind":"reaudit-clean","func":"func_80043E98"}
