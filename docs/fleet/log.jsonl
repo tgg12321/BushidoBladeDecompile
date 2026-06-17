@@ -1258,3 +1258,12 @@
 {"ts":"2026-06-17T02:36:34.7328477Z","kind":"reaudit-clean","func":"func_80043398"}
 {"ts":"2026-06-17T02:40:18.6683360Z","kind":"reaudit-clean","func":"func_800433E4"}
 {"ts":"2026-06-17T02:50:08.2459975Z","kind":"reaudit-clean","func":"func_80043E98"}
+{"ts":"2026-06-17T02:54:13.9248782Z","kind":"reaudit-clean","func":"func_80043F0C"}
+{"ts":"2026-06-17T02:58:29.5093743Z","kind":"reaudit-clean","func":"func_80043F80"}
+{"ts":"2026-06-17T03:02:18.8284325Z","kind":"reaudit-clean","func":"func_80043FCC"}
+{"ts":"2026-06-17T03:06:14.3808558Z","kind":"reaudit-clean","func":"func_80044100"}
+{"ts":"2026-06-17T03:13:16.1312788Z","kind":"reaudit-regressed","reason":"Volatile-coercion cheat in loop body: `(s32)(*(volatile s32 **)&a0)` forces a `lw $v1, 0x38($sp)` reload from the `a0` stack home inside the loop, where the C variable `a0` (= `base + 1` after the assignment at line 911) is semantically identical to the forced load — the volatile cast has no semantic purpose and the commit message explicitly states it is a 'volatile cast for stack spill of table base', invoking GCC internals as the mechanism. The function needs a clean re-attempt that produces `lw $v1, 0x38($sp)` through pure C structure rather than volatile coercion — try spelling the table-base computation as `(s32)a0` directly (since a0 still holds base+1 in a register at this point) or restructuring the expression so GCC naturally reloads from the stack home without the volatile annotation.","func":"func_80044170"}
+{"ts":"2026-06-17T03:15:46.0533658Z","kind":"lane-cycle","role":"blocked-worker","outcome":"blocked","lane":"fleet-blk","func":"tslPolyF4Init"}
+{"ts":"2026-06-17T03:18:19.3913581Z","kind":"reaudit-clean","func":"func_80044504"}
+{"ts":"2026-06-17T03:19:45.1277751Z","kind":"reaudit-clean","func":"func_80044650"}
+{"ts":"2026-06-17T03:24:10.2532018Z","kind":"reaudit-regressed","reason":"Unannotated empty `do { } while (0);` at function top (src/text1a_c.c:1139) is a cheat — fails Tests 1/2/3 and does not meet the do-while-zero narrow exception's mandatory prerequisites (no `// FAKE` annotation, no lever-exhaustion ledger). This was already flagged as item #7 in the thorough cheat audit (commit f237c333) but never re-opened. Worker must produce a clean pure-C replacement that matches without the do-while(0), or (if all pure-C levers are exhausted) re-attempt with proper annotation + lever-exhaustion documentation per [[do-while-zero-exception]].","func":"func_80044670"}
