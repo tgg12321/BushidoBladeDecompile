@@ -253,4 +253,7 @@ high-value codegen + workflow rules: `sandbox-zero-retire-fails`,
 | `python3 tools/headless_review.py --latest` | per-run orchestrator packet (ACCEPT/ESCALATE) |
 | `python3 tools/headless_audit.py --all` | efficiency dashboard from transcripts |
 | `python3 tools/check_completion_integrity.py` | audit every completed function satisfies its invariants |
+| `python3 tools/find_duplicates.py` | regen near-duplicate leads (tmp/duplicates_leads.txt) — INCOMPLETE → COMPLETED-C analogs. Re-run after a batch reshapes the COMPLETED set; the SessionStart hook surfaces a lead for the top function automatically. [[find-duplicates-tool]] |
+| `python3 tools/permuter_annotate.py --func <f> --hint <slug>` | emit a PERM_*-annotated candidate to `tmp/permuter_candidates/<f>.c` from a rule-slug hint; pipe to permuter for directed search. `--list-hints` for catalog. Rule: `.claude/rules/permuter-directives.md`. **Outputs are PROPOSALS — vet against cheat catalog; layer-2 reviewer still mandatory.** |
+| `python3 tools/decomp_me_scrape.py {probe\|download\|search}` | mine decomp.me's GCC 2.7.2 PSX scratch corpus into `tmp/decomp_me_corpus/`; `search --asm-file <path>` finds scratches whose target asm overlaps. Useful when local levers exhausted. [[decomp-me-corpus]] |
 | `git commit -F tmp/msg.txt` | commit (never heredoc / nested quotes) |

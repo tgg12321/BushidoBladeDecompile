@@ -68,6 +68,43 @@ def main() -> int:
                     f"to start from the score-{cand} floor.")
         except Exception:
             pass
+        # Surface a near-duplicate lead if `tools/find_duplicates.py` has been
+        # run and the top function appears as INCOMPLETE in tmp/duplicates_leads.txt.
+        # Lead format: `func_A  ~= func_B  (similarity 0.93, lens 42/44)` where
+        # func_A is INCOMPLETE and func_B is a COMPLETED-C analog. If a lead
+        # exists, the worker should read func_B's C as a starting template.
+        # The leads file is gitignored (tmp/); regenerate via
+        #   `wsl bash -c '... && python3 tools/find_duplicates.py'`
+        # after large batches of completions reshape the COMPLETED-C set.
+        try:
+            leads = Path(root) / "tmp" / "duplicates_leads.txt"
+            if leads.is_file():
+                # Stale check: warn if leads file predates queue.json
+                stale = leads.stat().st_mtime < qp.stat().st_mtime
+                func = top["func"]
+                hit = None
+                for line in leads.read_text(encoding="utf-8", errors="replace").splitlines():
+                    if line.startswith("#") or "~=" not in line:
+                        continue
+                    lhs = line.split("~=", 1)[0].strip()
+                    if lhs == func:
+                        hit = line.strip()
+                        break
+                if hit:
+                    stale_str = " [STALE — re-run find_duplicates.py]" if stale else ""
+                    print(
+                        f"[queue] NEAR-DUPLICATE LEAD{stale_str} — {hit}\n"
+                        f"        The RHS is a COMPLETED-C analog. Read its src/ "
+                        f"body as a starting template, then sandbox-iterate from "
+                        f"there. (Tool: tools/find_duplicates.py)")
+            else:
+                # Quiet hint, not a warning — the leads view is an opt-in tool.
+                print(
+                    "[queue] (no tmp/duplicates_leads.txt — run "
+                    "`python3 tools/find_duplicates.py` once for "
+                    "match-by-analogy leads on INCOMPLETE items.)")
+        except Exception:
+            pass
     except Exception:
         pass
     return 0

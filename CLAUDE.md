@@ -184,6 +184,11 @@ The agent *is* the gap-closer — the engine measures, routes, and gates; you wr
    FIRST — apply `candidate.c` to `src/<file>.c`, confirm the documented floor with `sandbox`,
    and continue from there instead of starting from HEAD. The `rejected_forms` field lists
    constructs the prior agent ruled out; don't re-derive them.
+   **If the SessionStart hook surfaces a NEAR-DUPLICATE LEAD** for this function — or you find one
+   yourself in `tmp/duplicates_leads.txt` — the RHS is an already-COMPLETED-C analog. Read its `src/`
+   body BEFORE writing anything; it's the most efficient starting template. Tool:
+   `tools/find_duplicates.py` (memory/project/find-duplicates-tool.md). Regenerate after big
+   completion batches.
 1. **`verify-oracle --rebuild`** once at session start. This makes `build/` the clean canonical
    reference the sandbox scores against. (Skip if `build/` is already clean.)
 2. **`canonical <func>`** — route. ASM-region / ASM-STRUCTURAL ⇒ stop the pure-C effort
@@ -195,6 +200,17 @@ The agent *is* the gap-closer — the engine measures, routes, and gates; you wr
    Exploring >3 candidate forms? Sweep them in ONE call: `python3 tools/sweep_variants.py --func
    <f> --file <stem> --variants tmp/<f>_variants/` (scores each form via the sandbox, restores src;
    low scores are PROPOSALS — vet against the cheat catalog).
+   **Stuck on a recognised rule pattern** (e.g. `shared-end-label`, `register-asm-pins`,
+   `loop-rotation-two-shift`)? `python3 tools/permuter_annotate.py --func <f> --hint <rule-slug>`
+   writes a PERM_*-annotated candidate to `tmp/permuter_candidates/<f>.c` — feed it to permuter to
+   validate the maneuver instead of hand-iterating. `--list-hints` for the catalog. Rule:
+   `.claude/rules/permuter-directives.md`. **Closing forms from permuter are PROPOSALS — vet against
+   [[no-new-park-categories]] before committing; layer-2 cheat-reviewer still mandatory.**
+   **Still stuck after the local levers?** `python3 tools/decomp_me_scrape.py search --asm-file
+   asm/funcs/<func>.s` queries the downloaded decomp.me corpus (the BB2 toolchain class:
+   gcc2.7.2-psx / gcc2.7.2-cdk / psyq3.5) for scratches whose target asm overlaps yours. Coarse
+   pre-filter; manual inspect the top hits for an analogous C shape. Tool docs:
+   `memory/project/decomp-me-corpus.md`.
 5. **Score 0 ⇒ finish.** `retire <func>` deletes the function's now-unneeded regfix/asmfix rules,
    rebuilds, and SHA1-gates (auto-rollback on mismatch). A pure-C function with no rules to remove
    just needs `verify-oracle --rebuild` to confirm the byte+link match. **Note (masked-0 caveat):**

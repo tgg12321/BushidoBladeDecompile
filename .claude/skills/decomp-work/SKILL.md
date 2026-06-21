@@ -90,7 +90,21 @@ python tools/board.py card <func>
   The authoritative gate is **`wteng <id> make`** (`OK: bb2 matches!`) — do NOT use
   `verify-oracle --rebuild` to check an edit (it reverts your `src` to rebuild the
   reference). If the top item has a WIP checkpoint, resume from
-  `memory/wip/<func>/candidate.c` as the card says.)
+  `memory/wip/<func>/candidate.c` as the card says.
+- **Three lookups BEFORE deep iteration** (all read-only, all in your worktree):
+  1. **Near-duplicate lead** — grep `tmp/duplicates_leads.txt` for the function. If
+     it has an entry, the RHS is a COMPLETED-C analog; read its `src/` body as a
+     starting template. (Tool: `python3 tools/find_duplicates.py` regenerates;
+     SessionStart hook surfaces a lead for the queue top automatically.)
+  2. **Permuter directive hint** — if you recognise the rule pattern (see
+     `.claude/rules/codegen-technique-index.md`), `python3 tools/permuter_annotate.py
+     --func <f> --hint <rule-slug>` writes a PERM_*-annotated candidate to
+     `tmp/permuter_candidates/<f>.c`. `--list-hints` for the catalog. Closing forms
+     from permuter are PROPOSALS — vet per [[no-new-park-categories]].
+  3. **decomp.me corpus search** — when local levers are exhausted, `python3
+     tools/decomp_me_scrape.py search --asm-file asm/funcs/<func>.s` finds scratches
+     whose target asm overlaps yours (gcc2.7.2-psx / gcc2.7.2-cdk / psyq3.5).
+     Coarse pre-filter; inspect the top hits for analogous C shape.
 - Then record the outcome on the board:
   - **Matched (COMPLETED-C):** `python tools/board.py done <func>` and commit in your
     worktree.

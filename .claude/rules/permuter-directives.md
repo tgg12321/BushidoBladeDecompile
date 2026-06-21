@@ -127,7 +127,7 @@ PERM_LINESWAP(
 
 **Pairs naturally with:** scheduling-sensitive rules where the lever
 is the order of independent statements —
-[[loop-counter-fills-load-delay]],
+loop-counter-fills-load-delay (hint),
 [[walking-pointer-serializes-parallel-loads]],
 [[defer-store-past-later-compute-into-jal-delay]],
 [[hoist-call-arg-local-flips-jal-delay]].
@@ -184,7 +184,7 @@ a `PERM_GENERAL` alternative.
 | [[walking-pointer-serializes-parallel-loads]] | `PERM_LINESWAP` over the pointer-walk block | Reorder loads / stores; preserve dataflow. |
 | [[defer-store-past-later-compute-into-jal-delay]] | `PERM_ONCE(GLOBAL = val;)` placement | Either-side-of-compute store placement. |
 | [[hoist-call-arg-local-flips-jal-delay]] | `PERM_ONCE` for arg load placement | First-in-block vs. just-before-call. |
-| [[loop-counter-fills-load-delay]] | `PERM_LINESWAP` over load / inc / consume | Test load / address-advance / counter / use orderings. |
+| loop-counter-fills-load-delay (hint, no rule file) | `PERM_LINESWAP` over load / inc / consume | Test load / address-advance / counter / use orderings. |
 | [[narrow-byte-args-packed-call]] | `PERM_GENERAL(u8, s32)` for param type | Sweep narrow vs. word param decls. |
 
 This list is starter coverage; extend as the helper grows.
