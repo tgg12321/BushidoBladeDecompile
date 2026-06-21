@@ -1312,3 +1312,17 @@
 {"ts":"2026-06-21T21:16:11.3542937Z","kind":"reaudit-clean","func":"func_80066FF8"}
 {"ts":"2026-06-21T21:18:53.3534558Z","kind":"reaudit-clean","func":"func_8006702C"}
 {"ts":"2026-06-21T21:23:22.6203237Z","kind":"reaudit-clean","func":"func_80067060"}
+{"ts":"2026-06-21T21:25:01.2971409Z","kind":"reaudit-clean","func":"func_80067094"}
+{"ts":"2026-06-21T21:26:39.8811122Z","kind":"reaudit-clean","func":"func_800670C8"}
+{"ts":"2026-06-21T21:29:10.3748999Z","kind":"reaudit-clean","func":"func_800670FC"}
+{"ts":"2026-06-21T21:31:47.2729646Z","kind":"reaudit-clean","func":"func_80067130"}
+{"ts":"2026-06-21T21:33:55.8614818Z","kind":"lane-cycle","lane":"fleet-blk","role":"blocked-worker","outcome":"blocked","func":"tslPolyF4Init"}
+{"ts":"2026-06-21T21:35:18.4477612Z","kind":"reaudit-clean","func":"func_80067164"}
+{"ts":"2026-06-21T21:38:55.3437354Z","kind":"reaudit-clean","func":"func_80067198"}
+{"ts":"2026-06-21T21:44:00.3100292Z","kind":"reaudit-clean","func":"func_800671CC"}
+{"ts":"2026-06-21T21:46:48.4754415Z","kind":"reaudit-clean","func":"func_800676C8"}
+{"ts":"2026-06-21T21:49:23.8461257Z","kind":"reaudit-clean","func":"func_80067704"}
+{"ts":"2026-06-21T21:50:42.2693956Z","kind":"reaudit-clean","func":"func_80067740"}
+{"ts":"2026-06-21T21:52:01.5331508Z","kind":"reaudit-clean","func":"func_8006777C"}
+{"ts":"2026-06-21T21:53:36.0787469Z","kind":"reaudit-clean","func":"func_800677B8"}
+{"ts":"2026-06-21T21:55:46.7231216Z","kind":"reaudit-clean","func":"func_800677F4"}
