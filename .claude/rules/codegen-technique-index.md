@@ -95,6 +95,7 @@ difficult-is-not-impossible — still auto-load and are not listed here.)
 - **maspsx-label-nop-gate** — single `__asm__("nop")` before a load in a loop → per-function maspsx gate, don't park.
 - **maspsx-noreorder-stripping** — glabel-form asm MUST duplicate TAB-form `.set` directives with SPACE-form.
 - **compiler-flags-canonical** — do not flag-hunt; flags were settled project-wide 2026-05-20.
+- **permuter-directives** — bridge from a technique-index rule to PERM_* macros (decomp-permuter manual mutations); use when a rule lists 2+ alternative spellings, when you need to sweep candidate registers / orderings, or after you've measurably lowered the floor and want exhaustive cross-product validation. Closing forms are PROPOSALS and must clear the cheat-vetting checklist + layer-2 cheat-reviewer.
 
 ## Registering a NEW technique rule
 
