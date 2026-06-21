@@ -1326,3 +1326,9 @@
 {"ts":"2026-06-21T21:52:01.5331508Z","kind":"reaudit-clean","func":"func_8006777C"}
 {"ts":"2026-06-21T21:53:36.0787469Z","kind":"reaudit-clean","func":"func_800677B8"}
 {"ts":"2026-06-21T21:55:46.7231216Z","kind":"reaudit-clean","func":"func_800677F4"}
+{"ts":"2026-06-21T22:13:00.8665000Z","kind":"merge-gate-failed","func":"func_80045878","reason":"oracle-gate-failed"}
+{"ts":"2026-06-21T22:14:26.8483100Z","kind":"reaudit-clean","func":"func_8006786C"}
+{"ts":"2026-06-21T22:21:24.9228913Z","kind":"reaudit-regressed","func":"func_80068F70","reason":"Three do-while(0) constructs lack the mandatory /* FAKE: ... */ annotation and the non-empty one is explicitly for CSE defeat (not the sanctioned LABEL_OUTSIDE_LOOP_P / reorg.c mechanism); `const u32 mask;` uninitialized declaration is GCC manipulation with no semantic purpose. Worker must produce a clean pure-C replacement (or if do-while-zero is genuinely needed for reorg.c on loop_label, annotate + document lever-exhaustion and re-submit for review)."}
+{"ts":"2026-06-21T22:22:48.9607658Z","kind":"reaudit-clean","func":"func_8006920C"}
+{"ts":"2026-06-21T22:25:58.6375103Z","kind":"reaudit-clean","func":"func_80069250"}
+{"ts":"2026-06-21T22:30:53.7225136Z","kind":"reaudit-clean","func":"func_80069898"}
