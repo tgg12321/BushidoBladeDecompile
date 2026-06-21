@@ -1295,3 +1295,9 @@
 {"ts":"2026-06-17T06:31:09.4832099Z","kind":"main-contamination-cleaned","detail":" M tools/hooks/main_reintegration_lock.py"}
 {"ts":"2026-06-17T06:31:09.5690758Z","kind":"lane-cycle","role":"backlog-worker","lane":"fleet-bw2","outcome":"in-review","func":"func_800611A4"}
 {"ts":"2026-06-17T06:38:44.3841352Z","kind":"reaudit-clean","func":"func_80065484"}
+{"ts":"2026-06-17T06:45:39.6073225Z","kind":"merge-gate-failed","reason":"oracle-gate-failed","func":"func_800611A4"}
+{"ts":"2026-06-21T20:24:04.6498089Z","kind":"reaudit-clean","func":"func_80065590"}
+{"ts":"2026-06-21T20:26:10.8574500Z","kind":"reaudit-clean","func":"func_800655E0"}
+{"ts":"2026-06-21T20:33:36.7524178Z","kind":"reaudit-clean","func":"func_80065630"}
+{"ts":"2026-06-21T20:44:59.7600330Z","kind":"reaudit-regressed","func":"func_80065680","reason":"extern s16 D_800F0BC4 at src/text1b.c:14763 is a conflicting type redeclaration (canonical type is u16 at line 14546, same TU) — a dead type-coercion attempt that fails tests 1 and 2; fix is remove line 14763, oracle unaffected (GCC uses u16 throughout, target has lhu, all other constructs are clean)"}
+{"ts":"2026-06-21T20:48:48.7314202Z","kind":"reaudit-clean","func":"func_80065760"}
