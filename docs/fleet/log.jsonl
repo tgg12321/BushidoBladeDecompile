@@ -1405,3 +1405,12 @@
 {"ts":"2026-06-22T06:44:05.6143259Z","kind":"reaudit-clean","func":"func_800853F4"}
 {"ts":"2026-06-22T06:47:52.9894969Z","kind":"reaudit-clean","func":"func_800859F0"}
 {"ts":"2026-06-22T06:57:30.9295378Z","kind":"reaudit-clean","func":"func_80085EE4"}
+{"ts":"2026-06-22T07:00:26.9954561Z","kind":"reaudit-clean","func":"func_80085FB8"}
+{"ts":"2026-06-22T07:05:30.3140973Z","kind":"reaudit-clean","func":"func_80087F64"}
+{"ts":"2026-06-22T07:06:40.2835996Z","kind":"lane-cycle","role":"backlog-worker","lane":"fleet-bw1","outcome":"blocked","func":"func_80037B00"}
+{"ts":"2026-06-22T07:16:42.0295468Z","kind":"reaudit-clean","func":"func_800884C4"}
+{"ts":"2026-06-22T07:20:54.2407111Z","kind":"reaudit-clean","func":"func_80089178"}
+{"ts":"2026-06-22T07:25:52.2299710Z","kind":"reaudit-clean","func":"func_80089D10"}
+{"ts":"2026-06-22T07:26:59.1726900Z","kind":"reaudit-clean","func":"func_8008A904"}
+{"ts":"2026-06-22T07:32:59.6901653Z","kind":"reaudit-clean","func":"func_8008AD64"}
+{"ts":"2026-06-22T07:34:27.6738698Z","kind":"lane-cycle","role":"backlog-worker","lane":"fleet-bw1","outcome":"in-review","func":"calc_fc_frame"}
