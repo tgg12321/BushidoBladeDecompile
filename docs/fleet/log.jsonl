@@ -1383,3 +1383,11 @@
 {"ts":"2026-06-22T05:09:16.1661542Z","kind":"lane-cycle","role":"backlog-worker","lane":"fleet-bw1","outcome":"blocked","func":"saEft03Start2"}
 {"ts":"2026-06-22T05:10:28.0902379Z","kind":"reaudit-clean","func":"func_80079154"}
 {"ts":"2026-06-22T05:12:54.8452500Z","kind":"reaudit-clean","func":"func_80079194"}
+{"ts":"2026-06-22T05:17:51.1751105Z","kind":"reaudit-clean","func":"func_800798CC"}
+{"ts":"2026-06-22T05:22:14.4207376Z","kind":"reaudit-clean","func":"func_8007992C"}
+{"ts":"2026-06-22T05:25:27.3880889Z","kind":"reaudit-clean","func":"func_8007A318"}
+{"ts":"2026-06-22T05:26:10.4109447Z","kind":"lane-cycle","role":"backlog-worker","lane":"fleet-bw1","outcome":"blocked","func":"func_80037A20"}
+{"ts":"2026-06-22T05:29:06.8860271Z","kind":"reaudit-clean","func":"func_8007A3C8"}
+{"ts":"2026-06-22T05:32:15.9264547Z","kind":"reaudit-clean","func":"func_8007B244"}
+{"ts":"2026-06-22T05:40:16.8189719Z","kind":"reaudit-clean","func":"func_8007B4D0"}
+{"ts":"2026-06-22T05:47:00.6272357Z","kind":"reaudit-clean","func":"func_8007B9B0"}
