@@ -1481,3 +1481,14 @@
 {"ts":"2026-06-22T11:50:41.5058496Z","kind":"reaudit-clean","func":"initPolyG3"}
 {"ts":"2026-06-22T11:52:45.9095992Z","kind":"reaudit-clean","func":"initPolyG4"}
 {"ts":"2026-06-22T11:55:23.2462813Z","kind":"reaudit-clean","func":"initPolyGT3"}
+{"ts":"2026-06-22T11:58:20.6602753Z","kind":"reaudit-clean","func":"initSprt"}
+{"ts":"2026-06-22T12:00:13.0111473Z","kind":"reaudit-clean","func":"initSprt8"}
+{"ts":"2026-06-22T12:03:28.0905736Z","kind":"reaudit-clean","func":"initTexPage"}
+{"ts":"2026-06-22T12:06:07.6958660Z","kind":"reaudit-clean","func":"initTile1"}
+{"ts":"2026-06-22T12:06:33.8602605Z","kind":"lane-cycle","role":"backlog-worker","lane":"fleet-bw1","outcome":"blocked","func":"func_80017FA0"}
+{"ts":"2026-06-22T12:07:55.4247885Z","kind":"reaudit-clean","func":"initTile8"}
+{"ts":"2026-06-22T12:11:13.2115841Z","kind":"reaudit-clean","func":"irq_ClearAlarm"}
+{"ts":"2026-06-22T12:15:14.3045550Z","kind":"reaudit-clean","func":"irq_Dispatch"}
+{"ts":"2026-06-22T12:24:23.2528126Z","kind":"reaudit-clean","func":"irq_ProcessPending"}
+{"ts":"2026-06-22T12:26:20.6935354Z","kind":"lane-cycle","role":"backlog-worker","lane":"fleet-bw1","outcome":"in-review","func":"func_8001F938"}
+{"ts":"2026-06-22T12:28:15.6496139Z","kind":"reaudit-clean","func":"irq_SetAlarm"}
