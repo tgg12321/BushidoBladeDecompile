@@ -1501,3 +1501,12 @@
 {"ts":"2026-06-22T12:52:33.7182951Z","kind":"lane-cycle","role":"backlog-worker","lane":"fleet-bw1","outcome":"in-review","func":"func_800617C8"}
 {"ts":"2026-06-22T12:56:00.0445492Z","kind":"reaudit-regressed","reason":"out[4] has a dead 4th element (out[3] is never written by the callee or read by the caller) that inflates the array to 16 bytes to coerce $ra to sp+0x30 and the frame to 0x38 — frame-coercion by dead array element. Worker must find a pure-C form that reaches the correct frame layout without the dead element, or confirm via GCC run whether out[3] produces the same layout.","func":"math_Distance3D"}
 {"ts":"2026-06-22T13:00:13.9597303Z","kind":"reaudit-clean","func":"math_Sin"}
+{"ts":"2026-06-22T13:06:46.0271846Z","kind":"reaudit-clean","func":"md_game_check_change_sub_mode"}
+{"ts":"2026-06-22T13:09:34.9226261Z","kind":"reaudit-clean","func":"md_option_reset_8004001C"}
+{"ts":"2026-06-22T13:11:26.1639279Z","kind":"reaudit-clean","func":"md_option_reset_800400B0"}
+{"ts":"2026-06-22T13:12:29.2590401Z","kind":"reaudit-clean","func":"memcard_SetBusy"}
+{"ts":"2026-06-22T13:17:00.7686712Z","kind":"lane-cycle","role":"backlog-worker","lane":"fleet-bw1","outcome":"in-review","func":"func_8006156C"}
+{"ts":"2026-06-22T13:20:39.9685013Z","kind":"reaudit-clean","func":"memcard_SetSlot"}
+{"ts":"2026-06-22T13:26:15.4179466Z","kind":"reaudit-clean","func":"motion_Close_8001D904"}
+{"ts":"2026-06-22T13:29:54.1294131Z","kind":"lane-cycle","role":"backlog-worker","lane":"fleet-bw1","outcome":"in-review","func":"func_80061658"}
+{"ts":"2026-06-22T13:32:35.7669935Z","kind":"reaudit-clean","func":"motion_LoadPreCalcData_80037F08"}
