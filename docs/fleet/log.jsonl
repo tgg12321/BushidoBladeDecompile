@@ -1541,3 +1541,11 @@
 {"ts":"2026-06-22T15:02:47.7995846Z","kind":"reaudit-clean","func":"saTan2InfoInit_80077AC0"}
 {"ts":"2026-06-22T15:06:28.3319440Z","kind":"reaudit-clean","func":"saTan5TakeGetCnt"}
 {"ts":"2026-06-22T15:10:26.1047122Z","kind":"reaudit-clean","func":"saTan5TakeGetPos_80045694"}
+{"ts":"2026-06-22T15:12:52.8366667Z","kind":"reaudit-clean","func":"saTanMainDispGnd_80046020"}
+{"ts":"2026-06-22T15:15:55.0624716Z","kind":"reaudit-clean","func":"scratchpad_Restore"}
+{"ts":"2026-06-22T15:25:14.1803095Z","kind":"lane-cycle","role":"backlog-worker","lane":"fleet-bw1","outcome":"blocked","func":"func_80062020"}
+{"ts":"2026-06-22T15:27:50.4041079Z","kind":"reaudit-regressed","reason":"Two codegen-coercion constructs with no semantic purpose: (1) '(s8)(u16)D_800A36A4' forces lhu vs lh for no semantic gain (sb discards the sign-extension difference); (2) 's8 *p = (s8*)&D_8010277C' caches the address in a callee-save register across a call where a direct cast would suffice — inconsistency between condition (direct cast) and body (pointer) is the tell. Both fail tests 1+2+3 of the 6-test checklist. Function needs a clean redo: remove the (u16) intermediate cast and replace *p with (s8)D_8010277C throughout, then find the pure-C structure that naturally produces lhu and $s0 address-caching.","func":"se_data_set"}
+{"ts":"2026-06-22T15:30:09.1468091Z","kind":"reaudit-clean","func":"seq_Reset"}
+{"ts":"2026-06-22T15:31:29.9843135Z","kind":"reaudit-clean","func":"single_game_SetStageId"}
+{"ts":"2026-06-22T15:36:25.0049424Z","kind":"reaudit-clean","func":"snd_AllocSe"}
+{"ts":"2026-06-22T15:48:08.7953741Z","kind":"reaudit-clean","func":"snd_CalcFade"}
