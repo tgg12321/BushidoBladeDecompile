@@ -1532,3 +1532,12 @@
 {"ts":"2026-06-22T14:31:02.5295475Z","kind":"reaudit-clean","func":"rng_Next"}
 {"ts":"2026-06-22T14:36:15.5733342Z","kind":"reaudit-clean","func":"rob_ScaleMarioInit"}
 {"ts":"2026-06-22T14:36:29.3863400Z","kind":"lane-cycle","role":"backlog-worker","lane":"fleet-bw1","outcome":"blocked","func":"ang_hosei_80056FE8"}
+{"ts":"2026-06-22T14:39:55.5179640Z","kind":"reaudit-clean","func":"saMotionSet"}
+{"ts":"2026-06-22T14:49:20.5703404Z","kind":"reaudit-regressed","reason":"char b (line 359) fails test-1 (no semantic purpose — identical runtime behavior with u8 b) and test-3 (justification explicitly invokes GCC value-width tracking). Not on the SOTN-accepted exceptions list. Worker must replace with u8 b and find a pure-C structure that naturally reproduces andi $a2,$s2,0xFF, OR bring SOTN master-branch evidence for type-coercion-for-range-analysis as an accepted technique before this construct can pass.","func":"saTan0Main"}
+{"ts":"2026-06-22T14:54:29.9133684Z","kind":"lane-cycle","role":"backlog-worker","lane":"fleet-bw1","outcome":"blocked","func":"func_800692C0"}
+{"ts":"2026-06-22T14:55:37.2867841Z","kind":"reaudit-clean","func":"saTan1SyuryoDraw"}
+{"ts":"2026-06-22T14:58:27.5919739Z","kind":"reaudit-clean","func":"saTan2GaugeInit_80077D00"}
+{"ts":"2026-06-22T15:00:39.3016945Z","kind":"reaudit-clean","func":"saTan2InfoInit_8006C1FC"}
+{"ts":"2026-06-22T15:02:47.7995846Z","kind":"reaudit-clean","func":"saTan2InfoInit_80077AC0"}
+{"ts":"2026-06-22T15:06:28.3319440Z","kind":"reaudit-clean","func":"saTan5TakeGetCnt"}
+{"ts":"2026-06-22T15:10:26.1047122Z","kind":"reaudit-clean","func":"saTan5TakeGetPos_80045694"}
