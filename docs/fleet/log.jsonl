@@ -1429,3 +1429,14 @@
 {"ts":"2026-06-22T08:25:02.9902712Z","kind":"reaudit-clean","func":"game_EffStop"}
 {"ts":"2026-06-22T08:35:52.5919103Z","kind":"reaudit-clean","func":"game_FrameLoop"}
 {"ts":"2026-06-22T08:40:02.4288869Z","kind":"reaudit-clean","func":"game_GetDummyFlag"}
+{"ts":"2026-06-22T08:45:55.9997488Z","kind":"reaudit-clean","func":"game_GetPause"}
+{"ts":"2026-06-22T08:49:21.4100397Z","kind":"reaudit-clean","func":"game_GetPlayerCount"}
+{"ts":"2026-06-22T08:52:24.3997652Z","kind":"reaudit-clean","func":"game_InitStageSound"}
+{"ts":"2026-06-22T08:52:55.7721182Z","kind":"lane-cycle","role":"backlog-worker","lane":"fleet-bw1","outcome":"blocked","func":"D_80083418"}
+{"ts":"2026-06-22T08:55:49.0510426Z","kind":"reaudit-clean","func":"game_SetControllerPorts"}
+{"ts":"2026-06-22T08:59:59.3198676Z","kind":"reaudit-clean","func":"game_SetPlayerCount"}
+{"ts":"2026-06-22T09:02:41.4127808Z","kind":"reaudit-clean","func":"game_SndInit"}
+{"ts":"2026-06-22T09:06:41.0600498Z","kind":"reaudit-clean","func":"game_StageInit"}
+{"ts":"2026-06-22T09:09:00.3637180Z","kind":"reaudit-clean","func":"game_Stub2"}
+{"ts":"2026-06-22T09:11:30.8290260Z","kind":"reaudit-clean","func":"game_Stub4"}
+{"ts":"2026-06-22T09:13:57.2473480Z","kind":"reaudit-clean","func":"gnd_close_8001DB9C"}
