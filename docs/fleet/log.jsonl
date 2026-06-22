@@ -1569,3 +1569,6 @@
 {"ts":"2026-06-22T18:01:22.9848511Z","kind":"reaudit-clean","func":"spu_ReadStatus"}
 {"ts":"2026-06-22T18:03:45.4119794Z","kind":"reaudit-clean","func":"spu_ResetCounter"}
 {"ts":"2026-06-22T18:09:50.5261896Z","kind":"reaudit-clean","func":"spu_SetCallback"}
+{"ts":"2026-06-22T18:17:12.0851804Z","kind":"reaudit-clean","func":"spu_SetMotionState"}
+{"ts":"2026-06-22T18:19:30.5718983Z","kind":"reaudit-clean","func":"spu_TransferData"}
+{"ts":"2026-06-22T18:22:16.0854725Z","kind":"reaudit-clean","func":"spu_WaitReady"}
