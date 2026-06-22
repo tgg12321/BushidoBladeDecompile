@@ -1549,3 +1549,12 @@
 {"ts":"2026-06-22T15:31:29.9843135Z","kind":"reaudit-clean","func":"single_game_SetStageId"}
 {"ts":"2026-06-22T15:36:25.0049424Z","kind":"reaudit-clean","func":"snd_AllocSe"}
 {"ts":"2026-06-22T15:48:08.7953741Z","kind":"reaudit-clean","func":"snd_CalcFade"}
+{"ts":"2026-06-22T15:56:23.2009412Z","kind":"reaudit-clean","func":"snd_GetFadeCurve"}
+{"ts":"2026-06-22T16:00:20.9160705Z","kind":"reaudit-clean","func":"snd_GetSeId"}
+{"ts":"2026-06-22T16:02:51.7839067Z","kind":"reaudit-clean","func":"snd_LoadSe"}
+{"ts":"2026-06-22T16:04:20.1352116Z","kind":"lane-cycle","role":"backlog-worker","lane":"fleet-bw1","outcome":"blocked","func":"func_8006E10C"}
+{"ts":"2026-06-22T16:04:23.6131512Z","kind":"reaudit-clean","func":"snd_PlayBgm"}
+{"ts":"2026-06-22T16:06:35.2415678Z","kind":"reaudit-clean","func":"snd_PlaySystemSe"}
+{"ts":"2026-06-22T16:11:27.6984474Z","kind":"reaudit-clean","func":"snd_SelectionCallback"}
+{"ts":"2026-06-22T16:15:28.7734229Z","kind":"reaudit-clean","func":"snd_StopAll"}
+{"ts":"2026-06-22T16:19:10.0307714Z","kind":"reaudit-clean","func":"snd_StopSelection"}
