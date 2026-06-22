@@ -1421,3 +1421,11 @@
 {"ts":"2026-06-22T08:00:48.8474912Z","kind":"reaudit-clean","func":"g_data_start"}
 {"ts":"2026-06-22T08:08:21.1214425Z","kind":"main-contamination-cleaned","detail":" M docs/tooling_incidents.md"}
 {"ts":"2026-06-22T08:08:21.1237985Z","kind":"reaudit-clean","func":"g_module_type_tbl"}
+{"ts":"2026-06-22T08:11:07.3811530Z","kind":"reaudit-clean","func":"game_AnimInit"}
+{"ts":"2026-06-22T08:13:29.0071492Z","kind":"reaudit-clean","func":"game_AnimStop"}
+{"ts":"2026-06-22T08:16:33.9650080Z","kind":"reaudit-clean","func":"game_DisablePause"}
+{"ts":"2026-06-22T08:20:18.3575199Z","kind":"reaudit-clean","func":"game_EffCleanup2"}
+{"ts":"2026-06-22T08:22:49.4041475Z","kind":"reaudit-clean","func":"game_EffInit2"}
+{"ts":"2026-06-22T08:25:02.9902712Z","kind":"reaudit-clean","func":"game_EffStop"}
+{"ts":"2026-06-22T08:35:52.5919103Z","kind":"reaudit-clean","func":"game_FrameLoop"}
+{"ts":"2026-06-22T08:40:02.4288869Z","kind":"reaudit-clean","func":"game_GetDummyFlag"}
