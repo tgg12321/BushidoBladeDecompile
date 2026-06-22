@@ -69,12 +69,18 @@ rather than hardcoding.
 
 ### Model tiers (quality/risk, never cost)
 ```powershell
-pwsh tools/fleet/launch.ps1 -CheapModel sonnet -StrongModel opus
+pwsh tools/fleet/launch.ps1 -CheapModel sonnet -StrongModel opus -ReauditModel sonnet
 ```
-- **Cheap** (default `sonnet`): active backlog decomp, re-audit patrol, overseer.
+- **Cheap** (default `sonnet`): active backlog decomp, overseer.
 - **Strong** (default `opus`): blocked no-quit grind, forward merge-gate (auditor +
-  verifier), adjudicator. The auditor is tiered *by mode* — re-audit = cheap, forward
-  in-review gate = strong.
+  verifier), adjudicator. The auditor is tiered *by mode* — re-audit = ReauditModel,
+  forward in-review gate = strong.
+- **Reaudit** (default = inherit `CheapModel`): re-audit patrol model. Split out
+  from `CheapModel` 2026-06-22 so the active backlog tier can be bumped (e.g. to
+  opus, after sonnet active produced 2 gate-failed candidates / 0 completions)
+  without dragging the high-volume re-audit patrol with it (sonnet re-audit had
+  caught 42 historical cheats with precise reasoning by then). Recommended:
+  `-CheapModel opus -ReauditModel sonnet` for the current hard tail.
 - `-CheapModel haiku` is cheaper but a riskier match rate.
 
 ---

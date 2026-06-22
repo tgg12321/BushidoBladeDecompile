@@ -30,11 +30,17 @@
 param(
     [string]$Model = 'opus',              # fallback / drill modes
     # Per-role model tiers (cost control). cheap = high-volume / lower-stakes roles
-    # (active backlog decomp, the re-audit patrol, overseer); strong = the hard /
-    # highest-stakes / deepest-reasoning roles (blocked no-quit grind, forward
-    # merge-gate review + verifier, adjudicator). See Get-LaneModel + Auditor-Cycle.
+    # (active backlog decomp, overseer); strong = the hard / highest-stakes /
+    # deepest-reasoning roles (blocked no-quit grind, forward merge-gate review +
+    # verifier, adjudicator). See Get-LaneModel + Auditor-Cycle. The re-audit
+    # patrol is split out into ReauditModel (default = CheapModel for back-compat)
+    # so the active backlog tier can be bumped without dragging the high-volume
+    # re-audit patrol with it — 2026-06-22, after sonnet active produced 2
+    # gate-failed candidates and zero completions but sonnet re-audit caught
+    # 42 historical cheats with precise reasoning.
     [string]$CheapModel = 'sonnet',
     [string]$StrongModel = 'opus',
+    [string]$ReauditModel = '',           # auditor's re-audit-mode model; '' = inherit CheapModel
     [int]$MaxMinutes = 0,                 # 0 = run forever
     [int]$OracleBackstopMinutes = 30,
     [int]$LaneTimeoutMinutes = 120,       # heartbeat-stale kill threshold
@@ -253,9 +259,11 @@ function Auditor-Cycle {
 
 function Auditor-Cycle-Body($pkt, $func, $mode) {
     Write-Host "[auditor] $func (mode=$mode)"
-    # reaudit patrol (bulk, lower stakes, surfaced-not-merged) = cheap; forward
-    # in-review merge-gate (rare, a miss puts new code on main) = strong.
-    $auditModel = if ($mode -eq 'reaudit') { $CheapModel } else { $StrongModel }
+    # reaudit patrol (bulk, lower stakes, surfaced-not-merged) = ReauditModel
+    # (defaults to CheapModel for back-compat); forward in-review merge-gate
+    # (rare, a miss puts new code on main) = strong.
+    $reauditEff = if ($ReauditModel) { $ReauditModel } else { $CheapModel }
+    $auditModel = if ($mode -eq 'reaudit') { $reauditEff } else { $StrongModel }
     $precheck = if ($mode -ne 'reaudit') { Get-ReviewerPrecheck $func ([string]$pkt.candidate_sha) } else { '' }
     $task = Build-AuditorTask $pkt 'first' $precheck
     $outcome = Invoke-RoleAgent -Role auditor -Lane fleet-aud -TaskText $task -Model $auditModel
