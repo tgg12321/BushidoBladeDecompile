@@ -3,12 +3,20 @@
   "file": "ings2",
   "scores": {
     "head_floor": 13,
-    "candidate_floor": 13,
+    "candidate_floor": 7,
     "metric": "sandbox --disable all (masked Levenshtein)",
-    "build_insns": 96,
+    "build_insns": 97,
     "target_insns": 97
   },
   "sessions": [
+    {
+      "date": "2026-06-22",
+      "git_head_at_measurement": "e006aefd",
+      "lever": "Three combined structural changes drop floor 13->7: (1) init order `mask_const, base, one` flips global-allocator priority so one->$s4 and base->$s5 matching target (retires 4 $20<->$21 substs); (2) outer structure `i=0; if(bits==0) goto reload; tbl=base;` restores the missing 2nd beqz $s1 (retires the insert beq @19); (3) error-loop `p[i<<2]` flips addu dest from $v0 to $v1. All pure C, cheat-reviewer PASS.",
+      "lever_rule": "register-alloc-pure-c (allocator priority via assignment order + outer-structure restructure)",
+      "floor_was": 13,
+      "floor_now": 7
+    },
     {
       "date": "2026-06-14",
       "lever": "control-flow restructure reproduces the missing beq $s1,$0 branch (96->97 insns); register-rotation $s4/$s5 + $v0/$v1 did NOT yield to decl-order",
@@ -20,30 +28,74 @@
   "prior_sessions_summary": [],
   "reviewer": {
     "verdict": "PASS",
-    "date": "2026-06-14",
-    "evidence": "The structural base in rejected/ (branch-correct, 97 insns) is clean pure C — no do-while, no pins, no injected asm. It is NOT saved as candidate.c only because it scores 14 > HEAD 13 (the RA swap, now exposed without the merged branch, costs 1). No cheat present; it just isn't a floor improvement yet. The remaining gap is pure register-rotation."
+    "date": "2026-06-22",
+    "evidence": "Layer-1 cheat-reviewer (this session) reviewed candidate.c's three edits: init order, outer restructure, p[i<<2]. PASS on all three. Init-order is analogous to SOTN-sanctioned named-intermediate declaration-order (real assignments all consumed, no dead computation). Outer restructure correctly positions i=0 before the branch so it lands in the delay slot. p[i<<2] is idiomatic C, semantically identical to *(s32*)((u8*)p+(i<<4))."
   },
   "remaining_gap": {
-    "summary": "Two independent issues. (1) SOLVED in pure C: target has a 2nd `beqz $s1,$0` (reload check) that GCC folds on first entry; moving `i=0; tbl=base;` ahead of the `outer:` check makes GCC emit it (96->97). (2) WALL: coupled register rotation — target one=1->$s4, mask_const=0xFFFFFF->$s3, base->$s5 (mine swaps $s4/$s5); plus a $v0<->$v1 swap in the done-block mask compare (lw/and/addu operand order). Declaration-order swap did NOT move the RA.",
+    "summary": "Floor 7. Two clusters remain: (a) INIT EMISSION ORDER (~2 Levenshtein ops): scheduler emits `mask, base, one` but target emits `one, mask, base`; RA is now correct (one->$s4, mask->$s3, base->$s5) -- only the prologue issue order differs. Sched1's `longest-critical-path-first` heuristic prefers the lui+ori/lui+addiu chains over the standalone `addiu $s4, 0, 1`. (b) DONE-BLOCK v0/v1 SWAP (~5 substs): val goes to $v1, target wants $v0; pseudo 94 (val, /v global) conflicts with hardreg 2 because local-alloc gives $v0 to pseudo 96 (const 0xFF000000) first during val's live range. Split-val variants drop scheduler nops (95-insn anomaly). The const pseudo's local-alloc grab of $v0 is the blocker; needs more aggressive RA lever or instrumented cc1 (BB2_ALLOC_DEBUG / PRIODBG).",
     "rule_count_at_head": 12,
-    "rules_required_for_full_match": "1 lost-codegen `insert beq $17,$0` (the missing branch — now shown pure-C-solvable via the control-flow restructure) + 11 `subst` register-swap/operand-order rules ($20<->$21 = $s4/$s5, $2<->$3 = $v0/$v1, and/addu operand reorders). The 11 RA rules are the wall."
+    "rules_required_for_full_match": "After applying candidate.c the residual gap is encoded in the EXISTING regfix rules (oracle still byte-matches). The 4 $s4/$s5 substs + the insert-beq + the addu operand-reorder are retired by candidate.c. The 5 $v0/$v1 substs in done block + the and operand-reorder + the prologue scheduling diff are the remaining 7."
   },
   "next_hypotheses": [
-    "START from rejected/goto_outer_recheck_97insn.c (branch already correct) and attack ONLY the RA swap. The lost-codegen insert can then be retired too.",
-    "Lever A: shrink/relocate the live range of `one` vs `mask_const` so the allocator flips $s4/$s5 (decl-order did nothing; try using mask_const before one in the loop expression, or a block-local for one of them).",
-    "Instrumented cc1 ALLOCDBG (register-alloc-deep-dive recipe) to read why one->$s5 not $s4.",
-    "The done-block $v0/$v1 swap: try reading *ctrl into a fresh local vs reusing `val` to flip which value lands in $v0."
+    "Done block v0/v1: try splitting val into single-write locals while preserving load-delay nops; previous attempts dropped to 95 insns due to scheduler fusion. Try with explicit __volatile__ load barrier between them, or a memory barrier between the load and the use (no -- memory barrier is a cheat). Better: instrumented cc1 PRIODBG to read the local-alloc decision for pseudo 96.",
+    "Init prologue scheduling order: try to inflate one's apparent critical path so sched1 schedules it first. E.g. make one's consumer (the sllv) appear LATER in dependence chain, or shorten the mask/base chains' apparent length. Hard -- both chains are 2-insn lui+_ already.",
+    "Try the original target source structure -- maybe the original C had `s32 *base = &D_800A2640[0];` or some other base-init form that GCC compiles differently."
   ],
   "rejected_forms": [
     {
-      "form": "swap declaration + init order of one / mask_const",
-      "score": 13,
-      "reason": "No change — $s4/$s5 allocation is not declaration-order driven here."
+      "form": "swap declaration order of base/one (s32 one; s32 *base; vs s32 *base; s32 one;)",
+      "score": 14,
+      "reason": "Pseudo numbers shuffle but RA priority is intrinsic to variables, not pseudo numbers. Same emitted asm."
     },
     {
-      "form": "while-loop restructure (a_separate_checks) + goto outer recheck (b)",
+      "form": "decl orders: one_first, all_scalars_first, register_one (8 variants)",
+      "score": 9,
+      "reason": "Decl order doesn't change emitted asm once we have the right outer structure + init order. All produced floor 9."
+    },
+    {
+      "form": "while-loop restructure (a_separate_checks) + goto outer recheck (b) -- from prior session",
       "score": 14,
-      "reason": "Reproduces the missing branch (97 insns) but the RA swap costs +1; clean C, just not a floor improvement. Best base preserved in rejected/goto_outer_recheck_97insn.c."
+      "reason": "Reproduces the missing branch (97 insns) but the RA swap costs +1 over HEAD floor. Floor improvement was elusive until init-order lever found."
+    },
+    {
+      "form": "i += one (replacing i++ inside inner loop)",
+      "score": 10,
+      "reason": "Lowers score by fixing RA but emits `addu s0,s0,s4` vs target's `addiu s0,s0,1` -- semantically the same but different opcode. Borderline cheat-by-spelling (using `one` solely to influence RA in an i++ context). REJECTED as cheat."
+    },
+    {
+      "form": "bits >>= one (replacing bits >>= 1)",
+      "score": 10,
+      "reason": "Same family as i += one. Cheat-by-spelling -- using `one` for non-mask-formation purpose solely to influence RA."
+    },
+    {
+      "form": "mask_via_one: mask_const = (one << 24) - 1",
+      "score": 14,
+      "reason": "Adds dependency on `one` but breaks the lui+ori emission of mask_const."
+    },
+    {
+      "form": "inline_base_reread: drop base var, use D_800A2640 directly in tbl assignment",
+      "score": 16,
+      "reason": "Inserts lui+addiu inside outer per iteration (breaks LICM hoisting). 94 insns vs target 97."
+    },
+    {
+      "form": "split val into two_val_short / first_val / val0_val1 / fresh_locals",
+      "score": "11-18",
+      "reason": "Scheduler fuses load-delay nops into delay slots since the two vals are independent. Produces 95 insns vs target 97."
+    },
+    {
+      "form": "compound_andne / via_xor / via_subtract / complement in done block",
+      "score": "7-12 (some 98 insns)",
+      "reason": "Changes the AND-compare structure. complement (~val&0x7F000000) lowers masked score to 4 but adds a `nor` insn (98 vs 97). Won't byte-match."
+    },
+    {
+      "form": "register hint on val / ctrl / one",
+      "score": 9,
+      "reason": "No effect on RA priority (already at floor 9 baseline, but doesn't push lower)."
+    },
+    {
+      "form": "volatile_ptr_negative: declare ctrl as volatile s32 *",
+      "score": 9,
+      "reason": "No floor improvement at this baseline."
     }
   ],
   "memory_notes": []

@@ -15,6 +15,25 @@
       "lever_rule": "register-alloc-pure-c",
       "floor_was": 10,
       "floor_now": 10
+    },
+    {
+      "date": "2026-06-22",
+      "git_head_at_measurement": "43f80563",
+      "lever": "swept 10 additional structural variants under instrumented codegen comparison (objdump tail of sandbox .o vs target). NONE produced var_v0 -> $v0; all stayed at build_insns 42 vs target 43.",
+      "lever_rule": "register-alloc-pure-c",
+      "floor_was": 10,
+      "floor_now": 10,
+      "variants_ruled_out": [
+        "no `partial` intermediate (inline base+var_v0 in return)",
+        "var_v0 declared FIRST (lower LUID) — same allocation",
+        "remove `a3` intermediate (inline a3 def in `base =`) — same allocation",
+        "`var_v0 += base; return var_v0 + lookup + 0x12C;` — DIFFERENT alloc (a2->$a1, base->$a2, var_v0->$v1), still 42 insns, partial-add still in lh delay slot",
+        "explicit `s32 lookup = ...;` after `s32 partial = base+var_v0;` — same alloc as canonical candidate",
+        "`var_v0 += base; var_v0 += lookup; var_v0 += 0x12C; return var_v0;` (var_v0 as accumulator/return-thread) — DIFFERENT alloc (base->$a2, var_v0->$v1, lookup->$v0), still 42 insns, partial fills lh delay slot",
+        "`s32 partial = a3 * 40;` then `partial += var_v0;` (SAME var split-init) — DIFFERENT alloc (partial->$a2, var_v0->$v1), still 42 insns, partial-add in lh delay slot",
+        "`return (base + lookup + 0x12C) + var_v0;` (var_v0 as LAST addend) — DIFFERENT alloc; addiu 0x12C fills lh delay slot, still 42 insns",
+        "`register s32 var_v0;` (storage-class hint) — same alloc as candidate; NOTE: also counts as a residual non-pin register hint, dropped"
+      ]
     }
   ],
   "reviewer": {
@@ -47,6 +66,11 @@
       "form": "base += var_v0 in place / partial += 0x12C / group const",
       "score": "15-16",
       "reason": "Addition reordering does not force partial before the load; all worse than the named-partial floor 10."
+    },
+    {
+      "form": "structural variants of accumulator/split-init/declaration-order (2026-06-22 session, 10 forms)",
+      "score": 10,
+      "reason": "All produce masked floor 10 (= candidate.c floor) but differ in WHICH physical register hosts var_v0. NONE produce var_v0 -> $v0. GCC 2.7.2's allocator routes var_v0 to $a1 / $v1 / $v0(via accumulator) depending on form; even when var_v0 lands in $v0 (full-accumulator variant), the partial-add (`addu` of base+var_v0) doesn't displace the lh delay slot fill because base lives in a different reg (e.g. $a2), so the scheduler still fills the lh's slot with the partial-add. The wall isn't 'var_v0 in $v0' — it's the FULL coupling: var_v0 in $v0 AND base in $a1 simultaneously, so that `addu $a1, $a1, $v0` is FORCED before the `lw $v0, 0($a0)` (otherwise the lw clobbers live var_v0)."
     }
   ],
   "memory_notes": []

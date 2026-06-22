@@ -1,43 +1,66 @@
-# D_80083418 — branch reproducible in C, register-rotation is the wall (ings2.c)
+# D_80083418 — floor 13→7 via three pure-C levers (ings2.c)
 
-## TL;DR (2026-06-14)
-Honest distance 13 (12 regfix rules stripped); build_insns 96 vs target 97.
-Two separable problems:
-1. **SOLVED in pure C** — the missing instruction is a 2nd `beqz $s1,$0`
-   (the reload check) that GCC folds on first loop entry. Moving `i=0;
-   tbl=base;` ahead of the `outer:` bits==0 check makes GCC emit it
-   (96 -> 97 insns). This retires the lost-codegen `insert beq $17,$0` cheat.
-2. **WALL** — coupled register rotation the 11 `subst` rules encode:
-   - target `one`=1 -> $s4, `mask_const`=0xFFFFFF -> $s3, `base` -> $s5;
-     mine swaps $s4/$s5.
-   - done-block: target `lw v0; lui v1; and v0,v0,v1` / `addu v1,v1,v0`;
-     mine has $v0<->$v1 swapped.
-   Declaration-order swap did NOT move the RA. Same plateau class as
-   func_80072CD4 this session.
+## TL;DR (2026-06-22)
+Honest distance HEAD 13 → candidate 7 (97 vs target 97 insns). Three structural
+levers, all pure C, cheat-reviewer PASS:
 
-Net: no floor improvement (the branch-correct base scores 14 because the RA
-swap, no longer hidden behind the merged branch, costs +1). Blocked; the
-branch finding + clean base are preserved for the next agent.
+1. **Init order `mask_const, base, one`** — flips global-allocator priority so
+   `one`→$s4 and `base`→$s5 (matches target). Retires the 4 `subst $20<->$21`
+   register-rotation regfix rules. Prior session tried decl-order; this swaps
+   *assignment* order in the function body (not declaration order). The
+   `(log2(n_refs)*n_refs)/live_length` priority math is in `global.c:611`.
+2. **Outer structure `i = 0; if (bits == 0) goto reload; tbl = base;`** —
+   placing `i = 0;` BEFORE the branch keeps GCC from folding the redundant
+   bits-check, restores the missing 2nd `beqz $s1` (96→97 insns), and puts
+   `move $s0, $zero` (i=0) in the branch delay slot exactly as target.
+   Retires `insert beq $17,$0,{lbl#4} @ 19`.
+3. **Error-loop `p[i << 2]`** — replacing `*(s32 *)((u8 *)p + (i << 4))`
+   with the idiomatic s32-array index (mathematically identical) flips the
+   addu destination from $v0 to $v1 in the debug_printf loop. Retires the
+   `subst addu $2,$2,$3 → addu $3,$3,$2 @ 71` regfix.
+
+Oracle SHA1 still matches with these src changes (existing 12 rules cover the
+residual 7-position diff). Floor measurably lowered; src/ reverted per WIP
+protocol so the next agent applies `candidate.c` and resumes from floor 7.
 
 ## Resume steps
-1. Apply `rejected/goto_outer_recheck_97insn.c` to src/ings2.c — it is
-   branch-correct (97 insns) and clean pure C (reviewer PASS). Confirm
-   `sandbox D_80083418 --disable all` ~ 14.
-2. Attack ONLY the RA swap from there (the lost-codegen insert is then dead).
+1. Apply `candidate.c` to src/ings2.c. Confirm `sandbox D_80083418 --disable all`
+   reports score 7 (97 build_insns vs 97 target).
+2. Attack the residual 7. Two clusters (see meta.json remaining_gap):
+   - **Init prologue scheduling order** (~2 ops): RA is correct, but
+     scheduler emits `mask, base, one` while target emits `one, mask, base`.
+     Sched1 picks the lui+ori/lui+addiu chains over `addiu $s4, 0, 1`.
+   - **Done-block $v0/$v1 swap on val** (~5 ops): pseudo 94 (val, /v global)
+     conflicts with hardreg 2 because pseudo 96 (const 0xFF000000) gets
+     local-allocated $v0 first. Split-val variants drop to 95 insns
+     (scheduler fuses delay-slot nops).
 
 ## Live hypotheses
-- Lever A on `one` vs `mask_const`: try `mask_const` referenced before `one`
-  in the loop expression, or hoist one of them into a block-local, to flip
-  $s4/$s5.
-- done-block: read `*ctrl` into a fresh local instead of reusing `val` to flip
-  which value lands in $v0 (the $2/$3 swap).
-- Instrumented cc1 ALLOCDBG ([[register-alloc-deep-dive]]) for the $s4/$s5 tie.
+- Instrumented cc1 with `BB2_ALLOC_DEBUG` / `BB2_PRIO_DEBUG` to read the
+  exact local-alloc priority for pseudo 96 vs the global pseudo 94 — see
+  [[register-alloc-deep-dive]] for the recipe. Goal: find a structural
+  lever that makes val win $v0 over const.
+- Split val into single-write locals BUT add a control-flow barrier that
+  prevents scheduler from fusing the load-delay slots. Hard without a cheat
+  barrier; needs creativity.
+- For prologue order: try to make `one`'s critical path APPEAR longer to
+  sched1 so it issues first. The `sllv $v0, $s4, $v0` consumer is in inner,
+  far away. Maybe an early dummy reference to `one`? (Borderline.)
 
-## Ruled out (do not re-derive)
-- swap decl/init order of one & mask_const -> 13 (no change).
-- while-loop restructure / goto-outer-recheck -> 14 (branch fixed, RA +1).
+## Ruled out (do NOT re-derive — see meta.json rejected_forms)
+- Decl-order swaps (8 variants, all floor 9 once init+outer lever applied).
+- `i += one` and `bits >>= one` — float to 10 but introduce `addu` vs `addiu`
+  (cheat-by-spelling: using `one` solely to influence RA in non-mask contexts).
+- `mask_const = (one << 24) - 1` (mask via one) — breaks lui+ori emission.
+- Inline base re-read (drop `base` var) — 94 insns, breaks LICM hoist.
+- Split val into separate locals — drops to 95 insns (scheduler fuses nops).
+- compound_andne / via_xor / via_subtract / complement done-block rewrites.
+- register hints on val / ctrl / one — no RA effect.
 
 ## Pointers
-- `.claude/rules/register-alloc-pure-c.md` — Step-0 + Levers; the
-  "confirmed limits" coupled-rotation class is the precedent.
-- Sibling on the same wall this session: `memory/wip/func_80072CD4/`.
+- `.claude/rules/register-alloc-pure-c.md` — Step-0 + Levers (the candidate
+  is essentially Lever A applied to assignment ORDER, not just declaration).
+- `.claude/rules/no-new-park-categories.md` — the cheat-by-spelling lens
+  that ruled out `i += one` / `bits >>= one`.
+- Prior WIP base (`rejected/goto_outer_recheck_97insn.c`) — branch-correct
+  base from 2026-06-14 that the (1)+(2) levers improved on.

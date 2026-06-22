@@ -19,6 +19,19 @@ regfix") — a strong signal it's a genuine coupled scheduling+RA wall.
 - 6 decl-order / init-order permutations (bitpos-first decl; bitpos-before-sum;
   sum-last; bitpos-last; combos). ALL score >=9 (several made it worse). Source
   ordering does not move either diff.
+- (2026-06-22) 8 more pure-C variants: shift-temp extraction `s32 sh=1<<bitpos`;
+  plain `register` storage-class hint (no asm pin) — scored 9, GCC ignores the
+  K&R hint here; `register`+shift-temp combined; p=&D_800A32D0 materialized
+  FIRST; for-loop with bitpos in the for-clause; ANSI decl+init in bitpos-first
+  order; arg1<<=4 hoisted to first init; arg1<<=4 deferred past zero-inits.
+  Best non-baseline scored 11; baseline (and plain-register hint) stay at 9.
+  Confirms the wall is not source-orderable.
+- (2026-06-22) Attempted decomp-permuter import from candidate.c — import.py
+  pulls in a sibling inline-asm body (func_8004A348) and the maspsx pipeline
+  then fails with `too many values to unpack (expected 2)`. Permuter cannot
+  drive this function until the import pipeline is patched to handle sibling
+  inline-asm in text1b.c, OR the import is hand-trimmed to JUST this function's
+  context.
 
 ## Resume guidance
 The two diffs look coupled (sched li-placement + allocator t1/t2 tie). Best next

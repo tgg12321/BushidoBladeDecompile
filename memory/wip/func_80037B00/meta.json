@@ -10,12 +10,29 @@
   },
   "head_carries": ["9x register asm() pins (t1,t3,t2,a3,a1,a2,t0,v1,v0)", "s32 sp_dummy[2] frame-padding cheat"],
   "rejected_forms": [
-    "pin-free + no-dummy (23; whole-function register-rotation cascade + loop scheduling shift + absent 8-byte frame)"
+    "pin-free + no-dummy (23; whole-function register-rotation cascade + loop scheduling shift + absent 8-byte frame)",
+    "pin-free + sp_dummy[2] (FAILED reviewer 2026-06-22 — dead-vars-local-array; saved under rejected/. GCC DCEs the dummy in pin-free form so the frame doesn't materialize regardless — the construct is both forbidden AND ineffective here)",
+    "do-while restructure pin-free (sandbox=17, build_insns=33 — worse than the goto form: GCC dropped one inner-loop instruction; the do-while loop-exit collapses one slt/bnez pair)"
   ],
-  "blocker": "removing the 9 pins triggers a coupled multi-register rotation (t1->t0, a1->v1, a2->a1, ...) + inner-loop scheduling divergence + an 8-byte frame gap (DCE'd sp_dummy can't supply). pin-free floor 23 >> HEAD's cheated 15. Orchestrator/multi-session grade.",
-  "next_modality": ["decomp-permuter from candidate.c (may plateau like marionation_Exec)", "cc1psx frame calibration -- shared +8 frame anomaly with func_80037AA4 and file_LoadSectors"],
-  "reviewer": "n/a (no commit; blocked)",
+  "blocker": "removing the 9 pins triggers a coupled multi-register rotation (t1->t0, a1->v1, a2->a1, t0->t1, v1->a2) + inner-loop scheduling divergence + an 8-byte frame gap. Pin-free floor 23 >> HEAD's cheated 15. Confirmed 2026-06-22: sp_dummy is BOTH a forbidden cheat (dead-vars-local-array) AND non-functional in pin-free form (DCE'd). The frame can ONLY be coerced by something that survives DCE AND is policy-clean — none found.",
+  "next_modality": [
+    "decomp-permuter from candidate.c — directed at the 5-way register rotation; this is the highest-yield untried lever (analogous to marionation_Exec coupled-rotation closure attempts)",
+    "matched-sibling search: compare against other code6cac_c.c string-compare loops + cluster siblings func_80037AA4 / file_LoadSectors (all three carry the same +8 phantom frame; a single cc1psx vs cc1-mips-2.7.2 calibration could explain the cluster)",
+    "instrumented cc1 RTL dump on candidate.c to see WHY the allocator picks t0/v1/a1/t1/a2 instead of t1/a1/a2/t0/v1 — the rotation may be one rename-pass parameter away"
+  ],
+  "reviewer": "PASS 2026-06-22 (fleet-bw1) — clean pin-free goto body, no pins/asm/aliases/dummies; sp_dummy variant kept in rejected/dead-vars-local-array.c",
+  "prior_sessions_summary": "2026-06-14 orch3a: identified the 9-pin + sp_dummy HEAD cheat, measured pin-free floor=23, flagged the +8 phantom frame as cluster-wide with func_80037AA4 / file_LoadSectors.",
   "sessions": [
-    {"date": "2026-06-14", "agent": "worker orch3a", "result": "analysed; 9 pins + frame dummy; pin-free floor 23>15 (register rotation + scheduling + frame); blocked as multi-session, part of a 3-fn +8-frame cluster"}
+    {
+      "date": "2026-06-14",
+      "agent": "worker orch3a",
+      "result": "analysed; 9 pins + frame dummy; pin-free floor 23>15 (register rotation + scheduling + frame); blocked as multi-session, part of a 3-fn +8-frame cluster"
+    },
+    {
+      "date": "2026-06-22",
+      "agent": "fleet-bw1",
+      "git_head_at_measurement": "50e5ab29",
+      "result": "confirmed pin-free goto floor=15 weighted (masked) / 23 honest insns; verified sp_dummy DCE in pin-free form (no frame emitted); cheat-reviewer FAILED sp_dummy as dead-vars-local-array (moved to rejected/); do-while restructure scored worse (sandbox=17, build_insns=33); reverted src to HEAD, oracle remains green. Next-modality permuter is the right lever — same pin-free C body now sits in candidate.c as the permuter seed."
+    }
   ]
 }

@@ -5,8 +5,8 @@
     "head_floor": 9,
     "candidate_floor": 9,
     "metric": "sandbox --disable all (masked Levenshtein)",
-    "build_insns": 70,
-    "target_insns": 70
+    "build_insns": 77,
+    "target_insns": 77
   },
   "sessions": [
     {
@@ -14,24 +14,57 @@
       "lever": "confirmed same family plateau as func_80061658; tail-only v0/v1 rotation diff",
       "floor_was": 9,
       "floor_now": 9
+    },
+    {
+      "date": "2026-06-22",
+      "git_head_at_measurement": "01e7ecf0",
+      "lane": "fleet-bw1",
+      "lever": "8 pure-C forms swept on this function's body (different from 658/710); none beat floor 9",
+      "floor_was": 9,
+      "floor_now": 9,
+      "rejected_forms": [
+        "v1 baseline pins-stripped (s32 t; s32 mask;) -> 9",
+        "v2 block-local { s32 t; s32 mask; ... } scope after the call -> 9",
+        "v3 decl order swap (mask before t) -> 9",
+        "v4 split mask: mask=0xFF0000; mask|=0x8080; between loads -> 9",
+        "v5 mask=0xFF8080 placed immediately after func_80060A68() -> 9",
+        "v6 s32 mask = 0xFF8080; initialiser at top of function -> 9 (+1 build insn)",
+        "v7 inline arg0[i] no t var (D_800F1140 = arg0[0] etc) -> 11",
+        "v8 u8 *p = D_800F1164 alias in body -> 33 (worse)"
+      ],
+      "candidate_saved": true,
+      "candidate_reviewer": "PASS"
     }
   ],
   "reviewer": {
-    "verdict": null,
-    "date": "2026-06-14",
-    "evidence": "No candidate adopted. HEAD pins are the documented family cheat; no new cheat introduced."
+    "verdict": "PASS",
+    "date": "2026-06-22",
+    "evidence": "candidate.c is HEAD minus the two register-asm pins; every construct passes the six-test checklist. Named-intermediate t/mask is SOTN-sanctioned. No forbidden family constructs introduced."
   },
   "remaining_gap": {
-    "summary": "Tail-only v0/v1 register-rotation: loads->v1 / mask(0xFF8080)->v0 unpinned vs target loads->v0 / mask->v1 with lui v1,0xff interleaved. Body (D_800F1164 dispatch) matches. Masked floor 9.",
+    "summary": "Tail-only v0/v1 register-rotation: target uses v0 for the three arg0[] loads and v1 for the mask (lui/ori 0xFF8080) with `lui $v1,0xFF` interleaved between the 2nd lw and 2nd sw; unpinned GCC swaps both (loads->v1, mask->v0) on the same schedule. Masked Levenshtein = 9 on every pure-C form explored across this function and both siblings (80061658, 80061710). Schedule is byte-identical; this is purely the GCC 2.7.2 local-alloc preference flip discussed in memory/project/register-alloc-deep-dive.md.",
     "rule_count_at_head": 0,
-    "rules_required_for_full_match": "Two register pins (t->$2, mask->$3); no regfix rules. Pure-C reordering does not reproduce the rotation (see func_80061658)."
+    "rules_required_for_full_match": "Two register-asm pins (t->$2, mask->$3); no regfix rules. Pure-C reordering does not reproduce the rotation (sibling 80061658, 80061710, and this function's 8-form sweep all confirm)."
   },
   "next_hypotheses": [
-    "Resolve as a family with func_80061658/710/617C8/618B4/611A4/6133C — one lever covers all siblings."
+    "Standalone cc1 `-da` dump on minimal isolation TU to expose the .greg priority queue and the structural lever that flips mask's vs t's spill-cost ranking (mechanical, not guesswork).",
+    "Directed permuter seeded from candidate.c with PERM_GENERAL biasing the v0/v1 allocation between the two pseudos.",
+    "Family-level resolution covering func_80061658 / 710 / 617C8 / 618B4 / 611A4 / 6133C / ACC -- one lever covers the whole sibling set if identified."
   ],
-  "rejected_forms": [],
+  "rejected_forms": [
+    "v1 baseline pins-stripped -> 9",
+    "v2 block-local t/mask -> 9",
+    "v3 decl order swap (mask first) -> 9",
+    "v4 mask split high|low between loads -> 9",
+    "v5 mask early (right after call) -> 9",
+    "v6 mask top-of-function initialiser -> 9 (+1 insn)",
+    "v7 inline arg0[i] no t var -> 11",
+    "v8 u8 *p alias for D_800F1164 -> 33"
+  ],
   "memory_notes": [
     "memory/wip/func_80061658/notes.md",
+    "memory/wip/func_80061710/notes.md",
+    "memory/wip/func_80061710/candidate.c",
     "memory/project/register-alloc-deep-dive.md"
   ]
 }

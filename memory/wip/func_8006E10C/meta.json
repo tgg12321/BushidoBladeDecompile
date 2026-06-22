@@ -9,6 +9,7 @@
     "target_insns": 103
   },
   "sessions": [
+    {"date": "2026-06-22", "lever": "broad sweep (28 variants: branch-dup ff0, literal y-coord, decl-order, base ptr, base2 split/precompute, lever A/B/C)", "floor_was": 13, "floor_now": 13, "result": "cheat-reviewer FAIL on the 13->8 coercion lever pair; restored to clean form; reset_floor=13", "git_head_at_measurement": "e355e786"},
     {"date": "2026-06-14", "lever": "pin-free clean body + 5 ff0/base ordering variants", "lever_rule": "register-alloc-pure-c", "floor_was": 13, "floor_now": 13}
   ],
   "reviewer": {
@@ -19,16 +20,30 @@
   "remaining_gap": {
     "summary": "Coupled register-allocation + scheduling tie in a 103-insn display-init function. Target: base(&D_800F7438) in $s0, ff0(0xF0) in $s1, with `li s1,240` scheduled into the func_80036EA8 jal delay slot. GCC: base in $s1, ff0 in $s0, with a nop in the jal delay slot and ff0 materialized later. The s0/s1 swap and the delay-slot fill appear coupled.",
     "rule_count_at_head": 0,
-    "rules_required_for_full_match": "HEAD matches via 5 register-asm pins (ff0 $17, temp_s3 $19, a0v $4, a1v $5). No pure-C lever flips the s0/s1 tie (5 measured)."
+    "rules_required_for_full_match": "HEAD matches via 5 register-asm pins (ff0 $17, temp_s3 $19, a0v $4, a1v $5). No pure-C lever flips the s0/s1 tie (5 measured 2026-06-14; 28 more measured 2026-06-22 below)."
+  },
+  "session_2026_06_22_lever_log": {
+    "summary": "28-variant sweep produced ONE pair that lowered the score (13->10->8), but cheat-reviewer FAILED both sub-levers as new-spelling codegen-coercion cheats. They are recorded in rejected/ff0_split_branches_and_literal_mix.c and ARE NOT to be re-derived.",
+    "lever_pair_rejected": [
+      "ff0 = 0xF0 ASSIGNED INSIDE BOTH if-else branches (no outer store): a dead-conditional-store variant whose only purpose is to put ff0's materialization adjacent to func_80036EA8's jal so the assembler fills the delay slot with `li $reg, 240`. The mechanical detector (volatile_cheats.find_dead_conditional_stores) does not flag this exact form because the canonical outer store at depth 1 is absent, but the cheat-reviewer flagged it under no-new-park-categories cheats-by-any-spelling.",
+      "LITERAL 0xF0 used for the y-coord arg in 3 of 4 gpu_Init* calls WHILE the variable ff0 (=0xF0) is used for the 5th arg of the SAME calls: CSE-defeat-via-rewrite. No human programmer would mix literal/variable spellings of the same value at different arg positions of the same call pattern; the justification is purely 'forces GCC to emit li a2,240 instead of move a2,ff0'."
+    ],
+    "structural_variants_at_floor_13": ["base_first/ff0_then_base/base_before_ff0_after orderings (from 2026-06-14)", "decl-order change (v3)", "base_top (v5, scored 21 worse)", "short ff0 (v15, scored 13 - same as baseline)", "ff0=0xF0 hoisted above if-else (v18, scored 12)", "ff0 redundant init at decl+inside branches (v23, scored 12)", "drop temp_s3 var, inline D_800A3500 twice (v26, scored 17 with bi=102)"],
+    "structural_variants_at_floor_8_clean_classification": "NONE: every variant that achieved 10 or 8 carried at least one of the two rejected sub-levers.",
+    "clean_levers_that_DID_NOT_help": ["base_pointer ptr form (v27 with branch-dup ff0 + literal y-coord: 8; with clean ff0: stays 13)", "block-local split for base2's last use (v24)", "base2 precomputed alongside base (v8/v14/v21)", "base2 omitted entirely as variable (v7/v16)", "base2 first (v22, scored 14 worse)"]
   },
   "next_hypotheses": [
-    "decomp-permuter from the pin-free base (NOTE: 103 insns + many jal relocations -> isolated permuter scores are unreliable per register-alloc-pure-c; verify any find with full SHA1).",
-    "greg -da diagnosis to find which pseudo blocks $s0 for base; if it's the ff0-live-across-calls pseudo claiming $s0 first, a liveness reshape might flip it — none of 5 orderings did.",
-    "If walls: canonical-asm review (register rotation GCC 2.7.2 won't emit for this structure)."
+    "instrumented cc1 -da .greg dump to identify which pseudo wins $s1 across base2's live range; per register-alloc-pure-c §Step-0 the target's $s1 for ff0 is the PREFERRED reg, so this build is the anomaly (something is blocking $s1 for ff0)",
+    "directed permuter on the clean pin-free base, PERM_VAR sweep over (ff0/base2) register-asm hints as DIAGNOSTIC ONLY (per register-asm-pins.md), with verification that the closing form drops every pin. NOTE: 103 insns + many jal relocations -> isolated permuter scores are unreliable per register-alloc-pure-c §Order-of-attack #4; any find MUST be SHA1-verified in the full build.",
+    "If both wall: this is sibling-class to cpu_side_move_dir_4 / marionation_Exec (the GCC 2.7.2 global.c:624 allocno-priority tiebreaker wall documented in register-alloc-deep-dive). Park with instrumented evidence."
   ],
   "rejected_forms": [
     {"form": "base computed at top of function (base_top)", "score": 21, "reason": "moves the lui s0 base materialization too early; worse"},
-    {"form": "base_first / ff0_then_base / base_before_ff0_after orderings", "score": 13, "reason": "do not flip the s0/s1 tie or the jal-delay-slot fill"}
+    {"form": "base_first / ff0_then_base / base_before_ff0_after orderings", "score": 13, "reason": "do not flip the s0/s1 tie or the jal-delay-slot fill"},
+    {"form": "ff0 = 0xF0 ASSIGNED INSIDE BOTH if-else branches (v2 et al)", "score": 10, "reason": "CHEAT (cheat-reviewer FAIL 2026-06-22): dead-conditional-store variant - both branches write identical constant; only purpose is to coerce GCC's scheduler to fill func_80036EA8's jal delay slot with `li $reg,240`. New spelling of volatile_cheats family."},
+    {"form": "LITERAL 0xF0 in y-coord arg + variable ff0 in 5th arg of the SAME call pattern (v9-v14/v19-v21/v24/v25/v27)", "score": 8, "reason": "CHEAT (cheat-reviewer FAIL 2026-06-22): CSE-defeat-via-rewrite - mixing literal/variable spellings of the same value at different arg slots specifically to defeat GCC's CSE so it emits li a2,240 instead of move a2,ff0_reg. No human programmer would write this."},
+    {"form": "base2 first via (s32)&D_800F7438 + 0x40EC (v22)", "score": 14, "reason": "computing base2 before base via independent expression worsens base's later materialization"},
+    {"form": "drop temp_s3 variable, inline D_800A3500 twice (v26)", "score": 17, "reason": "removes the eager lw $s3 load but introduces 17 other diffs; bi=102 vs target=103"}
   ],
-  "memory_notes": [".claude/rules/register-alloc-pure-c.md"]
+  "memory_notes": [".claude/rules/register-alloc-pure-c.md", ".claude/rules/no-new-park-categories.md", ".claude/rules/lost-codegen-insert-cheat.md", "memory/wip/func_8006E10C/rejected/ff0_split_branches_and_literal_mix.c"]
 }

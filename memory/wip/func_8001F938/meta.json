@@ -24,6 +24,13 @@
       "lever": "Variant sweep: 41 forms tested. Best matched-count (bi=107) reached floor 4 via `kind_full=lhu; kind = kind_full & 0xFFFFU` split + if/else `t = (s32)*((u16*)+0x270) << 16` (else lui-folded). Best overall floor 2 (bi=108) reached via the kind-split + dual-typed read at +0x270 (`s32 probe=s16-read; s32 v=u16-read; if(probe>=4) v=3; t=v<<16`) yielding target's exact `lhu $a1; andi $v1, $a1, 0xFFFF; ...; addiu $v1,3; sll` shape — but with 1 extra `andi $v1,$v0,0xFFFF` insn at the ternary (because GCC CSE'd the u16 read into the s16-load value and materialized u16 via andi rather than emitting a separate lhu).",
       "floor_was": 11,
       "floor_now": 11
+    },
+    {
+      "date": "2026-06-22",
+      "git_head_at_measurement": "3586d7d4",
+      "lever": "re-verified HEAD floor=11 (bi=107==target). Re-examined target asm at .L8001FA60: unambiguously emits `lh $v0, 0x270($a0); lhu $v1, 0x270($a0)` BOTH UNCONDITIONAL — i.e. the original C source MUST have had a dual-typed read at +0x270 (no other GCC 2.7.2 construct produces both lh and lhu of the same address). The previous session's reviewer-FAIL of the dual-typed-read variant is therefore in tension with what the target source provably did. Re-confirming needs-decision; no new lever attempted (would duplicate the 41-variant sweep).",
+      "floor_was": 11,
+      "floor_now": 11
     }
   ],
   "reviewer": {

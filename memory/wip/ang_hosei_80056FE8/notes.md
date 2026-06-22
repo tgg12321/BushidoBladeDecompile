@@ -28,6 +28,19 @@ the sandbox score) plus the delay-slot-fill consequence.
 - Computing base late / inline: floor 27 (multiply moves past the load).
 - Addition reordering (base+=, partial+=0x12C, group const): floor 15-16.
 
+### 2026-06-22 — 10 more structural variants, all stay at masked 10 / build 42 insns
+- No `partial` intermediate (inline `base+var_v0` in return): same alloc.
+- `var_v0` declared FIRST (lower LUID): same alloc.
+- Remove `a3` intermediate (inline def): same alloc.
+- `var_v0 += base; return var_v0 + lookup + 0x12C;`: DIFFERENT alloc (base→$a2, var_v0→$v1), still 42.
+- `s32 partial = base + var_v0; s32 lookup = ...; return partial+lookup+0x12C;`: same alloc as canonical candidate.
+- Full accumulator (`var_v0 += base; var_v0 += lookup; var_v0 += 0x12C; return var_v0;`): DIFFERENT alloc (base→$a2, var_v0→$v1, lookup→$v0); still 42.
+- Same-var split-init (`s32 partial = a3 * 40;` … `partial += var_v0;`): DIFFERENT alloc (partial→$a2, var_v0→$v1); still 42.
+- `return (base + lookup + 0x12C) + var_v0;` (var_v0 as LAST addend): addiu 0x12C fills lh slot; still 42.
+- `register s32 var_v0;` (storage-class hint, NOT asm-pin): same alloc; NOTE: cheat_asm_stripped counter increments → dropped.
+
+**Pattern:** every variant produces the same TOTAL insn count (42) but with DIFFERENT register choices. Masked sandbox cannot distinguish — all score 10. The wall is the FULL coupling `var_v0→$v0 AND base→$a1 SIMULTANEOUSLY` — only then does the partial-add `addu $a1, $a1, $v0` become forced-before the `lw $v0, 0($a0)` (since the lw would clobber live var_v0 in $v0). When base is in $a2/$a3, the addu doesn't conflict with the lw's $v0 destination, so the scheduler is free to put it in the lh delay slot.
+
 ## Pointers
 - `.claude/rules/register-alloc-pure-c.md` (Lever A; pins/barriers forbidden)
 - Same masked-10 RA-coupling class as this batch's other backlog items.

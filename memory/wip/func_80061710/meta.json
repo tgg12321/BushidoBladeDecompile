@@ -14,20 +14,41 @@
       "lever": "confirmed identical to sibling func_80061658; no separate grind",
       "floor_was": 9,
       "floor_now": 9
+    },
+    {
+      "date": "2026-06-22",
+      "git_head_at_measurement": "6fba84ad",
+      "lane": "fleet-bw1",
+      "lever": "8 pure-C forms swept; no improvement (all >= 9, several worsen to 11)",
+      "floor_was": 9,
+      "floor_now": 9,
+      "rejected_forms": [
+        "decl order swap (mask before t)",
+        "block-local {t,mask} scope after the call",
+        "mask = 0x10FF10 placed immediately after func_80060A68()",
+        "split mask: mask=0x100000; ... mask|=0xFF10;",
+        "inline mask literal: D_800A3464 = 0x10FF10 (no mask var)",
+        "inline t loads: D_800F1140 = arg0[0] (no t var) -> floor 11",
+        "mask = 0x10FF10 initializer at top of function -> floor 11 (+2 spill insns)",
+        "*arg0 / *(arg0+N) pointer-deref form vs arg0[N] -> identical asm"
+      ]
     }
   ],
   "reviewer": {
-    "verdict": null,
-    "date": "2026-06-14",
-    "evidence": "No candidate adopted. HEAD pins are the documented family cheat; no new cheat introduced."
+    "verdict": "PASS",
+    "date": "2026-06-22",
+    "evidence": "candidate.c is HEAD minus the two register-asm pins; no forbidden family constructs, named-intermediate t/mask is SOTN-accepted. WIP checkpoint at floor 9 honestly documented."
   },
   "remaining_gap": {
-    "summary": "Identical to func_80061658: v0/v1 register-rotation with the mask's lui interleaved between the arg0[] loads. Unpinned GCC swaps the registers and de-interleaves the mask. Masked floor 9.",
+    "summary": "Identical to func_80061658: v0/v1 register-rotation with the mask's lui interleaved between the arg0[] loads. The post-jal schedule is BYTE-IDENTICAL to target except every v0/v1 occurrence is swapped (9 lines, 9 = masked-Levenshtein floor). GCC's local-alloc gives mask (longer live range, single pseudo across the loads) the lower-numbered v0; target gives mask v1.",
+    "mechanism": "GCC 2.7.2 local-alloc allocates the longer-lived `mask` pseudo to the preferred low reg ($v0). To match target, t's pseudo must get v0 instead. None of the pure-C levers tried (declaration order, block-local scope, mask placement, split-mask, dereference form) flip this preference.",
     "rule_count_at_head": 0,
-    "rules_required_for_full_match": "Two register pins (t->$2, mask->$3); no regfix rules. Pure-C reordering does not reproduce the rotation (see func_80061658 ruled-out forms)."
+    "rules_required_for_full_match": "Two register pins (t->$2, mask->$3); no regfix rules."
   },
   "next_hypotheses": [
-    "Resolve as a family with func_80061658/617C8/618B4/611A4/6133C — one lever (permuter or canonical/plateau decision) covers all siblings."
+    "Directed permuter from candidate.c with hint that biases the v0/v1 allocation between t (3-occurrence pseudo) and mask (single-occurrence-spanning-loads pseudo)",
+    "Standalone -da .greg dump on a minimal isolation TU to see the exact priority/conflict that fixes mask -> v0 in this allocator's pass; that should name a concrete C structure that swaps the priorities",
+    "Family-level resolution covering func_80061658 / 710 / 617C8 / 618B4 / 611A4 / 6133C - one lever resolves all siblings (or moves the family to a canonical/plateau decision)"
   ],
   "rejected_forms": [],
   "memory_notes": [

@@ -16,6 +16,24 @@
       "floor_was": 9,
       "floor_now": 9,
       "git_head_at_measurement": "c3aa1ffc"
+    },
+    {
+      "date": "2026-06-22",
+      "lever": "8 more pure-C variants from candidate.c (floor 9) — shift-tmp split (1<<bitpos to s32 sh), plain `register` storage-class hint (no asm pin), shift-tmp+register combined, p=&D_800A32D0 materialized FIRST in init, for-loop with bitpos in for-clause, ANSI decl+init bitpos-first, arg1<<=4 hoisted to init head, arg1<<=4 deferred past zero-inits. Plain `register` hint scored 9 (no effect); ALL others scored 11-17 (worse). Confirms the wall is NOT source-orderable. Attempted permuter import on candidate.c — import.py warned about a sibling func_8004A348 inline-asm body and the subsequent compile.sh hit a maspsx 'too many values to unpack' exception; permuter needs an import-pipeline patch BEFORE it can drive this function.",
+      "lever_rule": "register-alloc-pure-c + scheduling",
+      "floor_was": 9,
+      "floor_now": 9,
+      "git_head_at_measurement": "43f80563",
+      "variants_tried": [
+        {"form": "1<<bitpos extracted to s32 sh local", "score": 11},
+        {"form": "plain `register` (no asm pin) on sum+bitpos, bitpos decl first", "score": 9},
+        {"form": "shift-tmp + register-hint combined", "score": 11},
+        {"form": "p=&D_800A32D0 materialized FIRST in init", "score": 17},
+        {"form": "rewrite do/while as for(bitpos=0,i=0; i<2; bitpos+=0x10,p++,i++)", "score": 15},
+        {"form": "ANSI decl+init, bitpos before sum", "score": 11},
+        {"form": "arg1<<=4 hoisted to first init line", "score": 13},
+        {"form": "arg1<<=4 deferred past bitpos=0", "score": 11}
+      ]
     }
   ],
   "reviewer": {
@@ -41,6 +59,13 @@
     {"form": "sum-first decl, bitpos initialized before sum", "score": 12, "why": "worse"},
     {"form": "sum-first decl, sum=0 moved to last init", "score": 10, "why": "worse"},
     {"form": "sum-first decl, bitpos=0 moved to last init", "score": 10, "why": "worse"},
-    {"form": "bitpos-first decl, bitpos=0 moved to last init", "score": 10, "why": "worse"}
+    {"form": "bitpos-first decl, bitpos=0 moved to last init", "score": 10, "why": "worse"},
+    {"form": "1<<bitpos extracted to s32 sh local (force bitpos read before sum)", "score": 11, "why": "worse — adds an extra computation that broke other allocation"},
+    {"form": "plain `register` (no asm pin) on sum and bitpos", "score": 9, "why": "no effect — GCC ignores the K&R hint here"},
+    {"form": "p=&D_800A32D0 materialized FIRST in init", "score": 17, "why": "much worse — disrupts the whole prologue scheduler"},
+    {"form": "rewrite do/while as for(bitpos=0,i=0; i<2; bitpos+=0x10,p++,i++)", "score": 15, "why": "for-clause comma operator changes RTL gen"},
+    {"form": "ANSI decl+init combining decl and assignment", "score": 11, "why": "worse"},
+    {"form": "arg1<<=4 hoisted to first init line", "score": 13, "why": "worse"},
+    {"form": "arg1<<=4 deferred past zero-inits", "score": 11, "why": "worse"}
   ]
 }
