@@ -24,6 +24,14 @@
       "floor_was": 3,
       "floor_now": 3,
       "permuter_finding": "0-score forms found; all are dead-code cheats per cheat-reviewer FAIL + policy analysis"
+    },
+    {
+      "date": "2026-06-21",
+      "git_head_at_measurement": "c5480edb",
+      "lever": "cc1psx calibration (next_hypothesis #2) + sibling search (next_hypothesis #3). Reapplied candidate, reconfirmed floor 3 at current HEAD. cc1psx (original PsyQ GCC 2.7.2.SN.1 via dosemu) compiled the candidate to the SAME 13-insn folded form as decompals/gcc-2.7.2 (andi/j/move via thread_jumps). Sibling-search across text1b_b.c: no matched boolean-predicate function with a comparable double-and-test-return shape. Cheat-reviewer PASSed candidate again (independent re-review). Conclusion: both GCC 2.7.2 forks fold this C identically; the target's verbose `bnez;li 1;move 0` is NOT producible from any sanctioned pure-C form.",
+      "floor_was": 3,
+      "floor_now": 3,
+      "decision_recommendation": "needs-decision — canonical-asm authorization. Function is a registered VBlank/timer callback (D_800F1840 = func_80078EC0 in func_80078DA0); callback-table entries are commonly hand-written asm in PsyQ-era code; the 3-insn verbose form matches a hand-coded predicate that wasn't run through the compiler."
     }
   ],
   "reviewer": {

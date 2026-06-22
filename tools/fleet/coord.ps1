@@ -339,6 +339,18 @@ switch ($Command) {
                 Save-State $st
                 return ([pscustomobject]@{ ok = $true; func = $f; new_state = 'regression-recorded' } | ConvertTo-Json -Compress)
             }
+            if ($Outcome -eq 'reaudit-clean') {
+                # 2026-06-22: re-audit confirmed the committed function is clean.
+                # REMOVE from pending so the patrol doesn't re-audit it again after
+                # the cursor wraps (HANDOFF's "wrap wastefully" deferred fix —
+                # without this, a multi-day run cycles forever on already-cleared
+                # work). The function stays COMPLETED-C on main; this just retires
+                # the reaudit obligation.
+                $st.reaudit.pending = @($st.reaudit.pending | Where-Object { $_ -ne $f })
+                if ($st.lanes[$Lane]) { $st.lanes[$Lane].current_func = $null }
+                Save-State $st
+                return ([pscustomobject]@{ ok = $true; func = $f; new_state = 'reaudit-cleared' } | ConvertTo-Json -Compress)
+            }
             throw "submit: function '$f' not tracked"
         }
         if (-not $e.home) { $e.home = 'backlog' }

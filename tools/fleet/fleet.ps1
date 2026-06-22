@@ -176,13 +176,8 @@ function Restore-MainTo([string]$Head) {
 }
 
 # ───────────────────────────── auditor (inline) ──────────────────────────────
-function Get-ReviewerPrecheck([string]$Func, [string]$Sha) {
-    # Maj-6: mechanical pre-check so the auditor spends its judgment on semantics.
-    $main = Get-MainRoot
-    if ($main -match '^([A-Za-z]):[\\/](.*)$') { $wsl = "/mnt/$($Matches[1].ToLower())/$($Matches[2] -replace '\\','/')" } else { $wsl = $main -replace '\\','/' }
-    $arg = if ($Sha) { "--func $Func --commit $Sha" } else { "--func $Func" }
-    try { return (wsl bash -c "cd '$wsl' && source .venv/bin/activate && python3 tools/reviewer_precheck.py $arg 2>/dev/null" | Out-String) } catch { return '' }
-}
+# Get-ReviewerPrecheck moved to _fleet_common.ps1 (2026-06-22) so lane.ps1 can
+# call it from the worker-side gate as well as the auditor-side briefing.
 
 function Build-AuditorTask($pkt, [string]$Layer = 'first', [string]$Precheck = '') {
     if ([string]$pkt.mode -eq 'reaudit') {
@@ -317,6 +312,13 @@ function Auditor-Cycle-Body($pkt, $func, $mode) {
         'reaudit-clean'      {
             Append-FleetLog 'reaudit-clean' @{ func = $func }
             Invoke-BoardAudit clean $func    # stamp "Last Audited" + archive the card (Done -> archived)
+            # 2026-06-22: also tell the coordinator so it removes from reaudit.pending —
+            # otherwise the cursor wraps and re-audits the same clean func again. New
+            # 'reaudit-clean' outcome handler in coord.ps1 short-circuits the
+            # "not tracked" throw (completed functions aren't in $st.functions).
+            try { Coord submit -Lane fleet-aud -Outcome reaudit-clean -Func $func | Out-Null } catch {
+                Write-Host "[auditor] coord reaudit-clean submit failed for $func — pending list may grow stale: $_" -ForegroundColor Yellow
+            }
         }
         'reaudit-regressed'  {
             # Record FIRST (so the finding persists even if the coord call has an issue),

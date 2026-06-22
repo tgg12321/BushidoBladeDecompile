@@ -195,6 +195,37 @@ function Ensure-Worktree([string]$Id) {
     return $wt
 }
 
+function Get-ReviewerPrecheck([string]$Func, [string]$Sha) {
+    # Maj-6: mechanical pre-check so the auditor spends its judgment on semantics.
+    # Also used worker-side by lane.ps1 (2026-06-22) to catch obvious cheats BEFORE
+    # the in-review handoff burns an auditor cycle. Runs from MAIN against the
+    # candidate sha — git history is repo-wide so the candidate's diff is reachable
+    # regardless of which worktree produced it. Returns raw stdout (text); caller
+    # parses --json themselves if they need structured access.
+    $main = Get-MainRoot
+    if ($main -match '^([A-Za-z]):[\\/](.*)$') { $wsl = "/mnt/$($Matches[1].ToLower())/$($Matches[2] -replace '\\','/')" } else { $wsl = $main -replace '\\','/' }
+    $arg = if ($Sha) { "--func $Func --commit $Sha" } else { "--func $Func" }
+    try { return (wsl bash -c "cd '$wsl' && source .venv/bin/activate && python3 tools/reviewer_precheck.py $arg 2>/dev/null" | Out-String) } catch { return '' }
+}
+
+function Test-PrecheckFlags([string]$Func, [string]$Sha) {
+    # Worker-side gate: parse --json precheck output and return @{flagged; report}.
+    # On any parse / tool error returns flagged=$false so a precheck-tool issue
+    # never blocks a worker (defense in depth, not gospel — the auditor is still
+    # the authoritative gate).
+    $main = Get-MainRoot
+    if ($main -match '^([A-Za-z]):[\\/](.*)$') { $wsl = "/mnt/$($Matches[1].ToLower())/$($Matches[2] -replace '\\','/')" } else { $wsl = $main -replace '\\','/' }
+    $arg = if ($Sha) { "--func $Func --commit $Sha --json" } else { "--func $Func --json" }
+    $raw = ''
+    try { $raw = wsl bash -c "cd '$wsl' && source .venv/bin/activate && python3 tools/reviewer_precheck.py $arg 2>/dev/null" | Out-String } catch { return @{ flagged = $false; report = '' } }
+    if (-not $raw.Trim()) { return @{ flagged = $false; report = '' } }
+    try {
+        $pc = $raw | ConvertFrom-Json
+        $flags = @($pc.mechanical_flags)
+        return @{ flagged = ($flags.Count -gt 0); report = ($flags -join '; ') }
+    } catch { return @{ flagged = $false; report = '' } }
+}
+
 function Append-FleetLog([string]$Kind, [hashtable]$Data) {
     # Durable, human-reviewable event log (committed periodically by the supervisor).
     $logDir = Join-Path $script:RepoRoot 'docs\fleet'

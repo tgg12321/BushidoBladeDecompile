@@ -48,6 +48,19 @@ $rule
 Follow your role definition exactly. Use & tools/wteng.ps1 $wtId <cmd> for every
 engine/build command. Edit only ..\bb2-worktrees\bb2-work-$wtId\src and the worktree's build
 inputs. Do NOT touch main, do NOT run 'queue done', do NOT merge, do NOT push.
+
+BEFORE you mark the function in-review (i.e. before your candidate commit), run
+`reviewer_precheck` in your worktree and resolve any mechanical_flags it surfaces:
+
+  wsl bash -c 'cd "/mnt/c/Users/Trenton/Desktop/bb2-worktrees/bb2-work-$wtId" && \
+    source "/mnt/c/Users/Trenton/Desktop/Bushido Blade 2 Decompile/.venv/bin/activate" && \
+    python3 tools/reviewer_precheck.py --func $($pkt.func) --commit HEAD --json'
+
+If `mechanical_flags` is non-empty (residual rules, register-asm pins, hardcoded `\$N`
+asm in the body, unauthorized `extern volatile`, self-sanctioning rules-doc), the
+auditor will reject — fix it now instead of burning an auditor cycle. The post-agent
+gate ALSO runs this and will downgrade your in-review to blocked if it flags;
+running it yourself first saves the round-trip.
 "@
 }
 
@@ -86,7 +99,23 @@ function Run-Cycle {
     $o = [string]$outcome.outcome
     Write-Host "[$Lane/$Role] $func -> $o"
     switch ($o) {
-        'in-review'            { Coord submit -Lane $Lane -Outcome in-review -Func $func -Branch "work/$Lane" -Sha ([string]$outcome.sha) -Reason ([string]$outcome.reason) | Out-Null }
+        'in-review'            {
+            # 2026-06-22 worker-side mechanical precheck: catch the historically
+            # gate-failing patterns (residual rules, register-asm pins, hardcoded
+            # $N body asm, unauthorized extern volatile, self-sanctioning rules
+            # doc) BEFORE the auditor burns an opus cycle. Test-PrecheckFlags is
+            # defense-in-depth — a tool-side error returns flagged=$false so it
+            # never blocks a worker; the auditor remains the authoritative gate.
+            $sha = [string]$outcome.sha
+            $pc = Test-PrecheckFlags $func $sha
+            if ($pc.flagged) {
+                Write-Host "[$Lane] PRECHECK FLAGGED for $func — downgrading in-review to blocked. flags: $($pc.report)" -ForegroundColor Yellow
+                $reason = "WORKER PRECHECK FLAGGED before in-review handoff (auditor cycle saved): $($pc.report). Worker's reason was: $([string]$outcome.reason)"
+                Coord submit -Lane $Lane -Outcome blocked -Func $func -Reason $reason | Out-Null
+            } else {
+                Coord submit -Lane $Lane -Outcome in-review -Func $func -Branch "work/$Lane" -Sha $sha -Reason ([string]$outcome.reason) | Out-Null
+            }
+        }
         'needs-decision'       { Coord submit -Lane $Lane -Outcome needs-decision -Func $func -Reason ([string]$outcome.reason) | Out-Null }
         'blocked'              { Coord submit -Lane $Lane -Outcome blocked -Func $func -Reason ([string]$outcome.reason) | Out-Null }
         'to-review'            { Coord submit -Lane $Lane -Outcome to-review -Func $func -Verdict ([string]$outcome.verdict) -Rationale ([string]$outcome.rationale) -Branch ([string]$outcome.branch) -Sha ([string]$outcome.sha) | Out-Null }
