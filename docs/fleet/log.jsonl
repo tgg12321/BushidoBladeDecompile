@@ -1440,3 +1440,9 @@
 {"ts":"2026-06-22T09:09:00.3637180Z","kind":"reaudit-clean","func":"game_Stub2"}
 {"ts":"2026-06-22T09:11:30.8290260Z","kind":"reaudit-clean","func":"game_Stub4"}
 {"ts":"2026-06-22T09:13:57.2473480Z","kind":"reaudit-clean","func":"gnd_close_8001DB9C"}
+{"ts":"2026-06-22T09:17:52.0173176Z","kind":"lane-cycle","role":"backlog-worker","lane":"fleet-bw1","outcome":"blocked","func":"func_80086014"}
+{"ts":"2026-06-22T09:23:39.2011408Z","kind":"reaudit-clean","func":"gnd_get_fog"}
+{"ts":"2026-06-22T09:32:50.8080589Z","kind":"reaudit-clean","func":"gnd_land_hit_char_die_main"}
+{"ts":"2026-06-22T09:36:26.7411088Z","kind":"reaudit-clean","func":"gnd_open"}
+{"ts":"2026-06-22T09:39:02.2983556Z","kind":"reaudit-clean","func":"gpu_CalcTPage"}
+{"ts":"2026-06-22T09:45:06.9992267Z","kind":"reaudit-clean","func":"gpu_ClearOTag"}
