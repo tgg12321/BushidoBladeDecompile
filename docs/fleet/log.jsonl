@@ -1375,3 +1375,11 @@
 {"ts":"2026-06-22T04:08:23.6543410Z","kind":"reaudit-clean","func":"func_80078628"}
 {"ts":"2026-06-22T04:17:35.2405276Z","kind":"reaudit-clean","func":"func_80078634"}
 {"ts":"2026-06-22T04:21:57.7523416Z","kind":"reaudit-clean","func":"func_80078824"}
+{"ts":"2026-06-22T04:47:21.4142779Z","kind":"reaudit-clean","func":"func_80078B3C"}
+{"ts":"2026-06-22T04:51:59.1507751Z","kind":"reaudit-clean","func":"func_80078BA8"}
+{"ts":"2026-06-22T04:55:31.7158308Z","kind":"reaudit-clean","func":"func_80078BF0"}
+{"ts":"2026-06-22T04:58:36.6576729Z","kind":"reaudit-clean","func":"func_80078C9C"}
+{"ts":"2026-06-22T05:03:28.4074946Z","kind":"reaudit-clean","func":"func_80078DA0"}
+{"ts":"2026-06-22T05:09:16.1661542Z","kind":"lane-cycle","role":"backlog-worker","lane":"fleet-bw1","outcome":"blocked","func":"saEft03Start2"}
+{"ts":"2026-06-22T05:10:28.0902379Z","kind":"reaudit-clean","func":"func_80079154"}
+{"ts":"2026-06-22T05:12:54.8452500Z","kind":"reaudit-clean","func":"func_80079194"}
