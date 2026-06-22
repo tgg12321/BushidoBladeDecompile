@@ -1354,3 +1354,14 @@
 {"ts":"2026-06-22T02:40:04.7186041Z","kind":"reaudit-clean","func":"func_80072FCC"}
 {"ts":"2026-06-22T02:48:22.5524656Z","kind":"reaudit-regressed","func":"func_80074220","reason":"Dead-store delay-slot fill at src/text1b.c:17078 (`sp[0] = _t;` inside the anonymous block before saMotionSet). After the do-while loop, sp[] is never passed to any function again; sp[0] is never read after this write. The sole mechanical effect is to produce `sw $a0, 0x18($sp)` in the delay slot of `jal saMotionSet` (target asm 64B0C). Without this line the delay slot would be a nop, which does not match target. This is a manufactured dead-store to fill a jal delay slot — a scheduling cheat that bypasses the detector because volatile_cheats.py does not flag dead writes to local array elements. Worker action: restructure the post-loop code so the delay slot is filled by a semantically live instruction (e.g., a store to sp[0] that is subsequently consumed, or a different instruction GCC naturally schedules there), keeping the oracle match."}
 {"ts":"2026-06-22T02:57:08.2141129Z","kind":"reaudit-regressed","func":"func_80075830","reason":"Line `*(s32 *)(packet + 0x1C) = (s32)(var_a2 << 16) >> 12;` is a codegen-steering form: mathematically identical to `var_a2 * 16` (= `var_a2 << 4`) but written as a two-shift pair specifically to force GCC 2.7.2 to emit `sll 16; sra 12` rather than the single `sll 4` a human would write. Fails tests 1 (no semantic purpose beyond var_a2*16) and 2 (no human programmer writes multiply-by-16 this way). Worker should rewrite as `var_a2 * 16` and verify the target has `sll 4` (or find a different pure-C form if the target truly has `sll 16; sra 12`, in which case the worker must explain why the target would emit a two-instruction sequence for an s16 scale factor)."}
+{"ts":"2026-06-22T02:58:36.0033526Z","kind":"lane-cycle","func":"func_80038170","role":"backlog-worker","lane":"fleet-bw1","outcome":"blocked"}
+{"ts":"2026-06-22T02:59:18.7937018Z","kind":"reaudit-clean","func":"func_80077098"}
+{"ts":"2026-06-22T03:04:07.5449843Z","kind":"reaudit-clean","func":"func_80077724"}
+{"ts":"2026-06-22T03:06:14.8707388Z","kind":"reaudit-clean","func":"func_80077820"}
+{"ts":"2026-06-22T03:08:24.0918148Z","kind":"reaudit-clean","func":"func_80077860"}
+{"ts":"2026-06-22T03:12:19.8335595Z","kind":"reaudit-clean","func":"func_80077894"}
+{"ts":"2026-06-22T03:15:51.2741626Z","kind":"reaudit-clean","func":"func_80077904"}
+{"ts":"2026-06-22T03:19:52.7869585Z","kind":"reaudit-clean","func":"func_80077940"}
+{"ts":"2026-06-22T03:24:46.4224912Z","kind":"reaudit-clean","func":"func_80077984"}
+{"ts":"2026-06-22T03:26:51.6225991Z","kind":"reaudit-clean","func":"func_800779C8"}
+{"ts":"2026-06-22T03:29:15.2733085Z","kind":"reaudit-clean","func":"func_80077A28"}
