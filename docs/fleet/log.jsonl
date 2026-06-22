@@ -1492,3 +1492,12 @@
 {"ts":"2026-06-22T12:24:23.2528126Z","kind":"reaudit-clean","func":"irq_ProcessPending"}
 {"ts":"2026-06-22T12:26:20.6935354Z","kind":"lane-cycle","role":"backlog-worker","lane":"fleet-bw1","outcome":"in-review","func":"func_8001F938"}
 {"ts":"2026-06-22T12:28:15.6496139Z","kind":"reaudit-clean","func":"irq_SetAlarm"}
+{"ts":"2026-06-22T12:32:11.9421764Z","kind":"reaudit-clean","func":"katinuki_game_setData_8003D2C4"}
+{"ts":"2026-06-22T12:36:50.5419788Z","kind":"reaudit-clean","func":"leaf_muki_awase_800421A4"}
+{"ts":"2026-06-22T12:36:51.0631097Z","kind":"lane-cycle","role":"backlog-worker","lane":"fleet-bw1","outcome":"in-review","func":"func_800611A4"}
+{"ts":"2026-06-22T12:40:33.4674790Z","kind":"reaudit-clean","func":"mario_getMarioVoiceData_8001B3C0"}
+{"ts":"2026-06-22T12:43:24.5211713Z","kind":"reaudit-clean","func":"marionation_camera_GetMaxFrame"}
+{"ts":"2026-06-22T12:45:56.7831001Z","kind":"reaudit-clean","func":"marionation_camera_Init_80037468"}
+{"ts":"2026-06-22T12:52:33.7182951Z","kind":"lane-cycle","role":"backlog-worker","lane":"fleet-bw1","outcome":"in-review","func":"func_800617C8"}
+{"ts":"2026-06-22T12:56:00.0445492Z","kind":"reaudit-regressed","reason":"out[4] has a dead 4th element (out[3] is never written by the callee or read by the caller) that inflates the array to 16 bytes to coerce $ra to sp+0x30 and the frame to 0x38 — frame-coercion by dead array element. Worker must find a pure-C form that reaches the correct frame layout without the dead element, or confirm via GCC run whether out[3] produces the same layout.","func":"math_Distance3D"}
+{"ts":"2026-06-22T13:00:13.9597303Z","kind":"reaudit-clean","func":"math_Sin"}
