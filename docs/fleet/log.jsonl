@@ -1470,3 +1470,14 @@
 {"ts":"2026-06-22T11:06:50.4172222Z","kind":"reaudit-clean","func":"gpu_StartDmaList"}
 {"ts":"2026-06-22T11:11:53.4192651Z","kind":"reaudit-clean","func":"gte_GetH"}
 {"ts":"2026-06-22T11:24:04.3626314Z","kind":"reaudit-clean","func":"gte_SetFarColor"}
+{"ts":"2026-06-22T11:24:59.0179739Z","kind":"lane-cycle","role":"backlog-worker","lane":"fleet-bw1","outcome":"blocked","func":"func_80040CB8"}
+{"ts":"2026-06-22T11:34:12.1152253Z","kind":"reaudit-regressed","reason":"Two constructs violate the SOTN bar; primary is a confirmed param-local-alias-prologue-pair-flip (explicitly forbidden). Worker must produce a clean pure-C body that matches the prologue without aliasing the parameters in reverse order.","func":"hirahira_w_frie"}
+{"ts":"2026-06-22T11:35:49.5189768Z","kind":"reaudit-clean","func":"initDrawArea"}
+{"ts":"2026-06-22T11:38:06.7249212Z","kind":"reaudit-clean","func":"initLineF2"}
+{"ts":"2026-06-22T11:42:22.9612214Z","kind":"reaudit-clean","func":"initLoadImage"}
+{"ts":"2026-06-22T11:44:43.5481268Z","kind":"reaudit-clean","func":"initPolyF3"}
+{"ts":"2026-06-22T11:46:57.5707383Z","kind":"reaudit-clean","func":"initPolyF4"}
+{"ts":"2026-06-22T11:48:25.8227925Z","kind":"reaudit-clean","func":"initPolyFT3"}
+{"ts":"2026-06-22T11:50:41.5058496Z","kind":"reaudit-clean","func":"initPolyG3"}
+{"ts":"2026-06-22T11:52:45.9095992Z","kind":"reaudit-clean","func":"initPolyG4"}
+{"ts":"2026-06-22T11:55:23.2462813Z","kind":"reaudit-clean","func":"initPolyGT3"}
