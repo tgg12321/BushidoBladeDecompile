@@ -4,10 +4,10 @@
   "scores": {
     "head_floor": 12,
     "candidate_floor": 12,
-    "metric": "sandbox --disable all (masked Levenshtein); pins+dummy+reorder stripped",
+    "metric": "sandbox --disable all (masked Levenshtein); all cheats stripped",
     "build_insns": 141,
     "target_insns": 141,
-    "note": "HEAD byte-matches the full build ONLY via the dummy0/dummy1 + \"m\" frame-coercion cheat. Honest distance (cheats stripped) = 12, all of it a single +8-byte frame-size delta."
+    "note": "Floor is 12 regardless of s1/s2/s3 declaration order; masked scorer normalizes register names so save-order differences don't count. All 12 diffs from +8-byte frame-size delta (vars=8 natural vs vars=16 target)."
   },
   "sessions": [
     {
@@ -17,26 +17,39 @@
       "floor_was": 12,
       "floor_now": 12,
       "git_head_at_measurement": "c3aa1ffc"
+    },
+    {
+      "date": "2026-06-21",
+      "lever": "Confirmed frame mechanism: GCC 2.7.2 cc1 naturally gives vars=8 for this function body. Dead-array test: `{ s32 tmp[2]; }` (no stores, nested block at end) gives vars=16/frame=56 with NO extra body stores — correct save offsets — but FORBIDDEN by dead-vars-local-array (engine detector refuses completion). Declaration-order reversal (s3,s2,s1) gives correct save order but FAILS cheat-reviewer (param-local-alias-prologue-pair-flip family). Floor unchanged at 12.",
+      "lever_rule": "dead-vars-local-array (FORBIDDEN) + param-local-alias-prologue-pair-flip (FAIL)",
+      "floor_was": 12,
+      "floor_now": 12,
+      "git_head_at_measurement": "ef84c457"
     }
   ],
   "reviewer": {
-    "verdict": "N/A — block for forbidden-frame-cheat / unrecoverable local",
-    "date": "2026-06-14",
-    "evidence": "All 12 honest diffs are one +8-byte frame-size delta; 141-insn body byte-identical. Target reserves a 16-byte sp local hole it never touches. The only forms producing the 56-byte frame are forbidden frame-coercion cheats (dummy + \"m\", or pad/named-guess arrays). No semantic local recoverable from the body."
+    "verdict": "FAIL (for candidate with s3,s2,s1 order) / N/A for s1,s2,s3 order (no cheats, not submitted for COMPLETED-C)",
+    "date": "2026-06-21",
+    "evidence": "Cheat-reviewer FAILed the s3,s2,s1 declaration-order reversal as prologue-save-order manipulation (param-local-alias-prologue-pair-flip family). Saved under rejected/decl-order-prologue-flip.c. Current candidate.c uses logical s1,s2,s3 order — pure C, no cheats, honest distance 12."
   },
   "remaining_gap": {
-    "summary": "12 diffs = 5 prologue saves + 5 epilogue restores at offsets shifted by 8, + the two addiu-sp insns. Frame 48 (ours, honest) vs 56 (target). Target's 8 extra local bytes are an unused stack hole the body never accesses — a phantom local fully DCE'd.",
+    "summary": "12 diffs = 1 addiu-sp prologue + 5 sw saves at wrong offsets + 5 lw restores at wrong offsets + 1 addiu-sp epilogue. Frame -48 (ours) vs -56 (target). Target's vars area (sp+16..sp+31 = 16 bytes) is NEVER accessed in body — a phantom local fully DCE'd.",
+    "key_finding_2026-06-21": "Dead array `{ s32 tmp[2]; }` in nested scope (no stores) IS the mechanism that gives vars=16 without extra body asm. Gives correct frame, correct save offsets, no register shift. FORBIDDEN by dead-vars-local-array policy.",
     "rule_count_at_head": 1,
     "rules_at_head": ["reorder 10,11,13,12,9 @ 9-13 (prologue save order)"],
-    "cheat_at_head": "register asm(a3)=i, asm(a1)=mask pins + dummy0/dummy1 with __asm__(\"\" :: \"m\"(dummy0),\"m\"(dummy1)) frame-coercion + the reorder rule. HEAD's full-build match depends on the dummy \"m\" slots.",
-    "rules_required_for_full_match": "A genuine 8-byte local with recoverable semantic meaning. None recoverable from the body. Phantom dummy/pad arrays are forbidden."
+    "cheat_at_head": "register asm(a3)=i, asm(a1)=mask pins + dummy0/dummy1 with __asm__(\"\" :: \"m\"(dummy0),\"m\"(dummy1)) frame-coercion + reorder rule. prologue_config.json entry also present (hardcoded -56 frame).",
+    "rules_required_for_full_match": "A phantom 16-byte local (vars=16). No semantic local recoverable from the body. Dead-array approaches are forbidden. Phantom dummy/pad arrays are forbidden."
   },
   "next_hypotheses": [
-    "Data-layout / caller analysis: the function fills a structured `out` buffer from D_8008F1A8/1C0/204 etc.; check whether the original used a stack scratch struct/array fully optimized away. Body shows none.",
-    "If no semantic local is recoverable, canonical-asm / park (unrecoverable phantom frame local) — surface for user authorization. On the dead-vars-local-array re-evaluation list (code6cac.c family)."
+    "No remaining pure-C levers. All frame-coercion mechanisms are FORBIDDEN. Function is in same class as func_8001924C.",
+    "If no semantic local is recoverable, canonical-asm / park (unrecoverable phantom frame local). Surface for user authorization."
   ],
   "rejected_forms": [
     {"form": "dummy0/dummy1 + __asm__ \"m\" (HEAD)", "score": "matches-via-cheat", "why": "FORBIDDEN frame-coercion; sandbox strips it -> honest 12"},
-    {"form": "strip all cheats (clean pure C)", "score": 12, "why": "pure +8-byte frame gap; body byte-identical"}
+    {"form": "strip all cheats, s1,s2,s3 order (clean pure C)", "score": 12, "why": "pure +8-byte frame gap; body byte-identical"},
+    {"form": "s32 s3=0,s2=0,s1=0 (reversed decl order) — rejected/decl-order-prologue-flip.c", "score": "would be 12 same", "why": "FAIL: cheat-reviewer — prologue-save-order manipulation, param-local-alias-prologue-pair-flip family"},
+    {"form": "{ s32 tmp[2]; } (dead array nested block, no stores)", "score": "gives vars=16/frame=56 with correct save offsets, no extra body stores", "why": "FORBIDDEN: dead-vars-local-array; engine detector refuses completion"},
+    {"form": "{ s32 tmp[2]; tmp[0]=0; tmp[1]=0; } (dead array with stores)", "score": "gives vars=16 but adds 2 extra sw insns + shifts register alloc", "why": "FORBIDDEN: dead-vars-local-array + produces wrong body asm"},
+    {"form": "s32 tmp1,tmp2; (dead scalars)", "score": "vars=8", "why": "GCC eliminates dead scalar stack slots entirely"}
   ]
 }
