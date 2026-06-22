@@ -1455,3 +1455,11 @@
 {"ts":"2026-06-22T10:09:36.0679794Z","kind":"lane-cycle","role":"backlog-worker","lane":"fleet-bw1","outcome":"needs-decision","func":"func_8001F938"}
 {"ts":"2026-06-22T10:12:00.2504682Z","kind":"reaudit-clean","func":"gpu_GetInfo"}
 {"ts":"2026-06-22T10:18:02.4570799Z","kind":"reaudit-clean","func":"gpu_InitDispEnv"}
+{"ts":"2026-06-22T10:19:02.7888193Z","kind":"lane-cycle","role":"backlog-worker","lane":"fleet-bw1","outcome":"needs-decision","func":"func_80017FA0"}
+{"ts":"2026-06-22T10:21:58.4131765Z","kind":"reaudit-clean","func":"gpu_InitDrawEnv"}
+{"ts":"2026-06-22T10:23:46.0157614Z","kind":"reaudit-clean","func":"gpu_LoadClut16"}
+{"ts":"2026-06-22T10:27:07.8394481Z","kind":"reaudit-clean","func":"gpu_LoadImage"}
+{"ts":"2026-06-22T10:32:05.6917971Z","kind":"reaudit-clean","func":"gpu_SendData"}
+{"ts":"2026-06-22T10:38:43.4549231Z","kind":"reaudit-clean","func":"gpu_SetDebugLevel"}
+{"ts":"2026-06-22T10:40:40.8962488Z","kind":"lane-cycle","outcome":"to-review","lane":"fleet-adj","role":"adjudicator","func":"func_8001F938"}
+{"ts":"2026-06-22T10:50:34.7131094Z","kind":"reaudit-clean","func":"gpu_SetDither"}
