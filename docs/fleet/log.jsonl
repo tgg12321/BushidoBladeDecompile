@@ -1463,3 +1463,10 @@
 {"ts":"2026-06-22T10:38:43.4549231Z","kind":"reaudit-clean","func":"gpu_SetDebugLevel"}
 {"ts":"2026-06-22T10:40:40.8962488Z","kind":"lane-cycle","outcome":"to-review","lane":"fleet-adj","role":"adjudicator","func":"func_8001F938"}
 {"ts":"2026-06-22T10:50:34.7131094Z","kind":"reaudit-clean","func":"gpu_SetDither"}
+{"ts":"2026-06-22T10:51:24.7697667Z","kind":"lane-cycle","role":"backlog-worker","lane":"fleet-bw1","outcome":"blocked","func":"func_8003553C"}
+{"ts":"2026-06-22T10:57:02.9727044Z","kind":"reaudit-clean","func":"gpu_SetInterlace"}
+{"ts":"2026-06-22T10:58:34.4881816Z","kind":"reaudit-clean","func":"gpu_SetRawTexture"}
+{"ts":"2026-06-22T11:05:25.0855101Z","kind":"lane-cycle","outcome":"go-back","lane":"fleet-adj","role":"adjudicator","func":"func_80017FA0"}
+{"ts":"2026-06-22T11:06:50.4172222Z","kind":"reaudit-clean","func":"gpu_StartDmaList"}
+{"ts":"2026-06-22T11:11:53.4192651Z","kind":"reaudit-clean","func":"gte_GetH"}
+{"ts":"2026-06-22T11:24:04.3626314Z","kind":"reaudit-clean","func":"gte_SetFarColor"}
