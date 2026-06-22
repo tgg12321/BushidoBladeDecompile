@@ -1519,3 +1519,16 @@
 {"ts":"2026-06-22T13:58:28.1363757Z","kind":"lane-cycle","role":"backlog-worker","lane":"fleet-bw1","outcome":"blocked","func":"func_80061710"}
 {"ts":"2026-06-22T13:59:37.2279144Z","kind":"reaudit-clean","func":"obj_ClearAll"}
 {"ts":"2026-06-22T14:03:19.0083510Z","kind":"reaudit-clean","func":"obj_InitAll"}
+{"ts":"2026-06-22T14:06:39.3730778Z","kind":"reaudit-clean","func":"obj_InitPair"}
+{"ts":"2026-06-22T14:09:21.6020151Z","kind":"reaudit-clean","func":"obj_InitTaskCamera"}
+{"ts":"2026-06-22T14:11:09.2041947Z","kind":"reaudit-clean","func":"obj_UpdatePosition"}
+{"ts":"2026-06-22T14:11:33.5862570Z","kind":"lane-cycle","role":"backlog-worker","lane":"fleet-bw1","outcome":"blocked","func":"func_80061ACC"}
+{"ts":"2026-06-22T14:13:42.7898808Z","kind":"reaudit-clean","func":"ot_Insert"}
+{"ts":"2026-06-22T14:15:26.1907296Z","kind":"reaudit-clean","func":"ot_Link"}
+{"ts":"2026-06-22T14:17:05.3785456Z","kind":"reaudit-clean","func":"ot_SetEnd"}
+{"ts":"2026-06-22T14:18:34.7743050Z","kind":"reaudit-clean","func":"pad_Init"}
+{"ts":"2026-06-22T14:23:08.2729959Z","kind":"reaudit-clean","func":"pad_press_control"}
+{"ts":"2026-06-22T14:27:49.7782717Z","kind":"reaudit-clean","func":"player_SetCharId"}
+{"ts":"2026-06-22T14:31:02.5295475Z","kind":"reaudit-clean","func":"rng_Next"}
+{"ts":"2026-06-22T14:36:15.5733342Z","kind":"reaudit-clean","func":"rob_ScaleMarioInit"}
+{"ts":"2026-06-22T14:36:29.3863400Z","kind":"lane-cycle","role":"backlog-worker","lane":"fleet-bw1","outcome":"blocked","func":"ang_hosei_80056FE8"}
