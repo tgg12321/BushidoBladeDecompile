@@ -14,12 +14,20 @@
       "lever": "reassociate both p-pointer adds to (offset + table)",
       "floor_was": 9,
       "floor_now": 3
+    },
+    {
+      "date": "2026-06-22",
+      "lever": "adjudicator escalation -> user decision: split-init-off-accumulation form (off = X; off += table;) NOT sanctioned. Layer-2 cheat-reviewer FAILed the proposed broad-family rule registration with six specific findings (see notes.md). User decision: move to blocked lane, keep grinding, do NOT re-attempt the split-init form. Continue search for the genuine RA-coalescing lever from the candidate-floor-3 baseline.",
+      "lever_rule": "split-init-accumulation NOT sanctioned (cheat-by-spelling per layer-2 review)",
+      "floor_was": 3,
+      "floor_now": 3,
+      "git_head_at_measurement": "758b27a8"
     }
   ],
   "reviewer": {
-    "verdict": "PASS",
-    "date": "2026-06-14",
-    "evidence": "Candidate only reassociates an integer add (A+B -> B+A), pure C, semantically identical. No regfix/asmfix rule added, no __asm__ injected; the candidate REMOVES the pre-existing asm(\"s3\") pin. audit_asm_cheats --check-new reports no new patterns. Self-reviewed against cheat catalog; no coercion construct introduced."
+    "verdict": "PASS (candidate.c floor-3 baseline) / FAIL (rejected/split-init-off-accumulation.c — both layer-1 2026-06-16 and layer-2 2026-06-22)",
+    "date": "2026-06-22",
+    "evidence": "The candidate.c floor-3 baseline remains PASS (reassociated integer add, pure C). The split-init-off-accumulation form (rejected/) is FAIL by user decision after layer-2 adversarial review found: (1) the cited SOTN evidence for the broad split-init-accumulation family was mischaracterized — e_coffin.c posX/posY asymmetry is semantic (posY adds a table offset; posX has nothing to add), NOT RA-motivated; (2) src/dra/6BF64.c argY case is inside a for-loop the scan script's 15-line lookback window missed; (3) e_bone_ark.c angle += ROT(360) is angle normalization, not codegen coercion; (4) the cited sp20 example uses a name that announces stack-slot role; (5) the EXACT form for this function was already rejected by layer-1 on 2026-06-16 — sanctioning would be the self-sanctioning antipattern review-discipline-before-commit.md was designed to catch; (6) the 2026-06-13 narrow sanction for func_80049C24 may itself bear re-examination. User policy: 'I don't want to allow cheats of any kind.' Function moves to blocked lane to continue search for a genuine pure-C coalescing lever; not permanently parked."
   },
   "remaining_gap": {
     "summary": "First p's pointer addu does not coalesce its offset temp into the dest register (target reuses v0 -> `addu v0,v0,a2`; ours allocates v1 -> `addu v1,v0,a2`), cascading to the two `lh` base registers (3 masked-differing insns). The second p coalesces correctly. Asymmetry traced to the `if((s16)prev_idx<0)` reload giving prev_idx a two-def (phi) live range vs next_idx's single def. Additionally a0/a2 hold (prev_idx, table) swapped vs target (masked out, but a real byte diff) and the s3-for-next_idx choice must come naturally for a 0-rule match.",
@@ -56,6 +64,11 @@
       "form": "second p left as (table + offset) [HEAD form]",
       "score": 9,
       "reason": "not a cheat; this is the un-reassociated baseline the candidate improves on"
+    },
+    {
+      "form": "split-init-off-accumulation: `off = (((s32)(prev_idx<<16)>>16)<<2); off += (s32)table; p = (s16*)off;` (memory/wip/func_80057CC8/rejected/split-init-off-accumulation.c)",
+      "score": 0,
+      "reason": "REJECTED 2026-06-22 by user decision after layer-2 cheat-reviewer FAIL: (a) the broad split-init-accumulation sanction's SOTN evidence base did not survive verification (semantic-asymmetry misread of e_coffin.c, in-loop false-positive in dra/6BF64.c, semantic-purpose misread of e_bone_ark.c, naming-role failure of sp20), (b) the EXACT form was already rejected by layer-1 cheat-reviewer on 2026-06-16, and (c) the 2026-06-13 narrow sanction precedent (func_80049C24) may itself bear re-examination. Future workers MUST NOT re-attempt this form. The mechanism (refs-count bump on same-variable accumulation) is the kind of GCC-internals-only justification that the project's cheat-by-any-spelling posture forbids in the absence of clear SOTN-master evidence — which 2026-06-22 verification showed the project does not actually have for this specific construct."
     }
   ],
   "memory_notes": []

@@ -30,58 +30,7 @@ NOVEL FAMILY (NOT SELF-MINTABLE): The interesting policy question this raises is
 DIRECT PRECEDENT: func_8003B10C adjudicated by fleet-adj this morning (2026-06-15T11:42:01Z, docs/fleet/adjudications.md) under nearly-identical structural conditions — compiler-fold artifact, canonical 'C' verdict, scan_hand_coded LOW score 0, plain-C body shape, no SOTN family applicable, no STRONG hand-coded signals. That ruling was needs-owner with recommendation to park-permanently as documented pure-C-impossible plateau. func_80078EC0 fits the same pattern. The cheat-reviewer (fleet-bw2 session, 2026-06-15) independently recommended PARK with the same reasoning.
 
 RECOMMENDATION TO OWNER: Park permanently as a documented pure-C-impossible plateau under the boolean-fold compiler-artifact category. The function stays INCOMPLETE in the queue with its 5 regfix rules + 2 register pins + Lever-D dead-store retained as cheat-infrastructure under a queue-parked status (NOT a COMPLETED state). Alternative paths owner can choose: (1) authorize canonical-asm despite weak hand-coded signal (the gap IS irreducible structurally), citing the compiler-fold artifact as a 'weak-signal canonical-asm' family worth opening — would set new precedent and likely apply to other small-IRQ-probe functions; (2) commission SOTN research for a new sanctioned 'IRQ-probe-mmio-single-read' volatile shape under legitimate-volatile-interrupt-touched.md — but note volatile alone would not close the gap here, so this path requires ALSO defeating the boolean fold; (3) accept that some functions are genuinely pure-C-irreducible due to GCC 2.7.2 jump-opt's structural folding and live with them parked. The WIP candidate.c remains the cleanest representation should the owner want to revisit later.
-- func_80057CC8 — NOVEL technique, needs your SOTN sign-off (NOT auto-merged). Rationale: ADJUDICATION: re-application of the user-sanctioned split-init-accumulation pattern (2026-06-13, func_80049C24) to a SECOND function. Owner ruling needed.
-
-==== THE CONSTRUCT ====
-The WIP carries a layer-1-REJECTED form at memory/wip/func_80057CC8/rejected/split-init-off-accumulation.c that the prior worker proved closes the function to COMPLETED-C with SHA1==oracle (retire() ok per the file header; 7 regfix rules + the asm("s3") pin retire). The construct is:
-
-    off = (((s32)(prev_idx << 16) >> 16) << 2);  // var = X
-    off += (s32)table;                            // var += Y
-    p = (s16 *)off;
-
-This is `var = X; var += Y;` --- same-variable split-init accumulation on a fresh local. The two statements collapse to one emitted `addu` in target; the split exists only to bump the pseudo's RTL `reg_n_refs` count so GCC's allocno priority steers `off` into a register that coalesces with the addu dest --- closing the remaining 3-insn first-p coalescing gap (target reuses v0 as addu dest; HEAD allocates v1, cascading into the two lh base regs).
-
-==== WHY THIS IS THE SANCTIONED SHAPE ====
-The user-sanctioned pattern (memory/feedback/split-init-accumulation-sanctioned.md, 2026-06-13, for func_80049C24):
-
-    var_s7 = arg0;
-    var_s7 += temp_v0;
-
-The mechanism documented there: "Splitting one `var = a + b;` into an init + compound-assign on the SAME variable bumps that pseudo's RTL `reg_n_refs` (e.g. 3 -> 5), raising its allocno priority (`log2(refs)*refs/livelen`, `global.c:611`) so it wins a lower/target register. GCC's `combine` folds the two statements back into ONE emitted instruction, so the emitted code is byte-identical to the target --- the split exists only in the C source, purely to steer register allocation."
-
-The rejected form here is the same spelling: a same-variable accumulation that collapses to one emitted insn, with no semantic purpose beyond bumping refs count. The 4 prior rejected forms in memory/wip/func_80057CC8/rejected/ (block-scope-alias-p1, duplicate-address-expr-pseudo-inline, separate-p1-p2-function-scope-aliases, split-lh-px0-px1-locals) are a DIFFERENT family --- aliasing/lexical-scope/duplication coercions that work via the RA interference graph. The split-init-accumulation form is the refs-count mechanism, structurally aligned with the user-sanctioned shape. The layer-1 reviewer characterized it as "5th spelling of same RA-coalescing coercion"; the mechanism analysis says otherwise.
-
-Differences vs the 2026-06-13 sanctioned case:
-  - RHS1 here is a complex sign-extend+shift expression vs a simple variable.
-  - RHS2 here is a cast-to-int of a global vs a simple variable.
-  - The mechanism (refs-count bump on same-var accumulation) is IDENTICAL.
-
-==== WHY I CANNOT SELF-SANCTION ====
-1. Per my role: "A borderline construct may be sanctioned (`to-review`, verdict `sotn-family:<name>`) ONLY if it matches a family ALREADY in the frozen sanctioned list in `.claude/rules/no-new-park-categories.md`." split-init-accumulation is NOT in that frozen list. The 7 SOTN-accepted techniques there cover variable-reuse, opaque arithmetic, sub-word reads, mixed exit forms, duplicate-reads, named-intermediates, do-while-zero. It is documented only in user feedback memory.
-2. Per the user feedback memory itself: "\"For now\" = provisional. Do NOT over-generalize. ... New adjacent spellings still need their own user ruling." The 2026-06-13 sanction was function-specific; the user explicitly anticipated this gating.
-3. Per [[review-discipline-before-commit]]: "If this pattern recurs and proves stable, the orchestrator may register a proper rule doc after an independent layer-2 review --- flag it to the user first." This is the second recurrence and is exactly the moment to surface to the user.
-4. Per the Adjudicator role: "a genuinely novel-but-plausibly-legitimate construct... emit `needs-owner` with your evidence; it parks for Trenton's review, it does not proceed autonomously. (No self-minting of new families.)"
-
-==== EVIDENCE THE FORM WORKS ====
-- WIP rejected file header (2026-06-16) states retire() == SHA1==oracle (byte-identical full build).
-- All 7 regfix-subst rules at regfix.txt:3183-3189 dropped; the asm("s3") pin removed.
-- 4 prior measured-but-rejected forms in rejected/ are unrelated mechanisms (aliasing/lexical) and don't bear on this one.
-- The mechanism aligns with the documented sanctioned mechanism (refs-count bump on same-var accumulation).
-
-==== OWNER QUESTION ====
-Does the 2026-06-13 split-init-accumulation sanction (originally for func_80049C24) extend to func_80057CC8 in the spelling above? If YES: this closes the function to COMPLETED-C with proven SHA1==oracle, retiring 7 regfix rules + 1 pin. If NO (or NEEDS_REFINEMENT): the function stays parked as a register-allocation plateau at masked floor 3 (the legitimate-pure-C levers explored in this WIP across two sessions did not close the coalescing gap; the WIP's un-attempted hypothesis is a targeted permuter run from candidate.c, with the documented ~50% apply-failure rate caveat for text1b.c).
-
-If the user sanctions the pattern broadly (not function-specific), the natural next step is for the orchestrator to register a proper rule doc in `.claude/rules/` after the layer-2 review per [[review-discipline-before-commit]], so subsequent functions don't need individual owner sign-off.
-
-==== POINTERS ====
-- memory/wip/func_80057CC8/rejected/split-init-off-accumulation.c --- the form, with retire/SHA1 evidence
-- memory/wip/func_80057CC8/candidate.c --- the masked-floor-3 baseline (does NOT close; needs the split)
-- memory/wip/func_80057CC8/meta.json + notes.md --- two-session investigation summary
-- memory/feedback/split-init-accumulation-sanctioned.md --- the 2026-06-13 sanction (func_80049C24, commit ad11a8c8)
-- .claude/rules/no-new-park-categories.md --- the frozen sanctioned list (does NOT include this family)
-- .claude/rules/review-discipline-before-commit.md --- the rule-doc-registration gate this hits
-- regfix.txt:3182-3189 --- the 7 rules this would retire
-- src/text1b.c:11838-11886 --- HEAD body (with the asm("s3") pin on next_idx, line 11840)
+- ~~func_80057CC8~~ — **RESOLVED 2026-06-22**: user moved to blocked lane (not permanently parked; search continues). The proposed broad-family sanction for the split-init-accumulation pattern FAILed layer-2 adversarial cheat-reviewer with 6 specific findings: (1) the e_coffin.c posX/posY "clinching evidence" is semantic asymmetry (posY adds a table offset, posX has nothing), NOT RA-motivated; (2) the dra/6BF64.c argY example is inside a for-loop the scan script's 15-line lookback missed (methodology false-positive); (3) e_bone_ark.c angle += ROT(360) is angle normalization, not codegen coercion; (4) the cited sp20 example fails the rule's own naming-announces-intent test; (5) the EXACT form was already rejected by layer-1 cheat-reviewer on 2026-06-16 — retroactive sanction would be the self-sanctioning antipattern review-discipline-before-commit was codified to prevent; (6) 2026-06-13 narrow precedent (func_80049C24) may itself bear re-examination. **The split-init-off-accumulation form is now in rejected_forms** (memory/wip/func_80057CC8/meta.json) — future workers MUST NOT re-attempt it. Resume from the candidate-floor-3 baseline (pure-C, reassociated p-pointer adds) and pursue the open avenues in notes.md (ALLOCDBG dump of the asymmetric coalescing, branchless prev_idx forms, sibling-family transfer from func_8006133C cluster).
 - motion_SetMotion — NOVEL technique, needs your SOTN sign-off (NOT auto-merged). Rationale: ADJUDICATION (motion_SetMotion / code6cac_c_mid.c, 402-insn motion-state dispatcher; HEAD carries 2 register pins `register s32 result asm("s3")` + `register s32 sel2 asm("s2")` AND 1 regfix `motion_SetMotion: subst "addiu\t$16,$zero,12" "...,13" @149` — both forbidden families).
 
 == Empirical re-verification of the worker's wall analysis (fresh BB2_ALLOC_DEBUG run, this session) ==
