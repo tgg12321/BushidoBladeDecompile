@@ -1414,3 +1414,10 @@
 {"ts":"2026-06-22T07:26:59.1726900Z","kind":"reaudit-clean","func":"func_8008A904"}
 {"ts":"2026-06-22T07:32:59.6901653Z","kind":"reaudit-clean","func":"func_8008AD64"}
 {"ts":"2026-06-22T07:34:27.6738698Z","kind":"lane-cycle","role":"backlog-worker","lane":"fleet-bw1","outcome":"in-review","func":"calc_fc_frame"}
+{"ts":"2026-06-22T07:37:47.3783871Z","kind":"reaudit-clean","func":"func_8008AEB0"}
+{"ts":"2026-06-22T07:45:37.3366427Z","kind":"reaudit-clean","func":"func_8008BD88"}
+{"ts":"2026-06-22T07:48:18.3856575Z","kind":"reaudit-clean","func":"func_8008BE04"}
+{"ts":"2026-06-22T07:54:15.3731470Z","kind":"reaudit-clean","func":"func_8008BE9C"}
+{"ts":"2026-06-22T08:00:48.8474912Z","kind":"reaudit-clean","func":"g_data_start"}
+{"ts":"2026-06-22T08:08:21.1214425Z","kind":"main-contamination-cleaned","detail":" M docs/tooling_incidents.md"}
+{"ts":"2026-06-22T08:08:21.1237985Z","kind":"reaudit-clean","func":"g_module_type_tbl"}
