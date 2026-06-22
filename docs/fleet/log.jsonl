@@ -1398,3 +1398,10 @@
 {"ts":"2026-06-22T06:09:23.4455526Z","kind":"reaudit-clean","func":"func_8007D3D4"}
 {"ts":"2026-06-22T06:16:46.9820110Z","kind":"reaudit-clean","func":"func_8007DB20"}
 {"ts":"2026-06-22T06:23:24.1629135Z","kind":"reaudit-clean","func":"func_8007FF7C"}
+{"ts":"2026-06-22T06:27:44.8672761Z","kind":"reaudit-clean","func":"func_80080148"}
+{"ts":"2026-06-22T06:35:25.0609874Z","kind":"reaudit-clean","func":"func_80080620"}
+{"ts":"2026-06-22T06:41:24.7270792Z","kind":"reaudit-clean","func":"func_800832A0"}
+{"ts":"2026-06-22T06:43:16.8920308Z","kind":"lane-cycle","role":"backlog-worker","lane":"fleet-bw1","outcome":"blocked","func":"func_80045878"}
+{"ts":"2026-06-22T06:44:05.6143259Z","kind":"reaudit-clean","func":"func_800853F4"}
+{"ts":"2026-06-22T06:47:52.9894969Z","kind":"reaudit-clean","func":"func_800859F0"}
+{"ts":"2026-06-22T06:57:30.9295378Z","kind":"reaudit-clean","func":"func_80085EE4"}
