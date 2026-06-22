@@ -1558,3 +1558,9 @@
 {"ts":"2026-06-22T16:11:27.6984474Z","kind":"reaudit-clean","func":"snd_SelectionCallback"}
 {"ts":"2026-06-22T16:15:28.7734229Z","kind":"reaudit-clean","func":"snd_StopAll"}
 {"ts":"2026-06-22T16:19:10.0307714Z","kind":"reaudit-clean","func":"snd_StopSelection"}
+{"ts":"2026-06-22T16:23:05.3887000Z","kind":"lane-cycle","role":"backlog-worker","lane":"fleet-bw1","outcome":"in-review","func":"func_80049718"}
+{"ts":"2026-06-22T16:24:45.4812162Z","kind":"reaudit-clean","func":"special_camera_check_pos_outside_ground_80035DC8"}
+{"ts":"2026-06-22T16:38:36.6877178Z","kind":"reaudit-clean","func":"spu_GetReverbMode"}
+{"ts":"2026-06-22T16:42:38.8876685Z","kind":"reaudit-clean","func":"spu_InitIrq"}
+{"ts":"2026-06-22T16:46:37.2412537Z","kind":"lane-cycle","role":"backlog-worker","lane":"fleet-bw1","outcome":"in-review","func":"func_8006B92C"}
+{"ts":"2026-06-22T16:55:23.9165596Z","kind":"reaudit-clean","func":"spu_NotifyChannel"}
