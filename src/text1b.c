@@ -17403,7 +17403,7 @@ void func_80075830(s32 *arg0, s32 arg1, s32 arg2, s32 arg3) {
         *(s8 *)(packet + 0x28) = 0;
     }
     *(s32 *)(packet + 0x18) = arg2 * 0xF0 + var_a1 * 0x64;
-    *(s32 *)(packet + 0x1C) = (s32)(var_a2 << 16) >> 12;
+    *(s32 *)(packet + 0x1C) = var_a2 * 16;
     if (arg2 != 0) {
         *(s32 *)(packet + 0x14) = 0x13;
     } else {
