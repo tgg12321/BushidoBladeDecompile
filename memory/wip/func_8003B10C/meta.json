@@ -15,6 +15,19 @@
       "floor_was": 10,
       "floor_now": 10,
       "lever_rule": "split-read-defeats-hoist"
+    },
+    {
+      "date": "2026-06-15",
+      "lever": "adjudicator deep-dive: 5 additional forms beyond session 1; v9 (arm-local s32 v1 + duplicated func_800494D4 call INSIDE each arm) reached masked floor 13 = baseline+3 \u2014 closest form ever recorded. Cross-jump merging works (addu/addu/lbu/jal tail matches target exactly, operand order included). Residual gap is RA cascade: v9 source triggers `move s2,s0` in jal func_800493E4 delay slot, else-arm references s2 (0x67c, 0x688), adding a 2nd live copy of s0, growing save set + frame -32\u2192-40. Target keeps single s0 live across both arms \u2014 RA decision not source-derivable from levers tried.",
+      "floor_was": 10,
+      "floor_now": 10,
+      "lever_rule": "split-read-defeats-hoist v9 = arm-local-var + per-arm-call-duplication; structural match achieved, RA cascade residual"
+    },
+    {
+      "date": "2026-06-24",
+      "event": "owner-ruling",
+      "verdict": "send-back-to-blocked",
+      "rationale": "Owner ruling: 'park permanently' is not a disposition. Canonical-asm signal is WEAK (scan_hand_coded LOW score 0, no STRONG signals). Cycle in blocked until STRONG hand-coded signal or pure-C match. Next worker: resume from v9, attack the RA cascade (move s2,s0 in the jal func_800493E4 delay slot)."
     }
   ],
   "reviewer": {
@@ -28,14 +41,61 @@
     "rules_required_for_full_match": "12 regfix rules (4 delete + 6 insert + 1 subst) that delete the shared hoisted load and inject duplicated lui/addu/lh %hi/%lo(D_80101ED6) loads into each branch arm."
   },
   "next_hypotheses": [
-    "Canonical-asm authorization: the 6 insert rules reconstruct duplicated absolute loads that GCC's CSE provably removes — a no-pure-C-form construct for this branch shape.",
-    "Permuter from baseline (low expected value: CSE on an identical read is a fixed control-flow artifact the permuter cannot restructure)."
+    "Resume from v9: arm-local `s32 v1` + duplicate the func_800494D4 call INSIDE each if/else arm. Cross-jump merges the addu/addu/lbu/jal tail correctly; structural match is achieved. Floor 13 = baseline+3.",
+    "Attack the RA cascade: v9 triggers `move s2,s0` in the jal func_800493E4 delay slot, growing the callee-save set. Target avoids it. Try (a) reorder the s0-using statements so GCC schedules a different delay-slot filler, (b) introduce a no-spill structural change that keeps s0 live across both arms without a copy, (c) examine what the s2 copy is feeding and whether a different sequencing eliminates the second live range.",
+    "Last-resort permuter run seeded from v9 candidate.c targeting only the s2/s0 RA decision (other 60 insns are stable)."
   ],
   "rejected_forms": [
-    { "form": "per-branch ed6 variable (separate read each arm)", "score": 32, "reason": "not a cheat; GCC promotes ed6 to callee-saved, frame grows -32->-40" },
-    { "form": "per-branch full pointer p = &TBL + idx*N + ed6read", "score": 26, "reason": "not a cheat; worse" },
-    { "form": "per-branch p = &TBL + idx*N, ed6 read in shared tail", "score": 19, "reason": "not a cheat; still hoists + spill" },
-    { "form": "fold ed6 into v0 per branch (v0 = idx*N + ed6read)", "score": 26, "reason": "not a cheat; worse" }
+    {
+      "form": "per-branch ed6 variable (separate read each arm)",
+      "score": 32,
+      "reason": "not a cheat; GCC promotes ed6 to callee-saved, frame grows -32->-40"
+    },
+    {
+      "form": "per-branch full pointer p = &TBL + idx*N + ed6read",
+      "score": 26,
+      "reason": "not a cheat; worse"
+    },
+    {
+      "form": "per-branch p = &TBL + idx*N, ed6 read in shared tail",
+      "score": 19,
+      "reason": "not a cheat; still hoists + spill"
+    },
+    {
+      "form": "fold ed6 into v0 per branch (v0 = idx*N + ed6read)",
+      "score": 26,
+      "reason": "not a cheat; worse"
+    },
+    {
+      "form": "v6 fn-scope s32 v1 declared FIRST (declaration-order LUID)",
+      "score": 33,
+      "reason": "no improvement"
+    },
+    {
+      "form": "v7 register s32 v1 storage-class hint",
+      "score": 33,
+      "reason": "no improvement"
+    },
+    {
+      "form": "v8 s8 *tbl with explicit u8 cast at lbu",
+      "score": 33,
+      "reason": "no improvement"
+    },
+    {
+      "form": "v10 fn-scope s32 arg carrying lbu result",
+      "score": 20,
+      "reason": "partial cross-jump but loses elsewhere"
+    },
+    {
+      "form": "v11 arm-local u8 *tbl AND s32 v1",
+      "score": 25,
+      "reason": "no improvement"
+    },
+    {
+      "form": "v12 v0 += ED6 inline per arm + per-arm call",
+      "score": 37,
+      "reason": "no improvement"
+    }
   ],
   "memory_notes": [
     ".claude/rules/split-read-defeats-hoist.md"

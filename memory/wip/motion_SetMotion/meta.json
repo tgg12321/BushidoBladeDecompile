@@ -4,7 +4,7 @@
   "scores": {
     "head_floor": 10,
     "candidate_floor": 10,
-    "metric": "sandbox --disable all (masked Levenshtein) — UNRELIABLE here: the register swap is masked to 0, so the sandbox cannot see the real gap. Full SHA1 is the only truth.",
+    "metric": "sandbox --disable all (masked Levenshtein) \u00e2\u20ac\u201d UNRELIABLE here: the register swap is masked to 0, so the sandbox cannot see the real gap. Full SHA1 is the only truth.",
     "build_insns": 402,
     "target_insns": 402,
     "empirical_sha1_pin_free_regfix_kept": "46e36200ae5bd842088ccbcd1e98b5f94484dc6c",
@@ -13,36 +13,45 @@
   "sessions": [
     {
       "date": "2026-06-14",
-      "lever": "diagnosis only — identified the two coupled cheats; no floor reduction (the real gap is masked)",
+      "lever": "diagnosis only \u00e2\u20ac\u201d identified the two coupled cheats; no floor reduction (the real gap is masked)",
       "floor_was": 10,
       "floor_now": 10
     },
     {
       "date": "2026-06-16",
-      "lever": "full analysis + empirical confirmation. (1) RA: GCC priority formula from global.c:604 = floor_log2(n_refs)*n_refs/live_length*10k. result(n=6,len=400)=300 > sel2(n=3,len=124)=242 → result takes $s2. Empirically: pins removed + regfix kept = SHA1 46e36200 (RA mismatch). (2) Cross-jump: minimum-2 fires when case9/11 uses sel=0xD (both blocks `li s0,13; j sel_dispatch`). Mixed-exit-forms lever not applicable (neither path can return mid-function). No pure-C lever found for either issue.",
+      "lever": "full analysis + empirical confirmation. (1) RA: GCC priority formula from global.c:604 = floor_log2(n_refs)*n_refs/live_length*10k. result(n=6,len=400)=300 > sel2(n=3,len=124)=242 \u00e2\u2020\u2019 result takes $s2. Empirically: pins removed + regfix kept = SHA1 46e36200 (RA mismatch). (2) Cross-jump: minimum-2 fires when case9/11 uses sel=0xD (both blocks `li s0,13; j sel_dispatch`). Mixed-exit-forms lever not applicable (neither path can return mid-function). No pure-C lever found for either issue.",
       "floor_was": 10,
       "floor_now": 10,
       "outcome": "needs-decision"
+    },
+    {
+      "date": "2026-06-24",
+      "event": "owner-ruling",
+      "verdict": "send-back-to-blocked",
+      "rationale": "Owner ruling: B (send-back). Cluster precedent (saEft00Add / marionation_Exec / cpu_side_move_dir_4 / func_8007C97C) is circumstantially strong but does not meet the canonical-asm bar \u2014 Lever D demonstrates bytes are C-reachable. HEAD's 2 register pins + 1 regfix retained as cheat-infrastructure until clean replacement lands."
     }
   ],
   "reviewer": {
     "verdict": "NEEDS_USER",
     "date": "2026-06-14",
-    "evidence": "Two coupled forbidden cheats: (1) register pins result asm(\"s3\")/sel2 asm(\"s2\"); (2) regfix subst 'addiu $16,$zero,12'->'13' @149 (commented 'anti-cross-jump fix'). Removing pins flips RA (masked-invisible); removing the rule via setting case9/11 sel=0xD FAILS the full build. Likely needs cross-jump-defeating restructure + a pure-C RA lever, or canonical-asm auth. Session 2 (2026-06-16): exhaustive analysis confirms BOTH issues are plateaus — no pure-C lever exists for either."
+    "evidence": "Two coupled forbidden cheats: (1) register pins result asm(\"s3\")/sel2 asm(\"s2\"); (2) regfix subst 'addiu $16,$zero,12'->'13' @149 (commented 'anti-cross-jump fix'). Removing pins flips RA (masked-invisible); removing the rule via setting case9/11 sel=0xD FAILS the full build. Likely needs cross-jump-defeating restructure + a pure-C RA lever, or canonical-asm auth. Session 2 (2026-06-16): exhaustive analysis confirms BOTH issues are plateaus \u00e2\u20ac\u201d no pure-C lever exists for either."
   },
   "remaining_gap": {
-    "summary": "402-insn dispatcher. Target: result in $s3, sel2 in $s2. Without pins: result→$s2, sel2→$s3 (SHA1 46e36200). Without regfix (case9/11 sel=0xD): cross_jump merges ea0+fc0 blocks (SHA1 82e50f76). GCC priority formula (global.c:604) shows result (priority≈300) > sel2 (priority≈242): sel2 needs n_refs≥4 to win, but any 4th ref changes the binary (oracle has li a1,-1 not move a1,s2). Cross_jump minimum-2 fires with sel=0xD for case9/11. No pure-C solution for either issue found after exhaustive analysis.",
+    "summary": "402-insn dispatcher. Target: result in $s3, sel2 in $s2. Without pins: result\u00e2\u2020\u2019$s2, sel2\u00e2\u2020\u2019$s3 (SHA1 46e36200). Without regfix (case9/11 sel=0xD): cross_jump merges ea0+fc0 blocks (SHA1 82e50f76). GCC priority formula (global.c:604) shows result (priority\u00e2\u2030\u02c6300) > sel2 (priority\u00e2\u2030\u02c6242): sel2 needs n_refs\u00e2\u2030\u00a54 to win, but any 4th ref changes the binary (oracle has li a1,-1 not move a1,s2). Cross_jump minimum-2 fires with sel=0xD for case9/11. No pure-C solution for either issue found after exhaustive analysis.",
     "rule_count_at_head": 1,
     "rules_required_for_full_match": "HEAD byte-matches ONLY via 2 cheat-asm pins + 1 regfix subst. No pure-C form found after exhaustive analysis of RA priority formula and cross_jump mechanism."
   },
   "next_hypotheses": [
-    "Adjudicator decision: (a) any pure-C RA lever to flip sel2>result without changing binary? (b) any structural approach to prevent cross_jump merge while both blocks emit 13? (c) park?"
+    "UN-TRIED \u2014 attack Wall 1 (RA priority) via emission-byte-neutral changes: try (a) restructuring the case-9/11 result-setting blocks so the 4 `result=1;` stores come from a single shared assignment reached by goto, but cross-jump RESPREADS into 4 emissions (this is the inverse of the wall \u2014 make the C show 1 store, let cross-jump spread it). (b) Examine whether ANY structural change to the case-bodies that doesn't touch result/sel2 nrefs/livelen *indirectly* shifts pri via livelen recomputation cascade.",
+    "UN-TRIED \u2014 attack Wall 2 (cross-jump suffix): the documented `cross-jump-store-tail-merge` mix-exit lever was ruled out because both paths must reach the shared sel_dispatch call. But there's an UN-EXAMINED variant \u2014 restructuring so the SUFFIX (not the exit) differs. E.g., introduce a no-op USE/CLOBBER that survives prev_nonnote_insn but breaks rtx_renumbered_equal_p at exactly insn #2 of the suffix. Note: must NOT emit bytes (USE/CLOBBER are skipped per jump.c:2524, so the trick is a construct that survives the skip but breaks the rtx comparison). This is at the edge of what's structurally possible \u2014 un-tested.",
+    "UN-TRIED \u2014 combined attack: change the sel2 initialization site so it's BORN later (after early-exit) AND restructure the post-early-exit code so target's prologue `addiu $s2,-1` is reproduced naturally via a different sequencing. Adjudicator ruled this out under livelen analysis BUT \u2014 Lever C variant 'loop-local precompute' was waved off as 'no loop here'; check whether the case-dispatch can be reshaped as a logical loop-1-iteration for sel2 lifetime purposes.",
+    "Latent policy deliberation: if cluster grows + permuter benchmark + SOTN cross-check support it, canonical-asm signal set may expand to include 'documented N-function cluster with empirical RA-priority + cross-jump coupling'. Not actionable per-function; surface to owner separately if cluster reaches 6+ members."
   ],
   "rejected_forms": [
     {
       "form": "case 9: case 11: sel = 0xD; (with rule removed)",
       "score": 0,
-      "reason": "WRONG: full build SHA1 mismatch 82e50f76. Cross_jump fires when both case9/11 and D_800A3207==3 non-10 have sel=0xD — minimum-2 (`li s0,13; j sel_dispatch`) met → blocks merged → different binary."
+      "reason": "WRONG: full build SHA1 mismatch 82e50f76. Cross_jump fires when both case9/11 and D_800A3207==3 non-10 have sel=0xD \u00e2\u20ac\u201d minimum-2 (`li s0,13; j sel_dispatch`) met \u00e2\u2020\u2019 blocks merged \u00e2\u2020\u2019 different binary."
     },
     {
       "form": "swap declaration order (sel2 before result)",
@@ -52,7 +61,7 @@
     {
       "form": "pins removed + regfix kept",
       "score": 0,
-      "reason": "PROVEN this session: SHA1 46e36200 (RA mismatch). result→$s2 (wrong) without pins."
+      "reason": "PROVEN this session: SHA1 46e36200 (RA mismatch). result\u00e2\u2020\u2019$s2 (wrong) without pins."
     },
     {
       "form": "func_8006BEC4(0xA, sel2) instead of func_8006BEC4(0xA, -1) at early exit",
