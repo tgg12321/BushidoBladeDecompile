@@ -42,3 +42,45 @@
 - 2026-06-22T13:54:31.7466285Z  **mottest_disp** — Four `u8 & 0xFF` / `(u8)u8var` masks with no semantic purpose: each forces an `andi` instruction that creates a new register for register-allocation/delay-slot scheduling control. They fail the 6-test checklist at tests 1 (no observable-output effect), 2 (no human programmer writes `(u8_var & 0xFF)` on an already-`u8` variable from spec), and 3 (the rationale is GCC-internals: force `andi`, create `$vN` so the original register stays live for the branch delay slot or a concurrent store). Not in the SOTN-accepted list. Function stays in main until a clean replacement that omits these masks (or demonstrates they close without them) is produced and passes a fresh layer-2 review.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)
 - 2026-06-22T14:49:20.5693609Z  **saTan0Main** — char b (line 359) fails test-1 (no semantic purpose — identical runtime behavior with u8 b) and test-3 (justification explicitly invokes GCC value-width tracking). Not on the SOTN-accepted exceptions list. Worker must replace with u8 b and find a pure-C structure that naturally reproduces andi $a2,$s2,0xFF, OR bring SOTN master-branch evidence for type-coercion-for-range-analysis as an accepted technique before this construct can pass.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)
 - 2026-06-22T15:27:50.4028610Z  **se_data_set** — Two codegen-coercion constructs with no semantic purpose: (1) '(s8)(u16)D_800A36A4' forces lhu vs lh for no semantic gain (sb discards the sign-extension difference); (2) 's8 *p = (s8*)&D_8010277C' caches the address in a callee-save register across a call where a direct cast would suffice — inconsistency between condition (direct cast) and body (pointer) is the tell. Both fail tests 1+2+3 of the 6-test checklist. Function needs a clean redo: remove the (u16) intermediate cast and replace *p with (s8)D_8010277C throughout, then find the pure-C structure that naturally produces lhu and $s0 address-caching.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)
+
+---
+
+## Resolution log — 2026-06-24 sweep
+
+Owner-directed sweep of the 19 fresh regressions accumulated 2026-06-17 through 2026-06-22. Categorized as trivial-or-easy (2), easy (7), hard (10); sweep attempted the first 9 (trivial-or-easy + easy).
+
+### Cleaned (6) — committed to main as cheat-cleanup with cheat-reviewer PASS
+
+| Function | Commit | Disposition |
+|---|---|---|
+| `func_80065680` | `4b5b71ff` | conflicting `extern s16` redeclaration deleted; canonical `u16` decl remains |
+| `func_80044170` | `3c087c92` | volatile cast `(volatile s32 **)&a0` -> plain `(s32)a0`; pointer-aliasing on `slots`/`a0` produces the reload naturally |
+| `func_80044DE4` | `9c9b8d9e` | `sp18[4]`/`sp28[4]` -> `[3]`; callee accesses 0/4/8 only, sibling already uses [3] |
+| `func_8006C168` | `d1d80523` | void/s32 type mismatch fixed: definition -> s32, add `return`, drop post-def redecl |
+| `func_80075830` | `cf4c762b` | `(s32)(var_a2 << 16) >> 12` -> `var_a2 * 16`; GCC canonicalizes both forms to the same `sll 16; sra 12` emit |
+| `saTan0Main` | `e46c5115` | `char b` -> `u8 b` + remove false comment about GCC value-width tracking (SHA1 unchanged with `u8`, proving the `char` claim wrong) |
+
+Standing oracle held throughout: SHA1 == `62efab4f73f992798c43e8c730aa43baa10bb4fa`.
+
+### WIP-stubs (3) — load-bearing constructs, structural rewrite needed
+
+The auditor's expected trivial fixes scored non-zero on attempt. WIP entries created with empirical findings + concrete un-tried lever hypotheses so the next worker doesn't redo the failed strip. Single commit: `<wip-stub commit>`.
+
+| Function | Strip score | Why load-bearing |
+|---|---|---|
+| `func_8006E49C` | 0 -> 35 | `int new_var;` decl bumps RTL `reg_n_refs` (Lever D cheat-by-spelling); affects RA bias on the store-pack sequence |
+| `func_80044670` | 0 -> 4 | empty `do{}while(0)` defeats reorg.c `relax_delay_slots` peephole on the switch dispatch entry; mechanism IS what [[do-while-zero-exception]] sanctions but HEAD lacks the mandatory annotation + lever-exhaustion ledger |
+| `func_800455AC` | 0 -> 20 | `s16 (*new_var)[]; new_var = &D_800EED10;` pointer alias caches the address in a callee-save register; 5 extra insns without it. Sanctioned-shape named-intermediate is on the SOTN-accepted list — question is whether a rename to a meaningful name + meaningful type promotes it from cheat-by-spelling to sanctioned |
+
+### Deferred (10) — hard regressions, queued for fleet campaign
+
+These are load-bearing cheats that need structural pure-C re-derivation; not in scope for the inline sweep. Each retains its auditor note above; the disposition is to surface them on the next fleet launch for worker-queue treatment.
+
+`func_80040510`, `func_800417D0`, `func_80068F70`, `func_8006A3CC`, `func_8006F038`, `func_80074220`, `hirahira_w_frie`, `math_Distance3D`, `mottest_disp`, `se_data_set`
+
+### Sweep totals
+
+- Sweep attempted: 9 of 19 (trivial-or-easy + easy buckets)
+- Cleaned: 6 functions (66.7% success rate on attempt)
+- WIP-stubbed for structural follow-up: 3
+- Deferred (hard bucket): 10
