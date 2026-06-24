@@ -15896,7 +15896,7 @@ void func_8006BEC4(s32 arg0, s32 arg1) {
 }
 extern void func_8006BB68(s32);
 extern s32 func_8006B92C();
-void func_8006C168(s32 arg0, s32 arg1) {
+s32 func_8006C168(s32 arg0, s32 arg1) {
     s32 sp10[22];
     u8 *t;
     D_800A3514 += 1;
@@ -15904,9 +15904,8 @@ void func_8006C168(s32 arg0, s32 arg1) {
     func_8006E390(sp10, &D_800A3518);
     func_80069AE4(sp10, 1, t);
     func_8006BB68(sp10);
-    func_8006B92C(&arg0, &arg1);
+    return func_8006B92C(&arg0, &arg1);
 }
-s32 func_8006C168(s32, s32);
 s32 saTan2InfoInit_8006C1FC(s32 a0, s32 a1) {
     return func_8006C168(a0, a1);
 }
