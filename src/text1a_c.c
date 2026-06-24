@@ -925,7 +925,7 @@ s32 func_80044170(s32 *a0, ...) {
                 InitFadePanel();
             }
             count--;
-            tbl = (s32 *)((entry * 4) + (s32)(*(volatile s32 **)&a0));
+            tbl = (s32 *)((entry * 4) + (s32)a0);
             cur_off = *tbl;
             size = *(tbl + 1);
             *slots = dest - (s32)base;
