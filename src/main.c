@@ -334,29 +334,21 @@ extern s32 spu_ReadMotionFrame(s32, s16);
 
 s32 saTan0Main(s16 a0, s16 a1)
 {
-  /* 100% pure C: no regfix rules, no register pins, no inline asm. Two
-   * non-obvious choices reproduce target's exact codegen:
+  /* 100% pure C: no regfix rules, no register pins, no inline asm.
    *
-   * 1. `b` is the narrow `char` type (not u32). The 8-bit type changes GCC's
-   *    value-width tracking so it emits the byte-mask (andi $a2,$s2,0xFF) the
-   *    target has when b feeds the u8-typed handler args — a wide `u32 b` (a
-   *    byte from lbu, provably <=255) elided that mask as redundant, which had
-   *    needed an andi regfix rule. The narrow type also gives GCC target's
-   *    natural callee-save allocation for b/next/ret/cmd, retiring 4 pins.
-   *
-   * 2. The 2nd switch's 0x90 case reads the sequence pointer into a *block-
-   *    local* `cp` instead of the shared `cmd_ptr`. Sharing one variable made
-   *    GCC's global allocator place `cmd_ptr` in $a2 (reusing the handler arg
-   *    register, since the temp dies just before arg setup); splitting that one
-   *    use shrinks cmd_ptr's live range / conflicts so the allocator gives it
-   *    $v1 (its default-order preference) across the 1st-switch cases — exactly
-   *    target. Retires the last pin. */
+   * One non-obvious choice: the 2nd switch's 0x90 case reads the sequence
+   * pointer into a *block-local* `cp` instead of the shared `cmd_ptr`.
+   * Sharing one variable made GCC's global allocator place `cmd_ptr` in $a2
+   * (reusing the handler arg register, since the temp dies just before arg
+   * setup); splitting that one use shrinks cmd_ptr's live range / conflicts
+   * so the allocator gives it $v1 (its default-order preference) across the
+   * 1st-switch cases — exactly target. Retires the last pin. */
   u8 *state;
   s32 cmd;
   u8 *cmd_ptr;
   u8 *ptr;
   u32 data;
-  char b;
+  u8 b;
   u8 prev;
   u8 databyte;
   u8 next;
