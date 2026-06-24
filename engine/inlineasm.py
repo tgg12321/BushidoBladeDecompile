@@ -211,7 +211,7 @@ def strip_cheat_asm_file(text: str) -> tuple[str, int]:
 def write_stripped(stem: str, out_path: str) -> int:
     """Write src/<stem>.c with cheat-asm, register hints, and volatile coercion
     cheats stripped to out_path. Returns the count of stripped constructs."""
-    text = Path(f"src/{stem}.c").read_text()
+    text = Path(f"src/{stem}.c").read_text(encoding="utf-8")
     stripped, n = strip_cheat_asm_file(text)
     Path(out_path).parent.mkdir(parents=True, exist_ok=True)
     Path(out_path).write_text(stripped)
@@ -301,7 +301,7 @@ def _read_src_cached(stem: str) -> str | None:
     if cached and cached[0] == mt:
         return cached[1]
     try:
-        text = p.read_text()
+        text = p.read_text(encoding="utf-8")
     except OSError:
         return None
     _FILE_TEXT_CACHE[stem] = (mt, text)

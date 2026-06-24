@@ -45,7 +45,7 @@ def canonical_asm_funcs(path: str = INLINE_ASM_CANONICAL) -> set[str]:
     if not p.exists():
         return set()
     out: set[str] = set()
-    for ln in p.read_text().splitlines():
+    for ln in p.read_text(encoding="utf-8").splitlines():
         ln = ln.strip()
         if ln and not ln.startswith("#"):
             out.add(ln.split()[0])
@@ -106,7 +106,7 @@ def func_rule_lines(func: str, cfg: str = REGFIX) -> list[tuple[int, str]]:
     kr = _key_re(func)
     if not Path(cfg).exists():
         return []
-    return [(i, ln) for i, ln in enumerate(Path(cfg).read_text().splitlines())
+    return [(i, ln) for i, ln in enumerate(Path(cfg).read_text(encoding="utf-8").splitlines())
             if kr.match(ln)]
 
 
@@ -115,7 +115,7 @@ def _filter_text(func: str, disable: str, cfg: str) -> tuple[str, int]:
         return "", 0
     kr = _key_re(func)
     out, dropped = [], 0
-    for ln in Path(cfg).read_text().splitlines(keepends=True):
+    for ln in Path(cfg).read_text(encoding="utf-8").splitlines(keepends=True):
         if kr.match(ln) and (disable == "all" or
                              (disable == "lost-codegen" and is_lost_codegen(ln))):
             dropped += 1
@@ -130,7 +130,7 @@ def all_keyed_functions() -> set[str]:
     funcs: set[str] = set()
     for c in (REGFIX, REGFIX2, ASMFIX):
         if Path(c).exists():
-            for ln in Path(c).read_text().splitlines():
+            for ln in Path(c).read_text(encoding="utf-8").splitlines():
                 m = keyre.match(ln)
                 if m:
                     funcs.add(m.group(1))
@@ -144,7 +144,7 @@ def _prologue_txt_funcs(path: str) -> set[str]:
     if not p.exists():
         return set()
     out: set[str] = set()
-    for ln in p.read_text().splitlines():
+    for ln in p.read_text(encoding="utf-8").splitlines():
         tok = ln.strip().split()
         if tok and not tok[0].startswith("#"):
             out.add(tok[0])
@@ -192,7 +192,7 @@ def _write_prologue_overrides(sd: Path, drop_func: str | None) -> dict:
     out["prologue_config_path"] = str(sd / "prologue_config.json")
     for label, src in (("delay_slot_ra_path", DELAY_SLOT_RA), ("frame_fix_path", FRAME_FIX)):
         sp = Path(src)
-        lines = sp.read_text().splitlines(keepends=True) if sp.exists() else []
+        lines = sp.read_text(encoding="utf-8").splitlines(keepends=True) if sp.exists() else []
         kept = []
         for ln in lines:
             tok = ln.strip().split()

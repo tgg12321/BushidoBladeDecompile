@@ -90,7 +90,7 @@ def _load_volatile_extern_allowlist() -> frozenset[str]:
         return _volatile_extern_allowlist_cache[2]
     syms: set[str] = set()
     try:
-        for raw in path.read_text().splitlines():
+        for raw in path.read_text(encoding="utf-8").splitlines():
             line = raw.split("#", 1)[0].strip()
             if not line:
                 continue
@@ -1198,7 +1198,7 @@ def strip_volatile_cheats_file(text: str) -> tuple[str, int]:
 def write_stripped(stem: str, out_path: str) -> int:
     """Strip volatile-coercion cheats from src/<stem>.c into out_path. Returns
     count. Mirrors inlineasm.write_stripped's signature so it composes."""
-    text = Path(f"src/{stem}.c").read_text()
+    text = Path(f"src/{stem}.c").read_text(encoding="utf-8")
     stripped, n = strip_volatile_cheats_file(text)
     Path(out_path).parent.mkdir(parents=True, exist_ok=True)
     Path(out_path).write_text(stripped)
@@ -1345,7 +1345,7 @@ def func_volatile_cheat_count(text: str, func: str) -> int:
 
 def file_func_volatile_cheat_count(stem: str, func: str) -> int:
     try:
-        text = Path(f"src/{stem}.c").read_text()
+        text = Path(f"src/{stem}.c").read_text(encoding="utf-8")
     except OSError:
         return -1
     return func_volatile_cheat_count(text, func)
@@ -1364,7 +1364,7 @@ def audit_project(src_dir: str = "src") -> dict:
     by_func: dict[str, int] = {}
     # All .c files
     for p in sorted(Path(src_dir).glob("*.c")):
-        text = p.read_text()
+        text = p.read_text(encoding="utf-8")
         cheats_ = find_all_cheats(text)
         if not cheats_:
             continue
