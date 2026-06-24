@@ -14760,7 +14760,6 @@ u8 func_80065630(void) {
 }
 extern s32 motion_SetExMotion(s32);
 extern u16 D_800F0BC0;
-extern s16 D_800F0BC4;
 s32 func_80065680(void) {
     u16 *v1;
     s32 v0;
