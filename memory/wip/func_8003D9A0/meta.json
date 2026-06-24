@@ -1,0 +1,51 @@
+{
+  "function": "func_8003D9A0",
+  "file": "code6cac_c2",
+  "scores": {
+    "head_floor": 19,
+    "candidate_floor": null,
+    "metric": "sandbox --disable all (masked Levenshtein)",
+    "build_insns": null,
+    "target_insns": null
+  },
+  "sessions": [
+    {
+      "date": "2026-06-24",
+      "event": "stub-from-stranded-branch",
+      "lever": "Stub created from the obsolete worker branch work/blkB2-0614 (commit e1f215db, 2026-06-14, Trenton). On the branch, this candidate.c form scored sandbox 0 + SHA1==oracle (cheat-reviewer PASS). On main, the standing memory [[stranded-branch-work-not-transplantable]] proved a byte-identical version of THIS function scores 19 due to compilation-context drift (~70+ commits of header/type/per-file state). Source-identical-different-score is the empirical case the memory was written from. The technique may still apply via a derivative form; the diff is a worthwhile starting hint.",
+      "floor_was": 19,
+      "floor_now": 19,
+      "lever_rule": "loop-counter-hoist-for-delay-slot-fill"
+    }
+  ],
+  "reviewer": {
+    "verdict": "N/A",
+    "date": "2026-06-24",
+    "evidence": "No candidate adopted on main. The branch commit e1f215db is a hint, not a transplantable match. The branch's cheat-reviewer PASS only applies in the branch's compilation context."
+  },
+  "remaining_gap": {
+    "summary": "Branch commit e1f215db on work/blkB2-0614 (2026-06-14) closes the function in the branch's context via two edits: (1) drop the `register s16 *s0 asm(\"s0\")` + `register u32 *s1 asm(\"s1\")` pins + the `asm(\"\" : : \"r\"(s1))` barrier; (2) hoist `s2 = a1 - 1;` out of the `if (a1 != 0)` block to BEFORE the early-exit guard. The hoist makes cc1 fill the branch delay slot of `beqz a1` with `addiu s2,a1,-1` (computed unconditionally), so `move s1,a2` materializes in the prologue paired with its `sw s1` save — matching target's prologue. On main, the same source diff scores 19 (context drift).",
+    "rule_count_at_head": 0,
+    "rules_required_for_full_match": "0 (no regfix rules carried by this function; the cheat was source-level pins + barrier)"
+  },
+  "next_hypotheses": [
+    "Resume from the hoist-the-loop-counter idea. Apply the branch's edit (drop pins/barrier + hoist `s2 = a1 - 1;`) and sandbox on CURRENT main. Per [[stranded-branch-work-not-transplantable]] the score was 19 in mid-June; check whether it's still 19 today, what the diff is, and whether a derivative form (e.g. additional reordering of the s4/s3 reads vs the hoist; or hoisting other invariants) closes the gap.",
+    "Inspect the per-file compilation context for code6cac_c2: what's changed in the headers (`include/code6cac.h`?) or in adjacent function bodies that might affect the GCC's view of s0/s1/s2 liveness? The drift is real and measurable; if a specific header change can be pinned as the cause, that might suggest a structural workaround.",
+    "Check the sibling functions in code6cac_c2.c that DID get COMPLETED-C in June (look at b3165e38's queue-done sweep or commits referencing the file in mid-June). Their completion may have involved a similar loop-counter-hoist or prologue-fix retire — those bodies are the most relevant analogs available in main's current context."
+  ],
+  "rejected_forms": [],
+  "memory_notes": [
+    "[[stranded-branch-work-not-transplantable]] — the standing experiment was specifically on THIS function. The 2-vs-19 score gap proves compilation-context drift, not source-level error.",
+    "[[hoist-call-arg-local-flips-jal-delay]] — adjacent codegen rule on delay-slot fill via local hoisting.",
+    "[[loop-note-fixes-delay-slot-steal]] — adjacent codegen rule on loop-note interaction with delay slot."
+  ],
+  "branch_hint": {
+    "branch": "work/blkB2-0614",
+    "commit": "e1f215db",
+    "date": "2026-06-14",
+    "diff_summary": "src/code6cac_c2.c func_8003D9A0: drop 2 register-asm pins (s0/s1) + drop asm barrier on s1; hoist `s2 = a1 - 1;` from inside the if(a1!=0) block to before the early-exit guard.",
+    "branch_score": "sandbox 0 + SHA1==oracle (PASS)",
+    "main_score_at_time": "19 (per [[stranded-branch-work-not-transplantable]] experiment, 2026-06-16)",
+    "verdict": "Hint only; not transplantable as-is per the standing experiment."
+  }
+}
