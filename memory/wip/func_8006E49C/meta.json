@@ -1,0 +1,55 @@
+{
+  "function": "func_8006E49C",
+  "file": "text1b",
+  "scores": {
+    "head_floor": 0,
+    "candidate_floor": 35,
+    "metric": "sandbox --disable all (masked Levenshtein)",
+    "build_insns": 38,
+    "target_insns": 38,
+    "head_carries_cheat": true
+  },
+  "sessions": [
+    {
+      "date": "2026-06-24",
+      "event": "regression-sweep-attempt",
+      "lever": "Attempted the regression note's trivial fix: drop `int new_var;` declaration AND replace `a = (new_var = arg0 + 0x9C40)` with `a = arg0 + 0x9C40`. Regression note (2026-06-22 auditor) expected 'GCC DCEs the dead store before RA so the match is unaffected'. EMPIRICALLY WRONG: sandbox jumped 0 -> 35 with the trivial strip. Reverted.",
+      "floor_was": 0,
+      "floor_now": 0,
+      "lever_rule": "auditor's expected trivial fix did NOT hold — new_var is load-bearing, not dead"
+    }
+  ],
+  "reviewer": {
+    "verdict": null,
+    "date": "2026-06-24",
+    "evidence": "Regression flagged HEAD's `a = (new_var = arg0 + 0x9C40)` chained assignment with a never-read `new_var` as a dead sub-assign. Trivial strip jumps score to 35 — proves new_var is load-bearing for RA/scheduling, despite never being READ. This is exactly the [[register-alloc-pure-c]] Lever D / dead-self-assign cheat-by-spelling pattern: the value isn't used at the C level, but the declaration changes GCC's RA state at the RTL level."
+  },
+  "remaining_gap": {
+    "summary": "HEAD's body packs 12 `arg1[N] = expr;` stores around two compute groups (a = arg0 + 0x9C40, then b = a + 0x6838, ... then a = (b + new_var2) + 0x9C40 for the second group). The `(new_var = arg0 + 0x9C40)` chained-assign with `new_var` declared as a fn-scope `int` (and never read) bumps the pseudo's RTL reg_n_refs, which biases RA / LUID. Stripping it costs 35 masked-Levenshtein diffs (target 38 / build 38 — same insn count, different RA). The `new_var2 = 0x1FB0` mid-function is a separate construct (sanctioned-shape opaque-constant, has genuine reads, NOT a cheat).",
+    "rule_count_at_head": 0,
+    "rules_required_for_full_match": "0 (cheat is source-level dead-assign + named-temp decl, no regfix)"
+  },
+  "next_hypotheses": [
+    "Structural rephrase WITHOUT the dead chained-assign: try forms that reach the same RA bias via a legitimate route. (a) Introduce a SECOND genuine use of the `arg0 + 0x9C40` value beyond the `a` assignment — but the second compute group needs `b + new_var2 + 0x9C40`, not `arg0 + 0x9C40`, so a real second use would have to come from elsewhere in the body. (b) Reorder the store sequence so the compiler naturally bumps the pseudo for `a`'s computation. (c) Investigate whether splitting the first compute group's stores INTO interleaving with the second group changes RA state in the same direction the dead chained-assign does.",
+    "Compare against COMPLETED-C siblings in text1b.c that have similar `arg1[N] = base + K;` store-pack shapes — what construct biases their RA without dead-assigns? (e.g. nearby text-buffer init helpers — the file has dozens.)",
+    "Run BB2_ALLOC_DEBUG cc1 dump on the body to identify which pseudo benefits from new_var's existence — the formula in global.c:611 (log2(refs)*refs/livelen) should make it obvious whether it's a priority bump on `a`'s pseudo or a livelen-shrink on `arg0`'s pseudo. Once the mechanism is named, levers A/B/C from [[register-alloc-pure-c]] can target it directly."
+  ],
+  "rejected_forms": [
+    {
+      "form": "strip `int new_var;` decl + replace `a = (new_var = arg0 + 0x9C40)` with `a = arg0 + 0x9C40`",
+      "score": 35,
+      "reason": "Trivial fix the 2026-06-22 regression note recommended. Score jumped 0 -> 35. new_var is load-bearing for RA/scheduling despite never being read at the C level — exact Lever D dead-self-assign cheat-by-spelling pattern."
+    }
+  ],
+  "memory_notes": [
+    "[[register-alloc-pure-c]] Lever D — dead self-assignments / dead-store coercion is FORBIDDEN; the cheat the auditor flagged.",
+    "[[inline-asm-policy]] expanded catalog (2026-05-31) — dead self-assignments of locals to bias RA fall in the same family as dead self-assigns of params.",
+    "[[no-new-park-categories]] — cluster (`new_var`-bias for store-pack shape) is NOT a new category; keep grinding in pure C."
+  ],
+  "regression_ref": {
+    "date": "2026-06-22",
+    "auditor_finding": "Dead sub-assignment to `new_var` (declared int, assigned once in `a = (new_var = arg0 + 0x9C40)` at text1b.c:16232, never read again) — fails Test 1 (no semantic purpose: `a = arg0 + 0x9C40` is identical) and Test 2",
+    "auditor_expected_fix": "remove new_var; expected GCC DCE to make removal a no-op",
+    "actual_result": "score 0 -> 35 (load-bearing for RA, NOT dead at RTL level despite being dead at C level)"
+  }
+}

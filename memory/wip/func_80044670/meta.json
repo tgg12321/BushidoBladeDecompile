@@ -1,0 +1,55 @@
+{
+  "function": "func_80044670",
+  "file": "text1a_c",
+  "scores": {
+    "head_floor": 0,
+    "candidate_floor": 4,
+    "metric": "sandbox --disable all (masked Levenshtein)",
+    "build_insns": 51,
+    "target_insns": 51,
+    "head_carries_cheat": true
+  },
+  "sessions": [
+    {
+      "date": "2026-06-24",
+      "event": "regression-sweep-attempt",
+      "lever": "Strip the unannotated `do { } while (0);` at function top (src/text1a_c.c:1139). EMPIRICAL: removing it raises sandbox 0 -> 4. Load-bearing per do-while-zero-exception mechanism (NOTE_INSN_LOOP_BEG / LABEL_OUTSIDE_LOOP_P suppresses reorg.c's relax_delay_slots invert-jump peephole). Reverted.",
+      "floor_was": 0,
+      "floor_now": 0,
+      "lever_rule": "do-while-zero-exception (LOAD-BEARING; current usage missing FAKE annotation + lever-exhaustion ledger required by the rule)"
+    }
+  ],
+  "reviewer": {
+    "verdict": null,
+    "date": "2026-06-24",
+    "evidence": "Regression flagged HEAD's unannotated do{}while(0) at function top as a cheat — fails Tests 1/2/3 and does not meet do-while-zero-exception's mandatory prerequisites (no /* FAKE */ annotation, no lever-exhaustion ledger). Trivial strip jumps score 0 -> 4, confirming the construct IS load-bearing (defeats a 4-insn reorg.c peephole — likely the bnez/beqz delay-slot inversion that the do-while-zero NOTE_INSN_LOOP_BEG suppresses). Therefore the construct is genuinely the mechanism the rule sanctions, BUT the worker who committed it never added the mandatory annotation/exhaustion record."
+  },
+  "remaining_gap": {
+    "summary": "Function has zero conditional branches in the explicit control flow, but the do{}while(0) defeats a reorg.c invert-jump-peephole that operates on the switch dispatch path. The 4 masked diffs without the do{}while(0) are likely a beqz/bnez at the switch entry whose delay slot gets stolen by the invert-jump peephole. Per [[do-while-zero-exception]] the construct is the sanctioned mechanism, but committing it requires (a) // FAKE annotation with the specific GCC pass + mechanism, (b) lever-exhaustion documentation (what structural alternatives were tried and measured negative).",
+    "rule_count_at_head": 0,
+    "rules_required_for_full_match": "0 (cheat is source-level do{}while(0), no regfix)"
+  },
+  "next_hypotheses": [
+    "Option A — keep the construct, ANNOTATE it. Add `/* FAKE: defeats reorg.c relax_delay_slots invert-jump peephole on the switch entry's beqz/bnez delay slot (NOTE_INSN_LOOP_BEG / LABEL_OUTSIDE_LOOP_P suppression) */`. Per [[do-while-zero-exception]] mandatory prerequisites: also document lever-exhaustion. Levers to try and rule out (each measured) BEFORE annotating: (i) restructure the switch as if/else chain — measure if the peephole still fires; (ii) reorder the four global stores to give the peephole something else to fill the delay slot with; (iii) hoist `v0 = stage_GetId();` to before the cases, eliminating the in-delay-slot stage_GetId call site that the peephole may be targeting.",
+    "Option B — find a non-do-while structural alternative. The peephole mechanism is identifiable; a different C construct that produces NOTE_INSN_LOOP_BEG (or that produces LABEL_OUTSIDE_LOOP_P on the relevant label) without the do-while wrapper. Long shot — the rule's narrow sanction exists precisely because no such alternative was found across SOTN's 18+ uses.",
+    "Option C — full structural rewrite that bypasses the peephole entirely (e.g. compute the switch result into a local first, set the globals in a separate trailing block). Aggressive rewrite — likely worth trying before settling for Option A."
+  ],
+  "rejected_forms": [
+    {
+      "form": "strip the do{}while(0)",
+      "score": 4,
+      "reason": "Load-bearing for the reorg.c invert-jump peephole defeat. Score 0 -> 4 with strip."
+    }
+  ],
+  "memory_notes": [
+    "[[do-while-zero-exception]] — sanctioned but with MANDATORY prerequisites; HEAD's usage doesn't meet them.",
+    "[[register-alloc-pure-c]] — Option C structural rewrite levers.",
+    "[[switch-vs-ifchain-branch-sense]] — adjacent rule on switch/dispatch structure choices."
+  ],
+  "regression_ref": {
+    "date": "2026-06-17",
+    "auditor_finding": "Unannotated empty do { } while (0); at function top fails Tests 1/2/3 and does not meet do-while-zero-exception's mandatory prerequisites",
+    "auditor_recommendation": "(1) sandbox without the wrapper; if still matches, remove. (2) if necessary, ADD the // FAKE annotation + document lever exhaustion.",
+    "actual_result": "score 0 -> 4 with strip — load-bearing. Need either Option A (annotate + document exhaustion) or Option B/C (find structural alternative)."
+  }
+}
