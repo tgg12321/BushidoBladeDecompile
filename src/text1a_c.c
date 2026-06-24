@@ -1414,8 +1414,8 @@ void func_80044CCC(s16 *a0, s16 *a1, s32 a2, s32 a3) {
 }
 extern void func_8007E1AC(s32 *, s32 *, s32, s32, s32);
 void func_80044DE4(s16 *a0, s16 *a1, s32 a2, s32 a3) {
-    s32 sp18[4];
-    s32 sp28[4];
+    s32 sp18[3];
+    s32 sp28[3];
     sp18[0] = a0[0];
     a0++;
     sp18[1] = -a0[0];
