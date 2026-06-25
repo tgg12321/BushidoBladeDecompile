@@ -1572,3 +1572,13 @@
 {"ts":"2026-06-22T18:17:12.0851804Z","kind":"reaudit-clean","func":"spu_SetMotionState"}
 {"ts":"2026-06-22T18:19:30.5718983Z","kind":"reaudit-clean","func":"spu_TransferData"}
 {"ts":"2026-06-22T18:22:16.0854725Z","kind":"reaudit-clean","func":"spu_WaitReady"}
+{"ts":"2026-06-25T03:00:51.2961423Z","kind":"main-contamination-cleaned","detail":" M tools/fleet/fleet.ps1"}
+{"ts":"2026-06-25T03:00:51.3043147Z","kind":"reaudit-clean","func":"stage_ClearLighting"}
+{"ts":"2026-06-25T03:02:52.1415439Z","kind":"reaudit-clean","func":"stage_GetCollision"}
+{"ts":"2026-06-25T03:04:50.6434157Z","kind":"reaudit-clean","func":"stage_GetId"}
+{"ts":"2026-06-25T03:11:02.2019177Z","kind":"reaudit-clean","func":"stage_InitCollision"}
+{"ts":"2026-06-25T03:14:05.4668114Z","kind":"reaudit-clean","func":"stage_SetLightPosDir"}
+{"ts":"2026-06-25T03:18:20.0444455Z","kind":"reaudit-clean","func":"sys_GetIrqCounter"}
+{"ts":"2026-06-25T03:21:17.0008581Z","kind":"reaudit-clean","func":"sys_GetVideoMode"}
+{"ts":"2026-06-25T03:23:59.8694164Z","kind":"reaudit-clean","func":"sys_InitSound"}
+{"ts":"2026-06-25T03:28:18.7161007Z","kind":"reaudit-clean","func":"sys_MemClear2"}
