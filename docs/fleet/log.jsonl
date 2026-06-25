@@ -1630,3 +1630,14 @@
 {"ts":"2026-06-25T08:11:34.9374251Z","kind":"reaudit-clean","func":"cdrom_SetCallbackB"}
 {"ts":"2026-06-25T08:13:54.7131538Z","kind":"reaudit-clean","func":"cdrom_SetErrorCallback"}
 {"ts":"2026-06-25T08:20:18.2105844Z","kind":"reaudit-clean","func":"change_shadow_tex_reg"}
+{"ts":"2026-06-25T08:24:30.3577539Z","kind":"reaudit-clean","func":"coli_CheckBukiPreHit_800880B8"}
+{"ts":"2026-06-25T08:28:37.1175642Z","kind":"reaudit-clean","func":"cpu_check_move_dir_pattern_enemy_attack"}
+{"ts":"2026-06-25T08:30:49.0935921Z","kind":"reaudit-clean","func":"cpu_reset_dir"}
+{"ts":"2026-06-25T08:35:20.0374404Z","kind":"reaudit-clean","func":"debug_printf"}
+{"ts":"2026-06-25T08:38:18.5172842Z","kind":"reaudit-clean","func":"disp_Init"}
+{"ts":"2026-06-25T08:42:12.9090149Z","kind":"reaudit-clean","func":"efc_buki_draw_zanzou"}
+{"ts":"2026-06-25T08:44:06.4345807Z","kind":"reaudit-clean","func":"efc_rob_Init"}
+{"ts":"2026-06-25T08:45:22.4983160Z","kind":"reaudit-clean","func":"file_GetFlag1"}
+{"ts":"2026-06-25T08:47:06.0352183Z","kind":"reaudit-clean","func":"file_LoadAll"}
+{"ts":"2026-06-25T08:48:38.7652734Z","kind":"reaudit-clean","func":"file_LoadSoundData"}
+{"ts":"2026-06-25T08:54:45.9143271Z","kind":"reaudit-clean","func":"func_80016A8C"}
