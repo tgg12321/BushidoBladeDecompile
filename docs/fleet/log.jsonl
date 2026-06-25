@@ -1641,3 +1641,10 @@
 {"ts":"2026-06-25T08:47:06.0352183Z","kind":"reaudit-clean","func":"file_LoadAll"}
 {"ts":"2026-06-25T08:48:38.7652734Z","kind":"reaudit-clean","func":"file_LoadSoundData"}
 {"ts":"2026-06-25T08:54:45.9143271Z","kind":"reaudit-clean","func":"func_80016A8C"}
+{"ts":"2026-06-25T08:57:09.3820467Z","kind":"reaudit-clean","func":"func_80019488"}
+{"ts":"2026-06-25T08:59:14.9376693Z","kind":"reaudit-clean","func":"func_800194F4"}
+{"ts":"2026-06-25T09:09:38.3563384Z","kind":"reaudit-clean","func":"func_8001A484"}
+{"ts":"2026-06-25T09:12:16.9222176Z","kind":"reaudit-clean","func":"func_8001A538"}
+{"ts":"2026-06-25T09:18:52.7951070Z","kind":"reaudit-regressed","reason":"Two codegen-control constructs fail the human-programmer test (test #2) and the semantic-purpose test (test #1): (1) a typed s16 intermediate used to clamp a u16 global — `{ s16 tmp = -0x1C00; g_file_vram_timer = tmp; }` — has no semantic difference from `g_file_vram_timer = -0x1C00;` and the SOTN named-intermediate sanction does not cover typed-literal coercion; (2) an explicit `(s32)` cast on a 32-bit AND mask — `& (s32)0xFFFEFFFE` — changes the RTL type of the expression (SI vs USI) without changing the MIPS `and` instruction or the runtime result, and a human programmer would write `& ~0x10001` or the unsigned literal without a signed cast. Both constructs change how GCC 2.7.2 sees the type of a computation in order to influence scheduling or RTL analysis, with no observable semantic effect. Next action: a worker must produce a clean pure-C form — replace `{ s16 tmp = -0x1C00; g_file_vram_timer = tmp; }` with `g_file_vram_timer = -0x1C00;` (or the natural u16 equivalent) and `& (s32)0xFFFEFFFE` with `& ~0x10001` (or `& 0xFFFEFFFE` without cast), then verify sandbox distance is 0 and SHA1 == oracle before re-submitting.","func":"func_8001B138"}
+{"ts":"2026-06-25T09:21:37.7273991Z","kind":"reaudit-clean","func":"func_8001B6F4"}
+{"ts":"2026-06-25T09:26:04.6422079Z","kind":"reaudit-clean","func":"func_8001BBD8"}
