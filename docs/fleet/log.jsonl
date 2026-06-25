@@ -1756,3 +1756,11 @@
 {"ts":"2026-06-25T17:07:01.4392200Z","kind":"reaudit-clean","func":"func_80044FA0"}
 {"ts":"2026-06-25T17:13:32.9026777Z","kind":"reaudit-clean","func":"func_800450F4"}
 {"ts":"2026-06-25T17:16:36.6108848Z","kind":"reaudit-clean","func":"func_800451D0"}
+{"ts":"2026-06-25T17:22:07.2300092Z","kind":"reaudit-clean","func":"func_8004574C"}
+{"ts":"2026-06-25T17:24:07.0865883Z","kind":"reaudit-clean","func":"func_800457D4"}
+{"ts":"2026-06-25T17:26:22.7871487Z","kind":"reaudit-clean","func":"func_800457E8"}
+{"ts":"2026-06-25T17:28:13.1372100Z","kind":"reaudit-clean","func":"func_80045808"}
+{"ts":"2026-06-25T17:31:22.2669650Z","kind":"reaudit-clean","func":"func_80045A50"}
+{"ts":"2026-06-25T17:35:44.1056672Z","kind":"reaudit-clean","func":"func_80046048"}
+{"ts":"2026-06-25T17:42:34.6089665Z","kind":"reaudit-clean","func":"func_8004659C"}
+{"ts":"2026-06-25T17:51:12.7274567Z","kind":"reaudit-regressed","reason":"The construct ((void (*)(s32))func_80044100)(8) fails the 6-test checklist. func_80044100 is declared 'extern void func_80044100(s32, ...);' (varargs). Calling it with a single arg as func_80044100(8) is valid C and should produce identical MIPS call-site asm (MIPS O32 ABI: only the caller's arg-register loads differ, not any varargs preamble). The cast to '(void (*)(s32))' either: (a) is inert — same asm as func_80044100(8), meaning Test 1 fails (no observable effect on output vs simpler form) and Test 2 fails (no human given the spec writes this cast); or (b) changes call-site asm by suppressing varargs USE insns and affecting delay-slot scheduling — meaning Test 3 fails (GCC-internals mechanism, not program logic). Remediation: replace with func_80044100(8) directly; if that still sandbox-0 matches the oracle, remove the cast and re-commit as clean. If it does NOT match, the cast IS a scheduling lever and a genuine clean approach (restructure surrounding context, or declare a separate non-varargs extern) is needed.","func":"func_800466C0"}
