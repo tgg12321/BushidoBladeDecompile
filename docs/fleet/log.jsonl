@@ -1669,3 +1669,12 @@
 {"ts":"2026-06-25T10:53:31.7929025Z","kind":"reaudit-clean","func":"func_80023E40"}
 {"ts":"2026-06-25T10:56:28.5911188Z","kind":"reaudit-clean","func":"func_8002738C"}
 {"ts":"2026-06-25T11:03:58.0069317Z","kind":"reaudit-clean","func":"func_8002798C"}
+{"ts":"2026-06-25T11:12:11.9147576Z","kind":"reaudit-clean","func":"func_8002872C"}
+{"ts":"2026-06-25T11:15:38.9811653Z","kind":"reaudit-clean","func":"func_8002EECC"}
+{"ts":"2026-06-25T11:19:18.5693995Z","kind":"reaudit-clean","func":"func_8003043C"}
+{"ts":"2026-06-25T11:22:48.7776448Z","kind":"reaudit-clean","func":"func_80030900"}
+{"ts":"2026-06-25T11:25:29.3056943Z","kind":"reaudit-clean","func":"func_80030D04"}
+{"ts":"2026-06-25T11:27:34.0542555Z","kind":"reaudit-clean","func":"func_80030D50"}
+{"ts":"2026-06-25T11:29:53.9466002Z","kind":"reaudit-clean","func":"func_80032854"}
+{"ts":"2026-06-25T11:31:04.5465089Z","kind":"reaudit-clean","func":"func_80033898"}
+{"ts":"2026-06-25T11:35:41.8164991Z","kind":"reaudit-clean","func":"func_800340A0"}
