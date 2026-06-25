@@ -1678,3 +1678,12 @@
 {"ts":"2026-06-25T11:29:53.9466002Z","kind":"reaudit-clean","func":"func_80032854"}
 {"ts":"2026-06-25T11:31:04.5465089Z","kind":"reaudit-clean","func":"func_80033898"}
 {"ts":"2026-06-25T11:35:41.8164991Z","kind":"reaudit-clean","func":"func_800340A0"}
+{"ts":"2026-06-25T11:37:24.1863744Z","kind":"reaudit-clean","func":"func_80035430"}
+{"ts":"2026-06-25T11:46:21.1237212Z","kind":"reaudit-regressed","reason":"phi-variable-for-delay-slot-steal cheat: `s32 v0` assigned 1 in BOTH branches then `D_800A31D8 = v0` — both arms assign the same constant, so the intermediate has no semantic purpose; its sole effect is to create a phi-node that allows GCC reorg.c to steal `addiu $v0, 1` (else-branch body) into the beqz delay slot. Fails test 1 (no semantic purpose — `D_800A31D8 = 1` after the if is equivalent) and test 3 (GCC-internals mechanism: delay-slot fill via phi-variable). Not in SOTN-accepted list. Fix: find pure-C structure where the delay slot fills naturally (real data dependency, or different if/else shape), OR confirm the slot must be nop and verify that is also byte-correct. Do not commit until the phi-variable intermediary is removed.","func":"func_80035480"}
+{"ts":"2026-06-25T11:50:36.2246527Z","kind":"reaudit-clean","func":"func_80035E88"}
+{"ts":"2026-06-25T11:53:04.4061074Z","kind":"reaudit-clean","func":"func_80035F30"}
+{"ts":"2026-06-25T11:54:25.2765060Z","kind":"reaudit-clean","func":"func_80035FA8"}
+{"ts":"2026-06-25T11:55:21.9984452Z","kind":"reaudit-clean","func":"func_80036034"}
+{"ts":"2026-06-25T11:59:25.6034728Z","kind":"reaudit-clean","func":"func_80036EA8"}
+{"ts":"2026-06-25T12:04:40.4741210Z","kind":"reaudit-clean","func":"func_80037110"}
+{"ts":"2026-06-25T12:06:49.1153589Z","kind":"reaudit-clean","func":"func_800371E8"}
