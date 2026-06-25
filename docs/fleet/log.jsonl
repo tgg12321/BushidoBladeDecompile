@@ -1619,3 +1619,7 @@
 {"ts":"2026-06-25T06:54:48.6609343Z","kind":"reaudit-clean","func":"bios_FileRead"}
 {"ts":"2026-06-25T06:56:51.9177791Z","kind":"reaudit-clean","func":"camera_GetBoneData"}
 {"ts":"2026-06-25T07:12:30.3742500Z","kind":"reaudit-clean","func":"camera_InitMatrix"}
+{"ts":"2026-06-25T07:18:10.3458108Z","kind":"reaudit-clean","func":"camera_SetMatrix_8001DA8C"}
+{"ts":"2026-06-25T07:23:39.3080258Z","kind":"reaudit-clean","func":"camera_check_inside_screen_rob_dpos"}
+{"ts":"2026-06-25T07:28:20.9924263Z","kind":"reaudit-clean","func":"cdrom_BcdToFrames"}
+{"ts":"2026-06-25T07:43:33.8432480Z","kind":"reaudit-clean","func":"cdrom_ClearIrq"}
