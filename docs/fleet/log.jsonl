@@ -1815,3 +1815,15 @@
 {"ts":"2026-06-25T22:55:03.0363084Z","kind":"reaudit-regressed","reason":"Flagged construct: `(s16)v1` in `if ((s16)v1 < 0x11C8)` fails test #1 — `v1` is already declared `s16`; the cast is a C-language no-op and the function's observable behavior is identical without it. May also drive the `sll $v1,$v1,16 / sra $v1,$v1,16` sign-extension pair in the assembly (test #3 concern). Next action: run `sandbox func_80065760 --disable all` twice — once with the current source and once with the cast removed — and diff the scored asm. If assembly is byte-identical, the cast is pure documentation clutter (false flag, mark reaudit-clean). If different, the cast is a codegen-coercion construct without semantic purpose; rework the C to reach the match without it (the `s16 v1` declared type mandates signed comparison under integer promotion, so removing the cast and restructuring the comparison form is the clean path).","func":"func_80065760"}
 {"ts":"2026-06-25T22:56:31.8372727Z","kind":"reaudit-clean","func":"func_80066EC0"}
 {"ts":"2026-06-25T22:58:53.0836508Z","kind":"reaudit-clean","func":"func_80066F28"}
+{"ts":"2026-06-25T23:03:37.0620215Z","kind":"reaudit-clean","func":"func_80066F90"}
+{"ts":"2026-06-25T23:07:06.9727983Z","kind":"reaudit-clean","func":"func_80066FF8"}
+{"ts":"2026-06-25T23:10:03.4158086Z","kind":"reaudit-clean","func":"func_80067060"}
+{"ts":"2026-06-25T23:13:16.7155822Z","kind":"reaudit-clean","func":"func_800670C8"}
+{"ts":"2026-06-25T23:15:48.1966900Z","kind":"reaudit-clean","func":"func_80067130"}
+{"ts":"2026-06-25T23:17:40.8235903Z","kind":"reaudit-clean","func":"func_80067198"}
+{"ts":"2026-06-25T23:19:49.8421330Z","kind":"reaudit-clean","func":"func_800676C8"}
+{"ts":"2026-06-25T23:21:15.2444080Z","kind":"reaudit-clean","func":"func_80067740"}
+{"ts":"2026-06-25T23:22:57.6728681Z","kind":"reaudit-clean","func":"func_800677B8"}
+{"ts":"2026-06-25T23:24:21.1949976Z","kind":"reaudit-clean","func":"func_80067830"}
+{"ts":"2026-06-25T23:29:26.9576387Z","kind":"reaudit-clean","func":"func_80069120"}
+{"ts":"2026-06-25T23:31:58.6314636Z","kind":"reaudit-clean","func":"func_80069250"}
