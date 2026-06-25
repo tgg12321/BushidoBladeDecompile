@@ -1654,3 +1654,11 @@
 {"ts":"2026-06-25T09:42:21.7929838Z","kind":"reaudit-clean","func":"func_8001E878"}
 {"ts":"2026-06-25T09:53:37.0694409Z","kind":"reaudit-clean","func":"func_8001EEB4"}
 {"ts":"2026-06-25T09:57:11.2162444Z","kind":"reaudit-clean","func":"func_8001F1C4"}
+{"ts":"2026-06-25T10:01:18.9140267Z","kind":"reaudit-clean","func":"func_8001F888"}
+{"ts":"2026-06-25T10:08:15.4667537Z","kind":"reaudit-regressed","reason":"One construct fails tests 2+3: `v0 = (u32)0 < (u32)v0;` mirrors the target instruction `sltu $v0, $zero, $v0` by reversed-operand unsigned comparison rather than natural `v0 != 0`; a worker should verify whether `v0 = (v0 != 0);` produces the same sltu in GCC 2.7.2 (false flag if yes; genuine cheat if slt is emitted instead), then rework the final line to the cleaner form or confirm the match.","func":"func_8001FB34"}
+{"ts":"2026-06-25T10:13:22.8219173Z","kind":"reaudit-clean","func":"func_800206B0"}
+{"ts":"2026-06-25T10:16:23.8898628Z","kind":"reaudit-clean","func":"func_80020D70"}
+{"ts":"2026-06-25T10:18:35.4964826Z","kind":"reaudit-clean","func":"func_80021210"}
+{"ts":"2026-06-25T10:22:12.3010006Z","kind":"reaudit-clean","func":"func_800218C8"}
+{"ts":"2026-06-25T10:27:48.8453989Z","kind":"reaudit-clean","func":"func_80021974"}
+{"ts":"2026-06-25T10:29:12.6764609Z","kind":"reaudit-clean","func":"func_80021A3C"}
