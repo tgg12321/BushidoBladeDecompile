@@ -1611,3 +1611,11 @@
 {"ts":"2026-06-25T06:17:45.1447633Z","kind":"reaudit-clean","func":"AllocRobRmd"}
 {"ts":"2026-06-25T06:19:15.4076316Z","kind":"reaudit-clean","func":"FadeOut_8003FFA8"}
 {"ts":"2026-06-25T06:29:41.7356500Z","kind":"reaudit-regressed","reason":"CODEGEN-CAST CHEAT at text1b.c:12269: func_80087F64((s16)v) forces a sign-extension pair (sll/sra in the jal delay slot) with no semantic purpose. Visible proto at line 12013 is void func_80087F64(s32); v is always in [1,46] so (s16)v==v. Three other call sites with the same s32 proto and runtime variable args (lines 12523, 12643, 12662) omit the cast. Worker redo: declare func_80087F64 as s16 consistently so GCC emits sign-extension naturally via integer promotion, then drop the explicit cast; confirm with retire/verify-oracle.","func":"GetAllocPacketSize"}
+{"ts":"2026-06-25T06:32:02.5368616Z","kind":"reaudit-clean","func":"LWCard_SetAccessData"}
+{"ts":"2026-06-25T06:40:04.5665029Z","kind":"reaudit-clean","func":"SetBloodSpot"}
+{"ts":"2026-06-25T06:44:40.9232106Z","kind":"reaudit-clean","func":"Vu0SetLightColMatrix_80080208"}
+{"ts":"2026-06-25T06:47:12.0540836Z","kind":"reaudit-clean","func":"Vu0SetLightColMatrix_80080684"}
+{"ts":"2026-06-25T06:49:19.8580867Z","kind":"reaudit-clean","func":"bb2_memcpy"}
+{"ts":"2026-06-25T06:54:48.6609343Z","kind":"reaudit-clean","func":"bios_FileRead"}
+{"ts":"2026-06-25T06:56:51.9177791Z","kind":"reaudit-clean","func":"camera_GetBoneData"}
+{"ts":"2026-06-25T07:12:30.3742500Z","kind":"reaudit-clean","func":"camera_InitMatrix"}
