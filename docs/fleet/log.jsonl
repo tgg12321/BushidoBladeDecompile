@@ -1623,3 +1623,10 @@
 {"ts":"2026-06-25T07:23:39.3080258Z","kind":"reaudit-clean","func":"camera_check_inside_screen_rob_dpos"}
 {"ts":"2026-06-25T07:28:20.9924263Z","kind":"reaudit-clean","func":"cdrom_BcdToFrames"}
 {"ts":"2026-06-25T07:43:33.8432480Z","kind":"reaudit-clean","func":"cdrom_ClearIrq"}
+{"ts":"2026-06-25T07:46:22.3971386Z","kind":"reaudit-clean","func":"cdrom_DmaToRam"}
+{"ts":"2026-06-25T07:49:48.5162946Z","kind":"reaudit-clean","func":"cdrom_GetReadyFlag"}
+{"ts":"2026-06-25T08:04:23.2212717Z","kind":"reaudit-clean","func":"cdrom_Initialize"}
+{"ts":"2026-06-25T08:10:15.9520761Z","kind":"reaudit-clean","func":"cdrom_SendCmd"}
+{"ts":"2026-06-25T08:11:34.9374251Z","kind":"reaudit-clean","func":"cdrom_SetCallbackB"}
+{"ts":"2026-06-25T08:13:54.7131538Z","kind":"reaudit-clean","func":"cdrom_SetErrorCallback"}
+{"ts":"2026-06-25T08:20:18.2105844Z","kind":"reaudit-clean","func":"change_shadow_tex_reg"}
