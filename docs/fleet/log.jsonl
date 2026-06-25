@@ -1725,3 +1725,10 @@
 {"ts":"2026-06-25T14:53:27.5362760Z","kind":"reaudit-clean","func":"func_8003CE18"}
 {"ts":"2026-06-25T14:58:22.0311857Z","kind":"reaudit-clean","func":"func_8003D774"}
 {"ts":"2026-06-25T15:02:13.9206926Z","kind":"reaudit-clean","func":"func_8003D91C"}
+{"ts":"2026-06-25T15:08:29.1690332Z","kind":"reaudit-clean","func":"func_8003E0E0"}
+{"ts":"2026-06-25T15:12:10.2601061Z","kind":"reaudit-clean","func":"func_8003E2AC"}
+{"ts":"2026-06-25T15:14:34.9846681Z","kind":"reaudit-clean","func":"func_8003E6A0"}
+{"ts":"2026-06-25T15:18:19.2810730Z","kind":"reaudit-clean","func":"func_8003F3D4"}
+{"ts":"2026-06-25T15:20:29.4528911Z","kind":"reaudit-clean","func":"func_8003F7F4"}
+{"ts":"2026-06-25T15:29:09.6227710Z","kind":"reaudit-regressed","reason":"Two dead-operation cheats found: (1) `a3++; a3--;` and `t1++; t1--;` inside the loop — net zero effect, GCC-internal allocator steering; (2) `new_var = &a2[0]; if (a2[(*new_var) * 0] == (-2))` — the multiply-by-zero through a pointer alias is always 0 and has no semantic purpose beyond defeating CSE between the unsigned and signed reads of a2[0]. Clean re-implementation should: eliminate the dead increment-decrement pairs (they generate no target asm — DCE removes them), and replace the `(*new_var)*0` alias trick with a direct dual-typed read spelling such as `s16 signed_val = a2[0]; t0 = (u16)a2[0]; if (signed_val == -2)` (the InitHiraRmd_80041AC8 sibling at text1a.c:1130-1132 achieves the same lh+lhu pair without any alias trick). Function stays INCOMPLETE; a byte-correct cheat cannot be reverted without breaking the oracle, so it remains on main until a clean pure-C redo is produced and Auditor-PASSed.","func":"func_8003FECC"}
+{"ts":"2026-06-25T15:40:14.5801911Z","kind":"reaudit-regressed","reason":"Pre-comparison `s0 = 0;` + `if (s2[0] > s0)` is a blez-delay-slot scheduling coercion; clean fix: reorder `s0 = 0; s1 = s2;` (not `s1 = s2; s0 = 0;`) inside the if block and remove the pre-comparison assignment, which naturally puts `move s0, zero` in the delay slot without dead code.","func":"func_800400F8"}
