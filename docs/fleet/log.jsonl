@@ -1806,3 +1806,7 @@
 {"ts":"2026-06-25T21:30:17.1274569Z","kind":"reaudit-clean","func":"func_8006505C"}
 {"ts":"2026-06-25T21:36:06.1960348Z","kind":"reaudit-clean","func":"func_800650EC"}
 {"ts":"2026-06-25T21:47:03.7114706Z","kind":"reaudit-clean","func":"func_8006517C"}
+{"ts":"2026-06-25T21:53:30.2221563Z","kind":"reaudit-clean","func":"func_800652AC"}
+{"ts":"2026-06-25T22:07:27.9182834Z","kind":"reaudit-regressed","reason":"The `(s16)v1` cast in `if ((s16)v1 < 0x11C8)` where v1 is already declared s16 fails tests 1, 2, and 3: it is a C no-op (s16 cast to s16), no human programmer from spec writes it, and its purpose is to trigger GCC's deferred sign-extension (load-narrowing), converting lh to lhu + sll/sra at the comparison site. Nearby correct siblings func_80065680 / func_800656EC use the legitimate form: u16 globals + (s16) comparison cast (semantically meaningful). Clean fix: retype D_800F0BAA (and all ~12 sister globals in this cluster: D_800F0BAC, D_800F0BAE, D_800F0BB0, D_800F0BB4, D_800F0BB6, D_800F0BBC, D_800F0BBE, D_800F0BC8, D_800F0BCA) from `s16` to `u16`; change `s16 *p` to `u16 *p` and `s16 v1 = *p` to `u16 v1 = *p`; the (s16) comparison cast is then semantically meaningful and lhu is generated naturally.","func":"func_80065344"}
+{"ts":"2026-06-25T22:16:43.0372852Z","kind":"reaudit-clean","func":"func_800653E4"}
+{"ts":"2026-06-25T22:26:02.7928447Z","kind":"reaudit-clean","func":"func_80065484"}
