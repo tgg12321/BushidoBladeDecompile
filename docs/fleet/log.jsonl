@@ -1582,3 +1582,10 @@
 {"ts":"2026-06-25T03:21:17.0008581Z","kind":"reaudit-clean","func":"sys_GetVideoMode"}
 {"ts":"2026-06-25T03:23:59.8694164Z","kind":"reaudit-clean","func":"sys_InitSound"}
 {"ts":"2026-06-25T03:28:18.7161007Z","kind":"reaudit-clean","func":"sys_MemClear2"}
+{"ts":"2026-06-25T03:38:18.3730340Z","kind":"reaudit-regressed","reason":"*(volatile s32 *)p write-cast is a volatile-coercion on non-volatile, non-allowlisted global g_sys_timer. Fix: change *(volatile s32 *)p = a0 to *p = a0 (pointer alone produces the lui+addiu match; volatile has no effect on MIPS sw and was never needed).","func":"sys_SetTimer"}
+{"ts":"2026-06-25T03:42:29.6896778Z","kind":"reaudit-clean","func":"sys_SetVsyncMode"}
+{"ts":"2026-06-25T03:44:11.6895212Z","kind":"reaudit-clean","func":"sys_StubEmpty"}
+{"ts":"2026-06-25T03:47:21.6387205Z","kind":"reaudit-clean","func":"sys_StubEmpty3"}
+{"ts":"2026-06-25T03:51:20.3895231Z","kind":"reaudit-clean","func":"tslCDFileRead"}
+{"ts":"2026-06-25T03:52:49.2937915Z","kind":"reaudit-clean","func":"tslFileClose"}
+{"ts":"2026-06-25T04:01:34.4915704Z","kind":"reaudit-clean","func":"tslTmlGetHeda"}
