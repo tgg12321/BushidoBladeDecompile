@@ -1965,3 +1965,12 @@
 {"ts":"2026-06-26T09:54:57.4730117Z","kind":"reaudit-clean","func":"cdrom_GetReadyFlag2"}
 {"ts":"2026-06-26T09:58:11.1606942Z","kind":"reaudit-clean","func":"cdrom_SetCallbackA"}
 {"ts":"2026-06-26T10:05:21.9862614Z","kind":"reaudit-clean","func":"cdrom_Shutdown"}
+{"ts":"2026-06-26T10:11:18.6045882Z","kind":"reaudit-clean","func":"conv_matrix_rotation"}
+{"ts":"2026-06-26T10:19:01.4379426Z","kind":"reaudit-clean","func":"cpu_set_move_command_and_dir"}
+{"ts":"2026-06-26T10:20:37.7032578Z","kind":"reaudit-clean","func":"efc_buki_ZanzouClose"}
+{"ts":"2026-06-26T10:22:13.6848915Z","kind":"reaudit-clean","func":"file_GetFlag0"}
+{"ts":"2026-06-26T10:24:48.4364072Z","kind":"reaudit-clean","func":"file_LoadOverlay"}
+{"ts":"2026-06-26T10:27:02.0826425Z","kind":"reaudit-clean","func":"func_8001945C"}
+{"ts":"2026-06-26T10:28:26.1890609Z","kind":"reaudit-clean","func":"func_80019534"}
+{"ts":"2026-06-26T10:31:39.0303202Z","kind":"reaudit-clean","func":"func_8001A62C"}
+{"ts":"2026-06-26T10:38:48.8792463Z","kind":"reaudit-clean","func":"func_8001BAE4"}
