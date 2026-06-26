@@ -2055,3 +2055,9 @@
 {"ts":"2026-06-26T16:05:39.0154153Z","kind":"reaudit-clean","func":"func_80065134"}
 {"ts":"2026-06-26T16:13:50.6136255Z","kind":"reaudit-clean","func":"func_800652F4"}
 {"ts":"2026-06-26T16:21:06.5960429Z","kind":"reaudit-regressed","reason":"The (s16)v1 cast in the comparison (src/text1b.c:14679) is a same-type cast with no C-level semantic purpose (v1 is already s16). Its only function is to steer GCC from a plain lh+slti sequence to the lhu+sll+sra+slti sequence the target asm shows. This fails test 1 (no semantic purpose — same-type cast is a C no-op per integer-promotion rules) and test 2 (a programmer from spec would write 'if (v1 < 0xC9)', not 'if ((s16)v1 < 0xC9)'). The asm evidence: after 'sh $v1', the target has 'sll $v1,$v1,16; sra $v1,$v1,16; slti $v1,$v1,0xC9' — the explicit sign-extension pair is the codegen fingerprint of this cast. The same cast appears identically in all sibling functions (func_80065540, func_80065590, func_800655E0), so ALL would need to be re-evaluated. Next action: sandbox func_80065434 with and without the (s16) cast to confirm the cast is load-bearing for the match; if it changes the asm, this is a codegen-steering cheat and the function needs a clean rewrite that either (a) finds a pure structural form that produces lhu+sll+sra naturally, or (b) confirms lh+slti is actually the right sequence and removes the cast.","func":"func_80065434"}
+{"ts":"2026-06-26T16:37:31.1412492Z","kind":"reaudit-clean","func":"func_800655E0"}
+{"ts":"2026-06-26T16:43:16.3855125Z","kind":"reaudit-clean","func":"func_800657B0"}
+{"ts":"2026-06-26T16:46:24.8207845Z","kind":"reaudit-clean","func":"func_80066F5C"}
+{"ts":"2026-06-26T16:48:46.5473348Z","kind":"reaudit-clean","func":"func_8006702C"}
+{"ts":"2026-06-26T16:50:36.5248668Z","kind":"reaudit-clean","func":"func_800670FC"}
+{"ts":"2026-06-26T16:53:09.5417200Z","kind":"reaudit-clean","func":"func_800671CC"}
