@@ -1919,3 +1919,12 @@
 {"ts":"2026-06-26T05:33:22.2790865Z","kind":"reaudit-clean","func":"player_Destroy"}
 {"ts":"2026-06-26T05:35:11.6512155Z","kind":"reaudit-clean","func":"rng_SetSeed"}
 {"ts":"2026-06-26T05:37:31.9547579Z","kind":"reaudit-clean","func":"saRobDraw"}
+{"ts":"2026-06-26T05:40:25.3467704Z","kind":"reaudit-clean","func":"saTan2GaugeInit_80077B20"}
+{"ts":"2026-06-26T05:41:54.4335381Z","kind":"reaudit-clean","func":"saTan2InfoInit_80077A60"}
+{"ts":"2026-06-26T05:44:10.6275408Z","kind":"reaudit-clean","func":"saTan5TakeGetPos_80045230"}
+{"ts":"2026-06-26T05:45:51.4945225Z","kind":"reaudit-clean","func":"saTanMainDispGnd_80077A04"}
+{"ts":"2026-06-26T05:47:43.4462084Z","kind":"reaudit-clean","func":"seq_GetState"}
+{"ts":"2026-06-26T05:55:56.6267531Z","kind":"reaudit-regressed","reason":"Dead variable `s32 var_v0;` (display.c:3516) declared but never initialized or read; fails 6-test checklist tests #1 (no semantic purpose) and #2 (human-programmer test). Next action: remove the declaration, run `verify-oracle --rebuild`, confirm SHA1 == oracle. If oracle holds (expected — GCC elides unreferenced uninitialized scalars), commit as a cheat-cleanup: single line removal. If oracle breaks (indicating the declaration was a frame/allocno coercion), re-open the function for a pure-C redo without the dead variable.","func":"single_game_getEnemyCharId"}
+{"ts":"2026-06-26T05:56:55.3029769Z","kind":"reaudit-clean","func":"snd_GetBgmId"}
+{"ts":"2026-06-26T06:07:29.0255797Z","kind":"reaudit-clean","func":"snd_LoadBgm"}
+{"ts":"2026-06-26T06:10:12.7735857Z","kind":"reaudit-clean","func":"snd_PlaySe"}
