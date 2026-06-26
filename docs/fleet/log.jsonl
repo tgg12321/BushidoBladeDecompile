@@ -1827,3 +1827,10 @@
 {"ts":"2026-06-25T23:24:21.1949976Z","kind":"reaudit-clean","func":"func_80067830"}
 {"ts":"2026-06-25T23:29:26.9576387Z","kind":"reaudit-clean","func":"func_80069120"}
 {"ts":"2026-06-25T23:31:58.6314636Z","kind":"reaudit-clean","func":"func_80069250"}
+{"ts":"2026-06-25T23:37:37.6690403Z","kind":"reaudit-clean","func":"func_80069A30"}
+{"ts":"2026-06-25T23:45:44.3381646Z","kind":"reaudit-regressed","reason":"Line 15648 src/text1b.c: `v = *(volatile s32 *)(arg1 + 0)` is a volatile inline cast on non-volatile game-state memory used to defeat GCC CSE and force the `lw $v0, 0x0($s0)` at target offset 0x8006A4D8. The sibling commit (4fb57431, func_8006A3CC) self-confesses the mechanism: 'Volatile cast on the re-read forced GCC to emit the actual lw rather than keeping the value live in a register.' No IRQ-writer citation, no allowlist entry, no MMIO address — falls squarely in the 'inline volatile casts on game-state' forbidden family (inline-asm-policy.md expanded catalog, 2026-05-31). The 'cheats by any spelling' policy covers this *(volatile T*)(ptr+offset) form just as it covers *(volatile T*)&D_xxx. next_action: re-open func_8006A494 for a clean pure-C redo that achieves the sw-then-lw naturally (e.g. restructure so GCC's alias analysis or liveness kills $v1 before the v+0xC use without a volatile coercion); sibling func_8006A3CC carries the same construct and should be flagged simultaneously.","func":"func_8006A494"}
+{"ts":"2026-06-25T23:48:30.2838988Z","kind":"reaudit-clean","func":"func_8006CBD4"}
+{"ts":"2026-06-25T23:55:38.4531769Z","kind":"reaudit-clean","func":"func_8006D5D4"}
+{"ts":"2026-06-25T23:56:50.5230696Z","kind":"reaudit-clean","func":"func_8006D7FC"}
+{"ts":"2026-06-26T00:01:15.9706092Z","kind":"reaudit-clean","func":"func_8006E068"}
+{"ts":"2026-06-26T00:07:23.1627336Z","kind":"reaudit-clean","func":"func_8006E390"}
