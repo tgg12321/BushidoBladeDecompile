@@ -1884,3 +1884,11 @@
 {"ts":"2026-06-26T03:17:03.2706939Z","kind":"reaudit-clean","func":"gnd_load_tex"}
 {"ts":"2026-06-26T03:22:54.6705238Z","kind":"reaudit-clean","func":"gpu_CatPacket"}
 {"ts":"2026-06-26T03:25:55.1076815Z","kind":"reaudit-clean","func":"gpu_DebugDrawEnv"}
+{"ts":"2026-06-26T03:33:06.3806298Z","kind":"reaudit-clean","func":"gpu_DrawSync"}
+{"ts":"2026-06-26T03:35:51.6604927Z","kind":"reaudit-clean","func":"gpu_GetDrawEnv"}
+{"ts":"2026-06-26T03:40:40.2783298Z","kind":"reaudit-clean","func":"gpu_InitDisplay"}
+{"ts":"2026-06-26T03:42:20.0039476Z","kind":"reaudit-clean","func":"gpu_LoadClut256"}
+{"ts":"2026-06-26T03:47:34.7501704Z","kind":"reaudit-clean","func":"gpu_SendPacket"}
+{"ts":"2026-06-26T03:49:06.3625174Z","kind":"reaudit-clean","func":"gpu_SetDrawMode"}
+{"ts":"2026-06-26T03:50:46.0351934Z","kind":"reaudit-clean","func":"gpu_SetSemiTransp"}
+{"ts":"2026-06-26T04:03:12.9266449Z","kind":"reaudit-clean","func":"gte_SetBackColor"}
