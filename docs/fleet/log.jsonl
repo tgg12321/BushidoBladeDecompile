@@ -1845,3 +1845,11 @@
 {"ts":"2026-06-26T00:35:48.5353268Z","kind":"reaudit-clean","func":"func_80077820"}
 {"ts":"2026-06-26T00:37:53.9357217Z","kind":"reaudit-clean","func":"func_80077894"}
 {"ts":"2026-06-26T00:43:27.8055934Z","kind":"reaudit-clean","func":"func_80077940"}
+{"ts":"2026-06-26T00:46:54.5154779Z","kind":"reaudit-clean","func":"func_800779C8"}
+{"ts":"2026-06-26T00:53:00.3957252Z","kind":"reaudit-regressed","reason":"s32 disp_SetFramebufferMode redeclaration at text1b.c:17721 overrides a void declaration at 17707 within the same TU; the only effect is coercing GCC $v0 liveness after the jal (prevents 'li $v0,1' from being scheduled before/into the call's delay slot) — a type-mismatch scheduling lever with no semantic purpose. Worker should revert line 17721 to 'void disp_SetFramebufferMode(s32, s32, s32, s32);' and verify whether the byte match holds; if void also matches, the s32 was an unnecessary cheat; if not, surface as needs-adjudication for the owner to confirm whether the original TU lacked a void prototype in scope.","func":"func_80077A80"}
+{"ts":"2026-06-26T00:55:21.2856629Z","kind":"reaudit-clean","func":"func_80077B00"}
+{"ts":"2026-06-26T00:56:29.9213771Z","kind":"reaudit-clean","func":"func_80077D10"}
+{"ts":"2026-06-26T01:06:30.5405630Z","kind":"reaudit-clean","func":"func_8007855C"}
+{"ts":"2026-06-26T01:09:06.8429358Z","kind":"reaudit-clean","func":"func_80078634"}
+{"ts":"2026-06-26T01:11:45.5063088Z","kind":"reaudit-clean","func":"func_800788B0"}
+{"ts":"2026-06-26T01:17:00.0277874Z","kind":"reaudit-clean","func":"func_80078B70"}
