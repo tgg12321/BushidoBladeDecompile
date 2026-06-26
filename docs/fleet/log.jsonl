@@ -2013,3 +2013,12 @@
 {"ts":"2026-06-26T13:27:28.9076274Z","kind":"reaudit-clean","func":"func_8003C9A4"}
 {"ts":"2026-06-26T13:29:49.7253149Z","kind":"reaudit-clean","func":"func_8003D478"}
 {"ts":"2026-06-26T13:32:03.3275855Z","kind":"reaudit-clean","func":"func_8003DDF8"}
+{"ts":"2026-06-26T13:35:05.0640325Z","kind":"reaudit-clean","func":"func_8003E2C8"}
+{"ts":"2026-06-26T13:40:37.4659873Z","kind":"reaudit-regressed","reason":"Dead-write cheat: `int new_var;` is assigned in `s0 = (new_var = -1);` and never read again. The write to new_var is a pure dead store — semantically equivalent to `s0 = -1;`. This is a dead-write-through-intermediate-local for RA coercion, closely analogous to the forbidden dead-param-assign family (Lever D). Not covered by any SOTN sanction (the variable-reuse sanction requires the intermediate be read downstream; new_var is never read). Worker redo: replace `s0 = (new_var = -1);` with `s0 = -1;` and remove the `int new_var;` declaration. Divmod routing (`s0 = a1/2000; s2 = s0; s0 = a1-s2*2000`) is ALLOWED under SOTN variable-reuse-for-codegen-control and does not regress; only the new_var construct fails.","func":"func_8003F420"}
+{"ts":"2026-06-26T13:44:07.1733212Z","kind":"reaudit-clean","func":"func_8003FFE0"}
+{"ts":"2026-06-26T13:49:56.4657478Z","kind":"reaudit-clean","func":"func_80040400"}
+{"ts":"2026-06-26T13:56:26.1912755Z","kind":"reaudit-clean","func":"func_80041430"}
+{"ts":"2026-06-26T13:57:55.8064719Z","kind":"reaudit-clean","func":"func_80041650"}
+{"ts":"2026-06-26T14:00:46.4554962Z","kind":"reaudit-clean","func":"func_800420E8"}
+{"ts":"2026-06-26T14:02:04.2253322Z","kind":"reaudit-clean","func":"func_8004283C"}
+{"ts":"2026-06-26T14:07:46.2017631Z","kind":"reaudit-clean","func":"func_80042FA0"}
