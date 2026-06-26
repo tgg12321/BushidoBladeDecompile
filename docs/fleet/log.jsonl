@@ -1940,3 +1940,9 @@
 {"ts":"2026-06-26T07:08:34.3818759Z","kind":"reaudit-clean","func":"stage_GetVariant"}
 {"ts":"2026-06-26T07:10:50.9017677Z","kind":"reaudit-clean","func":"sys_GameInit"}
 {"ts":"2026-06-26T07:14:36.4173934Z","kind":"reaudit-clean","func":"sys_Init"}
+{"ts":"2026-06-26T07:22:48.5980283Z","kind":"reaudit-clean","func":"sys_Panic"}
+{"ts":"2026-06-26T07:24:04.0664582Z","kind":"reaudit-clean","func":"sys_Shutdown"}
+{"ts":"2026-06-26T07:31:55.0977622Z","kind":"reaudit-clean","func":"sys_VSync"}
+{"ts":"2026-06-26T07:38:14.6873314Z","kind":"reaudit-clean","func":"tslLineG5Init"}
+{"ts":"2026-06-26T07:45:10.8249721Z","kind":"reaudit-regressed","reason":"Three cheats found in current main source (src/sound.c:462-476): (1) unannotated do-while(0) wrapper — missing mandatory /* FAKE */ annotation, so the LABEL_OUTSIDE_LOOP_P prerequisite and lever-exhaustion cannot be verified; (2) s16 h2 declared in inner block but never assigned or read — dead local with no semantic purpose (RA/frame coercion); (3) s16 *new_var set to &D_800EEDD8 but used only for a single write — write-only single-use pointer is explicitly NOT covered by pointer-rmw-global-sanctioned (which requires at least one load AND one store through the pointer). Worker must produce a clean pure-C replacement that: eliminates h2, eliminates new_var (write directly via *((&D_800EEDD8)+1)), and either removes the do-while(0) wrapper or — if lever exhaustion is genuine — re-documents and annotates it with /* FAKE: <reason> */.","func":"camera_InitBoneData"}
+{"ts":"2026-06-26T07:58:17.3376749Z","kind":"reaudit-clean","func":"cdrom_GetCmdName"}
