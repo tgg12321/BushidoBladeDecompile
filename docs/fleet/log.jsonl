@@ -2006,3 +2006,10 @@
 {"ts":"2026-06-26T12:51:49.7040937Z","kind":"reaudit-clean","func":"func_8003A42C"}
 {"ts":"2026-06-26T12:54:05.2301493Z","kind":"reaudit-clean","func":"func_8003AA78"}
 {"ts":"2026-06-26T12:59:47.8039554Z","kind":"reaudit-clean","func":"func_8003AE5C"}
+{"ts":"2026-06-26T13:05:48.2862594Z","kind":"reaudit-clean","func":"func_8003B328"}
+{"ts":"2026-06-26T13:07:34.2641088Z","kind":"reaudit-clean","func":"func_8003B534"}
+{"ts":"2026-06-26T13:14:49.5667406Z","kind":"reaudit-clean","func":"func_8003BE10"}
+{"ts":"2026-06-26T13:20:28.7730263Z","kind":"reaudit-regressed","reason":"do{} while(0) at src/code6cac_c2.c:592 is completely unannotated — no '// FAKE' or '/* FAKE: ... */' comment. Per [[do-while-zero-exception]], the annotation is a mandatory transparency requirement; if absent, the exception does not apply and the construct defaults to FORBIDDEN (tests #1 and #2 fail: no semantic purpose, no human programmer would write it). The commit (8db4e1e4, 2026-03-26) predates the rule (2026-06-04) and documents no lever exhaustion and no mechanism rationale. Remediation: add '// FAKE: do{} while(0) — suppresses reorg.c LABEL_OUTSIDE_LOOP_P invert-jump peephole on bne→.L8003C520 branches' (or equivalent one-line explanation), then re-verify the exception prerequisites are met (lever exhaustion evidence, correct GCC-pass target). This is a TRANSPARENCY fix, not a full C re-match — the rest of the function body is clean.","func":"func_8003C42C"}
+{"ts":"2026-06-26T13:27:28.9076274Z","kind":"reaudit-clean","func":"func_8003C9A4"}
+{"ts":"2026-06-26T13:29:49.7253149Z","kind":"reaudit-clean","func":"func_8003D478"}
+{"ts":"2026-06-26T13:32:03.3275855Z","kind":"reaudit-clean","func":"func_8003DDF8"}
