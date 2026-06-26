@@ -2121,3 +2121,8 @@
 {"ts":"2026-06-26T20:45:36.3908661Z","kind":"reaudit-clean","func":"stage_GetDataPtr"}
 {"ts":"2026-06-26T20:48:51.5613856Z","kind":"reaudit-clean","func":"sys_GetVblankCount"}
 {"ts":"2026-06-26T20:51:27.2481251Z","kind":"reaudit-clean","func":"sys_SetVideoMode"}
+{"ts":"2026-06-26T21:01:14.2429930Z","kind":"reaudit-clean","func":"tslDmaDrawListDelAll"}
+{"ts":"2026-06-26T21:09:20.1215915Z","kind":"reaudit-clean","func":"camera_Transform"}
+{"ts":"2026-06-26T21:13:32.3216890Z","kind":"reaudit-regressed","reason":"volatile-coercion cheat: `volatile u8 *ptr = (volatile u8 *)(&D_80101EC8 + v * 1100)` is an inline volatile cast on a non-volatile game-state global (D_80101EC8 declared extern u8 in code6cac.h:300). The cast forces GCC to emit two separate lbu loads of ptr[0x62] (target F038 + F050) that it would CSE into one without volatile. D_80101EC8 is absent from volatile_extern_allowlist.txt; no IRQ-writer citation exists; the cast form (volatile T *) is explicitly excluded from the narrow scalar-extern volatile carve-out (carve-out covers only extern volatile T G; declarations, not pointer casts). Remove the volatile cast and find a pure-C structural approach — either demonstrate genuine IRQ-touching (allowlist process) or restructure so GCC naturally emits two loads.","func":"func_8001E800"}
+{"ts":"2026-06-26T21:18:37.8345379Z","kind":"reaudit-clean","func":"func_800417D0"}
+{"ts":"2026-06-26T21:24:07.8346221Z","kind":"reaudit-clean","func":"func_8006C168"}
