@@ -1892,3 +1892,14 @@
 {"ts":"2026-06-26T03:49:06.3625174Z","kind":"reaudit-clean","func":"gpu_SetDrawMode"}
 {"ts":"2026-06-26T03:50:46.0351934Z","kind":"reaudit-clean","func":"gpu_SetSemiTransp"}
 {"ts":"2026-06-26T04:03:12.9266449Z","kind":"reaudit-clean","func":"gte_SetBackColor"}
+{"ts":"2026-06-26T04:07:05.3733811Z","kind":"reaudit-clean","func":"initClearImage"}
+{"ts":"2026-06-26T04:11:17.3318094Z","kind":"reaudit-clean","func":"initLineG2"}
+{"ts":"2026-06-26T04:12:15.6511850Z","kind":"reaudit-clean","func":"initPolyF3_dither"}
+{"ts":"2026-06-26T04:13:59.9961549Z","kind":"reaudit-clean","func":"initPolyFT4"}
+{"ts":"2026-06-26T04:16:04.6866958Z","kind":"reaudit-clean","func":"initPolyG4_dither"}
+{"ts":"2026-06-26T04:17:23.6262078Z","kind":"reaudit-clean","func":"initSprt16"}
+{"ts":"2026-06-26T04:20:40.0332652Z","kind":"reaudit-clean","func":"initTile"}
+{"ts":"2026-06-26T04:24:14.8543356Z","kind":"reaudit-clean","func":"irq_AcknowledgeVblank"}
+{"ts":"2026-06-26T04:26:59.4343157Z","kind":"reaudit-clean","func":"irq_EnableInterrupts"}
+{"ts":"2026-06-26T04:30:51.8963323Z","kind":"reaudit-clean","func":"katinuki_game_getMyWeaponId"}
+{"ts":"2026-06-26T04:34:07.1399041Z","kind":"reaudit-clean","func":"leaf_muki_awase_800444E0"}
