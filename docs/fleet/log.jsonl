@@ -2095,3 +2095,13 @@
 {"ts":"2026-06-26T18:56:30.6246941Z","kind":"reaudit-clean","func":"gpu_GetDebugLevel"}
 {"ts":"2026-06-26T19:00:06.5480651Z","kind":"reaudit-clean","func":"gpu_IsDrawing"}
 {"ts":"2026-06-26T19:10:00.1240739Z","kind":"reaudit-regressed","reason":"Pointer-derived address cheat: `u8 *p = &g_gpu_debug_level; bb2_memset(p + 0x6A, -1, 0x14)` uses g_gpu_debug_level (0x8009BE76) as the base to compute g_gpu_disp_env (0x8009BEE0 = 0x8009BE76 + 0x6A), which IS a separately-named global in symbol_addrs.txt. The pointer `p` exists solely to keep &g_gpu_debug_level live in $s1 (callee-save) so the compiler emits `addiu $a0,$s1,0x6A` (one instruction) for the memset arg rather than a fresh lui+addiu for g_gpu_disp_env (two instructions). A clean redo must write `bb2_memset(&g_gpu_disp_env, -1, 0x14)` (or equivalent cast) and accept the changed register allocation, then find a legitimate C form that also produces the target's single-instruction memset-arg computation.","func":"gpu_SetDispMask"}
+{"ts":"2026-06-26T19:15:03.3494138Z","kind":"reaudit-clean","func":"gpu_StoreImage"}
+{"ts":"2026-06-26T19:18:09.0466090Z","kind":"reaudit-clean","func":"initDrawOffset"}
+{"ts":"2026-06-26T19:21:58.8401531Z","kind":"reaudit-clean","func":"initPolyF4_dither"}
+{"ts":"2026-06-26T19:23:50.9909449Z","kind":"reaudit-clean","func":"initPolyGT4"}
+{"ts":"2026-06-26T19:26:47.2570032Z","kind":"reaudit-clean","func":"initTile16"}
+{"ts":"2026-06-26T19:28:16.6058677Z","kind":"reaudit-clean","func":"irq_Reset"}
+{"ts":"2026-06-26T19:33:50.9205968Z","kind":"reaudit-clean","func":"mario_getMarioVoiceData_8001C820"}
+{"ts":"2026-06-26T19:35:14.2235290Z","kind":"reaudit-clean","func":"math_SinLookup"}
+{"ts":"2026-06-26T19:40:05.0438264Z","kind":"reaudit-clean","func":"memcard_SetData"}
+{"ts":"2026-06-26T19:45:34.6364435Z","kind":"reaudit-clean","func":"motion_SavePreCalcData_8003A3F0"}
