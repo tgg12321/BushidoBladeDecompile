@@ -1911,3 +1911,11 @@
 {"ts":"2026-06-26T05:02:02.7297910Z","kind":"reaudit-clean","func":"motion_LoadPreCalcData_8005B98C"}
 {"ts":"2026-06-26T05:03:39.4368548Z","kind":"reaudit-clean","func":"motion_SavePreCalcData_80080014"}
 {"ts":"2026-06-26T05:06:26.7463866Z","kind":"reaudit-clean","func":"motion_shift_check_m_hit_stop"}
+{"ts":"2026-06-26T05:08:54.8288821Z","kind":"reaudit-clean","func":"obj_Clear"}
+{"ts":"2026-06-26T05:14:25.8307435Z","kind":"reaudit-clean","func":"obj_InitChars"}
+{"ts":"2026-06-26T05:15:52.3927774Z","kind":"reaudit-clean","func":"obj_Reset"}
+{"ts":"2026-06-26T05:19:27.1132861Z","kind":"reaudit-clean","func":"ot_IsEnd"}
+{"ts":"2026-06-26T05:27:52.6776602Z","kind":"reaudit-clean","func":"pad_FuncAnalog"}
+{"ts":"2026-06-26T05:33:22.2790865Z","kind":"reaudit-clean","func":"player_Destroy"}
+{"ts":"2026-06-26T05:35:11.6512155Z","kind":"reaudit-clean","func":"rng_SetSeed"}
+{"ts":"2026-06-26T05:37:31.9547579Z","kind":"reaudit-clean","func":"saRobDraw"}
