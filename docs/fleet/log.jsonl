@@ -1876,3 +1876,11 @@
 {"ts":"2026-06-26T02:47:17.6075995Z","kind":"reaudit-clean","func":"game_EffInit"}
 {"ts":"2026-06-26T02:52:01.2760595Z","kind":"reaudit-clean","func":"game_FrameInit"}
 {"ts":"2026-06-26T02:54:51.8737927Z","kind":"reaudit-clean","func":"game_GetMode"}
+{"ts":"2026-06-26T02:58:14.7721668Z","kind":"reaudit-clean","func":"game_GetPlayerData"}
+{"ts":"2026-06-26T03:01:18.8400798Z","kind":"reaudit-clean","func":"game_SetPause"}
+{"ts":"2026-06-26T03:04:12.9675620Z","kind":"reaudit-clean","func":"game_StageCleanup"}
+{"ts":"2026-06-26T03:05:05.7982853Z","kind":"reaudit-clean","func":"game_Stub3"}
+{"ts":"2026-06-26T03:10:12.4650091Z","kind":"reaudit-clean","func":"gnd_close_8004939C"}
+{"ts":"2026-06-26T03:17:03.2706939Z","kind":"reaudit-clean","func":"gnd_load_tex"}
+{"ts":"2026-06-26T03:22:54.6705238Z","kind":"reaudit-clean","func":"gpu_CatPacket"}
+{"ts":"2026-06-26T03:25:55.1076815Z","kind":"reaudit-clean","func":"gpu_DebugDrawEnv"}
