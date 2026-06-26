@@ -1928,3 +1928,7 @@
 {"ts":"2026-06-26T05:56:55.3029769Z","kind":"reaudit-clean","func":"snd_GetBgmId"}
 {"ts":"2026-06-26T06:07:29.0255797Z","kind":"reaudit-clean","func":"snd_LoadBgm"}
 {"ts":"2026-06-26T06:10:12.7735857Z","kind":"reaudit-clean","func":"snd_PlaySe"}
+{"ts":"2026-06-26T06:16:27.5474176Z","kind":"reaudit-clean","func":"snd_SetVolume"}
+{"ts":"2026-06-26T06:17:55.0972756Z","kind":"reaudit-clean","func":"snd_StopSystemSe"}
+{"ts":"2026-06-26T06:26:13.9941516Z","kind":"reaudit-clean","func":"spu_Init"}
+{"ts":"2026-06-26T06:42:56.0065297Z","kind":"reaudit-clean","func":"spu_ReadMotionFrame"}
