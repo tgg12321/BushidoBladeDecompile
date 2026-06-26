@@ -2105,3 +2105,12 @@
 {"ts":"2026-06-26T19:35:14.2235290Z","kind":"reaudit-clean","func":"math_SinLookup"}
 {"ts":"2026-06-26T19:40:05.0438264Z","kind":"reaudit-clean","func":"memcard_SetData"}
 {"ts":"2026-06-26T19:45:34.6364435Z","kind":"reaudit-clean","func":"motion_SavePreCalcData_8003A3F0"}
+{"ts":"2026-06-26T19:51:55.2783462Z","kind":"reaudit-clean","func":"obj_AddValue"}
+{"ts":"2026-06-26T19:53:56.9658271Z","kind":"reaudit-clean","func":"obj_InitTask"}
+{"ts":"2026-06-26T19:55:06.6516716Z","kind":"reaudit-clean","func":"ot_SetAddr"}
+{"ts":"2026-06-26T19:59:01.4255452Z","kind":"reaudit-clean","func":"replay_camera_rob_back_loose2"}
+{"ts":"2026-06-26T20:03:38.1795303Z","kind":"reaudit-clean","func":"saTan1GaugeInit"}
+{"ts":"2026-06-26T20:07:58.3689648Z","kind":"reaudit-clean","func":"saTan5GetTakeCutAnimType"}
+{"ts":"2026-06-26T20:10:25.4722106Z","kind":"reaudit-clean","func":"scratchpad_Save"}
+{"ts":"2026-06-26T20:15:29.9380704Z","kind":"reaudit-clean","func":"snd_BgmCallback"}
+{"ts":"2026-06-26T20:18:58.6449903Z","kind":"reaudit-clean","func":"snd_LoadSelection"}
