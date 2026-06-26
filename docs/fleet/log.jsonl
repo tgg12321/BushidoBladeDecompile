@@ -1932,3 +1932,11 @@
 {"ts":"2026-06-26T06:17:55.0972756Z","kind":"reaudit-clean","func":"snd_StopSystemSe"}
 {"ts":"2026-06-26T06:26:13.9941516Z","kind":"reaudit-clean","func":"spu_Init"}
 {"ts":"2026-06-26T06:42:56.0065297Z","kind":"reaudit-clean","func":"spu_ReadMotionFrame"}
+{"ts":"2026-06-26T06:45:41.7824922Z","kind":"reaudit-clean","func":"spu_Reset"}
+{"ts":"2026-06-26T06:50:41.2263216Z","kind":"reaudit-clean","func":"spu_SetMotionCallback"}
+{"ts":"2026-06-26T06:54:53.1470453Z","kind":"reaudit-clean","func":"spu_TransferDirect"}
+{"ts":"2026-06-26T07:01:55.9595745Z","kind":"reaudit-clean","func":"spu_WriteReg16"}
+{"ts":"2026-06-26T07:06:57.5474453Z","kind":"reaudit-clean","func":"stage_ExecInitFunc"}
+{"ts":"2026-06-26T07:08:34.3818759Z","kind":"reaudit-clean","func":"stage_GetVariant"}
+{"ts":"2026-06-26T07:10:50.9017677Z","kind":"reaudit-clean","func":"sys_GameInit"}
+{"ts":"2026-06-26T07:14:36.4173934Z","kind":"reaudit-clean","func":"sys_Init"}
