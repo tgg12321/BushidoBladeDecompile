@@ -2086,3 +2086,12 @@
 {"ts":"2026-06-26T18:27:00.1254320Z","kind":"reaudit-clean","func":"func_800891B4"}
 {"ts":"2026-06-26T18:28:27.6569195Z","kind":"reaudit-clean","func":"func_8008AF84"}
 {"ts":"2026-06-26T18:31:08.3779002Z","kind":"reaudit-clean","func":"g_module_func_tbl"}
+{"ts":"2026-06-26T18:33:57.1548316Z","kind":"reaudit-clean","func":"game_EffCleanup"}
+{"ts":"2026-06-26T18:39:24.7242215Z","kind":"reaudit-clean","func":"game_GetCharData"}
+{"ts":"2026-06-26T18:41:24.6805138Z","kind":"reaudit-clean","func":"game_ResetTimer"}
+{"ts":"2026-06-26T18:43:53.3010161Z","kind":"reaudit-clean","func":"game_Stub1"}
+{"ts":"2026-06-26T18:50:23.4332887Z","kind":"reaudit-clean","func":"gnd_init_8001B294"}
+{"ts":"2026-06-26T18:55:10.9099716Z","kind":"reaudit-clean","func":"gpu_DebugClut"}
+{"ts":"2026-06-26T18:56:30.6246941Z","kind":"reaudit-clean","func":"gpu_GetDebugLevel"}
+{"ts":"2026-06-26T19:00:06.5480651Z","kind":"reaudit-clean","func":"gpu_IsDrawing"}
+{"ts":"2026-06-26T19:10:00.1240739Z","kind":"reaudit-regressed","reason":"Pointer-derived address cheat: `u8 *p = &g_gpu_debug_level; bb2_memset(p + 0x6A, -1, 0x14)` uses g_gpu_debug_level (0x8009BE76) as the base to compute g_gpu_disp_env (0x8009BEE0 = 0x8009BE76 + 0x6A), which IS a separately-named global in symbol_addrs.txt. The pointer `p` exists solely to keep &g_gpu_debug_level live in $s1 (callee-save) so the compiler emits `addiu $a0,$s1,0x6A` (one instruction) for the memset arg rather than a fresh lui+addiu for g_gpu_disp_env (two instructions). A clean redo must write `bb2_memset(&g_gpu_disp_env, -1, 0x14)` (or equivalent cast) and accept the changed register allocation, then find a legitimate C form that also produces the target's single-instruction memset-arg computation.","func":"gpu_SetDispMask"}
