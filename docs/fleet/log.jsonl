@@ -1974,3 +1974,10 @@
 {"ts":"2026-06-26T10:28:26.1890609Z","kind":"reaudit-clean","func":"func_80019534"}
 {"ts":"2026-06-26T10:31:39.0303202Z","kind":"reaudit-clean","func":"func_8001A62C"}
 {"ts":"2026-06-26T10:38:48.8792463Z","kind":"reaudit-clean","func":"func_8001BAE4"}
+{"ts":"2026-06-26T10:46:54.2816599Z","kind":"reaudit-clean","func":"func_8001C4C0"}
+{"ts":"2026-06-26T10:50:18.2628255Z","kind":"reaudit-clean","func":"func_8001DB58"}
+{"ts":"2026-06-26T10:55:13.9758614Z","kind":"reaudit-clean","func":"func_8001EFA0"}
+{"ts":"2026-06-26T11:01:46.7105900Z","kind":"reaudit-regressed","reason":"char new_var is a dead-constant codegen coercion (permuter-found trick, commit-confirmed). The variable is always 0, both comparisons are semantically identical to != 0, no asm instruction corresponds to it (fully DCE'd by GCC), and the name announces non-semantic intent. Fails all 6 checklist tests. New spelling of dead-variable coercion family not caught by volatile_cheats.py. Worker must remove char new_var and replace both uses with literal 0, then find the pure-C form that still produces score 0 without the trick (if score rises, that is the real distance to close).","func":"func_8001FAE4"}
+{"ts":"2026-06-26T11:04:48.5988142Z","kind":"reaudit-clean","func":"func_80020CDC"}
+{"ts":"2026-06-26T11:09:07.8309485Z","kind":"reaudit-clean","func":"func_800213A0"}
+{"ts":"2026-06-26T11:13:34.7606296Z","kind":"reaudit-clean","func":"func_800219E4"}
