@@ -1861,3 +1861,9 @@
 {"ts":"2026-06-26T01:41:39.7275864Z","kind":"reaudit-clean","func":"func_8007B564"}
 {"ts":"2026-06-26T01:47:26.8968191Z","kind":"reaudit-clean","func":"func_8007C938"}
 {"ts":"2026-06-26T01:49:37.4793225Z","kind":"reaudit-clean","func":"func_8007D2F4"}
+{"ts":"2026-06-26T01:55:08.8416938Z","kind":"reaudit-clean","func":"func_8007DE08"}
+{"ts":"2026-06-26T01:56:30.4632257Z","kind":"reaudit-clean","func":"func_80080600"}
+{"ts":"2026-06-26T02:04:47.6645722Z","kind":"reaudit-clean","func":"func_80083BE4"}
+{"ts":"2026-06-26T02:10:39.2933396Z","kind":"reaudit-clean","func":"func_80085E4C"}
+{"ts":"2026-06-26T02:20:18.6968834Z","kind":"reaudit-regressed","reason":"Construct `(s16)(a0 << 16 >> 16)` (line ~909, argument to func_8008BD88) fails Tests 1, 2, 3 of the 6-test checklist: a0 is already s16, the shift pair is mathematically a no-op for all valid s16 inputs (no semantic purpose), a human programmer from spec would write `a0` directly, and the sole justification is GCC-internals (forces sll+sra before jal). It is not in any explicitly forbidden catalog family (pure C, no asm/pins/volatile), but it is also NOT in the SOTN-accepted exceptions list. The 'opaque arithmetic' carve-out does not extend to this pattern without its own SOTN-master-branch evidence; each exception requires independent clearance per the standing policy. The function needs a clean redo: either confirm the sll+sra is genuinely in the target asm and that a direct `a0` argument also produces score=0 (in which case the shift is unnecessary and should be deleted), or if the shift IS required, surface a policy question to the owner before re-merging.","func":"func_80086080"}
+{"ts":"2026-06-26T02:21:34.0256173Z","kind":"reaudit-clean","func":"func_80088584"}
