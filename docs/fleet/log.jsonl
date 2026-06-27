@@ -2126,3 +2126,13 @@
 {"ts":"2026-06-26T21:13:32.3216890Z","kind":"reaudit-regressed","reason":"volatile-coercion cheat: `volatile u8 *ptr = (volatile u8 *)(&D_80101EC8 + v * 1100)` is an inline volatile cast on a non-volatile game-state global (D_80101EC8 declared extern u8 in code6cac.h:300). The cast forces GCC to emit two separate lbu loads of ptr[0x62] (target F038 + F050) that it would CSE into one without volatile. D_80101EC8 is absent from volatile_extern_allowlist.txt; no IRQ-writer citation exists; the cast form (volatile T *) is explicitly excluded from the narrow scalar-extern volatile carve-out (carve-out covers only extern volatile T G; declarations, not pointer casts). Remove the volatile cast and find a pure-C structural approach — either demonstrate genuine IRQ-touching (allowlist process) or restructure so GCC naturally emits two loads.","func":"func_8001E800"}
 {"ts":"2026-06-26T21:18:37.8345379Z","kind":"reaudit-clean","func":"func_800417D0"}
 {"ts":"2026-06-26T21:24:07.8346221Z","kind":"reaudit-clean","func":"func_8006C168"}
+{"ts":"2026-06-27T22:58:59.7791761Z","kind":"reaudit-clean","func":"FadeOut_8003FFC4"}
+{"ts":"2026-06-27T23:02:43.5595625Z","kind":"reaudit-clean","func":"Vu0SetLightColMatrix_80080640"}
+{"ts":"2026-06-27T23:03:58.3248221Z","kind":"reaudit-clean","func":"camera_InitBone2"}
+{"ts":"2026-06-27T23:05:56.5220824Z","kind":"reaudit-clean","func":"cdrom_CheckReady"}
+{"ts":"2026-06-27T23:17:13.1965391Z","kind":"reaudit-clean","func":"cdrom_IrqHandler"}
+{"ts":"2026-06-27T23:18:34.7808375Z","kind":"reaudit-clean","func":"coli_CheckBukiPreHit_80088088"}
+{"ts":"2026-06-27T23:20:03.9781112Z","kind":"reaudit-clean","func":"disp_CalcFov"}
+{"ts":"2026-06-27T23:21:46.9348033Z","kind":"reaudit-clean","func":"file_GetFlag2"}
+{"ts":"2026-06-27T23:27:15.4228537Z","kind":"reaudit-clean","func":"func_800194C0"}
+{"ts":"2026-06-27T23:29:28.3774234Z","kind":"reaudit-clean","func":"func_8001B690"}
