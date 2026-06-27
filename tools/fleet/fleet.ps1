@@ -51,8 +51,13 @@ param(
     [switch]$DryRun,
     [switch]$NoLanes,                     # supervisor-only (drill: drive auditor by hand)
     [switch]$AuditOnce,                   # drill: run exactly one Auditor-Cycle then exit
+    [switch]$DrainReaudit,                # one-shot: run only the auditor until reaudit.pending is empty, then exit
     [switch]$SelfTest                     # drill: deterministic merge-rollback + overseer wiring proofs
 )
+if ($DrainReaudit) {
+    # DrainReaudit implies auditor-only (no producer lanes, no producer roles).
+    $NoLanes = $true; $NoBlocked = $true; $NoAdjudicator = $true
+}
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot '_fleet_common.ps1')
 
@@ -559,6 +564,36 @@ try {
         $didAudit = $false
         if ($circuit -eq 'running') {
             try { $didAudit = Auditor-Cycle } catch { Write-Host "[supervisor] auditor cycle error: $_" -ForegroundColor Red }
+        }
+
+        # 2b) drain mode: exit cleanly once the historical re-audit list is empty
+        # (every COMPLETED-C function has been reviewed at least once against the
+        # current cheat lens). Without this the supervisor sits in an idle loop
+        # forever; with -DrainReaudit it shuts down so the cursor never wraps.
+        if ($DrainReaudit) {
+            $pendingCount = 99999
+            try {
+                $stRaw = Get-Content (Join-Path $RepoRoot 'tmp\fleet\state.json') -Raw | ConvertFrom-Json -AsHashtable
+                $pendingCount = [int]@($stRaw.reaudit.pending).Count
+            } catch { }
+            if ($pendingCount -le 0) {
+                Write-Host "[supervisor] DrainReaudit: reaudit.pending is empty; supervisor exiting." -ForegroundColor Green
+                break
+            }
+            if (-not $didAudit) {
+                # claim returned no work but pending still has entries: the entries are
+                # currently locked by the auditor lane heartbeat (race window). Sweep
+                # stale claims and retry; if still nothing in 3 consecutive empty
+                # cycles, treat as drained and exit (defensive).
+                if (-not $script:_drainIdleStrikes) { $script:_drainIdleStrikes = 0 }
+                $script:_drainIdleStrikes += 1
+                if ($script:_drainIdleStrikes -ge 3) {
+                    Write-Host "[supervisor] DrainReaudit: 3 idle cycles with pending=$pendingCount (likely stuck claims); exiting." -ForegroundColor Yellow
+                    break
+                }
+            } else {
+                $script:_drainIdleStrikes = 0
+            }
         }
 
         # 3) oracle backstop
