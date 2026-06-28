@@ -2144,3 +2144,6 @@
 {"ts":"2026-06-27T23:51:19.3516501Z","kind":"reaudit-clean","func":"func_8002906C"}
 {"ts":"2026-06-27T23:54:49.0353268Z","kind":"reaudit-clean","func":"func_80030D48"}
 {"ts":"2026-06-28T00:01:30.1409780Z","kind":"reaudit-regressed","reason":"Cheat: `*(s8 *)&D_80102787` where D_80102787 is `extern u8`. This pointer-type-cast is used to force a `lb` (signed byte load) instruction instead of `lbu + sll 24 + sra 24`, compensating for an incorrect `u8` type declaration in include/code6cac.h. Observable behavior is byte-identical to `(s8)D_80102787`; the construct serves no semantic purpose beyond GCC instruction-selection coercion. Analogous to the forbidden `*(volatile T *)&G` family (same structural intent: take address of global, cast to different pointer type, coerce codegen). Clean fix: change `extern u8 D_80102787;` to `extern s8 D_80102787;` in include/code6cac.h (target asm `lb` proves original was signed), then write `s32 val_87 = D_80102787;` without any cast.","func":"func_800343F0"}
+{"ts":"2026-06-28T00:03:47.7445845Z","kind":"reaudit-clean","func":"func_80035F78"}
+{"ts":"2026-06-28T00:08:04.7702950Z","kind":"reaudit-clean","func":"func_800371AC"}
+{"ts":"2026-06-28T00:10:18.6320786Z","kind":"reaudit-clean","func":"func_80037774"}
