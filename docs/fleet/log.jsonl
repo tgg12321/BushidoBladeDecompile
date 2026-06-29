@@ -2197,3 +2197,14 @@
 {"ts":"2026-06-29T08:58:59.0998225Z","kind":"reaudit-clean","func":"gpu_DisableDisplay"}
 {"ts":"2026-06-29T09:06:34.1280146Z","kind":"reaudit-clean","func":"gpu_LoadTexture"}
 {"ts":"2026-06-29T09:18:01.9346294Z","kind":"reaudit-clean","func":"gte_SetScreenOffset"}
+{"ts":"2026-06-29T09:21:06.1118493Z","kind":"reaudit-clean","func":"initPolyG3_dither"}
+{"ts":"2026-06-29T09:22:54.3483301Z","kind":"reaudit-clean","func":"irq_DisableInterrupts"}
+{"ts":"2026-06-29T09:24:34.2217199Z","kind":"reaudit-clean","func":"math_Cos"}
+{"ts":"2026-06-29T09:30:42.5694212Z","kind":"reaudit-clean","func":"motion_Close_8001D998"}
+{"ts":"2026-06-29T09:32:20.4278742Z","kind":"reaudit-clean","func":"obj_ExecTask"}
+{"ts":"2026-06-29T09:33:44.8727357Z","kind":"reaudit-clean","func":"pad_button_info_clear"}
+{"ts":"2026-06-29T09:35:46.5449112Z","kind":"reaudit-clean","func":"saTan2InfoInit_80044F80"}
+{"ts":"2026-06-29T09:37:19.7453019Z","kind":"reaudit-clean","func":"seq_Start"}
+{"ts":"2026-06-29T09:38:28.2171126Z","kind":"reaudit-clean","func":"snd_SeNullCallback"}
+{"ts":"2026-06-29T09:43:34.4780628Z","kind":"reaudit-clean","func":"spu_ReadReg"}
+{"ts":"2026-06-29T09:49:05.7223452Z","kind":"reaudit-clean","func":"stage_ApplyLighting"}
