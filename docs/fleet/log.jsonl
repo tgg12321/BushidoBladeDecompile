@@ -2241,3 +2241,11 @@
 {"ts":"2026-06-29T12:21:44.7518229Z","kind":"reaudit-clean","func":"func_80067094"}
 {"ts":"2026-06-29T12:25:00.2775101Z","kind":"reaudit-clean","func":"func_8006920C"}
 {"ts":"2026-06-29T12:32:17.9898929Z","kind":"reaudit-clean","func":"func_8006E440"}
+{"ts":"2026-06-29T12:39:38.8671196Z","kind":"reaudit-clean","func":"func_80077724"}
+{"ts":"2026-06-29T12:41:50.6658383Z","kind":"reaudit-clean","func":"func_80078628"}
+{"ts":"2026-06-29T12:47:47.4709417Z","kind":"reaudit-clean","func":"func_8007B3A8"}
+{"ts":"2026-06-29T12:48:56.1207109Z","kind":"reaudit-clean","func":"func_80088058"}
+{"ts":"2026-06-29T12:50:38.3241543Z","kind":"reaudit-clean","func":"game_EffStart"}
+{"ts":"2026-06-29T12:52:19.2564640Z","kind":"reaudit-clean","func":"gpu_CalcClut"}
+{"ts":"2026-06-29T12:59:42.6872992Z","kind":"reaudit-regressed","func":"gpu_SetMode","reason":"Scheduling-lever variable `new_var = -1` placed between two array-read/store pairs (width and height), used as the fill argument in only the FIRST of two bb2_memset calls whose fill value is identical (-1). The asymmetric use (variable for one call, literal for the next) has no semantic purpose and reveals GCC scheduling manipulation. Worker must replace `new_var` with the literal -1, verify whether the byte match holds; if it breaks, find a semantically-grounded restructure that achieves the same delay-slot fill via meaningful C (e.g. reorder of surrounding statements) rather than a dead-purpose named variable."}
+{"ts":"2026-06-29T13:05:56.9852363Z","kind":"reaudit-clean","func":"initStoreImage"}
