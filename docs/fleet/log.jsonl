@@ -2236,3 +2236,8 @@
 {"ts":"2026-06-29T11:51:54.2487163Z","kind":"reaudit-clean","func":"func_80054884"}
 {"ts":"2026-06-29T11:56:09.5927023Z","kind":"reaudit-clean","func":"func_8005BF78"}
 {"ts":"2026-06-29T12:01:26.2000706Z","kind":"reaudit-clean","func":"func_800613C8"}
+{"ts":"2026-06-29T12:09:15.2860313Z","kind":"reaudit-clean","func":"func_80064F68"}
+{"ts":"2026-06-29T12:18:11.0081436Z","kind":"reaudit-regressed","func":"func_80065540","reason":"Codegen-coercion cast `(s16)v1` where v1:s16 — no semantic purpose, fails tests 1/2/3; verify whether dropping it changes the oracle match (if not, harmless noise; if yes, needs a clean pure-C form for the sll/sra sign-extension)."}
+{"ts":"2026-06-29T12:21:44.7518229Z","kind":"reaudit-clean","func":"func_80067094"}
+{"ts":"2026-06-29T12:25:00.2775101Z","kind":"reaudit-clean","func":"func_8006920C"}
+{"ts":"2026-06-29T12:32:17.9898929Z","kind":"reaudit-clean","func":"func_8006E440"}
