@@ -2266,3 +2266,13 @@
 {"ts":"2026-06-29T14:04:22.7458523Z","kind":"reaudit-clean","func":"func_8003E120"}
 {"ts":"2026-06-29T14:09:53.0174031Z","kind":"reaudit-regressed","func":"func_80042ED8","reason":"The 4-variable form (t0,t1,t2,t3) with a specific partial-read-ahead ordering fails Test 2 (human-programmer test): three independent swaps are most naturally written as 3 sequential single-temp operations; the current form reads [6,2,1,5] before the first write, then interleaves reads of [3,7] between writes — creating a specific simultaneous liveness window for t1/t2/t3 that controls GCC's register allocator rather than reflecting any semantic need. The variable names (t0–t3 matching MIPS $t0–$t3 by name convention) further indicate register-allocation was the design concern. The function needs a clean redo: find the C form that matches the target bytes without the GCC-steering variable count/ordering, or confirm via sandbox that the simpler 3-swap / 1-temp form also scores 0 (in which case the current committed form is strictly unnecessary complexity)."}
 {"ts":"2026-06-29T14:11:58.2698635Z","kind":"reaudit-clean","func":"func_800457DC"}
+{"ts":"2026-06-29T14:15:18.3930205Z","kind":"reaudit-clean","func":"func_8004E564"}
+{"ts":"2026-06-29T14:20:44.8831408Z","kind":"reaudit-clean","func":"func_800602AC"}
+{"ts":"2026-06-29T14:25:01.3961737Z","kind":"reaudit-clean","func":"func_80065264"}
+{"ts":"2026-06-29T14:26:16.2476246Z","kind":"reaudit-clean","func":"func_80067704"}
+{"ts":"2026-06-29T14:29:42.3015760Z","kind":"reaudit-clean","func":"func_800720AC"}
+{"ts":"2026-06-29T14:31:54.9979405Z","kind":"reaudit-clean","func":"func_80078D38"}
+{"ts":"2026-06-29T14:34:53.5028526Z","kind":"reaudit-clean","func":"func_8008BE4C"}
+{"ts":"2026-06-29T14:36:41.7474053Z","kind":"reaudit-clean","func":"gpu_GetType"}
+{"ts":"2026-06-29T14:37:56.2488721Z","kind":"reaudit-clean","func":"katinuki_game_setData_800548DC"}
+{"ts":"2026-06-29T14:52:19.9182377Z","kind":"reaudit-clean","func":"saFidLoad"}
