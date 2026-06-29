@@ -2276,3 +2276,13 @@
 {"ts":"2026-06-29T14:36:41.7474053Z","kind":"reaudit-clean","func":"gpu_GetType"}
 {"ts":"2026-06-29T14:37:56.2488721Z","kind":"reaudit-clean","func":"katinuki_game_setData_800548DC"}
 {"ts":"2026-06-29T14:52:19.9182377Z","kind":"reaudit-clean","func":"saFidLoad"}
+{"ts":"2026-06-29T14:57:57.0973419Z","kind":"reaudit-clean","func":"spu_SetVolume"}
+{"ts":"2026-06-29T15:02:41.5007711Z","kind":"reaudit-regressed","func":"func_800455AC","reason":"Pointer-alias cheat: `s16 (*new_var)[] = &D_800EED10` introduces a local pointer indirection that is semantically identical to using D_800EED10 directly (as sibling functions saTan5TakeGetPos_80045694 and func_800456F0 do). The alias serves no semantic purpose and the name 'new_var' announces coercion intent. Worker must find a clean C form that reaches byte-match without the alias — e.g. use D_800EED10 directly with the same byte-offset arithmetic the siblings use, and rely on pure C structure to get the right register allocation."}
+{"ts":"2026-06-29T15:07:55.0023899Z","kind":"reaudit-clean","func":"cdrom_GetMode"}
+{"ts":"2026-06-29T15:16:21.4828958Z","kind":"reaudit-clean","func":"func_8002006C"}
+{"ts":"2026-06-29T15:20:18.1222173Z","kind":"reaudit-clean","func":"func_80030524"}
+{"ts":"2026-06-29T15:21:52.4308132Z","kind":"reaudit-regressed","func":"func_800397A0","reason":"Redundant `(u8)val` cast where val is already declared u8 fails tests 1+2 (no semantic purpose, human programmer would write `if (val == 0x77)`); may also be a codegen coercion forcing `andi $v1,$a0,0xFF` + register split in target asm. Owner should verify: drop cast to `if (val == 0x77)` — if asm is identical the source has a benign artifact to clean up; if asm differs this is a confirmed codegen coercion requiring a proper re-match."}
+{"ts":"2026-06-29T15:23:42.9160254Z","kind":"reaudit-clean","func":"func_800404A0"}
+{"ts":"2026-06-29T15:25:47.9090162Z","kind":"reaudit-clean","func":"func_80057094"}
+{"ts":"2026-06-29T15:26:25.5413190Z","kind":"reaudit-clean","func":"func_800484A0"}
+{"ts":"2026-06-29T15:26:29.7440364Z","kind":"reaudit-clean","func":"func_80066EF4"}
