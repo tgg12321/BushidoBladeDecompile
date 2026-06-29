@@ -52,6 +52,7 @@ param(
     [switch]$NoLanes,                     # supervisor-only (drill: drive auditor by hand)
     [switch]$AuditOnce,                   # drill: run exactly one Auditor-Cycle then exit
     [switch]$DrainReaudit,                # one-shot: run only the auditor until reaudit.pending is empty, then exit
+    [string]$AuditorLane = 'fleet-aud',   # auditor lane id; override for a second concurrent auditor (e.g. 'fleet-audB')
     [switch]$SelfTest                     # drill: deterministic merge-rollback + overseer wiring proofs
 )
 if ($DrainReaudit) {
@@ -239,8 +240,8 @@ re-runs the full oracle gate — so PASS means COMPLETED. Mean it.
 function Auditor-Cycle {
     $pkt = $null
     try {
-        if ($NoReaudit) { $pkt = Coord claim -Role auditor -Lane fleet-aud -NoReaudit | ConvertFrom-Json }
-        else            { $pkt = Coord claim -Role auditor -Lane fleet-aud | ConvertFrom-Json }
+        if ($NoReaudit) { $pkt = Coord claim -Role auditor -Lane $AuditorLane -NoReaudit | ConvertFrom-Json }
+        else            { $pkt = Coord claim -Role auditor -Lane $AuditorLane | ConvertFrom-Json }
     } catch { }
     if (-not $pkt -or -not $pkt.func) { return $false }
     $func = [string]$pkt.func
@@ -251,7 +252,7 @@ function Auditor-Cycle {
         # any throw after the claim would otherwise strand the in_review item (its lane
         # heartbeat keeps refreshing). Requeue it immediately so it's re-reviewable.
         Write-Host "[auditor] cycle threw on ${func}: $_ — requeuing." -ForegroundColor Yellow
-        if ($mode -ne 'reaudit') { try { Coord submit -Lane fleet-aud -Outcome requeue-review -Func $func | Out-Null } catch { } }
+        if ($mode -ne 'reaudit') { try { Coord submit -Lane $AuditorLane -Outcome requeue-review -Func $func | Out-Null } catch { } }
         Append-FleetLog 'auditor-throw' @{ func = $func; err = "$_" }
     }
     return $true
@@ -266,12 +267,12 @@ function Auditor-Cycle-Body($pkt, $func, $mode) {
     $auditModel = if ($mode -eq 'reaudit') { $reauditEff } else { $StrongModel }
     $precheck = if ($mode -ne 'reaudit') { Get-ReviewerPrecheck $func ([string]$pkt.candidate_sha) } else { '' }
     $task = Build-AuditorTask $pkt 'first' $precheck
-    $outcome = Invoke-RoleAgent -Role auditor -Lane fleet-aud -TaskText $task -Model $auditModel
+    $outcome = Invoke-RoleAgent -Role auditor -Lane $AuditorLane -TaskText $task -Model $auditModel
     Assert-MainClean | Out-Null   # Maj-8: the review agent must not have edited main
 
     if (-not $outcome -or -not $outcome.outcome) {
         Write-Host "[auditor] no verdict for $func (mode=$mode)." -ForegroundColor Yellow
-        if ($mode -ne 'reaudit') { Coord submit -Lane fleet-aud -Outcome requeue-review -Func $func | Out-Null }  # B6: don't strand
+        if ($mode -ne 'reaudit') { Coord submit -Lane $AuditorLane -Outcome requeue-review -Func $func | Out-Null }  # B6: don't strand
         return $true
     }
     $o = [string]$outcome.outcome
@@ -286,16 +287,16 @@ function Auditor-Cycle-Body($pkt, $func, $mode) {
             $v2 = if ($v) { [string]$v.outcome } else { '' }
             if ($v2 -ne 'pass') {
                 Write-Host "[auditor] second layer did NOT pass ($v2) — not merging." -ForegroundColor Yellow
-                if ($v2 -eq 'needs-adjudication') { Coord submit -Lane fleet-aud -Outcome to-adjudicator -Func $func | Out-Null }
-                elseif ($v2 -eq 'fail')           { Coord submit -Lane fleet-aud -Outcome rejected -Func $func -Reason ("second-layer FAIL: " + [string]$v.reason) | Out-Null }
-                else                              { Coord submit -Lane fleet-aud -Outcome requeue-review -Func $func | Out-Null }
+                if ($v2 -eq 'needs-adjudication') { Coord submit -Lane $AuditorLane -Outcome to-adjudicator -Func $func | Out-Null }
+                elseif ($v2 -eq 'fail')           { Coord submit -Lane $AuditorLane -Outcome rejected -Func $func -Reason ("second-layer FAIL: " + [string]$v.reason) | Out-Null }
+                else                              { Coord submit -Lane $AuditorLane -Outcome requeue-review -Func $func | Out-Null }
                 Append-FleetLog 'second-layer-block' @{ func = $func; verdict = $v2 }
                 return $true
             }
             # both layers passed -> privileged merge
             $m = Merge-Candidate $func ([string]$pkt.candidate_sha)
             if ($m.ok) {
-                Coord submit -Lane fleet-aud -Outcome approved -Func $func | Out-Null
+                Coord submit -Lane $AuditorLane -Outcome approved -Func $func | Out-Null
                 $script:LastGreen = $m.head
                 Append-FleetLog 'completed' @{ func = $func; head = $m.head; via = ([string]$pkt.ruling.verdict) }
                 Write-Host "[auditor] MERGED + COMPLETED $func (main @ $($m.head.Substring(0,8)))" -ForegroundColor Green
@@ -305,15 +306,15 @@ function Auditor-Cycle-Body($pkt, $func, $mode) {
                 # the oracle, or queue-done refused = a cheat both layers missed). Main was
                 # rolled back to green by Merge-Candidate, so this is NOT a circuit event —
                 # mark the sha gate-failed (never re-PASS it) and bounce to the worker.
-                Coord submit -Lane fleet-aud -Outcome gate-failed -Func $func -Sha ([string]$pkt.candidate_sha) -Reason ([string]$m.reason) | Out-Null
+                Coord submit -Lane $AuditorLane -Outcome gate-failed -Func $func -Sha ([string]$pkt.candidate_sha) -Reason ([string]$m.reason) | Out-Null
                 Append-FleetLog 'merge-gate-failed' @{ func = $func; reason = $m.reason }
                 if ([string]$m.reason -like 'queue-done-refused*') {
                     Write-Host "[auditor] WARNING: both review layers PASSed but queue-done refused ($($m.reason)) — possible missed cheat. Logged." -ForegroundColor Red
                 }
             }
         }
-        'fail'               { Coord submit -Lane fleet-aud -Outcome rejected -Func $func -Reason ([string]$outcome.reason) | Out-Null }
-        'needs-adjudication' { Coord submit -Lane fleet-aud -Outcome to-adjudicator -Func $func | Out-Null }
+        'fail'               { Coord submit -Lane $AuditorLane -Outcome rejected -Func $func -Reason ([string]$outcome.reason) | Out-Null }
+        'needs-adjudication' { Coord submit -Lane $AuditorLane -Outcome to-adjudicator -Func $func | Out-Null }
         'reaudit-clean'      {
             Append-FleetLog 'reaudit-clean' @{ func = $func }
             Invoke-BoardAudit clean $func    # stamp "Last Audited" + archive the card (Done -> archived)
@@ -321,7 +322,7 @@ function Auditor-Cycle-Body($pkt, $func, $mode) {
             # otherwise the cursor wraps and re-audits the same clean func again. New
             # 'reaudit-clean' outcome handler in coord.ps1 short-circuits the
             # "not tracked" throw (completed functions aren't in $st.functions).
-            try { Coord submit -Lane fleet-aud -Outcome reaudit-clean -Func $func | Out-Null } catch {
+            try { Coord submit -Lane $AuditorLane -Outcome reaudit-clean -Func $func | Out-Null } catch {
                 Write-Host "[auditor] coord reaudit-clean submit failed for $func — pending list may grow stale: $_" -ForegroundColor Yellow
             }
         }
@@ -333,7 +334,7 @@ function Auditor-Cycle-Body($pkt, $func, $mode) {
             $line = "- $((Get-Date).ToUniversalTime().ToString('o'))  **$func** — $([string]$outcome.reason)  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
             Add-Content -Path $reg -Value $line -Encoding utf8
             Append-FleetLog 'reaudit-regressed' @{ func = $func; reason = ([string]$outcome.reason) }
-            Coord submit -Lane fleet-aud -Outcome regressed -Func $func -Sha ([string]$script:LastGreen) -Reason ([string]$outcome.reason) | Out-Null
+            Coord submit -Lane $AuditorLane -Outcome regressed -Func $func -Sha ([string]$script:LastGreen) -Reason ([string]$outcome.reason) | Out-Null
             Invoke-BoardAudit flag $func --reason ([string]$outcome.reason)   # keep card in Done, stamp REGRESSED
             Write-Host "[auditor] REGRESSION flagged on committed $func — logged to docs/fleet/regressions.md + board for your review." -ForegroundColor Red
         }
