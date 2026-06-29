@@ -2191,3 +2191,9 @@
 {"ts":"2026-06-29T08:37:24.3912224Z","kind":"reaudit-clean","func":"func_8007CAC8"}
 {"ts":"2026-06-29T08:39:03.7768533Z","kind":"reaudit-clean","func":"func_8008541C"}
 {"ts":"2026-06-29T08:44:54.4901463Z","kind":"reaudit-clean","func":"func_8008ACD0"}
+{"ts":"2026-06-29T08:48:11.2978313Z","kind":"reaudit-clean","func":"game_AnimStart"}
+{"ts":"2026-06-29T08:53:30.1093926Z","kind":"reaudit-clean","func":"game_GetPlayerBase"}
+{"ts":"2026-06-29T08:57:38.9049542Z","kind":"reaudit-clean","func":"get_point_value"}
+{"ts":"2026-06-29T08:58:59.0998225Z","kind":"reaudit-clean","func":"gpu_DisableDisplay"}
+{"ts":"2026-06-29T09:06:34.1280146Z","kind":"reaudit-clean","func":"gpu_LoadTexture"}
+{"ts":"2026-06-29T09:18:01.9346294Z","kind":"reaudit-clean","func":"gte_SetScreenOffset"}
