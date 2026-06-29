@@ -2162,3 +2162,11 @@
 {"ts":"2026-06-29T06:27:09.9612871Z","kind":"reaudit-clean","func":"func_80043278"}
 {"ts":"2026-06-29T06:29:07.7968575Z","kind":"reaudit-clean","func":"func_80044498"}
 {"ts":"2026-06-29T06:31:41.0146105Z","kind":"reaudit-clean","func":"func_80044ED8"}
+{"ts":"2026-06-29T06:33:51.1962729Z","kind":"reaudit-clean","func":"func_800456F0"}
+{"ts":"2026-06-29T06:35:23.7802114Z","kind":"reaudit-clean","func":"func_80045814"}
+{"ts":"2026-06-29T06:45:14.0130864Z","kind":"reaudit-clean","func":"func_80046BF4"}
+{"ts":"2026-06-29T06:49:16.5091686Z","kind":"reaudit-clean","func":"func_80048A7C"}
+{"ts":"2026-06-29T06:56:27.4158798Z","kind":"reaudit-regressed","func":"func_80049F4C","reason":"s32 sp10[12] over-declares by one element (48 bytes declared, 44 bytes used). The 12th element sp10[11] is never written (memcpy copies exactly 44 bytes) and never read (func_8004A09C consumes at most 44 bytes = 22 u16 values). Its sole observable effect is pushing the stack frame from 0x48 (what sp10[11] would produce) to 0x50 (target). This is a frame-coercion cheat spelled as an extra element in an otherwise-used array, analogous to the forbidden dead-vars-local-array family. Worker should revert sp10[12] to sp10[11], verify the 0x50 frame assumption by running sandbox, and find the legitimate C structure that produces the 0x50 frame without the phantom element."}
+{"ts":"2026-06-29T06:59:43.6638798Z","kind":"reaudit-clean","func":"func_80053584"}
+{"ts":"2026-06-29T07:01:25.3509131Z","kind":"reaudit-clean","func":"func_8005508C"}
+{"ts":"2026-06-29T07:04:11.8848767Z","kind":"reaudit-clean","func":"func_8005B6FC"}
