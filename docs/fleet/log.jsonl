@@ -2286,3 +2286,4 @@
 {"ts":"2026-06-29T15:25:47.9090162Z","kind":"reaudit-clean","func":"func_80057094"}
 {"ts":"2026-06-29T15:26:25.5413190Z","kind":"reaudit-clean","func":"func_800484A0"}
 {"ts":"2026-06-29T15:26:29.7440364Z","kind":"reaudit-clean","func":"func_80066EF4"}
+{"ts":"2026-06-29T17:29:31.5075181Z","kind":"merge-gate-failed","func":"func_8006B92C","reason":"oracle-gate-failed"}
