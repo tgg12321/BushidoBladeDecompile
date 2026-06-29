@@ -2221,3 +2221,10 @@
 {"ts":"2026-06-29T10:42:00.8488317Z","kind":"reaudit-clean","func":"func_80021904"}
 {"ts":"2026-06-29T10:49:53.8155316Z","kind":"reaudit-clean","func":"func_80027438"}
 {"ts":"2026-06-29T10:55:11.9725962Z","kind":"reaudit-clean","func":"func_80033510"}
+{"ts":"2026-06-29T10:58:17.1468050Z","kind":"reaudit-clean","func":"func_80036D88"}
+{"ts":"2026-06-29T11:01:33.0071851Z","kind":"reaudit-clean","func":"func_80037964"}
+{"ts":"2026-06-29T11:05:13.3107641Z","kind":"reaudit-clean","func":"func_8003880C"}
+{"ts":"2026-06-29T11:08:33.9756606Z","kind":"reaudit-clean","func":"func_8003A39C"}
+{"ts":"2026-06-29T11:09:36.9806666Z","kind":"reaudit-clean","func":"func_8003B484"}
+{"ts":"2026-06-29T11:16:08.2658388Z","kind":"reaudit-clean","func":"func_8003CD10"}
+{"ts":"2026-06-29T11:27:57.7828828Z","kind":"reaudit-regressed","func":"func_8003FE40","reason":"Two named-constant variables neg1=-1 and neg1b=-1 fail the human-programmer and naming tests; they are register-coercion artifacts (originated as asm(\"t1\")/asm(\"t0\") explicit pins) that survived both cleanup passes. Owner should verify: sandbox with literal -1 substituted for both — if score stays 0, variables are inert noise and should be cleaned up; if score rises, they are still load-bearing allocation coercion requiring a clean redo."}
