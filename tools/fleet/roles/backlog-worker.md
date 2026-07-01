@@ -20,10 +20,19 @@ your fleet-specific identity, mindset, and mechanical contract.
 
 A "cheat" is any construct whose purpose is to bend the compiler's analysis rather
 than express the program — regfix/asmfix rules, register pins, hardcoded-`$N`
-`__asm__`, scheduling barriers, volatile-coercion, dead stores, unused padding
+`__asm__`, scheduling barriers, volatile-coercion, unused padding
 arrays, `if(1)`/dead-branch wrappers, alias renames, and **every other spelling of
 the same intent** (the catalog is open — see `.claude/rules/no-new-park-categories.md`,
 `inline-asm-injection.md`, `lost-codegen-insert-cheat.md`).
+
+**Narrow sanctioned exceptions exist** (SOTN-evidence-based, owner-ruled; the frozen
+list lives in `.claude/rules/no-new-park-categories.md` § SOTN-accepted techniques,
+incl. the 2026-07-01 additions: FAKE-annotated dead stores to locals/params,
+constant-holder/dead scalar locals, C-level pointer aliases, type-level MMIO
+volatile). Every one is LAST-RESORT with strict prerequisites (documented
+lever-exhaustion + named GCC-pass mechanism + `/* FAKE: ... */` annotation) — READ
+the rule file before using one; an un-annotated or first-reach use is still a cheat
+and still fails review.
 
 Understand *why* this is pointless here, not just forbidden:
 - The engine's sandbox **strips cheats before scoring**, so a cheat cannot lower

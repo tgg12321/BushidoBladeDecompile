@@ -83,6 +83,10 @@ difficult-is-not-impossible — still auto-load and are not listed here.)
 - **legitimate-volatile-interrupt-touched** — narrow `extern volatile` carve-out (IRQ-touched globals only); two-prong test; READ BEFORE adding any volatile. NB (func_80078B04, 2026-06-12): `*(volatile T *)(computed MMIO address)` is a DIFFERENT, legitimate category (hardware-register access; detector distinguishes it from `&D_xxx` casts) — a single-read of an MMIO-pointer table plateauing 1-2 regs off target allocation is the symptom that the original access was volatile.
 - **pointer-rmw-global-sanctioned** — narrow zero-displacement pointer-RMW spelling sanction.
 - **proven-spelling-class-reconstruction** — same-bytes respelling exception; ALL conditions must hold.
+- **dead-store-fake-exception** — SANCTIONED 2026-07-01 (last-resort): dead store / self-assign to a LOCAL or PARAM, `/* FAKE */`-annotated, after documented lever-exhaustion; READ BEFORE writing one. Un-annotated = still forbidden; pins still forbidden.
+- **named-local-fake-exception** — SANCTIONED 2026-07-01 (last-resort): constant-holder locals across calls + dead SCALAR local decls biasing RA, `/* FAKE */`-annotated; arrays/frame coercion still forbidden.
+- **pointer-alias-fake-exception** — SANCTIONED 2026-07-01 (last-resort): C-level local pointer alias / typed re-view of a global, `/* FAKE */`-annotated; `asm("Sym")` alias-RENAMES still forbidden.
+- **mmio-volatile-type-level** — RULING 2026-07-01: volatile on hardware-MMIO-range (0x1F801000-0x1F802FFF) declarations is legitimate TYPE-LEVEL semantics — all shapes incl. single-read probes; no shape test, no FAKE annotation; game-state globals keep the two-prong gate.
 
 ## Engine / pipeline gotchas (also fire on their own narrow paths)
 

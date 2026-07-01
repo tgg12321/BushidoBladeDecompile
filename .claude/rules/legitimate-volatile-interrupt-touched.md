@@ -9,6 +9,15 @@ metadata:
 
 # The `extern volatile T G;` narrow exception (IRQ-touched globals)
 
+> **SCOPE AMENDMENT (owner ruling 2026-07-01):** for addresses in the
+> PSX hardware I/O-register range (`0x1F801000-0x1F802FFF`), volatile is
+> now TYPE-LEVEL hardware semantics — no use-site shape test, all read
+> shapes including single-read probes — per [[mmio-volatile-type-level]]
+> (SOTN declares register pointers volatile at the declaration; evidence
+> in [[sotn-family-research-2026-07-01]]). THIS rule's two-prong +
+> three-shape criterion now governs GAME-STATE memory only (KSEG0 RAM,
+> scratchpad). Everything below is unchanged for that class.
+
 **This rule documents a NARROW carve-out to the default ban on
 `extern volatile T D_xxxxxxxx;` declarations codified in
 [[inline-asm-policy]] (expanded catalog, 2026-05-31). It is deliberately

@@ -2,7 +2,7 @@
 name: register-alloc-pure-c
 paths: [".claude/rules/register-alloc-pure-c.md"]
 # on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
-description: "Retire a register pin in PURE C. gcc-2.7.2 prefers low regs; if target uses a lower reg than you, YOU are the anomaly (cc1 -da greg dump). Levers: block-local split, narrow type, loop precompute (dead stores are FORBIDDEN). Full session logs: [[register-alloc-deep-dive]]."
+description: "Retire a register pin in PURE C. gcc-2.7.2 prefers low regs; if target uses a lower reg than you, YOU are the anomaly (cc1 -da greg dump). Levers: block-local split, narrow type, loop precompute; dead stores are LAST-RESORT, FAKE-annotated per [[dead-store-fake-exception]] (2026-07-01). Full session logs: [[register-alloc-deep-dive]]."
 metadata:
   type: reference
 ---
@@ -96,54 +96,50 @@ a loop-local can move a prologue copy GCC otherwise copy-prop-folds away.
 **Reference:** `InitHiraRmd_80047FBC` prologue staging — see
 [[dead-vars-local-array]].
 
-## Lever D — dead stores (all forms) ❌ FORBIDDEN as of 2026-05-31 / expanded 2026-06-01
+## Lever D — dead stores: LAST-RESORT, FAKE-annotated (owner ruling 2026-07-01)
 
-> **All forms of this lever are no longer allowed.** Per user policy
-> ("cheats by any spelling are forbidden, full stop" — [[no-new-park-categories]]),
-> dead stores written to influence RA / scheduling / DCE-flow analysis
-> are codegen-coercion cheats regardless of WHO the LHS is or HOW the
-> store is wrapped. SOTN's bar rejects them.
+> **History:** forbidden 2026-05-31 / expanded 2026-06-01; **narrowly
+> re-sanctioned 2026-07-01** per [[dead-store-fake-exception]] after the
+> full-tree SOTN census ([[sotn-family-research-2026-07-01]]) disproved
+> this section's original "SOTN's bar rejects them" rationale — SOTN
+> master ships `dest = val1; // fake`, `idxSub = idxSub;`; oot ships
+> `rtile = rtile; // Fake match?`.
 >
-> Detectors:
-> - **2026-05-31** (commit `44ef3df`): `find_dead_param_assigns` —
->   `arg0 = 0;` / `param = param;` where `param` is a function parameter
->   and is never referenced after the statement.
-> - **2026-06-01** (this commit): `find_dead_conditional_stores` —
->   `if (cond) { ...; v = x; } ...; v = x;` style dead conditional stores
->   to local variables, where the inner store is dead because the outer
->   overwrites it before any use. Caught the `func_8007B844` directed-
->   permuter find verbatim.
+> **The lever is LAST in the order of attack, never first.** Using it
+> requires ALL of: documented A/B/C lever-exhaustion, a named GCC-pass
+> mechanism, a `/* FAKE: <reason> */` annotation on the statement, and
+> layer-1 + layer-2 cheat-reviewer PASS. Read
+> [[dead-store-fake-exception]] BEFORE writing one.
 >
-> `mark_done` refuses completion for any function with either pattern.
-> The catalog is open: future variants identified by the same intent
-> (DCE'd store written to influence pre-DCE analysis) will be added.
+> Detectors (still active — they enforce the annotation requirement):
+> - `find_dead_param_assigns` — `arg0 = 0;` / `param = param;` never
+>   referenced after. Flags UN-annotated instances only.
+> - `find_dead_conditional_stores` — `if (cond) { ...; v = x; } ...;
+>   v = x;` dead inner stores. Flags UN-annotated instances only.
+>
+> `mark_done` refuses completion for any UN-annotated instance. A dead
+> store paired with a register pin still fails on the pin (pins have
+> zero community precedent and remain forbidden).
 
-### Why this changed (short form)
-
-A dead store's ONLY effect is on GCC's pre-DCE analysis — that is the
-definition of a codegen-coercion cheat, same kind as a register-asm pin
-(which also emits nothing and is also forbidden). A real programmer
-wouldn't write it, and SOTN's bar rejects it.
-
-### What to do instead
-
-When natural C doesn't reach the target register allocation:
+### What to do (order of attack within this family)
 
 1. Try Lever A (block-local var split), Lever B (narrow integer type), and
-   Lever C (whole-function reallocation via loop-local) — these are
-   legitimate codegen levers, NOT coercion: they restructure the source's
-   liveness/conflict graph without injecting dead stores.
-2. If none of those reach target RA, the function is genuinely not
-   pure-C-matchable. `queue park` it for canonical-asm review; do NOT
-   add a dead `arg0 = 0;`.
+   Lever C (whole-function reallocation via loop-local) FIRST — these
+   restructure liveness/conflict without dead stores and need no
+   annotation or reviewer prerequisites.
+2. If none reach target RA and you can name the blocking GCC mechanism
+   (allocno priority / nrefs / livelen from an ALLOCDBG dump), apply
+   Lever D per [[dead-store-fake-exception]]'s prerequisites.
+3. If even Lever D doesn't close it (e.g. the wall also needs a pin),
+   the function stays INCOMPLETE — `queue park` with the evidence.
 
-### Currently affected — re-evaluation needed
+### Historical note
 
-`InitHiraRmd_80047FBC` (commit `10becc3`) used this lever to fix the
-second pointer's `$s4` vs `$a0` allocation. With Lever D forbidden, that
-function's COMPLETED-C status needs re-evaluation. Queue regen will re-route it.
-The dead-vars-local-array cluster has the same dependency — see
-[[dead-vars-local-array]] for the cluster's re-evaluation note.
+`InitHiraRmd_80047FBC` (commit `10becc3`) used this lever pre-ban; the
+2026-07-01 ruling makes that shape reviewable again (annotation must be
+added when the function is next touched). The dead-vars-local-array
+cluster (unused ARRAYS / frame coercion) is NOT covered — see
+[[dead-vars-local-array]], still forbidden.
 
 ## Order of attack
 

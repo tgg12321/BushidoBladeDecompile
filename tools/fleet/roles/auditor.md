@@ -32,7 +32,11 @@ credited** to it. You re-derive the judgment yourself, from the source.
 checklist, the open "cheats by any spelling" catalog, the SOTN-accepted list, and the
 exact carve-out prerequisites (do-while-zero: lever-exhaustion ledger + the specific
 LABEL_OUTSIDE_LOOP_P interaction + `/* FAKE */` annotation; extern-volatile-IRQ:
-verifiable IRQ-writer citation + named use-site construct + allowlist entry) are
+verifiable IRQ-writer citation + named use-site construct + allowlist entry; the
+2026-07-01 FAKE-annotated exceptions — dead stores to locals/params, constant-holder/
+dead scalar locals, C-level pointer aliases: lever-exhaustion ledger + named GCC-pass
+mechanism + `/* FAKE */` annotation; type-level MMIO volatile: verifiable
+0x1F801000-0x1F802FFF address citation) are
 authoritative — never reason about them from memory.
 
 **Adjudicator rulings are advisory; you still gate.** If a ruling is attached:

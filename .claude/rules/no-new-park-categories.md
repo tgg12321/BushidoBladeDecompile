@@ -210,6 +210,44 @@ SOTN master-branch evidence ([[sotn-borderline-research-2026-06-02]]):
 The `cheat-reviewer` agent treats these patterns as ALLOWED — the
 "family check" (test #5 of its 6-test checklist) no longer flags them.
 
+**2026-07-01 additions (owner rulings, evidence:
+[[sotn-family-research-2026-07-01]] — full-tree SOTN census + oot/
+papermario/MGS/esa/VS corroboration).** Each is a LAST-RESORT sanction
+with strict prerequisites (documented lever-exhaustion, named GCC-pass
+mechanism, mandatory `/* FAKE */` annotation, layer-1+2 review) — read
+the rule file BEFORE using:
+
+- **Dead stores / self-assigns to locals+params**
+  ([[dead-store-fake-exception]]) — SOTN `dest = val1; // fake`,
+  `idxSub = idxSub;`; oot `rtile = rtile; // Fake match?`. Supersedes
+  the Lever-D blanket ban (whose "SOTN's bar rejects them" rationale
+  the census disproved). Register pins remain forbidden; a dead store
+  paired with a pin still fails on the pin. The `func_8007B844`
+  confirmed-example below predates this ruling: that closing form's
+  dead conditional store would TODAY be reviewable under the carve-out's
+  prerequisites rather than auto-rejected.
+- **Constant-holder / dead scalar locals**
+  ([[named-local-fake-exception]]) — SOTN `s16 three = 3;`, `s32 zero
+  = 0; // needed for PSP`, constant-holder named `fake`; `new_var` in
+  9 committed files. Arrays / frame coercion remain forbidden.
+- **C-level pointer aliases to globals**
+  ([[pointer-alias-fake-exception]]) — SOTN `tilemap = &g_Tilemap; //
+  n.b.! unused, required for PSP`, `fakeEntity = self; // !FAKE`,
+  FakePrim family. `asm("Sym")` alias-RENAMES remain forbidden.
+- **Type-level MMIO volatile** ([[mmio-volatile-type-level]]) —
+  hardware I/O-register range (0x1F801000-0x1F802FFF) declarations are
+  volatile as ordinary hardware semantics, all shapes incl. single-read
+  probes (SOTN types register pointers volatile at declaration). NOT
+  fake — no annotation; `extern volatile` spellings still tracked via
+  the allowlist. Game-state globals keep the
+  [[legitimate-volatile-interrupt-touched]] two-prong gate.
+
+What the 2026-07-01 research explicitly does NOT support relaxing
+(zero community precedent found): register-asm pins, hardcoded-`$N`
+`__asm__` injection, regfix/asmfix-style build-time rewriting,
+`asm("sym")` alias renames, redundant width casts (F2 — evidence
+insufficient; those findings close by ordinary cleanup).
+
 This resolution affects only these seven specific techniques. Other
 forbidden families ([[dead-vars-local-array]], dead-conditional-store,
 dead-param-assign, lost-codegen-insert, register-asm pins, scheduling

@@ -43,14 +43,20 @@ metadata:
 >   carve-out applying ONLY to globals asynchronously mutated by an
 >   identifiable IRQ handler at use sites that demonstrably require
 >   CSE-defeat. The default ban is unchanged for every case OUTSIDE the
->   two-pronged criterion in that rule).
+>   two-pronged criterion in that rule. **2026-07-01: for hardware
+>   I/O-register addresses (0x1F801000-0x1F802FFF) volatile is now
+>   TYPE-LEVEL hardware semantics — all shapes incl. single reads —
+>   per [[mmio-volatile-type-level]]; the two-prong gate governs
+>   game-state memory only.**)
 > - **Unused fixed-size local arrays** — `s32 buf[N];` declared with no use,
 >   to force GCC to reserve frame bytes. See [[dead-vars-local-array]] for
 >   the deprecated rationalization.
 > - **Dead self-assignments of function parameters** — `arg0 = 0;` where
 >   `arg0` is a parameter never referenced afterward, used to break GCC's
 >   value-association for register allocation. See [[register-alloc-pure-c]]
->   Lever D for the deprecated rationalization.
+>   Lever D. **2026-07-01: narrow `/* FAKE */`-annotated last-resort
+>   carve-out sanctioned — [[dead-store-fake-exception]]; un-annotated
+>   instances remain forbidden and detector-flagged.**
 > - **Macro-hidden `__asm__`** — `#define X ... __asm__(...) ...` macros
 >   (e.g., `PAD_NOPS_*` in `code6cac_*.c`) that expand to inline asm at
 >   every use site. The existing detector skipped `#define` lines; the new

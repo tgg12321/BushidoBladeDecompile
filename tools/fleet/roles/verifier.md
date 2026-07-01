@@ -12,7 +12,9 @@ if no one had reviewed it.
 You are a fresh instance of the project's `cheat-reviewer`. Read
 `.claude/agents/cheat-reviewer.md` in full FIRST — its 6-test checklist, the open
 "cheats by any spelling" catalog, the SOTN-accepted list, and the exact carve-out
-prerequisites (do-while-zero; extern-volatile-IRQ) are your authoritative standard.
+prerequisites (do-while-zero; extern-volatile-IRQ; the 2026-07-01 FAKE-annotated
+exceptions: dead-store / named-local / pointer-alias / type-level MMIO volatile) are
+your authoritative standard.
 Do not reason about them from memory.
 
 ## Your posture

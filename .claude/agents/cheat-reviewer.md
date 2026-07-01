@@ -105,8 +105,57 @@ in memory/project/sotn-*-research-*.md with citation:
   gets the default FAIL posture per the rest of this prompt. The
   do-while-zero exception is a narrow carve-out, not a precedent.
 
-- **`extern volatile T G;` on IRQ-touched globals** — **NARROW
-  SANCTIONED CARVE-OUT** (user policy 2026-06-08), scoped by
+- **Dead stores / self-assigns to LOCALS or PARAMS** — **NARROW
+  SANCTIONED EXCEPTION** (owner ruling 2026-07-01), scoped by
+  [[dead-store-fake-exception]], grounded in
+  [[sotn-family-research-2026-07-01]] (SOTN ships `dest = val1; //
+  fake`, `idxSub = idxSub;`; oot ships `rtile = rtile;`). Strict
+  prerequisites — FAIL unless ALL hold:
+  1. Documented lever-exhaustion (WIP `rejected_forms`/`sessions[]`
+     ledger or commit body shows [[register-alloc-pure-c]] A/B/C +
+     structural forms measured-negative FIRST). First-reach = FAIL.
+  2. The worker names the GCC-pass mechanism (allocno priority /
+     scheduling / DCE-flow) the store influences.
+  3. The statement carries `/* FAKE: <reason> */` or `// FAKE:` —
+     un-annotated = FAIL (and the engine detectors still flag it).
+  4. Scope: locals/params only; dead stores to GLOBALS = FAIL; a dead
+     store PAIRED with a register pin = FAIL on the pin; unused-ARRAY
+     frame coercion = FAIL ([[dead-vars-local-array]] unchanged).
+
+- **Constant-holder / dead scalar locals** — **NARROW SANCTIONED
+  EXCEPTION** (owner ruling 2026-07-01), scoped by
+  [[named-local-fake-exception]] (SOTN: `s16 three = 3;`, `s32 zero =
+  0; // needed for PSP`, constant-holder named `fake`, `new_var` in 9
+  files). Same prerequisite pattern: lever-exhaustion + named mechanism
+  + `/* FAKE */` annotation, else FAIL. Scope: SCALAR locals whose
+  mechanism is RA/scheduling; unused arrays / frame-size coercion /
+  address-coerced locals stay FAIL.
+
+- **C-level pointer alias to a global** — **NARROW SANCTIONED
+  EXCEPTION** (owner ruling 2026-07-01), scoped by
+  [[pointer-alias-fake-exception]] (SOTN: `tilemap = &g_Tilemap; //
+  n.b.! unused, required for PSP`, `fakeEntity = self; // !FAKE`,
+  FakePrim family). Same prerequisite pattern: lever-exhaustion +
+  named mechanism + `/* FAKE */` annotation, else FAIL. Scope: ordinary
+  C local-pointer declarations ONLY; `asm("Sym")` alias-RENAMES stay
+  FAIL ([[inline-asm-injection]]); volatile-cast aliases are governed
+  by the volatile catalog, not this exception.
+
+- **Type-level MMIO volatile** — **OWNER RULING 2026-07-01**, scoped by
+  [[mmio-volatile-type-level]]: volatile on declarations whose address
+  is verifiably in the PSX hardware I/O-register range
+  (0x1F801000-0x1F802FFF) is legitimate hardware semantics for ALL
+  access shapes, including single-read probes. No use-site shape test,
+  no FAKE annotation (it is not fake). Verify: the worker cites how the
+  address resolves into the range (literal / .data word / documented
+  symbol) — unverifiable address = FAIL; scratchpad
+  (0x1F800000-0x1F8003FF) and game RAM = NOT covered (two-prong gate
+  below applies). `extern volatile` spellings must still add the symbol
+  to `volatile_extern_allowlist.txt` in the same commit.
+
+- **`extern volatile T G;` on IRQ-touched GAME-STATE globals** — **NARROW
+  SANCTIONED CARVE-OUT** (user policy 2026-06-08; scope narrowed to
+  non-MMIO memory 2026-07-01 by [[mmio-volatile-type-level]]), scoped by
   [[legitimate-volatile-interrupt-touched]]. The default ban from
   [[inline-asm-policy]] expanded catalog (2026-05-31) is UNCHANGED for
   every case outside the two-pronged criterion below; the carve-out
