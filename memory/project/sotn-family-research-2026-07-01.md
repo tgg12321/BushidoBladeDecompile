@@ -217,8 +217,12 @@ of any ruling (inert constructs, retype cluster).
 
 **What NO family ruling closes** (stays hard, honest walls):
 - `func_8003B10C` — same-global split-read plateau (floor 10 even with F5).
-- `func_80078EC0` — boolean-fold wall; closing Variant F needs a register
-  PIN + dead store; pins remain forbidden (zero community precedent).
+- ~~`func_80078EC0`~~ — **CLOSED 2026-07-01, same day, under F1 alone**: a
+  FAKE-annotated dead store INSIDE the else arm (two-set arm) breaks the
+  jump.c store-flag fold with NO pin — the original "needs a pin" claim
+  came from Variant F's specific spelling, not the mechanism. COMPLETED-C,
+  SHA1 == oracle, 2 pins + 5 regfix retired. See
+  [[dead-store-fake-exception]] § Confirmed closures.
 - `motion_SetMotion` (+ saEft00Add / marionation_Exec / cpu_side_move_dir_4 /
   func_8007C97C cluster) — RA-priority + cross-jump coupling; closing lever
   is pin+regfix.

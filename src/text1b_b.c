@@ -1552,16 +1552,15 @@ s32 func_80078E58(void) {
     return 0;
 }
 s32 func_80078EC0(void) {
-    register s32 *p asm("$3") = (s32 *)D_8009BD88;
-    register volatile s32 ret asm("$2") = 0;
-    if ((p[1] & 1) == 0) goto end;
+    s32 *p = (s32 *)D_8009BD88;
+    s32 ret;
+    if ((p[1] & 1) == 0) return 0;
     if ((p[0] & 1) != 0) {
         ret = 1;
-        goto end;
+    } else {
+        ret = 1; /* FAKE: two-set else arm defeats jump.c store-flag fold (dead-store-fake-exception) */
+        ret = 0;
     }
-    ret = 1;
-    ret = 0;
-end:
     return ret;
 }
 __asm__(

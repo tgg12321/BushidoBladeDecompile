@@ -166,14 +166,6 @@
       "status": "active"
     },
     {
-      "func": "func_80078EC0",
-      "file": "text1b_b",
-      "distance": 11,
-      "verdict": "C",
-      "rules": 5,
-      "status": "active"
-    },
-    {
       "func": "func_8001924C",
       "file": "code6cac",
       "distance": 12,
@@ -3360,14 +3352,14 @@
     }
   ],
   "counts": {
-    "total": 407,
-    "active": 328,
+    "total": 406,
+    "active": 327,
     "by_status": {
-      "active": 328,
+      "active": 327,
       "parked": 79
     },
     "by_verdict": {
-      "C": 153,
+      "C": 152,
       "ASM-PARTIAL": 57,
       "ASM-SUSPECT": 118
     }

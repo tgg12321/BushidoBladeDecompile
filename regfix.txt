@@ -2900,11 +2900,6 @@ func_800651F0: reorder 16,12,13,14,15 @ 12-16
 func_800651F0: subst "\$4" "$2" @ 13
 func_800651F0: subst "\$4" "$2" @ 14
 # RETIRED (targeted-permuter): func_80077894: reorder 10,9 @ 9-10
-func_80078EC0: subst "subu\s+\$sp,\$sp,8" "nop" @ 1
-func_80078EC0: delete @ 13
-func_80078EC0: subst "\$4" "$2" @ 2
-func_80078EC0: subst "andi\s+\$4,\$4,0x0001" "andi	$2,$2,0x0001" @ 4
-func_80078EC0: subst "\$4" "$2" @ 5
 func_8007C97C: subst "subu\s+\$sp,\$sp,16" "bnez	$4,.LC97C" @ 0
 func_8007C97C: subst "beq\s+\$4,\$0,\.L\d+" "subu	$sp,$sp,16" @ 1
 func_8007C97C: subst "addu\s+\$2,\$4,\$zero" "addu	$2,$0,$0" @ 2

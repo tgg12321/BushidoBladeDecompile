@@ -80,9 +80,10 @@ cited `.data` word, or a symbol whose value is documented in the split):
 - **Alias renames, macro-hidden asm** — forbidden, unchanged.
 - A volatile MMIO declaration is NOT a general codegen wand: if the
   bytes still don't match with correct hardware typing, the remaining
-  gap is ordinary pure-C work. (Known case: `func_80078EC0`'s wall is
-  the jump-opt boolean fold, which volatile does NOT defeat — the
-  2026-06-24 adjudication stands.)
+  gap is ordinary pure-C work. (Known case: `func_80078EC0`'s wall was
+  the jump-opt boolean fold, which volatile does NOT defeat — it closed
+  2026-07-01 via [[dead-store-fake-exception]] instead, with NO volatile
+  needed for the match.)
 
 ## Related
 

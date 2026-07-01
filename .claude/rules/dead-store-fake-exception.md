@@ -83,6 +83,29 @@ scheduling / flow analysis upstream of DCE):
   construct. Next borderline construct → default FAIL + its own SOTN
   evidence bar per [[no-new-park-categories]].
 
+## Confirmed closures
+
+- **func_80078EC0** (text1b_b.c, 2026-07-01, the ruling's first application):
+  16-insn I_STAT/I_MASK predicate; GCC folds `if (X) return 1; return 0;`
+  (jump.c store-flag conversion: single-set 0/1 arms, condition == value)
+  to `return X;`, but the target keeps the verbose
+  `bnez; li v0,1(delay); move v0,zero` diamond. Closing shape — the dead
+  store must be INSIDE the else arm (a two-set arm breaks the conversion's
+  single-set precondition); a detached dead store before `return 0;` does
+  NOT work (still folds, floor 3):
+  ```c
+  if ((p[0] & 1) != 0) {
+      ret = 1;
+  } else {
+      ret = 1; /* FAKE: two-set else arm defeats jump.c store-flag fold */
+      ret = 0;
+  }
+  return ret;
+  ```
+  Retired 2 pins + 5 regfix; SHA1 == oracle; layer-2 reviewer PASS.
+  Reusable for any unfolded 0/1 branch-diamond tail (`bnez` + delay-slot
+  `li 1` + fall-through `move 0`).
+
 ## Related
 
 - [[sotn-family-research-2026-07-01]] — the evidence base + impact map.
