@@ -610,9 +610,38 @@ _DEAD_COND_STORE_ASSIGN_RE = re.compile(
     #   var: single identifier (no struct member / array access on LHS)
     #   rhs: single identifier OR simple typed-constant; NOT a function call,
     #        binary op, or anything with nested () / [] / + / etc.
-    r"^[ \t]*(?P<var>\w+)\s*=\s*(?P<rhs>[\w&\*]+)\s*;[ \t]*(?://[^\n]*)?$",
+    r"^[ \t]*(?P<var>\w+)\s*=\s*(?P<rhs>[\w&\*]+)\s*;[ \t]*(?:(?://|/\*)[^\n]*)?$",
     re.MULTILINE,
 )
+
+_FAKE_ANNOT_RE = re.compile(r"\bFAKE\b", re.IGNORECASE)
+
+
+def _stmt_fake_annotated(body: str, start: int, end: int) -> bool:
+    """True when the statement at [start, end) carries the sanctioned
+    `/* FAKE: ... */` / `// FAKE` annotation — trailing on the statement's
+    own line, or as a comment on the line immediately above. Sanctioned
+    last-resort exceptions (dead-store-fake-exception.md /
+    named-local-fake-exception.md / pointer-alias-fake-exception.md,
+    owner ruling 2026-07-01) require this annotation; annotated instances
+    bypass the Lever-D detectors (and therefore also the cheat-strip, so
+    they contribute to the honest sandbox distance like any other source
+    line). Un-annotated instances stay flagged."""
+    line_start = body.rfind("\n", 0, start) + 1
+    line_end = body.find("\n", end)
+    if line_end < 0:
+        line_end = len(body)
+    # The statement's own line (the trailing annotation may sit inside the
+    # detector's regex match, so scan the full line, not just past `end`).
+    if _FAKE_ANNOT_RE.search(body[line_start:line_end]):
+        return True
+    nl = body.rfind("\n", 0, start)
+    if nl <= 0:
+        return False
+    prev_start = body.rfind("\n", 0, nl) + 1
+    prev_line = body[prev_start:nl].strip()
+    return (prev_line.startswith("//") or prev_line.startswith("/*")) and \
+        bool(_FAKE_ANNOT_RE.search(prev_line))
 
 
 def find_dead_conditional_stores(text: str, body_lo: int, body_hi: int) -> list[tuple[int, int, str, str]]:
@@ -750,6 +779,10 @@ def find_dead_conditional_stores(text: str, body_lo: int, body_hi: int) -> list[
             gap = body[e:outer[0]]
             if var_ref_re.search(gap):
                 continue
+            # Sanctioned-exception bypass (2026-07-01): FAKE-annotated
+            # instances are legitimate last-resort levers, not cheats.
+            if _stmt_fake_annotated(body, s, e):
+                continue
             out.append((body_lo + s, body_lo + e, var, rhs))
     out.sort()
     return out
@@ -770,12 +803,17 @@ def find_dead_param_assigns(text: str, body_lo: int, body_hi: int,
     out = []
     body = text[body_lo:body_hi]
     param_pat = "|".join(re.escape(p) for p in params)
-    rx = re.compile(rf"(?m)^[ \t]*(?P<name>{param_pat})\s*=\s*(?:0|\1)\s*;\s*$")
+    rx = re.compile(
+        rf"(?m)^[ \t]*(?P<name>{param_pat})\s*=\s*(?:0|\1)\s*;[ \t]*(?:(?://|/\*)[^\n]*)?$")
     for m in rx.finditer(body):
         name = m.group("name")
         rest_after = body[m.end():]
         if re.search(rf"\b{re.escape(name)}\b", rest_after):
             continue  # used later → not dead
+        # Sanctioned-exception bypass (2026-07-01): FAKE-annotated
+        # instances are legitimate last-resort levers, not cheats.
+        if _stmt_fake_annotated(body, m.start(), m.end()):
+            continue
         out.append((body_lo + m.start(), body_lo + m.end(), name))
     return out
 

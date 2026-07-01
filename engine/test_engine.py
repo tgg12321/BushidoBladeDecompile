@@ -766,6 +766,102 @@ void l(int debug, int *p, int *ot) {
           cnt >= 1)
 
 
+def test_fake_annotated_lever_d_bypass() -> None:
+    """dead-store-fake-exception.md (owner ruling 2026-07-01): a dead
+    conditional store / dead param assign carrying a `/* FAKE */` or
+    `// FAKE` annotation (same line or the line above) is a sanctioned
+    last-resort lever — the Lever-D detectors skip it, so it also
+    survives the cheat-strip and contributes to the honest distance.
+    Un-annotated instances stay flagged (the annotation requirement is
+    mechanically enforced)."""
+
+    # Annotated dead conditional store (trailing comment) -> bypassed.
+    text = """\
+s32 f(u8 *ot, int debug) {
+    u32 *p;
+    if (debug) {
+        do_thing();
+        p = ot; /* FAKE: keeps p's allocno priority above q */
+    }
+    other_code();
+    p = ot;
+    *p = 5;
+    return 0;
+}
+"""
+    body_lo = text.index("{")
+    body_hi = text.rindex("}") + 1
+    hits = volatile_cheats.find_dead_conditional_stores(text, body_lo, body_hi)
+    eq("fake-annot: trailing /* FAKE */ dead-cond-store bypassed", len(hits), 0)
+
+    # Annotated on the line ABOVE -> bypassed.
+    text2 = """\
+s32 g(u8 *ot, int debug) {
+    u32 *p;
+    if (debug) {
+        do_thing();
+        // FAKE: RA lever, see dead-store-fake-exception.md
+        p = ot;
+    }
+    other_code();
+    p = ot;
+    *p = 5;
+    return 0;
+}
+"""
+    body_lo = text2.index("{")
+    body_hi = text2.rindex("}") + 1
+    hits = volatile_cheats.find_dead_conditional_stores(text2, body_lo, body_hi)
+    eq("fake-annot: line-above // FAKE dead-cond-store bypassed", len(hits), 0)
+
+    # Un-annotated (plain trailing comment, no FAKE) -> still flagged.
+    text3 = """\
+s32 h(u8 *ot, int debug) {
+    u32 *p;
+    if (debug) {
+        do_thing();
+        p = ot; // reset pointer
+    }
+    other_code();
+    p = ot;
+    *p = 5;
+    return 0;
+}
+"""
+    body_lo = text3.index("{")
+    body_hi = text3.rindex("}") + 1
+    hits = volatile_cheats.find_dead_conditional_stores(text3, body_lo, body_hi)
+    eq("fake-annot: non-FAKE comment still flagged", len(hits), 1)
+
+    # Dead param assign: annotated -> bypassed; un-annotated -> flagged.
+    text4 = """\
+void k(int arg0) {
+    do_thing();
+    arg0 = 0; /* FAKE: breaks the a0 value association */
+}
+"""
+    body_lo = text4.index("{")
+    body_hi = text4.rindex("}") + 1
+    hits = volatile_cheats.find_dead_param_assigns(text4, body_lo, body_hi, ["arg0"])
+    eq("fake-annot: annotated dead param assign bypassed", len(hits), 0)
+
+    text5 = """\
+void m(int arg0) {
+    do_thing();
+    arg0 = 0;
+}
+"""
+    body_lo = text5.index("{")
+    body_hi = text5.rindex("}") + 1
+    hits = volatile_cheats.find_dead_param_assigns(text5, body_lo, body_hi, ["arg0"])
+    eq("fake-annot: un-annotated dead param assign still flagged", len(hits), 1)
+
+    # Strip integration: the annotated store survives the cheat-strip.
+    stripped, _ = volatile_cheats.strip_volatile_cheats_file(text)
+    check("fake-annot: annotated store survives strip",
+          stripped.count("p = ot;") == text.count("p = ot;"))
+
+
 def test_volatile_extern_allowlist() -> None:
     """Narrow IRQ-touched-global carve-out (user policy 2026-06-08): the
     `extern volatile T D_xxxxxxxx;` plain-extern detector honors a
@@ -1092,6 +1188,7 @@ def main() -> int:
     test_empty_if_dead_reads()
     test_void_discard_unused_locals()
     test_dead_conditional_stores()
+    test_fake_annotated_lever_d_bypass()
     test_metrics()
     test_canonical_build()
     print(f"\n{_passed} passed, {_failed} failed, {_skipped} skipped")
