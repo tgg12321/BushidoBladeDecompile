@@ -1,67 +1,48 @@
-# marionation_Exec (system.c) — 6/8 regs + printf block ONE condition out
+# marionation_Exec — HONEST SCORE 17 (was 56); printf block SOLVED
 
-## TL;DR (2026-07-02, session 4c) — resume HERE
-Composite w9+u13+w16 (probe tags, tmp/probe_mar.py) = 6/8 s-regs locked
-(status s0, saved s1, i1494 s2, i1496 s3, arg1 s4, i1495 s6) + masks
-fold + tail cascade (check→a2, `move v0,a2` ×2) + printf block: **fmt-la
-wins backward clock 5** (w16's in-block pp kills the a1-move → a0
-hard-free), chain sparse-tied, a1-lw pos 3, la last. **ONE condition
-left: v1-occupancy** — local-alloc packs chain5→v0, 11D5→v0, val5→v0,
-leaving v1 empty until chain4's turn → chain4 takes v1 (numeric order)
-before a0. Target needs val5→v1 (`lw v1,0(v0)`), i.e. v0 blocked over
-val5's range ⟺ **the 11D5-lbu forward-BEFORE the sw5 in SCHED1 coords**.
-The launch cascade (birthing_insn_p: bump iff dest-live + function-wide
-reg_n_sets==1 — a2/a3 hard-loads bump; moves/sw/la never) packs clocks
-6-11 rigid → sw@12, lw5@15 → sw always lands before the lbu ✗.
-Then: trio {arg0 s5 / tbl s7 swap} — small livelen deltas (t1 tbl-chain
-+1 ref verified byte-free, available); then assemble + retire 42.
-
-## w16 printf block (current best; c4=v1, all else target)
-`{ s32 arg5; s32 t0; s32 *p4; void **pp; t0 = idx_1494[0];
-pp = (void **)&D_800F19C0; arg5 = tbl_125c[idx_1494[1]];
-p4 = &tbl_125c[t0];
-debug_printf(&D_800161C8, *pp, D_800A11DC[D_800A11D5], *p4, arg5); }`
-- pp (IN-BLOCK) → combine substitutes symbol into the mem IN PLACE
-  (symbol-SET moves nothing across the sw) → direct `(set a1 (mem
-  sym))`, no a1-move → la ready ALONE at clock 5 (SCHEDDBG `clock=5
-  picked=132`). A plain `D_800F19C0` arg CANNOT do this: expand
-  precopies it (calls.c:1618+1653, rtx_cost>2 + -O2's
-  flag_expensive_optimizations) and combine won't merge the load
-  across the sw. The a2 arg escapes precopy (ARRAY_REF → unloaded
-  (mem (reg)), cost≤2 → direct late load).
-- s32 t0 (NOT u8 — u8's zext merges at the USE and the lbu sinks) +
-  addr-local p4 + `*p4` inline: sll/addu at stmt-3 luids, lw at call
-  luid AFTER the sw (reg-addr loads can't cross sp-stores; symbol
-  loads cross freely) → chain tied sparse [8..15], allocated last.
-- pp/p4/t0 are sanctioned C (pointer-alias-fake-exception / plain
-  locals); FAKE-annotate pp in the final form.
-
-## v1-occupancy — enumerated-dead + next ideas
-DEAD: val5 (needs the sw/lbu flip), 11D5 via chain5-overlap (chain5
-dies at lw5@7 always), untied chain fragments (wrong bytes),
-global-class merges (local-alloc runs first; chain4 beats them to v1),
-a2-set-count unbump (no byte-free 2nd a2 set), v0-hard segments (no
-byte-free source), cross-block pointer alias w17 (`u8 *pi=&D_800A11D5`
-head-init: pi SURVIVES to RA — no equiv-deletion in this compiler —
-colored fp, +3 insns ✗; only in-block aliases vanish, via combine).
-w18/w19 (i5 = D_800A11D5; i5s = i5*4 stmt locals, byte-indexed a2 arg):
-insns 142 ✓, **the a0-flip machinery WORKS** — but the i5-qty became
-the sparser chain and TOOK a0 (11D5→a0, chain4→v1 ✗ target needs 11D5
-in v0). Competition rule confirmed: the two sparsest qtys take {v1,a0}
-in density order; val5→v1 requires the INLINE-dense 11D5 (v0, 32000)
-covering val5's range ⟺ STILL the sw/lbu ordering. Also proven: moving
-`v0 = -1;` early is bytes-fatal (74's range would block v0 at check).
-UNTESTED next:
-(a) luid-tie reshuffles of the launch cascade with INLINE 11D5 (w16
-    base): the cascade packing is tie-driven (126@8 vs 115 by luid);
-    arg-order/spelling changes that lower 126/121's luids below 115/
-    113's may open the pre-12 gap for the sw → lbu before sw;
-(b) exhaustive stmt-permutation sweep w/ chain-reg flags (harness
-    tmp/sweep_mar_printf.py, ~25s/variant) on the w16 base;
-(c) assemble the REST first (arms/trio final form), re-probe the block
-    LAST — the cascade is luid-sensitive; full-function shape shifts
-    ties (cheapest remaining unknown);
-(d) cc1psx CONFIRMED identical on w15 (parity holds; C is the variable).
+## SESSION 5 — PRINTF BLOCK CRACKED (w24) — resume HERE
+**w24 composite (u12/u13 + w9 + the w24 printf form) scores HONEST 17**
+(sandbox --disable all, 42 rules dropped, 20 cheat-asm stripped;
+build 177 vs target 179). The w24 printf block:
+`{ s32 arg5; s32 t0; void **pp; t0 = idx_1494[0];
+pp = (void **)&D_800F19C0; t0 *= 4;
+t0 = (s32)((u8 *)tbl_125c + t0); arg5 = tbl_125c[idx_1494[1]];
+debug_printf(&D_800161C8, *pp, D_800A11DC[D_800A11D5], *(s32 *)t0, arg5); }`
+→ **ALL FOUR block registers TARGET: chain4=a0 (lbu a0/sll a0,a0/addu
+a0,a0/lw a3,0(a0)), chain5=v0, val5=v1 (`lw v1,0(v0)`), 11D5=v0-reuse**;
+la last, a1-lw early. Mechanisms (all dump-verified):
+- pp in-block pointer (combine substitutes symbol in place) kills the
+  a1-move → fmt-la wins backward clock 5 → a0 hard-free.
+- **t0 MULTI-SET accumulator** (`t0=idx[0]; t0*=4; t0=(s32)((u8*)tbl+t0)`)
+  — reg_n_sets>1 → birthing_insn_p FALSE → chain DE-LAUNCHED from the
+  backward-sched storm → lbu drifts to pos 1, chain qty spans the block
+  (sparse, allocated last) → walk lands a0. Same-reg chain = target's
+  exact byte form. Sanctioned split-init family.
+- **t0-stmts BEFORE the arg5 stmt (w24) flips the val5/chain4 density
+  tie** (w21 = same but arg5-stmt-before → chain4=v1/val5=a0 swapped;
+  w22 = arg5-inline → chain4=a0 but val5/11D5 swapped). RAZOR TIES —
+  keep w24's exact stmt order.
+**Remaining 17 (normalized diff tmp/mar_diff2.sh, sandbox .o kept):**
+1. TRIO s5↔s7 (arg0/tbl swap): current pris arg0 256(2/78) >
+   i1495 202(3/148) > tbl 197(3/152). Need tbl livelen ≤147 or arg0
+   ≥ +2. t1-chain overshoots (526 > arg1 365) — livelen route only.
+2. Block micro-perm (3 lines): ours [lbu4, a1lw, lbu5, sll4..] vs
+   target [lbu4, lbu5, a1lw, sll5, addu5, sll4..]; addu-tbl uses the
+   trio reg — may move WITH the trio fix.
+3. ARM-1 shape: target = ORIGINAL param-test (`src=..; if (a1) {
+   dst=a1; i=7; do..}`; bytes: nop; beqz s4; move a1,s4 in delay +
+   arm-2's own move) = +2 insns. **w25 (arm-1 reverted) REGRESSED to
+   33**: arg1 refs 3→4 → pri 975 > saved 952 → arg1 steals s1,
+   i1494→s3 rotation. Need arg1 livelen 82→85+ (-23 pri) BEFORE the
+   arm-1 revert lands. Session-2 note "t3 arg1 refs 4→3" documents
+   this exact trade.
+Next: (a) find the arg1-livelen +3 (arm-internal statement order /
+move position); re-run w25-variant → expect ~8-10; (b) trio livelen
+nudges (tbl -5 via printf-block last-use position / arg0 +2); (c)
+verify block micro-perm resolves with trio; (d) assemble → retire 42
+→ full SHA1 → dual review → queue done. Probe kit: tags w20-w25 in
+tmp/probe_mar.py + mar_sandbox_test.sh (applies tag → HONEST sandbox →
+restores src) + mar_diff2.sh (normalized objdump diff).
 
 ## Composite recipe (other pieces, all probe-verified byte-neutral 142)
 - u12/u13: masks `check = *idx_1496 & new_var;` / `& new_var3` (two
