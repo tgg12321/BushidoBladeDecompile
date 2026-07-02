@@ -60,36 +60,33 @@ CONSTRAINT: every added ref must sit INSIDE the pseudo's existing live
 range (livelen must NOT grow — it's the denominator) and be byte-free
 (cross-jump-remerged duplicate, or a real re-spelling combine folds).
 
-## Execution state (2026-07-02)
-- **t1 LANDED (probe-verified, not yet in src):** tbl+1 via
-  `D_800F19C0 = (void*)((u8*)tbl_125c + ((s32)&D_80016248 -
-  (s32)D_800A125C)); /* FAKE */` → dispositions
-  arg0=s6 tbl=s5 ✓ (rest unchanged), insns 141 (=baseline).
-- **Remaining lifts** (recompute after each; use tmp/probe_mar.py,
-  extend its tag table per variant): idx_1495 +2 (→555, must stay below
-  tbl's 675 — note tbl is now 675 wait: with +1 tbl=540; my budget's
-  tbl+2/idx_1495+2 pairing kept 675>555; t1 alone = +1 → 540; if
-  idx_1495 gets +2 (555) that BEATS 540 ✗ — give tbl the second ref or
-  idx_1495 only +1... +1=208 < arg0 263 ✗. So tbl needs its second ref;
-  find one more tbl chain site (candidate: chain `D_800F19BC = 0;`
-  through tbl?? needs a foldable zero-delta — no symbol algebra gives 0
-  cleanly; better: another symbol-store chained via tbl, or route an
-  idx init: `idx_1494 = (u8*)tbl_125c + ((s32)&D_800A1494 -
-  (s32)D_800A125C);` = csmd4's ORIGINAL lever-1 — but that DROPS
-  idx_1494's livelen (def moves later? no — same position...) — it
-  ADDS a tbl ref AND keeps idx_1494's store (+0 to 1494's count; its
-  def expression changes only). PROBE IT (t2).
-- **saved +2:** thin ref surface (volatile init/restore not duplicable).
-  Untested candidates: chain-extender via saved impossible (runtime
-  value). Consider instead whether saved even needs lifting once 76/78
-  land exactly: order needed saved>76'; if 76' ends at 958 (+1 only,
-  viable when arg1 drops — see below) then saved+1 (1428) suffices; a
-  single +1 site may exist via a REAL second restore... probe
-  semantics carefully (callbacks may write the global mid-poll).
-- **arg1 ref-reduction alternative:** hoisting `dst = a1;` above the
-  two copy-arms would drop arg1 4→3 refs (975→365), shrinking EVERY
-  lift; but target has per-arm `move a1,s4`-shaped copies — verify
-  against bytes before pursuing.
+## Execution state (2026-07-02, session 2 — MAJOR: t3 structural discovery)
+**t3 (NO coercion, pure shape fix) lands 5/8 registers**: reshape BOTH
+copy arms to target's byte order — `dst = a1; src = (u8*)&...; if
+(dst != 0) { copy }` (arm 1 currently tests `a1` first — inconsistent
+with arm 2; target bytes at 71A48/71A8C prove move-then-la-then-beqz in
+BOTH). Result: saved=s1 ✓ i1494=s2 ✓ i1496=s3 ✓ arg1=s4 ✓ p81=s0 ✓
+(insns 140; arg1 refs 4→3 = pri 365, matching the byte evidence).
+**Remaining trio {arg0=s5→s7, tbl=s6→s5, i1495=s7→s6}: NOT a priority
+problem** — with pris {arg0 263 > tbl 203 > i1495 139}, target's order
+{tbl > i1495 > arg0} is UNREACHABLE by the formula (i1495 has the same
+2 refs in target's bytes). ⇒ find_reg's CONFLICT/PREFERENCE machinery
+decides this trio. NEXT LEVER (named, unrun): rebuild the instrumented
+cc1 (hooks already in tools/gcc-2.7.2 sources — build into tmp/gccdbg,
+canonical binary untouched) and read the find_reg walk / preferences
+for these three at the t3 base.
+**Refuted this session:** t5/t6 late-site chain-extenders MATERIALIZE
+(+6 insns — combine only folds chains ADJACENT to the base's def; the
+csmd4-style lever works at init sites only). t4 (=t3+t1 tbl-chain):
+tbl overshoots to 540 > arg1's 365 → s4 ✗ — the t1 chain is
+INCOMPATIBLE with t3; do not combine them.
+
+## Superseded session-1 lift budget (kept one line for history)
+The 07-01 arithmetic budget (saved+2/76+2/78+3/tbl+2/1495+2) is
+SUPERSEDED by t3: the arm reshape alone lands saved/76/78/arg1
+naturally (no lifts); only the {arg0,tbl,i1495} trio remains and it is
+conflict/preference-driven, not priority-driven. t1 (tbl chain at the
+D_800F19C0 init) remains valid IN ISOLATION but incompatible with t3.
 
 ## Known gotchas
 - **`new_var` is UNDECLARED in this function** (src/system.c:555) — the

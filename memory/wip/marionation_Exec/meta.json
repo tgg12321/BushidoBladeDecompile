@@ -23,6 +23,14 @@
       "floor_was": 56,
       "floor_now": 56,
       "note": "masked floor rotation-blind; real progress = validated lift model + confirmed target map"
+    },
+    {
+      "date": "2026-07-02",
+      "git_head_at_measurement": "994db7ff",
+      "lever": "SESSION 2 — t3 STRUCTURAL DISCOVERY: reshaping both copy arms to target's byte order (dst = a1; src = (u8*)&...; if (dst != 0) {copy}) lands FIVE of eight registers with ZERO coercion (saved=s1, i1494=s2, i1496=s3, arg1=s4, p81=s0; insns 140; arg1 pri drops to 365 matching byte evidence — arm 1 currently tests a1 first, inconsistent with arm 2; target 71A48/71A8C prove move-then-la-then-beqz both arms). REFUTED: t5/t6 late-site chain-extenders materialize +6 insns (combine folds only ADJACENT to the base def); t4 (t3+t1) overshoots tbl to s4. KEY NEGATIVE RESULT: the remaining trio {arg0->s7, tbl->s5, i1495->s6} is UNREACHABLE by the priority formula (target's i1495 has the same 2 refs) => find_reg conflicts/preferences decide it; next lever = instrumented cc1 (tmp/gccdbg) find_reg walk at the t3 base.",
+      "floor_was": 56,
+      "floor_now": 56,
+      "note": "t3 not yet applied to src (probe-verified only); apply via tmp/probe_mar.py splice text when resuming"
     }
   ],
   "reviewer": {
