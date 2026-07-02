@@ -65,15 +65,26 @@ is the byte-proven exemplar). Mechanics established by probes u1-u7
   reg_n_refs==2 && multi-block) substitutes the constant into the
   killing use and DELETES the init — pseudo vanishes pre-lreg. Both
   mask pseudos ride it when actually initialized.
-- **Remaining single chain:** b (copy-loop byte) must take v0 (ours
-  v1; v0 stays free so `check` coalesces onto it) → check forced to a2
-  → `move v0,a2` returns appear (target has them as real insns) → tail
-  liveness shifts → expect the trio {arg0→s7, tbl→s5, i1495→s6} to
-  follow (tbl already s6 in u11 — one step off). Investigate WHY our
-  loop-local b avoids v0 (lreg qty data / local-alloc suggested regs)
-  at the u11 base; also compare arm-1's exact branch/delay bytes
-  (u11's `move $5,$20` sits in the check-beq delay; target's sits in
-  the arm's own beqz-s4 delay — sb/la order differs slightly).
+- **Remaining single chain — DECODED (s4b):** ours: check wins v0 via
+  its return-copy PREFERENCE + the regs_someone_prefers machinery
+  (global.c prune_preferences: higher-pri loop temps AVOID v0 because
+  lower-pri conflicting check prefers it) → b→v1, i→a0, src→a2. Target:
+  check's v0-preference must be PRUNED (conflict) → loop temps take
+  {b:v0, i:v1, src:a0, dst:a1} low-first by weighted priority → check
+  lands a2 by elimination → real `move v0,a2` returns. NOTE: `u8 b` is
+  GLOBAL-class here (REUSED by both copy loops — 2 blocks) unlike
+  csmd4's single-loop local-class b. u12 (csmd4's arm shape: dst; src;
+  i=7 outside guard) did NOT flip the coloring — shape isn't the lever.
+  **DECISIVE NEXT PROBE (u13): make the byte temp BLOCK-LOCAL per loop**
+  (`{ u8 bb; do { bb = *src; ... } while ...; }` in each arm, or find
+  what v0-hard conflict prunes check's preference — e.g. a v0-hard live
+  range overlapping check's). If block-local temps grab v0 via
+  local-alloc (which runs BEFORE global), check's preference dies to
+  the conflict and the whole tail cascades to target. Verify with
+  MAR_TAIL emission + then re-check the trio {arg0,tbl,i1495} (tbl
+  was already s6 in u11 — one off; tail liveness shift may finish it).
+- u12 also fixed arm-2's `i = 7;` placement (outside guard, csmd4
+  parity) — keep it; byte-order effects unmeasured vs target yet.
 - Target tail facts (asm 71A24-71ACC): both null-paths share one
   [j .L2CC; move v0,a2] at .L2BC while arm-1's copy-exit has its OWN
   copy at 71A6C (unmerged pair — same protective mystery as motion
