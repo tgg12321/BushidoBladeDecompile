@@ -15,6 +15,14 @@
       "lever": "PLAN DERIVED (no src change): fresh cc1 -da .greg/.lreg baseline; the allocno priority formula reproduces the current dispositions EXACTLY, so the rotation is a computable ref-lift problem under the sanctioned duplicated-statement lever (proven on motion_SetMotion this session). Lift budget: p80(saved)+2, idx_1494+2, idx_1496+3 (deliberate tie with idx_1494, broken by allocno order), tbl_125c+2, idx_1495+2 — eleven byte-free refs, each inside the existing live range. Also discovered: new_var is UNDECLARED at system.c:555 (build passes only because the Makefile pipe swallows cc1's error-recovery exit; bytes unaffected).",
       "floor_was": 56,
       "floor_now": 56
+    },
+    {
+      "date": "2026-07-02",
+      "git_head_at_measurement": "3f816004",
+      "lever": "MODEL VALIDATED + ground truth harvested. (1) Probe t1 (tmp/probe_mar.py): tbl+1 chain-extender on the D_800F19C0 store moved tbl s6->s5 (target reg) at identical insn count (141) — first of six rotation slots proven byte-free. (2) Tie-break verified in global.c source (double-truncate, allocno-ascending fallback). (3) reg_n_refs is += loop_depth; goto-loops don't raise depth. (4) Target bytes read: full register map confirmed (status s0, saved s1); poll C-shape CORRECT as-is; the masked-56 lives in the TAIL — a second local-alloc cascade (check->a2 = the body pin's purpose; src/i/b roles rotated) + the check2 lbu-then-andi-0xff micro-shape. Budget interaction found: tbl needs its 2nd ref before idx_1495's +2 (555 would beat a +1-only tbl at 540); t2 candidate = csmd4-style idx_1494-init chain via tbl.",
+      "floor_was": 56,
+      "floor_now": 56,
+      "note": "masked floor rotation-blind; real progress = validated lift model + confirmed target map"
     }
   ],
   "reviewer": {

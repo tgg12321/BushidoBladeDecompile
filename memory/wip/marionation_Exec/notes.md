@@ -1,12 +1,35 @@
-# marionation_Exec (system.c) — WIP, RA-rotation lift plan derived, execution pending
+# marionation_Exec (system.c) — WIP, lift model VALIDATED, execution in progress
 
-## TL;DR (2026-07-01)
-The 42-rule wall's register-rotation core is now a COMPUTED plan under the
-sanctioned duplicated-statement lever ([[duplicated-statement-into-arms]],
-proven on motion_SetMotion). The allocno formula exactly reproduces the
-baseline dispositions, so the lift budget is arithmetic, not guesswork.
-ASM-SUSPECT verdict is the distance>50 heuristic only (0 asm insns;
-bounded-attempt authorized).
+## TL;DR (2026-07-02)
+The 42-rule wall's register-rotation core is a COMPUTED AND NOW VALIDATED
+plan: probe t1 (tmp/probe_mar.py — chain-extender on the `D_800F19C0 =
+&D_80016248;` store through tbl_125c, sanctioned per
+[[dead-store-fake-exception]] §chain-extender) moved tbl s6→s5 (its
+target reg) at IDENTICAL insn count. First of six slots confirmed
+byte-free. The tie-break arithmetic is verified against global.c:604-625
+(double-math truncation → exact tie at equal refs/len; fallback `*v1-*v2`
+= ascending allocno ✓). reg_n_refs increments are `+= loop_depth`
+(flow.c:2067 — goto-loops do NOT increase depth; only real do/while
+loops do; the poll loop is a GOTO loop → +1 per site).
+ASM-SUSPECT verdict is the distance>50 heuristic only (0 asm insns).
+
+## Target ground truth (read from asm/funcs/marionation_Exec.s, 2026-07-02)
+- Register map CONFIRMED from bytes: status→s0 (call result), saved→s1
+  (`andi $s1,$v0,3`), idx_1494→s2, idx_1496→s3, arg1→s4, tbl→s5,
+  idx_1495→s6, arg0→s7.
+- Poll shape: current C is CORRECT (call-at-loop-top; the delay-slot
+  `andi v0,s0,4` / duplicated `andi v0,s0,2` at .L1D8+delay are reorg
+  steal-from-target artifacts of the plain two-if shape, not source).
+- The masked-56 diffs live in the TAIL (check block + two copy loops):
+  a SECOND local-alloc cascade — target: check→a2 (the reason for the
+  body's `register s32 check asm("$6")` pin), src→a0, i→v1, b→v0;
+  ours-natural: src→a2, i→a0, b→v1. Same class as
+  cpu_side_move_dir_4's block (see its WIP — density/coloring analysis).
+- check2 micro-shape: target `lbu v0,-1(s3); andi a2,v0,0xff` — an
+  emitted byte-mask AFTER lbu that also serves as the v0→a2 move; plain
+  `check = *(idx_1496-1);` folds it. Candidate spellings to probe: u8
+  intermediate + s32 check, or `& 0xFF` on a cross-pseudo copy (watch
+  the F2-not-sanctioned boundary — find the spelling GCC emits naturally).
 
 ## Baseline (verified via cc1 -da .greg/.lreg, 2026-07-01, HEAD c6d96b06)
 pri = floor_log2(nrefs)*nrefs/livelen*1e4 — reproduces dispositions exactly:
@@ -37,20 +60,36 @@ CONSTRAINT: every added ref must sit INSIDE the pseudo's existing live
 range (livelen must NOT grow — it's the denominator) and be byte-free
 (cross-jump-remerged duplicate, or a real re-spelling combine folds).
 
-## Duplication-site inventory (to find/verify)
-The function mirrors cpu_side_move_dir_4's shape: init block, timeout
-loop, debug_printf block, poll loop with callback arms
-(`(status&4)→cb(*idx_1495)`, `(status&2)→cb(*idx_1494)`, likely
-`(status&1)→cb(*idx_1496)`), then the copy-out tail. Candidate sites:
-- Deref args in callback arms are per-arm — duplicating a shared store
-  into arms needs the arms to share a mergeable tail (probe with the
-  m6/m9 method: label placement steers merge direction).
-- The idx_149X inits (`idx_1495 = 1 + idx_1494; idx_1496 = idx_1494+2`)
-  reference 76 — duplicating THOSE into a conditional arm lifts 76.
-- `saved` (80): `saved = (*D_800A147C_2) & 3;` + restore `*… = saved;`
-  — a duplicated restore-store in an arm could lift it.
-Use tmp/probe_fn.py + a marionation rtl-dump slice per probe; check
-dispositions after EACH lift (interactions shift livelens).
+## Execution state (2026-07-02)
+- **t1 LANDED (probe-verified, not yet in src):** tbl+1 via
+  `D_800F19C0 = (void*)((u8*)tbl_125c + ((s32)&D_80016248 -
+  (s32)D_800A125C)); /* FAKE */` → dispositions
+  arg0=s6 tbl=s5 ✓ (rest unchanged), insns 141 (=baseline).
+- **Remaining lifts** (recompute after each; use tmp/probe_mar.py,
+  extend its tag table per variant): idx_1495 +2 (→555, must stay below
+  tbl's 675 — note tbl is now 675 wait: with +1 tbl=540; my budget's
+  tbl+2/idx_1495+2 pairing kept 675>555; t1 alone = +1 → 540; if
+  idx_1495 gets +2 (555) that BEATS 540 ✗ — give tbl the second ref or
+  idx_1495 only +1... +1=208 < arg0 263 ✗. So tbl needs its second ref;
+  find one more tbl chain site (candidate: chain `D_800F19BC = 0;`
+  through tbl?? needs a foldable zero-delta — no symbol algebra gives 0
+  cleanly; better: another symbol-store chained via tbl, or route an
+  idx init: `idx_1494 = (u8*)tbl_125c + ((s32)&D_800A1494 -
+  (s32)D_800A125C);` = csmd4's ORIGINAL lever-1 — but that DROPS
+  idx_1494's livelen (def moves later? no — same position...) — it
+  ADDS a tbl ref AND keeps idx_1494's store (+0 to 1494's count; its
+  def expression changes only). PROBE IT (t2).
+- **saved +2:** thin ref surface (volatile init/restore not duplicable).
+  Untested candidates: chain-extender via saved impossible (runtime
+  value). Consider instead whether saved even needs lifting once 76/78
+  land exactly: order needed saved>76'; if 76' ends at 958 (+1 only,
+  viable when arg1 drops — see below) then saved+1 (1428) suffices; a
+  single +1 site may exist via a REAL second restore... probe
+  semantics carefully (callbacks may write the global mid-poll).
+- **arg1 ref-reduction alternative:** hoisting `dst = a1;` above the
+  two copy-arms would drop arg1 4→3 refs (975→365), shrinking EVERY
+  lift; but target has per-arm `move a1,s4`-shaped copies — verify
+  against bytes before pursuing.
 
 ## Known gotchas
 - **`new_var` is UNDECLARED in this function** (src/system.c:555) — the
