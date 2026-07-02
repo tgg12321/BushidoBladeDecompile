@@ -2900,15 +2900,6 @@ func_800651F0: reorder 16,12,13,14,15 @ 12-16
 func_800651F0: subst "\$4" "$2" @ 13
 func_800651F0: subst "\$4" "$2" @ 14
 # RETIRED (targeted-permuter): func_80077894: reorder 10,9 @ 9-10
-func_8007C97C: subst "subu\s+\$sp,\$sp,16" "bnez	$4,.LC97C" @ 0
-func_8007C97C: subst "beq\s+\$4,\$0,\.L\d+" "subu	$sp,$sp,16" @ 1
-func_8007C97C: subst "addu\s+\$2,\$4,\$zero" "addu	$2,$0,$0" @ 2
-func_8007C97C: subst "0\(\$2\)" "0($4)" @ 3
-func_8007C97C: subst "srl\s+\$6,\$6,3" "sra	$6,$6,3" @ 11
-func_8007C97C: subst "srl\s+\$3,\$3,3" "sra	$3,$3,3" @ 24
-func_8007C97C: insert "j	.LE97C" @ 2
-func_8007C97C: insert_label ".LE97C:" @ 29
-func_8007C97C: insert_label ".LC97C:" @ 3
 # RETIRED (targeted-permuter): func_80062FEC: $5 <-> $6
 func_80078A68: reorder 12,11 @ 11-12
 # RETIRED (targeted-permuter): mario_getMarioVoiceData_8005BE84: reorder 15,14,13 @ 13-15
