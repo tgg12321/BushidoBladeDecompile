@@ -44,21 +44,8 @@ pri = floor_log2(nrefs)*nrefs/livelen*1e4 — reproduces dispositions exactly:
 | 79 | tbl_125c | 3/148 | 203 | s5→s6 | s5 |
 | 77 | idx_1495 | 2/144 | 139 | s7 | s6 |
 
-## The lift budget (all byte-free, duplicated-statement or equivalent)
-Target priority order: 81 > 80 > 76 > 78 > 973(arg1) > 79 > 77 > 263(arg0).
-- **p80 (saved): +2 refs** → 2*4/21*1e4 = 3809 (must exceed arg1's 975 AND
-  stay above 76's lifted value; +1 gives only 1428 < 76's +2 → use +2).
-- **idx_1494 (76): +2 refs** → 3*8/146 = 1643.
-- **idx_1496 (78): +3 refs** → 3*8/146 = 1643 — deliberate TIE with 76;
-  allocno_compare tiebreaker = ascending pseudo number → 76 wins s2, 78
-  gets s3 ✓. VERIFY the tie holds under global.c's exact integer math
-  before relying on it (read global.c:600-630; if rounding differs,
-  rebalance: 76:+3/78:+3 keeps the tie, or 76:+3=2191? recompute).
-- **tbl_125c (79): +2 refs** → 2*5/148 = 675 (> arg0 263, < arg1 975).
-- **idx_1495 (77): +2 refs** → 2*4/144 = 555 (< 79's 675 ✓, > 263 ✓).
-CONSTRAINT: every added ref must sit INSIDE the pseudo's existing live
-range (livelen must NOT grow — it's the denominator) and be byte-free
-(cross-jump-remerged duplicate, or a real re-spelling combine folds).
+## (superseded lift budget removed — see session-2 conclusion; the tie
+## arithmetic + site accounting live in git history of this file)
 
 ## Execution state (2026-07-02, session 2 — MAJOR: t3 structural discovery)
 **t3 (NO coercion, pure shape fix) lands 5/8 registers**: reshape BOTH
@@ -80,6 +67,25 @@ for these three at the t3 base.
 csmd4-style lever works at init sites only). t4 (=t3+t1 tbl-chain):
 tbl overshoots to 540 > arg1's 365 → s4 ✗ — the t1 chain is
 INCOMPATIBLE with t3; do not combine them.
+
+**SESSION-2 CONCLUSION (instrumented ALLOCDBG on t3, pin-on and
+pin-off identical):** the trio allocates in pure priority order (arg0
+263 → tbl 202 → i1495 138 taking s5/s6/s7); no preference or conflict
+effects exist to exploit. Target's order {tbl s5, i1495 s6, arg0 s7}
+implies ORIGINAL livelens incompatible with the current tail structure
+(i1495 < 76, arg0 > 144 — ours: 144/76, near-exactly swapped!).
+⇒ **the tail region's true C shape (check block + copy loops — where
+the 56 masked diffs live) reshapes late-function LIVENESS, and the trio
+is its CONSEQUENCE.** Stop treating the rotation as a separate wall:
+derive the tail byte-by-byte (target: check2 `lbu v0,-1(s3); andi
+a2,v0,0xff` + `move v0,a2` returns; copy loops with src→a0, i→v1
+counting DOWN via `addiu v1,v1,-1; bne v1,a3`; ours: src→a2, i→a0)
+exactly like the t3/csmd4-block derivations, verifying the trio's
+dispositions after each shape probe (tmp/probe_mar_allocdbg.py).
+The arg0/i1495 livelen SWAP hints the original tail keeps arg0 (a1's
+sibling) alive longer (e.g. a0 tested LATER/differently) while i1495
+dies earlier — look for shapes where the copy loops' dst/src derivation
+changes which pointers stay live across the tail.
 
 ## Superseded session-1 lift budget (kept one line for history)
 The 07-01 arithmetic budget (saved+2/76+2/78+3/tbl+2/1495+2) is
