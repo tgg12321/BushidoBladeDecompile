@@ -10,13 +10,10 @@
     "empirical_sha1_pin_free_regfix_kept": "46e36200ae5bd842088ccbcd1e98b5f94484dc6c",
     "empirical_sha1_sel0xD_pins_kept": "82e50f76 (from session 1)"
   },
+  "prior_sessions_summary": [
+    "2026-06-14: diagnosis only \u2014 identified the two coupled cheats (2 pins + 1 regfix subst); floor 10 (masked, unreliable here)."
+  ],
   "sessions": [
-    {
-      "date": "2026-06-14",
-      "lever": "diagnosis only \u00e2\u20ac\u201d identified the two coupled cheats; no floor reduction (the real gap is masked)",
-      "floor_was": 10,
-      "floor_now": 10
-    },
     {
       "date": "2026-06-16",
       "lever": "full analysis + empirical confirmation. (1) RA: GCC priority formula from global.c:604 = floor_log2(n_refs)*n_refs/live_length*10k. result(n=6,len=400)=300 > sel2(n=3,len=124)=242 \u00e2\u2020\u2019 result takes $s2. Empirically: pins removed + regfix kept = SHA1 46e36200 (RA mismatch). (2) Cross-jump: minimum-2 fires when case9/11 uses sel=0xD (both blocks `li s0,13; j sel_dispatch`). Mixed-exit-forms lever not applicable (neither path can return mid-function). No pure-C lever found for either issue.",
@@ -29,11 +26,22 @@
       "event": "owner-ruling",
       "verdict": "send-back-to-blocked",
       "rationale": "Owner ruling: B (send-back). Cluster precedent (saEft00Add / marionation_Exec / cpu_side_move_dir_4 / func_8007C97C) is circumstantially strong but does not meet the canonical-asm bar \u2014 Lever D demonstrates bytes are C-reachable. HEAD's 2 register pins + 1 regfix retained as cheat-infrastructure until clean replacement lands."
+    },
+    {
+      "date": "2026-07-01",
+      "git_head_at_measurement": "e51fa168",
+      "lever": "WALL 1 SOLVED \u2014 duplicated-store priority lift: load_sel2's store duplicated into case 0 (FAKE-annotated), label moved to case 13/17's copy. Real second def bumps sel2 reg_n_refs 3->4 (pri 851 > result 412) -> RA lands sel2->$s2/result->$s3 naturally; jump2 cross-jump re-merges the tails (zero bytes; label placement steers merge direction \u2014 mirror labeling emits a 4-diff layout). Both pins RETIRED; function byte-diff vs canonical EMPTY; full SHA1 == oracle with the 1 rule applied. Dead stores measured INERT for global RA (flow deletes without counting). Wall 2 attempts m7 (label aliasing \u2014 jump1 unifies) and m8 (two-goto arm reshape) both still merge; open lead = REG_DEAD-note equality requirement in find_cross_jump.",
+      "floor_was": 10,
+      "floor_now": 10,
+      "note": "masked floor unchanged/meaningless here; the real state is pins 0 / rules 1"
     }
   ],
   "reviewer": {
-    "verdict": "NEEDS_USER",
-    "date": "2026-06-14",
+    "verdict": "FAIL-then-owner-sanctioned",
+    "date": "2026-07-01",
+    "evidence_2026_07_01": "Layer-2 FAIL on family-scope (mechanics verified: byte-diff empty, SHA1==oracle, one physical lbu in final bytes). Appealed with fresh SOTN evidence (cross-arm duplication routine in matched code); owner sanctioned duplicated-statement-into-arms.md. Prior history below.",
+    "prior_verdict": "NEEDS_USER",
+    "prior_date": "2026-06-14",
     "evidence": "Two coupled forbidden cheats: (1) register pins result asm(\"s3\")/sel2 asm(\"s2\"); (2) regfix subst 'addiu $16,$zero,12'->'13' @149 (commented 'anti-cross-jump fix'). Removing pins flips RA (masked-invisible); removing the rule via setting case9/11 sel=0xD FAILS the full build. Likely needs cross-jump-defeating restructure + a pure-C RA lever, or canonical-asm auth. Session 2 (2026-06-16): exhaustive analysis confirms BOTH issues are plateaus \u00e2\u20ac\u201d no pure-C lever exists for either."
   },
   "remaining_gap": {

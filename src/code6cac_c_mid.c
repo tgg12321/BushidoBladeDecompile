@@ -917,8 +917,8 @@ s32 motion_SetMotion(void) {
     extern void func_8003879C(void);
     extern void func_800387C0(void);
     extern void func_800387E8(void);
-    register s32 result asm("s3") = 0;
-    register s32 sel2 asm("s2") = -1;
+    s32 result = 0;
+    s32 sel2 = -1;
     s32 v0;
     s32 sel;
 
@@ -974,13 +974,17 @@ s32 motion_SetMotion(void) {
     switch (v0) {
     case 0:
         sel = 0x11;
-    load_sel2:
-        sel2 = D_800A3350;
+        sel2 = D_800A3350; /* FAKE: duplicate of load_sel2's store — jump2 cross-jump re-merges it
+                              (zero emitted bytes); the extra real def lifts sel2's reg_n_refs
+                              priority above result's so RA lands sel2->$s2 / result->$s3 (target).
+                              SOTN duplicate-into-arms family. */
         goto sel_dispatch;
     case 13:
     case 17:
         sel = 6;
-        goto load_sel2;
+    load_sel2:
+        sel2 = D_800A3350;
+        goto sel_dispatch;
     case 1:
         sel = (-(D_800A38CC != 0)) & 7;
         goto sel_dispatch;

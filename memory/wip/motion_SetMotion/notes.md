@@ -1,60 +1,53 @@
-# motion_SetMotion (code6cac_c_mid.c) — WIP, coupled plateau, needs-decision
+# motion_SetMotion (code6cac_c_mid.c) — WIP, Wall 1 SOLVED, Wall 2 open
 
-## TL;DR (2026-06-16)
-402-insn motion-state dispatcher. HEAD byte-matches ONLY via TWO forbidden
-cheats that are COUPLED. Exhaustive analysis (session 2) confirms BOTH issues
-are genuine plateaus with no pure-C lever — emitting needs-decision.
+## TL;DR (2026-07-01)
+The coupled wall split and half fell. **Wall 1 (RA priority) is SOLVED
+in pure C** — both pins retired (commit: cheat-cleanup 2026-07-01); full
+SHA1 == oracle with the 1 remaining rule applied. **Wall 2 (cross-jump
+merge) remains**: 1 regfix rule (case-9/11 sel 12→13 subst @
+regfix.txt:2484). Masked sandbox is BLIND here — full SHA1 only.
 
-1. **Register pins** `register s32 result asm("s3")`, `register s32 sel2 asm("s2")`.
-2. **regfix subst** `motion_SetMotion: subst "addiu\t$16,$zero,12" "...,13" @149`.
+## Wall 1 recipe (landed — reusable for the cluster)
+Duplicate load_sel2's `sel2 = D_800A3350;` into case 0 (FAKE-annotated)
+and move the label to case 13/17's copy. Flow counts the REAL second def
+(sel2 reg_n_refs 3→4 → pri 851 > result 412) → RA lands sel2→$s2 /
+result→$s3 naturally; jump2 cross-jump re-merges the identical
+[lbu; j] tails → zero byte delta. **Label placement steers merge
+direction**: label on case 13/17 ⇒ cross-jump rewrites case 0's copy ⇒
+target layout exactly. Mirror labeling (m6) emits a 4-diff flipped
+layout. Measured this session: dead stores are INERT for global RA
+(m1: cse folds const re-stores; m3: `sel2 = v0` deleted by flow WITHOUT
+being counted — 2.7.2 counts refs post-deletion). Real duplication is
+the working spelling.
 
-EMPIRICALLY CONFIRMED (session 2, 2026-06-16):
-- Pins removed + regfix kept → SHA1 46e36200 (RA mismatch). RA alone blocks match.
-- sel=0xD case9/11 + regfix removed → SHA1 82e50f76 (cross_jump merge, from WIP session 1).
+## Wall 2 — cross-jump no-merge (open)
+Target keeps BOTH `[li s0,13; j sel_dispatch]` sites (==3 arm at ea0 as
+j-delay form; case 9/11 at fc0). Writing 0xD in C merges them (SHA1
+82e50f76). Ruled out this session:
+- consecutive-label aliasing (sel_dispatch2:) — jump1 unifies
+  same-address labels, then merge fires ANYWAY and deletes 2 insns (m7).
+- ==3 arm reshaped to the two-goto form (`sel=0xF; if(==10) goto disp;
+  sel=0xD; goto disp;`) matching target's delay-slot structure — still
+  merges (m8).
+**Open lead:** find_cross_jump requires REG_DEAD-note equality post-
+reload (`cross_jump_death_matters`) — the two sites may differ in the
+original by surrounding register liveness. Next session: dump the
+death notes at both [set s0,13] sites (instrumented cc1 or -da .jump2
+dump) and find a C shape that makes the death sets differ (e.g. a value
+live across one site but not the other) with zero byte delta.
+Also untried: making ONE site fall through to sel_dispatch (suffix < 2
+insns → no merge) — requires the case-block emission order to place it
+last; check GCC's case-ordering vs target layout first.
 
-Do NOT trust masked sandbox score (stays at 10 regardless — RA swap is invisible).
+## Ruled out (session 1-2, do not re-derive)
+- Declaration-order swap (masked noise, swap persisted).
+- `func_8006BEC4(0xA, sel2)` at early exit (bytes: li a1,-1 vs move).
+- Real 4th-ref forms that add bytes; livelen restructures (init-later).
 
-## Issue 1 — Register Allocation (PLATEAU, proven)
-Target: result→$s3, sel2→$s2. Pin-free gives result→$s2, sel2→$s3 (swap, confirmed).
-
-GCC 2.7.2 priority formula (from tools/gcc-2.7.2/global.c:604):
-  `floor_log2(n_refs) × n_refs / live_length × 10000 × size`
-
-Measured values:
-- result: n_refs=6 (init=0, 3×result=1, `if (result!=0)`, `return result`),
-  live_length≈400 (d74→1384, all blocks), priority = floor_log2(6)×6/400×10k = 2×6/400×10k = 300
-- sel2: n_refs=3 (init=-1, load at load_sel2, use at sel_dispatch move a1,s2),
-  live_length≈124 (d7c→fe0 skipping early-exit body dc4-e30), priority = 1×3/124×10k = 242
-
-result (300) > sel2 (242) → result gets $s2. To flip: sel2 needs n_refs≥4.
-Any 4th ref to sel2 CHANGES THE BINARY — oracle at dc8-dcc shows `li a1,-1` NOT
-`move a1,s2`. No pure-C way to add an invisible ref.
-
-The "target uses higher reg" case (result in $s3 > $s2) is the RARER case per
-register-alloc-pure-c rule ("pin may be closer to justified").
-
-## Issue 2 — Cross-Jump Merge (PLATEAU, proven)
-Target: case 9/11 at fc0 = `j fd4; li s0, 13`; D_800A3207==3 non-10 at ea0 = `j fd4; li s0, 13`.
-Both blocks separate in oracle.
-
-Mechanism: GCC's `find_cross_jump` (jump.c, minimum=2) merges blocks with identical
-2-insn suffix. With case 9/11 sel=0xD: both blocks → `li s0,13; j sel_dispatch` → merge fires
-→ SHA1 82e50f76. With sel=0xC: suffix differs (12≠13) → no merge → regfix patches 12→13.
-No pure-C structural change can produce two SEPARATE `li s0,13; j sel_dispatch` blocks without
-one of them having sel=0xC (then needing regfix) or the cross_jump making them one block.
-
-Mixed-exit-forms lever (cross-jump-store-tail-merge rule) requires one path to be an inline
-return. Neither case 9/11 nor D_800A3207==3 non-10 can `return` mid-function — both must
-go to sel_dispatch to call func_8006BEC4. Lever not applicable.
-
-## Ruled out (do not re-derive)
-- `case 9/11: sel=0xD` + rule removed: SHA1 82e50f76 (cross_jump merge)
-- Pins removed + regfix kept: SHA1 46e36200 (RA mismatch, CONFIRMED this session)
-- Declaration-order swap: masked noise, RA swap persisted (session 1)
-- `func_8006BEC4(0xA, sel2)` at early exit: changes binary (li a1,-1 → move a1,s2)
-- Any add of refs to sel2 to raise priority: all change binary
-
-## Next steps for Adjudicator
-- (a) Point to any pure-C lever that flips RA (sel2 priority > result) without changing binary
-- (b) Point to any structural approach preventing cross_jump merge with both blocks emitting 13
-- (c) Or confirm as documented plateau → park
+## Pointers
+- tmp/probe_msm.py (m0-m9 probe harness; regenerate from git if gone).
+- Wall-1 mechanics: dead-store-fake-exception.md (chain-extender note),
+  register-alloc-pure-c.md, register-alloc-deep-dive.md.
+- Cluster siblings to apply the Wall-1 recipe to: saEft00Add,
+  marionation_Exec, cpu_side_move_dir_4 (local-alloc variant — see its
+  WIP), func_8007C97C.
