@@ -45,41 +45,50 @@ class (i1494/95/96/tbl — used in the timeout/poll regions) and a
 ~78-86 class (arg0/arg1 — used only in the check-arms tail), despite
 identical live-at-start block membership (verified session 4). Target's
 arg1 (4 refs, s4) and arg0 (s7 lowest) must both sit in the LONG class.
-**Session 5c FLOWDBG RESULT (hook live in tools/gcc-2.7.2/flow.c,
-env-gated BB2_FLOW_DEBUG=<pseudo>; gccdbg rebuilt via
-tmp/build_gccdbg2.sh — i386 triplet + parser-touch fixes)**: flow.c's
-OWN live_length gives arg0/arg1/i1495 nearly IDENTICAL counts (~85-95,
-same blocks, bb3=28 for all) — but lreg shows 78 vs 148!! ⟹ **the
-livelen local-alloc uses is SCHED.C'S POST-SCHEDULE RECOMPUTATION**
-(sched_reg_live_length, sometimes-live per CLOCK incl. stalls,
-update_flow_info copies it back). The ~150-vs-80 class = sched1 clock
-spans, i.e. WHERE each reg's last use lands in its block's schedule +
-stall cycles. NEXT: hook sched.c's `p->live_length += 1` (~:3890,
-attach same env-gate printing reg/clock/block) → decode why arm-tail
-users (arg0/arg1) span half the clocks of timeout/poll users
-(i1494/95/96/tbl) → find the C lever for arg1 ≥121 (arm-1 fix ~-5)
-and arg0 +2 / tbl -5 (trio ~-8); block micro-perm (3) likely follows.
+**Session 5c/5d — THE LIVELEN CLASS MECHANISM FOUND**: the ~150-vs-80
+split is **local-alloc.c:1064 `reg_live_length[regno] *= 2`** — fires
+for single-set pseudos carrying a REG_EQUIV note (REG_EQUAL constant
+promoted at :1031, incl. symbol arithmetic; or the single-block
+unchanging-MEM path :1051). Verified by SLLDBG segments: raw sched
+totals are 74(i1495)/76(tbl)/78(arg0)/86(arg1) — near-identical — and
+the lreg 148/152 = EXACTLY 2× for the equiv-init pointers, while the
+param copies (hard-reg src → no note) stay raw. flow.c's own counts
+are overwritten by sched.c's recomputation (update_flow_info); the
+sched raw totals ARE the substrate the doubling applies to.
+Hooks live (gitignored tree, env-gated): BB2_FLOW_DEBUG (flow.c:1684),
+BB2_SLL_DEBUG (sched.c finish_sometimes_live :3121 — NOTE the 2nd
+accumulation site :3903 contributes nothing here). Rebuild via
+tmp/build_gccdbg2.sh (i386 triplet + parser-touch; CRLF guard: edit
+gcc sources then `python3 tools/normalize_lf.py <file>`).
+**Target-consistency equations (w27 numbers)**: saved 952(21 raw,
+undoubled) > i1494 933(75×2) > i1496 666(75×2) > arg1[NEEDS (197,666):
+4 refs ⟹ L ≥ 121; ours 86 raw, undoubled, param-copy can't gain an
+equiv note ⟹ target's arg1 raw-L ≥ 121] > tbl 197(76×2) > i1495
+202(74×2)?? [tbl/i1495 also need swapping: tbl > i1495 > arg0 256??
+arg0 must drop to LAST: arg0 needs L > 78... recheck vs doubled tbl]
+— arg1's +35 raw clocks ≈ the copy-loop blocks (~27) + success (~3)
+where arg1 is currently dead (dies at `dst=a1` before each loop):
+NEXT LEVER CANDIDATES: keep a1 live through the loops (a real post-
+loop use exists? arm-1's `return check` — no; investigate whether
+TARGET's liveness has a1 live-through via the do-while backedge
+semantics vs our early-kill), or find the +35 in entry-block/success
+scheduling. Measure with SLLDBG per-segment diffs on shape variants.
 THEN assemble → retire 42 → full SHA1 → dual review → queue done.
-Kit: probe tags w20-w27 (tools/mar_probe_kit.py = committed copy),
-mar_sandbox_test.sh (tag → HONEST sandbox → restore), mar_diff2.sh,
-mar_flowdbg.sh (tag+pseudos → per-block counts, marionation-isolated
-via the sed MARKSTART split on cc1's non-quiet name stream).
+Kit: tags w20-w27 (tools/mar_probe_kit.py committed), mar_sandbox_
+test.sh (HONEST sandbox), mar_diff2.sh, mar_flowdbg.sh/mar_slldbg.sh
+(per-block/per-segment livelen traces, marionation-isolated).
 **Best-known = w24 (17)**; w27 = arm-1-revert branch (26; arm bytes +
-saved s1/i1494 s2 correct, arg1 misplaced s3 at 86/930 — needs <666).
+saved s1/i1494 s2 correct; arg1 misplaced s3 at 86-raw/930).
 
 ## Composite recipe (other pieces, all probe-verified byte-neutral 142)
-- u12/u13: masks `check = *idx_1496 & new_var;` / `& new_var3` (two
-  single-use opaque constants; fold via update_equiv_regs refs==2
-  UNWEIGHTED, local-alloc.c:1079) + csmd4 arm shape + BLOCK-LOCAL
-  `u8 bb` per copy loop → tail cascade (bb v0, src a0, i v1, dst a1,
-  check a2).
+- u12/u13: masks (new_var/new_var3 opaque consts; fold via
+  update_equiv_regs refs==2 UNWEIGHTED, local-alloc.c:1079) + csmd4
+  arm shape + BLOCK-LOCAL `u8 bb` per copy loop → tail cascade
+  (bb v0, src a0, i v1, dst a1, check a2).
 - w9: poll as REAL `do { status=f(); if (status==0) break; {arms} }
   while (1);` → loop_depth weights (flow.c: depth PLUS ONE) → status
-  8 refs, i1494 909 (under saved 952), i1495 197 → s6. **Outer cycle
+  8 refs, i1494 909→933 (under saved 952), i1495 → s6. **Outer cycle
   MUST stay goto-loop** (real loop → mask refs 4 ≠ 2 → fold dies).
-- w9 pris: arg1:357 saved:952 i1494:909 i1496:684 arg0:250 tbl:192
-  i1495:197. Trio needs tbl>197 (t1 chain +1 → 512? recheck vs arg1
-  357 — overshoot risk; livelen route: tbl<152) and arg0 lowest.
 
 ## Target ground truth (asm/funcs/marionation_Exec.s)
 - Regs: status s0, saved s1, i1494 s2, i1496 s3, arg1 s4, tbl s5,
