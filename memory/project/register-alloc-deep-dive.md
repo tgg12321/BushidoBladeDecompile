@@ -175,7 +175,14 @@ project-scope". **That was wrong.** Session 5 built a SEPARATE instrumented cc1
 already existed from the saEft00Add session — `cross-jump-store-tail-merge.md`'s
 `tmp/gccdbg`) and the instrumented dump produced the LEVER directly.
 
-### Session-5 (2026-05-29) — combine-foldable chain-extender lever ❌ FORBIDDEN as of 2026-06-02
+### Session-5 (2026-05-29) — combine-foldable chain-extender lever — **RE-SANCTIONED 2026-07-01**
+
+> **Owner ruling 2026-07-01:** the chain-extender spelling is now part of
+> the sanctioned F1 family ([[dead-store-fake-exception]] chain-extender
+> clause; evidence [[sotn-family-research-2026-07-01]]) — last-resort,
+> `/* FAKE */`-annotated, zero-byte-fold verified. The 2026-06-02
+> FORBIDDEN marker below is retained as history; its policy conclusion is
+> superseded.
 
 > **The combine-foldable chain-extender sub-technique below is FORBIDDEN as
 > of 2026-06-02** ([[techniques-audit-2026-06-02]]) — same family as Lever D

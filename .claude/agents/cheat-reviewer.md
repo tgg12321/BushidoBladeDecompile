@@ -44,9 +44,13 @@ dead-param-assign (Lever D), dead-conditional-store, empty-body
 `if (cond) { }` dead-read, `if (1) { ... }` always-true wrapping,
 dead-goto label-pad, DImode chain for scheduling, goto-end-with-ret-val
 accumulator + shared label, param-local-alias declaration-order trick,
-combine-foldable chain-extender to bump `reg_n_refs`, `s32 one = 1;`
+`s32 one = 1;`
 opaque variable to defeat single-bit transform, lowercase `asm(...)`
-cheat blocks bypassing detector regex.
+cheat blocks bypassing detector regex. (The combine-foldable
+chain-extender to bump `reg_n_refs` was moved to the sanctioned F1
+family by owner ruling 2026-07-01 — FAKE-annotated last-resort per
+[[dead-store-fake-exception]]'s chain-extender clause; un-annotated or
+byte-materializing instances remain FAIL.)
 
 # SOTN-accepted techniques (treat as ALLOWED in the family check)
 

@@ -29,6 +29,21 @@ scheduling / flow analysis upstream of DCE):
 - dead store to a local: `dest = val1;` where `dest` is never read
 - dead conditional store: `if (c) { v = e; } ...; v = e;` (inner store dead)
 - dead param assign: `arg0 = 0;` / `param = param;` never read after
+- **combine-foldable chain-extender** (scope extension, owner ruling
+  2026-07-01 same-day): a LIVE store/computation routed through an
+  algebraically-equivalent detour that combine folds back to the direct
+  form with ZERO emitted bytes — its only surviving effect is the extra
+  `reg_n_refs` count flow.c records before the fold. E.g.
+  `D_800F19C0 = (void*)((u8*)tbl_125c + ((s32)&D_80016240 -
+  (s32)D_800A125C));` (link-constant delta; folds to
+  `D_800F19C0 = &D_80016240;`). SOTN ships the intent-class: the
+  wiki-endorsed `(Random() & 3) + 1 - 1` opaque detour and the committed
+  `spriteX = four + ptr[0]; ... width = spriteX - four;` round-trip
+  (`src/dra/84B88.c:817-884`, `src/dra/7879C.c:3038-3044`). The
+  2026-06-02 forbidden classification of this spelling is superseded.
+  Extra prerequisite: verify the fold actually emits zero bytes (same
+  insn count + no new address materialization) — a chain that
+  MATERIALIZES is a real code change, not this lever.
 
 ## SOTN / community evidence (verbatim, master branches)
 
