@@ -44,17 +44,24 @@ a2-set-count unbump (no byte-free 2nd a2 set), v0-hard segments (no
 byte-free source), cross-block pointer alias w17 (`u8 *pi=&D_800A11D5`
 head-init: pi SURVIVES to RA — no equiv-deletion in this compiler —
 colored fp, +3 insns ✗; only in-block aliases vanish, via combine).
+w18/w19 (i5 = D_800A11D5; i5s = i5*4 stmt locals, byte-indexed a2 arg):
+insns 142 ✓, **the a0-flip machinery WORKS** — but the i5-qty became
+the sparser chain and TOOK a0 (11D5→a0, chain4→v1 ✗ target needs 11D5
+in v0). Competition rule confirmed: the two sparsest qtys take {v1,a0}
+in density order; val5→v1 requires the INLINE-dense 11D5 (v0, 32000)
+covering val5's range ⟺ STILL the sw/lbu ordering. Also proven: moving
+`v0 = -1;` early is bytes-fatal (74's range would block v0 at check).
 UNTESTED next:
-(a) luid-tie reshuffles of the launch cascade (packing is tie-driven;
-    reorder arg2/arg4 evaluation luids; may open a pre-12 gap for sw);
-(b) move `v0 = -1;` BEFORE the printf (semantically free, reshapes
-    block tail + luids + maybe the cascade);
-(c) exhaustive stmt-permutation sweep w/ chain4-reg flag
-    (tmp/sweep_mar_printf.py ready, ~25s/variant — extend VARIANTS);
-(d) assemble the REST of the function first (arms/trio final form),
-    re-probe the block LAST — the cascade is luid-sensitive and the
-    full-function shape shifts luids;
-(e) cc1psx CONFIRMED identical on w15 (parity holds; C is the variable).
+(a) luid-tie reshuffles of the launch cascade with INLINE 11D5 (w16
+    base): the cascade packing is tie-driven (126@8 vs 115 by luid);
+    arg-order/spelling changes that lower 126/121's luids below 115/
+    113's may open the pre-12 gap for the sw → lbu before sw;
+(b) exhaustive stmt-permutation sweep w/ chain-reg flags (harness
+    tmp/sweep_mar_printf.py, ~25s/variant) on the w16 base;
+(c) assemble the REST first (arms/trio final form), re-probe the block
+    LAST — the cascade is luid-sensitive; full-function shape shifts
+    ties (cheapest remaining unknown);
+(d) cc1psx CONFIRMED identical on w15 (parity holds; C is the variable).
 
 ## Composite recipe (other pieces, all probe-verified byte-neutral 142)
 - u12/u13: masks `check = *idx_1496 & new_var;` / `& new_var3` (two
