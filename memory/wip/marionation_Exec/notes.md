@@ -53,23 +53,27 @@ is the byte-proven exemplar). Mechanics established by probes u1-u7
   register-form `and` + callee-save residency ✗ (u3).
 - ⇒ TWO single-use constants: `new_var` + a sibling (`new_var3 = 0xFF;`
   next to it) → BOTH andi sites emit (u6 ✓) and `saved` lands s1.
-- u7/u8/u10 (masks + any arm-1 reshape): **6/8 regs** (arg1=s4
-  i1494=s2 i1496=s3 saved=s1 p81=s0) BUT the SECOND-DECLARED mask
-  constant regresses to register-`and` via $fp. PINNED DOWN (u10 ±
-  SWAP_SETS): the regression follows the VARIABLE (new_var3), not the
-  site and not the set order. Mechanism hypothesis (strong): the fold
-  is NOT combine but RELOAD's reg_equiv_constant substitution — it only
-  fires for pseudos that get NO hard reg; the arm reshape frees a 9th
-  callee-save ($fp appears in the epilogue!) so new_var3's allocno GETS
-  allocated → uses read the reg. NEXT: one ALLOCDBG run reading
-  new_var3's allocno at u8, + read local-alloc.c update_equiv_regs /
-  reload1.c reg_equiv_constant conditions; then find the shape where
-  BOTH mask pseudos stay unallocated (e.g. raise register pressure back,
-  or the original arm-1 shape that kept 8 callee-saves — note u6
-  (original arms) folds BOTH masks but loses arg1=s4).
-  Then: (b) loop-local coloring src→a0/i→v1/b→v0 (ours a2/a0/v1) so
-  check lands a2 by conflict; (c) the trio {arg0→s7, tbl→s5, i1495→s6}
-  expected to follow from tail liveness.
+- **u11 = the correct composite (u7-u10's asymmetry was a SPLICE BUG):**
+  the u6-u10 probes' shared anchors matched cpu_side_move_dir_4 FIRST
+  (the twins share text!), so new_var3's decl+set landed in the WRONG
+  FUNCTION and marionation read an uninitialized error-recovered var.
+  With marionation-unique anchors (u11 in tmp/probe_mar.py): **BOTH
+  masks fold to `andi imm` ✓, insns 140 (byte-neutral), 5 regs locked
+  (status s0, saved s1, i1494 s2, i1496 s3, arg1 s4).** The REAL fold
+  mechanism (traced in dumps, mar8/mar11.i.*): cse leaves (and reg
+  reg_nv); local-alloc's update_equiv_regs (local-alloc.c:1079,
+  reg_n_refs==2 && multi-block) substitutes the constant into the
+  killing use and DELETES the init — pseudo vanishes pre-lreg. Both
+  mask pseudos ride it when actually initialized.
+- **Remaining single chain:** b (copy-loop byte) must take v0 (ours
+  v1; v0 stays free so `check` coalesces onto it) → check forced to a2
+  → `move v0,a2` returns appear (target has them as real insns) → tail
+  liveness shifts → expect the trio {arg0→s7, tbl→s5, i1495→s6} to
+  follow (tbl already s6 in u11 — one step off). Investigate WHY our
+  loop-local b avoids v0 (lreg qty data / local-alloc suggested regs)
+  at the u11 base; also compare arm-1's exact branch/delay bytes
+  (u11's `move $5,$20` sits in the check-beq delay; target's sits in
+  the arm's own beqz-s4 delay — sb/la order differs slightly).
 - Target tail facts (asm 71A24-71ACC): both null-paths share one
   [j .L2CC; move v0,a2] at .L2BC while arm-1's copy-exit has its OWN
   copy at 71A6C (unmerged pair — same protective mystery as motion
