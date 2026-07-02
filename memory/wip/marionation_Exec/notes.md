@@ -45,16 +45,27 @@ class (i1494/95/96/tbl — used in the timeout/poll regions) and a
 ~78-86 class (arg0/arg1 — used only in the check-arms tail), despite
 identical live-at-start block membership (verified session 4). Target's
 arg1 (4 refs, s4) and arg0 (s7 lowest) must both sit in the LONG class.
-NEXT: instrument flow.c's regs_sometimes_live live_length loop
-(propagate_block ~:1679; entries deleted/re-added on death/rebirth —
-per-block segment sums differ by WHERE the reg dies inside blocks).
-tmp/gccdbg + the env-gated hook pattern = ~20 min. Unlocks: arg1 ≥121
-(arm-1 fix ~-5), arg0 +2 / tbl -5 (trio ~-8), likely the block
-micro-perm (3). THEN assemble → retire 42 → full SHA1 → dual review →
-queue done. Probe kit: tags w20-w27 + mar_sandbox_test.sh (tag →
-HONEST sandbox → restore) + mar_diff2.sh (normalized objdump diff).
+**Session 5c FLOWDBG RESULT (hook live in tools/gcc-2.7.2/flow.c,
+env-gated BB2_FLOW_DEBUG=<pseudo>; gccdbg rebuilt via
+tmp/build_gccdbg2.sh — i386 triplet + parser-touch fixes)**: flow.c's
+OWN live_length gives arg0/arg1/i1495 nearly IDENTICAL counts (~85-95,
+same blocks, bb3=28 for all) — but lreg shows 78 vs 148!! ⟹ **the
+livelen local-alloc uses is SCHED.C'S POST-SCHEDULE RECOMPUTATION**
+(sched_reg_live_length, sometimes-live per CLOCK incl. stalls,
+update_flow_info copies it back). The ~150-vs-80 class = sched1 clock
+spans, i.e. WHERE each reg's last use lands in its block's schedule +
+stall cycles. NEXT: hook sched.c's `p->live_length += 1` (~:3890,
+attach same env-gate printing reg/clock/block) → decode why arm-tail
+users (arg0/arg1) span half the clocks of timeout/poll users
+(i1494/95/96/tbl) → find the C lever for arg1 ≥121 (arm-1 fix ~-5)
+and arg0 +2 / tbl -5 (trio ~-8); block micro-perm (3) likely follows.
+THEN assemble → retire 42 → full SHA1 → dual review → queue done.
+Kit: probe tags w20-w27 (tools/mar_probe_kit.py = committed copy),
+mar_sandbox_test.sh (tag → HONEST sandbox → restore), mar_diff2.sh,
+mar_flowdbg.sh (tag+pseudos → per-block counts, marionation-isolated
+via the sed MARKSTART split on cc1's non-quiet name stream).
 **Best-known = w24 (17)**; w27 = arm-1-revert branch (26; arm bytes +
-saved/i1494 correct, arg1 misplaced at s3).
+saved s1/i1494 s2 correct, arg1 misplaced s3 at 86/930 — needs <666).
 
 ## Composite recipe (other pieces, all probe-verified byte-neutral 142)
 - u12/u13: masks `check = *idx_1496 & new_var;` / `& new_var3` (two
