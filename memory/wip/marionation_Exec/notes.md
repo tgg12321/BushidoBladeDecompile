@@ -36,13 +36,25 @@ la last, a1-lw early. Mechanisms (all dump-verified):
    i1494→s3 rotation. Need arg1 livelen 82→85+ (-23 pri) BEFORE the
    arm-1 revert lands. Session-2 note "t3 arg1 refs 4→3" documents
    this exact trade.
-Next: (a) find the arg1-livelen +3 (arm-internal statement order /
-move position); re-run w25-variant → expect ~8-10; (b) trio livelen
-nudges (tbl -5 via printf-block last-use position / arg0 +2); (c)
-verify block micro-perm resolves with trio; (d) assemble → retire 42
-→ full SHA1 → dual review → queue done. Probe kit: tags w20-w25 in
-tmp/probe_mar.py + mar_sandbox_test.sh (applies tag → HONEST sandbox →
-restores src) + mar_diff2.sh (normalized objdump diff).
+Session 5b (w26/w27): arm-2 stmt moves grew arg1 livelen 84→85→86;
+saved-tie broken ✓ (saved=s1, i1494=s2 with arm-1 reverted; w27 = 26).
+BUT target needs arg1 BELOW i1496 (666): 4 refs ⟹ livelen ≥ 121 — a
++35 jump = the printf-region span. **The flow live_length CLASS
+mystery is now THE blocker**: cycle-live pseudos split into a ~150
+class (i1494/95/96/tbl — used in the timeout/poll regions) and a
+~78-86 class (arg0/arg1 — used only in the check-arms tail), despite
+identical live-at-start block membership (verified session 4). Target's
+arg1 (4 refs, s4) and arg0 (s7 lowest) must both sit in the LONG class.
+NEXT: instrument flow.c's regs_sometimes_live live_length loop
+(propagate_block ~:1679; entries deleted/re-added on death/rebirth —
+per-block segment sums differ by WHERE the reg dies inside blocks).
+tmp/gccdbg + the env-gated hook pattern = ~20 min. Unlocks: arg1 ≥121
+(arm-1 fix ~-5), arg0 +2 / tbl -5 (trio ~-8), likely the block
+micro-perm (3). THEN assemble → retire 42 → full SHA1 → dual review →
+queue done. Probe kit: tags w20-w27 + mar_sandbox_test.sh (tag →
+HONEST sandbox → restore) + mar_diff2.sh (normalized objdump diff).
+**Best-known = w24 (17)**; w27 = arm-1-revert branch (26; arm bytes +
+saved/i1494 correct, arg1 misplaced at s3).
 
 ## Composite recipe (other pieces, all probe-verified byte-neutral 142)
 - u12/u13: masks `check = *idx_1496 & new_var;` / `& new_var3` (two
