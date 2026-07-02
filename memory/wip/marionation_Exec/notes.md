@@ -53,15 +53,23 @@ is the byte-proven exemplar). Mechanics established by probes u1-u7
   register-form `and` + callee-save residency ✗ (u3).
 - ⇒ TWO single-use constants: `new_var` + a sibling (`new_var3 = 0xFF;`
   next to it) → BOTH andi sites emit (u6 ✓) and `saved` lands s1.
-- u7 (u6 + t3 arm-1 reshape): **6/8 regs** (arg1=s4 i1494=s2 i1496=s3
-  saved=s1 p81=s0) BUT mask #2 regressed to `and $2,$2,$fp` — the
-  reshape perturbs the cross-block combine (fragile; new_var3→$fp).
-  Remaining: (a) find the arm-1 shape that keeps both combines firing
-  (grid: mask-set placement × arm shape × src-init position);
-  (b) loop-local coloring src→a0/i→v1/b→v0 (ours a2/a0/v1) so check
-  lands a2 by conflict (its dest is still v0-coalesced);
-  (c) the last trio rotation {arg0 s5→s7, tbl s6→s5, i1495 s7→s6} —
-  expected to follow from (b) reshaping tail liveness.
+- u7/u8/u10 (masks + any arm-1 reshape): **6/8 regs** (arg1=s4
+  i1494=s2 i1496=s3 saved=s1 p81=s0) BUT the SECOND-DECLARED mask
+  constant regresses to register-`and` via $fp. PINNED DOWN (u10 ±
+  SWAP_SETS): the regression follows the VARIABLE (new_var3), not the
+  site and not the set order. Mechanism hypothesis (strong): the fold
+  is NOT combine but RELOAD's reg_equiv_constant substitution — it only
+  fires for pseudos that get NO hard reg; the arm reshape frees a 9th
+  callee-save ($fp appears in the epilogue!) so new_var3's allocno GETS
+  allocated → uses read the reg. NEXT: one ALLOCDBG run reading
+  new_var3's allocno at u8, + read local-alloc.c update_equiv_regs /
+  reload1.c reg_equiv_constant conditions; then find the shape where
+  BOTH mask pseudos stay unallocated (e.g. raise register pressure back,
+  or the original arm-1 shape that kept 8 callee-saves — note u6
+  (original arms) folds BOTH masks but loses arg1=s4).
+  Then: (b) loop-local coloring src→a0/i→v1/b→v0 (ours a2/a0/v1) so
+  check lands a2 by conflict; (c) the trio {arg0→s7, tbl→s5, i1495→s6}
+  expected to follow from tail liveness.
 - Target tail facts (asm 71A24-71ACC): both null-paths share one
   [j .L2CC; move v0,a2] at .L2BC while arm-1's copy-exit has its OWN
   copy at 71A6C (unmerged pair — same protective mystery as motion
