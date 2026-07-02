@@ -29,15 +29,26 @@ j-delay form; case 9/11 at fc0). Writing 0xD in C merges them (SHA1
 - ==3 arm reshaped to the two-goto form (`sel=0xF; if(==10) goto disp;
   sel=0xD; goto disp;`) matching target's delay-slot structure — still
   merges (m8).
-**Open lead:** find_cross_jump requires REG_DEAD-note equality post-
-reload (`cross_jump_death_matters`) — the two sites may differ in the
-original by surrounding register liveness. Next session: dump the
-death notes at both [set s0,13] sites (instrumented cc1 or -da .jump2
-dump) and find a C shape that makes the death sets differ (e.g. a value
-live across one site but not the other) with zero byte delta.
-Also untried: making ONE site fall through to sel_dispatch (suffix < 2
-insns → no merge) — requires the case-block emission order to place it
-last; check GCC's case-ordering vs target layout first.
+**REG_DEAD lead REFUTED (2026-07-02):** the death-note comparison in
+find_cross_jump is `#ifdef STACK_REGS` only (jump.c:2436-2467) — MIPS
+never compares them. **Pairing algorithm fully mapped** (jump.c:
+1966-2001 + 2371-2533): for each simplejump, (a) minimum=1 attempt vs
+code-before-its-own-label, (b) minimum=2 attempts vs every other jump
+in the SAME label's jump_chain. Stream-1 hitting a CODE_LABEL does
+`--minimum; break` — so a [jtbl-label; set13; j] block as stream 1
+gets 1 match + label bonus = merge GUARANTEED against any same-label
+[set13; j] partner. ⇒ the original compile must have had the two 0xD
+jumps targeting DIFFERENT CODE_LABELs at jump2 time (labels are free
+in bytes — they coalesce at assembly). Remaining lever family: a
+second label for case 9/11's goto that is NOT adjacent to sel_dispatch
+(adjacent → m7 showed unification/merge). Known cost problem: any
+real-code separation between the labels either emits bytes or gets
+cross-jump-merged itself leaving a thunk `j` (+1 insn). UNSOLVED
+puzzle: what C makes GCC keep two labels apart through jump1's
+tensioning yet emit them at the same final address. Also note: in the
+CURRENT source's cc1 output the ==3 arm's 0xD/0xF sets are NOT visible
+as separate li's near the dispatch (only case-10's 13 at a bne delay)
+— map the arm's actual emission before theorizing further.
 
 ## Ruled out (session 1-2, do not re-derive)
 - Declaration-order swap (masked noise, swap persisted).
