@@ -1,0 +1,45 @@
+{
+  "function": "cpu_side_move_dir_4",
+  "file": "system",
+  "scores": {
+    "head_floor": 7,
+    "candidate_floor": 7,
+    "metric": "sandbox --disable all (masked) — MASKED-BLIND to the remaining register half (arg4 chain v1 vs target a0); real progress this session is structural (a1-load position), not masked-visible. Full SHA1 is the only truth.",
+    "build_insns": 160,
+    "target_insns": 160
+  },
+  "sessions": [
+    {
+      "date": "2026-07-01",
+      "git_head_at_measurement": "81b47079",
+      "lever": "Mechanism split + partial solve. (1) SCHED half SOLVED clean: arg5-first + split-index (candidate.c) emits `lw a1,D_800F19C0` at target position 51-52 with idx order preserved — the wall sessions 6-7 called structurally impossible falls to evaluation-order structure at the current chain-lever base. (2) REG half characterized via fresh -da dumps: local-alloc ties the arg4 chain into one qty (density 6/11) and colors it v1 before arg5val; target needs the chain range stretched to the call (density<0.35, colored last, v0/v1 blocked -> a0), which also yields the target interleave. Stretch-forms v16/v17 break the file-level s-reg balance (s2->s1); volatile ruled out (prong-1 fails: only writer func_80080828 is synchronous); standalone permuter proven UNFAITHFUL (v16-shape scores 270 isolated with s2 intact).",
+      "floor_was": 7,
+      "floor_now": 7
+    }
+  ],
+  "reviewer": {
+    "verdict": "PASS",
+    "date": "2026-07-01",
+    "evidence": "Layer-1 cheat-reviewer PASS: split-index temp + statement reorder = real, non-dead, non-coercive block-local restructure (register-alloc-pure-c Lever A family); no forbidden-family match. Caveat noted: the a1-position claim rests on this session's objdump probes — re-verify via tmp/probe_csmd4.py when resuming."
+  },
+  "remaining_gap": {
+    "summary": "One block (do_timeout/debug_printf). With candidate applied: a1-load position matches; remaining = arg4 chain register (v1 vs a0) + its interleave stretch + idx-pair order + arg5val register (a2 vs v1) — all downstream of ONE local-alloc coloring decision. Win condition: stretch the arg4 chain's range to the call without changing idx_1494/tbl_125c/idx_1495 ref counts (file-level s-reg balance is delicately tied to the committed idx_1495 chain lever).",
+    "rule_count_at_head": 5,
+    "rules_required_for_full_match": "4 substs v1->a0 in the block + 1 reorder (15-elem) — exactly the two halves above; the reorder half is now reproducible in pure C by candidate.c."
+  },
+  "next_hypotheses": [
+    "Chain-extender-style combine-foldable detour routing an EXISTING live store through the arg4 address pseudo to extend its range (sanctioned 2026-07-01; verify zero-byte fold + s-reg preservation via tmp/probe_csmd4.py).",
+    "Faithful permuter workspace: compile.sh = engine sandbox build (this function's rules dropped), target.o = build/src/system.o, base = candidate.c; directed PERM_* only (~30s/iter).",
+    "Read local-alloc.c qty_compare + reg preference paths for why a0 is skipped for block temps (arg5val took a2 with a0 apparently free) — if a0 needs a preference edge, find which real insn shape creates it (call-arg adjacency?)."
+  ],
+  "rejected_forms": [
+    {"form": "volatile u8 *idx_1494 (v15/v12/v14)", "score": 7, "reason": "Policy: prong-1 fails (writer synchronous). Also only bought idx-pair order, not the reg half."},
+    {"form": "arg4 inline in call (v16) / address-precompute p4 (v17)", "score": "7-8 masked", "reason": "Stretch works but file-level s-reg regression s2->s1 (ref-balance coupling with the committed idx_1495 chain lever)."},
+    {"form": "inline-all args (v1/v8/v9)", "score": 14, "reason": "Right-to-left eval: idx1-first + 11D5-early; bare u8 locals forward-substituted."},
+    {"form": "standalone-permuter finds (output-270-1 v16-shape)", "score": "270 permuter-units", "reason": "Workspace context UNFAITHFUL to full file (s-reg coupling invisible); do not trust without full-context re-verification."}
+  ],
+  "prior_sessions_summary": [
+    "2026-05-29..30 (sessions 4-9, register-alloc-deep-dive.md): chain-extender + idx-local levers derived (then-forbidden); floors 20->15; all named levers measured. The committed idx_1495-via-tbl chain (line ~406) later landed the s-regs; HEAD floor 7 with 5 rules on this one block."
+  ],
+  "memory_notes": []
+}
