@@ -10,13 +10,6 @@
   },
   "sessions": [
     {
-      "date": "2026-07-01",
-      "git_head_at_measurement": "c6d96b06",
-      "lever": "PLAN DERIVED (no src change): fresh cc1 -da .greg/.lreg baseline; the allocno priority formula reproduces the current dispositions EXACTLY, so the rotation is a computable ref-lift problem under the sanctioned duplicated-statement lever (proven on motion_SetMotion this session). Lift budget: p80(saved)+2, idx_1494+2, idx_1496+3 (deliberate tie with idx_1494, broken by allocno order), tbl_125c+2, idx_1495+2 — eleven byte-free refs, each inside the existing live range. Also discovered: new_var is UNDECLARED at system.c:555 (build passes only because the Makefile pipe swallows cc1's error-recovery exit; bytes unaffected).",
-      "floor_was": 56,
-      "floor_now": 56
-    },
-    {
       "date": "2026-07-02",
       "git_head_at_measurement": "3f816004",
       "lever": "MODEL VALIDATED + ground truth harvested. (1) Probe t1 (tmp/probe_mar.py): tbl+1 chain-extender on the D_800F19C0 store moved tbl s6->s5 (target reg) at identical insn count (141) — first of six rotation slots proven byte-free. (2) Tie-break verified in global.c source (double-truncate, allocno-ascending fallback). (3) reg_n_refs is += loop_depth; goto-loops don't raise depth. (4) Target bytes read: full register map confirmed (status s0, saved s1); poll C-shape CORRECT as-is; the masked-56 lives in the TAIL — a second local-alloc cascade (check->a2 = the body pin's purpose; src/i/b roles rotated) + the check2 lbu-then-andi-0xff micro-shape. Budget interaction found: tbl needs its 2nd ref before idx_1495's +2 (555 would beat a +1-only tbl at 540); t2 candidate = csmd4-style idx_1494-init chain via tbl.",
@@ -31,6 +24,14 @@
       "floor_was": 56,
       "floor_now": 56,
       "note": "t3 not yet applied to src (probe-verified only); apply via tmp/probe_mar.py splice text when resuming"
+    },
+    {
+      "date": "2026-07-02",
+      "git_head_at_measurement": "7a5c58f9",
+      "lever": "SESSION 3 — check-mask mechanics CRACKED + 6/8 registers (probe u7). The target's two `andi $a2-class,$v0,0xFF` sites come from the sibling's opaque-constant idiom (the vestigial undeclared `new_var = 0xFF;` at :555 IS the original's construct; csmd4's 443/470 twin is byte-proven). Fold rules established: literal &0xFF folds in the FRONT END; opaque-const mask + same-block set -> cse eats it; cross-block set + SINGLE use -> combine folds to andi IMMEDIATE and consumes the set (byte-free); multi-use -> register-and (bad). Two single-use constants (new_var + new_var3) give both sites (u6). u7 (u6 + t3 arm-reshape) = 6/8 regs (saved s1, i1494 s2, i1496 s3, arg1 s4, status s0) but mask #2 regresses to register-and (combine fragility vs arm shape). Remaining grid in notes.md Session-3.",
+      "floor_was": 56,
+      "floor_now": 56,
+      "note": "probes only, src untouched, oracle green"
     }
   ],
   "reviewer": {
@@ -50,7 +51,8 @@
   ],
   "rejected_forms": [],
   "prior_sessions_summary": [
-    "2026-05-29 (register-alloc-deep-dive): rotation map established; chain-extender hypothesis tested (idx_1496 already present); clean-target permuter plateau 1125 over 16.8k iters."
+    "2026-05-29 (register-alloc-deep-dive): rotation map established; chain-extender hypothesis tested (idx_1496 already present); clean-target permuter plateau 1125 over 16.8k iters.",
+    "2026-07-01 (plan session, c6d96b06): allocno formula reproduces baseline exactly; 11-ref lift budget computed (superseded by t3/u7); new_var UNDECLARED at :555 discovered (Makefile pipe swallows cc1's error-recovery exit; bytes unaffected)."
   ],
   "memory_notes": []
 }
