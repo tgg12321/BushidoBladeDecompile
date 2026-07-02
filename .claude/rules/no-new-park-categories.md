@@ -242,6 +242,16 @@ the rule file BEFORE using:
   the allowlist. Game-state globals keep the
   [[legitimate-volatile-interrupt-touched]] two-prong gate.
 
+- **Duplicated statement into arms** ([[duplicated-statement-into-arms]],
+  second 2026-07-01 ruling, own evidence pass) — a REAL statement
+  duplicated into 2+ control-flow arms instead of label-shared, incl.
+  when cross-jump re-merges it byte-neutrally and the effect is a
+  reg_n_refs priority lift. SOTN duplicates assignments across arms
+  routinely (7-arm / 11-arm instances in doppleganger.c); redundant
+  match-annotated duplicate stores in dra/42398.c + menu.c; MGS
+  "no match if we don't". Prereqs: byte-neutrality verified +
+  exhaustion + FAKE annotation + layer-1/2 review.
+
 What the 2026-07-01 research explicitly does NOT support relaxing
 (zero community precedent found): register-asm pins, hardcoded-`$N`
 `__asm__` injection, regfix/asmfix-style build-time rewriting,

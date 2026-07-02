@@ -145,6 +145,21 @@ in memory/project/sotn-*-research-*.md with citation:
   FAIL ([[inline-asm-injection]]); volatile-cast aliases are governed
   by the volatile catalog, not this exception.
 
+- **Duplicated statement into arms** — **NARROW SANCTIONED EXCEPTION**
+  (owner ruling 2026-07-01, own evidence pass after a layer-2 FAIL
+  appeal), scoped by [[duplicated-statement-into-arms]]: a REAL
+  statement duplicated into 2+ arms instead of label-shared — including
+  when jump2 cross-jump re-merges the copies byte-neutrally and the
+  surviving effect is a reg_n_refs/allocno-priority lift, and when the
+  label placement is chosen to steer merge direction. Verify: (1) the
+  copy is REAL on its path (dead stores stay under
+  [[dead-store-fake-exception]]); (2) byte-neutrality evidence present
+  (objdump diff vs canonical and/or full SHA1); (3) lever-exhaustion
+  ledger; (4) `/* FAKE */` annotation on the match-motivated copy.
+  Missing any = FAIL. GCC-internals justification language does NOT
+  auto-FAIL this construct when 1-4 hold (the family is
+  evidence-sanctioned; SOTN 7-arm/11-arm duplication precedent).
+
 - **Type-level MMIO volatile** — **OWNER RULING 2026-07-01**, scoped by
   [[mmio-volatile-type-level]]: volatile on declarations whose address
   is verifiably in the PSX hardware I/O-register range

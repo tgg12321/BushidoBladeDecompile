@@ -87,6 +87,7 @@ difficult-is-not-impossible — still auto-load and are not listed here.)
 - **named-local-fake-exception** — SANCTIONED 2026-07-01 (last-resort): constant-holder locals across calls + dead SCALAR local decls biasing RA, `/* FAKE */`-annotated; arrays/frame coercion still forbidden.
 - **pointer-alias-fake-exception** — SANCTIONED 2026-07-01 (last-resort): C-level local pointer alias / typed re-view of a global, `/* FAKE */`-annotated; `asm("Sym")` alias-RENAMES still forbidden.
 - **mmio-volatile-type-level** — RULING 2026-07-01: volatile on hardware-MMIO-range (0x1F801000-0x1F802FFF) declarations is legitimate TYPE-LEVEL semantics — all shapes incl. single-read probes; no shape test, no FAKE annotation; game-state globals keep the two-prong gate.
+- **duplicated-statement-into-arms** — SANCTIONED 2026-07-01: a REAL statement duplicated into 2+ arms (vs label-sharing), incl. when cross-jump re-merges it to identical bytes and the effect is a reg_n_refs priority lift; label placement steers merge direction. Prereqs: byte-neutrality verified + exhaustion + FAKE annotation. **The proven byte-free ref-lift for global-RA priority walls** (motion_SetMotion pins retired; dead stores measured INERT for this — flow deletes before counting).
 
 ## Engine / pipeline gotchas (also fire on their own narrow paths)
 
