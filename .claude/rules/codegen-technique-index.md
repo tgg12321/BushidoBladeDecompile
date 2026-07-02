@@ -74,7 +74,7 @@ difficult-is-not-impossible — still auto-load and are not listed here.)
 
 ## Forbidden families & narrow sanctions (READ THE RULE before using or judging)
 
-- **dead-vars-local-array** — FORBIDDEN: frame coercion via unused arrays/scalars.
+- **dead-vars-local-array** — FORBIDDEN: frame coercion via unused arrays/scalars. **CARVE-OUT 2026-07-01:** a WRITTEN-never-read local array IS sanctioned (SOTN dra/62DEC.c sp70[4] ×2) when the target bytes contain the dead stores — last-resort, FAKE-annotated, dual-reviewed. Symptom: target has dead `sw` stores into a frame the clean C never allocates.
 - **lost-codegen-insert-cheat** — FORBIDDEN: `insert_after "addu $rN,$0,$zero"` regfix (restore what const-prop ate) → fix via shared-end-label.
 - **inline-asm-injection** — FORBIDDEN: hardcoded-`$N` single-instruction `__asm__`; also `asm("Sym")` alias renames.
 - **inline-move-aliasing** — ARCHIVED/FORBIDDEN tombstone (placeholder-move recipe).

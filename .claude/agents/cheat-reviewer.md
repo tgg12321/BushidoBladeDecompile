@@ -160,6 +160,18 @@ in memory/project/sotn-*-research-*.md with citation:
   auto-FAIL this construct when 1-4 hold (the family is
   evidence-sanctioned; SOTN 7-arm/11-arm duplication precedent).
 
+- **Written-never-read local array** — **NARROW SANCTIONED CARVE-OUT**
+  (owner ruling 2026-07-01), scoped by [[dead-vars-local-array]]'s
+  carve-out header (SOTN dra/62DEC.c `u8 sp70[4]` written 4×/read 0× in
+  two matched core functions; z[5] ×2; annotated volatile pad[4]).
+  Verify ALL of: (1) the TARGET bytes contain the corresponding dead
+  stores/frame (read the target asm — if the original has no dead `sw`s
+  this construct is fabrication, FAIL); (2) the array is genuinely
+  WRITTEN (an unreferenced array or `(void)&local` stays FAIL under the
+  unchanged base rule); (3) lever-exhaustion ledger; (4) `/* FAKE */`
+  annotation; (5) the writes' values/order correspond to the target's
+  store pattern (not arbitrary filler). When torn, FAIL.
+
 - **Type-level MMIO volatile** — **OWNER RULING 2026-07-01**, scoped by
   [[mmio-volatile-type-level]]: volatile on declarations whose address
   is verifiably in the PSX hardware I/O-register range

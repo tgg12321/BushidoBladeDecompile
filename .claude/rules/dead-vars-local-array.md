@@ -2,13 +2,38 @@
 name: dead-vars-local-array
 paths: [".claude/rules/dead-vars-local-array.md"]
 # on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
-description: "FORBIDDEN as of 2026-05-31 (expanded 2026-06-01). Frame coercion via unused local arrays (`s32 buf[N];`) OR scalar address-of coercion (`s32 pad; (void)&pad;`) is a cheat. SOTN rejects both. The engine's volatile_cheats detector flags every such pattern and refuses completion."
+description: "FORBIDDEN as of 2026-05-31 (expanded 2026-06-01) — unused local arrays and (void)&scalar address-coercion. NARROW CARVE-OUT 2026-07-01: a WRITTEN-never-read local array is sanctioned (SOTN dra/62DEC.c ships u8 sp70[4] written 4x/read 0x, twice, in matched core) when the TARGET bytes contain the dead stores (oracle-enforced), after exhaustion, FAKE-annotated, dual-reviewed."
 metadata:
   type: reference
   status: forbidden
 ---
 
 # FORBIDDEN — Frame coercion is a cheat (array AND scalar variants)
+
+> **NARROW CARVE-OUT (owner ruling 2026-07-01):** a local array that is
+> **WRITTEN but never read** is sanctioned as a last-resort matching
+> construct. Direct SOTN-master evidence (matched, no NON_MATCHING
+> markers): `u8 sp70[4]; sp70[2] = sp70[1] = sp70[0] = 0x80; sp70[3] = 0;`
+> written-never-read in BOTH `func_80104790` and `func_80105078`
+> (`src/dra/62DEC.c` — PSX core overlay), `s16 z[5]` written-never-read
+> in `EntityStageNamePopup` (st/chi + st/nz0), amid announced-dead locals
+> (`SVECTOR pad;`, `s32 stupid80;`, `s32 unused_interp;`); plus
+> `volatile u32 pad[4]; // FAKE` (st/sel/stream.c:80). Prerequisites
+> (cheat-reviewer FAILs if missing):
+> 1. The TARGET function's bytes contain the corresponding dead stores /
+>    frame (the oracle enforces this — the construct cannot fabricate a
+>    match where the original had none).
+> 2. Documented lever-exhaustion (WIP ledger).
+> 3. `/* FAKE: ... */` annotation on the declaration or writes.
+> 4. Layer-1 + layer-2 review.
+>
+> The UNWRITTEN-array form (`s32 buf[N];` never referenced) and the
+> `(void)&local` scalar coercion remain FORBIDDEN below — SOTN's
+> written-never-read instances all WRITE the array (real stores that
+> survive in the emitted bytes); a never-referenced array emits nothing
+> and is pure frame-size coercion with no SOTN analog in matched code
+> beyond annotated `pad` declarations, which stay out of scope pending
+> their own evidence request.
 
 ## Status
 

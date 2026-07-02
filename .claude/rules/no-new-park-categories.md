@@ -252,6 +252,15 @@ the rule file BEFORE using:
   "no match if we don't". Prereqs: byte-neutrality verified +
   exhaustion + FAKE annotation + layer-1/2 review.
 
+- **Written-never-read local array** ([[dead-vars-local-array]] carve-out,
+  third 2026-07-01 ruling, own evidence pass) — sanctioned ONLY when the
+  target bytes contain the corresponding dead stores (oracle-enforced),
+  written (not merely declared), exhaustion-documented, FAKE-annotated,
+  dual-reviewed. SOTN evidence: `u8 sp70[4]` written 4×/read 0× in two
+  matched dra-core functions (62DEC.c), `s16 z[5]` ×2, annotated
+  `volatile u32 pad[4]; // FAKE`. The unwritten-array and `(void)&local`
+  forms remain forbidden.
+
 What the 2026-07-01 research explicitly does NOT support relaxing
 (zero community precedent found): register-asm pins, hardcoded-`$N`
 `__asm__` injection, regfix/asmfix-style build-time rewriting,
