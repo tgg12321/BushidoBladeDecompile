@@ -5,54 +5,59 @@
     "head_floor": 56,
     "candidate_floor": 56,
     "metric": "sandbox --disable all (masked) — rotation-blind here; the real state is the disposition table in notes.md. Full SHA1 after retire-all-42 is the only end gate.",
-    "build_insns": 179,
-    "target_insns": 179
+    "build_insns": 142,
+    "target_insns": 142
   },
   "sessions": [
     {
       "date": "2026-07-02",
-      "git_head_at_measurement": "3f816004",
-      "lever": "MODEL VALIDATED + ground truth harvested. (1) Probe t1 (tmp/probe_mar.py): tbl+1 chain-extender on the D_800F19C0 store moved tbl s6->s5 (target reg) at identical insn count (141) — first of six rotation slots proven byte-free. (2) Tie-break verified in global.c source (double-truncate, allocno-ascending fallback). (3) reg_n_refs is += loop_depth; goto-loops don't raise depth. (4) Target bytes read: full register map confirmed (status s0, saved s1); poll C-shape CORRECT as-is; the masked-56 lives in the TAIL — a second local-alloc cascade (check->a2 = the body pin's purpose; src/i/b roles rotated) + the check2 lbu-then-andi-0xff micro-shape. Budget interaction found: tbl needs its 2nd ref before idx_1495's +2 (555 would beat a +1-only tbl at 540); t2 candidate = csmd4-style idx_1494-init chain via tbl.",
-      "floor_was": 56,
-      "floor_now": 56,
-      "note": "masked floor rotation-blind; real progress = validated lift model + confirmed target map"
-    },
-    {
-      "date": "2026-07-02",
       "git_head_at_measurement": "994db7ff",
-      "lever": "SESSION 2 — t3 STRUCTURAL DISCOVERY: reshaping both copy arms to target's byte order (dst = a1; src = (u8*)&...; if (dst != 0) {copy}) lands FIVE of eight registers with ZERO coercion (saved=s1, i1494=s2, i1496=s3, arg1=s4, p81=s0; insns 140; arg1 pri drops to 365 matching byte evidence — arm 1 currently tests a1 first, inconsistent with arm 2; target 71A48/71A8C prove move-then-la-then-beqz both arms). REFUTED: t5/t6 late-site chain-extenders materialize +6 insns (combine folds only ADJACENT to the base def); t4 (t3+t1) overshoots tbl to s4. KEY NEGATIVE RESULT: the remaining trio {arg0->s7, tbl->s5, i1495->s6} is UNREACHABLE by the priority formula (target's i1495 has the same 2 refs) => find_reg conflicts/preferences decide it; next lever = instrumented cc1 (tmp/gccdbg) find_reg walk at the t3 base.",
+      "lever": "SESSION 2 — t3 STRUCTURAL DISCOVERY: reshaping both copy arms to target's byte order (dst = a1; src = (u8*)&...; if (dst != 0) {copy}) lands FIVE of eight registers with ZERO coercion (saved=s1, i1494=s2, i1496=s3, arg1=s4, p81=s0; insns 140). REFUTED: t5/t6 late-site chain-extenders materialize +6 insns (combine folds only ADJACENT to the base def); t4 (t3+t1) overshoots tbl to s4.",
       "floor_was": 56,
       "floor_now": 56,
-      "note": "t3 not yet applied to src (probe-verified only); apply via tmp/probe_mar.py splice text when resuming"
+      "note": "probe-verified only"
     },
     {
       "date": "2026-07-02",
       "git_head_at_measurement": "7a5c58f9",
-      "lever": "SESSION 3 — check-mask mechanics CRACKED + 6/8 registers (probe u7). The target's two `andi $a2-class,$v0,0xFF` sites come from the sibling's opaque-constant idiom (the vestigial undeclared `new_var = 0xFF;` at :555 IS the original's construct; csmd4's 443/470 twin is byte-proven). Fold rules established: literal &0xFF folds in the FRONT END; opaque-const mask + same-block set -> cse eats it; cross-block set + SINGLE use -> combine folds to andi IMMEDIATE and consumes the set (byte-free); multi-use -> register-and (bad). Two single-use constants (new_var + new_var3) give both sites (u6). u7 (u6 + t3 arm-reshape) = 6/8 regs (saved s1, i1494 s2, i1496 s3, arg1 s4, status s0) but mask #2 regresses to register-and (combine fragility vs arm shape). Remaining grid in notes.md Session-3.",
+      "lever": "SESSION 3 — check-mask mechanics CRACKED + 6/8 registers (probe u7->u11). Opaque-constant masks (new_var/new_var3) fold to andi IMMEDIATE via local-alloc update_equiv_regs when cross-block + single-use; u11 fixed the twin-anchor splice bug (u6-u10's asymmetry was contamination into csmd4); both masks fold, insns 140, 5 regs locked.",
       "floor_was": 56,
       "floor_now": 56,
       "note": "probes only, src untouched, oracle green"
+    },
+    {
+      "date": "2026-07-02",
+      "git_head_at_measurement": "59426e8b",
+      "lever": "SESSION 4 — u13 block-local loop temps -> TAIL CASCADE (check->a2, both `move v0,a2` returns, src/i/dst/bb all target; insns 142 = target count); w9 poll as REAL do-while -> loop_depth reweighting lands i1495 s6 (6/8 locked; outer cycle MUST stay goto or the mask fold dies: update_equiv_regs needs UNWEIGHTED refs==2); w15 printf shape (s32 t0 + addr-local p4 + *p4 inline) stretches chain4 across the block with lw4 crossing the sw and fmt-la last. Chain4 lands v1 not a0: blocker traced in SCHEDDBG to fmt-la's backward-drift to sched1 pos-7 (hard-a0 [7..16]); val5->v1 needs sw5-after-11D5-lbu overlap in sched1 coords (w13 had it, w15 doesn't). Full mechanism ledger + x3 sweep plan in notes.md.",
+      "floor_was": 56,
+      "floor_now": 56,
+      "note": "probes only, src untouched, oracle green; composite = u13+w9+w15 tags in tmp/probe_mar.py"
     }
   ],
   "reviewer": {
     "verdict": "N/A",
-    "date": "2026-07-01",
-    "evidence": "No candidate body yet — plan-only checkpoint; no src modified; oracle green."
+    "date": "2026-07-02",
+    "evidence": "No candidate body yet — probe-only checkpoint; no src modified; oracle green."
   },
   "remaining_gap": {
-    "summary": "Two walls: (1) the 6-register rotation (this plan); (2) the debug_printf-block scheduling cluster (9 substs + reorder + label-dup tricks) — attack with the csmd4 v15-style restructure after the rotation lands. The 7 prologue + 7 epilogue renames encode the same rotation and should fall with wall 1.",
+    "summary": "Two residuals: (1) trio tail {arg0 s5 / tbl s7 -> swap to s7/s5}: small livelen deltas (tbl needs <152, arg0 <197-pri), expect movement from the final printf shape + the verified t1 tbl-chain (+1 ref, byte-free). (2) printf-block chain4 must color a0 (currently v1): needs fmt-la late in sched1 + val5/11D5 range overlap — x3 stmt-order/local-vs-inline sweep is the next move; lbu order + tail micro-perm follow automatically via sched2 anti-deps.",
     "rule_count_at_head": 42,
-    "rules_required_for_full_match": "42 (5 register-rotation clusters + 7 prologue renames + 7 epilogue renames + 9 sched substs + 1 reorder + label-dup tricks)"
+    "rules_required_for_full_match": "42 (5 rotation swaps + 7 prologue + 7 epilogue renames fall with the register story; 8 printf substs + reorder fall with chain4=a0; 11 tail rules fall with u13's cascade — verify each against bytes at assembly time)"
   },
   "next_hypotheses": [
-    "Execute the lift budget site-by-site with tmp/probe_fn.py + per-probe disposition checks (notes.md inventory); verify the 76/78 tie under global.c's exact integer math FIRST.",
-    "After rotation: csmd4-style arg5-first/split restructure for the debug_printf scheduling cluster.",
-    "End gate: retire all 42 rules + full SHA1; declare the undeclared new_var in the final form and re-verify."
+    "x3 sweep: extend tmp/sweep_mar_printf.py to print chain4's disposition; sweep {t0,arg5,p4} stmt orders x {F19C0 early local} x {11D5 local position} x {arg5 addr-local}; win = chain4 a0.",
+    "Then: re-measure trio (probe_mar_disp), close with t1 chain if needed; assemble final form (u13+w9+winning block + declare new_var/new_var3); retire all 42; full SHA1; dual review; queue done.",
+    "Fallback: instrument sched.c adjust_priority for fmt-la's pri; or check which of the 42 rules retire under chain4=v1."
   ],
-  "rejected_forms": [],
+  "rejected_forms": [
+    {"form": "outer cycle as real do-while (w-full-loop)", "score": "n/a", "reason": "loop_depth weighting breaks update_equiv_regs' refs==2 precondition -> masks materialize as register-and. Outer stays goto-loop."},
+    {"form": "u8 t0 split (w10/w11/v_k)", "score": "lbu sinks", "reason": "QI-load + zext-at-use; combine merges AT THE USE -> chain birth late -> dense qty -> v0/v1."},
+    {"form": "all-locals target-order (w12)", "score": "4/14", "reason": "11D5 local hoists its lbu to pos2 and displaces the a1 load."}
+  ],
   "prior_sessions_summary": [
-    "2026-05-29 (register-alloc-deep-dive): rotation map established; chain-extender hypothesis tested (idx_1496 already present); clean-target permuter plateau 1125 over 16.8k iters.",
-    "2026-07-01 (plan session, c6d96b06): allocno formula reproduces baseline exactly; 11-ref lift budget computed (superseded by t3/u7); new_var UNDECLARED at :555 discovered (Makefile pipe swallows cc1's error-recovery exit; bytes unaffected)."
+    "2026-05-29 (register-alloc-deep-dive): rotation map established; clean-target permuter plateau 1125 over 16.8k iters.",
+    "2026-07-01 (plan session, c6d96b06): allocno formula reproduces baseline exactly; new_var UNDECLARED at :555 discovered (Makefile pipe swallows cc1's error-recovery exit; bytes unaffected).",
+    "2026-07-02 session 1 (3f816004): t1 tbl-chain proven byte-free (tbl s6->s5 at 141 insns); global.c tie-break verified (double-truncate, allocno-ascending); reg_n_refs += loop_depth confirmed; full target register map read from bytes."
   ],
   "memory_notes": []
 }

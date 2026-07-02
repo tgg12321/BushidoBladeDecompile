@@ -1,117 +1,120 @@
-# marionation_Exec (system.c) — WIP, 6/8 regs + mask mechanics cracked
+# marionation_Exec (system.c) — WIP, 6/8 regs + printf-block mechanism decoded
 
-## TL;DR (2026-07-02, session 3)
-Best composite (probe u7): **6/8 registers correct** (status s0, saved
-s1, i1494 s2, i1496 s3, arg1 s4 — only the {arg0,tbl,i1495} trio still
-rotated) + both check-site `andi` masks derivable from the sibling's
-opaque-constant idiom. Resume from §Session-3 below — the remaining
-grid is (a) mask-combine × arm-shape interaction, (b) copy-loop local
-coloring (src→a0), (c) the trio (expected consequence of (b)).
-ASM-SUSPECT verdict is the distance>50 heuristic only (0 asm insns).
+## TL;DR (2026-07-02, session 4)
+**w9+u13+w15 composite = 6/8 registers locked** (status s0, saved s1,
+i1494 s2, i1496 s3, arg1 s4, **i1495 s6** ✓) + both masks fold + tail
+cascade (check→a2, both `move v0,a2` returns) + printf-block structure
+12/14. Residuals: (1) trio tail {arg0 s5/tbl s7 must swap to s7/s5} —
+small livelen deltas, expect movement from the final printf shape;
+(2) printf-block chain4 colored v1 not a0 — blocker EXACTLY identified
+(fmt-la sched1 drift, below); lbu-pair order + tail micro-perm follow
+the chain4=a0 flip automatically (sched2 anti-deps).
+
+## Composite recipe (probe tags in tmp/probe_mar.py)
+- **u12/u13**: masks `check = *idx_1496 & new_var;` / `& new_var3` (two
+  single-use opaque constants, declared after idx_1496 decl anchor) +
+  csmd4 arm shape + BLOCK-LOCAL `u8 bb` per copy loop (u13) → tail
+  cascades: bb→v0, src→a0, i→v1, dst→a1, check→a2, `move v0,a2` ×2.
+  insns 142 = byte-neutral. Masks fold via local-alloc
+  update_equiv_regs (reg_n_refs==2 UNWEIGHTED, local-alloc.c:1079).
+- **w9**: poll cycle as REAL `do { status=f(); if (status==0) break;
+  {arms} } while (1);` → loop_depth (flow.c: depth PLUS ONE is the ref
+  weight) double-counts poll-resident refs: status 4→8 refs (pri
+  24000), i1494 6→7 (909, stays under saved 952), i1495 2→3 (197 →
+  lands s6 ✓). **Outer cycle MUST stay goto-loop** — a real outer
+  do-while would make mask refs 4 (≠2) and kill the andi fold.
+- **w15 printf block** (current best):
+  `s32 t0; s32 *p4; t0 = idx_1494[0]; arg5 = tbl_125c[idx_1494[1]];
+  p4 = &tbl_125c[t0]; debug_printf(fmt, D_800F19C0, 11DC[11D5], *p4, arg5);`
+  → chain4 stretched (lbu@2, sll@6, addu@8, lw@11), lw4 crosses the sw
+  (source-after ⇒ no anti-dep), fmt-la last, chain5=v0 ✓, 11D5=v0 ✓.
+
+## Printf-block mechanism ledger (session-4 dumps; tmp/rtl/marS.*)
+- Final block order is dictated by RA + sched2 anti-deps; sched1 order
+  (what local-alloc sees) is the real substrate. sched.c = BACKWARD
+  list scheduling: pick sequence = reverse layout; ties at equal pri
+  break by class-vs-last-scheduled then luid.
+- **u8 t0 fails**: expand emits QI-load + zext-at-use; combine merges
+  AT THE USE → lbu sinks (the w10/w11 lbu4-late mystery). `s32 t0`
+  keeps the merged zext-load at stmt-1 (uservar not combine-sunk) but
+  sched1 still slaves the lbu to its consumer's position — the fix is
+  the ADDRESS-LOCAL p4 (sll/addu at stmt-3 luids) + `*p4` inline (lw
+  at call luid, AFTER the sw in expand order — a tbl-based (reg-addr)
+  load cannot cross an sp-store (memrefs can't prove distinct), while
+  symbol-based loads (F19C0/11D5/11DC) cross freely).
+- **Local-alloc**: block_alloc ties chains through dying srcs into one
+  qty; qty order = copy-suggested first (a3/a1 feeders), then density
+  `floor_log2(refs)*refs*size/(death-birth)` DESC (qty_compare,
+  local-alloc.c:~1578). Sparse chain4 allocates LAST → gets a0 IFF
+  v0+v1 busy across its range AND a0 not hard-blocked.
+- **THE a0 BLOCKER (w15 trace, log line 4350)**: fmt-la `(set a0
+  (symbol D_800161C8))` (combine-merged direct-a0) has backward pri 1
+  — loses every pick to the huge-pri chain insns → drifts to sched1
+  pos-7 → hard-a0 live [7..16] → chain4 can never take a0. Target
+  needs fmt-la picked by backward clock ~5 (ready set {a1-move(p2),
+  fmt-la(p1)} at clock 5 — it must WIN there or the deep insns arrive).
+- **val5→v1 condition**: val5 (arg5 value) takes v1 (target) instead
+  of v0 iff its range overlaps the 11D5 qty in SCHED1 coords (i.e. the
+  sw5 sits AFTER 11D5's lbu in sched1 order). w13 (arg4-local) had
+  that ✓; w15 doesn't. With val5=v1 AND fmt-la late, chain4 (sparse,
+  last) → v0✗v1✗ → a0 ✓ and the whole tail order follows via sched2
+  anti-deps (lw4 sinks past 11D5's v0 ops; fmt-la after lw4 by a0
+  anti-dep; lbu4(a0)/lbu5(v0) order follows).
+
+## Next session — exact resume
+1. **x3 sweep (highest EV)**: extend tmp/sweep_mar_printf.py classify
+   to also print chain4's disposition (grep greg for the p4/t0
+   pseudos). Sweep stmt-order micro-perms around w15: {t0,arg5,p4}
+   orders × {F19C0 as early local a1v} × {11D5 as local placed 2nd/3rd/
+   4th} × {arg5 addr-local p5 variant}. LOOK for chain4=a0. The two
+   target conditions: fmt-la late in sched1 + val5/11D5 overlap.
+2. If a0 lands: re-run probe_mar_disp → expect tail micro-perm to
+   snap to target; then re-measure the TRIO (arg0/tbl livelens shift
+   with the block reshape; need tbl<152, arg0>102-ish livelen or
+   tbl+1 byte-free ref via the t1 F19C0-chain (folds, verified)).
+3. Assemble final form in src/system.c: u13 masks/arms/loops + w9 poll
+   do-while + winning printf shape + DECLARE `int new_var; int
+   new_var3;` (new_var is currently UNDECLARED at line 555 — fix in
+   the final form only). Then retire all 42 rules + full build SHA1 +
+   dual review + queue done.
+4. Fallback if x3 dry: instrument adjust_priority (sched.c) to print
+   fmt-la's pri computation; find what legitimately raises it (e.g. a
+   REAL dependence shape); or accept chain4=v1 and check whether ANY
+   rules can still retire (prologue offsets etc. depend only on the
+   s-reg trio).
 
 ## Target ground truth (from asm/funcs/marionation_Exec.s)
-- Register map CONFIRMED from bytes: status→s0 (call result), saved→s1
-  (`andi $s1,$v0,3`), idx_1494→s2, idx_1496→s3, arg1→s4, tbl→s5,
-  idx_1495→s6, arg0→s7. Tail locals: check→a2, src→a0, i→v1, b→v0.
-- Poll shape: current C is CORRECT (delay-slot andi's are reorg
-  artifacts). Arm shapes (71A3C-71A9C): arm-1 = src-la THEN
-  `beqz s4` (tests the PARAM) with dst-copy in the delay; arm-2 =
-  dst-copy THEN src-la THEN `beqz a1` (tests the copy) — the current
-  C's asymmetric arms MATCH this; t3's symmetrization helps REGISTERS
-  but likely wrongs arm-1's branch bytes — reconcile in the final form.
-- reg_n_refs += loop_depth (goto-loops don't raise depth); tie-break =
-  double-truncate then ascending allocno (global.c:604-625).
-
-## Baseline priorities (re-derivable: tmp/probe_mar_allocdbg.py / probe_mar.py t0)
-pri = floor_log2(nrefs)*nrefs/livelen*1e4 reproduces dispositions exactly;
-07-01 numbers: 81:8000(s0) arg1:975 saved:952 i1494:821 i1496:684
-arg0:263 tbl:203 i1495:139.
-
-## Session 1-2 digest (details in git history of this file)
-- t3 arm-symmetrization landed 5/8 regs (arg1 refs 4→3, pri 365) but
-  wrongs arm-1's branch bytes; u7 gets the same 6/8 with u6's masks.
-- ALLOCDBG (faithful dbg cc1, tmp/gccdbg/cc1) proved the trio is pure
-  priority order — no preferences to exploit; original livelens imply
-  the TAIL SHAPE sets the trio (arg0/i1495 livelens ~swapped vs ours).
-- Refuted: late-site chain-extenders materialize (+6); t1 tbl-chain
-  incompatible with t3 (overshoots arg1); dead stores inert for global
-  RA (flow deletes before counting); the s1-lift budget superseded.
-
-## Session-3 (2026-07-02): the check-mask mechanics CRACKED + 6/8 regs
-**The target's `andi $a2,$v0,0xFF` at both check sites comes from the
-sibling's opaque-constant idiom** — `check = *idx_1496 & new_var;` with
-`int new_var; new_var = 0xFF;` (the UNDECLARED vestigial set at
-system.c:555 — the original used it; csmd4's committed twin at 443/470
-is the byte-proven exemplar). Mechanics established by probes u1-u7
-(tmp/probe_mar.py tags):
-- A LITERAL `& 0xFF` on a u8 deref folds in the FRONT END (u1/u2 —
-  var-reuse via wide v0 does NOT help; cse folds locally).
-- An OPAQUE-constant mask survives the front end; then: same-block
-  const-set → cse eats the whole and (u5 site-2); cross-block set +
-  SINGLE-use → combine folds the const into `andi` IMMEDIATE and
-  consumes the set insn (u4 ✓ byte-free); cross-block + MULTI-use →
-  register-form `and` + callee-save residency ✗ (u3).
-- ⇒ TWO single-use constants: `new_var` + a sibling (`new_var3 = 0xFF;`
-  next to it) → BOTH andi sites emit (u6 ✓) and `saved` lands s1.
-- **u11 = the correct composite (u7-u10's asymmetry was a SPLICE BUG):**
-  the u6-u10 probes' shared anchors matched cpu_side_move_dir_4 FIRST
-  (the twins share text!), so new_var3's decl+set landed in the WRONG
-  FUNCTION and marionation read an uninitialized error-recovered var.
-  With marionation-unique anchors (u11 in tmp/probe_mar.py): **BOTH
-  masks fold to `andi imm` ✓, insns 140 (byte-neutral), 5 regs locked
-  (status s0, saved s1, i1494 s2, i1496 s3, arg1 s4).** The REAL fold
-  mechanism (traced in dumps, mar8/mar11.i.*): cse leaves (and reg
-  reg_nv); local-alloc's update_equiv_regs (local-alloc.c:1079,
-  reg_n_refs==2 && multi-block) substitutes the constant into the
-  killing use and DELETES the init — pseudo vanishes pre-lreg. Both
-  mask pseudos ride it when actually initialized.
-- **Remaining single chain — DECODED (s4b):** ours: check wins v0 via
-  its return-copy PREFERENCE + the regs_someone_prefers machinery
-  (global.c prune_preferences: higher-pri loop temps AVOID v0 because
-  lower-pri conflicting check prefers it) → b→v1, i→a0, src→a2. Target:
-  check's v0-preference must be PRUNED (conflict) → loop temps take
-  {b:v0, i:v1, src:a0, dst:a1} low-first by weighted priority → check
-  lands a2 by elimination → real `move v0,a2` returns. NOTE: `u8 b` is
-  GLOBAL-class here (REUSED by both copy loops — 2 blocks) unlike
-  csmd4's single-loop local-class b. u12 (csmd4's arm shape: dst; src;
-  i=7 outside guard) did NOT flip the coloring — shape isn't the lever.
-  **DECISIVE NEXT PROBE (u13): make the byte temp BLOCK-LOCAL per loop**
-  (`{ u8 bb; do { bb = *src; ... } while ...; }` in each arm, or find
-  what v0-hard conflict prunes check's preference — e.g. a v0-hard live
-  range overlapping check's). If block-local temps grab v0 via
-  local-alloc (which runs BEFORE global), check's preference dies to
-  the conflict and the whole tail cascades to target. Verify with
-  MAR_TAIL emission + then re-check the trio {arg0,tbl,i1495} (tbl
-  was already s6 in u11 — one off; tail liveness shift may finish it).
-- u12 also fixed arm-2's `i = 7;` placement (outside guard, csmd4
-  parity) — keep it; byte-order effects unmeasured vs target yet.
-- Target tail facts (asm 71A24-71ACC): both null-paths share one
-  [j .L2CC; move v0,a2] at .L2BC while arm-1's copy-exit has its OWN
-  copy at 71A6C (unmerged pair — same protective mystery as motion
-  Wall-2; our compiles also keep them separate, don't worry it).
-  after_blocks = `beqz s7 → loop` with `move v0,zero` in the delay.
+- Register map: status→s0, saved→s1 (`andi $s1,$v0,3`), idx_1494→s2,
+  idx_1496→s3, arg1→s4, tbl→s5, idx_1495→s6, arg0→s7. Tail: check→a2,
+  src→a0, i→v1, b→v0. Printf block (718FC-7194C): lbu a0(idx0), lbu
+  v0(idx1), lui/lw a1(F19C0), sll v0, addu v0+s5, sll a0, lw v1 0(v0),
+  lbu v0 11D5, addu a0+s5, sll v0, sw v1 0x10(sp), lw a2 11DC(at+v0),
+  lw a3 0(a0), la a0 fmt, jal. tslTm2 delay slot = NOP (lbu a0
+  arg-conflicts; lbu v0 return-conflicts — follows from the coloring).
+- Poll arms + after_blocks: `beqz s7 → loop` w/ `move v0,zero` delay.
+  Both null-paths share one [j; move v0,a2] at .L2BC; arm-1 copy-exit
+  has its OWN copy at 71A6C (unmerged pair — same as our compiles ✓).
 
 ## Known gotchas
-- **`new_var` is UNDECLARED in this function** (src/system.c:555) — the
-  build only passes because the Makefile PIPE swallows cc1's
-  error-recovery exit. cc1 recovers as-if-declared; RTL/bytes are fine.
-  DO NOT "fix" the decl mid-derivation (it may shift pseudo numbering);
-  fix it in the final committed form and re-verify SHA1.
+- `new_var` UNDECLARED at src/system.c:555 (Makefile pipe swallows
+  cc1's error-recovery exit; bytes fine). DON'T fix mid-derivation
+  (shifts pseudo numbering); fix in the final committed form.
 - The 42 rules are index-anchored: mid-derivation full builds are
-  meaningless (rules misapply on shifted indices). Iterate at cc1-dump
-  level (dispositions) + sandbox insn-count; the ONLY end gate is
-  retire-all-42 + full SHA1.
-- Masked sandbox is rotation-blind here (like motion_SetMotion).
-- After the RA rotation lands, the residual = the 7 prologue + 7
-  epilogue rename substs should vanish together (they encode the same
-  rotation); the 9 debug_printf scheduling substs + reorder + label-dup
-  tricks are a SECOND wall (cf. csmd4's block — the v15-style arg5-first
-  restructure may apply; see memory/wip/cpu_side_move_dir_4/notes.md).
+  meaningless. Iterate at cc1-dump level; the only end gate is
+  retire-all-42 + full SHA1. Masked sandbox is rotation-blind.
+- Twin-function contamination: csmd4 (line ~399) shares text with
+  marionation (499) — ALL probe anchors must be marionation-unique
+  (the `_2` suffix on D_800A147C_2, or split at "s32 marionation_Exec").
+- w9 pris: arg1:357 saved:952 i1494:909 i1496:684 arg0:250 tbl:192
+  i1495:197. **csmd4 payoff**: its remaining 5 rules are THIS block
+  (reg-half = chain4=a0); the w15+x3 answer transfers, but respect its
+  committed ref-count balance (WIP rejected_forms) before applying.
 
 ## Pointers
-- [[duplicated-statement-into-arms]] — the lever + prerequisites.
-- memory/wip/motion_SetMotion/notes.md — the proven recipe + merge-
-  direction steering.
-- memory/project/register-alloc-deep-dive.md § marionation_Exec — the
-  prior sessions' rotation map (matches this baseline).
-- tmp/rtl_dump.sh + tmp/probe_fn.py + tmp/probe_msm.py — the probe kit.
+- tmp/probe_mar.py (tags t0..w15) + probe_mar_disp.py + probe_mar_
+  sched.py + mar_sched_section2.py + mar_rtl_order.py + mar_block_
+  regs.py + sweep_mar_printf.py — the probe kit (all restore src).
+- tmp/gccdbg/cc1 = instrumented cc1 (BB2_SCHED_DEBUG/BB2_PRIO_DEBUG/
+  BB2_ALLOC_DEBUG in-tree env-gated; build/cc1 is canonical May-18).
+- memory/wip/cpu_side_move_dir_4/notes.md — the twin's ledger.
+- [[duplicated-statement-into-arms]], [[register-alloc-pure-c]].
