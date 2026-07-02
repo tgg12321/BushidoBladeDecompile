@@ -38,3 +38,7 @@ sdata*.txt           text eol=lf
 # both sides' lines). Not eol-normalized here — it's already LF (Python-written),
 # per this file's "add only confirmed-LF patterns" rule.
 metrics/events.jsonl merge=union
+
+# gcc-2.7.2 toolchain sources (local dep, gitignored, but Edit-tool writes
+# must stay LF for the 1996 build system + WSL make)
+tools/gcc-2.7.2/** text eol=lf

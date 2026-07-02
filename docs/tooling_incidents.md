@@ -113,3 +113,10 @@ git stash pop
 diff tmp/oracle.dump tmp/cur.dump | head -80`
 - **Why not a real failure:** Agent invoked mipsel-linux-gnu-objdump from Git Bash where the cross-toolchain is not on PATH; the correct path is to invoke via tools/wsl.sh or the PowerShell tool. No code change needed — the toolchain itself is fine and accessible from WSL/eng.ps1. The signature already correctly flags the wrong-shell pattern; recovery is for the agent to switch to the WSL wrapper.
 - **Action:** tighten signature `core-tool-not-found` in tools/hooks/tooling_error_signatures.json so it no longer fires on this output.
+
+## 2026-07-02 16:41:28 — RESOLVED (crlf/crlf-build-file)
+- **Triggering command:** `Edit C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile\tools\gcc-2.7.2\sched.c`
+- **Root cause:** Windows Edit tool wrote CRLF into tools/gcc-2.7.2/sched.c (gitignored local dep, uncovered by gitattributes)
+- **Permanent guard:** `.gitattributes` (uncommitted change)
+- **Verified by:** normalize_lf stripped CRs (CR-bytes: 0 confirmed); .gitattributes eol=lf entry added for tools/gcc-2.7.2/**
+- **Occurrences this incident:** 1
