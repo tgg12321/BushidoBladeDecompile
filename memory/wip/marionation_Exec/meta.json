@@ -1,0 +1,40 @@
+{
+  "function": "marionation_Exec",
+  "file": "system",
+  "scores": {
+    "head_floor": 56,
+    "candidate_floor": 56,
+    "metric": "sandbox --disable all (masked) — rotation-blind here; the real state is the disposition table in notes.md. Full SHA1 after retire-all-42 is the only end gate.",
+    "build_insns": 179,
+    "target_insns": 179
+  },
+  "sessions": [
+    {
+      "date": "2026-07-01",
+      "git_head_at_measurement": "c6d96b06",
+      "lever": "PLAN DERIVED (no src change): fresh cc1 -da .greg/.lreg baseline; the allocno priority formula reproduces the current dispositions EXACTLY, so the rotation is a computable ref-lift problem under the sanctioned duplicated-statement lever (proven on motion_SetMotion this session). Lift budget: p80(saved)+2, idx_1494+2, idx_1496+3 (deliberate tie with idx_1494, broken by allocno order), tbl_125c+2, idx_1495+2 — eleven byte-free refs, each inside the existing live range. Also discovered: new_var is UNDECLARED at system.c:555 (build passes only because the Makefile pipe swallows cc1's error-recovery exit; bytes unaffected).",
+      "floor_was": 56,
+      "floor_now": 56
+    }
+  ],
+  "reviewer": {
+    "verdict": "N/A",
+    "date": "2026-07-01",
+    "evidence": "No candidate body yet — plan-only checkpoint; no src modified; oracle green."
+  },
+  "remaining_gap": {
+    "summary": "Two walls: (1) the 6-register rotation (this plan); (2) the debug_printf-block scheduling cluster (9 substs + reorder + label-dup tricks) — attack with the csmd4 v15-style restructure after the rotation lands. The 7 prologue + 7 epilogue renames encode the same rotation and should fall with wall 1.",
+    "rule_count_at_head": 42,
+    "rules_required_for_full_match": "42 (5 register-rotation clusters + 7 prologue renames + 7 epilogue renames + 9 sched substs + 1 reorder + label-dup tricks)"
+  },
+  "next_hypotheses": [
+    "Execute the lift budget site-by-site with tmp/probe_fn.py + per-probe disposition checks (notes.md inventory); verify the 76/78 tie under global.c's exact integer math FIRST.",
+    "After rotation: csmd4-style arg5-first/split restructure for the debug_printf scheduling cluster.",
+    "End gate: retire all 42 rules + full SHA1; declare the undeclared new_var in the final form and re-verify."
+  ],
+  "rejected_forms": [],
+  "prior_sessions_summary": [
+    "2026-05-29 (register-alloc-deep-dive): rotation map established; chain-extender hypothesis tested (idx_1496 already present); clean-target permuter plateau 1125 over 16.8k iters."
+  ],
+  "memory_notes": []
+}
