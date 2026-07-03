@@ -45,35 +45,35 @@ pri=1, luid-desc ties — SCHEDDBG block-23); no mips.md peepholes; jump2
 moves nothing. ⟹ target's geometry must differ UPSTREAM (arg1-refs=3
 via a construct keeping beqz-s4?? merged-test spelling gives beqz-dst ✗;
 or pair-refs=8 via floor_log2 jump — no byte-free 8th ref found).
-**(3b) EXHAUSTION COMPLETED (session 10):** the tie-copy hole in the
-catch-22 (src born same-block + dies at copy + dest used cross-block →
-survives cse, ties to noop, jump2-deletes) has NO vehicle in arm-2:
-i/src are CONSTANTS (i2=i measured: cse1 const-propagates 7 into the
-copy, then i's set dead — trace tmp/mar_i2_trace.py, copy present in
-.jump, gone in .cse; L stays 85 → s2 rotation); dst2-chain copies sit
-past arg1's death; check/chkb cross-block-born; arg0/tbl/i1496 don't die
-at the copy. saved-split refuted by bytes (target lbu→v0 = unsplit).
-Sandwich arithmetic (saved 952 > pair > arg1) has no integer solution
-for any move-earlier order (floor_log2 jumps overshoot). Also L counts
-LIVE positions only (arm-1's loop + done-island are arg1-dead — stream
-topology games are inert). Construct-family sweep (twin-form/u8/array-
-ptr/named-arg4/direct: tmp/mar_family_sweep.py) all ≥9.
-**Permuter:** harness WORKS (tmp/perm_mar random, tmp/perm_mar2 directed;
-pre-preprocessed sanitized base.c; honest pipeline compile.sh). 17280
-directed lineswap orders: nothing below score 6. Random best uses
-illegitimate inline_fn mutations — vet before use.
-**CONCLUSION (session 10):** the local search spaces around the current
-FOUNDATION are exhausted with measured negatives. The remaining 6 points
-require a DIFFERENT foundation spelling (head FAKE chains / poll /
-printf variable structure) that shifts the global pri table — target's
-true C plausibly differs there while emitting identical head bytes.
-**NEXT round:** (i) enumerate alternative HEAD-CHAIN spellings that emit
-the same bytes (the pair's refs/L are set there); (ii) long permuter
-campaign seeded from score-6 with inline mutations disabled. DONE leads:
-twin's C read (src/system.c:388 — its tail matched via the ==2||==5
-two-entry label; its arm order [st;dst;src;i] tolerated by ITS pri
-table); corpus scraped (matched gcc2.7.2 scratches with this idiom all
-use OR-conditions/multi-entry arms).
+**(3b) EXHAUSTION COMPLETED (session 10):** the tie-copy hole (src born
+same-block + dies at copy + dest cross-block) has NO vehicle in arm-2:
+i/src are CONSTANTS (i2=i: cse1 const-propagates — tmp/mar_i2_trace.py,
+copy in .jump, gone in .cse; L=85 → s2 rotation); dst2-chains sit past
+arg1's death; check/chkb cross-block-born; arg0/tbl/i1496 don't die at
+the copy. saved-split refuted by bytes (lbu→v0 = unsplit). Sandwich
+(saved 952 > pair > arg1) has no integer solution (floor_log2 jumps
+overshoot). L counts LIVE positions only (arm-1 loop + done-island are
+arg1-dead — topology games inert). Family sweep (twin-form/u8/array-ptr/
+named-arg4/direct) all ≥9.
+**Permuter (session 11): REAL METRIC ACHIEVED.** tmp/perm_mar3 (recipe:
+tools/mar_perm_workspace.sh + tools/mar_perm_compile.sh): full-TU compile
+(context-faithful — a reduced TU shifts marionation by 55 lines!!) then
+awk-extract marionation from the maspsx'd asm (directives at col 0!) →
+offset-0 .o vs target.o from asm/funcs+prelude. Base score = 300 (was
+238800 of address noise — old runs' rankings were GARBAGE: their best
+scored 55 through the sandbox). perm_inline=0 via settings weight_overrides.
+Runs: perm_mar3 random + perm_mar4 (lineswap 17280 orders) vs real metric.
+Also refuted: Kengo marionation_Exec = PS2 rewrite (useless); the -1
+constant-holder + status&2-named leads (K1/K2 rotate, K3 neutral); the
+42 old rules confirm the same steal (subst addu->nop @127 + insert @130
+= the previous workers cheated through the identical wall).
+**CONCLUSION:** local search around this foundation = exhausted with
+measured negatives; head-chain respellings byte-pinned (H1-H6 + O1-O3:
+sched1 normalizes stores, la-reorders drop refs). The 6 points need a
+foundation the derivation hasn't conceived — the REAL-metric permuter
+campaigns (perm_mar3/4) are the active search. DONE leads: twin's C
+(:388, ==2||==5 two-entry label), corpus (OR-conditions), m2c (no pp in
+original; arm-2 dst-early in bytes), Kengo (rewrite, useless).
 
 ## Region-1 ledger (printf lbu5/sll4) — the two-state trap
 sched1 normalizes ALL statement orders to TWO streams (QTYDBG):
