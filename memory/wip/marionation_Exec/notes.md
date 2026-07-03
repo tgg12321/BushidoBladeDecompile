@@ -17,18 +17,12 @@ scan takes the move (trial-1), sb protected → [sb, la, beqz, move-slot]
 = target. check-1 NOP: sb loses (trap+oppmem=1 always), la inelig
 (never splits), SEQ stops; 1723 refuses conditional-SEQ steals.
 
-## Region-3 DECOMPOSED (sessions 9b/9c) — the ledger
-**(3a) the steal — MECHANISM FOUND VIA THE TWIN.** cpu_side_move_dir_4's
-target tail (71A9C..): its check-branch (bne a2,v0) slot = NOP with
-[li-2, sb, MOVE, la, SEQ(beqz-a1, li-v1)] straightline — because its arm
-head carries .L80080FBC, targeted by the FIRST of two chained tests
-(`chk==2 || chk==5`) ⟹ own_thread_p sees the CODE_LABEL ⟹
-own_fallthrough=0 ⟹ fill_eager SKIPS the fall-through fill (reorg.c:3764
-gates on own_fallthrough) ⟹ NOP. Marionation's check2 needs the same but
-its bytes show NO label at arm-2's head — a label alive at pass-1-eager
-and dead by final needs a user deleted post-eager byte-free; L1/L2/L4/L6
-label structures (else-goto, redundant second test, switch, bnez-form)
-ALL normalize away pre-dbr (measured, all score 6).
+## Region-3 DECOMPOSED (9b/9c) — ledger
+**(3a) steal — twin-proven mechanism:** cpu_side_move_dir_4's NOP comes
+from its arm-head label (two-entry `chk==2||chk==5`) ⟹ own_fallthrough=0
+⟹ fill_eager skips (reorg.c:3764). Marionation's single-beqz bytes admit
+no visible second entry; L1/L2/L4/L6 label structures all normalize away
+pre-dbr (measured 6).
 **(3b) the transposition — RA-pinned, measured to ±1.** Exact allocno
 table (BB2_ALLOC_DEBUG, tmp/mar_allocdbg.sh): pair i1494/96 = refs 7,
 L=150, pri 933/933; arg1 = refs 4, L=86, pri 930; saved = 952. arg1's
@@ -85,14 +79,20 @@ that gives sched1 the lw5-first luids. Pins ignored (RA fights them).
 State A (mul-before-arg5) = RA ✓ order ✗ (the base-6). REFUTED sinks
 (session 9): seg3-inline (combine merges), named t3 (re-ties), pp moves
 (normalized), copy-back (pre-RA-eliminated).
-**Permuter-find VETTING (session 11c):** the 17280-order enumeration
-floor = 220 (order space DONE). mar5's "180" = FALSE POSITIVE: a
-semantic `goto loop` inside the &2-handler (j-target divergence that
-both the masked sandbox AND the permuter's difflib alignment underprice)
-+ a spurious nop. VET every find: (1) semantics diff vs base, (2) the
-150/151-region j-target DELTAS must be uniform (+0x584-class), (3) run
-the full-diff, not hunk counts. do-while-0 near the tail = NEUTRAL
-(B/C measured 6). Exact-180 full diff = reg-swap ✗ + goto ✗ + steal ✗.
+**VETTING (11c):** order-floor = 220 (17280 enumerated). mar5 "180" =
+FALSE POSITIVE (semantic goto-loop, mask-blind j-target + spurious nop).
+Vet: semantics diff + uniform j-deltas + full-diff. do-while-0 = neutral.
+**State-B RTL mapped (11d, tmp/mar_b_uidmap.py on marB.i.greg):** the
+t0-chain = ONE user-var pseudo, 3 sets, IN-PLACE ops (lbu v1; sll v1,v1;
+addu v1,v1,s5; lw a3,0(v1)) → v1; val5 → a0. TARGET = same shapes,
+swapped (t0→a0, val5→v1). Local qty 114 [18..24] (the tie-winner on v1)
+still needs identification (t0 is multi-set ⟹ global-alloc ⟹ 114 is
+NOT t0 — next: BB2_QTY_DEBUG reg1↔pseudo cross-ref via marB.i.lreg).
+sched2 CAN violate luid (state-A @8: sw picked over sll-11D5 against
+luid — hazard/class rule), so the tie(stream) vs bytes(sched2) CAN
+split — the lever = making val5's allocation precede qty-114's.
+SCHEDDBG state-B: sched1 dump line 3318, sched2 3857 in marS.sched.log
+(regenerate via tmp/mar_sched_b.py).
 
 ## Target ground truth (asm/funcs/marionation_Exec.s)
 - Regs: status s0, saved s1, i1494 s2, i1496 s3, arg1 s4, tbl s5,
