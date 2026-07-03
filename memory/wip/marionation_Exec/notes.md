@@ -55,18 +55,13 @@ the copy. saved-split refuted by bytes (lbu→v0 = unsplit). Sandwich
 overshoot). L counts LIVE positions only (arm-1 loop + done-island are
 arg1-dead — topology games inert). Family sweep (twin-form/u8/array-ptr/
 named-arg4/direct) all ≥9.
-**Permuter (session 11): REAL METRIC ACHIEVED.** tmp/perm_mar3 (recipe:
-tools/mar_perm_workspace.sh + tools/mar_perm_compile.sh): full-TU compile
-(context-faithful — a reduced TU shifts marionation by 55 lines!!) then
-awk-extract marionation from the maspsx'd asm (directives at col 0!) →
-offset-0 .o vs target.o from asm/funcs+prelude. Base score = 300 (was
-238800 of address noise — old runs' rankings were GARBAGE: their best
-scored 55 through the sandbox). perm_inline=0 via settings weight_overrides.
-Runs: perm_mar3 random + perm_mar4 (lineswap 17280 orders) vs real metric.
-Also refuted: Kengo marionation_Exec = PS2 rewrite (useless); the -1
-constant-holder + status&2-named leads (K1/K2 rotate, K3 neutral); the
-42 old rules confirm the same steal (subst addu->nop @127 + insert @130
-= the previous workers cheated through the identical wall).
+**Permuter (session 11): REAL METRIC.** tmp/perm_mar3 (recipe: tools/
+mar_perm_workspace.sh + mar_perm_compile.sh): full-TU compile (a reduced
+TU shifts marionation by 55 lines!) + awk-extract to offset-0 .o vs
+asm/funcs-built target. Base = 300 real points (was 238800 noise; old
+rankings garbage). perm_inline=0. Refuted: Kengo (PS2 rewrite); -1
+holder + status&2-named (rotate/neutral); the old 42 rules = the same
+steal wall cheated through (addu->nop @127 + insert @130).
 **CONCLUSION:** local search around this foundation = exhausted with
 measured negatives; head-chain respellings byte-pinned (H1-H6 + O1-O3:
 sched1 normalizes stores, la-reorders drop refs). The 6 points need a
@@ -90,6 +85,14 @@ that gives sched1 the lw5-first luids. Pins ignored (RA fights them).
 State A (mul-before-arg5) = RA ✓ order ✗ (the base-6). REFUTED sinks
 (session 9): seg3-inline (combine merges), named t3 (re-ties), pp moves
 (normalized), copy-back (pre-RA-eliminated).
+**Permuter-find VETTING (session 11c):** the 17280-order enumeration
+floor = 220 (order space DONE). mar5's "180" = FALSE POSITIVE: a
+semantic `goto loop` inside the &2-handler (j-target divergence that
+both the masked sandbox AND the permuter's difflib alignment underprice)
++ a spurious nop. VET every find: (1) semantics diff vs base, (2) the
+150/151-region j-target DELTAS must be uniform (+0x584-class), (3) run
+the full-diff, not hunk counts. do-while-0 near the tail = NEUTRAL
+(B/C measured 6). Exact-180 full diff = reg-swap ✗ + goto ✗ + steal ✗.
 
 ## Target ground truth (asm/funcs/marionation_Exec.s)
 - Regs: status s0, saved s1, i1494 s2, i1496 s3, arg1 s4, tbl s5,
@@ -108,11 +111,9 @@ State A (mul-before-arg5) = RA ✓ order ✗ (the base-6). REFUTED sinks
   csmd4's last 5 rules are THIS printf block; mechanisms transfer.
 
 ## Tools
-- tmp/gccdbg/cc1: BB2_DBR_DEBUG (fill decisions), BB2_NO_FT_STEAL
-  (what-if), BB2_ALLOC_DEBUG (allocno table), QTY/SCHED/SLL/FLOW.
-  Runners: tmp/mar_{dbrdbg,allocdbg,qtydbg,cand_sched}.sh;
-  tmp/mar_dbr_tail.py (uid map); tmp/mar_i2_trace.py (copy tracer).
+- tmp/gccdbg/cc1: BB2_DBR_DEBUG, BB2_NO_FT_STEAL, BB2_ALLOC_DEBUG,
+  QTY/SCHED/SLL/FLOW. Runners: tmp/mar_{dbrdbg,allocdbg,qtydbg,
+  cand_sched}.sh; mar_dbr_tail.py; mar_i2_trace.py.
 - Sweeps: tmp/mar_qty_sweep{,2,3,4}.py, mar_family_sweep.py,
-  mar_cross_sweep.py (csv), mar_sweep_{printf2,tail,arm2,label}.py.
-- Prior kit: mar_test_candidate.sh, mar_diff2.sh,
-  probe_mar.py (all restore src).
+  mar_{cross_sweep,nv2_sweep,head_order,perm_leads}.py.
+- Kit: mar_test_candidate.sh + mar_diff2.sh (restore src).
