@@ -41,9 +41,9 @@ s32 marionation_Exec(s32 a0, u8 *a1)
     s32 t0;
     void **pp;
     t0 = idx_1494[0];
+    pp = (void **)&D_800F19C0; /* FAKE */
     t0 *= 4;
     t0 = (s32)((u8 *)tbl_125c + t0);
-    pp = (void **)&D_800F19C0; /* FAKE */
     arg5 = tbl_125c[idx_1494[1]];
     debug_printf(&D_800161C8, *pp, D_800A11DC[D_800A11D5], *(s32 *)t0, arg5);
   }
@@ -98,8 +98,8 @@ s32 marionation_Exec(s32 a0, u8 *a1)
     *idx_1496 = 0;
     if (a1 != 0)
     {
-      dst = a1;
       i = 7;
+      dst = a1;
       do
       {
         u8 bb;
@@ -115,29 +115,23 @@ s32 marionation_Exec(s32 a0, u8 *a1)
     goto done;
     check2:
     check = *(idx_1496 - 1) & new_var3;
-    if (check)
+    if (!check) goto after_blocks;
+    *(idx_1496 - 1) = 0;
+    src = (u8 *) (&D_800F19A8);
+    i = 7;
+    dst = a1;
+    if (dst != 0)
     {
-      *(idx_1496 - 1) = 0;
-      src = (u8 *) (&D_800F19A8);
-      i = 7;
-      dst = a1;
-      if (dst != 0)
+      do
       {
-        do
-        {
-          u8 bb;
-          bb = *src;
-          src++;
-          i--;
-          *dst = bb;
-          dst++;
-        }
-        while (i != (-1));
+        u8 bb;
+        bb = *src;
+        src++;
+        i--;
+        *dst = bb;
+        dst++;
       }
-    }
-    else
-    {
-      goto after_blocks;
+      while (i != (-1));
     }
     done:
     return check;
