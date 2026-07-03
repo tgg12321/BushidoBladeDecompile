@@ -94,8 +94,8 @@ s32 marionation_Exec(s32 a0, u8 *a1)
     s32 check;
     check = *idx_1496 & new_var;
     if (!check) goto check2;
-    src = (u8 *) (&D_800F19B0);
     *idx_1496 = 0;
+    src = (u8 *) (&D_800F19B0);
     if (a1 != 0)
     {
       i = 7;
@@ -115,23 +115,29 @@ s32 marionation_Exec(s32 a0, u8 *a1)
     goto done;
     check2:
     check = *(idx_1496 - 1) & new_var3;
-    if (!check) goto after_blocks;
-    *(idx_1496 - 1) = 0;
-    src = (u8 *) (&D_800F19A8);
-    i = 7;
-    dst = a1;
-    if (dst != 0)
+    if (check)
     {
-      do
+      *(idx_1496 - 1) = 0;
+      src = (u8 *) (&D_800F19A8);
+      i = 7;
+      dst = a1;
+      if (dst != 0)
       {
-        u8 bb;
-        bb = *src;
-        src++;
-        i--;
-        *dst = bb;
-        dst++;
+        do
+        {
+          u8 bb;
+          bb = *src;
+          src++;
+          i--;
+          *dst = bb;
+          dst++;
+        }
+        while (i != (-1));
       }
-      while (i != (-1));
+    }
+    else
+    {
+      goto after_blocks;
     }
     done:
     return check;

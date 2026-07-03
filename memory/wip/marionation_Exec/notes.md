@@ -1,45 +1,51 @@
-# marionation_Exec — HONEST SCORE 9; ALL EIGHT S-REGS + BLOCK REGS TARGET
+# marionation_Exec — HONEST SCORE 8; final-4 sched ties fully decoded
 
-## SESSION 6 — candidate.c assembled, score 9 (was 56→17→9)
-**memory/wip/marionation_Exec/candidate.c** = the full function; apply
-via tmp/mar_apply_candidate.py, test via tmp/mar_test_candidate.sh
-(disp + honest sandbox + restore). ALL EIGHT s-regs target ✓ + all four
-printf-block regs ✓. Composition: u12/u13 masks+block-local loop temps
-+ w9 poll do-while + w24 printf (pp + 3-set t0 multiset BEFORE arg5 —
-RAZOR: any reorder flips chain4/val5) + w25/26/27/28 arm shapes (arm-1
-param-test, [i=7;dst=a1] interior; arm-2 [store;src;i;dst]) + w29
-i1495-chain (UN-DOUBLES i1495 → 405 → s6; csmd4's committed idiom) +
-w31 F19C0-store-chain via i1496 (+2 weighted refs → 7 → 933-TIE with
-i1494, ascending-allocno breaks correctly → i1494 s2, i1496 s3, arg1
-s4 at L=87/919). KEY EQUATIONS: saved 952 > i1494 933 = i1496 933 >
-arg1 919 (L=87, NEEDS ≥86 — ONE clock of margin!) > tbl 657 (5 refs
-doubled) > i1495 405 (undoubled) > arg0 256.
-**Remaining 9 masked diffs + 1 insn (178 vs 179), 4 regions:**
-(1) printf: lbu5 2-early + sll4 2-early [target: lbu4,lbu5,a1lw,sll5,
-addu5,sll4,lw5]; (2) arm-1: sb-before-la + move-in-slot [target: sb,
-la-pair, beqz-s4, move(slot), li v1]; ours [la, beqz, sb(slot), li,
-move]; (3) check2: move/nop slot [+1 insn]; (4) coupled li/move order.
-ALL statement-order fixes for 1-3 ROTATE the RA (arg1's L drops below
-86 or the printf qty-birth tie flips): v2-v11 all measured 14-19.
-tmp/mar_sweep_final.py = 40-combo permutation sweep (pp-pos × arm1i ×
-arm1s × arm2 orders) — run in progress at session end; check results.
-NEXT if sweep dry: (a) SLLDBG per-segment diff of v9-vs-v1 to find
-WHERE arm-1's [dst;i] loses 2 clocks, then a neutral +2 lever;
-(b) sched1-stall margin in do_timeout (clock-count vs bytes decouple);
-(c) directed permuter with sandbox compile.sh on the candidate.
-THEN: retire 42 + full SHA1 + declare new_var/new_var3 ✓ (already in
-candidate) + dual review + queue done. csmd4's last 5 rules = same
-machinery (transfer after).
-
-## Composite recipe (other pieces, all probe-verified byte-neutral 142)
-- u12/u13: masks (new_var/new_var3 opaque consts; fold via
-  update_equiv_regs refs==2 UNWEIGHTED, local-alloc.c:1079) + csmd4
-  arm shape + BLOCK-LOCAL `u8 bb` per copy loop → tail cascade
-  (bb v0, src a0, i v1, dst a1, check a2).
-- w9: poll as REAL `do { status=f(); if (status==0) break; {arms} }
-  while (1);` → loop_depth weights (flow.c: depth PLUS ONE) → status
-  8 refs, i1494 909→933 (under saved 952), i1495 → s6. **Outer cycle
-  MUST stay goto-loop** (real loop → mask refs 4 ≠ 2 → fold dies).
+## SESSION 7 — score 8; the last-mile dependency web (READ FIRST)
+candidate.c = the score-8 form (restore-verify before iterating:
+`bash tools/mar_test_candidate.sh` needs tmp/mar_candidate.c +
+tmp/mar_apply_candidate.py — committed copies in tools/). The final 8
+masked diffs + 1 insn = 4 regions; each is now MEASURED to the exact
+tie (hooks: BB2_QTY_DEBUG in local-alloc block_alloc (both phases),
+BB2_SCHED/SLL/FLOW as before; tools/mar_qtydbg.sh prints per-block qty
+allocations, marionation-isolated):
+- **The RA structure that WORKS (QTYDBG, blk=3)**: chain5-qty(6refs)
+  →v0; 11D5(4refs)→v0-reuse; val5(2refs,[20..26])→v1 (v0 blocked by
+  chain5 death-touch AT the lw5 boundary!); sll4-TEMP(2refs,[14..24])
+  →a0; t0-var = MULTI-DEATH ⟹ NO local qty ⟹ GLOBAL-alloc, LAST
+  ⟹ a0 (fits the temp's gap [lbu..sll]+[addu..lw4]). The *=4 temp
+  split (t0 dies at the sll, reborn at addu) is what makes t0
+  global-class; `t0 <<= 2` has no mid-death ⟹ one LOCAL qty(6refs,
+  5000-pri) ⟹ beats val5 ⟹ steals v1 ⟹ FAILS.
+- **Region-1 (printf lbu5/sll4 order)**: needs sll4-luid > sll5-group
+  (SCHEDDBG: flips picks c13-c17 to target exactly) BUT every such
+  form (v2/a5i/<<=) narrows the temp span or unifies the qty ⟹ temp
+  beats val5 (3333-vs-2500-3333 razor, qty-birth tie-break) ⟹ v1
+  stolen ⟹ chain4=v1. CONSTRAINT: temp must allocate AFTER val5 —
+  needs val5-span < temp-span strictly (target's own geometry gives
+  temp[8..11]=3 < val5[9..13]=4 ⟹ ??? target contradiction unresolved
+  — its sll a0,a0 = in-place no-temp + val5 v1 ⟹ its chain must be
+  global-class AND slotless: UNFOUND spelling. Next: enumerate 2-death
+  no-temp spellings; or QTYDBG the exact-tie margins per variant).
+- **Region-2 (arm-1 sb/la)**: the head is a 3-insn block; sched1 tie
+  {sb(l0), la(l1)} both pri-1 → emits [sb, la, beqz] ALREADY-target;
+  then DBR hoists the sb (1-word, from-before, past the 2-word la
+  macro) into the beqz slot ⟹ [la, beqz, sb-slot] ✗. Target's dbr
+  did NOT hoist ⟹ its sb was slot-ineligible (may_trap on reg-based
+  store? but ours hoisted...) — UNRESOLVED: read dbr fill_simple's
+  from-before scan conditions (reorg.c) for what blocks a store hoist.
+  C-side sb/la stmt swap does NOT reach sched1 (canonicalized) but
+  costs +1 elsewhere.
+- **Region-3/4 (check2 move-slot vs nop, +1 insn)**: ours' dbr steals
+  the arm-2 move (depth-4 fall-through, independent of sb/la/li);
+  target = nop ⟹ its move was ineligible (a1 liveness at the taken
+  target per mark_target_live_regs? our steal says a1-dead) —
+  UNRESOLVED same-code contradiction; likely coupled to region-2's
+  dbr pass ordering (earlier fills change later liveness!). If
+  regions 2+3 fix, +1 insn lands (179 ✓).
+- arg1's L: [i;dst] arm-interiors + [store;src;i;dst] arm-2 = L 87 =
+  919 < i1494/96's 933 ✓ (2-pt margin); every dst-early form costs
+  2 → rotation. The 933-tie between i1494/i1496 (both 7 weighted refs
+  after the F19C0-chain) breaks by ascending allocno ✓ correct.
 
 ## Target ground truth (asm/funcs/marionation_Exec.s)
 - Regs: status s0, saved s1, i1494 s2, i1496 s3, arg1 s4, tbl s5,
