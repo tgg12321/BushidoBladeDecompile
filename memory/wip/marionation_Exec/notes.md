@@ -25,62 +25,68 @@ BEFORE `if (a1 != 0)` — line 100 of candidate.c). Mechanism:
   mark_target_live_regs:2463), loses la (2-word macro, NEVER splits),
   stops at SEQ; steal_from_fallthrough:1723 refuses conditional SEQs.
 
-## Region-3 DECOMPOSED (session 9b) — two sub-problems, both walled
-**(3a) the steal:** eager fill walks arm-2 [sb LOSE(trap+oppmem), la
-LOSE(inelig), move WINNER — $a1 dead at after_blocks (20fc0000)] → steals.
-BB2_NO_FT_STEAL what-if (env-gated knob in gccdbg reorg.c) confirms:
-blocking it restores the NOP+insn-count but exposes (3b). Predicates
-structural for ANY same-shape RTL; only stoppers = labels (mid-walk
-own_thread←0 @3322, or head own_fallthrough=0) — no byte-free C label
-construct found (jump2 cross-jump is the only post-flow label creator,
-runs AFTER sched2 per toplev.c:3142, but arm-2's mid-block spot is not a
-merge tail). get_branch_condition handles both branch senses; MIPS
-define_delay has no likely-conditions; no mips.md peepholes.
-**(3b) the transposition:** target arm-2 straightline = [sb, MOVE, la,
-SEQ(beqz-a1, li)]; ours (steal blocked) = [sb, la, MOVE, SEQ]. sched2 is a
-measured luid-no-op here (flat pri=1, ready sorted luid-desc — SCHEDDBG
-block-23). All C orders placing the move ≤2 luids earlier ROTATE the RA:
-arg1's global-alloc pri (~32000/L truncated) vs the i1494/96 pair
-(~56000/150=373) has a ONE-POINT margin — L=86 ok (372), L=85 crosses
-(376). Measured: T4/[store;dst2;src;i] → L=84 → arg1→s1; B → rotation;
-v2/v3 noop-compensation (`chk2 = check`) FAILS because check/chkb cross
-the test→arm-2 block boundary ⟹ NO local qty ⟹ no tie ⟹ real move
-(chk2→a3/v0). In-arm-2 noop impossible (nothing born before the move).
-⟹ target's L(arg1)/pair-L geometry MUST differ upstream: the RA-insn
-count between prologue and arm-2 has slack vs bytes ONLY via macro-insn
-respellings (la/mem-symbol macros = 1 RA insn / 2 bytes). NEXT: instrument
-global.c allocno_priority (BB2_GLOB_DEBUG: pri/live_length/refs table),
-compute the exact (pair-L, arg1-L) windows, then search head/poll/printf
-respellings that shift RA-insn counts byte-identically.
-Also: permuter now RUNS on marionation (tmp/perm_mar random,
-tmp/perm_mar2 = PERM_LINESWAP 17280-order enumeration; workspaces fixed:
-pre-preprocessed base.c + sanitized asm-renames; compile.sh = honest
-pipeline). Directed enumeration found nothing below the score-6 plateau.
+## Region-3 DECOMPOSED (sessions 9b/9c) — the ledger
+**(3a) the steal — MECHANISM FOUND VIA THE TWIN.** cpu_side_move_dir_4's
+target tail (71A9C..): its check-branch (bne a2,v0) slot = NOP with
+[li-2, sb, MOVE, la, SEQ(beqz-a1, li-v1)] straightline — because its arm
+head carries .L80080FBC, targeted by the FIRST of two chained tests
+(`chk==2 || chk==5`) ⟹ own_thread_p sees the CODE_LABEL ⟹
+own_fallthrough=0 ⟹ fill_eager SKIPS the fall-through fill (reorg.c:3764
+gates on own_fallthrough) ⟹ NOP. Marionation's check2 needs the same but
+its bytes show NO label at arm-2's head — a label alive at pass-1-eager
+and dead by final needs a user deleted post-eager byte-free; L1/L2/L4/L6
+label structures (else-goto, redundant second test, switch, bnez-form)
+ALL normalize away pre-dbr (measured, all score 6).
+**(3b) the transposition — RA-pinned, measured to ±1.** Exact allocno
+table (BB2_ALLOC_DEBUG, tmp/mar_allocdbg.sh): pair i1494/96 = refs 7,
+L=150, pri 933/933; arg1 = refs 4, L=86, pri 930; saved = 952. arg1's
+death = arm-2's move; EVERY order placing it earlier: L=85→941 (>933,
+takes s2; measured s_i_d_src), L=84→952 (ties saved, allocno-order wins,
+takes s1; measured T4/s_d_i_src). Dbr fill enumeration: NO RA-legal
+pre-dbr order yields target's [sb, move, la, SEQ] (from [sb,la,li,move]
+the li-fill leaves [sb, la, move]; every sb-before-branch order with the
+move earlier gets sb-or-li stolen or rotates). Noop-at-RA compensation is
+a catch-22: same-block copies get cse-propagated away (R1a/b/c measured:
+qty tables identical to no-noop), cross-block copies get no local qty ⟹
+no tie ⟹ real moves (v2/v3: chk2→a3/v0). sched2 = luid-no-op (flat
+pri=1, luid-desc ties — SCHEDDBG block-23); no mips.md peepholes; jump2
+moves nothing. ⟹ target's geometry must differ UPSTREAM (arg1-refs=3
+via a construct keeping beqz-s4?? merged-test spelling gives beqz-dst ✗;
+or pair-refs=8 via floor_log2 jump — no byte-free 8th ref found).
+**Region-1 status:** same catch-22 (noop between sll4/lw5 cse-folded).
+Two-state trap stands. The +2-common-span-insn window (arg1 919 / pair
+921 order-preserving) computed but no legal insn source exists.
+**Permuter:** harness WORKS (tmp/perm_mar random, tmp/perm_mar2 directed;
+pre-preprocessed sanitized base.c; honest pipeline compile.sh). 17280
+directed lineswap orders: nothing below score 6. Random best uses
+illegitimate inline_fn mutations — vet any output against the cheat
+catalog before use.
+**NEXT round:** (i) solve region-1 and region-3 TOGETHER — the razor
+constants (933/930 margins) shift if the printf-block spelling changes
+refs/L upstream; enumerate t0-chain spellings × arm-2 orders jointly
+(the per-region local searches are provably exhausted); (ii) find the
+byte-free label for (3a) — study how the TWIN's own candidate C (its 5
+remaining rules are THIS block) is currently spelled in src/system.c and
+what IT does about the label; (iii) decomp.me corpus scrape for this tail
+idiom (beqz+NOP+sb+move) in gcc2.7.2-psx scratches.
 
 ## Region-1 ledger (printf lbu5/sll4) — the two-state trap
-sched1 normalizes ALL statement orders to exactly TWO streams (QTYDBG,
-tmp/mar_qtydbg.sh; indices = block-local luids):
-- **State A** (mul-before-arg5; CURRENT candidate): sll4@14 → temp
-  [14..24] L=10 < val5 [20..26] L=6 density → val5→v1, temp→a0, 11D5→v0
-  = TARGET RA ✓ but order [.., sll4, sll5, addu5, lw5] ✗ (4 masked lines).
-- **State B** (any arg5-before-mul): sll4@18 → ORDER ✓ (pure register-
-  substitution diffs) but temp [18..24] L=6 TIES val5 L=6 → qty_compare_1
-  tie → smaller qty number = earlier birth = temp (18<20) → temp steals
-  v1, val5→a0 ✗.
-Target = state-B order + state-A registers ⟹ val5 must win the tie:
-temp L≥7 (sink addu4 past 24) or val5 born first (impossible: lw5 depends
-on addu5@18; sll4>18 required for order). REFUTED sinks: seg3-inline into
-the call arg (score 16 — combine merges the chain, [20..32] 6-ref qty);
-named t3 for seg3 (G1/G2: local-alloc ties it into a 6-ref [18..32] qty
-→ v1 ✗); named t3 for the shift (G4: normalizes back to state B); pp
-position (no effect — sched1 normalizes); copy-back `t0 = t3` (eliminated
-pre-RA, same tables). Key mechanism: addu4 (`t0 = base + t0`) is
+sched1 normalizes ALL statement orders to TWO streams (QTYDBG):
+- **State A** (mul-before-arg5; CURRENT): sll4@14 → temp [14..24] L=10 <
+  val5 [20..26] L=6 density → val5→v1, temp→a0, 11D5→v0 = TARGET RA ✓
+  but order ✗ (4 masked lines).
+- **State B** (any arg5-before-mul): sll4@18 → ORDER ✓ but temp [18..24]
+  L=6 TIES val5 → qty_compare_1 tie → earlier birth = temp → steals v1 ✗.
+Target = B-order + A-registers ⟹ val5 must win: temp L≥7 (sink addu4
+past 24) or val5 born first (impossible: lw5 needs addu5@18; sll4>18
+required for order). REFUTED sinks: seg3-inline into the call arg (16 —
+combine merges); named t3 seg3 (G1/G2 re-tie → v1); named-shift t3 (G4 =
+state B); pp position (normalized); copy-back (pre-RA-eliminated).
+Key mechanism: addu4 (`t0 = base + t0`) is
 NON-BIRTHING (t0 multi-set) → drifts early (24) in backward sched1; sw
-(call-gen'd, luid after everything) lands 26. To flip addu4 past sw its
-dest must be single-set, but every naming that does so re-ties the chain.
-NEXT: permuter directed sweep on the block (tools/permuter_annotate.py);
-spellings that keep t0 2-set AND stretch temp span; a3-arg cost>2 forms
-that trigger calls.c:1618 precompute WITHOUT combine-merging.
+(call-gen'd, luid after everything) lands 26; single-set namings re-tie
+the chain. Remaining: a3-arg cost>2 precompute forms (calls.c:1618)
+WITHOUT combine-merging; joint search with region-3 (see NEXT above).
 
 ## Target ground truth (asm/funcs/marionation_Exec.s)
 - Regs: status s0, saved s1, i1494 s2, i1496 s3, arg1 s4, tbl s5,
