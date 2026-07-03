@@ -26,22 +26,33 @@ allocations, marionation-isolated):
   — its sll a0,a0 = in-place no-temp + val5 v1 ⟹ its chain must be
   global-class AND slotless: UNFOUND spelling. Next: enumerate 2-death
   no-temp spellings; or QTYDBG the exact-tie margins per variant).
-- **Region-2 (arm-1 sb/la)**: the head is a 3-insn block; sched1 tie
-  {sb(l0), la(l1)} both pri-1 → emits [sb, la, beqz] ALREADY-target;
-  then DBR hoists the sb (1-word, from-before, past the 2-word la
-  macro) into the beqz slot ⟹ [la, beqz, sb-slot] ✗. Target's dbr
-  did NOT hoist ⟹ its sb was slot-ineligible (may_trap on reg-based
-  store? but ours hoisted...) — UNRESOLVED: read dbr fill_simple's
-  from-before scan conditions (reorg.c) for what blocks a store hoist.
-  C-side sb/la stmt swap does NOT reach sched1 (canonicalized) but
-  costs +1 elsewhere.
-- **Region-3/4 (check2 move-slot vs nop, +1 insn)**: ours' dbr steals
-  the arm-2 move (depth-4 fall-through, independent of sb/la/li);
-  target = nop ⟹ its move was ineligible (a1 liveness at the taken
-  target per mark_target_live_regs? our steal says a1-dead) —
-  UNRESOLVED same-code contradiction; likely coupled to region-2's
-  dbr pass ordering (earlier fills change later liveness!). If
-  regions 2+3 fix, +1 insn lands (179 ✓).
+- **Region-2 (arm-1 sb/la) — session-8 dbr analysis**: sched2 emits
+  [sb, la, beqz] (target order!); fill_simple's BACKWARD scan then
+  hoists the sb into the beqz-s4 slot (trial-1 = la: 2-word macro,
+  ineligible, accumulate {a0}; trial-2 = sb: conflict-free 1-word →
+  TAKEN; from-before hoists have NO may_trap check — that's only for
+  speculative fall-through/target steals). .dbr dump confirms:
+  SEQUENCE(beqz-s4 + sb). The sb is SLOT-BAIT for whichever branch
+  precedes it under fill_simple; analysis says TARGET's sb should be
+  equally takeable ⟹ REMAINING CONTRADICTION: some scan condition
+  unread (stop_search_p internals? mark_referenced_resources of the
+  la-macro incl. constant-pool? update_block effects from EARLIER
+  fills?). NEXT: read stop_search_p + mark_referenced_resources for
+  (set reg (symbol)); consider whether target's check-1/check2 fills
+  (processed earlier, insn order) consume or fence differently.
+  NOTE: read-then-always-clear (`check = *idx & m; *idx = 0; if...`)
+  is SEMANTICALLY EQUIVALENT here (storing 0 over an already-0 flag
+  byte) — moves the sb to the check-1 block — but then CHECK-1's
+  scan eats it (same bait problem) ⟹ only useful combined with a
+  fence.
+- **Region-3/4 (check2 move-slot vs nop, +1 insn)**: ours steals the
+  arm-2 move (depth-4 fall-through past sb/la/li — all independent);
+  target = nop ⟹ its move failed `insn_sets_resource_p(trial,
+  other_needed)` (a1 live on the taken path per mark_target_live_regs)
+  OR may_trap-family gates — but our steal implies a1-dead verdict on
+  the SAME taken path ⟹ same-code contradiction as region-2; the two
+  are likely ONE unread dbr rule. If found, regions 2+3+4 and the +1
+  insn all land (→ score ~2-3, then region-1 remains).
 - arg1's L: [i;dst] arm-interiors + [store;src;i;dst] arm-2 = L 87 =
   919 < i1494/96's 933 ✓ (2-pt margin); every dst-early form costs
   2 → rotation. The 933-tie between i1494/i1496 (both 7 weighted refs
