@@ -52,21 +52,14 @@ campaigns (perm_mar3/4) are the active search. DONE leads: twin's C
 (:388, ==2||==5 two-entry label), corpus (OR-conditions), m2c (no pp in
 original; arm-2 dst-early in bytes), Kengo (rewrite, useless).
 
-## Region-1 ledger (session 11b) — the tie, sharply
-State B/220-form (arg5-early or the arg5v-split — SAME state): ORDER
-fully correct; remaining = a pure v1↔a0 swap of [temp+t0-global]↔val5
-(5 subst lines, masked-8). QTYDBG: temp [18..24]=6 TIES val5 [20..26]=6
-→ qty-order (birth) → temp → v1 ✗. Target needs val5 first. addu4
-ALREADY sinks to 24 in this state; only the BIRTH tie (sll4@18 < lw5@20)
-remains, and sched1 normalizes every C order to sll4-first (arg5v/N1-N5
-all identical tables). KEY NEW MECHANISM (SCHEDDBG runs 16/17): sched2
-is NOT a no-op in the printf block (it swaps sw↔sll-11D5 between
-passes!) ⟹ luid-order [lw5<sll4] + byte-order [sll4<lw5] is REACHABLE
-in principle via post-RA anti-dep differences — no C spelling found yet
-that gives sched1 the lw5-first luids. Pins ignored (RA fights them).
-State A (mul-before-arg5) = RA ✓ order ✗ (the base-6). REFUTED sinks
-(session 9): seg3-inline (combine merges), named t3 (re-ties), pp moves
-(normalized), copy-back (pre-RA-eliminated).
+## Region-1 ledger — the tie
+State B/220 (arg5-early ≡ arg5v-split): ORDER correct; residue = the
+v1↔a0 swap of [temp+t0-global]↔val5 (5 substs, masked-8). QTYDBG: temp
+[18..24]=6 TIES val5 [20..26]=6 → birth order → temp ✗. addu4 already
+sinks; only the birth tie remains; sched1 normalizes all C orders
+(N1-N5 identical). sched2 NOT a no-op here (sw↔sll-11D5 swap measured)
+so stream/bytes can split. Pins ignored. State A = RA ✓ order ✗ (base
+6). Refuted sinks (s9): seg3-inline, named-t3, pp-moves, copy-back.
 **VETTING (11c):** order-floor 220 (17280 enumerated). mar5 "180" =
 FALSE POSITIVE (semantic goto-loop). Vet: semantics + uniform j-deltas +
 full-diff. do-while-0 neutral.
@@ -77,10 +70,8 @@ qty-114 IDENTIFIED = the ANON SHIFT TEMP: insn 127 `(set 114 (ashift
 val5 = 104 (lw5 = insn 120; has REG_EQUIV (mem sp+16) — its stack home).
 Post-RA both 105+114 → v1 (in-place look); val5 → a0; TARGET swapped.
 The tie: 114-birth (insn 127's stream slot) vs 104-birth (insn 120's).
-**CLOCK-12 (11f):** RTL luids already favor the flip (lw5=l9 < sll4=
-l11); the backward pick@12 takes the load anyway — explained by the
-theorem below (hazard-greedy select), NOT a luid/class anomaly.
-Failed: arg3v naming (AF1-3, 15-16 — pulls the 11D5 chain).
+Failed: arg3v naming (AF1-3, 15-16 — pulls the 11D5 chain); clock-12
+luids favored the flip but hazard-greedy select overrides (theorem).
 **SCHEDULER THEOREM (11h — mechanism COMPLETE):** rank_for_schedule
 (pri → dep-class → luid; BB2_RANK_DEBUG: clock-12 = class-3 tie, val=0)
 THEN schedule_select (sched.c:2643): within a same-priority group it
@@ -91,9 +82,16 @@ first birth = a theorem; breaking it needs a PRIORITY-GROUP SPLIT
 (strip one side's LAUNCH bump = dest multi-set/not-live); val5-reuse
 (VR1-3: index-then-value) strips it but relocates the index-lbu reg
 (10-11); `t0 <<= 2` (no anon temp — synth_mult only fires for `*= 4`)
-= continuous 6-ref qty stealing v1 (48*2500/22 ≫ 13333). In-family
-levers exhausted; the campaigns own the residual space. CAUTION:
-sched-log dumps interleave functions — cross-check uids vs marB.i.lreg.
+= continuous 6-ref qty stealing v1 (48*2500/22 ≫ 13333).
+**GROUP-SPLIT CLOSED (11i):** the index var MUST stay multi-set/global
+to land a0 (any single-set index qty gets v0/v1 first in find_free
+order — the relocation curse, measured in VR1-3/t4-split/t2 analyses)
+⟹ t0's multi-set is pinned ⟹ the anon temp + both LAUNCH bumps are
+pinned ⟹ NO priority-group split exists within the register
+constraints ⟹ region-1's local family is CLOSED analytically. Open:
+whole-foundation respellings (poll/head/w9 geometry) + campaign luck
+outside the modeled family. CAUTION: sched-log dumps interleave
+functions — cross-check uids vs marB.i.lreg.
 
 ## Target ground truth (asm/funcs/marionation_Exec.s)
 - Regs: status s0, saved s1, i1494 s2, i1496 s3, arg1 s4, tbl s5,
