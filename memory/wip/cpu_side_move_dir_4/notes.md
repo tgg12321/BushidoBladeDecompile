@@ -1,4 +1,30 @@
-# cpu_side_move_dir_4 (system.c) — WIP, masked floor 4
+# cpu_side_move_dir_4 (system.c) — WIP, masked floor 4 / raw floor 8
+
+## TL;DR (session 3d — CARRY-FORMS solve the ORDER; the STAGING THEOREM is the last wall)
+The faithful permuter found (and sandbox verified) the ORDER-half unlock:
+**route val5 through a multi-set carrier** (`i = tbl_125c[idx_1494[1]]` — 2nd
+set = check2's `i = 7`) — the lw5's dest is then non-birthing → no LAUNCH →
+sched1 re-times the WHOLE TAIL into target order (raw diff shows every slot
+matching in the carry forms; e1/90-x = raw 12-13, all registers). Combining
+with the split-addu frame gives THREE near-miss decompositions (best raw 8):
+- t2-TRIPLE (w=idx<<2∪src, i=val5∪counter, k=addr∪-1): raw 8 = the state-A
+  HEAD trap (lbu5 up-2/w-sll down-2/pp) + k=a3 (needs a0) at addu/lw-a3.
+- split-addu+plain-arg5 (3b): raw 8 = perfect head, 6-slot tail rotation+p_t.
+- carry-only (e1): raw 12, PERFECT order, p_t=v1 steals the cascade.
+**THE STAGING THEOREM (why no tested form closes)**: locals allocate before
+globals; any in-call/lone address temp p_t is LOCAL and steals v1 (no local
+v1-blocker exists once val5 is carried=global); the only a0-compatible addu
+dest is w itself (3-stmt) whose homing mem(w) sets the a3-pref, unmaskable
+because the only a3-holder (-1h, pri 2142) allocates after w (pri≥11142) and
+someone_prefers needs a CONFLICTING lower-pri allocno WITH an a3-pref (none
+has prefs). k∪-1 as addr gets the a3-pref where k needs a0 (t2's G2). Dead
+stores are INERT (d1: flow recounts refs+sets — the stale-reg_n_sets door is
+closed). k-value forms blow up (21-25). reu-arg5: chain grabs a0 (14).
+NEXT LEVERS: (1) permuter grinding from the 90-forms (honest metric, running);
+(2) t2's G1 head trap with i-carry has DIFFERENT mechanics than state-A's
+(lbu5-i is pri-2 leftover, loses T-16 to nothing — readiness analysis
+unfinished — trace t2 with -dS!); (3) enumerate second-role pairings giving
+p_t a v1-blocking LOCAL (none found: pp/fp sugg-diverted, arg5-copy folds).
 
 ## TL;DR (2026-07-03 session 3b — SPLIT-ADDU BREAKTHROUGH: w=a0 ACHIEVED, pref dead)
 **candidate_splitaddu.c = masked 4 with the REGISTER HALF ~SOLVED**: split the
@@ -28,24 +54,13 @@ tmp/perm_csmd4 --best-only --stop-on-zero -j24. base=265 (the 6-line diff).
 State-A's trap re-confirmed luid-fork-forced by its -dS trace (T-16 LAUNCH
 beats pp; both fork arms map to t0-luid vs arg5-luid — no third state).
 
-## TL;DR (session 3a — the mechanism map that led here)
-candidate.c (state-A form) still = masked floor 4 (order-displacement class).
-Session 3 decoded the ENTIRE register half via new FINDREGDBG/QTYDBG dumps and
-proved the target allocation is reachable ONLY via CROSS-BLOCK VARIABLE REUSE:
-- **w = printf-index-chain ∪ check2 copy-walker `src`** (both a0 in target!):
-  w goes GLOBAL → the local temp qty vanishes → **val5=v1 + arg5-chain=v0 +
-  11D5=v0 all BYTE-MATCH** (k-frame emissions: slots 50,53-54,56-58 ✓).
-- **k = arg4-value ∪ the copy-loop's `-1` limit** (both a3 in target!): k multi-set
-  → global → unrenumbered at set_preference → kills w's a3-pref; k pri 22222 > w
-  → k=a3 allocated first (emits `lw a3` + `li a3,-1` ✓).
-- Remaining single defect: **w lands v1 not a0** — two complementary traps:
-  (T1) INLINE deref `*(s32*)w`: w [8,32] conflicts v1 ✓ (pass-0 → a0!) BUT
-  `(set a3 (mem w))` gives w an a3 FULL-PREF via set_preference's one-level
-  unwrap (global.c:1601) → find_reg's pref-upgrade overrides a0 → a3. A local
-  arg4 var RECREATES the pref (local-alloc renumbers it to a3 via copy-sugg
-  BEFORE global_conflicts scans). (T2) k-multi-set kills the pref BUT w then
-  dies at the k-load (sched1 luid 18) < val5 birth (24) → v1 unconflicted →
-  pass-0 ascending takes v1. Order-of-statements invariant (all sweeps 14-17).
+## TL;DR (session 3a — the mechanism map; superseded details in git history)
+Cross-block reuse discovered: w = chain∪src (a0-family), k = val∪-1 (a3).
+The T1/T2 trap pair: inline deref → a3-pref on w (set_preference one-level
+MEM unwrap, global.c:1601; local arg4 var recreates it via renumbered
+copy-sugg); k-carry kills the pref but shortens w below val5's birth
+(v1-hole). Statement order invariant. [Session 3d's staging theorem subsumes
+and extends this — read 3d first.]
 
 ## The decisive mechanism facts (all read from tools/gcc-2.7.2, verified by dumps)
 - find_reg pass 0 excludes `regs_someone_prefers` (prefs of CONFLICTING
