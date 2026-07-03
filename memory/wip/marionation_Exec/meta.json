@@ -1,63 +1,69 @@
 {
-  "function": "marionation_Exec",
-  "file": "system",
-  "scores": {
-    "head_floor": 56,
-    "candidate_floor": 56,
-    "metric": "sandbox --disable all (masked) — rotation-blind here; the real state is the disposition table in notes.md. Full SHA1 after retire-all-42 is the only end gate.",
-    "build_insns": 142,
-    "target_insns": 142
+ "function": "marionation_Exec",
+ "file": "system",
+ "scores": {
+  "head_floor": 56,
+  "candidate_floor": 6,
+  "metric": "sandbox --disable all (masked) — rotation-blind here; the real state is the disposition table in notes.md. Full SHA1 after retire-all-42 is the only end gate.",
+  "build_insns": 178,
+  "target_insns": 179
+ },
+ "sessions": [
+  {
+   "date": "2026-07-02",
+   "git_head_at_measurement": "59426e8b",
+   "lever": "SESSION 4 — u13 block-local loop temps -> TAIL CASCADE (check->a2, both `move v0,a2` returns, src/i/dst/bb all target; insns 142 = target count); w9 poll as REAL do-while -> loop_depth reweighting lands i1495 s6 (6/8 locked; outer cycle MUST stay goto or the mask fold dies: update_equiv_regs needs UNWEIGHTED refs==2); w15 printf shape (s32 t0 + addr-local p4 + *p4 inline) stretches chain4 across the block with lw4 crossing the sw and fmt-la last. Chain4 lands v1 not a0: blocker traced in SCHEDDBG to fmt-la's backward-drift to sched1 pos-7 (hard-a0 [7..16]); val5->v1 needs sw5-after-11D5-lbu overlap in sched1 coords (w13 had it, w15 doesn't). Full mechanism ledger + x3 sweep plan in notes.md.",
+   "floor_was": 56,
+   "floor_now": 56,
+   "note": "probes only, src untouched, oracle green; composite = u13+w9+w15 tags in tmp/probe_mar.py"
   },
-  "sessions": [
-    {
-      "date": "2026-07-02",
-      "git_head_at_measurement": "994db7ff",
-      "lever": "SESSION 2 — t3 STRUCTURAL DISCOVERY: reshaping both copy arms to target's byte order (dst = a1; src = (u8*)&...; if (dst != 0) {copy}) lands FIVE of eight registers with ZERO coercion (saved=s1, i1494=s2, i1496=s3, arg1=s4, p81=s0; insns 140). REFUTED: t5/t6 late-site chain-extenders materialize +6 insns (combine folds only ADJACENT to the base def); t4 (t3+t1) overshoots tbl to s4.",
-      "floor_was": 56,
-      "floor_now": 56,
-      "note": "probe-verified only"
-    },
-    {
-      "date": "2026-07-02",
-      "git_head_at_measurement": "7a5c58f9",
-      "lever": "SESSION 3 — check-mask mechanics CRACKED + 6/8 registers (probe u7->u11). Opaque-constant masks (new_var/new_var3) fold to andi IMMEDIATE via local-alloc update_equiv_regs when cross-block + single-use; u11 fixed the twin-anchor splice bug (u6-u10's asymmetry was contamination into csmd4); both masks fold, insns 140, 5 regs locked.",
-      "floor_was": 56,
-      "floor_now": 56,
-      "note": "probes only, src untouched, oracle green"
-    },
-    {
-      "date": "2026-07-02",
-      "git_head_at_measurement": "59426e8b",
-      "lever": "SESSION 4 — u13 block-local loop temps -> TAIL CASCADE (check->a2, both `move v0,a2` returns, src/i/dst/bb all target; insns 142 = target count); w9 poll as REAL do-while -> loop_depth reweighting lands i1495 s6 (6/8 locked; outer cycle MUST stay goto or the mask fold dies: update_equiv_regs needs UNWEIGHTED refs==2); w15 printf shape (s32 t0 + addr-local p4 + *p4 inline) stretches chain4 across the block with lw4 crossing the sw and fmt-la last. Chain4 lands v1 not a0: blocker traced in SCHEDDBG to fmt-la's backward-drift to sched1 pos-7 (hard-a0 [7..16]); val5->v1 needs sw5-after-11D5-lbu overlap in sched1 coords (w13 had it, w15 doesn't). Full mechanism ledger + x3 sweep plan in notes.md.",
-      "floor_was": 56,
-      "floor_now": 56,
-      "note": "probes only, src untouched, oracle green; composite = u13+w9+w15 tags in tmp/probe_mar.py"
-    }
-  ],
-  "reviewer": {
-    "verdict": "N/A",
-    "date": "2026-07-02",
-    "evidence": "No candidate body yet — probe-only checkpoint; no src modified; oracle green."
+  {
+   "date": "2026-07-02",
+   "git_head_at_measurement": "978e5cce",
+   "lever": "SESSION 9 — REGION-2 SOLVED (score 8 -> 6): dst split into per-arm dst/dst2 + arm-1 dst=a1 FIRST INSIDE the guard. Mechanism (all dump-verified): cse.c make_regs_eqv:853 promotes a copy dest to qty-canonical only if regno_last_uid[new] > regno_last_uid[old] — shared dst (last use = arm-2 loop) beat a1, rewriting arm-1's test to dst (=the score-19 rotation); per-arm dst1 dies before a1's arm-2 use, so the test stays on the param. dbr then: fill_simple backward scan from beqz-s4 takes the MOVE (trial-1, elig, breaks after 1 slot) leaving the sb in straightline = target bytes [sb, la, beqz, move-slot]. check-1 stays NOP (eager walk: sb LOSE trap+mem, la LOSE 2-word-inelig-never-splits, SEQ stop; steal_delay_list_from_fallthrough:1723 refuses conditional SEQs). BB2_DBR_DEBUG hook added to reorg.c (fill_simple + fill_slots_from_thread + mark_target_live_regs); tmp/mar_dbrdbg.sh + tmp/mar_dbr_tail.py map uid->insn.",
+   "floor_was": 8,
+   "floor_now": 6,
+   "note": "candidate.c updated; src untouched; oracle green"
+  }
+ ],
+ "reviewer": {
+  "verdict": "N/A",
+  "date": "2026-07-02",
+  "evidence": "No candidate body yet — probe-only checkpoint; no src modified; oracle green."
+ },
+ "remaining_gap": {
+  "summary": "Two residuals: (1) trio tail {arg0 s5 / tbl s7 -> swap to s7/s5}: small livelen deltas (tbl needs <152, arg0 <197-pri), expect movement from the final printf shape + the verified t1 tbl-chain (+1 ref, byte-free). (2) printf-block chain4 must color a0 (currently v1): needs fmt-la late in sched1 + val5/11D5 range overlap — x3 stmt-order/local-vs-inline sweep is the next move; lbu order + tail micro-perm follow automatically via sched2 anti-deps.",
+  "rule_count_at_head": 42,
+  "rules_required_for_full_match": "42 (5 rotation swaps + 7 prologue + 7 epilogue renames fall with the register story; 8 printf substs + reorder fall with chain4=a0; 11 tail rules fall with u13's cascade — verify each against bytes at assembly time)"
+ },
+ "next_hypotheses": [
+  "x3 sweep: extend tmp/sweep_mar_printf.py to print chain4's disposition; sweep {t0,arg5,p4} stmt orders x {F19C0 early local} x {11D5 local position} x {arg5 addr-local}; win = chain4 a0.",
+  "Then: re-measure trio (probe_mar_disp), close with t1 chain if needed; assemble final form (u13+w9+winning block + declare new_var/new_var3); retire all 42; full SHA1; dual review; queue done.",
+  "Fallback: instrument sched.c adjust_priority for fmt-la's pri; or check which of the 42 rules retire under chain4=v1."
+ ],
+ "rejected_forms": [
+  {
+   "form": "outer cycle as real do-while (w-full-loop)",
+   "score": "n/a",
+   "reason": "loop_depth weighting breaks update_equiv_regs' refs==2 precondition -> masks materialize as register-and. Outer stays goto-loop."
   },
-  "remaining_gap": {
-    "summary": "Two residuals: (1) trio tail {arg0 s5 / tbl s7 -> swap to s7/s5}: small livelen deltas (tbl needs <152, arg0 <197-pri), expect movement from the final printf shape + the verified t1 tbl-chain (+1 ref, byte-free). (2) printf-block chain4 must color a0 (currently v1): needs fmt-la late in sched1 + val5/11D5 range overlap — x3 stmt-order/local-vs-inline sweep is the next move; lbu order + tail micro-perm follow automatically via sched2 anti-deps.",
-    "rule_count_at_head": 42,
-    "rules_required_for_full_match": "42 (5 rotation swaps + 7 prologue + 7 epilogue renames fall with the register story; 8 printf substs + reorder fall with chain4=a0; 11 tail rules fall with u13's cascade — verify each against bytes at assembly time)"
+  {
+   "form": "u8 t0 split (w10/w11/v_k)",
+   "score": "lbu sinks",
+   "reason": "QI-load + zext-at-use; combine merges AT THE USE -> chain birth late -> dense qty -> v0/v1."
   },
-  "next_hypotheses": [
-    "x3 sweep: extend tmp/sweep_mar_printf.py to print chain4's disposition; sweep {t0,arg5,p4} stmt orders x {F19C0 early local} x {11D5 local position} x {arg5 addr-local}; win = chain4 a0.",
-    "Then: re-measure trio (probe_mar_disp), close with t1 chain if needed; assemble final form (u13+w9+winning block + declare new_var/new_var3); retire all 42; full SHA1; dual review; queue done.",
-    "Fallback: instrument sched.c adjust_priority for fmt-la's pri; or check which of the 42 rules retire under chain4=v1."
-  ],
-  "rejected_forms": [
-    {"form": "outer cycle as real do-while (w-full-loop)", "score": "n/a", "reason": "loop_depth weighting breaks update_equiv_regs' refs==2 precondition -> masks materialize as register-and. Outer stays goto-loop."},
-    {"form": "u8 t0 split (w10/w11/v_k)", "score": "lbu sinks", "reason": "QI-load + zext-at-use; combine merges AT THE USE -> chain birth late -> dense qty -> v0/v1."},
-    {"form": "all-locals target-order (w12)", "score": "4/14", "reason": "11D5 local hoists its lbu to pos2 and displaces the a1 load."}
-  ],
-  "prior_sessions_summary": [
-    "2026-05-29 (register-alloc-deep-dive): rotation map established; clean-target permuter plateau 1125 over 16.8k iters.",
-    "2026-07-01 (plan session, c6d96b06): allocno formula reproduces baseline exactly; new_var UNDECLARED at :555 discovered (Makefile pipe swallows cc1's error-recovery exit; bytes unaffected).",
-    "2026-07-02 session 1 (3f816004): t1 tbl-chain proven byte-free (tbl s6->s5 at 141 insns); global.c tie-break verified (double-truncate, allocno-ascending); reg_n_refs += loop_depth confirmed; full target register map read from bytes."
-  ],
-  "memory_notes": []
+  {
+   "form": "all-locals target-order (w12)",
+   "score": "4/14",
+   "reason": "11D5 local hoists its lbu to pos2 and displaces the a1 load."
+  }
+ ],
+ "prior_sessions_summary": [
+  "2026-05-29 (register-alloc-deep-dive): rotation map established; clean-target permuter plateau 1125 over 16.8k iters.",
+  "2026-07-01 (plan session, c6d96b06): allocno formula reproduces baseline exactly; new_var UNDECLARED at :555 discovered (Makefile pipe swallows cc1's error-recovery exit; bytes unaffected).",
+  "2026-07-02 session 1 (3f816004): t1 tbl-chain proven byte-free (tbl s6->s5 at 141 insns); global.c tie-break verified (double-truncate, allocno-ascending); reg_n_refs += loop_depth confirmed; full target register map read from bytes.",
+  "2026-07-02 (994db7ff): SESSION 2 — t3 STRUCTURAL DISCOVERY: reshaping both copy arms to target's byte order (dst = a1; src = (u8*)&...; if (dst != 0) {copy}) lands FIVE of eight regis",
+  "2026-07-02 (7a5c58f9): SESSION 3 — check-mask mechanics CRACKED + 6/8 registers (probe u7->u11). Opaque-constant masks (new_var/new_var3) fold to andi IMMEDIATE via local-alloc update"
+ ],
+ "memory_notes": []
 }

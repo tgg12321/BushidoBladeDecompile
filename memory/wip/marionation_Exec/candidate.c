@@ -12,6 +12,7 @@ s32 marionation_Exec(s32 a0, u8 *a1)
   s32 status;
   u8 *src;
   u8 *dst;
+  u8 *dst2;
   s32 i;
   D_800F19B8 = sys_VSync(-1) + 0x3C0;
   tbl_125c = D_800A125C;
@@ -96,10 +97,10 @@ s32 marionation_Exec(s32 a0, u8 *a1)
     if (!check) goto check2;
     *idx_1496 = 0;
     src = (u8 *) (&D_800F19B0);
+    dst = a1;
     if (a1 != 0)
     {
       i = 7;
-      dst = a1;
       do
       {
         u8 bb;
@@ -120,8 +121,8 @@ s32 marionation_Exec(s32 a0, u8 *a1)
       *(idx_1496 - 1) = 0;
       src = (u8 *) (&D_800F19A8);
       i = 7;
-      dst = a1;
-      if (dst != 0)
+      dst2 = a1;
+      if (dst2 != 0)
       {
         do
         {
@@ -129,8 +130,8 @@ s32 marionation_Exec(s32 a0, u8 *a1)
           bb = *src;
           src++;
           i--;
-          *dst = bb;
-          dst++;
+          *dst2 = bb;
+          dst2++;
         }
         while (i != (-1));
       }
