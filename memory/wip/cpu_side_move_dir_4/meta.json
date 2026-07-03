@@ -11,19 +11,19 @@
  "sessions": [
   {
    "date": "2026-07-03",
-   "git_head_at_measurement": "079fbb34",
-   "lever": "SESSION 2 \u2014 TRANSFER from marionation_Exec's campaign: the state-A printf form (t0 multi-set 3-stmt chain + pp FAKE pointer-alias + arg5-late) drops the honest floor 7 -> 4 WITHOUT the file-level s-reg rebalance that killed v16/v17 (idx_1494/tbl refs preserved; only hunks = the lbu5/sll4 order displacement + uniform j-artifacts). The residual = the SAME two-state trap as marionation region-1 (full mechanism ledger in memory/wip/marionation_Exec/notes.md: scheduler theorem, qty-tie arithmetic, closures). Whatever cracks one closes both.",
-   "floor_was": 7,
-   "floor_now": 4,
-   "note": "src untouched; candidate.c updated; oracle green"
-  },
-  {
-   "date": "2026-07-03",
    "git_head_at_measurement": "9a773627",
    "lever": "SESSION 3 \u2014 register half MECHANISM-SOLVED via cross-block reuse: w = printf-chain + copy-walker src (global, target a0) makes val5=v1/chain=v0/11D5=v0 byte-match; k = arg4 + copy-loop -1 limit (global, target a3, pri 22222>w) kills w a3-pref + emits lw a3/li a3,-1 correctly. Remaining single defect: w=v1 not a0 \u2014 trap pair: inline deref gives w an a3 FULL-PREF (set_preference one-level unwrap, global.c:1601; find_reg pref-upgrade overrides pass-0 a0); k-statement kills pref but shortens w (dies luid 18 < val5 birth 24) freeing v1. find_reg COPY-pref upgrade short-circuits before full-prefs (goto no_prefs) = the winning door if an unfoldable (set a0 (reg w)) copy exists. All priorities measured (w 16956, i 15555, temp 4210, -1h 2142). New FINDREGDBG instrumentation added.",
    "floor_was": 4,
    "floor_now": 4,
    "note": "src untouched; candidate.c unchanged (state-A, floor 4); k-frame forms measured 14-17 masked but with the register half STRUCTURALLY correct (different defect class than candidate)"
+  },
+  {
+   "date": "2026-07-03",
+   "git_head_at_measurement": "adeee02a",
+   "lever": "SESSION 3b \u2014 SPLIT-ADDU BREAKTHROUGH (candidate_splitaddu.c): moving the addu INTO the call arg (*(s32 *)(w + (s32)tbl_125c)) with w = idx<<2 only + src->w check2 unification kills the a3-pref (homing address = in-call temp, not w) AND keeps w live to the in-call addu (covers val5 -> v1-conflict) -> w = a0 VERIFIED (slots 49-54 byte-match). Residual: 6-slot schedule permutation + p_t=v1 (follows from the schedule). -dS trace pinpoints: T-11 memory-unit hazard from sw@T-10 (swaps 11D5/w-sll), and addu4 pick at T-8 forced by in-call luid order (arg4 > arg3).",
+   "floor_was": 4,
+   "floor_now": 4,
+   "note": "masked floor unchanged at 4 but TRUE distance roughly halved (registers all-but-one correct, order localized to 6 slots); candidate.c (state-A) kept as alternate"
   }
  ],
  "reviewer": {
@@ -37,10 +37,10 @@
   "rules_required_for_full_match": "4 substs v1->a0 in the block + 1 reorder (15-elem) \u2014 exactly the two halves above; the reorder half is now reproducible in pure C by candidate.c."
  },
  "next_hypotheses": [
-  "someone_prefers[w] via a conflicting lower-pri allocno with a v1/a3 full-pref (notes.md lever 1 \u2014 enumerate real one-unwrap insn shapes for check2/poll vars).",
-  "Unfoldable (set a0 (reg w)) copy-pref (lever 2): find an a0-homing whose source can be w with a real second use pinning the copy against cse.",
-  "Transfer the cross-block door to marionation_Exec (its arm-2/check2 analogs; same trap).",
-  "Faithful directed permuter over the k-frame (compile.sh = sandbox pipeline, target.o = build/src/system.o)."
+  "Directed permuter on the split-addu base (faithful workspace per marionation recipe): statement orders x spellings to shift the sw/addu4 luid microstructure.",
+  "Find an a2-arg spelling whose sll-luid exceeds the in-call addu4 luid (flips the T-8 pick) without a2v-hoist damage.",
+  "Check whether the sched2 pass re-derives sll4@55 once sw leaves T-10 (the T-11 hazard chain).",
+  "Transfer the split-addu + cross-block-w door to marionation_Exec region-1."
  ],
  "rejected_forms": [
   {
@@ -66,7 +66,8 @@
  ],
  "prior_sessions_summary": [
   "2026-05-29..30 (sessions 4-9, register-alloc-deep-dive.md): chain-extender + idx-local levers derived (then-forbidden); floors 20->15; all named levers measured. The committed idx_1495-via-tbl chain (line ~406) later landed the s-regs; HEAD floor 7 with 5 rules on this one block.",
-  "2026-07-01: mechanism split (sched half solved via arg5-first+split-index; reg half characterized as chain-density coloring). Superseded by session-3 cross-block discovery."
+  "2026-07-01: mechanism split (sched half solved via arg5-first+split-index; reg half characterized as chain-density coloring). Superseded by session-3 cross-block discovery.",
+  "2026-07-03 s3a: mechanism map (cross-block reuse, set_preference poison, find_reg internals); k-frame/w-frame trap pair characterized."
  ],
  "memory_notes": []
 }

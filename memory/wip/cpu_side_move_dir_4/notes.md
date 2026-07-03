@@ -1,6 +1,26 @@
 # cpu_side_move_dir_4 (system.c) — WIP, masked floor 4
 
-## TL;DR (2026-07-03 session 3 — the register half is MECHANISM-SOLVED, one lever short)
+## TL;DR (2026-07-03 session 3b — SPLIT-ADDU BREAKTHROUGH: w=a0 ACHIEVED, pref dead)
+**candidate_splitaddu.c = masked 4 with the REGISTER HALF ~SOLVED**: split the
+address chain so the addu lives IN THE CALL ARG — `w = idx[0]; arg5-stmt; pp;
+w <<= 2; call(..., *(s32 *)(w + (s32)tbl_125c), arg5)` + the check2 src→w
+unification. Effects (all verified): homing's mem-address = the in-call addu
+temp p_t (NOT w) → w gets NO a3-pref → and w's last use = the in-call addu
+(luid ~30) → w [8,30] covers val5 → v1-conflicted → **w = a0** (slots 49-54
+byte-match: lbu a0/lbu5-v0/pp/sll5-addu5-v0). `w + (s32)tbl` operand order
+gives `addu ?,a0,s3` ✓. Residual = 6-slot schedule permutation {sll4@58→55,
+addu4@61→59, lw5/11D5/sll-11D5/sw 1-slot shifts} + p_t=v1→a0 (masked-blind;
+FOLLOWS automatically if addu4 emits @59 < sw: val5-overlap → v0/v1 blocked).
+-dS trace (tmp/rtl/t1.i.sched): the T-11 memory-unit hazard (sw@T-10) swaps
+11D5-lbu/w-sll (fix = sw off T-10 ⟹ sll4@55 exact); addu4@T-8-pick forced by
+its in-call luid > a2-sll's (arg 4 > arg 3) — the last wall. u-as-statement
+kills w's range (v1-hole); u∪jalr coalesces back to the poisoned form; a2v
+hoists blow up (24-26); i5/t1 spellings sink/normalize (invariant 4s).
+NEXT: directed permuter on THIS base (statement orders × spellings can shift
+the sw/addu4 luid microstructure); or find an a2-arg spelling whose sll-luid
+exceeds the addu4's.
+
+## TL;DR (session 3a — the mechanism map that led here)
 candidate.c (state-A form) still = masked floor 4 (order-displacement class).
 Session 3 decoded the ENTIRE register half via new FINDREGDBG/QTYDBG dumps and
 proved the target allocation is reachable ONLY via CROSS-BLOCK VARIABLE REUSE:
