@@ -1,6 +1,16 @@
-# cpu_side_move_dir_4 (system.c) — WIP, masked floor 7, PARKED
+# cpu_side_move_dir_4 (system.c) — WIP, masked floor 4
 
-## TL;DR (2026-07-01 session)
+## TL;DR (2026-07-03 — marionation transfer)
+candidate.c = the committed body with marionation's STATE-A printf form
+(t0 multi-set + pp FAKE alias + arg5-late): floor 7 → 4 with s-regs
+INTACT (the v16/v17 rebalance problem avoided). Residual = ONLY the
+lbu5/sll4 order displacement = marionation's region-1 two-state trap —
+the complete mechanism ledger (scheduler theorem, qty-tie arithmetic,
+all closures) lives in memory/wip/marionation_Exec/notes.md; work THEM
+TOGETHER (one crack closes both; this one has no region-3, so it
+completes the function outright).
+
+## Prior session (2026-07-01)
 The residual is ONE block (debug_printf/do_timeout) and splits into TWO
 mechanisms: (1) SCHEDULING — the `lw a1, D_800F19C0` must emit early
 (target pos 51-52): **SOLVED in pure C** by candidate.c's arg5-first +

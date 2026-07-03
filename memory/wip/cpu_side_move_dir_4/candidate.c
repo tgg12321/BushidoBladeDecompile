@@ -36,11 +36,15 @@ s32 cpu_side_move_dir_4(s32 a0, u8 *a1)
   tslTm2LoadImage_2(&D_800161B8);
 
   {
-    s32 arg4, arg5;
-    u8 t0 = idx_1494[0];
+    s32 arg5;
+    s32 t0;
+    void **pp;
+    t0 = idx_1494[0];
+    pp = (void **)&D_800F19C0; /* FAKE */
+    t0 *= 4;
+    t0 = (s32)((u8 *)tbl_125c + t0);
     arg5 = tbl_125c[idx_1494[1]];
-    arg4 = tbl_125c[t0];
-    debug_printf(&D_800161C8, D_800F19C0, D_800A11DC[D_800A11D5], arg4, arg5);
+    debug_printf(&D_800161C8, *pp, D_800A11DC[D_800A11D5], *(s32 *)t0, arg5);
   }
   cdrom_ClearIrq();
   v0 = -1;
