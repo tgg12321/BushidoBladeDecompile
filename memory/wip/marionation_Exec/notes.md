@@ -1,29 +1,21 @@
-# marionation_Exec — HONEST SCORE 6; region-2 solved, regions 1+3 remain
+# marionation_Exec — HONEST SCORE 6; regions 1+3 remain (foundation-level)
 
-## SESSION 9 STATE (READ FIRST)
-candidate.c = the score-6 form (`bash tools/mar_test_candidate.sh` applies +
-scores + restores; needs tmp/mar_candidate.c — committed mirror is this
-candidate.c). 178/179 insns; ALL 8 callee-saved + all block regs target.
-Remaining = TWO regions:
-- **Region-1 (printf lbu5/sll4 order, 4 masked lines)** — see ledger below.
-- **Region-3 (check2 slot: ours steals arm-2's `move a1,s4`, target NOP —
-  also the missing insn)** — see paradox below.
+## STATE (READ FIRST)
+candidate.c = the score-6 form (`bash tools/mar_test_candidate.sh` applies
++ scores + restores; copy to tmp/mar_candidate.c first). 178/179 insns;
+ALL 8 callee-saved + block regs target. Remaining:
+- **Region-1 (printf lbu5/sll4 order, 4 masked lines)** — ledger below.
+- **Region-3 (check2 slot steal + arm-2 move/la transposition, 2 lines +
+  missing nop)** — decomposed + locally EXHAUSTED below.
 
-## Region-2 SOLVED (this session) — the recipe
-`dst` split into per-arm `dst`/`dst2` AND arm-1 dst-EARLY (`dst = a1;`
-BEFORE `if (a1 != 0)` — line 100 of candidate.c). Mechanism:
-- cse.c `make_regs_eqv:853`: copy dest becomes qty-canonical iff its
-  `regno_last_uid` > the old reg's. Shared dst (lives to arm-2's loop) beat
-  a1 → test rewritten to dst → refs 4→3 → RA rotation (= every old
-  "dst-early costs 2" failure). Per-arm dst dies before a1's arm-2 use →
-  a1 stays canonical → beqz s4 ✓. RTL: [sb, la, move-324, beqz-327].
-- dbr fill_simple backward scan (reorg.c:2907): trial-1 = the move
-  (conflict-free vs needed={s4}, eligible) → TAKEN, breaks after 1 slot →
-  sb never reached → bytes [sb, la, beqz, move-slot] = target. Arm-1 order
-  [store; dst; src] equivalent (same score).
-- check-1 stays NOP: eager walk loses sb (may_trap + oppmem=1 always,
-  mark_target_live_regs:2463), loses la (2-word macro, NEVER splits),
-  stops at SEQ; steal_from_fallthrough:1723 refuses conditional SEQs.
+## Region-2 SOLVED — recipe (in candidate.c)
+Per-arm `dst`/`dst2` split + arm-1 dst-EARLY (`dst = a1;` before the
+guard, candidate line ~100). cse.c make_regs_eqv:853 promotes a copy
+dest to qty-canonical iff regno_last_uid[new] > old's — per-arm dst dies
+before a1's arm-2 use → a1 stays canonical → beqz s4 ✓. dbr backward
+scan takes the move (trial-1), sb protected → [sb, la, beqz, move-slot]
+= target. check-1 NOP: sb loses (trap+oppmem=1 always), la inelig
+(never splits), SEQ stops; 1723 refuses conditional-SEQ steals.
 
 ## Region-3 DECOMPOSED (sessions 9b/9c) — the ledger
 **(3a) the steal — MECHANISM FOUND VIA THE TWIN.** cpu_side_move_dir_4's
@@ -53,22 +45,35 @@ pri=1, luid-desc ties — SCHEDDBG block-23); no mips.md peepholes; jump2
 moves nothing. ⟹ target's geometry must differ UPSTREAM (arg1-refs=3
 via a construct keeping beqz-s4?? merged-test spelling gives beqz-dst ✗;
 or pair-refs=8 via floor_log2 jump — no byte-free 8th ref found).
-**Region-1 status:** same catch-22 (noop between sll4/lw5 cse-folded).
-Two-state trap stands. The +2-common-span-insn window (arg1 919 / pair
-921 order-preserving) computed but no legal insn source exists.
+**(3b) EXHAUSTION COMPLETED (session 10):** the tie-copy hole in the
+catch-22 (src born same-block + dies at copy + dest used cross-block →
+survives cse, ties to noop, jump2-deletes) has NO vehicle in arm-2:
+i/src are CONSTANTS (i2=i measured: cse1 const-propagates 7 into the
+copy, then i's set dead — trace tmp/mar_i2_trace.py, copy present in
+.jump, gone in .cse; L stays 85 → s2 rotation); dst2-chain copies sit
+past arg1's death; check/chkb cross-block-born; arg0/tbl/i1496 don't die
+at the copy. saved-split refuted by bytes (target lbu→v0 = unsplit).
+Sandwich arithmetic (saved 952 > pair > arg1) has no integer solution
+for any move-earlier order (floor_log2 jumps overshoot). Also L counts
+LIVE positions only (arm-1's loop + done-island are arg1-dead — stream
+topology games are inert). Construct-family sweep (twin-form/u8/array-
+ptr/named-arg4/direct: tmp/mar_family_sweep.py) all ≥9.
 **Permuter:** harness WORKS (tmp/perm_mar random, tmp/perm_mar2 directed;
 pre-preprocessed sanitized base.c; honest pipeline compile.sh). 17280
 directed lineswap orders: nothing below score 6. Random best uses
-illegitimate inline_fn mutations — vet any output against the cheat
-catalog before use.
-**NEXT round:** (i) solve region-1 and region-3 TOGETHER — the razor
-constants (933/930 margins) shift if the printf-block spelling changes
-refs/L upstream; enumerate t0-chain spellings × arm-2 orders jointly
-(the per-region local searches are provably exhausted); (ii) find the
-byte-free label for (3a) — study how the TWIN's own candidate C (its 5
-remaining rules are THIS block) is currently spelled in src/system.c and
-what IT does about the label; (iii) decomp.me corpus scrape for this tail
-idiom (beqz+NOP+sb+move) in gcc2.7.2-psx scratches.
+illegitimate inline_fn mutations — vet before use.
+**CONCLUSION (session 10):** the local search spaces around the current
+FOUNDATION are exhausted with measured negatives. The remaining 6 points
+require a DIFFERENT foundation spelling (head FAKE chains / poll /
+printf variable structure) that shifts the global pri table — target's
+true C plausibly differs there while emitting identical head bytes.
+**NEXT round:** (i) enumerate alternative HEAD-CHAIN spellings that emit
+the same bytes (the pair's refs/L are set there); (ii) long permuter
+campaign seeded from score-6 with inline mutations disabled. DONE leads:
+twin's C read (src/system.c:388 — its tail matched via the ==2||==5
+two-entry label; its arm order [st;dst;src;i] tolerated by ITS pri
+table); corpus scraped (matched gcc2.7.2 scratches with this idiom all
+use OR-conditions/multi-entry arms).
 
 ## Region-1 ledger (printf lbu5/sll4) — the two-state trap
 sched1 normalizes ALL statement orders to TWO streams (QTYDBG):
@@ -91,29 +96,25 @@ WITHOUT combine-merging; joint search with region-3 (see NEXT above).
 ## Target ground truth (asm/funcs/marionation_Exec.s)
 - Regs: status s0, saved s1, i1494 s2, i1496 s3, arg1 s4, tbl s5,
   i1495 s6, arg0 s7; tail check a2, src a0, i v1, b v0, dst/dst2 a1.
-- check-1 (71A24): lbu 0(s3), andi a2 0xFF, beqz→check2, NOP.
-- arm-1: sb 0(s3), la F19B0, beqz s4→.L812BC, slot=move a1,s4; li v1,7;
-  li a3,-1; loop; j .L812CC; move v0,a2.
-- check2 (71A74): lbu -1(s3), andi, beqz→after_blocks(.L812C4), NOP.
-- arm-2: sb -1(s3), move a1,s4, la F19A8, beqz a1→.L812BC, slot=li v1,7;
-  li a3,-1; loop; .L812BC: j .L812CC; move v0,a2.
-- after_blocks: beqz s7→loop, slot=move v0,zero. Epilogue .L812CC.
-- The two [j; move v0,a2] sites stay unmerged (ours too ✓).
+- check-1: lbu 0(s3), andi a2, beqz→check2, NOP. arm-1: sb 0(s3), la
+  F19B0, beqz s4→.L812BC, slot=move; li v1,7; li a3,-1; loop; j; move.
+- check2: lbu -1(s3), andi, beqz→after_blocks, NOP. arm-2: sb -1(s3),
+  MOVE, la F19A8, beqz a1→.L812BC, slot=li v1,7; li a3,-1; loop;
+  .L812BC: j .L812CC; move v0,a2. after_blocks: beqz s7→loop, slot=
+  move v0,zero. Two [j; move] sites unmerged (ours ✓).
 
 ## Known gotchas
-- 42 rules index-anchored: mid-derivation full builds meaningless; end
-  gate = retire-all-42 + full SHA1. Sandbox masked (register-blind).
-- Twin csmd4 (~:399) shares text — anchors must be marionation-unique.
-- Declare new_var/new_var3 in the final form (undeclared-at-:555 pipe
-  swallows cc1 error-recovery exit; bytes fine but fix before close-out).
-- csmd4 payoff: its last 5 rules are THIS block; every mechanism transfers.
+- 42 rules index-anchored; end gate = retire-all-42 + full SHA1. Twin
+  csmd4 (:388) shares text — marionation-unique anchors. Declare
+  new_var/new_var3 in the final form (undeclared-at-:555; bytes fine).
+  csmd4's last 5 rules are THIS printf block; mechanisms transfer.
 
-## Tools (this session's additions)
-- tmp/gccdbg/cc1 now has BB2_DBR_DEBUG (reorg.c: fill_simple trials/elig,
-  fill_slots_from_thread entry+trials+WINNER/LOSE, mark_target_live_regs
-  block). Runner: tmp/mar_dbrdbg.sh (dumps kept in tmp/rtl/marD.*);
-  uid→insn map: tmp/mar_dbr_tail.py [dumpfile].
-- QTYDBG sweeps: tmp/mar_qty_sweep{,2,3,4}.py (statement-order × qty
-  tables); tmp/mar_sweep_printf2.py (order × score).
-- Prior kit: mar_test_candidate.sh, mar_qtydbg.sh, mar_cand_sched.sh,
-  probe_mar.py, mar_diff2.sh (all restore src).
+## Tools
+- tmp/gccdbg/cc1: BB2_DBR_DEBUG (fill decisions), BB2_NO_FT_STEAL
+  (what-if), BB2_ALLOC_DEBUG (allocno table), QTY/SCHED/SLL/FLOW.
+  Runners: tmp/mar_{dbrdbg,allocdbg,qtydbg,cand_sched}.sh;
+  tmp/mar_dbr_tail.py (uid map); tmp/mar_i2_trace.py (copy tracer).
+- Sweeps: tmp/mar_qty_sweep{,2,3,4}.py, mar_family_sweep.py,
+  mar_cross_sweep.py (csv), mar_sweep_{printf2,tail,arm2,label}.py.
+- Prior kit: mar_test_candidate.sh, mar_diff2.sh,
+  probe_mar.py (all restore src).
