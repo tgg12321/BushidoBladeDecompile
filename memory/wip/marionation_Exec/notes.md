@@ -36,23 +36,16 @@ pri=1, luid-desc ties — SCHEDDBG block-23); no mips.md peepholes; jump2
 moves nothing. ⟹ target's geometry must differ UPSTREAM (arg1-refs=3
 via a construct keeping beqz-s4?? merged-test spelling gives beqz-dst ✗;
 or pair-refs=8 via floor_log2 jump — no byte-free 8th ref found).
-**(3b) EXHAUSTION COMPLETED (session 10):** the tie-copy hole (src born
-same-block + dies at copy + dest cross-block) has NO vehicle in arm-2:
-i/src are CONSTANTS (i2=i: cse1 const-propagates — tmp/mar_i2_trace.py,
-copy in .jump, gone in .cse; L=85 → s2 rotation); dst2-chains sit past
-arg1's death; check/chkb cross-block-born; arg0/tbl/i1496 don't die at
-the copy. saved-split refuted by bytes (lbu→v0 = unsplit). Sandwich
-(saved 952 > pair > arg1) has no integer solution (floor_log2 jumps
-overshoot). L counts LIVE positions only (arm-1 loop + done-island are
-arg1-dead — topology games inert). Family sweep (twin-form/u8/array-ptr/
-named-arg4/direct) all ≥9.
-**Permuter (session 11): REAL METRIC.** tmp/perm_mar3 (recipe: tools/
-mar_perm_workspace.sh + mar_perm_compile.sh): full-TU compile (a reduced
-TU shifts marionation by 55 lines!) + awk-extract to offset-0 .o vs
-asm/funcs-built target. Base = 300 real points (was 238800 noise; old
-rankings garbage). perm_inline=0. Refuted: Kengo (PS2 rewrite); -1
-holder + status&2-named (rotate/neutral); the old 42 rules = the same
-steal wall cheated through (addu->nop @127 + insert @130).
+**(3b) EXHAUSTED (10):** tie-copy hole has NO arm-2 vehicle (i/src
+constants — i2=i cse1-propagated, tmp/mar_i2_trace.py; dst2-chains past
+arg1 death; check cross-block; others don't die). saved-split refuted
+by bytes. Sandwich has no integer solution. L counts LIVE positions
+(topology inert). Family sweep all ≥9.
+**Permuter: REAL METRIC** (tmp/perm_mar3; recipe tools/mar_perm_
+workspace.sh + mar_perm_compile.sh: full-TU compile + awk-extract to
+offset-0 .o; reduced TU shifts codegen 55 lines — don't). Base = 300
+(was 238800 noise). perm_inline=0. Refuted: Kengo (rewrite); -1-holder/
+status&2-named; old 42 rules = same steal wall cheated through.
 **CONCLUSION:** local search around this foundation = exhausted with
 measured negatives; head-chain respellings byte-pinned (H1-H6 + O1-O3:
 sched1 normalizes stores, la-reorders drop refs). The 6 points need a
@@ -87,11 +80,17 @@ val5 = 104 (lw5 = insn 120; has REG_EQUIV (mem sp+16) — its stack home).
 Post-RA both 105+114 → v1 (in-place look); val5 → a0; TARGET swapped.
 The tie: 114-birth (insn 127's stream slot) vs 104-birth (insn 120's).
 sched2 CAN violate luid (measured once), so tie(sched1-stream) vs
-bytes(sched2) CAN split. CAUTION (11e): the sched dumps analyzed at log
-lines 3318/3857 were the WRONG FUNCTION (uid mismatch vs lreg!) — redo:
-fresh mar_sched_b.py run, grep dumps containing insn=127 AND insn=120;
-then find what pick-tie puts 120 before 127 in sched1 while sched2
-restores 127-first bytes.
+bytes(sched2) CAN split. **THE CLOCK-12 TIE (11f, real state-B dump @ log 4349):** RTL luids
+ALREADY have lw5(120)=l9 < sll4(127)=l11!! sched1's backward pick@12
+chose 120 over 127 AGAINST luid-desc — the sort ranks a LOAD above ALU
+right after a LOAD (last=138) — MEMORY-AFFINITY tie-break. Breaking it
+= the tie-flip: need 127 picked@12 (then fwd: lw5 first, val5 wins).
+Failed: naming arg3v (AF1-3, score 15-16 — pulls the whole 11D5 chain).
+Next levers: shift 138's luid between 9 and 11 WITHOUT naming; or make
+120 unready at clock 12 (its consumer 147-sw picked @9 — delay THAT);
+or find the affinity rule in sched.c rank()/SCHED_SORT and its exact
+class test (read sched.c launch/rank!). Then verify sched2 keeps
+[sll4 before lw5] bytes from the flipped stream (target byte order).
 
 ## Target ground truth (asm/funcs/marionation_Exec.s)
 - Regs: status s0, saved s1, i1494 s2, i1496 s3, arg1 s4, tbl s5,
