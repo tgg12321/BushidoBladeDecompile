@@ -14,12 +14,10 @@ rule) keeps a1 canonical → beqz s4; dbr backward scan takes the move,
 sb protected. check-1 NOP: sb trap+oppmem, la never splits, SEQ stops,
 1723 refuses conditional-SEQ steals.
 
-## Region-3 DECOMPOSED (9b/9c) — ledger
-**(3a) steal — twin-proven mechanism:** cpu_side_move_dir_4's NOP comes
-from its arm-head label (two-entry `chk==2||chk==5`) ⟹ own_fallthrough=0
-⟹ fill_eager skips (reorg.c:3764). Marionation's single-beqz bytes admit
-no visible second entry; L1/L2/L4/L6 label structures all normalize away
-pre-dbr (measured 6).
+## Region-3 (9b/9c)
+**(3a) steal:** twin-proven — arm-head label (two-entry ==2||==5) ⟹
+own_fallthrough=0 ⟹ fill_eager skips (3764). Marionation's single-beqz
+admits no visible second entry; L1/L2/L4/L6 all normalize away (6).
 **(3b) the transposition — RA-pinned, measured to ±1.** Exact allocno
 table (BB2_ALLOC_DEBUG, tmp/mar_allocdbg.sh): pair i1494/96 = refs 7,
 L=150, pri 933/933; arg1 = refs 4, L=86, pri 930; saved = 952. arg1's
@@ -85,12 +83,17 @@ ALREADY have lw5(120)=l9 < sll4(127)=l11!! sched1's backward pick@12
 chose 120 over 127 AGAINST luid-desc — the sort ranks a LOAD above ALU
 right after a LOAD (last=138) — MEMORY-AFFINITY tie-break. Breaking it
 = the tie-flip: need 127 picked@12 (then fwd: lw5 first, val5 wins).
-Failed: naming arg3v (AF1-3, score 15-16 — pulls the whole 11D5 chain).
-Next levers: shift 138's luid between 9 and 11 WITHOUT naming; or make
-120 unready at clock 12 (its consumer 147-sw picked @9 — delay THAT);
-or find the affinity rule in sched.c rank()/SCHED_SORT and its exact
-class test (read sched.c launch/rank!). Then verify sched2 keeps
-[sll4 before lw5] bytes from the flipped stream (target byte order).
+Failed: naming arg3v (AF1-3, 15-16 — pulls the 11D5 chain). sched.c
+rank_for_schedule READ: pri → dep-CLASS-vs-last (in LOG_LINKS(last):
+data=1 < anti/output=2 < independent-or-cost-1=3; HIGHEST first) →
+LUID-DESC. Clock-12 (last=138): lreg links of 138 = {anti-103} only ⟹
+120/127 both class-3 ⟹ luid-desc should pick 127(l11) — MEASURED 120
+first ⟹ sched1's ANALYZED deps ≠ stored lreg links. NEXT: instrument
+rank_for_schedule (print tmp/tmp2/classes/links at LAUNCH-pri ties in
+block 3) → identify the real edge ranking 120>127 → find its C lever.
+Then verify sched2 restores [sll4 before lw5] bytes (target order).
+CAUTION: sched-log dumps interleave functions — always cross-check the
+pick-uids against marB.i.lreg's marionation section before analyzing.
 
 ## Target ground truth (asm/funcs/marionation_Exec.s)
 - Regs: status s0, saved s1, i1494 s2, i1496 s3, arg1 s4, tbl s5,
