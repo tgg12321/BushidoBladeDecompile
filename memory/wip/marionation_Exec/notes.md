@@ -9,13 +9,10 @@ ALL 8 callee-saved + block regs target. Remaining:
   missing nop)** — decomposed + locally EXHAUSTED below.
 
 ## Region-2 SOLVED — recipe (in candidate.c)
-Per-arm `dst`/`dst2` split + arm-1 dst-EARLY (`dst = a1;` before the
-guard, candidate line ~100). cse.c make_regs_eqv:853 promotes a copy
-dest to qty-canonical iff regno_last_uid[new] > old's — per-arm dst dies
-before a1's arm-2 use → a1 stays canonical → beqz s4 ✓. dbr backward
-scan takes the move (trial-1), sb protected → [sb, la, beqz, move-slot]
-= target. check-1 NOP: sb loses (trap+oppmem=1 always), la inelig
-(never splits), SEQ stops; 1723 refuses conditional-SEQ steals.
+Per-arm dst/dst2 split + arm-1 dst-EARLY. make_regs_eqv:853 (last-uid
+rule) keeps a1 canonical → beqz s4; dbr backward scan takes the move,
+sb protected. check-1 NOP: sb trap+oppmem, la never splits, SEQ stops,
+1723 refuses conditional-SEQ steals.
 
 ## Region-3 DECOMPOSED (9b/9c) — ledger
 **(3a) steal — twin-proven mechanism:** cpu_side_move_dir_4's NOP comes
@@ -79,20 +76,22 @@ that gives sched1 the lw5-first luids. Pins ignored (RA fights them).
 State A (mul-before-arg5) = RA ✓ order ✗ (the base-6). REFUTED sinks
 (session 9): seg3-inline (combine merges), named t3 (re-ties), pp moves
 (normalized), copy-back (pre-RA-eliminated).
-**VETTING (11c):** order-floor = 220 (17280 enumerated). mar5 "180" =
-FALSE POSITIVE (semantic goto-loop, mask-blind j-target + spurious nop).
-Vet: semantics diff + uniform j-deltas + full-diff. do-while-0 = neutral.
-**State-B RTL mapped (11d, tmp/mar_b_uidmap.py on marB.i.greg):** the
-t0-chain = ONE user-var pseudo, 3 sets, IN-PLACE ops (lbu v1; sll v1,v1;
-addu v1,v1,s5; lw a3,0(v1)) → v1; val5 → a0. TARGET = same shapes,
-swapped (t0→a0, val5→v1). Local qty 114 [18..24] (the tie-winner on v1)
-still needs identification (t0 is multi-set ⟹ global-alloc ⟹ 114 is
-NOT t0 — next: BB2_QTY_DEBUG reg1↔pseudo cross-ref via marB.i.lreg).
-sched2 CAN violate luid (state-A @8: sw picked over sll-11D5 against
-luid — hazard/class rule), so the tie(stream) vs bytes(sched2) CAN
-split — the lever = making val5's allocation precede qty-114's.
-SCHEDDBG state-B: sched1 dump line 3318, sched2 3857 in marS.sched.log
-(regenerate via tmp/mar_sched_b.py).
+**VETTING (11c):** order-floor 220 (17280 enumerated). mar5 "180" =
+FALSE POSITIVE (semantic goto-loop). Vet: semantics + uniform j-deltas +
+full-diff. do-while-0 neutral.
+**State-B RTL mapped (11d/e, marB.i.lreg via tmp/mar_b_uidmap.py):**
+qty-114 IDENTIFIED = the ANON SHIFT TEMP: insn 127 `(set 114 (ashift
+105 2))` + insn 132 `(set 105 (plus 114 tbl))` — 105 = the t0 user-var
+(multi-set → global); 114 = [sll..addu] = the [18..24] tie-winner.
+val5 = 104 (lw5 = insn 120; has REG_EQUIV (mem sp+16) — its stack home).
+Post-RA both 105+114 → v1 (in-place look); val5 → a0; TARGET swapped.
+The tie: 114-birth (insn 127's stream slot) vs 104-birth (insn 120's).
+sched2 CAN violate luid (measured once), so tie(sched1-stream) vs
+bytes(sched2) CAN split. CAUTION (11e): the sched dumps analyzed at log
+lines 3318/3857 were the WRONG FUNCTION (uid mismatch vs lreg!) — redo:
+fresh mar_sched_b.py run, grep dumps containing insn=127 AND insn=120;
+then find what pick-tie puts 120 before 127 in sched1 while sched2
+restores 127-first bytes.
 
 ## Target ground truth (asm/funcs/marionation_Exec.s)
 - Regs: status s0, saved s1, i1494 s2, i1496 s3, arg1 s4, tbl s5,
