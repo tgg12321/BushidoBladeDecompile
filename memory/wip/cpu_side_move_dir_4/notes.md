@@ -16,9 +16,17 @@ FOLLOWS automatically if addu4 emits @59 < sw: val5-overlap → v0/v1 blocked).
 its in-call luid > a2-sll's (arg 4 > arg 3) — the last wall. u-as-statement
 kills w's range (v1-hole); u∪jalr coalesces back to the poisoned form; a2v
 hoists blow up (24-26); i5/t1 spellings sink/normalize (invariant 4s).
-NEXT: directed permuter on THIS base (statement orders × spellings can shift
-the sw/addu4 luid microstructure); or find an a2-arg spelling whose sll-luid
-exceeds the addu4's.
+NEXT: the FAITHFUL permuter workspace is BUILT and running (session 3c):
+tmp/perm_csmd4/ — full-TU compile + fn extraction; **compile.sh splices the
+permuted fn back into base_full.c via tmp/csmd4_splice.py** because the
+permuter PRUNES other fn bodies and the pruned-TU metric is UNFAITHFUL
+(its "90-finds" = arg5-through-var reuse scored 13-17 in the real sandbox —
+always re-verify finds via engine sandbox). Regenerate: tmp/csmd4_perm_setup.sh
++ csmd4_perm_base.py (+ sanitize: csmd4_sanitize_base.py escapes multi-line
+asm strings for pycparser) + cp base.c base_full.c. Launch: permuter.py
+tmp/perm_csmd4 --best-only --stop-on-zero -j24. base=265 (the 6-line diff).
+State-A's trap re-confirmed luid-fork-forced by its -dS trace (T-16 LAUNCH
+beats pp; both fork arms map to t0-luid vs arg5-luid — no third state).
 
 ## TL;DR (session 3a — the mechanism map that led here)
 candidate.c (state-A form) still = masked floor 4 (order-displacement class).
