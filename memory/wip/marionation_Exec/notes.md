@@ -77,23 +77,23 @@ qty-114 IDENTIFIED = the ANON SHIFT TEMP: insn 127 `(set 114 (ashift
 val5 = 104 (lw5 = insn 120; has REG_EQUIV (mem sp+16) — its stack home).
 Post-RA both 105+114 → v1 (in-place look); val5 → a0; TARGET swapped.
 The tie: 114-birth (insn 127's stream slot) vs 104-birth (insn 120's).
-sched2 CAN violate luid (measured once), so tie(sched1-stream) vs
-bytes(sched2) CAN split. **THE CLOCK-12 TIE (11f, real state-B dump @ log 4349):** RTL luids
-ALREADY have lw5(120)=l9 < sll4(127)=l11!! sched1's backward pick@12
-chose 120 over 127 AGAINST luid-desc — the sort ranks a LOAD above ALU
-right after a LOAD (last=138) — MEMORY-AFFINITY tie-break. Breaking it
-= the tie-flip: need 127 picked@12 (then fwd: lw5 first, val5 wins).
-Failed: naming arg3v (AF1-3, 15-16 — pulls the 11D5 chain). sched.c
-rank_for_schedule READ: pri → dep-CLASS-vs-last (in LOG_LINKS(last):
-data=1 < anti/output=2 < independent-or-cost-1=3; HIGHEST first) →
-LUID-DESC. Clock-12 (last=138): lreg links of 138 = {anti-103} only ⟹
-120/127 both class-3 ⟹ luid-desc should pick 127(l11) — MEASURED 120
-first ⟹ sched1's ANALYZED deps ≠ stored lreg links. NEXT: instrument
-rank_for_schedule (print tmp/tmp2/classes/links at LAUNCH-pri ties in
-block 3) → identify the real edge ranking 120>127 → find its C lever.
-Then verify sched2 restores [sll4 before lw5] bytes (target order).
-CAUTION: sched-log dumps interleave functions — always cross-check the
-pick-uids against marB.i.lreg's marionation section before analyzing.
+**CLOCK-12 (11f):** RTL luids already favor the flip (lw5=l9 < sll4=
+l11); the backward pick@12 takes the load anyway — explained by the
+theorem below (hazard-greedy select), NOT a luid/class anomaly.
+Failed: arg3v naming (AF1-3, 15-16 — pulls the 11D5 chain).
+**SCHEDULER THEOREM (11h — mechanism COMPLETE):** rank_for_schedule
+(pri → dep-class → luid; BB2_RANK_DEBUG: clock-12 = class-3 tie, val=0)
+THEN schedule_select (sched.c:2643): within a same-priority group it
+queues blocked insns and picks the LARGEST potential_hazard first ⟹
+loads beat ALU backward ⟹ [ALU-forward-before-load] IS FORCED for
+LAUNCH-tied birthing pairs. Corollaries: state-B's [sll4, lw5] + temp-
+first birth = a theorem; breaking it needs a PRIORITY-GROUP SPLIT
+(strip one side's LAUNCH bump = dest multi-set/not-live); val5-reuse
+(VR1-3: index-then-value) strips it but relocates the index-lbu reg
+(10-11); `t0 <<= 2` (no anon temp — synth_mult only fires for `*= 4`)
+= continuous 6-ref qty stealing v1 (48*2500/22 ≫ 13333). In-family
+levers exhausted; the campaigns own the residual space. CAUTION:
+sched-log dumps interleave functions — cross-check uids vs marB.i.lreg.
 
 ## Target ground truth (asm/funcs/marionation_Exec.s)
 - Regs: status s0, saved s1, i1494 s2, i1496 s3, arg1 s4, tbl s5,
