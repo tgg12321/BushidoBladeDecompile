@@ -75,23 +75,21 @@ campaigns (perm_mar3/4) are the active search. DONE leads: twin's C
 (:388, ==2||==5 two-entry label), corpus (OR-conditions), m2c (no pp in
 original; arm-2 dst-early in bytes), Kengo (rewrite, useless).
 
-## Region-1 ledger (printf lbu5/sll4) — the two-state trap
-sched1 normalizes ALL statement orders to TWO streams (QTYDBG):
-- **State A** (mul-before-arg5; CURRENT): sll4@14 → temp [14..24] L=10 <
-  val5 [20..26] L=6 density → val5→v1, temp→a0, 11D5→v0 = TARGET RA ✓
-  but order ✗ (4 masked lines).
-- **State B** (any arg5-before-mul): sll4@18 → ORDER ✓ but temp [18..24]
-  L=6 TIES val5 → qty_compare_1 tie → earlier birth = temp → steals v1 ✗.
-Target = B-order + A-registers ⟹ val5 must win: temp L≥7 (sink addu4
-past 24) or val5 born first (impossible: lw5 needs addu5@18; sll4>18
-required for order). REFUTED sinks: seg3-inline into the call arg (16 —
-combine merges); named t3 seg3 (G1/G2 re-tie → v1); named-shift t3 (G4 =
-state B); pp position (normalized); copy-back (pre-RA-eliminated).
-Key mechanism: addu4 (`t0 = base + t0`) is
-NON-BIRTHING (t0 multi-set) → drifts early (24) in backward sched1; sw
-(call-gen'd, luid after everything) lands 26; single-set namings re-tie
-the chain. Remaining: a3-arg cost>2 precompute forms (calls.c:1618)
-WITHOUT combine-merging; joint search with region-3 (see NEXT above).
+## Region-1 ledger (session 11b) — the tie, sharply
+State B/220-form (arg5-early or the arg5v-split — SAME state): ORDER
+fully correct; remaining = a pure v1↔a0 swap of [temp+t0-global]↔val5
+(5 subst lines, masked-8). QTYDBG: temp [18..24]=6 TIES val5 [20..26]=6
+→ qty-order (birth) → temp → v1 ✗. Target needs val5 first. addu4
+ALREADY sinks to 24 in this state; only the BIRTH tie (sll4@18 < lw5@20)
+remains, and sched1 normalizes every C order to sll4-first (arg5v/N1-N5
+all identical tables). KEY NEW MECHANISM (SCHEDDBG runs 16/17): sched2
+is NOT a no-op in the printf block (it swaps sw↔sll-11D5 between
+passes!) ⟹ luid-order [lw5<sll4] + byte-order [sll4<lw5] is REACHABLE
+in principle via post-RA anti-dep differences — no C spelling found yet
+that gives sched1 the lw5-first luids. Pins ignored (RA fights them).
+State A (mul-before-arg5) = RA ✓ order ✗ (the base-6). REFUTED sinks
+(session 9): seg3-inline (combine merges), named t3 (re-ties), pp moves
+(normalized), copy-back (pre-RA-eliminated).
 
 ## Target ground truth (asm/funcs/marionation_Exec.s)
 - Regs: status s0, saved s1, i1494 s2, i1496 s3, arg1 s4, tbl s5,
