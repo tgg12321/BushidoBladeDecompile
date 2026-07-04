@@ -10,20 +10,20 @@
  },
  "sessions": [
   {
-   "date": "2026-07-03",
-   "git_head_at_measurement": "d9e490c0",
-   "lever": "SESSION 4c - the twin h5 mirror (v0 <<= 2 + v0+(s32)tbl spelling) lands identically: region-1 down to the SAME {sll4<->addu5} pair (2 lines); total masked 4 = pair-2 + region-3 (nop + shifts). Candidates now mirror across both functions.",
-   "floor_was": 4,
-   "floor_now": 4,
-   "note": "region-1 effectively one pair from closed; region-3 = the old (3a) wall"
-  },
-  {
    "date": "2026-07-04",
    "git_head_at_measurement": "4a3afb71",
    "lever": "SESSION 5 - REGION-3 MECHANISM DECODED: the nop requires reorg.c fill_slots_from_thread to refuse the move-steal, and the only byte-compatible refusal is mark_target_live_regs' everything-live conservatism at check2's target (find_basic_block==-1). KNOB-PROVEN byte-exact via new BB2_ALLLIVE_LABEL diagnostic (debug cc1 only): steal refused, nop appears, 179/179. Prediction/LOOP_BEG path DISPROVEN (fall-through retried regardless; do{}while(0) probe inert). Byte-free ref-bump program ALLOCDBG-verified: u3+sv+iq+ix = EXACT target s-register allocation (all 8) under a steal-refusing guard - the 3-point-margin wall is open; but ix costs +4 prologue insns (cse latches the adjacent symbol) and sv costs 2 lines (combine merges load+move -> lbu s1). Transposition sub-gap decoded: dst2-first reorder shortens p73 livelen 86->84 -> pri 952 EXACT TIE with p82 -> ascending flip (d1/d2 measured).",
    "floor_was": 4,
    "floor_now": 4,
    "note": "floor unchanged (no committed candidate change); next: jump.c label-lifecycle read for the natural-C find_basic_block==-1 trigger; p76 cse-shielded 3-stmt split + y2/y5 sv spellings untested"
+  },
+  {
+   "date": "2026-07-04",
+   "git_head_at_measurement": "9c2f17aa",
+   "lever": "SESSION 6 - empirical trigger-discovery protocol EXECUTED (4 mini-batteries, ~35 variants) + jump.c/reorg.c/flow.c source verification. CONFIRMED natural-C steal refusal: a goto-referenced label in check2's fall-through between sb and the move refuses the fill (h1 mini, bare slot = NOP) -- overturns 5b's own_fallthrough closure (labels are zero-width; user labels delete to NOTE_INSN_DELETED_LABEL). Timing calculus established: dbr runs fill+relax TWICE, so refusal scaffolding must survive pass-2 fill_eager and die in pass-2 relax (only deleters: branch-to-next, threading orphans). find_basic_block==-1 requires a POST-FLOW-minted target (every flow-era label is its own basic_block_head -- flow.c verified); relax redundancy-chain (reorg.c 3992-4006) can mint barrier-adjacent at exactly .L812C4 given a re-computed check expression at after_blocks, with byte-free cleanup via delete_insn's label-cascade (jump.c 3509), but is blocked ALONE by pass-1-fill-first (h2 measured). Composite blueprint banked; unsolved slot = the mid-thread label's referencer J must be byte-free. Dead ends measured: &&label dead-take (tree-eliminated, k-battery), all loop/duptail/switch topologies at after_blocks (rounds 1-2). Permuter finds honest-verified: mar6 200-1/2=masked 8, 200-3=masked 5, csmd4 40-2=6 -- ALL REJECTED, mh5 stands.",
+   "floor_was": 4,
+   "floor_now": 4,
+   "note": "floor unchanged; next: (i) BB2_DBR_DEBUG per-pass fill trace on the real candidate, (ii) compose h1+h2 minis with J-lifecycle variants, (iii) finish relax 4030-4120 deleter catalog, (iv) deferred jump-around-jump inversion probe"
   }
  ],
  "reviewer": {
@@ -59,6 +59,7 @@
   }
  ],
  "prior_sessions_summary": [
+  "2026-07-03 (d9e490c0): SESSION 4c - twin h5 mirror lands identically; region-1 down to the same {sll4<->addu5} pair; masked 4 = pair-2 + region-3.",
   "2026-07-03 (16a40185): SESSION 3/4a - twin-campaign transfer opened (cpu_side_move_dir_4 mechanism map applies to region-1); M1 double--1-holder exploration masked 30, not better.",
   "2026-07-03 (6999016b): SESSION 4b - owner sanctioned staged-value-reused-variable after the SOTN census; candidate = masked-4 v0-idx form; floor 6 -> 4.",
   "2026-05-29 (register-alloc-deep-dive): rotation map established; clean-target permuter plateau 1125 over 16.8k iters.",
