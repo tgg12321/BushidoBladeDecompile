@@ -22,13 +22,20 @@ transposition (coupled to a p73 livelen tie), (c) the region-1 pair (unchanged).
 - ⇒ ONLY door: mark_target_live_regs everything-live = target label unknown to
   flow-era basic_block_head (find_basic_block==-1). Simulated via the new env
   knob → arm-2 becomes [beq a2; NOP; sb; la; move; beq a1; li-slot] ✓ nop ✓.
-- Natural-C trigger = a POST-FLOW-minted label at check2's target. jump2's
-  cross_jump (runs after reload) mints labels — and duplicated-statement-into-
-  arms (owner-sanctioned 2026-07-01) explicitly covers byte-neutral cross-jump
-  re-merge. Blocker: the after_blocks tail has only ONE instance/predecessor,
-  so there is nothing to merge. NEXT: read jump.c label lifecycle (cross_jump
-  get_label_before; adjacent-label merge keep-direction; any other post-flow
-  label create/delete) and hunt a shape that re-mints that label.
+- Natural-C trigger = a POST-FLOW-minted label at check2's target. Session-5b
+  CLOSED the remaining derivation doors: block-0 fallback (linear walk kills
+  a1 at calls/labels), mid-block-label pending-death trick (barrier pins the
+  head), jump1/jump2 canonicalize-on-last constructions (the two-referencer
+  obstruction: after_blocks has ONE jumper; every keeper-jump is either
+  unreachable (deleted jump1) or real bytes), reorg-era label replacement
+  (only check2 targets it; fills process in stream order). NEXT-SESSION
+  PROTOCOL (the strongest remaining tool): EMPIRICAL TRIGGER DISCOVERY —
+  generate ~50 synthetic mini-functions reproducing the steal shape
+  [beqz; sb; move(dead-on-taken); la; beqz] x label/goto/loop/duplicated-tail
+  topologies around the target block; compile each; grep .s for nop-in-slot;
+  any natural NOP = the trigger, reverse-engineer it. Cheap, mechanical,
+  falsifies-or-finds. (Harness sketch: tmp/mar_alllive_full.py's fixpoint
+  runner + a topology generator.)
 
 ## Arm-2 transposition (knob-world residual, 2 masked lines)
 Knob-world order [sb; la; move] vs target [sb; move; la] = sched2 following C
@@ -38,31 +45,31 @@ p82(saved, 952) → ascending-pseudo tiebreak → p73 steals s1 (s-regs flip).
 Counter = raise p82 (+2 refs → 3636) and, because p73 then sits at 952 > 933,
 also raise p76/p78 above it — the full bump program below.
 
-## Byte-free ref-bump program (ALLOCDBG-verified arithmetic, session-5)
+## Byte-free ref-bump program — CLOSED as a byte-exact route (session-5/5b)
 Target order needs p82 > p76 >= p78 > p73 strictly (find_reg = lowest-free-s).
-- p78 (idx_1496): split-init `idx_1496 = idx_1494; idx_1496 += 2;` → 9r/1800;
-  combine merges back to one addiu; REFS SURVIVE COMBINE (measured). ✓
-- p82 (saved): 3-stmt `{u8 t; t=*D_800A147C_2; saved=t; saved&=3;}` → 4r/3636
-  and allocation ✓, BUT combine merges load+move → `lbu s1` (2-line byte cost;
-  target has lbu v0 / andi s1,v0,3). UNTESTED byte-clean spellings:
-  y2 `saved=3; saved&=t;` (cse const-prop risk), y5 `t&=0xF;` chain.
-- p76 (idx_1494): needs +2 → 1800 (ties p78; ascending keeps p76 first).
-  Adjacent-symbol split `idx_1494=&D_800A1496; idx_1494-=2;` FAILED: cse
-  latches the intermediate symbol for idx_1495/19C0 derivations (+4 insns,
-  u3_all=16). Only sets gain refs (fold-away reads just relocate the read).
-  BATTERY (session-5): tp-shielded 3-stmt split FAILED WORSE (+2 more insns,
-  185; breaks iq's p78 bump to 6r/810). y2 `saved=3;saved&=t` and y5
-  `t&=0xF` chain both COLLAPSE (cse const-prop; p82 back to 2r/952; 185
-  insns, score 31). y1+ix remain the ONLY working vehicles — the u3 ref-bump
-  path has NO byte-clean instantiation found; treat as proof-of-mechanism.
-- PROOF OF CONCEPT: u3(guard) + sv + iq + ix = EXACT target s-alloc
-  (p83 s0, p82 s1, p76 s2, p78 s3, p73 s4, p81 s5, p77 s6, p72 s7) — first
-  steal-refusing shape ever to hold all 8; cost = ix prologue damage + guard
-  position (masked 16). The u3-guard path is INFERIOR to the knob-trigger path
-  (guard beqz sits early w/ sb in its slot vs target's late beqz a1).
+WORKING (with byte costs): p78 iq-split `idx_1496=idx_1494; idx_1496+=2;`
+(9r/1800, refs SURVIVE combine, byte-clean); p82 y1 3-stmt split (4r/3636,
+alloc right, 2-line cost: combine merges load+move -> lbu s1); p76 ix
+adjacent-symbol split (+4 insns: cse latches the symbol). BATTERY-FAILED:
+tp-shield (185 insns, breaks iq), y2 `saved=3;saved&=t` + y5 `t&=0xF` (cse
+const-prop collapses both; score 31). Only sets gain refs; const-sourced
+splits die in cse; reg-sourced survive (iq precedent).
+PROOF OF CONCEPT: u3+y1+iq+ix = EXACT target s-alloc (all 8) — the 3-point
+wall is arithmetic, but no byte-clean instantiation exists; u3-guard path
+also loses on guard position (beqz early w/ sb slot vs target late beqz a1).
 
 ## Region-2 SOLVED — recipe unchanged (in candidate.c)
 Per-arm dst/dst2 split + arm-1 dst-EARLY (see git history for mechanics).
+
+## Region-1 pair — session-5b corrections (READ BEFORE acting on 5a's redirect)
+- CAVEAT on the "in-place = byte-proven" claim: RA colors a fresh single-set
+  temp onto its dying operand's register, producing IDENTICAL bytes to an
+  in-place chain — the g3-family inference is plausible, NOT proven.
+- MEASURED (twin): all in-place chain forms (addu-in-place W1, +shl W2,
+  target-order W3, g3-hybrid W4) score 15-16 vs ctl 2 — with no launches the
+  whole head re-times; h5/mh5 is a deep local optimum. Do NOT re-derive.
+- Permuter find output-40-1 (temp=arg5 staging) honest-verified 6 — rejected,
+  but it confirms the search is in the arg5-qty neighborhood.
 
 ## Region-1 pair (2 masked lines) — FRONTIER REDIRECTED to g3 (session-5)
 {sll a0 <-> addu v0,v0,s5} @56-57: both LAUNCH (sched1 dump: sll dest = fresh
