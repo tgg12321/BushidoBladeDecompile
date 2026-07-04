@@ -1,97 +1,95 @@
-# marionation_Exec - CANDIDATE MASKED 4 (mh5 form; region-1 down to ONE insn-pair)
+# marionation_Exec — CANDIDATE MASKED 4 (mh5); region-3 mechanism DECODED (2026-07-04)
 
-## SESSION-4c: the twin h5 mirror lands (candidate.c = mh5)
-Adding `v0 <<= 2; arg5 = *(s32 *)(v0 + (s32)tbl_125c);` (the twin's h5
-half-staging) collapses region-1 to the SAME residual as the twin: ONE
-{sll4@56 <-> addu5@57} pair. Total masked 4 = that pair (2) + region-3
-(the arm-2 beqz-a2 delay nop + the resulting 1-slot shifts). The two
-functions now share an identical region-1 residual and mirrored
-candidates. Twin floor = masked 2 (h5). Permuters grinding both bases.
+## TL;DR
+Floor unchanged (masked 4 = region-1 pair 2 + region-3 2; candidate.c = mh5).
+SESSION-5 DECODED REGION-3 END-TO-END: the missing nop requires reorg.c's
+fill_slots_from_thread to refuse stealing `move a1,s4`, and the ONLY
+byte-compatible refusal is mark_target_live_regs' conservative everything-live
+answer for check2's branch target (find_basic_block()==-1). KNOB-PROVEN
+byte-exact (BB2_ALLLIVE_LABEL): steal refused, nop appears, 179/179. Remaining:
+(a) a NATURAL-C trigger for that conservatism, (b) the arm-2 move/la
+transposition (coupled to a p73 livelen tie), (c) the region-1 pair (unchanged).
 
-## SESSION-4 (2026-07-03): the v0-idx discovery + the review outcome
-A form reaching masked 4 (vs the 6 floor) was found and twice FAILed
-layer-1 review: rejected/v0-idx-staging-scheduler-pass.c — the index
-staged through the dead-here v0 var strips the load LAUNCH priority
-(sched.c adjust_priority/birthing_insn_p, reg_n_sets>=2) and re-times
-the head to target (51-54+58-67 byte-match; t0=a0 via the p109 a0-pref
-chain, FINDREGDBG-verified). Reviewer: live store = neither dead-store
-nor named-local carve-out fits; the scheduler-pass mechanism is outside
-the SOTN-evidenced LICM/RA variable-reuse scope -> needs fresh SOTN
-evidence or a USER POLICY RULING. OWNER SANCTIONED IT 2026-07-03 (rule:
-staged-value-reused-variable). candidate.c = the masked-4 form again;
-residual = [55-57 sll4-rotation, luid-pinned] + region-3 (nop + shifts).
-The bare FAKEs
-(idx_1495/D_800F19C0/pp) now carry full mechanism annotations per the
-review. Lever-exhaustion ledger for the block (all sandbox-measured):
-plain 6; REU 10; carriers i/status/cnt/temp 9-30; unions M1/M3 9-30;
-18+ order sweeps 4-37; split-addu 8+drift; m2c-inline 14. Permuter
-(tmp/perm_mar6, honest splice-metric): 200x2/220x3/225 finds = the
-X-hoist family, sandbox-verified WORSE (weighted-vs-masked divergence);
-grinding on.
+## Region-3 — the decision tree (all measured, session-5)
+- Steal site: jump_insn(beqz a2) steals `(set a1 s4)` from its OWN fall-through
+  thread [sb; la; move] — trial passes refset/setset/setneed/setsopp/trap.
+- Prediction (mostly_true_jump) is IRRELEVANT: predicted-taken still retries
+  the fall-through on failure (reorg.c:3748). Empirically: `do{}while(0);`
+  before after_blocks (LOOP_BEG note → prediction 2) changes NOTHING.
+- own_fallthrough=0 impossible (needs a label between beqz and sb — bytes).
+- $a1 genuinely live at .L812C4 impossible (bytes: a1 is written before any
+  read on both paths out of after_blocks).
+- ⇒ ONLY door: mark_target_live_regs everything-live = target label unknown to
+  flow-era basic_block_head (find_basic_block==-1). Simulated via the new env
+  knob → arm-2 becomes [beq a2; NOP; sb; la; move; beq a1; li-slot] ✓ nop ✓.
+- Natural-C trigger = a POST-FLOW-minted label at check2's target. jump2's
+  cross_jump (runs after reload) mints labels — and duplicated-statement-into-
+  arms (owner-sanctioned 2026-07-01) explicitly covers byte-neutral cross-jump
+  re-merge. Blocker: the after_blocks tail has only ONE instance/predecessor,
+  so there is nothing to merge. NEXT: read jump.c label lifecycle (cross_jump
+  get_label_before; adjacent-label merge keep-direction; any other post-flow
+  label create/delete) and hunt a shape that re-mints that label.
 
-## (session-3 door-map folded: see cpu_side_move_dir_4 notes + git history)
+## Arm-2 transposition (knob-world residual, 2 masked lines)
+Knob-world order [sb; la; move] vs target [sb; move; la] = sched2 following C
+stmt order. Reordering C (dst2=a1 before src=…, d1/d2) fixes the order BUT
+shortens p73's live range 86→84 luids → pri 2*4*1e4/84 = 952 = EXACT TIE with
+p82(saved, 952) → ascending-pseudo tiebreak → p73 steals s1 (s-regs flip).
+Counter = raise p82 (+2 refs → 3636) and, because p73 then sits at 952 > 933,
+also raise p76/p78 above it — the full bump program below.
 
-## STATE (READ FIRST)
-candidate.c = the score-6 form (`bash tools/mar_test_candidate.sh` applies
-+ scores + restores; copy to tmp/mar_candidate.c first). 178/179 insns;
-ALL 8 callee-saved + block regs target. Remaining:
-- **Region-1 (printf lbu5/sll4 order, 4 masked lines)** — ledger below.
-- **Region-3 (check2 slot steal + arm-2 move/la transposition, 2 lines +
-  missing nop)** — decomposed + locally EXHAUSTED below.
+## Byte-free ref-bump program (ALLOCDBG-verified arithmetic, session-5)
+Target order needs p82 > p76 >= p78 > p73 strictly (find_reg = lowest-free-s).
+- p78 (idx_1496): split-init `idx_1496 = idx_1494; idx_1496 += 2;` → 9r/1800;
+  combine merges back to one addiu; REFS SURVIVE COMBINE (measured). ✓
+- p82 (saved): 3-stmt `{u8 t; t=*D_800A147C_2; saved=t; saved&=3;}` → 4r/3636
+  and allocation ✓, BUT combine merges load+move → `lbu s1` (2-line byte cost;
+  target has lbu v0 / andi s1,v0,3). UNTESTED byte-clean spellings:
+  y2 `saved=3; saved&=t;` (cse const-prop risk), y5 `t&=0xF;` chain.
+- p76 (idx_1494): needs +2 → 1800 (ties p78; ascending keeps p76 first).
+  Adjacent-symbol split `idx_1494=&D_800A1496; idx_1494-=2;` FAILED: cse
+  latches the intermediate symbol for idx_1495/19C0 derivations (+4 insns,
+  u3_all=16). Only sets gain refs (fold-away reads just relocate the read).
+  UNTESTED: cse-shielded 3-stmt `{u8*tp; tp=&D_800A1496; idx_1494=tp;
+  idx_1494-=2;}` (combine 3-insn merge → la D_800A1494; refs counted at flow).
+- PROOF OF CONCEPT: u3(guard) + sv + iq + ix = EXACT target s-alloc
+  (p83 s0, p82 s1, p76 s2, p78 s3, p73 s4, p81 s5, p77 s6, p72 s7) — first
+  steal-refusing shape ever to hold all 8; cost = ix prologue damage + guard
+  position (masked 16). The u3-guard path is INFERIOR to the knob-trigger path
+  (guard beqz sits early w/ sb in its slot vs target's late beqz a1).
 
-## Region-2 SOLVED — recipe (in candidate.c)
-Per-arm dst/dst2 split + arm-1 dst-EARLY. make_regs_eqv:853 (last-uid
-rule) keeps a1 canonical → beqz s4; dbr backward scan takes the move,
-sb protected. check-1 NOP: sb trap+oppmem, la never splits, SEQ stops,
-1723 refuses conditional-SEQ steals.
+## Region-2 SOLVED — recipe unchanged (in candidate.c)
+Per-arm dst/dst2 split + arm-1 dst-EARLY (see git history for mechanics).
 
-## Region-3 — MECHANISM CLOSED (session-4c re-measure on the mh5 foundation)
-The ONLY difference vs target: cc1 dbr steals `move a1,s4` past the sb
-into the beqz-a2 slot (everything after = a 1-slot shift; sxs probe
-tmp/mar_region3_sxs.py). Both loops' C is u3-style guards; loop-1's
-steal MATCHES target, only loop-2's must be refused.
-**Shapes that refuse the steal exist** — s1/u1/u3/u5/u6 (dst2 init moved
-inside `if (a1 != 0)`) give 179/179 WITH the nop: the second branch then
-tests the s-reg directly and follows the sb immediately, so the fill scan
-hits a jump with nothing eligible. **But all of them flip the s-regs**:
-the guard's extra a1-var read raises p73 (a1-holder) refs 4->5, pri
-930->1176 vs the lui-base pair's 933 (3-point margin, ALLOCDBG probe
-tmp/mar_u3_alloc.py) -> allocates 1st instead of 4th -> s1<->s4 +
-s2/s3 rotate (masked 22-26). Counter-levers CLOSED by arithmetic:
-refs back to 4 breaks loop-1's bytes (its guard must keep the a1-test);
-livelen needs +23 luids that don't exist past the block; embedded
-assign `if ((dst2 = a1) != 0)` CSEs back to base RTL (v1: byte-identical
-to base, steal intact); src/i movement alone flips WITHOUT the nop
-(u2/u4/v2-v4). Old (3a)/(3b) text: git history. The permuter
-(tmp/perm_mar6, honest splice metric, rebased on mh5) owns the search.
-
-## Region-1 ledger (LARGELY SUPERSEDED by session-4's v0-idx fix; full text in git)
-The old tie ([temp+t0]↔val5 birth-order) and the scheduler theorem
-(rank_for_schedule → schedule_select hazard-greedy; LAUNCH-tied pairs
-force ALU-before-load) remain the mechanism reference — see git history
-and the twin's notes. The v0-idx staging resolved the head; only the
-55-57 sll4-rotation survives (luid-pinned, see session-4 block).
+## Region-1 pair (2 masked lines) — UNCHANGED
+{sll a0 <-> addu v0,v0,s5} @56-57: both LAUNCH, luid-pinned; flip breaks the
+p106/val5 qty birth-tie (6). ~45 forms ledgered (git). Permuters own the
+search: tmp/perm_mar6 (mh5) + tmp/perm_csmd4 (twin g3) — running, honest
+splice metric; verify finds via tmp/perm_finds_verify.py. Twin crack transfers.
 
 ## Target ground truth (asm/funcs/marionation_Exec.s)
-- Regs: status s0, saved s1, i1494 s2, i1496 s3, arg1 s4, tbl s5,
-  i1495 s6, arg0 s7; tail check a2, src a0, i v1, b v0, dst/dst2 a1.
-- check-1: lbu 0(s3), andi a2, beqz→check2, NOP. arm-1: sb 0(s3), la
-  F19B0, beqz s4→.L812BC, slot=move; li v1,7; li a3,-1; loop; j; move.
-- check2: lbu -1(s3), andi, beqz→after_blocks, NOP. arm-2: sb -1(s3),
-  MOVE, la F19A8, beqz a1→.L812BC, slot=li v1,7; li a3,-1; loop;
-  .L812BC: j .L812CC; move v0,a2. after_blocks: beqz s7→loop, slot=
-  move v0,zero. Two [j; move] sites unmerged (ours ✓).
+- Regs: status s0, saved s1, i1494 s2, i1496 s3, arg1 s4, tbl s5, i1495 s6,
+  arg0 s7; check a2, src a0, i v1, b v0, dst/dst2 a1.
+- arm-2: sb -1(s3); move a1,s4; la F19A8; beqz a1→.L812BC slot=li v1,7;
+  li a3,-1; loop; .L812BC: j .L812CC; move v0,a2. check2 beqz slot = NOP.
+- after_blocks .L812C4: beqz s7→.L810A4 slot=move v0,0; falls into epilogue.
+- Base ALLOCDBG s-order: p82 952 / p76 933 / p78 933 / p73 930 / p81 657 /
+  p77 405 / p72 256 (u3 guard lifts p73 to 5r/1176 — the old (3a) wall).
 
 ## Known gotchas
-- 42 rules index-anchored; end gate = retire-all-42 + full SHA1. Twin
-  csmd4 (:388) shares text — marionation-unique anchors. Declare
-  new_var/new_var3 in the final form (undeclared-at-:555; bytes fine).
-  csmd4's last 5 rules are THIS printf block; mechanisms transfer.
+- 42 rules index-anchored; end gate = retire-all-42 + full SHA1. Twin csmd4
+  (:388) shares text — marionation-unique anchors. Declare new_var/new_var3.
+- d1/d2 stmt reorders flip s-regs via the 952 tie (do NOT re-derive).
+- knob uids shift with any C change — tmp/mar_alllive_full.py re-discovers
+  them by fixpoint (watch for false stealer matches in prologue).
 
-## Tools
-- tmp/gccdbg/cc1: BB2_DBR_DEBUG, BB2_NO_FT_STEAL, BB2_ALLOC_DEBUG,
-  QTY/SCHED/SLL/FLOW. Runners: tmp/mar_{dbrdbg,allocdbg,qtydbg,
-  cand_sched}.sh; mar_dbr_tail.py; mar_i2_trace.py.
-- Sweeps: tmp/mar_qty_sweep{,2,3,4}.py, mar_family_sweep.py,
-  mar_{cross_sweep,nv2_sweep,head_order,perm_leads}.py.
-- Kit: mar_test_candidate.sh + mar_diff2.sh (restore src).
+## Tools (all local/gitignored; regenerate from here if lost)
+- tmp/gccdbg/cc1: BB2_DBR_DEBUG, BB2_NO_FT_STEAL, BB2_ALLOC/QTY/SCHED/SLL/FLOW.
+- tmp/gccdbg/cc1_alllive (NEW): + BB2_ALLLIVE_LABEL=<uid,uid,...> — forces
+  mark_target_live_regs everything-live for those target uids (simulates
+  find_basic_block==-1). Source: ~/gcc272src/reorg.c (= tools/gcc-2.7.2/
+  reorg.c, kept in sync); rebuild: make cc1 in ~/gccdbg-build.
+- Session-5 probes: tmp/mar_alllive_test.sh, tmp/mar_alllive_full.py,
+  tmp/mar_r3_refs_sweep.py (ref-bump ALLOCDBG sweep), tmp/mar_dw_test.py,
+  tmp/mar_u3_alloc3.py. Kit: tools/mar_test_candidate.sh, tmp/mar_diff2.sh,
+  tmp/mar_floor_check.sh.

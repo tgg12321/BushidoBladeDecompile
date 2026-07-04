@@ -11,27 +11,19 @@
  "sessions": [
   {
    "date": "2026-07-03",
-   "git_head_at_measurement": "16a40185",
-   "lever": "TWIN-CAMPAIGN TRANSFER OPENED: the cpu_side_move_dir_4 session-3 mechanism map (cross-block unions, carry-form order fix, set_preference a3-poison, staging theorem, find_reg internals - see its WIP notes) applies directly to region-1 (byte-identical block geometry, base s5 vs s3). Marionation advantage: TWO arms -> double -1-holder (m1) can out-prioritize w and mask the a3-pref, which the twin cannot. First M1 measurement: masked 30 (m1 stole a2 because the check-var went t0; arm-2 drifted -1 insn) - the check-var-before-m1 priority is the next knob. Probe: tmp/mar_m1_test.py.",
-   "floor_was": 6,
-   "floor_now": 6,
-   "note": "candidate.c unchanged (state-A, 6); M1 is a new-foundation exploration, not yet better"
-  },
-  {
-   "date": "2026-07-03",
-   "git_head_at_measurement": "6999016b",
-   "lever": "SESSION 4b - owner sanctioned the staged-value-reused-variable family after the SOTN census; candidate restored to the masked-4 v0-idx form with the full rule-citing annotation. Floor 6 -> 4. Residual: the 3-line sll4 rotation (luid-pinned in-family, permuter grinding) + region-3 (nop + arm-2 shifts).",
-   "floor_was": 6,
-   "floor_now": 4,
-   "note": "oracle green; src untouched; rule doc + index entry added"
-  },
-  {
-   "date": "2026-07-03",
    "git_head_at_measurement": "d9e490c0",
    "lever": "SESSION 4c - the twin h5 mirror (v0 <<= 2 + v0+(s32)tbl spelling) lands identically: region-1 down to the SAME {sll4<->addu5} pair (2 lines); total masked 4 = pair-2 + region-3 (nop + shifts). Candidates now mirror across both functions.",
    "floor_was": 4,
    "floor_now": 4,
    "note": "region-1 effectively one pair from closed; region-3 = the old (3a) wall"
+  },
+  {
+   "date": "2026-07-04",
+   "git_head_at_measurement": "4a3afb71",
+   "lever": "SESSION 5 - REGION-3 MECHANISM DECODED: the nop requires reorg.c fill_slots_from_thread to refuse the move-steal, and the only byte-compatible refusal is mark_target_live_regs' everything-live conservatism at check2's target (find_basic_block==-1). KNOB-PROVEN byte-exact via new BB2_ALLLIVE_LABEL diagnostic (debug cc1 only): steal refused, nop appears, 179/179. Prediction/LOOP_BEG path DISPROVEN (fall-through retried regardless; do{}while(0) probe inert). Byte-free ref-bump program ALLOCDBG-verified: u3+sv+iq+ix = EXACT target s-register allocation (all 8) under a steal-refusing guard - the 3-point-margin wall is open; but ix costs +4 prologue insns (cse latches the adjacent symbol) and sv costs 2 lines (combine merges load+move -> lbu s1). Transposition sub-gap decoded: dst2-first reorder shortens p73 livelen 86->84 -> pri 952 EXACT TIE with p82 -> ascending flip (d1/d2 measured).",
+   "floor_was": 4,
+   "floor_now": 4,
+   "note": "floor unchanged (no committed candidate change); next: jump.c label-lifecycle read for the natural-C find_basic_block==-1 trigger; p76 cse-shielded 3-stmt split + y2/y5 sv spellings untested"
   }
  ],
  "reviewer": {
@@ -67,6 +59,8 @@
   }
  ],
  "prior_sessions_summary": [
+  "2026-07-03 (16a40185): SESSION 3/4a - twin-campaign transfer opened (cpu_side_move_dir_4 mechanism map applies to region-1); M1 double--1-holder exploration masked 30, not better.",
+  "2026-07-03 (6999016b): SESSION 4b - owner sanctioned staged-value-reused-variable after the SOTN census; candidate = masked-4 v0-idx form; floor 6 -> 4.",
   "2026-05-29 (register-alloc-deep-dive): rotation map established; clean-target permuter plateau 1125 over 16.8k iters.",
   "2026-07-01 (plan session, c6d96b06): allocno formula reproduces baseline exactly; new_var UNDECLARED at :555 discovered (Makefile pipe swallows cc1's error-recovery exit; bytes unaffected).",
   "2026-07-02 session 1 (3f816004): t1 tbl-chain proven byte-free (tbl s6->s5 at 141 insns); global.c tie-break verified (double-truncate, allocno-ascending); reg_n_refs += loop_depth confirmed; full target register map read from bytes.",
