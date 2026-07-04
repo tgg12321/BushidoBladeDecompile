@@ -17,10 +17,10 @@ s32 marionation_Exec(s32 a0, u8 *a1)
   D_800F19B8 = sys_VSync(-1) + 0x3C0;
   tbl_125c = D_800A125C;
   idx_1494 = &D_800A1494;
-  idx_1495 = (u8 *)((u8 *)tbl_125c + ((s32)&D_800A1494 - (s32)D_800A125C) + 1); /* FAKE */
+  idx_1495 = (u8 *)((u8 *)tbl_125c + ((s32)&D_800A1494 - (s32)D_800A125C) + 1); /* FAKE: pointer derived from the loaded tbl base instead of &D_800A1495; mechanism: cse.c symbol-fold defeat keeps the reg-relative address (target bytes have the addu chain); lever-exhaustion: direct &-forms fold to lui/addiu, prior sessions (git) */
   idx_1496 = idx_1494 + 2;
   D_800F19BC = 0;
-  D_800F19C0 = (void *)((u8 *)idx_1496 + ((s32)&D_80016248 - ((s32)&D_800A1494 + 2))); /* FAKE */
+  D_800F19C0 = (void *)((u8 *)idx_1496 + ((s32)&D_80016248 - ((s32)&D_800A1494 + 2))); /* FAKE: same reg-relative address family as idx_1495 (cse.c symbol-fold defeat, target-byte-pinned); lever-exhaustion in git history */
   loop:
   v0 = sys_VSync(-1);
 
@@ -42,7 +42,7 @@ s32 marionation_Exec(s32 a0, u8 *a1)
     s32 t0;
     void **pp;
     t0 = idx_1494[0];
-    pp = (void **)&D_800F19C0; /* FAKE */
+    pp = (void **)&D_800F19C0; /* FAKE: pointer-alias staging the D_800F19C0 load early; mechanism: local-alloc.c update_equiv_regs refs-2 sink defeat so the a1 arg loads at target slot 53-54; lever-exhaustion: direct arg forms sink the load (measured, git history) */
     t0 *= 4;
     t0 = (s32)((u8 *)tbl_125c + t0);
     arg5 = tbl_125c[idx_1494[1]];

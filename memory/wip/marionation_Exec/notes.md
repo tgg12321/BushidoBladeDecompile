@@ -1,20 +1,26 @@
-# marionation_Exec — HONEST SCORE 6; regions 1+3 remain (foundation-level)
+# marionation_Exec — HONEST SCORE 6; the masked-4 v0-idx form REJECTED by review (policy Q pending)
 
-## NEW DOORS from the twin's 2026-07-03 campaign (READ cpu_side_move_dir_4 notes FIRST)
-The twin's session-3 mechanism map opens region-1 differently:
-(a) CROSS-BLOCK UNIONS: w = printf-chain ∪ arm-walker(s) (a0-family),
-    i = val5-carrier ∪ the arms' counters (v1; CARRY = `i = tbl[idx1]`
-    makes lw5 non-birthing → no LAUNCH → tail re-times to target order),
-    m1 = shared -1 holder across BOTH arms (a3; pri ~2×the twin's single).
-(b) The a3-pref on w (set_preference MEM-unwrap at the lw-a3 homing) needs
-    an a3-holder allocated BEFORE w — marionation's DOUBLE -1 gives m1
-    pri ~10909 vs w∪1-walker ~11142 (within 2% — measure, don't derive).
-(c) FIRST MEASUREMENT (tmp/mar_m1_test.py, masked 30): m1 landed a2 (no
-    pref, ascending scan — a2 was FREE because the check-var went t0!) and
-    the arm-2 structure drifted (-1 insn). NEXT: make the check-var hold
-    a2 before m1 (its natural target reg) — check-var vs m1 priority is
-    the knob; then w's pref-mask follows. The head shows the t2-class trap
-    (lbu5/pp/w-sll rotation) — see the twin's staging theorem + traces.
+## SESSION-4 (2026-07-03): the v0-idx discovery + the review outcome
+A form reaching masked 4 (vs the 6 floor) was found and twice FAILed
+layer-1 review: rejected/v0-idx-staging-scheduler-pass.c — the index
+staged through the dead-here v0 var strips the load LAUNCH priority
+(sched.c adjust_priority/birthing_insn_p, reg_n_sets>=2) and re-times
+the head to target (51-54+58-67 byte-match; t0=a0 via the p109 a0-pref
+chain, FINDREGDBG-verified). Reviewer: live store = neither dead-store
+nor named-local carve-out fits; the scheduler-pass mechanism is outside
+the SOTN-evidenced LICM/RA variable-reuse scope -> needs fresh SOTN
+evidence or a USER POLICY RULING (surfaced). If sanctioned, the form is
+ready: residual would be [55-57 sll4-rotation, luid-pinned] + region-3.
+Candidate REVERTED to the honest masked-6 (verified). The bare FAKEs
+(idx_1495/D_800F19C0/pp) now carry full mechanism annotations per the
+review. Lever-exhaustion ledger for the block (all sandbox-measured):
+plain 6; REU 10; carriers i/status/cnt/temp 9-30; unions M1/M3 9-30;
+18+ order sweeps 4-37; split-addu 8+drift; m2c-inline 14. Permuter
+(tmp/perm_mar6, honest splice-metric): 200x2/220x3/225 finds = the
+X-hoist family, sandbox-verified WORSE (weighted-vs-masked divergence);
+grinding on.
+
+## (session-3 door-map folded: see cpu_side_move_dir_4 notes + git history)
 
 ## STATE (READ FIRST)
 candidate.c = the score-6 form (`bash tools/mar_test_candidate.sh` applies
@@ -54,46 +60,12 @@ sched1 normalizes stores, la-reorders drop refs). The 6 points need a
 foundation the derivation hasn't conceived — the REAL-metric permuter
 campaigns are the search. DONE leads: twin's C, corpus, m2c, Kengo (✗).
 
-## Region-1 ledger — the tie
-State B/220 (arg5-early ≡ arg5v-split): ORDER correct; residue = the
-v1↔a0 swap of [temp+t0-global]↔val5 (5 substs, masked-8). QTYDBG: temp
-[18..24]=6 TIES val5 [20..26]=6 → birth order → temp ✗. addu4 already
-sinks; only the birth tie remains; sched1 normalizes all C orders
-(N1-N5 identical). sched2 NOT a no-op here (sw↔sll-11D5 swap measured)
-so stream/bytes can split. Pins ignored. State A = RA ✓ order ✗ (base
-6). Refuted sinks (s9): seg3-inline, named-t3, pp-moves, copy-back.
-**VETTING (11c):** order-floor 220 (17280 enumerated). mar5 "180" =
-FALSE POSITIVE (semantic goto-loop). Vet: semantics + uniform j-deltas +
-full-diff. do-while-0 neutral.
-**State-B RTL mapped (11d/e, marB.i.lreg via tmp/mar_b_uidmap.py):**
-qty-114 IDENTIFIED = the ANON SHIFT TEMP: insn 127 `(set 114 (ashift
-105 2))` + insn 132 `(set 105 (plus 114 tbl))` — 105 = the t0 user-var
-(multi-set → global); 114 = [sll..addu] = the [18..24] tie-winner.
-val5 = 104 (lw5 = insn 120; has REG_EQUIV (mem sp+16) — its stack home).
-Post-RA both 105+114 → v1 (in-place look); val5 → a0; TARGET swapped.
-The tie: 114-birth (insn 127's stream slot) vs 104-birth (insn 120's).
-Failed: arg3v naming (AF1-3, 15-16 — pulls the 11D5 chain); clock-12
-luids favored the flip but hazard-greedy select overrides (theorem).
-**SCHEDULER THEOREM (11h — mechanism COMPLETE):** rank_for_schedule
-(pri → dep-class → luid; BB2_RANK_DEBUG: clock-12 = class-3 tie, val=0)
-THEN schedule_select (sched.c:2643): within a same-priority group it
-queues blocked insns and picks the LARGEST potential_hazard first ⟹
-loads beat ALU backward ⟹ [ALU-forward-before-load] IS FORCED for
-LAUNCH-tied birthing pairs. Corollaries: state-B's [sll4, lw5] + temp-
-first birth = a theorem; breaking it needs a PRIORITY-GROUP SPLIT
-(strip one side's LAUNCH bump = dest multi-set/not-live); val5-reuse
-(VR1-3: index-then-value) strips it but relocates the index-lbu reg
-(10-11); `t0 <<= 2` (no anon temp — synth_mult only fires for `*= 4`)
-= continuous 6-ref qty stealing v1 (48*2500/22 ≫ 13333).
-**GROUP-SPLIT CLOSED (11i):** the index var MUST stay multi-set/global
-to land a0 (any single-set index qty gets v0/v1 first in find_free
-order — the relocation curse, measured in VR1-3/t4-split/t2 analyses)
-⟹ t0's multi-set is pinned ⟹ the anon temp + both LAUNCH bumps are
-pinned ⟹ NO priority-group split exists within the register
-constraints ⟹ region-1's local family is CLOSED analytically. Open:
-whole-foundation respellings (poll/head/w9 geometry) + campaign luck
-outside the modeled family. CAUTION: sched-log dumps interleave
-functions — cross-check uids vs marB.i.lreg.
+## Region-1 ledger (LARGELY SUPERSEDED by session-4's v0-idx fix; full text in git)
+The old tie ([temp+t0]↔val5 birth-order) and the scheduler theorem
+(rank_for_schedule → schedule_select hazard-greedy; LAUNCH-tied pairs
+force ALU-before-load) remain the mechanism reference — see git history
+and the twin's notes. The v0-idx staging resolved the head; only the
+55-57 sll4-rotation survives (luid-pinned, see session-4 block).
 
 ## Target ground truth (asm/funcs/marionation_Exec.s)
 - Regs: status s0, saved s1, i1494 s2, i1496 s3, arg1 s4, tbl s5,
