@@ -12,11 +12,25 @@ p106/val5 [18,24]/[20,26] L6=L6 birth-tie (6). The v0-2nd-stage (v0=v0+tbl
 as a stmt) collapses v0-var pri below t0 (t0 steals v0-hard, 15) - closed.
 cnt-staging clashes with cnt's v1 loop role - closed. Double-staging d/e
 families 15-17 - closed. ~40 forms measured this session.
-NEXT: (1) the faithful permuter is grinding the exact h5 base
-(tmp/perm_csmd4, splice-compile); (2) any luid-door that reorders sll4
-before addu5 WITHOUT moving the A5 statement ahead of T0B (that order is
-the tie-6); (3) marionation region-1 is now the IDENTICAL pair — any crack
-transfers both ways.
+**SESSION-4b — the g3 discovery (SECOND frontier, the pair FIXED):**
+`v0<<=2; arg5=*(s32*)(v0+(s32)tbl); t0<<=2; call(..., *(s32*)(t0+(s32)
+tbl_125c), arg5)` (t0's addu IN the call) = masked 6 / raw 6 with ORDER
+PERFECT; residual = a pure v1<->a0 exchange (t0-chain vs arg5 value).
+Mechanics (QTYDBG/lreg-verified): t0's qty ties the sll+in-call-addu
+(p113: 6refs/span24 = pri 5000) and allocates BEFORE arg5 (p100:
+2refs/span6 = 3333) -> t0 takes v1; target needs arg5 first (v1), t0
+skipping to a0. Flip requires arg5-qty refs>=4 via a LOCAL copy-tie;
+every vehicle measured dead: fresh single-set x folds back (k2=6=g3);
+fn-scope carriers are global allocnos (permuter's status/temp finds ->
+s0 spill, honest 6-8, REJECTED); v0-carrier scrambles (k1=16); a2v
+presequence re-times the 11D5 chain (k3/k4=16-17); 2-ref t0 forms hit
+the equiv-sink (h8*=14); t0*=4-late respellings re-time the head
+(g1/g6/h7=14); plain re-measured 7/11. Sweeps: tmp/csmd4_{g,h2,h8,k,
+f}_sweep.py, plain_now.py; tables tmp/csmd4_g3_{qty,pseudos}.py.
+NEXT: (1) permuter now on the g3 base (weighted ~30 vs h5's 60 — richer
+mutation neighborhood for stop-on-zero); (2) h5 base = still the masked
+floor (2); candidate.c stays h5; (3) marionation region-1 = the same
+pair — a twin crack transfers; g3 NOT yet mirrored onto marionation.
 
 ## Prior sessions (3a-3d), one line each — details in git history
 - 3d: carry-forms (val5 through a multi-set carrier) solve the ORDER half;
