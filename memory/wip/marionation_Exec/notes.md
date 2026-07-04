@@ -45,29 +45,25 @@ rule) keeps a1 canonical → beqz s4; dbr backward scan takes the move,
 sb protected. check-1 NOP: sb trap+oppmem, la never splits, SEQ stops,
 1723 refuses conditional-SEQ steals.
 
-## Region-3 (9b/9c)
-**(3a) steal:** twin-proven — arm-head label (two-entry ==2||==5) ⟹
-own_fallthrough=0 ⟹ fill_eager skips (3764). Marionation's single-beqz
-admits no visible second entry; L1/L2/L4/L6 all normalize away (6).
-**(3b) the transposition — RA-pinned, measured to ±1, EXHAUSTED.** Allocno
-table: pair i1494/96 refs7/L150/pri 933; arg1 refs4/L86/930; saved 952.
-Every earlier-arg1 order rotates (941→s2 / 952-tie→s1). No RA-legal
-pre-dbr order yields [sb, move, la, SEQ]. Noop-compensation catch-22
-(same-block copies cse-fold; cross-block get no qty). sched2 = luid-noop;
-no peepholes. Tie-copy vehicles: none (i2 propagated, dst2 past death,
-check cross-block). Sandwich: no integer solution. Family sweep ≥9.
-NOTE: the M1-union transform CHANGES the whole allocno table — (3b)'s
-exhaustion is w.r.t. the OLD foundation; re-measure after region-1 lands.
-**Permuter: REAL METRIC** (tmp/perm_mar3; recipe tools/mar_perm_
-workspace.sh + mar_perm_compile.sh: full-TU compile + awk-extract to
-offset-0 .o; reduced TU shifts codegen 55 lines — don't). Base = 300
-(was 238800 noise). perm_inline=0. Refuted: Kengo (rewrite); -1-holder/
-status&2-named; old 42 rules = same steal wall cheated through.
-**CONCLUSION:** local search around this foundation = exhausted with
-measured negatives; head-chain respellings byte-pinned (H1-H6 + O1-O3:
-sched1 normalizes stores, la-reorders drop refs). The 6 points need a
-foundation the derivation hasn't conceived — the REAL-metric permuter
-campaigns are the search. DONE leads: twin's C, corpus, m2c, Kengo (✗).
+## Region-3 — MECHANISM CLOSED (session-4c re-measure on the mh5 foundation)
+The ONLY difference vs target: cc1 dbr steals `move a1,s4` past the sb
+into the beqz-a2 slot (everything after = a 1-slot shift; sxs probe
+tmp/mar_region3_sxs.py). Both loops' C is u3-style guards; loop-1's
+steal MATCHES target, only loop-2's must be refused.
+**Shapes that refuse the steal exist** — s1/u1/u3/u5/u6 (dst2 init moved
+inside `if (a1 != 0)`) give 179/179 WITH the nop: the second branch then
+tests the s-reg directly and follows the sb immediately, so the fill scan
+hits a jump with nothing eligible. **But all of them flip the s-regs**:
+the guard's extra a1-var read raises p73 (a1-holder) refs 4->5, pri
+930->1176 vs the lui-base pair's 933 (3-point margin, ALLOCDBG probe
+tmp/mar_u3_alloc.py) -> allocates 1st instead of 4th -> s1<->s4 +
+s2/s3 rotate (masked 22-26). Counter-levers CLOSED by arithmetic:
+refs back to 4 breaks loop-1's bytes (its guard must keep the a1-test);
+livelen needs +23 luids that don't exist past the block; embedded
+assign `if ((dst2 = a1) != 0)` CSEs back to base RTL (v1: byte-identical
+to base, steal intact); src/i movement alone flips WITHOUT the nop
+(u2/u4/v2-v4). Old (3a)/(3b) text: git history. The permuter
+(tmp/perm_mar6, honest splice metric, rebased on mh5) owns the search.
 
 ## Region-1 ledger (LARGELY SUPERSEDED by session-4's v0-idx fix; full text in git)
 The old tie ([temp+t0]↔val5 birth-order) and the scheduler theorem
