@@ -10,14 +10,6 @@
  },
  "sessions": [
   {
-   "date": "2026-07-02",
-   "git_head_at_measurement": "978e5cce",
-   "lever": "SESSION 9 \u2014 REGION-2 SOLVED (score 8 -> 6): dst split into per-arm dst/dst2 + arm-1 dst=a1 FIRST INSIDE the guard. Mechanism (all dump-verified): cse.c make_regs_eqv:853 promotes a copy dest to qty-canonical only if regno_last_uid[new] > regno_last_uid[old] \u2014 shared dst (last use = arm-2 loop) beat a1, rewriting arm-1's test to dst (=the score-19 rotation); per-arm dst1 dies before a1's arm-2 use, so the test stays on the param. dbr then: fill_simple backward scan from beqz-s4 takes the MOVE (trial-1, elig, breaks after 1 slot) leaving the sb in straightline = target bytes [sb, la, beqz, move-slot]. check-1 stays NOP (eager walk: sb LOSE trap+mem, la LOSE 2-word-inelig-never-splits, SEQ stop; steal_delay_list_from_fallthrough:1723 refuses conditional SEQs). BB2_DBR_DEBUG hook added to reorg.c (fill_simple + fill_slots_from_thread + mark_target_live_regs); tmp/mar_dbrdbg.sh + tmp/mar_dbr_tail.py map uid->insn.",
-   "floor_was": 8,
-   "floor_now": 6,
-   "note": "candidate.c updated; src untouched; oracle green"
-  },
-  {
    "date": "2026-07-03",
    "git_head_at_measurement": "16a40185",
    "lever": "TWIN-CAMPAIGN TRANSFER OPENED: the cpu_side_move_dir_4 session-3 mechanism map (cross-block unions, carry-form order fix, set_preference a3-poison, staging theorem, find_reg internals - see its WIP notes) applies directly to region-1 (byte-identical block geometry, base s5 vs s3). Marionation advantage: TWO arms -> double -1-holder (m1) can out-prioritize w and mask the a3-pref, which the twin cannot. First M1 measurement: masked 30 (m1 stole a2 because the check-var went t0; arm-2 drifted -1 insn) - the check-var-before-m1 priority is the next knob. Probe: tmp/mar_m1_test.py.",
@@ -32,6 +24,14 @@
    "floor_was": 6,
    "floor_now": 4,
    "note": "oracle green; src untouched; rule doc + index entry added"
+  },
+  {
+   "date": "2026-07-03",
+   "git_head_at_measurement": "d9e490c0",
+   "lever": "SESSION 4c - the twin h5 mirror (v0 <<= 2 + v0+(s32)tbl spelling) lands identically: region-1 down to the SAME {sll4<->addu5} pair (2 lines); total masked 4 = pair-2 + region-3 (nop + shifts). Candidates now mirror across both functions.",
+   "floor_was": 4,
+   "floor_now": 4,
+   "note": "region-1 effectively one pair from closed; region-3 = the old (3a) wall"
   }
  ],
  "reviewer": {
@@ -72,7 +72,8 @@
   "2026-07-02 session 1 (3f816004): t1 tbl-chain proven byte-free (tbl s6->s5 at 141 insns); global.c tie-break verified (double-truncate, allocno-ascending); reg_n_refs += loop_depth confirmed; full target register map read from bytes.",
   "2026-07-02 (994db7ff): SESSION 2 \u2014 t3 STRUCTURAL DISCOVERY: reshaping both copy arms to target's byte order (dst = a1; src = (u8*)&...; if (dst != 0) {copy}) lands FIVE of eight regis",
   "2026-07-02 (7a5c58f9): SESSION 3 \u2014 check-mask mechanics CRACKED + 6/8 registers (probe u7->u11). Opaque-constant masks (new_var/new_var3) fold to andi IMMEDIATE via local-alloc update",
-  "2026-07-02: SESSION 4 \u2014 u13 block-local loop temps -> TAIL CASCADE (check->a2, both `move v0,a2` returns, src/i/dst/bb all target; i"
+  "2026-07-02: SESSION 4 \u2014 u13 block-local loop temps -> TAIL CASCADE (check->a2, both `move v0,a2` returns, src/i/dst/bb all target; i",
+  "2026-07-02: SESSION 9 \u2014 REGION-2 SOLVED (score 8 -> 6): dst split into per-arm dst/dst2 + arm-1 dst=a1 FIRST INSIDE the guard. Mecha"
  ],
  "memory_notes": []
 }

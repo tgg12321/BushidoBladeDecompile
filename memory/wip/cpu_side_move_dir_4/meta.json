@@ -3,7 +3,7 @@
  "file": "system",
  "scores": {
   "head_floor": 7,
-  "candidate_floor": 4,
+  "candidate_floor": 2,
   "metric": "sandbox --disable all (masked) \u2014 MASKED-BLIND to the remaining register half (arg4 chain v1 vs target a0); real progress this session is structural (a1-load position), not masked-visible. Full SHA1 is the only truth.",
   "build_insns": 160,
   "target_insns": 160
@@ -24,6 +24,14 @@
    "floor_was": 4,
    "floor_now": 4,
    "note": "raw floor 8 (two 8-forms with COMPLEMENTARY defects: head-trap vs tail-rotation); permuter grinding from the 90-forms with the honest metric"
+  },
+  {
+   "date": "2026-07-03",
+   "git_head_at_measurement": "d9e490c0",
+   "lever": "SESSION 4 - the owner-sanctioned staged-value-reused-variable family applied: v0-idx staging (masked 4->2) then the half-staged shift (v0 <<= 2 + the v0+(s32)tbl addu-spelling) -> masked 2 / raw 2. Residual = ONE instruction pair {sll4@54 <-> addu5@55}, theorem-locked in-family (both LAUNCH; luid decides; A5-before-T0B orders hit the p106/val5 tie at 6). ~40 decompositions measured. Permuter grinding the h5 base.",
+   "floor_was": 4,
+   "floor_now": 2,
+   "note": "candidate.c = the h5 form with full FAKE annotations; oracle green"
   }
  ],
  "reviewer": {

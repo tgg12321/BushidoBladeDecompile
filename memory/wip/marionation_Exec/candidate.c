@@ -46,7 +46,8 @@ s32 marionation_Exec(s32 a0, u8 *a1)
     t0 *= 4;
     t0 = (s32)((u8 *)tbl_125c + t0);
     v0 = idx_1494[1]; /* FAKE: index staged through the (dead-here) v0 var per staged-value-reused-variable (owner-sanctioned 2026-07-03); mechanism: sched.c adjust_priority/birthing_insn_p - the multi-set dest strips the load-late LAUNCH priority so the load places at the target slot; v0's prior value dead (re-set to -1/0 below before any read); lever-exhaustion: notes.md session-4 */
-    arg5 = tbl_125c[v0];
+    v0 <<= 2; /* FAKE: continued staging per staged-value-reused-variable - the shift on v0 keeps the arg5 index-chain non-birthing (sched.c birthing_insn_p) so sll5 places at the target slot */
+    arg5 = *(s32 *)(v0 + (s32)tbl_125c);
     debug_printf(&D_800161C8, *pp, D_800A11DC[D_800A11D5], *(s32 *)t0, arg5);
   }
   cdrom_ClearIrq();

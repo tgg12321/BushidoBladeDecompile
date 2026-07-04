@@ -1,4 +1,12 @@
-# marionation_Exec — CANDIDATE MASKED 4 (v0-idx form, owner-sanctioned 2026-07-03)
+# marionation_Exec - CANDIDATE MASKED 4 (mh5 form; region-1 down to ONE insn-pair)
+
+## SESSION-4c: the twin h5 mirror lands (candidate.c = mh5)
+Adding `v0 <<= 2; arg5 = *(s32 *)(v0 + (s32)tbl_125c);` (the twin's h5
+half-staging) collapses region-1 to the SAME residual as the twin: ONE
+{sll4@56 <-> addu5@57} pair. Total masked 4 = that pair (2) + region-3
+(the arm-2 beqz-a2 delay nop + the resulting 1-slot shifts). The two
+functions now share an identical region-1 residual and mirrored
+candidates. Twin floor = masked 2 (h5). Permuters grinding both bases.
 
 ## SESSION-4 (2026-07-03): the v0-idx discovery + the review outcome
 A form reaching masked 4 (vs the 6 floor) was found and twice FAILed
