@@ -28,6 +28,7 @@ difficult-is-not-impossible — still auto-load and are not listed here.)
 - **drop-param-alias-local** — param→local alias pins → drop the alias so the param register frees up for reuse.
 - **exit-path-return-set-cse-join** — shared finish label where a copy into `$v0` feeds an op → set the return value in EACH exit path, not at the join.
 - **divmod-coalesce-reuse-var** (memory/reference/) — GCC's quotient→move→var divmod allocation.
+- **staged-value-reused-variable** — SANCTIONED 2026-07-03: a load places too LATE (fresh single-set dest gets the scheduler's load-late LAUNCH priority) → stage the value through an EXISTING currently-dead local (`v0 = idx[1]; arg5 = tbl[v0];`), FAKE-annotated + lever-exhaustion; live code only (zero dead stores); SOTN ships the shape ("fake reuse of i", 6 files).
 
 ## Cross-jump / merged-tail diffs (target has MORE instructions than you)
 

@@ -1,4 +1,4 @@
-# marionation_Exec — HONEST SCORE 6; the masked-4 v0-idx form REJECTED by review (policy Q pending)
+# marionation_Exec — CANDIDATE MASKED 4 (v0-idx form, owner-sanctioned 2026-07-03)
 
 ## SESSION-4 (2026-07-03): the v0-idx discovery + the review outcome
 A form reaching masked 4 (vs the 6 floor) was found and twice FAILed
@@ -9,9 +9,10 @@ the head to target (51-54+58-67 byte-match; t0=a0 via the p109 a0-pref
 chain, FINDREGDBG-verified). Reviewer: live store = neither dead-store
 nor named-local carve-out fits; the scheduler-pass mechanism is outside
 the SOTN-evidenced LICM/RA variable-reuse scope -> needs fresh SOTN
-evidence or a USER POLICY RULING (surfaced). If sanctioned, the form is
-ready: residual would be [55-57 sll4-rotation, luid-pinned] + region-3.
-Candidate REVERTED to the honest masked-6 (verified). The bare FAKEs
+evidence or a USER POLICY RULING. OWNER SANCTIONED IT 2026-07-03 (rule:
+staged-value-reused-variable). candidate.c = the masked-4 form again;
+residual = [55-57 sll4-rotation, luid-pinned] + region-3 (nop + shifts).
+The bare FAKEs
 (idx_1495/D_800F19C0/pp) now carry full mechanism annotations per the
 review. Lever-exhaustion ledger for the block (all sandbox-measured):
 plain 6; REU 10; carriers i/status/cnt/temp 9-30; unions M1/M3 9-30;

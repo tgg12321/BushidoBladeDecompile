@@ -3,20 +3,12 @@
  "file": "system",
  "scores": {
   "head_floor": 56,
-  "candidate_floor": 6,
+  "candidate_floor": 4,
   "metric": "sandbox --disable all (masked) \u2014 rotation-blind here; the real state is the disposition table in notes.md. Full SHA1 after retire-all-42 is the only end gate.",
   "build_insns": 178,
   "target_insns": 179
  },
  "sessions": [
-  {
-   "date": "2026-07-02",
-   "git_head_at_measurement": "59426e8b",
-   "lever": "SESSION 4 \u2014 u13 block-local loop temps -> TAIL CASCADE (check->a2, both `move v0,a2` returns, src/i/dst/bb all target; insns 142 = target count); w9 poll as REAL do-while -> loop_depth reweighting lands i1495 s6 (6/8 locked; outer cycle MUST stay goto or the mask fold dies: update_equiv_regs needs UNWEIGHTED refs==2); w15 printf shape (s32 t0 + addr-local p4 + *p4 inline) stretches chain4 across the block with lw4 crossing the sw and fmt-la last. Chain4 lands v1 not a0: blocker traced in SCHEDDBG to fmt-la's backward-drift to sched1 pos-7 (hard-a0 [7..16]); val5->v1 needs sw5-after-11D5-lbu overlap in sched1 coords (w13 had it, w15 doesn't). Full mechanism ledger + x3 sweep plan in notes.md.",
-   "floor_was": 56,
-   "floor_now": 56,
-   "note": "probes only, src untouched, oracle green; composite = u13+w9+w15 tags in tmp/probe_mar.py"
-  },
   {
    "date": "2026-07-02",
    "git_head_at_measurement": "978e5cce",
@@ -32,12 +24,20 @@
    "floor_was": 6,
    "floor_now": 6,
    "note": "candidate.c unchanged (state-A, 6); M1 is a new-foundation exploration, not yet better"
+  },
+  {
+   "date": "2026-07-03",
+   "git_head_at_measurement": "6999016b",
+   "lever": "SESSION 4b - owner sanctioned the staged-value-reused-variable family after the SOTN census; candidate restored to the masked-4 v0-idx form with the full rule-citing annotation. Floor 6 -> 4. Residual: the 3-line sll4 rotation (luid-pinned in-family, permuter grinding) + region-3 (nop + arm-2 shifts).",
+   "floor_was": 6,
+   "floor_now": 4,
+   "note": "oracle green; src untouched; rule doc + index entry added"
   }
  ],
  "reviewer": {
-  "verdict": "N/A",
-  "date": "2026-07-02",
-  "evidence": "No candidate body yet \u2014 probe-only checkpoint; no src modified; oracle green."
+  "verdict": "FAIL->OWNER-SANCTIONED",
+  "date": "2026-07-03",
+  "evidence": "Layer-1 FAILed the v0-idx staging twice (live store fits no existing carve-out; scheduler-pass mechanism outside the LICM/RA variable-reuse scope). Surfaced to owner with the SOTN census (fake-reuse-of-i in 6 matched cutscene files + menu.c j-staging + clock_room primIndex). Owner sanctioned the family 2026-07-03; new rule .claude/rules/staged-value-reused-variable.md codifies the bounds (live value, existing variable, provably-dead prior value, full FAKE annotation, lever-exhaustion). Layer-2 review still required at completion time."
  },
  "remaining_gap": {
   "summary": "Two residuals: (1) trio tail {arg0 s5 / tbl s7 -> swap to s7/s5}: small livelen deltas (tbl needs <152, arg0 <197-pri), expect movement from the final printf shape + the verified t1 tbl-chain (+1 ref, byte-free). (2) printf-block chain4 must color a0 (currently v1): needs fmt-la late in sched1 + val5/11D5 range overlap \u2014 x3 stmt-order/local-vs-inline sweep is the next move; lbu order + tail micro-perm follow automatically via sched2 anti-deps.",
@@ -71,7 +71,8 @@
   "2026-07-01 (plan session, c6d96b06): allocno formula reproduces baseline exactly; new_var UNDECLARED at :555 discovered (Makefile pipe swallows cc1's error-recovery exit; bytes unaffected).",
   "2026-07-02 session 1 (3f816004): t1 tbl-chain proven byte-free (tbl s6->s5 at 141 insns); global.c tie-break verified (double-truncate, allocno-ascending); reg_n_refs += loop_depth confirmed; full target register map read from bytes.",
   "2026-07-02 (994db7ff): SESSION 2 \u2014 t3 STRUCTURAL DISCOVERY: reshaping both copy arms to target's byte order (dst = a1; src = (u8*)&...; if (dst != 0) {copy}) lands FIVE of eight regis",
-  "2026-07-02 (7a5c58f9): SESSION 3 \u2014 check-mask mechanics CRACKED + 6/8 registers (probe u7->u11). Opaque-constant masks (new_var/new_var3) fold to andi IMMEDIATE via local-alloc update"
+  "2026-07-02 (7a5c58f9): SESSION 3 \u2014 check-mask mechanics CRACKED + 6/8 registers (probe u7->u11). Opaque-constant masks (new_var/new_var3) fold to andi IMMEDIATE via local-alloc update",
+  "2026-07-02: SESSION 4 \u2014 u13 block-local loop temps -> TAIL CASCADE (check->a2, both `move v0,a2` returns, src/i/dst/bb all target; i"
  ],
  "memory_notes": []
 }
