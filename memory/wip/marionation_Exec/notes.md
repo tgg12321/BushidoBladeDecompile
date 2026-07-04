@@ -1,5 +1,21 @@
 # marionation_Exec — HONEST SCORE 6; regions 1+3 remain (foundation-level)
 
+## NEW DOORS from the twin's 2026-07-03 campaign (READ cpu_side_move_dir_4 notes FIRST)
+The twin's session-3 mechanism map opens region-1 differently:
+(a) CROSS-BLOCK UNIONS: w = printf-chain ∪ arm-walker(s) (a0-family),
+    i = val5-carrier ∪ the arms' counters (v1; CARRY = `i = tbl[idx1]`
+    makes lw5 non-birthing → no LAUNCH → tail re-times to target order),
+    m1 = shared -1 holder across BOTH arms (a3; pri ~2×the twin's single).
+(b) The a3-pref on w (set_preference MEM-unwrap at the lw-a3 homing) needs
+    an a3-holder allocated BEFORE w — marionation's DOUBLE -1 gives m1
+    pri ~10909 vs w∪1-walker ~11142 (within 2% — measure, don't derive).
+(c) FIRST MEASUREMENT (tmp/mar_m1_test.py, masked 30): m1 landed a2 (no
+    pref, ascending scan — a2 was FREE because the check-var went t0!) and
+    the arm-2 structure drifted (-1 insn). NEXT: make the check-var hold
+    a2 before m1 (its natural target reg) — check-var vs m1 priority is
+    the knob; then w's pref-mask follows. The head shows the t2-class trap
+    (lbu5/pp/w-sll rotation) — see the twin's staging theorem + traces.
+
 ## STATE (READ FIRST)
 candidate.c = the score-6 form (`bash tools/mar_test_candidate.sh` applies
 + scores + restores; copy to tmp/mar_candidate.c first). 178/179 insns;
@@ -18,27 +34,15 @@ sb protected. check-1 NOP: sb trap+oppmem, la never splits, SEQ stops,
 **(3a) steal:** twin-proven — arm-head label (two-entry ==2||==5) ⟹
 own_fallthrough=0 ⟹ fill_eager skips (3764). Marionation's single-beqz
 admits no visible second entry; L1/L2/L4/L6 all normalize away (6).
-**(3b) the transposition — RA-pinned, measured to ±1.** Exact allocno
-table (BB2_ALLOC_DEBUG, tmp/mar_allocdbg.sh): pair i1494/96 = refs 7,
-L=150, pri 933/933; arg1 = refs 4, L=86, pri 930; saved = 952. arg1's
-death = arm-2's move; EVERY order placing it earlier: L=85→941 (>933,
-takes s2; measured s_i_d_src), L=84→952 (ties saved, allocno-order wins,
-takes s1; measured T4/s_d_i_src). Dbr fill enumeration: NO RA-legal
-pre-dbr order yields target's [sb, move, la, SEQ] (from [sb,la,li,move]
-the li-fill leaves [sb, la, move]; every sb-before-branch order with the
-move earlier gets sb-or-li stolen or rotates). Noop-at-RA compensation is
-a catch-22: same-block copies get cse-propagated away (R1a/b/c measured:
-qty tables identical to no-noop), cross-block copies get no local qty ⟹
-no tie ⟹ real moves (v2/v3: chk2→a3/v0). sched2 = luid-no-op (flat
-pri=1, luid-desc ties — SCHEDDBG block-23); no mips.md peepholes; jump2
-moves nothing. ⟹ target's geometry must differ UPSTREAM (arg1-refs=3
-via a construct keeping beqz-s4?? merged-test spelling gives beqz-dst ✗;
-or pair-refs=8 via floor_log2 jump — no byte-free 8th ref found).
-**(3b) EXHAUSTED (10):** tie-copy hole has NO arm-2 vehicle (i/src
-constants — i2=i cse1-propagated, tmp/mar_i2_trace.py; dst2-chains past
-arg1 death; check cross-block; others don't die). saved-split refuted
-by bytes. Sandwich has no integer solution. L counts LIVE positions
-(topology inert). Family sweep all ≥9.
+**(3b) the transposition — RA-pinned, measured to ±1, EXHAUSTED.** Allocno
+table: pair i1494/96 refs7/L150/pri 933; arg1 refs4/L86/930; saved 952.
+Every earlier-arg1 order rotates (941→s2 / 952-tie→s1). No RA-legal
+pre-dbr order yields [sb, move, la, SEQ]. Noop-compensation catch-22
+(same-block copies cse-fold; cross-block get no qty). sched2 = luid-noop;
+no peepholes. Tie-copy vehicles: none (i2 propagated, dst2 past death,
+check cross-block). Sandwich: no integer solution. Family sweep ≥9.
+NOTE: the M1-union transform CHANGES the whole allocno table — (3b)'s
+exhaustion is w.r.t. the OLD foundation; re-measure after region-1 lands.
 **Permuter: REAL METRIC** (tmp/perm_mar3; recipe tools/mar_perm_
 workspace.sh + mar_perm_compile.sh: full-TU compile + awk-extract to
 offset-0 .o; reduced TU shifts codegen 55 lines — don't). Base = 300
@@ -48,9 +52,7 @@ status&2-named; old 42 rules = same steal wall cheated through.
 measured negatives; head-chain respellings byte-pinned (H1-H6 + O1-O3:
 sched1 normalizes stores, la-reorders drop refs). The 6 points need a
 foundation the derivation hasn't conceived — the REAL-metric permuter
-campaigns (perm_mar3/4) are the active search. DONE leads: twin's C
-(:388, ==2||==5 two-entry label), corpus (OR-conditions), m2c (no pp in
-original; arm-2 dst-early in bytes), Kengo (rewrite, useless).
+campaigns are the search. DONE leads: twin's C, corpus, m2c, Kengo (✗).
 
 ## Region-1 ledger — the tie
 State B/220 (arg5-early ≡ arg5v-split): ORDER correct; residue = the
