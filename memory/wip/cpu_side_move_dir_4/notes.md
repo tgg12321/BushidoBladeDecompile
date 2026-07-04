@@ -31,6 +31,14 @@ NEXT: (1) permuter now on the g3 base (weighted ~30 vs h5's 60 — richer
 mutation neighborhood for stop-on-zero); (2) h5 base = still the masked
 floor (2); candidate.c stays h5; (3) marionation region-1 = the same
 pair — a twin crack transfers; g3 NOT yet mirrored onto marionation.
+SESSION-5 ADDENDUM (2026-07-04, from the marionation deep-dive): target
+bytes have the t0 chain IN-PLACE in $a0 => the original's sll never
+LAUNCHED => the ORIGINAL SOURCE WAS THE g3 FAMILY. The pair is not to be
+flipped in h5 (re-confirmed: t0<<=2 at same position = 7 here, 9 mar —
+the *=4 temp's launch is head-load-bearing). Attack g3's v1/a0 qty
+exchange instead: arg5-qty needs pri>=5000 (3refs/span6 ties, birth
+order wins); untried class = multi-set arg5 VALUE-staging keeping the
+lw-dest split. See marionation notes.md region-1 for the full argument.
 
 ## Prior sessions (3a-3d), one line each — details in git history
 - 3d: carry-forms (val5 through a multi-set carrier) solve the ORDER half;

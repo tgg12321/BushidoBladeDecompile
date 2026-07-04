@@ -50,8 +50,11 @@ Target order needs p82 > p76 >= p78 > p73 strictly (find_reg = lowest-free-s).
   Adjacent-symbol split `idx_1494=&D_800A1496; idx_1494-=2;` FAILED: cse
   latches the intermediate symbol for idx_1495/19C0 derivations (+4 insns,
   u3_all=16). Only sets gain refs (fold-away reads just relocate the read).
-  UNTESTED: cse-shielded 3-stmt `{u8*tp; tp=&D_800A1496; idx_1494=tp;
-  idx_1494-=2;}` (combine 3-insn merge → la D_800A1494; refs counted at flow).
+  BATTERY (session-5): tp-shielded 3-stmt split FAILED WORSE (+2 more insns,
+  185; breaks iq's p78 bump to 6r/810). y2 `saved=3;saved&=t` and y5
+  `t&=0xF` chain both COLLAPSE (cse const-prop; p82 back to 2r/952; 185
+  insns, score 31). y1+ix remain the ONLY working vehicles — the u3 ref-bump
+  path has NO byte-clean instantiation found; treat as proof-of-mechanism.
 - PROOF OF CONCEPT: u3(guard) + sv + iq + ix = EXACT target s-alloc
   (p83 s0, p82 s1, p76 s2, p78 s3, p73 s4, p81 s5, p77 s6, p72 s7) — first
   steal-refusing shape ever to hold all 8; cost = ix prologue damage + guard
@@ -61,11 +64,23 @@ Target order needs p82 > p76 >= p78 > p73 strictly (find_reg = lowest-free-s).
 ## Region-2 SOLVED — recipe unchanged (in candidate.c)
 Per-arm dst/dst2 split + arm-1 dst-EARLY (see git history for mechanics).
 
-## Region-1 pair (2 masked lines) — UNCHANGED
-{sll a0 <-> addu v0,v0,s5} @56-57: both LAUNCH, luid-pinned; flip breaks the
-p106/val5 qty birth-tie (6). ~45 forms ledgered (git). Permuters own the
-search: tmp/perm_mar6 (mh5) + tmp/perm_csmd4 (twin g3) — running, honest
-splice metric; verify finds via tmp/perm_finds_verify.py. Twin crack transfers.
+## Region-1 pair (2 masked lines) — FRONTIER REDIRECTED to g3 (session-5)
+{sll a0 <-> addu v0,v0,s5} @56-57: both LAUNCH (sched1 dump: sll dest = fresh
+single-set p109 split from the t0 chain; addu dest = fresh p111), luid-pinned.
+NEW: t0<<=2 at the same position (in-place, kills p109's launch) scores 9
+(twin 7) — the *=4 temp's launch is load-bearing for the h5 head timing; the
+pair cannot be flipped inside the h5 equilibrium (re-confirms the ledger).
+DECISIVE BYTE FACT: target's t0 chain is fully in-place in $a0
+(lbu a0; sll a0,a0; addu a0,a0,s5) => the ORIGINAL's sll never launched =>
+the original source was the g3 FAMILY (in-place chain, pair naturally right).
+=> The search belongs on g3's residual (the v1/a0 qty exchange: t0-qty p113
+6r/24 pri 5000 allocates before arg5-qty p100 2r/6 pri 3333), NOT on h5's
+pair. arg5-qty needs pri >= 5000 (refs 3/span6 ties at 5000; birth order
+favors arg5) — the twin ledger's vehicle classes all died; untried: multi-set
+arg5 VALUE-staging shapes that keep the lw v1,0(v0) dest split (arg5 var
+separate from address var). Permuters own the blind search meanwhile:
+tmp/perm_mar6 (mh5) + tmp/perm_csmd4 (twin g3) — verify finds via
+tmp/perm_finds_verify.py. Twin crack transfers.
 
 ## Target ground truth (asm/funcs/marionation_Exec.s)
 - Regs: status s0, saved s1, i1494 s2, i1496 s3, arg1 s4, tbl s5, i1495 s6,
