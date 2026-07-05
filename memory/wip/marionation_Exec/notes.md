@@ -13,30 +13,24 @@ Launch law (s6g): birthing_insn_p = live dest with reg_n_sets==1
 in-place. The v0-staging FAKEs are byte-inert in o1 (removable).
 Region-3 unchanged (Window Theorem; source-shape-dependent hole).
 
-## THE WINDOW THEOREM (s6d — impossibility map; every clause sourced)
+## THE WINDOW THEOREM (s6d; premises = the OLD tail — re-verify in s6l's!)
 Slot=NOP needs one of these at BOTH fill_eager attempts; each closed:
-1. a1 live at after_blocks ⇒ needs a $5 pseudo live there ⇒ crosses the
-   loop's vsync call ⇒ s-reg, never $5. CLOSED.
-2. everything-live ⇒ find_basic_block==-1 ⇒ post-flow-minted target label
-   (every flow-era label is its own basic_block_head). Minters:
-   do_cross_jump (mid-block ⇒ b_far, not -1), USE-hoist (wrong side),
-   relax 3992/4002 (FILLED-SEQ-only per 3946 ⇒ exclusive with refusal;
-   filled slots never empty — see 4). CLOSED.
-3. Walk-blocker in [beqz..move]: labels un-own (3397) / jumps stop the
-   walk, but referenced labels need a referencer alive to FINAL (=bytes).
-   &&-take dies (unused: never expands; dead-store: flow+jump2 sweep);
-   forced_labels = EXPAND_INITIALIZER-only (expr.c 4137 ⇒ data bytes);
-   LABEL_PRESERVE_P nonlocal/eh-only. Referencer-jumps: near-label folds
-   pre-flow at ANY condition; far = bytes + CASCADE (r5d-real 45); every
-   relax deleter fires pass-1 (⇒ pass-2 retry steals, measured) or needs
-   a gap-insn = bytes (sb mem/trap-unstealable; la len-2; move guard-
-   live); 4031 RE-EMITS slots inline; USE-markers walk-skipped (3404),
-   next_active-invisible post-reload (emit-rtl 1855). CLOSED.
-4. Filled-then-emptied: 3956 scan stops at CODE_LABELs (2001) ⇒ window =
-   {lbu; andi}; the move never matches; a matching lbu can't be target-
-   stolen (may_trap 3461; backward simp reaches only pre-branch insns);
-   recompute dests dead ⇒ flow deletes; volatile unstealable. try_merge
-   never empties the caller's own slot (annul dead on MIPS). CLOSED.
+1. a1 live at after_blocks ⇒ $5 pseudo live there ⇒ crosses the vsync
+   call ⇒ s-reg. CLOSED.
+2. everything-live ⇒ post-flow-minted target label (every flow-era label
+   is its own basic_block_head). Minters: do_cross_jump (mid-block ⇒
+   b_far, not -1), USE-hoist (wrong side), relax 3992/4002 (FILLED-SEQ-
+   only ⇒ exclusive with refusal; filled slots never empty). CLOSED.
+3. Walk-blocker in [beqz..move]: referenced labels need a referencer
+   alive to FINAL (=bytes); &&-take dies; forced_labels = EXPAND_
+   INITIALIZER-only; LABEL_PRESERVE_P nonlocal/eh-only; near-label
+   referencers fold pre-flow; far = bytes + cascade; every relax deleter
+   fires pass-1 (pass-2 retry steals, measured) or needs a gap-insn =
+   bytes; 4031 re-emits inline; USE-markers walk-skipped +
+   next_active-invisible post-reload. CLOSED.
+4. Filled-then-emptied: 3956 scan stops at labels ⇒ window {lbu; andi};
+   move never matches; matching lbu trap-blocked from steals; recompute
+   dests flow-deleted; try_merge never empties own slot. CLOSED.
 ⇒ The original EXISTS ⇒ a hole exists — upstream in source shape.
 
 ## s6d ground truth: check2's fill trace matches the model; r5d-on-real
@@ -79,25 +73,31 @@ with REGION-1's registers RIGHT (t0→a0, lbu a0@51 ✓✓) — the exchange
 GONE. Residual = s-web ROTATION (p73's 84-luid 952-tie, the documented
 d1/d2 coupling: ALLOCDBG T_mh5: p73(4r/84/952)→s1 ✗, p82(2r/21/952)→s2,
 p76/p78(7r/150/933)→s3/s4; TARGET needs p82>p76≥p78>p73 = the OLD
-ledger's exact inequality) + the 56/57 pair + region-3. Old vehicles
-re-measured here: iq+y1 = 22 (marginal); i5-split = 30 (backfires —
-extra move); whole-m2c = 28 (timeout respell also rotates). NEXT: (1)
-ALLOCDBG on C_iq_y1 → the new pri numbers → re-derive byte-clean bumps
-IN THIS LANDSCAPE (p73 needs <933: len 86 (+2 luids via a late a1 read)
-or refs 3; p82/76/78 bumps); (2) then the 56/57 pair in this world; (3)
-region-3 in this world (the fill landscape CHANGED — after_blocks label
-GONE ⇒ re-run the check2-fill trace — the Window Theorem's premises may
-not hold here!!). Permuters: tmp/perm_mar_ip (-j6) + perm_csmd4 (-j4)
-running; finds 210-1 (pointer-arith semantics) REJECTED, 260-1/2 ties.
+ledger's exact inequality) + the 56/57 pair + region-3. S-WEB DATA (ALLOCDBG, C_iq_y1): saved-y1 = 3636→s1 ✓ TARGET;
+i1496-iq = 9r/1800→s2 ✗ (overshoots); arg1 = 4r/84/952→s3 ✗; i1494 =
+7r/150/933→s4 ✗. NEEDED: p76 > p78 > p73 after saved — arithmetic says
++1 ref each on p76/p78 (→1066 tie, ascending seats p76 first) with p73
+at 952. Vehicle attempts: natural head (idx_1495 = idx_1494+1 + F19C0
+direct — target bytes DO show la v0,D_80016248 direct + addiu-from-s2!)
+= 30 ALL SUBSETS (the folds the FAKEs guard against happen; the FAKEs
+are load-bearing even though the byte SHAPE matches the natural form);
+i5-split = 30 (p77 jump). NEXT (mechanical, ALLOCDBG-guided): find +1
+p76 / +1 p78 vehicles that don't touch p77/p73 — candidates: an extra
+*idx_1494/*idx_1496 read folded into an existing insn (duplicated-
+statement family), F19C0-FAKE rebased from idx_1496→idx_1494 (+1 p76
+-1 p78 — wrong direction alone but pairs with iq's +2), y1 with iq only
+(22, marginal — its web: re-measure). Then: 56/57 pair + region-3 in
+THIS world (after_blocks label GONE ⇒ re-run the check2 fill trace —
+Window Theorem premises may not hold!). Permuters: perm_mar_ip (-j6) +
+perm_csmd4 (-j4) running; 210-1 REJECTED (ptr-arith), 260-1/2 ties.
 
 ## Region-2 SOLVED. Archive: o1=8 pair-order-perfect; s4=7 (launch
 lever); qty_compare = flog2(r)*r*size/span DESC; status/cnt/i GLOBAL.
-- MEASURED DEAD (s6e-l): mh5-basin staging+orders; o1 copy-stages;
-  q15-18 stale-refs; t0load-late; o3/o6/o8; shift-stages (mask FAKEs
-  load-bearing!); u1-u3; fmt staging; ipA/B/C; src/i-hosting (cascades);
-  h1-h4 in-call arg5 (sw drags); m1-m5 pure in-call (sequential shape);
-  whole-m2c (28 — timeout respell rotates s-web too); i5-split (30 —
-  extra move); iq+y1 in the new tail = 22 (marginal only).
+- MEASURED DEAD (s6e-l): mh5 staging+orders; o1 copy-stages; q15-18;
+  t0load-late; o3/o6/o8; shift-stages; u1-u3; fmt staging; ipA/B/C;
+  src/i-hosting; h1-h4 in-call; m1-m5 pure in-call; whole-m2c (28);
+  i5-split (30); natural-head N-battery (30 all subsets — head FAKEs
+  are load-bearing despite matching byte shapes); iq+y1 = 22 marginal.
 
 ## Target ground truth (asm/funcs/marionation_Exec.s)
 - Regs: status s0, saved s1, i1494 s2, i1496 s3, arg1 s4, tbl s5, i1495
