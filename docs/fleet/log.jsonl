@@ -2304,3 +2304,6 @@
 {"ts":"2026-07-05T19:38:57.7667674Z","kind":"lane-cycle","role":"backlog-worker","lane":"fleet-bw1","outcome":"needs-decision","func":"func_800481E8"}
 {"ts":"2026-07-05T19:42:31.8554479Z","kind":"lane-cycle","func":"func_800481E8","lane":"fleet-adj","outcome":"needs-owner","role":"adjudicator"}
 {"ts":"2026-07-05T19:50:31.3143522Z","kind":"lane-cycle","role":"blocked-worker","outcome":"blocked","func":"func_80017FA0","lane":"fleet-blk"}
+{"ts":"2026-07-05T20:26:57.5132744Z","kind":"merge-gate-failed","reason":"oracle-gate-failed","func":"func_80068D88"}
+{"ts":"2026-07-05T20:28:30.1869123Z","kind":"lane-cycle","role":"blocked-worker","outcome":"blocked","func":"func_80017FA0","lane":"fleet-blk"}
+{"ts":"2026-07-05T20:40:42.1579557Z","kind":"lane-cycle","role":"blocked-worker","outcome":"blocked","func":"func_800651F0","lane":"fleet-blk"}
