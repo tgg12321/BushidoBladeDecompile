@@ -66,32 +66,33 @@ No referencer condition avoids the delicate pseudos (v0/check fold via
 record_jump_equiv fall-side equalities; all s-regs in the 952/933 tie web).
 
 ## NEXT SESSION (in order)
-1. Permuters own the mechanical search: keep base = mh5 (r5d-real is masked
-   45 — NOT a seed). Add PERM_ variants of the check2/after_blocks region
-   spellings if directed mode is used; verify finds w/ perm_finds_verify.py.
-2. Trace-diff harness generalization: for ANY candidate variant batch, grep
-   the emitted .s for the bare-slot beqz (the refusal oracle is cheap) —
-   tmp/mar_trigger_gen*.py pattern applies to real-function sweeps too.
-3. Region-1 (the pair, 2 lines) is now the SOFTER half: g3 v1/a0 qty
-   exchange, untried multi-set arg5 VALUE-staging keeping the lw dest split.
-   Closing region-1 first would make any region-3 experiment cleanly
-   measurable at masked 2.
-4. If the Window Theorem also survives fresh eyes: surface to the owner —
+1. Permuters own BOTH searches from the mh5 base (r5d-real masked 45 is NOT
+   a seed; region-1 neighborhood exhausted s6e). Directed mode: PERM_ perms
+   over the printf block AND the check2/after_blocks region; honest verify
+   via perm_finds_verify.py; region-3 oracle = bare-slot beqz grep on .s.
+2. Region-1's wall is sched1 LAUNCH priorities (not order/regs): if attacked
+   again, instrument BB2_SCHED on the two insns' priority computation and
+   find which C property feeds the 1-point gap — a targeted, bounded read.
+3. If the Window Theorem also survives fresh eyes: surface to the owner —
    region-3's evidence (this file) + options: keep hunting the source-shape
    hole vs a documented-plateau disposition (NOT canonical-asm; the
    original is compiled C, so a matching source EXISTS — the theorem having
    a hole is CERTAIN, only its location is unknown).
 
-## Arm-2 transposition (2 masked lines): unchanged from s5 — git history
-(d1/d2 tie at 952; ref-bump program CLOSED: exact s-alloc, no byte-clean form).
+## Arm-2 transposition: unchanged from s5 (d1/d2 952-tie; ref-bump CLOSED).
 ## Region-2 SOLVED — recipe unchanged (in candidate.c)
 
-## Region-1 pair — permuter verdicts (s6)
-- perm_mar6 200-1/2 (arg5 value-staging): masked 8, registers break. REJECTED.
-- 200-3 (goto-loop into the arm): masked 5 (3-insn rotation). REJECTED.
-- csmd4 40-2: masked 6 vs floor 2. REJECTED. mh5's basin keeps re-confirming;
-  frontier stays the g3 v1/a0 qty exchange (untried: multi-set arg5
-  VALUE-staging keeping the lw dest split).
+## Region-1 pair — s6e sweeps: the untried family is now TRIED (all ≥ 4)
+- arg5 VALUE-staging (tmp/mar_arg5_sweep.py, 7 forms): cnt/status/v0-reload
+  stages 8-14 (registers break); addr-var + xor-split fold to IDENTICAL code
+  (still 4). Stmt-order sweep (tmp/mar_order_sweep.py, 8 perms): five tie at
+  4, rest 6-10 — the pair is ORDER-INVARIANT in the mh5 basin (launch
+  priorities, not luid tiebreak). Registers at 49-55 all correct; residual =
+  pure 2-insn sched swap {ours sll a0;addu v0 | tgt addu v0;sll a0} @56-57.
+- Permuter verdicts (s6): 200-1/2 masked 8, 200-3 masked 5, csmd4 40-2
+  masked 6 — all REJECTED. Both remaining gaps are now proven deep-basin
+  walls: the answer needs a DIFFERENT GLOBAL source shape — permuters (mh5
+  base, honest verify via perm_finds_verify.py) own both searches.
 
 ## Target ground truth (asm/funcs/marionation_Exec.s)
 - Regs: status s0, saved s1, i1494 s2, i1496 s3, arg1 s4, tbl s5, i1495 s6,
