@@ -2302,3 +2302,5 @@
 {"ts":"2026-07-05T19:31:33.0579742Z","kind":"lane-cycle","role":"blocked-worker","outcome":"blocked","func":"func_80017FA0","lane":"fleet-blk"}
 {"ts":"2026-07-05T19:35:42.2850491Z","kind":"lane-cycle","role":"backlog-worker","lane":"fleet-bw1","outcome":"blocked","func":"func_80072CD4"}
 {"ts":"2026-07-05T19:38:57.7667674Z","kind":"lane-cycle","role":"backlog-worker","lane":"fleet-bw1","outcome":"needs-decision","func":"func_800481E8"}
+{"ts":"2026-07-05T19:42:31.8554479Z","kind":"lane-cycle","func":"func_800481E8","lane":"fleet-adj","outcome":"needs-owner","role":"adjudicator"}
+{"ts":"2026-07-05T19:50:31.3143522Z","kind":"lane-cycle","role":"blocked-worker","outcome":"blocked","func":"func_80017FA0","lane":"fleet-blk"}
