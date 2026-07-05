@@ -17,9 +17,8 @@ the o1 world (r1-r4 byte-identical) — removable. Region-3 unchanged
 (Window Theorem; source-shape hole). NEXT: s4 + block-local stage +
 fmt-la-late sweep = the closing combination for region-1.
 
-## THE WINDOW THEOREM (s6d — the impossibility map; every clause sourced)
-Target window [beqz..move] = [sb] only; slot = NOP. One of these must hold
-at BOTH fill_eager attempts (dbr runs fill+relax twice); each is closed:
+## THE WINDOW THEOREM (s6d — impossibility map; every clause sourced)
+Slot=NOP needs one of these at BOTH fill_eager attempts; each closed:
 1. a1 (reg 5) live at after_blocks ⇒ needs a $5-allocated pseudo live there
    ⇒ crosses the loop's immediate vsync call ⇒ s-reg, never $5. CLOSED (5b +
    allocation argument).
@@ -52,15 +51,14 @@ at BOTH fill_eager attempts (dbr runs fill+relax twice); each is closed:
 original source shaped an upstream difference not yet modeled. The original
 EXISTS ⇒ the hole exists. FIND IT EMPIRICALLY.
 
-## Validated ground truth (s6d traces — hole-hunt step 1 DONE)
-check2 = insn 386; fall-walk EXACTLY matches the model (390 sb LOSE
-setsopp+trap; 393 la LOSE len-2; 399 move WINNER; guard 402 setneed-refused
-the move backward). The mtlr block=0 anomaly = ANOTHER function (uid
-collision). Marionation's trace CLEAN. mtlr's recursion (2810-31)
-INTERSECTS live sets ⇒ can't create refusal. ⇒ hole is SOURCE-SHAPE-
-DEPENDENT. r5d-on-real w/ 1-insn opaque referencer = masked 45 — one
+## Validated ground truth (s6d — hole-hunt step 1 DONE)
+check2 = insn 386; fall-walk matches the model exactly (sb LOSE
+setsopp+trap; la LOSE len-2; move WINNER; guard setneed-refused the move
+backward). mtlr block=0 anomaly = another function (uid collision);
+marionation's trace CLEAN; mtlr recursion (2810-31) INTERSECTS ⇒ can't
+refuse. ⇒ hole is SOURCE-SHAPE-DEPENDENT. r5d-on-real = masked 45 (one
 condition-read cascades the s-allocation; no condition avoids the
-delicate pseudos (v0/check fold via record_jump_equiv fall-equalities).
+delicate pseudos — record_jump_equiv fall-equalities fold v0/check).
 
 ## NEXT SESSION (in order)
 1. REGION-1 CLOSING COMBO (from s6g's s4 at masked 7): o1 order + t0-shift
@@ -76,7 +74,7 @@ delicate pseudos (v0/check fold via record_jump_equiv fall-equalities).
    (options: keep hunting vs documented-plateau; NOT canonical-asm — the
    original is compiled C so a matching source EXISTS).
 
-## Arm-2 transposition: unchanged. Region-2 SOLVED. Region-1 state:
+## Arm-2 transposition unchanged. Region-2 SOLVED. Region-1:
 - S6F — THE O1 FRONTIER: C order [t0load; pp; v0ld; v0shl; a5; t0mul;
   t0add] = masked 8, PAIR ORDER PERFECT; residual = v1/a0 qty exchange.
   QTYDBG (marionation cluster; SEGMENT PER FUNCTION — twin collides):
@@ -93,8 +91,11 @@ delicate pseudos (v0/check fold via record_jump_equiv fall-equalities).
   order-invariant; o1-basin copy-stages fold or 8-14; q15-q18 stale-refs
   vehicles fold (refs canceled — iq did NOT reproduce); t0load-late costs
   lbu@51; o3/o6/o8 collapse to mh5; shift-stages via cnt(11)/i(26)/v0(12)/
-  new_var,new_var3(36-45 — NEVER touch the mask FAKEs). Permuter finds all
-  rejected (s6).
+  new_var,new_var3(36-45 — NEVER touch the mask FAKEs); FRESH block-local
+  2-set stage (u1-u3: sh=t0;sh<<=2 etc.) — combine MERGES the sets and
+  properly updates reg_n_sets ⇒ launch returns ⇒ 8 (need a combine-
+  resistant 2-set spelling, or lead with fmt-la-late on plain s4).
+  Permuter finds all rejected (s6).
 
 ## Target ground truth (asm/funcs/marionation_Exec.s)
 - Regs: status s0, saved s1, i1494 s2, i1496 s3, arg1 s4, tbl s5, i1495
@@ -105,8 +106,6 @@ delicate pseudos (v0/check fold via record_jump_equiv fall-equalities).
   identical [j .L812CC; slot move v0,a2] (jump-vs-jump cross-jump needs
   min-2 match; only 1). Arm-1's check-beqz slot = NOP naturally (sb trap/
   mem + la ineligible + guard jump — no steal candidates; VERIFIED in trace).
-- Base ALLOCDBG s-order: p82 952 / p76 933 / p78 933 / p73 930.
-
 ## Known gotchas
 - 42 rules index-anchored; end gate = retire-all-42 + full SHA1. Twin
   shares text — uid spaces COLLIDE in TU-wide debug logs (segment per
