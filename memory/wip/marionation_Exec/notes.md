@@ -84,18 +84,20 @@ Region-3 unchanged (Window Theorem; source-shape hole; surface to owner
 if it survives fresh eyes — NOT canonical-asm, the original is compiled C).
 
 ## Arm-2 transposition unchanged. Region-2 SOLVED.
-- S6F/G archive: o1 order [t0load; pp; v0ld; v0shl; a5; t0mul; t0add] =
-  masked 8 pair-order-perfect; QTYDBG marionation cluster: addr-109→v0,
-  sll-111→v1, arg5-104→a0; qty_compare = flog2(refs)*refs*size/span DESC,
-  111v104 EXACT TIE → birth order. s4 (status-staged shift) = 7, arg5
-  side fixed (launch lever proven). status/cnt/i = GLOBAL pseudos.
+- S6F/G archive: o1 order = masked 8 pair-order-perfect; QTYDBG cluster:
+  addr-109→v0, sll-111→v1, arg5-104→a0; qty_compare = flog2(refs)*refs*
+  size/span DESC, tie → birth. s4 (status-staged shift) = 7, arg5 side
+  fixed (launch lever proven). status/cnt/i = GLOBAL pseudos.
 - MEASURED DEAD (s6e-h): mh5-basin arg5-staging + orders (>= 4, order-
   invariant); o1-basin copy-stages fold or 8-14; q15-q18 stale-refs fold
   (refs canceled — iq did NOT reproduce); t0load-late costs lbu@51;
   o3/o6/o8 collapse; shift-stages cnt(11)/i(26)/v0(12)/new_var*(36-45 —
   mask FAKEs load-bearing!); fresh 2-set stage u1-u3 (combine merges +
   updates refs ⇒ launch returns); fmt staging cse-inert (const source);
-  ip3 (in-place chain C-early: t0-sll lands @55). Permuter finds rejected.
+  ip3 (in-place C-early: sll@55); ipA/B/C (in-place basin is ALSO order-
+  invariant across shl/add C placements — the 56/57 order is priority-
+  driven there; the exchange levers are the sole remaining dials).
+  Permuter finds rejected.
 
 ## Target ground truth (asm/funcs/marionation_Exec.s)
 - Regs: status s0, saved s1, i1494 s2, i1496 s3, arg1 s4, tbl s5, i1495
@@ -108,8 +110,7 @@ if it survives fresh eyes — NOT canonical-asm, the original is compiled C).
   mem + la ineligible + guard jump — no steal candidates; VERIFIED in trace).
 ## Known gotchas
 - 42 rules index-anchored; end gate = retire-all-42 + full SHA1. Twin
-  shares text — uid spaces COLLIDE in TU-wide debug logs (segment per
-  function!). Declare new_var/new_var3.
+  shares text — uid spaces COLLIDE in TU logs. Declare new_var/new_var3.
 
 ## Tools (local/gitignored; regenerate from here if lost)
 - tmp/gccdbg/cc1 + cc1_alllive (BB2_DBR/ALLLIVE/ALLOC/QTY/SCHED knobs).
