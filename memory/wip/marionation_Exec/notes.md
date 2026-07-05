@@ -45,44 +45,42 @@ anomaly = another function (uid collision); marionation's trace CLEAN;
 mtlr recursion INTERSECTS ⇒ can't refuse. r5d-on-real = masked 45 (one
 condition-read cascades; record_jump_equiv folds v0/check conditions).
 
-## NEXT SESSION — REGION-1, the final equation (s6h ground truth)
-TARGET BYTES (dumped, tmp/mar_final_matrix era): t0 chain IN-PLACE in a0
-(1070 lbu a0; 1088 sll a0,a0; 1098 addu a0,a0,s5; 10b0 lw a3,0(a0));
-fmt-la LAST (10b4, after t0's death) — hard-a0 set outside t0's span, NO
-staging needed; 11DC access via $at MACRO (lui at/addu at/lw a2 = ONE RTL
-insn); 11D5 via lui+lbu macro reusing V0's second segment (1090-109c ✓
-ours matches). ⇒ mh5's fresh-temp basin is STRUCTURALLY WRONG (masked 4 is
-a register-masked mirage); the true basin = IN-PLACE (ip1/ip2: o1 order +
-`t0 <<= 2; t0 += (s32)tbl_125c;` = masked 9, shape exact, residual = the
-v1/a0 exchange + the 56/57 order + region-3). THE EQUATION: first-fit
-gives t0→a0 only if v0 AND v1 are occupied at t0's allocation ⇒ ARG5 MUST
-ALLOCATE BEFORE T0's one-qty ⇒ need pri(arg5) > pri(t0): t0 (in-place, 1
-qty born@51 dies@67: ~6refs/span16: flog2(6)*6/16 = 0.75) vs arg5 (2refs/
-span5 = 0.4). S6I CLOSURES: global-var hosting cascades ALL flavors (src
+## REGION-1 — the final equation (s6h/s6j ground truth)
+TARGET BYTES: t0 chain IN-PLACE in a0 (1070/1088/1098/10b0); fmt-la LAST
+(10b4, outside t0's span — no staging needed); 11DC via $at macro; 11D5
+macro on v0's second segment. mh5's fresh-temp basin = STRUCTURALLY
+WRONG (register-masked mirage); true basin = IN-PLACE (ip1/ip2 masked 9,
+shape exact; residual = v1/a0 exchange + 56/57 order + region-3).
+EQUATION (inputs MEASURED s6j): t0 6refs/span24 pri 2.0 vs arg5
+2refs/span6 pri 1.33 ⇒ t0 first ⇒ v1; target needs arg5 first (v1) so
+t0 falls to a0. S6I CLOSURES: global-var hosting cascades ALL flavors (src
 w1-w4=22; i-hosted x1-x4=22-32); suggestions = hard↔pseudo COPIES only
-(combine_regs 1815-62; arg5=stack ⇒ impossible, t0 meets no hard copy);
-NO qty rebirth (reg_is_born 2000-27: alloc_qty only at reg_qty==-2; one
-pseudo = one monolithic qty); REG_ALLOC_ORDER absent ⇒ regno first-fit
-(v0,v1,a0…) confirmed; 11D5-shift temp (pri 4.0) owns v0 first — matches
-target. ⇒ SECOND IMPOSSIBILITY THEOREM: pri(arg5) is PINNED at 1.6
-(2refs/span5, stack arg) and ANY local carrier of t0's value across
-[58,61] has ≥2refs/span≤4 ⇒ pri ≥ 2.0 > 1.6 ⇒ allocates before arg5 ⇒
-takes v1 ⇒ the TARGET allocation (arg5→v1 before t0→a0) CANNOT arise
-from two plain local qtys under qty_compare. Same epistemic shape as the
-Window Theorem: the bytes exist ⇒ a model-hole exists — in UNREAD
-local-alloc corners: qty_min_class (constraint-driven class narrowing!),
-the sugg-round fallback, requires_inout/may_save_copy tie paths,
-retry_global_alloc, or reload-inheritance. NEXT: read those (bounded);
-then re-derive the vehicle. Sub-facts: in-place = `<<=`/`+=` (NOT `*=`);
-fmt staging cse-inert. Oracle: masked 2. Region-3 unchanged (Window
-Theorem). find_free_reg read (s6i2): arg hard-regs live setup→call;
-a0[68,70] vs t0[51,67] disjoint ✓; call-crossing qtys exclude call-used
-regs; model CONFIRMED end-to-end ⇒ CONVERGENT CONCLUSION (both regions,
-triple-confirmed): local perturbations of THIS candidate cannot close
-either gap — the original had a GLOBALLY different variable structure.
-Search must move to whole-function shapes: permuter big-jump mode over
-variable roles + m2c re-read of the original structure + the twin's
-eventual crack (shared arithmetic transfers).
+(combine_regs 1815-62; arg5=stack ⇒ impossible; t0 meets no hard copy);
+NO qty rebirth (reg_is_born: alloc_qty only at reg_qty==-2);
+REG_ALLOC_ORDER absent ⇒ regno first-fit confirmed. ⇒ SECOND
+IMPOSSIBILITY THEOREM: arg5's pri is PINNED (stack arg) and ANY local
+carrier of t0's value across [58,61] outranks it ⇒ takes v1 first ⇒ the
+TARGET allocation CANNOT arise from two plain local qtys under
+qty_compare. The bytes exist ⇒ a model-hole exists. Sub-facts: in-place
+= `<<=`/`+=` (NOT `*=`); fmt staging cse-inert. Oracle: masked 2.
+Region-3 unchanged (Window
+Theorem). find_free_reg read: model CONFIRMED end-to-end. S6J: qty
+inputs MEASURED on ip1 (tmp/mar_ip_qty.py): t0 = 6refs/span24 pri 2.0
+→ v1 (ord 2); arg5 = 2refs/span6 pri 1.33 → a0 (ord 3) — theorem's
+inputs verified on the machine. m2c EVIDENCE (tools/m2c on the target
+asm): the call spelled fully in-call, 2nd arg = DIRECT global (no pp!)
+— but m2c is VALUE-faithful not structure-faithful: the pure in-call
+form measures masked 16 with the WRONG shape (sequential arg chains;
+ours idx1-first) ⇒ original HAD locals that sched interleaved = the
+ip/o1 family confirmed from a second direction. In-call arg5 hybrids
+(h1-h4 = 13-16): the span-2 pri-4.0 arg5 temp allocates first but the
+sw moves to 60 (target 63) — shape broken. LAST HOLE CANDIDATE
+(global.c:388): pseudos local-alloc FAILS to allocate fall to GREG
+(different pri formula + reg preference) — if the original's block was
+dense enough that t0-or-arg5 FAILED local, greg's rules apply. NEXT:
+probe what makes a qty fail local (span conflicts) + read find_reg's
+preference order. PERMUTER RELAUNCHED on the ip1 base (tmp/perm_mar_ip,
+base score 260, running) — finds → perm_finds_verify pattern.
 
 ## Arm-2 transposition unchanged. Region-2 SOLVED.
 - S6F/G archive: o1 = masked 8 pair-order-perfect; qty_compare =
