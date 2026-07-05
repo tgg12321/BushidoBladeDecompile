@@ -13,10 +13,8 @@ the referencer's one condition-read cascades the allocation. Permuters own
 the search from the mh5 base; region-1 is the softer half to close first.
 
 ## THE WINDOW THEOREM (s6d — the impossibility map; every clause sourced)
-Between check2's beqz and the move, target bytes = [sb] only; slot = NOP.
-For the slot to stay empty through dbr's TWO {fill_simple×2, fill_eager,
-relax} passes, one of these must hold at BOTH fill_eager attempts, and each
-is closed:
+Target window [beqz..move] = [sb] only; slot = NOP. One of these must hold
+at BOTH fill_eager attempts (dbr runs fill+relax twice); each is closed:
 1. a1 (reg 5) live at after_blocks ⇒ needs a $5-allocated pseudo live there
    ⇒ crosses the loop's immediate vsync call ⇒ s-reg, never $5. CLOSED (5b +
    allocation argument).
@@ -50,29 +48,30 @@ original source shaped an upstream difference not yet modeled. The original
 EXISTS ⇒ the hole exists. FIND IT EMPIRICALLY.
 
 ## Validated ground truth (s6d traces — hole-hunt step 1 DONE)
-check2 = insn 386; fall-walk EXACTLY matches the model: 390 sb LOSE
-setsopp+trap; 393 la LOSE quiet (len 2 — arm-1's bare slot same cause); 399
-move WINNER. Guard 402 setneed-refused the move backward; arm-1's guard took
-its move backward — all match bytes. The `mtlr target=399 block=0` anomaly
-is ANOTHER function (log line 584 vs marionation's 790-897; uid spaces
-repeat per function — mar_logseg.py segments by fingerprints). Marionation's
-trace is CLEAN — no hole in THIS compilation. mtlr's recursion (2810-31)
-INTERSECTS live sets (AND) ⇒ can't create refusal; check2's target scan
-breaks at the conditional beqz-s7 first. ⇒ the hole is SOURCE-SHAPE-
-DEPENDENT. NEW NEGATIVE (mar_r5d_real.py): r5d-on-real with the 1-insn
-opaque referencer (`if (idx_1494==0) goto arm;`) = masked 45 (183/179): one
-condition-read cascades the s-allocation (9th s-reg, prologue reshuffles).
-No referencer condition avoids the delicate pseudos (v0/check fold via
-record_jump_equiv fall-side equalities; all s-regs in the 952/933 tie web).
+check2 = insn 386; fall-walk EXACTLY matches the model (390 sb LOSE
+setsopp+trap; 393 la LOSE len-2; 399 move WINNER; guard 402 setneed-refused
+the move backward). The `mtlr target=399 block=0` anomaly is ANOTHER
+function (log 584 vs marionation 790-897; uid collision). Marionation's
+trace is CLEAN. mtlr's recursion (2810-31) INTERSECTS live sets ⇒ can't
+create refusal. ⇒ the hole is SOURCE-SHAPE-DEPENDENT. NEW NEGATIVE
+(mar_r5d_real.py): r5d-on-real w/ 1-insn opaque referencer = masked 45
+(183/179) — one condition-read cascades the s-allocation (9th s-reg). No
+referencer condition avoids the delicate pseudos (v0/check fold via
+record_jump_equiv fall-side equalities; s-regs all in the 952/933 web).
 
 ## NEXT SESSION (in order)
 1. Permuters own BOTH searches from the mh5 base (r5d-real masked 45 is NOT
    a seed; region-1 neighborhood exhausted s6e). Directed mode: PERM_ perms
    over the printf block AND the check2/after_blocks region; honest verify
    via perm_finds_verify.py; region-3 oracle = bare-slot beqz grep on .s.
-2. Region-1's wall is sched1 LAUNCH priorities (not order/regs): if attacked
-   again, instrument BB2_SCHED on the two insns' priority computation and
-   find which C property feeds the 1-point gap — a targeted, bounded read.
+2. Region-1 pair sched trace STARTED (tmp/mar_pair_sched.py): sll=uid116,
+   addu=uid130 in marionation's sched2. BB2_SCHED_DEBUG shows A cluster
+   picking 130 BEFORE 116 at equal pri via higher-LUID tiebreak (= TARGET
+   order!) — but uid collisions across functions (twin shares text/uid
+   layout) make attribution ambiguous. NEXT: segment SCHEDDBG per function
+   (block-dump uid sets) and read marionation's actual pick + which C
+   property sets the luid order — if a picked-cluster really is the twin's,
+   ITS source spelling of the printf block is the transplant donor.
 3. If the Window Theorem also survives fresh eyes: surface to the owner —
    region-3's evidence (this file) + options: keep hunting the source-shape
    hole vs a documented-plateau disposition (NOT canonical-asm; the
@@ -107,14 +106,14 @@ record_jump_equiv fall-side equalities; all s-regs in the 952/933 tie web).
 
 ## Known gotchas
 - 42 rules index-anchored; end gate = retire-all-42 + full SHA1. Twin csmd4
-  shares source text — marionation-unique anchors. Declare new_var/new_var3.
-- d1/d2 stmt reorders flip s-regs via the 952 tie (do NOT re-derive).
-- knob uids shift with any C change — tmp/mar_alllive_full.py re-discovers.
+  shares text — unique anchors; uid spaces COLLIDE in TU-wide debug logs
+  (segment per function first). Declare new_var/new_var3. d1/d2 reorders
+  flip s-regs via the 952 tie. Knob uids shift with any C change.
 
 ## Tools (local/gitignored; regenerate from here if lost)
-- tmp/gccdbg/cc1 + cc1_alllive (BB2_DBR_DEBUG, BB2_ALLLIVE_LABEL, ALLOC/QTY).
-- s6 harness: tmp/mar_trigger_gen{,2,3,4,5,6,7}.py (batteries), tmp/mar_
-  {trace_labels.sh, trace56.sh, pass_trace.py, check2_trace.py, ctx399.py,
-  ctx_mtlr399.py, logseg.py, hole_hunt.py, r5d_real.py}. Minis: tmp/mar_trig/.
+- tmp/gccdbg/cc1 + cc1_alllive (BB2_DBR/ALLLIVE/ALLOC/QTY/SCHED knobs).
+- s6 harness: tmp/mar_trigger_gen{,2..7}.py, tmp/mar_{trace_labels.sh,
+  trace56.sh, pass_trace, check2_trace, ctx399, ctx_mtlr399, logseg,
+  hole_hunt, r5d_real, arg5_sweep, arg5_diff, order_sweep, pair_sched}.py.
 - Verify kit: tmp/perm_finds_verify.py, tools/mar_test_candidate.sh,
-  tmp/mar_floor_check.sh.
+  tmp/mar_floor_check.sh. Minis: tmp/mar_trig/.
