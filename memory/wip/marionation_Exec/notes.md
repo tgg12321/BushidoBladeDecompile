@@ -1,74 +1,79 @@
-# marionation_Exec — HONEST FLOOR = masked 30; remaining gap is 100% REGISTER ALLOCATION (2026-07-05 handoff)
+# marionation_Exec — WIP (2026-07-05 session-7: register rotation REACHABILITY PROVEN)
 
-## TL;DR (read this first — the record was corrected this session)
-The committed build's "masked 4" (mh5) was a **register-masked MIRAGE** built on
-TWO unsanctioned cheats that a fresh cheat-reviewer FAILED. candidate.c is now
-the **HONEST BASELINE = masked 30** (m2c-tail structure, cheats stripped to
-natural C). Resume from candidate.c, NOT from the old mirage. The instruction
-SHAPES are all free from natural C — **the entire remaining gap is the s-register
-allocation** (a knife-edge allocno-priority rotation). No fold, no missing cheat.
+## TL;DR (read first)
+The honest baseline is still `candidate.c` = **masked 30** (m2c-tail, no cheats). This
+session PROVED the target callee-saved allocation is reachable and pinned the exact
+priority targets, but the clean (cheat-free, byte-matching) form is still open.
 
-## What was PROVEN this session (banked, don't re-derive)
-1. **The FAKEs are register-web gaming, NOT symbol-fold defeat** (their comments
-   lied). Proof (proto_mh5.py): natural `idx_1495 = 1 + idx_1494` emits the exact
-   target `addiu s6,s2,1` (base+offset, no reloc) — identical to the FAKE. The
-   FAKE only changes WHICH registers seat. Same for the iq3 `+=1;+=1;` double-
-   split (ref-count inflation) and the F19C0 rebase. All three are the same cheat
-   class; layer-1 reviewer FAILed them (meta.json.reviewer). DO NOT reintroduce.
-2. **The original used explicit STORED pointers** idx_1494/1495/1496 (candidate
-   structure is right). Proof: full m2c rebuild with field-style accesses
-   `(&D_800A1494)[k]` REGRESSED to masked 65 (GCC re-materializes the base each
-   use). m2c full-rebuild is a DEAD END. Target `addiu s2,1/2` off a held base
-   confirms stored pointers.
-3. **Honest floor = masked 30.** The masked-4/6 forms were all cheat-carrying.
+**Key correction to the model:** `masked` normalizes register names OUT, so the
+masked-30 floor is **scheduling diffs, NOT the register rotation**. The rotation is a
+RAW-only diff. So closing needs BOTH: (a) the register rotation (raw), and (b) ~4
+independent scheduling residuals (the masked-30). Prior notes conflated these.
 
-## The register problem, fully quantified (ledger_full.py, honest baseline)
-status(s0)/saved(s1)/i1495(s6) already seat CORRECT. The other 5 rotate:
-```
-       ours(honest)          target wants
-  s2   arg1  r4 ll84  p952    i1494
-  s3   i1494 r7 ll150 p933    i1496
-  s4   i1496 r5 ll150 p666    arg1
-  s5   arg0  r2 ll78  p256    tbl
-  s7   tbl   r3 ll152 p197    arg0
-```
-Needed priority order (desc, pri=2*refs*1e4/livelen): i1494 > i1496 > arg1 > tbl
-> i1495 > arg0.
+## The register mechanism (fully quantified, faithful debug cc1)
+allocno pri ≈ FREQ×nrefs/livelen; FREQ = loop-exec weight of the ref sites
+(status inner-poll=30000; arg1/i1494/i1496=20000; arg0/i1495/tbl=10000). All 8
+s-pseudos mutually conflict → allocation is **sequential by priority** → pri order
+== s0..s7 order. Honest baseline ledger (pri desc): arg1 952 > i1494 933 > i1496 666
+> arg0 256 > i1495 202 > tbl 197. TARGET needs: i1494 > i1496 > arg1 > tbl > i1495 > arg0.
+Three inversions: (i1496>arg1), (tbl>i1495), (i1495>arg0).
+**Pre-reload greg ledger == final callee-saved allocation** (verified via reconcile.py) —
+but VERIFY register claims against FINAL objdump; the ledger block-matcher can mislead.
 
-## LEVER FOUND (honest, partial): arg1-hold flips the hard pair
-`hold = a1;` at top + `hold` in BOTH copy arms (natural C, ~m2c's var_a1)
-extends arg1's live range → arg1 drops below i1496 → **i1494→s2 ✓ and i1496→s3 ✓
-flip correct** (honest_sweep2 W3). BUT it overshoots the bottom-3 and adds
-register pressure (masked rises to 38 until the rest is fixed). It's a real
-honest lever; it just isn't the whole answer.
+## BREAKTHROUGH (diagnostic): param-staging reaches ALL 8 target regs in FINAL asm
+`tmp/vM3.c` (saved: rejected/staging-diagnostic-all-callee-saved-correct.c):
+candidate + `s32 aa; u8 *hold;` + `aa = a0; hold = a1;` placed LATE (after D_800F19C0)
++ tbl-def-AFTER-idx (T1) + use aa in the a0-test + hold in both copy arms.
+→ FINAL objdump: i1494=s2, i1496=s3, arg1=s4, tbl=s5, i1495=s6, arg0=s7, status=s0,
+saved=s1 — **all target-correct** (first time). masked stays 30 (masked ≠ registers).
+Mechanism: staging LATE gives aa/hold short live ranges (low pri) → arg0→s7, arg1→s4.
 
-## THE WALL (where the next session starts)
-Bottom-3 are REVERSE-ordered: ours arg0(256)>i1495(202)>tbl(197); target needs
-tbl>i1495>arg0. tbl is dead-last because its live range spans the whole timeout
-loop (ll152). Can't shorten honestly — to stay call-saved tbl must cross a call;
-the only pre-use calls are in the loop; crossing the loop = long ll. Moving the
-load drops tbl to a t-reg (masked 37). Target has tbl long-lived too (s5), so the
-resolution is that the ORIGINAL's arg0/i1495 had EVEN LOWER priority than ours —
-i.e. the exact statement structure sets these livelens. Neither candidate-patch
-nor m2c-rebuild reproduced it this session.
+## Why vM3 is NOT the answer (two blockers)
+1. **Prologue placement.** Target saves params AT the prologue (`move s7,a0`@insn2,
+   `move s4,a1`@insn4) — the ORIGINAL has a0/a1 DIRECTLY at s7/s4 (params low pri
+   naturally). Staging emits those moves MID-preamble → bytes differ, insn count
+   176 vs 179. Staging can't produce the prologue save (needs the param itself at
+   s7, i.e. low pri WITHOUT a copy — the unsolved crux).
+2. **Cheat-questionable.** `aa=a0`/`hold=a1` are purposeless param copies whose only
+   effect is RA — same family a fresh reviewer FAILs. (`hold=a1` alone was called
+   "honest ~m2c var_a1" in old notes, but a0-staging is new and must clear review.)
 
-## NEXT SESSION — concrete plan
-1. Apply candidate.c → `sandbox marionation_Exec --disable all` == 30 (confirm).
-2. Apply the arg1-hold lever (see honest_sweep2.py W3) → confirm i1494/i1496 flip.
-3. Attack the bottom-3: find natural code that raises tbl's priority above
-   i1495/arg0 WITHOUT dropping tbl to a t-reg, OR lowers arg0/i1495 below tbl.
-   Levers to try: arg0 use-site placement (extend its live range → lower pri);
-   whether i1495 (the callback pointer) can live shorter; the || compound loop
-   condition from m2c (may reshape livelens). ALL must be natural — no ref
-   inflation, no cross-symbol arithmetic, no register pins.
-4. End gate: masked 0 → retire all 42 rules → full SHA1 == oracle → dual
-   adversarial review → queue done → delete WIP.
+## THE OPEN CRUX
+Find the NATURAL C structure that gives **arg0 lowest priority** (ll 78→>101, so it
+saves at prologue to s7) and **arg1 3rd** (ll 84→~120), WITHOUT staging copies. arg0
+is used at exactly ONE site (the `if(a0)` loop test) yet flow gives ll=78; extending
+it honestly is the key. m2c's reconstruction (var_a0/var_a1 + `||` compound loop cond)
+is the most likely lead — m2c was NOT runnable this session (not installed; archive guarded).
 
-## Artifacts (this session's worktree was bb2-work-marproto, now removed)
-Harness + full write-up copied to `tmp/marion_handoff/` (gitignored, on-machine):
-FINDINGS.md, honest_baseline.py, honest_sweep{,2,3}.py, ledger_full.py,
-proto_m2c_rebuild.py, proto_mh5.py. Pattern: splice candidate body into
-src/system.c → engine sandbox → objdump tmp/sandbox vs build/src/system.o →
-restore. Debug cc1 (ALLOCDBG ledger): tmp/gccdbg/cc1. rejected/ holds the three
-dead forms (mh5 mirage, iq3 cross-symbol, v0-idx). Twin cpu_side_move_dir_4 has
-the identical structure/problem — the same honest analysis applies.
+## Scheduling residuals (the masked-30, independent of registers)
+1. do_timeout pair-swap: `sll a0; addu v0,v0,tbl` order (idx 56/57).
+2. saved-stage: target `lbu v0; andi s1,v0` vs ours `lbu s1; andi s1,s1` — try
+   staging saved through v0 (`v0=*D_800A147C_2; saved=v0&3`, sanctioned reuse).
+3. copy-loop a0/a1 (src/dst) allocation swap in block1.
+4. prologue param-save order (tied to the crux above).
+
+## DEAD ENDS confirmed this session (don't repeat)
+- tail-restructure (shared epilogue): raw↓ but BREAKS staging (masked 51).
+- do-while(a0==0) outer loop: refs DOUBLE (loop-depth weight), masks materialize
+  as register-and, +2 insns (masked 48). Confirms old note.
+- staging placed FIRST: aa/hold get long ranges → high pri → allocation reverts.
+- branch-sense flip, faithful-preamble reorder: NO-OPS (GCC canonicalizes/reschedules).
+- tbl load moved into loop / do_timeout: overshoots (freq doubles) or drops to t-reg.
+- T1 needed for tbl/i1495 order, but T1 makes setup order (i1494-first) differ from
+  target (tbl-first) — a tension staging doesn't resolve.
+
+## Tooling (all in tmp/, worktree bb2-work-marion; regenerate from this note if lost)
+- tmp/gccdbg/cc1 = instrumented debug cc1 (copied from main tmp/gccdbg; VERIFIED
+  byte-identical codegen to canonical build/cc1 via verify_dbgcc1.py).
+- tmp/mar.sh = WSL venv wrapper. Run: `wsl bash <abs>/tmp/mar.sh tmp/<tool>.py <args>`.
+- tmp/probe.py <cand> = masked score + callee-saved mapping + allocno ledger.
+- tmp/adiff.py <cand> = LCS-aligned objdump diff (ours vs target).
+- tmp/genprobe.py = batch variant generator/prober. tmp/ledger3.py, reconcile.py.
+
+## Next session
+1. Apply candidate.c, confirm sandbox==30 (honest floor). vM3 is a DIAGNOSTIC only.
+2. Get m2c running (mips_to_c) on asm/funcs/marionation_Exec.s — read var_a0/var_a1
+   handling + the `||` compound loop condition; likely the natural mechanism.
+3. Attack arg0 ll (78→>101) HONESTLY so it prologue-saves to s7 without a copy.
+4. Knock down the scheduling residuals (saved-stage is the easy sanctioned one).
+5. If staging turns out to be the only path: invoke cheat-reviewer BEFORE relying on it.
