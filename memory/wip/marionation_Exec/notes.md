@@ -42,8 +42,22 @@ Mechanism: staging LATE gives aa/hold short live ranges (low pri) → arg0→s7,
 Find the NATURAL C structure that gives **arg0 lowest priority** (ll 78→>101, so it
 saves at prologue to s7) and **arg1 3rd** (ll 84→~120), WITHOUT staging copies. arg0
 is used at exactly ONE site (the `if(a0)` loop test) yet flow gives ll=78; extending
-it honestly is the key. m2c's reconstruction (var_a0/var_a1 + `||` compound loop cond)
-is the most likely lead — m2c was NOT runnable this session (not installed; archive guarded).
+it honestly is the key.
+
+## m2c RESULT (2026-07-05, now WORKING — junctioned main's tools/m2c into worktree)
+Run: `wsl bash tmp/run_m2c.sh` (m2c -t mipsel-gcc-c --valid-syntax -f marionation_Exec).
+Faithful structure revealed → tmp/vMC.c is the direct transcription. Findings:
+- **arg0 is used DIRECTLY** (`if (arg0 != 0)`), NOT staged. => the session-7 `aa=a0`
+  staging diagnostic is UNFAITHFUL (confirmed cheat, not the original). Drop it.
+- arg1 gets TWO copies (var_a1 block1 / var_a1_2 block2); block1 checks arg1, block2
+  checks the copy — candidate.c ALREADY matches this (dst/dst2). Not the lever.
+- Outer loop = compound `||` timeout condition + `v0_2` flag + `v0=-1` default gated
+  by `if(v0_2==0)`. Target holds all 3 idx regs (s2/s6/s3) => STORED pointers right,
+  m2c's field-style is a decompiler artifact (confirms candidate).
+- **Direct transcription vMC = masked 49 (WORSE than candidate 30)**, arg0→s5 arg1→s1.
+  The candidate's goto structure beats raw m2c; the compound-`||` does NOT fix arg0.
+=> m2c did not unlock the match. candidate.c (masked 30, goto structure, stored
+  pointers) remains the best honest base. arg0→s7 still unreproduced by honest C.
 
 ## Scheduling residuals (the masked-30, independent of registers)
 1. do_timeout pair-swap: `sll a0; addu v0,v0,tbl` order (idx 56/57).
@@ -71,9 +85,15 @@ is the most likely lead — m2c was NOT runnable this session (not installed; ar
 - tmp/genprobe.py = batch variant generator/prober. tmp/ledger3.py, reconcile.py.
 
 ## Next session
-1. Apply candidate.c, confirm sandbox==30 (honest floor). vM3 is a DIAGNOSTIC only.
-2. Get m2c running (mips_to_c) on asm/funcs/marionation_Exec.s — read var_a0/var_a1
-   handling + the `||` compound loop condition; likely the natural mechanism.
-3. Attack arg0 ll (78→>101) HONESTLY so it prologue-saves to s7 without a copy.
-4. Knock down the scheduling residuals (saved-stage is the easy sanctioned one).
-5. If staging turns out to be the only path: invoke cheat-reviewer BEFORE relying on it.
+1. Apply candidate.c, confirm sandbox==30 (honest floor). vM3/staging = confirmed
+   UNFAITHFUL cheat (m2c proves arg0 is direct); do NOT resume from it.
+2. m2c is junctioned (tools/m2c) + tmp/run_m2c.sh works; the structure is fully
+   extracted above — no need to re-run unless probing a variant.
+3. The crux is narrow: arg0 (used once, direct) has flow ll=78 in EVERY structure
+   tried (candidate, m2c, vMC) but target needs >101 (→s7). Next ideas UNTRIED:
+   (a) directed permuter from candidate.c (clean base, insn-count-matched) —
+   automated search for the livelen perturbation; vet finds for cheats.
+   (b) instrument WHY flow gives arg0 ll=78 (BB2 flow.c reg_live_length walk) vs
+   what target's structure would give — the gap is one specific CFG/live-set detail.
+4. Knock down scheduling residuals independently (saved-stage via sanctioned v0 reuse).
+Infra note: setup_worktree.ps1 should junction tools/m2c (main has it; worktrees don't).
