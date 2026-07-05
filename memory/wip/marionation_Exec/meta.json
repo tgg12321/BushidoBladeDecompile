@@ -24,6 +24,14 @@
    "floor_was": 4,
    "floor_now": 4,
    "note": "floor unchanged; next: (i) BB2_DBR_DEBUG per-pass fill trace on the real candidate, (ii) compose h1+h2 minis with J-lifecycle variants, (iii) finish relax 4030-4120 deleter catalog, (iv) deferred jump-around-jump inversion probe"
+  },
+  {
+   "date": "2026-07-04",
+   "git_head_at_measurement": "6ca7b7aa",
+   "lever": "SESSION 6b - round-5 battery (tmp/mar_trigger_gen5.py): r5d/r5c reproduce the EXACT target arm-2 shape [beqz->after; BARE SLOT; sb; la; move; beqz a1; li 7] in natural C via an arm-head label with a second referencer (zero-width label un-owns the fall-through thread; steal refused in both passes). Relax deleter catalog COMPLETED (3866 next-active delete / 3876 + 4080 invert-around-bare-j deleting the j / 3913 SWAP / 3956 slot-emptying / 3992+4002 redundancy mint / 4031 filled-to-next inline re-emit / 4067). Per-pass fill trace on the real TU (tmp/mar_pass_trace.py): pass-2 retries real (56 branches multi-attempted, 36 wins). LOAD-BEARING CORRECTION: the 3992 redundancy-mint chain is in relax's filled-SEQUENCE-only section (3946 guard) - unfilled beqz never reaches it, so label-refusal and the mint cannot compose naively. Referencer-lifecycle constraint set fully mapped; every single-mechanism byte-free death collapses to needing a pass-2-only steal/adjacency (open construction).",
+   "floor_was": 4,
+   "floor_now": 4,
+   "note": "floor unchanged; region-3 reduced to ONE well-posed problem: a referencer to the arm label that dies byte-free in pass-2 relax (or the filled+slot-emptying mint route). Four concrete probes queued in notes.md."
   }
  ],
  "reviewer": {
