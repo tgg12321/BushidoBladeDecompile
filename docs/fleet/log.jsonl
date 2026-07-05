@@ -2319,3 +2319,4 @@
 {"ts":"2026-07-05T22:42:50.5937345Z","kind":"lane-cycle","role":"blocked-worker","outcome":"blocked","func":"func_80045878","lane":"fleet-blk"}
 {"ts":"2026-07-05T23:00:38.0784893Z","kind":"merge-gate-failed","reason":"oracle-gate-failed","func":"func_80068D88"}
 {"ts":"2026-07-05T23:09:12.6055005Z","kind":"lane-cycle","role":"blocked-worker","outcome":"blocked","func":"func_80045878","lane":"fleet-blk"}
+{"ts":"2026-07-05T23:41:58.1534301Z","kind":"merge-gate-failed","reason":"oracle-gate-failed","func":"func_800651F0"}
