@@ -78,3 +78,56 @@ My strong recommendation: (a). This is consistent with the func_8007C97C escalat
 
 == Files inspected this session ==
 src/code6cac_c_mid.c:905-1206 (motion_SetMotion body), asm/funcs/motion_SetMotion.s, regfix.txt:2483-2484, tools/gcc-2.7.2/global.c:600-625 (allocno_compare formula), tools/gcc-2.7.2/jump.c:1900-2535 (jump_optimize cross-jump invocation + find_cross_jump + do_cross_jump), memory/wip/motion_SetMotion/{meta.json,notes.md,candidate.c}, .claude/rules/{no-new-park-categories,no-compiler-divergence,inline-asm-policy,register-alloc-pure-c,cross-jump-store-tail-merge,cross-jump-call-merge,difficult-is-not-impossible,review-discipline-before-commit,inline-asm-injection,lost-codegen-insert-cheat,codegen-technique-index}.md, memory/project/register-alloc-deep-dive.md, memory/wip/func_8007C97C/meta.json. Empirical: `& tools/wteng.ps1 fleet-adj sandbox motion_SetMotion --disable all` (score 10) + isolated BB2_ALLOC_DEBUG on a pin-free copy via `tmp/gccdbg/cc1`. No worktree src edits attempted — no lever I could derive preserves both binary and policy.
+- func_8001F938 — NOVEL technique, needs your SOTN sign-off (NOT auto-merged). Rationale: POLICY QUESTION FOR OWNER: is 'unconditional dual-typed read of the same address' a sanctioned SOTN-family construct in this project?
+
+=== Why this cannot be self-resolved autonomously ===
+
+A prior 2026-06-15 cheat-reviewer FAILed an unconditional dual-typed read form for this function (`s32 probe = *((s16*)(arg0+0x270)); s32 v = *((u16*)(arg0+0x270));`), rationale: 'A single variable with one load would produce identical program semantics. The split exists to produce distinct RTL nodes... Not on the SOTN-accepted list. Tests 1 (semantic purpose) and 2 (human-programmer) both fail.' The FAILed form was banked at memory/wip/func_8001F938/rejected/dual-type-probe-load.c.
+
+My prior fleet-adj ruling attempted to distinguish a new spelling (`u16 raw_u16 = (u16)p270[0]; if (p270[0] >= 4) raw_u16 = 3;` — same-pointer s16 access + narrow u16 destination) as a fresh sanction based on (i) 'narrow u16 destination has distinct semantic role for the shift' and (ii) 'kind_full split is sanctioned split-init-accumulation.' The subsequent cheat-reviewer REJECTED that ruling with: 'The +0x270 dual-typed read is a NEW SPELLING of the dual-typed-read-at-same-address construct... the kind_full split is also bare codegen-steering. The Adjudicator may NOT self-resolve it against a prior reviewer FAIL via a cosmetic spelling change.' The reviewer's directive was explicit: EITHER (a) surface the policy question to the user for explicit sanction, OR (b) find a non-dual-read lever, OR (c) park with the explicit policy question recorded.
+
+On re-examination the reviewer is correct: for values fitting in u16 (which the +0x270 field always does — the ternary clamps at 4), `((s16*)p)[0] >= 4` and `(u16)((s16*)p)[0] >= 4` are semantically identical. Neither variable has a distinct program-logic role; the split exists to influence GCC's memory-access RTL. Per no-new-park-categories.md (2026-06-01 policy): 'If you find yourself drafting any code construct whose ONLY purpose is to change GCC's analysis (without that purpose appearing in the emitted output), you are drafting a cheat — regardless of whether the existing detector recognises the specific syntax.'
+
+=== Why option (b) — non-dual-read lever — is likely exhausted ===
+
+The WIP notes.md documents a 41-variant sweep (2026-06-15 session):
+- Single-read variant (`s32 v = *((s16*)(+0x270)); if (v>=4) v=3;`) scored 8, build_insns=104. Removes too many instructions vs target's 107.
+- Volatile-qualified u16 read scored 5 (adds unrelated work).
+- Two-pointer alias (`const s16 *p_s; const u16 *p_u;`) — GCC 2.7.2 CSE still merges.
+- Memory union at +0x270 scored 4 (no improvement over baseline).
+- Shift-inside-each-arm forms scored 4-5; `3 << 16` always folds to `lui`.
+
+The target asm at .L8001FA60 consecutively emits `lh $v0, 0x270($a0)` and `lhu $v1, 0x270($a0)` — BOTH unconditional, same address, different sign types. There is no single-read C construct in GCC 2.7.2 that produces both `lh` AND `lhu` of the same address; if a single-read C form is the standard, this function structurally cannot close in pure C under this toolchain and belongs in canonical-asm authorization (which I am NOT authorizing here — hand-coded-asm signals are not established for this function, see below).
+
+=== Why option (c) — park with policy question — is what this outcome is ===
+
+HEAD's current pure-C body for func_8001F938 ALSO uses a dual-typed read at +0x270 (in guarded-ternary form: `s32 probe = *((s16*)(...)); s32 raw = (probe<4) ? *((u16*)(...)) : 3;`) — but that emission requires 13 regfix rules to paper over the actual bytes GCC emits. If the policy question resolves 'dual-typed-read IS a cheat', HEAD's body is ALSO structurally suspect (13 rules of coverage, not clean pure-C). If the policy resolves 'dual-typed-read is sanctioned for this specific structural shape', the rejected v36 form (or my rejected u16-destination form, or some kin) closes with 0 rules. Either resolution has architectural consequences beyond this one function.
+
+=== The specific question for the owner ===
+
+Is the dual-typed-read-at-same-address construct — where GCC's own CSE would otherwise merge the reads and the second read exists purely to force a second memory access at the RTL level — a SANCTIONED SOTN-family technique in BB2? Specifically:
+
+(1) Unconditional dual-typed read: `T1 a = *(T1*)p; T2 b = *(T2*)p;` where a and b hold semantically-equivalent values (differing only in sign representation) and both are used downstream. If YES, function closes with the v36 form (rejected/dual-type-probe-load.c), retiring 13 rules.
+
+(2) Guarded-ternary dual-typed read: HEAD's `s32 a = *(s16*)p; s32 b = (a<4) ? *(u16*)p : 3;` form. Currently in main, 13 rules retained. If NO, HEAD's body is retroactively a cheat.
+
+(3) Neither variant sanctioned — dual-typed-read is a cheat by any spelling. Then this function needs a fundamentally different approach: either an untried C lever (WIP 41-variant sweep suggests limited remaining space, but not proven exhaustive), or canonical-asm authorization for the +0x270 ternary region. I have NOT established hand-coded-asm signals for this function (no whole-body S1/S2/S6 evidence run at STRONG tier); the target has one small no-C-form region rather than whole-function hand-coded structure, so blanket canonical-asm authorization is unlikely to be right without further evidence.
+
+=== Why I am not ruling myself ===
+
+My role permits ruling 'sotn-family:<name>' ONLY when the family is ALREADY on the frozen sanctioned list. `split-read-defeats-hoist` (which is duplicate-read into branch ARMS via duplication) is on that list; unconditional dual-typed read at same address is NOT. Minting a new family requires the owner's sign-off per standing policy (no self-sanctioning). A prior reviewer FAILed the construct and directed me explicitly not to self-resolve via cosmetic re-spelling. Ruling 'go-back' with 'find a different C lever' is not honest either: the WIP's 41-variant sweep is substantial and no clear untried candidate remains after re-reading it (though 'more search' is always possible in principle). The honest ruling is 'needs-owner': surface the policy question, park pending Trenton's resolution.
+
+=== State ===
+
+- Worktree ..\bb2-worktrees\bb2-work-fleet-adj: clean on HEAD (only metrics/events.jsonl modified). No src/regfix edits authored this cycle.
+- WIP memory/wip/func_8001F938/ intact with candidate.c, rejected/dual-type-probe-load.c, notes.md (unchanged from 2026-06-15 checkpoint).
+- No commit, no branch mutation, no queue action taken.
+
+=== Recommended owner-review inputs ===
+
+- memory/wip/func_8001F938/notes.md (the 41-variant sweep + policy question)
+- memory/wip/func_8001F938/rejected/dual-type-probe-load.c (the FAILed v36 form)
+- .claude/rules/no-new-park-categories.md 'Cheats by any spelling' section (the policy)
+- .claude/rules/split-read-defeats-hoist.md (the CLOSEST sanctioned family — is dual-typed at-address a legitimate extension of it?)
+- 2026-06-15 cheat-reviewer FAIL rationale (in the WIP)
+- 2026-06-22 cheat-reviewer REJECTED-my-ruling rationale (in the feedback attached to this task)

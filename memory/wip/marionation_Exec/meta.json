@@ -4,52 +4,59 @@
  "scores": {
   "head_floor": 56,
   "candidate_floor": 4,
-  "metric": "sandbox --disable all (masked) \u2014 rotation-blind here; the real state is the disposition table in notes.md. Full SHA1 after retire-all-42 is the only end gate.",
+  "metric": "sandbox --disable all (masked). candidate.c = mh5 (restored after layer-1 FAIL on the iq3 form). The iq3 form (masked 6, full s-web seated, structurally-correct basin) is measured and banked under rejected/cross-symbol-fake-plus-double-split.c PENDING USER RULINGS on its two constructs; if sanctioned it supersedes mh5 (whose 4 is a wrong-basin mirage). Full SHA1 after retire-all-42 is the only end gate.",
   "build_insns": 178,
   "target_insns": 179
  },
  "sessions": [
   {
-   "date": "2026-07-04",
-   "git_head_at_measurement": "ddfe526d",
-   "lever": "SESSION 6F (ultrathink #2) - THE O1 FRONTIER: C order [t0load; pp; v0ld; v0shl; a5; t0mul; t0add] (t0 chain last) produces the PERFECT pair order at masked 8 = pure v1/a0 qty exchange (6) + region-3 (2). Full qty arithmetic extracted (QTYDBG, marionation cluster isolated from the twin's by per-function segmentation): addr-109 (b16d20r2)->v0, t0-sll-111 (b18d24r2)->v1, arg5-104 (b20d26r2)->a0; comparator = floor_log2(refs)*refs*size/span DESC (local-alloc.c qty_compare); 111-vs-104 is an EXACT tie broken by qty/birth order. Target needs 104 first. KEY INSIGHT: qty birth order = sched1 output order while emitted bytes = sched2 output (sched2 re-sorts by downstream priority, sll(3) > lw(2), restoring byte order regardless) => the search target is any form whose SCHED1 stream has lw-before-sll; the win measures as masked 2. Measured dead in the o1 basin: staging stages (cse copy-propagates single-set sources pre-alloc), add-then-subtract stale-refs vehicles q15-q18 (refs properly canceled - iq's stale-refs did not reproduce), t0load-late orders (cost lbu@51), partial-chain moves (collapse to mh5). Twin cross-check: twin's g3 = the same frontier from the other side (twin ledger p113/p100 arithmetic matches).",
-   "floor_was": 4,
-   "floor_now": 4,
-   "note": "committed floor unchanged (o1 not committed: masked 8 > 4; it becomes the better base the moment the qty flip is found, landing at 2). Next: BB2_SCHED read of the o1 sll/lw priorities+luids to derive the lw-first form analytically; permuter PERM_ sweep with BASE = o1. Region-3 unchanged (Window Theorem; source-shape hole)."
-  },
-  {
    "date": "2026-07-05",
-   "git_head_at_measurement": "aa8cad24",
-   "lever": "SESSION 6G - THE HALF-FLIP: launch mechanism read from source (sched.c birthing_insn_p 2496 + adjust_priority 2566: INSN_PRIORITY=max iff dest is a LIVE SINGLE-SET pseudo; n_deaths always 0 per the stripped-notes comment). Staging the t0-shift through a MULTI-SET variable kills its launch: s4 (o1 order + `status = t0 << 2; t0 = (s32)((u8*)tbl_125c + status);`) = masked 7 with the ARG5 SIDE OF THE EXCHANGE FULLY FIXED (lw->v1, addu-v0, sw all match). Remaining in s4: the t0 chain lands a3/s0 instead of in-place-a0 because (a) status/cnt/i are GLOBAL pseudos with fixed regs (the stage must be a BLOCK-LOCAL multi-set - none exists; fresh 2-set local pending combine-refs-staleness check), and (b) a0 is blocked by the call's fmt-la scheduling before t0's last use - the OLD ledger's fmt-la-late/chain4=a0 hypothesis is now THE final region-1 obstacle. Bonus: the v0-staging FAKEs are byte-INERT in the o1 world (r1-r4 identical) - removable at commit time. Also measured dead: shift-stages via cnt(11)/i(26)/v0(12); new_var/new_var3 stages catastrophic (the mask FAKEs are load-bearing).",
+   "git_head_at_measurement": "4350b019",
+   "lever": "SESSIONS 6L-6N - THE M2C-TAIL BREAKTHROUGH CHAIN, landed at masked 6: (1) full m2c read gave the original's control shape; the TAIL transplant (arm-1 `goto done` into arm-2's if-body; arm-2 order [sb; dst2=a1; src; i]; after-code fall-through `v0=0; if(a0) return v0; goto loop`) FIXES the region-1 v1/a0 exchange the two impossibility theorems proved unreachable by local perturbation (t0 chain in-place in a0, lbu a0@51). (2) ALLOCDBG ledger drill (tmp/mar_reb_drill.py) turned the s-web into arithmetic: FAKE anchor = +2 refs to its base pseudo; iq = +2; p78 needs refs 8-9 (pri in (952,1800], L=150, arg1 fixed at 952). (3) F19C0-FAKE rebased to idx_1494 (+2 -> p76 9/1800) + y1 saved-split (p82 3636) + IQ3 (`idx_1496 = idx_1494; +=1; +=1;` - 9 refs SURVIVE combine, one addiu emitted) -> p78 9/1800 ties p76, tie broken allocno-ascending (76<78) -> ALL SIX s-seats + all temp regs correct. Measured dead: idx_1495-fake rebased to idx_1494 (FOLDS - cse traces la constants; anchor must be opaque (tbl is mem-loaded); F19C0-on-1494 survives only because the symbol diff spans sections), tmp/v0 saved-splits (rotate web, 23/24), dst-test (CSE'd back, no-op), tail-end branch-sense respells (jump.c canonicalizes, all 16), both permuter finds 210-1/220-1 (int+ptr arith scales x4).",
    "floor_was": 4,
-   "floor_now": 4,
-   "note": "committed floor unchanged; best experimental form s4 = masked 7 (uncommitted). REGION-1 CLOSING COMBO identified: o1 + block-local 2-set shift-stage + fmt-la-late arg spelling => t0 in-place a0 => masked 2. All harness pieces exist (tmp/mar_o1_*.py, mar_s4_diff.py)."
-  },
-  {
-   "date": "2026-07-05",
-   "git_head_at_measurement": "e5aa2dd4",
-   "lever": "SESSION 6H (ultrathink #3) - THE BASIN CORRECTION: dumped the actual target printf-call window (bytes 1070-10bc). Ground truth: t0 chain IN-PLACE in a0 (lbu a0 / sll a0,a0 / addu a0,a0,s5 / lw a3,0(a0)); the fmt-la is LAST (10b4, a hard-a0 set AFTER t0's death - no staging needed, and fmt staging is cse-inert anyway since the source is constant); 11DC access via the $at assembler macro (one RTL insn); 11D5 macro reuses v0's second qty segment. CONSEQUENCE: mh5's fresh-temp basin is structurally wrong - its masked 4 is a register-masked mirage; the true basin = in-place C spellings (`t0 <<= 2; t0 += (s32)tbl_125c;` - NOT `*=`, whose mult path synthesizes the launching temp). ip1/ip2 (o1 order, in-place) = masked 9 with the exact target SHAPE; residual = the v1/a0 exchange + the 56/57 order. THE FINAL EQUATION: first-fit gives t0->a0 only if v1 is occupied at t0's allocation => arg5 must allocate BEFORE t0's one-qty => pri(arg5) > pri(t0): t0 ~6refs/span16 = 0.75 vs arg5 2refs/span5 = 0.4. Levers queued: t0-qty SEGMENT REBIRTH (check local-alloc reg_qty rebirth when a multi-set pseudo's value fully dies mid-block - the v0/11D5 reuse proves per-segment qtys exist for SOME shapes), t0 refs/span reduction, +1 surviving arg5 ref (reg-sourced only), and the 56/57 order via C-luid placement of the t0-shl between v0shl and a5.",
-   "floor_was": 4,
-   "floor_now": 4,
-   "note": "committed floor unchanged (mirage caveat noted!); in-place basin ip1/ip2 = masked 9 (uncommitted) = the structurally-correct base. Next session: the allocation equation levers + [t0load; pp; v0ld; v0shl; t0shl; a5; t0add] order probe. If region-1 lands at 2, region-3 (Window Theorem) is the sole remainder."
+   "floor_now": 6,
+   "note": "floor number ROSE 4->6 but the state strictly improved: the 4 was a wrong-basin mirage; 6 has every register right. Remaining = 3 named residuals (2 lines each): 56/57 sll/addu pair, 86/88 y1 load shape, 149 check2-slot NOP (+arm-2 move/sb order + tail beqz-s7 inside the shift window). Layer-1 cheat-review of the new candidate: rev-iq3 agent (pending at commit time; techniques identical to the owner-sanctioned set + split-init iq3)."
   }
  ],
  "reviewer": {
-  "verdict": "FAIL->OWNER-SANCTIONED",
-  "date": "2026-07-03",
-  "evidence": "Layer-1 FAILed the v0-idx staging twice (live store fits no existing carve-out; scheduler-pass mechanism outside the LICM/RA variable-reuse scope). Surfaced to owner with the SOTN census (fake-reuse-of-i in 6 matched cutscene files + menu.c j-staging + clock_room primIndex). Owner sanctioned the family 2026-07-03; new rule .claude/rules/staged-value-reused-variable.md codifies the bounds (live value, existing variable, provably-dead prior value, full FAKE annotation, lever-exhaustion). Layer-2 review still required at completion time."
+  "verdict": "FAIL",
+  "date": "2026-07-05",
+  "evidence": "Layer-1 (rev-iq3) FAILed the iq3 candidate on TWO constructs, both NEEDS_USER: (1) the cross-symbol pointer-derivation FAKEs (idx_1495 tbl-derived; D_800F19C0 reg-relative/rebase) - reviewer finds they fit NO existing sanctioned family (not defeat-combine-symbol-fold, not pointer-alias) and were never independently sanctioned (the 2026-07-03 owner ruling covered ONLY staged-value-reused-variable; the cross-symbol FAKEs rode along unreviewed since before d9e490c0 - NOTE this applies retroactively to the restored mh5 candidate.c too, which carries the same family); (2) iq3's `+= 1; += 1;` double-split - over-generalizes the PROVISIONAL split-init-accumulation sanction (memo explicitly forbids adjacent spellings without a new ruling); its stated purpose is refs/allocno-priority inflation. Both constructs are LOAD-BEARING (measured: without #1 the head folds, masked 30 all subsets; without the double-split p78 stays at 7 refs/933 and the web loses two seats, masked 16 vs 6). PASSED: printf-block v0/pp staging (staged-value-reused-variable + pointer-alias), saved &= 3 split, goto control shape. Surfaced to owner 2026-07-05; iq3 form banked under rejected/cross-symbol-fake-plus-double-split.c pending rulings.",
+  "prior": "2026-07-03 FAIL->OWNER-SANCTIONED covered staged-value-reused-variable only (see .claude/rules/staged-value-reused-variable.md)."
  },
  "remaining_gap": {
-  "summary": "Two residuals: (1) trio tail {arg0 s5 / tbl s7 -> swap to s7/s5}: small livelen deltas (tbl needs <152, arg0 <197-pri), expect movement from the final printf shape + the verified t1 tbl-chain (+1 ref, byte-free). (2) printf-block chain4 must color a0 (currently v1): needs fmt-la late in sched1 + val5/11D5 range overlap \u2014 x3 stmt-order/local-vs-inline sweep is the next move; lbu order + tail micro-perm follow automatically via sched2 anti-deps.",
+  "summary": "Three 2-line residuals on candidate.c (masked 6): (1) printf 56/57 sll/addu order (sched1 C-luid of the t0-shl; launch-law archive applies); (2) y1's merged load (need saved>=3refs with the load in a separate pseudo - every user-temp spelling rotates the web; unsolved); (3) check2-beqz slot NOP + arm-2 [sb before move] + tail beqz-s7 (region-3 in the NEW world - our taken-path has a1 dead so the eager fill legally takes move a1,s4; original likely had a post-jump2-minted target label (two identical j/move tails) or an arm-2 shape that kept the move unavailable). Fill trace on the iq3 form is the next diagnostic.",
   "rule_count_at_head": 42,
-  "rules_required_for_full_match": "42 (5 rotation swaps + 7 prologue + 7 epilogue renames fall with the register story; 8 printf substs + reorder fall with chain4=a0; 11 tail rules fall with u13's cascade \u2014 verify each against bytes at assembly time)"
+  "rules_required_for_full_match": "42 (all fall together when masked 0 lands; verify each against bytes at retire time)"
  },
  "next_hypotheses": [
-  "x3 sweep: extend tmp/sweep_mar_printf.py to print chain4's disposition; sweep {t0,arg5,p4} stmt orders x {F19C0 early local} x {11D5 local position} x {arg5 addr-local}; win = chain4 a0.",
-  "Then: re-measure trio (probe_mar_disp), close with t1 chain if needed; assemble final form (u13+w9+winning block + declare new_var/new_var3); retire all 42; full SHA1; dual review; queue done.",
-  "Fallback: instrument sched.c adjust_priority for fmt-la's pri; or check which of the 42 rules retire under chain4=v1."
+  "BLOCKED ON USER RULINGS (surfaced 2026-07-05): (a) the cross-symbol pointer-derivation FAKE family - new technique needing its own evidence-based ruling (affects mh5 candidate retroactively too); (b) extending the provisional split-init sanction to the double `+= 1; += 1;` spelling (or finding a compliant 9-ref spelling - single-split iq measures only 7 refs/933, insufficient).",
+  "If sanctioned: resume from rejected/cross-symbol-fake-plus-double-split.c (masked 6). Residual-3 (check2-slot NOP): mechanism pinned (everything-live at taken label reproduces target exactly, knob fixpoint {462,101,557}); hunt = the C tail shape making find_basic_block fail; all local respells canonicalize back (measured). Next diagnostic: standalone mini of the exact new-world tail bisecting label-mint/replacement events (jump1 follow_jumps refusals, relax redirect+get_label_before).",
+  "56/57 pair: sched-priority-driven, NOT C-order-driven in this world (P1/P2/P3 orders measured 10/6/6 - no movement); needs a new lever class.",
+  "86/88 saved shape: every user-temp spelling drops saved to 2r/952 and rotates the web (measured); unsolved.",
+  "Permuter tmp/perm_mar_iq3 (base 230) + tmp/perm_csmd4 grinding; verify every find by splice+sandbox (weighted-metric misjudgments: 220-1 type no-op, 210-1 status-staging rotation)."
  ],
  "rejected_forms": [
+  {
+   "form": "R_reb_y1_iq3 (rejected/cross-symbol-fake-plus-double-split.c)",
+   "score": "masked 6 - the true frontier measurement",
+   "reason": "layer-1 FAIL 2026-07-05: cross-symbol FAKE family unsanctioned + iq3 double-split exceeds the provisional split-init sanction. NOT a dead form - blocked on user rulings; resume from it if sanctioned."
+  },
+  {
+   "form": "idx_1495 FAKE rebased to idx_1494 (bothnines M1/M2)",
+   "score": "25 (raw 124)",
+   "reason": "cse traces idx_1494 to its la constant and folds the cross-symbol expression; head shatters. FAKE anchors must be opaque (mem-loaded) or span sections."
+  },
+  {
+   "form": "saved-load via fresh temp or v0-var (tmp0/v0 splits)",
+   "score": "23-24",
+   "reason": "any new pseudo in the saved load rotates the s-web (allocno order/refs shift)."
+  },
+  {
+   "form": "tail-end branch-sense respells (rev/chk/chk2) + dst-test",
+   "score": "16 (no change)",
+   "reason": "jump.c canonicalizes the branch sense; CSE copy-propagates dst back to a1 - refs unchanged."
+  },
   {
    "form": "outer cycle as real do-while (w-full-loop)",
    "score": "n/a",
@@ -59,28 +66,16 @@
    "form": "u8 t0 split (w10/w11/v_k)",
    "score": "lbu sinks",
    "reason": "QI-load + zext-at-use; combine merges AT THE USE -> chain birth late -> dense qty -> v0/v1."
-  },
-  {
-   "form": "all-locals target-order (w12)",
-   "score": "4/14",
-   "reason": "11D5 local hoists its lbu to pos2 and displaces the a1 load."
   }
  ],
  "prior_sessions_summary": [
-  "2026-07-04 (9a53ed26): SESSION 6c/6d - the Window Theorem (region-3 byte-free space closed, every clause sourced/measured); check2 trace validates the model; forced_labels/LABEL_PRESERVE closures; hole must be source-shape-dependent.",
-  "2026-07-04 (6ca7b7aa): SESSION 6b - r5d/r5c reproduce the exact target arm-2 shape + NOP in minis (arm-head label, 2nd referencer); relax deleter catalog completed; pass-2 retries measured real; 3992-mint is filled-SEQ-only (load-bearing correction).",
-  "2026-07-04 (9c2f17aa): SESSION 6 - empirical trigger-discovery executed; natural-C steal refusal CONFIRMED (mid-thread label, h1); dbr two-pass timing calculus; 5b own_fallthrough closure overturned; permuter finds all rejected.",
-  "2026-07-04 (4a3afb71): SESSION 5 - region-3 mechanism decoded (everything-live refusal, BB2_ALLLIVE_LABEL knob-proven 179/179); ref-bump arithmetic verified (u3+sv+iq+ix = exact s-alloc, no byte-clean instantiation); d1/d2 952-tie transposition decoded.",
-  "2026-07-03 (d9e490c0): SESSION 4c - twin h5 mirror lands identically; region-1 down to the same {sll4<->addu5} pair; masked 4 = pair-2 + region-3.",
-  "2026-07-03 (16a40185): SESSION 3/4a - twin-campaign transfer opened (cpu_side_move_dir_4 mechanism map applies to region-1); M1 double--1-holder exploration masked 30, not better.",
-  "2026-07-03 (6999016b): SESSION 4b - owner sanctioned staged-value-reused-variable after the SOTN census; candidate = masked-4 v0-idx form; floor 6 -> 4.",
-  "2026-05-29 (register-alloc-deep-dive): rotation map established; clean-target permuter plateau 1125 over 16.8k iters.",
-  "2026-07-01 (plan session, c6d96b06): allocno formula reproduces baseline exactly; new_var UNDECLARED at :555 discovered (Makefile pipe swallows cc1's error-recovery exit; bytes unaffected).",
-  "2026-07-02 session 1 (3f816004): t1 tbl-chain proven byte-free (tbl s6->s5 at 141 insns); global.c tie-break verified (double-truncate, allocno-ascending); reg_n_refs += loop_depth confirmed; full target register map read from bytes.",
-  "2026-07-02 (994db7ff): SESSION 2 \u2014 t3 STRUCTURAL DISCOVERY: reshaping both copy arms to target's byte order (dst = a1; src = (u8*)&...; if (dst != 0) {copy}) lands FIVE of eight regis",
-  "2026-07-02 (7a5c58f9): SESSION 3 \u2014 check-mask mechanics CRACKED + 6/8 registers (probe u7->u11). Opaque-constant masks (new_var/new_var3) fold to andi IMMEDIATE via local-alloc update",
-  "2026-07-02: SESSION 4 \u2014 u13 block-local loop temps -> TAIL CASCADE (check->a2, both `move v0,a2` returns, src/i/dst/bb all target; i",
-  "2026-07-02: SESSION 9 \u2014 REGION-2 SOLVED (score 8 -> 6): dst split into per-arm dst/dst2 + arm-1 dst=a1 FIRST INSIDE the guard. Mecha"
+  "2026-07-05 (fba16c2a..4350b019): SESSIONS 6I-6K - local-alloc/global.c source reads (qty_compare, combine_regs, find_free_reg, allocno pri formula); Second Impossibility Theorem (old-tail target allocation unreachable from two plain local qtys - RESOLVED by the m2c tail changing the landscape); in-call hybrids h1-h4/m1-m5 dead; ip1 qty inputs machine-verified.",
+  "2026-07-05 (e5aa2dd4): SESSION 6H - basin correction: target printf window dumped; t0 chain IN-PLACE in a0, fmt-la LAST; mh5's 4 = mirage; in-place ip1/ip2 masked 9 = correct shape.",
+  "2026-07-05 (aa8cad24): SESSION 6G - launch law read (sched.c birthing_insn_p): live single-set pseudo launches; `*=` synthesizes launching temp, `<<=`/`+=` in-place; s4 half-flip masked 7.",
+  "2026-07-04 (ddfe526d/9a53ed26/6ca7b7aa/9c2f17aa/4a3afb71): SESSIONS 5-6F - Window Theorem (region-3 byte-free space closed in the OLD tail, every clause sourced); check2 trace validates model; o1 frontier + qty arithmetic (QTYDBG); everything-live refusal knob-proven; d1/d2 952-tie decoded.",
+  "2026-07-03 (d9e490c0/16a40185/6999016b): SESSIONS 3-4c - twin h5 mirror; owner sanctioned staged-value-reused-variable (SOTN census); floor 6->4 (mh5).",
+  "2026-07-01/02 (c6d96b06/3f816004/994db7ff/7a5c58f9): allocno formula reproduced; t1 tbl-chain byte-free; global.c tie-break verified (double-truncate, allocno-ascending); t3/u7-u13 structural discoveries (copy arms, check-mask andi mechanics, tail cascade); REGION-2 SOLVED.",
+  "2026-05-29: rotation map established; clean-target permuter plateau 1125 over 16.8k iters."
  ],
  "memory_notes": []
 }

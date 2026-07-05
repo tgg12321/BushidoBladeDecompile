@@ -2288,3 +2288,5 @@
 {"ts":"2026-06-29T15:26:29.7440364Z","kind":"reaudit-clean","func":"func_80066EF4"}
 {"ts":"2026-06-29T17:29:31.5075181Z","kind":"merge-gate-failed","func":"func_8006B92C","reason":"oracle-gate-failed"}
 {"ts":"2026-06-29T17:38:17.8812250Z","kind":"lane-cycle","outcome":"needs-decision","role":"blocked-worker","lane":"fleet-blk","func":"func_8001F938"}
+{"ts":"2026-07-05T09:08:14.5772131Z","kind":"overseer-decision","incident":"drill: simulated incident (main is actually green)","decision":"resume","report":"Drill confirmed as a false alarm: main is green. Oracle rebuild matches byte-for-byte (SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa), HEAD is exactly the last-known-green commit bdd16448, and the only uncommitted changes are a WIP memory note and the metrics log — both non-build-input files that pose no risk to the oracle. Nothing to fix; the fleet can resume immediately. Logged to docs/fleet/incidents.md under 2026-07-05."}
+{"ts":"2026-07-05T09:12:00.7225155Z","kind":"lane-cycle","func":"func_8001F938","role":"adjudicator","outcome":"needs-owner","lane":"fleet-adj"}
