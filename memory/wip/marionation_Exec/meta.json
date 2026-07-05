@@ -11,14 +11,6 @@
  "sessions": [
   {
    "date": "2026-07-04",
-   "git_head_at_measurement": "9c2f17aa",
-   "lever": "SESSION 6 - empirical trigger-discovery protocol EXECUTED (4 mini-batteries, ~35 variants) + jump.c/reorg.c/flow.c source verification. CONFIRMED natural-C steal refusal: a goto-referenced label in check2's fall-through between sb and the move refuses the fill (h1 mini, bare slot = NOP) -- overturns 5b's own_fallthrough closure (labels are zero-width; user labels delete to NOTE_INSN_DELETED_LABEL). Timing calculus established: dbr runs fill+relax TWICE, so refusal scaffolding must survive pass-2 fill_eager and die in pass-2 relax (only deleters: branch-to-next, threading orphans). find_basic_block==-1 requires a POST-FLOW-minted target (every flow-era label is its own basic_block_head -- flow.c verified); relax redundancy-chain (reorg.c 3992-4006) can mint barrier-adjacent at exactly .L812C4 given a re-computed check expression at after_blocks, with byte-free cleanup via delete_insn's label-cascade (jump.c 3509), but is blocked ALONE by pass-1-fill-first (h2 measured). Composite blueprint banked; unsolved slot = the mid-thread label's referencer J must be byte-free. Dead ends measured: &&label dead-take (tree-eliminated, k-battery), all loop/duptail/switch topologies at after_blocks (rounds 1-2). Permuter finds honest-verified: mar6 200-1/2=masked 8, 200-3=masked 5, csmd4 40-2=6 -- ALL REJECTED, mh5 stands.",
-   "floor_was": 4,
-   "floor_now": 4,
-   "note": "floor unchanged; next: (i) BB2_DBR_DEBUG per-pass fill trace on the real candidate, (ii) compose h1+h2 minis with J-lifecycle variants, (iii) finish relax 4030-4120 deleter catalog, (iv) deferred jump-around-jump inversion probe"
-  },
-  {
-   "date": "2026-07-04",
    "git_head_at_measurement": "6ca7b7aa",
    "lever": "SESSION 6b - round-5 battery (tmp/mar_trigger_gen5.py): r5d/r5c reproduce the EXACT target arm-2 shape [beqz->after; BARE SLOT; sb; la; move; beqz a1; li 7] in natural C via an arm-head label with a second referencer (zero-width label un-owns the fall-through thread; steal refused in both passes). Relax deleter catalog COMPLETED (3866 next-active delete / 3876 + 4080 invert-around-bare-j deleting the j / 3913 SWAP / 3956 slot-emptying / 3992+4002 redundancy mint / 4031 filled-to-next inline re-emit / 4067). Per-pass fill trace on the real TU (tmp/mar_pass_trace.py): pass-2 retries real (56 branches multi-attempted, 36 wins). LOAD-BEARING CORRECTION: the 3992 redundancy-mint chain is in relax's filled-SEQUENCE-only section (3946 guard) - unfilled beqz never reaches it, so label-refusal and the mint cannot compose naively. Referencer-lifecycle constraint set fully mapped; every single-mechanism byte-free death collapses to needing a pass-2-only steal/adjacency (open construction).",
    "floor_was": 4,
@@ -32,6 +24,14 @@
    "floor_was": 4,
    "floor_now": 4,
    "note": "floor unchanged; strategy pivoted from construction-search to model-hole-hunting. HOLE-HUNT STEP 1 COMPLETED same session: per-function log segmentation (fingerprint lines; uid spaces repeat per function) shows marionation's trace is model-CLEAN - the mtlr block=0 anomaly was another function; mtlr's recursion (2810-31) only intersects live sets (cannot create refusal). The hole is source-shape-dependent. ALSO measured: r5d-on-real with a 1-insn opaque referencer = masked 45 (183/179) - one condition-read cascades the whole s-allocation (9th s-reg); no referencer condition avoids the delicate pseudos. Permuter base stays mh5; region-1 (the pair) flagged as the softer half to close first."
+  },
+  {
+   "date": "2026-07-04",
+   "git_head_at_measurement": "ddfe526d",
+   "lever": "SESSION 6F (ultrathink #2) - THE O1 FRONTIER: C order [t0load; pp; v0ld; v0shl; a5; t0mul; t0add] (t0 chain last) produces the PERFECT pair order at masked 8 = pure v1/a0 qty exchange (6) + region-3 (2). Full qty arithmetic extracted (QTYDBG, marionation cluster isolated from the twin's by per-function segmentation): addr-109 (b16d20r2)->v0, t0-sll-111 (b18d24r2)->v1, arg5-104 (b20d26r2)->a0; comparator = floor_log2(refs)*refs*size/span DESC (local-alloc.c qty_compare); 111-vs-104 is an EXACT tie broken by qty/birth order. Target needs 104 first. KEY INSIGHT: qty birth order = sched1 output order while emitted bytes = sched2 output (sched2 re-sorts by downstream priority, sll(3) > lw(2), restoring byte order regardless) => the search target is any form whose SCHED1 stream has lw-before-sll; the win measures as masked 2. Measured dead in the o1 basin: staging stages (cse copy-propagates single-set sources pre-alloc), add-then-subtract stale-refs vehicles q15-q18 (refs properly canceled - iq's stale-refs did not reproduce), t0load-late orders (cost lbu@51), partial-chain moves (collapse to mh5). Twin cross-check: twin's g3 = the same frontier from the other side (twin ledger p113/p100 arithmetic matches).",
+   "floor_was": 4,
+   "floor_now": 4,
+   "note": "committed floor unchanged (o1 not committed: masked 8 > 4; it becomes the better base the moment the qty flip is found, landing at 2). Next: BB2_SCHED read of the o1 sll/lw priorities+luids to derive the lw-first form analytically; permuter PERM_ sweep with BASE = o1. Region-3 unchanged (Window Theorem; source-shape hole)."
   }
  ],
  "reviewer": {
@@ -67,6 +67,7 @@
   }
  ],
  "prior_sessions_summary": [
+  "2026-07-04 (9c2f17aa): SESSION 6 - empirical trigger-discovery executed; natural-C steal refusal CONFIRMED (mid-thread label, h1); dbr two-pass timing calculus; 5b own_fallthrough closure overturned; permuter finds all rejected.",
   "2026-07-04 (4a3afb71): SESSION 5 - region-3 mechanism decoded (everything-live refusal, BB2_ALLLIVE_LABEL knob-proven 179/179); ref-bump arithmetic verified (u3+sv+iq+ix = exact s-alloc, no byte-clean instantiation); d1/d2 952-tie transposition decoded.",
   "2026-07-03 (d9e490c0): SESSION 4c - twin h5 mirror lands identically; region-1 down to the same {sll4<->addu5} pair; masked 4 = pair-2 + region-3.",
   "2026-07-03 (16a40185): SESSION 3/4a - twin-campaign transfer opened (cpu_side_move_dir_4 mechanism map applies to region-1); M1 double--1-holder exploration masked 30, not better.",

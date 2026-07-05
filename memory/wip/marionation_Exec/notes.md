@@ -1,16 +1,15 @@
 # marionation_Exec — CANDIDATE MASKED 4 (mh5); region-3: near-total impossibility map ⇒ hunt the model-hole (2026-07-04 s6…s6d)
 
 ## TL;DR
-Floor unchanged (masked 4 = region-1 pair 2 + region-3 2; candidate.c = mh5).
-S6d: THE WINDOW THEOREM (below) — the check2 NOP has NO byte-free pure-C
-construction under the now-nearly-complete reorg model; every corridor
-source-proven or mini-measured dead. The ORIGINAL produced the nop from real
-C ⇒ the model has a hole ⇒ hole-hunt step 1 DONE: marionation's own trace is
-model-clean; the hole is SOURCE-SHAPE-DEPENDENT (different upstream C ⇒
-different fills). r5d (s6b) = the confirmed refusal SHAPE (arm-head label +
-live referencer, exact target bytes) but r5d-on-real measures masked 45 —
-the referencer's one condition-read cascades the allocation. Permuters own
-the search from the mh5 base; region-1 is the softer half to close first.
+Floor: masked 4 (mh5 committed candidate). S6F: REGION-1 IS ONE QTY-FLIP
+FROM CLOSED — the o1 order (t0 chain last) yields PERFECT pair order at
+masked 8 = v1/a0 exchange (6) + region-3 (2); the exchange is an EXACT
+qty-pri tie (arithmetic below) broken by birth order; flip it ⇒ masked 2.
+Region-3: the Window Theorem (s6d) stands — the nop has no byte-free
+construction under the trace-validated model; the hole (which MUST exist —
+the original is compiled C) is source-shape-dependent. r5d-on-real = masked
+45 (referencer cascades allocation) — the label route is closed on the real
+fn. Next: the sched1 lw-before-sll flip (below) closes region-1.
 
 ## THE WINDOW THEOREM (s6d — the impossibility map; every clause sourced)
 Target window [beqz..move] = [sb] only; slot = NOP. One of these must hold
@@ -60,38 +59,41 @@ referencer condition avoids the delicate pseudos (v0/check fold via
 record_jump_equiv fall-side equalities; s-regs all in the 952/933 web).
 
 ## NEXT SESSION (in order)
-1. Permuters own BOTH searches from the mh5 base (r5d-real masked 45 is NOT
-   a seed; region-1 neighborhood exhausted s6e). Directed mode: PERM_ perms
-   over the printf block AND the check2/after_blocks region; honest verify
-   via perm_finds_verify.py; region-3 oracle = bare-slot beqz grep on .s.
-2. Region-1 pair sched trace STARTED (tmp/mar_pair_sched.py): sll=uid116,
-   addu=uid130 in marionation's sched2. BB2_SCHED_DEBUG shows A cluster
-   picking 130 BEFORE 116 at equal pri via higher-LUID tiebreak (= TARGET
-   order!) — but uid collisions across functions (twin shares text/uid
-   layout) make attribution ambiguous. NEXT: segment SCHEDDBG per function
-   (block-dump uid sets) and read marionation's actual pick + which C
-   property sets the luid order — if a picked-cluster really is the twin's,
-   ITS source spelling of the printf block is the transplant donor.
-3. If the Window Theorem also survives fresh eyes: surface to the owner —
-   region-3's evidence (this file) + options: keep hunting the source-shape
-   hole vs a documented-plateau disposition (NOT canonical-asm; the
-   original is compiled C, so a matching source EXISTS — the theorem having
-   a hole is CERTAIN, only its location is unknown).
+1. REGION-1 IS ONE FLIP FROM CLOSED (see o1 frontier below): find the form
+   whose SCHED1 output orders the arg5-lw BEFORE the t0-sll (qty birth
+   flip); sched2 restores byte order automatically. Oracle: masked 2 in the
+   o1 world. Levers left: sched1 launch/tiebreak surgery via BB2_SCHED on
+   the o1 form (read the actual sll/lw priorities + luids), and permuter
+   PERM_ perms over the o1 spelling (BASE = o1, not mh5!).
+2. Region-3 unchanged: source-shape hole hunt / permuter with the bare-slot
+   beqz oracle. If the Window Theorem survives fresh eyes, surface to owner
+   (options: keep hunting vs documented-plateau; NOT canonical-asm — the
+   original is compiled C so a matching source EXISTS).
 
-## Arm-2 transposition: unchanged from s5 (d1/d2 952-tie; ref-bump CLOSED).
-## Region-2 SOLVED — recipe unchanged (in candidate.c)
-
-## Region-1 pair — s6e sweeps: the untried family is now TRIED (all ≥ 4)
-- arg5 VALUE-staging (tmp/mar_arg5_sweep.py, 7 forms): cnt/status/v0-reload
-  stages 8-14 (registers break); addr-var + xor-split fold to IDENTICAL code
-  (still 4). Stmt-order sweep (tmp/mar_order_sweep.py, 8 perms): five tie at
-  4, rest 6-10 — the pair is ORDER-INVARIANT in the mh5 basin (launch
-  priorities, not luid tiebreak). Registers at 49-55 all correct; residual =
-  pure 2-insn sched swap {ours sll a0;addu v0 | tgt addu v0;sll a0} @56-57.
-- Permuter verdicts (s6): 200-1/2 masked 8, 200-3 masked 5, csmd4 40-2
-  masked 6 — all REJECTED. Both remaining gaps are now proven deep-basin
-  walls: the answer needs a DIFFERENT GLOBAL source shape — permuters (mh5
-  base, honest verify via perm_finds_verify.py) own both searches.
+## Arm-2 transposition: unchanged (d1/d2 952-tie; ref-bump CLOSED).
+## Region-2 SOLVED — recipe in candidate.c. Region-1 s6e/s6f state:
+- S6F BREAKTHROUGH — THE O1 FRONTIER: C order [t0load; pp; v0ld; v0shl; a5;
+  t0mul; t0add] (t0 CHAIN LAST) = masked 8 with the PAIR ORDER PERFECT;
+  residual = the v1/a0 qty EXCHANGE (t0 in v1, arg5 in a0) + region-3. The
+  o1 world's alloc data (QTYDBG, marionation cluster = log lines 116-119 of
+  tmp/rtl/marQ.log; segment per function — twin's cluster nearby has the
+  ledger's p113/p100!): addr-temp 109 (b16 d20 r2)→v0; t0-sll-temp 111 (b18
+  d24 r2)→v1; arg5 104 (b20 d26 r2)→a0. Comparator (local-alloc qty_compare)
+  = floor_log2(refs)*refs*size/span, DESC; 111 vs 104 = EXACT TIE → qsort
+  index order (birth) → 111 first. TARGET NEEDS 104 FIRST ⇒ pri(104) >
+  pri(111): +1 surviving ref on arg5, or shorter 104-span, or longer
+  111-span. KEY INSIGHT: qty birth order = SCHED1 output order, but emitted
+  bytes = SCHED2 output — sched2 re-sorts by priority (sll's downstream
+  path 3 > lw's 2 ⇒ sched2 puts sll first REGARDLESS) ⇒ the search target =
+  a form whose SCHED1 stream has lw-BEFORE-sll; bytes self-restore. WIN
+  SHOWS AS masked 2 (o1 world: exchange 6 + region-3 2 → flip = 2).
+- MEASURED DEAD (s6e/f): mh5-basin arg5-staging (7) + orders (8) all >= 4
+  and order-invariant; o1-basin stages (cnt/status/v0/b0/fused) 8-14 or
+  fold-identical (cse copy-props single-set sources); add-then-subtract
+  stale-refs vehicles (q15-q18) fold with refs properly canceled (iq's
+  stale-refs did NOT reproduce); t0load-late (o9-o14) costs lbu@51 (9);
+  o3/o6/o8 partial-chain moves collapse to mh5 codegen.
+- Permuter verdicts (s6): 200-1/2=8, 200-3=5, csmd4 40-2=6 — REJECTED.
 
 ## Target ground truth (asm/funcs/marionation_Exec.s)
 - Regs: status s0, saved s1, i1494 s2, i1496 s3, arg1 s4, tbl s5, i1495 s6,
@@ -105,10 +107,9 @@ record_jump_equiv fall-side equalities; s-regs all in the 952/933 web).
 - Base ALLOCDBG s-order: p82 952 / p76 933 / p78 933 / p73 930.
 
 ## Known gotchas
-- 42 rules index-anchored; end gate = retire-all-42 + full SHA1. Twin csmd4
-  shares text — unique anchors; uid spaces COLLIDE in TU-wide debug logs
-  (segment per function first). Declare new_var/new_var3. d1/d2 reorders
-  flip s-regs via the 952 tie. Knob uids shift with any C change.
+- 42 rules index-anchored; end gate = retire-all-42 + full SHA1. Twin shares
+  text — uid spaces COLLIDE in TU-wide debug logs (segment per function!).
+  Declare new_var/new_var3. Knob uids shift with any C change.
 
 ## Tools (local/gitignored; regenerate from here if lost)
 - tmp/gccdbg/cc1 + cc1_alllive (BB2_DBR/ALLLIVE/ALLOC/QTY/SCHED knobs).
