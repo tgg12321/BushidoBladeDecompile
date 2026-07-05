@@ -94,10 +94,10 @@ if it survives fresh eyes — NOT canonical-asm, the original is compiled C).
   o3/o6/o8 collapse; shift-stages cnt(11)/i(26)/v0(12)/new_var*(36-45 —
   mask FAKEs load-bearing!); fresh 2-set stage u1-u3 (combine merges +
   updates refs ⇒ launch returns); fmt staging cse-inert (const source);
-  ip3 (in-place C-early: sll@55); ipA/B/C (in-place basin is ALSO order-
-  invariant across shl/add C placements — the 56/57 order is priority-
-  driven there; the exchange levers are the sole remaining dials).
-  Permuter finds rejected.
+  ip3 (in-place C-early: sll@55); ipA/B/C (in-place basin ALSO order-
+  invariant — priority-driven); w1-w4 src-hosted chain = 22 (extending a
+  GLOBAL var's range cascades the web — same lesson as r5d; global-var
+  hosting is closed as a t0→a0 vehicle). Permuter finds rejected.
 
 ## Target ground truth (asm/funcs/marionation_Exec.s)
 - Regs: status s0, saved s1, i1494 s2, i1496 s3, arg1 s4, tbl s5, i1495
