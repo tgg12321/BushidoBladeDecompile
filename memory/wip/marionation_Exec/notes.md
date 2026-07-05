@@ -61,21 +61,22 @@ lets one of the deleters fire in pass-2 relax specifically.
   SWAP exists explicitly to enable pass-2 fills).
 - MEASURED DEAD: &&label dead-take (tree-eliminated, k-battery); rounds 1-2
   topology batteries (27 variants at after_blocks) all steal; loop-top
-  labels die pre-flow (back-edge folded); h2 recheck-alone steals (pass-1
-  fill precedes relax).
+  labels die pre-flow; h2 recheck-alone steals (pass-1 fill precedes relax);
+  round-6 (_gen6.py s1-s5): NEAR-label referencers of ANY condition
+  (check==0 / check!=0 / a0==0, label 0-2 stmts away, before/after sb) all
+  fold pre-flow to the exact baseline — referencer survival REQUIRES
+  distance from the label (r5d's far guard survived).
 - NEXT: (i) minis where a pass-1 SWAP/inversion sets up a pass-2 fill that
-  creates the referencer's branch-to-next deletion; (ii) same-condition
-  referencer `if (check==0) goto arm;` in-arm (zero condition bytes —
-  survives cse/jump1?); (iii) filled+slot-emptying: pass-1 steal an insn
-  that a pass-1 relax case-4031 inline re-emission makes redundant → 3956
-  empties → 3992 mints → pass-2 everything-live; (iv) read
-  fill_simple_delay_slots fully for missed unfilled-branch transforms.
+  creates the referencer's branch-to-next deletion; (ii) filled+slot-
+  emptying: pass-1 steal an insn that a pass-1 relax case-4031 inline
+  re-emission makes redundant → 3956 empties → 3992 mints → pass-2
+  everything-live; (iii) read fill_simple_delay_slots fully for missed
+  unfilled-branch transforms; (iv) far-referencer variants whose branch
+  bytes COINCIDE with a real function branch (audit every real branch in
+  the fn for retarget-to-arm compatibility during reorg).
 
-## Arm-2 transposition (knob-world residual, 2 masked lines)
-Unchanged from s5 — see git history (d1/d2 tie at 952, ref-bump program
-CLOSED as byte-exact route; u3+y1+iq+ix = exact s-alloc but no byte-clean
-instantiation).
-
+## Arm-2 transposition (2 masked lines): unchanged from s5 — git history
+(d1/d2 tie at 952; ref-bump program CLOSED: exact s-alloc, no byte-clean form).
 ## Region-2 SOLVED — recipe unchanged (in candidate.c)
 
 ## Region-1 pair — permuter verdicts (session-6)
@@ -104,8 +105,7 @@ instantiation).
 - 42 rules index-anchored; end gate = retire-all-42 + full SHA1. Twin csmd4
   (:388) shares text — marionation-unique anchors. Declare new_var/new_var3.
 - d1/d2 stmt reorders flip s-regs via the 952 tie (do NOT re-derive).
-- knob uids shift with any C change — tmp/mar_alllive_full.py re-discovers
-  them by fixpoint.
+- knob uids shift with any C change — tmp/mar_alllive_full.py re-discovers.
 
 ## Tools (all local/gitignored; regenerate from here if lost)
 - tmp/gccdbg/cc1 + cc1_alllive: BB2_DBR_DEBUG, BB2_ALLLIVE_LABEL, ALLOC/QTY/
@@ -116,5 +116,5 @@ instantiation).
   SHAPE + NOP via second-referencer arm label), tmp/mar_trace_labels.sh
   (label lifecycle per pass), tmp/mar_pass_trace.py (real-candidate DBRDBG
   fill trace; pass-2 retries confirmed). Minis in tmp/mar_trig/.
-- Verify kit: tmp/perm_finds_verify.py (splice+sandbox permuter finds),
-  tools/mar_test_candidate.sh, tmp/mar_floor_check.sh.
+- Verify kit: tmp/perm_finds_verify.py, tools/mar_test_candidate.sh,
+  tmp/mar_floor_check.sh. Round-6 minis: tmp/mar_trigger_gen6.py.
