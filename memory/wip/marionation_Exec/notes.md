@@ -39,30 +39,20 @@ Slot=NOP needs one of these at BOTH fill_eager attempts; each closed:
    never empties the caller's own slot (annul dead on MIPS). CLOSED.
 ⇒ The original EXISTS ⇒ a hole exists — upstream in source shape.
 
-## Validated ground truth (s6d): check2's fill trace matches the model
-exactly; marionation trace CLEAN; mtlr recursion INTERSECTS (can't
-refuse); r5d-on-real = 45 (condition-read cascades; record_jump_equiv
-folds v0/check).
+## s6d ground truth: check2's fill trace matches the model; r5d-on-real
+= 45 (condition-read cascades); record_jump_equiv folds v0/check.
 
-## REGION-1 — the final equation (s6h/s6j ground truth)
-TARGET BYTES: t0 chain IN-PLACE in a0 (1070/1088/1098/10b0); fmt-la LAST
-(10b4, outside t0's span — no staging needed); 11DC via $at macro; 11D5
-macro on v0's second segment. mh5's fresh-temp basin = STRUCTURALLY
-WRONG (register-masked mirage); true basin = IN-PLACE (ip1/ip2 masked 9,
-shape exact; residual = v1/a0 exchange + 56/57 order + region-3).
-EQUATION (inputs MEASURED s6j): t0 6refs/span24 pri 2.0 vs arg5
-2refs/span6 pri 1.33 ⇒ t0 first ⇒ v1; target needs arg5 first (v1) so
-t0 falls to a0. S6I CLOSURES: global-var hosting cascades ALL flavors (src
-w1-w4=22; i-hosted x1-x4=22-32); suggestions = hard↔pseudo COPIES only
-(combine_regs 1815-62; arg5=stack ⇒ impossible; t0 meets no hard copy);
-NO qty rebirth (reg_is_born: alloc_qty only at reg_qty==-2);
-REG_ALLOC_ORDER absent ⇒ regno first-fit confirmed. ⇒ SECOND
-IMPOSSIBILITY THEOREM: arg5's pri is PINNED (stack arg) and ANY local
-carrier of t0's value across [58,61] outranks it ⇒ takes v1 first ⇒ the
-TARGET allocation CANNOT arise from two plain local qtys under
-qty_compare. The bytes exist ⇒ a model-hole exists. Sub-facts: in-place
-= `<<=`/`+=` (NOT `*=`); fmt staging cse-inert. Oracle: masked 2.
-Region-3 unchanged (Window
+## REGION-1 ground truth (s6h/j): t0 chain IN-PLACE in a0; fmt-la LAST
+(no staging needed); 11DC via $at macro; 11D5 on v0's 2nd segment.
+mh5 basin structurally wrong (masked mirage). Local-qty equation
+(measured): t0 2.0 vs arg5 1.33 ⇒ t0→v1 — SOLVED BY THE M2C TAIL (s6l,
+below), which changes the pseudo landscape wholesale. S6I archive: global-hosting cascades (src=22, i=22-32);
+suggestions = hard↔pseudo copies only; no qty rebirth; regno first-fit.
+SECOND IMPOSSIBILITY THEOREM (in the OLD tail): the target allocation
+cannot arise from two plain local qtys — RESOLVED by s6l: the original's
+TAIL STRUCTURE (m2c) changes the landscape so the theorem's premises
+don't apply. In-place = `<<=`/`+=` (NOT `*=`); fmt staging cse-inert.
+Region-3 (Window
 Theorem). find_free_reg read: model CONFIRMED end-to-end. S6J: qty
 inputs MEASURED on ip1 (tmp/mar_ip_qty.py): t0 = 6refs/span24 pri 2.0
 → v1 (ord 2); arg5 = 2refs/span6 pri 1.33 → a0 (ord 3) — theorem's
@@ -78,26 +68,36 @@ sw moves to 60 (target 63) — shape broken. LAST HOLE CANDIDATE
 (different pri formula + reg preference) — if the original's block was
 dense enough that t0-or-arg5 FAILED local, greg's rules apply. NEXT:
 probe what makes a qty fail local (span conflicts) + read find_reg's
-preference order. PERMUTERS RUNNING: tmp/perm_mar_ip (ip1 base, score 260,
--j6) + tmp/perm_csmd4 (twin, -j4). First find output-210-1 REJECTED:
-`t0 += tbl_125c` (cast dropped) = pointer-arith scaling ⇒ sll 0x4 ⇒
-WRONG SEMANTICS (permuter score ≠ correctness — verify every find:
-tmp/mar_verify_210.py pattern). Working hypothesis for the exchange:
-the ORIGINAL hosted arg5 in i (v1-global) with the WHOLE equilibrium
-formed around it — single perturbations cascade (x1=32) but the right
-COMBINATION of role-reassignments is the permuter's domain.
+preference order. S6L BREAKTHROUGH — THE M2C TAIL FIXES THE EXCHANGE: full m2c read
+(tmp/m2c output; save it!) gave the original's control shape; the TAIL
+transplant (tmp/mar_m2c_tail.py: arm-1 `goto done` INTO arm-2's if-body
+(done: inside the arm = .L812BC's 2 jumpers ✓); arm-2 order [sb;
+dst2=a1; src; i] (move-FIRST = the transposition natively!); after-code
+as FALL-THROUGH `v0 = 0; if (a0 != 0) return v0; goto loop;` (no
+after_blocks label; v0=0 = beqz-s7's backward-fill ✓)) yields masked 23
+with REGION-1's registers RIGHT (t0→a0, lbu a0@51 ✓✓) — the exchange
+GONE. Residual = s-web ROTATION (p73's 84-luid 952-tie, the documented
+d1/d2 coupling: ALLOCDBG T_mh5: p73(4r/84/952)→s1 ✗, p82(2r/21/952)→s2,
+p76/p78(7r/150/933)→s3/s4; TARGET needs p82>p76≥p78>p73 = the OLD
+ledger's exact inequality) + the 56/57 pair + region-3. Old vehicles
+re-measured here: iq+y1 = 22 (marginal); i5-split = 30 (backfires —
+extra move); whole-m2c = 28 (timeout respell also rotates). NEXT: (1)
+ALLOCDBG on C_iq_y1 → the new pri numbers → re-derive byte-clean bumps
+IN THIS LANDSCAPE (p73 needs <933: len 86 (+2 luids via a late a1 read)
+or refs 3; p82/76/78 bumps); (2) then the 56/57 pair in this world; (3)
+region-3 in this world (the fill landscape CHANGED — after_blocks label
+GONE ⇒ re-run the check2-fill trace — the Window Theorem's premises may
+not hold here!!). Permuters: tmp/perm_mar_ip (-j6) + perm_csmd4 (-j4)
+running; finds 210-1 (pointer-arith semantics) REJECTED, 260-1/2 ties.
 
-## Arm-2 transposition unchanged. Region-2 SOLVED. Archive: o1 = 8
-pair-order-perfect; s4 = 7 arg5-side-fixed (launch lever); qty_compare
-= flog2(r)*r*size/span DESC, tie→birth; status/cnt/i = GLOBAL pseudos.
-- MEASURED DEAD (s6e-j): mh5-basin staging+orders (>=4, order-invar.);
-  o1 copy-stages fold or 8-14; q15-18 stale-refs fold; t0load-late costs
-  lbu@51; o3/o6/o8 collapse; shift-stages cnt/i/v0/new_var* (11-45 —
-  mask FAKEs load-bearing!); u1-u3 fresh 2-set (combine merges+updates);
-  fmt staging cse-inert; ip3 sll@55; ipA/B/C order-invariant; w1-w4
-  src-hosted = 22 (global-range cascade); x1-x4 i-hosted = 22-32;
-  h1-h4 in-call arg5 = 13-16 (sw drags to 60); m1-m5 pure-m2c in-call =
-  16-17 (sequential chains, wrong shape). Permuter finds rejected.
+## Region-2 SOLVED. Archive: o1=8 pair-order-perfect; s4=7 (launch
+lever); qty_compare = flog2(r)*r*size/span DESC; status/cnt/i GLOBAL.
+- MEASURED DEAD (s6e-l): mh5-basin staging+orders; o1 copy-stages;
+  q15-18 stale-refs; t0load-late; o3/o6/o8; shift-stages (mask FAKEs
+  load-bearing!); u1-u3; fmt staging; ipA/B/C; src/i-hosting (cascades);
+  h1-h4 in-call arg5 (sw drags); m1-m5 pure in-call (sequential shape);
+  whole-m2c (28 — timeout respell rotates s-web too); i5-split (30 —
+  extra move); iq+y1 in the new tail = 22 (marginal only).
 
 ## Target ground truth (asm/funcs/marionation_Exec.s)
 - Regs: status s0, saved s1, i1494 s2, i1496 s3, arg1 s4, tbl s5, i1495
