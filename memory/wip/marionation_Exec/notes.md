@@ -15,36 +15,29 @@ Region-3 unchanged (Window Theorem; source-shape-dependent hole).
 
 ## THE WINDOW THEOREM (s6d — impossibility map; every clause sourced)
 Slot=NOP needs one of these at BOTH fill_eager attempts; each closed:
-1. a1 (reg 5) live at after_blocks ⇒ needs a $5-allocated pseudo live there
-   ⇒ crosses the loop's immediate vsync call ⇒ s-reg, never $5. CLOSED (5b +
-   allocation argument).
+1. a1 live at after_blocks ⇒ needs a $5 pseudo live there ⇒ crosses the
+   loop's vsync call ⇒ s-reg, never $5. CLOSED.
 2. everything-live ⇒ find_basic_block==-1 ⇒ post-flow-minted target label
-   (flow.c: every flow-era label is its own basic_block_head). All minters:
-   do_cross_jump (mid-block ⇒ b_far found, not -1), USE-hoist (wrong side),
-   relax 3992/4002 chain (FILLED-SEQ-only per 3946 guard ⇒ mutually
-   exclusive with refusal; and a filled slot never empties — see 4). CLOSED.
-3. Walk-blocker in [beqz..move]: labels un-own (3397) / jumps stop the walk,
-   but referenced labels need a referencer-insn alive to FINAL (= bytes).
-   &&-take dies (unused: never expands — k; dead-store in live var: expands,
-   flow kills the set, jump2 sweeps the label — u + label-56 trace);
-   forced_labels is EXPAND_INITIALIZER-ONLY (expr.c 4137 ⇒ static-data
-   bytes); LABEL_PRESERVE_P is nonlocal/eh-only (stmt.c 665/3085).
-   Referencer-jumps: near-label folds pre-flow at ANY condition (round-6);
-   far = bytes + ALLOCATION CASCADE (r5d-real masked 45!); every relax
-   deleter's precondition held already in pass-1 (dies early ⇒ pass-2 retry
-   steals — retries measured) or needs a gap-insn X = bytes (X=sb
-   unstealable mem/trap; X=la ineligible len-2; X=move guard-live); 4031
-   dissolution RE-EMITS slots inline; USE-markers walk-skipped (3404) and
+   (every flow-era label is its own basic_block_head). Minters:
+   do_cross_jump (mid-block ⇒ b_far, not -1), USE-hoist (wrong side),
+   relax 3992/4002 (FILLED-SEQ-only per 3946 ⇒ exclusive with refusal;
+   filled slots never empty — see 4). CLOSED.
+3. Walk-blocker in [beqz..move]: labels un-own (3397) / jumps stop the
+   walk, but referenced labels need a referencer alive to FINAL (=bytes).
+   &&-take dies (unused: never expands; dead-store: flow+jump2 sweep);
+   forced_labels = EXPAND_INITIALIZER-only (expr.c 4137 ⇒ data bytes);
+   LABEL_PRESERVE_P nonlocal/eh-only. Referencer-jumps: near-label folds
+   pre-flow at ANY condition; far = bytes + CASCADE (r5d-real 45); every
+   relax deleter fires pass-1 (⇒ pass-2 retry steals, measured) or needs
+   a gap-insn = bytes (sb mem/trap-unstealable; la len-2; move guard-
+   live); 4031 RE-EMITS slots inline; USE-markers walk-skipped (3404),
    next_active-invisible post-reload (emit-rtl 1855). CLOSED.
-4. Filled-then-emptied: 3956 redundancy scan stops at CODE_LABELs (2001) ⇒
-   window = {lbu; andi} only ⇒ the move never matches; a matching lbu can't
-   be target-stolen (loads fail may_trap 3461; backward simp reaches only
-   pre-branch insns); recompute dests all dead-at-after_blocks ⇒ flow
-   deletes; volatile loads unstealable. try_merge (1815-1964) deletes thread
-   copies or the OTHER SEQ's slots, never the caller's own (annul dead on
-   MIPS). CLOSED.
-⇒ One of ~30 links is wrong (~30-50% compound) or the hole is upstream in
-source shape. The original EXISTS ⇒ the hole exists. Find it empirically.
+4. Filled-then-emptied: 3956 scan stops at CODE_LABELs (2001) ⇒ window =
+   {lbu; andi}; the move never matches; a matching lbu can't be target-
+   stolen (may_trap 3461; backward simp reaches only pre-branch insns);
+   recompute dests dead ⇒ flow deletes; volatile unstealable. try_merge
+   never empties the caller's own slot (annul dead on MIPS). CLOSED.
+⇒ The original EXISTS ⇒ a hole exists — upstream in source shape.
 
 ## Validated ground truth (s6d — hole-hunt step 1 DONE)
 check2 = insn 386; fall-walk matches the model exactly. mtlr block=0
@@ -82,7 +75,14 @@ the sugg-round fallback, requires_inout/may_save_copy tie paths,
 retry_global_alloc, or reload-inheritance. NEXT: read those (bounded);
 then re-derive the vehicle. Sub-facts: in-place = `<<=`/`+=` (NOT `*=`);
 fmt staging cse-inert. Oracle: masked 2. Region-3 unchanged (Window
-Theorem; both regions now await same-class discoveries).
+Theorem). find_free_reg read (s6i2): arg hard-regs live setup→call;
+a0[68,70] vs t0[51,67] disjoint ✓; call-crossing qtys exclude call-used
+regs; model CONFIRMED end-to-end ⇒ CONVERGENT CONCLUSION (both regions,
+triple-confirmed): local perturbations of THIS candidate cannot close
+either gap — the original had a GLOBALLY different variable structure.
+Search must move to whole-function shapes: permuter big-jump mode over
+variable roles + m2c re-read of the original structure + the twin's
+eventual crack (shared arithmetic transfers).
 
 ## Arm-2 transposition unchanged. Region-2 SOLVED.
 - S6F/G archive: o1 = masked 8 pair-order-perfect; qty_compare =
