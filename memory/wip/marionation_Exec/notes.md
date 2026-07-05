@@ -73,23 +73,23 @@ with REGION-1's registers RIGHT (t0→a0, lbu a0@51 ✓✓) — the exchange
 GONE. Residual = s-web ROTATION (p73's 84-luid 952-tie, the documented
 d1/d2 coupling: ALLOCDBG T_mh5: p73(4r/84/952)→s1 ✗, p82(2r/21/952)→s2,
 p76/p78(7r/150/933)→s3/s4; TARGET needs p82>p76≥p78>p73 = the OLD
-ledger's exact inequality) + the 56/57 pair + region-3. S-WEB DATA (ALLOCDBG, C_iq_y1): saved-y1 = 3636→s1 ✓ TARGET;
-i1496-iq = 9r/1800→s2 ✗ (overshoots); arg1 = 4r/84/952→s3 ✗; i1494 =
-7r/150/933→s4 ✗. NEEDED: p76 > p78 > p73 after saved — arithmetic says
-+1 ref each on p76/p78 (→1066 tie, ascending seats p76 first) with p73
-at 952. Vehicle attempts: natural head (idx_1495 = idx_1494+1 + F19C0
-direct — target bytes DO show la v0,D_80016248 direct + addiu-from-s2!)
-= 30 ALL SUBSETS (the folds the FAKEs guard against happen; the FAKEs
-are load-bearing even though the byte SHAPE matches the natural form);
-i5-split = 30 (p77 jump). NEXT (mechanical, ALLOCDBG-guided): find +1
-p76 / +1 p78 vehicles that don't touch p77/p73 — candidates: an extra
-*idx_1494/*idx_1496 read folded into an existing insn (duplicated-
-statement family), F19C0-FAKE rebased from idx_1496→idx_1494 (+1 p76
--1 p78 — wrong direction alone but pairs with iq's +2), y1 with iq only
-(22, marginal — its web: re-measure). Then: 56/57 pair + region-3 in
-THIS world (after_blocks label GONE ⇒ re-run the check2 fill trace —
-Window Theorem premises may not hold!). Permuters: perm_mar_ip (-j6) +
-perm_csmd4 (-j4) running; 210-1 REJECTED (ptr-arith), 260-1/2 ties.
+ledger's exact inequality) + the 56/57 pair + region-3. FRONTIER FORM (s6m2): **R_reb_y1 = masked 16** (tmp/mar_rebase_combo.py:
+m2c-tail + F19C0-FAKE REBASED to idx_1494 + saved-y1) — web nearly
+restored: saved→s1 ✓, i1494→s2 ✓ (the rebase's +1 p76 worked!), ONLY
+arg1↔i1496 swapped (s3/s4). FOUR NAMED DELTAS TO ZERO: (1) p78 needs
+net +2 refs (6r/800 → 8r/1066 > p73's 952) — iq SHOULD do it but
+measured no-change on top (verify iq's actual ALLOCDBG effect; other
+vehicles: duplicated-statement reads of *idx_1496); (2) y1's 2-line
+merge cost (lbu s1/andi s1,s1 vs lbu v0/andi s1,v0 — via-v0 spelling
+FAILED (24); try `saved = (*p)&3; saved &= 3;` stale-refs or 3-stmt
+orders); (3) the tail lost beqz-s7 (GCC threads my local `return v0` —
+needs m2c's SHARED-FLAG-RETURN architecture: var_v0=-1 set early on the
+timeout path, single `return var_v0` at fn end; my V-battery respell
+missed it (17-24) — spell the flag EXACTLY as m2c); (4) the 56/57 pair
++ region-3 in the new world (after_blocks label GONE ⇒ re-trace check2's
+fill — Window Theorem premises may differ!). Natural-head battery = 30
+(the FAKEs are load-bearing); i5-split = 30 (p77 jump). Permuters:
+perm_mar_ip (-j6) + perm_csmd4 (-j4); 210-1 REJECTED, 260-1/2 ties.
 
 ## Region-2 SOLVED. Archive: o1=8 pair-order-perfect; s4=7 (launch
 lever); qty_compare = flog2(r)*r*size/span DESC; status/cnt/i GLOBAL.
