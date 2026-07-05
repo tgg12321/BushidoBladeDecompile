@@ -1,21 +1,17 @@
 # marionation_Exec — mh5 masked 4; region-1 closing combo identified (s6g); region-3 = Window Theorem (2026-07-04/05)
 
 ## TL;DR
-Floor: masked 4 (mh5 committed). S6G HALF-FLIP LANDED: in the o1 world,
-staging the t0-SHIFT through a multi-set var kills its sched1 LAUNCH
-(birthing_insn_p = live dest with reg_n_sets==1 — sched.c 2496/2566) and
-s4 (`status = t0 << 2; t0 = (s32)((u8*)tbl_125c + status);` after the a5
-stmt) = masked 7 with THE ARG5 SIDE FULLY FIXED (lw→v1, addu-v0, sw ✓).
-Residuals in s4: t0 chain in a3/s0 not in-place-a0 + the 56/57 pair back.
-Causes decoded: (a) status/cnt/i are GLOBAL pseudos (fixed regs s0/…) —
-the stage var must be BLOCK-LOCAL multi-set (none exists; a fresh 2-set
-local `sh = t0; sh <<= 2;` may work IF combine leaves reg_n_sets stale);
-(b) a0 blocked for t0 because the CALL's fmt-la schedules BEFORE t0's last
-use — the OLD ledger's "fmt-la late; chain4=a0" problem, now THE final
-region-1 obstacle. Unstage discovery: the v0-staging FAKEs are INERT in
-the o1 world (r1-r4 byte-identical) — removable. Region-3 unchanged
-(Window Theorem; source-shape hole). NEXT: s4 + block-local stage +
-fmt-la-late sweep = the closing combination for region-1.
+Committed floor: masked 4 (mh5) — BUT s6h proves mh5's basin structurally
+wrong: TARGET BYTES have the t0 chain IN-PLACE in a0 and the fmt-la LAST
+(dumped; see NEXT). True basin = in-place (ip1/ip2 at masked 9, shape
+exact); the WHOLE remaining region-1 = the v1/a0 allocation equation in
+the NEXT section + the 56/57 order (C-luid of the t0-shl). s4 (status-
+staged shift, masked 7) proved the launch lever works (arg5 side fixed)
+but its s0-shift is byte-wrong — superseded by the in-place reading.
+Launch law (s6g): birthing_insn_p = live dest with reg_n_sets==1
+(sched.c 2496/2566); `*=` synthesizes a launching temp, `<<=`/`+=` stay
+in-place. The v0-staging FAKEs are byte-inert in o1 (removable).
+Region-3 unchanged (Window Theorem; source-shape-dependent hole).
 
 ## THE WINDOW THEOREM (s6d — impossibility map; every clause sourced)
 Slot=NOP needs one of these at BOTH fill_eager attempts; each closed:
@@ -60,42 +56,46 @@ refuse. ⇒ hole is SOURCE-SHAPE-DEPENDENT. r5d-on-real = masked 45 (one
 condition-read cascades the s-allocation; no condition avoids the
 delicate pseudos — record_jump_equiv fall-equalities fold v0/check).
 
-## NEXT SESSION (in order)
-1. REGION-1 CLOSING COMBO (from s6g's s4 at masked 7): o1 order + t0-shift
-   staged multi-set (kills its launch; fixes arg5 ✓ measured) + (a) a
-   BLOCK-LOCAL 2-set stage (`{ s32 sh; } sh = t0; sh <<= 2;` — verify
-   combine leaves reg_n_sets stale; if not, other spellings) so the shift
-   colors onto t0's dying reg, + (b) fmt-la LATE (the old x3 hypothesis:
-   sweep 11DC/11D5/fmt arg spellings — e.g. fmt via a local, pp-style —
-   until la a0 lands after lw a3,0(a0)@67) ⇒ t0 chain in-place a0. Oracle:
-   masked 2. Harness: tmp/mar_o1_*.py + mar_s4_diff.py patterns.
-2. Region-3 unchanged: source-shape hole hunt / permuter with the bare-slot
-   beqz oracle. If the Window Theorem survives fresh eyes, surface to owner
-   (options: keep hunting vs documented-plateau; NOT canonical-asm — the
-   original is compiled C so a matching source EXISTS).
+## NEXT SESSION — REGION-1, the final equation (s6h ground truth)
+TARGET BYTES (dumped, tmp/mar_final_matrix era): t0 chain IN-PLACE in a0
+(1070 lbu a0; 1088 sll a0,a0; 1098 addu a0,a0,s5; 10b0 lw a3,0(a0));
+fmt-la LAST (10b4, after t0's death) — hard-a0 set outside t0's span, NO
+staging needed; 11DC access via $at MACRO (lui at/addu at/lw a2 = ONE RTL
+insn); 11D5 via lui+lbu macro reusing V0's second segment (1090-109c ✓
+ours matches). ⇒ mh5's fresh-temp basin is STRUCTURALLY WRONG (masked 4 is
+a register-masked mirage); the true basin = IN-PLACE (ip1/ip2: o1 order +
+`t0 <<= 2; t0 += (s32)tbl_125c;` = masked 9, shape exact, residual = the
+v1/a0 exchange + the 56/57 order + region-3). THE EQUATION: first-fit
+gives t0→a0 only if v0 AND v1 are occupied at t0's allocation ⇒ ARG5 MUST
+ALLOCATE BEFORE T0's one-qty ⇒ need pri(arg5) > pri(t0): t0 (in-place, 1
+qty born@51 dies@67: ~6refs/span16: flog2(6)*6/16 = 0.75) vs arg5 (2refs/
+span5 = 0.4). Levers: shrink t0's refs (4refs ⇒ 0.5 — still >) or SPAN
+(load later? bytes pin 51…67) or SPLIT t0's qty (the 11D5-style SECOND
+SEGMENT — v0 got reused mid-block and its qty segments…: check whether a
+multi-set pseudo whose value FULLY DIES mid-block gets a FRESH QTY per
+local-alloc (reg_qty rebirth!) — if yes, spelling t0's chain so the value
+dies at 58ish and REBIRTHS shortens spans below arg5's pri!), or +1 arg5
+ref that survives (window: reg-sourced only). Sub-facts: fmt-la staging
+is cse-inert (const source); in-place C spelling = `<<=`/`+=` (NOT `*=` —
+the mult path synthesizes the launching temp!); the 56/57 order flip
+needs the t0-shl's C-luid < a5-stmt's (try [t0load; pp; v0ld; v0shl;
+t0shl; a5; t0add]-family in the in-place basin!). Oracle: masked 2.
+Region-3 unchanged (Window Theorem; source-shape hole; surface to owner
+if it survives fresh eyes — NOT canonical-asm, the original is compiled C).
 
-## Arm-2 transposition unchanged. Region-2 SOLVED. Region-1:
-- S6F — THE O1 FRONTIER: C order [t0load; pp; v0ld; v0shl; a5; t0mul;
-  t0add] = masked 8, PAIR ORDER PERFECT; residual = v1/a0 qty exchange.
-  QTYDBG (marionation cluster; SEGMENT PER FUNCTION — twin collides):
-  addr-109 (b16d20r2)→v0; t0-sll-111 (b18d24r2)→v1; arg5-104 (b20d26r2)→a0.
-  qty_compare = floor_log2(refs)*refs*size/span DESC; 111v104 EXACT TIE →
-  birth order. S6G: LAUNCH = birthing_insn_p (sched.c 2496): live dest AND
-  reg_n_sets==1 → INSN_PRIORITY=max (adjust_priority 2566; n_deaths always
-  0 — notes stripped). Multi-set dest ⇒ no launch ⇒ scheduled late ⇒ birth
-  flip. s4 (status-staged shift) = masked 7, ARG5 SIDE FIXED; t0 side needs
-  the block-local stage + fmt-la-late (TL;DR). Sub-facts: status/cnt/i =
-  GLOBAL pseudos (fixed s0/…); v0/i stages 11-26 (their fixed regs); the
-  v0-staging FAKEs are INERT in o1 (r1-r4 byte-identical — removable).
-- MEASURED DEAD (s6e/f/g): mh5-basin arg5-staging + orders all >= 4,
-  order-invariant; o1-basin copy-stages fold or 8-14; q15-q18 stale-refs
-  vehicles fold (refs canceled — iq did NOT reproduce); t0load-late costs
-  lbu@51; o3/o6/o8 collapse to mh5; shift-stages via cnt(11)/i(26)/v0(12)/
-  new_var,new_var3(36-45 — NEVER touch the mask FAKEs); FRESH block-local
-  2-set stage (u1-u3: sh=t0;sh<<=2 etc.) — combine MERGES the sets and
-  properly updates reg_n_sets ⇒ launch returns ⇒ 8 (need a combine-
-  resistant 2-set spelling, or lead with fmt-la-late on plain s4).
-  Permuter finds all rejected (s6).
+## Arm-2 transposition unchanged. Region-2 SOLVED.
+- S6F/G archive: o1 order [t0load; pp; v0ld; v0shl; a5; t0mul; t0add] =
+  masked 8 pair-order-perfect; QTYDBG marionation cluster: addr-109→v0,
+  sll-111→v1, arg5-104→a0; qty_compare = flog2(refs)*refs*size/span DESC,
+  111v104 EXACT TIE → birth order. s4 (status-staged shift) = 7, arg5
+  side fixed (launch lever proven). status/cnt/i = GLOBAL pseudos.
+- MEASURED DEAD (s6e-h): mh5-basin arg5-staging + orders (>= 4, order-
+  invariant); o1-basin copy-stages fold or 8-14; q15-q18 stale-refs fold
+  (refs canceled — iq did NOT reproduce); t0load-late costs lbu@51;
+  o3/o6/o8 collapse; shift-stages cnt(11)/i(26)/v0(12)/new_var*(36-45 —
+  mask FAKEs load-bearing!); fresh 2-set stage u1-u3 (combine merges +
+  updates refs ⇒ launch returns); fmt staging cse-inert (const source);
+  ip3 (in-place chain C-early: t0-sll lands @55). Permuter finds rejected.
 
 ## Target ground truth (asm/funcs/marionation_Exec.s)
 - Regs: status s0, saved s1, i1494 s2, i1496 s3, arg1 s4, tbl s5, i1495

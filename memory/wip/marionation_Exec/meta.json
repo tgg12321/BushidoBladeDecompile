@@ -11,14 +11,6 @@
  "sessions": [
   {
    "date": "2026-07-04",
-   "git_head_at_measurement": "9a53ed26",
-   "lever": "SESSION 6c/6d (ultrathink) - THE WINDOW THEOREM: closed the entire byte-free mechanism space for the region-3 nop, every clause source-verified or mini-measured. New closures: near-label referencers of ANY condition fold pre-flow (round-6); &&-take never expands when unused and dies at flow+jump2 when a dead store (u-battery + label-56 pass trace); forced_labels registration is EXPAND_INITIALIZER-only (expr.c 4137, static-data bytes); LABEL_PRESERVE_P is nonlocal/eh-only (stmt.c 665/3085); next_active_insn skips USE/CLOBBER only post-reload (emit-rtl 1855) so markers hide 3866 preconditions from relax; redundant_insn stops at CODE_LABELs (2001) making the slot-emptying window exactly {lbu,andi}; thread-steals of loads are may_trap-blocked (3461) so a matching lbu can never enter the slot; try_merge_delay_insns deletes thread copies or the OTHER SEQ's slots, never the caller's own (annul dead on MIPS); 4031 dissolution re-emits slot insns inline (bytes return). Validation: full DBRDBG decision trace of check2 (insn 386) matches the model exactly (sb setsopp+trap LOSE, la eligibility LOSE, move WINNER; guard 402 setneed-refused the move backward). CONCLUSION: the original compiler produced this nop from real C, so the model has a hole - next session hunts it in the trace (per-function log segmentation; enumerate natural block=0/-1 mtlr calls - they DO occur in this TU; insn-352 mid-block-target fill unexplained).",
-   "floor_was": 4,
-   "floor_now": 4,
-   "note": "floor unchanged; strategy pivoted from construction-search to model-hole-hunting. HOLE-HUNT STEP 1 COMPLETED same session: per-function log segmentation (fingerprint lines; uid spaces repeat per function) shows marionation's trace is model-CLEAN - the mtlr block=0 anomaly was another function; mtlr's recursion (2810-31) only intersects live sets (cannot create refusal). The hole is source-shape-dependent. ALSO measured: r5d-on-real with a 1-insn opaque referencer = masked 45 (183/179) - one condition-read cascades the whole s-allocation (9th s-reg); no referencer condition avoids the delicate pseudos. Permuter base stays mh5; region-1 (the pair) flagged as the softer half to close first."
-  },
-  {
-   "date": "2026-07-04",
    "git_head_at_measurement": "ddfe526d",
    "lever": "SESSION 6F (ultrathink #2) - THE O1 FRONTIER: C order [t0load; pp; v0ld; v0shl; a5; t0mul; t0add] (t0 chain last) produces the PERFECT pair order at masked 8 = pure v1/a0 qty exchange (6) + region-3 (2). Full qty arithmetic extracted (QTYDBG, marionation cluster isolated from the twin's by per-function segmentation): addr-109 (b16d20r2)->v0, t0-sll-111 (b18d24r2)->v1, arg5-104 (b20d26r2)->a0; comparator = floor_log2(refs)*refs*size/span DESC (local-alloc.c qty_compare); 111-vs-104 is an EXACT tie broken by qty/birth order. Target needs 104 first. KEY INSIGHT: qty birth order = sched1 output order while emitted bytes = sched2 output (sched2 re-sorts by downstream priority, sll(3) > lw(2), restoring byte order regardless) => the search target is any form whose SCHED1 stream has lw-before-sll; the win measures as masked 2. Measured dead in the o1 basin: staging stages (cse copy-propagates single-set sources pre-alloc), add-then-subtract stale-refs vehicles q15-q18 (refs properly canceled - iq's stale-refs did not reproduce), t0load-late orders (cost lbu@51), partial-chain moves (collapse to mh5). Twin cross-check: twin's g3 = the same frontier from the other side (twin ledger p113/p100 arithmetic matches).",
    "floor_was": 4,
@@ -32,6 +24,14 @@
    "floor_was": 4,
    "floor_now": 4,
    "note": "committed floor unchanged; best experimental form s4 = masked 7 (uncommitted). REGION-1 CLOSING COMBO identified: o1 + block-local 2-set shift-stage + fmt-la-late arg spelling => t0 in-place a0 => masked 2. All harness pieces exist (tmp/mar_o1_*.py, mar_s4_diff.py)."
+  },
+  {
+   "date": "2026-07-05",
+   "git_head_at_measurement": "e5aa2dd4",
+   "lever": "SESSION 6H (ultrathink #3) - THE BASIN CORRECTION: dumped the actual target printf-call window (bytes 1070-10bc). Ground truth: t0 chain IN-PLACE in a0 (lbu a0 / sll a0,a0 / addu a0,a0,s5 / lw a3,0(a0)); the fmt-la is LAST (10b4, a hard-a0 set AFTER t0's death - no staging needed, and fmt staging is cse-inert anyway since the source is constant); 11DC access via the $at assembler macro (one RTL insn); 11D5 macro reuses v0's second qty segment. CONSEQUENCE: mh5's fresh-temp basin is structurally wrong - its masked 4 is a register-masked mirage; the true basin = in-place C spellings (`t0 <<= 2; t0 += (s32)tbl_125c;` - NOT `*=`, whose mult path synthesizes the launching temp). ip1/ip2 (o1 order, in-place) = masked 9 with the exact target SHAPE; residual = the v1/a0 exchange + the 56/57 order. THE FINAL EQUATION: first-fit gives t0->a0 only if v1 is occupied at t0's allocation => arg5 must allocate BEFORE t0's one-qty => pri(arg5) > pri(t0): t0 ~6refs/span16 = 0.75 vs arg5 2refs/span5 = 0.4. Levers queued: t0-qty SEGMENT REBIRTH (check local-alloc reg_qty rebirth when a multi-set pseudo's value fully dies mid-block - the v0/11D5 reuse proves per-segment qtys exist for SOME shapes), t0 refs/span reduction, +1 surviving arg5 ref (reg-sourced only), and the 56/57 order via C-luid placement of the t0-shl between v0shl and a5.",
+   "floor_was": 4,
+   "floor_now": 4,
+   "note": "committed floor unchanged (mirage caveat noted!); in-place basin ip1/ip2 = masked 9 (uncommitted) = the structurally-correct base. Next session: the allocation equation levers + [t0load; pp; v0ld; v0shl; t0shl; a5; t0add] order probe. If region-1 lands at 2, region-3 (Window Theorem) is the sole remainder."
   }
  ],
  "reviewer": {
@@ -67,6 +67,7 @@
   }
  ],
  "prior_sessions_summary": [
+  "2026-07-04 (9a53ed26): SESSION 6c/6d - the Window Theorem (region-3 byte-free space closed, every clause sourced/measured); check2 trace validates the model; forced_labels/LABEL_PRESERVE closures; hole must be source-shape-dependent.",
   "2026-07-04 (6ca7b7aa): SESSION 6b - r5d/r5c reproduce the exact target arm-2 shape + NOP in minis (arm-head label, 2nd referencer); relax deleter catalog completed; pass-2 retries measured real; 3992-mint is filled-SEQ-only (load-bearing correction).",
   "2026-07-04 (9c2f17aa): SESSION 6 - empirical trigger-discovery executed; natural-C steal refusal CONFIRMED (mid-thread label, h1); dbr two-pass timing calculus; 5b own_fallthrough closure overturned; permuter finds all rejected.",
   "2026-07-04 (4a3afb71): SESSION 5 - region-3 mechanism decoded (everything-live refusal, BB2_ALLLIVE_LABEL knob-proven 179/179); ref-bump arithmetic verified (u3+sv+iq+ix = exact s-alloc, no byte-clean instantiation); d1/d2 952-tie transposition decoded.",
