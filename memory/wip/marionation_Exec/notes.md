@@ -39,11 +39,10 @@ Slot=NOP needs one of these at BOTH fill_eager attempts; each closed:
    never empties the caller's own slot (annul dead on MIPS). CLOSED.
 ⇒ The original EXISTS ⇒ a hole exists — upstream in source shape.
 
-## Validated ground truth (s6d — hole-hunt step 1 DONE)
-check2 = insn 386; fall-walk matches the model exactly. mtlr block=0
-anomaly = another function (uid collision); marionation's trace CLEAN;
-mtlr recursion INTERSECTS ⇒ can't refuse. r5d-on-real = masked 45 (one
-condition-read cascades; record_jump_equiv folds v0/check conditions).
+## Validated ground truth (s6d): check2's fill trace matches the model
+exactly; marionation trace CLEAN; mtlr recursion INTERSECTS (can't
+refuse); r5d-on-real = 45 (condition-read cascades; record_jump_equiv
+folds v0/check).
 
 ## REGION-1 — the final equation (s6h/s6j ground truth)
 TARGET BYTES: t0 chain IN-PLACE in a0 (1070/1088/1098/10b0); fmt-la LAST
@@ -79,23 +78,26 @@ sw moves to 60 (target 63) — shape broken. LAST HOLE CANDIDATE
 (different pri formula + reg preference) — if the original's block was
 dense enough that t0-or-arg5 FAILED local, greg's rules apply. NEXT:
 probe what makes a qty fail local (span conflicts) + read find_reg's
-preference order. PERMUTER RELAUNCHED on the ip1 base (tmp/perm_mar_ip,
-base score 260, running) — finds → perm_finds_verify pattern.
+preference order. PERMUTERS RUNNING: tmp/perm_mar_ip (ip1 base, score 260,
+-j6) + tmp/perm_csmd4 (twin, -j4). First find output-210-1 REJECTED:
+`t0 += tbl_125c` (cast dropped) = pointer-arith scaling ⇒ sll 0x4 ⇒
+WRONG SEMANTICS (permuter score ≠ correctness — verify every find:
+tmp/mar_verify_210.py pattern). Working hypothesis for the exchange:
+the ORIGINAL hosted arg5 in i (v1-global) with the WHOLE equilibrium
+formed around it — single perturbations cascade (x1=32) but the right
+COMBINATION of role-reassignments is the permuter's domain.
 
-## Arm-2 transposition unchanged. Region-2 SOLVED.
-- S6F/G archive: o1 = masked 8 pair-order-perfect; qty_compare =
-  flog2(refs)*refs*size/span DESC, tie → birth; s4 (status-staged shift)
-  = 7, arg5 side fixed (launch lever). status/cnt/i = GLOBAL pseudos.
-- MEASURED DEAD (s6e-h): mh5-basin arg5-staging + orders (>= 4, order-
-  invariant); o1-basin copy-stages fold or 8-14; q15-q18 stale-refs fold
-  (refs canceled — iq did NOT reproduce); t0load-late costs lbu@51;
-  o3/o6/o8 collapse; shift-stages cnt(11)/i(26)/v0(12)/new_var*(36-45 —
-  mask FAKEs load-bearing!); fresh 2-set stage u1-u3 (combine merges +
-  updates refs ⇒ launch returns); fmt staging cse-inert (const source);
-  ip3 (in-place C-early: sll@55); ipA/B/C (in-place basin ALSO order-
-  invariant — priority-driven); w1-w4 src-hosted chain = 22 (extending a
-  GLOBAL var's range cascades the web — same lesson as r5d; global-var
-  hosting is closed as a t0→a0 vehicle). Permuter finds rejected.
+## Arm-2 transposition unchanged. Region-2 SOLVED. Archive: o1 = 8
+pair-order-perfect; s4 = 7 arg5-side-fixed (launch lever); qty_compare
+= flog2(r)*r*size/span DESC, tie→birth; status/cnt/i = GLOBAL pseudos.
+- MEASURED DEAD (s6e-j): mh5-basin staging+orders (>=4, order-invar.);
+  o1 copy-stages fold or 8-14; q15-18 stale-refs fold; t0load-late costs
+  lbu@51; o3/o6/o8 collapse; shift-stages cnt/i/v0/new_var* (11-45 —
+  mask FAKEs load-bearing!); u1-u3 fresh 2-set (combine merges+updates);
+  fmt staging cse-inert; ip3 sll@55; ipA/B/C order-invariant; w1-w4
+  src-hosted = 22 (global-range cascade); x1-x4 i-hosted = 22-32;
+  h1-h4 in-call arg5 = 13-16 (sw drags to 60); m1-m5 pure-m2c in-call =
+  16-17 (sequential chains, wrong shape). Permuter finds rejected.
 
 ## Target ground truth (asm/funcs/marionation_Exec.s)
 - Regs: status s0, saved s1, i1494 s2, i1496 s3, arg1 s4, tbl s5, i1495
