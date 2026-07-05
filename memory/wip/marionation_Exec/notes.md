@@ -43,18 +43,14 @@ Slot=NOP needs one of these at BOTH fill_eager attempts; each closed:
    deletes; volatile loads unstealable. try_merge (1815-1964) deletes thread
    copies or the OTHER SEQ's slots, never the caller's own (annul dead on
    MIPS). CLOSED.
-⇒ Either one of ~30 derivation links is wrong (compound ~30-50%!), or the
-original source shaped an upstream difference not yet modeled. The original
-EXISTS ⇒ the hole exists. FIND IT EMPIRICALLY.
+⇒ One of ~30 links is wrong (~30-50% compound) or the hole is upstream in
+source shape. The original EXISTS ⇒ the hole exists. Find it empirically.
 
 ## Validated ground truth (s6d — hole-hunt step 1 DONE)
-check2 = insn 386; fall-walk matches the model exactly (sb LOSE
-setsopp+trap; la LOSE len-2; move WINNER; guard setneed-refused the move
-backward). mtlr block=0 anomaly = another function (uid collision);
-marionation's trace CLEAN; mtlr recursion (2810-31) INTERSECTS ⇒ can't
-refuse. ⇒ hole is SOURCE-SHAPE-DEPENDENT. r5d-on-real = masked 45 (one
-condition-read cascades the s-allocation; no condition avoids the
-delicate pseudos — record_jump_equiv fall-equalities fold v0/check).
+check2 = insn 386; fall-walk matches the model exactly. mtlr block=0
+anomaly = another function (uid collision); marionation's trace CLEAN;
+mtlr recursion INTERSECTS ⇒ can't refuse. r5d-on-real = masked 45 (one
+condition-read cascades; record_jump_equiv folds v0/check conditions).
 
 ## NEXT SESSION — REGION-1, the final equation (s6h ground truth)
 TARGET BYTES (dumped, tmp/mar_final_matrix era): t0 chain IN-PLACE in a0
@@ -69,25 +65,29 @@ v1/a0 exchange + the 56/57 order + region-3). THE EQUATION: first-fit
 gives t0→a0 only if v0 AND v1 are occupied at t0's allocation ⇒ ARG5 MUST
 ALLOCATE BEFORE T0's one-qty ⇒ need pri(arg5) > pri(t0): t0 (in-place, 1
 qty born@51 dies@67: ~6refs/span16: flog2(6)*6/16 = 0.75) vs arg5 (2refs/
-span5 = 0.4). Levers: shrink t0's refs (4refs ⇒ 0.5 — still >) or SPAN
-(load later? bytes pin 51…67) or SPLIT t0's qty (the 11D5-style SECOND
-SEGMENT — v0 got reused mid-block and its qty segments…: check whether a
-multi-set pseudo whose value FULLY DIES mid-block gets a FRESH QTY per
-local-alloc (reg_qty rebirth!) — if yes, spelling t0's chain so the value
-dies at 58ish and REBIRTHS shortens spans below arg5's pri!), or +1 arg5
-ref that survives (window: reg-sourced only). Sub-facts: fmt-la staging
-is cse-inert (const source); in-place C spelling = `<<=`/`+=` (NOT `*=` —
-the mult path synthesizes the launching temp!); the 56/57 order flip
-needs the t0-shl's C-luid < a5-stmt's (try [t0load; pp; v0ld; v0shl;
-t0shl; a5; t0add]-family in the in-place basin!). Oracle: masked 2.
-Region-3 unchanged (Window Theorem; source-shape hole; surface to owner
-if it survives fresh eyes — NOT canonical-asm, the original is compiled C).
+span5 = 0.4). S6I CLOSURES: global-var hosting cascades ALL flavors (src
+w1-w4=22; i-hosted x1-x4=22-32); suggestions = hard↔pseudo COPIES only
+(combine_regs 1815-62; arg5=stack ⇒ impossible, t0 meets no hard copy);
+NO qty rebirth (reg_is_born 2000-27: alloc_qty only at reg_qty==-2; one
+pseudo = one monolithic qty); REG_ALLOC_ORDER absent ⇒ regno first-fit
+(v0,v1,a0…) confirmed; 11D5-shift temp (pri 4.0) owns v0 first — matches
+target. ⇒ SECOND IMPOSSIBILITY THEOREM: pri(arg5) is PINNED at 1.6
+(2refs/span5, stack arg) and ANY local carrier of t0's value across
+[58,61] has ≥2refs/span≤4 ⇒ pri ≥ 2.0 > 1.6 ⇒ allocates before arg5 ⇒
+takes v1 ⇒ the TARGET allocation (arg5→v1 before t0→a0) CANNOT arise
+from two plain local qtys under qty_compare. Same epistemic shape as the
+Window Theorem: the bytes exist ⇒ a model-hole exists — in UNREAD
+local-alloc corners: qty_min_class (constraint-driven class narrowing!),
+the sugg-round fallback, requires_inout/may_save_copy tie paths,
+retry_global_alloc, or reload-inheritance. NEXT: read those (bounded);
+then re-derive the vehicle. Sub-facts: in-place = `<<=`/`+=` (NOT `*=`);
+fmt staging cse-inert. Oracle: masked 2. Region-3 unchanged (Window
+Theorem; both regions now await same-class discoveries).
 
 ## Arm-2 transposition unchanged. Region-2 SOLVED.
-- S6F/G archive: o1 order = masked 8 pair-order-perfect; QTYDBG cluster:
-  addr-109→v0, sll-111→v1, arg5-104→a0; qty_compare = flog2(refs)*refs*
-  size/span DESC, tie → birth. s4 (status-staged shift) = 7, arg5 side
-  fixed (launch lever proven). status/cnt/i = GLOBAL pseudos.
+- S6F/G archive: o1 = masked 8 pair-order-perfect; qty_compare =
+  flog2(refs)*refs*size/span DESC, tie → birth; s4 (status-staged shift)
+  = 7, arg5 side fixed (launch lever). status/cnt/i = GLOBAL pseudos.
 - MEASURED DEAD (s6e-h): mh5-basin arg5-staging + orders (>= 4, order-
   invariant); o1-basin copy-stages fold or 8-14; q15-q18 stale-refs fold
   (refs canceled — iq did NOT reproduce); t0load-late costs lbu@51;
