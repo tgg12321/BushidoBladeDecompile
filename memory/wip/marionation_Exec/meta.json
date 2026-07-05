@@ -11,14 +11,6 @@
  "sessions": [
   {
    "date": "2026-07-04",
-   "git_head_at_measurement": "6ca7b7aa",
-   "lever": "SESSION 6b - round-5 battery (tmp/mar_trigger_gen5.py): r5d/r5c reproduce the EXACT target arm-2 shape [beqz->after; BARE SLOT; sb; la; move; beqz a1; li 7] in natural C via an arm-head label with a second referencer (zero-width label un-owns the fall-through thread; steal refused in both passes). Relax deleter catalog COMPLETED (3866 next-active delete / 3876 + 4080 invert-around-bare-j deleting the j / 3913 SWAP / 3956 slot-emptying / 3992+4002 redundancy mint / 4031 filled-to-next inline re-emit / 4067). Per-pass fill trace on the real TU (tmp/mar_pass_trace.py): pass-2 retries real (56 branches multi-attempted, 36 wins). LOAD-BEARING CORRECTION: the 3992 redundancy-mint chain is in relax's filled-SEQUENCE-only section (3946 guard) - unfilled beqz never reaches it, so label-refusal and the mint cannot compose naively. Referencer-lifecycle constraint set fully mapped; every single-mechanism byte-free death collapses to needing a pass-2-only steal/adjacency (open construction).",
-   "floor_was": 4,
-   "floor_now": 4,
-   "note": "floor unchanged; region-3 reduced to ONE well-posed problem: a referencer to the arm label that dies byte-free in pass-2 relax (or the filled+slot-emptying mint route). Four concrete probes queued in notes.md."
-  },
-  {
-   "date": "2026-07-04",
    "git_head_at_measurement": "9a53ed26",
    "lever": "SESSION 6c/6d (ultrathink) - THE WINDOW THEOREM: closed the entire byte-free mechanism space for the region-3 nop, every clause source-verified or mini-measured. New closures: near-label referencers of ANY condition fold pre-flow (round-6); &&-take never expands when unused and dies at flow+jump2 when a dead store (u-battery + label-56 pass trace); forced_labels registration is EXPAND_INITIALIZER-only (expr.c 4137, static-data bytes); LABEL_PRESERVE_P is nonlocal/eh-only (stmt.c 665/3085); next_active_insn skips USE/CLOBBER only post-reload (emit-rtl 1855) so markers hide 3866 preconditions from relax; redundant_insn stops at CODE_LABELs (2001) making the slot-emptying window exactly {lbu,andi}; thread-steals of loads are may_trap-blocked (3461) so a matching lbu can never enter the slot; try_merge_delay_insns deletes thread copies or the OTHER SEQ's slots, never the caller's own (annul dead on MIPS); 4031 dissolution re-emits slot insns inline (bytes return). Validation: full DBRDBG decision trace of check2 (insn 386) matches the model exactly (sb setsopp+trap LOSE, la eligibility LOSE, move WINNER; guard 402 setneed-refused the move backward). CONCLUSION: the original compiler produced this nop from real C, so the model has a hole - next session hunts it in the trace (per-function log segmentation; enumerate natural block=0/-1 mtlr calls - they DO occur in this TU; insn-352 mid-block-target fill unexplained).",
    "floor_was": 4,
@@ -32,6 +24,14 @@
    "floor_was": 4,
    "floor_now": 4,
    "note": "committed floor unchanged (o1 not committed: masked 8 > 4; it becomes the better base the moment the qty flip is found, landing at 2). Next: BB2_SCHED read of the o1 sll/lw priorities+luids to derive the lw-first form analytically; permuter PERM_ sweep with BASE = o1. Region-3 unchanged (Window Theorem; source-shape hole)."
+  },
+  {
+   "date": "2026-07-05",
+   "git_head_at_measurement": "aa8cad24",
+   "lever": "SESSION 6G - THE HALF-FLIP: launch mechanism read from source (sched.c birthing_insn_p 2496 + adjust_priority 2566: INSN_PRIORITY=max iff dest is a LIVE SINGLE-SET pseudo; n_deaths always 0 per the stripped-notes comment). Staging the t0-shift through a MULTI-SET variable kills its launch: s4 (o1 order + `status = t0 << 2; t0 = (s32)((u8*)tbl_125c + status);`) = masked 7 with the ARG5 SIDE OF THE EXCHANGE FULLY FIXED (lw->v1, addu-v0, sw all match). Remaining in s4: the t0 chain lands a3/s0 instead of in-place-a0 because (a) status/cnt/i are GLOBAL pseudos with fixed regs (the stage must be a BLOCK-LOCAL multi-set - none exists; fresh 2-set local pending combine-refs-staleness check), and (b) a0 is blocked by the call's fmt-la scheduling before t0's last use - the OLD ledger's fmt-la-late/chain4=a0 hypothesis is now THE final region-1 obstacle. Bonus: the v0-staging FAKEs are byte-INERT in the o1 world (r1-r4 identical) - removable at commit time. Also measured dead: shift-stages via cnt(11)/i(26)/v0(12); new_var/new_var3 stages catastrophic (the mask FAKEs are load-bearing).",
+   "floor_was": 4,
+   "floor_now": 4,
+   "note": "committed floor unchanged; best experimental form s4 = masked 7 (uncommitted). REGION-1 CLOSING COMBO identified: o1 + block-local 2-set shift-stage + fmt-la-late arg spelling => t0 in-place a0 => masked 2. All harness pieces exist (tmp/mar_o1_*.py, mar_s4_diff.py)."
   }
  ],
  "reviewer": {
@@ -67,6 +67,7 @@
   }
  ],
  "prior_sessions_summary": [
+  "2026-07-04 (6ca7b7aa): SESSION 6b - r5d/r5c reproduce the exact target arm-2 shape + NOP in minis (arm-head label, 2nd referencer); relax deleter catalog completed; pass-2 retries measured real; 3992-mint is filled-SEQ-only (load-bearing correction).",
   "2026-07-04 (9c2f17aa): SESSION 6 - empirical trigger-discovery executed; natural-C steal refusal CONFIRMED (mid-thread label, h1); dbr two-pass timing calculus; 5b own_fallthrough closure overturned; permuter finds all rejected.",
   "2026-07-04 (4a3afb71): SESSION 5 - region-3 mechanism decoded (everything-live refusal, BB2_ALLLIVE_LABEL knob-proven 179/179); ref-bump arithmetic verified (u3+sv+iq+ix = exact s-alloc, no byte-clean instantiation); d1/d2 952-tie transposition decoded.",
   "2026-07-03 (d9e490c0): SESSION 4c - twin h5 mirror lands identically; region-1 down to the same {sll4<->addu5} pair; masked 4 = pair-2 + region-3.",
