@@ -1,14 +1,3 @@
-/* HONEST BASELINE (2026-07-05) - masked 30, m2c-tail structure, all THREE
- * unsanctioned register-web cheats stripped to natural C:
- *   idx_1495 = 1 + idx_1494;      (was cross-symbol tbl-derived FAKE)
- *   idx_1496 = idx_1494 + 2;      (was iq3 `+=1;+=1;` double-split)
- *   D_800F19C0 = &D_80016248;     (was idx_1494-rebase FAKE)
- * Kept: sanctioned printf staging (staged-value-reused-variable + pointer-
- * alias, owner-sanctioned 2026-07-03) + saved &= 3 split. Apply to
- * src/system.c, `sandbox marionation_Exec --disable all` must say 30.
- * This is the TRUE resume point; the committed build's masked-4 (mh5, now
- * rejected/mh5-mirage-masked4.c) was a register-masked mirage on the cheats.
- * The whole remaining gap is REGISTER ALLOCATION - see notes.md. */
 s32 marionation_Exec(s32 a0, u8 *a1)
 {
   s32 v0;
@@ -28,10 +17,10 @@ s32 marionation_Exec(s32 a0, u8 *a1)
   D_800F19B8 = sys_VSync(-1) + 0x3C0;
   tbl_125c = D_800A125C;
   idx_1494 = &D_800A1494;
-  idx_1495 = 1 + idx_1494;
+  idx_1495 = (u8 *)((u8 *)tbl_125c + ((s32)&D_800A1494 - (s32)D_800A125C) + 1); /* FAKE: pointer derived from the loaded tbl base instead of &D_800A1495; mechanism: cse.c symbol-fold defeat keeps the reg-relative address (target bytes have the addu chain); lever-exhaustion: direct &-forms fold to lui/addiu, prior sessions (git) */
   idx_1496 = idx_1494 + 2;
   D_800F19BC = 0;
-  D_800F19C0 = &D_80016248;
+  D_800F19C0 = (void *)((u8 *)idx_1496 + ((s32)&D_80016248 - ((s32)&D_800A1494 + 2))); /* FAKE: same reg-relative address family as idx_1495 (cse.c symbol-fold defeat, target-byte-pinned); lever-exhaustion in git history */
   loop:
   v0 = sys_VSync(-1);
 
@@ -53,11 +42,11 @@ s32 marionation_Exec(s32 a0, u8 *a1)
     s32 t0;
     void **pp;
     t0 = idx_1494[0];
-    pp = (void **)&D_800F19C0; /* FAKE: pointer-alias staging (staged-value-reused-variable / pointer-alias, owner-sanctioned 2026-07-03) - the D_800F19C0 load placed early so the a1 arg loads at the target slot */
+    pp = (void **)&D_800F19C0; /* FAKE: pointer-alias staging the D_800F19C0 load early; mechanism: local-alloc.c update_equiv_regs refs-2 sink defeat so the a1 arg loads at target slot 53-54; lever-exhaustion: direct arg forms sink the load (measured, git history) */
     t0 *= 4;
     t0 = (s32)((u8 *)tbl_125c + t0);
-    v0 = idx_1494[1]; /* FAKE: index staged through the (dead-here) v0 var per staged-value-reused-variable (owner-sanctioned 2026-07-03); v0's prior value is dead (re-set below before any read) */
-    v0 <<= 2; /* FAKE: continued staging per staged-value-reused-variable */
+    v0 = idx_1494[1]; /* FAKE: index staged through the (dead-here) v0 var per staged-value-reused-variable (owner-sanctioned 2026-07-03); mechanism: sched.c adjust_priority/birthing_insn_p - the multi-set dest strips the load-late LAUNCH priority so the load places at the target slot; v0's prior value dead (re-set to -1/0 below before any read); lever-exhaustion: notes.md session-4 */
+    v0 <<= 2; /* FAKE: continued staging per staged-value-reused-variable - the shift on v0 keeps the arg5 index-chain non-birthing (sched.c birthing_insn_p) so sll5 places at the target slot */
     arg5 = *(s32 *)(v0 + (s32)tbl_125c);
     debug_printf(&D_800161C8, *pp, D_800A11DC[D_800A11D5], *(s32 *)t0, arg5);
   }
@@ -77,8 +66,7 @@ s32 marionation_Exec(s32 a0, u8 *a1)
   new_var3 = 0xFF;
   if (sys_GetVblankCount() != 0)
   {
-    saved = *D_800A147C_2;
-    saved &= 3;  /* split (y1): sanctioned split-init accumulation */
+    saved = (*D_800A147C_2) & 3;
     do
     {
     status = func_80080828();
@@ -130,12 +118,12 @@ s32 marionation_Exec(s32 a0, u8 *a1)
     goto done;
     check2:
     check = *(idx_1496 - 1) & new_var3;
-    if (check != 0)
+    if (check)
     {
       *(idx_1496 - 1) = 0;
-      dst2 = a1;
       src = (u8 *) (&D_800F19A8);
       i = 7;
+      dst2 = a1;
       if (dst2 != 0)
       {
         do
@@ -149,13 +137,17 @@ s32 marionation_Exec(s32 a0, u8 *a1)
         }
         while (i != (-1));
       }
-      done:
-      return check;
     }
-    v0 = 0;
+    else
+    {
+      goto after_blocks;
+    }
+    done:
+    return check;
+    after_blocks:
     if (a0 != 0)
     {
-      return v0;
+      return 0;
     }
     goto loop;
   }

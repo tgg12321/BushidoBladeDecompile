@@ -1,100 +1,74 @@
-# marionation_Exec — iq3 form (masked 6, full s-web) LAYER-1 FAILED; BLOCKED ON USER RULINGS (2026-07-05)
+# marionation_Exec — HONEST FLOOR = masked 30; remaining gap is 100% REGISTER ALLOCATION (2026-07-05 handoff)
 
-## TL;DR
-THE FRONTIER MEASUREMENT = rejected/cross-symbol-fake-plus-double-split.c
-(masked 6, raw 28, full s-web + printf regs TARGET-CORRECT) — layer-1
-FAILed it on 2 constructs (see meta.json.reviewer): (1) the cross-symbol
-pointer FAKEs (idx_1495 tbl-derived + F19C0 rebase) = an UNSANCTIONED
-family (also present in the restored mh5 candidate.c — retroactive);
-(2) iq3's `+=1; +=1;` double-split exceeds the provisional split-init
-sanction. BOTH load-bearing (no-#1 = masked 30; no-#2 = masked 16).
-SURFACED TO USER — do not carry them forward without rulings.
-candidate.c = mh5 (masked 4, wrong-basin mirage) restored per protocol.
-Recipe of the failed frontier: m2c-tail (fixes region-1 exchange) +
-F19C0-FAKE rebased to idx_1494 (+2 refs) + y1 saved-split + iq3
-(`idx_1496 = idx_1494; +=1; +=1;` — 9 refs survive combine, ONE addiu
-emitted). Ledger
-(BB2_ALLOC_DEBUG): saved 3636→s1, i1494 9r/1800→s2, i1496 9r/1800→s3
-(tie broken allocno-ascending, 76<78), arg1 952→s4, tbl 657→s5, i1495
-405→s6 — ALL CORRECT. Levers measured: FAKE anchor = +2 refs to its
-base pseudo; iq = +2; iq3 = +4; cross-symbol diffs never fold BUT
-anchor must be OPAQUE (tbl = mem-loaded ✓; idx_1494-anchored idx_1495
-FAKE FOLDED — cse traces la constants; F19C0-on-idx_1494 survives
-because &D_80016248-&D_800A1494 spans sections). tbl NEEDS its +2
-(idx_1495 FAKE) to hold s5.
+## TL;DR (read this first — the record was corrected this session)
+The committed build's "masked 4" (mh5) was a **register-masked MIRAGE** built on
+TWO unsanctioned cheats that a fresh cheat-reviewer FAILED. candidate.c is now
+the **HONEST BASELINE = masked 30** (m2c-tail structure, cheats stripped to
+natural C). Resume from candidate.c, NOT from the old mirage. The instruction
+SHAPES are all free from natural C — **the entire remaining gap is the s-register
+allocation** (a knife-edge allocno-priority rotation). No fold, no missing cheat.
 
-## REMAINING 3 RESIDUALS (masked 6 = 2+2+2)
-1. **56/57 pair**: ours `sll a0; addu v0` vs tgt `addu v0; sll a0`
-   (printf block, the t0-shl C-luid order). Old archive: launch law
-   (birthing_insn_p sched.c:2496) — `<<=`/`+=` in-place, `*=` launches.
-2. **86/88 y1 cost**: ours `lbu s1; andi s1,s1` vs tgt `lbu v0; andi
-   s1,v0`. Need saved≥3refs (seat s1) with load in a SEPARATE pseudo:
-   plain=2refs loses seat; any user temp (tmp0/v0-var) rotates web
-   (23/24). UNSOLVED — candidate keeps y1's 2-line cost.
-3. **149 NOP**: check2-beqz slot: tgt NOP, ours fills `move a1,s4` ⇒
-   178 vs 179; lines 150-177 = SHIFT artifact (beqz-s7 was NEVER
-   missing). MECHANISM PINNED (s6n): DBRDBG trace insn=393: fill_slots_
-   from_thread, fall-through side, own=1 likely=0 tif=0, oppregs=
-   20fc0000 (={s2-s7,sp}, a1 NOT live at taken target) ⇒ sb loses
-   (trap=1), move a1,s4 WINS. Forcing all-live at the taken label
-   (BB2_ALLLIVE_LABEL fixpoint {462,101,557}, cc1_alllive) reproduces
-   target EXACTLY — nop + arm-2 [sb;move;la] order together. reorg.c
-   reads (3321-3820, 2186-2255): win needs !sets(opposite_needed)+
-   !trap; own_thread_p checks HEAD labels only (deep done: label
-   irrelevant); scan stops at sb-LOSE only if own=0; find_basic_block
-   = back-to-BARRIER + consecutive-labels vs basic_block_head[] (-1 ⇒
-   all-live). a1 semantically dead on taken path (calls write a1 pre-
-   use) ⇒ original refusal MUST be all-live ⇒ its .L812C4-analog label
-   was NOT resolvable (post-flow-minted/replaced). MEASURED FILLED
-   (shapes that canonicalize back): goto-after indirection, 3rd return
-   stub, explicit else, return-const, tail relocations above-check2 /
-   pre-check (backward targets), r5d far-referencer inapplicable (no
-   label at arm-2 head in TARGET bytes; .L812BC's 2 refs = the done:
-   stub, harmless). Bytes prove NO cross-jump fired (both [j;move
-   v0,a2] stubs present). NEXT: standalone mini of the EXACT new-world
-   tail (uid-stable, fast) bisecting what mints/replaces the label —
-   candidates: jump1 follow_jumps depth/loop-crossing refusals leaving
-   a threadable chain for relax pass, label recreation via
-   redirect+get_label_before in relax_delay_slots.
+## What was PROVEN this session (banked, don't re-derive)
+1. **The FAKEs are register-web gaming, NOT symbol-fold defeat** (their comments
+   lied). Proof (proto_mh5.py): natural `idx_1495 = 1 + idx_1494` emits the exact
+   target `addiu s6,s2,1` (base+offset, no reloc) — identical to the FAKE. The
+   FAKE only changes WHICH registers seat. Same for the iq3 `+=1;+=1;` double-
+   split (ref-count inflation) and the F19C0 rebase. All three are the same cheat
+   class; layer-1 reviewer FAILed them (meta.json.reviewer). DO NOT reintroduce.
+2. **The original used explicit STORED pointers** idx_1494/1495/1496 (candidate
+   structure is right). Proof: full m2c rebuild with field-style accesses
+   `(&D_800A1494)[k]` REGRESSED to masked 65 (GCC re-materializes the base each
+   use). m2c full-rebuild is a DEAD END. Target `addiu s2,1/2` off a held base
+   confirms stored pointers.
+3. **Honest floor = masked 30.** The masked-4/6 forms were all cheat-carrying.
 
-## Ledger arithmetic (BB2_ALLOC_DEBUG drill, tmp/mar_reb_drill.py)
-p78 needs pri ∈ (952, 1800]; L=150 ⇒ pri=133.3×refs ⇒ refs 8-9. Base 5,
-iq→7 (933 < arg1's 952 — why iq alone "did nothing"), iq3→9 ✓. p76
-base 7 + rebase-FAKE 2 = 9. arg1 fixed 4r/84/952 (dst-test respell is
-CSE'd back — can't drop; livelen byte-pinned). MEASURED DEAD: bothnines
-via idx_1495-rebase (FOLDS, head shattered, 25/124); tmp/v0 saved
-splits (23/24); dst-test (16, no-op); tail-end branch-sense respells
-rev/chk/chk2 (16 — jump.c canonicalizes); natural-head all subsets
-(30); i5-split (30); whole-m2c timeout respell (17-24, rotates web).
+## The register problem, fully quantified (ledger_full.py, honest baseline)
+status(s0)/saved(s1)/i1495(s6) already seat CORRECT. The other 5 rotate:
+```
+       ours(honest)          target wants
+  s2   arg1  r4 ll84  p952    i1494
+  s3   i1494 r7 ll150 p933    i1496
+  s4   i1496 r5 ll150 p666    arg1
+  s5   arg0  r2 ll78  p256    tbl
+  s7   tbl   r3 ll152 p197    arg0
+```
+Needed priority order (desc, pri=2*refs*1e4/livelen): i1494 > i1496 > arg1 > tbl
+> i1495 > arg0.
 
-## Target ground truth (asm/funcs/marionation_Exec.s)
-- Regs: status s0, saved s1, i1494 s2, i1496 s3, arg1 s4, tbl s5, i1495
-  s6, arg0 s7; check a2, src a0, i v1, b v0, dst/dst2 a1.
-- arm-2: sb -1(s3); move a1,s4; la F19A8; beqz a1→.L812BC slot=li v1,7;
-  li a3,-1; loop; .L812BC: j .L812CC; move v0,a2. check2 beqz slot=NOP.
-- .L812C4: beqz s7→.L810A4 slot=move v0,0; epilogue .L812CC. Tail has
-  TWO identical [j .L812CC; move v0,a2] (jump-vs-jump cross-jump needs
-  min-2; only 1). Arm-1 check-beqz slot=NOP naturally (verified trace).
-- printf window: t0 chain IN-PLACE in a0; fmt-la LAST; 11DC via $at;
-  11D5 lui+lbu on v0; head idx_1495/6 = addiu s6,s2,1 / addiu s3,s2,2;
-  F19C0 stored from direct la v0,D_80016248.
+## LEVER FOUND (honest, partial): arg1-hold flips the hard pair
+`hold = a1;` at top + `hold` in BOTH copy arms (natural C, ~m2c's var_a1)
+extends arg1's live range → arg1 drops below i1496 → **i1494→s2 ✓ and i1496→s3 ✓
+flip correct** (honest_sweep2 W3). BUT it overshoots the bottom-3 and adds
+register pressure (masked rises to 38 until the rest is fixed). It's a real
+honest lever; it just isn't the whole answer.
 
-## Known gotchas
-- 42 rules index-anchored; end gate = retire-all-42 + full SHA1. Twin
-  csmd4 shares system.c — uid/pseudo spaces COLLIDE in TU logs (segment
-  per function: p82/pri=3636 fingerprint = marionation's block).
-  Declare new_var/new_var3. Permuter finds = PROPOSALS (210-1/220-1
-  REJECTED: int+ptr arith scales ×4 — check `t0 += tbl` patterns).
-- Resume protocol: apply candidate.c to src/system.c, `sandbox
-  marionation_Exec --disable all` must say 6; iterate from there.
+## THE WALL (where the next session starts)
+Bottom-3 are REVERSE-ordered: ours arg0(256)>i1495(202)>tbl(197); target needs
+tbl>i1495>arg0. tbl is dead-last because its live range spans the whole timeout
+loop (ll152). Can't shorten honestly — to stay call-saved tbl must cross a call;
+the only pre-use calls are in the loop; crossing the loop = long ll. Moving the
+load drops tbl to a t-reg (masked 37). Target has tbl long-lived too (s5), so the
+resolution is that the ORIGINAL's arg0/i1495 had EVEN LOWER priority than ours —
+i.e. the exact statement structure sets these livelens. Neither candidate-patch
+nor m2c-rebuild reproduced it this session.
 
-## Tools (local/gitignored; regenerate from here if lost)
-- tmp/gccdbg/cc1 (BB2_DBR/ALLLIVE/ALLOC/QTY/SCHED knobs); drills:
-  tmp/mar_reb_drill.py (ALLOCDBG ledger), tmp/mar_refsweep.py (ref
-  sweep, compile-only), tmp/mar_iq3_score.py (frontier verify),
-  tmp/mar_mk_candidate.py (regen candidate from recipe).
-- Permuters: tmp/perm_mar_iq3 (-j6, base 230) + tmp/perm_csmd4 (-j4);
-  verify pattern: tmp/mar_verify_220.py. Traces: tmp/mar_trigger_gen*.
-- Harness pattern: splice candidate body into src/system.c → engine
-  sandbox → objdump tmp/sandbox/.../system.o vs build/src/system.o →
-  restore src. See tmp/mar_tailend.py for the template.
+## NEXT SESSION — concrete plan
+1. Apply candidate.c → `sandbox marionation_Exec --disable all` == 30 (confirm).
+2. Apply the arg1-hold lever (see honest_sweep2.py W3) → confirm i1494/i1496 flip.
+3. Attack the bottom-3: find natural code that raises tbl's priority above
+   i1495/arg0 WITHOUT dropping tbl to a t-reg, OR lowers arg0/i1495 below tbl.
+   Levers to try: arg0 use-site placement (extend its live range → lower pri);
+   whether i1495 (the callback pointer) can live shorter; the || compound loop
+   condition from m2c (may reshape livelens). ALL must be natural — no ref
+   inflation, no cross-symbol arithmetic, no register pins.
+4. End gate: masked 0 → retire all 42 rules → full SHA1 == oracle → dual
+   adversarial review → queue done → delete WIP.
+
+## Artifacts (this session's worktree was bb2-work-marproto, now removed)
+Harness + full write-up copied to `tmp/marion_handoff/` (gitignored, on-machine):
+FINDINGS.md, honest_baseline.py, honest_sweep{,2,3}.py, ledger_full.py,
+proto_m2c_rebuild.py, proto_mh5.py. Pattern: splice candidate body into
+src/system.c → engine sandbox → objdump tmp/sandbox vs build/src/system.o →
+restore. Debug cc1 (ALLOCDBG ledger): tmp/gccdbg/cc1. rejected/ holds the three
+dead forms (mh5 mirage, iq3 cross-symbol, v0-idx). Twin cpu_side_move_dir_4 has
+the identical structure/problem — the same honest analysis applies.
