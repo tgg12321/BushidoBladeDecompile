@@ -1,10 +1,31 @@
-# marionation_Exec — WIP (2026-07-05 session-8: 8/8 REGS + andi's, masked 6)
+# marionation_Exec — WIP (session-9: saved FIXED masked 4; real-loop breakthrough)
 
 ## TL;DR (current state)
-`tmp/vDT10.c` (saved: progress/vDT10-8of8-WITH-andi-masked6.c) = **ALL 8 callee-saved
-regs match target AND both check `andi ,0xff` masks present, masked 6** (178 vs 179
-insns). The full register rotation (the 10-session wall) is SOLVED with the masks
-intact. candidate.c untouched, oracle green. Only 3 scheduling residuals remain.
+**BEST SCORE: `tmp/vDT30.c` (progress/vDT30-8of8-saved-fixed-masked4.c) = 8/8 regs +
+andi's + saved-stage fixed, masked 4** (goto-loop + do-while(0) weighting). Only pair-swap
++ region-3 remain. candidate.c untouched, oracle green.
+
+## SESSION-9 BREAKTHROUGH: the andi/loop tension is FALSE (real loop is viable)
+Earlier I "proved" region-3 needs a real loop but a real loop breaks the andi's. **WRONG.**
+The andi's break under a real loop ONLY because new_var was set INSIDE the loop. **Hoisting
+`new_var=0xFF; new_var3=0xFF;` to BEFORE the `while(1)`** makes them set-once/dominating →
+update_equiv_regs folds them → **andi's SURVIVE under a real loop** (vDT32, verified: no
+`li sN,255`, checks stay `andi ,0xff`). So the goto-loop is NOT mandatory. Consequence:
+region-3's dbr steal (which needs the loop note, per [[loop-note-fixes-delay-slot-steal]])
+IS fixable in principle — the real `while(1)` gives 179 insns (target count) and s0-s5 come
+out correct NATURALLY (no do-while(0) needed for those).
+**NEW blocker on the real-loop path (vDT32/35, masked 18-21):** the copy-loop `-1` constant
+(`while (i != -1)`) gets LICM-hoisted + GCSE'd across both copy loops into a **9th
+callee-saved reg** (target keeps it caller-saved `li a3,-1` per block) → inflates the frame.
+Re-weighting (dnest i1495 + wrap arg0) shuffles which reg but the -1 ALWAYS claims one
+callee-saved slot (GCC's cost model + s8 always free). `count_to_0` (bnez, no -1) fixes the
+frame but diverges from tgt's `bne i,-1`. Cracking the -1's reg class = the real-loop path's
+key. Real-loop checkpoint: progress/vDT32-realloop-keeps-andis-masked18.c.
+
+## The goto-loop recipe (how vDT30/vDT10 works — the masked-4 best)
+GCC 2.7.2 frequency-weights refs only inside `NOTE_INSN_LOOP_BEG` loops (do/while/for,
+NOT goto-loops). The candidate's outer `goto loop` leaves the body weight-1, so the
+register order is wrong. Fix = candidate body + LOCAL `do{}while(0)` wrappers, each
 
 ## THE SOLUTION recipe (how vDT10 works)
 GCC 2.7.2 frequency-weights refs only inside `NOTE_INSN_LOOP_BEG` loops (do/while/for,
