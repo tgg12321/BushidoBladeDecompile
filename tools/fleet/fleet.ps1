@@ -606,17 +606,20 @@ try {
             # periodically persist the durable fleet logs to git (non-build files).
             # Best-effort: if another session holds the reintegration lock (e.g. a
             # concurrent deep-dive committing wip checkpoints), DEFER to the next
-            # backstop tick rather than crash the supervisor. The acquire is guarded
-            # so a HELD-lock terminating error can never escape and kill the fleet.
+            # backstop tick rather than crash the supervisor. `acquire` throws a
+            # terminating error when the lock is HELD (ErrorActionPreference=Stop),
+            # so try/catch cleanly separates got-it from busy. NB: acquire prints
+            # "ACQUIRED" via Write-Host (information stream), which 2>&1 does NOT
+            # capture — so success is detected by "no exception thrown", never by
+            # parsing output. Release runs ONLY on the path where we truly acquired.
             $main = Get-MainRoot
             if ((git -C "$main" status --porcelain docs/fleet | Out-String).Trim()) {
                 $logLockOk = $false
                 try {
-                    $acq = (& $ReintLock acquire -Label 'fleet-log-commit' 2>&1 | Out-String)
-                    if ($acq -match 'ACQUIRED') { $logLockOk = $true }
-                    else { Write-Host "[supervisor] fleet-log commit deferred (reintegration lock busy); retry next backstop." -ForegroundColor Yellow }
+                    & $ReintLock acquire -Label 'fleet-log-commit' 2>&1 | Out-Null
+                    $logLockOk = $true
                 } catch {
-                    Write-Host "[supervisor] fleet-log commit deferred (lock acquire failed: $($_.Exception.Message)); retry next backstop." -ForegroundColor Yellow
+                    Write-Host "[supervisor] fleet-log commit deferred (reintegration lock busy); retry next backstop." -ForegroundColor Yellow
                 }
                 if ($logLockOk) {
                     try {
