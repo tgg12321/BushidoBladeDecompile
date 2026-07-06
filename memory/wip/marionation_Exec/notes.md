@@ -24,21 +24,32 @@ mechanism-agnostic match device — empty bodies at fn entry / straight-line pro
 not delay-slot-only; grouped with temp-vars/self-assigns). BB2's old "delay-slot only"
 narrowing in do-while-zero-exception.md was over-conservative.
 
-## REMAINING (masked 6, 3 scheduling residuals — all on a CORRECT reg base)
-1. **do_timeout pair-swap** @56/57: target `addu v0,v0,s5` then `sll a0`; ours swapped.
-   Staging reorder (arg5 before t0, vDT12) flips printf-arg regs → WORSE. Leave to permuter.
-2. **saved-stage**: target `lbu v0,0(v0); andi s1,v0`; ours `lbu s1,0(v0); andi s1,s1`.
-   GCC coalesces the load into saved's reg (v0 dead-after). u8/s32/ptr temps + single-
-   expr all fail (savedbatch.py). Coalescing decision — needs the permuter.
-3. **region-3 dbr steal** (1 missing insn → 178 not 179): target `beqz a2; nop; sb
-   zero,-1(s3)`; ours' dbr steals the sb into the beqz delay slot. Goto-loop → the beqz
-   isn't a recognized loop-exit (see loop-note-fixes-delay-slot-steal); the clear's
-   do-while(0) didn't stop it. A real outer loop would but breaks the andi's.
+## REMAINING (masked 6, 3 residuals — STRUCTURALLY DIAGNOSED, session-9)
+Each residual has a lever that fixes it — and each lever regresses something already
+matched. The tensions are PROVEN, not just unfound (see below). The andi's require the
+goto-loop (no LOOP_BEG around checks; target loads are `lbu` so `andi ,0xff` is
+redundant-elided unless new_var defeats it via update_equiv_regs, skipped under LOOP_BEG
+— checkasm.py confirms tgt `lbu v0,0(s3);andi a2,v0,0xff`). That goto-loop is the ROOT of
+all 3 residuals, and it cannot be a real loop.
+1. **do_timeout pair-swap** @56/57: tgt `addu v0,v0,s5`(arg5) then `sll a0`(t0); ours swap.
+   ROOT: GCC evals args R→L so arg5(5th) computes first → lower LUID → wins the tie. My
+   staging computes t0 first (needed to place D_800A11D5 late + keep t0→a0). vDT23 (natural
+   args, pp staged) fixes the pair-swap but mis-places D_800A11D5 → masked 18. arg5-first
+   staging (vDT15) flips t0→v1. Pair-swap ⊥ register/D_800A11D5 placement — can't decouple.
+2. **saved-stage** @86/88: tgt `lbu v0,0(v0);andi s1,v0`; ours `lbu s1;andi s1,s1`. GCC
+   coalesces the byte load into saved's reg. u8/s32/ptr temps + single-expr all coalesce
+   (savedbatch.py). Emergent coalescing decision.
+3. **region-3 dbr steal** @149 (178 vs tgt 179): tgt `beqz a2;nop;sb zero,-1(s3);move
+   a1,s4`; ours' dbr steals `move a1,s4`(dst2=a1) into the delay slot. ROOT (region3b.py+
+   r3sweep.py): dbr steals because a1-reg(=dst2) is DEAD on the beqz-taken(→loop) path.
+   Making dst2 live (vR2: merge dst/dst2) DOES produce the nop — but merging adds refs to a
+   weighted var → s4/s5/s6 reallocate → masked 18. Region-3 fix ⊥ register weighting.
 
-## Permuter (background)
-On the vDT10 base (tmp/perm_mar, main PID in campaign.pid): base score 230, converging
-(→220), `--stop-on-zero`. The 3 residuals are exactly its strength. Finds:
-tmp/perm_mar/output-<score>-N/source.c — PROPOSALS, cheat-vet before use.
+## Permuter — DEAD END (session-9)
+Killed after 1.04M clean-only iters. Best find (output-210) is masked 10 by the honest
+sandbox (WORSE than vDT10's 6) — its weighted score diverges (traded a reg penalty for
+scheduling). No score-0. The 105 was the pre-restart volatile cheat. The residuals resist
+it too.
 
 ## Endgame
 On masked 0 → full-build SHA1 == oracle → **dual cheat-review** (layer-1 in-session +
