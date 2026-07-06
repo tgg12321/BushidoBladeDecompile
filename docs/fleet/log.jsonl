@@ -2332,3 +2332,6 @@
 {"ts":"2026-07-06T03:52:22.4947501Z","kind":"lane-cycle","role":"blocked-worker","outcome":"blocked","func":"func_80045294","lane":"fleet-blk"}
 {"ts":"2026-07-06T04:12:48.4434918Z","kind":"lane-cycle","role":"blocked-worker","outcome":"blocked","func":"func_80045294","lane":"fleet-blk"}
 {"ts":"2026-07-06T04:32:59.0581315Z","kind":"lane-cycle","outcome":"blocked","func":"func_800470B0","role":"backlog-worker","lane":"fleet-bw1"}
+{"ts":"2026-07-06T04:40:17.1828812Z","kind":"lane-cycle","role":"blocked-worker","outcome":"blocked","func":"func_80045294","lane":"fleet-blk"}
+{"ts":"2026-07-06T04:58:31.1697763Z","kind":"main-contamination-cleaned","detail":"?? base_test.o"}
+{"ts":"2026-07-06T04:58:31.2045304Z","kind":"lane-cycle","role":"blocked-worker","outcome":"blocked","func":"func_80045294","lane":"fleet-blk"}
