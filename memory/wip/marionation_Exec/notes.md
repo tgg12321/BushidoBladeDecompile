@@ -1,12 +1,17 @@
-# marionation_Exec — WIP (session-10: both residuals ROOT-CAUSED; masked 4)
+# marionation_Exec — WIP (session-10: residuals root-caused; REVIEWER FAILED the wrap lineage)
 
-## TL;DR (current state)
-**BEST: `progress/vT31-tailwrap-masked4.c` (= vDT30 + inert tail-wrap), masked 4.**
-Two 2-insn residuals remain — the do_timeout pair-swap and the region-3 delay-slot
-steal — and session-10 root-caused BOTH to exact GCC-pass decisions, with a knob-level
-byte-proof for region-3. `src/system.c` untouched, oracle green. The remaining work is
-finding the natural-C spellings that flip two specific compiler tie-breaks (below);
-a permuter campaign on the vT31/vT32 bases is the active lever.
+## TL;DR (current state) — BLOCKED ON OWNER RULING
+**Layer-1 (rev-vt31, 2026-07-06) FAILED the masked-4 lineage**: its 4 do-while(0)
+RA-weighting wraps are register-web gaming by a new spelling (do-while-zero-exception
+sanctions the construct ONLY for reorg label-placement). Measured: wraps removed →
+**masked 30** = the reviewer-clean floor (`progress/vT38-reviewer-clean-masked30.c`).
+The measured-best masked 4 is banked at `rejected/do-while0-ra-weighting-masked4.c`
+(also drops the `saved` widening temp — proven inert). **Owner must rule**: sanction
+do-while(0)-as-RA-weighting (session-9's SOTN research argued yes; the 2026-07-05
+cross-symbol precedent argues no) → resume at 4 with the two root-caused residuals
+(below); or not → resume at 30 via natural statement/live-range shaping only.
+`src/system.c` untouched, oracle green. Permuter campaign (vT32 base) inherits the
+contested wraps — its finds are usable only under a sanction.
 
 ## Residual 1 — pair-swap @56/57 (2 masked pts): FULLY CHARACTERIZED
 - **Order half SOLVED (vT32, progress/)**: put the `arg5 = *(s32*)(v0+(s32)tbl_125c);`
