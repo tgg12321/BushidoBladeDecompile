@@ -1,99 +1,67 @@
-# marionation_Exec — WIP (2026-07-05 session-7: register rotation REACHABILITY PROVEN)
+# marionation_Exec — WIP (2026-07-05 session-8: REGISTER WALL BROKEN, masked 30→8)
 
 ## TL;DR (read first)
-The honest baseline is still `candidate.c` = **masked 30** (m2c-tail, no cheats). This
-session PROVED the target callee-saved allocation is reachable and pinned the exact
-priority targets, but the clean (cheat-free, byte-matching) form is still open.
+The 10-session register-rotation wall is **SOLVED**. `tmp/vDW7.c` (saved:
+progress/vDW7-masked8-8of8regs.c) gets **ALL 8 callee-saved regs matching target**
+(regmatch 8/8) at **masked 8** — 20 below the old honest floor. 3 instructions short
+of a byte match. Two things remain: the 2 elided `andi` masks, and a HONESTY ruling
+on the do-while(0) weighting (below). candidate.c is still the old honest baseline
+(untouched, oracle green) until the do-while(0) question is settled.
 
-**Key correction to the model:** `masked` normalizes register names OUT, so the
-masked-30 floor is **scheduling diffs, NOT the register rotation**. The rotation is a
-RAW-only diff. So closing needs BOTH: (a) the register rotation (raw), and (b) ~4
-independent scheduling residuals (the masked-30). Prior notes conflated these.
+## THE BREAKTHROUGH — how the rotation was solved
+GCC 2.7.2 frequency-weights refs only inside `NOTE_INSN_LOOP_BEG` loops (structured
+do/while/for), NOT goto-loops. The candidate's outer `goto loop` leaves the body
+weight-1, so tbl/i1496/arg1 stay too low and arg0 too high. Fix (vDW3/6/7):
+- Wrap the loop BODY in `do { ... } while (0)` → emits LOOP_BEG → weights the body
+  → i1494>i1496>arg1>tbl>i1495 come out correct.
+- Keep the `if (a0) return; goto loop` arg0 test OUTSIDE the do-while(0) (weight-1)
+  → arg0 lands dead-last at s7. Ledger now = exact target priority order.
+- Use LITERAL `& 0xFF`/`& 3` masks, NOT `new_var` (int) — new_var MATERIALIZES to a
+  saved reg under do-while(0) (update_equiv_regs skips the fold under LOOP_BEG),
+  displacing the rotation (vDW5/8 → 5/8, frame grows to s8).
+- Keep the sanctioned printf staging + saved-stage (via v0).
 
-## The register mechanism (fully quantified, faithful debug cc1)
-allocno pri ≈ FREQ×nrefs/livelen; FREQ = loop-exec weight of the ref sites
-(status inner-poll=30000; arg1/i1494/i1496=20000; arg0/i1495/tbl=10000). All 8
-s-pseudos mutually conflict → allocation is **sequential by priority** → pri order
-== s0..s7 order. Honest baseline ledger (pri desc): arg1 952 > i1494 933 > i1496 666
-> arg0 256 > i1495 202 > tbl 197. TARGET needs: i1494 > i1496 > arg1 > tbl > i1495 > arg0.
-Three inversions: (i1496>arg1), (tbl>i1495), (i1495>arg0).
-**Pre-reload greg ledger == final callee-saved allocation** (verified via reconcile.py) —
-but VERIFY register claims against FINAL objdump; the ledger block-matcher can mislead.
+## REMAINING GAP (masked 8, 176 vs 179 insns) — all scheduling/codegen
+1. **do_timeout pair-swap** (1 diff): target `addu v0,v0,s5` @56 then `sll a0` @57;
+   ours swapped. Reordering the staging (vDW12) flips the printf arg regs — worse.
+   Leave to permuter.
+2. **Two check `andi rX,rY,0xff`** (the 3 missing insns = 2 andi + 1 load-delay nop):
+   target `lbu v0; andi a2,v0,0xff`. VERIFIED candidate.c emits these via `& new_var`
+   (int var → generates the & then folds to immediate 0xff). But new_var MATERIALIZES
+   under do-while(0) (can't coexist). Literal `& 0xFF` folds → andi elided. volatile
+   load, v0-staging, preamble new_var — all fail. This is the crux of the last 3 insns.
 
-## BREAKTHROUGH (diagnostic): param-staging reaches ALL 8 target regs in FINAL asm
-`tmp/vM3.c` (saved: rejected/staging-diagnostic-all-callee-saved-correct.c):
-candidate + `s32 aa; u8 *hold;` + `aa = a0; hold = a1;` placed LATE (after D_800F19C0)
-+ tbl-def-AFTER-idx (T1) + use aa in the a0-test + hold in both copy arms.
-→ FINAL objdump: i1494=s2, i1496=s3, arg1=s4, tbl=s5, i1495=s6, arg0=s7, status=s0,
-saved=s1 — **all target-correct** (first time). masked stays 30 (masked ≠ registers).
-Mechanism: staging LATE gives aa/hold short live ranges (low pri) → arg0→s7, arg1→s4.
+## THE HONESTY QUESTION (needs user ruling — gates acceptance)
+The `do{}while(0)` here is used for its LOOP_BEG **RA-weighting** side-effect; the copy
+blocks `return` (not `break`), so it has no local break-semantic — the "no semantic
+purpose, only codegen" cheat signature. BUT do-while(0) is a sanctioned construct
+([[do-while-zero-exception]], SOTN 18+), and the target's RA appears reproducible ONLY
+with body-weight + arg0-outside == exactly this structure, arguing the ORIGINAL had it
+(faithful). The dedicated rule sanctions do-while(0) for the reorg.c delay-slot effect,
+"NOT a precedent for other wrappers" — so THIS use (RA weighting) is a new application
+needing user sign-off + cheat-review. Until ruled, vDW7 is NOT committed as the match.
 
-## Why vM3 is NOT the answer (two blockers)
-1. **Prologue placement.** Target saves params AT the prologue (`move s7,a0`@insn2,
-   `move s4,a1`@insn4) — the ORIGINAL has a0/a1 DIRECTLY at s7/s4 (params low pri
-   naturally). Staging emits those moves MID-preamble → bytes differ, insn count
-   176 vs 179. Staging can't produce the prologue save (needs the param itself at
-   s7, i.e. low pri WITHOUT a copy — the unsolved crux).
-2. **Cheat-questionable.** `aa=a0`/`hold=a1` are purposeless param copies whose only
-   effect is RA — same family a fresh reviewer FAILs. (`hold=a1` alone was called
-   "honest ~m2c var_a1" in old notes, but a0-staging is new and must clear review.)
+## Permuter campaign (background)
+Running on the vDW7 base (tmp/perm_mar, main PID in campaign.pid): base score 430,
+converging (→385). `--stop-on-zero`. Finds in tmp/perm_mar/output-<score>-N/source.c
+— PROPOSALS to cheat-vet. Targeting the andi + pair-swap.
 
-## THE OPEN CRUX
-Find the NATURAL C structure that gives **arg0 lowest priority** (ll 78→>101, so it
-saves at prologue to s7) and **arg1 3rd** (ll 84→~120), WITHOUT staging copies. arg0
-is used at exactly ONE site (the `if(a0)` loop test) yet flow gives ll=78; extending
-it honestly is the key.
+## Tooling (tmp/, worktree bb2-work-marion)
+- tmp/regmatch.py <c> = reg→value mapping vs target + N/8 rotation-match count (the
+  clean rotation fitness, independent of scheduling). tmp/adiff.py <c> = LCS diff w/
+  branch-address normalization. tmp/probe.py = score+ledger. tmp/mar.sh = WSL wrapper.
+- tmp/gccdbg/cc1 = instrumented cc1 (verified == canonical). m2c junctioned at tools/m2c
+  (tmp/run_m2c.sh). Progress bodies in memory/wip/marionation_Exec/progress/.
 
-## m2c RESULT (2026-07-05, now WORKING — junctioned main's tools/m2c into worktree)
-Run: `wsl bash tmp/run_m2c.sh` (m2c -t mipsel-gcc-c --valid-syntax -f marionation_Exec).
-Faithful structure revealed → tmp/vMC.c is the direct transcription. Findings:
-- **arg0 is used DIRECTLY** (`if (arg0 != 0)`), NOT staged. => the session-7 `aa=a0`
-  staging diagnostic is UNFAITHFUL (confirmed cheat, not the original). Drop it.
-- arg1 gets TWO copies (var_a1 block1 / var_a1_2 block2); block1 checks arg1, block2
-  checks the copy — candidate.c ALREADY matches this (dst/dst2). Not the lever.
-- Outer loop = compound `||` timeout condition + `v0_2` flag + `v0=-1` default gated
-  by `if(v0_2==0)`. Target holds all 3 idx regs (s2/s6/s3) => STORED pointers right,
-  m2c's field-style is a decompiler artifact (confirms candidate).
-- **Direct transcription vMC = masked 49 (WORSE than candidate 30)**, arg0→s5 arg1→s1.
-  The candidate's goto structure beats raw m2c; the compound-`||` does NOT fix arg0.
-=> m2c did not unlock the match. candidate.c (masked 30, goto structure, stored
-  pointers) remains the best honest base. arg0→s7 still unreproduced by honest C.
+## Variant ladder (regmatch / masked)
+- candidate.c: 3/8, masked 30 (honest baseline, goto-loop).
+- vDW2 (structured do-while(a0==0)): 5/8, masked 49 (arg0 over-weighted by while-cond).
+- vDW3 (do-while(0) body + goto arg0, literal masks): 8/8, masked 34.
+- vDW6 (candidate body + literal masks + do-while(0)): 8/8, masked 10.
+- vDW7 (vDW6 + saved-stage): 8/8, **masked 8** ← current best.
+- vDW5/8 (new_var + do-while(0)): 5/8 — new_var materializes. DEAD.
 
-## Scheduling residuals (the masked-30, independent of registers)
-1. do_timeout pair-swap: `sll a0; addu v0,v0,tbl` order (idx 56/57).
-2. saved-stage: target `lbu v0; andi s1,v0` vs ours `lbu s1; andi s1,s1` — try
-   staging saved through v0 (`v0=*D_800A147C_2; saved=v0&3`, sanctioned reuse).
-3. copy-loop a0/a1 (src/dst) allocation swap in block1.
-4. prologue param-save order (tied to the crux above).
-
-## DEAD ENDS confirmed this session (don't repeat)
-- tail-restructure (shared epilogue): raw↓ but BREAKS staging (masked 51).
-- do-while(a0==0) outer loop: refs DOUBLE (loop-depth weight), masks materialize
-  as register-and, +2 insns (masked 48). Confirms old note.
-- staging placed FIRST: aa/hold get long ranges → high pri → allocation reverts.
-- branch-sense flip, faithful-preamble reorder: NO-OPS (GCC canonicalizes/reschedules).
-- tbl load moved into loop / do_timeout: overshoots (freq doubles) or drops to t-reg.
-- T1 needed for tbl/i1495 order, but T1 makes setup order (i1494-first) differ from
-  target (tbl-first) — a tension staging doesn't resolve.
-
-## Tooling (all in tmp/, worktree bb2-work-marion; regenerate from this note if lost)
-- tmp/gccdbg/cc1 = instrumented debug cc1 (copied from main tmp/gccdbg; VERIFIED
-  byte-identical codegen to canonical build/cc1 via verify_dbgcc1.py).
-- tmp/mar.sh = WSL venv wrapper. Run: `wsl bash <abs>/tmp/mar.sh tmp/<tool>.py <args>`.
-- tmp/probe.py <cand> = masked score + callee-saved mapping + allocno ledger.
-- tmp/adiff.py <cand> = LCS-aligned objdump diff (ours vs target).
-- tmp/genprobe.py = batch variant generator/prober. tmp/ledger3.py, reconcile.py.
-
-## Next session
-1. Apply candidate.c, confirm sandbox==30 (honest floor). vM3/staging = confirmed
-   UNFAITHFUL cheat (m2c proves arg0 is direct); do NOT resume from it.
-2. m2c is junctioned (tools/m2c) + tmp/run_m2c.sh works; the structure is fully
-   extracted above — no need to re-run unless probing a variant.
-3. The crux is narrow: arg0 (used once, direct) has flow ll=78 in EVERY structure
-   tried (candidate, m2c, vMC) but target needs >101 (→s7). Next ideas UNTRIED:
-   (a) directed permuter from candidate.c (clean base, insn-count-matched) —
-   automated search for the livelen perturbation; vet finds for cheats.
-   (b) instrument WHY flow gives arg0 ll=78 (BB2 flow.c reg_live_length walk) vs
-   what target's structure would give — the gap is one specific CFG/live-set detail.
-4. Knock down scheduling residuals independently (saved-stage via sanctioned v0 reuse).
-Infra note: setup_worktree.ps1 should junction tools/m2c (main has it; worktrees don't).
+## Next
+1. Close the 2 andi's: permuter, OR find a non-new_var andi that survives do-while(0).
+2. Fix pair-swap (permuter).
+3. On masked 0 → full SHA1 gate → cheat-reviewer (esp. the do-while(0) use) → user ruling.
