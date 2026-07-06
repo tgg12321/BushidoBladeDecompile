@@ -2330,3 +2330,5 @@
 {"ts":"2026-07-06T03:42:45.0371190Z","kind":"lane-cycle","role":"blocked-worker","outcome":"blocked","func":"func_80045294","lane":"fleet-blk"}
 {"ts":"2026-07-06T03:48:19.5012671Z","kind":"lane-cycle","outcome":"blocked","func":"func_800477E8","role":"backlog-worker","lane":"fleet-bw1"}
 {"ts":"2026-07-06T03:52:22.4947501Z","kind":"lane-cycle","role":"blocked-worker","outcome":"blocked","func":"func_80045294","lane":"fleet-blk"}
+{"ts":"2026-07-06T04:12:48.4434918Z","kind":"lane-cycle","role":"blocked-worker","outcome":"blocked","func":"func_80045294","lane":"fleet-blk"}
+{"ts":"2026-07-06T04:32:59.0581315Z","kind":"lane-cycle","outcome":"blocked","func":"func_800470B0","role":"backlog-worker","lane":"fleet-bw1"}
