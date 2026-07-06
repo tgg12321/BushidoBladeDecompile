@@ -1,119 +1,81 @@
-# marionation_Exec — WIP (session-9: saved FIXED masked 4; real-loop breakthrough)
+# marionation_Exec — WIP (session-10: both residuals ROOT-CAUSED; masked 4)
 
 ## TL;DR (current state)
-**BEST SCORE: `tmp/vDT30.c` (progress/vDT30-8of8-saved-fixed-masked4.c) = 8/8 regs +
-andi's + saved-stage fixed, masked 4** (goto-loop + do-while(0) weighting). Only pair-swap
-+ region-3 remain. candidate.c untouched, oracle green.
+**BEST: `progress/vT31-tailwrap-masked4.c` (= vDT30 + inert tail-wrap), masked 4.**
+Two 2-insn residuals remain — the do_timeout pair-swap and the region-3 delay-slot
+steal — and session-10 root-caused BOTH to exact GCC-pass decisions, with a knob-level
+byte-proof for region-3. `src/system.c` untouched, oracle green. The remaining work is
+finding the natural-C spellings that flip two specific compiler tie-breaks (below);
+a permuter campaign on the vT31/vT32 bases is the active lever.
 
-## SESSION-9 BREAKTHROUGH: the andi/loop tension is FALSE (real loop is viable)
-Earlier I "proved" region-3 needs a real loop but a real loop breaks the andi's. **WRONG.**
-The andi's break under a real loop ONLY because new_var was set INSIDE the loop. **Hoisting
-`new_var=0xFF; new_var3=0xFF;` to BEFORE the `while(1)`** makes them set-once/dominating →
-update_equiv_regs folds them → **andi's SURVIVE under a real loop** (vDT32, verified: no
-`li sN,255`, checks stay `andi ,0xff`). So the goto-loop is NOT mandatory. Consequence:
-region-3's dbr steal (which needs the loop note, per [[loop-note-fixes-delay-slot-steal]])
-IS fixable in principle — the real `while(1)` gives 179 insns (target count) and s0-s5 come
-out correct NATURALLY (no do-while(0) needed for those).
-**Real-loop CLEAN 8/8 recipe (vDT48, masked 18)** = real while(1) + new_var hoisted + saved
-widening-temp + **neg1** (`s32 neg1;neg1=-1;` after poll, `while(i!=neg1)`) + **elem_ptr**
-(`s32 *a2p=&D_800A11DC[D_800A11D5]; *a2p` — pointer-to-element kills the D_800A11DC LICM
-hoist) + **tbl-def double-nest** (`do{do{tbl_125c=D_800A125C;}while(0)}while(0)` weights tbl
-→ s5 WITHOUT the staging-wrap's do_timeout scramble) + drop do_timeout wrapper + clears
-un-nested. All 8 main vars land s0-s7, do_timeout CLEAN.
-**THE CONSERVATION BARRIER (why masked 18 > vDT30's 4, confirmed fundamental):** the real
-loop's LICM promotes EXACTLY ONE loop-invariant (new_var / new_var3 / the D_800A11DC base)
-into a 9th callee-saved reg (s8) → frame +8 → cascade. I can move WHICH one takes s8
-(elem_ptr moves it off the address onto new_var3; nv3-before-check2 moves it onto new_var)
-but NEVER eliminate it — it's conserved. The goto-loop (no LICM) folds ALL of them via
-update_equiv_regs (both andi's, no s8) → 8 regs. The target ALSO fits 8 in a real loop, so
-GCC there promotes none — a global-alloc/update_equiv_regs tipping point I traced (reorg.c
-mostly_true_jump needs the loop note; loop.c move_movables: single-use-address substitution
-fails on indexed mem; move threshold `thr*savings*lifetime>=insn_count`, D_800A11DC life=2)
-but can't flip from C. Plus tbl-def perturbs the preamble (~3) + the pair-swap. So the
-region-3 fix (~2) is out-weighed. **vDT30 (goto, masked 4) stays best.** Checkpoints:
-progress/vDT45-...masked23.c, vDT48-realloop-clean-8of8-masked18.c.
+## Residual 1 — pair-swap @56/57 (2 masked pts): FULLY CHARACTERIZED
+- **Order half SOLVED (vT32, progress/)**: put the `arg5 = *(s32*)(v0+(s32)tbl_125c);`
+  statement BEFORE `t0 *= 4; t0 = tbl + t0;` (loads stay first). LUID tie flips →
+  `addu v0,v0,s5` then `sll a0` ✓ target order.
+- **Cost: the two temps exchange seats** (t0-web→v1, arg5val→a0; target wants a0/v1).
+  Root (QTYDBG, local-alloc.c qty_compare): pri = floor_log2(refs)·refs·size/life;
+  ours: addr-temp 102 {r4 l4}=8.0 → v0 ✓; t0-web 104 {r4 l6}=5.33; arg5val 97 {r4 l6}
+  =5.33 — EXACT TIE, broken by qty birth order (104 first → v1). Target needs 97 ≥
+  104: arg5val needs weighted refs 6 (density 8.0) or t0-web needs refs 2.
+- **Measured dead**: fresh temps for shift or sum re-time the head (launch: vT34=11,
+  vT33=16); extra do-while(0) nesting to reweight refs perturbs sched (vT35=15,
+  vT36=14 — note streams shift LUIDs); all flat respellings canonicalize (6 forms = 8).
+- Twin lore (cpu_side_move_dir_4 g3): same pair; "multi-set arg5 VALUE-staging keeping
+  the lw-dest split" is the untried class there too.
 
-## The goto-loop recipe (how vDT30/vDT10 works — the masked-4 best)
-GCC 2.7.2 frequency-weights refs only inside `NOTE_INSN_LOOP_BEG` loops (do/while/for,
-NOT goto-loops). The candidate's outer `goto loop` leaves the body weight-1, so the
-register order is wrong. Fix = candidate body + LOCAL `do{}while(0)` wrappers, each
-weighting the pseudos used in the wrapped region, WITHOUT wrapping the check masks
-(so `new_var` folds late → the andi's survive — a full-body do-while(0) breaks them):
-- `do{}while(0)` around **do_timeout** → weights tbl (→ s5).
-- `do{}while(0)` around the **poll block** (GetVblank..*D_800A147C_2=saved) → i1494/i1495.
-- `do{}while(0)` around **each idx_1496 clear** (`*idx_1496=0`, `*(idx_1496-1)=0`) →
-  weights i1496 above arg1. The FIRST clear is DOUBLE-nested
-  (`do{do{*idx_1496=0;}while(0);}while(0)`) → i1496 pri 1600 (> arg1 952).
-- new_var/new_var3 masks + the copy blocks stay OUTSIDE all wrappers.
-do-while(0) adds NO runtime instructions (control-flow only) — pure RA/scheduling
-weighting. **SOTN-sanctioned** (2026-07-05 research: SOTN uses do-while(0) as a
-mechanism-agnostic match device — empty bodies at fn entry / straight-line prove it's
-not delay-slot-only; grouped with temp-vars/self-assigns). BB2's old "delay-slot only"
-narrowing in do-while-zero-exception.md was over-conservative.
+## Residual 2 — region-3 dbr steal @149 (2 masked pts): MECHANISM BYTE-PROVEN
+- reorg processes fill_simple for ALL insns first: check1's `dst=a1` move is eaten by
+  beqz-s4's slot (simp nearest-first) → out of the steal window → check1 nop ✓ free.
+  check2's window keeps its move (li v1,7 is nearest to beqz-a1 instead) → the eager
+  fall-through fill steals `move a1,s4` into check2-beqz's slot (WINNER trial=450).
+- **Knob byte-proof**: canonical cc1 has env-gated what-if knobs;
+  `BB2_ALLLIVE_LABEL=513,627` (the tail thread insn + its pass-2 SEQUENCE uid) forces
+  all-live at the tail → move REJECTED (setsopp=1) → asm == target region-3 EXACTLY
+  (beqz;nop;sb;move + backedge beqz s7;move v0,zero). Diagnostic only — NOT a lever.
+- **Impossibility results (don't re-derive)**: genuine a1-liveness at the tail is
+  impossible in ANY spelling (every pseudo live there crosses the loop's calls →
+  callee-saved only; flow/forward-scan both accurate). own_fallthrough=0 needs a
+  CODE_LABEL right after beqz-a2 with surviving uses — semantically impossible
+  (do-while(0) top labels get deleted; while(cond-false-but-unprovable) backedges add
+  bytes). Young-label→find_basic_block(-1)→all-live is the only reachable route and
+  needs a post-flow label; cross-jump does NOT fire in this toolchain config (proven:
+  our two identical `j epi; move v0,a2` tails stay unmerged in ours AND target).
+- **Prediction is NOT the blocker**: vT31's tail-wrap (`do { tail: if (a0==0) goto
+  loop; } while(0); return 0;` — LOOP_BEG right before the interior label) makes
+  mostly_true_jump return 2 (verified likely=1 in DBRDBG) — but after the target-thread
+  fill fails, reorg still fills from an owned fall-through. Keep the wrap anyway
+  (harmless, matches the backedge/v0=0 slot shape naturally).
 
-## SESSION-9 UPDATE: saved-stage FIXED → masked 4 (vDT30, 8/8 regs)
-`tmp/vDT30.c` (saved: progress/vDT30-8of8-saved-fixed-masked4.c) = vDT10 + the saved-stage
-fix. Replace `saved=*D_800A147C_2; saved&=3;` with **`{ s32 _b; _b = *D_800A147C_2; saved =
-_b & 3; }`** — a widening temp that de-ties the byte load from saved's callee-saved reg
-(byte prefers its def-side v0 reuse instead of coalescing into s1). Now tgt-matches
-`lbu v0,0(v0); andi s1,v0`. (Also works: `saved = 3 & *ptr` operand-swap, `explicit_ptr_byte`
-— all masked 4. Widening temp is the cleanest/most defensible.) 8/8 regs intact.
-Only 2 residuals left: pair-swap + region-3.
+## The goto-loop recipe (vDT30/vT31 base — unchanged, still load-bearing)
+GCC 2.7.2 weights refs only inside LOOP_BEG loops; the outer cycle stays a goto-loop
+(masks fold via update_equiv_regs refs==2 → immediate `andi ,0xff`; no LICM → no s8);
+do{}while(0) wrappers weight chosen regions: do_timeout (tbl→s5), poll (i1494/i1495),
+idx_1496 clears (double-nest first clear → i1496 over arg1). saved widening temp
+`{s32 _b; _b=*D_800A147C_2; saved=_b&3;}`. Masks + copy blocks stay unwrapped.
+REAL-LOOP family is a dead end: LICM promotes exactly one invariant to s8 (conservation
+barrier); u8-typed checks kill the masks entirely (vU1/vU2=17: PROMOTE_MODE keeps u8
+locals SI-extended, combine merges lbu+extension when the value dies — andi needs the
+mask-var reload-substitution, which needs the goto-loop refs==2 fold).
 
-## REMAINING (masked 4, 2 residuals — pair-swap + region-3)
-NOTE: masked-6-era numbering; saved-stage (was #2) is now FIXED. Remaining:
-Each residual has a lever that fixes it — and each lever regresses something already
-matched. The tensions are PROVEN, not just unfound (see below). The andi's require the
-goto-loop (no LOOP_BEG around checks; target loads are `lbu` so `andi ,0xff` is
-redundant-elided unless new_var defeats it via update_equiv_regs, skipped under LOOP_BEG
-— checkasm.py confirms tgt `lbu v0,0(s3);andi a2,v0,0xff`). NOTE: goto-loop is NOT
-mandatory — with new_var HOISTED a real loop keeps the andi's (session-9 breakthrough);
-but the real loop pays the LICM address-hoist tax (see breakthrough section) so vDT30 wins.
-1. **do_timeout pair-swap** @56/57: tgt `addu v0,v0,s5`(arg5) then `sll a0`(t0); ours swap.
-   ROOT: GCC evals args R→L so arg5(5th) computes first → lower LUID → wins the tie. My
-   staging computes t0 first (needed to place D_800A11D5 late + keep t0→a0). vDT23 (natural
-   args, pp staged) fixes the pair-swap but mis-places D_800A11D5 → masked 18. arg5-first
-   staging (vDT15) flips t0→v1. Pair-swap ⊥ register/D_800A11D5 placement — can't decouple.
-   vDT25 (arg5 chain before t0 chain) FIXES the pair-swap ORDER but swaps do_timeout temps
-   idx[0]↔arg5 (v1/a0, masked 10): named staging vars are long-lived→v1; tgt's natural temps
-   are short-lived→a0. 3-way ⊥ {pair-swap, temps-a0, D_800A11D5-late}; vDT30 gets 2 of 3.
-2. **~~saved-stage~~ FIXED** (widening temp, see session-9 update above).
-3. **region-3 dbr steal** @149 (178 vs tgt 179): tgt `beqz a2;nop;sb zero,-1(s3);move
-   a1,s4`; ours' dbr steals `move a1,s4`(dst2=a1) into the delay slot. ROOT (region3b.py+
-   r3sweep.py): dbr steals because physical-a1(=dst2) is DEAD on the beqz-taken(→loop) path.
-   Making it live (vR2 merge dst/dst2) DOES give the nop — but the merge just RELOCATES the
-   steal to copy-block-1 (W1/mergetune.py: merge + double-nest arg1 restores 8/8 AND keeps
-   block-2 nop, but block-1 now steals → masked 9). Emergent physical-a1 liveness at each
-   beqz's loop-taken path; can't get both blocks live at once yet.
+## DBR/QTY tooling (all in tmp/, worktree bb2-work-marion)
+- probe.py (splice+sandbox+greg ledger), adiff.py (LCS diff), dumpours.py.
+- dbrdbg.py / candbr*.py (BB2_DBR_DEBUG traces), qtydbg.py (BB2_QTY_DEBUG),
+  rtlorder.py / notecheck.py / pseudomap.py (RTL dumps), knobs.py / knobsb.sh
+  (what-if knobs vs canonical cc1). Canonical cc1 knobs: BB2_ALLLIVE_LABEL,
+  BB2_DBR_DEBUG, BB2_NO_FT_STEAL (env-gated, inert unset; oracle green proves it).
+- gccdbg cc1 lacks ALLLIVE — use ../../tools/gcc-2.7.2/cc1 for that knob.
 
-## Permuter — DEAD END (session-9)
-Killed after 1.04M clean-only iters. Best find (output-210) is masked 10 by the honest
-sandbox (WORSE than vDT10's 6) — its weighted score diverges (traded a reg penalty for
-scheduling). No score-0. The 105 was the pre-restart volatile cheat. The residuals resist
-it too.
+## NEXT SESSION
+1. Confirm vT31 masked 4 (`tmp/probe.py progress/vT31-tailwrap-masked4.c`).
+2. Permuter campaign on vT31 + vT32 bases (import.py flow, not hand-patched base —
+   see HANDOFF.md session-9 note). The two residuals are exactly the blind-search-
+   friendly kind (statement order / temp splitting / wrapper placement permutations).
+3. Hand levers still open: arg5val refs 6 via a natural second ref that doesn't
+   re-time the head; region-3 structural spellings that shift the check2 fall-through
+   window (positions of dst2=a1 / i=7 / src=... relative to fill_simple consumers).
+4. On masked 0: retire 42 rules, full SHA1, dual review, queue done, delete WIP.
 
-## Endgame
-On masked 0 → full-build SHA1 == oracle → **dual cheat-review** (layer-1 in-session +
-layer-2 fresh cheat-reviewer) of: the nested do-while(0) RA-weighting (SOTN-sanctioned,
-cite the research) + the sanctioned printf staging + saved split → retire the 42 rules
-+ the register pin → `queue done` → delete WIP.
-
-## Tooling (tmp/, worktree bb2-work-marion; regen from this note if lost)
-- tmp/regmatch.py <c> = reg→value map + N/8 rotation-match (clean rotation fitness).
-- tmp/adiff.py <c> = LCS diff w/ branch-addr normalization. tmp/probe.py = score+ledger.
-- tmp/mar.sh = WSL wrapper (`wsl bash <abs>/tmp/mar.sh tmp/<tool>.py <args>`).
-- tmp/gccdbg/cc1 = instrumented cc1 (verified == canonical). m2c at tools/m2c
-  (tmp/run_m2c.sh). Progress bodies in progress/.
-
-## Variant ladder (regmatch / masked)
-- candidate.c: 3/8, masked 30 (goto-loop baseline). vDT10: 8/8 + andi's, masked 6.
-- **vDT30 (vDT10 + saved widening-temp): 8/8 + andi's + saved, masked 4** ← CURRENT BEST.
-- vDT48 (real loop, clean 8/8, region-3-fixable): masked 18 (conservation: 9th callee reg).
-
-## DEAD ENDS (don't repeat)
-- Full-body do-while(0) breaks andi's. Real while(1) breaks them ONLY if new_var is set
-  inside the loop — HOIST new_var before the loop and the andi's survive (breakthrough).
-- staged raw byte (raw=*idx_1496; check=raw&nv): folds (raw is a proven byte) → no andi.
-- arg1-hold / shared-epilogue tail: didn't drop arg1 cleanly (fixed instead by weighting
-  i1496 UP via the clear-wrappers).
-- staging reorder (pair-swap): flips printf-arg regs, worse.
+## Variant ladder (masked)
+candidate.c/vT31: 4 ← BEST. vT32 (order fix, temps traded): 8. vDT10: 6 (pre saved-fix).
+vT33 in-call add: 16. vT34 sum-split: 11. vT35/vT36 nest-reweight: 15/14. vU1/vU2
+(u8 checks, real loop, no s8): 17. vDT48 real-loop: 18. m2c rebuild: 65.
