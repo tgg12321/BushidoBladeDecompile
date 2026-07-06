@@ -2374,3 +2374,4 @@
 {"ts":"2026-07-06T13:17:59.1162343Z","kind":"merge-gate-failed","func":"func_80089EB0","reason":"oracle-gate-failed"}
 {"ts":"2026-07-06T13:48:31.1900628Z","kind":"merge-gate-failed","func":"func_80089EB0","reason":"oracle-gate-failed"}
 {"ts":"2026-07-06T14:18:32.3848068Z","kind":"merge-gate-failed","func":"func_80089EB0","reason":"oracle-gate-failed"}
+{"ts":"2026-07-06T15:00:17.1965112Z","kind":"merge-gate-failed","func":"spu_SetMotionActive","reason":"oracle-gate-failed"}
