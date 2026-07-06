@@ -2371,3 +2371,4 @@
 {"ts":"2026-07-06T12:20:44.2710353Z","kind":"lane-cycle","outcome":"blocked","func":"func_8001E6E4","role":"backlog-worker","lane":"fleet-bw1"}
 {"ts":"2026-07-06T12:32:38.3251036Z","kind":"lane-cycle","role":"blocked-worker","outcome":"blocked","func":"func_80049718","lane":"fleet-blk"}
 {"ts":"2026-07-06T12:43:30.6159954Z","kind":"lane-cycle","outcome":"blocked","func":"func_80089EB0","role":"backlog-worker","lane":"fleet-bw1"}
+{"ts":"2026-07-06T13:17:59.1162343Z","kind":"merge-gate-failed","func":"func_80089EB0","reason":"oracle-gate-failed"}
