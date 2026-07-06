@@ -2360,3 +2360,6 @@
 {"ts":"2026-07-06T09:40:44.7386081Z","kind":"merge-gate-failed","func":"spu_SetMotionActive","reason":"oracle-gate-failed"}
 {"ts":"2026-07-06T09:52:07.9967129Z","kind":"merge-gate-failed","func":"func_80089EB0","reason":"merge-conflict"}
 {"ts":"2026-07-06T10:07:53.0876841Z","kind":"lane-cycle","role":"blocked-worker","outcome":"blocked","func":"func_8006B92C","lane":"fleet-blk"}
+{"ts":"2026-07-06T10:27:43.5646315Z","kind":"lane-cycle","role":"blocked-worker","outcome":"blocked","func":"func_8006B92C","lane":"fleet-blk"}
+{"ts":"2026-07-06T10:36:43.0068870Z","kind":"lane-cycle","outcome":"blocked","func":"PutShadowRmd","role":"backlog-worker","lane":"fleet-bw1"}
+{"ts":"2026-07-06T10:39:39.1451980Z","kind":"lane-cycle","role":"blocked-worker","outcome":"blocked","func":"func_8006B92C","lane":"fleet-blk"}
