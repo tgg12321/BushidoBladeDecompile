@@ -1,0 +1,19 @@
+diff --git a/src/code6cac.c b/src/code6cac.c
+index b11f960f..e15b8781 100644
+--- a/src/code6cac.c
++++ b/src/code6cac.c
+@@ -1742,11 +1742,11 @@ void func_8001E6E4(s32 arg0) {
+     local.rz = *(u16 *)((u8 *)s2 + 0x14) + (u16)D_800FF5DC;
+ 
+     local.dist = *(s32 *)((u8 *)s2 + 0x18) + D_800FF5E0;
+-    func_80046BF4((s32 *)&local, &local.rx, local.dist);
+-
+     {
++        s32 *p0 = (s32 *)&local;
+         s32 *p20 = (s32 *)((u8 *)s2 + 0x20);
+-        func_8001A538((s32 *)&local, p20);
++        func_80046BF4(p0, &local.rx, local.dist);
++        func_8001A538(p0, p20);
+         func_80061064((s32 *)&local.rx, p20);
+     }
+ 

@@ -2322,3 +2322,6 @@
 {"ts":"2026-07-05T23:41:58.1534301Z","kind":"merge-gate-failed","reason":"oracle-gate-failed","func":"func_800651F0"}
 {"ts":"2026-07-05T23:46:33.1220131Z","kind":"lane-cycle","role":"blocked-worker","outcome":"blocked","func":"func_80045878","lane":"fleet-blk"}
 {"ts":"2026-07-06T00:08:58.3707584Z","kind":"lane-cycle","role":"blocked-worker","outcome":"blocked","func":"func_800651F0","lane":"fleet-blk"}
+{"ts":"2026-07-06T02:38:44.9199872Z","kind":"lane-cycle","outcome":"blocked","func":"func_80045878","role":"blocked-worker","lane":"fleet-blk"}
+{"ts":"2026-07-06T02:47:36.3557587Z","kind":"lane-cycle","outcome":"blocked","func":"func_8007C4B8","role":"blocked-worker","lane":"fleet-blk"}
+{"ts":"2026-07-06T02:59:32.3796195Z","kind":"lane-cycle","role":"backlog-worker","lane":"fleet-bw1","func":"func_8001E6E4","outcome":"needs-decision"}
