@@ -603,14 +603,27 @@ try {
             if (-not (Test-OracleRebuild)) { Trip-Circuit "oracle backstop: main not green" }
             else { $script:LastGreen = (Get-MainHead) }
             $lastBackstop = Get-Date
-            # periodically persist the durable fleet logs to git (non-build files)
+            # periodically persist the durable fleet logs to git (non-build files).
+            # Best-effort: if another session holds the reintegration lock (e.g. a
+            # concurrent deep-dive committing wip checkpoints), DEFER to the next
+            # backstop tick rather than crash the supervisor. The acquire is guarded
+            # so a HELD-lock terminating error can never escape and kill the fleet.
             $main = Get-MainRoot
             if ((git -C "$main" status --porcelain docs/fleet | Out-String).Trim()) {
-                & $ReintLock acquire -Label 'fleet-log-commit' 2>&1 | Out-Null
+                $logLockOk = $false
                 try {
-                    git -C "$main" add docs/fleet 2>&1 | Out-Null
-                    git -C "$main" commit -m "fleet: log + adjudication/incident/regression records [skip-park-src-guard]" 2>&1 | Out-Null
-                } finally { & $ReintLock release 2>&1 | Out-Null }
+                    $acq = (& $ReintLock acquire -Label 'fleet-log-commit' 2>&1 | Out-String)
+                    if ($acq -match 'ACQUIRED') { $logLockOk = $true }
+                    else { Write-Host "[supervisor] fleet-log commit deferred (reintegration lock busy); retry next backstop." -ForegroundColor Yellow }
+                } catch {
+                    Write-Host "[supervisor] fleet-log commit deferred (lock acquire failed: $($_.Exception.Message)); retry next backstop." -ForegroundColor Yellow
+                }
+                if ($logLockOk) {
+                    try {
+                        git -C "$main" add docs/fleet 2>&1 | Out-Null
+                        git -C "$main" commit -m "fleet: log + adjudication/incident/regression records [skip-park-src-guard]" 2>&1 | Out-Null
+                    } finally { & $ReintLock release 2>&1 | Out-Null }
+                }
             }
         }
 
