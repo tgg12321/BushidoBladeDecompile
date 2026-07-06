@@ -2338,3 +2338,6 @@
 {"ts":"2026-07-06T05:07:42.6281122Z","kind":"lane-cycle","role":"blocked-worker","outcome":"blocked","func":"func_80045294","lane":"fleet-blk"}
 {"ts":"2026-07-06T05:23:41.8748369Z","kind":"lane-cycle","role":"blocked-worker","outcome":"blocked","func":"func_80045294","lane":"fleet-blk"}
 {"ts":"2026-07-06T05:34:10.1344521Z","kind":"lane-cycle","outcome":"blocked","func":"func_800826CC","role":"backlog-worker","lane":"fleet-bw1"}
+{"ts":"2026-07-06T05:47:11.3695483Z","kind":"lane-cycle","role":"blocked-worker","outcome":"blocked","func":"func_80037A20","lane":"fleet-blk"}
+{"ts":"2026-07-06T05:55:20.6913563Z","kind":"lane-cycle","role":"blocked-worker","outcome":"blocked","func":"func_80037A20","lane":"fleet-blk"}
+{"ts":"2026-07-06T06:04:47.6629192Z","kind":"lane-cycle","role":"blocked-worker","outcome":"blocked","func":"func_80037A20","lane":"fleet-blk"}
