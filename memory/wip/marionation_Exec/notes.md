@@ -14,20 +14,24 @@ update_equiv_regs folds them → **andi's SURVIVE under a real loop** (vDT32, ve
 region-3's dbr steal (which needs the loop note, per [[loop-note-fixes-delay-slot-steal]])
 IS fixable in principle — the real `while(1)` gives 179 insns (target count) and s0-s5 come
 out correct NATURALLY (no do-while(0) needed for those).
-**Real-loop path reached 8/8 regs (vDT45, masked 23) — recipe:** real while(1) + new_var
-hoisted + saved widening-temp + **neg1** (`s32 neg1; neg1=-1;` after poll, `while(i!=neg1)`
-→ -1 caller-saved `li a3,-1` like tgt) + **drop the do_timeout do-while(0) wrapper** (it
-boosts the D_800A11DC base above arg0) + **wrap ONLY the t0/arg5 staging** in do-while(0)
-(weights tbl WITHOUT boosting the printf's D_800A11DC base). All 8 main vars land s0-s7.
-**The intrinsic real-loop TAX (why masked 23 > vDT30's 4):** the loop note that fixes
-region-3 ALSO enables LICM, which hoists the `D_800A11DC` base (2-insn addr) into a 9th
-callee-saved reg (s8) → frame +8 → cascades. Target keeps it caller-saved (`lui at,%hi;
-lw a2,%lo(at)` per-use) because its 8 vars fill s0-s7 with NO free reg. Ours has s8 free →
-LICM hoists. Tried: 5 address-access forms (value-stage/ptr-add/char-cast/idx-var/a2base) —
-ALL hoist; it's register-pressure, not access-form. neg1 worked for -1 (1-insn, cheap to
-rematerialize) but NOT the 2-insn address. **Can't make GCC leave s8 unused.** So region-3
-via real loop costs ~6+ (addr hoist) > the ~2 it saves. **vDT30 (goto, masked 4) stays
-best.** Real-loop checkpoints: progress/vDT32-... and vDT45-realloop-8of8-masked23.c.
+**Real-loop CLEAN 8/8 recipe (vDT48, masked 18)** = real while(1) + new_var hoisted + saved
+widening-temp + **neg1** (`s32 neg1;neg1=-1;` after poll, `while(i!=neg1)`) + **elem_ptr**
+(`s32 *a2p=&D_800A11DC[D_800A11D5]; *a2p` — pointer-to-element kills the D_800A11DC LICM
+hoist) + **tbl-def double-nest** (`do{do{tbl_125c=D_800A125C;}while(0)}while(0)` weights tbl
+→ s5 WITHOUT the staging-wrap's do_timeout scramble) + drop do_timeout wrapper + clears
+un-nested. All 8 main vars land s0-s7, do_timeout CLEAN.
+**THE CONSERVATION BARRIER (why masked 18 > vDT30's 4, confirmed fundamental):** the real
+loop's LICM promotes EXACTLY ONE loop-invariant (new_var / new_var3 / the D_800A11DC base)
+into a 9th callee-saved reg (s8) → frame +8 → cascade. I can move WHICH one takes s8
+(elem_ptr moves it off the address onto new_var3; nv3-before-check2 moves it onto new_var)
+but NEVER eliminate it — it's conserved. The goto-loop (no LICM) folds ALL of them via
+update_equiv_regs (both andi's, no s8) → 8 regs. The target ALSO fits 8 in a real loop, so
+GCC there promotes none — a global-alloc/update_equiv_regs tipping point I traced (reorg.c
+mostly_true_jump needs the loop note; loop.c move_movables: single-use-address substitution
+fails on indexed mem; move threshold `thr*savings*lifetime>=insn_count`, D_800A11DC life=2)
+but can't flip from C. Plus tbl-def perturbs the preamble (~3) + the pair-swap. So the
+region-3 fix (~2) is out-weighed. **vDT30 (goto, masked 4) stays best.** Checkpoints:
+progress/vDT45-...masked23.c, vDT48-realloop-clean-8of8-masked18.c.
 
 ## The goto-loop recipe (how vDT30/vDT10 works — the masked-4 best)
 GCC 2.7.2 frequency-weights refs only inside `NOTE_INSN_LOOP_BEG` loops (do/while/for,
@@ -102,13 +106,9 @@ cite the research) + the sanctioned printf staging + saved split → retire the 
   (tmp/run_m2c.sh). Progress bodies in progress/.
 
 ## Variant ladder (regmatch / masked)
-- candidate.c: 3/8, masked 30 (honest baseline, goto-loop, andi's present).
-- vDW7 (full do-while(0)): 8/8 but NO andi's (masks materialize under LOOP_BEG). DEAD.
-- vDT2 (local wrappers, do_timeout+poll): 6/8 WITH andi's (bottom-3 fixed).
-- vDT8 (+ wrap both clears): 6/8, i1496 → 933 (arg1 952, gap 19).
-- vDT10 (+ double-nest first clear): 8/8 WITH andi's, masked 6.
+- candidate.c: 3/8, masked 30 (goto-loop baseline). vDT10: 8/8 + andi's, masked 6.
 - **vDT30 (vDT10 + saved widening-temp): 8/8 + andi's + saved, masked 4** ← CURRENT BEST.
-- vDT45 (real loop, 8/8, region-3-fixable): masked 23 (LICM addr-hoist tax). Structure-right.
+- vDT48 (real loop, clean 8/8, region-3-fixable): masked 18 (conservation: 9th callee reg).
 
 ## DEAD ENDS (don't repeat)
 - Full-body do-while(0) breaks andi's. Real while(1) breaks them ONLY if new_var is set
