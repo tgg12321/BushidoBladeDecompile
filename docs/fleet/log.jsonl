@@ -2354,3 +2354,4 @@
 {"ts":"2026-07-06T07:58:56.5391795Z","kind":"lane-cycle","role":"blocked-worker","outcome":"blocked","func":"func_800651F0","lane":"fleet-blk"}
 {"ts":"2026-07-06T08:09:14.6293514Z","kind":"lane-cycle","role":"blocked-worker","outcome":"blocked","func":"func_800651F0","lane":"fleet-blk"}
 {"ts":"2026-07-06T08:10:14.7707611Z","kind":"lane-cycle","outcome":"in-review","func":"spu_SetMotionActive","role":"backlog-worker","lane":"fleet-bw1"}
+{"ts":"2026-07-06T08:36:29.9606515Z","kind":"lane-cycle","role":"blocked-worker","outcome":"blocked","func":"func_800651F0","lane":"fleet-blk"}
