@@ -14,20 +14,22 @@ update_equiv_regs folds them → **andi's SURVIVE under a real loop** (vDT32, ve
 region-3's dbr steal (which needs the loop note, per [[loop-note-fixes-delay-slot-steal]])
 IS fixable in principle — the real `while(1)` gives 179 insns (target count) and s0-s5 come
 out correct NATURALLY (no do-while(0) needed for those).
-**NEW blocker on the real-loop path (vDT32/35, masked 18-21):** the copy-loop `-1` constant
-(`while (i != -1)`) gets LICM-hoisted + GCSE'd across both copy loops into a **9th
-callee-saved reg** (target keeps it caller-saved `li a3,-1` per block) → inflates the frame.
-Re-weighting (dnest i1495 + wrap arg0) shuffles which reg but the -1 ALWAYS claims one
-callee-saved slot (GCC's cost model + s8 always free). `count_to_0` (bnez, no -1) fixes the
-frame but diverges from tgt's `bne i,-1`. Cracking the -1's reg class = the real-loop path's
-key. Real-loop checkpoint: progress/vDT32-realloop-keeps-andis-masked18.c.
+**Real-loop path reached 8/8 regs (vDT45, masked 23) — recipe:** real while(1) + new_var
+hoisted + saved widening-temp + **neg1** (`s32 neg1; neg1=-1;` after poll, `while(i!=neg1)`
+→ -1 caller-saved `li a3,-1` like tgt) + **drop the do_timeout do-while(0) wrapper** (it
+boosts the D_800A11DC base above arg0) + **wrap ONLY the t0/arg5 staging** in do-while(0)
+(weights tbl WITHOUT boosting the printf's D_800A11DC base). All 8 main vars land s0-s7.
+**The intrinsic real-loop TAX (why masked 23 > vDT30's 4):** the loop note that fixes
+region-3 ALSO enables LICM, which hoists the `D_800A11DC` base (2-insn addr) into a 9th
+callee-saved reg (s8) → frame +8 → cascades. Target keeps it caller-saved (`lui at,%hi;
+lw a2,%lo(at)` per-use) because its 8 vars fill s0-s7 with NO free reg. Ours has s8 free →
+LICM hoists. Tried: 5 address-access forms (value-stage/ptr-add/char-cast/idx-var/a2base) —
+ALL hoist; it's register-pressure, not access-form. neg1 worked for -1 (1-insn, cheap to
+rematerialize) but NOT the 2-insn address. **Can't make GCC leave s8 unused.** So region-3
+via real loop costs ~6+ (addr hoist) > the ~2 it saves. **vDT30 (goto, masked 4) stays
+best.** Real-loop checkpoints: progress/vDT32-... and vDT45-realloop-8of8-masked23.c.
 
 ## The goto-loop recipe (how vDT30/vDT10 works — the masked-4 best)
-GCC 2.7.2 frequency-weights refs only inside `NOTE_INSN_LOOP_BEG` loops (do/while/for,
-NOT goto-loops). The candidate's outer `goto loop` leaves the body weight-1, so the
-register order is wrong. Fix = candidate body + LOCAL `do{}while(0)` wrappers, each
-
-## THE SOLUTION recipe (how vDT10 works)
 GCC 2.7.2 frequency-weights refs only inside `NOTE_INSN_LOOP_BEG` loops (do/while/for,
 NOT goto-loops). The candidate's outer `goto loop` leaves the body weight-1, so the
 register order is wrong. Fix = candidate body + LOCAL `do{}while(0)` wrappers, each
@@ -60,19 +62,17 @@ Each residual has a lever that fixes it — and each lever regresses something a
 matched. The tensions are PROVEN, not just unfound (see below). The andi's require the
 goto-loop (no LOOP_BEG around checks; target loads are `lbu` so `andi ,0xff` is
 redundant-elided unless new_var defeats it via update_equiv_regs, skipped under LOOP_BEG
-— checkasm.py confirms tgt `lbu v0,0(s3);andi a2,v0,0xff`). That goto-loop is the ROOT of
-all 3 residuals, and it cannot be a real loop.
+— checkasm.py confirms tgt `lbu v0,0(s3);andi a2,v0,0xff`). NOTE: goto-loop is NOT
+mandatory — with new_var HOISTED a real loop keeps the andi's (session-9 breakthrough);
+but the real loop pays the LICM address-hoist tax (see breakthrough section) so vDT30 wins.
 1. **do_timeout pair-swap** @56/57: tgt `addu v0,v0,s5`(arg5) then `sll a0`(t0); ours swap.
    ROOT: GCC evals args R→L so arg5(5th) computes first → lower LUID → wins the tie. My
    staging computes t0 first (needed to place D_800A11D5 late + keep t0→a0). vDT23 (natural
    args, pp staged) fixes the pair-swap but mis-places D_800A11D5 → masked 18. arg5-first
    staging (vDT15) flips t0→v1. Pair-swap ⊥ register/D_800A11D5 placement — can't decouple.
-   Also tried: address-staging (stage &tbl[idx], load values inline, vP1-3) → 7/8 masked 12.
-   vDT25 (both idx loaded first, arg5 chain before t0 chain) FIXES the pair-swap ORDER (all
-   diffs become same-position reg-renames) but swaps do_timeout temps idx[0]↔arg5 (v1/a0) →
-   masked 10. Root: named staging vars are long-lived → allocated v1; target's natural temps
-   are short-lived → a0. Getting idx[0]→a0 needs short-lived temps = natural printf = D_800A11D5
-   hoists early. 3-way ⊥ {pair-swap, temps-a0, D_800A11D5-late}; vDT30 gets 2 of 3.
+   vDT25 (arg5 chain before t0 chain) FIXES the pair-swap ORDER but swaps do_timeout temps
+   idx[0]↔arg5 (v1/a0, masked 10): named staging vars are long-lived→v1; tgt's natural temps
+   are short-lived→a0. 3-way ⊥ {pair-swap, temps-a0, D_800A11D5-late}; vDT30 gets 2 of 3.
 2. **~~saved-stage~~ FIXED** (widening temp, see session-9 update above).
 3. **region-3 dbr steal** @149 (178 vs tgt 179): tgt `beqz a2;nop;sb zero,-1(s3);move
    a1,s4`; ours' dbr steals `move a1,s4`(dst2=a1) into the delay slot. ROOT (region3b.py+
@@ -106,11 +106,13 @@ cite the research) + the sanctioned printf staging + saved split → retire the 
 - vDW7 (full do-while(0)): 8/8 but NO andi's (masks materialize under LOOP_BEG). DEAD.
 - vDT2 (local wrappers, do_timeout+poll): 6/8 WITH andi's (bottom-3 fixed).
 - vDT8 (+ wrap both clears): 6/8, i1496 → 933 (arg1 952, gap 19).
-- **vDT10 (+ double-nest first clear): 8/8 WITH andi's, masked 6** ← current best.
+- vDT10 (+ double-nest first clear): 8/8 WITH andi's, masked 6.
+- **vDT30 (vDT10 + saved widening-temp): 8/8 + andi's + saved, masked 4** ← CURRENT BEST.
+- vDT45 (real loop, 8/8, region-3-fixable): masked 23 (LICM addr-hoist tax). Structure-right.
 
 ## DEAD ENDS (don't repeat)
-- Full/partial-top do-while(0), while(1), real outer loop: break the check andi's
-  (new_var materializes or cse-folds early under any LOOP_BEG touching the checks).
+- Full-body do-while(0) breaks andi's. Real while(1) breaks them ONLY if new_var is set
+  inside the loop — HOIST new_var before the loop and the andi's survive (breakthrough).
 - staged raw byte (raw=*idx_1496; check=raw&nv): folds (raw is a proven byte) → no andi.
 - arg1-hold / shared-epilogue tail: didn't drop arg1 cleanly (fixed instead by weighting
   i1496 UP via the clear-wrappers).
