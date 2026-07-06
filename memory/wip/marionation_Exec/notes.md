@@ -24,7 +24,17 @@ mechanism-agnostic match device — empty bodies at fn entry / straight-line pro
 not delay-slot-only; grouped with temp-vars/self-assigns). BB2's old "delay-slot only"
 narrowing in do-while-zero-exception.md was over-conservative.
 
-## REMAINING (masked 6, 3 residuals — STRUCTURALLY DIAGNOSED, session-9)
+## SESSION-9 UPDATE: saved-stage FIXED → masked 4 (vDT30, 8/8 regs)
+`tmp/vDT30.c` (saved: progress/vDT30-8of8-saved-fixed-masked4.c) = vDT10 + the saved-stage
+fix. Replace `saved=*D_800A147C_2; saved&=3;` with **`{ s32 _b; _b = *D_800A147C_2; saved =
+_b & 3; }`** — a widening temp that de-ties the byte load from saved's callee-saved reg
+(byte prefers its def-side v0 reuse instead of coalescing into s1). Now tgt-matches
+`lbu v0,0(v0); andi s1,v0`. (Also works: `saved = 3 & *ptr` operand-swap, `explicit_ptr_byte`
+— all masked 4. Widening temp is the cleanest/most defensible.) 8/8 regs intact.
+Only 2 residuals left: pair-swap + region-3.
+
+## REMAINING (masked 4, 2 residuals — pair-swap + region-3)
+NOTE: masked-6-era numbering; saved-stage (was #2) is now FIXED. Remaining:
 Each residual has a lever that fixes it — and each lever regresses something already
 matched. The tensions are PROVEN, not just unfound (see below). The andi's require the
 goto-loop (no LOOP_BEG around checks; target loads are `lbu` so `andi ,0xff` is
@@ -36,14 +46,20 @@ all 3 residuals, and it cannot be a real loop.
    staging computes t0 first (needed to place D_800A11D5 late + keep t0→a0). vDT23 (natural
    args, pp staged) fixes the pair-swap but mis-places D_800A11D5 → masked 18. arg5-first
    staging (vDT15) flips t0→v1. Pair-swap ⊥ register/D_800A11D5 placement — can't decouple.
-2. **saved-stage** @86/88: tgt `lbu v0,0(v0);andi s1,v0`; ours `lbu s1;andi s1,s1`. GCC
-   coalesces the byte load into saved's reg. u8/s32/ptr temps + single-expr all coalesce
-   (savedbatch.py). Emergent coalescing decision.
+   Also tried: address-staging (stage &tbl[idx], load values inline, vP1-3) → 7/8 masked 12.
+   vDT25 (both idx loaded first, arg5 chain before t0 chain) FIXES the pair-swap ORDER (all
+   diffs become same-position reg-renames) but swaps do_timeout temps idx[0]↔arg5 (v1/a0) →
+   masked 10. Root: named staging vars are long-lived → allocated v1; target's natural temps
+   are short-lived → a0. Getting idx[0]→a0 needs short-lived temps = natural printf = D_800A11D5
+   hoists early. 3-way ⊥ {pair-swap, temps-a0, D_800A11D5-late}; vDT30 gets 2 of 3.
+2. **~~saved-stage~~ FIXED** (widening temp, see session-9 update above).
 3. **region-3 dbr steal** @149 (178 vs tgt 179): tgt `beqz a2;nop;sb zero,-1(s3);move
    a1,s4`; ours' dbr steals `move a1,s4`(dst2=a1) into the delay slot. ROOT (region3b.py+
-   r3sweep.py): dbr steals because a1-reg(=dst2) is DEAD on the beqz-taken(→loop) path.
-   Making dst2 live (vR2: merge dst/dst2) DOES produce the nop — but merging adds refs to a
-   weighted var → s4/s5/s6 reallocate → masked 18. Region-3 fix ⊥ register weighting.
+   r3sweep.py): dbr steals because physical-a1(=dst2) is DEAD on the beqz-taken(→loop) path.
+   Making it live (vR2 merge dst/dst2) DOES give the nop — but the merge just RELOCATES the
+   steal to copy-block-1 (W1/mergetune.py: merge + double-nest arg1 restores 8/8 AND keeps
+   block-2 nop, but block-1 now steals → masked 9). Emergent physical-a1 liveness at each
+   beqz's loop-taken path; can't get both blocks live at once yet.
 
 ## Permuter — DEAD END (session-9)
 Killed after 1.04M clean-only iters. Best find (output-210) is masked 10 by the honest
