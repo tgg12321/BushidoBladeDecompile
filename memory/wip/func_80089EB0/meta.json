@@ -1,0 +1,45 @@
+{
+  "func": "func_80089EB0",
+  "file": "main.c",
+  "verdict": "C",
+  "scores": {
+    "head_distance": 23,
+    "candidate_floor": 0,
+    "target_insns": 35,
+    "build_insns": 35
+  },
+  "status": "CLOSED-verify-oracle-passed",
+  "reviewer": {
+    "layer1_cheat_reviewer": "PASS",
+    "note": "2026-07-06 fleet-blk session: cheat-reviewer PASSed the do-while(1)+break closing form via 6-test walk (no pins/asm/dead-stores; ordinary do-while-break loop, not the narrow do{}while(0) exception family). Full verify-oracle --rebuild returns build_matches=true, build_sha1=oracle_sha1."
+  },
+  "closing_form": {
+    "slug": "do-while-1-break-out-of-loop",
+    "why": "The prior WIP session's rejected list had for(;;) and shared-end-label but not do{}while(1) with break-out-of-loop for the ret0-sentinel exit. That shape gives GCC a distinct ret0 landing (target's separate .L80089F30: addu $v0,$zero,$zero) rather than the shared cross-jump-tail-merged block the plain goto/label form produced, closing the residual null-check placement gap."
+  },
+  "rejected_forms": [
+    { "slug": "for-loop-instead-of-goto-loop", "score": 7 },
+    { "slug": "pointer-null-check-instead-of-entry", "score": 7 },
+    { "slug": "precompute-masks-before-null-check", "score": 12 },
+    { "slug": "swap-t0-a3reg-check-order", "score": 6 },
+    { "slug": "return-entry-instead-of-return-0", "score": 4 },
+    { "slug": "shift-variable-for-shifted-a0", "score": 4 },
+    { "slug": "shared-end-label-with-return-var", "score": 4 },
+    { "slug": "null-check-early-return-first", "score": 8 },
+    { "slug": "ret0-inline-side-value-via-entry", "score": 4 },
+    { "slug": "switch-case-flags-3way", "score": 7 },
+    { "slug": "split-ret0-dead-store-via-shift", "score": 4 },
+    { "slug": "nested-if-branchless-flags", "score": 4 },
+    { "slug": "returnvar-split-null", "score": 4 }
+  ],
+  "sessions": [
+    {
+      "agent": "fleet-blk 2026-07-06",
+      "git_head_at_measurement": "661416be",
+      "summary": "Closed the residual (floor=4 -> 0). Applied prior session's cheat-free candidate.c as baseline, confirmed floor=4 (34/35 insns). Ran 6-variant sweep on untried structural forms; do-while(1)+continue-skip+break-ret0 form (v6_do_while.c) scored 0 with build_insns=35 (target match). Applied to worktree src/main.c, sandbox --disable all = 0, verify-oracle --rebuild returned build_matches=true build_sha1=62efab4f...oracle. cheat-reviewer PASSed. Commit BLOCKED at end of turn by concurrent fleet-supervisor main-reintegration lock (label=fleet-merge spu_SetMotionActive); candidate remains in worktree src/main.c uncommitted. Next fleet turn: apply candidate.c (identical to this session's winning form) if setup_worktree.ps1 reset the worktree, else the edit is still present; commit as Match:."
+    }
+  ],
+  "prior_sessions_summary": [
+    "fleet-bw1: removed 6 register-asm pins + hardcoded __asm__(move $2,$0) injection; rewrote goto/label state machine; dropped floor 23 -> 7 -> 4 via distinct ret0 goto-label. Residual traced to null-check false-path placement (target has 2 separate move $v0,$zero stanzas; candidate cross-jump-merged into one). Exhausted 7 structural variants without closing."
+  ]
+}

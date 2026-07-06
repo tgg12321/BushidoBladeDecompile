@@ -1,0 +1,49 @@
+{
+  "function": "func_80068D88",
+  "file": "text1b",
+  "scores": {
+    "head_floor": 18,
+    "candidate_floor": 5,
+    "metric": "sandbox --disable all (masked Levenshtein)",
+    "build_insns": 81,
+    "target_insns": 81
+  },
+  "sessions": [
+    {
+      "date": "2026-07-06",
+      "lever": "remove register-asm pins + __asm__ memory-clobber scheduling barriers (both are cheat-stripped by the honest sandbox anyway); split reused pointer var p_a into p_a/p_a2 (fresh nested-scope local for its second use) to shorten its live range so GCC's unpinned allocator naturally lands on target's registers in the loop body",
+      "lever_rule": null,
+      "floor_was": 18,
+      "floor_now": 5
+    }
+  ],
+  "prior_sessions_summary": [],
+  "reviewer": {
+    "verdict": "PASS",
+    "date": "2026-07-06",
+    "evidence": "Pins/barriers fully removed; remaining candidate is clean pure C whose p_a/p_a2 split is both SOTN-sanctioned and faithfully models a genuine target reload from D_800A34E4/D_800A34E8 confirmed in the asm."
+  },
+  "remaining_gap": {
+    "summary": "Register-allocation tie in the swap section only (lines ~15034-15040 of the candidate): GCC's unpinned global allocator assigns prev_init (D_800A37D4 load) to $a1 and cur_init (*p_cur load) to $a3; target has them swapped ($a3/$a1). Confirmed via RTL dumps at every pass (rtl/cse/cse2/loop/greg/lreg/flow/jump/jump2/dbr/sched/sched2) that the RTL is correct/hard-bound through cc1's own pipeline when register pins are used (matches target exactly), and that the sandbox's --disable all mode literally strips `register T x asm(\"$N\")` annotations from the WHOLE FILE before compiling for scoring (this is why the previously-committed HEAD form, which used pins + memory-barrier asm, scored 18 despite superficially matching oracle with the cheat intact -- the pins/barriers are recognized cheat categories). Without pins, GCC's global.c allocator processes pseudos in conflict-degree order (most-constrained first): prev_init has a longer live range (defined early, used late) giving it higher degree, so it gets processed before cur_init and claims the lower-numbered free register ($a1) first, pushing cur_init to $a3 -- the reverse of target. This is a genuine register-rename-only floor (0 structural diffs) -- exactly the pattern flagged in .claude/rules/no-new-park-categories.md as NOT a valid park category; more search (permuter / different C shape) is the standing answer, not pins.",
+    "rule_count_at_head": 0,
+    "rules_required_for_full_match": "None needed -- HEAD already has 0 regfix/asmfix rules for this function. The gap is purely in src/text1b.c's register allocation outcome, not build-pipeline rules."
+  },
+  "next_hypotheses": [
+    "Directed permuter (tools/decomp-permuter) seeded from candidate.c, targeting the prev_init/cur_init swap-section only -- permuter's random variable-live-range mutations may stumble on a structural form that flips the conflict-degree tie without pins.",
+    "Try further shortening prev_init's live range by deferring its use differently (many manual reorderings tried this session -- see rejected/ -- none worked; a fresh angle e.g. computing strength_red via two half-expressions or reassociating the subtraction may change pseudo creation order).",
+    "Try lengthening cur_init's live range instead (extra genuine reference between its def and use) so IT becomes the higher-conflict-degree pseudo instead of prev_init.",
+    "Cross-reference a matched sibling function with an analogous 'read global + read *ptr, subtract, use both later in a swap' shape (if one exists elsewhere in text1b.c/text1a.c) for a working structural pattern.",
+    "m2c re-decompile from target asm/funcs/func_80068D88.s for a fresh structural hypothesis on the swap-section ordering."
+  ],
+  "rejected_forms": [
+    {"form": "register asm(\"$7\")/asm(\"$5\") pins on prev_init/cur_init (inherited from HEAD)", "score": 18, "reason": "cheat -- stripped by --disable all sandbox; matches .claude/rules register-asm-pins forbidden category. Confirmed: swapping which pin number goes to which variable produced IDENTICAL score (12/17 depending on other changes), proving the pins have zero effect on the honest score."},
+    {"form": "__asm__ volatile(\"\" ::: \"memory\") barriers between swap store and reload", "score": 18, "reason": "cheat -- dead-branch-scheduling/CSE-defeat pattern, stripped by sandbox; confirmed via source-level diff of the sandboxed copy that these lines are deleted before compilation."},
+    {"form": "prev_tmp/cur_tmp fresh copy locals right before the swap store", "score": 17, "reason": "no improvement over baseline; register choice unaffected"},
+    {"form": "declare cur_init and compute it before prev_init (near top, right after outer/p_cur)", "score": 8, "reason": "worse -- disturbs instruction scheduling order, not just register choice"},
+    {"form": "move D_800A3724 store to after prev_init/cur_init computed", "score": 7, "reason": "worse"},
+    {"form": "declare p_cur first among the pointer locals (before p_idx/p_prev/p_matrix)", "score": 7, "reason": "worse -- shifts p_cur's own register choice away from target's a2"},
+    {"form": "swap C statement order of *p_cur=prev_init / *p_prev=cur_init store pair", "score": 12, "reason": "fixes the swap-section register choice but BREAKS the loop-section register choice (p_a/p_b) as a side effect -- net worse than the p_a/p_a2 split alone at 5"},
+    {"form": "Lever A (register-alloc-pure-c): block-local `prev_reload = D_800A37D4;` at the swap-store site instead of reusing the shared prev_init pseudo", "score": 5, "reason": "no improvement -- confirmed via -da greg dump that the allocation order/registers were byte-identical to the un-shrunk baseline (75->a1, 80->a3 either way), i.e. this did not actually shrink prev_init's live range/conflict-degree the way the analogous saTan0Main switch-case lever did (that case had genuinely separate control-flow arms; this function is straight-line so the fresh read didn't decouple the conflict graph)"},
+    {"form": "Lever D-style dead self-assign `cur_init = cur_init;` immediately after its read, to try to boost cur_init's ref-count/priority above prev_init's", "score": 5, "reason": "no improvement -- likely eliminated before reaching register allocation; NOT committed as a FAKE-annotated candidate since it produced zero measured effect (no lever-exhaustion justification to annotate a no-op)"}
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "function": "func_8003DBE4",
+  "file": "code6cac_c2",
+  "scores": {
+    "head_floor": 21,
+    "candidate_floor": 21,
+    "metric": "sandbox --disable all — IDENTICAL (21) with or without the committed src's `s32 buf[2]` dead array; verified empirically this session (removed the array, re-ran sandbox, same score). The array has zero effect on the honest cheat-invisible measurement.",
+    "build_insns": 133,
+    "target_insns": 133
+  },
+  "sessions": [
+    {
+      "date": "2026-07-06",
+      "lever": "fleet-bw1 backlog worker — objdump + m2c root-cause of the 21-instruction diff; confirmed 100% attributable to an 8-byte (target frame=0x40, clean-C frame=0x38) unused-frame gap, no register-allocation or logic differences anywhere else in the function",
+      "lever_rule": "dead-vars-local-array",
+      "floor_was": 21,
+      "floor_now": 21,
+      "session_id": "fleet-bw1"
+    }
+  ],
+  "reviewer": {
+    "verdict": "FAIL",
+    "date": "2026-07-06",
+    "evidence": "cheat-reviewer agent adjudicated the COMMITTED src form (with `s32 buf[2]` unreferenced array): FAIL. buf is never read or written anywhere in the function; it exists solely to reserve 8 bytes of frame. The 2026-07-01 written-never-read carve-out does not apply — objdump of build/src/code6cac_c2.o (pristine byte-matched reference) shows ZERO sw/lw instructions anywhere touching the 8 bytes in question, so there are no target dead-stores to justify the carve-out. m2c on asm/funcs/func_8003DBE4.s independently confirms the target has NO stack-resident locals at all — every value is register-only."
+  },
+  "remaining_gap": {
+    "summary": "POLICY-GRADE, not a pure-C grind — identical shape to the already-escalated AddTbpOfst_80047EE8 / InitHiraRmd_80047FBC cluster (memory/wip/AddTbpOfst_80047EE8, commit 3d7e222d, 2026-06-14). Target reserves a 64-byte (0x40) frame; the clean pure-C body needs only 56 bytes (0x38). The 8-byte difference is UNUSED frame slack: no instruction in the target's compiled bytes ever accesses stack offsets 0x10-0x17. The function's own commit history (9e722985, 2026-05-28, pre-ban) used `s32 buf[2]` to fabricate exactly this gap and byte-matched; the 2026-05-31 dead-vars-local-array ban re-routed the function back to the active queue because that construct is no longer eligible for COMPLETED-C, and no replacement pure-C lever has been found (or is mathematically possible, per the objdump/m2c proof) that produces an unused, unaccessed 8-byte frame region.",
+    "rule_count_at_head": 0,
+    "rules_required_for_full_match": "0 regfix/asmfix — the ONLY thing standing between this function and a byte-identical build is the single forbidden `s32 buf[2]` declaration line. No other cheat is present or needed."
+  },
+  "next_hypotheses": [
+    "PROJECT-WIDE POLICY DECISION (per the AddTbpOfst_80047EE8 precedent): either (1) re-sanction a narrow frame-slack idiom specifically for the verified-unused-frame case (this function is a second, independent piece of evidence for that evidence request — 8-byte gap here vs 32-byte at AddTbpOfst_80047EE8/InitHiraRmd_80047FBC, same mechanism), or (2) some other resolution the owner decides on the cluster as a whole.",
+    "Checked: no register spill, no additional saved register, no extra outgoing-arg-size call, no alignment cause — objdump confirms the ENTIRE 21-instruction sandbox distance is the frame-shift cascade and nothing else; every opcode in the function is otherwise byte-identical to target once the frame offset is accounted for.",
+    "This function should probably be grouped with the AddTbpOfst_80047EE8/InitHiraRmd_80047FBC cluster for whatever policy resolution the owner reaches — it is the same construct, same root cause, same forbidden-carve-out gap."
+  ],
+  "rejected_forms": [
+    {"form": "committed src (main HEAD): `s32 buf[2]` unwritten dead array", "score": "0 (matches, on main's current pre-ban build)", "reason": "cheat-reviewer FAIL — unwritten/unread local array, dead-vars-local-array FORBIDDEN since 2026-05-31; the 2026-07-01 written-never-read carve-out does not apply (no target dead-stores exist for this frame region)."},
+    {"form": "clean pure-C body (candidate.c, buf[2] removed)", "score": 21, "reason": "HONEST floor — 0 cheats, entire function body byte-identical to target except the 8-byte frame gap + its offset/branch-target cascade. Cannot be lowered by any pure-C construct found or provably possible (objdump + m2c both confirm zero real stack usage in that region)."}
+  ],
+  "memory_notes": [".claude/rules/dead-vars-local-array.md", "memory/wip/AddTbpOfst_80047EE8", ".claude/rules/register-alloc-pure-c.md"]
+}

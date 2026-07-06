@@ -1,0 +1,33 @@
+{
+  "func": "func_80021280",
+  "file": "code6cac",
+  "verdict": "C",
+  "scores": {
+    "head_distance": 19,
+    "candidate_floor": 2
+  },
+  "rules_dropped_if_applied": 1,
+  "regfix_rule": "func_80021280: $5 <-> $6 (register swap)",
+  "reviewer": {
+    "verdict": "PASS",
+    "summary": "Reusing outer-scope a1 as the inner loop's counter (replacing a fresh s32 i) is the SOTN-sanctioned variable-reuse-for-RA family, verified semantically inert (old a1 value fully consumed before the reset) and consistent with this function's register-mirrored naming style."
+  },
+  "rejected_forms": [
+    "shadow-redeclare a1 inside inner block (s32 a1 = 0; shadowing outer) -> new pseudo, no priority boost, floor back to 19",
+    "hoist t1/t4/t3/t2/mode/t0 to function-scope decls-without-initializer + plain assignments (to legalize a1=0 first) -> floor 19 (loses the nrefs-priority merge benefit)",
+    "single nested sub-block { a1=0; { t1..t0 decls; loop } } -> floor 19",
+    "fully inline mode/t0/constants directly in loop body (no named locals at all) -> floor 41, build_insns 75 (GCC does NOT auto-hoist the global reads through the aliasing a2 pointer stores; recomputes per-iteration)",
+    "convert loop2 to `for (a1=0; a1<3; a1++)` with continue instead of goto/label -> floor 34",
+    "reorder t1/t4/t3/t2/mode/t0 declaration permutations (t1 last, mode/t0 first, t2/t3/t4 swapped, etc.) -> floor stays 2 or gets worse (3-6), never better",
+    "redundant reload for t1 (`*(u16*)(a2+0x48)` instead of `= val`) -> floor 23",
+    "widen t1 to s32 -> floor 4",
+    "comma-operator stage `u16 t1 = (a1 = 0, val);` to force a1=0 first -> NOT TRIED (rejected as unnatural/cheat-shaped before testing; avoid)"
+  ],
+  "root_cause": "GCC 2.7.2's loop.c handles the loop-2 induction variable (a1)'s zero-init via a BIV-specific relocation mechanism that runs on a DIFFERENT schedule than the generic move_movables() pass which relocates loop-invariant MEMORY LOADS (mode = D_800A38DC; t0 = D_800A384C). Both mechanisms insert their instruction via emit_insn_before(..., loop_start), but the BIV-init relocation for a1 fires EARLIER in the scan (triggered by a1's FIRST use inside the loop body, at the very top: `nibble = t1 >> (a1<<2)`), while the generic movable relocation for mode/t0 fires LATER (triggered when their later-appearing uses are scanned: `if (mode != t3)`, `if (t0 != nibble)`). Because later insertions land closer to the label, the final order is: [immovable t1,t4,t3,t2 — cheap reg-immediate/reg-reg ops are never recognized as GCC movables] then [a1 (biv-init, inserted first)] then [mode, t0 (movables, inserted after, land closer to the label)]. Confirmed via `cc1 -da` RTL dumps on a standalone repro (tmp/standalone.c in the worktree): `.rtl` dump shows a1's insn originally adjacent to the label (matching C source's textual position, i.e. as the LAST prologue statement); `.loop` dump shows a1's insn relocated to sit between t2 and mode. Target wants a1 FIRST in final order (ahead of t1 too), which the C89 declaration-before-statement rule structurally prevents (a1=0 as a plain reassignment of an already-declared variable can only be placed AFTER all of the block's `T t = init;` declarations — it cannot be pulled ahead of t1/t4/t3/t2 without either (a) illegal decl-after-statement C, or (b) an unnatural comma-operator/synthetic-declaration trick that would fail cheat review, or (c) making a1's reset itself part of a declaration by shadowing (tried — defeats the priority merge that fixed the outer register-swap, regressing to floor 19).",
+  "next_avenues": [
+    "Directed decomp-permuter run seeded from this floor-2 candidate, mutating ONLY the declaration/statement order and types of t1/t4/t3/t2/mode/t0/a1 in this block — may stumble on a legal C89 form none of the ~10 manual variants above hit.",
+    "Read tools/gcc-2.7.2/loop.c around the biv/record_biv and move_movables functions directly (grep 'record_biv\\|record_giv\\|scan_loop' — biv relocation call site) to find the EXACT condition that determines biv-init insertion timing relative to move_movables' first movable; there may be a C-observable lever (e.g. whether a1's use is inside a nested {} vs directly in the loop body, or whether the shift `a1<<2` is written as `a1*4` instead) that shifts the biv scan trigger point earlier or later.",
+    "Try wrapping the FIRST loop-body statement (`nibble = t1 >> (a1<<2) & 0xF;`) differently, e.g. splitting `a1<<2` into its own statement BEFORE the nibble computation, to see if that changes when the biv is discovered relative to t1's use.",
+    "This may simply be a genuine compiler-pass-ordering wall requiring canonical inline asm authorization if no C form is found after further attempts — do NOT conclude that without exhausting the RTL-driven levers above first."
+  ]
+}
