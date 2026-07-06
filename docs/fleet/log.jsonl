@@ -2347,3 +2347,7 @@
 {"ts":"2026-07-06T06:52:33.1418069Z","kind":"lane-cycle","role":"blocked-worker","outcome":"blocked","func":"special_camera_get_rot_dir","lane":"fleet-blk"}
 {"ts":"2026-07-06T07:01:00.7902558Z","kind":"lane-cycle","outcome":"blocked","func":"func_80080390","role":"backlog-worker","lane":"fleet-bw1"}
 {"ts":"2026-07-06T07:01:24.1620208Z","kind":"lane-cycle","role":"blocked-worker","outcome":"blocked","func":"special_camera_get_rot_dir","lane":"fleet-blk"}
+{"ts":"2026-07-06T07:23:56.2350915Z","kind":"merge-gate-failed","func":"spu_SetMotionActive","reason":"oracle-gate-failed"}
+{"ts":"2026-07-06T07:28:25.4973162Z","kind":"lane-cycle","role":"blocked-worker","outcome":"blocked","func":"func_800651F0","lane":"fleet-blk"}
+{"ts":"2026-07-06T07:40:21.7442247Z","kind":"lane-cycle","role":"blocked-worker","outcome":"blocked","func":"func_800651F0","lane":"fleet-blk"}
+{"ts":"2026-07-06T07:41:28.8057102Z","kind":"lane-cycle","outcome":"blocked","func":"replay_camera_Init","role":"backlog-worker","lane":"fleet-bw1"}
