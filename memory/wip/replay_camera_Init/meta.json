@@ -1,0 +1,45 @@
+{
+  "func": "replay_camera_Init",
+  "file": "code6cac_b2_post",
+  "verdict": "C",
+  "scores": {
+    "head_distance": 18,
+    "candidate_floor": 17,
+    "target_insns": 39,
+    "candidate_build_insns": 36
+  },
+  "rules": {
+    "regfix_lines": [
+      "replay_camera_Init: fill_delay @ 26 <- 15"
+    ],
+    "count": 1
+  },
+  "cheat_state": {
+    "register_asm_pins_removed": [
+      "register s32 saved_a1 asm(\"$7\") = a1;",
+      "register s16 *s0 asm(\"$8\") = &D_80101E62;"
+    ],
+    "asm_barrier_removed": "__asm__ volatile(\"\" ::: \"memory\");",
+    "pointer_alias_removed": "s16 *s0 = &D_80101E62; (unannotated pointer-alias-fake-exception shape, cheat-reviewer FAIL 2026-07-05 pass 1) -- replaced with direct D_80101E62 accesses; re-measured, distance UNCHANGED at 17, so the alias was not load-bearing.",
+    "current_body_cheat_count": 0
+  },
+  "rejected_forms": [
+    "*(volatile s32 *)&D_80101E70 inline cast at the final read site -- forces the reload but is the forbidden case-2 CSE-defeat cast pattern (inline-asm-injection / legitimate-volatile-interrupt-touched); engine detector flags it as cheat_asm_stripped delta, reviewer would FAIL the family check.",
+    "volatile s32 *ecp = &D_80101E70; *ecp = ec_val; ... *ecp + 0x7FF ... -- pointer-indirection variant of the same forbidden CSE-defeat spirit (defeats CSE via volatile aliasing with no IRQ-writer citation); DOES force a genuine reload instruction (confirmed empirically) but is the same forbidden family by spirit even though the mechanical detector's exact regex may not match the pointer-variable spelling. Do NOT resurrect without a genuine two-pronged IRQ-touched justification (none exists for D_80101E70 here) -- see .claude/rules/legitimate-volatile-interrupt-touched.md.",
+    "register s32 saved_a1 asm(\"$7\") = a1; (diagnostic-only, confirmed via instrumented sandbox --keep-cheat-asm run to be the ONLY thing that reproduces target's exact instruction ORDER: with just this pin, disable=none/keep-cheat-asm scored 11 with build_insns=39 matching target count and the volatile reload appeared naturally at the correct position). This CONFIRMS the pin is diagnostically correct but per register-asm-pins.md it is diagnostic-only / never committable. No pure-C structure found yet that makes GCC choose this allocation without the pin.",
+    "a1 = *(s32*)(SpecialCam+sval); D_80101E6C = a1; (param-reuse lever, param-reuse-base-copy-cse-canon.md style) -- did NOT force GCC to allocate a1 hardware register to cam_val; GCC still chose v1 and treated the a1 reassignment as an ordinary reg-to-reg copy candidate, not a hard binding.",
+    "s32 saved_a1 = a1; as a plain (non-register) local referenced once at D_80101E7C -- always coalesced/folded back to a1 by GCC (dead-copy elimination), regardless of declaration order (tried before AND after `s16 *s0` decl).",
+    "func_80036FD4 sibling's entry[0]/entry[1] shared-pointer trick (SpecialCam and D_8008EC38 are adjacent globals, SpecialCam=0x8008EC34, D_8008EC38=0x8008EC38, exactly +4) -- does NOT apply here: target's actual asm/funcs/replay_camera_Init.s emits TWO SEPARATE symbol relocations (R_MIPS_HI16 SpecialCam and R_MIPS_HI16 D_8008EC38, confirmed via objdump -dr), unlike func_80036FD4 which computes both loads through ONE base+offset. Ruled out by direct relocation evidence, not guesswork."
+  ],
+  "sessions": [
+    {
+      "agent": "fleet-bw1 backlog worker",
+      "date": "2026-07-05",
+      "summary": "Removed 2 register-asm pins (saved_a1 $7, s0 $8) and 1 __asm__ scheduling-barrier from HEAD's committed body (all diagnostic-only/forbidden per register-asm-pins.md and inline-asm-policy.md -- this function's prior 'match' commits, e.g. c52b3f19/238a8c2d, explicitly used these cheats to force target's byte sequence, which is why it sits on the queue as INCOMPLETE despite SHA1 matching at HEAD). Restored the s16*s0=&D_80101E62 pointer-caching idiom (matches sibling func_80036FD4's shape) which alone improved ordering for the D_80101E6C store. Found via diagnostic pin-testing (NOT committed) that a1-preservation into a fresh register at the branch delay slot is the exact mechanism target's compiler used, cascading into the volatile D_80101E70 reload and the two-load register choice -- but could not reproduce this via pure C despite ~6 structural variants (see rejected_forms). One reordering (moving `D_80101E7C = a1;` textually between the two loads) improved the honest distance from HEAD's 18 to 17 -- first genuine (non-cheat) improvement below HEAD. Did not modify committed src/ (working only in worktree bb2-work-fleet-bw1); oracle at HEAD is unaffected."
+    }
+  ],
+  "reviewer": {
+    "pass_1": "FAIL -- unannotated s16 *s0 = &D_80101E62; pointer alias (pointer-alias-fake-exception prerequisites not met: no lever-exhaustion doc, no named mechanism, no /* FAKE */ annotation). All other constructs (cam_val/ec_val staged locals, D_80101E7C = a1; direct store, byte-offset pointer arithmetic) PASSed.",
+    "pass_2": "re-review invoked 2026-07-05 on the corrected candidate.c (pointer alias removed entirely, direct D_80101E62 accesses, distance unchanged at 17) -- verdict pending / see session notes for result at checkpoint time."
+  }
+}
