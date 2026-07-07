@@ -1,0 +1,34 @@
+{
+ "func": "saEft00Add",
+ "file": "system",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 18,
+   "modality": "recon",
+   "headline": "fable-blitz deep recon: the documented 3-way trilemma (unmerged tails x JF-LOOP-safe fills x v0 reuse) is re-opened by post-2026-07 sanctions; prime UNMEASURED probe = stacked adjacent end-labels (end"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "UNMEASURED: stacked adjacent end-labels on ONE return statement (tail1/2/3 all 'D_800A14E4 = -1; goto endK;' with 'end1: end2: end3: return D_800A14E4;') keep all three identical store-tails unmerged AT A SINGLE END ADDRESS for zero bytes, reproducing target's 4 LO16 relocs + single .L80082610 - and the JF-LOOP recursion then seeds from the true end block (successors = epilogue only, $a0 dead in live-at-start), letting site1 eager-fill WITH the goto form (no inline-return, no v1 collision) - potentially dissolving trilemma goals 1+2+3 simultaneously",
+   "mechanism": "jump2 cross_jump: the tail-merge route requires JUMP_LABEL pointer equality (jump.c:1990); follow_jumps (jump.c:3045) cannot canonicalize stacked labels (next_active_insn(label) is the lw, not a JUMP_INSN) and 2.7.2 lacks skip_consecutive_labels; then reorg.c fill_slots_from_thread's mark_target_live_regs JF-LOOP seed comes from the end block's basic_block_live_at_start",
+   "next_probe": "Build the stacked-label form on the V2b chassis (all-goto tails, single 'end1: end2: end3: return D_800A14E4;'), sandbox it, and count R_MIPS_LO16 D_800A14E4 relocs in the sandbox .o (4 = merge defeated) + objdump the site1 bnez slot (addiu $a0,1 = JF-LOOP seeded clean). If labels DO coalesce, insert a zero-byte empty do-while(0) (FAKE-annotated, sanctioned 2026-07-06) between end1: and end2: and re-check - its notes are the only zero-byte separator available"
+  },
+  {
+   "hypothesis": "UNMEASURED: duplicating 'func_80080390(6, 0);' into both arms of the site2 'if (D_800A1500 & 1)' (byte-neutral after jump2 re-merges the identical CALL suffix, per the 2026-07-01 duplicated-statement-into-arms sanction) relocates the merge label / USE-insn geometry that reorg's opposite-thread walk traverses, so the site2 beqz slot fill (addiu $a0,6 + retarget label+4) fires despite the tslTmlGetHeda (use $a0) poisoner",
+   "mechanism": "jump2 do_cross_jump CALL-suffix merge (jump.c:1993-1998) followed by reorg.c fill_slots_from_thread - the walk's poison point (uid-233-class CALL (use a0)) sits in the fall-through thread whose block boundaries and update_block USE residue the merge rewrites",
+   "next_probe": "Build the duplicated form (FAKE-annotated), verify byte-neutrality of the merged CALL region in objdump, then check the site2 beqz delay slot for addiu $a0,6 and the branch target offset (+4 past the fall-through addiu)"
+  },
+  {
+   "hypothesis": "UNMEASURED: a rich-pass offset-0 permuter campaign from the reconstructed V2b+inline_ret_mode floor-8 base samples the unknown-source-shape space (the modality that found marionation's masked-3 signpost in under an hour); every prior saEft00Add campaign predates this config and the V2b base has only ever seen 1264 iters",
+   "mechanism": "not a single pass - directed sampling over jump2/reorg-sensitive C geometry; triage finds via reloc-count (4 E4 stores) and slot-fill signatures before scoring",
+   "next_probe": "Reconstruct V2b+inline_ret_mode from the deep-dive snippet, build single-function target.o (asm/funcs/saEft00Add.s + prelude.inc, drop .set gp=64), run rich passes --stop-on-zero with a watcher auto-triaging sub-200 finds; vet any closer against the volatile/semantic-lie bans before integrating"
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-07T15:21:45.079199+00:00"
+}
