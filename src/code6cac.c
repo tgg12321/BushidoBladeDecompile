@@ -1615,8 +1615,7 @@ void camera_SetMatrix_8001DBE4(void) {
         return;
     }
     func_8003AA78();
-    if (D_800A38F8 > D_800A37A0) {
-    } else {
+    if (!(D_800A38F8 > D_800A37A0)) {
         do {
             func_8003AA48();
             gnd_disp_loop_ctrl();

@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "camera_SetMatrix_8001DBE4",
-      "file": "code6cac",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: Empty if-body construct (line 1618, code6cac.c) fails tests 1+2 and matches the 'empty-body if(cond){} dead-read' forbidden family. Worker should rewrite to 'if (!(D_800A38F8 > D_800A37A0)) { ... }' ("
-    },
-    {
       "func": "cpu_get_move_pattern_table_number",
       "file": "code6cac",
       "distance": 0,
@@ -4252,14 +4242,14 @@
     }
   ],
   "counts": {
-    "total": 496,
-    "active": 418,
+    "total": 495,
+    "active": 417,
     "by_status": {
-      "active": 418,
+      "active": 417,
       "parked": 78
     },
     "by_verdict": {
-      "C": 243,
+      "C": 242,
       "ASM-PARTIAL": 57,
       "ASM-SUSPECT": 118
     }
