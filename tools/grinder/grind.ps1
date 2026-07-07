@@ -160,7 +160,7 @@ Write your verdict JSON to the exact path given below.
 function Invoke-CandidatePath([string]$func, [string]$stem, [string]$modality, $o) {
     # 1) bytes first — driver-verified, never trusted from the session
     $sb = Invoke-Eng @('sandbox', $func, '--disable', 'all')
-    if ($sb -notmatch '"?distance"?\s*[:=]\s*0\b') {
+    if ($sb -notmatch '"score"\s*:\s*0\b') {
         Log "${func}: candidate-ready claim FAILED driver sandbox check — treating as invalid session."
         Revert-SessionEdits
         return
