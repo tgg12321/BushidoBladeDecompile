@@ -1,10 +1,33 @@
 {
  "func": "motion_LoadPreCalcData_80037F08",
  "file": "code6cac_c_mid",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: the __asm__ symbol equate (func_80037F08_ret = motion_LoadPreCalcData_80037F08) is byte-INERT at the instruction level -- it emits zero instructions and only exists to give C a lega"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The 4-file retype (callee s32 + return; header extern s32; delete alias block + extern; direct call at :555) is byte-identical -- sandbox 0 for both motion_LoadPreCalcData_80037F08 and pad_FuncAnalog, full oracle SHA1 unchanged.",
+   "mechanism": "GCC 2.7.2 expand_return / function-value hard-reg pass-through: the final CALL_INSN's value lands in $2, FUNCTION_VALUE is $2, cse1 copy-propagation deletes the redundant pseudo copy, so the s32 spelling emits the identical 15-instruction body; the caller's jal reloc resolves to the same address under the canonical symbol name (UNMEASURED -- static analysis only this session).",
+   "next_probe": "Apply the edit (LF endings, via WSL), `& tools/wteng.ps1 main sandbox motion_LoadPreCalcData_80037F08 --disable all` (expect 0) and `& tools/wteng.ps1 main sandbox pad_FuncAnalog --disable all` (expect unchanged), then verify-oracle --rebuild for the SHA1 proof."
+  },
+  {
+   "hypothesis": "Risk check: retyping the callee could theoretically perturb pad_FuncAnalog's register allocation around :555 IF pad_FuncAnalog's var_v0 handling is sensitive to the call's declared return type -- but the declared signature seen by the caller is s32(s32,s32) BOTH before and after (only the symbol name changes), so global.c/local-alloc see an identical RTL stream.",
+   "mechanism": "The caller compiles against the extern declaration, not the definition; identical prototype -> identical CALL_INSN pattern -> identical sched1/global allocation (UNMEASURED formality, covered by the same sandbox run).",
+   "next_probe": "The pad_FuncAnalog sandbox run in frontier[0] doubles as this probe; if it unexpectedly moves, diff the caller's .s around the jal to isolate."
+  },
+  {
+   "hypothesis": "The misnomer flagged in named_syms.txt:2509 ('MISNAMED: not motion-pre-calc; calls func_80079A30 then bios_FormatDevice_B()') can be fixed in the same commit by renaming the symbol project-wide (named_syms.txt + src + header) once the alias is gone -- optional hygiene, zero byte impact, removes the residual naming confusion that motivated the _ret alias in the first place.",
+   "mechanism": "Symbol renames are link-time alpha-equivalence (same address in named_syms.txt); no GCC pass involved.",
+   "next_probe": "Only if the closer wants it: pick a semantically honest name (e.g. bios_FormatDeviceCall_80037F08), update named_syms.txt:2509 + the TU + header, verify-oracle; otherwise skip -- not required to clear the judge constraint."
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): File-scope __asm__ alias creates a second symbol (func_80037F08_ret) pointing to the void function motion_LoadPreCalcData_80037F08 with a different return type (s32), purely so the call site at line 555 can do `var_v0 = func_80037F08_ret(0, 0)`. The alias is unnecessary: declaring motion_LoadPreCalcData_80037F08 as `s32` returning `bios_FormatDevice_B(buf)` produces identical MIPS bytes and removes the need for the alias entirely. Clean fix: (1) change the function signature to `s32 motion_LoadPreCalcData_80037F08(s32 a0, s32 a1)` and add `return` before `bios_FormatDevice_B(buf)`; (2) remove the `extern s32 func_80037F08_ret(s32, s32)` declaration (line 180) and the __asm__ alias block (lines 189-194); (3) update the call site (line 555) to `var_v0 = motion_LoadPreCalcData_80037F08(0, 0)`; (4) verify-oracle to confirm byte identity (expected: same \u2014 void vs s32-returning final-jal function produces identical MIPS callee code). Not in inline_asm_canonical.txt; not authorized.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

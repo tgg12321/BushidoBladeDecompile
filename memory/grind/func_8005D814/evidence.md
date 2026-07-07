@@ -1,0 +1,25 @@
+# Evidence bank — func_8005D814
+
+- [s1] [fable-blitz 2026-07-07] Rule inventory: exactly ONE rule -- asmfix.txt:77 `replace_with_asmfile asm/funcs/func_8005D814.s`; stub body at src/text1b.c:12840 `s32 func_8005D814(s16 *arg0, s32 arg1, s32 arg2, s32 arg3)`. Queue distance 544 = whole body missing; floor = 544 until a first C draft lands.
+
+- [s1] [fable-blitz 2026-07-07] Park status is a REJECTED canonical routing (2026-06-09 audit: scan_hand_coded LOW, asm reads as standard GCC output, distance>500 heuristic misroute). This is pure-C work, not canonical-asm.
+
+- [s1] [fable-blitz 2026-07-07] Function shape: packet-buffer builder. arg2 = packet base (fp), arg3 = OT depth. Layout: two 0x10-byte tiles at arg2+0x00/+0x10, sprite packets appended from arg2+0xA0 via chained func_8007352C calls, texpage prim at arg2+0x2F8, end at arg2+0x304; returns end-start (constant 0x304 computed via saved sp+0x70 minus sp+0x58 -- write it as pointer-difference C, not a literal).
+
+- [s1] [fable-blitz 2026-07-07] Six phases: (1) i=0..2 sprites from D_8009B3C8+(i<<3), first p0=D_8009B398; (2) i=0..1 sprites from D_8009B3E0+i*8 with p0=D_8009B3A4, and for i!=0 a char byte at entry+6 = (arg1-1==1)? 0x2D : 0x3C; (3) 3x2 digit grid (outer s4=0..2 fields, inner s0=0..1 digits): values lhu arg0[0] / lbu ((u8*)arg0)[2] / lbu ((u8*)arg0)[3], glyph-code stores 0x1A2/0x1D3/0x209 into *(s16*)(D_8009B400+digit*8), x = s0*20 (+3 if digit==1), y=0x16; (4) 3-digit rendering of arg1-1 (digits at struct+0x30/0x32/0x34 = sp+0x48/4A/4C) with leading-zero suppression flag in s0, glyph base 0x1F3, x = i*21 (+3 if digit==1), y=0x29; (5) two tiles: initTile + rgb {0xFF,0x10,0x10} + size from u16 pair D_8009B450/D_8009B452[s4<<2 halfword-index], field h = 0x238 - D_8009B450[..], gpu_SetSemiTransp, ot_Link(D_800A374C + arg3*4) -- then two more func_8007352C calls with (D_8009B3BC,D_8009B3F8) and (D_8009B3B0,D_8009B3F0); (6) saMotionSet(&D_8009B398,0), initTexPage(arg2+0x2F8, 1, 0, ret, 0), ot_Link(D_800A374C+arg3*4, arg2+0x2F8), return.
+
+- [s1] [fable-blitz 2026-07-07] PRIMARY TEMPLATE: func_800600C8 (COMPLETED-C, src/text1b.c:12969) uses the identical request struct S60C8 (src/text1b.c:12950): p0(+0), p1(+4), in_tex(+8)=packet-chain ptr, zero10(+0x10), arg2/depth(+0x14), width/x(+0x18), zero1C/y(+0x1C), byte28(+0x28), s16 d0/d1(+0x30/0x32). func_8005D814's struct = same layout extended: a third s16 d2 at +0x34 (sp+0x4C) and three u8s at +0x29..0x2B = {0xFF,0x10,0x10} (sp+0x41..0x43).
+
+- [s1] [fable-blitz 2026-07-07] func_800600C8 also demonstrates the digit idioms that reproduce this asm: `s.d0 = arg % 10; hi = arg/10; s.d1 = hi % 10;` yields the 0x66666667 magic-div pairs, and `s.p1 = (s32*)((s32)&D_8009B708 + ((&s.d0)[i] * 8))` yields the digit*8 table indexing seen here against D_8009B400.
+
+- [s1] [fable-blitz 2026-07-07] Phase-3 digit update is asymmetric: for inner s0!=0 the just-stored digit is reduced `d[s0] %= 10` (mult by 0x66666667 on the s16 value), for s0==0 the SHARED d0 at sp+0x48 is rewritten `d0 = (d0/10) % 10` (two chained magic-divs on lhu-loaded u16). Loop bodies for the three fields are near-identical clones (case0 lines 118-188, case1 189-260, case2 261-328 of the asm) -- likely unrolled by source-level switch(s5) inside the 2-level for, NOT three separate loops: the case dispatch (beq s5,s7 / slti 2 / beqz) runs every inner iteration.
+
+- [s1] [fable-blitz 2026-07-07] Phase-4 arithmetic (asm lines 349-407): t0=(s16)(arg1-1); d2=t0%10 (0x66666667); a3=t0/10; d1=a3%100 (0x51EB851F magic, sll1+add,sll3+add,sll2 = *100 reconstruction); d0=t0/100. Note d1 uses %100 not %10 -- source was probably `(v/10)%100` or the %100 falls out of a /10-of-/10 CSE; sibling func_800600C8's hi%10 shape is the first form to try.
+
+- [s1] [fable-blitz 2026-07-07] All int16 loop counters (s0,s4,s5) with sll16/sra16 re-extension after each ++ -- declare them s16 locals. Persisting leading-zero flag: `s0=0` before phase-4 loop, set to 1 when any glyph drawn; suppression condition: skip iff (flag==0 && d[i]==0 && i!=2) -- always draw the ones digit.
+
+- [s1] [fable-blitz 2026-07-07] Phase-5 tile fill uses s1=fp+0xE as write base with negative offsets (-0xA..-0x2 = fp+4..fp+0xC) and fp advancing 0x10/iter; index s0 = s4<<2 into halfword tables D_8009B450/D_8009B452 (u16 x/y pairs, 4-byte stride -> (s4*2) halfword pairs). D_8009B450 already extern'd as u16 in src/text1b.c:12049 and src/text1b_b.c:221.
+
+- [s1] [fable-blitz 2026-07-07] m2c reference generated clean (285 lines, no M2C_ERROR): tmp/blitz/m2c_func_8005D814.c -- confirms control shape (do-whiles, the switch, the flag) and stack-var map (sp18..sp70).
+
+- [s1] [fable-blitz 2026-07-07] Callee signatures on hand: func_8007352C(s32) -> s32 chained-packet helper (extern'd throughout text1b.c, e.g. :12940); initTile, gpu_SetSemiTransp(s32,s32), ot_Link(s32,s32), saMotionSet(s32,s32), initTexPage(s32,s32,s32,s32,s32) all extern'd near src/text1b.c:12935-12941. saMotionSet's return feeds initTexPage arg3 (a3=v0).

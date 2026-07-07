@@ -1,0 +1,11 @@
+{
+ "func": "camera_set_target_zoom",
+ "file": "code6cac",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-07T20:06:56.909041+00:00"
+}

@@ -1,10 +1,28 @@
 {
  "func": "cdrom_GetCmdName",
  "file": "system",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: goto-done accumulator is inert-likely; target asm is the canonical GCC 2.7.2 two-direct-return shape (value-set -> j DONE -> shared textual epilogue)"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "UNMEASURED: replace goto-done accumulator with two direct returns: if ((a0 & 0xFF) < 0x1C) { return (void *)g_cd_cmd_table[a0 & 0xFF]; } return &g_str_none; (idx in a local u32) - expect sandbox 0",
+   "mechanism": "GCC 2.7.2 multi-return unification: each return sets v0 and jumps to the shared function-end label; MIPS textual epilogue means no jump-to-return conversion can collapse j DONE into a second jr ra",
+   "next_probe": "apply the two-return form to src/system.c:91-101 and run sandbox cdrom_GetCmdName --disable all; expect 0, then retire/verify-oracle"
+  },
+  {
+   "hypothesis": "UNMEASURED fallback: if the two-return form diverges (e.g. jump.c drops the j DONE), try the if/else single-return form without goto: void *ret; if (idx < 0x1C) ret = ...; else ret = &g_str_none; return ret;",
+   "mechanism": "if/else accumulator keeps one exit path in source order (then-arm jumps over else to the return) - same CFG as target, ordinary C, no shared-label goto",
+   "next_probe": "sandbox the if/else form; diff against target for the beqz-delay sll placement"
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): goto-end-with-ret-val accumulator pattern (void *ret; ... goto done; ... done: return ret;) is explicitly listed as a FORBIDDEN FAMILY in the cheat catalog \u2014 slipped through the mechanical gates because it uses entirely normal C syntax. Worker must redo with two direct return statements (if/return/return) or an equivalent pure-C form that has no goto+accumulator; the simpler form is the natural target.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

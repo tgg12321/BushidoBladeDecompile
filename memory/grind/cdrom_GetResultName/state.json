@@ -1,10 +1,28 @@
 {
  "func": "cdrom_GetResultName",
  "file": "system",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: goto-done accumulator inert-likely; identical twin of cdrom_GetCmdName (bound 7, table 0x800A125C) - judge's suggested two-direct-return form is the right probe"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "UNMEASURED: two direct returns exactly as the judge constraint suggests: if (idx < 0x7) { return (void *)g_cd_result_table[idx]; } return &g_str_none; - expect sandbox 0",
+   "mechanism": "GCC 2.7.2 multi-return unification to the single end-of-function label + textual MIPS epilogue reproduces j DONE / fallthrough-else / shared jr ra",
+   "next_probe": "apply to src/system.c:103-113 together with the sibling's edit and sandbox both; then retire/verify-oracle in one pass"
+  },
+  {
+   "hypothesis": "UNMEASURED fallback: if/else accumulator without goto (void *ret; if...else...; return ret;) if the direct-return form diverges",
+   "mechanism": "same CFG as target with a single source-level exit; ordinary C, no shared label",
+   "next_probe": "sandbox the if/else form and diff the beqz-delay sll placement"
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): goto-done + void*ret accumulator (src/system.c:103-113) matches forbidden family 'goto-end-with-ret-val accumulator + shared label'; fails tests #1 and #5. Worker should attempt the two-direct-return form: if (idx < 0x7) { return (void *)g_cd_result_table[idx]; } return &g_str_none; \u2014 for this simple no-saved-register leaf, GCC 2.7.2 + find_cross_jump produces a single shared jr-ra epilogue naturally, so the simple form is highly likely byte-identical. If sandbox shows it isn't, record the specific diff and seek a clean structural lever (not goto-done).  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

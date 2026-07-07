@@ -1,10 +1,33 @@
 {
  "func": "motion_SetExMotion",
  "file": "text1b",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 1453,
+   "modality": "recon",
+   "headline": "Recon: effect-sprite draw fn; GTE RTPS prologue (canonical-asm region) + two 18-case jumptable switches + tail re-entry loop; full m2c reference obtained"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The function decomposes into pure C + one canonical GTE inline-asm block; transplanting the m2c body (with project GTE macro style for the ctc2/rtps/swc2/cfc2/mfc2 region) into src/text1b.c gives a measurable honest floor far below 1453",
+   "mechanism": "inline-asm-policy canonical category covers the cop2 region (SetRotMatrix/SetTrans/RTPS/FLAG/SZ3 sequence, splat-marked handwritten); the remaining ~1300 insns m2c-decompile cleanly as ordinary GCC 2.7.2 output (jumptable switches, strength-reduced divides, cross-jump shared tails)",
+   "next_probe": "structural session: write the C skeleton from tmp/blitz/motion_SetExMotion_m2c.c, model the GTE block on an existing matched text1b.c/display.c GTE-in-C-body function, then `& tools/wteng.ps1 main sandbox motion_SetExMotion --disable all` for the true starting distance"
+  },
+  {
+   "hypothesis": "Both switches must be real C `switch(mode)` statements with cross-case gotos/shared labels (case5->case0 merge, block_43/block_35 shared tails, case6/10->7/11 fallthrough) to reproduce the jtbl target sharing",
+   "mechanism": "GCC casesi emission: jtbl entries 800158F8[1]==800158F8[2] etc. come from shared case labels; the m2c-visible cross-case joins are cross-jump merges ONLY if source shared the code \u2014 switch-vs-ifchain-branch-sense + cross-jump-store-tail-merge rules apply to residuals",
+   "next_probe": "when writing the skeleton, encode case sharing exactly as jtbl duplicates dictate (1==2, 3==4, 6==7 heads differ though \u2014 6/10 have the negate pre-block, check jtbl_80015940[6]!=[7]); diff sandbox output per-region with diagnose"
+  },
+  {
+   "hypothesis": "The tail re-entry (mode+=2, prim advance, goto top-of-body-after-GTE) must be a literal backward goto to a label between the RTPS block and the D_800A34A8 stores \u2014 NOT a while wrapper \u2014 or the GTE region gets pulled into the loop and LICM/BB layout diverges",
+   "mechanism": "loop notes (NOTE_INSN_LOOP_BEG) change reorg/scheduling; the single unconditional `j .L80065988` with zero loop-invariant hoisting above the label indicates the original had `top:` after the projection code and `goto top;` in cases 6/7/10/11",
+   "next_probe": "A/B the two spellings (while(1) vs label+goto) in the structural session and compare the 0x80065988-region scheduling in the sandbox diff"
+  }
+ ],
  "judge_constraints": [],
  "origin": "queue",
  "created": "2026-07-07T16:31:43.109548+00:00"

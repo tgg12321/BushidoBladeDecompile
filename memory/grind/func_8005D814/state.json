@@ -1,0 +1,34 @@
+{
+ "func": "func_8005D814",
+ "file": "text1b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 544,
+   "modality": "recon",
+   "headline": "fable-blitz recon: timer/score packet builder (6 phases, ~144 insns) -- func_800600C8 (COMPLETED-C, same file) is a direct template: same S60C8 sprite-request struct, same func_8007352C chaining, same"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Transplanting func_800600C8's S60C8 struct (extended with s16 d2 at +0x34 and u8 rgb bytes at +0x29..0x2B) plus its call/digit idioms reproduces phases 1-4 nearly line-for-line; the whole function drafts to a low masked distance in one pass.",
+   "mechanism": "same compilation unit, same struct-on-stack address computation (GCC 2.7.2 reload of sp+0x18 base), same magic-div lowering (expand_divmod const path).",
+   "next_probe": "Write the C body modeled on src/text1b.c:12969 (switch(s5) inside the 2-level digit loop, do-while trip counts 3/2/3x2/3/2), then sandbox func_8005D814 --disable all for the first measured floor."
+  },
+  {
+   "hypothesis": "Phase-4's d1 = %100 (0x51EB851F path) comes from source `(v/10)%100` or from writing digits as v/100, (v/10)%100, v%10 in that literal order -- NOT the sibling's hi%10 chain.",
+   "mechanism": "GCC 2.7.2 expand_divmod emits the 0x51EB851F /100 magic for both /100 and %100 on s16; the observed dual mfhi interleave (mult t0 then a3 with same magic) implies two independent /100-class ops, no CSE.",
+   "next_probe": "In the draft, A/B the two spellings ((v/10)%10 vs (v/10)%100) and diff the phase-4 window in the sandbox asm diff."
+  },
+  {
+   "hypothesis": "The three near-identical phase-3 case bodies are ONE source block under switch(field) (not unrolled copies): the per-iteration dispatch chain beq/slti/beqz proves live switch dispatch, so the C is a nested for with switch, and GCC's cross-jumping did NOT merge the tails (separate glyph constants 0x1A2/0x1D3/0x209 keep them apart).",
+   "mechanism": "jump.c cross-jump pass only merges identical tails; distinct addiu constants block it, so per-case duplicated store+jump tails are expected from plain source-level switch.",
+   "next_probe": "Draft with a single switch body; if tails wrongly merge or dispatch order flips, consult switch-vs-ifchain-branch-sense rule before restructuring."
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-07T20:12:00.437028+00:00"
+}
