@@ -1,7 +1,7 @@
 {
  "func": "marionation_Exec",
  "file": "system",
- "session_count": 4,
+ "session_count": 5,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -33,23 +33,24 @@
    "floor": 4,
    "modality": "permuter",
    "headline": "Permuter s4: campaign rebuilt on main (vT40 base, permuter 220 = masked 4); sampler found the FIRST honest 179-insn region-3 steal-kill (dst2 alias-merge, masked 17; +sanctioned saved split-init = mas"
+  },
+  {
+   "session": 5,
+   "floor": 4,
+   "modality": "permuter",
+   "headline": "Permuter s5: harvested the two s4-carryover campaigns; alias-merge family further confirmed CLOSED (permuter 85 = masked 14, permuter 95-2 = masked 15 \u2014 deeper permuter progress trades MORE seats, wor"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A sampler find at permuter <60 on either running campaign fixes the pair reordering (the only masked residual the alias-merge family shares with baseline) - the unknown original source shape remains findable only by sampling outside the fused/decoupled/merged/indexed hand families",
-   "mechanism": "permuter reorder penalty is 60, so any find below 60 has zero reorderings AND zero insertions/deletions - i.e. the 55-57 window in target order; seats may still differ (regs x5)",
-   "next_probe": "harvest the running campaigns (s4/poll3.sh; triage.log windows; adiff2.py any 179-insn find). If campaigns died, relaunch via s4/launch_c.sh pattern. Reseed on any masked <10 find."
+   "hypothesis": "A masked<3 find requires a shape neither the vT40 base nor the find105 chassis have sampled \u2014 plausibly a young-label / post-flow-label construct that survives semantic vetting (no cross-block value read, no +1 insn cost)",
+   "mechanism": "reorg's find_basic_block(-1) -> all-live only fires for labels created AFTER flow analysis; the four sampled forms (vP160 while(status), output-160-3 while(status=0), and the two 180-insn +bnez forms) all pay either a byte or a semantic lie. The zero-cost form (if it exists) needs a natural post-flow label whose semantics are provably identical to the target's flow.",
+   "next_probe": "seed a NEW permuter campaign on the vT40 base with PERM_GENERAL'd tail-restructure candidates (e.g. label placement between `sb` and `move a1,s4` via a natural exit condition already present in the CFG), OR keep the two running campaigns going and re-harvest \u2014 but with a filter that rejects insn-count != 179 in the watcher so the sampler is pushed OFF the +1 attractor toward the invariant-insn-count basin"
   },
   {
-   "hypothesis": "Region-3's true mechanism in the original source is the all-live/young-label route (BB2_ALLLIVE_LABEL byte-proof, s10) - a post-flow label at the tail - NOT liveness (proven impossible this session for target's a1 seat)",
-   "mechanism": "find_basic_block(-1) -> all-live at the tail thread makes reorg reject the fill; needs a label created after flow analysis with true semantics; vP160's while(status) backedge paid a byte + uninit read, but the sampler space of true-semantics tail restructures is not exhausted",
-   "next_probe": "triage specifically any 179-insn find whose insn 151 is 'move a1,s4' AND 149 is nop - that combination is the signature of the label route working; the seeded campaigns mutate the check2/tail block structure every iteration"
-  },
-  {
-   "hypothesis": "The pair-swap fixed point is invariant to chassis (now proven for vT40 AND find105 landscapes) - closure must come as a sampler find with a statement geometry outside every family swept in s2/s3/s4",
-   "mechanism": "sched2 LUID tie + qty_compare 5.33v5.33 tie both survive callee-saved relandscaping; only a shape that changes the RTL LUID order without arg5-first source order can flip the window without the seat trade",
-   "next_probe": "none by hand (both chassis now measured closed) - vet sampler finds only; adiff2 the 55-57 window first, then insn 149/151"
+   "hypothesis": "The twin cpu_side_move_dir_4 (same pair-swap fixed point per ledger) is a cheaper venue to develop the exchange lever, and any qty_compare-flipping technique proven there transfers here",
+   "mechanism": "Strategy note in the ledger's judge constraints (fable-blitz 2026-07-07): pre-merge commits aa8cad24 cd65f9c2 e5aa2dd4 f4bc8e67 df749bfd 622620cb (sessions 6f-6h) contain in-place basin correction, final qty_compare equation, and s4 half-flip \u2014 NOT present in this ledger's s1-s3 summaries",
+   "next_probe": "in a NON-permuter session (out of scope this modality), git-log those commits; specifically look for a natural refs=2 or refs=6 spelling of the addr-add that flips the qty_compare 5.33v5.33 tie without birthing a fresh temp \u2014 that's the ONE unswept axis per the s2/s3 exhaustive geometry sweep"
   }
  ],
  "judge_constraints": [
