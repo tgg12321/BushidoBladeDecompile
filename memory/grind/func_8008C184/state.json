@@ -13,13 +13,13 @@
  ],
  "frontier": [
   {
-   "hypothesis": "The wrapper is fully inert: deleting src/main.c:2889-2891 wholesale (no replacement) byte-matches.",
+   "hypothesis": "Wholesale deletion of src/main.c:2889-2891 byte-matches ONLY IF the do-while's mid-block sched fence (sched.c:2067-2088) is not what holds `lw $a0` (s:12-13) below the two macro-sw stores (s:8-11). The if-wrapper part is inert regardless (jump1 deletion). Expectation revised by same-session correction: divergence plausible; still run first as the judge-mandated clean-form necessity probe.",
    "mechanism": "jump.c jump1 branch-to-following-insn deletion removes all three short-circuit branches before cse/flow/RA (cse.c cannot fold symbol_ref!=0 -- #pragma weak #if 0 at cse.c:5375-5378), and the leftover empty LOOP_BEG/END note pair encloses zero insns so no pass (flow loop_depth weighting, jump LABEL_OUTSIDE_LOOP_P, reorg) consumes it.",
    "next_probe": "Delete src/main.c:2889-2891, `& tools/wteng.ps1 main sandbox func_8008C184 --disable all` (expect 0), then verify-oracle + queue done."
   },
   {
-   "hypothesis": "If deletion diverges, the empty LOOP notes were load-bearing after all; a STANDALONE `do { } while (0); /* FAKE */` at the same spot (no if-wrapper) reproduces the notes and restores the match.",
-   "mechanism": "NOTE_INSN_LOOP_BEG/END placement between the two global stores influencing sched.c ordering (watch s:14/s:22 placements) or reorg.c relax_delay_slots/fill_slots_from_thread around the bnez (watch s:6-7).",
+   "hypothesis": "HIGH-PRIOR CLOSER (revised): a STANDALONE `do { } while (0); /* FAKE: sched.c mid-block loop-note fence keeps the D_800A3044 load chain below the AF4/AF0 stores */` at the same spot (no if-wrapper) reproduces the fence and byte-matches.",
+   "mechanism": "sched.c:2067-2088 mid-block LOOP-note fence (full dependence wall in sched1+sched2) preserving source store->load order; reorg.c bnez delay fill unaffected.",
    "next_probe": "Read the failing sandbox diff to classify the divergence site (bnez delay vs sched placements), then re-add the standalone annotated do-while and re-sandbox; sanctioned single-level form per do-while-zero-exception.md."
   },
   {

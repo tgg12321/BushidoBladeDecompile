@@ -1,3 +1,15 @@
 # Evidence bank — func_8008AE7C
 
 - Audit diagnosis (regressions.md): Dead paired inc/dec `v0++; v0--;` in the else branch (src/main.c:2440-2441) has no semantic purpose — the pair cancels out (v0=0 before and after) and GCC 2.7.2 constant-folds it away, emitting no corresponding instructions. The target ASM for that branch is just the bne delay slot `addu $v0,$zero,$zero`. The construct fails Test 1 (byte-identical behavior with or without it) and Test 2 (no human programmer writes a self-cancelling inc/dec from a spec). Fix: remove `v0++;` and `v0--;`, leaving `else { v0 = 0; }`. The byte-match is preserved because GCC was already discarding these instructions.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)
+
+- [s1] [fable-blitz 2026-07-07] Construct located: src/main.c:2439-2441 `v0 = 0; v0++; v0--;` in the final else arm of func_8008AE7C (:2430-2445). Target (asm/funcs/func_8008AE7C.s) gives that arm exactly ONE instruction: `addu $v0,$zero,$zero` in the bne delay slot (s:5). No inc/dec artifacts exist anywhere in the 16-instruction function.
+
+- [s1] [fable-blitz 2026-07-07] Fold mechanism: cse.c constant-propagates the pseudo through the triple (v0=0 -> v0=1 -> v0=0), leaving the first two sets dead; flow.c's dead-code elimination deletes them well before sched1/regalloc/jump2. By every pass that decides bytes, the else arm is identical to plain `v0 = 0;` -- Test 1 (byte-identical without the construct) passes, exactly as the judge asserts.
+
+- [s1] [fable-blitz 2026-07-07] Residual risk (why one measurement is still owed): the FIRST jump.c pass runs BEFORE cse, so it sees a 3-statement else arm; branch threading/inversion decisions there could theoretically differ from the 1-statement form. The target's shape -- `bne $a0,$v0,.L8008AE98` with the else-value in its delay slot and a `j .L8008AE98; addiu $v0,1` for the then-arm (s:4-7) -- is the natural output for the 1-statement form too, so predicted no divergence; the sandbox run is the proof.
+
+- [s1] [fable-blitz 2026-07-07] Adjacent construct deliberately NOT in scope: `new_var = 1` (src/main.c:2433) is semantically live -- it feeds BOTH the comparison `new_var == a0` (target `bne $a0,$v0` after `addiu $v0,$zero,1` in the beqz delay slot, s:2-4) and the assignment `v0 = new_var` (s:7). The judge did not flag it; removing it (literal `a0 == 1`) would change the comparison to an immediate form and break the match. Close-out must delete ONLY lines 2440-2441.
+
+- [s1] [fable-blitz 2026-07-07] Post-arm shape sanity: the join at .L8008AE98 stores $a0 then $v0 to the two globals via $at macros (s:11-14) -- untouched by the else-arm edit; no cross-jump interaction (the two v0=0 arms are already unmerged in target: delay-slot copy s:5 vs labeled copy s:9, which the 1-statement form preserves since reorg, not source shape, made that placement).
+
+- [s1] [fable-blitz 2026-07-07] session_count was 0; construct byte-correct on main (floor 0); this is the cheapest of the six regression items -- a pure deletion with a single-run verification.

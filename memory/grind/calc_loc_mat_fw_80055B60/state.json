@@ -1,0 +1,11 @@
+{
+ "func": "calc_loc_mat_fw_80055B60",
+ "file": "text1b",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-07T16:19:29.525788+00:00"
+}

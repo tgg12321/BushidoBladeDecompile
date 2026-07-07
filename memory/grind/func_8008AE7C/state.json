@@ -1,10 +1,28 @@
 {
  "func": "func_8008AE7C",
  "file": "main",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: judge's diagnosis fully endorsed -- the `v0++; v0--;` pair (src/main.c:2440-2441) is INERT dead weight, constant-folded to nothing before any codegen-relevant pass, and the target e"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Deleting `v0++; v0--;` (leaving `else { v0 = 0; }`) is byte-identical: sandbox 0, retire clean, queue done.",
+   "mechanism": "cse.c const-prop + flow.c DCE erase the pair before jump2/sched2/reorg ever see it; the target else-arm is already the folded form.",
+   "next_probe": "Delete src/main.c:2440-2441; `sandbox func_8008AE7C --disable all` (expect 0); verify-oracle --rebuild; queue done func_8008AE7C."
+  },
+  {
+   "hypothesis": "If (against prediction) a diff appears, it is confined to early jump.c branch-sense/threading on the if-else chain (the only pre-cse pass that saw the extra statements), not to the join or stores.",
+   "mechanism": "jump.c first pass runs before cse and keys some invert/thread decisions off arm shape; all later passes see identical RTL.",
+   "next_probe": "Read the masked diff; if branch-sense flipped, consult switch-vs-ifchain-branch-sense before touching structure -- and note the finding would upgrade this construct from 'inert' to 'load-bearing dead code', a dead-store-fake-exception ruling candidate."
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Dead paired inc/dec `v0++; v0--;` in the else branch (src/main.c:2440-2441) has no semantic purpose \u2014 the pair cancels out (v0=0 before and after) and GCC 2.7.2 constant-folds it away, emitting no corresponding instructions. The target ASM for that branch is just the bne delay slot `addu $v0,$zero,$zero`. The construct fails Test 1 (byte-identical behavior with or without it) and Test 2 (no human programmer writes a self-cancelling inc/dec from a spec). Fix: remove `v0++;` and `v0--;`, leaving `else { v0 = 0; }`. The byte-match is preserved because GCC was already discarding these instructions.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

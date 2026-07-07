@@ -1,10 +1,33 @@
 {
  "func": "func_800892F8",
  "file": "main",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: the two flagged constructs split cleanly -- the triple `extern s32 g_spu_timer;` (now main.c:1655/1657/1659) emits zero RTL and is predicted INERT (delete first, free win); the vola"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The three duplicate `extern s32 g_spu_timer;` decls are byte-inert; reducing to one decl leaves the build byte-identical.",
+   "mechanism": "File-scope extern declarations emit no RTL/insns in GCC 2.7.2; duplicates merge in the symbol table.",
+   "next_probe": "Delete main.c:1657,1659; `sandbox func_800892F8 --disable all` expect 0; then full verify-oracle (declaration edits are TU-wide, so the full SHA1 gate is the real check)."
+  },
+  {
+   "hypothesis": "Without the volatile, the ONLY diff is reorg stealing the addu into the jal delay slot (and possibly addu emitted after the stores) -- i.e. the gap is a delay-slot/ordering cluster of 1-3 placements, characterizable in one measurement.",
+   "mechanism": "reorg.c fill_simple_delay_slots backward scan (unblocked once the sw loses its volatil flag); sched2 rank_for_schedule tiebreak for the addu-vs-stores order; 2-word macro stores remain slot-ineligible either way.",
+   "next_probe": "Remove `volatile` from main.c:23, `sandbox func_800892F8 --disable all`, and read the masked diff to record the exact clean-gap shape (this also measures func_8008AD64/func_8008ADC4 collateral in the same build -- sandbox each). Revert after measuring; oracle stays green."
+  },
+  {
+   "hypothesis": "A FAKE-annotated `do { g_spu_init_flag = 0; g_spu_timer = 0; } while (0);` wrap (or a wrap around the addu-feeding statement) blocks reorg's backward scan / keeps the nop, closing the match without volatile -- the sanctioned pure-C replacement.",
+   "mechanism": "NOTE_INSN_LOOP_BEG/LOOP_END emitted by the wrap sit between the stores and the jal; reorg.c fill candidates are gathered within the insn stream and loop notes perturb both sched block boundaries and reorg's thread-following (measured effect, per the 2026-07-06 ruling effect-level standard).",
+   "next_probe": "With volatile removed, sweep wrap placements (around both stores / around the first store only / empty wrap between addu and jal) via tools/sweep_variants.py --func func_800892F8 --file main; any 0 is the clean closer, then FAKE-annotate + cheat-reviewer."
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Two forbidden cheat constructs in main (both attributable to this function's completion commit 6b94c89f). REMOVE BOTH and redo the match in pure C: (1) remove the `volatile` keyword from `extern volatile s32 g_spu_init_flag;` at src/main.c:23; (2) reduce the three `extern s32 g_spu_timer;` declarations at lines 1663/1665/1667 to one. The clean match requires finding a C structure that produces the scheduler-hoisted `addu $a0,$zero,$zero` ahead of the two SW stores without volatile or repeat-extern inflation \u2014 look at the DEFER-STORE-PAST-LATER-COMPUTE technique or reorder the statement sequence so the argument expression is computed earlier in the C.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

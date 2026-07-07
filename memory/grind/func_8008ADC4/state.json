@@ -1,10 +1,33 @@
 {
  "func": "func_8008ADC4",
  "file": "main",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: for THIS function the volatile on g_spu_init_flag is predicted INERT, agreeing with the judge -- the post-call `lw / nop / bnez` shape is forced by the opaque jal barrier + the masp"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "With `volatile` removed from main.c:23, func_8008ADC4 (and twin func_8008AD64) still byte-match: the jal is already an un-crossable memory barrier and the single post-call read leaves nothing for the qualifier to order.",
+   "mechanism": "cse.c invalidate_memory at CALL_INSNs forces the lw regardless; maspsx supplies the load-delay nop; reorg.c fills the bnez delay slot from the fallthrough thread identically in both builds.",
+   "next_probe": "Temporarily drop `volatile` at main.c:23, `sandbox func_8008ADC4 --disable all` + `sandbox func_8008AD64 --disable all` (expect 0/0), record, revert. This is safe to measure NOW even though the edit cannot LAND until 892F8 closes."
+  },
+  {
+   "hypothesis": "The full closing sequence is: (1) land 892F8's pure-C fence or allowlist grant, (2) delete `volatile` at main.c:23 in the same commit, (3) verify-oracle once -- ADC4 and AD64 then close with ZERO body edits (their C is already the natural form).",
+   "mechanism": "Single-declaration coupling: one TU-level token serves three functions; the constraint on ADC4 is satisfiable only as a side effect of resolving 892F8.",
+   "next_probe": "After 892F8's frontier-3 sweep produces a 0, apply the combined edit and run the full oracle gate; mark both ADC4 and AD64 ledgers from the same build."
+  },
+  {
+   "hypothesis": "If (unexpectedly) ADC4 diffs without the volatile, the diff will be confined to the lw/nop/bnez cluster ordering (sched2 read-scheduling), and the fix is the legitimate-volatile-interrupt-touched carve-out question already filed on 892F8's ledger -- NOT a body restructure.",
+   "mechanism": "sched.c read_dependence treatment of the (now non-volatile) mem read vs the delay-slot addu; the only movable insn pair in the region.",
+   "next_probe": "Read the failing sandbox diff; if it shows the addu/lw order flip, attach it as evidence to the 892F8 ruling_question (shared resolution) instead of opening an independent structural search."
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): func_8008ADC4 (main.c:2410) reads g_spu_init_flag which is declared 'extern volatile s32 g_spu_init_flag' (main.c:23) \u2014 a scheduling-coercion volatile that is NOT in volatile_extern_allowlist.txt. Commit 6b94c89f introduced the volatile on D_800A2D14 (the pre-rename symbol) with the explicit rationale 'volatile qualifier on D_800A2D14 to prevent delay slot optimization', which is a scheduling coercion, not an IRQ-writer-grounded necessity. The two-prong carve-out criterion is unmet: no IRQ-writer citation, no use-site construct named (the use in func_8008ADC4 at line 2415 is a plain conditional 'if (g_spu_init_flag == 0)' \u2014 not a spin-wait, double-read-across-sequence-point, or IRQ-mutated-loop-bound), and the symbol is absent from volatile_extern_allowlist.txt. next_action: remove the unauthorized volatile qualifier from 'g_spu_init_flag' (main.c:23), verify whether func_8008ADC4 still byte-matches without it (likely yes, since spu_TransferData() is an opaque call barrier and GCC will not CSE across it), and if it does not match, find a pure-C structural fix rather than restoring the volatile.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

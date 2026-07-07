@@ -1,10 +1,28 @@
 {
  "func": "sys_SetTimer",
  "file": "ings2",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: volatile write-cast assessed INERT with strong in-band evidence -- the committed build's NON-volatile read through p already emits unfolded `lw 0($v1)`, proving mem(reg) pointer acc"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The judge's one-line fix -- `*p = a0;` replacing the volatile cast at ings2.c:31 -- keeps sandbox 0 and the oracle SHA1 unchanged.",
+   "mechanism": "cse.c/combine leave mem(p_reg) accesses unfolded here (proven for the non-volatile read in the committed bytes); sched1 same-address anti-dependence pins lw before sw; reload materializes p once as lui+addiu.",
+   "next_probe": "Apply the edit, run `& tools/wteng.ps1 main sandbox sys_SetTimer --disable all` (expect 0), then verify-oracle --rebuild and recommit as cheat-cleanup."
+  },
+  {
+   "hypothesis": "CONTINGENCY (only if probe 1 shows the folded 3-insn form): cse.c substitutes the REG_EQUIV symbol into the non-volatile sw address; the clean counter-lever is a spelling change on the accesses (e.g. both as p[0], or an intermediate re-read of p) per defeat-combine-symbol-fold -- never restoring volatile.",
+   "mechanism": "cse.c fold_rtx REG_EQUIV substitution into MEM addresses, which skips volatile MEMs -- the one pass where the cast could have been load-bearing.",
+   "next_probe": "Diff the sandbox asm's 6 insns against func_800828B4.s; if `sw $a0,%lo(D_800A1500)($v1)` appears, read .claude/rules/defeat-combine-symbol-fold.md and sweep the access spellings (p[0] write, split statement, second pointer read) in one sweep_variants call."
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): *(volatile s32 *)p write-cast is a volatile-coercion on non-volatile, non-allowlisted global g_sys_timer. Fix: change *(volatile s32 *)p = a0 to *p = a0 (pointer alone produces the lui+addiu match; volatile has no effect on MIPS sw and was never needed).  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

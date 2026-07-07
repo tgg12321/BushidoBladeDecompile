@@ -1,10 +1,33 @@
 {
  "func": "func_80085448",
  "file": "main",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: the judge's cheat finding is directionally right (buf[10] is frame-driven) but its factual predicate is wrong -- PsyQ SpuCommonAttr is 36 bytes (not 32), pinned by the function's ow"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Declaring the real PsyQ SpuCommonAttr (36 bytes: mask + mvol/mvolmode/mvolx + cd{volume,reverb,volumex} + ext{volume,reverb}, SpuVolume = {s16 left,right}) and rewriting both func_80085448 and func_80083BE4 to field stores byte-matches both: MIPS_STACK_ALIGN(36) = 40 reproduces the 0x40 frame / ra@0x38 / buf@sp+0x10 exactly as buf[10] did.",
+   "mechanism": "mips.c compute_frame_size MIPS_STACK_ALIGN 8-byte rounding of var_size; field stores emit identical (mem:HI (plus sp const)) RTL to the committed casts.",
+   "next_probe": "Add the struct (local typedef or include/), respell both functions, `sandbox func_80085448 --disable all` + `sandbox func_80083BE4 --disable all` (expect 0/0), verify-oracle, queue done; cite this ledger's layout derivation in the auditor brief."
+  },
+  {
+   "hypothesis": "Minimal-diff fallback if the struct respelling perturbs something unexpected: `s32 buf[9];` (36 bytes) with the existing cast-stores -- same var_size 40 by the same rounding, and no element lies beyond the true struct boundary (0x24 covers all writes through 0x1F).",
+   "mechanism": "Same MIPS_STACK_ALIGN rounding; the array size now equals sizeof(SpuCommonAttr), so the spelling is boundary-honest even if less descriptive.",
+   "next_probe": "Only if probe 1 diverges: swap 10 -> 9 in both functions, sandbox both; capture any diff (expected none -- the two spellings are var_size-identical)."
+  },
+  {
+   "hypothesis": "If either function's diff shows the s16 double-store cadence changing under field spelling (e.g. GCC reordering paired left/right stores), the hybrid form -- SpuCommonAttr-typed local with the original byte-offset casts retained -- preserves the committed store shapes while fixing the size/semantics.",
+   "mechanism": "Store-ordering in sched1 is driven by source statement order either way; this probe exists only to isolate spelling effects from size effects.",
+   "next_probe": "Sandbox the hybrid; diff against probe 1's result to attribute any delta to spelling vs size."
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): s32 buf[10] is an oversized-array frame-inflation cheat. PsyQ 3.5 SpuCommonAttr is 32 bytes (mask+result at 0x00-0x07, twelve SpuVolume s16 fields at 0x08-0x1F); the function's highest write is at offset 0x1E (byte 30). Elements 8-9 (bytes 32-39) are never written and lie beyond the struct boundary. They inflate the stack frame from the ~56 bytes buf[8] would produce to the target's 64 bytes. Commit e6ee2cfc explicitly names the technique 'Stack frame sizing and control flow restructuring for register alloc' \u2014 the worker's own words confirm the mechanism is GCC's frame allocator, not struct semantics. Sibling func_80083BE4 (same commit, line 89) uses identical buf[10] while writing only to elements 0-2 (bytes 0-7), further confirming the size is frame-driven. Next action: redo with s32 buf[8] (or SpuCommonAttr) and find a legitimate pure-C reason for the 64-byte frame, OR verify via PsyQ 3.5 SDK headers that SpuCommonAttr is actually 40 bytes (which would clear this finding). A byte-correct cheat cannot simply be reverted; it stays in main until a clean replacement is produced and passes a fresh auditor review.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

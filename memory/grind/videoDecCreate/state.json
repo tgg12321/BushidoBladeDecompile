@@ -1,10 +1,33 @@
 {
  "func": "videoDecCreate",
  "file": "text1a_c",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: cntPtr is LOAD-BEARING in the target bytes -- s:28 `addu $s1,$a1,$zero` IS the alias copy (countPtr in caller-save $a1 for the pre-loop guard, cntPtr in callee-save $s1 across the l"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The judge's removal probe FAILS as predicted: replacing `*cntPtr` with `*countPtr` at :577 (and deleting :572) changes the bytes with the exact signature -- s:28 `addu $s1,$a1,$zero` disappears, s:15 computes into $s1, the guard lhu reads 0($s1), function is 4 bytes shorter.",
+   "mechanism": "GCC 2.7.2 RA allocates one callee-save home ($s1) for the whole merged live range (live across jal); no live-range splitting exists to recreate the $a1/$s1 split from single-variable C.",
+   "next_probe": "Apply the removal, run `& tools/wteng.ps1 main sandbox videoDecCreate --disable all` (expect non-zero), diff the sandbox asm prologue+guard against videoDecCreate.s:12-28 to bank the signature, then REVERT the edit."
+  },
+  {
+   "hypothesis": "With load-bearing status measured, the clean close is documentary: keep the source byte-identical, recommit with the commit message explicitly justifying cntPtr as a live SOTN-#6 named intermediate (citing the s:28 copy + $a1/$s1 lifetime-split evidence), and obtain a fresh adversarial cheat-reviewer PASS per the judge's second branch.",
+   "mechanism": "The judge_constraints[0] disposition itself: 'if SHA1 breaks -> cntPtr is a load-bearing SOTN-#6 named-intermediate and the commit message must explicitly justify it before a fresh cheat-reviewer PASS'.",
+   "next_probe": "After probe 1's measurement, assemble the reviewer brief (reviewer_precheck output + the banked byte signature + this ledger's evidence) and run the layer-2 cheat-reviewer on the unchanged source."
+  },
+  {
+   "hypothesis": "CONTINGENCY (only if probe 1 unexpectedly keeps sandbox 0): the alias was inert after all (e.g. RA ties broke the same way) -- then the judge's first branch applies and the simplified countPtr-only form is committed as the clean replacement.",
+   "mechanism": "local-alloc/global.c could in principle coalesce the merged pseudo to reproduce both homes only if some other constraint recreates the split -- no such constraint is visible statically, hence this is the low-probability branch.",
+   "next_probe": "verify-oracle --rebuild on the simplified form, then recommit as cheat-cleanup."
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): u16 *cntPtr = countPtr; is a semantically-redundant pointer alias in the inner scope \u2014 fails tests 1+2, not mentioned in the completion commit's justification (7c2d2e4c only documents cnt_base/base_addr/idx as named-intermediates). Next action: worker removes cntPtr and uses countPtr directly in the loop condition, then runs verify-oracle; if SHA1 still matches \u2192 clean source confirmed, recommit; if SHA1 breaks \u2192 cntPtr is a load-bearing SOTN-#6 named-intermediate and the commit message must explicitly justify it before a fresh cheat-reviewer PASS.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

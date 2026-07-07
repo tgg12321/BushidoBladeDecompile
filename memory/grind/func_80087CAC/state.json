@@ -1,10 +1,33 @@
 {
  "func": "func_80087CAC",
  "file": "main",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: the `s16 *ptr = &D_80102806` alias is likely LOAD-BEARING, contra the judge's probe-(a) optimism -- target materializes the full address ONCE into $a3 (lui+addiu, s:7-8) and uses 0("
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Judge probe (a) -- direct `D_80102806 = a0; ... return D_80102806;` with the pointer deleted -- does NOT byte-match: the store becomes the $at macro form (lui $at; sh %lo($at)) and the reload a separately-legitimized lui+lh, with no shared $a3 and no addiu, because GCC 2.7.2 does not CSE symbol-address HIGHs across a store/load pair (func_800892F8 target evidence).",
+   "mechanism": "mips.c direct-symbol mem output (assembler-macro expansion via $at) vs cse.c -- no cross-access address unification for HIGH/LO_SUM pairs; the addiu full-address materialization only arises from an address-valued pseudo (the C pointer).",
+   "next_probe": "Apply the two-line direct spelling, `sandbox func_80087CAC --disable all`; if 0 (prediction wrong) proceed to retire/queue-done; if nonzero, capture the diff shape to confirm the $at-macro signature and move to frontier 2."
+  },
+  {
+   "hypothesis": "If probe (a) fails, the pointer IS the minimal C spelling that produces the target address shape, and the correct disposition is keep-with-annotation under pointer-alias-fake-exception (`/* FAKE: materializes &D_80102806 once in a reg for store+reload */`), not further structural search -- a read+write pointer to a status global is also plausibly the ORIGINAL source idiom (cf. func_8008BEA4's unflagged `flag` pointer).",
+   "mechanism": "pointer-alias-fake-exception family (owner ruling 2026-07-01); the pointer asserts nothing false and every byte comes from compiled C.",
+   "next_probe": "Surface the ruling_question below with probe-(a)'s measured diff attached; if granted, add the FAKE annotation + lever-exhaustion note and re-run cheat-reviewer."
+  },
+  {
+   "hypothesis": "A half-form (store direct + read via pointer, or store via pointer + read direct) does NOT match either -- both accesses must be through the pointer for $a3 to carry 0($a3) offsets at both sites; probing it cheaply identifies WHICH access drives the allocation if the full direct form's diff is ambiguous.",
+   "mechanism": "Each mem(reg ptr) use keeps the pointer pseudo live; a single use may let cse substitute mem(symbol) back or change the register's lifetime/allocation ($a3 choice depends on the live range spanning the *a1/*a2 stores).",
+   "next_probe": "sweep_variants with the two half-forms + the direct form + committed form in one call (tools/sweep_variants.py --func func_80087CAC --file main); scores rank the four spellings in one build cycle."
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Pointer alias `s16 *ptr = &D_80102806; *ptr = a0; return *ptr;` is a STORE-compute-LOAD codegen lever, not the sanctioned LOAD-compute-STORE RMW shape \u2014 fails tests 1, 2, 3, and 5; next action: try direct `D_80102806 = a0; return D_80102806;` (GCC may naturally CSE the address into a register reused for both accesses, matching target without the pointer) and if not, explore whether the intervening stores through `a1`/`a2` force a conservative-aliasing reload without the pointer coercion  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

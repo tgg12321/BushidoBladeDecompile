@@ -1,10 +1,33 @@
 {
  "func": "spu_ResetMotionEntry",
  "file": "main",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: judge's 'zero asm footprint / DCE' diagnosis is CONTESTED by the target bytes -- offset's initializer is the single x0xB0 shift-add chain ($a2, s:9-13) that all six 'inline' recompu"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Judge's deletion path: removing line 510 alone keeps sandbox 0. Expected to FAIL (chain moves after the base lw; sched1's load-early bias keeps it there), but it is the diagnosis's prescribed first measurement and is one sandbox run.",
+   "mechanism": "cse.c first-occurrence canonicalization decides the chain's home + emission position; sched1 (haifa predecessor in GCC 2.7.2 sched.c) breaks the lw-vs-chain order by priority/insn order once the source anchor is gone.",
+   "next_probe": "Delete main.c:510, run `& tools/wteng.ps1 main sandbox spu_ResetMotionEntry --disable all`; diff the first 16 insns of the sandbox asm against func_80085114.s:2-16 to see the chain/lw order directly."
+  },
+  {
+   "hypothesis": "Use-the-variable redo: keep `s32 offset = (s16)a1 * 0xB0;` and replace all six inline `(s16)a1 * 0xB0` spellings with `offset` (entry init at :512 and the five/one RMW address expressions at :515-519,:522) -- byte-identical (sandbox 0) and construct-family-free.",
+   "mechanism": "Direct pseudo reads reproduce exactly the post-cse RTL of the committed form (same single chain set, same readers); no pass sees a difference downstream of cse.",
+   "next_probe": "Apply the rewrite, sandbox (expect 0), verify-oracle --rebuild, recommit as the clean replacement with the CSE-carrier explanation in the commit message."
+  },
+  {
+   "hypothesis": "CONTINGENCY (only if BOTH probes diverge): the divergence is in the sign-extension placement (s:7-8 before the chain) or the $a1-vs-$v0 scratch choice for mask constants -- localize with RTL dumps rather than form-guessing.",
+   "mechanism": "GCC 2.7.2 expand-time SUBREG promotion of the s16 param + local-alloc scratch assignment for the five addiu mask constants.",
+   "next_probe": "cc1 -da on committed vs candidate .i; diff .cse and .sched dumps for the entry block to name the first diverging insn."
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Dead variable `s32 offset = (s16)a1 * 0xB0;` at src/main.c:510 is declared but never referenced anywhere in the function body (lines 511-522). Every downstream operation that needs a1*0xB0 computes it inline: `(s16)a1 * 0xB0` appears verbatim in `entry`'s initializer and in all six `*base_ptr`-based pointer expressions. The variable `offset` is set exactly once and never read. Fails test 1 (byte-identical without it \u2014 GCC 2.7.2 DCEs the dead shift-and-add sequence before register allocation; sandbox --disable-all confirms score==0 meaning the match is not dependent on this construct) and test 2 (no human programmer writing a motion-entry-reset function from spec would declare a named intermediate and then bypass it everywhere in favor of re-computing the expression inline). The match itself is clean (sandbox score 0, rules_dropped 0, cheat_asm_stripped 134 is file-level from unrelated functions in main.c). Fix: remove the dead `s32 offset = (s16)a1 * 0xB0;` declaration, run `verify-oracle` (oracle expected unchanged since the variable is dead), commit as a source-hygiene cleanup. If oracle fails unexpectedly, the variable was load-bearing through some GCC 2.7.2 mechanism not visible to DCE analysis and a fresh pure-C re-attempt is required.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

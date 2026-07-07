@@ -1,10 +1,33 @@
 {
  "func": "func_80082C58",
  "file": "ings2",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: the flag_ptr construct is LOAD-BEARING in the committed spelling (target wants `sh $2,-60($16)` reg+disp in a jal delay slot, which the judge's preferred `D_800A1578 = 1;` only reac"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Direct `D_800A1578 = 1;` (flag_ptr deleted) byte-matches because cse.c use_related_value rewrites the symbol-addressed store as reg+disp off the live s0b pseudo (D_800A15B4 = D_800A1578+0x3C), yielding the target's `sh $2,-60($16)` and preserving the delay-slot fill.",
+   "mechanism": "cse.c use_related_value / related-value chains for (plus (symbol_ref) (const_int)) addresses; the store and the pointer def share a basic block region with s0b live on both sides.",
+   "next_probe": "Delete :199, replace :204 with `D_800A1578 = 1;` (typed via `*(s16 *)&D_800A1578 = 1;` only if the u16 extern's sh width diverges), `sandbox func_80082C58 --disable all`; expect 0 => land it and RETIRE the defeat-combine-symbol-fold rule doc + its index line."
+  },
+  {
+   "hypothesis": "If related-value does NOT fire (combine re-folds to symbol form, sandbox back to 4), the single-walker spelling closes it: derive the second-block pointer from the first-block s0 (`s32 *s0b = (s32 *)(s0 + 0x1E);`) so the -60 displacement is same-object pointer arithmetic, and/or write the flag through `*(s16 *)s0 = 1;` while s0b carries the +0x3C view.",
+   "mechanism": "Same combine/cse fold surface, but the address base becomes a MULTI-set / call-crossing pseudo chain that combine's single-substitution precondition (reg_n_sets==1 with known symbol value) no longer satisfies; register pressure must stay at one callee-save ($s0) across block 1's three calls.",
+   "next_probe": "Sweep the 3-4 single-walker spellings via tools/sweep_variants.py (derive-from-s0, return-s0-directly, flag-through-s0) in one sandbox pass; check the diff for a second callee-save appearing (the failure signature)."
+  },
+  {
+   "hypothesis": "If no alias-free spelling matches, the committed flag_ptr survives ONLY as a pointer-alias-fake-exception instance: /* FAKE */ annotation + this ledger as lever-exhaustion + fresh layer-2 cheat-reviewer + user sign-off, with defeat-combine-symbol-fold.md rewritten to route through (or be replaced by) that sanctioned family instead of claiming not-a-cheat status.",
+   "mechanism": "pointer-alias-fake-exception (2026-07-01 owner ruling; SOTN FakePrim / tilemap evidence) -- typed re-view of a global for codegen effect, last-resort posture.",
+   "next_probe": "Only after probes 1-2 both fail with captured diffs: annotate, re-run cheat-reviewer on the annotated form, surface the ruling question below with the two failure diffs attached."
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Second-block flag_ptr construct (commit a7629356) fails tests 2 and 3: the spelling '(s16 *)((char *)s0b - 60)' is GCC-internals-driven (defeats combine's (plus symbol const) fold as stated in the commit message) rather than spec-driven \u2014 a programmer would write 'D_800A1578 = 1;' using the extern already declared 16 lines above in the same file. The sanctioning rule (.claude/rules/defeat-combine-symbol-fold.md) was added in the same commit with no SOTN master-branch evidence, violating the hard process rule against self-sanctioning rule docs. The 'named-intermediate declaration order' SOTN sanction covers LUID biasing specifically; combine-fold defeat is a different GCC pass and needs its own SOTN evidence and user sign-off. Next action: owner should (a) research SOTN master-branch for pre-computed-displaced-pointer instances that defeat combine, and if found, get user sign-off for the technique so the function stays COMPLETED-C; or (b) if no SOTN evidence, reopen the function and find a pure-C form that doesn't rely on the combine-defeat trick (or accept it stays INCOMPLETE pending further technique research). First-block volatile casts (*(volatile u16 *)v0_ptr) are CLEAN \u2014 hardware-register I/O pattern through a pointer variable, matching the sys_SetTimer / motion_make_table precedent in the same file, not the forbidden *(volatile T *)&D_xxx game-state form.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

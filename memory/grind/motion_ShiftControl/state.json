@@ -1,0 +1,11 @@
+{
+ "func": "motion_ShiftControl",
+ "file": "text1b",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-07T16:19:29.877362+00:00"
+}

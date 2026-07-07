@@ -1,10 +1,33 @@
 {
  "func": "game_Init",
  "file": "sound",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: the empty do-while at src/sound.c:259 is a sched.c MID-BLOCK FENCE (sched.c:2067-2088 -- LOOP notes in mid-basic-block block ALL insn motion across them, both sched passes), NOT a r"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Necessity probe (judge-mandated): the fully clean form -- literals only, no one/two/new_var, no do-while -- diverges, predicted diff shape: constant sets hoisted/reordered in the tail and 0x23 seated in a third register instead of reusing $v0.",
+   "mechanism": "Absence of the sched.c:2067 mid-block fence lets sched1 hoist the three constant sets above the leaf stores (priority: sets feeding stores outrank stores); overlapping pseudo live ranges then force a third hard reg at local-alloc.",
+   "next_probe": "Write the clean form, `& tools/wteng.ps1 main sandbox game_Init --disable all`; if 0, clean close-out (constructs were all inert); if non-zero, bank the diff shape as the necessity evidence the judge requires."
+  },
+  {
+   "hypothesis": "Minimal load-bearing subset: keep do-while + one/two (FAKE-annotated, citing the sched fence effect), DELETE new_var (inert) -- sandbox 0.",
+   "mechanism": "new_var's dead set is flow-deleted pre-sched (cse 0-propagation into the reg_or_0 store operand), so its removal cannot perturb sched or RA; the fence + pre-fence constant sets reproduce the target's two-register tail.",
+   "next_probe": "Delete :244/:251, change :263 to `D_800F6650 = 0;`, sandbox (expect 0); then add `/* FAKE: sched.c mid-block loop-note fence keeps one/two materialized ahead of the store tail (v0/v1 seating, v0 reuse for 0x23) */` and record lever-exhaustion in the ledger."
+  },
+  {
+   "hypothesis": "If new_var deletion unexpectedly diverges, the effect is pseudo-numbering/LUID shift feeding local-alloc or sched tie-breaks, not the dead store itself.",
+   "mechanism": "local-alloc processes pseudos in creation order; an extra early pseudo shifts regno order and can flip equal-priority tie-breaks downstream.",
+   "next_probe": "cc1 -da greg dumps with/without new_var; diff the register-disposition lines for the tail pseudos to name the flipped decision, then find a real-statement respelling that restores it."
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Two cheat constructs found: (1) empty `do { } while (0);` at src/sound.c:259 is missing the mandatory `/* FAKE */` annotation required by the do-while-zero-exception rule \u2014 hard fail per cheat-reviewer.md prerequisite 3. (2) Named constant intermediates `s16 one = 1`, `s16 two = 2`, `unsigned int new_var = 0` at lines 243\u2013245/257\u2013258/251 serve no semantic purpose (behavior identical to using the literals directly), fail the human-programmer test (no spec-driven reason to introduce them), and exist only to steer register allocation across the loop-note boundary \u2014 GCC-internals coercion. All three intermediates form the same forbidden cluster. Worker must: add `/* FAKE: <reason citing LABEL_OUTSIDE_LOOP_P / reorg.c peephole> */` annotation, AND document lever-exhaustion in a WIP ledger (prerequisite 1), AND verify the three named intermediates are genuinely necessary by attempting a clean pure-C form without them first.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],
