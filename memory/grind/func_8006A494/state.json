@@ -1,10 +1,33 @@
 {
  "func": "func_8006A494",
  "file": "text1b",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: same volatile-defeats-cse1 construct as sibling func_8006A3CC (fable frontier already banked there; ALIGNED) - A494 adds a cross-register tell (sw $v1 / lw $v0, $v1 immediately reus"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "ALIGNED WITH func_8006A3CC h1: strip volatile and sweep the re-read placement - (a) adjacent post-store, (b) after the zero-store block, (c) after the 0x100 stores, (d) fused into the +4 store `*(s32*)(arg1+4) = *(s32*)(arg1+0) + 0xC;` - a later placement should survive cse1 (seven intervening same-base stores invalidate the store-forward entry) and sched1 hoists the lw to the target slot; the cross-register sw $v1/lw $v0 pattern is the acceptance signature.",
+   "mechanism": "cse.c store-to-load-forward invalidation by intervening MEM writes + sched1 load hoisting",
+   "next_probe": "run whichever placement wins A3CC's sweep on A494 FIRST (shared lever); else strip volatile -> sandbox baseline -> tools/sweep_variants.py over the 4 placements"
+  },
+  {
+   "hypothesis": "ALIGNED WITH A3CC h2 fallback: FAKE-annotated typed re-view per pointer-alias-fake-exception (`s32 *view = (s32 *)arg1; /* FAKE */`, store through arg1, re-read through view), mirrored in both siblings; cse may canonicalize the reg copy so this needs measurement.",
+   "mechanism": "cse.c address canonicalization across a reg-copy equivalence (sanctioned spelling either way)",
+   "next_probe": "sandbox the alias variant on A494; if folded, break the equivalence-class ordering by initializing view before arg1's first use"
+  },
+  {
+   "hypothesis": "A494-specific liveness shaping: make v's producer register die AT the 0x0 store so RA hands the 0x100 constant its register and the +0xC consumer must reload - e.g. spell the RHS chain into a named temp used ONLY by the store, and the +4 store from a separate re-read expression; the cross-register target pattern says the original had exactly this liveness split.",
+   "mechanism": "local-alloc/global.c liveness + reg reuse (reload materializes only if the stored pseudo is dead at the reuse point)",
+   "next_probe": "variant with `tmp` feeding only the 0x0 store and the +4 line re-reading; check the emitted pair is sw $v1/lw $v0 (not sw $v0/lw $v0) - a stricter acceptance check than A3CC needs"
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Line 15648 src/text1b.c: `v = *(volatile s32 *)(arg1 + 0)` is a volatile inline cast on non-volatile game-state memory used to defeat GCC CSE and force the `lw $v0, 0x0($s0)` at target offset 0x8006A4D8. The sibling commit (4fb57431, func_8006A3CC) self-confesses the mechanism: 'Volatile cast on the re-read forced GCC to emit the actual lw rather than keeping the value live in a register.' No IRQ-writer citation, no allowlist entry, no MMIO address \u2014 falls squarely in the 'inline volatile casts on game-state' forbidden family (inline-asm-policy.md expanded catalog, 2026-05-31). The 'cheats by any spelling' policy covers this *(volatile T*)(ptr+offset) form just as it covers *(volatile T*)&D_xxx. next_action: re-open func_8006A494 for a clean pure-C redo that achieves the sw-then-lw naturally (e.g. restructure so GCC's alias analysis or liveness kills $v1 before the v+0xC use without a volatile coercion); sibling func_8006A3CC carries the same construct and should be flagged simultaneously.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

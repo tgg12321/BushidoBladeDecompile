@@ -1,3 +1,13 @@
 # Evidence bank — func_80065590
 
 - Audit diagnosis (regressions.md): Type-coercion cheat in `extern s16 D_800F0BB6` declaration: canonical type is `u16` (explicitly named in regressions.md func_80065344 cluster entry as one of ~12 sister globals needing `s16`→`u16` retype). Identical pattern to the flagged func_80065344 cheat. Next action: in all text1b.c declarations of D_800F0BB6 (lines 14502 and 14725), change `extern s16` to `extern u16`; change `s16 *p` to `u16 *p`; change `s16 v1 = *p` to `u16 v1 = *p`; the `(s16)v1` comparison cast is then semantically meaningful (u16→s16) and produces the canonical `lhu + sll/sra` sequence. Sibling globals in the cluster (D_800F0BB4, D_800F0BBC, D_800F0BBE, D_800F0BC8, D_800F0BCA) likely need the same fix in the same functions.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)
+
+- [s1] [fable-blitz 2026-07-07] Construct located: src/text1b.c:14732 `if ((s16)v1 < 0x100)` with v1:s16, global D_800F0BB6 declared `extern s16` at BOTH 14502 and 14725 (the diagnosis's two named sites confirmed). Member of the 10-function cluster analyzed in func_80065344's ledger session 1.
+
+- [s1] [fable-blitz 2026-07-07] Target bytes (asm/funcs/func_80065590.s:8-14): lhu / addiu +0x32 / sh / sll 16 / sra 16 / slti 0x100 - byte-shape identical to func_80065540 (same +0x32/0x100 constants, different global).
+
+- [s1] [fable-blitz 2026-07-07] Retype semantics check: the s16->u16 retype leaves every touching instruction byte-invariant on static analysis - the load is lhu either way (movhi_internal2 mips.md:3364 -> mips_move_1word unsignedp=TRUE, mips.c:1026), addiu/sh are sign-agnostic, and (s16) of the u16 value is extendhisi2's register sll/sra, exactly the target pair. After the retype the cast is a semantically meaningful u16->s16 conversion (passes the human-programmer test).
+
+- [s1] [fable-blitz 2026-07-07] Blast radius: D_800F0BB6's only other writer is matched func_800650A4 (src/text1b.c:14510, `D_800F0BB6 = 0`) - sh $zero, type-agnostic; sister globals D_800F0BB4/BBC/BBE/BC8/BCA named by the diagnosis live in the same shape (14486/14518/14534/14596/14612) with identical zero-writers.
+
+- [s1] [fable-blitz 2026-07-07] Simpler alternative also open: the (s16) cast on the CURRENT s16 local is expected inert (c-convert.c convert() same-type short-circuit), so a bare cast-drop may close the flag without any retype - but the retype is the better final form since it matches accepted siblings func_80065680/func_800656EC (14763/14779) and keeps cluster-wide consistency.

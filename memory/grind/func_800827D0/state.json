@@ -1,10 +1,33 @@
 {
  "func": "func_800827D0",
  "file": "system",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: the diagnosis is well-founded and its fix is low-risk -- target bytes prove real arg setup (a0=1 in the bnez delay slot s:43, a1=s3 in the jal delay slot s:48) into a wrapper that p"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The diagnosed fix lands byte-identical: definition at :119 becomes void(s32 a0, s32 a1) (body unchanged, params unused) and the call at :1120 becomes `Vu0SetLightColMatrix_80080208(1, a1);` -- both func_800827D0 and the wrapper keep their exact bytes.",
+   "mechanism": "expand_call (calls.c) emits identical (call (mem (symbol_ref))) RTL for a prototyped direct call as for the call-through-cast; unused named params are never referenced so no RTL is generated for them.",
+   "next_probe": "Apply both edits, `sandbox func_800827D0 --disable all` AND `sandbox Vu0SetLightColMatrix_80080208 --disable all` (expect 0/0), then verify-oracle + queue done."
+  },
+  {
+   "hypothesis": "If the caller diverges, the delta will be arg-setup scheduling -- specifically whether `addiu $a0,$zero,1` still lands in the bnez delay slot at s:43 (it is shared by the `if (a0 != 0) break;` branch path and the loop-exit path); the cast form may have suppressed an earlier hoist that the prototyped form re-enables.",
+   "mechanism": "reorg.c fill_simple_delay_slots choosing the a0-set for the bnez at .L80082860, sensitive to where expand_call materializes the constant-1 arg in the insn stream.",
+   "next_probe": "Read the failing sandbox diff to see where the a0=1 moved; if it split from the delay slot, try evaluating the constant arg via the existing source order (statement placement of the call after the do-while) before touching anything else."
+  },
+  {
+   "hypothesis": "The residual wrapper-to-marionation_Exec implicit pass-through (system.c:10 vs :499) is byte-load-bearing: explicit forwarding `marionation_Exec(a0, a1)` inside the wrapper would emit arg moves the target's bare jal/nop (wrapper s:4-5) does not contain, so the void(void) decl at :10 is the only form that matches.",
+   "mechanism": "function_arg/expand_call copying incoming param pseudos to outgoing $a0/$a1 -- GCC 2.7.2's weak coalescing may or may not eliminate the copies; if it does not, explicit forwarding is un-matchable and the pass-through idiom is forced.",
+   "next_probe": "Sandbox the wrapper with explicit forwarding as a one-off measurement to settle whether the idiom is forced or a choice; attach the result to the ruling question."
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Call site at src/system.c:1120 uses a type-cast workaround for an incorrect callee declaration. Vu0SetLightColMatrix_80080208 is declared void(void) at line 119, but marionation_Exec (ultimate callee) uses $a0 (saved to $s7) and $a1 (saved to $s4) as real arguments. The wrapper passes those registers through unmodified (jal marionation_Exec / nop delay slot). The cast forces arg-setup instructions that belong instead in a corrected function signature. Fix: change the definition at line 119 to void Vu0SetLightColMatrix_80080208(s32 a0, s32 a1) and the call at line 1120 to Vu0SetLightColMatrix_80080208(1, a1) without a cast.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

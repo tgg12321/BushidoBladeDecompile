@@ -1,10 +1,33 @@
 {
  "func": "func_80065434",
  "file": "text1b",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: the diagnosis's steering claim (cast turns lh+slti into lhu+sll+sra) is mechanically impossible for this dataflow - lhu is movhi_internal2's hardwired unsignedp=TRUE, and the compar"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Cast-drop is byte-neutral for func_80065434 (`if (v1 < 0xC9)`), closing the flag as trivial cleanup.",
+   "mechanism": "c-convert.c convert() same-type short-circuit - identical trees with or without the cast",
+   "next_probe": "remove the cast -> sandbox func_80065434 --disable all; expect no delta; ride whichever lever (drop vs u16 retype) 65344's grind confirms first"
+  },
+  {
+   "hypothesis": "u16 cluster retype (D_800F0BB0 -> u16, p/v1 -> u16, keep the now-semantic (s16) cast) is byte-neutral and the best final form, aligned with 65680/656EC style.",
+   "mechanism": "movhi_internal2 unsignedp=TRUE keeps the load lhu across typings; (s16) on u16 = extendhisi2 register sll/sra, same bytes",
+   "next_probe": "sandbox the retyped form of 65434; then sweep the whole 10-function cluster + 4 init functions in one build against the oracle SHA1"
+  },
+  {
+   "hypothesis": "If either variant unexpectedly diverges, the earliest-diverging RTL dump names the responsible pass; do not iterate blind.",
+   "mechanism": "build_c_cast NOP_EXPR survival vs fold at expand_expr (front-end/expand boundary)",
+   "next_probe": "cc1 -da diff of cast vs no-cast .rtl dumps for func_80065434"
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): The (s16)v1 cast in the comparison (src/text1b.c:14679) is a same-type cast with no C-level semantic purpose (v1 is already s16). Its only function is to steer GCC from a plain lh+slti sequence to the lhu+sll+sra+slti sequence the target asm shows. This fails test 1 (no semantic purpose \u2014 same-type cast is a C no-op per integer-promotion rules) and test 2 (a programmer from spec would write 'if (v1 < 0xC9)', not 'if ((s16)v1 < 0xC9)'). The asm evidence: after 'sh $v1', the target has 'sll $v1,$v1,16; sra $v1,$v1,16; slti $v1,$v1,0xC9' \u2014 the explicit sign-extension pair is the codegen fingerprint of this cast. The same cast appears identically in all sibling functions (func_80065540, func_80065590, func_800655E0), so ALL would need to be re-evaluated. Next action: sandbox func_80065434 with and without the (s16) cast to confirm the cast is load-bearing for the match; if it changes the asm, this is a codegen-steering cheat and the function needs a clean rewrite that either (a) finds a pure structural form that produces lhu+sll+sra naturally, or (b) confirms lh+slti is actually the right sequence and removes the cast.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

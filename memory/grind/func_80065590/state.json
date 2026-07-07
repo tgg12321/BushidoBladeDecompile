@@ -1,10 +1,33 @@
 {
  "func": "func_80065590",
  "file": "text1b",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: diagnosis's u16 retype of D_800F0BB6 is the right final form and is expected byte-neutral (lhu is movhi_internal2 unsignedp=TRUE, not typing); both decl sites 14502+14725 and the fu"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "u16 retype of D_800F0BB6 (decls 14502+14725, pointer, local; keep the (s16) cast) is byte-neutral including the func_800650A4 writer - the diagnosis's prescribed clean fix lands as-is.",
+   "mechanism": "movhi_internal2 unsignedp=TRUE (plain HImode loads always lhu) + extendhisi2 register sll/sra for (s16) of a u16 + type-agnostic sh $zero in the init writer",
+   "next_probe": "retype -> sandbox func_80065590 --disable all expect 0 -> full build SHA1 == oracle to prove func_800650A4 untouched; then sweep the sister globals with the 65344 cluster fix"
+  },
+  {
+   "hypothesis": "Fallback minimal fix: drop the (s16) cast on the current s16 form - expected byte-neutral, closes the flag without the retype if the retype hits an unexpected snag.",
+   "mechanism": "c-convert.c convert() same-type short-circuit (identical trees)",
+   "next_probe": "sandbox the cast-dropped s16 form; keep whichever of the two forms the cluster standardizes on"
+  },
+  {
+   "hypothesis": "If the retype diverges anywhere, the divergence will be at a DIRECT global read elsewhere in the TU (u16 vs s16 matters only for sign_extend(MEM) contexts) - audit all D_800F0BB6 readers before concluding.",
+   "mechanism": "extendhisi2 MEM-fold (lh) vs zero_extendhisi2 (lhu) at direct-compare sites",
+   "next_probe": "grep all D_800F0BB6 uses in src/text1b.c; for each non-local-mediated read, check the target opcode in the owning function's asm before applying the retype"
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Type-coercion cheat in `extern s16 D_800F0BB6` declaration: canonical type is `u16` (explicitly named in regressions.md func_80065344 cluster entry as one of ~12 sister globals needing `s16`\u2192`u16` retype). Identical pattern to the flagged func_80065344 cheat. Next action: in all text1b.c declarations of D_800F0BB6 (lines 14502 and 14725), change `extern s16` to `extern u16`; change `s16 *p` to `u16 *p`; change `s16 v1 = *p` to `u16 v1 = *p`; the `(s16)v1` comparison cast is then semantically meaningful (u16\u2192s16) and produces the canonical `lhu + sll/sra` sequence. Sibling globals in the cluster (D_800F0BB4, D_800F0BBC, D_800F0BBE, D_800F0BC8, D_800F0BCA) likely need the same fix in the same functions.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

@@ -1,10 +1,28 @@
 {
  "func": "single_game_getEnemyCharId",
  "file": "display",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: dead `s32 var_v0;` is almost certainly INERT m2c residue -- frameless leaf whose allocation is fully forced (params negated in place, lh dest $v1, mflo->$a0), no frame/callee-save b"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "var_v0 is zero-footprint m2c residue: deleting display.c:3493 leaves the emitted bytes identical (sandbox 0, oracle SHA1 unchanged) -- the judge's expected trivial path.",
+   "mechanism": "GCC 2.7.2 flow.c dead-pseudo elimination: a never-referenced pseudo (reg_n_refs==0) appears in no insn, joins no conflicts in local-alloc/global.c, and emits nothing; allocation of the remaining pseudos is forced by param coalescing + single-use dataflow, so the regno shift is inert.",
+   "next_probe": "Delete the `s32 var_v0;` line, run `& tools/wteng.ps1 main sandbox single_game_getEnemyCharId --disable all` (expect 0), then verify-oracle --rebuild + commit as cheat-cleanup/source-hygiene."
+  },
+  {
+   "hypothesis": "CONTINGENCY (only if probe 1 shows a diff): the declaration was load-bearing via pseudo-regno renumbering flipping a local-alloc/global.c allocno-order tie-break, and the clean fix is reordering the surviving declarations (e.g. idx earlier) rather than restoring a dead decl.",
+   "mechanism": "global.c allocno ordering / local-alloc qty tie-breaks key on pseudo regno when priorities tie; removing the 2nd-declared pseudo renumbers the 5 later ones.",
+   "next_probe": "cc1 -da on both forms; diff the .greg `Register dispositions:` blocks to name the flipped pseudo, then sweep declaration-order permutations of the remaining 6 locals in one sweep_variants call."
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Dead variable `s32 var_v0;` (display.c:3516) declared but never initialized or read; fails 6-test checklist tests #1 (no semantic purpose) and #2 (human-programmer test). Next action: remove the declaration, run `verify-oracle --rebuild`, confirm SHA1 == oracle. If oracle holds (expected \u2014 GCC elides unreferenced uninitialized scalars), commit as a cheat-cleanup: single line removal. If oracle breaks (indicating the declaration was a frame/allocno coercion), re-open the function for a pure-C redo without the dead variable.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

@@ -1,10 +1,28 @@
 {
  "func": "func_80077A80",
  "file": "text1b",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: the s32 redecl at text1b.c:17721 is plausibly LOAD-BEARING for the post-call `li $v0,1` placement (target keeps it after the jal + $ra reload), but it has a real provenance story th"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The judge's probe: reverting :17721 to `void disp_SetFramebufferMode(s32,s32,s32,s32);` still byte-matches, because even a plain CALL_INSN's hard-reg clobber of $v0 (CALL_USED_REGISTERS) blocks both the delay-slot steal and any hoist of `li $v0,1` above the call, and sched2 orders lw-$ra-first for load latency regardless.",
+   "mechanism": "sched.c CALL_INSN dependence handling (call-used hard-reg clobbers) + reorg.c fill_simple_delay_slots' refusal to move a call-clobbered-reg set above the call.",
+   "next_probe": "Edit :17721 s32->void, `sandbox func_80077A80 --disable all`; expect 0 => the s32 was unnecessary, land the void form (and sweep func_80077820's :17632 decl in the same pass for consistency)."
+  },
+  {
+   "hypothesis": "If void BREAKS the match (li $v0,1 migrates -- most likely swapping above `lw $ra` or into the jal delay slot), the s32 decl is genuinely load-bearing and the implicit-int provenance form is the clean landing: one s32 decl covering the TU (or deleting the void decl at :17707), matching what an unprototyped original would have compiled under.",
+   "mechanism": "call_value RTL `(set (reg:SI 2) (call ...))` (calls.c emit_call_1) creating a true output dependence that the bare clobber form lacks in sched2's dependence graph.",
+   "next_probe": "Capture the failing sandbox diff (record which position li $v0,1 moved to), then sandbox the unified-s32-decl TU variant confirming func_80077A80 AND func_80077A28 both stay byte-identical; attach both diffs to the ruling question."
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): s32 disp_SetFramebufferMode redeclaration at text1b.c:17721 overrides a void declaration at 17707 within the same TU; the only effect is coercing GCC $v0 liveness after the jal (prevents 'li $v0,1' from being scheduled before/into the call's delay slot) \u2014 a type-mismatch scheduling lever with no semantic purpose. Worker should revert line 17721 to 'void disp_SetFramebufferMode(s32, s32, s32, s32);' and verify whether the byte match holds; if void also matches, the s32 was an unnecessary cheat; if not, surface as needs-adjudication for the owner to confirm whether the original TU lacked a void prototype in scope.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

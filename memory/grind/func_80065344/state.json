@@ -1,10 +1,33 @@
 {
  "func": "func_80065344",
  "file": "text1b",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: (s16) same-type cast is near-certainly INERT (convert() strips it; lhu comes from movhi_internal2's hardwired unsignedp=TRUE, not the cast); two clean levers = cast-drop (expect byt"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The (s16) cast is byte-inert: dropping it (`if (v1 < 0x11C8)`) leaves the build byte-identical, closing the flag as trivial cleanup with no retype needed.",
+   "mechanism": "c-convert.c convert() same-type short-circuit (front-end fold, upstream of every RTL pass) - identical trees in, identical RTL out",
+   "next_probe": "remove the cast in func_80065344 only -> sandbox func_80065344 --disable all; expect 0/no-delta; if 0, apply to all 10 cluster functions and verify-oracle"
+  },
+  {
+   "hypothesis": "The diagnosis's u16 cluster retype (D_800F0BAA et al. -> u16, p -> u16*, v1 -> u16, KEEP the now-semantic (s16) compare cast) is byte-neutral and is the best final form - it matches the accepted 65680/656EC style and makes the cast meaningful instead of merely absent.",
+   "mechanism": "mips_move_1word unsignedp=TRUE (movhi_internal2, mips.md:3364) makes the load lhu for both typings; (s16) on the u16 value = extendhisi2 register form = the same sll/sra pair",
+   "next_probe": "retype ONE function's global+pointer+local (65344/D_800F0BAA) -> sandbox for 0 -> then sweep the retype across the 10 cluster functions AND the 4 init functions (8006505C/650A4/650EC/65134) with a full build to confirm SHA1 == oracle"
+  },
+  {
+   "hypothesis": "If (against expectation) the cast-drop shows a delta, the divergence is a NOP_EXPR surviving build_c_cast into expand affecting expression canonicalization - locate the exact pass by tree/RTL diff rather than guessing.",
+   "mechanism": "c-typeck.c build_c_cast NOP_EXPR wrapping vs fold stripping at expand_expr",
+   "next_probe": "cc1 -da on cast/no-cast preprocessed bodies; diff the earliest RTL dump (.rtl/.jump) to see where the forms first diverge"
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): The `(s16)v1` cast in `if ((s16)v1 < 0x11C8)` where v1 is already declared s16 fails tests 1, 2, and 3: it is a C no-op (s16 cast to s16), no human programmer from spec writes it, and its purpose is to trigger GCC's deferred sign-extension (load-narrowing), converting lh to lhu + sll/sra at the comparison site. Nearby correct siblings func_80065680 / func_800656EC use the legitimate form: u16 globals + (s16) comparison cast (semantically meaningful). Clean fix: retype D_800F0BAA (and all ~12 sister globals in this cluster: D_800F0BAC, D_800F0BAE, D_800F0BB0, D_800F0BB4, D_800F0BB6, D_800F0BBC, D_800F0BBE, D_800F0BC8, D_800F0BCA) from `s16` to `u16`; change `s16 *p` to `u16 *p` and `s16 v1 = *p` to `u16 v1 = *p`; the (s16) comparison cast is then semantically meaningful and lhu is generated naturally.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

@@ -1,10 +1,33 @@
 {
  "func": "func_80065760",
  "file": "text1b",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: diagnosis's own probe design is right and static analysis predicts its 'false flag' branch - the (s16) same-type cast strips in convert(); the sll/sra pair is post-add register exte"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Cast-drop (`if (v1 < 0x11C8)`) is byte-neutral - exactly the diagnosis's prescribed A/B probe, expected to land the false-flag branch.",
+   "mechanism": "c-convert.c convert() same-type short-circuit; extendhisi2 register sll/sra mandated by the s16 declared type regardless",
+   "next_probe": "sandbox func_80065760 --disable all with and without the cast, diff the scored asm (the diagnosis's own probe); expect byte-identical"
+  },
+  {
+   "hypothesis": "Cluster-consistent u16 retype (D_800F0BC8 -> u16, keep the now-semantic (s16) cast) is byte-neutral including the func_80065264 zero-writer - the better final form if 65344's grind standardizes the cluster on it.",
+   "mechanism": "movhi_internal2 unsignedp=TRUE load invariance + type-agnostic sh $zero + extendhisi2 sll/sra for (s16) of u16",
+   "next_probe": "sandbox the retyped 65760; land whichever form the 65344 cluster fix adopts, in one sweep with func_800657B0 (same construct, unflagged)"
+  },
+  {
+   "hypothesis": "If the A/B probe unexpectedly diverges, locate the responsible pass via earliest-differing RTL dump before iterating forms.",
+   "mechanism": "build_c_cast NOP_EXPR survival at the front-end/expand boundary",
+   "next_probe": "cc1 -da diff of cast vs no-cast preprocessed bodies"
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Flagged construct: `(s16)v1` in `if ((s16)v1 < 0x11C8)` fails test #1 \u2014 `v1` is already declared `s16`; the cast is a C-language no-op and the function's observable behavior is identical without it. May also drive the `sll $v1,$v1,16 / sra $v1,$v1,16` sign-extension pair in the assembly (test #3 concern). Next action: run `sandbox func_80065760 --disable all` twice \u2014 once with the current source and once with the cast removed \u2014 and diff the scored asm. If assembly is byte-identical, the cast is pure documentation clutter (false flag, mark reaudit-clean). If different, the cast is a codegen-coercion construct without semantic purpose; rework the C to reach the match without it (the `s16 v1` declared type mandates signed comparison under integer promotion, so removing the cast and restructuring the comparison form is the clean path).  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

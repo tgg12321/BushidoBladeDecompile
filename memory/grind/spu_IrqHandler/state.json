@@ -1,10 +1,28 @@
 {
  "func": "spu_IrqHandler",
  "file": "main",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: BOTH flagged constructs assessed inert -- the always-true-if folds to the plain early-return by cse+jump (target bytes s:3-6 are exactly the plain form's shape), and duplicate file-"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The single-edit redo -- `if (v0 <= 0) return 0;` replacing the wrapped form, duplicate extern sets (main.c:1685-1691) and `int new_var2;` deleted -- keeps sandbox 0 and the oracle SHA1 unchanged.",
+   "mechanism": "cse.c const-prop + jump.c dead-branch deletion already reduce the committed form to exactly this RTL; duplicate_decls merge makes the redecl deletion a no-op by construction.",
+   "next_probe": "Apply the edit, run `& tools/wteng.ps1 main sandbox spu_IrqHandler --disable all` (expect 0), then verify-oracle --rebuild and recommit as cheat-cleanup."
+  },
+  {
+   "hypothesis": "CONTINGENCY (only if probe 1 diverges): the divergence would be in branch sense or return-path layout (jump.c invert-jump / reorg.c delay-slot fill around the bgtz), not in the body -- and the lever space is the exit-form spelling catalog (goto-end vs inline return, switch-break-shared-return-sched-hoist / cross-jump-store-tail-merge families), never the always-true-if.",
+   "mechanism": "reorg.c relax_delay_slots + jump.c branch inversion choose between bgtz/blez and inline-vs-shared return-0 placement based on block layout.",
+   "next_probe": "Diff the sandbox asm's first 6 insns against func_80089384.s:2-6; if flipped, sweep exit spellings (inline `return 0;` / `goto end` variants) in one sweep_variants call before touching anything else."
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Two cheats in src/main.c:1693-1710. Primary: 'new_var2 = 1; if (new_var2) { return 0; }' (lines 1698-1701) is an always-true-if / dead-conditional-store \u2014 explicitly forbidden family. Secondary: duplicate extern declarations of g_spu_voice_key_{a,b,c} at lines 1685-1691 (two identical back-to-back sets after the file-top declaration at lines 52-54) \u2014 reference-count inflation coercion. Function needs a clean pure-C redo that achieves the same byte-match without these constructs; a worker should rewrite the early-exit path as a plain 'if (a0 <= 0) return 0;' and drop the duplicate extern declarations, then drive back to sandbox-0 with pure-C levers.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

@@ -1,10 +1,33 @@
 {
  "func": "func_80065540",
  "file": "text1b",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: diagnosis already hedges 'maybe harmless noise' - static analysis says exactly that ((s16) same-type cast strips in convert(); lhu forced by movhi_internal2 unsignedp=TRUE); cast-dr"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Cast-drop (`if (v1 < 0x100)`) is byte-neutral - the diagnosis's own 'harmless noise' branch - closing the flag as cleanup.",
+   "mechanism": "c-convert.c convert() same-type short-circuit (front-end fold)",
+   "next_probe": "sandbox func_80065540 --disable all with the cast removed; expect no delta; coordinate with the 65344 grind so the whole cluster lands one consistent form"
+  },
+  {
+   "hypothesis": "u16 retype of D_800F0BB4 (both extern decls 14486+14713, pointer, local; keep the now-semantic (s16) cast) is byte-neutral including the func_8006505C init writer.",
+   "mechanism": "movhi_internal2 unsignedp=TRUE load invariance + sh $zero type-agnostic store + extendhisi2 register sll/sra for the (s16) of a u16 value",
+   "next_probe": "sandbox 65540 retyped, then full build (SHA1 == oracle) to prove 8006505C is untouched"
+  },
+  {
+   "hypothesis": "If either variant diverges, name the pass from the earliest differing RTL dump instead of hand-iterating.",
+   "mechanism": "build_c_cast NOP_EXPR survival at the front-end/expand boundary",
+   "next_probe": "cc1 -da diff of cast vs no-cast forms"
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Codegen-coercion cast `(s16)v1` where v1:s16 \u2014 no semantic purpose, fails tests 1/2/3; verify whether dropping it changes the oracle match (if not, harmless noise; if yes, needs a clean pure-C form for the sll/sra sign-extension).  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],
