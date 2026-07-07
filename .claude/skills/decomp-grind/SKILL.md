@@ -49,9 +49,13 @@ NO-GO → do not launch; investigate, report the failing drill.
 
 ### 3. Launch detached
 ```powershell
-Start-Process pwsh -WindowStyle Hidden -ArgumentList '-NoProfile','-File',"$PWD\tools\grinder\grind.ps1"
+# NB: the embedded `"…`" quotes are REQUIRED — Start-Process does not quote
+# ArgumentList items itself, and the repo path contains spaces.
+Start-Process pwsh -WindowStyle Hidden -ArgumentList '-NoProfile','-File',"`"$PWD\tools\grinder\grind.ps1`""
 Start-Sleep -Seconds 5
 pwsh tools/grinder/status.ps1             # confirm: driver RUNNING (pid), target, modality
+# status must say RUNNING and tmp/grind/grind.log must show a NEW "grinder starting (pid …)"
+# line — a silent no-lock/no-log result means the spawn itself failed.
 ```
 The driver survives this session ending (not a full logoff). It grinds the
 queue top continuously; completions land as `Match: <func> — COMPLETED-C
