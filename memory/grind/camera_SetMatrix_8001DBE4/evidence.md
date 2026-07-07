@@ -29,3 +29,21 @@
 - [s2] H2 (<= operator form) not required to test: since H1 emits identical bytes, there is no branch-sense divergence to isolate.
 
 - [s2] H3 (early-return the tail) remains a NEGATIVE frontier per s1 analysis — no action taken.
+
+- [s3] s3 lock check: tmp/.main_reintegration.lock present, holder session_id=c56ff61a-f40f-49f8-ad83-348536c53c90, head=0c2d3c91, label='grinder e2e: score-fix commit + role hardening' — SAME holder as s2 (still held ~11 min at first s3 attempt). Sentinel tmp/.allow_main_edits also present (orchestrator override for MAIN edits during a batch), but does not bypass the reintegration mutex.
+
+- [s3] s3 Edit attempt on src/code6cac.c (1618: empty-if -> !(> )) BLOCKED by main_reintegration_lock.py hook. Per role, not touching tools/reintegrate_lock.ps1 (never acquire/release/steal).
+
+- [s3] s3 cc1-dump pipeline (tmp/grind/camera_SetMatrix_8001DBE4/s3/build.sh) runs same CC_FLAGS as s2 (-O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w). All four variants (HEAD, H1, H2, H4) emit 9275-line .s files; extract.py slices out the 70-line camera_SetMatrix_8001DBE4 body from each.
+
+- [s3] s3 diff HEAD.func.s H1.func.s = 6 lines (jump-label renumber only) — REPRODUCES s2's finding.
+
+- [s3] s3 diff HEAD.func.s H2.func.s = 6 lines (identical renumber to H1's diff).
+
+- [s3] s3 diff HEAD.func.s H4.func.s = 6 lines (identical renumber to H1's diff).
+
+- [s3] s3 diff H1.func.s H2.func.s = 0 lines (H2 is byte-identical to H1 post cc1).
+
+- [s3] s3 diff H1.func.s H4.func.s = 0 lines (H4 is byte-identical to H1 post cc1).
+
+- [s3] Equivalence class of proven-byte-equivalent forms now = {HEAD, H1, H2, H4}. Any of H1/H2/H4 is a safe drop-in replacement for HEAD's judge-rejected empty-if construct. The next session that finds the lock released can apply ANY of these three and re-verify with sandbox.

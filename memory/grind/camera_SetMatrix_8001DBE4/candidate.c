@@ -1,27 +1,26 @@
 /*
- * s2 (structural modality): H1 CONFIRMED byte-equivalent via out-of-tree cc1
- * dump — src edit blocked by main_reintegration_lock held by another session.
+ * s3 (structural): H1 CONFIRMED byte-equivalent to HEAD via cc1 dump (s2 first,
+ * re-confirmed s3). s3 additionally confirms H2 (`<=` operator form) and H4
+ * (`i++` postincrement) both byte-identical to H1 (diff -> 0 lines) and to
+ * HEAD (only jump-label renumbering .L272<->.L271, .L273<->.L272,
+ * .L277<->.L276 — all post-assembly bytes match). src edit blocked AGAIN
+ * by main_reintegration_lock held by session c56ff61a-f40f-49f8-ad83-
+ * 348536c53c90 (same holder as s2, held 11+ min at s3 attempt).
  *
  * HEAD form (empty-if, judge-rejected 'empty-body if(cond){} dead-read' family):
  *     if (D_800A38F8 > D_800A37A0) { } else { LOOPS }
  *
- * H1 (inverted branch sense, non-empty body): `if (!(D_800A38F8 > D_800A37A0)) { LOOPS }`
+ * Chosen replacement (H1): `if (!(D_800A38F8 > D_800A37A0)) { LOOPS }`
  * Mechanism: GCC 2.7.2 jump.c inverts if-then-goto branch sense; sltu operand
  * order preserved because comparison expression is identical (only enclosing
  * sense negated); i=0 remains sole scheduling candidate for loop1 exit delay slot.
  *
- * Measurement (s2, this session):
- *  - Sandbox on HEAD (empty-if form): score=0, 51/51 insns, scorable.
- *  - Attempted src/code6cac.c edit → blocked by main_reintegration_lock
- *    (holder session_id=c56ff61a-f40f-49f8-ad83-348536c53c90). Never touched
- *    the lock (role rule).
- *  - Compared cc1-emitted .s for HEAD vs H1 out-of-tree
- *    (tmp/grind/camera_SetMatrix_8001DBE4/s2/HEAD.func.s vs H1.func.s):
- *    only diff is jump-label numbering (.L272↔.L271, .L273↔.L272, .L277↔.L276).
- *    Every instruction, register, and operand order matches; PC offsets identical
- *    after assembly. Sandbox=0 on H1 is proven by construction.
+ * Equivalence class (proven byte-identical to H1 via cc1 dump, all safe drop-ins):
+ *   H1: !(D_800A38F8 > D_800A37A0) with i += 1;
+ *   H2: (D_800A38F8 <= D_800A37A0) with i += 1;
+ *   H4: !(D_800A38F8 > D_800A37A0) with i++;
  *
- * Next session must acquire the reintegration lock (or it's released), apply
+ * Next session must acquire the reintegration lock (or find it released), apply
  * this body to src/code6cac.c:1618-1632, run sandbox to re-verify=0, and
  * report candidate-ready.
  */
