@@ -1,10 +1,33 @@
 {
  "func": "func_80086080",
  "file": "main",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: the judge's first dichotomy branch is settled by direct EXE disassembly -- the sll+sra pair IS genuinely in the target (800860AC/800860B0, both before the jal; delay slot holds the "
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The s32 retype closes it byte-identically: `s32 func_80086080(s32 a0, s16 *a1, s16 *a2)` with `func_8008BD88((s16)a0, &raw1, &raw2);` reproduces andi/sltiu, sll+sra before the jal, addiu $a1/$a2 arg setup with $a2 in the delay slot, and the untouched division tail.",
+   "mechanism": "PROMOTE_MODE no longer certifies upper bits -> extendhisi2 expands (s16)a0 to ashift/ashiftrt; reorg.c fills the jal delay with the last arg-setup addiu as before.",
+   "next_probe": "Apply the retype to :905/:909 (jointly with the sibling's :873/:875 edit), `sandbox func_80086080 --disable all` (expect 0), verify-oracle, queue done both."
+  },
+  {
+   "hypothesis": "The direct-`a0` form (param kept s16) under-emits the two shifts and mismatches -- the measured negative that discharges the judge's first dichotomy branch.",
+   "mechanism": "PROMOTE_MODE + num_sign_bit_copies fold the no-op conversion; nothing regenerates the shift pair.",
+   "next_probe": "One sandbox run of `func_8008BD88(a0, &raw1, &raw2)` BEFORE the retype; attach the non-zero score to the ledger."
+  },
+  {
+   "hypothesis": "If the retype perturbs the pre-call ordering (shifts vs the $a1 addiu at 860B4), the lever is arg evaluation order in source -- naming the converted value first (`s32 conv = (s16)a0;` then passing conv) or reordering the & operands is NOT needed if left-to-right arg evaluation already emits the conversion first; only sweep if the diff shows the addiu hoisted above the shifts.",
+   "mechanism": "expand_call evaluates args left-to-right in GCC 2.7.2; sched1 may still reorder independent arg-setup insns -- the target order (sll, sra, addiu, jal+addiu) is the natural emission order.",
+   "next_probe": "Only on probe-1 divergence: read the diff, then sweep the named-intermediate spelling vs inline cast via tools/sweep_variants.py in one pass."
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Construct `(s16)(a0 << 16 >> 16)` (line ~909, argument to func_8008BD88) fails Tests 1, 2, 3 of the 6-test checklist: a0 is already s16, the shift pair is mathematically a no-op for all valid s16 inputs (no semantic purpose), a human programmer from spec would write `a0` directly, and the sole justification is GCC-internals (forces sll+sra before jal). It is not in any explicitly forbidden catalog family (pure C, no asm/pins/volatile), but it is also NOT in the SOTN-accepted exceptions list. The 'opaque arithmetic' carve-out does not extend to this pattern without its own SOTN-master-branch evidence; each exception requires independent clearance per the standing policy. The function needs a clean redo: either confirm the sll+sra is genuinely in the target asm and that a direct `a0` argument also produces score=0 (in which case the shift is unnecessary and should be deleted), or if the shift IS required, surface a policy question to the owner before re-merging.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],
