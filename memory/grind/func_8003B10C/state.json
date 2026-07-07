@@ -1,0 +1,40 @@
+{
+ "func": "func_8003B10C",
+ "file": "code6cac_c_ab",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 0,
+   "floor": 10,
+   "modality": "wip-import",
+   "headline": "floor imported from memory/wip checkpoint"
+  },
+  {
+   "session": 1,
+   "floor": 10,
+   "modality": "recon",
+   "headline": "fable-blitz recon: v9 (per-arm 494D4 call dup + cross-jump remerge) is the proven chassis; sole residual = the offset web split (move s2,s0 in 493E4's delay slot) - cse/local-alloc forensics + wrap an"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "v9's `move s2,s0` is a cse.c extended-basic-block web split: the fall-through if-arm's offset uses get canon_reg-folded to the older mult-result pseudo while the else-arm keeps the variable's pseudo, so two pseudos carry arg0*1100 across the branch. Confirming the exact pass (cse vs failed local-alloc qty coalescing of the expand copy) names the lever: equalize the arms' access spelling, or flip which arm falls through (branch sense / arm swap), so all post-call uses resolve to ONE pseudo and the copy insn never exists.",
+   "mechanism": "cse.c canon_reg EBB substitution feeding local-alloc.c qty coalescing failure (copy insn survives to reload as move s2,s0)",
+   "next_probe": "Reconstruct v9 from the evidence description (arm-local s32 v1 + per-arm 494D4 call, sibling func_8003AF40 spellings); sandbox to confirm ~13; then standalone cc1 -da dump: find the two offset pseudos in .greg Register dispositions and locate which dump (.cse/.jump/.lreg) first shows the split; save under tmp/grind/func_8003B10C/s2/"
+  },
+  {
+   "hypothesis": "A spelling change on the offset definition or its arm uses re-unifies the web without forensics: (a) split-init `s0 = arg0; s0 *= 1100;` (sanctioned 2026-06-13) makes the variable's pseudo the ONLY web member from birth (no expand temp to CSE toward); (b) swapping branch sense `if (D_800A38DC != 5)` with exchanged arms changes which arm sits in the entry EBB; (c) staging the EDA argument through an existing local (staged-value-reused-variable, sanctioned 2026-07-03) isolates the pre-call use from the arm uses.",
+   "mechanism": "expand-time target-pseudo selection + cse.c EBB reach -> single qty in local-alloc, no reload copy",
+   "next_probe": "On the reconstructed v9 chassis, sweep the 3 spellings (plus combinations) via tools/sweep_variants.py --func func_8003B10C --file code6cac_c_ab; any form scoring <13 with the tail still merged is the new candidate; verify the move s2,s0 disappeared by reading the sandbox asm, not just the score"
+  },
+  {
+   "hypothesis": "If the web split survives all spellings, a single-level do-while(0) wrap (sanctioned for ANY RA effect per the 2026-07-06 FINAL ruling; untried in all 11 prior forms) reweights refs via flow.c loop-depth multiplication so the offset variable's pseudo out-prioritizes the mult-temp in qty_compare, forcing global/local alloc to seat the WHOLE web in s0 and price the else-arm's s2 uses out. Placement must avoid the 493E4 call window (marionation: wraps near call windows re-timed the head 4/4).",
+   "mechanism": "flow.c loop-note ref weighting -> local-alloc.c qty_compare priority (floor_log2(refs)*refs*size/life) -> global.c seat assignment",
+   "next_probe": "v9 chassis + do{}while(0) wrapped around the if/else region only (FAKE-annotated: 'loop-note ref weighting keeps the arg0*1100 web in s0'), sandbox; if the frame returns to -32 and the delay-slot nop reappears, grind the remaining diffs; also try wrapping only the else-arm"
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-07T15:22:02.394488+00:00"
+}
