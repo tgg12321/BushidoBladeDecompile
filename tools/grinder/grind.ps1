@@ -169,9 +169,10 @@ function Invoke-CandidatePath([string]$func, [string]$stem, [string]$modality, $
     # target file itself. A load-bearing edit to another src/include file would be
     # byte-verified now but DROPPED by the fixed Match commit below — producing a
     # committed Match that fails a fresh rebuild. Reject before retire (retire
-    # legitimately mutates regfix/asmfix afterwards).
+    # legitimately mutates regfix/asmfix afterwards). Keys on the PATH under any
+    # git status (M/A/MM/rename/?? untracked header) — not modifications alone.
     $buildMods = @(git -C $Root status --porcelain |
-        Where-Object { $_ -match '^\s*M\s+("?)(src/|include/)' } |
+        Where-Object { $_ -match '^..\s+("?)(src/|include/)' } |
         ForEach-Object { ($_ -replace '^[\sA-Z?]+', '').Trim('"') })
     $offStem = @($buildMods | Where-Object { $_ -ne "src/$stem.c" })
     if ($offStem.Count) {
