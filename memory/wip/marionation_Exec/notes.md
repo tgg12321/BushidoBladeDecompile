@@ -28,8 +28,15 @@ the two ROOT-CAUSED residuals below. Permuter running on the vT40 base.
   the call itself (vT43=12) all scramble sched. Post-sanction probes 2026-07-06: the
   wrap toolbox CANNOT fix the pair. Only a natural second arg5 ref (identity ops all
   tree-fold) or different statement geometry. Flat respellings canonicalize (6 forms = 8).
-- Twin lore (cpu_side_move_dir_4 g3): same pair; "multi-set arg5 VALUE-staging keeping
-  the lw-dest split" is the untried class there too.
+- **Session-10b decode (sched1 dump, tmp/sched1dump.py): the pair is a COUPLED FIXED
+  POINT.** vT40 (t0-stmts first): arg5-addr temp is TIGHT (add+lw adjacent, density 32
+  -> v0) and seats all come out right, but the t0-sll's lower LUID wins the sched2 tie
+  -> order swapped. vT32 (arg5 first): LUIDs flip the order right, but sched1 stretches
+  the arg5-addr temp (life 4) and the t0-web/arg5 qtys tie (5.33 v 5.33) -> seats trade.
+  Statement order controls BOTH the sched tie AND the qty lives; every hand decomposition
+  fixes one and breaks the other. 9-variant tail/check2 topology sweep: ALL identical
+  4/178 (the region-3 steal is invariant to C-level topology).
+- Twin lore (cpu_side_move_dir_4 g3): same pair; same coupling likely.
 
 ## Residual 2 — region-3 dbr steal @149 (2 masked pts): MECHANISM BYTE-PROVEN
 - reorg processes fill_simple for ALL insns first: check1's `dst=a1` move is eaten by
