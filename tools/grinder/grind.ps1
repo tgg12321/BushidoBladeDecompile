@@ -73,10 +73,13 @@ function Test-OracleGreen {
     catch { return $false }
 }
 function Get-QueueTop {
-    # `queue next` prints a single pretty-printed JSON object (with a nested
-    # "wip" key when a checkpoint exists), preceded by wteng's [wteng] banner.
-    # Robust parse: take the substring from the first '{' to the last '}' and
-    # ConvertFrom-Json. Returns $null if there is no object or it won't parse.
+    # DELIBERATE DEVIATION from the plan's line-filter parser (which kept only
+    # lines starting with '{'/'['): `queue next` PRETTY-PRINTS a multi-line JSON
+    # object (indented inner lines don't start with '{') behind wteng's [wteng]
+    # banner, with a nested "wip" key when a checkpoint exists — a line filter
+    # would shred it. Robust parse instead: take the substring from the first '{'
+    # to the last '}' (the object's own closing brace is always the final one)
+    # and ConvertFrom-Json. Returns $null if there is no object or it won't parse.
     $raw = Invoke-Eng @('queue', 'next')
     $lo = $raw.IndexOf('{'); $hi = $raw.LastIndexOf('}')
     if ($lo -lt 0 -or $hi -le $lo) { return $null }
@@ -162,12 +165,30 @@ function Invoke-CandidatePath([string]$func, [string]$stem, [string]$modality, $
         Revert-SessionEdits
         return
     }
+    # Single-stem gate: the ONLY build-input change allowed in a candidate is the
+    # target file itself. A load-bearing edit to another src/include file would be
+    # byte-verified now but DROPPED by the fixed Match commit below — producing a
+    # committed Match that fails a fresh rebuild. Reject before retire (retire
+    # legitimately mutates regfix/asmfix afterwards).
+    $buildMods = @(git -C $Root status --porcelain |
+        Where-Object { $_ -match '^\s*M\s+("?)(src/|include/)' } |
+        ForEach-Object { ($_ -replace '^[\sA-Z?]+', '').Trim('"') })
+    $offStem = @($buildMods | Where-Object { $_ -ne "src/$stem.c" })
+    if ($offStem.Count) {
+        Log "${func}: candidate touches build inputs beyond src/$stem.c ($($offStem -join ', ')) — rejected as invalid session."
+        Revert-SessionEdits
+        $script:consecutiveInvalid++
+        if ($script:consecutiveInvalid -ge 3) { Circuit-Break "3 consecutive invalid sessions on $func" }
+        return
+    }
     $null = Invoke-Eng @('retire', $func)          # drops rules if any; SHA1-gated internally
     $vo = Invoke-Eng @('verify-oracle', '--rebuild', '--allow-dirty')
     if ($LASTEXITCODE -ne 0) {
         Log "${func}: FULL-BUILD SHA1 FAILED after retire — reverting, banking constraint."
         git -C $Root checkout -- . 2>$null
         python tools/grinder/grindlib.py constrain . $func "candidate form failed full-build SHA1 on main (masked-0 register diff class) — reg-alloc gap is real" | Out-Null
+        git -C $Root add -- memory/grind docs/grind 2>$null
+        git -C $Root commit -m "grind: $func byte-fail constraint banked [skip-park-src-guard]" 2>$null | Out-Null
         return
     }
     # 2) bytes proven — now the Judge rules on the C
@@ -204,13 +225,17 @@ $led/rejected/. Write your verdict JSON to the exact path given below.
         git -C $Root commit -m "grinder: close ledger for $func" | Out-Null
         Log "${func}: MERGED — COMPLETED-C."
     } else {
-        Add-Decision $func 'final call' 'FAIL' $v.justification
-        $c = if ($v.constraint) { [string]$v.constraint } else { [string]$v.justification }
-        python tools/grinder/grindlib.py constrain . $func $c | Out-Null
+        # Ordering matters: the rejected-form Copy-Item must read the still-dirty
+        # src BEFORE the broad checkout; every LEDGER write (Add-Decision,
+        # constrain, the commit) must come AFTER it, or `git checkout -- .` would
+        # revert the tracked decisions.md/state.json we just wrote.
         # keep the byte-matching form as evidence, but main goes back to HEAD
         Copy-Item (Join-Path $Root "src\$stem.c") (Join-Path $Root "memory\grind\$func\rejected\judge-fail-$(Get-Date -Format 'MMdd-HHmm').c") -ErrorAction SilentlyContinue
         git -C $Root checkout -- . 2>$null
         Invoke-Eng @('verify-oracle', '--rebuild') | Out-Null   # restore green build/
+        Add-Decision $func 'final call' 'FAIL' $v.justification
+        $c = if ($v.constraint) { [string]$v.constraint } else { [string]$v.justification }
+        python tools/grinder/grindlib.py constrain . $func $c | Out-Null
         git -C $Root add -- memory/grind docs/grind 2>$null
         git -C $Root commit -m "grind: $func judge FAIL banked [skip-park-src-guard]" 2>$null | Out-Null
         Log "${func}: judge FAILED the candidate — constraint banked, grind continues."
@@ -262,7 +287,7 @@ function Revert-SessionEdits {
     git -C $Root checkout -- metrics/events.jsonl 2>$null
 }
 
-$consecutiveInvalid = 0
+$script:consecutiveInvalid = 0
 while ($true) {
     if (Test-Path $StopFile) { Log "STOP sentinel found; exiting cleanly."; break }
 
@@ -300,8 +325,8 @@ while ($true) {
     if ($violations.Count) {
         Log "${func}: SCOPE VIOLATION — $($violations -join ' | ') — session discarded."
         git -C $Root checkout -- . 2>$null; git -C $Root clean -fd -- tmp 2>$null
-        $consecutiveInvalid++
-        if ($consecutiveInvalid -ge 3) { Circuit-Break "3 consecutive invalid sessions on $func" }
+        $script:consecutiveInvalid++
+        if ($script:consecutiveInvalid -ge 3) { Circuit-Break "3 consecutive invalid sessions on $func" }
         if ($Once) { break } else { continue }
     }
 
@@ -315,11 +340,11 @@ while ($true) {
     if (-not $valid) {
         Log "${func}: INVALID session output — discarded, src reverted, respawning."
         Revert-SessionEdits
-        $consecutiveInvalid++
-        if ($consecutiveInvalid -ge 3) { Circuit-Break "3 consecutive invalid sessions on $func" }
+        $script:consecutiveInvalid++
+        if ($script:consecutiveInvalid -ge 3) { Circuit-Break "3 consecutive invalid sessions on $func" }
         if ($Once) { break } else { continue }
     }
-    $consecutiveInvalid = 0
+    $script:consecutiveInvalid = 0
 
     # 7) route by result
     switch ([string]$o.result) {
