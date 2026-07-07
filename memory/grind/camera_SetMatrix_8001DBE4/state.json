@@ -1,10 +1,23 @@
 {
  "func": "camera_SetMatrix_8001DBE4",
  "file": "code6cac",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 42,
+   "modality": "recon",
+   "headline": "mock: killed a hypothesis"
+  }
+ ],
+ "frontier": [
+  {
+   "next_probe": "n",
+   "mechanism": "m",
+   "hypothesis": "h"
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Empty if-body construct (line 1618, code6cac.c) fails tests 1+2 and matches the 'empty-body if(cond){} dead-read' forbidden family. Worker should rewrite to 'if (!(D_800A38F8 > D_800A37A0)) { ... }' (or '<=' form) and run verify-oracle to confirm equivalence \u2014 if oracle passes the form was benign style; if it fails it was genuinely codegen-dependent and requires deeper analysis.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],
