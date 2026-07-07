@@ -71,7 +71,7 @@ s32 marionation_Exec(s32 a0, u8 *a1)
     return -1;
   }
 
-  new_var = 0xFF;  /* FAKE: opaque mask variables (with new_var3) keep the target's redundant `andi ,0xff` alive: combine cannot fold a symbolic mask; reload substitutes the REG_EQUIV constant after the goto-loop refs==2 fold */
+  new_var = 0xFF;  /* FAKE: opaque mask variables (with new_var3) keep the target's redundant `andi ,0xff` alive (named-local constant-holder family). Alternatives exhausted and recorded in memory/wip/marionation_Exec/notes.md: u8-typed checks fold via PROMOTE_MODE+combine (measured 17), staged raw byte folds (proven byte); the symbolic mask is the one spelling combine cannot fold */
   new_var3 = 0xFF;
   do { /* FAKE: do-while(0) loop-note ref weighting seats idx_1494/idx_1495 in s2/s6 */
   if (sys_GetVblankCount() != 0)
@@ -108,7 +108,7 @@ s32 marionation_Exec(s32 a0, u8 *a1)
     s32 check;
     check = *idx_1496 & new_var;
     if (!check) goto check2;
-    do { do { *idx_1496 = 0; } while (0); } while (0); /* FAKE: NESTED do-while(0) - double loop-note weighting lifts idx_1496's allocno priority to 1600, above arg1's 952 (single-level measured insufficient: 800 < 952 leaves i1496 mis-seated); justification per do-while-zero-exception prerequisite 3 */
+    do { do { *idx_1496 = 0; } while (0); } while (0); /* FAKE: NESTED do-while(0) - double loop-note weighting lifts idx_1496's allocno priority to 1600, above arg1's 952. Single-level MEASURED insufficient 2026-07-06: i1496 pri 933 < arg1 952, i1496 falls s3->s4 (probe ledger, masked 4->14). Justification per do-while-zero-exception prerequisite 3 */
     src = (u8 *) (&D_800F19B0);
     dst = a1;
     if (a1 != 0)

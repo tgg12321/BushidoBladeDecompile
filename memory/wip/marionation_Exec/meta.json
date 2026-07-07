@@ -35,11 +35,11 @@
   }
  ],
  "reviewer": {
-  "verdict": "PENDING",
+  "verdict": "PENDING (round 3)",
   "date": "2026-07-06",
-  "agent": "rev-vt40 (layer-1, fresh, reviewing under the FINAL construct-honesty rule)",
-  "evidence": "Fresh layer-1 launched on vT40 (the annotated candidate) under the updated do-while-zero-exception rule. Prior verdicts: rev-vt31 FAILed the unannotated predecessor under the OLD mechanism-scoped rule (correct application of the rule as then written; superseded by the owner's final ruling after full SOTN evidence re-evaluation). The owner's interim not-sanctioned ruling lasted <1 day and is superseded.",
-  "prior": "2026-07-05 cross-symbol FAIL + owner DO-NOT-SANCTION: STANDS (semantic-lie C). 2026-07-03 staged-value sanction: stands."
+  "agent": "rev-vt40 round-2 FAIL -> fixes applied -> round-3 launched",
+  "evidence": "Round 2 (rev-vt40) FAILed on (a) PROVENANCE - correctly refused to credit an owner-ruling rule file living only in the worker worktree, same-day, naming the function under review ('a rule addition that is itself a cheat' risk-shape); (b) the nested-wrap justification cited an INFERRED single-level figure (800). Both fixed: (a) the ruling now has an authoritative MAIN-branch record (commit 5c3a192f, provenance + owner quote in the message; worktree rules audit came back clean - only this session's own commits diverge); (b) single-level MEASURED 2026-07-06: i1496 pri 933 < arg1 952, seats s4 not s3, masked 4->14 (probe ledger) - annotation corrected with real figures; mask-variable annotation now points at the notes.md exhaustion record (u8 checks fold at 17, staged raw folds). Round-3 review runs against MAIN's rule file.",
+  "prior": "rev-vt31 FAIL under the old mechanism-scoped rule (correct application, rule since superseded by the owner). 2026-07-05 cross-symbol DO-NOT-SANCTION: STANDS."
  },
  "remaining_gap": {
   "summary": "Masked 4, candidate sanctioned under the 2026-07-06 construct-honesty ruling. Two root-caused residuals: (1) pair-swap - statement reorder fixes order, temps exchange on an exact local-alloc qty density tie (5.33 v 5.33; need arg5val 8.0 without new pseudos/notes); (2) region-3 steal - all-live-at-tail reproduces target bytes exactly (knob-proven); natural C trigger unidentified (a1-liveness impossible; own_fallthrough label impossible; cross-jump inert). Permuter running on the annotated candidate base.",
