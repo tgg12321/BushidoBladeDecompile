@@ -20,8 +20,8 @@
 param(
     [switch]$Once,
     [switch]$Stop,
-    [string]$Model = 'fable',
-    [string]$JudgeModel = 'fable',
+    [string]$Model = 'opus',
+    [string]$JudgeModel = 'opus',
     [int]$SessionTimeoutMin = 90,
     [string]$MockSessionScript = '',
     [string]$MockJudgeScript = ''
