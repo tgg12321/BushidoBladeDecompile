@@ -67,7 +67,7 @@ to this exact path: $judgeOut
 "@
     $sid = [guid]::NewGuid().ToString(); $env:CLAUDE_SESSION_ID = $sid
     $claudeArgs = @('-p', $task, '--append-system-prompt-file', 'tools/grinder/roles/judge.md',
-                    '--permission-mode', 'bypassPermissions', '--model', 'opus',
+                    '--permission-mode', 'bypassPermissions', '--model', 'fable',
                     '--session-id', $sid, '--output-format', 'json')
     $null = ($null | & claude @claudeArgs | Out-String)
     Remove-Item Env:\CLAUDE_SESSION_ID -ErrorAction SilentlyContinue
