@@ -128,3 +128,36 @@ def validate_outcome(o, modality, root):
         if not arts:
             return False, f"{modality} session must attach >=1 existing non-empty artifact"
     return True, ""
+
+
+def assign_modality(session_count):
+    """Modality for the NEXT session given completed count. Session 1 = recon;
+    sessions 2..10 walk LADDER; then the ladder repeats from 'structural'."""
+    if session_count == 0:
+        return "recon"
+    return LADDER[(session_count - 1) % len(LADDER)]
+
+
+def apply_outcome(root, func, o, modality):
+    """Fold a VALIDATED outcome into the ledger. Appends are never compacted."""
+    st = load_state(root, func)
+    n = st["session_count"] + 1
+    for h in o.get("hypotheses", []):
+        append_hypothesis(root, func, h, session=n)
+    for e in o.get("evidence", []):
+        append_evidence(root, func, e, session=n)
+    st["session_count"] = n
+    st["current_modality"] = modality
+    st["floor_history"].append({"session": n, "floor": o.get("floor"),
+                                "modality": modality,
+                                "headline": o.get("headline", "")[:200]})
+    if o.get("frontier"):
+        st["frontier"] = o["frontier"][:MAX_FRONTIER]
+    save_state(root, func, st)
+    return st
+
+
+def add_judge_constraint(root, func, text):
+    st = load_state(root, func)
+    st["judge_constraints"].append(text)
+    save_state(root, func, st)

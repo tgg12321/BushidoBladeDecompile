@@ -101,5 +101,48 @@ class TestValidateOutcome(unittest.TestCase):
         self.assertTrue(ok, why)
 
 
+class TestApplyAndLadder(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = self.tmp.name
+        G.init_ledger(self.root, "func_X", "text1a_c")
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def test_apply_updates_state_and_files(self):
+        o = {"result": "progress", "floor": 20, "headline": "h",
+             "hypotheses": [{"statement": "s", "mechanism": "m", "probe": "p",
+                             "result": "22 -> 20", "verdict": "CONFIRMED"}],
+             "evidence": ["fact1"], "frontier": [{"hypothesis": "x", "mechanism": "m",
+                                                  "next_probe": "n"}],
+             "artifacts": [], "ruling_question": ""}
+        G.apply_outcome(self.root, "func_X", o, "structural")
+        st = G.load_state(self.root, "func_X")
+        self.assertEqual(st["session_count"], 1)
+        self.assertEqual(st["floor_history"][-1]["floor"], 20)
+        self.assertEqual(st["floor_history"][-1]["modality"], "structural")
+        self.assertEqual(len(st["frontier"]), 1)
+        led = os.path.join(self.root, "memory", "grind", "func_X")
+        self.assertIn("fact1", open(os.path.join(led, "evidence.md"), encoding="utf-8").read())
+        self.assertIn("22 -> 20", open(os.path.join(led, "hypotheses.md"), encoding="utf-8").read())
+
+    def test_ladder(self):
+        self.assertEqual(G.assign_modality(0), "recon")
+        self.assertEqual(G.assign_modality(1), "structural")
+        self.assertEqual(G.assign_modality(2), "structural")
+        self.assertEqual(G.assign_modality(3), "permuter")
+        self.assertEqual(G.assign_modality(5), "forensics")
+        self.assertEqual(G.assign_modality(7), "rederive")
+        self.assertEqual(G.assign_modality(9), "synthesis")
+        self.assertEqual(G.assign_modality(10), "structural")  # ladder repeats
+        self.assertEqual(G.assign_modality(18), "synthesis")
+
+    def test_add_judge_constraint(self):
+        G.add_judge_constraint(self.root, "func_X", "do-while(0) RA-weighting rejected")
+        st = G.load_state(self.root, "func_X")
+        self.assertIn("do-while(0) RA-weighting rejected", st["judge_constraints"])
+
+
 if __name__ == "__main__":
     unittest.main()
