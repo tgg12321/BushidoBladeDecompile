@@ -1,102 +1,109 @@
-# marionation_Exec — HANDOFF (session-10, 2026-07-06)
+# marionation_Exec — HANDOFF (end of session-10, 2026-07-07)
 
 Narrative handoff. The compact current-state is `notes.md` (≤120-line cap); this file is
 the fuller story. History lives in git (`git log --oneline -- memory/wip/marionation_Exec/`).
 
 ## TL;DR — where we stand
 
-- **Best committed form: `progress/vT31-tailwrap-masked4.c`** (= session-9's vDT30 plus an
-  inert tail-wrap): 8/8 callee-saved registers, both check `andi ,0xff` masks, the
-  saved-stage — all honest pure C, **masked 4** (178 vs 179 insns), zero rules/pins/asm.
-- **The two residuals are now ROOT-CAUSED to exact GCC-2.7.2 pass decisions** (session-10),
-  with a knob-level byte-proof for region-3. What remains is finding natural-C spellings
-  that flip two specific compiler tie-breaks — a search problem, no longer a mystery.
-- A **clean permuter campaign is running on the vT32 basin** (`tmp/perm_mar/`, order-correct
-  base, weighted 200, cheat-prone passes disabled, --stop-on-zero).
-- `src/system.c` is UNTOUCHED (oracle green). Candidates splice via `tmp/probe.py <c>`.
+- **candidate.c = vT40, masked 4 (verified), policy-clean, layer-1 reviewed.** 8/8
+  callee-saved registers, both `andi` masks, all shapes; zero regfix rules, zero pins,
+  zero asm; every match device FAKE-annotated per site with measured justifications.
+- **Two 2-insn residuals remain** (do_timeout pair order; region-3 delay-slot nop). Both
+  are root-caused to exact GCC-2.7.2 pass decisions, and session-10 CLOSED every
+  analytically-derivable lever (list below). The open path is sampling the
+  unknown-original-source-shape space (rich-pass permuter — stopped 2026-07-07 at the
+  owner's request to free the machine for pipeline work; ~107k iterations done).
+- **Policy**: the construct-honesty line is owner-ruled and recorded on MAIN
+  (`5c3a192f` + provenance addendum `05a757e4`): do-while(0) sanctioned for ANY codegen
+  effect incl. register allocation, FAKE-annotated; nested wraps need measured
+  single-level-insufficient justification. Forbidden (unchanged): regfix, pins, __asm__
+  beyond canonical, toolchain edits, semantic-lie C (cross-symbol derivation, volatile).
+- `src/system.c` is PRISTINE (oracle green). All work lives in candidates under
+  memory/wip/marionation_Exec/{candidate.c, progress/, rejected/} and tmp/ tooling.
 
-## CORRECTION to the session-9 handoff
+## The review saga (governance record — do not re-litigate)
 
-Session-9 claimed "Region-3 IS fixed in vDT48 (real loop)". **That is wrong** — vDT48's
-adiff also lacks the nop at tgt[149] (verified session-10). The real-loop family remains
-dead for independent reasons (conservation barrier), and region-3 was never fixed by any
-form to date. Per [[verify-claims-against-main]]: measured, not inherited.
+Three adversarial layer-1 rounds on the wrap lineage:
+1. **rev-vt31 FAIL** under the old mechanism-scoped do-while-zero rule (correct
+   application; rule since superseded by the owner's construct-honesty ruling).
+2. **rev-vt40 FAIL** on (a) provenance — refused to credit a worktree-local rule file
+   claiming an owner ruling (correct per no-self-sanctioning; two prior real violations
+   exist) — and (b) an INFERRED figure in the nested-wrap justification. Fixed: the
+   ruling + owner's verbatim engagement now live on MAIN (5c3a192f, 05a757e4); the
+   nested justification was re-measured for real (single-level: i1496 pri 933 < arg1
+   952 → mis-seats, masked 4→14).
+3. **rev-vt40-r3 final: PASS-except-one.** Independently passes every construct on
+   pre-dated sanctions; holds ONLY the nested wrap (candidate.c line ~111) at
+   NEEDS_USER because it is the sole construct with no pre-existing community citation.
+   **THE LAYER-2 COMPLETION REVIEWER MUST MAKE AN INDEPENDENT CALL ON THE NESTED WRAP**
+   (recorded in meta.json; do not present it as resolved).
 
-## Residual 1 — do_timeout pair-swap (2 masked pts)
+## Residual 1 — do_timeout pair (tgt: `addu v0,v0,s5` THEN `sll a0`; ours swapped)
 
-Target order `addu v0,v0,s5` THEN `sll a0`; ours swapped. Session-10 findings:
-- **Order half SOLVED**: put the `arg5 = *(s32*)(v0+(s32)tbl_125c);` statement BEFORE
-  `t0 *= 4; t0 = tbl+t0;` (loads stay first) — LUID tie flips, order matches
-  (`progress/vT32-pairorder-masked8.c`).
-- **Cost**: the t0-web and arg5val temps exchange seats (v1↔a0). Root cause read from
-  local-alloc.c + QTYDBG: `qty_compare` pri = floor_log2(refs)·refs·size/life; the two
-  qtys tie exactly (r4·l6 = 5.33 both) and the tie breaks by qty birth order (t0-web
-  born first → allocated first → takes v1; target wants it skipping to a0).
-- **What must change**: arg5val's weighted refs 4→6 (density 8.0) or t0-web's 4→2 —
-  WITHOUT adding pseudos (fresh single-set temps LAUNCH per sched.c birthing_insn_p and
-  re-time the head: vT33=16, vT34=11) and WITHOUT note-stream changes inside the window
-  (do-while(0) nesting shifts LUIDs/sched: vT35=15, vT36=14). All flat respellings
-  canonicalize identically (six forms all = 8). Split-init cannot apply to a pure load
-  (identity ops fold at tree level).
+Root cause fully quantified (QTYDBG + sched1 dumps): **a coupled fixed point.**
+- vT40 (t0-statements first): seats all correct (arg5-addr temp tight → v0; density 32)
+  but t0-sll's lower LUID wins the sched2 tie → order swapped.
+- vT32 (arg5 first): order correct, but sched1 stretches the arg5-addr temp and the
+  t0-web/arg5val qtys tie exactly (5.33 v 5.33, qty_compare = floor_log2(refs)·refs·
+  size/life) → seats trade (masked 8).
+- **CLOSED levers (all measured)**: EXHAUSTIVE 140-ordering sweep (every dependency-
+  valid do_timeout interleaving; floor = 4; tmp/ordersweep.log); fresh single-set temps
+  (launch → head re-times: vT33=16, vT34=11); ANY loop-note insertion inside the window
+  (arg5-stmt wraps single/double vT42/vT35/vT36 = 14/15/14; call wrap vT43=12); flat
+  respellings (6 forms canonicalize = 8); identity-op second refs (all tree-fold);
+  s64/size games (byte-visible); value-staging via cnt/i/status (their other live
+  ranges pin wrong hard regs).
 
-## Residual 2 — region-3 delay-slot steal (2 masked pts)
+## Residual 2 — region-3 (tgt: `beqz a2; nop; sb; move a1,s4`; ours steals the move)
 
-Target: `beqz a2,C4; nop; sb zero,-1(s3); move a1,s4`. Ours steals the move into the slot.
-Session-10 established the complete mechanism (DBRDBG traces on our own compile):
-- reorg runs fill_simple for ALL insns before fill_eager. Check1's `dst=a1` move gets
-  consumed by `beqz s4`'s slot (nearest-preceding, matching target), which is why check1's
-  slot is nop for free. Check2's nearest-preceding for `beqz a1` is `li v1,7` (also matching
-  target), leaving check2's move exposed in the eager fall-through window, where it wins
-  (`thr WINNER trial=450`): sb loses on trap/mem, `la` is 2-word-ineligible, move is clean.
-- **Byte-proof**: the canonical cc1 carries env-gated what-if knobs (inert unset; oracle
-  green proves it). `BB2_ALLLIVE_LABEL=513,627` — the tail-thread insn uid AND its pass-2
-  SEQUENCE uid — forces mark_target_live_regs all-live at the tail → the move is rejected
-  (setsopp=1) in both reorg passes → **the emitted asm matches target region-3 exactly**,
-  including the backedge `beqz s7; move v0,zero` slot. So all-live-at-tail IS the answer;
-  only its natural-C trigger is unknown.
-- **Impossibility results** (exhaustive, do not re-derive):
-  - Genuine a1-liveness at the tail is impossible in ANY spelling: every pseudo live there
-    crosses the loop's calls → callee-saved only; flow liveness and reorg's forward-scan
-    (stops at the conditional backedge) are both accurate.
-  - own_fallthrough=0 needs a CODE_LABEL with surviving uses immediately after beqz-a2 —
-    semantically impossible (do-while(0) top labels get deleted; a while(cond)-backedge
-    with an unprovably-false cond adds bytes).
-  - The only reachable all-live route is find_basic_block()==-1, requiring the tail label
-    to be POST-FLOW (unknown to basic_block_head[]). The one post-flow label creator is
-    jump2 cross-jumping — **proven inert in this toolchain config**: our two identical
-    `j epi; move v0,a2` return tails stay unmerged in ours AND in target.
-  - Prediction is NOT the blocker: vT31's tail-wrap (`do { tail: if (a0==0) goto loop; }
-    while(0); return 0;` — LOOP_BEG immediately before the interior label) makes
-    mostly_true_jump return 2 (verified), but reorg still falls back to the owned
-    fall-through after the target-thread fill fails.
-- Topology battery: check2-as-do-while-break = 14; tail-as-while-goto = inert 4.
-
-## Closed side-quests (session-10)
-
-- **u8-typed checks (mask removal)**: PROMOTE_MODE keeps u8 locals SI-extended; combine
-  merges lbu+extension whenever the loaded value dies (→ `lbu a2` direct, andi gone).
-  The redundant `andi ,0xff` REQUIRES the mask-var + reload constant-substitution, which
-  requires the goto-loop's refs==2 update_equiv_regs fold. vU1/vU2 measured 17 (no s8,
-  no andi). This also explains why `& 3` (saved) survives while `& 0xFF` folds.
-- Conservation barrier confirmed categorical for the real-loop family.
-
-## Tooling (tmp/, worktree bb2-work-marion; all session-10 additions committed-adjacent)
-
-- `probe.py` (splice+sandbox+greg ledger), `adiff.py` (LCS diff), `dumpours.py`,
-  `rtlorder.py`/`notecheck.py`/`pseudomap.py` (RTL dumps), `dbrdbg.py`/`candbr*.py`
-  (DBRDBG), `qtydbg.py` (QTYDBG), `knobs.py`/`knobsb.sh` (what-if knobs).
-- Canonical cc1 knobs: BB2_ALLLIVE_LABEL / BB2_DBR_DEBUG / BB2_NO_FT_STEAL (+ QTY/FINDREG/
-  ALLOC/FLOW debug). gccdbg lacks ALLLIVE — use `tools/gcc-2.7.2/cc1` for that one.
-- Permuter: `tmp/perm_mar/` (base.c = vT32 body; launch.sh; campaign.log). Finds are
-  PROPOSALS — re-verify via sandbox + cheat catalog; the permuter TU metric is unfaithful.
+Mechanism complete (DBRDBG traces): fill_simple eats check1's move into beqz-s4's slot
+(hence check1's nop is free); check2's move stays in the eager fall-through window and
+wins. The knob byte-proof stands: BB2_ALLLIVE_LABEL=513,627 on the canonical cc1
+reproduces target's region-3 EXACTLY (diagnostic only).
+- **CLOSED levers (all proven/measured)**: genuine a1-liveness at the tail (impossible —
+  every live-there pseudo crosses calls → callee-saved; flow + reorg forward-scan both
+  accurate); own_fallthrough=0 via a label (needs a byte-visible user: the permuter's
+  masked-3 `while(status)` find proved the mechanism works but pays an extra bnez →
+  180 insns, unmatchable — AND reads status uninitialized → REJECTED, banked at
+  rejected/permuter-while-status-uninit-masked3.c); manufactured jumpers (jump1 cleans
+  adjacent-jump forms back to the attractor); young-label→find_basic_block(-1)→all-live
+  (cross-jump proven inert in this config); 9-variant check/tail topology sweep (all
+  identical 4/178); dst/dst2 merge on this chassis (masked 19); **cc1psx parity: PsyQ's
+  own compiler emits the IDENTICAL steal for our source (tmp/psxregion3.py) — the
+  compiler fork is NOT the variable; the ORIGINAL SOURCE was shaped differently in a
+  way not yet guessed.**
 
 ## How to resume
 
-1. `tmp/probe.py progress/vT31-tailwrap-masked4.c` → confirm masked 4.
-2. Check `tmp/perm_mar/campaign.log` / `output-*` for finds; vet any against the cheat
-   catalog, re-score via sandbox.
-3. Hand levers left: (pair) end the do_timeout wrapper between t0's add and the printf
-   (vT35 moved too much at once); (region-3) audit jump.c's get_label_before/after call
-   sites for any other post-flow label creator reachable from natural C.
-4. On masked 0: retire all 42 rules → full SHA1 == oracle → dual adversarial review →
-   queue done → delete WIP.
+1. `tmp/probe.py memory/wip/marionation_Exec/candidate.c` → confirm masked 4.
+2. Relaunch the rich-pass permuter: `bash tmp/perm_mar/launch_detached.sh` (base.c =
+   vT40 body; settings.toml = construct-honesty passes, only external/function type
+   randomization off), then `nohup setsid bash tmp/perm_watch.sh &` for auto-triage
+   (sub-200 finds get honest sandbox scores in tmp/perm_mar/triage.log). ~20 iters/sec.
+   Finds are PROPOSALS: vet semantics (uninitialized reads!), bans (volatile/
+   cross-symbol), and remember insns must be able to reach 179.
+3. Fresh structural ideas belong in the unknown-source-shape space (everything
+   enumerable was enumerated — see notes.md SESSION-10c CLOSURES before trying
+   anything "new").
+4. On masked 0: retire all 42 rules → full SHA1 == oracle → LAYER-2 fresh adversarial
+   review (independent nested-wrap ruling required) → reintegrate to main under the
+   reintegration lock → `queue done marionation_Exec` → delete this WIP dir.
+
+## Tooling map (tmp/, this worktree)
+
+probe.py (splice+sandbox+greg ledger) · adiff.py (LCS diff) · dumpours.py ·
+ordersweep.py/tailsweep.py/pairsweep.py (batteries) · sched1dump.py / rtlorder.py /
+notecheck.py / pseudomap.py (RTL dumps) · dbrdbg.py / candbr*.py (DBRDBG) · qtydbg.py
+(QTYDBG) · knobs.py / knobsb.sh (canonical-cc1 what-if knobs: BB2_ALLLIVE_LABEL /
+BB2_DBR_DEBUG / BB2_NO_FT_STEAL — env-gated, inert unset) · psxregion3.py (cc1psx
+side-by-side) · killsearch.sh (stop the campaign cleanly) · perm_mar/ (permuter
+workspace; archive_pre_rich/ holds the earlier campaigns' outputs).
+
+## Session-10 ledger (one line each)
+
+Ruling saga: interim not-sanctioned → owner-directed SOTN re-evaluation → FINAL
+construct-honesty sanction on main. Reviews: FAIL → FAIL(provenance+figure, both
+fixed) → PASS-except-nested-wrap. Measurements: exhaustive ordering floor 4; wrap
+toolbox closed for the pair; cc1psx parity negative; label-cost theorem; merge axis
+closed; ~107k rich-pass permuter iterations (best usable: none; best signpost:
+masked-3 rejected). All committed on work/marion (through 1d703e2b + this handoff).
