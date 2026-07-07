@@ -217,8 +217,18 @@ plain-English justification. This is the owner's post-hoc audit trail.
 - **Existing WIP checkpoints:** converted to seed ledgers on first contact
   (notes.md → opening evidence entries; rejected/ carries over; meta.json
   floors seed floor_history). Nothing already learned is lost.
-- **The 99 regressions:** stay in `docs/fleet/regressions.md`; they enter the
-  queue as items when the owner chooses. Not part of this build.
+- **The 99 regressions (owner ruling 2026-07-06 — fold in):** re-opened as
+  ordinary INCOMPLETE queue items; everything gets worked eventually. Each
+  item's audit diagnosis (from `docs/fleet/regressions.md`) seeds its grind
+  ledger's `evidence.md`, so the grinder starts knowing exactly which construct
+  was flagged and why. The Judge's completion bar for these items adds one
+  clause: the match must land without the flagged construct family. Queue
+  ordering is the standard easiest-first rank (a one-time triage pass strips
+  each flagged construct and measures the honest floor — inert constructs make
+  the item near-free; load-bearing ones rank by their real distance).
+  `regressions.md` retires as a work-tracker once its items are queue members;
+  the flagged-but-byte-correct code stays on main only until each clean redo
+  lands.
 - **Engine, sandbox, oracle, guards:** unchanged. The grinder is a new driver
   on the same proven engine.
 
