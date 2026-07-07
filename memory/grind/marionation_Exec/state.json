@@ -1,0 +1,22 @@
+{
+ "func": "marionation_Exec",
+ "file": "system",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [
+  {
+   "session": 0,
+   "floor": 4,
+   "modality": "wip-import",
+   "headline": "floor imported from memory/wip checkpoint"
+  }
+ ],
+ "frontier": [],
+ "judge_constraints": [
+  "FINAL owner ruling 2026-07-06 (do-while-zero-exception.md): do-while(0) sanctioned for ANY codegen effect incl. RA weighting, mandatory inline FAKE annotation; nested wraps additionally need a single-level-insufficient justification. The interim not-sanctioned ruling is superseded. STILL FORBIDDEN: regfix, register pins, __asm__ injection, semantic-lie C (cross-symbol derivation, per 2026-07-05).",
+  "candidate.c = vT40 (masked 4, verified): layer-1 review round-3 verdict was PASS-except-one \u2014 the NESTED wrap at line ~111 was held NEEDS_USER at the time; under the FINAL ruling it needs a documented single-level-insufficient justification (vT44 battery was staged to eliminate it entirely \u2014 check evidence). The Judge must independently verify that justification or its elimination.",
+  "Residual gap is 2 root-caused items (see evidence: pair-swap @56/57 coupled fixed point \u2014 sched2 LUID tie + qty_compare 5.33v5.33 tie; wrap toolbox measured DEAD for this pair). Do NOT re-derive the 140-ordering sweep, the 9-variant topology sweep, or the cc1psx parity test \u2014 all closed negative. Active lever at handoff: rich-pass permuter on the vT40 base."
+ ],
+ "origin": "queue",
+ "created": "2026-07-07T06:07:47.638269+00:00"
+}
