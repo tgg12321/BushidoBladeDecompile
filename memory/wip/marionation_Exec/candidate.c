@@ -1,14 +1,10 @@
-/* HONEST BASELINE (2026-07-05) - masked 30, m2c-tail structure, all THREE
- * unsanctioned register-web cheats stripped to natural C:
- *   idx_1495 = 1 + idx_1494;      (was cross-symbol tbl-derived FAKE)
- *   idx_1496 = idx_1494 + 2;      (was iq3 `+=1;+=1;` double-split)
- *   D_800F19C0 = &D_80016248;     (was idx_1494-rebase FAKE)
- * Kept: sanctioned printf staging (staged-value-reused-variable + pointer-
- * alias, owner-sanctioned 2026-07-03) + saved &= 3 split. Apply to
- * src/system.c, `sandbox marionation_Exec --disable all` must say 30.
- * This is the TRUE resume point; the committed build's masked-4 (mh5, now
- * rejected/mh5-mirage-masked4.c) was a register-masked mirage on the cheats.
- * The whole remaining gap is REGISTER ALLOCATION - see notes.md. */
+/* marionation_Exec candidate (2026-07-06, session-10 final) - masked 4.
+ * All techniques comply with the construct-honesty line (owner ruling
+ * 2026-07-06, .claude/rules/do-while-zero-exception.md): every byte from the
+ * pristine compiler consuming semantically-true C; zero regfix/asmfix rules,
+ * zero pins, zero __asm__. do-while(0) wraps are FAKE-annotated per site.
+ * Remaining gap (masked 4): the do_timeout sll/addu pair order+seats and the
+ * region-3 delay-slot nop - both root-caused, see notes.md. */
 s32 marionation_Exec(s32 a0, u8 *a1)
 {
   s32 v0;
@@ -46,6 +42,7 @@ s32 marionation_Exec(s32 a0, u8 *a1)
     goto success;
   }
   do_timeout:
+  do { /* FAKE: do-while(0) loop-note ref weighting seats tbl_125c in s5 (SOTN FAKE-class match device; do-while-zero-exception 2026-07-06) */
   tslTm2LoadImage_2(&D_800161B8);
 
   {
@@ -62,6 +59,7 @@ s32 marionation_Exec(s32 a0, u8 *a1)
     debug_printf(&D_800161C8, *pp, D_800A11DC[D_800A11D5], *(s32 *)t0, arg5);
   }
   cdrom_ClearIrq();
+  } while (0);
   v0 = -1;
   goto check;
   success:
@@ -73,12 +71,12 @@ s32 marionation_Exec(s32 a0, u8 *a1)
     return -1;
   }
 
-  new_var = 0xFF;
+  new_var = 0xFF;  /* FAKE: opaque mask variables (with new_var3) keep the target's redundant `andi ,0xff` alive (named-local constant-holder family). Alternatives exhausted and recorded in memory/wip/marionation_Exec/notes.md: u8-typed checks fold via PROMOTE_MODE+combine (measured 17), staged raw byte folds (proven byte); the symbolic mask is the one spelling combine cannot fold */
   new_var3 = 0xFF;
+  do { /* FAKE: do-while(0) loop-note ref weighting seats idx_1494/idx_1495 in s2/s6 */
   if (sys_GetVblankCount() != 0)
   {
-    saved = *D_800A147C_2;
-    saved &= 3;  /* split (y1): sanctioned split-init accumulation */
+    saved = *D_800A147C_2 & 3;
     do
     {
     status = func_80080828();
@@ -105,11 +103,12 @@ s32 marionation_Exec(s32 a0, u8 *a1)
     while (1);
     *D_800A147C_2 = saved;
   }
+  } while (0);
   {
     s32 check;
     check = *idx_1496 & new_var;
     if (!check) goto check2;
-    *idx_1496 = 0;
+    do { do { *idx_1496 = 0; } while (0); } while (0); /* FAKE: NESTED do-while(0) - double loop-note weighting lifts idx_1496's allocno priority to 1600, above arg1's 952. Single-level MEASURED insufficient 2026-07-06: i1496 pri 933 < arg1 952, i1496 falls s3->s4 (probe ledger, masked 4->14). Justification per do-while-zero-exception prerequisite 3 */
     src = (u8 *) (&D_800F19B0);
     dst = a1;
     if (a1 != 0)
@@ -130,33 +129,33 @@ s32 marionation_Exec(s32 a0, u8 *a1)
     goto done;
     check2:
     check = *(idx_1496 - 1) & new_var3;
-    if (check != 0)
+    if (!check) goto tail;
+    do { *(idx_1496 - 1) = 0; } while (0); /* FAKE: do-while(0) loop-note weighting balances the check2 clear against check1's nested wrap */
+    dst2 = a1;
+    src = (u8 *) (&D_800F19A8);
+    i = 7;
+    if (dst2 != 0)
     {
-      *(idx_1496 - 1) = 0;
-      dst2 = a1;
-      src = (u8 *) (&D_800F19A8);
-      i = 7;
-      if (dst2 != 0)
+      do
       {
-        do
-        {
-          u8 bb;
-          bb = *src;
-          src++;
-          i--;
-          *dst2 = bb;
-          dst2++;
-        }
-        while (i != (-1));
+        u8 bb;
+        bb = *src;
+        src++;
+        i--;
+        *dst2 = bb;
+        dst2++;
       }
-      done:
-      return check;
+      while (i != (-1));
     }
-    v0 = 0;
-    if (a0 != 0)
+    done:
+    return check;
+    do { /* FAKE: do-while(0) places NOTE_INSN_LOOP_BEG before the interior label so reorg.c mostly_true_jump predicts the check2 beqz taken */
+    tail:
+    if (a0 == 0)
     {
-      return v0;
+      goto loop;
     }
-    goto loop;
+    } while (0);
+    return 0;
   }
 }

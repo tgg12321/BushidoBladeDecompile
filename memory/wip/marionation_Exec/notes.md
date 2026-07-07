@@ -1,74 +1,118 @@
-# marionation_Exec — HONEST FLOOR = masked 30; remaining gap is 100% REGISTER ALLOCATION (2026-07-05 handoff)
+# marionation_Exec — WIP (session-10 final: masked 4 SANCTIONED; 2 root-caused residuals)
 
-## TL;DR (read this first — the record was corrected this session)
-The committed build's "masked 4" (mh5) was a **register-masked MIRAGE** built on
-TWO unsanctioned cheats that a fresh cheat-reviewer FAILED. candidate.c is now
-the **HONEST BASELINE = masked 30** (m2c-tail structure, cheats stripped to
-natural C). Resume from candidate.c, NOT from the old mirage. The instruction
-SHAPES are all free from natural C — **the entire remaining gap is the s-register
-allocation** (a knife-edge allocno-priority rotation). No fold, no missing cheat.
+## TL;DR (current state) — FINAL RULING: SANCTIONED (construct-honesty line)
+**candidate.c = vT40, masked 4 (verified), sanctioned.** After a full SOTN-evidence
+re-evaluation the owner issued the FINAL 2026-07-06 ruling (do-while-zero-exception.md
+rewritten): do-while(0) wraps are allowed for ANY codegen effect incl. register
+allocation, FAKE-annotated per site; nested wraps need a single-level-insufficient
+note (candidate complies). The interim not-sanctioned ruling (<1 day) is superseded;
+rev-vt31's FAIL correctly applied the OLD rule and is moot. STILL FORBIDDEN:
+regfix/pins/__asm__/semantic-lie C (cross-symbol derivation per 2026-07-05).
+`saved` widening temp dropped (plain `& 3` scores identically). Fresh layer-1
+(rev-vt40) reviewing under the new rule — verdict to be recorded. Remaining gap =
+the two ROOT-CAUSED residuals below. Permuter running on the vT40 base.
+`src/system.c` untouched, oracle green.
 
-## What was PROVEN this session (banked, don't re-derive)
-1. **The FAKEs are register-web gaming, NOT symbol-fold defeat** (their comments
-   lied). Proof (proto_mh5.py): natural `idx_1495 = 1 + idx_1494` emits the exact
-   target `addiu s6,s2,1` (base+offset, no reloc) — identical to the FAKE. The
-   FAKE only changes WHICH registers seat. Same for the iq3 `+=1;+=1;` double-
-   split (ref-count inflation) and the F19C0 rebase. All three are the same cheat
-   class; layer-1 reviewer FAILed them (meta.json.reviewer). DO NOT reintroduce.
-2. **The original used explicit STORED pointers** idx_1494/1495/1496 (candidate
-   structure is right). Proof: full m2c rebuild with field-style accesses
-   `(&D_800A1494)[k]` REGRESSED to masked 65 (GCC re-materializes the base each
-   use). m2c full-rebuild is a DEAD END. Target `addiu s2,1/2` off a held base
-   confirms stored pointers.
-3. **Honest floor = masked 30.** The masked-4/6 forms were all cheat-carrying.
+## Residual 1 — pair-swap @56/57 (2 masked pts): FULLY CHARACTERIZED
+- **Order half SOLVED (vT32, progress/)**: put the `arg5 = *(s32*)(v0+(s32)tbl_125c);`
+  statement BEFORE `t0 *= 4; t0 = tbl + t0;` (loads stay first). LUID tie flips →
+  `addu v0,v0,s5` then `sll a0` ✓ target order.
+- **Cost: the two temps exchange seats** (t0-web→v1, arg5val→a0; target wants a0/v1).
+  Root (QTYDBG, local-alloc.c qty_compare): pri = floor_log2(refs)·refs·size/life;
+  ours: addr-temp 102 {r4 l4}=8.0 → v0 ✓; t0-web 104 {r4 l6}=5.33; arg5val 97 {r4 l6}
+  =5.33 — EXACT TIE, broken by qty birth order (104 first → v1). Target needs 97 ≥
+  104: arg5val needs weighted refs 6 (density 8.0) or t0-web needs refs 2.
+- **Measured dead**: fresh temps for shift or sum re-time the head (launch: vT34=11,
+  vT33=16); ANY note insertion inside the do_timeout window re-times the head — wraps
+  around the arg5 stmt (vT35=15, vT36=14 double-nest, vT42=14 single-nest) AND around
+  the call itself (vT43=12) all scramble sched. Post-sanction probes 2026-07-06: the
+  wrap toolbox CANNOT fix the pair. Only a natural second arg5 ref (identity ops all
+  tree-fold) or different statement geometry. Flat respellings canonicalize (6 forms = 8).
+- **Session-10b decode (sched1 dump, tmp/sched1dump.py): the pair is a COUPLED FIXED
+  POINT.** vT40 (t0-stmts first): arg5-addr temp is TIGHT (add+lw adjacent, density 32
+  -> v0) and seats all come out right, but the t0-sll's lower LUID wins the sched2 tie
+  -> order swapped. vT32 (arg5 first): LUIDs flip the order right, but sched1 stretches
+  the arg5-addr temp (life 4) and the t0-web/arg5 qtys tie (5.33 v 5.33) -> seats trade.
+  Statement order controls BOTH the sched tie AND the qty lives; every hand decomposition
+  fixes one and breaks the other. 9-variant tail/check2 topology sweep: ALL identical
+  4/178 (the region-3 steal is invariant to C-level topology).
+- Twin lore (cpu_side_move_dir_4 g3): same pair; same coupling likely.
 
-## The register problem, fully quantified (ledger_full.py, honest baseline)
-status(s0)/saved(s1)/i1495(s6) already seat CORRECT. The other 5 rotate:
-```
-       ours(honest)          target wants
-  s2   arg1  r4 ll84  p952    i1494
-  s3   i1494 r7 ll150 p933    i1496
-  s4   i1496 r5 ll150 p666    arg1
-  s5   arg0  r2 ll78  p256    tbl
-  s7   tbl   r3 ll152 p197    arg0
-```
-Needed priority order (desc, pri=2*refs*1e4/livelen): i1494 > i1496 > arg1 > tbl
-> i1495 > arg0.
+## Residual 2 — region-3 dbr steal @149 (2 masked pts): MECHANISM BYTE-PROVEN
+- reorg processes fill_simple for ALL insns first: check1's `dst=a1` move is eaten by
+  beqz-s4's slot (simp nearest-first) → out of the steal window → check1 nop ✓ free.
+  check2's window keeps its move (li v1,7 is nearest to beqz-a1 instead) → the eager
+  fall-through fill steals `move a1,s4` into check2-beqz's slot (WINNER trial=450).
+- **Knob byte-proof**: canonical cc1 has env-gated what-if knobs;
+  `BB2_ALLLIVE_LABEL=513,627` (the tail thread insn + its pass-2 SEQUENCE uid) forces
+  all-live at the tail → move REJECTED (setsopp=1) → asm == target region-3 EXACTLY
+  (beqz;nop;sb;move + backedge beqz s7;move v0,zero). Diagnostic only — NOT a lever.
+- **Impossibility results (don't re-derive)**: genuine a1-liveness at the tail is
+  impossible in ANY spelling (every pseudo live there crosses the loop's calls →
+  callee-saved only; flow/forward-scan both accurate). own_fallthrough=0 needs a
+  CODE_LABEL right after beqz-a2 with surviving uses — semantically impossible
+  (do-while(0) top labels get deleted; while(cond-false-but-unprovable) backedges add
+  bytes). Young-label→find_basic_block(-1)→all-live is the only reachable route and
+  needs a post-flow label; cross-jump does NOT fire in this toolchain config (proven:
+  our two identical `j epi; move v0,a2` tails stay unmerged in ours AND target).
+- **Prediction is NOT the blocker**: vT31's tail-wrap (`do { tail: if (a0==0) goto
+  loop; } while(0); return 0;` — LOOP_BEG right before the interior label) makes
+  mostly_true_jump return 2 (verified likely=1 in DBRDBG) — but after the target-thread
+  fill fails, reorg still fills from an owned fall-through. Keep the wrap anyway
+  (harmless, matches the backedge/v0=0 slot shape naturally).
 
-## LEVER FOUND (honest, partial): arg1-hold flips the hard pair
-`hold = a1;` at top + `hold` in BOTH copy arms (natural C, ~m2c's var_a1)
-extends arg1's live range → arg1 drops below i1496 → **i1494→s2 ✓ and i1496→s3 ✓
-flip correct** (honest_sweep2 W3). BUT it overshoots the bottom-3 and adds
-register pressure (masked rises to 38 until the rest is fixed). It's a real
-honest lever; it just isn't the whole answer.
+## The goto-loop recipe (vDT30/vT31 base — unchanged, still load-bearing)
+GCC 2.7.2 weights refs only inside LOOP_BEG loops; the outer cycle stays a goto-loop
+(masks fold via update_equiv_regs refs==2 → immediate `andi ,0xff`; no LICM → no s8);
+do{}while(0) wrappers weight chosen regions: do_timeout (tbl→s5), poll (i1494/i1495),
+idx_1496 clears (double-nest first clear → i1496 over arg1). saved widening temp
+`{s32 _b; _b=*D_800A147C_2; saved=_b&3;}`. Masks + copy blocks stay unwrapped.
+REAL-LOOP family is a dead end: LICM promotes exactly one invariant to s8 (conservation
+barrier); u8-typed checks kill the masks entirely (vU1/vU2=17: PROMOTE_MODE keeps u8
+locals SI-extended, combine merges lbu+extension when the value dies — andi needs the
+mask-var reload-substitution, which needs the goto-loop refs==2 fold).
 
-## THE WALL (where the next session starts)
-Bottom-3 are REVERSE-ordered: ours arg0(256)>i1495(202)>tbl(197); target needs
-tbl>i1495>arg0. tbl is dead-last because its live range spans the whole timeout
-loop (ll152). Can't shorten honestly — to stay call-saved tbl must cross a call;
-the only pre-use calls are in the loop; crossing the loop = long ll. Moving the
-load drops tbl to a t-reg (masked 37). Target has tbl long-lived too (s5), so the
-resolution is that the ORIGINAL's arg0/i1495 had EVEN LOWER priority than ours —
-i.e. the exact statement structure sets these livelens. Neither candidate-patch
-nor m2c-rebuild reproduced it this session.
+## DBR/QTY tooling (all in tmp/, worktree bb2-work-marion)
+- probe.py (splice+sandbox+greg ledger), adiff.py (LCS diff), dumpours.py.
+- dbrdbg.py / candbr*.py (BB2_DBR_DEBUG traces), qtydbg.py (BB2_QTY_DEBUG),
+  rtlorder.py / notecheck.py / pseudomap.py (RTL dumps), knobs.py / knobsb.sh
+  (what-if knobs vs canonical cc1). Canonical cc1 knobs: BB2_ALLLIVE_LABEL,
+  BB2_DBR_DEBUG, BB2_NO_FT_STEAL (env-gated, inert unset; oracle green proves it).
+- gccdbg cc1 lacks ALLLIVE — use ../../tools/gcc-2.7.2/cc1 for that knob.
 
-## NEXT SESSION — concrete plan
-1. Apply candidate.c → `sandbox marionation_Exec --disable all` == 30 (confirm).
-2. Apply the arg1-hold lever (see honest_sweep2.py W3) → confirm i1494/i1496 flip.
-3. Attack the bottom-3: find natural code that raises tbl's priority above
-   i1495/arg0 WITHOUT dropping tbl to a t-reg, OR lowers arg0/i1495 below tbl.
-   Levers to try: arg0 use-site placement (extend its live range → lower pri);
-   whether i1495 (the callback pointer) can live shorter; the || compound loop
-   condition from m2c (may reshape livelens). ALL must be natural — no ref
-   inflation, no cross-symbol arithmetic, no register pins.
-4. End gate: masked 0 → retire all 42 rules → full SHA1 == oracle → dual
-   adversarial review → queue done → delete WIP.
+## SESSION-10c CLOSURES (2026-07-07) — read before trying anything
+- **EXHAUSTIVE ordering sweep (tmp/ordersweep.log): all 140 dependency-valid
+  do_timeout interleavings measured — floor is masked 4 (63×4, 49×6, 21×9, 7×8,
+  zero hits, insns pinned 178).** The pair cannot fall to statement order alone.
+- **cc1psx parity (tmp/psxregion3.py): PsyQ's own cc1 emits the IDENTICAL region-3
+  steal** for our source — the compiler fork is NOT the variable; the original
+  SOURCE was shaped differently in a way not yet guessed.
+- **Permuter masked-3 signpost (archive: output-160-1 / tmp/vP160.c): `while(status)`
+  backedge on the clear keeps the loop-top label alive → own_fallthrough=0 → steal
+  dies, region-3 aligns — but pays an extra bnez (180 insns, unmatchable) AND reads
+  status uninitialized on {first iteration ∧ VBlank==0} (semantically divergent —
+  REJECTED).** Confirms: every label route pays a visible byte; a label between the
+  sb and the move stops the scan (own_thread=0 after lose=1) but no semantic jumper
+  exists and manufactured ones cost a jump insn (jump1 cleans adjacent-jump forms
+  back to the attractor).
+- **vT45 dst/dst2 merge on the vT40 chassis: masked 19** (s-web collapses; W1-style
+  compensation is the known dead end at 9). Merge axis CLOSED.
+- Inline-helper shape: unviable a priori (the two copy blocks have DIFFERENT byte
+  shapes; a shared helper forces them identical).
 
-## Artifacts (this session's worktree was bb2-work-marproto, now removed)
-Harness + full write-up copied to `tmp/marion_handoff/` (gitignored, on-machine):
-FINDINGS.md, honest_baseline.py, honest_sweep{,2,3}.py, ledger_full.py,
-proto_m2c_rebuild.py, proto_mh5.py. Pattern: splice candidate body into
-src/system.c → engine sandbox → objdump tmp/sandbox vs build/src/system.o →
-restore. Debug cc1 (ALLOCDBG ledger): tmp/gccdbg/cc1. rejected/ holds the three
-dead forms (mh5 mirage, iq3 cross-symbol, v0-idx). Twin cpu_side_move_dir_4 has
-the identical structure/problem — the same honest analysis applies.
+## NEXT SESSION
+1. The ONE active lever: the rich-pass permuter (tmp/perm_mar, vT40 base, watcher
+   auto-triages sub-200 finds into triage.log). It found the masked-3 signpost in
+   <1h — it samples the unknown-source-shape space directly. Check triage.log.
+2. If a find reaches masked ≤2 with true semantics: verify (probe+adiff), vet
+   constructs (no volatile/cross-symbol/uninitialized reads), integrate.
+3. Region-3 unknown-shape ideas not yet tried: none remaining from analysis — trust
+   the sampler, or dump target-adjacent functions for structural analogies (Kengo
+   was a dead end per slog-kengo-dead-end).
+4. On masked 0: retire 42 rules, full SHA1, LAYER-2 review (MUST independently rule
+   on the nested wrap — see meta.json reviewer entry), queue done, delete WIP.
+
+## Variant ladder (masked)
+candidate.c/vT31: 4 ← BEST. vT32 (order fix, temps traded): 8. vDT10: 6 (pre saved-fix).
+vT33 in-call add: 16. vT34 sum-split: 11. vT35/vT36 nest-reweight: 15/14. vU1/vU2
+(u8 checks, real loop, no s8): 17. vDT48 real-loop: 18. m2c rebuild: 65.
