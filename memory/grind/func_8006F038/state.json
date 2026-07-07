@@ -1,10 +1,33 @@
 {
  "func": "func_8006F038",
  "file": "text1b",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: saved-block is almost certainly inert - plain `temp_s0 += 0x10` post-call reaches the same reorg.c jal-delay-slot fill; one-probe verification then trivial cleanup"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Remove the saved block, write `ot_Link(D_800A374C, temp_s0); temp_s0 += 0x10;` - expected byte-identical (sandbox 0, oracle green); this is a verification probe, not a search.",
+   "mechanism": "flow.c/regclass copy coalescing (saved==temp_s0 pseudo merge) + reorg.c delay-slot fill of the post-call increment",
+   "next_probe": "apply plain form -> sandbox func_8006F038 --disable all (expect 0) -> full retire/verify-oracle path"
+  },
+  {
+   "hypothesis": "If the delay-slot fill fails in the plain form (increment lands after the jal, nop in delay): the increment's RTL position relative to the call matters - try `temp_s0 = temp_s0 + 0x10;` spelled as a separate statement vs compound assignment, and the defer-store-past-later-compute-into-jal-delay statement-order lever on the 0x14 store.",
+   "mechanism": "reorg.c eligibility test on the delay-slot candidate (resource conflict with call args)",
+   "next_probe": "sweep the 2-3 increment spellings; diff will be exactly the jal delay slot at asm line 29"
+  },
+  {
+   "hypothesis": "Last resort only if both fail: reinstate the named intermediate WITH /* FAKE: keeps the increment in the jal delay slot */ annotation (allowed-list spelling under the 2026-07-06 ruling) and surface per the diagnosis's document-and-surface instruction.",
+   "mechanism": "named-intermediate live-range split biasing reorg.c candidate selection",
+   "next_probe": "only after probes 1-2 measured; annotation + layer-2 review"
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): saved block (src/text1b.c:16447-16451) fails Tests 1+2: `s32 saved = temp_s0; ot_Link(D_800A374C, temp_s0); temp_s0 = saved + 0x10;` is byte-identical to `ot_Link(D_800A374C, temp_s0); temp_s0 += 0x10;` \u2014 GCC coalesces saved to $s0, same delay-slot `addiu s0,s0,0x10` either way. Likely redundant (not load-bearing), not a classic bytes-from-asm cheat, but still fails the 6-test bar. Clean replacement: remove saved block, write `ot_Link(D_800A374C, temp_s0); temp_s0 += 0x10;`, verify oracle still passes. If oracle breaks, saved IS load-bearing \u2014 document why and surface to owner.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

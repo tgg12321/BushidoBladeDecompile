@@ -1,3 +1,17 @@
 # Evidence bank — hirahira_w_frie
 
 - Audit diagnosis (regressions.md): Two constructs violate the SOTN bar; primary is a confirmed param-local-alias-prologue-pair-flip (explicitly forbidden). Worker must produce a clean pure-C body that matches the prologue without aliasing the parameters in reverse order.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)
+
+- [s1] [fable-blitz 2026-07-07] Constructs located: src/text1a_c.c:944-945 `s16 *s3 = offsets; s32 *s4 = base;` - literal param renames declared in REVERSE param order (a1's alias first), the exact param-local-alias-prologue-pair-flip forbidden shape; and src/text1a_c.c:963 `s32 stop = -2;` - a constant-holder local keeping -2 in $s7 for the loop-end compare (the likely 'second construct' of the diagnosis; named-local-fake-exception family, sanctioned 2026-07-01 w/ FAKE annotation).
+
+- [s1] [fable-blitz 2026-07-07] Target prologue (asm/funcs/hirahira_w_frie.s:3-10): interleaved save+def pairs in order s3<-a1, s4<-a0, s5<-s4+4, s6<-0, then bulk saves ra/s7/s2/s1/s0. The flip in question is ONLY the first two pairs: a1's copy precedes a0's, opposite of expand_function_start's emission order (a0 first).
+
+- [s1] [fable-blitz 2026-07-07] What the alias order steers: expand_function_start emits the arg-copy insns in param order; their FINAL order in the insn stream is then sched1's choice (both copies are independent). Target's body begins `lh $v1,0x0($s3)` (line 16) feeding the entry beq - the offsets-copy is on the critical path to the first branch, which is a legitimate reason for sched1 to schedule it first WITHOUT any alias: the clean form's first consumed chain must be the *offsets read.
+
+- [s1] [fable-blitz 2026-07-07] Dual -2 materialization (asm lines 20-23): entry check uses `addiu $v0,$zero,-0x2; beq` while the loop-end compare uses register-held $s7 (`addiu $s7,$zero,-0x2` placed AFTER the entry branch, only on the loop path). The `stop` local reproduces the s7 copy; its placement inside the loop-entered block (src 962-963) matches target's post-branch materialization - keep that block structure in any respelling.
+
+- [s1] [fable-blitz 2026-07-07] Failure-mode context: this is the same prologue-save-order wall family as the func_8007C2A0/func_8007C4B8 twins (reverted af10dc8, re-parked with their 4-insn reorder regfix restored per the tombstone rule). If the clean form leaves exactly a 2-pair prologue swap, that is the known wall - the next lever is initializer/statement-order geometry, NOT the alias respelling.
+
+- [s1] [fable-blitz 2026-07-07] RULING TENSION: the 2026-06-02 tombstone forbids literal param renames on GCC-internals-justification grounds, but the FINAL 2026-07-06 construct-honesty line (do-while-zero-exception.md, restated project-wide) places 'named intermediates / variable staging / statement order' - semantically-TRUE C - on the ALLOWED side with FAKE annotation. `s16 *s3 = offsets;` asserts nothing false. Whether the tombstone survives the new line is an owner call; it also affects the parked 8007C2A0/C4B8 twins.
+
+- [s1] [fable-blitz 2026-07-07] Remaining locals are all legitimately derived (s5=base+1 slot pointer, s2=dest, s6=count, s1=walker, s0=size) - only the two flagged constructs plus cosmetic register-style naming need touching; the loop body (src 965-981) already matches target's shape including the srl/sll round-down and the delay-slot subu (asm 26-27).

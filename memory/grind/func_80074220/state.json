@@ -1,10 +1,33 @@
 {
  "func": "func_80074220",
  "file": "text1b",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: sp escapes via func_8007352C(sp) so the store is GCC-live regardless - respell as consumed (`sp[0]=*temp_s2; saMotionSet(sp[0],0)`) to make it semantically live; cse forwards the ar"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Consumed-store respelling: `sp[0] = *temp_s2; a3 = saMotionSet(sp[0], 0);` (drop _t or keep it, minor variants) - store becomes semantically live, cse forwards sp[0] to the already-loaded register for the arg, sw survives (escaped local) and lands in the jal delay slot. Expect byte-identical.",
+   "mechanism": "cse.c store-to-load forwarding + reorg.c delay-slot fill; no DSE on address-taken locals in GCC 2.7.2",
+   "next_probe": "apply -> sandbox func_80074220 --disable all (expect 0); if 0, retire path directly"
+  },
+  {
+   "hypothesis": "If cse emits a reload for the arg instead of forwarding: keep the named intermediate as the arg but consume the store elsewhere - e.g. `sp[0] = _t; a3 = saMotionSet(_t, 0);` followed by a later genuine read of sp[0] is NOT available (nothing reads sp after), so instead try `a3 = saMotionSet(sp[0] = _t, 0);` (assignment-expression arg) which makes the store and arg the same expression node.",
+   "mechanism": "expression-level store+use fusion - single RTL sequence, arg from the SET source",
+   "next_probe": "sandbox the assignment-expression variant; diff will be confined to the lw/sw around 64B08"
+  },
+  {
+   "hypothesis": "Fallback: keep the current dead store WITH /* FAKE: fills the jal delay slot; target byte 64B0C contains the dead sw */ under the dead-vars-local-array 2026-07-01 carve-out (target bytes contain the dead store; array is written-not-read; exhaustion documented by probes 1-2).",
+   "mechanism": "sanctioned carve-out, no codegen change",
+   "next_probe": "only after probes 1-2 measured negative; annotate + dual review"
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Dead-store delay-slot fill at src/text1b.c:17078 (`sp[0] = _t;` inside the anonymous block before saMotionSet). After the do-while loop, sp[] is never passed to any function again; sp[0] is never read after this write. The sole mechanical effect is to produce `sw $a0, 0x18($sp)` in the delay slot of `jal saMotionSet` (target asm 64B0C). Without this line the delay slot would be a nop, which does not match target. This is a manufactured dead-store to fill a jal delay slot \u2014 a scheduling cheat that bypasses the detector because volatile_cheats.py does not flag dead writes to local array elements. Worker action: restructure the post-loop code so the delay slot is filled by a semantically live instruction (e.g., a store to sp[0] that is subsequently consumed, or a different instruction GCC naturally schedules there), keeping the oracle match.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

@@ -1,10 +1,33 @@
 {
  "func": "func_80068F70",
  "file": "text1b",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: three unannotated wraps - first splits the doubled -0x10 materialization + pre-loop init placement, two empty ones fence post-loop store scheduling; all three are now annotation-san"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Strip all three wraps (keeping the two-local -0x10 split and the existing statement order) and measure the honest floor - the empty wraps may be permuter noise and the region-1 wrap's placement effect may already be carried by the block-local declarations; then sweep statement-order variants in the post-loop block (34FC load position vs 3524 store, sh-pair grouping).",
+   "mechanism": "sched1 basic-block scheduling order + cse.c constant-pseudo unification",
+   "next_probe": "strip -> sandbox func_80068F70 --disable all; record which of the three regions actually regresses (per-region attribution before any device is reinstated)"
+  },
+  {
+   "hypothesis": "For whichever region genuinely regresses: reinstate a SINGLE-LEVEL wrap with the now-mandatory /* FAKE: <observed effect> */ annotation per the 2026-07-06 ruling - sanctioned for any codegen effect incl. empty bodies; this is the guaranteed-byte-correct fallback since the committed form already matches.",
+   "mechanism": "construct-level sanction (do-while-zero-exception 2026-07-06); effect-level annotation duty only",
+   "next_probe": "after per-region attribution, annotate only the load-bearing wraps; fix the const-write (drop const from mask decl); layer-2 review"
+  },
+  {
+   "hypothesis": "Region-1-specific clean form: move the loop-mask/cache inits into the loop-entry block naturally by restructuring the goto-based loop as a real do-while/for (the current goto loop_label shape at 15149-15164 forces manual placement); a genuine loop construct gives GCC the same loop notes the wrap manufactures, honestly.",
+   "mechanism": "loop notes from a REAL loop construct (flow.c loop-depth REG_N_REFS weighting + reorg.c) instead of a fake wrap",
+   "next_probe": "rewrite the nibble-counter loop as `do { ... } while (!bit);` with mask/cache declared in the entry block -> sandbox"
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Three do-while(0) constructs in src/text1b.c lines 15145-15148, 15174-15175, 15178-15179 \u2014 none carry the mandatory '/* FAKE: <reason> */' annotation required by the do-while-zero exception; the second and third are in a post-loop block with no LABEL_OUTSIDE_LOOP_P context and no applicable exception. Worker must redo: remove all three do-while(0)s and find pure-C alternatives that byte-match, OR (first do-while only) re-introduce it with a /* FAKE */ annotation + verified WIP lever-exhaustion ledger; the second and third require either pure-C replacements or fresh SOTN-master-branch evidence for a distinct exception class.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

@@ -1,10 +1,33 @@
 {
  "func": "func_8006A3CC",
  "file": "text1b",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: volatile defeats cse1 store-to-load forwarding for ONE redundant lw; clean levers = re-read placement sweep (intervening-store invalidation) or sanctioned FAKE pointer-alias re-view"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Re-read placement sweep: spell `v = *(s32 *)(arg1 + 0);` (no volatile) at 3-4 source positions - (a) adjacent post-store, (b) after the five zero-stores, (c) fused into the +4 store as `*(s32*)(arg1+4) = *(s32*)(arg1+0) + 0xC;` - one of the later placements should survive cse1 (intervening same-base stores invalidate the store-forward entry) and sched1 hoists the lw to the target slot.",
+   "mechanism": "cse.c store-to-load forward invalidation by intervening MEM writes + sched1 load hoisting",
+   "next_probe": "strip volatile -> sandbox baseline (expect ~1-2 masked, the folded lw), then sweep the 3 placements via tools/sweep_variants.py on func_8006A3CC"
+  },
+  {
+   "hypothesis": "If all natural placements fold: FAKE-annotated typed re-view per pointer-alias-fake-exception - `s32 *view = (s32 *)arg1; /* FAKE: re-view keeps the post-store reload */` with the store through arg1 and the re-read through view (and mirrored in func_8006A494); cse may canonicalize the reg copy, so this needs measurement, not assumption.",
+   "mechanism": "cse.c address canonicalization across a reg-copy equivalence (may or may not fold; sanctioned spelling either way)",
+   "next_probe": "sandbox the alias variant; if folded too, try assigning view from the OTHER param path (view initialized before arg1's first use) to break the equivalence-class ordering"
+  },
+  {
+   "hypothesis": "Original-source shape: the field may have been written and read through a struct type where the store is a struct-member write and the re-read feeds TWO uses (the +0xC and the later saMotionSet arg at asm line 28, which re-reads 0x0($s0) post-call anyway) - spelling v as the shared named intermediate for both uses changes its pseudo's ref pattern and may block the fold via use-count, not aliasing.",
+   "mechanism": "cse.c fold decision interacting with pseudo use counts / the post-call natural re-read",
+   "next_probe": "variant where saMotionSet's first arg is spelled `v` (letting the call-clobber force ITS reload) vs the current explicit re-read - check whether target's two lw's of 0x0($s0) (lines 14, 28) both survive"
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): volatile-coercion cheat on parameter pointer: `v = *(volatile s32 *)(arg1 + 0)` immediately after `*(s32 *)(arg1 + 0) = <expr>` defeats GCC CSE to force a lw that GCC would otherwise eliminate. Commit 4fb57431 is explicit: 'volatile cast forced GCC to emit the actual lw rather than keeping the value live in a register.' Same family as the forbidden *(volatile T*)&D_xxx inline-cast pattern (inline-asm-policy expanded catalog), in a pointer-parameter spelling the detector does not flag. Fails tests 1 (no semantic purpose), 2 (human programmer wouldn't write volatile reload of value just stored), 3 (GCC-internals / CSE defeat is the entire justification), and 5 (forbidden volatile-coercion family, new spelling). Cannot revert in place \u2014 the oracle would break. Worker must find pure-C where GCC naturally keeps the lw: restructure so the intervening stores are seen as potential aliases of arg1+0 without volatile, or compute v from the original expression without a store-then-reload detour.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

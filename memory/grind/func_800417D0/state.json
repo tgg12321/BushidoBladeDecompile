@@ -1,10 +1,33 @@
 {
  "func": "func_800417D0",
  "file": "text1a",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: mixed child/a0[3] liveness trick has a natural respelling - drop the local entirely and let call-clobber CSE produce the one-load + re-read pattern"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Eliminate the `child` local entirely: spell all five accesses as `(s32 *)a0[3]` (null-check, status-check, recursive arg, both call args). cse.c merges the three pre-call reads into the single lw->$a0; call-clobber forces the two post-call reloads, matching target byte pattern with zero coercion.",
+   "mechanism": "cse.c common-subexpression merge within the pre-call region + call memory-clobber invalidation forcing reloads",
+   "next_probe": "apply the no-local spelling -> sandbox func_800417D0 --disable all; expect 0 or a tiny scheduling residue around the .L8004184C join"
+  },
+  {
+   "hypothesis": "If no-local CSE fails to keep the status-check on the same register (extra reload before lh): consistent-local-with-reassignment form - `child` used everywhere but re-assigned `child = (s32*)a0[3];` immediately after the recursive call and after func_80052930, so its live range never crosses a jal and no $s1 is allocated.",
+   "mechanism": "local live-range splitting at C level -> local-alloc sees three short-lived pseudos, none call-crossing, so no callee-save",
+   "next_probe": "sandbox the reassignment variant; compare masked diff at the two reload sites"
+  },
+  {
+   "hypothesis": "If both plateau on the a1 (=s0+0x38) placement around the recursive call: the delay-slot/recompute pattern suggests the args of func_80052930 were computed in a specific order in the original - sweep arg-expression order (a1 named first vs inline) per hoist-call-arg-local-flips-jal-delay before reaching for any device.",
+   "mechanism": "sched1 delay-slot fill of the bnez skip path (a1 compute hoisted into the branch delay)",
+   "next_probe": "tools/sweep_variants.py over arg-order/naming variants of the two call statements"
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Mixed child/a0[3] liveness-manipulation: 'child' is cached from a0[3] and used for the null-check, status-check, and recursive call, but (s32 *)a0[3] is re-read directly in the func_80052930 and func_80052A88 call arguments instead of using 'child'. The inconsistency has no spec-level motivation; its mechanism is making 'child' dead at the recursive jal, defeating callee-save allocation in $s1. Target confirms only $s0+$ra saved; using 'child' consistently would produce a $s1 save/restore and no lw-re-reads after the recursive call and after func_80052930. Next action: redo with 'child' used consistently in all accesses, or restructure to not cache it at all.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

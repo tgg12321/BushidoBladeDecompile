@@ -1,10 +1,33 @@
 {
  "func": "func_80040510",
  "file": "text1a",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: s0/s1 swap = global.c allocno-priority tie; wrap is now sanctionable (2026-07-06 ruling) but clean statement-order forms untried"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Strip both constructs to the fully natural form (`s32 *ptr = func_80045878(a0); g_player_ptrs[a0] = (s32)ptr; ...` flat call chain) and measure the true floor \u2014 the swap may cost only 2 masked units, and statement-order variants (store before vs after AllocRobRmd; index spelled `a0` vs cast forms) may flip the s0/s1 tie without any device.",
+   "mechanism": "global.c allocno priority ordering (reg_n_refs/live-length tie between the two call-crossing pseudos)",
+   "next_probe": "strip constructs -> sandbox func_80040510 --disable all for the honest floor; then sweep 3-4 statement-order/index-spelling variants via tools/sweep_variants.py"
+  },
+  {
+   "hypothesis": "Wrap-only form: drop the `idx` alias entirely (use a0 directly in g_player_ptrs[a0]) and keep a single-level do-while(0) around the mid-chain calls WITH the now-mandatory /* FAKE: loop-note ref weighting seats ptr in s0 */ annotation \u2014 sanctioned per the 2026-07-06 ruling; tests whether the alias was load-bearing or just permuter noise.",
+   "mechanism": "flow.c loop-depth REG_N_REFS weighting -> global.c allocation order (ptr allocated first, takes s0)",
+   "next_probe": "sandbox the wrap-only variant; if 0, this is the minimal sanctioned form (annotate + layer-2 review)"
+  },
+  {
+   "hypothesis": "If the alias IS load-bearing: respell it as a FAKE-annotated staging local under the 2026-07-06 allowed-list (named intermediate), or move the scaled-index computation into a distinct expression (`g_player_ptrs[(u8)a0]`-class width respellings are NOT allowed \u2014 use order, not type lies): e.g. store via `g_player_ptrs[a0]` placed AFTER AllocRobRmd so a0's live range extends, changing which pseudo global.c sees as longer-lived.",
+   "mechanism": "global.c conflict-graph live-range length changing the s0/s1 tiebreak",
+   "next_probe": "sandbox the store-after-AllocRobRmd variant (semantics: g_player_ptrs[idx] not read by AllocRobRmd \u2014 verify by reading AllocRobRmd body first)"
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Two coupled codegen-coercion cheats: (1) `do { ... } while (0)` used for s0/s1 register-allocation swap (commit f14316f3 explicitly admits 'wrapper trick for GCC 2.7.2 s0/s1 swap') \u2014 NOT the sanctioned LABEL_OUTSIDE_LOOP_P/reorg.c use case, no /* FAKE */ annotation, no documented lever exhaustion; (2) `s32 idx = a0` param-local-alias alongside direct `func_80045878(a0)` \u2014 two C handles for the same value with no semantic distinction, steering register allocation to put idx in s1 before the call. Both constructs were found by decomp-permuter and committed without cheat-catalog vetting (March 2026, pre-exception). Worker must redo as pure C: restructure so GCC naturally allocates s1=index, s0=ptr without either construct, or document lever-exhaustion and apply the do-while-zero exception ONLY if the LABEL_OUTSIDE_LOOP_P interaction is the mechanism (it is not here \u2014 this function has no conditional branches). Function stays in main until a clean replacement PASSes audit.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],
