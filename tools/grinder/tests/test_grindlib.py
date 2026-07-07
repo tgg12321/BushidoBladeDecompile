@@ -144,5 +144,40 @@ class TestApplyAndLadder(unittest.TestCase):
         self.assertIn("do-while(0) RA-weighting rejected", st["judge_constraints"])
 
 
+class TestBriefAndWip(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = self.tmp.name
+        G.init_ledger(self.root, "func_X", "text1a_c")
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def test_brief_contains_contract(self):
+        G.add_judge_constraint(self.root, "func_X", "no dead constant-holders")
+        b = G.build_brief(self.root, "func_X", "structural", "OUTCOME.json")
+        for token in ("func_X", "structural", "OUTCOME.json",
+                      "no dead constant-holders", "candidate.c", "rejected/"):
+            self.assertIn(token, b)
+        self.assertNotIn("blocked", b.lower())  # the word must not appear
+
+    def test_wip_conversion_seeds_ledger(self):
+        wd = os.path.join(self.root, "memory", "wip", "func_W")
+        os.makedirs(os.path.join(wd, "rejected"))
+        json.dump({"scores": {"candidate_floor": 13},
+                   "sessions": [{"n": 1}], "rejected_forms": ["formA"]},
+                  open(os.path.join(wd, "meta.json"), "w"))
+        open(os.path.join(wd, "notes.md"), "w").write("TL;DR: v9 arm-local\n")
+        open(os.path.join(wd, "candidate.c"), "w").write("s32 f(void){}\n")
+        open(os.path.join(wd, "rejected", "formA.c"), "w").write("x\n")
+        d = G.convert_wip(self.root, "func_W", "text1b")
+        st = G.load_state(self.root, "func_W")
+        self.assertEqual(st["floor_history"][0]["floor"], 13)
+        self.assertTrue(os.path.isfile(os.path.join(d, "candidate.c")))
+        self.assertTrue(os.path.isfile(os.path.join(d, "rejected", "formA.c")))
+        ev = open(os.path.join(d, "evidence.md"), encoding="utf-8").read()
+        self.assertIn("v9 arm-local", ev)
+
+
 if __name__ == "__main__":
     unittest.main()

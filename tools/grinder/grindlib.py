@@ -161,3 +161,152 @@ def add_judge_constraint(root, func, text):
     st = load_state(root, func)
     st["judge_constraints"].append(text)
     save_state(root, func, st)
+
+
+MODALITY_PLAYBOOK = {
+    "recon": ("Baseline + map. Run canonical + sandbox for the honest floor; scan for "
+              "sibling/duplicate analogs (tmp/duplicates_leads.txt, tools/find_duplicates.py); "
+              "read the m2c reference shape; read asm/funcs/<func>.s. Output an initial "
+              "frontier of 1-3 mechanism-grounded hypotheses."),
+    "structural": ("Structural levers: block-local var splits, declaration order, type "
+                   "narrowing, statement re-association — the codegen-technique-index "
+                   "catalog. Measure every form with sandbox; record deltas."),
+    "permuter": ("Directed permuter on the diverging region: tools/permuter_annotate.py "
+                 "--func <f> --hint <rule-slug>, then run decomp-permuter. Findings are "
+                 "PROPOSALS — vet against the cheat catalog. Save logs under "
+                 "tmp/grind/<func>/s<N>/ and list them in artifacts."),
+    "forensics": ("Instrumented cc1: RTL/ALLOCDBG/GREG dumps. Name the exact GCC pass and "
+                  "decision producing the divergence. Save dumps under tmp/grind/<func>/s<N>/ "
+                  "and list them in artifacts."),
+    "rederive": ("Re-derivation: fresh m2c decompile, decomp.me corpus "
+                 "(tools/decomp_me_scrape.py), sibling/Kengo transplant. Produce a "
+                 "structurally DIFFERENT C shape, not a tweak of the current one."),
+    "synthesis": ("Re-read the ENTIRE ledger (evidence.md + hypotheses.md + rejected/). "
+                  "Write the best merged attack. Reset the frontier to the strongest 1-3 "
+                  "hypotheses for the next ladder pass."),
+}
+
+
+def build_brief(root, func, modality, outcome_path):
+    st = load_state(root, func)
+    d = ledger_dir(root, func)
+    rejected = sorted(os.listdir(os.path.join(d, "rejected"))) if os.path.isdir(
+        os.path.join(d, "rejected")) else []
+    floors = "\n".join(f"  s{e['session']:>2} [{e['modality']}] floor={e['floor']}  {e['headline']}"
+                       for e in st["floor_history"][-15:]) or "  (none yet)"
+    frontier = "\n".join(f"  - {f['hypothesis']}\n    mechanism: {f['mechanism']}\n"
+                         f"    next probe: {f['next_probe']}"
+                         for f in st["frontier"]) or "  (empty — build one)"
+    constraints = "\n".join(f"  - {c}" for c in st["judge_constraints"]) or "  (none)"
+    return f"""# GRIND SESSION — {func} (src/{st['file']}.c)
+
+You are session {st['session_count'] + 1} of a cumulative grind. Your mandated
+modality for THIS session is: **{modality}**
+
+{MODALITY_PLAYBOOK[modality]}
+
+## Ledger state (your inheritance — do not re-derive any of it)
+Floor history:
+{floors}
+
+Live frontier:
+{frontier}
+
+Judge constraints (BINDING — forms/techniques already ruled out):
+{constraints}
+
+Rejected forms bank (do NOT re-propose): {', '.join(rejected) or '(empty)'}
+
+READ before working: memory/grind/{func}/evidence.md, memory/grind/{func}/hypotheses.md,
+memory/grind/{func}/candidate.c (apply it to src/{st['file']}.c as your starting point).
+
+## Your contract
+- Work ONLY {func} in src/{st['file']}.c. Engine commands: `& tools/wteng.ps1 main sandbox {func} --disable all` (your gradient), canonical, diagnose. NEVER edit regfix.txt/asmfix.txt/.claude/rules/engine/tools/Makefile/*.ld; NEVER run queue done/retire; NEVER commit.
+- Save your best form to memory/grind/{func}/candidate.c before finishing (even if it did not improve the floor). Save disproven forms to memory/grind/{func}/rejected/<slug>.c.
+- Scratch space: tmp/grind/{func}/s{st['session_count'] + 1}/ — put permuter logs / cc1 dumps there and list them in artifacts.
+- When finished, write your outcome JSON (single object) to EXACTLY this path: {outcome_path}
+  Schema: {{"result": "progress"|"candidate-ready"|"ruling-request", "floor": <int>,
+  "headline": "<one line>", "hypotheses": [{{"statement","mechanism","probe","result","verdict":"CONFIRMED"|"KILLED"}}],
+  "evidence": ["fact ..."], "frontier": [<=3 of {{"hypothesis","mechanism","next_probe"}}],
+  "artifacts": ["tmp/grind/..."], "ruling_question": ""}}
+- "candidate-ready" means: sandbox distance 0 THIS session, edits in place in src/. The driver re-verifies bytes itself — never claim it speculatively.
+- "ruling-request" is for a construct you cannot classify (sanctioned SOTN family vs cheat; genuine hand-written-asm evidence). Ask a precise question.
+- A hypothesis KILLED with measurements is a fully successful session. Eliminating search space IS the job. There is no such thing as a failed session — only an unproven one, and unproven sessions are discarded by the driver as if they never ran.
+"""
+
+
+def convert_wip(root, func, file_stem):
+    """Seed a grind ledger from an existing memory/wip/<func>/ checkpoint."""
+    import shutil
+    d = init_ledger(root, func, file_stem)
+    wd = os.path.join(root, "memory", "wip", func)
+    if not os.path.isdir(wd):
+        return d
+    meta_p = os.path.join(wd, "meta.json")
+    floor = None
+    if os.path.isfile(meta_p):
+        try:
+            meta = json.load(open(meta_p, encoding="utf-8"))
+            floor = (meta.get("scores") or {}).get("candidate_floor")
+            for rf in meta.get("rejected_forms", []):
+                append_evidence(root, func, f"WIP rejected_form: {rf}")
+        except Exception as e:
+            append_evidence(root, func, f"WIP meta.json unreadable: {e}")
+    notes_p = os.path.join(wd, "notes.md")
+    if os.path.isfile(notes_p):
+        append_evidence(root, func, "== imported from memory/wip notes.md ==\n"
+                        + open(notes_p, encoding="utf-8").read())
+    for name in ("candidate.c",):
+        sp = os.path.join(wd, name)
+        if os.path.isfile(sp):
+            shutil.copy2(sp, os.path.join(d, name))
+    wrej = os.path.join(wd, "rejected")
+    if os.path.isdir(wrej):
+        for fn in os.listdir(wrej):
+            shutil.copy2(os.path.join(wrej, fn), os.path.join(d, "rejected", fn))
+    if floor is not None:
+        st = load_state(root, func)
+        if not st["floor_history"]:
+            st["floor_history"].append({"session": 0, "floor": floor,
+                                        "modality": "wip-import",
+                                        "headline": "floor imported from memory/wip checkpoint"})
+            save_state(root, func, st)
+    return d
+
+
+if __name__ == "__main__":
+    # CLI for the PowerShell driver:
+    #   grindlib.py brief <root> <func> <modality> <outcome_path>   -> prints brief
+    #   grindlib.py validate <root> <outcome_json_path> <modality>  -> exit 0 ok / 1 invalid (prints reason)
+    #   grindlib.py apply <root> <func> <outcome_json_path> <modality>
+    #   grindlib.py init <root> <func> <file_stem> [origin]
+    #   grindlib.py convert-wip <root> <func> <file_stem>
+    #   grindlib.py modality <root> <func>                          -> prints next modality
+    #   grindlib.py constrain <root> <func> <text>
+    import sys
+    cmd = sys.argv[1]
+    if cmd == "brief":
+        print(build_brief(sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5]))
+    elif cmd == "validate":
+        o = json.load(open(sys.argv[3], encoding="utf-8"))
+        ok, why = validate_outcome(o, sys.argv[4], sys.argv[2])
+        if not ok:
+            print(why)
+            sys.exit(1)
+    elif cmd == "apply":
+        # grindlib.py apply <root> <func> <outcome_json_path> <modality>
+        o = json.load(open(sys.argv[4], encoding="utf-8"))
+        apply_outcome(sys.argv[2], sys.argv[3], o, sys.argv[5])
+    elif cmd == "init":
+        init_ledger(sys.argv[2], sys.argv[3], sys.argv[4],
+                    sys.argv[5] if len(sys.argv) > 5 else "queue")
+    elif cmd == "convert-wip":
+        convert_wip(sys.argv[2], sys.argv[3], sys.argv[4])
+    elif cmd == "modality":
+        st = load_state(sys.argv[2], sys.argv[3])
+        print(assign_modality(st["session_count"] if st else 0))
+    elif cmd == "constrain":
+        add_judge_constraint(sys.argv[2], sys.argv[3], sys.argv[4])
+    else:
+        print(f"unknown cmd {cmd}")
+        sys.exit(2)
