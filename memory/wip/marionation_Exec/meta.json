@@ -3,8 +3,8 @@
  "file": "system",
  "scores": {
   "head_floor": 56,
-  "candidate_floor": 30,
-  "metric": "sandbox --disable all (masked). RULING RESOLVED 2026-07-06 (owner): do-while(0)-as-RA-weighting NOT SANCTIONED (recorded in .claude/rules/do-while-zero-exception.md 'Declined extension'). The resume point is progress/vT38-reviewer-clean-masked30.c (masked 30): honest baseline + plain `saved = *D_800A147C_2 & 3;` + the byte-inert, mechanism-compliant annotated tail wrap (drop it if it bothers anyone - measured inert). The masked-4 wrap lineage is permanently rejected (rejected/do-while0-ra-weighting-masked4.c). Remaining gap at 30 = the scheduling shapes (masked) THEN the raw register rotation - to be closed via natural statement placement and live-range shaping ONLY. All session-10 mechanism knowledge (qty_compare density math, LUID ordering, region-3 reorg mechanics + knob byte-proof) transfers. Full SHA1 after retire-all-42 is the only end gate.",
+  "candidate_floor": 4,
+  "metric": "sandbox --disable all (masked). candidate.c = vT40 (masked 4, verified): the vDT30/vT39 lineage with per-site FAKE annotations, plain `saved = *D_800A147C_2 & 3;`, honest idx spellings, zero rules/pins/asm. SANCTIONED under the FINAL owner ruling 2026-07-06 (construct-honesty line, .claude/rules/do-while-zero-exception.md): do-while(0) wraps are allowed for ANY codegen effect incl. register allocation, FAKE-annotated per site; the nested clear wrap carries its single-level-insufficient justification (800 < 952 measured). Forbidden remains: regfix/pins/__asm__/semantic-lie C (cross-symbol derivation stays banned per 2026-07-05). Remaining gap (masked 4): the do_timeout sll/addu pair (order fixable by statement reorder - vT32 - at a qty-density tie cost; need arg5val density >= 8.0) and region-3's delay-slot nop (all-live-at-tail byte-proven via BB2_ALLLIVE_LABEL knob; natural trigger open). Full SHA1 after retire-all-42 is the only end gate.",
   "build_insns": 178,
   "target_insns": 179
  },
@@ -35,23 +35,22 @@
   }
  ],
  "reviewer": {
-  "verdict": "FAIL",
+  "verdict": "PENDING",
   "date": "2026-07-06",
-  "agent": "rev-vt31 (layer-1, fresh adversarial)",
-  "evidence": "FAIL driver: the 4 unannotated do-while(0) wraps (do_timeout block, GetVblankCount block, nested single-store clear wraps) use the sanctioned construct to bend REGISTER ALLOCATION (allocno priorities) rather than the narrowly-sanctioned reorg.c label-placement mechanism - the same forbidden intent (register-web gaming) as the 2026-07-05 DO-NOT-SANCTION ruling on the cross-symbol FAKEs, spelled with loop-notes. PASSED: honest idx spellings, pp pointer-alias staging, v0 reuse staging. BORDERLINE: saved widening temp (no named family, no annotation) - since measured droppable (vT39==vT31 masked+raw), DROP it. NEAR-COMPLIANT: the tail wrap (mechanism correctly named = mostly_true_jump LOOP_BEG-before-label) - needs inline FAKE annotation (added in vT37/vT38) + a lever-exhaustion note. Session-10 measurements CONFIRM the reviewer: wraps removed -> masked 30 (the wraps ARE the 30->4).",
-  "prior": "2026-07-05 FAIL (rev-iq3) on cross-symbol FAKEs + double-split, user ruled DO NOT SANCTION; 2026-07-03 owner sanction covers staged-value-reused-variable only."
+  "agent": "rev-vt40 (layer-1, fresh, reviewing under the FINAL construct-honesty rule)",
+  "evidence": "Fresh layer-1 launched on vT40 (the annotated candidate) under the updated do-while-zero-exception rule. Prior verdicts: rev-vt31 FAILed the unannotated predecessor under the OLD mechanism-scoped rule (correct application of the rule as then written; superseded by the owner's final ruling after full SOTN evidence re-evaluation). The owner's interim not-sanctioned ruling lasted <1 day and is superseded.",
+  "prior": "2026-07-05 cross-symbol FAIL + owner DO-NOT-SANCTION: STANDS (semantic-lie C). 2026-07-03 staged-value sanction: stands."
  },
  "remaining_gap": {
-  "summary": "RULING RESOLVED: not sanctioned. Floor = masked 30 (vT38). The wrap-free web must seat via natural statement/use-site placement (arg1-hold plan + session-10 qty-density math). The pair-swap ORDER fix (arg5 stmt before t0 shift - plain statement order, uncontested) transfers to any base. Region-3's all-live trigger hunt continues (knob byte-proof stands). Permuter relaunched on the vT38 base (clean).",
+  "summary": "Masked 4, candidate sanctioned under the 2026-07-06 construct-honesty ruling. Two root-caused residuals: (1) pair-swap - statement reorder fixes order, temps exchange on an exact local-alloc qty density tie (5.33 v 5.33; need arg5val 8.0 without new pseudos/notes); (2) region-3 steal - all-live-at-tail reproduces target bytes exactly (knob-proven); natural C trigger unidentified (a1-liveness impossible; own_fallthrough label impossible; cross-jump inert). Permuter running on the annotated candidate base.",
   "rule_count_at_head": 42,
   "rules_required_for_full_match": "42 (all fall together when masked 0 lands; verify each against bytes at retire time)"
  },
  "next_hypotheses": [
-  "Resume from progress/vT38-reviewer-clean-masked30.c (masked 30). Do NOT reintroduce RA-weighting wraps in any spelling (ruling 2026-07-06, see do-while-zero-exception.md).",
-  "Scheduling shapes first (masked 30 -> low): the old arg1-hold lever (hold=a1 top + both arms) + the vT32 statement-order fix (arg5 before t0 shift) are both natural and uncontested; re-measure them on vT38.",
-  "Register rotation (raw-only): natural use-site placement per the session-10 qty_compare density formula (floor_log2(refs)*refs*size/life) - the target seatings' required priority order is documented in the 2026-07-05 ledger.",
-  "Region-3: the natural all-live-at-tail trigger (knob-byte-proven; jump.c get_label_before audit open). Check permuter finds (tmp/perm_mar, vT38 base) - vet against the cheat catalog, re-score via sandbox.",
-  "Twin cpu_side_move_dir_4: the same ruling applies to its lineage - audit its candidate for RA-weighting wraps before resuming it."
+  "Resume from candidate.c (vT40, masked 4). The two residuals are root-caused - see notes.md session-10 sections.",
+  "Pair-swap: find arg5val qty density >= 8.0 (a natural second ref surviving tree-folding) OR t0-web refs 2, without new single-set pseudos (launch re-times the head) or note changes inside the do_timeout window (LUID/sched shifts). Wrap-COUNT tuning is now sanctioned if a spelling exists that reweights arg5val without re-timing (vT36's failure was sched perturbation, not policy).",
+  "Region-3: natural all-live-at-tail trigger. Open leads: jump.c get_label_before caller audit; a live-across-backedge variable serving as dst2 lands callee-saved (permuter's find) - target needs a1, so the lever must create REORG-VISIBLE (not flow-visible) liveness; check permuter finds (tmp/perm_mar, vT40 base).",
+  "Twin cpu_side_move_dir_4: same ruling applies; its lineage can now use annotated wraps."
  ],
  "rejected_forms": [
   {

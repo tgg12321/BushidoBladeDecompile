@@ -1,16 +1,17 @@
-# marionation_Exec — WIP (session-10: residuals root-caused; REVIEWER FAILED the wrap lineage)
+# marionation_Exec — WIP (session-10 final: masked 4 SANCTIONED; 2 root-caused residuals)
 
-## TL;DR (current state) — RULING RESOLVED: NOT SANCTIONED
-**Layer-1 (rev-vt31) FAILED the masked-4 lineage and the OWNER CONFIRMED
-(2026-07-06): do-while(0)-as-RA-weighting is NOT sanctioned** (recorded in
-do-while-zero-exception.md 'Declined extension'; also binds the twin
-cpu_side_move_dir_4). **Resume point: `progress/vT38-reviewer-clean-masked30.c`
-(masked 30)** — honest baseline + plain `saved = *& 3` + the byte-inert annotated
-tail wrap. The masked-4 form is permanently at `rejected/do-while0-ra-weighting-
-masked4.c`. Path forward: natural statement/use-site placement ONLY — the arg1-hold
-plan + the vT32 statement-order fix (both uncontested) + the session-10 mechanism
-knowledge (qty density math, region-3 knob byte-proof) all transfer. Permuter
-relaunched on the vT38 base. `src/system.c` untouched, oracle green.
+## TL;DR (current state) — FINAL RULING: SANCTIONED (construct-honesty line)
+**candidate.c = vT40, masked 4 (verified), sanctioned.** After a full SOTN-evidence
+re-evaluation the owner issued the FINAL 2026-07-06 ruling (do-while-zero-exception.md
+rewritten): do-while(0) wraps are allowed for ANY codegen effect incl. register
+allocation, FAKE-annotated per site; nested wraps need a single-level-insufficient
+note (candidate complies). The interim not-sanctioned ruling (<1 day) is superseded;
+rev-vt31's FAIL correctly applied the OLD rule and is moot. STILL FORBIDDEN:
+regfix/pins/__asm__/semantic-lie C (cross-symbol derivation per 2026-07-05).
+`saved` widening temp dropped (plain `& 3` scores identically). Fresh layer-1
+(rev-vt40) reviewing under the new rule — verdict to be recorded. Remaining gap =
+the two ROOT-CAUSED residuals below. Permuter running on the vT40 base.
+`src/system.c` untouched, oracle green.
 
 ## Residual 1 — pair-swap @56/57 (2 masked pts): FULLY CHARACTERIZED
 - **Order half SOLVED (vT32, progress/)**: put the `arg5 = *(s32*)(v0+(s32)tbl_125c);`
