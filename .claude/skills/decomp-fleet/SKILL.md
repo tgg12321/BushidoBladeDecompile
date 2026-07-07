@@ -1,14 +1,12 @@
 ---
 name: decomp-fleet
 description: >-
-  Operate the Bushido Blade 2 (SLUS-00663) Autonomous Decomp Fleet — the
-  standing multi-agent system (tools/fleet/) that works the backlog continuously
-  through its card states: backlog workers, a no-quit blocked worker, an
-  Adjudicator, an Auditor+Verifier promotion gate, and an Overseer circuit-breaker.
-  Use whenever asked to start / launch / resume / kick up the fleet, run the
-  autonomous decomp, work the card states, check on the fleet, review what it
-  found, or stop it. This is the DEFAULT autonomous workflow (it replaced
-  solo-agent-on-main). For driving ONE function by hand, use decomp-orchestrate.
+  RETIRED 2026-07-06 — superseded by the decomp-grind skill (the Grinder
+  pipeline). Use decomp-grind for anything phrased like "start the decomp
+  pipeline" / "run the autonomous decomp". This skill remains only as the
+  historical operator reference for the retired multi-agent fleet
+  (tools/fleet/): backlog workers, blocked worker, Adjudicator,
+  Auditor+Verifier gate, Overseer. Do not launch the fleet.
 ---
 
 # BB2 Autonomous Decomp Fleet — operator
