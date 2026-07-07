@@ -1,0 +1,3 @@
+# Evidence bank — func_8001C624
+
+- Audit diagnosis (regressions.md): Three distinct cheat constructs found — two unannotated do-while(0) wrappers (one with variant spelling `0 != 0`) and a dead load/store round-trip pair — all permuter-discovered, all framed in the commit by GCC-scheduling intent rather than program spec. Worker must redo the function in pure C, dropping the do-while wrappers and the t/u round-trips; the struct-copy Blk16/Blk12 pattern and the outer sequencing are clean and can stay.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)

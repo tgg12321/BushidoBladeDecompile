@@ -1,0 +1,3 @@
+# Evidence bank — func_8003B3A4
+
+- Audit diagnosis (regressions.md): Write-only pointer alias `u8 *p = &D_8010277D;` coerces GCC address pre-materialization before branch; not covered by pointer-rmw-global-sanctioned (requires load+store, this is store-only). Worker should rewrite the block as a direct conditional write (`if (a1 != 0) { D_8010277D = 0xE; } else { D_8010277D = 0x1D; }`) and find a clean pure-C structure that reaches the target's pre-branch address-in-register pattern without a write-only pointer alias.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)

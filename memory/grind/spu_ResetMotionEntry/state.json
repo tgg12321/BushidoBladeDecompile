@@ -1,0 +1,13 @@
+{
+ "func": "spu_ResetMotionEntry",
+ "file": "main",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Dead variable `s32 offset = (s16)a1 * 0xB0;` at src/main.c:510 is declared but never referenced anywhere in the function body (lines 511-522). Every downstream operation that needs a1*0xB0 computes it inline: `(s16)a1 * 0xB0` appears verbatim in `entry`'s initializer and in all six `*base_ptr`-based pointer expressions. The variable `offset` is set exactly once and never read. Fails test 1 (byte-identical without it \u2014 GCC 2.7.2 DCEs the dead shift-and-add sequence before register allocation; sandbox --disable-all confirms score==0 meaning the match is not dependent on this construct) and test 2 (no human programmer writing a motion-entry-reset function from spec would declare a named intermediate and then bypass it everywhere in favor of re-computing the expression inline). The match itself is clean (sandbox score 0, rules_dropped 0, cheat_asm_stripped 134 is file-level from unrelated functions in main.c). Fix: remove the dead `s32 offset = (s16)a1 * 0xB0;` declaration, run `verify-oracle` (oracle expected unchanged since the variable is dead), commit as a source-hygiene cleanup. If oracle fails unexpectedly, the variable was load-bearing through some GCC 2.7.2 mechanism not visible to DCE analysis and a fresh pure-C re-attempt is required.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
+ ],
+ "origin": "regression",
+ "created": "2026-07-07T03:55:12.982523+00:00"
+}

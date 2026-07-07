@@ -1,0 +1,13 @@
+{
+ "func": "func_8005509C",
+ "file": "text1b",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Permuter-found `u8 *new_var` (uninitialized, used before assignment) is a UB-based address-folding-defeat cheat: it fools GCC into thinking the two loop stores have distinct base variables so GCC doesn't fold the base to D_80101EC8+0x414 with small offsets \u2014 then relies on register coalescing to land both stores in $v1 with large offsets 0x415/0x414. Mechanically equivalent to the 3 regfix subst rules it retired (same bytes, same mechanism, different file). Next action: revert to the natural form `*(p + 0x415) = 0; *(p + 0x414) = 0;` and find a legitimate C restructuring that prevents GCC's base-folding without UB \u2014 e.g. change struct-access form, store ordering, or escalate if no pure-C lever exists.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
+ ],
+ "origin": "regression",
+ "created": "2026-07-07T03:55:07.226693+00:00"
+}

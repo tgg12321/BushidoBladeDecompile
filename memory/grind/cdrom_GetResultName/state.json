@@ -1,0 +1,13 @@
+{
+ "func": "cdrom_GetResultName",
+ "file": "system",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): goto-done + void*ret accumulator (src/system.c:103-113) matches forbidden family 'goto-end-with-ret-val accumulator + shared label'; fails tests #1 and #5. Worker should attempt the two-direct-return form: if (idx < 0x7) { return (void *)g_cd_result_table[idx]; } return &g_str_none; \u2014 for this simple no-saved-register leaf, GCC 2.7.2 + find_cross_jump produces a single shared jr-ra epilogue naturally, so the simple form is highly likely byte-identical. If sandbox shows it isn't, record the specific diff and seek a clean structural lever (not goto-done).  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
+ ],
+ "origin": "regression",
+ "created": "2026-07-07T03:55:01.801699+00:00"
+}

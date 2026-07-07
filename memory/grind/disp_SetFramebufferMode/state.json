@@ -1,0 +1,13 @@
+{
+ "func": "disp_SetFramebufferMode",
+ "file": "ings",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Active volatile coercion via *(vu8 *) casts on non-allowlisted game RAM globals; removing casts raises sandbox score 0\u21926; the volatile_cheats detector never caught this *(vu8 *)(ptr + N) spelling. Worker must find the pure-C scheduling/structure solution that matches without volatile.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
+ ],
+ "origin": "regression",
+ "created": "2026-07-07T03:55:02.173149+00:00"
+}

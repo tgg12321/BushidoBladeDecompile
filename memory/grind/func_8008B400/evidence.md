@@ -1,0 +1,3 @@
+# Evidence bank — func_8008B400
+
+- Audit diagnosis (regressions.md): s32 two = 2; and s32 three = 3; are opaque-constant register-coercion constructs not in the SOTN-accepted list. They fail Tests 1 (no semantic purpose vs writing the literal) and 2 (no human programmer names a variable 'two' or 'three' for its numeric value). Worker must rewrite without these variables — use literal 2 and 3, find the pure-C structure that reproduces sb $t0/$t1 in the delay slots through natural allocation, or park if no clean form exists.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)

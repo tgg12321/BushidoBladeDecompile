@@ -1,0 +1,13 @@
+{
+ "func": "func_800343F0",
+ "file": "code6cac_b",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Cheat: `*(s8 *)&D_80102787` where D_80102787 is `extern u8`. This pointer-type-cast is used to force a `lb` (signed byte load) instruction instead of `lbu + sll 24 + sra 24`, compensating for an incorrect `u8` type declaration in include/code6cac.h. Observable behavior is byte-identical to `(s8)D_80102787`; the construct serves no semantic purpose beyond GCC instruction-selection coercion. Analogous to the forbidden `*(volatile T *)&G` family (same structural intent: take address of global, cast to different pointer type, coerce codegen). Clean fix: change `extern u8 D_80102787;` to `extern s8 D_80102787;` in include/code6cac.h (target asm `lb` proves original was signed), then write `s32 val_87 = D_80102787;` without any cast.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
+ ],
+ "origin": "regression",
+ "created": "2026-07-07T03:55:03.806369+00:00"
+}

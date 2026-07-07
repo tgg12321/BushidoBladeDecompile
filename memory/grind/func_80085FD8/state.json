@@ -1,0 +1,13 @@
+{
+ "func": "func_80085FD8",
+ "file": "main",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Codegen-coercion expression at call site: `func_8008BD88((s16)(a0 << 16 >> 16))` where `a0` is already `s16`. The double-shift is semantically identical to `a0` for every s16 value (fails test 1), no human would write it from the spec (fails test 2), and its only justification is forcing `sll a0,a0,0x10; sra a0,a0,0x10` into the JAL delay slot (fails test 3). Next action: verify whether `func_8008BD88(a0)` also yields sandbox==0; if yes, replace with the clean form; if no, find the pure-C structural approach that makes GCC emit the sign-extension naturally (e.g. type the parameter as `s32` so the explicit `(s16)(...)` narrowing becomes semantically meaningful, or use an intermediate signed narrowing variable).  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
+ ],
+ "origin": "regression",
+ "created": "2026-07-07T03:55:10.003751+00:00"
+}

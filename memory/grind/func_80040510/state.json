@@ -1,0 +1,13 @@
+{
+ "func": "func_80040510",
+ "file": "text1a",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Two coupled codegen-coercion cheats: (1) `do { ... } while (0)` used for s0/s1 register-allocation swap (commit f14316f3 explicitly admits 'wrapper trick for GCC 2.7.2 s0/s1 swap') \u2014 NOT the sanctioned LABEL_OUTSIDE_LOOP_P/reorg.c use case, no /* FAKE */ annotation, no documented lever exhaustion; (2) `s32 idx = a0` param-local-alias alongside direct `func_80045878(a0)` \u2014 two C handles for the same value with no semantic distinction, steering register allocation to put idx in s1 before the call. Both constructs were found by decomp-permuter and committed without cheat-catalog vetting (March 2026, pre-exception). Worker must redo as pure C: restructure so GCC naturally allocates s1=index, s0=ptr without either construct, or document lever-exhaustion and apply the do-while-zero exception ONLY if the LABEL_OUTSIDE_LOOP_P interaction is the mechanism (it is not here \u2014 this function has no conditional branches). Function stays in main until a clean replacement PASSes audit.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
+ ],
+ "origin": "regression",
+ "created": "2026-07-07T03:55:05.465699+00:00"
+}

@@ -1,0 +1,13 @@
+{
+ "func": "func_80065760",
+ "file": "text1b",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Flagged construct: `(s16)v1` in `if ((s16)v1 < 0x11C8)` fails test #1 \u2014 `v1` is already declared `s16`; the cast is a C-language no-op and the function's observable behavior is identical without it. May also drive the `sll $v1,$v1,16 / sra $v1,$v1,16` sign-extension pair in the assembly (test #3 concern). Next action: run `sandbox func_80065760 --disable all` twice \u2014 once with the current source and once with the cast removed \u2014 and diff the scored asm. If assembly is byte-identical, the cast is pure documentation clutter (false flag, mark reaudit-clean). If different, the cast is a codegen-coercion construct without semantic purpose; rework the C to reach the match without it (the `s16 v1` declared type mandates signed comparison under integer promotion, so removing the cast and restructuring the comparison form is the clean path).  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
+ ],
+ "origin": "regression",
+ "created": "2026-07-07T03:55:08.414407+00:00"
+}

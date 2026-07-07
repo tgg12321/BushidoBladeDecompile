@@ -1,0 +1,13 @@
+{
+ "func": "func_8008B400",
+ "file": "main",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): s32 two = 2; and s32 three = 3; are opaque-constant register-coercion constructs not in the SOTN-accepted list. They fail Tests 1 (no semantic purpose vs writing the literal) and 2 (no human programmer names a variable 'two' or 'three' for its numeric value). Worker must rewrite without these variables \u2014 use literal 2 and 3, find the pure-C structure that reproduces sb $t0/$t1 in the delay slots through natural allocation, or park if no clean form exists.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
+ ],
+ "origin": "regression",
+ "created": "2026-07-07T03:55:10.877234+00:00"
+}

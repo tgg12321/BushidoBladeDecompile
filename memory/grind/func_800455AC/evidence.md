@@ -1,0 +1,3 @@
+# Evidence bank — func_800455AC
+
+- Audit diagnosis (regressions.md): Pointer-alias cheat: `s16 (*new_var)[] = &D_800EED10` introduces a local pointer indirection that is semantically identical to using D_800EED10 directly (as sibling functions saTan5TakeGetPos_80045694 and func_800456F0 do). The alias serves no semantic purpose and the name 'new_var' announces coercion intent. Worker must find a clean C form that reaches byte-match without the alias — e.g. use D_800EED10 directly with the same byte-offset arithmetic the siblings use, and rely on pure C structure to get the right register allocation.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)

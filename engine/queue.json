@@ -4,6 +4,916 @@
   "build_failures": [],
   "items": [
     {
+      "func": "camera_SetMatrix_8001DBE4",
+      "file": "code6cac",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Empty if-body construct (line 1618, code6cac.c) fails tests 1+2 and matches the 'empty-body if(cond){} dead-read' forbidden family. Worker should rewrite to 'if (!(D_800A38F8 > D_800A37A0)) { ... }' ("
+    },
+    {
+      "func": "cpu_get_move_pattern_table_number",
+      "file": "code6cac",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Line 1898: `if ((double)(D_800A3817 == 2))` \u2014 the `(double)` cast is a semantically-inert codegen trick (optimizer folds it away: target asm shows plain `bne $v1,$v0` with no float instructions). Fail"
+    },
+    {
+      "func": "func_8001B138",
+      "file": "code6cac",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Two codegen-control constructs fail the human-programmer test (test #2) and the semantic-purpose test (test #1): (1) a typed s16 intermediate used to clamp a u16 global \u2014 `{ s16 tmp = -0x1C00; g_file_"
+    },
+    {
+      "func": "func_8001C624",
+      "file": "code6cac",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Three distinct cheat constructs found \u2014 two unannotated do-while(0) wrappers (one with variant spelling `0 != 0`) and a dead load/store round-trip pair \u2014 all permuter-discovered, all framed in the com"
+    },
+    {
+      "func": "func_8001CD68",
+      "file": "code6cac",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Dead local variable `s32 frames;` (src/code6cac.c:1479) is declared inside the inner block, never assigned and never read \u2014 GCC DCEs it entirely, so it has zero semantic purpose. It fails test 1 (no o"
+    },
+    {
+      "func": "func_8001E800",
+      "file": "code6cac",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: volatile-coercion cheat: `volatile u8 *ptr = (volatile u8 *)(&D_80101EC8 + v * 1100)` is an inline volatile cast on a non-volatile game-state global (D_80101EC8 declared extern u8 in code6cac.h:300). "
+    },
+    {
+      "func": "func_8001FAE4",
+      "file": "code6cac",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: char new_var is a dead-constant codegen coercion (permuter-found trick, commit-confirmed). The variable is always 0, both comparisons are semantically identical to != 0, no asm instruction corresponds"
+    },
+    {
+      "func": "func_8001FB34",
+      "file": "code6cac",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: One construct fails tests 2+3: `v0 = (u32)0 < (u32)v0;` mirrors the target instruction `sltu $v0, $zero, $v0` by reversed-operand unsigned comparison rather than natural `v0 != 0`; a worker should ver"
+    },
+    {
+      "func": "func_800233AC",
+      "file": "code6cac",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: CHEAT: `__attribute__((packed))` on PackedPair_233AC (src/code6cac.c:2896) is an alignment-coercion lever that forces GCC to emit lwl/lwr/swl/swr instead of lw/sw for the 8-byte struct copy at line 29"
+    },
+    {
+      "func": "se_data_set",
+      "file": "code6cac",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Two codegen-coercion constructs with no semantic purpose: (1) '(s8)(u16)D_800A36A4' forces lhu vs lh for no semantic gain (sb discards the sign-extension difference); (2) 's8 *p = (s8*)&D_8010277C' ca"
+    },
+    {
+      "func": "DispSamnailWindow",
+      "file": "code6cac_b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Function-scope `s32 s0;` is used in cases 1 and 3 ONLY to hold the constant 1 in a callee-save register ($s0) across intervening jal calls (cpu_set_move_command_and_dir_for_no_action in case 1; func_8"
+    },
+    {
+      "func": "func_8003047C",
+      "file": "code6cac_b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Dead-goto label-pad confirmed: `goto loop_start;` immediately before `loop_start:` has no semantic effect (execution falls through anyway) and exists solely to coerce GCC's CFG/loop-analysis. Forbidde"
+    },
+    {
+      "func": "func_80030BA8",
+      "file": "code6cac_b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Two codegen-coercion constructs identified in src/code6cac_b.c:2600. Primary: `s32 new_var;` at function scope assigned `new_var = 0xF423F` only inside one inner block \u2014 decompiler-artifact name, func"
+    },
+    {
+      "func": "func_80032064",
+      "file": "code6cac_b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: sw_val = -0xC8 (src/code6cac_b.c:2829) is a single-use constant variable initialized at function entry and used 32 instructions later as a mult-delay-filling store. The target asm shows addiu $t0, $ze"
+    },
+    {
+      "func": "func_80033498",
+      "file": "code6cac_b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Width-coercion cast `*(u16 *)&D_800A36A4` on an `s16`-declared global forces `lhu` instead of `lh` with zero semantic effect \u2014 the outer `(s16)` cast makes the expression identical to a plain read for"
+    },
+    {
+      "func": "func_800342A0",
+      "file": "code6cac_b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Duplicate file-scope extern declarations immediately before the function (src/code6cac_b.c:3910-3917) are a DECL_UID/LUID codegen coercion cheat. The same four symbols (func_80034200, func_800372C0, D"
+    },
+    {
+      "func": "func_800343F0",
+      "file": "code6cac_b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Cheat: `*(s8 *)&D_80102787` where D_80102787 is `extern u8`. This pointer-type-cast is used to force a `lb` (signed byte load) instruction instead of `lbu + sll 24 + sra 24`, compensating for an incor"
+    },
+    {
+      "func": "mottest_disp",
+      "file": "code6cac_b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Four `u8 & 0xFF` / `(u8)u8var` masks with no semantic purpose: each forces an `andi` instruction that creates a new register for register-allocation/delay-slot scheduling control. They fail the 6-test"
+    },
+    {
+      "func": "func_80037540",
+      "file": "code6cac_b2_post",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: s32 sp[8] oversized by 2 elements: sp[6] and sp[7] are never written or read; callee is invoked with count=6, so only sp[0]-sp[5] have semantic purpose. The 2 unused elements inflate the stack frame f"
+    },
+    {
+      "func": "func_80035480",
+      "file": "code6cac_b2_pre",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: phi-variable-for-delay-slot-steal cheat: `s32 v0` assigned 1 in BOTH branches then `D_800A31D8 = v0` \u2014 both arms assign the same constant, so the intermediate has no semantic purpose; its sole effect "
+    },
+    {
+      "func": "cpu_side_move_dir_2",
+      "file": "code6cac_c2",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Scheduling cheat confirmed: the csmd2_call: goto-thread block (commit a8f50a1e) was explicitly inserted to make cc1 produce a delay-slot-threaded call to func_8005FBC8 \u2014 the commit message and inline "
+    },
+    {
+      "func": "func_8003C42C",
+      "file": "code6cac_c2",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: do{} while(0) at src/code6cac_c2.c:592 is completely unannotated \u2014 no '// FAKE' or '/* FAKE: ... */' comment. Per [[do-while-zero-exception]], the annotation is a mandatory transparency requirement; i"
+    },
+    {
+      "func": "func_8003D7B4",
+      "file": "code6cac_c2",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Two constructs fail the checklist: (1) `u8 *new_var` is a codegen-steering pointer alias \u2014 assigned `new_var = p` inside the inner do-while(0) then used as `*(u16 *)(new_var + 0xC)` on the load side w"
+    },
+    {
+      "func": "func_8003B3A4",
+      "file": "code6cac_c_ab",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Write-only pointer alias `u8 *p = &D_8010277D;` coerces GCC address pre-materialization before branch; not covered by pointer-rmw-global-sanctioned (requires load+store, this is store-only). Worker sh"
+    },
+    {
+      "func": "func_800388A8",
+      "file": "code6cac_c_mid",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Empty-body 'if (D_800A3318 != 0) { }' is a scheduling-direction cheat: semantically identical to 'if (D_800A3318 == 0) { result = 1; }' but the backwards condition + empty true body exists solely to f"
+    },
+    {
+      "func": "func_800392C8",
+      "file": "code6cac_c_mid",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Comma-expression cheat `j -= (0, 0x10)` in loop2: the left operand `0` is a constant with no side effects and is discarded by the C comma operator, making this semantically identical to `j -= 0x10`. F"
+    },
+    {
+      "func": "func_800397A0",
+      "file": "code6cac_c_mid",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Redundant `(u8)val` cast where val is already declared u8 fails tests 1+2 (no semantic purpose, human programmer would write `if (val == 0x77)`); may also be a codegen coercion forcing `andi $v1,$a0,0"
+    },
+    {
+      "func": "motion_LoadPreCalcData_80037F08",
+      "file": "code6cac_c_mid",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: File-scope __asm__ alias creates a second symbol (func_80037F08_ret) pointing to the void function motion_LoadPreCalcData_80037F08 with a different return type (s32), purely so the call site at line 5"
+    },
+    {
+      "func": "func_8003F420",
+      "file": "config",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Dead-write cheat: `int new_var;` is assigned in `s0 = (new_var = -1);` and never read again. The write to new_var is a pure dead store \u2014 semantically equivalent to `s0 = -1;`. This is a dead-write-thr"
+    },
+    {
+      "func": "func_8003FE40",
+      "file": "config",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Two named-constant variables neg1=-1 and neg1b=-1 fail the human-programmer and naming tests; they are register-coercion artifacts (originated as asm(\"t1\")/asm(\"t0\") explicit pins) that survived both "
+    },
+    {
+      "func": "func_8003FECC",
+      "file": "config",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Two dead-operation cheats found: (1) `a3++; a3--;` and `t1++; t1--;` inside the loop \u2014 net zero effect, GCC-internal allocator steering; (2) `new_var = &a2[0]; if (a2[(*new_var) * 0] == (-2))` \u2014 the m"
+    },
+    {
+      "func": "func_800400F8",
+      "file": "config",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Pre-comparison `s0 = 0;` + `if (s2[0] > s0)` is a blez-delay-slot scheduling coercion; clean fix: reorder `s0 = 0; s1 = s2;` (not `s1 = s2; s0 = 0;`) inside the if block and remove the pre-comparison "
+    },
+    {
+      "func": "gpu_SetDispMask",
+      "file": "display",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Pointer-derived address cheat: `u8 *p = &g_gpu_debug_level; bb2_memset(p + 0x6A, -1, 0x14)` uses g_gpu_debug_level (0x8009BE76) as the base to compute g_gpu_disp_env (0x8009BEE0 = 0x8009BE76 + 0x6A), "
+    },
+    {
+      "func": "single_game_getEnemyCharId",
+      "file": "display",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Dead variable `s32 var_v0;` (display.c:3516) declared but never initialized or read; fails 6-test checklist tests #1 (no semantic purpose) and #2 (human-programmer test). Next action: remove the decla"
+    },
+    {
+      "func": "gpu_SetMode",
+      "file": "gpu",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Scheduling-lever variable `new_var = -1` placed between two array-read/store pairs (width and height), used as the fill argument in only the FIRST of two bb2_memset calls whose fill value is identical"
+    },
+    {
+      "func": "disp_SetFramebufferMode",
+      "file": "ings",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Active volatile coercion via *(vu8 *) casts on non-allowlisted game RAM globals; removing casts raises sandbox score 0\u21926; the volatile_cheats detector never caught this *(vu8 *)(ptr + N) spelling. Wor"
+    },
+    {
+      "func": "math_Distance3D",
+      "file": "ings",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: out[4] has a dead 4th element (out[3] is never written by the callee or read by the caller) that inflates the array to 16 bytes to coerce $ra to sp+0x30 and the frame to 0x38 \u2014 frame-coercion by dead "
+    },
+    {
+      "func": "func_80082C58",
+      "file": "ings2",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Second-block flag_ptr construct (commit a7629356) fails tests 2 and 3: the spelling '(s16 *)((char *)s0b - 60)' is GCC-internals-driven (defeats combine's (plus symbol const) fold as stated in the com"
+    },
+    {
+      "func": "sys_SetTimer",
+      "file": "ings2",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: *(volatile s32 *)p write-cast is a volatile-coercion on non-volatile, non-allowlisted global g_sys_timer. Fix: change *(volatile s32 *)p = a0 to *p = a0 (pointer alone produces the lui+addiu match; vo"
+    },
+    {
+      "func": "func_80085448",
+      "file": "main",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: s32 buf[10] is an oversized-array frame-inflation cheat. PsyQ 3.5 SpuCommonAttr is 32 bytes (mask+result at 0x00-0x07, twelve SpuVolume s16 fields at 0x08-0x1F); the function's highest write is at off"
+    },
+    {
+      "func": "func_80085FD8",
+      "file": "main",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Codegen-coercion expression at call site: `func_8008BD88((s16)(a0 << 16 >> 16))` where `a0` is already `s16`. The double-shift is semantically identical to `a0` for every s16 value (fails test 1), no "
+    },
+    {
+      "func": "func_80086080",
+      "file": "main",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Construct `(s16)(a0 << 16 >> 16)` (line ~909, argument to func_8008BD88) fails Tests 1, 2, 3 of the 6-test checklist: a0 is already s16, the shift pair is mathematically a no-op for all valid s16 inpu"
+    },
+    {
+      "func": "func_80087CAC",
+      "file": "main",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Pointer alias `s16 *ptr = &D_80102806; *ptr = a0; return *ptr;` is a STORE-compute-LOAD codegen lever, not the sanctioned LOAD-compute-STORE RMW shape \u2014 fails tests 1, 2, 3, and 5; next action: try di"
+    },
+    {
+      "func": "func_800892F8",
+      "file": "main",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Two forbidden cheat constructs in main (both attributable to this function's completion commit 6b94c89f). REMOVE BOTH and redo the match in pure C: (1) remove the `volatile` keyword from `extern volat"
+    },
+    {
+      "func": "func_8008ADC4",
+      "file": "main",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: func_8008ADC4 (main.c:2410) reads g_spu_init_flag which is declared 'extern volatile s32 g_spu_init_flag' (main.c:23) \u2014 a scheduling-coercion volatile that is NOT in volatile_extern_allowlist.txt. Com"
+    },
+    {
+      "func": "func_8008AE7C",
+      "file": "main",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Dead paired inc/dec `v0++; v0--;` in the else branch (src/main.c:2440-2441) has no semantic purpose \u2014 the pair cancels out (v0=0 before and after) and GCC 2.7.2 constant-folds it away, emitting no cor"
+    },
+    {
+      "func": "func_8008B400",
+      "file": "main",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: s32 two = 2; and s32 three = 3; are opaque-constant register-coercion constructs not in the SOTN-accepted list. They fail Tests 1 (no semantic purpose vs writing the literal) and 2 (no human programme"
+    },
+    {
+      "func": "func_8008BEA4",
+      "file": "main",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: src/main.c:2765-2767 contains `if ((flag && flag) && flag) { do { } while (0); }` \u2014 a prohibited double construct: (1) the outer `if` is an always-true wrapper (`flag = &D_800F1AFC` is always non-null"
+    },
+    {
+      "func": "func_8008C184",
+      "file": "main",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Cheat construct at src/main.c:2889-2891: `if ((flag && flag) && flag) { do { } while (0); }` \u2014 flag is always non-null (&D_800F1AEC), so the condition is always true and the body emits nothing; this i"
+    },
+    {
+      "func": "spu_IrqHandler",
+      "file": "main",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Two cheats in src/main.c:1693-1710. Primary: 'new_var2 = 1; if (new_var2) { return 0; }' (lines 1698-1701) is an always-true-if / dead-conditional-store \u2014 explicitly forbidden family. Secondary: dupli"
+    },
+    {
+      "func": "spu_ResetMotionEntry",
+      "file": "main",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Dead variable `s32 offset = (s16)a1 * 0xB0;` at src/main.c:510 is declared but never referenced anywhere in the function body (lines 511-522). Every downstream operation that needs a1*0xB0 computes it"
+    },
+    {
+      "func": "camera_CalcAngles",
+      "file": "sound",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Dead store `sp18[2] = a1` (line 543, src/sound.c): sp18[2] is written but never read afterward \u2014 the next call uses `a1` directly from register, not sp18[2] from the stack. The store has no semantic p"
+    },
+    {
+      "func": "camera_InitBoneData",
+      "file": "sound",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Three cheats found in current main source (src/sound.c:462-476): (1) unannotated do-while(0) wrapper \u2014 missing mandatory /* FAKE */ annotation, so the LABEL_OUTSIDE_LOOP_P prerequisite and lever-exhau"
+    },
+    {
+      "func": "camera_InitRotation",
+      "file": "sound",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Source carries 26 inline-volatile-cast constructs on game-state struct fields (camera bone data accessed through `u8 *a0`). All follow the pattern `*(volatile T *)(s0 + offset)` \u2014 the forbidden 'inlin"
+    },
+    {
+      "func": "game_Init",
+      "file": "sound",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Two cheat constructs found: (1) empty `do { } while (0);` at src/sound.c:259 is missing the mandatory `/* FAKE */` annotation required by the do-while-zero-exception rule \u2014 hard fail per cheat-reviewe"
+    },
+    {
+      "func": "cdrom_ConfigSPU",
+      "file": "system",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Unauthorized outer-volatile on pointer variable g_cd_spu_voice (src/system.c:691): declared `extern volatile u16 * volatile g_cd_spu_voice;` \u2014 the OUTER volatile makes the pointer VALUE itself volatil"
+    },
+    {
+      "func": "cdrom_GetCmdName",
+      "file": "system",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: goto-end-with-ret-val accumulator pattern (void *ret; ... goto done; ... done: return ret;) is explicitly listed as a FORBIDDEN FAMILY in the cheat catalog \u2014 slipped through the mechanical gates becau"
+    },
+    {
+      "func": "cdrom_GetResultName",
+      "file": "system",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: goto-done + void*ret accumulator (src/system.c:103-113) matches forbidden family 'goto-end-with-ret-val accumulator + shared label'; fails tests #1 and #5. Worker should attempt the two-direct-return "
+    },
+    {
+      "func": "func_800827D0",
+      "file": "system",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Call site at src/system.c:1120 uses a type-cast workaround for an incorrect callee declaration. Vu0SetLightColMatrix_80080208 is declared void(void) at line 119, but marionation_Exec (ultimate callee)"
+    },
+    {
+      "func": "func_80040510",
+      "file": "text1a",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Two coupled codegen-coercion cheats: (1) `do { ... } while (0)` used for s0/s1 register-allocation swap (commit f14316f3 explicitly admits 'wrapper trick for GCC 2.7.2 s0/s1 swap') \u2014 NOT the sanctione"
+    },
+    {
+      "func": "func_800417D0",
+      "file": "text1a",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Mixed child/a0[3] liveness-manipulation: 'child' is cached from a0[3] and used for the null-check, status-check, and recursive call, but (s32 *)a0[3] is re-read directly in the func_80052930 and func_"
+    },
+    {
+      "func": "func_800466C0",
+      "file": "text1a_b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: The construct ((void (*)(s32))func_80044100)(8) fails the 6-test checklist. func_80044100 is declared 'extern void func_80044100(s32, ...);' (varargs). Calling it with a single arg as func_80044100(8)"
+    },
+    {
+      "func": "func_80042ED8",
+      "file": "text1a_c",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: The 4-variable form (t0,t1,t2,t3) with a specific partial-read-ahead ordering fails Test 2 (human-programmer test): three independent swaps are most naturally written as 3 sequential single-temp opera"
+    },
+    {
+      "func": "func_80044670",
+      "file": "text1a_c",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Unannotated empty `do { } while (0);` at src/text1a_c.c:1139 fails do-while-zero-exception's mandatory prerequisites (no `// FAKE` annotation, no lever-exhaustion ledger) \u2014 the exact failing shape alr"
+    },
+    {
+      "func": "func_80044B30",
+      "file": "text1a_c",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Width-coercion pointer cast `*(u16 *)&D_800A9CF8` on a declared `extern s16` global forces `lhu` (unsigned halfword load) instead of the natural `lh`. Fails tests 1, 2, and 3: no observable semantic p"
+    },
+    {
+      "func": "func_80044F30",
+      "file": "text1a_c",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Function-pointer cast cheat: definition declares (s32 a0) with ((void (*)(s32))func_80044E74)(a0+0x27), but callers (text1a_c2.c:14,77,79) declare and call it as func_80044F30(s32, s32) \u2014 two explicit"
+    },
+    {
+      "func": "func_800455AC",
+      "file": "text1a_c",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Pointer-alias cheat: `s16 (*new_var)[] = &D_800EED10` introduces a local pointer indirection that is semantically identical to using D_800EED10 directly (as sibling functions saTan5TakeGetPos_80045694"
+    },
+    {
+      "func": "hirahira_w_frie",
+      "file": "text1a_c",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Two constructs violate the SOTN bar; primary is a confirmed param-local-alias-prologue-pair-flip (explicitly forbidden). Worker must produce a clean pure-C body that matches the prologue without alias"
+    },
+    {
+      "func": "mot_data_set",
+      "file": "text1a_c",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: max_pin = max_val is register-cascade coercion-by-spelling: no observable semantic purpose (test #1), no human programmer writing RGB-to-HSV would alias max_val into max_pin and use both throughout (t"
+    },
+    {
+      "func": "videoDecCreate",
+      "file": "text1a_c",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: u16 *cntPtr = countPtr; is a semantically-redundant pointer alias in the inner scope \u2014 fails tests 1+2, not mentioned in the completion commit's justification (7c2d2e4c only documents cnt_base/base_ad"
+    },
+    {
+      "func": "GetAllocPacketSize",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: CODEGEN-CAST CHEAT at text1b.c:12269: func_80087F64((s16)v) forces a sign-extension pair (sll/sra in the jal delay slot) with no semantic purpose. Visible proto at line 12013 is void func_80087F64(s32"
+    },
+    {
+      "func": "func_80048F58",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: param-local-alias pair `s32 s1 = a0; s32 s0 = a1;` is a forbidden codegen-coercion cheat: fails Tests 1/2/3/5/6 \u2014 no semantic purpose, no human-from-spec would write it, mechanism is GCC LUID/allocno-"
+    },
+    {
+      "func": "func_800493E4",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: do { } while (0); at src/text1b.c:815 is unannotated \u2014 fails the do-while-zero-exception strict prerequisite #3 (requires /* FAKE: <reason> */ or // FAKE annotation). Without the annotation the except"
+    },
+    {
+      "func": "func_80049F4C",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: s32 sp10[12] over-declares by one element (48 bytes declared, 44 bytes used). The 12th element sp10[11] is never written (memcpy copies exactly 44 bytes) and never read (func_8004A09C consumes at most"
+    },
+    {
+      "func": "func_8005344C",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Unannotated do { ... } while(0) wrapper at src/text1b.c:11254 is an unsanctioned no-semantic-purpose codegen device. The first two reflection stores (lines 11252-11253) are bare statements; only the t"
+    },
+    {
+      "func": "func_8005509C",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Permuter-found `u8 *new_var` (uninitialized, used before assignment) is a UB-based address-folding-defeat cheat: it fools GCC into thinking the two loop stores have distinct base variables so GCC does"
+    },
+    {
+      "func": "func_8005C5A8",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Two param-local aliases (s32 *s1 = a0; s16 s0 = a1) at function entry are literal renames with MIPS register names, no semantic purpose, declared in a specific order to steer LUID and produce target p"
+    },
+    {
+      "func": "func_80060768",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Two single-use pointer aliases (p_b4, p_b6) fall explicitly outside the pointer-rmw-global-sanctioned carve-out \u2014 that rule requires at least one load AND one store through the pointer (an actual RMW "
+    },
+    {
+      "func": "func_80060CB8",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: CHEAT: `unsigned int new_var = arg0;` with asymmetric use (arg0 in v==0 branch, new_var in all others + gpu_LoadImage calls) is a spelling of the forbidden param-local-alias-prologue-pair-flip pattern"
+    },
+    {
+      "func": "func_80065344",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: The `(s16)v1` cast in `if ((s16)v1 < 0x11C8)` where v1 is already declared s16 fails tests 1, 2, and 3: it is a C no-op (s16 cast to s16), no human programmer from spec writes it, and its purpose is t"
+    },
+    {
+      "func": "func_80065434",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: The (s16)v1 cast in the comparison (src/text1b.c:14679) is a same-type cast with no C-level semantic purpose (v1 is already s16). Its only function is to steer GCC from a plain lh+slti sequence to the"
+    },
+    {
+      "func": "func_80065540",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Codegen-coercion cast `(s16)v1` where v1:s16 \u2014 no semantic purpose, fails tests 1/2/3; verify whether dropping it changes the oracle match (if not, harmless noise; if yes, needs a clean pure-C form fo"
+    },
+    {
+      "func": "func_80065590",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Type-coercion cheat in `extern s16 D_800F0BB6` declaration: canonical type is `u16` (explicitly named in regressions.md func_80065344 cluster entry as one of ~12 sister globals needing `s16`\u2192`u16` ret"
+    },
+    {
+      "func": "func_80065760",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Flagged construct: `(s16)v1` in `if ((s16)v1 < 0x11C8)` fails test #1 \u2014 `v1` is already declared `s16`; the cast is a C-language no-op and the function's observable behavior is identical without it. M"
+    },
+    {
+      "func": "func_80068F70",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Three do-while(0) constructs in src/text1b.c lines 15145-15148, 15174-15175, 15178-15179 \u2014 none carry the mandatory '/* FAKE: <reason> */' annotation required by the do-while-zero exception; the secon"
+    },
+    {
+      "func": "func_8006A3CC",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: volatile-coercion cheat on parameter pointer: `v = *(volatile s32 *)(arg1 + 0)` immediately after `*(s32 *)(arg1 + 0) = <expr>` defeats GCC CSE to force a lw that GCC would otherwise eliminate. Commit"
+    },
+    {
+      "func": "func_8006A494",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Line 15648 src/text1b.c: `v = *(volatile s32 *)(arg1 + 0)` is a volatile inline cast on non-volatile game-state memory used to defeat GCC CSE and force the `lw $v0, 0x0($s0)` at target offset 0x8006A4"
+    },
+    {
+      "func": "func_8006E49C",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Dead sub-assignment to `new_var` (declared int, assigned once in `a = (new_var = arg0 + 0x9C40)` at text1b.c:16232, never read again) \u2014 fails Test 1 (no semantic purpose: `a = arg0 + 0x9C40` is identi"
+    },
+    {
+      "func": "func_8006F038",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: saved block (src/text1b.c:16447-16451) fails Tests 1+2: `s32 saved = temp_s0; ot_Link(D_800A374C, temp_s0); temp_s0 = saved + 0x10;` is byte-identical to `ot_Link(D_800A374C, temp_s0); temp_s0 += 0x10"
+    },
+    {
+      "func": "func_80074220",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: Dead-store delay-slot fill at src/text1b.c:17078 (`sp[0] = _t;` inside the anonymous block before saMotionSet). After the do-while loop, sp[] is never passed to any function again; sp[0] is never read"
+    },
+    {
+      "func": "func_80077A80",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "regression: s32 disp_SetFramebufferMode redeclaration at text1b.c:17721 overrides a void declaration at 17707 within the same TU; the only effect is coercing GCC $v0 liveness after the jal (prevents 'li $v0,1' fr"
+    },
+    {
       "func": "func_80045294",
       "file": "text1a_c",
       "distance": 2,
@@ -3342,14 +4252,14 @@
     }
   ],
   "counts": {
-    "total": 405,
-    "active": 327,
+    "total": 496,
+    "active": 418,
     "by_status": {
-      "active": 327,
+      "active": 418,
       "parked": 78
     },
     "by_verdict": {
-      "C": 152,
+      "C": 243,
       "ASM-PARTIAL": 57,
       "ASM-SUSPECT": 118
     }

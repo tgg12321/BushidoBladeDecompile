@@ -1,0 +1,13 @@
+{
+ "func": "func_80065590",
+ "file": "text1b",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Type-coercion cheat in `extern s16 D_800F0BB6` declaration: canonical type is `u16` (explicitly named in regressions.md func_80065344 cluster entry as one of ~12 sister globals needing `s16`\u2192`u16` retype). Identical pattern to the flagged func_80065344 cheat. Next action: in all text1b.c declarations of D_800F0BB6 (lines 14502 and 14725), change `extern s16` to `extern u16`; change `s16 *p` to `u16 *p`; change `s16 v1 = *p` to `u16 v1 = *p`; the `(s16)v1` comparison cast is then semantically meaningful (u16\u2192s16) and produces the canonical `lhu + sll/sra` sequence. Sibling globals in the cluster (D_800F0BB4, D_800F0BBC, D_800F0BBE, D_800F0BC8, D_800F0BCA) likely need the same fix in the same functions.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
+ ],
+ "origin": "regression",
+ "created": "2026-07-07T03:55:08.264192+00:00"
+}

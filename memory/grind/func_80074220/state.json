@@ -1,0 +1,13 @@
+{
+ "func": "func_80074220",
+ "file": "text1b",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Dead-store delay-slot fill at src/text1b.c:17078 (`sp[0] = _t;` inside the anonymous block before saMotionSet). After the do-while loop, sp[] is never passed to any function again; sp[0] is never read after this write. The sole mechanical effect is to produce `sw $a0, 0x18($sp)` in the delay slot of `jal saMotionSet` (target asm 64B0C). Without this line the delay slot would be a nop, which does not match target. This is a manufactured dead-store to fill a jal delay slot \u2014 a scheduling cheat that bypasses the detector because volatile_cheats.py does not flag dead writes to local array elements. Worker action: restructure the post-loop code so the delay slot is filled by a semantically live instruction (e.g., a store to sp[0] that is subsequently consumed, or a different instruction GCC naturally schedules there), keeping the oracle match.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
+ ],
+ "origin": "regression",
+ "created": "2026-07-07T03:55:09.271669+00:00"
+}

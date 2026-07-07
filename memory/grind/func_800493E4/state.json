@@ -1,0 +1,13 @@
+{
+ "func": "func_800493E4",
+ "file": "text1b",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): do { } while (0); at src/text1b.c:815 is unannotated \u2014 fails the do-while-zero-exception strict prerequisite #3 (requires /* FAKE: <reason> */ or // FAKE annotation). Without the annotation the exception does not formally apply; the empty construct then fails 6-test checklist test #1 (no semantic purpose) and test #5 (family check). Lever-exhaustion documentation (prerequisite #1) cannot be verified from main (WIP deleted); the targeted GCC-pass interaction (prerequisite #2, must be LABEL_OUTSIDE_LOOP_P/reorg.c) is also undocumented. next_action: worker verifies that lever-exhaustion was genuinely performed and the wrap is defeating the LABEL_OUTSIDE_LOOP_P/reorg.c invert-jump peephole (not another GCC pass), then adds /* FAKE: <one-line reason> */ annotation inline. If prerequisites were not met, replace with a different pure-C form. No other issues: zero regfix/asmfix rules, no register pins, no volatile casts, no alias-rename externs, no __asm__ blocks.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
+ ],
+ "origin": "regression",
+ "created": "2026-07-07T03:55:06.785633+00:00"
+}

@@ -1,0 +1,13 @@
+{
+ "func": "func_800417D0",
+ "file": "text1a",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Mixed child/a0[3] liveness-manipulation: 'child' is cached from a0[3] and used for the null-check, status-check, and recursive call, but (s32 *)a0[3] is re-read directly in the func_80052930 and func_80052A88 call arguments instead of using 'child'. The inconsistency has no spec-level motivation; its mechanism is making 'child' dead at the recursive jal, defeating callee-save allocation in $s1. Target confirms only $s0+$ra saved; using 'child' consistently would produce a $s1 save/restore and no lw-re-reads after the recursive call and after func_80052930. Next action: redo with 'child' used consistently in all accesses, or restructure to not cache it at all.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
+ ],
+ "origin": "regression",
+ "created": "2026-07-07T03:55:05.625167+00:00"
+}

@@ -1,0 +1,3 @@
+# Evidence bank — func_8003FE40
+
+- Audit diagnosis (regressions.md): Two named-constant variables neg1=-1 and neg1b=-1 fail the human-programmer and naming tests; they are register-coercion artifacts (originated as asm("t1")/asm("t0") explicit pins) that survived both cleanup passes. Owner should verify: sandbox with literal -1 substituted for both — if score stays 0, variables are inert noise and should be cleaned up; if score rises, they are still load-bearing allocation coercion requiring a clean redo.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)

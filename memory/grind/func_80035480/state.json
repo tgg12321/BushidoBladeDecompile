@@ -1,0 +1,13 @@
+{
+ "func": "func_80035480",
+ "file": "code6cac_b2_pre",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): phi-variable-for-delay-slot-steal cheat: `s32 v0` assigned 1 in BOTH branches then `D_800A31D8 = v0` \u2014 both arms assign the same constant, so the intermediate has no semantic purpose; its sole effect is to create a phi-node that allows GCC reorg.c to steal `addiu $v0, 1` (else-branch body) into the beqz delay slot. Fails test 1 (no semantic purpose \u2014 `D_800A31D8 = 1` after the if is equivalent) and test 3 (GCC-internals mechanism: delay-slot fill via phi-variable). Not in SOTN-accepted list. Fix: find pure-C structure where the delay slot fills naturally (real data dependency, or different if/else shape), OR confirm the slot must be nop and verify that is also byte-correct. Do not commit until the phi-variable intermediary is removed.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
+ ],
+ "origin": "regression",
+ "created": "2026-07-07T03:55:03.928434+00:00"
+}

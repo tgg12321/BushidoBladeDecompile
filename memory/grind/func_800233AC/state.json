@@ -1,0 +1,13 @@
+{
+ "func": "func_800233AC",
+ "file": "code6cac",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): CHEAT: `__attribute__((packed))` on PackedPair_233AC (src/code6cac.c:2896) is an alignment-coercion lever that forces GCC to emit lwl/lwr/swl/swr instead of lw/sw for the 8-byte struct copy at line 2953. The struct has only s32 members (no padding to eliminate), so packed has zero semantic effect; its only purpose is instruction selection. The original match commit (77f2494e) named this explicitly: 'packed struct lwl/lwr'. A worker must find a pure-C form that generates the unaligned load/store pairs without the packed coercion \u2014 the legitimate path is direct s32-from-u8* casts (arg0 is u8*, so arg0+0x98 carries 1-byte alignment naturally \u2192 swl/swr; out1 is s16[], alignment 2 \u2192 lwl/lwr from s32-pointer cast) rather than a purpose-built packed struct. Remove PackedPair_233AC and its use; replace with direct cast copies that let GCC derive the unalignment from the actual C types.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
+ ],
+ "origin": "regression",
+ "created": "2026-07-07T03:55:03.071070+00:00"
+}

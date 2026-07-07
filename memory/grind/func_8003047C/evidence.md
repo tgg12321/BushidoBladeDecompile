@@ -1,0 +1,3 @@
+# Evidence bank — func_8003047C
+
+- Audit diagnosis (regressions.md): Dead-goto label-pad confirmed: `goto loop_start;` immediately before `loop_start:` has no semantic effect (execution falls through anyway) and exists solely to coerce GCC's CFG/loop-analysis. Forbidden family per cheat-reviewer catalog. Additionally, `s32 neg1 = -1` is a suspicious opaque-constant variable not covered by the SOTN s32-one=1 sanction. Worker must redo with a clean loop structure (while/do-while/for, or goto-based without the dead leading jump) and verify that neg1 can be replaced by the literal -1.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)

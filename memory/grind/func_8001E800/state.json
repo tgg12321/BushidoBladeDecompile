@@ -1,0 +1,13 @@
+{
+ "func": "func_8001E800",
+ "file": "code6cac",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): volatile-coercion cheat: `volatile u8 *ptr = (volatile u8 *)(&D_80101EC8 + v * 1100)` is an inline volatile cast on a non-volatile game-state global (D_80101EC8 declared extern u8 in code6cac.h:300). The cast forces GCC to emit two separate lbu loads of ptr[0x62] (target F038 + F050) that it would CSE into one without volatile. D_80101EC8 is absent from volatile_extern_allowlist.txt; no IRQ-writer citation exists; the cast form (volatile T *) is explicitly excluded from the narrow scalar-extern volatile carve-out (carve-out covers only extern volatile T G; declarations, not pointer casts). Remove the volatile cast and find a pure-C structural approach \u2014 either demonstrate genuine IRQ-touching (allowlist process) or restructure so GCC naturally emits two loads.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
+ ],
+ "origin": "regression",
+ "created": "2026-07-07T03:55:02.692948+00:00"
+}

@@ -1,0 +1,13 @@
+{
+ "func": "func_8005344C",
+ "file": "text1b",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Unannotated do { ... } while(0) wrapper at src/text1b.c:11254 is an unsanctioned no-semantic-purpose codegen device. The first two reflection stores (lines 11252-11253) are bare statements; only the third axis has the wrapper, which is byte-identical behavior without it. The do-while-zero-exception (the only path that allows this) has three strict prerequisites \u2014 prerequisite #3 requires a '/* FAKE: <reason> */' or '// FAKE' annotation; cheat-reviewer.md says explicitly 'If unannotated, FAIL.' Annotation is ABSENT. Prerequisite #1 (documented lever-exhaustion) is unverifiable (WIP deleted). Prerequisite #2 (LABEL_OUTSIDE_LOOP_P/reorg.c interaction) is undocumented. Remediation: worker must either (a) redo to pure C without the wrapper if a plain assignment closes the function, or (b) if the wrapper genuinely targets reorg.c's invert-jump peephole, add the '/* FAKE: ... */' annotation with the GCC-mechanism spelled out AND document lever-exhaustion \u2014 then re-run the cheat-reviewer before resubmitting.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
+ ],
+ "origin": "regression",
+ "created": "2026-07-07T03:55:07.095403+00:00"
+}

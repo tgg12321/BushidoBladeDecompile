@@ -1,0 +1,13 @@
+{
+ "func": "func_8001C624",
+ "file": "code6cac",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Three distinct cheat constructs found \u2014 two unannotated do-while(0) wrappers (one with variant spelling `0 != 0`) and a dead load/store round-trip pair \u2014 all permuter-discovered, all framed in the commit by GCC-scheduling intent rather than program spec. Worker must redo the function in pure C, dropping the do-while wrappers and the t/u round-trips; the struct-copy Blk16/Blk12 pattern and the outer sequencing are clean and can stay.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
+ ],
+ "origin": "regression",
+ "created": "2026-07-07T03:55:02.441228+00:00"
+}

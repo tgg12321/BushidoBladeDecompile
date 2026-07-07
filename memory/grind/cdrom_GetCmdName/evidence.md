@@ -1,0 +1,3 @@
+# Evidence bank — cdrom_GetCmdName
+
+- Audit diagnosis (regressions.md): goto-end-with-ret-val accumulator pattern (void *ret; ... goto done; ... done: return ret;) is explicitly listed as a FORBIDDEN FAMILY in the cheat catalog — slipped through the mechanical gates because it uses entirely normal C syntax. Worker must redo with two direct return statements (if/return/return) or an equivalent pure-C form that has no goto+accumulator; the simpler form is the natural target.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)

@@ -1,0 +1,13 @@
+{
+ "func": "se_data_set",
+ "file": "code6cac",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Two codegen-coercion constructs with no semantic purpose: (1) '(s8)(u16)D_800A36A4' forces lhu vs lh for no semantic gain (sb discards the sign-extension difference); (2) 's8 *p = (s8*)&D_8010277C' caches the address in a callee-save register across a call where a direct cast would suffice \u2014 inconsistency between condition (direct cast) and body (pointer) is the tell. Both fail tests 1+2+3 of the 6-test checklist. Function needs a clean redo: remove the (u16) intermediate cast and replace *p with (s8)D_8010277C throughout, then find the pure-C structure that naturally produces lhu and $s0 address-caching.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
+ ],
+ "origin": "regression",
+ "created": "2026-07-07T03:55:12.581048+00:00"
+}

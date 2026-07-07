@@ -1,0 +1,13 @@
+{
+ "func": "func_8001CD68",
+ "file": "code6cac",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Dead local variable `s32 frames;` (src/code6cac.c:1479) is declared inside the inner block, never assigned and never read \u2014 GCC DCEs it entirely, so it has zero semantic purpose. It fails test 1 (no observable effect on output) and test 2 (no human programmer writing a frame-count-to-time converter from spec would declare an unused `frames` variable). Either the original source had `frames = D_800A3858 % 30; centiseconds = frames * 100 / 30;` (decomp error \u2014 the variable was meant to be used) or it is a LUID-shift declaration inserted to affect register allocation for `centiseconds` (GCC-internals cheat). Both readings fail the standard. Next action: remove `s32 frames;` and re-run sandbox; if score stays 0 the declaration was inert and the fix is trivial (clean up the source); if score rises, the declaration was load-bearing as a LUID cheat and the worker must find a clean C restructuring (e.g., assign `frames = D_800A3858 % 30;` and use it in the centiseconds expression, which would be the natural original form).  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
+ ],
+ "origin": "regression",
+ "created": "2026-07-07T03:55:02.567933+00:00"
+}

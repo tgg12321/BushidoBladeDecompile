@@ -1,0 +1,13 @@
+{
+ "func": "videoDecCreate",
+ "file": "text1a_c",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): u16 *cntPtr = countPtr; is a semantically-redundant pointer alias in the inner scope \u2014 fails tests 1+2, not mentioned in the completion commit's justification (7c2d2e4c only documents cnt_base/base_addr/idx as named-intermediates). Next action: worker removes cntPtr and uses countPtr directly in the loop condition, then runs verify-oracle; if SHA1 still matches \u2192 clean source confirmed, recommit; if SHA1 breaks \u2192 cntPtr is a load-bearing SOTN-#6 named-intermediate and the commit message must explicitly justify it before a fresh cheat-reviewer PASS.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
+ ],
+ "origin": "regression",
+ "created": "2026-07-07T03:55:13.270748+00:00"
+}

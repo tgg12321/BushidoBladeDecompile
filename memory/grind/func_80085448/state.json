@@ -1,0 +1,13 @@
+{
+ "func": "func_80085448",
+ "file": "main",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): s32 buf[10] is an oversized-array frame-inflation cheat. PsyQ 3.5 SpuCommonAttr is 32 bytes (mask+result at 0x00-0x07, twelve SpuVolume s16 fields at 0x08-0x1F); the function's highest write is at offset 0x1E (byte 30). Elements 8-9 (bytes 32-39) are never written and lie beyond the struct boundary. They inflate the stack frame from the ~56 bytes buf[8] would produce to the target's 64 bytes. Commit e6ee2cfc explicitly names the technique 'Stack frame sizing and control flow restructuring for register alloc' \u2014 the worker's own words confirm the mechanism is GCC's frame allocator, not struct semantics. Sibling func_80083BE4 (same commit, line 89) uses identical buf[10] while writing only to elements 0-2 (bytes 0-7), further confirming the size is frame-driven. Next action: redo with s32 buf[8] (or SpuCommonAttr) and find a legitimate pure-C reason for the 64-byte frame, OR verify via PsyQ 3.5 SDK headers that SpuCommonAttr is actually 40 bytes (which would clear this finding). A byte-correct cheat cannot simply be reverted; it stays in main until a clean replacement is produced and passes a fresh auditor review.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
+ ],
+ "origin": "regression",
+ "created": "2026-07-07T03:55:09.859136+00:00"
+}

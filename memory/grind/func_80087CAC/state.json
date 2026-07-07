@@ -1,0 +1,13 @@
+{
+ "func": "func_80087CAC",
+ "file": "main",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Pointer alias `s16 *ptr = &D_80102806; *ptr = a0; return *ptr;` is a STORE-compute-LOAD codegen lever, not the sanctioned LOAD-compute-STORE RMW shape \u2014 fails tests 1, 2, 3, and 5; next action: try direct `D_80102806 = a0; return D_80102806;` (GCC may naturally CSE the address into a register reused for both accesses, matching target without the pointer) and if not, explore whether the intervening stores through `a1`/`a2` force a conservative-aliasing reload without the pointer coercion  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
+ ],
+ "origin": "regression",
+ "created": "2026-07-07T03:55:10.251989+00:00"
+}

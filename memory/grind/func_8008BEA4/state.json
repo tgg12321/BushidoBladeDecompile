@@ -1,0 +1,13 @@
+{
+ "func": "func_8008BEA4",
+ "file": "main",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): src/main.c:2765-2767 contains `if ((flag && flag) && flag) { do { } while (0); }` \u2014 a prohibited double construct: (1) the outer `if` is an always-true wrapper (`flag = &D_800F1AFC` is always non-null, so the condition is functionally `if (1) { }`, an explicitly forbidden family), and (2) the inner `do { } while (0)` is unannotated (prerequisite 3 of the do-while-zero exception requires `/* FAKE: ... */`; without it the exception does not apply and the construct defaults to FAIL). The entire block has zero semantic purpose and zero asm footprint in the target. Function must be reworked to remove the if/do block and find a pure-C structural form that produces the same target asm without it.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
+ ],
+ "origin": "regression",
+ "created": "2026-07-07T03:55:11.032775+00:00"
+}

@@ -1,0 +1,13 @@
+{
+ "func": "func_80032064",
+ "file": "code6cac_b",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): sw_val = -0xC8 (src/code6cac_b.c:2829) is a single-use constant variable initialized at function entry and used 32 instructions later as a mult-delay-filling store. The target asm shows addiu $t0, $zero, -0xC8 at instruction 5 (function entry) and sw $t0, 0x20($s0) at instruction 37, interleaved between mult $v0,$a1 and mflo to fill mult latency. With a literal -0xC8 in the store, GCC's scheduler would place the addiu near the mult site, not at function entry. The variable forces GCC to emit the constant materialization early \u2014 a scheduling coercion. Owner action: remove sw_val, replace with literal -0xC8 in the store, verify oracle. If oracle breaks, the function needs a clean pure-C redo that achieves the early constant materialization through a legitimate means (e.g., is there a second use, or can structure be changed so GCC naturally hoists it).  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
+ ],
+ "origin": "regression",
+ "created": "2026-07-07T03:55:03.445238+00:00"
+}

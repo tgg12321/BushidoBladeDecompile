@@ -1,0 +1,13 @@
+{
+ "func": "cdrom_GetCmdName",
+ "file": "system",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): goto-end-with-ret-val accumulator pattern (void *ret; ... goto done; ... done: return ret;) is explicitly listed as a FORBIDDEN FAMILY in the cheat catalog \u2014 slipped through the mechanical gates because it uses entirely normal C syntax. Worker must redo with two direct return statements (if/return/return) or an equivalent pure-C form that has no goto+accumulator; the simpler form is the natural target.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
+ ],
+ "origin": "regression",
+ "created": "2026-07-07T03:55:01.682617+00:00"
+}

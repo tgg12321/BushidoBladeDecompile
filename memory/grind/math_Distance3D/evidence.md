@@ -1,0 +1,3 @@
+# Evidence bank — math_Distance3D
+
+- Audit diagnosis (regressions.md): out[4] has a dead 4th element (out[3] is never written by the callee or read by the caller) that inflates the array to 16 bytes to coerce $ra to sp+0x30 and the frame to 0x38 — frame-coercion by dead array element. Worker must find a pure-C form that reaches the correct frame layout without the dead element, or confirm via GCC run whether out[3] produces the same layout.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)

@@ -1,0 +1,13 @@
+{
+ "func": "spu_IrqHandler",
+ "file": "main",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Two cheats in src/main.c:1693-1710. Primary: 'new_var2 = 1; if (new_var2) { return 0; }' (lines 1698-1701) is an always-true-if / dead-conditional-store \u2014 explicitly forbidden family. Secondary: duplicate extern declarations of g_spu_voice_key_{a,b,c} at lines 1685-1691 (two identical back-to-back sets after the file-top declaration at lines 52-54) \u2014 reference-count inflation coercion. Function needs a clean pure-C redo that achieves the same byte-match without these constructs; a worker should rewrite the early-exit path as a plain 'if (a0 <= 0) return 0;' and drop the duplicate extern declarations, then drive back to sandbox-0 with pure-C levers.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
+ ],
+ "origin": "regression",
+ "created": "2026-07-07T03:55:12.856382+00:00"
+}

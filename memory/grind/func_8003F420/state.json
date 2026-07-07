@@ -1,0 +1,13 @@
+{
+ "func": "func_8003F420",
+ "file": "config",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Dead-write cheat: `int new_var;` is assigned in `s0 = (new_var = -1);` and never read again. The write to new_var is a pure dead store \u2014 semantically equivalent to `s0 = -1;`. This is a dead-write-through-intermediate-local for RA coercion, closely analogous to the forbidden dead-param-assign family (Lever D). Not covered by any SOTN sanction (the variable-reuse sanction requires the intermediate be read downstream; new_var is never read). Worker redo: replace `s0 = (new_var = -1);` with `s0 = -1;` and remove the `int new_var;` declaration. Divmod routing (`s0 = a1/2000; s2 = s0; s0 = a1-s2*2000`) is ALLOWED under SOTN variable-reuse-for-codegen-control and does not regress; only the new_var construct fails.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
+ ],
+ "origin": "regression",
+ "created": "2026-07-07T03:55:04.915127+00:00"
+}

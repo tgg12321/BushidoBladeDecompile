@@ -1,0 +1,3 @@
+# Evidence bank — single_game_getEnemyCharId
+
+- Audit diagnosis (regressions.md): Dead variable `s32 var_v0;` (display.c:3516) declared but never initialized or read; fails 6-test checklist tests #1 (no semantic purpose) and #2 (human-programmer test). Next action: remove the declaration, run `verify-oracle --rebuild`, confirm SHA1 == oracle. If oracle holds (expected — GCC elides unreferenced uninitialized scalars), commit as a cheat-cleanup: single line removal. If oracle breaks (indicating the declaration was a frame/allocno coercion), re-open the function for a pure-C redo without the dead variable.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)

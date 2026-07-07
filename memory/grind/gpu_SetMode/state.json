@@ -1,0 +1,13 @@
+{
+ "func": "gpu_SetMode",
+ "file": "gpu",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Scheduling-lever variable `new_var = -1` placed between two array-read/store pairs (width and height), used as the fill argument in only the FIRST of two bb2_memset calls whose fill value is identical (-1). The asymmetric use (variable for one call, literal for the next) has no semantic purpose and reveals GCC scheduling manipulation. Worker must replace `new_var` with the literal -1, verify whether the byte match holds; if it breaks, find a semantically-grounded restructure that achieves the same delay-slot fill via meaningful C (e.g. reorder of surrounding statements) rather than a dead-purpose named variable.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
+ ],
+ "origin": "regression",
+ "created": "2026-07-07T03:55:11.621840+00:00"
+}

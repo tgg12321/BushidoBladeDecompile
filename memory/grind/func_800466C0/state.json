@@ -1,0 +1,13 @@
+{
+ "func": "func_800466C0",
+ "file": "text1a_b",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): The construct ((void (*)(s32))func_80044100)(8) fails the 6-test checklist. func_80044100 is declared 'extern void func_80044100(s32, ...);' (varargs). Calling it with a single arg as func_80044100(8) is valid C and should produce identical MIPS call-site asm (MIPS O32 ABI: only the caller's arg-register loads differ, not any varargs preamble). The cast to '(void (*)(s32))' either: (a) is inert \u2014 same asm as func_80044100(8), meaning Test 1 fails (no observable effect on output vs simpler form) and Test 2 fails (no human given the spec writes this cast); or (b) changes call-site asm by suppressing varargs USE insns and affecting delay-slot scheduling \u2014 meaning Test 3 fails (GCC-internals mechanism, not program logic). Remediation: replace with func_80044100(8) directly; if that still sandbox-0 matches the oracle, remove the cast and re-commit as clean. If it does NOT match, the cast IS a scheduling lever and a genuine clean approach (restructure surrounding context, or declare a separate non-varargs extern) is needed.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
+ ],
+ "origin": "regression",
+ "created": "2026-07-07T03:55:06.486070+00:00"
+}

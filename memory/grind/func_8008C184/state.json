@@ -1,0 +1,13 @@
+{
+ "func": "func_8008C184",
+ "file": "main",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Cheat construct at src/main.c:2889-2891: `if ((flag && flag) && flag) { do { } while (0); }` \u2014 flag is always non-null (&D_800F1AEC), so the condition is always true and the body emits nothing; this is a compound `if(1){...}` always-true wrapper (explicitly forbidden family) enclosing an un-annotated do-while-zero outside its narrow sanctioned prerequisites. Additionally, the triple `(flag && flag) && flag` evaluation bumps reg_n_refs for the flag pseudo (combine-foldable chain-extender family). Next action: redo the function \u2014 remove the compound construct and find a clean C structure that produces the correct reorg.c scheduling (either via structural changes that naturally fill the delay slot, or \u2014 only after documented lever exhaustion and with LABEL_OUTSIDE_LOOP_P purpose confirmed \u2014 a standalone `do{}while(0)` with `/* FAKE */` annotation, NOT wrapped in if(1)).  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
+ ],
+ "origin": "regression",
+ "created": "2026-07-07T03:55:11.172444+00:00"
+}

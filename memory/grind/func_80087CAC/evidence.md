@@ -1,0 +1,3 @@
+# Evidence bank — func_80087CAC
+
+- Audit diagnosis (regressions.md): Pointer alias `s16 *ptr = &D_80102806; *ptr = a0; return *ptr;` is a STORE-compute-LOAD codegen lever, not the sanctioned LOAD-compute-STORE RMW shape — fails tests 1, 2, 3, and 5; next action: try direct `D_80102806 = a0; return D_80102806;` (GCC may naturally CSE the address into a register reused for both accesses, matching target without the pointer) and if not, explore whether the intervening stores through `a1`/`a2` force a conservative-aliasing reload without the pointer coercion  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)

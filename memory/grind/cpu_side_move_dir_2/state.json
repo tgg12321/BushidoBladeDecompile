@@ -1,0 +1,13 @@
+{
+ "func": "cpu_side_move_dir_2",
+ "file": "code6cac_c2",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Scheduling cheat confirmed: the csmd2_call: goto-thread block (commit a8f50a1e) was explicitly inserted to make cc1 produce a delay-slot-threaded call to func_8005FBC8 \u2014 the commit message and inline comment both say so. This is test-#3 (GCC-internals justification) + test-#1 (no semantic difference from plain if/else) + test-#2 (human-programmer wouldn't write goto-to-label-before-call-site from spec) + test-#5 (scheduling-coercion family, same as ARCHIVED/FORBIDDEN goto-end-prologue-delay-slot). The prior if/else form is the right skeleton; a clean lever must produce the delay-slot pattern without a goto-thread. Secondary: `u8 v = D_800A38A4;` used for only one (v==8) of four same-global comparisons; D_800A38A4 is already extern u8 (no narrowing), so selective caching fails test-#1 and test-#2 and warrants owner review.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
+ ],
+ "origin": "regression",
+ "created": "2026-07-07T03:55:02.052195+00:00"
+}

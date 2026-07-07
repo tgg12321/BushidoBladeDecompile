@@ -1,0 +1,13 @@
+{
+ "func": "func_8003047C",
+ "file": "code6cac_b",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Dead-goto label-pad confirmed: `goto loop_start;` immediately before `loop_start:` has no semantic effect (execution falls through anyway) and exists solely to coerce GCC's CFG/loop-analysis. Forbidden family per cheat-reviewer catalog. Additionally, `s32 neg1 = -1` is a suspicious opaque-constant variable not covered by the SOTN s32-one=1 sanction. Worker must redo with a clean loop structure (while/do-while/for, or goto-based without the dead leading jump) and verify that neg1 can be replaced by the literal -1.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
+ ],
+ "origin": "regression",
+ "created": "2026-07-07T03:55:03.193824+00:00"
+}

@@ -1,0 +1,3 @@
+# Evidence bank — func_800388A8
+
+- Audit diagnosis (regressions.md): Empty-body 'if (D_800A3318 != 0) { }' is a scheduling-direction cheat: semantically identical to 'if (D_800A3318 == 0) { result = 1; }' but the backwards condition + empty true body exists solely to force a bnez branch (not beqz) so GCC's delay-slot filler can hoist the pre-call 'result = -1' assignment into the bnez delay slot. Worker must rewrite with the condition un-inverted and result=-1 placed inside the if-body (or equivalent non-cheat form that produces the same scheduling naturally), then re-close.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)

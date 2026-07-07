@@ -1,0 +1,3 @@
+# Evidence bank — func_8005C5A8
+
+- Audit diagnosis (regressions.md): Two param-local aliases (s32 *s1 = a0; s16 s0 = a1) at function entry are literal renames with MIPS register names, no semantic purpose, declared in a specific order to steer LUID and produce target prologue save order ($s1 before $s0). This matches the forbidden param-local-alias-prologue-pair-flip family ('cheats by any spelling'). Clean re-derivation needed: try the aliasless form first; if GCC misallocates, find a legitimate structural lever (type change, reordering) — never param-local aliases.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)

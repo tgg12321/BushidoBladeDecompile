@@ -1,0 +1,3 @@
+# Evidence bank — func_800397A0
+
+- Audit diagnosis (regressions.md): Redundant `(u8)val` cast where val is already declared u8 fails tests 1+2 (no semantic purpose, human programmer would write `if (val == 0x77)`); may also be a codegen coercion forcing `andi $v1,$a0,0xFF` + register split in target asm. Owner should verify: drop cast to `if (val == 0x77)` — if asm is identical the source has a benign artifact to clean up; if asm differs this is a confirmed codegen coercion requiring a proper re-match.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)

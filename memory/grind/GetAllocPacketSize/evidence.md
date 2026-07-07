@@ -1,0 +1,3 @@
+# Evidence bank — GetAllocPacketSize
+
+- Audit diagnosis (regressions.md): CODEGEN-CAST CHEAT at text1b.c:12269: func_80087F64((s16)v) forces a sign-extension pair (sll/sra in the jal delay slot) with no semantic purpose. Visible proto at line 12013 is void func_80087F64(s32); v is always in [1,46] so (s16)v==v. Three other call sites with the same s32 proto and runtime variable args (lines 12523, 12643, 12662) omit the cast. Worker redo: declare func_80087F64 as s16 consistently so GCC emits sign-extension naturally via integer promotion, then drop the explicit cast; confirm with retire/verify-oracle.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)

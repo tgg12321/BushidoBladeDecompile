@@ -1,0 +1,13 @@
+{
+ "func": "func_8008AE7C",
+ "file": "main",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Dead paired inc/dec `v0++; v0--;` in the else branch (src/main.c:2440-2441) has no semantic purpose \u2014 the pair cancels out (v0=0 before and after) and GCC 2.7.2 constant-folds it away, emitting no corresponding instructions. The target ASM for that branch is just the bne delay slot `addu $v0,$zero,$zero`. The construct fails Test 1 (byte-identical behavior with or without it) and Test 2 (no human programmer writes a self-cancelling inc/dec from a spec). Fix: remove `v0++;` and `v0--;`, leaving `else { v0 = 0; }`. The byte-match is preserved because GCC was already discarding these instructions.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
+ ],
+ "origin": "regression",
+ "created": "2026-07-07T03:55:10.708427+00:00"
+}

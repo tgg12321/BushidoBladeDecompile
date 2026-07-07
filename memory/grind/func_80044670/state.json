@@ -1,0 +1,13 @@
+{
+ "func": "func_80044670",
+ "file": "text1a_c",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Unannotated empty `do { } while (0);` at src/text1a_c.c:1139 fails do-while-zero-exception's mandatory prerequisites (no `// FAKE` annotation, no lever-exhaustion ledger) \u2014 the exact failing shape already documented in memory/wip/func_80044670/meta.json (head_carries_cheat=true, auditor finding 2026-06-17). Construct IS load-bearing (strip: score 0\u21924, confirmed 2026-06-24), so a simple revert breaks the oracle. Worker must either (A) try structural alternatives first (if/else chain, store reordering, compute-then-store rewrite) and if each fails, annotate with `/* FAKE: defeats reorg.c relax_delay_slots invert-jump peephole via NOTE_INSN_LOOP_BEG / LABEL_OUTSIDE_LOOP_P suppression */` + record lever-exhaustion in WIP, then re-invoke cheat-reviewer; or (B) find a non-do-while structural alternative per WIP next_hypotheses Options B/C.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
+ ],
+ "origin": "regression",
+ "created": "2026-07-07T03:55:05.933924+00:00"
+}

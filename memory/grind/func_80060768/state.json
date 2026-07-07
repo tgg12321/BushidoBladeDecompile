@@ -1,0 +1,13 @@
+{
+ "func": "func_80060768",
+ "file": "text1b",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Two single-use pointer aliases (p_b4, p_b6) fall explicitly outside the pointer-rmw-global-sanctioned carve-out \u2014 that rule requires at least one load AND one store through the pointer (an actual RMW sequence); here the RMW on D_800A32B4/D_800A32B6 uses direct access and the pointers each have exactly one read use. Worker must: (a) replace `(s16)*p_b4` and `(s16)*p_b6` with `(s16)D_800A32B4` / `(s16)D_800A32B6` (or the appropriate direct signed cast) and confirm the oracle still holds \u2014 if it does the pointers were redundant and the clean form is the fix; (b) if oracle breaks, find a pure-C form that produces the signed halfword `lh` load without a pointer alias (e.g. check whether `(s16)D_800A32B4` already produces `lh` via GCC's sign-extend inference on a cast, or restructure the comparison).  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
+ ],
+ "origin": "regression",
+ "created": "2026-07-07T03:55:07.486827+00:00"
+}

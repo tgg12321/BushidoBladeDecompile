@@ -1,0 +1,13 @@
+{
+ "func": "DispSamnailWindow",
+ "file": "code6cac_b",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Function-scope `s32 s0;` is used in cases 1 and 3 ONLY to hold the constant 1 in a callee-save register ($s0) across intervening jal calls (cpu_set_move_command_and_dir_for_no_action in case 1; func_80033DF4 in case 3) so the second u8 store can reuse it. The clean spec form `D_80102781 = 1; ...; D_800A3768 = 1;` is behaviorally identical; the only purpose of the local + (u8)-cast is to defeat GCC's natural re-materialization of `1` at the second store by forcing allocation to a callee-save register. This is constant-in-local-for-callee-save-persistence coercion \u2014 a cheat by any spelling, not on the SOTN-sanctioned list. Distinguish from the legitimate `s0` in sibling func_80032854 (line 3108), which IS the SOTN-sanctioned variable-reuse-for-codegen pattern (s0 = 0; s0 = arg0*40; s0 += ...; two unrelated values + accumulation). next_action: revert DispSamnailWindow to INCOMPLETE; redo cases 1 and 3 with inline literal `1` (no local) and search for the genuine pure-C lever that pins `1` to a callee-save across the call \u2014 likely register-allocation steering via the surrounding statement structure, not a function-scope constant-holder.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
+ ],
+ "origin": "regression",
+ "created": "2026-07-07T03:55:00.765799+00:00"
+}

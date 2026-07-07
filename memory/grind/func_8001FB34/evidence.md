@@ -1,0 +1,3 @@
+# Evidence bank — func_8001FB34
+
+- Audit diagnosis (regressions.md): One construct fails tests 2+3: `v0 = (u32)0 < (u32)v0;` mirrors the target instruction `sltu $v0, $zero, $v0` by reversed-operand unsigned comparison rather than natural `v0 != 0`; a worker should verify whether `v0 = (v0 != 0);` produces the same sltu in GCC 2.7.2 (false flag if yes; genuine cheat if slt is emitted instead), then rework the final line to the cleaner form or confirm the match.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)

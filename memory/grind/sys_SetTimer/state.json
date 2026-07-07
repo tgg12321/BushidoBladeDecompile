@@ -1,0 +1,13 @@
+{
+ "func": "sys_SetTimer",
+ "file": "ings2",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): *(volatile s32 *)p write-cast is a volatile-coercion on non-volatile, non-allowlisted global g_sys_timer. Fix: change *(volatile s32 *)p = a0 to *p = a0 (pointer alone produces the lui+addiu match; volatile has no effect on MIPS sw and was never needed).  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
+ ],
+ "origin": "regression",
+ "created": "2026-07-07T03:55:13.132778+00:00"
+}

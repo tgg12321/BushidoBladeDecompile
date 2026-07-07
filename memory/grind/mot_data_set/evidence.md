@@ -1,0 +1,3 @@
+# Evidence bank — mot_data_set
+
+- Audit diagnosis (regressions.md): max_pin = max_val is register-cascade coercion-by-spelling: no observable semantic purpose (test #1), no human programmer writing RGB-to-HSV would alias max_val into max_pin and use both throughout (test #2), and the dead regfix comment + prior commit 0bc09521 explicitly name the GCC register cascade mechanism as the sole purpose (test #3). Worker needs a pure-C form where the copy instruction at target addr 800426E8 (addu $t3,$a0,$zero) arises naturally without a semantics-free alias.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)
