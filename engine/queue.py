@@ -100,7 +100,7 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
     prev = {}
     if preserve and Path(QUEUE_PATH).exists():
         for it in load().get("items", []):
-            if it.get("status") == "parked":
+            if it.get("status") == "parked" or it.get("origin") == "regression":
                 prev[it["func"]] = it
     verdicts = {r["func"]: r["verdict"] for r in canonical.scan_all()}
     canon_funcs = cheats.canonical_asm_funcs()
@@ -171,6 +171,16 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
             if not scorable:
                 entry["scorable"] = False
             items.append(entry)
+    # origin=="regression" items (semantic-audit re-opens, see reopen()) are
+    # mechanically invisible to the scan above -- the committed code IS 0
+    # rules / 0 distance / 0 cheat-asm, which is exactly the COMPLETED-C
+    # `continue` case. Re-add whatever the scan didn't rediscover; if the scan
+    # DID produce a fresh item for the func (e.g. it now carries a rule/cheat
+    # too), that fresh item wins.
+    have = {it["func"] for it in items}
+    for fn, it in prev.items():
+        if fn not in have:
+            items.append(it)
     items.sort(key=_sort_key)
     q = {"generated_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
          "oracle_sha1": cfg.ORACLE_SHA1, "build_failures": failures, "items": items}
@@ -253,6 +263,28 @@ def mark_parked(func: str, reason: str = "") -> dict:
     q["counts"] = _counts(q["items"])
     save(q)
     return {"ok": True, "func": func, "park_reason": reason}
+
+
+def reopen(func: str, file: str, reason: str = "", origin: str = "regression") -> dict:
+    """Re-open a previously-COMPLETED function as an ordinary INCOMPLETE queue
+    item. For semantic-audit regressions (owner ruling 2026-07-06): the
+    committed code byte-matches (0 rules, 0 honest distance, 0 cheat-asm), so
+    `generate()`'s mechanical scan treats it as COMPLETED-C and can never
+    re-derive it as outstanding on its own. `origin: "regression"` items are
+    carried across regen the same way `parked` items are (see generate())."""
+    q = load()
+    items = q.setdefault("items", [])
+    if any(it["func"] == func for it in items):
+        return {"ok": False, "func": func, "reason": f"{func} already in queue"}
+    item = {"func": func, "file": file, "distance": 0, "verdict": "C",
+            "rules": 0, "status": "active", "origin": origin,
+            "reopen_reason": (reason or "")[:400]}
+    items.append(item)
+    items.sort(key=_sort_key)
+    q["items"] = items
+    q["counts"] = _counts(items)
+    save(q)
+    return {"ok": True, "func": func, "item": item}
 
 
 def status() -> dict:

@@ -95,9 +95,10 @@ def main() -> int:
     sub.add_parser("test", help="run the engine regression suite (fast pure-logic + build-read tiers)")
 
     qp = sub.add_parser("queue", help="consolidated INCOMPLETE-work queue — work the TOP item to done")
-    qp.add_argument("action", choices=["next", "done", "park", "status", "regen"])
-    qp.add_argument("func", nargs="?", help="function name (required for done/park)")
-    qp.add_argument("--reason", default="", help="reason (for park)")
+    qp.add_argument("action", choices=["next", "done", "park", "status", "regen", "reopen"])
+    qp.add_argument("func", nargs="?", help="function name (required for done/park/reopen)")
+    qp.add_argument("--reason", default="", help="reason (for park/reopen)")
+    qp.add_argument("--file", default="", help="src file stem (required for reopen)")
 
     a = ap.parse_args()
 
@@ -218,6 +219,14 @@ def main() -> int:
                  else Q.mark_parked(a.func, a.reason))
             print(json.dumps(r, indent=2))
             MET.record_event(f"queue-{a.action}", a.func, r, exit_code=0 if r.get("ok") else 1)
+            return 0 if r.get("ok") else 1
+        if a.action == "reopen":
+            if not a.func or not a.file:
+                print("queue reopen: requires <func> --file <stem>")
+                return 2
+            r = Q.reopen(a.func, a.file, a.reason)
+            print(json.dumps(r, indent=2))
+            MET.record_event("queue-reopen", a.func, r, exit_code=0 if r.get("ok") else 1)
             return 0 if r.get("ok") else 1
         return 0
 

@@ -23,6 +23,8 @@ import tempfile
 from pathlib import Path
 
 from engine import canonical, score, inlineasm, cheats, metrics, volatile_cheats
+from engine import queue as Q
+from engine import pipeline as P
 
 _passed = _failed = _skipped = 0
 
@@ -1087,6 +1089,58 @@ def test_metrics() -> None:
             check("metrics: DISABLE writes nothing", not logp.exists())
 
 
+def test_queue_reopen() -> None:
+    """queue reopen: re-open a semantic-audit REGRESSION (owner ruling
+    2026-07-06) as an ordinary INCOMPLETE queue item. The flagged construct is
+    plain C -- the committed body is 0 rules / 0 honest distance / 0
+    cheat-asm, i.e. exactly generate()'s COMPLETED-C `continue` case -- so the
+    mechanical scan can never re-derive it as outstanding on its own.
+    `origin: "regression"` items must survive `generate()`'s preserve step the
+    same way `parked` items do."""
+    with tempfile.TemporaryDirectory() as td:
+        qp = Path(td) / "queue.json"
+        qp.write_text(json.dumps({"items": [], "counts": {}}))
+        orig_path = Q.QUEUE_PATH
+        Q.QUEUE_PATH = str(qp)
+        try:
+            r = Q.reopen("func_REOPEN", "text1a_c", reason="regression: dead constant-holder")
+            check("reopen: ok", r.get("ok") is True)
+            q = Q.load()
+            it = next((i for i in q["items"] if i["func"] == "func_REOPEN"), None)
+            check("reopen: item landed in queue", it is not None)
+            eq("reopen: status active", it["status"], "active")
+            eq("reopen: origin regression", it["origin"], "regression")
+            eq("reopen: file recorded", it["file"], "text1a_c")
+
+            # duplicate rejected
+            r2 = Q.reopen("func_REOPEN", "text1a_c", reason="dup attempt")
+            check("reopen: duplicate rejected", r2.get("ok") is False)
+            eq("reopen: duplicate leaves queue at 1 item", len(Q.load()["items"]), 1)
+
+            # regen preservation: an origin=="regression" item survives a scan
+            # that (correctly) finds nothing mechanically outstanding for it.
+            # Stub the scan's real-build dependencies so this stays a
+            # pure-logic test (no build/ required).
+            orig_stems = P.c_stems
+            orig_scan = canonical.scan_all
+            orig_canon_funcs = cheats.canonical_asm_funcs
+            P.c_stems = lambda: []
+            canonical.scan_all = lambda: []
+            cheats.canonical_asm_funcs = lambda: set()
+            try:
+                q2 = Q.generate(workdir=str(Path(td) / "scan"), preserve=True)
+            finally:
+                P.c_stems = orig_stems
+                canonical.scan_all = orig_scan
+                cheats.canonical_asm_funcs = orig_canon_funcs
+            it2 = next((i for i in q2["items"] if i["func"] == "func_REOPEN"), None)
+            check("regen: regression-origin item NOT lost by preserve", it2 is not None)
+            eq("regen: preserved item keeps origin", it2.get("origin") if it2 else None, "regression")
+            eq("regen: preserved item stays active", it2["status"] if it2 else None, "active")
+        finally:
+            Q.QUEUE_PATH = orig_path
+
+
 # --------------------------------------------------------------------------
 # BUILD-READ tier — canonical verdicts against the real linked ELF
 # --------------------------------------------------------------------------
@@ -1190,6 +1244,7 @@ def main() -> int:
     test_dead_conditional_stores()
     test_fake_annotated_lever_d_bypass()
     test_metrics()
+    test_queue_reopen()
     test_canonical_build()
     print(f"\n{_passed} passed, {_failed} failed, {_skipped} skipped")
     return 1 if _failed else 0
