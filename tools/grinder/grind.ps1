@@ -95,9 +95,129 @@ if (-not (Test-OracleGreen)) {
 }
 Log "pre-flight: oracle green."
 
-function Circuit-Break([string]$Reason) { Log "CIRCUIT-BREAK: $Reason"; Remove-Item $PidFile -EA SilentlyContinue; exit 3 }
-function Invoke-JudgeRuling([string]$f, [string]$q) { Log "judge ruling stub: $f — $q" }
-function Invoke-CandidatePath([string]$f, [string]$s, [string]$m, $o) { Log "candidate path stub: $f" }
+function Circuit-Break([string]$Reason) {
+    $inc = Join-Path $Root 'docs\grind\INCIDENT.md'
+    @("# GRINDER CIRCUIT-BREAK — $(Get-Date -Format 'yyyy-MM-dd HH:mm')",
+      "", "**Reason:** $Reason", "",
+      "git HEAD: $(git -C $Root rev-parse --short HEAD)",
+      "git status:", '```', (git -C $Root status --short | Out-String), '```',
+      "Last 20 log lines:", '```',
+      ((Get-Content (Join-Path $GrindTmp 'grind.log') -Tail 20) -join "`n"), '```'
+     ) | Set-Content $inc -Encoding utf8
+    Log "CIRCUIT-BREAK: $Reason — see docs/grind/INCIDENT.md"
+    Journal "CIRCUIT-BREAK: $Reason"
+    Remove-Item $PidFile -ErrorAction SilentlyContinue
+    exit 3
+}
+
+function Add-Decision([string]$func, [string]$kind, [string]$verdict, [string]$justification) {
+    if (-not (Test-Path $Decisions)) {
+        "# Grinder judge decisions — the owner's audit trail`n" | Set-Content $Decisions -Encoding utf8
+    }
+    @("", "## $(Get-Date -Format 'yyyy-MM-dd HH:mm') — $func — $kind — **$verdict**",
+      "", $justification) | Add-Content $Decisions
+}
+
+function Invoke-Judge([string]$func, [string]$TaskText) {
+    # Retry transient failures with backoff (a proven candidate is never
+    # discarded because of an API hiccup).
+    $outPath = Join-Path $GrindTmp "judge_$func.json"
+    $briefPath = Join-Path $GrindTmp "judge_brief_$func.md"
+    Set-Content $briefPath -Value $TaskText -Encoding utf8
+    for ($try = 1; $try -le 5; $try++) {
+        $v = Invoke-GrindAgent $briefPath $outPath (Join-Path $RolesDir 'judge.md') $JudgeModel $MockJudgeScript
+        if ($v -and $v.verdict -in @('PASS', 'FAIL')) { return $v }
+        Log "judge attempt $try returned no valid verdict; backing off $([math]::Pow(2,$try) * 30)s."
+        Start-Sleep -Seconds ([math]::Pow(2, $try) * 30)
+    }
+    Circuit-Break "judge unreachable/invalid after 5 attempts for $func"
+}
+
+function Invoke-JudgeRuling([string]$func, [string]$question) {
+    $led = "memory/grind/$func"
+    $task = @"
+RULING REQUEST for $func.
+
+Question from the grind session:
+$question
+
+Read the ledger first: $led/state.json (judge_constraints), $led/hypotheses.md,
+$led/evidence.md, $led/candidate.c, $led/rejected/. Verify claims yourself.
+Write your verdict JSON to the exact path given below.
+"@
+    $v = Invoke-Judge $func $task
+    $qShort = $question.Substring(0, [Math]::Min(80, $question.Length))
+    Add-Decision $func "ruling: $qShort" $v.verdict $v.justification
+    if ($v.constraint) { python tools/grinder/grindlib.py constrain . $func ([string]$v.constraint) | Out-Null }
+    git -C $Root add -- memory/grind docs/grind 2>$null
+    git -C $Root commit -m "grind: $func judge ruling [skip-park-src-guard]" 2>$null | Out-Null
+    Log "${func}: judge ruling $($v.verdict) recorded."
+}
+
+function Invoke-CandidatePath([string]$func, [string]$stem, [string]$modality, $o) {
+    # 1) bytes first — driver-verified, never trusted from the session
+    $sb = Invoke-Eng @('sandbox', $func, '--disable', 'all')
+    if ($sb -notmatch '"?distance"?\s*[:=]\s*0\b') {
+        Log "${func}: candidate-ready claim FAILED driver sandbox check — treating as invalid session."
+        Revert-SessionEdits
+        return
+    }
+    $null = Invoke-Eng @('retire', $func)          # drops rules if any; SHA1-gated internally
+    $vo = Invoke-Eng @('verify-oracle', '--rebuild', '--allow-dirty')
+    if ($LASTEXITCODE -ne 0) {
+        Log "${func}: FULL-BUILD SHA1 FAILED after retire — reverting, banking constraint."
+        git -C $Root checkout -- . 2>$null
+        python tools/grinder/grindlib.py constrain . $func "candidate form failed full-build SHA1 on main (masked-0 register diff class) — reg-alloc gap is real" | Out-Null
+        return
+    }
+    # 2) bytes proven — now the Judge rules on the C
+    $diff = (git -C $Root diff -- "src/$stem.c" | Out-String)
+    $led = "memory/grind/$func"
+    $task = @"
+FINAL CALL for $func — bytes are already proven on main (sandbox 0 + retire +
+full-build SHA1 == oracle). Rule ONLY on the legitimacy of the C.
+
+The candidate diff against HEAD:
+``````diff
+$diff
+``````
+
+Ledger: $led/state.json (judge_constraints — includes the regression diagnosis
+if this is a regression-origin item), $led/hypotheses.md, $led/evidence.md,
+$led/rejected/. Write your verdict JSON to the exact path given below.
+"@
+    $v = Invoke-Judge $func $task
+    $sessionsTaken = ((Get-Content (Join-Path $Root "memory\grind\$func\state.json") -Raw | ConvertFrom-Json).session_count + 1)
+    if ($v.verdict -eq 'PASS') {
+        $qd = Invoke-Eng @('queue', 'done', $func)
+        if ($qd -notmatch '"ok"\s*:\s*true') {
+            Log "${func}: queue done REFUSED after judge PASS: $qd"
+            git -C $Root checkout -- . 2>$null
+            Circuit-Break "queue done refused a judge-PASSed, bytes-proven candidate for $func — investigate"
+        }
+        git -C $Root add -- "src/$stem.c" engine/queue.json regfix.txt asmfix.txt 2>$null
+        git -C $Root commit -m "Match: $func — COMPLETED-C (grinder, $sessionsTaken sessions)" | Out-Null
+        Add-Decision $func 'final call' 'PASS' $v.justification
+        Journal "$func COMPLETED-C after $sessionsTaken sessions."
+        Remove-Item -Recurse -Force (Join-Path $Root "memory\grind\$func")
+        git -C $Root add -A -- memory/grind docs/grind 2>$null
+        git -C $Root commit -m "grinder: close ledger for $func" | Out-Null
+        Log "${func}: MERGED — COMPLETED-C."
+    } else {
+        Add-Decision $func 'final call' 'FAIL' $v.justification
+        $c = if ($v.constraint) { [string]$v.constraint } else { [string]$v.justification }
+        python tools/grinder/grindlib.py constrain . $func $c | Out-Null
+        # keep the byte-matching form as evidence, but main goes back to HEAD
+        Copy-Item (Join-Path $Root "src\$stem.c") (Join-Path $Root "memory\grind\$func\rejected\judge-fail-$(Get-Date -Format 'MMdd-HHmm').c") -ErrorAction SilentlyContinue
+        git -C $Root checkout -- . 2>$null
+        Invoke-Eng @('verify-oracle', '--rebuild') | Out-Null   # restore green build/
+        git -C $Root add -- memory/grind docs/grind 2>$null
+        git -C $Root commit -m "grind: $func judge FAIL banked [skip-park-src-guard]" 2>$null | Out-Null
+        Log "${func}: judge FAILED the candidate — constraint banked, grind continues."
+        $jShort = $v.justification.Substring(0, [Math]::Min(120, $v.justification.Length))
+        Journal "${func}: judge FAILED a bytes-proven candidate — $jShort"
+    }
+}
 
 # ── session spawn (pattern from tools/fleet/_fleet_common.ps1:132-170) ────────
 function Invoke-GrindAgent([string]$BriefPath, [string]$OutcomePath,
