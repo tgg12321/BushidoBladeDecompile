@@ -1,7 +1,7 @@
 {
  "func": "marionation_Exec",
  "file": "system",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -21,23 +21,29 @@
    "floor": 4,
    "modality": "structural",
    "headline": "Structural axis for the pair-swap measured CLOSED: 26 forms swept (geometry/decl-order/type/staging), floor stays 4; NEW mechanism fact \u2014 shift-merged-into-load geometry moves the sched2 tie WITHOUT t"
+  },
+  {
+   "session": 3,
+   "floor": 4,
+   "modality": "structural",
+   "headline": "Structural s3: decoupled-addu family measured DEAD (22 new forms); pair-swap seat-trade proven invariant to deref position, arg5val life, web decomposition, and plus-operand canonicalization - addu-ea"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The unknown original source shape is findable by the rebuilt rich-pass permuter campaign on the vT40 base (unchanged from s1 \u2014 still the ONE active lever, now with the hand-structural space fully banked as closed)",
-   "mechanism": "the sampler explores statement-geometry space directly; hand enumeration this session proved the reachable-order set from t0-first spellings is exactly {addu-last x2} \u2014 the target order needs a shape class no hand axis (ordering x140, geometry x26, decl, type, staging) reaches",
-   "next_probe": "rebuild in tmp/grind/marionation_Exec/s3/: preprocess vT40 body to base.c, single-function offset-0 target.o from asm/funcs/marionation_Exec.s + prelude.inc (drop .set gp=64), permuter_annotate rich PERM_* pass, --stop-on-zero + watcher; triage sub-200 finds with s2's adiff.py \u2014 check the 55-57 window order AND seats first, then region-3 at 149"
+   "hypothesis": "The unknown original source shape is findable by the rebuilt rich-pass permuter campaign on the vT40 base (unchanged - still the ONE active lever; the hand-structural space is now closed from s2's 26 + s3's 22 directions)",
+   "mechanism": "the sampler explores statement-geometry space directly; s3 proved addu-early <=> seats-trade across every hand spelling family, so a closing find must use a shape class outside the fused/decoupled/merged/indexed families entirely",
+   "next_probe": "rebuild in tmp/grind/marionation_Exec/s4/: preprocess vT40 body to base.c, single-function offset-0 target.o from asm/funcs/marionation_Exec.s + prelude.inc (drop .set gp=64), permuter_annotate rich PERM_* pass, --stop-on-zero + watcher; triage sub-200 finds with s2's adiff.py - check the 55-57 window order AND seats first, then region-3 at 149"
   },
   {
-   "hypothesis": "Pair-swap via hand-derived C is CLOSED (do not re-attempt): any closure must arrive as a sampler find whose window shows (sll v0; addu; sll a0) with t0-first seats",
-   "mechanism": "LUID(arg5-addu) < LUID(t0-sll) forces arg5-first source order; arg5-first trades seats in every measured geometry; t0-first caps at addu-last; qty birth is decl-inert and type-inert",
-   "next_probe": "none by hand \u2014 vet sampler finds only; banked rejected forms name the dead families"
+   "hypothesis": "Pair-swap via hand-derived C is CLOSED (do not re-attempt): any closure must arrive as a sampler find whose 55-57 window shows (sll v0; addu; sll a0) with t0-web in a0 and arg5val in v1",
+   "mechanism": "s3 hardened s2's closure: addu-LUID-early forces the seat trade in every fused, decoupled, merged, and array-indexed spelling, at every deref position; 3-stmt staging webs head-retime at 17 position-invariantly",
+   "next_probe": "none by hand - vet sampler finds only; the rejected/ bank now names the dead families incl. the two s3 additions"
   },
   {
-   "hypothesis": "Region-3 steal (unchanged from s1): dies only in a source shape where check2-beqz's delay-window has a different nearest safe insn than move a1,s4",
+   "hypothesis": "Region-3 steal (unchanged from s1/s2): dies only in a source shape where check2-beqz's delay-window has a different nearest safe insn than move a1,s4",
    "mechanism": "reorg.c eager fall-through fill, byte-proven; all label/liveness routes closed",
-   "next_probe": "no independent probe \u2014 adiff.py the tail region (insn 149) of any sub-200 sampler find before scoring the rest"
+   "next_probe": "no independent probe - adiff.py the tail region (insn 149) of any sub-200 sampler find before scoring the rest"
   }
  ],
  "judge_constraints": [
