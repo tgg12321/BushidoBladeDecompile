@@ -1,1 +1,2 @@
 - 2026-07-06 23:35 camera_SetMatrix_8001DBE4 s1 [recon] floor=0: recon: HEAD form floor=0 but uses judge-rejected empty-if; three pure-C alternate spellings identified, all untested
+- 2026-07-06 23:54 camera_SetMatrix_8001DBE4 s2 [structural] floor=0: H1 (inverted branch sense, non-empty body) proven byte-equivalent to HEAD via out-of-tree cc1 dump; src edit blocked by main_reintegration_lock so in-tree sandbox=0 not producible this session
