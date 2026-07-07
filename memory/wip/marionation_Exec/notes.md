@@ -80,15 +80,37 @@ mask-var reload-substitution, which needs the goto-loop refs==2 fold).
   BB2_DBR_DEBUG, BB2_NO_FT_STEAL (env-gated, inert unset; oracle green proves it).
 - gccdbg cc1 lacks ALLLIVE — use ../../tools/gcc-2.7.2/cc1 for that knob.
 
+## SESSION-10c CLOSURES (2026-07-07) — read before trying anything
+- **EXHAUSTIVE ordering sweep (tmp/ordersweep.log): all 140 dependency-valid
+  do_timeout interleavings measured — floor is masked 4 (63×4, 49×6, 21×9, 7×8,
+  zero hits, insns pinned 178).** The pair cannot fall to statement order alone.
+- **cc1psx parity (tmp/psxregion3.py): PsyQ's own cc1 emits the IDENTICAL region-3
+  steal** for our source — the compiler fork is NOT the variable; the original
+  SOURCE was shaped differently in a way not yet guessed.
+- **Permuter masked-3 signpost (archive: output-160-1 / tmp/vP160.c): `while(status)`
+  backedge on the clear keeps the loop-top label alive → own_fallthrough=0 → steal
+  dies, region-3 aligns — but pays an extra bnez (180 insns, unmatchable) AND reads
+  status uninitialized on {first iteration ∧ VBlank==0} (semantically divergent —
+  REJECTED).** Confirms: every label route pays a visible byte; a label between the
+  sb and the move stops the scan (own_thread=0 after lose=1) but no semantic jumper
+  exists and manufactured ones cost a jump insn (jump1 cleans adjacent-jump forms
+  back to the attractor).
+- **vT45 dst/dst2 merge on the vT40 chassis: masked 19** (s-web collapses; W1-style
+  compensation is the known dead end at 9). Merge axis CLOSED.
+- Inline-helper shape: unviable a priori (the two copy blocks have DIFFERENT byte
+  shapes; a shared helper forces them identical).
+
 ## NEXT SESSION
-1. Confirm vT31 masked 4 (`tmp/probe.py progress/vT31-tailwrap-masked4.c`).
-2. Permuter campaign on vT31 + vT32 bases (import.py flow, not hand-patched base —
-   see HANDOFF.md session-9 note). The two residuals are exactly the blind-search-
-   friendly kind (statement order / temp splitting / wrapper placement permutations).
-3. Hand levers still open: arg5val refs 6 via a natural second ref that doesn't
-   re-time the head; region-3 structural spellings that shift the check2 fall-through
-   window (positions of dst2=a1 / i=7 / src=... relative to fill_simple consumers).
-4. On masked 0: retire 42 rules, full SHA1, dual review, queue done, delete WIP.
+1. The ONE active lever: the rich-pass permuter (tmp/perm_mar, vT40 base, watcher
+   auto-triages sub-200 finds into triage.log). It found the masked-3 signpost in
+   <1h — it samples the unknown-source-shape space directly. Check triage.log.
+2. If a find reaches masked ≤2 with true semantics: verify (probe+adiff), vet
+   constructs (no volatile/cross-symbol/uninitialized reads), integrate.
+3. Region-3 unknown-shape ideas not yet tried: none remaining from analysis — trust
+   the sampler, or dump target-adjacent functions for structural analogies (Kengo
+   was a dead end per slog-kengo-dead-end).
+4. On masked 0: retire 42 rules, full SHA1, LAYER-2 review (MUST independently rule
+   on the nested wrap — see meta.json reviewer entry), queue done, delete WIP.
 
 ## Variant ladder (masked)
 candidate.c/vT31: 4 ← BEST. vT32 (order fix, temps traded): 8. vDT10: 6 (pre saved-fix).
