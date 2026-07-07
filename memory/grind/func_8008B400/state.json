@@ -1,10 +1,33 @@
 {
  "func": "func_8008B400",
  "file": "main",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: `s32 three = 3; s32 two = 2;` are predicted LOAD-BEARING -- target hoists all three store-constants into registers BEFORE the loop ($a3=1,$t1=3,$t0=2, s:4-6) so each conditional arm"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Full-literal form (`*buf = 1/3/2;`, keep `one` only if needed for the sllv) diverges with in-arm `addiu $rN,$zero,3/2` loads and broken J-delay-slot sb placement -- the natural-allocation path fails, establishing exhaustion prong 1 for the sanction.",
+   "mechanism": "loop.c scan_loop/move_movables refuses conditionally-reached invariant insns (maybe_never), so const materialization stays in-arm; reorg fits only 1 word per J delay slot.",
+   "next_probe": "Build 3 variants (all-literal; literal two/three + kept one; kept holders reordered) via tools/sweep_variants.py --func func_8008B400 --file main and record each masked score + diff shape."
+  },
+  {
+   "hypothesis": "No intermediate pure-C spelling gives two/three an unconditional per-iteration use without changing bytes -- candidate trick spellings (e.g. deriving the stored value arithmetically from `bit`/`data`, or a value-select then single sb) change the arm/store structure and cannot reproduce four distinct sb sites (s:23,26,31,33).",
+   "mechanism": "The target has 4 physically separate sb instructions in 4 arms; any join/select restructure produces 1 sb, and any arithmetic derivation adds arm insns -- structural mismatch by instruction count, checkable without building.",
+   "next_probe": "One sweep slot for the best such candidate (cheap negative); if any scores 0 it wins outright, else it documents the family as structurally excluded in the ledger."
+  },
+  {
+   "hypothesis": "With exhaustion measured, the committed form + `/* FAKE: constant-holders keep 1/3/2 in regs so each arm is a bare sb in a J delay slot; loop.c won't hoist conditional-arm consts */` annotations passes cheat-reviewer under named-local-fake-exception (SOTN `s16 three = 3;` evidence) -- the byte-correct construct is KEPT, annotated, and the regression closes without a rewrite.",
+   "mechanism": "named-local-fake-exception prerequisites: exhaustion (frontier 1-2 measurements), named pass (loop.c invariant motion), FAKE annotation, layer-1+2 review.",
+   "next_probe": "Surface the ruling_question below with the sweep results attached; on a grant, add annotations, run cheat-reviewer layer-1, and route to layer-2."
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): s32 two = 2; and s32 three = 3; are opaque-constant register-coercion constructs not in the SOTN-accepted list. They fail Tests 1 (no semantic purpose vs writing the literal) and 2 (no human programmer names a variable 'two' or 'three' for its numeric value). Worker must rewrite without these variables \u2014 use literal 2 and 3, find the pure-C structure that reproduces sb $t0/$t1 in the delay slots through natural allocation, or park if no clean form exists.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

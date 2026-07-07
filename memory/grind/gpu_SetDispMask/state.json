@@ -1,10 +1,33 @@
 {
  "func": "gpu_SetDispMask",
  "file": "display",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: judge confirmed -- p+0x6A is cross-symbol address derivation (semantic-lie family) AND no two-symbol respelling can ever match (target byte `addiu $a0,$s1,0x6A` in a delay slot; GCC"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "GPU-context struct at 0x8009BE6C + `u8 *p = &g_gpu_ctx.debug_level;` + `bb2_memset((u8 *)&g_gpu_ctx.disp_env, -1, 0x14)` byte-matches gpu_SetDispMask and leaves every other function's bytes unchanged.",
+   "mechanism": "cse.c use_related_value rewrites the &ctx.disp_env (ctx+0x74) materialization as $s1+0x6A given p=ctx+0xA live in $s1; identical relocation encodings keep sibling functions byte-stable.",
+   "next_probe": "Draft the struct (TU-visible header or file-local), re-spell the 17 g_gpu_debug_level/g_gpu_disp_env refs across src/display.c + src/gpu.c, update externs/symbol_addrs per the re-attribution recipe, `& tools/wteng.ps1 main sandbox gpu_SetDispMask --disable all` (expect 0), then full build to prove sibling stability."
+  },
+  {
+   "hypothesis": "If cse's related-value rewrite does not fire for the member-name spelling, the single-object offset spelling `bb2_memset(p + 0x6A, -1, 0x14)` with p pointing into the DECLARED struct (ctx+0xA -> ctx+0x74, still inside one object) is semantically true and emits the addiu directly.",
+   "mechanism": "Source-level pointer add within one declared object compiles to addiu $s1,0x6A trivially; the semantic-lie taint was the TWO-SYMBOL derivation, which the struct removes.",
+   "next_probe": "Only if probe 1 diverges: measure the offset spelling in the struct'd TU, and put the member-name-vs-offset spelling question to the ruling queue with both diffs attached."
+  },
+  {
+   "hypothesis": "A matched community decomp of the same libgpu models this block as a single struct/object (comparable-sibling evidence for the re-attribution).",
+   "mechanism": "PsyQ libgpu sys.c is a shared upstream; SotN's psxsdk tree and decomp.me scratches of SetDispMask/GetDispMask-class functions show the accepted modeling.",
+   "next_probe": "python3 tools/decomp_me_scrape.py search --asm-file asm/funcs/gpu_SetDispMask.s; inspect top hits + any SotN libgpu sys.c source for the static-block modeling; attach findings to the re-attribution evidence."
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Pointer-derived address cheat: `u8 *p = &g_gpu_debug_level; bb2_memset(p + 0x6A, -1, 0x14)` uses g_gpu_debug_level (0x8009BE76) as the base to compute g_gpu_disp_env (0x8009BEE0 = 0x8009BE76 + 0x6A), which IS a separately-named global in symbol_addrs.txt. The pointer `p` exists solely to keep &g_gpu_debug_level live in $s1 (callee-save) so the compiler emits `addiu $a0,$s1,0x6A` (one instruction) for the memset arg rather than a fresh lui+addiu for g_gpu_disp_env (two instructions). A clean redo must write `bb2_memset(&g_gpu_disp_env, -1, 0x14)` (or equivalent cast) and accept the changed register allocation, then find a legitimate C form that also produces the target's single-instruction memset-arg computation.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

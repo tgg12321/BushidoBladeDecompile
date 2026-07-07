@@ -1,10 +1,33 @@
 {
  "func": "func_80085FD8",
  "file": "main",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: the double-shift is LOAD-BEARING as spelled (target bytes: sll $a0,16 before the jal + sra $a0,16 IN the jal delay slot, recovered by direct EXE disassembly) and the judge's probe-("
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The retype closes it byte-identically: `s32 func_80085FD8(s32 a0)` with body `if ((u16)a0 < 0x18) { func_8008BD88((s16)a0); return 0; } return -1;` reproduces andi/sltiu, sll+sra with sra in the jal delay slot, and move $v0,$zero unchanged.",
+   "mechanism": "PROMOTE_MODE no longer certifies the upper bits, so (u16) emits andi and (s16) expands via extendhisi2 -> ashift/ashiftrt; reorg.c fill_slots_from_thread takes the sra as the jal's delay insn (last arg-setup).",
+   "next_probe": "Apply the retype to :873/:875, `sandbox func_80085FD8 --disable all` (expect 0); then apply the identical retype to func_80086080 (:905/:909) and sandbox it in the same pass; verify-oracle, queue done for both."
+  },
+  {
+   "hypothesis": "The judge's probe (a) -- `func_8008BD88(a0)` with the s16 param kept -- under-emits by the 2 shift instructions and mismatches (banked as the measured negative the diagnosis explicitly requested).",
+   "mechanism": "PROMOTE_MODE + combine's num_sign_bit_copies on the incoming promoted param fold the conversion to a no-op; nothing forces the sll/sra back.",
+   "next_probe": "One sandbox run of the clean form BEFORE the retype, so the diagnosis's 'verify whether it also yields sandbox==0' step is answered with a number, not an assumption."
+  },
+  {
+   "hypothesis": "If the retype unexpectedly perturbs the guard compare (e.g. the andi operand register or the bnez sense), the fallback within the s32-param form is respelling the guard as `(a0 & 0xFFFF) < 0x18` (same RTL, different C spelling) or hoisting `s32 masked = (u16)a0;` -- the shift pair itself is safe either way.",
+   "mechanism": "cse/combine canonicalization of (and:SI reg 0xFFFF) feeding sltiu -- spelling variants land in the same canonical form, so divergence here is unlikely but cheap to rule out.",
+   "next_probe": "Only on probe-1 divergence: read the sandbox diff; if the delta is in the compare cluster, sweep the two guard spellings via tools/sweep_variants.py in one pass."
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Codegen-coercion expression at call site: `func_8008BD88((s16)(a0 << 16 >> 16))` where `a0` is already `s16`. The double-shift is semantically identical to `a0` for every s16 value (fails test 1), no human would write it from the spec (fails test 2), and its only justification is forcing `sll a0,a0,0x10; sra a0,a0,0x10` into the JAL delay slot (fails test 3). Next action: verify whether `func_8008BD88(a0)` also yields sandbox==0; if yes, replace with the clean form; if no, find the pure-C structural approach that makes GCC emit the sign-extension naturally (e.g. type the parameter as `s32` so the explicit `(s16)(...)` narrowing becomes semantically meaningful, or use an intermediate signed narrowing variable).  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

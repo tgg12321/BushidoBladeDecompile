@@ -1,10 +1,33 @@
 {
  "func": "calc_loc_mat_fw_80055B60",
  "file": "text1b",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 1108,
+   "modality": "recon",
+   "headline": "fable-blitz deep recon: NOT a twin of calc_loc_mat_fw (normalized insn similarity 0.0117); it is a from-scratch CPU-controller input synthesizer (writes a 6-word pad key/trig block to arg1) with zero "
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "UNMEASURED (flagship): a full-body first draft written region-by-region from the R1-R13 map + m2c reference collapses the 1108 distance to a small residual concentrated in R3 (callee-save flag ladder) and R13 (block build) - the function is ordinary -O2 C with no structural traps (no jtbl, no GTE, four counter loops).",
+   "mechanism": "distance 1108 = unwritten body (1 replace_with_asmfile rule, stub src). Standard compiled C per the 2026-06-09 park audit and this pass's full read; the expected residual mechanisms are global-alloc priority order (R3's 9 live flag locals across 4 jals) and sched1 delay-slot placement (lazy sll-in-delay-slot pattern L117/132/159/174/187/202/222).",
+   "next_probe": "Draft the body into src/text1b.c from the region map (use tmp/blitz/m2c_calc_loc_mat_fw_80055B60.c as dataflow reference, NOT literal transcription); sandbox calc_loc_mat_fw_80055B60 --disable all for the honest floor; then bisect the residual per-region by objdump window diff. Declare R3's flag locals in target consumption order (early2bits-spilled, b3, b4, b7, b8, b9, b10, b11) with each `bN = cond << N;` statement placed between its compare ladder and the next."
+  },
+  {
+   "hypothesis": "UNMEASURED: R3's lazy-shift-in-delay-slot cadence (each flag's sll issued as the FIRST insn of the next compare ladder's delay slot) falls out naturally when each flag is written `bN = c << K;` as a separate statement AFTER the conditional that computes c (two-arm if/goto ladders ending in `c = 1; c2 = 0;` pairs) - i.e. sched1 hoists the sll into the branch delay slot without help.",
+   "mechanism": "cc1 first-pass scheduler fills the compare-ladder's bne delay slots with the next independent computation; the sll of a just-finalized boolean is the only ready insn at each ladder head (L132: sll s7,s0,4 sits in the beq delay slot of the NEXT region's first compare). If the draft instead computes `flags |= c << K` eagerly, combine merges the or-chain and the 6-term reduction at L256-261 disappears - so the or-reduction MUST be a single expression at the end, not accumulated.",
+   "next_probe": "In the first draft write the ladder as: per-region `bK = 0; if (id==A||id==B||...) { bK = 1; <prev-region cleanup>; }` then `sK = bK << K;` and the final `v = spill50 | fp | s7 | s6 | s5 | s4 | s3 | s1;` or-chain in one statement ordered exactly as L256-261. If the delay-slot cadence diverges, sweep the assignment-placement axis (before vs after the compare ladder) with sweep_variants before touching any exotic lever."
+  },
+  {
+   "hypothesis": "UNMEASURED: R13's lwl/lwr pair is a 4-byte align-1 struct assignment (typedef struct { u8 b[4]; } Pack4; local = *(Pack4 *)&D_800A3258) and the whole sp+0x10..0x24 block is one 6-word (or 5-word + pad) struct local written field-wise then assigned twice (to s2->0x3D0 block and through arg1) - GCC 2.7.2 emits exactly the L1187-1211 double lw/sw run for consecutive-word struct copies.",
+   "mechanism": "GCC 2.7.2 expand_assignment on BLKmode aggregates with alignment 1 emits lwl/lwr (expr.c emit_block_move path); word-aligned 24-byte struct copy unrolls to lw/sw pairs in source order - matching L1200-1211's 6 lw + 6 sw with the same register rotation (v0,v1,a0,a1 cadence = 4-reg move_by_pieces window).",
+   "next_probe": "Draft with `struct InBlk { u16 idx[2]; s32 trig; s32 key; s32 rel; s32 held; s32 inv; }`-style local (exact field split TBD against L1180-1198 offsets: sp10/sp12 halfwords, sp14, sp18, sp1C, sp20, sp24) + Pack4 copy local at sp+0x28; verify the lwl/lwr and the two block-copy runs appear; if the copy uses a loop instead, the struct is too big/aligned - re-split fields."
+  }
+ ],
  "judge_constraints": [],
  "origin": "queue",
  "created": "2026-07-07T16:19:29.525788+00:00"

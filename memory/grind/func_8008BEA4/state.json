@@ -1,10 +1,33 @@
 {
  "func": "func_8008BEA4",
  "file": "main",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: split verdict on the double construct -- the `if ((flag && flag) && flag)` wrapper is INERT under any outcome (cse folds symbol-non-null tests to nothing before loop/sched run) and "
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Deleting the entire `if ((flag && flag) && flag) { do { } while (0); }` block is byte-identical (judge's prediction): the notes were fencing nothing because the lw hoist never happens ($a0 pressure / rank_for_schedule keeps source order anyway) -- sandbox 0, retire, done.",
+   "mechanism": "cse.c const-fold + jump.c branch deletion erase the wrapper; if sched1's ready-list tiebreak (INSN_LUID order for equal priority) already preserves sw,sw,lw order, the notes were decorative.",
+   "next_probe": "Delete src/main.c:2765-2767; `sandbox func_8008BEA4 --disable all`; 0 -> verify-oracle + queue done."
+  },
+  {
+   "hypothesis": "If the deletion diffs, the diff shape is the `lw D_800A3044` (or the flag-store cluster) migrating above/between the two macro-sw stores, and a bare single-level `do { } while (0); /* FAKE: loop notes hold sw a1/sw a0/lw source order */` in the same slot restores the match -- the sanctioned minimal form.",
+   "mechanism": "NOTE_INSN_LOOP_BEG/END between the stores act as a scheduling boundary for sched1's block interleave (the do-while-zero-exception's documented effect class); the if-wrapper contributed nothing (already folded).",
+   "next_probe": "Re-add only the annotated bare wrap; sandbox expect 0; run cheat-reviewer layer-1 on the wrap-bearing candidate before commit."
+  },
+  {
+   "hypothesis": "If neither the clean form nor the bare wrap matches (both diff), the residual is a natural-geometry problem -- statement placement of `s32 reg = D_800A3044;` (e.g. hoisting the decl above the a0 store or into the outer scope) reproduces the target order without any wrap.",
+   "mechanism": "Source statement order feeds INSN_LUID which feeds sched1 tiebreaks; moving the load's C position changes its LUID relative to the stores without semantic change.",
+   "next_probe": "Sweep 3-4 placements of the reg/ptr block via tools/sweep_variants.py --func func_8008BEA4 --file main alongside the frontier-1/2 forms in one pass."
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): src/main.c:2765-2767 contains `if ((flag && flag) && flag) { do { } while (0); }` \u2014 a prohibited double construct: (1) the outer `if` is an always-true wrapper (`flag = &D_800F1AFC` is always non-null, so the condition is functionally `if (1) { }`, an explicitly forbidden family), and (2) the inner `do { } while (0)` is unannotated (prerequisite 3 of the do-while-zero exception requires `/* FAKE: ... */`; without it the exception does not apply and the construct defaults to FAIL). The entire block has zero semantic purpose and zero asm footprint in the target. Function must be reworked to remove the if/do block and find a pure-C structural form that produces the same target asm without it.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

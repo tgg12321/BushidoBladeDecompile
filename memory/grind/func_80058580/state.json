@@ -1,10 +1,33 @@
 {
  "func": "func_80058580",
  "file": "text1b",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 2989,
+   "modality": "recon",
+   "headline": "fable-blitz deep recon: 2991-insn CPU-AI think monster, whole-body asmfix; m2c clean (1321 lines); 3-switch jtbl-infra wall + cross-jump exit stubs identified; region map + scaffold-first attack seque"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "A typed scaffold built from the m2c output compiles and lands the honest distance far below 2989 on the first sandbox run - the bulk of the body is ordinary field-compare/branch code identical in style to matched cpu_* siblings.",
+   "mechanism": "distance 2989 measures a stub vs the full body; any structurally-correct C recovers most instructions, leaving RA/scheduling/cross-jump residue as the real work",
+   "next_probe": "Type tmp/blitz/m2c_80058580.c against text1b conventions (raw offset casts, existing extern decls), apply to src/text1b.c working copy, run '& tools/wteng.ps1 main sandbox func_80058580 --disable all', record the first real floor and the diff clusters it exposes"
+  },
+  {
+   "hypothesis": "The 3 switch regions can byte-match via the replay_camera_rob_back_loose2 jtbl-infra asmfix bridge (external jtbl symbols at 0x1585C/84/9C + rules redirecting the cc1-emitted local jtbl refs).",
+   "mechanism": "linker places text1b.o(.rodata) away from 0x1585C, so cc1's switch jtbl lands wrong; the documented bridge rewrites %hi/%lo jtbl references to the external symbol and suppresses the local table ([infra-rule: jtbl-infra] is a sanctioned escape, per-function retirement is later queue work)",
+   "next_probe": "Read the replay_camera 24-rule cluster in asmfix.txt + recipe in memory/project/rodata-cleanup-progress.md; draft the analogous bridge for jtbl_8001585C/80015884/8001589C; validate on a switch-region-only scaffold in the sandbox"
+  },
+  {
+   "hypothesis": "The 7-site shared exit stub at .L80058BD0 (sw +0x3CC; j) and the twin tails at 0x5B404/0x5B408 reproduce from per-path plain stores merged by jump2 cross-jump, without mixed-exit tricks, because the target ALREADY shows maximal merging.",
+   "mechanism": "find_cross_jump merges identical store+jump suffixes; when target is the merged form, naive per-path C is the natural source and the rule's mixed-exit treatment is only needed if OUR build over- or under-merges",
+   "next_probe": "Once the R2 region scaffold compiles, objdump the sandbox .o and count j .L<stub> sites vs target's 7; if counts diverge, apply cross-jump-store-tail-merge mixed-exit forms site by site"
+  }
+ ],
  "judge_constraints": [],
  "origin": "queue",
  "created": "2026-07-07T16:17:02.650906+00:00"
