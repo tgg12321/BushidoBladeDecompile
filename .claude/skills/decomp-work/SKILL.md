@@ -1,14 +1,9 @@
 ---
 name: decomp-work
 description: >-
-  Run ONE Bushido Blade 2 decomp WORKER agent that takes a batch of items off the
-  board and drives each to completion — safe to run on several agents at once
-  without conflict. Invoke with a count + lane, e.g. "work 10 backlogged items",
-  "work 20 blocked items until completion", "grind 15 backlog items". The worker
-  isolates itself in a private git worktree, claims items off the board so other
-  workers skip them, runs the engine match loop on each, and moves the card. Use
-  whenever asked to work/grind/clear a batch of board items, or to launch a worker.
-  (For DRIVING multiple workers + review + reintegration, that's decomp-orchestrate.)
+  RETIRED 2026-07-06 — the board-claiming batch worker was part of the retired
+  fleet era; use the decomp-grind skill (the Grinder) for autonomous work, or
+  decomp-orchestrate for driving one function by hand. Historical reference only.
 ---
 
 # BB2 Decomp worker — work a batch off the board

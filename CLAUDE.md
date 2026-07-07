@@ -17,13 +17,9 @@ match. By construction, cheating can't help and asm functions aren't pure-C-grin
 The engine runs under WSL, but hand-authored `wsl bash -c 'cd … && source .venv && python3 -m
 engine.cli …'` nests three shells and the quoting silently eats awk/sed/heredocs — the PreToolUse
 guard BLOCKS that form and the footguns below.
-- **Engine/build commands → PowerShell tool + `tools/wteng.ps1 <target> <cmd>`** (zero quoting;
-  stamps `CLAUDE_SESSION_ID`) where `<target>` = `main` (solo-on-main) or a worker's `<id>` —
-  e.g. `& tools/wteng.ps1 main sandbox func_X --disable all`. **`wteng` pins the repo explicitly so
-  the engine can't resolve to the wrong worktree** (the 2026-06-14 contamination fix; a subagent's
-  cwd is ALWAYS main, so a relative `& tools/eng.ps1` silently builds/mutates MAIN — `worktree_
-  contamination_guard.py` BLOCKS that form and bare `make`). To edit MAIN's build inputs while
-  worker worktrees are live, drop the sentinel `tmp/.allow_main_edits` (orchestrator override).
+- **Engine/build commands → PowerShell tool + `tools/wteng.ps1 main <cmd>`** (zero quoting;
+  stamps `CLAUDE_SESSION_ID`) — e.g. `& tools/wteng.ps1 main sandbox func_X --disable all`.
+  `wteng` pins the repo explicitly (never bare `make` / relative `eng.ps1` — a guard blocks them).
 - **Anything beyond ONE simple command** (awk/sed, multi-statement pipelines, heredocs) → **write
   a `.py`/`.sh`/`.ps1` file to `tmp/` and run that file** (more robust AND readable than inline).
 - **Multi-line commit messages → `git commit -F tmp/msg.txt`.** Never heredocs or quote-escape dances.
@@ -69,8 +65,8 @@ pins, cheat-asm `__asm__` blocks, scheduling barriers — are NEVER an end state
    unless it's authorized canonical-asm in `inline_asm_canonical.txt`. SHA1
    alone can't catch a cheat-asm "match" (the asm emits the right bytes), so
    the gate audits the source. `tools/check_completion_integrity.py` is the
-   standing audit; the orchestrator's `headless_review` flags any cheated
-   committed match.
+   standing audit; the Grinder's default-FAIL Judge gates every autonomous
+   completion.
 2. **The oracle is the only truth** — "done" = full build+link SHA1 ==
    `62efab4f73f992798c43e8c730aa43baa10bb4fa`. Intermediate exit codes and isolated scores are hints.
 3. **Cheating can't help** — the sandbox scores with regfix/asmfix disabled and
@@ -97,49 +93,23 @@ Spec: docs/superpowers/specs/2026-07-06-grinder-pipeline-design.md. The fleet
 (`tools/fleet/`) is RETIRED (superseded 2026-07-06 — see docs/fleet/HANDOFF.md).
 
 ### Fallback: a single focused agent, on main
-For driving ONE function by hand (or a headless single-agent loop), decomp work can still run
-**directly on `main`** — one focused agent, end-to-end, the engine as a toolkit it drives
-itself (the `decomp-orchestrate` skill). This is the per-function loop the fleet workers run;
-it's the fallback/manual path, no longer the primary orchestration.
+For driving ONE function by hand, decomp work can still run **directly on `main`** — one focused
+agent, end-to-end, the engine as a toolkit it drives itself (the `decomp-orchestrate` skill).
+Manual path only; the Grinder is the autonomous pipeline.
 **Build files (`src/*.c`, `*.h`, `*.s`, `Makefile`, `*.ld`, pipeline `*.txt`) MUST use LF line
 endings** — edit via WSL or an LF-enforcing editor (the Write tool produces LF on this machine).
 
-### Optional: headless driver (`tools/headless_loop.ps1`)
-`pwsh tools/headless_loop.ps1 -MaxIterations N` invokes `claude -p` once per queue item (one
-focused agent per function). Guardrails: oracle baseline + authoritative post-check per
-iteration, dirty-tree stop, never pushes; runs log to `metrics/headless_runs.jsonl` with
-self-auditing efficiency signals from `tools/headless_audit.py` (`--all` = dashboard,
-`--session <sid>` = drill-down). Full autonomy = `-PermissionMode bypassPermissions` (default);
-`-DryRun` to preview. Both the runner and `tools/eng.ps1` stamp `CLAUDE_SESSION_ID` for metrics.
-
-### Orchestrator post-run protocol (autonomous operation)
-> The **`/decomp-orchestrate`** skill IS the orchestrator playbook (worker driving, review,
-> retro-audit, escalation boundary, auto-handle categories, footguns). Invoke it for any
-> orchestrator session; the load-bearing summary:
-
-1. Per worker run: `python3 tools/headless_review.py --latest` (exit `0`=ACCEPT, `10`=ESCALATE);
-   confirm PARK/STUCK findings yourself — workers over-claim.
-2. **MANDATORY retro-audit (user directive 2026-06-10):** every completion-class commit
-   (`Match:` / `cheat-cleanup:` / `auth:` / rule-doc additions) needs a FRESH adversarial
-   `cheat-reviewer` (default-FAIL, worker's verdict not credited) before acceptance. FAIL ⇒
-   byte-identical revert (`[infra-rule: reviewer-fail-revert]` for rule restorations; clean
-   levers → WIP). NEEDS_USER ⇒ surface. Run `python3 tools/reviewer_precheck.py --func <f>`
-   FIRST and paste its output into the brief — reviewer tokens go to semantics, not re-derived
-   procedural facts. Batch sweeps: gate-tampering diff, `check_completion_integrity.py`,
-   canonical-registry delta.
-3. Fix recurring tooling friction the audit surfaces, and commit the fix.
-4. Escalate ONLY for: oracle break, worker error, stuck/no-progress, unconfirmable park,
-   architecture/policy decisions. **No deferral (user directive 2026-06-12):** never skip or
-   rotate a stuck top item — change MODALITY (orchestrator deep-dive with sustained context,
-   bulk variant sweeps, better diagnostics) on the SAME function.
-
-**Auto-handle (NOT escalate):** GTE leaf wrappers (pure cop2, no C form — orchestrator
-authorizes per user policy 2026-05-26, [[gte-wrapper-misroute-park]]; whole-body hand-coded asm
-still escalates) and jtbl-infra parks (auto-confirmed; per-function rule retirement is queue work).
+### Manual-path review discipline (autonomous path: the Judge handles this)
+Any MANUAL completion-class commit (`Match:` / `cheat-cleanup:` / `auth:` / rule-doc additions)
+still requires the layer-2 fresh adversarial `cheat-reviewer` (default-FAIL, author's verdict
+not credited) before acceptance — full protocol in
+`.claude/rules/review-discipline-before-commit.md`. No deferral (2026-06-12): a stuck top item
+changes MODALITY, never target. Auto-handle without escalation: GTE leaf wrappers
+([[gte-wrapper-misroute-park]], user policy 2026-05-26) and jtbl-infra parks.
 
 ## Rodata cleanup project — COMPLETE 2026-06-09 (pointer)
-All 12 `asm/data/*.rodata*` segments retired; jtbl-infra rules deleted; oracle unchanged. Full
-log + recipes: `memory/project/rodata-cleanup-progress.md`. **Two standing warnings:**
+All 12 `asm/data/*.rodata*` segments retired; jtbl-infra rules deleted; oracle unchanged
+(full log in git history). **Two standing warnings:**
 1. **`bb2.ld` is HAND-MAINTAINED — do NOT run `make setup`** (re-adds dead rodata lines +
    conflicts with const decls now in `src/*.c`; recovery procedure in `splat.yaml`).
 2. **`asm/data/*.rodata*.s` are deliberately DELETED** — don't re-create them.
@@ -164,11 +134,13 @@ never target. The SessionStart hook surfaces the top each session; `queue status
 Items routed `ASM-STRUCTURAL` / `ASM-WHOLE` sit in an `authorize` bucket (not `active`) — they need
 user canonical-asm sign-off, so they never block pure-C work.
 
-## WIP checkpoints (`memory/wip/<func>/`)
-Multi-session functions checkpoint their best candidate + measured floor + hypotheses +
-cheat-reviewer verdict in `memory/wip/<func>/` (candidate.c + meta.json + notes.md +
-rejected/) — tracked in git, OUTSIDE the build pipeline, surfaced by the SessionStart hook and
-`queue next`'s `wip` block. Full schema + usage: `memory/wip/README.md`. Load-bearing rules:
+## WIP checkpoints (`memory/wip/<func>/`) — manual path
+The GRINDER uses its own richer ledgers (`memory/grind/<func>/`, append-only, driver-managed)
+and converts any existing WIP entry into a seed ledger on first contact. MANUAL multi-session
+work still checkpoints here: best candidate + measured floor + hypotheses + cheat-reviewer
+verdict in `memory/wip/<func>/` (candidate.c + meta.json + notes.md + rejected/) — tracked in
+git, OUTSIDE the build pipeline, surfaced by the SessionStart hook and `queue next`'s `wip`
+block. Full schema + usage: `memory/wip/README.md`. Load-bearing rules:
 - **Resume from the checkpoint, not HEAD** — apply candidate.c, confirm the documented floor
   with `sandbox`, don't re-derive `rejected_forms`.
 - **Cheat discipline:** invoke `cheat-reviewer` on the candidate BEFORE saving; FAIL ⇒ save
@@ -191,8 +163,7 @@ The agent *is* the gap-closer — the engine measures, routes, and gates; you wr
    **If the SessionStart hook surfaces a NEAR-DUPLICATE LEAD** for this function — or you find one
    yourself in `tmp/duplicates_leads.txt` — the RHS is an already-COMPLETED-C analog. Read its `src/`
    body BEFORE writing anything; it's the most efficient starting template. Tool:
-   `tools/find_duplicates.py` (memory/project/find-duplicates-tool.md). Regenerate after big
-   completion batches.
+   `tools/find_duplicates.py`. Regenerate after big completion batches.
 1. **`verify-oracle --rebuild`** once at session start. This makes `build/` the clean canonical
    reference the sandbox scores against. (Skip if `build/` is already clean.)
 2. **`canonical <func>`** — route. ASM-region / ASM-STRUCTURAL ⇒ stop the pure-C effort
@@ -213,8 +184,7 @@ The agent *is* the gap-closer — the engine measures, routes, and gates; you wr
    **Still stuck after the local levers?** `python3 tools/decomp_me_scrape.py search --asm-file
    asm/funcs/<func>.s` queries the downloaded decomp.me corpus (the BB2 toolchain class:
    gcc2.7.2-psx / gcc2.7.2-cdk / psyq3.5) for scratches whose target asm overlaps yours. Coarse
-   pre-filter; manual inspect the top hits for an analogous C shape. Tool docs:
-   `memory/project/decomp-me-corpus.md`.
+   pre-filter; manual inspect the top hits for an analogous C shape.
 5. **Score 0 ⇒ finish.** `retire <func>` deletes the function's now-unneeded regfix/asmfix rules,
    rebuilds, and SHA1-gates (auto-rollback on mismatch). A pure-C function with no rules to remove
    just needs `verify-oracle --rebuild` to confirm the byte+link match. **Note (masked-0 caveat):**
@@ -269,20 +239,11 @@ files; `[skip-park-src-guard]` override), **no_new_regfix_guard** (net rule addi
 `[infra-rule: <category>]` escape), **wip_compaction_guard** (WIP current-state caps;
 `[skip-wip-compaction]` override). Legacy decomp-loop hooks are removed.
 
-**PreToolUse parallel-orchestrator guards** (cwd-independent; both fail-open):
-- **worktree_contamination_guard** — blocks a WORKER's relative `eng.ps1`/`make`/build-input
-  edit that would hit MAIN instead of its worktree (a subagent's shell cwd is ALWAYS main).
-  Pin engine/build via `& tools/wteng.ps1 <id|main> <cmd>`; the orchestrator drops
-  `tmp/.allow_main_edits` to edit main's build inputs during a batch.
-- **main_reintegration_lock** — the REINTEGRATION MUTEX. While worker worktrees are live, a
-  main-mutating git op (merge / reset / rebase / cherry-pick / apply(write) / commit /
-  checkout / stash) or a build-input edit requires THIS session to hold the lock
-  (`tmp/.main_reintegration.lock`). Prevents the 2026-06-14 orch3↔orch0614b collision — one
-  orchestrator's `git merge` on main clobbering another's still-uncommitted reintegration.
-  **Protocol:** `& tools/reintegrate_lock.ps1 acquire` BEFORE you start merging worker
-  branches → hold it for the whole apply/build/commit/queue-done window → `… release` after.
-  `… status` shows the holder; `… steal -Reason "…"` reclaims only a STALE lock (>90 min) from
-  a dead session. Read-only git (show/log/diff/status) and worktree-pinned ops are never gated.
+**PreToolUse worktree-era guards — DORMANT since 2026-07-06** (no `bb2-work-*` worktrees exist;
+both are NO-OPs in solo/grinder mode and fail open): **worktree_contamination_guard** +
+**main_reintegration_lock** re-arm automatically if worker worktrees are ever recreated —
+don't recreate them while the Grinder runs (see the decomp-grind skill's invariants; full
+protocol lives in the hook docstrings and `tools/reintegrate_lock.ps1`).
 
 ## Metrics (`metrics/` + `tools/metrics/`)
 Capture is silent and best-effort: `engine/cli.py` appends to `metrics/events.jsonl` (committed

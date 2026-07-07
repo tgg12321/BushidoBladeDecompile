@@ -1,3 +1,5 @@
+> **RETIRED 2026-07-06** — superseded by the Grinder (`tools/grinder/`). Kept for reference; safe to delete once no longer useful.
+
 # Autonomous Decomp Fleet
 
 A zero-human-intervention multi-agent system that works the Bushido Blade 2 decomp

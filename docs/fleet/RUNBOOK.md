@@ -1,3 +1,5 @@
+> **SUPERSEDED 2026-07-06.** The fleet is retired — the Grinder (`tools/grinder/`, operate via the `decomp-grind` skill) is the autonomous pipeline. This runbook is historical reference only; do not launch the fleet.
+
 # Fleet Runbook — operator one-pager
 
 The single on-ramp for operating the **Autonomous Decomp Fleet**. Quickstart →

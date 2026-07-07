@@ -1,13 +1,9 @@
 ---
 name: decomp-board
 description: >-
-  Work the Bushido Blade 2 (SLUS-00663) decomp via the "BB2 Decomp" GitHub
-  Projects board treated as a QUEUE — pull the top function, read its one-stop-shop
-  card briefing, claim it, and move it through In-Progress → Done, all with
-  single-card operations (NEVER pulling the full card list). Use whenever an agent
-  should take the next function off the board, fetch a function's card info, or
-  claim / move / complete / block a card. Pairs with the engine loop (which still
-  owns the actual match + oracle gate).
+  RETIRED 2026-07-06 — the GitHub Projects board workflow was part of the
+  retired fleet era; engine/queue.json is the single worklist and the Grinder
+  (decomp-grind skill) is the autonomous pipeline. Historical reference only.
 ---
 
 # BB2 Decomp board — agent queue interface

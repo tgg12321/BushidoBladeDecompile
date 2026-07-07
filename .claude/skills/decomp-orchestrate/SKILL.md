@@ -1,12 +1,12 @@
 ---
 name: decomp-orchestrate
 description: >-
-  Drive the Bushido Blade 2 (SLUS-00663) matching-decompilation workflow as the
-  ORCHESTRATOR — run headless worker agents through the engine loop, review each
-  run, enforce the completion standard (only pure C, or canonical asm for
-  genuinely-canonical functions), and operate autonomously per the escalation
-  boundary. Use whenever asked to run / continue / resume the decomp, orchestrate
-  the loop, work the queue, or kick off / babysit autonomous matching.
+  MANUAL-FALLBACK path (the Grinder via the decomp-grind skill is the default
+  autonomous pipeline since 2026-07-06). Drive ONE Bushido Blade 2 function by
+  hand on main: the per-function engine loop (canonical -> sandbox -> edit ->
+  retire -> queue done) with layer-2 cheat-reviewer acceptance. Use when the
+  user names a specific function to work manually or asks for a hands-on
+  deep-dive session.
 ---
 
 # BB2 Decomp Orchestrator
