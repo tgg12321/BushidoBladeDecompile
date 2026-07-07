@@ -1,10 +1,33 @@
 {
  "func": "func_80060CB8",
  "file": "text1b",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: new_var IS load-bearing (it flips the pure EMISSION ORDER of the two prologue save+copy pairs -- allocation itself is natural in both forms) and is an unvetted permuter find in the "
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The pair-order divergence is introduced (or should be absorbed) by the prologue_fix stage, not GCC: the aliasless C's raw cc1+maspsx output may already have the target pair order before prologue_fix canonicalizes it -- making the clean fix a prologue_config exemption (infra), with zero C constructs.",
+   "mechanism": "tools/prologue_fix save-order canonicalization (prologue-fix-redundant-reorder rule) operating on the 4-insn save+copy window.",
+   "next_probe": "Build the aliasless form in the sandbox, capture the PRE-prologue_fix assembly, and diff its first 8 insns against asm/funcs/func_80060CB8.s:2-9; inspect tools/prologue_config.json for this function's treatment."
+  },
+  {
+   "hypothesis": "If GCC genuinely emits a0-pair-first in the aliasless form, the flip point is identifiable in the RTL: either assign_parms copy order surviving to sched1 (LUID tie-break) or a combine-era copy movement -- and knowing the exact pass will name a legitimate C lever (e.g. a real first-statement consumer of arg1, or an ordering already sanctioned in the index) or prove none exists.",
+   "mechanism": "sched1 ready-list tie-breaking by insn LUID for two dependence-free save+copy pairs; the alias perturbs LUIDs upstream via the extra body copy.",
+   "next_probe": "cc1 -da on both the aliased and aliasless .i; diff the .sched (and .greg) dumps' insn order for the entry block; then sweep only levers that survive the forbidden-family catalog."
+  },
+  {
+   "hypothesis": "If no clean lever exists, the judge's option (b) is the correct terminal state for this session: re-open `reorder 3,4,1,2 @ 1-4` (INCOMPLETE, rule restored under `[infra-rule: reviewer-fail-revert]`) rather than keeping the unvetted alias on main.",
+   "mechanism": "queue/regression policy -- the byte-correct cheat may not stand as COMPLETED; a restored rule honestly re-marks the function as carrying debt.",
+   "next_probe": "Only after probes 1-2 fail: restore the rule, revert :13417/:13428 + rename uses back to arg0, verify-oracle, queue regen."
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): CHEAT: `unsigned int new_var = arg0;` with asymmetric use (arg0 in v==0 branch, new_var in all others + gpu_LoadImage calls) is a spelling of the forbidden param-local-alias-prologue-pair-flip pattern. The function previously carried a `reorder 3,4,1,2 @ 1-4` regfix rule \u2014 the exact same rule shape that was ruled a cheat in func_8007C2A0/func_8007C4B8 (commit af10dc8, reverted 2026-06-02). The permuter found a closing form (tagged `# RETIRED (targeted-permuter)` in regfix.txt), but the closing form was not vetted against the forbidden-family catalog. Needed: re-derive a clean pure-C lever or re-open the `reorder 3,4,1,2 @ 1-4` rule until a legitimate form is found.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],
