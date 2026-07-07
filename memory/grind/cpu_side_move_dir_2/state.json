@@ -1,10 +1,33 @@
 {
  "func": "cpu_side_move_dir_2",
  "file": "code6cac_c2",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: csmd2_call goto-thread is layout-load-bearing BUT has a trivially clean equivalent - the target beq polarity + arm layout IS plain 'if (D_800A38A4 != 9) a0 = D_800A38A4; else a0 = 8"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "UNMEASURED: replace the csmd2_call goto-thread with plain polarity-flipped if/else: if (D_800A38A4 != 9) { a0 = D_800A38A4; } else { a0 = 8; } func_8005FBC8(a0, (s32)0x80118800); - expect byte-identical (same tree/CFG as the goto form)",
+   "mechanism": "do_jump on NE_EXPR emits the beq-to-else polarity; reorg.c fill_slots_from_thread hoists the else-arm's li a0,8 into the beq delay and the join-head lui a1 into the j delay - the exact target fills",
+   "next_probe": "edit src/code6cac_c2.c:453-461 to the != if/else and run sandbox cpu_side_move_dir_2 --disable all; expect 0"
+  },
+  {
+   "hypothesis": "UNMEASURED alternate spelling if #1 diverges: assign-then-override: a0 = 8; if (D_800A38A4 != 9) { a0 = D_800A38A4; } - matches the delay-slot li a0,8 executing on both paths even more literally",
+   "mechanism": "the unconditional a0=8 before the branch is the natural producer of the both-paths li a0,8; cc1's first-pass scheduler or reorg places it in the beq delay slot",
+   "next_probe": "sweep both spellings in one sweep_variants call against the same target region"
+  },
+  {
+   "hypothesis": "UNMEASURED: drop the selective 'u8 v' cache (src/code6cac_c2.c:423) and spell the ==8 compare as a direct D_800A38A4 == 8 read - expect byte-identical since target CSEs all four reads into the single lbu at 0x8003c088",
+   "mechanism": "cse.c merges repeated QImode loads of the same global within the extended basic block (no intervening calls/stores in the dispatch chain)",
+   "next_probe": "make this edit together with frontier #1 and sandbox; if bytes shift, isolate by testing the cache-drop alone"
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Scheduling cheat confirmed: the csmd2_call: goto-thread block (commit a8f50a1e) was explicitly inserted to make cc1 produce a delay-slot-threaded call to func_8005FBC8 \u2014 the commit message and inline comment both say so. This is test-#3 (GCC-internals justification) + test-#1 (no semantic difference from plain if/else) + test-#2 (human-programmer wouldn't write goto-to-label-before-call-site from spec) + test-#5 (scheduling-coercion family, same as ARCHIVED/FORBIDDEN goto-end-prologue-delay-slot). The prior if/else form is the right skeleton; a clean lever must produce the delay-slot pattern without a goto-thread. Secondary: `u8 v = D_800A38A4;` used for only one (v==8) of four same-global comparisons; D_800A38A4 is already extern u8 (no narrowing), so selective caching fails test-#1 and test-#2 and warrants owner review.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

@@ -1,10 +1,33 @@
 {
  "func": "func_8006E49C",
  "file": "text1b",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "recon: target is a single walking accumulator in $a0 (arg0 += K self-adds) \u2014 respell a/b/c/new_var/new_var2 as `arg0 +=` accumulation and the RA-bias construct becomes unnecessary (one pseudo, no allo"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Full accumulator respelling closes at 0: delete a/b/c/new_var/new_var2; write `arg1[0]=arg0; arg0+=0x9C40; arg1[2]=arg0+0x5DC0; arg1[1]=arg0; arg1[3]=arg0+0x61F8; arg0+=0x6838; ... arg0+=0x1FB0; arg1[0xB]=arg0; arg0+=0x9C40; ... return arg0+0x1FB0;` (18 stores, source order per the committed body)",
+   "mechanism": "One pseudo = no RA decision (local-alloc keeps the param in $a0); cse.c shares the out-of-range 0x9C40 constant in $v1 across both advances; sched1's dependence-chain priority orders the $v0 store temps around the $a0 chain",
+   "next_probe": "Rewrite src/text1b.c:16223-16253 as the accumulator form, `& tools/wteng.ps1 main sandbox func_8006E49C --disable all`; expect 0 or small store-order residual"
+  },
+  {
+   "hypothesis": "If a small residual remains, it is store-ORDER scheduling (the [8]-deferral / group-2 delay-slot tail), fixable by permuting source store order within groups \u2014 not by any dead construct",
+   "mechanism": "sched1 ready-list priority: which sw fills each slot depends on source-order LUID tiebreaks; the [2]-before-[1] and [8]-after-[4],[0xB] shapes bound the search to a handful of permutations",
+   "next_probe": "Sweep store-order permutations of the diverging group via tools/sweep_variants.py --func func_8006E49C --file text1b --variants tmp/grind/func_8006E49C/s2/ (or permuter with PERM_PERMUTE on the store block)"
+  },
+  {
+   "hypothesis": "If the $v0 temps misallocate (e.g. a second temp register appears), stage each store value through ONE reused named local `s32 t;` (t = arg0+K; arg1[N] = t;) \u2014 the sanctioned staged-value-reused-variable shape \u2014 instead of expression-temporaries",
+   "mechanism": "A single reused local funnels all store values into one pseudo -> one hard reg ($v0), reproducing the strict two-register ($a0 chain + $v0 temp) target allocation if expression temps split",
+   "next_probe": "Only if probe 1 shows register-class diffs: apply the reused-t variant and re-sandbox; if THAT still misses, run BB2_ALLOC_DEBUG cc1 dump per the imported WIP hypothesis to name the misallocated pseudo"
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Dead sub-assignment to `new_var` (declared int, assigned once in `a = (new_var = arg0 + 0x9C40)` at text1b.c:16232, never read again) \u2014 fails Test 1 (no semantic purpose: `a = arg0 + 0x9C40` is identical) and Test 2 (no human programmer writes a compound sub-assignment whose left side is dead). Name `new_var` announces m2c/machine-generated provenance. Next action: remove `new_var` from the declaration and replace `a = (new_var = arg0 + 0x9C40)` with `a = arg0 + 0x9C40`, verify the function still byte-matches (expected: GCC DCEs the dead store before RA so the match is unaffected), then re-commit as a clean cheat-cleanup. Also note: `new_var2 = 0x1FB0` mid-function is the analogous opaque-constant shape (similar to SOTN-sanctioned `s32 one = 1;`) and has genuine reads \u2014 not a clear cheat on its own, but the owner should confirm it is not preventing a simpler direct-literal form.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

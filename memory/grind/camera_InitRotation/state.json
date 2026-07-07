@@ -1,10 +1,33 @@
 {
  "func": "camera_InitRotation",
  "file": "sound",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: all 26 volatile casts inert-likely \u2014 the target's OWN bytes prove GCC 2.7.2 kept store-then-reload through the struct pointer from plain C (sh 0x8 then lh 0x8; sw $zero 0x4C-0x54 th"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Strip every `(volatile ...)` qualifier in the function body (keep all structure otherwise) \u2014 floor stays 0; this is the judge's own next_action and the target bytes independently predict it",
+   "mechanism": "no GCC pass exploits the removed qualifier: cse.c does not forward pointer-mem stores (proven by target lines 9-10 and 27-29 vs 39-41), and sched has no incentive to reorder the copy blocks",
+   "next_probe": "sandbox camera_InitRotation --disable all on the devolatilized form; expect 0, then verify-oracle --rebuild for the unmasked SHA1 proof (masked-0 caveat)"
+  },
+  {
+   "hypothesis": "If the devolatilized form unexpectedly diverges: isolate the s0+8 write/read pair first (most likely fold site), then the 0x4C/0x50/0x54 zero-then-reload triple \u2014 re-add non-volatile-defeating STRUCTURE (e.g. read via a separately-named s16 local or reorder the zero stores) rather than volatile",
+   "mechanism": "cse.c store-forwarding isolation; any genuine blocker needed must be spelled as ordinary C dataflow, not volatile coercion",
+   "next_probe": "two-step sandbox: devolatilize everything EXCEPT :488, then everything except :503-505; attribute the diff"
+  },
+  {
+   "hypothesis": "Sibling sweep: the same volatile-cast blocks appear in the preceding function (src/sound.c:507-525 pattern also at :440-455 region) \u2014 check whether the same regression family exists there and batch the cleanup",
+   "mechanism": "same family, same inertness argument",
+   "next_probe": "grep sound.c for remaining `*(volatile` instances after this function is cleaned; sandbox each owning function"
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Source carries 26 inline-volatile-cast constructs on game-state struct fields (camera bone data accessed through `u8 *a0`). All follow the pattern `*(volatile T *)(s0 + offset)` \u2014 the forbidden 'inline volatile casts on game-state globals' family from the expanded cheat catalog (inline-asm-policy). Sandbox confirms the cheats are DEAD: `sandbox --disable all` strips 26 instances and scores 0, meaning the function already byte-matches in pure C WITHOUT the volatile qualifiers. Specific constructs: (1) `*(volatile s16 *)(s0 + 8) = 0;` followed by a NON-volatile read of the same field \u2014 asymmetric volatile write/read, scheduling coercion; (2) three volatile stores `*(volatile s32 *)(s0 + 0x54/0x50/0x4C) = 0;` before a block of volatile reads; (3) eight volatile reads in two copy-blocks: `*(volatile s32 *)(s0 + 0x38..0x44)` and `*(volatile s32 *)(s0 + 0x48..0x54)`; (4) eight volatile writes in the same blocks. Every volatile-qualifier here fails all three: Test #1 (no semantic purpose \u2014 stripping them gives score 0), Test #2 (no human programmer initialising a camera struct writes volatile casts on its fields), Test #5 (matches 'inline volatile casts on game-state globals' \u2014 explicitly enumerated in the expanded cheat catalog, and the extern-volatile IRQ carve-out does NOT extend to pointer-cast spellings). Next action: remove all `(volatile ...)` qualifiers from the pointer casts in the function body (20 visible volatile casts); run `sandbox camera_InitRotation --disable all` to confirm score stays 0; run `verify-oracle --rebuild` to confirm the build is still oracle-clean; commit as `cheat-cleanup: camera_InitRotation \u2014 remove inert volatile casts (inline-volatile-cast family)`.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

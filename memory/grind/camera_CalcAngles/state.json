@@ -1,10 +1,33 @@
 {
  "func": "camera_CalcAngles",
  "file": "sound",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: the flagged store IS in target bytes (sw $a1,0x20($sp) in the jal delay slot, never re-read) \u2014 Form A (pass sp18[2] as the arg) makes the store live-in-source and should match via r"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Form A: keep `sp18[2] = a1;` (or fold the expr into it) and change the call to `single_game_getEnemyCharId(sp18[1], sp18[2])` \u2014 store becomes live-in-source, bytes stay identical (floor stays 0)",
+   "mechanism": "cse.c store-to-mem/reg equivalence forwards the stored $a1 pseudo into the call arg (no lw reload); store schedules into the jal delay slot as in target",
+   "next_probe": "sandbox camera_CalcAngles --disable all with Form A; expect 0, then retire/verify-oracle for the unmasked proof"
+  },
+  {
+   "hypothesis": "Form B: eliminate the `a1` local entirely \u2014 `sp18[2] = ((s32)Judge[((s16)s0+0x400)&0xFFF]*sp18[2] + (s32)Judge[s0&0xFFF]*sp18[0]) >> 12; D_800A33C8 = -single_game_getEnemyCharId(sp18[1], sp18[2]);` \u2014 the cleanest human spelling",
+   "mechanism": "same CSE forwarding; the compute pseudo's only consumers are the sw and arg2, so RA still picks $a1 (arg-register affinity via call-use)",
+   "next_probe": "sweep {Form A with local, Form B folded} in one sweep_variants call; compare masked distance and confirm the sw stays in the delay slot"
+  },
+  {
+   "hypothesis": "If CSE reloads (lw $a1,0x20($sp) appears instead of register forwarding): the reload adds 1 insn + shifts the delay-slot fill \u2014 then this is genuinely a dead-store-in-original case and the FAKE-annotated dead store per dead-store-fake-exception is the sanctioned closing form",
+   "mechanism": "dead-store-fake-exception (2026-07-01) \u2014 target bytes contain the dead sw (oracle-enforced), store to a written local array element, lever-exhaustion + FAKE annotation + dual review",
+   "next_probe": "only after Forms A/B measure non-zero: re-apply current form + /* FAKE */ annotation + exhaustion note, invoke cheat-reviewer"
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Dead store `sp18[2] = a1` (line 543, src/sound.c): sp18[2] is written but never read afterward \u2014 the next call uses `a1` directly from register, not sp18[2] from the stack. The store has no semantic purpose (Test 1 fails) and exists only to emit the sw instruction in the target asm. Next action: sandbox-verify Form A \u2014 replace `single_game_getEnemyCharId(sp18[1], a1)` with `single_game_getEnemyCharId(sp18[1], sp18[2])` (dropping the explicit dead store). If Form A still matches, it is the cleaner original-intent decomp and the dead store was a codegen coercion; commit Form A as the replacement. If Form A breaks the match, escalate for investigation of the original call-site form.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

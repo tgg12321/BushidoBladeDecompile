@@ -1,10 +1,33 @@
 {
  "func": "func_8001B138",
  "file": "code6cac",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: (s32) mask cast is inert-likely (SImode const canonicalization makes all three spellings identical RTL); the s16 tmp clamp is load-bearing-LIKELY via constant materialization (targe"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "UNMEASURED: swap line 1057 to *arg0 = *arg0 & ~0x10001; and line 1041 to plain g_file_vram_timer = -0x1C00; then sandbox - the mask edit should be byte-neutral; the clamp edit is the real test (watch 0x8001b21c: addiu 0x2402e400 vs ori 0x3402e400)",
+   "mechanism": "SImode const_int canonicalization (mask: identical RTL) vs SImode materialization of a u16-truncated constant (clamp: 58368 -> ori unless the cst stays signed)",
+   "next_probe": "make both edits, run sandbox func_8001B138 --disable all; if score is exactly 1 with the li encoding diff, construct-1 is confirmed load-bearing and only the clamp needs a lever"
+  },
+  {
+   "hypothesis": "UNMEASURED: if plain clamp gives ori, respell the store through a signed view: *(s16 *)&g_file_vram_timer = -0x1C00; - HImode signed store keeps cst -7168 -> addiu; consistent with the function's existing (s16) read casts",
+   "mechanism": "expand_assignment through an HImode-signed lvalue truncates/sign-extends the constant at tree level (-7168) so GEN_INT gets the addiu-encodable value",
+   "next_probe": "sandbox the *(s16 *)& spelling; then grep matched COMPLETED-C siblings for prior negative-constant stores to u16 globals to confirm the spelling has precedent (tools/find_duplicates.py or grep '= -0x' over src/)"
+  },
+  {
+   "hypothesis": "UNMEASURED fallback: if the type-pun store is judged too close to the flagged family, try value-flow alternatives: g_file_vram_timer = (s16)-0x1C00; (cast on the literal) or unsigned-arithmetic respelling g_file_vram_timer = 0xE400 - 0x10000; - each changes where the sign-extension happens at tree level",
+   "mechanism": "fold-const keeps (s16)-0x1C00 as signed short cst -7168; the subtraction form folds to SImode -65536+58368 = -7168 signed",
+   "next_probe": "sweep the 3-4 clamp spellings in one sweep_variants call and pick the byte-identical one with the most natural human-programmer reading"
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Two codegen-control constructs fail the human-programmer test (test #2) and the semantic-purpose test (test #1): (1) a typed s16 intermediate used to clamp a u16 global \u2014 `{ s16 tmp = -0x1C00; g_file_vram_timer = tmp; }` \u2014 has no semantic difference from `g_file_vram_timer = -0x1C00;` and the SOTN named-intermediate sanction does not cover typed-literal coercion; (2) an explicit `(s32)` cast on a 32-bit AND mask \u2014 `& (s32)0xFFFEFFFE` \u2014 changes the RTL type of the expression (SI vs USI) without changing the MIPS `and` instruction or the runtime result, and a human programmer would write `& ~0x10001` or the unsigned literal without a signed cast. Both constructs change how GCC 2.7.2 sees the type of a computation in order to influence scheduling or RTL analysis, with no observable semantic effect. Next action: a worker must produce a clean pure-C form \u2014 replace `{ s16 tmp = -0x1C00; g_file_vram_timer = tmp; }` with `g_file_vram_timer = -0x1C00;` (or the natural u16 equivalent) and `& (s32)0xFFFEFFFE` with `& ~0x10001` (or `& 0xFFFEFFFE` without cast), then verify sandbox distance is 0 and SHA1 == oracle before re-submitting.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

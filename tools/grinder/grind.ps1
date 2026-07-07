@@ -284,7 +284,11 @@ function Invoke-GrindAgent([string]$BriefPath, [string]$OutcomePath,
 }
 
 # Paths a session may legitimately touch. ANYTHING else dirty = invalid session.
-$AllowedDirtyPattern = '^(\?\?|.M|M.|A.|.A)\s+("?)(memory/grind/|tmp/|metrics/events\.jsonl|src/|include/)'
+# docs/grind/ is included because the DRIVER's own journal/INCIDENT/decisions
+# writes can be left uncommitted by a circuit-break — they must never trip the
+# scope gate of a later session (2026-07-07 incident: the gate's broad checkout
+# also wiped concurrent uncommitted ledger work).
+$AllowedDirtyPattern = '^(\?\?|.M|M.|A.|.A)\s+("?)(memory/grind/|docs/grind/|tmp/|metrics/events\.jsonl|src/|include/)'
 
 function Revert-SessionEdits {
     git -C $Root checkout -- src include 2>$null

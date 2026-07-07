@@ -1,10 +1,33 @@
 {
  "func": "camera_InitBoneData",
  "file": "sound",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: h2 (dead local) and new_var (single-use write pointer) are inert-likely \u2014 the sym+2 fold and the interleaved schedule are reachable from direct spellings; the do-while(0) is the one"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Strip all three flagged constructs at once (plain struct assign, no h2, direct `(&D_800EEDD8)[1]` store) \u2014 expect floor stays 0 (all inert)",
+   "mechanism": "sym+2 address fold in expr/combine is spelling-independent; dead pseudo has zero refs; loop notes likely reemitted not fenced",
+   "next_probe": "sandbox camera_InitBoneData --disable all on the fully-clean form; 0 => done, non-zero => isolate"
+  },
+  {
+   "hypothesis": "If the clean form diverges: isolate by stripping ONE construct at a time (h2 only, new_var only, wrapper only) to attribute the diff \u2014 prediction: any diff comes from the do-while(0) as a sched fence between copy and halvings, not from h2/new_var",
+   "mechanism": "NOTE_INSN_LOOP_BEG/END interaction with sched.c on the single-BB function",
+   "next_probe": "three single-strip sandbox runs; compare which one moves the lhu/sh interleave"
+  },
+  {
+   "hypothesis": "If the wrapper is genuinely load-bearing: keep it with /* FAKE: sched fence between block copy and halving cluster */ per the FINAL 2026-07-06 do-while-zero ruling, and delete h2 + new_var (which should be independently inert)",
+   "mechanism": "do-while-zero-exception (sanctioned w/ FAKE annotation) + ordinary cleanup of the two inert constructs",
+   "next_probe": "sandbox the wrapper-kept/h2-new_var-deleted form; expect 0; document lever exhaustion for the annotation"
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Three cheats found in current main source (src/sound.c:462-476): (1) unannotated do-while(0) wrapper \u2014 missing mandatory /* FAKE */ annotation, so the LABEL_OUTSIDE_LOOP_P prerequisite and lever-exhaustion cannot be verified; (2) s16 h2 declared in inner block but never assigned or read \u2014 dead local with no semantic purpose (RA/frame coercion); (3) s16 *new_var set to &D_800EEDD8 but used only for a single write \u2014 write-only single-use pointer is explicitly NOT covered by pointer-rmw-global-sanctioned (which requires at least one load AND one store through the pointer). Worker must produce a clean pure-C replacement that: eliminates h2, eliminates new_var (write directly via *((&D_800EEDD8)+1)), and either removes the do-while(0) wrapper or \u2014 if lever exhaustion is genuine \u2014 re-documents and annotates it with /* FAKE: <reason> */.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

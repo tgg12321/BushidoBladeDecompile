@@ -1,3 +1,15 @@
 # Evidence bank — func_80033498
 
 - Audit diagnosis (regressions.md): Width-coercion cast `*(u16 *)&D_800A36A4` on an `s16`-declared global forces `lhu` instead of `lh` with zero semantic effect — the outer `(s16)` cast makes the expression identical to a plain read for ALL 16-bit inputs (`(s16)((u16)x-2) == (s16)(x-2)` is an arithmetic identity). This is the alias-rename injection family spelled as a use-site type-pun rather than a new declaration. Clean fix: reclassify `D_800A36A4` as `u16` in `include/code6cac.h` (consistent with other use sites: `(s8)(u16)D_800A36A4` at code6cac.c:1511 and `*(u16 *)&D_800A36A4` at code6cac_c_ab.c:333), then write `switch ((s16)(D_800A36A4 - 2))` with no cast — GCC naturally emits `lhu` for a `u16` global, reaching the target bytes in pure C.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)
+
+- [s1] [fable-blitz 2026-07-07] Flagged construct located: src/code6cac_b.c:3331 `switch ((s16)(*(u16 *)&D_800A36A4 - 2))` -- pointer-pun forcing lhu on the s16-declared global (include/code6cac.h:95 `extern s16 D_800A36A4;`).
+
+- [s1] [fable-blitz 2026-07-07] Target asm/funcs/func_80033498.s:3 is `lhu` + addiu -2 + sll/sra 16 + sltiu 0x17 jtbl dispatch -- the zero-extended load is REQUIRED by the bytes; a plain s16 read emits lh.
+
+- [s1] [fable-blitz 2026-07-07] Binary-wide census (grep asm/funcs for D_800A36A4): reads use lh in ~13 functions (camera_SetMatrix_8001DA8C, cpu_side_move_dir, func_80021D10, func_80021DB0, func_80022224, func_80022408, func_80032C50 x2, func_80058580, mario_test_Exec, mk_leaf_newpos, se_data_set x3) and lhu in only 3 places (func_80033498, func_8003AE5C, se_data_set 4th read at E078). The s16 declaration is CORRECT for the dominant form; the judge's prescribed header retype to u16 would flip all lh sites to lhu and break every completed function that reads it.
+
+- [s1] [fable-blitz 2026-07-07] se_data_set reads the SAME global with lh (x3) and lhu (x1) WITHIN ONE FUNCTION (asm/funcs/se_data_set.s E044 lh vs E078 lhu) -- no single declaration type can produce both from plain reads; the original source necessarily used an explicit widened-access spelling at the lhu sites. The use-site width-view is AUTHENTIC original-source behavior, not our coercion.
+
+- [s1] [fable-blitz 2026-07-07] In-repo precedent for the VALUE-cast spelling: code6cac.c:1511 ships `(s8)(u16)D_800A36A4` on main. GCC 2.7.2 combine.c folds zero_extend of a single-use sign-extended HImode load into the load itself (lh -> lhu), so `(u16)D_800A36A4` (ordinary value cast, no pointer pun) plausibly reaches lhu.
+
+- [s1] [fable-blitz 2026-07-07] Sanction tension: [[pointer-alias-fake-exception]] (2026-07-01) sanctions a 'typed re-view of a global' at C level with FAKE annotation -- the committed `*(u16 *)&` IS that family, while the seeded diagnosis classifies it as the forbidden alias-rename-injection family. See ruling_question.

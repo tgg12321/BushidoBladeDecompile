@@ -1,10 +1,33 @@
 {
  "func": "disp_SetFramebufferMode",
  "file": "ings",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: volatile casts are LOAD-BEARING (judge measured 0->6 on removal); target loop keeps THREE induction vars (counter t1, ptr v1, offset t0) + mixed addressing (symbolic sb a0,g_disp_fb"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "UNMEASURED (first, cheap): strip the four volatile casts, sandbox, and objdump-diff the 6 divergent insns against target to identify WHICH pass moves - IV-merge (offset t0 disappears), LICM (lui hoisted above the loop head), or sched (sb order shuffles); the diff shape picks the technique slug",
+   "mechanism": "loop.c strength-reduction/IV elimination vs loop.c LICM vs sched.c store reordering - each produces a distinguishable byte signature",
+   "next_probe": "edit out the vu8 casts, run sandbox disp_SetFramebufferMode --disable all (expect ~6), objdump tmp .o and classify the diff"
+  },
+  {
+   "hypothesis": "UNMEASURED: if the diff is IV-merge/LICM, serialize the flag store's address chain: keep a SECOND walked u8* flag_ptr = (u8 *)&g_disp_fb_flag; ... *flag_ptr = a0; flag_ptr += 0x4090; - a real second induction variable that loop.c must keep (walking-pointer family, store variant), reproducing the t0-indexed symbolic store without volatile",
+   "mechanism": "a live pointer IV with its own increment is not eliminable by loop.c IV-merge because its base is a different symbol; matches target's two parallel 0x4090-stepped registers",
+   "next_probe": "sandbox the two-walking-pointers form; if the symbolic lui/addu/%lo(at) macro shape is lost (GCC emits plain sb 0(reg)), fall back to (&g_disp_fb_flag)[offset] = a0 array-index spelling to force the symbol+index mem"
+  },
+  {
+   "hypothesis": "UNMEASURED: if the diff is store-order scheduling, fix order without volatile via dependence: make the a1/a2/a3 stores address-dependent on the a0 store's pointer chain (e.g. write all four through one walked pointer with post-increments) per walking-pointer-serializes-parallel-loads",
+   "mechanism": "address dependence through a serially-updated pointer forbids sched.c from lifting later stores across earlier ones",
+   "next_probe": "sweep 3-4 candidate spellings with sweep_variants against the 16-insn target region"
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Active volatile coercion via *(vu8 *) casts on non-allowlisted game RAM globals; removing casts raises sandbox score 0\u21926; the volatile_cheats detector never caught this *(vu8 *)(ptr + N) spelling. Worker must find the pure-C scheduling/structure solution that matches without volatile.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

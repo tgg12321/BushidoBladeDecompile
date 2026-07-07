@@ -1,10 +1,33 @@
 {
  "func": "se_data_set",
  "file": "code6cac",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "recon: lhu likely falls out of a plain truncating store (movhi=lhu; the (s8)(u16) is m2c transcription); $s0 address-caching may be natural block-local CSE of two identical lb reads \u2014 and if not, the "
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The lhu closes with a cast-free spelling: plain `D_800A390E = D_800A36A4;` (or a u16 local snapshot) emits lhu+sb because the value is only truncated, never SImode-sign-extended",
+   "mechanism": "mips.md movhi plain HImode load = lhu; lh is the fused extendhisi2 form and is only chosen when the consumer needs sign extension \u2014 a truncating sb consumer does not",
+   "next_probe": "Sweep the three spellings (plain assignment / u16 tmp local / single (u16) cast) via tools/sweep_variants.py --func se_data_set --file code6cac, keeping the rest of the body fixed; expect at least one at masked 0"
+  },
+  {
+   "hypothesis": "The $s0 address-caching closes without the pointer: write `*(&D_8008E5A8 + (s8)D_8010277C)` directly at both body sites; block-local CSE unifies the two identical lb-address computations into a call-surviving pseudo",
+   "mechanism": "cse.c on the single body basic block (calls do not end BBs) CSEs the HIGH/LO_SUM address of the twice-read symbol; a pseudo live across func_8005BA8C gets a callee-save reg -> lui/addiu $s0 + lb 0($s0) x2, matching target",
+   "next_probe": "Replace `s8 *p`/`*p` with the direct expression at src/code6cac.c:1509 and :1512, `& tools/wteng.ps1 main sandbox se_data_set --disable all`; if masked 0, run the lhu sweep on top and check for 0 combined"
+  },
+  {
+   "hypothesis": "If direct spelling does NOT form the $s0 cache (cse declines the address pseudo), the pointer alias is retained as a sanctioned pointer-alias-fake-exception with /* FAKE */ annotation and the probe-2 negative as the documented exhaustion",
+   "mechanism": "pointer-alias-fake-exception (2026-07-01 ruling, post-dating this flag): C-level local pointer alias to a global is a last-resort sanctioned family; the 2026-06-22 judge constraint predates the sanction and the clean-replacement bar can be met by annotation + exhaustion + fresh layer-2 review",
+   "next_probe": "Only after probe 2 measures non-zero: annotate `s8 *p = (s8 *)&D_8010277C; /* FAKE: address-cache; direct spelling scores +N, see ledger s1 */`, bank the measured negative in hypotheses.md, and route to layer-2 review with the ruling question"
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Two codegen-coercion constructs with no semantic purpose: (1) '(s8)(u16)D_800A36A4' forces lhu vs lh for no semantic gain (sb discards the sign-extension difference); (2) 's8 *p = (s8*)&D_8010277C' caches the address in a callee-save register across a call where a direct cast would suffice \u2014 inconsistency between condition (direct cast) and body (pointer) is the tell. Both fail tests 1+2+3 of the 6-test checklist. Function needs a clean redo: remove the (u16) intermediate cast and replace *p with (s8)D_8010277C throughout, then find the pure-C structure that naturally produces lhu and $s0 address-caching.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

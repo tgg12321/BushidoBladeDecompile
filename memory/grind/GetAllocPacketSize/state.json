@@ -1,10 +1,33 @@
 {
  "func": "GetAllocPacketSize",
  "file": "text1b",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: sll/sra sign-extension is REAL in target (sra in jal delay slot); the (s16) cast is a redundant SPELLING under the s32 proto \u2014 s16-proto swap should be byte-neutral ordinary cleanup"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Change the 12013 proto to `void func_80087F64(s16);` and drop the cast at 12269 (`func_80087F64(v)`) \u2014 expect byte-identical output (floor stays 0)",
+   "mechanism": "prototype-driven narrow-argument conversion emits the same sign_extend(subreg:HI) RTL as the explicit cast; sched fills the jal delay slot with the sra identically",
+   "next_probe": "sandbox GetAllocPacketSize --disable all with the proto+cast edit; expect 0, then verify-oracle/retire for the unmasked proof"
+  },
+  {
+   "hypothesis": "If the s16 proto perturbs anything (decl-conflict diagnostics or RTL difference), use the TU's own K&R spelling: `extern void func_80087F64();` (no proto) + keep `(s16)v` \u2014 under no-proto the cast IS semantically meaningful (determines the promoted value), matching the line-12592 precedent, so it is not the flagged redundant-cast family",
+   "mechanism": "K&R default argument promotion of an s16 value emits the identical sll/sra pair; the cast has semantic purpose under this decl so it passes the human-programmer test",
+   "next_probe": "sandbox with the no-proto spelling; expect 0"
+  },
+  {
+   "hypothesis": "Cleanup adjacency: the sibling call at 12316 carries the same redundant cast UNDER an s16 proto (12300) \u2014 same-commit cleanup candidate if its bytes are cast-invariant",
+   "mechanism": "cast-to-declared-type is a no-op conversion; dropping it should be RTL-identical",
+   "next_probe": "sandbox the owning function of line 12316 with the cast dropped; expect 0 (separate function, verify ownership first)"
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): CODEGEN-CAST CHEAT at text1b.c:12269: func_80087F64((s16)v) forces a sign-extension pair (sll/sra in the jal delay slot) with no semantic purpose. Visible proto at line 12013 is void func_80087F64(s32); v is always in [1,46] so (s16)v==v. Three other call sites with the same s32 proto and runtime variable args (lines 12523, 12643, 12662) omit the cast. Worker redo: declare func_80087F64 as s16 consistently so GCC emits sign-extension naturally via integer promotion, then drop the explicit cast; confirm with retire/verify-oracle.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

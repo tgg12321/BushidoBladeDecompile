@@ -1,3 +1,15 @@
 # Evidence bank — func_80032064
 
 - Audit diagnosis (regressions.md): sw_val = -0xC8 (src/code6cac_b.c:2829) is a single-use constant variable initialized at function entry and used 32 instructions later as a mult-delay-filling store. The target asm shows addiu $t0, $zero, -0xC8 at instruction 5 (function entry) and sw $t0, 0x20($s0) at instruction 37, interleaved between mult $v0,$a1 and mflo to fill mult latency. With a literal -0xC8 in the store, GCC's scheduler would place the addiu near the mult site, not at function entry. The variable forces GCC to emit the constant materialization early — a scheduling coercion. Owner action: remove sw_val, replace with literal -0xC8 in the store, verify oracle. If oracle breaks, the function needs a clean pure-C redo that achieves the early constant materialization through a legitimate means (e.g., is there a second use, or can structure be changed so GCC naturally hoists it).  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)
+
+- [s1] [fable-blitz 2026-07-07] Flagged construct located: src/code6cac_b.c:2822+2829 (`s32 sw_val; ... sw_val = -0xC8;`), single use at :2852 (`*(s32 *)(s0 + 0x20) = sw_val;`).
+
+- [s1] [fable-blitz 2026-07-07] Target: asm/funcs/func_80032064.s:6 `addiu $t0,$zero,-0xC8` in the ENTRY basic block (before the .L8003208C search loop), consumed only at line 60 `sw $t0,0x20($s0)` -- placed between `mult $v0,$a1` (line 59) and `mflo $t1` (line 61), filling the mult latency window.
+
+- [s1] [fable-blitz 2026-07-07] Key mechanism fact: GCC 2.7.2 sched.c schedules WITHIN basic blocks only. The sw site's BB starts at .L800320C4 (asm line 28); the addiu sits in the entry BB, separated by the loop (.L8003208C) and two branches. A literal -0xC8 at the use site expands inside the .L800320C4 BB and CANNOT be scheduler-moved into the entry BB -> the judge's predicted literal failure has a named mechanism; sw_val is LOAD-BEARING-likely for the entry-block placement.
+
+- [s1] [fable-blitz 2026-07-07] The init cluster matches source order: asm lines 5-9 materialize 0x50 ($a1, = `mul`, :2828), -0xC8 ($t0, = `sw_val`, :2829), i=0 ($v1, :2830), &D_80104E88 ($a0, :2831) in exactly the C statement order -- evidence the ORIGINAL source had both constants as top-of-function initialized locals (mul is the same construct with 2 uses at :2851/:2853 and was NOT flagged).
+
+- [s1] [fable-blitz 2026-07-07] Semantics support a meaningful rename: s0+0x1C/0x20/0x24 form a velocity vector (x from Judge sin table * 0x50, y = -0xC8 constant, z from Judge cos * 0x50) for the projectile/effect slot -- `sw_val` is a decompiler-artifact name for what is plausibly a y-velocity constant (-200).
+
+- [s1] [fable-blitz 2026-07-07] Judge bar (memory/grind/func_80032064/state.json): remove sw_val -> literal, verify oracle; if oracle breaks, clean redo achieving early materialization legitimately. Index rule [[named-local-fake-exception]] (2026-07-01) sanctions constant-holder locals (SOTN `s16 three = 3;`) -- the flagged family is the sanctioned family.

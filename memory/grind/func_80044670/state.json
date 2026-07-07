@@ -1,10 +1,39 @@
 {
  "func": "func_80044670",
  "file": "text1a_c",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 0,
+   "floor": 4,
+   "modality": "wip-import",
+   "headline": "floor imported from memory/wip checkpoint"
+  },
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "recon: the 2026-07-06 owner ruling (do-while-zero-exception, commit 5c3a192f) sanctions this exact single-level wrap with ONLY an inline FAKE annotation \u2014 exhaustion is no longer a hard gate; primary "
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "PRIMARY (Option A under the 2026-07-06 ruling): keep the wrap, add `/* FAKE: keeps reorg.c relax_delay_slots from inverting the two default-path j/nop pairs in the stage-id switch */` at src/text1a_c.c:1139, and route through a fresh layer-2 cheat-reviewer \u2014 the construct is now rule-compliant as-is",
+   "mechanism": "do-while-zero-exception (owner ruling 2026-07-06): single-level wraps sanctioned for any codegen effect with effect-level FAKE annotation; NOTE_INSN_LOOP_BEG sets LABEL_OUTSIDE_LOOP_P which suppresses the invert-jump peephole",
+   "next_probe": "Run the two cheap structural probes below first (to honor the judge constraint's alternatives-first spirit and enrich the annotation), then annotate and re-invoke cheat-reviewer with the ruling citation + this ledger; surface the constraint-vs-ruling supersession to the judge explicitly"
+  },
+  {
+   "hypothesis": "Structural probe: reordering the pre-call global stores (D_800A9CF8/D_800A9D00/D_800A9D04/D_800A9CFA) or moving the return-block geometry does NOT remove the peephole's target (expected KILLED \u2014 the j/nop pairs live in switch expansion, not the stores), confirming no natural-geometry close-out exists",
+   "mechanism": "relax_delay_slots fires on the jump-over-jump shape that expand_case's default edges create; statement order outside the switch cannot change that shape",
+   "next_probe": "Two sandbox measurements without the wrap: (a) stores reordered to match emit order, (b) `return a2 + D_800A9CFE * 104;` direct form \u2014 record scores (expect 4 each) in hypotheses.md as the documented negatives"
+  },
+  {
+   "hypothesis": "Structural probe: giving the switch an explicit empty `default:` or reordering case bodies (case 4 / case 0x12 / case 7 order) leaves the decision tree and the invert-jump exposure unchanged (expected KILLED), closing WIP Option B",
+   "mechanism": "expand_case sorts case values and builds the balanced tree regardless of source case order; no C-level switch respelling controls reorg.c's peephole",
+   "next_probe": "One sweep_variants run over 3-4 switch respellings without the wrap; if all score 4, the exhaustion record is complete and Option A stands as the finished form"
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Unannotated empty `do { } while (0);` at src/text1a_c.c:1139 fails do-while-zero-exception's mandatory prerequisites (no `// FAKE` annotation, no lever-exhaustion ledger) \u2014 the exact failing shape already documented in memory/wip/func_80044670/meta.json (head_carries_cheat=true, auditor finding 2026-06-17). Construct IS load-bearing (strip: score 0\u21924, confirmed 2026-06-24), so a simple revert breaks the oracle. Worker must either (A) try structural alternatives first (if/else chain, store reordering, compute-then-store rewrite) and if each fails, annotate with `/* FAKE: defeats reorg.c relax_delay_slots invert-jump peephole via NOTE_INSN_LOOP_BEG / LABEL_OUTSIDE_LOOP_P suppression */` + record lever-exhaustion in WIP, then re-invoke cheat-reviewer; or (B) find a non-do-while structural alternative per WIP next_hypotheses Options B/C.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

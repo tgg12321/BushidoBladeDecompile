@@ -1,10 +1,39 @@
 {
  "func": "func_800455AC",
  "file": "text1a_c",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 0,
+   "floor": 20,
+   "modality": "wip-import",
+   "headline": "floor imported from memory/wip checkpoint"
+  },
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "recon: WIP's $s0-address-cache story is WRONG \u2014 target computes the ELEMENT address (base+idx*16) once into $v1 with 3 offset stores; that is the registered defeat-combine-symbol-fold shape, closable "
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Semantic element-pointer respelling is byte-identical and reviewer-clean: `s16 *slot = (s16 *)((u8 *)D_800EED10 + idx * 16); *(s32 *)((u8 *)slot + 4) = ret; *slot = a0; *(s32 *)((u8 *)slot + 0xC) = 0;` (drop new_var and its type entirely)",
+   "mechanism": "defeat-combine-symbol-fold: the named derived pointer forces one lui/addiu + addu address computation that all three stores offset from, preventing combine/final from folding sym+4/sym+0xC into three separate %hi/%lo macro addressings",
+   "next_probe": "Apply the respelling to src/text1a_c.c:1729-1742, `& tools/wteng.ps1 main sandbox func_800455AC --disable all` expecting 0, then fresh layer-2 review citing defeat-combine-symbol-fold + the genuine-reuse semantics"
+  },
+  {
+   "hypothesis": "If the reviewer wants maximum naturalness (or the flat-pointer form perturbs codegen), a struct-typed record pointer is the fully-human form: 16-byte record {s16 id; s16 pad; s32 *buf; s32 x8; s32 len;} with `rec->buf = ret; rec->id = a0; rec->len = 0;`",
+   "mechanism": "Same single address computation; struct field access generates identical 0/4/0xC offsets while documenting the record layout the three sibling walkers also traverse",
+   "next_probe": "Only if probe 1 has friction: add the struct decl (local to the TU), retype the access, sandbox; note this changes D_800EED10's extern typing surface so verify siblings saSeMain_80045600/func_8004574C still compile identically"
+  },
+  {
+   "hypothesis": "If both semantic forms somehow diverge from the exact target register/order, the existing construct is retainable under pointer-alias-fake-exception with a FAKE annotation + the probe negatives as exhaustion",
+   "mechanism": "pointer-alias-fake-exception (2026-07-01): C-level pointer alias to a global sanctioned as annotated last-resort; the 2026-06-17 judge flag predates this ruling",
+   "next_probe": "Only after probes 1-2 measure non-zero: rename new_var -> a semantic name, fix the type, annotate `/* FAKE: single base computation; direct spelling folds 3 symbolic addresses, +5 insns (ledger s1) */`, re-invoke cheat-reviewer"
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Pointer-alias cheat: `s16 (*new_var)[] = &D_800EED10` introduces a local pointer indirection that is semantically identical to using D_800EED10 directly (as sibling functions saTan5TakeGetPos_80045694 and func_800456F0 do). The alias serves no semantic purpose and the name 'new_var' announces coercion intent. Worker must find a clean C form that reaches byte-match without the alias \u2014 e.g. use D_800EED10 directly with the same byte-offset arithmetic the siblings use, and rely on pure C structure to get the right register allocation.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

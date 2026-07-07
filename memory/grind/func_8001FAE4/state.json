@@ -1,10 +1,33 @@
 {
  "func": "func_8001FAE4",
  "file": "code6cac",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: char new_var is the SOTN 'new_var' constant-holder idiom (named-local-fake-exception family), zero asm footprint confirmed; likely protects if-else arm orientation / branch sense - "
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "UNMEASURED: literal-0 replacement (`(v1 & 0xC000) != 0`, `v1 != 0`, decl deleted) already scores 0 - both compares already emit as canonical zero-branch forms, so new_var may be a permuter souvenir, not load-bearing",
+   "mechanism": "after cprop the RTL is identical; the only divergence risk is expand-time branch polarity before jump.c normalization",
+   "next_probe": "sandbox func_8001FAE4 --disable all with the literal-0 form; 0 = trivial cleanup"
+  },
+  {
+   "hypothesis": "UNMEASURED: if the branch shape flips, an arm-order/branch-sense respell closes it - negated condition with swapped bodies (`if ((v1 & 0xC000) == 0) a0 += 4; else a0 += 8;`) or plain truth-test `if (v1 & 0xC000)`",
+   "mechanism": "jump.c arm placement + reorg.c delay-slot fill choose j-vs-fallthrough per the expand-time branch polarity; swapping the source arms reproduces the register-compare polarity without the fake variable",
+   "next_probe": "tools/sweep_variants.py over the 4 polarity/arm-order spellings of the 0xC000 test and the 2 spellings of the loop-back test"
+  },
+  {
+   "hypothesis": "UNMEASURED fallback: retain new_var as a FAKE-annotated constant-holder per .claude/rules/named-local-fake-exception.md if the spelling sweep exhausts - requires documented lever-exhaustion and conflicts with this regression's explicit bar, so it is a last resort surfaced to the judge, not a default",
+   "mechanism": "extra DECL pseudo + register-compare expansion shift LUIDs and branch canonicalization; the 2026-07-01 sanction covers exactly this shape (SOTN new_var)",
+   "next_probe": "only after probes 1-2 fail: document the exhaustion, FAKE-annotate, and put the retention question to the judge"
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): char new_var is a dead-constant codegen coercion (permuter-found trick, commit-confirmed). The variable is always 0, both comparisons are semantically identical to != 0, no asm instruction corresponds to it (fully DCE'd by GCC), and the name announces non-semantic intent. Fails all 6 checklist tests. New spelling of dead-variable coercion family not caught by volatile_cheats.py. Worker must remove char new_var and replace both uses with literal 0, then find the pure-C form that still produces score 0 without the trick (if score rises, that is the real distance to close).  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

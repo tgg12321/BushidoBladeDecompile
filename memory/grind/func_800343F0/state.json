@@ -1,10 +1,28 @@
 {
  "func": "func_800343F0",
  "file": "code6cac_b",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: pun is load-bearing (target lb vs lbu+sll/sra) and the judge's retype fix is VIABLE -- blast radius audited: the only other committed C use of D_80102787 is a width-neutral store; o"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Retype `extern u8 D_80102787;` -> `extern s8 D_80102787;` + plain read at :3969 reproduces the bytes exactly (lb, no extend pair), and func_8001C444's store site is unaffected.",
+   "mechanism": "type-level access width -- GCC emits lb for a signed char global read; sb is sign-agnostic.",
+   "next_probe": "Apply the retype + cast removal, `sandbox func_800343F0 --disable all` (expect 0), then `sandbox func_8001C444 --disable all` (expect unchanged), then verify-oracle."
+  },
+  {
+   "hypothesis": "No other header or auto-syms surface conflicts with the retype (undefined_syms_auto.txt only carries the address).",
+   "mechanism": "single canonical extern decl in include/code6cac.h.",
+   "next_probe": "Grep include/ for any second declaration of D_80102787 before editing (census already shows only code6cac.h:409)."
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Cheat: `*(s8 *)&D_80102787` where D_80102787 is `extern u8`. This pointer-type-cast is used to force a `lb` (signed byte load) instruction instead of `lbu + sll 24 + sra 24`, compensating for an incorrect `u8` type declaration in include/code6cac.h. Observable behavior is byte-identical to `(s8)D_80102787`; the construct serves no semantic purpose beyond GCC instruction-selection coercion. Analogous to the forbidden `*(volatile T *)&G` family (same structural intent: take address of global, cast to different pointer type, coerce codegen). Clean fix: change `extern u8 D_80102787;` to `extern s8 D_80102787;` in include/code6cac.h (target asm `lb` proves original was signed), then write `s32 val_87 = D_80102787;` without any cast.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

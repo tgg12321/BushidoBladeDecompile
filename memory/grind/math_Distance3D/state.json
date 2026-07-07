@@ -1,10 +1,33 @@
 {
  "func": "math_Distance3D",
  "file": "ings",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "recon: out[4]->out[3] predicted byte-identical (BLKmode 8-align + MIPS_STACK_ALIGN both round 0x1C->0x20); PsyQ VECTOR (vx,vy,vz,pad) is the semantically-real alternative"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "s32 out[3]; alone is byte-identical to the current out[4] form \u2014 the dead 4th element contributes nothing to frame layout",
+   "mechanism": "cc1 frame layout: assign_stack_local gives BLKmode arrays 8-byte alignment (function.c ~678, BIGGEST_ALIGNMENT=64) so out sits at sp+0x20 regardless; mips.c compute_frame_size MIPS_STACK_ALIGN rounds the 0x1C locals span back to 0x20, keeping frame 0x38 and $ra at sp+0x30",
+   "next_probe": "Edit src/ings.c:783 `s32 out[4];` -> `s32 out[3];`, run `& tools/wteng.ps1 main sandbox math_Distance3D --disable all` expecting 0, then full verify-oracle; if it holds, apply the same one-line fix to math_Distance3D_16 (src/ings.c:793)"
+  },
+  {
+   "hypothesis": "If out[3] diverges (contradicting the arithmetic), a VECTOR-style struct local `struct { s32 vx, vy, vz, pad; } out;` reaches the 16-byte slot with a semantically-real PsyQ SDK type instead of a dead array element",
+   "mechanism": "Same frame-layout pass; a 16-byte RECORD_TYPE local gets the identical BLKmode 8-aligned slot as s32[4], but the 4th word is the SDK's documented pad member \u2014 human-natural GTE code, not frame coercion",
+   "next_probe": "Only if probe 1 fails: swap the local to the 4-word struct (members accessed as out.vx+out.vy+out.vz), sandbox expecting 0, and record which of the two spellings the judge accepts as clean"
+  },
+  {
+   "hypothesis": "If both respellings shift layout, the divergence is in var_size rounding, not the array \u2014 read the actual computed frame constants from an RTL dump before touching anything else",
+   "mechanism": "cc1 -da .greg dump prints the frame layout decisions (compute_frame_size result, slot offsets); diff out[3] vs out[4] dumps to see the first differing constant",
+   "next_probe": "cpp the TU, run tools/gcc-2.7.2/build/cc1 <build flags> -da on both variants, diff the .greg frame dispositions for math_Distance3D"
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): out[4] has a dead 4th element (out[3] is never written by the callee or read by the caller) that inflates the array to 16 bytes to coerce $ra to sp+0x30 and the frame to 0x38 \u2014 frame-coercion by dead array element. Worker must find a pure-C form that reaches the correct frame layout without the dead element, or confirm via GCC run whether out[3] produces the same layout.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

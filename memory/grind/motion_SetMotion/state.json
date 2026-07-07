@@ -1,0 +1,40 @@
+{
+ "func": "motion_SetMotion",
+ "file": "code6cac_c_mid",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 0,
+   "floor": 10,
+   "modality": "wip-import",
+   "headline": "floor imported from memory/wip checkpoint"
+  },
+  {
+   "session": 1,
+   "floor": 10,
+   "modality": "recon",
+   "headline": "fable-blitz deep recon: Wall 1 (RA) landed 2026-07-01; the ONE remaining rule is a jump2 find_cross_jump label-bonus merge of the two [li s0,0xD; j sel_dispatch] blocks - and the function ITSELF ships"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "UNMEASURED (flagship): the committed build's RTL contains, at the -1 sites, a concrete feature that blocks find_cross_jump (intervening byte-free insn, non-const-int set pattern, REG-note structure, or distinct JUMP_LABEL rtx) which the 13 sites lack - the original source had the same feature at BOTH pairs. One -da compile of the committed TU discriminates the two pairs and the feature is then respelled onto the ==3-arm/case-9/11 pair (with case 9/11 honestly sel = 0xD), retiring the last rule.",
+   "mechanism": "jump2 = jump_optimize(insns,1,1,0) (toplev.c:3142) -> find_cross_jump (jump.c:2371-2533). The validated trace predicts the -1 pair merges via the case-8 label bonus; it demonstrably does not (build byte-matches with both [addiu s0,-1; j] blocks present, asm L119-120 vs L158-159) - so a real, dump-visible blocking condition exists in our own RTL.",
+   "next_probe": "Preprocess src/code6cac_c_mid.c with the pipeline cpp flags, run tools/gcc-2.7.2/build/cc1 with the build flags + -da on the .i (diagnostic compile, no tree build), open the .jump2 dump (and the sched2-stage dump for the pre-jump2 view): locate the four blocks (case 8, case-10 subpath, ==3 arm, case 9/11), record each jump's JUMP_LABEL uid, the exact PATTERN of each pre-jump insn, and any USE/CLOBBER/insn between set and jump. If the discriminator is not obvious, add a printf trace knob to find_cross_jump in a DIAGNOSTIC gccdbg cc1 copy (established BB2_*_DEBUG precedent; diagnostic-only, never the build compiler) and trace the (case8, case10) pair's exit condition. Then respell the 13-pair to carry the discriminator and verify via sandbox + full SHA1 (retire)."
+  },
+  {
+   "hypothesis": "UNMEASURED: a byte-free suffix-breaker insn - a bare (clobber ...) from a union-typed constructor/assignment (expr.c:2996) placed between `sel = 0xD;` and `goto sel_dispatch;` in ONE arm (prefer case 9/11, breaking BOTH merge directions) - survives to jump2, breaks iter1's rtx comparison (GET_CODE SET != CLOBBER, jump.c:2469) before any label bonus, emits zero bytes at final, and leaves reorg free to fill the j's delay slot with the set13 past the CLOBBER (target shape preserved).",
+   "mechanism": "jump2 find_cross_jump iter1 pattern-code mismatch (jump.c:2412/2469) - stream2 skips only notes/labels (2392), so a CLOBBER INSN is compared, not skipped; USE/CLOBBER never emit (final skips them) and reorg's fill_simple ignores them as slot candidates. Risk: flow1 may delete the clobber together with its dead pseudo before jump2 (then the lever is inert, not harmful). Policy checkpoint: a dead union local is in the named-local-fake-exception / dead-store family - FAKE annotation + documented lever-exhaustion + layer-2 review required BEFORE commit; treat any closing form as a PROPOSAL.",
+   "next_probe": "Micro-testcase first (tmp/, static diagnostic compile with -da): a switch with two identical [set;goto] arms + a `union { s32 a; } u = { 0 };` (and variants: uninitialized union + field assign; struct-return call shapes) inserted in one arm; grep the .jump2 dump for the clobber's survival and the merge's suppression, and the final asm for byte-freeness. If it survives, splice into motion_SetMotion case 9/11 (honest 0xD both arms), sandbox + full SHA1."
+  },
+  {
+   "hypothesis": "UNMEASURED on this function: a sanctioned FAKE-annotated do-while(0) wrap around {case-9/11's body | the ==3 arm's 0xD statement | empty wrap between the set and the goto} changes the emitted RTL neighborhood (extra emission structure, sched2 region boundary) enough to break iter1 adjacency at jump2 - the only lever class sanctioned AFTER m7/m8 were measured, so the wall has never been probed with it.",
+   "mechanism": "Indirect only: NOTE_INSN_LOOP_BEG/END are skipped by every comparison on this wall (jump.c:2389, 2392-2393, 3187-3192), so any effect must come from stmt.c loop-expansion changing insn emission order/adjacency or sched2 treating the noted region differently. Low prior by source reading; cheap; a clean negative closes the wrap family for cross-jump walls cluster-wide (transfers to saEft00Add's residual).",
+   "next_probe": "One sweep_variants call with 3-4 wrap spellings on the honest-0xD body; judge each by full-build SHA1 / raw window diff (masked sandbox is blind here). Bank the negative in the ledger if inert, per the wrap-vs-cross-jump question this recon's source reading predicts."
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-07T15:21:59.271930+00:00"
+}

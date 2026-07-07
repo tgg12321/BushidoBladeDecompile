@@ -1,3 +1,15 @@
 # Evidence bank — func_8001E800
 
 - Audit diagnosis (regressions.md): volatile-coercion cheat: `volatile u8 *ptr = (volatile u8 *)(&D_80101EC8 + v * 1100)` is an inline volatile cast on a non-volatile game-state global (D_80101EC8 declared extern u8 in code6cac.h:300). The cast forces GCC to emit two separate lbu loads of ptr[0x62] (target F038 + F050) that it would CSE into one without volatile. D_80101EC8 is absent from volatile_extern_allowlist.txt; no IRQ-writer citation exists; the cast form (volatile T *) is explicitly excluded from the narrow scalar-extern volatile carve-out (carve-out covers only extern volatile T G; declarations, not pointer casts). Remove the volatile cast and find a pure-C structural approach — either demonstrate genuine IRQ-touching (allowlist process) or restructure so GCC naturally emits two loads.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)
+
+- [s1] [fable-blitz 2026-07-07] Flagged construct located: `volatile u8 *ptr = (volatile u8 *)(&D_80101EC8 + v * 1100)` at src/code6cac.c:1756; the two coerced reads are ptr[0x62] & 1 at src/code6cac.c:1758 and ptr[0x62] & 4 at src/code6cac.c:1762
+
+- [s1] [fable-blitz 2026-07-07] Target emits TWO lbu 0x62($v1) loads: asm/funcs/func_8001E800.s:16 (F038) and :23 (F050); everything between is andi/beqz/delay-slot addiu $a1,-1/lh (asm lines 17-21) - NO store, NO call, NO pointer modification between the reads
+
+- [s1] [fable-blitz 2026-07-07] The second lbu sits at join label .L8001E850 (asm/funcs/func_8001E800.s:22). GCC 2.7.2 -O2 enables -fcse-skip-blocks: cse.c's extended-basic-block walk follows the beqz around the single-insn lh block (label used by exactly one jump), invalidating only what the skipped block SETS ($a1) - the cached MEM value for ptr[0x62] survives, so without volatile the second load folds to the first's pseudo. Load-bearing-likely
+
+- [s1] [fable-blitz 2026-07-07] No legitimate invalidation point exists in the target bytes: the skipped arm is a lone lh (a LOAD, not a store), so no natural may-alias store can flush the CSE entry; a1 = -1 lives in the beqz delay slot (asm/funcs/func_8001E800.s:20). Any pure-C defeat must stop cse.c from seeing the two MEMs as rtx-equal while still emitting both as 0x62($v1) - a narrow spelling space
+
+- [s1] [fable-blitz 2026-07-07] D_80101EC8 with the v*1100 stride (shift-add chain at asm/funcs/func_8001E800.s:6-12) is the per-player rob work array - game-state memory; judge confirms it is absent from volatile_extern_allowlist.txt and no IRQ-writer citation exists; +0x62 is a flags byte (bit0 = valid, bit2 = the arg passed to func_80048BA4)
+
+- [s1] [fable-blitz 2026-07-07] Technique-index scan: store-const-reload-cse and split-read-defeats-hoist are the nearest families but neither maps - there is no store between the reads, and arm-duplication is the wrong direction (target has ONE load at the join, not per-arm copies)

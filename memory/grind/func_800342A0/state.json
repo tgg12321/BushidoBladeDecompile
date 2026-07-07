@@ -1,10 +1,33 @@
 {
  "func": "func_800342A0",
  "file": "code6cac_b",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: duplicate-extern decl padding is the forbidden family with NO 2026-07-01 sanction cover (file-scope, not local); suspected mechanism is cse.c SYMBOL_REF string-pointer hashing (obst"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Deleting the duplicate decls (:3914-3917) breaks func_800342A0 in a SMALL localized region (the .L800342F4 preamble RA tie: $a0/$a1/$v0 assignment or lui/addiu order), and the diff shape -- currently UNMEASURED -- is the actual work map for a clean lever.",
+   "mechanism": "cse.c canon_hash SYMBOL_REF string-pointer hashing perturbing equivalence-list order (decl-stream padding shifts permanent-obstack layout).",
+   "next_probe": "Delete :3914-3917, `sandbox func_800342A0 --disable all`, record the exact diff region; ALSO sandbox 2-3 downstream siblings in the same TU (e.g. func_800343F0, DispSamnailWindow) to test the file-global-effect hypothesis."
+  },
+  {
+   "hypothesis": "The residual diff after removal maps to a known local technique (compare-operand-order for the bne at line 11, init order of the a1/a0 pointer locals, or placement of v1=0 relative to the branch) that reproduces the allocation without decl padding.",
+   "mechanism": "local.c/global.c allocation-order tie on the three preamble pseudos (&D_801027A0, &D_801027D8, 0x50).",
+   "next_probe": "After probe 1 characterizes the diff, sweep pointer-decl order / init-statement order variants via tools/sweep_variants.py."
+  },
+  {
+   "hypothesis": "If the effect is confirmed file-global (downstream siblings shift), the duplicate-decl pair may be compensating for a decl-stream delta introduced by an EARLIER refactor, and the clean fix is restoring a semantically-real decl (e.g. an extern actually used by a later function) rather than any padding.",
+   "mechanism": "TU decl-stream layout as shared state across all functions in code6cac_b.c.",
+   "next_probe": "git log/f75aea09 archaeology: diff the decl stream before/after that refactor to identify what real decls were removed when the duplicates became load-bearing."
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Duplicate file-scope extern declarations immediately before the function (src/code6cac_b.c:3910-3917) are a DECL_UID/LUID codegen coercion cheat. The same four symbols (func_80034200, func_800372C0, D_801027A0, D_801027D8) are declared twice in identical sequence; a refactor commit (f75aea09) removed some duplicates from the larger set but intentionally preserved this core duplicate pair, confirming they are load-bearing. A worker should attempt to remove them and verify the oracle still holds; if removal breaks the match, the function needs a clean pure-C redo that matches without the duplicate-declaration lever.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],
