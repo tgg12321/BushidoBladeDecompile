@@ -171,15 +171,12 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
             if not scorable:
                 entry["scorable"] = False
             items.append(entry)
-    # origin=="regression" items (semantic-audit re-opens, see reopen()) are
-    # mechanically invisible to the scan above -- the committed code IS 0
-    # rules / 0 distance / 0 cheat-asm, which is exactly the COMPLETED-C
-    # `continue` case. Re-add whatever the scan didn't rediscover; if the scan
-    # DID produce a fresh item for the func (e.g. it now carries a rule/cheat
-    # too), that fresh item wins.
+    # re-add ONLY regression-origin items the scan can't derive (their cheat
+    # is semantic); a parked item the scan no longer produces is mechanically
+    # complete and must drop, as before.
     have = {it["func"] for it in items}
     for fn, it in prev.items():
-        if fn not in have:
+        if fn not in have and it.get("origin") == "regression":
             items.append(it)
     items.sort(key=_sort_key)
     q = {"generated_at": time.strftime("%Y-%m-%dT%H:%M:%S"),

@@ -1117,6 +1117,16 @@ def test_queue_reopen() -> None:
             check("reopen: duplicate rejected", r2.get("ok") is False)
             eq("reopen: duplicate leaves queue at 1 item", len(Q.load()["items"]), 1)
 
+            # seed a PARKED item too -- the pre-existing preserve contract:
+            # if the scan no longer produces a parked func, it's mechanically
+            # COMPLETED and must drop (not zombie-re-added like regression
+            # items, whose cheat the scan can never see in the first place).
+            q_seed = Q.load()
+            q_seed["items"].append({"func": "func_PARKED_GONE", "file": "text1a_c",
+                                    "distance": 12, "verdict": "C", "rules": 1,
+                                    "status": "parked", "park_reason": "test seed"})
+            Q.save(q_seed)
+
             # regen preservation: an origin=="regression" item survives a scan
             # that (correctly) finds nothing mechanically outstanding for it.
             # Stub the scan's real-build dependencies so this stays a
@@ -1137,6 +1147,9 @@ def test_queue_reopen() -> None:
             check("regen: regression-origin item NOT lost by preserve", it2 is not None)
             eq("regen: preserved item keeps origin", it2.get("origin") if it2 else None, "regression")
             eq("regen: preserved item stays active", it2["status"] if it2 else None, "active")
+            gone = next((i for i in q2["items"] if i["func"] == "func_PARKED_GONE"), None)
+            check("regen: parked item the scan no longer produces DROPS (unchanged old behavior)",
+                  gone is None)
         finally:
             Q.QUEUE_PATH = orig_path
 
