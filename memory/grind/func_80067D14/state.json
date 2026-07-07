@@ -1,10 +1,33 @@
 {
  "func": "func_80067D14",
  "file": "text1b",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 1046,
+   "modality": "recon",
+   "headline": "fable-blitz deep recon: particle/effect updater+emitter over the D_800A34EC context - one giant per-slot do-while with 4 canonical-GTE micro-blocks (mvmva x2, sqr, rtpt+swc2 packet stores), 5 div-by-g"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "UNMEASURED (flagship): full-body draft = C skeleton (outer slot loop + 9 regions) with the 4 GTE micro-blocks written as canonical __asm__ volatile cop2 sequences copied from the committed code6cac_b.c mvmva precedent; expected to collapse 1046 to a residual dominated by the sp-slot pointer-home layout and GTE-block register choices (t4/t5/t6 for ctc2, v0/v1 addressing for lwc2).",
+   "mechanism": "ASM-PARTIAL routing = GTE sub-regions only; everything else is compiled C (m2c clean except at cop2 ops). GTE ops have no C form but ARE the sanctioned canonical inline-asm category with in-repo completed precedent (code6cac_b.c x4, display.c) - so the pure-C bar applies only to the ~95% non-GTE body.",
+   "next_probe": "Draft into src/text1b.c: declare the ~14 pointer locals in sp-slot order, outer do-while on *(s16*)(ctx+0x6E), regions R1-R9 per the evidence map, GTE blocks as __asm__ volatile with %-operand addressing on the s2/s6/s7 pointer locals (match the code6cac_b.c spelling). sandbox func_80067D14 --disable all; bisect residual per-region via objdump window diff."
+  },
+  {
+   "hypothesis": "UNMEASURED: the sp-home assignment (which ctx-pointer lands at which sp slot, and which of the 8 hottest live in s-regs s1/s2/s3/s4/s6/s7/fp) is reproduced by declaration order + use frequency alone - GCC 2.7.2 assigns frame homes in decl order and callee-saves by allocno priority (ref count); the prologue's interleaved sw-to-sp / addiu pattern (L20-48) is the compiler homing cold pointers immediately.",
+   "mechanism": "global.c allocno priority: the 8 pointers used inside BOTH loops (vert-buf s2, out s7, work s6, entry-slot s3, count s4, cursor s1, fp ctx+0x70, s0 ctx) get hard regs; the ~10 used once-per-iteration spill. If the draft's decl order diverges, the sp offsets shuffle = large masked diff that is pure layout, fixable by reordering decls only.",
+   "next_probe": "After first draft, if sp offsets are permuted: reorder the pointer-local declarations to match sp10..sp78 ascending and re-sandbox; do NOT reach for pins (func_80068D88's pin-carrying candidate is the anti-pattern)."
+  },
+  {
+   "hypothesis": "UNMEASURED: the s5-ladder's three near-identical scaling arms (type<2 / type<4 / type<6) and the second in-emit ladder are plain if/else-if chains on slti boundaries (s5<2, s5<4, s5<6, s5<8) - written as `if (type < 2) ... else if (type < 4) ...`, NOT a switch (no jtbl exists; the slti cascade with delay-slot pre-computation of the NEXT slti at L443-445/L959-961 is the compiled if-ladder signature).",
+   "mechanism": "GCC 2.7.2 emits switch as jtbl above ~4 dense cases; the slti-cascade shape with each next-comparison hoisted into the current branch's delay slot is the if-ladder emit. Duplicating the div/mult scaling code per arm in source (rather than factoring to a helper) matches the target's arm-local repetition.",
+   "next_probe": "Encode as if-ladder with fully duplicated arm bodies in the first draft (no helper extraction); confirm the arm boundaries (L501 beqz->0x630, L611 beqz->0x75C, L1027 beqz->0xC5C) land as beqz-of-slti chains in the sandbox diff."
+  }
+ ],
  "judge_constraints": [],
  "origin": "queue",
  "created": "2026-07-07T16:19:29.655535+00:00"

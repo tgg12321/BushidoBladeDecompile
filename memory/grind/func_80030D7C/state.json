@@ -1,10 +1,33 @@
 {
  "func": "func_80030D7C",
  "file": "code6cac_b",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 707,
+   "modality": "recon",
+   "headline": "fable-blitz recon: whole-body asmfix stub (asmfix.txt:89 replace_with_asmfile) - NOT a plateau; ~380-insn thrown-weapon flight-physics loop over the 12x0x64 D_80106A78 table, fully conventional GCC C "
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Full-body transcription from tmp/blitz/m2c_80030D7C.c using the sibling byte-offset idiom ((u8*)&D_80106A78 walkers, raw 0x1F8002B8 scratch pointers) lands a first honest floor far below 707, likely in the low tens - the function is conventional throughout.",
+   "mechanism": "baseline probe - no wall engaged yet; every region uses documented-natural GCC 2.7.2 shapes (bias diamonds, sin-table indexing, mult/mflo interleave)",
+   "next_probe": "write the body into src/code6cac_b.c:2682, `& tools/wteng.ps1 main sandbox func_80030D7C --disable all` for the real floor, then region-scope the diff"
+  },
+  {
+   "hypothesis": "The R5 three-call funnel (asm 552-560) reproduces from m2c's nested if/else with three separate func_80032854 calls whose arg code suffixes are identical - jump2 cross-jumps them without any coaxing; if not, the cross-jump-call-merge levers (arg-count/arg-order) close it.",
+   "mechanism": "jump2 find_cross_jump on identical CALL-suffix blocks (the sltu a0 + a3=0 + jal tail)",
+   "next_probe": "after baseline, diff scoped to asm lines 436-560; verify labels .L80031590/9C/A0 shape (one call, three entries) vs three separate jals"
+  },
+  {
+   "hypothesis": "The endgame plateau will be s-register assignment among the 9 callee-saved values + the sp+0x18 spill of 0x1F8002C8; declaration order and per-region ref counts (NOT pins) steer global.c to the target permutation, with the spilled constant emerging naturally as the lowest-ref value.",
+   "mechanism": "global.c ref-count/priority allocation across s0-s7+fp; spill of the 10th-priority live range",
+   "next_probe": "if renames persist after regions match structurally, -da greg dump on the sandbox .i and compare pseudo dispositions per register-alloc-pure-c step 0"
+  }
+ ],
  "judge_constraints": [],
  "origin": "queue",
  "created": "2026-07-07T16:27:20.064925+00:00"

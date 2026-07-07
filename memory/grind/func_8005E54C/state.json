@@ -1,10 +1,33 @@
 {
  "func": "func_8005E54C",
  "file": "text1b",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 798,
+   "modality": "recon",
+   "headline": "fable-blitz recon: full-body asmfix stub (798 = whole function, no C exists yet); asm is a standard GCC-compiled versus-results scoreboard drawer built almost entirely on the ALREADY-TYPED EnvA arg-st"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "A full mechanical transcription using the existing EnvA struct + the 9-region map collapses the floor from 798 to a small residual (expected <50): the function is standard -O2 GCC output with zero hand-coded signals (park audit agrees), so the first honest C draft is the single highest-value move.",
+   "mechanism": "No wall mechanism -- floor 798 measures an empty stub. Every construct observed (delay-slot arm assignments, strength-reduced i*24/i*70/i*34 index math, s16 counters, stack-homed derived pointers) is vanilla GCC 2.7.2 codegen already reproduced elsewhere in text1b.c.",
+   "next_probe": "structural session: write the draft into src/text1b.c (EnvA env; s16 vals[2]; s16 wins[2]; u8 *p=arg1; u8 *end=arg1+0xBC4; region order R1..R9 per evidence), `& tools/wteng.ps1 main sandbox func_8005E54C --disable all`, then iterate on the residual."
+  },
+  {
+   "hypothesis": "The sp+0x18 local block is ONE declaration cluster where wins[] lands exactly 8 bytes after vals[] (gap at 0x1C/0x1E), and the `lh 0x8($a1)` win-counter access falls out of plain wins[i] indexing once layout matches -- no pointer tricks needed.",
+   "mechanism": "GCC 2.7.2 allocates locals in declaration order; the +8 displacement addressing (`a1=&vals[i]; lh 0x8(a1)`) is combine folding &wins[i] = &vals[i]+8 only when the two arrays are frame-adjacent with a 4-byte spacer (candidates: `s16 vals[2]; s32 spare; s16 wins[2];` or `s16 arr[6]` used as arr[i]/arr[i+4]).",
+   "next_probe": "In the draft, sweep the 3 layout spellings (separate arrays + s32 gap / s16[6] / s16[2][2]+wins) with sweep_variants and keep whichever reproduces the 0x18/0x20 offsets AND the folded +8 addressing."
+  },
+  {
+   "hypothesis": "The dead `beqz` entry guards on all three round-count loops come from an explicit `if (rounds) { for(...) }` wrapper (or unsigned loop compare) in the original -- a plain signed for-loop pre-test would emit blez, so the guard shape is a real structural signal, not noise.",
+   "mechanism": "jump.c simplifies `0 <u n` to `n != 0` (beqz) while signed pre-tests emit blez/slt; back-edges here are signed slt, so entry and back-edge derive from DIFFERENT source tests -- consistent with an explicit != 0 guard around a signed for.",
+   "next_probe": "Two-variant compile probe on region R2 alone: `for (i=0; i<rounds; i++)` vs `if (rounds) for (...)` -- read the emitted entry branch opcode in the sandbox asm diff."
+  }
+ ],
  "judge_constraints": [],
  "origin": "queue",
  "created": "2026-07-07T16:25:58.213801+00:00"

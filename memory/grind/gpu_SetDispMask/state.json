@@ -13,8 +13,8 @@
  ],
  "frontier": [
   {
-   "hypothesis": "GPU-context struct at 0x8009BE6C + `u8 *p = &g_gpu_ctx.debug_level;` + `bb2_memset((u8 *)&g_gpu_ctx.disp_env, -1, 0x14)` byte-matches gpu_SetDispMask and leaves every other function's bytes unchanged.",
-   "mechanism": "cse.c use_related_value rewrites the &ctx.disp_env (ctx+0x74) materialization as $s1+0x6A given p=ctx+0xA live in $s1; identical relocation encodings keep sibling functions byte-stable.",
+   "hypothesis": "GPU-context struct at 0x8009BE74 (extend gpu_SetMode's existing GpuConfig: +2 debug_level, +0x6C disp_env, size 0x80) + `u8 *p = &g_gpu_ctx.debug_level;` + `bb2_memset((u8 *)&g_gpu_ctx.disp_env, -1, 0x14)` byte-matches gpu_SetDispMask and leaves every other function's bytes unchanged (identical reloc encodings).",
+   "mechanism": "cse.c use_related_value rewrites the &ctx.disp_env (ctx+0x6C) materialization as $s1+0x6A given p=ctx+2 live in $s1; small direct member accesses fold to absolute macro forms with byte-identical relocs (proven in-oracle by gpu_SetMode).",
    "next_probe": "Draft the struct (TU-visible header or file-local), re-spell the 17 g_gpu_debug_level/g_gpu_disp_env refs across src/display.c + src/gpu.c, update externs/symbol_addrs per the re-attribution recipe, `& tools/wteng.ps1 main sandbox gpu_SetDispMask --disable all` (expect 0), then full build to prove sibling stability."
   },
   {

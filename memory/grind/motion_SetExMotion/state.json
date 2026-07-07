@@ -1,0 +1,11 @@
+{
+ "func": "motion_SetExMotion",
+ "file": "text1b",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-07T16:31:43.109548+00:00"
+}

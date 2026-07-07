@@ -1,10 +1,33 @@
 {
  "func": "func_80023F08",
  "file": "code6cac",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 2981,
+   "modality": "recon",
+   "headline": "fable-blitz deep recon: 2983-insn CPU move-command executor, whole-body asmfix; m2c clean (1337 lines); NO jtbl wall (zero switch tables, single exit); 6 inline movstrsi block-moves + shared 0x44C AI "
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "A typed scaffold from tmp/blitz/m2c_80023F08.c compiles and drops the honest floor far below 2981 - no jtbl wall exists, all 38 callees have C decls, and the body is sibling-style field code.",
+   "mechanism": "distance 2981 measures a stub vs full body; structurally-correct C recovers the bulk, leaving movstrsi shapes + RA/scheduling residue",
+   "next_probe": "Type the m2c output against code6cac_b.c raw-offset conventions (D_80101EC8 + idx*0x44C spelling per code6cac_b.c:893), apply to src working copy, run '& tools/wteng.ps1 main sandbox func_80023F08 --disable all', record first real floor and diff clusters"
+  },
+  {
+   "hypothesis": "The 6 inline block-moves reproduce from builtin memcpy(dst, src, 0x84) on plain pointer args (runtime-alignment dual-loop shape), NOT from struct assignment.",
+   "mechanism": "GCC 2.7.2 expand_block_move emits the '(src|dst)&3' runtime dispatch only when neither operand's alignment is provable; a 4-aligned struct assign emits the aligned lw/sw loop only",
+   "next_probe": "Minimal sandbox probe: compile 'memcpy(b, p, 0x84)' vs '*(Rec*)b = *(Rec*)p' with project flags in a scratch TU, objdump-diff each against asm lines 1100-1143's exact shape (lwl/lwr order, unroll factor 4, tail copy); also check how the build resolves memcpy (builtin vs libc extern) since siblings call bb2_memcpy for the non-inline cases"
+  },
+  {
+   "hypothesis": "The 0x44C AI-struct offset map can be locked ONCE for both monsters (this + func_80058580) plus the cpu_* siblings, making both scaffolds consistent and reviewable.",
+   "mechanism": "same D_80101EC8 array: this function writes fields +0x24..0x82 that func_80058580 reads (+0x6A state, +0x430 flags family); a joint offset table prevents contradictory typings across the two grinds",
+   "next_probe": "Extract every s1/s0 field offset+width from both m2c outputs (tmp/blitz/m2c_80023F08.c, tmp/blitz/m2c_80058580.c) into one annotated offset table in the ledger; cross-check against matched cpu_* sibling accesses before any src edit"
+  }
+ ],
  "judge_constraints": [],
  "origin": "queue",
  "created": "2026-07-07T16:27:23.537335+00:00"
