@@ -1,10 +1,33 @@
 {
  "func": "camera_SetMatrix_8001DBE4",
  "file": "code6cac",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "recon: HEAD form floor=0 but uses judge-rejected empty-if; three pure-C alternate spellings identified, all untested"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "H1 (primary, saved in candidate.c): `if (!(D_800A38F8 > D_800A37A0)) { LOOPS }` \u2014 invert to non-empty-body form; jump.c inverts branch sense identically",
+   "mechanism": "GCC 2.7.2 jump.c invert_jump on if-then-goto skeleton; sltu operand order preserved because comparison expression is identical (only enclosing sense negated); i=0 remains sole scheduling candidate for loop1 exit delay slot",
+   "next_probe": "Apply candidate.c to src/code6cac.c:1611-1636; sandbox --disable all; if score=0, candidate-ready; if score>0, inspect .greg/.sched dumps in tmp/grind/camera_SetMatrix_8001DBE4/s2/ to see which insn diverged"
+  },
+  {
+   "hypothesis": "H2 (fallback if H1 fails on sltu direction): `if (D_800A38F8 <= D_800A37A0) { LOOPS }` \u2014 semantically equivalent to H1 but written with <= operator; may cause GCC to swap sltu operands (produce `sltu v0, v1, v0`+beqz instead of `sltu v0, v0, v1`+bnez)",
+   "mechanism": "GCC lowering of `a <= b` on unsigned integers often emits `sltu tmp, b, a; beqz tmp` \u2014 the OPPOSITE operand order and branch sense from target. If H1 succeeds this is moot; if H1 fails on branch-sense it is a controlled variant to isolate whether the issue is expression form vs enclosing sense",
+   "next_probe": "Only if H1 shows a divergence \u2014 write variant.c with `<=` form and sandbox; compare .s output vs H1's .s to localise the diff"
+  },
+  {
+   "hypothesis": "H3 (structural fallback): early-return the tail \u2014 `if (!(D_800A38F8 > D_800A37A0)) { LOOPS; } func_8003AAB0(); gpu_InitDisplay(); gpu_DisableDisplay();` unchanged (this IS H1). No structurally different pure-C form is compatible with the target's skip-to-tail control flow \u2014 the tail is unconditional, so an inversion-return-refactor would break the shape.",
+   "mechanism": "Control flow shape is fixed by target: outer bne-to-return + inner bnez-to-common-tail. There is no room for early-return inside the loop-guarded region without changing the skip target from .L8001DC84 (tail) to .L8001DC9C (fn exit).",
+   "next_probe": "This is a NEGATIVE frontier entry \u2014 do NOT attempt an early-return-tail refactor; it will regress the skip target. Included so future sessions do not rediscover this as a lever."
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Empty if-body construct (line 1618, code6cac.c) fails tests 1+2 and matches the 'empty-body if(cond){} dead-read' forbidden family. Worker should rewrite to 'if (!(D_800A38F8 > D_800A37A0)) { ... }' (or '<=' form) and run verify-oracle to confirm equivalence \u2014 if oracle passes the form was benign style; if it fails it was genuinely codegen-dependent and requires deeper analysis.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

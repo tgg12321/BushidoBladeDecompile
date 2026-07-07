@@ -1,0 +1,1 @@
+- 2026-07-06 23:35 camera_SetMatrix_8001DBE4 s1 [recon] floor=0: recon: HEAD form floor=0 but uses judge-rejected empty-if; three pure-C alternate spellings identified, all untested
