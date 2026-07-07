@@ -171,9 +171,12 @@ function Invoke-CandidatePath([string]$func, [string]$stem, [string]$modality, $
     # committed Match that fails a fresh rebuild. Reject before retire (retire
     # legitimately mutates regfix/asmfix afterwards). Keys on the PATH under any
     # git status (M/A/MM/rename/?? untracked header) — not modifications alone.
+    # NB: porcelain format is exactly "XY path"; extract by fixed offset. (The
+    # previous `-replace '^[\sA-Z?]+'` was case-INSENSITIVE per PowerShell default
+    # and ate the lowercase 'src' prefix too, mangling every path.)
     $buildMods = @(git -C $Root status --porcelain |
         Where-Object { $_ -match '^..\s+("?)(src/|include/)' } |
-        ForEach-Object { ($_ -replace '^[\sA-Z?]+', '').Trim('"') })
+        ForEach-Object { $_.Substring(3).Trim().Trim('"') })
     $offStem = @($buildMods | Where-Object { $_ -ne "src/$stem.c" })
     if ($offStem.Count) {
         Log "${func}: candidate touches build inputs beyond src/$stem.c ($($offStem -join ', ')) — rejected as invalid session."
