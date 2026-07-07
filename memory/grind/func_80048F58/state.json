@@ -1,10 +1,33 @@
 {
  "func": "func_80048F58",
  "file": "text1b",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "recon: the target's prologue moves (addu s1,a0 / addu s0,a1) are GCC's OWN parm-to-callee-save copies, emitted for direct param use too -- and ref-count arithmetic predicts the crossed s0/s1 assignmen"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "PRIMARY: deleting the alias pair and using a0/a1 (or domain-named params) directly still seats a0->$s1 / a1->$s0 and scores sandbox 0 -- the aliases are inert residue of register-name-driven decompilation",
+   "mechanism": "function.c assign_parms creates the parm pseudos + entry copies; global.c allocno priority (reg_n_refs x live-length) allocates the 6-use a1-pseudo before the 2-use a0-pseudo, assigning $s0 then $s1 in reg_alloc_order",
+   "next_probe": "sandbox the direct-param body (only lines 651-652 removed, s1/s0 uses renamed to a0/a1); expect 0; if 0 the function closes as the judge's remediation verbatim"
+  },
+  {
+   "hypothesis": "If the seating flips (a0->s0), the divergence is a pure global.c priority tie, diagnosable from the .greg dump -- the lever is then ref-count-shifting statement structure (e.g. where the *14 chain's intermediate is named), NOT aliases or pins",
+   "mechanism": "global.c allocno ordering: equal-priority pseudos allocate in allocno index order; a named intermediate in the src-address computation adds a ref to the a0-pseudo chain and can reorder the tie",
+   "next_probe": "cc1 -da on the direct-form .i; read ';; Register dispositions' to see each parm pseudo's priority and assignment; then sweep 2-3 semantically-true respellings of the address chains"
+  },
+  {
+   "hypothesis": "The prologue interleave (sw s1 / move / sw s0 / move, with sw ra sunk into the blez delay slot) is scheduler-produced and survives the rewrite unchanged -- any residual diff will be confined to register numbers, not insn order",
+   "mechanism": "sched2 + reorg.c: prologue saves and entry copies are reordered freely (no dependences among them); fill_simple_delay_slots hoists `sw $ra` into the blez delay slot independent of source spelling",
+   "next_probe": "same sandbox run as probe 1: inspect whether any diff lines are order diffs vs register-name diffs to confirm the diagnosis channel"
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): param-local-alias pair `s32 s1 = a0; s32 s0 = a1;` is a forbidden codegen-coercion cheat: fails Tests 1/2/3/5/6 \u2014 no semantic purpose, no human-from-spec would write it, mechanism is GCC LUID/allocno-priority steering, matches 'param-local-alias declaration-order trick' forbidden family, variable names (s0/s1) are MIPS callee-save register designations announcing allocation intent. The SOTN 'named-intermediate declaration order' carve-out covers computed sub-expressions, not direct parameter aliases. Next action: a worker should redo this function using `a0`/`a1` directly (or domain-named parameters), letting GCC's natural allocator assign callee-saves for values live across the InitFadePanel() call, and verify the result still byte-matches; if the allocation to specific $s0/$s1 registers requires coercion that can't be achieved in pure C, park with that finding.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

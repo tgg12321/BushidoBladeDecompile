@@ -1,10 +1,33 @@
 {
  "func": "func_8003D7B4",
  "file": "code6cac_c2",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: both flagged constructs (new_var pointer alias + unannotated inner do{}while(0)) are register-INVISIBLE in target bytes (alias coalesces to $s1; wrap emits nothing) -- effects are p"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The plain RMW respelling (new_var deleted, p on both sides) with the wrap KEPT compiles byte-identically -- the alias is inert and can simply be removed; only the wrap needs its FAKE annotation.",
+   "mechanism": "global.c allocno ref-weight: the alias adds one in-loop ref of p's value; if p's seating in $s1 is already forced by its 3 other in-loop refs (load base, store base, p += 2), the extra ref changes nothing.",
+   "next_probe": "sandbox func_8003D7B4 --disable all on a variant with :1164 deleted and :1173 reading through p; expect 0 if inert. Sweep the 2x2 (alias x wrap) variants in one tools/sweep_variants.py call to bisect which construct is load-bearing."
+  },
+  {
+   "hypothesis": "If the alias IS load-bearing, its exact effect can be named from allocator dumps for the FAKE annotation (or for deriving a natural-geometry substitute).",
+   "mechanism": "global.c allocno priority (reg_n_refs weighting) -- compare .greg dumps of alias vs plain variants: expect p's pseudo to lose one ref and a different hard reg to win 0xC-addressing.",
+   "next_probe": "cc1 -da on both preprocessed variants; diff ';; Register dispositions:' for p's pseudo and the RMW temp's pseudo."
+  },
+  {
+   "hypothesis": "The wrap is load-bearing on the bnez $s0 join (s:23) or the s0 seating; if the wrap-removed variant diverges there, annotate per the 2026-07-06 ruling instead of restructuring.",
+   "mechanism": "NOTE_INSN_LOOP_BEG/END from the wrap: loop-note ref multiplier in global.c and LABEL_OUTSIDE_LOOP_P gating reorg.c relax_delay_slots invert-jump.",
+   "next_probe": "From the same sweep: inspect the wrap-removed variant's diff -- if diffs cluster at 0x2E004 (branch sense/delay slot) or s0/s1 allocation, add `// FAKE: <observed effect>` at :1159 and close as annotation-only."
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Two constructs fail the checklist: (1) `u8 *new_var` is a codegen-steering pointer alias \u2014 assigned `new_var = p` inside the inner do-while(0) then used as `*(u16 *)(new_var + 0xC)` on the load side where `p + 0xC` is identical; no semantic purpose, fails Tests 1/2/3/6; not covered by any SOTN exception. (2) Inner `do { ... } while (0)` at lines 1159-1166 lacks mandatory `/* FAKE: <reason> */` annotation required by the do-while-zero-exception prerequisite checklist. Worker should: redo func_8003D7B4 in pure C \u2014 eliminate `new_var` alias (write the RMW as `*(u16 *)(p + 0xC) = (u16)(*(u16 *)(p + 0xC) + val)` or find a structural approach for the needed register allocation); either add the FAKE annotation with the lever-exhaustion evidence for the do-while(0), or find a pure-C loop structure that avoids the wrapper.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

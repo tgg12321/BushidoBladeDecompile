@@ -1,10 +1,28 @@
 {
  "func": "func_80049F4C",
  "file": "text1b",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: the sp10[12] phantom element is FRAME-INERT -- mips.c MIPS_STACK_ALIGN rounds the 44-byte sp10[11] frame to the same 48-byte var area, so [11] + natural frame should produce the ide"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Reverting src/text1b.c:1300 to `s32 sp10[11];` (44 bytes, exactly what is written and read) reproduces the target bytes unchanged -- var_size still rounds to 48, frame stays 0x50, and nothing else in the function references the array length.",
+   "mechanism": "mips.c:4464-4510 compute_frame_size -- MIPS_STACK_ALIGN 8-byte rounding of var_size makes 44- and 48-byte local areas indistinguishable.",
+   "next_probe": "Apply the one-token edit, `sandbox func_80049F4C --disable all` (expect 0), then verify-oracle + queue done; delete the phantom-element construct from main."
+  },
+  {
+   "hypothesis": "If sandbox unexpectedly shows a frame diff at [11], the divergence is in get_frame_size layout (assign_stack_local padding), not the rounding -- check the emitted prologue offsets in the sandbox .s before touching anything else.",
+   "mechanism": "function.c assign_stack_local assigns slot offsets before compute_frame_size rounds; a stray alignment bump would shift the gp-save base from 0x40 to 0x38/0x48.",
+   "next_probe": "Diff the sandbox-emitted prologue (addiu sp / sw offsets) against asm/funcs/func_80049F4C.s lines 2-11; if offsets moved, dump with -da and read the frame layout notes."
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): s32 sp10[12] over-declares by one element (48 bytes declared, 44 bytes used). The 12th element sp10[11] is never written (memcpy copies exactly 44 bytes) and never read (func_8004A09C consumes at most 44 bytes = 22 u16 values). Its sole observable effect is pushing the stack frame from 0x48 (what sp10[11] would produce) to 0x50 (target). This is a frame-coercion cheat spelled as an extra element in an otherwise-used array, analogous to the forbidden dead-vars-local-array family. Worker should revert sp10[12] to sp10[11], verify the 0x50 frame assumption by running sandbox, and find the legitimate C structure that produces the 0x50 frame without the phantom element.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

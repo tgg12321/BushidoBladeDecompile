@@ -1,10 +1,33 @@
 {
  "func": "func_8003FE40",
  "file": "config",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: target materializes -1 into TWO registers (t1 s:18 outer, t0 s:24 re-set per outer iteration) where one dominating register suffices -- redundant re-materialization is target-byte e"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Literal substitution (`!= -1` at :416 and :425, both decls deleted) raises the sandbox score with diffs at 0x3068C (lost addiu $t0,-1) and 0x306A4 (bne operand) -- confirming load-bearing.",
+   "mechanism": "cse.c constant-reg sharing / loop.c invariant motion unifying two identical (const_int -1) sources into one hard reg once the distinct pseudos are gone.",
+   "next_probe": "sandbox func_8003FE40 --disable all on the literal variant (the judge's prescribed probe). Score 0 => delete the locals and close; score >0 => proceed to probe 2."
+  },
+  {
+   "hypothesis": "If load-bearing, the committed form is sanctionable in place under [[named-local-fake-exception]]: keep both constant-holder locals, add `/* FAKE: distinct -1 holders keep the inner-loop compare constant in its own reg ($t0) */` annotations + exhaustion note.",
+   "mechanism": "sanctioned constant-holder locals (SOTN `s16 three = 3;` precedent), FAKE-annotated last-resort.",
+   "next_probe": "After probe 1 confirms load-bearing: try 2-3 natural-geometry forms first (single shared local; s16-typed compare source) via tools/sweep_variants.py, then annotate and route to layer-2 review; file the diagnosis-vs-rule tension if the reviewer insists on a structural redo."
+  },
+  {
+   "hypothesis": "The exact pass behavior (does cse unify across the .L8003FE7C label? does loop.c hoist the literal to the inner or outer preheader?) is dump-verifiable, giving the annotation its precise effect wording.",
+   "mechanism": "cse.c extended-basic-block constant tracking + loop.c invariant hoisting, visible in cc1 -da .cse/.loop dumps.",
+   "next_probe": "cc1 -da on literal vs named-local variants; diff the .loop dump's invariant-motion decisions for the two (const_int -1) sets."
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Two named-constant variables neg1=-1 and neg1b=-1 fail the human-programmer and naming tests; they are register-coercion artifacts (originated as asm(\"t1\")/asm(\"t0\") explicit pins) that survived both cleanup passes. Owner should verify: sandbox with literal -1 substituted for both \u2014 if score stays 0, variables are inert noise and should be cleaned up; if score rises, they are still load-bearing allocation coercion requiring a clean redo.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

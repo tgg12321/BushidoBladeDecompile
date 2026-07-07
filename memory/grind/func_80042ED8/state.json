@@ -1,10 +1,33 @@
 {
  "func": "func_80042ED8",
  "file": "text1a_c",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "recon: three independent u16 pair-swaps ([1]<->[3], [2]<->[6], [5]<->[7]); target RA serially reuses ONE reg ($a2) for 3 values -- the committed 4-temp shape has byte support, only the read-ahead ORDE"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Judge's demanded negative: the natural 3-swap single-temp form scores non-zero (serialized by anti-dependences on the single temp pseudo; cannot hoist 4 loads up front)",
+   "mechanism": "sched.c (GCC 2.7.2 pre-RA scheduler) honors anti/output deps on a multiply-defined pseudo; no register renaming exists to break the WAR chains",
+   "next_probe": "sandbox the 1-temp 3-swap form; bank the score as the documented negative the judge asked for (if it lands 0, the committed form is unnecessary complexity and the function closes immediately with the simple form)"
+  },
+  {
+   "hypothesis": "A 3-temp (one per swap) natural form lets sched1 hoist loads but produces 6 single-use pseudos, not the target's $a2 triple-reuse -- expect a small non-zero score with reg-alloc-shaped diffs",
+   "mechanism": "global.c allocates 6 short-lived pseudos round-robin among free caller-saves; nothing recreates the serial reuse of one register across the three second-loads",
+   "next_probe": "sandbox `u16 t1,t2,t3; t1=a0[2]; a0[2]=a0[6]; a0[6]=t1; ...` (and the store-order permutations); diff the masked output to confirm the divergence is the reuse pattern, not the swap logic"
+  },
+  {
+   "hypothesis": "Among 4-temp staged forms, only the read order [6],[2],[1],[5] (current) matches; natural-index-order reads ([1],[2],[5],[6] first) diverge because first-pass scheduling keeps source order for the independent loads -- i.e. the ordering IS load-bearing and the finish is rename + FAKE annotation under the 2026-07-06 ALLOWED list (statement order / staging)",
+   "mechanism": "sched1 (sched.c) assigns priority by dependence height; the four up-front loads are equal-height so emitted order follows source/LUID order, and global.c reg_n_refs gives the thrice-reused staging temp its own persistent register",
+   "next_probe": "sweep_variants over 3-4 read-order permutations of the 4-temp form; if only the committed order scores 0, surface the ordering-is-the-lever finding + the 2026-07-06 ALLOWED-list tension to the judge and propose rename+annotate as the finish"
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): The 4-variable form (t0,t1,t2,t3) with a specific partial-read-ahead ordering fails Test 2 (human-programmer test): three independent swaps are most naturally written as 3 sequential single-temp operations; the current form reads [6,2,1,5] before the first write, then interleaves reads of [3,7] between writes \u2014 creating a specific simultaneous liveness window for t1/t2/t3 that controls GCC's register allocator rather than reflecting any semantic need. The variable names (t0\u2013t3 matching MIPS $t0\u2013$t3 by name convention) further indicate register-allocation was the design concern. The function needs a clean redo: find the C form that matches the target bytes without the GCC-steering variable count/ordering, or confirm via sandbox that the simpler 3-swap / 1-temp form also scores 0 (in which case the current committed form is strictly unnecessary complexity).  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

@@ -1,10 +1,33 @@
 {
  "func": "func_8005C5A8",
  "file": "text1b",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: the two register-named param aliases (s1/s0) are the forbidden prologue-pair-flip family, but their load-bearing status is UNVERIFIED (aliasless baseline never measured, WIP deleted"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The aliasless direct-param body already byte-matches: refs-density gives a1's extension pseudo $s0 and a0's copy $s1 naturally, and parameter-setup order puts the a0-copy pair first in the scheduled prologue.",
+   "mechanism": "global.c allocno_compare priority (REG_N_REFS/REG_LIVE_LENGTH density) + REG_ALLOC_ORDER first-callee-save assignment; sched1 anti-dependence interleaving of prologue saves with entry copies.",
+   "next_probe": "Replace :12660-12665 with the direct-param body (evidence fact 5), `sandbox func_8005C5A8 --disable all`; if 0, verify-oracle + queue done and delete the alias construct."
+  },
+  {
+   "hypothesis": "If the aliasless form swaps $s0<->$s1, the flip is decidable at the entry-copy LUID level and a legitimate statement-level lever exists (e.g. which use appears textually first, or an early-named call-arg local per hoist-call-arg-local-flips-jal-delay) without any param rename.",
+   "mechanism": "local-alloc/global.c tie-breaking by first-def LUID when densities tie; statement order changes the LUIDs of the two entry copies.",
+   "next_probe": "Read the sandbox diff to confirm it is exactly an s0/s1 rename cluster, then sweep 3-5 legitimate orderings (call-arg locals, use reordering) via tools/sweep_variants.py; vet 0-scorers against the catalog."
+  },
+  {
+   "hypothesis": "If no ordering lever flips it, the register-alloc-pure-c Step-0 diagnosis (-da .greg dump) will name the conflicting hard reg and one of Levers A-C (block-local split / narrow type / precompute) closes it -- the tombstoned alias is never needed.",
+   "mechanism": "greg 'Register dispositions' shows which pseudo conflicts force the swap; the levers change conflict sets, not semantics.",
+   "next_probe": "cc1 -da on the sandbox .i, read the dispositions for the two cross-call pseudos, apply the indicated lever, re-sandbox."
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Two param-local aliases (s32 *s1 = a0; s16 s0 = a1) at function entry are literal renames with MIPS register names, no semantic purpose, declared in a specific order to steer LUID and produce target prologue save order ($s1 before $s0). This matches the forbidden param-local-alias-prologue-pair-flip family ('cheats by any spelling'). Clean re-derivation needed: try the aliasless form first; if GCC misallocates, find a legitimate structural lever (type change, reordering) \u2014 never param-local aliases.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

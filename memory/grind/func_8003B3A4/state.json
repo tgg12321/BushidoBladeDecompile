@@ -1,10 +1,33 @@
 {
  "func": "func_8003B3A4",
  "file": "code6cac_c_ab",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: write-only pointer alias is LOAD-BEARING (pre-branch lui/addiu into $v1 + register-indirect sb cannot arise from direct symbolic stores); near-exact fit for the 2026-07-01 pointer-a"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Falsify the judge's prescribed form: direct conditional writes `if (a1 != 0) { D_8010277D = 0xE; } else { D_8010277D = 0x1D; }` - expect NON-match (sb macro form via $at after the diamond, no pre-branch addiu into $v1)",
+   "mechanism": "cc1 symbolic-MEM store expansion ($at macro) vs pointer-variable address pre-materialization",
+   "next_probe": "sandbox func_8003B3A4 --disable all with the direct-write form; diff the 0x2BBF8-0x2BC14 region"
+  },
+  {
+   "hypothesis": "Ternary single store `D_8010277D = (a1 != 0) ? 0xE : 0x1D;` - also expected to stay in $at macro form, but cheap to measure and would be the cleanest human spelling if it lands",
+   "mechanism": "expand_assignment keeps SYMBOL_REF MEM symbolic; value diamond layout unchanged",
+   "next_probe": "include in the same sweep_variants.py call as the direct-write form"
+  },
+  {
+   "hypothesis": "If both clean forms fail as predicted, keep the alias with /* FAKE */ annotation + lever-exhaustion record under pointer-alias-fake-exception (pending the ruling below)",
+   "mechanism": "pointer variable forces the address into an allocated pseudo (RA-visible) instead of the sb macro's $at expansion",
+   "next_probe": "ruling_question resolution, then annotate and re-run layer-1/2 review"
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Write-only pointer alias `u8 *p = &D_8010277D;` coerces GCC address pre-materialization before branch; not covered by pointer-rmw-global-sanctioned (requires load+store, this is store-only). Worker should rewrite the block as a direct conditional write (`if (a1 != 0) { D_8010277D = 0xE; } else { D_8010277D = 0x1D; }`) and find a clean pure-C structure that reaches the target's pre-branch address-in-register pattern without a write-only pointer alias.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

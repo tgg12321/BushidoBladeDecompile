@@ -1,10 +1,33 @@
 {
  "func": "func_800493E4",
  "file": "text1b",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "recon: the judge's prerequisites #1/#2 (lever-exhaustion ledger + must-be-LABEL_OUTSIDE_LOOP_P) are SUPERSEDED by the FINAL 2026-07-06 owner ruling -- single-level empty do-while(0) is sanctioned for "
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The wrap is load-bearing: stripping `do { } while (0);` at src/text1b.c:815 raises the sandbox score, and the diff names the effect (expected: second lbu hoisted above the first sh / the 39CAC delay-slot nop filled / the cached-1 in $v1 rematerialized)",
+   "mechanism": "NOTE_INSN_LOOP_BEG/END emitted by the wrap between the stores constrains scheduler motion across the region and marks following labels LABEL_OUTSIDE_LOOP_P (reorg.c); effect-level identification is all the 2026-07-06 ruling requires for the annotation",
+   "next_probe": "sandbox with line 815 deleted; bank the score + the masked diff lines verbatim -- they become the /* FAKE: ... */ annotation text if PATH A finishes"
+  },
+  {
+   "hypothesis": "PATH B natural geometry: a named-local respelling (`u8 second = D_80099CC9[idx];` placed AFTER the first store, or reordering the temp_v1 store) reproduces the serialized load-store order WITHOUT the wrap -- if any scores 0, it beats annotation under the ruling's prefer-natural-geometry clause",
+   "mechanism": "sched.c emit order for independent memory ops follows source/LUID order when dependence heights tie; a source-level read placed after the first store may survive unhoisted if its result feeds an address compute chain long enough to anchor it",
+   "next_probe": "sweep 2-3 wrap-free respellings via sweep_variants; all non-zero => PATH B exhausted cheaply and PATH A (annotate) stands as the finish with the negatives banked"
+  },
+  {
+   "hypothesis": "PATH A finish: with the effect named from probe 1, adding `/* FAKE: <effect> */` at src/text1b.c:815 is the complete, rule-compliant remediation -- no structural change needed; fresh layer-2 cheat-reviewer with the 2026-07-06 ruling citation + this ledger clears the regression",
+   "mechanism": "do-while-zero-exception owner ruling 2026-07-06: single-level wraps incl. empty bodies sanctioned for any codegen effect; surviving prerequisite = inline effect-level FAKE annotation; judge constraint's exhaustion/mechanism-verification demands are superseded and should be surfaced to the judge explicitly",
+   "next_probe": "after probes 1-2: annotate, sandbox to confirm still 0, invoke cheat-reviewer citing the ruling and the banked PATH-B negatives; surface the constraint-vs-ruling supersession in the session outcome"
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): do { } while (0); at src/text1b.c:815 is unannotated \u2014 fails the do-while-zero-exception strict prerequisite #3 (requires /* FAKE: <reason> */ or // FAKE annotation). Without the annotation the exception does not formally apply; the empty construct then fails 6-test checklist test #1 (no semantic purpose) and test #5 (family check). Lever-exhaustion documentation (prerequisite #1) cannot be verified from main (WIP deleted); the targeted GCC-pass interaction (prerequisite #2, must be LABEL_OUTSIDE_LOOP_P/reorg.c) is also undocumented. next_action: worker verifies that lever-exhaustion was genuinely performed and the wrap is defeating the LABEL_OUTSIDE_LOOP_P/reorg.c invert-jump peephole (not another GCC pass), then adds /* FAKE: <one-line reason> */ annotation inline. If prerequisites were not met, replace with a different pure-C form. No other issues: zero regfix/asmfix rules, no register pins, no volatile casts, no alias-rename externs, no __asm__ blocks.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

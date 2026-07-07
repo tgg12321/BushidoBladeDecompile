@@ -1,10 +1,28 @@
 {
  "func": "func_8005344C",
  "file": "text1b",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: the do-while(0) wrapper at text1b.c:11254 is almost certainly INERT -- committed sibling func_80053304 produces the instruction-for-instruction identical if/else tail (j-join with t"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Unwrapping :11254 to a bare statement (matching :11252-11253) leaves the emitted bytes unchanged -- the wrapper is a no-op here, as proven achievable by sibling func_80053304's identical tail from bare statements.",
+   "mechanism": "jump.c deletes the constant-false loop branch and the residual NOTE_INSN_LOOP_BEG/END have no label to mark that reorg.c would treat differently in this branch layout.",
+   "next_probe": "Remove the do/while(0) wrapper in src/text1b.c:11254, `sandbox func_8005344C --disable all` (expect 0), then verify-oracle + queue done."
+  },
+  {
+   "hypothesis": "If the sandbox shows a diff without the wrapper, the divergence will be a reorg.c invert-jump or delay-slot refill at the `bnez .L80053550` / `j .L80053560` pair -- in that case the wrapper IS load-bearing and route (b) applies: annotate `/* FAKE: LABEL_OUTSIDE_LOOP_P suppresses reorg.c invert-jump */` + document lever-exhaustion + re-run cheat-reviewer.",
+   "mechanism": "reorg.c relax_delay_slots invert-jump peephole for NE conditions, suppressed by LABEL_OUTSIDE_LOOP_P from the loop notes (the do-while-zero-exception's documented interaction).",
+   "next_probe": "Diff the wrapper-free sandbox .s against asm/funcs/func_8005344C.s around lines 41-72; identify which insn moved; if it is the branch-sense or delay-slot fill, apply route (b) with the observed mechanism named."
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Unannotated do { ... } while(0) wrapper at src/text1b.c:11254 is an unsanctioned no-semantic-purpose codegen device. The first two reflection stores (lines 11252-11253) are bare statements; only the third axis has the wrapper, which is byte-identical behavior without it. The do-while-zero-exception (the only path that allows this) has three strict prerequisites \u2014 prerequisite #3 requires a '/* FAKE: <reason> */' or '// FAKE' annotation; cheat-reviewer.md says explicitly 'If unannotated, FAIL.' Annotation is ABSENT. Prerequisite #1 (documented lever-exhaustion) is unverifiable (WIP deleted). Prerequisite #2 (LABEL_OUTSIDE_LOOP_P/reorg.c interaction) is undocumented. Remediation: worker must either (a) redo to pure C without the wrapper if a plain assignment closes the function, or (b) if the wrapper genuinely targets reorg.c's invert-jump peephole, add the '/* FAKE: ... */' annotation with the GCC-mechanism spelled out AND document lever-exhaustion \u2014 then re-run the cheat-reviewer before resubmitting.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

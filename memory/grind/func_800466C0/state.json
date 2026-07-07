@@ -1,10 +1,28 @@
 {
  "func": "func_800466C0",
  "file": "text1a_b",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "recon: the fn-ptr cast on the case-9 call is almost certainly INERT m2c residue -- the same varargs extern is called uncast 13 lines earlier and compiles to the identical jal+delay-slot-li shape; prim"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "PRIMARY: `func_80044100(8);` (cast dropped, one-line edit at src/text1a_b.c:26) compiles byte-identically -- the cast is inert and the function closes immediately",
+   "mechanism": "calls.c expand_call constant-folds the casted function address to a direct call; O32 varargs vs fixed prototypes emit identical caller code for register-only args (mips.c function_arg)",
+   "next_probe": "sandbox func_800466C0 with the cast removed; expect 0; if 0, this is the judge's remediation branch (a) verbatim and the function is done"
+  },
+  {
+   "hypothesis": "Fallback diagnosis if non-zero: the divergence will be in the jal delay-slot fill or a spurious $a1 use insn, NOT in the switch skeleton -- localize before choosing a lever",
+   "mechanism": "reorg.c fill_simple_delay_slots (delay-slot candidacy) and expand_call's CALL_INSN_FUNCTION_USAGE (which arg regs are listed as used) are the only two things the prototype change can perturb",
+   "next_probe": "if probe 1 scores non-zero, diff the sandbox .s at .L80046754: check for an unfilled delay slot (nop after jal) or an extra a1-setup insn; that names the exact lever surface for the structural session"
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): The construct ((void (*)(s32))func_80044100)(8) fails the 6-test checklist. func_80044100 is declared 'extern void func_80044100(s32, ...);' (varargs). Calling it with a single arg as func_80044100(8) is valid C and should produce identical MIPS call-site asm (MIPS O32 ABI: only the caller's arg-register loads differ, not any varargs preamble). The cast to '(void (*)(s32))' either: (a) is inert \u2014 same asm as func_80044100(8), meaning Test 1 fails (no observable effect on output vs simpler form) and Test 2 fails (no human given the spec writes this cast); or (b) changes call-site asm by suppressing varargs USE insns and affecting delay-slot scheduling \u2014 meaning Test 3 fails (GCC-internals mechanism, not program logic). Remediation: replace with func_80044100(8) directly; if that still sandbox-0 matches the oracle, remove the cast and re-commit as clean. If it does NOT match, the cast IS a scheduling lever and a genuine clean approach (restructure surrounding context, or declare a separate non-varargs extern) is needed.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

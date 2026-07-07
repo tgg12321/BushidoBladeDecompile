@@ -1,10 +1,33 @@
 {
  "func": "func_8003F420",
  "file": "config",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: new_var dead-write at config.c:155 is very likely INERT -- the sibling diamond (s1) uses the PLAIN spelling and compiles to the identical target byte-shape; judge's `s0 = -1;` respe"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Plain respelling -- replace :155 with `s0 = -1;` and delete the :140 declaration -- compiles byte-identically (sandbox 0), closing the regression exactly as the judge prescribed.",
+   "mechanism": "flow.c dead-code elimination already deletes the never-read SET before register allocation, so the committed and plain forms converge at RA input.",
+   "next_probe": "sandbox func_8003F420 --disable all on the plain variant; expect 0. Then verify-oracle --rebuild and close."
+  },
+  {
+   "hypothesis": "If the plain form unexpectedly diverges, the diff localizes to the second diamond (0x2FCB4-0x2FCC0) -- jump.c converting it to a store-flag (slt/xor) shape absent the two-set arm.",
+   "mechanism": "jump.c store-flag conversion has a single-set-per-arm precondition; the inner assignment made the arm two-set ([[dead-store-fake-exception]] confirmed-closure mechanism).",
+   "next_probe": "objdump-diff the plain variant around 0x2FCB4; if a store-flag shape appears, try natural geometry first: arm-order swap, or `s0 = 1; if (rem < 1000) s0 = -1;` override form, swept via tools/sweep_variants.py."
+  },
+  {
+   "hypothesis": "If load-bearing is confirmed AND no natural-geometry form closes, the construct is re-sanctionable in place as `s0 = -1; new_var = -1; /* FAKE: two-set arm blocks store-flag fold */` under dead-store-fake-exception prerequisites.",
+   "mechanism": "sanctioned last-resort dead store to a local, FAKE-annotated, with documented lever exhaustion.",
+   "next_probe": "Only after probe 2's sweep is exhausted: write the exhaustion evidence into the ledger, add the FAKE annotation, and route through layer-2 review."
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Dead-write cheat: `int new_var;` is assigned in `s0 = (new_var = -1);` and never read again. The write to new_var is a pure dead store \u2014 semantically equivalent to `s0 = -1;`. This is a dead-write-through-intermediate-local for RA coercion, closely analogous to the forbidden dead-param-assign family (Lever D). Not covered by any SOTN sanction (the variable-reuse sanction requires the intermediate be read downstream; new_var is never read). Worker redo: replace `s0 = (new_var = -1);` with `s0 = -1;` and remove the `int new_var;` declaration. Divmod routing (`s0 = a1/2000; s2 = s0; s0 = a1-s2*2000`) is ALLOWED under SOTN variable-reuse-for-codegen-control and does not regress; only the new_var construct fails.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

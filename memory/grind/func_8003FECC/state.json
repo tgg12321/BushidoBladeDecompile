@@ -1,10 +1,33 @@
 {
  "func": "func_8003FECC",
  "file": "config",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: judge's respelling for the (*new_var)*0 alias is proven in-repo (InitHiraRmd_80041AC8 gets the same lh+lhu dual read with direct spelling); the a3++/a3--/t1++/t1-- pairs emit NO tar"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Entry respelling per the in-repo sibling (`t0 = (u16)a2[0]; if (a2[0] == -2) goto end;`, new_var deleted) reproduces the s:5-6 lh+lhu pair byte-identically.",
+   "mechanism": "cse.c keeps sign_extend-MEM and zero_extend-MEM as distinct exprs -> two loads survive (proven by InitHiraRmd_80041AC8's byte-match).",
+   "next_probe": "sandbox func_8003FECC --disable all on the respelled variant (inc/dec pairs untouched); expect 0. This is the highest-confidence half of the cleanup."
+  },
+  {
+   "hypothesis": "The four inc/dec statements are inert -- deleting :465-468 leaves the sandbox at 0 because a3/t1's natural refs already win their temp-reg seats.",
+   "mechanism": "flow.c cancels the paired +1/-1 before RA (or combine folds them); reg_n_refs delta only matters when an allocation is contested, and no callee-save contest exists here.",
+   "next_probe": "sandbox a variant with only :465-468 deleted; if 0, delete. If score rises, diff localizes the contested reg -- then sweep natural forms before considering a FAKE-annotated redundant-arithmetic close (pending the filed ruling_question)."
+  },
+  {
+   "hypothesis": "The full-clean form (both fixes together) also holds 0 -- the two constructs do not interact.",
+   "mechanism": "the alias affects only entry-block CSE; the inc/dec pairs affect only loop RA weights -- disjoint pass surfaces.",
+   "next_probe": "tools/sweep_variants.py with the 2x2 variant grid (alias-fix x incdec-removal) to confirm independence in one call, then verify-oracle on the winning full-clean form."
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Two dead-operation cheats found: (1) `a3++; a3--;` and `t1++; t1--;` inside the loop \u2014 net zero effect, GCC-internal allocator steering; (2) `new_var = &a2[0]; if (a2[(*new_var) * 0] == (-2))` \u2014 the multiply-by-zero through a pointer alias is always 0 and has no semantic purpose beyond defeating CSE between the unsigned and signed reads of a2[0]. Clean re-implementation should: eliminate the dead increment-decrement pairs (they generate no target asm \u2014 DCE removes them), and replace the `(*new_var)*0` alias trick with a direct dual-typed read spelling such as `s16 signed_val = a2[0]; t0 = (u16)a2[0]; if (signed_val == -2)` (the InitHiraRmd_80041AC8 sibling at text1a.c:1130-1132 achieves the same lh+lhu pair without any alias trick). Function stays INCOMPLETE; a byte-correct cheat cannot be reverted without breaking the oracle, so it remains on main until a clean pure-C redo is produced and Auditor-PASSed.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

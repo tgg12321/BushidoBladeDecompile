@@ -1,10 +1,33 @@
 {
  "func": "func_80044B30",
  "file": "text1a_c",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "recon: genuine per-site width split confirmed (B30 reads lhu @80044BEC, sibling C70 reads lh @80044C80, same s16 global) -- but the pointer-alias cast is likely removable: plain `u16 cf8 = D_800A9CF8;"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Plain `u16 cf8 = D_800A9CF8;` (no pointer cast) emits the identical lhu -- the alias cast is inert residue and the function closes with a one-line edit, zero cross-site changes",
+   "mechanism": "LOAD_EXTEND_OP(HImode)=ZERO_EXTEND in GCC 2.7.2 mips.h: HImode mem->reg moves use lhu; the s16->u16 conversion is a same-width bit no-op so expand_expr emits a bare HImode load, never a sign_extend",
+   "next_probe": "sandbox with only line 1362 changed to `u16 cf8 = D_800A9CF8;`; expect 0 -- if non-zero, diff whether GCC routed through an SImode sign-extended load (lh + extension) instead"
+  },
+  {
+   "hypothesis": "Judge's path B: retype D_800A9CF8 to `extern u16` (3 decl sites in text1a_c.c: 1130, 1377, plus any m2c_context.h entry) + `(s32)(s16)D_800A9CF8` at line 1382 keeps C70's lh -- byte-neutral across both functions",
+   "mechanism": "combine.c folds (sign_extend:SI (mem:HI)) into the mips.md lh extending-load pattern; B30's site then reads the u16 global naturally as lhu",
+   "next_probe": "only if the plain-assignment probe fails: apply the retype + per-site cast, sandbox BOTH func_80044B30 and func_80044C70 (C70 is COMPLETED -- any regression there is disqualifying), then full verify-oracle"
+  },
+  {
+   "hypothesis": "The early placement of the cf8 load (before `lh 0x8($s0)`) is driven by the block-local declaration order at src/text1a_c.c:1362-1363, not by the cast -- removing the cast does not perturb scheduling",
+   "mechanism": "sched1 (sched.c) emit order for independent loads follows source/LUID order; the initializer spelling does not change the insn's dependence height",
+   "next_probe": "covered by the same sandbox run as probe 1: a masked diff limited to zero confirms both width and placement survive the respelling"
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Width-coercion pointer cast `*(u16 *)&D_800A9CF8` on a declared `extern s16` global forces `lhu` (unsigned halfword load) instead of the natural `lh`. Fails tests 1, 2, and 3: no observable semantic purpose (value immediately stored as u16, high 16 bits irrelevant); no human programmer writes pointer-alias casts to override load width on a typed global (fix belongs at the declaration); the sole justification is instruction-selection in GCC's code generator. The SOTN `*(u16 *)&local` sanction covers stack-param subword-offset reads only, not globals. Non-volatile form not in the explicit catalog but clearly within `cheats by any spelling` scope. Fix: change `D_800A9CF8` declaration to `u16` globally and verify all other use-sites (especially line 1382 `func_80044100((s32)D_800A9CF8, a0)`) still produce matching instructions; if that site needs `lh` semantics, resolve the genuine type tension with a per-site explicit `(s32)(s16)D_800A9CF8` cast there instead of forcing `lhu` here via pointer aliasing.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

@@ -1,10 +1,28 @@
 {
  "func": "func_80044F30",
  "file": "text1a_c",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "recon: sibling-proven one-probe close -- saTan2InfoInit_80044F80's clean two-param form compiles to the byte-identical shape (only the addiu immediate differs, 0x4D vs 0x27); rewrite func_80044F30 as "
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The clean two-param rewrite `void func_80044F30(s32 a0, s32 a1) { func_80044E74(a0 + 0x27, a1); }` scores sandbox 0 (proven by the byte-identical sibling saTan2InfoInit_80044F80 whose source is exactly this shape)",
+   "mechanism": "calls.c expand_call: second arg already lives in $a1 so no caller-side insn is emitted; jal delay-slot fill of the addiu by reorg.c fill_simple_delay_slots is identical to the sibling's",
+   "next_probe": "apply the rewrite + update include/m2c_context.h:601 to (s32, s32); sandbox func_80044F30 expecting 0, then full build to confirm no other TU regresses on the prototype change"
+  },
+  {
+   "hypothesis": "Updating m2c_context.h:601 is byte-neutral for every other TU (the header is context-only; the sole cross-TU callers in text1a_c2.c already assume two params)",
+   "mechanism": "prototype changes alter caller codegen only where arg counts/types change materially; text1a_c2.c call sites already pass two s32 args, so their RTL is unchanged",
+   "next_probe": "grep for any other #include consumer declaring or calling func_80044F30, then verify-oracle after the edit (driver-side); expected no-op outside text1a_c.c"
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Function-pointer cast cheat: definition declares (s32 a0) with ((void (*)(s32))func_80044E74)(a0+0x27), but callers (text1a_c2.c:14,77,79) declare and call it as func_80044F30(s32, s32) \u2014 two explicit args. The cast exists solely to compensate for the missing second parameter declaration, relying on MIPS $a1 register passthrough. Sibling saTan2InfoInit_80044F80 proves the clean form works: void func_80044F30(s32 a0, s32 a1) { func_80044E74(a0+0x27, a1); } produces identical target asm without any cast. Worker must rewrite with two-param signature, drop the cast, and update m2c_context.h:601 accordingly.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

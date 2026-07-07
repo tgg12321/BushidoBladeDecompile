@@ -1,10 +1,33 @@
 {
  "func": "func_80037540",
  "file": "code6cac_b2_post",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: sp[8] oversize is LOAD-BEARING for the 0x48 frame (saves at 0x30 need array end 0x30); strong clean lead: the 6 slots factor as TWO 4-word entries -> struct entries[2] (2x16B) gives"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Reshape to `struct {s32 cam; s32 a; s32 b; s32 c;} entries[2]` (or equivalent 8-word 2-record type): entry0 fully written, entry1 half written; count stays 6. Frame 0x48 arises naturally, zero unused declarations",
+   "mechanism": "assign_stack_local frame layout - 2x16-byte aggregate reserves 0x20 regardless of which fields are written; no coercion construct remains",
+   "next_probe": "sandbox func_80037540 --disable all with the struct-pair form; confirm store offsets 0x10-0x24 and prologue -0x48 unchanged"
+  },
+  {
+   "hypothesis": "If the struct-pair perturbs codegen (e.g. SImode subreg or addressing differences), fall back to declaring the argv buffer by Exec-idiom capacity `s32 sp[8]` WITH an explanatory comment, and seek a ruling that a 6-of-8-used argv capacity buffer is natural C (array IS used, unlike the forbidden declared-with-no-use shape)",
+   "mechanism": "no GCC mechanism - pure policy question on the oversized-but-used buffer reading",
+   "next_probe": "ruling_question below; if accepted, annotate and keep; if rejected, exhaust reshape variants via sweep_variants.py"
+  },
+  {
+   "hypothesis": "Check the exec'd overlay (disc/STR/MOVOVL.EXE or NDATA-packed EXEs) for the argv consumer to see if it indexes argv[6]/argv[7] - would prove the 8 slots semantically real",
+   "mechanism": "external evidence, not codegen",
+   "next_probe": "grep the MOVOVL.EXE / stage-loader dispatch for the Exec target fed by SpecialCam entries; check its main(argc,argv) usage"
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): s32 sp[8] oversized by 2 elements: sp[6] and sp[7] are never written or read; callee is invoked with count=6, so only sp[0]-sp[5] have semantic purpose. The 2 unused elements inflate the stack frame from 0x40 (sp[6] would give 16+24+24=64) to 0x48 (sp[8] gives 16+32+24=72), matching the target prologue `addiu $sp,$sp,-0x48`. This is the 'oversized local array frame-coercion' pattern (inline-asm-policy expanded catalog: 'Unused fixed-size local arrays \u2014 s32 buf[N]; declared with no use, to force GCC to reserve frame bytes'). The correct fix is to find a C form where a 0x48 frame arises naturally (e.g., a genuine 8-element array if the original spec used one, a second local variable, or a different struct layout) \u2014 or to determine whether sp[6]/sp[7] ARE legitimately read by marionation_camera_Init_80037468 despite the count=6 argument. Until resolved, this function is cheat-carried and must remain INCOMPLETE.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

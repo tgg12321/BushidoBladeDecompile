@@ -1,10 +1,33 @@
 {
  "func": "func_800400F8",
  "file": "config",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: pre-comparison s0=0 coercion confirmed at config.c:553-556; the judge's natural-geometry fix (literal `> 0` compare + `s0 = 0; s1 = s2;` ordered first inside the block) is mechanism"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The judge's respelling -- delete :553 and :556, write `if (s2[0] > 0) { s0 = 0; s1 = s2; do ... }` -- compiles byte-identically (s0-init lands in the blez delay slot, s1 copy follows at s:15).",
+   "mechanism": "reorg.c fill_simple_delay_slots fall-through steal of a taken-path-dead insn into the blez slot.",
+   "next_probe": "sandbox func_800400F8 --disable all on the respelled variant; expect 0, then verify-oracle --rebuild and close."
+  },
+  {
+   "hypothesis": "If the slot instead receives the s1 copy or a nop, a small ordering/spelling sweep finds the natural form (statement order inside the block, `s0 = 0` via declaration-with-initializer, or keeping :553 but with the literal compare).",
+   "mechanism": "reorg.c slot-candidate selection takes the first eligible fall-through insn; cc1's first-pass scheduler can also reorder the block entry.",
+   "next_probe": "tools/sweep_variants.py --func func_800400F8 --file config with 3-4 ordering variants in one call; inspect which one seats addu $s0 in the slot."
+  },
+  {
+   "hypothesis": "The delay-slot behavior can be confirmed pre-build by reading reorg's decision if the sweep is ambiguous.",
+   "mechanism": "reorg.c fill_simple_delay_slots / eligible_for_delay, visible in the cc1 -dR (reorg) dump.",
+   "next_probe": "cc1 -da on the respelled TU; check the .reorg/.dbr dump for which insn filled the blez slot."
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Pre-comparison `s0 = 0;` + `if (s2[0] > s0)` is a blez-delay-slot scheduling coercion; clean fix: reorder `s0 = 0; s1 = s2;` (not `s1 = s2; s0 = 0;`) inside the if block and remove the pre-comparison assignment, which naturally puts `move s0, zero` in the delay slot without dead code.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],

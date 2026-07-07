@@ -1,10 +1,33 @@
 {
  "func": "func_800388A8",
  "file": "code6cac_c_mid",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: empty-body-if confirmed cheat-shaped, but target fine structure (bnez slot=-1, j slot=+1, load-delay nop kept) is exactly the reorg own-thread-steal signature of a plain if(==0)/els"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Replace lines 730-735 with `func_8005C650(1,0x7F,0x7F); if (D_800A3318 == 0) { result = 1; } else { result = -1; }` (no pre-call set) - expect byte-identical: bnez from ==0 branch-if-false, else-arm stolen into slot, then-arm into j slot",
+   "mechanism": "jump.c branch-if-false canonicalization + reorg.c fill_slots_from_thread own-thread steal (single-insn else arm) + j-slot hoist",
+   "next_probe": "sandbox func_800388A8 --disable all with the plain if/else form; diff slots at 0x290FC and 0x29104"
+  },
+  {
+   "hypothesis": "If the plain if/else gives beqz or fails the steal, try the judge's spelling: keep `result = -1;` before the call + `if (D_800A3318 == 0) result = 1;` (no else) - risk is the -1 set materializing before the jal instead of deferring into the slot",
+   "mechanism": "reorg.c fill_simple_delay_slots deferral of a callee-save set across the jal",
+   "next_probe": "sandbox the no-else variant; check no addiu $s0,-1 appears before the jal at 0x290E8"
+  },
+  {
+   "hypothesis": "If both miss, sweep the small spelling space (ternary `result = D_800A3318 ? -1 : 1;`, arm order swap, != with both arms filled) in one sweep_variants.py call",
+   "mechanism": "same reorg/jump interaction; spelling determines arm layout and steal eligibility",
+   "next_probe": "tools/sweep_variants.py --func func_800388A8 --file code6cac_c_mid with 4-6 variants"
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Empty-body 'if (D_800A3318 != 0) { }' is a scheduling-direction cheat: semantically identical to 'if (D_800A3318 == 0) { result = 1; }' but the backwards condition + empty true body exists solely to force a bnez branch (not beqz) so GCC's delay-slot filler can hoist the pre-call 'result = -1' assignment into the bnez delay slot. Worker must rewrite with the condition un-inverted and result=-1 placed inside the if-body (or equivalent non-cheat form that produces the same scheduling naturally), then re-close.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],
