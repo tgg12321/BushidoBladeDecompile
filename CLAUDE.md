@@ -87,9 +87,11 @@ deterministic single-lane driver that grinds the queue top to COMPLETED-C,
 however many sessions it takes: persistent per-function ledger
 (`memory/grind/<func>/`), driver-enforced modality ladder, no `blocked` outcome
 (invalid sessions are discarded and respawned), bytes proven on main BEFORE a
-default-FAIL Judge (the owner's static policy) makes the final call. Operate:
-`pwsh tools/grinder/grind.ps1` (add `-Once` for one supervised iteration) ·
-`pwsh tools/grinder/status.ps1` · `pwsh tools/grinder/grind.ps1 -Stop`.
+default-FAIL Judge (the owner's static policy) makes the final call.
+**Invoke the `decomp-grind` skill** to operate it ("start our decomp pipeline"
+→ orient → drill → launch detached → report; also status/stop/incident verbs).
+Direct commands: `pwsh tools/grinder/grind.ps1` (add `-Once` for one supervised
+iteration) · `pwsh tools/grinder/status.ps1` · `pwsh tools/grinder/grind.ps1 -Stop`.
 Owner audit surfaces: `docs/grind/decisions.md` + `docs/grind/journal.md`.
 Spec: docs/superpowers/specs/2026-07-06-grinder-pipeline-design.md. The fleet
 (`tools/fleet/`) is RETIRED (superseded 2026-07-06 — see docs/fleet/HANDOFF.md).
