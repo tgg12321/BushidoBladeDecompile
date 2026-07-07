@@ -336,13 +336,19 @@ while ($true) {
 
     # 6) validate the outcome (structure + modality proof)
     $valid = $false
+    $invalidReason = if ($o) { '' } else { 'no outcome file / unparseable JSON' }
     if ($o) {
         $o | ConvertTo-Json -Depth 8 | Set-Content $outPath -Encoding utf8
-        python tools/grinder/grindlib.py validate . $outPath $modality
+        $invalidReason = (python tools/grinder/grindlib.py validate . $outPath $modality 2>&1 | Out-String).Trim()
         $valid = ($LASTEXITCODE -eq 0)
     }
     if (-not $valid) {
-        Log "${func}: INVALID session output — discarded, src reverted, respawning."
+        # Preserve the discarded outcome for diagnosis — repeated invalids are
+        # otherwise unexplainable after the respawn overwrites the file.
+        if (Test-Path $outPath) {
+            Copy-Item $outPath (Join-Path $GrindTmp "invalid_${func}_s${sessionN}_$(Get-Date -Format 'HHmmss').json") -ErrorAction SilentlyContinue
+        }
+        Log "${func}: INVALID session output ($invalidReason) — discarded, src reverted, respawning."
         Revert-SessionEdits
         $script:consecutiveInvalid++
         if ($script:consecutiveInvalid -ge 3) { Circuit-Break "3 consecutive invalid sessions on $func" }
