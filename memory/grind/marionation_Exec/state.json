@@ -1,17 +1,39 @@
 {
  "func": "marionation_Exec",
  "file": "system",
- "session_count": 0,
- "current_modality": null,
+ "session_count": 1,
+ "current_modality": "recon",
  "floor_history": [
   {
    "session": 0,
    "floor": 4,
    "modality": "wip-import",
    "headline": "floor imported from memory/wip checkpoint"
+  },
+  {
+   "session": 1,
+   "floor": 4,
+   "modality": "recon",
+   "headline": "Recon: vT40 floor=4 reproduces on main (canonical C, 178/179); the handoff's active lever (rich-pass permuter workspace + triage + all session-10 tooling) was LOST with the bb2-work-marion worktree an"
   }
  ],
- "frontier": [],
+ "frontier": [
+  {
+   "hypothesis": "The unknown original source shape (the only open route to both residuals) is findable by a rebuilt rich-pass permuter campaign on the vT40 base",
+   "mechanism": "the sampler explores statement-geometry space directly; it previously found the masked-3 own_fallthrough=0 signpost in <1h; both residuals are closed to hand analysis (140-ordering sweep, 9-topology sweep, wrap toolbox, cc1psx parity all negative) but NOT to sampling",
+   "next_probe": "rebuild the campaign in tmp/grind/marionation_Exec/s2/: preprocess vT40 body to base.c, assemble single-function offset-0 target.o from asm/funcs/marionation_Exec.s + prelude.inc (drop .set gp=64), permuter_annotate rich PERM_* pass, run with --stop-on-zero + a watcher triaging sub-200 finds; vet every find for true semantics (no uninitialized reads, no cross-symbol derivation) before integrating"
+  },
+  {
+   "hypothesis": "Pair-swap @56/57 can close via a semantically-TRUE second reference to arg5 that lifts arg5val's weighted refs to 6 (density 8.0) without adding insns or notes in the do_timeout window",
+   "mechanism": "local-alloc.c qty_compare tie (5.33 v 5.33) breaks on qty birth order; a genuine extra arg5 ref changes pri to 8.0 and wins the seat; identity ops tree-fold, so the ref must be a real use (e.g. value threading into an existing live variable) \u2014 untried spellings only, the sweep-closed families are banked",
+   "next_probe": "enumerate true-semantics double-use spellings of arg5 (thread through an existing live local consumed by debug_printf or the return path), sweep via tools/sweep_variants.py in one call, cross-check no new pseudos/notes enter the do_timeout window (birthing_insn_p launch is the known killer)"
+  },
+  {
+   "hypothesis": "Region-3 steal dies only in a source shape where check2-beqz's delay-window has a different nearest-insn than `move a1,s4` \u2014 no hand-derivable form remains, so this rides on frontier item 1's sampler",
+   "mechanism": "reorg.c eager fall-through fill picks the nearest eligible insn; check1 escapes because its move is eaten by beqz-s4's slot first; every label/liveness route is byte-proven closed (all-live knob is diagnostic-only; manufactured jumpers cost a visible insn)",
+   "next_probe": "no independent probe \u2014 triage sampler finds specifically for region-3 alignment (adiff the tail region of any sub-200 find against target before scoring the rest)"
+  }
+ ],
  "judge_constraints": [
   "FINAL owner ruling 2026-07-06 (do-while-zero-exception.md): do-while(0) sanctioned for ANY codegen effect incl. RA weighting, mandatory inline FAKE annotation; nested wraps additionally need a single-level-insufficient justification. The interim not-sanctioned ruling is superseded. STILL FORBIDDEN: regfix, register pins, __asm__ injection, semantic-lie C (cross-symbol derivation, per 2026-07-05).",
   "candidate.c = vT40 (masked 4, verified): layer-1 review round-3 verdict was PASS-except-one \u2014 the NESTED wrap at line ~111 was held NEEDS_USER at the time; under the FINAL ruling it needs a documented single-level-insufficient justification (vT44 battery was staged to eliminate it entirely \u2014 check evidence). The Judge must independently verify that justification or its elimination.",

@@ -2,3 +2,4 @@
 - 2026-07-06 23:54 camera_SetMatrix_8001DBE4 s2 [structural] floor=0: H1 (inverted branch sense, non-empty body) proven byte-equivalent to HEAD via out-of-tree cc1 dump; src edit blocked by main_reintegration_lock so in-tree sandbox=0 not producible this session
 - 2026-07-07 00:00 camera_SetMatrix_8001DBE4 s3 [structural] floor=0: s3 structural: H2 (`<=`) and H4 (`i++`) both PROVEN byte-identical to H1 via cc1 dump — equivalence class expanded to 3 forms; src edit blocked again by same reintegration lock holder as s2.
 - 2026-07-07 00:08 camera_SetMatrix_8001DBE4 COMPLETED-C after 4 sessions.
+- 2026-07-07 01:41 marionation_Exec s1 [recon] floor=4: Recon: vT40 floor=4 reproduces on main (canonical C, 178/179); the handoff's active lever (rich-pass permuter workspace + triage + all session-10 tooling) was LOST with the bb2-work-marion worktree and must be rebuilt on main.
