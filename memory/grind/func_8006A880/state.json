@@ -1,10 +1,33 @@
 {
  "func": "func_8006A880",
  "file": "text1b",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 550,
+   "modality": "recon",
+   "headline": "fable-blitz deep recon: saTan3 (slash-mode) HUD painter - draws the 7 body-part icon column (flash/alive/dead tri-state per D_800A34F8/D_8009BC04 bits, sin-flicker RGB), the frame-animated counter ico"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "UNMEASURED (flagship): a full-body draft using func_8006A494's proven field-offset spellings + the phase map collapses 550 to a residual concentrated in the main loop's tri-state arms and delay-slot store placements; the function is straight-line emit code with one tiny do-while and one 7-iteration loop - no structural traps.",
+   "mechanism": "distance 550 = unwritten body (asmfix stub). The same-file completed sibling proves the family's C-to-asm mapping under this toolchain (byte-offset casts on a u8* block, chained emitter returns, cursor += idioms); jump_optimize cross-jumps the three arms' shared '-> emit' tail (all arms fall into .L8006AAE4); the repeated 9x texpage bracket compiles per-instance.",
+   "next_probe": "Fix the stub signature to (s32 *ctx, u16 *rect) - verify the single caller's arg types first (grep func_8006A880 callers in src/text1b.c); draft phases A-I from tmp/blitz/m2c_func_8006A880.c using A494's spellings; sandbox func_8006A880 --disable all; bisect per-phase (loop L96-200 is the biggest chunk)."
+  },
+  {
+   "hypothesis": "UNMEASURED: the constants 0x30 (s4), 1 (s7), and the y-accumulator (s2 starting 0x3F, += 0x18) landing in callee-saves across the 7-iter loop falls out from declaring them as loop-scope-visible values used across the 4 calls per iteration (rgb.b = 0x30 in all three arms, flag = 1 in two arms, y consumed by two arms) - GCC cse unifies the repeated (const_int 0x30)/(const_int 1) uses into pseudos that global-alloc puts in s-regs; Phase D's re-materialized literal 0x30 (addiu, not s4) marks where the pseudo's live range ENDED (last loop use), so the C must NOT force a shared variable across that boundary.",
+   "mechanism": "cse.c constant unification is extended-basic-block scoped + global-alloc live-range driven: within the loop the 0x30 uses are frequent enough to earn a callee-save; after the loop the single Phase-D use is cheaper re-materialized. Writing 'rgb_b = 0x30;' as a variable used in Phase D too would WRONGLY extend s4's range - keep Phase D as a literal.",
+   "next_probe": "Draft with literal 0x30/1 constants everywhere (no named constant locals) and y as 's16 y = 0x3F; ... y += 0x18;' loop-carried; check the objdump for s4/s7/s2 assignments; if the consts get temps instead of callee-saves, count the per-iteration uses - add/move one use across an arm boundary rather than pinning."
+  },
+  {
+   "hypothesis": "UNMEASURED: the two math_Sin calls in each flash arm re-evaluating the identical argument expression '((D_800A3514 & 0x1F) << 7) + 0x1FF' (fresh lw of the global before EACH call) match only when the C spells the expression out twice (or calls a local inline twice) - GCC 2.7.2 cannot CSE across the first jal because the call may clobber the global (no interprocedural alias info), so the reload is automatic; but if the draft caches the phase value in a local before the first call, the second lw disappears (2-instruction diff per arm x2 arms).",
+   "mechanism": "call-clobbered memory conservatism in GCC 2.7.2: globals are re-loaded after any jal; the (x & 0x1F) << 7 + 0x1FF arithmetic re-executes too (its input changed status). This is the split-read-defeats-hoist family in reverse - here the target WANTS the naive double-evaluation.",
+   "next_probe": "Write both flash arms with the full argument expression repeated at each math_Sin call site; verify the two lw+andi+sll+addiu runs appear before each jal in the sandbox objdump (loop arm at L107-118, Phase D arm at L293-308); if the draft's second evaluation gets CSE'd, the global declaration is missing (must be extern s32, gp-rel) or the calls got reordered."
+  }
+ ],
  "judge_constraints": [],
  "origin": "queue",
  "created": "2026-07-07T20:06:57.410565+00:00"
