@@ -1,0 +1,34 @@
+{
+ "func": "func_80034708",
+ "file": "code6cac_b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 542,
+   "modality": "recon",
+   "headline": "fable-blitz recon: sleep/debug menu handler (14 DispSleepMenuTex rows + 2-player pad loop + dual 12-case jump-table dec/inc + wrap normalization) -- the crux is the D_8010277C..87 byte-block typing, w"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Joint retype {D_80102784, D_80102785, D_80102787 -> s8} in this TU (plus s8* block pointer for phase-A rows 1/12/13) reproduces every lb in this function natively, while func_800343F0's sibling sites keep byte-identity via (s8)(u8) double value casts -- no pointer-pun coercion anywhere.",
+   "mechanism": "type-level instruction selection: s8 decl -> lb (native); (u8) value cast -> combine.c narrows zero_extend-of-load to lbu; outer (s8) on the zero-extended SI value -> explicit sll24/sra24 pair.",
+   "next_probe": "Draft the retype + this function's phase A; sandbox func_80034708 AND func_800343F0 (its committed form must stay byte-identical or be re-spelled (s8)(u8) in the same change); grep the TU for every other lbu user of 84/85/87 before committing the retype."
+  },
+  {
+   "hypothesis": "The dual jump-table switch pair comes from source `switch (cursor)` inside `if (left) ... else if (right) ...` with cases 8/9 (D_80106A73 ^= 1 / ^= 2) written identically in both switches -- GCC's cross-jumping merged the identical xori case bodies across the two switches (both jtbls point at the same case addresses).",
+   "mechanism": "jump.c cross_jump pass merges byte-identical tails ending in the same join label .L80034D9C; xori toggle is direction-independent so dec and inc switches share those bodies.",
+   "next_probe": "Draft both switches with identical case-8/9 bodies; if the shared addresses do not reproduce, consult cross-jump-call-merge / cross-jump-store-tail-merge rules for the forcing conditions."
+  },
+  {
+   "hypothesis": "Phase-B walking pointers (s1/s2/s3 from a common s7 anchor, +1 per iteration; s6/s0 +2) come from explicit per-player pointer locals initialized before the loop (p7C=&D_8010277C; p7E=...; p80=...;) and incremented at the tail -- not from array[i] indexing (which would emit base+i addiu per use, not persistent registers).",
+   "mechanism": "GCC 2.7.2 keeps address-of-global pointer locals in callee-saved regs across jals; the s7-relative addiu initialization falls out of CSE on the shared %hi(D_80102784) when the inits are adjacent.",
+   "next_probe": "Draft with explicit pointer locals + increments; check the s7-anchored init cluster (addiu s1,s7,-8 etc.) reproduces; if the anchor CSE fails, try ordering the pointer inits after taking &D_80102784 first."
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-07T20:22:50.216341+00:00"
+}

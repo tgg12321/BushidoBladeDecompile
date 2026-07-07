@@ -1,10 +1,33 @@
 {
  "func": "camera_set_target_zoom",
  "file": "code6cac",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 586,
+   "modality": "recon",
+   "headline": "fable-blitz deep recon: KENGO MISNOMER - not camera code; it is the per-frame round DIRECTOR for VS/sudden-death mode (announcer voice scheduler, ids 0x9C-0xA8, win-count bookkeeping) + replay-stream "
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "UNMEASURED (flagship): a full-body draft from the state-machine map collapses 586 to a small residual - the function is an if-chain state machine over u8 globals with zero structural traps (no jtbl, no GTE, no loops at all); expected residual = delay-slot/arg-hoist details around the 11 func_8005C650 call sites and the JOIN or-tree shape.",
+   "mechanism": "distance 586 = unwritten body (asmfix stub). The state machine is first-match-wins if/elif on 7 u8 counters; each arm is 5-15 instructions of counter arithmetic + a jal; GCC 2.7.2 jump_optimize cross-jumps the shared '-> JOIN' and '-> SET_A3670' tails (v0=1 flows into sb D_800A3670 from two arms; L298 .L8001D2B4 is a one-instruction landing pad setting v0=1 before the shared store).",
+   "next_probe": "Draft into src/code6cac.c:1486 from tmp/blitz/m2c_camera_set_target_zoom.c; keep the two 'D_800A3670=1; D_800A3834=0' sites as a shared tail (goto or fallthrough) so cross-jump reproduces .L8001D2B8; sandbox camera_set_target_zoom --disable all; bisect residual per-state via objdump window diff."
+  },
+  {
+   "hypothesis": "UNMEASURED: s0 ends up holding const 2 across the whole function (the only callee-save) purely from writing three literal '== 2' compares (D_800A38B0==2 at S3, D_800A38AA[D_800A38B0]==2 at S4, D_800A377B[D_800A3874]==2 at S7) - GCC cse.c unifies the (const_int 2) uses into one pseudo live across jals and global.c assigns s0; no local variable or hint needed, but if the draft spells any of them differently (e.g. '!= 2' vs '== 2' arm swap, or a switch) the pseudo dies and s0 disappears.",
+   "mechanism": "GCC 2.7.2 cse pass shares loaded constants across basic blocks within extended regions; a register holding 2 that must survive 3+ call sites is allocated a callee-save by global-alloc priority. The addiu s0,zero,2 sits in the SECOND branch's delay slot (L20), i.e. it was scheduled into the mode!=3 bne slot - it must be live from the top of the function.",
+   "next_probe": "First draft: write the three compares as literal '== 2' / '!= 2' exactly per branch sense in the asm (bne at L165 = skip-if-equal shape, bne at L205, bne at L336). If s0 doesn't materialize, check which compare got constant-folded or turned into sltiu (switch-vs-ifchain-branch-sense rule) and re-spell that one arm."
+  },
+  {
+   "hypothesis": "UNMEASURED: the JOIN's packed second argument matches only with the or-association ((a | (b<<8)) | (c<<4)) | (d<<12) - i.e. written in the asm's EVALUATION order (3898, 38AA<<8, 3899<<4, 38AB<<12), not ascending-shift order; GCC's combine/reassociation preserves source order for or-chains of loads (or-tree-shape-shift rule), and the four lbu's interleave with the shifts in a fixed cadence.",
+   "mechanism": "GCC 2.7.2 processes left-associative | in source order; each lbu+sll pair issues as the operand becomes needed, and the first-pass scheduler hoists the NEXT lbu into or-latency slots. A parenthesization matching the target cadence pins both the or order and the load interleave. The last or lands in the jal delay slot (L616) - the arg build must END with the <<12 term.",
+   "next_probe": "Write 'arg = D_800A3898 | (D_800A38AA<<8) | (D_800A3899<<4) | (D_800A38AB<<12);' as a single expression in that literal order; if the interleave diverges, sweep the 3 alternative parenthesizations with sweep_variants (cheap, pure reassociation - all cheat-free)."
+  }
+ ],
  "judge_constraints": [],
  "origin": "queue",
  "created": "2026-07-07T20:06:56.909041+00:00"

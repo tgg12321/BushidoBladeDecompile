@@ -1,10 +1,33 @@
 {
  "func": "motion_ShiftControl",
  "file": "text1b",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 808,
+   "modality": "recon",
+   "headline": "Recon: weapon-shift/select UI routine (pad-nibble tests, SE calls, texture upload, 2 sprite emits); plain C, s16 counters drive the sll/sra cadence; full m2c reference"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "UNMEASURED (flagship): a full-body draft from tmp/blitz/motion_ShiftControl_m2c.c with S16 loop counters (and s16 cursor/temp locals) reproduces the sll/sra-0x10 cadence and collapses 808 to a residual in the main loop's condition-join scheduling",
+   "mechanism": "unwritten body behind replace_with_asmfile; the asm is ordinary compiled C \u2014 the only systematic codegen feature is s16-typed induction variables and (s16)(i-base) shift-amount derivation, both direct source-type consequences",
+   "next_probe": "structural session: draft into src/text1b.c, `& tools/wteng.ps1 main sandbox motion_ShiftControl --disable all`; get the honest floor, then bisect: pre-pass loop / main loop confirm path / main loop locked path / draw loop / tail"
+  },
+  {
+   "hypothesis": "UNMEASURED: the 10 func_8005C650 call sites must keep their exact per-site arg counts (mixed 3-arg and 4-arg on an unprototyped callee) \u2014 the varying counts are what prevents (or shapes) jump2 call-suffix merging of the repeated (id,0x7F,0x7F) calls",
+   "mechanism": "cross-jump-call-merge: find_cross_jump merges identical CALL suffixes only when arg-setup insns match; the 4th arg (pan var_a3) present on some sites breaks suffix identity there. Normalizing all to one prototype would let jump2 merge sites the target keeps separate",
+   "next_probe": "draft with per-site literal arg lists exactly as m2c shows; if extra/missing merges appear in the sandbox diff around the jals, apply the cross-jump-call-merge levers (arg-count variation) site-by-site"
+  },
+  {
+   "hypothesis": "UNMEASURED: the thrice-repeated special-case condition (D_800A35BC==2 && !(D_800A3568->0x14 & 0x20000) && i==1, with the D_8009BC7C capability-bit else-arm) is a repeated INLINE compound conditional in source (not a helper), and its 3 instances must each be written out to reproduce the block_20/21/23, block_41/94/95 join shapes",
+   "mechanism": "GCC 2.7.2 emits short-circuit chains as branch ladders; the m2c goto-joins show partially-shared arms per instance, which only arise from the same source expression re-expanded at each site (a helper call would show jals; a hoisted flag would show one evaluation)",
+   "next_probe": "write the condition as a repeated expression; if the branch-sense or join points diverge, sweep operand order per switch-vs-ifchain-branch-sense before restructuring"
+  }
+ ],
  "judge_constraints": [],
  "origin": "queue",
  "created": "2026-07-07T16:19:29.877362+00:00"

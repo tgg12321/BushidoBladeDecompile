@@ -1,0 +1,34 @@
+{
+ "func": "replay_camera_attack",
+ "file": "text1b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 696,
+   "modality": "recon",
+   "headline": "fable-blitz recon: replay-mode camera-select UI handler -- one per-player loop with 4 open-coded D-pad grid-walk blocks over D_8009BC40/D_8009BC7C tables + two prim draws via the func_8007352C descrip"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "A full draft -- outer s16 player loop, 4 open-coded D-pad walk blocks, two S60C8-family descriptor draws with the pre-loop constant stores (0/0x100/0x100) lifted before the loop -- closes the bulk of the 696 distance in one pass.",
+   "mechanism": "expr.c open-codes each walk block (jump.c cross_jump cannot merge them: different wrap constants/directions); the pre-loop sw of descriptor constants is the source's own field-init placement (struct init before the loop), not a hoist -- GCC 2.7.2 does not hoist stores, so the C must literally assign those fields before the while.",
+   "next_probe": "Write the draft into the stub at src/text1b.c:16470 cribbing the S60C8 typedef from func_800600C8 (text1b.c:12949), run `& tools/wteng.ps1 main sandbox replay_camera_attack --disable all`, classify residual."
+  },
+  {
+   "hypothesis": "The double-width D_800A3554 read (lhu $a3 then lh $v0, s:37-40) reproduces from ONE s16 global accessed once through a u16 cast (for the subu operand) and once directly (for the +1 bound) -- cse.c does not merge loads of different modes (HImode zero-extend vs sign-extend are distinct rtx), so both loads survive.",
+   "mechanism": "cse.c mode-sensitive load CSE: (zero_extend:SI (mem:HI)) vs (sign_extend:SI (mem:HI)) hash differently, so no fold; matches the documented u16-global-lhu-lbu-low-byte rule family.",
+   "next_probe": "In the draft, spell `pad_base` as `(u16)D_800A3554` at the subtraction site and plain s16 at the bound; verify both instructions appear in the first sandbox diff; if merged, try a u16-typed alias declaration per the rule file .claude/rules/u16-global-lhu-lbu-low-byte."
+  },
+  {
+   "hypothesis": "s6=0xFF as a loop-carried register constant and the s16 loop-var sign-extension pattern (sll/sra 16 at loop head, sll in the backedge delay slot) fall out naturally from `s16 i` + repeated `== 0xFF` compares inside the loop body.",
+   "mechanism": "loop.c invariant motion promotes the repeated (const_int 255) comparand into a reg when it appears in >=2 loop-body comparisons against MEM bytes (lbu results); the backedge delay-slot sll is reorg.c fill_slots_from_thread stealing the loop-head truncation.",
+   "next_probe": "After first sandbox run, check whether 0xFF materializes per-use (addiu each site) instead of hoisted -- if so, increase comparison count visibility by keeping all `== 0xFF` compares as direct byte compares (no local caching), then re-sandbox; only then consider a `u8 ff = 0xFF`-style named local."
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-07T20:16:01.420109+00:00"
+}

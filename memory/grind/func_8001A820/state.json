@@ -1,10 +1,33 @@
 {
  "func": "func_8001A820",
  "file": "code6cac",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 574,
+   "modality": "recon",
+   "headline": "fable-blitz deep recon: camera zoom/pitch solver (the function that ACTUALLY does 'set target zoom') - lerps camera focus to the midpoint of two fighters, distance->zoom via the D_8008D118 LZC+table i"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "UNMEASURED (flagship): a full-body draft assembled from the completed neighbors (func_8001A67C for the normalize+sqrt core, marionation_camera_Exec lines 292-316 for the verbatim GTE-LZC island, func_8001A538/A4F0 semantics for call-site shapes) collapses 574 to a residual concentrated in the R12 dual-arm loop; the ASM-PARTIAL verdict covers only the LZC island, which needs NO new authorization (same spelling already accepted in completed code).",
+   "mechanism": "distance 574 = unwritten body (asmfix stub). The isqrt core is byte-identical in structure to completed siblings in the same file (0x13-variant constants at code6cac.c:292/316); the remaining code is if-diamonds + two do-while(++i<2) bisection loops; GCC 2.7.2 register pressure (10 saves live) reproduces the sp-slot spills naturally once all locals are declared.",
+   "next_probe": "Draft into src/code6cac.c:1021: transplant the Exec LZC block, write R12 as 'for (p=0; p<2; p++)' with pointer-walk locals (u8 *flag=D_800A30F0+p is WRONG - the asm compares s5 against the lui/addiu base each iteration, so spell it as walking pointers with 'if (flag == &D_800A30F0)' address tests); sandbox func_8001A820 --disable all; bisect residual per-region."
+  },
+  {
+   "hypothesis": "UNMEASURED: R11's call pair matches only when the first result-store is DEFERRED into the second jal's delay slot - i.e. C written as 'r1 = A4F0(t2 - p->a12, 8); r2arg = (s16)scr4 - p->a14; p->a12 = a12old + r1;' ordering where GCC's first-pass scheduler moves the sh past the second call's argument setup (defer-store-past-later-compute-into-jal-delay), and the analogous final-store-in-delay-slot at R13 (sh savedYaw into s6->0x10 in the jal slot) needs 'p->yaw = savedYaw;' placed immediately before the call whose result increments it.",
+   "mechanism": "GCC 2.7.2 sched1 fills jal delay slots with pending independent stores; the store is only pending if the C statement order puts the assignment AFTER the next call's arg computation is otherwise ready - statement order is the lever, documented in the defer-store-past-later-compute-into-jal-delay technique rule.",
+   "next_probe": "Draft both call regions in the target statement order first; if the sh lands before the jal instead of in its slot, apply the technique rule's reordering (move the += application statement after the next call's local computations); verify in the sandbox objdump window around both jals."
+  },
+  {
+   "hypothesis": "UNMEASURED: the R12 player-select and loop-bound tests compile to lui/addiu ADDRESS materializations compared against s5 (beq s5, &D_800A30F0 / slt s5, &D_800A30F0+2) only when the loop is written as a pointer-walk over the 2-byte flag array with literal address comparisons ('flag == D_800A30F0_arr' and 'flag < D_800A30F0_arr + 2'), not an index loop - GCC 2.7.2 keeps symbolic-constant compares as re-materialized lui/addiu pairs per use (no cse into a callee-save because all saves are occupied).",
+   "mechanism": "With register pressure at maximum, cse.c cannot allocate the base address a register that survives the calls, so each use re-expands the symbol_ref (defeat-combine-symbol-fold family); an index-based loop (p==0 test on an int) would instead produce a beqz on a register - visibly different shape from the beq-vs-address in the target.",
+   "next_probe": "Write the loop with 'u8 *flag = D_800A30F0_arr; s32 *rate = D_800A30F4_arr; ... while (flag < D_800A30F0_arr + 2)' and the fighter select as 'src = (flag == D_800A30F0_arr) ? arg2 : arg3;' - then check the objdump for the three lui/addiu re-materializations; if GCC hoists the base into a temp, split the reads (split-read-defeats-hoist rule) or re-order declarations to keep pressure high at the loop head."
+  }
+ ],
  "judge_constraints": [],
  "origin": "queue",
  "created": "2026-07-07T20:06:57.013470+00:00"

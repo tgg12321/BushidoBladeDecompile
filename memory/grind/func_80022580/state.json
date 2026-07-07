@@ -1,10 +1,33 @@
 {
  "func": "func_80022580",
  "file": "code6cac",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 619,
+   "modality": "recon",
+   "headline": "fable-blitz deep recon: per-player round-init function (writes ~80 fields of the 0x44C-stride player struct at D_80101EC8) called from mode_handler_00_GameInit; 16-region decomposition mapped; no jtbl"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "UNMEASURED (flagship): a full-body first draft from the 16-region map collapses the 619 distance to a small residual, because the function is straight-line -O2 C with no structural traps (no jtbl, no GTE, one magic div, if-chains throughout); the residual will concentrate in R9's aggregate-copy runs and R8's call-dispatch diamonds.",
+   "mechanism": "distance 619 = unwritten body (asmfix replace_with_asmfile stub). Field-wise stores with re-loads (0xF4=0xD8+0xE8 shape), separate 3/4-word aggregate assigns (GCC 2.7.2 expand_assignment/emit_block_move emits a fresh lw run per MEM-to-MEM struct copy, no cross-assignment CSE), and if/else diamonds sharing store tails (jump_optimize cross-jump) are all reproducible by writing the C at the right granularity.",
+   "next_probe": "Draft into src/code6cac.c:2763 using tmp/blitz/m2c_func_80022580.c as dataflow reference: declare a 4-s16 angle struct (0x1C8) + 3-word and 4-word vec structs for the R9 copies; sandbox func_80022580 --disable all for the honest floor; bisect residual per-region via objdump window diff."
+  },
+  {
+   "hypothesis": "UNMEASURED: the five identical 3-word copies in R9 (0xF4/F8/FC -> 0x168/0x174/0x180/0x18C) and the two 4-word copies (0xB8->0xC8, 0x104->0x24C) come out byte-exact when written as separate struct assignments (p->a = p->b; with 12-byte and 16-byte struct types), because GCC 2.7.2 expands each BLKmode assignment independently via move_by_pieces (lw x3/sw x3 or lw x4/sw x4 with v0/v1/a0/a1 register rotation) and never CSEs the reloaded source words.",
+   "mechanism": "expr.c emit_block_move / move_by_pieces at word mode; the register rotation (v0,v1,a0[,a1]) in the target matches the 4-register move window; a memcpy() or field-by-field spelling would instead CSE or reorder. The 0xB8 triple ({0xF4,0xDC,0xFC}) mixes sources, so THAT one is field-wise while its 0xC8 consumer is a 4-word aggregate - the struct layout must make 0xB8..0xC4 a 16-byte member starting a copyable sub-struct.",
+   "next_probe": "In the draft define struct V3 {s32 x,y,z;} and struct V4 {s32 x,y,z,w;} members at 0xB8(V4), 0xC8(V4), 0x104(V4), 0x24C(V4), 0xE8(V3), 0x1F8(V3), 0xF4(V3), 0x168/0x174/0x180/0x18C(V3); write p->c8 = p->b8; p->m24C = p->m104; and four p->mX = p->f4 assigns; verify the lw/sw runs and rotation registers in the sandbox objdump; if rotation differs, try swapping declaration adjacency (move_by_pieces window depends only on alignment, so a mismatch means the assignment got expanded field-wise instead - check struct alignment is 4)."
+  },
+  {
+   "hypothesis": "UNMEASURED: R12's 4-iteration loop matches only with the induction variable pair (i, walking short* base) both live - i.e. C of the form 'for (i=0, q=&p->f276; i<4; i++, q++) { q[0] = D_8008E3F8[p->chr*4+i]; q[4] = D_8008E4D0[p->chr*4+i]; }' where p->chr (0xA) is read TWICE per iteration from memory (no LICM because the q stores may alias p), and a1 (i) increments in the SECOND table's address computation, with the a0+=2 in the loop-latch delay slot.",
+   "mechanism": "GCC 2.7.2 loop.c LICM refuses to hoist p->chr because the sh through q (derived from p) may alias it (no type-based disambiguation at -O2 in 2.7.2); strength-reduction keeps both i*2 (sll v1,a1,1) and the walking pointer; the latch fills its delay slot with the pointer bump (addiu a0,a0,2) via the first-pass scheduler.",
+   "next_probe": "Draft exactly that loop shape; if the lh 0xA reload count diverges (e.g. draft caches chr), do NOT add volatile - re-derive q from p inside the loop or keep both table reads as p->-relative expressions; sweep the two spellings (walking q vs indexed p->arr[i]) with sweep_variants and keep whichever reproduces the double per-iteration lh."
+  }
+ ],
  "judge_constraints": [],
  "origin": "queue",
  "created": "2026-07-07T20:06:56.807699+00:00"

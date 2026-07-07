@@ -1,10 +1,33 @@
 {
  "func": "func_800198D0",
  "file": "code6cac",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 747,
+   "modality": "recon",
+   "headline": "fable-blitz recon: compressed animation-frame bitstream decoder over D_800F1B18[idx*0x570]; the ENTIRE bit-read idiom (refill/simple GETBITS) is already byte-match-proven in pure C by the adjacent COM"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "A full-body first draft translating the mapped skeleton, reusing func_8001979C's proven GETBITS spelling verbatim at every read site (open-coded, macro-expanded), collapses the 747 distance to a small residual in ONE step.",
+   "mechanism": "cse.c + combine.c produce the exact subu/srlv/sllv/or instruction forms already byte-proven for this spelling in this same TU (func_8001979C matched); expr.c open-codes each expansion so no jump.c cross-jump interference; synth_mult chains for *0x570 and *0x118 are the default expand_mult decompositions (both confirmed byte-identical in the sibling).",
+   "next_probe": "Write the draft into the empty stub at src/code6cac.c:930, run `& tools/wteng.ps1 main sandbox func_800198D0 --disable all`, record the masked distance and diff-classify the residual."
+  },
+  {
+   "hypothesis": "Register binding (buf=$t0, bitsLeft=$t1, wordPtr=$t3, slot=$s0, frame=$s1, out=$s2) reproduces WITHOUT pins from natural declaration/use order: s1/s2 are the incoming a1/a2 values live across the whole body (callee-saved forced in leaf because t-regs are exhausted by the decoder state), and the three reader-state pseudos have the highest n_refs so global.c hands them the first free caller-saved regs.",
+   "mechanism": "local-alloc.c/global.c allocno priority = ref count x loop depth; the reader state is referenced in every GETBITS expansion (~20 sites, most inside the depth-2 channel loop), dominating all other pseudos; no calls -> caller-saved regs are free for the taking.",
+   "next_probe": "After draft compiles, read the sandbox masked-vs-unmasked gap (masked 0 with reg diffs = pure RA work); if reg classes are wrong, reorder local declarations / split scopes per .claude/rules/register-alloc-pure-c before considering anything else."
+  },
+  {
+   "hypothesis": "The keyframe path needs NO goto: writing it as straight-line code that falls into the shared `for (sub = start; sub < (frame&7); sub++)` loop (start=0 for keyframe, start=(frame&7)-1 for delta path) reproduces the j .L80019DB8 / j .L80019D44 layout, and the `if (sub == 0) first-order else second-order` accumulation if/else inside the channel loop reproduces s:737-752.",
+   "mechanism": "stmt.c/jump.c natural layout: the common loop is emitted once after the if/else region; each arm's exit jump to the shared loop head is exactly the target's j+delay-slot (t8 init in the delay slot at s:314/348 = the arm's last assignment before the join).",
+   "next_probe": "In the first sandbox run, check the control-flow class of `diagnose func_800198D0` -- if control-flow divergence appears at the join, try arm-ordering (delta path first vs last) before any goto; only fall back to `goto` shared-label per .claude/rules/shared-end-label if both orders fail."
+  }
+ ],
  "judge_constraints": [],
  "origin": "queue",
  "created": "2026-07-07T20:09:45.882523+00:00"

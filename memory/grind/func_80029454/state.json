@@ -1,10 +1,33 @@
 {
  "func": "func_80029454",
  "file": "code6cac_b",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 1024,
+   "modality": "recon",
+   "headline": "Recon: weapon-vs-weapon clash detector; pure scratchpad/stack block-copy C with 17 counter loops, zero mult/div/GTE/jtbl; full m2c reference; from-scratch draft is the play"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "UNMEASURED (flagship): full-body from-scratch draft from tmp/blitz/func_80029454_m2c.c \u2014 scratchpad pointer locals + a real `s32 saved[16][3]` (or [0x30]) stack array for the sp10 buffer \u2014 collapses 1024 to a residual dominated by the 4 copy-loop forms and cross-jump tail merges in the 8 case-arm ladders",
+   "mechanism": "the body is block-copy + compare C with zero arithmetic complexity (no mult/div/GTE/jtbl); GCC 2.7.2 reproduces counter loops and unsigned-range phase idioms directly; the m2c control flow is fully structured (no irreducible regions)",
+   "next_probe": "structural session: draft into src/code6cac_b.c:748, `& tools/wteng.ps1 main sandbox func_80029454 --disable all`; bisect per-region; reuse the endpoint-triple ladder arm order from the asm (case 0 stores 0x60,0x64 then 0x68-via-shared-tail)"
+  },
+  {
+   "hypothesis": "UNMEASURED: the 4 sixteen-iteration vec3 save/restore loops must be counter do-while loops with TWO walking cursors (dst += 0xC, src implicit via loop counter vs +=0xC) exactly as m2c shows \u2014 and the 3 restore copies are literal duplicated code in 3 return paths (NOT a helper or a single merged tail), since the asm keeps 3 separate 9-insn loop bodies",
+   "mechanism": "GCC would merge identical tails only if control flow joins BEFORE the loops; the asm's three separate backward-branch loops at 0x80029EC0/0x80029F38/0x8002A3A4-0x8002A418 prove the original duplicated the restore loop before each return (cross-jump can't merge loops)",
+   "next_probe": "write the restore loop 3 times inline (plus entry save loop); if tempted to factor into a helper, don't \u2014 verify loop body register cadence (lw/lw/lw/sw/sw/sw addiu addiu bnez) against target per instance"
+  },
+  {
+   "hypothesis": "UNMEASURED: the halving pass is a nested loop `for p in 0..2 { for k in 0..4 { six explicit field >>= 1 statements on a walking base (base = p*0x60 + k*0x18 + 0x1F8000A8) } }` with the base pointer formed once per k-iteration (temp_v1_4 = var_a1 + 0x1F8000A8; var_a1 += 0x18 BEFORE the stores)",
+   "mechanism": "the asm increments the offset cursor before the six lw/sra/sw triplets and uses goto-style inner loop (bnez to loop_37 head) \u2014 pointer-formed-then-advanced ordering determines whether the addiu lands in the load-delay slot (walking-pointer-serializes-parallel-loads family)",
+   "next_probe": "A/B the two orderings (advance-before-stores vs advance-in-loop-tail) in the structural session and check the 0x80029A44/0x80029A54 dual backward-branch shape (inner bnez + outer bnez 21/27-insn spans) reproduces"
+  }
+ ],
  "judge_constraints": [],
  "origin": "queue",
  "created": "2026-07-07T16:19:29.784248+00:00"

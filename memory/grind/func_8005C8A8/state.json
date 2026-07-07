@@ -1,0 +1,34 @@
+{
+ "func": "func_8005C8A8",
+ "file": "text1b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 752,
+   "modality": "recon",
+   "headline": "Recon: HUD frame/gauge draw fn \u2014 11 func_8007352C calls through a reused stack param-block, 8 small tile loops, mode if/else ladder; plain C, full m2c reference"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "UNMEASURED (flagship): settle the func_8007352C call ABI (many-arg call with stack-homed args 5+ at sp+0x18.. vs pointer-to-stack-struct) by reading func_8007352C's prologue, then a full-body draft reproduces the 11-call sequence and collapses 752 to tile-loop/RA residual",
+   "mechanism": "if func_8007352C reads its 5th+ args from the caller frame (lw from sp+0x10/0x14/0x18... in ITS prologue relative to caller sp), the C is a plain >4-arg prototype and GCC homes exactly the observed sp+0x18..0x34 slots; if it loads through a0, it's a struct pointer. The repeated partial rewrites between calls then fall out naturally (args re-passed vs fields re-stored)",
+   "next_probe": "read asm/funcs/func_8007352C.s first 30 insns (or its src if partially decompiled); count its formal args; then draft func_8005C8A8's first two calls only and sandbox to verify the arg-homing byte pattern before writing the remaining 9"
+  },
+  {
+   "hypothesis": "UNMEASURED: mode 0 is a LABEL inside mode 2's flow (block_20) \u2014 the original used `if (mode == 2) { ...; } /* falls into */ mode0_body;` reached by goto/fallthrough from the mode ladder (if (mode==0) goto block_20 from the top) \u2014 reproducing the exact if/else ladder shape (mode!=1 -> mode<2 -> mode!=0 nest) is required for the 4 long forward branches at 0x8005C948-0x8005C974",
+   "mechanism": "GCC 2.7.2 lays out nested if/else by source order; the observed branch topology (beq mode,2 forward; beqz mode into the shared body; j around the mode-1 arm) pins the source ladder shape \u2014 a switch or reordered ladder produces different branch senses (switch-vs-ifchain-branch-sense family)",
+   "next_probe": "draft the ladder exactly as m2c shows (if (mode != 1) { if (mode < 2) { if (mode != 0) {...} else goto shared; } else { mode2 body... shared: ... } } else { mode1 }) and check the 0x8005C948/0x8005C95C/0x8005C964/0x8005C974 branch quartet in the sandbox diff"
+  },
+  {
+   "hypothesis": "UNMEASURED: the 5 near-identical 2-iter border-tile loop bodies are 5 separate inline do-while loops in source (not a helper): each writes rgb triple via THREE s8 stores, and the /2 centering math switches spelling between signed `/2` (early loops, div-free sra sign-fix on s16-sourced values) and u32-cast `(x + (x>>31)) >> 1` (loop_43/51) \u2014 the spelling difference is source-level (s32 vs u32 intermediate), not allocator noise",
+   "mechanism": "GCC emits sra+addu sign-fix for s32 x/2 but a bare srl when the source expression is (u32)(x + (x>>31)) >> 1; m2c faithfully shows both spellings in different loops, so the original mixed them \u2014 copying one spelling everywhere will leave ~2-insn diffs per loop instance",
+   "next_probe": "draft loops with the per-instance spelling from the m2c reference; if a loop still diverges by a srl/sra pair, flip that instance's intermediate type and re-sandbox (cheap A/B, 5 sites)"
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-07T20:28:33.753149+00:00"
+}

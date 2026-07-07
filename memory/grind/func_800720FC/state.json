@@ -1,0 +1,34 @@
+{
+ "func": "func_800720FC",
+ "file": "text1b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 688,
+   "modality": "recon",
+   "headline": "fable-blitz recon: saTan3-family replay/option menu frame handler (draw areas + cursor grid + smooth-scroll + pad input), built entirely from idioms already COMPLETED in this TU (S60C8 descriptor, fun"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "A full draft from the phase map -- descriptor struct + literal duplicate field assignments + plain /488 and /30 divisions + doubled-mask pad literals -- closes the bulk of 688 in one pass; this function is idiom-assembly, not discovery.",
+   "mechanism": "All building blocks are byte-proven in this TU: S60C8 descriptor (func_800600C8), func_80073728/func_8007352C call framing, ot_Link chains; GCC 2.7.2 flow.c does no MEM dead-store elimination so the double-stores survive verbatim; expmed.c expand_divmod synthesizes the 0x4325C53F//488 and 0x88888889//30 sequences from plain division.",
+   "next_probe": "Write the draft into the src/text1b.c stub, `& tools/wteng.ps1 main sandbox func_800720FC --disable all`, classify residual by phase (the 5 ot_Link blocks give clean landmarks)."
+  },
+  {
+   "hypothesis": "The [4,6] range gates compile to the observed `addiu -4; sltiu 3` from a plain `if (x >= 4 && x <= 6)` on the u16 globals (fold-const.c range collapse), NOT from hand-written `(u16)(x-4) < 3`.",
+   "mechanism": "fold-const.c merges the && of two comparisons on the same operand into a single unsigned range check during genrtl; the operand is the lhu-loaded u16, so the subtract stays in SImode with sltiu.",
+   "next_probe": "Draft with the natural && form first; if the compare shape diverges in the sandbox diff (branch sense or sltiu operand order), fall back to the explicit unsigned-subtract spelling and re-measure (rule ref: switch-vs-ifchain-branch-sense)."
+  },
+  {
+   "hypothesis": "The cached menu base stays a STACK slot (sp+0x58, reloaded twice) rather than a callee-saved reg because its two uses are >600 insns apart with 18 intervening calls -- reproduced naturally by declaring it as a plain local assigned in the prologue region, NOT by re-deriving *(D_800A35A8->0x80) at each use.",
+   "mechanism": "global.c spills low-refcount pseudos live across many calls to stack (allocno priority ~2 refs vs huge live range); re-deriving at each use would instead emit fresh gp-rel loads at both sites (different byte pattern -- lw gp_rel + lw 0x80 vs lw 0x58(sp)).",
+   "next_probe": "In the draft declare `u8 *menuBase = *(u8**)(D_800A35A8->0x80-ish)` once before the first initDrawArea; verify the sandbox diff shows lw 0x58($sp) at both consumption sites; if GCC rematerializes instead, raise the local's liveness by using it in both lbu index expressions only (no other refs)."
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-07T20:20:32.078775+00:00"
+}

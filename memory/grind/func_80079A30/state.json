@@ -1,0 +1,34 @@
+{
+ "func": "func_80079A30",
+ "file": "text1b_b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 533,
+   "modality": "recon",
+   "headline": "fable-blitz recon: this is libc vsprintf/sprintf -- the %-format interpreter (flags/width/precision struct at sp+0x210, jtbl_80015CA4 45-case conversion switch, backward digit buffer). Sibling helpers"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Source is the classic PsyQ/SN prnt.c vsprintf: a `while ((c = *fmt++))` loop, flags-struct default copied from a static initializer (D_8009BE10), switch(c) for conversions -- and the decomp.me gcc2.7.2-psx corpus contains a near-verbatim match to crib the exact spelling from.",
+   "mechanism": "libc functions ship identically across PsyQ titles; the jtbl shape (c-0x4C, 45 entries) and magic 0xCCCCCCCD unsigned-div are stable fingerprints of one source.",
+   "next_probe": "python3 tools/decomp_me_scrape.py search --asm-file asm/funcs/func_80079A30.s; inspect top hits for the prnt/vsprintf scratch; then draft from that shape and sandbox."
+  },
+  {
+   "hypothesis": "The varargs prologue (sw a1-a3 pre-adjust, va from old-sp+8) reproduces with a real `(char *dst, const char *fmt, ...)` + va_start(ap, fmt) under this GCC -- the fake-varargs-explicit-homing spelling is only the fallback if maspsx/prologue_fix mangles the pre-prologue store order.",
+   "mechanism": "GCC 2.7.2 MIPS stdarg homes unnamed arg registers a2/a3 plus spills a1's home when the last named arg lives in the incoming-args area; prologue scheduler places the homing sw's before the sp adjust.",
+   "next_probe": "Draft with real stdarg first; diff the first 20 prologue instructions in the sandbox; if the homing order diverges, read .claude/rules fake-varargs-explicit-homing and re-spell per debug_printf (src/text1b_b.c:1899)."
+  },
+  {
+   "hypothesis": "The flags/width/prec state lives in a 12-byte struct copied by-value from static D_8009BE10 (three lw/sw pairs = GCC struct assignment expansion), NOT field-by-field init -- and the sign-char is a struct byte at +1 (sp+0x211).",
+   "mechanism": "GCC 2.7.2 expands small struct assignment to word loads/stores (expr.c emit_block_move, 4-byte pieces); field inits would emit immediate stores instead.",
+   "next_probe": "Declare `static const struct fmtstate default_state` extern as D_8009BE10, assign `st = default_state;` in the '%' arm, and confirm the 3xlw/3xsw block reproduces in the sandbox diff."
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-07T20:27:34.060796+00:00"
+}

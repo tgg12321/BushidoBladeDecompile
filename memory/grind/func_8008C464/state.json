@@ -1,10 +1,34 @@
 {
  "func": "func_8008C464",
  "file": "main",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 761,
+   "modality": "recon",
+   "headline": "Recon: PsyQ libapi-style command dispatcher + trailing handler functions \u2014 the .s is a MULTI-FUNCTION blob (9 returns, 1 epilogue); jump tables live in ings.c as fixed-address asm words (jtbl-rodata a"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "UNMEASURED (flagship): the extent is 6-9 separate PsyQ libapi functions; recovering the trailing entry addresses (from the SysEnqIntRP handler struct + data-section function pointers) and drafting each as its own C function \u2014 dispatcher as two nested switches \u2014 accounts for nearly all of the 761",
+   "mechanism": "splat missed the internal entry points because they are referenced only via data-section pointers; the single-epilogue + 8 bare `jr $ra` pattern is impossible for one C function (GCC restores saved regs at every return) \u2014 it PROVES multiple link-time functions in the extent",
+   "next_probe": "structural session: extract exact sub-function boundaries (split at each jr $ra + delay slot; confirm each region's prologue/no-prologue), find the pointer references (grep .data words in 0x8008C974-0x8008D04C range across asm/data + src data arrays), then draft as consecutive static/global functions in one TU and sandbox func_8008C464"
+  },
+  {
+   "hypothesis": "UNMEASURED: the three dispatch tables are this TU's OWN GCC-emitted switch jtbls whose original .rodata landed at rodata-end (0x800164AC) because this is the last linked object \u2014 a pure-C switch build + bb2.ld re-attribution of those 19 words to this TU reproduces the exact %hi/%lo(sym+K) casesi sequence",
+   "mechanism": "PsyQ link order .rodata->.text concatenates per-object rodata; last object's jtbl = last rodata bytes. GCC 2.7.2 casesi emits exactly the observed sltiu/sll/lui-%hi/addu/lw-%lo/jr shape against its own jtbl symbol. The ings.c glabel blob is a placeholder that must be retired in the same change (its comment already documents the fixed-address coupling)",
+   "next_probe": "evidence pass per jtbl-rodata-split-infrastructure checklist: confirm no other TU references func_800164AC/func_800164F8 (grep), confirm 0x800164F8's 7 words are a REAL function (delay loop li 0x270F; bgez) not a table \u2014 then a grind session proposes the TU re-attribution as the documented-evidence rodata move (policy-reviewed, not auto)",
+   "next_probe_note": "this is the only one of the 6 recon targets with an infrastructure dependency; flag it in the session brief"
+  },
+  {
+   "hypothesis": "UNMEASURED: this module matches a known PsyQ libapi source family (card/pad async event handlers, DeliverEvent descriptor constants, EnterCriticalSection-guarded ops) \u2014 the decomp.me corpus / other PSX decomps' libapi reconstructions provide near-verbatim C bodies for the case handlers",
+   "mechanism": "PsyQ 3.5 libapi shipped identical objects into hundreds of games; community reconstructions (psyq libapi card.c/pad.c family) reproduce these exact byte patterns with known cc1 flags",
+   "next_probe": "python3 tools/decomp_me_scrape.py search --asm-file asm/funcs/func_8008C464.s; also compare bios_DeliverEvent descriptor constants in the case bodies (read them from the asm around 0x8008CAA0/0x8008CC54/0x8008CCE0) against libapi card event descriptors (0xF0000011/0xF4000001 family) to pin the exact SDK module name"
+  }
+ ],
  "judge_constraints": [],
  "origin": "queue",
  "created": "2026-07-07T16:32:11.287135+00:00"

@@ -1,0 +1,34 @@
+{
+ "func": "calc_loc_mat_fw",
+ "file": "code6cac_b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 1110,
+   "modality": "recon",
+   "headline": "Recon: 2-player weapon-contact/location-matrix fn; pure scratchpad-workspace C (no jtbl/GTE/div), full m2c reference + Kengo se_fc/calc_loc_mat_fw disasm lead; from-scratch draft is the play"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "UNMEASURED (flagship): a full-body from-scratch draft in src/code6cac_b.c, written region-by-region from tmp/blitz/calc_loc_mat_fw_m2c.c with scratchpad pointer-local spelling copied from the completed code6cac siblings, collapses the 1110 to a residual concentrated in RA over the 10 callee-saves and the shared-tail merges",
+   "mechanism": "distance 1110 = unwritten body behind a replace_with_asmfile rule; the asm is ordinary -O2 GCC 2.7.2 output (park audit + this pass: textbook prologue, no jtbl/GTE, strength-reduced arithmetic, cross-jump shared tails). The 2-player outer loop + 4 inner loops are all counter/pointer style GCC reproduces directly",
+   "next_probe": "structural session: draft the body (keep the two base-select spellings distinct: arith `-(s6==0)&K` vs if-else pointer select), then `& tools/wteng.ps1 main sandbox calc_loc_mat_fw --disable all`; bisect residual per-region via objdump window diff; cross-check region order against `python3 tools/kengo_ref.py calc_loc_mat_fw --bb2`"
+  },
+  {
+   "hypothesis": "UNMEASURED: the s5-endpoint-pointer selection block (m2c 331-376) reproduces its goto-shared tails (block_73/block_76) only as a real if/else ladder over s5 with the 0x60/0x64/0x68 triple stores written per-arm and cross-jump left to merge them \u2014 NOT as a switch (no jtbl exists) and NOT as pre-merged shared code",
+   "mechanism": "GCC jump2 find_cross_jump merges identical store suffixes across arms; the asm's shared `sw ->0x68` tail with distinct 0x60/0x64 heads is the merged residue. Writing the merged form by hand would invert the merge direction and misplace labels (cross-jump-store-tail-merge rule family)",
+   "next_probe": "in the draft, write all 6 (s4,s5) arms fully expanded with per-arm stores in target field order (0x60,0x64,0x68 vs 0x64,0x68,0x60 per m2c); if the merge direction diverges, apply the label-placement levers from cross-jump-store-tail-merge before any exotic form"
+  },
+  {
+   "hypothesis": "UNMEASURED: the six midpoint stores (+0x30..0x44) must be five explicit `(a+b+((a+b)>>31))>>1` expressions plus ONE plain `(a+b)/2` for the LAST (+0x44) \u2014 m2c renders them differently because the last one's operands come from direct field reloads (no live temps), i.e. the original wrote a plain /2 throughout and register pressure changed the expansion",
+   "mechanism": "GCC 2.7.2 expands signed x/2 as (x + (x>>31)) >> 1 with the sign-fix in a temp; when both addends are memory reloads at the last store the temp allocation shifts, which m2c displays as the '/ 2' form. All six are the same source expression `field = (a + b) / 2;` \u2014 the variance is allocator-driven, not source-driven",
+   "next_probe": "draft all six as `/2` on s32; if the sixth's register cadence diverges from target, try hoisting the two reloads into the same temps the first five use (split-read / staged-value catalog) and measure with sandbox"
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-07T20:14:53.860647+00:00"
+}
