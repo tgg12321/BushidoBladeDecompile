@@ -34,5 +34,72 @@ class TestLedgerInit(unittest.TestCase):
         self.assertIsNone(G.load_state(self.root, "nope"))
 
 
+class TestValidateOutcome(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = self.tmp.name
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def good(self, **kw):
+        base = {
+            "result": "progress", "floor": 12, "headline": "killed h1",
+            "hypotheses": [{"statement": "s", "mechanism": "m", "probe": "p",
+                            "result": "floor 14 -> 12", "verdict": "KILLED"}],
+            "evidence": ["fact"], "frontier": [{"hypothesis": "h", "mechanism": "m",
+                                                "next_probe": "n"}],
+            "artifacts": [], "ruling_question": "",
+        }
+        base.update(kw)
+        return base
+
+    def test_valid_progress(self):
+        ok, why = G.validate_outcome(self.good(), "structural", self.root)
+        self.assertTrue(ok, why)
+
+    def test_blocked_is_not_a_result(self):
+        ok, why = G.validate_outcome(self.good(result="blocked"), "structural", self.root)
+        self.assertFalse(ok)
+
+    def test_progress_needs_measured_hypothesis(self):
+        bad = self.good(hypotheses=[{"statement": "s", "mechanism": "m", "probe": "p",
+                                     "result": "it seems hard", "verdict": "KILLED"}])
+        ok, why = G.validate_outcome(bad, "structural", self.root)
+        self.assertFalse(ok)  # no digits in result => no measurement
+
+    def test_progress_without_hypotheses_invalid(self):
+        ok, why = G.validate_outcome(self.good(hypotheses=[]), "structural", self.root)
+        self.assertFalse(ok)
+
+    def test_recon_needs_frontier_and_evidence(self):
+        rec = self.good(hypotheses=[])
+        ok, why = G.validate_outcome(rec, "recon", self.root)
+        self.assertTrue(ok, why)
+        ok, why = G.validate_outcome(self.good(hypotheses=[], frontier=[]), "recon", self.root)
+        self.assertFalse(ok)
+
+    def test_permuter_needs_existing_artifact(self):
+        ok, why = G.validate_outcome(self.good(), "permuter", self.root)
+        self.assertFalse(ok)  # artifacts empty
+        ap = os.path.join(self.root, "perm.log")
+        open(ap, "w").write("score 120\n")
+        ok, why = G.validate_outcome(self.good(artifacts=["perm.log"]), "permuter", self.root)
+        self.assertTrue(ok, why)
+
+    def test_frontier_cap(self):
+        f = [{"hypothesis": str(i), "mechanism": "m", "next_probe": "n"} for i in range(4)]
+        ok, why = G.validate_outcome(self.good(frontier=f), "structural", self.root)
+        self.assertFalse(ok)
+
+    def test_ruling_request_needs_question(self):
+        r = self.good(result="ruling-request", ruling_question="")
+        ok, why = G.validate_outcome(r, "structural", self.root)
+        self.assertFalse(ok)
+        r["ruling_question"] = "Is X a sanctioned SOTN form?"
+        ok, why = G.validate_outcome(r, "structural", self.root)
+        self.assertTrue(ok, why)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -80,3 +80,51 @@ def append_hypothesis(root, func, h, session=None):
                 f"- probe: {h.get('probe', '?')}\n"
                 f"- result: {h.get('result', '?')}\n"
                 f"- verdict: {h.get('verdict', '?')}\n")
+
+
+def _has_measurement(text):
+    return any(ch.isdigit() for ch in str(text))
+
+
+def validate_outcome(o, modality, root):
+    """Return (ok, reason). A session is VALID only if it proves work:
+    - candidate-ready / ruling-request have their own requirements;
+    - progress requires >=1 hypothesis with a CONFIRMED/KILLED verdict and a
+      numeric measurement in its result (recon instead requires frontier+evidence);
+    - permuter/forensics sessions must attach >=1 existing artifact file.
+    'blocked' does not exist. Anything unproven is invalid and gets discarded."""
+    if not isinstance(o, dict):
+        return False, "outcome is not a JSON object"
+    res = o.get("result")
+    if res not in RESULTS:
+        return False, f"result must be one of {RESULTS}, got {res!r}"
+    if len(o.get("frontier", [])) > MAX_FRONTIER:
+        return False, f"frontier exceeds cap of {MAX_FRONTIER}"
+    if res == "ruling-request":
+        if not str(o.get("ruling_question", "")).strip():
+            return False, "ruling-request requires ruling_question"
+        return True, ""
+    if not isinstance(o.get("floor"), int):
+        return False, "floor (int) is required"
+    if res == "candidate-ready":
+        return True, ""
+    # res == progress
+    if modality == "recon":
+        if not o.get("frontier"):
+            return False, "recon must produce an initial frontier"
+        if not o.get("evidence"):
+            return False, "recon must bank evidence"
+        return True, ""
+    proven = [h for h in o.get("hypotheses", [])
+              if h.get("verdict") in ("CONFIRMED", "KILLED")
+              and _has_measurement(h.get("result", ""))]
+    if not proven:
+        return False, ("progress requires >=1 hypothesis with verdict "
+                       "CONFIRMED/KILLED and a numeric measurement in result")
+    if modality in ("permuter", "forensics"):
+        arts = [a for a in o.get("artifacts", [])
+                if os.path.isfile(os.path.join(root, a)) and
+                os.path.getsize(os.path.join(root, a)) > 0]
+        if not arts:
+            return False, f"{modality} session must attach >=1 existing non-empty artifact"
+    return True, ""
