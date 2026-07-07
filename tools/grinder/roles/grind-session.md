@@ -40,6 +40,10 @@ and ask; never self-approve.
 - Engine commands via `& tools/wteng.ps1 main <cmd>` (PowerShell). Your
   gradient: `sandbox <func> --disable all`. Never `verify-oracle` as an
   iteration tool; never `retire`; never `queue done`; never git commit/push.
+  Never touch `tools/reintegrate_lock.ps1` (no acquire/release/steal, even if
+  a lock looks stale or a hook message suggests it) — main's mutation
+  serialization belongs to the driver and the operator, not to you. If a hook
+  blocks something, record it in your outcome and move on.
 - Scratch: `tmp/grind/<func>/s<N>/`. Permuter logs and cc1 dumps go there and
   are listed in `artifacts` (permuter/forensics sessions are INVALID without
   at least one real artifact file).
