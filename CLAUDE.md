@@ -81,16 +81,18 @@ pins, cheat-asm `__asm__` blocks, scheduling barriers — are NEVER an end state
    grind it in pure C. Genuine no-C-form constructs get authorized inline asm; never recreate target
    bytes via hardcoded-`$N` `__asm__` injection.
 
-## Workflow: the Autonomous Decomp Fleet (default)
-The **default** way to work the backlog is the **Autonomous Decomp Fleet** (`tools/fleet/`) —
-a standing multi-agent system that works the card states continuously: backlog workers, a
-no-quit blocked worker, an Adjudicator, an Auditor+Verifier promotion gate (the ONLY path to
-COMPLETED on `main`), and an Overseer circuit-breaker. **Invoke the `decomp-fleet` skill** to
-operate it on demand (orient → status → drill → launch → report). Operator docs:
-[docs/fleet/RUNBOOK.md](docs/fleet/RUNBOOK.md) (quickstart/lifecycle), `tools/fleet/README.md`
-(reference), `docs/fleet/HANDOFF.md` (live campaign state), and [[autonomous-decomp-fleet]].
-Each fleet worker runs the per-function engine loop below in its own isolated worktree; only
-the supervisor mutates `main`, and every promotion is oracle-gated + triple-reviewed.
+## Workflow: the Grinder (default)
+The **default** autonomous workflow is the **Grinder** (`tools/grinder/`) — a
+deterministic single-lane driver that grinds the queue top to COMPLETED-C,
+however many sessions it takes: persistent per-function ledger
+(`memory/grind/<func>/`), driver-enforced modality ladder, no `blocked` outcome
+(invalid sessions are discarded and respawned), bytes proven on main BEFORE a
+default-FAIL Judge (the owner's static policy) makes the final call. Operate:
+`pwsh tools/grinder/grind.ps1` (add `-Once` for one supervised iteration) ·
+`pwsh tools/grinder/status.ps1` · `pwsh tools/grinder/grind.ps1 -Stop`.
+Owner audit surfaces: `docs/grind/decisions.md` + `docs/grind/journal.md`.
+Spec: docs/superpowers/specs/2026-07-06-grinder-pipeline-design.md. The fleet
+(`tools/fleet/`) is RETIRED (superseded 2026-07-06 — see docs/fleet/HANDOFF.md).
 
 ### Fallback: a single focused agent, on main
 For driving ONE function by hand (or a headless single-agent loop), decomp work can still run

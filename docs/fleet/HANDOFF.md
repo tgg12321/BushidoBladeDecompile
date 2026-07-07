@@ -1,3 +1,9 @@
+> **SUPERSEDED 2026-07-06.** The fleet is retired; the Grinder
+> (`tools/grinder/`, spec `docs/superpowers/specs/2026-07-06-grinder-pipeline-design.md`)
+> is the autonomous pipeline. `tools/fleet/` is kept for reference until the
+> grinder lands its first completions, then may be deleted. The 91 regressions
+> were folded into the queue (origin=regression) on 2026-07-06.
+
 # Fleet handoff — 2026-06-24
 
 Read this first if you're picking up the BB2 decomp / Autonomous Decomp Fleet.
