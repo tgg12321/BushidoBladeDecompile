@@ -1,0 +1,34 @@
+{
+ "func": "single_game_SetStatusUpData",
+ "file": "text1b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 514,
+   "modality": "recon",
+   "headline": "fable-blitz recon: per-player status-up initializer over the 0x44C player struct (mode switch on D_800A38DC computes char id + XP field 0x438, then a 2-player x 3-section movelist scan derives 3 stat "
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The function drafts directly from the m2c output + the neighbor-pinned struct spelling; the mode switch is a real source switch(D_800A38DC) and the scan is a straightforward triple-nested loop with local min/max trackers -- first sandbox floor lands well under 100.",
+   "mechanism": "no jtbl, no calls in the hot loop, all-local register allocation; GCC 2.7.2 emits the balanced beq/slti case tree for a 0..3 switch.",
+   "next_probe": "Transcribe phase-by-phase into src/text1b.c (m2c divisors as ground truth), then sandbox single_game_SetStatusUpData --disable all."
+  },
+  {
+   "hypothesis": "The byte-assembled big-endian-looking mask read (entry[8]<<24 | entry[7]<<16 | entry[6]<<8 | entry[5]) is a source-level unaligned-safe u32 composition (4 lbu + 3 or), not a lw -- and GCC preserves the exact or-tree association order written in source.",
+   "mechanism": "GCC 2.7.2 evaluates left-to-right for parenthesized or-chains; the emitted or order ((b8|b7)|b6)|b5 fingerprints the source association (see or-tree-shape-shift rule if the tree comes out rotated).",
+   "next_probe": "Draft with ((e[8]<<24)|(e[7]<<16))|((e[6]<<8)) style variants and diff the :407-413 window; consult or-tree-shape-shift on mismatch."
+  },
+  {
+   "hypothesis": "The interleaved opp/self zero-init tail (sb opp->0x440; sb p->0x440; sb opp->0x441; sb p->0x441; ...) reproduces only with the same statement ORDER in source (alternating targets), and the duplicate p->0x440=0 at :540 is literally written twice in the original.",
+   "mechanism": "GCC 2.7.2 does not reorder independent volatile-free global stores across each other at -O2 here (no scheduling window that big); store order = statement order; dead-store elimination does not fire on the duplicate because of the intervening opp-pointer stores.",
+   "next_probe": "Write the tail in asm store order including the duplicate; if the scheduler shuffles pairs, check store-const-reload-cse / dead-store-fake-exception rules for the known counter-moves."
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-07T20:35:25.319728+00:00"
+}

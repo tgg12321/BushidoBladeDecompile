@@ -1,0 +1,34 @@
+{
+ "func": "saTan4GaugeMain",
+ "file": "text1b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 620,
+   "modality": "recon",
+   "headline": "fable-blitz recon: Tan-mode gauge/HUD renderer -- 8 sequential draw phases (frame sprite, unlock icons, 6x2 sprite grid, 11x2 tiles, 2x2x2 gradient POLY_G4 gauge bars with pulse color), ZERO GTE, buil"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "A full draft translating the 8-phase map with literal per-phase descriptor re-stores and fully-written-out level==5/else arms closes most of the 620; no discovery needed, all idioms are TU-proven.",
+   "mechanism": "expr.c open-codes each phase's field stores (no MEM dead-store elim in GCC 2.7.2); jump.c cross_jump reproduces the merged store tails from identical C trailing statements; the delay-slot store placements (sh in jal shadow) fall out of source statement order + reorg.c.",
+   "next_probe": "Draft into src/text1b.c:15912 (check saTan3GaugeMain_80073200's src body first as the style template), run `& tools/wteng.ps1 main sandbox saTan4GaugeMain --disable all`, classify residual by phase landmark (the 7 jal clusters)."
+  },
+  {
+   "hypothesis": "The ctx-param stack homing (sw a0,0x48(sp) + 17 reloads) reproduces WITHOUT any trick once the draft declares the same long-lived locals (s3 data ptr, poly cursor, tile cursor, row state, pulse color, player-x offset) -- 9+ pseudos live across calls exhaust the s-regs and global.c leaves ctx in its arg home slot.",
+   "mechanism": "global.c allocno priority: ctx has ~17 refs but ALL are separated by calls (every ref costs a caller-save reload anyway), so its net benefit in a callee-saved reg loses to the loop-carried cursors referenced inside loop bodies (loop_depth-weighted ref counts); the arg's canonical home slot (sp+frame+0x48... the incoming a0 home) is reused free of charge.",
+   "next_probe": "First sandbox run: if ctx lands in an s-reg instead (diff shows addu sX,a0 in prologue), the draft has too FEW register-worthy locals -- check which target s-reg holder is missing (compare prologue save counts) rather than forcing anything; rule ref register-alloc-pure-c."
+  },
+  {
+   "hypothesis": "The sp+0x50 inner-loop counters and sp+0x80/88/90 accumulators being MEMORY (lw/addiu/sw each touch) come from the same pressure -- plain `s32` locals suffice, no volatile or aliasing needed.",
+   "mechanism": "Same global.c spill logic: counters referenced 3-4x per iteration but live across 2+ jals; with zero free callee-saved regs the pseudo stays on the stack and cse.c cannot keep it in a reg across the calls (call-clobber invalidation).",
+   "next_probe": "In the first diff, verify the counters read/modify/write through the SAME sp offsets pattern; if GCC caches one in $t8/$t9 across a call-free stretch and target doesn't, split the arithmetic exactly as target's lw/addiu/sw sites imply (statement-per-touch), then re-measure."
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-07T20:35:12.953894+00:00"
+}

@@ -1,0 +1,34 @@
+{
+ "func": "func_8003993C",
+ "file": "code6cac_c_mid",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 524,
+   "modality": "recon",
+   "headline": "fable-blitz recon: replay PLAYBACK frame-step (ring index %120, per-player record apply, event tables D_80101BF0/D_800F68E0 replay, end-of-replay mode dispatch) -- the RECORD-side siblings are already"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The whole function drafts directly from the m2c skeleton + sibling-pinned table layouts; the first sandbox floor lands far below 524 because control flow is straight-line phases with two simple counted loops.",
+   "mechanism": "no jtbl, no irreducible flow; GCC 2.7.2 emits phases in source order; record-entry field offsets are fixed by the completed record-side siblings.",
+   "next_probe": "Write the C body phase-by-phase in src/code6cac_c_mid.c and run sandbox func_8003993C --disable all for the first measured floor."
+  },
+  {
+   "hypothesis": "Phase 1's branch-heavy divide pair ((sum)%120 and (frames<<12)/120 in the if-arm vs runtime / by D_800A36F8 in the else-arm) reproduces only if the %120//120 pair is written so expand_divmod shares the 0x88888889 constant (single lui/ori, two mult/mfhi interleaved with the second operand's sll 12).",
+   "mechanism": "GCC 2.7.2 expand_divmod signed-magic path + first-pass scheduler interleaving of independent mult chains; CSE keeps one constant reg across both.",
+   "next_probe": "A/B in the sandbox: `x % 120` then `(y<<12)/120` adjacent vs separated by the camera call; diff the :15-38 window for the mfhi interleave."
+  },
+  {
+   "hypothesis": "Phase 5's entry addressing (s0 = entry+3 with lh 1(s0)/lh 3(s0)/lhu 7(s0)...) comes from a byte pointer into the entry (u8 *q = entry+3 or the payload struct starting at +3) rather than aligned struct fields -- same idiom the completed saSeInit_2 uses (tail = slot + 0xE).",
+   "mechanism": "GCC keeps a second derived pointer when source declares one; aligned-struct spelling would emit lh 4(s1) directly off the entry base instead.",
+   "next_probe": "Draft phase 5 both ways (derived q=entry+3 vs direct fields) and compare the offset bases in the sandbox diff; prefer the derived-pointer form to match s0/s1 dual-register walk."
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-07T20:31:37.543641+00:00"
+}

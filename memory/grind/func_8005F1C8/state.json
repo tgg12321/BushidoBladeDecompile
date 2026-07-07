@@ -1,10 +1,33 @@
 {
  "func": "func_8005F1C8",
  "file": "text1b",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 562,
+   "modality": "recon",
+   "headline": "fable-blitz deep recon: VS-mode HUD painter - draws win-mark pips (from the packed nibble arg) and the 2-row round-timer digit strip as GPU sprite packets via func_8007352C(&paramBlock), bracketed by "
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "UNMEASURED (flagship): a full-body draft using the S60C8-style local struct + s16 loop counters + the six phases collapses 562 to a residual concentrated in P5's digit-decomposition arithmetic and the P1 caller-save spill block; the function is loop-heavy but structurally ordinary (no jtbl, no GTE).",
+   "mechanism": "distance 562 = unwritten body (asmfix stub). The sibling func_800600C8/func_8005E51C completed bodies prove the family's C shape compiles to this packet-emit pattern under this toolchain; the phase-local field re-inits and fp-chaining reproduce the sw-to-block/jal cadence; s16 counters produce the sll16/sra16 pairs after every increment (HImode promotion).",
+   "next_probe": "Draft into src/text1b.c:12866 (change return type to s32; verify the caller's use - camera_set_target_zoom consumes v0); typedef the block struct with fields at +0/+4/+8/+0x10/+0x14/+0x18/+0x1C/+0x28-0x2B/+0x30; sandbox func_8005F1C8 --disable all; bisect per-phase (P1 L30-133, P3 L144-199, P4 L200-298, P5 L299-530)."
+  },
+  {
+   "hypothesis": "UNMEASURED: the P1 spill/reload of five temps around the inner jal (sp+0x88..0x98) falls out automatically from GCC 2.7.2's caller-save.c when the temps are ordinary block-scoped locals of the inner loop (j4=j*4, byte, count-positive flag etc.) - no explicit spill idiom needed; but the SET of spilled regs (a1,a2,a3,t0,t1) depends on which values are computed before the loop vs inside it, so hoisting/inlining choices in the C directly control the spill set.",
+   "mechanism": "caller-save.c saves live caller-save pseudos across calls when no callee-save is free; all 9 callee-saves + fp are occupied by phase-level values (i,j,k counters + base pointers + fp chain), forcing the loop temps into caller-saves. If the draft hoists 'byte' and 'count' OUT of the j loop (computed per-i), they stay in t0/t1 and get the spill treatment; if computed per-k they'd rematerialize instead.",
+   "next_probe": "Draft with byte/count computed per-player (before the j loop) and x/nibble per-k; diff the objdump window around the P1 jal for the sw/lw 0x88-0x98 run; if the spill set differs, move one computation at a time across loop boundaries and re-measure (sweep_variants on 3-4 placements)."
+  },
+  {
+   "hypothesis": "UNMEASURED: P5's digit stores through 'blk.x-slot reused as s16 digits[2] + separate sp48 scratch' actually model as the param block ending in an s16 array (like S60C8's d0/d1 at +0x30/+0x32) indexed [k] - i.e. the block struct has 's16 d[2];' at +0x18 and a separate s16 local at sp+0x48; GCC addresses d[k] as base(sp+0x18)+k*2 (matching L338-341's addu v0,v0,s1; sh 0x30(v0) with s1=sp+0x18) and the /10, %10 chain uses the divmod-coalesce pattern (quotient overwrites the value variable, remainder computed by mul-sub reusing the quotient register).",
+   "mechanism": "ARRAY_REF on a struct member array yields base+index*size addressing off the block's sp anchor; the mod-10 'v - (v/10)*10' expansion (expand_divmod with magic 0x66666667 + the *10 shift-add reconstruction) coalesces quotient into the source var per the divmod-coalesce-reuse-var reference memory - spelling 'd = v % 10; v = v / 10;' with the SAME v variable is load-bearing.",
+   "next_probe": "Draft P5 with 's16 d[2]' in the block + 's16 hund' local (sp48); write the decomposition exactly as 'blk.d[k] = val % 10; val /= 10;' style per row; check the sh 0x30(base+k*2) addressing and the mult/mfhi/sra/subu cadence against L376-402; if the array addressing differs (separate locals instead), the digits are NOT in the block - fall back to three named s16 locals and re-measure."
+  }
+ ],
  "judge_constraints": [],
  "origin": "queue",
  "created": "2026-07-07T20:06:57.272547+00:00"

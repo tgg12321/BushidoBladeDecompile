@@ -1,0 +1,34 @@
+{
+ "func": "func_8006F97C",
+ "file": "text1b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 513,
+   "modality": "recon",
+   "headline": "fable-blitz recon: replay/watch-mode HUD compositor (two find-state scans with sin/cos wobble, a 4x5 icon-grid cell loop with animated-vs-static split, then gauge/camera tail calls) -- func_80070C70 ("
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Drafting from the func_80070C70 template (PrimC70 + extended rgb/glyph fields, cheat-free spelling) + the m2c skeleton reproduces the bulk of the function; the shared extended-struct typedef also unblocks func_8005D814.",
+   "mechanism": "same TU, same struct-on-stack layout and call chaining; GCC 2.7.2 emits identical prologue/struct-address patterns for identical shapes.",
+   "next_probe": "Write the C body (plain constants where the template used pins/asm), sandbox func_8006F97C --disable all; then diff the residual against the template's known-friction spots (code=1 constant, saMotionSet(x, 0x60) mode reg)."
+  },
+  {
+   "hypothesis": "The two find-state scans (==5 then ==4) are literal source duplication (copy-pasted block with two constants changed), not a helper function or loop -- their instruction sequences are byte-identical except the two constants and the x init.",
+   "mechanism": "GCC cross-jumping cannot merge them (different constants embedded mid-block); a source helper would produce a jal instead.",
+   "next_probe": "Draft as two pasted blocks; if register allocation diverges between copies, compare s0/s1 usage in the two windows to see which locals were re-declared vs reused (fresh scope per block vs shared)."
+  },
+  {
+   "hypothesis": "The grid-cell skip condition compiles to the observed sltiu pair only when spelled as an unsigned range test on D_800A35BC (e.g. `if (D_800A35BC >= 2 && D_800A35BC - 2 < 2) goto draw;` or equivalently `if (!(u32)(D_800A35BC - 2) < 2)` shape) plus the col==4/row-odd test spelled with explicit `row == 1 || row == 3` (beq/beq, NOT row & 1).",
+   "mechanism": "GCC 2.7.2 range-folds `v==2||v==3` to sltiu(v-2,2) but keeps `row==1||row==3` as two beqs when the values are not foldable to a mask test in this context (explicit-rejection-set-defeats-range-fold rule documents the inverse trap).",
+   "next_probe": "A/B the spellings in the sandbox and diff the :300-319 window; consult explicit-rejection-set-defeats-range-fold if the row test folds when it should not."
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-07T20:39:14.690555+00:00"
+}

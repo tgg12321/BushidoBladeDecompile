@@ -1,10 +1,33 @@
 {
  "func": "calc_teasi_loc_fw",
  "file": "code6cac_b",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 572,
+   "modality": "recon",
+   "headline": "fable-blitz deep recon: per-limb ('teasi' = te/ashi, hand-foot) contact/hit-state dispatcher with a NAME-UNIQUE Kengo match (se_fc/calc_teasi_loc_fw) - 8-argument signature (current stub has ZERO args"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "UNMEASURED (flagship): a full-body draft (FIX THE SIGNATURE FIRST - 8 args; the stub's zero-arg form would make every caller ABI-mismatched) from the region map + m2c collapses 572 to a residual concentrated in the R6a table-index arithmetic and the switch's shared tails; the body is a textbook if-chain + dense switch with no structural traps.",
+   "mechanism": "distance 572 = unwritten body (asmfix stub). The multi-return + shared-epilogue shape (v0 assignments in j delay slots) is GCC 2.7.2's standard multi-exit expansion; the 22-entry jtbl regenerates from a plain switch(limbIdx) with grouped case labels; case tails ending in identical func_80032854(s2,3,s3,0)+func_80027A58(s1) sequences cross-jump into the .L80028328/.L80028378 shared blocks automatically when written as separate case bodies.",
+   "next_probe": "Change src/code6cac_b.c:525 to the 8-arg signature (verify caller signatures first: grep callers in src for calc_teasi_loc_fw and align arg count - callers exist per docs/naming/no_lead_first_pass.csv rows 99-101/353: func_8001F860/8002738C/80027438/80027A58 relationships); draft from tmp/blitz/m2c_calc_teasi_loc_fw.c; sandbox calc_teasi_loc_fw --disable all; bisect per-region."
+  },
+  {
+   "hypothesis": "UNMEASURED: the R6a hit-code lookup 'code = D_8008EB74[cat*4 + sign*2 + same]' matches as a 3-index array read (u8 tbl[3][2][2] indexed [cat][sign][same]) with cat in s4, sign=(u32)diff>>31 kept in s0 across the func_80032854 call, and same in s5 - the index expression compiles to sll-2/addu-base then sll-1/addu then addu(s5), i.e. GCC expands the multidim subscript left-to-right with the base symbol added at the FIRST index level (lui/addiu D_8008EB74 before the sll v1,s4,2).",
+   "mechanism": "GCC 2.7.2 expand_expr for ARRAY_REF chains: ((tbl + cat*4) + sign*2) + same, each level a separate addu; the base address materializes early because the s4*4 term is computed first. A flat 'tbl[cat*4+sign*2+same]' spelling would instead fold the adds into one index sum before the base add - visibly different schedule (base lui/addiu FIRST in target at L196-197, matching the multidim form).",
+   "next_probe": "Declare 'extern u8 D_8008EB74[3][2][2];' (or [][2][2]) and write code = D_8008EB74[cat][sign][same]; check the objdump window at the lookup (target L196-203: lui/addiu base, sll cat*4 FIRST then +base, sign<<1 +, +same); if the add order differs, sweep flat vs nested subscript spellings."
+  },
+  {
+   "hypothesis": "UNMEASURED: sign=(u32)diff>>31 surviving in s0 (the srl at L182 issues BETWEEN the two lbu's of the same-side computation, and diff's register s0 is DEAD after) matches when the C computes 'sign = (u32)diff >> 31;' AFTER the func_800272FC call but BEFORE the same-side xor statement - GCC's first-pass scheduler interleaves the srl into the lbu load-delay shadow; s0 is reused from diff (two-operand srl s0,s0,31 pattern = same pseudo, i.e. C reassigns the SAME variable: diff = (u32)diff >> 31 or a fresh var that allocator coalesces).",
+   "mechanism": "register coalescing in GCC 2.7.2 merges 'b = f(a)' chains when a dies at the definition of b (combine + reload); the srl s0,s0,31 in target (L182: srl $s0,$s0,31) PROVES source and dest are one register class - staged-value-reused-variable technique; a fresh local would usually get a temp reg unless it coalesces.",
+   "next_probe": "First draft: 'diff = opp->y - own->y; cat = calc_DistanceCategory(diff); sign_reuse: diff = (u32)diff >> 31;' (same variable). If the coalesce fails (extra move), try the fresh-variable spelling and compare; measure both with sweep_variants on the R6a window."
+  }
+ ],
  "judge_constraints": [],
  "origin": "queue",
  "created": "2026-07-07T20:06:57.142570+00:00"

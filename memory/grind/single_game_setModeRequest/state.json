@@ -1,0 +1,34 @@
+{
+ "func": "single_game_setModeRequest",
+ "file": "code6cac",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 642,
+   "modality": "recon",
+   "headline": "fable-blitz recon: MISNAMED -- this is NOT Kengo's single_game_setModeRequest (a jr-table mode dispatcher); BB2 0x800187F4 is a marionation rope/cloth PARTICLE SIMULATOR (spring-to-keyframe + free phy"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "A C draft with canonical inline-GTE blocks (pinned t-regs + %0 mtc2/lwc2/swc2, .word encodings for mvmva/sqr/gpf/gpl per the code6cac_b.c precedents) and plain-C spring/impulse/collision math closes the bulk of 642; the two open-coded isqrt instances must be written out twice (they use different stack slots sp+0x10/0x14 -- NOT a helper).",
+   "mechanism": "cop2 has no C form (inline-asm-allowed); GCC only schedules around volatile asm so the nop padding falls out of maspsx load-delay handling; the duplicated isqrt with distinct spill slots proves source-level macro/copy-paste, matching expr.c open-coding.",
+   "next_probe": "Draft into src/code6cac.c:604, `& tools/wteng.ps1 main sandbox single_game_setModeRequest --disable all`; use func_80019310 (60 lines below) as the style template for the lwc2/swc2 block spelling."
+  },
+  {
+   "hypothesis": "The count register recycling (lh into $s4, spill to sp+0x48, $s4 reused for GTE address staging, count RELOADED from stack at each loop-bottom compare) reproduces from a plain `s16 count = desc->4` local plus the register-asm-pinned GTE temp being declared as `register ... asm(\"$20\")` -- the pin forces the conflict that spills the count.",
+   "mechanism": "local-alloc/global.c: a hard-pinned $s4 GTE staging var creates a conflict window covering the whole loop body, evicting the count pseudo to a stack slot; reload materializes at the only remaining use (loop compare). If the draft's GTE temps use different pins, the count may stay in a reg and shave the reload -- a 2-insn diff signature to watch.",
+   "next_probe": "First sandbox run: check for the sw/lw 0x48($sp) pair around the loop; if absent, align the GTE staging pins with target's $s4/$t4 choices (visible in the asm at s:52-57) and re-measure."
+  },
+  {
+   "hypothesis": "The three-way state dispatch (state>0 spring / ==0 snap / [-0xFF,-1] damp / <=-0x100 skip) compiles to the observed branch pair `bltz` + `slti v0,state,-0xFF; bnez` from the natural nesting `if (state >= 0) { if (state > 0) ... else ... } else if (state >= -0xFF) { damp } /* fallthrough */`, with all arms converging on the shared free-physics block.",
+   "mechanism": "jump.c branch ordering on nested if/else emits the sign test first (bltz cheap form) and folds `state >= -0xFF` into slti -0xFF + bnez-to-skip; the shared .L800191F4 tail store is a natural join, no goto (cross-jump merges the identical `sw v0,0(t0)` tails).",
+   "next_probe": "Verify branch senses in the first sandbox diff; if inverted, swap arm order per .claude/rules/switch-vs-ifchain-branch-sense before touching anything else."
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-07T20:30:39.675246+00:00"
+}

@@ -1,10 +1,33 @@
 {
  "func": "func_80063084",
  "file": "text1b",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 659,
+   "modality": "recon",
+   "headline": "fable-blitz recon: 12-slot flare/glint effect renderer (2 sprites per slot, timer-animated via sin/cos curves) -- an ORDINARY C body plus one 5x-ctc2 SetRotMatrix head block and one swc2 SZ3 read, bot"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "A C draft with the func_8007E4DC-style canonical GTE blocks (pinned t-regs + %0-placeholder ctc2/swc2) for the two cop2 regions and plain-C everything else closes most of the 659; this is the designated completion form for an ASM-PARTIAL GTE function, not a park candidate.",
+   "mechanism": "cop2 has no C form (inline-asm-allowed policy); the lw-pair/ctc2 interleave at s:26-37 falls out of `t4=m[0]; t5=m[1]; ctc2 x2; t4=m[2]; t5=m[3]; t6=m[4]; ctc2 x3` with asm-pinned register locals exactly as the byte-matched display.c precedent; the rest is ordinary cse/expmed output.",
+   "next_probe": "Draft into src/text1b.c:14252 (fix prototype to `s32 func_80063084(void)`), run `& tools/wteng.ps1 main sandbox func_80063084 --disable all`; confirm the GTE-block bytes land, then classify the C-side residual."
+  },
+  {
+   "hypothesis": "The buffer-overflow guard compiles to the observed x0x33333333/negu/sra3 chain from plain typed pointer subtraction `(Prim28 *)s3 - (Prim28 *)D_800A3720 < 0x1C1` where sizeof(Prim28)==0x28.",
+   "mechanism": "expand_divmod EXACT_DIV_EXPR path (c-typeck pointer subtraction emits exact division; choose_multiplier gives inverse-of-5 0xCCCCCCCD spelled as negated 0x33333333 synth_mult chain, then >>3 for the power-of-2 factor).",
+   "next_probe": "Define the 0x28-byte prim struct type for s3/D_800A3720 in the draft; verify the sandbox diff shows the identical mult chain; if GCC instead emits a real div, the types were left as byte pointers -- fix the declarations, not the expression."
+  },
+  {
+   "hypothesis": "The 8 separate reloads of gp-global D_800A3488 between field unpacks (s:184-253) reproduce ONLY if every access is written through the global itself; caching `tbl` in a local would CSE the loads and lose ~8 instructions.",
+   "mechanism": "cse.c invalidates the (mem (gp_rel D_800A3488)) equivalence at each intervening store through other pointer globals (D_800A3494/98/9C/A0/A4 stores may alias); writing `(*D_800A3488)->field` per access regenerates the load each time, matching target; a local `tbl` would be REG-held and immune to invalidation.",
+   "next_probe": "Draft with all-global spelling first; if the sandbox shows the loads merged anyway (cse got smarter than expected), check .claude/rules/split-read-defeats-hoist and store-const-reload-cse for the documented lever; measure both spellings with tools/sweep_variants.py in one pass."
+  }
+ ],
  "judge_constraints": [],
  "origin": "queue",
  "created": "2026-07-07T20:24:27.063190+00:00"
