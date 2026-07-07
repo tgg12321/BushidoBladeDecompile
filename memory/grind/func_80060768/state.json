@@ -1,10 +1,28 @@
 {
  "func": "func_80060768",
  "file": "text1b",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "fable-blitz recon: the p_b4/p_b6 aliases are plausibly INERT -- the feared store-to-reload CSE fold has to survive two intervening variable-address stores (sh 0x7DE/0x7DC($s2)) and GCC 2.7.2 cse.c inv"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Direct re-reads `(s16)D_800A32B4` / `(s16)D_800A32B6` (aliases deleted) byte-match: the intervening variable-address stores at :13252-13253 already invalidate the store-to-reload equivalence, so the lh reloads at s:64/s:113 emerge naturally.",
+   "mechanism": "cse.c note_mem_written/invalidate_memory conservatism on stores through non-constant addresses + combine's sign_extend(mem:HI) -> lh narrowing for single-use loads.",
+   "next_probe": "Apply the two-line replacement + delete :13234-13235, `sandbox func_80060768 --disable all` (expect 0), verify-oracle, queue done."
+  },
+  {
+   "hypothesis": "If the fold happens anyway, an ordering/structure lever short of any alias may still break the equivalence -- e.g. spelling the clamp read before the 0x7DC store is NOT viable (target byte order fixes sh 0x7DC before lh), so the realistic fallback is the annotated pointer-alias route pending the ruling below.",
+   "mechanism": "cse.c equivalence lifetime between `sh gp_rel(sym)` and the re-read; the only C-visible events in that window are the two arg0-based stores.",
+   "next_probe": "Read the failing sandbox diff to confirm the fold shape (sll/sra of the increment register at s:64), capture the cse dump (-dc) naming the surviving equivalence, then surface the ruling_question with that evidence attached."
+  }
+ ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Two single-use pointer aliases (p_b4, p_b6) fall explicitly outside the pointer-rmw-global-sanctioned carve-out \u2014 that rule requires at least one load AND one store through the pointer (an actual RMW sequence); here the RMW on D_800A32B4/D_800A32B6 uses direct access and the pointers each have exactly one read use. Worker must: (a) replace `(s16)*p_b4` and `(s16)*p_b6` with `(s16)D_800A32B4` / `(s16)D_800A32B6` (or the appropriate direct signed cast) and confirm the oracle still holds \u2014 if it does the pointers were redundant and the clean form is the fix; (b) if oracle breaks, find a pure-C form that produces the signed halfword `lh` load without a pointer alias (e.g. check whether `(s16)D_800A32B4` already produces `lh` via GCC's sign-extend inference on a cast, or restructure the comparison).  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
  ],
