@@ -23,8 +23,11 @@ the two ROOT-CAUSED residuals below. Permuter running on the vT40 base.
   =5.33 — EXACT TIE, broken by qty birth order (104 first → v1). Target needs 97 ≥
   104: arg5val needs weighted refs 6 (density 8.0) or t0-web needs refs 2.
 - **Measured dead**: fresh temps for shift or sum re-time the head (launch: vT34=11,
-  vT33=16); extra do-while(0) nesting to reweight refs perturbs sched (vT35=15,
-  vT36=14 — note streams shift LUIDs); all flat respellings canonicalize (6 forms = 8).
+  vT33=16); ANY note insertion inside the do_timeout window re-times the head — wraps
+  around the arg5 stmt (vT35=15, vT36=14 double-nest, vT42=14 single-nest) AND around
+  the call itself (vT43=12) all scramble sched. Post-sanction probes 2026-07-06: the
+  wrap toolbox CANNOT fix the pair. Only a natural second arg5 ref (identity ops all
+  tree-fold) or different statement geometry. Flat respellings canonicalize (6 forms = 8).
 - Twin lore (cpu_side_move_dir_4 g3): same pair; "multi-set arg5 VALUE-staging keeping
   the lw-dest split" is the untried class there too.
 

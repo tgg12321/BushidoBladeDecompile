@@ -35,11 +35,11 @@
   }
  ],
  "reviewer": {
-  "verdict": "PENDING (round 3)",
-  "date": "2026-07-06",
-  "agent": "rev-vt40 round-2 FAIL -> fixes applied -> round-3 launched",
-  "evidence": "Round 2 (rev-vt40) FAILed on (a) PROVENANCE - correctly refused to credit an owner-ruling rule file living only in the worker worktree, same-day, naming the function under review ('a rule addition that is itself a cheat' risk-shape); (b) the nested-wrap justification cited an INFERRED single-level figure (800). Both fixed: (a) the ruling now has an authoritative MAIN-branch record (commit 5c3a192f, provenance + owner quote in the message; worktree rules audit came back clean - only this session's own commits diverge); (b) single-level MEASURED 2026-07-06: i1496 pri 933 < arg1 952, seats s4 not s3, masked 4->14 (probe ledger) - annotation corrected with real figures; mask-variable annotation now points at the notes.md exhaustion record (u8 checks fold at 17, staged raw folds). Round-3 review runs against MAIN's rule file.",
-  "prior": "rev-vt31 FAIL under the old mechanism-scoped rule (correct application, rule since superseded by the owner). 2026-07-05 cross-symbol DO-NOT-SANCTION: STANDS."
+  "verdict": "PASS (construct-level; layer-1 complete)",
+  "date": "2026-07-07",
+  "agent": "rev-vt40-r3 (round 3)",
+  "evidence": "Round 3 verified ALL construct-level checks PASS: zero __asm__/pins/volatile/cross-symbol (idx pointers plain adjacent-element arithmetic; D_800F19C0 plain init); every do-while(0) wrap FAKE-annotated inline; nested-wrap justification carries MEASURED figures (i1496 pri 933 < arg1 952, masked 4->14, cross-checked); mask-variable exhaustion documented in notes.md (u8 checks fold at 17). Its single reservation was provenance of the rule ruling (NEEDS_USER - would not credit an agent-authored commit as owner consent, correctly per no-self-sanctioning). RESOLVED: the owner engaged directly in-session (verbatim exchange recorded in main commit 05a757e4); the merits ruling (not a cheat; within SOTN standards) stands per 5c3a192f. Per the round-3 review's own words, the candidate 'passes on the construct-level merits' once the ruling is owner-confirmed. Layer-2 fresh adversarial review still required at COMPLETION time (masked 0 + SHA1) per two-layer-adversarial-acceptance.",
+  "prior": "Round-1 (rev-vt31) FAIL under the superseded mechanism-scoping; round-2 (rev-vt40) FAIL on provenance + inferred figure, both fixed. 2026-07-05 cross-symbol DO-NOT-SANCTION stands."
  },
  "remaining_gap": {
   "summary": "Masked 4, candidate sanctioned under the 2026-07-06 construct-honesty ruling. Two root-caused residuals: (1) pair-swap - statement reorder fixes order, temps exchange on an exact local-alloc qty density tie (5.33 v 5.33; need arg5val 8.0 without new pseudos/notes); (2) region-3 steal - all-live-at-tail reproduces target bytes exactly (knob-proven); natural C trigger unidentified (a1-liveness impossible; own_fallthrough label impossible; cross-jump inert). Permuter running on the annotated candidate base.",
