@@ -4,7 +4,7 @@
  "scores": {
   "head_floor": 56,
   "candidate_floor": 30,
-  "metric": "sandbox --disable all (masked). REVIEWER-CLEAN FLOOR = masked 30 (progress/vT38-reviewer-clean-masked30.c: honest baseline + inline-annotated tail wrap + plain saved). The measured-best masked 4 (session-9 vDT30 lineage / vT39) rests ENTIRELY on 4 do-while(0) RA-weighting wraps that layer-1 (rev-vt31, 2026-07-06) FAILed as register-web gaming by a new spelling (do-while-zero-exception sanctions the construct only for the reorg label-placement mechanism). Banked at rejected/do-while0-ra-weighting-masked4.c PENDING OWNER RULING: sanction do-while(0)-as-RA-weighting (session-9 cited SOTN using do-while(0) mechanism-agnostically) or not. If sanctioned: resume from rejected/do-while0-ra-weighting-masked4.c (masked 4, 2 root-caused residuals). If not: resume from vT38 (masked 30) via natural statement/live-range shaping only. Measured: the saved widening-temp is droppable (plain spelling scores identically). Full SHA1 after retire-all-42 is the only end gate.",
+  "metric": "sandbox --disable all (masked). RULING RESOLVED 2026-07-06 (owner): do-while(0)-as-RA-weighting NOT SANCTIONED (recorded in .claude/rules/do-while-zero-exception.md 'Declined extension'). The resume point is progress/vT38-reviewer-clean-masked30.c (masked 30): honest baseline + plain `saved = *D_800A147C_2 & 3;` + the byte-inert, mechanism-compliant annotated tail wrap (drop it if it bothers anyone - measured inert). The masked-4 wrap lineage is permanently rejected (rejected/do-while0-ra-weighting-masked4.c). Remaining gap at 30 = the scheduling shapes (masked) THEN the raw register rotation - to be closed via natural statement placement and live-range shaping ONLY. All session-10 mechanism knowledge (qty_compare density math, LUID ordering, region-3 reorg mechanics + knob byte-proof) transfers. Full SHA1 after retire-all-42 is the only end gate.",
   "build_insns": 178,
   "target_insns": 179
  },
@@ -42,15 +42,16 @@
   "prior": "2026-07-05 FAIL (rev-iq3) on cross-symbol FAKEs + double-split, user ruled DO NOT SANCTION; 2026-07-03 owner sanction covers staged-value-reused-variable only."
  },
  "remaining_gap": {
-  "summary": "BLOCKED ON OWNER RULING: do-while(0)-as-RA-weighting (the whole session-9 masked-4 lineage rests on it; reviewer FAILed it under current rules). Reviewer-clean floor = 30. If sanctioned, floor = 4 with two root-caused residuals (pair-swap qty-density tie; region-3 all-live-at-tail trigger). Permuter campaign (tmp/perm_mar, vT32 base) INHERITS the contested wraps - its finds are only usable under a sanction ruling.",
+  "summary": "RULING RESOLVED: not sanctioned. Floor = masked 30 (vT38). The wrap-free web must seat via natural statement/use-site placement (arg1-hold plan + session-10 qty-density math). The pair-swap ORDER fix (arg5 stmt before t0 shift - plain statement order, uncontested) transfers to any base. Region-3's all-live trigger hunt continues (knob byte-proof stands). Permuter relaunched on the vT38 base (clean).",
   "rule_count_at_head": 42,
   "rules_required_for_full_match": "42 (all fall together when masked 0 lands; verify each against bytes at retire time)"
  },
  "next_hypotheses": [
-  "FIRST: owner ruling on do-while(0)-as-RA-weighting (surfaced 2026-07-06). Sanctioned -> resume rejected/do-while0-ra-weighting-masked4.c (masked 4); not -> resume progress/vT38-reviewer-clean-masked30.c (masked 30).",
-  "If NOT sanctioned: the register web must seat via natural statement placement/live-range shaping only - the old notes plan (arg1-hold to flip i1494/i1496, then the bottom-3 tbl/i1495/arg0 ordering) plus whatever the qty_compare density math (session-10) suggests about use-site placement.",
-  "If sanctioned: pair-swap needs arg5val qty density >= 8.0 without new pseudos/notes (see session-10 dead ends); region-3 needs the natural all-live-at-tail trigger (knob-byte-proven; jump.c get_label_before audit is the open lead).",
-  "Twin cpu_side_move_dir_4 carries the same question (its h5/g3 lineage uses related shaping)."
+  "Resume from progress/vT38-reviewer-clean-masked30.c (masked 30). Do NOT reintroduce RA-weighting wraps in any spelling (ruling 2026-07-06, see do-while-zero-exception.md).",
+  "Scheduling shapes first (masked 30 -> low): the old arg1-hold lever (hold=a1 top + both arms) + the vT32 statement-order fix (arg5 before t0 shift) are both natural and uncontested; re-measure them on vT38.",
+  "Register rotation (raw-only): natural use-site placement per the session-10 qty_compare density formula (floor_log2(refs)*refs*size/life) - the target seatings' required priority order is documented in the 2026-07-05 ledger.",
+  "Region-3: the natural all-live-at-tail trigger (knob-byte-proven; jump.c get_label_before audit open). Check permuter finds (tmp/perm_mar, vT38 base) - vet against the cheat catalog, re-score via sandbox.",
+  "Twin cpu_side_move_dir_4: the same ruling applies to its lineage - audit its candidate for RA-weighting wraps before resuming it."
  ],
  "rejected_forms": [
   {

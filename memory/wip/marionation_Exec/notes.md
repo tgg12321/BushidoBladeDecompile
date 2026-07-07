@@ -1,17 +1,16 @@
 # marionation_Exec — WIP (session-10: residuals root-caused; REVIEWER FAILED the wrap lineage)
 
-## TL;DR (current state) — BLOCKED ON OWNER RULING
-**Layer-1 (rev-vt31, 2026-07-06) FAILED the masked-4 lineage**: its 4 do-while(0)
-RA-weighting wraps are register-web gaming by a new spelling (do-while-zero-exception
-sanctions the construct ONLY for reorg label-placement). Measured: wraps removed →
-**masked 30** = the reviewer-clean floor (`progress/vT38-reviewer-clean-masked30.c`).
-The measured-best masked 4 is banked at `rejected/do-while0-ra-weighting-masked4.c`
-(also drops the `saved` widening temp — proven inert). **Owner must rule**: sanction
-do-while(0)-as-RA-weighting (session-9's SOTN research argued yes; the 2026-07-05
-cross-symbol precedent argues no) → resume at 4 with the two root-caused residuals
-(below); or not → resume at 30 via natural statement/live-range shaping only.
-`src/system.c` untouched, oracle green. Permuter campaign (vT32 base) inherits the
-contested wraps — its finds are usable only under a sanction.
+## TL;DR (current state) — RULING RESOLVED: NOT SANCTIONED
+**Layer-1 (rev-vt31) FAILED the masked-4 lineage and the OWNER CONFIRMED
+(2026-07-06): do-while(0)-as-RA-weighting is NOT sanctioned** (recorded in
+do-while-zero-exception.md 'Declined extension'; also binds the twin
+cpu_side_move_dir_4). **Resume point: `progress/vT38-reviewer-clean-masked30.c`
+(masked 30)** — honest baseline + plain `saved = *& 3` + the byte-inert annotated
+tail wrap. The masked-4 form is permanently at `rejected/do-while0-ra-weighting-
+masked4.c`. Path forward: natural statement/use-site placement ONLY — the arg1-hold
+plan + the vT32 statement-order fix (both uncontested) + the session-10 mechanism
+knowledge (qty density math, region-3 knob byte-proof) all transfer. Permuter
+relaunched on the vT38 base. `src/system.c` untouched, oracle green.
 
 ## Residual 1 — pair-swap @56/57 (2 masked pts): FULLY CHARACTERIZED
 - **Order half SOLVED (vT32, progress/)**: put the `arg5 = *(s32*)(v0+(s32)tbl_125c);`

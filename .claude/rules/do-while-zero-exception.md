@@ -126,6 +126,25 @@ LICM (degenerate loop is folded as trivial before LICM runs). Source
 includes the `/* FAKE: ... */` annotation pointing at the research memo.
 This commit is the reference for what a sanctioned use looks like.
 
+## Declined extension — do-while(0) as register-allocation weighting (2026-07-06)
+
+**Owner ruling 2026-07-06: NOT SANCTIONED.** A marionation_Exec lineage
+(sessions 8-9, work/marion) reached masked 4 by scattering do-while(0) wraps
+at 4 sites to shift local-alloc/global allocno priorities (flow's loop-depth
+ref weighting) — using the sanctioned construct to bend REGISTER ALLOCATION
+rather than the reorg.c label-note interaction sanctioned above. A fresh
+layer-1 reviewer (rev-vt31) FAILed it as register-web gaming by a new
+spelling (same forbidden intent as the 2026-07-05 cross-symbol-FAKE
+DO-NOT-SANCTION ruling), and the owner confirmed: do not sanction.
+Session-9's "SOTN uses do-while(0) mechanism-agnostically" research was
+considered and declined — the mechanism scoping in this rule stands.
+Quantified: removing the wraps moved marionation_Exec from masked 4 to
+masked 30 (the wraps carried the entire delta). The FAILed form is banked at
+`memory/wip/marionation_Exec/rejected/do-while0-ra-weighting-masked4.c`.
+This also applies to the twin `cpu_side_move_dir_4` and any other function:
+wraps whose measured effect is allocno-priority movement are FAIL by
+default, whatever the annotation says.
+
 ## Adding future exceptions (if any)
 
 This rule is the SECOND time the project has added a narrow exception to
