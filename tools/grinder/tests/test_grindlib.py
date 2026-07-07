@@ -100,6 +100,10 @@ class TestValidateOutcome(unittest.TestCase):
         ok, why = G.validate_outcome(r, "structural", self.root)
         self.assertTrue(ok, why)
 
+    def test_frontier_items_need_keys(self):
+        ok, why = G.validate_outcome(self.good(frontier=[{"foo": "bar"}]), "structural", self.root)
+        self.assertFalse(ok)
+
 
 class TestApplyAndLadder(unittest.TestCase):
     def setUp(self):
@@ -177,6 +181,19 @@ class TestBriefAndWip(unittest.TestCase):
         self.assertTrue(os.path.isfile(os.path.join(d, "rejected", "formA.c")))
         ev = open(os.path.join(d, "evidence.md"), encoding="utf-8").read()
         self.assertIn("v9 arm-local", ev)
+
+    def test_brief_renders_populated_ledger(self):
+        o = {"result": "progress", "floor": 9, "headline": "hl",
+             "hypotheses": [{"statement": "s", "mechanism": "m", "probe": "p",
+                             "result": "10 -> 9", "verdict": "KILLED"}],
+             "evidence": ["e"], "frontier": [{"hypothesis": "hy", "mechanism": "me",
+                                              "next_probe": "np"}],
+             "artifacts": [], "ruling_question": ""}
+        G.apply_outcome(self.root, "func_X", o, "structural")
+        b = G.build_brief(self.root, "func_X", "permuter", "OUT.json")
+        self.assertIn("floor=9", b)
+        self.assertIn("hy", b)
+        self.assertIn("np", b)
 
 
 if __name__ == "__main__":

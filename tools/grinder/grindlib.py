@@ -39,9 +39,13 @@ def load_state(root, func):
 
 
 def save_state(root, func, state):
+    """Single-writer by design: exactly one driver process mutates a ledger at a
+    time (sessions run exclusively). Atomic write so a crash cannot tear state.json."""
     p = os.path.join(ledger_dir(root, func), "state.json")
-    with open(p, "w", encoding="utf-8", newline="\n") as f:
+    tmp = p + ".tmp"
+    with open(tmp, "w", encoding="utf-8", newline="\n") as f:
         json.dump(state, f, indent=1)
+    os.replace(tmp, p)
 
 
 def init_ledger(root, func, file_stem, origin="queue"):
@@ -100,6 +104,10 @@ def validate_outcome(o, modality, root):
         return False, f"result must be one of {RESULTS}, got {res!r}"
     if len(o.get("frontier", [])) > MAX_FRONTIER:
         return False, f"frontier exceeds cap of {MAX_FRONTIER}"
+    for fitem in o.get("frontier", []):
+        if not isinstance(fitem, dict) or not all(
+                k in fitem for k in ("hypothesis", "mechanism", "next_probe")):
+            return False, "frontier items require hypothesis/mechanism/next_probe keys"
     if res == "ruling-request":
         if not str(o.get("ruling_question", "")).strip():
             return False, "ruling-request requires ruling_question"
@@ -150,7 +158,7 @@ def apply_outcome(root, func, o, modality):
     st["current_modality"] = modality
     st["floor_history"].append({"session": n, "floor": o.get("floor"),
                                 "modality": modality,
-                                "headline": o.get("headline", "")[:200]})
+                                "headline": (o.get("headline") or "")[:200]})
     if o.get("frontier"):
         st["frontier"] = o["frontier"][:MAX_FRONTIER]
     save_state(root, func, st)
@@ -284,6 +292,8 @@ if __name__ == "__main__":
     #   grindlib.py modality <root> <func>                          -> prints next modality
     #   grindlib.py constrain <root> <func> <text>
     import sys
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
     cmd = sys.argv[1]
     if cmd == "brief":
         print(build_brief(sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5]))
