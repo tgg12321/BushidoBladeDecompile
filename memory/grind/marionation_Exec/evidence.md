@@ -838,3 +838,19 @@ vT33 in-call add: 16. vT34 sum-split: 11. vT35/vT36 nest-reweight: 15/14. vU1/vU
 - [s48] [s48] candidate.c unchanged - remains vT40 masked 4 (best-known form). src/system.c restored to HEAD after every measurement via splice_apply --restore + git checkout; working tree src/ clean; oracle green.
 
 - [s48] [s48] Cumulative structural coverage after s48: 167+ hand-authored structural variants across s2/s3/s8/s9/s10/s11/s12/s34/s35/s36/s37/s38/s39/s44/s45/s47/s48. Combined with s6/s7/s42/s43 forensics (140-ordering sweep, 9-topology sweep, insn-level sched2/dbr/mem-edge/class-lever) and 12+ permuter basins (~50+ CPU-hr), the hand-derivable + local-sampler space around vT40 remains comprehensively closed at masked 4. Both s48 KILLs extend the check-region axis coverage (previously s47 covered mask holders + pp position + saved scope; s48 adds check-var life AND copy-loop guard shape).
+
+- [s49] vT40 candidate.c reproduces masked 4 on main at session start (score=4, build 178, target 179, 42 rules dropped, 20 cheat-asm stripped) - src restored clean, oracle green.
+
+- [s49] PERM_IGNORE wrapping a mid-function compound statement is invalid in this decomp-permuter (2026 vintage): base compile fails downstream at maspsx because the b64literal pragma stub replaces a syntactic compound-stmt slot with a pragma line and the parser cannot reconstitute the surrounding function's AST. --debug printed base=220 (misleading; the parse-succeed happens in the score path via ast_util special-cased normalize) but the multi-worker campaign path fails at compile.sh's maspsx stage. This closes the naive reading of frontier item #2 as 'add PERM_IGNORE and launch'.
+
+- [s49] vS47c (pp hoisted to do_timeout inner-block head) confirmed as a valid permuter seed: base = 220 with identical residual signature (2 reorderings + 1 deletion) to all 12 prior sampled basins (vT40, find105, z07, w05, s18v02, s30v03, s29v06, s26idxp, s20status, s11u10, s35orcomma, s21v11).
+
+- [s49] s49-fresh-basin campaign metrics: 26min fresh-seed window, ~40k iterations at -j6, 3 sub-220 finds. Time-to-first-find 4:41, time-to-novel-find 12:38, time-to-second-inert 21:50. Yield curve consistent with s31 s30v03 (5 finds/26min) and s41 v11 (1 find/25min) - basin is neither denser nor sparser than portfolio norms.
+
+- [s49] output-195-1 masked-8 semantic-lie construct (new_var2 = *(idx_1496-1) & new_var3 AFTER the clear, return new_var2 instead of `check`) is the FIRST measured attractor at 179/179 insns (target-matching insn count) but pays via a wrong return value: when reached via the check2 path, original returns nonzero check while mutation returns 0 (post-clear read). Bank: memory/grind/marionation_Exec/rejected/s49-new_var2-post-clear-read-semantic-lie-masked8.c
+
+- [s49] output-220-1 reproduces the s48v02 attractor (i=7 hoisted inside the dst2-guard on check2's copy loop, symmetric to s48v02's masked 5 finding on check1). Since vS47c already has check1's i=7 conditional-scoped (as target requires per s48), moving check2's i=7 inside the dst2 guard trades the +1 build_insn saved on check2 for a +1 lost on structural equivalence - net score-equal at 220.
+
+- [s49] output-220-2 = canonicalization/scope-shift score-inert (addu operand swap already proven inert in s2 y03, dummy_label folded pre-sched2 per s7 and s16, src stmt hoist into the do-while(0) wrap has no effect on emitted asm).
+
+- [s49] Portfolio census extends: 13 basins sampled, 0 sub-vT40 novel attractors, closed attractor set {alias-merge, semantic-lie/label-alive, reg-shuffle-inert} holds invariantly.

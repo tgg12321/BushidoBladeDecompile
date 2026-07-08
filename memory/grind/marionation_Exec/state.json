@@ -1,8 +1,8 @@
 {
  "func": "marionation_Exec",
  "file": "system",
- "session_count": 48,
- "current_modality": "structural",
+ "session_count": 49,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 0,
@@ -297,23 +297,29 @@
    "floor": 4,
    "modality": "structural",
    "headline": "s48 structural: check-var split into two block-locals KILLED at 14 (+10, cross-block life-shortening regression class matches s47b merge); check1 i=7 hoist KILLED at 5/177 (-1 build_insn drops a targe"
+  },
+  {
+   "session": 49,
+   "floor": 4,
+   "modality": "permuter",
+   "headline": "s49 permuter: PERM_IGNORE-mid-function KILLED (b64literal pragma emits at compound-stmt position, base fails at maspsx); pivoted to 13th-basin sample (s47 vS47c pp-hoisted-to-block-head chassis, base="
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The operator-mediated exchange lever developed on twin cpu_side_move_dir_4 (pair-window-only residual) yields an order+seats-correct do_timeout window spelling that mirrors into saEft01Init and marionation_Exec via the s39 fingerprint",
-   "mechanism": "Twin's residual is the pair alone (no region-3, no check region); qty_compare 5.33v5.33 equation is the SAME tie; s39 saEft01Init regfix decode gives exact constraints. Pre-merge worker commits (aa8cad24 cd65f9c2 e5aa2dd4 f4bc8e67 df749bfd 622620cb) hold allocation-equation material not fully in this ledger.",
-   "next_probe": "OUT-OF-MANDATE for marionation_Exec structural session; requires queue-routing to twin cpu_side_move_dir_4"
+   "hypothesis": "The operator-mediated exchange lever developed on twin cpu_side_move_dir_4 (pair-window-only residual) yields an order+seats-correct do_timeout window spelling that mirrors into saEft01Init and marionation_Exec via the s39 fingerprint.",
+   "mechanism": "Twin's residual is the pair alone; qty_compare 5.33v5.33 equation is the SAME tie; s39 saEft01Init regfix decode gives exact constraints. Pre-merge worker commits (aa8cad24 cd65f9c2 e5aa2dd4 f4bc8e67 df749bfd 622620cb) hold allocation-equation material not fully in this ledger.",
+   "next_probe": "OUT-OF-MANDATE for marionation_Exec permuter session; requires queue-routing to twin cpu_side_move_dir_4."
   },
   {
-   "hypothesis": "A region-3-window-pinned permuter campaign on a masked-4 basin member finds a spelling that kills the check2 dbr steal without touching the pair window",
-   "mechanism": "All prior 12 basin campaigns randomized broadly; permuter's default scoring lumps pair + region-3 into one metric so a region-3-only find gets outcompeted. build_ws with PERM_IGNORE on pair-window + region-3 window randomized would isolate the mechanism space.",
-   "next_probe": "Permuter modality session - not this session's mandate"
+   "hypothesis": "Two-stage region-3-isolation: run the standard fresh-basin campaign, then post-filter finds by inspecting ONLY the check-region diff (ignore pair-window insn deltas) - a find whose region-3 window matches target and whose pair-window matches vT40 residual could break the region-3 residual byte-legally.",
+   "mechanism": "PERM_IGNORE-mid-function is unavailable (s49 KILL); scorer-weight override is not exposed (s49 doc). But filtering existing campaigns' output-* dirs by manual insn-window diff is straightforward. Existing archives: s4/perm/output-* (vT40, 15 finds), s4/perm_c/output-* (find105, 3 finds), plus s13/s14/s22/s31/s32/s40/s41/s49 basins.",
+   "next_probe": "Permuter or forensics modality: write tmp/grind/.../s50/region3_scan.py that for each existing output-*/source.c fingerprints the 3 check2-region insns (beqz, delay-slot nop-or-move, first-post-slot) and flags any find whose region-3 fingerprint = target's fingerprint AND whose pair-window is not worse than vT40's."
   },
   {
-   "hypothesis": "After F1 and F2 both close negative, marionation_Exec qualifies for canonical-asm authorization under the 'genuine no-C-form' gate",
-   "mechanism": "48 sessions of structural + forensic + portfolio-scale closure with byte-level insn-level mechanism proofs (including s48's check-region axis extensions) reach the evidence bar for a ruling-request per canonical-asm-retirement.md",
-   "next_probe": "Ruling-request session (not this session's mandate)"
+   "hypothesis": "After F1 (twin exchange lever) and F2 (region-3 post-filter) both close negative, marionation_Exec qualifies for canonical-asm authorization under the 'genuine no-C-form' gate.",
+   "mechanism": "49 sessions of structural + forensic + portfolio-scale closure (now 13 basins, all four qty_compare arithmetic axes, three named decision routes, class-vs-LUID mips.md decoding, mem-edge exhaustion, PERM_IGNORE unavailability) reach the evidence bar for a ruling-request per canonical-asm-retirement.md.",
+   "next_probe": "Ruling-request session (not this session's mandate)."
   }
  ],
  "judge_constraints": [
