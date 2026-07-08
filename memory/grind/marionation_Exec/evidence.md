@@ -398,3 +398,17 @@ vT33 in-call add: 16. vT34 sum-split: 11. vT35/vT36 nest-reweight: 15/14. vU1/vU
 - [s17] candidate.c unchanged (remains vT40 masked 4 best-known); src/system.c untouched (git status clean); oracle green.
 
 - [s17] 4 forms banked to memory/grind/marionation_Exec/rejected/: s17-t0-nested-shift-masked9.c, s17-t0-add-tree-masked9.c, s17-t0-4mul-lhs-masked4-basin-equiv.c, s17-both-mult-masked4-basin-equiv.c (two of each class for future reference).
+
+- [s18] s18 baseline: candidate.c (vT40) spliced -> sandbox --disable all = masked 4 (178/179, 42 rules dropped, 20 cheat-asm stripped). Floor unchanged since s0.
+
+- [s18] s18 NEW mechanism fact: idx_1495 life shape is doubly load-bearing. s12 measured +6-7 masked regression when idx_1495 life is EXTENDED (substitution *idx_1495 for idx_1494[1] in do_timeout window). s18 v03/v04 measure BOTH other directions: elimination (inline idx_1494[1] at callback, +11 masked / -3 build_insns) and shrinkage (late birth in check region, +21 masked / -1 build_insn). The function-top-birth-with-callback-only-use signature is a coupled fixed point; no shape movement recovers.
+
+- [s18] s18 NEW mechanism fact: check-region control-flow structure (goto+label chain vs structured if/else) is spelling-inert at masked 4. v02 rewrote check1/check2/tail as structured if/else with returns and reached masked 4 at 178 build_insns exactly. jump.c's CFG folding collapses the two forms to identical post-jump2 layout. Basin membership now 12 known distinct masked-4 spellings.
+
+- [s18] s18 NEW mechanism fact: outer polling as for(;;) with sentinel-tagged timeout (v0=-2 mid-loop, if(v0==-2) after) regresses +13 masked vs floor at same 179 build_insns. Different regression profile from s9v04's inverted-vsync if/else (+3 masked, -2 build_insns). Confirms outer-flow rewrites are all structurally distinct energy shapes, none dominant over vT40's two-goto polling.
+
+- [s18] s18 cumulative hand-authored coverage now includes 3 novel structural rederivations (v01 sentinel-outer, v03 pseudo-elimination, v04 late-birth) and 1 novel basin member (v02). Combined with prior 135 hand forms + 10k+ permuter samples + s6/s7/s15 forensics, the rederive-modality search around vT40 is comprehensively exhausted across outer flow, check region CFG, and pseudo life-shape axes.
+
+- [s18] s18 candidate.c unchanged (remains vT40 best-known masked 4). src/system.c restored to HEAD via git checkout after each measurement; working tree clean; oracle green.
+
+- [s18] s18 4 forms banked to rejected/: s18-forloop-outer-sentinel-17.c, s18-check-ifelse-structured-masked4-basin-equiv.c, s18-eliminate-idx1495-inline-15.c, s18-idx1495-late-birth-25.c.

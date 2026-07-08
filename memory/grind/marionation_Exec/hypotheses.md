@@ -341,3 +341,27 @@
 - probe: 6 v0-side variants (b1-b6) all score masked 4; c3_both_mult (both use mult) and c4_both_lhs_4mul (both use LHS const mult) also 4.
 - result: CONFIRMED. v0-side is fully spelling-inert. NEW mechanism refinement: s15's T-16 launch order sensitivity to expand-UID was ONLY for the tslTm2 delay slot (a different sched2 pass), not for the T-14 pair-swap tie.
 - verdict: CONFIRMED
+
+## [s18] Rewriting outer polling as for(;;) with break-on-timeout via v0=-2 sentinel + structured if(v0==-2) do_timeout (v01) reaches masked<=4 by eliminating the goto do_timeout/goto success/goto check chain and letting jump.c fold the CFG more tightly.
+- mechanism: outer-flow structural rewrite untried in this exact shape; s9v04 tested inverted-vsync if/else and reached masked 7 at 176 insns (-2 build). The sentinel-tag form preserves 179 insn count and is structurally distinct.
+- probe: tmp/grind/marionation_Exec/s18/v01_forloop_outer.c spliced -> sandbox --disable all
+- result: masked 17, 179 build_insns (+13 vs floor). Sentinel-tag mid-loop v0=-2 pollutes v0's post-loop life and adds a redundant compare; the do_timeout block's do-while(0) note anchor is preserved but the outer CFG rewrite reweights allocation across the whole function.
+- verdict: KILLED
+
+## [s18] Rewriting check1/check2/tail from goto+label chain to structured if/else (v02) reaches masked<=3 by aligning check-region CFG shape with jump.c's fold preferences.
+- mechanism: check1/check2 are two same-shape mask+clear+copy sequences currently expressed via goto check2; goto tail; goto loop. Structured if(check){...}else{if(check){...}...} is a distinct CFG at expand; jump.c's threaded jump elimination may collapse the two arms to different young-label placement (s7 jump2 mechanism, from evidence.md).
+- probe: tmp/grind/marionation_Exec/s18/v02_check_ifelse.c spliced -> sandbox --disable all
+- result: masked 4, 178 build_insns - TIES vT40. Novel masked-4 basin member. Check-region structural rewrite is spelling-inert; the two forms fold to the same post-jump.c CFG. Basin membership up to 12 known distinct masked-4 spellings.
+- verdict: KILLED
+
+## [s18] Eliminating idx_1495 pseudo entirely by substituting idx_1494[1] at its sole use in check1 callback (v03) reaches masked<=3 by removing a pseudo from the qty pool and letting idx_1494's addressing canonicalize.
+- mechanism: s12 z03/z04/z05/z08 tested *idx_1495 SUBSTITUTION for idx_1494[1] (opposite direction: added a ref to idx_1495 in the do_timeout window, extending its life) and regressed +6-7. Reverse direction (ELIMINATE idx_1495 by inlining idx_1494[1]) untried; if the +6-7 was life-extension cost, the reverse should recover.
+- probe: tmp/grind/marionation_Exec/s18/v03_eliminate_idx1495.c spliced -> sandbox --disable all
+- result: masked 15, 175 build_insns (+11 vs floor, -3 build_insns). Eliminating the pseudo drops the idx_1495 addu setup insn AND the callback lbu-via-alias emit, giving 3 fewer build_insns; but the removed set/use retimes qty allocation and the pair-window compute worsens by 11 masked pts. Rejected.
+- verdict: KILLED
+
+## [s18] Moving idx_1495 = 1 + idx_1494 birth from function-top to inside the check region (v04) shortens idx_1495 life to callback-local and reaches masked<=3 by removing a competing qty from the do_timeout window's allocation.
+- mechanism: idx_1495's pseudo currently lives function-wide (born at top, single use in check1 callback). Delayed birth would make it invisible during do_timeout window scheduling, reducing qty competition; may free up seat pressure on t0-web/arg5val.
+- probe: tmp/grind/marionation_Exec/s18/v04_idx1495_late_birth.c spliced -> sandbox --disable all
+- result: masked 25, 177 build_insns (+21 vs floor, -1 build_insn). LARGER regression than s12's life-extension probe (+6-7). Confirms idx_1495 fixed-point: function-top birth with single callback use is a doubly-load-bearing signature. The delayed addu births a separate sub-tree post-do_timeout, retiming the entire layout.
+- verdict: KILLED

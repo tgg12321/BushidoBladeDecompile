@@ -1,7 +1,7 @@
 {
  "func": "marionation_Exec",
  "file": "system",
- "session_count": 17,
+ "session_count": 18,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -111,13 +111,19 @@
    "floor": 4,
    "modality": "rederive",
    "headline": "s17 rederive: 19-form mult-vs-shift-vs-add canonicalization sweep closes frontier item #3 (t0-arithmetic-spelling axis) with sharp asymmetric mechanism split; no closer, vT40 floor 4 holds."
+  },
+  {
+   "session": 18,
+   "floor": 4,
+   "modality": "rederive",
+   "headline": "s18 rederive: 4 structurally novel forms measured; v02 check-region if/else = novel masked-4 basin member; idx_1495 life-shape shown load-bearing in BOTH directions (extension +6-7 per s12, shrinkage "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The s14 w05 permuter campaign (PID 3756068, s32 tbaseS chassis, base=220) or s13 z07 campaign (PID 3540094, u8* tbase chassis) has produced a novel sub-220 find since s14/s16 launched (~24h+ elapsed).",
+   "hypothesis": "s14 w05 permuter campaign (PID 3756068, s32 tbaseS chassis, base=220) or s13 z07 campaign (PID 3540094, u8* tbase chassis) has produced a novel sub-220 find during ~24h+ elapsed since s14/s16 launched.",
    "mechanism": "Both campaigns run detached under WSL sampling in structurally distinct masked-4 basins; extended sampling can still yield a masked <=3 find at any moment. w05 was recommended in s13 frontier as the highest-signal untriaged basin; unchanged since s16.",
-   "next_probe": "Non-forensics session: check tmp/grind/marionation_Exec/s14/perm_w05/output-* and s13/perm_z07/output-*; triage sub-200 finds via s4/adiff2.py + s2 sandbox splice; reject uninitialized-read (vP160 class) or +insn (>179 build)."
+   "next_probe": "Non-forensics/non-rederive session: check tmp/grind/marionation_Exec/s14/perm_w05/output-* and s13/perm_z07/output-*; triage sub-200 finds via s4/adiff2.py + s2 sandbox splice; reject uninitialized-read (vP160 class) or +insn (>179 build)."
   },
   {
    "hypothesis": "The twin cpu_side_move_dir_4 (parked, distance 7, 5 rules) exchange lever remains untried; solving twin first could yield the register-exchange technique transferable to marionation_Exec's pair-swap.",
@@ -125,7 +131,7 @@
    "next_probe": "Non-forensics session: route queue such that cpu_side_move_dir_4 gets its own session before further marionation_Exec permuter campaigns. Read the pre-merge commits BEFORE another permuter campaign here."
   },
   {
-   "hypothesis": "Compiler-flag or preprocessor-macro lever (fewer-conjunctions, -fno-force-mem, __attribute__((unused)) on decls, -fno-schedule-insns2 subset, etc.) at candidate-file scope could shift sched2 pass behavior on the T-14 tie without touching source arithmetic.",
+   "hypothesis": "Compiler-flag or preprocessor-macro lever (fewer-conjunctions, -fno-force-mem, __attribute__((unused)) on decls, -fno-schedule-insns2 subset) at candidate-file scope could shift sched2 pass behavior on the T-14 tie without touching source arithmetic.",
    "mechanism": "s17 CONFIRMED the T-14 tie is decided by scheduler-internal INSN_LUID from rank_for_schedule, not by expand opcode. If any per-file compilation flag alters rank_for_schedule's forward/backward walk seed OR alters sched2's tie-break priority, the LUID landscape could shift without new C. GCC 2.7.2 has -fno-schedule-insns2 (kills sched2 entirely - would probably break other functions); -fno-cse-follow-jumps; -fno-move-loop-invariants; other stage-selective flags.",
    "next_probe": "Structural/forensics session: enumerate GCC 2.7.2 -fdisable-* / -fno-* flags via `cc1 --help` output; test single-flag additions to system.c compilation via a wrapper cc1 shim (or Makefile override) with just marionation_Exec's file; measure sandbox. Flags known-safe (no other-fn regression) go to a per-file compile-flags mechanism. Untried in ledger."
   }
