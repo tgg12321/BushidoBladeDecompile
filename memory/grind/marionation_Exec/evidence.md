@@ -318,3 +318,17 @@ vT33 in-call add: 16. vT34 sum-split: 11. vT35/vT36 nest-reweight: 15/14. vU1/vU
 - [s12] candidate.c unchanged - remains vT40 masked 4 (best-known form). src/system.c restored to HEAD via git checkout after every measurement; working tree clean (except metrics/events.jsonl); oracle green.
 
 - [s12] Cumulative hand-authored structural coverage after s12: s2 (26 forms) + s3 (22) + s8 (3) + s9 (4) + s10 (2) + s11 (30) + s12 (25) = 112 hand-authored structural variants of do_timeout measured. Combined with s6/s7 forensics (140-ordering sweep, 9-topology sweep, insn-level sched2/dbr forensics) and s4/s5 permuter (~10k+ samples), the hand-derivable + local-sampler basin around vT40 is comprehensively closed at masked 4.
+
+- [s13] s13 baseline reproduced by inference from continuous ledger (candidate.c untouched since s10; vT40 masked 4 confirmed s1-s12). src/system.c untouched this session; oracle green.
+
+- [s13] perm campaign (vT40-base): PID 1935645, elapsed 10:47:26 at session end. output-* set = [145-1, 145-2, 160-1, 160-2, 160-3, 165-1, 165-2, 165-3, 170-1, 175-1, 200-*, 205-*, 210-*, 215-*]. IDENTICAL to s5 snapshot - vT40-basin sampling has plateaued.
+
+- [s13] perm_c campaign (find105-base): PID 1935593, elapsed 10:47:26. output-* set = [85-1, 95-1, 95-2]. IDENTICAL to s5 snapshot - alias-merge family floor holds at masked 10.
+
+- [s13] perm_z07 campaign (z07-base, NOVEL): PID 3540094 launched this session, base score 220 verified matches vT40 base's residual signature (2 reorderings 60ea + 1 deletion 100).
+
+- [s13] Total live campaigns at handoff = 3 (vT40, find105, z07 basins). Two remaining known masked-4 basins (s11 u10/w03/w10, s12 v08/w05/w08, z01/z02) not yet sampled as permuter bases - available for future permuter sessions.
+
+- [s13] PERM_RANDOMIZE_TYPE macro is NOT recognized by decomp-permuter (only PERM_FACTORIES = GENERAL/ONCE/RANDOMIZE/FORCE_SAMELINE/VAR/LINESWAP/LINESWAP_TEXT/INT/IGNORE/PRETEND). Any future annotation attempts must use PERM_RANDOMIZE alone.
+
+- [s13] PERM_GENERAL is a multi-alternate picker (splits args on commas), NOT a scope wrapper - PERM_GENERAL({compound-stmt}) is a pycparser syntax error at expansion. Correct use is PERM_GENERAL(expr1, expr2, ...) with alternate rewrites of the SAME node.

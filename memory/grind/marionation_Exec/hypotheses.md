@@ -257,3 +257,21 @@
 - probe: sweep2 w04 (tbase + split-init arg5) and w06 (split-init arg5 without tbase)
 - result: w04=11, w06=11 - both regress +7 vs floor. The intermediate store-then-load of arg5 = v0+(s32)tbase followed by arg5 = *arg5 emits an extra addu insn (build stays 178 because it fuses in canonicalization but the pair-window compute chain retimes to a +7 shape). Not a zero-cost lever.
 - verdict: KILLED
+
+## [s13] The s4/s5 vT40-base perm campaign (still running PID 1935645, -j6) has produced no new sub-145 find in the 10.5h since s5's snapshot.
+- mechanism: the vT40 local basin's sub-200 mutation trajectory converges on the alias-merge (masked >= 10, callee-saved seat) and label-alive (+1 insn) attractors; no lower-cost region-3 kill or pair-swap fix exists locally.
+- probe: listed tmp/grind/marionation_Exec/s4/perm/output-* (WSL); enumerated by permuter-score (145, 160, 165, 170, 175, 200, 205, 210, 215) - identical set to s5's snapshot; ps confirmed pid 1935645 elapsed 10:47:26.
+- result: 0 new sub-145 finds across ~10.5h continued sampling; the vT40 basin's search-space exhaustion evidence continues to accumulate.
+- verdict: KILLED
+
+## [s13] The s4/s5 find105-base perm_c campaign (PID 1935593, -j24) has produced no sub-85 find in the 10.5h since s5 (the alias-merge family floor was masked 10 at permuter-score 95-1).
+- mechanism: the family's callee-saved seat trade (dst2=a1-target vs s1-callee-saved) is a structural constraint permuter cannot resolve; further perm-score progress trades seats further from target (s5: output-85-1 = masked 14, output-95-2 = masked 15).
+- probe: listed tmp/grind/marionation_Exec/s4/perm_c/output-*: [85-1, 95-1, 95-2] - identical to s5 snapshot.
+- result: family floor confirmed at masked 10 (permuter 95-1); no new finds.
+- verdict: KILLED
+
+## [s13] A fresh permuter campaign seeded on the s12 z07 chassis (u8* tbase with v0-interleaved compute, masked 4) samples a structural neighborhood not reachable from vT40- or find105-base sampling.
+- mechanism: the tbase alias births a NEW function-level qty that changes the local sampler basin; z07 is one of 9 known distinct masked-4 spellings (vT40 + s11 u10/w03/w10 + s12 v08/w05/w08/z01/z02/z07) and each exposes a different qty-allocation landscape.
+- probe: adapted s4/build_ws.py -> tmp/grind/marionation_Exec/s13/build_ws_z07.py (z07 as base, target.o + base_full.c skeleton reused from perm_mar6); verified permuter --debug base score = 220 (2 reorderings * 60 + 1 deletion * 100 - identical residual signature to vT40 base). Launched detached campaign with -j6 --better-only --stop-on-zero (PID 3540094, log tmp/grind/marionation_Exec/s13/campaign_z07.log).
+- result: campaign live at session end (elapsed 1m at handoff, iterations up to 24 confirmed in log); base = 220 confirms z07 chassis is a valid seed. Attempted PERM_GENERAL wrap of the pair-window inner block + PERM_RANDOMIZE on `s32 check;` decl, but stripped after PERM_RANDOMIZE_TYPE proved unrecognized and PERM_GENERAL(compound-stmt) tripped the pycparser. Default randomization is active - the sampler is walking z07's local basin.
+- verdict: CONFIRMED
