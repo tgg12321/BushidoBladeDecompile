@@ -90,6 +90,23 @@ function Assert-CleanTree {
     $dirty = @(git -C $Root status --porcelain | Where-Object { $_ })
     return $dirty
 }
+function Reap-PermuterOrphans([string]$When) {
+    # Backstop for the fresh-seed campaign discipline (owner directive
+    # 2026-07-07): permuter campaigns must not outlive the session that seeded
+    # them. Workers harvest+stop their own campaigns (tools/permuter_campaign.py,
+    # which records the telemetry); this reaps whatever survived a crashed,
+    # timed-out, or discarded session, so orphans can never accumulate again
+    # (2026-07-07 incident: ~100 workers, some 21h old, from dead sessions).
+    # The backslash in the pattern keeps pgrep/pkill from matching their own
+    # invoking bash cmdline.
+    try {
+        $n = (& wsl bash -c 'pgrep -fc "permuter\.py" || true' 2>$null | Out-String).Trim()
+        if ($n -and [int]$n -gt 0) {
+            & wsl bash -c 'pkill -f "permuter\.py" || true' 2>$null | Out-Null
+            Log "reaped $n orphaned permuter process(es) ($When)."
+        }
+    } catch { }
+}
 
 Log "grinder starting (pid $PID, model $Model, judge $JudgeModel)"
 if (-not (Test-OracleGreen)) {
@@ -297,6 +314,10 @@ function Revert-SessionEdits {
 
 $script:consecutiveInvalid = 0
 while ($true) {
+    # Loop-TOP placement is deliberate: it fires after EVERY session disposition
+    # (progress, candidate, scope-violation `continue`, invalid `continue`), at
+    # driver start (leftovers from a crashed prior run), and before a STOP exit.
+    Reap-PermuterOrphans 'session boundary'
     if (Test-Path $StopFile) { Log "STOP sentinel found; exiting cleanly."; break }
 
     # 1) target = queue top

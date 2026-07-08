@@ -124,11 +124,22 @@ def _scan_outputs(d: Path):
     return sorted(out, key=lambda t: t[2])
 
 
-def _parse_log(logp: Path):
-    """(last_iteration, base_score) from a campaign.log (progress uses \\r)."""
+def _venv_python():
+    """The repo venv interpreter (permuter needs its deps: toml, pycparser...).
+    sys.executable is only safe when we're already running from the venv."""
+    venv = ROOT / ".venv" / "bin" / "python3"
+    return str(venv) if venv.is_file() else sys.executable
+
+
+def _parse_log(logp: Path, offset: int = 0):
+    """(last_iteration, base_score) from a campaign.log (progress uses \\r).
+    campaign.log is append-mode across campaigns — pass the launch-time offset
+    so a prior campaign's lines can't be misread as this one's."""
     iters, base = None, None
     try:
-        text = logp.read_text(encoding="utf-8", errors="replace").replace("\r", "\n")
+        with logp.open("r", encoding="utf-8", errors="replace") as f:
+            f.seek(offset)
+            text = f.read().replace("\r", "\n")
     except FileNotFoundError:
         return None, None
     for m in ITER_RE.finditer(text):
@@ -150,13 +161,14 @@ def cmd_launch(args):
         if _pid_alive(old.get("pid")):
             sys.exit(f"ERROR: campaign already RUNNING in {d} (pid {old['pid']}) — harvest --stop it first")
 
-    cmd = [sys.executable, str(ROOT / "tools" / "decomp-permuter" / "permuter.py"),
+    cmd = [_venv_python(), str(ROOT / "tools" / "decomp-permuter" / "permuter.py"),
            str(d), "-j", str(args.jobs)]
     if args.stop_on_zero:
         cmd.append("--stop-on-zero")
     logf = open(d / LOG_NAME, "a", encoding="utf-8")
     logf.write(f"\n=== campaign launch {_now_iso()} ===\n")
     logf.flush()
+    log_offset = (d / LOG_NAME).stat().st_size
     proc = subprocess.Popen(cmd, stdout=logf, stderr=subprocess.STDOUT,
                             cwd=str(ROOT), start_new_session=True)
     launch_epoch = time.time()
@@ -166,11 +178,11 @@ def cmd_launch(args):
     base_score = None
     for _ in range(60):
         time.sleep(0.5)
-        _, base_score = _parse_log(d / LOG_NAME)
-        if base_score is not None:
-            break
         if proc.poll() is not None:
             sys.exit(f"ERROR: permuter exited immediately (rc={proc.returncode}) — see {d / LOG_NAME}")
+        _, base_score = _parse_log(d / LOG_NAME, log_offset)
+        if base_score is not None:
+            break
 
     meta = {
         "func": args.func,
@@ -181,6 +193,7 @@ def cmd_launch(args):
         "launch_epoch": launch_epoch,
         "jobs": args.jobs,
         "base_score": base_score,
+        "log_offset": log_offset,
         "preexisting_outputs": [f"output-{s}-{c}" for s, c, _ in _scan_outputs(d)],
     }
     meta_path.write_text(json.dumps(meta, indent=2) + "\n", encoding="utf-8")
@@ -211,7 +224,7 @@ def cmd_harvest(args):
     pid = meta.get("pid")
     pre = set(meta.get("preexisting_outputs", []))
 
-    iters, base_from_log = _parse_log(d / LOG_NAME)
+    iters, base_from_log = _parse_log(d / LOG_NAME, meta.get("log_offset", 0))
     base_score = meta.get("base_score") or base_from_log
     outputs = _scan_outputs(d)
     finds = []

@@ -245,6 +245,9 @@ tails re-find known attractors; they do not search.
 **Harvest everything, always.** A 0-find harvest is the data point — run
 `harvest` on every campaign you launched before your session ends, then
 stop it. Campaigns must not outlive the session that seeded them.
+(Grinder backstop: the driver reaps any surviving permuter process at
+every session boundary — but a reaped campaign is LOST telemetry; the
+harvest is your job.)
 
 This is a measured-yield stopping criterion, not budget framing
 ([[no-budget-caps]] is untouched): the same search effort goes into MORE
