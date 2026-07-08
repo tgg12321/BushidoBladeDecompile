@@ -323,3 +323,21 @@
 - probe: v03 = candidate.c with only change `t0 *= 4;` -> `t0 = t0 << 2;`. Sandbox --disable all = masked 9 / 178 insns (REGRESSION +5). Pass-count telemetry (grep ashift/mult counts across .rtl/.jump/.cse/.loop/.cse2/.flow/.combine): baseline .rtl has 59 ashift + 53 mult; v03 .rtl has 59 ashift + 52 mult — the one `t0 *= 4` mult becomes a `t0 = t0 << 2` ashift AT EXPAND. Both files reach the same 47 ashift + 47/48 mult by CSE/combine (the delta of 1 persists because baseline's mult-by-4 got canonicalized to ashift only during CSE, one pass later than v03's user-authored ashift). Emitted .s diff at the pair window: baseline emits `lbu $4,0($18); lbu $2,1($18); lw $5,D_800F19C0; sll $2,$2,2; sll $4,$4,2; addu $2,$2,$21; lw $3,0($2); ...; sw $3,16($sp)` vs v03 `lbu $3,0($18); lbu $2,1($18); lw $5,...; sll $3,$3,2; sll $2,$2,2; addu $2,$2,$21; lw $4,0($2); ...; sw $4,16($sp)` - t0's seat swapped from $4 (a0, target-matching) to $3 (v1, WRONG) and t0-sll now emits BEFORE arg5-sll (chronological order swapped).
 - result: Falsified: expand-time canonicalization is NOT total; user ashift and canonicalized mult-by-4 land at different pass points, changing UID landscape and register-allocation seats.
 - verdict: KILLED
+
+## [s17] Rewriting t0's mult-by-4 as add-tree, nested-shift, LHS-const-mult, or paren-folded mult produces a new LUID landscape at the sched2 T-14 tie that could reorder the pair-swap without a seat trade (frontier item #3).
+- mechanism: GCC 2.7.2 canonicalizes (mult reg 4) at CSE (baseline drops mult 53->48 between .rtl and .cse) while user-authored (ashift reg 2) is expand-produced. Different tree shapes may cross canonicalization at different passes and yield distinct INSN_LUIDs at the T-14 tie between insn 106 (a0-sll) and insn 117 (v0-sll).
+- probe: s17/sweep.py: 19 variants swept, 6 on t0-side, 6 on v0-side, 6 mirror/cross combinations; each spliced via s6/splice_apply.py, sandbox --disable all measured.
+- result: 6/19 stay masked 4 (baseline, a4_t0_4mul_lhs, a5_t0_paren_folded, c3_both_mult, c4_both_lhs_4mul, all b1-b6 v0-side); 8/19 regress to masked 9; 0/19 go below 4. Path is DEAD as closer.
+- verdict: KILLED
+
+## [s17] t0's arithmetic spelling has a sharp shift-vs-mult expand-time RTL boundary; ANY plus-tree or ashift authorship on t0 pays +5 masked, while any spelling that expands to (mult reg const_int) is inert.
+- mechanism: s17 measured: `t0 *= 4`, `t0 * 4`, `4 * t0`, `t0 * (2*2)` ALL stay at masked 4 (all four fold to identical RTL `(mult t0 4)` at expand). `t0 = t0 << 2`, `t0 = (t0<<1)<<1`, `t0 = t0+t0+t0+t0`, `t0 = t0+t0; t0 = t0+t0;` ALL score masked 9. Add-tree canonicalizes to shift AT expand (not later), landing in the same expand-time RTL bucket as user-written ashift. The delta is exactly whether t0's RTL insn is `(mult reg 4)` or `(ashift reg 2)` at .rtl.
+- probe: Cross-comparison of the 19 s17 variants + s16 v03 result at same seed.
+- result: CONFIRMED. Six positive controls (mult-family stays 4) + four negative controls (shift-family + add-tree at 9) collapse cleanly onto the same +5 penalty. The +5 IS the mult-to-shift-at-expand shift, not spelling noise.
+- verdict: CONFIRMED
+
+## [s17] v0's arithmetic spelling is inert to the pair-swap: any spelling (shift, mult, add-tree, LHS-const, paren-folded) leaves masked at 4.
+- mechanism: v0's shift feeds arg5's deref (a chain that reaches the sched2 pair window via addu insn 120's user-chain 120->122->137->jal-arg). The T-14 tie is between insn 106 (a0=t0-sll) and insn 117 (v0=arg5-sll). v0's expand-time RTL shape does not enter the tie decision - the tie has both candidates on the ready list at pri=2 regardless of the ashift/mult authorship, and their INSN_LUIDs from sched2's own rank_for_schedule walk are set by dep-DAG position, not by expand RTL opcode.
+- probe: 6 v0-side variants (b1-b6) all score masked 4; c3_both_mult (both use mult) and c4_both_lhs_4mul (both use LHS const mult) also 4.
+- result: CONFIRMED. v0-side is fully spelling-inert. NEW mechanism refinement: s15's T-16 launch order sensitivity to expand-UID was ONLY for the tslTm2 delay slot (a different sched2 pass), not for the T-14 pair-swap tie.
+- verdict: CONFIRMED
