@@ -1,8 +1,8 @@
 {
  "func": "marionation_Exec",
  "file": "system",
- "session_count": 5,
- "current_modality": "permuter",
+ "session_count": 6,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 0,
@@ -39,18 +39,29 @@
    "floor": 4,
    "modality": "permuter",
    "headline": "Permuter s5: harvested the two s4-carryover campaigns; alias-merge family further confirmed CLOSED (permuter 85 = masked 14, permuter 95-2 = masked 15 \u2014 deeper permuter progress trades MORE seats, wor"
+  },
+  {
+   "session": 6,
+   "floor": 4,
+   "modality": "forensics",
+   "headline": "Forensics s6: pair-swap named as sched2 T-14 tie between insns 106/117 (both pri=2 ashlsi3) broken by insn-number ordering; region-3 named as reorg pass-1 fill_simple_delay_slots on check2-beqz steali"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A masked<3 find requires a shape neither the vT40 base nor the find105 chassis have sampled \u2014 plausibly a young-label / post-flow-label construct that survives semantic vetting (no cross-block value read, no +1 insn cost)",
-   "mechanism": "reorg's find_basic_block(-1) -> all-live only fires for labels created AFTER flow analysis; the four sampled forms (vP160 while(status), output-160-3 while(status=0), and the two 180-insn +bnez forms) all pay either a byte or a semantic lie. The zero-cost form (if it exists) needs a natural post-flow label whose semantics are provably identical to the target's flow.",
-   "next_probe": "seed a NEW permuter campaign on the vT40 base with PERM_GENERAL'd tail-restructure candidates (e.g. label placement between `sb` and `move a1,s4` via a natural exit condition already present in the CFG), OR keep the two running campaigns going and re-harvest \u2014 but with a filter that rejects insn-count != 179 in the watcher so the sampler is pushed OFF the +1 attractor toward the invariant-insn-count basin"
+   "hypothesis": "A young-label / post-flow-label spelling can force fill_simple to reject the check2 slot fill without paying a visible byte",
+   "mechanism": "reorg's find_basic_block(-1) returns -1 for labels created AFTER flow analysis (post-cse2/loop), triggering all-live-at-label conservatism \u2192 move $5,$20 rejected as slot fill (session-10's BB2_ALLLIVE_LABEL knob proves this route byte-exactly)",
+   "next_probe": "Enumerate GCC 2.7.2 passes that CREATE new CODE_LABELs after flow.c: dbr pass itself creates delay_seq labels but too late; loop.c splits labels but pre-flow; cse2 does not; combine does not; sched can move around but does not create. The only C-level lever left is a construct whose EXPAND-time CFG has a label that survives cse/loop/combine/flow simplification into dbr as a not-yet-analyzed label \u2014 e.g. a computed goto (unavailable in K&R), a switch-in-macro that expands to a fresh label after inlining (all our inlines are C90 fn calls), or a __builtin_expect-style hint (not in GCC 2.7.2). Conclusion: no reachable young-label mechanism in this compiler+C combination."
   },
   {
-   "hypothesis": "The twin cpu_side_move_dir_4 (same pair-swap fixed point per ledger) is a cheaper venue to develop the exchange lever, and any qty_compare-flipping technique proven there transfers here",
-   "mechanism": "Strategy note in the ledger's judge constraints (fable-blitz 2026-07-07): pre-merge commits aa8cad24 cd65f9c2 e5aa2dd4 f4bc8e67 df749bfd 622620cb (sessions 6f-6h) contain in-place basin correction, final qty_compare equation, and s4 half-flip \u2014 NOT present in this ledger's s1-s3 summaries",
-   "next_probe": "in a NON-permuter session (out of scope this modality), git-log those commits; specifically look for a natural refs=2 or refs=6 spelling of the addr-add that flips the qty_compare 5.33v5.33 tie without birthing a fresh temp \u2014 that's the ONE unswept axis per the s2/s3 exhaustive geometry sweep"
+   "hypothesis": "The 137 stack-arg-push insn's T-index CAN be nudged one slot earlier by re-ordering the debug_printf call site's ARG-EVALUATION order (e.g. moving the *pp load into a stack-arg via a helper struct or a comma-op) which would let 122 shift from T-12 to T-11 and 120 to T-13, freeing T-14 for 120",
+   "mechanism": "In GCC 2.7.2, function-call arg evaluation order is C90-implementation-defined; changing which arg receives the arg5 value (currently 5th) via calling debug_printf with a different signature wrapper could re-anchor the stack-push in dep-DAG",
+   "next_probe": "This is a NON-forensics modality (would require a permuter session sampling debug_printf arg-signature rewrites). Forbidden here: cross-symbol/semantic-lie C. The signature must stay debug_printf(fmt, pp, D_800A11DC[D_800A11D5], *(s32*)t0, arg5). Only true-semantics respellings of the LOADS producing 5th/6th/7th arg values are eligible \u2014 s3's y/w/x sweeps exhausted them (all reach masked 4-8 with either baseline coupled fixed point or seat trade). Frontier: negative."
+  },
+  {
+   "hypothesis": "The running s4/s5 permuter campaigns (perm PID 1935645 vT40-base, perm_c PID 1935593 find105-base) may still find a sub-4 form; the sampler's discovery of the vP160/output-160-3 masked-3 signposts proves it samples label-attracting shapes the hand-forensics ruled impossible-by-analysis",
+   "mechanism": "Permuter can mutate PERM_GENERAL/PERM_RANDOMIZE_TYPE across the vT40 base without our analytical constraint that the label must be semantically-justified \u2014 but every semantically-DIVERGENT find (vP160 uninit-read class) is a REJECTED banked form",
+   "next_probe": "Recheck the running campaign's output-dirs at s7/s8 handoff time (do not disturb this session \u2014 the campaigns are the ONLY active lever)."
   }
  ],
  "judge_constraints": [
