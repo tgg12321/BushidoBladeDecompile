@@ -608,3 +608,17 @@ vT33 in-call add: 16. vT34 sum-split: 11. vT35/vT36 nest-reweight: 15/14. vU1/vU
 - [s31] Src restored to HEAD (candidate stays in memory/grind/marionation_Exec/candidate.c). Campaign PID 592 confirmed dead post-harvest; no simmering processes.
 
 - [owner 2026-07-08] cc1psx CALIBRATION — toolchain-divergence hypothesis KILLED for the order residual. Experiment: HEAD src/system.c preprocessed once (exact Makefile cpp flags), compiled by BOTH tools/gcc-2.7.2/build/cc1 (port) and tools/cc1psx_wrapper.sh (PsyQ GNU C 2.7.2.SN.1 via dosemu), identical maspsx pipeline, marionation_Exec extracted at offset 0, objdump-normalized + register-name-masked. RESULT: port vs psx masked diff = 0 lines (177 insns each) — the ORIGINAL compiler emits the IDENTICAL instruction ORDER from this C; only register SEATS differ (operationally irrelevant: the oracle is built with the port). Port vs target = psx vs target = 38 masked lines, in the SAME windows (prologue save-order/slots, pair-window addu/lw split, region-3 andi/beqz/sb). cc1psx is not one instruction closer. CONSEQUENCE: the pair-swap + region-3 residuals are NOT port-vs-SN scheduler divergence; the target order came from DIFFERENT C source. The novel-statement-geometry search is the confirmed path (compiler-parity doctrine now proven for THIS function on THIS source). Artifacts: tmp/cal_mar/ (port.s, psx.s, *_insns.txt, *_m.txt; scripts tmp/cc1psx_marionation_cal.sh, tmp/cc1psx_mar_score.sh, tmp/cal_mar_masked.sh).
+
+- [s32] s32 perm_s26idxp base score = 220 confirmed (permuter --debug -j1) - identical residual signature (2 reorderings x60 + 1 deletion x100) to vT40/z07/w05/s18v02/s30v03/s29v06.
+
+- [s32] s32 perm_s26idxp campaign: 34034+ iterations at -j6 across ~22 minutes; 6 sub-220 finds triaged: output-215-1 (2 hits, do-while(0) hoist), output-200-1 (2 hits, regression), output-170-1 (label-alive class variant), output-165-1 (label-alive class).
+
+- [s32] s32 perm_s26idxp output-165-1 / output-170-1 are the FOURTH and FIFTH documented spellings of the label-alive attractor class: (i) vP160 `while(status)` uninit-read; (ii) s5 0xFF-through-local `while(status=0)`; (iii) z07-160-1 `status=0; ... while(status);`; (iv) s32-s26idxp-165-1 `*idx_1496=(status=0); ... while(status); return status;`; (v) s32-s26idxp-170-1 explicit `status=0` before check2 cascaded through `if (a1 != status)`, `while (status);`, `return status;`. Each pays visible bytes (180 insns) or exhibits semantic divergence; class REJECTED as a matcher regardless of basin.
+
+- [s32] s32 perm_s29v06 pre-existing campaign log documents 1049 iterations with 0 sub-220 finds - portfolio convergence extends to the 7th sampled basin.
+
+- [s32] Cumulative portfolio scale after s32: 8 sampled basins {vT40, find105, z07, w05, s18v02, s30v03, s29v06, s26idxp} across s4/s5/s13/s14/s22/s23/s31/s32 (~46+ CPU-hr per s31 + ~5.6 CPU-hr this session + prior s32 abandoned ~1049 iters), 0 novel-mechanism sub-200 attractors, all sub-200 finds classify into 3 known families (label-alive +1-insn, alias-merge masked>=10, permuter reg-diff shuffles).
+
+- [s32] Basin-invariance of the {pair-swap @56/57, region-3 steal @149} residuals is now measured negative across 8 distinct chassis; the 25-30 remaining basin members per s28/s31 census very likely fall into the same convergence pattern.
+
+- [s32] src/system.c untouched this session (git status src/ clean); candidate.c unchanged (remains vT40 masked 4 best-known); oracle green.
