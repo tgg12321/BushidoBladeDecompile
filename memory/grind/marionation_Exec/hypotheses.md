@@ -923,3 +923,27 @@
 - probe: v01_postinc_cnt.c spliced to src/system.c via s44/splice.py; sandbox --disable all measured.
 - result: masked 4 (178/179, 42 rules dropped, 20 cheat_asm stripped) — identical to vT40 baseline. Novel masked-4 spelling (10th known distinct member of the vT40 floor basin, joining vT40, s11 u10/w03/w10, s12 v08/w05/w08/z01/z02/z07); pair-window insn stream unchanged; region-3 steal unchanged.
 - verdict: KILLED
+
+## [s45] Reordering the prologue setup pool so D_800F19BC=0 and D_800F19C0=&D_80016248 execute BEFORE tbl_125c/idx_1494 assignments changes function-level pseudo birth order and could unstick the pair-swap coupling
+- mechanism: GCC 2.7.2 assigns pseudo/qty UIDs during RTL expand in textual order; reversing the block puts the two D_800F19x* stores' insns before the tbl_125c/idx_1494 assign insns, potentially reshaping the greg qty birth cascade that seats t0-web and arg5val at the pair-swap window
+- probe: vA candidate written with the D_800F19BC/D_800F19C0 stmts hoisted to immediately after D_800F19B8=sys_VSync line; spliced via s45/measure.py; sandbox --disable all
+- result: score=4 build_insns=178 - EXACTLY the vT40 floor (basin-invariant); statement reorder of the outer prologue pool is INERT for the pair-swap and region-3 residuals (the qty births of interest happen inside the do_timeout window and are decoupled from prologue-store-instr UIDs which get scheduled elsewhere)
+- verdict: KILLED
+
+## [s45] Deriving idx_1494 backward from idx_1496 via subtraction (idx_1496 = &D_800A1494+2; idx_1495 = idx_1496-1; idx_1494 = idx_1495-1) inverts the derivation chain and could birth idx_1494's pseudo AFTER idx_1495/idx_1496, reshaping the do_timeout-window qty seat assignment
+- mechanism: vT40 has idx_1494 as the root and idx_1495/idx_1496 derived forward via addition; reversing forces idx_1496 to be the root and the others derived backward. All three are load-bearing pseudos live across the debug_printf call (idx_1494 refs in do_timeout, idx_1495/1496 refs in check1/check2), so their qty birth order interacts with the s2/s6/s12-documented pair-swap 5.33 v 5.33 tie
+- probe: vB candidate; sandbox --disable all
+- result: score=14 build_insns=178 - REGRESSION +10 masked pts vs vT40 floor 4. Backward-chain derivation births idx_1494/idx_1495 as SUBTRACTION-based qtys, adding 2 extra addiu/subiu insns (invisible in build_insns because they fuse in canonicalization) and restructuring the prologue-vs-do_timeout live-cross-call qty cascade. Banked as rejected/s45-idx-chain-backward-from-1496-14.c
+- verdict: KILLED
+
+## [s45] Swapping tbl_125c and idx_1494 assignment order (idx first, tbl second) reorders the two dominant pseudo-birth candidates for the tbl-base seat
+- mechanism: s2 measured decl order INERT (pseudo birth = RTL first-use order, not decl), but stmt order sweeps for the outer prologue-globals were never recorded in the rejected forms bank; separate axis from decl
+- probe: vC candidate (single-line swap); sandbox --disable all
+- result: score=4 build_insns=178 - basin-invariant (11th novel masked-4 spelling adjacent to vT40). Confirms stmt-order for tbl_125c vs idx_1494 assignments is inert - the first-use ordering in the do_timeout window dominates, prologue-store stmt order is decoupled from window-scoped qty births
+- verdict: KILLED
+
+## [s45] Folding the setup pool into a comma-expression (tbl_125c=D_800A125C, idx_1494=&D_800A1494, D_800F19B8=sys_VSync(-1)+0x3C0) fuses the setup stmts into a single expression-statement whose sequence-point handling may collapse pseudo-birth to a single point
+- mechanism: Comma-expression semantics require left-to-right evaluation with sequence points but the whole thing is a single expression-stmt at the C99 level - GCC 2.7.2 K&R expand may treat this as a compound assignment tree with a distinct RTL emission from separate stmts
+- probe: vD candidate; sandbox --disable all
+- result: score=10 build_insns=178 - REGRESSION +6. Comma-fold birthing pattern retimes the prologue in a way that cross-couples with the do_timeout-window qty seat cascade (likely: the fused expression forces intermediate temps for the sub-expression values). Confirms the comma-expression fold axis is not a zero-cost lever. Banked as rejected/s45-comma-expr-setup-pool-10.c
+- verdict: KILLED

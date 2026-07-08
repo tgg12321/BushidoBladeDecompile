@@ -780,3 +780,15 @@ vT33 in-call add: 16. vT34 sum-split: 11. vT35/vT36 nest-reweight: 15/14. vU1/vU
 - [s44] 10 distinct masked-4 spellings now catalogued for the vT40 floor basin: vT40, s11 u10/w03/w10, s12 v08/w05/w08/z01/z02/z07, s44 postinc-cnt. Every basin member preserves the pair-swap @56/57 seat-trade coupling and the region-3 @149 dbr steal; the two residuals are basin-wide invariants across outer-counter, staging, cast-type, and pp-placement axes.
 
 - [s44] src/system.c restored to HEAD via splice.py restore (git checkout) after every measurement; working tree clean; oracle green throughout.
+
+- [s45] s45 baseline reconfirmed: candidate.c (vT40) spliced -> sandbox --disable all = masked 4 (178/179, 42 rules dropped, 20 cheat-asm stripped). src/system.c restored via git checkout after every measurement; oracle green; working tree clean
+
+- [s45] s45 rederive angle: prologue-setup stmt-order axis (NEW - not in the s2/s3/s8/s9/s10/s11/s12 rejected forms bank which covered only do_timeout-window structural axes)
+
+- [s45] NEW basin members: vA (D_800F19BC/D_800F19C0 stmt reorder) and vC (tbl_125c/idx_1494 stmt swap) both masked 4. Combined with prior 9 basin members (vT40, s11 u10/w03/w10, s12 v08/w05/w08, z01/z02/z07), vT40 floor basin now has >=11 known distinct spellings across compound-restructure, mirror, tbase-alias, and prologue-reorder axes - the residuals are structural basin-invariants
+
+- [s45] NEW mechanism fact: idx_1494/1495/1496 forward-derivation chain is LOAD-BEARING; backward-chain from idx_1496 via subtraction regresses +10 (adds subtract insns that fuse in canonicalization but restructure the prologue-vs-do_timeout qty cascade)
+
+- [s45] NEW mechanism fact: comma-expression fold of the setup pool regresses +6 - comma sequence points do not free-fold at expand for these global-store stmts; introduces intermediate temps for sub-expression values that couple with do_timeout-window qty allocation
+
+- [s45] Cumulative structural coverage after s45: s2 (26) + s3 (22) + s8 (3) + s9 (4) + s10 (2) + s11 (30) + s12 (25) + s45 (4) = 116 hand-authored structural variants of marionation_Exec measured. Combined with s6/s7 forensics + s4/s5 permuter (~10k samples), the hand-derivable + local-sampler basin around vT40 is comprehensively closed at masked 4
