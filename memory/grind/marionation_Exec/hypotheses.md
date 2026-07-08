@@ -383,3 +383,15 @@
 - probe: Cross-tabulated all 4 basins' post-s14 output-* sets: {vT40: identical to s5; find105: identical to s5; z07: NEW 160-1 + 200-1; w05: NEW 145-1 + 200-1 + 200-2}. Sampled the two novel sub-200 finds above.
 - result: FALSIFIED. Both novel sub-200 finds reproduce known attractor CLASSES (label-alive +1-insn / alias-merge callee-saved-seat) rather than exposing a new one. Combined with 11h+ vT40/find105 zero-new-finds and z07 first-10-min zero (s14), the portfolio approach has convergent, not diverse, sub-200 output: the two residuals map to a fixed small set of universal attractors reachable from any masked-4 basin.
 - verdict: CONFIRMED
+
+## [s20] Moving `s32 status` decl from function-top into the check1 body scope (where it is exclusively used) shortens its life to check1-local and reduces qty competition without perturbing do_timeout pair-window or region-3 steal.
+- mechanism: status is currently born at function-top (single set inside check1 do-while, single use in the same loop). Function-top decl gives it function-wide qty visibility across the do_timeout window's allocation. Tightening scope to the sys_GetVblankCount() != 0 branch delays its birth to a point AFTER do_timeout, so it should be invisible during pair-window scheduling AND avoid any cross-BB liveness effect.
+- probe: v01 = candidate.c with `s32 status;` decl moved from function-top block into the `if (sys_GetVblankCount() != 0)` body (before saved = ...). Splice + sandbox --disable all.
+- result: masked 4 / 178 build_insns — INERT. Novel masked-4 basin member #13 (extends 12 known distinct spellings from s18). GCC canonicalizes both decl positions to the same qty landscape; status was already effectively local to its use per flow analysis.
+- verdict: KILLED
+
+## [s20] Moving `int new_var; int new_var3;` decl+init from just-before-check1/check2 to inside the innermost block where they are actually AND-masked against idx_1496 reduces cross-basic-block qty pressure and could shift the region-3 steal window.
+- mechanism: new_var/new_var3 are the opaque-mask holders that keep target's `andi ,0xff` alive against combine's u8-load fold (per candidate.c comment). Their scope-tightening was untested; tighter scope birth-just-before-use is a novel structural probe on the mask-holder axis.
+- probe: v02 = candidate.c with `int new_var; int new_var3;` decl+init moved from between vsync-check and check1 to inside the `{ s32 check; ... }` block right after `s32 check;`. Splice + sandbox --disable all.
+- result: masked 8 / 176 build_insns — REGRESSION +4 masked, -2 build_insns. The tight-scope birth immediately-before-use lets combine forward-substitute `new_var = 0xFF` INTO the `& new_var` expression → `& 0xFF` → folded against the u8 lbu load (byte-load auto-zeros high bits) → the two `andi ,0xff` insns are eliminated (build 178 → 176). The 'opaque mask' property depends on the mask holder being far enough from its use that combine's forward-substitution scope does not reach it. NEW MECHANISM FACT: mask-holder scope IS load-bearing; the current mid-function-body position is not incidental.
+- verdict: KILLED

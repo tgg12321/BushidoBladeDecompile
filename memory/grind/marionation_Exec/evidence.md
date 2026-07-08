@@ -426,3 +426,17 @@ vT33 in-call add: 16. vT34 sum-split: 11. vT35/vT36 nest-reweight: 15/14. vU1/vU
 - [s19] [s19] Cumulative ledger state after s19: 135 hand-authored structural variants (s2/s3/s8/s9/s10/s11/s12/s16/s17/s18) + ~10k+ permuter samples across 4 basins (vT40/find105/z07/w05) + s6/s7/s15/s16 insn-level forensics (140-ordering sweep, 9-topology sweep, dbr/sched2 dumps) + 5 sub-200 finds triaged in-ledger. The hand-derivable + local-sampler basin around vT40/z07/w05 is COMPREHENSIVELY closed at masked 4. Movement requires (a) scheduler-behavior modification (compiler flag), (b) twin-first exchange lever, or (c) reseeding permuter on CFG-restructured chassis (s18v02 if/else check-region) not yet sampled — the tbase/interleaved chassis explored in s13/s14 has confirmed the same attractor set as vT40.
 
 - [s19] [s19] Ledger digest 'live frontier item 1' (w05/z07 campaigns producing novel sub-220 finds) is now RESOLVED — the finds materialized (5 total across both basins) and were triaged NEGATIVE as closers. That frontier item is closed.
+
+- [s20] s20 baseline reconfirmed on main: candidate.c (vT40) spliced -> sandbox --disable all = masked 4 (178/179, 42 rules dropped, 20 cheat-asm stripped). Floor unchanged since s0.
+
+- [s20] s20 NEW mechanism fact: `s32 status` decl position is qty/schedule-inert between function-top and check1-body scopes. v01 = masked 4/178 exactly; adds a 13th distinct known masked-4 basin member spelling.
+
+- [s20] s20 NEW mechanism fact: the `int new_var; int new_var3;` mask-holder decl+init position IS load-bearing at 2 build_insns and 4 masked pts. Moving init to immediately-before-use lets combine forward-substitute the 0xFF constant into the `& new_var` and `& new_var3` expressions and fold away both `andi ,0xff` insns (byte-load auto-clears high bits). The current position (between vsync-check and check1) is FAR ENOUGH from the uses that combine's local substitution window does not reach; that separation is the mechanism keeping the two andi insns alive. Confirms the candidate.c FAKE annotation on new_var: alternatives are NOT interchangeable spellings, they are structurally distinct against combine's fold reach.
+
+- [s20] s20 corollary: the mask-holder-scope axis is a NEW constraint documented for future rewrites. Any decl-scope-tightening of new_var / new_var3 (or renaming to a shorter/tighter-scope name) will re-trip combine's fold and drop 2 insns. Complementary to the 'symbolic mask is the one spelling combine cannot fold' finding recorded in candidate.c line 74 comment (which addressed u8-typed and split-init alternatives, not scope).
+
+- [s20] s20 v01 saved to memory/grind/marionation_Exec/rejected/s20-status-local-scope-masked4-basin-equiv.c (novel basin member #13). v02 saved to memory/grind/marionation_Exec/rejected/s20-newvar-tight-scope-combine-folds-andi-8.c (KILLED regression, mask-fold mechanism documented).
+
+- [s20] s20 candidate.c UNCHANGED (remains vT40, best-known masked 4). src/system.c restored to HEAD via git checkout after all measurement; working tree clean; oracle green.
+
+- [s20] s20 cumulative hand-authored structural coverage after s20: 135+ prior (s2/s3/s8/s9/s10/s11/s12/s16/s17/s18) + 2 new (v01/v02) = 137+ hand-authored structural variants measured. The non-do_timeout-local-scope axis is now catalogued: function-top vs body-local for status is inert; mask-holder scope position is load-bearing at -2 build_insns / +4 masked.
