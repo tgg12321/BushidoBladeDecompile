@@ -674,3 +674,13 @@ vT33 in-call add: 16. vT34 sum-split: 11. vT35/vT36 nest-reweight: 15/14. vU1/vU
 - [s36] s36 KILL: index-load hoisting cannot fix the arg5-first lbu-order flip - v03's i0 hoist copy-propagates away (emission byte-identical to v01); lbu launch order follows expression-tree order at sched2 T-16, not statement order of index loads.
 
 - [s36] s36 rejected/ additions: s36-sibling-saeft01init-shape-order-correct-seats-traded-10.c, s36-named-arg4-arg5-nopp-9.c, s36-i0-hoist-copyprop-folds-emission-identical-10.c. candidate.c unchanged (vT40 masked 4 remains best).
+
+- [s37] s37 baseline reconfirmed: candidate.c (vT40) spliced -> sandbox --disable all = masked 4 (178/179, 42 rules dropped, 20 cheat-asm stripped); src/system.c restored to HEAD, working tree src/ clean, oracle green.
+
+- [s37] s37 synthesis: pair-swap flip condition consolidated to ONE open arithmetic route - fresh t0 carrier (s30v03 launch-free load-then-self-shift shape) + tbl-add deferred into the call deref gives web refs 8 (pri 1.71) vs arg5val pri 2.00; its two measured neighbors s2 v30 (native web + deferral = 16) and s34 v04 (carrier + add = 11) are mechanism-distinct so neither kills the combination a priori.
+
+- [s37] s37 synthesis: the three named pair-swap decision routes (sched.c:2448 class-compare for t0-first; local-alloc.c:1646 birth-order tiebreak for arg5-first; combine_regs tied-web strict-priority for carrier forms) are mutually exhaustive over all 165+ measured hand forms; order-correctness and seat-correctness were mutually exclusive on every measured route.
+
+- [s37] s37 synthesis: region-3 falls only to the unknown original source spelling - liveness route can never byte-match (a1 caller-saved), label routes always pay +1 insn (5 catalogued spellings), cc1psx parity proves toolchain is not the variable; the saEft01Init exchange addresses the pair window only (sibling has no check region).
+
+- [s37] s37 synthesis document written to tmp/grind/marionation_Exec/s37/SYNTHESIS.md (proven-facts consolidation, merged attack P1/P2/P3, dead-end list); no new structural forms measured this session, candidate.c unchanged (vT40 remains best-known).

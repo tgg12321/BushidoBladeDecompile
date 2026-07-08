@@ -797,3 +797,21 @@
 - probe: v03 (i0 = idx_1494[0]; arg5 = tbl_125c[idx_1494[1]]; arg4 = tbl_125c[i0]) spliced, sandbox, emission dumped (v03_i0hoist.s)
 - result: masked 10, emitted asm BYTE-IDENTICAL to v01 - GCC copy-propagates the i0 hoist away entirely; lbu order is decided by TREE order, unreachable via index-load statement placement
 - verdict: KILLED
+
+## [s37] The vT40 candidate reproduces the masked-4 floor on main at s37 start
+- mechanism: candidate.c spliced via s6/splice_apply.py; cheat-invisible sandbox with all 42 rules disabled and 20 cheat-asm stripped is the honest metric
+- probe: splice_apply.py candidate.c; wteng sandbox marionation_Exec --disable all; splice_apply.py --restore + git checkout src/system.c
+- result: score=4, build_insns=178, target_insns=179, rules_dropped=42, cheat_asm_stripped=20; src restored clean, oracle untouched
+- verdict: CONFIRMED
+
+## [s37] The s33/s34 closed-form flip condition (strict pri(arg5val) > pri(t0-side) in an order-correct stream) has exactly ONE arithmetic axis still open after 36 sessions: lowering refs(t0-side) via fresh-carrier + deferred tbl-add
+- mechanism: Cross-tabulation of the four axes against banked measurements: raise refs(arg5val) closed (wrap toolbox retimes head, Judge-banked vT35/vT36/vT42/vT43); shorten life(arg5val) closed (sched1 call-setup normalization pins both lives at 6, 140-ordering sweep); lengthen life(t0-side) closed (call anchor pins life, s34 route-C closure); lower refs(t0-side) never measured in the carrier+deferral combination - s2 v30 (deferred add, NATIVE web) = 16 and s34 v04 (carrier WITH add) = 11 are its two distinct-mechanism neighbors, and only the combination yields web 2 sets + 2 uses = 8 weighted refs, pri 3*8/14 = 1.71 < arg5val 2.00
+- probe: Analytic synthesis over evidence.md + hypotheses.md + rejected/ (72 forms); arithmetic from the s33 QTYDBG closed form and the s34 combine_regs tied-web decomposition (refs 12 = (3s+3u)x2 loop-note weight, life 14)
+- result: All non-carrier-deferral routes to the pair flip confirmed closed by existing measurements; the v05 carrier+deferred-add family is the sole unmeasured arithmetic hole; predicted failure mode is the s2-v30-class call-arg-tree retime, decidable by the validated dump-first pre-vet without a sandbox run
+- verdict: CONFIRMED
+
+## [s37] Residual B (region-3 steal) is NOT addressed by any live frontier item except the unknown-original-spelling search; in particular the saEft01Init exchange lever can close only the pair half
+- mechanism: saEft01Init (s36) shares the byte-shape-identical do_timeout window but has NO callbacks/copy-blocks/check-region, so an order+seats-correct window spelling found there mirrors only residual A; region-3 lives in the check region, where liveness-kill can never byte-match (target dest a1 caller-saved, alias-merge floor 10), label routes always pay +1 insn (5 spellings), and cc1psx emits the identical steal (owner calibration) proving the fix is source-shape, not toolchain
+- probe: Ledger cross-read: s36 sibling facts vs s4/s5/s6/s7/s19/s32 region-3 closures and the owner cc1psx parity entry
+- result: Even a full pair-swap win leaves masked 2 unless the winning form also relandscapes the check region; frontier items must be read with this scope limit - the exchange lever is necessary for the window spelling but not sufficient for masked 0
+- verdict: CONFIRMED
