@@ -169,7 +169,7 @@ Write your verdict JSON to the exact path given below.
     $qShort = $question.Substring(0, [Math]::Min(80, $question.Length))
     Add-Decision $func "ruling: $qShort" $v.verdict $v.justification
     if ($v.constraint) { python tools/grinder/grindlib.py constrain . $func ([string]$v.constraint) | Out-Null }
-    git -C $Root add -- memory/grind docs/grind 2>$null
+    git -C $Root add -- memory/grind docs/grind metrics/events.jsonl 2>$null
     git -C $Root commit -m "grind: $func judge ruling [skip-park-src-guard]" 2>$null | Out-Null
     Log "${func}: judge ruling $($v.verdict) recorded."
 }
@@ -206,9 +206,12 @@ function Invoke-CandidatePath([string]$func, [string]$stem, [string]$modality, $
     $vo = Invoke-Eng @('verify-oracle', '--rebuild', '--allow-dirty')
     if ($LASTEXITCODE -ne 0) {
         Log "${func}: FULL-BUILD SHA1 FAILED after retire — reverting, banking constraint."
+        # stage events BEFORE the broad checkout: `checkout -- .` restores the
+        # worktree FROM the index, so staged telemetry survives the revert
+        git -C $Root add -- metrics/events.jsonl 2>$null
         git -C $Root checkout -- . 2>$null
         python tools/grinder/grindlib.py constrain . $func "candidate form failed full-build SHA1 on main (masked-0 register diff class) — reg-alloc gap is real" | Out-Null
-        git -C $Root add -- memory/grind docs/grind 2>$null
+        git -C $Root add -- memory/grind docs/grind metrics/events.jsonl 2>$null
         git -C $Root commit -m "grind: $func byte-fail constraint banked [skip-park-src-guard]" 2>$null | Out-Null
         return
     }
@@ -243,6 +246,7 @@ $led/rejected/. Write your verdict JSON to the exact path given below.
         Journal "$func COMPLETED-C after $sessionsTaken sessions."
         Remove-Item -Recurse -Force (Join-Path $Root "memory\grind\$func")
         git -C $Root add -A -- memory/grind docs/grind 2>$null
+        git -C $Root add -- metrics/events.jsonl 2>$null
         git -C $Root commit -m "grinder: close ledger for $func" | Out-Null
         Log "${func}: MERGED — COMPLETED-C."
     } else {
@@ -252,12 +256,13 @@ $led/rejected/. Write your verdict JSON to the exact path given below.
         # revert the tracked decisions.md/state.json we just wrote.
         # keep the byte-matching form as evidence, but main goes back to HEAD
         Copy-Item (Join-Path $Root "src\$stem.c") (Join-Path $Root "memory\grind\$func\rejected\judge-fail-$(Get-Date -Format 'MMdd-HHmm').c") -ErrorAction SilentlyContinue
+        git -C $Root add -- metrics/events.jsonl 2>$null   # staged telemetry survives the checkout
         git -C $Root checkout -- . 2>$null
         Invoke-Eng @('verify-oracle', '--rebuild') | Out-Null   # restore green build/
         Add-Decision $func 'final call' 'FAIL' $v.justification
         $c = if ($v.constraint) { [string]$v.constraint } else { [string]$v.justification }
         python tools/grinder/grindlib.py constrain . $func $c | Out-Null
-        git -C $Root add -- memory/grind docs/grind 2>$null
+        git -C $Root add -- memory/grind docs/grind metrics/events.jsonl 2>$null
         git -C $Root commit -m "grind: $func judge FAIL banked [skip-park-src-guard]" 2>$null | Out-Null
         Log "${func}: judge FAILED the candidate — constraint banked, grind continues."
         $jShort = $v.justification.Substring(0, [Math]::Min(120, $v.justification.Length))
@@ -308,8 +313,12 @@ function Invoke-GrindAgent([string]$BriefPath, [string]$OutcomePath,
 $AllowedDirtyPattern = '^(\?\?|.M|M.|A.|.A)\s+("?)(memory/grind/|docs/grind/|tmp/|metrics/events\.jsonl|src/|include/)'
 
 function Revert-SessionEdits {
+    # Deliberately does NOT touch metrics/events.jsonl: events are append-only
+    # facts about engine/permuter commands that really ran — valid telemetry
+    # even from discarded sessions (owner directive 2026-07-07; reverting it
+    # here wiped every session's permuter-harvest events). The ledger commits
+    # sweep it up each boundary.
     git -C $Root checkout -- src include 2>$null
-    git -C $Root checkout -- metrics/events.jsonl 2>$null
 }
 
 $script:consecutiveInvalid = 0
@@ -353,6 +362,7 @@ while ($true) {
     $violations = @($dirty | Where-Object { $_ -notmatch $AllowedDirtyPattern })
     if ($violations.Count) {
         Log "${func}: SCOPE VIOLATION — $($violations -join ' | ') — session discarded."
+        git -C $Root add -- metrics/events.jsonl 2>$null   # staged telemetry survives the checkout
         git -C $Root checkout -- . 2>$null; git -C $Root clean -fd -- tmp 2>$null
         $script:consecutiveInvalid++
         if ($script:consecutiveInvalid -ge 3) { Circuit-Break "3 consecutive invalid sessions on $func" }
@@ -390,7 +400,7 @@ while ($true) {
             Revert-SessionEdits
             Log "${func}: progress applied — floor=$($o.floor), '$($o.headline)'"
             Journal "$func s$sessionN [$modality] floor=$($o.floor): $($o.headline)"
-            git -C $Root add -- memory/grind docs/grind 2>$null
+            git -C $Root add -- memory/grind docs/grind metrics/events.jsonl 2>$null
             git -C $Root commit -m "grind: $func ledger s$sessionN update [skip-park-src-guard]" 2>$null | Out-Null
         }
     }
