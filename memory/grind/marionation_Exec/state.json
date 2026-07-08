@@ -1,7 +1,7 @@
 {
  "func": "marionation_Exec",
  "file": "system",
- "session_count": 8,
+ "session_count": 9,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -57,18 +57,29 @@
    "floor": 4,
    "modality": "rederive",
    "headline": "s8 rederive: three structurally distinct do_timeout shapes measured KILLED \u2014 quantifies load-bearing cost of vT40's t0-web decomposition (+12), pp pointer-alias (+12), and t0 address-value type (+7)."
+  },
+  {
+   "session": 9,
+   "floor": 4,
+   "modality": "rederive",
+   "headline": "s9 rederive: 4 structurally novel C shapes measured KILLED (9/11/18/7); quantifies pp-alias-only-with-named-locals recovery at 7 masked pts (16 -> 9) vs the s8 pp+web joint 12."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The rich-pass permuter sampler (offset-0 workspace, vT40 base) remains the only untried honest lever with search coverage outside the hand-derivable structural axis. s8's KILL of the sibling-transplant angle strengthens the case that any masked <= 3 form must come from a non-obvious mutation the sampler stumbles onto \u2014 the s5 signposts (vP160 class at masked 3, 180 insns) prove the sampler CAN reach nominally sub-4 space.",
-   "mechanism": "permuter's PERM_GENERAL/PERM_RANDOMIZE_TYPE mutations sample RTL-space more densely than hand-forensics; the s5 masked-3 signpost proves the sampler reaches sub-4 nominally but every route paid a visible byte or uninitialized read. A fresh long run WITHOUT the vP160-class (label-alive) attractor rejection may find a semantically-clean sub-4 form.",
-   "next_probe": "permuter modality: rebuild offset-0 workspace from s6/dumps prelude scaffolding, seed with vT40 base, add PERM_* directives targeting the pair-window insns 106/117 (T-14 UID tie) and the region-3 check2-beqz slot; run --stop-on-zero with watcher auto-triaging sub-200 finds; reject all sub-4 finds that read status uninitialized OR add net insns."
+   "hypothesis": "The pp-alias-with-named-locals form (s9v01=9) can reach vT40's masked 4 by restoring PART of the v0-web without the full byte-cast decomposition - e.g., keeping v0 staged for ONE of the two shifts while leaving the other clean.",
+   "mechanism": "s9v01 isolated pp's benefit; recovering the missing 5 pts should require reintroducing exactly the v0-web behavior that shapes the sched2 tie (per s6: insn 122's forward chain to jal 152 anchors the T-14 window). Partial web (e.g., v0 staging arg5's shift-only, natural array-index for t0) has not been swept.",
+   "next_probe": "Sweep partial-web variants on the s9v01 chassis: (a) v0 = idx_1494[1]<<2 staged, arg5 = *(s32*)(v0+(s32)tbl_125c), t0 natural; (b) t0 = (s32)((u8*)tbl_125c+idx_1494[0]*4) staged, arg5 natural; measure both."
   },
   {
-   "hypothesis": "The twin cpu_side_move_dir_4 (parked, dist 7) shares the pair-swap coupling by lore. If it closes FIRST (its residual is the pair exchange alone; masked ~6->0 on flip per pre-merge session-6f-6h commits), the lever mirrors here.",
-   "mechanism": "cross-function \u2014 twin work is a separate grind entry, but any pair-exchange technique that lands there transfers directly to marionation_Exec's do_timeout region.",
-   "next_probe": "Not this function's session. Recommend the driver route the queue such that cpu_side_move_dir_4 gets its own grind session before another marionation_Exec permuter campaign \u2014 per the fable-blitz 2026-07-07 strategic ruling in state.json."
+   "hypothesis": "The rich-pass permuter sampler (still the sole untried honest lever with search coverage outside hand-derivable structural axis) remains the highest-value next step - s9 KILLs strengthen the case that any masked <= 3 form must come from a non-obvious mutation.",
+   "mechanism": "Permuter's PERM_GENERAL/PERM_RANDOMIZE_TYPE mutations sample RTL-space more densely; s5's masked-3 signposts prove the sampler CAN reach sub-4 nominally but every route paid a visible byte or uninitialized read. Fresh long run WITHOUT the vP160-class (label-alive) attractor rejection may find a semantically-clean sub-4.",
+   "next_probe": "Permuter modality session: rebuild offset-0 workspace from s6 dumps prelude scaffolding, seed with vT40 base, add PERM_* directives targeting the pair-window insns 106/117 (T-14 UID tie) and the region-3 check2-beqz slot; run --stop-on-zero with watcher auto-triaging sub-200 finds; reject sub-4 finds that read status uninitialized OR add net insns."
+  },
+  {
+   "hypothesis": "The twin cpu_side_move_dir_4 (parked, dist 7) shares the pair-swap coupling by lore - solving it FIRST provides a directly transferable lever (per fable-blitz 2026-07-07 strategic ruling).",
+   "mechanism": "Cross-function: twin residual is the exchange alone (masked ~6->0 on flip per pre-merge sessions 6f-6h commits). Any pair-exchange technique landing there transfers to marionation_Exec's do_timeout region.",
+   "next_probe": "Not this function's session. Route the queue such that cpu_side_move_dir_4 gets its own grind session before another marionation_Exec permuter campaign."
   }
  ],
  "judge_constraints": [

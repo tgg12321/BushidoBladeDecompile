@@ -167,3 +167,27 @@
 - probe: wrote v03 (v03_t0_typed_s32ptr.c), spliced, sandbox = masked 11 / 178 insns.
 - result: masked 11 (regression +7). Type axis for the t0 pointer is a NEW measured negative — confirms the address-value s32 spelling is deliberately load-bearing. rejected/t0-typed-s32ptr-masked11.c.
 - verdict: KILLED
+
+## [s9] Preserving pp alias while replacing the v0-web t0/arg5 staging with clean s32-array-indexing named locals (arg4val = tbl_125c[idx_1494[0]]; arg5val = tbl_125c[idx_1494[1]]) reaches masked <= 4 - the pp alias is the load-bearing lever independent of the web.
+- mechanism: s8 measured pp+web joint contribution ~12 (v01 no-pp-no-web = 16, v02 pp+no-web inline = 16). Named locals differ from v02's inline args by forcing sequence-point evaluation of the two derefs; the resulting distinct pseudos may reach the vT40 seat assignment without the byte-cast web.
+- probe: s9v01 spliced to src/system.c, sandbox --disable all
+- result: masked 9 / 178 insns (regression +5 vs vT40=4, but recovery +7 vs s8 v02=16). Named-local pp-preserved form is BETTER than inline-arg pp-preserved (16) but still below vT40 - v0-web decomposition retains ~5 masked pts of value that named locals cannot substitute for.
+- verdict: KILLED
+
+## [s9] Reversing named-local arg computation order (arg5val computed BEFORE arg4val) forces arg5's tree LUID early enough to win the sched2 T-14 tie without touching the pair-swap coupling.
+- mechanism: In named-local form both trees are evaluated to full pseudos before the call - expand-time UID assignment follows textual order, so arg5-first source may produce lower UID for arg5's sll than for arg4's sll.
+- probe: s9v02 (v01 with arg5val/arg4val order swapped), splice + sandbox --disable all
+- result: masked 11 (worse than v01=9 by 2). arg5-first regresses even in named-local form - the s2-s4 arg5-first-seats-trade coupling survives the named-local transformation (was previously measured only for inline args and staged temps).
+- verdict: KILLED
+
+## [s9] Hoisting arg3 (D_800A11DC[D_800A11D5]) into a named local BEFORE the arg4/arg5 web compute perturbs expand-time UID assignment for the sll pair by inserting an extra mem-load in the tree walk.
+- mechanism: arg3's lbu load is a mem-hazard-flagged insn that may re-time the sched2 backward walk and alter T-14's ready-list composition; s2 tests never covered arg3 movement.
+- probe: s9v03 (vT40 body + arg3val = D_800A11DC[D_800A11D5] named local hoisted first), splice + sandbox --disable all
+- result: masked 18 (drastic regression +14). arg3 hoisting births a new pseudo whose life crosses the entire arg4/arg5 compute region - relandscapes qty allocation and re-times the head like a launch (analogous to s2 vT33/vT34 fresh-temp launches).
+- verdict: KILLED
+
+## [s9] Rewriting the outer control flow to use structured if/else (dropping the do_timeout/success gotos, using inverted D_800F19B8 >= v0 test) alters flow.c basic-block layout upstream of do_timeout and may shift jump2 label allocation for region-3.
+- mechanism: Session-7 identified jump2 as the sole young-label mechanism (creates labels 591/301/85 post-greg); outer CFG changes propagate to flow-analysis BB structure, which drives jump2's fold decisions.
+- probe: s9v04 (vT40 body with if(D_800F19B8>=v0){cnt=...;if(!(0x3C0000<cnt)){v0=0;goto check;}} + fallthrough to do_timeout), splice + sandbox --disable all
+- result: masked 7 at 176/179 insns (masked +3 AND build_insns -2 vs vT40). Outer restructure DELETES 2 target insns - the inverted vsync check compiles to fewer branch instructions than the original two-goto form, exposing a build-vs-target insn-count divergence. Score is closer masked-wise (7 < 9/11/18) but structurally wrong.
+- verdict: KILLED
