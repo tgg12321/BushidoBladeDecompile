@@ -596,3 +596,13 @@ vT33 in-call add: 16. vT34 sum-split: 11. vT35/vT36 nest-reweight: 15/14. vU1/vU
 - [s30] s30 cumulative hand-authored structural coverage: prior 161+ variants (s2/s3/s8/s9/s10/s11/s12/s16/s17/s18/s20/s21/s26/s27/s29) + 3 new = 164+ measured. Basin membership now 31 distinct masked-4 spellings.
 
 - [s30] src/system.c restored to HEAD via splice_apply.py --restore + git checkout after all measurement; working tree clean; oracle green.
+
+- [s31] vT40 candidate reproduces masked 4 / build 178 / target 179 with 42 rules dropped, 20 cheat-asm stripped — baseline confirmed at session start.
+
+- [s31] Frontier item #3 (arg5-first via load-then-self-shift fresh carriers): 3 refinements measured (v01 both-fresh arg5-first = 11; v02 both-fresh t0-first = 10; v03 arg5-only-fresh arg5-first = 9). Fresh-carrier launch-escape (s30 v03) is BOTH source-order-conditional (does not survive arg5-first flip) AND single-side-only (composability across both temps regresses +6 even in winning t0-first order). Escape is a fragile privilege of one specific spelling.
+
+- [s31] s30 v03 basin permuter campaign (26 min, 6 CPU-hr): 5 finds all 200-220 permuter score; 0 sub-200 attractors. Portfolio convergence confirmed on the 6th sampled basin chassis. Cumulative cross-basin coverage: 6 chassis / ~46+ CPU-hr / 0 novel-attractor find.
+
+- [s31] Basin census extends to 31 known distinct masked-4 spellings (s30 count) — none tested by permuter beyond the 6 named chassis. Basin-invariance remains a strong prior at 6-basin scale.
+
+- [s31] Src restored to HEAD (candidate stays in memory/grind/marionation_Exec/candidate.c). Campaign PID 592 confirmed dead post-harvest; no simmering processes.

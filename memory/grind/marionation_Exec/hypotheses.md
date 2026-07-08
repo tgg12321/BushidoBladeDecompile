@@ -677,3 +677,27 @@
 - probe: v03_fresh_carrier.c: fresh `s32 shift_carrier` declared in the inner block, used identically to v0. Sandbox --disable all.
 - result: masked 4 / 178 build_insns - IDENTICAL to vT40 floor. NEW MECHANISM FACT: the launch penalty does NOT fire for a fresh named-local when the birthing insn is a plain load (idx_1494[1]) whose subsequent self-mutating shift (<<=2) is emission-equivalent to the v0 form. The pseudo is qty-fold-canonical with the v0-web variant. Adds 31st known distinct masked-4 basin spelling.
 - verdict: CONFIRMED
+
+## [s31] Arg5-first geometry with BOTH shifts staged through fresh named pseudos via load-then-self-shift (frontier item #3) escapes the vT34 launch penalty and reaches masked <=4
+- mechanism: s30 v03 proved plain-load-then-in-place-shift-mutate avoids the vT33/vT34 fresh-temp launch (fresh-pseudo-load-then-shift = no launch, fresh-pseudo-fresh-sum = launch). Applying this pattern to BOTH temps symmetrically in arg5-first source order could enter arg5-first LUID landscape without paying the launch penalty.
+- probe: s31 v01: arg5_carrier + t0_carrier both via fresh named pseudo, load-then-self-shift, arg5 source-order first. Spliced via s6/splice_apply.py, sandbox --disable all.
+- result: masked 11 / build 178 (+7 vs vT40). Load-then-self-shift pattern does NOT rescue arg5-first source order; the arg5-first-seats-trade penalty holds. Banked as rejected/s31-arg5first-both-fresh-load-selfshift-11.c.
+- verdict: KILLED
+
+## [s31] Fresh-carrier load-then-self-shift pattern (s30 v03 escape) composes across both temps in t0-first source order, preserving floor 4
+- mechanism: s30 v03 confirmed single-side (arg5-only) fresh-carrier reaches vT40 floor as 31st basin member. If the escape composes, applying to both t0 and arg5 in the vT40 source order should also land at floor 4 — testing composability of the fresh-carrier launch-escape.
+- probe: s31 v02: t0_carrier + arg5_carrier both fresh, load-then-self-shift, t0 source-order first (as vT40). Spliced, sandbox --disable all.
+- result: masked 10 / build 178 (+6). Fresh-carrier escape is NOT composable across both temps: birthing two fresh named pseudos in the pair window regresses even in the winning source order. Escape is a single-side privilege. Banked as rejected/s31-both-fresh-carriers-t0first-10.c.
+- verdict: KILLED
+
+## [s31] Fresh-carrier escape (s30 v03) is source-order-invariant: applying it to arg5 only, in arg5-first source order, reaches floor 4
+- mechanism: If the escape's effectiveness is source-order-invariant (mechanism = pseudo-birth-shape, not statement-position-dependent), single-side arg5 fresh-carrier + arg5-first source + t0 native web should preserve floor 4 while also flipping the sched2 T-14 landscape.
+- probe: s31 v03: arg5_carrier fresh (load-then-shift), t0 native web (vT40 spelling), arg5 source-order first. Spliced, sandbox --disable all.
+- result: masked 9 / build 178 (+5). Fresh-carrier launch-escape does NOT compose with arg5-first source order flip. The arg5-first-seats-trade coupling is source-order-dominant, carrier-shape-invariant. Best of the three v01-v03 refinements but still floor+5. Banked as rejected/s31-arg5first-argonly-freshcarrier-9.c.
+- verdict: KILLED
+
+## [s31] A permuter campaign seeded on the s30 v03 fresh-carrier chassis (31st known distinct masked-4 basin member, structurally distinct from prior 5 sampled bases) surfaces a novel sub-200 attractor outside the closed 3-class set (alias-merge / label-alive / reg-shuffle) — frontier item #2
+- mechanism: s28's 5-basin portfolio convergence was proven at ~40 CPU-hr scale; s29/s30 added 5 novel basin members bringing the census to 31. Basin invariance is a strong prior but not exhaustive across unsampled members; a fresh chassis with a different qty landscape (fresh named pseudo instead of v0 web) might expose an untried local mutation neighborhood.
+- probe: tmp/grind/marionation_Exec/s31/build_ws_s30v03.py built the workspace on the s30 v03 chassis (adapted from z07 scaffold); permuter --debug confirmed base score 220 (identical residual signature). Launched detached via tools/permuter_campaign.py launch (PID 592, -j 6, --stop-on-zero, label s30v03-fresh-carrier). Ran ~26 min (1484 s), harvested + stopped.
+- result: 5 finds total, all >= 200: output-215-1 (215), output-220-1 (220), output-210-1 (210), output-200-1 (200), output-200-2 (200). Zero sub-200 finds; best matches historic vT40/z07 200-class attractors (portfolio-convergent). Fresh-seed window (~26 min > directive 20-30) closed with no novel find. s30v03-chassis is portfolio-convergent per s28 basin-invariance prediction; extends the sampled-basin count to 6 (vT40 + find105 + z07 + w05 + s18v02 + s30v03).
+- verdict: KILLED

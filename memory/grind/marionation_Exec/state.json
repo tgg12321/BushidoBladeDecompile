@@ -1,8 +1,8 @@
 {
  "func": "marionation_Exec",
  "file": "system",
- "session_count": 30,
- "current_modality": "structural",
+ "session_count": 31,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 0,
@@ -189,23 +189,29 @@
    "floor": 4,
    "modality": "structural",
    "headline": "s30 structural: frontier item #2 (SVR-on-shift-carrier via existing dead pseudos) KILLED - cnt=6, status=6; fresh named-local carrier = new masked-4 basin member (31st spelling); v0-specific staging i"
+  },
+  {
+   "session": 31,
+   "floor": 4,
+   "modality": "permuter",
+   "headline": "s31 permuter: 3 frontier-item-#3 refinements KILLED (arg5-first + fresh-carrier variants); s30v03-chassis campaign (26min, 5 finds) confirms portfolio convergence per s28 basin-invariance"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The twin cpu_side_move_dir_4's simpler exchange landscape develops a pair-swap fix transferable to marionation_Exec (STRATEGY item, cross-fn).",
-   "mechanism": "Twin's ip/g3 residual is exchange-alone (no idx_1496, no double-check, single mask) per handoff strategy; pre-merge commits aa8cad24/cd65f9c2/e5aa2dd4/f4bc8e67/df749bfd/622620cb hold RA-equation material not fully in this ledger.",
-   "next_probe": "Queue-routing / operator-mediated action; carry-forward from s28."
+   "hypothesis": "The twin cpu_side_move_dir_4's simpler exchange landscape develops a pair-swap fix transferable to marionation_Exec (STRATEGY item, cross-fn, per fable-blitz 2026-07-07)",
+   "mechanism": "Twin's ip/g3 residual is exchange-alone (no idx_1496, no double-check, single mask) per handoff strategy; pre-merge commits aa8cad24/cd65f9c2/e5aa2dd4/f4bc8e67/df749bfd/622620cb hold RA-equation material not fully in this ledger. Twin is cheaper to solve; solution transfers here.",
+   "next_probe": "Queue-routing / operator-mediated action; carry-forward from s28. No direct session lever without touching engine/queue."
   },
   {
-   "hypothesis": "A directed permuter campaign on an untried basin chassis (s21/v04 cnt-scope-loop, s29 novel basin members, s30 v03 fresh-carrier) surfaces a novel sub-200 attractor outside the closed 3-class set.",
-   "mechanism": "s19/s23 established portfolio convergence at 5-basin scale; s29 added 5 basin members, s30 adds a 31st (fresh named-local). Basin-invariance is a strong prior but not exhaustive - 26+ known basin members remain unsampled as permuter seeds.",
-   "next_probe": "Adapt tools/grinder infrastructure to seed permuter on s30 v03 fresh-carrier chassis or s29 v06 pre-dec-while - carry-forward from s28/s29."
+   "hypothesis": "A permuter campaign on ANOTHER unsampled masked-4 basin member (s29 v06 pre-dec-while, s21 v01 status-local, s26 idxp-alias, etc.) surfaces a sub-200 attractor",
+   "mechanism": "s31 confirms basin-invariance holds at 6-basin scale but 25 members remain unsampled. Each has a materially distinct qty landscape (pointer aliases vs local scoping vs loop-terminator restructure); any could expose a novel local-mutation neighborhood.",
+   "next_probe": "Adapt build_ws_s30v03.py to seed permuter on s29 v06 (loop-condition-side --i) or s21 v01 (status block-scoped) chassis; run 20-30min fresh-seed window; harvest+stop."
   },
   {
-   "hypothesis": "The s30 launch-pathology refinement (fresh-pseudo-load-then-shift = no launch, fresh-pseudo-fresh-sum = launch) opens a structural axis for arg5 or t0 tree decomposition that avoids vT34's +11 penalty",
-   "mechanism": "vT33/vT34's launch fires on fresh named pseudos whose birth is an arithmetic intermediate; v03 proved plain-load-then-in-place-shift-mutate avoids the penalty. Any tree decomposition where the fresh named pseudo's FIRST insn is a load (not an arithmetic set) could be a novel geometry axis.",
-   "next_probe": "Test arg5-first geometry where BOTH shifts are staged through fresh named pseudos with the load-then-self-shift pattern (rather than fresh-sum). Would enter the arg5-first LUID landscape without the launch penalty that killed prior arg5-first attempts."
+   "hypothesis": "The fresh-carrier launch-escape's mechanism (load-then-self-shift preserves qty-fold-canonicity with the v0 web) suggests a symmetric t0-only-fresh-carrier form (t0 fresh, arg5 native web) also lands at masked 4 as a 32nd basin member",
+   "mechanism": "s30 v03 tested arg5-only fresh-carrier (basin member). Symmetric probe: t0-only fresh-carrier + arg5 native. If also floor 4, extends the class of single-side fresh-carrier privilege to both sides independently; if regressed, suggests arg5 is uniquely tolerant.",
+   "next_probe": "Craft s31/v04_t0only_freshcarrier.c mirror of s30 v03 for t0-side. Splice + sandbox. Single measurement; if 4 = new basin member for permuter-seed pool; if regression = new mechanism fact re: which-side is escape-tolerant."
   }
  ],
  "judge_constraints": [
