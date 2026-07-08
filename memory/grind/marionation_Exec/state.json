@@ -1,7 +1,7 @@
 {
  "func": "marionation_Exec",
  "file": "system",
- "session_count": 42,
+ "session_count": 43,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -261,18 +261,24 @@
    "floor": 4,
    "modality": "forensics",
    "headline": "s42 forensics: P4 mem-carried-edge hypothesis KILLED by structural enumeration of GCC 2.7.2 sched.c mem-edge sources \u2014 no C-level statement can add a 122->X anti-dep lengthening arg5's forward chain w"
+  },
+  {
+   "session": 43,
+   "floor": 4,
+   "modality": "forensics",
+   "headline": "s43 forensics: T-14 tie class-vs-LUID disaggregation KILLED via mips.md function-unit read - MIPS gcc-2.7.2 has no `arith` unit so insn_cost defaults to 1, forcing class=3 for both candidates; tie is "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "P2 (unchanged, primary): saEft01Init's queue turn / operator-mediated exchange yields the original order+seats-correct spelling and mirrors into marionation_Exec same-day.",
-   "mechanism": "s36 sibling identity + s39 fingerprint transfer + s42 confirmation that in-function C-space is closed. Winning spelling must emit idx[0]-first loads, middle-addu pair, arg5-deref before arg3's lbu, arg4 addu+deref deferred, WITHOUT a v0-web-growth WAR edge (+12) and WITHOUT a mem-alias edge (+12+, KILLED s42).",
-   "next_probe": "Operator-mediated exchange session on saEft01Init (out-of-scope for this function's mandate); test spellings against the s39 fingerprint table via dump-first pre-vet, splice any winner into marionation_Exec same-day."
+   "hypothesis": "P2 (unchanged, primary, out-of-mandate here): saEft01Init operator-mediated exchange yields the order+seats-correct spelling for the do_timeout window and mirrors into marionation_Exec.",
+   "mechanism": "s36 sibling identity + s39 fingerprint transfer; must emit idx[0]-first loads, middle-addu pair, arg5-deref before arg3's lbu, arg4 addu+deref deferred, without a v0-web-growth WAR edge (+12, s39) or a mem-alias edge (+12+, s42), AND without a sched2 CLASS-lever (killed s43 by MIPS mips.md function-unit read).",
+   "next_probe": "Operator-mediated exchange session on saEft01Init (out-of-scope for THIS function's mandate); test spellings against the s39 fingerprint via dump-first pre-vet; splice any winner into marionation_Exec same-day."
   },
   {
-   "hypothesis": "P3 (still DOWNGRADED after s41/s42): remaining unsampled masked-4 basin members surface a novel attractor.",
-   "mechanism": "12-basin permuter convergence with zero novel sub-4 attractors; s42 further confirms hand-C axis exhaustion. Remaining s21 members (v01/v03/v04/v05/v06/v07/v08/v09/v10/v14) are minor structural variants with near-identical qty landscapes to v11 - convergence prior strengthens further.",
-   "next_probe": "Only if P2 is exhausted first: pick a structurally-most-distinct remaining s21 member (v04 cnt-scope-loop or v03 split-init-D_800F19B8), adapt build_ws_v11.py, fresh-seed 20-30 min, harvest, stop. Recommended: DEFER indefinitely - each basin yields at most 1 sub-220 find of a known family."
+   "hypothesis": "P3 (still DOWNGRADED after s41/s42/s43): remaining unsampled masked-4 basin members surface a novel attractor.",
+   "mechanism": "12-basin permuter convergence with zero novel sub-4 attractors (s41). s43 further closes the sched2 class axis, strengthening the portfolio-convergence prior. Remaining s21 basin members (v01/v03/v04/v05/v06/v07/v08/v09/v10/v14) are minor structural variants of v11.",
+   "next_probe": "Only if P2 exhausted first: pick a structurally-most-distinct remaining s21 member (v04 cnt-scope-loop or v03 split-init-D_800F19B8), adapt build_ws_v11.py, fresh-seed 20-30 min, harvest, stop. Recommended: DEFER indefinitely."
   }
  ],
  "judge_constraints": [

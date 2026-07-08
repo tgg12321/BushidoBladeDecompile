@@ -760,3 +760,15 @@ vT33 in-call add: 16. vT34 sum-split: 11. vT35/vT36 nest-reweight: 15/14. vU1/vU
 - [s42] The 122-forward-chain length in baseline IS its natural maximum under RA v0-reuse. No C-level statement can extend it via mem-edges without violating pseudo-web-growth or semantic-lie constraints.
 
 - [s42] Portfolio synthesis with s6/s25/s33/s41: pair-swap and region-3 residuals are compiler-internal decisions with no C-level lever addressable within the vT40 basin's mechanism space. P2's cross-function operator-mediated exchange is the only remaining pathway.
+
+- [s43] s43 baseline dump: fresh cc1 -da at tmp/grind/marionation_Exec/s43/mar_s43.i.{rtl,jump,cse,loop,cse2,flow,combine,sched,lreg,greg,jump2,sched2,dbr} + mar_s43.s (candidate.c spliced then reverted; src/system.c clean at HEAD after).
+
+- [s43] MECHANISM FACT (new, forensic): MIPS gcc-2.7.2 defines function-units only for memory (load/store/xfer) and imuldiv (hilo/imul/idiv) — arith insns (sll, addu, ori, add, etc.) have NO define_function_unit and default to latency 1. This makes the sched.c:2420 cost==1 shortcut always fire for arith->arith and arith->mem edges within a single cycle, forcing class=3 in rank_for_schedule for BOTH sides of every pair-window ready-list tie in BB #3. The class branch is inert; LUID always decides.
+
+- [s43] s6's characterization of the T-14 tie as 'INSN_UID / LUID decided' is mechanism-correct — the class branch that precedes it in rank_for_schedule cannot differentiate the arith candidates in this window.
+
+- [s43] IMPLICATION: any hypothesis in which a C-level construct alters the sched2 tie via changing 117's dep cost or class relative to 120 (or 120 vs 122, or 128 vs 111) is structurally KILLED — the MIPS latency model provides no differentiating cost > 1 for arith-only chains.
+
+- [s43] The LUID lever remains the ONLY sched2-tie-flip axis in the pair window, and s2/s3 measured all 140 dependency-valid orderings + 26+22 geometry/decomposition forms + the y-family operand-swap probes without a masked-3 or lower closer.
+
+- [s43] INSTRUMENTATION NOTE: BB2_RANK_DEBUG env-gated debug in sched.c:2436-2446 exists in tools/gcc-2.7.2/build/cc1 (strings|grep BB2_RANK confirms) but did not emit RANKDBG lines when invoked via tools/wsl.sh with `export BB2_RANK_DEBUG=1` in three attempts (rank_debug*.txt empty of RANKDBG). Likely wsl.sh nested-shell env-forwarding drop. Not needed for this KILL since the mips.md read directly proved insn_cost==1 for arith. Future forensic sessions wanting live RANKDBG capture should invoke cc1 via a shell script that exports before the first spawn.
