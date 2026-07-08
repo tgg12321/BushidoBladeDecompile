@@ -684,3 +684,17 @@ vT33 in-call add: 16. vT34 sum-split: 11. vT35/vT36 nest-reweight: 15/14. vU1/vU
 - [s37] s37 synthesis: region-3 falls only to the unknown original source spelling - liveness route can never byte-match (a1 caller-saved), label routes always pay +1 insn (5 catalogued spellings), cc1psx parity proves toolchain is not the variable; the saEft01Init exchange addresses the pair window only (sibling has no check region).
 
 - [s37] s37 synthesis document written to tmp/grind/marionation_Exec/s37/SYNTHESIS.md (proven-facts consolidation, merged attack P1/P2/P3, dead-end list); no new structural forms measured this session, candidate.c unchanged (vT40 remains best-known).
+
+- [s38] s38 baseline reconfirmed: candidate.c (vT40) spliced -> sandbox --disable all = masked 4 (178/179, 42 rules dropped, 20 cheat-asm stripped); src/system.c restored to HEAD (git checkout) after all measurement, working tree src/ clean.
+
+- [s38] AUTHORING FACT: the frontier P1's literal single-carrier reading (load-then-self-shift + deferred add) is alpha-equivalent to banked v30 (deferred-t0-tbladd-in-call-16.c) - variable renaming is invisible to GCC; the two-pseudo tied form (tc 1s+1u, t2 1s+1u) is the only novel spelling satisfying the refs-8 arithmetic.
+
+- [s38] NEW mechanism fact: C-level deferral of the tbl-add does NOT reduce the t0-side web's RTL refs - expand materializes the addu (compiler temp) and a deref value-holder (reg/v) as real insns in the call-arg tree; QTYDBG blk=3 shows a 12-ref qty (b20-32) reconstituting in all three spellings. qty_compare refs are pinned by semantic operation count, not C statement count.
+
+- [s38] NEW mechanism fact: the deferred-add retime (s2 v30 class) is carrier-invariant and holding-type-invariant - v05a (s32 tied pair), v05b (both sides fresh carriers), v05c (u8* t2) all emit the byte-identical serialized window: arg5 chain complete first, t0 chain inside the call-arg region, arg5 lbu in the tslTm2 delay slot.
+
+- [s38] FLIP-CONDITION EXHAUSTION: all four arithmetic axes of the s33 closed-form pair-flip condition are now measured or proven closed (raise refs(arg5val) / shorten life(arg5val) / lengthen life(t0-side) / lower refs(t0-side)). The pair-swap residual has NO remaining arithmetic route; it falls only to the unknown original source spelling (P2 sibling exchange) or unknown-shape sampling (P3).
+
+- [s38] s34 dump-first pre-vet protocol re-validated as a zero-sandbox KILL gate: all three verdicts issued from emitted-window order alone; no sandbox runs spent on order-incorrect forms.
+
+- [s38] 3 disproven forms banked: rejected/s38-v05a-tiedpair-deferred-add-order-incorrect-dumpvet.c, rejected/s38-v05b-both-carriers-deferred-add-order-incorrect-dumpvet.c, rejected/s38-v05c-u8ptr-carrier-deferred-add-order-incorrect-dumpvet.c. candidate.c unchanged (vT40 masked 4 remains best-known).

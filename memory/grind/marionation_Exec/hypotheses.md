@@ -815,3 +815,27 @@
 - probe: Ledger cross-read: s36 sibling facts vs s4/s5/s6/s7/s19/s32 region-3 closures and the owner cc1psx parity entry
 - result: Even a full pair-swap win leaves masked 2 unless the winning form also relandscapes the check region; frontier items must be read with this scope limit - the exchange lever is necessary for the window spelling but not sufficient for masked 0
 - verdict: CONFIRMED
+
+## [s38] A TWO-pseudo tied t0 carrier (tc = idx_1494[0]; t2 = tc * 4; tc dies into t2 -> combine_regs tie) with the tbl-add deferred into the call deref reaches 2 sets + 2 uses = 8 weighted refs (pri 1.71 < arg5val 2.00) while preserving s34 v04's order-correct sched1 launch (v05a, vT40 chassis, arg5 v0-web intact)
+- mechanism: s33/s34 closed-form flip condition, lower-refs(t0-side) axis - the one remaining arithmetic hole; combine_regs tie preserves the order lever, deferral drops the web refs below arg5val's
+- probe: Authored v05a (note: the frontier's literal single-var reading is alpha-equivalent to banked v30 masked-16, so the two-pseudo form is the only novel refs-8 spelling); spliced; s34 dump-first pre-vet via tmp/gccdbg/cc1 (BB2_QTY_DEBUG/BB2_ALLOC_DEBUG, -da); checked emitted window order then QTYDBG blk=3
+- result: ORDER-INCORRECT at the dump gate (no sandbox per protocol): window serializes arg5-chain-complete-first, t0 chain births inside the call-arg region (lbu/sll/addu/lw after the arg5 sw), arg5 lbu steals the tslTm2 delay slot - the predicted s2-v30-class retime. QTYDBG blk=3: a 12-ref qty (b20-32) reconstitutes on the t0 side; refs NEVER drop to 8 because expand materializes the deferred add (insn 105, temp reg106) and a deref value-holder (insn 107, reg/v 100) as real insns regardless of C spelling
+- verdict: KILLED
+
+## [s38] The same deferred-add t0 side with arg5 through its own free fresh carrier (s30v03 load-then-self-shift, no v0-web) relandscapes the qty table enough to keep the launch order correct (v05b)
+- mechanism: s30v03's arg5-side carrier is a proven launch-free masked-4 basin member; pairing it with the deferred t0 side removes the v0-web's staging interaction from the window
+- probe: v05b spliced; same dump-first pre-vet
+- result: Emitted window byte-identical to v05a's order-incorrect serialization; QTYDBG blk=3 shows the same 12-ref t0-side qty (reg114 b20-32) plus a 12-ref arg5-side web (reg106 b8-16)
+- verdict: KILLED
+
+## [s38] A u8*-typed t2 spelling of v05a shifts expand's address-mode canonicalization enough to keep the t0 chain out of the call-arg region (v05c)
+- mechanism: s35 proved carrier holding-type invariance for the 3-statement form only; the deferred form's type sensitivity was unmeasured
+- probe: v05c spliced; same dump-first pre-vet
+- result: Emitted window identical to v05a except the t0 addu operand order (addu $2,$2,$21 vs $2,$21,$2) - still order-incorrect serialization. Extends s35's type-invariance to the deferred-add family
+- verdict: KILLED
+
+## [s38] The s33 flip condition's fourth axis (lower refs(t0-side) below arg5val's) is reachable from C source
+- mechanism: qty_compare refs count RTL sets/uses; the hypothesis assumed C-level statement deletion (deferral) deletes sets
+- probe: Direct contrast on the same chassis: s34 v04 (explicit add, refs 12, ORDER-CORRECT, seats traded) vs s38 v05a/b/c (deferred add, refs still 12 via reconstituted temps, ORDER-INCORRECT)
+- result: CLOSED IN CLOSED FORM: the explicit add statement is simultaneously what makes the carrier form order-correct (the refs-12 tied web flips sched1's launch) and what pins refs above arg5val's; removing it collapses the order. The two halves of the flip condition are mutually exclusive in the same mechanism. With raise-refs(arg5val) (wrap toolbox, Judge-banked), shorten-life(arg5val) (sched1 normalization), and lengthen-life(t0-side) (call anchor, s34) already closed, NO arithmetic route to the pair flip remains
+- verdict: KILLED

@@ -1,8 +1,8 @@
 {
  "func": "marionation_Exec",
  "file": "system",
- "session_count": 37,
- "current_modality": "synthesis",
+ "session_count": 38,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 0,
@@ -231,23 +231,29 @@
    "floor": 4,
    "modality": "synthesis",
    "headline": "s37 synthesis: 36-session ledger merged; pair-swap reduced to ONE open arithmetic route (carrier+deferred-add refs reduction, pri 1.71<2.00) and region-3 proven solvable only by the unknown original s"
+  },
+  {
+   "session": 38,
+   "floor": 4,
+   "modality": "structural",
+   "headline": "s38 structural: frontier P1 (carrier + deferred tbl-add) KILLED at the dump gate across all 3 spellings - the s33 flip condition is now EXHAUSTED (all four arithmetic axes closed); the pair residual f"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "P1: fresh t0 carrier with the tbl-add DEFERRED into the call deref reduces the tied web to 2 sets + 2 uses = 8 weighted refs (pri 1.71 < arg5val 2.00), satisfying the closed-form flip condition and seating the pair correctly in an order-correct stream",
-   "mechanism": "s34 combine_regs tied-web arithmetic + s33 closed-form flip condition; the carrier makes combine_regs tie the web (order-correct from t0-first source, s34-proven) while the deferral is what drops refs below arg5val's; s35 proved carrier holding type is free. Predicted failure mode: s2-v30-class call-arg-tree retime.",
-   "next_probe": "Structural session: sweep 2-3 spellings of s37/v05_carrier_deferred_add.c ((a) vT40 chassis + arg5 v0-web intact; (b) arg5 through its own free s30v03 carrier; (c) u8* carrier spelling). DUMP-FIRST pre-vet each per the validated s34 protocol (emitted-window order, then QTYDBG blk=3 pri pair); sandbox only order-correct forms with pri(arg5val) strictly greater. A KILL here closes the LAST arithmetic route to the pair flip - record it as flip-condition exhaustion."
+   "hypothesis": "P2 (now the ONLY remaining pair lever): the shared-window sibling saEft01Init (dist 18, 15 rules, byte-shape-identical do_timeout window, no callbacks/copy-blocks/check-region) yields the unknown original order+seats-correct spelling, which mirrors into marionation_Exec same-day",
+   "mechanism": "s36 proof of window identity + s38's flip-condition exhaustion: no arithmetic route exists, so only a structurally different original spelling (findable on the simpler chassis) can seat the pair; import the s33/s34 tiebreak + s38 exhaustion knowledge",
+   "next_probe": "Queue-routing / operator-mediated: work saEft01Init's window on its queue turn or an operator-sanctioned exchange session; splice any winning spelling into marionation_Exec immediately"
   },
   {
-   "hypothesis": "P2: the shared-window sibling saEft01Init (dist 18, 15 rules, no callbacks/copy-blocks/check-region) is the cheapest vehicle for cracking the one unknown original window spelling; an order+seats-correct spelling found there mirrors directly into marionation_Exec's do_timeout",
-   "mechanism": "s36 proof: byte-shape-identical windows (same globals/fmt), same seat-trade failure from its current C; simpler chassis means its full residual is dominated by the window itself. Scope limit: closes residual A only - region-3 still needs the unknown check-region spelling.",
-   "next_probe": "Queue-routing / operator-mediated: work saEft01Init's window on its queue turn or an operator-sanctioned exchange session; import the s33/s34 tiebreak + three-route closure knowledge; splice any winning spelling into marionation_Exec same-day. Supersedes the cpu_side_move_dir_4 twin as exchange vehicle."
+   "hypothesis": "P3: a permuter seed on an unsampled masked-4 basin member (32 known, 8 sampled, all convergent) surfaces a novel sub-165 neighborhood with true semantics",
+   "mechanism": "Weak prior (8-basin convergence) but the sampler is the only tool sampling unknown-source-shape space; the s34/s38 dump pre-vet triages finds nearly free (discard order-incorrect and pri(arg5val)<=pri(t0-side) finds without sandboxing)",
+   "next_probe": "Adapt build_ws for one unsampled member (s20-status-local, s11-u10, or s35-m2c-outer-orcomma); 20-30 min fresh-seed window per the permuter-fresh-seed directive; harvest, pre-vet, stop"
   },
   {
-   "hypothesis": "P3: a permuter seed on an unsampled masked-4 basin member (32 known, 8 sampled, all convergent) surfaces a novel sub-165 local-mutation neighborhood with true semantics",
-   "mechanism": "Weak prior (8-basin portfolio convergence to the closed 3-class attractor set) but the sampler is the only tool sampling unknown-source-shape space; the validated s34 dump pre-vet makes triage nearly free (discard order-correct finds with pri(arg5val) <= pri(t0-side) without sandboxing).",
-   "next_probe": "Adapt build_ws_s26idxp for one unsampled member (s20-status-local, s11-u10, or s35-m2c-outer-orcomma); 20-30 min fresh-seed window per the permuter-fresh-seed directive; harvest, pre-vet, stop."
+   "hypothesis": "Both residuals (pair-swap and region-3) now share the same closure class: solvable only by the unknown original source spelling - a synthesis/forensics session could mine the sibling saEft01Init's 15 regfix rules and its window's rule-era history for hints about the original staging idiom before P2 is scheduled",
+   "mechanism": "The rules a function carries encode where its current C diverges from target; saEft01Init's 15 rules on a window-dominated residual may localize the original idiom more cheaply than a full exchange session",
+   "next_probe": "Forensics session: read saEft01Init's regfix/asmfix rules + target window, classify which rule families touch the pair window, and derive candidate original-idiom shapes for the exchange session to test first"
   }
  ],
  "judge_constraints": [
