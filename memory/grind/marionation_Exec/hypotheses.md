@@ -659,3 +659,21 @@
 - probe: v06_predec_while.c spliced, sandbox --disable all
 - result: masked 4 / 178 - INERT. Novel masked-4 basin member #30. GCC 2.7.2 canonicalizes body-i-- + test vs test-side --i to the same post-loop.c RTL (loop.c pushes the decrement to the end of the body for a canonical `beq -1,end`). Spelling-inert.
 - verdict: KILLED
+
+## [s30] Using cnt (dead-after-vsync-check, s32-typed) as the arg5-shift SVR carrier lifts weighted refs on cnt and breaks the qty tie
+- mechanism: cnt is set by the vsync-check block prior to do_timeout; re-writing cnt inside do_timeout for the shift-result could raise cnt's qty priority (refs across the pair-window) while eliminating v0's role there. If qty tie 5.33 v 5.33 breaks in arg5val's favor via a different pseudo web, seats might not trade.
+- probe: v01_cnt_svr.c: replaced `v0 = idx_1494[1]; v0 <<= 2; arg5 = *(s32*)(v0 + (s32)tbl_125c);` with the identical spelling using cnt. Sandbox --disable all.
+- result: masked 6 / 178 build_insns (+2 vs vT40 floor at same build count). The cnt-life extending into do_timeout re-times the head; the pseudo's callee-savedness across the debug_printf call birthes seat competition.
+- verdict: KILLED
+
+## [s30] Using status (uninit-before-check1, s32-typed) as the arg5-shift SVR carrier avoids cnt's callee-saved competition and might land the tie the other way
+- mechanism: status is only stored inside check1's inner do-while; its life-into-do_timeout is a dead-store cascade until check1 rewrites. Different qty seat landscape from cnt.
+- probe: v02_status_svr.c: identical replacement with status. Sandbox --disable all.
+- result: masked 6 / 178 build_insns - identical regression magnitude to cnt. The mechanism is pseudo-lifetime-agnostic among named cross-region carriers: any staging via an existing pseudo whose life crosses do_timeout regressions +2.
+- verdict: KILLED
+
+## [s30] A fresh named-local (shift_carrier) as the arg5-shift SVR carrier triggers the vT33/vT34 launch-fresh-temp penalty (birthing_insn_p re-times the head)
+- mechanism: s2/s9 measured vT33 (fresh sum) at masked 16 and vT34 at 11; s27 confirmed launch penalty is birthing-driven and position-invariant. Predicted +7 to +12 masked regression.
+- probe: v03_fresh_carrier.c: fresh `s32 shift_carrier` declared in the inner block, used identically to v0. Sandbox --disable all.
+- result: masked 4 / 178 build_insns - IDENTICAL to vT40 floor. NEW MECHANISM FACT: the launch penalty does NOT fire for a fresh named-local when the birthing insn is a plain load (idx_1494[1]) whose subsequent self-mutating shift (<<=2) is emission-equivalent to the v0 form. The pseudo is qty-fold-canonical with the v0-web variant. Adds 31st known distinct masked-4 basin spelling.
+- verdict: CONFIRMED

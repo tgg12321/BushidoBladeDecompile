@@ -580,3 +580,19 @@ vT33 in-call add: 16. vT34 sum-split: 11. vT35/vT36 nest-reweight: 15/14. vU1/vU
 - [s29] s29 src/system.c restored to HEAD via splice_apply.py --restore + git checkout after every measurement; working tree clean (except metrics/events.jsonl and the new rejected/ file); oracle green throughout.
 
 - [s29] s29 cumulative hand-authored structural coverage: prior 155+ variants (s2/s3/s8/s9/s10/s11/s12/s16/s17/s18/s20/s21/s26/s27) + s29 6 copy-loop-body variants = 161+ measured. The copy-loop-body internal-structure axis was previously untested per s21 note (only i-scoping was tested, not body-statement-order or bb-typing or ptr-advance-position). Now measured negative.
+
+- [s30] s30 baseline reconfirmed: candidate.c (vT40) spliced -> sandbox --disable all = masked 4 (178/179 insns, 42 rules dropped, 20 cheat-asm stripped). Floor unchanged since s0.
+
+- [s30] s30 v01 (cnt as arg5-shift SVR carrier): masked 6 / 178 - existing s32-typed cross-region pseudo staging regressions +2 masked; cnt's callee-saved lifetime through the vsync-check store into do_timeout creates seat competition at the debug_printf call.
+
+- [s30] s30 v02 (status as arg5-shift SVR carrier): masked 6 / 178 - identical regression to cnt; the mechanism is pseudo-life-agnostic among existing-pseudo cross-region carriers.
+
+- [s30] s30 v03 (fresh named-local shift_carrier as arg5-shift SVR): masked 4 / 178 - INERT, adds 31st known distinct masked-4 basin spelling. NEW mechanism fact: the vT33/vT34 fresh-temp launch pathology does NOT fire when the fresh pseudo's birth is a plain byte load followed by self-mutating shift (structurally identical to v0's staging). The launch penalty is opcode-and-shape driven, not fresh-pseudo-driven per se.
+
+- [s30] s30 refines s28 frontier item #2: the SVR-on-shift-carrier axis is now measured across v0 (vT40 base=4), cnt/status (existing dead cross-region=6), and fresh named-local (=4). The axis is closed - v0 is not uniquely load-bearing among structurally-analogous carriers.
+
+- [s30] s30 refines vT33/vT34 launch mechanism from s2/s9: `fresh named local` alone does NOT fire launch; the launch fires when the fresh pseudo births an ARITHMETIC SUM or intermediate (vT34=fresh_sum), not a plain load-then-shift.
+
+- [s30] s30 cumulative hand-authored structural coverage: prior 161+ variants (s2/s3/s8/s9/s10/s11/s12/s16/s17/s18/s20/s21/s26/s27/s29) + 3 new = 164+ measured. Basin membership now 31 distinct masked-4 spellings.
+
+- [s30] src/system.c restored to HEAD via splice_apply.py --restore + git checkout after all measurement; working tree clean; oracle green.
