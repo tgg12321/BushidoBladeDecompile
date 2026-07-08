@@ -648,3 +648,13 @@ vT33 in-call add: 16. vT34 sum-split: 11. vT35/vT36 nest-reweight: 15/14. vU1/vU
 - [s34] Tied-web refs decomposition: 12 = (3 sets + 3 uses) x2 loop-note weight from the do_timeout do-while(0) wrap; removing the wrap halves both sides (tied 0.86 vs arg5val 0.5 - trade persists) and loses tbl_125c's s5 seat.
 
 - [s34] Pre-vet method validated as a triage filter for permuter finds (frontier item #3): compute pri(arg5val) vs pri(t0-side) from the find's QTYDBG blk=3 table; only pri(arg5val) strictly greater is worth a sandbox run in an order-correct form.
+
+- [s35] s35 baseline reconfirmed: candidate.c (vT40) spliced -> sandbox --disable all = masked 4 (178/179, 42 rules dropped, 20 cheat-asm stripped); src/system.c restored to HEAD after all measurement, working tree src/ clean, oracle green.
+
+- [s35] s35 decomp.me corpus search run for the FIRST time on this function (s26 had it catalogued untried): 3754 local scratches in tmp/decomp_me_corpus, top similarity 0.094 - noise tier. The corpus rederive lever is exhausted; no BB2-toolchain-class scratch shares the do_timeout pattern.
+
+- [s35] s35 NEW mechanism fact: the t0-side fresh-carrier launch penalty (masked 11) is holding-type-invariant - s32 (s34 v04), s32* (s8 v03), u8* (s35 v01), and u8*-with-split-init-accumulation (s35 v02, bpAxD corpus idiom) all measure 11; symmetric u8* carriers both sides = 12. The penalty is web-shape-driven (fresh carrier absorbing the addr-temp), not type-driven; no pointer type escapes it.
+
+- [s35] s35 NEW basin member #32: m2c-derived ||-comma outer flow (v04) = masked 4 / 178 with adiff2-verified byte-identical residual windows (pair 56/57, region-3 149/151). Fresh m2c yields no structurally new information beyond this - its do_timeout window is the known killed inline-args shape (s8 v02 = 16 class) and its whole-body rebuild remains the ledger's masked-65 shape.
+
+- [s35] s35 rederive modality is now fully exhausted per s26's own residual-axis list: (a) twin transplant killed s8, (b) fresh m2c rebuild yields only basin member #32, (c) decomp.me corpus searched and killed. No rederive-class lever remains; the live frontier items (v05 carrier+deferred-add pre-vet, twin exchange lever, basin-seed permuter) belong to structural/operator/permuter modalities respectively.

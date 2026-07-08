@@ -749,3 +749,21 @@
 - probe: lreg/greg insn identity mapping + QTYDBG blk=3 table + emitted .s window vs target + adiff2 decomposition (tmp/grind/marionation_Exec/s34/v04/).
 - result: Order-correctness and seat-correctness remain mutually exclusive across all three named routes: sched.c:2448 class-compare (t0-first forms lose order), local-alloc.c:1646 tiebreak (arg5-first forms lose seats), and the new tied-web strict-priority route (order fixed, seats lost worse).
 - verdict: CONFIRMED
+
+## [s35] The decomp.me corpus (gcc2.7.2-psx/cdk/psyq3.5 class, 3754 local scratches) contains a scratch whose target asm overlaps marionation_Exec enough to expose the unknown original source shape for the do_timeout window.
+- mechanism: tools/decomp_me_scrape.py search ranks corpus scratches by asm shingles against asm/funcs/marionation_Exec.s; a high-similarity 100%-matched scratch would show real GCC 2.7.2 source geometry for the two-table-lookup-into-multi-arg-call pattern.
+- probe: First-ever corpus search run for this function (s26 had catalogued it as untried). Top 5 hits extracted from tmp/decomp_me_corpus and their C sources inspected (tmp/grind/marionation_Exec/s35/hit_*.c).
+- result: Max similarity 0.094 (zppzv, a battle-state dispatch loop); other hits are rect drawing, a card-slot builder, mts_boot - all structurally unrelated to the do_timeout window. No analogous two-adjacent-byte-index table-lookup call shape exists in the corpus. Only transferable material: bpAxD's u8*-accumulator idiom, measured separately below.
+- verdict: KILLED
+
+## [s35] Holding t0's computed address in a u8*-typed carrier (including the corpus bpAxD split-init accumulation idiom `t0p = (u8*)tbl_125c; t0p = (u8*)(t0 + (s32)t0p);`) reaches masked <= 4 because pointer-typed pseudos get a different RA/sched treatment than the s32 address-value and the killed s32* form.
+- mechanism: s8 killed s32* (11), s34 killed a fresh s32 t0-side carrier (11); u8*-typed byte-offset arithmetic is the one carrier type never measured, and split-init accumulation (sanctioned family) adds a second set to the carrier web which could reweight the qty tie.
+- probe: sweep_variants on v01 (u8* carrier, fused add), v02 (bpAxD split-accum), v03 (symmetric u8* carriers both sides); baseline candidate.c = 4 confirmed same session.
+- result: v01 = masked 11 / 178, v02 = masked 11 / 178, v03 = masked 12 / 178. v01/v02 exactly reproduce s34's s32-carrier 11 and s8's s32* 11: the t0-side fresh-carrier penalty is INVARIANT to holding type (s32, s32*, u8*) AND to split-init web growth. Carrier-type axis closed.
+- verdict: KILLED
+
+## [s35] A fresh m2c decompile yields a structurally different outer-flow spelling (short-circuit || with comma-expression cnt update, flag materialized) that relandscapes flow.c BB layout and moves either residual.
+- mechanism: m2c derives its shape from target bytes; its `if (A || (cnt=..., store, cnt>0x3C0000))` outer form is the one outer-CFG spelling never measured (s9v04 if/else, s18v01 for(;;) sentinel, s18v02 structured checks all measured; the ||-comma family untested).
+- probe: v04 = vT40 chassis with the m2c ||-comma outer flow replacing the two-goto polling head; sweep + adiff2 residual-window inspection.
+- result: v04 = masked 4 / 178 with residual signature BYTE-IDENTICAL to baseline (pair-swap insert/delete at 56/57, region-3 steal at 149/151 per adiff2). 32nd known masked-4 basin member; jump.c CFG folding collapses the ||-comma form to the same post-jump2 layout, extending s18's structured-if/else equivalence to the short-circuit-comma family. Outer-flow axis remains fully inert.
+- verdict: KILLED
