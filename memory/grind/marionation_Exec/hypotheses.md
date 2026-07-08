@@ -227,3 +227,33 @@
 - probe: sweep3 (x01-x10, 10 arg5-first refinements): pp placement (first/mid/last), full-compute vs interleave, mirror-form arg5-first.
 - result: CONFIRMED as new attractor, KILLED as closer. 7 of 10 spellings (x01-x05, x07, x08) land at masked 6 - a NEW plateau not present in ledger. Only x06 (full arg5 compute before t0) and x09 (deref before t0-finish) regress to 9. The interleaved arg5-first form recovers 2-5 masked pts vs prior arg5-first data. Still +2 over floor 4; the last coupling residual is not structural. sweep3.json.
 - verdict: CONFIRMED
+
+## [s12] volatile qualifier on the staging temp (arg5 or t0) alters qty priority via forced memory semantics without adding user pseudos, breaking the pair-swap 5.33 v 5.33 tie
+- mechanism: volatile forces every write/read to become a real memory op, which changes RTL memory-hazard classification in sched2 and may reweight the tie-relevant qty birth signature
+- probe: sweep1 v01/v02/v06/v07: `volatile s32 arg5` (vT40); `volatile s32 t0` (vT40); `volatile s32 t0` (x02 chassis); `volatile s32 arg5` (x02 chassis)
+- result: v01=26 (build 180), v02=36 (build 184), v06=41 (build 184), v07=28 (build 180) - all regress heavily AND add 1-5 build_insns from the mandated memory ops (stack sw/lw for every read/write). volatile emits real spill traffic; not a zero-cost lever.
+- verdict: KILLED
+
+## [s12] Mirror-both-as-s32*-pointer-typed spelling (both derefs via `s32 *pt = tbl_125c + idx[i]`) reaches masked <= 4 by giving both temps identical qty birth signatures via canonical ptr+index addressing
+- mechanism: s3 y01 tested t0-first-only s32*-array-indexing (masked 4 - same order as vT40); s8 v03 tested single-side s32* (masked 11 - worse). Mirror-BOTH-as-s32* untested; if canonical ptr+index emits identically for both, the sched2 UID tie could resolve at t0-first birth-order without seat trade.
+- probe: sweep1 v03/v04/v05/v09: mirror-both-s32* with pp early/last/arg5-first; and mirror-both-s32* with shared tb single alias
+- result: v03=v04=v05=v09=12 uniformly - all mirror-both-s32*-typed regress to +8 above floor and are WORSE than mirror-both-address-values (x10=8). Pointer-typed emit uses different RTL address modes (canonical ptr+index) that produce a distinct compute chain from address-value's (u8*)+byte-offset; the pair-window compute cost is +8 masked pts regardless of pp/birth-order spelling.
+- verdict: KILLED
+
+## [s12] Substituting `*idx_1495` for `idx_1494[1]` (semantic-identical: idx_1495 = idx_1494+1, both alias the same byte) adds a ref to the idx_1495 pseudo without adding an insn, reweighting the qty tie
+- mechanism: idx_1495 is already declared and set at function prologue; deref via *idx_1495 vs idx_1494[1] compiles to the SAME lbu at the same offset (byte load through the alias) but touches idx_1495's pseudo in the do_timeout window instead of just idx_1494's. Extra ref could raise idx_1495's priority or reweight the pair.
+- probe: sweep3 z03/z04/z05/z08: vT40 order with *idx_1495; x02 arg5-first-interleaved with *idx_1495; mirror form with *idx_1495; vT40 with *idx_1495 + pp last
+- result: z03=10, z04=11, z05=11, z08=10 - uniform +6 to +7 REGRESSION. Reading idx_1495 in the do_timeout window forces its pseudo to be LIVE across the debug_printf call (which the callback-path use later also forces), and the extra live-across-call ref makes it callee-saved seat-competitive - relandscapes qty allocation exactly like s4's alias-merge-dst2 pattern. Net: seat cascade dominates the tie fix.
+- verdict: KILLED
+
+## [s12] Combining a shared tbase alias (single u8*/s32 lifted from tbl_125c) with asymmetric application (only one side of the pair) breaks the coupling by differentiating qty births
+- mechanism: The two temps t0 and arg5 tie at qty 5.33 v 5.33 because their refs*log2(refs)*size/life is identical; introducing tbase reweights the SHARED base-pointer qty, which is different from tying the pair symmetrically
+- probe: sweep2 w01-w08 and sweep3 z01/z02/z06/z07: tbase symmetric + arg5-first; tbase asymmetric to arg5-only (z01); tbase asymmetric to t0-only (z02); tbase + arg5-first + *idx_1495 (z06); tbase + interleaved (z07)
+- result: z01/z02/z07 all masked 4 - novel masked-4 spellings but do NOT drop below the vT40 floor. Asymmetric tbase reproduces vT40's floor from a different structural chassis but the underlying pair-swap coupling holds. w04/w06 (split-init on arg5) regress to 11 (extra intermediate store scrambles sched); w01/w03 tbase + arg5-first plateau at 6 matching s11 x02 attractor; w02/w07 mirror-with-tbase = 7-8 matching s11 x10/mirror plateau.
+- verdict: KILLED
+
+## [s12] Split-init accumulation on arg5 (sanctioned family) with tbase alias breaks the seat trade by giving arg5 an extra store-then-load life extension that changes its qty allocation
+- mechanism: split-init-accumulation-sanctioned rule (2026-06-13): var=a; var+=b; sanctioned as pure-C; applied here as `arg5 = v0+(s32)tbase; arg5 = *(s32*)arg5;` extends arg5's life and adds refs to potentially win the 5.33 v 5.33 tie
+- probe: sweep2 w04 (tbase + split-init arg5) and w06 (split-init arg5 without tbase)
+- result: w04=11, w06=11 - both regress +7 vs floor. The intermediate store-then-load of arg5 = v0+(s32)tbase followed by arg5 = *arg5 emits an extra addu insn (build stays 178 because it fuses in canonicalization but the pair-window compute chain retimes to a +7 shape). Not a zero-cost lever.
+- verdict: KILLED

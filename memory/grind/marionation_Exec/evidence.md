@@ -298,3 +298,23 @@ vT33 in-call add: 16. vT34 sum-split: 11. vT35/vT36 nest-reweight: 15/14. vU1/vU
 - [s11] Cumulative structural coverage now: s2 (26 forms), s3 (22 forms), s8 (3 forms), s9 (4 forms), s10 (2 forms), s11 (30 forms) = 87 hand-authored structural variants of do_timeout measured. Combined with s6/s7 forensics (140-ordering sweep, 9-topology sweep, insn-level sched2/dbr) and s4/s5 permuter (~10k samples), the hand-derivable + local-sampler basin around vT40 remains comprehensively closed at masked 4.
 
 - [s11] Multiple novel masked-4 spellings (u10, w03, w10 - all interleaved with variations in pp placement and deref cast) prove vT40's floor is not spelling-unique; it's a basin-of-attraction under multiple compound-restructure spellings. The pair-swap + region-3 residuals are structurally invariant to spelling.
+
+- [s12] s12 baseline reconfirmed: HEAD src/system.c sandbox = 56 (176 build/179 target); candidate.c (vT40) spliced = masked 4 (178/179, 42 rules dropped, 22 cheat-asm stripped). Floor unchanged since s0.
+
+- [s12] 25 novel structural variants measured across 3 sweeps (tmp/grind/marionation_Exec/s12/sweep1.json, sweep2.json, sweep3.json); floor at 4 unchanged.
+
+- [s12] NEW mechanism fact: volatile qualifier on any staging temp adds 1-5 build_insns via mandatory memory ops (stack sw/lw sequences) and REGRESSES masked by +22 to +37. The volatile-as-qty-reweight lever is a NON-STARTER because the memory ops themselves are visible bytes.
+
+- [s12] NEW mechanism fact: `*idx_1495` substitution for `idx_1494[1]` (semantically identical byte load, idx_1495 = idx_1494+1) regresses uniformly by +6 to +7 across chassis (vT40 vT40+pp-last x02 mirror). Root: reading idx_1495 in the do_timeout window extends its life across the debug_printf call, forcing callee-saved seat competition with existing callee-saved qtys (the alias-merge callee-saved-seat cascade documented in s4). Any pseudo referenced in the do_timeout window that is ALSO used post-callback pays this seat penalty.
+
+- [s12] NEW mechanism fact: mirror-both-as-s32*-pointer-typed reaches +8 uniformly (masked 12), STRICTLY WORSE than mirror-both-as-address-values (x10=8). Canonical ptr+index addressing (`s32 *pt = tbl_125c + idx[i]; *pt`) emits a distinct pair-window compute chain from (u8*)+byte-offset arithmetic (`t0 = (u8*)tbl+t0*4; *(s32*)t0`); the +8 cost is invariant to pp position and birth order across 4 spellings.
+
+- [s12] NEW positive finding: 6 additional novel masked-4 spellings discovered in the tbase-alias family (v08/w05/w08/z01/z02/z07): (v08) u8* tbase symmetric applied to both; (w05) s32 tbaseS symmetric; (w08) s32 tbase with mixed u8*/s32 casts; (z01) u8* tbase applied ONLY to arg5's compute; (z02) u8* tbase applied ONLY to t0's compute; (z07) u8* tbase with v0-interleaved compute. Combined with s11's u10/w03/w10, vT40's floor basin now has 9 known distinct spellings - the pair-swap+region-3 residuals are basin-wide invariants.
+
+- [s12] NEW mechanism fact: split-init accumulation on arg5 (`arg5 = v0+(s32)tbase; arg5 = *(s32*)arg5;` - sanctioned family per split-init-accumulation-sanctioned 2026-06-13) regresses +7 uniformly (masked 11 in w04/w06). Extends arg5's life without changing final compute cost but retimes the pair-window sched to a suboptimal shape. The sanctioned split-init family does NOT help this pair.
+
+- [s12] 3 disproven forms banked to memory/grind/marionation_Exec/rejected/: s12-idx1495-substitution-regresses-10.c (the canonical *idx_1495 regression case), s12-mirror-both-s32ptr-typed-12.c (pointer-typed mirror regression), s12-volatile-arg5-adds-store-26.c (volatile-as-qty-lever regression).
+
+- [s12] candidate.c unchanged - remains vT40 masked 4 (best-known form). src/system.c restored to HEAD via git checkout after every measurement; working tree clean (except metrics/events.jsonl); oracle green.
+
+- [s12] Cumulative hand-authored structural coverage after s12: s2 (26 forms) + s3 (22) + s8 (3) + s9 (4) + s10 (2) + s11 (30) + s12 (25) = 112 hand-authored structural variants of do_timeout measured. Combined with s6/s7 forensics (140-ordering sweep, 9-topology sweep, insn-level sched2/dbr forensics) and s4/s5 permuter (~10k+ samples), the hand-derivable + local-sampler basin around vT40 is comprehensively closed at masked 4.
