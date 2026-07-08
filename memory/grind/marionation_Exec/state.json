@@ -1,8 +1,8 @@
 {
  "func": "marionation_Exec",
  "file": "system",
- "session_count": 52,
- "current_modality": "forensics",
+ "session_count": 53,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 0,
@@ -321,18 +321,29 @@
    "floor": 4,
    "modality": "forensics",
    "headline": "s52 forensics: F1(c) KILLED \u2014 dbr fill_simple_delay_slots picks the inserted cdrom_ClearIrq CALL_INSN itself as the check2-branch fill (masked 14, build 181); CALL_INSN memory-clobber does NOT block i"
+  },
+  {
+   "session": 53,
+   "floor": 4,
+   "modality": "rederive",
+   "headline": "s53 rederive: sibling saEft01Init's arg3-base prologue-hoist KILLED at masked 14 / build 181 - marionation_Exec has too much register pressure to absorb an extra callee-saved seat for tbl_A11DC withou"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F3: Fresh permuter sampling on an untried basin (s39 arg3-v0-WAR-edge family at masked 16, or s31 s30v03 chassis at masked 6-11) may reach masked 2 via a spelling that does not require volatile coercion, if the fresh basin's pseudo-allocation landscape differs enough from the 13 previously-sampled basins.",
+   "hypothesis": "F3 (unchanged from ledger): fresh permuter sampling on an untried basin (s39 arg3-v0-WAR-edge family at masked 16, or s31 s30v03 chassis at masked 6-11) may reach masked 2 via a spelling that does not require volatile coercion.",
    "mechanism": "Prior ledger's 13 sampled basins concentrated on vT40 / find105 / z07 / w05 / vS47c chassis; s39 WAR-edge and s31 s30v03 are structurally distinct and unsampled by permuter fresh-seed campaigns. Portfolio convergence has held across 13 basins but two untried remain.",
-   "next_probe": "Permuter session: build workspace from `memory/grind/marionation_Exec/rejected/s39-arg3-idx-staged-v0-war-edge-order-flips-webgrowth-16.c` as base; confirm base score with permuter --debug; launch -j6 fresh-seed campaign for ~25-30 min; filter finds through region-3 fingerprint scanner (tmp/grind/marionation_Exec/s50/scan_region3.py) as inline gate; harvest-and-stop discipline."
+   "next_probe": "Permuter session on the s39 arg3-v0-WAR-edge base with fresh-seed discipline; harvest via tools/permuter_campaign.py; filter finds through the s50 region-3 fingerprint scanner."
   },
   {
-   "hypothesis": "The pair-swap + region-3 joint residual (masked 4 = 2 + 2 at build=179) is now archive-exhausted for honest C at floor 4 across all four exhaustion classes: (1) 165+ hand forms swept, (2) 13 permuter basins sampled, (3) 154 archive finds region-3-fingerprint-scanned, (4) F1 call-insertion route KILLED at three points (F1a-c, s51-s52). Evidence for ruling-request may be reached after F3 lands negative.",
-   "mechanism": "s6/s7/s10/s15/s42/s43/s51/s52 pinned pair-swap to sched2 T-14 UID tiebreak and region-3 to fill_simple_delay_slots-picks-any-eligible-insn \u2014 both compiler-pass-internal on axes untouchable without: (a) growing an in-window pseudo web, (b) writing user-observable memory (semantic lie), (c) coercing type qualifiers (volatile-coercion cheat), (d) restructuring outer CFG (semantic mismatch), or (e) inserting semantically-nonsensical calls (F1c KILLED this session).",
-   "next_probe": "Not this session. If F3 lands no masked-2 honest find on the s39/s31 untried basins, escalate to ruling-request: 52+ sessions of documented lever-exhaustion + two named GCC-pass mechanisms + archive-negative scan + F1 route KILLED at three points constitute the SOTN evidence bar for canonical-asm-authorization consideration on the coupled pair-swap+region-3 residual."
+   "hypothesis": "The sibling-shape transplant lever is closed across ALL known dimensions once register-pressure landscape is accounted for. Any remaining sibling-shape variant (mixed hoist strategies, partial-hoist forms) will hit the same register-pressure gate.",
+   "mechanism": "s53's base-hoist KILL joins s36's value-form sibling-shape KILL (masked 10, seats traded), s9v03's arg3 value-hoist KILL (masked 18), and s27's arg3 late-hoist KILL (masked 18) in mapping the arg3-hoist axis to negative results across all applicable spellings. Sibling saEft01Init transferability is bounded by its lighter callee-saved usage.",
+   "next_probe": "Not this session. Ledger evidence for the ruling-request thread now includes explicit register-pressure gating of sibling transplant; when F3 lands negative, this adds to the SOTN evidence bar."
+  },
+  {
+   "hypothesis": "Sanctioned FAKE constructs not yet tried on the pair window - specifically, wrapping only the arg3 evaluation (not the whole do_timeout body) in a nested do-while(0) to reweight arg3's tree-refs without perturbing the arg4/arg5 pair-window sched.",
+   "mechanism": "Every measured wrap so far encloses statements OTHER than arg3's evaluation (do_timeout body wrap, arg5 stmt wrap, call itself wrap - all Judge-banked from wip meta). An arg3-only wrap would raise arg3's tree-refs weighting without touching the pair-window loop-note landscape. Untried per ledger.",
+   "next_probe": "Structural session: wrap `D_800A11DC[D_800A11D5]` in a comma-expression do-while(0) inside the debug_printf arg-list (or replicate its effect via a named-local wrapped in a wrap). Verify pair-window LUIDs preserved."
   }
  ],
  "judge_constraints": [
