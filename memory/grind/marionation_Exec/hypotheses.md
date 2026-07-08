@@ -1133,3 +1133,21 @@
 - probe: v03_both_block.c: combined v01+v02 modifications; splice + sandbox --disable all
 - result: score=4, build=178, target=179 - IDENTICAL to vT40. No compound perturbation. Basin-equivalent 18th spelling. Confirms the two scope-shortenings are fully independent AND both individually inert.
 - verdict: KILLED
+
+## [s57] Chaining idx_1496 = idx_1495 + 1 (instead of idx_1494 + 2) alters the prologue address-arithmetic dep-chain enough to break the pair-swap tie or region-3 steal
+- mechanism: Chained derivation changes RTL insn ordering for idx_1496's birth: idx_1496 now depends on idx_1495 (already the target `addiu s6,s2,1` per ledger evidence) instead of forking directly off idx_1494. New sequential dep may reweight qty birth signatures at expand time.
+- probe: s57 v05 spliced (idx_1496 = idx_1495 + 1); `& tools/wteng.ps1 main sandbox marionation_Exec --disable all`
+- result: masked 4 / 178 insns / 179 target — basin-equivalent. GCC canonicalizes both derivations to the same addiu chain; the change is codegen-invariant to the sched2 T-14 tie. 19th known distinct masked-4 spelling banked as rejected/s57-idx1496-chain-from-idx1495-basin-equiv-4.c
+- verdict: KILLED
+
+## [s57] Tightening src/dst/dst2 declaration scope to per-copy-block scope reduces live-range interference and reweights allocno priority for the outer loop's callee-saved landscape
+- mechanism: The three pointer temps currently span the whole check region (function-top decls). Block-scoping each pair into its own compound statement shortens each var's life and could reduce RA pressure enough to change the seat assignment in the copy-loop regions (which cascade into region-3).
+- probe: s57 v06 spliced (src/dst inside check1 block, dst2/src inside check2 block, i left at function scope); `& tools/wteng.ps1 main sandbox marionation_Exec --disable all`
+- result: masked 11 / 178 insns / 179 target — regression +7. Block-scoping the copy-loop pointer locals relandscapes the RA around the copy loops in a way that scrambles seat assignments (analogous to the s16 dead-local-saved-debug-inert / s21 fresh-i-per-copy-block regressions). Copy-block locals are load-bearing at function scope. Banked as rejected/s57-src-dst-block-scoped-copyblocks-11.c
+- verdict: KILLED
+
+## [s57] Rewriting cnt via split-init accumulation (cnt = D_800F19BC; D_800F19BC = cnt; D_800F19BC += 1;) — the sanctioned split-init-accumulation family — reweights D_800F19BC's global-load qty enough to break the pair-swap coupling
+- mechanism: Split-init sanctioned per 2026-06-13 owner directive; splits `D_800F19BC = cnt + 1;` into a store-back + += 1 pair. Adds an extra load/store to D_800F19BC's ref count, potentially changing global-qty priority that could propagate into do_timeout via cross-BB effects.
+- probe: s57 v07 spliced (three-statement cnt-split-init in the loop-body); `& tools/wteng.ps1 main sandbox marionation_Exec --disable all`
+- result: masked 4 / 178 insns / 179 target — basin-equivalent. The extra store gets folded by combine (build_insns unchanged at 178); the cnt local is loop-body-scoped and never reaches do_timeout's expand context. 20th known distinct masked-4 spelling banked as rejected/s57-cnt-split-init-basin-equiv-4.c
+- verdict: KILLED

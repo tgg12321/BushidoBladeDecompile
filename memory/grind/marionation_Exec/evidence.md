@@ -950,3 +950,13 @@ vT33 in-call add: 16. vT34 sum-split: 11. vT35/vT36 nest-reweight: 15/14. vU1/vU
 - [s56] [s56] 3 disproven forms banked to memory/grind/marionation_Exec/rejected/: s56-saved-block-scope-basin-equiv-4.c, s56-status-block-scope-basin-equiv-4.c, s56-saved-status-both-block-scope-basin-equiv-4.c. candidate.c unchanged (vT40 masked 4 remains best-known).
 
 - [s56] [s56] src/system.c restored to HEAD via splice_apply.py --restore + git checkout after every measurement; working tree src/ clean; oracle green throughout.
+
+- [s57] vT40 candidate.c baseline confirmed masked 4 / build=178 / target=179 / 42 rules dropped at s57 start (measured via s6/splice_apply.py + sandbox --disable all)
+
+- [s57] s57 basin catalog additions: idx_1496 = idx_1495 + 1 (v05) and cnt split-init (v07) both hit masked 4 — 19th and 20th distinct spellings of the vT40 basin (ledger tracked 18 known through s56). Basin exhaustion argument continues to strengthen.
+
+- [s57] Copy-block scope-tightening for src/dst pointer locals regresses +7 masked (v06=11 vs vT40=4). Same regression class as s16 dead-local-saved-debug-inert / s21 fresh-i-per-copy-block — RA relandscaping around the copy loops scrambles seats.
+
+- [s57] GCC canonicalizes `1 + idx_1494` and `idx_1494 + 2` chain-vs-fork derivations to identical addiu emission — the addr-arithmetic dep chain is codegen-invariant to the split source form (v05 result).
+
+- [s57] sanctioned split-init accumulation on cnt is loop-body-local so its extra global-store folds without cross-BB effect on do_timeout expand context (v07 result). Confirms the split-init lever is scope-local when applied to loop-body variables.
