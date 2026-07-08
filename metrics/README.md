@@ -8,6 +8,7 @@ links to the techniques/findings involved.
 
 ```
 engine command ──► engine/metrics.py.record_event()  (best-effort, SILENT)
+permuter campaign ─┘  (tools/permuter_campaign.py launch/harvest — same recorder)
                           │  appends one line
                           ▼
               metrics/events.jsonl   ◄── committed, append-only SOURCE OF TRUTH
@@ -43,6 +44,7 @@ gating a run on metrics being recordable is worth that one upfront check.
 | `tools/metrics/report.py` | canned text queries (`--list` for sections) |
 | `tools/metrics/report_html.py` | self-contained HTML dashboard (no JS/CDN; `--theme`/`--days`/`--sections`) |
 | `tools/metrics/preflight.py` | PG-reachability gate (silent on success) |
+| `tools/permuter_campaign.py` | permuter campaign wrapper — emits `permuter-launch` / `permuter-harvest` events (base score, iterations, finds with seconds-since-seed); the telemetry behind the fresh-seed stopping rule in `.claude/rules/permuter-directives.md` §Campaign discipline |
 
 ## Usage
 

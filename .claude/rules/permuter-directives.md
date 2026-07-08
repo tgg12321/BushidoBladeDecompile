@@ -203,11 +203,52 @@ source .venv/bin/activate
 python3 tools/decomp-permuter/import.py src/<file>.c asm/funcs/<func>.s
 # 2. Replace the auto-generated base.c with your PERM_*-annotated version.
 cp tmp/permuter_candidates/<func>.c tools/decomp-permuter/<dir>/base.c
-# 3. Run. -j N enables multi-threaded mode; --stop-on-zero halts on match.
-./tools/decomp-permuter/permuter.py tools/decomp-permuter/<dir> -j 8 --stop-on-zero
+# 3. Launch via the campaign wrapper (NOT raw permuter.py — see §Campaign
+#    discipline below; the wrapper records telemetry + enables harvest).
+python3 tools/permuter_campaign.py launch --func <func> --dir tools/decomp-permuter/<dir> \
+    --label <chassis-slug> -j 8 --stop-on-zero
+# 4. At the no-novel-find window (or session end), harvest + stop:
+python3 tools/permuter_campaign.py harvest --dir tools/decomp-permuter/<dir> \
+    --stop --reason "<why>"
 ```
 
 The helper prints this command tail on stdout for every run.
+
+## Campaign discipline — fresh-seed windows + telemetry (owner directive 2026-07-07)
+
+**Every campaign goes through `tools/permuter_campaign.py`** (`launch` /
+`harvest` / `status`) — never raw `permuter.py` for anything longer than an
+interactive foreground run. The wrapper logs `permuter-launch` and
+`permuter-harvest` events into `metrics/events.jsonl` (base score, iteration
+count, every find with seconds-since-seed), which is what makes permuter
+yield a data question instead of a gut question.
+
+**The stopping rule.** The permuter is a hill-climber: a freshly seeded
+basin yields its finds early or not at all. If **~20–30 minutes after a
+fresh seed** no NOVEL find has landed (novel = outside the already-known
+attractor classes for this function, not a re-find), `harvest --stop
+--reason "no-novel-find window elapsed"` and either:
+
+- reseed a **structurally different chassis** (a genuinely new CFG/statement
+  geometry — reseeding restarts the clock and is the productive move), or
+- switch modality (forensics, rederive, structural).
+
+**Never leave campaigns simmering.** Evidence (marionation_Exec,
+2026-07-07): campaigns left idle 10.5 h produced 0 new finds; a 5-basin
+15 h+ portfolio harvested 0 sub-floor finds; the finds that DID land came
+within ~1 h of fresh seeds and were all re-finds of known attractors; a
+process sweep found ~100 orphaned permuter workers, some 21 h old, none of
+which would ever have been harvested again. The single deep find on record
+(func_8007B844, ~36k iters) was a cheat-form, rejected on sight. Long
+tails re-find known attractors; they do not search.
+
+**Harvest everything, always.** A 0-find harvest is the data point — run
+`harvest` on every campaign you launched before your session ends, then
+stop it. Campaigns must not outlive the session that seeded them.
+
+This is a measured-yield stopping criterion, not budget framing
+([[no-budget-caps]] is untouched): the same search effort goes into MORE
+fresh basins instead of dead tails.
 
 **Hand-written prelude.inc note** (per [[difficult-is-not-impossible]]
 §3): build `target.o` from `asm/funcs/<func>.s` so the function sits at

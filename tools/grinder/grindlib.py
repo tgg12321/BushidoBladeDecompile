@@ -180,9 +180,16 @@ MODALITY_PLAYBOOK = {
                    "narrowing, statement re-association — the codegen-technique-index "
                    "catalog. Measure every form with sandbox; record deltas."),
     "permuter": ("Directed permuter on the diverging region: tools/permuter_annotate.py "
-                 "--func <f> --hint <rule-slug>, then run decomp-permuter. Findings are "
-                 "PROPOSALS — vet against the cheat catalog. Save logs under "
-                 "tmp/grind/<func>/s<N>/ and list them in artifacts."),
+                 "--func <f> --hint <rule-slug>. Campaigns run ONLY via "
+                 "tools/permuter_campaign.py launch/harvest (telemetry; owner directive "
+                 "2026-07-07). Fresh-seed discipline per permuter-directives §Campaign "
+                 "discipline: a basin yields early or not at all — if ~20-30 min after a "
+                 "fresh seed there is no NOVEL find, harvest --stop and reseed a "
+                 "structurally different chassis or switch lever; harvest+stop EVERY "
+                 "campaign before your session ends (a 0-find harvest is the data point); "
+                 "campaigns must not outlive the session. Findings are PROPOSALS — vet "
+                 "against the cheat catalog. Save logs under tmp/grind/<func>/s<N>/ and "
+                 "list them in artifacts."),
     "forensics": ("Instrumented cc1: RTL/ALLOCDBG/GREG dumps. Name the exact GCC pass and "
                   "decision producing the divergence. Save dumps under tmp/grind/<func>/s<N>/ "
                   "and list them in artifacts."),
