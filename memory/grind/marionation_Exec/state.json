@@ -1,8 +1,8 @@
 {
  "func": "marionation_Exec",
  "file": "system",
- "session_count": 54,
- "current_modality": "rederive",
+ "session_count": 55,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 0,
@@ -333,23 +333,29 @@
    "floor": 4,
    "modality": "rederive",
    "headline": "s54 rederive: arg3-only wrap frontier item KILLED across position + wrap-count axes; late-hoist=13, between/early=18, nesting inert"
+  },
+  {
+   "session": 55,
+   "floor": 4,
+   "modality": "synthesis",
+   "headline": "s55 synthesis: 55-session ledger merged; stmt-expr arg3 KILLED as +9 launch-floor prediction (measured basin-equivalent masked 4, 15th known distinct floor spelling); frontier reset to 3 items dominat"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Statement-expression form for arg3 inline in the debug_printf call (`({ arg3val = D_800A11DC[D_800A11D5]; arg3val; })` or `({ D_800A11DC[D_800A11D5]; })`) avoids the fresh-pseudo launch because GCC treats statement-expression's terminal expression as a tree-embedded value, not a set-into-named-local.",
-   "mechanism": "GNU statement-expressions have an unclear expand-time signature vs named-local hoist. If the terminal expr is folded directly into the arg tree without materializing a pseudo, the launch pathology may not fire. Requires user ruling on GNU-extension acceptability per SOTN construct-honesty line.",
-   "next_probe": "s55: write v04_arg3_stmt_expr.c with `({ D_800A11DC[D_800A11D5]; })` inline as debug_printf's arg3; measure; if <4, emit ruling-request on GNU-extension sanction. Note: PsyQ GCC 2.7.2 supports statement-expressions."
+   "hypothesis": "Portfolio convergence extends to the ~10 remaining unsampled masked-4 basin members (s11 u10/w03/w10, s12 v08/w05/w08/z01/z02, s44 postinc-cnt, s45 vA/vC, s47 vS47c/vS47d, s55 stmt-expr) - fresh permuter campaigns on each yield the same closed 3-family attractor set with 0 novel sub-vT40 non-cheat attractors.",
+   "mechanism": "Every masked-4 basin member has permuter base score = 220 (2 reorderings * 60 + 1 deletion * 100 = the same residual signature) so the sub-200 attractor space is chassis-invariant. If s55 confirms the convergence, the search-space exhaustion argument becomes formally complete against the hand-derivable + local-sampler pathway.",
+   "next_probe": "s56 permuter modality: build_ws.py for one unsampled masked-4 chassis (e.g. s55 stmt-expr since it's the freshest); confirm base=220; launch detached ~25min fresh-seed window per permuter-fresh-seed-discipline; harvest via tools/permuter_campaign.py; verify all sub-220 finds classify to {alias-merge, label-alive, reg-shuffle}."
   },
   {
-   "hypothesis": "The task brief's F3 (fresh permuter on s39 arg3-v0-WAR-edge basin at masked 16, or s31 s30v03 chassis at masked 6-11) is still untried per ledger's post-s14 permuter accounting; a fresh sampling campaign on either basin may hit masked 2.",
-   "mechanism": "s14 recorded z07 and w05 as launched bases; s39's WAR-edge basin and s31's s30v03 chassis at masked 6-11 were named in task brief as UNSAMPLED. Basin coverage is the load-bearing progress axis for permuter.",
-   "next_probe": "s55 or later permuter modality: build_ws.py for s39 WAR-edge chassis or s31 s30v03 chassis; launch detached campaign per s13/s14 protocol; harvest via tools/permuter_campaign.py."
+   "hypothesis": "The pair-swap residual has a cross-function operator-mediated lever (P2 exchange) via the twin cpu_side_move_dir_4's coupled pair-swap - developing the exchange lever on twin (out-of-mandate this session) then mirroring here reaches masked <=2, per fable-blitz 2026-07-07 strategy.",
+   "mechanism": "Twin's pair-swap-only residual (no region-3) makes it a cheaper development bench for the qty_compare 5.33 v 5.33 tie break; the allocation-equation material in pre-merge commits aa8cad24/cd65f9c2/e5aa2dd4/f4bc8e67/df749bfd/622620cb (sessions 6f-6h) is not yet in this ledger's s1-s55.",
+   "next_probe": "OUT OF MANDATE this session - marionation_Exec only. Requires a separate cpu_side_move_dir_4 grind session, or user decision to pivot the queue-top to the twin first. For any future marionation_Exec permuter session, first `git show aa8cad24 cd65f9c2 e5aa2dd4 f4bc8e67 df749bfd 622620cb` and extract in-place basin correction / final qty_compare equation / s4 half-flip material."
   },
   {
-   "hypothesis": "Twin cpu_side_move_dir_4 (parked at distance 7, 5 rules) has the SAME coupled pair-swap structure per ledger lore; developing the exchange lever on the cheaper twin FIRST (per task brief STRATEGY note referencing pre-merge commits aa8cad24 cd65f9c2 e5aa2dd4 f4bc8e67 df749bfd 622620cb) then mirroring here is the recommended path.",
-   "mechanism": "Twin has ip/g3 residual = exchange alone (masked ~6->0 on flip). If the equations are solvable on the cheaper landscape, the solution transfers here. s8 measured twin's clean shape does NOT directly transplant (different sched landscape), but the ALLOCATION-EQUATION material from those commits is not yet in this ledger's s1-s54.",
-   "next_probe": "Read git commits aa8cad24 cd65f9c2 e5aa2dd4 f4bc8e67 df749bfd 622620cb (sessions 6f-6h per task brief) BEFORE next permuter campaign; extract in-place basin correction, final qty_compare equation, s4 half-flip; apply to twin THEN mirror."
+   "hypothesis": "The region-3 dbr steal has a still-unenumerated volatile-honest lever: a call to sys_GetVblankCount or sys_VSync(-1) inserted at the check2 branch/clear boundary (both are demonstrably vblank-touched globals via the intrinsic vblank hardware side-effect) creates an honest MEM_VOLATILE_P memory op at the fill site without a coercion cheat.",
+   "mechanism": "s51 F1(a) killed the D_800A147C_2 volatile-load probe on SEMANTIC-LIE grounds (D_800A147C_2 not consumed at post-clear position). But sys_VSync(-1) and sys_GetVblankCount are FUNCTION CALLS whose semantic role at check2 could be 'confirm vblank state before mutating idx_1496' - a plausible fighting-game input-timing pattern. s52 F1(c) killed cdrom_ClearIrq at masked 14 via dbr filling the slot with the call itself; sys_GetVblankCount was NOT specifically tested at the check2 position (only enumerated in the callee-set).",
+   "next_probe": "s56+ (rederive or forensics modality): probe sys_GetVblankCount() call inserted between `if (!check) goto tail;` and `do { *(idx_1496 - 1) = 0; } while (0);`. Measure masked; if delta matches s52 cdrom_ClearIrq (+10 via call-as-fill), F1 family formally exhausted. If lower, investigate whether the dbr walk skips call-fills based on side-effect classification. Semantic-lie risk: cross-check whether the call has any semantic role at position vs being an inserted-for-effect cheat."
   }
  ],
  "judge_constraints": [
