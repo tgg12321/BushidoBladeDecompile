@@ -917,3 +917,9 @@
 - probe: python3 tmp/grind/marionation_Exec/s6/splice_apply.py memory/grind/marionation_Exec/candidate.c; cc1 -da into tmp/grind/marionation_Exec/s43/; splice_apply.py --restore; git checkout -- src/system.c.
 - result: BB #3 sched2 (mar_s43.i.sched2 lines 5597-5649): T-11 launches 128 before 111; T-12 [106,141,122]->[122,106,141]; T-13 [106,141,120]->[120,106,141]; T-14 [106,141,117]->[106,117,141]; T-15 [117,141]->[117,141]; chronological pair-window emission 117-then-106-then-120 (target: 117-then-120-then-106). Identical to s6/s42.
 - verdict: CONFIRMED
+
+## [s44] Expressing the outer counter as a single-statement postfix `cnt = D_800F19BC++` (instead of vT40's 2-statement `cnt = D_800F19BC; D_800F19BC = cnt + 1;`) perturbs outer-BB LUID assignment enough to shift downstream sched2/reorg decisions in do_timeout or the check2 delay-slot region.
+- mechanism: Compound RTL for postfix inc emits a single (parallel [set cnt mem] [set mem (+ mem 1)]) form that expand may split differently than two sequential (set) insns; UID assignment at expand-time drives sched2 T-14 ties per s6 forensics.
+- probe: v01_postinc_cnt.c spliced to src/system.c via s44/splice.py; sandbox --disable all measured.
+- result: masked 4 (178/179, 42 rules dropped, 20 cheat_asm stripped) — identical to vT40 baseline. Novel masked-4 spelling (10th known distinct member of the vT40 floor basin, joining vT40, s11 u10/w03/w10, s12 v08/w05/w08/z01/z02/z07); pair-window insn stream unchanged; region-3 steal unchanged.
+- verdict: KILLED

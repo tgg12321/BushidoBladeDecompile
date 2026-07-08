@@ -772,3 +772,11 @@ vT33 in-call add: 16. vT34 sum-split: 11. vT35/vT36 nest-reweight: 15/14. vU1/vU
 - [s43] The LUID lever remains the ONLY sched2-tie-flip axis in the pair window, and s2/s3 measured all 140 dependency-valid orderings + 26+22 geometry/decomposition forms + the y-family operand-swap probes without a masked-3 or lower closer.
 
 - [s43] INSTRUMENTATION NOTE: BB2_RANK_DEBUG env-gated debug in sched.c:2436-2446 exists in tools/gcc-2.7.2/build/cc1 (strings|grep BB2_RANK confirms) but did not emit RANKDBG lines when invoked via tools/wsl.sh with `export BB2_RANK_DEBUG=1` in three attempts (rank_debug*.txt empty of RANKDBG). Likely wsl.sh nested-shell env-forwarding drop. Not needed for this KILL since the mips.md read directly proved insn_cost==1 for arith. Future forensic sessions wanting live RANKDBG capture should invoke cc1 via a shell script that exports before the first spawn.
+
+- [s44] s44 baseline reproduced: candidate.c (vT40) spliced -> sandbox --disable all = masked 4 (178/179, 42 rules dropped, 20 cheat_asm stripped). Floor unchanged since s0.
+
+- [s44] s44 v01 (cnt = D_800F19BC++ single-statement postfix) = masked 4 exactly - novel outer-counter spelling not in the 89-entry rejected bank, banked as rejected/s44-postinc-cnt-masked4-basin-equiv.c. Outer counter idiom is qty-INERT at the do_timeout / region-3 residuals; the postfix single-statement compound emits identically to the split 2-statement read-then-write form for this GCC 2.7.2 codegen.
+
+- [s44] 10 distinct masked-4 spellings now catalogued for the vT40 floor basin: vT40, s11 u10/w03/w10, s12 v08/w05/w08/z01/z02/z07, s44 postinc-cnt. Every basin member preserves the pair-swap @56/57 seat-trade coupling and the region-3 @149 dbr steal; the two residuals are basin-wide invariants across outer-counter, staging, cast-type, and pp-placement axes.
+
+- [s44] src/system.c restored to HEAD via splice.py restore (git checkout) after every measurement; working tree clean; oracle green throughout.
