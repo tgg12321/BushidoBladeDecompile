@@ -1,8 +1,8 @@
 {
  "func": "marionation_Exec",
  "file": "system",
- "session_count": 10,
- "current_modality": "synthesis",
+ "session_count": 11,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 0,
@@ -69,23 +69,29 @@
    "floor": 4,
    "modality": "synthesis",
    "headline": "s10 synthesis: partial-web probes measured (v01 arg5-only=13, v02 t0-only=6); quantifies each staging component's independent contribution; frontier reset to twin-first, permuter, and pair-window wrap"
+  },
+  {
+   "session": 11,
+   "floor": 4,
+   "modality": "structural",
+   "headline": "s11 structural: unified-staging axis exhausted (30 forms across 3 sweeps); NEW arg5-first plateau discovered at masked 6 (7 spellings; prior s2/s9 arg5-first was 8-11); 3 novel spellings tie vT40=4; t"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The twin cpu_side_move_dir_4 (parked, dist 7, 5 rules) shares the pair-swap coupling; solving its cheaper exchange residual FIRST yields a directly transferable lever per fable-blitz 2026-07-07 ruling. It has been the standing next-step for 3+ sessions and has not been dispatched.",
-   "mechanism": "Twin's ip/g3 residual is the exchange alone (masked ~6->0 on flip per pre-merge sessions 6f-6h commits aa8cad24 cd65f9c2 e5aa2dd4 f4bc8e67 df749bfd 622620cb). Any pair-exchange technique landing there transfers to marionation_Exec's do_timeout region.",
-   "next_probe": "Route the queue such that cpu_side_move_dir_4 gets its own grind session before another marionation_Exec permuter campaign. Not this function's session."
+   "hypothesis": "Directed permuter sampling on the vT40 base with PERM_GENERAL between arg4/arg5 statements + PERM_RANDOMIZE_TYPE on the check block finds a semantically-clean sub-4 form. The s5 undirected sampler only found +1-insn masked-3 signposts; targeted directives concentrate search on the exact tie-breaking insns (106/117 pair, 149 region-3) which s6/s7 forensics localized.",
+   "mechanism": "s11's arg5-first-interleaved plateau (6) is a NEW basin uncovered by structural search after ledger's s2-s10 exhaustion. Its existence proves the local structural space is not saturated even after 87 forms - a directed permuter run on this newly-revealed 6-plateau chassis (or the u10/w03/w10 masked-4 alternates) may reach different sampling neighborhoods than vT40 alone did in s5.",
+   "next_probe": "Permuter modality session: rebuild offset-0 workspace (tools/decomp-permuter with prelude.inc drop-.set-gp=64), seed with the arg5-first-interleaved x02 or w09 form (masked 6, novel), insert PERM_GENERAL directives around the pair-compute statements + PERM_RANDOMIZE_TYPE on the check block, --stop-on-zero -j24, watcher auto-triaging sub-200 finds. Reject any find reading status uninitialized or adding net insns."
   },
   {
-   "hypothesis": "A single unified staging expression (both webs collapsed into ONE aggregate temp, e.g., a struct-like or self-referential cast) may capture the coupled t0/v0-web interaction that partial forms cannot.",
-   "mechanism": "s10 proved non-additivity: t0-web and v0-web are CONDITIONALLY beneficial (arg5-web negative alone, additive only with t0-web). vT40's floor 4 needs both simultaneously. This is the mechanistic signature of a compound expression where one sub-expression sets up the register state the other consumes - untested in the ledger's decomposed forms. e.g., `t0 = (s32*)((u8*)tbl_125c + (idx_1494[0]<<2)); v0 = idx_1494[1]<<2; arg5=(s32*)((u8*)tbl_125c+v0);` sharing a lifted (u8*)tbl_125c pseudo could birth a shared address-base qty.",
-   "next_probe": "Sweep 4-6 unified-staging spellings: (i) both derefs indexed off a single lifted (u8*)tbl_base local; (ii) idx-arithmetic (idx*4, idx+1, idx*4+4) sharing a common shift/add tree; (iii) pointer-typed tbl_125c index with expression-level fused ptr+shift. Measure vs vT40=4."
+   "hypothesis": "The twin cpu_side_move_dir_4 (parked, dist 7) shares the pair-swap coupling; solving its cheaper exchange residual FIRST yields a directly transferable lever per fable-blitz 2026-07-07 ruling.",
+   "mechanism": "Standing frontier item unchanged from s0-s10. Twin's ip/g3 residual is the exchange alone (masked ~6->0 on flip per pre-merge sessions 6f-6h). Any pair-exchange technique landing there transfers to marionation_Exec's do_timeout region. This function's structural axis is now exhausted; twin is the next-basin.",
+   "next_probe": "Route the queue such that cpu_side_move_dir_4 gets its own grind session before another marionation_Exec permuter campaign. Not this function's session (structural modality). Read pre-merge commits aa8cad24 cd65f9c2 e5aa2dd4 f4bc8e67 df749bfd 622620cb (sessions 6f-6h allocation-equation material) before dispatching."
   },
   {
-   "hypothesis": "The rich-pass permuter sampler with EXPLICIT PERM_* directives on the pair-window insns (106/117 sll pair) and region-3 (check2-beqz slot) - a shape untried since s5's undirected campaign - finds a semantically-clean sub-4 form.",
-   "mechanism": "s5's ~10k undirected iterations found only masked-3 signposts paying +1 insn. Directed PERM_GENERAL/PERM_RANDOMIZE_TYPE around the specific tie-breaking insns concentrates search where the mechanism actually lives. s6 forensics gave the exact insn UIDs to target; that information was not available to the s5 sampler.",
-   "next_probe": "Permuter modality session: rebuild offset-0 workspace, seed with vT40 base, insert PERM_GENERAL between the arg4val/arg5val statements + PERM_RANDOMIZE_TYPE on the check block, run --stop-on-zero -j24 with watcher auto-triaging sub-200 finds. Reject any find that reads status uninitialized or adds net insns."
+   "hypothesis": "The stable +2 gap between the arg5-first-interleaved plateau (6) and vT40 (4) is exactly the pair-swap seats-trade cost (2 masked pts). Since s11 proved arg5-first CAN be run without the launch penalty (interleaved form), a construct combining vT40's t0-first pair-window layout with the arg5-first tree-LUID ordering may exist off the structural axis (e.g., via targeted volatile/type coercions that don't add insns).",
+   "mechanism": "s10 measured non-additivity of t0-web and v0-web (t0-only=6, arg5-only=13). s11 shows arg5-first is now +2 (was +4-7). The 2-pt residual is the T-14 UID tie plus the qty seat trade. A construct that keeps t0-first UID ordering while forcing arg5's compute EARLIER than t0's (contradiction? or via type/qualifier tricks?) has not been tried.",
+   "next_probe": "Try 5-6 targeted type-coercion / qualifier variants on x02 or w09 chassis: (i) volatile qualifiers on selected staging temps to force earlier evaluation; (ii) mixed s32/u32 type casts to trigger different qty size classifications; (iii) fake-exception constructs from the codegen-technique-index (named-local-fake-exception, dead-store-fake-exception) applied to arg5 to reweight without new pseudos. Any find must pass layer-1 review + preserve semantics + not add insns."
   }
  ],
  "judge_constraints": [

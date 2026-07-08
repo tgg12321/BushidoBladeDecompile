@@ -270,3 +270,31 @@ vT33 in-call add: 16. vT34 sum-split: 11. vT35/vT36 nest-reweight: 15/14. vU1/vU
 - [s10] [s10] With s2/s3 (48 hand forms), s4/s5 (~10k permuter samples), s6/s7 (140-ordering sweep, 9-topology sweep, insn-level sched2/dbr forensics, jump2 label enumeration), s8 (3 rederive forms), s9 (4 rederive forms), and s10 (2 partial-web forms), the vT40-basin hand-derivable + local-sampler search space is COMPREHENSIVELY closed. The remaining honest levers are: (i) cross-function transfer from twin cpu_side_move_dir_4 (untried; queue-routing item), (ii) fresh rich-pass permuter campaign on vT40 base with pair-window/region-3 targeted directives (untried post-s5 in current tooling), (iii) sanctioned FAKE constructs not yet tried on the pair window.
 
 - [s10] [s10] SYNTHESIS: the two residuals (pair-swap @56/57, region-3 @149) are both root-caused at the insn level (s6/s7 forensics: sched2 T-14 UID tie insn 106<117; reorg pass-1 fill_simple check2-beqz caller-saved a1 dest). Neither has a hand-derivable pure-C closer within the vT40 basin. Progress requires (a) different basin (cross-fn transfer from twin), (b) larger sampling (fresh permuter with directives), or (c) an unrecognized construct outside current classification. The partial-web result strengthens (b/c): the coupled non-additive interaction between t0-web and v0-web suggests the target's source may have used a SINGLE unified staging expression that's beyond current hand enumeration.
+
+- [s11] s11 baseline: candidate.c (vT40) spliced -> sandbox --disable all = masked 4 (178/179, 42 rules dropped, 20 cheat-asm stripped). Floor unchanged since s0.
+
+- [s11] u10 (t0=idx0; v0=idx1; t0*=4; v0<<=2; t0=tbl+t0; arg5=deref(tbl+v0)) reaches masked 4 - novel interleaved spelling of vT40. Banked as rejected/s11-u10-interleaved-alt-masked4.c for reference.
+
+- [s11] w03 (u10 chassis with pp placed AFTER both idx loads, before mults) also reaches masked 4. Confirms pp placement is inert within the interleaved layout.
+
+- [s11] w10 (u10 with arg5 deref via (s32*)((u8*)tbl_125c+v0) instead of (s32*)(v0+(s32)tbl_125c)) also reaches masked 4. Confirms cast spelling is inert.
+
+- [s11] u06 mirrored form (BOTH t0 and arg5 as address-values, both via u8*+idx*4) = masked 7. Best sub-vT40 mirror; +3 over floor. The symmetric qty birth signatures do not break the coupling.
+
+- [s11] w01 (u06 mirror + v0-web restored for arg5 as addrval) = masked 6. Matches s10v02 attractor - the closest non-vT40 form remains 6 across the mirror + partial-web axes.
+
+- [s11] NEW ATTRACTOR discovered s11: arg5-first with v0-web preserved and BOTH indices loaded before either compute, then interleaved shifts+adds, stabilizes at masked 6 across 7 spellings (x01-x05, x07, x08). Prior arg5-first data (s2/s3/s4/s9) had this at 8-11 because those forms ran arg5's full compute before t0's. The tight interleaved form recovers 2-5 masked pts.
+
+- [s11] Non-interleaved arg5-first still regresses: x06 (arg5 fully computed before t0 starts) = 9; x09 (arg5 deref inserted before t0's tbl-add finishes) = 9. Confirms x01-x05/x07/x08 plateau is specifically from parallel-tree-expand geometry.
+
+- [s11] u04 and u09 (both use shared offset variable via v0 reuse with split computes) both add 1 build insn (180 vs 179) at masked 11 - v0-reuse-as-offset-only pathway births an extra move that scrambles sched.
+
+- [s11] u03 (ptr-advance form: s32 *p0 = tbl_125c + idx_1494[0]; s32 *p1 = tbl_125c + idx_1494[1]; *p0; *p1) = masked 12, novel pattern. Pointer-advance form gets penalized for callee-savedeness or seat placement of p0/p1 but avoids the launch-fresh-temp signature. Banked as rejected/s11-ptr-advance-p0p1-12.c.
+
+- [s11] u01/u02/u05/u08 (unified-no-web variants: lifted tblb, tblp array, expression-fused, tblp both) all = masked 16 - matches s8v01 (no-web-no-pp) baseline. The unified-single-lifted-base form does NOT itself carry any of the two-web scheduling contribution.
+
+- [s11] src/system.c restored to HEAD via git checkout after every measurement; working tree clean; oracle green.
+
+- [s11] Cumulative structural coverage now: s2 (26 forms), s3 (22 forms), s8 (3 forms), s9 (4 forms), s10 (2 forms), s11 (30 forms) = 87 hand-authored structural variants of do_timeout measured. Combined with s6/s7 forensics (140-ordering sweep, 9-topology sweep, insn-level sched2/dbr) and s4/s5 permuter (~10k samples), the hand-derivable + local-sampler basin around vT40 remains comprehensively closed at masked 4.
+
+- [s11] Multiple novel masked-4 spellings (u10, w03, w10 - all interleaved with variations in pp placement and deref cast) prove vT40's floor is not spelling-unique; it's a basin-of-attraction under multiple compound-restructure spellings. The pair-swap + region-3 residuals are structurally invariant to spelling.

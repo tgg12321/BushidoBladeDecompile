@@ -209,3 +209,21 @@
 - probe: s10v01 (arg5-web only) and s10v02 (t0-web only) directly test additivity: sum should equal joint if independent.
 - result: FALSIFIED. v02 (t0-only) = 6, expected ~9 if only t0-web-half of joint 5 pt recovery from s9v01=9; v01 (arg5-only) = 13 REGRESSES from s9v01=9 by +4. The v0-web is CONDITIONAL on the t0-web (helpful with it, harmful without). Non-additive interaction - the pair-window compute needs BOTH webs coherently to get the vT40 arrangement.
 - verdict: CONFIRMED
+
+## [s11] A single unified staging expression (both derefs off a shared lifted (u8*)tbl_base, or shared idx-arithmetic tree, or pointer-typed tbl_125c with fused ptr+shift) captures the coupled t0/v0-web interaction and reaches masked <=3
+- mechanism: s10 quantified non-additivity: t0-web and v0-web are CONDITIONALLY beneficial (arg5-web negative alone at 13, additive only with t0-web); vT40's floor 4 needs both simultaneously. Compound expression where one sub-expression sets up register state the other consumes may birth a shared address-base qty.
+- probe: Sweep u01-u10 (10 unified-staging spellings): (u01) lifted u8* tblb shared, (u02) s32* tblp array-index, (u03) ptr-advance p0/p1, (u04) shared v0 offset reuse, (u05) call-arg expression-fused, (u06) mirrored arg5 as address-value, (u07) u06 arg5-first, (u08) tblp array both, (u09) shared off-var split, (u10) interleaved t0/v0 computes. Sandbox each; adiff not needed for KILL (all >= floor). sweep1.json
+- result: KILLED. Results: u01/u02/u05/u08=16 (unified-no-web regresses to s8 baseline); u03=12 (ptr-advance new pattern); u04/u09=11 (v0-shared adds insn); u06=7, u07=8 (mirror form); u10=4 (novel masked-4 spelling matching vT40's floor, interleaved computes). Unified-single-expression does NOT drop below 4; the mechanism intuition was wrong - the two-web non-additivity is not resolvable by expression fusion. sweep1.json.
+- verdict: KILLED
+
+## [s11] Mirroring arg5's structural form to match t0's (both as address-values, both via u8*+idx*4 arithmetic) breaks the pair-window seat-trade by giving both temps identical qty birth signatures (same size/life/refs profile)
+- mechanism: u06 measured masked 7 (best sub-vT40 mirror). Refinements: add v0-web back around arg5, vary pp placement, use shift instead of mult, interleave both computes.
+- probe: sweep2 (w01-w10, 10 variants): w01 u06+v0web arg5addr, w05 pp between, w06 full interleave, w07 shift-not-mult, w10 s32-cast deref, plus arg5-first mirrors (w04 addrval).
+- result: KILLED. Best mirror score with v0-web added back: w01=6 (matches s10v02 attractor, still +2 over floor). Mirror without v0-web plateaus at 6-7 (w05/w06=7). w07 shift-not-mult=11 (mult vs shift emits different insns). w03/w10 both reach masked-4 (novel spellings). Mirror form does not break the coupling. sweep2.json.
+- verdict: KILLED
+
+## [s11] Preserving arg5-first source order (v0=idx_1494[1] first) with tight interleaving of both indices' loads followed by interleaved shifts breaks the s2/s9-measured arg5-first-seats-trade coupling (prior masked 8-11), because both trees are already fully expanded by the time the sched2 T-14 tie is decided
+- mechanism: s2/s3/s4/s9 measured arg5-first regressions of +4 to +7 (masked 8-15 across chassis: vT40, find105, alias-merge). Those forms placed arg5's compute FULLY before t0's. NEW spelling: both idx loads first, THEN both shifts, THEN interleaved tbl-adds - keeps arg5's tree LUIDs early but doesn't extend arg5val's life.
+- probe: sweep3 (x01-x10, 10 arg5-first refinements): pp placement (first/mid/last), full-compute vs interleave, mirror-form arg5-first.
+- result: CONFIRMED as new attractor, KILLED as closer. 7 of 10 spellings (x01-x05, x07, x08) land at masked 6 - a NEW plateau not present in ledger. Only x06 (full arg5 compute before t0) and x09 (deref before t0-finish) regress to 9. The interleaved arg5-first form recovers 2-5 masked pts vs prior arg5-first data. Still +2 over floor 4; the last coupling residual is not structural. sweep3.json.
+- verdict: CONFIRMED
