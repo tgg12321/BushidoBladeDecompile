@@ -916,3 +916,13 @@ vT33 in-call add: 16. vT34 sum-split: 11. vT35/vT36 nest-reweight: 15/14. vU1/vU
 - [s53] s53 CONFIRMS s36's conclusion via a distinct mechanism: sibling saEft01Init's structural advantages (target-order middle-addu, single-base hoisted arg3) exploit the sibling's LIGHTER register landscape and cannot be transplanted verbatim to marionation_Exec without paying the register-pressure cost. This joins s8's twin-transplant KILL (twin cpu_side_move_dir_4 clean shape = masked 16), s35's Kengo KILL, and s35's fresh-m2c basin-equivalence in the rederive-exhaustion evidence bank.
 
 - [s53] src/system.c restored to HEAD via splice_apply.py --restore + git checkout after every measurement; working tree src/ clean; oracle green throughout. candidate.c unchanged (vT40 masked 4 remains best-known).
+
+- [s54] s54 baseline reconfirmed: candidate.c (vT40) spliced -> sandbox --disable all = masked 4 (178/179, 42 rules dropped, 20 cheat-asm stripped). Floor unchanged since s0.
+
+- [s54] s54 NEW mechanism fact: arg3 hoist penalty is a two-part decomposition. Part 1 = fresh-pseudo launch cost (+9, floor for arg3 hoist ANYWHERE in the pair-window scope). Part 2 = pseudo-life-crossing-arg4/arg5-birth cost (+5, activated when arg3val's set precedes ANY arg4/arg5 compute stmt). Late-hoist (after arg5) pays only Part 1 = 13; early or between = 18.
+
+- [s54] s54 NEW mechanism fact: do-while(0) wrap-count (single vs nested) at the arg3 hoist site is INERT (13 both). Consistent with the frontier's mechanism theory being wrong here: doubling loop-note weighting does not overcome the launch pathology's baseline +9. The launch of a new pseudo dominates any refs-reweighting the wrap could provide.
+
+- [s54] s54 confirms the frontier's arg3-only-wrap hypothesis is CLOSED across position (early/between/late) and wrap-count (single/nested) axes. Only untried combination outside these 6 measurements would be a statement-expression form ({ ...; expr; }) inline in the debug_printf arg-list, which requires GNU extension review but per s54 measurements would also carry the +9 launch floor (arg3val pseudo births identically regardless of enclosing-syntax spelling).
+
+- [s54] src/system.c restored to HEAD via git checkout after every measurement; working tree clean; oracle green.

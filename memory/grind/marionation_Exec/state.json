@@ -1,7 +1,7 @@
 {
  "func": "marionation_Exec",
  "file": "system",
- "session_count": 53,
+ "session_count": 54,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -327,23 +327,29 @@
    "floor": 4,
    "modality": "rederive",
    "headline": "s53 rederive: sibling saEft01Init's arg3-base prologue-hoist KILLED at masked 14 / build 181 - marionation_Exec has too much register pressure to absorb an extra callee-saved seat for tbl_A11DC withou"
+  },
+  {
+   "session": 54,
+   "floor": 4,
+   "modality": "rederive",
+   "headline": "s54 rederive: arg3-only wrap frontier item KILLED across position + wrap-count axes; late-hoist=13, between/early=18, nesting inert"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F3 (unchanged from ledger): fresh permuter sampling on an untried basin (s39 arg3-v0-WAR-edge family at masked 16, or s31 s30v03 chassis at masked 6-11) may reach masked 2 via a spelling that does not require volatile coercion.",
-   "mechanism": "Prior ledger's 13 sampled basins concentrated on vT40 / find105 / z07 / w05 / vS47c chassis; s39 WAR-edge and s31 s30v03 are structurally distinct and unsampled by permuter fresh-seed campaigns. Portfolio convergence has held across 13 basins but two untried remain.",
-   "next_probe": "Permuter session on the s39 arg3-v0-WAR-edge base with fresh-seed discipline; harvest via tools/permuter_campaign.py; filter finds through the s50 region-3 fingerprint scanner."
+   "hypothesis": "Statement-expression form for arg3 inline in the debug_printf call (`({ arg3val = D_800A11DC[D_800A11D5]; arg3val; })` or `({ D_800A11DC[D_800A11D5]; })`) avoids the fresh-pseudo launch because GCC treats statement-expression's terminal expression as a tree-embedded value, not a set-into-named-local.",
+   "mechanism": "GNU statement-expressions have an unclear expand-time signature vs named-local hoist. If the terminal expr is folded directly into the arg tree without materializing a pseudo, the launch pathology may not fire. Requires user ruling on GNU-extension acceptability per SOTN construct-honesty line.",
+   "next_probe": "s55: write v04_arg3_stmt_expr.c with `({ D_800A11DC[D_800A11D5]; })` inline as debug_printf's arg3; measure; if <4, emit ruling-request on GNU-extension sanction. Note: PsyQ GCC 2.7.2 supports statement-expressions."
   },
   {
-   "hypothesis": "The sibling-shape transplant lever is closed across ALL known dimensions once register-pressure landscape is accounted for. Any remaining sibling-shape variant (mixed hoist strategies, partial-hoist forms) will hit the same register-pressure gate.",
-   "mechanism": "s53's base-hoist KILL joins s36's value-form sibling-shape KILL (masked 10, seats traded), s9v03's arg3 value-hoist KILL (masked 18), and s27's arg3 late-hoist KILL (masked 18) in mapping the arg3-hoist axis to negative results across all applicable spellings. Sibling saEft01Init transferability is bounded by its lighter callee-saved usage.",
-   "next_probe": "Not this session. Ledger evidence for the ruling-request thread now includes explicit register-pressure gating of sibling transplant; when F3 lands negative, this adds to the SOTN evidence bar."
+   "hypothesis": "The task brief's F3 (fresh permuter on s39 arg3-v0-WAR-edge basin at masked 16, or s31 s30v03 chassis at masked 6-11) is still untried per ledger's post-s14 permuter accounting; a fresh sampling campaign on either basin may hit masked 2.",
+   "mechanism": "s14 recorded z07 and w05 as launched bases; s39's WAR-edge basin and s31's s30v03 chassis at masked 6-11 were named in task brief as UNSAMPLED. Basin coverage is the load-bearing progress axis for permuter.",
+   "next_probe": "s55 or later permuter modality: build_ws.py for s39 WAR-edge chassis or s31 s30v03 chassis; launch detached campaign per s13/s14 protocol; harvest via tools/permuter_campaign.py."
   },
   {
-   "hypothesis": "Sanctioned FAKE constructs not yet tried on the pair window - specifically, wrapping only the arg3 evaluation (not the whole do_timeout body) in a nested do-while(0) to reweight arg3's tree-refs without perturbing the arg4/arg5 pair-window sched.",
-   "mechanism": "Every measured wrap so far encloses statements OTHER than arg3's evaluation (do_timeout body wrap, arg5 stmt wrap, call itself wrap - all Judge-banked from wip meta). An arg3-only wrap would raise arg3's tree-refs weighting without touching the pair-window loop-note landscape. Untried per ledger.",
-   "next_probe": "Structural session: wrap `D_800A11DC[D_800A11D5]` in a comma-expression do-while(0) inside the debug_printf arg-list (or replicate its effect via a named-local wrapped in a wrap). Verify pair-window LUIDs preserved."
+   "hypothesis": "Twin cpu_side_move_dir_4 (parked at distance 7, 5 rules) has the SAME coupled pair-swap structure per ledger lore; developing the exchange lever on the cheaper twin FIRST (per task brief STRATEGY note referencing pre-merge commits aa8cad24 cd65f9c2 e5aa2dd4 f4bc8e67 df749bfd 622620cb) then mirroring here is the recommended path.",
+   "mechanism": "Twin has ip/g3 residual = exchange alone (masked ~6->0 on flip). If the equations are solvable on the cheaper landscape, the solution transfers here. s8 measured twin's clean shape does NOT directly transplant (different sched landscape), but the ALLOCATION-EQUATION material from those commits is not yet in this ledger's s1-s54.",
+   "next_probe": "Read git commits aa8cad24 cd65f9c2 e5aa2dd4 f4bc8e67 df749bfd 622620cb (sessions 6f-6h per task brief) BEFORE next permuter campaign; extract in-place basin correction, final qty_compare equation, s4 half-flip; apply to twin THEN mirror."
   }
  ],
  "judge_constraints": [

@@ -1085,3 +1085,21 @@
 - probe: s53 v01: added `s32 *tbl_A11DC;` function local + `tbl_A11DC = D_800A11DC;` prologue assignment, changed inline `D_800A11DC[D_800A11D5]` to `tbl_A11DC[D_800A11D5]` in the debug_printf call; spliced vT40 candidate with only this delta; sandbox --disable all measured
 - result: masked 14 / build 181 / target 179 (+10 masked, +3 build_insns vs vT40). The prologue hoist emits `lui+addiu` for base materialization + a callee-saved spill (sw at prologue, lw at epilogue) - 3 visible bytes that saEft01Init could absorb into its lighter register landscape but marionation_Exec cannot. Additionally the tbl_A11DC pseudo's cross-function life competes for callee-saved seats with existing outer-scope state (idx_1494, idx_1495, idx_1496, tbl_125c) and re-times the pair window like a launch (masked +7 above vT40's floor).
 - verdict: KILLED
+
+## [s54] Wrapping ONLY the arg3 evaluation (D_800A11DC[D_800A11D5]) in a nested do-while(0), placed immediately before the debug_printf call (after arg5 setup), avoids the launch-fresh-temp signature and reaches masked <=3 by elevating arg3's tree-refs weighting without perturbing the pair-window sched.
+- mechanism: Frontier item from task brief: nested do-while(0) doubles GCC 2.7.2 loop-note ref weighting for the wrapped block. Late-position hoist (after arg5) keeps arg5's compute unperturbed while giving arg3 a named-local pseudo whose refs may reweight the pair-window qty tie. Untried per ledger (s9v03 hoisted arg3 EARLY = 18; every measured wrap encloses statements OTHER than arg3).
+- probe: v01_arg3_nested_wrap.c: `s32 arg3val;` decl in the block, `do { do { arg3val = D_800A11DC[D_800A11D5]; } while (0); } while (0);` placed immediately before debug_printf, arg3val substituted for the inline load. Spliced via s6/splice_apply.py, sandbox --disable all.
+- result: masked 13, build_insns 179, target 179 (+9 vs floor 4). Insn count matches target but reg-name diffs dominate.
+- verdict: KILLED
+
+## [s54] The +9 penalty of the late-position arg3 hoist comes from the do-while(0) nesting adding loop-note perturbation, not from the arg3 hoist itself; a single-level wrap around the same hoist reduces the penalty.
+- mechanism: s9v03's arg3 EARLY hoist (no wrap) = 18; if the nested-wrap's loop-note stream costs extra masked pts beyond the launch, unwrapping to single-level should drop the score.
+- probe: v02_arg3_single_wrap.c: identical to v01 but single-level `do { arg3val = D_800A11DC[D_800A11D5]; } while (0);`. Spliced, sandbox --disable all.
+- result: masked 13 (identical to v01). Wrap-count (single vs nested) is INERT at the late-position arg3 hoist site.
+- verdict: KILLED
+
+## [s54] Hoisting arg3 BETWEEN t0's setup and arg5's setup (interrupting the arg4/arg5 compute sequence) is neutral relative to late-position hoist since arg3 is a byte-load and doesn't interfere with the pair-window LUID tie.
+- mechanism: Position axis: s9v03 early (before arg4/arg5) = 18; s54v01/v02 late (after arg5) = 13; between-position untried. If arg3's pseudo life relative to the pair-window is the dominant cost driver, mid-position should split the delta.
+- probe: v03_arg3_between.c: arg3val = D_800A11DC[D_800A11D5]; placed between `t0 = (s32)((u8*)tbl_125c + t0);` and `v0 = idx_1494[1];`. No wrap. Spliced, sandbox --disable all.
+- result: masked 18 (matches s9v03 early-position exactly, build 178). Between-position pays the FULL early-hoist +14 penalty; the +9-vs-+14 delta between late and early is arg3's pseudo-life-crossing-arg4/arg5-birth, not position within the block per se.
+- verdict: KILLED
