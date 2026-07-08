@@ -965,3 +965,27 @@
 - probe: Enumerate label routes (vP160, s5 0xFF-through-local, z07-160-1, s26idxp-165-1/170-1) and liveness routes (alias-merge family floor 10); confirm cc1psx parity via owner 2026-07-08 calibration
 - result: Every route pays a visible byte OR is off-limits OR is semantically divergent; no zero-byte in-basin closer exists after 45 sessions of forensics + 12 permuter basins × 50+ CPU-hr
 - verdict: KILLED
+
+## [s47] Block-scoping new_var/new_var3 into their respective check regions preserves both andi masks while eliminating a function-scope pseudo, tightening qty allocation in the pair window without regressing region-3
+- mechanism: vT40's andi preservation relies on named-local constant-holders whose function-scope life keeps combine from folding the mask into the surrounding lbu/andi pair; block-scoping shortens their lives to a single reference each, which SHOULD keep the andi alive per named-local-fake-exception semantics while reducing pseudo count
+- probe: vS47a: new_var declared inside check region's compound block just before use; new_var3 declared inside check2's nested scope; sandbox --disable all
+- result: masked 8 / 176 build_insns (target 179) - build DROPS 2 instructions, meaning both andi's are folded away. The masks are load-bearing at FUNCTION-SCOPE lifetime, not just at named-local naming; combine's fold predicate treats block-scope single-use constants as CSE-able trivially. +4 masked from delta shape at 176 vs 179.
+- verdict: KILLED
+
+## [s47] Merging new_var and new_var3 into a single `mask` variable reused across both check regions reduces function-scope pseudo count while preserving both andi's
+- mechanism: s28+ portfolio convergence relied on the two masks being distinct pseudos; a single reused pseudo COULD change qty birth order for the check-region cascade and re-time region-3's steal window
+- probe: vS47b: single `int mask; mask = 0xFF;` at function scope, used at both `*idx_1496 & mask` and `*(idx_1496-1) & mask`; sandbox --disable all
+- result: masked 14 / 180 build_insns (target 179) - REGRESSION +10 AND adds 1 build_insn. Cross-check-region CSE extends the mask pseudo's life across the intermediate copy loop's calls, forcing a callee-saved seat competition. Same seat-cascade pathology as s12 *idx_1495 (crossing-window ref).
+- verdict: KILLED
+
+## [s47] Hoisting `pp = (void**)&D_800F19C0` to the head of the do_timeout inner block (before t0 = idx_1494[0]) reshapes RTL first-use order for pp's pseudo, potentially retiming the sched2 pair window
+- mechanism: vT40 places pp between t0's load and its shift; hoisting to block head places pp's set BEFORE any t0/arg5 tree evaluation, births pp's pseudo earliest, and could reweight the qty tie inputs
+- probe: vS47c: pp = (void**)&D_800F19C0 moved to first statement in the inner block; sandbox --disable all
+- result: masked 4 / 178 (basin-invariant). Novel masked-4 spelling; pp position within the do_timeout inner block is inert to the pair-window sched2 tie (consistent with s11/s12 pp-position sweeps). This is the 13th known distinct masked-4 basin member (following vT40, s11 u10/w03/w10, s12 v08/w05/w08/z01/z02/z07, s44 postinc-cnt, s45 vA/vC prologue-reorders).
+- verdict: KILLED
+
+## [s47] Block-scoping `saved` inside the `if (sys_GetVblankCount() != 0)` branch shortens saved's function-scope life and could unstick the check-region qty landscape
+- mechanism: saved is only used inside that if branch; declaring it at function scope inflates its declared life without a semantic need; block-scoping matches the RTL first-use pattern more tightly
+- probe: vS47d: `u8 saved;` moved from function-scope decl list to just inside the `if (sys_GetVblankCount() != 0)` block; sandbox --disable all
+- result: masked 4 / 178 (basin-invariant). 14th known novel masked-4 spelling. saved's block-scoping is inert - matches the s2 finding that pseudo birth follows RTL first-use, not declaration position; the scope change is a source-level cosmetic only.
+- verdict: KILLED

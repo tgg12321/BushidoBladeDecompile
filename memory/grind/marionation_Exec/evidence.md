@@ -812,3 +812,17 @@ vT33 in-call add: 16. vT34 sum-split: 11. vT35/vT36 nest-reweight: 15/14. vU1/vU
 - [s46] Sibling saEft01Init (system.c:806) has byte-shape-IDENTICAL do_timeout window fingerprint; one unknown original spelling decides both windows (s36/s39)
 
 - [s46] Twin cpu_side_move_dir_4 (system.c:388, queue dist 7, 5 rules) has same pair-swap coupling as development bench per 2026-07-07 fable-blitz strategy; pair-only residual (no region-3), cheaper to develop the exchange there first
+
+- [s47] s47 baseline: candidate.c (vT40) spliced -> sandbox --disable all = masked 4 (178/179, 42 rules dropped, 20 cheat_asm stripped). Floor unchanged since s0.
+
+- [s47] s47 NEW mechanism fact: named-local constant-holder mask preservation is LIFETIME-DEPENDENT, not naming-dependent. Function-scope int new_var = 0xFF keeps both andi's alive; block-scope int new_var = 0xFF (single-use within compound stmt) causes combine to fold the mask into the surrounding lbu/andi, DELETING 2 build_insns. The named-local family requires function-scope lifetime to preserve mask insns; block-scope collapses like inline constants.
+
+- [s47] s47 NEW mechanism fact: a merged-single-mask across both check regions inflates the mask pseudo's life across the intermediate check1 copy loop's calls, forcing a callee-saved seat competition (identical pathology to s12's *idx_1495 crossing-window ref). The two independent masks new_var/new_var3 are LIFE-SEPARATED by design; merging them re-lands them in the alias-merge callee-saved seat cascade zone.
+
+- [s47] s47 confirms pp-position-within-do_timeout-block inert (13th novel masked-4 spelling), extends s11/s12 pp-inertia across a new (hoisted-to-block-head) position not previously in the sweep.
+
+- [s47] s47 confirms saved-block-scoped inert (14th novel masked-4 spelling), extends s2's decl-order-vs-first-use finding to declaration-scope.
+
+- [s47] s47 total: 4 novel structural forms measured (2 KILLs at +4/+10, 2 basin-invariant); running cumulative hand-structural coverage: 165+ hand forms, 32+ basin members (now 14 confirmed on-basin masked-4 spellings), consistent with s46 synthesis's exhaustion conclusion.
+
+- [s47] src/system.c restored to HEAD via git checkout after every measurement; working tree clean (except metrics/events.jsonl); oracle untouched.
