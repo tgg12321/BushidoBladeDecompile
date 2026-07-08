@@ -1,8 +1,8 @@
 {
  "func": "marionation_Exec",
  "file": "system",
- "session_count": 14,
- "current_modality": "permuter",
+ "session_count": 15,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 0,
@@ -93,23 +93,29 @@
    "floor": 4,
    "modality": "permuter",
    "headline": "s14 permuter: launched 4th-basin campaign (w05 s32 tbaseS chassis, base=220 confirmed); z07 basin still warming (10min elapsed at handoff), no new sub-145 finds on vT40 or sub-85 on find105."
+  },
+  {
+   "session": 15,
+   "floor": 4,
+   "modality": "forensics",
+   "headline": "s15 forensics: x02 attractor's +2 over vT40 named at insn level - 1 fall-through swap at tslTm2 jal delay slot, sched2 BB3 T-16 emission ordering the two idx-lbu's by expand-time UID (source-order t0-"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The s14 w05 campaign (PID 3756068) finds a sub-vT40 form via the tbaseS chassis's distinct qty-allocation neighborhood.",
-   "mechanism": "s32-typed shared base gives permuter mutation moves that reweight tbaseS's qty priority independently of t0/arg5's ties - a lever unavailable in vT40's no-shared-base and z07's u8*-typed-shared-base landscapes.",
-   "next_probe": "Next permuter/harvester session: triage tmp/grind/marionation_Exec/s14/perm_w05/output-* via s4/adiff2.py + s2 sandbox splice pattern. Any sub-200 find is a lead; reject uninitialized-read (vP160 class) or +insn (>179 build). w05 was recommended in s13 frontier as the highest structural distance from vT40; expect it to explore territory u10/v08 later basins would only partly cover."
+   "hypothesis": "A source form that keeps t0-first-idx-load (target-matching delay slot) BUT rearranges the pair-window sll pair via a different mechanism than source-order flip (e.g. inserting a use-of-a0 or use-of-v0 between the idx-load and its shift) can retime the T-14 LUID tie without flipping T-16.",
+   "mechanism": "The T-14 tie between the two sll's is decided by sched2's LUID assignment during rank_for_schedule; that LUID is influenced by intervening dep chains. Inserting a real use of the value between load and shift would extend a live range and potentially reweight the ready-list. Untried: forms where a0 or v0 is READ (not just written) between its idx-lbu and its sll.",
+   "next_probe": "Sweep source forms with an early use of the loaded byte before its shift, e.g. `if (t0 == 0) { /* dead branch */ } t0 *= 4;` or `saved_debug = t0; t0 *= 4;` \u2014 must not add build insns (dead-branch or eliminable read). Requires t0-first source order preserved. Would need cc1 -dS trace + sched2 dump to confirm T-14 LUID differed."
   },
   {
-   "hypothesis": "The z07 basin (PID 3540094) after another ~10h of sampling reaches sub-220 attractors.",
-   "mechanism": "z07's u8* tbase + v0-interleaved chassis has never been sampled before; first 30 iters show default randomization is exploring but no immediate sub-220 attractor. More iterations may still find one.",
-   "next_probe": "Non-permuter session should NOT open a 5th basin (load already at 42 threads). Permuter session post-triage can add a 5th basin from s11 u10 (interleaved compute only, structurally closest to vT40 - useful sanity control) OR s12 v08 (u8* tbase symmetric - between z07 and w05 in structural distance)."
+   "hypothesis": "The s14 w05 permuter campaign (s32 tbaseS chassis, PID 3756068) or s13 z07 campaign (u8* tbase, PID 3540094) finds a sub-vT40 form in extended sampling. The type-differentiated qty landscapes may reweight the T-14 LUID tie via a shared-base pseudo priority.",
+   "mechanism": "s14 recorded both campaigns still warming with base score 220 confirmed. w05 was recommended in s13 frontier as highest structural distance from vT40. Continued sampling could still yield a novel find at any time.",
+   "next_probe": "Next permuter/harvester session: check tmp/grind/marionation_Exec/s14/perm_w05/output-* and tmp/grind/marionation_Exec/s13/perm_z07/output-* for sub-200 finds; triage via s4/adiff2.py + s2 sandbox splice; reject uninitialized-read (vP160 class) or +insn (>179 build). w05 remains the highest-signal untriaged basin."
   },
   {
-   "hypothesis": "The twin cpu_side_move_dir_4 (queue-parked, distance 7, 5 rules) exchange lever remains untried and would materially aid marionation_Exec's pair-swap - unchanged from prior sessions.",
-   "mechanism": "twin's residual is the ip/g3 exchange alone; pre-merge commits aa8cad24 cd65f9c2 e5aa2dd4 f4bc8e67 df749bfd 622620cb hold allocation-equation material not represented in this ledger.",
-   "next_probe": "Route queue such that cpu_side_move_dir_4 gets its own session before further marionation_Exec permuter campaigns. Not in-scope this session."
+   "hypothesis": "The twin cpu_side_move_dir_4 (parked, distance 7, 5 rules) exchange lever remains untried and its ip/g3 residual is documented as `the exchange alone` \u2014 solving twin first could yield the register-exchange technique transferable to marionation_Exec's pair-swap.",
+   "mechanism": "Judge-constraints ledger note: `develop the exchange lever on the CHEAPER twin cpu_side_move_dir_4 FIRST (its ip/g3 residual is the exchange alone; masked ~6->0 on flip), then mirror here. The decisive allocation-equation material is in pre-merge commits aa8cad24 cd65f9c2 e5aa2dd4 f4bc8e67 df749bfd 622620cb`.",
+   "next_probe": "Non-forensics session \u2014 route queue such that cpu_side_move_dir_4 gets its own session before further marionation_Exec permuter campaigns. Read the pre-merge commits BEFORE another permuter campaign here."
   }
  ],
  "judge_constraints": [
