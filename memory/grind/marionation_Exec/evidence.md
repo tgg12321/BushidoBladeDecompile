@@ -658,3 +658,19 @@ vT33 in-call add: 16. vT34 sum-split: 11. vT35/vT36 nest-reweight: 15/14. vU1/vU
 - [s35] s35 NEW basin member #32: m2c-derived ||-comma outer flow (v04) = masked 4 / 178 with adiff2-verified byte-identical residual windows (pair 56/57, region-3 149/151). Fresh m2c yields no structurally new information beyond this - its do_timeout window is the known killed inline-args shape (s8 v02 = 16 class) and its whole-body rebuild remains the ledger's masked-65 shape.
 
 - [s35] s35 rederive modality is now fully exhausted per s26's own residual-axis list: (a) twin transplant killed s8, (b) fresh m2c rebuild yields only basin member #32, (c) decomp.me corpus searched and killed. No rederive-class lever remains; the live frontier items (v05 carrier+deferred-add pre-vet, twin exchange lever, basin-seed permuter) belong to structural/operator/permuter modalities respectively.
+
+- [s36] s36 baseline reconfirmed: candidate.c (vT40) spliced -> sandbox --disable all = masked 4 (178/179, 42 rules dropped, 20 cheat-asm stripped); src/system.c restored to HEAD (git checkout) after all measurement, working tree src/ clean.
+
+- [s36] s36 KILL: Kengo's marionation_Exec (0x141400, name-unique match, 180 insns) is a full PS2 rewrite - FPU/motion/sound calls, no polling loop, no debug_printf window; the Marionation-engine-preserved assumption fails for this function; kengo transplant lever closed.
+
+- [s36] s36 KILL: find_duplicates.py (first run since merge, tmp/duplicates_leads.txt now exists) has zero marionation_Exec rows - no whole-function near-clone lead.
+
+- [s36] s36 NEW SIBLING FACT: saEft01Init (system.c:806, queue dist 18, 15 rules) has a byte-shape-IDENTICAL do_timeout debug_printf window to marionation_Exec vs both targets (same D_800F19C0/D_800A11D5/D_800161C8 globals + fmt string; only table-base seat s0-vs-s5 and arg3-table addressing s3-hoisted-vs-at-direct differ). Its current C (named arg5-first, no pp, no webs) emits the target middle-addu order but suffers the SAME seat trade vs its own target. One unknown original spelling decides both windows. Custom scanner proved NO completed function in the binary contains the pair shape (3 hits, all queued).
+
+- [s36] s36 NEW mechanism fact: the pp pointer-alias is INERT in the named-local family - v02 (named arg4-first, no pp) = 9 exactly matches s9v01 (with pp) = 9; v01 (arg5-first no pp) = 10 vs s9v02 (with pp) = 11. The lw a1 D_800F19C0 lands in the target slot from a plain direct arg. pp's ~7pt contribution is specific to the web-staging chassis.
+
+- [s36] s36 NEW mechanism fact: v01 (sibling shape) is the simplest order-correct spelling ever measured - target middle-addu pair order from honest plain C with zero FAKE constructs in the window, at masked 10 (seat trade + delay-slot lbu flip + arg4 addu/deref placement drift).
+
+- [s36] s36 KILL: index-load hoisting cannot fix the arg5-first lbu-order flip - v03's i0 hoist copy-propagates away (emission byte-identical to v01); lbu launch order follows expression-tree order at sched2 T-16, not statement order of index loads.
+
+- [s36] s36 rejected/ additions: s36-sibling-saeft01init-shape-order-correct-seats-traded-10.c, s36-named-arg4-arg5-nopp-9.c, s36-i0-hoist-copyprop-folds-emission-identical-10.c. candidate.c unchanged (vT40 masked 4 remains best).

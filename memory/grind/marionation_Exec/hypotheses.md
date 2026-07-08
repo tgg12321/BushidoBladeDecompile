@@ -767,3 +767,33 @@
 - probe: v04 = vT40 chassis with the m2c ||-comma outer flow replacing the two-goto polling head; sweep + adiff2 residual-window inspection.
 - result: v04 = masked 4 / 178 with residual signature BYTE-IDENTICAL to baseline (pair-swap insert/delete at 56/57, region-3 steal at 149/151 per adiff2). 32nd known masked-4 basin member; jump.c CFG folding collapses the ||-comma form to the same post-jump2 layout, extending s18's structured-if/else equivalence to the short-circuit-comma family. Outer-flow axis remains fully inert.
 - verdict: KILLED
+
+## [s36] marionation_Exec's name-unique Kengo match (kengo_matches.csv, 180 vs 179 insns) exposes the original C structure for the do_timeout window
+- mechanism: Marionation engine preserved BB2->Kengo; kengo_ref.py dumps the PS2 disassembly of the matched function
+- probe: python3 tools/kengo_ref.py marionation_Exec -> tmp/grind/marionation_Exec/s36/kengo_marionation_Exec.txt; structural comparison of the full body
+- result: The Kengo function is a complete PS2-era rewrite sharing only the name: FPU compares (c.lt.s/bc1tl), motion_CalcMotion/motion_SeControl/motion_IncFrame/saSeKeyOn calls, a switch dispatch - NO polling loop, NO debug_printf, NO adjacent-byte-index table-lookup pair. Zero transferable geometry; the 179-vs-180 size match is coincidence.
+- verdict: KILLED
+
+## [s36] A whole-function near-clone of marionation_Exec exists among COMPLETED-C functions (find_duplicates.py opcode-class Levenshtein), providing proven source geometry
+- mechanism: SOTN dups algorithm; leads file maps INCOMPLETE items to their best COMPLETED-C analog
+- probe: python3 tools/find_duplicates.py (full 21s run, first since merge); grep marionation_Exec tmp/duplicates.txt + tmp/duplicates_leads.txt
+- result: 0 rows for marionation_Exec in either report (200 pairs / 15 leads) - no near-clone at whole-function opcode-class level exists in the codebase
+- verdict: KILLED
+
+## [s36] Some COMPLETED-C function in this binary contains the pair-window shape (two sll<<2 + addu-to-same-saved-base + lw chains within 16 insns), giving proven C for the exact codegen shape
+- mechanism: Custom target-asm scanner (scan_pair_shape.py) over asm/funcs/*.s cross-checked against engine/queue.json membership
+- probe: tmp/grind/marionation_Exec/s36/scan_pair_shape.py: 3 hits total (func_8005C6D0, func_80067D14, saEft01Init) - ALL queued/INCOMPLETE; func_8004A4E0 (lbu-pair prefilter hit, not queued) is whole-body canonical asm with jr-dispatch, no C source
+- result: No proven-C analog of the shape exists anywhere in the binary. BUT the scan surfaced saEft01Init (system.c:806, dist 18, 15 rules): its do_timeout window is byte-shape IDENTICAL to marionation_Exec's vs BOTH targets - same D_800F19C0/D_800A11D5/D_800161C8 globals, same fmt string, same lbu-lbu-lw a1-sll-addu-sll-lw-lbu-addu-sll-sw-lw-lw sequence (only table-base seat s0-vs-s5 and arg3 table addressing s3-vs-at differ). The two functions share ONE unknown original window spelling; saEft01Init's current C suffers the SAME seat trade vs its own target.
+- verdict: KILLED
+
+## [s36] The literal saEft01Init source shape (named arg5-first locals, NO pp alias, NO staging webs, direct globals) transplanted into the vT40 chassis reaches masked <= 4
+- mechanism: The sibling's HEAD C emits sll;addu;sll (target middle-addu order) at its window - the never-measured grid cell named-locals x no-pp on marionation (s9 measured named+pp=9/11, s8 measured inline+no-pp=16)
+- probe: v01 spliced into candidate chassis, sandbox --disable all; emission dumped via cc1 (tmp/grind/marionation_Exec/s36/v01_sibling.s); v02 (arg4-first no-pp) for grid completion
+- result: v01 = masked 10 / 178: achieves EXACT target pair order (sll $3; addu $3,$3,$21; sll $2, base in s5) - the SIMPLEST order-correct spelling ever measured, zero FAKE constructs in the window - but pays the coupled seat trade (arg5 web v1-vs-v0, arg4 web v0-vs-a0), the tslTm2 delay-slot lbu [1] steal (s15 T-16 tree-order flip), and early arg4 addu+deref placement. v02 = masked 9. NEW mechanism fact: D_800F19C0 passed directly lands lw a1 in the target slot WITHOUT the pp alias; pp is INERT in the named-local family (v02 no-pp 9 == s9v01 with-pp 9; v01 10 vs s9v02 11) - the s8-era 'pp ~7pts' contribution is web-chassis-specific.
+- verdict: KILLED
+
+## [s36] Hoisting idx_1494[0] into a plain-load named local (s30v03 launch-free class) ahead of arg5's tree restores [0]-first lbu order while keeping the middle-addu order
+- mechanism: s15: lbu launch order at sched2 T-16 follows expand-time tree order; a separate [0]-load statement before arg5's tree should win the launch
+- probe: v03 (i0 = idx_1494[0]; arg5 = tbl_125c[idx_1494[1]]; arg4 = tbl_125c[i0]) spliced, sandbox, emission dumped (v03_i0hoist.s)
+- result: masked 10, emitted asm BYTE-IDENTICAL to v01 - GCC copy-propagates the i0 hoist away entirely; lbu order is decided by TREE order, unreachable via index-load statement placement
+- verdict: KILLED

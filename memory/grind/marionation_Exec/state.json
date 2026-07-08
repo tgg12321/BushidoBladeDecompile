@@ -1,7 +1,7 @@
 {
  "func": "marionation_Exec",
  "file": "system",
- "session_count": 35,
+ "session_count": 36,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -219,21 +219,27 @@
    "floor": 4,
    "modality": "rederive",
    "headline": "s35 rederive: decomp.me corpus lever KILLED (max similarity 0.094, no analogous shape); u8*-carrier family KILLED at 11-12 proving the t0-side carrier penalty is holding-type-invariant (s32/s32*/u8*/s"
+  },
+  {
+   "session": 36,
+   "floor": 4,
+   "modality": "rederive",
+   "headline": "s36 rederive: Kengo analog + near-clone levers KILLED; NEW sibling saEft01Init discovered with byte-shape-IDENTICAL do_timeout window (same globals/fmt) whose plain honest C reaches the target middle-"
   }
  ],
  "frontier": [
   {
    "hypothesis": "Tied-web refs reduction satisfies the flip condition: a fresh t0 carrier with the tbl-add DEFERRED into the call deref reduces the tied web to 2 sets + 2 uses = 8 weighted refs, pri 1.71 < arg5val's 2.00 - target seats.",
-   "mechanism": "s34's closed-form arithmetic; the fresh-carrier + deferred-add combination is the only arithmetic hole in the tied-route closure. s35 adds: the carrier's holding type is a free choice (type-invariant at the web level), so the probe need only test one type.",
-   "next_probe": "Structural session: craft s36/v05_carrier_deferred_add.c (tc = idx_1494[0]; tc <<= 2; deref *(s32*)((u8*)tbl_125c + tc) inside the call); pre-vet via qtydbg.sh BEFORE sandbox per the validated s34 protocol."
+   "mechanism": "s34's closed-form arithmetic; the fresh-carrier + deferred-add combination is the only arithmetic hole in the tied-route closure; s35 adds the carrier holding type is free.",
+   "next_probe": "Structural session: craft s37/v05_carrier_deferred_add.c (tc = idx_1494[0]; tc <<= 2; deref *(s32*)((u8*)tbl_125c + tc) inside the call); pre-vet via qtydbg BEFORE sandbox per the validated s34 protocol."
   },
   {
-   "hypothesis": "Cross-function exchange lever developed on the cheaper twin cpu_side_move_dir_4 transplants to marionation_Exec (STRATEGY item, carried from s28-s34).",
-   "mechanism": "Twin's ip/g3 residual is exchange-alone; s33/s34 tiebreak + tied-web route knowledge is shared mechanism material for the twin session.",
-   "next_probe": "Queue-routing / operator-mediated (unchanged - not addressable from this mandate)."
+   "hypothesis": "The shared-window sibling saEft01Init (dist 18, 15 rules, NO callbacks/copy-blocks/check-region) is the cheapest vehicle for cracking the one unknown original window spelling; a form that fixes its window (order AND seats vs its own target) mirrors directly into marionation_Exec's do_timeout.",
+   "mechanism": "s36 proof: byte-shape-identical windows (same globals/fmt), same seat-trade failure from its current C; simpler chassis means its full residual is dominated by the window itself.",
+   "next_probe": "Queue-routing / operator-mediated: work saEft01Init's window (its queue turn or an operator-sanctioned exchange session); import s33/s34 tiebreak + tied-web route knowledge; any order+seats-correct spelling found there gets spliced into marionation_Exec same-day. Supersedes the cpu_side_move_dir_4 twin item as the preferred exchange vehicle (closer window identity)."
   },
   {
-   "hypothesis": "A permuter seed on an unsampled masked-4 basin member (now 32 known; s20-status-local, s21-idx1494-pp-last, s11-u10, s35-m2c-outer-orcomma all unsampled) surfaces a novel local-mutation neighborhood yielding sub-165 with true semantics.",
+   "hypothesis": "A permuter seed on an unsampled masked-4 basin member (32 known; s20-status-local, s21-idx1494-pp-last, s11-u10, s35-m2c-outer-orcomma all unsampled) surfaces a novel local-mutation neighborhood yielding sub-165 with true semantics.",
    "mechanism": "Carried from s32-s34; triage filter is the validated dump pre-vet (extract QTYDBG blk=3, compute the pri pair, discard order-correct finds with pri(arg5val) <= pri(t0-side) without sandboxing).",
    "next_probe": "Adapt build_ws_s26idxp for one of the unsampled members; 20-30min fresh-seed window; harvest, pre-vet, stop."
   }
