@@ -44,7 +44,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from engine.metrics import record_event  # noqa: E402  (best-effort, never raises)
+try:  # best-effort telemetry; the reaper must run even if metrics deps are absent
+    from engine.metrics import record_event  # noqa: E402  (best-effort, never raises)
+except Exception:  # pragma: no cover
+    def record_event(*_a, **_k):  # type: ignore
+        return None
 
 REGISTRY = ROOT / "tmp" / "permuter_campaigns.json"
 META_NAME = "campaign_meta.json"
@@ -279,6 +283,104 @@ def cmd_harvest(args):
     print(json.dumps(summary, indent=2))
 
 
+def _clk_tck():
+    try:
+        return os.sysconf("SC_CLK_TCK") or 100
+    except Exception:
+        return 100
+
+
+def _boot_epoch():
+    """System boot time in epoch seconds (for /proc starttime conversion)."""
+    try:
+        with open("/proc/uptime") as f:
+            return time.time() - float(f.read().split()[0])
+    except Exception:
+        return None
+
+
+def _proc_start_epoch(pid, boot):
+    """Epoch seconds when `pid` started, from /proc/<pid>/stat field 22.
+    comm (field 2) can contain spaces/parens, so parse the tail after the
+    last ')'. Returns None if unreadable (process gone / permission)."""
+    if boot is None:
+        return None
+    try:
+        with open(f"/proc/{pid}/stat", "rb") as f:
+            data = f.read().decode("utf-8", "replace")
+        tail = data[data.rfind(")") + 2:].split()
+        starttime_ticks = int(tail[19])  # field 22 overall; tail index 19
+        return boot + starttime_ticks / _clk_tck()
+    except Exception:
+        return None
+
+
+def cmd_reap(args):
+    """Kill permuter.py process GROUPS older than --ttl seconds. Independent of
+    the grinder — safe to run on a timer. Age is the OLDEST member of each
+    group (a worker pool shares the leader's group via start_new_session), so
+    a healthy young campaign is never touched. Best-effort; never raises."""
+    proc = Path("/proc")
+    if not proc.exists():
+        print(json.dumps({"ok": True, "reaped": [], "note": "no /proc (not Linux/WSL)"}))
+        return
+    boot = _boot_epoch()
+    groups: dict[int, dict] = {}
+    for p in proc.iterdir():
+        if not p.name.isdigit():
+            continue
+        pid = int(p.name)
+        try:
+            cmd = (p / "cmdline").read_bytes().decode("utf-8", "replace").split("\0")
+        except (OSError, PermissionError):
+            continue
+        if not any("permuter.py" in c for c in cmd):
+            continue
+        try:
+            pgid = os.getpgid(pid)
+        except Exception:
+            pgid = pid
+        start = _proc_start_epoch(pid, boot)
+        g = groups.setdefault(pgid, {"pids": set(), "oldest_start": None})
+        g["pids"].add(pid)
+        if start and (g["oldest_start"] is None or start < g["oldest_start"]):
+            g["oldest_start"] = start
+
+    now = time.time()
+    reaped = []
+    for pgid, g in groups.items():
+        age = (now - g["oldest_start"]) if g["oldest_start"] else None
+        if age is None or age < args.ttl:
+            continue
+        reaped.append({"pgid": pgid, "pids": sorted(g["pids"]), "age_s": round(age, 1)})
+        if not args.dry_run:
+            try:
+                os.killpg(pgid, signal.SIGTERM)
+            except Exception:
+                pass
+    if reaped and not args.dry_run:
+        time.sleep(2.0)
+        for r in reaped:  # SIGKILL anything that ignored SIGTERM
+            try:
+                os.killpg(r["pgid"], signal.SIGKILL)
+            except Exception:
+                pass
+        killed_pids = {pid for r in reaped for pid in r["pids"]}
+        reg = _load_registry()
+        changed = False
+        for info in reg.values():
+            if info.get("pid") in killed_pids and info.get("active"):
+                info["active"] = False
+                changed = True
+        if changed:
+            _save_registry(reg)
+        record_event("permuter-reap", "permuter_reaper", {"ok": True},
+                     extra={"ttl_s": args.ttl, "reaped": reaped,
+                            "groups_seen": len(groups)})
+    print(json.dumps({"ok": True, "ttl_s": args.ttl, "groups_seen": len(groups),
+                      "reaped": reaped, "dry_run": bool(args.dry_run)}, indent=2))
+
+
 def cmd_status(args):
     reg = _load_registry()
     rows = []
@@ -318,6 +420,12 @@ def main():
 
     st = sub.add_parser("status", help="list registered campaigns")
     st.set_defaults(fn=cmd_status)
+
+    rp = sub.add_parser("reap", help="kill permuter process groups older than --ttl (timer-safe)")
+    rp.add_argument("--ttl", type=int, default=3600,
+                    help="max campaign lifetime in seconds (default 3600 = 60 min)")
+    rp.add_argument("--dry-run", action="store_true", help="report what would be killed, kill nothing")
+    rp.set_defaults(fn=cmd_reap)
 
     args = ap.parse_args()
     args.fn(args)
