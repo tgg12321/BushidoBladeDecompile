@@ -826,3 +826,15 @@ vT33 in-call add: 16. vT34 sum-split: 11. vT35/vT36 nest-reweight: 15/14. vU1/vU
 - [s47] s47 total: 4 novel structural forms measured (2 KILLs at +4/+10, 2 basin-invariant); running cumulative hand-structural coverage: 165+ hand forms, 32+ basin members (now 14 confirmed on-basin masked-4 spellings), consistent with s46 synthesis's exhaustion conclusion.
 
 - [s47] src/system.c restored to HEAD via git checkout after every measurement; working tree clean (except metrics/events.jsonl); oracle untouched.
+
+- [s48] [s48] Baseline reconfirmed on main: candidate.c (vT40) spliced -> sandbox --disable all = masked 4 (178/179 insns, 42 rules dropped, 20 cheat-asm stripped). Floor unchanged since s0.
+
+- [s48] [s48] NEW mechanism fact (check-var split): shortening check's life via block-scope split into check1v/check2v with per-region returns REGRESSES +10 masked (14 / 178). Same magnitude as s47b's cross-region merge regression - confirms check's function-scope life is load-bearing (both shorter AND longer lives regress). The check-region cascade needs check's specific life-range to seat correctly.
+
+- [s48] [s48] NEW mechanism fact (asymmetric copy-loop guard shape): check1's `i=7` INSIDE the `if (a1!=0)` guard is structurally target-required. Hoisting to before the guard drops 1 build_insn (177 vs 178) and adds +1 masked - the setup insn count itself is target-sensitive, and the asymmetry between check1 (guarded i=7) and check2 (hoisted i=7) is deliberate in target's byte pattern.
+
+- [s48] [s48] Both KILLs banked to memory/grind/marionation_Exec/rejected/: s48-check-split-two-blocks-14.c and s48-check1-i7-hoist-loses-target-insn-5.c
+
+- [s48] [s48] candidate.c unchanged - remains vT40 masked 4 (best-known form). src/system.c restored to HEAD after every measurement via splice_apply --restore + git checkout; working tree src/ clean; oracle green.
+
+- [s48] [s48] Cumulative structural coverage after s48: 167+ hand-authored structural variants across s2/s3/s8/s9/s10/s11/s12/s34/s35/s36/s37/s38/s39/s44/s45/s47/s48. Combined with s6/s7/s42/s43 forensics (140-ordering sweep, 9-topology sweep, insn-level sched2/dbr/mem-edge/class-lever) and 12+ permuter basins (~50+ CPU-hr), the hand-derivable + local-sampler space around vT40 remains comprehensively closed at masked 4. Both s48 KILLs extend the check-region axis coverage (previously s47 covered mask holders + pp position + saved scope; s48 adds check-var life AND copy-loop guard shape).
