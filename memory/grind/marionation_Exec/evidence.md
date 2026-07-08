@@ -514,3 +514,19 @@ vT33 in-call add: 16. vT34 sum-split: 11. vT35/vT36 nest-reweight: 15/14. vU1/vU
 - [s24] MECHANISM CONCLUSION strengthening s6/s17: sched2's rank_for_schedule INSN_LUID assignment at T-14 (deciding the arg4-sll/arg5-sll tie) is derived from the pass's own backward dep-DAG walk, not from any pre-sched2 IR shape a -f flag can re-arrange. All tested pre-sched2 (jump/cse/loop/cse2/flow/combine) and post-sched2 (dbr) flags leave the T-14 emission unchanged.
 
 - [s24] Global fp/dbr/sched-off flags additionally regress OTHER functions in system.c drastically (large line-count deltas 57-118 lines from small pass toggles), so even a per-file wrapper (unbuilt this session) would not resolve the tie without collateral fn-level damage.
+
+- [s25] s25 baseline reconfirmed: candidate.c (vT40) spliced -> cc1 -da dump produced fresh (13 RTL pass files + emitted .s) via tmp/grind/marionation_Exec/s25/rankdbg.sh; src/system.c restored to HEAD via splice_apply.py --restore + git checkout; oracle green.
+
+- [s25] Pass and line named at source level: rank_for_schedule at sched.c:2399-2456; T-14 tie decision at CLASS-compare line 2448 (correction of hypothesis 1 which named line 2455 - the LUID fallback is unreached for this pair). Neither compare's outcome is source-C reachable without changing arg5's expression tree topology (which measured KILLED at masked 8 uniformly across arg5-first-source variants).
+
+- [s25] Chain order at sched2 entry (from greg dump lines 3838-3893 for the marionation_Exec block): 99(LUID 0) -> 115(1) -> 141(2) -> 117(3) -> 106(4) -> 120(5) -> 122(6) -> 128(7) -> 111(8) -> 137(9) -> 133(10).
+
+- [s25] Data-dep chain confirmed: insn 117 SETS v0, insn 120 USES v0 as source of the plus. LOG_LINKS(120) contains 117; find_insn_list(117, ...) returns non-null; insn_cost(117, ..., 120) > 1 (ashift is not zero-latency); REG_NOTE_KIND == 0 (data-dep) -> class(117) = 1. For 106 (a0-sll), no LOG_LINK to 120 -> class(106) = 3.
+
+- [s25] sched2 T-14 trace: `ready list at T-14: 106 (2) 141 (1) 117 (2), now 106 117 141` (mar_system_s25.i.sched2 line 147). 106 emitted at chronological pos 7.
+
+- [s25] Novel infrastructure fact: sched.c source has BB2_RANK_DEBUG env-gated stderr diagnostic (lines 2436-2446) but neither built cc1 has it compiled in (build/cc1 dated May 18 predates the July 3 sched.c mod; strings|grep RANKDBG returns 0 on both build/cc1 and tmp/gccdbg/cc1). Rebuilding cc1 to activate the diagnostic is forbidden by no-compiler-divergence.md; the diagnostic is source-only until a legitimately-authorized rebuild.
+
+- [s25] Frontier item #3 refined: rank_for_schedule tie is decided at CLASS compare (line 2448), not LUID (line 2455). A source patch would need to modify class-preference (not just LUID-preference), which is a MORE INTRUSIVE change than the ledger digest imagined. This does not change the KILL verdict - .claude/rules/no-compiler-divergence.md categorically bans sched.c patches.
+
+- [s25] Verifies s16/s17 finding at the source-line level: 'the T-14 tie is decided by scheduler-internal state (INSN_LUID from the backward walk), not by expand-time opcode-family placement' is corrected to: 'decided at the class-compare via LOG_LINKS to last_scheduled_insn (which is fixed by arg5's expression-tree data-dep from 117 into 120)'. The class-compare outcome is INVARIANT to expand-time UID assignment because it depends on the DEP-DAG shape, which is a semantic property of the arg5 expression.

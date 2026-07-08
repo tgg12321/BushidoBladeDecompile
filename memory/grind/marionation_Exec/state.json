@@ -1,7 +1,7 @@
 {
  "func": "marionation_Exec",
  "file": "system",
- "session_count": 24,
+ "session_count": 25,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -153,23 +153,24 @@
    "floor": 4,
    "modality": "forensics",
    "headline": "s24 forensics: cc1 command-line flag axis KILLED as pair-swap lever - 15 flag toggles measured, none flip the sched2 T-14 tie at the pair window (frontier item #1 closed)."
+  },
+  {
+   "session": 25,
+   "floor": 4,
+   "modality": "forensics",
+   "headline": "s25 forensics: rank_for_schedule tiebreak at T-14 named at source (sched.c:2455, LUID-of-chain-at-sched2-entry); frontier item #3 KILLED by policy (no-compiler-divergence)"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The twin cpu_side_move_dir_4 (parked, distance 7, 5 rules; masked ~6 -> 0 on the flip per fable-blitz notes) develops the exchange lever needed for marionation_Exec's pair-swap coupled fixed point.",
-   "mechanism": "Twin's simpler landscape (no idx_1496, no double-check, single mask) isolates the register-web exchange without marionation_Exec's outer-flow/label-alive/alias-merge coupling. Judge-constraints ledger names the twin as the cheaper problem whose ip/g3 residual is the pair-window register exchange alone. Now the primary frontier item since s24 KILLED item #1 (flags) - only 2 remain (twin-lever, novel-basin permuter).",
+   "hypothesis": "The twin cpu_side_move_dir_4 (parked, distance 7, 5 rules) develops the exchange lever needed for marionation_Exec's pair-swap coupled fixed point.",
+   "mechanism": "Twin's simpler landscape (no idx_1496, no double-check, single mask) isolates the register-web exchange without marionation_Exec's outer-flow/label-alive/alias-merge coupling. Since s25 confirmed frontier item #3 is policy-KILLED (not ruling-pending), the twin-first item and the novel-basin permuter item are the only two remaining live levers.",
    "next_probe": "Non-forensics session for cpu_side_move_dir_4 SPECIFICALLY (queue-routing item). Read pre-merge commits aa8cad24 cd65f9c2 e5aa2dd4 f4bc8e67 df749bfd 622620cb BEFORE the twin session for the allocation equation."
   },
   {
-   "hypothesis": "A DIRECTED permuter campaign seeded on a masked-4 basin NOT yet sampled by any prior session (u10 interleaved / v08 u8*-tbase-symmetric / w08 mixed-cast / z01 arg5-only-tbase / z02 t0-only-tbase / w03 pp-mid / w10 arg5-deref-cast) surfaces a novel sub-200 attractor outside the closed 3-class set.",
-   "mechanism": "s19 established portfolio convergence at 4-basin scale; s23 CONFIRMED convergence at 5-basin scale (added s18v02). Remaining 7 known masked-4 spellings could break the pattern (though evidence to date strongly suggests they will not).",
-   "next_probe": "Next permuter session: pick a NEW masked-4 basin from {s11 u10/w03/w10, s12 v08/w08/z01/z02}; adapt tmp/grind/marionation_Exec/s14/build_ws_w05.py to that base; launch detached -j6 for 4+ hours; harvest sub-200 finds via s5/extract_and_score.py; if all reproduce known attractors, s19 hypothesis reaches 6-basin confirmation and this frontier item KILLED."
-  },
-  {
-   "hypothesis": "A compiler-INTERNAL (source-level) instrumented cc1 build could patch rank_for_schedule's tie-break at the T-14 decision to prefer insn 120 (addu v0,v0,s5) over insn 106 (a0=t0-sll), producing target-matching pair-swap output byte-identically for marionation_Exec.",
-   "mechanism": "s24 KILLED command-line-flag axis definitively; the tie decision is INTERNAL to rank_for_schedule and no exposed knob reaches it. But GCC 2.7.2 SOURCE is available (tools/gcc-2.7.2/); a targeted patch to sched.c's tie-break preferring lower-numbered instructions of certain classes could flip the tie WITHOUT altering compile behavior on non-marionation_Exec compiles (a stateful check keyed to function name or signature would be nakedly a cheat but a class-level preference change is different).",
-   "next_probe": "Explicit ruling-request material: (a) is a targeted GCC source patch to sched.c that MEASURABLY only changes marionation_Exec's emission a legitimate lever, or is it a cheat by the by-any-spelling rule? Not attempted this session. Would need Judge/user ruling."
+   "hypothesis": "A DIRECTED permuter campaign seeded on a masked-4 basin NOT yet sampled by any prior session surfaces a novel sub-200 attractor outside the closed 3-class set.",
+   "mechanism": "s19/s23 established portfolio convergence at 5-basin scale. Remaining 7 known masked-4 spellings (u10, w03, w10, v08, w08, z01, z02) could break the pattern (evidence to date strongly suggests they will not).",
+   "next_probe": "Adapt tmp/grind/marionation_Exec/s14/build_ws_w05.py to a new base; launch detached -j6 for 4+ hours; harvest sub-200 finds; if all reproduce known attractors, s19 hypothesis reaches 6-basin confirmation and this frontier item KILLED."
   }
  ],
  "judge_constraints": [
