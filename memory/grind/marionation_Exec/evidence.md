@@ -568,3 +568,15 @@ vT33 in-call add: 16. vT34 sum-split: 11. vT35/vT36 nest-reweight: 15/14. vU1/vU
 - [s28] Synthesis document: tmp/grind/marionation_Exec/s28/SYNTHESIS.md.
 
 - [s28] src/system.c untouched; candidate.c unchanged (remains vT40, best-known masked 4); oracle green.
+
+- [s29] s29 baseline reconfirmed: candidate.c (vT40) spliced -> sandbox --disable all = masked 4 (178/179 insns, 42 rules dropped, 20 cheat-asm stripped). Floor unchanged since s0 wip-import.
+
+- [s29] s29 NEW mechanism fact: the copy-loop body's internal statement axis (excluding i-decrement position) is spelling-inert across 5 measured spellings (no-temp / post-inc-idiom / s32-temp / stores-before-advance / pre-decrement-while); all reach masked 4 with 178 build_insns.
+
+- [s29] s29 NEW mechanism fact: i-decrement POSITION within the copy-loop body is load-bearing. Moving `i--` to the top of the loop body (before the bb load) regresses by +4 masked at same build count 178. This is a novel load-bearing axis not previously catalogued in the 25+ prior masked-4 spelling census.
+
+- [s29] s29 basin census: known distinct masked-4 spellings now 30 (was 25 at s28), extending across the copy-loop-body internal-structure axis. Adds: v01_no_bb_temp, v02_postinc_idiom, v04_s32_bb, v05_stores_before_advance, v06_predec_while.
+
+- [s29] s29 src/system.c restored to HEAD via splice_apply.py --restore + git checkout after every measurement; working tree clean (except metrics/events.jsonl and the new rejected/ file); oracle green throughout.
+
+- [s29] s29 cumulative hand-authored structural coverage: prior 155+ variants (s2/s3/s8/s9/s10/s11/s12/s16/s17/s18/s20/s21/s26/s27) + s29 6 copy-loop-body variants = 161+ measured. The copy-loop-body internal-structure axis was previously untested per s21 note (only i-scoping was tested, not body-statement-order or bb-typing or ptr-advance-position). Now measured negative.

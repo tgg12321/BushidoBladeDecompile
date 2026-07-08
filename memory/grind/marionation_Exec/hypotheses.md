@@ -623,3 +623,39 @@
 - probe: s28 synthesis: enumerated 25 basin members from evidence.md + hypotheses.md verdicts. Cumulative structural coverage after s27: 155+ hand-authored variants across s2/s3/s8/s9/s10/s11/s12/s16/s17/s18/s20/s21/s26/s27.
 - result: Basin spelling census consolidated; the two residuals are provably invariant across every hand-derivable structural axis.
 - verdict: CONFIRMED
+
+## [s29] Eliminating the `u8 bb` copy-loop temp entirely (direct `*dst = *src; src++; dst++; i--;`) reaches masked <=4 by removing a pseudo from the copy-region qty pool.
+- mechanism: Prior sessions established qty scope-tightening in the copy region is inert (s21 v10 ptrs block-scope, s20 v01 status scope). Direct load-store fusion is a distinct axis: removes the bb pseudo births (~2 in the whole function's copy blocks) and lets GCC use its own scratch reg for the transfer.
+- probe: v01_no_bb_temp.c spliced, sandbox --disable all
+- result: masked 4 / 178 build_insns - INERT. Novel masked-4 basin member #26. GCC fuses the load-store pair through the same scratch reg it would have named bb; the pseudo elimination is spelling-inert. Both copy loops share the same emission.
+- verdict: KILLED
+
+## [s29] Post-increment idiom (`bb = *src++; *dst++ = bb; i--;`) reweights the copy-loop qty allocation by fusing pointer advance with deref at the RTL level.
+- mechanism: Fused post-increment lowers to `lb; addiu` combined-mode addressing that combine may recognize; distinct sub-expr tree shape from the split `*src; src++;` form. Could differ at expand's INSN_LUID assignment for the copy body.
+- probe: v02_postinc_idiom.c spliced, sandbox --disable all
+- result: masked 4 / 178 - INERT. Novel masked-4 basin member #27. Post-increment idiom canonicalizes at expand to the identical `(set bb (mem src)) (set src (plus src 1))` sequence as the split form; the tree fusion is transparent by cse2.
+- verdict: KILLED
+
+## [s29] Moving `i--` to the top of the copy-loop body (before bb load) reshapes the copy-region schedule without affecting the do_timeout window.
+- mechanism: i's decrement is the loop-control update; its RTL position within the do-while body could reorder the copy-loop's internal sched2 walk. Prior s21 v02 measured `s32 i = 7;` fresh per-block birth as masked 19 (fresh-temp launch class); i-position within the existing single-decl body is a distinct axis.
+- probe: v03_i_dec_first.c spliced, sandbox --disable all
+- result: masked 8 / 178 build_insns - REGRESSION +4. NEW MECHANISM FACT: i-- position within the copy-loop body IS load-bearing. Moving the decrement to top places its RTL insn BEFORE the load/store pair, changing the loop-body's terminator dep-chain and re-timing the check2 branch-arg computation upstream (the +4 lives in the check-region delta, not the do_timeout pair-window). Position of i's update relative to the ptr-advance is the sole load-bearing axis in the copy-loop-body spelling census. Banked as rejected/s29-copyloop-i-dec-first-8.c.
+- verdict: KILLED
+
+## [s29] Widening the copy-loop temp `u8 bb` to `s32 bb` alters the load-store pair's RTL type and could shift the copy-loop's schedule via a different mem_mode.
+- mechanism: u8 bb compiles to `(set bb (zero_extend:SI (mem:QI src)))`, s32 bb to `(set bb (mem:SI src))` if src is s32-aliased or `(set bb (zero_extend:SI (mem:QI src)))` still if the deref stays QI. Different type widths test whether GCC picks the same mem_mode.
+- probe: v04_s32_bb.c spliced, sandbox --disable all
+- result: masked 4 / 178 - INERT. Novel masked-4 basin member #28. GCC uses the same lbu (deref of u8* src is QI-mode regardless of the temp's declared type), and the store into u8* dst matches - the temp type is transparent through combine.
+- verdict: KILLED
+
+## [s29] Placing the store `*dst = bb` BEFORE the pointer advances (`src++; dst++;`) reweights the copy-loop's internal sched.
+- mechanism: In vT40, the sequence is `bb = *src; src++; i--; *dst = bb; dst++;` - the store is separated from the load by two intervening insns. Moving the store adjacent to the load (`bb = *src; *dst = bb;`) shortens bb's life and could change the copy-loop's dep-DAG.
+- probe: v05_stores_before_advance.c spliced, sandbox --disable all
+- result: masked 4 / 178 - INERT. Novel masked-4 basin member #29. Copy-loop-body statement order within the pair {load-store, ptr-advance, i-decrement} is inert across the store-first vs advance-first orderings. Only i-- top-position is load-bearing.
+- verdict: KILLED
+
+## [s29] Pre-decrement `while (--i != -1)` (loop-test-side decrement, eliminating the in-body `i--`) restructures the loop terminator's RTL and could shift the copy-region sched2.
+- mechanism: Pre-decrement in the condition means i's update lives in the branch's cmp arg RTL, not as a separate body insn. Distinct dep-DAG shape from body-i-- + test-i.
+- probe: v06_predec_while.c spliced, sandbox --disable all
+- result: masked 4 / 178 - INERT. Novel masked-4 basin member #30. GCC 2.7.2 canonicalizes body-i-- + test vs test-side --i to the same post-loop.c RTL (loop.c pushes the decrement to the end of the body for a canonical `beq -1,end`). Spelling-inert.
+- verdict: KILLED
