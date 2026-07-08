@@ -742,3 +742,21 @@ vT33 in-call add: 16. vT34 sum-split: 11. vT35/vT36 nest-reweight: 15/14. vU1/vU
 - [s41] s41 portfolio convergence extends: 11 sampled basins {vT40, find105, z07, w05, s18v02, s30v03, s29v06, s26idxp, s35orcomma, s20status, s11u10} -> 12 including v11; cumulative ~50+ CPU-hr sampling; ZERO novel-mechanism sub-200 attractors across all 12; all sub-200 finds classify to 3 known families (alias-merge masked>=10, label-alive +1 insn, cross-window-alias/reg-shuffle score-inert-to-slight-regression).
 
 - [s41] s41 candidate.c unchanged (remains vT40 masked 4 best-known); no src/ edits persist; oracle green.
+
+- [s42] s42 baseline reproduced: candidate.c (vT40) spliced -> sandbox --disable all = masked 4 (178/179, 42 rules dropped, 20 cheat-asm stripped). Fresh cc1 -da dumps at s42/baseline/.
+
+- [s42] Baseline insn 122 direct successors in sched2: 128 (anti-dep via v0 register-allocator reuse, ALREADY PRESENT), 137 (true-dep via v1), 147 (call anti-dep via memflush). Longest 122->jal forward path = 122->128->133->143->147, length 4.
+
+- [s42] s39's arg3-through-v0 staging FORCED the 122->128 edge from source but the RA-produced edge was already there; s39's +12 masked penalty came from v0-web growth (3-set pseudo), not from edge-adding.
+
+- [s42] GCC 2.7.2 sched.c memrefs_conflict_p returns provably-disjoint for SYMBOL_REF vs different-SYMBOL_REF (line 748-750). Any store to a fixed global address that isn't tbl_125c creates NO edge with 122.
+
+- [s42] REG-based writes require materializing the address REG. Any new local pointer birth grows a pseudo web (defeats P4 constraint 'no in-window pseudo growth').
+
+- [s42] Existing param a1 could carry a mem-store without new pseudo births (a1 already live for check1/check2 copies), but *a1 = <expr> is a user-observable buffer write (Judge-verboten semantic-lie).
+
+- [s42] 137's dep entry (`insn_list:REG_DEP_ANTI 99 (REG_DEP_ANTI 115 (93 (122 (nil)))))`) shows 122 as a true-dep predecessor via v1 — sched.c find_insn_list dedups any would-be mem-anti-dep. Corollary: adding a stack-slot store cannot create a new 122-successor edge.
+
+- [s42] The 122-forward-chain length in baseline IS its natural maximum under RA v0-reuse. No C-level statement can extend it via mem-edges without violating pseudo-web-growth or semantic-lie constraints.
+
+- [s42] Portfolio synthesis with s6/s25/s33/s41: pair-swap and region-3 residuals are compiler-internal decisions with no C-level lever addressable within the vT40 basin's mechanism space. P2's cross-function operator-mediated exchange is the only remaining pathway.

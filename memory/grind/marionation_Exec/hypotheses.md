@@ -887,3 +887,21 @@
 - probe: Compare v11's 1 find/1740 iters (find at 35.8s from launch, no further sub-220 sample in remaining ~24 min) vs s31 s30v03 (5 finds/26min), s40 s20status (14 finds/6.5h stale), s40 s35orcomma (5 finds/5min stale), s40 s11u10 (1 find/25min fresh).
 - result: 1 sub-220 find in 25 min at fresh-seed window is on the low end but within band; the find classifies to known cross-window-alias family, matching portfolio convergence pattern (0 novel attractors across 12 basins now).
 - verdict: CONFIRMED
+
+## [s42] Baseline candidate.c (vT40) reproduces masked 4 on main with fresh cc1 -da dumps.
+- mechanism: candidate.c spliced -> sandbox --disable all; cc1 -da dump into tmp/grind/marionation_Exec/s42/baseline/.
+- probe: python3 tmp/grind/marionation_Exec/s6/splice_apply.py memory/grind/marionation_Exec/candidate.c; & tools/wteng.ps1 main sandbox marionation_Exec --disable all; bash tmp/grind/marionation_Exec/s42/dump.sh baseline; splice_apply.py --restore; git checkout src/system.c.
+- result: sandbox = masked 4 (178/179, 42 rules dropped, 20 cheat-asm stripped); 14 -da RTL dumps + emitted .s produced in s42/baseline/. src restored to HEAD, oracle green.
+- verdict: CONFIRMED
+
+## [s42] P4: a memory-carried anti-dep from insn 122 to some later mem-write can lengthen arg5's forward chain and flip the sched2 T-14 tie without adding sets to any in-window pseudo (v0/t0/arg5 webs).
+- mechanism: sched.c 2.7.2 mem-edge sources enumerated (sched_analyze_1/2, memrefs_conflict_p, true/anti/output_dependence, last_pending_memory_flush, ASM_OPERANDS/TRAP_IF/PRE_INC/POST_INC flushes). The only edge shape that lengthens 122's forward chain is a later MEM write whose target may-aliases (mem (reg v0)); memrefs_conflict_p resolves SYMBOL_REF-vs-SYMBOL_REF as provably disjoint (no edge), and REG-based writes require materializing the address REG.
+- probe: Fresh cc1 -da dump of baseline (s42/baseline/mar_system_s42.i.sched2) — extracted insn 122's LOG_LINKS structure and enumerated the sched.c code paths that can add an outgoing MEM anti-dep from 122. Cross-referenced C-level shapes reachable in the do_timeout window against pseudo-web-growth and semantic-lie constraints (table at s42/findings.md).
+- result: The 122->128 anti-dep is ALREADY present in baseline (via RA register-reuse of v0 for the D_800A11D5 load) — so s39's arg3-through-v0 staging did NOT structurally lengthen the chain, only forced pseudo-web growth. No other C-level statement can add a new 122->X mem-anti-dep without one of: (a) growing an in-window pseudo web (defeats P4), (b) writing user-observable memory (Judge-verboten as semantic-lie), or (c) SYMBOL_REF-vs-SYMBOL_REF disjointness (no edge). The 122-chain length is at its natural maximum given RA's freedom.
+- verdict: KILLED
+
+## [s42] sched.c 2.7.2's memrefs_conflict_p can be tricked by a REG-based address into creating a MEM edge with a SYMBOL_REF store, providing a pseudo-free lever.
+- mechanism: If ptr's known-value via reg_known_value resolves to a SYMBOL_REF, sched_analyze_2's REG handler at line 1898-1902 re-analyzes with the SYMBOL_REF and memrefs_conflict_p returns disjoint. Otherwise the fallback treats REG bases as may-alias.
+- probe: Read sched.c:614-780 (memrefs_conflict_p), 1740-1780 (SET target MEM), 1895-1945 (MEM read), 1985-1996 (ASM_OPERANDS clobber). Cross-checked baseline: 137 (sw sp+16) does NOT get an added anti-dep with 122 despite being reg-based, because the RAW (v1 true-dep) already exists and find_insn_list dedups.
+- result: The mechanism exists but is unreachable: any REG-based store either birth-extends a pseudo web (defeating P4) or resolves to SYMBOL_REF via reg_known_value (no edge). Every candidate shape either grows a web or writes user-observable memory. No pseudo-free MEM lever exists.
+- verdict: KILLED
