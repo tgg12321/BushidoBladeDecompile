@@ -365,3 +365,21 @@
 - probe: tmp/grind/marionation_Exec/s18/v04_idx1495_late_birth.c spliced -> sandbox --disable all
 - result: masked 25, 177 build_insns (+21 vs floor, -1 build_insn). LARGER regression than s12's life-extension probe (+6-7). Confirms idx_1495 fixed-point: function-top birth with single callback use is a doubly-load-bearing signature. The delayed addu births a separate sub-tree post-do_timeout, retiming the entire layout.
 - verdict: KILLED
+
+## [s19] The z07-basin permuter campaign produces a novel sub-200 find that closes below masked 4 with true semantics and 179 insns.
+- mechanism: z07 is one of 12 known distinct masked-4 spellings; its u8* tbase + v0-interleaved compute chassis births a different qty landscape than vT40/find105/w05, potentially reaching a non-alias-merge / non-label-alive attractor.
+- probe: Triaged the FIRST post-s14 z07 sub-200 find (output-160-1) via s5/extract_and_score.py + sandbox --disable all.
+- result: z07-160-1 = masked 3 / 180 build_insns. Diff: `status = 0;` inserted before check1 clear + `while (status)` (single-iter self-exit) after clear. Same +1-insn label-alive class as vP160 (s5) and the s5 0xFF-through-local variant (SAFER semantics — status is assigned locally, not uninit-read cross-block, but still emits the visible byte). Reproduces the known label-alive attractor from the NEW z07 basin; NOT a closer.
+- verdict: KILLED
+
+## [s19] The w05-basin permuter campaign produces a novel sub-200 find that breaks past the alias-merge family floor of masked 10.
+- mechanism: w05 is s32 tbaseS chassis — structurally distinct qty-allocation landscape from vT40/z07 (types differ); the alias-merge attractor may reach a different callee-saved seat outcome.
+- probe: Triaged the FIRST post-s14 w05 sub-200 find (output-145-1) via s5/extract_and_score.py + sandbox --disable all.
+- result: w05-145-1 = masked 17 / 179 build_insns. Reproduces the find145-class alias-merge attractor (dst2 = idx_1494 web merge, callee-saved seat trade) from the w05 basin — masked score identical to s4 output-145-2 measurement. Confirms alias-merge attractor is basin-invariant.
+- verdict: KILLED
+
+## [s19] Portfolio-scale permuter sampling across distinct masked-4 chassis (vT40/find105/z07/w05) produces qualitatively new sub-200 attractors beyond the alias-merge (masked 10 floor) and label-alive (+1 insn) classes documented in s4/s5/s10.
+- mechanism: 12 known masked-4 spellings cover disjoint local mutation neighborhoods; if novel attractors exist for the two residuals, different basins should surface them.
+- probe: Cross-tabulated all 4 basins' post-s14 output-* sets: {vT40: identical to s5; find105: identical to s5; z07: NEW 160-1 + 200-1; w05: NEW 145-1 + 200-1 + 200-2}. Sampled the two novel sub-200 finds above.
+- result: FALSIFIED. Both novel sub-200 finds reproduce known attractor CLASSES (label-alive +1-insn / alias-merge callee-saved-seat) rather than exposing a new one. Combined with 11h+ vT40/find105 zero-new-finds and z07 first-10-min zero (s14), the portfolio approach has convergent, not diverse, sub-200 output: the two residuals map to a fixed small set of universal attractors reachable from any masked-4 basin.
+- verdict: CONFIRMED

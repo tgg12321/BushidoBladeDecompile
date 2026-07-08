@@ -412,3 +412,17 @@ vT33 in-call add: 16. vT34 sum-split: 11. vT35/vT36 nest-reweight: 15/14. vU1/vU
 - [s18] s18 candidate.c unchanged (remains vT40 best-known masked 4). src/system.c restored to HEAD via git checkout after each measurement; working tree clean; oracle green.
 
 - [s18] s18 4 forms banked to rejected/: s18-forloop-outer-sentinel-17.c, s18-check-ifelse-structured-masked4-basin-equiv.c, s18-eliminate-idx1495-inline-15.c, s18-idx1495-late-birth-25.c.
+
+- [s19] [s19] Baseline unchanged: vT40 floor masked 4 (178/179, 42 rules dropped, 20 cheat-asm stripped); src/system.c restored to HEAD after triage; oracle green.
+
+- [s19] [s19] NEW permuter finds since s14: s13/perm_z07/{output-160-1, output-200-1} and s14/perm_w05/{output-145-1, output-200-1, output-200-2}. Both z07 and w05 basins now have first sub-200 outputs.
+
+- [s19] [s19] z07-160-1 triaged: masked 3 / 180 insns; diff = `status = 0;` before check1 clear + `while (status);` after clear — SAFER semantic variant of vP160 (status is locally-assigned, not uninit cross-block), but still pays +1 build_insn = unmatchable at 180 vs 179 target. Third distinct label-alive spelling documented in ledger (vP160 `while (status)` uninit + s5 0xFF-through-local `while (status = 0)` + this z07 pre-assign-then-check).
+
+- [s19] [s19] w05-145-1 triaged: masked 17 / 179 insns; reproduces find145-class alias-merge attractor from w05 basin at identical masked score to s4 output-145-2 measurement. Confirms alias-merge attractor is chassis-invariant (family floor masked 10 governs regardless of source basin).
+
+- [s19] [s19] SYNTHESIS finding: portfolio approach has CONVERGENT attractors — both novel sub-200 finds from previously-unsampled basins reproduced known attractor CLASSES rather than surfacing new ones. The two residuals map to a small closed set of universal attractors (alias-merge callee-saved family floor masked 10; label-alive +1-insn; find165/175/200-class permuter progress that trades reg-diff points without moving masked). This TIGHTENS the impossibility argument for hand-derivable / local-sampler closure and elevates non-local levers (compiler flags, twin-first exchange) to primary frontier status.
+
+- [s19] [s19] Cumulative ledger state after s19: 135 hand-authored structural variants (s2/s3/s8/s9/s10/s11/s12/s16/s17/s18) + ~10k+ permuter samples across 4 basins (vT40/find105/z07/w05) + s6/s7/s15/s16 insn-level forensics (140-ordering sweep, 9-topology sweep, dbr/sched2 dumps) + 5 sub-200 finds triaged in-ledger. The hand-derivable + local-sampler basin around vT40/z07/w05 is COMPREHENSIVELY closed at masked 4. Movement requires (a) scheduler-behavior modification (compiler flag), (b) twin-first exchange lever, or (c) reseeding permuter on CFG-restructured chassis (s18v02 if/else check-region) not yet sampled — the tbase/interleaved chassis explored in s13/s14 has confirmed the same attractor set as vT40.
+
+- [s19] [s19] Ledger digest 'live frontier item 1' (w05/z07 campaigns producing novel sub-220 finds) is now RESOLVED — the finds materialized (5 total across both basins) and were triaged NEGATIVE as closers. That frontier item is closed.
