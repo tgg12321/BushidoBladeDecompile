@@ -1,7 +1,7 @@
 {
  "func": "marionation_Exec",
  "file": "system",
- "session_count": 49,
+ "session_count": 50,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -303,23 +303,29 @@
    "floor": 4,
    "modality": "permuter",
    "headline": "s49 permuter: PERM_IGNORE-mid-function KILLED (b64literal pragma emits at compound-stmt position, base fails at maspsx); pivoted to 13th-basin sample (s47 vS47c pp-hoisted-to-block-head chassis, base="
+  },
+  {
+   "session": 50,
+   "floor": 4,
+   "modality": "permuter",
+   "headline": "Frontier F2 (region-3 post-filter) EXECUTED across 154 permuter finds: 28 have target-matching check2-slot=nop; only perm3/output-80-1 beats vT40 (masked 2, build=target=179) and it does so via volati"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The operator-mediated exchange lever developed on twin cpu_side_move_dir_4 (pair-window-only residual) yields an order+seats-correct do_timeout window spelling that mirrors into saEft01Init and marionation_Exec via the s39 fingerprint.",
-   "mechanism": "Twin's residual is the pair alone; qty_compare 5.33v5.33 equation is the SAME tie; s39 saEft01Init regfix decode gives exact constraints. Pre-merge worker commits (aa8cad24 cd65f9c2 e5aa2dd4 f4bc8e67 df749bfd 622620cb) hold allocation-equation material not fully in this ledger.",
-   "next_probe": "OUT-OF-MANDATE for marionation_Exec permuter session; requires queue-routing to twin cpu_side_move_dir_4."
+   "hypothesis": "Since perm3/80-1 PROVES the region-3 residual byte is byte-legally emittable at build=179 via SOME memory op forced between check2 and its clear-store, there may exist a non-cheat construct that emits the same insn (a legitimate volatile touch of an actually-interrupt-modified byte, or an aliased-store to a real memory region that dbr must treat as anti-dep to the clear).",
+   "mechanism": "Candidates: (a) reading or writing a genuinely-volatile global (D_800A147C_2 itself, or D_800F19B0 which is touched by the vblank/timer handler) at exactly the region-3 position; (b) a store to memory whose address the compiler cannot prove non-aliasing to the clear-target (idx_1496-1 = &D_800A1495); (c) a call to a pure-looking function whose ABI signals a memory clobber. Any of these could give dbr a real anti-dep edge that rejects the fill without a coercion cheat.",
+   "next_probe": "Grind or forensics session: for each of the 3 candidates, write a variant that inserts the honest memory op between the check2 branch and the sb clear; score with sandbox --disable all; probe whether the emitted insn matches target's addu $a1,$s4,$zero exactly (the un-stolen move). If ANY variant lands at masked 2 build 179, that is a candidate-ready pure-C form."
   },
   {
-   "hypothesis": "Two-stage region-3-isolation: run the standard fresh-basin campaign, then post-filter finds by inspecting ONLY the check-region diff (ignore pair-window insn deltas) - a find whose region-3 window matches target and whose pair-window matches vT40 residual could break the region-3 residual byte-legally.",
-   "mechanism": "PERM_IGNORE-mid-function is unavailable (s49 KILL); scorer-weight override is not exposed (s49 doc). But filtering existing campaigns' output-* dirs by manual insn-window diff is straightforward. Existing archives: s4/perm/output-* (vT40, 15 finds), s4/perm_c/output-* (find105, 3 finds), plus s13/s14/s22/s31/s32/s40/s41/s49 basins.",
-   "next_probe": "Permuter or forensics modality: write tmp/grind/.../s50/region3_scan.py that for each existing output-*/source.c fingerprints the 3 check2-region insns (beqz, delay-slot nop-or-move, first-post-slot) and flags any find whose region-3 fingerprint = target's fingerprint AND whose pair-window is not worse than vT40's."
+   "hypothesis": "Because pair-swap-@56/57 stays coupled to sched2 T-14 UID tie (s6/s15 confirmed) AND region-3 residual is now proven byte-reachable-only-by-coercion in the archive, the joint residual (masked 4 = 2 for pair + 2 for region-3) has NO joint pure-C closer at build=179 measurable from any known chassis.",
+   "mechanism": "s6/s15 analysis pinned pair-swap to insn-UID tiebreak in sched2 (structural, not addressable at the C level without adding pseudos, which regress) and s6 mapped region-3 to dbr fill_simple_delay_slots rejecting neither the fall-through-owner nor all-live predicates. Both mechanisms are compiler-pass-internal; the C source shapes cannot both flip without adding an insn (vP160) or coercing a memory op (perm3/80-1 volatile).",
+   "next_probe": "Ruling-request session: with F1 (twin exchange lever) still open per synthesis frontier, this session KILLS F2 as archive-exhausted. If a follow-up F1 session also closes negative, the evidence bar for canonical-asm-authorization is reached (49 sessions + this scan = comprehensive lever-exhaustion + named GCC-pass mechanisms + F2 archive-negative). Not this session's mandate."
   },
   {
-   "hypothesis": "After F1 (twin exchange lever) and F2 (region-3 post-filter) both close negative, marionation_Exec qualifies for canonical-asm authorization under the 'genuine no-C-form' gate.",
-   "mechanism": "49 sessions of structural + forensic + portfolio-scale closure (now 13 basins, all four qty_compare arithmetic axes, three named decision routes, class-vs-LUID mips.md decoding, mem-edge exhaustion, PERM_IGNORE unavailability) reach the evidence bar for a ruling-request per canonical-asm-retirement.md.",
-   "next_probe": "Ruling-request session (not this session's mandate)."
+   "hypothesis": "Deeper permuter sampling on a fresh basin (not previously enumerated 13 sampled chassis) might land a masked-2 pure-C spelling that the archive has not explored - the volatile-coercion basin is one possible attractor, but a distinct basin sampling different pseudo-allocation landscape could reach the same score without volatile.",
+   "mechanism": "The archive-scan measured 154 finds across 20 basins. Ledger's synthesis s37/s46 lists 13 SAMPLED basins. Untried basin chassis exist (e.g., asymmetric-tbase-with-shared-index, or one of the s39 arg3-v0-WAR-edge families that landed at masked 16 without campaign follow-up).",
+   "next_probe": "Permuter session: pick one of the higher-masked (10-16) chassis with a structurally distinct qty-allocation landscape (s39 arg3-v0-WAR-edge candidates at masked 16; s31 s30v03 chassis at masked 6-11), launch a fresh -j6 campaign with fresh-seed discipline (~20-30 min, harvest+stop). Filter finds through the F2 fingerprint scanner from this session as an inline gate."
   }
  ],
  "judge_constraints": [

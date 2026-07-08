@@ -854,3 +854,17 @@ vT33 in-call add: 16. vT34 sum-split: 11. vT35/vT36 nest-reweight: 15/14. vU1/vU
 - [s49] output-220-2 = canonicalization/scope-shift score-inert (addu operand swap already proven inert in s2 y03, dummy_label folded pre-sched2 per s7 and s16, src stmt hoist into the do-while(0) wrap has no effect on emitted asm).
 
 - [s49] Portfolio census extends: 13 basins sampled, 0 sub-vT40 novel attractors, closed attractor set {alias-merge, semantic-lie/label-alive, reg-shuffle-inert} holds invariantly.
+
+- [s50] 154 output-*/source.c files exist across 20 permuter campaigns (s4/perm-perm7, s4/perm_b, s4/perm_c, s13/perm_z07, s14/perm_w05, s22/perm_s18v02, s31/perm_s30v03, s32/perm_s26idxp, s40 x3, s41/perm_v11, s49/perm_vS47c); 133 compiled cleanly through the s4 pipeline, 21 hit maspsx/cc1 edge cases.
+
+- [s50] Region-3 fingerprint scanner: identifies the check2 beq $?,$0,.L? insn (second beq following jal sys_GetVblankCount whose fall-through contains sb $0/$zero) and inspects its immediate delay slot. Target's slot is nop (dbr rejected fill via all-live-pseudo path per session-6 dbr analysis); vT40's slot is a stolen move insn. 28/133 finds match target's nop-slot pattern; 105 exhibit vT40-class stolen fill.
+
+- [s50] perm3/output-80-1: masked 2, build_insns 179, target_insns 179, rules_dropped 42. Only find in the entire archive to beat vT40's masked-4 floor. Cheat: `volatile u8 *new_var2` local pointer with two coercion sites, one per prime-directive-forbidden pattern.
+
+- [s50] Removing `volatile` from perm3/80-1: masked reverts to 4, build 178 (vT40-equivalent). Confirms volatile is the sole score-moving mechanism.
+
+- [s50] D_800A147C_2 in src/system.c:498 IS declared `extern volatile u8 * D_800A147C_2 asm("D_800A147C");` - a same-symbol alias-rename to add volatile qualifier, sanctioned as legitimate-volatile-interrupt-touched per prior review because status/vblank handler modifies the underlying byte. But perm3/80-1 additionally propagates volatile-write semantics onto idx_1496 (which points to D_800A1496, a plain counter NOT interrupt-touched) via `new_var2 = idx_1496; *(new_var2-1) = 0` - that second site is unambiguous volatile-coercion, not legitimate-volatile-interrupt-touched.
+
+- [s50] Second-best non-cheat target-matching finds are score=3 at build=180 (perm3/180-1, perm2/160-1, perm_z07/160-1) - all in the vP160 label-alive class already KILLED at s5 as +1-insn semantically-divergent (some emit sb $s0 instead of sb $0, some use `while(status)` in check2 reading status across BBs).
+
+- [s50] Any pure-C region-3 fix in this archive costs >=1 build insn AND lands in a semantically-divergent form; the ONLY 179-insn pure-C spelling reaching masked<4 is the volatile-coercion cheat.
