@@ -149,3 +149,21 @@
 - probe: python3 tmp/grind/marionation_Exec/s6/splice_apply.py memory/grind/marionation_Exec/candidate.c; & tools/wteng.ps1 main sandbox marionation_Exec --disable all; splice_apply.py --restore; git checkout -- src/system.c.
 - result: score=4, build_insns=178, target_insns=179, rules_dropped=42, cheat_asm_stripped=20. src restored to HEAD (git status clean; CRLF fix via git checkout).
 - verdict: CONFIRMED
+
+## [s8] The twin cpu_side_move_dir_4's clean do_timeout shape (no arg4/arg5 locals, no pp alias, no v0 staging web — simply `debug_printf(&fmt, D_800F19C0, tbl_ptr[idx[?]], tbl_125c[idx_1494[0]], tbl_125c[idx_1494[1]])`) transplants to marionation_Exec at or below the vT40 floor.
+- mechanism: twin uses value-form array indexing directly at the call site; if canonicalization at expand-time is total (as s3 y03 fused-operand-swap suggested for CANONICAL sub-expressions), the resulting expand insns should match vT40's non-pp branch.
+- probe: wrote v01 (tmp/grind/marionation_Exec/s8/v01_inline_debug_args.c), spliced via s6/splice_apply.py, `& tools/wteng.ps1 main sandbox marionation_Exec --disable all` = masked 16 / 178 insns.
+- result: masked 16 (regression +12 vs vT40); rejected/twin-inline-noweb-nopp-masked16.c.
+- verdict: KILLED
+
+## [s8] A hybrid — keeping the pp pointer-alias staging + arg5 named local, but expressing BOTH tbl accesses as clean s32-array indexing `tbl_125c[idx_1494[i]]` inside the call (no explicit t0 temp, no (u8*) byte-cast, no v0 staging) — reaches floor <=4 by isolating the pp alias as the sufficient scheduling lever.
+- mechanism: Only untested combination in the s2/s3 y-family sweep: y01 used named `s32 arg4` locals; y03 tested operand swap on the fused form. NEW: pp-alias-present + inline-tblidx-in-call has no direct measurement in the ledger.
+- probe: wrote v02 (v02_hybrid_array_index_pp.c), spliced, sandbox = masked 16.
+- result: masked 16 (regression +12); pp alias alone doesn't compensate for the lost t0-web decomposition. rejected/hybrid-tblidx-pp-noweb-masked16.c.
+- verdict: KILLED
+
+## [s8] Typing the t0 web pointer as `s32 *t0` (pointer-typed, using `t0 = tbl_125c + idx_1494[0]` natural s32-index add and `*t0` deref) instead of vT40's address-value `s32 t0` with (u8*)+byte-offset casts reaches floor <=4 — pointer-type expand is not identical to address-value expand at the RTL level.
+- mechanism: vT40 uses `t0 *= 4; t0 = (u8*)tbl_125c + t0` to force byte-offset addressing (a s32*4 explicit); typing as s32* lets GCC use ptr+index which lowers to (index<<2)+ptr canonically — LUIDs of the resulting insn sequence may differ.
+- probe: wrote v03 (v03_t0_typed_s32ptr.c), spliced, sandbox = masked 11 / 178 insns.
+- result: masked 11 (regression +7). Type axis for the t0 pointer is a NEW measured negative — confirms the address-value s32 spelling is deliberately load-bearing. rejected/t0-typed-s32ptr-masked11.c.
+- verdict: KILLED
