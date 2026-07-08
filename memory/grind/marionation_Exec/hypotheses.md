@@ -275,3 +275,21 @@
 - probe: adapted s4/build_ws.py -> tmp/grind/marionation_Exec/s13/build_ws_z07.py (z07 as base, target.o + base_full.c skeleton reused from perm_mar6); verified permuter --debug base score = 220 (2 reorderings * 60 + 1 deletion * 100 - identical residual signature to vT40 base). Launched detached campaign with -j6 --better-only --stop-on-zero (PID 3540094, log tmp/grind/marionation_Exec/s13/campaign_z07.log).
 - result: campaign live at session end (elapsed 1m at handoff, iterations up to 24 confirmed in log); base = 220 confirms z07 chassis is a valid seed. Attempted PERM_GENERAL wrap of the pair-window inner block + PERM_RANDOMIZE on `s32 check;` decl, but stripped after PERM_RANDOMIZE_TYPE proved unrecognized and PERM_GENERAL(compound-stmt) tripped the pycparser. Default randomization is active - the sampler is walking z07's local basin.
 - verdict: CONFIRMED
+
+## [s14] The s12 w05 chassis (s32 tbaseS = (s32)tbl_125c) is a valid permuter seed with the same masked-4 residual signature as vT40/z07 but a structurally distinct qty-allocation landscape (types differ: s32 vs u8*).
+- mechanism: w05 births a s32-typed tbaseS pseudo instead of u8*-typed tbase (z07) or no shared base (vT40). Both `t0 = (s32)((u8*)tbaseS + t0)` and `arg5 = *(s32*)(v0 + tbaseS)` re-express through a s32-typed base pointer, which materially changes the type-attribute of the qty backing the shared base and thus its cross-BB liveness/RA priority - untried territory.
+- probe: python3 tmp/grind/marionation_Exec/s14/build_ws_w05.py built workspace; permuter --debug reported base score = 220 (Reorderings 2*60 + Deletions 1*100), matching vT40/z07 base signature exactly.
+- result: base score 220 confirmed; nohup permuter -j6 --better-only --stop-on-zero launched (PID 3756068, iterations running at handoff, log tmp/grind/marionation_Exec/s14/campaign_w05.log).
+- verdict: CONFIRMED
+
+## [s14] The s13-launched z07 permuter campaign (PID 3540094) produced sub-200 finds in its first 10 minutes.
+- mechanism: z07 base = 220; if the u8* tbase + interleaved-compute chassis's local basin contains lower-scoring mutations reachable via default randomization, they would appear in tmp/grind/marionation_Exec/s13/perm_z07/output-*.
+- probe: ls tmp/grind/marionation_Exec/s13/perm_z07/output-* -> (empty); tail campaign_z07.log shows iterations 1..30 all at scores >=220 (mostly 850-3610 spread; only iterations 1/2/6/10/26/27 stayed at 220).
+- result: 0 sub-200 finds in first 10 min - z07 basin's local random-mutation neighborhood has no immediate sub-vT40 attractor visible; the sampler needs many more iterations to find a lower-scoring form (or none exists).
+- verdict: KILLED
+
+## [s14] The 10.5h+ vT40 (PID 1935645) and find105 (PID 1935593) campaigns produced any new find since s13's snapshot.
+- mechanism: s13 recorded vT40 output-* set identical to s5; find105 output-* set identical to s5. Continued sampling could still yield a novel find at any moment.
+- probe: ls tmp/grind/marionation_Exec/s4/perm/ | grep ^output- | sort -u  vs s13 snapshot: [145-1,145-2,160-1,160-2,160-3,165-1,165-2,165-3,170-1,175-1,200-*,205-*,210-*,215-*] = IDENTICAL to s13. ls s4/perm_c/ | grep output-: [85-1,95-1,95-2] = IDENTICAL to s5/s13.
+- result: 0 new finds across 11h+ elapsed sampling on both vT40 and find105 basins. Search-space exhaustion evidence continues to strengthen for both.
+- verdict: KILLED

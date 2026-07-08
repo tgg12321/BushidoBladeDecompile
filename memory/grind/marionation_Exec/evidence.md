@@ -332,3 +332,19 @@ vT33 in-call add: 16. vT34 sum-split: 11. vT35/vT36 nest-reweight: 15/14. vU1/vU
 - [s13] PERM_RANDOMIZE_TYPE macro is NOT recognized by decomp-permuter (only PERM_FACTORIES = GENERAL/ONCE/RANDOMIZE/FORCE_SAMELINE/VAR/LINESWAP/LINESWAP_TEXT/INT/IGNORE/PRETEND). Any future annotation attempts must use PERM_RANDOMIZE alone.
 
 - [s13] PERM_GENERAL is a multi-alternate picker (splits args on commas), NOT a scope wrapper - PERM_GENERAL({compound-stmt}) is a pycparser syntax error at expansion. Correct use is PERM_GENERAL(expr1, expr2, ...) with alternate rewrites of the SAME node.
+
+- [s14] s14 baseline: NO source measurements were taken this session (permuter modality); candidate.c untouched, src/system.c untouched, oracle green throughout.
+
+- [s14] s14 running-campaign inventory at start: PID 1935645 (vT40 -j6, 10:49:43 elapsed), PID 1935593 (find105 -j24, 10:49:43), PID 3540094 (z07 -j6, 03:26 elapsed - z07 elapsed short because s13's PID likely died/relaunched; log shows only iterations 1..30 recorded so this is a fresh <=1h run).
+
+- [s14] s14 output snapshot: vT40 basin outputs unchanged since s13 (21 distinct scores from 145-215, no sub-145); find105 basin unchanged since s5 (3 outputs: 85-1/95-1/95-2); z07 basin empty (0 outputs).
+
+- [s14] s14 z07 log iteration spread: base=220 hit by iters 1/2/6/10/26/27 (approximately 20% at base); mutations up to 3610 seen - default randomization is exploring broadly but with no <220 attractor found in the first 30 iters.
+
+- [s14] s14 w05 workspace built at tmp/grind/marionation_Exec/s14/perm_w05/ via build_ws_w05.py (adapts z07 build script for w05 chassis; extract_fn strips /* */ comments and swaps into base_full.c skeleton from perm_mar6). No PERM_* directives (s13 confirmed PERM_RANDOMIZE_TYPE unrecognized and PERM_GENERAL(compound-stmt) trips pycparser).
+
+- [s14] s14 w05 permuter --debug base = 220 (Reorderings 2*60 + Deletions 1*100 - identical residual signature to vT40 and z07): confirms w05 is a valid basin seed with the same 2 root residuals but different structural neighborhood.
+
+- [s14] s14 w05 campaign launched: PID 3756068, -j6 --better-only --stop-on-zero, log tmp/grind/marionation_Exec/s14/campaign_w05.log, pidfile tmp/grind/marionation_Exec/s14/campaign_w05.pid. Total concurrent load now: 4 campaigns, 42 threads (24 + 6 + 6 + 6).
+
+- [s14] s14 confirms s13's frontier item #2 mechanism: distinct masked-4 spellings do serve as independent permuter basins with the same base score but different starting neighborhoods. Portfolio approach is mechanically viable.
