@@ -888,3 +888,19 @@ vT33 in-call add: 16. vT34 sum-split: 11. vT35/vT36 nest-reweight: 15/14. vU1/vU
 - [s51] hoist form is masked-4-inert, banked rejected/s51-hoist-dst2-at-check2-inert-4.c.
 
 - [s51] GCC reorg.c fill_simple_delay_slots reject predicates that DO fire for perm3/80-1: MEM_VOLATILE_P on the intervening/adjacent mem-store; that predicate is NOT satisfiable at the check2 clear position without a type-coercion cheat because D_800A1495 is ordinary DRAM (not touched by any interrupt handler in this codebase).
+
+- [s52] vT40 baseline floor unchanged: candidate.c yields masked 4 / build 178 / target 179 on this session (splice_apply + sandbox --disable all; s51 evidence intact).
+
+- [s52] v01 (cdrom_ClearIrq() inserted at check2 branch/clear boundary): masked 14 / build 181 / target 179 (+10 masked, +3 build). Emitted at mar_system_s6.s L1273-77.
+
+- [s52] GCC 2.7.2 reorg.c fill_simple_delay_slots dbr pass #1 header on v01: '3 insns needing delay slots; 2 got 0 delays, 1 got 1 delays' — IDENTICAL to vT40 baseline (s51). The fill count did not decrease.
+
+- [s52] check2 branch delay-slot fill on v01 is `jal cdrom_ClearIrq` (the inserted call itself). vT40's fill was `move a1,s4` (=dst2=a1 reg-move insn 445). Either fill is a visible byte vs target's nop.
+
+- [s52] CALL_INSN dep-list at check2 site: REG_DEP_ANTI 133 (do_timeout debug_printf), REG_UNUSED reg:SI 31 ra. No forward-block on the call's own placement. Confirms F1(c)'s memory-clobber prediction misidentifies the direction of the block (clobber restricts OTHER insns crossing the call, not the call crossing).
+
+- [s52] Semantic side effect: the inserted jal in the delay slot executes unconditionally — cdrom_ClearIrq() runs whether check2's flag was set or not. GCC 2.7.2 with no pure/const attribute on the external cdrom_ClearIrq declaration still elects the fill. This confirms F1(c) is not only mechanically wrong but would produce semantically-incorrect execution even if the fill outcome were desirable.
+
+- [s52] Callee-set of marionation_Exec (8 distinct call sites in asm/funcs/marionation_Exec.s): sys_VSync x2 (outer loop head), tslTm2LoadImage_2/debug_printf/cdrom_ClearIrq (do_timeout), sys_GetVblankCount/func_80080828 (polling region), jalr $v0 x2 (D_800A11B4/B8 status2/status4 callbacks inside func_80080828 poll). None fit the check2 branch/clear boundary at C-source altitude.
+
+- [s52] Frontier F1 (call-insertion route) is now fully closed: F1(a) killed s51 (no vblank-touched global available at position), F1(b) killed s51 (dst2 hoist/elimination), F1(c) killed s52 (this session, dbr fills with the call itself; no honest callee has a semantic role at position).

@@ -1,7 +1,7 @@
 {
  "func": "marionation_Exec",
  "file": "system",
- "session_count": 51,
+ "session_count": 52,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -315,23 +315,24 @@
    "floor": 4,
    "modality": "forensics",
    "headline": "s51 forensics: named the exact dbr sequence (620/insn 445) filling check2 beqz's slot with reg-move dst2=a1; hoist-dst2-into-check2 KILLED at masked 4 (dbr found alt fill site); a1-inline-eliminating-"
+  },
+  {
+   "session": 52,
+   "floor": 4,
+   "modality": "forensics",
+   "headline": "s52 forensics: F1(c) KILLED \u2014 dbr fill_simple_delay_slots picks the inserted cdrom_ClearIrq CALL_INSN itself as the check2-branch fill (masked 14, build 181); CALL_INSN memory-clobber does NOT block i"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Candidate (c) from s50 frontier: inserting a legitimate function call (implicit memory clobber) between check2 branch and clear-store forces dbr to reject the fill AND is not a coercion cheat if the call has an honest program purpose.",
-   "mechanism": "A CALL_INSN has an implicit memory clobber (GCC treats all callee-writable memory as clobbered), so any insn with a memory dep or a caller-saved-register dep against the call blocks fill_simple_delay_slots from moving that insn past the call. Between the check2 test and the sb clear-store there is a single-basic-block region with no natural call site \u2014 inserting one here would need an honest semantic role (e.g., an accessor / logger that legitimately runs when the check bit is set).",
-   "next_probe": "Grind/ruling-request session: enumerate the callee-set of marionation_Exec's do_timeout region and inner loop; identify whether any existing call (cdrom_ClearIrq, tslTm2LoadImage_2, or a debug hook) has a defensible C-level meaning at the check2 position between the check-test and the clear. If none, F1(c) is closed and F1 as a whole is exhausted."
+   "hypothesis": "F3: Fresh permuter sampling on an untried basin (s39 arg3-v0-WAR-edge family at masked 16, or s31 s30v03 chassis at masked 6-11) may reach masked 2 via a spelling that does not require volatile coercion, if the fresh basin's pseudo-allocation landscape differs enough from the 13 previously-sampled basins.",
+   "mechanism": "Prior ledger's 13 sampled basins concentrated on vT40 / find105 / z07 / w05 / vS47c chassis; s39 WAR-edge and s31 s30v03 are structurally distinct and unsampled by permuter fresh-seed campaigns. Portfolio convergence has held across 13 basins but two untried remain.",
+   "next_probe": "Permuter session: build workspace from `memory/grind/marionation_Exec/rejected/s39-arg3-idx-staged-v0-war-edge-order-flips-webgrowth-16.c` as base; confirm base score with permuter --debug; launch -j6 fresh-seed campaign for ~25-30 min; filter finds through region-3 fingerprint scanner (tmp/grind/marionation_Exec/s50/scan_region3.py) as inline gate; harvest-and-stop discipline."
   },
   {
-   "hypothesis": "Frontier F3 (deeper permuter sampling on an untried basin \u2014 s39 arg3-v0-WAR-edge family at masked 16 or s31 s30v03 chassis at masked 6-11) may reach masked 2 via a spelling that does not require volatile coercion, if the fresh sample basin has a distinct pseudo-allocation landscape.",
-   "mechanism": "Prior ledger's 13 sampled basins concentrated on vT40 / find105 / z07 / w05 chassis; s39 WAR-edge and s31 s30v03 are structurally distinct and unsampled.",
-   "next_probe": "Permuter session: build a permuter workspace from the s39 arg3-v0-WAR-edge candidate (`memory/grind/marionation_Exec/rejected/s39-arg3-idx-staged-v0-war-edge-order-flips-webgrowth-16.c` as base); confirm base score with permuter --debug; launch -j6 fresh-seed campaign for ~20-30 min; filter finds through region-3 fingerprint scanner (tmp/grind/marionation_Exec/s50/scan_region3.py) as inline gate; harvest-and-stop discipline."
-  },
-  {
-   "hypothesis": "The pair-swap + region-3 joint residual (masked 4 = 2 + 2) at build=179 is compiler-pass-internal on both axes (sched2 UID tiebreak for pair-swap + fill_simple_delay_slots for region-3) and archive-exhausted for honest C at floor 4 \u2014 the evidence bar for ruling-request may be reached after F1(c) closes.",
-   "mechanism": "s6/s7/s10/s15/s42/s43 pinned pair-swap to sched2 T-14 UID tiebreak (structural, non-C-addressable without adding pseudos which regress). s6/s50 pinned region-3 to fill_simple_delay_slots rejecting neither own-fallthrough nor all-live predicates. s50's archive scan across 154 permuter finds proved region-3 byte-reachable only via volatile coercion. F2 archive-exhausted; F1(a)/(b) closed this session; only F1(c) and F3 remain.",
-   "next_probe": "Not this session. If F1(c) closes negative AND a fresh untried-basin permuter campaign lands no masked-2 honest find, escalate to ruling-request: 50+ sessions of documented lever-exhaustion + two named GCC-pass mechanisms + archive-negative scan constitute the SOTN evidence bar for canonical-asm-authorization consideration."
+   "hypothesis": "The pair-swap + region-3 joint residual (masked 4 = 2 + 2 at build=179) is now archive-exhausted for honest C at floor 4 across all four exhaustion classes: (1) 165+ hand forms swept, (2) 13 permuter basins sampled, (3) 154 archive finds region-3-fingerprint-scanned, (4) F1 call-insertion route KILLED at three points (F1a-c, s51-s52). Evidence for ruling-request may be reached after F3 lands negative.",
+   "mechanism": "s6/s7/s10/s15/s42/s43/s51/s52 pinned pair-swap to sched2 T-14 UID tiebreak and region-3 to fill_simple_delay_slots-picks-any-eligible-insn \u2014 both compiler-pass-internal on axes untouchable without: (a) growing an in-window pseudo web, (b) writing user-observable memory (semantic lie), (c) coercing type qualifiers (volatile-coercion cheat), (d) restructuring outer CFG (semantic mismatch), or (e) inserting semantically-nonsensical calls (F1c KILLED this session).",
+   "next_probe": "Not this session. If F3 lands no masked-2 honest find on the s39/s31 untried basins, escalate to ruling-request: 52+ sessions of documented lever-exhaustion + two named GCC-pass mechanisms + archive-negative scan + F1 route KILLED at three points constitute the SOTN evidence bar for canonical-asm-authorization consideration on the coupled pair-swap+region-3 residual."
   }
  ],
  "judge_constraints": [
