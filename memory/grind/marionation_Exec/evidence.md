@@ -712,3 +712,17 @@ vT33 in-call add: 16. vT34 sum-split: 11. vT35/vT36 nest-reweight: 15/14. vU1/vU
 - [s39] v07 (plain unshifted idx locals, inline derefs) = masked 16, matching the s8v01 no-web class - staging webs remain load-bearing under the sibling-decode cue.
 
 - [s39] 6 disproven forms banked to rejected/: s39-arg3-idx-staged-v0-war-edge-order-flips-webgrowth-16.c, s39-arg5first-arg3v0-16.c, s39-sibling-chassis-arg3v0-both-orders-18.c, s39-arg3v0-byteoffset-20.c, s39-t0add-deferred-arg3v0-16.c, s39-plain-idx-locals-inline-derefs-16.c. candidate.c unchanged (vT40 masked 4 remains best-known).
+
+- [s40] s40 inherited a discarded prior-attempt's scratch: 3 built campaign workspaces (perm_s35orcomma, perm_s20status, perm_s11u10 - exactly the frontier P3 seeds) + 5 banked rejected forms; all 3 campaigns were dead processes with no outcome JSON. Resumed rather than re-derived.
+
+- [s40] All 3 campaigns harvested + stopped via tools/permuter_campaign.py with telemetry (owner directive 2026-07-07): s35orcomma 5 finds/all-220; s20status 14 finds over 6.5h (145-1 @ 9936s, 170-1 @ 14051s); s11u10 relaunch 6720 iters/25min/1 find-220.
+
+- [s40] perm_s20status output-145-1 sandbox = masked 17 @ 179/179 - the alias-merge attractor (idx_1494 -> dead dst2) re-derived at EXACTLY s4's find145 family entry score on a 9th distinct chassis. Family remains KILLED (target move dest a1 caller-saved; family floor 10).
+
+- [s40] perm_s20status output-170-1 sandbox = masked 21 @ 179/179 - NEW family variant: idx_1496 staged through dst2 with check-region reads (*dst2, *(dst2-1)); the check-side alias forces a deeper callee-saved seat cascade than the idx_1494-side variant (21 > 17). Banked rejected/s40-perm-s20status-aliasmerge-dst2-idx1496-checkside-21.c.
+
+- [s40] Portfolio convergence now measured across 11 sampled basins (prior 8 + s35orcomma + s20status + s11u10): every sub-200 find across ~50+ CPU-hours maps to the 3 known attractor classes (alias-merge masked>=10, label-alive +1-insn, score-inert shuffles). Frontier P3's three NAMED unsampled members are now all sampled and dry.
+
+- [s40] vT40 baseline floor 4 (178/179, 42 rules dropped, 20 cheat-asm stripped) reconfirmed this session after triage; src/system.c restored to HEAD via splice_apply.py --restore + git checkout, working tree src/ clean, oracle untouched.
+
+- [s40] s20status's 11x220-tier finds all classify to the clear-store-repositioning and spelling-inert classes already banked from s35orcomma (v0 = v0 << 2, idx_1494+1 operand swap, split-init idx_1496, dst2-guard brace shuffle) - no new banking needed.

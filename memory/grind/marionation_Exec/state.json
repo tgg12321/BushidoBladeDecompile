@@ -1,8 +1,8 @@
 {
  "func": "marionation_Exec",
  "file": "system",
- "session_count": 39,
- "current_modality": "structural",
+ "session_count": 40,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 0,
@@ -243,23 +243,29 @@
    "floor": 4,
    "modality": "structural",
    "headline": "s39 structural: sibling saEft01Init's 15 rules decoded into the original-idiom fingerprint (P2 exchange constraints now concrete); NEW WAR-edge route (arg3 index staged through dead v0) flips the pair"
+  },
+  {
+   "session": 40,
+   "floor": 4,
+   "modality": "permuter",
+   "headline": "s40 permuter: frontier P3 executed to completion - all 3 named unsampled basin seeds (s35orcomma/s20status/s11u10) campaigned, harvested, stopped; portfolio convergence extends 8->11 basins with zero "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "P2 (unchanged, now concretized): saEft01Init's window worked on its queue turn / operator exchange yields the original order+seats-correct spelling, mirrored into marionation_Exec same-day",
-   "mechanism": "s36 window identity + s39's decoded rule fingerprint: the winning spelling must make GCC naturally emit idx[0]-first loads, middle-addu pair, arg5-deref before arg3's lbu, arg4 addu+deref deferred - WITHOUT a v0-web-growth WAR edge (s39 measured that route at +12). The s33/s34 tiebreak + s38 exhaustion + s39 fingerprint transfer directly",
-   "next_probe": "Queue-routing / operator-mediated exchange session on saEft01Init; test spellings against the s39 fingerprint table (findings.md) via dump-first pre-vet before sandboxing; splice any winner into marionation_Exec immediately"
+   "hypothesis": "P2 (unchanged, primary): saEft01Init's window worked on its queue turn / operator exchange yields the original order+seats-correct spelling, mirrored into marionation_Exec same-day",
+   "mechanism": "s36 window identity + s39's decoded rule fingerprint: winning spelling must emit idx[0]-first loads, middle-addu pair, arg5-deref before arg3's lbu, arg4 addu+deref deferred - WITHOUT a v0-web-growth WAR edge (+12 measured). s33/s34 tiebreak + s38 exhaustion + s39 fingerprint transfer directly.",
+   "next_probe": "Queue-routing / operator-mediated exchange session on saEft01Init; test spellings against the s39 fingerprint table (tmp/grind/marionation_Exec/s39/findings.md) via dump-first pre-vet before sandboxing; splice any winner into marionation_Exec immediately"
   },
   {
-   "hypothesis": "P3 (unchanged): a permuter seed on an unsampled masked-4 basin member surfaces a novel sub-165 neighborhood with true semantics",
-   "mechanism": "Weak prior (8-basin convergence) but the sampler is the only tool sampling unknown-source-shape space; s34/s38 dump pre-vet plus s39's new v0-web-growth signature filter triage finds nearly free",
-   "next_probe": "Adapt build_ws for one unsampled member (s20-status-local, s11-u10, or s35-m2c-outer-orcomma); 20-30 min fresh-seed window per permuter-fresh-seed directive; harvest, pre-vet (order + QTYDBG 3-set-v0-web filter), stop"
-  },
-  {
-   "hypothesis": "A fourth pair-order route class (anti-dependence chain-lengthening) may exist through a dependency shape OTHER than v0-reuse - e.g. a memory-carried output dependence that lengthens the 122 chain without adding a set to any in-window pseudo",
-   "mechanism": "s39 proved chain-lengthening flips the tie (order half); the cost was specifically the pseudo-web growth, not the edge itself. A store-order or mem-alias edge into arg5's chain would raise its backward priority with zero new pseudo sets - no such C shape enumerated yet",
+   "hypothesis": "A fourth pair-order route class (anti-dependence chain-lengthening) exists through a dependency shape OTHER than v0-reuse - e.g. a memory-carried output dependence lengthening the 122 chain without adding a set to any in-window pseudo",
+   "mechanism": "s39 proved chain-lengthening flips the tie (order half); the cost was the pseudo-web growth, not the edge itself. A store-order or mem-alias edge into arg5's chain would raise its backward priority with zero new pseudo sets - no such C shape enumerated yet.",
    "next_probe": "Forensics session: enumerate GCC 2.7.2 sched.c dependence sources (true/anti/output/mem-alias) reachable from C in the do_timeout window; check whether any semantically-true statement creates 122-chain lengthening without touching v0/t0/arg5 webs; dump-first pre-vet any candidate"
+  },
+  {
+   "hypothesis": "P3 (DOWNGRADED after this session): remaining unsampled masked-4 basin members (~20 of the 32-member census) surface a novel attractor",
+   "mechanism": "Weak and weakening prior: 11-basin convergence with zero novel attractors, including all three members the frontier specifically named (s20-status-local, s11-u10, s35-m2c-outer-orcomma). The sampler keeps re-deriving the same 3 attractor classes from every chassis.",
+   "next_probe": "Only if P2/P4 modalities are exhausted first: adapt build_ws for another unsampled member; 20-30 min fresh-seed window; harvest, pre-vet (order + QTYDBG 3-set-v0-web filter), stop"
   }
  ],
  "judge_constraints": [

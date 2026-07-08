@@ -857,3 +857,21 @@
 - probe: v07 spliced + sandbox
 - result: masked 16 / 178 - lands in the known no-web class (s8v01=16); the two staging webs remain load-bearing
 - verdict: KILLED
+
+## [s40] The stale-but-completed 6.5h s20status campaign (14 finds incl. output-145-1 and output-170-1) surfaced a novel sub-165 neighborhood with true semantics (frontier P3)
+- mechanism: s20-status-local is an unsampled masked-4 basin member; its qty-allocation landscape differs from the 8 previously-sampled chassis, so its sub-200 mutation trajectory could reach an attractor the others cannot
+- probe: harvested via permuter_campaign.py (telemetry logged); triaged all 14 finds by diff inspection; extracted + spliced + sandboxed both sub-200 finds; restored src and reconfirmed vT40 floor 4
+- result: output-145-1 = alias-merge attractor re-derived EXACTLY (idx_1494 staged through dead dst2, sandbox masked 17 @ 179/179 - same score as s4's find145 entry point); output-170-1 = novel check-side variant (idx_1496 through dst2) at masked 21, WORSE via deeper callee-saved seat cascade; output-215-1 = semdiv clear-hoist; 11x220 = known score-inert shuffle classes (clearmove/spelling-inert). Zero novel attractors.
+- verdict: KILLED
+
+## [s40] A fresh-seed window on the s11-u10-interleaved basin (the 3rd P3-named unsampled member) surfaces a novel sub-200 neighborhood
+- mechanism: u10's interleaved t0/v0 computes give a distinct pseudo-birth order from vT40; the prior s40 attempt's launch died ~3min in with 0 sampling, so the basin was genuinely unsampled
+- probe: relaunched via permuter_campaign.py launch (-j6 --stop-on-zero, base 220 verified); 25-min fresh-seed window monitored; harvest --stop per permuter-fresh-seed-discipline
+- result: 6,720 iterations, 1 find (output-220-1) = the known score-inert clear-store-into-wrap repositioning class (already banked from s35orcomma's finds). No novel find in the window - basin dry.
+- verdict: KILLED
+
+## [s40] The s35orcomma basin (sampled by the discarded prior s40 attempt, 5 finds all score-220) contains any lever
+- mechanism: m2c-outer-orcomma chassis is basin member #32; its 5-min campaign produced 5 score-equal finds before dying
+- probe: harvested + stopped via permuter_campaign.py; the 5 finds were already triaged and banked by the prior attempt (4 semdiv clear-moves + 1 inert src-hoist, rejected/s40-perm-*)
+- result: All 5 finds score-equal (220) and classify to semdiv or inert shuffle classes; basin dry at the fresh-seed window
+- verdict: KILLED
