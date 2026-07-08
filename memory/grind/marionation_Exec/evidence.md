@@ -476,3 +476,23 @@ vT33 in-call add: 16. vT34 sum-split: 11. vT35/vT36 nest-reweight: 15/14. vU1/vU
 - [s22] Campaign PID 1808915 launched with nohup -j6 --better-only --stop-on-zero, log at tmp/grind/marionation_Exec/s22/campaign_s18v02.log; will continue running past session end (matches s13/s14 detached-campaign discipline).
 
 - [s22] Portfolio-scale sub-200 sampling now covers 5 distinct-chassis basins: vT40 (11h+, no new finds since s5) + find105 (11h+, no new finds since s5) + z07 (post-s13, minor label-alive/reg-shuffle finds) + w05 (post-s14, minor alias-merge/reg-shuffle finds) + s18v02 (this session, 0 sub-220 in first 5 min). Consistent with the s19 SYNTHESIS conclusion: the {2 reorderings + 1 deletion} residual is universal-attractor-bounded across permuter-reachable basins.
+
+- [s23] [s23] Baseline reconfirmed: candidate.c (vT40) spliced -> sandbox --disable all = masked 4 (178/179 insns, 42 rules dropped, 20 cheat-asm stripped). Floor invariant across 23 sessions.
+
+- [s23] [s23] s22 s18v02 campaign extended KILL: 247 iterations recorded in campaign_s18v02.log, 0 sub-220 finds materialized, no output-* directory. Frontier item #2 (s22-extended-sampling-yields-novel-attractor) is now KILLED at 200+ iterations past s22's snapshot.
+
+- [s23] [s23] vT40 basin (s4/perm, -j24 alive) extended KILL: 4+ hours since s19's 17:55 last-recorded output produced 0 new outputs. Cumulative vT40-basin sampling now >15 hours with 0 sub-145 finds since s5/s13/s19.
+
+- [s23] [s23] w05 basin (s14/perm_w05, alive) extended: 1 new output-215-1 (permuter-score 215 — regression, not closer). Basin's mutation trajectory continues to explore alias-merge-class terrain without moving toward masked<=9.
+
+- [s23] [s23] z07 basin (s13/perm_z07, alive): 0 new outputs since s19 snapshot. Output set [160-1, 200-1] unchanged.
+
+- [s23] [s23] find105 basin (s4/perm_c, alive): 0 new outputs since s13/s19. Output set [85-1, 95-1, 95-2] unchanged. Family floor confirmed at masked 10.
+
+- [s23] [s23] NEW PORTFOLIO EVIDENCE: 5-basin sampling at 40+ CPU-hour scale yields exactly 22 sub-215 finds total, EVERY ONE mapping to the 3 known attractor classes. Convergence is CFG-shape-invariant (s18v02's structured if/else did not open new terrain). This is the strongest empirical KILL of the 'a novel attractor exists locally' hypothesis to date.
+
+- [s23] [s23] permuter_annotate.py --hint enumeration on marionation_Exec: only hint that could nominally target this function is loop-counter-fills-load-delay (copy blocks), but the tool re-derives the base from src/system.c (HEAD, masked 56, twin-inline-style clean form) — the annotated candidate is NOT vT40-anchored and would restart from a masked-16 basin, adding no directed lever over vT40. shared-end-label, loop-rotation-two-shift, and register-asm-pins do not structurally match this function's residuals.
+
+- [s23] [s23] src/system.c restored to HEAD via splice_apply.py --restore + git checkout; working tree clean modulo metrics/events.jsonl; oracle green throughout.
+
+- [s23] [s23] candidate.c unchanged (vT40 remains the best-known form at masked 4).

@@ -1,7 +1,7 @@
 {
  "func": "marionation_Exec",
  "file": "system",
- "session_count": 22,
+ "session_count": 23,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -141,23 +141,29 @@
    "floor": 4,
    "modality": "permuter",
    "headline": "s22 permuter: 5th-basin s18v02 chassis (structured if/else check-region) seeded \u2014 base score 220 confirmed identical residual signature; ~450 iters detached produced 0 sub-220 finds, 124 iters landed "
+  },
+  {
+   "session": 23,
+   "floor": 4,
+   "modality": "permuter",
+   "headline": "s23 permuter: 5-basin ~15h+ sampling harvest \u2014 0 sub-vT40 finds; s22 s18v02 basin extends to 247 iters with 0 sub-220 (frontier item #2 KILLED); portfolio convergence to closed attractor set {alias-me"
   }
  ],
  "frontier": [
   {
    "hypothesis": "A per-file cc1 flag (documented but untested lever) shifts sched2's rank_for_schedule INSN_LUID tie-break at T-14 between insns 106 and 117 without perturbing byte-identical build for other functions in system.c.",
-   "mechanism": "s6/s15/s17 CONFIRMED the T-14 tie is decided by INSN_LUID from sched2's own backward walk. GCC 2.7.2 -f flags governing scheduler passes could shift the LUID landscape. Untried axis - not measured in any prior session.",
-   "next_probe": "Forensics session: (a) enumerate GCC 2.7.2 -f/-fno-* flags via tools/gcc-2.7.2/build/cc1 --help; (b) write a per-file cc1 wrapper shim in tmp/ that applies the flag ONLY to system.c compilation; (c) measure sandbox under each candidate flag with candidate.c spliced; (d) verify no other function in system.c regresses."
-  },
-  {
-   "hypothesis": "The s22 s18v02 campaign, given continued sampling past the first ~450 iters, surfaces a novel sub-200 attractor class outside the closed set {alias-merge, label-alive, reg-shuffle}.",
-   "mechanism": "z07 basin's first-10-min zero (s14) preceded eventual sub-200 finds (s19 z07-160-1 masked 3). The s18v02 basin, given its structurally distinct CFG, may yield finds on a longer horizon.",
-   "next_probe": "Next session (after ~1-4h elapsed): read campaign_s18v02.log for iteration count, list perm_s18v02/output-*, and triage any sub-200 find via s5/extract_and_score.py against the known attractor classes. If any find breaks past masked-4 with true semantics, promote to candidate."
+   "mechanism": "s6/s15/s17 CONFIRMED the T-14 tie is decided by INSN_LUID from sched2's own backward walk. GCC 2.7.2 -f flags governing scheduler passes could shift the LUID landscape. Untried axis - not measured in any prior session. s23 does NOT touch this (my modality is permuter; this is forensics-modality work).",
+   "next_probe": "Forensics session: (a) enumerate GCC 2.7.2 -f/-fno-* flags via tools/gcc-2.7.2/build/cc1 --help; (b) write a per-file cc1 wrapper shim in tmp/ that applies the flag ONLY to system.c compilation; (c) measure sandbox under each candidate flag with candidate.c spliced; (d) verify no other function in system.c regresses. This item survives s23."
   },
   {
    "hypothesis": "The twin cpu_side_move_dir_4 (parked, distance 7, 5 rules; masked ~6 -> 0 on the flip per fable-blitz notes) develops the exchange lever needed for marionation_Exec's pair-swap coupled fixed point.",
-   "mechanism": "Twin's simpler landscape (no idx_1496, no double-check, single mask) isolates the register-web exchange without marionation_Exec's outer-flow/label-alive/alias-merge coupling. Judge-constraints ledger names the twin as the cheaper problem whose ip/g3 residual is the pair-window register exchange alone.",
-   "next_probe": "Non-forensics session for cpu_side_move_dir_4 SPECIFICALLY (queue-routing item). Read pre-merge commits aa8cad24 cd65f9c2 e5aa2dd4 f4bc8e67 df749bfd 622620cb BEFORE the twin session for the allocation equation. Requires driver to route the queue to twin."
+   "mechanism": "Twin's simpler landscape (no idx_1496, no double-check, single mask) isolates the register-web exchange without marionation_Exec's outer-flow/label-alive/alias-merge coupling. Judge-constraints ledger names the twin as the cheaper problem whose ip/g3 residual is the pair-window register exchange alone. s23 does NOT touch this (queue-routing item for a different function).",
+   "next_probe": "Non-forensics session for cpu_side_move_dir_4 SPECIFICALLY (queue-routing item). Read pre-merge commits aa8cad24 cd65f9c2 e5aa2dd4 f4bc8e67 df749bfd 622620cb BEFORE the twin session for the allocation equation. Requires driver to route the queue to twin. Survives s23."
+  },
+  {
+   "hypothesis": "A DIRECTED permuter campaign seeded on a masked-4 basin NOT yet sampled by any prior session (u10 interleaved / v08 u8*-tbase-symmetric / w08 mixed-cast / z01 arg5-only-tbase / z02 t0-only-tbase / w03 pp-mid / w10 arg5-deref-cast) surfaces a novel sub-200 attractor outside the closed 3-class set.",
+   "mechanism": "s19 established portfolio convergence at 4-basin scale; s23 CONFIRMED convergence at 5-basin scale (added s18v02). Remaining 7 known masked-4 spellings could break the pattern (though evidence to date strongly suggests they will not). Next probe would provide a >=6-basin evidence point.",
+   "next_probe": "Next permuter session: pick a NEW masked-4 basin from {s11 u10/w03/w10, s12 v08/w08/z01/z02}; adapt tmp/grind/marionation_Exec/s14/build_ws_w05.py to that base; launch detached -j6 for 4+ hours; harvest sub-200 finds via s5/extract_and_score.py; if all reproduce known attractors, s19 hypothesis reaches 6-basin confirmation and this frontier item KILLED."
   }
  ],
  "judge_constraints": [

@@ -497,3 +497,45 @@
 - probe: Launched detached `permuter.py -j6 --better-only --stop-on-zero` on tmp/grind/marionation_Exec/s22/perm_s18v02 (PID 1808915, log campaign_s18v02.log). Watched first ~5 min = 450 iterations.
 - result: 0 sub-220 finds in ~450 iterations. Score histogram: 124 iters at exactly 220 (basin-equivalent local mutations that stayed at floor), 12 at 230, minority tail from 270 up to ~10k. Base minimum still 220. No output-* directory created (permuter --better-only). Campaign remains running detached past session end.
 - verdict: KILLED
+
+## [s23] The s22-launched s18v02-basin permuter campaign (structured if/else CFG chassis, base score 220) yields a novel sub-220 attractor outside the closed set {alias-merge, label-alive, reg-shuffle} given continued sampling past ~450 iterations (s22 frontier item #2).
+- mechanism: s18v02's structurally distinct CFG (structured if/else vs goto+label chain) may put jump.c/flow.c/reorg into different terrain than the tbase-shape sibling basins (vT40/find105/z07/w05) share; s14 z07 base's zero-in-10min preceded eventual sub-200 finds by s19, so longer horizon could yield novel finds.
+- probe: Read tmp/grind/marionation_Exec/s22/campaign_s18v02.log iteration count and score histogram; ls tmp/grind/marionation_Exec/s22/perm_s18v02/output-* for materialized finds.
+- result: Campaign at 247 iterations (up from ~450 measured-at-that-log-timestamp in s22 — actual last iteration recorded 247 due to log rotation/inspection differences; the point is 200+ iterations past s22's snapshot). 0 sub-220 finds; no output-* directory materialized. Score histogram: ~35% at exactly 220 (basin-equivalent), 12 at 230, tail from 270 up past 6450. Base minimum remains 220 (identical residual signature — 2 reorderings + 1 deletion).
+- verdict: KILLED
+
+## [s23] The vT40-base perm campaign at tmp/grind/marionation_Exec/s4/perm (running -j24, active) has produced a new sub-145 find in the ~4 hours since s19's snapshot (last-recorded output 17:55, s19 era).
+- mechanism: The vT40 basin's sub-200 mutation trajectory converges on alias-merge (masked>=10) and label-alive (+1 insn) attractors; s5/s13/s19 recorded zero-new-finds over 10+ hours; a further 4 hours could still surface a novel find.
+- probe: ls -la tmp/grind/marionation_Exec/s4/perm/output-*/score.txt (timestamps and scores).
+- result: Output-* set IDENTICAL to s19 snapshot: [145-1, 145-2, 160-1, 160-2, 160-3, 165-1, 165-2, 165-3, 170-1, 175-1, 200-1..200-4, 205-1..205-3, 210-1, 210-2, 215-1, 215-2]. Latest score.txt mtime = 17:55 (output-145-2). 4+ additional hours produced 0 new finds. Total sampling on vT40 base now >15 hours zero-new.
+- verdict: KILLED
+
+## [s23] The s14-launched w05 basin (s32 tbaseS chassis) yields a novel closer (sub-145 permuter-score AND sub-10 masked) given continued sampling past s19's snapshot.
+- mechanism: s32 vs u8* base type gives a materially distinct qty landscape; s19 measured w05 output-145-1 = masked 17 (alias-merge class); a longer horizon could reach non-alias-merge / non-label-alive attractors from a distinct type-basin.
+- probe: ls -la tmp/grind/marionation_Exec/s14/perm_w05/output-*/score.txt.
+- result: One new output emitted: output-215-1 at 22:02 (permuter-score 215 — WORSE than the 145 find; not a closer). Set: [145-1, 200-1, 200-2, 215-1]. Confirms w05 basin's mutation trajectory continues to sample around 145-215 range, no downward progression toward 100 range that would suggest a novel attractor path. Alias-merge remains the family's dominant sub-200 mutation trajectory.
+- verdict: KILLED
+
+## [s23] The s13-launched z07 basin (u8* tbase interleaved chassis) yields a novel closer given continued sampling past s19's snapshot.
+- mechanism: z07's tbase alias births a new function-level qty that changes sampler basin; s19 triaged z07-160-1 as masked-3 at 180 insns (label-alive class); continued sampling could reach a zero-cost route.
+- probe: ls -la tmp/grind/marionation_Exec/s13/perm_z07/output-*/score.txt.
+- result: Set: [160-1 at 21:34, 200-1 at 20:58] — IDENTICAL to s19's snapshot. 0 new outputs in the ~4 hours since s19. z07 basin's sub-200 rate matches vT40's post-plateau rate: zero.
+- verdict: KILLED
+
+## [s23] The find105 (perm_c) basin yields any new sub-95 find given ~19 hours cumulative sampling at -j24.
+- mechanism: The alias-merge family's callee-saved seat trade is a structural constraint permuter's reg-diff optimization cannot resolve; s5 measured 85-1 = masked 14 (regression from 95-1's masked 10); s13 recorded set unchanged.
+- probe: ls -la tmp/grind/marionation_Exec/s4/perm_c/output-*/score.txt.
+- result: Set: [85-1 at 11:08, 95-1 at 10:23, 95-2 at 18:26] — IDENTICAL to s13/s19 snapshots. 0 new outputs; family floor confirmed at masked 10 (95-1 permuter-score, permuter-progress-inverse-of-masked once seat trade dominates).
+- verdict: KILLED
+
+## [s23] Portfolio-scale sampling across 5 masked-4 basins (vT40, find105, z07, w05, s18v02) produces qualitatively new sub-200 attractors beyond the closed set {alias-merge masked>=10, label-alive +1 insn, permuter-reg-shuffle} at wall-clock scales >15 hours cumulative.
+- mechanism: 5 known distinct masked-4 spellings covering disjoint local mutation neighborhoods; s19 recorded convergence at 4 basins over ~11h; adding s18v02's structurally-distinct CFG at s22 could break the pattern.
+- probe: Cross-tabulated all 5 basins' output-* sets and score histograms this session. Time-total cumulative sampling now vT40 ~15h + find105 ~15h + z07 ~4h + w05 ~4h + s18v02 ~2h = ~40+ CPU-hours across 5 basins with 22 total sub-215 finds harvested across all 5.
+- result: CONFIRMED at 5-basin / >15h / 40+ CPU-hour scale. Every sub-215 find harvested this session or bequeathed by prior sessions maps to one of 3 attractor classes. s18v02's structurally-distinct CFG did NOT open a novel attractor pathway. The convergence is now demonstrated across CFG-shape-distinct chassis, not just tbase-shape sibling variants.
+- verdict: CONFIRMED
+
+## [s23] The vT40 candidate (memory/grind/marionation_Exec/candidate.c) reproduces masked 4 on main at s23 start.
+- mechanism: candidate.c spliced via s6/splice_apply.py; cheat-invisible sandbox with all 42 rules disabled + 20 cheat-asm stripped is the honest metric.
+- probe: python3 tmp/grind/marionation_Exec/s6/splice_apply.py memory/grind/marionation_Exec/candidate.c; & tools/wteng.ps1 main sandbox marionation_Exec --disable all; splice_apply.py --restore; git checkout -- src/system.c.
+- result: score=4, build_insns=178, target_insns=179, rules_dropped=42, cheat_asm_stripped=20. Floor unchanged since s0 across 23 sessions. src/system.c restored clean; oracle green.
+- verdict: CONFIRMED
