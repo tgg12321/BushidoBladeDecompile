@@ -726,3 +726,19 @@ vT33 in-call add: 16. vT34 sum-split: 11. vT35/vT36 nest-reweight: 15/14. vU1/vU
 - [s40] vT40 baseline floor 4 (178/179, 42 rules dropped, 20 cheat-asm stripped) reconfirmed this session after triage; src/system.c restored to HEAD via splice_apply.py --restore + git checkout, working tree src/ clean, oracle untouched.
 
 - [s40] s20status's 11x220-tier finds all classify to the clear-store-repositioning and spelling-inert classes already banked from s35orcomma (v0 = v0 << 2, idx_1494+1 operand swap, split-init idx_1496, dst2-guard brace shuffle) - no new banking needed.
+
+- [s41] s41 baseline reconfirmed: candidate.c (vT40) spliced -> sandbox --disable all = masked 4 (178/179, 42 rules dropped, 20 cheat-asm stripped); src/system.c restored to HEAD via s6/splice_apply.py --restore + git checkout, oracle untouched, working tree src/ clean at session end.
+
+- [s41] s41 workspace tmp/grind/marionation_Exec/s41/perm_v11 built on the previously-unsampled s21 v11_vsync_hoist_local basin member (sv prologue local for VSync value); permuter --debug reported base score = 220 = 2 reorderings * 60 + 1 deletion * 100 (identical residual signature to vT40/z07/w05/s18v02/s30v03/s29v06/s26idxp/s35orcomma/s20status/s11u10 = 11 prior sampled basins).
+
+- [s41] s41 v11 campaign launched via tools/permuter_campaign.py launch (owner directive 2026-07-07 telemetry compliance, label s21v11-vsync-hoist, pid 622, jobs 6, --stop-on-zero); 25-min fresh-seed window per permuter-fresh-seed-discipline; ~1740 iterations logged; harvested via tools/permuter_campaign.py harvest --stop.
+
+- [s41] s41 find output-200-1 (35.8s from launch, permuter score 200): extracted via tmp/grind/marionation_Exec/s41/extract_find.py, spliced into src/system.c via s6/splice_apply.py, sandbox --disable all = masked 8 (+4 regression vs vT40 floor 4); build_insns 178 vs target 179; novel construct is `status = *((s32 *) (v0 + ((s32) tbl_125c))); arg5 = status;` extending status's life across the do_timeout debug_printf call (same class as s12's *idx_1495 cross-window-alias regression pattern).
+
+- [s41] s41 rejected bank: memory/grind/marionation_Exec/rejected/s41-perm-v11-arg5-eq-status-alias-8.c (the v11 find200 form; novel construct killed at masked 8).
+
+- [s41] s41 elapsed_s field in campaign_meta.json harvest output (88.5) is a metadata artifact (log mtime-derived elapsed calculation); actual fresh-seed window was 25 min from launch_epoch 1783525141 per campaign_meta.json to harvest, with campaign.log recording iter counts up to 1740+ during that period; harvest telemetry accepted for the ~1740 iters / 1 find data point.
+
+- [s41] s41 portfolio convergence extends: 11 sampled basins {vT40, find105, z07, w05, s18v02, s30v03, s29v06, s26idxp, s35orcomma, s20status, s11u10} -> 12 including v11; cumulative ~50+ CPU-hr sampling; ZERO novel-mechanism sub-200 attractors across all 12; all sub-200 finds classify to 3 known families (alias-merge masked>=10, label-alive +1 insn, cross-window-alias/reg-shuffle score-inert-to-slight-regression).
+
+- [s41] s41 candidate.c unchanged (remains vT40 masked 4 best-known); no src/ edits persist; oracle green.

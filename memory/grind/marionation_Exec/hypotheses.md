@@ -875,3 +875,15 @@
 - probe: harvested + stopped via permuter_campaign.py; the 5 finds were already triaged and banked by the prior attempt (4 semdiv clear-moves + 1 inert src-hoist, rejected/s40-perm-*)
 - result: All 5 finds score-equal (220) and classify to semdiv or inert shuffle classes; basin dry at the fresh-seed window
 - verdict: KILLED
+
+## [s41] The s21 v11 vsync-hoist basin (sv = sys_VSync(-1); D_800F19B8 = sv + 0x3C0; VSync value materialized to a prologue local before the store) samples a distinct qty-birth landscape from vT40 and reaches a novel sub-vT40 attractor within a 25-min fresh-seed window.
+- mechanism: v11 births an extra prologue pseudo (sv) whose life ends at the D_800F19B8 store; the local retimes qty allocation upstream of the do_timeout window and could reweight the pair-swap tie. Never permuter-sampled prior to s41.
+- probe: Built tmp/grind/marionation_Exec/s41/perm_v11 workspace from tmp/perm_mar6 skeleton + s21 v11 base + target.o. permuter --debug base score = 220 (identical residual signature to vT40/z07/w05/etc). Launched via tools/permuter_campaign.py launch --func marionation_Exec --dir ... --label s21v11-vsync-hoist -j 6 --stop-on-zero (PID 622, launch_epoch 1783525141). 25-min fresh-seed window elapsed. Harvested via tools/permuter_campaign.py harvest --stop --reason 'fresh-seed 25min window; permuter modality s41'.
+- result: 1740+ iterations in the window, 1 sub-220 find (output-200-1, score 200 = 220 - 20). Sandbox --disable all on the extracted fn = masked 8 (+4 vs vT40 floor). Novel construct: `status = *((s32 *) (v0 + ((s32) tbl_125c))); arg5 = status;` - the arg5 value staged through the check-region `status` variable. Same class as s12 *idx_1495 regression (crossing-window ref extends the alias var's life across the debug_printf call, forcing callee-saved seat cascade for status which is also used as check2 loop cond). No novel attractor; classifies within the reg-shuffle / cross-window-alias space.
+- verdict: KILLED
+
+## [s41] The v11 basin's fresh-seed window (25 min, ~1740 iters at -j 6) is comparable in yield to prior 12-30 min fresh-seed windows across the 11 previously sampled basins.
+- mechanism: Per portfolio convergence (s40): 11 basins sampled across ~50+ CPU-hr with zero novel attractors; all sub-200 finds classify into 3 known families {alias-merge masked>=10, label-alive +1 insn, reg-shuffle/cross-window-alias score-inert}.
+- probe: Compare v11's 1 find/1740 iters (find at 35.8s from launch, no further sub-220 sample in remaining ~24 min) vs s31 s30v03 (5 finds/26min), s40 s20status (14 finds/6.5h stale), s40 s35orcomma (5 finds/5min stale), s40 s11u10 (1 find/25min fresh).
+- result: 1 sub-220 find in 25 min at fresh-seed window is on the low end but within band; the find classifies to known cross-window-alias family, matching portfolio convergence pattern (0 novel attractors across 12 basins now).
+- verdict: CONFIRMED
