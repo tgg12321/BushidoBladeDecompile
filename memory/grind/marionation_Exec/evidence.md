@@ -868,3 +868,23 @@ vT33 in-call add: 16. vT34 sum-split: 11. vT35/vT36 nest-reweight: 15/14. vU1/vU
 - [s50] Second-best non-cheat target-matching finds are score=3 at build=180 (perm3/180-1, perm2/160-1, perm_z07/160-1) - all in the vP160 label-alive class already KILLED at s5 as +1-insn semantically-divergent (some emit sb $s0 instead of sb $0, some use `while(status)` in check2 reading status across BBs).
 
 - [s50] Any pure-C region-3 fix in this archive costs >=1 build insn AND lands in a semantically-divergent form; the ONLY 179-insn pure-C spelling reaching masked<4 is the volatile-coercion cheat.
+
+- [s51] vT40 candidate reproduces masked 4 / 178 build vs 179 target on s51 start.
+
+- [s51] cc1 -da dumps produced this session at tmp/grind/marionation_Exec/s51/{vt40,hoist}.{dbr,s} and vt40.{sched2,greg}.
+
+- [s51] vt40.dbr sequence 620 (at insn 620): jump_insn 424 (branch_zero eq a2 0, label_ref 505) + insn 445 (set reg a1 reg s4), 445 has insn_list REG_DEP_ANTI 433.
+
+- [s51] vt40.dbr insn 433 immediately after sequence 620 (through NOTE_INSN_LOOP_BEG/CONT): set (mem:QI (plus s3 -1)) 0 — the byte-clear `*(idx_1496-1)=0`.
+
+- [s51] vt40.dbr summary for marionation_Exec: reorg pass #1 '3 insns needing delay slots, 2 got 0 delays, 1 got 1 delay'; the 1 filled is check2's beqz + move a1,s4.
+
+- [s51] vt40.s lines 1274-1277: `.set noreorder / .set nomacro / beq $6,$0,.L137 / move $5,$20 / .set macro / .set reorder` — the visible fill.
+
+- [s51] hoist.s at check2 region: identical fill signature. Additionally check1's slot now also steals its sb clear (`beq $6,$0,.L121 / sb $0,0($19)` at line 1238) — an orthogonal side-effect of the hoist, unrelated to region-3.
+
+- [s51] inline-a1 form regresses to masked 25 (RA cascade), banked rejected/s51-inline-a1-eliminates-dst2-temp-25.c.
+
+- [s51] hoist form is masked-4-inert, banked rejected/s51-hoist-dst2-at-check2-inert-4.c.
+
+- [s51] GCC reorg.c fill_simple_delay_slots reject predicates that DO fire for perm3/80-1: MEM_VOLATILE_P on the intervening/adjacent mem-store; that predicate is NOT satisfiable at the check2 clear position without a type-coercion cheat because D_800A1495 is ordinary DRAM (not touched by any interrupt handler in this codebase).

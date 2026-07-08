@@ -1,8 +1,8 @@
 {
  "func": "marionation_Exec",
  "file": "system",
- "session_count": 50,
- "current_modality": "permuter",
+ "session_count": 51,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 0,
@@ -309,23 +309,29 @@
    "floor": 4,
    "modality": "permuter",
    "headline": "Frontier F2 (region-3 post-filter) EXECUTED across 154 permuter finds: 28 have target-matching check2-slot=nop; only perm3/output-80-1 beats vT40 (masked 2, build=target=179) and it does so via volati"
+  },
+  {
+   "session": 51,
+   "floor": 4,
+   "modality": "forensics",
+   "headline": "s51 forensics: named the exact dbr sequence (620/insn 445) filling check2 beqz's slot with reg-move dst2=a1; hoist-dst2-into-check2 KILLED at masked 4 (dbr found alt fill site); a1-inline-eliminating-"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Since perm3/80-1 PROVES the region-3 residual byte is byte-legally emittable at build=179 via SOME memory op forced between check2 and its clear-store, there may exist a non-cheat construct that emits the same insn (a legitimate volatile touch of an actually-interrupt-modified byte, or an aliased-store to a real memory region that dbr must treat as anti-dep to the clear).",
-   "mechanism": "Candidates: (a) reading or writing a genuinely-volatile global (D_800A147C_2 itself, or D_800F19B0 which is touched by the vblank/timer handler) at exactly the region-3 position; (b) a store to memory whose address the compiler cannot prove non-aliasing to the clear-target (idx_1496-1 = &D_800A1495); (c) a call to a pure-looking function whose ABI signals a memory clobber. Any of these could give dbr a real anti-dep edge that rejects the fill without a coercion cheat.",
-   "next_probe": "Grind or forensics session: for each of the 3 candidates, write a variant that inserts the honest memory op between the check2 branch and the sb clear; score with sandbox --disable all; probe whether the emitted insn matches target's addu $a1,$s4,$zero exactly (the un-stolen move). If ANY variant lands at masked 2 build 179, that is a candidate-ready pure-C form."
+   "hypothesis": "Candidate (c) from s50 frontier: inserting a legitimate function call (implicit memory clobber) between check2 branch and clear-store forces dbr to reject the fill AND is not a coercion cheat if the call has an honest program purpose.",
+   "mechanism": "A CALL_INSN has an implicit memory clobber (GCC treats all callee-writable memory as clobbered), so any insn with a memory dep or a caller-saved-register dep against the call blocks fill_simple_delay_slots from moving that insn past the call. Between the check2 test and the sb clear-store there is a single-basic-block region with no natural call site \u2014 inserting one here would need an honest semantic role (e.g., an accessor / logger that legitimately runs when the check bit is set).",
+   "next_probe": "Grind/ruling-request session: enumerate the callee-set of marionation_Exec's do_timeout region and inner loop; identify whether any existing call (cdrom_ClearIrq, tslTm2LoadImage_2, or a debug hook) has a defensible C-level meaning at the check2 position between the check-test and the clear. If none, F1(c) is closed and F1 as a whole is exhausted."
   },
   {
-   "hypothesis": "Because pair-swap-@56/57 stays coupled to sched2 T-14 UID tie (s6/s15 confirmed) AND region-3 residual is now proven byte-reachable-only-by-coercion in the archive, the joint residual (masked 4 = 2 for pair + 2 for region-3) has NO joint pure-C closer at build=179 measurable from any known chassis.",
-   "mechanism": "s6/s15 analysis pinned pair-swap to insn-UID tiebreak in sched2 (structural, not addressable at the C level without adding pseudos, which regress) and s6 mapped region-3 to dbr fill_simple_delay_slots rejecting neither the fall-through-owner nor all-live predicates. Both mechanisms are compiler-pass-internal; the C source shapes cannot both flip without adding an insn (vP160) or coercing a memory op (perm3/80-1 volatile).",
-   "next_probe": "Ruling-request session: with F1 (twin exchange lever) still open per synthesis frontier, this session KILLS F2 as archive-exhausted. If a follow-up F1 session also closes negative, the evidence bar for canonical-asm-authorization is reached (49 sessions + this scan = comprehensive lever-exhaustion + named GCC-pass mechanisms + F2 archive-negative). Not this session's mandate."
+   "hypothesis": "Frontier F3 (deeper permuter sampling on an untried basin \u2014 s39 arg3-v0-WAR-edge family at masked 16 or s31 s30v03 chassis at masked 6-11) may reach masked 2 via a spelling that does not require volatile coercion, if the fresh sample basin has a distinct pseudo-allocation landscape.",
+   "mechanism": "Prior ledger's 13 sampled basins concentrated on vT40 / find105 / z07 / w05 chassis; s39 WAR-edge and s31 s30v03 are structurally distinct and unsampled.",
+   "next_probe": "Permuter session: build a permuter workspace from the s39 arg3-v0-WAR-edge candidate (`memory/grind/marionation_Exec/rejected/s39-arg3-idx-staged-v0-war-edge-order-flips-webgrowth-16.c` as base); confirm base score with permuter --debug; launch -j6 fresh-seed campaign for ~20-30 min; filter finds through region-3 fingerprint scanner (tmp/grind/marionation_Exec/s50/scan_region3.py) as inline gate; harvest-and-stop discipline."
   },
   {
-   "hypothesis": "Deeper permuter sampling on a fresh basin (not previously enumerated 13 sampled chassis) might land a masked-2 pure-C spelling that the archive has not explored - the volatile-coercion basin is one possible attractor, but a distinct basin sampling different pseudo-allocation landscape could reach the same score without volatile.",
-   "mechanism": "The archive-scan measured 154 finds across 20 basins. Ledger's synthesis s37/s46 lists 13 SAMPLED basins. Untried basin chassis exist (e.g., asymmetric-tbase-with-shared-index, or one of the s39 arg3-v0-WAR-edge families that landed at masked 16 without campaign follow-up).",
-   "next_probe": "Permuter session: pick one of the higher-masked (10-16) chassis with a structurally distinct qty-allocation landscape (s39 arg3-v0-WAR-edge candidates at masked 16; s31 s30v03 chassis at masked 6-11), launch a fresh -j6 campaign with fresh-seed discipline (~20-30 min, harvest+stop). Filter finds through the F2 fingerprint scanner from this session as an inline gate."
+   "hypothesis": "The pair-swap + region-3 joint residual (masked 4 = 2 + 2) at build=179 is compiler-pass-internal on both axes (sched2 UID tiebreak for pair-swap + fill_simple_delay_slots for region-3) and archive-exhausted for honest C at floor 4 \u2014 the evidence bar for ruling-request may be reached after F1(c) closes.",
+   "mechanism": "s6/s7/s10/s15/s42/s43 pinned pair-swap to sched2 T-14 UID tiebreak (structural, non-C-addressable without adding pseudos which regress). s6/s50 pinned region-3 to fill_simple_delay_slots rejecting neither own-fallthrough nor all-live predicates. s50's archive scan across 154 permuter finds proved region-3 byte-reachable only via volatile coercion. F2 archive-exhausted; F1(a)/(b) closed this session; only F1(c) and F3 remain.",
+   "next_probe": "Not this session. If F1(c) closes negative AND a fresh untried-basin permuter campaign lands no masked-2 honest find, escalate to ruling-request: 50+ sessions of documented lever-exhaustion + two named GCC-pass mechanisms + archive-negative scan constitute the SOTN evidence bar for canonical-asm-authorization consideration."
   }
  ],
  "judge_constraints": [
