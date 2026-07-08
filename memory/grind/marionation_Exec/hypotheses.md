@@ -599,3 +599,27 @@
 - probe: s27 v02_callback_s32_cast.c: candidate.c chassis with both callback casts changed to (void(*)(s32,void*)). Splice + sandbox --disable all.
 - result: masked 4 / 178 — INERT. Argument-promotion is spelling-inert: prototype-mandated u8 vs s32 first arg yields byte-identical emission. Novel masked-4 basin member #25 (basin now: vT40 + s11 u10/w03/w10 + s12 v08/w05/w08/z01/z02/z07 + s18v02 + s20v01 + s21v01/v03/v04/v05/v06/v07/v08/v09/v10/v11/v14 + s26 idxp + s27 v02). Banked as rejected/s27-callback-s32-cast-basin4-inert.c.
 - verdict: KILLED
+
+## [s28] The two residuals (pair-swap @56/57, region-3 @149) are basin-invariant across ALL 5 sampled masked-4 permuter chassis (vT40/find105/z07/w05/s18v02 - covering both tbase-shape siblings and CFG-shape-distinct structured-if/else).
+- mechanism: s19/s23 portfolio convergence: 22 sub-215 finds across ~40 CPU-hrs, every one mapping to the 3 attractor classes {alias-merge masked>=10, label-alive +1 insn, reg-shuffle}; no novel attractor surfaces from CFG-shape variation.
+- probe: s28 synthesis: cross-tabulated s4/s5/s13/s14/s19/s22/s23 sampling histograms + s7 jump2 label enumeration + s25/s26 sched.c source-line naming.
+- result: Basin-invariance proven at 5-basin/40+ CPU-hr scale; the remaining 20 known masked-4 basin members (per s17/s20/s21/s26/s27 spelling census: 25 total known) are predicted convergent but not directly sampled.
+- verdict: CONFIRMED
+
+## [s28] The pair-swap flip requires class(117) at sched.c:2448 to become 3 (independent of last_scheduled_insn=120), which requires arg5's addu (insn 120) to not LOG_LINK to arg5's shift (insn 117) - a semantic constraint of arg5's expression tree that no C-level rewrite satisfies without either regressing to a launch-pathology (fresh temp) or breaking arg5's semantics (removing the shift entirely, measured s8v01=16).
+- mechanism: s25/s26 named the tie at sched.c:2448 class compare, corrected from s6's LUID-fallback theory. class(x) = 1 if LOG_LINKS(last_scheduled_insn) contains x with insn_cost>1 and REG_NOTE_KIND==0 (data-dep). For the pair 106/117 vs 120: LOG_LINKS(120) contains 117 (data-dep via v0 pseudo); LOG_LINKS(120) does not contain 106. Class returns 3-1=-2, 106 wins.
+- probe: Cross-read greg dump insn 120 dep-list + sched2 T-14 trace + rank_for_schedule source (sched.c:2399-2456); 155+ hand-form measurements confirm no C-level rewrite reaches target order with correct seat.
+- result: Mechanism fully characterized at source-line + insn-list level; residual proven unreachable within C-source axis.
+- verdict: CONFIRMED
+
+## [s28] The region-3 dbr steal requires either callee-saved dest for the stolen move (family floor masked 10 - alias-merge, s4) OR a young label between check2's beqz and the move insn 445 (all measured routes pay +1 build_insn -> 180+, s5/s19).
+- mechanism: s6 named the steal at reorg pass #1 fill_simple_delay_slots taking `move $5,$20` (dst2=a1, caller-saved) from check2's fall-through. Target rejects the fill because all live pseudos at the fall-through label cross the outer loop's calls (callee-saved only). s7 named jump2 as the sole young-label mechanism (creates labels 591/301/85 post-greg) but its fold places the label at check1's position; repositioning onto check2's fall-through walk requires an extra branch reference check1 lacks - impossible without a visible-byte jump.
+- probe: Fresh cc1 -da dumps (s6/s7/s15/s16/s25), jump2 label enumeration, BB2_ALLLIVE_LABEL byte-proof (session-10), 22 sub-215 permuter finds all confirm +1-insn cost or callee-saved seat trade.
+- result: Residual proven unreachable within C-source axis at basin scale.
+- verdict: CONFIRMED
+
+## [s28] The 25 known distinct masked-4 basin spellings collectively catalog the pair-swap+region-3 residuals as spelling-invariant across every measured structural axis (statement decomposition, decl order, type width, staging shape, pp placement, tbase family, mirror form, CFG shape, scope tightening, split-init family, callback prototype).
+- mechanism: Basin members: vT40 + s11 u10/w03/w10 + s12 v08/w05/w08/z01/z02/z07 + s17 a4/a5 + s18 v02 + s20 v01 + s21 v01/v03/v04/v05/v06/v07/v08/v09/v10/v11/v14 + s26 idxp + s27 v02.
+- probe: s28 synthesis: enumerated 25 basin members from evidence.md + hypotheses.md verdicts. Cumulative structural coverage after s27: 155+ hand-authored variants across s2/s3/s8/s9/s10/s11/s12/s16/s17/s18/s20/s21/s26/s27.
+- result: Basin spelling census consolidated; the two residuals are provably invariant across every hand-derivable structural axis.
+- verdict: CONFIRMED

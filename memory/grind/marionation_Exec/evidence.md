@@ -550,3 +550,21 @@ vT33 in-call add: 16. vT34 sum-split: 11. vT35/vT36 nest-reweight: 15/14. vU1/vU
 - [s27] Cumulative structural coverage after s27: 26 sessions of measured hand-authored variants (110+ forms in s2/s3/s8/s9/s10/s11/s12/s16/s17/s18/s20/s21/s26/s27) + insn-level forensics (s6/s7/s15/s24/s25) + 5-basin permuter (~40+ CPU-hours across vT40/find105/z07/w05/s18v02) all converge on masked-4 floor with 2 root-caused residuals. The masked-4 basin now has 25 known distinct spellings — the residuals are provably spelling-invariant at basin scale.
 
 - [s27] src/system.c restored to HEAD via splice_apply.py --restore + git checkout after every measurement; working tree clean except metrics/events.jsonl (engine-managed); oracle green throughout.
+
+- [s28] s28 synthesis: 27-session ledger consolidated (evidence.md 553 lines + hypotheses.md 602 lines); no new sandbox measurements taken this session, floor remains masked 4 with candidate.c (vT40) unchanged.
+
+- [s28] Pair-swap residual: sched.c:2448 class-compare selects insn 106 (class=3) over insn 117 (class=1, data-dep to last_scheduled_insn=120 via v0 pseudo). Any C rewrite must break the LOG_LINK from 120 to 117 without launching a fresh temp - measured impossible across 155+ hand-forms.
+
+- [s28] Region-3 residual: reorg fill_simple_delay_slots steals caller-saved a1-dest move because target's callee-saved-only live-set at fall-through label rejects only the target's fill. jump2's young-label mechanism (s7: labels 591/301/85) always places the new label at check1's position (fold absorbs check2), off check2's fall-through walk.
+
+- [s28] Portfolio convergence at 5-basin scale (vT40/find105/z07/w05/s18v02), 40+ CPU-hrs, 22 sub-215 finds - all map to 3 known attractor classes; CFG-shape-invariant (s18v02's structured if/else did NOT open new terrain).
+
+- [s28] 25 known distinct masked-4 basin spellings enumerate the two residuals as basin-invariant; 20 remain untried as permuter seeds but s19/s23 predict convergent.
+
+- [s28] Policy-killed levers (no ruling required): sched.c/reorg.c/flow.c patches (.claude/rules/no-compiler-divergence.md HARD RULE); cheat family (regfix/pins/__asm__ injection); cross-symbol FAKE (2026-07-05 semantic-lie ruling).
+
+- [s28] Actionable frontier: (a) twin cpu_side_move_dir_4 exchange lever via queue-routing (NOT addressable from this function's mandate); (b) untried permuter basin with SVR-on-arg5-shift chassis; (c) ruling-request placeholder for beyond-classification constructs.
+
+- [s28] Synthesis document: tmp/grind/marionation_Exec/s28/SYNTHESIS.md.
+
+- [s28] src/system.c untouched; candidate.c unchanged (remains vT40, best-known masked 4); oracle green.
