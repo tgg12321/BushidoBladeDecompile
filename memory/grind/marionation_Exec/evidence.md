@@ -496,3 +496,21 @@ vT33 in-call add: 16. vT34 sum-split: 11. vT35/vT36 nest-reweight: 15/14. vU1/vU
 - [s23] [s23] src/system.c restored to HEAD via splice_apply.py --restore + git checkout; working tree clean modulo metrics/events.jsonl; oracle green throughout.
 
 - [s23] [s23] candidate.c unchanged (vT40 remains the best-known form at masked 4).
+
+- [s24] s24 baseline sandbox re-confirmed: score=4, build_insns=178, target_insns=179, rules_dropped=42, cheat_asm_stripped=20 on vT40 candidate.c spliced.
+
+- [s24] cc1 flag sweep (15 toggles) tested on src/system.c-with-candidate.c-spliced preprocessed to a single .i, cc1 emissions per flag captured at tmp/grind/marionation_Exec/s24/full_*.s and marionation_Exec extractions at asm2/*.s.
+
+- [s24] IDENTICAL-emission set on marionation_Exec (8 flags KILL as levers): -fno-caller-saves, -fno-cse-follow-jumps, -fno-defer-pop, -fno-force-mem, -fforce-mem, -fno-peephole, -fno-strength-reduce, -fno-thread-jumps.
+
+- [s24] -fno-rerun-cse-after-loop's 11-line system.c diff is entirely OUTSIDE marionation_Exec (fn emission identical to baseline).
+
+- [s24] -fno-schedule-insns2, -fno-schedule-insns, and -fno-expensive-optimizations each perturb marionation_Exec (26/25/4 diff lines respectively) but leave the pair-window emission (sll v0; sll a0; addu v0,v0,s5) EXACTLY as baseline - no flag toggle flips the T-14 tie.
+
+- [s24] -fno-delayed-branch produces a structurally distinct emission (147 vs 204 lines total, no delay-slot fills anywhere) but the pair-window at insns 46-58 remains byte-identical to baseline: sll v0; sll a0; addu. dbr does NOT feed back into sched2's T-14 UID decision.
+
+- [s24] -fno-omit-frame-pointer (208 lines, fp scaffolding) and -fforce-addr (205 lines, hoisted address loads) preserve the pair-window t0-first sll pair - no path to target order.
+
+- [s24] MECHANISM CONCLUSION strengthening s6/s17: sched2's rank_for_schedule INSN_LUID assignment at T-14 (deciding the arg4-sll/arg5-sll tie) is derived from the pass's own backward dep-DAG walk, not from any pre-sched2 IR shape a -f flag can re-arrange. All tested pre-sched2 (jump/cse/loop/cse2/flow/combine) and post-sched2 (dbr) flags leave the T-14 emission unchanged.
+
+- [s24] Global fp/dbr/sched-off flags additionally regress OTHER functions in system.c drastically (large line-count deltas 57-118 lines from small pass toggles), so even a per-file wrapper (unbuilt this session) would not resolve the tie without collateral fn-level damage.
