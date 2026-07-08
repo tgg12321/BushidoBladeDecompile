@@ -485,3 +485,15 @@
 - probe: v15_split_init_saved: `saved = *D_800A147C_2; saved &= 3;`.
 - result: masked 6 / 178 build_insns (+2 REGRESSION at same build count). NEW MECHANISM FACT: split-init on saved is a MEASURED REGRESSION (+2 masked, byte-neutral), NOT byte-inert. The saved pseudo life extends over the check-region label-fold decision points, creating a callee-saved seat competition analogous to s12's *idx_1495 life-extension. Split-init IS sanctioned BUT does not help this pair.
 - verdict: KILLED
+
+## [s22] The s18v02 chassis (structured if/else check-region — the ONE known masked-4 spelling with a genuinely different upstream CFG per s19 SYNTHESIS) is a valid permuter seed with the same {2 reorderings x60 + 1 deletion x100 = 220} residual signature as vT40/find105/z07/w05.
+- mechanism: s19 identified the check-region structural if/else as CFG-distinct from the other 12 known masked-4 spellings which share tbase/staging structure. If the residual signature at the base is IDENTICAL across a structurally distinct CFG chassis, it strengthens the s19 synthesis: the pair-swap + region-3 residual is basin-invariant, not chassis-specific.
+- probe: tmp/grind/marionation_Exec/s22/build_ws_s18v02.py adapted s14/build_ws_w05.py to the s18v02 chassis (from tmp/grind/marionation_Exec/s18/v02_check_ifelse.c). Ran permuter --debug base analysis.
+- result: base score = 220 EXACTLY (Reorderings: 2 (60), Insertions: 0 (100), Deletions: 1 (100)). Identical to vT40/z07/w05 base signatures. The residual is CFG-shape-invariant across 5 sampled basins.
+- verdict: CONFIRMED
+
+## [s22] The s18v02-basin permuter campaign produces a novel sub-200 attractor class outside the closed set {alias-merge (masked>=10), label-alive (+1 insn), permuter-reg-shuffle} within its first ~450 iterations.
+- mechanism: s18v02's structurally distinct CFG (structured if/else vs goto+label chain in the check region) may put jump.c/flow.c/reorg local rewrites into different terrain than the tbase-shape sibling basins (vT40/find105/z07/w05) share.
+- probe: Launched detached `permuter.py -j6 --better-only --stop-on-zero` on tmp/grind/marionation_Exec/s22/perm_s18v02 (PID 1808915, log campaign_s18v02.log). Watched first ~5 min = 450 iterations.
+- result: 0 sub-220 finds in ~450 iterations. Score histogram: 124 iters at exactly 220 (basin-equivalent local mutations that stayed at floor), 12 at 230, minority tail from 270 up to ~10k. Base minimum still 220. No output-* directory created (permuter --better-only). Campaign remains running detached past session end.
+- verdict: KILLED

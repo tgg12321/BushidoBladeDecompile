@@ -466,3 +466,13 @@ vT33 in-call add: 16. vT34 sum-split: 11. vT35/vT36 nest-reweight: 15/14. vU1/vU
 - [s21] [s21] src/system.c restored to HEAD via python3 tmp/grind/marionation_Exec/s6/splice_apply.py --restore + git checkout after every measurement; working tree src/ clean; oracle green (only metrics/events.jsonl modified).
 
 - [s21] [s21] candidate.c UNCHANGED (remains vT40 masked 4 best-known). 4 disproven forms banked to memory/grind/marionation_Exec/rejected/: s21-i-fresh-local-per-copy-block-19.c, s21-idx1495-birth-in-check1-27.c, s21-idx1496-birth-in-check-region-18.c, s21-split-init-saved-masked6.c.
+
+- [s22] s18v02 chassis base score = 220 CONFIRMED at permuter --debug (Reorderings 2 x60 + Deletions 1 x100 = 220), exactly matching vT40/z07/w05 base signatures.
+
+- [s22] s18v02 permuter workspace built via tmp/grind/marionation_Exec/s22/build_ws_s18v02.py (adapted from s14/build_ws_w05.py); fn body chars: old=2604 new=2650; default randomization only, no PERM_* macros (s13 lesson).
+
+- [s22] First ~450 iterations of the s22 s18v02 permuter campaign: 0 sub-220 finds. Distribution: 124 iters at 220 (~27.6% of iterations landed at the local basin minimum via random mutation), 12 at 230, tail up to 11140. Minimum floor after ~5 min: 220.
+
+- [s22] Campaign PID 1808915 launched with nohup -j6 --better-only --stop-on-zero, log at tmp/grind/marionation_Exec/s22/campaign_s18v02.log; will continue running past session end (matches s13/s14 detached-campaign discipline).
+
+- [s22] Portfolio-scale sub-200 sampling now covers 5 distinct-chassis basins: vT40 (11h+, no new finds since s5) + find105 (11h+, no new finds since s5) + z07 (post-s13, minor label-alive/reg-shuffle finds) + w05 (post-s14, minor alias-merge/reg-shuffle finds) + s18v02 (this session, 0 sub-220 in first 5 min). Consistent with the s19 SYNTHESIS conclusion: the {2 reorderings + 1 deletion} residual is universal-attractor-bounded across permuter-reachable basins.
