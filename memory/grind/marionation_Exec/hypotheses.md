@@ -1115,3 +1115,21 @@
 - probe: Cumulative closure check across s2/s3 (48 hand forms), s4/s5 (~10k permuter samples), s6/s7 (140-ordering sweep, 9-topology sweep, insn-level sched2/dbr forensics), s8-s12/s45-s55 (structural + mirror + tbase + prologue-reorder + stmt-expr axes), s25/s33/s37/s38/s42/s43 (mechanism forensics), s40/s41/s49 (portfolio permuter basins), s50/s51/s52 (dbr steal + F1 branch enumeration), s53/s54 (sibling saEft01Init transfer + arg3 hoist axis). 165+ hand forms, 15+ basin members, 13 permuter basins ~50+ CPU-hr, 3-family closed attractor set holds.
 - result: KILLED - the honest in-basin closer space is exhausted. All measured novel attractors converge to {vT40 floor 4 @ 178, alias-merge >=10, label-alive/semantic-lie +1 insn or wrong-return, reg-shuffle score-inert}. No non-cheat pathway to masked <4 within the vT40 basin has been demonstrated across 55 sessions.
 - verdict: KILLED
+
+## [s56] Block-scoping `u8 saved` inside the `if (sys_GetVblankCount()!=0)` block (shortening its life from function-scope to the vblank-if body only) perturbs the qty allocation at the pair-swap or region-3 residuals
+- mechanism: s47 proved constant-holder lifetime is combine-relevant (block-scope new_var/new_var3 folds to inline constants, deleting mask insns); the analogous test for a load-derived value (saved = *D_800A147C_2 & 3) may similarly let combine fold `saved & 3` reads at the restore site or shift the RA landscape for the check region
+- probe: v01_saved_block.c: removed function-scope `u8 saved;`, injected `u8 saved;` at top of the vblank-if compound; splice + sandbox --disable all
+- result: score=4, build=178, target=179 - IDENTICAL to vT40 baseline. Basin-equivalent 16th spelling. Combine did NOT fold `& 3` into `*D_800A147C_2 = saved;` because the intervening func_80080828() call is an unknown-side-effect barrier; qty allocation for saved is unchanged because its RTL first-use position is identical.
+- verdict: KILLED
+
+## [s56] Block-scoping `s32 status` inside the polling `do{}while(1)` loop (shortening its life from function-scope to the loop body) perturbs the qty allocation at the pair-swap or region-3 residuals
+- mechanism: s41 established that extending status's life across do_timeout regresses +4 via callee-saved seat competition; the symmetric probe (shortening status's life to just the polling loop where it's actually used) tests whether the shortened life releases seat pressure or otherwise reweights the check-region cascade
+- probe: v02_status_block.c: removed function-scope `s32 status;`, injected `s32 status;` at top of polling do{} body; splice + sandbox --disable all
+- result: score=4, build=178, target=179 - IDENTICAL to vT40. Basin-equivalent 17th spelling. Status's RTL first-use inside the polling loop is unchanged by decl scope; GCC 2.7.2 pseudo births at first-use, not declaration site (consistent with s2's decl-order finding extended to lifetime scoping).
+- verdict: KILLED
+
+## [s56] Combining both scope-shortenings (saved to vblank-if, status to poll-do) produces a compounded landscape perturbation not visible in either isolated probe
+- mechanism: s10 proved staging webs are NON-ADDITIVE (t0-web + v0-web interact non-linearly); a symmetric interaction between scope-shortened locals could conceivably tip a seat cascade tie the isolated forms did not reach
+- probe: v03_both_block.c: combined v01+v02 modifications; splice + sandbox --disable all
+- result: score=4, build=178, target=179 - IDENTICAL to vT40. No compound perturbation. Basin-equivalent 18th spelling. Confirms the two scope-shortenings are fully independent AND both individually inert.
+- verdict: KILLED
