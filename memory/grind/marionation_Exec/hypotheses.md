@@ -137,3 +137,15 @@
 - probe: Cross-read sched2 trace T-6..T-18 against greg insn dep-lists (insn 137, 143, 145 all show 'insn_list 137 (...)') — confirms 137 anchors the debug_printf arg-flow chain
 - result: The dep-DAG mechanism explains why the s2/s3 exhaustive 140-ordering sweep found the coupled fixed point: statement order in C alters expand-time insn numbering (which breaks the T-14 UID tie one way or the other) but any dep-chain shortening would require semantic changes to the debug_printf call site, which are impossible (its args are load-bearing).
 - verdict: CONFIRMED
+
+## [s7] No GCC 2.7.2 pass creates a new CODE_LABEL after flow.c that a semantically-true C construct could route through — the young-label mechanism is unreachable in this compiler+C combination (s6 frontier item #1).
+- mechanism: s6 concluded: dbr creates labels too late; loop.c splits labels pre-flow; cse2/combine don't create; sched moves but doesn't create; no computed goto / macro-inlined switch / __builtin_expect available in K&R.
+- probe: Enumerated `code_label N` entries in every RTL dump pass (jump/cse/loop/cse2/flow/combine/sched/lreg/greg/jump2/sched2/dbr) on the vT40 candidate; diffed the label-id set across transitions (tmp/grind/marionation_Exec/s7/labels_*.txt + jump2_label_delta.txt).
+- result: FALSIFIED — jump2 (jump.c: jump_optimize, called between greg and sched2) synthesizes 3 new code_labels (591, 301, 85) not present in ANY prior pass. Label 591 is used by TWO branches (label_ref at insn 397 = check1 branch_equality, and insn 454 = an in-body branch inside SEQUENCE insn 610), proving jump2 folded two originally-distinct jump-around sequences under a single new label. Label 493 (the ORIGINAL check2 copy-skip label) was DELETED by that same fold. So the mechanism DOES exist, but jump2 places the young label at check1's position because check1 emits first and its skip-target absorbs check2's during fold. To reposition onto check2's fall-through walk (between insn 424 = beqz(a2==0) and insn 445 = move a1,s4), we'd need either (a) check2 to emit first (semantically impossible — check1 is the prior-state precheck), or (b) check2's copy-skip position to have an extra branch reference check1 lacks (no C construct provides this without a visible-byte jump). No C-level lever.
+- verdict: KILLED
+
+## [s7] The vT40 candidate reproduces masked-4 on main at s7 start; baseline unchanged from s1-s6.
+- mechanism: candidate.c spliced via s6/splice_apply.py; sandbox --disable all is the honest cheat-invisible score.
+- probe: python3 tmp/grind/marionation_Exec/s6/splice_apply.py memory/grind/marionation_Exec/candidate.c; & tools/wteng.ps1 main sandbox marionation_Exec --disable all; splice_apply.py --restore; git checkout -- src/system.c.
+- result: score=4, build_insns=178, target_insns=179, rules_dropped=42, cheat_asm_stripped=20. src restored to HEAD (git status clean; CRLF fix via git checkout).
+- verdict: CONFIRMED

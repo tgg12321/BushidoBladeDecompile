@@ -1,7 +1,7 @@
 {
  "func": "marionation_Exec",
  "file": "system",
- "session_count": 6,
+ "session_count": 7,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -45,23 +45,24 @@
    "floor": 4,
    "modality": "forensics",
    "headline": "Forensics s6: pair-swap named as sched2 T-14 tie between insns 106/117 (both pri=2 ashlsi3) broken by insn-number ordering; region-3 named as reorg pass-1 fill_simple_delay_slots on check2-beqz steali"
+  },
+  {
+   "session": 7,
+   "floor": 4,
+   "modality": "forensics",
+   "headline": "s7 forensics: jump2 DOES create young labels (591/301/85 post-greg) \u2014 mechanism is real in this compiler, but lands at check1's copy-skip position, not check2's; s6 frontier item #1 KILLED with insn-l"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A young-label / post-flow-label spelling can force fill_simple to reject the check2 slot fill without paying a visible byte",
-   "mechanism": "reorg's find_basic_block(-1) returns -1 for labels created AFTER flow analysis (post-cse2/loop), triggering all-live-at-label conservatism \u2192 move $5,$20 rejected as slot fill (session-10's BB2_ALLLIVE_LABEL knob proves this route byte-exactly)",
-   "next_probe": "Enumerate GCC 2.7.2 passes that CREATE new CODE_LABELs after flow.c: dbr pass itself creates delay_seq labels but too late; loop.c splits labels but pre-flow; cse2 does not; combine does not; sched can move around but does not create. The only C-level lever left is a construct whose EXPAND-time CFG has a label that survives cse/loop/combine/flow simplification into dbr as a not-yet-analyzed label \u2014 e.g. a computed goto (unavailable in K&R), a switch-in-macro that expands to a fresh label after inlining (all our inlines are C90 fn calls), or a __builtin_expect-style hint (not in GCC 2.7.2). Conclusion: no reachable young-label mechanism in this compiler+C combination."
+   "hypothesis": "The rich-pass permuter (s4/s5) is the only remaining honest lever; a fresh rebuild+run may still find a masked-<=3 form from the vT40 base that neither hand-forensics ruled out nor was reachable through the earlier campaign's sampled trajectory.",
+   "mechanism": "permuter samples RTL-space by permuting PERM_GENERAL/PERM_RANDOMIZE_TYPE mutations; the s4 base score 220 corresponds exactly to the masked-4 residual (2 reorderings x60 + 1 deletion x100). The s5 signposts (masked-3 at 180 insns) proved the sampler CAN reach nominally sub-4 space, but every s5 route paid a visible byte or read status uninitialized.",
+   "next_probe": "Not a forensics modality. A permuter-modality session would need to rebuild the offset-0 workspace (perm_mar6 skeleton + vT40 base + rich-pass config + watcher/triage on pair-window[50:63] and region-3-window[144:157]) and run --stop-on-zero for a bounded sample; all sub-200 finds must be validated by the s2 adiff.py normalizer against candidate.c for true semantics."
   },
   {
-   "hypothesis": "The 137 stack-arg-push insn's T-index CAN be nudged one slot earlier by re-ordering the debug_printf call site's ARG-EVALUATION order (e.g. moving the *pp load into a stack-arg via a helper struct or a comma-op) which would let 122 shift from T-12 to T-11 and 120 to T-13, freeing T-14 for 120",
-   "mechanism": "In GCC 2.7.2, function-call arg evaluation order is C90-implementation-defined; changing which arg receives the arg5 value (currently 5th) via calling debug_printf with a different signature wrapper could re-anchor the stack-push in dep-DAG",
-   "next_probe": "This is a NON-forensics modality (would require a permuter session sampling debug_printf arg-signature rewrites). Forbidden here: cross-symbol/semantic-lie C. The signature must stay debug_printf(fmt, pp, D_800A11DC[D_800A11D5], *(s32*)t0, arg5). Only true-semantics respellings of the LOADS producing 5th/6th/7th arg values are eligible \u2014 s3's y/w/x sweeps exhausted them (all reach masked 4-8 with either baseline coupled fixed point or seat trade). Frontier: negative."
-  },
-  {
-   "hypothesis": "The running s4/s5 permuter campaigns (perm PID 1935645 vT40-base, perm_c PID 1935593 find105-base) may still find a sub-4 form; the sampler's discovery of the vP160/output-160-3 masked-3 signposts proves it samples label-attracting shapes the hand-forensics ruled impossible-by-analysis",
-   "mechanism": "Permuter can mutate PERM_GENERAL/PERM_RANDOMIZE_TYPE across the vT40 base without our analytical constraint that the label must be semantically-justified \u2014 but every semantically-DIVERGENT find (vP160 uninit-read class) is a REJECTED banked form",
-   "next_probe": "Recheck the running campaign's output-dirs at s7/s8 handoff time (do not disturb this session \u2014 the campaigns are the ONLY active lever)."
+   "hypothesis": "The twin cpu_side_move_dir_4 (parked, distance 7, 5 rules) shares the pair-swap coupling per lore; if solved there first (fable-blitz recommendation), the technique may mirror here.",
+   "mechanism": "Twin has residual = the pair exchange alone (masked ~6 -> 0 on flip per pre-merge commits aa8cad24/cd65f9c2/e5aa2dd4/f4bc8e67/df749bfd/622620cb sessions 6f-6h).",
+   "next_probe": "Cross-function; would be executed as a separate grind entry (cpu_side_move_dir_4 top). This function's forensics cannot advance it directly."
   }
  ],
  "judge_constraints": [
