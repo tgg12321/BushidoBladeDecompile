@@ -839,3 +839,21 @@
 - probe: Direct contrast on the same chassis: s34 v04 (explicit add, refs 12, ORDER-CORRECT, seats traded) vs s38 v05a/b/c (deferred add, refs still 12 via reconstituted temps, ORDER-INCORRECT)
 - result: CLOSED IN CLOSED FORM: the explicit add statement is simultaneously what makes the carrier form order-correct (the refs-12 tied web flips sched1's launch) and what pins refs above arg5val's; removing it collapses the order. The two halves of the flip condition are mutually exclusive in the same mechanism. With raise-refs(arg5val) (wrap toolbox, Judge-banked), shorten-life(arg5val) (sched1 normalization), and lengthen-life(t0-side) (call anchor, s34) already closed, NO arithmetic route to the pair flip remains
 - verdict: KILLED
+
+## [s39] saEft01Init's regfix rule cluster can be decoded against its rules-free build emission to fingerprint the unknown original window idiom before P2 is scheduled
+- mechanism: The rules a function carries encode exactly where its current C diverges from target; the @35-48 reorder + $2<->$3/$2<->$4 swaps map plain-C emission onto target insn-by-insn
+- probe: Fresh cc1 emission of system.c (dumps/mar_system_s39.s lines 1859-1872) aligned against asm/funcs/saEft01Init.s and the regfix reorder permutation [36,35,37,38,39,40,44,43,41,45,46,47,48,42]
+- result: Decoded: original idiom must emit idx[0] first, arg5 deref BEFORE arg3's index lbu, arg4's tbl-addu deferred after arg3's lbu, arg4 deref LAST, arg4 chain seated in a0, arg3 index byte reusing v0 after arg5's deref. Fingerprint is shape-identical to marionation_Exec's own target window - one spelling decides both (P2 exchange evidence, constraints recorded in s39/findings.md)
+- verdict: CONFIRMED
+
+## [s39] Staging arg3's index through the dead v0 staging var (v0 = D_800A11D5; D_800A11DC[v0]) - the target's own v0-reuse shape - creates a WAR edge 122->128 that lengthens arg5's chain-to-jal and flips the sched2 pair to target order, reaching masked <=4
+- mechanism: Backward-walk priority = longest path to end; the anti-dependence routes 122->128->133->lw a2->jal (4 hops) instead of 122->137->jal (2 hops), outranking the 106 chain at the tie. staged-value-reused-variable family (owner-sanctioned 2026-07-03), semantically true, no fresh pseudo
+- probe: v01 (vT40 + arg3-through-v0): cc1 dump pre-vet then sandbox; refinements v02 (arg5-first), v03/v04 (sibling named-locals chassis both orders), v05 (byte-offset spelling), v06 (t0 tbl-add deferred combo)
+- result: ORDER FLIP CONFIRMED: v01 emits sll; addu v0,v0,s5; sll from t0-first source (v01.s) - the first order-correct t0-first form ever measured, refuting the s37 arg5-first-only route synthesis at the order level. KILLED as closer: v0 gains a 3rd set, its web spans the call-arg region, s3-class web-growth penalty ~+12 dominates: v01=16, v02=16, v03=18, v04=18, v05=20, v06=16. v0 is the only dead-in-window variable, so the WAR edge is unobtainable without the web growth - axis closed
+- verdict: KILLED
+
+## [s39] Plain unshifted index staging (t0 = idx[0]; v0 = idx[1]) with both derefs inline in the call reaches masked <=4 (sibling-decode cue: idx loads first, chains in arg-like seats)
+- mechanism: Minimal staging without the byte-cast/shift webs might let expand seat the chains naturally per the target's a0/v0 lbu dests
+- probe: v07 spliced + sandbox
+- result: masked 16 / 178 - lands in the known no-web class (s8v01=16); the two staging webs remain load-bearing
+- verdict: KILLED

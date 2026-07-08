@@ -1,7 +1,7 @@
 {
  "func": "marionation_Exec",
  "file": "system",
- "session_count": 38,
+ "session_count": 39,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -237,23 +237,29 @@
    "floor": 4,
    "modality": "structural",
    "headline": "s38 structural: frontier P1 (carrier + deferred tbl-add) KILLED at the dump gate across all 3 spellings - the s33 flip condition is now EXHAUSTED (all four arithmetic axes closed); the pair residual f"
+  },
+  {
+   "session": 39,
+   "floor": 4,
+   "modality": "structural",
+   "headline": "s39 structural: sibling saEft01Init's 15 rules decoded into the original-idiom fingerprint (P2 exchange constraints now concrete); NEW WAR-edge route (arg3 index staged through dead v0) flips the pair"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "P2 (now the ONLY remaining pair lever): the shared-window sibling saEft01Init (dist 18, 15 rules, byte-shape-identical do_timeout window, no callbacks/copy-blocks/check-region) yields the unknown original order+seats-correct spelling, which mirrors into marionation_Exec same-day",
-   "mechanism": "s36 proof of window identity + s38's flip-condition exhaustion: no arithmetic route exists, so only a structurally different original spelling (findable on the simpler chassis) can seat the pair; import the s33/s34 tiebreak + s38 exhaustion knowledge",
-   "next_probe": "Queue-routing / operator-mediated: work saEft01Init's window on its queue turn or an operator-sanctioned exchange session; splice any winning spelling into marionation_Exec immediately"
+   "hypothesis": "P2 (unchanged, now concretized): saEft01Init's window worked on its queue turn / operator exchange yields the original order+seats-correct spelling, mirrored into marionation_Exec same-day",
+   "mechanism": "s36 window identity + s39's decoded rule fingerprint: the winning spelling must make GCC naturally emit idx[0]-first loads, middle-addu pair, arg5-deref before arg3's lbu, arg4 addu+deref deferred - WITHOUT a v0-web-growth WAR edge (s39 measured that route at +12). The s33/s34 tiebreak + s38 exhaustion + s39 fingerprint transfer directly",
+   "next_probe": "Queue-routing / operator-mediated exchange session on saEft01Init; test spellings against the s39 fingerprint table (findings.md) via dump-first pre-vet before sandboxing; splice any winner into marionation_Exec immediately"
   },
   {
-   "hypothesis": "P3: a permuter seed on an unsampled masked-4 basin member (32 known, 8 sampled, all convergent) surfaces a novel sub-165 neighborhood with true semantics",
-   "mechanism": "Weak prior (8-basin convergence) but the sampler is the only tool sampling unknown-source-shape space; the s34/s38 dump pre-vet triages finds nearly free (discard order-incorrect and pri(arg5val)<=pri(t0-side) finds without sandboxing)",
-   "next_probe": "Adapt build_ws for one unsampled member (s20-status-local, s11-u10, or s35-m2c-outer-orcomma); 20-30 min fresh-seed window per the permuter-fresh-seed directive; harvest, pre-vet, stop"
+   "hypothesis": "P3 (unchanged): a permuter seed on an unsampled masked-4 basin member surfaces a novel sub-165 neighborhood with true semantics",
+   "mechanism": "Weak prior (8-basin convergence) but the sampler is the only tool sampling unknown-source-shape space; s34/s38 dump pre-vet plus s39's new v0-web-growth signature filter triage finds nearly free",
+   "next_probe": "Adapt build_ws for one unsampled member (s20-status-local, s11-u10, or s35-m2c-outer-orcomma); 20-30 min fresh-seed window per permuter-fresh-seed directive; harvest, pre-vet (order + QTYDBG 3-set-v0-web filter), stop"
   },
   {
-   "hypothesis": "Both residuals (pair-swap and region-3) now share the same closure class: solvable only by the unknown original source spelling - a synthesis/forensics session could mine the sibling saEft01Init's 15 regfix rules and its window's rule-era history for hints about the original staging idiom before P2 is scheduled",
-   "mechanism": "The rules a function carries encode where its current C diverges from target; saEft01Init's 15 rules on a window-dominated residual may localize the original idiom more cheaply than a full exchange session",
-   "next_probe": "Forensics session: read saEft01Init's regfix/asmfix rules + target window, classify which rule families touch the pair window, and derive candidate original-idiom shapes for the exchange session to test first"
+   "hypothesis": "A fourth pair-order route class (anti-dependence chain-lengthening) may exist through a dependency shape OTHER than v0-reuse - e.g. a memory-carried output dependence that lengthens the 122 chain without adding a set to any in-window pseudo",
+   "mechanism": "s39 proved chain-lengthening flips the tie (order half); the cost was specifically the pseudo-web growth, not the edge itself. A store-order or mem-alias edge into arg5's chain would raise its backward priority with zero new pseudo sets - no such C shape enumerated yet",
+   "next_probe": "Forensics session: enumerate GCC 2.7.2 sched.c dependence sources (true/anti/output/mem-alias) reachable from C in the do_timeout window; check whether any semantically-true statement creates 122-chain lengthening without touching v0/t0/arg5 webs; dump-first pre-vet any candidate"
   }
  ],
  "judge_constraints": [

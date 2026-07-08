@@ -698,3 +698,17 @@ vT33 in-call add: 16. vT34 sum-split: 11. vT35/vT36 nest-reweight: 15/14. vU1/vU
 - [s38] s34 dump-first pre-vet protocol re-validated as a zero-sandbox KILL gate: all three verdicts issued from emitted-window order alone; no sandbox runs spent on order-incorrect forms.
 
 - [s38] 3 disproven forms banked: rejected/s38-v05a-tiedpair-deferred-add-order-incorrect-dumpvet.c, rejected/s38-v05b-both-carriers-deferred-add-order-incorrect-dumpvet.c, rejected/s38-v05c-u8ptr-carrier-deferred-add-order-incorrect-dumpvet.c. candidate.c unchanged (vT40 masked 4 remains best-known).
+
+- [s39] s39 baseline reconfirmed: candidate.c (vT40) spliced -> sandbox --disable all = masked 4 (178/179, 42 rules dropped, 20 cheat-asm stripped); src/system.c restored to HEAD via git checkout after all measurement, working tree src/ clean, oracle green.
+
+- [s39] saEft01Init rule decode (frontier bullet 3 executed): the @35-48 reorder rule maps its plain-C build to target as: idx-lbu pair swapped (idx[0] first), arg5-deref hoisted before arg3's lbu, arg4's tbl-addu deferred after arg3's lbu, arg4-deref deferred to last; seat rules put arg4's chain in a0 and arg5's addr/deref in v0/v1. Fingerprint shape-identical to marionation_Exec's target window - concrete constraints for the P2 exchange session recorded in tmp/grind/marionation_Exec/s39/findings.md.
+
+- [s39] NEW mechanism fact: arg3-index staged through the dead v0 (staged-value-reused-variable) creates WAR edge 122(lw v1)->128(lbu arg3), lengthening arg5's chain-to-jal; the pair emits in TARGET middle-addu order from t0-first source - order-correctness is NOT arg5-first-exclusive (refines s37's three-route synthesis: a fourth route exists via anti-dependence chain-lengthening).
+
+- [s39] NEW mechanism fact: the WAR-edge route is web-growth-dominated - v0's 3rd set extends its web across the call-arg region at ~+12 masked (s3 web-growth class), uniformly across 6 spellings/chassis (16/16/18/18/20/16). v0 is the only dead-in-window variable, so the WAR edge cannot be had without the web growth; axis comprehensively closed.
+
+- [s39] P3 triage corollary: any permuter find showing middle-addu order from t0-first source should be QTYDBG-pre-vetted for a 3-set v0 web (blk=3) - that signature predicts masked >=16 with no sandbox run.
+
+- [s39] v07 (plain unshifted idx locals, inline derefs) = masked 16, matching the s8v01 no-web class - staging webs remain load-bearing under the sibling-decode cue.
+
+- [s39] 6 disproven forms banked to rejected/: s39-arg3-idx-staged-v0-war-edge-order-flips-webgrowth-16.c, s39-arg5first-arg3v0-16.c, s39-sibling-chassis-arg3v0-both-orders-18.c, s39-arg3v0-byteoffset-20.c, s39-t0add-deferred-arg3v0-16.c, s39-plain-idx-locals-inline-derefs-16.c. candidate.c unchanged (vT40 masked 4 remains best-known).
