@@ -587,3 +587,15 @@
 - probe: v02_idxpp.c: vT40 chassis with `u8 *idxp = idx_1494; t0 = idxp[0]; v0 = idxp[1];` in place of direct idx_1494[]; splice + sandbox --disable all.
 - result: masked 4 / build_insns 178 — IDENTICAL to vT40 floor. GCC folds the copy so idxp emits as an alias of idx_1494 without a launch penalty. Adds 10th known distinct spelling to the vT40 masked-4 basin (prior known: vT40 + s11 u10/w03/w10 + s12 v08/w05/w08/z01/z02/z07). Confirms the two residuals are spelling-invariant across yet another chassis variant.
 - verdict: KILLED
+
+## [s27] Hoisting arg3 (D_800A11DC[D_800A11D5]) into a named local placed JUST BEFORE the debug_printf call (inside the do_timeout inner block, after t0/arg5 fully computed and pp assigned) escapes the fresh-temp-launch penalty s9v03 measured for hoist-first position, since arg3v's life is bounded to a single-insn window between compute and call.
+- mechanism: s9v03 (arg3-hoist-FIRST) = masked 18 — a fresh named pseudo whose life spans the entire arg4/arg5 compute region fires the vT33/vT34-class launch penalty. Prediction: constraining arg3v's life to a 1-stmt window between the last compute and the jal would keep the pseudo out of the pair-window's scheduling terrain and yield an inert or improved score.
+- probe: s27 v01_arg3_late_hoist.c: candidate.c chassis with `s32 arg3v = D_800A11DC[D_800A11D5];` inserted between `arg5 = *(s32*)(v0+(s32)tbl_125c);` and the debug_printf call. Splice via s6/splice_apply.py, sandbox --disable all.
+- result: masked 18 / 178 build_insns — IDENTICAL magnitude to s9v03's hoist-first (masked 18). Position-invariant fresh-temp launch. Banked as rejected/s27-arg3-late-hoist-18.c.
+- verdict: KILLED
+
+## [s27] Changing the callback fn-ptr cast type from (void(*)(u8,void*)) to (void(*)(s32,void*)) at BOTH callback sites (D_800A11B8 for idx_1495, D_800A11B4 for idx_1494) reweights the u8-lbu → arg-register promotion in the callback pathway, potentially shifting idx_1495's cross-region qty life (idx_1495 is doubly-load-bearing per s18v04 / s21 v12).
+- mechanism: Callback signature u8-vs-s32 controls whether GCC 2.7.2 treats the first-arg lbu as a byte load with zero-extend into arg reg vs an sll-mask ext to full s32 in the caller. Changed treatment could re-time idx_1495's second use, altering its cross-region qty priority.
+- probe: s27 v02_callback_s32_cast.c: candidate.c chassis with both callback casts changed to (void(*)(s32,void*)). Splice + sandbox --disable all.
+- result: masked 4 / 178 — INERT. Argument-promotion is spelling-inert: prototype-mandated u8 vs s32 first arg yields byte-identical emission. Novel masked-4 basin member #25 (basin now: vT40 + s11 u10/w03/w10 + s12 v08/w05/w08/z01/z02/z07 + s18v02 + s20v01 + s21v01/v03/v04/v05/v06/v07/v08/v09/v10/v11/v14 + s26 idxp + s27 v02). Banked as rejected/s27-callback-s32-cast-basin4-inert.c.
+- verdict: KILLED
