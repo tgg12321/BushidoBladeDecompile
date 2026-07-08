@@ -440,3 +440,29 @@ vT33 in-call add: 16. vT34 sum-split: 11. vT35/vT36 nest-reweight: 15/14. vU1/vU
 - [s20] s20 candidate.c UNCHANGED (remains vT40, best-known masked 4). src/system.c restored to HEAD via git checkout after all measurement; working tree clean; oracle green.
 
 - [s20] s20 cumulative hand-authored structural coverage after s20: 135+ prior (s2/s3/s8/s9/s10/s11/s12/s16/s17/s18) + 2 new (v01/v02) = 137+ hand-authored structural variants measured. The non-do_timeout-local-scope axis is now catalogued: function-top vs body-local for status is inert; mask-holder scope position is load-bearing at -2 build_insns / +4 masked.
+
+- [s21] [s21] Baseline reconfirmed on main at session start: candidate.c (vT40) spliced -> sandbox --disable all = masked 4 (178/179, 42 rules dropped, 20 cheat-asm stripped). Floor unchanged since s0.
+
+- [s21] [s21] 15 novel structural variants measured (tmp/grind/marionation_Exec/s21/sweep_results.json). 11/15 = masked 4 INERT (novel basin members #14-#24); 4/15 KILLED with regressions (v02=19, v12=27, v13=18, v15=6).
+
+- [s21] [s21] NEW mechanism fact: idx_1496 birth-site is load-bearing (v13 = masked 18 / 177 build_insns when moved from function-top into check-region prologue). Extends s18v04's idx_1495-late-birth finding (masked 25) to a SECOND pseudo. Both idx_1495 and idx_1496 have doubly-load-bearing function-top birth signatures.
+
+- [s21] [s21] NEW mechanism fact: check1-scoped idx_1495 birth (v12 = masked 27 / 177 build_insns) is WORSE than s18v04's callback-scoped late birth (masked 25). Narrower delay-birth scope strengthens the regression; the ideal birth site is function-top exactly.
+
+- [s21] [s21] NEW mechanism fact: split-init on saved (`saved = *D_800A147C_2; saved &= 3;`) is a byte-neutral +2 masked regression despite the sanctioned family status (2026-06-13 owner directive). saved-life extension creates a callee-saved seat competition analog to the s12 *idx_1495 mechanism. Split-init family is SANCTIONED but NOT universally helpful; on this pseudo it costs.
+
+- [s21] [s21] NEW mechanism fact: fresh named-local `s32 i = 7;` per-copy-block (v02 = masked 19) births two separate pseudos with the fresh-temp-launch signature s2/s9 documented for vT33/vT34. The function-top single `s32 i;` is qty-collapse-canonical for the copy loops.
+
+- [s21] [s21] NEW mechanism confirmation: mask-holder decl axis is comprehensively closed - decl-list order (v08), init-site statement order (v07), type width (v05 u32, v06 s32, baseline int) are all inert; only scope-tightening (s20 v02) folds combine and drops 2 build_insns for a masked regression.
+
+- [s21] [s21] NEW mechanism confirmation: pointer decl scope-tightening from function-top to inner check block (v10) is inert; supports s2's decl-order-follows-first-use finding at the pointer scope level.
+
+- [s21] [s21] NEW mechanism confirmation: sanctioned split-init family on D_800F19B8 prologue (v03) is inert - byte-neutral, masked-neutral. Distinct from split-init on saved which regresses; family effect is context-dependent per pseudo life.
+
+- [s21] [s21] NEW mechanism confirmation: sub-expression hoisting at the prologue (v11 vsync-hoist) is inert. Prologue fresh-temps do NOT launch the same way check-region fresh-temps do (s9 arg3 = 18) because the debug_printf-call dep chain is confined to do_timeout region.
+
+- [s21] [s21] Cumulative hand-authored structural coverage after s21: 137+ prior (s2/s3/s8/s9/s10/s11/s12/s16/s17/s18/s20) + 15 new = 152+ hand-authored structural variants measured. Basin membership expanded from 13 known masked-4 spellings (s20) to 24 known distinct spellings. The pair-swap + region-3 residuals are basin-wide invariant across every hand-derivable structural axis.
+
+- [s21] [s21] src/system.c restored to HEAD via python3 tmp/grind/marionation_Exec/s6/splice_apply.py --restore + git checkout after every measurement; working tree src/ clean; oracle green (only metrics/events.jsonl modified).
+
+- [s21] [s21] candidate.c UNCHANGED (remains vT40 masked 4 best-known). 4 disproven forms banked to memory/grind/marionation_Exec/rejected/: s21-i-fresh-local-per-copy-block-19.c, s21-idx1495-birth-in-check1-27.c, s21-idx1496-birth-in-check-region-18.c, s21-split-init-saved-masked6.c.

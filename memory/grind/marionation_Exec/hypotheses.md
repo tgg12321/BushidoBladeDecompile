@@ -395,3 +395,93 @@
 - probe: v02 = candidate.c with `int new_var; int new_var3;` decl+init moved from between vsync-check and check1 to inside the `{ s32 check; ... }` block right after `s32 check;`. Splice + sandbox --disable all.
 - result: masked 8 / 176 build_insns — REGRESSION +4 masked, -2 build_insns. The tight-scope birth immediately-before-use lets combine forward-substitute `new_var = 0xFF` INTO the `& new_var` expression → `& 0xFF` → folded against the u8 lbu load (byte-load auto-zeros high bits) → the two `andi ,0xff` insns are eliminated (build 178 → 176). The 'opaque mask' property depends on the mask holder being far enough from its use that combine's forward-substitution scope does not reach it. NEW MECHANISM FACT: mask-holder scope IS load-bearing; the current mid-function-body position is not incidental.
 - verdict: KILLED
+
+## [s21] Tightening `u8 saved` decl scope from function-top into check1 body (parallel to s20 v01 status probe) reaches masked <=4 by reducing cross-BB qty pressure.
+- mechanism: s20 established status decl scope is qty/schedule-inert; saved's scope was untested. Prediction: same class of inertness OR mask-holder-scope-style regression if combine can reach saved.
+- probe: v01_saved_scope_check1: `s32 status;` remains at function-top; `u8 saved;` decl moved into check1 body as `u8 saved = *D_800A147C_2 & 3;` (init merged with decl).
+- result: masked 4 / 178 build_insns - INERT. Novel masked-4 basin member #14.
+- verdict: KILLED
+
+## [s21] Copy-loop control variable `s32 i;` scope-per-block (fresh `s32 i = 7;` inside each of the two copy blocks instead of function-top single decl) reweights qty births in the check region for +1 masked delta or better.
+- mechanism: Two fresh named locals both called `i` may or may not collapse to a single qty. If they birth as separate pseudos, may reshape the copy-loop-region qty allocation without touching do_timeout.
+- probe: v02_i_scope_per_copy_block: removed `s32 i;` from function-top, added `s32 i = 7;` as first stmt of each copy block.
+- result: masked 19 / 178 build_insns (+15 REGRESSION). Two fresh named locals birth as separate pseudos AND the merged init in the block scope disturbs the copy-loop's do-while sched; the regression tracks the fresh-temp-launch signature s2/s9 documented (vT33/vT34 launch class).
+- verdict: KILLED
+
+## [s21] Split-init accumulation on the prologue `D_800F19B8 = sys_VSync(-1) + 0x3C0` (sanctioned family per split-init-accumulation-sanctioned 2026-06-13) alters prologue qty landscape and reaches masked <=4.
+- mechanism: Split-init family is per-owner-directive a valid pure-C construct. On this prologue assignment, splits sys_VSync's return into a set-then-add sequence that could reshape the initial pseudo qty priorities.
+- probe: v03_split_init_D_800F19B8: `D_800F19B8 = sys_VSync(-1); D_800F19B8 += 0x3C0;`.
+- result: masked 4 / 178 build_insns - INERT. Novel masked-4 basin member #15. Sanctioned split-init family is spelling-inert on this global assignment; combine folds the second store's RMW into a single addu+sw sequence identical to the fused form.
+- verdict: KILLED
+
+## [s21] Tightening `s32 cnt;` decl scope from function-top into the loop-body { } block eliminates its cross-body qty visibility and reaches masked <=4.
+- mechanism: cnt is used in only one region (immediately after v0 = sys_VSync(-1); comparison and increment before the goto success test). Scope-tightening delays birth to loop-body region only.
+- probe: v04_cnt_scope_loop: `s32 cnt;` decl removed from function-top; `{ s32 cnt = D_800F19BC; D_800F19BC = cnt + 1; if (!(0x3C0000 < cnt)) { goto success; } }` block replaces the assignment sequence.
+- result: masked 4 / 178 build_insns - INERT. Novel masked-4 basin member #16. cnt is already effectively region-local per flow analysis.
+- verdict: KILLED
+
+## [s21] Narrowing the mask-holder pair type from `int` to `u32` gives combine a different width to work against and may either (a) enable a fold that regresses like v02_newvar_tight_scope (s20 v02, -2 build_insns +4 masked) or (b) stay inert with 178 insns.
+- mechanism: s20 confirmed the mask-holder pair is opaque-because-int-typed and combine cannot fold across the current decl distance. u32 has same width (32-bit) but different integer conversion rank in the AND expression.
+- probe: v05_maskvar_u32: `u32 new_var; u32 new_var3;` decl type change only.
+- result: masked 4 / 178 - INERT. Novel masked-4 basin member #17. u32 vs int are combine-fold-equivalent at the current decl distance.
+- verdict: KILLED
+
+## [s21] Narrowing mask-holder pair type `int` -> `s32` is codegen-inert (same width, same rank).
+- mechanism: s32 is the same ABI type as int under the PsyQ toolchain; expected inert.
+- probe: v06_maskvar_s32: `s32 new_var; s32 new_var3;`.
+- result: masked 4 / 178 - INERT. Novel masked-4 basin member #18. Confirms s32 vs int are identical here.
+- verdict: KILLED
+
+## [s21] Swapping the init-site order of the mask-holder pair (`new_var3 = 0xFF; new_var = 0xFF;` instead of the reverse) shifts qty births in the check-region and moves masked.
+- mechanism: s20 confirmed init position IS load-bearing at combine's fold reach; init-site order at same position is a novel axis.
+- probe: v07_maskvar_init_order_swap: swap the two `= 0xFF;` init statements.
+- result: masked 4 / 178 - INERT. Novel masked-4 basin member #19. Init-site statement order within the pair is spelling-inert.
+- verdict: KILLED
+
+## [s21] Swapping decl-list order of the mask-holder pair (decl `int new_var3;` before `int new_var;`) shifts qty births.
+- mechanism: s2 measured 6 decl permutations byte-identical; this specific pair was not isolated. Test in case pair-specific decl order differs.
+- probe: v08_maskvar_decl_order_swap: `int new_var3; int new_var;` at decl site.
+- result: masked 4 / 178 - INERT. Novel masked-4 basin member #20. Confirms s2's decl-order-inertness applies to the mask-holder pair specifically.
+- verdict: KILLED
+
+## [s21] Swapping idx pointer decl order (idx_1494, idx_1496, idx_1495 instead of the natural 1494, 1495, 1496) shifts their qty birth and could reshape the do_timeout window's allocation.
+- mechanism: idx pseudos are all born at function-top; their birth order per pseudo-map affects qty comparison ties.
+- probe: v09_idx_decl_order_swap: `u8 *idx_1494; u8 *idx_1496; u8 *idx_1495;` decl order.
+- result: masked 4 / 178 - INERT. Novel masked-4 basin member #21.
+- verdict: KILLED
+
+## [s21] Tightening `u8 *src; u8 *dst; u8 *dst2;` scope from function-top into the `{ s32 check; ... }` inner block localizes their qty and could shift the check-region allocation.
+- mechanism: All three are used only within that block. Prior tests only varied ptr type (s8/s12) not scope.
+- probe: v10_ptrs_block_scope: removed from function-top decl-list; added inside the inner check block along with `s32 check;`.
+- result: masked 4 / 178 - INERT. Novel masked-4 basin member #22. Pointer scope-tightening in the check region is inert - qty births follow first-use order regardless of decl scope.
+- verdict: KILLED
+
+## [s21] Hoisting the sys_VSync(-1) return into a fresh named local `sv` before adding 0x3C0 reshapes the prologue qty and could reach masked <=4 via a different scheduling.
+- mechanism: Analogous to split-init but as fresh-local staging; s9 established arg3 hoisting caused fresh-temp launch (masked +14). Test at the prologue site where the target's dep chain is less tight.
+- probe: v11_vsync_hoist_local: `s32 sv;` decl added; `sv = sys_VSync(-1); D_800F19B8 = sv + 0x3C0;`.
+- result: masked 4 / 178 - INERT. Novel masked-4 basin member #23. Prologue-region fresh-temp does NOT launch like check-region fresh-temps do - the debug_printf-call dep chain doesn't reach here.
+- verdict: KILLED
+
+## [s21] Moving idx_1495's birth (`idx_1495 = 1 + idx_1494;`) from function-top into check1 body (its sole use site) reaches masked <=4 by localizing its life.
+- mechanism: s18v04 measured late-birth of idx_1495 as masked 25 (+21 regression), s12 measured extended-life via *idx_1495 substitution as +6-7, evidence.md called this a doubly load-bearing fixed point. Refine test: birth at check1 top (not within callback) narrows to check1-local.
+- probe: v12_idx1495_birth_in_check1: `idx_1495 = 1 + idx_1494;` removed from prologue, placed as first stmt of the `sys_GetVblankCount() != 0` body.
+- result: masked 27 / 177 build_insns (+23 REGRESSION, -1 build_insn vs floor). WORSE than s18v04's masked-25 with narrower check1 scoping. The fixed-point signature strengthens: idx_1495 MUST be born function-top to keep the do_timeout-window qty landscape stable.
+- verdict: KILLED
+
+## [s21] Moving idx_1496's birth (`idx_1496 = idx_1494 + 2;`) from function-top into the check region reaches masked <=4 by shortening its life to the check-region only.
+- mechanism: idx_1496 was NOT included in s18's late-birth sweep (only idx_1495 was tested). Untested axis on a distinct pseudo.
+- probe: v13_idx1496_birth_in_check: `idx_1496 = idx_1494 + 2;` removed from prologue, placed after `new_var3 = 0xFF;` (before the outer do-while(0) wrap that opens the check region).
+- result: masked 18 / 177 build_insns (+14 REGRESSION, -1 build_insn). NEW MECHANISM FACT: idx_1496 birth-site is load-bearing, same doubly-fixed signature as idx_1495 (though the regression magnitude is smaller at +14 vs idx_1495's +23). idx_1496 is used in BOTH check1 (`*idx_1496 = 0`) and check2 (`*(idx_1496 - 1)`); its function-top birth places it in the qty pool for the entire check region layout.
+- verdict: KILLED
+
+## [s21] Reordering prologue statement `tbl_125c = D_800A125C;` to sit AFTER `idx_1494 = &D_800A1494;` shifts qty birth priorities among the prologue pseudos.
+- mechanism: Prologue pseudos birth in RTL first-use order; statement rearrangement changes which reaches expand-set first.
+- probe: v14_prologue_stmt_order: swap the two prologue init statements.
+- result: masked 4 / 178 - INERT. Novel masked-4 basin member #24. Prologue statement order for global-address-copies is spelling-inert (both are single-set pseudos with identical downstream user profiles).
+- verdict: KILLED
+
+## [s21] Split-init accumulation on `saved` (sanctioned family): `saved = *D_800A147C_2; saved &= 3;` alters saved's qty landscape without breaking semantics and could reach masked <=4 or lower.
+- mechanism: sanctioned split-init family per 2026-06-13 owner directive. saved's current single-stmt form fuses the byte-load and the AND. Split may extend saved's life by 1-2 RTL insns.
+- probe: v15_split_init_saved: `saved = *D_800A147C_2; saved &= 3;`.
+- result: masked 6 / 178 build_insns (+2 REGRESSION at same build count). NEW MECHANISM FACT: split-init on saved is a MEASURED REGRESSION (+2 masked, byte-neutral), NOT byte-inert. The saved pseudo life extends over the check-region label-fold decision points, creating a callee-saved seat competition analogous to s12's *idx_1495 life-extension. Split-init IS sanctioned BUT does not help this pair.
+- verdict: KILLED
