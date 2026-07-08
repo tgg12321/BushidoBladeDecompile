@@ -1,8 +1,8 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 0,
@@ -15,23 +15,29 @@
    "floor": 7,
    "modality": "recon",
    "headline": "fable-blitz deep recon: csmd4 IS marionation region-1's cheaper twin (no region-3) - the whole gap is the in-place-basin v1/a0 allocation-equation flip (pri(arg5) > pri(t0)); the wrap-weighting x in-p"
+  },
+  {
+   "session": 2,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "Structural axis (decl order, s32/u32 narrow, statement re-assoc under arg5-after-t0) closed directly on csmd4: 4/4 masked-INERT at 2, head-order flip regresses to 7 - twin's structural closure confirm"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "UNMEASURED: in the in-place basin (order-invariant, no launching temps), a FAKE-annotated do-while(0) wrap covering the arg5 chain lifts arg5-qty's loop-weighted refs from 2 to >=4 -> pri 13333 > t0's 5000 -> arg5 allocates first, v1 occupied, t0 first-fits to a0 - the exchange flips and the in-place base's masked ~6 goes to 0 (whole function closes; no region-3 here). Nuance: a whole-window wrap weights both qtys and does NOT flip the ratio (t0 12refs/24 = 15000 vs arg5 4refs/6 = 13333) - the wrap must be DIFFERENTIAL (arg5 chain only, or nested inner-arg5/outer-window: t0 15000 vs arg5 8refs = 40000).",
-   "mechanism": "local-alloc.c qty_compare (pri = floor_log2(refs)*refs*size/span) fed by loop-depth-weighted ref counts; do-while(0) emits NOTE_INSN_LOOP_BEG raising loop_depth over the wrapped refs. Sanctioned 2026-07-06 (do-while-zero-exception.md) - a lever class that did not exist when csmd4 was parked. Marionation's wrap-dead data is all fresh-temp-basin (launch-coupled) and does not condemn this cross. Named risk to measure: LOOP notes as sched-region barriers re-timing the window head.",
-   "next_probe": "Build the ip base first: g3 order with 't0 <<= 2; t0 += (s32)tbl_125c;' as statements (NOT *=4, NOT in-call) in src/system.c's block at ~425; sandbox --disable all expecting ~6 order-perfect (raw-diff/adiff to confirm the residual is exactly the 4-reg exchange). Then sweep wrap extents in ONE sweep_variants call: {arg5-chain-only, whole-window, nested-differential, wrap-boundary-after-head-loads}; QTYDBG the qty table per variant to confirm the refs lift, adiff the window for seat + order."
+   "hypothesis": "Differential do-while(0) wrap around the arg5 chain ONLY (not the whole window) lifts arg5-qty loop-weighted refs so pri(arg5) > pri(t0) strictly, flipping the v1/a0 exchange in the h5 or ip basin.",
+   "mechanism": "flow.c loop-depth-weighted REG_N_REFS feeds local-alloc.c qty_compare; do-while(0) emits NOTE_INSN_LOOP_BEG (sanctioned 2026-07-06 do-while-zero-exception.md). Structural sweep result reinforces this is now the ONLY untried differentiator on the h5 base.",
+   "next_probe": "Insert `do { v0 = idx_1494[1]; v0 <<= 2; arg5 = *(s32*)(v0+(s32)tbl_125c); } while (0);` as the arg5-chain wrap; sandbox --disable all + QTYDBG on the gccdbg cc1 (rebuild recipe memory/wip/cpu_side_move_dir_4/notes.md:88-91) to confirm arg5 qty refs lift and whether the exchange flips."
   },
   {
-   "hypothesis": "UNMEASURED on csmd4: the 6h local-only equation levers - (a) a surviving reg-sourced arg5 ref at span <= 5 (refs 3/span 5 = 6000 beats t0's 5000 STRICTLY; a 5000 tie loses on birth order since t0 births first), via the multi-set arg5 VALUE-staging class named untried in the session-5 addendum (keep the lw dest split: load into the existing multi-set v0, then arg5 = v0 - the copy source is multi-set so cse cannot fold it back the way single-set stages folded, k2=6); (b) t0-qty segment rebirth via a mid-block full death (target proves per-segment qty reuse: 11D5's lbu reuses v0's second segment at asm L61-62) so t0's second segment births AFTER arg5's allocation.",
-   "mechanism": "local-alloc.c qty allocation order + find_free_reg ascending first-fit; qty segmentation on full death (reg_qty rebirth); cse.c copy-propagation folds single-set reg sources but multi-set sources break the fold precondition - the same reg_n_sets!=1 test that governs birthing_insn_p.",
-   "next_probe": "On the ip base, sweep the value-staging spellings ({v0 = *(s32*)(v0 + (s32)tbl_125c); arg5 = v0;} and arg5-multi-set variants) via sweep_variants; QTYDBG each: check whether arg5's qty gains the ref AND whether t0's qty segments. Score by raw window diff, not masked."
+   "hypothesis": "Multi-set arg5 value-staging via a DIFFERENT single-set carrier that survives cse's fold precondition (not the v0-carrier which regressed to 12 in rejected/arg5_split_multiset_v0.c).",
+   "mechanism": "cse.c copy-propagation folds single-set reg sources; needs a carrier that is either legitimately multi-set for a non-cheat reason, or whose use-shape breaks the fold precondition even at single-set.",
+   "next_probe": "Sweep {arg5 = v0-then-mask-with-0xFFFFFF, arg5 via idx-return-value re-use, arg5 threaded through cnt-carrier (cnt is dead here after do_timeout)} on the ip base; check whether the fold survives and arg5's qty gains the ref."
   },
   {
-   "hypothesis": "UNMEASURED combo on csmd4: fmt-la-late spelling frees a0 for t0's in-place chain (marionation 6g finding (b): a0 is blocked for t0 by the call's fmt-la scheduling before t0's last use; csmd4 target sets the hard-a0 fmt la LAST at asm L70-71, and HEAD's reorder rule moves the arg4 lw to the window end = our build homes fmt EARLY). If the a0-block, not the qty order, is the binding constraint in the ip basin, a C spelling that defers the fmt operand (fmt staged through a last-placed local, or arg-evaluation-order respelling of the call) closes the exchange without touching the qty arithmetic - alone, or combined with the sanctioned multi-set v0 shift-stage (the s4 half-flip, masked 7 in marionation with the arg5 side fully fixed).",
-   "mechanism": "GCC 2.7.2 call expansion homes constant args by cse/scheduling convenience; a hard-a0 set placed before t0's last use enters t0's conflict set (global.c/local-alloc hard_reg_conflicts), excluding a0 from t0's first-fit regardless of priority order. sched.c birthing_insn_p governs the shift-stage half.",
-   "next_probe": "On the ip base, sweep fmt-la-late spellings ({s32 fmt; ...window...; fmt = (s32)&D_800161C8; debug_printf((void*)fmt, ...)} and eval-order variants) alone and crossed with the v0 shift-stage; adiff for the fmt-la position and the t0 seat; QTYDBG to see whether a0 leaves t0's conflict set."
+   "hypothesis": "The residual v1/a0 exchange on the ip basin has an a0-block from the fmt-la scheduled before t0's last use (twin marionation 6g finding (b)); fmt-la-late via cse-defeat (not source-level respelling which is INERT per rejected/fmt_la_late_local.c) closes the exchange.",
+   "mechanism": "GCC 2.7.2 cse.c equiv_constant folds symbol addresses regardless of C staging; the lui/addiu selection is post-CSE. Only a construct that hides the symbol from equiv_constant (function-argument-passed constant, opaque tail-call) would move it.",
+   "next_probe": "Prototype an opaque-carrier: pass &D_800161C8 through a volatile assign that GCC can't fold (`static void *volatile fmt_hold = &D_800161C8;` + read at call site), verify equiv_constant NO longer sees the constant at the call, sandbox."
   }
  ],
  "judge_constraints": [],
