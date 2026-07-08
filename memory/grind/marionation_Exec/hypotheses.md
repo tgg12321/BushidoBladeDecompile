@@ -731,3 +731,21 @@
 - probe: Luid arithmetic from the blk=3 tables cross-checked against s6 dep-DAG (sw anchors the jal chain), s3 8-form window invariance, s10c 140-ordering sweep, and the Judge-banked wrap-toolbox measurements (vT35/vT36/vT42/vT43).
 - result: Both axes closed on existing evidence: sched1's call-setup normalization fixes both lives at 6 across every measured ordering (life axis), and loop-note wraps scoped to the window re-time the head (refs axis, Judge-banked dead). The flip condition is now stated in closed form for any future novel-geometry candidate to be checked against BEFORE measuring.
 - verdict: KILLED
+
+## [s34] A symmetric t0-only fresh-carrier form (t0 fresh, arg5 native v0-web) mirrors s30 v03 at masked 4, adding a 32nd basin member (frontier item #2).
+- mechanism: s30 v03 proved fresh-carrier load-then-self-shift escapes the launch penalty on the arg5 side; the mirror tests which side is escape-tolerant.
+- probe: Crafted s34/v04_t0only_freshcarrier.c; QTYDBG/ALLOCDBG dump via tmp/gccdbg/cc1 FIRST (pre-vet), then sandbox --disable all.
+- result: masked 11 / 178 insns. The fresh-carrier escape is side-ASYMMETRIC: arg5-side = 4 (s30v03), t0-side = 11. Banked rejected/s34-t0only-freshcarrier-tied-web-order-correct-seats-priority-trade-11.c.
+- verdict: KILLED
+
+## [s34] The s33 closed-form flip condition applied to a form's QTYDBG/lreg dump correctly classifies it BEFORE sandbox measurement (the pre-vet filter frontier items #2/#3 depend on).
+- mechanism: blk=3 qty table gives pri = floor_log2(refs)*refs*size/life per pseudo; seats trade iff pri(arg5val) <= pri(t0-side qty) in an order-correct stream (local-alloc.c:1646 / strict-priority allocation order).
+- probe: Dumped v04, mapped pseudos to insns via lreg (arg5val reg97 pri 2.00, tied t0-web reg98 pri 2.57), wrote the prediction (NOT floor; seats-traded class; ~6-10) before running sandbox.
+- result: Sandbox = 11 with EXACTLY the predicted signature: adiff2 shows the arg5 pair half (sll v0; addu v0,v0,s5) MATCHED target in the LCS, and all points are the seat trade (t0-web v1 vs a0, arg5val v0 vs v1) + placement drift. Pre-vet is a valid KILL-classifier (class exactly right; score under-predicted by 1-5 - treat output as class, not score).
+- verdict: CONFIRMED
+
+## [s34] Splitting t0's web through a fresh carrier creates a THIRD decision route of the coupled fixed point: local-alloc combine_regs ties carrier->sll->sum into one qty whose long life reorders sched1 to arg5-first (order-correct from t0-first source, first time in 34 sessions) while its high refs force a strict-priority seat trade.
+- mechanism: combine_regs (local-alloc.c:1822-1861 tying arm) merges reg99/reg103/reg98 into qty2: refs 12 = (3 sets + 3 uses) x2 do-while(0) loop-note weight, life 14 (luid 18-32); pri 2.57 > arg5val 2.00, allocates first, takes v1; arg5val takes v0. Closed form: flip needs L_t > 18 with refs byte-pinned at 12; life is pinned by the call anchor (s6 dep-DAG) - route closed, mirroring s33's closure of the arg5-first route.
+- probe: lreg/greg insn identity mapping + QTYDBG blk=3 table + emitted .s window vs target + adiff2 decomposition (tmp/grind/marionation_Exec/s34/v04/).
+- result: Order-correctness and seat-correctness remain mutually exclusive across all three named routes: sched.c:2448 class-compare (t0-first forms lose order), local-alloc.c:1646 tiebreak (arg5-first forms lose seats), and the new tied-web strict-priority route (order fixed, seats lost worse).
+- verdict: CONFIRMED

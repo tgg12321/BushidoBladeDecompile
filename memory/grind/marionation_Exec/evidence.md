@@ -636,3 +636,15 @@ vT33 in-call add: 16. vT34 sum-split: 11. vT35/vT36 nest-reweight: 15/14. vU1/vU
 - [s33] s33 qty_sugg KILL: qty_phys_(copy_)sugg is created ONLY in combine_regs (local-alloc.c:1822-1861) from hardreg<->pseudo COPY insns; the pair window's insn set has no copy insn and neither pseudo can acquire one in any residual-preserving spelling; zero QTYDBG-SUGG blk=3 lines in both chassis. Suggested qtys allocate before ALL unsuggested (1469-1490), so the lever WOULD flip the trade if it were reachable - it is not.
 
 - [s33] s33 flip condition (closed form, for vetting future candidates): strict pri(arg5val)>pri(t0-sll) requires life(arg5val)<life(t0-sll) (refs equal) = the arg5 sw within 1 sched1 slot of the t0-deref lw (sched1 normalization fixes both at 6 across all measured orderings), OR refs(arg5val)>=5 (only via loop-note ref-weighting scoped to arg5val alone - wrap toolbox Judge-banked dead at this window). Artifacts: tmp/grind/marionation_Exec/s33/.
+
+- [s34] Baseline reconfirmed at s34 start: candidate.c (vT40) spliced -> sandbox --disable all = masked 4 (178/179, 42 rules dropped, 20 cheat-asm stripped); src/system.c restored to HEAD (git checkout) after all measurement, oracle untouched.
+
+- [s34] v04 QTYDBG blk=3 table (anchor stderr line 155): addr-temp reg105 pri 4.00 -> v0; arg3-web reg111 pri 4.00 -> v0; TIED t0-web reg98 birth18-death32 refs12 pri 2.57 -> v1 (target a0); arg5val reg97 birth16-death20 refs4 pri 2.00 -> v0 (target v1).
+
+- [s34] v04 emitted window achieves TARGET pair order (sll v0; addu v0,v0,s5; sll) from t0-first source - the tied web flips sched1's launch order; adiff2 confirms the arg5 half sits in the unchanged LCS.
+
+- [s34] Fresh-carrier escape asymmetry settled: arg5-side carrier = masked 4 (s30v03, 31st basin member), t0-side carrier = masked 11 (NOT a basin member). Frontier item #2's 32nd-member hypothesis dead.
+
+- [s34] Tied-web refs decomposition: 12 = (3 sets + 3 uses) x2 loop-note weight from the do_timeout do-while(0) wrap; removing the wrap halves both sides (tied 0.86 vs arg5val 0.5 - trade persists) and loses tbl_125c's s5 seat.
+
+- [s34] Pre-vet method validated as a triage filter for permuter finds (frontier item #3): compute pri(arg5val) vs pri(t0-side) from the find's QTYDBG blk=3 table; only pri(arg5val) strictly greater is worth a sandbox run in an order-correct form.

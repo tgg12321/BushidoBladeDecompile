@@ -1,7 +1,7 @@
 {
  "func": "marionation_Exec",
  "file": "system",
- "session_count": 33,
+ "session_count": 34,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -207,23 +207,29 @@
    "floor": 4,
    "modality": "forensics",
    "headline": "s33 forensics: seat-trade named at source (local-alloc.c:1646 qty-number tiebreak on an exact 1.33v1.33 pri tie, byte-order-pinned) and the 622620cb qty_sugg frontier KILLED (suggestions require a har"
+  },
+  {
+   "session": 34,
+   "floor": 4,
+   "modality": "forensics",
+   "headline": "s34 forensics: frontier item #2 KILLED via dump-first pre-vet (v04 t0-only fresh carrier = masked 11, predicted before sandbox); NEW third decision route named - combine_regs ties the t0 carrier web ("
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Cross-function exchange lever developed on the cheaper twin cpu_side_move_dir_4 transplants to marionation_Exec (STRATEGY item, carried from s28/s31/s32).",
-   "mechanism": "Twin's ip/g3 residual is exchange-alone; s33 adds the exact tiebreak line (local-alloc.c:1646) and the suggested-first allocation loop as shared mechanism knowledge for the twin session.",
+   "hypothesis": "Tied-web refs reduction satisfies the flip condition: a fresh t0 carrier with the tbl-add DEFERRED into the call deref (*(s32*)((u8*)tbl_125c + tc)) reduces the tied web to 2 sets + 2 uses = 8 weighted refs, pri = 3*8/14 = 1.71 < arg5val's 2.00 - target seats - IF the tie still order-corrects sched1 and the deferred add does not re-time the head.",
+   "mechanism": "Derived from s34's closed-form arithmetic. s2 v30 measured deferred-add at 16 on t0's OWN web (no carrier, no tie); the fresh-carrier + deferred-add combination is unmeasured and is the only arithmetic hole in the tied-route closure.",
+   "next_probe": "Structural session: craft s35/v05_carrier_deferred_add.c (tc = idx_1494[0]; tc <<= 2; deref (u8*)tbl_125c + tc inside the call); pre-vet via qtydbg.sh BEFORE sandbox per the validated s34 protocol."
+  },
+  {
+   "hypothesis": "Cross-function exchange lever developed on the cheaper twin cpu_side_move_dir_4 transplants to marionation_Exec (STRATEGY item, carried from s28/s31/s32/s33).",
+   "mechanism": "Twin's ip/g3 residual is exchange-alone; s33/s34 add the tiebreak line, the suggested-first loop, AND the tied-web route as shared mechanism knowledge for the twin session.",
    "next_probe": "Queue-routing / operator-mediated (unchanged - not addressable from this mandate)."
   },
   {
-   "hypothesis": "A symmetric t0-only-fresh-carrier form (t0 fresh, arg5 native web) mirrors s30 v03's arg5-only-fresh-carrier at masked 4, adding a 32nd basin member and refining which-side is escape-tolerant.",
-   "mechanism": "Carried from s32 unchanged; s33 adds that any such form can be pre-vetted against the closed-form flip condition (lives/refs of the two qtys) from its lreg dump before sandbox measurement.",
-   "next_probe": "Structural sweep session: craft s33/v04_t0only_freshcarrier.c mirror of s30 v03; single splice + sandbox."
-  },
-  {
-   "hypothesis": "A permuter seed on an unsampled masked-4 basin member (s20 status-local, s21 #14-#24, s11 u10/w03/w10, s12 v08/w05/w08/z01/z02) surfaces a novel local-mutation neighborhood yielding sub-165 with true semantics.",
-   "mechanism": "Carried from s32; basin-invariance measured negative across 8 chassis but ~22 members unsampled. s33's flip condition gives the triage filter: any find must show life(arg5val)<life(t0-sll) or refs>=5 at blk3 to be a genuine seat-fix rather than a reg-shuffle.",
-   "next_probe": "Adapt build_ws_s26idxp for one of {s20-status-local, s21-idx1494-pp-last, s11-u10}; 20-30min fresh-seed window; harvest+stop."
+   "hypothesis": "A permuter seed on an unsampled masked-4 basin member surfaces a novel local-mutation neighborhood yielding sub-165 with true semantics, triaged by the NOW-VALIDATED dump pre-vet.",
+   "mechanism": "Carried from s32/s33; s34 upgrades the triage filter from theory to validated protocol: extract each find's QTYDBG blk=3, compute the pri pair, discard order-correct finds with pri(arg5val) <= pri(t0-side) without sandboxing.",
+   "next_probe": "Adapt build_ws_s26idxp for one of {s20-status-local, s21-idx1494-pp-last, s11-u10}; 20-30min fresh-seed window; harvest, pre-vet, stop."
   }
  ],
  "judge_constraints": [
