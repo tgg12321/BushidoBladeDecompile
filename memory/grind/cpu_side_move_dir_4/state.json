@@ -1,7 +1,7 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -21,23 +21,29 @@
    "floor": 2,
    "modality": "structural",
    "headline": "Structural axis (decl order, s32/u32 narrow, statement re-assoc under arg5-after-t0) closed directly on csmd4: 4/4 masked-INERT at 2, head-order flip regresses to 7 - twin's structural closure confirm"
+  },
+  {
+   "session": 3,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "Structural axis on csmd4 h5 base fully closed: 13 variants swept (var-splits, expression compression, decl-position, pointer-deref form) \u2014 8 INERT at masked 2, 5 measured regressions (t0s-split=3, arg"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Differential do-while(0) wrap around the arg5 chain ONLY (not the whole window) lifts arg5-qty loop-weighted refs so pri(arg5) > pri(t0) strictly, flipping the v1/a0 exchange in the h5 or ip basin.",
-   "mechanism": "flow.c loop-depth-weighted REG_N_REFS feeds local-alloc.c qty_compare; do-while(0) emits NOTE_INSN_LOOP_BEG (sanctioned 2026-07-06 do-while-zero-exception.md). Structural sweep result reinforces this is now the ONLY untried differentiator on the h5 base.",
-   "next_probe": "Insert `do { v0 = idx_1494[1]; v0 <<= 2; arg5 = *(s32*)(v0+(s32)tbl_125c); } while (0);` as the arg5-chain wrap; sandbox --disable all + QTYDBG on the gccdbg cc1 (rebuild recipe memory/wip/cpu_side_move_dir_4/notes.md:88-91) to confirm arg5 qty refs lift and whether the exchange flips."
+   "hypothesis": "do-while(0) wrap around the arg5-chain ONLY lifts arg5-qty loop-weighted refs (flow.c REG_N_REFS \u00d7 loop depth) so pri(arg5) > pri(t0) strictly.",
+   "mechanism": "do-while(0) emits NOTE_INSN_LOOP_BEG (sanctioned 2026-07-06); local-alloc.c qty_compare weights refs by loop depth. The structural sweep now closes the un-wrapped structural axis, so this remains the ONLY untried differentiator on h5.",
+   "next_probe": "Wrap ONLY `{ v0 = idx_1494[1]; v0 <<= 2; arg5 = *(s32*)(v0+(s32)tbl_125c); }` in do{...}while(0); sandbox + QTYDBG to verify arg5-qty refs lift AND the LOOP_BEG note doesn't split the window."
   },
   {
-   "hypothesis": "Multi-set arg5 value-staging via a DIFFERENT single-set carrier that survives cse's fold precondition (not the v0-carrier which regressed to 12 in rejected/arg5_split_multiset_v0.c).",
-   "mechanism": "cse.c copy-propagation folds single-set reg sources; needs a carrier that is either legitimately multi-set for a non-cheat reason, or whose use-shape breaks the fold precondition even at single-set.",
-   "next_probe": "Sweep {arg5 = v0-then-mask-with-0xFFFFFF, arg5 via idx-return-value re-use, arg5 threaded through cnt-carrier (cnt is dead here after do_timeout)} on the ip base; check whether the fold survives and arg5's qty gains the ref."
+   "hypothesis": "An alternate multi-set arg5 VALUE carrier (not the v0-carrier which regressed to 12) whose use-shape defeats cse's single-set-source copy-fold precondition.",
+   "mechanism": "cse.c copy-propagation folds single-set reg sources; the carrier must be legitimately multi-set OR its use-shape must break the fold precondition even at single-set.",
+   "next_probe": "Sweep {arg5 through cnt-carrier (cnt dead after do_timeout), arg5 masked with 0xFFFFFF via v0, arg5 threaded through idx-return-value re-use} \u2014 the untried carriers not in the rejected bank."
   },
   {
-   "hypothesis": "The residual v1/a0 exchange on the ip basin has an a0-block from the fmt-la scheduled before t0's last use (twin marionation 6g finding (b)); fmt-la-late via cse-defeat (not source-level respelling which is INERT per rejected/fmt_la_late_local.c) closes the exchange.",
-   "mechanism": "GCC 2.7.2 cse.c equiv_constant folds symbol addresses regardless of C staging; the lui/addiu selection is post-CSE. Only a construct that hides the symbol from equiv_constant (function-argument-passed constant, opaque tail-call) would move it.",
-   "next_probe": "Prototype an opaque-carrier: pass &D_800161C8 through a volatile assign that GCC can't fold (`static void *volatile fmt_hold = &D_800161C8;` + read at call site), verify equiv_constant NO longer sees the constant at the call, sandbox."
+   "hypothesis": "The residual v1/a0 exchange requires fmt-la scheduling AFTER t0's last use; source-level respelling of the fmt symbol is INERT (rejected/fmt_la_late_local.c), so the lever must hide the symbol from cse.c equiv_constant.",
+   "mechanism": "GCC 2.7.2 cse.c equiv_constant folds symbol addresses regardless of C staging; lui/addiu selection is post-CSE. Only a construct that hides the symbol from equiv_constant would move it.",
+   "next_probe": "Opaque-carrier: `static void *volatile fmt_hold = &D_800161C8;` + read at call site; verify equiv_constant no longer sees the constant."
   }
  ],
  "judge_constraints": [],
