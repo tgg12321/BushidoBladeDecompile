@@ -792,3 +792,23 @@ vT33 in-call add: 16. vT34 sum-split: 11. vT35/vT36 nest-reweight: 15/14. vU1/vU
 - [s45] NEW mechanism fact: comma-expression fold of the setup pool regresses +6 - comma sequence points do not free-fold at expand for these global-store stmts; introduces intermediate temps for sub-expression values that couple with do_timeout-window qty allocation
 
 - [s45] Cumulative structural coverage after s45: s2 (26) + s3 (22) + s8 (3) + s9 (4) + s10 (2) + s11 (30) + s12 (25) + s45 (4) = 116 hand-authored structural variants of marionation_Exec measured. Combined with s6/s7 forensics + s4/s5 permuter (~10k samples), the hand-derivable + local-sampler basin around vT40 is comprehensively closed at masked 4
+
+- [s46] Floor invariant at masked 4 across 45 sessions (vT40 candidate.c reproduces at s1-s45)
+
+- [s46] Pair-swap residual: sched2 BB #3 T-14 tie between insn 106 (a0-sll) and insn 117 (v0-sll); LUID decides because mips.md defines no arith function-unit and cost=1 shortcut collapses class to 3 for both (s43)
+
+- [s46] Pair-swap seat trade: qty_compare_1 pri 1.33 v 1.33 tie broken by birth order at local-alloc.c:1646 (s33 QTYDBG blk=3); byte order pins tie in t0-web's favor
+
+- [s46] Region-3 residual: dbr fill_simple_delay_slots pass #1 steals move a1,s4 into check2 beqz slot because a1 is caller-saved and absent from fall-through label's callee-saved-only live-set (s6/s7)
+
+- [s46] Cross-symbol FAKE forbidden per 2026-07-05 semantic-lie ruling; do-while(0) wraps around the do_timeout window retime head (Judge-banked vT35/vT36/vT42/vT43)
+
+- [s46] cc1psx (PsyQ GNU C 2.7.2.SN.1 via dosemu) emits IDENTICAL instruction ORDER to port cc1 from THIS source (owner 2026-07-08 calibration); target order came from DIFFERENT C source
+
+- [s46] Portfolio convergence: 12 sampled basins {vT40, find105, z07, w05, s18v02, s30v03, s29v06, s26idxp, s35orcomma, s20status, s11u10, s21v11} × ~50+ CPU-hr yield 0 novel-mechanism sub-200 attractors; all sub-200 finds classify to 3 known families (alias-merge >=10, label-alive +1 insn, reg-shuffle score-inert)
+
+- [s46] Basin has 11+ distinct known masked-4 spellings enumerating structural axes to closure
+
+- [s46] Sibling saEft01Init (system.c:806) has byte-shape-IDENTICAL do_timeout window fingerprint; one unknown original spelling decides both windows (s36/s39)
+
+- [s46] Twin cpu_side_move_dir_4 (system.c:388, queue dist 7, 5 rules) has same pair-swap coupling as development bench per 2026-07-07 fable-blitz strategy; pair-only residual (no region-3), cheaper to develop the exchange there first

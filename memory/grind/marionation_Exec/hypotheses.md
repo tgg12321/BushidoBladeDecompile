@@ -947,3 +947,21 @@
 - probe: vD candidate; sandbox --disable all
 - result: score=10 build_insns=178 - REGRESSION +6. Comma-fold birthing pattern retimes the prologue in a way that cross-couples with the do_timeout-window qty seat cascade (likely: the fused expression forces intermediate temps for the sub-expression values). Confirms the comma-expression fold axis is not a zero-cost lever. Banked as rejected/s45-comma-expr-setup-pool-10.c
 - verdict: KILLED
+
+## [s46] The pair-swap flip condition (pri(arg5val) > pri(t0-side)) has any remaining reachable arithmetic axis after s38's carrier+deferred-add KILL
+- mechanism: The four axes (raise refs(arg5val), shorten life(arg5val), lengthen life(t0-side), lower refs(t0-side)) span the qty_compare_1 output; s38 closed the last one via 3 dump-vet spellings
+- probe: Cross-tabulate the 165+ measured hand forms and 32 basin-member spellings against the s33 closed-form condition; verify each axis has at least one banked KILL representative
+- result: All four axes have banked KILLs: raise-refs=wrap toolbox (vT35/36/42/43); shorten-life=140-ordering sweep sched1 normalization; lengthen-life=call-anchor pin per s34; lower-refs=v05a/b/c dump-vet (s38)
+- verdict: KILLED
+
+## [s46] The three named decision routes (sched.c:2448, local-alloc.c:1646, combine_regs tied-web) plus WAR/mem-edge extensions are mutually exhaustive over the pair-swap residual
+- mechanism: s37/s39/s42/s43 forensics enumerate every source path that reaches order-correctness AND seat-correctness simultaneously; s43 mips.md proved arith cost=1 forces class=3 for both sides so class-lever is dead; s42 proved mem-edge unreachable without pseudo-web growth or semantic-lie
+- probe: Verify each of the enumerated routes is banked KILLED; confirm no unenumerated in-function pathway remains after 45 sessions
+- result: All routes closed with byte-level or source-level evidence; the fifth route (WAR through v0) reduces to +12 web-growth per s39; no residual route in the vT40 basin's mechanism space
+- verdict: KILLED
+
+## [s46] Region-3 dbr steal has any zero-byte C-level closer within the vT40 basin
+- mechanism: reorg fill_simple_delay_slots at check2 beqz picks caller-saved move a1,s4 because a1 is not in the fall-through target's callee-saved live-set; 5 label routes catalogued all pay +1 insn; sched.c/reorg.c patches Judge-banned per no-compiler-divergence.md
+- probe: Enumerate label routes (vP160, s5 0xFF-through-local, z07-160-1, s26idxp-165-1/170-1) and liveness routes (alias-merge family floor 10); confirm cc1psx parity via owner 2026-07-08 calibration
+- result: Every route pays a visible byte OR is off-limits OR is semantically divergent; no zero-byte in-basin closer exists after 45 sessions of forensics + 12 permuter basins × 50+ CPU-hr
+- verdict: KILLED

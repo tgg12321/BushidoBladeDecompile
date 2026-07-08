@@ -1,8 +1,8 @@
 {
  "func": "marionation_Exec",
  "file": "system",
- "session_count": 45,
- "current_modality": "rederive",
+ "session_count": 46,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 0,
@@ -279,18 +279,29 @@
    "floor": 4,
    "modality": "rederive",
    "headline": "s45 rederive: prologue-setup statement-order axis measured - reorder inert (2 new basin members vA/vC = 4), idx-chain-backward-from-1496 KILLED (+10), comma-expr setup-pool fold KILLED (+6); vT40 basi"
+  },
+  {
+   "session": 46,
+   "floor": 4,
+   "modality": "synthesis",
+   "headline": "s46 synthesis: 45-session ledger merged; all four arithmetic axes + three named decision routes for pair-swap proven closed; region-3 confirmed as harder residual not addressable in-basin; frontier re"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "P2 (unchanged, primary): saEft01Init operator-mediated exchange yields the order+seats-correct spelling for the do_timeout window and mirrors into marionation_Exec",
-   "mechanism": "s36 sibling identity + s39 fingerprint transfer; must emit idx[0]-first loads, middle-addu pair, arg5-deref before arg3's lbu, arg4 addu+deref deferred, without v0-web-growth WAR edge (+12 s39) or mem-alias edge (+12+ s42), AND without a sched2 CLASS-lever (killed s43). Twin cpu_side_move_dir_4 is the cheaper development bench per strategy note",
-   "next_probe": "Operator-mediated exchange session on saEft01Init or twin cpu_side_move_dir_4 (out-of-scope for THIS function's mandate); test spellings against s39 fingerprint via dump-first pre-vet; splice any winner into marionation_Exec"
+   "hypothesis": "The operator-mediated exchange lever developed on twin cpu_side_move_dir_4 (pair-window-only residual) yields an order+seats-correct do_timeout window spelling that mirrors into saEft01Init and marionation_Exec via the s39 fingerprint",
+   "mechanism": "Twin's residual is the pair alone (no region-3, no check region); qty_compare 5.33v5.33 equation is the SAME tie; s39 saEft01Init regfix decode gives the exact constraints (idx[0] launch first, middle-addu, arg5-deref before arg3-lbu, arg4-defer, seats a0/v0-v1); pre-merge worker commits (aa8cad24, cd65f9c2, e5aa2dd4, f4bc8e67, df749bfd, 622620cb) hold allocation-equation material NOT in this ledger",
+   "next_probe": "OUT-OF-MANDATE for marionation_Exec \u2014 requires queue-routing to a twin cpu_side_move_dir_4 session; if a winning spelling lands there, mirror via saEft01Init constraints then splice with the vT40 chassis"
   },
   {
-   "hypothesis": "The vT40 floor basin's spelling-diversity (now 11 known members) is exhaustive for hand-derivable structural axes; the residuals are pinned by insn-level sched2 T-14 UID tie + reorg fill_simple check2-beqz caller-saved a1 dest, neither of which has a C-level lever within basin",
-   "mechanism": "s6/s7 forensics + s10 non-additivity + s45 prologue-reorder invariance: multiple orthogonal structural axes reach floor 4 but no combination drops below - the coupled fixed point is invariant to any spelling of the do_timeout body OR its surrounding prologue",
-   "next_probe": "Modality shift to permuter or forensics is required; further rederive sessions on this basin have vanishing marginal information unless targeting an unrecognized construct family (out of enumerated forms)"
+   "hypothesis": "A region-3-window-pinned permuter campaign on a masked-4 basin member finds a spelling that kills the check2 dbr steal without touching the pair window",
+   "mechanism": "All prior 12 basin campaigns randomized broadly; permuter's default scoring lumps pair + region-3 into one metric so a region-3-only find gets outcompeted. A build_ws driver that pins insns 144-157 as the exclusive perturbation target with a region-3-diff-lines --better-only would isolate the mechanism space",
+   "next_probe": "Permuter modality session \u2014 build a region-3-focused workspace from any masked-4 basin member (vT40 default) with pair-window locked via PERM_IGNORE + region-3 window randomized; run ~24-hour fresh-seed window per permuter-fresh-seed-discipline"
+  },
+  {
+   "hypothesis": "After F1 (twin exchange) and F2 (region-3 permuter) both close negative, marionation_Exec qualifies for canonical-asm authorization under the 'genuine no-C-form' gate",
+   "mechanism": "45 sessions of structural + forensic + portfolio-scale closure with byte-level insn-level mechanism proofs (sched2 T-14 UID tie, reorg fill_simple caller-saved-liveness rejection, cc1psx parity, 12-basin portfolio convergence) reach the evidence bar for a ruling-request per canonical-asm-retirement.md",
+   "next_probe": "Ruling-request session (NOT this session's Judge to make) compiles the byte-level residual evidence packet + 45-session closure summary + list of proven-inert axes and asks the owner whether the two-residual gap qualifies for authorized inline asm at the do_timeout window + check2 delay-slot region"
   }
  ],
  "judge_constraints": [
