@@ -713,3 +713,21 @@
 - probe: Inherited an abandoned tmp/grind/marionation_Exec/s32/perm_s29v06/ campaign log left by an earlier invalidated session. Iterated count = 1049; searched full log for any score < 220.
 - result: 0 sub-220 finds across 1049 iters; no output-* directories were produced by that run. Data point stands independently of the invalidated session that produced it.
 - verdict: KILLED
+
+## [s33] The pre-merge 'final allocation equation' (f4bc8e67) reproduces on the current chassis and the seat trade in order-correct forms is decided by local-alloc's qty_compare priority order.
+- mechanism: block_alloc sorts qtys at local-alloc.c:1525 via qty_compare_1 (pri = floor_log2(refs)*refs*size/life descending); on exact tie line 1646 returns *q1-*q2 = lower qty number = earlier block birth wins.
+- probe: BB2_QTY_DEBUG dumps via tmp/gccdbg/cc1 (has the knob compiled in; build/cc1 does not) on vT40 and rejected/arg5first-any-geometry-seats-trade-8.c spliced into src/system.c; blk=3 tables extracted, pseudos mapped via lreg setter insns; qty_compare/qty_compare_1/combine_regs read at source.
+- result: CONFIRMED with updated arithmetic: trade8 t0-sll (reg105, b18 d24 r4) and arg5val (reg97, b20 d26 r4) tie at pri 1.33 v 1.33 (NOT the o1-era 5.33v5.33); tiebreak = qty number = birth order; byte order pins birth(t0-sll)<birth(arg5val) in every order-correct form so the trade is deterministic. vT40's correct seats decoded: t0-sll early birth (luid 16, life 8, pri 1.00) makes it the strict priority LOSER, allocating last into a0 - seats are right precisely BECAUSE order is wrong.
+- verdict: CONFIRMED
+
+## [s33] local-alloc's suggested-color mechanism (qty_sugg / QTYDBG-SUGG, the 622620cb never-explored frontier) can steer the pair seats via an operand-tying C pattern.
+- mechanism: Suggested qtys allocate BEFORE all unsuggested qtys (block_alloc first loop, local-alloc.c:1469-1490), so a suggestion on arg5val would flip the trade regardless of the pri tie.
+- probe: Read the only creation sites of qty_phys_(copy_)sugg (combine_regs, local-alloc.c:1822-1861); grep QTYDBG-SUGG lines for marionation blk=3 in both chassis dumps.
+- result: KILLED: suggestions arise ONLY from reg-reg copy insns between a hard reg and a pseudo; the pair window's residual-preserving insn set (lbu/sll/addu/lw/sw) contains no copy insn - arg5val is mem-set/mem-used, t0-sll is arith-set/address-used - so no spelling can create a suggestion without adding a visible copy insn (launch class, measured dead s2-s31). Empirically zero QTYDBG-SUGG lines for blk=3 in both forms.
+- verdict: KILLED
+
+## [s33] A closed-form flip condition exists that a future C form could satisfy: strict pri(arg5val) > pri(t0-sll) in an order-correct stream.
+- mechanism: With refs equal (4/4) the condition reduces to life(arg5val) < life(t0-sll), i.e. the arg5 sw landing within 1 sched1 stream slot of the t0-deref lw; with lives equal it requires refs(arg5val) >= 5, reachable without a new insn only via flow.c loop_depth ref-weighting scoped to arg5val alone.
+- probe: Luid arithmetic from the blk=3 tables cross-checked against s6 dep-DAG (sw anchors the jal chain), s3 8-form window invariance, s10c 140-ordering sweep, and the Judge-banked wrap-toolbox measurements (vT35/vT36/vT42/vT43).
+- result: Both axes closed on existing evidence: sched1's call-setup normalization fixes both lives at 6 across every measured ordering (life axis), and loop-note wraps scoped to the window re-time the head (refs axis, Judge-banked dead). The flip condition is now stated in closed form for any future novel-geometry candidate to be checked against BEFORE measuring.
+- verdict: KILLED

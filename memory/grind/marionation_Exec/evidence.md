@@ -622,3 +622,17 @@ vT33 in-call add: 16. vT34 sum-split: 11. vT35/vT36 nest-reweight: 15/14. vU1/vU
 - [s32] Basin-invariance of the {pair-swap @56/57, region-3 steal @149} residuals is now measured negative across 8 distinct chassis; the 25-30 remaining basin members per s28/s31 census very likely fall into the same convergence pattern.
 
 - [s32] src/system.c untouched this session (git status src/ clean); candidate.c unchanged (remains vT40 masked 4 best-known); oracle green.
+
+- [s33] s33 baseline: HEAD src/system.c sandbox --disable all = 56 (176/179); candidate.c (vT40) spliced = masked 4 (178/179, 42 rules dropped, 22 cheat-asm stripped). Floor unchanged. src restored to HEAD via git checkout after all dumps; working tree src/ clean.
+
+- [s33] s33 infrastructure fact: tmp/gccdbg/cc1 (Jul 6 build) has ALL env knobs compiled in (BB2_QTY_DEBUG, BB2_ALLOC_DEBUG, BB2_RANK_DEBUG, BB2_FINDREG_DEBUG, BB2_PRIO_DEBUG, BB2_SLL_DEBUG, BB2_DBR_DEBUG, BB2_ALLLIVE_LABEL, BB2_NO_FT_STEAL); tools/gcc-2.7.2/build/cc1 (May 18) has NONE of them. QTYDBG output has no function markers - marionation_Exec's cluster is anchored by the 'conflicting types' parse warning (system.c:500) that immediately precedes it; do_timeout = blk 3.
+
+- [s33] s33 QTYDBG vT40 blk3: addu-arg5addr reg104 (b18 d20 r4 pri4.00)->v0; arg3-web sll reg110 (b22 d30 r8 pri3.00)->v0; arg5val reg97 (b20 d26 r4 pri1.33)->v1; t0-sll reg102 (b16 d24 r4 pri1.00)->a0. No tie in vT40: t0-sll's early birth stretches life to 8, making it the strict priority loser that allocates LAST into a0. Correct seats are a consequence of the wrong order.
+
+- [s33] s33 QTYDBG trade8 blk3: addu reg103 (b14 d20 r8 pri4.00)->v0; arg3-web reg111 (b22 d30 r8 pri3.00)->v0; t0-sll reg105 (b18 d24 r4 pri1.33)->v1; arg5val reg97 (b20 d26 r4 pri1.33)->a0. EXACT 1.33v1.33 tie (current-chassis correction of the o1-era 5.33v5.33 ledger numbers), broken at local-alloc.c:1646 (qty_compare_1 'return *q1 - *q2') by qty number = block birth order, which byte order pins in t0-sll's favor (addu < t0-sll < arg5-lw stream requirement).
+
+- [s33] s33 seat propagation: one comparison decides both seats - the tie winner (t0-sll 18-24) conflicts v0 (regs 103/111) and takes v1, pushing arg5val (20-26, v1 now blocked) to a0; had arg5val allocated first it would take v1 (free at 20-26) and t0-sll would land a0 = exact target seats.
+
+- [s33] s33 qty_sugg KILL: qty_phys_(copy_)sugg is created ONLY in combine_regs (local-alloc.c:1822-1861) from hardreg<->pseudo COPY insns; the pair window's insn set has no copy insn and neither pseudo can acquire one in any residual-preserving spelling; zero QTYDBG-SUGG blk=3 lines in both chassis. Suggested qtys allocate before ALL unsuggested (1469-1490), so the lever WOULD flip the trade if it were reachable - it is not.
+
+- [s33] s33 flip condition (closed form, for vetting future candidates): strict pri(arg5val)>pri(t0-sll) requires life(arg5val)<life(t0-sll) (refs equal) = the arg5 sw within 1 sched1 slot of the t0-deref lw (sched1 normalization fixes both at 6 across all measured orderings), OR refs(arg5val)>=5 (only via loop-note ref-weighting scoped to arg5val alone - wrap toolbox Judge-banked dead at this window). Artifacts: tmp/grind/marionation_Exec/s33/.
