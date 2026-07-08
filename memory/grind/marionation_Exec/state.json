@@ -1,8 +1,8 @@
 {
  "func": "marionation_Exec",
  "file": "system",
- "session_count": 9,
- "current_modality": "rederive",
+ "session_count": 10,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 0,
@@ -63,23 +63,29 @@
    "floor": 4,
    "modality": "rederive",
    "headline": "s9 rederive: 4 structurally novel C shapes measured KILLED (9/11/18/7); quantifies pp-alias-only-with-named-locals recovery at 7 masked pts (16 -> 9) vs the s8 pp+web joint 12."
+  },
+  {
+   "session": 10,
+   "floor": 4,
+   "modality": "synthesis",
+   "headline": "s10 synthesis: partial-web probes measured (v01 arg5-only=13, v02 t0-only=6); quantifies each staging component's independent contribution; frontier reset to twin-first, permuter, and pair-window wrap"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The pp-alias-with-named-locals form (s9v01=9) can reach vT40's masked 4 by restoring PART of the v0-web without the full byte-cast decomposition - e.g., keeping v0 staged for ONE of the two shifts while leaving the other clean.",
-   "mechanism": "s9v01 isolated pp's benefit; recovering the missing 5 pts should require reintroducing exactly the v0-web behavior that shapes the sched2 tie (per s6: insn 122's forward chain to jal 152 anchors the T-14 window). Partial web (e.g., v0 staging arg5's shift-only, natural array-index for t0) has not been swept.",
-   "next_probe": "Sweep partial-web variants on the s9v01 chassis: (a) v0 = idx_1494[1]<<2 staged, arg5 = *(s32*)(v0+(s32)tbl_125c), t0 natural; (b) t0 = (s32)((u8*)tbl_125c+idx_1494[0]*4) staged, arg5 natural; measure both."
+   "hypothesis": "The twin cpu_side_move_dir_4 (parked, dist 7, 5 rules) shares the pair-swap coupling; solving its cheaper exchange residual FIRST yields a directly transferable lever per fable-blitz 2026-07-07 ruling. It has been the standing next-step for 3+ sessions and has not been dispatched.",
+   "mechanism": "Twin's ip/g3 residual is the exchange alone (masked ~6->0 on flip per pre-merge sessions 6f-6h commits aa8cad24 cd65f9c2 e5aa2dd4 f4bc8e67 df749bfd 622620cb). Any pair-exchange technique landing there transfers to marionation_Exec's do_timeout region.",
+   "next_probe": "Route the queue such that cpu_side_move_dir_4 gets its own grind session before another marionation_Exec permuter campaign. Not this function's session."
   },
   {
-   "hypothesis": "The rich-pass permuter sampler (still the sole untried honest lever with search coverage outside hand-derivable structural axis) remains the highest-value next step - s9 KILLs strengthen the case that any masked <= 3 form must come from a non-obvious mutation.",
-   "mechanism": "Permuter's PERM_GENERAL/PERM_RANDOMIZE_TYPE mutations sample RTL-space more densely; s5's masked-3 signposts prove the sampler CAN reach sub-4 nominally but every route paid a visible byte or uninitialized read. Fresh long run WITHOUT the vP160-class (label-alive) attractor rejection may find a semantically-clean sub-4.",
-   "next_probe": "Permuter modality session: rebuild offset-0 workspace from s6 dumps prelude scaffolding, seed with vT40 base, add PERM_* directives targeting the pair-window insns 106/117 (T-14 UID tie) and the region-3 check2-beqz slot; run --stop-on-zero with watcher auto-triaging sub-200 finds; reject sub-4 finds that read status uninitialized OR add net insns."
+   "hypothesis": "A single unified staging expression (both webs collapsed into ONE aggregate temp, e.g., a struct-like or self-referential cast) may capture the coupled t0/v0-web interaction that partial forms cannot.",
+   "mechanism": "s10 proved non-additivity: t0-web and v0-web are CONDITIONALLY beneficial (arg5-web negative alone, additive only with t0-web). vT40's floor 4 needs both simultaneously. This is the mechanistic signature of a compound expression where one sub-expression sets up the register state the other consumes - untested in the ledger's decomposed forms. e.g., `t0 = (s32*)((u8*)tbl_125c + (idx_1494[0]<<2)); v0 = idx_1494[1]<<2; arg5=(s32*)((u8*)tbl_125c+v0);` sharing a lifted (u8*)tbl_125c pseudo could birth a shared address-base qty.",
+   "next_probe": "Sweep 4-6 unified-staging spellings: (i) both derefs indexed off a single lifted (u8*)tbl_base local; (ii) idx-arithmetic (idx*4, idx+1, idx*4+4) sharing a common shift/add tree; (iii) pointer-typed tbl_125c index with expression-level fused ptr+shift. Measure vs vT40=4."
   },
   {
-   "hypothesis": "The twin cpu_side_move_dir_4 (parked, dist 7) shares the pair-swap coupling by lore - solving it FIRST provides a directly transferable lever (per fable-blitz 2026-07-07 strategic ruling).",
-   "mechanism": "Cross-function: twin residual is the exchange alone (masked ~6->0 on flip per pre-merge sessions 6f-6h commits). Any pair-exchange technique landing there transfers to marionation_Exec's do_timeout region.",
-   "next_probe": "Not this function's session. Route the queue such that cpu_side_move_dir_4 gets its own grind session before another marionation_Exec permuter campaign."
+   "hypothesis": "The rich-pass permuter sampler with EXPLICIT PERM_* directives on the pair-window insns (106/117 sll pair) and region-3 (check2-beqz slot) - a shape untried since s5's undirected campaign - finds a semantically-clean sub-4 form.",
+   "mechanism": "s5's ~10k undirected iterations found only masked-3 signposts paying +1 insn. Directed PERM_GENERAL/PERM_RANDOMIZE_TYPE around the specific tie-breaking insns concentrates search where the mechanism actually lives. s6 forensics gave the exact insn UIDs to target; that information was not available to the s5 sampler.",
+   "next_probe": "Permuter modality session: rebuild offset-0 workspace, seed with vT40 base, insert PERM_GENERAL between the arg4val/arg5val statements + PERM_RANDOMIZE_TYPE on the check block, run --stop-on-zero -j24 with watcher auto-triaging sub-200 finds. Reject any find that reads status uninitialized or adds net insns."
   }
  ],
  "judge_constraints": [

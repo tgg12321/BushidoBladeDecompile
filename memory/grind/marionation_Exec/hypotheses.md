@@ -191,3 +191,21 @@
 - probe: s9v04 (vT40 body with if(D_800F19B8>=v0){cnt=...;if(!(0x3C0000<cnt)){v0=0;goto check;}} + fallthrough to do_timeout), splice + sandbox --disable all
 - result: masked 7 at 176/179 insns (masked +3 AND build_insns -2 vs vT40). Outer restructure DELETES 2 target insns - the inverted vsync check compiles to fewer branch instructions than the original two-goto form, exposing a build-vs-target insn-count divergence. Score is closer masked-wise (7 < 9/11/18) but structurally wrong.
 - verdict: KILLED
+
+## [s10] Preserving v0-staging web for arg5 only (t0 natural clean array-index, s9v01 chassis) reaches masked <=4 by capturing the sched2-tie geometry through arg5's expression alone.
+- mechanism: s9v01 (both webs stripped) = 9; the arg5 v0-staging web is one of vT40's two independent stagings and, per s3, its shift-merged-into-load geometry moves the sched2 tie without seat trade. Retaining only that half might isolate the tie-fixing contribution.
+- probe: s10v01 spliced (pp alias + arg4val = tbl_125c[idx_1494[0]] clean + v0=idx_1494[1]<<2; arg5 = *(s32*)(v0+(s32)tbl_125c)), sandbox --disable all
+- result: masked 13 / 178 insns - REGRESSION +4 vs s9v01 (9) and +9 vs vT40 (4). The v0-staging web WITHOUT the t0 byte-cast web is actively harmful: unbalanced pair-window compute re-times worse than either clean or fully-webbed. Novel finding: the two webs are not additive-independent; the arg5 web is NEGATIVE without the t0 web to anchor the pair.
+- verdict: KILLED
+
+## [s10] Preserving t0 byte-cast web only (arg5 natural clean array-index, s9v01 chassis) reaches masked <=4.
+- mechanism: Symmetric probe to v01; t0-web is the s8-measured ~7-12 pt lever; without arg5's v0-staging web the pair-window compute might still resolve cleanly if t0-web anchors the LUID pattern.
+- probe: s10v02 spliced (pp alias + t0 = idx_1494[0]; t0*=4; t0=(s32)((u8*)tbl_125c+t0) + arg5val=tbl_125c[idx_1494[1]] clean), sandbox --disable all
+- result: masked 6 / 178 insns - CLOSEST non-vT40 form ever measured (+2 over floor). t0-web alone recovers 3 masked pts vs s9v01 (9). Quantifies t0-web dominant (>=3 pts standalone), v0-web incremental (~2 pts, gets vT40 from 6 to 4), pp alias ~7 pts (s9v01 vs s8v01). All three components are independently load-bearing and non-substitutable.
+- verdict: KILLED
+
+## [s10] The two staging webs (t0 byte-cast, v0-<<2 for arg5) are additive-independent contributions to the masked score.
+- mechanism: Naive read of s8 (both stripped = 16, +12 vs 4) and s9 (both stripped, pp preserved = 9, +5 vs 4) suggested a decomposable sum.
+- probe: s10v01 (arg5-web only) and s10v02 (t0-web only) directly test additivity: sum should equal joint if independent.
+- result: FALSIFIED. v02 (t0-only) = 6, expected ~9 if only t0-web-half of joint 5 pt recovery from s9v01=9; v01 (arg5-only) = 13 REGRESSES from s9v01=9 by +4. The v0-web is CONDITIONAL on the t0-web (helpful with it, harmful without). Non-additive interaction - the pair-window compute needs BOTH webs coherently to get the vT40 arrangement.
+- verdict: CONFIRMED
