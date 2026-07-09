@@ -420,3 +420,11 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s20] Dispatch load (D_800A11DC[D_800A11D5]) and tbl_125c/pp targets: both require fn-scope named carriers to enable the duplicated-into-arms construct (block-scope decls inside the debug_printf inner scope are NOT visible in the arms above do_timeout:). Fn-scope named carriers with zero semantic purpose are the cheat family per [[no-new-park-categories]] cheats-by-any-spelling and the s14 perm_s14_hoist_new_var2_g3_basin.c rejection precedent. Both KILLED without measurement per policy.
 
 - [s20] Frontier #2 (duplicated-statement-into-arms on NON-t0 targets) is fully closed after s20: only the D_800F19C0 target admits a non-cheat duplication (no fn-scope carrier needed since the LHS is a real global with independent semantic purpose), and it is measurably wrong-signed for arg5-lift on the h5 basin. The other two ranked targets can only be realized via fn-scope-carrier cheat forms that fail layer-1 vetting.
+
+- [s21] s21 h5 baseline reproduced from memory/grind/cpu_side_move_dir_4/candidate.c applied to src/system.c: masked=2, target_insns=160, build_insns=160.
+
+- [s21] combine.c fold_rtx aggressively canonicalizes ALL self-doubling C forms to a single ashiftsi3: (plus x x) -> (ashift x 1); (ashift (ashift x 1) 1) -> (ashift x 2); (mult x 4) -> (ashift x 2). Three-way triangulation via probes A/B/C.
+
+- [s21] expand_mult case alg_shift NULL_RTX target (s7 CONFIRMED mechanism) only births a distinct pseudo when the OUTER context provides no target for the multiply — i.e. when the multiply is a sub-expression of a larger tree. `v0 = v0 * 4;` with outer SET target = v0-pseudo folds identically to `v0 <<= 2`. The t0-side p106 fresh-dest birth in the h5 basin depends on `t0 *= 4;`-form where the outer SET's target is absorbed differently (or the *= compound assignment causes a target-thread-away).
+
+- [s21] s21 CONFIRMED via probe D (masked=4): the sanctioned staged-value-reused-variable v0 SET in the h5 candidate is not decorative FAKE-annotation — the fn-scope v0's participation in the arg5 chain is load-bearing to masked=2. Removing v0 SET before the shift regresses +2. This is empirical proof that h5 masked=2 REQUIRES v0-pseudo-in-arg5-chain.

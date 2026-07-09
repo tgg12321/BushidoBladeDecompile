@@ -431,3 +431,51 @@
 - probe: Policy vetting BEFORE measurement. Confirmed by s19 frontier synthesis pre-analysis.
 - result: Rejected without measurement by policy. Third-ranked frontier #2 target CLOSED. Rejected placeholder at memory/grind/cpu_side_move_dir_4/rejected/dup_tbl_125c_arms.c (annotated).
 - verdict: KILLED
+
+## [s21] Routing the arg5-side × 4 via `v0 = v0 * 4;` gives p_v0 a fresh single-set dest through expmed.c::expand_mult case alg_shift NULL_RTX (mirroring t0-side p106 birth), creating a symmetric LAUNCH on arg5 side that either flips the pair or synchronizes the tie differently.
+- mechanism: Per s7-CONFIRMED expmed.c line 2244 hardcoded NULL_RTX target on case alg_shift, `v0 = v0 * 4` OUGHT to birth a fresh single-set pseudo just like `t0 *= 4` does for p106. sched.c::adjust_priority + birthing_insn_p would then LAUNCH the arg5-side SLL insn with the same 0x7f000001 sentinel, potentially altering the ready-queue outcome at clock 13.
+- probe: Replaced `v0 <<= 2;` with `v0 = v0 * 4;` on h5 candidate (v0 = idx_1494[1] staging preserved). sandbox --disable all.
+- result: masked=2 INERT, target_insns=160, build_insns=160. Bytes match h5 baseline. Empirical finding: when the OUTER SET's target is v0's pseudo (not NULL), expand_mult's alg_shift NULL_RTX target is folded/absorbed by the outer SET at RTL emission — the emitted SLL is in-place on p_v0, identical to `v0 <<= 2`. The expand_mult fresh-dest mechanism (s7) only births a distinct pseudo when the outer context provides no target, i.e. when the multiply is a SUB-expression of a larger expression tree (as in `t0 *= 4;` where `*=` combined form causes expand_mult's target arg to be threaded away from the outer SET dest). Rejected form at memory/grind/cpu_side_move_dir_4/rejected/v0_mult4_arg5_side.c.
+- verdict: KILLED
+
+## [s21] Two-shift form `v0 <<= 1; v0 <<= 1;` on arg5 side adds an extra SET to p_v0's set count, altering flow-time reg_n_sets and possibly shifting qty priority.
+- mechanism: Local-alloc.c qty_compare feeds from flow.c reg_n_sets; adding an extra in-place SET on p_v0 would increment reg_n_sets(p_v0) from 2 (init + shift) to 3 (init + shift1 + shift2). Different priority arithmetic.
+- probe: Replaced `v0 <<= 2;` with `v0 <<= 1; v0 <<= 1;`. sandbox --disable all.
+- result: masked=2 INERT, target_insns=160, build_insns=160. Bytes identical to h5 baseline. combine.c fold_rtx recognizes `(ashift (ashift x 1) 1)` as `(ashift x 2)` and canonicalizes to a single SLL — the extra SET is optimized away at combine time before flow, so reg_n_sets(p_v0) is unchanged at flow-time. Rejected form at memory/grind/cpu_side_move_dir_4/rejected/v0_two_shift_arg5_side.c.
+- verdict: KILLED
+
+## [s21] Addsi3 chain form `v0 = v0 + v0; v0 = v0 + v0;` on arg5 side routes through addsi3_internal instead of ashiftsi3, providing a distinct expand path.
+- mechanism: Different RTL codegen path — expand_binop(PLUS_EXPR) instead of expand_binop(LSHIFT_EXPR); addsi3_internal recognizer vs ashiftsi3 recognizer. If cse.c or combine.c does NOT recognize the (plus x x) chain as a shift, the emitted code would differ.
+- probe: Replaced `v0 <<= 2;` with `v0 = v0 + v0; v0 = v0 + v0;`. sandbox --disable all.
+- result: masked=2 INERT, target_insns=160, build_insns=160. Bytes identical to h5 baseline. combine.c fold_rtx `simplify_plus_minus` recognizes `(plus x x)` and canonicalizes to `(ashift x 1)`; the chain collapses to `(ashift x 2)` at combine time. Confirms combine.c's aggressive shift-canonicalization on all self-doubling patterns. Rejected form at memory/grind/cpu_side_move_dir_4/rejected/v0_double_add_arg5_side.c.
+- verdict: KILLED
+
+## [s21] Fully inline arg5 without any v0 staging (`arg5 = *(s32 *)((idx_1494[1] << 2) + (s32)tbl_125c);` with no `v0 = idx_1494[1]` set before) probes whether the h5 basin depends on the fn-scope v0 SET being present in the arg5 chain.
+- mechanism: The h5 candidate ships with a sanctioned staged-value-reused-variable form: `v0 = idx_1494[1]; v0 <<= 2; arg5 = *(s32 *)(v0 + tbl);`. Removing the fn-scope v0 SET converts the arg5 index to a single-set fresh pseudo local to the address computation. This tests whether v0's presence is load-bearing to the basin, or merely a documented FAKE that could be replaced by any single-set carrier.
+- probe: Replaced the full arg5-side chain (v0=idx_1494[1]; v0<<=2; arg5=*(s32*)(v0+tbl)) with `arg5 = *(s32 *)((idx_1494[1] << 2) + (s32)tbl_125c);`. sandbox --disable all.
+- result: masked=4 (+2 REGRESSION vs h5 baseline), target_insns=160, build_insns=160. NOVEL DATA POINT: fully-inline arg5 does NOT reach the h5 basin. The fn-scope v0 SET before the shift is empirically load-bearing to masked=2. Mechanism explanation: without v0 pre-set, the arg5 index becomes a single-set fresh pseudo (never launched via the staged carrier). This shifts qty priorities and yields a distinct sched2 outcome (+2 masked). Confirms the sanctioned staged-value-reused-variable pattern is not just cosmetic — the v0 SET carries the mult-expander LAUNCH-tie into a specific alignment that requires the v0 pseudo's participation in the arg5 chain. This ELIMINATES the "unstage v0" search subspace: no arg5-side inline form (no fn-scope v0 SET participation) can reach the h5 masked=2 floor. Rejected form at memory/grind/cpu_side_move_dir_4/rejected/arg5_fully_inline_no_v0_staging.c.
+- verdict: KILLED
+
+## [s21] Routing arg5-side *4 via `v0 = v0 * 4;` births a fresh single-set pseudo via expmed.c::expand_mult case alg_shift NULL_RTX target, mirroring t0-side p106 birth and creating a symmetric LAUNCH signature on arg5 that shifts the sched2 tiebreak outcome.
+- mechanism: Per s7-CONFIRMED expmed.c:2244 hardcoded NULL_RTX target on case alg_shift, `v0 = v0 * 4;` OUGHT to birth a fresh single-set pseudo and LAUNCH on the arg5 side.
+- probe: Replaced `v0 <<= 2;` with `v0 = v0 * 4;` on h5 candidate (v0 = idx_1494[1] staging preserved). sandbox --disable all.
+- result: masked=2 INERT, target_insns=160, build_insns=160. When the OUTER SET's target is v0's pseudo, expand_mult's alg_shift NULL_RTX target is absorbed by the outer SET at RTL emission — SLL emitted in-place on p_v0, identical to `v0 <<= 2`. expand_mult fresh-dest mechanism (s7) only births a distinct pseudo when the outer context provides no target (multiply as sub-expression, e.g. `t0 *= 4;` where the *= form threads target away).
+- verdict: KILLED
+
+## [s21] Two-shift form `v0 <<= 1; v0 <<= 1;` on arg5 side gives p_v0 an extra in-place SET, potentially shifting flow.c reg_n_sets and qty priority.
+- mechanism: Local-alloc.c qty_compare feeds from reg_n_sets; extra SET on p_v0 would increment reg_n_sets from 2 to 3.
+- probe: Replaced `v0 <<= 2;` with `v0 <<= 1; v0 <<= 1;`. sandbox --disable all.
+- result: masked=2 INERT. combine.c fold_rtx recognizes (ashift (ashift x 1) 1) as (ashift x 2) and canonicalizes to a single SLL BEFORE flow, so reg_n_sets is unchanged at flow-time.
+- verdict: KILLED
+
+## [s21] Addsi3 chain form `v0 = v0 + v0; v0 = v0 + v0;` on arg5 side routes through addsi3_internal instead of ashiftsi3, giving a distinct expand path that combine may not shift-canonicalize.
+- mechanism: Different RTL emission path — expand_binop(PLUS_EXPR) vs expand_binop(LSHIFT_EXPR); if cse/combine doesn't recognize (plus x x)-chain as shift, emitted code differs.
+- probe: Replaced `v0 <<= 2;` with `v0 = v0 + v0; v0 = v0 + v0;`. sandbox --disable all.
+- result: masked=2 INERT. combine.c simplify_plus_minus recognizes (plus x x) as (ashift x 1) and collapses the chain to (ashift x 2). Confirms combine's aggressive shift-canonicalization on all self-doubling patterns — no C spelling of x*4 as an addsi3 chain escapes to distinct RTL.
+- verdict: KILLED
+
+## [s21] Fully inline arg5 without any v0 staging (`arg5 = *(s32*)((idx_1494[1] << 2) + tbl_125c);` with no v0 = idx_1494[1] set before) probes whether the h5 basin depends on the fn-scope v0 SET being in the arg5 chain.
+- mechanism: Removing v0 = idx_1494[1] converts the arg5 index into a single-set fresh pseudo local to the address computation. Tests whether v0's participation is load-bearing to h5 or merely cosmetic FAKE-annotation.
+- probe: Replaced arg5-side chain (v0=idx_1494[1]; v0<<=2; arg5=*(s32*)(v0+tbl)) with `arg5 = *(s32 *)((idx_1494[1] << 2) + (s32)tbl_125c);`. sandbox --disable all.
+- result: masked=4 (+2 REGRESSION), target_insns=160, build_insns=160. NOVEL DATA: fully-inline arg5 does NOT reach h5 basin. The fn-scope v0 SET before the shift is empirically load-bearing to masked=2. Confirms sanctioned staged-value-reused-variable is not cosmetic; v0's participation in arg5 chain carries the mult-expander LAUNCH tie into the alignment that reaches masked=2. ELIMINATES the 'unstage v0' subspace: no arg5-side inline form without fn-scope v0 SET reaches h5.
+- verdict: KILLED

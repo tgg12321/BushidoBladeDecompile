@@ -1,7 +1,7 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 20,
+ "session_count": 21,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -129,23 +129,29 @@
    "floor": 2,
    "modality": "structural",
    "headline": "s20 structural: frontier #2 duplicated-statement-into-arms CLOSED on all four candidate targets \u2014 D_800F19C0 keep-prologue +4 (cross-jump obstructed by do_timeout: label), D_800F19C0 no-prologue +8 (c"
+  },
+  {
+   "session": 21,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "s21 structural: 4 arg5-side rewritings measured \u2014 3 combine-folded INERT (v0*4, two-shift, double-add), and NOVEL fully-inline arg5 (no v0 SET) regresses +2, empirically confirming the sanctioned stag"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "PERM_LINESWAP directed campaign on h5 base with strict h5-preserving audit (LINESWAP as SOLE PERM directive; NO PERM_GENERAL, NO PERM_RANDOMIZE on CALL) discovers a statement-ordering the s3 13-variant hand sweep and the s13/s14 random permuter campaigns both missed.",
-   "mechanism": "LINESWAP enumerates dataflow-valid orderings WITHOUT mutating expressions, so h5's mult-expander LAUNCH on insn 111 (fresh p106 dest from expmed.c case alg_shift NULL_RTX target, s7 CONFIRMED) is preserved by construction. base_score MUST measure 60 at launch (h5-multexpander chassis) \u2014 abort if 40. Complements s14 directed PERM_GENERAL which fell to g3 basin due to alternative-set drift.",
-   "next_probe": "Permuter modality: edit tmp/perm_csmd4/base.c to wrap the h5 inline block with PERM_LINESWAP as SOLE directive. Verify base_score=60 BEFORE launch. tools/permuter_campaign.py --label s21_h5_lineswap_strict -j 8 --stop-on-zero. Fresh-seed harvest ~20-30 min or 0-find window. Any sub-baseline find splice-verified via engine sandbox; layer-2 cheat-reviewer on candidate (default-PASS expected since LINESWAP produces pure statement reorderings)."
+   "hypothesis": "PERM_LINESWAP directed campaign on h5 base with strict h5-preserving audit (LINESWAP as SOLE PERM directive; NO PERM_GENERAL, NO PERM_RANDOMIZE on CALL) discovers a statement-ordering the s3 hand sweep and s13/s14 random campaigns missed.",
+   "mechanism": "LINESWAP enumerates dataflow-valid orderings WITHOUT mutating expressions, so h5's mult-expander LAUNCH on insn 111 (fresh p106 dest, s7 CONFIRMED) is preserved by construction. base_score MUST measure 60 at launch; abort if 40. Complements s14 directed PERM_GENERAL which fell to g3 basin via alternative-set drift. s21 confirmed the v0-SET is load-bearing to h5 \u2014 LINESWAP won't touch that structure.",
+   "next_probe": "Permuter modality (next session): edit tmp/perm_csmd4/base.c to wrap the h5 inline block with PERM_LINESWAP as SOLE directive. Verify base_score=60 BEFORE launch. tools/permuter_campaign.py --label s22_h5_lineswap_strict -j 8 --stop-on-zero. Fresh-seed harvest ~20-30 min or 0-find window."
   },
   {
-   "hypothesis": "A g3-basin arg5-side-only directed permuter campaign (PERM_LINESWAP over arg5 statements + PERM_GENERAL alternatives for arg5 dereference ONLY; NO t0-side PERM directives) finds an arg5-qty ref lift (weighted refs>=4 at span 6, or refs 3 at span<=5) that closes the v1/a0 register exchange residual to masked 0.",
+   "hypothesis": "Given s21's CONFIRMED finding that v0-pseudo-in-arg5-chain is load-bearing to h5 masked=2, the remaining structural surface is C spellings that KEEP v0 SET but alter arg5's ADDRESSING SHAPE \u2014 e.g. moving the v0 SET across a statement boundary that affects LUID, or splitting the arg5 dereference into a two-step (arg5_addr = ...; arg5 = *arg5_addr;) form where the LUID of the *arg5_addr load is decoupled from the addr compute. Prior s11 M1-tertiary/s12 pointer-walker forms tested arg5_addr splits but all reduced to h5 RTL via combine addsi3_internal substitution.",
+   "mechanism": "s7's expmed.c CONFIRMED wall governs the t0-side LAUNCH on p106. The remaining unresolved question: which arg5-side statement-position/LUID assignment lets insn 121 win the backward-sched tiebreak vs insn 111 with LUID-differential > 4. All s3/s11/s12 splits either INERT (combine folds) or REGRESS (basin flip). The last-untried micro-axis: LUID via C-line-count between the v0 SET and the arg5 dereference \u2014 insertion of an INDEPENDENT statement (not touching v0 or arg5 chain) between them, that materializes as a distinct RTL insn (not DCE'd) and shifts arg5-side LUIDs by exactly 1.",
+   "next_probe": "Structural modality (next session): identify an existing statement in the do_timeout body that could be REPOSITIONED (not duplicated, not added) to sit between `v0 = idx_1494[1];` and `v0 <<= 2;` \u2014 e.g. move `tslTm2LoadImage_2(&D_800161B8);` to that position, or repositioning the `cdrom_ClearIrq();` call up into the block. Measure each; check byte-neutrality vs semantic-equivalence. Any masked movement is a fresh signal."
+  },
+  {
+   "hypothesis": "A g3-basin arg5-side-only directed permuter campaign (PERM_LINESWAP over arg5 statements + PERM_GENERAL alternatives for arg5 dereference ONLY; NO t0-side PERM directives) finds an arg5-qty ref-lift that closes the v1/a0 exchange residual to masked=0.",
    "mechanism": "g3 base (v0<<=2; arg5=*(s32*)(v0+tbl); t0<<=2; call(..., *(s32*)(t0+tbl_125c), arg5)) is order-perfect at masked 6; residual is pure v1/a0 exchange. csmd4-g3 qty numbers: t0 p113 6refs/span24=5000 vs arg5 p100 2refs/span6=3333. Target is arg5 strict-win via block-local ref-shift on arg5 alone. s5 unrestricted 9040-iter and s14 cross-basin 23,427-iter campaigns did not target this subspace.",
-   "next_probe": "Permuter modality: rewrite tmp/perm_csmd4/base.c to g3 base (statement-form t0 chain, arg5 chain unchanged from h5). PERM_LINESWAP over arg5 statements + PERM_GENERAL alternatives ONLY on `*(s32*)(v0+(s32)tbl_125c)` dereference. NO t0-side directives. Verify base_score=40 at launch. tools/permuter_campaign.py --label s21_g3_arg5_directed -j 8 --stop-on-zero. Layer-2 with heightened default-FAIL bias due to historical g3-permuter cheat family (0xFF/0xFFFF masks, u16 narrowing, alias repurposing per WIP L11)."
-  },
-  {
-   "hypothesis": "A structural probe attacking the arg5-side (v0/pp/arg5 chain) with h5-preserving LOCAL constructs \u2014 narrow-type staging of v0 (u16 or u8 index carrier), split-init accumulation (v0=(idx_1494[1]); v0=v0<<2), or a real (non-fake) computation duplicated into arms whose LHS is a currently-live-inside-inline-block local \u2014 closes the pair swap without falling to g3 basin.",
-   "mechanism": "s20 empirically confirmed duplicated-statement-into-arms mechanism produces a real ref-lift where cross-jump merges the arms (D_800F19C0 no-prologue: build_insns=160), but the D_800F19C0 target's qty differential is wrong-signed. The unexplored mechanism-analog: attack the arg5 index-chain via v0-carrier ref-lift instead, using constructs LOCAL to the do_timeout arms (not fn-scope carriers). Constraint: v0 is a fn-scope local already, and it's live across the arms (assigned via sys_VSync at loop top, tested in `if (D_800F19B8 < v0)`), so duplicated `v0 = ...` in both arms would either overwrite the live sys_VSync return or need a distinct carrier.",
-   "next_probe": "Structural modality (next session): draft candidate forms that duplicate a narrow-typed staging step (u16/u8 idx) into both arms via an existing-live local carrier (not fn-scope pseudo). Verify each by sandbox and cross-check byte-neutrality via adiff.py. FIRST test the untried baseline: whether ANY arm-duplication using a currently-live-and-used local (not a fresh carrier) survives cross-jump AND lifts arg5-qty. If bytes non-neutral, the pattern is a cheat family; if bytes neutral but masked non-improving, the differential is wrong-signed like D_800F19C0."
+   "next_probe": "Permuter modality (later session): rewrite tmp/perm_csmd4/base.c to g3 base. PERM_LINESWAP over arg5 statements + PERM_GENERAL alternatives ONLY on `*(s32*)(v0+(s32)tbl_125c)` dereference. NO t0-side directives. Verify base_score=40 at launch. tools/permuter_campaign.py --label s22_g3_arg5_directed -j 8 --stop-on-zero. Layer-2 with heightened default-FAIL bias due to historical g3-permuter cheat family (0xFF/0xFFFF masks, u16 narrowing, alias repurposing per WIP L11)."
   }
  ],
  "judge_constraints": [],
