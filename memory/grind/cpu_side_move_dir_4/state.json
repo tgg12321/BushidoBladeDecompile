@@ -1,8 +1,8 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 68,
- "current_modality": "permuter",
+ "session_count": 69,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 0,
@@ -417,23 +417,29 @@
    "floor": 2,
    "modality": "permuter",
    "headline": "s68 permuter: F7 whole-block PERM_LINESWAP(5-stmts=120) + PERM_GENERAL(4-way arg5) exhaustive enum on h5 chassis 480 iters / 96s / 0 novel finds; F7 KILLED \u2014 closes the last permuter-adjacent determin"
+  },
+  {
+   "session": 69,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "s69 forensics: ALLOCDBG greg diff (h5 vs honest idx_1495) reduces cleanly to 4-cycle s-reg rotation {p72<->p79, p73<->p78} driven by prologue-length REG_EQUIV/qty-priority perturbation; no second unna"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F5 (from prior brief): ALLOCDBG-instrumented s-reg coupling hunt \u2014 build cc1 dumps at BB2_ALLOC_DEBUG=1 for h5 candidate AND the honest idx_1495 respelling side-by-side; diff every s-reg pseudo's (refs, livelen, birth_luid, priority, assigned_reg) across the two, identify the specific edges producing the +13 alloc-web rotation, and search for a C construct that flips ONE s-reg's ref count / priority without adding insns.",
-   "mechanism": "s60 already named REG_EQUIV attachment via expand.c::set_unique_reg_note as the pass producing the +13; s61 KILLED four natural respellings. F5 asks for a fresh whole-function ALLOCDBG diff (h5 vs honest ptr-arith) that could identify a SECOND lever (e.g., an inert side-computation that keeps a specific s-reg's ref count parity) not yet enumerated in s60/s61's REG_EQUIV-only frame.",
-   "next_probe": "Build cc1 dumps at BB2_ALLOC_DEBUG=1 BB2_QTY_DEBUG=1 on both h5 candidate and honest idx_1495 respelling (probe1 shape); extract cpu_side_move_dir_4 section from both .greg files and diff the full 15-way pseudo table (refs, livelen, birth_luid, priority, assigned_reg for each s-reg pseudo p72-p79 range). Save table to tmp/grind/cpu_side_move_dir_4/s69/allocdbg_diff/. Cross-reference every changed edge against ledger's REG_EQUIV mechanism to identify residual unnamed edges."
+   "hypothesis": "F6 (from prior brief, unmeasured): SOTN-family carve-out application - duplicated-statement-into-arms and dead-store-fake-exception on arg5's carrier to lift pri(arg5) >= pri(t0) via reg_n_refs, potentially flipping the h5 basin's residual pair-swap through the qty_compare priority equation.",
+   "mechanism": "s69 forensics CONFIRMED the debug_printf window pseudos allocate identically across prologue-shape perturbations - therefore the pair-swap residual is NOT touchable via prologue levers. F6's proposed vehicle (reg_n_refs lift on arg5's carrier via SOTN-sanctioned duplication into do_timeout arms) targets the block-3 window directly, orthogonal to the exhausted prologue-lever axis.",
+   "next_probe": "Enumerate do_timeout arrival arms in src/system.c; identify a real statement referencing arg5 or its carrier that can be duplicated into BOTH arms with cross-jump byte-neutrality; measure via sandbox --disable all; if byte-neutral AND lifts pri(arg5) >= pri(t0), invoke layer-2 cheat-reviewer per no-new-park-categories prerequisites (FAKE annotation + lever-exhaustion + independent verdict). Judge constraint: this is the ONLY unexhausted axis for the h5 basin residual under current policy."
   },
   {
-   "hypothesis": "F6 (from prior brief): SOTN-family carve-out reassessment for the two remaining sanctioned families not yet applied (duplicated-statement-into-arms and dead-store-fake-exception on arg5's carrier), searching for a byte-neutral ref-lift on arg5-qty (target: pri(arg5) >= pri(t0) via reg_n_refs).",
-   "mechanism": "candidate.c already deploys staged-value-reused-variable (v0-idx staging) and pointer-alias-fake (pp = &D_800F19C0). If a real arg5-related statement can be duplicated into the two do_timeout arrival arms (timeout branch + cnt-overflow branch) with cross-jump byte-neutrality confirmed, reg_n_refs on arg5's carrier lifts without changing bytes.",
-   "next_probe": "Enumerate the two do_timeout arrival arms in src/system.c; identify a real statement referencing v0/arg5/tbl_125c that could plausibly be duplicated into BOTH arms; test byte-neutrality via sandbox --disable all before proposing to layer-2 cheat-reviewer. If any duplication holds bytes AND lifts pri(arg5) >= pri(t0), record verdict; on layer-2 PASS emit ruling-request. Prerequisites documented per no-new-park-categories: lever-exhaustion (satisfied by 67+ session ledger), FAKE annotation, byte-neutrality, layer-2 cheat-reviewer independent verdict."
+   "hypothesis": "F9 (novel this session, low probability): The 4-cycle s-reg rotation basin coupled through qty_compare is a hint - if a C construct can force pri(p72) = pri(p79) EXACTLY (a strict tie), MIPS's ascending-regno find_reg would break the tie by ord= sequence rather than by pri delta, potentially yielding a DIFFERENT rotation basin than either of the two measured here.",
+   "mechanism": "qty_compare tie-breaking priority: when floor_log2(refs)*refs/livelen*10000 evaluates equal for two competing carriers, the tie is broken by insertion order (RTL first-set LUID). If we can seed idx_1494 and tbl_125c with identical (refs, livelen) via a byte-neutral C shape (e.g., a shared prologue helper), the tie would resolve differently.",
+   "next_probe": "Enumerate prologue shapes that give tbl_125c and idx_1494 carriers identical (refs=3, livelen=~6) at the pre-loop insertion point. Candidate: swap the declaration/initialization order at lines 404-406 while preserving byte-equivalent RTL first-uses. Measure both directions (swap lines 404/405, then swap 405/406). If any variant produces a 3rd rotation basin distinct from h5 and honest, we have a new axis of exploration."
   },
   {
-   "hypothesis": "F8 (novel): Combine the 5-statement whole-block re-ordering enumeration with a t0-chain PERM_GENERAL enumerating semantically-equivalent spellings of the t0 mult+add fold (`t0*=4` vs `t0=t0*4` vs `t0=(t0<<2)` \u2014 the last regresses to g3 basin and is measured KILLED, but the first two might expand-time differ) to broaden the whole-block cross-product beyond the arg5-only PERM_GENERAL of s68 F7.",
-   "mechanism": "s68 F7 held t0*=4 fixed while enumerating arg5-side dereference spellings. If expand.c treats `t0*=4` and `t0=t0*4` as differently-lowered constructs (one hitting expand_stmt vs expand_expr paths), the RTL for insn 111 could differ subtly \u2014 even if both route through expand_mult case alg_shift NULL_RTX per s7, the surrounding statement expander context could set birthing conditions differently. Very low probability given s7 CONFIRMED expmed.c pinning, but a deterministic 5!*4*2=960 enum is a cheap closure of yet-another surface.",
-   "next_probe": "Copy s68 workspace to tmp/grind/cpu_side_move_dir_4/s69/perm_wholeblock_t0general/; add PERM_GENERAL wrapping the t0 mult statement: {t0 *= 4, t0 = t0*4}. Launch via tools/permuter_campaign.py with -j 6; ~192s expected (2x wall time of s68). If 0 novel finds, closes yet another deterministic axis without adding new probes to a well-mapped surface."
+   "hypothesis": "F10 (novel this session): The 8-insn prologue-length delta between h5 (43 insns) and honest (35 insns) may include a scheduler-relevant NOTE_INSN_LOOP_BEG boundary that changes birthing_insn_p classification for later insns beyond just the s-reg rotation.",
+   "mechanism": "SCHEDDBG line-counts are IDENTICAL (10626 each), so the block-3 debug_printf window's scheduling proceeds identically. But the 8-insn prologue shift may affect the number of LUIDs before block 3 begins, offsetting all subsequent LUIDs by ~8. This does NOT affect ready-queue LUID tie-breaks WITHIN a block (LUID diffs are preserved), so is unlikely to help - but a directed sched2 dump comparison could confirm.",
+   "next_probe": "Grep sched2.csmd4 for block=3 dispatch order in both dumps and compare - if identical (as expected), close F10 empirically."
   }
  ],
  "judge_constraints": [
