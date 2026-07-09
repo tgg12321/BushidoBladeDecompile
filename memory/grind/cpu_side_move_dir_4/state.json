@@ -1,8 +1,8 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 79,
- "current_modality": "forensics",
+ "session_count": 80,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 0,
@@ -483,18 +483,24 @@
    "floor": 2,
    "modality": "forensics",
    "headline": "s79 forensics F16 KILLED: reorg.c delay-slot fill mechanism is pass-order+topology invalid for the block=3-interior {sll@57 <-> addu@58} pair-swap residual"
+  },
+  {
+   "session": 80,
+   "floor": 2,
+   "modality": "rederive",
+   "headline": "s80 rederive: m2c --context include/m2c_context.h (final un-enumerated m2c flag combination) KILLED - produces array-subscript syntax for arg3 already present in h5 candidate.c; arg4/arg5 remain in kn"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F6 (retained, structural modality): duplicated-statement-into-arms carve-out on p73/p77 via cross-jump re-merge \u2014 remains the ONLY documented byte-neutral single-carrier refs-lift mechanism after s78 (isolated-local-USE forensics KILL) and s79 (delay-slot-fill forensics KILL) close the forensics-modality axis.",
-   "mechanism": "Sanctioned 2026-07-01 duplicated-statement-into-arms permits duplicating a REAL read statement into 2+ control-flow arms; jump2 find_cross_jump collapses identical byte-suffixes so emitted-byte count is preserved while reg_n_refs on the duplicated read's carrier rises. Applied to a tbl_125c[k] or idx_1494 read in the success->do_timeout arm and the direct-goto-do_timeout arm.",
-   "next_probe": "Draft 2-3 duplications of a real read-statement referencing p73(tbl_125c) or p77(idx_1494) into BOTH do_timeout arrival arms; measure sandbox --disable all AND inspect emitted .s for cross-jump re-merge preservation of total byte count; if byte-neutral AND ALLOCDBG shows p73 or p77 refs++ isolated from p78/p79, promote to layer-2 cheat-reviewer with FAKE annotation."
+   "hypothesis": "F6 (retained): SOTN sanctioned duplicated-statement-into-arms carve-out on p73(tbl_125c) or p77(idx_1494) via cross-jump re-merge in the success->do_timeout and direct-goto-do_timeout arms.",
+   "mechanism": "Sanctioned 2026-07-01 duplicated-statement-into-arms permits duplicating a REAL read statement into 2+ CF arms; jump2 find_cross_jump collapses identical byte-suffixes preserving emitted byte count while reg_n_refs on the duplicated read's carrier rises. Byte-neutrality + isolated-refs++ per s69 greg required for the carve-out prerequisite. Structural modality.",
+   "next_probe": "Draft 2-3 duplications of a real read-statement referencing p73(tbl_125c) or p77(idx_1494) into BOTH do_timeout arrival arms; measure sandbox --disable all + ALLOCDBG diff vs h5 to confirm cross-jump preserved byte-count AND refs++ isolated to p73/p77 (not leaking to p78/p79). If byte-neutral AND single-carrier-refs-lifted, promote to layer-2 cheat-reviewer with FAKE annotation."
   },
   {
-   "hypothesis": "F17 (new, forensics modality): sched2's LAUNCH-priority for insn 121 (arg5_addr p107 = p75 + p79) can be DEMOTED to non-LAUNCH by making p107 flow-time multi-set via a construct that survives combine.c's addsi3_internal substitution AND reaches sched2 without altering the emitted byte count. All simple two-SET decompositions were closed in s11+s12 (5 realizations KILLED); the remaining un-probed sub-axis is a two-SET where the SECOND set is a CALL-clobber shadow (e.g. return-value fold via a preceding call whose return happens to equal p75+p79).",
-   "mechanism": "combine.c substitutes trivial two-SET patterns through mips.md addsi3_internal (per s7:213); a two-SET whose second SET originates from a jal return-value coincidence would defeat combine's operand-tracking (call-clobber semantics). Preserves flow.c reg_n_sets(p107)=2 -> sched2 birthing_insn_p returns FALSE at insn 121 -> no LAUNCH -> insn 111 wins the pair without a LUID tiebreak.",
-   "next_probe": "Identify any function CALL in block=2 (before block=3) whose return value is arithmetically equal to (base + idx*4) for the arg5_addr computation. sys_VSync's return goes to D_800F19B8 (offset by +0x3C0). No obvious candidate; probably requires a structural-modality search across block=2 predecessors. Distinct from all s11+s12 simple two-SETs."
+   "hypothesis": "F17 (retained): sched2's LAUNCH-priority for insn 121 can be DEMOTED via a two-SET whose second SET originates from a CALL return-value coincidence in block=2 predecessors (defeats combine.c operand-tracking via call-clobber semantics).",
+   "mechanism": "combine.c substitutes trivial two-SET patterns through mips.md addsi3_internal (s7:213); a two-SET whose second SET is jal-return-clobber-shadowed defeats combine's operand-tracking. Preserves flow.c reg_n_sets(p107)=2 -> sched2 birthing_insn_p returns FALSE at insn 121 -> no LAUNCH -> insn 111 wins the pair without LUID tiebreak. Forensics modality.",
+   "next_probe": "Search block=2 predecessors of block=3 dispatch for any CALL whose return value is arithmetically equal to (base + idx*4). sys_VSync return (offset D_800F19B8 by +0x3C0) is the only block=2 CALL; unlikely candidate. Requires a structural-modality companion search identifying an unnoticed jal return-value coincidence."
   }
  ],
  "judge_constraints": [

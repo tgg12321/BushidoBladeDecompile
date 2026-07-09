@@ -1300,3 +1300,15 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s79] F16's precondition (delay-slot fill can influence pair order) fails on two independent grounds: (1) TOPOLOGY - the pair is block-interior, no delay slot exists between the two paired insns for reorg.c to consume; (2) PASS-ORDER - sched2 commits the ordering before reorg.c runs, so any delay-slot-only materialization cannot influence a decision already made.
 
 - [s79] Cross-linkage to s6 LUID-reorder: any C-level added read that survives to sched2 perturbs the LUID tie exactly like the s6-measured `t0*=4` late-move -> masked 6 g3 basin. The frontier's assumption that the added read could be reorg.c-only (invisible to sched2) is falsified by DCE: an insn invisible to sched2 is by definition DCE'd before sched2 and never reaches reorg.c.
+
+- [s80] Ledger cross-read: rederive-modality declared exhausted at s19 ('any future session choosing rederive must justify a genuinely new external input'), reconfirmed at s37 ('no un-tried rederive angle remains without external-input dependency') and s46 ('rederive-modality is fully closed at chassis').
+
+- [s80] m2c option-combination enumeration across all prior rederive sessions: s8 default, s53 --reg-vars v0/v1/a0, s54 --void and --no-stack-spill --gotos-only, s62 on marionation_Exec.s, s63 --reg-vars s0-s5, s72 on saEft01Init.s. s80 closes the final un-enumerated combinations: --context (types via existing header) and --stack-structs --passes 5.
+
+- [s80] m2c --context ADDS a lexical refinement (array subscript vs raw pointer arith) for arg3 D_800A11DC[D_800A11D5], but this exact syntax is already committed in memory/grind/cpu_side_move_dir_4/candidate.c line 49. The refinement is in-basin.
+
+- [s80] m2c --stack-structs --passes 5 produces byte-identical debug_printf shape to s8 default; block=3 uses no stack-slot spills in target asm so --stack-structs surfaces nothing.
+
+- [s80] Both artifacts confirm the arg4/arg5 sub-shape emitted by every m2c variant remains the known inline-all-args form landing in the masked=14 basin (WIP L7). No m2c variant surfaces a structurally novel arg4/arg5 spelling.
+
+- [s80] The exhaustive rederive-source list is now closed at 9 distinct sources across 4+ sessions: (1) m2c default s8, (2) m2c --reg-vars variants s53/s63, (3) m2c --void/--gotos-only s54, (4) m2c on marionation_Exec twin s62, (5) m2c on saEft01Init third-twin s72, (6) m2c --context header-driven s80, (7) m2c --stack-structs --passes 5 s80, (8) decomp.me corpus whole-function and window-slice scans s17/s26/s44/s71, (9) Kengo local dump + adjacent function extraction s18/s36/s45.
