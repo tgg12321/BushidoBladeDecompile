@@ -1212,3 +1212,15 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s73] Judge constraint (2026-07-08, BINDING) verified: no canonical-asm authorization framing surfaced this session; synthesis outcome elevates only the carve-out and operator-dependent modality frontiers the constraint permits.
 
 - [s73] Rejected forms bank (84 entries at rejected/) documented as the deterministic no-fly zone for s74+; no new form drafted this session (synthesis modality).
+
+- [s74] s74 baseline confirmed: h5 candidate applied to src/system.c scores masked=2 (target_insns=160, build_insns=160) via sandbox cpu_side_move_dir_4 --disable all.
+
+- [s74] s74 F9 prologue-reorder frontier fully KILLED across 6 probes. Byte-neutral statement-order permutations amongst {tbl_125c, idx_1494, idx_1495, D_800F19BC, D_800F19C0} (P1-P4) are qty-INERT at masked=2 - none shifts (refs,livelen) enough to break the 4-cycle rotation tie. The F9 frontier's assumption that byte-neutral prologue reorderings expose qty_compare's LUID-tiebreak is empirically wrong on this window: simple const-address stores don't birth long-lived debug-window pseudos, so their C-position is qty-transparent.
+
+- [s74] s74 sys_VSync position mapping: FIRST=2 (h5 baseline), INTERIOR=15 (+13, lands in the same collapse basin as honest-idx_1495 s8 and s65 P1/P2), LAST=21 (+19). The CALL_INSN's v0-return livelen and call-clobber footprint anchor the h5 basin - it is not byte-neutral to relocate. sys_VSync cannot be part of an F9-style byte-neutral reorder.
+
+- [s74] s74 mechanism finding: qty_compare LUID-tiebreak IS reachable in principle at the outer function scope but requires perturbing a pseudo with non-trivial livelen; the debug-window pseudos p72/p73/p78/p79 have their livelens dominated by USES at the poll region and the debug_printf call, NOT by prologue-side placement, so prologue statement-order edits cannot move (refs,livelen) numbers on those carriers.
+
+- [s74] s74 F9 formally closed: no byte-neutral prologue reorder within src/system.c:404-408 (the assignment cluster) surfaces a novel s-reg basin distinct from h5 and honest 4-cycles. Combined with s60/s61/s69's atomic-4-cycle-under-qty_compare finding, this closes the entire 'byte-neutral outer-scope structural reorder' axis for the F9 mechanism.
+
+- [s74] s74 src/system.c restored to h5 candidate at session end; post-restore sandbox re-measures masked=2. candidate.c unchanged (h5 form remains masked-2 floor). Rejected forms saved: prologue_reorder_svsync_last.c, prologue_reorder_svsync_middle.c.

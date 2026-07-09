@@ -1151,3 +1151,39 @@
 - probe: Not measured this session (synthesis modality). Precondition for the s74 measurement: compute (refs, livelen) for {p72,p73,p78,p79} carriers under h5 and honest from tmp/grind/cpu_side_move_dir_4/s69/allocdbg_diff/csmd4_only.greg, identify byte-neutral prologue re-orderings at src/system.c:388-408 that equalize (refs, livelen) on 2+ of them while preserving byte-equivalent RTL first-uses.
 - result: Frontier documented, quantitative precondition (s69 greg extract read) named. Elevated to F9 in reset frontier.
 - verdict: CONFIRMED
+
+## [s74] Swapping the assignment order of tbl_125c and idx_1494 (both simple const-address stores) shifts qty birth luids to reach a novel s-reg basin distinct from h5 and honest 4-cycles.
+- mechanism: local-alloc.c qty_compare tiebreak on (refs, livelen); C-decl-order does not drive pseudo birth but statement-order does drive RTL first-use LUID, which feeds the qty birth-order tiebreak when priorities tie.
+- probe: src/system.c:404-405 swap: idx_1494 = &D_800A1494; tbl_125c = D_800A125C; sandbox --disable all
+- result: masked=2, target_insns=160, build_insns=160. INERT vs h5 baseline. Bytes identical; simple const-load reorder is qty-invariant at debug-window scope.
+- verdict: KILLED
+
+## [s74] Hoisting the D_800F19BC=0 and D_800F19C0=&D_80016240 assignments BEFORE the idx setup lengthens/shortens carrier livelen, potentially equalizing (refs,livelen) on the 4-cycle rotation carriers.
+- mechanism: Same qty_compare mechanism; hoisting D_800F19_ stores earlier moves their write-insns to lower LUIDs, but no local pseudo carries D_800F19_ addr in the debug window - they're direct SW insns with lui/addiu inline.
+- probe: src/system.c:404-408 reorder: D_800F19B8=...; D_800F19BC=0; D_800F19C0=...; tbl_125c=...; idx_1494=...; idx_1495=...; sandbox --disable all
+- result: masked=2 INERT. Confirms D_800F19_ stores emit as direct SW insns (no long-lived local pseudos) so their C-position doesn't feed qty priority arithmetic.
+- verdict: KILLED
+
+## [s74] Interleaving D_800F19_ stores BETWEEN the idx setup statements (breaking up the const-address cluster) alters expand-time scheduling and s-reg birth ordering.
+- mechanism: sched.c LUID assignment follows RTL emission order; splitting the const cluster with unrelated stores creates gaps that could re-time debug-window pseudo births.
+- probe: src/system.c: tbl_125c=...; D_800F19BC=0; idx_1494=...; D_800F19C0=...; idx_1495=...; sandbox --disable all
+- result: masked=2 INERT. The two D_800F19_ stores are LUID-transparent for debug-window pseudo qty; interleaving them does not perturb the residual pair.
+- verdict: KILLED
+
+## [s74] Delaying idx_1495 assignment until AFTER the D_800F19_ stores (idx_1495 as LAST prologue statement) delays p78's first-use LUID, potentially demoting its qty priority via a shorter livelen from the window's start.
+- mechanism: livelen = last_use_luid - first_use_luid; pushing p78's first-use later shortens its livelen relative to the constant span the debug window covers - hoping to raise p78's priority and offset the s-reg rotation.
+- probe: src/system.c: tbl_125c=...; idx_1494=...; D_800F19BC=0; D_800F19C0=...; idx_1495=...; sandbox --disable all
+- result: masked=2 INERT. p78's livelen calculation is dominated by its LAST-USE at the poll region (*idx_1495 dispatch call), not by prologue-side placement - the prologue reorder does not move the livelen numerator enough to shift qty_compare.
+- verdict: KILLED
+
+## [s74] Delaying D_800F19B8 = sys_VSync(-1) + 0x3C0 (the CALL prologue insn) to LAST position frees the initial CALL-return v0 for other pseudo births and could yield a distinct alloc basin.
+- mechanism: sys_VSync return value in v0 births p_D_800F19B8_val at the CALL_INSN; delaying it to last would put the CALL_INSN AFTER const setup, possibly changing the initial hard-reg conflict set for downstream pseudos.
+- probe: src/system.c: [all const assignments]; D_800F19B8 = sys_VSync(-1)+0x3C0; sandbox --disable all. Rejected form at memory/grind/cpu_side_move_dir_4/rejected/prologue_reorder_svsync_last.c
+- result: masked=21, target_insns=160, build_insns=160. +19 REGRESSION. Delayed sys_VSync destroys the h5 alignment: the CALL's v0-return + call-clobber footprint at the WRONG position pulls apart the const-address cluster's pseudo births.
+- verdict: KILLED
+
+## [s74] sys_VSync CALL in INTERIOR position (after idx setup, before D_800F19BC/C0) is a middle-ground between LAST (masked=21) and FIRST (masked=2 baseline), potentially reaching a novel basin below either endpoint.
+- mechanism: Same as above; interior placement gives partial livelen redistribution.
+- probe: src/system.c: tbl_125c=...; idx_1494=...; idx_1495=...; D_800F19B8=sys_VSync(-1)+0x3C0; D_800F19BC=0; D_800F19C0=...; sandbox --disable all. Rejected form at memory/grind/cpu_side_move_dir_4/rejected/prologue_reorder_svsync_middle.c
+- result: masked=15, target_insns=160, build_insns=160. +13 REGRESSION - lands in the same +13 collapse basin as the honest-idx_1495 respelling (s8) and the two-set arg5 collapse family (s65 P1/P2). sys_VSync position is monotonically load-bearing with FIRST as the unique minimum.
+- verdict: KILLED
