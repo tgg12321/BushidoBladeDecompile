@@ -364,3 +364,29 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s17] Top-15 shape check (tmp/grind/cpu_side_move_dir_4/s17/shape_check.py): 0/15 hits contain debug_printf or FntPrint (the 5-arg variadic call that anchors csmd4's residual pair); 1/15 references VSync (erpie, entrypoint_sotn, distinct skeleton); 0/15 contain tbl-indexed dispatch. The corpus does not host a viable transplant candidate for csmd4.
 
 - [s17] Rederive-modality closure updated: s8 m2c KILLED, s9 marionation_Exec sibling transplant KILLED (P1-P4), s9 decomp.me GATED, s17 decomp.me MEASURED KILLED. The only remaining rederive angle noted in ledger is external-Kengo-source glance (frontier note (c) from s9), which requires operator supply of a Kengo dump.
+
+- [s18] s18 baseline: applied memory/grind/cpu_side_move_dir_4/candidate.c to src/system.c inline block; sandbox cpu_side_move_dir_4 --disable all reports score=2 target_insns=160 build_insns=160 (h5 masked-2 floor confirmed).
+
+- [s18] HEAD src/system.c (both-named arg4/arg5 array-index form) scored masked=7 pre-apply — matches s12 baseline record (marionation-hybrid basin, ip_base_statement_form region).
+
+- [s18] Kengo local-asset inventory: top-level Kengo/ + Kengo/disc/ (498 MB BIN + 3.15 MB SLUS_200.21 PS2 ELF); Kengo/kengo_functions_full.txt (4169 lines), kengo_func_names_sorted.txt (2482 syms), kengo_debug_full.txt (1215 file-line-addr records), kengo_globals*.txt. Identical copies replicated under multiple .claude/worktrees/*/Kengo/.
+
+- [s18] cpu_side_move_dir entry at kengo_functions_full.txt line 1077: '/* 0013aa60 00000280 */ cpu_side_move_dir() {}' — empty stub, no body, no signature, no locals.
+
+- [s18] Kengo dump has 2409 empty-stub entries (grep -c '{}$'); cpu_side_move_dir is one of them, alongside 2408 other unresolved-body functions. Some libc/math funcs (cos/sin/atan2/cosf/sinf) DO carry m2c-shaped signatures + local reg/stack info in the same file, so dump format supports body content when extraction succeeded — cpu_side_move_dir extraction did not.
+
+- [s18] File attribution for cpu_side_move_dir recoverable from surrounding section header: src/numata/nm_cpu.c (matches src/system.c:497 tombstone reference).
+
+- [s18] cpu_side_move_dir size in Kengo: 0x280 bytes = 640 bytes = 160 insns — EXACT match with BB2 csmd4's 160-insn footprint, confirming they are the same-purpose function despite the '_4' suffix delta on BB2's side.
+
+- [s18] kengo_debug_full.txt has zero records at addr 0x13aa60 (grep 0013aa60 = empty); the .dbg records are limited to .dsm/.vsm VU-microcode files, so no source-line reconstruction available for nm_cpu.c.
+
+- [s18] Kengo ELF architecture per kengo_debug_full.txt line 1: 'file format elf32-tradlittlemips' = PS2 R5900 EE core, GCC 3.x SN Systems / EE-GCC toolchain (Kengo shipped 2001).
+
+- [s18] BB2 architecture: PS1 R3000A, GCC 2.7.2 PsyQ (mips-gcc-2.7.2 fork). Compiler-generation gap between BB2's mult-expander (expmed.c case alg_shift NULL_RTX, s7 CONFIRMED) and PS2/EE-GCC 3.x's mult-expander is not shape-transferable in codegen.
+
+- [s18] src/system.c reverted to HEAD (both-named form) at session end; sandbox re-measures masked=7 baseline. candidate.c unchanged (h5 form remains the masked-2 floor).
+
+- [s18] Rederive-modality closure across s8/s9/s17/s18: m2c fresh decompile KILLED (s8, produced score-14 inline-all-args), marionation sibling transplant KILLED (s9 P1-P4 = 7/14/8/20), decomp.me corpus scrape KILLED (s17 top-15 zero structural matches, peak similarity 0.097), Kengo local-asset probe KILLED (s18, empty dump stub + arch-non-transferable ELF). Every rederive angle enumerated in the ledger is now measured KILLED.
+
+- [s18] The next modality for a follow-up session should NOT be rederive — no rederive frontier remains. Live frontier note (a) PERM_LINESWAP is a permuter-modality task; frontier note (b) 'operator supplies Kengo source dump' is now measured to be UNAVAILABLE via local assets (empty stub, not merely absent — actively resolved KILLED).

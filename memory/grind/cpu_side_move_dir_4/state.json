@@ -1,7 +1,7 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 17,
+ "session_count": 18,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -111,18 +111,29 @@
    "floor": 2,
    "modality": "rederive",
    "headline": "s17 rederive: decomp.me corpus scrape unblocked (curl_cffi installed) and MEASURED KILLED \u2014 3754-scratch corpus top-15 hits max similarity 9.7%, zero contain debug_printf/FntPrint + tbl-index-lookup s"
+  },
+  {
+   "session": 18,
+   "floor": 2,
+   "modality": "rederive",
+   "headline": "s18 rederive: Kengo local assets FOUND (.claude/worktrees/*/Kengo/ + Kengo/disc/SLUS_200.21) \u2014 but dump has NO C body for cpu_side_move_dir (empty {} stub); ELF is PS2/EE (GCC 3.x, arch-non-transferab"
   }
  ],
  "frontier": [
   {
    "hypothesis": "PERM_LINESWAP over the inline block's 6-8 non-CALL statements discovers a schedule-space arrangement outside the s3 hand-swept 13 structural axes and s4-s5 wrap/carrier probes.",
-   "mechanism": "PERM_LINESWAP enumerates all dataflow-valid orderings of the specified line block, complementing directed-PERM_GENERAL (s14) with systematic O(n!)-minus-invalid coverage.",
-   "next_probe": "Permuter modality: add PERM_LINESWAP around the inline block's non-CALL statements in tmp/perm_csmd4/base.c; launch fresh h5-basin campaign with LINESWAP as the only PERM directive; each ordering re-verified against engine sandbox (workspace UNFAITHFUL caveat per WIP notes) \u2014 sub-baseline finds must be splice-verified before promotion. Audit the alternative set BEFORE launch to guarantee no g3-basin spellings sneak in (s14 lesson: mixed base_score dropped to 40 and redid g3 exploration)."
+   "mechanism": "PERM_LINESWAP enumerates all dataflow-valid orderings of the specified line block, complementing directed-PERM_GENERAL (s14) with systematic O(n!)-minus-invalid coverage. Would sweep orderings the hand-structural pass missed at fixed h5-multexpander base.",
+   "next_probe": "Permuter-modality session: edit tmp/perm_csmd4/base.c to wrap the h5 inline block (t0=idx[0]; v0=idx[1]; pp=...; t0*=4; t0=tbl+t0; v0<<=2; arg5=*(...)) with PERM_LINESWAP as the sole PERM directive. AUDIT the alternative set to guarantee no g3-basin spellings sneak in (s14 lesson: mixed base_score dropped to 40 and redid g3 exploration \u2014 LINESWAP is safer here because it reorders statements without mutating expressions, so h5's mult-expander LAUNCH is preserved by construction). Launch tools/permuter_campaign.py --label s19_h5_lineswap -j 8 --stop-on-zero; harvest with fresh-seed discipline (~20-30 min or 0-find window). Any sub-baseline find must be splice-verified via engine sandbox before promotion (workspace UNFAITHFUL per WIP notes)."
   },
   {
-   "hypothesis": "External Kengo (nm_cpu/cpu_side_move_dir_4) source glance surfaces the original C shape and points to a distinct structural axis not covered by m2c or marionation_Exec sibling.",
-   "mechanism": "The src/system.c:497 tombstone flags `kengo:HIGH  |  nm_cpu/cpu_side_move_dir_4  |  160i  |  x4 size collision` \u2014 Kengo carries a same-name analog with a 4x-size difference indicating a superset. Original Lightweight source likely factored csmd4 as a subroutine of the Kengo function.",
-   "next_probe": "Operator supplies a Kengo source dump (or an inspection command against an available Kengo binary/scratch) so a rederive-modality session can diff Kengo's `nm_cpu/cpu_side_move_dir_4` C body against csmd4's target asm. Absent operator supply, this frontier remains unavailable (WIP notes: `no known second twin in the codebase per notes.md`)."
+   "hypothesis": "The layer-2 SANCTIONED techniques added 2026-07-01 (dead-store-fake-exception, named-local-fake-exception, pointer-alias-fake-exception, duplicated-statement-into-arms, written-never-read local array) provide FAKE-annotated last-resort levers that were forbidden when csmd4's prior ~15 sessions ran but are now available. Specifically duplicated-statement-into-arms was ledger-listed as a lever but s10 demoted it as attacking the wrong side (would double p101 refs, regressing to g3). Re-examining under the 2026-07-01 formal sanction with a NON-t0-side target (e.g. the pp/D_800F19C0 store, or the fmt-la pattern) could provide the arg5>t0 ref lift without triggering the g3-basin trap.",
+   "mechanism": "duplicated-statement-into-arms 2026-07-01 evidence: reg_n_refs priority lift is the proven byte-free mechanism for global-RA walls (motion_SetMotion pins retired). csmd4's ledger identifies 'arg5-qty needs pri>=5000, weighted refs>=4 at span 6 (13333) or refs 3 at span<=5 (6000)' (s1 fable-blitz). If the arg5 chain's REG_N_REFS can be lifted via a duplicated statement WITHOUT touching the mult-expander LAUNCH machinery (i.e., duplicate a statement OUTSIDE the block-local dataflow that feeds insn 111's fresh p106 dest), the pri-lift lever is orthogonal to the h5-basin membership.",
+   "next_probe": "Ledger-cross-modality session (structural or synthesis): read .claude/rules/duplicated-statement-into-arms.md fully. Identify the do_timeout arms \u2014 the check!=0 path and the fast-path \u2014 as the target arm structure. Enumerate REAL statements that could be duplicated into both arms while preserving byte-neutrality (label placement steers cross-jump merge direction). Candidate: the D_800F19C0 pointer-load, the D_800A11D5 dispatch-index load, the tbl_125c=D_800A125C bind (currently in prologue). Vet each duplication for (a) byte-neutrality on target (does cross-jump re-merge to identical bytes?), (b) FAKE annotation quality, (c) whether the ref-lift lands on arg5-qty or on p101/p106. Measure at least the top candidate; document byte-diff via splice + adiff.py."
+  },
+  {
+   "hypothesis": "A permuter campaign targeting the ip/g3 base_score=40 chassis with PERM_LINESWAP + BLOCK-LOCAL PERM_GENERAL on the arg5-only chain (NOT touching t0), specifically searching for an arg5-qty ref lift with span<=5 or refs>=4 (per the s1 fable-blitz arithmetic), closes the residual v1/a0 register exchange in the g3 basin at masked=0.",
+   "mechanism": "The g3 basin is order-perfect (masked=6, residual is pure v1/a0 exchange). s5 g3-permuter (9040 iters, 0 novel) and s13 h5-multexpander-permuter (2999 iters, 0 novel) both used unrestricted random mutation \u2014 arg5-side-only directed search hasn't been tried on g3. csmd4-g3's arg5-qty is p100 2refs/span6=3333 vs t0-qty p113 6refs/span24=5000; the target is arg5 strict-win via block-local ref-refs shift on arg5 alone.",
+   "next_probe": "Permuter modality: on the g3-basin base (v0<<=2; arg5=*(s32*)(v0+tbl); t0<<=2; call(...,*(s32*)(t0+tbl_125c),arg5)), add PERM_LINESWAP over the arg5 statements + PERM_GENERAL alternatives for the arg5 dereference only. Do NOT touch the t0 chain. Base_score should stay at 40 (g3 chassis). Harvest with fresh-seed discipline; any find must re-verify via engine sandbox with splice."
   }
  ],
  "judge_constraints": [],
