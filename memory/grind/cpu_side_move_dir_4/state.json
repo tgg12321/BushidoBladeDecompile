@@ -1,8 +1,8 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 82,
- "current_modality": "synthesis",
+ "session_count": 83,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 0,
@@ -501,18 +501,24 @@
    "floor": 2,
    "modality": "synthesis",
    "headline": "s82 synthesis: 81-session ledger merged; frontier reset to F6-double-prime (dup-into-arms on the ONE untested co-live carrier p77 idx_1494, distinct from s20 D_800F19C0 wrong-signed and rejected/dup_t"
+  },
+  {
+   "session": 83,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "F20 poll-region symmetric idx_1495 comma-op subvariant KILLED via DCE-invisibility (masked=2, build_insns=160) - closes last un-measured p78-lift frontier"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F6-double-prime (retained, un-tested subvariant): SOTN duplicated-statement-into-arms on p77 (idx_1494 addr) \u2014 the ONE co-live-at-block=3-entry pseudo per s69 greg whose dup-into-arms variant is NOT in the rejected bank. s20 D_800F19C0 (+8 wrong-signed) and rejected/dup_tbl_125c_arms.c (p73/p79) exhaust the other two co-live targets; p77 is untested.",
-   "mechanism": "jump2 find_cross_jump merges byte-identical tails from the two do_timeout arrival arms (success:\u2192do_timeout: fallthrough + direct goto do_timeout:); a REAL statement referencing idx_1494 duplicated in BOTH arms lifts p77 refs +1 per arm (flow.c counts pre-merge) then merges back to net-zero emitted bytes. p77's carrier feeds the OPPOSITE side of the qty-compare tie (poll-region dispatch vs debug-window head-load) relative to D_800F19C0's carrier, so the ref-lift direction may be opposite-signed to s20's misdirection.",
-   "next_probe": "Structural-modality session: draft candidate with a byte-neutral REAL statement referencing idx_1494 in BOTH do_timeout arrival arms; measure sandbox --disable all; inspect build_insns (must stay 160 for merge success) and ALLOCDBG for isolated p77 refs++ (must not leak to p73/p79). AVOID semantic-lie shapes (*x - *x) and dead-branch shapes (if(*x==0){}); prefer a real store-to-globals form matching s20's D_800F19C0 recipe but for idx_1494. If byte-neutral AND direction-correct, promote to layer-2 cheat-reviewer with FAKE annotation."
+   "hypothesis": "F6-double-prime: SOTN duplicated-statement-into-arms on p77 (idx_1494 address) - the one co-live-at-block=3-entry pseudo not yet tested (s20 D_800F19C0 wrong-signed; rejected/dup_tbl_125c_arms.c covered p73/p79).",
+   "mechanism": "jump2 find_cross_jump merges byte-identical tails from success->do_timeout fallthrough + direct goto do_timeout: arms. A REAL statement referencing idx_1494 duplicated in BOTH arrival arms lifts p77 refs +1 per arm at flow-time (pre-merge count) then merges back to net-zero emitted bytes. Direction opposite to D_800F19C0's carrier per s69 greg extract - may resolve the qty tie the s20 misdirection couldn't.",
+   "next_probe": "Structural session: draft candidate placing byte-neutral REAL statement referencing idx_1494 (e.g. store-to-globals recipe mirroring s20's D_800F19C0 shape but for idx_1494) at TAIL of both do_timeout arrival arms; measure sandbox --disable all; inspect build_insns (must stay 160 for merge success) and ALLOCDBG for isolated p77 refs++ (must not leak to p73/p79). AVOID semantic-lie shapes (*x - *x) and dead-branch shapes; require FAKE annotation + prep for layer-2 cheat-reviewer under duplicated-statement-into-arms carve-out."
   },
   {
-   "hypothesis": "F20 (novel, last un-measured p78 lever): poll-region symmetric idx_1495-touching real-USE inside BOTH vblank if-arms (status&4 arm and status&2 arm). Untried across s5/s13/s14/s67/s68/s76/s77 (s77 arm-SWAP KILLED at masked=2215, but a symmetric ADD-to-both-arms is distinct).",
-   "mechanism": "Even without cross-jump merge (arm bodies are not tail-identical), a symmetric byte-position construct might credit refs on p78 at flow-time before local-alloc; if jump2 tolerates a \u00b10 emit delta despite the distinct fn-ptr calls, the p78 refs++ could offset s60/s61's demoted priority=138 \u2192 shift qty_compare's 4-cycle rotation without triggering full basin regression.",
-   "next_probe": "Structural probe: insert an identical byte-neutral idx_1495-dereferencing statement at HEAD of both arms (e.g. inside the fn-ptr call arg list); measure sandbox + build_insns. Expected KILLED per s78-pattern (+2-3 insns per arm), but this is the ONE un-measured p78-lift subvariant remaining in the ledger and closing it eliminates the last poll-region frontier."
+   "hypothesis": "ALLOCDBG-instrumented s-reg coupling hunt: measure whether any block-3-interior C-source lever de-couples the sll4@54 <-> addu5@55 pair-swap without falling out of h5 basin, by isolating a p106/p107 LAUNCH-signature perturbation via targeted greg + sched2 dumps on an untested structural mutation.",
+   "mechanism": "sched.c adjust_priority + birthing_insn_p LAUNCH governs the pair; s6-s7 CONFIRMED the mechanism is p106 (fresh SLL dest from expmed.c case alg_shift) LAUNCH-tied with p121 (arg5_addr) at pri 0x7f000001, LUID tiebreak wrong-direction. Levers (a) attacking 111 collapse to g3 basin; (c) LUID reorder is qty-coupled. Only lever (b) - making p107 multi-set at flow-time while p106 stays single-set - has any unexplored realization, and that realization needs ALLOCDBG-guided C shape hunting.",
+   "next_probe": "Forensics session: run cc1 with BB2_QTY_DEBUG/BB2_SCHED_DEBUG/BB2_ALLOC_DEBUG on a candidate variant that introduces a second SET of the arg5-addr pseudo (e.g. `s32 arg5_addr = v0 + (s32)tbl_125c; arg5_addr = arg5_addr;` or `arg5_addr = ...; if (0) arg5_addr = 0;`), verify p107 goes multi-set (loses LAUNCH), verify p106 stays single-set (keeps LAUNCH), measure sandbox. Novel: no prior session isolated the multi-set-p107-only lever with instrumentation."
   }
  ],
  "judge_constraints": [

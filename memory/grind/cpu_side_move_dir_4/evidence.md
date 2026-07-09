@@ -1348,3 +1348,13 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s82] Judge risk (F20): MODERATE-HIGH — `if(*idx_1495==0){}` falls in .claude/rules/dead-branch-scheduling.md territory; likely layer-2 FAIL.
 
 - [s82] Modality guidance for s83+: NOT rederive (13 sub-angles KILLED, tool-space saturated); NOT permuter (137k iters both chassis all regions); YES structural for F6-double-prime measurement; YES forensics for a companion F17-CALL-return corpus search (expected 0 hits).
+
+- [s83] h5 baseline candidate.c applied to src/system.c yields masked=2, target_insns=160, build_insns=160 (unchanged from ledger inheritance).
+
+- [s83] F20 comma-op probe (idx_1495 comma-op read prepended in BOTH vblank if-arms) measured masked=2, build_insns=160 - the 0-emit-delta subvariant is DCE-invisible to flow.c REG_N_REFS.
+
+- [s83] The +2/+3-insn-visible subvariant of F20 (observable stores/observable dead-computes) is a separate class, well-established KILLED via the s78-pattern (single-carrier refs-lift via observable dead form regresses local-alloc web away from h5 basin).
+
+- [s83] Combined DCE-invisible + observable-store closure: no byte-neutral p78-lift path remains in the poll-region symmetric-arm frontier; F20 is fully closed.
+
+- [s83] src/system.c reverted to exact h5 baseline candidate.c (masked=2 re-verified post-probe).

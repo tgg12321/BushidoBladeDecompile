@@ -1265,3 +1265,9 @@
 - probe: Ledger cross-read of block=2 CALL topology from s6/s7 dumps + task-brief digest. No forensics dump built this session (synthesis modality).
 - result: Only block=2 CALL is sys_VSync(-1). Its return value has no arithmetic relation to (u8*)tbl_125c + idx_1494[1]*4. F17 remains theoretically un-run but is downgraded to dead unless an operator-supplied structural rewrite fabricates the coincidence (e.g. sys_VSync-return-through-identity that equals arg5_addr).
 - verdict: KILLED
+
+## [s83] Symmetric byte-neutral idx_1495 dereference inserted via comma-op at HEAD of both vblank if-arms lifts p78 refs at flow-time before local-alloc counts, shifting qty priority to break the 4-cycle s-reg rotation.
+- mechanism: flow.c REG_N_REFS counted pre-local-alloc; comma-op discarded value could survive as a load RTL insn observable to flow counter even though DCE later removes it. If so, p78 refs+=2 offsets the s60/s61 demoted priority=138 tie at qty_compare.
+- probe: Applied h5 baseline candidate.c to src/system.c (confirmed masked=2), then edited both status&4 and status&2 if-arms to prepend a comma-op read of *idx_1495 to the fn-ptr call's first arg: `((...) D_800A11B8)((*idx_1495, *idx_1495), &D_800F19A8);` and `((...) D_800A11B4)((*idx_1495, *idx_1494), &D_800F19A0);`. Ran `& tools/wteng.ps1 main sandbox cpu_side_move_dir_4 --disable all`.
+- result: masked=2, target_insns=160, build_insns=160. INERT vs h5 baseline. The comma-op unused-value reads are eliminated by flow.c delete_noop_moves / DCE BEFORE the local-alloc REG_N_REFS counter runs, so p78's flow-time ref count is unchanged; the +2 fake refs never materialise. Same mechanism as s78's H2-extension finding for local scalar pointer carriers p73/p77/p78/p79.
+- verdict: KILLED
