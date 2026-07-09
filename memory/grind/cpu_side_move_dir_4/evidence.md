@@ -1514,3 +1514,15 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s93] Prior artifacts consulted: memory/grind/cpu_side_move_dir_4/candidate.c (h5 form), evidence.md, hypotheses.md ledger head, rejected/ bank (no POLL-region structural probes present - confirms this is novel un-swept axis).
 
 - [s93] src/system.c restored to HEAD after sweep (oracle-safe; candidate.c unchanged at h5).
+
+- [s94] s94 baseline: h5 candidate applied to src/system.c scores masked=2 (target_insns=160, build_insns=160) via sandbox cpu_side_move_dir_4 --disable all.
+
+- [s94] s94 permuter campaign tmp/grind/cpu_side_move_dir_4/s94/perm_poll: fresh workspace (copy of tmp/perm_csmd4 with h5 debug_printf block PERM_RANDOMIZE stripped and 5 PERM_GENERAL wrappers added on POLL-region expression sites - status test, two bit-mask tests, both idx_N deref forms). Structurally distinct chassis from s5's 9040-iter g3-basin, s13's 2999-iter h5-multexpander base, s14's 23427-iter directed h5+PERM_GENERAL on inline block, s86's 1375-iter vblank-poll-arm-annotated h5, and s67/s68's POLL LINESWAP over full statement blocks.
+
+- [s94] s94 harvest: base_score=60 (h5 basin, correct); 44479 iterations / 1333.7s; finds_new=0; finds_total=0; best_new_score=null; procs_killed=9; stopped=true. Log tail preserved at tmp/grind/cpu_side_move_dir_4/s94/campaign_tail.log shows iteration scores dropping to exactly 60 repeatedly (the h5 basin floor at permuter's weighted metric) but never below.
+
+- [s94] s94 finding: POLL-region expression-level permuter mutation is compilation-invariant to the block=3 pair-swap residual. The 5-site PERM_GENERAL cross-product explored ~20-30 candidate expression variants over 44479 iterations of composed mutation - no permutation of these expression forms shifts the file-level s-reg ref-balance in a way that closes the {sll4@54 <-> addu5@55} pair. This CONFIRMS s93's compilation-invariance claim at the permuter-mutation-neighborhood level, not just at hand-structural byte-neutrality.
+
+- [s94] s94 confirms fresh-seed permuter discipline: with the h5 basin now measured across 5 structurally-distinct permuter chassis (s5 g3-basin 9040 iters, s13 h5-multexpander 2999 iters, s14 h5-inlineblock-directed 23427 iters, s86 vblank-arm 1375 iters, s94 POLL-expression 44479 iters = ~81420 aggregate iterations) with 0 basin-closing novel finds, the h5 basin is definitively permuter-inert under random mutation. Any future permuter work on this function must attack via a structurally-different chassis that permutes across block=3 QTY priority arithmetic (F3 ALLOCDBG frontier) - which is a forensics modality, not permuter.
+
+- [s94] s94 src/system.c restored to HEAD (both-named arg4/arg5 array-index form, masked=7 baseline). candidate.c unchanged (h5 form remains masked-2 floor).

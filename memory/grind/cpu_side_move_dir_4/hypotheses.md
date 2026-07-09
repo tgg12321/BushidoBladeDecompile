@@ -1445,3 +1445,9 @@
 - probe: P9: `u8 saved = (*D_800A147C) & 3;` as a single block-local stmt
 - result: masked=2 build=160 INERT
 - verdict: KILLED
+
+## [s94] PERM_GENERAL on POLL-region expressions (status != 0 vs status; status & K vs (status & K) != 0 vs status & 0xK; *idx_N vs idx_N[0]) - a mutation neighborhood at the expression level, structurally distinct from prior POLL sweeps (s67 LINESWAP over 3 statement blocks, s68 whole-block LINESWAP+GENERAL) - would yield a novel find below the h5 basin at score 60
+- mechanism: Prior POLL structural sweep (s93 9-probe axis) closed at masked=2 INERT for byte-neutral variants; permuter's random cross-product over expression rewrites explores a mutation space that hand-structural sweeps do not - the compilation-invariance claim from s93 is that STRUCTURE is inert, and expression-level permuter mutations could in principle disturb the block=3 alloc web via file-level s-reg ref-balance shifts
+- probe: Fresh permuter workspace tmp/grind/cpu_side_move_dir_4/s94/perm_poll (copied from tmp/perm_csmd4 with h5 block PERM_RANDOMIZE stripped and PERM_GENERAL wrappers added on 5 POLL-region expression sites: status test, two (status & K) tests, and both idx_N deref forms). Launched via tools/permuter_campaign.py with --stop-on-zero -j 8. Ran 44479 iterations in 1333.7s (~22.2 min). base_score=60 (h5 basin, correct). Harvested with --stop.
+- result: 0 novel finds. 0 total finds. best_new_score=null. Iteration scores oscillated across the 60-2000 range with hits at exactly 60 (the h5 basin) but no drop below. Confirms fresh-seed permuter discipline: 20+min no-novel-find harvest is the KILLED data point.
+- verdict: KILLED
