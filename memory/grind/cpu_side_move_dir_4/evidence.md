@@ -942,3 +942,17 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s55] Judge constraint (BINDING per s40/s41/s46/s54) reaffirmed: do not resurface canonical-asm authorization; next session must shift modality within {SOTN carve-out (closed s47/s48; skip), ALLOCDBG s-reg coupling hunt, novel forensics/structural axis}.
 
 - [s55] H1 (sched2 LUID enumeration) is compiler-source forensics within the allowed frontier; H3 (LINE_NOTE condensation) is a structural probe never measured on csmd4; H2 (ALLOCDBG conflict-list-diff) is a direct realization of the task-brief frontier note (1).
+
+- [s56] s56 baseline: h5 candidate applied to src/system.c scores masked=2 (target=160, build=160) via `& tools/wteng.ps1 main sandbox cpu_side_move_dir_4 --disable all`.
+
+- [s56] s56 H3 single-line condensation of the 4 residual-window statements: masked=2 INERT, bytes identical to baseline. Rejected form saved at memory/grind/cpu_side_move_dir_4/rejected/line_note_condense_single_line.c.
+
+- [s56] s56 H3-inverse blank-line expansion of the same 4 statements: masked=2 INERT, bytes identical to baseline. Rejected form saved at memory/grind/cpu_side_move_dir_4/rejected/line_note_expand_blank_lines.c. Together the two probes bracket the physical-line-layout axis as fully masked from the residual pair-swap in production.
+
+- [s56] s56 mechanism KILL: Makefile:36 CC_FLAGS = '-O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w' — no -g. cc1 in production never emits NOTE_INSN_LINE. LINE_NOTE-based LUID-shift levers of ANY spelling are architecturally inapplicable to the production sched2 pass.
+
+- [s56] s56 corollary: any future frontier proposal predicated on 'shift LUID(X) by manipulating debug notes' is DOA on this build without a Makefile change (out of scope — no-compiler-divergence forbids toolchain edits including CC_FLAGS changes).
+
+- [s56] s56 modality note: hand-STRUCTURAL now closes another dimension. Combined with s3 (13 block-local axes closed), s4 (do-while(0) 4 scopes), s5 (block-scope carriers, named dispatch, whole/nested/call-only wraps + permuter fresh-seed), s9 (m2c + 4 marionation transplants), s11/s12 (5 arg5_addr two-SETs), s13 (fn-body hoist + g3 carrier + h5-chassis permuter), s14 (directed-PERM), and now s56 (physical-line/LINE_NOTE axis), the structural axis on csmd4's h5 base is fully swept modulo the two live forensics frontiers (H1 sched2 LUID neighbor-shift, H2 ALLOCDBG conflict-list diff on idx_1495 spellings).
+
+- [s56] s56 src/system.c restored to h5 candidate at session end; post-restore sandbox re-measures masked=2. candidate.c unchanged (h5 form remains masked-2 floor).

@@ -1,8 +1,8 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 55,
- "current_modality": "synthesis",
+ "session_count": 56,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 0,
@@ -339,23 +339,24 @@
    "floor": 2,
    "modality": "synthesis",
    "headline": "s55 synthesis: 54-session ledger merged; frontier reset to sched2-LUID-enum + LINE_NOTE(9)-condense + ALLOCDBG-conflict-diff on idx_1495 spellings"
+  },
+  {
+   "session": 56,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "H3 (LINE_NOTE condensation) KILLED both empirically (single-line + blank-line both INERT masked=2) and architecturally (production CC_FLAGS has no -g, so cc1 never emits NOTE_INSN_LINE \u2014 the LUID coun"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "H1: The sched2 post-reload LUID renumbering (s43-measured delta collapse from sched1's 4 to sched2's 1) admits a shift-by-1 lever via a C-source construct that alters the position of exactly one sched2-visible neighbor (insn 142 pushed 12 slots earlier by reload, or insn 116 pushed 6 slots later) without disturbing the h5 s-reg web or dropping to g3 basin.",
-   "mechanism": "sched.c::rank_for_schedule at sched2 sees insns 111/121 at plain priority 2 (not LAUNCH) with LUID delta 1 (per s43 log line 775). If a C-lever can move a single sched2-visible non-residual insn by exactly 1 LUID slot in the post-reload chain, the sched2 comparator could see 121 lose its LUID advantage without needing to flip sched1's decision. The lever must not collapse t0 to single-set (drops to g3) and must not add multi-set spellings to p107 (folded by combine.c per s11/s12).",
-   "next_probe": "s56 forensics: read tmp/grind/cpu_side_move_dir_4/s6/csmd4_only.log sched2 SCHEDDBG PICK events + READY-list at clock=10..15; enumerate insns at post-reload LUIDs 4..9 (adjacent to 111@6 and 121@7); for each, cross-check its RTL predecessor chain against ledger's KILLED family list; report the smallest (insn, C-source lever) pair that shifts one LUID slot without triggering a KILLED family, OR a null-result closure that no such pair exists in the sched2 numbering."
+   "hypothesis": "H1 (unchanged from s55): The sched2 post-reload LUID renumbering admits a shift-by-1 lever via a C-source construct that alters the position of exactly one sched2-visible neighbor without disturbing h5's s-reg web.",
+   "mechanism": "sched.c::rank_for_schedule at sched2 sees insns 111/121 at plain priority 2 (not LAUNCH) with LUID delta 1 (s43 log line 775). A one-slot shift on a non-residual neighbor could tip 121's LUID advantage without flipping sched1's decision.",
+   "next_probe": "s57 forensics: read tmp/grind/cpu_side_move_dir_4/s6/csmd4_only.log sched2 SCHEDDBG PICK events + READY-list at clock=10..15; enumerate insns at post-reload LUIDs 4..9; cross-check RTL predecessor chains vs KILLED family list; report smallest (insn, C-lever) pair that shifts one LUID slot, or null-result."
   },
   {
-   "hypothesis": "H3: A LINE_NOTE at sched1 LUID 9 (between insn 111@8 and insn 121@12, per s51) is emitted because the t0 chain and arg5 chain sit on separate physical source lines. Condensing `t0 *= 4; t0 = (u8*)tbl_125c + t0; v0 <<= 2; arg5 = *(s32*)(v0 + (s32)tbl_125c);` onto a single physical source line at cc1 -g suppresses the intra-block LINE_NOTE, shifting LUID(121) from 12 to 11 without altering emitted RTL insns; the reduced sched1 LUID delta (4->3) may compose with h5 basin preservation.",
-   "mechanism": "cc1 -g emits NOTE_INSN_LINE (via ggc/toplev line-note tracking) per source-line transition; sched.c LUID assignment increments for every insn including NOTE_INSN_LINE; per s51 LUID 9 = LINE_NOTE (not a real insn). Removing the LINE_NOTE via single-line C source (no line transition inside the residual window) leaves the emitted RTL identical (line-notes are debug-only) but changes only the LUID counter. This is orthogonal to every previously measured axis: NOT statement re-order (same order, one physical line), NOT expression-form change (identical C tokens), NOT stmt-count change (identical stmt count), NOT decl-order.",
-   "next_probe": "s56 structural: apply h5 candidate.c with the 4 residual-window statements on ONE physical source line (semicolons-only, no newlines); sandbox --disable all; if masked<2, layer-1 vet then instrumented cc1 dump (BB2_SCHED_DEBUG) to confirm LUID(121) shift; if masked>=2, dump sched1 SCHEDDBG PICK at clock=13 to identify what LUID actually landed and record the mechanism finding (LINE_NOTE dependency direction)."
-  },
-  {
-   "hypothesis": "H2: An ALLOCDBG conflict-list side-by-side diff on p78 (idx_1495) across two direct-symbol vs adjacency-index respellings (`idx_1495 = (u8*)&D_800A1495` vs `idx_1495 = &((u8*)&D_800A1494)[1]`) will reveal spelling-dependent conflict-list variation that sandbox-only measurement (s35 P1/P2/P3 = masked 3/4/3) could not distinguish from register-name reshuffles the masked metric normalizes out.",
-   "mechanism": "s42 CONFIRMED p78 conflict list = {72,73,75,77,78,79,80,81,86,101,120,126,2,3,4,5,6,7,29} at h5 baseline \u2014 zero overlap with block=3 QTY pseudos {100,106,107,113}. But s35 measured non-zero sandbox regression on 3 idx_1495 spellings, indicating p78's DYNAMIC live range changes with spelling even when its assigned s-reg does not. ALLOCDBG dumps global-alloc conflict-list construction BEFORE local-alloc runs; diff-ing conflict lists across spellings names the mechanism producing the +1/+2 sandbox delta (which currently has no named mechanism in ledger).",
-   "next_probe": "s56 forensics: rebuild gccdbg with BB2_ALLOC_DEBUG=1; capture cc1 dumps for h5 baseline + h5 with idx_1495 = (u8*)&D_800A1495 spelling + h5 with adjacency-index spelling; diff .greg conflict lists for p78 pairwise; correlate any conflict-list delta to the s35 measured sandbox delta (masked 3 vs 4); report whether the sandbox delta corresponds to (a) an alloc-web edge, (b) a reload-substitution artefact, or (c) a purely-cosmetic LUID reshuffle. This is the task-brief frontier note (1) realized as an ALLOCDBG diff rather than a sandbox sweep."
+   "hypothesis": "H2 (unchanged from s55): ALLOCDBG conflict-list side-by-side diff on p78 (idx_1495) across two respellings will reveal spelling-dependent conflict-list variation that masked-only measurement cannot see.",
+   "mechanism": "s42 confirmed p78 conflict list at h5 baseline; s35 measured non-zero sandbox regression on 3 idx_1495 spellings, indicating p78's dynamic live range changes with spelling. ALLOCDBG dumps global-alloc conflict-list construction; diff-ing names the mechanism producing the +1/+2 sandbox delta.",
+   "next_probe": "s57 forensics: rebuild gccdbg with BB2_ALLOC_DEBUG=1; capture cc1 dumps for h5 baseline + h5 with idx_1495=(u8*)&D_800A1495 + h5 with adjacency-index spelling; diff .greg conflict lists for p78 pairwise; correlate deltas to sandbox measurements."
   }
  ],
  "judge_constraints": [

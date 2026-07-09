@@ -971,3 +971,9 @@
 - probe: Deferred to s56+ ladder pass per synthesis-modality contract (no measurement this session).
 - result: Frontier reset written to synthesis artifact; drafted probes are specific mechanism targets, not broad axis searches.
 - verdict: CONFIRMED
+
+## [s56] H3: Condensing the 4 residual-window statements (t0*=4; t0=(u8*)tbl+t0; v0<<=2; arg5=*(v0+tbl)) onto ONE physical source line suppresses the LINE_NOTE at sched1 LUID 9 (between insn 111@8 and insn 121@12), shifting LUID(121) from 12 to 11 without altering emitted RTL insns.
+- mechanism: cc1 -g emits NOTE_INSN_LINE per source-line transition; sched.c LUID assignment increments for every insn including NOTE_INSN_LINE; per s51 LUID 9 = LINE_NOTE (not a real insn). Removing the LINE_NOTE via single-line C source should leave emitted RTL identical (line-notes are debug-only) but change only the LUID counter, reducing sched1 LUID delta 4->3.
+- probe: s56 probe A: applied h5 candidate + collapsed the 4 residual-window statements onto ONE physical source line (semicolons-only, no newlines). sandbox cpu_side_move_dir_4 --disable all. s56 probe B (bracketing / opposite direction): re-expanded to 4 lines with blank lines between each to maximize any line-note emission. sandbox again.
+- result: Probe A: masked=2, target_insns=160, build_insns=160, bytes identical to baseline. Probe B: masked=2, bytes identical. Both directions INERT vs h5 baseline. Makefile inspection (line 36): CC_FLAGS = -O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w — NO -g flag in production. cc1 emits no NOTE_INSN_LINE in production; the LUID counter physically cannot be shifted by C-source physical-line manipulation. s51's LUID=9 LINE_NOTE observation must have been from an instrumented -da dump only.
+- verdict: KILLED
