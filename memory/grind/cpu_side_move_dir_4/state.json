@@ -1,8 +1,8 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 45,
- "current_modality": "rederive",
+ "session_count": 46,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 0,
@@ -279,18 +279,24 @@
    "floor": 2,
    "modality": "rederive",
    "headline": "s45 rederive: cross-project SOTN scan + Kengo whole-dump body inventory KILLED \u2014 extends rederive closure to 10 sub-angles; no external-repo analog exists for BB2's 5-arg variadic tbl-indexed dispatch"
+  },
+  {
+   "session": 46,
+   "floor": 2,
+   "modality": "synthesis",
+   "headline": "s46 synthesis: 45-session frontier merged; primary axis reset to F2 (SOTN-family FAKE-annotated named-local targeting p107 sched2 birthing_insn_p reload renumbering, mirroring s33 saEft01Init mechanis"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F1 (unchanged from s43): C-source-addable WAR/WAW antidep on p101 lifts sched2 pri(insn 111) without perturbing multi-set launch-suppression.",
-   "mechanism": "sched.c::insn_priority walks INSN_DEPEND successors; a WAR (write-after-read) dep-edge to insn 111 from a later C-source expression that reads p101 could raise pri(111) without adding a new C-visible use of p106.",
-   "next_probe": "Structural modality session: read tools/gcc-2.7.2/sched.c::sched_analyze_insn dep-edge insertion rules; enumerate C constructs that read t0 after the shift but before the call arg marshaling."
+   "hypothesis": "F2 (primary, judge-preferred): a FAKE-annotated named-local (SOTN archetype s32 zero=0 or s16 three=3) declared at fn body top (src/system.c:388-ish) shifts local-alloc.c qty birth-luid at flow-time such that reload renumbers block=3 SET-dests (p107 or p106) into fn-scope multi-set hard-regs, killing birthing_insn_p at sched2 for the residual pair and flipping the LUID tiebreak on the h5 chassis.",
+   "mechanism": "sched.c::birthing_insn_p returns TRUE only when SET-dest reg_n_sets==1; s33 measured saEft01Init sched2 zero-LAUNCH because reload renumbered fresh block=3 dests into hard-regs already multi-set elsewhere fn-scope (v0 re-used by 2 sys_VSync retries + D_800F19BC writes). csmd4's fn-scope write topology has single-set-per-global; a FAKE-annotated named-local sanctioned by named-local-fake-exception.md creates a legitimate fn-scope multi-set candidate WITHOUT triggering layer-1 auto-fail. The sanctioned SOTN archetype (constant-holder or dead scalar) fits the codified sanctioned mechanism class.",
+   "next_probe": "Structural modality s47: (1) Draft C1 (s32 zero=0; /* FAKE: ... */) at src/system.c:388. (2) Invoke layer-1 cheat-reviewer on draft with brief citing named-local-fake-exception.md prerequisites and the s33 reload-renumbering mechanism. (3) If PASS, apply candidate + h5 chassis to src/system.c, run sandbox cpu_side_move_dir_4 --disable all. (4) If masked <=1, invoke layer-2 fresh cheat-reviewer subagent. (5) Iterate C2 (s16 three=3), then C3 (mini-sweep u8/s16/s32/void*). (6) ALLOCDBG-instrument the best-scoring variant to verify the s33 mechanism actually materializes (or diagnose why not)."
   },
   {
-   "hypothesis": "F2 (unchanged from s43): SOTN-family carve-out with FAKE-annotated named-local-fake-exception exclusively targeting p107's sched1 LAUNCH suppression.",
-   "mechanism": "Only surviving mechanism-hit for h5 basin is 'kill 121 sched1 LAUNCH keep 111 sched1 LAUNCH'; FAKE-annotated named-local-fake-exception family has never been probed on csmd4.",
-   "next_probe": "Structural modality per judge constraint. Read .claude/rules/named-local-fake-exception.md + pointer-alias-fake-exception.md; draft ONE FAKE-annotated named-local candidate; probe via cheat-reviewer BEFORE sandbox."
+   "hypothesis": "F1 (secondary): a legitimate downstream C-source expression that reads p101 (t0 post-shift value) after the debug_printf window, if any exists in the target asm arms, adds a WAR dep-edge to insn 111 without perturbing multi-set launch-suppression on 116, raising sched2 pri(111) above pri(121) and flipping the LUID tiebreak.",
+   "mechanism": "sched.c::insn_priority walks INSN_DEPEND successors; a WAR (write-after-read) dep-edge to insn 111 from a later C-source expression that reads p101 could raise pri(111) without adding a new C-visible use of p106. To not perturb multi-set launch-suppression on 116, the read must not change reg_n_sets(p101). The read must have semantic purpose per no-new-park-categories cheats-by-any-spelling \u2014 i.e., the target asm already computes it under a distinct spelling.",
+   "next_probe": "Structural modality s48 (contingent on s47 KILLED): (1) Re-audit asm/funcs/cpu_side_move_dir_4.s L80080ED4-L800810004 arms with a NEW lens: not for downstream reads of tbl_125c[idx_1494[1]] (s38 already ruled out), but for downstream reads of ANY (u8*)tbl_125c + (t0<<2)-shape address that could be legitimately spelled to reference the post-shift t0 value. (2) If found, draft honest use in the corresponding C arm; if not found, KILL F1 with the arms-audit as the finality proof."
   }
  ],
  "judge_constraints": [

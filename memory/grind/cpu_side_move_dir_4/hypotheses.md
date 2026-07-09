@@ -809,3 +809,21 @@
 - probe: grep -rlnE '\bdebug_printf\s*\(' + grep -rlE '\w+\[\w+\[[01]\]\]' across ../sotn-decomp/src/**/*.c (1494 files).
 - result: Zero debug_printf references (SOTN uses OSReport/FntPrint/sprintf families). Tbl-indexed dispatch pattern present at 8+ sites but none is 5-arg variadic + adjacent-byte-index shape. Konami PsyQ variant + distinct macro surface further block transplant.
 - verdict: KILLED
+
+## [s46] Synthesis modality merge produces a novel merged attack for s47+ by reordering the two live frontier notes (F2 primary, F1 secondary) and codifying the prerequisite audit for the judge-preferred SOTN-family carve-out axis.
+- mechanism: Read entire 45-session ledger (evidence.md 813 lines, hypotheses.md 811 lines). Cross-check judge constraint (BINDING per s40/s41 ledger) against the two live frontier notes (F1 WAR/WAW dep-edge, F2 FAKE-annotated named-local). Judge explicitly lists F2's axis first ('SOTN-family carve-out application under codified prerequisites + FAKE annotation + layer-2 cheat-reviewer'); F1 competes against s38 post-window arm audit finding zero downstream reads of p101-post-shift, weakening its precondition. Named-local-fake-exception rule (2026-07-01, .claude/rules/named-local-fake-exception.md) codifies a NAMED GCC-pass interaction sanctioned prerequisite that fits the s33 reload-renumbering mechanism observed on saEft01Init (sched2 zero LAUNCH after reload substitutes fresh block=3 dests into fn-scope multi-set hard-regs), which csmd4 has NEVER been probed against with FAKE annotation.
+- probe: Ledger cross-read + rule-file cross-read; no measurement.
+- result: Frontier reset: F2 promoted primary with 3 concrete SOTN-archetype-mirror candidate drafts specified (C1: s32 zero=0 archetype; C2: s16 three=3 archetype; C3: ALLOCDBG-instrumented scalar-type mini-sweep); F1 demoted secondary contingent on s38 arm-audit re-check for missed post-shift semantic use. Synthesis artifact at tmp/grind/cpu_side_move_dir_4/s46/synthesis.md documents merged attack, prerequisite audit, layer-1/2 cheat-reviewer risk analysis, and execution order for s47+.
+- verdict: CONFIRMED
+
+## [s46] Every rederive-modality angle enumerable from the ledger is measurement-closed; no external-corpus lookup or in-repo transplant should be scheduled at this chassis.
+- mechanism: s45 extended the rederive census to 10 sub-angles across m2c (s8), marionation transplant P1-P4 (s9), decomp.me shingle (s17), Kengo cpu_side_move_dir stub (s18), decomp.me residual + BB2 in-repo residual (s26), saEft01Init decl-transfer (s27), idx_1495 respellings (s35), Kengo numata + BB2 5-arg debug_printf template (s36), decomp.me BB2-toolchain corpus (s44), cross-project SOTN scan + Kengo whole-dump body inventory (s45). All 10 KILLED at measurement threshold >=0.10 similarity or shape-match by structural audit.
+- probe: Ledger cross-read only.
+- result: Rederive-modality is fully closed at chassis; the operator supplying a third-party PS1 decomp with GCC 2.7.2 provenance and byte-matched 5-arg variadic tbl-dispatch shape is the only theoretical remaining input, and no such class of input has been observed in 45 sessions.
+- verdict: CONFIRMED
+
+## [s46] Permuter-modality campaigns at h5 chassis produce zero novel finds below weighted-40 across ≈62,545 iterations spanning every reorderable scope (prologue, block, block+CALL, wider AST), so future permuter modality on this function without a NEW chassis is redundant.
+- mechanism: Union of s22 (LINESWAP 7!=5040 block AST), s23 (LINESWAP_TEXT 20429 block+CALL text neighborhood), s31 (LINESWAP 5!=120 prologue), s32 (PERM_GENERAL 35338 block AST expression-level), s40 (PERM_GENERAL 1738 block+flanking-CALLs wider AST). All launched from base_score=60 h5 chassis (confirmed guardrail). Combined coverage exhausts h5-preserving permuter neighborhood.
+- probe: Ledger cross-read only.
+- result: Permuter-modality closed at h5 chassis; s47+ permuter runs must launch from a DIFFERENT chassis (e.g. FAKE-annotated named-local variant emerging from F2) or the campaign duplicates prior 0-find measurements.
+- verdict: CONFIRMED
