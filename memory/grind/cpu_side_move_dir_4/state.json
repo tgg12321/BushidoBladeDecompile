@@ -1,7 +1,7 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 92,
+ "session_count": 93,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -561,18 +561,29 @@
    "floor": 2,
    "modality": "structural",
    "headline": "s92 structural: F1-refined (inter-block idx_1494/idx_1495 re-shape) and F2-refined (loop-top game-state observable) BOTH KILLED by target-asm-audit + byte-count invariance; baseline candidate re-confi"
+  },
+  {
+   "session": 93,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "s93 structural: 9-probe POLL-region axis sweep on h5 basin - 7/9 INERT at masked=2, 2 KILLED locally (arm-swap +5, saved-hoist-19/158); POLL structural axis compilation-invariant to block=3 residual"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F3 (carry-over from s91): conflict-graph enumeration via ALLOCDBG on both h5 candidate and one +13 basin variant identifies the atomic allocno_conflicts edge whose flip drives the ord=[12..15] 4-cycle rotation {p72<->p79, p73<->p78}, seeding a targeted structural probe on the specific file-scope s-reg seat coupling.",
-   "mechanism": "s42 established zero live-range overlap p77/p78 with block=3 QTY pseudos p100/p106/p107/p113 but did NOT enumerate the full allocno_conflicts adjacency between block=3 QTY pseudos and file-scope s-reg web (s2..s9 hardreg seats). The 4-cycle rotation implies a shared conflict-edge set; naming it names the coupling any C-side lever must dislodge.",
-   "next_probe": "Forensics session: cc1 dump BB2_ALLOC_DEBUG=1 on h5 candidate AND one +13 basin variant (e.g. s8 honest_idx_1495 or s85 loop-top-idx_1495); grep global.c allocno_conflicts for edges involving {p72,p73,p78,p79} \u00d7 {s2..s9 hardregs}; diff to identify the atomic edge(s) that flip. Report the specific edge set and mechanism (interval overlap vs conflict inheritance)."
+   "hypothesis": "F3 (carry-over from s91): ALLOCDBG-instrumented enumeration of block=3 QTY-pseudo <-> file-scope s-reg conflict-graph edges names the atomic conflict driving the {p72<->p79, p73<->p78} 4-cycle rotation",
+   "mechanism": "s42 established zero live-range overlap p77/p78 vs block=3 QTY pseudos p100/p106/p107/p113 but did NOT enumerate allocno_conflicts adjacency between block=3 QTYs and the s2..s9 hardreg web. The 4-cycle rotation implies a shared conflict-edge set.",
+   "next_probe": "Forensics session (NOT this modality): cc1 dump BB2_ALLOC_DEBUG=1 on h5 vs +13 basin variant; grep global.c allocno_conflicts for edges involving {p72,p73,p78,p79} x {s2..s9 hardregs}; diff to identify the atomic edge(s) that flip. Report the specific edge set + mechanism (interval overlap vs conflict inheritance)."
   },
   {
-   "hypothesis": "SOTN-family carve-out application on non-block=3 span: apply [[duplicated-statement-into-arms]] (2026-07-01 sanction) to a REAL statement in the POLL region (not block=3) with `/* FAKE */` annotation + full prerequisites (byte-neutrality verified + lever-exhaustion documented + layer-2 cheat-reviewer). Un-tested target: the poll-region if-arm bodies invoking D_800A11B4/D_800A11B8 callbacks with distinct idx uses \u2014 duplicating a common tail into both callback arms could re-partition p77/p78 refs at global-RA priority level.",
-   "mechanism": "s20 measured duplicated-statement-into-arms on block=3 arms; s84 measured on idx_1494+1 into arms; both KILLED. UN-TESTED: duplication INSIDE the poll region across the two independent status&2 vs status&4 callback dispatches \u2014 different alloc-web scope than block=3 (poll is under sys_GetVblankCount conditional, block=3 is under do_timeout branch).",
-   "next_probe": "Structural session: introduce a byte-neutral duplicated stmt (e.g. `saved = (*D_800A147C) & 3;` re-refreshed inside each callback arm) with FAKE annotation citing duplicated-statement-into-arms 2026-07-01 sanction; measure sandbox masked; if byte-neutral and non-regressing, invoke layer-2 cheat-reviewer per review-discipline-before-commit; if reviewer PASS, evaluate p77/p78 ref-count delta via cc1 -da .greg dump."
+   "hypothesis": "SOTN-family carve-out: duplicated-statement-into-arms (2026-07-01 sanction) applied to a REAL statement in the POLL region with /* FAKE */ annotation + full prerequisites",
+   "mechanism": "s84 KILLED duplicated-statement on block=3 arms; POLL-region duplication into the two callback dispatch arms (status&4 vs status&2) has NEVER been measured. Different alloc-web scope than block=3.",
+   "next_probe": "Structural session: introduce a byte-neutral duplicated stmt into both POLL callback arms with FAKE annotation citing duplicated-statement-into-arms 2026-07-01 sanction; measure sandbox masked; if byte-neutral, invoke layer-2 cheat-reviewer per review-discipline-before-commit."
+  },
+  {
+   "hypothesis": "The candidate itself sits in a shape where the ONLY remaining lever is a block=3 QTY pri arithmetic dial - all POLL-region axes (structural/type/scope/wrap) confirmed compilation-invariant at this basin, and all block=3 hand-structural axes closed by s2/s3 twin transfer + s84/s85/s92 rejections",
+   "mechanism": "s93 closes the last plausibly-orthogonal C-side axis (POLL region) as inert. Combined with prior closures (block=3 structural, permuter fresh-seed campaign on h5, m2c substring scan, wraps on block=3, dup-into-arms on block=3), the exchange must resolve via either (a) ALLOCDBG-informed non-carrier C-side lever, or (b) SOTN-family carve-out per Judge constraint.",
+   "next_probe": "Alternate modality: ALLOCDBG forensics session per F3 above, OR permuter/rederive with SOTN-family targeted probe per frontier item 2."
   }
  ],
  "judge_constraints": [

@@ -1391,3 +1391,57 @@
 - probe: Applied memory/grind/cpu_side_move_dir_4/candidate.c to src/system.c cpu_side_move_dir_4 body; ran `tools/wteng.ps1 main sandbox cpu_side_move_dir_4 --disable all`.
 - result: score=2, target_insns=160, build_insns=160, rules_dropped=5, cheat_asm_stripped=22. Chassis integrity confirmed; the 91-session mechanism map remains valid on current tree.
 - verdict: CONFIRMED
+
+## [s93] POLL region status-arm order (status&4 before status&2) is a load-bearing byte-match ordering, not compiler-arbitrary
+- mechanism: Swapping the two if-arms produces a strictly-source-ordered emission - GCC preserves C statement order on independent status& tests (no cross-jump merge / no reorder). Confirms the current arm order matches target.
+- probe: P1: swap `if (status & 4) {...}` with `if (status & 2) {...}` in the POLL body; re-measure sandbox --disable all
+- result: masked=7 (build=160) - regression of +5 vs baseline masked=2
+- verdict: CONFIRMED
+
+## [s93] POLL region status type-width narrowing (s32->u32) affects codegen at RTL
+- mechanism: Would test whether the status pseudo's mode reaches into RA priority arithmetic or scheduler LUID assignment
+- probe: P2: change fn-scope `s32 status;` to `u32 status;`; re-measure
+- result: masked=2 build=160 INERT - status width is compilation-invariant at this basin
+- verdict: KILLED
+
+## [s93] POLL region status decl-scope (fn-scope vs block-local inside the vblank-if) affects codegen
+- mechanism: Would test whether local-alloc.c allocno scope-classification treats block-scope pseudos differently from fn-scope ones for POLL region's local status
+- probe: P3: remove fn-scope `s32 status;`, inject `s32 status;` as first stmt inside `if (sys_GetVblankCount()!=0)` block
+- result: masked=2 build=160 INERT - status scope-class is compilation-invariant
+- verdict: KILLED
+
+## [s93] Hoisting `saved = (*D_800A147C) & 3;` OUT of the vblank-if is semantically equivalent (writeback still gated)
+- mechanism: The read of D_800A147C moves outside the sys_GetVblankCount guard; would change one observable global read but not the visible write behavior
+- probe: P4: move `saved = (*D_800A147C) & 3;` above the `if (sys_GetVblankCount())` guard
+- result: masked=19 build=158 (2 fewer insns) - net semantic change and heavy regression
+- verdict: KILLED
+
+## [s93] do-while(0) wrap around the whole POLL region body emits LOOP_BEG/LOOP_END NOTEs that propagate cross-block to the do_timeout block=3 alloc web
+- mechanism: Per marionation vT35/36/42/43 evidence + do-while-zero-exception.md, LOOP_BEG NOTE is a sched barrier that re-times insn placement. Un-measured for csmd4 POLL region (block=3 wraps closed s48/s85; POLL-region wraps never attempted per notes.md:128).
+- probe: P5: wrap the POLL body (`saved=...; poll: ...; *D_800A147C=saved;`) in `do { ... } while(0);` inside the vblank-if
+- result: masked=2 build=160 INERT - LOOP_BEG/END emission from POLL region does NOT reach the block=3 alloc web
+- verdict: KILLED
+
+## [s93] POLL region local variable declaration ORDER (`u8 saved` vs `s32 status`) affects RTL pseudo birth order for the POLL region web
+- mechanism: flow.c pseudo assignment follows RTL first-use; but user_reg_class + tree pseudo numbering could differ. Would surface if any allocno tie is decided by pseudo id.
+- probe: P6: swap `u8 saved;` and `s32 status;` fn-scope decl order
+- result: masked=2 build=160 INERT - decl order compilation-invariant
+- verdict: KILLED
+
+## [s93] Type-narrowing `saved` from u8 to u32 changes lbu->lw emission or eliminates zero-extend
+- mechanism: Would remove the andi/lbu low-byte behavior; POLL region local storage size
+- probe: P7: change `u8 saved;` to `u32 saved;` (with the existing `& 3` mask keeping semantics)
+- result: masked=2 build=160 INERT - saved storage width compilation-invariant (mask + writeback dominates)
+- verdict: KILLED
+
+## [s93] Block-local declaration of `u8 saved` inside vblank-if changes RA scope
+- mechanism: Same as P3 for status - test scope class independence for saved
+- probe: P8: remove fn-scope `u8 saved;`, inject `u8 saved;` inside vblank-if body
+- result: masked=2 build=160 INERT
+- verdict: KILLED
+
+## [s93] Coalesced declaration-initialization of saved (`u8 saved = (*D_800A147C) & 3;`) inside vblank-if changes GCC tree/RTL
+- mechanism: Coalescing decl+init may skip a separate SET INSN emission at expand
+- probe: P9: `u8 saved = (*D_800A147C) & 3;` as a single block-local stmt
+- result: masked=2 build=160 INERT
+- verdict: KILLED

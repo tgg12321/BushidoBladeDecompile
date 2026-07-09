@@ -1498,3 +1498,19 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s92] The residual pair {sll@57 <-> addu@58} theorem-locked in the staged-value-reused-variable family (per resume banner) is unaffected by structural-modality F1/F2 axes: F1 targets p78 refs, F2 targets loop-top alloc-web perturbation, but the residual is at LUID 8 vs 12 in block=3 interior (per s51 forensics) and depends on the p106/p107/p113 QTY relationships (per s6/s24/s25 forensics). Structural-modality axes at F1/F2 scope cannot dislodge a block=3-interior LUID tiebreak.
 
 - [s92] No src/ regressions this session: candidate.c applied to src/system.c and left as-is at floor=2; no rejected/ additions (both F1/F2 kills are asm-audit closures, not source-form measurements).
+
+- [s93] s93 baseline confirmed: h5 candidate applied to src/system.c scores masked=2, target_insns=160, build_insns=160 via sandbox cpu_side_move_dir_4 --disable all.
+
+- [s93] s93 POLL-region structural axis 9-probe sweep result: 7 of 9 mutations INERT at masked=2 (P2 status u32, P3 status blocklocal, P5 do-while(0) poll-body wrap, P6 saved/status decl order, P7 saved u32, P8 saved blocklocal, P9 coalesced saved decl+init).
+
+- [s93] s93 P1 (swap `if (status & 4)` <-> `if (status & 2)` arm order in POLL body) regresses to masked=7 (build_insns=160) - PROVES current arm order is target's C-source order, not a compiler-reorder emerging from either sequence.
+
+- [s93] s93 P4 (hoist `saved = (*D_800A147C) & 3;` OUT of vblank-if guard) regresses to masked=19 (build_insns=158, 2 fewer than baseline) - not byte-neutral semantically; observable global read moves and codegen shrinks.
+
+- [s93] s93 NOVEL: do-while(0) wrap on POLL region (P5) is compilation-invariant to the block=3 residual - the LOOP_BEG/LOOP_END NOTEs from a poll-region wrap do NOT cross-block-propagate to the do_timeout block=3 alloc web. Closes the wrap-family axis on POLL as a lever to block=3 (block=3 wraps already closed s48/s85; POLL wraps now equally closed).
+
+- [s93] s93 STRUCTURAL AXIS SUMMARY: POLL region structural mutations either (a) regress POLL region locally (arm swap, saved hoist) or (b) are fully absorbed by expand/CSE/local-alloc without any cross-block effect on the block=3 {sll4@54 <-> addu5@55} residual pair. This closes the frontier hypothesis 'POLL region structural axis is a lever for the block=3 residual'.
+
+- [s93] Prior artifacts consulted: memory/grind/cpu_side_move_dir_4/candidate.c (h5 form), evidence.md, hypotheses.md ledger head, rejected/ bank (no POLL-region structural probes present - confirms this is novel un-swept axis).
+
+- [s93] src/system.c restored to HEAD after sweep (oracle-safe; candidate.c unchanged at h5).
