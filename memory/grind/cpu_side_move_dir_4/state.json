@@ -1,7 +1,7 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 38,
+ "session_count": 39,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -237,13 +237,19 @@
    "floor": 2,
    "modality": "structural",
    "headline": "s38 structural: Frontier #1 KILLED by asm audit (no downstream site computes tbl_125c[idx_1494[1]]); Frontier #2 axis (a) decl-swap KILLED (+5, +1 insn) and axis (b) named-carrier at callback KILLED ("
+  },
+  {
+   "session": 39,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "s39 structural: three novel arg5-chain respellings KILLED (array-index / direct-symbol / v0-triple-set-carrier); h5 chassis basin non-composable at every measured C-source axis"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Cross-symbol idx_1495 lie at src/system.c:406 retirement is blocked by a +13 s-reg web coupling (s8 finding). Combined with s38 P1 result (+5 for idx_1495 seed at lbu + decl swap), all direct honest-respelling paths for idx_1495 are measurably regressive. The only surviving retirement axis is: keep the cross-symbol spelling as-is (accepting the semantic-lie policy debt) OR find a distinct h5-basin C form that tolerates the honest respelling. The task brief lists 'ruling-request session on canonical-asm authorization for the twin family' as the closure of Frontier #2 axis (b).",
-   "mechanism": "If BOTH structural axes (a) and (b) of Frontier #2 are KILLED (they now are: axis (a) at +5 s38 P1, axis (b) at +0 INERT s38 P3), and rederive is 8-way KILLED (s8-s36), and forensics is compiler-source-triple-KILLED (s15/s16/s24), then the C-search surface is closed at every enumerable axis. The residual pair-swap {sll4@54 <-> addu5@55} at sched2 clock=13 is a LUID-invariant coupled to basin membership; no C-source lever changes the basin without falling into g3.",
-   "next_probe": "Ruling-request session: precise question to owner is whether the twin family (cpu_side_move_dir_4 / marionation_Exec \u2014 sharing the exchange residual per marionation 6f cross-check, notes.md L131) qualifies for canonical-asm authorization on the pair {sll v0 / addu v0 / sll a0} at the debug_printf window, given (a) 38 sessions have measurement-closed every C-source axis, (b) the residual is a mechanically-explained rank_for_schedule LUID tiebreak, (c) both twins share the exchange arithmetic, and (d) the honest-respelling of idx_1495 remains blocked by +13 s-reg coupling (s8) so cross-symbol semantic-lie retirement is also blocked."
+   "hypothesis": "Ruling-request session on canonical-asm authorization for the twin family (cpu_side_move_dir_4 / marionation_Exec) is the only remaining path after 39 sessions of measurement-closed C-search space.",
+   "mechanism": "s37 CONFIRMED: the h5 basin LUID tiebreak at sched2 clock=13 is the sole surviving mechanism; three theoretical lever directions (a) 111 loses LAUNCH \u2014 closed via expmed.c:2244 case alg_shift NULL_RTX (s7), (b) 121 loses LAUNCH \u2014 closed via 5+ arg5_addr forms (s11/s12) plus s39 P3 v0-scope multi-set, (c) LUID reorder \u2014 closed via s6 basin non-composability. The residual pair-swap {sll4@54 <-> addu5@55} at sched2 clock=13 is a LUID-invariant coupled to basin membership; no C-source lever changes the basin without falling into g3.",
+   "next_probe": "Emit ruling-request outcome with precise question to owner: does the twin family (csmd4/marionation_Exec, sharing the exchange residual per marionation 6f cross-check) qualify for canonical-asm authorization on the pair {sll v0 / addu v0 / sll a0} at the debug_printf window, given (a) 39 sessions have measurement-closed every C-source axis including the newly-added v0-scope multi-set lever, (b) the residual is a mechanically-explained rank_for_schedule LUID tiebreak, (c) both twins share the exchange arithmetic, (d) the honest-respelling of idx_1495 remains blocked by +13 s-reg coupling (s8), and (e) all novel structural axes measured this session (array-index, direct-symbol, v0-triple-set) either INERT-fold or regress."
   }
  ],
  "judge_constraints": [],

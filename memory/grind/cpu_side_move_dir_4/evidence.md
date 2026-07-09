@@ -712,3 +712,13 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s38] s38 rejected forms saved: memory/grind/cpu_side_move_dir_4/rejected/s38_idx1495_seed_plus_decl_swap.c (P1 diff), s38_idx1495_seed_plus_mode_carrier.c (P3 diff).
 
 - [s38] s38 h5 candidate remains masked-2 floor unchanged; src/system.c restored to HEAD (both-named form, masked=7 baseline) at session end via `git checkout HEAD -- src/system.c`.
+
+- [s39] h5 chassis baseline reconfirmed at masked=2, target_insns=160, build_insns=160 with candidate.c applied.
+
+- [s39] Novel expand-normalization data point: `tbl_125c[v0]` array-syntax and `v0<<=2; *(s32*)(v0+(s32)tbl_125c)` explicit-shift form produce byte-identical RTL/asm on h5 chassis; the array-syntax path does NOT birth a distinct fresh single-set pseudo on the arg5 side. Prior ledger did not enumerate this equivalence.
+
+- [s39] Direct-symbol respelling `(s32)&D_800A125C + v0` in the arg5 addressing costs +1 physical insn (fresh lui/addiu materialisation) and +14 masked regression — confirms cse.c equiv_constant does NOT fold the reference-site symbol back to the fn-scope `tbl_125c` pseudo when the pseudo is not already in the arg5 chain (contrast with t0 side where tbl_125c pseudo participates).
+
+- [s39] Triple-set v0 carrier (v0=lbu; v0<<=2; v0+=tbl) regresses +13 (masked=15) — extends the s11/s12 arg5_addr multi-set KILL family onto the v0 pseudo itself; the lever direction '121 loses LAUNCH via multi-set carrier' is measurement-closed at every enumerated C-spelling now including v0-scope.
+
+- [s39] All three P1/P2/P3 probes are structural-modality (block-local statement re-association / respelling) and clear layer-1 cheat-vetting: no register pins, no volatile coercion, no dead stores, no hardcoded-$N asm.
