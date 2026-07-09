@@ -1198,3 +1198,17 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s72] s72 orthogonality argument: m2c's outer-flow if/else-flattening on saEft01Init (single fused if condition using comma-operator on the D_800F19BC increment) is a control-flow reconstruction axis fully upstream of the block=3 debug_printf residual. The mult-expander LAUNCH mechanism (s7 CONFIRMED: expmed.c case alg_shift NULL_RTX target) lives INSIDE block=3 and is invariant to the outer control-flow C structure — s29/s30 empirically measured (success-label removal INERT, do_timeout-label removal INERT; while(1)/for(;;) outer refactor regresses to masked=52). The comma-operator reconstruction adds a novel C-source idiom but is not a lever for the residual — comma-operator was measurably KILLED by s24 forensics via expr.c COMPOUND_EXPR walkthrough.
 
 - [s72] s72 sub-angle exhaustion: the three enumerated m2c corpora (csmd4 asm, marionation asm, saEft01Init asm) are the ONLY BB2 asm files known to contain a 5-arg debug_printf(&D_800161C8, ...) tbl-indexed dispatch (per s26 in-repo scan surfacing exactly these three); no additional in-repo asm exists to m2c for a novel BB2 twin. The m2c-shape space is saturated: three functions, three m2c calls, one invariant shape.
+
+- [s73] s73 synthesis pass: no src edit, no sandbox measurement (synthesis modality contract); h5 candidate remains the masked-2 floor baseline unchanged from s72.
+
+- [s73] Ledger cross-read confirms: 84 rejected forms banked; ~170 hypothesis blocks with terminal verdicts; every enumerable first-order structural / permuter / rederive / forensics lever mapped to a compiler-source wall (expmed.c:2244 case alg_shift, combine.c addsi3_internal, sched.c LUID counter without -g, integrate.c:96 varargs refusal) or an empirical regression basin (+7 g3, +8 P3, +13 REG_EQUIV rotation, +14 inline-all, +14 F3 compound, +20 P4 marionation, +27 opaque-carrier).
+
+- [s73] Post-s64 frontier (F1 g3-arg5-only permuter + F2 poll lineswap + F3 closure-by-construction) fully consumed: s67 KILLED F1 (24 iters / 0 novel), s67 KILLED F2 (6 iters / 0 novel), s64 F3 CONFIRMED. Follow-on s65-s72 KILLED all 8 novel probes: t0-two-add-pair (+13), v0-in-place-PLUS (+13), fresh-t0_addr (+7), F3-compound-dual-collapse (+14), F7 whole-block LINESWAP+GENERAL (480 iters / 0 novel), F5 ALLOCDBG residual-lever (4-cycle rotation atomic), F10 prologue-LUID-offset (block=3 identical), F11 window-slice decomp.me shingle (top sim 0.133 unrelated).
+
+- [s73] s72 rederive KILLED (third-twin saEft01Init m2c reconstructs the same score-14 inline-all-args basin as csmd4 and marionation_Exec) — closes the m2c rederive angle across all three known BB2 twins.
+
+- [s73] Un-run first-order axes remaining: NONE at h5 chassis under first-order block-local / fn-scope / basin-transplant / permuter / m2c / decomp.me / ALLOCDBG lens. Only carve-out (SOTN duplicated-statement-into-arms with FAKE + layer-2 review on a NON-arg5 co-live carrier per s69 greg) and operator-dependent (Ghidra rederive) angles remain.
+
+- [s73] Judge constraint (2026-07-08, BINDING) verified: no canonical-asm authorization framing surfaced this session; synthesis outcome elevates only the carve-out and operator-dependent modality frontiers the constraint permits.
+
+- [s73] Rejected forms bank (84 entries at rejected/) documented as the deterministic no-fly zone for s74+; no new form drafted this session (synthesis modality).

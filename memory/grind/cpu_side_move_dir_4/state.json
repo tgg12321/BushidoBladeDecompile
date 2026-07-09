@@ -1,8 +1,8 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 72,
- "current_modality": "rederive",
+ "session_count": 73,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 0,
@@ -441,23 +441,29 @@
    "floor": 2,
    "modality": "rederive",
    "headline": "s72 rederive: m2c on the THIRD-twin saEft01Init.s (never m2c'd in s8/s53/s54/s62/s63) produces the SAME fully-inlined debug_printf(*((D_800A11D5*4)+&D_800A11DC), *((M2C_FIELD(&D_800A1494,u8*,0)*4)+&D_"
+  },
+  {
+   "session": 73,
+   "floor": 2,
+   "modality": "synthesis",
+   "headline": "s73 synthesis: 72-session ledger merged; frontier reset to F6 SOTN duplicated-statement-into-arms on non-arg5 co-live carrier (p73/p77/p79 per s69 greg extract) + F9 prologue-reorder to equalize (refs"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F6 (from prior brief, still unmeasured): SOTN-family carve-out via duplicated-statement-into-arms \u2014 duplicate a REAL statement referencing arg5's carrier into BOTH do_timeout arrival arms, byte-neutral via cross-jump re-merge, lifting reg_n_refs on the arg5 index chain to flip qty_compare pri(arg5) >= pri(t0) inside block=3.",
-   "mechanism": "s69 forensics confirmed prologue-lever axis is EXHAUSTED (debug_printf window pseudos allocate identically across prologue perturbations); s70 confirmed block=3 dispatch shape is prologue-invariant; s71 confirmed decomp.me class-13 closure; s72 (this session) confirmed m2c class-13 closure. Only the block=3 body itself can shift the pair. duplicated-statement-into-arms [[duplicated-statement-into-arms]] targets reg_n_refs directly. Requires FAKE annotation + documented exhaustion + layer-2 cheat-reviewer per no-new-park-categories prerequisites. NB: s10 flagged cross-arm duplication of the ARG5 chain as byte-non-neutral because v0=idx_1494[1] is set inside the do_timeout block; requires a DIFFERENT carrier (co-live pseudo per s69 conflict-graph extract, not arg5's own v0 stage).",
-   "next_probe": "Read s69's ALLOCDBG greg extract (tmp/grind/cpu_side_move_dir_4/s69/allocdbg_diff/csmd4_only.greg) to identify pseudos co-live with p107 (arg5-addr) at block=3 entry that ARE derivable outside do_timeout \u2014 candidates: idx_1494 itself (p77), tbl_125c (p73/79), status pseudo (p75). Draft 2-3 candidate duplications of a real statement referencing one of these into BOTH do_timeout arrival arms (the success:->do_timeout: fallthrough and the direct-goto-do_timeout: paths). Measure via sandbox --disable all; if any is byte-neutral AND lifts pri(arg5) above pri(t0) in the qty_compare tables, invoke layer-2 cheat-reviewer with FAKE annotation."
+   "hypothesis": "F6 (elevated from prior brief, still unmeasured): SOTN sanctioned carve-out via duplicated-statement-into-arms on a NON-arg5 co-live carrier (p73/p79 tbl_125c or p77 idx_1494-addr per s69 greg extract), lifting reg_n_refs on p72/p73/p79 above p78's demoted priority=138 to offset the s60/s69 REG_EQUIV 4-cycle rotation, byte-neutral via cross-jump re-merge, with FAKE annotation + layer-2 cheat-reviewer approval per no-new-park-categories prerequisites.",
+   "mechanism": "duplicated-statement-into-arms [[duplicated-statement-into-arms]] targets reg_n_refs directly via cross-jump-collapsed duplication. s69 identified p73/p77/p79 as pseudos co-live with p107 at block=3 entry AND derivable strictly outside the do_timeout arms (unlike v0=idx_1494[1] which births inside). s60's 4-cycle rotation is priority-driven (p78 demoted to 138); raising p72/p73/p79 refs above 138 could offset. Requires FAKE annotation because the duplicated statement is byte-neutral but semantically inert (its only purpose is codegen effect).",
+   "next_probe": "Read tmp/grind/cpu_side_move_dir_4/s69/allocdbg_diff/csmd4_only.greg to confirm p73/p77/p79 as co-live-at-block=3-entry candidates NOT set inside do_timeout arms. Draft 2-3 candidate duplications of a real statement referencing one of these into BOTH do_timeout arrival arms (the success:->do_timeout: fallthrough and the direct-goto-do_timeout: paths, per asm/funcs/cpu_side_move_dir_4.s control-flow map). Measure each via sandbox cpu_side_move_dir_4 --disable all; if any is byte-neutral AND lifts pri(carrier) above pri(p78=138) in the qty_compare tables (verify via ALLOCDBG on gccdbg cc1), invoke layer-2 cheat-reviewer with FAKE annotation. Save disproven forms to memory/grind/cpu_side_move_dir_4/rejected/dup_into_arms_<carrier>.c."
   },
   {
-   "hypothesis": "F9 (from s69 frontier, still unmeasured): a C construct that seeds idx_1494 and tbl_125c carriers with STRICTLY EQUAL (refs, livelen) at their qty birth would push qty_compare into pure LUID-tiebreak territory, potentially yielding a THIRD s-reg rotation basin distinct from both the h5 and honest 4-cycle rotations.",
-   "mechanism": "qty_compare tie-breaking in local-alloc.c: when floor_log2(refs)*refs/livelen*10000 evaluates equal for two carriers, the tie breaks by insertion order (RTL first-set LUID). If prologue arithmetic can be respelled so tbl_125c and idx_1494 carriers hit identical (refs, livelen) at their post-preload qty birth, and if the shared-tie evaluates via first-set-LUID ordering, MIPS's ascending-regno find_reg awarding could yield a novel s-reg assignment (e.g., ord=13/14 tied -> pick by insertion, not by pri delta).",
-   "next_probe": "Compute (refs, livelen) for {p72,p73,p78,p79} carriers under h5 and honest from s69's csmd4_only.greg extracts. Identify byte-neutral prologue re-orderings that would equalize (refs, livelen) on 2+ of them. Candidate: swap the declaration/initialization sequence at src/system.c:404-406 (tbl_125c/idx_1494/idx_1495 preload order) while preserving byte-equivalent RTL first-uses."
+   "hypothesis": "F9 (elevated from s69 forensics frontier, still unmeasured): prologue-reorder at src/system.c:388-408 to equalize (refs, livelen) on the 4-cycle rotation carriers {p72,p73,p78,p79} pushes qty_compare into pure LUID-tiebreak territory, potentially yielding a THIRD s-reg rotation basin distinct from both the h5 and honest 4-cycle rotations.",
+   "mechanism": "qty_compare tie-break in local-alloc.c: floor_log2(refs)*refs/livelen*10000 evaluates equal -> tie breaks by insertion order (RTL first-set LUID). MIPS ascending-regno find_reg then picks by insertion. If prologue arithmetic is respelled so tbl_125c and idx_1494 carriers hit identical (refs, livelen) at post-preload qty birth, novel s-reg assignment (ord=13/14 tied -> insertion-picked) becomes reachable. This is a NEW rotation basin never measured \u2014 distinct from h5's basin and from the honest form's basin per s69's atomic 4-cycle observation.",
+   "next_probe": "Compute (refs, livelen) for {p72,p73,p78,p79} carriers under h5 and honest from tmp/grind/cpu_side_move_dir_4/s69/allocdbg_diff/csmd4_only.greg (h5 and honest sub-dirs). Identify byte-neutral prologue re-orderings that equalize (refs, livelen) on 2+ of them. Candidate: swap the declaration/initialization sequence at src/system.c:404-406 (tbl_125c/idx_1494/idx_1495 preload order) while preserving byte-equivalent RTL first-uses. Measure via sandbox --disable all; if a lower masked score surfaces, this is a novel basin worth ledger-elevating. Save disproven forms to memory/grind/cpu_side_move_dir_4/rejected/prologue_reorder_<slug>.c."
   },
   {
-   "hypothesis": "F12 (new from s72): a NON-m2c external-decomp-tool rederive angle \u2014 try Ghidra's decompiler on the raw ELF of cpu_side_move_dir_4 (or its saEft01Init third-twin) if a Ghidra install is available in the operator's environment. Ghidra's Pcode+SSA reconstruction differs materially from m2c's RTL-recovery, so its C output for a variadic-call block with tbl-indexed dispatch might elect distinct fold-vs-stage decisions than any m2c reconstruction has produced across s8/s53/s54/s62/s63/s72.",
-   "mechanism": "Ghidra decompiles via Pcode intermediate form + SSA; m2c decompiles via ASM->RTL->AST walker. The two toolchains have different heuristics for when to introduce named intermediates vs inline expressions, when to reconstruct comma-operators, when to fold vs stage displaced-addressing arithmetic. A Ghidra output for the debug_printf window would populate an untested sub-angle within rederive.",
-   "next_probe": "Operator ask: 'Do you have a Ghidra install with PS1/MIPS-R3000 support? If yes, decompile cpu_side_move_dir_4 (or saEft01Init) from the ELF and paste the debug_printf window C body.' If no available Ghidra install, F12 is a permanent operator-dependent frontier this pipeline cannot self-advance."
+   "hypothesis": "F12 (from s72 frontier, still unmeasured, OPERATOR-DEPENDENT): a non-m2c external-decomp-tool rederive angle via Ghidra's Pcode+SSA reconstructor on the raw ELF of cpu_side_move_dir_4 (or its saEft01Init third-twin) \u2014 Ghidra's fold-vs-stage heuristics differ materially from m2c's RTL walker for a variadic-call block with tbl-indexed dispatch.",
+   "mechanism": "Ghidra decompiles via Pcode intermediate + SSA reconstruction; m2c decompiles via ASM->RTL->AST walker. The two toolchains differ on when to introduce named intermediates vs inline expressions, when to reconstruct comma-operators, when to fold vs stage displaced-addressing arithmetic. A Ghidra output for the debug_printf window may populate an untested sub-angle within rederive that all m2c-based rederives (s8/s54/s62/s63/s72) have missed.",
+   "next_probe": "OPERATOR ASK required (this pipeline cannot self-advance F12): 'Do you have a Ghidra install with PS1/MIPS-R3000 support? If yes, decompile cpu_side_move_dir_4 (or saEft01Init third-twin) from the ELF and paste the debug_printf window C body.' If no available Ghidra install, F12 is a permanent operator-dependent frontier this pipeline cannot self-advance and should be de-prioritized in favor of F6/F9 measurement passes."
   }
  ],
  "judge_constraints": [
