@@ -560,3 +560,25 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s28] s28 speculative axis catalog (untried, unpromising): outer-function flow restructure (F3 candidate) is the only ledger-enumerated angle not yet measured; helper-function extraction likely closed by function-boundary preservation in cc1 -O2 (F2 to verify).
 
 - [s28] s28 synthesis artifact: tmp/grind/cpu_side_move_dir_4/s28/synthesis.md documents closed levers, surviving space, frontier reset, ruling-request precondition, judge-risk per frontier.
+
+- [s29] s29 baseline: h5 candidate applied to src/system.c scores masked=2 (target_insns=160, build_insns=160) via `& tools/wteng.ps1 main sandbox cpu_side_move_dir_4 --disable all`.
+
+- [s29] s29 F3-P1 (outer flow flattened, both success: and do_timeout: labels removed, fallthrough to timeout arm): masked=5, target_insns=160, build_insns=158 (-2). Rejected form saved at memory/grind/cpu_side_move_dir_4/rejected/f3_outer_flatten_invert_drop_success.c (P2 shape, direction-equivalent to P1).
+
+- [s29] s29 F3-P2 (branch-sense inverted on second test: `if (0x3C0000 < cnt) goto do_timeout;`, success: label removed, do_timeout: kept): masked=5, target_insns=160, build_insns=158. IDENTICAL to P1 result - direction-invariance confirms success: label removal is the -2 insn source, not branch-sense.
+
+- [s29] s29 F3-P3 (nested-if fallthrough form: `if (!(D_800F19B8 < v0)) { cnt=...; if (!(0x3C0000 < cnt)) goto success; } tslTm2LoadImage_2(...); ...; v0=-1; goto check; success: v0=0; check:`, do_timeout: label removed but success: label preserved): masked=2 INERT, target_insns=160, build_insns=160. Bytes byte-identical to h5 baseline. Rejected form saved at memory/grind/cpu_side_move_dir_4/rejected/f3_outer_flatten_drop_do_timeout_inert.c.
+
+- [s29] s29 mechanism finding: the success: label is a load-bearing BB boundary for h5's masked=2 alignment; the do_timeout: label is redundant (fallthrough compiles identically). Any outer-flow restructure that removes success: regresses via -2 branch insns from jump.c cross-jump/straight-line collapse.
+
+- [s29] s29 novel finding vs prior ledger: F3 is the FIRST measured outer-flow topology axis. Prior s3/s5/s20 measured block-local axes (statement re-association, decl order, do-while(0) wraps, duplicated-into-arms on D_800F19C0) but never touched the outer if-chain BB topology. F3-P3's INERT result is the first evidence that some outer-flow labels are freely removable without disturbing h5.
+
+- [s29] s29 F3-P3 also gives a byte-neutral C simplification that could be adopted in candidate.c (drop the redundant do_timeout: label) without any masked score change - but does not advance the floor. Not applied to candidate.c since ledger contract is to preserve the h5 form; INERT restructures do not require candidate updates.
+
+- [s29] s29 modality contract: structural axis (block-local variants + outer-flow topology) is now closed on csmd4's h5 base after s3 (13 block-local variants), s4 (do-while(0) 4 scopes), s5 (block-scope carriers/named dispatch/wraps), s11+s12 (5 arg5_addr two-SET realizations), s20 (duplicated-into-arms on non-t0), and s29 (F3 outer-flow topology 3 realizations). All structural mechanism-hits at both block-local and outer-flow scope are now measured KILLED.
+
+- [s29] s29 candidate.c: unchanged (h5 form remains masked-2 floor). src/system.c restored to HEAD (both-named form, masked=7 baseline) at session end via `git checkout HEAD -- src/system.c`.
+
+- [s29] s29 novel structural-axis frontier remaining: after F3 closure, the only outer-flow angle not measured is `loop:` label elimination (would require converting `goto loop` at line 495 to a real `while(1)`/`do{}while` construct with `break` on success and `continue` semantics; this changes fn-level control-flow topology which is a distinct probe from F3's outer-if-chain within the loop body). Left as a candidate for s30+ if the driver revisits structural modality; risk: the fn-level while(1) refactor is more invasive and may disturb the s-reg web coupling documented in s8/s9.
+
+- [s29] s29 F1 and F2 frontiers untouched (they are forensics + static-analysis modalities, not structural).

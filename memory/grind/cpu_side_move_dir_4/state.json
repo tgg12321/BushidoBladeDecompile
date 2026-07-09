@@ -1,8 +1,8 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 28,
- "current_modality": "synthesis",
+ "session_count": 29,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 0,
@@ -177,23 +177,29 @@
    "floor": 2,
    "modality": "synthesis",
    "headline": "s28 synthesis: full ledger merged; every enumerated mechanism-hit closed at compiler-source; frontier reset to F1 saEft01Init QTY forensics + F2 tree-inline.c static analysis + F3 outer-flow restructu"
+  },
+  {
+   "session": 29,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "s29 structural: F3 outer-flow restructure axis measured across 3 realizations - success: label removal drops 2 branch insns (+3 regression), do_timeout: label removal INERT; h5 basin is coupled to suc"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F1 (data-gathering forensics): saEft01Init's block=3 QTY numbers (p107/p113 birth/death/refs) either MATCH csmd4's s6 baseline (\u21d2 same LUID-tiebreak mechanism drives both, informing a possible ruling-request about twin-family canonical-asm authorization) or DIFFER (\u21d2 closes the last cross-function angle; saEft01Init's pin family solves a distinct alloc problem not present in csmd4).",
-   "mechanism": "sched.c::rank_for_schedule + local-alloc.c qty_compare are deterministic on QTY inputs; matching qty tables across two functions imply matching allocation decisions. saEft01Init has 15 regfix rules including register renames + reorder \u2014 if it targets the SAME p106/p107 LAUNCH pair-tie as csmd4, that is compiler-source evidence the pair-swap has no C-source dial anywhere in this compiler.",
-   "next_probe": "Forensics session (NOT rederive): rebuild instrumented cc1 with BB2_QTY_DEBUG=1 BB2_SCHED_DEBUG=1 BB2_ALLOC_DEBUG=1 BB2_RANK_DEBUG=1 -da; apply saEft01Init's current C body verbatim; dump saEft01Init's block=3 SCHEDDBG/QTYDBG entries; cross-reference against tmp/grind/cpu_side_move_dir_4/s6/csmd4_only.* for structural congruence at insn IDs equivalent to csmd4's 111/121 LAUNCH tie. Segment the dump by function to avoid cross-function uid collisions (marionation aa8cad24 trick)."
+   "hypothesis": "F1 (data-gathering forensics): saEft01Init's block=3 QTY numbers (p107/p113 birth/death/refs) either MATCH csmd4's s6 baseline (same LUID-tiebreak mechanism drives both, informing a possible ruling-request about twin-family canonical-asm authorization) or DIFFER (closes the last cross-function angle).",
+   "mechanism": "sched.c::rank_for_schedule + local-alloc.c qty_compare are deterministic on QTY inputs; matching qty tables across two functions imply matching allocation decisions. saEft01Init has 15 regfix rules including register renames + reorder - if it targets the SAME p106/p107 LAUNCH pair-tie as csmd4, that is compiler-source evidence the pair-swap has no C-source dial in this compiler.",
+   "next_probe": "Forensics session (NOT structural): rebuild instrumented cc1 with BB2_QTY_DEBUG=1 BB2_SCHED_DEBUG=1 BB2_ALLOC_DEBUG=1 BB2_RANK_DEBUG=1 -da; apply saEft01Init's current C body verbatim; dump saEft01Init's block=3 SCHEDDBG/QTYDBG entries; cross-reference against tmp/grind/cpu_side_move_dir_4/s6/csmd4_only.* for structural congruence at insn IDs equivalent to csmd4's 111/121 LAUNCH tie. Segment the dump by function to avoid cross-function uid collisions."
   },
   {
    "hypothesis": "F2 (static-analysis closure-by-construction): tools/gcc-2.7.2/tree-inline.c under -O2 preserves the function-body boundary for `static inline` helpers, closing the helper-extraction angle because target bytes must land in csmd4's function but code moved to a helper compiles into the helper's function.",
    "mechanism": "GCC 2.7.2 has no LTO; -O2 always_inline decisions run at tree-optimize; if inlining lands before RTL emit with fresh flow.c reg_n_sets on the caller, helper-extraction opens a novel RTL context (F2 OPEN). If the function-body boundary is preserved through cc1 (typical for 2.7.2 pre-integration), the emitted bytes are split across two function labels which cannot land in csmd4's target range (F2 CLOSED-BY-CONSTRUCTION).",
-   "next_probe": "Static-analysis session (NOT rederive): read tools/gcc-2.7.2/tree-inline.c + integrate.c to determine `static inline` handling under -O2; cross-check whether integrate.c::expand_inline_function fires at cc1 time or preserves the CALL_EXPR through to RTL emit. No src edit, no sandbox measurement \u2014 closure-by-construction verdict is the deliverable."
+   "next_probe": "Static-analysis session: read tools/gcc-2.7.2/tree-inline.c + integrate.c to determine `static inline` handling under -O2; cross-check whether integrate.c::expand_inline_function fires at cc1 time or preserves the CALL_EXPR through to RTL emit. No src edit, no sandbox measurement - closure-by-construction verdict is the deliverable."
   },
   {
-   "hypothesis": "F3 (only remaining speculative structural axis): flattening the outer fast-path if-chain (`if (D_800F19B8 < v0) goto do_timeout;` + `if (!(0x3C0000 < cnt)) goto success;`) into an if/else without the `loop:`/`success:` labels changes BB structure feeding local-alloc.c qty_compare's `freq` factor without touching the inline debug_printf block statements, potentially shifting the LUID-tiebreak without disturbing h5's LAUNCH signature.",
-   "mechanism": "flow.c basic-block boundaries follow labels + control-flow edges; local-alloc.c qty_compare weights refs by bb->frequency. Removing the intermediate labels merges BBs at flow-time, changing frequency computations across the block=3 window without altering any statement inside the debug_printf inline block. Novel because prior fn-level probes (s13 hoist +13, s20 D_800F19C0 arm-dup +8) modified within-block or prologue positions, never the outer if-chain topology.",
-   "next_probe": "Structural session: baseline masked=2 with h5 candidate applied; edit src/system.c to convert the goto-based flow at loop/do_timeout/success into a single if/else expression preserving the same fast-path/timeout semantics; sandbox --disable all. Guardrail: verify byte-visible callee behavior (D_800F19B8/D_800F19BC/D_800F19C0 writes) is unchanged. Regression direction is s-reg-coupled with outer if-chain; INERT or LOWER opens the axis, REGRESS closes it."
+   "hypothesis": "F3b (residual structural axis after s29 F3 closure): fn-level while(1)/do{}while refactor eliminating the `loop:` label creates a distinct outer BB topology from F3's inner-if variants and may reach a novel structural axis via loop-depth-weighted qty priorities that F3's non-loop restructures could not.",
+   "mechanism": "flow.c's find_basic_blocks assigns loop_depth to each BB based on natural-loop detection; if the outer `loop:` -> `goto loop` structure is expressed as a real C `while(1)` with structured break/continue, GCC 2.7.2's loop.c recognises it earlier and applies loop-depth REG_N_REFS weighting inside the loop body - which includes the debug_printf block=3 residual. The s25 forensics finding that do-while(0) zero-iteration wraps do NOT lift refs via loop_depth does NOT apply here (this is a real, high-iteration loop, not a zero-iteration wrap).",
+   "next_probe": "Structural session: baseline masked=2 with h5 candidate applied; edit src/system.c to convert `loop: ... goto loop;` to `while(1) { ...; if (v0 != 0) return -1; ...; if (a0 != 0) return 0; }` preserving byte-visible callee behavior; sandbox --disable all. Guardrail: verify the s-reg web (idx_1494/idx_1495/tbl_125c hoist and s2/s3/s4/s5/s6 dispositions) is unchanged - the fn-level while(1) refactor is more invasive than F3 and may disturb the s-reg coupling documented in s8/s9 (which forbid the honest idx_1495 respelling due to s-reg web coupling). Risk: this axis may be closed as a compound regression rather than a novel opening."
   }
  ],
  "judge_constraints": [],

@@ -575,3 +575,27 @@
 - probe: Ledger cross-read + rank of surviving mechanism space in synthesis.md.
 - result: Frontier reset to F1 (forensics, data-gathering) + F2 (static analysis, closure-by-construction) + F3 (structural, only remaining speculative axis with byte-neutral pure-C shape). Ruling-request precondition documented: if F1 numbers-match AND F2 boundary-preserved, next session may justify asking the operator about SOTN canonical-asm authorization for the csmd4/marionation_Exec/saEft01Init twin family.
 - verdict: CONFIRMED
+
+## [s29] Flattening the outer if-chain by dropping BOTH success: and do_timeout: labels (fallthrough to timeout arm) shifts flow.c BB frequencies feeding local-alloc.c qty_compare enough to flip the LUID-tiebreak on the h5 residual pair-swap.
+- mechanism: flow.c basic-block boundaries follow labels + control-flow edges; local-alloc.c qty_compare weights refs by bb->frequency. Removing intermediate labels merges BBs at flow-time, changing frequency computations across block=3 window without altering statements inside the debug_printf inline block.
+- probe: F3-P1: applied h5 candidate, then rewrote outer flow to `if (!(D_800F19B8 < v0)) { cnt = ...; if (!(0x3C0000 < cnt)) { v0=0; goto check; } } tslTm2LoadImage_2(...); { inline block } ...; v0=-1;` with success:/do_timeout: labels removed. sandbox cpu_side_move_dir_4 --disable all.
+- result: masked=5 (+3 vs h5 baseline masked=2), target_insns=160, build_insns=158 (-2 vs target). The label removal drops 2 branch insns via jump.c cross-jump/straight-line optimization, disturbing h5 alignment.
+- verdict: KILLED
+
+## [s29] Direction of P1 regression is due to branch-sense (inverting `!(x)` vs `x` on the second test), so branch-sense-preserving restructure keeps the pair-swap alignment.
+- mechanism: GCC's expand-time branch canonicalisation may or may not normalize `if (X) goto A;` vs `if (!X) fallthrough;` before RTL emit; testing the alternative branch sense isolates the mechanism as label-removal-driven vs branch-sense-driven.
+- probe: F3-P2: rewrote to `if (D_800F19B8 < v0) goto do_timeout; cnt = ...; if (0x3C0000 < cnt) goto do_timeout; v0=0; goto check; do_timeout: ...` - INVERT the second test's sense, drop success: label, keep do_timeout: label. sandbox --disable all.
+- result: masked=5 (+3 vs h5 baseline), build_insns=158 (-2 vs target). IDENTICAL to P1. Confirms direction-invariance: regression is due to success: label removal (2 dropped branch insns), NOT branch-sense of the second test.
+- verdict: KILLED
+
+## [s29] Asymmetric label removal (drop do_timeout: label but keep success: label) preserves the h5 basin because success: is the load-bearing BB boundary for the pair-swap alignment.
+- mechanism: If P1/P2's -2 insn regression is specifically the success: label collapse, then keeping success: while removing do_timeout: should preserve h5 masked=2 - GCC's jump.c fallthrough handling compiles nested-if fallthrough to the timeout arm identically to the goto-based form when success: still exists as a distinct BB.
+- probe: F3-P3: rewrote to `if (!(D_800F19B8 < v0)) { cnt = ...; if (!(0x3C0000 < cnt)) { goto success; } } tslTm2LoadImage_2(...); { inline block } ...; v0=-1; goto check; success: v0=0; check: ...` - drop do_timeout: label, keep success: label, use nested-if fallthrough to timeout arm. sandbox --disable all.
+- result: masked=2 INERT, target_insns=160, build_insns=160. Bytes byte-identical to h5 baseline. CONFIRMS success: is the load-bearing label; do_timeout: is redundant (GCC compiles nested-if fallthrough identically to explicit goto do_timeout).
+- verdict: CONFIRMED
+
+## [s29] The outer-flow BB topology is coupled to h5's masked=2 alignment through the success: label as a distinct BB; no outer-flow restructure that removes success: can preserve the h5 basin.
+- mechanism: Empirical: P1 (drop both) and P2 (drop success, keep do_timeout) both regress +3 with build_insns=158; P3 (drop do_timeout, keep success) is INERT. The direction-invariance across P1/P2 (both branch senses) and the P3 asymmetry isolates the success: label as the load-bearing BB boundary. Consistent with s3/s5/s20 findings that block-local structural changes are qty-invariant while outer-flow BB reshape has direct byte impact.
+- probe: Direct comparison of the three F3 realizations: P1 (fallthrough, both labels removed), P2 (invert branch, keep do_timeout only), P3 (nested-if fallthrough, keep success only).
+- result: The frontier F3 hypothesis 'outer if-chain flattening shifts LUID-tiebreak without disturbing the h5 basin's inline block' is FALSIFIED. Every outer-flow restructure that removes success: regresses by dropping 2 branch insns; keeping success: is INERT. There is no outer-flow structural axis realization that lowers below h5's masked=2 floor.
+- verdict: KILLED
