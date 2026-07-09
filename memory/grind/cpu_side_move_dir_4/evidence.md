@@ -634,3 +634,19 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s33] Structural divergence at every measurable layer: (a) live-span - saEft01Init 32 luid units vs csmd4 14; (b) refs - saEft01Init dominant pseudos refs=6 vs csmd4 refs=2-4; (c) LAUNCH activity sched2 - saEft01Init 0 vs csmd4 2 tied. The functions are NOT QTY-family twins despite sharing the debug_printf-window surface shape.
 
 - [s33] Baseline sanity: candidate.c (h5) applied to src/system.c continues to score masked=2 (target_insns=160, build_insns=160) via sandbox cpu_side_move_dir_4 --disable all; this session did not modify src/system.c or candidate.c.
+
+- [s34] tools/gcc-2.7.2/ contains no tree-inline.c — tree-level inlining machinery does not exist in GCC 2.7.2 (introduced GCC 3.x). Sole inline mechanism is integrate.c::expand_inline_function.
+
+- [s34] integrate.c:96 refuses inlining for any varargs helper: `if ((last && TREE_VALUE (last) != void_type_node) || current_function_varargs) return "varargs function cannot be inline";`. debug_printf takes 5+ variadic args; any helper forwarding the tail is varargs.
+
+- [s34] calls.c:709 is_integrable dispatch: on refusal (varargs / size / etc.) falls through to real CALL_INSN emit — same shape as HEAD's debug_printf call in block=3.
+
+- [s34] integrate.c:106,153 size-gate non-DECL_INLINE helpers out of the inline path; only `static inline` (DECL_INLINE=1) survives. But even DECL_INLINE cannot bypass the varargs guard at line 96.
+
+- [s34] expand_inline_function (integrate.c:1154) is an RTL insn-copy pass that preserves SET-dest identity via reg_map/label_map/insn_map remapping. Post-inline flow re-analysis rebuilds reg_n_sets=1 on the copied p106 SET, so birthing_insn_p still fires LAUNCH at the copied insn — the h5 pair-swap residual is invariant under insn-copy inlining.
+
+- [s34] s5-F2a/F2b measured named-dispatch masked=16 (+14): forwarding args as fn-scope pseudos destroys h5 launch-suppression alignment. Any fixed-arg wrapper materializes its parameters through the same mechanism at the call site.
+
+- [s34] s33 named the reload-substitution mechanism (fresh block=3 SET-dests renumbered into hard-regs already multi-set fn-scope). csmd4's fn-scope write topology has single-set-per-global (D_800F19B8/BC/C0), so reproducing saEft01Init's substitution pattern requires adding fn-scope multi-set writes — which is the cheat family.
+
+- [s34] candidate.c unchanged; src/system.c not modified (forensics modality). h5 masked-2 floor unchanged from ledger.
