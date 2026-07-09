@@ -352,3 +352,15 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s16] The h5-basin's LUID tiebreak (LUID(121)=12 beats LUID(111)=8 at clock=13) is the sole surviving mechanism for the pair-swap, and the only lever known to affect LUID (statement order in C) is coupled to basin membership per s6 LUID-reorder + s7 expmed.c:2244 findings — LUID manipulation that keeps h5 basin membership is s6-KILLED.
 
 - [s16] This forensics finding does NOT touch frontier #2 (PERM_LINESWAP, permuter modality) or frontier #3 (decomp.me corpus scrape, gated on curl_cffi install). Both remain unmeasured / unavailable in this session per the modality contract.
+
+- [s17] s17 baseline (from task brief + ledger): h5 candidate.c is the masked-2 floor; residual is the {sll4@54 <-> addu5@55} LAUNCH-vs-LAUNCH LUID tiebreak per s6/s7/s15/s16 forensics.
+
+- [s17] curl_cffi 0.15.0 confirmed importable in .venv/bin/activate (`python3 -c "import curl_cffi"` succeeds). The s9-recorded `ModuleNotFoundError: No module named 'curl_cffi'` blocker on the decomp.me corpus scrape modality is REMOVED as of s17.
+
+- [s17] Corpus size: 3754 scratches under tmp/decomp_me_corpus (gcc2.7.2-cdk / gcc2.7.2-psx / psyq3.5 toolchain classes).
+
+- [s17] Top-30 shingle-similarity hits saved at tmp/grind/cpu_side_move_dir_4/s17/scrape_top30.txt. Peak similarity 0.097 (zppzv); tail-of-top-15 similarity 0.075. All similarities below 0.10 indicate coincidental token overlap, not structural analog.
+
+- [s17] Top-15 shape check (tmp/grind/cpu_side_move_dir_4/s17/shape_check.py): 0/15 hits contain debug_printf or FntPrint (the 5-arg variadic call that anchors csmd4's residual pair); 1/15 references VSync (erpie, entrypoint_sotn, distinct skeleton); 0/15 contain tbl-indexed dispatch. The corpus does not host a viable transplant candidate for csmd4.
+
+- [s17] Rederive-modality closure updated: s8 m2c KILLED, s9 marionation_Exec sibling transplant KILLED (P1-P4), s9 decomp.me GATED, s17 decomp.me MEASURED KILLED. The only remaining rederive angle noted in ledger is external-Kengo-source glance (frontier note (c) from s9), which requires operator supply of a Kengo dump.

@@ -1,8 +1,8 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 16,
- "current_modality": "forensics",
+ "session_count": 17,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 0,
@@ -105,18 +105,24 @@
    "floor": 2,
    "modality": "forensics",
    "headline": "s16 forensics KILLS frontier #1 by direct compiler-source read: MIPS ADJUST_COST (mips.h:2946) is a ONE-line macro that only zeros anti/output-dep and NEVER raises data-dep cost; insn_cost(121,link,12"
+  },
+  {
+   "session": 17,
+   "floor": 2,
+   "modality": "rederive",
+   "headline": "s17 rederive: decomp.me corpus scrape unblocked (curl_cffi installed) and MEASURED KILLED \u2014 3754-scratch corpus top-15 hits max similarity 9.7%, zero contain debug_printf/FntPrint + tbl-index-lookup s"
   }
  ],
  "frontier": [
   {
    "hypothesis": "PERM_LINESWAP over the inline block's 6-8 non-CALL statements discovers a schedule-space arrangement outside the s3 hand-swept 13 structural axes and s4-s5 wrap/carrier probes.",
-   "mechanism": "PERM_LINESWAP enumerates all dataflow-valid orderings of the specified line block, complementing directed-PERM_GENERAL with systematic O(n!)-minus-invalid coverage.",
-   "next_probe": "Permuter modality: add PERM_LINESWAP around the inline block's non-CALL statements in tmp/perm_csmd4/base.c; launch fresh h5-basin campaign with LINESWAP as the only PERM directive; each ordering re-verified against engine sandbox (workspace-permuter UNFAITHFUL caveat per WIP notes) \u2014 sub-baseline finds must be splice-verified before promotion."
+   "mechanism": "PERM_LINESWAP enumerates all dataflow-valid orderings of the specified line block, complementing directed-PERM_GENERAL (s14) with systematic O(n!)-minus-invalid coverage.",
+   "next_probe": "Permuter modality: add PERM_LINESWAP around the inline block's non-CALL statements in tmp/perm_csmd4/base.c; launch fresh h5-basin campaign with LINESWAP as the only PERM directive; each ordering re-verified against engine sandbox (workspace UNFAITHFUL caveat per WIP notes) \u2014 sub-baseline finds must be splice-verified before promotion. Audit the alternative set BEFORE launch to guarantee no g3-basin spellings sneak in (s14 lesson: mixed base_score dropped to 40 and redid g3 exploration)."
   },
   {
-   "hypothesis": "decomp.me corpus scrape surfaces a similar-asm scratch whose C shape lies OUTSIDE the h5/g3 basins entirely.",
-   "mechanism": "Coarse asm-overlap pre-filter over the downloaded decomp.me corpus (BB2 toolchain class: gcc2.7.2-psx / gcc2.7.2-cdk / psyq3.5); manual inspection of top hits.",
-   "next_probe": "Operator installs curl_cffi (source .venv/bin/activate && pip install curl_cffi); next rederive-modality session runs python3 tools/decomp_me_scrape.py search --asm-file asm/funcs/cpu_side_move_dir_4.s and inspects top asm-overlap hits."
+   "hypothesis": "External Kengo (nm_cpu/cpu_side_move_dir_4) source glance surfaces the original C shape and points to a distinct structural axis not covered by m2c or marionation_Exec sibling.",
+   "mechanism": "The src/system.c:497 tombstone flags `kengo:HIGH  |  nm_cpu/cpu_side_move_dir_4  |  160i  |  x4 size collision` \u2014 Kengo carries a same-name analog with a 4x-size difference indicating a superset. Original Lightweight source likely factored csmd4 as a subroutine of the Kengo function.",
+   "next_probe": "Operator supplies a Kengo source dump (or an inspection command against an available Kengo binary/scratch) so a rederive-modality session can diff Kengo's `nm_cpu/cpu_side_move_dir_4` C body against csmd4's target asm. Absent operator supply, this frontier remains unavailable (WIP notes: `no known second twin in the codebase per notes.md`)."
   }
  ],
  "judge_constraints": [],
