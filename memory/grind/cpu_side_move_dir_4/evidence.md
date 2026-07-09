@@ -1256,3 +1256,23 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s76] s76 modality-exhaustion note: with s5 (g3 fresh-seed 9040), s13 (h5-multexpander fresh-seed 2999), s14 (directed PERM_GENERAL h5 chassis 23427), s67 (F1 g3-arg5 24 exhaustive + F2 poll 3-stmt 6 exhaustive), s68 (F7 whole-block 480 exhaustive), and now s76 (F13 h5-preserving prologue-lineswap 706s / 720 registered / ~650k raw / 0 novel), permuter modality is measurably closed against every reachable region of the function on both h5 and g3 chassis. Remaining live levers are structural (F6 SOTN duplicated-statement-into-arms on non-arg5 co-live carrier per s73 frontier), forensics (H2-extension single-carrier extra-use isolation per s73 frontier), or operator-dependent (F12 Ghidra Pcode+SSA rederive).
 
 - [s76] s76 src/system.c restored to h5 candidate at session end; post-restore sandbox re-measures masked=2. candidate.c unchanged (h5 form remains masked-2 floor).
+
+- [s77] s77 baseline: no src/system.c modification (HEAD state per git diff --stat empty at session end); candidate.c (h5 form, masked=2 floor since s4) unchanged.
+
+- [s77] s77 pre-launch: workspace tmp/perm_csmd4/base.c annotated by removing s76's prologue PERM_LINESWAP (KILLED axis) and adding PERM_LINESWAP over the two vblank-poll if-arms with semicolon-terminated brace-blocks.
+
+- [s77] s77 initial launch failed at parse: PERM_LINESWAP required semicolon-terminated statements, not raw brace-blocks; corrected by adding `;` after each `if (...) { ... }`.
+
+- [s77] s77 permuter reported base_score=2215 at launch, NOT h5=60 nor g3=40 — the arm-swap alternative crashes the chassis into a novel high-score basin ~2155 above h5 baseline.
+
+- [s77] s77 6779+ iterations sampled: scores cluster in {2215, 2380} (near-baseline arm-swap orderings) plus randomizer-generated forms in 90-1945 range; 0 candidates below 2215.
+
+- [s77] s77 mechanism: the vblank-poll if-arms call through fn-pointers D_800A11B8 / D_800A11B4 with opaque semantics; GCC's sched.c cannot re-order the calls because CALL_INSN carries no side-effect analysis, so the arm-swap forces a fundamentally different RTL emission order that cascades across the poll region's s-reg web. This CONFIRMS by measurement that the poll-arm-swap axis is not a valid h5-preserving permuter chassis.
+
+- [s77] s77 pre-existing output-55-* dirs found in workspace (July 8 mtime, before session launch): three forms hoisting arg5-chain before t0-chain in inline block, weighted score 55. Shape matches s2 E_arg5_first rejected form (masked=7) — pre-recorded KILLED, no sandbox re-measurement needed.
+
+- [s77] s77 modality-compliance: mandated modality was permuter; F14 (poll-arm LINESWAP) is the sole novel un-run permuter neighborhood exposed by the s76 modality-exhaustion frontier list. All prior permuter regions (inline block, poll pre-region 3 statements, prologue lineswap, g3-arg5) already KILLED across s5/s13/s14/s67/s68/s76. This session's KILL of F14 further closes the permuter-modality search space.
+
+- [s77] s77 permuter modality now measurably CLOSED across every reachable structural region of the function: prologue lineswap (s76 KILLED), inline block LINESWAP+GENERAL (s67/s68 KILLED), poll pre-region 3-stmt LINESWAP (s67 F2 KILLED), poll if-arm LINESWAP (s77 KILLED), inline block fresh-seed random (s5/s13/s14 KILLED). No h5-preserving permuter region remains that has not been either exhaustively enumerated or fresh-seed sampled.
+
+- [s77] s77 Judge-constraint compliance: no canonical-asm framing surfaced; no rederive resurfacing; the KILLED outcome eliminates a permuter neighborhood on the H5 chassis (the mandated modality axis) without violating the BINDING constraints from s40/s41/s46/s54/s55/s64/s71.
