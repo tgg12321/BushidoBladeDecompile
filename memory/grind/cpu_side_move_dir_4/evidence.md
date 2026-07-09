@@ -1312,3 +1312,21 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s80] Both artifacts confirm the arg4/arg5 sub-shape emitted by every m2c variant remains the known inline-all-args form landing in the masked=14 basin (WIP L7). No m2c variant surfaces a structurally novel arg4/arg5 spelling.
 
 - [s80] The exhaustive rederive-source list is now closed at 9 distinct sources across 4+ sessions: (1) m2c default s8, (2) m2c --reg-vars variants s53/s63, (3) m2c --void/--gotos-only s54, (4) m2c on marionation_Exec twin s62, (5) m2c on saEft01Init third-twin s72, (6) m2c --context header-driven s80, (7) m2c --stack-structs --passes 5 s80, (8) decomp.me corpus whole-function and window-slice scans s17/s26/s44/s71, (9) Kengo local dump + adjacent function extraction s18/s36/s45.
+
+- [s81] s81 baseline confirmed: h5 candidate applied to src/system.c scores masked=2 (target_insns=160, build_insns=160) via `& tools/wteng.ps1 main sandbox cpu_side_move_dir_4 --disable all`.
+
+- [s81] s81 sibling asm inventory (glob asm/funcs/cpu_side_move_dir*.s): cpu_side_move_dir.s (168 insns), cpu_side_move_dir_2.s (176), cpu_side_move_dir_3.s (173), cpu_side_move_dir_4.s (176). Four name-cluster siblings total; only _4 has been the grind target. Per s63 evidence, cpu_side_move_dir lives in code6cac_b.c, _2 in code6cac_c2.c, _3 in main.c (COMPLETED-C, so grep of those files returned empty for the debug_printf pattern) — but m2c'ing the SIBLING ASM directly (as s62 did for marionation) was un-run for these three per the s54/s62 closure list (which only recorded marionation_Exec.s).
+
+- [s81] s81 m2c(cpu_side_move_dir base): produces `void cpu_side_move_dir(void *arg0)` — object-based movement dispatch reading `M2C_FIELD(arg0, s16 *, 4)` / `0x34C` counter / `D_800A36A4` mode / `stage_GetDataPtr()` velocity table; calls func_80021424 / func_80021A98 / func_80032854. Zero debug_printf calls, zero tbl_125c/idx_1494 references, zero VSync polling loop. Structurally orthogonal to csmd4's system.c body.
+
+- [s81] s81 m2c(cpu_side_move_dir_2): produces initialization function calling gpu_InitDisplay/gpu_EnableDisplay/game_Cleanup/kgm_init_hitrect/marionation_camera_GetMaxFrame. No debug_printf window, no tbl_125c index-marshal.
+
+- [s81] s81 m2c(cpu_side_move_dir_3): produces `s32 cpu_side_move_dir_3(u8 *arg0, s32 arg1)` — bios_DeliverEvent-driven state machine on D_800F1AFC guard + D_800A3044/D_800F1AE0 dispatch; return-early with -1 if D_800F1AFC set. No debug_printf, no tbl_125c/idx_1494 window.
+
+- [s81] s81 rederive-class closure list extended from 11 → 12 sub-angles: s8 m2c-csmd4-default + s9 marionation-C-transplant + s17 decomp.me-shingle-scan + s18 Kengo-local-cpu_side_move_dir-stub + s26 decomp.me-residual + BB2-in-repo-cluster + s27 saEft01Init-decl-transfer + s35 idx_1495-respellings + s36 BB2-5-arg-templates + Kengo-numata-subsystem + s44 decomp.me-BB2-toolchain-corpus + s45 SOTN-cross-project + Kengo-whole-dump + s54 m2c-flag-space + s62 m2c-marionation-sibling-asm + s72 m2c-third-twin-saEft01Init + s80 m2c-context-flag + s81 (this session) m2c-name-cluster-siblings (cpu_side_move_dir base + _2 + _3). All 12 KILLED.
+
+- [s81] s81 candidate.c: unchanged (h5 form remains masked-2 floor); src/system.c restored to HEAD both-named form (masked=7 baseline) at session end. Post-restore not re-measured since edit was a literal revert of the h5 apply.
+
+- [s81] s81 mechanism finding: the four cpu_side_move_dir* siblings share only the `cpu_side_move_dir` name-prefix — they are functionally unrelated (movement dispatch / init / event handler / VSync-poll debug_printf). csmd4's block-3 window is structurally UNIQUE within its name cluster; the only file-local twin remains marionation_Exec (s9/s62 sub-angles, both KILLED). No further un-run sibling m2c angle exists at the name-cluster level.
+
+- [s81] s81 modality compliance: mandated modality was rederive; sub-angle chosen was m2c-on-name-cluster-siblings (novel un-run angle within the rederive class — the s54/s62/s72/s80 closure list only covered csmd4's own asm and marionation/saEft01Init). Judge constraint respected — no canonical-asm framing surfaced; ALLOCDBG s-reg coupling hunt (frontier F6/F17 territory) is the un-run structural/forensics frontier for post-modality-rotation sessions.
