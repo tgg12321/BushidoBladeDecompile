@@ -1,8 +1,8 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 39,
- "current_modality": "structural",
+ "session_count": 40,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 0,
@@ -243,13 +243,19 @@
    "floor": 2,
    "modality": "structural",
    "headline": "s39 structural: three novel arg5-chain respellings KILLED (array-index / direct-symbol / v0-triple-set-carrier); h5 chassis basin non-composable at every measured C-source axis"
+  },
+  {
+   "session": 40,
+   "floor": 2,
+   "modality": "permuter",
+   "headline": "s40 permuter: wider-scope PERM_GENERAL (block + tslTm2LoadImage_2 pre-call + cdrom_ClearIrq post-call) KILLED - 0 novel finds at base_score=60 h5 chassis; closes the last-remaining permuter-scope axis"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Ruling-request session on canonical-asm authorization for the twin family (cpu_side_move_dir_4 / marionation_Exec) is the only remaining path after 39 sessions of measurement-closed C-search space.",
-   "mechanism": "s37 CONFIRMED: the h5 basin LUID tiebreak at sched2 clock=13 is the sole surviving mechanism; three theoretical lever directions (a) 111 loses LAUNCH \u2014 closed via expmed.c:2244 case alg_shift NULL_RTX (s7), (b) 121 loses LAUNCH \u2014 closed via 5+ arg5_addr forms (s11/s12) plus s39 P3 v0-scope multi-set, (c) LUID reorder \u2014 closed via s6 basin non-composability. The residual pair-swap {sll4@54 <-> addu5@55} at sched2 clock=13 is a LUID-invariant coupled to basin membership; no C-source lever changes the basin without falling into g3.",
-   "next_probe": "Emit ruling-request outcome with precise question to owner: does the twin family (csmd4/marionation_Exec, sharing the exchange residual per marionation 6f cross-check) qualify for canonical-asm authorization on the pair {sll v0 / addu v0 / sll a0} at the debug_printf window, given (a) 39 sessions have measurement-closed every C-source axis including the newly-added v0-scope multi-set lever, (b) the residual is a mechanically-explained rank_for_schedule LUID tiebreak, (c) both twins share the exchange arithmetic, (d) the honest-respelling of idx_1495 remains blocked by +13 s-reg coupling (s8), and (e) all novel structural axes measured this session (array-index, direct-symbol, v0-triple-set) either INERT-fold or regress."
+   "hypothesis": "Ruling-request session on canonical-asm authorization for the twin family (cpu_side_move_dir_4 / marionation_Exec) is the only remaining path after 40 sessions of measurement-closed C-search space, now including every permuter-scope realization.",
+   "mechanism": "s37 CONFIRMED: the h5 basin LUID tiebreak at sched2 clock=13 is the sole surviving mechanism. Every C-source lever direction (a/b/c) is compiler-source-closed. The permuter-modality search space is now empirically exhausted across all 5 scope realizations (LINESWAP prologue/block/text+CALL, PERM_GENERAL block-only, PERM_GENERAL block+flanking-CALLs). Structural, forensics, rederive, synthesis, and permuter modalities have all measurement-closed the space.",
+   "next_probe": "Emit ruling-request outcome asking the owner: does the twin family (csmd4 / marionation_Exec, sharing the exchange residual per marionation 6f cross-check) qualify for canonical-asm authorization on the pair {sll v0 / addu v0 / sll a0} at the debug_printf window, given (a) 40 sessions have measurement-closed every C-source axis including the newly-added wider-scope permuter axis, (b) the residual is a mechanically-explained rank_for_schedule LUID tiebreak, (c) both twins share the exchange arithmetic, (d) the honest-respelling of idx_1495 remains blocked by +13 s-reg coupling (s8), and (e) 5 independent permuter scopes yielded 0 weighted-<40 finds across ~63,000 combined iterations on h5 chassis."
   }
  ],
  "judge_constraints": [],

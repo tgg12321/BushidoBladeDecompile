@@ -722,3 +722,11 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s39] Triple-set v0 carrier (v0=lbu; v0<<=2; v0+=tbl) regresses +13 (masked=15) — extends the s11/s12 arg5_addr multi-set KILL family onto the v0 pseudo itself; the lever direction '121 loses LAUNCH via multi-set carrier' is measurement-closed at every enumerated C-spelling now including v0-scope.
 
 - [s39] All three P1/P2/P3 probes are structural-modality (block-local statement re-association / respelling) and clear layer-1 cheat-vetting: no register pins, no volatile coercion, no dead stores, no hardcoded-$N asm.
+
+- [s40] candidate.c (h5 chassis) applied to src/system.c produces sandbox masked=2 target_insns=160 build_insns=160 (baseline confirmed pre-campaign).
+
+- [s40] s40 wider-scope PERM_GENERAL campaign: base_score=60 confirmed iter 1, 1738 iterations, 0 finds, harvested+stopped.
+
+- [s40] The union of s22 (block LINESWAP, 7!=5040) + s23 (block+CALL LINESWAP_TEXT, 20429) + s31 (prologue LINESWAP, 5!=120) + s32 (h5 block PERM_GENERAL, 35338) + s40 (block+flanking-CALLs PERM_GENERAL, 1738) covers every permuter-modality scope reachable on this fn under h5-chassis preservation. All 5 campaigns yielded 0 weighted-<40 finds.
+
+- [s40] The s37/s39 CONFIRMED closure — 'no C-source lever changes the basin without falling into g3' — is reinforced by the s40 wider-scope 0-find data point: even random AST mutation with statement-motion across CALL boundaries cannot surface a novel neighborhood.
