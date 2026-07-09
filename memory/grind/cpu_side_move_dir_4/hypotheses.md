@@ -209,3 +209,27 @@
 - probe: python3 tools/m2c/m2c.py --valid-syntax --target mipsel-gcc-c --function cpu_side_move_dir_4 asm/funcs/cpu_side_move_dir_4.s; output saved to tmp/grind/cpu_side_move_dir_4/s8/m2c_out.txt.
 - result: m2c emits the direct-inlined-all-args shape for the debug_printf call: debug_printf(&D_800161C8, D_800F19C0, *(&D_800A11DC + (D_800A11D5 * 4)), *((M2C_FIELD(&D_800A1494, u8*, 0) * 4) + &D_800A125C), *((M2C_FIELD(&D_800A1494, u8*, 1) * 4) + &D_800A125C)) - NO local variable staging for arg4/arg5 or the index bases. This matches the WIP-recorded 'inline-all args (v1/v8/v9): score 14' shape (evidence.md L7). m2c also flattens the loop/do_timeout goto skeleton into if/else; the flattening axis is upstream of the residual pair-swap window at L80080E64+ and doesn't touch the mult-expander LAUNCH mechanism. The rederive angle does NOT surface a novel structural neighborhood for the h5/g3 residual.
 - verdict: KILLED
+
+## [s9] The marionation_Exec inline-block shape (arg4 named via tbl_125c[idx_1494[0]] array-index syntax, arg5 fully inline in the debug_printf call) transplants onto csmd4 and lowers or maintains the h5 masked-2 floor.
+- mechanism: marionation_Exec is the file-local twin and its inline-block form has never been measured on csmd4; the array-index syntax lowers to different expand-time RTL than the pointer-arithmetic *(s32*)(v0+(s32)tbl_125c) form on which h5's masked-2 basin depends. A sibling-transplant is the modality-mandated rederive angle after m2c was closed in s8.
+- probe: Applied P1 (arg4 named + arg5 inline) on top of the h5 candidate applied to src/system.c; sandbox cpu_side_move_dir_4 --disable all.
+- result: masked 7, target_insns=160, build_insns=160. Matches the ip_base_statement_form.c basin (g3 family, direct-LSHIFT / in-place, p101 multi-set, non-LAUNCH).
+- verdict: KILLED
+
+## [s9] Mirroring the marionation-hybrid (arg5 named, arg4 inlined at call) shifts the qty birth order and re-orders the pair.
+- mechanism: Right-to-left CALL arg evaluation would evaluate arg4 (last) into a very late-birthed pseudo, possibly delaying its LAUNCH past arg5's stage.
+- probe: Applied P2 (arg5 named + arg4 inline) on top of h5 base; sandbox --disable all.
+- result: masked 14, target_insns=160, build_insns=160. Matches the WIP-recorded 'inline-all args' basin (evidence.md L7).
+- verdict: KILLED
+
+## [s9] Both arg4 and arg5 named via array-index syntax with reverse eval order (arg5 first) lands in a distinct novel basin.
+- mechanism: Two distinct named pseudos with the array-index lowering; reverse-order eval assigns arg5 an earlier LUID than arg4.
+- probe: Applied P3 (both named, arg5 first) on top of h5 base; sandbox --disable all.
+- result: masked 8, target_insns=160, build_insns=160. Novel intermediate basin between ip-basin (7) and inline-all (14) - not previously measured but strictly worse than h5.
+- verdict: KILLED
+
+## [s9] Full marionation basin transplant (honest idx_1495 = idx_1494 + 1 + marionation-hybrid inline block) composes the two levers to yield a novel basin.
+- mechanism: The honest idx_1495 respelling and the marionation-hybrid inline block are both LOAD-BEARING at marionation's s-reg web (idx_1494/idx_1495/idx_1496 triad + register pin + alias rename); transplanting both together might respect the coupling.
+- probe: Applied P4 (honest idx_1495 + marionation-hybrid inline block) on top of h5 base; sandbox --disable all.
+- result: masked 20, target_insns=160, build_insns=160. WORSE than either lever in isolation (+5 P1 + +13 s8-probe1 -> +18 non-linear compound at s-reg-web level).
+- verdict: KILLED

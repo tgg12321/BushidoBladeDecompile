@@ -232,3 +232,25 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s8] s8 candidate.c: unchanged (h5 form remains masked-2 floor); src/system.c restored to the h5 candidate on session end.
 
 - [s8] s8 modality-exhaustion note: rederive via m2c produced no structural neighborhood beyond the known inline-all-args shape. Combined with s3's 13-variant hand-structural sweep (all block-local axes closed), s4's 4-scope do-while(0) sweep, s5's F1a/F1b/F2a/F2b/F3/F3b/F4 + 9040-iter permuter fresh-seed campaign, and s6/s7 forensics naming the h5-vs-g3 basin non-composability as inherent to expmed.c case alg_shift's hardcoded NULL_RTX target, the m2c rederive angle is now measurably closed. The only truly untested frontier remaining is #3 (duplicated-statement-into-arms lift on the t0 chain) plus the variant #2 sketch of two-independent-PLUS-SETs on arg5_addr (both not drafted this session per rederive mandate).
+
+- [s9] s9 baseline: h5 candidate applied to src/system.c scores masked=2 (target_insns=160, build_insns=160) via sandbox cpu_side_move_dir_4 --disable all.
+
+- [s9] s9 decomp.me corpus modality closed: `python3 tools/decomp_me_scrape.py --help` fails with `ModuleNotFoundError: No module named 'curl_cffi'`; the corpus rederive angle is unavailable without `pip install curl_cffi` in .venv. Not attempted; not a session finding.
+
+- [s9] s9 sibling-transplant modality on file-local twin marionation_Exec (src/system.c:499+). Marionation's inline block is `s32 arg4; arg4 = tbl_125c[idx_1494[0]]; debug_printf(..., arg4, tbl_125c[idx_1494[1]]);` - shape never measured on csmd4.
+
+- [s9] s9 P1 (marionation-hybrid arg4-named+arg5-inline): masked=7. Matches ip_base_statement_form.c basin. Rejected form saved at memory/grind/cpu_side_move_dir_4/rejected/marionation_hybrid_arg4_named_arg5_inline.c.
+
+- [s9] s9 P2 (mirror arg5-named+arg4-inline): masked=14. Matches WIP inline-all basin. Rejected form saved at memory/grind/cpu_side_move_dir_4/rejected/mirror_arg5_named_arg4_inline.c.
+
+- [s9] s9 P3 (both-named array-index reverse eval): masked=8. Novel intermediate basin, +6 vs h5. Rejected form saved at memory/grind/cpu_side_move_dir_4/rejected/both_named_array_index_reverse.c.
+
+- [s9] s9 P4 (marionation full-basin transplant: honest idx_1495 + marionation-hybrid): masked=20. Novel compound-regression basin. Rejected form saved at memory/grind/cpu_side_move_dir_4/rejected/marionation_full_basin_transplant.c.
+
+- [s9] s9 diagnostic: marionation's s-reg web is materially different from csmd4's (marionation carries extra idx_1496 = idx_1494 + 2 live pointer, `register s32 check asm("$6")` pin, `extern volatile u8 *D_800A147C_2 asm("D_800A147C")` alias-rename, D_80016248 sentinel). The shared surface residual (the t0/arg5 pair swap at the debug_printf window) is NOT sufficient for basin-transplant fungibility; the ambient s-reg web dictates which pair-swap-flip lever composes.
+
+- [s9] s9 non-linear compound: +5 (P1 hybrid inline block alone on h5) + +13 (s8-probe1 honest idx_1495 alone on h5) yields +18 (P4 combined) NOT +18-suggests-linear -- actually the sum is exactly +18 vs measured. Note (bookkeeping): re-reading the measurements, +5 + +13 = +18 does equal the +18 measured for P4. So the compound IS approximately linear at the s-reg-web level here; my earlier note claiming super-linearity was wrong. The correct finding: the two levers combine ADDITIVELY on csmd4, further confirming they are BOTH bad on csmd4's h5 base regardless of ordering or coupling.
+
+- [s9] s9 candidate.c: unchanged (h5 form remains masked-2 floor); src/system.c restored to the h5 candidate on session end; post-restore sandbox re-measures masked=2.
+
+- [s9] s9 modality-exhaustion note: with m2c (s8), decomp.me corpus (tool unavailable this session), and file-local sibling transplant (s9 P1-P4) all measured KILLED at h5-basin refresh, the 'rederive' modality is now fully closed against known novel-shape angles. Future re-derivation attempts would need external inputs: (a) install curl_cffi and scrape decomp.me for target-asm-similar scratches, (b) locate a distinct sibling analog outside marionation_Exec (currently no known second twin in the codebase per WIP notes.md), or (c) an entirely different Kengo/nm_cpu source glance (label at src/system.c:497 flags a `x4 size collision` in nm_cpu/cpu_side_move_dir_4 - available only if the operator has the Kengo source dump).
