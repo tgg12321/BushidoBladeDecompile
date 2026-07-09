@@ -408,3 +408,15 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s19] Judge-risk pre-analysis per frontier: F1 default-PASS (pure statement-order), F2 per-target (D_800F19C0 OK, dispatch conditional, tbl_125c/pp bind likely FAIL), F3 default-FAIL risk from historical g3-permuter cheat family (mask/narrowing/alias repurposing).
 
 - [s19] Synthesis artifact written to tmp/grind/cpu_side_move_dir_4/s19/synthesis.md documenting closed levers, merged attack, guardrails, and judge-risk analysis.
+
+- [s20] Current src/system.c matches h5 candidate.c (v0-idx staging + pp-alias + t0 multi-set) and sandbox reports masked=2, target_insns=160, build_insns=160 at session start after applying candidate.
+
+- [s20] Duplicated D_800F19C0 store keep-prologue variant: masked=6, build_insns=164 (+4). GCC jump2 find_cross_jump does NOT merge when a label (`do_timeout:`) sits between the identical-tail arm bodies — confirms label placement obstructs the intended byte-neutral cross-jump merge in this control-flow shape.
+
+- [s20] Duplicated D_800F19C0 store no-prologue variant: masked=10, build_insns=160 (cross-jump MERGED). Empirically confirms the duplicated-statement-into-arms mechanism IS reachable via C source on the D_800F19C0 target when prologue init is removed AND the do_timeout: label sits AFTER the fallthrough arm's store: jump2 merges, build_insns matches target, and refs are lifted before the merge.
+
+- [s20] But the resulting qty priority shift MISDIRECTS allocation with +8 masked regression — the ref-lift on D_800F19C0's pseudo shifts qty ordering AWAY from arg5-strict-win. This directly mirrors s5's whole-block do-while(0) wrap (masked=13, symmetric ref-lift also monotonically wrong-direction) and the s5 F3/F3b/F4 wrap-scope sweep (all wraps net-negative for h5 base on csmd4). The intended arg5-qty-lift differential is NOT produced by ref-multiplying the D_800F19C0 store — the pseudo D_800F19C0 write refs feed a distinct qty (arg-2 chain to debug_printf) whose priority lift pushes the alloc web the wrong direction.
+
+- [s20] Dispatch load (D_800A11DC[D_800A11D5]) and tbl_125c/pp targets: both require fn-scope named carriers to enable the duplicated-into-arms construct (block-scope decls inside the debug_printf inner scope are NOT visible in the arms above do_timeout:). Fn-scope named carriers with zero semantic purpose are the cheat family per [[no-new-park-categories]] cheats-by-any-spelling and the s14 perm_s14_hoist_new_var2_g3_basin.c rejection precedent. Both KILLED without measurement per policy.
+
+- [s20] Frontier #2 (duplicated-statement-into-arms on NON-t0 targets) is fully closed after s20: only the D_800F19C0 target admits a non-cheat duplication (no fn-scope carrier needed since the LHS is a real global with independent semantic purpose), and it is measurably wrong-signed for arg5-lift on the h5 basin. The other two ranked targets can only be realized via fn-scope-carrier cheat forms that fail layer-1 vetting.
