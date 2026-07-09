@@ -797,3 +797,15 @@
 - probe: Installed curl_cffi in .venv (s9's blocker resolved). Downloaded 602 scratches (263 gcc2.7.2-psx, 190 gcc2.7.2-cdk, 149 psyq3.5) via `python3 tools/decomp_me_scrape.py download --compiler <X> --limit N --out tmp/grind/cpu_side_move_dir_4/s44/corpus/<X>`, then `search --asm-file asm/funcs/cpu_side_move_dir_4.s --top 10` against each corpus.
 - result: Max similarity across all 3 corpora: 0.079 (psyq3.5 slug h1LHX 'main' - sonicdcer's Kalisto engine init boilerplate, structurally unrelated to a poll-loop/debug_printf dispatcher). gcc2.7.2-psx top 0.053 (ape_escape func_80020F6C, unrelated). gcc2.7.2-cdk top 0.071 (func_8009BCE4, unrelated). All top-10s per corpus fall in background-noise band [0.024, 0.079]. No candidate crosses the meaningful-overlap threshold.
 - verdict: KILLED
+
+## [s45] The Kengo dump contains at least one non-stub game function body that could serve as a structural template for csmd4's h5 basin flip.
+- mechanism: Kengo is Lightweight's PS2 successor reusing the Marionation engine; if any nm_cpu / nm_single_game / adjacent numata function extracted with a body, its 5-arg debug_printf shape (if present) would document original-source structure for csmd4.
+- probe: grep -vE '\{\}$' Kengo/kengo_functions_full.txt to enumerate all 73 non-stub bodies; classify by subsystem.
+- result: 73 non-stub bodies inventoried; 100% are libc/math (cos/sin/atan2/sqrt/sprintf/_vfprintf_r/etc). Zero game functions carry extracted bodies. Zero 5-arg variadic dispatch shapes present.
+- verdict: KILLED
+
+## [s45] The SOTN decomp corpus (../sotn-decomp) contains a pure-C matched function with the same 5-arg variadic + adjacent-byte-index tbl-dispatch shape as csmd4's debug_printf window, transferable as a structural template.
+- mechanism: SOTN uses GCC 2.7.2 PsyQ variant (compiler-class match to BB2); shared codegen would imply shared closing form for the same source-shape.
+- probe: grep -rlnE '\bdebug_printf\s*\(' + grep -rlE '\w+\[\w+\[[01]\]\]' across ../sotn-decomp/src/**/*.c (1494 files).
+- result: Zero debug_printf references (SOTN uses OSReport/FntPrint/sprintf families). Tbl-indexed dispatch pattern present at 8+ sites but none is 5-arg variadic + adjacent-byte-index shape. Konami PsyQ variant + distinct macro surface further block transplant.
+- verdict: KILLED

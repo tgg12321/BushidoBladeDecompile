@@ -796,3 +796,17 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s44] src/system.c is unchanged (h5 candidate.c form remains masked-2 floor; not applied for this session's measurement since the probe is external-corpus lookup, not code editing).
 
 - [s44] The full rederive modality (m2c s8 KILLED, sibling-transplant s9 KILLED, decomp.me corpus s44 KILLED) is now measurably closed; no further rederive angle remains without external inputs (Kengo source dump, external asm-recognition corpus, or human expert asm inspection).
+
+- [s45] HEAD src/system.c sandbox cpu_side_move_dir_4 --disable all = masked 7 (target_insns=160, build_insns=160); h5 candidate.c remains masked-2 floor unchanged.
+
+- [s45] Kengo/kengo_functions_full.txt whole-dump inventory: 4169 lines / 2409 empty stubs / 73 non-stub bodies. Non-stub sample: cos, sin, cosf, sinf, atan2, sqrt, __ieee754_atan2, sprintf, _sprintf_r, __sbprintf, _vfprintf_r — 100% runtime library, zero game code.
+
+- [s45] Kengo grep -cE '\bprintf\b|\bfprintf\b|\bsprintf\b' = 4 (all libc). grep -c debug_printf = 0.
+
+- [s45] Kengo nm_cpu.c section (lines 1023-1089): 64/64 entries are `{}$` stubs including cpu_side_move_dir at 0x13aa60 (=640 bytes = 160 insns, exact BB2 csmd4 size match per s18/s36).
+
+- [s45] sotn-decomp local checkout at ../sotn-decomp: 1494 .c files; grep -rln debug_printf returns zero hits; SOTN's fmt family is OSReport / FntPrint / sprintf — orthogonal API to BB2's debug_printf.
+
+- [s45] Tbl-indexed byte dispatch shape (`\w+\[\w+\[[01]\]\]`) present in SOTN at doors.c, doppleganger.c, unk_46E7C.c, game_handlers.c, iso9660.c, 4E04C.c, 20B48.c, 3AB08.c; manual inspection confirms none share BB2 csmd4's 5-arg variadic + adjacent-byte-index dispatch surface.
+
+- [s45] Rederive-modality closure list extended from 9 → 10 sub-angles: prior s8 m2c / s9 marionation P1-P4 / s17 decomp.me shingle / s18 Kengo cpu_side_move_dir stub / s26 decomp.me residual + BB2 in-repo residual / s27 saEft01Init decl-transfer / s35 idx_1495 respellings / s36 BB2 5-arg template + Kengo numata subsystem / s44 decomp.me BB2-toolchain corpus + s45 (this session) cross-project SOTN scan + Kengo whole-dump body inventory.
