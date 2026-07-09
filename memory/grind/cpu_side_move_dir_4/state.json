@@ -1,7 +1,7 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 56,
+ "session_count": 57,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -345,18 +345,24 @@
    "floor": 2,
    "modality": "structural",
    "headline": "H3 (LINE_NOTE condensation) KILLED both empirically (single-line + blank-line both INERT masked=2) and architecturally (production CC_FLAGS has no -g, so cc1 never emits NOTE_INSN_LINE \u2014 the LUID coun"
+  },
+  {
+   "session": 57,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "s57 structural: cross-block-scope hoist of block-3 locals (arg5/t0/pp) to fn-scope KILLED at both tail-hoist and top-of-fn-body-hoist placements (masked=2 INERT bytes-identical vs h5 baseline); extend"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "H1 (unchanged from s55): The sched2 post-reload LUID renumbering admits a shift-by-1 lever via a C-source construct that alters the position of exactly one sched2-visible neighbor without disturbing h5's s-reg web.",
+   "hypothesis": "H1 (unchanged from s55/s56): The sched2 post-reload LUID renumbering admits a shift-by-1 lever via a C-source construct that alters the position of exactly one sched2-visible neighbor without disturbing h5's s-reg web.",
    "mechanism": "sched.c::rank_for_schedule at sched2 sees insns 111/121 at plain priority 2 (not LAUNCH) with LUID delta 1 (s43 log line 775). A one-slot shift on a non-residual neighbor could tip 121's LUID advantage without flipping sched1's decision.",
-   "next_probe": "s57 forensics: read tmp/grind/cpu_side_move_dir_4/s6/csmd4_only.log sched2 SCHEDDBG PICK events + READY-list at clock=10..15; enumerate insns at post-reload LUIDs 4..9; cross-check RTL predecessor chains vs KILLED family list; report smallest (insn, C-lever) pair that shifts one LUID slot, or null-result."
+   "next_probe": "s58 forensics: read tmp/grind/cpu_side_move_dir_4/s6/csmd4_only.log sched2 SCHEDDBG PICK events + READY-list at clock=10..15; enumerate insns at post-reload LUIDs 4..9; cross-check RTL predecessor chains vs KILLED family list; report smallest (insn, C-lever) pair that shifts one LUID slot, or null-result."
   },
   {
-   "hypothesis": "H2 (unchanged from s55): ALLOCDBG conflict-list side-by-side diff on p78 (idx_1495) across two respellings will reveal spelling-dependent conflict-list variation that masked-only measurement cannot see.",
+   "hypothesis": "H2 (unchanged from s55/s56): ALLOCDBG conflict-list side-by-side diff on p78 (idx_1495) across two respellings will reveal spelling-dependent conflict-list variation that masked-only measurement cannot see.",
    "mechanism": "s42 confirmed p78 conflict list at h5 baseline; s35 measured non-zero sandbox regression on 3 idx_1495 spellings, indicating p78's dynamic live range changes with spelling. ALLOCDBG dumps global-alloc conflict-list construction; diff-ing names the mechanism producing the +1/+2 sandbox delta.",
-   "next_probe": "s57 forensics: rebuild gccdbg with BB2_ALLOC_DEBUG=1; capture cc1 dumps for h5 baseline + h5 with idx_1495=(u8*)&D_800A1495 + h5 with adjacency-index spelling; diff .greg conflict lists for p78 pairwise; correlate deltas to sandbox measurements."
+   "next_probe": "s58 forensics: rebuild gccdbg with BB2_ALLOC_DEBUG=1; capture cc1 dumps for h5 baseline + h5 with idx_1495=(u8*)&D_800A1495 + h5 with adjacency-index spelling; diff .greg conflict lists for p78 pairwise; correlate deltas to sandbox measurements."
   }
  ],
  "judge_constraints": [

@@ -956,3 +956,17 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s56] s56 modality note: hand-STRUCTURAL now closes another dimension. Combined with s3 (13 block-local axes closed), s4 (do-while(0) 4 scopes), s5 (block-scope carriers, named dispatch, whole/nested/call-only wraps + permuter fresh-seed), s9 (m2c + 4 marionation transplants), s11/s12 (5 arg5_addr two-SETs), s13 (fn-body hoist + g3 carrier + h5-chassis permuter), s14 (directed-PERM), and now s56 (physical-line/LINE_NOTE axis), the structural axis on csmd4's h5 base is fully swept modulo the two live forensics frontiers (H1 sched2 LUID neighbor-shift, H2 ALLOCDBG conflict-list diff on idx_1495 spellings).
 
 - [s56] s56 src/system.c restored to h5 candidate at session end; post-restore sandbox re-measures masked=2. candidate.c unchanged (h5 form remains masked-2 floor).
+
+- [s57] s57 baseline: HEAD src/system.c (both-named arg4/arg5 array-index inline block form) scores masked=7 (rules_dropped=5, cheat_asm_stripped=22); applying h5 candidate.c inline block restores masked=2 (target=160, build=160). h5 chassis alive.
+
+- [s57] s57 P1 (block-3 locals hoisted to TAIL of fn-body decl list): masked=2 INERT, bytes byte-identical to h5 baseline. First empirical measurement on csmd4 of cross-block-scope decl hoisting for variables used in a single downstream block.
+
+- [s57] s57 P2 (block-3 locals hoisted to TOP of fn-body decl list, before int new_var): masked=2 INERT, bytes byte-identical to h5 baseline AND to P1. Fn-body decl ordering has zero effect on the sched1 pair-swap residual.
+
+- [s57] s57 mechanism corollary: the twin marionation s2/s3 finding 'pseudo birth follows RTL first-use, not C decl order' — previously measured only at BLOCK-local decl-reversal axis (s2 A_decl_reverse, s3 V12 decl_pp_first) — now measurably transfers to the CROSS-BLOCK-SCOPE axis (arg5/t0/pp declared at fn-scope but used only inside block=3). The rule is scope-agnostic on csmd4.
+
+- [s57] s57 modality-closure extension: combined with s3 (13 block-local axes closed), s4 (do-while(0) 4 scopes), s5 (block-scope carriers/named dispatch/whole+nested+call-only wraps + permuter fresh-seed), s9 (m2c + 4 marionation transplants), s11/s12 (5 arg5_addr two-SETs), s13 (fn-body hoist to do_timeout body + g3 carrier + h5 permuter), s14 (directed-PERM), s56 (physical-line/LINE_NOTE), and now s57 (cross-block-scope decl hoisting at 2 placements), the structural axis on csmd4's h5 base is fully swept modulo the two live forensics frontiers (H1 sched2 LUID neighbor-shift, H2 ALLOCDBG conflict-list diff on idx_1495 spellings) — both explicitly OUTSIDE the s57 mandated structural modality.
+
+- [s57] s57 cheat-vetting: probes P1/P2 do NOT add semantic-purposeless constructs — they merely change the C-scope declaration slot of variables that continue to be used identically at block=3 first-use points. No new pseudos, no dead stores, no register pins, no volatile coercion, no hardcoded-$N asm. Clear layer-1 cheat gates by construction.
+
+- [s57] s57 src/system.c restored to h5 candidate at session end; post-restore sandbox re-measures masked=2. candidate.c unchanged (h5 form remains the masked-2 floor).
