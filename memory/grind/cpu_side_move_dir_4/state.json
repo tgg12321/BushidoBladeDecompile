@@ -1,7 +1,7 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 6,
+ "session_count": 7,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -45,23 +45,24 @@
    "floor": 2,
    "modality": "forensics",
    "headline": "s6 forensics: instrumented cc1 names the h5 masked-2 residual as sched.c::adjust_priority LAUNCH-vs-LAUNCH LUID tiebreak between insn 111 (p106=p101<<2, single-set via mult-by-power-of-2 expander) and"
+  },
+  {
+   "session": 7,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "s7 forensics: h5 basin's LAUNCH sentinel on insn 111 originates at expmed.c::expand_mult case alg_shift line 2244 (hardcoded NULL_RTX target); frontier #1 (combine.c num_sets lever) KILLED \u2014 MIPS md h"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A different mult-form for the t0 chain that keeps p106 single-use but forces GCC to CSE or combine it into a hard-reg copy earlier could suppress LAUNCH on insn 111 without collapsing to the g3 basin.",
-   "mechanism": "combine.c pass2 can merge (set p106 (ashift p101 2)) with a following (set p101 (plus p106 p79)) into (set p101 (plus (ashift p101 2) p79)) IF the intermediate has a single use. When that merge fires, p106 vanishes and the multi-set p101 gets a synthetic 3rd set that re-launches under a different insn ID.",
-   "next_probe": "Instrument combine.c decisions on the h5 base and check whether the p106 pseudo is a merge-candidate that combine is REJECTING; if so, identify which combine test blocks the merge (probably num_sets > 1 on p101 or set validity). If combine's rejection is what preserves the LAUNCH, a C-source lever that changes p101's set-count could unstick it."
+   "hypothesis": "Frontier #3 (only untested): duplicated-statement-into-arms lift on the t0 chain \u2014 duplicate `t0 = idx[0]` or `t0 *= 4` into two byte-neutral arms of an upstream runtime condition (cross-jump re-merges to identical bytes) to raise reg_n_refs on t0's pseudo (p101/p113) without changing emitted bytes; higher qty priority may steer allocation without leaving h5 basin.",
+   "mechanism": "flow.c reg_n_refs counts each duplicate as a distinct ref \u2192 qty_compare pri = floor_log2(refs)*refs*size/span rises. Cross-jump (jump2 find_cross_jump) re-merges identical suffixes so the emitted bytes are unchanged. If the ref-count lift changes global-alloc's ranking without displacing the h5 basin's mult-expander LAUNCH, insn 111's tiebreak vs 121 might resolve differently.",
+   "next_probe": "Wrap the t0 assignment in `if (D_800F19BC) { t0 = idx_1494[0]; } else { t0 = idx_1494[0]; }` (byte-neutral duplication on a pre-existing runtime var), FAKE-annotate per [[duplicated-statement-into-arms]], sandbox --disable all, verify build_insns unchanged and masked score vs h5 baseline of 2. If masked <2, verify byte-neutrality via retire dry-run. Requires layer-2 review before commit (this session does NOT commit)."
   },
   {
-   "hypothesis": "The LAUNCH-tie between 111 and 121 could be broken by making insn 121 non-LAUNCH (make p107, the arg5-addr pseudo, multi-set) instead of making insn 111 non-LAUNCH. If 121 stops launching, 111 (LAUNCH) beats it and emits first in backward = last in emission -> pair emits as 118,121,111 which is target's shape.",
-   "mechanism": "birthing_insn_p wants single-set for LAUNCH; if p107 has two SETs (e.g. `p107 = v0; p107 = p107 + tbl;` split-add), 121 becomes non-LAUNCH and 111's LAUNCH wins the pair.",
-   "next_probe": "Try splitting the arg5-addr computation into a multi-set p107 shape: `s32 arg5_addr; arg5_addr = v0; arg5_addr = arg5_addr + (s32)tbl_125c; arg5 = *(s32*)arg5_addr;` on the h5 base; sandbox --disable all and diff bytes vs h5. This is a candidate untested by s3 V4 (which named the addr but kept single-set) \u2014 the deliberate multi-set on p107 is the untested axis."
-  },
-  {
-   "hypothesis": "Rebasing the launching insn's LUID via a duplicated-statement-into-arms lift on the t0 chain (sanctioned 2026-07-01) could give insn 111 more refs / different birth so the tiebreak or the pri ordering changes.",
-   "mechanism": "duplicated-statement-into-arms adds real duplicated statements into 2+ control-flow arms; flow.c REG_N_REFS lift raises the ref count on the duplicated dest without breaking byte-neutrality (cross-jump re-merges). Higher refs -> different qty pri -> potentially different LUID position or different LAUNCH condition through birth-order change.",
-   "next_probe": "On the h5 base, duplicate `t0 = idx_1494[0];` (or `t0 *= 4;`) into two arms of a byte-neutral if/else on a pre-existing runtime condition upstream of the debug_printf window (e.g. wrap in `if (D_800F19BC) { t0 = idx[0]; ...} else { t0 = idx[0]; ... }` where both arms are identical so cross-jump re-merges). Measure masked and window-diff vs h5's 2. Prereq: byte-neutrality verification + FAKE annotation + layer-2 review before commit."
+   "hypothesis": "Untested variant of frontier #2 that avoids cse collapse: express the arg5 address as a multi-set through a WRITTEN name that survives cse \u2014 e.g. two independent additions rather than a MOVE-then-add (`p107 = v0 * 4; p107 = p107 + tbl_125c_lo; ...` split via an intermediate constant load whose intermediate is not a copy of v0*4).",
+   "mechanism": "cse.c collapses `x = y; x = x + k` back to `x = y + k` when y's assignment to x is a dead move. But two independent adds `x = a + b1; x = x + b2` where neither addend is a dead intermediate cannot fold back. If arg5_addr genuinely receives two SETs surviving to flow, birthing_insn_p returns FALSE for the second one (multi-set dest) \u2192 insn 121 loses LAUNCH \u2192 insn 111 (still LAUNCH) beats it \u2192 pair emits target-order.",
+   "next_probe": "Draft a form where the arg5 address is computed via two independent PLUS SETs surviving cse \u2014 e.g. constant-fold-defeating split of `tbl_125c` addressing via a runtime-live scratch. Measure masked + inspect .cse2/.combine to confirm both SETs survive to flow. Concrete C sketch pending \u2014 this session did not draft; s7 was mandated-forensics not permuter."
   }
  ],
  "judge_constraints": [],
