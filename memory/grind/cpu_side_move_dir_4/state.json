@@ -1,7 +1,7 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 78,
+ "session_count": 79,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -477,18 +477,24 @@
    "floor": 2,
    "modality": "forensics",
    "headline": "s78 forensics: H2-extension byte-neutral single-carrier refs-lift KILLED for local scalar pointer carriers p73/p77/p78/p79 -- flow.c delete_noop_moves DCE-eliminates self-assigns before local-alloc (0"
+  },
+  {
+   "session": 79,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "s79 forensics F16 KILLED: reorg.c delay-slot fill mechanism is pass-order+topology invalid for the block=3-interior {sll@57 <-> addu@58} pair-swap residual"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F6 (unchanged, structural modality): SOTN duplicated-statement-into-arms on non-arg5 co-live carrier (p73/p77/p79) via cross-jump re-merge is the ONLY remaining byte-neutral single-carrier refs-lift mechanism after s78's forensics closure of the isolated-local-USE branch.",
-   "mechanism": "duplicated-statement-into-arms sanctioned 2026-07-01 carve-out permits duplicating a REAL statement into 2+ control-flow arms; jump2 find_cross_jump collapses identical byte-suffixes so emitted-byte count is preserved while reg_n_refs on the duplicated statement's read-carriers rises. Applied to a tbl_125c[k] or idx_1494 read in the success->do_timeout and direct-goto-do_timeout arms, would lift p73/p77 refs above p78's demoted priority=138 without disturbing the four-carrier rotation atomicity.",
-   "next_probe": "Draft 2-3 duplications of a real read-statement referencing p73(tbl_125c) or p77(idx_1494) into BOTH do_timeout arrival arms; measure sandbox --disable all AND inspect emitted .s for cross-jump re-merge preservation of byte count; if byte-neutral AND ALLOCDBG shows p73 or p77 refs++ isolated from p78/p79, promote to layer-2 cheat-reviewer with FAKE annotation."
+   "hypothesis": "F6 (retained, structural modality): duplicated-statement-into-arms carve-out on p73/p77 via cross-jump re-merge \u2014 remains the ONLY documented byte-neutral single-carrier refs-lift mechanism after s78 (isolated-local-USE forensics KILL) and s79 (delay-slot-fill forensics KILL) close the forensics-modality axis.",
+   "mechanism": "Sanctioned 2026-07-01 duplicated-statement-into-arms permits duplicating a REAL read statement into 2+ control-flow arms; jump2 find_cross_jump collapses identical byte-suffixes so emitted-byte count is preserved while reg_n_refs on the duplicated read's carrier rises. Applied to a tbl_125c[k] or idx_1494 read in the success->do_timeout arm and the direct-goto-do_timeout arm.",
+   "next_probe": "Draft 2-3 duplications of a real read-statement referencing p73(tbl_125c) or p77(idx_1494) into BOTH do_timeout arrival arms; measure sandbox --disable all AND inspect emitted .s for cross-jump re-merge preservation of total byte count; if byte-neutral AND ALLOCDBG shows p73 or p77 refs++ isolated from p78/p79, promote to layer-2 cheat-reviewer with FAKE annotation."
   },
   {
-   "hypothesis": "F16 (new, forensics modality): a byte-neutral single-carrier refs-lift IS achievable via a construct that reaches local-alloc as a REAL insn but jump.c/reorg.c fills a delay slot with it, preserving emitted-byte count. Example: a redundant read whose lw drops into a previously-nop delay slot elsewhere in the function.",
-   "mechanism": "reorg.c's fill_slots_from_thread greedily fills bnez/jmp delay slots by scavenging insns whose data flow permits reordering. If an added `s32 x = *idx_1495;` is placed adjacent to a bnez whose current delay slot is a nop, reorg.c may promote the load into the slot, adding ONE lbu emission but not increasing total insn count. Precondition: identify a current-nop delay slot in the function's asm (audit target.s for `\\tnop$` following jumps).",
-   "next_probe": "grep asm/funcs/cpu_side_move_dir_4.s for `nop` following bnez/beq/j to enumerate current delay-slot nops; for each, identify the pseudo-carriers live at that program point; propose a C-level extra-read that reorg.c would nominate to fill that slot; measure sandbox and ALLOCDBG. Distinct from H2's local-alloc-USE angle -- targets reorg.c's delay-slot filling instead."
+   "hypothesis": "F17 (new, forensics modality): sched2's LAUNCH-priority for insn 121 (arg5_addr p107 = p75 + p79) can be DEMOTED to non-LAUNCH by making p107 flow-time multi-set via a construct that survives combine.c's addsi3_internal substitution AND reaches sched2 without altering the emitted byte count. All simple two-SET decompositions were closed in s11+s12 (5 realizations KILLED); the remaining un-probed sub-axis is a two-SET where the SECOND set is a CALL-clobber shadow (e.g. return-value fold via a preceding call whose return happens to equal p75+p79).",
+   "mechanism": "combine.c substitutes trivial two-SET patterns through mips.md addsi3_internal (per s7:213); a two-SET whose second SET originates from a jal return-value coincidence would defeat combine's operand-tracking (call-clobber semantics). Preserves flow.c reg_n_sets(p107)=2 -> sched2 birthing_insn_p returns FALSE at insn 121 -> no LAUNCH -> insn 111 wins the pair without a LUID tiebreak.",
+   "next_probe": "Identify any function CALL in block=2 (before block=3) whose return value is arithmetically equal to (base + idx*4) for the arg5_addr computation. sys_VSync's return goes to D_800F19B8 (offset by +0x3C0). No obvious candidate; probably requires a structural-modality search across block=2 predecessors. Distinct from all s11+s12 simple two-SETs."
   }
  ],
  "judge_constraints": [

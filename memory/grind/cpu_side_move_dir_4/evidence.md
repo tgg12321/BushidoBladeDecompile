@@ -1286,3 +1286,17 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s78] P2 (real p78 branch-read before poll:): sandbox masked=15, target_insns=160, build_insns=163 (+3 insns). Regression matches +13 collapse basin family (s8/s65/s74 all landed at masked ~13-15 for constructs that added ~3 insns to the debug-window schedule).
 
 - [s78] The two probes together bracket the space: no byte-neutral middle ground exists for local scalar pointer carriers under GCC 2.7.2 flow.c/combine.c semantics. Any p73/p77/p78/p79 refs-lift must ride on either (a) a real statement duplicated across control-flow arms that jump2 cross-merges (F6 SOTN carve-out, structural modality), or (b) a non-local construct (global-scope declaration, macro expansion) outside this session's forensics scope.
+
+- [s79] s79 baseline: HEAD src/system.c (both-named form) sandbox --disable all = masked 7; h5 candidate.c applies to reach masked 2 per ledger (unchanged this session).
+
+- [s79] Block=3 topology: label .L80080E64 (L48) through jal debug_printf (L72) is a straight-line 20-insn block with ZERO interior branches. Residual pair {sll@L57 <-> addu@L58 <-> sll@L59} is BLOCK-INTERIOR.
+
+- [s79] Delay-slot enumeration in target asm (asm/funcs/cpu_side_move_dir_4.s L1-L176): 14 NOP delay slots identified. Reachable-from-block=3-interior without branch traversal: L52 (jal tslTm2LoadImage_2, block=3 head PRECEDING pair) and L73 (jal debug_printf, block=3 tail AFTER pair). All other NOP slots are in block=2 (upstream), the downstream loop body, or the epilogue.
+
+- [s79] GCC 2.7.2 pass order confirmed via tools/gcc-2.7.2/toplev.c rest_of_compilation: sched1 -> local_alloc -> global_alloc -> sched2 -> reorg.c dbr_schedule/fill_slots_from_thread. reorg.c is STRICTLY DOWNSTREAM of sched2; the pair-swap decision (LUID tiebreak on LAUNCH ties at insn 111/121) is finalized by sched2 BEFORE reorg.c runs.
+
+- [s79] L52 (jal tslTm2LoadImage_2 delay) has no free scavenging insn: preceding block=3 head insns (lui $a0, addiu $a0) are the jal's arg set-up. L73 (jal debug_printf delay) preceding insns all feed a0-a3 arg registers, so reorg.c has no independent-flow candidate; this is the mechanism that produced the current NOP fills in the target.
+
+- [s79] F16's precondition (delay-slot fill can influence pair order) fails on two independent grounds: (1) TOPOLOGY - the pair is block-interior, no delay slot exists between the two paired insns for reorg.c to consume; (2) PASS-ORDER - sched2 commits the ordering before reorg.c runs, so any delay-slot-only materialization cannot influence a decision already made.
+
+- [s79] Cross-linkage to s6 LUID-reorder: any C-level added read that survives to sched2 perturbs the LUID tie exactly like the s6-measured `t0*=4` late-move -> masked 6 g3 basin. The frontier's assumption that the added read could be reorg.c-only (invisible to sched2) is falsified by DCE: an insn invisible to sched2 is by definition DCE'd before sched2 and never reaches reorg.c.
