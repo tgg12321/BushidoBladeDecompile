@@ -1276,3 +1276,13 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s77] s77 permuter modality now measurably CLOSED across every reachable structural region of the function: prologue lineswap (s76 KILLED), inline block LINESWAP+GENERAL (s67/s68 KILLED), poll pre-region 3-stmt LINESWAP (s67 F2 KILLED), poll if-arm LINESWAP (s77 KILLED), inline block fresh-seed random (s5/s13/s14 KILLED). No h5-preserving permuter region remains that has not been either exhaustively enumerated or fresh-seed sampled.
 
 - [s77] s77 Judge-constraint compliance: no canonical-asm framing surfaced; no rederive resurfacing; the KILLED outcome eliminates a permuter neighborhood on the H5 chassis (the mandated modality axis) without violating the BINDING constraints from s40/s41/s46/s54/s55/s64/s71.
+
+- [s78] instrumented cc1 (tmp/gccdbg/cc1, BB2_*_DEBUG=1 -da) baseline dump on h5 candidate produced identical QTYDBG (276 lines) and ALLOCDBG (102 lines) traces to s69's h5 dump, confirming reproducibility of the forensics harness.
+
+- [s78] sandbox baseline h5 candidate applied to src/system.c: masked=2, target_insns=160, build_insns=160 (unchanged from ledger).
+
+- [s78] P1 (idx_1495 self-assign before poll:): sandbox masked=2, target_insns=160, build_insns=160 (byte-neutral). ALLOCDBG per-pseudo diff: 0 differing pseudos out of 102. QTYDBG per-reg1 refs max diff: 0 out of 276 entries. flow.c delete_noop_moves confirmed to remove (set p78 p78) upstream of local-alloc.
+
+- [s78] P2 (real p78 branch-read before poll:): sandbox masked=15, target_insns=160, build_insns=163 (+3 insns). Regression matches +13 collapse basin family (s8/s65/s74 all landed at masked ~13-15 for constructs that added ~3 insns to the debug-window schedule).
+
+- [s78] The two probes together bracket the space: no byte-neutral middle ground exists for local scalar pointer carriers under GCC 2.7.2 flow.c/combine.c semantics. Any p73/p77/p78/p79 refs-lift must ride on either (a) a real statement duplicated across control-flow arms that jump2 cross-merges (F6 SOTN carve-out, structural modality), or (b) a non-local construct (global-scope declaration, macro expansion) outside this session's forensics scope.
