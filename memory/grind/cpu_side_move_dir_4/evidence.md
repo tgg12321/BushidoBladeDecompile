@@ -696,3 +696,19 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s37] Cross-symbol idx_1495 lie at src/system.c:406 is in the semantic-lie family the 2026-07-05 ruling forbids but is currently LOAD-BEARING for h5 s-reg web (s8 honest-respelling +13); safe retirement is blocked until h5 closes or a different web is found.
 
 - [s37] Synthesis artifact written at tmp/grind/cpu_side_move_dir_4/s37/synthesis.md documenting the terminal mechanism, closed levers, surviving axes, layer-1 risk analysis, and ruling-request precondition.
+
+- [s38] s38 baseline: h5 candidate applied to src/system.c scores masked=2, target_insns=160, build_insns=160 via `& tools/wteng.ps1 main sandbox cpu_side_move_dir_4 --disable all`.
+
+- [s38] s38 target-asm downstream audit (asm/funcs/cpu_side_move_dir_4.s L80080ED4-L800810004): the only three uses of idx_1494 / idx_1495 after debug_printf are u8-value reads for callback args and the temp==2/5 test at L80080F3C/L80080F70/L80080F9C. Target has ZERO downstream site that would legitimately reference `arg5` (the s32 tbl_125c-indexed value) — every use is the raw u8 index byte, not the scaled table lookup.
+
+- [s38] s38 P1 (idx_1495 seed at arg5 lbu + decl-order swap 405-406): masked=7, build_insns=161 (+1 physical insn). Regression +5. The two levers compound additively; the decl-swap forces a distinct lui/addiu materialization for idx_1494 during prologue (mirrors the s27 P1 fn-scope tbl_11dc materialization: +3 insns via lui/addiu prologue pair) rather than compensating.
+
+- [s38] s38 P2 (idx_1495 seed alone, reconfirmed): masked=3, build_insns=160. Matches s35 P1 measurement verbatim — the +1 register diff basin is stable and reproducible.
+
+- [s38] s38 P3 (idx_1495 seed + `u8 mode = *idx_1495;` legitimate hoist at callback site): masked=3 INERT vs P2. cse.c folds the single-use named local back to *idx_1495 direct read; the reg web does NOT shift; the +1 diff is unabsorbed. Confirms s5-F1a/F1b family finding that single-use named locals at flow time are cse-transparent — the finding transfers from the debug_printf window to the post-window arms.
+
+- [s38] s38 mechanism corollary: axis-(b) compensating adjustment can NOT be realized in pure C via a named local at the callback site. To land idx_1495 in a distinct callee-save that absorbs the +1 diff, a fresh pointer/value carrier participating in the flow-time allocation web would be required — but any such carrier without semantic purpose beyond changing register assignments fails no-new-park-categories cheats-by-any-spelling. The frontier's precondition (`carrier MUST participate in a downstream use with real semantic purpose, not just live-across the debug_printf window`) is met by the `mode` local, but cse eliminates it from participation. There is no C form that both (a) has semantic purpose AND (b) survives cse to distinct-pseudo at flow time.
+
+- [s38] s38 rejected forms saved: memory/grind/cpu_side_move_dir_4/rejected/s38_idx1495_seed_plus_decl_swap.c (P1 diff), s38_idx1495_seed_plus_mode_carrier.c (P3 diff).
+
+- [s38] s38 h5 candidate remains masked-2 floor unchanged; src/system.c restored to HEAD (both-named form, masked=7 baseline) at session end via `git checkout HEAD -- src/system.c`.

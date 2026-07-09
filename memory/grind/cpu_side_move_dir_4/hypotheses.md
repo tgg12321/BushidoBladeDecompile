@@ -713,3 +713,21 @@
 - probe: s37 ledger cross-read only.
 - result: The three theoretical mechanism paths are compiler-source-closed or measurement-closed across all C-spelling realizations tried in 27 sessions of structural + permuter + forensics work.
 - verdict: CONFIRMED
+
+## [s38] There exists a post-debug_printf arm that already computes tbl_125c[idx_1494[1]] (arg5's s32 value) under a distinct C spelling, admitting an asymmetric arg5-only ref-lift.
+- mechanism: local-alloc.c qty_compare uses flow-time REG_N_REFS; an additional legitimate use of arg5 (not t0) lifts pri(arg5) above pri(t0) at the strict-win threshold, flipping the p107/p106 allocation and killing the 121/111 LUID tie.
+- probe: Audit asm/funcs/cpu_side_move_dir_4.s post-debug_printf arms for any lbu/lw/sll/addu cluster that computes the s32-scaled tbl_125c[idx_1494[1]] value.
+- result: Downstream sites only use raw byte values: L80080F3C `lbu 0(s4)`=*idx_1495=idx_1494[1] (u8, callback arg), L80080F70 `lbu 0(s2)`=*idx_1494 (u8, callback arg), L80080F9C `lbu 0(s2)`=*idx_1494 (u8, temp==2/5 test). ZERO downstream sites compute the s32 tbl_125c[idx_1494[1]] value; the only tbl-indexed read in the entire function body is the arg5 computation itself.
+- verdict: KILLED
+
+## [s38] Pairing s35 P1 (v0 = *idx_1495 at the arg5 lbu site, masked=3) with a decl-order swap at src/system.c:405-406 (idx_1495 declared BEFORE idx_1494) absorbs the +1 register diff via s-reg birth-luid reordering.
+- mechanism: local-alloc.c pseudo birth follows RTL first-use; reordering the two pointer inits shifts idx_1495 and idx_1494 seat allocation and could compensate for the extended idx_1495 live range across the debug_printf window.
+- probe: Apply s35 P1 (v0 = *idx_1495 inside inline block) + swap lines 405-406 (idx_1495 init before idx_1494 init). Sandbox --disable all.
+- result: masked=7, target_insns=160, build_insns=161 (+1 physical insn). +5 regression vs h5. The decl swap compounds with the idx_1495 seed additively; a lui/addiu materialization for idx_1494 shifts prologue and disturbs s-reg web further, opposite of compensating.
+- verdict: KILLED
+
+## [s38] Pairing s35 P1 with a legitimate named carrier at src/system.c:456 (u8 mode = *idx_1495; then callback(mode, ...)) participates in the downstream *idx_1495 semantic use and lands idx_1495 in a distinct callee-save that absorbs the +1 diff.
+- mechanism: A named local at the callback site has real semantic purpose (reading callback arg into a local before passing), so it clears layer-1 cheat-vet; if cse.c does NOT fold it, mode's pseudo lands in a distinct s-reg and the extended idx_1495 live-range +1 is absorbed by the reg-web shift.
+- probe: Apply s35 P1 (v0 = *idx_1495) + inject `u8 mode = *idx_1495;` before the D_800A11B8 callback at src/system.c:456, pass mode instead of *idx_1495.
+- result: masked=3, target_insns=160, build_insns=160. INERT vs s35 P1 baseline (masked=3). cse.c copy-propagation folds the single-use `mode` local back to a direct *idx_1495 read; final RTL is byte-identical to s35 P1 alone. The named local is cse-transparent and does NOT create a distinct pseudo at flow time.
+- verdict: KILLED

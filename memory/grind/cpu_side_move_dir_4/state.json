@@ -1,8 +1,8 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 37,
- "current_modality": "synthesis",
+ "session_count": 38,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 0,
@@ -231,18 +231,19 @@
    "floor": 2,
    "modality": "synthesis",
    "headline": "s37 synthesis: 35-session mechanism space measurement-closed; only two structural-modality axes remain (asymmetric arg5-only ref-lift via legitimate downstream user; idx_1495 micro-basin + coupled dec"
+  },
+  {
+   "session": 38,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "s38 structural: Frontier #1 KILLED by asm audit (no downstream site computes tbl_125c[idx_1494[1]]); Frontier #2 axis (a) decl-swap KILLED (+5, +1 insn) and axis (b) named-carrier at callback KILLED ("
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Asymmetric arg5-only REG_N_REFS lift via a legitimate downstream semantic user of arg5 (not t0) in one of the post-debug_printf arms (do_timeout/poll/success/check) reaches pri(arg5) > pri(t0) at strict-win threshold, flipping the qty allocation and killing 121's LAUNCH-vs-111's LUID tie.",
-   "mechanism": "local-alloc.c qty_compare uses flow-time REG_N_REFS. An additional legitimate use of arg5 in an outer arm lifts its refs by 1 with no matching t0 lift. Every symmetric lever KILLED across s5/s25/s30; asymmetric requires a downstream site that already computes tbl_125c[idx_1494[1]] under a distinct spelling and can be legitimately re-derived as arg5.",
-   "next_probe": "Structural session: audit asm/funcs/cpu_side_move_dir_4.s post-debug_printf arms for any existing byte-neutral computation of tbl_125c[idx_1494[1]] (arg5's value) under a distinct C spelling; if a legitimate site is found, restructure that C to reference arg5 directly and measure via sandbox --disable all; carefully layer-1 cheat-vet against no-new-park-categories cheats-by-any-spelling BEFORE saving as candidate. If no such site exists, report KILLED. Not a rederive frontier."
-  },
-  {
-   "hypothesis": "The idx_1495-based +1 micro-basin surfaced by s35 (masked=3 with build_insns=160 for both *idx_1495 and idx_1495[0]) admits a compensating s-reg web adjustment (decl-order swap at src/system.c:405-406, or a distinct callee-save carrier for idx_1494/idx_1495 with legitimate semantic purpose at src/system.c:456 or the D_800F19BC=*idx_1494 write) that absorbs the +1 register diff and reaches masked <= 2 while satisfying the semantic-lie retirement.",
-   "mechanism": "s35 measured that idx_1495 base pointer at the arg5 lbu site produces exactly ONE additional register diff over h5's baseline. If that specific diff can be absorbed by a coupled reassignment elsewhere in the function, the two levers compose to a net-neutral-or-lower masked score.",
-   "next_probe": "Structural session: pair idx_1495 base-pointer at the arg5 lbu site (s35 P1 or P3) with (a) a decl-order swap at src/system.c:405-406, or (b) reroute idx_1494/idx_1495 through a distinct callee-save via a fresh named carrier that participates in the existing downstream *idx_1495 use at src/system.c:456. Layer-1 cheat-vet: the carrier MUST participate in a downstream use with real semantic purpose, not just live-across the debug_printf window. If no legitimate compensating adjustment exists, KILLED closes the axis and clears the way for a ruling-request session on canonical-asm authorization for the twin family."
+   "hypothesis": "Cross-symbol idx_1495 lie at src/system.c:406 retirement is blocked by a +13 s-reg web coupling (s8 finding). Combined with s38 P1 result (+5 for idx_1495 seed at lbu + decl swap), all direct honest-respelling paths for idx_1495 are measurably regressive. The only surviving retirement axis is: keep the cross-symbol spelling as-is (accepting the semantic-lie policy debt) OR find a distinct h5-basin C form that tolerates the honest respelling. The task brief lists 'ruling-request session on canonical-asm authorization for the twin family' as the closure of Frontier #2 axis (b).",
+   "mechanism": "If BOTH structural axes (a) and (b) of Frontier #2 are KILLED (they now are: axis (a) at +5 s38 P1, axis (b) at +0 INERT s38 P3), and rederive is 8-way KILLED (s8-s36), and forensics is compiler-source-triple-KILLED (s15/s16/s24), then the C-search surface is closed at every enumerable axis. The residual pair-swap {sll4@54 <-> addu5@55} at sched2 clock=13 is a LUID-invariant coupled to basin membership; no C-source lever changes the basin without falling into g3.",
+   "next_probe": "Ruling-request session: precise question to owner is whether the twin family (cpu_side_move_dir_4 / marionation_Exec \u2014 sharing the exchange residual per marionation 6f cross-check, notes.md L131) qualifies for canonical-asm authorization on the pair {sll v0 / addu v0 / sll a0} at the debug_printf window, given (a) 38 sessions have measurement-closed every C-source axis, (b) the residual is a mechanically-explained rank_for_schedule LUID tiebreak, (c) both twins share the exchange arithmetic, and (d) the honest-respelling of idx_1495 remains blocked by +13 s-reg coupling (s8) so cross-symbol semantic-lie retirement is also blocked."
   }
  ],
  "judge_constraints": [],
