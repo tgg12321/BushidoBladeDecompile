@@ -266,3 +266,17 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s10] Judge-risk pre-analysis: M1 primary probe belongs to the split-init-accumulation-sanctioned family (2026-06-13 provisional) with a defeat-cse twist; layer-2 cheat-reviewer must verify FAKE annotation quality when s11 measures.
 
 - [s10] decomp.me corpus scrape modality remains gated on operator installing curl_cffi in .venv (unchanged from s9).
+
+- [s11] s11 baseline: h5 candidate applied to src/system.c scores masked=2 (target_insns=160, build_insns=160) via sandbox cpu_side_move_dir_4 --disable all.
+
+- [s11] s11 M1-primary (algebraic-cancel two-SET on arg5_addr) measured masked=11 (+9). Rejected form saved.
+
+- [s11] s11 M1-secondary (opaque-carrier t_alias two-SET) measured masked=29 (+27). Rejected form saved; cse did NOT unify t_alias with t0 (duplicated lbu-shift emitted).
+
+- [s11] s11 M1-tertiary (simple two-SET, no cancellation) measured masked=2 INERT — bytes IDENTICAL to h5 baseline, isolating the combine.c fold mechanism as the reason INERT and regression variants both block flow-time multi-set on p107.
+
+- [s11] s11 mechanism finding: combine.c substitutes (plus symref reg) through addsi3_internal (per s7:213), folding any simple two-SET on p107 back to single-SET RTL; two-SET forms with non-trivial subtrahends either disturb the alloc web (M1-primary) or force cse to keep intermediate pseudos distinct (M1-secondary, duplicating the lbu-mult chain).
+
+- [s11] s11 frontier #1 CLOSED across three C-realizations: no C two-SET decomposition of arg5_addr reaches flow-time with reg_n_sets(p107)=2. The mechanism-hit is not realizable via block-local structural means.
+
+- [s11] s11 candidate.c: unchanged (h5 form remains masked-2 floor). src/system.c restored to h5 candidate on session end; post-restore sandbox re-measures masked=2.

@@ -251,3 +251,21 @@
 - probe: Ledger cross-check: s6 CONFIRMED lever (a) is the g3-basin trap; #3 mechanism as previously stated realizes lever (a). No measurement needed to demote.
 - result: Frontier #3 demoted to the rejected reasoning bank (not a rejected form; a rejected LEVER DIRECTION). Retained as a warning line in synthesis.md.
 - verdict: KILLED
+
+## [s11] arg5_addr = v0 + t0; arg5_addr += (s32)tbl_125c - t0; produces two SETs of p107 with algebraic cancellation of the t0 term; combine.c cannot substitute cleanly across the two SETs so p107 survives to flow with reg_n_sets=2; sched.c birthing_insn_p returns FALSE on insn 121; 121 loses LAUNCH; 111 keeps LAUNCH via mult-expander p106 fresh dest; strict-priority tiebreak picks 111 first at clock 13 -> pair flips to target order 118,121,111.
+- mechanism: sched.c::adjust_priority + birthing_insn_p gate LAUNCH on flow-time reg_n_sets==1 of SET dest. If two SETs of arg5_addr survive to flow-time (either combine.c fails to substitute due to the -t0 subtrahend, or combine.c substitutes but leaves an intermediate pseudo), p107 reg_n_sets=2 and insn 121's LAUNCH is suppressed.
+- probe: Applied arg5_addr = v0 + t0; arg5_addr += (s32)tbl_125c - t0; on h5 base at src/system.c:434-439. sandbox cpu_side_move_dir_4 --disable all.
+- result: masked=11 (+9 vs baseline 2), target_insns=160, build_insns=160. Rejected form saved at memory/grind/cpu_side_move_dir_4/rejected/arg5_addr_algebraic_cancel_two_set.c. The +9 regression indicates combine.c either substituted through both SETs (canonicalizing the arg5 chain differently than h5's staged form), or an intermediate pseudo formed by the substitution disturbed the alloc web enough to fall out of the h5 basin. Either way the frontier mechanism (flow-time reg_n_sets(p107)=2) is not preserved in the emitted code.
+- verdict: KILLED
+
+## [s11] M1-secondary: opaque-carrier t_alias = idx_1494[0] * 4 provides a fresh pseudo whose SET_SRC (mult (lbu idx_1494) 4) may or may not unify with t0's (mult (lbu idx_1494) 4) at cse.c value-numbering, testing cse granularity; if distinct, p107 two-SET survives combine.
+- mechanism: cse.c value-numbers by RTL SET_SRC canonical form. t_alias and t0 both reduce to (mult (lbu idx_1494) 4) via expand's mult-expander; whether cse folds them determines whether reg_n_sets on p107 can be 2.
+- probe: Applied t_alias = idx_1494[0] * 4; arg5_addr = v0 + t_alias; arg5_addr += (s32)tbl_125c - t_alias; on h5 base. sandbox --disable all.
+- result: masked=29 (+27 vs baseline 2), target_insns=160, build_insns=160. Rejected form saved at memory/grind/cpu_side_move_dir_4/rejected/arg5_addr_opaque_carrier_two_set.c. cse did NOT unify t_alias with t0 (the massive +27 regression indicates the duplicated (lbu; sll) sequence is emitted), but the resulting duplicated chain is far outside the h5 basin — the extra lbu-and-shift disrupts the entire arg5-chain LAUNCH signature.
+- verdict: KILLED
+
+## [s11] M1-tertiary (mechanism isolation): simple two-SET arg5_addr = tbl_125c; arg5_addr += v0; tests whether ANY two-statement decomposition of the arg5 address survives combine.c substitution; if bytes are IDENTICAL to h5 baseline, combine fully folds and p107 stays single-SET.
+- mechanism: combine.c::try_combine substitutes (set p107 (plus p107 v0)) with previous (set p107 tbl) if the MIPS md pattern recognizes (plus symref reg) — addsi3_internal does (s7:213). Successful substitution yields single-SET p107 → 121 LAUNCH preserved → pair unchanged.
+- probe: Applied arg5_addr = (s32)tbl_125c; arg5_addr += v0; arg5 = *(s32*)arg5_addr; on h5 base. sandbox --disable all.
+- result: masked=2 INERT, target_insns=160, build_insns=160. Bytes byte-identical to h5. Rejected form saved at memory/grind/cpu_side_move_dir_4/rejected/arg5_addr_simple_two_set_inert.c. CONFIRMS combine.c substitutes cleanly through any C two-SET on p107 that lacks a non-trivially-cancellable operand — the fold reduces to single-SET RTL identical to h5's inline form. Together with M1-primary (+9 regression, non-trivial subtrahend disturbs alloc web) and M1-secondary (+27 regression, cse keeps t_alias distinct but duplicates the lbu-mult chain), the frontier's mechanism realization (flow-time reg_n_sets(p107)=2) is not reachable via any C two-SET decomposition of arg5_addr.
+- verdict: KILLED

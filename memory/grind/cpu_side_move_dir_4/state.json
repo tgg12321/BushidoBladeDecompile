@@ -1,8 +1,8 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 10,
- "current_modality": "synthesis",
+ "session_count": 11,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 0,
@@ -69,23 +69,29 @@
    "floor": 2,
    "modality": "synthesis",
    "headline": "s10 synthesis: only (b) 'kill 121 LAUNCH keep 111 LAUNCH' survives the s7-CONFIRMED expmed.c wall; frontier reset to arg5_addr two-SET (algebraic-cancel + opaque-carrier variants) as the direct hit on"
+  },
+  {
+   "session": 11,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "s11 structural: frontier M1 arg5_addr multi-set on p107 CLOSED across three C-realizations (algebraic-cancel +9, opaque-carrier +27, simple two-SET INERT via combine-fold) \u2014 combine.c substitution fol"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "M1-primary: arg5_addr algebraic-cancellation two-SET (`arg5_addr = v0 + t0; arg5_addr += (s32)tbl_125c - t0;`) makes p107 flow-time multi-set \u2192 insn 121 loses LAUNCH \u2192 111 wins strict priority \u2192 pair flips.",
-   "mechanism": "sched.c::birthing_insn_p depends on flow.c reg_n_sets computed BEFORE sched2. Two distinct SETs of arg5_addr surviving cse.simplify_plus_minus to flow yields reg_n_sets(p107)=2, non-LAUNCH on 121. 111 stays LAUNCH via expmed.c case alg_shift's fresh p106. Backward-scheduler strict priority: 111 (only LAUNCH) picked at clock 13 \u2192 emitted last \u2192 118,121,111 = target order.",
-   "next_probe": "Draft `arg5_addr` two-SET body preserving h5's t0 chain and v0 staging. FAKE-annotate: split-init-accumulation-sanctioned + defeat-cse-fold family; mechanism = birthing_insn_p reg_n_sets gate on p107. Sandbox --disable all. Instrument cc1 with BB2_SCHED_DEBUG to confirm birthing_insn_p(121) returns FALSE. Inspect .cse2 dump for whether simplify_plus_minus preserved both SETs. Layer-2 cheat-reviewer before any commit."
-  },
-  {
-   "hypothesis": "M1-secondary: if cse folds the algebraic-cancellation form, an opaque-carrier variant (`s32 t_alias = idx_1494[0] * 4; arg5_addr = v0 + t_alias; arg5_addr += (s32)tbl_125c - t_alias;`) may keep the two SETs distinct at cse's value-numbering.",
-   "mechanism": "cse.c value-numbers by RTL SET_SRC canonical form. t_alias and t0 both reduce to `(mult (lbu idx_1494) 4)` via expand's mult-expander \u2192 cse's SET_SRC hash MAY unify them (they'd fold), OR cse may keep the two pseudos distinct if their SETs live in different insns with intervening non-invalidating insns. The probe measures cse's granularity.",
-   "next_probe": "Only run if M1-primary produces masked=2 or worse (cse folded, no LAUNCH change). Same FAKE annotation family + reviewer contract. If both variants fold, the mechanism is dead and frontier collapses to decomp.me only."
-  },
-  {
    "hypothesis": "decomp.me corpus scrape via tools/decomp_me_scrape.py against asm/funcs/cpu_side_move_dir_4.s may surface a structurally distinct C form from the BB2 toolchain class (gcc2.7.2-psx / gcc2.7.2-cdk / psyq3.5).",
-   "mechanism": "Coarse asm-overlap pre-filter; manual inspection of top hits could reveal an original-source shape our search space missed. Untested since s9 (module unavailable).",
-   "next_probe": "Operator installs curl_cffi in .venv (`source .venv/bin/activate && pip install curl_cffi`). Then s11+ rederive session runs `python3 tools/decomp_me_scrape.py search --asm-file asm/funcs/cpu_side_move_dir_4.s` and manually inspects top asm-overlap hits. Not actionable in a self-contained grind session."
+   "mechanism": "Coarse asm-overlap pre-filter; manual inspection of top hits could reveal an original-source shape our search space missed. Blocked s9/s11 since curl_cffi module unavailable in .venv.",
+   "next_probe": "Operator installs curl_cffi in .venv (`source .venv/bin/activate && pip install curl_cffi`). Then rederive session runs `python3 tools/decomp_me_scrape.py search --asm-file asm/funcs/cpu_side_move_dir_4.s` and manually inspects top asm-overlap hits."
+  },
+  {
+   "hypothesis": "The h5 masked-2 residual mechanism (insn 121 LAUNCH via single-SET p107) is inherent to any C form that expresses arg5_addr as a compound expression; the only C-source lever that could suppress insn 121's LAUNCH would be to make p107 die BEFORE the sched2 window OR to make the SET dest itself a multi-set at combine-time (not at C-source-decomposition-time).",
+   "mechanism": "combine.c's substitution runs BEFORE flow.c recomputes reg_n_sets; only p101 (t0) achieves genuine multi-set via direct in-place C respellings (t0 <<= 2 or t0 += ...). No analogous C form exists for arg5_addr that resembles a genuine in-place update on a single pseudo (because arg5 is a value, not a mutable pointer being walked). Consider a pointer-shaped arg5_addr walker construct.",
+   "next_probe": "Draft a pointer-walker form for arg5_addr - e.g. `s32 *ap = (s32 *)(s32)tbl_125c; ap = (s32 *)((s32)ap + v0); arg5 = *ap;` - test whether the pointer-typed local escapes cse's plus-fold. If also folded, frontier #2 dies; if not, potential mechanism hit for p_ap multi-set."
+  },
+  {
+   "hypothesis": "arg5 memory-read is being LAUNCHED as insn 121 (a PLUS SET birthing p107); an alternate mechanism to suppress the LAUNCH is to route the memory read through a pseudo that is NOT the PLUS SET dest - e.g., let expand emit a MEM using an address computed as a subexpression without a distinct pseudo carrier for the sum.",
+   "mechanism": "expand.c emits (set dst (mem (plus base offset))) directly for `*(T*)(a+b)` when no intermediate is named - the (plus base offset) is a subexpression of the MEM's address, NOT a separate SET. In that path, no p107 for the sum exists; the sched.c LAUNCH candidate is the MEM SET itself. This is the h5 baseline shape - so mechanism #3 is the untested INVERSE: force the sum to be a SET that DIES BEFORE the memory read via a manual liveness split.",
+   "next_probe": "Draft `s32 a5 = v0 + (s32)tbl_125c; { s32 sink = a5; (void)sink; } arg5 = *(s32*)a5;` - test whether the (void)sink read materializes as a live use that dies before the MEM, altering the LAUNCH candidate list. Risk: dead-code eliminated by GCC before flow."
   }
  ],
  "judge_constraints": [],
