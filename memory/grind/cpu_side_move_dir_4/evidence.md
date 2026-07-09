@@ -1358,3 +1358,17 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s83] Combined DCE-invisible + observable-store closure: no byte-neutral p78-lift path remains in the poll-region symmetric-arm frontier; F20 is fully closed.
 
 - [s83] src/system.c reverted to exact h5 baseline candidate.c (masked=2 re-verified post-probe).
+
+- [s84] h5 baseline masked=2, build_insns=160 confirmed at session start on applied candidate.c.
+
+- [s84] Probe 1 (symmetric both-arms dup, prologue retained): masked=17, build_insns=160. Cross-jump merge fires; the F6-double-prime mechanism (refs-lift via pre-merge counting) IS reachable through this construct but produces wrong-sign misdirection (+15).
+
+- [s84] Probe 2 (asymmetric arm-A-only): masked=15, build_insns=162. No merge partner; construct emits physically +2 insns, violating byte-neutrality prereq.
+
+- [s84] Both probes together CLOSE the F6-double-prime frontier subvariant for p77 via `idx_1495 = idx_1494 + 1;` construct. Symmetric produces the misdirection signature; asymmetric fails byte-neutrality.
+
+- [s84] The wrong-sign misdirection pattern replicates s20 dup_D_800F19C0_arms_no_prologue.c (+8 wrong-sign) and matches s5 whole-block do-while(0) wrap (+11 wrong-sign): every dup-into-arms and ref-lift construct tested to date on this function has produced monotonically wrong-direction alloc-web shifts, never a lower basin.
+
+- [s84] Post-probe revert to h5 candidate.c form: masked=2 baseline restored.
+
+- [s84] Neither probe explored inserting the dup on the SUCCESS path (before `goto success;`); this remains a novel un-run subvariant of F6-double-prime with idx_1494-referencing dup, but success path does not arrive at do_timeout: label so cross-jump merge topology differs from arm-A/arm-B pair. Not measured this session.

@@ -1,7 +1,7 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 83,
+ "session_count": 84,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -507,18 +507,29 @@
    "floor": 2,
    "modality": "structural",
    "headline": "F20 poll-region symmetric idx_1495 comma-op subvariant KILLED via DCE-invisibility (masked=2, build_insns=160) - closes last un-measured p78-lift frontier"
+  },
+  {
+   "session": 84,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "s84 structural: F6-double-prime p77 idx_1494 dup-into-arms via `idx_1495 = idx_1494 + 1;` KILLED across both symmetry axes - symmetric-both-arms byte-neutral cross-jump merge but +15 misdirection, asy"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F6-double-prime: SOTN duplicated-statement-into-arms on p77 (idx_1494 address) - the one co-live-at-block=3-entry pseudo not yet tested (s20 D_800F19C0 wrong-signed; rejected/dup_tbl_125c_arms.c covered p73/p79).",
-   "mechanism": "jump2 find_cross_jump merges byte-identical tails from success->do_timeout fallthrough + direct goto do_timeout: arms. A REAL statement referencing idx_1494 duplicated in BOTH arrival arms lifts p77 refs +1 per arm at flow-time (pre-merge count) then merges back to net-zero emitted bytes. Direction opposite to D_800F19C0's carrier per s69 greg extract - may resolve the qty tie the s20 misdirection couldn't.",
-   "next_probe": "Structural session: draft candidate placing byte-neutral REAL statement referencing idx_1494 (e.g. store-to-globals recipe mirroring s20's D_800F19C0 shape but for idx_1494) at TAIL of both do_timeout arrival arms; measure sandbox --disable all; inspect build_insns (must stay 160 for merge success) and ALLOCDBG for isolated p77 refs++ (must not leak to p73/p79). AVOID semantic-lie shapes (*x - *x) and dead-branch shapes; require FAKE annotation + prep for layer-2 cheat-reviewer under duplicated-statement-into-arms carve-out."
+   "hypothesis": "F6-triple-prime: single dup of `idx_1495 = idx_1494 + 1;` on the SUCCESS path (before `goto success;`) is non-arrival-arm relative to do_timeout: so its refs-lift on p77 is isolated from the do_timeout alloc web and could differentially shift qty priorities without triggering the +15 misdirection seen in the both-arms probe.",
+   "mechanism": "Placing the dup on a path that does NOT reach do_timeout: means jump2 has no merge partner at that label, so the insn will emit physically on the success path (non-byte-neutral) UNLESS cross-jump finds a different merge site (e.g. matching insn just before `success:` label from another arm). Speculative: if cross-jump does not merge, the extra insn on success path is +1-2 physical but the refs-lift on p77 might still resolve the 4-cycle differently than both-arms probe.",
+   "next_probe": "Structural session: apply `idx_1495 = idx_1494 + 1;` at tail of the fallthrough arm just before `goto success;`; measure sandbox --disable all; check build_insns (expect +1 physical add unless merge fires from elsewhere). If non-neutral, KILL for byte-neutrality; if neutral, check masked delta vs h5 baseline."
   },
   {
-   "hypothesis": "ALLOCDBG-instrumented s-reg coupling hunt: measure whether any block-3-interior C-source lever de-couples the sll4@54 <-> addu5@55 pair-swap without falling out of h5 basin, by isolating a p106/p107 LAUNCH-signature perturbation via targeted greg + sched2 dumps on an untested structural mutation.",
-   "mechanism": "sched.c adjust_priority + birthing_insn_p LAUNCH governs the pair; s6-s7 CONFIRMED the mechanism is p106 (fresh SLL dest from expmed.c case alg_shift) LAUNCH-tied with p121 (arg5_addr) at pri 0x7f000001, LUID tiebreak wrong-direction. Levers (a) attacking 111 collapse to g3 basin; (c) LUID reorder is qty-coupled. Only lever (b) - making p107 multi-set at flow-time while p106 stays single-set - has any unexplored realization, and that realization needs ALLOCDBG-guided C shape hunting.",
-   "next_probe": "Forensics session: run cc1 with BB2_QTY_DEBUG/BB2_SCHED_DEBUG/BB2_ALLOC_DEBUG on a candidate variant that introduces a second SET of the arg5-addr pseudo (e.g. `s32 arg5_addr = v0 + (s32)tbl_125c; arg5_addr = arg5_addr;` or `arg5_addr = ...; if (0) arg5_addr = 0;`), verify p107 goes multi-set (loses LAUNCH), verify p106 stays single-set (keeps LAUNCH), measure sandbox. Novel: no prior session isolated the multi-set-p107-only lever with instrumentation."
+   "hypothesis": "F6-quad-prime: real statement referencing idx_1494 duplicated via a DIFFERENT vehicle - not idx_1495 re-assignment (which co-perturbs p78) but a memory store into a slot that already receives compile-time-constant addresses (e.g. re-store of D_800F19C0). Because s20 D_800F19C0-carrier misdirected wrong-sign, mixing carriers may compose: `D_800F19C0 = (void*)((s32)&D_80016240 | ((s32)idx_1494 & 0));` - a bit-mask-zero form that references idx_1494 but stores &D_80016240.",
+   "mechanism": "The `& 0` folds arithmetically to zero in cse.c but the idx_1494 REG expression appears as an operand of the AND at expand time; if combine.c fails to simplify the AND before flow.c counts refs, p77 refs++. Combine.c aggressiveness on `& 0` on register operands - fold to constant 0 at combine time - is the risk; would need forensics.",
+   "next_probe": "Structural session with forensics fallback: draft candidate storing D_800F19C0 = (void*)((s32)&D_80016240 | ((s32)idx_1494 & 0)); into both arms with prologue retained. Measure sandbox. If masked!=2, gather ALLOCDBG p77 refs to determine whether idx_1494 REG appeared in reg_n_refs booking. AVOID SEMANTIC-LIE TEST: the construct uses `& 0` which is the semantic-lie family the F6 frontier explicitly forbids. THIS FRONTIER IS INADMISSIBLE per the duplicated-statement-into-arms carve-out prereqs (byte-neutrality via REAL statement, no semantic-lie shapes). Documented here as ELIMINATED-BY-POLICY not measured; kept in frontier so future agents see the boundary."
+  },
+  {
+   "hypothesis": "ALLOCDBG-instrumented forensics on the +15 masked signature of probe 1: identify which specific s-reg carrier(s) rotated within the misdirection, and whether the rotation is compatible with a compensating C-level lever on ANOTHER carrier that would net back into h5-basin territory with the p77 refs-lift preserved.",
+   "mechanism": "s60/s61/s69 established the 4-cycle rotation is ATOMIC under qty_compare's transitive priority ordering. Probe 1's +15 misdirection is empirically a novel rotation basin distinct from honest_idx_1495 respelling's +13 (s8) and dup_D_800F19C0 no-prologue's +8 (s20). The greg extract on probe 1 would show WHICH carriers rotated and how, potentially revealing whether the p77 refs-lift shifted a carrier the +13 rotation did NOT touch - opening a compensating-lever path.",
+   "next_probe": "Forensics session: run BB2_ALLOC_DEBUG/BB2_QTY_DEBUG/BB2_SCHED_DEBUG on probe 1 candidate; diff greg vs h5 and vs honest_idx_1495 (s69 dumps). Isolate the specific pseudo-to-hardreg rotation. If a novel carrier rotated (e.g. p73 stayed but p77/p78 swapped), that's a NEW compensation target."
   }
  ],
  "judge_constraints": [
