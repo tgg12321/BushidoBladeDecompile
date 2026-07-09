@@ -695,3 +695,21 @@
 - probe: sed -n '1023,1090p' Kengo/kengo_functions_full.txt on the nm_cpu.c section (64 functions), then awk-extract non-empty numata entries across all `FILE -- src/numata/*.c` sections.
 - result: Every one of the 64 nm_cpu.c functions is `{}` empty stub. Awk across all numata FILE sections yields only libc/math functions (cos/sin/atan2/sqrt/__ieee754_*) with bodies, zero game-code numata bodies. The extraction gap is subsystem-wide, not cpu_side_move_dir-specific.
 - verdict: KILLED
+
+## [s37] Every mechanism reachable via block-local expression/statement-order/AST mutation on the h5-multexpander chassis is measurement-closed with zero sub-h5 finds across the four permuter campaigns.
+- mechanism: Union of s22 LINESWAP (7!=5040), s23 LINESWAP_TEXT (20429), s31 prologue LINESWAP (5!=120), s32 PERM_GENERAL (35338) all launched from base_score=60 h5 chassis; total ~60,807 iters. LINESWAP handles statement-order permutations, LINESWAP_TEXT text-chunk reorderings across CALL boundaries, PERM_GENERAL expression-level AST mutations. All three axes at three scopes (prologue, block, block+CALL).
+- probe: s37 ledger cross-read only (synthesis modality).
+- result: 0 novel finds below weighted-40 across all four campaigns. Any future permuter session at h5-chassis is wasted iterations.
+- verdict: CONFIRMED
+
+## [s37] Every rederive sub-angle enumerable from the ledger is measurement-closed across 8 distinct sources.
+- mechanism: m2c fresh decompile (s8, inline-all-args basin), marionation_Exec sibling transplant P1-P4 (s9, s-reg web non-fungible), decomp.me shingle scan (s17, peak 0.097 similarity), decomp.me residual instruction cluster (s26, 0/3754), BB2 in-repo residual cluster (s26, only self+twins+asmfix stub), Kengo cpu_side_move_dir dump (s18, empty stub), saEft01Init decl-transfer (s27, both scopes), idx_1495 respellings (s35, +1/+2/+1), Kengo numata subsystem inventory (s36, 64/64 empty), in-repo 5-arg debug_printf template (s36, 3/3 INCOMPLETE).
+- probe: s37 ledger cross-read only.
+- result: No un-tried rederive angle remains without external-input dependency (a third-party PS1 decomp with GCC 2.7.2 provenance and a byte-matched 5-arg variadic tbl-dispatch shape).
+- verdict: CONFIRMED
+
+## [s37] The h5 basin's LUID tiebreak at sched2 clock=13 (insn 121 LUID 12 vs insn 111 LUID 8, both LAUNCH pri 0x7f000001) is the sole surviving mechanism and cannot be flipped via any of three theoretical lever directions in a way that both preserves h5 basin membership and passes layer-1 cheat vetting.
+- mechanism: Lever (a) 111 loses LAUNCH: s7 expmed.c:2244 case alg_shift NULL_RTX wall — any t0*4 spelling reachable through the mult-expander births p106 fresh single-set; any direct-LSHIFT spelling births p101 multi-set in place (g3 basin, register exchange). Lever (b) 121 loses LAUNCH: 5 C-realizations of two-SET p107 KILLED (s11 M1-a/b/c + s12 pointer-walker/dead-sink); combine.c addsi3_internal substitutes simple two-SETs back to single-SET; non-trivial subtrahends regress alloc web. Lever (c) LUID reorder: coupled to basin membership per s6-KILLED and s7 basin non-composability.
+- probe: s37 ledger cross-read only.
+- result: The three theoretical mechanism paths are compiler-source-closed or measurement-closed across all C-spelling realizations tried in 27 sessions of structural + permuter + forensics work.
+- verdict: CONFIRMED

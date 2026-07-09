@@ -1,8 +1,8 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 36,
- "current_modality": "rederive",
+ "session_count": 37,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 0,
@@ -225,18 +225,24 @@
    "floor": 2,
    "modality": "rederive",
    "headline": "s36 rederive KILLS two more sub-angles: BB2 in-repo has ZERO COMPLETED-C 5-arg debug_printf templates (all 3 sites INCOMPLETE), and the ENTIRE Kengo numata C-file family is empty-stub in the dump (not"
+  },
+  {
+   "session": 37,
+   "floor": 2,
+   "modality": "synthesis",
+   "headline": "s37 synthesis: 35-session mechanism space measurement-closed; only two structural-modality axes remain (asymmetric arg5-only ref-lift via legitimate downstream user; idx_1495 micro-basin + coupled dec"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Asymmetric arg5-only ref-lift via a legitimate downstream semantic user of arg5 (not t0) reachable after the debug_printf call.",
-   "mechanism": "local-alloc.c qty_compare uses per-pseudo REG_N_REFS at flow time; the arg5>t0 flip requires arg5 refs >= 4 at span 6 OR t0 refs lowered. Every symmetric wrap KILLED across s4/s5/s25/s30. Asymmetric lever requires a legitimate semantic user of arg5 downstream that references NO t0-chain member. Layer-1 self-vet risk high (no-new-park-categories cheats-by-any-spelling).",
-   "next_probe": "Structural session: audit the post-debug_printf control-flow arms (do_timeout, poll, success, check) for a byte-neutral semantic surface that already recomputes tbl_125c[idx_1494[1]] under a distinct precondition (e.g. status-branch mask condition, saved-state restoration). This is NOT a rederive frontier."
+   "hypothesis": "Asymmetric arg5-only REG_N_REFS lift via a legitimate downstream semantic user of arg5 (not t0) in one of the post-debug_printf arms (do_timeout/poll/success/check) reaches pri(arg5) > pri(t0) at strict-win threshold, flipping the qty allocation and killing 121's LAUNCH-vs-111's LUID tie.",
+   "mechanism": "local-alloc.c qty_compare uses flow-time REG_N_REFS. An additional legitimate use of arg5 in an outer arm lifts its refs by 1 with no matching t0 lift. Every symmetric lever KILLED across s5/s25/s30; asymmetric requires a downstream site that already computes tbl_125c[idx_1494[1]] under a distinct spelling and can be legitimately re-derived as arg5.",
+   "next_probe": "Structural session: audit asm/funcs/cpu_side_move_dir_4.s post-debug_printf arms for any existing byte-neutral computation of tbl_125c[idx_1494[1]] (arg5's value) under a distinct C spelling; if a legitimate site is found, restructure that C to reference arg5 directly and measure via sandbox --disable all; carefully layer-1 cheat-vet against no-new-park-categories cheats-by-any-spelling BEFORE saving as candidate. If no such site exists, report KILLED. Not a rederive frontier."
   },
   {
-   "hypothesis": "The idx_1495-based +1 micro-basin between h5 (masked=2) and g3 (masked=6) surfaced by s35 admits a compensating s-reg web adjustment that reaches masked=0 or masked=1.",
-   "mechanism": "s35 P1/P3 masked=3 with build_insns=160 indicates ONE additional register-diff over h5's pair-swap; if that diff can be absorbed by a coupled s-reg reassignment elsewhere in the function, the net effect could break the pair-swap while preserving the rest.",
-   "next_probe": "Structural session: pair the idx_1495 base-pointer with a second lever that reassigns which callee-save carries idx_1494/idx_1495 (swap decl order at src/system.c:405-406, or route idx_1494 through a fresh callee-save via named intermediate). Layer-1 self-vet risk: no fn-scope carrier without semantic purpose. This is NOT a rederive frontier."
+   "hypothesis": "The idx_1495-based +1 micro-basin surfaced by s35 (masked=3 with build_insns=160 for both *idx_1495 and idx_1495[0]) admits a compensating s-reg web adjustment (decl-order swap at src/system.c:405-406, or a distinct callee-save carrier for idx_1494/idx_1495 with legitimate semantic purpose at src/system.c:456 or the D_800F19BC=*idx_1494 write) that absorbs the +1 register diff and reaches masked <= 2 while satisfying the semantic-lie retirement.",
+   "mechanism": "s35 measured that idx_1495 base pointer at the arg5 lbu site produces exactly ONE additional register diff over h5's baseline. If that specific diff can be absorbed by a coupled reassignment elsewhere in the function, the two levers compose to a net-neutral-or-lower masked score.",
+   "next_probe": "Structural session: pair idx_1495 base-pointer at the arg5 lbu site (s35 P1 or P3) with (a) a decl-order swap at src/system.c:405-406, or (b) reroute idx_1494/idx_1495 through a distinct callee-save via a fresh named carrier that participates in the existing downstream *idx_1495 use at src/system.c:456. Layer-1 cheat-vet: the carrier MUST participate in a downstream use with real semantic purpose, not just live-across the debug_printf window. If no legitimate compensating adjustment exists, KILLED closes the axis and clears the way for a ruling-request session on canonical-asm authorization for the twin family."
   }
  ],
  "judge_constraints": [],

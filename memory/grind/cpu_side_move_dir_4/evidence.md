@@ -678,3 +678,21 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s36] Rederive-modality now measured KILLED across 8 distinct sub-angles: m2c (s8), marionation sibling P1-P4 (s9), decomp.me shingle (s17), Kengo cpu_side_move_dir stub (s18), decomp.me residual + BB2 in-repo residual (s26), saEft01Init decl-transfer (s27), idx_1495 respellings (s35), in-repo COMPLETED-C 5-arg-debug_printf template + Kengo numata subsystem inventory (s36).
 
 - [s36] No untried rederive angle enumerable from the ledger + this session's search remains. Future sessions on this function should not repeat rederive modality unless the operator supplies external inputs (a third-party PS1 decomp source with GCC 2.7.2 provenance and a byte-matched 5-arg variadic tbl-dispatch shape) — a class of input the ledger has never seen materialize.
+
+- [s37] s37 ledger cross-read: h5 candidate.c masked=2 remains the floor since s4; HEAD masked=7 unchanged.
+
+- [s37] Register half already target-correct (100->v1 106->a0 113->v0 107->v0 per s6 .greg); masked=2 is a pure pair-swap, no register diff hidden.
+
+- [s37] Residual is one LUID tiebreak at sched2 clock=13: insn 111 (LAUNCH, p106 fresh from mult-expander) vs insn 121 (LAUNCH, p107 arg5_addr); rank_for_schedule val=0 across all 51 block=3 events (s15); LUID(121)=12 wins backward-scheduler pick over LUID(111)=8; linear text 118,111,121 vs target 118,121,111.
+
+- [s37] Every ref-lift lever measured triply misdirects (s5 wraps monotonic wrong direction across 4 scopes; s20 duplicated-into-arms D_800F19C0 +8 masked; s25 g3+arg5-deref-wrap +10 masked; s30 while(1)/for(;;) +50 masked with +5 physical loop scaffold).
+
+- [s37] Cross-function forensics s33 confirmed saEft01Init QTY diverges structurally: refs=6, luid-span=32 vs csmd4 refs=2-4, span=14; saEft01Init sched2 has 0 LAUNCH because reload substitutes fresh block=3 dests into fn-scope multi-set hard-regs (v0 re-used by 2 sys_VSync retries + D_800F19BC writes) — a substitution csmd4 cannot reproduce without fn-scope cheat carriers.
+
+- [s37] Static-analysis F2 (helper extraction under -O2) triple-closed at compiler source per s34: (1) GCC 2.7.2 has no tree-inline.c; (2) integrate.c:96 refuses varargs helpers; (3) fixed-arg wrapper materializes params via s5-F2a/F2b named-dispatch path (masked=16 measured).
+
+- [s37] Class-attack surface triple-KILL: s15 val=0 across 51 events (rank_for_schedule LUID always decides), s16 mips.h:2946 ADJUST_COST never raises (only lowers), s24 both alternate expand_mult algorithms (alg_add_t_m2, alg_add_factor) unreachable for t=4 and COMPOUND_EXPR emits identical LUIDs to ';'-statements.
+
+- [s37] Cross-symbol idx_1495 lie at src/system.c:406 is in the semantic-lie family the 2026-07-05 ruling forbids but is currently LOAD-BEARING for h5 s-reg web (s8 honest-respelling +13); safe retirement is blocked until h5 closes or a different web is found.
+
+- [s37] Synthesis artifact written at tmp/grind/cpu_side_move_dir_4/s37/synthesis.md documenting the terminal mechanism, closed levers, surviving axes, layer-1 risk analysis, and ruling-request precondition.
