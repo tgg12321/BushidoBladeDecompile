@@ -1,7 +1,7 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 96,
+ "session_count": 97,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -585,23 +585,29 @@
    "floor": 2,
    "modality": "forensics",
    "headline": "s96 forensics KILLS F3 (conflict-graph attribution): h5 vs +13 basin probe1 have BIT-IDENTICAL greg allocno_conflicts edge sets (after 4-pseudo rename 101->97, 120->116, 126->122, 137->133); the 4-cyc"
+  },
+  {
+   "session": 97,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "s97 forensics NAMES the p79 nrefs-delta driver: RTL insns 34 (subsi3 SYMBOL_REF-diff) + 38 (addsi3 tbl+delta) emitted by expr.c::expand_expr for h5's cross-symbol source spelling; unfoldable in cse.c:"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "SOTN-family duplicated-statement-into-arms (2026-07-01 sanction) applied to a REAL statement in the POLL callback arms (status&4 and status&2) with /* FAKE */ annotation - carry-over, still un-measured after s96",
-   "mechanism": "s94/s95 closed POLL expression-level and pp-position permuter neighborhoods. s96 further shows the block=3 alloc web has no conflict-graph slack: h5 and probe1 share identical edge topology. The POLL region is a distinct alloc-web scope from block=3 (different basic blocks, different qty ids p88..p93 vs p97..p137); statement-level duplication INTO the arms adds a real ref-count with cross-jump re-merge invariance, hitting the ONLY remaining structurally untouched neighborhood.",
-   "next_probe": "Structural session: introduce a byte-neutral duplicated statement into both POLL callback arms (status&4 branch and status&2 branch) with FAKE annotation citing duplicated-statement-into-arms 2026-07-01 sanction; measure sandbox masked; if byte-neutral, invoke layer-2 cheat-reviewer per review-discipline-before-commit."
+   "hypothesis": "F97a - a semantic-purpose C form emitting >=2 additional pre-block=3 references to tbl_125c (p79) without cross-symbol arithmetic could preserve masked=2 priority basin. Un-run because no natural semantic use of tbl_125c exists at prologue in the target's observable behavior spec.",
+   "mechanism": "Any such spelling would need to raise flow.c REG_N_REFS[p79] to >=5 via insns that survive cse.c fold_rtx as p79-referencing (i.e., not folded into const:SI). Candidates require a variable operand (non-const_int) upstream. Real observable uses of tbl_125c in the function are ONLY the block=3 arg4 and arg5 reads; any pre-block=3 dead read (e.g. `(void)tbl_125c[0];`) fails the human-programmer test per no-new-park-categories cheats-by-any-spelling vetting checklist.",
+   "next_probe": "Structural session: enumerate honest semantic-purpose spellings that pre-touch tbl_125c[N] (e.g., early bound-checking; but the C spec has no such check). Predicted enumeration size: 0 candidates satisfying human-programmer test. If 0 candidates, F97a formally CLOSED and combined with F97b closes the entire honest-p79-uplift axis."
   },
   {
-   "hypothesis": "A p79-nrefs-preserving alternate spelling for idx_1495 exists in the sanctioned family (staged-value-reused-variable / pointer-alias-fake-exception) that keeps p79 refs>=5 without the do-while-zero-exception forbidden-family cross-symbol form at line 406",
-   "mechanism": "s96 proves the +13 basin gap is nrefs-on-p79 (5->3, delta -2 refs). ANY spelling reducing to `idx_1494 + 1` collapses to 3 refs (s88). But a spelling that ALSO reads &D_800A1494 through a symbol path (adding intermediate refs) may keep the 5-ref lead. Untested spellings: (a) route idx_1495 via a fn-scope pointer-alias variable holding `&D_800A1494` so its initializer contributes refs, (b) route through a named-local fake with type coercion. Both are 2026-07-01 SOTN-family carve-outs and require lever-exhaustion + FAKE annotation + layer-2 review.",
-   "next_probe": "Structural session: build 2 idx_1495 respellings using pointer-alias-fake-exception (fn-scope `u8 *idx_1494_base = &D_800A1494;` then `idx_1495 = idx_1494_base + 1;`) and named-local-fake-exception (fn-scope constant-holder feeding the derivation). Measure greg nrefs on p79 - the class KILL only holds if refs still fall to 3."
+   "hypothesis": "F97b - pointer-alias-fake-exception fn-scope `s32 *tbl_alias = tbl_125c;` (2026-07-01 sanction) applied to duplicate p79 references. Predicted KILL: the alias creates a NEW pseudo, splitting refs across two pseudos rather than lifting nrefs on p79.",
+   "mechanism": "s89/s90 established that any spelling reducing to `SYMBOL_REF + int` at fold time collapses to probe1's 3-ref profile. A fn-scope alias `s32 *tbl_alias = D_800A125C;` emits SET of a fresh pseudo p_alias carrying REG_EQUAL (symbol_ref) and each downstream `tbl_alias[K]` reads p_alias, not p79. Total p79 refs drop to 1 (SET only, then p_alias forwards); tbl_alias absorbs the block=3 arg reads. Predicted flow-count: p79=1, p_alias=3-5.",
+   "next_probe": "Structural session: measure the alias probe once via sandbox + gccdbg to formally close F97b (predicted masked>=15 based on the ref-splitting mechanism). Requires layer-2 cheat-reviewer per sanctioned-family protocol (annotate `/* FAKE: pointer-alias-fake-exception per 2026-07-01 sanction */`)."
   },
   {
-   "hypothesis": "Conflict-graph attack surface is fully closed - future forensics must switch focus from allocno_conflicts to priority arithmetic (nrefs and livelen accounting in flow.c reg_scan / cse.c invalidate)",
-   "mechanism": "s42 (conflict-list census), s69 (greg diff), s87/s88 (ord=12..15 rotation table), s96 (edge-set identity across basins) collectively enumerate every layer of the register interference graph. All say the same thing: the graph is fixed for this function; the priorities differ. The unattacked layer is the ref-count/livelen accounting itself - what counts as a ref (rtx passes: expand insns vs post-combine SETs), how livelen is measured across the loop back-edge.",
-   "next_probe": "Instrumented cc1 dump with BB2_FLOW_DEBUG (if implemented; else patch flow.c mark_regs_live_at_end to log ref counts per pseudo per basic block) on h5 vs probe1; identify WHICH insn contributes the 2 extra refs to p79 in h5's cross-symbol spelling but not probe1's honest spelling. Naming that insn class opens a novel axis (spelling shapes that preserve those refs without the do-while-zero-exception #5 forbidden form)."
+   "hypothesis": "F97c - attack the non-nrefs priority inputs (livelen, size) rather than nrefs. Livelen is measured as luid(last_ref) - luid(first_ref) via flow.c mark_regs_live_at_end; can be perturbed by insn re-timing. Un-attacked as of s96 which pointed to this axis but did not probe.",
+   "mechanism": "priority = floor_log2(refs) * refs * size / livelen * 10000. If nrefs is locked at 3 (probe1 profile) but livelen can be shortened from 148 to <60, pri could re-enter the >675 range without needing extra refs. p79's livelen 148 spans from insn 24 (prologue SET) to insn ~118 (last block=3 use). Shortening requires MOVING the initial SET closer to block=3 - but SET position is determined by C-source declaration order + expr.c expand_expr; the initializer is at src line 404 which cse.c cannot hoist across the intervening D_800F19B8/D_800F19BC stores.",
+   "next_probe": "Forensics session: instrument flow.c::mark_regs_live_at_end to log luid-per-pseudo per basic block on h5 vs probe1; identify whether p79's livelen shrinks under (a) moving the tbl_125c assignment CLOSER to block=3, (b) removing D_800F19BC/D_800F19C0 stores between insn 24 and block=3, or (c) any pseudo-livespan interaction with the loop's back-edge that flow's basic-block-scanning could shortcut."
   }
  ],
  "judge_constraints": [

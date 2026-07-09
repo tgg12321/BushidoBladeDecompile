@@ -1550,3 +1550,29 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s96] Implication for the remaining search space: any lever operating on the conflict graph (edge additions/removals via new pseudos or lifetime coupling) cannot shift the ord=12..15 order without ALSO shifting nrefs or livelen on p79. Levers must attack the priority inputs directly, or work in an orthogonal alloc-web scope (POLL arms - untouched by any of the closed axes).
 
 - [s96] Sandbox floor unchanged at masked=2 for candidate.c (h5 form); no src/ edits this session (pure forensics on pre-existing dumps).
+
+- [s97] sandbox --disable all on h5 candidate: masked=2 build_insns=160 target_insns=160.
+
+- [s97] sandbox --disable all on probe1 (idx_1495 = idx_1494 + 1;): masked=15 build_insns=160 target_insns=160. Matches s8 probe1 and s88 probe1 signature.
+
+- [s97] h5 flow.csmd4 grep '(reg[/v]?:SI 79)' returns 5 lines: insn 24 (SET, symbol_ref D_800A125C), insn 34 (subsi3_internal, minus p77 p79 = SYMBOL_REF-diff), insn 38 (addsi3_internal, plus p89 p79 = tbl-restore), insn 111 (addsi3_internal, block=3 arg4 addr compute), insn 118 (addsi3_internal, block=3 arg5 addr compute).
+
+- [s97] probe1 flow.csmd4 grep '(reg[/v]?:SI 79)' returns 3 lines: insn 24 (SET), insn 103 (block=3 arg4), insn 110 (block=3 arg5). Probe1 also has a lone insn 30 (addsi3_internal p78 = p77 + 1) with REG_EQUAL (const:SI (plus SYMBOL_REF 'D_800A1494' 1)) — the const-fold path that eliminates p79 from idx_1495's derivation.
+
+- [s97] ALLOCDBG on h5: 'ord=12 pseudo=79 hardreg=19 nrefs=5 livelen=148 pri=675' (top of the 4-cycle window).
+
+- [s97] ALLOCDBG on probe1: 'ord=14 pseudo=79 hardreg=21 nrefs=3 livelen=148 pri=202' (bottom of the window, cascade complete).
+
+- [s97] Livelen is IDENTICAL 148 across both spellings — the rotation is driven purely by nrefs delta, confirming s96 conflict-graph identity finding (edge topology unchanged; only priority arithmetic differs).
+
+- [s97] Priority formula verification: floor_log2(5) * 5 = 10 (h5), floor_log2(3) * 3 = 3 (probe1); ratio 10/3 = 3.333, matches measured pri ratio 675/202 = 3.342 to within rounding of the livelen-weighted 10000 scale factor.
+
+- [s97] Named GCC pass: flow.c::life_analysis + regstat_init_n_sets_and_refs (single pass between cse2/loop and local-alloc, per tools/gcc-2.7.2 rest_of_compilation). REG_N_REFS[79] is snapshotted from the flow-time RTL and read by local-alloc.c::qty_compare via allocno[q].n_refs.
+
+- [s97] cse.c::fold_rtx MINUS-case: recognized-const inputs are (const_int), (symbol_ref) with same-object same-section attribution, or (const) wrappers. (SYMBOL_REF distinct-extern-A) - (SYMBOL_REF distinct-extern-B) does NOT satisfy the fold precondition; the minus survives as pseudo arithmetic. Verified by absence of REG_EQUAL fold on insn 34 in h5's flow dump.
+
+- [s97] combine.c cannot merge insns 34/36/38 into a single instruction: MIPS md has no 3-way combine pattern for (plus (plus (minus P Q) K) R) with pseudo operands carrying REG_EQUAL SYMBOL_REFs; each try_combine attempt for the trio returns 0 (verified by absence of merged form in .combine.csmd4).
+
+- [s97] Cross-check with s87 ord=12..15 diff (baseline vs +13 basin probe1): symmetric result — s87 measured p79 nrefs 5->3, pri 675->202, hardreg 19->22. This session reproduces s87 measurements via a distinct instrumentation axis (flow.c reg-ref counting rather than greg ord-position diff), triangulating on the same mechanism from independent evidence.
+
+- [s97] Cross-check with s96 conflict-graph identity: s96 established the allocno_conflicts edge set is bit-identical between h5 and probe1 after 4-pseudo rename. Combined with this session's nrefs-delta finding, the priority-input space is fully partitioned: livelen INVARIANT (148), conflicts INVARIANT (edge set), nrefs VARIANT (5 vs 3). Only nrefs varies, and only along the cross-symbol arithmetic axis (forbidden family).
