@@ -767,3 +767,9 @@
 - probe: Edit src/system.c inline block to candidate.c spelling; & tools/wteng.ps1 main sandbox cpu_side_move_dir_4 --disable all.
 - result: masked=2, target_insns=160, build_insns=160 (matches the 40-session ledger; HEAD (both-named form) scores masked=7 baseline).
 - verdict: CONFIRMED
+
+## [s42] Frontier (b) - flattening the poll-loop callback if-blocks into a single-statement ternary dispatch shifts the s-reg web and re-weights local-alloc.c qty_compare on idx_1494/idx_1495, propagating into block=3's pair-swap residual.
+- mechanism: Alleged: callback restructure changes REG_N_REFS on idx_1494/idx_1495 pseudos, which re-weights their global-alloc priority (pri = floor_log2(refs)*refs*10000/livelen), shifting s-reg ranking; the shift is claimed to propagate into block=3's local-alloc qty_compare on p106/p107.
+- probe: Read ALLOCDBG global-alloc ranking, QTYDBG blk=3 census, and .greg conflict lists from tmp/grind/cpu_side_move_dir_4/s6/ (h5 baseline instrumented cc1 dump). Map pseudos to source variables (p77=idx_1494, p78=idx_1495, p79=tbl_125c, p106=t0*4 mult-expander temp, p107=arg5_addr). Check whether idx_1494/idx_1495 conflict with any block=3 QTY pseudo (necessary precondition for allocation coupling).
+- result: p77 conflict list: {72,73,75,77,78,79,80,81,86,101,120,126, 2,3,4,5,6,7,29}. p78 conflict list: identical. Block=3 QTY pseudos {p100, p106, p107, p113}: NONE appear in p77/p78 conflict lists. idx_1494 and idx_1495 have zero shared live range with the pair-swap window's local pseudos. Additionally, priority formula shows idx_1494's pri=933 sits between p80's 952 and p79's 675 with >20-unit gap; +/-1 ref change yields pri deltas (~130 up, ~130 down) that leave the s-reg ranking order unchanged (still ord=11, hardreg s2).
+- verdict: KILLED

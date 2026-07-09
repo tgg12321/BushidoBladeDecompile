@@ -744,3 +744,21 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s41] src/system.c restored to HEAD both-named form at session end (masked=7 baseline). candidate.c unchanged (h5 form remains the recorded masked=2 floor).
 
 - [s41] Judge constraint (BINDING per s40 ruling): 'Do not resurface canonical-asm authorization ... Next session must SHIFT MODALITY to (a) SOTN-family carve-out application under codified prerequisites + FAKE annotation + layer-2 cheat-reviewer, OR (b) ALLOCDBG-instrumented s-reg coupling hunt.' This session's chosen axis targets frontier (b) via a permuter vehicle (the mandated modality); the axis is now measurement-closed via the tool-side blocker, eliminating one of the potential (b) sub-realizations.
+
+- [s42] s42 baseline (per ledger + task brief): h5 candidate.c is the masked-2 floor; residual is the {sll4@54 <-> addu5@55} LAUNCH-vs-LAUNCH LUID tiebreak at intra-block=3 clock=13 (per s6/s7/s15/s16 forensics). src/system.c unchanged this session (HEAD both-named form retained).
+
+- [s42] s42 ALLOCDBG census (h5 baseline, from tmp/grind/cpu_side_move_dir_4/s6/csmd4_only.log): 16 pseudos in global-alloc ranking; hardreg assignment 75->v0, 83->a1, 84->v1, 82->a0, 81->s0, 101->a0 (call), 120/126->v0, 86->a2, 137->a3, 80->s1, 77->s2, 79->s3, 78->s4, 72->s5, 73->s6. Priority formula pri=floor_log2(nrefs)*nrefs*10000/livelen.
+
+- [s42] s42 pseudo-to-variable mapping (from tmp/grind/cpu_side_move_dir_4/s6/csmd4_only.rtl): p72=a0 param, p73=a1 param, p77=&D_800A1494=idx_1494, p78=tbl_125c+(D_800A1494-D_800A125C+1)=idx_1495, p79=&D_800A125C=tbl_125c. p77 (idx_1494) at ord=11 pri=933 -> s2; p78 (idx_1495) at ord=13 pri=277 -> s4; p79 (tbl_125c) at ord=12 pri=675 -> s3.
+
+- [s42] s42 block=3 QTY table (h5 baseline, from tmp/grind/cpu_side_move_dir_4/s6/csmd4_only.log): only 4 pseudos p100/p106/p107/p113 (all block-local; birth luids 16-22, death 20-30). None of these are global-alloc pseudos; they are pure block-local qtys competing for a0/v0/v1 hardregs. idx_1494/idx_1495 are pre-assigned s2/s4 by global-alloc BEFORE local-alloc runs on block=3.
+
+- [s42] s42 conflict-list separation (from tmp/grind/cpu_side_move_dir_4/s6/csmd4_only.greg): p77 conflicts = {72,73,75,77,78,79,80,81,86,101,120,126,2,3,4,5,6,7,29}; p78 conflicts identical. Neither list contains p100, p106, p107, or p113. Zero shared live range between idx_1494/idx_1495 and block=3 QTY pseudos means allocation coupling as described by frontier (b) is refuted at the .greg-level liveness dump.
+
+- [s42] s42 priority-formula stability: p77 (idx_1494) pri=933 at nrefs=7 livelen=150 sits at ord=11. Adding one ref -> (3*8*10000)/150=1600 (moves up one slot, still in s2-s6 territory); removing one ref -> (2*6*10000)/150=800 (no change in ranking position). +/-1 ref delta from callback restructure cannot displace idx_1494/idx_1495 from the s2-s5 slot range.
+
+- [s42] s42 LUID tiebreak separability (per s15 evidence + this session cross-check): the pair-swap residual is decided by RANKDBG cls=3 val=0 -> LUID diff on insns 111 vs 121 (LUID 8 vs 12); both insns are internal to block=3, and their LUIDs come from schedule_block's intra-block sched_analyze walk. Restructuring the poll-loop (blocks 5-9 in the CFG) changes LUIDs of poll-loop insns but leaves the 111/121 relative LUID delta intact.
+
+- [s42] s42 flattened-dispatch pseudo count: the frontier (b) proposed C form `mask & 4 ? D_800A11B8 : D_800A11B4)(*(mask & 4 ? idx_1495 : idx_1494), ...)` introduces at minimum one new pseudo for the function-pointer ternary result plus one for the operand ternary; both would be live simultaneously in the callback window. This ADDS pressure to global-alloc, not relieves it - opposite of the frontier's directional claim.
+
+- [s42] s42 modality-contract compliance: instrumented cc1 dumps referenced (RTL/ALLOCDBG/QTYDBG/greg); named GCC-source passes: global-alloc.c (find_reg, priority ordering), local-alloc.c (qty_compare, block-local qty table), sched.c::rank_for_schedule + LUID tiebreak (per s15 rank_for_schedule at lines 2399-2456). Named decision producing the divergence: block=3 clock=13 LUID(121)=12 > LUID(111)=8 with cls=3 val=0 -> emission 118,111,121 vs target 118,121,111.
