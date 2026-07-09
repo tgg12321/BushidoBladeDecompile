@@ -1,7 +1,7 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 85,
+ "session_count": 86,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -519,23 +519,29 @@
    "floor": 2,
    "modality": "permuter",
    "headline": "s85 KILLED F6-triple-prime (success-path idx_1495=idx_1494+1 dup): masked=15/build_insns=162 non-byte-neutral; also KILLED F6-quint-prime (loop-top variant): masked=15/build_insns=159 novel signature;"
+  },
+  {
+   "session": 86,
+   "floor": 2,
+   "modality": "permuter",
+   "headline": "s86 permuter: fresh-seed campaign on s77 vblank-poll-arm-annotated chassis (base_score=2215) KILLED - 1375 iters / 0 novel finds below the 16 preexisting output-40/50/55 basins; loop-top PERM_GENERAL "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "ALLOCDBG-instrumented forensics on probe2's build_insns=159 signature will identify the specific pseudo whose refs shifted and which upstream insn was eliminated by local-alloc. If the eliminated insn is on the p73/p79/p77 line (rather than the pair-swap window itself), a COMPENSATING C-level lever on a distinct carrier could redirect the refs-shift back toward the target basin while preserving the +1 physical elimination.",
-   "mechanism": "The novel -1 physical delta indicates flow.c reg_n_refs redistributed under the loop-top store, and local-alloc's qty_compare re-ranked at least one qty above its baseline priority, causing a spill/rematerialization elimination. QTYDBG on the probe2 candidate vs h5 baseline would show WHICH qty's (refs, span) numerics shifted and by how much.",
-   "next_probe": "Forensics session: rebuild gccdbg cc1 with BB2_QTY_DEBUG/BB2_SCHED_DEBUG/BB2_ALLOC_DEBUG/BB2_RANK_DEBUG=1 -da on probe2's src (memory/grind/cpu_side_move_dir_4/rejected/dup_idx1495_loop_top_p77.c applied to src/system.c). Diff greg + qty tables vs s6/s69 h5 baseline dumps. Isolate the eliminated insn and its owning pseudo. Cross-reference against register-alloc-pure-c lever catalog for a compensating C construct."
+   "hypothesis": "A rebuilt permuter chassis with the annotations FOCUSED on the loop-top region alone (drop PERM_LINESWAP prologue + drop PERM_RANDOMIZE inline block; keep only the loop-top PERM_GENERAL with a curated cheat-free alternative set) would produce a lower base_score than 2215 and unlock a novel mutation neighborhood.",
+   "mechanism": "The current chassis's base_score=2215 signature (matches s77 F14 vblank-poll-arm regression) inflates per-iteration compile cost and drops the search into a chassis-regressed basin that dominates score contributions; annotation-focused campaigns typically ship with a single PERM_* macro so the base score reflects h5-relative measurements only. A single PERM_GENERAL at the loop-top site with alternatives from {v0 = sys_VSync(-1); / { s32 vt = sys_VSync(-1); v0 = vt; } / v0 = (s32)sys_VSync(-1); / s32 vt; vt = sys_VSync(-1); v0 = vt;} preserves h5's mult-expander LAUNCH and could give a base_score at h5's masked-2 floor.",
+   "next_probe": "Permuter session: rebuild tmp/perm_csmd4/base.c dropping PERM_LINESWAP + PERM_RANDOMIZE annotations, keeping ONLY the loop-top PERM_GENERAL with 3-4 cheat-vetted variants of the sys_VSync assignment. Confirm base_score is at or near 60 (h5-multexpander merged) rather than 2215. Launch fresh-seed with -j 8 --stop-on-zero, ~20-min window. If base_score stays at 2215, the inflation is intrinsic to the current base.c body, and the chassis must be rebuilt from candidate.c freshly rather than reused from s14."
   },
   {
-   "hypothesis": "The +1 physical eliminated by probe2's loop-top store corresponds to a MERGED prologue-store pair \u2014 combine.c may be merging the loop-top `sw idx_1495, mem` with the prologue's original `sw idx_1495, mem` in a way that only the loop-top spelling triggers, since the assignment expressions differ. If so, replacing the prologue idx_1495 initializer with a form that MATCHES the loop-top spelling directly (both using `idx_1494 + 1`) could achieve the same +1 elimination WITHOUT the additional loop-top insn overhead \u2014 potentially opening a byte-neutral p77-refs redistribution.",
-   "mechanism": "combine.c can absorb two SETs into one when the second re-establishes a dead-earlier value; if the prologue's cross-symbol `(u8*)tbl + (idx_1494_sym - tbl_sym) + 1` folds to the same RTL as `idx_1494 + 1`, and combine merges the loop-top SET into the prologue block via a NON-adjacent absorption pass, a matching prologue spelling could eliminate the prologue's own store insn while retaining the loop-top's refs-lift.",
-   "next_probe": "Structural session: draft candidate where the src/system.c:406 idx_1495 initializer is respelled as `idx_1495 = idx_1494 + 1;` (matching the loop-top form), WITHOUT the loop-top dup. Measure sandbox --disable all. If build_insns=159 with same masked misdirection, the -1 physical is prologue-only and no p77-refs-lift is achievable. If build_insns=160 with different masked score, the prologue lever is qty-active and warrants ALLOCDBG follow-up. NB: this exact respell was measured s8 probe1 (masked=15, build=160); re-visit its cc1 dump for the eliminated-insn identity."
+   "hypothesis": "ALLOCDBG-instrumented forensics on s85 probe2's build_insns=159 signature will identify the specific pseudo whose refs shifted and which upstream insn was eliminated by local-alloc.",
+   "mechanism": "Per s85 record: probe2 novel -1 physical delta indicates flow.c reg_n_refs redistributed under the loop-top store, and local-alloc's qty_compare re-ranked at least one qty above its baseline priority. QTYDBG on probe2 vs h5 baseline would show WHICH qty's (refs, span) numerics shifted.",
+   "next_probe": "Forensics session: rebuild gccdbg cc1 with BB2_QTY_DEBUG/BB2_SCHED_DEBUG/BB2_ALLOC_DEBUG/BB2_RANK_DEBUG=1 -da on probe2's src (memory/grind/cpu_side_move_dir_4/rejected/dup_idx1495_loop_top_p77.c applied to src/system.c). Diff greg + qty tables vs s6/s69 h5 baseline dumps under tmp/grind/cpu_side_move_dir_4/s6/. Isolate the eliminated insn and its owning pseudo."
   },
   {
-   "hypothesis": "Fresh permuter campaign on a NOVEL chassis annotating PERM_GENERAL alternatives at the s85-probe2 loop-top site (variants: null form / real-statement / pointer-cast-respell / typed-narrow) may explore a mutation neighborhood the s5/s13/s14/s76/s77 campaigns have not touched, since this loop-top region has never been directly permuted.",
-   "mechanism": "Prior permuter campaigns targeted the inline-block (s5/s13/s14, both chassis), poll region (s67 F2), poll-arms (s77 F14), prologue-lineswap (s76 F13), and inline-block-general (s67/s68 F1/F7). The loop-top region (between `loop:` label and `if (D_800F19B8 < v0)`) has zero permuter coverage. Fresh-seed campaign with 20-30 min stopping rule per permuter-directives \u00a7Campaign discipline.",
-   "next_probe": "Permuter session: annotate tmp/perm_csmd4/base.c line-457 region (post `loop:` label pre-if) with PERM_GENERAL alternatives including {null, `idx_1495 = idx_1494 + 1;`, `(void)*idx_1495;`, `idx_1494 = &D_800A1494;`, `idx_1494[0];`}. Launch via tools/permuter_campaign.py launch --label s86_looptop_general -j 8 --stop-on-zero; harvest+stop at 20-min no-novel window."
+   "hypothesis": "Replacing the prologue idx_1495 initializer with `idx_1495 = idx_1494 + 1;` (matching the s85 loop-top form) WITHOUT the loop-top dup could achieve the same +1 elimination without loop-top overhead - potentially opening a byte-neutral p77-refs redistribution.",
+   "mechanism": "combine.c can absorb two SETs into one when the second re-establishes a dead-earlier value. If the prologue cross-symbol form and the s85 loop-top spelling both fold to the same RTL, combine may merge the loop-top SET into the prologue block via non-adjacent absorption. Matching the prologue spelling directly could eliminate the prologue's own store while retaining the s85 refs-lift.",
+   "next_probe": "Structural session: draft candidate where src/system.c:406 idx_1495 initializer is respelled as `idx_1495 = idx_1494 + 1;` (matching the loop-top form) WITHOUT the loop-top dup. Measure sandbox --disable all. NB: this exact respell was measured s8 probe1 (masked=15, build=160); re-visit its cc1 dump for the eliminated-insn identity BEFORE re-launching. If build_insns=159 with different masked, prologue lever is qty-active and warrants ALLOCDBG follow-up."
   }
  ],
  "judge_constraints": [

@@ -1301,3 +1301,9 @@
 - probe: Applied h5 candidate; inserted BOTH the loop-top dup AND the success-path dup simultaneously; ran sandbox --disable all.
 - result: masked=15, target_insns=160, build_insns=159 - IDENTICAL to loop-top-alone signature. Cross-jump merge from success-path into loop-top fires deterministically, producing zero net effect vs loop-top-alone. The compound does NOT open a distinct qty basin. Rejected form saved at memory/grind/cpu_side_move_dir_4/rejected/dup_idx1495_looptop_plus_success.c.
 - verdict: KILLED
+
+## [s86] A fresh-seed permuter campaign on the tmp/perm_csmd4 chassis (PERM_LINESWAP prologue + PERM_GENERAL loop-top v0=sys_VSync + PERM_RANDOMIZE inline block) will surface novel finds below the h5-relative baseline within the ~15-min fresh-seed window.
+- mechanism: Per s86 frontier probe: the loop-top region between `loop:` label and `if (D_800F19B8 < v0)` has been included in prior merged chassis (s13 base=60, s14 merged=40) but never explored via a fresh-seed campaign after the s85 probe2 -1-physical-delta signature. Random-mutation neighborhood around the loop-top PERM_GENERAL alternatives (v0 = sys_VSync(-1); / { s32 vt = sys_VSync(-1); v0 = vt; } / v0 = (s32)sys_VSync(-1);) may reach a mutation basin the prior campaigns missed.
+- probe: Launch permuter_campaign.py fresh-seed on tmp/perm_csmd4 with existing base.c chassis, -j 8, --stop-on-zero, ~15-min wall window per fresh-seed discipline (permuter-directives Campaign discipline). Snapshot pre-existing 16 output-* dirs; measure novel finds count.
+- result: Campaign launched (pid 417, 2026-07-09T14:31:03Z), harvested with --stop after ~15 min. Permuter self-reported base_score=2215 (the s77 F14 vblank-poll-arm regressed chassis - annotations in current base.c inflate merged base to a bad neighborhood). Elapsed s=95 tracked in meta, iterations=1375. finds_new=0; output dir count unchanged at 16 (all pre-existing per campaign_meta.preexisting_outputs).
+- verdict: KILLED

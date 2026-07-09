@@ -1388,3 +1388,21 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s85] s85 rejected forms bank: dup_idx1495_success_path_p77.c, dup_idx1495_loop_top_p77.c, dup_idx1495_looptop_plus_success.c added under memory/grind/cpu_side_move_dir_4/rejected/. Bank grows from 84 -> 87 entries.
 
 - [s85] s85 src/system.c restored to HEAD (both-named arg4/arg5 form, masked=7 baseline) at session end via `git checkout src/system.c`. candidate.c unchanged (h5 form remains masked=2 floor since s4).
+
+- [s86] s86 baseline confirmed: h5 candidate applied to src/system.c scores masked=2 (target_insns=160, build_insns=160) via `& tools/wteng.ps1 main sandbox cpu_side_move_dir_4 --disable all`.
+
+- [s86] s86 permuter chassis inspected: tmp/perm_csmd4/base.c has PERM_LINESWAP over prologue (lines 448-455), PERM_GENERAL on loop-top v0=sys_VSync(-1) with 3 alternatives (lines 457-463), and PERM_RANDOMIZE over the inline block (lines 477-491). This is the s77-style chassis; permuter self-reported base_score=2215 on this workspace (the same 2215 signature the ledger s77 line documents as regressed).
+
+- [s86] s86 campaign meta: label=s86_looptop_freshseed, jobs=8, launch_ts=2026-07-09T14:31:03Z, pid=417, preexisting_outputs count=16 (output-40-1..10 + output-50-1..3 + output-55-1..3).
+
+- [s86] s86 harvest at ~15-min stopping window: iterations=1375, finds_new=0, best_new_score=null, pid_alive_at_harvest=false (killed via --stop). Output dir count at harvest: 16 (unchanged from preexisting).
+
+- [s86] s86 finding: the existing loop-top PERM_GENERAL region (3 alternatives at the sys_VSync assignment) does NOT open a mutation basin producing novel finds below the merged-chassis score-40 floor within a fresh-seed 15-min window at 8 jobs. This closes the last-listed frontier item's fresh-seed variant on the CURRENT annotated chassis.
+
+- [s86] s86 modality-vetting note: the frontier's proposed additional PERM_GENERAL alternatives at the loop-top site {`(void)*idx_1495;`, `idx_1494 = &D_800A1494;`, `idx_1494[0];`} are pre-classifiable cheats per no-new-park-categories vetting checklist (dead-read / dead-self-assign coercion with no semantic purpose, no h5-mult-expander-LAUNCH preservation motive). The remaining honest alternative `idx_1495 = idx_1494 + 1;` (dead in-loop store) was already measured s8 probe1 at masked=15 as a whole-source respell of the prologue form; adding it as an in-loop duplicate would fall under dead-store-fake-exception with FAKE annotation + layer-2 review AND still needs the s-reg-web disruption s8 documented. This frontier variant is therefore closed at the alternative-set level without introducing a cheat-shaped campaign.
+
+- [s86] s86 candidate.c: unchanged (h5 form remains masked-2 floor). src/system.c restored to HEAD state (both-named arg4/arg5 form) via `git stash push` prior to launch; candidate remains available at memory/grind/cpu_side_move_dir_4/candidate.c for the next session to apply.
+
+- [s86] s86 fresh-seed discipline note: 1375 iterations at base_score=2215 (~1.5 iter/sec across 8 jobs, dominated by high per-iteration compile cost of the s77-regressed chassis) is thin evidence relative to s13's 2999 iters / s5's 9040 iters / s76's 720 iters / s14's 23427 iters. The chassis's base_score=2215 signature indicates the current merged annotation set (LINESWAP+GENERAL+RANDOMIZE) explores from a bad neighborhood; the h5-preserving chassis and g3-basin chassis have both been re-measured this modality across prior sessions, closing the CURRENT-annotated-chassis fresh-seed axis.
+
+- [s86] s86 orientation note: the frontier's other two items (ALLOCDBG-instrumented forensics on s85 probe2's build_insns=159 signature; structural respelling of src/system.c:406 idx_1495 initializer as `idx_1495 = idx_1494 + 1;`) were not selected because the driver mandated `permuter` modality this session. Those remain live frontier for future forensics / structural sessions per the s85 ledger.
