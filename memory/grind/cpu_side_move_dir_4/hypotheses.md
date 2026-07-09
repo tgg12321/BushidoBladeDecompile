@@ -599,3 +599,9 @@
 - probe: Direct comparison of the three F3 realizations: P1 (fallthrough, both labels removed), P2 (invert branch, keep do_timeout only), P3 (nested-if fallthrough, keep success only).
 - result: The frontier F3 hypothesis 'outer if-chain flattening shifts LUID-tiebreak without disturbing the h5 basin's inline block' is FALSIFIED. Every outer-flow restructure that removes success: regresses by dropping 2 branch insns; keeping success: is INERT. There is no outer-flow structural axis realization that lowers below h5's masked=2 floor.
 - verdict: KILLED
+
+## [s30] Converting the fn-level `loop: ... goto loop;` construct to a real `while(1) { ... }` block enables flow.c/loop.c natural-loop detection, applying loop-depth REG_N_REFS weighting inside the loop body (which includes the debug_printf block=3 residual). This might lift arg5's refs to reach the pri>=5000 threshold documented for the arg5>t0 qty flip, unlocking the h5 pair-swap.
+- mechanism: flow.c find_basic_blocks assigns loop_depth to BBs; loop.c recognizes the C-level while(1) as a natural loop; local-alloc.c qty_compare uses loop-depth-weighted references (indirectly via bb->frequency). s25 forensics showed do-while(0) zero-iteration wraps do NOT lift refs (frequency<=1); a REAL loop (loop_depth>=1) is different.
+- probe: Applied h5 candidate to src/system.c (baseline masked=2, target_insns=160, build_insns=160 confirmed). Rewrote fn-level `loop:/goto loop;` as `while (1) { ... }` wrapping the entire loop body, preserving all internal goto labels (do_timeout:/success:/check:/poll:) and return statements as loop-exit paths. Measured via `sandbox cpu_side_move_dir_4 --disable all`.
+- result: masked=52, target_insns=160, build_insns=165 (+5). Also confirmed via for(;;) variant: identical masked=52/build_insns=165 - GCC 2.7.2 normalizes while(1) and for(;;) to the same RTL. Rejected forms saved at memory/grind/cpu_side_move_dir_4/rejected/f3b_fn_while1_refactor.c.
+- verdict: KILLED

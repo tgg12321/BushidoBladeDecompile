@@ -582,3 +582,19 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s29] s29 novel structural-axis frontier remaining: after F3 closure, the only outer-flow angle not measured is `loop:` label elimination (would require converting `goto loop` at line 495 to a real `while(1)`/`do{}while` construct with `break` on success and `continue` semantics; this changes fn-level control-flow topology which is a distinct probe from F3's outer-if-chain within the loop body). Left as a candidate for s30+ if the driver revisits structural modality; risk: the fn-level while(1) refactor is more invasive and may disturb the s-reg web coupling documented in s8/s9.
 
 - [s29] s29 F1 and F2 frontiers untouched (they are forensics + static-analysis modalities, not structural).
+
+- [s30] s30 baseline: h5 candidate applied to src/system.c scores masked=2, target_insns=160, build_insns=160 via sandbox cpu_side_move_dir_4 --disable all.
+
+- [s30] s30 F3b-P1 (while(1) fn-level refactor): masked=52, target_insns=160, build_insns=165 (+5 insns). The +5 physical opcodes indicate loop.c emits real loop-scaffolding (LOOP_BEG/LOOP_END notes plus at least one physical branch/label pair for the back-edge) that produces bytes, unlike do-while(0) zero-iteration wraps which are notes-only.
+
+- [s30] s30 F3b-P2 (for(;;) equivalent): masked=52, target_insns=160, build_insns=165 (IDENTICAL to while(1)). Confirms GCC 2.7.2's c-parse.y normalizes both C-source loop constructs to the same tree/RTL - no dial available at the loop-syntax level.
+
+- [s30] s30 novel finding: the ledger's F3b hypothesis that loop-depth weighting via a real natural-loop conversion would LIFT arg5 refs and unlock the qty flip is DISPROVED direction-wise: the ref-weighting materializes but MISDIRECTS the arg5-vs-t0 competition (matches s5 whole-block do-while(0) misdirection + s20 duplicated-into-arms D_800F19C0 misdirection + s25 g3+arg5-wrap misdirection - the third independent measurement of a ref-lift going the wrong way on this function's qty topology).
+
+- [s30] s30 mechanism corollary: for csmd4's h5 basin the arg5 qty pri wall is NOT closable via ANY ref-lift lever measured to date (do-while(0) at all scopes, duplicated-into-arms, real natural loops). The arg5>t0 flip requires either (a) a lever that raises arg5's refs WITHOUT also raising t0's refs, or (b) a lever that lowers t0's refs. Symmetric ref-lifts have now been TRIPLY-KILLED across three distinct wrap/loop constructs.
+
+- [s30] s30 outer-flow topology axis closure updated: after s29 F3 (3 realizations: success:/do_timeout: label removal) + s30 F3b (2 realizations: while(1)/for(;;)), the outer-flow structural axis is closed at both label-removal AND explicit-loop-conversion sub-axes. The only remaining outer-flow angle would be selective label removal with alternate exit-return spellings, which s29 F3-P3 already showed to be INERT (byte-neutral) - not a source of gradient.
+
+- [s30] s30 src/system.c restored to HEAD (both-named form, masked=7 baseline) at session end via git checkout HEAD -- src/system.c; candidate.c unchanged (h5 form remains the masked-2 floor).
+
+- [s30] s30 modality contract: structural axis is now closed at every scope measured across s3 (13 block-local variants), s4 (do-while(0) 4 scopes), s5 (block-scope carriers/named dispatch/wraps + 9040-iter permuter), s11+s12 (5 arg5_addr two-SET realizations), s20 (duplicated-into-arms non-t0), s29 (F3 outer-flow topology 3 realizations), and s30 (F3b fn-level explicit-loop 2 realizations). Every enumerable structural mechanism-hit is now measured KILLED. Future structural sessions have no untried axis at either block-local, outer-if-chain, or fn-level-loop scope.
