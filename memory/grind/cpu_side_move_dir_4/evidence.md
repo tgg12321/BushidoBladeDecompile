@@ -1150,3 +1150,19 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s69] s69 dbg.filtered totals identical for both dumps (11660 log lines, 276 QTYDBG, 102 ALLOCDBG, 10626 SCHEDDBG, 623 RANKDBG). No new function-level scheduling divergence introduced; all deltas confined to global-alloc's per-pseudo output for cpu_side_move_dir_4's s-reg carriers.
 
 - [s69] s69 candidate.c: unchanged (h5 form remains masked-2 floor). src/system.c restored to HEAD at session end via git checkout src/system.c.
+
+- [s70] s70 baseline confirmed: h5 candidate applied to src/system.c scores masked=2 (target_insns=160, build_insns=160) via `& tools/wteng.ps1 main sandbox cpu_side_move_dir_4 --disable all` (rules_dropped=5, cheat_asm_stripped=22).
+
+- [s70] F10 empirically KILLED via forensic dump-diff (no fresh cc1 rebuild needed — s69 dumps already contained the answer): block=3 total_time IDENTICAL (20 cycles) between h5 and honest forms in s69's ALLOCDBG-instrumented sched2 dumps.
+
+- [s70] Per-insn priority + ref_count IDENTICAL for the residual-pair-swap triad: {T-15 lw arg4, T-14 SLL, T-13 PLUS arg5_addr}. h5 numbering (118/111/121) vs honest numbering (110/103/113) differs by exactly 8 = block-0 prologue insn delta; monotonic offset preserves within-block LUID differentials.
+
+- [s70] Ready-list dispatch tiebreak identical: h5 T-13 picks 121 before 111 (higher LUID wins backward pass); honest T-13 picks 113 before 103 (same delta). Both forms emit {arg4-lw, SLL, PLUS} linearly vs target {arg4-lw, PLUS, SLL}; residual pair-swap is prologue-shape-INVARIANT.
+
+- [s70] Direct confirmation of s6/s15/s69 finding: the residual pair-swap {sll4@54 <-> addu5@55} is decoupled from the line-406 prologue-shape lever; the +13 masked delta of honest_idx_1495 (s8/s61) is entirely body-scope s-reg rotation among {p72,p73,p78,p79} driven by REG_EQUIV-note-based qty_compare priority shuffle (s60 named the mechanism, s69 named the 4-cycle rotation pattern).
+
+- [s70] Modality-compliance note: forensics modality without fresh cc1 rebuild is legitimate here because s69's dumps already contained the block=3 comparison data at ALLOCDBG/SCHEDDBG grain; the un-run angle was the direct diff. No new cc1 dump was needed to answer F10; using existing artifacts saves duplicative work and closes the frontier cleanly.
+
+- [s70] F10 KILLED closes one of three live frontier hypotheses (F6, F9, F10 from s69). F6 (SOTN carve-out duplicated-statement-into-arms on arg5's carrier under FAKE + layer-2 review) and F9 (refs/livelen strict-tie seeding to produce a THIRD s-reg rotation basin) remain untouched by this closure.
+
+- [s70] src/system.c restored to HEAD at session end via `git checkout src/system.c`; candidate.c unchanged (h5 form remains masked=2 floor since s4).

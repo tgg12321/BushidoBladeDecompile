@@ -1,7 +1,7 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 69,
+ "session_count": 70,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -423,23 +423,24 @@
    "floor": 2,
    "modality": "forensics",
    "headline": "s69 forensics: ALLOCDBG greg diff (h5 vs honest idx_1495) reduces cleanly to 4-cycle s-reg rotation {p72<->p79, p73<->p78} driven by prologue-length REG_EQUIV/qty-priority perturbation; no second unna"
+  },
+  {
+   "session": 70,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "s70 forensics: F10 KILLED via s69 sched2 dump diff \u2014 block=3 dispatch is prologue-shape-INVARIANT (identical priorities, ref_counts, LUID order, total_time between h5 and honest); +13 delta is entirel"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F6 (from prior brief, unmeasured): SOTN-family carve-out application - duplicated-statement-into-arms and dead-store-fake-exception on arg5's carrier to lift pri(arg5) >= pri(t0) via reg_n_refs, potentially flipping the h5 basin's residual pair-swap through the qty_compare priority equation.",
-   "mechanism": "s69 forensics CONFIRMED the debug_printf window pseudos allocate identically across prologue-shape perturbations - therefore the pair-swap residual is NOT touchable via prologue levers. F6's proposed vehicle (reg_n_refs lift on arg5's carrier via SOTN-sanctioned duplication into do_timeout arms) targets the block-3 window directly, orthogonal to the exhausted prologue-lever axis.",
-   "next_probe": "Enumerate do_timeout arrival arms in src/system.c; identify a real statement referencing arg5 or its carrier that can be duplicated into BOTH arms with cross-jump byte-neutrality; measure via sandbox --disable all; if byte-neutral AND lifts pri(arg5) >= pri(t0), invoke layer-2 cheat-reviewer per no-new-park-categories prerequisites (FAKE annotation + lever-exhaustion + independent verdict). Judge constraint: this is the ONLY unexhausted axis for the h5 basin residual under current policy."
+   "hypothesis": "F6 (from prior brief, unmeasured): SOTN-family carve-out via duplicated-statement-into-arms \u2014 duplicate a REAL statement referencing arg5's carrier (or a co-live pseudo) into BOTH do_timeout arrival arms, byte-neutral via cross-jump re-merge, with the effect of lifting reg_n_refs on the arg5 index chain to flip qty_compare pri(arg5) >= pri(t0) inside block=3.",
+   "mechanism": "s69 forensics confirmed prologue-lever axis is EXHAUSTED (debug_printf window pseudos allocate identically across prologue perturbations); s70 confirmed block=3 dispatch shape is prologue-invariant. Only the block=3 body itself can shift the pair. duplicated-statement-into-arms [[duplicated-statement-into-arms]] targets reg_n_refs directly \u2014 a byte-neutral duplication into arms lifts refs on the duplicated variable, and if that variable co-lives with arg5's index carrier it can flip qty_compare's priority equation without changing bytes. Requires FAKE annotation + documented exhaustion + layer-2 cheat-reviewer per no-new-park-categories prerequisites.",
+   "next_probe": "Enumerate do_timeout arrival arms in src/system.c around cpu_side_move_dir_4 (lines 415-434). Identify: (a) how many statement-neutral cross-jump-mergeable candidate points exist between the do_timeout label and the debug_printf call, (b) which live pseudos co-live with arg5's index carrier in block=3's ALLOCDBG conflict graph. Draft 2-3 candidate duplications; measure via sandbox --disable all; if any is byte-neutral AND lifts pri(arg5) above pri(t0) in the qty_compare tables, invoke layer-2 cheat-reviewer with FAKE annotation. Judge constraint: this is the ONLY unexhausted axis under current policy after F10 KILL."
   },
   {
-   "hypothesis": "F9 (novel this session, low probability): The 4-cycle s-reg rotation basin coupled through qty_compare is a hint - if a C construct can force pri(p72) = pri(p79) EXACTLY (a strict tie), MIPS's ascending-regno find_reg would break the tie by ord= sequence rather than by pri delta, potentially yielding a DIFFERENT rotation basin than either of the two measured here.",
-   "mechanism": "qty_compare tie-breaking priority: when floor_log2(refs)*refs/livelen*10000 evaluates equal for two competing carriers, the tie is broken by insertion order (RTL first-set LUID). If we can seed idx_1494 and tbl_125c with identical (refs, livelen) via a byte-neutral C shape (e.g., a shared prologue helper), the tie would resolve differently.",
-   "next_probe": "Enumerate prologue shapes that give tbl_125c and idx_1494 carriers identical (refs=3, livelen=~6) at the pre-loop insertion point. Candidate: swap the declaration/initialization order at lines 404-406 while preserving byte-equivalent RTL first-uses. Measure both directions (swap lines 404/405, then swap 405/406). If any variant produces a 3rd rotation basin distinct from h5 and honest, we have a new axis of exploration."
-  },
-  {
-   "hypothesis": "F10 (novel this session): The 8-insn prologue-length delta between h5 (43 insns) and honest (35 insns) may include a scheduler-relevant NOTE_INSN_LOOP_BEG boundary that changes birthing_insn_p classification for later insns beyond just the s-reg rotation.",
-   "mechanism": "SCHEDDBG line-counts are IDENTICAL (10626 each), so the block-3 debug_printf window's scheduling proceeds identically. But the 8-insn prologue shift may affect the number of LUIDs before block 3 begins, offsetting all subsequent LUIDs by ~8. This does NOT affect ready-queue LUID tie-breaks WITHIN a block (LUID diffs are preserved), so is unlikely to help - but a directed sched2 dump comparison could confirm.",
-   "next_probe": "Grep sched2.csmd4 for block=3 dispatch order in both dumps and compare - if identical (as expected), close F10 empirically."
+   "hypothesis": "F9 (from s69 frontier, unmeasured): a C construct that seeds idx_1494 and tbl_125c carriers with STRICTLY EQUAL (refs, livelen) at their qty birth would push qty_compare into pure LUID-tiebreak territory, potentially yielding a THIRD s-reg rotation basin distinct from both the h5 and honest 4-cycle rotations.",
+   "mechanism": "qty_compare tie-breaking in local-alloc.c: when floor_log2(refs)*refs/livelen*10000 evaluates equal for two carriers, the tie breaks by insertion order (RTL first-set LUID). If prologue arithmetic can be respelled so tbl_125c and idx_1494 carriers hit identical (refs, livelen) at their post-preload qty birth, and if the shared-tie evaluates via first-set-LUID ordering, MIPS's ascending-regno find_reg awarding could yield a novel s-reg assignment (e.g., ord=13/14 tied \u2192 pick by insertion, not by pri delta). Untested since s60/s61/s69 focused on REG_EQUIV attachment mechanism, not on ties via ref/livelen equality.",
+   "next_probe": "Compute (refs, livelen) for {p72,p73,p78,p79} carriers under h5 and honest from s69's csmd4_only.greg extracts (already produced under tmp/grind/cpu_side_move_dir_4/s69/allocdbg_diff/). Identify byte-neutral prologue re-orderings that would equalize (refs, livelen) on 2+ of them. Candidate: swap the declaration/initialization sequence at src/system.c:404-406 (tbl_125c/idx_1494/idx_1495 preload order) while preserving byte-equivalent RTL first-uses. Measure both directions. If any variant produces a 3rd rotation basin distinct from h5 and honest, F9 becomes a new axis of exploration."
   }
  ],
  "judge_constraints": [
