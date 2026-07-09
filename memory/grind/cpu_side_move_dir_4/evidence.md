@@ -1224,3 +1224,19 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s74] s74 F9 formally closed: no byte-neutral prologue reorder within src/system.c:404-408 (the assignment cluster) surfaces a novel s-reg basin distinct from h5 and honest 4-cycles. Combined with s60/s61/s69's atomic-4-cycle-under-qty_compare finding, this closes the entire 'byte-neutral outer-scope structural reorder' axis for the F9 mechanism.
 
 - [s74] s74 src/system.c restored to h5 candidate at session end; post-restore sandbox re-measures masked=2. candidate.c unchanged (h5 form remains masked-2 floor). Rejected forms saved: prologue_reorder_svsync_last.c, prologue_reorder_svsync_middle.c.
+
+- [s75] s75 baseline confirmed: h5 candidate applied to src/system.c scores masked=2 (target_insns=160, build_insns=160) via `& tools/wteng.ps1 main sandbox cpu_side_move_dir_4 --disable all`.
+
+- [s75] s75 F9-supplementary named-intermediate sweep: 5 of 6 STORE positions (P0..P4) INERT at masked=2 with build_insns=160 - GCC folds the named intermediate and relocated store to h5-identical RTL when the STORE sits BEFORE at least one subsequent independent global-store; the fold is position-invariant across the prologue's INTERIOR positions.
+
+- [s75] s75 P5 (STORE moved to LAST prologue slot, after D_800F19C0 = &D_80016240): masked=8, build_insns=160. Novel intermediate misalignment basin (+6 vs h5, distinct from the +7 g3/P3, +13 honest_idx_1495/multi-set-collapse, +14 F3-compound and inline-all, +19 sys_VSync-LAST from s74). Rejected form saved at memory/grind/cpu_side_move_dir_4/rejected/s75_vsync_ret_store_last.c.
+
+- [s75] s75 mechanism finding: the named vsync_ret intermediate is combine.c/cse.c-transparent as long as the STORE is not deferred past all other prologue stores - the vsync_ret pseudo dies at the ADD-and-STORE regardless of intermediate independent-store statements. Only the trailing placement (past ALL globals) extends its livelen enough to disturb qty_compare, and that disturbance moves in the wrong direction. The frontier's assumption that named-vsync + STORE-sweep could induce a novel s-reg basin is empirically refuted.
+
+- [s75] s75 F9 axis fully closed across (s74) byte-neutral prologue reorders + (s74) sys_VSync CALL position sweep + (s75) named-vsync + STORE position sweep. Combined with the s60/s61/s69 REG_EQUIV 4-cycle rotation atomicity finding, no first-order outer-scope structural lever remains for perturbing the {p72,p73,p78,p79} rotation in a targeted direction.
+
+- [s75] s75 structural modality (block-local var splits, decl order, type narrowing, statement re-association per the codegen-technique-index) is thereby exhausted at the outer-scope prologue-restructure sub-axis; combined with all prior structural closures (s3 13-variant block-local, s4 do-while(0) 4-scope, s5 block-scope carriers + named dispatch + wraps, s11/s12 5 arg5_addr two-SETs, s13 fn-body hoist, s56 physical-line, s57 cross-block-scope decl hoist, s65 3 novel LAUNCH-mechanism probes, s66 F3 compound, s74 F9 byte-neutral + sys_VSync-position), the structural axis has no un-run first-order lever at the h5 chassis.
+
+- [s75] s75 src/system.c left with h5 candidate applied at session end (sandbox re-measures masked=2). candidate.c unchanged (h5 form remains the 71-session floor). rejected/ file saved for P5.
+
+- [s75] s75 sweep results JSON at tmp/grind/cpu_side_move_dir_4/s75/sweep_results.json; backup of pre-sweep h5 src at tmp/grind/cpu_side_move_dir_4/s75/system.c.h5; sweep driver at tmp/grind/cpu_side_move_dir_4/s75/sweep.py.
