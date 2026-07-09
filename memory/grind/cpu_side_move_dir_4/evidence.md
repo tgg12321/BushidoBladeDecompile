@@ -292,3 +292,15 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s12] s12 src/system.c restored to h5 candidate at session end; post-restore sandbox re-measures masked=2. candidate.c unchanged (h5 form remains masked-2 floor).
 
 - [s12] s12 modality-exhaustion: structural axis fully closed on csmd4's h5 base — s3 (13 block-local structural variants), s4 (do-while(0) 4 scopes), s5 (block-scope carriers, named dispatch, whole+nested+call-only wraps, permuter fresh-seed 9040 iters), s9 (m2c + 4 marionation transplants), s11 (3 arg5_addr two-SETs), s12 (2 more arg5_addr two-SETs). All frontier mechanism-hits at the block-local structural level are now measured KILLED. Any future structural session must target a genuinely novel axis (cross-block-scope declaration hoisting into an outer sequence-point, fn-body-level scope changes, or upstream declaration-order edits at src/system.c:388-408) — not more block-local decompositions.
+
+- [s13] s13 baseline confirmed: h5 candidate applied to src/system.c scores masked=2 (target_insns=160, build_insns=160) via sandbox cpu_side_move_dir_4 --disable all.
+
+- [s13] s13 frontier #1 (fn-body-scope D_800F19C0 hoist into do_timeout): masked=15 (+13). File-level s-reg ref-balance coupling CONFIRMED direction-of-effect for hoisting-into-loop-body — the store is emitted per-iteration and disrupts the alloc web.
+
+- [s13] s13 frontier live #2 (g3 base + block-scope multi-set VALUE carrier for arg5): measured INERT vs g3 baseline masked=6 across TWO seed sources (*idx_1495 and t0). The h5-basin s5 F1a/F1b finding transfers verbatim to g3 basin: the multi-set VALUE carrier vehicle is qty-invariant regardless of first-set source symbol on both basins.
+
+- [s13] s13 permuter fresh-seed on h5-multexpander chassis (base_score=60, structurally distinct from s5's g3-basin base=40 campaign): 2999 iterations / 142.5s / 0 novel finds. Prior output-40-1/2 are pre-existing (from an older workspace chassis) and unchanged. The h5-multexpander local-minimum-under-random-mutation is stable at 20-min wall time; matches the g3-basin s5 result (9040 iters / 0 novel).
+
+- [s13] s13 permuter tooling note: perm_add_sub randomizer hits AssertionError('int - pointer') on the `(u8*)tbl_125c + t0` pointer-arith pattern in the h5 chassis (tmp/grind/cpu_side_move_dir_4/s13/permuter_run_tail.log). Worker pool tolerates it (2999 iters completed via other mutation methods) but this pattern is a partial-blindspot for permuter mutations targeting that expression node — a directed-PERM_* form on that node might explore forms permuter misses randomly.
+
+- [s13] s13 src/system.c restored to h5 candidate at session end; post-restore sandbox re-measures masked=2. candidate.c unchanged (h5 form remains masked-2 floor).

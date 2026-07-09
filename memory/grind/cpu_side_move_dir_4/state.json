@@ -1,8 +1,8 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 12,
- "current_modality": "structural",
+ "session_count": 13,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 0,
@@ -81,23 +81,29 @@
    "floor": 2,
    "modality": "structural",
    "headline": "s12 structural: two live frontier probes (pointer-walker + dead-sink liveness split) both KILLED as INERT \u2014 combine.c addsi3_internal substitution defeats every C two-SET arg5_addr decomposition acros"
+  },
+  {
+   "session": 13,
+   "floor": 2,
+   "modality": "permuter",
+   "headline": "s13 permuter+structural: h5-multexpander fresh-seed 2999 iters 0-novel (base=60); 3 KILLED \u2014 D_800F19C0 fn-body-hoist +13, g3+multi-set VALUE carrier for arg5 INERT (both *idx_1495 and t0 seeds)."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The masked-2 residual mechanism has been closed at the block-local structural axis across 5 arg5_addr two-SET C-realizations plus every other block-local structural axis measured s3/s4/s5. The only remaining STRUCTURAL angle not yet touched is UPSTREAM of the debug_printf block \u2014 fn-body-scope moves of the tbl_125c/idx_1494/idx_1495/D_800F19C0 initializers at src/system.c:404-408, which sit in the same TU-level RA web (WIP notes.md: 'file-level s-reg ref-balance coupling'). If any of these fn-body-scope initializer positions is load-bearing for p107's LAUNCH signature, moving them within the loop body might shift the qty priorities without regressing the s-reg web.",
-   "mechanism": "The prologue s-reg saves at src/system.c:388-408 initialize tbl_125c/idx_1494/idx_1495/D_800F19BC/D_800F19C0 outside the loop. Their C statement positions influence LUID at expand, which via qty_compare feeds birth-order tiebreaks at local-alloc. Moving one of these into the loop body (or into the do_timeout block) creates a fresh RA seat for the s-reg that could re-time the arg5-chain's LAUNCH via different birth-order tiebreaks. Risk high: WIP + s8/s9 measurements confirm the s-reg web is currently load-bearing (honest idx_1495 +13, marionation full-basin transplant +18, arg4-named +11).",
-   "next_probe": "Move `D_800F19C0 = &D_80016240;` from src/system.c:408 into the do_timeout block just before the debug_printf inline block (making its store an intra-block SET rather than a prologue-emitted one). Measure sandbox --disable all. Diagnostic: does the s-reg web absorb the shift, or does the loop repeat the store per-iteration causing byte regression? If former, potential ref-lift for pp; if latter, KILLED cleanly."
+   "hypothesis": "PERM_* directed mutation on the pointer-arith node `(u8*)tbl_125c + t0` may reach mutation forms permuter random misses due to the perm_add_sub AssertionError. Candidate hints: staged-value-reused-variable, register-alloc-pure-c.",
+   "mechanism": "tools/permuter_annotate.py --func cpu_side_move_dir_4 --hint <slug> writes PERM_*-annotated candidates that force the permuter to explore specific transformations on flagged nodes, bypassing the random-mutation blindspot. The h5-multexpander base has base_score=60 vs g3's 40; a directed campaign on the h5 pointer-arith node has not been run.",
+   "next_probe": "python3 tools/permuter_annotate.py --list-hints; select a hint aligned to the frontier (staged-value-reused-variable is directly applicable to the h5 t0-chain); write annotated candidate to tmp/permuter_candidates/cpu_side_move_dir_4.c; tools/permuter_campaign.py launch --func cpu_side_move_dir_4 --dir tmp/perm_csmd4_directed --label s14_h5_directed -j 8 --stop-on-zero. Fresh-seed 20-30 min window."
   },
   {
-   "hypothesis": "The g3 basin's residual v1/a0 register exchange (masked 6, order-perfect per WIP notes.md:26-29) is untouched by the h5-basin structural closure. A modality-switch to g3 base and attacking arg5-qty pri>=t0 via a block-scope multi-set VALUE carrier (not address) could flip the exchange.",
-   "mechanism": "In g3 basin, t0 chain is in-place ($a0), arg5 chain via v0 -> lw v1. Target requires arg5 to allocate v1 BEFORE t0 (which then falls to $a0). WIP notes.md:34-41 specifies arg5-qty needs pri>=5000 via 3refs/span6 tie + birth-order win. Unmeasured: multi-set arg5 VALUE-staging keeping the lw-dest split (see s5 F1a/F1b which measured VALUE carriers under h5 base \u2014 never tested on g3 base).",
-   "next_probe": "Adopt the g3-basin base (`v0 <<= 2; arg5 = *(s32*)(v0 + (s32)tbl); t0 <<= 2; ... *(s32*)(t0 + (s32)tbl_125c) in-call`) then apply s5 F1a-style block-scope multi-set VALUE carrier for arg5: `s32 v_arg5; v_arg5 = *idx_1495; v_arg5 = *(s32*)(v0 + tbl); ... call(..., v_arg5)`. Measure sandbox --disable all. Predicted: g3 base is masked=6; probe either lifts arg5-qty pri >= t0 (flips exchange, potential closure toward 0) or is INERT (multi-set carrier equally masked-inert on g3 base). Cross-basin modality \u2014 synthesis-adjacent structural probe."
+   "hypothesis": "The h5-multexpander chassis has 5 structural axes fully closed (block-local structure s3-s5, do-while(0) 4 scopes s4-s5, m2c rederive s8, marionation transplants s9, arg5_addr two-SETs s11-s12) plus fn-body-scope D_800F19C0-hoist KILLED (s13). The remaining untested fn-body-scope moves are: hoisting tbl_125c/idx_1494/idx_1495/D_800F19BC inits into do_timeout block, or moving the `cnt = D_800F19BC; D_800F19BC = cnt - -1;` counter increment PAST the do_timeout label.",
+   "mechanism": "Same fn-body-scope-move mechanism as frontier #1 (LUID at expand + qty birth-order); each remaining prologue-init is a candidate for the same probe. WIP explicitly warned the file-level s-reg web is coupled to these initializers.",
+   "next_probe": "Sweep the remaining prologue-init hoists into do_timeout individually: (a) tbl_125c into do_timeout, (b) idx_1494 into do_timeout, (c) idx_1495 into do_timeout, (d) D_800F19BC=0 into do_timeout. Each is a single sandbox measurement. All four are structural pure-C moves within pure-C. If any is INERT/improved, seed a permuter chassis on it."
   },
   {
-   "hypothesis": "The decomp.me corpus scrape via tools/decomp_me_scrape.py against asm/funcs/cpu_side_move_dir_4.s may surface a structurally distinct C form from the BB2 toolchain class not present in the current search space.",
-   "mechanism": "Coarse asm-overlap pre-filter; manual inspection of top hits could reveal an original-source shape our search space missed. Blocked s9/s11/s12: `python3 tools/decomp_me_scrape.py --help` fails with ModuleNotFoundError: No module named 'curl_cffi'.",
-   "next_probe": "Operator installs curl_cffi in .venv (`source .venv/bin/activate && pip install curl_cffi`). Then next rederive session runs `python3 tools/decomp_me_scrape.py search --asm-file asm/funcs/cpu_side_move_dir_4.s` and manually inspects top asm-overlap hits for a structurally novel closing shape."
+   "hypothesis": "The decomp.me corpus scrape via tools/decomp_me_scrape.py against asm/funcs/cpu_side_move_dir_4.s remains gated on operator installing curl_cffi in .venv (unchanged from s9/s11/s12). A structurally-novel-in-corpus C form from a similar-asm scratch could bypass the search space closed by s1-s13.",
+   "mechanism": "Coarse asm-overlap pre-filter over the downloaded decomp.me corpus (BB2 toolchain class: gcc2.7.2-psx / gcc2.7.2-cdk / psyq3.5); manual inspection of top hits could reveal an original-source shape our block-local + fn-body-scope search space missed.",
+   "next_probe": "Operator installs curl_cffi in .venv (`source .venv/bin/activate && pip install curl_cffi`); next rederive session runs `python3 tools/decomp_me_scrape.py search --asm-file asm/funcs/cpu_side_move_dir_4.s` and manually inspects top asm-overlap hits."
   }
  ],
  "judge_constraints": [],
