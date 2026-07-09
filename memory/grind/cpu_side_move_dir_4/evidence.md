@@ -668,3 +668,13 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s35] s35 rederive modality census: after s8 (m2c KILLED), s9 (marionation transplant P1-P4 KILLED), s17 (decomp.me shingle KILLED), s18 (Kengo dump KILLED), s26 (decomp.me residual + in-repo residual KILLED), s27 (saEft01Init decl-transfer KILLED), s35 (three idx_1495-based index-source respellings KILLED) — every enumerable rederive angle is now measured KILLED across seven distinct modality sub-attempts.
 
 - [s35] s35 asymmetric ref-lift frontier NOT approached: every C-source lever that lifts ONLY arg5's refs via a control-flow arm or additional use has cheat-shape at layer-1 self-vet (no-new-park-categories cheats-by-any-spelling — no semantic purpose for the extra reference). Structural / permuter attacks on this axis are the surviving frontier, not rederive.
+
+- [s36] s36 rederive-modality sub-angle #7 (in-repo COMPLETED-C 5-arg-debug_printf template scan) KILLED: 3 total 5-arg sites in src/*.c, all in system.c (L429/L541/L837), all INCOMPLETE. Confirms no native BB2 template exists for the arg4/arg5 tbl-indexed dispatch shape at COMPLETED-C bar.
+
+- [s36] s36 rederive-modality sub-angle #8 (Kengo numata subsystem body inventory) KILLED: 64/64 nm_cpu.c functions are `{}` empty stubs; extraction gap is subsystem-wide across all `src/numata/*.c` files in the dump. Refines s18's cpu_side_move_dir-specific finding to a subsystem-wide extraction property.
+
+- [s36] HEAD src/system.c sandbox cpu_side_move_dir_4 --disable all = 7 (target_insns=160, build_insns=160), matches ledger HEAD floor 7. Session did not modify src/system.c or candidate.c; h5 candidate remains the masked-2 floor.
+
+- [s36] Rederive-modality now measured KILLED across 8 distinct sub-angles: m2c (s8), marionation sibling P1-P4 (s9), decomp.me shingle (s17), Kengo cpu_side_move_dir stub (s18), decomp.me residual + BB2 in-repo residual (s26), saEft01Init decl-transfer (s27), idx_1495 respellings (s35), in-repo COMPLETED-C 5-arg-debug_printf template + Kengo numata subsystem inventory (s36).
+
+- [s36] No untried rederive angle enumerable from the ledger + this session's search remains. Future sessions on this function should not repeat rederive modality unless the operator supplies external inputs (a third-party PS1 decomp source with GCC 2.7.2 provenance and a byte-matched 5-arg variadic tbl-dispatch shape) — a class of input the ledger has never seen materialize.

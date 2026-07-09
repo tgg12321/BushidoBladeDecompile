@@ -1,7 +1,7 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 35,
+ "session_count": 36,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -219,18 +219,24 @@
    "floor": 2,
    "modality": "rederive",
    "headline": "s35 rederive KILLS three novel arg5-index-source respellings (idx_1495-based) \u2014 h5 basin is coupled to idx_1494+offset base-pointer, not fungible with the idx_1495 pointer used in the target's s4 chai"
+  },
+  {
+   "session": 36,
+   "floor": 2,
+   "modality": "rederive",
+   "headline": "s36 rederive KILLS two more sub-angles: BB2 in-repo has ZERO COMPLETED-C 5-arg debug_printf templates (all 3 sites INCOMPLETE), and the ENTIRE Kengo numata C-file family is empty-stub in the dump (not"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Asymmetric ref-lift via a legitimate additional use of arg5 (not t0) within a control-flow arm reachable only after the debug_printf call.",
-   "mechanism": "local-alloc.c qty_compare uses per-pseudo REG_N_REFS at flow time; the arg5>t0 flip requires arg5 refs >= 4 at span 6 OR t0 refs lowered. Every symmetric wrap KILLED across s4/s5/s25/s30. An asymmetric lever needs a legitimate semantic user of arg5 downstream that references NO t0 chain member.",
-   "next_probe": "Structural session: identify a downstream branch arm that legitimately consumes arg5 (e.g. cnt-condition-dependent recomputation of the tbl_125c[idx_1494[1]] value for a distinct semantic purpose) \u2014 high cheat-vetting risk, requires layer-1 self-vet against no-new-park-categories."
+   "hypothesis": "Asymmetric arg5-only ref-lift via a legitimate downstream semantic user of arg5 (not t0) reachable after the debug_printf call.",
+   "mechanism": "local-alloc.c qty_compare uses per-pseudo REG_N_REFS at flow time; the arg5>t0 flip requires arg5 refs >= 4 at span 6 OR t0 refs lowered. Every symmetric wrap KILLED across s4/s5/s25/s30. Asymmetric lever requires a legitimate semantic user of arg5 downstream that references NO t0-chain member. Layer-1 self-vet risk high (no-new-park-categories cheats-by-any-spelling).",
+   "next_probe": "Structural session: audit the post-debug_printf control-flow arms (do_timeout, poll, success, check) for a byte-neutral semantic surface that already recomputes tbl_125c[idx_1494[1]] under a distinct precondition (e.g. status-branch mask condition, saved-state restoration). This is NOT a rederive frontier."
   },
   {
-   "hypothesis": "The idx_1495-basin +1 regression measured s35 reveals a novel micro-basin between h5 (masked=2) and g3 (masked=6). A structural probe combining the idx_1495 base-pointer with a compensating s-reg web adjustment may land at masked=1 or masked=0.",
-   "mechanism": "s35 P1/P3 masked=3 with build_insns=160 indicates ONE additional register-diff over h5's residual pair-swap; if that diff can be absorbed by a coupled s-reg reassignment elsewhere in the function, the net effect could break the pair-swap while preserving the rest.",
-   "next_probe": "Structural: pair P1/P3 with a second lever that reassigns which callee-save carries idx_1494/idx_1495 (e.g. swap decl order at src/system.c:405-406, or route idx_1494 through a fresh callee-save via named intermediate). Layer-1 self-vet risk: no fn-scope carrier without semantic purpose."
+   "hypothesis": "The idx_1495-based +1 micro-basin between h5 (masked=2) and g3 (masked=6) surfaced by s35 admits a compensating s-reg web adjustment that reaches masked=0 or masked=1.",
+   "mechanism": "s35 P1/P3 masked=3 with build_insns=160 indicates ONE additional register-diff over h5's pair-swap; if that diff can be absorbed by a coupled s-reg reassignment elsewhere in the function, the net effect could break the pair-swap while preserving the rest.",
+   "next_probe": "Structural session: pair the idx_1495 base-pointer with a second lever that reassigns which callee-save carries idx_1494/idx_1495 (swap decl order at src/system.c:405-406, or route idx_1494 through a fresh callee-save via named intermediate). Layer-1 self-vet risk: no fn-scope carrier without semantic purpose. This is NOT a rederive frontier."
   }
  ],
  "judge_constraints": [],

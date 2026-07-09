@@ -683,3 +683,15 @@
 - probe: Applied `v0 = idx_1495[0];` on h5 base; sandbox --disable all.
 - result: masked=3 (+1 vs h5), build_insns=160 — IDENTICAL to P1. Confirms expand-time normalization of `idx_1495[0]` and `*idx_1495` to the same RTL MEM; the two spellings are not orthogonal. Rejected form saved at memory/grind/cpu_side_move_dir_4/rejected/arg5_seed_idx_1495_array.c.
 - verdict: KILLED
+
+## [s36] Some other function in the BB2 tree implements the 5-arg debug_printf tbl-indexed-dispatch shape in COMPLETED-C form and could serve as a byte-proven C-shape template for csmd4's inline block.
+- mechanism: Native in-repo templates would share the same GCC 2.7.2 mult-expander (case alg_shift NULL_RTX) and cse.c pointer-symbol canonicalization behaviors that gate h5's residual pair-swap, so a matched template's C shape would exhibit the same qty/LAUNCH invariants and be transplantable to csmd4's window.
+- probe: Grep src/*.c for `debug_printf\([^)]*,[^)]*,[^)]*,[^)]*,[^)]*\)` 5-arg call sites, then cross-check each against engine/queue.json + regfix.txt for cheat rules.
+- result: Only 3 in-repo 5-arg debug_printf sites exist and ALL are in system.c and ALL are INCOMPLETE: L429 cpu_side_move_dir_4 (this fn), L541 marionation_Exec (twin), L837 saEft01Init (twin, 15 regfix rules per s26). Zero COMPLETED-C templates exist to crib from.
+- verdict: KILLED
+
+## [s36] Kengo numata functions adjacent to cpu_side_move_dir have extracted C bodies in the dump even though cpu_side_move_dir itself is an empty stub (s18), so a neighbor function might supply structural information about the numata coding style transferable to csmd4.
+- mechanism: Kengo's dump extraction is per-function so extractor may have succeeded on some numata functions and failed on others; a partial-recovery would yield style hints (local decl order, control-flow idioms) even if not a direct transplant.
+- probe: sed -n '1023,1090p' Kengo/kengo_functions_full.txt on the nm_cpu.c section (64 functions), then awk-extract non-empty numata entries across all `FILE -- src/numata/*.c` sections.
+- result: Every one of the 64 nm_cpu.c functions is `{}` empty stub. Awk across all numata FILE sections yields only libc/math functions (cos/sin/atan2/sqrt/__ieee754_*) with bodies, zero game-code numata bodies. The extraction gap is subsystem-wide, not cpu_side_move_dir-specific.
+- verdict: KILLED
