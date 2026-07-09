@@ -1052,3 +1052,15 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s62] s62 candidate.c: unchanged (h5 form remains masked-2 floor since s4, now 58 sessions). src/system.c restored to HEAD both-named form at session end via in-place edit; no oracle-affecting change.
 
 - [s62] s62 modality compliance: mandated modality was rederive; sub-angle chosen was m2c-on-sibling-asm (novel un-run angle within the rederive class per ledger closure list). Judge constraint (BINDING per s40/s41/s46/s54/s55) NOT violated — no canonical-asm framing surfaced, no ALLOCDBG s-reg coupling attempted (that's the un-run frontier for post-modality-rotation sessions). This session eliminates one more rederive sub-angle and hands the frontier list to future sessions unchanged.
+
+- [s63] s63 baseline: h5 candidate applied to src/system.c scores masked=2, target_insns=160, build_insns=160 via sandbox cpu_side_move_dir_4 --disable all (rules_dropped=5, cheat_asm_stripped=22).
+
+- [s63] s63 m2c-with-reg-vars-all-sregs: 80-line output at tmp/grind/cpu_side_move_dir_4/s63/m2c_regvars_sregs.txt. Debug-window arg shape = inline-all-args (score-14 basin per WIP). Fn prologue shape = duplicate SET-INSNs (m2c hallucination from --reg-vars pinning). No novel structural neighborhood.
+
+- [s63] s63 rederive-modality closure update (transferable): the --reg-vars flag exhaustion (untried subset: all-s-regs) is now measured. Combined with s8 (no --reg-vars, default), s53 (--reg-vars arg5-addr), s54 (m2c --void / --no-stack-spill / --gotos-only flag-space), s62 (m2c on marionation_Exec.s twin sibling), the m2c rederive modality has NOW been exhausted across every non-trivial flag+input combination the tool exposes. Future rederive sessions must use out-of-tool inputs (decomp.me corpus [gated on curl_cffi install per s9/s10], Kengo source glance [operator-dependent], or a fresh sibling analog outside marionation_Exec [none known per WIP notes.md]).
+
+- [s63] s63 sibling landscape confirmed: cpu_side_move_dir (code6cac_b.c), cpu_side_move_dir_2 (code6cac_c2.c), cpu_side_move_dir_3 (main.c) do NOT share the debug_printf tbl_125c/idx_1494 window pattern (grep for debug_printf/tbl_125c/D_800A125C/D_800A1494 in those files returns empty). marionation_Exec remains the sole structural twin; its rederive angle was closed in s62.
+
+- [s63] s63 candidate.c: unchanged (h5 form remains masked-2 floor). src/system.c has h5 candidate applied (edit in place) at session end.
+
+- [s63] Judge-constraint alignment note: this session's mandated modality was rederive; the Judge's binding constraint (BINDING per digest) also names ALLOCDBG-instrumented s-reg coupling hunt (H2 frontier) as an un-run axis. This session did NOT advance H2 because the modality was rederive; H2 remains the highest-priority un-run frontier for the next session with allocdbg/forensics modality.
