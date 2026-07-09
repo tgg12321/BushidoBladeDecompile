@@ -1,8 +1,8 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 61,
- "current_modality": "forensics",
+ "session_count": 62,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 0,
@@ -375,23 +375,29 @@
    "floor": 2,
    "modality": "forensics",
    "headline": "s61 forensics: H3 REG_EQUIV-lever reversibility CLOSED across 4 natural idx_1495 respellings \u2014 all attach REG_EQUIV via set_unique_reg_note and produce +13 alloc-web rotation."
+  },
+  {
+   "session": 62,
+   "floor": 2,
+   "modality": "rederive",
+   "headline": "s62 rederive: m2c on the SIBLING marionation_Exec.s (novel un-run sub-angle, distinct from s8/s53/s54 which m2c'd csmd4.s) produces the SAME fully-inlined block=3 debug_printf shape as csmd4's m2c out"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "H1 (unchanged from s60): sched2 post-reload LUID renumbering admits a shift-by-1 lever via directed PERM_LINESWAP on a scheduler-visible sub-scope disturbing exactly one 106/107/111/121 neighbor without disturbing h5's s-reg web.",
+   "hypothesis": "H1 (unchanged from s60/s61): sched2 post-reload LUID renumbering admits a shift-by-1 lever via directed PERM_LINESWAP on a scheduler-visible sub-scope disturbing exactly one 106/107/111/121 neighbor without disturbing h5's s-reg web.",
    "mechanism": "sched.c::rank_for_schedule at sched2 sees insns 111/121 at plain priority 2 with LUID delta 1 (s43 log line 775). A one-slot shift on a non-residual neighbor tips 121's LUID advantage without flipping sched1's decision.",
-   "next_probe": "s62 forensics/permuter hybrid: wrap the do_timeout inline block in explicit extra braces; add PERM_LINESWAP over the 8 statements inside; run the N!/directed cross-product. Cross-check winners against tmp/grind/cpu_side_move_dir_4/s6/csmd4_only.log sched2 SCHEDDBG PICK events + READY-list at clock=10..15 to identify which LUID slot moved."
+   "next_probe": "forensics/permuter hybrid: wrap the do_timeout inline block in explicit extra braces; add PERM_LINESWAP over the 8 statements inside; run the N!/directed cross-product. Cross-check winners against tmp/grind/cpu_side_move_dir_4/s6/csmd4_only.log sched2 SCHEDDBG PICK events + READY-list at clock=10..15 to identify which LUID slot moved."
+  },
+  {
+   "hypothesis": "H2 (per s46 judge-mandated axis, still un-executed): ALLOCDBG-instrumented s-reg coupling hunt per register-alloc-pure-c. s42's global-alloc conflict-list census showed p77(idx_1494)/p78(idx_1495) zero-conflict with block=3 QTY pseudos, but the s6-baseline dump does NOT enumerate global-alloc coupling for the block=3 quads p100/p106/p107/p113 against the fn-scope pseudos beyond the raw conflict list. A directed ALLOCDBG=<p101,p106,p107> diff between h5 and honest_idx1495 chassis would expose the mechanism of the +13 s-reg-web rotation at the exact pseudo/qty layer (extending s60's REG_EQUIV finding downstream into local-alloc birth-order).",
+   "mechanism": "local-alloc.c qty_compare priority formula uses reg_n_refs times floor_log2 divided by livelen; sched1 LUID assignment inside block=3 is driven by post-global-alloc pseudo->hardreg tiebreaks. The h5-vs-honest chassis differs by REG_EQUIV attachment on p78 which propagates to livelen and priority. A directed diff isolates whether the +13 lives at global-alloc ordering, local-alloc qty birth, or sched1 LUID assignment.",
+   "next_probe": "instrumented cc1 dump with BB2_ALLOC_DEBUG=1 and BB2_QTY_DEBUG=1 on BOTH h5 candidate AND honest_idx1495 chassis; diff the ALLOCDBG global-alloc ordering and the QTYDBG block=3 tables to name the exact pass where +13 originates. If global-alloc ordering identical, the effect is downstream at local-alloc qty; if diff at global-alloc, the effect is upstream at s-reg assignment. This determines whether the honest-idx_1495 respelling can be reversed at any downstream pass."
   },
   {
    "hypothesis": "H4 (unchanged from s60): wrap `{ ...; goto poll; }` inside extra `{}` inside `if(status != 0)`; PERM_LINESWAP the 3 statements (if&4, if&2, goto poll). 6 orderings enumerable in <2 min.",
    "mechanism": "sched.c LUID reweighting from goto/store placement is orthogonal to the 2-if-block-swap axis; the 3-statement wrap enumerates callback-vs-goto orderings that shift the terminal RANKDBG LUID diff at clock=13.",
-   "next_probe": "s62 permuter: wrap and PERM_LINESWAP; 6 combinations; record score per ordering. If any <60 that's a novel find outside h5 identity minimum; if not, close this granularity too."
-  },
-  {
-   "hypothesis": "s15 class-1 attack (untested): make insn 121's PLUS operand involve a mul-result / HI-LO producer so mips_adjust_cost raises the 121->123 edge latency above 1, causing rank_for_schedule's class diff via LOG_LINKS(last_scheduled) to return non-zero.",
-   "mechanism": "sched.c::rank_for_schedule cascade: (1) priority diff -> (2) class diff via LOG_LINKS(last_scheduled) + insn_cost gate -> (3) LUID diff. All 51/51 RANKDBG events in s6 block=3 fall through to LUID (val=0 on cls diff). A cost>1 on the 121->123 dependency would break the LUID tiebreak by raising the class-diff term.",
-   "next_probe": "s62 forensics: identify a natural C construction where the (v0 + (s32)tbl_125c) plus operand's producer is a mul/mult (HI-LO stall producer) rather than a plain lw/lbu/add. Would require restructuring the arg5 index derivation to route through a mult - measure whether that keeps h5 basin AND raises 121->123 cost."
+   "next_probe": "permuter: wrap and PERM_LINESWAP; 6 combinations; record score per ordering. If any <60 that's a novel find outside h5 identity minimum; if not, close this granularity too."
   }
  ],
  "judge_constraints": [

@@ -1034,3 +1034,21 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s61] The cross-symbol semantic-lie form (src/system.c:406) remains committed and remains policy-flagged; s61 confirms pure-C retirement at masked=2 floor is still blocked. Retirement paths unchanged from s60: close h5 to 0, or achieve g3 basin masked=0 (with file-wide s-reg re-balancing).
 
 - [s61] src/system.c restored to h5 candidate at session end; post-restore sandbox re-measures masked=2. candidate.c unchanged (h5 form remains masked-2 floor).
+
+- [s62] s62 baseline: h5 candidate applied to src/system.c scores masked=2, target_insns=160, build_insns=160 via `& tools/wteng.ps1 main sandbox cpu_side_move_dir_4 --disable all` (rules_dropped=5, cheat_asm_stripped=22). Reproduces the 60-session ledger floor.
+
+- [s62] s62 rederive sub-angle: m2c on the file-local twin marionation_Exec.s (NOT the committed src/system.c body, NOT csmd4's own asm) — this specific angle is absent from the s8/s9/s17/s18/s26/s27/s35/s36/s44/s45/s54 rederive-closure list. s9 transplanted marionation's already-committed C body (masked 7/8/14/20 across 4 probes); s54 m2c'd csmd4's own asm with all flag combos. m2c-on-sibling-asm never previously run.
+
+- [s62] s62 output: marionation m2c block=3 line: `debug_printf(&D_800161C8, D_800F19C0, *(&D_800A11DC + (D_800A11D5 * 4)), *((M2C_FIELD(&D_800A1494, u8 *, 0) * 4) + &D_800A125C), *((M2C_FIELD(&D_800A1494, u8 *, 1) * 4) + &D_800A125C));` — byte-identical inline-all-args expression to csmd4's s8/s54 m2c output.
+
+- [s62] s62 novel non-block=3 observation (recorded to eliminate future re-derivation): m2c does reconstruct marionation's distinct `temp_s3 = &D_800A1494 + 2` pointer (the idx_1496 s6-register in marionation's ALLOCDBG that csmd4 lacks) and shows the sibling-only post-window READ at `M2C_FIELD(temp_s3, u8 *, -1)`. This confirms s9's finding that marionation's s-reg web differs materially — the idx_1496 pointer is a live global-alloc pseudo in marionation but has zero corresponding site in csmd4.s. Confirms marionation-transplant fungibility is bounded by this s-reg web asymmetry (s9 P4 masked=20 already measured this compound regression).
+
+- [s62] s62 mechanism: m2c's block=3 fixed-point across (a) csmd4.s with 5+ flag combos (s8/s53/s54), (b) marionation.s (s62), regardless of target-asm-level differences in the surrounding function shape. Confirms the fully-inlined form is m2c's structural attractor for GCC-2.7.2 varargs-CALL with tbl-indexed byte-dispatch reconstruction. The reconstruction depends on the CALL-shape, not the ambient s-reg web.
+
+- [s62] s62 KILLED cross-reference to known rejected forms: the m2c-output block=3 shape (fully-inlined args, no v0/t0 staging) is byte-identical to the rejected forms already in the bank as `arg5_fully_inline_no_v0_staging.c` and `mirror_arg5_named_arg4_inline.c` and matches s9 P2 masked=14 (inline-all args). No new sandbox measurement required — the shape is repeatedly closed.
+
+- [s62] s62 rederive-class closure extended to 11 sub-angles: s8 m2c-csmd4-default + s9 marionation-C-transplant + s17 decomp.me-shingle-scan + s18 Kengo-local-cpu_side_move_dir-stub + s26 decomp.me-residual-scan + BB2-in-repo-cluster + s27 saEft01Init-decl-transfer + s35 idx_1495-respellings + s36 BB2-5-arg-templates + Kengo-numata-stubs + s44 decomp.me-BB2-toolchain-corpus + s45 SOTN-cross-project + Kengo-whole-dump + s54 m2c-flag-space + s62 m2c-sibling-asm. All 11 KILLED.
+
+- [s62] s62 candidate.c: unchanged (h5 form remains masked-2 floor since s4, now 58 sessions). src/system.c restored to HEAD both-named form at session end via in-place edit; no oracle-affecting change.
+
+- [s62] s62 modality compliance: mandated modality was rederive; sub-angle chosen was m2c-on-sibling-asm (novel un-run angle within the rederive class per ledger closure list). Judge constraint (BINDING per s40/s41/s46/s54/s55) NOT violated — no canonical-asm framing surfaced, no ALLOCDBG s-reg coupling attempted (that's the un-run frontier for post-modality-rotation sessions). This session eliminates one more rederive sub-angle and hands the frontier list to future sessions unchanged.
