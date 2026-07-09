@@ -970,3 +970,13 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s57] s57 cheat-vetting: probes P1/P2 do NOT add semantic-purposeless constructs — they merely change the C-scope declaration slot of variables that continue to be used identically at block=3 first-use points. No new pseudos, no dead stores, no register pins, no volatile coercion, no hardcoded-$N asm. Clear layer-1 cheat gates by construction.
 
 - [s57] s57 src/system.c restored to h5 candidate at session end; post-restore sandbox re-measures masked=2. candidate.c unchanged (h5 form remains the masked-2 floor).
+
+- [s58] h5 baseline confirmed: candidate.c applied to src/system.c -> `sandbox cpu_side_move_dir_4 --disable all` yielded score=2 target_insns=160 build_insns=160 scorable=true rules_dropped=5 cheat_asm_stripped=22 (matches 45+session ledger).
+
+- [s58] s58 permuter campaign launched (pid 413) with h5 candidate.c as base, PERM_GENERAL at fn-body prologue scope; parser rejected the directive and fell back to full-function random-mode with base_score=60.
+
+- [s58] s58 harvest metrics: elapsed_s=689.4, iterations=18652, base_score=60, finds_new=0, best_new_score=null, procs_killed=9, stopped=true. Recorded via permuter-launch + permuter-harvest events in metrics/events.jsonl.
+
+- [s58] src/system.c reverted to HEAD via `git checkout src/system.c` after harvest (no floor improvement to commit; oracle stays green).
+
+- [s58] Cumulative h5-chassis permuter closure now spans s5/s13/s22/s23/s31/s32/s40/s49/s50/s58 = ~103k whole-fn random-mode iters + directed-scope campaigns; per s55 CONFIRMED, this closes permuter-modality without a chassis change.
