@@ -1043,3 +1043,27 @@
 - probe: python3 tools/m2c/m2c.py --valid-syntax --target mipsel-gcc-c --function cpu_side_move_dir_4 --reg-vars s0,s1,s2,s3,s4,s5 asm/funcs/cpu_side_move_dir_4.s > tmp/grind/cpu_side_move_dir_4/s63/m2c_regvars_sregs.txt (80 lines emitted).
 - result: The debug_printf call materializes fully-inlined as `debug_printf(&D_800161C8, D_800F19C0, *(&D_800A11DC + (D_800A11D5 * 4)), *((M2C_FIELD(&D_800A1494, u8*, 0) * 4) + &D_800A125C), *((M2C_FIELD(&D_800A1494, u8*, 1) * 4) + &D_800A125C))` -- byte-identical shape to s8's inline-all-args reconstruction (evidence.md s8 probe2), which is the WIP-recorded score-14 basin (evidence.md L7). The fn prologue also shows spurious duplicate SET-INSNs (`var_s3 = &D_800A125C; var_s3 = &D_800A125C; var_s2 = &D_800A1494; var_s2 = &D_800A1494;`) -- m2c hallucination from the s-reg-pinning forcing repeated names to redundant sets, not evidence of a novel source-shape (a duplicated fn-prologue assignment is a straight-line dead-store cheat, not the sanctioned duplicated-statement-into-arms carve-out which requires 2+ control-flow arms per no-new-park-categories).
 - verdict: KILLED
+
+## [s64] Every ledger-visible C-source lever direction on the h5 {sll4@54 <-> addu5@55} residual pair-swap has been mapped to a compiler-source wall (expmed.c:2244 case alg_shift NULL_RTX, mips.h:2946 ADJUST_COST, combine.c addsi3_internal, integrate.c:96 varargs refusal, sched.c LUID counter without -g) or an empirical regression across 63 sessions.
+- mechanism: Grand inventory: LUID reorder basin-coupled (s6); class attack triple-KILL (s15/s16); p106 multi-set expmed-pinned (s7); p107 two-SET combine-folded (s11/s12/s39); do-while(0) at 5 scopes wrong-direction (s4/s5/s25); duplicated-into-arms non-t0 wrong-direction or fn-scope-cheat (s20 + rejection-bank); SOTN named-local FAKE C1-C6 all KILLED (s47/s48); permuter modality ~137k iters 0 <40 finds (s5/s13/s22/s23/s31/s32/s40/s49/s50/s58); rederive 11 sub-angles KILLED (s8/s9/s17/s18/s26/s27/s35/s36/s44/s45/s54/s62/s63); ALLOCDBG s-reg coupling REG_EQUIV attachment mechanism NAMED and no-C-offset (s60/s61).
+- probe: Ledger cross-read (evidence.md 1066 lines, hypotheses.md 1046 lines / 160 blocks, rejected/ 78 forms).
+- result: The h5-basin closed-lever set is COMPLETE at first-order structural + permuter + forensics + rederive modalities.
+- verdict: CONFIRMED
+
+## [s64] F1 (novel): a g3-chassis (base_score=40, statement-form t0<<=2) directed permuter campaign scoped strictly to arg5-side (PERM_LINESWAP arg5 statements + PERM_GENERAL arg5 dereference ONLY, NO t0-side directives) can shift REG_N_REFS on arg5-qty above the ~5000 priority threshold (s1 fable-blitz refs>=4 span 6 = 13333, or refs=3 span<=5 = 6000), flipping the v1/a0 register exchange residual in g3=6 basin without crossing back into h5-basin territory.
+- mechanism: s5 g3 fresh-seed unrestricted (9040 iters) was NOT arg5-only; s14 h5-chassis directed at both sides drifted into g3 via alternative t0 forms. s19 elevated this exact axis as frontier #3, never executed. g3 has an order-perfect {sll v0, addu v0, sll a0} triangle so t0-side is untouchable; only arg5-side pri-lift can reach a distinct alloc.
+- probe: Not measured this session (synthesis modality mandates no probes). Elevated to frontier #1 for s65+.
+- result: Guardrail: iter1 base_score MUST measure 40 at launch (g3 chassis); layer-1 vet against g3-permuter cheat family (0xFF/0xFFFF masks, u16 narrowing, fn-scope alias) on every find. Fresh-seed 20-30 min wall time.
+- verdict: CONFIRMED
+
+## [s64] F2 (low-probability, deterministically enumerable): 3-statement PERM_LINESWAP inside a nested { } compound inside if(status != 0) covering (if&4 dispatch, if&2 dispatch, goto poll) enumerates 3! = 6 orderings; extends s59 2-if-swap negative to include the goto slot; targets ALLOCDBG s-reg web at the poll-loop dispatch scope.
+- mechanism: s59 established nested { } inside compound-if IS parsed by permuter (2/2 iters ran; swap regresses +65). s42 shows p78/idx_1495 have zero block=3 QTY overlap, so lift is unlikely, but 6-combo enumeration is <2 min tool time; measures full statement-order axis at previously-inaccessible dispatch scope.
+- probe: Not measured this session. Elevated to frontier #2 for s65+.
+- result: Low upside, deterministic enumeration, low tool cost.
+- verdict: CONFIRMED
+
+## [s64] F3 (closure by construction, not a probe): no third live first-order lever survives at h5 chassis without owner-supplied external input or a new structural chassis.
+- mechanism: SOTN carve-out realizations exhausted (named-local-fake-exception C1-C6, dead-vars-local-array requires oracle-honest dead sw stores absent per s49, do-while-zero all scopes wrong-direction); external-corpus rederive angles enumerated to exhaustion (s44/s45/s26/s17 all KILLED); ALLOCDBG axis fully named with no C-offset lever (s60/s61); Kengo body extraction empty across 64 nm_cpu.c stubs (s18/s36).
+- probe: Ledger cross-read; no measurement.
+- result: Documented honestly; no ruling-request emitted (judge constraint 2026-07-08 bars canonical-asm authorization framing).
+- verdict: CONFIRMED

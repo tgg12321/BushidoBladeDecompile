@@ -1,8 +1,8 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 63,
- "current_modality": "rederive",
+ "session_count": 64,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 0,
@@ -387,23 +387,29 @@
    "floor": 2,
    "modality": "rederive",
    "headline": "s63 rederive: m2c with --reg-vars s0..s5 pinning produces the same inline-all-args (score-14 basin) shape as s8's default m2c, plus a spurious double-assign hallucination on tbl_125c/idx_1494 prologue"
+  },
+  {
+   "session": 64,
+   "floor": 2,
+   "modality": "synthesis",
+   "headline": "s64 synthesis: 63-session ledger merged; frontier reset to g3-chassis arg5-only directed permuter (F1, never measured) + 3-statement poll-loop PERM_LINESWAP (F2, low-probability but 6-combo enumerable"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "H2 (unchanged from s46/s60 ledger digest, still un-executed): ALLOCDBG-instrumented directed diff of block=3 pseudos p100/p101/p106/p107/p113 between the h5 chassis and the honest_idx_1495 chassis names the exact pass (global-alloc ordering, local-alloc qty birth-order, or sched1 LUID assignment) where the +13 s-reg-web rotation originates, determining whether the honest respelling is reversible at any downstream lever.",
-   "mechanism": "local-alloc.c qty_compare priority formula uses reg_n_refs times floor_log2 divided by livelen; sched1 LUID inside block=3 is driven by post-global-alloc pseudo->hardreg tiebreaks. h5 vs honest_idx_1495 differ by REG_EQUIV attachment on p78 (s61 finding) which propagates to livelen and priority.",
-   "next_probe": "Instrumented cc1 dump with BB2_ALLOC_DEBUG=1 and BB2_QTY_DEBUG=1 on BOTH the h5 candidate (masked=2) AND the honest_idx_1495 chassis (masked=15, +13 regression per s8-probe1). Diff the ALLOCDBG global-alloc ordering; if identical, effect is downstream at local-alloc qty; if diff at global-alloc, effect is upstream at s-reg assignment. This determines reversibility of the honest respelling."
+   "hypothesis": "F1: g3-chassis arg5-side-only directed permuter campaign (base_score=40 statement-form t0<<=2, PERM_LINESWAP+PERM_GENERAL scoped exclusively to arg5 chain) reaches a novel arg5-qty pri>=5000 profile that closes the v1/a0 exchange in g3=6 basin.",
+   "mechanism": "s1 fable-blitz threshold: arg5-qty pri>=5000 requires refs>=4 span 6 (=13333) OR refs=3 span<=5 (=6000). g3 chassis avoids the h5 mult-expander LAUNCH constraint; arg5-side-only bounds the search to the closable half of g3's residual.",
+   "next_probe": "Copy tmp/perm_csmd4 workspace, edit base.c to g3 shape (t0<<=2 in place of t0*=4 chain), add PERM_LINESWAP wrapping arg5's 3 statements + PERM_GENERAL alternatives on the arg5 dereference only. Confirm iter1 base_score=40; abort if 60. Fresh-seed 20-30 min. Any find must pass layer-1 vet against g3-permuter cheat family."
   },
   {
-   "hypothesis": "H1 (unchanged from s15/s60/s61): sched2 rank_for_schedule LUID renumbering admits a shift-by-1 lever via directed PERM_LINESWAP on a scheduler-visible sub-scope that disturbs exactly one 106/107/111/121 neighbor without disturbing the h5 s-reg web.",
-   "mechanism": "sched.c::rank_for_schedule at sched2 sees insns 111/121 at plain priority 2 with LUID delta 1 (s15 line 775 measurement). A one-slot shift on a non-residual neighbor tips 121's LUID advantage without flipping sched1's decision.",
-   "next_probe": "Wrap the do_timeout inline block in explicit extra braces; PERM_LINESWAP over the 8 statements inside; run the N!/directed cross-product. Cross-check winners against tmp/grind/cpu_side_move_dir_4/s6/csmd4_only.log sched2 SCHEDDBG PICK events + READY-list at clock=10..15 to identify which LUID slot moved."
+   "hypothesis": "F2: 3-statement PERM_LINESWAP inside nested { } inside if(status != 0) covering (if&4, if&2, goto poll) enumerates 3! = 6 orderings; ALLOCDBG s-reg web coupling may surface at previously-inaccessible dispatch scope.",
+   "mechanism": "s59 established nested-compound-if parsing works (2/2 iters ran); s42 shows p78/idx_1495 have zero block=3 QTY overlap so upside is small, but deterministic enumeration is cheap (<2 min tooling).",
+   "next_probe": "Extend s59 base.c to wrap 3 statements including the goto; permuter exhausts 3!=6; measure any weighted<60 output on sandbox --disable all."
   },
   {
-   "hypothesis": "H4 (unchanged from s60): wrap `{ ...; goto poll; }` inside extra `{}` inside `if(status != 0)`; PERM_LINESWAP the 3 statements (if&4, if&2, goto poll). 6 orderings enumerable in <2 min.",
-   "mechanism": "sched.c LUID reweighting from goto/store placement is orthogonal to the 2-if-block-swap axis (s59 KILLED the 2-swap surface); the 3-statement wrap enumerates callback-vs-goto orderings that could shift the terminal RANKDBG LUID diff at clock=13.",
-   "next_probe": "permuter: wrap the if(status!=0) body in `{...}` and PERM_LINESWAP the 3 statements; 6 combinations; record score per ordering. If any <60 that's a novel find outside h5 identity minimum; if not, close this granularity too."
+   "hypothesis": "F3: no third first-order lever survives at h5 chassis; further sessions must either shift to F1/F2 or accept the axis closure and document it.",
+   "mechanism": "Grand inventory closes every ledger-enumerated axis (structural, permuter, forensics, rederive, ALLOCDBG). Judge constraint bars canonical-asm ruling-request framing.",
+   "next_probe": "None. Reserved as fallback documentation if F1 and F2 both close."
   }
  ],
  "judge_constraints": [

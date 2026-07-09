@@ -1064,3 +1064,23 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s63] s63 candidate.c: unchanged (h5 form remains masked-2 floor). src/system.c has h5 candidate applied (edit in place) at session end.
 
 - [s63] Judge-constraint alignment note: this session's mandated modality was rederive; the Judge's binding constraint (BINDING per digest) also names ALLOCDBG-instrumented s-reg coupling hunt (H2 frontier) as an un-run axis. This session did NOT advance H2 because the modality was rederive; H2 remains the highest-priority un-run frontier for the next session with allocdbg/forensics modality.
+
+- [s64] 63-session floor stable at masked=2 (h5 chassis, mult-expander LAUNCH insn 111 fresh p106 via expmed.c:2244 case alg_shift NULL_RTX; residual pair-swap 118/111/121 vs target 118/121/111 at sched1 clock=13 LUID tiebreak, LUID(121)=12 > LUID(111)=8).
+
+- [s64] s60/s61 named the +13 alloc-web rotation mechanism: p78 (idx_1495) REG_EQUIV attachment at expand-time via set_unique_reg_note; livelen 72->144, priority 277->138, ord 13->15 (demoted last); triggers 4-pseudo rotation into s3/s4/s5/s6.
+
+- [s64] s61 confirmed all 4 natural idx_1495 respellings (&D_800A1495, 1+idx_1494, (u8*)((s32)&D_800A1494+1), (u8*)((s32)idx_1494+1)) all attach REG_EQUIV; the cross-symbol form remains the only respelling that defeats the note.
+
+- [s64] s61 confirmed no natural-C offset lever raises p72/p73/p79 above the demoted p78=138 priority.
+
+- [s64] s62 confirmed m2c on marionation_Exec.s emits byte-identical block=3 shape to csmd4's m2c output; sibling asm is m2c-fixed-point.
+
+- [s64] s63 confirmed m2c --reg-vars s0..s5 emits the same inline-all-args (score-14 basin) shape plus spurious duplicate prologue SETs (cheat-shaped hallucination, not a novel structural axis).
+
+- [s64] Permuter modality closed: h5 chassis ~137k iterations across 9 campaigns, 0 novel weighted<40 finds.
+
+- [s64] Rederive modality closed: 11 sub-angles KILLED across m2c/marionation/decomp.me/BB2-in-repo/Kengo/saEft01Init/SOTN corpus.
+
+- [s64] Judge constraint (2026-07-08) BINDING: canonical-asm authorization is settled-FAIL; do not resurface.
+
+- [s64] s64 no measurement per synthesis modality; candidate.c at floor 2 preserved verbatim.
