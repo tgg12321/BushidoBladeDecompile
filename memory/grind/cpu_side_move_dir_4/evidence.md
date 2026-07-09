@@ -1438,3 +1438,19 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s88] Pseudo-ID renumbering (101->97, 120->116, 126->122, 137->133) reflects the shorter idx_1495 initializer (fewer intermediate pseudos in the prologue). Not diagnostic of the RA change; the ord rotation is real.
 
 - [s88] Kill class WIDTH: probe1 has NO loop-top compute; the spelling ALONE triggers the rotation. Any lever that respells idx_1495 through a form cse-unifiable with idx_1494 hits the same p79 ref loss, regardless of position. Frontier probe #1 (p79-preserving loop-top levers) is only viable if it PRESERVES the cross-symbol tbl-routed idx_1495 spelling AT src/system.c:406 - the honest respell axis is closed for the h5 basin.
+
+- [s89] s89 baseline sandbox --disable all masked=7 on HEAD src/system.c (both-named form); masked=2 on candidate.c applied to src/system.c (h5 form, target_insns=160, build_insns=160). Floor unchanged since s4.
+
+- [s89] s89 decomp.me corpus C-source substring scan: 3754 scratches scanned via regex on printf-family calls with >=5 args; 2 hits (PfboX printf trampoline, QkCAP MDEC_print_error).
+
+- [s89] s89 hit (a) PfboX: score=0 matching=True; body is `sprintf(msg,fmt,a1..a5); mts_set_debuglog(msg);` — a variadic-forwarding wrapper. No VSync structure, no tbl_125c marshaling, no arg4/arg5 register chain rivalry. Not a csmd4 template.
+
+- [s89] s89 hit (b) QkCAP: score=7600 matching=False; body is multiple sequential printf calls over MDEC register status bitfields with (>>N)&1 masks. No VSync-poll wrapper, no fresh 1D-array index-marshal chain, no analog to csmd4's `arg5 = *(s32*)(v0+(s32)tbl)` + `t0 = *(s32*)((idx*4)+(s32)tbl)` rivalry.
+
+- [s89] s89 sub-angle novelty: the C-source substring lens is materially distinct from (i) asm-shingle whole-function similarity (s17, peak 0.097), (ii) residual-window instruction-cluster scans (s26 residual + s71 window-slice), and (iii) all m2c-variant sub-angles (s8/s53/s54/s62/s63/s72/s80/s81) which regenerate C from BB2 asm rather than search external C. It queries a distinct index of the same corpus and yields a distinct (empty-of-transplant) answer.
+
+- [s89] s89 cumulative rederive-modality sub-angle closure: 12 (s81 ledger tally) → 13 (this session). The exhaustive rederive-source list closed at s80 is preserved; s89 exhausts the C-source substring sub-lens on the decomp.me corpus source-code field.
+
+- [s89] s89 src/system.c: restored to HEAD after baseline measurements via `git checkout src/system.c`. candidate.c unchanged (h5 form remains the masked=2 floor).
+
+- [s89] s89 modality compliance: mandated modality was rederive; the corpus C-source substring 5-arg-printf lens is a novel un-run rederive sub-angle within the corpus lens family. Judge constraint respected — no canonical-asm framing surfaced; no forbidden semantic-lie construct proposed; no cheat-shaped honest respelling of src/system.c:406 attempted.
