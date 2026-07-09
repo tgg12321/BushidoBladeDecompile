@@ -762,3 +762,23 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s42] s42 flattened-dispatch pseudo count: the frontier (b) proposed C form `mask & 4 ? D_800A11B8 : D_800A11B4)(*(mask & 4 ? idx_1495 : idx_1494), ...)` introduces at minimum one new pseudo for the function-pointer ternary result plus one for the operand ternary; both would be live simultaneously in the callback window. This ADDS pressure to global-alloc, not relieves it - opposite of the frontier's directional claim.
 
 - [s42] s42 modality-contract compliance: instrumented cc1 dumps referenced (RTL/ALLOCDBG/QTYDBG/greg); named GCC-source passes: global-alloc.c (find_reg, priority ordering), local-alloc.c (qty_compare, block-local qty table), sched.c::rank_for_schedule + LUID tiebreak (per s15 rank_for_schedule at lines 2399-2456). Named decision producing the divergence: block=3 clock=13 LUID(121)=12 > LUID(111)=8 with cls=3 val=0 -> emission 118,111,121 vs target 118,121,111.
+
+- [s43] s43 forensics: no src edit; h5 candidate.c remains masked=2 floor. Analysis reuses s6 instrumented cc1 dump (canonical BB2_SCHED_DEBUG/BB2_RANK_DEBUG artifact).
+
+- [s43] sched1 SCHEDDBG PICK clock=13 (csmd4_only.log:172): picked=121 with pri=2130706433 (LAUNCH sentinel 0x7f000001) luid=12. Ready list: [121(p=2130706433,l=12) 111(p=2130706433,l=8) 142(p=1,l=22)].
+
+- [s43] sched2 SCHEDDBG PICK clock=13 (csmd4_only.log:775): picked=121 with pri=2 luid=7. Ready list: [121(p=2,l=7) 111(p=2,l=6) 142(p=1,l=4)]. NO LAUNCH sentinel.
+
+- [s43] sched1-vs-sched2 LUID renumbering: sched1(111,121,118)=(8,12,11); sched2(111,121,118)=(6,7,5). sched2 re-numbers via post-reload RTL chain walk; the LUID gap between the residual pair collapses from 4 (sched1) to 1 (sched2).
+
+- [s43] Mechanism: adjust_priority applies LAUNCH iff birthing_insn_p returns TRUE, which requires REGNO(SET-dest) >= FIRST_PSEUDO_REGISTER. Post-reload, dests of insns 111 (p106) and 121 (p107) are hard regs; birthing_insn_p returns FALSE at sched2 -> no LAUNCH adjustment.
+
+- [s43] Both passes produce the SAME emission order (118, 111, 121) via distinct tiebreak mechanisms: sched1 = LAUNCH-vs-LAUNCH LUID diff; sched2 = plain-pri-2 LUID diff. The sched1 output determines sched2 LUID assignment, so sched2 preserves sched1's decision without needing LAUNCH.
+
+- [s43] Ledger correction (novel forensic data point): s6 evidence line stating 'insn 111 pri=2130706433 (LAUNCH) and insn 121 pri=2130706433 (LAUNCH), simultaneously ready at clock=13 with 121(luid=12) picked first' was documenting sched1 state, not sched2 (LUID=12 exists only in sched1 numbering; sched2 has luid=7). The confusion propagated to s7/s15/s16/s28/s37/s42 phrasings but does not invalidate their conclusions -- the sched1 mechanism is the correct one, sched2 is just its inheritor.
+
+- [s43] Attack-surface consequence: sched2's plain-priority-2 tie is symmetric (both 111 and 121 have exactly 1 downstream user contributing 1+1=2 to their priority chain). Raising pri(111) above pri(121) at sched2 requires either multi-use of p106 (blocked by s7 alg_shift wall = g3 basin drop) or extending 116's downstream chain via multi-use of p101 (blocked by h5's dependence on multi-set t0 LAUNCH suppression on 116 = g3 drop). No C lever operates at sched2 layer without also crossing s3/s11/s12/s39 KILLED families.
+
+- [s43] Frontier (b) sanctioned-carve-out-at-callback-slot suffers a distinct KILL from this finding: LUIDs are computed per-block by sched_analyze walking each block's RTL chain, and block=3 (debug_printf window) is upstream of the callback poll-loop blocks (5-9 per csmd4_only.sched2). LUID assignments in blocks 5+ have zero effect on block=3's LUID tiebreak at sched2 clock=13.
+
+- [s43] Frontier (a) PERM_GENERAL-at-callback-sites suffers the same per-block LUID isolation KILL: any AST mutation over the callback slots produces RTL insns in blocks 5-9, which do not participate in block=3 sched_analyze.

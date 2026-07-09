@@ -773,3 +773,21 @@
 - probe: Read ALLOCDBG global-alloc ranking, QTYDBG blk=3 census, and .greg conflict lists from tmp/grind/cpu_side_move_dir_4/s6/ (h5 baseline instrumented cc1 dump). Map pseudos to source variables (p77=idx_1494, p78=idx_1495, p79=tbl_125c, p106=t0*4 mult-expander temp, p107=arg5_addr). Check whether idx_1494/idx_1495 conflict with any block=3 QTY pseudo (necessary precondition for allocation coupling).
 - result: p77 conflict list: {72,73,75,77,78,79,80,81,86,101,120,126, 2,3,4,5,6,7,29}. p78 conflict list: identical. Block=3 QTY pseudos {p100, p106, p107, p113}: NONE appear in p77/p78 conflict lists. idx_1494 and idx_1495 have zero shared live range with the pair-swap window's local pseudos. Additionally, priority formula shows idx_1494's pri=933 sits between p80's 952 and p79's 675 with >20-unit gap; +/-1 ref change yields pri deltas (~130 up, ~130 down) that leave the s-reg ranking order unchanged (still ord=11, hardreg s2).
 - verdict: KILLED
+
+## [s43] sched2 (post-reload) applies adjust_priority-LAUNCH to insns 111 and 121, matching sched1's LAUNCH state on both insns.
+- mechanism: sched.c::adjust_priority uses birthing_insn_p to flag SET-dests-of-live-pseudos with LAUNCH sentinel 0x7f000001. If sched2 sees the same pseudos as sched1, LAUNCH persists.
+- probe: Direct read of csmd4_only.log at both sched1 (lines 165-180) and sched2 (lines 763-785) SCHEDDBG ready-list traces for block=3 clock=10-15 picks on insns 111,121,123,129,116,118,142.
+- result: sched1 shows 111,121,123,129 all at pri=2130706433 (LAUNCH); ready-queue trace: '121(p=2130706433,l=12) 111(p=2130706433,l=8) 142(p=1,l=22)'. sched2 shows the SAME insns at plain pri=2; ready-queue trace: '121(p=2,l=7) 111(p=2,l=6) 142(p=1,l=4)'. Zero LAUNCH sentinels in sched2 block=3 output.
+- verdict: KILLED
+
+## [s43] sched2's mechanism for picking 121 before 111 at clock=13 is a LAUNCH-vs-LAUNCH LUID tiebreak, mirroring the sched1 mechanism the ledger has been targeting since s6.
+- mechanism: If sched2 has LAUNCH on both, RANKDBG val=0 (cls=3 vs cls=3) triggers LUID tiebreak; higher-LUID wins in backward-scheduler pick order.
+- probe: Read SCHEDDBG PICK / ready traces at sched2 clock=13-15 for the residual pair (line 774-782 of csmd4_only.log).
+- result: sched2 clock=13 pick: 121(p=2,l=7) beats 111(p=2,l=6) by LUID diff of 1 within the plain-priority-2 class (RANKDBG last=123 y=121 cls=3 x=111 cls2=3 val=0). NOT a LAUNCH-vs-LAUNCH tie; it is a plain-priority-tie. The LUID delta is 1, not the sched1 delta of 4.
+- verdict: KILLED
+
+## [s43] sched2 offers an independent attack surface from sched1 for flipping the pair-swap (i.e., a C-source lever exists that shifts sched2 outcome without also shifting sched1 outcome).
+- mechanism: If sched2's priority computation differs materially from sched1, a lever that raises pri(111) above pri(121) at sched2 (via deepening 111's downstream chain post-reload) could win the tiebreak in the correct direction.
+- probe: Enumerate sched2 priority sources: 111->116 (single downstream user, pri=2) and 121->123 (single downstream user, pri=2). Enumerate C-source levers that would add a downstream user to p106 (SLL dest at 111) or extend 116's chain via multi-use of p101.
+- result: Both directions collapse into KILLED families: (a) adding a downstream user of p106 = multi-use of the mult-expander fresh temp, which by s7 expmed.c:2244 case alg_shift NULL_RTX target forces the direct-LSHIFT path = g3 basin regression (masked=6-7); (b) extending 116 via multi-use of p101 (t0) breaks the multi-set t0 pattern that h5's sched1 LAUNCH suppression on insn 116 depends on = g3 basin regression. Both = s3/s11/s12/s39 KILLED classes.
+- verdict: KILLED

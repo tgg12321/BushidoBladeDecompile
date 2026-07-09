@@ -1,7 +1,7 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 42,
+ "session_count": 43,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -261,18 +261,24 @@
    "floor": 2,
    "modality": "forensics",
    "headline": "s42 forensics: frontier (b) flattened-callback s-reg coupling KILLED by ALLOCDBG/greg conflict-list census - idx_1494 (p77/s2) and idx_1495 (p78/s4) share zero live range with block=3 QTY pseudos p100"
+  },
+  {
+   "session": 43,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "s43 forensics KILLS 'sched2 LAUNCH manipulation' as an attack surface: sched2 sees BOTH insn 111 and 121 at plain priority=2 (NOT the LAUNCH 0x7f000001 the s6/s15 ledger entries claimed); LAUNCH senti"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Live frontier (a) PERM_GENERAL alternatives at the poll-loop callback sites - offering ordering-equivalent shape alternatives that avoid the s41 PERM_LINESWAP brace-block parse failure - could shift the s-reg web via AST-mutation of the callback slots.",
-   "mechanism": "PERM_GENERAL accepts explicit alternative expressions/statements at a site, bypassing LINESWAP's statement-splitter brace constraint. If alternatives at each callback slot preserve semantics (null-check-preserving flattened forms), a permuter mutation neighbourhood over their cross-product could shift the h5-chassis mutation subspace. Note: s42 ALLOCDBG census shows this cannot affect block=3's pair-swap via s-reg re-allocation (frontier b's mechanism is KILLED), but a permuter mutation over the callback AST could still surface a novel outer-web ordering with different downstream RTL luids.",
-   "next_probe": "Draft PERM_GENERAL alternatives at each callback slot (flattened single-statement conditionals guarded on outer if-status precondition). AUDIT alternatives to preserve h5 chassis (multi-set t0, mult-expander LAUNCH insn 111 preserved). Enforce base_score=60 at t=0 guardrail per s14 finding. Launch permuter fresh-seed."
+   "hypothesis": "F1: A downstream user of p106 (the SLL dest at insn 111) that survives the mult-expander alg_shift wall by NOT being a use of p106 itself but rather of p101 (t0) AFTER the SLL emit, could raise sched2 pri(111) via a distinct chain-extension mechanism.",
+   "mechanism": "sched2 insn_priority walks INSN_DEPEND successors; if p106 has 1 direct user AND p101's chain gets an additional dep-edge added via an inserted SET, pri(111) could rise. Alternative: a WAR (write-after-read) dep on p101 might contribute an antidep edge without adding a new C-visible use of p106.",
+   "next_probe": "Read tools/gcc-2.7.2/sched.c::insn_priority + sched_analyze_insn to enumerate exactly which dep-edge types feed pri(); check whether any WAR/WAW dep-edge to insn 111 is C-source addable without perturbing p101's multi-set launch-suppression. Structural modality would apply if a candidate lever emerges."
   },
   {
-   "hypothesis": "SOTN-family carve-out sub-realizations at the debug_printf window - specifically pointer-alias-fake-exception or named-local-fake-exception constructs at the callback slot mirroring SOTN sanctioned evidence.",
-   "mechanism": "SOTN evidence sanctions certain FAKE-annotated dead constructs when documented lever-exhaustion + named GCC-pass mechanism + layer-1+2 review. If a matched-shape SOTN carve-out exists for idx_1495/idx_1494 pointer aliasing at the callback slot with a FAKE-annotated dead re-alias, it may be sanctioned rather than a cheat.",
-   "next_probe": "Read .claude/rules/pointer-alias-fake-exception.md and named-local-fake-exception.md in full; enumerate SOTN evidence bar exactly; probe ONE draft against layer-2 cheat-reviewer BEFORE measuring on sandbox to avoid drafting cheats-by-any-spelling. Emit ruling-request if uncertain."
+   "hypothesis": "F2: SOTN-family carve-out application at the debug_printf inner block (NOT callback slot per s43 per-block LUID isolation KILL) with FAKE-annotated named-local-fake-exception construct exclusively targeting p107's sched1 LAUNCH suppression.",
+   "mechanism": "Per s10 frontier statement, the ledger's only surviving mechanism is 'kill 121 sched1 LAUNCH keep 111 sched1 LAUNCH'; the sanctioned FAKE-annotated named-local families are the remaining spelling class that the s11/s12 non-sanctioned two-SET variants did not exhaust. Layer-2 cheat-reviewer default-FAIL gate + owner-doc SOTN prerequisite check must precede any sandbox measurement.",
+   "next_probe": "Read .claude/rules/named-local-fake-exception.md + .claude/rules/pointer-alias-fake-exception.md in full; draft ONE candidate FAKE-annotated construct that flips p107 to flow-time reg_n_sets=2 via a SANCTIONED family; probe via cheat-reviewer BEFORE sandbox. Emit ruling-request if the layer-1 self-vet is uncertain."
   }
  ],
  "judge_constraints": [
