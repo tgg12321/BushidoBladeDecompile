@@ -1538,3 +1538,15 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s95] 5 stale campaigns reaped in the process (marionation Exec dev campaigns from s30..s40); no interference with s95's csmd4 workspace
 
 - [s95] run.log per-worker iteration counters climbed past 606k with score distribution 40..9590 - all >= base=60 or in known regression basins; workers exhibited the same score-noise floor as s94's POLL PERM_GENERAL run (44k iters / 0 finds), consistent with the frontier-item-3 mechanism (POLL and pp-position axes are permuter-neighborhood inert)
+
+- [s96] greg allocno_conflicts extract for {p72,p73,p77,p78,p79} in h5, probe1, probe2: all three carry the same hardreg set {2,3,4,5,6,7,29}=$v0/$v1/$a0-$a3/$sp (call-cluster interference); zero $s2..$s9 hardreg conflicts. S-reg assignment is purely ord-order-driven.
+
+- [s96] h5 vs probe1 pseudo-vs-pseudo edge sets are identical after the 4-pseudo rename 101->97, 120->116, 126->122, 137->133 (checked via symmetric set diff on 80 focus edges in each dump). No atomic conflict edge flips between h5 and probe1 - yet probe1 masked=15 while h5 masked=2, and probe1's ord=12..15 rotates identically to probe2 (s88 confirms).
+
+- [s96] h5 vs probe2 differs by exactly one edge: {p78 <-> p86} present in h5, absent in probe2. p86 is in the debug_printf call-cluster (conflicts 82,83,84,86,137). Its live range shifts because of probe2's extra loop-top insn, so this edge deletion is a POSITIONAL side effect, not the driver: probe1 (no positional change, only spelling change) still rotates without this edge change.
+
+- [s96] Therefore the driver of the 4-cycle rotation {p72<->p79, p73<->p78} is priority-arithmetic (pri = floor_log2(refs)*refs*size/livelen*10000): p79 loses 2 refs (5->3) across both probes, pri collapses 675->202, ord-position 12->{14 or 15}, hardregs 19..22 reassign. Confirms and extends the s87/s88 mechanism naming.
+
+- [s96] Implication for the remaining search space: any lever operating on the conflict graph (edge additions/removals via new pseudos or lifetime coupling) cannot shift the ord=12..15 order without ALSO shifting nrefs or livelen on p79. Levers must attack the priority inputs directly, or work in an orthogonal alloc-web scope (POLL arms - untouched by any of the closed axes).
+
+- [s96] Sandbox floor unchanged at masked=2 for candidate.c (h5 form); no src/ edits this session (pure forensics on pre-existing dumps).

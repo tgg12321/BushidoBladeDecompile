@@ -1,8 +1,8 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 95,
- "current_modality": "permuter",
+ "session_count": 96,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 0,
@@ -579,23 +579,29 @@
    "floor": 2,
    "modality": "permuter",
    "headline": "s95 permuter: fresh-seed PERM_GENERAL block=3 pp-ordering chassis (base=60, h5) 4320 iters / 660s / 0 novel finds - pp-hoist-position axis is permuter-inert to block=3 residual"
+  },
+  {
+   "session": 96,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "s96 forensics KILLS F3 (conflict-graph attribution): h5 vs +13 basin probe1 have BIT-IDENTICAL greg allocno_conflicts edge sets (after 4-pseudo rename 101->97, 120->116, 126->122, 137->133); the 4-cyc"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F3 ALLOCDBG-instrumented enumeration of block=3 QTY-pseudo <-> file-scope s-reg conflict-graph edges names the atomic conflict driving the {p72<->p79, p73<->p78} 4-cycle rotation (carry-over from s91/s94)",
-   "mechanism": "s95 closes the pp-position PERM_GENERAL axis as inert; combined with s94 POLL PERM_GENERAL inert and s86/s85 arm-duplication inert, the plausibly-orthogonal expression-level permuter-neighborhoods are ALL closed. The 4-cycle rotation still implies a shared conflict-edge set at the ALLOCDBG layer; that axis remains untouched.",
-   "next_probe": "Forensics session (NOT permuter modality): cc1 dump BB2_ALLOC_DEBUG=1 on h5 vs +13 basin variant (e.g. honest idx_1495 respell from s8-probe1); grep global.c allocno_conflicts for edges involving {p72,p73,p78,p79} x {s2..s9 hardregs}; diff to identify the atomic edge(s) that flip. Report the specific edge set + mechanism (interval overlap vs conflict inheritance)."
+   "hypothesis": "SOTN-family duplicated-statement-into-arms (2026-07-01 sanction) applied to a REAL statement in the POLL callback arms (status&4 and status&2) with /* FAKE */ annotation - carry-over, still un-measured after s96",
+   "mechanism": "s94/s95 closed POLL expression-level and pp-position permuter neighborhoods. s96 further shows the block=3 alloc web has no conflict-graph slack: h5 and probe1 share identical edge topology. The POLL region is a distinct alloc-web scope from block=3 (different basic blocks, different qty ids p88..p93 vs p97..p137); statement-level duplication INTO the arms adds a real ref-count with cross-jump re-merge invariance, hitting the ONLY remaining structurally untouched neighborhood.",
+   "next_probe": "Structural session: introduce a byte-neutral duplicated statement into both POLL callback arms (status&4 branch and status&2 branch) with FAKE annotation citing duplicated-statement-into-arms 2026-07-01 sanction; measure sandbox masked; if byte-neutral, invoke layer-2 cheat-reviewer per review-discipline-before-commit."
   },
   {
-   "hypothesis": "SOTN-family duplicated-statement-into-arms (2026-07-01 sanction) applied to a REAL statement in the POLL region with /* FAKE */ annotation - carry-over from prior frontier, still un-measured",
-   "mechanism": "s84 KILLED duplicated-statement on block=3 arms; POLL-region duplication into the two callback dispatch arms (status&4 vs status&2) has NEVER been measured. Different alloc-web scope than block=3. s94 confirmed POLL-region expression-level permuter neighborhood inert; s95 confirmed pp-position permuter neighborhood inert. Statement-level duplication in POLL arms remains a structurally distinct axis (adds a real statement into 2 arms with cross-jump re-merge invariance) and none of the closed permuter axes touch it.",
-   "next_probe": "Structural session: introduce a byte-neutral duplicated statement into both POLL callback arms (status&4 and status&2) with FAKE annotation citing duplicated-statement-into-arms 2026-07-01 sanction; measure sandbox masked; if byte-neutral, invoke layer-2 cheat-reviewer per review-discipline-before-commit."
+   "hypothesis": "A p79-nrefs-preserving alternate spelling for idx_1495 exists in the sanctioned family (staged-value-reused-variable / pointer-alias-fake-exception) that keeps p79 refs>=5 without the do-while-zero-exception forbidden-family cross-symbol form at line 406",
+   "mechanism": "s96 proves the +13 basin gap is nrefs-on-p79 (5->3, delta -2 refs). ANY spelling reducing to `idx_1494 + 1` collapses to 3 refs (s88). But a spelling that ALSO reads &D_800A1494 through a symbol path (adding intermediate refs) may keep the 5-ref lead. Untested spellings: (a) route idx_1495 via a fn-scope pointer-alias variable holding `&D_800A1494` so its initializer contributes refs, (b) route through a named-local fake with type coercion. Both are 2026-07-01 SOTN-family carve-outs and require lever-exhaustion + FAKE annotation + layer-2 review.",
+   "next_probe": "Structural session: build 2 idx_1495 respellings using pointer-alias-fake-exception (fn-scope `u8 *idx_1494_base = &D_800A1494;` then `idx_1495 = idx_1494_base + 1;`) and named-local-fake-exception (fn-scope constant-holder feeding the derivation). Measure greg nrefs on p79 - the class KILL only holds if refs still fall to 3."
   },
   {
-   "hypothesis": "Permuter modality is now exhausted across the h5 basin under BOTH random-neighborhood (PERM_RANDOMIZE) and directed-alternative (PERM_GENERAL 2-branch and 3-branch) mutation over BOTH the POLL region (s94) and the block=3 pp-ordering / statement-order (s95) - future permuter gains require a chassis where block=3 QTY priorities are directly steered, not achievable via C-source expression or ordering mutation",
-   "mechanism": "s94 (POLL PERM_GENERAL, 44479 iters/0 finds) + s95 (block=3 pp-order PERM_GENERAL, 4320 iters/0 finds; 3-way u32-cast variant chassis-invalid) + s86 (vblank-poll-arm chassis, 1375 iters/0 finds) + s85 (F6-triple/quint duplications, +15 misdirection / novel-signature regressions) enumerate the full expression- and ordering-permuter-neighborhood of the h5 basin. All closures point to the same block=3 QTY-priority tiebreaker (s6/s7 forensics: sched.c adjust_priority LAUNCH-vs-LAUNCH LUID tie between insn 111 p106=p101<<2 and its mate); C-source expression mutation cannot reach the QTY priority arithmetic that governs the tie.",
-   "next_probe": "Alternate modality: ALLOCDBG forensics session per frontier item 1, OR structural session with SOTN-family duplicated-statement-into-arms probe in the POLL arms per frontier item 2. Do NOT re-run permuter on the h5 basin - all documented mutation axes are closed and re-measurement produces the same 0-find data point."
+   "hypothesis": "Conflict-graph attack surface is fully closed - future forensics must switch focus from allocno_conflicts to priority arithmetic (nrefs and livelen accounting in flow.c reg_scan / cse.c invalidate)",
+   "mechanism": "s42 (conflict-list census), s69 (greg diff), s87/s88 (ord=12..15 rotation table), s96 (edge-set identity across basins) collectively enumerate every layer of the register interference graph. All say the same thing: the graph is fixed for this function; the priorities differ. The unattacked layer is the ref-count/livelen accounting itself - what counts as a ref (rtx passes: expand insns vs post-combine SETs), how livelen is measured across the loop back-edge.",
+   "next_probe": "Instrumented cc1 dump with BB2_FLOW_DEBUG (if implemented; else patch flow.c mark_regs_live_at_end to log ref counts per pseudo per basic block) on h5 vs probe1; identify WHICH insn contributes the 2 extra refs to p79 in h5's cross-symbol spelling but not probe1's honest spelling. Naming that insn class opens a novel axis (spelling shapes that preserve those refs without the do-while-zero-exception #5 forbidden form)."
   }
  ],
  "judge_constraints": [
