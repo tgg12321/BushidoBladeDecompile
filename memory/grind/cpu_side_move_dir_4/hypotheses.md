@@ -827,3 +827,27 @@
 - probe: Ledger cross-read only.
 - result: Permuter-modality closed at h5 chassis; s47+ permuter runs must launch from a DIFFERENT chassis (e.g. FAKE-annotated named-local variant emerging from F2) or the campaign duplicates prior 0-find measurements.
 - verdict: CONFIRMED
+
+## [s47] A fn-body-top `s32 zero = 0;` FAKE-annotated per named-local-fake-exception SOTN archetype, DECLARED unused, will shift local-alloc qty birth-luid so reload renumbers a block=3 SET-dest into a fn-scope multi-set hard-reg, suppressing LAUNCH at sched2 and flipping the h5 pair.
+- mechanism: s33 saEft01Init reload-renumbering mechanism: fn-scope multi-set hard-regs cause birthing_insn_p to return FALSE at sched2. But a DCE'd unused local never reaches local-alloc.
+- probe: Applied `s32 zero = 0;` at fn body top (line 389, before decl block), h5 candidate otherwise intact; sandbox cpu_side_move_dir_4 --disable all.
+- result: masked=2 INERT, target_insns=160, build_insns=160 unchanged. Tree-level DCE removes the unused local before local-alloc sees it. Rejected form saved at memory/grind/cpu_side_move_dir_4/rejected/fn_scope_zero_dead_scalar_C1.c.
+- verdict: KILLED
+
+## [s47] A fn-scope `s32 zero = 0;` kept live via `v0 = zero;` at the success arm (SOTN DispSamnailWindow constant-holder archetype spanning debug_printf + cdrom_ClearIrq) forces zero into a callee-save and shifts the block=3 alloc equation.
+- mechanism: SOTN constant-holder shape reserves a callee-save reg to avoid re-materialization across intervening calls; cross-call preservation is what actually reaches local-alloc as a live pseudo (unlike C1/C3 which fold or DCE).
+- probe: Applied `s32 zero = 0;` at fn top + replaced `v0 = 0;` at cpu_side_move_dir_4 success arm with `v0 = zero;` (unique-context edit; marionation success arm untouched); sandbox --disable all.
+- result: masked=10 (+8 vs h5 baseline 2), target_insns=160, build_insns=163 (+3 insns). The callee-save reserve + preservation moves cost >> any LUID/LAUNCH benefit; the alloc web falls out of h5 basin. Rejected form saved at memory/grind/cpu_side_move_dir_4/rejected/fn_scope_zero_constant_holder_C2.c.
+- verdict: KILLED
+
+## [s47] A fn-scope `s32 zero = 0;` used at a SINGLE pre-block=3 store (`D_800F19BC = zero;` at line 408) — no cross-call preservation demanded — will land the local as a distinct pseudo in local-alloc while avoiding C2's callee-save cost.
+- mechanism: Local born at line 408, dead by loop entry; short live range confined to prologue. If cse does not fold it back to literal 0, it acquires a distinct pseudo and could bias qty tables at the loop entry into block=3.
+- probe: Applied `s32 zero = 0;` + `D_800F19BC = zero;` at line 408; sandbox --disable all.
+- result: masked=2 INERT, target_insns=160, build_insns=160 unchanged. cse folds `zero` back to literal 0 at the single-use site before local-alloc; the local never reaches allocation as a distinct pseudo. Same net outcome as C1 (DCE), different pass. Rejected form saved at memory/grind/cpu_side_move_dir_4/rejected/fn_scope_zero_prologue_use_C3.c.
+- verdict: KILLED
+
+## [s47] A downstream C-source expression in one of the target's post-block=3 arms reads the post-shift t0 value (or a `(u8*)tbl_125c + (t0<<2)` shape), letting an honest respelling add a WAR dep-edge to insn 111 and raise pri(111) above pri(121) to flip the LUID tiebreak without perturbing 116's launch suppression.
+- mechanism: sched.c::insn_priority walks INSN_DEPEND successors; a WAR from a later reader raises the producer's priority. The read must have semantic purpose (target asm must already compute the same expression under a distinct spelling) per no-new-park-categories.
+- probe: Audit asm/funcs/cpu_side_move_dir_4.s L80080EDC..L80081004 (all arms after the do_timeout block) for any expression reading (u8*)tbl_125c + (t0<<2), or the raw t0<<2 value, or an alias-derived shape.
+- result: KILLED. The arms use only $s2 (idx_1494), $s4 (idx_1495), $s6 (a1), $s5 (arg0), literal constants, and D_800A147C/D_800A11B4/D_800A11B8 dispatch pointers. NO downstream expression references (u8*)tbl_125c + (t0<<2), the raw t0 value, or its shift result. The t0-chain shifted value is dead immediately after the debug_printf window (the lw a3,0(a0) at L80080ED8 is the final use). No honest downstream reader exists to lever pri(111).
+- verdict: KILLED

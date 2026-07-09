@@ -824,3 +824,19 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s46] Prerequisite audit for F2 completed this session per named-local-fake-exception.md: (1) lever-exhaustion documented across 45-session ledger; (2) GCC-pass interaction named (sched.c::birthing_insn_p FALSE at sched2 iff SET-dest reg_n_sets>1 post-reload; a fn-scope dead scalar in the correct hardreg class could force reload renumbering of block=3 SET-dests into fn-scope multi-set hard-regs per s33 saEft01Init mechanism); (3) mandatory /* FAKE: ... */ annotation to be authored at draft; (4) layer-1+2 cheat-reviewer per review-discipline-before-commit.md mandatory before commit — s47 workers must not skip.
 
 - [s46] Search-space elimination this session: rederive modality (10 sub-angles KILLED, no further external corpus warranted), permuter-modality at h5 chassis (≈62,545 iters at 0 novel <40, redundant unless chassis changes), forensics on sched2 pri arithmetic (s43+s16 close class-attack sub-frontier at both sched1 and sched2 layers), poll-loop restructuring (s41/s42 idx_1494/idx_1495 zero-conflict with block=3 QTY pseudos).
+
+- [s47] s47 baseline: h5 candidate applied to src/system.c scores masked=2, target_insns=160, build_insns=160 via `& tools/wteng.ps1 main sandbox cpu_side_move_dir_4 --disable all`.
+
+- [s47] s47 C1 (`s32 zero = 0;` fn-body-top dead unread): masked=2 INERT, insns=160. Tree-level DCE removes uninit/unread scalar locals before local-alloc. The named-local FAKE mechanism (F2 primary) cannot fire on a DCE-eliminable form.
+
+- [s47] s47 C2 (`s32 zero = 0;` + `v0 = zero;` at success arm, constant-holder spanning calls): masked=10 (+8), insns=163 (+3). SOTN DispSamnailWindow-shape constant-holder DOES reach local-alloc as a live pseudo but the callee-save reserve + preservation moves across debug_printf/cdrom_ClearIrq cost 3 real insns and 8 masked units; h5 basin destroyed.
+
+- [s47] s47 C3 (`s32 zero = 0;` + `D_800F19BC = zero;` single pre-block=3 use, no cross-call): masked=2 INERT, insns=160. cse folds zero back to literal at the single-use site before local-alloc. Short-live-range constant-holder is qty-invisible.
+
+- [s47] s47 F2 primary closure: SOTN FAKE-annotated `s32 zero = 0;` archetype has no middle-ground realization on csmd4's h5 base. Either (a) DCE'd if unused (C1) / cse-folded if singly-used (C3) — INERT and never reaches local-alloc as a distinct pseudo, or (b) preserved across calls (C2) — costs +3 real insns and regresses +8. There is no `s32 zero = 0` shape that both survives to local-alloc and stays within the h5 alignment.
+
+- [s47] s47 F1 secondary closure via post-block=3 arms audit (asm/funcs/cpu_side_move_dir_4.s L80080EDC..L80081004): all arms use $s2/$s4/$s6/$s5 and literal/dispatch pointers only; no downstream reader of the t0<<2 post-shift value exists under any spelling. Confirms t0-shift value is dead after L80080ED8 (the final lw a3,0(a0) inside the debug_printf window). No WAR-edge-based pri(111) lift is available from an honest downstream expression.
+
+- [s47] s47 mechanism note: the s33 saEft01Init reload-renumbering pattern (fn-scope multi-set hard-reg killing birthing_insn_p) requires the FAKE-annotated local to (i) reach local-alloc as a live pseudo AND (ii) not add real emitted insns. On csmd4's h5 base these two requirements are mutually exclusive across the three probed archetypes: the local is either DCE/cse-eliminated (fails i) or it costs preservation insns (fails ii). The mechanism-realization gap is not a random measurement gap but a structural one: any zero-cost fn-scope local is by construction not present at flow-time.
+
+- [s47] s47 src/system.c restored to h5 candidate at session end; post-restore sandbox re-measures masked=2, insns=160. candidate.c unchanged (h5 form remains the masked-2 floor).
