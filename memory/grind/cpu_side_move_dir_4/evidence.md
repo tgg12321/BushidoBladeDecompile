@@ -930,3 +930,15 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s54] Ledger cross-check: s37 CONFIRMED 'every rederive sub-angle enumerable from the ledger is measurement-closed across 8 distinct sources' — s54 extends this to 9 distinct sources (m2c-flag-space).
 
 - [s54] Judge constraint acknowledged: s54's mandated modality was rederive, not the s53-frontier-preferred ALLOCDBG or sched2-rank_for_schedule axes. Rederive angle chosen (m2c flag exhaustion) is the only remaining actionable rederive sub-angle; on completion here, the entire rederive class is fully closed and future sessions must shift modality per the s53 frontier notes.
+
+- [s55] s55 no src edit / no sandbox measurement per synthesis-modality contract; candidate.c (h5 chassis) remains masked=2 floor unchanged since s4.
+
+- [s55] Terminal mechanism (locked across s6/s7/s15/s16/s24/s28/s37/s42/s43/s51): sched1 block=3 clock=13 ready [121(p=0x7f000001,l=12) 111(p=0x7f000001,l=8) 142(p=1,l=22)]; cls=3 val=0; LUID(121)=12 beats LUID(111)=8; emission {118,111,121} vs target {118,121,111}. sched2 inherits via plain-pri-2 LUID delta 7 vs 6.
+
+- [s55] Register half target-correct (100->v1 106->a0 113->v0 107->v0 per s6 .greg); masked=2 hides no register diff.
+
+- [s55] Rejected-forms inventory: 72 files under memory/grind/cpu_side_move_dir_4/rejected/ + 66 named in the task brief.
+
+- [s55] Judge constraint (BINDING per s40/s41/s46/s54) reaffirmed: do not resurface canonical-asm authorization; next session must shift modality within {SOTN carve-out (closed s47/s48; skip), ALLOCDBG s-reg coupling hunt, novel forensics/structural axis}.
+
+- [s55] H1 (sched2 LUID enumeration) is compiler-source forensics within the allowed frontier; H3 (LINE_NOTE condensation) is a structural probe never measured on csmd4; H2 (ALLOCDBG conflict-list-diff) is a direct realization of the task-brief frontier note (1).
