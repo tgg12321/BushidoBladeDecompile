@@ -338,3 +338,17 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s15] The 121-loses-LAUNCH attack (arg5_addr multi-set at flow-time) is s11+s12 5-realization KILLED (combine.c addsi3_internal substitution folds every simple two-SET; non-trivial subtrahends regress alloc web).
 
 - [s15] s7 expmed.c:2244 case alg_shift NULL_RTX wall on insn 111 basin composition is not disturbed by any class-attack path — attacking 121's class does not touch 111's LAUNCH source.
+
+- [s16] tools/gcc-2.7.2/config/mips/mips.h:2946-2948 (ADJUST_COST macro) — for MIPS in GCC 2.7.2, the macro is a single line: 'if (REG_NOTE_KIND(LINK) != 0) COST = 0;'. Comment: 'On the MIPS, ignore the cost of anti- and output-dependencies.' NO clause raises data-dep cost. The R8000 fixme comment at 2936 confirms the file's minimal intent.
+
+- [s16] tools/gcc-2.7.2/sched.c:1363-1417 (insn_cost body) — computes cost = result_ready_cost(insn) clamped to >=1, then ADJUST_COST can only lower it (or set LINK_COST_FREE=1). Never raises above result_ready_cost(producer).
+
+- [s16] tools/gcc-2.7.2/insn-attrtab.c:755+ (result_ready_cost dispatched by INSN_CODE — the generated table from mips.md function_units) + tools/gcc-2.7.2/config/mips/mips.md:148-183 (define_function_unit for memory/imuldiv units on r3000): load=2, hilo=1, imul=12, idiv=35, default arith=1.
+
+- [s16] TYPE(121) is arith (addsi3_internal) per s6 lreg dump — result_ready_cost(121)=1 on r3000 unconditionally. Upstream operand types (whether p75/p79 came from a mul or a shift or a lbu) do NOT enter insn_cost(121,link,123) at all.
+
+- [s16] Combined with s15's val=0 across 51 RANKDBG comparisons in block=3 and s15 H2's cls=2 structural impossibility, the class-attack surface for the h5-basin residual pair-swap is now exhausted at the compiler-source level — no class-differentiated decision path exists that a C-source lever can reach.
+
+- [s16] The h5-basin's LUID tiebreak (LUID(121)=12 beats LUID(111)=8 at clock=13) is the sole surviving mechanism for the pair-swap, and the only lever known to affect LUID (statement order in C) is coupled to basin membership per s6 LUID-reorder + s7 expmed.c:2244 findings — LUID manipulation that keeps h5 basin membership is s6-KILLED.
+
+- [s16] This forensics finding does NOT touch frontier #2 (PERM_LINESWAP, permuter modality) or frontier #3 (decomp.me corpus scrape, gated on curl_cffi install). Both remain unmeasured / unavailable in this session per the modality contract.

@@ -335,3 +335,21 @@
 - probe: Read sched.c:1363-1417 (insn_cost) + grep mips_adjust_cost / ADJUST_COST macro locations in tools/gcc-2.7.2/config/mips/.
 - result: For the current h5 candidate, insn_cost(121,link,123)==1 unconditionally. To make it >1, the operands of insn 121's PLUS must involve a HI/LO (mul-result) or genuine multi-cycle producer, at which point mips_adjust_cost adds an inter-op latency stall.
 - verdict: CONFIRMED
+
+## [s16] s15 frontier #1: introducing a HI/LO (mul-result) producer into insn 121's PLUS operand raises insn_cost(121,link,123) above 1 via mips_adjust_cost, dropping 121 to cls=1 and yielding val=-2 at the clock=13 tiebreak.
+- mechanism: sched.c::rank_for_schedule cls-gate at lines 2419-2433 tests insn_cost(tmp,link,last_scheduled)==1; if >1, cls=1 (data-dep with cost>1); MIPS mips_adjust_cost was claimed to fire for HI/LO consumer edges yielding extra latency.
+- probe: Static walkthrough of tools/gcc-2.7.2/config/mips/mips.h:2946-2948 (ADJUST_COST macro), tools/gcc-2.7.2/sched.c:1363-1417 (insn_cost body), tools/gcc-2.7.2/insn-attrtab.c:755+ (result_ready_cost function-unit table generated from mips.md:148-183 define_function_unit entries).
+- result: TRIPLE-KILL. (a) mips.h:2946-2948 ADJUST_COST macro has exactly ONE clause: if REG_NOTE_KIND(link)!=0 (anti/output-dep) then COST=0; the data-dep else-branch is a no-op — the R8000 fixme comment confirms the macro is deliberately minimal, there is NO HI/LO-consumer stall clause in this compiler for MIPS. (b) sched.c::insn_cost(insn,link,used) sets base = result_ready_cost(insn) clamped to >=1, then ADJUST_COST can only DECREMENT (per a) and clamps ncost to >=1 via LINK_COST_FREE — the function architecturally cannot lift a cost above result_ready_cost(producer). (c) result_ready_cost reads TYPE(insn), not its inputs. TYPE(121)=arith (plus), r3000 default ready-cost=1 (mips.md:148 default; no override for addsi3). A mul UPSTREAM of 121 changes result_ready_cost of the mul (12), i.e. the mul->121 edge cost — not the 121->123 edge cost that rank_for_schedule tests. Frontier #1's mechanism is not realizable under this frozen compiler on any C spelling.
+- verdict: KILLED
+
+## [s16] cls(121) can be raised by making insn 121 an anti/output-dep of insn 123 (WAR/WAW) rather than a RAW producer.
+- mechanism: ADJUST_COST would zero the cost, making rank_for_schedule assign cls=2 in the classification gate. This was already CONFIRMED impossible in s15 H2 (121 writes p107; 123 reads MEM(p107) is producer->consumer, semantically fixed).
+- probe: Cross-check with s15 H2 evidence + arg5's semantic role in the debug_printf call — arg5's address must be computed before it's dereferenced.
+- result: Semantically impossible without changing the C-observable behavior of the debug_printf call. Confirms s15 H2 conclusion — the class-2 path was already closed structurally.
+- verdict: CONFIRMED
+
+## [s16] cls(121) can be raised by changing TYPE(121) itself — making insn 121 be a load or a multiply instead of an arith plus.
+- mechanism: result_ready_cost reads TYPE(insn); TYPE=load gives cost=2 on r3000, TYPE=imul gives cost=12. This is the ONLY compiler-visible dial that lifts insn_cost above 1 for data-dep edges.
+- probe: Consider whether any C form makes the arg5_addr plus vanish into a memory addressing mode (mem (plus reg reg)) — MIPS lw supports only imm(base). tbl_125c is a 32-bit link-time symbol, requires lui+addu materialization. The plus insn is architecturally required. And no C spelling reasonably makes the arg5 address itself a multiply (semantic content is v0 + tbl).
+- result: No realizable path. The plus insn 121 is architecturally mandatory as long as the arg5 access is a 32-bit-symbol-plus-runtime-index MEM load on MIPS.
+- verdict: KILLED
