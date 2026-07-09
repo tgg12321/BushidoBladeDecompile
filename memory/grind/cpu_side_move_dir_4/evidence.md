@@ -1488,3 +1488,13 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s91] F3 conflict-graph enumeration (global.c allocno_conflicts diff between h5/g3) is the newly-identified un-run forensics angle satisfying the s71 Judge constraint (ALLOCDBG-instrumented s-reg coupling hunt).
 
 - [s91] Judge constraint compliance verified: no canonical-asm authorization framing surfaced; no cheat-shaped honest respelling proposed; no forbidden semantic-lie construct proposed.
+
+- [s92] s92 baseline: sandbox cpu_side_move_dir_4 --disable all -> masked=2, target=160, build=160 (h5 candidate re-applied to src/system.c).
+
+- [s92] F1 asm audit: $s2 (p77=idx_1494) has 5 use sites, all in blocks the h5 candidate already exercises (block=3 debug-window x2, poll-callback conditional, post-poll unconditional read, post-poll conditional store). $s4 (p78=idx_1495) has ONLY 1 use site (poll-callback conditional). No downstream block can host an ADDITIONAL byte-neutral use without hitting s78 DCE-invisibility (measured for local scalar carriers p73/p77/p78/p79).
+
+- [s92] F2 asm audit: loop-head/test block (.L80080E1C..E5C) reads exactly {sys_VSync, D_800F19B8, D_800F19BC}. No game-state observable exists at loop-top in the target; any insertion regresses byte count by >=3 insns and lands outside the h5 basin.
+
+- [s92] The residual pair {sll@57 <-> addu@58} theorem-locked in the staged-value-reused-variable family (per resume banner) is unaffected by structural-modality F1/F2 axes: F1 targets p78 refs, F2 targets loop-top alloc-web perturbation, but the residual is at LUID 8 vs 12 in block=3 interior (per s51 forensics) and depends on the p106/p107/p113 QTY relationships (per s6/s24/s25 forensics). Structural-modality axes at F1/F2 scope cannot dislodge a block=3-interior LUID tiebreak.
+
+- [s92] No src/ regressions this session: candidate.c applied to src/system.c and left as-is at floor=2; no rejected/ additions (both F1/F2 kills are asm-audit closures, not source-form measurements).

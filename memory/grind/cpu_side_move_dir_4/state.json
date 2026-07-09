@@ -1,8 +1,8 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 91,
- "current_modality": "synthesis",
+ "session_count": 92,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 0,
@@ -555,23 +555,24 @@
    "floor": 2,
    "modality": "synthesis",
    "headline": "s91 synthesis: 90-session ledger merged; frontier reset with F1 (p78-lift success-arm) and F2 (loop-top non-idx compute) refined against s78/s85/s87/s88 findings; NEW F3 conflict-graph enumeration sea"
+  },
+  {
+   "session": 92,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "s92 structural: F1-refined (inter-block idx_1494/idx_1495 re-shape) and F2-refined (loop-top game-state observable) BOTH KILLED by target-asm-audit + byte-count invariance; baseline candidate re-confi"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F3 conflict-graph enumeration: an edge in global.c allocno_conflicts between a block=3 debug-window pseudo (p106/p107/p101) and a file-scope s-reg seat can be identified whose removal would legalize both LAUNCH insns at low LUIDs, seeding a follow-on structural probe.",
-   "mechanism": "s42 ran only a partial greg conflict-list census (established zero live-range overlap p77/p78 with p100/p106/p107/p113). The full allocno_conflicts adjacency between block=3 QTY pseudos and file-scope s-reg web (s2/s3/s4/s5/s8/s9 hardreg seats) has never been enumerated. The 4-cycle rotation {p72<->p79, p73<->p78} at ord=[12..15] means those four pseudos share conflict edges with a common set of file-scope hardregs; enumerating that set names the specific coupling that any C-side lever must dislodge.",
-   "next_probe": "Forensics session: instrumented cc1 dump with BB2_ALLOC_DEBUG=1 on both h5 candidate and one +13 basin variant (e.g. s8 honest_idx_1495 or s85 loop-top-idx_1495); grep global.c allocno_conflicts printout for edges involving p72/p73/p78/p79 AND any of s2..s9 hardregs; diff the two dumps to identify the atomic edge(s) that flip in the rotation. Report the specific edge set and the mechanism (interval overlap vs conflict inheritance) that produced it."
+   "hypothesis": "F3 (carry-over from s91): conflict-graph enumeration via ALLOCDBG on both h5 candidate and one +13 basin variant identifies the atomic allocno_conflicts edge whose flip drives the ord=[12..15] 4-cycle rotation {p72<->p79, p73<->p78}, seeding a targeted structural probe on the specific file-scope s-reg seat coupling.",
+   "mechanism": "s42 established zero live-range overlap p77/p78 with block=3 QTY pseudos p100/p106/p107/p113 but did NOT enumerate the full allocno_conflicts adjacency between block=3 QTY pseudos and file-scope s-reg web (s2..s9 hardreg seats). The 4-cycle rotation implies a shared conflict-edge set; naming it names the coupling any C-side lever must dislodge.",
+   "next_probe": "Forensics session: cc1 dump BB2_ALLOC_DEBUG=1 on h5 candidate AND one +13 basin variant (e.g. s8 honest_idx_1495 or s85 loop-top-idx_1495); grep global.c allocno_conflicts for edges involving {p72,p73,p78,p79} \u00d7 {s2..s9 hardregs}; diff to identify the atomic edge(s) that flip. Report the specific edge set and mechanism (interval overlap vs conflict inheritance)."
   },
   {
-   "hypothesis": "F1-refined: inter-block structural axis \u2014 re-shape a downstream real statement in cpu_side_move_dir_4 body to arrive at idx_1494 on the success arm without perturbing the h5 chassis prologue/inline-block RTL.",
-   "mechanism": "F1's block-local vehicles are closed (s78 P1/P2). The remaining axis is inter-block: a statement outside block=3 that already USES idx_1494 (or would naturally on a re-shape) could produce the p78-refs delta the F1 mechanism needs, without triggering the s78 emit-delta signature. Requires locating a statement whose semantic re-shape (e.g. re-associating a global-store address form) reads idx_1494 unconditionally.",
-   "next_probe": "Structural session: asm audit of asm/funcs/cpu_side_move_dir_4.s for any block other than block=3 that materializes tbl_125c OR idx_1494 base; if found, propose a byte-neutral C re-shape that adds an unconditional p78/p77 use in that block; measure greg ord=[12..15] delta vs h5 baseline."
-  },
-  {
-   "hypothesis": "F2-refined: h5-preserving observable statement at loop-top that references a NON-idx live pseudo the way a stage-transition semantic dictates.",
-   "mechanism": "F2's block-local vehicles are closed at every DCE-visible construct. The remaining axis is semantic: if a stage-transition observation exists between the loop-top and the vblank poll (e.g. a mode/status read that would naturally sit at loop-top per game-loop semantics), that observable statement's p-var refs would satisfy F2's alloc-web-lift criterion without cse-migrating idx_1494 uses. Requires source-code re-derivation informed by the observed control flow (not asm-shape).",
-   "next_probe": "Rederive session (novel angle after 13 KILLED sub-angles): read the LOOP invariants of the vblank poll in asm/funcs/cpu_side_move_dir_4.s (block=2 loop head, block=4 loop test) to identify what game-state read WOULD be idiomatic at loop-top for a psx CD-side move dispatcher; if a natural non-idx read surfaces (e.g. an interrupt-flag test), attempt insertion and measure."
+   "hypothesis": "SOTN-family carve-out application on non-block=3 span: apply [[duplicated-statement-into-arms]] (2026-07-01 sanction) to a REAL statement in the POLL region (not block=3) with `/* FAKE */` annotation + full prerequisites (byte-neutrality verified + lever-exhaustion documented + layer-2 cheat-reviewer). Un-tested target: the poll-region if-arm bodies invoking D_800A11B4/D_800A11B8 callbacks with distinct idx uses \u2014 duplicating a common tail into both callback arms could re-partition p77/p78 refs at global-RA priority level.",
+   "mechanism": "s20 measured duplicated-statement-into-arms on block=3 arms; s84 measured on idx_1494+1 into arms; both KILLED. UN-TESTED: duplication INSIDE the poll region across the two independent status&2 vs status&4 callback dispatches \u2014 different alloc-web scope than block=3 (poll is under sys_GetVblankCount conditional, block=3 is under do_timeout branch).",
+   "next_probe": "Structural session: introduce a byte-neutral duplicated stmt (e.g. `saved = (*D_800A147C) & 3;` re-refreshed inside each callback arm) with FAKE annotation citing duplicated-statement-into-arms 2026-07-01 sanction; measure sandbox masked; if byte-neutral and non-regressing, invoke layer-2 cheat-reviewer per review-discipline-before-commit; if reviewer PASS, evaluate p77/p78 ref-count delta via cc1 -da .greg dump."
   }
  ],
  "judge_constraints": [

@@ -1373,3 +1373,21 @@
 - probe: Ledger cross-read reveals this axis unexplored; no prior forensics session enumerated conflict-graph edges between debug-window QTY pseudos and file-scope s-reg web.
 - result: F3 IDENTIFIED as the un-run forensics angle; not measured this session (synthesis modality) - passed to driver as the highest-expected-information frontier item for the next forensics slot.
 - verdict: CONFIRMED
+
+## [s92] F1-refined: an inter-block statement outside block=3 can be re-shaped to add an unconditional p78/p77 (idx_1495/idx_1494) use, producing an alloc-web-lift without triggering s78's DCE-invisibility signature.
+- mechanism: Full asm audit of all $s2 ($p77) and $s4 ($p78) uses in asm/funcs/cpu_side_move_dir_4.s: $s2 uses at LUIDs corresponding to block=3 (80080E74/E78 debug-window), poll callback (80080F70 conditional), post-poll (80080F9C read + 80080FC0 conditional store); $s4 use ONLY at poll-callback (80080F3C conditional). Every downstream block that CAN host an idx use already does in the h5 candidate.
+- probe: Enumerated candidate host blocks: (A) block=2 loop head — impossible (would add byte count); (B) post-poll block — every scalar-carrier byte-neutral p77/p78 use DCE-eliminated per s78 measured (flow.c delete_noop_moves), every byte-non-neutral re-shape lands +13 (s8/s60/s61/s65 measured); (C) memcpy loop body — reads &D_800F19A0/writes a1, disjoint memory from D_800A1494/1495, any XOR/AND fold-linked form combine.c-eliminated (simplify_binary_operation idempotent-fold).
+- result: F1-refined structural axis fully exhausted: NO un-tried inter-block re-shape survives both (a) DCE-invisibility gate and (b) target byte-count invariance gate. tmp/grind/cpu_side_move_dir_4/s92/f1_asm_audit.txt has the block-by-block enumeration.
+- verdict: KILLED
+
+## [s92] F2-refined: a stage-transition observable (mode/status/interrupt-flag read) is idiomatic at loop-top per game-loop semantics; inserting it satisfies the F2 alloc-web-lift criterion without cse-migrating idx_1494.
+- mechanism: Full enumeration of observable reads in target's loop-head/test block (.L80080E1C..80080E5C): {sys_VSync call, D_800F19B8 deadline read, D_800F19BC counter read}. No game-state/interrupt-flag/mode/status observable appears.
+- probe: For F2 to succeed the observable MUST appear in target asm at some LUID slot inside the loop-head/test window. It does not. Any inserted observable would REGRESS the 160-insn target count by >=3 insns (lui/lw/andi or nop-padded variants).
+- result: F2-refined semantic axis KILLED by target-asm audit: no naturally-idiomatic loop-top observable exists to host the F2 mechanism. tmp/grind/cpu_side_move_dir_4/s92/f2_asm_audit.txt has the LUID-by-LUID enumeration.
+- verdict: KILLED
+
+## [s92] The h5 candidate re-application to src/system.c reproduces the ledger-documented masked=2 floor after 91 prior sessions.
+- mechanism: Direct sandbox measurement.
+- probe: Applied memory/grind/cpu_side_move_dir_4/candidate.c to src/system.c cpu_side_move_dir_4 body; ran `tools/wteng.ps1 main sandbox cpu_side_move_dir_4 --disable all`.
+- result: score=2, target_insns=160, build_insns=160, rules_dropped=5, cheat_asm_stripped=22. Chassis integrity confirmed; the 91-session mechanism map remains valid on current tree.
+- verdict: CONFIRMED
