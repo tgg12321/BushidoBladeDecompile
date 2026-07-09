@@ -1330,3 +1330,21 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s81] s81 mechanism finding: the four cpu_side_move_dir* siblings share only the `cpu_side_move_dir` name-prefix — they are functionally unrelated (movement dispatch / init / event handler / VSync-poll debug_printf). csmd4's block-3 window is structurally UNIQUE within its name cluster; the only file-local twin remains marionation_Exec (s9/s62 sub-angles, both KILLED). No further un-run sibling m2c angle exists at the name-cluster level.
 
 - [s81] s81 modality compliance: mandated modality was rederive; sub-angle chosen was m2c-on-name-cluster-siblings (novel un-run angle within the rederive class — the s54/s62/s72/s80 closure list only covered csmd4's own asm and marionation/saEft01Init). Judge constraint respected — no canonical-asm framing surfaced; ALLOCDBG s-reg coupling hunt (frontier F6/F17 territory) is the un-run structural/forensics frontier for post-modality-rotation sessions.
+
+- [s82] s82 baseline (implicit from ledger, not re-measured per synthesis modality): candidate.c (h5 form) applied to src/system.c would score masked=2, target_insns=160, build_insns=160. Floor stable at masked=2 since s4 (78 sessions).
+
+- [s82] Rejected forms bank at 84 entries covers every first-order structural mutation attempted across 81 sessions; includes dup_D_800F19C0_arms_keep_prologue.c / dup_D_800F19C0_arms_no_prologue.c (s20 SOTN-carve targets, both wrong-signed / merged-but-misdirected) and dup_tbl_125c_arms.c (s10/s20 co-live carrier target for p73/p79).
+
+- [s82] The ONE co-live-at-block=3-entry pseudo per s69 greg that has NOT had its dup-into-arms subvariant explicitly tested is p77 (idx_1494 addr). Rejected bank contains dup_tbl_125c_arms.c (targets p73/p79) and dup_D_800F19C0_arms_*.c (targets D_800F19C0 store addr pseudo) but NO dup_idx_1494_arms.c.
+
+- [s82] s78 KILLED all local-scalar-pointer extra-USE isolation via bracket-argument (P1 self-assign DCE-invisible → 0 refs delta; P2 real branch-read → +3 insns non-neutral) BUT explicitly named 'the only remaining ref-lift mechanism at the local-scalar-pointer level is the F6 SOTN-sanctioned duplicated-statement-into-arms with cross-jump re-merge (requires real statement with genuine control-flow arms, structural modality)'. F6 for p77 is the un-run subvariant.
+
+- [s82] s78 P2 result establishes the pattern: any real branch read of idx_1495/idx_1494 emits +3 insns per single-arm (li const, bne, delay-slot lui, jump-to-return). The F6 mechanism REQUIRES a real statement in BOTH arms whose tails are byte-identical so jump2 find_cross_jump merges. s20 demonstrated the merge IS reachable when no label sits between (no-prologue variant, build_insns=160 target-match) but on D_800F19C0 the ref-lift direction was wrong (+8 masked).
+
+- [s82] F20 (poll-arm symmetric idx_1495-USE) is not a strict SOTN carve-out — the poll arms have distinct fn-ptr call bodies (D_800A11B8 vs D_800A11B4) so their tails are not identical; cross-jump merge is unlikely and the symmetric-position construct would likely emit +2-3 insns per arm (KILLED via s78-pattern). Kept in frontier only as the last un-measured poll-region idx_1495 lever.
+
+- [s82] Judge risk (F6-double-prime): HIGH if the duplicated statement is semantic-lie-shaped (e.g. `*idx_1494 - *idx_1494` = defeat-combine-symbol-fold shape); requires a CLEANER real-statement candidate for FAKE annotation to survive layer-2 cheat-reviewer.
+
+- [s82] Judge risk (F20): MODERATE-HIGH — `if(*idx_1495==0){}` falls in .claude/rules/dead-branch-scheduling.md territory; likely layer-2 FAIL.
+
+- [s82] Modality guidance for s83+: NOT rederive (13 sub-angles KILLED, tool-space saturated); NOT permuter (137k iters both chassis all regions); YES structural for F6-double-prime measurement; YES forensics for a companion F17-CALL-return corpus search (expected 0 hits).

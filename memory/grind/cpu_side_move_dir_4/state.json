@@ -1,8 +1,8 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 81,
- "current_modality": "rederive",
+ "session_count": 82,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 0,
@@ -495,18 +495,24 @@
    "floor": 2,
    "modality": "rederive",
    "headline": "s81 rederive: m2c on the three name-cluster siblings (cpu_side_move_dir base / _2 / _3) \u2014 all structurally unrelated to csmd4's debug_printf/tbl_125c/idx_1494 window; name-cluster-m2c sub-angle KILLED"
+  },
+  {
+   "session": 82,
+   "floor": 2,
+   "modality": "synthesis",
+   "headline": "s82 synthesis: 81-session ledger merged; frontier reset to F6-double-prime (dup-into-arms on the ONE untested co-live carrier p77 idx_1494, distinct from s20 D_800F19C0 wrong-signed and rejected/dup_t"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F6 (retained from ledger): SOTN-sanctioned duplicated-statement-into-arms carve-out on p73(tbl_125c) or p77(idx_1494) via cross-jump re-merge in the success->do_timeout and direct-goto-do_timeout arms.",
-   "mechanism": "duplicated-statement-into-arms permits duplicating a REAL read statement into 2+ CF arms; jump2 find_cross_jump collapses identical byte-suffixes preserving emitted byte count while reg_n_refs on the duplicated read's carrier rises. Byte-neutrality + isolated-refs++ per s69 greg required for the carve-out prerequisite.",
-   "next_probe": "Draft 2-3 duplications of a real read-statement referencing p73(tbl_125c) or p77(idx_1494) into BOTH do_timeout arrival arms; measure sandbox --disable all + ALLOCDBG diff vs h5 to confirm cross-jump preserved byte-count AND refs++ isolated to p73/p77 (not leaking to p78/p79). If byte-neutral AND single-carrier-refs-lifted, promote to layer-2 cheat-reviewer with FAKE annotation."
+   "hypothesis": "F6-double-prime (retained, un-tested subvariant): SOTN duplicated-statement-into-arms on p77 (idx_1494 addr) \u2014 the ONE co-live-at-block=3-entry pseudo per s69 greg whose dup-into-arms variant is NOT in the rejected bank. s20 D_800F19C0 (+8 wrong-signed) and rejected/dup_tbl_125c_arms.c (p73/p79) exhaust the other two co-live targets; p77 is untested.",
+   "mechanism": "jump2 find_cross_jump merges byte-identical tails from the two do_timeout arrival arms (success:\u2192do_timeout: fallthrough + direct goto do_timeout:); a REAL statement referencing idx_1494 duplicated in BOTH arms lifts p77 refs +1 per arm (flow.c counts pre-merge) then merges back to net-zero emitted bytes. p77's carrier feeds the OPPOSITE side of the qty-compare tie (poll-region dispatch vs debug-window head-load) relative to D_800F19C0's carrier, so the ref-lift direction may be opposite-signed to s20's misdirection.",
+   "next_probe": "Structural-modality session: draft candidate with a byte-neutral REAL statement referencing idx_1494 in BOTH do_timeout arrival arms; measure sandbox --disable all; inspect build_insns (must stay 160 for merge success) and ALLOCDBG for isolated p77 refs++ (must not leak to p73/p79). AVOID semantic-lie shapes (*x - *x) and dead-branch shapes (if(*x==0){}); prefer a real store-to-globals form matching s20's D_800F19C0 recipe but for idx_1494. If byte-neutral AND direction-correct, promote to layer-2 cheat-reviewer with FAKE annotation."
   },
   {
-   "hypothesis": "F17 (retained from ledger): sched2's LAUNCH-priority for insn 121 can be DEMOTED via a two-SET whose second SET originates from a CALL return-value coincidence in block=2 predecessors.",
-   "mechanism": "combine.c substitutes trivial two-SET patterns through mips.md addsi3_internal; a two-SET whose second SET is jal-return-clobber-shadowed defeats combine's operand-tracking. Preserves flow.c reg_n_sets(p107)=2 -> sched2 birthing_insn_p returns FALSE at insn 121 -> no LAUNCH -> insn 111 wins the pair without LUID tiebreak.",
-   "next_probe": "Search block=2 predecessors of block=3 dispatch for any CALL whose return value is arithmetically equal to (base + idx*4). sys_VSync return (offset D_800F19B8 by +0x3C0) is the only block=2 CALL; unlikely candidate. Requires a structural-modality companion search identifying an unnoticed jal return-value coincidence."
+   "hypothesis": "F20 (novel, last un-measured p78 lever): poll-region symmetric idx_1495-touching real-USE inside BOTH vblank if-arms (status&4 arm and status&2 arm). Untried across s5/s13/s14/s67/s68/s76/s77 (s77 arm-SWAP KILLED at masked=2215, but a symmetric ADD-to-both-arms is distinct).",
+   "mechanism": "Even without cross-jump merge (arm bodies are not tail-identical), a symmetric byte-position construct might credit refs on p78 at flow-time before local-alloc; if jump2 tolerates a \u00b10 emit delta despite the distinct fn-ptr calls, the p78 refs++ could offset s60/s61's demoted priority=138 \u2192 shift qty_compare's 4-cycle rotation without triggering full basin regression.",
+   "next_probe": "Structural probe: insert an identical byte-neutral idx_1495-dereferencing statement at HEAD of both arms (e.g. inside the fn-ptr call arg list); measure sandbox + build_insns. Expected KILLED per s78-pattern (+2-3 insns per arm), but this is the ONE un-measured p78-lift subvariant remaining in the ledger and closing it eliminates the last poll-region frontier."
   }
  ],
  "judge_constraints": [
