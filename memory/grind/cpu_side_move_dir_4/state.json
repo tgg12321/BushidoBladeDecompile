@@ -1,7 +1,7 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 87,
+ "session_count": 88,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -531,23 +531,29 @@
    "floor": 2,
    "modality": "forensics",
    "headline": "s87 forensics CONFIRMS frontier hyp2 mechanism (p79 -2 refs, ord=12..15 rotation) BUT DISPROVES it as a close: any respell that pulls uses off the 5-ref lead pseudo p79 hits the same catastrophic hard"
+  },
+  {
+   "session": 88,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "s88 forensics KILLS position-caused rotation hypothesis: s8-probe1 (honest idx_1495=idx_1494+1, NO loop-top touch) redistributes p79 refs 5->3 and rotates greg ord [79,78,72,73]->[72,73,79,78] BY THE "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "p79-preserving loop-top levers - any construct that adds a loop-top compute BUT does NOT re-route a *idx_1495 use through a fresh pseudo (so p79 keeps its 5 refs) might still absorb the -1 build_insn without triggering the ord rotation",
-   "mechanism": "the -1 physical insn came from local-alloc equiv-reg absorption of the prologue idx_1495 setup once loop-top dominates all uses. If we can inject an equivalent loop-top compute that IS folded by combine/local-alloc but reads from an already-live pseudo instead of introducing a fresh set to p79, the DCE fires without redistributing p79's refs.",
-   "next_probe": "Structural session: candidate where loop-top adds a self-assignment or PP-alias touch that references *idx_1495 through the existing p79 carrier (e.g. `void *dummy = idx_1495;` or `*(volatile u8 **)&idx_1495_alias = idx_1495;`). Measure sandbox --disable all. Success signature: build_insns<=159 AND greg ord=[12..15] preserved as [79,78,72,73]. Failure signature: either build=160 (no absorb) or ord rotates (regression)."
+   "hypothesis": "p78-lift levers (extending idx_1494's live span at loop-top WITHOUT changing idx_1495's spelling) could raise p78's pri while preserving p79's 5-ref profile.",
+   "mechanism": "s88 probe1 measured p78 livelen doubled 72->144 as a REGRESSION-side migration (via cse on idx_1494). But a lever that extends p78's span WITHOUT migrating uses off p79 (e.g. adding an idx_1494 read/use that stays on p78's carrier via a distinct pseudo) would raise p78's pri from 277 while leaving p79's 675 intact. If p78's pri approaches but stays below p79's ceiling, ord=[12..15] stays [79,78,72,73] and the sll-vs-addu pair-swap residual might resolve without touching p79.",
+   "next_probe": "Structural session: add a byte-neutral idx_1494 use at loop-top that stays on p78's carrier (e.g. `(void)idx_1494[2];` sanity-touch OR a self-referential p78 statement that flow.c counts as a ref but cse.c does NOT unify with idx_1495). Measure ord=[12..15] and p79 nrefs/livelen. Success: p78 nrefs rises, p79 nrefs stays 5, ord preserved."
   },
   {
-   "hypothesis": "ALLOCDBG on the p79-preserving prologue-position variants (s8 probe1 respell WITHOUT the loop-top) will show whether the -2 refs delta comes from the loop-top position specifically OR from the `idx_1494+1` spelling itself",
-   "mechanism": "s8 probe1 was masked=15 build=160 (identical masked to s87 probe2 but no absorb). If p79 also lost 2 refs in s8 probe1, then the `idx_1494+1` spelling itself is what redistributes refs regardless of position, and the ord-rotation is intrinsic to that spelling class. If p79 kept 5 refs in s8 probe1, then position (loop-top) is what triggers the rotation via DCE-cascade.",
-   "next_probe": "Forensics session: rebuild gccdbg dumps for s8 probe1 (prologue init respelled to `idx_1495 = idx_1494 + 1;`). Compare its greg ord=[12..15] window vs h5 baseline. Distinguishes spelling-caused rotation (=> broader kill class) from position-caused rotation (=> narrower kill class)."
+   "hypothesis": "p79-preserving loop-top levers - constructs that add a loop-top compute using an already-live pseudo instead of setting p79 - might absorb the -1 build_insn without triggering the ord rotation.",
+   "mechanism": "s88 confirmed the -2 refs came from the spelling (cse-unify on idx_1494), not from a fresh loop-top set. A loop-top compute that reads from an EXISTING live pseudo other than p79 (e.g. a *idx_1495-independent construct that fires local-alloc equiv-reg absorption on a DIFFERENT symbol) might still hit the -1 build_insn without disturbing p79's ref map.",
+   "next_probe": "Structural session: candidate where loop-top adds a compute referencing an existing live pseudo (e.g. `(void)cnt;` or `(void)*idx_1494;` at loop-top before the sys_VSync poll). Measure build_insns and greg ord. Success: build<=159 AND greg ord=[79,78,72,73] preserved."
   },
   {
-   "hypothesis": "p78-lift levers (drive p78 livelen ABOVE h5's 72 without touching p79) could raise p78's priority WITHOUT triggering the ord rotation - the reverse of what probe2 did to p78",
-   "mechanism": "in h5 the ord=12..15 window is stable BECAUSE p79's pri (675) dominates p78 (277) by ~2.4x. If a lever raises p78's livelen (say 72 -> 100) while leaving p79 untouched, p78's pri rises but stays below p79's ceiling, preserving the ord order. If p78's ref-map changes such that a *idx_1494 use that currently launches early instead launches late, the sll-vs-addu pair-swap residual might resolve without touching p79.",
-   "next_probe": "Structural session: try a candidate that extends idx_1494's (=p78's likely alias in blk=1) live span at loop-top WITHOUT introducing new refs (e.g. a lineswap of the prologue idx_1494 init). Measure ord=[12..15]. If p78 livelen rises but ord stays [79,78,72,73], this axis is open for further exploration."
+   "hypothesis": "The cross-symbol tbl-routed idx_1495 spelling at src/system.c:406 is IN-FAMILY forbidden but the ord=[12..15] preservation it provides may be reachable via an ALTERNATIVE symbolic-distinct construct that is not semantic-lie.",
+   "mechanism": "The load-bearing property is: cse.c does NOT unify idx_1495 with idx_1494 as sharing a base. This is achievable through any initializer that names a symbol OTHER than idx_1494. Candidates: idx_1495 initialized from a DIFFERENT external base (e.g. &D_800A1495 directly if the symbol is decl'd; or a distinct tbl-routed form that is byte-neutral without the arithmetic sleight). If a non-semantic-lie form exists that keeps p79's 5-ref profile, it retires the src/system.c:406 policy debt without regressing h5.",
+   "next_probe": "Rederive session: enumerate symbolically-distinct idx_1495 initializers (idx_1495 = &D_800A1495 if symbol exists; idx_1495 = ((u8*)&D_800A1494) + 1 with explicit cast to force separate rtx; idx_1495 = (u8*)((intptr_t)idx_1494 + 1) with intptr_t cast to break cse.c's ptr-arith recognition). Measure each's greg 'regs to allocate' order and p79 nrefs. Success: masked stays 2 AND idx_1495's initializer does NOT reference idx_1494 as a shared symbolic base."
   }
  ],
  "judge_constraints": [

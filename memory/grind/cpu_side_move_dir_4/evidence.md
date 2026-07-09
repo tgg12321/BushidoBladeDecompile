@@ -1418,3 +1418,23 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s87] SCHED and RANK diff have 742 / 44 differing lines respectively - all downstream ripple from the ord=12..15 rotation (no new decision surface).
 
 - [s87] p79 identified as the LEAD carrier in the greg [12..15] window (nrefs=5, pri=675, hardreg=19 in h5). p78 identified as the SECOND-place carrier (nrefs=2 livelen=72 pri=277). Levers must preserve p79's nrefs>=5 AND avoid shrinking p78's livelen below ~72 to avoid triggering this rotation.
+
+- [s88] s88 baseline sandbox --disable all masked=2 target_insns=160 build_insns=160 (h5 candidate applied to src/system.c).
+
+- [s88] s88 probe1 sandbox masked=15 build_insns=160 (exactly matches s8 record; no absorb).
+
+- [s88] s88 baseline greg 'regs to allocate': 75 83 84 82 81 101 120 126 86 137 80 77 79 78 72 73 (positions 12..15 = 79 78 72 73).
+
+- [s88] s88 probe1 greg 'regs to allocate': 75 83 84 82 81 97 116 122 86 133 80 77 72 73 79 78 (positions 12..15 = 72 73 79 78 - ROTATED).
+
+- [s88] s88 baseline ALLOCDBG ord=12..15: p79 refs=5 pri=675 | p78 refs=2 livelen=72 pri=277 | p72 refs=2 pri=263 | p73 refs=2 pri=253.
+
+- [s88] s88 probe1 ALLOCDBG ord=12..15: p72 refs=2 pri=263 | p73 refs=2 pri=253 | p79 refs=3 pri=202 | p78 refs=2 livelen=144 pri=138.
+
+- [s88] p79 delta: nrefs 5->3 (LOST 2), livelen unchanged 148->148, pri 675->202. Position-caused hypothesis requires refs preserved; measured refs LOST => position-caused DISPROVEN, spelling-caused CONFIRMED.
+
+- [s88] p78 delta: nrefs unchanged 2->2, livelen 72->144 (DOUBLED, ~absorbed the 2 refs p79 lost), pri 277->138. Consistent with poll-region *idx_1495 uses migrating from p79 to p78 via cse-unification on idx_1494 as the shared base.
+
+- [s88] Pseudo-ID renumbering (101->97, 120->116, 126->122, 137->133) reflects the shorter idx_1495 initializer (fewer intermediate pseudos in the prologue). Not diagnostic of the RA change; the ord rotation is real.
+
+- [s88] Kill class WIDTH: probe1 has NO loop-top compute; the spelling ALONE triggers the rotation. Any lever that respells idx_1495 through a form cse-unifiable with idx_1494 hits the same p79 ref loss, regardless of position. Frontier probe #1 (p79-preserving loop-top levers) is only viable if it PRESERVES the cross-symbol tbl-routed idx_1495 spelling AT src/system.c:406 - the honest respell axis is closed for the h5 basin.
