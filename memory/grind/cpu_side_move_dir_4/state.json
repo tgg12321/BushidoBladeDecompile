@@ -1,7 +1,7 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 51,
+ "session_count": 52,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -315,13 +315,19 @@
    "floor": 2,
    "modality": "forensics",
    "headline": "s51 forensics: LUID-gap decomposition between residual pair (111 at LUID 8, 121 at LUID 12) enumerated for first time \u2014 gap contains LINE_NOTE(9), insn 116 t0-third-stage plus(10), insn 118 arg5 lw(11"
+  },
+  {
+   "session": 52,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "s52 forensics: target-asm audit KILLS the s51 pointer-carrier frontier \u2014 no post-debug_printf-arm READ of &D_800A11DC exists (single logical use site), and no arm-side (tbl_125c + (t0<<2)) shape exist"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The rigid h5 chain-position triangle (111/116/121) is a hard local minimum; SOTN-family named-local-fake-exception carve-out at fn-scope, if a C-legitimate carrier can be constructed that reaches local-alloc as a live pseudo AND stays within the h5 alignment (both conditions failed simultaneously in s47's C1/C2/C3 archetypes), might introduce a fourth pseudo whose conflict list forces reg-alloc's ordering to break the LAUNCH assignment on insn 121 (breaking the triangle at the LAUNCH-source level rather than at the LUID level).",
-   "mechanism": "s47's finding: 'The s33 saEft01Init reload-renumbering pattern requires the FAKE-annotated local to (i) reach local-alloc as a live pseudo AND (ii) not add real emitted insns.' On csmd4's h5 base these are mutually exclusive across the three probed archetypes (zero, mode, held). But s47 did not probe carriers with a POINTER type that could sit in a callee-save slot (s6/s7 range) with a legitimate downstream READ. A pointer with a real dereference downstream would satisfy 'semantic purpose' and 'reaches local-alloc as a distinct pseudo' simultaneously.",
-   "next_probe": "s52+ (F2/F1 hybrid): draft a fn-scope pointer-typed FAKE-annotated carrier that (a) is initialized from &D_800A11DC or a legitimate arm-pointer source that already lives past debug_printf, (b) participates in a downstream READ inside the post-debug_printf arms (do_timeout/poll/success/check paths that s47's F1 audit found have no p101-post-shift reader \u2014 but MIGHT have an unaudited &D_800A11DC re-use site), (c) has FAKE annotation citing named-local-fake-exception.md, (d) clears layer-1 cheat-reviewer before sandbox measurement, (e) if sub-h5 masked, clears layer-2 fresh cheat-reviewer. If the carrier lands in s6/s7 with a live-across-debug_printf range, its conflict list would include block=3 pseudos p100/p106/p107/p113 (contrast s42 finding that idx_1494/idx_1495's s2/s4 conflict lists have ZERO block=3 QTY overlap) and could re-order local-alloc priorities on p106 vs p107, potentially killing 121's LAUNCH while preserving 111's."
+   "hypothesis": "The s6 SCHEDDBG-confirmed birthing_insn_p LAUNCH signature on insns 111 and 121 admits no C-source lever below the RTL expand layer that (a) keeps the h5 mult-expander chassis (111 LAUNCH via expmed.c:2244 case alg_shift NULL_RTX target), (b) keeps 118 as the arg5 lw producer that 121 consumes via RAW, and (c) shrinks the LUID(121)-LUID(111)=4 gap or breaks 121's birthing_insn_p precondition without falling out of h5 basin. This is a synthesis conclusion for s53+: the residual pair-swap is an inherent-to-expand hard local minimum for pure-C.",
+   "mechanism": "Every non-INERT non-basin-flip lever measured across 52 sessions (structural: s3/s5/s6/s8/s9/s39/s47/s48; permuter: s5/s13/s22/s23/s31/s32/s40/s49/s50 ~85k iters at 0 novel <40 finds on h5 chassis; forensics: s6/s7/s15/s42/s43/s51/s52; rederive: s8/s9/s17/s18/s26/s27/s35/s36/s44/s45) reduces to one of three classes: (i) h5-preserving INERT (mult-expander LAUNCH intact, no measurable RTL-shape delta -> expand normalizes back to identical chain), (ii) h5->g3 basin flip (multi-set p101 chain broken or p106 LAUNCH lost -> masked=6+ with unresolvable v1/a0 register exchange), (iii) FAKE-local family (DCE / cse-fold / callee-save cost -> INERT or +8/+3 regress). Class exhaustion is measurement-closed.",
+   "next_probe": "s53 modality should be SYNTHESIS (35th-percentile modality in the ladder given the exhaustion state) to formally consolidate the 52-session evidence into a ruling-request draft: this is either (A) a documentation-level operator escalation asking whether the residual pair-swap qualifies for a NEW carve-out class (novel post-2026-07-06 category \u2014 barred by no-new-park-categories user directive 2026-06-24), or (B) a re-audit of the CANONICAL-ASM gate (canonical cpu_side_move_dir_4) with the s51 chain-position-triangle evidence as the mechanism-explanation the gate would need \u2014 noting that the judge constraint pre-emptively rules this out ('do not resurface canonical-asm authorization ... under any framing'). Recommend s53 emit ruling-request with the exhaustion evidence bundled, not another structural/permuter/forensics probe."
   }
  ],
  "judge_constraints": [

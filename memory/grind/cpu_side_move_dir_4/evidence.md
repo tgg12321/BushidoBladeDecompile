@@ -896,3 +896,13 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s51] Load-bearing analysis of the two real intervening insns: insn 116 removal = t0 chain collapses to g3-family single-set spelling (measurement-closed via s3-V10 masked=9, s6 LUID-reorder masked=6, s7 static walkthrough of expmed.c case alg_shift). Insn 118 removal impossible: 118 is 121's data producer (sets p75 that 121's PLUS consumes) so a RAW dep pins 118 chain-position before 121.
 
 - [s51] Pass identity confirmed: sched.c::schedule_block called at sched1 (pre-reload), function rank_for_schedule at lines 2399-2456 of tools/gcc-2.7.2/sched.c. Terminal decision at clock=13 as documented above. Cross-consistent with s15 (val=0 across all 51 block=3 events) and s43 (sched2 LUID delta collapse to 1).
+
+- [s52] Target-asm audit (asm/funcs/cpu_side_move_dir_4.s, 176 lines): D_800A11DC has exactly ONE logical use — the arg5 varargs-slot-2 load at insns 66-68 in block=3. ZERO downstream-arm re-use sites. Artifact: tmp/grind/cpu_side_move_dir_4/s52/asm_audit_D_800A11DC_downstream_readers.txt.
+
+- [s52] Target-asm audit: $s3 = &D_800A125C (tbl_125c) is read at insns 58 and 63 (both inside block=3's pre-debug_printf staging, matched by h5 candidate); ZERO post-debug_printf-arm reads (L80080EDC..L80081004 use $s2 idx_1494, $s4 idx_1495, $s5/$s6 arg pass-throughs, $s1 saved status bits, and D_800A147C/D_800A11B4/D_800A11B8 dispatch pointers — never $s3).
+
+- [s52] Target-asm audit: ZERO occurrences of the composite shape (u8*)tbl_125c + (t0<<2) in the arms — reconfirms s47's F1 audit finding on the sibling &D_800A11DC symbol; extends the closure to include the arg5-side base symbol.
+
+- [s52] s47 C2 (fn_scope_zero_constant_holder_C2.c) empirical bound: any FAKE-annotated fn-scope carrier held live across debug_printf costs masked=10 (+8) and build_insns=163 (+3); the general form is monotone-worse than h5 baseline, independent of carrier type (scalar/pointer).
+
+- [s52] Sibling closures (extends the axis-wide KILL): s47 C1/C2/C3 (three scalar-archetype fn-scope FAKE carriers), s48 C4/C5/C6 (three fast-path/do_timeout-entry realizations), s49-F4 (dead-vars-local-array prerequisite absent — zero unmatched frame stores). Combined: the SOTN-family named-local-fake-exception carve-out is CLOSED at every measured C-realization AND at every downstream-reader axis available in target bytes.
