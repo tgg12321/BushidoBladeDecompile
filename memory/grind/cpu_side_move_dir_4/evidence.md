@@ -1406,3 +1406,15 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s86] s86 fresh-seed discipline note: 1375 iterations at base_score=2215 (~1.5 iter/sec across 8 jobs, dominated by high per-iteration compile cost of the s77-regressed chassis) is thin evidence relative to s13's 2999 iters / s5's 9040 iters / s76's 720 iters / s14's 23427 iters. The chassis's base_score=2215 signature indicates the current merged annotation set (LINESWAP+GENERAL+RANDOMIZE) explores from a bad neighborhood; the h5-preserving chassis and g3-basin chassis have both been re-measured this modality across prior sessions, closing the CURRENT-annotated-chassis fresh-seed axis.
 
 - [s86] s86 orientation note: the frontier's other two items (ALLOCDBG-instrumented forensics on s85 probe2's build_insns=159 signature; structural respelling of src/system.c:406 idx_1495 initializer as `idx_1495 = idx_1494 + 1;`) were not selected because the driver mandated `permuter` modality this session. Those remain live frontier for future forensics / structural sessions per the s85 ledger.
+
+- [s87] greg diff (s87/allocdbg_diff/diff.alloc.txt): only 4 lines differ (of 102). h5 ord=[12,13,14,15]=[79(19,5r,148ll,675p), 78(20,2r,72ll,277p), 72(21,2r,76ll,263p), 73(22,2r,79ll,253p)]; probe2 ord=[12,13,14,15]=[78(19,2r,55ll,363p), 72(20,2r,76ll,263p), 73(21,2r,79ll,253p), 79(22,3r,148ll,202p)].
+
+- [s87] p79 delta: nrefs 5->3 (-2 refs); pri 675->202 (collapse); hardreg 19->22 (last in window). p78 delta: livelen 72->55 (-17 luids because respell shortens its span); pri 277->363; hardreg 20->19.
+
+- [s87] QTY diff (s87/allocdbg_diff/diff.qty.txt): only 3 lines differ (of 276). blk=0 qty=0 reg1=88 birth 16->14 death 18->16; blk=0 qty=1 reg1=93 birth 22->20 death 24->22; blk=1 qty=0 reg1=95 birth 8->8 death 12->14. All prologue-block entries shift -2 luids (one insn eliminated); loop-top block extends p95's live range +2 luids (idx_1494 held through new respell insn).
+
+- [s87] build_insns 160->159 confirmed via sandbox (masked=15, target=160). Prologue-only variant s8 probe1 measured masked=15 build=160 (NO insn eliminated) - the -1 delta is loop-top-position-specific: loop-top dominates both *idx_1495 uses, so local-alloc.c update_equiv_regs recognizes prologue idx_1495 init as redundant and DCE/absorb collapses one of the two prologue setup insns (la+addiu -> single addu of idx_1494+1).
+
+- [s87] SCHED and RANK diff have 742 / 44 differing lines respectively - all downstream ripple from the ord=12..15 rotation (no new decision surface).
+
+- [s87] p79 identified as the LEAD carrier in the greg [12..15] window (nrefs=5, pri=675, hardreg=19 in h5). p78 identified as the SECOND-place carrier (nrefs=2 livelen=72 pri=277). Levers must preserve p79's nrefs>=5 AND avoid shrinking p78's livelen below ~72 to avoid triggering this rotation.

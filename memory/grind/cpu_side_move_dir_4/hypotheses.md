@@ -1307,3 +1307,15 @@
 - probe: Launch permuter_campaign.py fresh-seed on tmp/perm_csmd4 with existing base.c chassis, -j 8, --stop-on-zero, ~15-min wall window per fresh-seed discipline (permuter-directives Campaign discipline). Snapshot pre-existing 16 output-* dirs; measure novel finds count.
 - result: Campaign launched (pid 417, 2026-07-09T14:31:03Z), harvested with --stop after ~15 min. Permuter self-reported base_score=2215 (the s77 F14 vblank-poll-arm regressed chassis - annotations in current base.c inflate merged base to a bad neighborhood). Elapsed s=95 tracked in meta, iterations=1375. finds_new=0; output dir count unchanged at 16 (all pre-existing per campaign_meta.preexisting_outputs).
 - verdict: KILLED
+
+## [s87] ALLOCDBG-instrumented forensics on s85 probe2 (loop-top idx_1495=idx_1494+1) build_insns=159 signature will identify the specific pseudo whose refs shifted and which upstream insn was eliminated by local-alloc
+- mechanism: flow.c reg_n_refs redistributes when a loop-top respell dominates all uses of a prologue-init pseudo; local-alloc/combine can absorb one prologue insn; the ref-redistribution then causes greg's qty_compare to re-rank the affected pseudo in the ord window
+- probe: Rebuild gccdbg dumps for probe2 (rejected/dup_idx1495_loop_top_p77.c) with BB2_QTY_DEBUG/BB2_SCHED_DEBUG/BB2_ALLOC_DEBUG/BB2_FINDREG_DEBUG/BB2_RANK_DEBUG=1; diff greg/qty/findreg vs s69/h5 baseline
+- result: p79 (5-ref lead carrier, hardreg=19 in h5) lost 2 refs (nrefs 5->3), pri collapsed 675->202, and was DEMOTED from ord=12 (FIRST in the [12..15] window) to ord=15 (LAST); p78 was PROMOTED to ord=12 and re-took hardreg=19; the ord=[12..15] rotation [79,78,72,73]->[78,72,73,79] is the mechanism producing the 13+ downstream reg-name diffs (masked=15); build_insns 160->159 (-1) is the one prologue insn eliminated by local-alloc equiv-reg propagation because loop-top respell dominates all *idx_1495 uses (prologue-only variant s8 probe1 had build=160 = no elimination). QTYDBG confirms: blk=0 (prologue) shifted all birth/death luids -2 (one insn removed); blk=1 (loop-top) extended qty=0/reg1=95 death 12->14 (=idx_1494 carrier held live through the new respell).
+- verdict: CONFIRMED
+
+## [s87] The loop-top idx_1495 dup mechanism (-1 build_insn from local-alloc equiv-reg absorb) is a viable close lever
+- mechanism: if the -1 physical insn were free (no reg-alloc ripple), it could compose with other levers to reach masked=0; the frontier speculated the -1 build_insn signature was a signal of latent close-margin
+- probe: same as above; then evaluate whether the ord=[12..15] rotation is a coincidence or the cause of masked=15
+- result: Rotation is causal: p79's nrefs=5->3 collapses pri 675->202, and greg assigns hardregs in strict ord order, so p79 flips from hardreg=19 to hardreg=22 and p78 flips from hardreg=20 to hardreg=19. The 13+ downstream masked-15 objdump diffs are all reg-name diffs downstream of this flip. Any respell that reduces p79's ref-count (any variant that pulls a *idx_1495-family use off of p79 onto a fresh pseudo) is doomed to hit the same ord rotation. Loop-top respell class is CLOSED.
+- verdict: KILLED
