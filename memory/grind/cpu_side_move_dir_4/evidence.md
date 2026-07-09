@@ -446,3 +446,23 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s22] s22 novel-form rejected bank: memory/grind/cpu_side_move_dir_4/rejected/lineswap_arg5_first_v0_shift_early_g3.c (measured masked=6), lineswap_pp_hoisted_arg5_first_g3.c, lineswap_v0_full_arg5_first_pp_mid.c.
 
 - [s22] s22 metric correlation refined: permuter weighted score 40 = g3 basin (masked=6, register exchange residual); weighted 55 = intermediate (partial-h5-partial-g3 spelling); weighted 60 = full h5 (masked=2 pair-swap residual). The permuter weighted metric penalizes register diffs but does not see the pair-swap that h5 shows in the byte-level metric, so lower weighted score does NOT imply better sandbox masked score in this basin family.
+
+- [s23] s23 baseline: h5 candidate applied to src/system.c scores masked=2, target_insns=160, build_insns=160 via sandbox cpu_side_move_dir_4 --disable all.
+
+- [s23] PERM_LINESWAP_TEXT workspace edit: tmp/perm_csmd4/base.c wraps 8 items (tslTm2LoadImage_2 + t0=idx[0] + v0=idx[1] + pp=&D_800F19C0 + t0*=4 + t0=(u8*)tbl+t0 + v0<<=2 + arg5=*(s32*)(v0+tbl)) in PERM_LINESWAP_TEXT sole directive. Backup at tmp/grind/cpu_side_move_dir_4/s23/base_s22.c.
+
+- [s23] Campaign launch metrics: base_score=60 (h5-multexpander chassis confirmed at launch, guardrail satisfied); pid=425; 4 jobs; --stop-on-zero.
+
+- [s23] Campaign harvest metrics: elapsed_s=1462.5, iterations=20429, finds_new=2, stopped=true, procs_alive at harvest per campaign_meta.
+
+- [s23] Preexisting outputs at s23 launch (12): output-40-1..7, output-50-1..3, output-55-1..2. Post-harvest state (14 outputs): novel output-55-3 (+67.4s post-launch) and output-40-8 (+819.5s post-launch).
+
+- [s23] output-55-3 diff: arg5-chain (v0=idx[1]; v0<<=2; arg5=*(v0+tbl)) hoisted before t0 chain (t0=idx[0]; t0*=4; t0=(u8*)tbl+t0); tslTm2LoadImage_2 at top; pp assignment mid-block. Sandbox measurement on src/system.c: masked=7, target_insns=160, build_insns=160. Novel intermediate basin — matches the s2 E_arg5_first head-load-flip regression signature (masked 7).
+
+- [s23] output-40-8 diff: v0/arg5 chain hoisted before final t0 finish, with pp interleaved into t0 chain. Weighted-40 correlates to g3-basin masked=6 per s22 correlation (measured on output-40-7 there); assumed masked=6, not re-measured.
+
+- [s23] The textual-swap axis under strict h5-preservation now measures on par with s22's AST-swap axis: crossing the tslTm2LoadImage_2 boundary does NOT unlock a below-h5 ordering. Combined with s22 (LINESWAP AST, 5040 orderings exhausted, 0 sub-40 finds) and s5/s13 (fresh-seed random-mutation 9040+2999 iters, 0 novel), the statement-ordering axis is CLOSED at both AST + text + random-random levels.
+
+- [s23] Fresh-seed harvest at 1462s / 20429 iterations is the data point per owner directive 2026-07-07 fresh-seed discipline: 0 weighted-score-<40 novel finds after ~24 min = ordering-space local minimum stable for the h5-multexpander chassis under textual mutation.
+
+- [s23] candidate.c: unchanged (h5 form remains masked=2 floor). src/system.c restored to HEAD (both-named form, masked=7 baseline) at session end. Rejected forms saved: memory/grind/cpu_side_move_dir_4/rejected/lineswap_text_arg5_hoist_pre_t0.c (masked=7 measured) + lineswap_text_g3_ordering.c (g3-dupe, unmeasured).

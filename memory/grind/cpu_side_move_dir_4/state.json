@@ -1,7 +1,7 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 22,
+ "session_count": 23,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -141,23 +141,29 @@
    "floor": 2,
    "modality": "permuter",
    "headline": "s22 PERM_LINESWAP strict-h5 campaign exhausted the enumeration (5040 = 7! orderings) \u2014 3 novel finds ALL in g3-basin (weighted 40 / 55; masked=6 confirmed on 40-7); zero orderings below h5 masked=2; L"
+  },
+  {
+   "session": 23,
+   "floor": 2,
+   "modality": "permuter",
+   "headline": "s23 PERM_LINESWAP_TEXT h5-preserving campaign (base_score=60, 20429 iters / 1462s / 4 jobs) \u2014 2 novel finds: score-55 arg5-before-t0 hoist that reaches an intermediate basin masked=7 (measured), and s"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The g3-basin residual (masked=6, pure v1<->a0 register exchange, order-perfect) admits a novel closing lever via `register` pin manipulations that were s1/WIP-KILLED on h5-basin but were NEVER re-measured on g3-basin under the 2026-07-06 do-while(0)-sanction + 2026-07-01 dead-store/named-local carve-outs. Specifically: a fn-scope BLOCK-LOCAL multi-set carrier for arg5 wrapped in a sanctioned do{}while(0) whose LOOP_BEG/END ref-multiplier lifts arg5-qty refs*loop-depth above t0-qty on the g3 chassis (where s5 measured wraps as monotonically wrong-direction ONLY on h5-basin, never on g3-basin).",
-   "mechanism": "s5's F3/F3b/F4 do-while(0) wraps were all measured on h5 base and were monotonically wrong-direction. But g3's ORDER-PERFECT status means wrap-based ref-reweighting on g3 doesn't have to compete with a pair-swap residual \u2014 only with the v1/a0 register exchange. flow.c reg_n_refs multiplied by loop depth feeds local-alloc.c qty_compare. Untested cross: wrap around ONLY the arg5 dereference statement on g3 base.",
-   "next_probe": "Structural modality (next session): Apply g3 base to src/system.c (t0<<=2, arg5=*(s32*)(v0+tbl); t0<<=2; call(..., *(s32*)(t0+tbl_125c), arg5) \u2014 no *=4 mult-expander; masked=6 baseline). Wrap ONLY `arg5 = *(s32*)(v0 + (s32)tbl_125c);` in do{}while(0). Sandbox --disable all; if masked drops below 6, then wrap the arg5 chain more aggressively (v0<<=2; arg5=...) OR try the fully-inline arg5 in-call form with wrap. If INERT at 6, wrap-based ref-lift on g3 is closed too."
-  },
-  {
-   "hypothesis": "PERM_LINESWAP_TEXT (line-level, text-based swap that handles incomplete statements) applied to the ENTIRE do_timeout block INCLUDING the do_timeout label and tslTm2LoadImage_2 call could discover a sanctioned control-flow ordering that s22 PERM_LINESWAP (AST-based, block-scoped) could not reach.",
-   "mechanism": "PERM_LINESWAP operates on complete C statements at AST level within one block scope; it cannot swap lines across the do_timeout label boundary or interleave the tslTm2LoadImage_2 call with the inline block. PERM_LINESWAP_TEXT is textual and could reach broader orderings, some of which might re-time the block-3 sched.c ready queue in ways that break the LUID(121)>LUID(111) tiebreak without disturbing basin membership.",
-   "next_probe": "Permuter modality (later session): edit tmp/perm_csmd4/base.c with PERM_LINESWAP_TEXT wrapping tslTm2LoadImage_2(...) + the whole inline block; verify base_score=60 at launch (must preserve h5). Cap fresh-seed harvest at ~20 min OR until textual-mutation-space exhausts (much larger than 5040). Guard: any find with weighted score >= 60 that produces masked < 2 is the target; forms in g3 basin (weighted 40) are dupes of s22 findings."
+   "hypothesis": "The g3-basin residual (masked=6, pure v1<->a0 register exchange, order-perfect) admits a novel closing lever via `register` pin manipulations that were s1/WIP-KILLED on h5-basin but were NEVER re-measured on g3-basin under the 2026-07-06 do-while(0)-sanction + 2026-07-01 dead-store/named-local carve-outs. Specifically: a fn-scope BLOCK-LOCAL multi-set carrier for arg5 wrapped in a sanctioned do{}while(0) whose LOOP_BEG/END ref-multiplier lifts arg5-qty refs*loop-depth above t0-qty on the g3 chassis.",
+   "mechanism": "s5's F3/F3b/F4 do-while(0) wraps were all measured on h5 base and were monotonically wrong-direction. But g3's ORDER-PERFECT status means wrap-based ref-reweighting on g3 doesn't have to compete with a pair-swap residual \u2014 only with the v1/a0 register exchange. Untested cross: wrap around ONLY the arg5 dereference statement on g3 base.",
+   "next_probe": "Structural modality (next session): Apply g3 base to src/system.c (t0<<=2; arg5=*(s32*)(v0+tbl); t0<<=2; call(..., *(s32*)(t0+tbl_125c), arg5) \u2014 no *=4 mult-expander; masked=6 baseline). Wrap ONLY `arg5 = *(s32*)(v0 + (s32)tbl_125c);` in do{}while(0). Sandbox --disable all; if masked drops below 6, then wrap the arg5 chain more aggressively OR try the fully-inline arg5 in-call form with wrap. If INERT at 6, wrap-based ref-lift on g3 is closed too."
   },
   {
    "hypothesis": "The forensic surface has ONE unexplored micro-axis: dropping BOTH v0 and t0 chain statements at the same LUID slot by co-declaring them and using an assignment operator that produces a comma-separated expression sequence, could give sched.c a novel adjust_priority interaction between p106 (t0*=4 fresh dest) and p107 (arg5_addr). Not measured in any prior session.",
-   "mechanism": "GCC's expand-time comma expression lowering may create a distinct RTL insertion point relative to statement-order; if p106's SET INSN and p107's SET INSN end up at the SAME LUID (via a comma expression tying their computes into a single sequence-point), the LUID tiebreak degenerates and adjust_priority may fall through to a different comparator (register class, pri) that hasn't been probed.",
+   "mechanism": "GCC's expand-time comma expression lowering may create a distinct RTL insertion point relative to statement-order; if p106's SET INSN and p107's SET INSN end up at the SAME LUID via a comma expression tying their computes into a single sequence-point, the LUID tiebreak degenerates and adjust_priority may fall through to a different comparator (register class, pri) that hasn't been probed.",
    "next_probe": "Structural modality: rewrite the inline block to use comma-op `v0 <<= 2, arg5 = *(s32*)(v0+tbl)`, `t0 *= 4, t0 = (u8*)tbl+t0` folded into single statements; if sched.c assigns identical LUID to the SLL emissions, rank_for_schedule's val=0 outcome may shift class or fall to REGNO. Measure via sandbox; if INERT, comma-op axis is closed."
+  },
+  {
+   "hypothesis": "PERM_INT (0..3) directives on the shift amounts of t0*=4 (2) and v0<<=2 (2), swept through 4x4=16 combinations, may surface an ordering-independent shift-amount pair that changes GCC's mult-expander alg selection (alg_shift vs alg_add_t_m2 vs alg_add_factor) and side-steps the s7-CONFIRMED expmed.c line-2244 NULL_RTX wall without dropping into g3.",
+   "mechanism": "expand_mult's synthetic-mult table (expmed.c synth_mult) selects an algorithm based on target constant; different small constants take different paths. Only alg_shift hardcodes NULL_RTX; alg_add_t_m2 and alg_add_factor thread add_target/accum_target through, potentially birthing the LAUNCH-tied insn as an in-place re-SET of an existing pseudo. Not measured this or prior sessions.",
+   "next_probe": "Permuter modality (later session): edit tmp/perm_csmd4/base.c with PERM_INT(2,3,4,6,8) on both shift/mult amounts; verify base_score at launch tracks the h5 chassis. Only orderings whose sandbox equivalence preserves the *4 semantic will be measurable \u2014 but the mutation may explore synth_mult neighborhoods that structural sweeps can't reach. Guardrail: any find with weighted score < 60 that preserves target byte semantics."
   }
  ],
  "judge_constraints": [],
