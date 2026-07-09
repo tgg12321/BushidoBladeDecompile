@@ -1,8 +1,8 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 66,
- "current_modality": "structural",
+ "session_count": 67,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 0,
@@ -405,23 +405,29 @@
    "floor": 2,
    "modality": "structural",
    "headline": "s66 structural: F3 compound dual-collapse KILLED at masked=16 (+14) \u2014 the +13 collapse basin is single-side-driven, not compositionally symmetric; dual-non-LAUNCH lands in a novel +14 basin worse than"
+  },
+  {
+   "session": 67,
+   "floor": 2,
+   "modality": "permuter",
+   "headline": "s67 permuter: F1 (g3-chassis arg5 PERM_GENERAL x LINESWAP, 24-iter exhaustive enum) and F2 (poll-region 3-statement PERM_LINESWAP, 6-iter 3! enum) both KILLED at 0 novel finds; all mutations strictly "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F1 (unchanged from s64/s65): g3-chassis arg5-side-only directed permuter reaches a novel arg5-qty pri>=5000 profile closing the v1/a0 exchange in g3=6 basin.",
-   "mechanism": "g3 chassis avoids the h5 mult-expander LAUNCH constraint; arg5-side-only bounds the search to the closable half of g3's residual. Fresh-seed 20-30 min per campaign discipline.",
-   "next_probe": "Copy tmp/perm_csmd4 workspace, edit base.c to g3 shape (t0<<=2 in place of t0*=4 chain), add PERM_LINESWAP wrapping arg5's 3 statements + PERM_GENERAL alternatives on the arg5 dereference only. Confirm iter1 base_score=40; fresh-seed 20-30 min. Any find must pass layer-1 vet against g3-permuter cheat family."
+   "hypothesis": "F5 (novel): The ALLOCDBG-instrumented s-reg coupling hunt named in Judge constraint - dump cc1 -da with BB2_ALLOC_DEBUG on the h5 candidate applied, extract every s-reg pseudo's refs/livelen/priorities across the whole-function scope, identify the specific s-reg web edges that couple the honest idx_1495 respelling (masked +13 at s8) to the h5-basin masked-2 residual, then find a C respelling of idx_1495 that satisfies the prologue's addiu s4,s2,1 shape WITHOUT triggering the +13 collapse.",
+   "mechanism": "s8 CONFIRMED the WIP-recorded 'file-level s-reg ref-balance coupling' warning: cross-symbol tbl_125c-routed idx_1495 spelling is LOAD-BEARING at the s-reg web level for the h5 basin. The mechanism is not yet named at the qty_compare/find_reg level - a whole-function ALLOCDBG dump would identify which s-reg allocations shift when the cross-symbol form is replaced with the honest ptr-arithmetic form, giving a targeted lever (e.g. an inert side-computation that keeps a specific s-reg's ref count parity).",
+   "next_probe": "Build cc1 dump directly on the h5 candidate at tmp/grind/cpu_side_move_dir_4/s68/allocdbg_h5/ with BB2_ALLOC_DEBUG=1 BB2_QTY_DEBUG=1. Grep the greg/lreg pass for every s-reg pseudo's (refs, livelen, birth_luid, priority, assigned_reg). Repeat with the honest idx_1495 form applied. Diff the two ALLOCDBG traces; every s-reg pseudo whose priority/reg-assignment differs is a candidate for a targeted respell. Identify a C construct that would flip ONE of those pseudos' ref count/priority without adding insns."
   },
   {
-   "hypothesis": "F2 (unchanged from s64/s65): 3-statement PERM_LINESWAP inside nested { } inside if(status != 0) covering (if&4, if&2, goto poll) enumerates 3! = 6 orderings; ALLOCDBG s-reg web coupling may surface at previously-inaccessible dispatch scope.",
-   "mechanism": "s59 established nested-compound-if parsing works (2/2 iters ran); s42 shows p78/idx_1495 have zero block=3 QTY overlap so upside is small, but deterministic enumeration is cheap.",
-   "next_probe": "Extend s59 base.c to wrap 3 statements including the goto; permuter exhausts 3!=6; measure any weighted<60 output on sandbox --disable all."
+   "hypothesis": "F6 (novel): The SOTN-family carve-out named in Judge constraint - reassess whether cpu_side_move_dir_4 qualifies for any of the 2026-07-01 last-resort sanctions ([[dead-store-fake-exception]], [[named-local-fake-exception]], [[pointer-alias-fake-exception]], [[duplicated-statement-into-arms]]) that could produce a byte-neutral ref-lift on the arg5-qty (target: pri(arg5) >= pri(t0) via reg_n_refs) without falling out of h5.",
+   "mechanism": "candidate.c already deploys staged-value-reused-variable (v0-idx staging) and pointer-alias-fake (pp = &D_800F19C0). The two remaining sanctioned families not yet applied are duplicated-statement-into-arms and dead-store-fake on arg5's carrier. If a real arg5-related statement can be duplicated into the two do_timeout arrival arms with cross-jump byte-neutrality confirmed, reg_n_refs on arg5's carrier lifts without changing bytes. The prerequisites (documented lever-exhaustion, byte-neutrality, FAKE annotation, layer-2 cheat-reviewer) must be individually verified.",
+   "next_probe": "Enumerate the arg5-carrier variables (v0, arg5, tbl_125c) and identify a real statement referencing one that could be plausibly duplicated into the two arms feeding do_timeout (the timeout branch + the cnt-overflow branch). Test byte-neutrality via sandbox before proposing to cheat-reviewer. If any duplication holds bytes and lifts refs, it enters ruling-request."
   },
   {
-   "hypothesis": "F4 (NEW from s66 observation): the +14 basin isolated by dual-non-LAUNCH (F3) may share structure with an un-explored ASYMMETRIC-collapse form where insn 111 LAUNCHes but is DELAYED by an inserted single-set intermediate (e.g., `s32 t0m = t0*4;` before t0=(tbl+t0m)), keeping p106 fresh-single-set (LAUNCH) but shifting its LUID relative to insn 121.",
-   "mechanism": "The intermediate t0m gets its own pseudo (p_new fresh single-set \u2192 LAUNCH), so THREE insns now compete at clock=13 (insn 111 sll + insn 121 addu + insn newAddu p101=tbl+p_new). Backward-scheduler picks highest LUID first; if the intermediate's LUID falls between 111 and 121, the pair-swap ordering could flip. NOT a repeat of V3_t0s_split (that used `s32 t0s = t0*4;` which regressed to +1 per s3) \u2014 that variant preserves the ORIGINAL t0*=4 too; F4 would REPLACE the mult with the split form.",
-   "next_probe": "Apply `s32 t0m; t0m = t0 * 4; t0 = (s32)((u8*)tbl_125c + t0m);` (t0m as a fresh block-scope single-set intermediate, replacing the in-place t0*=4 mult chain), leave v0/arg5 chain untouched. Measure structural modality. Cross-check against rejected/v3_t0s_split_regress.c which is likely the SAME form \u2014 if so, KILLED-by-reference; if distinct, novel probe."
+   "hypothesis": "F7 (novel structural, permuter-adjacent): Combine F1's PERM_LINESWAP arg5-chain with a PERM_LINESWAP wrapping the WHOLE do_timeout inline block (all 4-5 statements) - cross-product enumeration could surface an ordering that satisfies both the head-load luid constraint and the arg5-side LAUNCH suppression.",
+   "mechanism": "s3 measured C_v0shl_early / D_interleave (interior statement re-association) as INERT on h5, but did NOT enumerate the full cross-product of BOTH t0 chain and arg5 chain orderings simultaneously. A whole-block PERM_LINESWAP with e.g. 5 statements = 5!=120 orderings; combined with the F1 arg5-side variants could reach 480 iters. Cheap enumeration, high probability that the intersection contains a previously-unmeasured shape.",
+   "next_probe": "tmp/grind/cpu_side_move_dir_4/s68/perm_wholeblock_lineswap/: base.c with PERM_LINESWAP wrapping the 5 do_timeout block statements (t0=idx[0]; v0=idx[1]; pp=..; t0*=4; t0=(u8*)tbl+t0; v0<<=2; arg5=*(...)) plus PERM_GENERAL on the arg5 dereference. Launch fresh-seed 20-30 min per campaign discipline; harvest with stop."
   }
  ],
  "judge_constraints": [

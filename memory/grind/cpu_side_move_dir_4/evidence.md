@@ -1100,3 +1100,15 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s66] Confirms that the g3/ip/+13 basin family is NOT compositional; the two LAUNCH insns are not independent axes but a coupled 2D system whose (LAUNCH, LAUNCH) and (non-LAUNCH, non-LAUNCH) diagonals are separated by +14, and only the (LAUNCH, LAUNCH) corner sits in the h5 pair-swap neighborhood of the target.
 
 - [s66] Baseline re-verification at end of session: masked=2 with candidate.c restored to src/system.c — h5 basin holds cleanly.
+
+- [s67] h5 baseline score reconfirmed at start of session: sandbox cpu_side_move_dir_4 --disable all -> score=2, target_insns=160, build_insns=160 (candidate.c applied to src/system.c).
+
+- [s67] F1 workspace compile-check: base.c splices into base_full.c and produces 2652-byte .o (successful).
+
+- [s67] F1 permuter enumerated the full 4x6=24 cross-product deterministically in 66.2s. base_score=40 (g3-chassis weighted). Best non-base score 50 (still above base). Confirms the g3 basin is closed under the four semantic-equivalent arg5-dereference spellings tested here; PERM_GENERAL over the addu operand-order + cast axis does not surface a lower-scoring form.
+
+- [s67] F2 permuter enumerated the 6 orderings of the poll region's 3 statements in 120.4s. Every non-identity ordering strictly regressed (best non-base 105). Confirms the poll-region statement order is score-minimum on the g3 chassis; no s-reg web coupling was inducible via LINESWAP on this axis.
+
+- [s67] F4 (t0m intermediate replacing t0*=4 in-place mult) collapse to rejected/v3_t0s_split_regress.c: v3 form was s3-measured at masked=3 (baseline 2), i.e. +1 regression. The frontier claimed distinction (F4 REPLACES the mult, V3 preserves it) is refuted by inspection of rejected/v3_t0s_split_regress.c which shows V3 also replaces the mult (t0s = t0*4; t0 = (u8*)tbl+t0s;). F4 = V3, KILLED-by-reference; excluded from this session's probes.
+
+- [s67] The g3-chassis permuter neighborhood has now been sampled by: s5 fresh-seed random 9040 iters / 411.8s / 0 novel finds (KILLED); s58 fresh-seed random 18652 iters / 689s / 0 novel finds on h5 chassis (KILLED); s67 directed 24-iter PERM_GENERAL x LINESWAP arg5 enumeration / 0 novel finds (this session, F1 KILLED); s67 directed 6-iter poll LINESWAP enumeration / 0 novel finds (this session, F2 KILLED). Cumulative permuter search on both basins now covers ~27700 iters across random + directed modalities with no closing form.

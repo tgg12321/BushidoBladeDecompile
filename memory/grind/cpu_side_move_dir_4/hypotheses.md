@@ -1091,3 +1091,15 @@
 - probe: Applied `t0 <<= 2; t0 = (s32)((u8*)tbl_125c + t0); v0 <<= 2; v0 = v0 + (s32)tbl_125c; arg5 = *(s32*)v0;` on h5 candidate; sandbox cpu_side_move_dir_4 --disable all. Rejected form saved at memory/grind/cpu_side_move_dir_4/rejected/f3_compound_dual_collapse.c.
 - result: masked=16, target_insns=160, build_insns=160 (+14 vs h5 baseline of 2). Strictly WORSE than either single collapse (s65 P1=+13, s65 P2=+13). Compound dual-collapse does NOT cancel to a novel low-launch basin; instead lands in a fresh +14 basin never previously measured. The +13 collapse basin is single-side-driven, not compositionally symmetric.
 - verdict: KILLED
+
+## [s67] F1: Directed permuter on the g3-chassis with PERM_LINESWAP wrapping the arg5 3-statement chain plus PERM_GENERAL enumerating 4 semantic-equivalent spellings of the arg5 dereference (v0+tbl, tbl+v0, ((s32*)((u8*)tbl+v0))[0], *(s32*)((u8*)tbl+v0)) reaches a novel arg5-qty pri>=5000 profile closing the v1/a0 exchange in g3=6 basin.
+- mechanism: PERM_GENERAL emits distinct RTL trees for the operand order swap and the s32*/(u8*) cast paths, potentially altering combine.c's expand-time fold that produces the arg5 addu; PERM_LINESWAP re-times qty birth luids on v0's staging chain. Cross-product 4x6=24 orderings enumerated deterministically.
+- probe: tmp/grind/cpu_side_move_dir_4/s67/perm_g3_arg5general/ workspace: base.c is g3-chassis (t0 <<= 2 in-place, arg5 addu in the call) with PERM_LINESWAP(v0=idx[1]; v0<<=2; arg5=PERM_GENERAL(4 spellings);). tools/permuter_campaign.py launch -j 6 --stop-on-zero; 24 iterations / 66.2s.
+- result: 0 novel finds. base_score=40. iteration-24 (identity mutation) hit 40. best non-base score 50 (iters 13, 15, 17 - three PERM_LINESWAP orderings paired with the same PERM_GENERAL alt). All other mutations landed at 140/150/1290/1490.
+- verdict: KILLED
+
+## [s67] F2: PERM_LINESWAP wrapping the 3 statements inside 'if(status != 0){}' in the poll region (the if(status&4){...}, if(status&2){...}, goto poll; block) enumerates 3!=6 orderings; ALLOCDBG s-reg web coupling may surface at previously-inaccessible dispatch scope.
+- mechanism: s59 established that nested-compound PERM_LINESWAP inside if(status!=0){} parses correctly (2/2 iters ran). p78/idx_1495 zero block=3 QTY overlap makes upside small but enumeration is cheap (3!=6 combos). If any ordering shifts s-reg web assignment for the arg5-chain, the residual pair could flip.
+- probe: tmp/grind/cpu_side_move_dir_4/s67/perm_poll_lineswap/ workspace: base.c is g3-chassis (no PERM on arg5) with PERM_LINESWAP wrapping the 3 poll statements. tools/permuter_campaign.py launch -j 6 --stop-on-zero; 6 iterations / 120.4s.
+- result: 0 novel finds. base_score=40. iteration-6 (identity) hit 40. best non-base 105 (iter 5). Others 1825/2090/3690/3690. All non-identity orderings strictly regressed the score; the original poll ordering IS the score-minimum shape on the g3 chassis.
+- verdict: KILLED
