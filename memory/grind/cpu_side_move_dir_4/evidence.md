@@ -868,3 +868,17 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s49] s49 narrow permuter campaign (tmp/grind/cpu_side_move_dir_4/s49/perm_narrow): base_score=60 confirms h5 chassis preserved; 15064 iterations, 0 novel finds, elapsed 567.1s. Extends the h5-chassis 0-find plateau from ~40k (s13+s32+s40) to ~55k accumulated iterations.
 
 - [s49] s49 modality-exhaustion note: F3 (HI-LO producer) and F4 (dead-vars-local-array) were the two live frontier axes in the s48 ledger. Both close via target-asm audit without measurement (F3: target has no HI-LO ops; F4: target has no unmatched dead frame stores). Frontier F5 was already documented as closed-at-drafting per no-new-park-categories (`(void)&local` in cheat catalog; multi-set carrier redundant with s5 F1a/F1b). All three s48-declared live frontiers are now measurement-closed; the live frontier list is empty.
+
+- [s50] h5 candidate.c applied to src/system.c reproduces masked=2 baseline (sandbox --disable all: score=2, target_insns=160, build_insns=160).
+
+- [s50] s50 permuter campaign: workspace tmp/grind/cpu_side_move_dir_4/s50/perm_poll_gen; base_score=60 (h5 chassis preserved); 29289 iterations / 1565.2s; 1 novel find at weighted=40 (output-40-1, seconds_since_launch=662.7); permuter fell back to full-function random-mode (`No perm macros found. Defaulting to randomization.`) because the PERM_GENERAL directive was placed inside a compound `if (status != 0) { ... }` block — same class of tool-side limitation as s41 PERM_LINESWAP on brace-delimited blocks.
+
+- [s50] s50 novel find (output-40-1): hoists `void **new_var2= &D_800F19C0;` fn-scope + inline block uses `pp = (void **) new_var2;` and `temp = *(s32*)(v0+(s32)tbl_125c); arg5 = temp;`. Applied to src/system.c: masked=2 (target_insns=160, build_insns=160) — SAME as h5 baseline; the weighted-40 improvement is a register-name reshuffle the masked scorer normalizes out.
+
+- [s50] Cheat-vetting the find: `new_var2` = fn-scope pointer-alias with no semantic purpose beyond routing pp; `temp` = load-intermediate with no semantic purpose (arg5 is direct load-and-pass). Both constructs match the 'no semantic purpose' + 'necessary only because permuter said so' signals in no-new-park-categories — rejected without measurement dependency.
+
+- [s50] src/system.c reverted to h5 candidate; masked=2 confirmed post-revert.
+
+- [s50] Rejected form saved at memory/grind/cpu_side_move_dir_4/rejected/s50_perm_new_var2_temp_intermediate.c with cheat-vetting notes for future sessions.
+
+- [s50] Cumulative h5-chassis permuter closure now ≈85k iterations across 9 sessions at 0 novel weighted-<40 finds; the s50 whole-function-random-mode superset campaign confirms no basin exists below weighted-40 within h5-chassis mutation reach.

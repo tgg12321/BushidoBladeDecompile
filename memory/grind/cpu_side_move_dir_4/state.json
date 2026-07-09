@@ -1,7 +1,7 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 49,
+ "session_count": 50,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -303,23 +303,19 @@
    "floor": 2,
    "modality": "permuter",
    "headline": "s49 permuter: F3 (HI-LO producer) and F4 (dead-vars-local-array) both closed by target-asm audits; narrow arg5-only PERM_GENERAL 15064 iters at base=60 (h5-chassis preserved), 0 novel finds."
+  },
+  {
+   "session": 50,
+   "floor": 2,
+   "modality": "permuter",
+   "headline": "s50 permuter (poll-loop-dispatch PERM_GENERAL, fell back to full-function randomization): 29289 iters / 1565s / 1 novel find at weighted=40 masked=2 \u2014 same-floor variant, no <40 find; permuter surface"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F3 (HI-LO producer for arg5_addr): make insn 121's PLUS operand involve a HI-LO producer (mult/div result) so mips_adjust_cost raises the 121->123 edge latency above 1, letting insn 111 win the class-1 test in rank_for_schedule (sched.c:2399-2456, s15 finding).",
-   "mechanism": "sched.c::rank_for_schedule class diff via LOG_LINKS(last_scheduled) + insn_cost gate: if insn 121's dep-edge to 123 (via a HI-LO consumer) has cost>1, the class diff val!=0 could pick 111 over 121 without going through the LUID tiebreak. Untested C-source realization per s15.",
-   "next_probe": "s49: (1) identify a HI-LO-producing operation whose result can legitimately feed the arg5_addr computation without being a semantic lie (frontier already flagged this as likely cheat-shaped per no-new-park-categories - the intermediate has no semantic purpose beyond triggering the HI-LO scheduler cost). (2) audit target asm/funcs/cpu_side_move_dir_4.s for any legitimate mult-consumer that could naturally feed arg5_addr; if none, F3 also closes."
-  },
-  {
-   "hypothesis": "F4 (WRITTEN-never-read local ARRAY per dead-vars-local-array.md 2026-07-01 sanction, ORACLE-ENFORCED): if csmd4 target asm shows dead sw stores into a stack-frame region the h5 candidate never allocates, a matching-shape local u8 array with matched writes reserves frame bytes AND emits actual sw stores (unlike the scalar variant which DCEs); prerequisite is target-oracle-enforced by construction.",
-   "mechanism": "Written-never-read local array reserves frame bytes AND emits actual sw stores if the writes are to distinct offsets; if target has matching dead stores, the shape is byte-accurate. Reserves stack space that shifts prologue frame-adjust arithmetic AND emits real MEM stores (not DCE-vulnerable like the scalar) which could ripple into the h5 basin's alloc web via saved-reg pressure at prologue emission.",
-   "next_probe": "s49 or s50: grep asm/funcs/cpu_side_move_dir_4.s for `sw` instructions targeting offsets 0x10-0x1F (or wherever the h5 candidate's frame ends and the target's frame may extend) with NO matching lw. If any found, draft C7 with a matching-shape local u8/s32 array + matching writes; layer-1 cheat-reviewer against dead-vars-local-array.md carve-out prerequisites; if PASS, apply + sandbox. If no unmatched dead-sw stores in target asm, F4 closes as not-applicable."
-  },
-  {
-   "hypothesis": "F5 (new, from s48 C6 KILL): the DCE-upstream-of-flow that suppresses `held` is bypassable if `held` is either address-taken (making it a memory pseudo not subject to reg-DCE) or written-then-read once (defeating dead-set elimination) at a position that leaves the READ dead but the SET live. E.g. `held = *idx_1494; something_using_held_that_folds_out;` where the read gets DCE'd but the SET survives to flow.c.",
-   "mechanism": "Two candidate realizations: (a) `held` as address-taken via `(void*)&held;` (forbidden by no-new-park-categories: `(void)&local;` is in the cheat catalog). (b) `held` reused as a live carrier for a different purpose (e.g. temp for arg4 chain output) where the SET is dead but a downstream READ sinks it - but this converges with F1a/F1b block-scope multi-set carrier probes already KILLED at s5.",
-   "next_probe": "F5 (a) is policy-blocked (address-taken void cast is in the cheat catalog). F5 (b) is redundant with s5 F1a/F1b. F5 closes at drafting time WITHOUT measurement per no-new-park-categories; documented for completeness so future sessions don't re-derive."
+   "hypothesis": "PERM_GENERAL / PERM_LINESWAP directives cannot be placed inside compound brace-delimited if-blocks in the current decomp-permuter's directive parser (s41 LINESWAP + s50 GENERAL both fell back to defaults). A restructured base.c that flattens the poll-loop callback dispatch into a single-statement top-level scope (e.g. two-arg dispatch table or ternary) would let PERM_GENERAL / PERM_LINESWAP actually engage the dispatch region as an isolated mutation scope.",
+   "mechanism": "Tool-side directive parser limitation on brace-delimited compound statements; the workaround is a preprocessing step that lifts the target statements to top-level flat scope while preserving semantics OR a different permuter tool that handles compound scopes.",
+   "next_probe": "s51+: (a) rewrite base.c with the poll-loop dispatch as two top-level PERM_GENERAL-annotated single-statement blocks (goto-based flattening) then re-launch; (b) alternatively, add a wrapper PERM_GENERAL(...) around the ENTIRE outer poll-loop `if (status != 0)` block at the STATEMENT level (not inside the compound body) \u2014 this may parse and yield the intended isolated dispatch mutation neighborhood."
   }
  ],
  "judge_constraints": [
