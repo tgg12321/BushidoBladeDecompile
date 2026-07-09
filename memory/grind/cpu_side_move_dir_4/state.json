@@ -1,8 +1,8 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 43,
- "current_modality": "forensics",
+ "session_count": 44,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 0,
@@ -267,18 +267,29 @@
    "floor": 2,
    "modality": "forensics",
    "headline": "s43 forensics KILLS 'sched2 LAUNCH manipulation' as an attack surface: sched2 sees BOTH insn 111 and 121 at plain priority=2 (NOT the LAUNCH 0x7f000001 the s6/s15 ledger entries claimed); LAUNCH senti"
+  },
+  {
+   "session": 44,
+   "floor": 2,
+   "modality": "rederive",
+   "headline": "s44 rederive: decomp.me BB2-toolchain corpus scrape (s9's curl_cffi blocker unblocked) measures KILLED - 602-scratch sample yields background-noise similarity (max 0.079), no analog for csmd4's h5/g3 "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F1: A downstream user of p106 (the SLL dest at insn 111) that survives the mult-expander alg_shift wall by NOT being a use of p106 itself but rather of p101 (t0) AFTER the SLL emit, could raise sched2 pri(111) via a distinct chain-extension mechanism.",
-   "mechanism": "sched2 insn_priority walks INSN_DEPEND successors; if p106 has 1 direct user AND p101's chain gets an additional dep-edge added via an inserted SET, pri(111) could rise. Alternative: a WAR (write-after-read) dep on p101 might contribute an antidep edge without adding a new C-visible use of p106.",
-   "next_probe": "Read tools/gcc-2.7.2/sched.c::insn_priority + sched_analyze_insn to enumerate exactly which dep-edge types feed pri(); check whether any WAR/WAW dep-edge to insn 111 is C-source addable without perturbing p101's multi-set launch-suppression. Structural modality would apply if a candidate lever emerges."
+   "hypothesis": "F1 (unchanged from s43): p101's chain gains an additional dep-edge via a C-source-addable WAR/WAW antidep on p101 that lifts sched2 pri(insn 111) without perturbing the multi-set launch-suppression.",
+   "mechanism": "sched.c::insn_priority walks INSN_DEPEND successors; a WAR (write-after-read) dep-edge to insn 111 from a later C-source expression that reads p101 could raise pri(111) without adding a new C-visible use of p106.",
+   "next_probe": "Structural modality session: identify a C-source expression that generates a WAR dep on p101 landing between insn 111 and the debug_printf call, without perturbing the h5-basin qty priorities. Read tools/gcc-2.7.2/sched.c::sched_analyze_insn for the exact dep-edge insertion rules; enumerate C constructs that read t0 after the shift but before the call arg marshaling."
   },
   {
-   "hypothesis": "F2: SOTN-family carve-out application at the debug_printf inner block (NOT callback slot per s43 per-block LUID isolation KILL) with FAKE-annotated named-local-fake-exception construct exclusively targeting p107's sched1 LAUNCH suppression.",
-   "mechanism": "Per s10 frontier statement, the ledger's only surviving mechanism is 'kill 121 sched1 LAUNCH keep 111 sched1 LAUNCH'; the sanctioned FAKE-annotated named-local families are the remaining spelling class that the s11/s12 non-sanctioned two-SET variants did not exhaust. Layer-2 cheat-reviewer default-FAIL gate + owner-doc SOTN prerequisite check must precede any sandbox measurement.",
-   "next_probe": "Read .claude/rules/named-local-fake-exception.md + .claude/rules/pointer-alias-fake-exception.md in full; draft ONE candidate FAKE-annotated construct that flips p107 to flow-time reg_n_sets=2 via a SANCTIONED family; probe via cheat-reviewer BEFORE sandbox. Emit ruling-request if the layer-1 self-vet is uncertain."
+   "hypothesis": "F2 (unchanged from s43): SOTN-family carve-out application at debug_printf inner block with FAKE-annotated named-local-fake-exception exclusively targeting p107's sched1 LAUNCH suppression.",
+   "mechanism": "Per s10 frontier, the only surviving mechanism-hit for the h5 basin is 'kill 121 sched1 LAUNCH keep 111 sched1 LAUNCH'; the sanctioned FAKE-annotated named-local-fake-exception family has NEVER been probed on csmd4 (s11/s12 covered only the block-local structural axis of two-SET on arg5_addr).",
+   "next_probe": "Structural modality session per judge constraint. Read .claude/rules/named-local-fake-exception.md + .claude/rules/pointer-alias-fake-exception.md in full; draft ONE candidate FAKE-annotated named-local construct that flips p107 to flow-time reg_n_sets=2 via a SANCTIONED family (not two-SET which s11/s12 KILLED); probe via cheat-reviewer BEFORE sandbox. Emit ruling-request if layer-1 self-vet is uncertain."
+  },
+  {
+   "hypothesis": "External-input rederive: Kengo source dump (nm_cpu/cpu_side_move_dir_4 label at src/system.c:497 flags an 'x4 size collision' twin) provides the original C shape.",
+   "mechanism": "Kengo (Lightweight's later PS2 title) reuses the Marionation engine; the operator may have a source dump. If accessible, the Kengo cpu_side_move_dir_4 C would be the definitive original-shape reference (superseding all inferred rederives).",
+   "next_probe": "Requires operator action: locate the Kengo source dump. Not available to grind sessions autonomously. Flagged in s9 as a possible external-input angle; still-untapped."
   }
  ],
  "judge_constraints": [

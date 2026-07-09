@@ -782,3 +782,17 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s43] Frontier (b) sanctioned-carve-out-at-callback-slot suffers a distinct KILL from this finding: LUIDs are computed per-block by sched_analyze walking each block's RTL chain, and block=3 (debug_printf window) is upstream of the callback poll-loop blocks (5-9 per csmd4_only.sched2). LUID assignments in blocks 5+ have zero effect on block=3's LUID tiebreak at sched2 clock=13.
 
 - [s43] Frontier (a) PERM_GENERAL-at-callback-sites suffers the same per-block LUID isolation KILL: any AST mutation over the callback slots produces RTL insns in blocks 5-9, which do not participate in block=3 sched_analyze.
+
+- [s44] curl_cffi 0.15.0 is now installed in .venv (s9's ModuleNotFoundError blocker resolved 2026-07-09); the decomp.me corpus rederive modality is measurable going forward without operator install action.
+
+- [s44] decomp.me /stats reports 259874 total scratches / 181106 with asm as of 2026-07-09; the 602-scratch sample downloaded here is ~0.3% of the total but 100% of the BB2-toolchain-class first-page slice per compiler (download API paginates by creation_time desc; the sample skews toward recent submissions).
+
+- [s44] gcc2.7.2-psx first-800 download timed out at 120 iterations (per-scratch fetch is ~1s incl. compiler_config + asm blob); parallel download of --limit 400 across 3 compilers completed 602 scratches in ~5min.
+
+- [s44] Top-similarity psyq3.5 hit h1LHX at 0.079 is sonicdcer's Kalisto-engine `main` prologue (ResetGraph/InitialisePSX/MRSNDInit boilerplate) - lexical shingle overlap comes from generic call-marshaling asm sequences, not from any shared structural pattern with csmd4's debug_printf/poll window.
+
+- [s44] Shingle threshold calibration: the twin marionation_Exec asm (same window shape confirmed by 43 prior sessions of forensics) would be expected to score >= 0.30-0.50 vs csmd4; the 0.079 max here is a clear NO-ANALOG signal, not a threshold-tuning artifact.
+
+- [s44] src/system.c is unchanged (h5 candidate.c form remains masked-2 floor; not applied for this session's measurement since the probe is external-corpus lookup, not code editing).
+
+- [s44] The full rederive modality (m2c s8 KILLED, sibling-transplant s9 KILLED, decomp.me corpus s44 KILLED) is now measurably closed; no further rederive angle remains without external inputs (Kengo source dump, external asm-recognition corpus, or human expert asm inspection).
