@@ -320,3 +320,21 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s14] s14 src/system.c restored to HEAD (both-named arg4/arg5 array-index form, masked=7 baseline). candidate.c unchanged (h5 form remains masked-2 floor).
 
 - [s14] s14 modality note: the frontier's assumption that directed PERM on the pointer-arith node would bypass the blindspot is only PARTIALLY true — my alternatives are DIRECTED SEEDS but PERM_RANDOMIZE'd mutations still trigger the same AssertionError. Further, my alternatives inadvertently included g3-basin-shape spellings, so the merged base_score dropped to 40 and the campaign redid g3 exploration. Future directed-PERM sessions must AUDIT the alternative set to guarantee all forms preserve h5's mult-expander LAUNCH (multi-set t0 chain, fresh p106 dest at the SLL) before launch.
+
+- [s15] s15 baseline: applying memory/grind/cpu_side_move_dir_4/candidate.c to src/system.c inline block scored masked=2, target_insns=160, build_insns=160 via sandbox --disable all. src/system.c restored to HEAD both-named form at session end.
+
+- [s15] sched.c::rank_for_schedule at lines 2399-2456 (tools/gcc-2.7.2/sched.c) is the terminal ready-queue comparator: (1) priority diff → (2) class diff via LOG_LINKS(last_scheduled) + insn_cost gate → (3) LUID diff. All three tests exposed and named.
+
+- [s15] RANKDBG event corpus in s6 block=3 shows 51/51 events return val=0 (grep -c cls=3 = 51). The entire function's ready-queue outcome is LUID-decided.
+
+- [s15] Terminal decision at clock=13: RANKDBG last=123 y=121 cls=3 x=111 cls2=3 val=0 → LUID(121)=12 beats LUID(111)=8 → pair emits as 118,111,121 vs target 118,121,111.
+
+- [s15] The class-2 (anti/output-dep) attack is structurally CLOSED: 121→123 is producer→consumer (RAW), not WAR/WAW.
+
+- [s15] The class-1 (data-dep with cost>1) attack has ONE untested C-source realization: make insn 121's PLUS operand involve a mul-result / HI-LO producer so mips_adjust_cost raises the 121→123 edge latency above 1. Not in the rejected forms bank; not in the ledger; qualifies as a novel frontier.
+
+- [s15] The LUID-raise attack (moving t0*=4 past arg5 in C order) is s6-KILLED (drops to g3 basin masked=6).
+
+- [s15] The 121-loses-LAUNCH attack (arg5_addr multi-set at flow-time) is s11+s12 5-realization KILLED (combine.c addsi3_internal substitution folds every simple two-SET; non-trivial subtrahends regress alloc web).
+
+- [s15] s7 expmed.c:2244 case alg_shift NULL_RTX wall on insn 111 basin composition is not disturbed by any class-attack path — attacking 121's class does not touch 111's LAUNCH source.

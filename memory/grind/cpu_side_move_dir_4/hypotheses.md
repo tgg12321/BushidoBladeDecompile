@@ -317,3 +317,21 @@
 - probe: Static inspection of the find: pattern is a fn-scope carrier hoist (new_var2) + arg5-to-temp reuse — cheat-shaped per no-new-park-categories (fn-scope carriers are global pseudos per twin's s2/s3 finding, no semantic purpose beyond RA coercion; `temp = arg5;` is a dead re-alias). This is the same cheat family the WIP notes explicitly rejected (status/temp finds -> s0 spill, honest 6-8, rejected). Not sandbox-measured because the form fails cheat vetting before measurement.
 - result: Form is a cheat-family (fn-scope carrier + dead alias); NOT sandbox-measured. Even if it scored masked-0 in sandbox, it would fail layer-1 cheat-reviewer (no semantic purpose; matches expanded cheat catalog and prior WIP rejected banks).
 - verdict: KILLED
+
+## [s15] The h5-basin residual pair-swap at clock=13 is decided inside sched.c::rank_for_schedule (lines 2399-2456) when tmp_class(121)-tmp2_class(111)=0 forces fallthrough to INSN_LUID diff; the class-3 assignment for both 121 and 111 comes from insn_cost(insn,link,123)==1 evaluated at rank_for_schedule.c:2420/2428.
+- mechanism: rank_for_schedule test order: (1) INSN_PRIORITY diff — both LAUNCH sentinel 0x7f000001 (s7-confirmed via expmed.c:2244 case alg_shift NULL_RTX); (2) class diff from LOG_LINKS(last_scheduled=123) cost gate — both cls=3 because MIPS mips_adjust_cost returns 1 for ALU ashift/plus edges; (3) LUID(121)=12 vs LUID(111)=8 → 121 sorted later → picked first at clock=13 → linear order 118,111,121.
+- probe: Grep RANKDBG rows in tmp/grind/cpu_side_move_dir_4/s6/csmd4_only.log for the last=123 y=121 x=111 event and count val distribution across block=3 (all sched1+sched2 comparisons).
+- result: grep returned `RANKDBG last=123 y=121 cls=3 x=111 cls2=3 val=0`; grep -c cls=3 returned 51 = full block=3 RANKDBG event count; ALL comparisons val=0. Confirms the entire block-3 ready-queue outcome reduces to LUID for LAUNCH-tied pairs with no class-differentiated decision anywhere in the function.
+- verdict: CONFIRMED
+
+## [s15] The class-attack path via anti/output-dep (cls=2 for insn 121 with respect to last_scheduled=123) is structurally impossible for this pair: 121 writes p107, 123 reads p107 through MEM(p107); this is RAW (data-dep, cls=1 candidate), not anti/output (WAR/WAW).
+- mechanism: rank_for_schedule classifies via REG_NOTE_KIND(link) — data-dep (kind 0) → cls=1; anti/output → cls=2. The 121→123 edge is RAW because 123 loads from the address 121 computes. No C form can invert this direction while preserving the semantic meaning of the debug_printf arg5.
+- probe: Static walkthrough of s6 lreg RTL (insn 121 = set p107 plus p75 p79; insn 123 = set p??? mem p107) plus sched.c rank_for_schedule class assignment lines 2419-2433.
+- result: Anti/output-dep between the same producer→consumer pair is not realizable structurally. Cls=2 attack path CLOSED.
+- verdict: CONFIRMED
+
+## [s15] The class-attack path via data-dep with cost>1 (cls=1 for insn 121 wrt last_scheduled=123) requires MIPS mips_adjust_cost to raise the 121→123 latency above 1, which for a plain (plus)→(mem) edge does not happen; only mul/div/FP producers get extra latency.
+- mechanism: sched.c insn_cost:1363 calls ADJUST_COST macro (MIPS: mips_adjust_cost in mips.c). For ALU→memory-address edges the base cost is 1 and no adjustment fires. LINK_COST_FREE gets clamped to 1 at sched.c:1404-1405 → class-assignment gate evaluates true → cls=3 for 121.
+- probe: Read sched.c:1363-1417 (insn_cost) + grep mips_adjust_cost / ADJUST_COST macro locations in tools/gcc-2.7.2/config/mips/.
+- result: For the current h5 candidate, insn_cost(121,link,123)==1 unconditionally. To make it >1, the operands of insn 121's PLUS must involve a HI/LO (mul-result) or genuine multi-cycle producer, at which point mips_adjust_cost adds an inter-op latency stall.
+- verdict: CONFIRMED

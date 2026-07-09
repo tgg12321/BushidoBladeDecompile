@@ -1,8 +1,8 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 14,
- "current_modality": "permuter",
+ "session_count": 15,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 0,
@@ -93,23 +93,29 @@
    "floor": 2,
    "modality": "permuter",
    "headline": "s14 directed PERM_GENERAL on pointer-arith nodes: 23,427 iters / 895s / 6 new finds all >= baseline (3 novel @ score 40 g3-basin, 3 @ score 50); AssertionError blindspot on `(u8*)t0 + (s32)tbl_125c` s"
+  },
+  {
+   "session": 15,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "s15 forensics names sched.c::rank_for_schedule val=0 as terminal tiebreak; ALL 51 RANKDBG events in block=3 are val=0; only untested h5-preserving lever is raising insn_cost(121,link,123)>1 via HI/LO "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Directed PERM_GENERAL constrained to alternatives that PRESERVE h5's mult-expander chassis (multi-set t0, fresh p106 SLL dest) reveals sub-60 forms that random alone misses.",
-   "mechanism": "The s13/s14 h5-multexpander campaigns both saw base_score=60 (s13) or collapsed to 40 (s14, due to alternatives including g3-family). A directed-PERM alternative set restricted to h5-preserving spellings (e.g. only nested-cast variations that keep `t0 *= 4` -> mult-expand -> p106 fresh SLL dest, and only arg5-address decompositions that leave p107 single-SET so 121 keeps LAUNCH) would open the neighborhood the s7 forensics named. Requires vetting each alternative for h5-basin preservation before launch.",
-   "next_probe": "Audit each PERM_GENERAL alternative against the s7-CONFIRMED h5-vs-g3 basin classification: `t0 *= 4` (MULT expand path) OR any equivalent that routes through expand_mult (preserves p106 fresh dest); reject any alternative that reaches expand_binop with target=p101 (that's the g3-basin trap). Restrict to 2-3 alternatives that provably preserve h5. Relaunch tmp/perm_csmd4 with the constrained annotation."
+   "hypothesis": "Introducing a HI/LO (mul-result) producer into insn 121's PLUS operand raises insn_cost(121,link,123) above 1 via mips_adjust_cost, dropping 121 to cls=1 in rank_for_schedule and yielding val=-2 in favor of 111 at the clock=13 tiebreak \u2192 linear order 118,121,111 = target.",
+   "mechanism": "sched.c::rank_for_schedule cls=1 vs cls=3 \u2192 val=-2 \u2192 111 picked first at clock=13. Cost>1 requires mips_adjust_cost to fire, which happens for HI/LO consumer edges (mult\u2192consumer stall) and FP edges on MIPS. A C form like `arg5_addr = (v0 * K) + (s32)tbl_125c;` where K is a runtime-derived value or a mult-not-strength-reduced constant would put a mult upstream of 121.",
+   "next_probe": "Draft 2-3 C spellings that route v0<<2 through an explicit mult synthesizer without falling back to expand_mult case alg_shift on the arg5 side (mixing a runtime multiplier from an in-scope pseudo would work; the compiler cannot strength-reduce it). Verify each preserves h5 t0 chain (`t0*=4` still lowers via expmed.c case alg_shift, keeping insn 111 LAUNCH). Sandbox each; look for masked<2 or the class-1 signature in a new instrumented dump."
   },
   {
-   "hypothesis": "PERM_LINESWAP applied to the inline block's statement ordering discovers a novel schedule-space arrangement the s3 hand-swept 13 structural axes and s4-s5 wrap/carrier probes missed.",
-   "mechanism": "PERM_LINESWAP enumerates all orderings of a specified line block; s3's 13 variants were hand-picked (decl order, split-variables, expression compression), NOT a complete enumeration of the ~8! = 40320 orderings of the 8 statements in the inline block. LINESWAP is dataflow-safe (permutes independent lines) and would be a systematic complement to the hand sweep.",
-   "next_probe": "Add `PERM_LINESWAP(...)` around the 8-line block `t0 = idx_1494[0]; v0 = idx_1494[1]; pp = ...; t0 *= 4; t0 = ...; v0 <<= 2; arg5 = ...; debug_printf(...);` (or just the 6 non-CALL lines with the call held below). Launch a fresh h5-basin campaign with LINESWAP as the only PERM directive; expected mutation space ~O(n!) minus dataflow-invalid orderings. Complements the directed-PERM approach with systematic schedule-space coverage."
+   "hypothesis": "PERM_LINESWAP applied to the inline block's 6-8 statement ordering discovers a novel schedule-space arrangement that the s3 hand-swept 13 structural axes and s4-s5 wrap/carrier probes missed (frontier carried forward from s14 ledger; still untested).",
+   "mechanism": "PERM_LINESWAP enumerates all orderings of the specified line block, complementing the directed-PERM approach with systematic O(n!) coverage minus dataflow-invalid orderings.",
+   "next_probe": "Add PERM_LINESWAP around the inline block's 6 non-CALL statements (t0=idx[0]; v0=idx[1]; pp=\u2026; t0*=4; t0=\u2026; v0<<=2; arg5=\u2026) with the CALL below. Launch a fresh h5-basin campaign with LINESWAP as the only PERM directive; each ordering re-verified against engine sandbox (workspace-permuter UNFAITHFUL caveat, per WIP notes)."
   },
   {
-   "hypothesis": "The decomp.me corpus scrape (still gated on curl_cffi install) surfaces a similar-asm scratch whose C shape lies OUTSIDE the h5/g3 basins entirely.",
-   "mechanism": "Coarse asm-overlap pre-filter over the downloaded decomp.me corpus (BB2 toolchain class: gcc2.7.2-psx / gcc2.7.2-cdk / psyq3.5); manual inspection of top hits could reveal a novel-in-corpus C form the s1-s14 structural + permuter neighborhoods have not reached.",
-   "next_probe": "Operator installs curl_cffi (`source .venv/bin/activate && pip install curl_cffi`); next rederive-modality session runs `python3 tools/decomp_me_scrape.py search --asm-file asm/funcs/cpu_side_move_dir_4.s` and inspects top asm-overlap hits."
+   "hypothesis": "The decomp.me corpus scrape (still gated on curl_cffi install) surfaces a similar-asm scratch whose C shape lies OUTSIDE the h5/g3 basins entirely (frontier carried forward from s14; still gated).",
+   "mechanism": "Coarse asm-overlap pre-filter over the downloaded decomp.me corpus (BB2 toolchain class: gcc2.7.2-psx / gcc2.7.2-cdk / psyq3.5); manual inspection of top hits could reveal a novel-in-corpus C form outside the s1-s15 measured neighborhoods.",
+   "next_probe": "Operator installs curl_cffi (source .venv/bin/activate && pip install curl_cffi); next rederive-modality session runs python3 tools/decomp_me_scrape.py search --asm-file asm/funcs/cpu_side_move_dir_4.s and inspects top asm-overlap hits."
   }
  ],
  "judge_constraints": [],
