@@ -1,8 +1,8 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 52,
- "current_modality": "forensics",
+ "session_count": 53,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 0,
@@ -321,13 +321,19 @@
    "floor": 2,
    "modality": "forensics",
    "headline": "s52 forensics: target-asm audit KILLS the s51 pointer-carrier frontier \u2014 no post-debug_printf-arm READ of &D_800A11DC exists (single logical use site), and no arm-side (tbl_125c + (t0<<2)) shape exist"
+  },
+  {
+   "session": 53,
+   "floor": 2,
+   "modality": "rederive",
+   "headline": "s53 rederive: m2c --reg-vars-derived arg5-addr in-place walk (v0 += tbl; arg5 = *v0) + statement-order-swap (arg5 chain fully before t0) both KILLED at masked=15 (+13); pair-swap coupling through qty "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The s6 SCHEDDBG-confirmed birthing_insn_p LAUNCH signature on insns 111 and 121 admits no C-source lever below the RTL expand layer that (a) keeps the h5 mult-expander chassis (111 LAUNCH via expmed.c:2244 case alg_shift NULL_RTX target), (b) keeps 118 as the arg5 lw producer that 121 consumes via RAW, and (c) shrinks the LUID(121)-LUID(111)=4 gap or breaks 121's birthing_insn_p precondition without falling out of h5 basin. This is a synthesis conclusion for s53+: the residual pair-swap is an inherent-to-expand hard local minimum for pure-C.",
-   "mechanism": "Every non-INERT non-basin-flip lever measured across 52 sessions (structural: s3/s5/s6/s8/s9/s39/s47/s48; permuter: s5/s13/s22/s23/s31/s32/s40/s49/s50 ~85k iters at 0 novel <40 finds on h5 chassis; forensics: s6/s7/s15/s42/s43/s51/s52; rederive: s8/s9/s17/s18/s26/s27/s35/s36/s44/s45) reduces to one of three classes: (i) h5-preserving INERT (mult-expander LAUNCH intact, no measurable RTL-shape delta -> expand normalizes back to identical chain), (ii) h5->g3 basin flip (multi-set p101 chain broken or p106 LAUNCH lost -> masked=6+ with unresolvable v1/a0 register exchange), (iii) FAKE-local family (DCE / cse-fold / callee-save cost -> INERT or +8/+3 regress). Class exhaustion is measurement-closed.",
-   "next_probe": "s53 modality should be SYNTHESIS (35th-percentile modality in the ladder given the exhaustion state) to formally consolidate the 52-session evidence into a ruling-request draft: this is either (A) a documentation-level operator escalation asking whether the residual pair-swap qualifies for a NEW carve-out class (novel post-2026-07-06 category \u2014 barred by no-new-park-categories user directive 2026-06-24), or (B) a re-audit of the CANONICAL-ASM gate (canonical cpu_side_move_dir_4) with the s51 chain-position-triangle evidence as the mechanism-explanation the gate would need \u2014 noting that the judge constraint pre-emptively rules this out ('do not resurface canonical-asm authorization ... under any framing'). Recommend s53 emit ruling-request with the exhaustion evidence bundled, not another structural/permuter/forensics probe."
+   "hypothesis": "s53 rederive extends the class-exhaustion conclusion: even the m2c-regvars-derived spelling target (v0 as multi-set addr carrier + arg5-subseq-before-t0-subseq statement order) fails to decouple the pair-swap from h5's s-reg web. Rederive across every un-run sub-angle (m2c default, m2c void, m2c no-andor, m2c reg-vars, m2c gotos-only) now closed at compiler-source and measurement.",
+   "mechanism": "sched.c::birthing_insn_p LAUNCH gate on p107/p106 is coupled to local-alloc.c qty priorities for p101 (v0) via the s0/s2/s4 s-reg web (idx_1494/idx_1495/idx_1496). Any C spelling that adds a THIRD in-place set to v0 to break p107's LAUNCH \u2014 including the m2c-regvars-suggested `v0 += tbl` walk \u2014 spreads conflict lists onto the s-reg web and regresses to a masked=15 intermediate basin. There is no C spelling that simultaneously (a) makes p107 multi-set at flow-time AND (b) leaves the s0/s2/s4 web intact.",
+   "next_probe": "s54 should shift MODALITY away from rederive (now exhausted) to one of the un-run axes named in the judge constraint: (A) ALLOCDBG-instrumented s-reg coupling hunt targeting idx_1495 (p78/s4) \u2014 probe whether ANY C respelling of `idx_1495 = ...` narrows its conflict list without regressing the callback deref site at line 456, per register-alloc-pure-c Lever A; OR (B) forensics probe on the sched2 pass rank_for_schedule val=0 tiebreak to see if the s51 LUID-gap decomposition offers a new lever below the LAUNCH signature layer."
   }
  ],
  "judge_constraints": [

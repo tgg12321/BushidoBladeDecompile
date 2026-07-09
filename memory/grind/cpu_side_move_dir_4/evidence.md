@@ -906,3 +906,15 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s52] s47 C2 (fn_scope_zero_constant_holder_C2.c) empirical bound: any FAKE-annotated fn-scope carrier held live across debug_printf costs masked=10 (+8) and build_insns=163 (+3); the general form is monotone-worse than h5 baseline, independent of carrier type (scalar/pointer).
 
 - [s52] Sibling closures (extends the axis-wide KILL): s47 C1/C2/C3 (three scalar-archetype fn-scope FAKE carriers), s48 C4/C5/C6 (three fast-path/do_timeout-entry realizations), s49-F4 (dead-vars-local-array prerequisite absent — zero unmatched frame stores). Combined: the SOTN-family named-local-fake-exception carve-out is CLOSED at every measured C-realization AND at every downstream-reader axis available in target bytes.
+
+- [s53] src/system.c at HEAD reads masked=7 sandbox (rules_dropped=5, cheat_asm_stripped=22); applying memory/grind/cpu_side_move_dir_4/candidate.c reproduces the documented masked=2 h5 floor (rules_dropped=5, cheat_asm_stripped=22). Ledger's WIP CHECKPOINT floor is reproducible on THIS session.
+
+- [s53] m2c --reg-vars v0,v1,a0 output produces `var_v0 *= 4; var_v0 += &D_800A125C; var_v1 = *var_v0` for the arg5 chain — a THREE-in-place-set walk on v0 as the reg-carrier — plus `var_a0 *= 4; var_a0 += &D_800A125C; temp_a3 = *var_a0` for t0. m2c-regvars is the FIRST rederive angle to surface a persuasive spelling target for the s10 M1 frontier's `p107 multi-set` mechanism using v0 reuse rather than a fresh named addr pseudo.
+
+- [s53] The m2c-regvars-derived in-place walk on v0 reaches masked=15 (+13) at sandbox — the same broken-web basin s39 measured for `v0-triple-set-carrier`, EMPIRICALLY confirming that reusing v0 for arg5's ADDR (not just the value) does NOT decouple the pair-swap: it disrupts the s0/s2/s4 s-reg web that h5's masked-2 chassis depends on.
+
+- [s53] Statement-order transplant of the full m2c-regvars line ordering (arg5 subseq fully before t0 subseq, preserving head-lbu order) also reaches masked=15 — the disruption is dominant regardless of C-source ordering.
+
+- [s53] Combined evidence: the s10 M1 frontier's mechanism (`p107 multi-set at flow-time via v0 reuse`) is NOT reachable in pure C — combine.c substitution folds every legitimate multi-set spelling of the ADDR arithmetic (per s11/s12 measurements on fresh-var forms), AND rewiring v0 itself to carry the multi-set introduces s-reg-web disruption that is monotonically worse than the pair-swap it's trying to fix. The frontier is measurement-closed across THIS rederive axis.
+
+- [s53] Reconfirms the s6/s7 mechanism-locked conclusion: the residual pair-swap requires flipping insn 121's LAUNCH signature WITHOUT introducing multi-set behaviour on p101 (the v0 pseudo). No pure-C spelling reaches that combination; every attempt either folds via combine (INERT) or spreads to the s-reg web (regression).
