@@ -1,7 +1,7 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 11,
+ "session_count": 12,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -75,23 +75,29 @@
    "floor": 2,
    "modality": "structural",
    "headline": "s11 structural: frontier M1 arg5_addr multi-set on p107 CLOSED across three C-realizations (algebraic-cancel +9, opaque-carrier +27, simple two-SET INERT via combine-fold) \u2014 combine.c substitution fol"
+  },
+  {
+   "session": 12,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "s12 structural: two live frontier probes (pointer-walker + dead-sink liveness split) both KILLED as INERT \u2014 combine.c addsi3_internal substitution defeats every C two-SET arg5_addr decomposition acros"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "decomp.me corpus scrape via tools/decomp_me_scrape.py against asm/funcs/cpu_side_move_dir_4.s may surface a structurally distinct C form from the BB2 toolchain class (gcc2.7.2-psx / gcc2.7.2-cdk / psyq3.5).",
-   "mechanism": "Coarse asm-overlap pre-filter; manual inspection of top hits could reveal an original-source shape our search space missed. Blocked s9/s11 since curl_cffi module unavailable in .venv.",
-   "next_probe": "Operator installs curl_cffi in .venv (`source .venv/bin/activate && pip install curl_cffi`). Then rederive session runs `python3 tools/decomp_me_scrape.py search --asm-file asm/funcs/cpu_side_move_dir_4.s` and manually inspects top asm-overlap hits."
+   "hypothesis": "The masked-2 residual mechanism has been closed at the block-local structural axis across 5 arg5_addr two-SET C-realizations plus every other block-local structural axis measured s3/s4/s5. The only remaining STRUCTURAL angle not yet touched is UPSTREAM of the debug_printf block \u2014 fn-body-scope moves of the tbl_125c/idx_1494/idx_1495/D_800F19C0 initializers at src/system.c:404-408, which sit in the same TU-level RA web (WIP notes.md: 'file-level s-reg ref-balance coupling'). If any of these fn-body-scope initializer positions is load-bearing for p107's LAUNCH signature, moving them within the loop body might shift the qty priorities without regressing the s-reg web.",
+   "mechanism": "The prologue s-reg saves at src/system.c:388-408 initialize tbl_125c/idx_1494/idx_1495/D_800F19BC/D_800F19C0 outside the loop. Their C statement positions influence LUID at expand, which via qty_compare feeds birth-order tiebreaks at local-alloc. Moving one of these into the loop body (or into the do_timeout block) creates a fresh RA seat for the s-reg that could re-time the arg5-chain's LAUNCH via different birth-order tiebreaks. Risk high: WIP + s8/s9 measurements confirm the s-reg web is currently load-bearing (honest idx_1495 +13, marionation full-basin transplant +18, arg4-named +11).",
+   "next_probe": "Move `D_800F19C0 = &D_80016240;` from src/system.c:408 into the do_timeout block just before the debug_printf inline block (making its store an intra-block SET rather than a prologue-emitted one). Measure sandbox --disable all. Diagnostic: does the s-reg web absorb the shift, or does the loop repeat the store per-iteration causing byte regression? If former, potential ref-lift for pp; if latter, KILLED cleanly."
   },
   {
-   "hypothesis": "The h5 masked-2 residual mechanism (insn 121 LAUNCH via single-SET p107) is inherent to any C form that expresses arg5_addr as a compound expression; the only C-source lever that could suppress insn 121's LAUNCH would be to make p107 die BEFORE the sched2 window OR to make the SET dest itself a multi-set at combine-time (not at C-source-decomposition-time).",
-   "mechanism": "combine.c's substitution runs BEFORE flow.c recomputes reg_n_sets; only p101 (t0) achieves genuine multi-set via direct in-place C respellings (t0 <<= 2 or t0 += ...). No analogous C form exists for arg5_addr that resembles a genuine in-place update on a single pseudo (because arg5 is a value, not a mutable pointer being walked). Consider a pointer-shaped arg5_addr walker construct.",
-   "next_probe": "Draft a pointer-walker form for arg5_addr - e.g. `s32 *ap = (s32 *)(s32)tbl_125c; ap = (s32 *)((s32)ap + v0); arg5 = *ap;` - test whether the pointer-typed local escapes cse's plus-fold. If also folded, frontier #2 dies; if not, potential mechanism hit for p_ap multi-set."
+   "hypothesis": "The g3 basin's residual v1/a0 register exchange (masked 6, order-perfect per WIP notes.md:26-29) is untouched by the h5-basin structural closure. A modality-switch to g3 base and attacking arg5-qty pri>=t0 via a block-scope multi-set VALUE carrier (not address) could flip the exchange.",
+   "mechanism": "In g3 basin, t0 chain is in-place ($a0), arg5 chain via v0 -> lw v1. Target requires arg5 to allocate v1 BEFORE t0 (which then falls to $a0). WIP notes.md:34-41 specifies arg5-qty needs pri>=5000 via 3refs/span6 tie + birth-order win. Unmeasured: multi-set arg5 VALUE-staging keeping the lw-dest split (see s5 F1a/F1b which measured VALUE carriers under h5 base \u2014 never tested on g3 base).",
+   "next_probe": "Adopt the g3-basin base (`v0 <<= 2; arg5 = *(s32*)(v0 + (s32)tbl); t0 <<= 2; ... *(s32*)(t0 + (s32)tbl_125c) in-call`) then apply s5 F1a-style block-scope multi-set VALUE carrier for arg5: `s32 v_arg5; v_arg5 = *idx_1495; v_arg5 = *(s32*)(v0 + tbl); ... call(..., v_arg5)`. Measure sandbox --disable all. Predicted: g3 base is masked=6; probe either lifts arg5-qty pri >= t0 (flips exchange, potential closure toward 0) or is INERT (multi-set carrier equally masked-inert on g3 base). Cross-basin modality \u2014 synthesis-adjacent structural probe."
   },
   {
-   "hypothesis": "arg5 memory-read is being LAUNCHED as insn 121 (a PLUS SET birthing p107); an alternate mechanism to suppress the LAUNCH is to route the memory read through a pseudo that is NOT the PLUS SET dest - e.g., let expand emit a MEM using an address computed as a subexpression without a distinct pseudo carrier for the sum.",
-   "mechanism": "expand.c emits (set dst (mem (plus base offset))) directly for `*(T*)(a+b)` when no intermediate is named - the (plus base offset) is a subexpression of the MEM's address, NOT a separate SET. In that path, no p107 for the sum exists; the sched.c LAUNCH candidate is the MEM SET itself. This is the h5 baseline shape - so mechanism #3 is the untested INVERSE: force the sum to be a SET that DIES BEFORE the memory read via a manual liveness split.",
-   "next_probe": "Draft `s32 a5 = v0 + (s32)tbl_125c; { s32 sink = a5; (void)sink; } arg5 = *(s32*)a5;` - test whether the (void)sink read materializes as a live use that dies before the MEM, altering the LAUNCH candidate list. Risk: dead-code eliminated by GCC before flow."
+   "hypothesis": "The decomp.me corpus scrape via tools/decomp_me_scrape.py against asm/funcs/cpu_side_move_dir_4.s may surface a structurally distinct C form from the BB2 toolchain class not present in the current search space.",
+   "mechanism": "Coarse asm-overlap pre-filter; manual inspection of top hits could reveal an original-source shape our search space missed. Blocked s9/s11/s12: `python3 tools/decomp_me_scrape.py --help` fails with ModuleNotFoundError: No module named 'curl_cffi'.",
+   "next_probe": "Operator installs curl_cffi in .venv (`source .venv/bin/activate && pip install curl_cffi`). Then next rederive session runs `python3 tools/decomp_me_scrape.py search --asm-file asm/funcs/cpu_side_move_dir_4.s` and manually inspects top asm-overlap hits for a structurally novel closing shape."
   }
  ],
  "judge_constraints": [],

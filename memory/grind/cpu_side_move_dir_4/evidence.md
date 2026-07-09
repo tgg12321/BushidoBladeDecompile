@@ -280,3 +280,15 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s11] s11 frontier #1 CLOSED across three C-realizations: no C two-SET decomposition of arg5_addr reaches flow-time with reg_n_sets(p107)=2. The mechanism-hit is not realizable via block-local structural means.
 
 - [s11] s11 candidate.c: unchanged (h5 form remains masked-2 floor). src/system.c restored to h5 candidate on session end; post-restore sandbox re-measures masked=2.
+
+- [s12] s12 baseline: HEAD src/system.c (both-named arg4/arg5 array-index form) scores masked=7 via sandbox cpu_side_move_dir_4 --disable all; applying h5 candidate.c to src/system.c restores masked=2 (target_insns=160, build_insns=160).
+
+- [s12] s12 P1 (pointer-walker `s32 *ap`): masked=2 INERT vs h5 baseline. Combine.c substitutes through pointer-typed intermediates via addsi3_internal exactly as through s32 intermediates — RTL is type-agnostic for the (plus symref reg) shape.
+
+- [s12] s12 P2 (dead-sink `s32 sink = a5; (void)sink;`): masked=2 INERT vs h5 baseline. GCC tree-level DCE eliminates sink; residual matches s11 M1-tertiary and combine folds identically.
+
+- [s12] s12 mechanism finding: five independent C-realizations of the two-SET arg5_addr frontier now measured KILLED across s11+s12 (algebraic-cancel +9, opaque-carrier +27, simple two-SET INERT, pointer-walker INERT, dead-sink INERT). The frontier hypothesis 'make p107 flow-time reg_n_sets=2 via block-local structural decomposition' is closed by construction: combine.c's addsi3_internal substitution runs BEFORE flow.c recomputes reg_n_sets, and every structural decomposition either (a) folds cleanly (INERT — combine substitutes) or (b) introduces a non-trivial subterm that disturbs the alloc web (regression). No middle-ground realization exists in the block-local structural axis.
+
+- [s12] s12 src/system.c restored to h5 candidate at session end; post-restore sandbox re-measures masked=2. candidate.c unchanged (h5 form remains masked-2 floor).
+
+- [s12] s12 modality-exhaustion: structural axis fully closed on csmd4's h5 base — s3 (13 block-local structural variants), s4 (do-while(0) 4 scopes), s5 (block-scope carriers, named dispatch, whole+nested+call-only wraps, permuter fresh-seed 9040 iters), s9 (m2c + 4 marionation transplants), s11 (3 arg5_addr two-SETs), s12 (2 more arg5_addr two-SETs). All frontier mechanism-hits at the block-local structural level are now measured KILLED. Any future structural session must target a genuinely novel axis (cross-block-scope declaration hoisting into an outer sequence-point, fn-body-level scope changes, or upstream declaration-order edits at src/system.c:388-408) — not more block-local decompositions.
