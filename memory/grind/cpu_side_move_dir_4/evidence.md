@@ -1454,3 +1454,19 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s89] s89 src/system.c: restored to HEAD after baseline measurements via `git checkout src/system.c`. candidate.c unchanged (h5 form remains the masked=2 floor).
 
 - [s89] s89 modality compliance: mandated modality was rederive; the corpus C-source substring 5-arg-printf lens is a novel un-run rederive sub-angle within the corpus lens family. Judge constraint respected — no canonical-asm framing surfaced; no forbidden semantic-lie construct proposed; no cheat-shaped honest respelling of src/system.c:406 attempted.
+
+- [s90] s90 baseline: h5 candidate applied to src/system.c scored masked=2 (target_insns=160, build_insns=160) via sandbox cpu_side_move_dir_4 --disable all.
+
+- [s90] s90 HEAD (both-named form) baseline: masked=7, target_insns=160, build_insns=160.
+
+- [s90] s90 probe P1 (`idx_1495 = &D_800A1495;` -- honest direct symref): masked=16, build_insns=161 (+1 insn). D_800A1495 exists as an extern-declared symbol in src/system.c:387 and undefined_syms_auto.txt.
+
+- [s90] s90 probe P2 (`idx_1495 = (u8*)tbl_125c + 0x239;` -- tbl-routed numeric): masked=15, build_insns=160 (byte-neutral). Identical to s8-probe1 (honest idx_1494+1) signature.
+
+- [s90] s90 finding: only the exact semantic-lie form `(u8*)((u8*)tbl_125c + ((s32)&D_800A1494 - (s32)D_800A125C) + 1)` preserves masked=2. The three symbolically-distinct alternatives (idx_1494+1, &D_800A1495, tbl+0x239) all regress by +13 to +14 with build_insns delta of 0 or +1.
+
+- [s90] s90 mechanism: the load-bearing property of the cross-symbol expression is NOT its base symbol (tbl_125c is preserved in P2) NOR its byte-neutrality (P2 is byte-neutral) -- it is the triple-symbol expression `(s32)&D_800A1494 - (s32)D_800A125C` that cse.c evidently uses to compose the file-level RA fabric preserving block=3 window ord=[12..15].
+
+- [s90] s90 modality-closure: frontier item #3 (symbolically-distinct idx_1495 initializer) is fully closed on csmd4 -- the axis has no honest realization. Retirement of the semantic-lie form remains blocked by the same +13 s-reg web disruption documented in s8 policy note.
+
+- [s90] s90 src/system.c: restored to HEAD (both-named arg4/arg5 array-index form) at session end; candidate.c unchanged (h5 form remains masked-2 floor).

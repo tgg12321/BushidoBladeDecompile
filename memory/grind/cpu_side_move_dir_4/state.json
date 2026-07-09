@@ -1,7 +1,7 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 89,
+ "session_count": 90,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -543,23 +543,24 @@
    "floor": 2,
    "modality": "rederive",
    "headline": "s89 rederive KILLED: decomp.me C-source substring scan for 5-arg printf-family calls yields 2 structurally-orthogonal hits (trampoline + MDEC dump); no transplant candidate for csmd4's block=3 window."
+  },
+  {
+   "session": 90,
+   "floor": 2,
+   "modality": "rederive",
+   "headline": "s90 rederive KILLED frontier item #3: no symbolically-distinct idx_1495 initializer preserves masked=2 -- the h5 basin depends on the &D_800A1494 SYMBOL reference in idx_1495's initializer, not merely"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "p78-lift via a byte-neutral idx_1494 use added on the SUCCESS-only fall-through arm (before `goto success;` becomes `v0=0`) that stays on p78's carrier without unifying via cse with idx_1495 as a shared base.",
-   "mechanism": "s88 measured p78 livelen 72\u2192144 as a REGRESSION-side migration (uses off p79 via cse-unify on idx_1494 shared base). The un-run subvariant: a use placed on the SUCCESS arm alone (a control-flow-conditional add) may lift p78's ref count without triggering the shared-base cse rewrite that caused the -2 refs on p79 in s88 probe1. Requires a construct that flow.c counts as a p78 ref but cse.c does NOT recognize as a shared-base merge candidate (e.g. a symbolically-distinct dereference form).",
+   "hypothesis": "p78-lift via a byte-neutral idx_1494 use added on the SUCCESS-only fall-through arm (before `goto success;`) that stays on p78's carrier without unifying via cse with idx_1495 as a shared base.",
+   "mechanism": "s88 measured p78 livelen 72->144 as a REGRESSION-side migration (uses off p79 via cse-unify on idx_1494 shared base). The un-run subvariant: use placed on SUCCESS arm alone (control-flow-conditional add) may lift p78 refs without shared-base cse rewrite. Requires construct flow.c counts as p78 ref but cse.c does NOT recognize as shared-base merge candidate.",
    "next_probe": "Structural session: candidate with a single byte-neutral p78-carrier use on the success arm only (e.g. cast-through-alias `((volatile u8*)idx_1494)[0]` on the success path immediately before `v0=0`). Measure greg ord=[12..15] and p78 nrefs/livelen deltas; compare against s88 probe1 baseline."
   },
   {
-   "hypothesis": "p79-preserving loop-top compute referencing an EXISTING live pseudo (e.g. cnt or a poll-region carrier) that fires local-alloc equiv-reg absorption at a symbol distinct from p79 while still absorbing the -1 build_insn signature of the s85 probe2 loop-top form.",
-   "mechanism": "s88 confirmed the -2 refs came from spelling (cse-unify on idx_1494), not from a fresh loop-top set. A loop-top compute that reads from an EXISTING live pseudo OTHER than the idx_1494/idx_1495 family (e.g. `(void)cnt;` or `(void)D_800F19BC;`) could still trigger absorb elsewhere without disturbing p79's 5-ref map. Absorbs from a distinct pseudo won't cse-migrate poll-region uses.",
+   "hypothesis": "p79-preserving loop-top compute referencing an EXISTING live pseudo (e.g. cnt or D_800F19BC) that fires local-alloc equiv-reg absorption at a symbol distinct from p79 while still absorbing the -1 build_insn signature of the s85 probe2 loop-top form.",
+   "mechanism": "s88 confirmed the -2 refs came from spelling (cse-unify on idx_1494), not from a fresh loop-top set. A loop-top compute reading an EXISTING live pseudo OTHER than idx family could trigger absorb elsewhere without disturbing p79's 5-ref map. Absorbs from a distinct pseudo won't cse-migrate poll-region uses.",
    "next_probe": "Structural session: candidate where loop-top adds a compute referencing an existing non-idx live pseudo (cnt, D_800F19BC, D_800F19C0). Measure build_insns and greg ord. Success = build<=159 AND greg ord=[79,78,72,73] preserved."
-  },
-  {
-   "hypothesis": "The cross-symbol tbl-routed idx_1495 spelling at src/system.c:406 is IN-FAMILY forbidden but the ord=[12..15] preservation it provides may be reachable via an ALTERNATIVE symbolic-distinct construct that is not semantic-lie.",
-   "mechanism": "The load-bearing property: cse.c does NOT unify idx_1495 with idx_1494 as sharing a base. Achievable through any initializer that names a symbol OTHER than idx_1494 \u2014 e.g. `idx_1495 = &D_800A1495` if that symbol exists in symbol_addrs.txt or is add-eligible; or a distinct tbl-routed form that is byte-neutral without the arithmetic sleight (e.g. `idx_1495 = (u8*)((intptr_t)tbl_125c + K)` where K is a build-time-derivable constant addressing D_800A1495 through a base other than D_800A1494).",
-   "next_probe": "Rederive session: enumerate symbolically-distinct idx_1495 initializers (existing s35 idx_1495 respellings should be re-audited for base-symbol distinctness under the cse.c lens, not just the emit-byte lens). Success = masked stays 2 AND idx_1495's initializer does NOT reference idx_1494 as a shared symbolic base AND is not semantic-lie under do-while-zero-exception.md FORBIDDEN #5."
   }
  ],
  "judge_constraints": [

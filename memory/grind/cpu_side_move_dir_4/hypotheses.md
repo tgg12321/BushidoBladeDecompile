@@ -1337,3 +1337,21 @@
 - probe: Regex scan of all 3754 tmp/decomp_me_corpus/*.json source_code fields for `debug_printf\s*\(.*,.*,.*,.*,.*\)` OR `\bprintf\w*\s*\(.*,.*,.*,.*,.*\)`; hand-review each hit for structural analogy to csmd4's tbl_125c/idx_1494 marshaling + VSync-poll wrapper.
 - result: 2 hits total. (a) gcc2.7.2-cdk__PfboX printf: 4-line sprintf+mts_set_debuglog trampoline, no VSync poll, no 1D-array index-marshal chain. (b) psyq3.5__QkCAP MDEC_print_error: multi-call printf sequence over MDEC status registers with bitfield shifts, no VSync poll, no fresh 1D-array chain, no arg4/arg5 rivalry. Neither hit is structurally analogous to csmd4's block=3 window; both are transplant-inert.
 - verdict: KILLED
+
+## [s90] idx_1495 = &D_800A1495 (honest direct symref, symbolically distinct from idx_1494) reaches h5 basin masked=2.
+- mechanism: Symbolically-distinct symbol reference should defeat cse.c unify-on-shared-base while remaining honest (D_800A1495 exists in undefined_syms_auto.txt). Frontier item #3 predicted this preserves h5's ord=[12..15] property.
+- probe: Applied h5 candidate to src/system.c, replaced only idx_1495 init line with `idx_1495 = &D_800A1495;`. Ran sandbox --disable all.
+- result: masked=16, build_insns=161 (+1 insn, +14 vs h5 baseline). Regression.
+- verdict: KILLED
+
+## [s90] idx_1495 = (u8*)tbl_125c + 0x239 (tbl-routed with numeric constant, no &D_800A1494 symbol reference) reaches h5 basin masked=2.
+- mechanism: Same base symbol (tbl_125c) as current cross-symbol form, byte-neutral offset, but no &D_800A1494 reference. Tests whether the tbl_125c base OR the &D_800A1494 symbol reference is the load-bearing property.
+- probe: Applied h5 candidate, replaced idx_1495 init line with `idx_1495 = (u8 *)tbl_125c + 0x239;`. Ran sandbox --disable all.
+- result: masked=15, build_insns=160 (byte-neutral, +13 vs h5). Matches s8-probe1 (honest idx_1494+1 = 15) exactly.
+- verdict: KILLED
+
+## [s90] The h5 basin's masked=2 depends specifically on the semantic-lie cross-symbol expression `(u8*)tbl_125c + ((s32)&D_800A1494 - (s32)D_800A125C) + 1` and not on any structural property of the initializer that a symbolically-distinct honest form could reproduce.
+- mechanism: The three tested honest-or-distinct forms (idx_1494+1 [s8], &D_800A1495 [s90 P1], (u8*)tbl_125c + 0x239 [s90 P2]) all regress to masked=13-15. The ONLY masked=2-preserving initializer is the specific semantic-lie fold that references BOTH tbl_125c AND &D_800A1494 AND D_800A125C simultaneously. cse.c evidently uses that triple-symbol expression to compose a file-level RA fabric that no substitute reproduces.
+- probe: Comparing s90 P1 + s90 P2 measurements against s8 probe1 measurements and against s90 h5 baseline (masked=2).
+- result: All three symbolically-distinct honest forms regress by +13 to +14. h5 depends specifically on the semantic-lie fold.
+- verdict: CONFIRMED
