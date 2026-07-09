@@ -530,3 +530,21 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s26] s26 candidate.c unchanged (h5 form remains masked-2 floor); src/system.c reverted to HEAD (both-named form, masked=7) at session end; committed WIP entry unaffected.
 
 - [s26] s26 rederive-modality full closure status: m2c (s8) KILLED, marionation_Exec sibling transplant (s9 P1-P4) KILLED, decomp.me shingle scan (s17) KILLED, Kengo local dump (s18) KILLED, decomp.me residual-pattern scan (s26) KILLED, BB2 in-repo twin scan (s26) KILLED with novel-twin discovery yielding no viable transplant. Every enumerable rederive angle is now measured KILLED — future sessions must not repeat rederive.
+
+- [s27] s27 baseline: HEAD src/system.c (both-named arg4/arg5 form at line 425-430) scores masked=7, target_insns=160, build_insns=160 via `& tools/wteng.ps1 main sandbox cpu_side_move_dir_4 --disable all` — matches ledger's HEAD floor 7.
+
+- [s27] s27 h5 baseline reconfirmed: applying memory/grind/cpu_side_move_dir_4/candidate.c to src/system.c restores masked=2, target_insns=160, build_insns=160.
+
+- [s27] s27 REDERIVE probe P1 (fn-scope tbl_11dc = D_800A11DC pointer stage, mirroring saEft01Init pattern): masked=14, target_insns=160, build_insns=163 (+3). REGRESSION +12 vs h5. Mechanism confirmed via build_insns diff — GCC materializes D_800A11DC via lui/addiu prologue pair (2 extra insns) plus a store to the fn-scope tbl_11dc local (1 more insn), disturbing s-reg web.
+
+- [s27] s27 REDERIVE probe P2 (block-scope tbl_11dc pointer stage inside inline { } block): masked=2 INERT, target_insns=160, build_insns=160. Bytes byte-identical to h5 baseline — cse.c copy-propagation folds the single-use pointer alias; final RTL matches inline `D_800A11DC[D_800A11D5]` verbatim.
+
+- [s27] s27 novel scope-dependence finding: block-scope named pointer for dispatch symbol is cse-transparent (INERT); fn-scope named pointer for dispatch symbol forces lui/addiu prologue materialization (+3 insns). This differentiates the two saEft01Init-mirror scopes and closes both as csmd4 levers.
+
+- [s27] s27 cross-twin decl-diff catalog complete: csmd4 uses cross-symbol idx_1495 lie (line 406) + inline dispatch; marionation uses honest idx_1495=1+idx_1494 + idx_1496 + register-pin + volatile-alias (bulk pins); saEft01Init uses pre-staged tbl_125c AND tbl_11dc (no idx_1495, no register pins per src listing but ledger says 15 regfix rules — pins elsewhere in file).
+
+- [s27] s27 frontier #1 (cross-function qty instrumentation on saEft01Init) NOT executed — it is a forensics probe, not a rederive probe; would land in wrong modality. Deferred to a future forensics session; expected value: comparing p107/p113 qty numbers between saEft01Init's pinned h5-equivalent basin and csmd4's h5 basin to determine whether saEft01Init's pin family targets the same p106/p107 LAUNCH pair as csmd4's h5 residual.
+
+- [s27] s27 src/system.c restored to HEAD at session end (git checkout HEAD -- src/system.c); candidate.c unchanged (h5 form remains the masked-2 floor).
+
+- [s27] s27 rederive-modality census (post-session): m2c s8 KILLED (inline-all-args), marionation sibling s9 P1-P4 KILLED (s-reg web non-fungible), decomp.me shingle s17 KILLED (peak 0.097 similarity), Kengo dump s18 KILLED (empty stub + arch-non-transferable), decomp.me residual-pattern + BB2 in-repo residual-cluster s26 KILLED (0 external hits, in-repo hits either self or asmfix-stubbed), saEft01Init decl-transfer s27 KILLED (both scopes). The rederive modality is now closed across all six sub-angles; no viable rederive sub-frontier remains beyond speculative cross-function forensics.

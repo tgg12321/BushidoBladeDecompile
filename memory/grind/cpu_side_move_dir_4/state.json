@@ -1,7 +1,7 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 26,
+ "session_count": 27,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -165,23 +165,24 @@
    "floor": 2,
    "modality": "rederive",
    "headline": "s26 rederive KILLS two novel angles: decomp.me residual-pattern scan 0/3754 hits (distinct from s17 shingle scan), BB2 in-repo residual-cluster twin scan surfaces saEft01Init as a THIRD twin (self+mar"
+  },
+  {
+   "session": 27,
+   "floor": 2,
+   "modality": "rederive",
+   "headline": "s27 rederive: novel dispatch-symbol pre-stage angle KILLED \u2014 fn-scope tbl_11dc=D_800A11DC regresses (+12, masked=14, +3 build_insns from lui/addiu prologue materialization); block-scope tbl_11dc INERT"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The saEft01Init third-twin discovery + its persistent 15 regfix rules opens a cross-function analysis angle: if a lever CAN be derived that closes csmd4 in pure C, that same lever should apply to saEft01Init and (possibly) marionation_Exec. Conversely, the saEft01Init pin-installed pair-swap workaround is evidence that the pair-swap residual persists across at least 3 independent debug_printf-tbl-index instantiations \u2014 a cluster-wide compiler-pattern, not a csmd4 idiosyncrasy.",
-   "mechanism": "All three twins share the same expmed.c case alg_shift NULL_RTX target birthing p106 for `t0*=4` AND the same sched.c LUID tiebreak at clock=13; the fact that saEft01Init's incumbent C uses reverse-named-eval (measured masked=8 on csmd4 via s9 P3) yet STILL needed pins to match indicates the surrounding s-reg web is the load-bearing differentiator across the three sites.",
-   "next_probe": "Cross-function analysis: instrument saEft01Init with the same BB2_QTY/SCHED/RANK/ALLOC debug flags used on csmd4 (s6/s25 recipe), compare qty tables between saEft01Init's pinned h5-equivalent basin and csmd4's h5 basin. If p107/p113 qty numbers match numerically, the pin family saEft01Init uses IS a viable csmd4 lever direction if reproduced in pure C. Cross-function session; not a csmd4-only probe."
+   "hypothesis": "Cross-function forensics: instrument saEft01Init with the same BB2_QTY_DEBUG/BB2_SCHED_DEBUG/BB2_ALLOC_DEBUG/BB2_RANK_DEBUG flags used on csmd4 in s6/s25; compare the p107/p113 qty numbers in saEft01Init's h5-equivalent debug_printf window against csmd4's h5 baseline. If p107/p113 birth-death/refs match numerically, saEft01Init's 15-pin family reproduces the SAME p106/p107 LAUNCH pair-tie mechanism \u2014 meaning the pin direction saEft01Init uses IS a viable csmd4 lever direction if reproducible in pure C.",
+   "mechanism": "sched.c::rank_for_schedule + local-alloc.c qty_compare determinism means matching qty tables across two functions imply matching allocation decisions. If saEft01Init's pins force a specific p106/p107 outcome that csmd4's h5 residual matches modulo pin-strength, the CATEGORY of intervention that closes saEft01Init informs the CATEGORY that would close csmd4 in pure C.",
+   "next_probe": "Forensics session (NOT rederive): apply saEft01Init's candidate C body to src/system.c; rebuild instrumented cc1 (BB2_*_DEBUG=1 -da); dump saEft01Init's block=3 (debug_printf window) SCHEDDBG/QTYDBG entries; cross-reference against tmp/grind/cpu_side_move_dir_4/s6/csmd4_only.* for structural congruence at insn IDs equivalent to csmd4's 111/121 LAUNCH-tie."
   },
   {
-   "hypothesis": "The persistent g3-basin register-exchange residual (pri(arg5) needs strict-win over pri(t0)) requires a LEGITIMATELY-SEMANTIC arg5 multi-use that satisfies the function's stated purpose \u2014 not a codegen-driven multi-use. saEft01Init's presence as a third twin suggests looking for functions with a similar dispatch pattern where the natural C uses arg5's VALUE more than once (e.g. as a bound-check + call arg) for hints.",
-   "mechanism": "flow.c REG_N_REFS is a plain use count; multiple SEMANTIC uses of arg5's value would linearly increment refs. The frontier from s25 (arg5 idempotent second use) is codegen-driven and cheat-shaped; a semantic alternative would be within the function's stated behaviour (e.g. arg5 used both as a return-value indicator and as a printf arg).",
-   "next_probe": "Read the third-twin surrounding-function C in src/system.c (saEft01Init full body + surrounding sa* family) for any place where an arg5-analog is used semantically twice. If found, the same restructuring pattern may transfer to csmd4."
-  },
-  {
-   "hypothesis": "The residual pair-swap could be attacked at the FILE-scope declaration order: the ledger notes idx_1495 cross-symbol spelling at line 406 is load-bearing to h5's s-reg web (s8 probe1 masked=15). If saEft01Init and marionation_Exec use different cross-symbol tricks, the delta between them provides evidence about which file-scope constants are truly load-bearing.",
-   "mechanism": "file-level constant folding via cse.c equiv_constant + splat linker ordering. Not a block-local structural lever.",
-   "next_probe": "diff the leading fn-scope decls (D_800A125C / D_800A1494 / D_800A11DC / D_800F19C0 uses) across csmd4, marionation_Exec, and saEft01Init C sources; identify which cross-symbol respellings each uses and whether saEft01Init's LACK of the idx_1495 cross-symbol trick (or presence thereof) correlates with its pin count."
+   "hypothesis": "Speculative: some pure-C form outside the h5-basin structural axis (e.g. moving the ENTIRE inline debug_printf block into a static helper function called from cpu_side_move_dir_4's do_timeout arm) presents a different RTL context to the mult-expander that avoids p106's LAUNCH birth entirely, bypassing s7's expmed.c NULL_RTX wall by never reaching that expand path.",
+   "mechanism": "A separate function call would put the arg5/t0 chains in a DIFFERENT function's RTL, with fresh flow.c reg_n_sets. cpu_side_move_dir_4 becomes a wrapper that calls a helper doing the printf. This restructures the ENTIRE compilation unit for that block \u2014 a fundamentally different axis than block-local structural sweeps. Byte-neutrality risk: the target bytes are IN cpu_side_move_dir_4, so any code moved to a helper would need to inline back at maspsx/link time (impossible) \u2014 this angle is likely a cheat by shape.",
+   "next_probe": "Static-analysis session (NOT rederive): read tools/gcc-2.7.2/tree-inline.c to determine whether static-inline functions with -O2 are guaranteed to inline back at cc1 time (before RTL emission). If yes, the helper's C shape could produce the target bytes without cheating. If no (or if inlining is preserved as an ABI-visible boundary), the angle is closed by construction."
   }
  ],
  "judge_constraints": [],
