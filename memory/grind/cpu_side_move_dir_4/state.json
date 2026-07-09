@@ -1,8 +1,8 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 30,
- "current_modality": "structural",
+ "session_count": 31,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 0,
@@ -189,23 +189,29 @@
    "floor": 2,
    "modality": "structural",
    "headline": "s30 structural: F3b fn-level explicit-loop refactor MEASURED KILLED - while(1) and for(;;) both regress masked=52 build_insns=165 (+50/+5) confirming loop.c natural-loop detection + loop_depth REG_N_R"
+  },
+  {
+   "session": 31,
+   "floor": 2,
+   "modality": "permuter",
+   "headline": "s31 permuter: PERM_LINESWAP over 5 fn-scope prologue init statements enumerated 120 orderings, base_score=60 (h5 preserved), 0 novel finds \u2014 prologue-scope C-order is qty-invariant on block=3 residual"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F1 (data-gathering forensics on saEft01Init QTY numbers): saEft01Init is a third BB2 twin sharing the same {sll,addu,sll}->jal debug_printf residual signature (discovered s26); comparing its block=3 QTY table against csmd4's s6 baseline (p107/p113 birth/death/refs) will show either MATCH (indicating both target the same p106/p107 LAUNCH pair-tie and providing compiler-source evidence the pair-swap has no C-source dial in this compiler class - grounds for a ruling-request about canonical-asm authorization of the twin family) or DIFFER (closes the last cross-function forensics angle).",
-   "mechanism": "sched.c::rank_for_schedule + local-alloc.c qty_compare are deterministic on QTY inputs; matching qty tables across two functions imply matching allocation decisions.",
-   "next_probe": "Forensics session (not structural): rebuild instrumented cc1 with BB2_QTY_DEBUG=1 etc (recipe at memory/wip/cpu_side_move_dir_4/notes.md:88-91); apply saEft01Init's current C body verbatim (src/system.c:806-857); dump saEft01Init's block=3 SCHEDDBG/QTYDBG entries; segment the dump by function to avoid cross-function uid collisions; cross-reference against tmp/grind/cpu_side_move_dir_4/s6/csmd4_only.* at insn IDs equivalent to csmd4's 111/121 LAUNCH tie."
+   "hypothesis": "F1 (data-gathering forensics on saEft01Init QTY numbers): saEft01Init is the third BB2 twin sharing the {sll,addu,sll}->jal debug_printf residual signature (s26 discovery); comparing its block=3 QTY table against csmd4's s6 baseline (p107/p113 birth/death/refs) will show either MATCH (both target p106/p107 LAUNCH pair-tie -> grounds for a canonical-asm-authorization ruling-request) or DIFFER (closes the last cross-function forensics angle). Unmoved by s31.",
+   "mechanism": "sched.c::rank_for_schedule + local-alloc.c qty_compare are deterministic on QTY inputs; matching qty tables across two twin functions imply matching allocation decisions.",
+   "next_probe": "Forensics session (not permuter, not structural): rebuild instrumented cc1 with BB2_QTY_DEBUG=1 etc (recipe at memory/wip/cpu_side_move_dir_4/notes.md:88-91); apply saEft01Init's current C body verbatim (src/system.c:806-857); dump saEft01Init's block=3 SCHEDDBG/QTYDBG entries; segment the dump by function to avoid cross-function uid collisions; cross-reference against tmp/grind/cpu_side_move_dir_4/s6/csmd4_only.* at insn IDs equivalent to csmd4's 111/121 LAUNCH tie."
   },
   {
-   "hypothesis": "F2 (static-analysis closure-by-construction): tools/gcc-2.7.2/tree-inline.c under -O2 preserves the function-body boundary for `static inline` helpers, closing the helper-extraction angle because target bytes must land in csmd4's function but code moved to a helper compiles into the helper's function.",
+   "hypothesis": "F2 (static-analysis closure-by-construction): tools/gcc-2.7.2/tree-inline.c under -O2 preserves the function-body boundary for `static inline` helpers, closing the helper-extraction angle. Unmoved by s31.",
    "mechanism": "GCC 2.7.2 has no LTO; -O2 always_inline decisions run at tree-optimize; if inlining lands before RTL emit with fresh flow.c reg_n_sets on the caller, helper-extraction opens a novel RTL context (F2 OPEN). If the function-body boundary is preserved through cc1 (typical for 2.7.2 pre-integration), the emitted bytes are split across two function labels (F2 CLOSED-BY-CONSTRUCTION).",
    "next_probe": "Static-analysis session: read tools/gcc-2.7.2/tree-inline.c + integrate.c to determine `static inline` handling under -O2; cross-check whether integrate.c::expand_inline_function fires at cc1 time or preserves the CALL_EXPR through to RTL emit. No src edit, no sandbox measurement - closure-by-construction verdict is the deliverable."
   },
   {
-   "hypothesis": "Speculative axis (arg5-side-only ref-lift): every ref-lift lever measured on csmd4 has been SYMMETRIC (do-while(0) wraps around block, duplicated-into-arms of a shared expression, natural-loop scaling of the whole loop body) - all lift arg5 AND t0 refs together, misdirecting. A construct that lifts ONLY arg5's refs (or ONLY lowers t0's refs) has never been measured; unknown whether such a construct exists in C-source space.",
-   "mechanism": "local-alloc.c qty_compare uses per-pseudo REG_N_REFS at flow-time. To flip arg5>t0 (arg5 pri needs >=5000 per s1 fable-blitz arithmetic, currently 3333 vs t0's 5000), need to raise arg5 refs to >=4 at span 6, or lower t0 refs below 6 at span 24.",
-   "next_probe": "Structural session (novel axis, not yet measured): survey RTL emit for whether t0's 6 refs can be reduced via C-source spelling (e.g. compute t0 chain in a DIFFERENT scope so cse folds one ref away without dropping into g3 basin) OR arg5's 2 refs can be doubled via a legitimate additional use (e.g. use arg5 in a call arg AND as a local computation both). Requires careful cheat-vetting - naive additional uses are dead-store family."
+   "hypothesis": "Speculative axis (arg5-side-only ref-lift): every ref-lift lever measured on csmd4 has been SYMMETRIC (do-while(0) wraps around block, duplicated-into-arms of shared expression, natural-loop scaling of whole loop body). A construct that lifts ONLY arg5's refs (or ONLY lowers t0's refs) has never been measured; unknown whether such a construct exists in C-source space. s31's LINESWAP enumeration reconfirms symmetric statement-order is a null lever, but does not touch asymmetric ref-lift constructs.",
+   "mechanism": "local-alloc.c qty_compare uses per-pseudo REG_N_REFS at flow-time. To flip arg5>t0 (arg5 pri needs >=5000 per s1 fable-blitz arithmetic, currently 3333 vs t0's 5000), need to raise arg5 refs to >=4 at span 6, or lower t0 refs below 6 at span 24. All symmetric wrap/dup constructs measured (s4/s5/s13/s20/s25/s30) lift both sides.",
+   "next_probe": "Structural session (novel axis, not permuter): survey RTL emit for whether t0's 6 refs can be reduced via C-source spelling (e.g. compute t0 chain in a DIFFERENT scope so cse folds one ref away without dropping into g3 basin) OR arg5's 2 refs can be doubled via a legitimate additional use (e.g. use arg5 in a call arg AND as a local computation both). Requires careful cheat-vetting - naive additional uses are dead-store family."
   }
  ],
  "judge_constraints": [],

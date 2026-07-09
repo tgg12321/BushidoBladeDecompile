@@ -598,3 +598,13 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s30] s30 src/system.c restored to HEAD (both-named form, masked=7 baseline) at session end via git checkout HEAD -- src/system.c; candidate.c unchanged (h5 form remains the masked-2 floor).
 
 - [s30] s30 modality contract: structural axis is now closed at every scope measured across s3 (13 block-local variants), s4 (do-while(0) 4 scopes), s5 (block-scope carriers/named dispatch/wraps + 9040-iter permuter), s11+s12 (5 arg5_addr two-SET realizations), s20 (duplicated-into-arms non-t0), s29 (F3 outer-flow topology 3 realizations), and s30 (F3b fn-level explicit-loop 2 realizations). Every enumerable structural mechanism-hit is now measured KILLED. Future structural sessions have no untried axis at either block-local, outer-if-chain, or fn-level-loop scope.
+
+- [s31] s31 permuter campaign (tmp/perm_csmd4, label s31_prologue_lineswap): base_score=60 (h5 chassis, guardrail met), 5!=120 orderings enumerated over the 5 fn-scope prologue init statements, 0 novel finds. Harvest telemetry: iterations=120, best_new_score=null, all 14 pre-existing outputs new=false.
+
+- [s31] campaign.log scoring distribution: 110-2265 range across all orderings; no output-<score>-<ctr> below 60 written to disk. Most orderings destroy h5 basin membership (scores 800-2000+), confirming prologue-init order propagates directly to fn-scope pseudo birth luid but does NOT surface any sub-baseline ordering that preserves h5.
+
+- [s31] Statement-order axis fully partitioned across three campaigns: s22 (inner block 7!=5040), s23 (block+call 8!+text neighborhood, 20429 iters harvested), s31 (prologue 5!=120). Union covers every reorderable C-statement region in cpu_side_move_dir_4 body. Total iterations across the axis: 25,589. Total novel finds below weighted 60: ZERO.
+
+- [s31] Reconfirms s3 V12 finding (block-local decl reversal INERT) at prologue scope: C-statement-order of globals-init does not propagate to block=3 qty birth-order or LUID tiebreaks — the s-reg web treats prologue-init LUID as fungible.
+
+- [s31] Chassis base_score consistency (60 = h5 across s22/s23/s31) confirms none of the three campaigns drifted into g3 (weighted 40) or intermediate basins (55) at chassis selection; every campaign faithfully explored the h5 mult-expander neighborhood.
