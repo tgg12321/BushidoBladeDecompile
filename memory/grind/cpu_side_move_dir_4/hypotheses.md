@@ -665,3 +665,21 @@
 - probe: Cross-referenced s33 saEft01Init QTYDBG (multi-set v0 pattern) against csmd4 fn-scope write topology (single-set per global); noted that ADDING multi-set writes reproduces s5-F2a/F2b (named dispatch, masked=16) and s27-P1 (fn-scope tbl_11dc, masked=14) regressions. The reload-substitution mechanism is not a novel lever — its C-source realizations are precisely the fn-scope-carrier cheat family.
 - result: F1-derivative collapses into the closed fn-scope-carrier cheat family — no distinct lever direction remains.
 - verdict: KILLED
+
+## [s35] Seeding arg5's index-chain from *idx_1495 (matching target's honest s4 = s2+1 prologue derivation) preserves h5's masked-2 floor.
+- mechanism: target derives s4 = s2+1 in ONE addiu at asm/funcs/cpu_side_move_dir_4.s:19 and its arg5 lbu reads via s4; matching the target's index-source pointer should either be masked-invariant or improve alignment. idx_1495 is the pointer variable already used later in the function (line 456: (*D_800A11B8)(*idx_1495, ...)), so extending its live range across the debug_printf window is semantically neutral (no new local, no dead store).
+- probe: Applied `v0 = *idx_1495;` in place of `v0 = idx_1494[1];` on h5 candidate at src/system.c:434-439; sandbox cpu_side_move_dir_4 --disable all.
+- result: masked=3 (+1 vs h5 baseline of 2), target_insns=160, build_insns=160. Bytes change but the pair-swap residual is not resolved; the extended s4 live range disturbs the h5 s-reg-web alignment by 1 masked-instruction diff without flipping the residual pair. Rejected form saved at memory/grind/cpu_side_move_dir_4/rejected/arg5_seed_from_idx_1495_deref.c.
+- verdict: KILLED
+
+## [s35] Symbol-offset spelling `((u8*)&D_800A1494)[1]` folds cse-identically to `idx_1494[1]` and is masked-invariant vs h5.
+- mechanism: cse.c simplify_ppcheck should canonicalize &D_800A1494 + 1 to the same MEM as idx_1494[1] since idx_1494 = &D_800A1494 at line 405. If expand-time canonicalization holds, RTL is identical and score should be INERT.
+- probe: Applied `v0 = ((u8*)&D_800A1494)[1];` on h5 base; sandbox --disable all.
+- result: masked=4 (+2 vs h5), build_insns=161 (+1 physical insn). CSE does NOT fold `&D_800A1494` to the idx_1494 pseudo across the block boundary — a fresh lui/addiu pair materializes for &D_800A1494 at the reference site, adding one insn AND disturbing alignment by an additional +1 diff. Rejected form saved at memory/grind/cpu_side_move_dir_4/rejected/arg5_seed_symbol_offset.c.
+- verdict: KILLED
+
+## [s35] Array-syntax spelling `idx_1495[0]` produces distinct RTL from the pointer-deref spelling `*idx_1495` (probe P1).
+- mechanism: Both lower to (mem (plus (reg idx_1495) 0)) in principle; if expand.c treats array-index and pointer-deref uniformly, scores should be identical.
+- probe: Applied `v0 = idx_1495[0];` on h5 base; sandbox --disable all.
+- result: masked=3 (+1 vs h5), build_insns=160 — IDENTICAL to P1. Confirms expand-time normalization of `idx_1495[0]` and `*idx_1495` to the same RTL MEM; the two spellings are not orthogonal. Rejected form saved at memory/grind/cpu_side_move_dir_4/rejected/arg5_seed_idx_1495_array.c.
+- verdict: KILLED

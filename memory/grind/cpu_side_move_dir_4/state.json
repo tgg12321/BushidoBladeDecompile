@@ -1,8 +1,8 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 34,
- "current_modality": "forensics",
+ "session_count": 35,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 0,
@@ -213,13 +213,24 @@
    "floor": 2,
    "modality": "forensics",
    "headline": "s34 forensics KILLS F2 helper-extraction at compiler source: GCC 2.7.2 has no tree-inline.c; integrate.c:96 forbids varargs inline; fixed-arg wrapper insn-copy preserves h5 LAUNCH residual and mirrors"
+  },
+  {
+   "session": 35,
+   "floor": 2,
+   "modality": "rederive",
+   "headline": "s35 rederive KILLS three novel arg5-index-source respellings (idx_1495-based) \u2014 h5 basin is coupled to idx_1494+offset base-pointer, not fungible with the idx_1495 pointer used in the target's s4 chai"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Asymmetric ref-lift: a C construct that lifts ONLY arg5's refs (or ONLY lowers t0's refs) without symmetric wrap/dup effect, breaking the triple-KILLED symmetric-ref-lift pattern (s5/s20/s25/s30).",
-   "mechanism": "local-alloc.c qty_compare uses per-pseudo REG_N_REFS at flow time. To flip arg5>t0 priority, need to raise arg5's refs to >=4 at span 6 (weighted >=13333) OR lower t0's refs below the crossover. Every symmetric wrap (do-while(0) at all scopes, natural loops, duplicated-into-arms on D_800F19C0) raises both sides monotonically. An asymmetric lever must touch ONE side only. This axis is the only surviving speculative direction after F1/F2 closure.",
-   "next_probe": "Structural session on a very tight scope: identify a C-source spelling that lifts arg5's refs via a legitimate additional use inside a control-flow arm that does NOT reach t0's use \u2014 e.g. a conditional post-debug_printf arm that references arg5 only. High cheat-vetting risk; requires layer-1 self-vet against no-new-park-categories fn-scope-carrier + dead-store families."
+   "hypothesis": "Asymmetric ref-lift via a legitimate additional use of arg5 (not t0) within a control-flow arm reachable only after the debug_printf call.",
+   "mechanism": "local-alloc.c qty_compare uses per-pseudo REG_N_REFS at flow time; the arg5>t0 flip requires arg5 refs >= 4 at span 6 OR t0 refs lowered. Every symmetric wrap KILLED across s4/s5/s25/s30. An asymmetric lever needs a legitimate semantic user of arg5 downstream that references NO t0 chain member.",
+   "next_probe": "Structural session: identify a downstream branch arm that legitimately consumes arg5 (e.g. cnt-condition-dependent recomputation of the tbl_125c[idx_1494[1]] value for a distinct semantic purpose) \u2014 high cheat-vetting risk, requires layer-1 self-vet against no-new-park-categories."
+  },
+  {
+   "hypothesis": "The idx_1495-basin +1 regression measured s35 reveals a novel micro-basin between h5 (masked=2) and g3 (masked=6). A structural probe combining the idx_1495 base-pointer with a compensating s-reg web adjustment may land at masked=1 or masked=0.",
+   "mechanism": "s35 P1/P3 masked=3 with build_insns=160 indicates ONE additional register-diff over h5's residual pair-swap; if that diff can be absorbed by a coupled s-reg reassignment elsewhere in the function, the net effect could break the pair-swap while preserving the rest.",
+   "next_probe": "Structural: pair P1/P3 with a second lever that reassigns which callee-save carries idx_1494/idx_1495 (e.g. swap decl order at src/system.c:405-406, or route idx_1494 through a fresh callee-save via named intermediate). Layer-1 self-vet risk: no fn-scope carrier without semantic purpose."
   }
  ],
  "judge_constraints": [],

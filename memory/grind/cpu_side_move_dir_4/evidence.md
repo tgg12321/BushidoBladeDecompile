@@ -650,3 +650,21 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s34] s33 named the reload-substitution mechanism (fresh block=3 SET-dests renumbered into hard-regs already multi-set fn-scope). csmd4's fn-scope write topology has single-set-per-global (D_800F19B8/BC/C0), so reproducing saEft01Init's substitution pattern requires adding fn-scope multi-set writes — which is the cheat family.
 
 - [s34] candidate.c unchanged; src/system.c not modified (forensics modality). h5 masked-2 floor unchanged from ledger.
+
+- [s35] s35 baseline: h5 candidate applied to src/system.c scores masked=2, target_insns=160, build_insns=160 via `& tools/wteng.ps1 main sandbox cpu_side_move_dir_4 --disable all`.
+
+- [s35] s35 P1 (v0 = *idx_1495): masked=3, build_insns=160 — novel +1 regression; idx_1495's extended live range disturbs h5 s-reg web without flipping the pair-swap residual.
+
+- [s35] s35 P2 (v0 = ((u8*)&D_800A1494)[1]): masked=4, build_insns=161 — +2 regression + 1 extra insn (fresh lui/addiu materialization of &D_800A1494 that does NOT cse-fold to the idx_1494 pseudo across a block boundary).
+
+- [s35] s35 P3 (v0 = idx_1495[0]): masked=3, build_insns=160 — identical to P1; confirms array-syntax and pointer-deref lower to the same MEM RTL at expand time.
+
+- [s35] s35 novel finding: idx_1495-based index-source respelling is NOT fungible with idx_1494[1] on the h5 basin; the h5 alignment is coupled to the specific base-pointer identity (idx_1494) at the arg5 lbu site, not just the byte address computed. Extending the idx_1495 live range across the debug_printf window regresses by +1 in EVERY spelling tested.
+
+- [s35] s35 novel finding: cse.c does NOT fold &D_800A1494 back to the idx_1494 pseudo across the arg5 lbu site, contrary to naive expectation — the fresh symbol reference materializes lui/addiu at reference site. This is a novel forensics data point about the RTL scope of cse's pointer-symbol canonicalization at the p107 arg5_addr site.
+
+- [s35] s35 candidate.c: unchanged (h5 form remains masked-2 floor). src/system.c restored to HEAD (both-named form, masked=7 baseline) at session end via git checkout HEAD -- src/system.c.
+
+- [s35] s35 rederive modality census: after s8 (m2c KILLED), s9 (marionation transplant P1-P4 KILLED), s17 (decomp.me shingle KILLED), s18 (Kengo dump KILLED), s26 (decomp.me residual + in-repo residual KILLED), s27 (saEft01Init decl-transfer KILLED), s35 (three idx_1495-based index-source respellings KILLED) — every enumerable rederive angle is now measured KILLED across seven distinct modality sub-attempts.
+
+- [s35] s35 asymmetric ref-lift frontier NOT approached: every C-source lever that lifts ONLY arg5's refs via a control-flow arm or additional use has cheat-shape at layer-1 self-vet (no-new-park-categories cheats-by-any-spelling — no semantic purpose for the extra reference). Structural / permuter attacks on this axis are the surviving frontier, not rederive.
