@@ -258,7 +258,9 @@
    "next_probe": "Emit ruling-request outcome asking the owner: does the twin family (csmd4 / marionation_Exec, sharing the exchange residual per marionation 6f cross-check) qualify for canonical-asm authorization on the pair {sll v0 / addu v0 / sll a0} at the debug_printf window, given (a) 40 sessions have measurement-closed every C-source axis including the newly-added wider-scope permuter axis, (b) the residual is a mechanically-explained rank_for_schedule LUID tiebreak, (c) both twins share the exchange arithmetic, (d) the honest-respelling of idx_1495 remains blocked by +13 s-reg coupling (s8), and (e) 5 independent permuter scopes yielded 0 weighted-<40 finds across ~63,000 combined iterations on h5 chassis."
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "Do not resurface canonical-asm authorization for cpu_side_move_dir_4 or its twins under any framing of 'exhaustion / mechanism-explained / cluster-shared' evidence; that evidence class is settled-FAIL. Next session must SHIFT MODALITY to one of the un-run axes above (SOTN-family carve-out application under codified prerequisites + FAKE annotation + layer-2 cheat-reviewer, OR ALLOCDBG-instrumented s-reg coupling hunt per register-alloc-pure-c). Report the specific carve-out or ALLOCDBG frontier chosen, not another sweep of the closed space."
+ ],
  "origin": "queue",
  "created": "2026-07-07T15:21:29.115668+00:00"
 }
