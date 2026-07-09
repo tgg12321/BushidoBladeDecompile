@@ -992,3 +992,25 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s59] harvest --stop reports iterations=2, elapsed_s=177.8, best_new_score=None, new_finds=[]. Campaign terminated on its own (2-combination cross-product exhausted).
 
 - [s59] Base score 60 (weighted) corresponds to the same h5 masked=2 floor measured directly via the engine sandbox at session start — permuter and sandbox agree on the h5 chassis identity.
+
+- [s60] s60 baseline sandbox masked=2 (target_insns=160, build_insns=160) via `& tools/wteng.ps1 main sandbox cpu_side_move_dir_4 --disable all` with h5 candidate applied.
+
+- [s60] s60 honest_idx1495 variant (idx_1495 = idx_1494 + 1 in place of the cross-symbol form) sandbox masked=15 - reproduces the s8-probe1 measurement.
+
+- [s60] p78 conflict list SHAPE identical between variants: {72,73,75,77,78,79,80,81,86, X_dispatch, X_writer, X_reader, 2,3,4,5,6,7,29} where X_* are three debug-window pseudos whose numbers shift (101,120,126 baseline / 97,116,122 honest) due to the prologue insn-count delta.
+
+- [s60] p78 ALLOCDBG deltas: ord=13→ord=15 (last), hardreg=20(s4)→22(s6), livelen=72→144 (doubled), pri=277→138 (halved), nrefs stays 2.
+
+- [s60] Coordinated 4-pseudo rotation across s3..s6: {p72,p73,p78,p79} = (s5,s6,s4,s3) baseline → (s3,s4,s6,s5) honest. p77 (idx_1494, s2) and p80/p81 (s1/s0 debug-window) stay put.
+
+- [s60] p79 (tbl_125c) additional delta: nrefs=5→3 (idx_1495 no longer consumes tbl_125c in honest), pri=675→202, ord=12→ord=14, s3→s5.
+
+- [s60] Root cause named at the RTL layer: baseline lreg insn 38 has REG_NOTES=(nil); honest lreg insn 30 has REG_NOTES=(expr_list:REG_EQUIV (const (plus symref D_800A1494 const_int 1))). Same RTL SET pattern, different REG_NOTES chain.
+
+- [s60] The REG_EQUIV note is attached at expand.c time (emit_move_insn / set_unique_reg_note) based on tree-level constant-expression recognition. The honest form's tree (POINTER_PLUS_EXPR (ADDR_EXPR D_800A1494) (INTEGER_CST 1)) IS a compile-time constant; the baseline's tree contains VAR_DECL tbl_125c so it is not, even though tbl_125c aliases D_800A125C at RTL-CSE.
+
+- [s60] local-alloc.c::update_equiv_regs consumes REG_EQUIV notes for live-range strategy; the presence changes livelen accounting and downstream allocno priority in global-alloc.
+
+- [s60] Files list & inventory: tmp/grind/cpu_side_move_dir_4/s60/csmd4.{baseline,honest_idx1495}.{rtl,cse,cse2,loop,flow,combine,jump,jump2,lreg,greg,sched,sched2,dbr,log,s,i} + csmd4_only.{greg,lreg} + csmd4_honest.{greg,lreg} + FORENSICS.md + dump_baseline.sh.
+
+- [s60] Ledger implication: the s8 kill of the honest respelling is now MECHANISM-NAMED, not just measured. Any future 'retire the semantic-lie idx_1495 spelling' attempt must plan for the REG_EQUIV-driven alloc web rotation as the specific obstruction, not just 's-reg coupling'.
