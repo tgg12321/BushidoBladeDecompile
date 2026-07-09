@@ -1240,3 +1240,19 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s75] s75 src/system.c left with h5 candidate applied at session end (sandbox re-measures masked=2). candidate.c unchanged (h5 form remains the 71-session floor). rejected/ file saved for P5.
 
 - [s75] s75 sweep results JSON at tmp/grind/cpu_side_move_dir_4/s75/sweep_results.json; backup of pre-sweep h5 src at tmp/grind/cpu_side_move_dir_4/s75/system.c.h5; sweep driver at tmp/grind/cpu_side_move_dir_4/s75/sweep.py.
+
+- [s76] s76 baseline: h5 candidate applied to src/system.c scores masked=2 (target_insns=160, build_insns=160) via & tools/wteng.ps1 main sandbox cpu_side_move_dir_4 --disable all.
+
+- [s76] s76 pre-launch audit: alternatives in the PERM_LINESWAP region strictly reorder prologue assignments only; inline-block h5 chain (t0 *= 4 mult path; multi-set t0 via + tbl_125c; pp alias; v0 <<= 2 stage; *(s32 *)t0 deref in call) is FIXED across all alternatives (fixes s14 flaw where alternatives dropped to g3 base=40).
+
+- [s76] s76 permuter reported base_score=60 at launch, confirming the h5-multexpander basin is what the campaign explored (not g3=40 that s5/s14 explored).
+
+- [s76] s76 campaign meta: {"label":"s76_h5_prologue_lineswap_v2","base_score":60,"elapsed_s":706.2,"iterations":720,"finds_total":16,"finds_new":0,"best_new_score":null,"stopped":false,"stop_reason":"s76 h5 prologue-lineswap fresh-seed 0 novel"}.
+
+- [s76] s76 run.log tail shows steady stream of score=40 (g3-basin mutations) and score=60-3000+ hits during randomization but 0 candidates matched below any pre-existing find; permuter_failures count 21 confirms the s13/s14 AssertionError blindspot on the pointer-arith node is still triggering intermittently (worker pool tolerates).
+
+- [s76] s76 novel-region PERM_LINESWAP on the fn-scope prologue is the only permuter-adjacent lever remaining in the block-local + neighbor-region search space; all prior permuter campaigns targeted inline-block or poll region (s5/s13/s14/s67/s68).
+
+- [s76] s76 modality-exhaustion note: with s5 (g3 fresh-seed 9040), s13 (h5-multexpander fresh-seed 2999), s14 (directed PERM_GENERAL h5 chassis 23427), s67 (F1 g3-arg5 24 exhaustive + F2 poll 3-stmt 6 exhaustive), s68 (F7 whole-block 480 exhaustive), and now s76 (F13 h5-preserving prologue-lineswap 706s / 720 registered / ~650k raw / 0 novel), permuter modality is measurably closed against every reachable region of the function on both h5 and g3 chassis. Remaining live levers are structural (F6 SOTN duplicated-statement-into-arms on non-arg5 co-live carrier per s73 frontier), forensics (H2-extension single-carrier extra-use isolation per s73 frontier), or operator-dependent (F12 Ghidra Pcode+SSA rederive).
+
+- [s76] s76 src/system.c restored to h5 candidate at session end; post-restore sandbox re-measures masked=2. candidate.c unchanged (h5 form remains masked-2 floor).

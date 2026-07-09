@@ -1,8 +1,8 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 75,
- "current_modality": "structural",
+ "session_count": 76,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 0,
@@ -459,21 +459,27 @@
    "floor": 2,
    "modality": "structural",
    "headline": "s75 structural: F9 supplementary vsync_ret named-intermediate + STORE-position sweep KILLED - 5 of 6 positions INERT at masked=2, tail-position P5 regresses to masked=8; no novel basin below h5 floor."
+  },
+  {
+   "session": 76,
+   "floor": 2,
+   "modality": "permuter",
+   "headline": "s76 permuter: F13 h5-preserving prologue-lineswap campaign KILLED (base_score=60, 706s / 720 registered iters / 650k+ raw iterations per run.log / 0 novel finds below h5 baseline masked=2)"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F6 SOTN duplicated-statement-into-arms on non-arg5 co-live carrier (p73/p77/p79 per s69 greg extract) remains the sole first-order live lever within pure-C policy; requires FAKE annotation + layer-2 cheat-reviewer approval per no-new-park-categories carve-out prerequisites.",
-   "mechanism": "duplicated-statement-into-arms lifts reg_n_refs on p73/p77/p79 above p78's demoted priority=138 to offset the s60/s69 REG_EQUIV 4-cycle rotation; byte-neutral via cross-jump re-merge; the SOTN-sanctioned 2026-07-01 carve-out permits this only under strict prereqs.",
+   "hypothesis": "F6 SOTN duplicated-statement-into-arms on non-arg5 co-live carrier (p73/p77/p79 per s69 greg extract) remains the sole first-order live lever within pure-C policy",
+   "mechanism": "duplicated-statement-into-arms lifts reg_n_refs on p73/p77/p79 above p78's demoted priority=138 to offset the s60/s69 REG_EQUIV 4-cycle rotation; byte-neutral via cross-jump re-merge; the SOTN-sanctioned 2026-07-01 carve-out permits this only under strict prereqs (byte-neutrality verified + exhaustion + FAKE annotation + layer-1/2 review).",
    "next_probe": "Draft 2-3 candidate duplications of a real statement referencing p73(tbl_125c) or p77(idx_1494-addr) into BOTH do_timeout arrival arms (success:->do_timeout: fallthrough and direct-goto-do_timeout: paths). Measure via sandbox --disable all; if any is byte-neutral AND lifts pri(carrier) above 138 in ALLOCDBG qty_compare, invoke layer-2 cheat-reviewer with FAKE annotation."
   },
   {
-   "hypothesis": "H2-extension: ALLOCDBG conflict-list diff on non-arg5 co-live carriers under a byte-neutral C perturbation that ISOLATES a single p72/p73/p78/p79 refs/livelen delta (rather than triggering the coupled 4-cycle rotation).",
-   "mechanism": "s69 named the rotation as atomic under qty_compare's transitive priority ordering; s74 confirmed simple prologue reorders don't move any single carrier's (refs,livelen) - the LAUNCH signature is dominated by USES at poll/debug_printf, not prologue placement. A C construct that adds an EXTRA use of ONLY tbl_125c or idx_1494 at a scheduled position (not the debug_printf window) could raise its refs by 1 without disturbing the other three carriers if the added use is at a site the RA already dominates.",
-   "next_probe": "Sweep 2-3 candidate single-carrier extra-use insertions (a dead-in-outputs `(void)*idx_1494` before or after the poll block; a redundant `tbl_125c = tbl_125c;` pointer self-assign near the check block) vs baseline ALLOCDBG dump; require byte-neutrality + isolated single-carrier refs delta before promoting to a sandbox measurement; this is FORENSICS modality, not structural, so must be scheduled by the driver into an allocdbg session."
+   "hypothesis": "H2-extension: ALLOCDBG conflict-list diff on non-arg5 co-live carriers under a byte-neutral C perturbation that ISOLATES a single p72/p73/p78/p79 refs/livelen delta (forensics modality per s73 frontier)",
+   "mechanism": "s69 named the rotation as atomic under qty_compare's transitive priority ordering; s74 confirmed simple prologue reorders don't move any single carrier's (refs,livelen); s76 confirms permuter over h5-preserving prologue reorderings finds 0 novel (0 randomized perm of the same C surface unlocks a single-carrier delta). A C construct that adds an EXTRA use of ONLY tbl_125c or idx_1494 at a scheduled position (not the debug_printf window) could raise its refs by 1 without disturbing the other three carriers if the added use is at a site the RA already dominates.",
+   "next_probe": "Sweep 2-3 candidate single-carrier extra-use insertions (a dead-in-outputs (void)*idx_1494 before or after the poll block; a redundant tbl_125c = tbl_125c; pointer self-assign near the check block) vs baseline ALLOCDBG dump; require byte-neutrality + isolated single-carrier refs delta before promoting to a sandbox measurement; this is FORENSICS modality, not structural, so must be scheduled by the driver into an allocdbg session."
   },
   {
-   "hypothesis": "F12 Ghidra Pcode+SSA rederive remains operator-dependent; this pipeline cannot self-advance without external Ghidra output.",
+   "hypothesis": "F12 Ghidra Pcode+SSA rederive remains operator-dependent",
    "mechanism": "Ghidra's fold-vs-stage heuristics differ materially from m2c's RTL walker for variadic-call blocks with tbl-indexed dispatch; the m2c fixed-point saturation (13 sub-angles KILLED s8/s54/s62/s63/s72) does not preclude a distinct Ghidra reconstruction.",
    "next_probe": "OPERATOR ASK required: 'Do you have a Ghidra install with PS1/MIPS-R3000 support?' If not, F12 is a permanent operator-dependent frontier."
   }
