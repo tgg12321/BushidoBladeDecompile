@@ -1,8 +1,8 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 32,
- "current_modality": "permuter",
+ "session_count": 33,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 0,
@@ -201,23 +201,29 @@
    "floor": 2,
    "modality": "permuter",
    "headline": "s32 permuter: PERM_GENERAL fresh-seed on the h5 block (base_score=60 chassis preserved) \u2014 35338 iters / 1258s / 4 jobs / 2 novel finds both weighted=40 (g3 basin) within first 60s / zero sub-40 finds "
+  },
+  {
+   "session": 33,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "F1 KILLED via instrumented cc1 QTY+SCHED dump: saEft01Init block=3 has ZERO LAUNCH sentinels at sched2 pass vs csmd4's TWO in a tie; the twins are NOT QTY-family analogs; cross-function forensics angl"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F1 (unchanged from s28-s31): saEft01Init's block=3 QTY table diverges from csmd4's s6 baseline; if MATCH, grounds for a canonical-asm-authorization ruling-request (the twin family reaches the same p106/p107 LAUNCH pair-tie at qty compare 6). If DIFFER, closes the last cross-function forensics angle.",
-   "mechanism": "sched.c::rank_for_schedule + local-alloc.c qty_compare are deterministic on QTY inputs; matching qty tables across two twin functions imply matching allocation decisions.",
-   "next_probe": "Forensics session (not permuter, not structural): rebuild instrumented cc1 with BB2_QTY_DEBUG=1 etc (recipe at memory/wip/cpu_side_move_dir_4/notes.md:88-91); apply saEft01Init's current C body verbatim (src/system.c:806-857); dump saEft01Init's block=3 SCHEDDBG/QTYDBG entries; segment the dump by function to avoid cross-function uid collisions; cross-reference against tmp/grind/cpu_side_move_dir_4/s6/csmd4_only.* at insn IDs equivalent to csmd4's 111/121 LAUNCH tie."
-  },
-  {
-   "hypothesis": "F2 (unchanged from s28-s31): tree-inline.c under -O2 preserves the function-body boundary for `static inline` helpers, closing the helper-extraction angle by construction.",
+   "hypothesis": "F2 (unchanged): tree-inline.c under -O2 preserves the function-body boundary for `static inline` helpers, closing the helper-extraction angle by construction.",
    "mechanism": "GCC 2.7.2 has no LTO; -O2 always_inline decisions run at tree-optimize; if inlining lands before RTL emit with fresh flow.c reg_n_sets on the caller, helper-extraction opens a novel RTL context (F2 OPEN). If the function-body boundary is preserved through cc1, emitted bytes are split across two function labels (F2 CLOSED-BY-CONSTRUCTION).",
-   "next_probe": "Static-analysis session: read tools/gcc-2.7.2/tree-inline.c + integrate.c to determine `static inline` handling under -O2; cross-check whether integrate.c::expand_inline_function fires at cc1 time or preserves the CALL_EXPR through to RTL emit. No src edit, no sandbox measurement - closure-by-construction verdict is the deliverable."
+   "next_probe": "Static-analysis session: read tools/gcc-2.7.2/tree-inline.c + integrate.c to determine `static inline` handling under -O2; cross-check whether integrate.c::expand_inline_function fires at cc1 time or preserves the CALL_EXPR through to RTL emit. No src edit, no sandbox measurement \u2014 closure-by-construction verdict is the deliverable."
   },
   {
-   "hypothesis": "Speculative axis (unchanged, permuter-modality-inert): asymmetric ref-lift \u2014 a C construct that lifts ONLY arg5's refs (or ONLY lowers t0's refs) without symmetric wrap/dup effect. Not surfaced by any of the four permuter campaigns' scoreboards; needs a structural-modality lever survey (RTL emit for whether t0's 6 refs can be reduced via C-source spelling without dropping to g3, OR arg5's 2 refs doubled via a legitimate additional use). Requires careful cheat-vetting.",
-   "mechanism": "local-alloc.c qty_compare uses per-pseudo REG_N_REFS at flow-time. To flip arg5>t0 (arg5 pri needs >=5000 per s1 fable-blitz arithmetic, currently 3333 vs t0's 5000), need to raise arg5 refs to >=4 at span 6, or lower t0 refs below 6 at span 24. All symmetric wrap/dup constructs measured; asymmetric ref-lift constructs unmeasured.",
-   "next_probe": "Structural session (novel axis, not permuter): survey RTL emit for whether t0's 6 refs can be reduced via C-source spelling (e.g. compute t0 chain in a DIFFERENT scope so cse folds one ref away without dropping into g3 basin) OR arg5's 2 refs can be doubled via a legitimate additional use (e.g. use arg5 in a call arg AND as a local computation both). Requires careful cheat-vetting - naive additional uses are dead-store family."
+   "hypothesis": "Speculative axis (unchanged): asymmetric ref-lift \u2014 a C construct that lifts ONLY arg5's refs (or ONLY lowers t0's refs) without symmetric wrap/dup effect.",
+   "mechanism": "local-alloc.c qty_compare uses per-pseudo REG_N_REFS at flow-time. To flip arg5>t0 (arg5 pri needs >=5000 per s1 fable-blitz arithmetic, currently 3333 vs t0's 5000), need to raise arg5 refs to >=4 at span 6, or lower t0 refs below 6 at span 24.",
+   "next_probe": "Structural session (novel axis, not permuter): survey RTL emit for whether t0's 6 refs can be reduced via C-source spelling (e.g. compute t0 chain in a DIFFERENT scope so cse folds one ref away without dropping into g3 basin) OR arg5's 2 refs can be doubled via a legitimate additional use. Requires careful cheat-vetting."
+  },
+  {
+   "hypothesis": "F1-derivative (NEW this session): reload-substitution axis on csmd4 \u2014 engineer csmd4's outer control flow so reload substitutes block=3 fresh-dest pseudos into already-multi-set hard-regs, dropping LAUNCH activity to 0 the way saEft01Init does.",
+   "mechanism": "Reload pass renumbers pseudos to hard-regs and can leave the block=3 SET dests multi-set at sched2 time. If v0/v1/a0 gain enough fn-scope contention (multi-set writes upstream and downstream of the debug_printf block), reload may substitute p106/p107 into those hard-regs, killing the LAUNCH-tie.",
+   "next_probe": "This angle converges with the already-explored fn-scope-refs bank (s5 F1a/F1b/F2a/F2b, s13 fn-body-hoist, s31 5-slot prologue permuter, s32 PERM_GENERAL fresh-seed). To reopen: identify a fn-scope multi-set pattern NOT in the rejected bank (e.g. multi-set writes to D_800F19BC or D_800F19C0 that create hard-reg contention on v0/v1/a0 through a legitimate program logic path, not a coercion). High cheat-vetting risk."
   }
  ],
  "judge_constraints": [],

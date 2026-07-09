@@ -620,3 +620,17 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s32] Zero novel finds emerged between t=60s and t=1258s: the entire fresh-seed window past the initial cluster produced no additional distinct-score outputs. Per fresh-seed discipline (owner directive 2026-07-07, ~20-30min no-find harvest+stop), harvested at 1258s (~21min).
 
 - [s32] Combined campaign coverage (s22+s23+s31+s32) exhausts the h5-preserving permuter neighborhood: LINESWAP (order axis, 7!=5040 exhausted at block scope, 5!=120 exhausted at prologue scope), LINESWAP_TEXT (20429 iters across block+CALL text-mutation), PERM_GENERAL (35338 iters across block-scope expression-level AST mutation). All four launched from base_score=60 h5 chassis; combined zero outputs at weighted <40 across ~60,807 total iterations.
+
+- [s33] saEft01Init block=3 QTYDBG (from tmp/grind/cpu_side_move_dir_4/s33/saeft.log): ord=0 qty=1 p98 birth=12 death=22 refs=6 got=v0; ord=1 qty=0 p93 birth=8 death=20 refs=6 got=v1; ord=2 qty=4 p105 birth=24 death=38 refs=6 got=v0; ord=4 qty=2 p87 birth=20 death=28 refs=2 got=v1; SUGG qty=5 p100 birth=32 death=36 refs=2 got=t1; SUGG qty=3 p88 birth=22 death=40 refs=2 got=t3.
+
+- [s33] csmd4 block=3 QTYDBG (from s6/csmd4_only.log): ord=0 qty=1 p107 birth=18 death=20 refs=2 got=v0; ord=1 qty=3 p113 birth=22 death=30 refs=4 got=v0; ord=2 qty=2 p100 birth=20 death=26 refs=2 got=v1; ord=3 qty=0 p106 birth=16 death=24 refs=2 got=a0.
+
+- [s33] saEft01Init sched2 block=3 priorities (from saeft.log SCHEDDBG block=3 n_insns=21): distinct set {1,2,3,4,2147483536}. Zero occurrences of LAUNCH sentinel 2130706433 (0x7f000001). The 2147483536 (0x7fffff90) is the RETURN sentinel, distinct from LAUNCH.
+
+- [s33] csmd4 sched2 block=3 priorities (from s6/csmd4_only.log): includes 2130706433 on insn 111 (p106=p101<<2, mult-expander fresh dest) and insn 121 (p107=p75+p79, arg5 addr) simultaneously at clock=13 ready list; LUID(121)=12 > LUID(111)=8 backward-scheduler tiebreak picks 121 first -> emission {118,111,121} vs target {118,121,111}.
+
+- [s33] saEft01Init sched1 block=3 (BEFORE reload): >=15 LAUNCH-priority insns; sched2 (AFTER reload): 0 LAUNCH insns. The reload pass renumbered block=3 fresh SET dests into hard-regs already multi-set elsewhere in saEft01Init (v0 re-used by 2 sys_VSync retries; D_800F19BC writes) so birthing_insn_p returns FALSE at sched2 time.
+
+- [s33] Structural divergence at every measurable layer: (a) live-span - saEft01Init 32 luid units vs csmd4 14; (b) refs - saEft01Init dominant pseudos refs=6 vs csmd4 refs=2-4; (c) LAUNCH activity sched2 - saEft01Init 0 vs csmd4 2 tied. The functions are NOT QTY-family twins despite sharing the debug_printf-window surface shape.
+
+- [s33] Baseline sanity: candidate.c (h5) applied to src/system.c continues to score masked=2 (target_insns=160, build_insns=160) via sandbox cpu_side_move_dir_4 --disable all; this session did not modify src/system.c or candidate.c.
