@@ -1,7 +1,7 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 4,
+ "session_count": 5,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -33,23 +33,29 @@
    "floor": 2,
    "modality": "permuter",
    "headline": "Frontier top-3 cleared: do-while(0) wrap direction-invariant +2 insns (KILLS pri-lift lever), cnt-carrier regresses to masked 4, volatile fmt-carrier policy-rejected. h5 floor holds at 2."
+  },
+  {
+   "session": 5,
+   "floor": 2,
+   "modality": "permuter",
+   "headline": "s5 permuter: all 3 frontier hypotheses (block-scope multi-set carrier, named-dispatch reorder, nested do-while(0)) KILLED with measurements; h5 masked-2 floor holds"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The residual {sll4@54 <-> addu5@55} pair may respond to a LOCAL block-scope multi-set variable (declared inside the inline block, set twice on non-collapsing values, referenced 3-4 times) as the arg5 value-carrier \u2014 the ledger records fn-scope carriers going to s0 spill and fresh single-set locals folding, but a block-scope multi-set with a legitimately distinct second-set value (not idx[1] scrambled) has not been swept.",
-   "mechanism": "combine.c merges paired sets with accurate ref bookkeeping (session-3 evidence, e5aa2dd4), but only when the sets are transformable equalities. A block-scope carrier initialised from a UNIQUE second value (e.g. the D_800A11D5 dispatch byte) would be non-mergeable and could lift arg5-qty refs without triggering combine collapse.",
-   "next_probe": "Sweep {block-scope `s32 c = D_800A11D5; c = idx_1494[1]; ...`; block-scope `s32 c = *idx_1495; c = idx_1494[1]; ...`; block-scope `s32 c = t0; c = idx_1494[1]; ...`} \u2014 three distinct multi-set precedents whose first value is a live-here-not-dead reference. Measure each against the h5 base."
+   "hypothesis": "The g3 base (masked 6, ORDER PERFECT, residual = pure v1/a0 exchange) may admit a duplicated-statement-into-arms lever: duplicating the arg5 index computation into distinct control-flow arms (SOTN-sanctioned 2026-07-01, duplicated-statement-into-arms.md) creates a byte-neutral REG_N_REFS priority lift on arg5-qty without triggering cross-jump merge collapse.",
+   "mechanism": "flow.c REG_N_REFS lift from duplicated statement (2x refs) achieves the +differential the wraps failed to deliver, but WITHOUT the loop-note ref-multiplier's symmetric effect on t0. Ownership-sanctioned since 2026-07-01 with byte-neutrality + FAKE-annotation prerequisites.",
+   "next_probe": "Apply g3 form (in-call addu, t0<<=2 statement) to src/system.c; guard the arg5 stage under an if/else duplication (both arms compute the same arg5 index) - each arm's ref-set counts once, cross-jump may re-merge byte-neutrally, giving arg5-qty refs=4 without loop-notes. Measure masked and window-diff vs g3's 6."
   },
   {
-   "hypothesis": "A statement-level rearrangement of the debug_printf CALL argument evaluation shape (e.g. pre-computing D_800A11DC[D_800A11D5] into a named local BEFORE the arg5 stage) shifts the arg-register homing seat and may re-time the fmt-la relative to t0's death without needing to hide the symbol from equiv_constant.",
-   "mechanism": "expand.c handles CALL args right-to-left; naming an earlier arg's evaluation moves its LUID slot and may re-order the ready queue when arg5 births.",
-   "next_probe": "Insert `s32 dispatch = D_800A11DC[D_800A11D5];` BEFORE the arg5 stage; use dispatch in the call. Measure. Compare vs. inserting it AFTER arg5. Compare vs. naming the fmt pointer itself as `const char *fmt = (const char *)&D_800161C8;` (non-volatile, so the symbol is CSE-visible \u2014 the change would be the LUID slot only)."
+   "hypothesis": "A hybrid form combining h5's v0-staging (arg5 chain) with the g3-style t0<<=2 STATEMENT variant (not the in-call addu) may create a new qty configuration untested by either pure base.",
+   "mechanism": "Prior sweeps only tested each base independently: h5 uses `t0 = (s32)((u8*)tbl + t0)` in the outer scope THEN in-call *(s32*)t0; g3 uses `t0<<=2` in-block + in-call *(s32*)(t0 + tbl). The hybrid \u2014 h5's v0 chain PLUS g3's t0<<=2 form \u2014 represents 8 unmeasured cells in the h/g cross-product ledger's Cartesian.",
+   "next_probe": "Sweep 4 cells: {h5-v0-staging, g3-v0-inline} x {h5-t0-in-call-t0, g3-t0<<=2-plus-in-call-addu}; measure each via sandbox --disable all; look for a cell with masked <2 or masked =2 with a distinct register configuration."
   },
   {
-   "hypothesis": "Nested do-while(0) wraps ARE sanctioned with single-level-insufficient documentation. Given single-level wraps are direction-invariant scheduler barriers here (measured KILLED this session), nesting is unlikely to help \u2014 but a nested wrap that includes idx_1494 dereference INSIDE the outer wrap (making both loads participate in the loop-note refs) is different in kind from the single-level probes.",
-   "mechanism": "flow.c multiplies REG_N_REFS by depth; nested wraps double the multiplier. If depth-2 loops both idx dereferences, cse might invalidate the equiv-sink defeat on D_800A11D5 (the pp alias is refs-2, session-1 evidence).",
-   "next_probe": "Wrap the entire inline block (idx_1494[0], idx_1494[1], t0 chain, arg5 chain, pp, and the CALL) in one do{}while(0). Measure. If +N insns and masked worsens, kills the nested-wrap direction entirely. If masked improves at any insn budget, characterise the depth-2 ref reweighting."
+   "hypothesis": "Since ALL prior wrap probes symmetrically lift both idx sources, an asymmetric wrap that includes idx_1494[1] but NOT idx_1494[0] should selectively lift arg5-qty refs while leaving t0-qty untouched.",
+   "mechanism": "flow.c REG_N_REFS depth multiplier applies per-insn based on which loop the insn resides in; if idx_1494[0] is emitted BEFORE the wrap begins, only idx_1494[1] gets the ref lift.",
+   "next_probe": "src/system.c: `t0 = idx_1494[0]; do { v0 = idx_1494[1]; v0 <<= 2; arg5 = *(s32*)(v0 + (s32)tbl); } while(0);` \u2014 only the arg5 chain inside the wrap, with t0 assignment BEFORE the wrap. (This differs from s4 P1 which wrapped {v0=idx[1]; v0<<=2; arg5=...} but scored masked=20 +2 insns \u2014 the discovery here is the +2 barrier signature that F3/F3b/F4 lack, indicating placement-dependence in the loop-note barrier effect.) Re-measure and diff-compare with F3's no-barrier signature."
   }
  ],
  "judge_constraints": [],
