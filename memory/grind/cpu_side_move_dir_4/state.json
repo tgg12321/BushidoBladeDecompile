@@ -1,8 +1,8 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 25,
- "current_modality": "forensics",
+ "session_count": 26,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 0,
@@ -159,23 +159,29 @@
    "floor": 2,
    "modality": "forensics",
    "headline": "s25 forensics KILLS the frontier g3+do-while(0)-arg5-deref probe: masked=12 (+6 vs g3, +10 vs h5); QTYDBG on the instrumented dump shows block=3 arg5/t0 qty numbers (p107/p113/p100/p106 birth-death/re"
+  },
+  {
+   "session": 26,
+   "floor": 2,
+   "modality": "rederive",
+   "headline": "s26 rederive KILLS two novel angles: decomp.me residual-pattern scan 0/3754 hits (distinct from s17 shingle scan), BB2 in-repo residual-cluster twin scan surfaces saEft01Init as a THIRD twin (self+mar"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The g3-basin register-exchange residual can only be closed by lifting arg5-qty REG_N_REFS through a mechanism OTHER than do-while(0) wraps - specifically by giving arg5 a legitimate multi-use pattern (arg5 used at least 2 more times inside the same block) so flow.c's straight-count REG_N_REFS reaches >=4 without loop_depth reliance.",
-   "mechanism": "flow.c REG_N_REFS is a plain use count; multiple uses of arg5's pseudo would linearly increment it. The challenge is finding a use-pattern that preserves semantics: arg5's value is consumed once by debug_printf, so extra uses must be dead OR must feed into another computation that appears in target bytes. Prior s5 F1a/F1b/F2a/F2b + s13 g3 multi-set VALUE carrier tests explored the first-set-side; the OPPOSITE side (multi-set post-hoc via a bit-pattern-preserving self-reference) is unexplored.",
-   "next_probe": "structural: `arg5 = *(s32*)(v0+(s32)tbl_125c); arg5 = arg5 | 0;` OR `arg5 = arg5 ^ 0;` as a self-preserving idempotent second use - this WOULD add a second REG_N_REFS increment to arg5's pseudo. Risk: combine.c fold_rtx may recognize `arg5 | 0 == arg5` and eliminate the second SET before flow, making it INERT. If it survives, arg5-qty refs would reach 3-4 and potentially flip the exchange. This form must be layer-2 vetted: `arg5 = arg5 | 0` is arguably a dead-self-assign to a local, which is sanctioned as last-resort per dead-store-fake-exception with FAKE annotation; owner has explicitly sanctioned same-var split-init accumulation (split-init-accumulation-sanctioned, 2026-06-13) as pure-C infrastructure - the shape is analogous."
+   "hypothesis": "The saEft01Init third-twin discovery + its persistent 15 regfix rules opens a cross-function analysis angle: if a lever CAN be derived that closes csmd4 in pure C, that same lever should apply to saEft01Init and (possibly) marionation_Exec. Conversely, the saEft01Init pin-installed pair-swap workaround is evidence that the pair-swap residual persists across at least 3 independent debug_printf-tbl-index instantiations \u2014 a cluster-wide compiler-pattern, not a csmd4 idiosyncrasy.",
+   "mechanism": "All three twins share the same expmed.c case alg_shift NULL_RTX target birthing p106 for `t0*=4` AND the same sched.c LUID tiebreak at clock=13; the fact that saEft01Init's incumbent C uses reverse-named-eval (measured masked=8 on csmd4 via s9 P3) yet STILL needed pins to match indicates the surrounding s-reg web is the load-bearing differentiator across the three sites.",
+   "next_probe": "Cross-function analysis: instrument saEft01Init with the same BB2_QTY/SCHED/RANK/ALLOC debug flags used on csmd4 (s6/s25 recipe), compare qty tables between saEft01Init's pinned h5-equivalent basin and csmd4's h5 basin. If p107/p113 qty numbers match numerically, the pin family saEft01Init uses IS a viable csmd4 lever direction if reproduced in pure C. Cross-function session; not a csmd4-only probe."
   },
   {
-   "hypothesis": "The pair-swap residual on h5 basin can be attacked via a mechanism-untested angle: making insn 118 (the addu/sub before 111) be a LAUNCH insn too, so the RANKDBG tiebreak at clock=13 involves 3 LAUNCHes instead of 2 - the birth-order arithmetic in sched.c ties may resolve differently with 3-way LAUNCH competition.",
-   "mechanism": "sched.c::schedule_block ready-queue LUID tiebreak is described in ledger as pairwise; but if THREE LAUNCHes are simultaneously ready at clock=13, the ordering scan may pick differently. Insn 118 in s6 h5 was pri=2 (non-LAUNCH). To make 118 LAUNCH would require its SET dest to be a live single-set pseudo (birthing_insn_p). Whether any h5-preserving C form achieves this without regressing to another basin is untested.",
-   "next_probe": "forensics: instrument h5 base with a variant that adds a fresh single-set pseudo for the pp assignment or the D_800A11DC dispatch's intermediate, and check whether insn 118 (or its analog) shifts to LAUNCH. Then measure sandbox. Risk: this is close to F2a/F2b (dispatch named) which regressed +14; the difference here is targeting a specific single-set fresh dest, not a named local carrier."
+   "hypothesis": "The persistent g3-basin register-exchange residual (pri(arg5) needs strict-win over pri(t0)) requires a LEGITIMATELY-SEMANTIC arg5 multi-use that satisfies the function's stated purpose \u2014 not a codegen-driven multi-use. saEft01Init's presence as a third twin suggests looking for functions with a similar dispatch pattern where the natural C uses arg5's VALUE more than once (e.g. as a bound-check + call arg) for hints.",
+   "mechanism": "flow.c REG_N_REFS is a plain use count; multiple SEMANTIC uses of arg5's value would linearly increment refs. The frontier from s25 (arg5 idempotent second use) is codegen-driven and cheat-shaped; a semantic alternative would be within the function's stated behaviour (e.g. arg5 used both as a return-value indicator and as a printf arg).",
+   "next_probe": "Read the third-twin surrounding-function C in src/system.c (saEft01Init full body + surrounding sa* family) for any place where an arg5-analog is used semantically twice. If found, the same restructuring pattern may transfer to csmd4."
   },
   {
-   "hypothesis": "The rejected form g3_dowhile0_arg5_deref_only.c mirrors marionation_Exec's residual pattern; if applied to marionation as a twin sanity check, it should also regress by ~+6 confirming the mechanism is not marionation-specific.",
-   "mechanism": "cpu_side_move_dir_4 and marionation_Exec share the same debug_printf window shape (per WIP notes.md file-local twin). QTY numbers p113 vs p111 differ by ~2 per marionation 6f cross-check; the flow.c wrap mechanism is compiler-source-common so identical regressions confirm generality.",
-   "next_probe": "structural: apply the same g3+wrap-arg5-deref variant to marionation_Exec's inline block, sandbox marionation_Exec --disable all. If masked regresses by similar ~+6, confirms twin-invariance. This is CROSS-FUNCTION so must be run as a marionation session, not a csmd4 one - deferred to a future marionation grind step."
+   "hypothesis": "The residual pair-swap could be attacked at the FILE-scope declaration order: the ledger notes idx_1495 cross-symbol spelling at line 406 is load-bearing to h5's s-reg web (s8 probe1 masked=15). If saEft01Init and marionation_Exec use different cross-symbol tricks, the delta between them provides evidence about which file-scope constants are truly load-bearing.",
+   "mechanism": "file-level constant folding via cse.c equiv_constant + splat linker ordering. Not a block-local structural lever.",
+   "next_probe": "diff the leading fn-scope decls (D_800A125C / D_800A1494 / D_800A11DC / D_800F19C0 uses) across csmd4, marionation_Exec, and saEft01Init C sources; identify which cross-symbol respellings each uses and whether saEft01Init's LACK of the idx_1495 cross-symbol trick (or presence thereof) correlates with its pin count."
   }
  ],
  "judge_constraints": [],

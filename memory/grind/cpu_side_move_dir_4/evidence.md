@@ -512,3 +512,21 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s25] Compiler-source cross-check: tools/gcc-2.7.2/flow.c mark_used_regs / mark_set_regs increment REG_N_REFS by exactly 1 per use, with no loop_depth weighting in the update. loop_depth influences local-alloc.c qty_compare only via bb->frequency, and a do-while(0) zero-iteration loop yields frequency<=1 (not amplified). Therefore the frontier's 'flow.c multiplies REG_N_REFS by loop-depth' mechanism assumption is FALSE at the compiler source level for zero-iteration wraps.
 
 - [s25] The g3 base's v1<->a0 register-exchange residual is inseparable from the qty numbers p113 (t0) 6refs vs p100 (arg5) 2refs; without a mechanism to lift arg5's refs to >=4 (per s1 fable-blitz arithmetic pri>=5000), the exchange cannot flip. This session forensically confirms do-while(0) wraps are NOT such a mechanism on g3 base.
+
+- [s26] s26 rederive modality: no src/system.c edit; HEAD sandbox re-measures masked=7 (both-named baseline s12 basin); h5 candidate.c would restore to masked=2 (not applied this session).
+
+- [s26] s26 decomp.me corpus residual-signature scan: 0/3754 hits (independent-dest {sll,addu,sll} window + jal-within-15). Distinct novel measurement from s17's whole-function shingle scan (which peaked at 0.097 similarity). The corpus's absence of csmd4's residual pattern at the instruction-cluster level is now measured, not just at the whole-function level.
+
+- [s26] s26 in-repo residual scan discovers saEft01Init as a THIRD BB2 twin with the same {sll,addu,sll} -> jal debug_printf residual signature (previously the ledger only knew of marionation_Exec as file-local twin). saEft01Init lives at src/system.c:806-857; regfix.txt has 15 rules for it including 3 register renames + reorder + subst clusters — INCOMPLETE with a hand-installed pair-swap workaround.
+
+- [s26] s26 saEft01Init C form: `arg5 = tbl_125c[idx_1494[1]]; arg4 = tbl_125c[idx_1494[0]]; debug_printf(fmt, D_800F19C0, tbl_11dc[D_800A11D5], arg4, arg5);` — both-named array-index REVERSE-eval. csmd4 s9 P3 already measured exactly this shape at masked=8 (+6 regression). The novel-twin discovery does NOT produce a novel transplant candidate — the same-shape has been measured KILLED on csmd4 already.
+
+- [s26] s26 tslTm2LoadImage C body is a stub: `s32 tslTm2LoadImage(...) { (void)a0; (void)a1; (void)a2; (void)a3; return 0; }` — the function is asmfix'd (asmfix.txt: `tslTm2LoadImage: replace_with_asmfile "asm/funcs/tslTm2LoadImage.s"`), so its target bytes come from a full asm replacement, not from a compiled C form. NOT a viable template.
+
+- [s26] s26 policy note: saEft01Init's regfix pattern (register renames $16<->$18, $16<->$17, subst pairs, reorder) is the exact hand-installed pair-swap workaround the anti-cheat policy forbids for csmd4. Its persistence in the tree is a queue-item for another session — but its shape does NOT transfer as a csmd4 solution.
+
+- [s26] s26 additional in-repo hits (2/6) are wrong-context: func_80067200 jal func_80079154 (not debug_printf; different arg structure); single_game_CheckStatusUpDataTotalOver jal func_8001FB34 (not debug_printf). Neither produces the arg4/arg5 tbl-index dispatch shape.
+
+- [s26] s26 candidate.c unchanged (h5 form remains masked-2 floor); src/system.c reverted to HEAD (both-named form, masked=7) at session end; committed WIP entry unaffected.
+
+- [s26] s26 rederive-modality full closure status: m2c (s8) KILLED, marionation_Exec sibling transplant (s9 P1-P4) KILLED, decomp.me shingle scan (s17) KILLED, Kengo local dump (s18) KILLED, decomp.me residual-pattern scan (s26) KILLED, BB2 in-repo twin scan (s26) KILLED with novel-twin discovery yielding no viable transplant. Every enumerable rederive angle is now measured KILLED — future sessions must not repeat rederive.
