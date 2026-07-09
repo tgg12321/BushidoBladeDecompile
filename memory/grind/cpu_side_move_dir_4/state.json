@@ -1,8 +1,8 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 84,
- "current_modality": "structural",
+ "session_count": 85,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 0,
@@ -513,23 +513,29 @@
    "floor": 2,
    "modality": "structural",
    "headline": "s84 structural: F6-double-prime p77 idx_1494 dup-into-arms via `idx_1495 = idx_1494 + 1;` KILLED across both symmetry axes - symmetric-both-arms byte-neutral cross-jump merge but +15 misdirection, asy"
+  },
+  {
+   "session": 85,
+   "floor": 2,
+   "modality": "permuter",
+   "headline": "s85 KILLED F6-triple-prime (success-path idx_1495=idx_1494+1 dup): masked=15/build_insns=162 non-byte-neutral; also KILLED F6-quint-prime (loop-top variant): masked=15/build_insns=159 novel signature;"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F6-triple-prime: single dup of `idx_1495 = idx_1494 + 1;` on the SUCCESS path (before `goto success;`) is non-arrival-arm relative to do_timeout: so its refs-lift on p77 is isolated from the do_timeout alloc web and could differentially shift qty priorities without triggering the +15 misdirection seen in the both-arms probe.",
-   "mechanism": "Placing the dup on a path that does NOT reach do_timeout: means jump2 has no merge partner at that label, so the insn will emit physically on the success path (non-byte-neutral) UNLESS cross-jump finds a different merge site (e.g. matching insn just before `success:` label from another arm). Speculative: if cross-jump does not merge, the extra insn on success path is +1-2 physical but the refs-lift on p77 might still resolve the 4-cycle differently than both-arms probe.",
-   "next_probe": "Structural session: apply `idx_1495 = idx_1494 + 1;` at tail of the fallthrough arm just before `goto success;`; measure sandbox --disable all; check build_insns (expect +1 physical add unless merge fires from elsewhere). If non-neutral, KILL for byte-neutrality; if neutral, check masked delta vs h5 baseline."
+   "hypothesis": "ALLOCDBG-instrumented forensics on probe2's build_insns=159 signature will identify the specific pseudo whose refs shifted and which upstream insn was eliminated by local-alloc. If the eliminated insn is on the p73/p79/p77 line (rather than the pair-swap window itself), a COMPENSATING C-level lever on a distinct carrier could redirect the refs-shift back toward the target basin while preserving the +1 physical elimination.",
+   "mechanism": "The novel -1 physical delta indicates flow.c reg_n_refs redistributed under the loop-top store, and local-alloc's qty_compare re-ranked at least one qty above its baseline priority, causing a spill/rematerialization elimination. QTYDBG on the probe2 candidate vs h5 baseline would show WHICH qty's (refs, span) numerics shifted and by how much.",
+   "next_probe": "Forensics session: rebuild gccdbg cc1 with BB2_QTY_DEBUG/BB2_SCHED_DEBUG/BB2_ALLOC_DEBUG/BB2_RANK_DEBUG=1 -da on probe2's src (memory/grind/cpu_side_move_dir_4/rejected/dup_idx1495_loop_top_p77.c applied to src/system.c). Diff greg + qty tables vs s6/s69 h5 baseline dumps. Isolate the eliminated insn and its owning pseudo. Cross-reference against register-alloc-pure-c lever catalog for a compensating C construct."
   },
   {
-   "hypothesis": "F6-quad-prime: real statement referencing idx_1494 duplicated via a DIFFERENT vehicle - not idx_1495 re-assignment (which co-perturbs p78) but a memory store into a slot that already receives compile-time-constant addresses (e.g. re-store of D_800F19C0). Because s20 D_800F19C0-carrier misdirected wrong-sign, mixing carriers may compose: `D_800F19C0 = (void*)((s32)&D_80016240 | ((s32)idx_1494 & 0));` - a bit-mask-zero form that references idx_1494 but stores &D_80016240.",
-   "mechanism": "The `& 0` folds arithmetically to zero in cse.c but the idx_1494 REG expression appears as an operand of the AND at expand time; if combine.c fails to simplify the AND before flow.c counts refs, p77 refs++. Combine.c aggressiveness on `& 0` on register operands - fold to constant 0 at combine time - is the risk; would need forensics.",
-   "next_probe": "Structural session with forensics fallback: draft candidate storing D_800F19C0 = (void*)((s32)&D_80016240 | ((s32)idx_1494 & 0)); into both arms with prologue retained. Measure sandbox. If masked!=2, gather ALLOCDBG p77 refs to determine whether idx_1494 REG appeared in reg_n_refs booking. AVOID SEMANTIC-LIE TEST: the construct uses `& 0` which is the semantic-lie family the F6 frontier explicitly forbids. THIS FRONTIER IS INADMISSIBLE per the duplicated-statement-into-arms carve-out prereqs (byte-neutrality via REAL statement, no semantic-lie shapes). Documented here as ELIMINATED-BY-POLICY not measured; kept in frontier so future agents see the boundary."
+   "hypothesis": "The +1 physical eliminated by probe2's loop-top store corresponds to a MERGED prologue-store pair \u2014 combine.c may be merging the loop-top `sw idx_1495, mem` with the prologue's original `sw idx_1495, mem` in a way that only the loop-top spelling triggers, since the assignment expressions differ. If so, replacing the prologue idx_1495 initializer with a form that MATCHES the loop-top spelling directly (both using `idx_1494 + 1`) could achieve the same +1 elimination WITHOUT the additional loop-top insn overhead \u2014 potentially opening a byte-neutral p77-refs redistribution.",
+   "mechanism": "combine.c can absorb two SETs into one when the second re-establishes a dead-earlier value; if the prologue's cross-symbol `(u8*)tbl + (idx_1494_sym - tbl_sym) + 1` folds to the same RTL as `idx_1494 + 1`, and combine merges the loop-top SET into the prologue block via a NON-adjacent absorption pass, a matching prologue spelling could eliminate the prologue's own store insn while retaining the loop-top's refs-lift.",
+   "next_probe": "Structural session: draft candidate where the src/system.c:406 idx_1495 initializer is respelled as `idx_1495 = idx_1494 + 1;` (matching the loop-top form), WITHOUT the loop-top dup. Measure sandbox --disable all. If build_insns=159 with same masked misdirection, the -1 physical is prologue-only and no p77-refs-lift is achievable. If build_insns=160 with different masked score, the prologue lever is qty-active and warrants ALLOCDBG follow-up. NB: this exact respell was measured s8 probe1 (masked=15, build=160); re-visit its cc1 dump for the eliminated-insn identity."
   },
   {
-   "hypothesis": "ALLOCDBG-instrumented forensics on the +15 masked signature of probe 1: identify which specific s-reg carrier(s) rotated within the misdirection, and whether the rotation is compatible with a compensating C-level lever on ANOTHER carrier that would net back into h5-basin territory with the p77 refs-lift preserved.",
-   "mechanism": "s60/s61/s69 established the 4-cycle rotation is ATOMIC under qty_compare's transitive priority ordering. Probe 1's +15 misdirection is empirically a novel rotation basin distinct from honest_idx_1495 respelling's +13 (s8) and dup_D_800F19C0 no-prologue's +8 (s20). The greg extract on probe 1 would show WHICH carriers rotated and how, potentially revealing whether the p77 refs-lift shifted a carrier the +13 rotation did NOT touch - opening a compensating-lever path.",
-   "next_probe": "Forensics session: run BB2_ALLOC_DEBUG/BB2_QTY_DEBUG/BB2_SCHED_DEBUG on probe 1 candidate; diff greg vs h5 and vs honest_idx_1495 (s69 dumps). Isolate the specific pseudo-to-hardreg rotation. If a novel carrier rotated (e.g. p73 stayed but p77/p78 swapped), that's a NEW compensation target."
+   "hypothesis": "Fresh permuter campaign on a NOVEL chassis annotating PERM_GENERAL alternatives at the s85-probe2 loop-top site (variants: null form / real-statement / pointer-cast-respell / typed-narrow) may explore a mutation neighborhood the s5/s13/s14/s76/s77 campaigns have not touched, since this loop-top region has never been directly permuted.",
+   "mechanism": "Prior permuter campaigns targeted the inline-block (s5/s13/s14, both chassis), poll region (s67 F2), poll-arms (s77 F14), prologue-lineswap (s76 F13), and inline-block-general (s67/s68 F1/F7). The loop-top region (between `loop:` label and `if (D_800F19B8 < v0)`) has zero permuter coverage. Fresh-seed campaign with 20-30 min stopping rule per permuter-directives \u00a7Campaign discipline.",
+   "next_probe": "Permuter session: annotate tmp/perm_csmd4/base.c line-457 region (post `loop:` label pre-if) with PERM_GENERAL alternatives including {null, `idx_1495 = idx_1494 + 1;`, `(void)*idx_1495;`, `idx_1494 = &D_800A1494;`, `idx_1494[0];`}. Launch via tools/permuter_campaign.py launch --label s86_looptop_general -j 8 --stop-on-zero; harvest+stop at 20-min no-novel window."
   }
  ],
  "judge_constraints": [

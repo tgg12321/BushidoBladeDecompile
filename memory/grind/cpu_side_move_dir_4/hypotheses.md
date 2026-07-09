@@ -1283,3 +1283,21 @@
 - probe: Applied `idx_1495 = idx_1494 + 1;` at tail of arm-A ONLY. Sandbox --disable all.
 - result: masked=15, target_insns=160, build_insns=162 (+2 insns). Byte-neutrality FAILS - no counterpart to cross-jump-merge with, so the add insn (addiu s4, s2, 1) emits physically PLUS an extra move/store re-alignment (+2 total). Non-neutrality disqualifies the F6-double-prime carve-out isolation criterion (prereq is byte-neutrality per duplicated-statement-into-arms 2026-07-01 sanction). Rejected form at memory/grind/cpu_side_move_dir_4/rejected/dup_idx1495_arm_a_only_p77.c.
 - verdict: KILLED
+
+## [s85] Single dup of `idx_1495 = idx_1494 + 1;` on the SUCCESS path (before goto success;) is byte-neutral (cross-jump merges with some other tail) and induces a novel p77-refs-lift qty basin distinct from the s84 symmetric-arms +15 misdirection.
+- mechanism: The frontier's cross-jump-merge hope: if some tail elsewhere emits an identical `sw idx_1495, mem` insn, jump2 find_cross_jump can absorb the success-path dup into the shared merge site, keeping build_insns=160 while lifting p77 refs at flow.c time. Alternatively: physical +1-2 insn if no merge partner exists, KILL for byte-neutrality.
+- probe: Applied h5 candidate to src/system.c; measured baseline masked=2 build_insns=160. Then inserted `idx_1495 = idx_1494 + 1;` at the tail of the fallthrough arm (inside the `if (!(0x3C0000 < cnt))` block, immediately before `goto success;`); ran & tools/wteng.ps1 main sandbox cpu_side_move_dir_4 --disable all.
+- result: masked=15, target_insns=160, build_insns=162 (+2 physical). No cross-jump merge partner exists on the success-path tail; the assignment emits as a lui+sw pair inside the arm. Rejected form saved at memory/grind/cpu_side_move_dir_4/rejected/dup_idx1495_success_path_p77.c.
+- verdict: KILLED
+
+## [s85] Placing the same dup at LOOP-TOP (immediately after `loop:` label, before `v0 = sys_VSync(-1);`) may DCE-invisibly CSE with the prologue idx_1495 initializer, producing 0 refs delta AND 0 insn delta (byte-neutral no-op), OR emit a per-iteration store (heavy regression).
+- mechanism: GCC's cse.c copy-propagation on same-value stores; the assigned RHS `idx_1494 + 1` = `&D_800A1494 + 1` is compile-time constant (idx_1494 was assigned `&D_800A1494` in prologue), semantically identical to the prologue-computed idx_1495 value; if cse folds it, the store is dead and DCE'd (0 refs delta); if not, per-iteration overhead lands.
+- probe: Applied h5 candidate; inserted `idx_1495 = idx_1494 + 1;` immediately after `loop:` label; ran sandbox --disable all.
+- result: masked=15, target_insns=160, build_insns=159 (-1 physical). NOVEL signature never previously observed in the ledger (all prior probes were 160, 162, or 163). The loop-top store does NOT CSE with the prologue (unlike s78 P1 self-assign which was DCE-invisible) — instead it survives through combine, then the resulting flow-time reg_n_refs shift on idx_1495 causes local-alloc to eliminate ONE physical insn elsewhere in the pair-swap window while still misdirecting +13 vs baseline. Rejected form saved at memory/grind/cpu_side_move_dir_4/rejected/dup_idx1495_loop_top_p77.c.
+- verdict: KILLED
+
+## [s85] COMPOUND: loop-top dup + success-path dup together may cross-jump merge (jump2 find_cross_jump absorbs the success-path insn into the loop-top occurrence, since success falls back through check: and re-enters loop:) yielding either byte-neutral compound with a different alloc web than loop-top alone, or the same masked=15 signature (confirming the merge fired).
+- mechanism: jump2 find_cross_jump scans block tails for identical insn suffixes; if the success-path insn is bytewise identical to the loop-top insn AND the success-path tail's control flow reaches loop-top (which it does via check:/return/loop cycle), merge fires.
+- probe: Applied h5 candidate; inserted BOTH the loop-top dup AND the success-path dup simultaneously; ran sandbox --disable all.
+- result: masked=15, target_insns=160, build_insns=159 - IDENTICAL to loop-top-alone signature. Cross-jump merge from success-path into loop-top fires deterministically, producing zero net effect vs loop-top-alone. The compound does NOT open a distinct qty basin. Rejected form saved at memory/grind/cpu_side_move_dir_4/rejected/dup_idx1495_looptop_plus_success.c.
+- verdict: KILLED

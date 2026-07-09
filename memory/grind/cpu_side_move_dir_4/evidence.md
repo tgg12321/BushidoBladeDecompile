@@ -1372,3 +1372,19 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s84] Post-probe revert to h5 candidate.c form: masked=2 baseline restored.
 
 - [s84] Neither probe explored inserting the dup on the SUCCESS path (before `goto success;`); this remains a novel un-run subvariant of F6-double-prime with idx_1494-referencing dup, but success path does not arrive at do_timeout: label so cross-jump merge topology differs from arm-A/arm-B pair. Not measured this session.
+
+- [s85] s85 baseline: h5 candidate.c applied to src/system.c scores masked=2 target_insns=160 build_insns=160 via `& tools/wteng.ps1 main sandbox cpu_side_move_dir_4 --disable all`.
+
+- [s85] s85 probe1 (F6-triple-prime, success-path dup): masked=15 build_insns=162 (+2 physical). No cross-jump merge partner on success-path tail; construct emits lui+sw pair inside the arm.
+
+- [s85] s85 probe2 (F6-quint-prime, loop-top dup): masked=15 build_insns=159 (-1 physical). NOVEL signature; loop-top store survives DCE (does NOT CSE with prologue idx_1495 initializer) but the resulting reg_n_refs shift causes local-alloc to eliminate ONE physical insn elsewhere in the debug window while misdirecting +13 vs baseline.
+
+- [s85] s85 probe3 (compound loop-top + success-path): masked=15 build_insns=159, IDENTICAL to probe2 loop-top-alone. CONFIRMS jump2 find_cross_jump merges the success-path insn into the loop-top occurrence (success falls through check: -> loop: cycle, providing the reachable-tail precondition).
+
+- [s85] s85 mechanism finding: the F6-double-prime and F6-triple-prime family (idx_1495=idx_1494+1 dup as p77-refs-lift carrier) is now measured KILLED across FOUR placement axes: symmetric both-arms (s84 +15 masked, build 160), asymmetric arm-A (s84 +13 masked, build 162), success-path arm (s85 +13 masked, build 162), loop-top (s85 +13 masked, build 159), and loop-top+success-path compound (s85 +13 masked, build 159). ALL placements produce +13 masked misdirection; only symmetric-arms is byte-neutral (via cross-jump), and it lands in the same wrong-direction basin as the observable stores.
+
+- [s85] s85 mechanism corollary: the loop-top store's `-1 build_insn` signature is NEW evidence that adding a real (non-DCE'd) reference to idx_1495 in the pre-pair-swap-window control-flow region does perturb the alloc web (unlike s78 P1 self-assign which was flow.c-invisible via delete_noop_moves). But the perturbation is monotonically misdirection: refs on p77 shift qty priorities into a distinct basin that eliminates a physical insn upstream while entrenching the pair-swap.
+
+- [s85] s85 rejected forms bank: dup_idx1495_success_path_p77.c, dup_idx1495_loop_top_p77.c, dup_idx1495_looptop_plus_success.c added under memory/grind/cpu_side_move_dir_4/rejected/. Bank grows from 84 -> 87 entries.
+
+- [s85] s85 src/system.c restored to HEAD (both-named arg4/arg5 form, masked=7 baseline) at session end via `git checkout src/system.c`. candidate.c unchanged (h5 form remains masked=2 floor since s4).
