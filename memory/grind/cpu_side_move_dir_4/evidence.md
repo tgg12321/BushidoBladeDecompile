@@ -466,3 +466,25 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s23] Fresh-seed harvest at 1462s / 20429 iterations is the data point per owner directive 2026-07-07 fresh-seed discipline: 0 weighted-score-<40 novel finds after ~24 min = ordering-space local minimum stable for the h5-multexpander chassis under textual mutation.
 
 - [s23] candidate.c: unchanged (h5 form remains masked=2 floor). src/system.c restored to HEAD (both-named form, masked=7 baseline) at session end. Rejected forms saved: memory/grind/cpu_side_move_dir_4/rejected/lineswap_text_arg5_hoist_pre_t0.c (masked=7 measured) + lineswap_text_g3_ordering.c (g3-dupe, unmeasured).
+
+- [s24] s24 forensics modality: no src edit, no sandbox measurement per modality contract (h5 masked-2 baseline unchanged); candidate.c retained at memory/grind/cpu_side_move_dir_4/candidate.c.
+
+- [s24] expmed.c:1947-1963 low-zero-bits branch for t=4: m=floor_log2(4)=2, q=1, recursion hits t==1 base at line 1916 (op[0]=alg_m,cost=0); best_alg becomes {alg_m, alg_shift(log=2)} at cost=shift_cost[2].
+
+- [s24] expmed.c:2021 factor loop `for (m = floor_log2(t-1); m >= 2; m--)`: floor_log2(3)=1, loop condition 1>=2 FALSE, body never executes for t=4.
+
+- [s24] expmed.c:2065 shift-and-add path for a*3/a*5/a*9 is gated on `(t & 1) != 0` - skipped for t=4.
+
+- [s24] expmed.c:2243-2247 case alg_shift: `expand_shift(...,NULL_RTX,0)` hardcodes NULL_RTX target; the outer expand_mult `target` parameter (a candidate p101 outer LHS) is threaded ONLY into `add_target` (line 2236-2238) which is dead in the alg_shift branch.
+
+- [s24] expmed.c:2249-2298 alg_add_t_m2 / alg_sub_t_m2 / alg_add_t2_m / alg_sub_t2_m / alg_add_factor / alg_sub_factor DO consult add_target/accum_target for the PLUS/MINUS step, but ALL are unselected by synth_mult(4) so add_target's threading is unreachable for t0*4.
+
+- [s24] expmed.c:2202-2229 expand_mult variant sweeps (negate_variant, add_variant) call synth_mult with -val and val-1 respectively; each returns >= the base alg cost for val=4 (add_cost or negate_cost premium on top of a still-non-cheaper alternative).
+
+- [s24] expr.c:5710-5715 COMPOUND_EXPR case: `expand_expr(op0, const0_rtx,...); emit_queue(); return expand_expr(op1, target,...);` - two sequential re-entries into expand_expr, producing sequential emit_insn calls.
+
+- [s24] sched.c LUID assignment (top of schedule_region / sched_analyze) walks the RTL insn chain in emit order assigning strictly increasing integers; two distinct emit_insn calls always yield distinct LUIDs.
+
+- [s24] s6 combine dump insn 111 REG_EQUAL note `(mult:SI (reg/v:SI 101) (const_int 4))` empirically confirms the alg_shift-via-val=4 dispatch path (fresh p106 target).
+
+- [s24] PERM_INT frontier and comma-op frontier were BOTH described in the task brief as compiler-source-reachable mechanism hits; both are now CLOSED at the compiler-source level with no sandbox measurement needed.
