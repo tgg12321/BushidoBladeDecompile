@@ -1,7 +1,7 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 13,
+ "session_count": 14,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -87,23 +87,29 @@
    "floor": 2,
    "modality": "permuter",
    "headline": "s13 permuter+structural: h5-multexpander fresh-seed 2999 iters 0-novel (base=60); 3 KILLED \u2014 D_800F19C0 fn-body-hoist +13, g3+multi-set VALUE carrier for arg5 INERT (both *idx_1495 and t0 seeds)."
+  },
+  {
+   "session": 14,
+   "floor": 2,
+   "modality": "permuter",
+   "headline": "s14 directed PERM_GENERAL on pointer-arith nodes: 23,427 iters / 895s / 6 new finds all >= baseline (3 novel @ score 40 g3-basin, 3 @ score 50); AssertionError blindspot on `(u8*)t0 + (s32)tbl_125c` s"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "PERM_* directed mutation on the pointer-arith node `(u8*)tbl_125c + t0` may reach mutation forms permuter random misses due to the perm_add_sub AssertionError. Candidate hints: staged-value-reused-variable, register-alloc-pure-c.",
-   "mechanism": "tools/permuter_annotate.py --func cpu_side_move_dir_4 --hint <slug> writes PERM_*-annotated candidates that force the permuter to explore specific transformations on flagged nodes, bypassing the random-mutation blindspot. The h5-multexpander base has base_score=60 vs g3's 40; a directed campaign on the h5 pointer-arith node has not been run.",
-   "next_probe": "python3 tools/permuter_annotate.py --list-hints; select a hint aligned to the frontier (staged-value-reused-variable is directly applicable to the h5 t0-chain); write annotated candidate to tmp/permuter_candidates/cpu_side_move_dir_4.c; tools/permuter_campaign.py launch --func cpu_side_move_dir_4 --dir tmp/perm_csmd4_directed --label s14_h5_directed -j 8 --stop-on-zero. Fresh-seed 20-30 min window."
+   "hypothesis": "Directed PERM_GENERAL constrained to alternatives that PRESERVE h5's mult-expander chassis (multi-set t0, fresh p106 SLL dest) reveals sub-60 forms that random alone misses.",
+   "mechanism": "The s13/s14 h5-multexpander campaigns both saw base_score=60 (s13) or collapsed to 40 (s14, due to alternatives including g3-family). A directed-PERM alternative set restricted to h5-preserving spellings (e.g. only nested-cast variations that keep `t0 *= 4` -> mult-expand -> p106 fresh SLL dest, and only arg5-address decompositions that leave p107 single-SET so 121 keeps LAUNCH) would open the neighborhood the s7 forensics named. Requires vetting each alternative for h5-basin preservation before launch.",
+   "next_probe": "Audit each PERM_GENERAL alternative against the s7-CONFIRMED h5-vs-g3 basin classification: `t0 *= 4` (MULT expand path) OR any equivalent that routes through expand_mult (preserves p106 fresh dest); reject any alternative that reaches expand_binop with target=p101 (that's the g3-basin trap). Restrict to 2-3 alternatives that provably preserve h5. Relaunch tmp/perm_csmd4 with the constrained annotation."
   },
   {
-   "hypothesis": "The h5-multexpander chassis has 5 structural axes fully closed (block-local structure s3-s5, do-while(0) 4 scopes s4-s5, m2c rederive s8, marionation transplants s9, arg5_addr two-SETs s11-s12) plus fn-body-scope D_800F19C0-hoist KILLED (s13). The remaining untested fn-body-scope moves are: hoisting tbl_125c/idx_1494/idx_1495/D_800F19BC inits into do_timeout block, or moving the `cnt = D_800F19BC; D_800F19BC = cnt - -1;` counter increment PAST the do_timeout label.",
-   "mechanism": "Same fn-body-scope-move mechanism as frontier #1 (LUID at expand + qty birth-order); each remaining prologue-init is a candidate for the same probe. WIP explicitly warned the file-level s-reg web is coupled to these initializers.",
-   "next_probe": "Sweep the remaining prologue-init hoists into do_timeout individually: (a) tbl_125c into do_timeout, (b) idx_1494 into do_timeout, (c) idx_1495 into do_timeout, (d) D_800F19BC=0 into do_timeout. Each is a single sandbox measurement. All four are structural pure-C moves within pure-C. If any is INERT/improved, seed a permuter chassis on it."
+   "hypothesis": "PERM_LINESWAP applied to the inline block's statement ordering discovers a novel schedule-space arrangement the s3 hand-swept 13 structural axes and s4-s5 wrap/carrier probes missed.",
+   "mechanism": "PERM_LINESWAP enumerates all orderings of a specified line block; s3's 13 variants were hand-picked (decl order, split-variables, expression compression), NOT a complete enumeration of the ~8! = 40320 orderings of the 8 statements in the inline block. LINESWAP is dataflow-safe (permutes independent lines) and would be a systematic complement to the hand sweep.",
+   "next_probe": "Add `PERM_LINESWAP(...)` around the 8-line block `t0 = idx_1494[0]; v0 = idx_1494[1]; pp = ...; t0 *= 4; t0 = ...; v0 <<= 2; arg5 = ...; debug_printf(...);` (or just the 6 non-CALL lines with the call held below). Launch a fresh h5-basin campaign with LINESWAP as the only PERM directive; expected mutation space ~O(n!) minus dataflow-invalid orderings. Complements the directed-PERM approach with systematic schedule-space coverage."
   },
   {
-   "hypothesis": "The decomp.me corpus scrape via tools/decomp_me_scrape.py against asm/funcs/cpu_side_move_dir_4.s remains gated on operator installing curl_cffi in .venv (unchanged from s9/s11/s12). A structurally-novel-in-corpus C form from a similar-asm scratch could bypass the search space closed by s1-s13.",
-   "mechanism": "Coarse asm-overlap pre-filter over the downloaded decomp.me corpus (BB2 toolchain class: gcc2.7.2-psx / gcc2.7.2-cdk / psyq3.5); manual inspection of top hits could reveal an original-source shape our block-local + fn-body-scope search space missed.",
-   "next_probe": "Operator installs curl_cffi in .venv (`source .venv/bin/activate && pip install curl_cffi`); next rederive session runs `python3 tools/decomp_me_scrape.py search --asm-file asm/funcs/cpu_side_move_dir_4.s` and manually inspects top asm-overlap hits."
+   "hypothesis": "The decomp.me corpus scrape (still gated on curl_cffi install) surfaces a similar-asm scratch whose C shape lies OUTSIDE the h5/g3 basins entirely.",
+   "mechanism": "Coarse asm-overlap pre-filter over the downloaded decomp.me corpus (BB2 toolchain class: gcc2.7.2-psx / gcc2.7.2-cdk / psyq3.5); manual inspection of top hits could reveal a novel-in-corpus C form the s1-s14 structural + permuter neighborhoods have not reached.",
+   "next_probe": "Operator installs curl_cffi (`source .venv/bin/activate && pip install curl_cffi`); next rederive-modality session runs `python3 tools/decomp_me_scrape.py search --asm-file asm/funcs/cpu_side_move_dir_4.s` and inspects top asm-overlap hits."
   }
  ],
  "judge_constraints": [],

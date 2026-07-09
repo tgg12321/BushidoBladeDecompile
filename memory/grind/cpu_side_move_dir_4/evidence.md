@@ -304,3 +304,19 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s13] s13 permuter tooling note: perm_add_sub randomizer hits AssertionError('int - pointer') on the `(u8*)tbl_125c + t0` pointer-arith pattern in the h5 chassis (tmp/grind/cpu_side_move_dir_4/s13/permuter_run_tail.log). Worker pool tolerates it (2999 iters completed via other mutation methods) but this pattern is a partial-blindspot for permuter mutations targeting that expression node — a directed-PERM_* form on that node might explore forms permuter misses randomly.
 
 - [s13] s13 src/system.c restored to h5 candidate at session end; post-restore sandbox re-measures masked=2. candidate.c unchanged (h5 form remains masked-2 floor).
+
+- [s14] s14 baseline: h5 candidate applied to src/system.c scores masked=2 (target_insns=160, build_insns=160) via `& tools/wteng.ps1 main sandbox cpu_side_move_dir_4 --disable all`.
+
+- [s14] s14 directed permuter workspace: tmp/perm_csmd4/base.c edited with PERM_GENERAL(4-way, t0-side) + PERM_GENERAL(5-way, arg5-side) + PERM_RANDOMIZE(debug_printf) at the h5 inline block. Original saved at tmp/grind/cpu_side_move_dir_4/s14/base_pre_annotate.c; annotated at tmp/grind/cpu_side_move_dir_4/s14/base_annotated.c.
+
+- [s14] s14 launch/harvest via tools/permuter_campaign.py (label s14_h5_directed_ptrarith): elapsed_s=895.7, iterations=23427, finds_new=6 (3 at score 40, 3 at score 50), best_new_score=40, procs_killed=9, stopped=true. Pre-launch snapshot: 2 pre-existing score-40 finds. All new finds >= baseline.
+
+- [s14] s14 finding: merged base_score of the 20-source PERM cross-product was 40 (g3-basin) not 60 (h5-multexpander); my PERM_GENERAL alternatives at the t0 site included `(s32)tbl_125c + t0` (statement-form / g3-equivalent) and `(s32)((u8 *)t0 + (s32)tbl_125c)` (swapped-operand) which the permuter picked as the lower-scoring base. So the campaign explored the g3 mutation neighborhood, redundant with s5's 9040-iter g3-basin campaign that found 0 novel.
+
+- [s14] s14 finding: AssertionError blindspot on the pointer-arith node is STILL ACTIVE — 19 permuter failures accumulated during the run, tracebacks in tmp/grind/cpu_side_move_dir_4/s14/campaign_tail_20k.txt point to src/randomizer.py::perm_temp_for_expr -> ast_types.py::decayed_expr_type -> deref_type -> `assert isinstance(type, (ca.ArrayDecl, ca.PtrDecl)), 'dereferencing non-pointer'`. Directed PERM_GENERAL alternatives do NOT fully bypass this blindspot; the mutator still hits it on random passes over the annotated block.
+
+- [s14] s14 finding: output-40-3 novel form (`new_var2 = &D_800A11DC[D_800A11D5];` hoist + `temp = arg5;` fn-scope carrier + `t0 = (s32)&((u8*)tbl_125c)[t0]` indexed form) is cheat-shaped per no-new-park-categories (fn-scope carrier + dead alias, no semantic purpose); saved to memory/grind/cpu_side_move_dir_4/rejected/perm_s14_hoist_new_var2_g3_basin.c. Confirms the WIP-recorded 'standalone-permuter finds are UNFAITHFUL / cheat-shaped' warning transfers to directed-PERM output.
+
+- [s14] s14 src/system.c restored to HEAD (both-named arg4/arg5 array-index form, masked=7 baseline). candidate.c unchanged (h5 form remains masked-2 floor).
+
+- [s14] s14 modality note: the frontier's assumption that directed PERM on the pointer-arith node would bypass the blindspot is only PARTIALLY true — my alternatives are DIRECTED SEEDS but PERM_RANDOMIZE'd mutations still trigger the same AssertionError. Further, my alternatives inadvertently included g3-basin-shape spellings, so the merged base_score dropped to 40 and the campaign redid g3 exploration. Future directed-PERM sessions must AUDIT the alternative set to guarantee all forms preserve h5's mult-expander LAUNCH (multi-set t0 chain, fresh p106 dest at the SLL) before launch.
