@@ -1526,3 +1526,15 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s94] s94 confirms fresh-seed permuter discipline: with the h5 basin now measured across 5 structurally-distinct permuter chassis (s5 g3-basin 9040 iters, s13 h5-multexpander 2999 iters, s14 h5-inlineblock-directed 23427 iters, s86 vblank-arm 1375 iters, s94 POLL-expression 44479 iters = ~81420 aggregate iterations) with 0 basin-closing novel finds, the h5 basin is definitively permuter-inert under random mutation. Any future permuter work on this function must attack via a structurally-different chassis that permutes across block=3 QTY priority arithmetic (F3 ALLOCDBG frontier) - which is a forensics modality, not permuter.
 
 - [s94] s94 src/system.c restored to HEAD (both-named arg4/arg5 array-index form, masked=7 baseline). candidate.c unchanged (h5 form remains masked-2 floor).
+
+- [s95] sandbox cpu_side_move_dir_4 --disable all on HEAD src returned masked=7 (build_insns=160 matches target)
+
+- [s95] after applying memory/grind/cpu_side_move_dir_4/candidate.c to src/system.c: masked=2, build_insns=160 (h5 basin confirmed unchanged)
+
+- [s95] permuter campaign s95_perm_general_pp_ordering (fresh seed, PID 19902, -j 4): base_score=60, elapsed=660.1s, iterations=4320, finds_total=0, finds_new=0, best_new_score=null - harvested with --stop reason 's95 fresh-seed PERM_GENERAL pp-ordering chassis - 0 novel finds after ~600k iters / 10 min'
+
+- [s95] concurrent earlier crash campaign s95_perm_general_block3_declorder (PID 413) with a third u32-cast alt branch triggered a permuter internal failure (ast_types.py:165 'int - pointer' AssertionError on the -(s32)-cast arithmetic); harvested at 1376 iters / 112s / 0 finds, chassis form documented as PERMUTER-INVALID
+
+- [s95] 5 stale campaigns reaped in the process (marionation Exec dev campaigns from s30..s40); no interference with s95's csmd4 workspace
+
+- [s95] run.log per-worker iteration counters climbed past 606k with score distribution 40..9590 - all >= base=60 or in known regression basins; workers exhibited the same score-noise floor as s94's POLL PERM_GENERAL run (44k iters / 0 finds), consistent with the frontier-item-3 mechanism (POLL and pp-position axes are permuter-neighborhood inert)

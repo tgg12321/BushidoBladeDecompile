@@ -1,7 +1,7 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 94,
+ "session_count": 95,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -573,23 +573,29 @@
    "floor": 2,
    "modality": "permuter",
    "headline": "s94 permuter: POLL-region PERM_GENERAL fresh-seed chassis (base=60, h5) 44479 iters / 22min / 0 novel finds - POLL expression neighborhood is permuter-inert to block=3 residual"
+  },
+  {
+   "session": 95,
+   "floor": 2,
+   "modality": "permuter",
+   "headline": "s95 permuter: fresh-seed PERM_GENERAL block=3 pp-ordering chassis (base=60, h5) 4320 iters / 660s / 0 novel finds - pp-hoist-position axis is permuter-inert to block=3 residual"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F3 ALLOCDBG-instrumented enumeration of block=3 QTY-pseudo <-> file-scope s-reg conflict-graph edges names the atomic conflict driving the {p72<->p79, p73<->p78} 4-cycle rotation (carry-over from s91)",
-   "mechanism": "s42 established zero live-range overlap p77/p78 vs block=3 QTY pseudos p100/p106/p107/p113 but did NOT enumerate allocno_conflicts adjacency between block=3 QTYs and the s2..s9 hardreg web. The 4-cycle rotation implies a shared conflict-edge set. With s94 confirming the permuter-mutation-neighborhood on POLL is exhausted, the ALLOCDBG axis is the remaining orthogonal probe.",
+   "hypothesis": "F3 ALLOCDBG-instrumented enumeration of block=3 QTY-pseudo <-> file-scope s-reg conflict-graph edges names the atomic conflict driving the {p72<->p79, p73<->p78} 4-cycle rotation (carry-over from s91/s94)",
+   "mechanism": "s95 closes the pp-position PERM_GENERAL axis as inert; combined with s94 POLL PERM_GENERAL inert and s86/s85 arm-duplication inert, the plausibly-orthogonal expression-level permuter-neighborhoods are ALL closed. The 4-cycle rotation still implies a shared conflict-edge set at the ALLOCDBG layer; that axis remains untouched.",
    "next_probe": "Forensics session (NOT permuter modality): cc1 dump BB2_ALLOC_DEBUG=1 on h5 vs +13 basin variant (e.g. honest idx_1495 respell from s8-probe1); grep global.c allocno_conflicts for edges involving {p72,p73,p78,p79} x {s2..s9 hardregs}; diff to identify the atomic edge(s) that flip. Report the specific edge set + mechanism (interval overlap vs conflict inheritance)."
   },
   {
-   "hypothesis": "SOTN-family duplicated-statement-into-arms (2026-07-01 sanction) applied to a REAL statement in the POLL region with /* FAKE */ annotation - carry-over from prior frontier",
-   "mechanism": "s84 KILLED duplicated-statement on block=3 arms; POLL-region duplication into the two callback dispatch arms (status&4 vs status&2) has NEVER been measured. Different alloc-web scope than block=3. s94 now confirms POLL-region expression-level permuter neighborhood is inert, but statement-level duplication is a structurally distinct axis (adds a real statement into 2 arms with cross-jump re-merge invariance).",
+   "hypothesis": "SOTN-family duplicated-statement-into-arms (2026-07-01 sanction) applied to a REAL statement in the POLL region with /* FAKE */ annotation - carry-over from prior frontier, still un-measured",
+   "mechanism": "s84 KILLED duplicated-statement on block=3 arms; POLL-region duplication into the two callback dispatch arms (status&4 vs status&2) has NEVER been measured. Different alloc-web scope than block=3. s94 confirmed POLL-region expression-level permuter neighborhood inert; s95 confirmed pp-position permuter neighborhood inert. Statement-level duplication in POLL arms remains a structurally distinct axis (adds a real statement into 2 arms with cross-jump re-merge invariance) and none of the closed permuter axes touch it.",
    "next_probe": "Structural session: introduce a byte-neutral duplicated statement into both POLL callback arms (status&4 and status&2) with FAKE annotation citing duplicated-statement-into-arms 2026-07-01 sanction; measure sandbox masked; if byte-neutral, invoke layer-2 cheat-reviewer per review-discipline-before-commit."
   },
   {
-   "hypothesis": "The candidate sits in a shape where the ONLY remaining lever is a block=3 QTY priority arithmetic dial - all POLL-region axes (structural s93, expression-permuter s94, wrap s5) closed as compilation-invariant, and all block=3 hand-structural axes closed by s2/s3 twin transfer + s84/s85/s92 rejections",
-   "mechanism": "s94 closes the last plausibly-orthogonal permuter-neighborhood axis (POLL expression-level) as inert. Combined with prior closures (block=3 structural, permuter fresh-seed across 5 chassis, m2c substring scan, wraps on block=3, dup-into-arms on block=3, POLL structural), the exchange must resolve via either (a) ALLOCDBG-informed non-carrier C-side lever, or (b) SOTN-family carve-out per Judge constraint.",
-   "next_probe": "Alternate modality: ALLOCDBG forensics session per frontier item 1, OR structural session with SOTN-family duplicated-statement-into-arms probe per frontier item 2. Permuter modality is now exhausted across the h5 basin under random mutation - future permuter must attack a chassis where block=3 QTY priorities are directly permuted (not achievable via C-source expression mutation)."
+   "hypothesis": "Permuter modality is now exhausted across the h5 basin under BOTH random-neighborhood (PERM_RANDOMIZE) and directed-alternative (PERM_GENERAL 2-branch and 3-branch) mutation over BOTH the POLL region (s94) and the block=3 pp-ordering / statement-order (s95) - future permuter gains require a chassis where block=3 QTY priorities are directly steered, not achievable via C-source expression or ordering mutation",
+   "mechanism": "s94 (POLL PERM_GENERAL, 44479 iters/0 finds) + s95 (block=3 pp-order PERM_GENERAL, 4320 iters/0 finds; 3-way u32-cast variant chassis-invalid) + s86 (vblank-poll-arm chassis, 1375 iters/0 finds) + s85 (F6-triple/quint duplications, +15 misdirection / novel-signature regressions) enumerate the full expression- and ordering-permuter-neighborhood of the h5 basin. All closures point to the same block=3 QTY-priority tiebreaker (s6/s7 forensics: sched.c adjust_priority LAUNCH-vs-LAUNCH LUID tie between insn 111 p106=p101<<2 and its mate); C-source expression mutation cannot reach the QTY priority arithmetic that governs the tie.",
+   "next_probe": "Alternate modality: ALLOCDBG forensics session per frontier item 1, OR structural session with SOTN-family duplicated-statement-into-arms probe in the POLL arms per frontier item 2. Do NOT re-run permuter on the h5 basin - all documented mutation axes are closed and re-measurement produces the same 0-find data point."
   }
  ],
  "judge_constraints": [
