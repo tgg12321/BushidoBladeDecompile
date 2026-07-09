@@ -1,8 +1,8 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 5,
- "current_modality": "permuter",
+ "session_count": 6,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 0,
@@ -39,23 +39,29 @@
    "floor": 2,
    "modality": "permuter",
    "headline": "s5 permuter: all 3 frontier hypotheses (block-scope multi-set carrier, named-dispatch reorder, nested do-while(0)) KILLED with measurements; h5 masked-2 floor holds"
+  },
+  {
+   "session": 6,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "s6 forensics: instrumented cc1 names the h5 masked-2 residual as sched.c::adjust_priority LAUNCH-vs-LAUNCH LUID tiebreak between insn 111 (p106=p101<<2, single-set via mult-by-power-of-2 expander) and"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The g3 base (masked 6, ORDER PERFECT, residual = pure v1/a0 exchange) may admit a duplicated-statement-into-arms lever: duplicating the arg5 index computation into distinct control-flow arms (SOTN-sanctioned 2026-07-01, duplicated-statement-into-arms.md) creates a byte-neutral REG_N_REFS priority lift on arg5-qty without triggering cross-jump merge collapse.",
-   "mechanism": "flow.c REG_N_REFS lift from duplicated statement (2x refs) achieves the +differential the wraps failed to deliver, but WITHOUT the loop-note ref-multiplier's symmetric effect on t0. Ownership-sanctioned since 2026-07-01 with byte-neutrality + FAKE-annotation prerequisites.",
-   "next_probe": "Apply g3 form (in-call addu, t0<<=2 statement) to src/system.c; guard the arg5 stage under an if/else duplication (both arms compute the same arg5 index) - each arm's ref-set counts once, cross-jump may re-merge byte-neutrally, giving arg5-qty refs=4 without loop-notes. Measure masked and window-diff vs g3's 6."
+   "hypothesis": "A different mult-form for the t0 chain that keeps p106 single-use but forces GCC to CSE or combine it into a hard-reg copy earlier could suppress LAUNCH on insn 111 without collapsing to the g3 basin.",
+   "mechanism": "combine.c pass2 can merge (set p106 (ashift p101 2)) with a following (set p101 (plus p106 p79)) into (set p101 (plus (ashift p101 2) p79)) IF the intermediate has a single use. When that merge fires, p106 vanishes and the multi-set p101 gets a synthetic 3rd set that re-launches under a different insn ID.",
+   "next_probe": "Instrument combine.c decisions on the h5 base and check whether the p106 pseudo is a merge-candidate that combine is REJECTING; if so, identify which combine test blocks the merge (probably num_sets > 1 on p101 or set validity). If combine's rejection is what preserves the LAUNCH, a C-source lever that changes p101's set-count could unstick it."
   },
   {
-   "hypothesis": "A hybrid form combining h5's v0-staging (arg5 chain) with the g3-style t0<<=2 STATEMENT variant (not the in-call addu) may create a new qty configuration untested by either pure base.",
-   "mechanism": "Prior sweeps only tested each base independently: h5 uses `t0 = (s32)((u8*)tbl + t0)` in the outer scope THEN in-call *(s32*)t0; g3 uses `t0<<=2` in-block + in-call *(s32*)(t0 + tbl). The hybrid \u2014 h5's v0 chain PLUS g3's t0<<=2 form \u2014 represents 8 unmeasured cells in the h/g cross-product ledger's Cartesian.",
-   "next_probe": "Sweep 4 cells: {h5-v0-staging, g3-v0-inline} x {h5-t0-in-call-t0, g3-t0<<=2-plus-in-call-addu}; measure each via sandbox --disable all; look for a cell with masked <2 or masked =2 with a distinct register configuration."
+   "hypothesis": "The LAUNCH-tie between 111 and 121 could be broken by making insn 121 non-LAUNCH (make p107, the arg5-addr pseudo, multi-set) instead of making insn 111 non-LAUNCH. If 121 stops launching, 111 (LAUNCH) beats it and emits first in backward = last in emission -> pair emits as 118,121,111 which is target's shape.",
+   "mechanism": "birthing_insn_p wants single-set for LAUNCH; if p107 has two SETs (e.g. `p107 = v0; p107 = p107 + tbl;` split-add), 121 becomes non-LAUNCH and 111's LAUNCH wins the pair.",
+   "next_probe": "Try splitting the arg5-addr computation into a multi-set p107 shape: `s32 arg5_addr; arg5_addr = v0; arg5_addr = arg5_addr + (s32)tbl_125c; arg5 = *(s32*)arg5_addr;` on the h5 base; sandbox --disable all and diff bytes vs h5. This is a candidate untested by s3 V4 (which named the addr but kept single-set) \u2014 the deliberate multi-set on p107 is the untested axis."
   },
   {
-   "hypothesis": "Since ALL prior wrap probes symmetrically lift both idx sources, an asymmetric wrap that includes idx_1494[1] but NOT idx_1494[0] should selectively lift arg5-qty refs while leaving t0-qty untouched.",
-   "mechanism": "flow.c REG_N_REFS depth multiplier applies per-insn based on which loop the insn resides in; if idx_1494[0] is emitted BEFORE the wrap begins, only idx_1494[1] gets the ref lift.",
-   "next_probe": "src/system.c: `t0 = idx_1494[0]; do { v0 = idx_1494[1]; v0 <<= 2; arg5 = *(s32*)(v0 + (s32)tbl); } while(0);` \u2014 only the arg5 chain inside the wrap, with t0 assignment BEFORE the wrap. (This differs from s4 P1 which wrapped {v0=idx[1]; v0<<=2; arg5=...} but scored masked=20 +2 insns \u2014 the discovery here is the +2 barrier signature that F3/F3b/F4 lack, indicating placement-dependence in the loop-note barrier effect.) Re-measure and diff-compare with F3's no-barrier signature."
+   "hypothesis": "Rebasing the launching insn's LUID via a duplicated-statement-into-arms lift on the t0 chain (sanctioned 2026-07-01) could give insn 111 more refs / different birth so the tiebreak or the pri ordering changes.",
+   "mechanism": "duplicated-statement-into-arms adds real duplicated statements into 2+ control-flow arms; flow.c REG_N_REFS lift raises the ref count on the duplicated dest without breaking byte-neutrality (cross-jump re-merges). Higher refs -> different qty pri -> potentially different LUID position or different LAUNCH condition through birth-order change.",
+   "next_probe": "On the h5 base, duplicate `t0 = idx_1494[0];` (or `t0 *= 4;`) into two arms of a byte-neutral if/else on a pre-existing runtime condition upstream of the debug_printf window (e.g. wrap in `if (D_800F19BC) { t0 = idx[0]; ...} else { t0 = idx[0]; ... }` where both arms are identical so cross-jump re-merges). Measure masked and window-diff vs h5's 2. Prereq: byte-neutrality verification + FAKE annotation + layer-2 review before commit."
   }
  ],
  "judge_constraints": [],
