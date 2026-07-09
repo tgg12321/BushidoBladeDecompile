@@ -1067,3 +1067,21 @@
 - probe: Ledger cross-read; no measurement.
 - result: Documented honestly; no ruling-request emitted (judge constraint 2026-07-08 bars canonical-asm authorization framing).
 - verdict: CONFIRMED
+
+## [s65] Replacing `t0 *= 4` with two chained `t0 = t0 + t0;` PLUS statements routes expansion through expand_binop's PLUS path (rather than expand_mult case alg_shift), altering insn 111's LAUNCH signature by producing two PLUS insns whose dests may or may not be single-set; predicted a distinct basin from *=4 (h5) and <<=2 (g3).
+- mechanism: expand_binop with target=t0 (l-value) emits `set p101 (plus p101 p101)` in-place -> p101 becomes multi-set for the first add. Second add likewise. This should defeat any launch on the t0-side shift-equivalents.
+- probe: Applied t0 = t0 + t0; t0 = t0 + t0; in place of t0 *= 4 on the h5 candidate; sandbox --disable all.
+- result: masked=15, target_insns=160, build_insns=160. +13 vs baseline 2. Regressed hard.
+- verdict: KILLED
+
+## [s65] Making v0 the explicit multi-set dest of the arg5_addr PLUS (`v0 = v0 + (s32)tbl_125c; arg5 = *(s32*)v0;`) forces expand to emit `set p_v0 (plus p_v0 tbl)` with p_v0 multi-set, defeating LAUNCH on insn 121 (which is currently LAUNCH via a fresh single-set p107 dest).
+- mechanism: birthing_insn_p gates LAUNCH on reg_n_sets(dest)==1. Reusing v0 (already set at load + at <<=2) as the PLUS dest makes reg_n_sets(p_v0)==3, so insn 121 loses LAUNCH; the priority tie with insn 111 collapses, potentially flipping the pair.
+- probe: Applied `v0 <<= 2; v0 = v0 + (s32)tbl_125c; arg5 = *(s32*)v0;` on the h5 candidate; sandbox --disable all.
+- result: masked=15, target_insns=160, build_insns=160. +13. Same regression signature as P1.
+- verdict: KILLED
+
+## [s65] Splitting the t0-chain tail PLUS to a fresh block-local `s32 t0_addr = (s32)((u8*)tbl_125c + t0);` gives insn ~117 (tbl+t0 PLUS) LAUNCH (via reg_n_sets(t0_addr)==1); alters the tiebreak against insn 121 by putting a third LAUNCH insn in the ready-queue window.
+- mechanism: Fresh single-set pseudo t0_addr replaces multi-set t0 as the PLUS's dest; insn corresponding to `tbl+t0` transitions NON-LAUNCH -> LAUNCH; three-way priority tie at clock=13 in backward sched with new luid ordering.
+- probe: Applied `s32 t0_addr; ...; t0_addr = (s32)((u8*)tbl_125c + t0);` with call reading *(s32*)t0_addr on the h5 candidate; sandbox --disable all.
+- result: masked=9, target_insns=160, build_insns=160. +7. Novel intermediate basin (distinct from h5=2, g3=6/7, +13 collapse basin, and inline-all=14).
+- verdict: KILLED

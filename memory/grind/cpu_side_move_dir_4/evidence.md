@@ -1084,3 +1084,11 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s64] Judge constraint (2026-07-08) BINDING: canonical-asm authorization is settled-FAIL; do not resurface.
 
 - [s64] s64 no measurement per synthesis modality; candidate.c at floor 2 preserved verbatim.
+
+- [s65] P1 (t0-two-add-pair) and P2 (v0-in-place-PLUS-carrying-arg5_addr) both land at masked=15 (+13). This is a NEW named basin: 'multi-set-collapse' — any single-mutation forcing either the SLL-equivalent-dest or the PLUS-equivalent-dest to multi-set collapses the h5 window's LAUNCH duo into a +13 misalignment. The 2 basin members are compositionally symmetric (SLL-side and PLUS-side), reinforcing s7's finding that h5 alignment depends specifically on the fresh single-set dual on both p106 (mult-expander) and p107 (arg5-addr PLUS).
+
+- [s65] P3 (fresh-single-set-t0_addr) lands at a distinct masked=9 (+7). Splitting the tail PLUS to a fresh dest without disturbing the shift-side gives a THREE-LAUNCH-insn window (insn 111, insn 117-equivalent, insn 121), producing a novel misalignment not yet catalogued in the ledger's basin table.
+
+- [s65] Baseline masked=2 confirmed at session start (candidate.c applied) and at session end after restoration.
+
+- [s65] Structural modality is empirically exhausted on the h5 chassis for FIRST-order block-local statement rewrites: the ledger's ~40 measured decompositions plus this session's 3 novel probes leave no untested single-mutation that both preserves h5 basin AND flips the pair. Every measurable structural mutation either preserves h5=2 (INERT), collapses to g3=6/7 (mult-expander -> in-place-shift), or lands in +7 / +13 / +14 novel misalignment basins.
