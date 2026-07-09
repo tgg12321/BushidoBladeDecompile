@@ -254,3 +254,15 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s9] s9 candidate.c: unchanged (h5 form remains masked-2 floor); src/system.c restored to the h5 candidate on session end; post-restore sandbox re-measures masked=2.
 
 - [s9] s9 modality-exhaustion note: with m2c (s8), decomp.me corpus (tool unavailable this session), and file-local sibling transplant (s9 P1-P4) all measured KILLED at h5-basin refresh, the 'rederive' modality is now fully closed against known novel-shape angles. Future re-derivation attempts would need external inputs: (a) install curl_cffi and scrape decomp.me for target-asm-similar scratches, (b) locate a distinct sibling analog outside marionation_Exec (currently no known second twin in the codebase per WIP notes.md), or (c) an entirely different Kengo/nm_cpu source glance (label at src/system.c:497 flags a `x4 size collision` in nm_cpu/cpu_side_move_dir_4 - available only if the operator has the Kengo source dump).
+
+- [s10] s10 synthesis pass: no src edit, no sandbox measurement (synthesis modality); h5 candidate remains the masked-2 floor baseline.
+
+- [s10] Ledger cross-read confirms the s7 expmed.c wall (case alg_shift NULL_RTX target) forbids composing the h5 pair-swap-fix with the g3 register-exchange-fix on any C spelling of the t0 chain.
+
+- [s10] Only lever (b) 'kill 121 LAUNCH keep 111 LAUNCH' has an untested mechanism realization: arg5_addr two-SET forms that survive cse.simplify_plus_minus to flow-time.
+
+- [s10] Frontier #3 (duplicated-statement-into-arms on t0 chain) demoted: it realizes lever (a) which is the g3-basin trap. Cross-jump-based duplication of the ARG5 chain is infeasible because v0=idx_1494[1] is set inside the do_timeout block, making cross-arm duplication byte-non-neutral.
+
+- [s10] Judge-risk pre-analysis: M1 primary probe belongs to the split-init-accumulation-sanctioned family (2026-06-13 provisional) with a defeat-cse twist; layer-2 cheat-reviewer must verify FAKE annotation quality when s11 measures.
+
+- [s10] decomp.me corpus scrape modality remains gated on operator installing curl_cffi in .venv (unchanged from s9).

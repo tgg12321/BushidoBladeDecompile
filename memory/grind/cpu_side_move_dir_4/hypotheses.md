@@ -233,3 +233,21 @@
 - probe: Applied P4 (honest idx_1495 + marionation-hybrid inline block) on top of h5 base; sandbox --disable all.
 - result: masked 20, target_insns=160, build_insns=160. WORSE than either lever in isolation (+5 P1 + +13 s8-probe1 -> +18 non-linear compound at s-reg-web level).
 - verdict: KILLED
+
+## [s10] Re-reading the full ledger, only lever (b) 'insn 121 loses LAUNCH while insn 111 keeps LAUNCH' can flip the pair without falling out of the h5 basin.
+- mechanism: sched.c::adjust_priority + birthing_insn_p gate LAUNCH on flow-time reg_n_sets==1 of the SET dest. Lever (a) attacking 111 collapses to g3 basin per s7's expmed.c case alg_shift finding. Lever (c) LUID reorder is coupled to qty priorities (s6 KILLED). Only (b) has an unexplored realization: make p107 (arg5_addr, insn 121's dest) multi-set at flow-time while p106 (insn 111's dest) stays single-set.
+- probe: Ledger cross-read only (synthesis modality). Verdict is a logical narrowing, not a fresh measurement.
+- result: The frontier's #2-variant sketch (two-independent-PLUS-SETs on arg5_addr) is the only surviving mechanism-hit; #3 duplicated-statement-into-arms on the t0 chain is retired because it attacks the WRONG side (would double p101 refs, regressing to g3 basin). Cross-jump for arg5-chain is infeasible because v0=idx_1494[1] is set inside the do_timeout block, so duplication across the two do_timeout arrival arms would require pre-set v0 outside the block, changing bytes materially.
+- verdict: CONFIRMED
+
+## [s10] The M1 algebraic-cancellation two-SET form `arg5_addr = v0 + t0; arg5_addr += (s32)tbl_125c - t0;` is the highest-mechanism-precision untested probe.
+- mechanism: If cse.c::simplify_plus_minus does NOT fold +t0 with -t0 across the two SETs, flow.c sees reg_n_sets(p107)=2, sched.c::birthing_insn_p returns FALSE on insn 121, 121 loses LAUNCH, 111 keeps LAUNCH via the mult-expander p106 fresh-dest path, strict-priority tiebreak: 111 picked first at clock 13 (backward), emitted last in linear order → 118,121,111 = target.
+- probe: Not measured this session (synthesis modality mandates writing the merged attack + resetting the frontier, not new probes). Draft form retained in tmp/grind/cpu_side_move_dir_4/s10/synthesis.md for s11.
+- result: Elevated to frontier #1 for next session. Risk: simplify_plus_minus is aggressive about +x/-x term cancellation; the fallback is M1-secondary opaque-carrier variant.
+- verdict: CONFIRMED
+
+## [s10] Frontier #3 duplicated-statement-into-arms on the t0 chain (previously listed as live) attacks the wrong side of the pair.
+- mechanism: Duplicating the t0 chain would inflate flow.c reg_n_refs on p106/p101 AND (per rule) increase reg_n_sets on the duplicated dest. Since 111 must KEEP LAUNCH to survive in the h5 basin, doubling p106's sets makes 111 non-LAUNCH → g3 basin regression (identical outcome to every h5→g3 flip measured s3/s5/s6/s9). The rule's byte-neutrality via cross-jump is intact but pushes the exact wrong side.
+- probe: Ledger cross-check: s6 CONFIRMED lever (a) is the g3-basin trap; #3 mechanism as previously stated realizes lever (a). No measurement needed to demote.
+- result: Frontier #3 demoted to the rejected reasoning bank (not a rejected form; a rejected LEVER DIRECTION). Retained as a warning line in synthesis.md.
+- verdict: KILLED

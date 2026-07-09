@@ -1,8 +1,8 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 9,
- "current_modality": "rederive",
+ "session_count": 10,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 0,
@@ -63,23 +63,29 @@
    "floor": 2,
    "modality": "rederive",
    "headline": "s9 rederive: 4 sibling-transplant probes from marionation_Exec twin all KILLED; s-reg webs disjoint despite shared surface residual"
+  },
+  {
+   "session": 10,
+   "floor": 2,
+   "modality": "synthesis",
+   "headline": "s10 synthesis: only (b) 'kill 121 LAUNCH keep 111 LAUNCH' survives the s7-CONFIRMED expmed.c wall; frontier reset to arg5_addr two-SET (algebraic-cancel + opaque-carrier variants) as the direct hit on"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Frontier #3 (unchanged from ledger, still untested): duplicated-statement-into-arms lift on the t0 chain per [[duplicated-statement-into-arms]] (2026-07-01 sanction).",
-   "mechanism": "flow.c reg_n_refs counts each duplicated statement as a distinct ref -> qty_compare pri = floor_log2(refs)*refs*size/span rises; jump2 find_cross_jump re-merges identical suffixes so emitted bytes are unchanged. If ref-count lift changes global-alloc's ranking without displacing the h5 basin's mult-expander LAUNCH on insn 111, its tiebreak vs insn 121 might resolve differently.",
-   "next_probe": "Draft outer-scope `s32 t0_seed;` with `t0_seed = idx_1494[0];` duplicated into (a) the arm ending in goto do_timeout and (b) the fall-through arm just before do_timeout label; use `t0 = t0_seed;` inside the block. Sandbox --disable all. If masked <2, verify byte-neutrality via retire dry-run and inspect .jump2 dump. Needs FAKE annotation + duplicated-statement-into-arms cross-jump byte-neutrality check + layer-2 cheat-reviewer."
+   "hypothesis": "M1-primary: arg5_addr algebraic-cancellation two-SET (`arg5_addr = v0 + t0; arg5_addr += (s32)tbl_125c - t0;`) makes p107 flow-time multi-set \u2192 insn 121 loses LAUNCH \u2192 111 wins strict priority \u2192 pair flips.",
+   "mechanism": "sched.c::birthing_insn_p depends on flow.c reg_n_sets computed BEFORE sched2. Two distinct SETs of arg5_addr surviving cse.simplify_plus_minus to flow yields reg_n_sets(p107)=2, non-LAUNCH on 121. 111 stays LAUNCH via expmed.c case alg_shift's fresh p106. Backward-scheduler strict priority: 111 (only LAUNCH) picked at clock 13 \u2192 emitted last \u2192 118,121,111 = target order.",
+   "next_probe": "Draft `arg5_addr` two-SET body preserving h5's t0 chain and v0 staging. FAKE-annotate: split-init-accumulation-sanctioned + defeat-cse-fold family; mechanism = birthing_insn_p reg_n_sets gate on p107. Sandbox --disable all. Instrument cc1 with BB2_SCHED_DEBUG to confirm birthing_insn_p(121) returns FALSE. Inspect .cse2 dump for whether simplify_plus_minus preserved both SETs. Layer-2 cheat-reviewer before any commit."
   },
   {
-   "hypothesis": "Frontier #2 variant (unchanged from ledger, still untested): express arg5 address via two independent runtime-live PLUS SETs that survive cse and combine.",
-   "mechanism": "cse.c collapses `x = y; x = x + k` when y's set is dead-move; combine.c may algebraically fold two adds when addends simplify. Both addends must be runtime-live and their algebraic combination must not simplify to a form GCC's simplify_rtx recognizes. If arg5_addr genuinely receives two SETs surviving to flow, birthing_insn_p returns FALSE for the second one -> insn 121 loses LAUNCH -> insn 111 (still LAUNCH) beats it -> pair emits target-order.",
-   "next_probe": "Draft: after `v0 <<= 2;`, do `s32 arg5_addr = v0 + t0;` (t0 is runtime-live at that point) then `arg5_addr = arg5_addr + ((s32)tbl_125c - t0);` -- algebraically = v0 + (s32)tbl_125c. Sandbox and inspect .cse2/.combine dumps."
+   "hypothesis": "M1-secondary: if cse folds the algebraic-cancellation form, an opaque-carrier variant (`s32 t_alias = idx_1494[0] * 4; arg5_addr = v0 + t_alias; arg5_addr += (s32)tbl_125c - t_alias;`) may keep the two SETs distinct at cse's value-numbering.",
+   "mechanism": "cse.c value-numbers by RTL SET_SRC canonical form. t_alias and t0 both reduce to `(mult (lbu idx_1494) 4)` via expand's mult-expander \u2192 cse's SET_SRC hash MAY unify them (they'd fold), OR cse may keep the two pseudos distinct if their SETs live in different insns with intervening non-invalidating insns. The probe measures cse's granularity.",
+   "next_probe": "Only run if M1-primary produces masked=2 or worse (cse folded, no LAUNCH change). Same FAKE annotation family + reviewer contract. If both variants fold, the mechanism is dead and frontier collapses to decomp.me only."
   },
   {
-   "hypothesis": "decomp.me corpus scrape modality is untested this session (curl_cffi missing).",
-   "mechanism": "The BB2 toolchain class (gcc2.7.2-psx/cdk, psyq3.5) has scratches on decomp.me that may include structural analogs to csmd4's target-asm shape. tools/decomp_me_scrape.py search --asm-file asm/funcs/cpu_side_move_dir_4.s would surface candidates ranked by asm-overlap.",
-   "next_probe": "Operator installs curl_cffi in .venv (`source .venv/bin/activate && pip install curl_cffi`); a future rederive session can then run `python3 tools/decomp_me_scrape.py search --asm-file asm/funcs/cpu_side_move_dir_4.s` and manually inspect top hits."
+   "hypothesis": "decomp.me corpus scrape via tools/decomp_me_scrape.py against asm/funcs/cpu_side_move_dir_4.s may surface a structurally distinct C form from the BB2 toolchain class (gcc2.7.2-psx / gcc2.7.2-cdk / psyq3.5).",
+   "mechanism": "Coarse asm-overlap pre-filter; manual inspection of top hits could reveal an original-source shape our search space missed. Untested since s9 (module unavailable).",
+   "next_probe": "Operator installs curl_cffi in .venv (`source .venv/bin/activate && pip install curl_cffi`). Then s11+ rederive session runs `python3 tools/decomp_me_scrape.py search --asm-file asm/funcs/cpu_side_move_dir_4.s` and manually inspects top asm-overlap hits. Not actionable in a self-contained grind session."
   }
  ],
  "judge_constraints": [],
