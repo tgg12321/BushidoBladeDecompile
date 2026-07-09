@@ -1475,3 +1475,27 @@
 - probe: Cross-referenced against previously-killed spellings: s8 P1 (idx_1494+1, +13 masked +0 build, nrefs collapse), s90 P1 (&D_800A1495 direct symref, +14 masked +1 build), s90 P2 ((u8*)tbl_125c + 0x239 numeric offset, +13 masked +0 build); all three respellings measured p79 nrefs<=3 and are ledger-closed. This session's probe1 forensics REPRODUCES s8/s90 P2 signatures via a distinct diagnostic axis (flow-time ref count vs allocdbg ord), triangulating on the same underlying mechanism.
 - result: Search-space narrowing: no honest respelling axis exists that both (a) preserves masked=2 basin priority arithmetic and (b) avoids the forbidden cross-symbol form at src/system.c:406. Frontier for s98+ must EITHER (A) shift to an orthogonal alloc-web scope (POLL-region, closed s93/s94; loop-top, closed s85/s86; F17 CALL-return corpus, ledger-closed) or (B) name a non-nrefs priority input (livelen accounting via loop-note-fixes-delay-slot-steal or defeat-licm-hoist-var-reuse mechanics — un-attacked as of s96).
 - verdict: CONFIRMED
+
+## [s98] An in-repo COMPLETED-C function using (s32)&SYM_A - (s32)SYM_B cross-symbol arithmetic exists as a transplant source for csmd4's idx_1495 initializer.
+- mechanism: s97 named RTL insns 34 (subsi3 SYMBOL_REF-diff) + 38 (addsi3 tbl+delta) as the p79 nrefs driver. If any other in-repo function's src uses the same idiom in a COMPLETED-C body, its shape could be mined as a rederive template.
+- probe: grep -rn '(s32)&D_.*- (s32)' src/
+- result: 1 hit: src/system.c:406 (cpu_side_move_dir_4 itself). Zero other in-repo functions carry the cross-symbol subtraction idiom.
+- verdict: KILLED
+
+## [s98] Respelling idx_1495 with an all-SYMBOL_REF base ((s32)&D_800A125C) instead of local (u8*)tbl_125c preserves h5 masked=2 (same subtraction, same +1 constant).
+- mechanism: If the h5 basin depends only on the SYMBOL_REF-SYMBOL_REF DELTA and the constant fold, then substituting the base spelling from local pseudo to raw symbol_ref should be invariant.
+- probe: src edit; sandbox cpu_side_move_dir_4 --disable all
+- result: masked=15 (+13). H5 basin lost. Confirms basin requires LOCAL-pseudo base combined with the symbol_ref-symbol_ref delta.
+- verdict: KILLED
+
+## [s98] Respelling the DELTA side of the subtraction as (s32)&SYM - (s32)local_pseudo (mixing SYMBOL_REF minuend with local subtrahend) preserves h5 masked=2 while adding an extra pseudo reference to p79 (predicted refs-lift lever).
+- mechanism: s97 attribution names insn 38 (addsi3 tbl+delta) as p79-referencing; if delta becomes a runtime subtract on local pseudo, additional pseudo references to tbl_125c could accumulate.
+- probe: idx_1495 = (u8*)((u8*)tbl_125c + (s32)&D_800A1494 - (s32)tbl_125c + 1); sandbox
+- result: masked=15 (+13). Same +13 basin as probe1. Runtime pseudo-based delta is unfoldable in cse.c and does NOT emit the insns 34+38 form; RA priority profile collapses.
+- verdict: KILLED
+
+## [s98] A completed 5-arg debug_printf timeout-guard function elsewhere in BB2 src/ carries a transferrable shape for csmd4's block=3 window.
+- mechanism: 5-arg debug_printf sites are rare; if any is COMPLETED-C, its block-3 arrangement could serve as an in-repo rederive template.
+- probe: grep for debug_printf sites; sandbox each for status
+- result: 3 relevant sites: display.c:993 func_8007DC9C (masked=9, cheat_asm_stripped=437 - INCOMPLETE), system.c marionation_Exec (masked=56 - INCOMPLETE), ings2.c:99 func_80082A14 (masked=0 but 39 cheat_asm stripped and relies on volatile counter + memory barrier - both are forbidden constructs). Zero COMPLETED-C 5-arg debug_printf transplant sources.
+- verdict: KILLED

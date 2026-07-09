@@ -1576,3 +1576,17 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s97] Cross-check with s87 ord=12..15 diff (baseline vs +13 basin probe1): symmetric result — s87 measured p79 nrefs 5->3, pri 675->202, hardreg 19->22. This session reproduces s87 measurements via a distinct instrumentation axis (flow.c reg-ref counting rather than greg ord-position diff), triangulating on the same mechanism from independent evidence.
 
 - [s97] Cross-check with s96 conflict-graph identity: s96 established the allocno_conflicts edge set is bit-identical between h5 and probe1 after 4-pseudo rename. Combined with this session's nrefs-delta finding, the priority-input space is fully partitioned: livelen INVARIANT (148), conflicts INVARIANT (edge set), nrefs VARIANT (5 vs 3). Only nrefs varies, and only along the cross-symbol arithmetic axis (forbidden family).
+
+- [s98] src/ cross-symbol subtraction census: grep '(s32)&D_.*- (s32)' returns exactly 1 hit (src/system.c:406 = csmd4 itself). The idiom is unique to csmd4 in the codebase; no in-repo COMPLETED-C sibling uses the pattern.
+
+- [s98] probe1 (all-SYMBOL_REF idx_1495 base): masked=15/build_insns=160/rules_dropped=5/cheat_asm_stripped=22 - regresses +13. Confirms the h5 basin requires the LOCAL (u8*)tbl_125c base, not a raw &D_800A125C base.
+
+- [s98] probe2 (pseudo-based delta subtrahend): masked=15/build_insns=160 - regresses +13. Confirms cse.c cannot fold the pseudo-based subtract into a constant, so it does not emit insns 34+38 in the p79-referencing form s97 identified. The h5 basin's p79 refs=5 profile is dependent on both operands being SYMBOL_REFs at expand_expr time.
+
+- [s98] func_8007DC9C (display.c: 5-arg debug_printf gpu-timeout guard): masked=9, cheat_asm_stripped=437, INCOMPLETE. Not a transplant source.
+
+- [s98] marionation_Exec (system.c: sibling): masked=56, 42 rules dropped, 22 cheat_asm stripped. INCOMPLETE. Direct transplants (marionation_full_basin_transplant, marionation_hybrid_arg4_named_arg5_inline, mirror_arg5_named_arg4_inline) already killed in ledger (s2/s4/s9).
+
+- [s98] func_80082A14 (ings2.c: tslTm2LoadImage_2 timeout guard, same target callee as csmd4): score 0 but 39 cheat_asm stripped - shape relies on `volatile s32 counter = a1<<15;` + `asm volatile('' ::: 'memory');` barrier; both are forbidden constructs. Not transplantable.
+
+- [s98] Baseline candidate.c re-verified at masked=2/build_insns=160 after all probes; src restored to h5 form.
