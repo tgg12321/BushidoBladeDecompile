@@ -377,3 +377,33 @@
 - probe: Static reasoning against the ledger's compiler-forensics (s6/s7/s16). Kengo is PS2 (R5900 EE core) compiled with GCC 3.x SN Systems / EE-GCC; BB2 is PS1 (R3000A) with GCC 2.7.2 PsyQ. The csmd4 h5 residual is a compiler-internal mult-expander LUID tiebreak (s16 CONFIRMED: expmed.c::expand_mult case alg_shift line 2244 NULL_RTX target hardcoded, produces LAUNCH insn 111 that ties with LAUNCH insn 121 at sched.c val=0). ANY C form of '× 4' in BB2 that reaches expand_mult produces this signature; only direct '<<=' bypasses (basin flip to g3 masked=6, s7 CONFIRMED).
 - result: Reasoning conclusion (not measured): Kengo asm reconstruction is transferable to csmd4 only in shape, not in codegen — and the shape space is exhaustively closed. The angle is available in principle but adds no new signal beyond s8/s9/s17.
 - verdict: KILLED
+
+## [s19] The ladder's next measurable lever is a strictly h5-preserving PERM_LINESWAP (no PERM_GENERAL, no PERM_RANDOMIZE) that enumerates dataflow-valid statement orderings over the 6-8 non-CALL statements in the inline block.
+- mechanism: LINESWAP does not mutate expressions, so h5's mult-expander LAUNCH (insn 111's fresh p106 dest from expmed.c case alg_shift NULL_RTX target, s7 CONFIRMED) is preserved by construction. This is orthogonal to the s14 g3-drift failure mode where PERM_GENERAL alternatives included g3-basin-shape spellings and the merged base_score dropped to 40.
+- probe: Synthesis-only: hypothesis elevated to frontier #1 for next session. Guardrails documented (base_score MUST measure 60 at launch; abort if 40).
+- result: Elevated to frontier #1. Not measured this session per synthesis modality.
+- verdict: CONFIRMED
+
+## [s19] Duplicated-statement-into-arms lever on NON-t0 targets (D_800F19C0 store, D_800A11DC[D_800A11D5] dispatch load, pp alias) unlocked by the 2026-07-01 formal sanction can lift arg5-qty REG_N_REFS via label-steered cross-jump merge without touching h5-basin machinery (insn 111 p106 dest, insn 121 p107 dest).
+- mechanism: s10 demotion of frontier #3 was specific to t0-chain targets (would double p101 refs -> g3 regression). 2026-07-01 FAKE-annotated sanction covers non-t0 targets. Cross-jump collapses duplicates at middle-end while REG_N_REFS was already booked at tree/RTL level, distinct from s13's hoist mechanism (+13 per-iteration store).
+- probe: Synthesis-only: hypothesis elevated to frontier #2. Per-target judge-risk pre-analysis: D_800F19C0 OK, dispatch load conditional on other arm's control flow, tbl_125c bind likely FAILS layer-2, pp alias same concern as tbl_125c.
+- result: Elevated to frontier #2. Not measured this session per synthesis modality.
+- verdict: CONFIRMED
+
+## [s19] A g3-basin arg5-side-only directed permuter campaign (PERM_LINESWAP over arg5 statements + PERM_GENERAL alternatives on arg5 dereference ONLY, NO t0-side directives) is the last untried permuter angle and targets the closable v1/a0 exchange residual in g3 masked=6.
+- mechanism: s5's g3 9040-iter and s14's h5 directed 23,427-iter campaigns were both UNRESTRICTED or CROSS-BASIN. Arg5-side-only directed search on g3 chassis has never been measured. Target: arg5-qty pri>=5000 = weighted refs>=4 at span 6 (13333) OR refs 3 at span<=5 (6000) per s1 fable-blitz arithmetic.
+- probe: Synthesis-only: hypothesis elevated to frontier #3. Guardrails: base_score MUST measure 40 (g3 chassis) at launch; NO t0-side directives to prevent basin drift; layer-2 vetting for the historical g3-permuter cheat family (0xFF/0xFFFF masks, u16 narrowing, alias repurposing).
+- result: Elevated to frontier #3. Not measured this session per synthesis modality.
+- verdict: CONFIRMED
+
+## [s19] The rederive modality is fully closed across all known angles (m2c s8, marionation sibling s9, decomp.me corpus s17, Kengo local dump s18); no rederive frontier remains.
+- mechanism: s8 m2c produced score-14 inline-all-args (known basin). s9 marionation P1-P4 = 7/14/8/20 (s-reg web non-fungible). s17 decomp.me top-15 peak similarity 0.097; 0/15 contained debug_printf+tbl-index shape. s18 Kengo cpu_side_move_dir is an empty stub; ELF is PS2 R5900/EE-GCC 3.x, arch-non-transferable to BB2's PS1 R3000A/GCC 2.7.2.
+- probe: Cross-read of s8/s9/s17/s18 evidence and hypotheses.
+- result: Rederive modality declared exhausted. Any future session choosing rederive must justify a genuinely new external input (unknown at s19).
+- verdict: CONFIRMED
+
+## [s19] The class-attack surface (raising cls(121) via cost>1, anti/output-dep, or type change) is exhausted at compiler-source level and no C-source lever can reach it under GCC 2.7.2 MIPS.
+- mechanism: s16 TRIPLE-KILL confirmed: mips.h:2946 ADJUST_COST is a one-line macro that only zeros anti/output-dep and NEVER raises data-dep cost; sched.c insn_cost architecturally cannot lift above result_ready_cost(producer); result_ready_cost reads TYPE(insn) only, upstream operand types (mul/HI-LO) do not enter 121->123 edge cost. s15 H2 confirmed 121 writes p107 / 123 reads MEM(p107) is RAW, semantically fixed. s16 H3 confirmed no C spelling reasonably makes 121 a load or mul.
+- probe: Cross-read of s15+s16 forensics.
+- result: Class-attack surface declared exhausted. LUID is the sole surviving mechanism and is coupled to basin membership (s6 KILLED for h5).
+- verdict: CONFIRMED

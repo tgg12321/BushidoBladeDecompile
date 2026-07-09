@@ -390,3 +390,21 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s18] Rederive-modality closure across s8/s9/s17/s18: m2c fresh decompile KILLED (s8, produced score-14 inline-all-args), marionation sibling transplant KILLED (s9 P1-P4 = 7/14/8/20), decomp.me corpus scrape KILLED (s17 top-15 zero structural matches, peak similarity 0.097), Kengo local-asset probe KILLED (s18, empty dump stub + arch-non-transferable ELF). Every rederive angle enumerated in the ledger is now measured KILLED.
 
 - [s18] The next modality for a follow-up session should NOT be rederive — no rederive frontier remains. Live frontier note (a) PERM_LINESWAP is a permuter-modality task; frontier note (b) 'operator supplies Kengo source dump' is now measured to be UNAVAILABLE via local assets (empty stub, not merely absent — actively resolved KILLED).
+
+- [s19] s19 synthesis modality: no src edit, no sandbox measurement per modality contract; candidate.c unchanged (h5 form remains masked-2 floor).
+
+- [s19] Ledger cross-read confirms surviving mechanism space is exactly three frontiers: (1) h5-preserving PERM_LINESWAP, (2) duplicated-statement-into-arms on non-t0 targets under 2026-07-01 sanction, (3) g3-basin arg5-only directed permuter.
+
+- [s19] s14 failure mode (merged base_score drop to 40 via g3-basin-shape alternatives) is preventable in frontier #1 by using LINESWAP-only (no PERM_GENERAL alternatives that could introduce g3 spellings).
+
+- [s19] s10 wrong-side demotion of duplicated-statement lever is specific to t0 chain; NON-t0 targets are a distinct lever direction not yet measured.
+
+- [s19] s5 unrestricted g3-permuter (9040 iters, 0 novel) does not close the g3-basin arg5-only directed frontier — that search subspace has never been enumerated with the correct guardrails.
+
+- [s19] Class-attack path (frontier #1 in s15's original phrasing) is compiler-source-CLOSED per s16; no future session should re-derive.
+
+- [s19] Rederive modality is closed across m2c/marionation/decomp.me/Kengo; the only remaining rederive angle would require operator-supplied additional twin source that is currently unknown to exist.
+
+- [s19] Judge-risk pre-analysis per frontier: F1 default-PASS (pure statement-order), F2 per-target (D_800F19C0 OK, dispatch conditional, tbl_125c/pp bind likely FAIL), F3 default-FAIL risk from historical g3-permuter cheat family (mask/narrowing/alias repurposing).
+
+- [s19] Synthesis artifact written to tmp/grind/cpu_side_move_dir_4/s19/synthesis.md documenting closed levers, merged attack, guardrails, and judge-risk analysis.
