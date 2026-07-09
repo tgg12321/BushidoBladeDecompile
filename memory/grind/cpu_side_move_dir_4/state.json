@@ -1,8 +1,8 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 7,
- "current_modality": "forensics",
+ "session_count": 8,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 0,
@@ -51,18 +51,29 @@
    "floor": 2,
    "modality": "forensics",
    "headline": "s7 forensics: h5 basin's LAUNCH sentinel on insn 111 originates at expmed.c::expand_mult case alg_shift line 2244 (hardcoded NULL_RTX target); frontier #1 (combine.c num_sets lever) KILLED \u2014 MIPS md h"
+  },
+  {
+   "session": 8,
+   "floor": 2,
+   "modality": "rederive",
+   "headline": "s8 rederive: honest idx_1495=idx_1494+1 (from prologue asm) regresses +13 masked; m2c-derived shape is known-killed inline-all form"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Frontier #3 (only untested): duplicated-statement-into-arms lift on the t0 chain \u2014 duplicate `t0 = idx[0]` or `t0 *= 4` into two byte-neutral arms of an upstream runtime condition (cross-jump re-merges to identical bytes) to raise reg_n_refs on t0's pseudo (p101/p113) without changing emitted bytes; higher qty priority may steer allocation without leaving h5 basin.",
-   "mechanism": "flow.c reg_n_refs counts each duplicate as a distinct ref \u2192 qty_compare pri = floor_log2(refs)*refs*size/span rises. Cross-jump (jump2 find_cross_jump) re-merges identical suffixes so the emitted bytes are unchanged. If the ref-count lift changes global-alloc's ranking without displacing the h5 basin's mult-expander LAUNCH, insn 111's tiebreak vs 121 might resolve differently.",
-   "next_probe": "Wrap the t0 assignment in `if (D_800F19BC) { t0 = idx_1494[0]; } else { t0 = idx_1494[0]; }` (byte-neutral duplication on a pre-existing runtime var), FAKE-annotate per [[duplicated-statement-into-arms]], sandbox --disable all, verify build_insns unchanged and masked score vs h5 baseline of 2. If masked <2, verify byte-neutrality via retire dry-run. Requires layer-2 review before commit (this session does NOT commit)."
+   "hypothesis": "Frontier #3 (unchanged, still untested): duplicated-statement-into-arms lift on the t0 chain - duplicate `t0 = idx_1494[0]` or `t0 *= 4` into two byte-neutral arms of an upstream runtime condition (cross-jump re-merges to identical bytes) to raise reg_n_refs on t0's pseudo (p101/p113) without changing emitted bytes; higher qty priority may steer allocation without leaving h5 basin.",
+   "mechanism": "flow.c reg_n_refs counts each duplicate as a distinct ref -> qty_compare pri = floor_log2(refs)*refs*size/span rises. Cross-jump (jump2 find_cross_jump) re-merges identical suffixes so emitted bytes are unchanged. If ref-count lift changes global-alloc's ranking without displacing the h5 basin's mult-expander LAUNCH, insn 111's tiebreak vs 121 might resolve differently. Candidate arms: the do_timeout entry has two predecessors (goto do_timeout branch at line ~415 vs fall-through past success guard); duplicating `t0 = idx_1494[0]` into each arm and reading a shared outer-scope t0 in the block would raise refs while cross-jump re-merges. Needs FAKE annotation + [[duplicated-statement-into-arms]] cross-jump byte-neutrality check + layer-2 cheat-reviewer.",
+   "next_probe": "Draft outer-scope `s32 t0_seed;` with `t0_seed = idx_1494[0];` duplicated into (a) the arm ending in goto do_timeout and (b) the fall-through arm just before do_timeout label; use `t0 = t0_seed;` inside the block instead of `t0 = idx_1494[0];`. Sandbox --disable all. If masked <2, verify byte-neutrality via retire dry-run and inspect .jump2 dump to confirm cross-jump merged the duplicated set. This session did not draft it (rederive mandate was m2c/corpus/sibling)."
   },
   {
-   "hypothesis": "Untested variant of frontier #2 that avoids cse collapse: express the arg5 address as a multi-set through a WRITTEN name that survives cse \u2014 e.g. two independent additions rather than a MOVE-then-add (`p107 = v0 * 4; p107 = p107 + tbl_125c_lo; ...` split via an intermediate constant load whose intermediate is not a copy of v0*4).",
-   "mechanism": "cse.c collapses `x = y; x = x + k` back to `x = y + k` when y's assignment to x is a dead move. But two independent adds `x = a + b1; x = x + b2` where neither addend is a dead intermediate cannot fold back. If arg5_addr genuinely receives two SETs surviving to flow, birthing_insn_p returns FALSE for the second one (multi-set dest) \u2192 insn 121 loses LAUNCH \u2192 insn 111 (still LAUNCH) beats it \u2192 pair emits target-order.",
-   "next_probe": "Draft a form where the arg5 address is computed via two independent PLUS SETs surviving cse \u2014 e.g. constant-fold-defeating split of `tbl_125c` addressing via a runtime-live scratch. Measure masked + inspect .cse2/.combine to confirm both SETs survive to flow. Concrete C sketch pending \u2014 this session did not draft; s7 was mandated-forensics not permuter."
+   "hypothesis": "Frontier #2 variant (unchanged, still untested): express arg5 address via two independent PLUS SETs that survive cse (not a MOVE-then-add pattern).",
+   "mechanism": "cse.c collapses `x = y; x = x + k` back to `x = y + k` when y's assignment to x is a dead move. combine.c may still algebraically fold two adds `x = a + b1; x = x + b2` if b1+b2 or (a+b1)+(b2) simplifies to a form matching an existing insn pattern. To survive both cse and combine, both addends must be runtime-live (not compile-time constants) and their algebraic combination must not simplify to a form GCC's simplify_rtx recognizes. If arg5_addr genuinely receives two SETs surviving to flow, birthing_insn_p returns FALSE for the second one (multi-set dest) -> insn 121 loses LAUNCH -> insn 111 (still LAUNCH) beats it -> pair emits target-order.",
+   "next_probe": "Draft: after `v0 <<= 2;`, do `s32 arg5_addr = v0 + t0;` (t0 is runtime-live: it holds `(s32)((u8*)tbl_125c + idx[0]*4)` at that point) then `arg5_addr = arg5_addr + ((s32)tbl_125c - t0);` -- algebraically equals `v0 + (s32)tbl_125c`. Sandbox and inspect .cse2/.combine to confirm both SETs survive to flow (or diagnose which pass folds them). This session did not draft (rederive mandate)."
+  },
+  {
+   "hypothesis": "The honest idx_1495 = idx_1494 + 1 respelling can be paired with a compensating s-reg-web adjustment elsewhere in the function to retire the +13 regression measured in s8 probe1.",
+   "mechanism": "s8 probe1 confirmed the cross-symbol form at src/system.c:406 is load-bearing at s-reg allocation for h5 basin. But that form violates the 2026-07-05 do-while-zero-exception.md #5 semantic-lie ban. A compensating lever elsewhere in the function's inline block (extra pointer alias, restructured pp staging, or a do-while(0) wrap of a s-reg-live region) might absorb the -13 masked regression by resettling the s-reg web without breaking h5's t0/arg5 basin arithmetic.",
+   "next_probe": "Re-apply the honest idx_1495 respelling (from probe1) as the base, then sweep candidate s-reg-web compensations: (a) additional pointer alias for &D_800A147C or &D_800F19A0 declared and used with a legitimate purpose, (b) do-while(0) wrap around only the do_timeout body's post-call cdrom_ClearIrq segment (segments not swept in s4/s5 wrap taxonomy), (c) restructure the block-local decls so idx_1495's early ref-cost is absorbed by a re-used earlier local. This must land at masked <= 2 to be viable and must not re-introduce a policy-violating form."
   }
  ],
  "judge_constraints": [],

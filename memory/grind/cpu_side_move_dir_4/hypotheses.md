@@ -197,3 +197,15 @@
 - probe: Cross-checked with s3-V7 (statement-form t0 <<= 2 → masked 7 = g3 basin), s6 LUID-reorder (t0 *= 4 moved late → masked 6 = g3 basin). Both confirm the basin flip is purely a function of whether the SLL's dest is a fresh pseudo (h5) or an in-place re-SET of p101 (g3).
 - result: CONFIRMED via prior measurements + this session's static expmed.c walkthrough.
 - verdict: CONFIRMED
+
+## [s8] Replacing the cross-symbol tbl_125c-routed spelling of idx_1495 (line 19 of candidate.c) with the honest pointer-arithmetic form idx_1495 = idx_1494 + 1 (as directly evidenced by the prologue asm `addiu $s4, $s2, 0x1` at 715F4) is basin-neutral or improves the h5 masked-2 floor.
+- mechanism: The prologue asm derives s4=s2+1 in ONE addiu, so the original C computed idx_1495 by direct pointer arithmetic on idx_1494. The current committed cross-symbol form (u8*)tbl_125c + ((s32)&D_800A1494 - (s32)D_800A125C) + 1) is in the semantic-lie family the 2026-07-05 do-while-zero-exception.md #5 ruling forbids. WIP notes.md warned of file-level s-reg ref-balance coupling for this substitution but the h5 masked measurement was never taken.
+- probe: Applied replacement in-place on the h5 candidate; sandbox cpu_side_move_dir_4 --disable all.
+- result: masked=15, target_insns=160, build_insns=160 (+13 vs h5 baseline of 2). Rejected form saved at memory/grind/cpu_side_move_dir_4/rejected/honest_idx_1495_ptrarith.c and tmp/grind/cpu_side_move_dir_4/s8/system_probe1.c. Empirically CONFIRMS the WIP file-level s-reg coupling warning: the cross-symbol spelling is currently LOAD-BEARING at the s-reg allocation web level for h5 basin. Any pure-C closure must find a way to satisfy the prologue's `addiu s4,s2,1` shape WITHOUT breaking the s-reg web h5 depends on.
+- verdict: KILLED
+
+## [s8] Fresh m2c decompile of asm/funcs/cpu_side_move_dir_4.s produces a structurally novel C shape not measured in prior sessions.
+- mechanism: m2c reconstructs original-compiler-shaped C from RTL-recovered dataflow; a rederive from raw asm bypasses the search paths biased by the h5-basin lineage.
+- probe: python3 tools/m2c/m2c.py --valid-syntax --target mipsel-gcc-c --function cpu_side_move_dir_4 asm/funcs/cpu_side_move_dir_4.s; output saved to tmp/grind/cpu_side_move_dir_4/s8/m2c_out.txt.
+- result: m2c emits the direct-inlined-all-args shape for the debug_printf call: debug_printf(&D_800161C8, D_800F19C0, *(&D_800A11DC + (D_800A11D5 * 4)), *((M2C_FIELD(&D_800A1494, u8*, 0) * 4) + &D_800A125C), *((M2C_FIELD(&D_800A1494, u8*, 1) * 4) + &D_800A125C)) - NO local variable staging for arg4/arg5 or the index bases. This matches the WIP-recorded 'inline-all args (v1/v8/v9): score 14' shape (evidence.md L7). m2c also flattens the loop/do_timeout goto skeleton into if/else; the flattening axis is upstream of the residual pair-swap window at L80080E64+ and doesn't touch the mult-expander LAUNCH mechanism. The rederive angle does NOT surface a novel structural neighborhood for the h5/g3 residual.
+- verdict: KILLED
