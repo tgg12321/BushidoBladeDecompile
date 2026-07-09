@@ -548,3 +548,15 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s27] s27 src/system.c restored to HEAD at session end (git checkout HEAD -- src/system.c); candidate.c unchanged (h5 form remains the masked-2 floor).
 
 - [s27] s27 rederive-modality census (post-session): m2c s8 KILLED (inline-all-args), marionation sibling s9 P1-P4 KILLED (s-reg web non-fungible), decomp.me shingle s17 KILLED (peak 0.097 similarity), Kengo dump s18 KILLED (empty stub + arch-non-transferable), decomp.me residual-pattern + BB2 in-repo residual-cluster s26 KILLED (0 external hits, in-repo hits either self or asmfix-stubbed), saEft01Init decl-transfer s27 KILLED (both scopes). The rederive modality is now closed across all six sub-angles; no viable rederive sub-frontier remains beyond speculative cross-function forensics.
+
+- [s28] s28 ledger cross-read: 27 prior sessions total across permuter (s5/s13/s14/s22/s23), forensics (s6/s7/s15/s16/s24/s25), rederive (s8/s9/s17/s18/s26/s27), structural (s3/s4/s11/s12/s20/s21), synthesis (s10/s19), collectively closing every C-source-reachable mechanism hit.
+
+- [s28] s28 closed-lever catalog: LUID reorder (s6), class attack (s16 TRIPLE-KILL), arg5_addr two-SET five realizations (s11 M1-a/b/c + s12 pointer/dead-sink), p106 multi-set (s7 expmed.c:2244 NULL_RTX), do-while(0) wraps at all scopes (s4/s5/s25), LINESWAP AST 5040-iter exhaustive (s22), LINESWAP_TEXT 20429-iter (s23), block-local structural 13-variant (s3), comma-op + PERM_INT (s24), rederive six sub-angles (s8/s9/s17/s18/s26/s27), duplicated-into-arms non-t0 (s20), fn-scope carriers cheat family, cross-symbol idx_1495 retirement blocked (s8).
+
+- [s28] s28 residual mechanism: sched.c::rank_for_schedule at clock=13, both insn 111 and insn 121 LAUNCH pri=0x7f000001, cls=3 vs cls=3 (val=0 across all 51 block-3 RANKDBG events per s15), LUID(121)=12 beats LUID(111)=8 (backward-scheduler picks 121 first) → linear order 118,111,121 vs target 118,121,111.
+
+- [s28] s28 register-half status: h5 candidate emits target-correct dispositions (100→3/v1, 106→4/a0, 113→2/v0, 107→2/v0 per s6 .greg) — masked=2 does NOT hide a register diff; the sole residual is the pair-swap.
+
+- [s28] s28 speculative axis catalog (untried, unpromising): outer-function flow restructure (F3 candidate) is the only ledger-enumerated angle not yet measured; helper-function extraction likely closed by function-boundary preservation in cc1 -O2 (F2 to verify).
+
+- [s28] s28 synthesis artifact: tmp/grind/cpu_side_move_dir_4/s28/synthesis.md documents closed levers, surviving space, frontier reset, ruling-request precondition, judge-risk per frontier.
