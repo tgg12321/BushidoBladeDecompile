@@ -1,7 +1,7 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 40,
+ "session_count": 41,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -249,13 +249,29 @@
    "floor": 2,
    "modality": "permuter",
    "headline": "s40 permuter: wider-scope PERM_GENERAL (block + tslTm2LoadImage_2 pre-call + cdrom_ClearIrq post-call) KILLED - 0 novel finds at base_score=60 h5 chassis; closes the last-remaining permuter-scope axis"
+  },
+  {
+   "session": 41,
+   "floor": 2,
+   "modality": "permuter",
+   "headline": "s41 permuter: novel poll-loop callback lineswap axis KILLED by PERM_LINESWAP tool-side constraint (brace-delimited if-blocks unparseable); h5 masked=2 floor preserved."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Ruling-request session on canonical-asm authorization for the twin family (cpu_side_move_dir_4 / marionation_Exec) is the only remaining path after 40 sessions of measurement-closed C-search space, now including every permuter-scope realization.",
-   "mechanism": "s37 CONFIRMED: the h5 basin LUID tiebreak at sched2 clock=13 is the sole surviving mechanism. Every C-source lever direction (a/b/c) is compiler-source-closed. The permuter-modality search space is now empirically exhausted across all 5 scope realizations (LINESWAP prologue/block/text+CALL, PERM_GENERAL block-only, PERM_GENERAL block+flanking-CALLs). Structural, forensics, rederive, synthesis, and permuter modalities have all measurement-closed the space.",
-   "next_probe": "Emit ruling-request outcome asking the owner: does the twin family (csmd4 / marionation_Exec, sharing the exchange residual per marionation 6f cross-check) qualify for canonical-asm authorization on the pair {sll v0 / addu v0 / sll a0} at the debug_printf window, given (a) 40 sessions have measurement-closed every C-source axis including the newly-added wider-scope permuter axis, (b) the residual is a mechanically-explained rank_for_schedule LUID tiebreak, (c) both twins share the exchange arithmetic, (d) the honest-respelling of idx_1495 remains blocked by +13 s-reg coupling (s8), and (e) 5 independent permuter scopes yielded 0 weighted-<40 finds across ~63,000 combined iterations on h5 chassis."
+   "hypothesis": "The remaining permuter-vehicle sub-realizations of the ALLOCDBG s-reg coupling frontier require PERM_GENERAL alternatives at the poll-loop callback sites (offering ordering-equivalent shape alternatives that avoid the PERM_LINESWAP brace-block parse failure) rather than PERM_LINESWAP.",
+   "mechanism": "PERM_GENERAL accepts explicit alternative expressions/statements at a site, bypassing the LINESWAP statement-splitter's brace constraint; if the alternatives at each callback slot preserve semantics (e.g. flattened single-statement conditionals guarded on the outer if-status precondition), a permuter mutation neighborhood over their cross-product could shift the s-reg web.",
+   "next_probe": "Write PERM_GENERAL alternatives at each callback that flatten the if-else nesting into single statements while preserving semantics; audit the alternatives to guarantee they preserve h5 chassis (multi-set t0, mult-expander LAUNCH on insn 111) before launch; enforce base_score=60 at t=0 guardrail per s14 finding."
+  },
+  {
+   "hypothesis": "A hand-structural axis (non-permuter modality) that flattens the poll-loop callback if-blocks into a single-statement dispatch (u8 mask = status & 6; ((void(*)(u8,void*))(mask & 4 ? D_800A11B8 : D_800A11B4))(*(mask & 4 ? idx_1495 : idx_1494), ...)) shifts the s-reg web without introducing new pseudos.",
+   "mechanism": "A single-statement callback dispatch collapses the two-if-block ref-lift on idx_1494/idx_1495 into a ternary-fold, potentially altering flow.c REG_N_REFS bookings on the two pointer variables. If the ref-diff at flow-time re-weights local-alloc.c qty_compare on idx_1494 vs idx_1495, the s-reg allocation web propagating into block=3 may shift.",
+   "next_probe": "Apply the flattened dispatch form on top of h5 candidate; sandbox cpu_side_move_dir_4 --disable all; measure delta vs h5=2. Verify the flattened dispatch preserves observable semantics (null-check on D_800A11B* must not be dropped when 0)."
+  },
+  {
+   "hypothesis": "SOTN-family carve-out sub-realizations of the debug_printf window (frontier (a)): specifically a `[[dead-store-fake-exception]]`-annotated pointer alias / `[[named-local-fake-exception]]` constant-holder at the callback dispatch that mirrors the SOTN evidence in `sotn-family-research-2026-07-01` may allow a layer-2-passing FAKE construct to shift the s-reg web.",
+   "mechanism": "SOTN evidence sanctions certain FAKE-annotated dead constructs (e.g. `fakeEntity = self;`, `s16 three = 3;`) when documented lever-exhaustion + named GCC-pass mechanism + layer-1+2 review. If a matched-shape SOTN carve-out exists for the pattern here (idx_1495/idx_1494 pointer aliasing at the callback slot with a FAKE-annotated dead re-alias), it would be sanctioned rather than a cheat.",
+   "next_probe": "Read `.claude/rules/pointer-alias-fake-exception.md` and `named-local-fake-exception.md` in full; enumerate the SOTN evidence bar exactly; probe ONE draft against the layer-2 cheat-reviewer BEFORE measuring on sandbox to avoid drafting cheats-by-any-spelling."
   }
  ],
  "judge_constraints": [

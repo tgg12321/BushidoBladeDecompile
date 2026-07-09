@@ -730,3 +730,17 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s40] The union of s22 (block LINESWAP, 7!=5040) + s23 (block+CALL LINESWAP_TEXT, 20429) + s31 (prologue LINESWAP, 5!=120) + s32 (h5 block PERM_GENERAL, 35338) + s40 (block+flanking-CALLs PERM_GENERAL, 1738) covers every permuter-modality scope reachable on this fn under h5-chassis preservation. All 5 campaigns yielded 0 weighted-<40 finds.
 
 - [s40] The s37/s39 CONFIRMED closure — 'no C-source lever changes the basin without falling into g3' — is reinforced by the s40 wider-scope 0-find data point: even random AST mutation with statement-motion across CALL boundaries cannot surface a novel neighborhood.
+
+- [s41] HEAD src/system.c (both-named arg4/arg5 array-index inline block form) scores masked=7 via sandbox cpu_side_move_dir_4 --disable all (rules_dropped=5, cheat_asm_stripped=22).
+
+- [s41] Applying memory/grind/cpu_side_move_dir_4/candidate.c inline block to src/system.c restores the h5 chassis at masked=2 (target_insns=160, build_insns=160). Baseline confirmed unchanged from s40.
+
+- [s41] s41 novel permuter axis: PERM_LINESWAP over the poll-loop callback if-blocks (status&4 -> D_800A11B8 callback vs status&2 -> D_800A11B4 callback). This scope has NEVER been targeted by any prior permuter campaign: s31 permuted the fn-scope prologue init (5-item, 120 orderings); s22 the h5 inline block (7-item AST LINESWAP, 5040 exhausted); s23 h5 block + pre-CALL (LINESWAP_TEXT, 20429); s32 h5 block PERM_GENERAL (35338); s40 h5 block + flanking tslTm2LoadImage_2 + cdrom_ClearIrq (1738). The poll-loop dispatch scope is uniquely un-permuted.
+
+- [s41] PERM_LINESWAP tool-side constraint discovered: annotator/parser cannot handle brace-delimited compound statement blocks (`if (cond) { ... }`). Permuter exit rc=1 with `Syntax error in base.c. before: } at approximately line 425, column 23 (after PERM expansion)`. Recorded to campaign.log at tmp/grind/cpu_side_move_dir_4/s41/perm_poll/campaign.log and copied to tmp/grind/cpu_side_move_dir_4/s41/perm_poll_campaign.log.
+
+- [s41] Rewriting the two callback if-blocks into single-line ternary or comma-op form to make them PERM_LINESWAP-compatible would itself be a codegen-visible edit — not a permutation of the current AST — so this rewrite path is out-of-scope for a permutation campaign and is instead a distinct hand-structural axis if attempted.
+
+- [s41] src/system.c restored to HEAD both-named form at session end (masked=7 baseline). candidate.c unchanged (h5 form remains the recorded masked=2 floor).
+
+- [s41] Judge constraint (BINDING per s40 ruling): 'Do not resurface canonical-asm authorization ... Next session must SHIFT MODALITY to (a) SOTN-family carve-out application under codified prerequisites + FAKE annotation + layer-2 cheat-reviewer, OR (b) ALLOCDBG-instrumented s-reg coupling hunt.' This session's chosen axis targets frontier (b) via a permuter vehicle (the mandated modality); the axis is now measurement-closed via the tool-side blocker, eliminating one of the potential (b) sub-realizations.
