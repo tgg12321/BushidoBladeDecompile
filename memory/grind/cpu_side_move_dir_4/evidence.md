@@ -858,3 +858,13 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s48] s48 src/system.c restored to h5 candidate at session end; post-restore sandbox re-measures masked=2. candidate.c unchanged (h5 form remains the masked-2 floor).
 
 - [s48] s48 policy vetting: all three probes were FAKE-annotated at declaration + assignment per dead-store-fake-exception.md / named-local-fake-exception.md prerequisites (lever-exhaustion documented s2-s47; GCC-pass mechanism named; annotation applied). Layer-1/2 cheat-reviewer not invoked because all three probes were INERT vs baseline - nothing to accept.
+
+- [s49] s49 baseline: h5 candidate applied to src/system.c scores masked=2 (score=2, target_insns=160, build_insns=160) via `& tools/wteng.ps1 main sandbox cpu_side_move_dir_4 --disable all`.
+
+- [s49] s49 F3 audit measurement: `grep -nE '\bmult\b|\bdiv\b|\bmadd\b|\bmfhi\b|\bmflo\b|\bmultu\b|\bdivu\b' asm/funcs/cpu_side_move_dir_4.s` returns ZERO matches. Target asm has no HI-LO consumer anywhere. F3 (frontier hypothesis: raise 121->123 edge latency via HI-LO producer for arg5_addr) closes as not-applicable AND cheat-shaped (any C-source HI-LO producer inserted purely to trigger mips_adjust_cost class-1 gate has no semantic purpose beyond changing GCC's scheduler cost per no-new-park-categories).
+
+- [s49] s49 F4 audit measurement: 13 stores total in cpu_side_move_dir_4.s; frame slot 0x14 is the only unused stack gap and target does NOT write it. dead-vars-local-array.md carve-out prerequisite (target bytes contain corresponding dead stores, oracle-enforced) NOT satisfied. F4 closes as not-applicable.
+
+- [s49] s49 narrow permuter campaign (tmp/grind/cpu_side_move_dir_4/s49/perm_narrow): base_score=60 confirms h5 chassis preserved; 15064 iterations, 0 novel finds, elapsed 567.1s. Extends the h5-chassis 0-find plateau from ~40k (s13+s32+s40) to ~55k accumulated iterations.
+
+- [s49] s49 modality-exhaustion note: F3 (HI-LO producer) and F4 (dead-vars-local-array) were the two live frontier axes in the s48 ledger. Both close via target-asm audit without measurement (F3: target has no HI-LO ops; F4: target has no unmatched dead frame stores). Frontier F5 was already documented as closed-at-drafting per no-new-park-categories (`(void)&local` in cheat catalog; multi-set carrier redundant with s5 F1a/F1b). All three s48-declared live frontiers are now measurement-closed; the live frontier list is empty.

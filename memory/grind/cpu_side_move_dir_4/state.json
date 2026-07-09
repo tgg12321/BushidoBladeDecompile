@@ -1,8 +1,8 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 48,
- "current_modality": "structural",
+ "session_count": 49,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 0,
@@ -297,6 +297,12 @@
    "floor": 2,
    "modality": "structural",
    "headline": "s48 structural: F2-B (WRITTEN-never-read fn-scope named-local) closed across 3 C-realizations (fast-path scalar-source, fast-path pointer-source, do_timeout-entry) - all masked=2 INERT vs h5 baseline;"
+  },
+  {
+   "session": 49,
+   "floor": 2,
+   "modality": "permuter",
+   "headline": "s49 permuter: F3 (HI-LO producer) and F4 (dead-vars-local-array) both closed by target-asm audits; narrow arg5-only PERM_GENERAL 15064 iters at base=60 (h5-chassis preserved), 0 novel finds."
   }
  ],
  "frontier": [
