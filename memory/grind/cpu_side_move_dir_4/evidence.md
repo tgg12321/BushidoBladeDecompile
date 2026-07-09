@@ -488,3 +488,27 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s24] s6 combine dump insn 111 REG_EQUAL note `(mult:SI (reg/v:SI 101) (const_int 4))` empirically confirms the alg_shift-via-val=4 dispatch path (fresh p106 target).
 
 - [s24] PERM_INT frontier and comma-op frontier were BOTH described in the task brief as compiler-source-reachable mechanism hits; both are now CLOSED at the compiler-source level with no sandbox measurement needed.
+
+- [s25] s25 baseline (HEAD src/system.c both-named form) sandbox masked=7, target_insns=160, build_insns=160 (unchanged - the HEAD spelling is neither h5 nor g3, it's the s12 intermediate basin).
+
+- [s25] s25 probe (g3 base + do-while(0) around ONLY arg5 deref, applied to src/system.c) sandbox masked=12 (+6 vs g3 baseline masked=6; +10 vs h5 candidate masked=2), target_insns=160, build_insns=160.
+
+- [s25] Restored src/system.c to HEAD both-named form at session end; post-restore sandbox re-measures masked=7 (HEAD-invariant).
+
+- [s25] Instrumented cc1 dump on the g3+wrap variant produced via tmp/grind/cpu_side_move_dir_4/s6/dump.sh (BB2_QTY_DEBUG/BB2_SCHED_DEBUG/BB2_ALLOC_DEBUG/BB2_RANK_DEBUG=1 -da). Artifacts snapshot at tmp/grind/cpu_side_move_dir_4/s25/g3_wrap_arg5_deref.{log,greg,lreg,flow}.
+
+- [s25] flow.c dump shows NOTE_INSN_LOOP_BEG at insn 311 and NOTE_INSN_LOOP_END at insn 341 wrapping the arg5 dereference block. Only 2 loop notes present in the entire function (grep -c LOOP_BEG|LOOP_END = 2).
+
+- [s25] QTYDBG block=3 arg5/t0 pseudos (g3+wrap): p107 birth18/death20/refs=2, p113 birth22/death30/refs=4, p100 birth20/death26/refs=2, p106 birth16/death24/refs=2. BYTE-IDENTICAL to s6 h5 QTYDBG block=3 record (hypotheses.md s6 evidence line 196). The wrap did not lift REG_N_REFS for arg5's pseudo.
+
+- [s25] SCHEDDBG block=3 (g3+wrap): 20 insns scheduled; 7 LAUNCH insns (pri=2130706433) at insns 111/121/123/129/134/144/146. Contrast s6 h5 baseline: minimal LAUNCH count (2 at 111/121 in the residual pair-swap window). The 4 new LAUNCHes at 129/134/144/146 are birthed by flow's re-analysis of intra-block SETs after the wrap inserts NOTE_INSN_LOOP_BEG.
+
+- [s25] SCHEDDBG block=3 clock=13 tiebreak: RANKDBG last=123 y=121 cls=3 x=111 cls2=3 val=0 -> LUID(121)=12 beats LUID(111)=8 -> emission order (backward: 121@13,111@14,118@15) = forward text 118,111,121 (pair-swap residual survives, matching s6 h5 exactly).
+
+- [s25] SCHEDDBG block=3 clock=6-9 (new tiebreaks introduced by the wrap): PICK 146 luid=24 -> 144 luid=23 -> 134 luid=18 -> 138 luid=20 -> 116 luid=10. The extra LAUNCH insns are picked in LUID order and shift the emission of the arg5-adjacent code by +6 masked.
+
+- [s25] build_insns=160 (matches target) despite the wrap creating 2 NOTE_INSN_LOOP_* notes and 4 extra LAUNCH insns - confirming the notes don't materialise as physical opcodes but DO influence sched-time decisions.
+
+- [s25] Compiler-source cross-check: tools/gcc-2.7.2/flow.c mark_used_regs / mark_set_regs increment REG_N_REFS by exactly 1 per use, with no loop_depth weighting in the update. loop_depth influences local-alloc.c qty_compare only via bb->frequency, and a do-while(0) zero-iteration loop yields frequency<=1 (not amplified). Therefore the frontier's 'flow.c multiplies REG_N_REFS by loop-depth' mechanism assumption is FALSE at the compiler source level for zero-iteration wraps.
+
+- [s25] The g3 base's v1<->a0 register-exchange residual is inseparable from the qty numbers p113 (t0) 6refs vs p100 (arg5) 2refs; without a mechanism to lift arg5's refs to >=4 (per s1 fable-blitz arithmetic pri>=5000), the exchange cannot flip. This session forensically confirms do-while(0) wraps are NOT such a mechanism on g3 base.

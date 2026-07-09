@@ -1,7 +1,7 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 24,
+ "session_count": 25,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -153,13 +153,29 @@
    "floor": 2,
    "modality": "forensics",
    "headline": "s24 forensics: two of three live frontiers (PERM_INT, comma-op) KILLED at compiler-source level via expmed.c synth_mult + expr.c COMPOUND_EXPR walkthrough; only the g3-base do-while(0)-wrap frontier s"
+  },
+  {
+   "session": 25,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "s25 forensics KILLS the frontier g3+do-while(0)-arg5-deref probe: masked=12 (+6 vs g3, +10 vs h5); QTYDBG on the instrumented dump shows block=3 arg5/t0 qty numbers (p107/p113/p100/p106 birth-death/re"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The g3-basin residual (masked=6, pure v1<->a0 register exchange) may admit a novel closing lever via `register` pin manipulations that were s1/WIP-KILLED on h5-basin but never re-measured on g3-basin under the 2026-07-06 do-while(0)-sanction. Specifically: on g3 base (t0<<=2; arg5=*(s32*)(v0+tbl); t0<<=2; call(...,*(s32*)(t0+tbl_125c),arg5) - no *=4 mult-expander; masked=6 baseline order-perfect), wrap ONLY the arg5 dereference statement in do{}while(0). g3's order-perfect status means wrap-based ref-reweighting doesn't have to compete with a pair-swap residual - only with the v1/a0 register exchange.",
-   "mechanism": "s5's F3/F3b/F4 do-while(0) wraps were all measured on h5 base and were monotonically wrong-direction because the wrap's ref-reweighting had to overcome the LAUNCH-generated pair-swap AND lift arg5>t0 simultaneously. On g3 base, LAUNCH is not the residual (the SLLs are non-LAUNCH via multi-set p101 in-place respell); only the qty birth-order/refs differential feeds v1/a0 exchange. Wrap around ONLY arg5's dereference lifts arg5-qty refs*loop-depth without touching t0-qty (which sits outside the wrap), giving a clean pri differential without the pair-swap coupling.",
-   "next_probe": "Structural modality: apply g3 base to src/system.c inline block; wrap ONLY `arg5 = *(s32*)(v0 + (s32)tbl_125c);` in `do { ... } while (0)`. Sandbox --disable all. If masked drops below 6, wrap the arg5 chain more aggressively. If INERT at 6, wrap-based ref-lift on g3 is closed too. Save the tested form to rejected/ if KILLED; keep the g3-wrap as a candidate.c anchor if it drops the floor."
+   "hypothesis": "The g3-basin register-exchange residual can only be closed by lifting arg5-qty REG_N_REFS through a mechanism OTHER than do-while(0) wraps - specifically by giving arg5 a legitimate multi-use pattern (arg5 used at least 2 more times inside the same block) so flow.c's straight-count REG_N_REFS reaches >=4 without loop_depth reliance.",
+   "mechanism": "flow.c REG_N_REFS is a plain use count; multiple uses of arg5's pseudo would linearly increment it. The challenge is finding a use-pattern that preserves semantics: arg5's value is consumed once by debug_printf, so extra uses must be dead OR must feed into another computation that appears in target bytes. Prior s5 F1a/F1b/F2a/F2b + s13 g3 multi-set VALUE carrier tests explored the first-set-side; the OPPOSITE side (multi-set post-hoc via a bit-pattern-preserving self-reference) is unexplored.",
+   "next_probe": "structural: `arg5 = *(s32*)(v0+(s32)tbl_125c); arg5 = arg5 | 0;` OR `arg5 = arg5 ^ 0;` as a self-preserving idempotent second use - this WOULD add a second REG_N_REFS increment to arg5's pseudo. Risk: combine.c fold_rtx may recognize `arg5 | 0 == arg5` and eliminate the second SET before flow, making it INERT. If it survives, arg5-qty refs would reach 3-4 and potentially flip the exchange. This form must be layer-2 vetted: `arg5 = arg5 | 0` is arguably a dead-self-assign to a local, which is sanctioned as last-resort per dead-store-fake-exception with FAKE annotation; owner has explicitly sanctioned same-var split-init accumulation (split-init-accumulation-sanctioned, 2026-06-13) as pure-C infrastructure - the shape is analogous."
+  },
+  {
+   "hypothesis": "The pair-swap residual on h5 basin can be attacked via a mechanism-untested angle: making insn 118 (the addu/sub before 111) be a LAUNCH insn too, so the RANKDBG tiebreak at clock=13 involves 3 LAUNCHes instead of 2 - the birth-order arithmetic in sched.c ties may resolve differently with 3-way LAUNCH competition.",
+   "mechanism": "sched.c::schedule_block ready-queue LUID tiebreak is described in ledger as pairwise; but if THREE LAUNCHes are simultaneously ready at clock=13, the ordering scan may pick differently. Insn 118 in s6 h5 was pri=2 (non-LAUNCH). To make 118 LAUNCH would require its SET dest to be a live single-set pseudo (birthing_insn_p). Whether any h5-preserving C form achieves this without regressing to another basin is untested.",
+   "next_probe": "forensics: instrument h5 base with a variant that adds a fresh single-set pseudo for the pp assignment or the D_800A11DC dispatch's intermediate, and check whether insn 118 (or its analog) shifts to LAUNCH. Then measure sandbox. Risk: this is close to F2a/F2b (dispatch named) which regressed +14; the difference here is targeting a specific single-set fresh dest, not a named local carrier."
+  },
+  {
+   "hypothesis": "The rejected form g3_dowhile0_arg5_deref_only.c mirrors marionation_Exec's residual pattern; if applied to marionation as a twin sanity check, it should also regress by ~+6 confirming the mechanism is not marionation-specific.",
+   "mechanism": "cpu_side_move_dir_4 and marionation_Exec share the same debug_printf window shape (per WIP notes.md file-local twin). QTY numbers p113 vs p111 differ by ~2 per marionation 6f cross-check; the flow.c wrap mechanism is compiler-source-common so identical regressions confirm generality.",
+   "next_probe": "structural: apply the same g3+wrap-arg5-deref variant to marionation_Exec's inline block, sandbox marionation_Exec --disable all. If masked regresses by similar ~+6, confirms twin-invariance. This is CROSS-FUNCTION so must be run as a marionation session, not a csmd4 one - deferred to a future marionation grind step."
   }
  ],
  "judge_constraints": [],
