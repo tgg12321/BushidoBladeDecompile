@@ -428,3 +428,21 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s21] expand_mult case alg_shift NULL_RTX target (s7 CONFIRMED mechanism) only births a distinct pseudo when the OUTER context provides no target for the multiply — i.e. when the multiply is a sub-expression of a larger tree. `v0 = v0 * 4;` with outer SET target = v0-pseudo folds identically to `v0 <<= 2`. The t0-side p106 fresh-dest birth in the h5 basin depends on `t0 *= 4;`-form where the outer SET's target is absorbed differently (or the *= compound assignment causes a target-thread-away).
 
 - [s21] s21 CONFIRMED via probe D (masked=4): the sanctioned staged-value-reused-variable v0 SET in the h5 candidate is not decorative FAKE-annotation — the fn-scope v0's participation in the arg5 chain is load-bearing to masked=2. Removing v0 SET before the shift regresses +2. This is empirical proof that h5 masked=2 REQUIRES v0-pseudo-in-arg5-chain.
+
+- [s22] s22 baseline: h5 candidate applied to src/system.c scores masked=2 (target_insns=160, build_insns=160) via & tools/wteng.ps1 main sandbox cpu_side_move_dir_4 --disable all.
+
+- [s22] s22 PERM_LINESWAP workspace: rewrote tmp/perm_csmd4/base.c inline block to strict h5 form (removed all prior s14 PERM_GENERAL/PERM_RANDOMIZE directives) with PERM_LINESWAP as SOLE directive wrapping 7 statements. campaign_meta.json base_score=60 (h5-multexpander chassis confirmed).
+
+- [s22] s22 campaign: pid 4879 launched 2026-07-09T02:59:09Z, ran deterministically to 5040 iterations = 7! (all statement permutations enumerated); permuter exited normally (alive=false at 5040).
+
+- [s22] s22 harvest: 3 NEW finds — output-55-2 (weighted 55; ordering: v0-full-chain-first, pp mid, t0 last), output-40-6 (weighted 40; arg5-first with pp hoisted), output-40-7 (weighted 40; arg5-first with t0 last). No sub-40 find.
+
+- [s22] s22 sandbox verification: output-40-7 applied to src/system.c scored masked=6 (g3 basin). Confirms weighted-40 ↔ masked-6 g3 correlation from s5/s13 transfers to LINESWAP-generated orderings.
+
+- [s22] s22 conclusion: strict-h5-preserving LINESWAP over the block's 7 statements yields NO ordering below h5 masked=2. Every reachable improvement over base_score=60 drops into g3-basin masked>=6, which is empirically WORSE than h5 in sandbox metric. Frontier CLOSED.
+
+- [s22] s22 candidate.c: unchanged (h5 form remains masked-2 floor). src/system.c reverted to HEAD (both-named arg4/arg5 form) via `git checkout -- src/system.c` at session end.
+
+- [s22] s22 novel-form rejected bank: memory/grind/cpu_side_move_dir_4/rejected/lineswap_arg5_first_v0_shift_early_g3.c (measured masked=6), lineswap_pp_hoisted_arg5_first_g3.c, lineswap_v0_full_arg5_first_pp_mid.c.
+
+- [s22] s22 metric correlation refined: permuter weighted score 40 = g3 basin (masked=6, register exchange residual); weighted 55 = intermediate (partial-h5-partial-g3 spelling); weighted 60 = full h5 (masked=2 pair-swap residual). The permuter weighted metric penalizes register diffs but does not see the pair-swap that h5 shows in the byte-level metric, so lower weighted score does NOT imply better sandbox masked score in this basin family.
