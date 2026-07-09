@@ -1355,3 +1355,21 @@
 - probe: Comparing s90 P1 + s90 P2 measurements against s8 probe1 measurements and against s90 h5 baseline (masked=2).
 - result: All three symbolically-distinct honest forms regress by +13 to +14. h5 depends specifically on the semantic-lie fold.
 - verdict: CONFIRMED
+
+## [s91] Inherited F1 (p78-lift via ((volatile u8*)idx_1494)[0] on SUCCESS-only fall-through arm) survives the cross-read as a mechanism but its named probe vehicle is judge-risky.
+- mechanism: Volatile-cast dead read fails legitimate-volatile-interrupt-touched prong 1 (idx_1494 not IRQ-mutated); non-volatile dead read is DCE'd by flow.c delete_noop_moves per s78 P1; real branch-read emits +3 insns per s78 P2. No byte-neutral p78-carrier use exists in the block-local structural axis.
+- probe: Ledger cross-read against s78 P1/P2 measurements and legitimate-volatile-interrupt-touched two-prong policy.
+- result: F1 named vehicle KILLED at policy layer before measurement; F1 mechanism only reachable if a downstream real statement (not currently present per s52 asm audit) can be re-shaped to reach idx_1494 on the success arm - an inter-block structural axis retained as a lower-probability fallback frontier item.
+- verdict: KILLED
+
+## [s91] Inherited F2 (p79-preserving loop-top compute referencing existing non-idx pseudo cnt/D_800F19BC/D_800F19C0) has no realization that both survives DCE and avoids the s87/s88 shared-base cse-migration.
+- mechanism: s13 KILLED D_800F19C0 fn-body hoist at +13; s85 KILLED loop-top idx_1495 store at masked=15 build_insns=159; s87/s88 CONFIRMED the p79 -2-refs rotation is spelling-caused via cse-unify on idx_1494 as shared base. A read of cnt alone is DCE'd; a self-assign is DCE'd; a real observable update to cnt would change semantics. do-while(0) wraps of existing statements already KILLED across s4/s5.
+- probe: Ledger cross-read against s13, s85, s87, s88, s4, s5 measurements.
+- result: F2 has no un-run C-realization that satisfies all three constraints (DCE-survival + p79-refs-preservation + semantics-preservation) at the block-local axis; retained as low-probability frontier fallback.
+- verdict: KILLED
+
+## [s91] Un-named F3 angle exists: conflict-graph enumeration in global.c allocno_conflicts has never been diffed between h5 and g3 baselines (only priority/LUID axes have been diffed).
+- mechanism: s42 ran a partial greg conflict-list census showing p77/p78 share ZERO live range with block=3 pseudos p100/p106/p107/p113, but the conflict EDGES between block=3 pseudos and the file-level s-reg web (s2/s3/s4/s5/s8/s9 seats) were never enumerated. A single edge whose removal would legalize both LAUNCH insns at low LUIDs would seed a follow-on structural session. This is the ALLOCDBG-instrumented s-reg coupling hunt the s71 Judge constraint explicitly permits as a permitted un-run axis.
+- probe: Ledger cross-read reveals this axis unexplored; no prior forensics session enumerated conflict-graph edges between debug-window QTY pseudos and file-scope s-reg web.
+- result: F3 IDENTIFIED as the un-run forensics angle; not measured this session (synthesis modality) - passed to driver as the highest-expected-information frontier item for the next forensics slot.
+- verdict: CONFIRMED

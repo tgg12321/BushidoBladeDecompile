@@ -1470,3 +1470,21 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s90] s90 modality-closure: frontier item #3 (symbolically-distinct idx_1495 initializer) is fully closed on csmd4 -- the axis has no honest realization. Retirement of the semantic-lie form remains blocked by the same +13 s-reg web disruption documented in s8 policy note.
 
 - [s90] s90 src/system.c: restored to HEAD (both-named arg4/arg5 array-index form) at session end; candidate.c unchanged (h5 form remains masked-2 floor).
+
+- [s91] s91 synthesis: no src edit, no sandbox measurement (synthesis modality contract); h5 candidate remains the 87-session masked=2 floor since s4.
+
+- [s91] Ledger cross-read confirms the compiler-source wall: expmed.c:2244 case alg_shift NULL_RTX target forces p106 fresh single-set; MIPS md has no shift-add insn pattern so combine cannot fold; sched.c birthing_insn_p LAUNCH sentinel on insn 111 ties with LAUNCH on insn 121; LUID(121)=12 > LUID(111)=8 tiebreak backward-picks 121 first. h5 and g3 basins provably non-composable at every measured C axis (s6/s7/s10/s16).
+
+- [s91] Closed modality tally: structural 40+ probes (s3/s4/s5/s11/s12/s13/s21/s27/s29/s30/s38/s39/s47/s48/s56/s57/s65/s66/s74/s75/s83/s84/s85); permuter ~150k+ iters both chassis every region (s5/s13/s14/s22/s23/s31/s32/s40/s49/s50/s58/s67/s68/s76/s77/s86); rederive 13 sub-angles (s8/s9/s17/s18/s26/s27/s35/s36/s44/s45/s53/s54/s62/s63/s71/s72/s80/s81/s89/s90); forensics reduces residual to atomic 4-cycle s-reg rotation {p72<->p79, p73<->p78} driven by REG_EQUIV attachment on idx_1495 initializer (s60/s61/s69/s70/s87/s88).
+
+- [s91] Rejected forms bank at 98 entries (memory/grind/cpu_side_move_dir_4/rejected/) documents the deterministic no-fly zone for s92+; every enumerable first-order structural mutation across 90 sessions is banked.
+
+- [s91] Symbolic-honesty policy contradiction (s90): only the cross-symbol form at src/system.c:406 preserves masked=2, which is in the do-while-zero-exception #5 forbidden family; retirement blocked by +13 s-reg web disruption. This is a live policy contradiction the driver must own; no session-level fix exists within the pure-C grind.
+
+- [s91] Inherited frontier F1 named vehicle (volatile-cast dead read) is judge-risky before measurement (fails legitimate-volatile-interrupt-touched prong 1).
+
+- [s91] Inherited frontier F2 has no un-run C-realization satisfying DCE-survival + p79-refs-preservation + semantics-preservation simultaneously.
+
+- [s91] F3 conflict-graph enumeration (global.c allocno_conflicts diff between h5/g3) is the newly-identified un-run forensics angle satisfying the s71 Judge constraint (ALLOCDBG-instrumented s-reg coupling hunt).
+
+- [s91] Judge constraint compliance verified: no canonical-asm authorization framing surfaced; no cheat-shaped honest respelling proposed; no forbidden semantic-lie construct proposed.

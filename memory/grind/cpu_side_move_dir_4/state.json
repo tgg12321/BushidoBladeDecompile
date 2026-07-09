@@ -1,8 +1,8 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 90,
- "current_modality": "rederive",
+ "session_count": 91,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 0,
@@ -549,18 +549,29 @@
    "floor": 2,
    "modality": "rederive",
    "headline": "s90 rederive KILLED frontier item #3: no symbolically-distinct idx_1495 initializer preserves masked=2 -- the h5 basin depends on the &D_800A1494 SYMBOL reference in idx_1495's initializer, not merely"
+  },
+  {
+   "session": 91,
+   "floor": 2,
+   "modality": "synthesis",
+   "headline": "s91 synthesis: 90-session ledger merged; frontier reset with F1 (p78-lift success-arm) and F2 (loop-top non-idx compute) refined against s78/s85/s87/s88 findings; NEW F3 conflict-graph enumeration sea"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "p78-lift via a byte-neutral idx_1494 use added on the SUCCESS-only fall-through arm (before `goto success;`) that stays on p78's carrier without unifying via cse with idx_1495 as a shared base.",
-   "mechanism": "s88 measured p78 livelen 72->144 as a REGRESSION-side migration (uses off p79 via cse-unify on idx_1494 shared base). The un-run subvariant: use placed on SUCCESS arm alone (control-flow-conditional add) may lift p78 refs without shared-base cse rewrite. Requires construct flow.c counts as p78 ref but cse.c does NOT recognize as shared-base merge candidate.",
-   "next_probe": "Structural session: candidate with a single byte-neutral p78-carrier use on the success arm only (e.g. cast-through-alias `((volatile u8*)idx_1494)[0]` on the success path immediately before `v0=0`). Measure greg ord=[12..15] and p78 nrefs/livelen deltas; compare against s88 probe1 baseline."
+   "hypothesis": "F3 conflict-graph enumeration: an edge in global.c allocno_conflicts between a block=3 debug-window pseudo (p106/p107/p101) and a file-scope s-reg seat can be identified whose removal would legalize both LAUNCH insns at low LUIDs, seeding a follow-on structural probe.",
+   "mechanism": "s42 ran only a partial greg conflict-list census (established zero live-range overlap p77/p78 with p100/p106/p107/p113). The full allocno_conflicts adjacency between block=3 QTY pseudos and file-scope s-reg web (s2/s3/s4/s5/s8/s9 hardreg seats) has never been enumerated. The 4-cycle rotation {p72<->p79, p73<->p78} at ord=[12..15] means those four pseudos share conflict edges with a common set of file-scope hardregs; enumerating that set names the specific coupling that any C-side lever must dislodge.",
+   "next_probe": "Forensics session: instrumented cc1 dump with BB2_ALLOC_DEBUG=1 on both h5 candidate and one +13 basin variant (e.g. s8 honest_idx_1495 or s85 loop-top-idx_1495); grep global.c allocno_conflicts printout for edges involving p72/p73/p78/p79 AND any of s2..s9 hardregs; diff the two dumps to identify the atomic edge(s) that flip in the rotation. Report the specific edge set and the mechanism (interval overlap vs conflict inheritance) that produced it."
   },
   {
-   "hypothesis": "p79-preserving loop-top compute referencing an EXISTING live pseudo (e.g. cnt or D_800F19BC) that fires local-alloc equiv-reg absorption at a symbol distinct from p79 while still absorbing the -1 build_insn signature of the s85 probe2 loop-top form.",
-   "mechanism": "s88 confirmed the -2 refs came from spelling (cse-unify on idx_1494), not from a fresh loop-top set. A loop-top compute reading an EXISTING live pseudo OTHER than idx family could trigger absorb elsewhere without disturbing p79's 5-ref map. Absorbs from a distinct pseudo won't cse-migrate poll-region uses.",
-   "next_probe": "Structural session: candidate where loop-top adds a compute referencing an existing non-idx live pseudo (cnt, D_800F19BC, D_800F19C0). Measure build_insns and greg ord. Success = build<=159 AND greg ord=[79,78,72,73] preserved."
+   "hypothesis": "F1-refined: inter-block structural axis \u2014 re-shape a downstream real statement in cpu_side_move_dir_4 body to arrive at idx_1494 on the success arm without perturbing the h5 chassis prologue/inline-block RTL.",
+   "mechanism": "F1's block-local vehicles are closed (s78 P1/P2). The remaining axis is inter-block: a statement outside block=3 that already USES idx_1494 (or would naturally on a re-shape) could produce the p78-refs delta the F1 mechanism needs, without triggering the s78 emit-delta signature. Requires locating a statement whose semantic re-shape (e.g. re-associating a global-store address form) reads idx_1494 unconditionally.",
+   "next_probe": "Structural session: asm audit of asm/funcs/cpu_side_move_dir_4.s for any block other than block=3 that materializes tbl_125c OR idx_1494 base; if found, propose a byte-neutral C re-shape that adds an unconditional p78/p77 use in that block; measure greg ord=[12..15] delta vs h5 baseline."
+  },
+  {
+   "hypothesis": "F2-refined: h5-preserving observable statement at loop-top that references a NON-idx live pseudo the way a stage-transition semantic dictates.",
+   "mechanism": "F2's block-local vehicles are closed at every DCE-visible construct. The remaining axis is semantic: if a stage-transition observation exists between the loop-top and the vblank poll (e.g. a mode/status read that would naturally sit at loop-top per game-loop semantics), that observable statement's p-var refs would satisfy F2's alloc-web-lift criterion without cse-migrating idx_1494 uses. Requires source-code re-derivation informed by the observed control flow (not asm-shape).",
+   "next_probe": "Rederive session (novel angle after 13 KILLED sub-angles): read the LOOP invariants of the vblank poll in asm/funcs/cpu_side_move_dir_4.s (block=2 loop head, block=4 loop test) to identify what game-state read WOULD be idiomatic at loop-top for a psx CD-side move dispatcher; if a natural non-idx read surfaces (e.g. an interrupt-flag test), attempt insertion and measure."
   }
  ],
  "judge_constraints": [
