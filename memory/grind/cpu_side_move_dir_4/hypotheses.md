@@ -941,3 +941,21 @@
 - probe: Applied ordering: `t0 = idx[0]; v0 = idx[1]; pp = &D_800F19C0; v0 <<= 2; v0 += (s32)tbl_125c; arg5 = *(s32*)v0; t0 *= 4; t0 = (s32)((u8*)tbl_125c + t0);` and sandboxed.
 - result: masked=15, target_insns=160, build_insns=160 (+13 vs h5=2). Identical regression signature to the v0-triple-set-addr-walk sibling — indicates the s-reg web disruption dominates any potential LUID re-timing benefit. Rejected form saved at memory/grind/cpu_side_move_dir_4/rejected/s53_m2c_regvars_verbatim_order.c.
 - verdict: KILLED
+
+## [s54] m2c with --void return-type hint produces a structurally distinct block=3 (debug_printf window) shape from s8's default output, exposing a novel arg4/arg5 spelling for h5-chassis grafting.
+- mechanism: m2c dataflow analysis differs when return-type is asserted void — the return-value register (v0) is not treated as a live-out, potentially altering how the arg5/arg4 expression chain in block=3 is reconstructed (e.g., could shift v0's role in the reconstructed IR and expose a subscript-vs-pointer-arith spelling difference in the arg5 expression).
+- probe: python3 tools/m2c/m2c.py --valid-syntax --target mipsel-gcc-c --void --function cpu_side_move_dir_4 asm/funcs/cpu_side_move_dir_4.s > tmp/grind/cpu_side_move_dir_4/s54/m2c_void.txt; grep debug_printf tmp/grind/cpu_side_move_dir_4/s54/m2c_void.txt.
+- result: block=3 window is line-identical to s8's default m2c output: debug_printf(&D_800161C8, D_800F19C0, *(&D_800A11DC + (D_800A11D5 * 4)), *((M2C_FIELD(&D_800A1494, u8 *, 0) * 4) + &D_800A125C), *((M2C_FIELD(&D_800A1494, u8 *, 1) * 4) + &D_800A125C)). --void alters ONLY the outer return-plumbing (line 76 area), never touches the debug_printf window's arg4/arg5 reconstruction. Confirms the block=3 window shape is a fixed point of m2c's expression-reconstruction pass, independent of the return-type flag.
+- verdict: KILLED
+
+## [s54] m2c with --no-stack-spill and --gotos-only produces a structurally distinct block=3 shape by suppressing structured-CFG reconstruction and stack-spilling heuristics, exposing a raw-form debug_printf call site with distinct arg4/arg5 spellings.
+- mechanism: --gotos-only disables m2c's structured control-flow (if/else) reconstruction, emitting goto+label everywhere. --no-stack-spill disables detection of stack spilling to temporaries. Combined, these should produce a more asm-literal C shape where any hidden staged intermediate becomes explicit, potentially surfacing a v0/v1/a0-staging variant not seen in s8's default output.
+- probe: python3 tools/m2c/m2c.py --valid-syntax --target mipsel-gcc-c --no-stack-spill --gotos-only --function cpu_side_move_dir_4 asm/funcs/cpu_side_move_dir_4.s > tmp/grind/cpu_side_move_dir_4/s54/m2c_nostackspill_gotos.txt; inspected block_3 label region.
+- result: block_3 label emits debug_printf(&D_800161C8, D_800F19C0, *(&D_800A11DC + (D_800A11D5 * 4)), *((M2C_FIELD(&D_800A1494, u8 *, 0) * 4) + &D_800A125C), *((M2C_FIELD(&D_800A1494, u8 *, 1) * 4) + &D_800A125C)) — line-identical to s8 default AND to --void output. --no-stack-spill affects only stack-slot temporaries (which csmd4's block=3 window doesn't use — the arg-marshal chain is register-only through the debug_printf CALL). --gotos-only affects only the outer poll-loop control-flow reconstruction (visible in the block_16/loop_8/block_17 gotos), never the block_3 arg-reconstruction. Confirms the block=3 shape's fixed-point property across CFG-reconstruction flags too.
+- verdict: KILLED
+
+## [s54] The h5 candidate.c applied to src/system.c reproduces the ledger-recorded masked=2 floor (baseline sanity check for s54's rederive attempt).
+- mechanism: Overlay the block-scope {s32 arg5; s32 t0; void **pp; t0=idx_1494[0]; v0=idx_1494[1]; pp=(void**)&D_800F19C0; t0*=4; t0=(s32)((u8*)tbl_125c+t0); v0<<=2; arg5=*(s32*)(v0+(s32)tbl_125c); debug_printf(...);} onto src/system.c, replacing the HEAD both-named arg4/arg5 array-index form.
+- probe: Edit src/system.c inline block to candidate.c spelling; & tools/wteng.ps1 main sandbox cpu_side_move_dir_4 --disable all
+- result: score=2, target_insns=160, build_insns=160, scorable=true, rules_dropped=5, cheat_asm_stripped=22 (matches 45-session ledger; HEAD both-named form scores masked=7). H5 chassis confirmed live for s54 measurements.
+- verdict: CONFIRMED

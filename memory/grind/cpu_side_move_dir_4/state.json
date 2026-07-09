@@ -1,7 +1,7 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 53,
+ "session_count": 54,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -327,13 +327,24 @@
    "floor": 2,
    "modality": "rederive",
    "headline": "s53 rederive: m2c --reg-vars-derived arg5-addr in-place walk (v0 += tbl; arg5 = *v0) + statement-order-swap (arg5 chain fully before t0) both KILLED at masked=15 (+13); pair-swap coupling through qty "
+  },
+  {
+   "session": 54,
+   "floor": 2,
+   "modality": "rederive",
+   "headline": "s54 rederive: m2c flag-space exhaustion \u2014 --void and --no-stack-spill+--gotos-only produce byte-identical block=3 shape to s8 default; m2c-modality now closed across every enumerable flag combination"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "s53 rederive extends the class-exhaustion conclusion: even the m2c-regvars-derived spelling target (v0 as multi-set addr carrier + arg5-subseq-before-t0-subseq statement order) fails to decouple the pair-swap from h5's s-reg web. Rederive across every un-run sub-angle (m2c default, m2c void, m2c no-andor, m2c reg-vars, m2c gotos-only) now closed at compiler-source and measurement.",
-   "mechanism": "sched.c::birthing_insn_p LAUNCH gate on p107/p106 is coupled to local-alloc.c qty priorities for p101 (v0) via the s0/s2/s4 s-reg web (idx_1494/idx_1495/idx_1496). Any C spelling that adds a THIRD in-place set to v0 to break p107's LAUNCH \u2014 including the m2c-regvars-suggested `v0 += tbl` walk \u2014 spreads conflict lists onto the s-reg web and regresses to a masked=15 intermediate basin. There is no C spelling that simultaneously (a) makes p107 multi-set at flow-time AND (b) leaves the s0/s2/s4 web intact.",
-   "next_probe": "s54 should shift MODALITY away from rederive (now exhausted) to one of the un-run axes named in the judge constraint: (A) ALLOCDBG-instrumented s-reg coupling hunt targeting idx_1495 (p78/s4) \u2014 probe whether ANY C respelling of `idx_1495 = ...` narrows its conflict list without regressing the callback deref site at line 456, per register-alloc-pure-c Lever A; OR (B) forensics probe on the sched2 pass rank_for_schedule val=0 tiebreak to see if the s51 LUID-gap decomposition offers a new lever below the LAUNCH signature layer."
+   "hypothesis": "ALLOCDBG-instrumented s-reg coupling hunt targeting idx_1495 (p78/s4): probe whether ANY C respelling of `idx_1495 = ...` narrows its conflict list without regressing the callback deref site at line 456, per register-alloc-pure-c Lever A.",
+   "mechanism": "s42 CONFIRMED idx_1495 (p78) and idx_1494 (p77) have zero conflict overlap with block=3 QTY pseudos p100/p106/p107/p113 at h5 baseline. But idx_1495 is a load-bearing pseudo whose live range crosses the poll-loop callback dereference at line 456 (D_800A11B8(*idx_1495, ...)). ALLOCDBG-instrumented probes of idx_1495 respellings that shift its conflict list may cascade into a novel s-reg-web configuration that DOES intersect block=3 QTY at flow time.",
+   "next_probe": "s55 forensics: capture BB2_ALLOC_DEBUG=1 cc1 dump for the h5 candidate + candidate variant with a distinct idx_1495 spelling (e.g., `idx_1495 = &D_800A1494 + 1`, `idx_1495 = &D_800A1495`, or a struct-field-typed access via a fn-scope helper struct). Compare .greg conflict lists for p78 side-by-side."
+  },
+  {
+   "hypothesis": "Forensics probe on sched2 pass rank_for_schedule val=0 tiebreak to see if the s51 LUID-gap decomposition offers a new lever below the LAUNCH signature layer (per s43 finding that sched2 sees insns 111/121 at plain priority 2, not the LAUNCH sentinel).",
+   "mechanism": "s43 CONFIRMED sched2 pick at clock=13 is `121(p=2,l=7) beats 111(p=2,l=6)` by LUID diff of 1 within plain-priority-2 class \u2014 NOT a LAUNCH-vs-LAUNCH tie. The sched2 LUID delta of 1 (vs sched1's delta of 4) may admit a C-source lever that shifts LUIDs by 1 slot without disturbing basin membership. s51 CONFIRMED the LUID gap contains real insns 116/118 (load-bearing) plus a LINE_NOTE at LUID 9, but the sched2 renumbering may open a distinct LUID delta lever unexplored at sched1.",
+   "next_probe": "s55 forensics: read s6 csmd4_only.log sched2 SCHEDDBG block=3 clock=10-15 traces; enumerate all sched2-visible insns between the (post-reload) 111/121 equivalents. Look for a scheduler-visible insn at sched2 LUID 6.5 or 7 (post-reload) that a C-source lever could shift by 1 slot without touching sched1's LAUNCH gating."
   }
  ],
  "judge_constraints": [
