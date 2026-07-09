@@ -882,3 +882,17 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s50] Rejected form saved at memory/grind/cpu_side_move_dir_4/rejected/s50_perm_new_var2_temp_intermediate.c with cheat-vetting notes for future sessions.
 
 - [s50] Cumulative h5-chassis permuter closure now ≈85k iterations across 9 sessions at 0 novel weighted-<40 finds; the s50 whole-function-random-mode superset campaign confirms no basin exists below weighted-40 within h5-chassis mutation reach.
+
+- [s51] s51 baseline: no src edit this session (following s42/s43/s46 forensics precedent that reuses the s6 canonical cc1 dump). h5 candidate.c remains masked=2 floor unchanged (target_insns=160, build_insns=160 per s50 baseline confirmation).
+
+- [s51] sched1 block=3 initial insn enumeration (log line 107) preserves chain order: 92,94,100,104,111,116,118,121,123,129,134,138,140,142,144,146,148,153,156,158 (20 real insns). LUIDs assigned sequentially with LINE_NOTE gaps at 2,3,5,7,9,14,15,17,19,26.
+
+- [s51] sched2 block=3 initial insn enumeration (log line 710) shows chain REORDERED by reload: 92,94,100,104,142,118,111,121,123,129,116,138,134,144,146,140,148,153,156,158. Insn 116 pushed 6 positions later (from between 111,118 to after 129); insn 142 pushed 12 positions earlier (from between 140,144 to before 118); insn 140 pushed 5 positions later. This is a novel post-s43 data point: reload's chain-rearrangement is deterministic given reg-pressure state, not attackable via C source.
+
+- [s51] sched1 clock=13 PICK decision (log line 172): RANKDBG last=123 y=121 cls=3 x=111 cls2=3 val=0. Ready list: [121(p=2130706433,l=12) 111(p=2130706433,l=8) 142(p=1,l=22)]. Picked 121 by LUID tiebreak (12>8). This seals the pair-swap emission order 118,111,121 at sched1; sched2 inherits and confirms with plain-pri=2 LUID diff 7>6.
+
+- [s51] LUID-gap composition (novel, not previously in ledger): LUID 8 = insn 111 (mult-expander SLL, fresh p106, LAUNCH); LUID 9 = NOTE_INSN (LINE_NOTE, non-schedulable); LUID 10 = insn 116 (t0 third-stage plus, multi-set p101, pri=2 non-LAUNCH); LUID 11 = insn 118 (arg5 lw, multi-set p75, pri=2 non-LAUNCH); LUID 12 = insn 121 (arg5_addr plus, fresh p107, LAUNCH).
+
+- [s51] Load-bearing analysis of the two real intervening insns: insn 116 removal = t0 chain collapses to g3-family single-set spelling (measurement-closed via s3-V10 masked=9, s6 LUID-reorder masked=6, s7 static walkthrough of expmed.c case alg_shift). Insn 118 removal impossible: 118 is 121's data producer (sets p75 that 121's PLUS consumes) so a RAW dep pins 118 chain-position before 121.
+
+- [s51] Pass identity confirmed: sched.c::schedule_block called at sched1 (pre-reload), function rank_for_schedule at lines 2399-2456 of tools/gcc-2.7.2/sched.c. Terminal decision at clock=13 as documented above. Cross-consistent with s15 (val=0 across all 51 block=3 events) and s43 (sched2 LUID delta collapse to 1).

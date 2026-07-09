@@ -1,8 +1,8 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 50,
- "current_modality": "permuter",
+ "session_count": 51,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 0,
@@ -309,13 +309,19 @@
    "floor": 2,
    "modality": "permuter",
    "headline": "s50 permuter (poll-loop-dispatch PERM_GENERAL, fell back to full-function randomization): 29289 iters / 1565s / 1 novel find at weighted=40 masked=2 \u2014 same-floor variant, no <40 find; permuter surface"
+  },
+  {
+   "session": 51,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "s51 forensics: LUID-gap decomposition between residual pair (111 at LUID 8, 121 at LUID 12) enumerated for first time \u2014 gap contains LINE_NOTE(9), insn 116 t0-third-stage plus(10), insn 118 arg5 lw(11"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "PERM_GENERAL / PERM_LINESWAP directives cannot be placed inside compound brace-delimited if-blocks in the current decomp-permuter's directive parser (s41 LINESWAP + s50 GENERAL both fell back to defaults). A restructured base.c that flattens the poll-loop callback dispatch into a single-statement top-level scope (e.g. two-arg dispatch table or ternary) would let PERM_GENERAL / PERM_LINESWAP actually engage the dispatch region as an isolated mutation scope.",
-   "mechanism": "Tool-side directive parser limitation on brace-delimited compound statements; the workaround is a preprocessing step that lifts the target statements to top-level flat scope while preserving semantics OR a different permuter tool that handles compound scopes.",
-   "next_probe": "s51+: (a) rewrite base.c with the poll-loop dispatch as two top-level PERM_GENERAL-annotated single-statement blocks (goto-based flattening) then re-launch; (b) alternatively, add a wrapper PERM_GENERAL(...) around the ENTIRE outer poll-loop `if (status != 0)` block at the STATEMENT level (not inside the compound body) \u2014 this may parse and yield the intended isolated dispatch mutation neighborhood."
+   "hypothesis": "The rigid h5 chain-position triangle (111/116/121) is a hard local minimum; SOTN-family named-local-fake-exception carve-out at fn-scope, if a C-legitimate carrier can be constructed that reaches local-alloc as a live pseudo AND stays within the h5 alignment (both conditions failed simultaneously in s47's C1/C2/C3 archetypes), might introduce a fourth pseudo whose conflict list forces reg-alloc's ordering to break the LAUNCH assignment on insn 121 (breaking the triangle at the LAUNCH-source level rather than at the LUID level).",
+   "mechanism": "s47's finding: 'The s33 saEft01Init reload-renumbering pattern requires the FAKE-annotated local to (i) reach local-alloc as a live pseudo AND (ii) not add real emitted insns.' On csmd4's h5 base these are mutually exclusive across the three probed archetypes (zero, mode, held). But s47 did not probe carriers with a POINTER type that could sit in a callee-save slot (s6/s7 range) with a legitimate downstream READ. A pointer with a real dereference downstream would satisfy 'semantic purpose' and 'reaches local-alloc as a distinct pseudo' simultaneously.",
+   "next_probe": "s52+ (F2/F1 hybrid): draft a fn-scope pointer-typed FAKE-annotated carrier that (a) is initialized from &D_800A11DC or a legitimate arm-pointer source that already lives past debug_printf, (b) participates in a downstream READ inside the post-debug_printf arms (do_timeout/poll/success/check paths that s47's F1 audit found have no p101-post-shift reader \u2014 but MIGHT have an unaudited &D_800A11DC re-use site), (c) has FAKE annotation citing named-local-fake-exception.md, (d) clears layer-1 cheat-reviewer before sandbox measurement, (e) if sub-h5 masked, clears layer-2 fresh cheat-reviewer. If the carrier lands in s6/s7 with a live-across-debug_printf range, its conflict list would include block=3 pseudos p100/p106/p107/p113 (contrast s42 finding that idx_1494/idx_1495's s2/s4 conflict lists have ZERO block=3 QTY overlap) and could re-order local-alloc priorities on p106 vs p107, potentially killing 121's LAUNCH while preserving 111's."
   }
  ],
  "judge_constraints": [
