@@ -840,3 +840,21 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s47] s47 mechanism note: the s33 saEft01Init reload-renumbering pattern (fn-scope multi-set hard-reg killing birthing_insn_p) requires the FAKE-annotated local to (i) reach local-alloc as a live pseudo AND (ii) not add real emitted insns. On csmd4's h5 base these two requirements are mutually exclusive across the three probed archetypes: the local is either DCE/cse-eliminated (fails i) or it costs preservation insns (fails ii). The mechanism-realization gap is not a random measurement gap but a structural one: any zero-cost fn-scope local is by construction not present at flow-time.
 
 - [s47] s47 src/system.c restored to h5 candidate at session end; post-restore sandbox re-measures masked=2, insns=160. candidate.c unchanged (h5 form remains the masked-2 floor).
+
+- [s48] s48 baseline: h5 candidate applied to src/system.c scores masked=2, target_insns=160, build_insns=160 via `& tools/wteng.ps1 main sandbox cpu_side_move_dir_4 --disable all`.
+
+- [s48] s48 C4 (fn-scope `held` + `held = cnt;` fast-path between lines 416-417): masked=2 INERT vs h5 baseline. Byte-identical.
+
+- [s48] s48 C5 (fn-scope `held` + `held = *idx_1495;` fast-path pointer-source): masked=2 INERT vs h5 baseline. Byte-identical. Rules out copy-fold as sole explanation for C4 inert.
+
+- [s48] s48 C6 (fn-scope `held` + `held = *idx_1494;` INSIDE block=3 at do_timeout entry): masked=2 INERT vs h5 baseline. Byte-identical. Definitively confirms dead store to a written-never-read local scalar gets DCE'd upstream of flow's reg_n_refs count regardless of placement (fast-path or block=3-interior).
+
+- [s48] s48 mechanism finding: three placements of a written-never-read `held` fn-scope local scalar - two in the fast path (scalar-source and pointer-source) and one inside block=3's dominator region at the do_timeout entry - all measured INERT. The frontier F2-B assumption 'reg_n_refs(held) reaches 1 at flow-time and shifts qty tables' is falsified: GCC's tree-level DCE (or an equivalent early flow.c dead-set elimination) removes the SET before flow.c recomputes reg_n_refs, so held's ref never participates in local-alloc.c qty_compare regardless of where the write is placed.
+
+- [s48] s48 F2-B closure: with C4 (fast-path scalar), C5 (fast-path pointer), and C6 (block=3-interior pointer) all measured KILLED, the entire F2-B WRITTEN-never-read fn-scope named-local scalar direction is CLOSED at the mechanism level, not just for these three specific spellings. Any variant is by construction dead-store-DCE-vulnerable.
+
+- [s48] s48 rejected forms saved (3): memory/grind/cpu_side_move_dir_4/rejected/s48_C{4,5,6}_*.c.
+
+- [s48] s48 src/system.c restored to h5 candidate at session end; post-restore sandbox re-measures masked=2. candidate.c unchanged (h5 form remains the masked-2 floor).
+
+- [s48] s48 policy vetting: all three probes were FAKE-annotated at declaration + assignment per dead-store-fake-exception.md / named-local-fake-exception.md prerequisites (lever-exhaustion documented s2-s47; GCC-pass mechanism named; annotation applied). Layer-1/2 cheat-reviewer not invoked because all three probes were INERT vs baseline - nothing to accept.

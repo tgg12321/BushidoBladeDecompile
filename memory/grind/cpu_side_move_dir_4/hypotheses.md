@@ -851,3 +851,21 @@
 - probe: Audit asm/funcs/cpu_side_move_dir_4.s L80080EDC..L80081004 (all arms after the do_timeout block) for any expression reading (u8*)tbl_125c + (t0<<2), or the raw t0<<2 value, or an alias-derived shape.
 - result: KILLED. The arms use only $s2 (idx_1494), $s4 (idx_1495), $s6 (a1), $s5 (arg0), literal constants, and D_800A147C/D_800A11B4/D_800A11B8 dispatch pointers. NO downstream expression references (u8*)tbl_125c + (t0<<2), the raw t0 value, or its shift result. The t0-chain shifted value is dead immediately after the debug_printf window (the lw a3,0(a0) at L80080ED8 is the final use). No honest downstream reader exists to lever pri(111).
 - verdict: KILLED
+
+## [s48] C4: fn-scope `s32 held;` decl + `held = cnt;` written between line 416 (`cnt = D_800F19BC;`) and line 417 (`D_800F19BC = cnt - -1;`) at the fast path lifts arg5-qty refs above t0-qty via reg_n_refs propagation on the loop-back edge into block=3.
+- mechanism: flow.c reg_n_refs feeds local-alloc.c qty_compare priority. A written-never-read fast-path local's SET participates in flow-time ref counting; if its liveness propagates through the loop-back edge into block=3, it may bias qty allocation.
+- probe: Applied C4 to src/system.c (h5 base): `s32 held;` fn-scope decl + `held = cnt;` between lines 416-417. FAKE annotation per dead-store-fake-exception.md. sandbox cpu_side_move_dir_4 --disable all.
+- result: masked=2 INERT vs h5 baseline (target_insns=160, build_insns=160). Bytes identical - the dead store is DCE'd upstream of qty tables OR its ref never reaches block=3's live-in set. Rejected form saved at memory/grind/cpu_side_move_dir_4/rejected/s48_C4_held_cnt_fast_path.c.
+- verdict: KILLED
+
+## [s48] C5: same shape as C4 but `held = *idx_1495;` (pointer-read source vs scalar cnt-copy) escapes single-set copy-fold via non-fold across the reload boundary and preserves reg_n_refs contribution to block=3 qty.
+- mechanism: cse.c copy-propagation folds simple `held = local_scalar` (copy of an existing live pseudo) as a trivial single-set copy; a `held = *ptr` load from an unrelated address should defeat the copy-fold and keep held's SET distinct at flow-time. If so, ref-lift materializes; otherwise the DCE runs before block=3 sees it.
+- probe: Applied C5 to src/system.c: replaced C4's `held = cnt;` with `held = *idx_1495;`. FAKE annotation retained. sandbox --disable all.
+- result: masked=2 INERT vs h5 baseline. Bytes identical - the pointer-read source ALSO does not shift block=3 qty tables; distinguishes copy-fold from DCE as the mechanism (both would give inert, but the pointer-source rules out the copy-fold explanation exclusively - the effect is DCE-upstream-of-flow OR the ref-lift is sub-threshold vs t0's 5000-priority). Rejected form saved at memory/grind/cpu_side_move_dir_4/rejected/s48_C5_held_idx1495_fast_path.c.
+- verdict: KILLED
+
+## [s48] C6: fn-scope `s32 held;` decl + `held = *idx_1494;` written at do_timeout label entry (immediately before the tslTm2LoadImage_2 call, INSIDE block=3's dominator region) forces held's ref count into block=3 directly, bypassing the loop-back-edge propagation dependency.
+- mechanism: By placing the write at the do_timeout entry (block=3's actual predecessor after either branch merges), held's reg_n_refs is unambiguously counted against block=3's qty table. If C4/C5 failed because loop-back propagation doesn't carry held's liveness into block=3, this placement removes that risk - the write is inside block=3's dominator region.
+- probe: Applied C6 to src/system.c: `s32 held;` fn-scope decl + `held = *idx_1494;` between `do_timeout:` label (line 423) and `tslTm2LoadImage_2` call (line 424). FAKE annotation per named-local-fake-exception.md. sandbox --disable all.
+- result: masked=2 INERT vs h5 baseline. Bytes identical - CONFIRMS the mechanism failure is DCE-upstream-of-flow (dead store to a local whose value is never read gets removed BEFORE local-alloc sees the ref, so the qty tables never widen for held) rather than a placement/liveness-propagation issue. Rejected form saved at memory/grind/cpu_side_move_dir_4/rejected/s48_C6_held_do_timeout_entry.c.
+- verdict: KILLED

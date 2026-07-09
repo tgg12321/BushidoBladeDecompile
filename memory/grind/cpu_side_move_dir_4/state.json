@@ -1,7 +1,7 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 47,
+ "session_count": 48,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -291,23 +291,29 @@
    "floor": 2,
    "modality": "structural",
    "headline": "s47 structural: F2 primary (SOTN FAKE-annotated named-local) closed across 3 canonical shapes; F1 secondary (downstream reader of t0<<2 in arms) closed by asm audit."
+  },
+  {
+   "session": 48,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "s48 structural: F2-B (WRITTEN-never-read fn-scope named-local) closed across 3 C-realizations (fast-path scalar-source, fast-path pointer-source, do_timeout-entry) - all masked=2 INERT vs h5 baseline;"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F2-variant B: a fn-scope NAMED-LOCAL of a DIFFERENT SHAPE \u2014 a WRITTEN-never-read local scalar assigned an already-computed live value (not a literal) at a pre-block=3 site \u2014 could reach local-alloc as a live pseudo without cse-folding to a literal AND without cross-call preservation cost. E.g. `s32 held = cnt;` (written once from a fast-path local, never read) inserted in the fast path so its live range dies before block=3 but its pseudo participates in fast-path qty tables that feed into block=3's alloc via the loop-back edge.",
-   "mechanism": "Written-never-read local escapes cse (literal-fold requires a symbolic-constant source; a live-pseudo source is not foldable). Written-once-in-fast-path escapes C2's cross-call preservation cost (dies before the do_timeout branch). If reg_n_sets(held) reaches 1 and the loop-back edge propagates its liveness into the block=3 entry set, the local-alloc qty tables for block=3 pseudos may shift.",
-   "next_probe": "s48 structural: (1) Draft C4 = `s32 held; ... held = cnt;` inserted between line 416 (`cnt = D_800F19BC;`) and line 417 (`D_800F19BC = cnt - -1;`) at the fast path, with FAKE annotation per named-local-fake-exception.md. (2) Layer-1 cheat-reviewer check the WRITTEN-never-read pattern against dead-store-fake-exception.md prerequisites (written-not-just-declared, exhaustion documented). (3) Apply + sandbox. (4) If masked <=1, layer-2 fresh reviewer. (5) If regressed, C5 with different write-source (`held = *idx_1495;` \u2014 pointer read source, likely non-fold across the reload-boundary). (6) If both KILLED, F2-B closes entire named-local frontier direction."
+   "hypothesis": "F3 (HI-LO producer for arg5_addr): make insn 121's PLUS operand involve a HI-LO producer (mult/div result) so mips_adjust_cost raises the 121->123 edge latency above 1, letting insn 111 win the class-1 test in rank_for_schedule (sched.c:2399-2456, s15 finding).",
+   "mechanism": "sched.c::rank_for_schedule class diff via LOG_LINKS(last_scheduled) + insn_cost gate: if insn 121's dep-edge to 123 (via a HI-LO consumer) has cost>1, the class diff val!=0 could pick 111 over 121 without going through the LUID tiebreak. Untested C-source realization per s15.",
+   "next_probe": "s49: (1) identify a HI-LO-producing operation whose result can legitimately feed the arg5_addr computation without being a semantic lie (frontier already flagged this as likely cheat-shaped per no-new-park-categories - the intermediate has no semantic purpose beyond triggering the HI-LO scheduler cost). (2) audit target asm/funcs/cpu_side_move_dir_4.s for any legitimate mult-consumer that could naturally feed arg5_addr; if none, F3 also closes."
   },
   {
-   "hypothesis": "F3 (new): the residual pair {sll4@54 <-> addu5@55} may be flippable via a class-1 latency lever \u2014 making insn 121's PLUS operand involve a HI-LO producer (mult / div result) so mips_adjust_cost raises the 121->123 edge latency above 1, letting insn 111 win the class-1 test in rank_for_schedule (s15 finding: class-2 is structurally closed; class-1 has one untested realization).",
-   "mechanism": "sched.c::rank_for_schedule at lines 2399-2456: (2) class diff via LOG_LINKS(last_scheduled) + insn_cost gate. If insn 121's dep-edge to 123 (via a HI-LO consumer) has cost>1, the class diff test val!=0 could pick 111 over 121 without going through the LUID tiebreak. s15 named this as the one untested C-source realization but did not draft or measure it.",
-   "next_probe": "s49 (contingent on F2-B KILL): (1) Identify a HI-LO-producing operation whose result can legitimately feed the arg5_addr computation without being a semantic lie. Candidates: replace `v0 <<= 2; arg5 = *(s32*)(v0+(s32)tbl_125c);` with `arg5 = tbl_125c[(idx_1494[1] * 0x40000000) >> 30];` (a mult-then-shift that lowers to mult+mflo+sra but yields the same value 0..3 range for a u8 index). (2) Vet against no-new-park-categories: is this a proven-spelling-class-reconstruction (same bytes, different C shape) or a semantic lie? The intermediate has NO semantic purpose beyond triggering the HI-LO scheduler cost. Likely FAIL as cheat-shaped. If FAIL, (3) audit target asm for any legitimate mult-consumer that could naturally feed arg5_addr \u2014 if none, F3 also closes."
+   "hypothesis": "F4 (WRITTEN-never-read local ARRAY per dead-vars-local-array.md 2026-07-01 sanction, ORACLE-ENFORCED): if csmd4 target asm shows dead sw stores into a stack-frame region the h5 candidate never allocates, a matching-shape local u8 array with matched writes reserves frame bytes AND emits actual sw stores (unlike the scalar variant which DCEs); prerequisite is target-oracle-enforced by construction.",
+   "mechanism": "Written-never-read local array reserves frame bytes AND emits actual sw stores if the writes are to distinct offsets; if target has matching dead stores, the shape is byte-accurate. Reserves stack space that shifts prologue frame-adjust arithmetic AND emits real MEM stores (not DCE-vulnerable like the scalar) which could ripple into the h5 basin's alloc web via saved-reg pressure at prologue emission.",
+   "next_probe": "s49 or s50: grep asm/funcs/cpu_side_move_dir_4.s for `sw` instructions targeting offsets 0x10-0x1F (or wherever the h5 candidate's frame ends and the target's frame may extend) with NO matching lw. If any found, draft C7 with a matching-shape local u8/s32 array + matching writes; layer-1 cheat-reviewer against dead-vars-local-array.md carve-out prerequisites; if PASS, apply + sandbox. If no unmatched dead-sw stores in target asm, F4 closes as not-applicable."
   },
   {
-   "hypothesis": "F4 (revive): a WRITTEN-never-read local ARRAY carve-out per dead-vars-local-array.md 2026-07-01 sanction. SOTN dra/62DEC.c ships `u8 sp70[4]` written 4x/read 0x with matched dead sw stores in target bytes. If csmd4 target asm shows dead sw stores into a frame the h5 candidate never allocates, the carve-out prerequisite (target-oracle-enforced) is satisfied.",
-   "mechanism": "Written-never-read local array reserves frame bytes AND emits actual sw stores; if target has matching dead stores, the shape is byte-accurate. Reserves stack space that shifts prologue frame-adjust arithmetic and could ripple into the h5 basin's alloc web.",
-   "next_probe": "s50 (contingent on F2-B and F3 KILL): (1) grep asm/funcs/cpu_side_move_dir_4.s for `sw` instructions targeting offsets 0x14-0x1F of $sp (the range where dead-local-arrays would land) that have NO matching lw. (2) If any found, draft C6 with a matching-shape local array + writes. (3) Layer-1 cheat-reviewer against dead-vars-local-array.md carve-out prerequisites. (4) If PASS, apply + sandbox. (5) If no matching dead-sw stores found in target asm, F4 closes as not-applicable."
+   "hypothesis": "F5 (new, from s48 C6 KILL): the DCE-upstream-of-flow that suppresses `held` is bypassable if `held` is either address-taken (making it a memory pseudo not subject to reg-DCE) or written-then-read once (defeating dead-set elimination) at a position that leaves the READ dead but the SET live. E.g. `held = *idx_1494; something_using_held_that_folds_out;` where the read gets DCE'd but the SET survives to flow.c.",
+   "mechanism": "Two candidate realizations: (a) `held` as address-taken via `(void*)&held;` (forbidden by no-new-park-categories: `(void)&local;` is in the cheat catalog). (b) `held` reused as a live carrier for a different purpose (e.g. temp for arg4 chain output) where the SET is dead but a downstream READ sinks it - but this converges with F1a/F1b block-scope multi-set carrier probes already KILLED at s5.",
+   "next_probe": "F5 (a) is policy-blocked (address-taken void cast is in the cheat catalog). F5 (b) is redundant with s5 F1a/F1b. F5 closes at drafting time WITHOUT measurement per no-new-park-categories; documented for completeness so future sessions don't re-derive."
   }
  ],
  "judge_constraints": [
