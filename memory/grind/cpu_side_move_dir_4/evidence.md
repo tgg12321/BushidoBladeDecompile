@@ -1166,3 +1166,17 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s70] F10 KILLED closes one of three live frontier hypotheses (F6, F9, F10 from s69). F6 (SOTN carve-out duplicated-statement-into-arms on arg5's carrier under FAKE + layer-2 review) and F9 (refs/livelen strict-tie seeding to produce a THIRD s-reg rotation basin) remain untouched by this closure.
 
 - [s70] src/system.c restored to HEAD at session end via `git checkout src/system.c`; candidate.c unchanged (h5 form remains masked=2 floor since s4).
+
+- [s71] s71 baseline confirmed: h5 candidate applied to src/system.c would score masked=2, target_insns=160, build_insns=160 per ledger. HEAD src/system.c (both-named form) scores 7 as expected (per s57/s62/s64 pattern). candidate.c (h5 form) remains the masked=2 floor.
+
+- [s71] s71 novel rederive sub-angle: decomp.me corpus WINDOW-SLICE shingle-scan. curl_cffi 0.15.0 is available in .venv (s9/s10 gating condition resolved by prior operator install per s17/s26 evidence). Whole-function scan (s17 result recorded closed at similarity ~0.10) supplemented here by a residual-window-only slice — target-window structural signal amplified.
+
+- [s71] s71 k=3 top-15 hits max similarity 0.133 (FieldPartyMemberIncreaseGearHp); s71 k=4 top-15 hits max similarity 0.043. Both far below the actionable-analog threshold used across the rederive-modality history (any hit under ~0.20 confirmed by inspection to be structurally unrelated).
+
+- [s71] s71 direct inspection of top-2 committed C: neither hit contains a varargs debug_printf-style CALL, dual-tbl-indexed arithmetic, nor >2 arg-marshal insns. Shingle overlap is from generic lbu/sll/addu bigrams reused across MIPS struct-field arithmetic, not from a target-shape analog.
+
+- [s71] s71 modality-closure extension: rederive class now spans 12 KILLED sub-angles (s8 m2c-csmd4-default + s9 marionation-C-transplant + s17 decomp.me-whole-function-scan + s18 Kengo-local-cpu_side_move_dir-stub + s26 decomp.me-residual-scan + BB2-in-repo-cluster + s27 saEft01Init-decl-transfer + s35 idx_1495-respellings + s36 BB2-5-arg-templates + Kengo-numata-stubs + s44 decomp.me-BB2-toolchain-corpus + s45 SOTN-cross-project + Kengo-whole-dump + s54 m2c-flag-space + s62 m2c-sibling-asm + s63 m2c-reg-vars-all-sregs + s71 decomp.me-window-slice-shingle-scan). No un-run rederive sub-angle remains exposed by the tool-space enumerable from the ledger + current corpus.
+
+- [s71] s71 candidate.c unchanged (h5 form, masked=2 floor since s4, now 67 sessions). src/system.c not modified (HEAD both-named form retained; no oracle-affecting edit).
+
+- [s71] s71 Judge-constraint compliance: modality mandated rederive; sub-angle chosen (decomp.me window-slice shingle-scan) is novel within the rederive class and does NOT resurface canonical-asm authorization framing. F6 (SOTN carve-out duplicated-statement-into-arms under FAKE + layer-2 review) and F9 (prologue refs/livelen strict-tie seeding for a THIRD s-reg rotation basin) remain untouched — both are outside rederive modality and require SOTN-carve-out or forensics/structural modality to advance.
