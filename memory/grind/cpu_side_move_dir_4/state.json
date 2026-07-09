@@ -1,7 +1,7 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 60,
+ "session_count": 61,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -369,23 +369,29 @@
    "floor": 2,
    "modality": "forensics",
    "headline": "s60 forensics: named the mechanism producing the +13 alloc-web rotation on idx_1495 respellings \u2014 expand.c's REG_EQUIV attachment differs between the h5 cross-symbol form (no note) and the honest resp"
+  },
+  {
+   "session": 61,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "s61 forensics: H3 REG_EQUIV-lever reversibility CLOSED across 4 natural idx_1495 respellings \u2014 all attach REG_EQUIV via set_unique_reg_note and produce +13 alloc-web rotation."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "H4 permuter: wrap `{ ...; goto poll; }` inside an extra `{ }` inside `if(status != 0)`; PERM_LINESWAP the 3 statements (if&4, if&2, goto poll). 3!=6 combinations, fully enumerable in <2 min. s59 confirmed nested-{} inside if() parses; the poll-dispatch-2-only sub-neighborhood is closed at masked=2 identity \u2014 expanding to include the terminator gives orderings inaccessible with goto outside the wrap.",
-   "mechanism": "sched.c LUID reweighting from goto/store placement is orthogonal to the 2-if-block-swap axis; the 3-statement wrap enumerates callback-vs-goto orderings that shift the terminal RANKDBG LUID diff at clock=13 (RANKDBG val=0 \u2192 LUID(121)=12 vs LUID(111)=8 in the residual pair).",
-   "next_probe": "s61 permuter: wrap `{ ...; goto poll; }` inside `if(status != 0)` in extra braces + PERM_LINESWAP; 6 combinations; record score per ordering. If any <60 that's a novel find outside h5 identity minimum; if not, close this granularity too and try wrapping the entire outer `if (sys_GetVblankCount() != 0) { ... }` block."
-  },
-  {
-   "hypothesis": "H1 (unblocked by H3's s59 nested-{} parseability finding): sched2 post-reload LUID renumbering admits a shift-by-1 lever via directed PERM_LINESWAP on a scheduler-visible sub-scope disturbing exactly one 106/107/111/121 neighbor without disturbing h5's s-reg web (measured stable at s60 baseline).",
+   "hypothesis": "H1 (unchanged from s60): sched2 post-reload LUID renumbering admits a shift-by-1 lever via directed PERM_LINESWAP on a scheduler-visible sub-scope disturbing exactly one 106/107/111/121 neighbor without disturbing h5's s-reg web.",
    "mechanism": "sched.c::rank_for_schedule at sched2 sees insns 111/121 at plain priority 2 with LUID delta 1 (s43 log line 775). A one-slot shift on a non-residual neighbor tips 121's LUID advantage without flipping sched1's decision.",
-   "next_probe": "s61 forensics/permuter hybrid: wrap the do_timeout inline block in explicit extra braces; add PERM_LINESWAP over the 8 statements inside; run the N!/directed cross-product. Cross-check winners against tmp/grind/cpu_side_move_dir_4/s6/csmd4_only.log sched2 SCHEDDBG PICK events + READY-list at clock=10..15 to identify which LUID slot moved."
+   "next_probe": "s62 forensics/permuter hybrid: wrap the do_timeout inline block in explicit extra braces; add PERM_LINESWAP over the 8 statements inside; run the N!/directed cross-product. Cross-check winners against tmp/grind/cpu_side_move_dir_4/s6/csmd4_only.log sched2 SCHEDDBG PICK events + READY-list at clock=10..15 to identify which LUID slot moved."
   },
   {
-   "hypothesis": "REG_EQUIV-driven alloc web rotation identified in s60 is a REVERSIBLE lever: an offsetting C construct that raises p72/p73 or p79 priority above p78's REG_EQUIV-boosted-livelen might restore the s4 disposition for p78 in the honest respelling world, potentially retiring the do-while-zero-exception #5 policy-flagged cross-symbol form without regressing the h5 masked=2 floor.",
-   "mechanism": "global-alloc's priority queue is sorted by pri=floor_log2(nrefs)*nrefs*10000/livelen; p78 lands at pri=138 in the honest form; a lever adding a ref to p72 or p73 (e.g. touching a0/a1 in a live-adding way) would restore ord ordering and hard-reg fit. Must be a NON-cheat lever - no dead assigns.",
-   "next_probe": "s61 structural: enumerate the small set of natural-C ways to add a use to p72 (parameter a0) or p73 (parameter a1) within the function's live semantic domain. Examples: (a) if the a1 pointer is naturally used in a computation the code doesn't already perform; (b) any structural refactor that references a0 more times without introducing a dead store. If no natural lever exists, this closes the retirement path via a different mechanism than 'file-level regression'."
+   "hypothesis": "H4 (unchanged from s60): wrap `{ ...; goto poll; }` inside extra `{}` inside `if(status != 0)`; PERM_LINESWAP the 3 statements (if&4, if&2, goto poll). 6 orderings enumerable in <2 min.",
+   "mechanism": "sched.c LUID reweighting from goto/store placement is orthogonal to the 2-if-block-swap axis; the 3-statement wrap enumerates callback-vs-goto orderings that shift the terminal RANKDBG LUID diff at clock=13.",
+   "next_probe": "s62 permuter: wrap and PERM_LINESWAP; 6 combinations; record score per ordering. If any <60 that's a novel find outside h5 identity minimum; if not, close this granularity too."
+  },
+  {
+   "hypothesis": "s15 class-1 attack (untested): make insn 121's PLUS operand involve a mul-result / HI-LO producer so mips_adjust_cost raises the 121->123 edge latency above 1, causing rank_for_schedule's class diff via LOG_LINKS(last_scheduled) to return non-zero.",
+   "mechanism": "sched.c::rank_for_schedule cascade: (1) priority diff -> (2) class diff via LOG_LINKS(last_scheduled) + insn_cost gate -> (3) LUID diff. All 51/51 RANKDBG events in s6 block=3 fall through to LUID (val=0 on cls diff). A cost>1 on the 121->123 dependency would break the LUID tiebreak by raising the class-diff term.",
+   "next_probe": "s62 forensics: identify a natural C construction where the (v0 + (s32)tbl_125c) plus operand's producer is a mul/mult (HI-LO stall producer) rather than a plain lw/lbu/add. Would require restructuring the arg5 index derivation to route through a mult - measure whether that keeps h5 basin AND raises 121->123 cost."
   }
  ],
  "judge_constraints": [

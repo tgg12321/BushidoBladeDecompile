@@ -1014,3 +1014,23 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s60] Files list & inventory: tmp/grind/cpu_side_move_dir_4/s60/csmd4.{baseline,honest_idx1495}.{rtl,cse,cse2,loop,flow,combine,jump,jump2,lreg,greg,sched,sched2,dbr,log,s,i} + csmd4_only.{greg,lreg} + csmd4_honest.{greg,lreg} + FORENSICS.md + dump_baseline.sh.
 
 - [s60] Ledger implication: the s8 kill of the honest respelling is now MECHANISM-NAMED, not just measured. Any future 'retire the semantic-lie idx_1495 spelling' attempt must plan for the REG_EQUIV-driven alloc web rotation as the specific obstruction, not just 's-reg coupling'.
+
+- [s61] s61 baseline confirmed: h5 candidate applied to src/system.c scores masked=2 target_insns=160 build_insns=160 via sandbox cpu_side_move_dir_4 --disable all.
+
+- [s61] s61 P1 &D_800A1495: masked=16, build_insns=161 (+1 insn vs h5). Rejected form saved at memory/grind/cpu_side_move_dir_4/rejected/honest_idx_1495_direct_symref.c.
+
+- [s61] s61 P2 1+idx_1494: masked=15, build_insns=160. Same as s8-probe1 (idx_1494 + 1).
+
+- [s61] s61 P3 (u8*)((s32)&D_800A1494+1): masked=15, build_insns=160. Integer-cast intermediate does NOT block REG_EQUIV attachment.
+
+- [s61] s61 P4 (u8*)((s32)idx_1494+1): masked=15, build_insns=160. Var-mediated cast folds via CSE back to ADDR_EXPR before note decision.
+
+- [s61] s61 P2/P3/P4 rejected forms consolidated at memory/grind/cpu_side_move_dir_4/rejected/honest_idx_1495_intcast_forms.c.
+
+- [s61] Named sub-mechanism: expand.c set_unique_reg_note attaches REG_EQUIV whenever the RHS tree reaches emit_move_insn as a compile-time-constant address, regardless of intervening integer CAST_EXPR or local-variable substitution (CSE folds the intermediate before the note decision). Only tbl_125c-VAR_DECL-referenced expressions escape the note because tbl_125c is not itself an ADDR_EXPR at tree time.
+
+- [s61] H3 frontier verdict: the REG_EQUIV alloc-web rotation is DETERMINISTIC and NAMED, but NOT reversibly leverable via C-source respelling. Every natural respelling either matches s8-probe1 (masked=15) or regresses further (P1 masked=16 +1insn). Offsetting via p72/p73/p79 priority raises is also closed - no natural-C lever raises those priorities within the function's stated semantics.
+
+- [s61] The cross-symbol semantic-lie form (src/system.c:406) remains committed and remains policy-flagged; s61 confirms pure-C retirement at masked=2 floor is still blocked. Retirement paths unchanged from s60: close h5 to 0, or achieve g3 basin masked=0 (with file-wide s-reg re-balancing).
+
+- [s61] src/system.c restored to h5 candidate at session end; post-restore sandbox re-measures masked=2. candidate.c unchanged (h5 form remains masked-2 floor).
