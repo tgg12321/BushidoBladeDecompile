@@ -1085,3 +1085,9 @@
 - probe: Applied `s32 t0_addr; ...; t0_addr = (s32)((u8*)tbl_125c + t0);` with call reading *(s32*)t0_addr on the h5 candidate; sandbox --disable all.
 - result: masked=9, target_insns=160, build_insns=160. +7. Novel intermediate basin (distinct from h5=2, g3=6/7, +13 collapse basin, and inline-all=14).
 - verdict: KILLED
+
+## [s66] Simultaneous multi-set-forcing of BOTH sides (t0<<=2 in-place + v0=v0+tbl in-place) produces a symmetric priority cancellation at clock=13: neither insn 111 nor insn 121 LAUNCHes, ready queue falls back to normal-priority ordering, potentially reaching a novel low-launch basin unreachable by either single-side collapse.
+- mechanism: sched.c adjust_priority/birthing_insn_p gates LAUNCH on flow-time reg_n_sets==1 of SET dest. In-place `t0<<=2` routes expand_binop with target=p101 (multi-set, non-LAUNCH per s7 CONFIRMED). Explicit `v0=v0+tbl` in-place makes p107 multi-set (non-LAUNCH). If neither insn LAUNCHes at clock=13, scheduler's ready queue tiebreak follows normal priority path, hypothetically clean.
+- probe: Applied `t0 <<= 2; t0 = (s32)((u8*)tbl_125c + t0); v0 <<= 2; v0 = v0 + (s32)tbl_125c; arg5 = *(s32*)v0;` on h5 candidate; sandbox cpu_side_move_dir_4 --disable all. Rejected form saved at memory/grind/cpu_side_move_dir_4/rejected/f3_compound_dual_collapse.c.
+- result: masked=16, target_insns=160, build_insns=160 (+14 vs h5 baseline of 2). Strictly WORSE than either single collapse (s65 P1=+13, s65 P2=+13). Compound dual-collapse does NOT cancel to a novel low-launch basin; instead lands in a fresh +14 basin never previously measured. The +13 collapse basin is single-side-driven, not compositionally symmetric.
+- verdict: KILLED

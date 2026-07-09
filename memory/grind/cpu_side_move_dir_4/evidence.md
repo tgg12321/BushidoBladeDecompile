@@ -1092,3 +1092,11 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s65] Baseline masked=2 confirmed at session start (candidate.c applied) and at session end after restoration.
 
 - [s65] Structural modality is empirically exhausted on the h5 chassis for FIRST-order block-local statement rewrites: the ledger's ~40 measured decompositions plus this session's 3 novel probes leave no untested single-mutation that both preserves h5 basin AND flips the pair. Every measurable structural mutation either preserves h5=2 (INERT), collapses to g3=6/7 (mult-expander -> in-place-shift), or lands in +7 / +13 / +14 novel misalignment basins.
+
+- [s66] s66 F3 compound dual-collapse measurement: masked=16 target_insns=160 build_insns=160 (+14 vs h5 baseline of 2), rejected form at memory/grind/cpu_side_move_dir_4/rejected/f3_compound_dual_collapse.c.
+
+- [s66] The h5 masked=2 basin genuinely requires BOTH LAUNCHes jointly (insn 111 via mult-expander p106 fresh-single-set + insn 121 via v0+tbl compound p107 fresh-single-set); removing either drops to +13 (s65 P1/P2), removing both drops FURTHER to +14 (s66 F3).
+
+- [s66] Confirms that the g3/ip/+13 basin family is NOT compositional; the two LAUNCH insns are not independent axes but a coupled 2D system whose (LAUNCH, LAUNCH) and (non-LAUNCH, non-LAUNCH) diagonals are separated by +14, and only the (LAUNCH, LAUNCH) corner sits in the h5 pair-swap neighborhood of the target.
+
+- [s66] Baseline re-verification at end of session: masked=2 with candidate.c restored to src/system.c — h5 basin holds cleanly.

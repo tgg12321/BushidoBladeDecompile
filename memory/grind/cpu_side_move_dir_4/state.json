@@ -1,7 +1,7 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 65,
+ "session_count": 66,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -399,23 +399,29 @@
    "floor": 2,
    "modality": "structural",
    "headline": "s65 structural: three novel LAUNCH-mechanism probes KILLED (P1 t0-two-add +13, P2 v0-in-place-PLUS +13, P3 fresh-t0_addr +7); identifies a discrete +13 collapse basin reachable by any multi-set-forcin"
+  },
+  {
+   "session": 66,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "s66 structural: F3 compound dual-collapse KILLED at masked=16 (+14) \u2014 the +13 collapse basin is single-side-driven, not compositionally symmetric; dual-non-LAUNCH lands in a novel +14 basin worse than"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F1 (unchanged from s64): g3-chassis arg5-side-only directed permuter reaches a novel arg5-qty pri>=5000 profile closing the v1/a0 exchange in g3=6 basin.",
-   "mechanism": "g3 chassis avoids the h5 mult-expander LAUNCH constraint; arg5-side-only bounds the search to the closable half of g3's residual. Fable-blitz threshold: arg5-qty pri>=5000 requires refs>=4 span 6 OR refs=3 span<=5.",
+   "hypothesis": "F1 (unchanged from s64/s65): g3-chassis arg5-side-only directed permuter reaches a novel arg5-qty pri>=5000 profile closing the v1/a0 exchange in g3=6 basin.",
+   "mechanism": "g3 chassis avoids the h5 mult-expander LAUNCH constraint; arg5-side-only bounds the search to the closable half of g3's residual. Fresh-seed 20-30 min per campaign discipline.",
    "next_probe": "Copy tmp/perm_csmd4 workspace, edit base.c to g3 shape (t0<<=2 in place of t0*=4 chain), add PERM_LINESWAP wrapping arg5's 3 statements + PERM_GENERAL alternatives on the arg5 dereference only. Confirm iter1 base_score=40; fresh-seed 20-30 min. Any find must pass layer-1 vet against g3-permuter cheat family."
   },
   {
-   "hypothesis": "F2 (unchanged from s64): 3-statement PERM_LINESWAP inside nested { } inside if(status != 0) covering (if&4, if&2, goto poll) enumerates 3! = 6 orderings; ALLOCDBG s-reg web coupling may surface at previously-inaccessible dispatch scope.",
+   "hypothesis": "F2 (unchanged from s64/s65): 3-statement PERM_LINESWAP inside nested { } inside if(status != 0) covering (if&4, if&2, goto poll) enumerates 3! = 6 orderings; ALLOCDBG s-reg web coupling may surface at previously-inaccessible dispatch scope.",
    "mechanism": "s59 established nested-compound-if parsing works (2/2 iters ran); s42 shows p78/idx_1495 have zero block=3 QTY overlap so upside is small, but deterministic enumeration is cheap.",
    "next_probe": "Extend s59 base.c to wrap 3 statements including the goto; permuter exhausts 3!=6; measure any weighted<60 output on sandbox --disable all."
   },
   {
-   "hypothesis": "F3 (NEW from s65 observation): the +13 collapse basin members (P1, P2) suggest a compositional symmetry that could be probed COMPOUND \u2014 simultaneously multi-set-force BOTH sides via `t0<<=2; ...; v0=v0+tbl;` \u2014 hypothesis: if the collapse is single-side-driven, dual-collapse either 2x-worse or unexpectedly nears g3/h5 via symmetric priority cancellation.",
-   "mechanism": "Both insn 111 and insn 121 become NON-LAUNCH simultaneously; ready queue at clock=13 has NO LAUNCH-priority candidates in the window; scheduler falls back to normal-priority ordering, potentially reaching a novel low-launch basin.",
-   "next_probe": "Apply `t0 <<= 2; t0 = (s32)((u8*)tbl_125c + t0); v0 <<= 2; v0 = v0 + (s32)tbl_125c; arg5 = *(s32*)v0;` and measure. Structural modality, one probe."
+   "hypothesis": "F4 (NEW from s66 observation): the +14 basin isolated by dual-non-LAUNCH (F3) may share structure with an un-explored ASYMMETRIC-collapse form where insn 111 LAUNCHes but is DELAYED by an inserted single-set intermediate (e.g., `s32 t0m = t0*4;` before t0=(tbl+t0m)), keeping p106 fresh-single-set (LAUNCH) but shifting its LUID relative to insn 121.",
+   "mechanism": "The intermediate t0m gets its own pseudo (p_new fresh single-set \u2192 LAUNCH), so THREE insns now compete at clock=13 (insn 111 sll + insn 121 addu + insn newAddu p101=tbl+p_new). Backward-scheduler picks highest LUID first; if the intermediate's LUID falls between 111 and 121, the pair-swap ordering could flip. NOT a repeat of V3_t0s_split (that used `s32 t0s = t0*4;` which regressed to +1 per s3) \u2014 that variant preserves the ORIGINAL t0*=4 too; F4 would REPLACE the mult with the split form.",
+   "next_probe": "Apply `s32 t0m; t0m = t0 * 4; t0 = (s32)((u8*)tbl_125c + t0m);` (t0m as a fresh block-scope single-set intermediate, replacing the in-place t0*=4 mult chain), leave v0/arg5 chain untouched. Measure structural modality. Cross-check against rejected/v3_t0s_split_regress.c which is likely the SAME form \u2014 if so, KILLED-by-reference; if distinct, novel probe."
   }
  ],
  "judge_constraints": [
