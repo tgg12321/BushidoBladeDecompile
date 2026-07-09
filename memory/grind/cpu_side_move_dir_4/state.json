@@ -1,7 +1,7 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 58,
+ "session_count": 59,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -357,23 +357,29 @@
    "floor": 2,
    "modality": "permuter",
    "headline": "s58 permuter fresh-seed 0-find at h5 chassis (18652 iters / 689s, base=60); PERM_GENERAL at fn-body prologue scope parsed as random-mode fallback (same tool limitation as s50); extends h5 whole-fn ran"
+  },
+  {
+   "session": 59,
+   "floor": 2,
+   "modality": "permuter",
+   "headline": "s59 permuter H3: PERM_LINESWAP inside a NESTED `{ }` in `if(status!=0)` IS parsed (base=60, 2 iters run over the 2-combo cross-product); swap of the two poll-callback if-blocks regresses to 125; poll-"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "H1 (unchanged from s55/s56/s57): The sched2 post-reload LUID renumbering admits a shift-by-1 lever via a C-source construct that alters the position of exactly one sched2-visible neighbor without disturbing h5's s-reg web.",
+   "hypothesis": "H4 (new): PERM_LINESWAP directed cross-product at LARGER granularity \u2014 inside a nested `{ }` wrapping the WHOLE `if (status != 0)` body (including the two callbacks AND the `goto poll` terminator) \u2014 enumerates a wider set of poll-loop schedulings including callback-vs-goto orderings that are inaccessible when goto sits outside the wrap.",
+   "mechanism": "H3 confirmed the nested-{} scope is parseable; the poll-dispatch-2-only sub-neighborhood is closed at masked=2 identity. Expanding the wrap to include `goto poll` (or the `*D_800A147C = saved;` restoration in the outer arm) gives PERM_LINESWAP N! orderings over N statements \u2014 the sched.c LUID reweighting from goto/store placement is orthogonal to the 2-if-block-swap axis just measured.",
+   "next_probe": "s60 permuter: wrap `{ ... goto poll; }` in an extra `{}` inside `if(status != 0)`, PERM_LINESWAP the three statements (if&4, if&2, goto poll). 3! = 6 combinations; fully enumerable in <2 min. Verify base still parses as `Will run for N iterations` and record the score for each ordering. If any ordering < 60, that's a novel find outside the h5 identity minimum. If not, this granularity closes too \u2014 try wrapping the entire outer `if (sys_GetVblankCount() != 0) { ... }` block."
+  },
+  {
+   "hypothesis": "H1 (unchanged): The sched2 post-reload LUID renumbering admits a shift-by-1 lever via a C-source construct altering the position of exactly one sched2-visible neighbor without disturbing h5's s-reg web. Now UNBLOCKED by H3's parseability finding \u2014 directed PERM_LINESWAP can be applied inside nested `{}` at ANY scheduler-visible sub-scope in the function body, including the do_timeout inline block (currently un-wrapped-scope-open for PERM directives).",
    "mechanism": "sched.c::rank_for_schedule at sched2 sees insns 111/121 at plain priority 2 (not LAUNCH) with LUID delta 1 (s43 log line 775). A one-slot shift on a non-residual neighbor could tip 121's LUID advantage without flipping sched1's decision.",
-   "next_probe": "s59 forensics: read tmp/grind/cpu_side_move_dir_4/s6/csmd4_only.log sched2 SCHEDDBG PICK events + READY-list at clock=10..15; enumerate insns at post-reload LUIDs 4..9; cross-check RTL predecessor chains vs KILLED family list; report smallest (insn, C-lever) pair that shifts one LUID slot, or null-result."
+   "next_probe": "s60 forensics/permuter hybrid: wrap the do_timeout inline block in an extra `{ ... }` (already an implicit compound) plus explicit extra braces; add PERM_LINESWAP over the 8 statements inside; run the 8!/directed cross-product. Cross-check winners against tmp/grind/cpu_side_move_dir_4/s6/csmd4_only.log sched2 SCHEDDBG PICK events + READY-list at clock=10..15 to identify which LUID slot moved."
   },
   {
-   "hypothesis": "H2 (unchanged from s55/s56/s57): ALLOCDBG conflict-list side-by-side diff on p78 (idx_1495) across two respellings will reveal spelling-dependent conflict-list variation that masked-only measurement cannot see.",
+   "hypothesis": "H2 (unchanged): ALLOCDBG conflict-list side-by-side diff on p78 (idx_1495) across two respellings will reveal spelling-dependent conflict-list variation that masked-only measurement cannot see.",
    "mechanism": "s42 confirmed p78 conflict list at h5 baseline; s35 measured non-zero sandbox regression on 3 idx_1495 spellings, indicating p78's dynamic live range changes with spelling. ALLOCDBG dumps global-alloc conflict-list construction; diff-ing names the mechanism producing the +1/+2 sandbox delta.",
-   "next_probe": "s59 forensics: rebuild gccdbg with BB2_ALLOC_DEBUG=1; capture cc1 dumps for h5 baseline + h5 with idx_1495=(u8*)&D_800A1495 + h5 with adjacency-index spelling; diff .greg conflict lists for p78 pairwise; correlate deltas to sandbox measurements."
-  },
-  {
-   "hypothesis": "H3 (new for s59+): PERM_LINESWAP scoped inside a nested {} block (e.g. wrapping the poll-loop dispatch inside the `if (status != 0)` compound with explicit nested braces around the two callback if-blocks) will bypass the s50/s58 directive-parser fallback and open the poll-dispatch mutation neighborhood at h5 chassis.",
-   "mechanism": "s58's parser-fallback finding indicates PERM_GENERAL at fn-body-outer scope isn't parsed; the same directive inside a nested `{...}` block statement chain is parsed (per s22/s32/s40 successful campaigns). Wrapping the two callback if-blocks in an explicit `do {...} while(0);` sub-block would give the parser a canonical scope for PERM_LINESWAP over the two if-blocks.",
-   "next_probe": "s59 permuter: wrap the two callback if-blocks in an explicit `{ ... }` sub-block (compound statement) or `do {...} while(0)` per do-while-zero-exception owner-sanctioned wrap; place PERM_LINESWAP inside; launch fresh-seed campaign; harvest+stop after ~15min. If parser recognizes it, this is the FIRST time the poll-loop dispatch mutation neighborhood is genuinely explored at h5 chassis."
+   "next_probe": "s60 forensics: rebuild gccdbg with BB2_ALLOC_DEBUG=1; capture cc1 dumps for h5 baseline + h5 with idx_1495=(u8*)&D_800A1495 + h5 with adjacency-index spelling; diff .greg conflict lists for p78 pairwise; correlate deltas to sandbox measurements."
   }
  ],
  "judge_constraints": [

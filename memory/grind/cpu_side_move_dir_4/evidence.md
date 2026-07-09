@@ -980,3 +980,15 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s58] src/system.c reverted to HEAD via `git checkout src/system.c` after harvest (no floor improvement to commit; oracle stays green).
 
 - [s58] Cumulative h5-chassis permuter closure now spans s5/s13/s22/s23/s31/s32/s40/s49/s50/s58 = ~103k whole-fn random-mode iters + directed-scope campaigns; per s55 CONFIRMED, this closes permuter-modality without a chassis change.
+
+- [s59] sandbox cpu_side_move_dir_4 --disable all with h5 candidate applied to src/system.c: masked=2, target_insns=160, build_insns=160 (floor confirmed at start of session).
+
+- [s59] Campaign launch 2026-07-09T10:03:19+00:00: PROLOGUE_FIX 4 reordered / 0 unchanged; permuter reports `Will run for 2 iterations.` — directed-cross-product mode, NOT random fallback (contrast s50/s58 where `No perm macros found. Defaulting to randomization.` was printed).
+
+- [s59] Weighted cross-product: identity order = 60 (== base = h5 masked=2 basin), swap order = 125 (+65). No new finds; identity is the target-matching order at this chassis.
+
+- [s59] The parse succeeds when PERM_LINESWAP sits inside an extra `{ }` compound-statement nested inside an existing compound (`if (status != 0) { { PERM_LINESWAP(...) } goto poll; }`). This eliminates the s50/s58 tool-limitation frontier: the fallback was a SCOPE-SPECIFIC parse rejection, not a global block on this function.
+
+- [s59] harvest --stop reports iterations=2, elapsed_s=177.8, best_new_score=None, new_finds=[]. Campaign terminated on its own (2-combination cross-product exhausted).
+
+- [s59] Base score 60 (weighted) corresponds to the same h5 masked=2 floor measured directly via the engine sandbox at session start — permuter and sandbox agree on the h5 chassis identity.
