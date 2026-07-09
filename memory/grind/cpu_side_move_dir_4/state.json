@@ -1,8 +1,8 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 0,
@@ -27,23 +27,29 @@
    "floor": 2,
    "modality": "structural",
    "headline": "Structural axis on csmd4 h5 base fully closed: 13 variants swept (var-splits, expression compression, decl-position, pointer-deref form) \u2014 8 INERT at masked 2, 5 measured regressions (t0s-split=3, arg"
+  },
+  {
+   "session": 4,
+   "floor": 2,
+   "modality": "permuter",
+   "headline": "Frontier top-3 cleared: do-while(0) wrap direction-invariant +2 insns (KILLS pri-lift lever), cnt-carrier regresses to masked 4, volatile fmt-carrier policy-rejected. h5 floor holds at 2."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "do-while(0) wrap around the arg5-chain ONLY lifts arg5-qty loop-weighted refs (flow.c REG_N_REFS \u00d7 loop depth) so pri(arg5) > pri(t0) strictly.",
-   "mechanism": "do-while(0) emits NOTE_INSN_LOOP_BEG (sanctioned 2026-07-06); local-alloc.c qty_compare weights refs by loop depth. The structural sweep now closes the un-wrapped structural axis, so this remains the ONLY untried differentiator on h5.",
-   "next_probe": "Wrap ONLY `{ v0 = idx_1494[1]; v0 <<= 2; arg5 = *(s32*)(v0+(s32)tbl_125c); }` in do{...}while(0); sandbox + QTYDBG to verify arg5-qty refs lift AND the LOOP_BEG note doesn't split the window."
+   "hypothesis": "The residual {sll4@54 <-> addu5@55} pair may respond to a LOCAL block-scope multi-set variable (declared inside the inline block, set twice on non-collapsing values, referenced 3-4 times) as the arg5 value-carrier \u2014 the ledger records fn-scope carriers going to s0 spill and fresh single-set locals folding, but a block-scope multi-set with a legitimately distinct second-set value (not idx[1] scrambled) has not been swept.",
+   "mechanism": "combine.c merges paired sets with accurate ref bookkeeping (session-3 evidence, e5aa2dd4), but only when the sets are transformable equalities. A block-scope carrier initialised from a UNIQUE second value (e.g. the D_800A11D5 dispatch byte) would be non-mergeable and could lift arg5-qty refs without triggering combine collapse.",
+   "next_probe": "Sweep {block-scope `s32 c = D_800A11D5; c = idx_1494[1]; ...`; block-scope `s32 c = *idx_1495; c = idx_1494[1]; ...`; block-scope `s32 c = t0; c = idx_1494[1]; ...`} \u2014 three distinct multi-set precedents whose first value is a live-here-not-dead reference. Measure each against the h5 base."
   },
   {
-   "hypothesis": "An alternate multi-set arg5 VALUE carrier (not the v0-carrier which regressed to 12) whose use-shape defeats cse's single-set-source copy-fold precondition.",
-   "mechanism": "cse.c copy-propagation folds single-set reg sources; the carrier must be legitimately multi-set OR its use-shape must break the fold precondition even at single-set.",
-   "next_probe": "Sweep {arg5 through cnt-carrier (cnt dead after do_timeout), arg5 masked with 0xFFFFFF via v0, arg5 threaded through idx-return-value re-use} \u2014 the untried carriers not in the rejected bank."
+   "hypothesis": "A statement-level rearrangement of the debug_printf CALL argument evaluation shape (e.g. pre-computing D_800A11DC[D_800A11D5] into a named local BEFORE the arg5 stage) shifts the arg-register homing seat and may re-time the fmt-la relative to t0's death without needing to hide the symbol from equiv_constant.",
+   "mechanism": "expand.c handles CALL args right-to-left; naming an earlier arg's evaluation moves its LUID slot and may re-order the ready queue when arg5 births.",
+   "next_probe": "Insert `s32 dispatch = D_800A11DC[D_800A11D5];` BEFORE the arg5 stage; use dispatch in the call. Measure. Compare vs. inserting it AFTER arg5. Compare vs. naming the fmt pointer itself as `const char *fmt = (const char *)&D_800161C8;` (non-volatile, so the symbol is CSE-visible \u2014 the change would be the LUID slot only)."
   },
   {
-   "hypothesis": "The residual v1/a0 exchange requires fmt-la scheduling AFTER t0's last use; source-level respelling of the fmt symbol is INERT (rejected/fmt_la_late_local.c), so the lever must hide the symbol from cse.c equiv_constant.",
-   "mechanism": "GCC 2.7.2 cse.c equiv_constant folds symbol addresses regardless of C staging; lui/addiu selection is post-CSE. Only a construct that hides the symbol from equiv_constant would move it.",
-   "next_probe": "Opaque-carrier: `static void *volatile fmt_hold = &D_800161C8;` + read at call site; verify equiv_constant no longer sees the constant."
+   "hypothesis": "Nested do-while(0) wraps ARE sanctioned with single-level-insufficient documentation. Given single-level wraps are direction-invariant scheduler barriers here (measured KILLED this session), nesting is unlikely to help \u2014 but a nested wrap that includes idx_1494 dereference INSIDE the outer wrap (making both loads participate in the loop-note refs) is different in kind from the single-level probes.",
+   "mechanism": "flow.c multiplies REG_N_REFS by depth; nested wraps double the multiplier. If depth-2 loops both idx dereferences, cse might invalidate the equiv-sink defeat on D_800A11D5 (the pp alias is refs-2, session-1 evidence).",
+   "next_probe": "Wrap the entire inline block (idx_1494[0], idx_1494[1], t0 chain, arg5 chain, pp, and the CALL) in one do{}while(0). Measure. If +N insns and masked worsens, kills the nested-wrap direction entirely. If masked improves at any insn budget, characterise the depth-2 ref reweighting."
   }
  ],
  "judge_constraints": [],
