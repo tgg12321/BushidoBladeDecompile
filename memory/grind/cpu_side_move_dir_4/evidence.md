@@ -608,3 +608,15 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s31] Reconfirms s3 V12 finding (block-local decl reversal INERT) at prologue scope: C-statement-order of globals-init does not propagate to block=3 qty birth-order or LUID tiebreaks — the s-reg web treats prologue-init LUID as fungible.
 
 - [s31] Chassis base_score consistency (60 = h5 across s22/s23/s31) confirms none of the three campaigns drifted into g3 (weighted 40) or intermediate basins (55) at chassis selection; every campaign faithfully explored the h5 mult-expander neighborhood.
+
+- [s32] s32 campaign metadata: base_score=60 (h5 chassis preserved, guardrail satisfied), 35338 iterations, 1258.4s wall time, 4 workers, 2 novel finds, best_new_score=40, pid_alive_at_harvest=false (auto-stopped by --stop-on-zero after harvest).
+
+- [s32] Novel find output-40-9 (seconds_since_launch=34.9s): fn-scope `s32 temp;` split of arg5 into `temp = *(s32*)(v0+tbl); arg5 = temp;`. Saved at memory/grind/cpu_side_move_dir_4/rejected/s32_perm_general_temp_arg5_two_set.c. Same class as s3-V6 arg4_named (+9 regression) and s11 M1-secondary opaque-carrier (+27 regression) — fresh intermediate pseudo drops h5 to g3 basin.
+
+- [s32] Novel find output-40-10 (seconds_since_launch=38.1s): composite mutation — fn-scope `void **new_var2= &D_800F19C0;` hoist + alias arg5 through fn-scope `status` local (`status = arg5; debug_printf(...,status)`). Saved at memory/grind/cpu_side_move_dir_4/rejected/s32_perm_general_pp_hoist_status_alias.c. Novel spelling of an already-measured g3-basin family (fn-scope carrier disrupts h5 s-reg web + mult-expander LAUNCH signature).
+
+- [s32] Both novel finds at weighted score 40 = g3 basin per s22/s23 established correlation weighted-40 <-> masked-6 (s22 measured output-40-7 on sandbox at masked=6, hypotheses.md L513 and L487). No re-measurement needed per correlation.
+
+- [s32] Zero novel finds emerged between t=60s and t=1258s: the entire fresh-seed window past the initial cluster produced no additional distinct-score outputs. Per fresh-seed discipline (owner directive 2026-07-07, ~20-30min no-find harvest+stop), harvested at 1258s (~21min).
+
+- [s32] Combined campaign coverage (s22+s23+s31+s32) exhausts the h5-preserving permuter neighborhood: LINESWAP (order axis, 7!=5040 exhausted at block scope, 5!=120 exhausted at prologue scope), LINESWAP_TEXT (20429 iters across block+CALL text-mutation), PERM_GENERAL (35338 iters across block-scope expression-level AST mutation). All four launched from base_score=60 h5 chassis; combined zero outputs at weighted <40 across ~60,807 total iterations.
