@@ -47,8 +47,20 @@ function Reap-Permuters {
     } catch { }
 }
 
+# single-instance lock (a second closer editing src/ concurrently = disaster)
+$LockFile = Join-Path $CloserTmp 'closer.lock'
+if (Test-Path $LockFile) {
+    $oldPid = Get-Content $LockFile -ErrorAction SilentlyContinue
+    if ($oldPid -and (Get-Process -Id $oldPid -ErrorAction SilentlyContinue)) {
+        Log "another closer is running (pid $oldPid). Exiting."
+        exit 1
+    }
+    Log "reclaiming stale lock (dead pid $oldPid)."
+}
+$PID | Set-Content $LockFile
+
 $MissionPath = if ([System.IO.Path]::IsPathRooted($Mission)) { $Mission } else { Join-Path $Root $Mission }
-if (-not (Test-Path $MissionPath)) { throw "mission brief not found: $MissionPath" }
+if (-not (Test-Path $MissionPath)) { Remove-Item $LockFile; throw "mission brief not found: $MissionPath" }
 $missionName = [System.IO.Path]::GetFileNameWithoutExtension($MissionPath)
 $OutcomePath = Join-Path $CloserTmp "outcome_$missionName.json"
 Remove-Item $OutcomePath -ErrorAction SilentlyContinue
@@ -57,7 +69,7 @@ Log "closer starting: mission=$missionName model=$Model timeout=${TimeoutMin}m"
 
 # pre-flight
 Invoke-Eng @('verify-oracle') | Out-Null
-if ($LASTEXITCODE -ne 0) { Log "PRE-FLIGHT FAIL: oracle not green on main."; exit 2 }
+if ($LASTEXITCODE -ne 0) { Log "PRE-FLIGHT FAIL: oracle not green on main."; Remove-Item $LockFile -ErrorAction SilentlyContinue; exit 2 }
 Log "pre-flight: oracle green."
 
 $Task = @"
@@ -102,10 +114,49 @@ if (-not $o) {
     Log "NO OUTCOME (missing/unparseable $OutcomePath) — session unproven; src reverted."
     git -C $Root checkout -- src include 2>$null
     Reap-Permuters
+    Remove-Item $LockFile -ErrorAction SilentlyContinue
     exit 1
 }
 
 Log "result=$($o.result) headline='$($o.headline)'"
+
+# ── batch completion path (library-adoption missions) ────────────────────────
+# outcome.completed_funcs = funcs the session drove to sandbox 0 (--disable all).
+# The DRIVER (not the agent) strips their regfix/asmfix rules — deletion-only by
+# construction (lines keyed "^func:") — then re-proves the WHOLE oracle and runs
+# each through the real `queue done` gate (mark_done self-guards: 0 rules +
+# oracle green + no cheat constructs). Anything refused stays in the queue.
+if ($o.completed_funcs -and @($o.completed_funcs).Count -gt 0) {
+    $funcs = @($o.completed_funcs | ForEach-Object { [string]$_ })
+    Log "completion path: $($funcs.Count) claimed: $($funcs -join ', ')"
+    foreach ($f in $funcs) {
+        foreach ($rf in 'regfix.txt', 'asmfix.txt') {
+            $p = Join-Path $Root $rf
+            $lines = @(Get-Content $p)
+            $kept = @($lines | Where-Object { $_ -notmatch "^\s*$([regex]::Escape($f))\s*:" })
+            if ($kept.Count -ne $lines.Count) {
+                Set-Content -Path $p -Value $kept -Encoding utf8
+                Log "stripped $($lines.Count - $kept.Count) $rf rule(s) for $f"
+            }
+        }
+    }
+    $vo = Invoke-Eng @('verify-oracle', '--rebuild', '--allow-dirty')
+    if ($LASTEXITCODE -ne 0) {
+        Log "BYTE-VERIFY FAILED after rule strip — restoring rules, completing NOTHING. Output tail:`n$(($vo -split "`n") | Select-Object -Last 8 | Out-String)"
+        git -C $Root checkout -- regfix.txt asmfix.txt 2>$null
+    } else {
+        Log "BYTES GREEN with rules stripped."
+        $done = @()
+        foreach ($f in $funcs) {
+            $qd = Invoke-Eng @('queue', 'done', $f)
+            if ($LASTEXITCODE -eq 0) { $done += $f; Log "queue done: $f" }
+            else { Log "queue done REFUSED for ${f}: $(($qd -split "`n") | Select-Object -Last 2)" }
+        }
+        git -C $Root add -- src include regfix.txt asmfix.txt engine/queue.json memory docs/closer metrics/events.jsonl 2>$null
+        git -C $Root commit -m "closer: adopt PsyQ library sources — completed $($done -join ', ')" 2>$null | Out-Null
+        Log "COMPLETED $($done.Count)/$($funcs.Count) — committed."
+    }
+}
 switch ([string]$o.result) {
     'candidate-ready' {
         Log "candidate claimed — byte-verifying (tree left in place for review)..."
@@ -122,4 +173,5 @@ switch ([string]$o.result) {
     }
 }
 Reap-Permuters
+Remove-Item $LockFile -ErrorAction SilentlyContinue
 Log "closer done: $missionName"
