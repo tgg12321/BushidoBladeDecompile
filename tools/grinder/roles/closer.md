@@ -45,12 +45,14 @@ You are NOT a grind session. Differences from that role:
 ## Hard rails (identical to grind sessions — non-negotiable)
 
 - NEVER edit `regfix.txt`, `asmfix.txt`, `.claude/rules/`, `engine/`, `tools/`,
-  `Makefile`, `*.ld`, or `volatile_extern_allowlist.txt`. Allowlist grants are
-  OWNER-gated: when an adoption needs an `extern volatile` grant, write the
-  proposed entry + full two-prong evidence (IRQ writer file:line, use-site
-  shape, ground-truth citation) to `memory/closer/volatile-grant-proposals.md`
-  and list the blocked funcs in your outcome — the operator audits and grants
-  between sessions.
+  `Makefile`, `*.ld`, `volatile_extern_allowlist.txt`, or
+  `inline_asm_canonical.txt`. Grant/authorization files are OWNER-gated: when
+  an adoption needs an `extern volatile` grant or a canonical-asm entry change
+  (including renames of existing entries), write the proposed edit + full
+  evidence (for volatile: IRQ writer file:line, use-site shape, ground-truth
+  citation) to `memory/closer/volatile-grant-proposals.md` and list the
+  blocked funcs in your outcome — the operator audits and applies between
+  sessions.
 - NEVER run `queue done` / `retire`. NEVER `git commit` — the driver commits.
 - Engine commands: `& tools/wteng.ps1 main sandbox <func> --disable all`
   (your gradient), `canonical`, `diagnose`, `verify-oracle`.

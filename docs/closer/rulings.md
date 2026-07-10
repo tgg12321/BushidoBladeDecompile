@@ -51,3 +51,16 @@ Disposition:
 - Corollary: any Closer impossibility argument must state which side of that
   line the evidence falls on ("compiler could emit this, we can't find the C"
   vs "no C input can make this compiler emit this").
+
+## Ruling 3 — partial-use volatile delay-counter array — 2026-07-10
+
+**Status: GRANTED, narrowly scoped.**
+
+Owner grant (option "Grant, narrowly scoped"): `volatile s32 arr[N]` local
+with only `[0]` referenced is sanctioned ONLY for census-proven Sony library
+functions where sotn-decomp's matched tree ships the identical shape
+(evidence: memory/closer/sotn-volatile-delay-array-research-2026-07-10.md,
+SOTN vsync.c `timeout[2]`). It is the original author's idiom, not an
+invented device. Not a precedent for non-Sony functions or other shapes.
+Unlocks: v_wait (removes asm-barrier cheat), _Pad1 (removes forbidden
+unwritten pad[2]) — both with measured sandbox-0 oracle-green candidates.
