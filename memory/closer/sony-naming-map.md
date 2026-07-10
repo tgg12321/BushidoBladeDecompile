@@ -4,3 +4,18 @@
 - D_800A2888 → _spu_rev_attr (struct SpuRevAttr; members D_800A288C mode / D_800A2890-92 depth / D_800A2894 delay / D_800A2898 feedback)
 - D_800A2D94 → Sony rev_param preset table (10 x 0x44 RevParamEntry)
 coli_HitPauseKatana_2 -> _SpuSetAnyVoice (confirmed: shared static behind SpuSetNoiseVoice/SpuSetReverbVoice wrappers @0x80089A24/0x8008A904; kengo:HIGH name was an x2 size collision)
+- tslTm2LoadImage_2 -> puts (LIBC2/PUTS); its splice extent also covers the two cdread statics below
+- D_80082050 -> cb_read (LIBCD/CDREAD static, cdread.c v1.86)
+- D_80082320 -> cb_data (LIBCD/CDREAD static, v1.86 tsl data-DMA callback; not in SOTN's v1.77)
+- D_800A1504 -> cdread.c v1.86 saved result ptr (v1.86 addition, feeds cb dispatch)
+- D_800A14CC -> CD_ReadCallbackFunc (already mapped via CdlREAD comment; confirmed)
+- func_80080620 -> CdGetSector (LIBCD/SYS), Vu0SetLightColMatrix_80080640 -> CdGetSector2 (LIBCD/SYS) [via cdrom_DmaToRam/DmaChain wrappers]
+- func_80080828 -> getintr (LIBCD/BIOS static) [blocked: jtbl_8001622C placement, see phase3-progress s8]
+- saTan2Main -> SsVabOpenHeadWithMode (LIBSND VS_VH, static; PsyQ 4.0) — best pure-C candidate banked at memory/closer/candidates/satan2main_vsvh.c (floor 5/4, see header)
+- func_80088058 -> SsVabOpenHead ; coli_CheckBukiPreHit_80088088 -> SsVabOpenHeadSticky ; coli_CheckBukiPreHit_800880B8 -> SsVabFakeHead (thin saTan2Main wrappers, LIBSND VS_VH)
+- func_8008AF84 -> _spu_getInTransfer ; ReturnVSMode -> _spu_setInTransfer (LIBSPU)
+- coli_HitPauseKatana -> SpuMalloc (kengo:HIGH name is an x2 size collision, like coli_HitPauseKatana_2 -> _SpuSetAnyVoice)
+- D_80102A68 -> _svm_vab_used (u8[16]) ; D_80107808 -> _svm_vab_count (u16)
+- D_800F66B8 -> _svm_vab_vh ; D_800F6660 -> _svm_vab_pg ; D_800F6700 -> _svm_vab_tn (per-vab pointer tables, s32[16])
+- D_800FF634 -> kMaxPrograms (s16) ; D_80107810 -> _svm_vab_start ; D_801077C8 -> _svm_vab_total
+- PsyQ 4.0 vs SOTN-3.x deltas in SsVabOpenHeadWithMode: no _svm_brr_start_addr store after the vag-length loop; direct _svm_vab_used[vabid] read in the else arm; VabHdr.vs read via lbu 0x16 (declare u8 vs + pad under our fork — u16->u8 subreg narrowing takes the HIGH byte, emits lbu 0x17)

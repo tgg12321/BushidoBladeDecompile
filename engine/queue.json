@@ -2245,14 +2245,6 @@
       "status": "active"
     },
     {
-      "func": "func_8008AAD4",
-      "file": "main",
-      "distance": 69,
-      "verdict": "ASM-SUSPECT",
-      "rules": 42,
-      "status": "active"
-    },
-    {
       "func": "func_8007E8DC",
       "file": "display",
       "distance": 72,
@@ -3901,16 +3893,16 @@
     }
   ],
   "counts": {
-    "total": 457,
-    "active": 387,
+    "total": 456,
+    "active": 386,
     "by_status": {
-      "active": 387,
+      "active": 386,
       "parked": 70
     },
     "by_verdict": {
       "C": 215,
       "ASM-PARTIAL": 57,
-      "ASM-SUSPECT": 115
+      "ASM-SUSPECT": 114
     }
   }
 }

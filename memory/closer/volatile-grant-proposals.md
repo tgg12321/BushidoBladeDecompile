@@ -81,3 +81,38 @@ Symbols (Sony names from PsyQ 4.0 LIBSPU.LIB S_SK relocs, psyq_lib.py):
 - **Also needed to land:** replace the two split externs in src/main.c with the
   merged `D_800F7420[4]`; respell `D_800F7424[i]` → `D_800F7420[2+i]`
   (main.c is the only referencing TU; undefined_syms_auto.txt entry can stay).
+
+## Proposal 3 — LIBCD cdread.c module state, per-member view (12 symbols) — 2026-07-10
+
+**Symbols:** `D_800A14D4` (buf), `D_800A14D8` (p), `D_800A14DC` (mode),
+`D_800A14E0` (size), `D_800A14E4` (cnt), `D_800A14E8` (t2), `D_800A14EC` (t1),
+`D_800A14F0` (pos), `D_800A14F4` (cbsync), `D_800A14F8` (cbready),
+`D_800A14FC` (cbdata), `D_800A1500` (tslmode).
+
+**Class:** Ruling-4 (ground-truth codegen), plus these are the SAME Sony
+object the operator already granted as the block symbol `D_800A14D0`
+(allowlist line 32, "Sony's source declares it volatile", CDREAD.OBJ verbatim
+census) — this proposal only extends the existing grant to the per-member
+symbol names of the identical memory.
+
+**Why the per-member names are needed (measured, cc1psx-confirmed):** the
+volatile-STRUCT spelling la-materializes the first member access per BB
+(3-insn `la;lw` — combine refuses address substitution into volatile mems;
+cc1psx emits the identical la-form, so Sony's source did not spell these
+sites through the struct). Sony's cdread.c compiles per-member volatile
+globals: zero-offset macro-form accesses, order pinned, RMW re-reads. With
+the per-member volatile decls the whole 263-word region
+0x80082000..0x8008241C (puts + cb_read + cb_data) is BIT-EXACT vs the EXE
+(memory/closer/candidates/cdread_triple_README.md; 0/263 via link_sim, no
+masking). Non-volatile per-member decls collapse the ordering (scheduler
+commutes reads) and the cnt--/pos++ re-read sequences.
+
+**IRQ writer (carried over from the D_800A14D0 grant):** the CD-ready ISR
+callback IS cb_read itself (D_80082050, installed via
+cdrom_SetCallbackB(&D_80082050), src/system.c) — the block is mutated from
+interrupt context and read by CdReadSync spin-waits.
+
+**Blocked function:** tslTm2LoadImage_2 (= puts + the two cdread callback
+statics under its splice extent; dist 261, 1 asmfix splice). Candidate:
+memory/closer/candidates/cdread_triple.patch (byte-neutral saEft00Add
+compensation included and verified — tmp/closer/head_cmp.sh).

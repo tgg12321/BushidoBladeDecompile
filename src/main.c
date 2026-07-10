@@ -47,7 +47,7 @@ extern s16 D_800A2890;
 extern s16 D_800A2892;
 extern s32 D_800A2894;
 extern s32 D_800A2898;
-extern s32 D_800A289C;
+extern volatile s32 D_800A289C; /* _spu_RQvoice — Ruling-4 grant (volatile_extern_allowlist.txt:44) */
 extern volatile s32 D_800A28A0;
 extern s16 D_800A28D2;
 extern volatile s32 D_800A2CD4;
@@ -82,8 +82,10 @@ extern s32 D_800163D8;
 extern s32 D_800163E8;
 extern void debug_printf(s32 *, s32 *);
 extern void spu_WriteReg16(void);
-extern volatile u16 D_800F7420[2];
-extern volatile u16 D_800F7424[2];
+/* Sony _spu_RQ: ONE u16[4] object (PsyQ 4.0 LIBSPU S_SK relocs: addends 0/2/4/6 —
+ * key-on pending [0..1], key-off pending [2..3]); splat split it into two D_
+ * symbols. Ruling-4 grant, volatile_extern_allowlist.txt:40-41. */
+extern volatile u16 D_800F7420[4];
 extern s32 spu_TransferData(s32, s32);
 extern s32 D_800A2D2C;
 extern s32 D_800A2D30;
@@ -2416,56 +2418,65 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-void func_8008AAD4(s32 arg0, u32 arg1) {
-    register u32 mask asm("a1");
-    register u32 lo asm("a2");
-    register u32 hi asm("a3");
-    register u32 hi32 asm("t0");
+/* PsyQ 4.0 LIBSPU s_sk: SpuSetKey — verbatim-linked Sony object (census
+ * 2026-07-09); C ref: sotn-decomp src/psxsdk/libspu/s_sk.c shape + PsyQ 4.0
+ * S_SK object relocs (_spu_RQ = one u16[4]). Volatile decls are Ruling-4
+ * ground-truth-codegen grants (volatile_extern_allowlist.txt:40-44). */
+typedef struct {
+    u16 pad[196];
+    volatile u16 key_on[2];  /* +0x188 SPU KEY-ON (MMIO via _spu_RXX) */
+    volatile u16 key_off[2]; /* +0x18C SPU KEY-OFF */
+} SpuRXX;
 
-    mask = arg1 & 0xFFFFFF;
-    lo = mask;
-    hi32 = mask >> 16;
-    hi = hi32;
+void func_8008AAD4(s32 on_off, u32 voice_bit) {
+    u16 lo;
+    u16 hi;
+    u32 hi2;
 
-    if (arg0 == 0) goto case0;
-    if (arg0 != 1) return;
+    voice_bit &= 0xFFFFFF;
+    lo = voice_bit;
+    hi2 = voice_bit >> 16;
+    hi = hi2;
 
-    if (D_800A2CD4 & 1) {
-        D_800F7420[0] = (u16)lo;
-        D_800F7420[1] = (u16)hi;
-        *(volatile s32 *)&D_800A28A0 = *(volatile s32 *)&D_800A28A0 | 1;
-        *(volatile s32 *)&D_800A289C = *(volatile s32 *)&D_800A289C | mask;
-        if (D_800F7424[0] & mask) {
-            D_800F7424[0] = (u16)(D_800F7424[0] & ~mask);
+    switch (on_off) {
+    case 1:
+        if (D_800A2CD4 & 1) {
+            D_800F7420[0] = lo;
+            D_800F7420[1] = hi;
+            D_800A28A0 |= 1;
+            D_800A289C |= voice_bit;
+            if (D_800F7420[2] & voice_bit) {
+                D_800F7420[2] &= ~voice_bit;
+            }
+            if (D_800F7420[3] & hi2) {
+                D_800F7420[3] &= ~hi2;
+            }
+        } else {
+            u32 stat = D_800A2874 | voice_bit;
+            ((SpuRXX *)D_800A2CDC)->key_on[0] = lo;
+            ((SpuRXX *)D_800A2CDC)->key_on[1] = hi;
+            D_800A2874 = stat;
         }
-        if (D_800F7424[1] & hi32) {
-            D_800F7424[1] = (u16)(D_800F7424[1] & ~hi32);
+        break;
+    case 0:
+        if (D_800A2CD4 & 1) {
+            D_800F7420[2] = lo;
+            D_800F7420[3] = hi;
+            D_800A28A0 |= 1;
+            D_800A289C &= ~voice_bit;
+            if (D_800F7420[0] & voice_bit) {
+                D_800F7420[0] &= ~voice_bit;
+            }
+            if (D_800F7420[1] & hi2) {
+                D_800F7420[1] &= ~hi2;
+            }
+        } else {
+            ((SpuRXX *)D_800A2CDC)->key_off[0] = lo;
+            ((SpuRXX *)D_800A2CDC)->key_off[1] = hi;
+            D_800A2874 &= ~voice_bit;
         }
-        return;
+        break;
     }
-    *(s16 *)(D_800A2CDC + 0x188) = (s16)lo;
-    *(s16 *)(D_800A2CDC + 0x18A) = (s16)hi;
-    D_800A2874 = D_800A2874 | mask;
-    return;
-
-case0:
-    if (D_800A2CD4 & 1) {
-        u32 notmask = ~mask;
-        D_800F7424[0] = (u16)lo;
-        D_800F7424[1] = (u16)hi;
-        D_800A28A0 |= 1;
-        D_800A289C &= notmask;
-        if (D_800F7420[0] & mask) {
-            D_800F7420[0] = (u16)(D_800F7420[0] & notmask);
-        }
-        if (D_800F7420[1] & hi32) {
-            D_800F7420[1] = (u16)(D_800F7420[1] & ~hi32);
-        }
-        return;
-    }
-    *(s16 *)(D_800A2CDC + 0x18C) = (s16)lo;
-    *(s16 *)(D_800A2CDC + 0x18E) = (s16)hi;
-    D_800A2874 = D_800A2874 & ~mask;
 }
 s32 func_8008ACD0(s32 arg0) {
     s32 bit_found;

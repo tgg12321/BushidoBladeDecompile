@@ -1,5 +1,72 @@
 # Closer Phase 3 — PsyQ psxsdk adoption progress ledger
 
+## SESSION 8 (2026-07-10) — SpuSetKey claimed; CDREAD triple proven 0/263 (grant-gated)
+
+**func_8008AAD4 (SpuSetKey, dist 7, 42 rules) — CANDIDATE-COMPLETE, claimed.**
+Banked spusetkey_v40_proven.c applied verbatim (Ruling 4 unblocked it: the
+five allowlist grants at lines 40-44 stand). Sandbox 8 = 127/127 insns, all
+8 diffs are %lo(D_800F7420+4/+6) vs the split D_800F7424 reloc spellings
+(self-heal on driver rebuild, S_SCA precedent). link_sim: 0/127 words differ
+bit-exact vs the EXE. Layer-1 cheat-reviewer PASS with full independent
+re-verification (re-ran sandbox + link_sim, re-derived S_SK relocs from
+LIBSPU.LIB, re-measured volatile-removal collapse 8->56 w/ 127->109 insns,
+verified detector allowlist handling). Driver mechanics: strip the 42 rules,
+D_800F7424's undefined_syms entry may stay (unreferenced after the [4] merge).
+
+**tslTm2LoadImage_2 (= puts + cb_read + cb_data, dist 261, 1 asmfix splice) —
+PROVEN 0/263 BIT-EXACT, banked; blocked on volatile grant (proposal §3).**
+Full candidate: memory/closer/candidates/cdread_triple.patch + _README.md.
+Everything is in the README: the GCC 2.7.2 volatile addressing-form law
+(volatile-cast/struct-first-access -> la-form; volatile-decl zero-offset ->
+macro form; cc1psx-confirmed), the byte-neutral saEft00Add compensation
+(cast/plain site swaps, verified via tmp/closer/head_cmp.sh per-function
+HEAD-vs-current cc1 diff = label renumbering only), the CdGetSector wrapper
+arg-forwarding fix, and cb_data's 26-insn sunk prologue reproducing
+NATURALLY from plain C. src/system.c REVERTED to HEAD this session (the
+un-strippable splice + ungranted volatiles make the in-tree form unbuildable
+rules-on); replay = git apply the patch after the operator grants §3.
+
+**func_80080828 (getintr, dist 352) — BLOCKED, jtbl placement wall (new class
+for system.c).** Its switch table jtbl_8001622C lives at 0x8001622C inside
+text1a_b_post_rodata.o's rodata region; bb2.ld places system.o(.rodata)
+elsewhere, so a C switch's GCC-emitted table cannot land at the target
+address (main.c functions do not have this problem - S_SCA's tables emitted
+correctly because main.o's rodata region covers them). No committed C in the
+tree uses computed-goto-through-extern-jtbl; resolving this needs either an
+owner ruling on that spelling or TU re-attribution evidence. ALSO needs
+volatile D_800A1494/95/96 (g_cd_status_a/b/c) grants for the chained
+Intr.ready = Intr.c re-read stores (same Ruling-4 class; the twins' HEAD
+bodies already carry these decls as ungranted debt). Full asm analysis done
+(SOTN bios.c getintr maps 1:1 with v1.86 printf-guard deltas) - transcription
+is ~1h once both blockers clear.
+
+**saTan2Main (SsVabOpenHeadWithMode, dist 245, 1 splice) — banked at floor 5
+(subagent adoption run; candidate memory/closer/candidates/satan2main_vsvh.c;
+src/main.c restored to placeholder).** 245 -> 5 in one session. Everything
+matches except one 5-line cluster at the SpuMalloc-fail/overflow join; named
+mechanism: the overflow-sum temp must land in $v1 but a named `u32 sum`
+inherits var_s0's $a0 preference via global.c expand_preferences; the SOTN
+expression form gets v1 but jump2 over-merges the malloc errbody (floor 4,
+245/247). Load-bearing deltas vs SOTN documented in the candidate header
+(u8 vs/vspad split for VabHdr.vs — our fork's u16->u8 subreg narrowing takes
+the HIGH byte; SOTN's var_a2 staging line is load-bearing; no
+_svm_brr_start_addr store in 4.0). Killed: split-init accumulation, sum decl
+position, do-while(0) wraps (both). Full _svm_* symbol map appended to
+sony-naming-map.md.
+
+**func_80089F3C (SpuSetReverbModeParam) — no change (banked 3-word spill
+residual stands; reload two-pass mechanism needs a dedicated instrumentation
+session; deliberately not ground per batch discipline).**
+
+**Method artifacts (tmp/closer/):** link_sim.py upgraded (splat-name address
+fallback, build/bb2.map symbol fallback, region-scoped .text resolution —
+cross-TU regions now provable); triple_prove.sh (real-src standalone prover:
+cpp|cc1|prologue_fix|maspsx|as + link_sim; tolerates the pre-existing benign
+marionation new_var cc1 error — NB the Makefile pipe swallows that error;
+never add set -e on cc1 for system.c); head_cmp.sh (per-function HEAD-vs-
+current cc1 diff — THE byte-neutrality auditor for shared-TU decl changes).
+
+
 ## SESSION 6 (2026-07-10) — S_SCA close + S_SRMP near-close
 
 **Review trail:** layer-1 cheat-reviewer initially FAILed func_8008AF9C on the
