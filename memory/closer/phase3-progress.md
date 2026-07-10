@@ -1,5 +1,91 @@
 # Closer Phase 3 — PsyQ psxsdk adoption progress ledger
 
+## SESSION 5b (2026-07-10) — post-grant batch
+
+**Completed (sandbox --disable all this session, edits in src/main.c;
+layer-1 cheat-reviewer PASS on all three):**
+
+| queue item | Sony name | sandbox | notes |
+|---|---|---|---|
+| func_80085270 | _SsSndStop (LIBSND SSSTOP) | 0 | was PARKED "scheduler-only floor" — closed with two honest respellings (see below); unmasked-IDENTICAL incl. registers; 2 rules to strip |
+| func_800856B0 | _SsSndTempo (LIBSND TEMPO) | 0 | sotn tempo.c chassis + 4.0-interim early-exit; 65 rules to strip; unmasked-IDENTICAL |
+| saTan5TakeAnim2_2 | _SsStart (LIBSND SSSTART) | 0 | NO new edits — session-2 committed body now measures 0 (reference .o caught up after the driver's commits); claim-only, unmasked-IDENTICAL |
+
+**func_8008AAD4 (SpuSetKey) — applied, measured 8 (all addend-class,
+byte-identical after link, 127/127), then REVERTED to HEAD on layer-1
+cheat-reviewer FAIL.** Reviewer grounds (full verdict in its output; both
+independent): (1) `extern volatile u16 D_800F7420[4]` is an ARRAY-typed
+volatile extern — [[legitimate-volatile-interrupt-touched]] item 5 is
+scalar-only ("FAIL any non-scalar-extern spelling"); (2) the §2 grant's
+claimed async writer coli_HitPauseKatana_2 is an ordinary C function
+called synchronously via jal from func_80089A24/func_8008A904 — the
+reviewer found NO SysSetCallback/InterruptCallback/MMIO installation
+evidence, i.e. the "VSync-tick/IRQ path" in the proposal was asserted, not
+demonstrated. This CONFLICTS with the operator-ratified grant commit
+de188634 (allowlist :40-44 explicitly ships the array decl). Per
+review-discipline, FAIL is never bypassed → reverted; the conflict is
+surfaced as this session's ruling question. Blast-radius measurements
+while applied (for the record): spu_InitEx 0 with D_800A289C volatile;
+func_80088740 unchanged at 56 with the [4] merge. The proven candidate
+remains banked at memory/closer/candidates/spusetkey_v40_proven.c.
+
+**RULING NEEDED (owner):** does the operator-audited §2 grant stand
+(reviewer objections overruled — then next session re-applies the banked
+candidate verbatim, ~5 minutes to sandbox-8/oracle), or does the reviewer's
+reading control (then the grant should be pulled from the allowlist and
+SpuSetKey needs either a verified interrupt-installation citation for the
+_spu_RQ family or a volatile-free pure-C derivation)? Key factual question
+to settle it: is coli_HitPauseKatana_2 (Sony _spu_gcSPU-adjacent flush)
+reachable from an interrupt/DMA-callback context, or only from synchronous
+gameplay calls? (exec_game = _spu_gcSPU @0x800896A0 is its own queue item —
+its callers may answer this.)
+
+**_SsSndStop levers (killed the 2026-06-07 park reason):**
+- Diff A (sll,sra,lui,addiu → sll,lui,addiu,sra): the COMPLETED sibling
+  spu_SetMotionActive's exact two-local prologue — `s32 shifted = a0<<16;
+  s32 *addr = (s32*)&D_80106F28; base = addr + (shifted>>14);` — the park
+  session tried each half separately, never the sibling's combination. 5→3.
+- Diff B (li t2/li t1 before the copy-loads, move t0,s0 after): the t0
+  walking pointer is a strength-reduction GIV, not a source local — respell
+  `*(s16*)((u8*)hp+0x60)=0x7F; hp++;` as indexed `*(s16*)(p + i*2 + 0x60)
+  = 0x7F;` (Sony stop.c: `score->vol[i] = 127`). Loop body unchanged
+  (recomputed `ip = p+i` kept); giv init lands after the hoisted constants
+  in RTL → target order. 3→0.
+
+**_SsSndTempo levers (65 → 0 in 4 steps):**
+- SOTN tempo.c chassis + BB2 4.0-interim delta (counter<0 early clear+return). 65→20.
+- Late flag-clears: fresh SHARED `tbl2` local (fresh full recompute incl. la,
+  but base CSE'd across the two &=~0x40/&=~0x80 statements); reusing the
+  prologue's `shifted`/`addr` locals over-CSEs (target recomputes from a
+  t1-copied a0); a fully-inline expression under-CSEs (at-macro form). 20→12→5.
+- ++/-- diamond: HEAD's m2c labeled-store form (`new_val = cur-1; goto
+  tempo_store;` into the second if's body) — produces the bnez-into-shared-
+  tail + delay-slot addiu; the plain else-if spelling leaves an unmerged
+  j/sw pair. 5→2.
+- Clear-block prologue: same two-local shifted2/addr2 spelling as diff A. 2→0.
+
+**Multi-static splice regions identified (NOT quick wins — dedicated sessions):**
+- func_80082D34 (dist 295, 1 asmfix splice, 0x4A4 bytes): the WHOLE rest of
+  LIBETC INTR — trapIntr + setIntr@0x80082F1C + stopIntr@0x80083070 +
+  restartIntr@0x8008311C + memclr(func_800831A4) + 2 junk tail words
+  (0x15007350/0x0040809C @0x800831D0 — original Sony object tail/next-module
+  data, NOT compiler-emittable). setIntr/stopIntr/restartIntr are referenced
+  ONLY by raw .word in 7D920.data.s (0x800A25E8/F0/F8) — no symbolic callers.
+  BLOCKER to sandbox-0: engine score extracts my .o's func_80082D34 extent
+  = symbol offset → next F-typed symbol (engine/score.py:_o_func_table);
+  separate C functions break the 0x4A4 extent. Open question: do static
+  functions get F-typed .o symbols through this pipeline? (If NOT, statics
+  keep the extent intact = the path to close.) Sony C is fully known
+  (sotn intr.c v1.73; v1.76 has the startIntr arg delta).
+- DispStuff (dist 207, target 209 insns = 0x80083E9C..0x800841E0): SsStart +
+  the whole SSCALL module. Same splice category.
+
+**LIBGTE queue items are NOT pure-C adoptable:** func_8007E1AC (LoadAverage12)
+is hand-written GTE asm (mtc2/lwc2/gpf/gpl, splat "handwritten instruction"
+markers) — the whole LIBGTE cluster (E1AC/E1FC/ED6C/F24C/F2DC/E4DC/EB4C/
+E8DC/EA0C/E74C) is canonical-asm territory needing owner authorize routing,
+not C grinding.
+
 ## SESSION 4 (2026-07-10)
 
 **Completed (sandbox --disable all == 0 this session, edits in src/):**

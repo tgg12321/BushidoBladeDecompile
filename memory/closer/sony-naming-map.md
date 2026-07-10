@@ -26,6 +26,15 @@ One line each; append as adopted. Renames deferred to an owner-signed pass.
 - func_80080258 → CdControl, func_80080390 → CdControlF,
   tslPolyF4Init → CdControlB (LIBCD/SYS)
 
+- func_8008AAD4 -> SpuSetKey (LIBSPU/S_SK)
+- func_80085270 -> _SsSndStop (LIBSND/SSSTOP, 4.0 Jun-06 interim build)
+- func_800853F4 -> SsSeqStop (LIBSND/SSSTOP)
+- func_8008541C -> SsSepStop (LIBSND/SSSTOP)
+- func_800856B0 -> _SsSndTempo (LIBSND/TEMPO)
+- saTan5TakeAnim2_2 -> _SsStart (LIBSND/SSSTART static)
+- func_80082D34 -> trapIntr..memclr multi-static region (LIBETC/INTR: trapIntr @0x80082D34, setIntr @0x80082F1C, stopIntr @0x80083070, restartIntr @0x8008311C, memclr = func_800831A4)
+- DispStuff -> SsStart + SSCALL module region (LIBSND, multi-function splice)
+
 ## Data (CDREAD module .data block)
 - D_800A14CC → CD_ReadCallbackFunc
 - D_800A14D0 → cdread state struct (SOTN D_80032DBC): +0 sectors, +4 buf,

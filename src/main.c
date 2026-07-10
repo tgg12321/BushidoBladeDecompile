@@ -549,11 +549,16 @@ void spu_SetMotionActive(s32 a0, s16 a1) {
     entry[0x14] = 1;
     *(s32 *)((u8 *)*base_ptr + (s16)a1 * 0xB0 + 0x98) &= ~8;
 }
+/* PsyQ 4.0 LIBSND SSSTOP: _SsSndStop — verbatim-linked Sony object (LIBSND
+   hunt 2026-07-10: bit-verbatim vs the Jun-06-1997 4.0 build, 118 words);
+   C ref: sotn-decomp src/main/psxsdk/libsnd/stop.c (interim 4.0 build adds
+   the ~0x400 flag clear + NotifyChannel/ResetCounter pair). */
 void func_80085270(s16 a0, s16 a1) {
-    s32 *base_ptr = (s32*)((u8*)&D_80106F28 + ((s32)(a0 << 16) >> 14));
+    s32 shifted = a0 << 16;
+    s32 *addr = (s32 *)&D_80106F28;
+    s32 *base_ptr = (s32 *)((u8 *)addr + (shifted >> 14));
     u8 *p = (u8*)(*base_ptr + (s16)a1 * 0xB0);
     s32 i;
-    s16 *hp;
     u8 *ip;
 
     *(s32*)(p + 0x98) &= ~1;
@@ -588,13 +593,11 @@ void func_80085270(s16 a0, s16 a1) {
     *(s32*)(p + 0x0) = *(s32*)(p + 0x4);
     *(s32*)(p + 0x8) = *(s32*)(p + 0x4);
 
-    hp = (s16*)p;
     do {
         ip = p + i;
         ip[0x37] = (u8)i;
         ip[0x27] = 0x40;
-        *(s16*)((u8*)hp + 0x60) = 0x7F;
-        hp++;
+        *(s16 *)(p + i * 2 + 0x60) = 0x7F;
         i++;
     } while (i < 0x10);
     *(s16*)(p + 0x5C) = 0x7F;
@@ -714,93 +717,62 @@ big_v:
     D_80104E80 = v;
 }
 /* kengo:MED  |  am_rmd/SetBloodSpot  |  91i */
+/* PsyQ 4.0 LIBSND TEMPO: _SsSndTempo — verbatim-linked Sony object (census
+   2026-07-09); C ref: sotn-decomp src/main/psxsdk/libsnd/tempo.c (interim
+   4.0 build adds the counter<0 early clear-and-return). */
 void func_800856B0(s16 a0, s16 a1) {
-    s32 *tbl_ptr;
-    u8 *p;
-    s32 countdown;
-    s16 duration;
-    u32 current;
-    u32 target;
-    u32 new_val;
-    s32 product;
-    s32 numer;
-    s32 denom;
-    s16 display;
-    s32 *tbl2;
-    u8 *q;
+    s32 shifted = a0 << 16;
+    s32 *addr = (s32 *)&D_80106F28;
+    s32 *tbl = (s32 *)((u8 *)addr + (shifted >> 14));
+    u8 *p = (u8 *)(*tbl + (s16)a1 * 0xB0);
 
-    tbl_ptr = (s32 *)((u8 *)&D_80106F28 + ((s32)(a0 << 16) >> 14));
-    p = (u8 *)(*tbl_ptr + (s16)a1 * 0xB0);
-
-    countdown = *(s32 *)(p + 0xA8) - 1;
-    *(s32 *)(p + 0xA8) = countdown;
-
-    if (countdown < 0) {
-        q = (u8 *)(*tbl_ptr + (s16)a1 * 0xB0);
-        *(s32 *)(q + 0x98) &= ~0x40;
-        q = (u8 *)(*tbl_ptr + (s16)a1 * 0xB0);
-        goto clear_80;
+    *(s32 *)(p + 0xA8) = *(s32 *)(p + 0xA8) - 1;
+    if (*(s32 *)(p + 0xA8) < 0) {
+        *(s32 *)((u8 *)(*tbl + (s16)a1 * 0xB0) + 0x98) &= ~0x40;
+        *(s32 *)((u8 *)(*tbl + (s16)a1 * 0xB0) + 0x98) &= ~0x80;
+        return;
     }
 
-    duration = *(s16 *)(p + 0x4E);
-    if (duration > 0) {
-        if (countdown % duration != 0) {
+    if (*(s16 *)(p + 0x4E) > 0) {
+        u32 new_val;
+        if ((*(s32 *)(p + 0xA8) % *(s16 *)(p + 0x4E)) != 0) {
             return;
         }
-        current = *(u32 *)(p + 0x94);
-        target = *(u32 *)(p + 0xAC);
-        if (target < current) {
-            new_val = current - 1;
-            goto pos_store;
+        if (*(u32 *)(p + 0x94) > *(u32 *)(p + 0xAC)) {
+            new_val = *(u32 *)(p + 0x94) - 1;
+            goto tempo_store;
         }
-        if (current < target) {
-            new_val = current + 1;
-        pos_store:
+        if (*(u32 *)(p + 0x94) < *(u32 *)(p + 0xAC)) {
+            new_val = *(u32 *)(p + 0x94) + 1;
+        tempo_store:
             *(u32 *)(p + 0x94) = new_val;
         }
     } else {
-        current = *(u32 *)(p + 0x94);
-        target = *(u32 *)(p + 0xAC);
-        if (target < current) {
-            new_val = current + duration;
-            *(u32 *)(p + 0x94) = new_val;
-            if (new_val < target) {
-                *(u32 *)(p + 0x94) = target;
+        if (*(u32 *)(p + 0x94) > *(u32 *)(p + 0xAC)) {
+            *(u32 *)(p + 0x94) = *(u32 *)(p + 0x94) + *(s16 *)(p + 0x4E);
+            if (*(u32 *)(p + 0x94) < *(u32 *)(p + 0xAC)) {
+                *(u32 *)(p + 0x94) = *(u32 *)(p + 0xAC);
             }
-        } else if (current < target) {
-            new_val = current - duration;
-            target = *(u32 *)(p + 0xAC);
-            *(u32 *)(p + 0x94) = new_val;
-            if (target < new_val) {
-                *(u32 *)(p + 0x94) = target;
+        } else if (*(u32 *)(p + 0x94) < *(u32 *)(p + 0xAC)) {
+            *(u32 *)(p + 0x94) = *(u32 *)(p + 0x94) - *(s16 *)(p + 0x4E);
+            if (*(u32 *)(p + 0x94) > *(u32 *)(p + 0xAC)) {
+                *(u32 *)(p + 0x94) = *(u32 *)(p + 0xAC);
             }
         }
     }
 
-    product = *(s16 *)(p + 0x50) * *(s32 *)(p + 0x94);
-    numer = product * 10;
-    denom = D_80104E80 * 60;
-    display = (u32)numer / (u32)denom;
-    *(s16 *)(p + 0x54) = display;
-    if ((s16)display <= 0) {
+    *(s16 *)(p + 0x54) =
+        (*(s16 *)(p + 0x50) * *(u32 *)(p + 0x94) * 10) / (u32)(D_80104E80 * 60);
+    if (*(s16 *)(p + 0x54) <= 0) {
         *(s16 *)(p + 0x54) = 1;
     }
-
-    if (*(s32 *)(p + 0xA8) == 0) {
-        goto recompute;
+    if ((*(s32 *)(p + 0xA8) == 0) || (*(u32 *)(p + 0x94) == *(u32 *)(p + 0xAC))) {
+        s32 shifted2 = a0 << 16;
+        s32 *addr2 = (s32 *)&D_80106F28;
+        s32 *tbl2 = (s32 *)((u8 *)addr2 + (shifted2 >> 14));
+        *(s32 *)((u8 *)(*tbl2 + (s16)a1 * 0xB0) + 0x98) &= ~0x40;
+        *(s32 *)((u8 *)(*tbl2 + (s16)a1 * 0xB0) + 0x98) &= ~0x80;
     }
-    if (*(s32 *)(p + 0x94) == *(s32 *)(p + 0xAC)) {
-        goto recompute;
-    }
-    return;
-
-recompute:
-    tbl2 = (s32 *)((u8 *)&D_80106F28 + ((s32)(a0 << 16) >> 14));
-    q = (u8 *)(*tbl2 + (s16)a1 * 0xB0);
-    *(s32 *)(q + 0x98) &= ~0x40;
-    q = (u8 *)(*tbl2 + (s16)a1 * 0xB0);
-clear_80:
-    *(s32 *)(q + 0x98) &= ~0x80;
 }
 extern u8 D_80101BCC;
 extern s16 D_800F4E1A;
