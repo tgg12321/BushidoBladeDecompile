@@ -19,3 +19,8 @@ coli_HitPauseKatana_2 -> _SpuSetAnyVoice (confirmed: shared static behind SpuSet
 - D_800F66B8 -> _svm_vab_vh ; D_800F6660 -> _svm_vab_pg ; D_800F6700 -> _svm_vab_tn (per-vab pointer tables, s32[16])
 - D_800FF634 -> kMaxPrograms (s16) ; D_80107810 -> _svm_vab_start ; D_801077C8 -> _svm_vab_total
 - PsyQ 4.0 vs SOTN-3.x deltas in SsVabOpenHeadWithMode: no _svm_brr_start_addr store after the vag-length loop; direct _svm_vab_used[vabid] read in the else arm; VabHdr.vs read via lbu 0x16 (declare u8 vs + pad under our fork — u16->u8 subreg narrowing takes the HIGH byte, emits lbu 0x17)
+- DispStuff -> SsStart (LIBSND SSSTART); its splice extent also covers: SsStart2 @0x80083EBC (unreferenced Sony export, now a static C fn), D_80083EDC -> _SsTrapIntrVSync (ssstart.c static), D_80083F1C -> _SsSeqCalledTbyT_1per2 (ssstart.c static), 0x80083F6C -> SsSeqCalledTbyT (LIBSND SSCALL; address-referenced only by the SndSeqTickEnv .data initializer raw word @0x800A26D4)
+- D_800FF630 -> _snd_ev_flag ; D_801077A8 -> _snd_seq_s_max (s16) ; D_801077AA -> _snd_seq_t_max (s16) ; D_801027E4 -> _snd_openflag
+- D_80106F28 -> _ss_score (per-SEP score-block pointer table; BB2 4.0 entry stride 0xB0, status flag at +0x98 vs SOTN's unk90)
+- D_800A26E0 -> _snd_seq_tick_env 1-per-2 toggle word (standalone splat dlabel; named_syms: g_alarm_pending_priority_flag)
+- func_800841E0 -> _SsSndCrescendo (LIBSND CRES) ; func_80084500 -> _SsSndDecrescendo (LIBSND DECRE) [identity by call position in SsSeqCalledTbyT; NOT census-proven - the 0x800841E0..0x800848AC window is in the LIBSND gap]

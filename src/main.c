@@ -109,8 +109,8 @@ extern s32 irq_EnableInterrupts(s32, s32);
 extern void func_80078BA8(s32);
 extern void func_80078A68(s32, s32, s32);
 extern s32 g_alarm_secondary_cb_ptr;
-extern s32 D_80083EDC;
-extern s32 D_80083F1C;
+static void D_80083EDC(void); /* _SsTrapIntrVSync (ssstart.c static) */
+static void D_80083F1C(void); /* _SsSeqCalledTbyT_1per2 (ssstart.c static) */
 
 /* PsyQ 4.0 LIBSND ssstart: _SsStart + SndSeqTickEnv (_snd_seq_tick_env @
    D_800A26CC) — verbatim-linked Sony object (census 2026-07-09); C ref:
@@ -204,16 +204,107 @@ void saTan5TakeAnim2_2(s32 arg0) {
     ExitCriticalSection();
 }
 /* kengo:MED  |  sa_tan5/saTan5TakeAnim2_2  |  154i  |  x2 size collision */
+/* PsyQ 4.0 LIBSND ssstart: SsStart / SsStart2 / _SsTrapIntrVSync /
+   _SsSeqCalledTbyT_1per2 + sscall: SsSeqCalledTbyT — verbatim-linked Sony
+   objects (census 2026-07-09); C ref: sotn-decomp
+   src/main/psxsdk/libsnd/{ssstart.c,sscall.c}. Only SsStart (=DispStuff)
+   has a glabel: SsStart2 + the tick trampolines are statics inside the
+   splat extent; SsSeqCalledTbyT is address-referenced only by the
+   SndSeqTickEnv .data initializer (raw .word @0x800A26D4). */
+extern s32 D_800FF630;  /* _snd_ev_flag */
+extern s16 D_801077A8;  /* _snd_seq_s_max */
+extern s16 D_801077AA;  /* _snd_seq_t_max */
+extern s32 D_801027E4;  /* _snd_openflag */
+extern s32 D_80106F28;  /* _ss_score (per-SEP score-block pointer table) */
+extern void action_CheckHitZangeki(void);   /* SpuVmFlush */
+void spu_SetMotionCallback(s16 a0, s16 a1); /* _SsSndPlay */
+void func_800841E0(s16 arg0, s16 arg1);     /* _SsSndCrescendo */
+void func_80084500(s16 arg0, s16 arg1);     /* _SsSndDecrescendo */
+void func_800856B0(s16 a0, s16 a1);         /* _SsSndTempo */
+void spu_SetMotionState(s16 a0, s16 a1);    /* _SsSndPause */
+void spu_SetMotionActive(s32 a0, s16 a1);   /* _SsSndReplay */
+void func_80085270(s16 a0, s16 a1);         /* _SsSndStop */
+
 void DispStuff(void) {
+    saTan5TakeAnim2_2(1);
+}
+static void SsStart2(void) {
+    saTan5TakeAnim2_2(0);
+}
+static void D_80083EDC(void) {
+    if (D_800A26CC.unk12 != 0) {
+        ((void (*)(void))D_800A26CC.unk12)();
+    }
+    ((void (*)(void))D_800A26CC.unk8)();
+}
+static void D_80083F1C(void) {
+    /* The 1-per-2 tick toggle: a standalone word AFTER the declared
+       SndSeqTickEnv block (which ends at +0x13) — its own splat symbol
+       (dlabel D_800A26E0 in 7D920.data.s; named_syms.txt:
+       g_alarm_pending_priority_flag), the only C handle for this memory
+       in the TU. */
+    extern s32 D_800A26E0;
+    if (D_800A26E0 == 0) {
+        D_800A26E0 = 1;
+    } else {
+        D_800A26E0 = 0;
+        ((void (*)(void))D_800A26CC.unk8)();
+    }
+}
+#define SS_SCORE_FLAG(i, j) \
+    (*(s32 *)(((s32 *)&D_80106F28)[i] + (j) * 0xB0 + 0x98))
+static void SsSeqCalledTbyT(void) {
+    int i;
+    int j;
+    if (D_800FF630 != 1) {
+        D_800FF630 = 1;
+
+        action_CheckHitZangeki();
+
+        for (i = 0; i < D_801077A8; i++) {
+            s32 bit = 1 << i;
+            if (D_801027E4 & bit) {
+                for (j = 0; j < D_801077AA; j++) {
+                    if (SS_SCORE_FLAG(i, j) & 1) {
+                        spu_SetMotionCallback(i, j);
+
+                        if (SS_SCORE_FLAG(i, j) & 0x10) {
+                            func_800841E0(i, j);
+                        }
+                        if (SS_SCORE_FLAG(i, j) & 0x20) {
+                            func_80084500(i, j);
+                        }
+                        if (SS_SCORE_FLAG(i, j) & 0x40) {
+                            func_800856B0(i, j);
+                        }
+                        if (SS_SCORE_FLAG(i, j) & 0x80) {
+                            func_800856B0(i, j);
+                        }
+                    }
+                    if (SS_SCORE_FLAG(i, j) & 2) {
+                        spu_SetMotionState(i, j);
+                    }
+                    if (SS_SCORE_FLAG(i, j) & 8) {
+                        spu_SetMotionActive((s16)i, j);
+                    }
+                    if (SS_SCORE_FLAG(i, j) & 4) {
+                        func_80085270(i, j);
+                        SS_SCORE_FLAG(i, j) = 0;
+                    }
+                }
+            }
+        }
+        D_800FF630 = 0;
+    }
 }
 /* kengo:LOW  |  su_menu_ending/_DispStuff  |  209i  |  PS2 UI — reverted */
-void func_800841E0(s32 arg0, s32 arg1) {
+void func_800841E0(s16 arg0, s16 arg1) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_800841E0.s).
      * Inline-asm scaffolding retired; pure-C decomp pending. */
     (void)arg0;
     (void)arg1;
 }
-void func_80084500(s32 arg0, s32 arg1) {
+void func_80084500(s16 arg0, s16 arg1) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80084500.s).
      * Inline-asm scaffolding retired; pure-C decomp pending. */
     (void)arg0;

@@ -1,5 +1,64 @@
 # Closer Phase 3 — PsyQ psxsdk adoption progress ledger
 
+## SESSION 10 (2026-07-10) — cdread family REPLAYED+re-proven; DispStuff (SsStart+SSCALL) closed 0/209
+
+**cdread family close (session-9 banked patch) — REPLAYED, re-proven, claimed.**
+git apply memory/closer/candidates/cdread_family_close.patch (clean); all five
+regions re-proven bit-exact vs the EXE this session (triple_prove.sh /
+saeft_prove.sh / link_sim): tslTm2LoadImage_2 region 0/263, saEft00Add 0/133,
+CdReadSync 0/51, CdRead 0/65, saEft00Add_sub 0/39. Sandbox: saEft00Add 2
+(reloc-spelling artifacts), tslTm2LoadImage_2 243 (extent-split artifact).
+Fresh layer-1 cheat-reviewer verdict: C content CLEAN on every cheat test
+(volatiles all granted §3, de-volatile casts gone, byte proofs independently
+re-run); formal FAIL solely on the still-wired rules (asmfix:62 splice +
+saEft00Add's 9 regfix + 2 asmfix) — which is the DRIVER's strip-then-rebuild
+job under the outcome contract (SpuSetKey-42-rules / DMA-pair precedent; the
+Closer is rail-forbidden from regfix/asmfix). Claimed: tslTm2LoadImage_2 +
+saEft00Add. DRIVER MECHANICS: strip the splice + rules in the SAME commit
+(rules-on build unbuildable until then, session-9 note stands).
+
+**DispStuff (= SsStart + SSCALL module, dist 207, 1 asmfix splice) —
+CANDIDATE-COMPLETE, claimed. 0/209 bit-exact** (tmp/closer/dispstuff_prove.sh,
+region 0x80083E9C+0x344), and saTan5TakeAnim2_2's region re-proven 0/154 (it
+references the now-static trampolines). Sandbox 201 = extent-split artifact
+(my DispStuff C fn is 8 insns; 4 statics carry the rest of the extent).
+Structure: DispStuff{saTan5TakeAnim2_2(1)} + static SsStart2{(0)} + static
+D_80083EDC (_SsTrapIntrVSync) + static D_80083F1C (_SsSeqCalledTbyT_1per2) +
+static SsSeqCalledTbyT (sotn sscall.c literal, BB2 flag offset 0x98/stride
+0xB0, _ss_score as pointer table). Levers measured:
+- unk20 via struct member (added to SndSeqTickEnv): 34 differing — 3 refs
+  through the struct base la-materialize the address. Fix WITHOUT a second
+  handle: unk20 is NOT in the struct (struct ends +0x13 as committed);
+  D_800A26E0 is its own standalone splat symbol (dlabel in 7D920.data.s,
+  named_syms: g_alarm_pending_priority_flag) declared as the block-scope
+  extern in D_80083F1C — the ONLY handle in the TU. 0 differing.
+- `if ((1 << i) & D_801027E4)`: 2 differing (and-operand order). Swapped
+  order `flag & (1 << i)`: WORSE (6) — tree-level bit-test fold fires
+  (srav+andi). `s32 bit = 1 << i; if (D_801027E4 & bit)`: 0 differing —
+  the named local blocks the tree fold and gives flag-first RTL order.
+- Collateral: func_800841E0/func_80084500 placeholder sigs -> (s16,s16)
+  (Sony prototypes; bodies are separate splices, emission-inert).
+Review: fresh cheat-reviewer PASSed everything except the D_800A26E0 extern
+(flagged as second-handle before the struct-member removal); re-invoked with
+the fix + the splat-dlabel evidence it had missed -> PASS (all 4 new facts
+independently verified incl. the target asm's own four %hi/%lo(D_800A26E0)
+relocs and a fresh 0/209 prover re-run; 'no second handle' confirmed).
+DRIVER MECHANICS: strip asmfix.txt:125 (DispStuff replace_with_asmfile) in
+the same commit.
+
+**Identity note:** func_800841E0 (_SsSndCrescendo, dist 198) + func_80084500
+(_SsSndDecrescendo, dist 233) are call-position-identified but sit in the
+census GAP (0x800841E0..0x800848AC not proven) — excluded per the LIBSND-gap
+rule; natural next targets IF ground truth lands (their protos + all shared
+symbols are now in place).
+
+**Not attempted (scoped, for the record):** func_8007D3F8 (_addque2) needs
+the volatile QueueItem array + SYS block state (LIBGPU whole-module design,
+same wall as gpu_SetDispMask — dedicated session). CRES/DECRE excluded (gap).
+LIBCOMB Syncro pair = self-decomp vs LIBCOMB.LIB (no SOTN ref; heavy legacy
+cheat-asm bodies) — dedicated session.
+
+
 ## SESSION 9 (2026-07-10) — CDREAD family closed bit-exact (triple + saEft00Add)
 
 **tslTm2LoadImage_2 (puts + cb_read + cb_data, dist 261, 1 asmfix splice) —

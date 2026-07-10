@@ -1221,14 +1221,6 @@
       "status": "active"
     },
     {
-      "func": "saEft00Add",
-      "file": "system",
-      "distance": 18,
-      "verdict": "C",
-      "rules": 11,
-      "status": "active"
-    },
-    {
       "func": "saEft01Init",
       "file": "system",
       "distance": 18,
@@ -2581,14 +2573,6 @@
       "status": "active"
     },
     {
-      "func": "DispStuff",
-      "file": "main",
-      "distance": 207,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
       "func": "func_8006ECF4",
       "file": "text1b",
       "distance": 207,
@@ -2712,14 +2696,6 @@
       "func": "AllocBukiRmd",
       "file": "main",
       "distance": 257,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "tslTm2LoadImage_2",
-      "file": "system",
-      "distance": 261,
       "verdict": "ASM-SUSPECT",
       "rules": 1,
       "status": "active"
@@ -3893,16 +3869,16 @@
     }
   ],
   "counts": {
-    "total": 456,
-    "active": 386,
+    "total": 453,
+    "active": 383,
     "by_status": {
-      "active": 386,
+      "active": 383,
       "parked": 70
     },
     "by_verdict": {
-      "C": 215,
+      "C": 214,
       "ASM-PARTIAL": 57,
-      "ASM-SUSPECT": 114
+      "ASM-SUSPECT": 112
     }
   }
 }

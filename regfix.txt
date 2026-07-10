@@ -136,15 +136,6 @@ saEft01Init: subst ",24\(" ",32(" @ 72
 saEft01Init: reorder 72,70,71 @ 70-72
 
 # saEft00Add: fix volatile D_800A14E4 addressing and ASPSX delay slot fills
-saEft00Add: subst "nop" "addiu	$4,$zero,1" @ 26
-saEft00Add: subst "\.L\d+" "{lbl#2}+4" @ 25
-saEft00Add: subst "sw	\$2,0\(\$3\)" "sw	$2,D_800A14E4" @ 38
-saEft00Add: subst "nop" "addiu	$4,$zero,6" @ 93
-saEft00Add: subst "\.L\d+" "{lbl#7}+4" @ 92
-saEft00Add: delete @ 35
-saEft00Add: insert "nop" @ 101
-saEft00Add: insert "nop" @ 105
-saEft00Add: reorder 97,100,98,99,101,102,105,103,104,106 @ 97-106
 
 # saEft00Add_sub: swap D_800A14E4 store and D_800A14F4 load order
 
