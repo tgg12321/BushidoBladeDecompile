@@ -3285,15 +3285,6 @@
       "status": "active"
     },
     {
-      "func": "func_80082A14",
-      "file": "ings2",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "sched.c-priority prologue ordering gap: target schedules volatile counter init store (sll+sw) BEFORE global g_sys_dma_region read (lui+lw), with load-delay nop; GCC 2.7.2 sched.c picks opposite order because the lui/lw->slt->beqz chain has higher INSN_PRIORITY than the terminal volatile sw. Honest pure-C distance with cheat-asm barrier stripped = 4 (1 missing nop + 4 reordered insns). Forbidden levers tested: (a) extern volatile s32 g_sys_dma_region (declaration-level volatile-coercion per inline-asm-policy catalog; also regressed sys_VSync by 34 byte diffs); (b) alias-rename via D_800A2634 volatile name (same intent, different spelling); (c) do-while-zero wrap between counter init and if-check (mechanically achieves score 0 but per do-while-zero-exception only sanctioned for LABEL_OUTSIDE_LOOP_P / reorg.c, not sched.c priority \u2014 explicitly the slippery-slope the rule forbids). The existing asm volatile memory barrier is cheat-asm. No documented pure-C lever closes a sched.c INSN_PRIORITY gap on a volatile-local-init vs unrelated-global-load ordering without emitting extra instructions or being cheat-by-spelling."
-    },
-    {
       "func": "spu_InitEx",
       "file": "main",
       "distance": 0,
@@ -3943,11 +3934,11 @@
     }
   ],
   "counts": {
-    "total": 462,
+    "total": 461,
     "active": 390,
     "by_status": {
       "active": 390,
-      "parked": 72
+      "parked": 71
     },
     "by_verdict": {
       "C": 216,

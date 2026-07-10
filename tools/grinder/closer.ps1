@@ -139,11 +139,34 @@ if ($o.completed_funcs -and @($o.completed_funcs).Count -gt 0) {
                 Log "stripped $($lines.Count - $kept.Count) $rf rule(s) for $f"
             }
         }
+        # prologue_fix cheats (3rd category; mark_done hard-refuses them):
+        # line-list files — drop exact-name lines (deletion-only)
+        foreach ($pf in 'tools\delay_slot_ra_funcs.txt', 'tools\frame_fix_funcs.txt') {
+            $p = Join-Path $Root $pf
+            if (Test-Path $p) {
+                $lines = @(Get-Content $p)
+                $kept = @($lines | Where-Object { $_.Trim() -ne $f })
+                if ($kept.Count -ne $lines.Count) {
+                    Set-Content -Path $p -Value $kept -Encoding utf8
+                    Log "stripped $pf entry for $f"
+                }
+            }
+        }
+        # json config — remove the function's key (deletion-only)
+        $pcPath = Join-Path $Root 'tools\prologue_config.json'
+        if (Test-Path $pcPath) {
+            $cfg = Get-Content $pcPath -Raw | ConvertFrom-Json
+            if ($cfg.PSObject.Properties.Name -contains $f) {
+                $cfg.PSObject.Properties.Remove($f)
+                $cfg | ConvertTo-Json -Depth 10 | Set-Content $pcPath -Encoding utf8
+                Log "stripped prologue_config.json entry for $f"
+            }
+        }
     }
     $vo = Invoke-Eng @('verify-oracle', '--rebuild', '--allow-dirty')
     if ($LASTEXITCODE -ne 0) {
         Log "BYTE-VERIFY FAILED after rule strip — restoring rules, completing NOTHING. Output tail:`n$(($vo -split "`n") | Select-Object -Last 8 | Out-String)"
-        git -C $Root checkout -- regfix.txt asmfix.txt 2>$null
+        git -C $Root checkout -- regfix.txt asmfix.txt tools/delay_slot_ra_funcs.txt tools/frame_fix_funcs.txt tools/prologue_config.json 2>$null
     } else {
         Log "BYTES GREEN with rules stripped."
         $done = @()
@@ -152,7 +175,7 @@ if ($o.completed_funcs -and @($o.completed_funcs).Count -gt 0) {
             if ($LASTEXITCODE -eq 0) { $done += $f; Log "queue done: $f" }
             else { Log "queue done REFUSED for ${f}: $(($qd -split "`n") | Select-Object -Last 2)" }
         }
-        git -C $Root add -- src include regfix.txt asmfix.txt engine/queue.json memory docs/closer metrics/events.jsonl 2>$null
+        git -C $Root add -- src include regfix.txt asmfix.txt tools/delay_slot_ra_funcs.txt tools/frame_fix_funcs.txt tools/prologue_config.json engine/queue.json memory docs/closer metrics/events.jsonl 2>$null
         git -C $Root commit -m "closer: adopt PsyQ library sources — completed $($done -join ', ')" 2>$null | Out-Null
         Log "COMPLETED $($done.Count)/$($funcs.Count) — committed."
     }
