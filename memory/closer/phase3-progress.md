@@ -1,5 +1,73 @@
 # Closer Phase 3 — PsyQ psxsdk adoption progress ledger
 
+## SESSION 3 (2026-07-10)
+
+**Completed (measured this session, edits in src/, full build SHA1 == oracle
+with everything in place; layer-1 cheat-reviewer PASS):**
+
+| queue item | Sony name | sandbox | notes |
+|---|---|---|---|
+| func_8007A28C | memmove (LIBC2/MEMMOVE) | 0 | SOTN memmove.c verbatim (`while (n-- > 0)` both arms); 17 regfix rules now no-op |
+| func_80082C58 | startIntr (LIBETC/INTR static) | 1* | faithful intrEnv_t struct at D_800A1578; *the single masked diff is `%lo(D_800A1578+60)` vs `%lo(D_800A15B4)` addend spelling — byte-identical, proven by the oracle SHA1 |
+
+**startIntr levers (all measured):**
+- `setjmp` TRUE-NAME RENAME (func_80083220 → setjmp; glabel + decl +
+  inline_asm_canonical.txt): GCC 2.7.2 keys returns-twice on the literal
+  callee name — with the real name the compiler stops caching &intrEnv
+  across the call and re-anchors at &buf[1] (29 → 8). The -60/-4/+0xFDC
+  spellings then fall out of related-address CSE (no source arithmetic).
+- `*D_800A2604 = (*(volatile u16 *)g_sys_irq_counter = 0);` single-statement
+  chained MMIO store+re-read (8 → 4; staging the mask ptr in a local first
+  loses the load order).
+- `_96_remove` arg evidence: SOTN v1.73's plain `_96_remove();` compiles to
+  $v1 for the second pCallbacks load (measured, tmp/closer/intr_test.c);
+  Sony's v1.76 object has $a0 with the value live into the call → v1.76
+  source passed the pointer. Spelled `r = conv_matrix_rotation(); cb =
+  g_sys_irq_vtable; cb[1] = r; bios_CdRemove_A0(cb);` (call-first so cb
+  doesn't cross the call; the arg-copy gives the a0 qty suggestion). 4 → 1.
+
+**KEY METHOD FINDING — sandbox strips un-granted volatile (measure physics
+standalone!):** the s-2 banked negative "volatile did NOT hold store order"
+for the SIO pair was an artifact — `extern volatile` on non-allowlisted
+symbols is cheat-invisible (stripped before scoring; cheat_asm_stripped
+count rises when you add them). Real volatile compiles to EXACTLY the
+target's strictly-ordered stores. Standalone proof pipeline:
+tmp/closer/diffsa.sh (cpp|cc1|prologue_fix|maspsx|as + masked diff vs
+build/src/<file>.o).
+
+**Blocked — owner volatile grant needed (proposal filed at
+memory/closer/volatile-grant-proposals.md §1):** func_8008BEA4
+(SioAnsyncRead) + func_8008C184 (SioAnsyncWrite) — candidates PROVEN
+standalone-identical (25/25, registers included) at
+memory/closer/candidates/sio_ansync_pair_volatile.c. ALSO label-drift
+coupled: asmfix.txt:139-140 anchor SetPacketData on .L761/.L764; removing
+the fake wrappers shifts all later main.c labels (-5/-6) → the pair can
+only land together with the COMB Syncro pair shedding those label-anchored
+rules (module-coherent close).
+
+**Blocked — owner ruling needed (research memo:
+memory/closer/sotn-volatile-delay-array-research-2026-07-10.md):**
+func_80082A14 (v_wait) + func_80078E58 (_Pad1) — both sandbox-0 AND
+oracle-green in place this session with the SOTN partial-use
+`volatile s32 arr[N]` delay-counter idiom (vsync.c ships `timeout[2]`
+using only [0]); layer-1 reviewer FAILed the unwritten-element sub-case as
+not-yet-ratified and directed the ruling. Candidates:
+memory/closer/candidates/vwait_pad1_volatile_array.c. NOTE: v_wait's park
+reason is otherwise STALE (predates the g_sys_dma_region volatile grant).
+
+**Label-drift discipline (load-bearing for any main.c/display.c edit):**
+functions with .L-anchored regfix/asmfix rules: SetPacketData + exec_game
+(main.c), func_8007B6C8/func_8007CA00/func_8007D3F8 (display.c),
+saEft00Add/marionation_Exec (system.c), others — full list via grepping
+'\.L[0-9]' in regfix/asmfix. Any upstream label-count change in those files
+silently no-ops the rules and breaks the oracle.
+
+**gpu_SetDispMask**: confirmed the memset base is same-symbol CSE off the
+debug byte (`addiu a0,s1,0x6A`, no reloc) → one static SYS-block struct in
+v1.129. Blast radius: dozens of per-symbol uses across display.c (DrawSync,
+checkRECT family, etc.) — whole-module conversion, CDREAD-scale, needs
+LIBGPU.LIB .data ground-truth design. Deferred (multi-session).
+
 Session 1 (2026-07-09). Reference tree: sparse clone at `tmp/sotn-decomp`
 (src/main/psxsdk only). Work list: memory/closer/psyq-queue-hits.json.
 

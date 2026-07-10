@@ -166,17 +166,31 @@ u32 sys_GetVblankCount(void) {
 u32 sys_GetIrqCounter(void) {
     return *g_sys_irq_counter;
 }
-extern u16 *D_800A2604;
-extern s32 *D_800A260C;
-extern u16 D_800A1578;
-extern s32 D_800A15B4;
+/* PsyQ 4.0 LIBETC INTR: intr.c v1.76 module state — verbatim-linked Sony
+   object (census 2026-07-09); C ref: sotn-decomp src/main/psxsdk/libetc/
+   intr.c (intrEnv_t). D_800A1578 = intrEnv; D_800A15B4 = intrEnv.buf[1]
+   (JB_SP); D_800A2604/g_sys_irq_counter/D_800A260C = the module's
+   i_stat/i_mask/d_pcr MMIO pointer statics (0x1F801070/74/F0). */
+typedef struct {
+    u16 interruptsInitialized;   /* +0x00 = D_800A1578 */
+    u16 inInterrupt;             /* +0x02 */
+    void (*handlers[11])(void);  /* +0x04 */
+    u16 enabledInterruptsMask;   /* +0x30 */
+    u16 savedMask;               /* +0x32 */
+    s32 savedPcr;                /* +0x34 */
+    s32 buf[12];                 /* +0x38 jmp_buf; [1] = JB_SP = D_800A15B4 */
+    s32 stack[1024];             /* +0x68 */
+} intrEnv_t;                     /* sizeof 0x1068; memclr count 0x41A words */
+extern volatile u16 *D_800A2604;   /* i_stat = (u16 *)0x1F801070 (MMIO) */
+extern volatile s32 *D_800A260C;   /* d_pcr  = (s32 *)0x1F8010F0 (MMIO) */
+extern intrEnv_t D_800A1578;
 extern s32 func_800831A4(u16 *, s32);
-extern s32 func_80083220(u16 *);
+extern s32 setjmp(u16 *);
 extern void func_80082D34(void);
 extern void bios_SetCustomExitFromException(s32 *);
-extern s32 func_800832A0(void);
-extern s32 conv_matrix_rotation(void);
-extern s32 bios_CdRemove_A0(s32 *);
+extern s32 func_800832A0();
+extern s32 conv_matrix_rotation();
+extern void bios_CdRemove_A0(s32 *);
 u16 motion_make_table(u16 arg0) {
     u16 *ptr = g_sys_irq_counter;
     u16 old = *ptr;
@@ -184,58 +198,34 @@ u16 motion_make_table(u16 arg0) {
     return old;
 }
 
+/* startIntr (LIBETC intr.c static) */
 u16 *func_80082C58(void) {
-    u16 *s0 = &D_800A1578;
-    s32 result;
-
-    if (*s0 != 0) {
+    if (D_800A1578.interruptsInitialized) {
         return 0;
     }
-
-    {
-        u16 *v1 = D_800A2604;
-        u16 *v0_ptr = g_sys_irq_counter;
-        s32 a1_val = 0x33333333;
-
-        *(volatile u16 *)v0_ptr = 0;
-        {
-            u16 val = *(volatile u16 *)v0_ptr;
-            *v1 = val;
-        }
-
-        *D_800A260C = a1_val;
-
-        func_800831A4(s0, 0x41A);
-
-        if (func_80083220(s0 + 0x1C) != 0) {
-            func_80082D34();
-        }
+    /* i_mask deref is MMIO (0x1F801074) — volatile is hardware semantics */
+    *D_800A2604 = (*(volatile u16 *)g_sys_irq_counter = 0);
+    *D_800A260C = 0x33333333;
+    func_800831A4((u16 *)&D_800A1578, 0x41A);
+    if (setjmp((u16 *)D_800A1578.buf) != 0) {
+        func_80082D34();
     }
-
+    D_800A1578.buf[1] = (s32)&D_800A1578.stack[1004];
+    bios_SetCustomExitFromException(D_800A1578.buf);
+    D_800A1578.interruptsInitialized = 1;
+    g_sys_irq_vtable[5] = func_800832A0();
     {
-        s32 *s0b = &D_800A15B4;
-        s16 *flag_ptr = (s16 *)((char *)s0b - 60);
-
-        *s0b = (s32)s0b + 0xFDC;
-        bios_SetCustomExitFromException(s0b - 1);
-
-        *flag_ptr = 1;
-        result = func_800832A0();
-
-        {
-            s32 *v1 = g_sys_irq_vtable;
-            v1[5] = result;
-        }
-        result = conv_matrix_rotation();
-        {
-            s32 *a0 = g_sys_irq_vtable;
-            a0[1] = result;
-            bios_CdRemove_A0(a0);
-        }
-        s0b = (s32 *)((char *)s0b - 0x3C);
-        ExitCriticalSection();
-        return (u16 *)s0b;
+        /* v1.76 evidence: the compiled Sony object keeps pCallbacks live in
+           $a0 INTO the _96_remove call (v1.73's plain `_96_remove();` compiles
+           to $v1 here — measured, tmp/closer/intr_test.c); the v1.76 source
+           passed the pointer through. */
+        s32 r = conv_matrix_rotation();
+        s32 *cb = g_sys_irq_vtable;
+        cb[1] = r;
+        bios_CdRemove_A0(cb);
     }
+    ExitCriticalSection();
+    return (u16 *)&D_800A1578;
 }
 /* kengo:HIGH  |  is_motion/motion_make_table  |  62i */
 void func_80082D34(void) {}
@@ -297,7 +287,7 @@ __asm__(
     ".section .text\n"
     "    .set noat\n"
     "    .set noreorder\n"
-    "glabel func_80083220\n"
+    "glabel setjmp\n"
     "    sw $ra, 0($a0)\n"
     "    sw $gp, 44($a0)\n"
     "    sw $sp, 4($a0)\n"
@@ -330,7 +320,7 @@ __asm__(
     "    nop\n"
     "    nop\n"
     "    nop\n"
-    "endlabel func_80083220\n"
+    "endlabel setjmp\n"
     "    .set reorder\n"
     "    .set at\n"
 );

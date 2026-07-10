@@ -3678,23 +3678,6 @@ gnd_land_hit_char_tsuba: reorder 145,130,131,132,133,134,135,136,137,138,139,140
 gnd_land_hit_char_tsuba: reorder 145,130,131,132,133,152,134,135,136,137,138,139,140,141,142,143,144,146,165,147,148,149,150,151,153,154,155,156,157,158,159,160,161,162,163,164 @ 130-165
 gnd_land_hit_char_tsuba: insert_label ".L_loopfix:" @ 62
 gnd_land_hit_char_tsuba: subst "bne\s+\$3,\$0,\.L\d+" "bne	$3,$0,.L_loopfix" @ 154
-func_8007A28C: fill_delay @ 3 <- 5
-func_8007A28C: fill_delay @ 17 <- 19
-func_8007A28C: subst "nop\s+#\s+DEBUG:\s+branch/jump" "addu	$2,$6,$0" @ 2
-func_8007A28C: subst "blez\s+\$6," "blez	$2," @ 3
-func_8007A28C: subst "blez\s+\$6," "blez	$2," @ 17
-func_8007A28C: subst "addu\s+\$7,\$4,\$6" "addu	$7,$6,$4" @ 6
-func_8007A28C: subst "addu\s+\$5,\$5,\$6" "addu	$5,$6,$5" @ 7
-func_8007A28C: subst "lbu\s+\$3,0\(\$5\)" "lbu	$2,0($5)" @ 8
-func_8007A28C: subst "addu\s+\$2,\$6,\$zero" "addu	$3,$6,$0" @ 10
-func_8007A28C: subst "addu\s+\$6,\$2,-1" "addu	$6,$6,-1" @ 11
-func_8007A28C: subst "sb\s+\$3," "sb	$2," @ 12
-func_8007A28C: subst "bgtz\s+\$2," "bgtz	$3," @ 13
-func_8007A28C: subst "lbu\s+\$3,0\(\$5\)" "lbu	$2,0($5)" @ 20
-func_8007A28C: subst "addu\s+\$2,\$6,\$zero" "addu	$3,$6,$0" @ 22
-func_8007A28C: subst "addu\s+\$6,\$2,-1" "addu	$6,$6,-1" @ 23
-func_8007A28C: subst "sb\s+\$3," "sb	$2," @ 24
-func_8007A28C: subst "bgtz\s+\$2," "bgtz	$3," @ 25
 func_8007D3F8: reorder 41,38,39,40,37 @ 37-41
 func_8007D3F8: $2 <-> $3 @ 49-54
 func_8007D3F8: subst "sw\s+\$19,D_8009BF68" "lui	$2,%hi(D_8009BF68)" @ 60

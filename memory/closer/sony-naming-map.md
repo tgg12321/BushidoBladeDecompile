@@ -63,3 +63,12 @@ One line each; append as adopted. Renames deferred to an owner-signed pass.
 - D_800A2CDC -> _spu_RXX (SPU register block pointer; spucnt at +0x1AA, MMIO volatile)
 - D_800A287C -> _spu_rev_flag, D_800A2CF8 -> _spu_transMode, D_800A2870 -> _spu_EVdma, D_800A28D4 -> reverb-clear zero buffer (D_800330F8)
 - D_80101BC8 -> _svm_tn (VagAtr*), D_801027F7 -> _svm_cur.field_7_fake_program, D_801027FC -> _svm_cur.field_C_vag_idx, D_800A26E4 -> pitch table (D_80032F14)
+- func_8007A28C -> memmove (LIBC2/MEMMOVE)
+- func_80082C58 -> startIntr (LIBETC/INTR static)
+- func_80083220 -> setjmp (LIBC2/SETJMP) — RENAMED in-tree 2026-07-10 (load-bearing: GCC returns-twice keys on the literal name)
+- func_80082A14 -> v_wait (LIBETC/VSYNC static; candidate banked, ruling pending)
+- func_80078E58 -> _Pad1 (LIBAPI/PAD static; candidate banked, ruling pending)
+- func_8008BEA4 -> SioAnsyncRead, func_8008C184 -> SioAnsyncWrite (LIBCOMB statics; candidates proven, volatile grant pending)
+- HandleSio (SIO ISR core) = static @0x8008C9F4 inside asm/funcs/func_8008C464.s; AddCOMB @0x8008BE04
+- D_800A1578 -> intrEnv (intrEnv_t, LIBETC intr.c), D_800A15B4 = intrEnv.buf[1] (JB_SP)
+- D_800A2604 -> i_stat ptr static, g_sys_irq_counter -> i_mask (g_InterruptMask) ptr static, D_800A260C -> d_pcr ptr static (LIBETC intr.c)

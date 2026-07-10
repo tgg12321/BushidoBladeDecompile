@@ -83,37 +83,16 @@ typedef struct GameObj {
     s32 field_EC; s32 field_F0; s32 field_F4; s16 field_F8;
     s16 field_FA; s32 field_FC;
 } GameObj;
+/* PsyQ 4.0 LIBC2 MEMMOVE: memmove — verbatim-linked Sony object (census
+   2026-07-09); C ref: sotn-decomp src/main/psxsdk/libc/memmove.c */
 u8 *func_8007A28C(u8 *dst, u8 *src, s32 n) {
-    s32 cnt;
-    u8 *de;
-    u8 *se;
-    u8 b;
-
-    if ((u32)dst >= (u32)src) {
-        if (n > 0) {
-            n -= 1;
-            de = dst + n;
-            se = src + n;
-            do {
-                b = *se;
-                se -= 1;
-                cnt = n;
-                n -= 1;
-                *de = b;
-                de -= 1;
-            } while (cnt > 0);
+    if (dst >= src) {
+        while (n-- > 0) {
+            dst[n] = src[n];
         }
     } else {
-        if (n > 0) {
-            n -= 1;
-            do {
-                b = *src;
-                src += 1;
-                cnt = n;
-                n -= 1;
-                *dst = b;
-                dst += 1;
-            } while (cnt > 0);
+        while (n-- > 0) {
+            *dst++ = *src++;
         }
     }
     return dst;

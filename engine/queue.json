@@ -344,16 +344,6 @@
       "reopen_reason": "regression: out[4] has a dead 4th element (out[3] is never written by the callee or read by the caller) that inflates the array to 16 bytes to coerce $ra to sp+0x30 and the frame to 0x38 \u2014 frame-coercion by dead "
     },
     {
-      "func": "func_80082C58",
-      "file": "ings2",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: Second-block flag_ptr construct (commit a7629356) fails tests 2 and 3: the spelling '(s16 *)((char *)s0b - 60)' is GCC-internals-driven (defeats combine's (plus symbol const) fold as stated in the com"
-    },
-    {
       "func": "func_80085FD8",
       "file": "main",
       "distance": 0,
@@ -1208,14 +1198,6 @@
       "distance": 17,
       "verdict": "C",
       "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_8007A28C",
-      "file": "gpu",
-      "distance": 17,
-      "verdict": "C",
-      "rules": 17,
       "status": "active"
     },
     {
@@ -4006,14 +3988,14 @@
     }
   ],
   "counts": {
-    "total": 469,
-    "active": 396,
+    "total": 467,
+    "active": 394,
     "by_status": {
-      "active": 396,
+      "active": 394,
       "parked": 73
     },
     "by_verdict": {
-      "C": 222,
+      "C": 220,
       "ASM-PARTIAL": 57,
       "ASM-SUSPECT": 117
     }
