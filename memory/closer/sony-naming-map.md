@@ -76,3 +76,10 @@ One line each; append as adopted. Renames deferred to an owner-signed pass.
 - conv_matrix_rotation -> startIntrDMA (LIBETC/INTR_DMA; already matched, respelled for the volatile-MMIO-pointee decl)
 - D_800A263C -> DMA Interrupt Register ptr static (0x1F8010F4; Sony declares volatile u_long*), D_800A2640 -> DMA callback table[8], D_800A2660 -> DMA base regs ptr (0x1F801080)
 - saEft01Init -> CD_datasync (LIBCD/BIOS; NOT adopted -- window is the twins' knot, see phase3 s4 findings)
+D_800A2CD4 -> _spu_env (LIBSPU S_SK relocs)
+D_800F7420 -> _spu_RQ (u16[4]; D_800F7424 = _spu_RQ+4, same object)
+D_800A28A0 -> _spu_RQmask
+D_800A289C -> _spu_RQvoice
+D_800A2874 -> _spu_keystat
+D_800A2CDC -> _spu_RXX
+func_8008AAD4 -> SpuSetKey

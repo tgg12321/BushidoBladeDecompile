@@ -52,3 +52,32 @@ plain/non-volatile forms reorder deterministically).
 **Sandbox note for the auditor:** the sandbox strips un-granted volatile
 (cheat-invisible), so these candidates score 4 in-sandbox until granted;
 the standalone pipeline proof (tmp/closer/diffsa.sh) is the evidence.
+
+## §2 — _spu_RQ pending-key family (SpuSetKey close, 2026-07-10 session 5)
+
+Symbols (Sony names from PsyQ 4.0 LIBSPU.LIB S_SK relocs, psyq_lib.py):
+
+| symbol | Sony name | proposed decl |
+|---|---|---|
+| D_800F7420 | `_spu_RQ` | `extern volatile u16 D_800F7420[4];` (MERGED — subsumes D_800F7424; S_SK relocs prove one object, addends 0/2/4/6) |
+| D_800A28A0 | `_spu_RQmask` | `extern volatile s32 D_800A28A0;` (already volatile at HEAD, ungranted debt) |
+| D_800A2CD4 | `_spu_env` | `extern volatile s32 D_800A2CD4;` (already volatile at HEAD, ungranted debt) |
+| D_800A289C | `_spu_RQvoice` | `extern volatile s32 D_800A289C;` (NEW volatile) |
+
+- **Use-site shape:** SpuSetKey (func_8008AAD4) does ordered
+  pending-queue stores + re-read-after-test clears (`if (RQ[2]&m) RQ[2]&=~m` —
+  target re-loads between test and clear); volatile is load-bearing for the
+  strict store order and the re-reads (sandbox-stripped build collapses them:
+  score 63).
+- **IRQ/consumer writer:** the queued requests are flushed by the SPU event
+  processor `coli_HitPauseKatana_2` @0x80089A48 (asm: RMWs D_800A28A0
+  clear-bits at 0x80089B3C/0x80089C04/0x80089CC0, gated on `_spu_env & 1` at
+  0x80089A50) — the flush runs from the SsSeqCalledTbyT/VSync tick path, i.e.
+  asynchronous to SpuSetKey callers. Same Sony-declared-volatile class as the
+  granted D_800A2D14 (_spu_transferCallback) precedent.
+- **Candidate:** memory/closer/candidates/spusetkey_v40_proven.c — standalone
+  masked-identical incl. registers; residual diffs are merged-symbol reloc
+  addends only (byte-identical after link).
+- **Also needed to land:** replace the two split externs in src/main.c with the
+  merged `D_800F7420[4]`; respell `D_800F7424[i]` → `D_800F7420[2+i]`
+  (main.c is the only referencing TU; undefined_syms_auto.txt entry can stay).
