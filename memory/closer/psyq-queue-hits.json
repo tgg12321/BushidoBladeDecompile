@@ -1,0 +1,2468 @@
+{
+ "regions": [
+  [
+   "0x800469A0",
+   "0x800469C4",
+   36
+  ],
+  [
+   "0x80046B20",
+   "0x80046B44",
+   36
+  ],
+  [
+   "0x80078948",
+   "0x80083698",
+   44368
+  ],
+  [
+   "0x8008386C",
+   "0x8008387C",
+   16
+  ],
+  [
+   "0x80083954",
+   "0x800841E0",
+   2188
+  ],
+  [
+   "0x800848AC",
+   "0x80084974",
+   200
+  ],
+  [
+   "0x80085064",
+   "0x80085270",
+   524
+  ],
+  [
+   "0x8008541C",
+   "0x800858D0",
+   1204
+  ],
+  [
+   "0x800859F0",
+   "0x80085A40",
+   80
+  ],
+  [
+   "0x80085E4C",
+   "0x80085FD8",
+   396
+  ],
+  [
+   "0x80086B38",
+   "0x80086CF8",
+   448
+  ],
+  [
+   "0x80087E3C",
+   "0x80089A48",
+   7180
+  ],
+  [
+   "0x80089D10",
+   "0x8008B488",
+   6008
+  ],
+  [
+   "0x8008BA94",
+   "0x8008D070",
+   5596
+  ]
+ ],
+ "modules": [
+  [
+   "0x800469A0",
+   "0x800469C4",
+   "LIBSPU",
+   "S_CB"
+  ],
+  [
+   "0x80046B20",
+   "0x80046B44",
+   "LIBGS",
+   "GS_008"
+  ],
+  [
+   "0x80046B20",
+   "0x80046B44",
+   "LIBGS",
+   "GS_009"
+  ],
+  [
+   "0x80078948",
+   "0x80078958",
+   "LIBAPI",
+   "C67"
+  ],
+  [
+   "0x80078958",
+   "0x80078968",
+   "LIBAPI",
+   "C112"
+  ],
+  [
+   "0x80078958",
+   "0x80078968",
+   "LIBCARD",
+   "C112"
+  ],
+  [
+   "0x80078968",
+   "0x80078978",
+   "LIBAPI",
+   "C159"
+  ],
+  [
+   "0x80078978",
+   "0x80078988",
+   "LIBAPI",
+   "A08"
+  ],
+  [
+   "0x80078988",
+   "0x80078998",
+   "LIBAPI",
+   "A09"
+  ],
+  [
+   "0x80078998",
+   "0x800789A8",
+   "LIBAPI",
+   "A11"
+  ],
+  [
+   "0x800789A8",
+   "0x800789B8",
+   "LIBAPI",
+   "A12"
+  ],
+  [
+   "0x800789B8",
+   "0x800789C8",
+   "LIBAPI",
+   "A36"
+  ],
+  [
+   "0x800789C8",
+   "0x800789D8",
+   "LIBAPI",
+   "A37"
+  ],
+  [
+   "0x800789D8",
+   "0x800789E8",
+   "LIBAPI",
+   "A39"
+  ],
+  [
+   "0x800789E8",
+   "0x800789F8",
+   "LIBAPI",
+   "A50"
+  ],
+  [
+   "0x800789F8",
+   "0x80078A08",
+   "LIBAPI",
+   "A52"
+  ],
+  [
+   "0x80078A08",
+   "0x80078A18",
+   "LIBAPI",
+   "A53"
+  ],
+  [
+   "0x80078A18",
+   "0x80078A28",
+   "LIBAPI",
+   "A54"
+  ],
+  [
+   "0x80078A28",
+   "0x80078A38",
+   "LIBAPI",
+   "A65"
+  ],
+  [
+   "0x80078A38",
+   "0x80078A48",
+   "LIBAPI",
+   "A66"
+  ],
+  [
+   "0x80078A48",
+   "0x80078A58",
+   "LIBAPI",
+   "A67"
+  ],
+  [
+   "0x80078A58",
+   "0x80078A68",
+   "LIBAPI",
+   "A91"
+  ],
+  [
+   "0x80078A68",
+   "0x80078BE0",
+   "LIBAPI",
+   "COUNTER"
+  ],
+  [
+   "0x80078BE0",
+   "0x80078F00",
+   "LIBAPI",
+   "PAD"
+  ],
+  [
+   "0x80078F00",
+   "0x80078F10",
+   "LIBAPI",
+   "A18"
+  ],
+  [
+   "0x80078F10",
+   "0x80078F20",
+   "LIBAPI",
+   "A19"
+  ],
+  [
+   "0x80078F20",
+   "0x80078F30",
+   "LIBAPI",
+   "A20"
+  ],
+  [
+   "0x80078F30",
+   "0x80078F40",
+   "LIBAPI",
+   "A21"
+  ],
+  [
+   "0x80078F40",
+   "0x80078F50",
+   "LIBAPI",
+   "L02"
+  ],
+  [
+   "0x80078F50",
+   "0x80078F60",
+   "LIBAPI",
+   "L03"
+  ],
+  [
+   "0x80078F60",
+   "0x80078FF0",
+   "LIBAPI",
+   "PATCH"
+  ],
+  [
+   "0x80078FF0",
+   "0x80079000",
+   "LIBAPI",
+   "C68"
+  ],
+  [
+   "0x80079000",
+   "0x800790C0",
+   "LIBAPI",
+   "SENDPAD"
+  ],
+  [
+   "0x800790C0",
+   "0x80079120",
+   "LIBAPI",
+   "CHCLRPAD"
+  ],
+  [
+   "0x80079120",
+   "0x80079154",
+   "LIBC2",
+   "MEMCPY"
+  ],
+  [
+   "0x80079154",
+   "0x80079194",
+   "LIBC2",
+   "RAND"
+  ],
+  [
+   "0x80079194",
+   "0x800791D8",
+   "LIBC2",
+   "STRCPY"
+  ],
+  [
+   "0x800791D8",
+   "0x80079208",
+   "LIBC2",
+   "STRLEN"
+  ],
+  [
+   "0x80079208",
+   "0x80079244",
+   "LIBC2",
+   "PRINTF"
+  ],
+  [
+   "0x80079244",
+   "0x800798CC",
+   "LIBC2",
+   "PRNT"
+  ],
+  [
+   "0x800798CC",
+   "0x8007992C",
+   "LIBC2",
+   "CTYPE"
+  ],
+  [
+   "0x8007992C",
+   "0x8007997C",
+   "LIBC2",
+   "MEMCHR"
+  ],
+  [
+   "0x8007997C",
+   "0x80079A30",
+   "LIBC2",
+   "PUTCHAR"
+  ],
+  [
+   "0x80079A30",
+   "0x8007A28C",
+   "LIBC",
+   "SPRINTF"
+  ],
+  [
+   "0x80079A30",
+   "0x8007A28C",
+   "LIBC2",
+   "SPRINTF"
+  ],
+  [
+   "0x8007A28C",
+   "0x8007A2F8",
+   "LIBC",
+   "MEMMOVE"
+  ],
+  [
+   "0x8007A28C",
+   "0x8007A2F8",
+   "LIBC2",
+   "MEMMOVE"
+  ],
+  [
+   "0x8007A2F8",
+   "0x8007A308",
+   "LIBCARD",
+   "C171"
+  ],
+  [
+   "0x8007A308",
+   "0x8007A318",
+   "LIBCARD",
+   "C172"
+  ],
+  [
+   "0x8007A318",
+   "0x8007A350",
+   "LIBCARD",
+   "CARD"
+  ],
+  [
+   "0x8007A350",
+   "0x8007A360",
+   "LIBCARD",
+   "A78"
+  ],
+  [
+   "0x8007A360",
+   "0x8007A370",
+   "LIBCARD",
+   "A80"
+  ],
+  [
+   "0x8007A370",
+   "0x8007A428",
+   "LIBCARD",
+   "INIT"
+  ],
+  [
+   "0x8007A428",
+   "0x8007A438",
+   "LIBCARD",
+   "A74"
+  ],
+  [
+   "0x8007A438",
+   "0x8007A448",
+   "LIBCARD",
+   "A75"
+  ],
+  [
+   "0x8007A448",
+   "0x8007A458",
+   "LIBCARD",
+   "A76"
+  ],
+  [
+   "0x8007A458",
+   "0x8007A4D8",
+   "LIBCARD",
+   "END"
+  ],
+  [
+   "0x8007A4D8",
+   "0x8007A788",
+   "LIBGPU",
+   "EXT"
+  ],
+  [
+   "0x8007A788",
+   "0x8007AE7C",
+   "LIBGPU",
+   "PRIM"
+  ],
+  [
+   "0x8007AE7C",
+   "0x8007DF10",
+   "LIBGPU",
+   "SYS"
+  ],
+  [
+   "0x8007DF10",
+   "0x8007DF20",
+   "LIBAPI",
+   "C73"
+  ],
+  [
+   "0x8007DF20",
+   "0x8007DFEC",
+   "LIBGTE",
+   "GEO_00"
+  ],
+  [
+   "0x8007DFEC",
+   "0x8007E08C",
+   "LIBGTE",
+   "GEO_01"
+  ],
+  [
+   "0x8007E08C",
+   "0x8007E11C",
+   "LIBGTE",
+   "MSC00"
+  ],
+  [
+   "0x8007E11C",
+   "0x8007E1AC",
+   "LIBGTE",
+   "MSC01"
+  ],
+  [
+   "0x8007E1AC",
+   "0x8007E43C",
+   "LIBGTE",
+   "MSC06"
+  ],
+  [
+   "0x8007E43C",
+   "0x8007E4DC",
+   "LIBGTE",
+   "MSC09"
+  ],
+  [
+   "0x8007E4DC",
+   "0x8007E5EC",
+   "LIBGTE",
+   "MTX_000"
+  ],
+  [
+   "0x8007E5EC",
+   "0x8007E74C",
+   "LIBGTE",
+   "MTX_003"
+  ],
+  [
+   "0x8007E74C",
+   "0x8007E8AC",
+   "LIBGTE",
+   "MTX_004"
+  ],
+  [
+   "0x8007E8AC",
+   "0x8007E8DC",
+   "LIBGTE",
+   "MTX_005"
+  ],
+  [
+   "0x8007E8DC",
+   "0x8007EA0C",
+   "LIBGTE",
+   "MTX_00A"
+  ],
+  [
+   "0x8007EA0C",
+   "0x8007EB4C",
+   "LIBGTE",
+   "MTX_01"
+  ],
+  [
+   "0x8007EB4C",
+   "0x8007EC5C",
+   "LIBGTE",
+   "MTX_03"
+  ],
+  [
+   "0x8007EC5C",
+   "0x8007ED6C",
+   "LIBGTE",
+   "MTX_04"
+  ],
+  [
+   "0x8007ED6C",
+   "0x8007EDBC",
+   "LIBGTE",
+   "MTX_05"
+  ],
+  [
+   "0x8007EDBC",
+   "0x8007EEEC",
+   "LIBGTE",
+   "MTX_08"
+  ],
+  [
+   "0x8007EEEC",
+   "0x8007EF1C",
+   "LIBGTE",
+   "MTX_09"
+  ],
+  [
+   "0x8007EF1C",
+   "0x8007EF4C",
+   "LIBGTE",
+   "MTX_11"
+  ],
+  [
+   "0x8007EF4C",
+   "0x8007EF6C",
+   "LIBGTE",
+   "MTX_12"
+  ],
+  [
+   "0x8007EF6C",
+   "0x8007EF8C",
+   "LIBGTE",
+   "REG04"
+  ],
+  [
+   "0x8007EF8C",
+   "0x8007EF9C",
+   "LIBGTE",
+   "REG09"
+  ],
+  [
+   "0x8007EF9C",
+   "0x8007EFBC",
+   "LIBGTE",
+   "REG10"
+  ],
+  [
+   "0x8007EFBC",
+   "0x8007EFDC",
+   "LIBGTE",
+   "REG11"
+  ],
+  [
+   "0x8007EFDC",
+   "0x8007EFFC",
+   "LIBGTE",
+   "REG12"
+  ],
+  [
+   "0x8007EFFC",
+   "0x8007F00C",
+   "LIBGTE",
+   "REG13"
+  ],
+  [
+   "0x8007F00C",
+   "0x8007F21C",
+   "LIBGTE",
+   "SMP_00"
+  ],
+  [
+   "0x8007F21C",
+   "0x8007F24C",
+   "LIBGTE",
+   "SMP_02"
+  ],
+  [
+   "0x8007F24C",
+   "0x8007F2AC",
+   "LIBGTE",
+   "SMP_03"
+  ],
+  [
+   "0x8007F2AC",
+   "0x8007F2DC",
+   "LIBGTE",
+   "SMP_04"
+  ],
+  [
+   "0x8007F2DC",
+   "0x8007F35C",
+   "LIBGTE",
+   "CMB_00"
+  ],
+  [
+   "0x8007F35C",
+   "0x8007F5EC",
+   "LIBGTE",
+   "FGO_01"
+  ],
+  [
+   "0x8007F5EC",
+   "0x8007F87C",
+   "LIBGTE",
+   "FGO_03"
+  ],
+  [
+   "0x8007F87C",
+   "0x8007FA1C",
+   "LIBGTE",
+   "FGO_04"
+  ],
+  [
+   "0x8007FA1C",
+   "0x8007FBBC",
+   "LIBGTE",
+   "FGO_05"
+  ],
+  [
+   "0x8007FBBC",
+   "0x8007FD5C",
+   "LIBGTE",
+   "FGO_06"
+  ],
+  [
+   "0x8007FD5C",
+   "0x8007FEDC",
+   "LIBGTE",
+   "RATAN"
+  ],
+  [
+   "0x8007FEDC",
+   "0x8007FF7C",
+   "LIBGTE",
+   "PATCHGTE"
+  ],
+  [
+   "0x8007FF7C",
+   "0x8008008C",
+   "LIBCD",
+   "EVENT"
+  ],
+  [
+   "0x8008008C",
+   "0x8008009C",
+   "LIBAPI",
+   "A07"
+  ],
+  [
+   "0x8008009C",
+   "0x80080828",
+   "LIBCD",
+   "SYS"
+  ],
+  [
+   "0x80080828",
+   "0x80082000",
+   "LIBCD",
+   "BIOS"
+  ],
+  [
+   "0x80082000",
+   "0x80082050",
+   "LIBC2",
+   "PUTS"
+  ],
+  [
+   "0x80082050",
+   "0x800828CC",
+   "LIBCD",
+   "CDREAD"
+  ],
+  [
+   "0x800828CC",
+   "0x80082AB0",
+   "LIBETC",
+   "VSYNC"
+  ],
+  [
+   "0x80082AB0",
+   "0x80082AC0",
+   "LIBAPI",
+   "L10"
+  ],
+  [
+   "0x80082AC0",
+   "0x800831D0",
+   "LIBETC",
+   "INTR"
+  ],
+  [
+   "0x800831D0",
+   "0x800831F0",
+   "LIBAPI",
+   "C114"
+  ],
+  [
+   "0x800831F0",
+   "0x80083200",
+   "LIBAPI",
+   "A23"
+  ],
+  [
+   "0x80083200",
+   "0x80083210",
+   "LIBAPI",
+   "A24"
+  ],
+  [
+   "0x80083210",
+   "0x80083220",
+   "LIBAPI",
+   "A25"
+  ],
+  [
+   "0x80083220",
+   "0x800832A0",
+   "LIBC2",
+   "SETJMP"
+  ],
+  [
+   "0x800832A0",
+   "0x800833C8",
+   "LIBETC",
+   "INTR_VB"
+  ],
+  [
+   "0x800833C8",
+   "0x80083670",
+   "LIBETC",
+   "INTR_DMA"
+  ],
+  [
+   "0x80083670",
+   "0x80083698",
+   "LIBETC",
+   "VMODE"
+  ],
+  [
+   "0x8008386C",
+   "0x8008387C",
+   "LIBAPI",
+   "C57"
+  ],
+  [
+   "0x80083954",
+   "0x80083A18",
+   "LIBSND",
+   "SSEND"
+  ],
+  [
+   "0x80083A18",
+   "0x80083A48",
+   "LIBSND",
+   "SSINIT_C"
+  ],
+  [
+   "0x80083A18",
+   "0x80083A48",
+   "LIBSND",
+   "SSINIT_H"
+  ],
+  [
+   "0x80083A48",
+   "0x80083B30",
+   "LIBSND",
+   "SSINIT"
+  ],
+  [
+   "0x80083B30",
+   "0x80083B50",
+   "LIBAPI",
+   "SEND"
+  ],
+  [
+   "0x80083B30",
+   "0x80083B50",
+   "LIBGS",
+   "GS_106"
+  ],
+  [
+   "0x80083B30",
+   "0x80083B50",
+   "LIBSND",
+   "SSNOFF"
+  ],
+  [
+   "0x80083B30",
+   "0x80083B50",
+   "LIBSND",
+   "SSQUIT"
+  ],
+  [
+   "0x80083B50",
+   "0x80083BE4",
+   "LIBSND",
+   "SSSATTR"
+  ],
+  [
+   "0x80083BE4",
+   "0x80083C34",
+   "LIBSND",
+   "SSSMV"
+  ],
+  [
+   "0x80083C34",
+   "0x80083F6C",
+   "LIBSND",
+   "SSSTART"
+  ],
+  [
+   "0x80083F6C",
+   "0x800841E0",
+   "LIBSND",
+   "SSCALL"
+  ],
+  [
+   "0x800848AC",
+   "0x80084948",
+   "LIBSND",
+   "PAUSE"
+  ],
+  [
+   "0x80084948",
+   "0x80084974",
+   "LIBSND",
+   "PLAY"
+  ],
+  [
+   "0x80085064",
+   "0x80085114",
+   "LIBSND",
+   "MIDITIME"
+  ],
+  [
+   "0x80085114",
+   "0x80085210",
+   "LIBSND",
+   "NEXT"
+  ],
+  [
+   "0x80085210",
+   "0x80085270",
+   "LIBSND",
+   "REPLAY"
+  ],
+  [
+   "0x8008541C",
+   "0x80085448",
+   "LIBSND",
+   "PLAY"
+  ],
+  [
+   "0x80085448",
+   "0x80085544",
+   "LIBSND",
+   "SSSV"
+  ],
+  [
+   "0x80085544",
+   "0x800856B0",
+   "LIBSND",
+   "SSTICK"
+  ],
+  [
+   "0x800856B0",
+   "0x800858D0",
+   "LIBSND",
+   "TEMPO"
+  ],
+  [
+   "0x800859F0",
+   "0x80085A40",
+   "LIBSND",
+   "UT_GVBA"
+  ],
+  [
+   "0x80085E4C",
+   "0x80085EE4",
+   "LIBSND",
+   "UT_RDEP"
+  ],
+  [
+   "0x80085EE4",
+   "0x80085F98",
+   "LIBSND",
+   "UT_REV"
+  ],
+  [
+   "0x80085F98",
+   "0x80085FB8",
+   "LIBSND",
+   "UT_ROFF"
+  ],
+  [
+   "0x80085F98",
+   "0x80085FB8",
+   "LIBSPU",
+   "S_I"
+  ],
+  [
+   "0x80085FB8",
+   "0x80085FD8",
+   "LIBSND",
+   "UT_RON"
+  ],
+  [
+   "0x80085FB8",
+   "0x80085FD8",
+   "LIBSPU",
+   "S_IH"
+  ],
+  [
+   "0x80086B38",
+   "0x80086CF8",
+   "LIBSND",
+   "VM_N2P"
+  ],
+  [
+   "0x80087E3C",
+   "0x80087F00",
+   "LIBSND",
+   "VM_VSU"
+  ],
+  [
+   "0x80087F00",
+   "0x80087F10",
+   "LIBSND",
+   "VS_AUTO"
+  ],
+  [
+   "0x80087F10",
+   "0x80087F34",
+   "LIBSND",
+   "VS_MONO"
+  ],
+  [
+   "0x80087F34",
+   "0x80087F64",
+   "LIBSND",
+   "VS_SRV"
+  ],
+  [
+   "0x80087F64",
+   "0x80087FE8",
+   "LIBSND",
+   "VS_VAB"
+  ],
+  [
+   "0x80087FE8",
+   "0x80088058",
+   "LIBSND",
+   "VS_VFB"
+  ],
+  [
+   "0x80088058",
+   "0x800884C4",
+   "LIBSND",
+   "VS_VH"
+  ],
+  [
+   "0x800884C4",
+   "0x80088584",
+   "LIBSND",
+   "VS_VTB"
+  ],
+  [
+   "0x80088584",
+   "0x800885AC",
+   "LIBSND",
+   "VS_VTC"
+  ],
+  [
+   "0x800885AC",
+   "0x800885CC",
+   "LIBSND",
+   "UT_ROFF"
+  ],
+  [
+   "0x800885AC",
+   "0x800885CC",
+   "LIBSPU",
+   "S_I"
+  ],
+  [
+   "0x800885CC",
+   "0x80088740",
+   "LIBSPU",
+   "S_INI"
+  ],
+  [
+   "0x80088740",
+   "0x800892D4",
+   "LIBSPU",
+   "SPU"
+  ],
+  [
+   "0x800892D4",
+   "0x800892F8",
+   "LIBSPU",
+   "S_DCB"
+  ],
+  [
+   "0x800892F8",
+   "0x80089374",
+   "LIBSPU",
+   "S_Q"
+  ],
+  [
+   "0x80089374",
+   "0x80089384",
+   "LIBAPI",
+   "A13"
+  ],
+  [
+   "0x80089384",
+   "0x800893D8",
+   "LIBSPU",
+   "S_M_INIT"
+  ],
+  [
+   "0x800893D8",
+   "0x800896A0",
+   "LIBSPU",
+   "S_M_M"
+  ],
+  [
+   "0x800896A0",
+   "0x800899A8",
+   "LIBSPU",
+   "S_M_INT"
+  ],
+  [
+   "0x800899A8",
+   "0x80089A24",
+   "LIBSPU",
+   "S_M_F"
+  ],
+  [
+   "0x80089A24",
+   "0x80089A48",
+   "LIBSPU",
+   "S_SNV"
+  ],
+  [
+   "0x80089D10",
+   "0x80089D60",
+   "LIBSPU",
+   "S_SNC"
+  ],
+  [
+   "0x80089D60",
+   "0x80089E30",
+   "LIBSPU",
+   "S_SR"
+  ],
+  [
+   "0x80089E30",
+   "0x80089F3C",
+   "LIBSPU",
+   "S_M_UTIL"
+  ],
+  [
+   "0x80089F3C",
+   "0x8008A434",
+   "LIBSPU",
+   "S_SRMP"
+  ],
+  [
+   "0x8008A434",
+   "0x8008A904",
+   "LIBSPU",
+   "S_SRA"
+  ],
+  [
+   "0x8008A904",
+   "0x8008A928",
+   "LIBSPU",
+   "S_SRV"
+  ],
+  [
+   "0x8008A928",
+   "0x8008AAC4",
+   "LIBSPU",
+   "S_CRWA"
+  ],
+  [
+   "0x8008AAC4",
+   "0x8008AAD4",
+   "LIBAPI",
+   "A10"
+  ],
+  [
+   "0x8008AAD4",
+   "0x8008ACD0",
+   "LIBSPU",
+   "S_SK"
+  ],
+  [
+   "0x8008ACD0",
+   "0x8008AD64",
+   "LIBSPU",
+   "S_GKS"
+  ],
+  [
+   "0x8008AD64",
+   "0x8008ADC4",
+   "LIBSPU",
+   "S_R"
+  ],
+  [
+   "0x8008AD64",
+   "0x8008ADC4",
+   "LIBSPU",
+   "S_W"
+  ],
+  [
+   "0x8008ADC4",
+   "0x8008AE24",
+   "LIBSPU",
+   "S_R"
+  ],
+  [
+   "0x8008ADC4",
+   "0x8008AE24",
+   "LIBSPU",
+   "S_W"
+  ],
+  [
+   "0x8008AE24",
+   "0x8008AE7C",
+   "LIBSPU",
+   "S_STSA"
+  ],
+  [
+   "0x8008AE7C",
+   "0x8008AEB0",
+   "LIBSPU",
+   "S_STM"
+  ],
+  [
+   "0x8008AEB0",
+   "0x8008AF58",
+   "LIBSPU",
+   "S_ITC"
+  ],
+  [
+   "0x8008AF58",
+   "0x8008AF9C",
+   "LIBSPU",
+   "S_IT"
+  ],
+  [
+   "0x8008AF9C",
+   "0x8008B330",
+   "LIBSPU",
+   "S_SCA"
+  ],
+  [
+   "0x8008B330",
+   "0x8008B488",
+   "LIBSPU",
+   "SR_GAKS"
+  ],
+  [
+   "0x8008BA94",
+   "0x8008BD88",
+   "LIBSPU",
+   "S_N2P"
+  ],
+  [
+   "0x8008BD88",
+   "0x8008BDE8",
+   "LIBSPU",
+   "S_GVV"
+  ],
+  [
+   "0x8008BDE8",
+   "0x8008BE04",
+   "LIBSPU",
+   "S_GVEX"
+  ],
+  [
+   "0x8008BE04",
+   "0x8008D050",
+   "LIBCOMB",
+   "COMB"
+  ],
+  [
+   "0x8008D050",
+   "0x8008D060",
+   "LIBAPI",
+   "A71"
+  ],
+  [
+   "0x8008D060",
+   "0x8008D070",
+   "LIBAPI",
+   "A72"
+  ]
+ ],
+ "placed_multi": [
+  [
+   "LIBAPI",
+   "SEND",
+   "0x80083B30",
+   8,
+   23
+  ],
+  [
+   "LIBGS",
+   "GS_106",
+   "0x80083B30",
+   8,
+   23
+  ],
+  [
+   "LIBSND",
+   "PLAY",
+   "0x80084948",
+   11,
+   2
+  ],
+  [
+   "LIBSND",
+   "PLAY",
+   "0x8008541C",
+   11,
+   2
+  ],
+  [
+   "LIBSND",
+   "SSNOFF",
+   "0x80083B30",
+   8,
+   23
+  ],
+  [
+   "LIBSND",
+   "SSQUIT",
+   "0x80083B30",
+   8,
+   23
+  ],
+  [
+   "LIBSND",
+   "UT_ROFF",
+   "0x80085F98",
+   8,
+   7
+  ],
+  [
+   "LIBSND",
+   "UT_ROFF",
+   "0x800885AC",
+   8,
+   7
+  ],
+  [
+   "LIBSND",
+   "VS_AUTO",
+   "0x80087F00",
+   4,
+   3
+  ],
+  [
+   "LIBSPU",
+   "S_I",
+   "0x80085F98",
+   8,
+   7
+  ],
+  [
+   "LIBSPU",
+   "S_I",
+   "0x800885AC",
+   8,
+   7
+  ],
+  [
+   "LIBSPU",
+   "S_R",
+   "0x8008AD64",
+   24,
+   2
+  ],
+  [
+   "LIBSPU",
+   "S_R",
+   "0x8008ADC4",
+   24,
+   2
+  ],
+  [
+   "LIBSPU",
+   "S_W",
+   "0x8008AD64",
+   24,
+   2
+  ],
+  [
+   "LIBSPU",
+   "S_W",
+   "0x8008ADC4",
+   24,
+   2
+  ],
+  [
+   "LIBSND",
+   "UT_RON",
+   "0x80085FB8",
+   8,
+   4
+  ],
+  [
+   "LIBSPU",
+   "S_IH",
+   "0x80085FB8",
+   8,
+   4
+  ]
+ ],
+ "subsumed": [
+  [
+   "LIBAPI",
+   "SEND",
+   8,
+   [
+    "0x80080148",
+    "0x800801E8",
+    "0x80080208",
+    "0x80080684",
+    "0x80083B30"
+   ]
+  ],
+  [
+   "LIBGS",
+   "GS_101",
+   4,
+   [
+    "0x80078BE0",
+    "0x80079184",
+    "0x80080170",
+    "0x80080230",
+    "0x80080248",
+    "0x80081F0C",
+    "0x800828A4",
+    "0x80083678"
+   ]
+  ],
+  [
+   "LIBGS",
+   "GS_102",
+   4,
+   [
+    "0x80078BE0",
+    "0x80079184",
+    "0x80080170",
+    "0x80080230",
+    "0x80080248",
+    "0x80081F0C",
+    "0x800828A4",
+    "0x80083678"
+   ]
+  ],
+  [
+   "LIBGS",
+   "GS_106",
+   8,
+   [
+    "0x80080148",
+    "0x800801E8",
+    "0x80080208",
+    "0x80080684",
+    "0x80083B30"
+   ]
+  ],
+  [
+   "LIBGS",
+   "GS_124",
+   4,
+   [
+    "0x80078BE0",
+    "0x80079184",
+    "0x80080170",
+    "0x80080230",
+    "0x80080248",
+    "0x80081F0C",
+    "0x800828A4",
+    "0x80083678"
+   ]
+  ],
+  [
+   "LIBGS",
+   "GS_125",
+   4,
+   [
+    "0x80078BF0",
+    "0x80079094",
+    "0x80083688"
+   ]
+  ],
+  [
+   "LIBSND",
+   "PLAY",
+   11,
+   [
+    "0x80084948",
+    "0x8008541C"
+   ]
+  ],
+  [
+   "LIBSND",
+   "SSNOFF",
+   8,
+   [
+    "0x80080148",
+    "0x800801E8",
+    "0x80080208",
+    "0x80080684",
+    "0x80083B30"
+   ]
+  ],
+  [
+   "LIBSND",
+   "SSQUIT",
+   8,
+   [
+    "0x80080148",
+    "0x800801E8",
+    "0x80080208",
+    "0x80080684",
+    "0x80083B30"
+   ]
+  ],
+  [
+   "LIBSND",
+   "UT_ROFF",
+   8,
+   [
+    "0x80083EBC",
+    "0x80085F98",
+    "0x800885AC"
+   ]
+  ],
+  [
+   "LIBSND",
+   "UT_RON",
+   8,
+   [
+    "0x80083E9C",
+    "0x80085FB8"
+   ]
+  ],
+  [
+   "LIBSND",
+   "VM_DOFF",
+   4,
+   [
+    "0x80087F24"
+   ]
+  ],
+  [
+   "LIBSND",
+   "VM_VIB",
+   4,
+   [
+    "0x8008BE94"
+   ]
+  ],
+  [
+   "LIBSND",
+   "VS_AUTO",
+   4,
+   [
+    "0x80087F00",
+    "0x80087F54"
+   ]
+  ],
+  [
+   "LIBSPU",
+   "S_I",
+   8,
+   [
+    "0x80083EBC",
+    "0x80085F98",
+    "0x800885AC"
+   ]
+  ],
+  [
+   "LIBSPU",
+   "S_IH",
+   8,
+   [
+    "0x80083E9C",
+    "0x80085FB8"
+   ]
+  ],
+  [
+   "LIBSPU",
+   "S_R",
+   24,
+   [
+    "0x8008AD64",
+    "0x8008ADC4"
+   ]
+  ],
+  [
+   "LIBSPU",
+   "S_W",
+   24,
+   [
+    "0x8008AD64",
+    "0x8008ADC4"
+   ]
+  ]
+ ],
+ "ambiguous": [],
+ "queue_hits": [
+  {
+   "func": "cpu_side_move_dir_4",
+   "file": "system",
+   "status": "active",
+   "distance": 7,
+   "addr": "0x80080DB0",
+   "lib": "LIBCD",
+   "mod": "BIOS",
+   "sony": "CD_sync"
+  },
+  {
+   "func": "marionation_Exec",
+   "file": "system",
+   "status": "active",
+   "distance": 56,
+   "addr": "0x80081030",
+   "lib": "LIBCD",
+   "mod": "BIOS",
+   "sony": "CD_ready"
+  },
+  {
+   "func": "gpu_SetDispMask",
+   "file": "display",
+   "status": "active",
+   "distance": 0,
+   "addr": "0x8007B2A0",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "sony": "SetDispMask"
+  },
+  {
+   "func": "single_game_getEnemyCharId",
+   "file": "display",
+   "status": "active",
+   "distance": 0,
+   "addr": "0x8007FD5C",
+   "lib": "LIBGTE",
+   "mod": "RATAN",
+   "sony": "ratan2"
+  },
+  {
+   "func": "gpu_SetMode",
+   "file": "gpu",
+   "status": "active",
+   "distance": 0,
+   "addr": "0x8007AE7C",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "sony": "ResetGraph"
+  },
+  {
+   "func": "func_80082C58",
+   "file": "ings2",
+   "status": "active",
+   "distance": 0,
+   "addr": "0x80082C58",
+   "lib": "LIBETC",
+   "mod": "INTR",
+   "sony": "startIntr (static)"
+  },
+  {
+   "func": "sys_SetTimer",
+   "file": "ings2",
+   "status": "active",
+   "distance": 0,
+   "addr": "0x800828B4",
+   "lib": "LIBCD",
+   "mod": "CDREAD",
+   "sony": "CdReadMode"
+  },
+  {
+   "func": "func_80085448",
+   "file": "main",
+   "status": "active",
+   "distance": 0,
+   "addr": "0x80085448",
+   "lib": "LIBSND",
+   "mod": "SSSV",
+   "sony": "SsSetSerialVol"
+  },
+  {
+   "func": "func_800892F8",
+   "file": "main",
+   "status": "active",
+   "distance": 0,
+   "addr": "0x800892F8",
+   "lib": "LIBSPU",
+   "mod": "S_Q",
+   "sony": "SpuQuit"
+  },
+  {
+   "func": "func_8008ADC4",
+   "file": "main",
+   "status": "active",
+   "distance": 0,
+   "addr": "0x8008ADC4",
+   "lib": "LIBSPU",
+   "mod": "S_R",
+   "sony": "SpuRead/SpuWrite"
+  },
+  {
+   "func": "func_8008AE7C",
+   "file": "main",
+   "status": "active",
+   "distance": 0,
+   "addr": "0x8008AE7C",
+   "lib": "LIBSPU",
+   "mod": "S_STM",
+   "sony": "SpuSetTransferMode"
+  },
+  {
+   "func": "func_8008B400",
+   "file": "main",
+   "status": "active",
+   "distance": 0,
+   "addr": "0x8008B400",
+   "lib": "LIBSPU",
+   "mod": "SR_GAKS",
+   "sony": "SpuGetAllKeysStatus"
+  },
+  {
+   "func": "func_8008BEA4",
+   "file": "main",
+   "status": "active",
+   "distance": 0,
+   "addr": "0x8008BEA4",
+   "lib": "LIBCOMB",
+   "mod": "COMB",
+   "sony": "SioAnsyncRead (static)"
+  },
+  {
+   "func": "func_8008C184",
+   "file": "main",
+   "status": "active",
+   "distance": 0,
+   "addr": "0x8008C184",
+   "lib": "LIBCOMB",
+   "mod": "COMB",
+   "sony": "SioAnsyncWrite (static)"
+  },
+  {
+   "func": "spu_IrqHandler",
+   "file": "main",
+   "status": "active",
+   "distance": 0,
+   "addr": "0x80089384",
+   "lib": "LIBSPU",
+   "mod": "S_M_INIT",
+   "sony": "SpuInitMalloc"
+  },
+  {
+   "func": "spu_ResetMotionEntry",
+   "file": "main",
+   "status": "active",
+   "distance": 0,
+   "addr": "0x80085114",
+   "lib": "LIBSND",
+   "mod": "NEXT",
+   "sony": "_SsSndNextSep"
+  },
+  {
+   "func": "cdrom_ConfigSPU",
+   "file": "system",
+   "status": "active",
+   "distance": 0,
+   "addr": "0x80081880",
+   "lib": "LIBCD",
+   "mod": "BIOS",
+   "sony": "CD_initvol"
+  },
+  {
+   "func": "cdrom_GetCmdName",
+   "file": "system",
+   "status": "active",
+   "distance": 0,
+   "addr": "0x80080180",
+   "lib": "LIBCD",
+   "mod": "SYS",
+   "sony": "CdComstr"
+  },
+  {
+   "func": "cdrom_GetResultName",
+   "file": "system",
+   "status": "active",
+   "distance": 0,
+   "addr": "0x800801B4",
+   "lib": "LIBCD",
+   "mod": "SYS",
+   "sony": "CdIntstr"
+  },
+  {
+   "func": "func_800827D0",
+   "file": "system",
+   "status": "active",
+   "distance": 0,
+   "addr": "0x800827D0",
+   "lib": "LIBCD",
+   "mod": "CDREAD",
+   "sony": "CdReadSync"
+  },
+  {
+   "func": "func_8007C4B8",
+   "file": "display",
+   "status": "active",
+   "distance": 4,
+   "addr": "0x8007C4B8",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "sony": "SetDrawEnv2 (static)"
+  },
+  {
+   "func": "tslPolyF4Init",
+   "file": "system",
+   "status": "active",
+   "distance": 8,
+   "addr": "0x800804BC",
+   "lib": "LIBCD",
+   "mod": "SYS",
+   "sony": "CdControlB"
+  },
+  {
+   "func": "func_8007E1AC",
+   "file": "display",
+   "status": "active",
+   "distance": 13,
+   "addr": "0x8007E1AC",
+   "lib": "LIBGTE",
+   "mod": "MSC06",
+   "sony": "LoadAverage12"
+  },
+  {
+   "func": "func_8007E1FC",
+   "file": "display",
+   "status": "active",
+   "distance": 13,
+   "addr": "0x8007E1FC",
+   "lib": "LIBGTE",
+   "mod": "MSC06",
+   "sony": "LoadAverage0"
+  },
+  {
+   "func": "D_80083418",
+   "file": "ings2",
+   "status": "active",
+   "distance": 13,
+   "addr": "0x80083418",
+   "lib": "LIBETC",
+   "mod": "INTR_DMA",
+   "sony": "trapIntrDMA (static)"
+  },
+  {
+   "func": "saEft03Start2",
+   "file": "main",
+   "status": "active",
+   "distance": 15,
+   "addr": "0x80089D60",
+   "lib": "LIBSPU",
+   "mod": "S_SR",
+   "sony": "SpuSetReverb"
+  },
+  {
+   "func": "func_8007ED6C",
+   "file": "display",
+   "status": "active",
+   "distance": 16,
+   "addr": "0x8007ED6C",
+   "lib": "LIBGTE",
+   "mod": "MTX_05",
+   "sony": "ApplyMatrix"
+  },
+  {
+   "func": "func_8007F24C",
+   "file": "display",
+   "status": "active",
+   "distance": 16,
+   "addr": "0x8007F24C",
+   "lib": "LIBGTE",
+   "mod": "SMP_03",
+   "sony": "RotTransPers3"
+  },
+  {
+   "func": "func_8007A28C",
+   "file": "gpu",
+   "status": "active",
+   "distance": 17,
+   "addr": "0x8007A28C",
+   "lib": "LIBC",
+   "mod": "MEMMOVE",
+   "sony": "memmove"
+  },
+  {
+   "func": "saEft00Add",
+   "file": "system",
+   "status": "active",
+   "distance": 18,
+   "addr": "0x8008241C",
+   "lib": "LIBCD",
+   "mod": "CDREAD",
+   "sony": "cd_read_retry (static)"
+  },
+  {
+   "func": "saEft01Init",
+   "file": "system",
+   "status": "active",
+   "distance": 18,
+   "addr": "0x80081BB0",
+   "lib": "LIBCD",
+   "mod": "BIOS",
+   "sony": "CD_datasync"
+  },
+  {
+   "func": "func_80083A48",
+   "file": "ings2",
+   "status": "active",
+   "distance": 19,
+   "addr": "0x80083A48",
+   "lib": "LIBSND",
+   "mod": "SSINIT",
+   "sony": "_SsInit"
+  },
+  {
+   "func": "saTan5TakeAnim2_2",
+   "file": "main",
+   "status": "active",
+   "distance": 19,
+   "addr": "0x80083C34",
+   "lib": "LIBSND",
+   "mod": "SSSTART",
+   "sony": "_SsStart (static)"
+  },
+  {
+   "func": "D_8008359C",
+   "file": "ings2",
+   "status": "active",
+   "distance": 20,
+   "addr": "0x8008359C",
+   "lib": "LIBETC",
+   "mod": "INTR_DMA",
+   "sony": "setIntrDMA (static)"
+  },
+  {
+   "func": "func_8007F2DC",
+   "file": "display",
+   "status": "active",
+   "distance": 23,
+   "addr": "0x8007F2DC",
+   "lib": "LIBGTE",
+   "mod": "CMB_00",
+   "sony": "RotTransPers4"
+  },
+  {
+   "func": "func_80089E30",
+   "file": "main",
+   "status": "active",
+   "distance": 23,
+   "addr": "0x80089E30",
+   "lib": "LIBSPU",
+   "mod": "S_M_UTIL",
+   "sony": "_SpuIsInAllocateArea"
+  },
+  {
+   "func": "func_80089EB0",
+   "file": "main",
+   "status": "active",
+   "distance": 23,
+   "addr": "0x80089EB0",
+   "lib": "LIBSPU",
+   "mod": "S_M_UTIL",
+   "sony": "_SpuIsInAllocateArea_"
+  },
+  {
+   "func": "spu_SetMotionActive",
+   "file": "main",
+   "status": "active",
+   "distance": 23,
+   "addr": "0x80085210",
+   "lib": "LIBSND",
+   "mod": "REPLAY",
+   "sony": "_SsSndReplay"
+  },
+  {
+   "func": "func_80080390",
+   "file": "system",
+   "status": "active",
+   "distance": 23,
+   "addr": "0x80080390",
+   "lib": "LIBCD",
+   "mod": "SYS",
+   "sony": "CdControlF"
+  },
+  {
+   "func": "func_800826CC",
+   "file": "system",
+   "status": "active",
+   "distance": 23,
+   "addr": "0x800826CC",
+   "lib": "LIBCD",
+   "mod": "CDREAD",
+   "sony": "CdRead"
+  },
+  {
+   "func": "func_80080258",
+   "file": "system",
+   "status": "active",
+   "distance": 25,
+   "addr": "0x80080258",
+   "lib": "LIBCD",
+   "mod": "SYS",
+   "sony": "CdControl"
+  },
+  {
+   "func": "SetPacketData",
+   "file": "main",
+   "status": "active",
+   "distance": 32,
+   "addr": "0x8008C1E8",
+   "lib": "LIBCOMB",
+   "mod": "COMB",
+   "sony": "SioSyncroWrite (static)"
+  },
+  {
+   "func": "func_8008BB24",
+   "file": "main",
+   "status": "active",
+   "distance": 39,
+   "addr": "0x8008BB24",
+   "lib": "LIBSPU",
+   "mod": "S_N2P",
+   "sony": "_spu_note2pitch"
+  },
+  {
+   "func": "func_80086BFC",
+   "file": "main",
+   "status": "active",
+   "distance": 40,
+   "addr": "0x80086BFC",
+   "lib": "LIBSND",
+   "mod": "VM_N2P",
+   "sony": "note2pitch2"
+  },
+  {
+   "func": "cpu_side_move_dir_3",
+   "file": "main",
+   "status": "active",
+   "distance": 41,
+   "addr": "0x8008BF04",
+   "lib": "LIBCOMB",
+   "mod": "COMB",
+   "sony": "SioSyncroRead (static)"
+  },
+  {
+   "func": "func_8007D3F8",
+   "file": "display",
+   "status": "active",
+   "distance": 43,
+   "addr": "0x8007D3F8",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "sony": "_addque2 (static)"
+  },
+  {
+   "func": "cdrom_FramesToBcd",
+   "file": "system",
+   "status": "active",
+   "distance": 52,
+   "addr": "0x800806A4",
+   "lib": "LIBCD",
+   "mod": "SYS",
+   "sony": "CdIntToPos"
+  },
+  {
+   "func": "func_80088740",
+   "file": "main",
+   "status": "active",
+   "distance": 56,
+   "addr": "0x80088740",
+   "lib": "LIBSPU",
+   "mod": "SPU",
+   "sony": "_spu_init"
+  },
+  {
+   "func": "saTan0GaugeDraw",
+   "file": "main",
+   "status": "active",
+   "distance": 57,
+   "addr": "0x80088D0C",
+   "lib": "LIBSPU",
+   "mod": "SPU",
+   "sony": "_spu_t"
+  },
+  {
+   "func": "coli_HitPauseKatana",
+   "file": "main",
+   "status": "active",
+   "distance": 58,
+   "addr": "0x800893D8",
+   "lib": "LIBSPU",
+   "mod": "S_M_M",
+   "sony": "SpuMalloc"
+  },
+  {
+   "func": "func_8007E4DC",
+   "file": "display",
+   "status": "active",
+   "distance": 62,
+   "addr": "0x8007E4DC",
+   "lib": "LIBGTE",
+   "mod": "MTX_000",
+   "sony": "MulMatrix0"
+  },
+  {
+   "func": "func_8007EB4C",
+   "file": "display",
+   "status": "active",
+   "distance": 62,
+   "addr": "0x8007EB4C",
+   "lib": "LIBGTE",
+   "mod": "MTX_03",
+   "sony": "MulMatrix"
+  },
+  {
+   "func": "func_8008BC60",
+   "file": "main",
+   "status": "active",
+   "distance": 64,
+   "addr": "0x8008BC60",
+   "lib": "LIBSPU",
+   "mod": "S_N2P",
+   "sony": "_spu_pitch2note"
+  },
+  {
+   "func": "func_800856B0",
+   "file": "main",
+   "status": "active",
+   "distance": 65,
+   "addr": "0x800856B0",
+   "lib": "LIBSND",
+   "mod": "TEMPO",
+   "sony": "_SsSndTempo"
+  },
+  {
+   "func": "func_8008AAD4",
+   "file": "main",
+   "status": "active",
+   "distance": 69,
+   "addr": "0x8008AAD4",
+   "lib": "LIBSPU",
+   "mod": "S_SK",
+   "sony": "SpuSetKey"
+  },
+  {
+   "func": "func_8007E8DC",
+   "file": "display",
+   "status": "active",
+   "distance": 72,
+   "addr": "0x8007E8DC",
+   "lib": "LIBGTE",
+   "mod": "MTX_00A",
+   "sony": "ScaleMatrixL"
+  },
+  {
+   "func": "func_8007EA0C",
+   "file": "display",
+   "status": "active",
+   "distance": 75,
+   "addr": "0x8007EA0C",
+   "lib": "LIBGTE",
+   "mod": "MTX_01",
+   "sony": "ApplyRotMatrixLV"
+  },
+  {
+   "func": "func_8007E74C",
+   "file": "display",
+   "status": "active",
+   "distance": 85,
+   "addr": "0x8007E74C",
+   "lib": "LIBGTE",
+   "mod": "MTX_004",
+   "sony": "ApplyMatrixLV"
+  },
+  {
+   "func": "exec_game",
+   "file": "main",
+   "status": "active",
+   "distance": 121,
+   "addr": "0x800896A0",
+   "lib": "LIBSPU",
+   "mod": "S_M_INT",
+   "sony": "_spu_gcSPU"
+  },
+  {
+   "func": "func_8007D048",
+   "file": "display",
+   "status": "active",
+   "distance": 159,
+   "addr": "0x8007D048",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "sony": "_drs (static)"
+  },
+  {
+   "func": "func_8007D6D8",
+   "file": "display",
+   "status": "active",
+   "distance": 185,
+   "addr": "0x8007D6D8",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "sony": "_exeque (static)"
+  },
+  {
+   "func": "DispUpdateStatusMessage",
+   "file": "main",
+   "status": "active",
+   "distance": 204,
+   "addr": "0x800889D4",
+   "lib": "LIBSPU",
+   "mod": "SPU",
+   "sony": "_spu_FwriteByIO (static)"
+  },
+  {
+   "func": "DispStuff",
+   "file": "main",
+   "status": "active",
+   "distance": 207,
+   "addr": "0x80083E9C",
+   "lib": "LIBSND",
+   "mod": "SSSTART",
+   "sony": "SsStart"
+  },
+  {
+   "func": "saTan2Main",
+   "file": "main",
+   "status": "active",
+   "distance": 245,
+   "addr": "0x800880E8",
+   "lib": "LIBSND",
+   "mod": "VS_VH",
+   "sony": "SsVabOpenHeadWithMode (static)"
+  },
+  {
+   "func": "tslTm2LoadImage_2",
+   "file": "system",
+   "status": "active",
+   "distance": 261,
+   "addr": "0x80082000",
+   "lib": "LIBC2",
+   "mod": "PUTS",
+   "sony": "puts"
+  },
+  {
+   "func": "tslTm2LoadImage",
+   "file": "system",
+   "status": "active",
+   "distance": 262,
+   "addr": "0x800812FC",
+   "lib": "LIBCD",
+   "mod": "BIOS",
+   "sony": "CD_cw"
+  },
+  {
+   "func": "func_8008AF9C",
+   "file": "main",
+   "status": "active",
+   "distance": 279,
+   "addr": "0x8008AF9C",
+   "lib": "LIBSPU",
+   "mod": "S_SCA",
+   "sony": "SpuSetCommonAttr"
+  },
+  {
+   "func": "func_80082D34",
+   "file": "ings2",
+   "status": "active",
+   "distance": 295,
+   "addr": "0x80082D34",
+   "lib": "LIBETC",
+   "mod": "INTR",
+   "sony": "trapIntr (static)"
+  },
+  {
+   "func": "func_80089F3C",
+   "file": "main",
+   "status": "active",
+   "distance": 316,
+   "addr": "0x80089F3C",
+   "lib": "LIBSPU",
+   "mod": "S_SRMP",
+   "sony": "SpuSetReverbModeParam"
+  },
+  {
+   "func": "func_80080828",
+   "file": "system",
+   "status": "active",
+   "distance": 352,
+   "addr": "0x80080828",
+   "lib": "LIBCD",
+   "mod": "BIOS",
+   "sony": "getintr (static)"
+  },
+  {
+   "func": "func_80079244",
+   "file": "text1b_b",
+   "status": "active",
+   "distance": 416,
+   "addr": "0x80079244",
+   "lib": "LIBC2",
+   "mod": "PRNT",
+   "sony": "prnt"
+  },
+  {
+   "func": "func_80082A14",
+   "file": "ings2",
+   "status": "parked",
+   "distance": 0,
+   "addr": "0x80082A14",
+   "lib": "LIBETC",
+   "mod": "VSYNC",
+   "sony": "v_wait (static)"
+  },
+  {
+   "func": "spu_InitEx",
+   "file": "main",
+   "status": "parked",
+   "distance": 0,
+   "addr": "0x800885CC",
+   "lib": "LIBSPU",
+   "mod": "S_INI",
+   "sony": "_SpuInit"
+  },
+  {
+   "func": "func_80078A68",
+   "file": "text1b_b",
+   "status": "parked",
+   "distance": 2,
+   "addr": "0x80078A68",
+   "lib": "LIBAPI",
+   "mod": "COUNTER",
+   "sony": "SetRCnt"
+  },
+  {
+   "func": "func_80078E58",
+   "file": "text1b_b",
+   "status": "parked",
+   "distance": 2,
+   "addr": "0x80078E58",
+   "lib": "LIBAPI",
+   "mod": "PAD",
+   "sony": "_Pad1 (static)"
+  },
+  {
+   "func": "AddTbpOfst",
+   "file": "main",
+   "status": "parked",
+   "distance": 3,
+   "addr": "0x80087E3C",
+   "lib": "LIBSND",
+   "mod": "VM_VSU",
+   "sony": "_SsVmVSetUp"
+  },
+  {
+   "func": "md_game_check_change_main_mode_katinuki",
+   "file": "main",
+   "status": "parked",
+   "distance": 3,
+   "addr": "0x8008A928",
+   "lib": "LIBSPU",
+   "mod": "S_CRWA",
+   "sony": "SpuClearReverbWorkArea"
+  },
+  {
+   "func": "func_8007C2A0",
+   "file": "display",
+   "status": "parked",
+   "distance": 4,
+   "addr": "0x8007C2A0",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "sony": "SetDrawEnv"
+  },
+  {
+   "func": "spu_DmaTransfer",
+   "file": "main",
+   "status": "parked",
+   "distance": 4,
+   "addr": "0x800899A8",
+   "lib": "LIBSPU",
+   "mod": "S_M_F",
+   "sony": "SpuFree"
+  },
+  {
+   "func": "saEft00Add_sub",
+   "file": "system",
+   "status": "parked",
+   "distance": 4,
+   "addr": "0x80082630",
+   "lib": "LIBCD",
+   "mod": "CDREAD",
+   "sony": "CdReadBreak"
+  },
+  {
+   "func": "initDrawMode",
+   "file": "gpu",
+   "status": "parked",
+   "distance": 5,
+   "addr": "0x8007AB8C",
+   "lib": "LIBGPU",
+   "mod": "PRIM",
+   "sony": "SetDrawTPage"
+  },
+  {
+   "func": "func_8007B844",
+   "file": "display",
+   "status": "parked",
+   "distance": 7,
+   "addr": "0x8007B844",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "sony": "ClearOTagR"
+  },
+  {
+   "func": "func_8007DC9C",
+   "file": "display",
+   "status": "parked",
+   "distance": 9,
+   "addr": "0x8007DC9C",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "sony": "get_alarm (static)"
+  },
+  {
+   "func": "func_8007CA00",
+   "file": "display",
+   "status": "parked",
+   "distance": 13,
+   "addr": "0x8007CA00",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "sony": "get_dx (static)"
+  },
+  {
+   "func": "func_8007C7A0",
+   "file": "display",
+   "status": "parked",
+   "distance": 20,
+   "addr": "0x8007C7A0",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "sony": "get_cs (static)"
+  },
+  {
+   "func": "func_8007C86C",
+   "file": "display",
+   "status": "parked",
+   "distance": 20,
+   "addr": "0x8007C86C",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "sony": "get_ce (static)"
+  },
+  {
+   "func": "func_8007B6C8",
+   "file": "display",
+   "status": "parked",
+   "distance": 21,
+   "addr": "0x8007B6C8",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "sony": "MoveImage"
+  },
+  {
+   "func": "func_8007CE0C",
+   "file": "display",
+   "status": "parked",
+   "distance": 48,
+   "addr": "0x8007CE0C",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "sony": "_dws (static)"
+  },
+  {
+   "func": "func_8007CBB0",
+   "file": "display",
+   "status": "parked",
+   "distance": 149,
+   "addr": "0x8007CBB0",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "sony": "_clr (static)"
+  },
+  {
+   "func": "func_8007BC08",
+   "file": "display",
+   "status": "parked",
+   "distance": 296,
+   "addr": "0x8007BC08",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "sony": "PutDispEnv"
+  },
+  {
+   "func": "func_80079A30",
+   "file": "text1b_b",
+   "status": "parked",
+   "distance": 533,
+   "addr": "0x80079A30",
+   "lib": "LIBC",
+   "mod": "SPRINTF",
+   "sony": "sprintf"
+  },
+  {
+   "func": "func_8008C464",
+   "file": "main",
+   "status": "parked",
+   "distance": 761,
+   "addr": "0x8008C464",
+   "lib": "LIBCOMB",
+   "mod": "COMB",
+   "sony": "_comb_control"
+  }
+ ],
+ "unresolved": []
+}
