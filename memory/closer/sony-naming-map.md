@@ -26,3 +26,20 @@ coli_HitPauseKatana_2 -> _SpuSetAnyVoice (confirmed: shared static behind SpuSet
 - func_800841E0 -> _SsSndCrescendo (LIBSND CRES) ; func_80084500 -> _SsSndDecrescendo (LIBSND DECRE) [identity by call position in SsSeqCalledTbyT; NOT census-proven - the 0x800841E0..0x800848AC window is in the LIBSND gap]
 - saTan0GaugeDraw -> _spu_t (LIBSPU SPU) ; func_80088740 -> _spu_init ; DispUpdateStatusMessage -> _spu_FwriteByIO (static) ; D_80088BA0/g_snd_irq_data -> _spu_FiDMA ; 0x80088C60 -> _spu_Fr_ (unreferenced dead code) ; spu_WriteReg16 -> _spu_Fw1ts ; spu_ReadReg -> _spu_FsetDelayR (static) ; spu_ReadStatus -> _spu_FsetDelayW (static)
 - D_800A2CF8 -> _spu_transMode ; D_800A2CFC -> _spu_addrMode ; D_800A2CF4 -> _spu_tsa ; D_800A2D00/04/08/0C -> _spu_mem_mode/_plus/_unit/_unitM ; D_800A2D10 -> _spu_inTransfer ; D_800A2D2C -> _spu_transfer_startaddr-mode flag (D_80033550 analog) ; D_800A2D30/34 -> DMA addr/size staging (D_80033554/58) ; D_800A2CE0/E4/E8 -> DMA MADR/BCR/CHCR ptrs (D_80033508/0C/10) ; D_800A2CEC -> DMA PCR ptr (D_80033514) ; D_800F7420 -> _spu_RQ (>= u16[10]; _spu_init clears 10)
+
+## LIBETC INTR module tail (session 12, banked patch)
+func_80082D34 -> trapIntr (intr.c v1.76)
+(new static) setIntr -> setIntr @0x80082F1C (vtable 0x800A25E8 raw word)
+(new static) stopIntr -> stopIntr @0x80083070 (vtable 0x800A25F0)
+(new static) restartIntr -> restartIntr @0x8008311C (vtable 0x800A25F8)
+func_800831A4 -> memclr
+D_800A2610 -> trapMissedCount
+D_8001635C -> "unexpected interrupt(%04x)\n" ; D_80016378 -> "intr timeout(%04x:%04x)\n"
+
+## LIBCD BIOS CD_cw (session 12, banked candidate)
+tslTm2LoadImage -> CD_cw (bios.c v1.86)
+D_800A11C0 -> CD_debug ; D_800A11D0 -> CD_pos ; D_800A11D4 -> CD_mode
+D_800A11D5 -> CD_com ; D_800A13FC -> com-needs-param table
+D_800A12FC -> per-com intr table (+0x40 = param counts)
+D_800A1480/D_800A1484 -> CD register 1/2 pointer statics (volatile pointee)
+D_8001626C -> "CD_cw" alarm-name string

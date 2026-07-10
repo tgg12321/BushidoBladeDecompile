@@ -231,12 +231,137 @@ u16 *func_80082C58(void) {
     ExitCriticalSection();
     return (u16 *)&D_800A1578;
 }
-/* kengo:HIGH  |  is_motion/motion_make_table  |  62i */
-void func_80082D34(void) {}
+/* PsyQ 4.0 LIBETC INTR: trapIntr + setIntr + stopIntr + restartIntr + memclr
+   — verbatim-linked Sony object intr.c v1.76 (census 2026-07-09); C ref:
+   sotn-decomp src/main/psxsdk/libetc/intr.c (v1.73; v1.76 deltas measured).
+   setIntr/stopIntr/restartIntr are statics referenced only through the
+   callbacks vtable raw words at 0x800A25E8/F0/F8 (7D920.data.s). */
+typedef void (*IntrCallback)(void);
+extern u8 D_8001635C;  /* "unexpected interrupt(%04x)\n" */
+extern u8 D_80016378;  /* "intr timeout(%04x:%04x)\n" */
+extern s32 D_800A2610; /* trapMissedCount */
+extern void bios_ReturnFromException(void);
+extern void bios_SetDefaultExitFromException(void);
+
+/* trapIntr */
+void func_80082D34(void) {
+    s32 i;
+    u16 mask;
+
+    if (!D_800A1578.interruptsInitialized) {
+        debug_printf(&D_8001635C, *D_800A2604);
+        bios_ReturnFromException();
+    }
+    D_800A1578.inInterrupt = 1;
+    while ((mask = (D_800A1578.enabledInterruptsMask & *D_800A2604) &
+                   *(volatile u16 *)g_sys_irq_counter) != 0) {
+        for (i = 0; mask && i < 11; ++i, mask >>= 1) {
+            if (mask & 1) {
+                *D_800A2604 = ~(1 << i);
+                if (D_800A1578.handlers[i] != 0) {
+                    D_800A1578.handlers[i]();
+                }
+            }
+        }
+    }
+    if (*D_800A2604 & *(volatile u16 *)g_sys_irq_counter) {
+        if (D_800A2610++ > 0x800) {
+            debug_printf(&D_80016378, *D_800A2604,
+                         *(volatile u16 *)g_sys_irq_counter);
+            D_800A2610 = 0;
+            *D_800A2604 = 0;
+        }
+    } else {
+        D_800A2610 = 0;
+    }
+    D_800A1578.inInterrupt = 0;
+    bios_ReturnFromException();
+}
+
+/* setIntr (LIBETC intr.c static, vtable slot 0x800A25E8) */
+static IntrCallback setIntr(s32 irq, IntrCallback handler) {
+    IntrCallback prevHandler;
+    s32 mask;
+
+    prevHandler = D_800A1578.handlers[irq];
+    if (handler != prevHandler && D_800A1578.interruptsInitialized) {
+        mask = *(volatile u16 *)g_sys_irq_counter;
+        *(volatile u16 *)g_sys_irq_counter = 0;
+        if (handler != 0) {
+            D_800A1578.handlers[irq] = handler;
+            mask = mask | (1 << irq);
+            D_800A1578.enabledInterruptsMask |= 1 << irq;
+        } else {
+            D_800A1578.handlers[irq] = 0;
+            mask = mask & ~(1 << irq);
+            D_800A1578.enabledInterruptsMask &= ~(1 << irq);
+        }
+        if (irq == 0) {
+            bios_ChangeClearPad(handler == 0);
+            bios_ChangeClearRCnt(3, handler == 0);
+        }
+        if (irq == 4) {
+            bios_ChangeClearRCnt(0, handler == 0);
+        }
+        if (irq == 5) {
+            bios_ChangeClearRCnt(1, handler == 0);
+        }
+        if (irq == 6) {
+            bios_ChangeClearRCnt(2, handler == 0);
+        }
+        *(volatile u16 *)g_sys_irq_counter = mask;
+    }
+    return prevHandler;
+}
+
+/* stopIntr (LIBETC intr.c static, vtable slot 0x800A25F0) */
+static intrEnv_t *stopIntr(void) {
+    if (!D_800A1578.interruptsInitialized) {
+        return 0;
+    }
+    EnterCriticalSection();
+    D_800A1578.savedMask = *(volatile u16 *)g_sys_irq_counter;
+    D_800A1578.savedPcr = *D_800A260C;
+    *D_800A2604 = (*(volatile u16 *)g_sys_irq_counter = 0);
+    *D_800A260C &= 0x77777777;
+    bios_SetDefaultExitFromException();
+    D_800A1578.interruptsInitialized = 0;
+    return &D_800A1578;
+}
+
+/* restartIntr (LIBETC intr.c static, vtable slot 0x800A25F8) */
+static intrEnv_t *restartIntr(void) {
+    if (D_800A1578.interruptsInitialized) {
+        return 0;
+    }
+    bios_SetCustomExitFromException(D_800A1578.buf);
+    D_800A1578.interruptsInitialized = 1;
+    *(volatile u16 *)g_sys_irq_counter = D_800A1578.savedMask;
+    *D_800A260C = D_800A1578.savedPcr;
+    ExitCriticalSection();
+    return &D_800A1578;
+}
+
+/* memclr (LIBETC intr.c) */
+void func_800831A4(u16 *ptr, s32 size) {
+    s32 *e = (s32 *)ptr;
+    s32 i;
+
+    for (i = size - 1; i != -1; i--) {
+        *e++ = 0;
+    }
+}
 __asm__(
     ".section .text\n"
     "    .set noat\n"
     "    .set noreorder\n"
+    /* The two data words below are the first 8 bytes of Sony's hand-written
+       LIBAPI C114 object (.text+0x0; _96_remove entry is at .text+0x8 —
+       proven vs tmp/libscan/psyq40/LIBAPI.LIB C114, zero relocs). They are
+       object data, not compiler output, and belong to this canonical
+       trampoline's module. */
+    "    .word 0x15007350\n"
+    "    .word 0x0040809C\n"
     "glabel bios_CdRemove_A0\n"
     "    addiu $t2, $zero, 0xA0\n"
     "    jr $t2\n"

@@ -1,5 +1,91 @@
 # Closer Phase 3 — PsyQ psxsdk adoption progress ledger
 
+## SESSION 12 (2026-07-10) - LIBETC INTR module proven 0/297 (blocked on Proposal 4); CD_cw banked at 57/263
+
+**func_80082D34 (= trapIntr + setIntr + stopIntr + restartIntr + memclr,
+LIBETC intr.c v1.76, dist 295, asmfix:58 splice) - PROVEN 0/297 BIT-EXACT
+over the full 0x4A4 splice extent (prover tmp/closer/intr_prove.sh, link_sim
+vs EXE); NOT claimed - blocked on ONE owner sign-off (Proposal 4).**
+- Patch banked: memory/closer/candidates/intr_module_close.patch (+ _README).
+  src/ings2.c reverted to HEAD (splice double-emits otherwise).
+- SOTN intr.c transcription onto the session-3 intrEnv_t struct. ONE lever:
+  Sony's trapIntr mask loop is ASSIGNMENT-IN-CONDITION -
+  `while ((mask = (enabled & *i_stat) & *i_mask) != 0)` - gives the
+  compute-into-v0 + `beqz v0; addu s0,v0` delay copy at entry AND rotated
+  bottom (plain assign-then-test allocates into s0 directly; 21 words).
+- TU head-parity verified (label renumbering only; parser must normalize
+  BOTH `.L\d` and `.Lfe\d`).
+- THE BLOCKER: last 8 bytes of the extent (0x800831D0/D4 = 0x15007350
+  0x0040809C) are LIBAPI C114 OBJECT HEADER DATA - proven vs
+  tmp/libscan/psyq40/LIBAPI.LIB module C114 (psyq_lib.py): .text=32 bytes,
+  XDEF _96_remove at +0x8, bytes +0..+7 = exactly these words, zero relocs;
+  +0x8..+0x1F = exactly the authorized bios_CdRemove_A0 trampoline. Honest
+  home = 2 leading `.word` lines in that canonical block (in the patch).
+  Canonical-asm content edits are owner-gated => Proposal 4 in
+  memory/closer/volatile-grant-proposals.md. Driver mechanics on sign-off:
+  apply patch + strip asmfix:58 in the SAME commit.
+
+**tslTm2LoadImage (= CD_cw, LIBCD BIOS v1.86, dist 262, asmfix:62 splice) -
+BANKED at 57/263 differing (from 262); candidate
+memory/closer/candidates/cdcw_tslTm2LoadImage.c; src reverted to HEAD.**
+Prover: clone triple_prove.sh -> link_sim out.o tslTm2LoadImage 0x800812FC
+0x41C. Levers that WORKED (all measured, in the candidate):
+- SOTN bios.c CD_cw chassis + v1.86 deltas (inlined set_alarm/get_alarm +
+  callback windows a la the twins; EARLY CdlSetmode store D_800A11D4 before
+  the Intr stores; 11-slot -> same).
+- `(a0 & 0xFF)` spelled PER USE on the s32 param (per-use andi; the offset
+  sll CSEs across the D_800A13FC/D_800A11DC pair).
+- `if (a3 == 0) { alarm+loop+tail } return 0;` restructure (NOT
+  `if (a3) return 0;`) - puts the ret-0 block at the end so reorg fills the
+  bnez delay from the target thread (v0=0) instead of stealing the reg1
+  store (145->…).
+- `extern volatile u8 *D_800A1480/D_800A1484` (MMIO pointees, block-scope,
+  type-level sanction): volatile makes the reg1 sb INELIGIBLE for the bnez
+  delay steal AND fixes the reg2-loop shape. 145 -> 60.
+- Entry test = DIRECT volatile-struct access (`g_cd_status_a.sync != 0` via
+  block-scope `extern volatile CdIntr g_cd_status_a`) -> la a0 + lbu;
+  then `tbl = D_800A125C; intr = (volatile u8 *)&g_cd_status_a; intr1 =
+  &g_cd_status_a.ready;` AFTER the test -> cse yields `addu s2,a0` +
+  `addiu s4,s2,1` (the twins' preamble shape, honestly derived - GCC itself
+  rewrites intr1 to intr+1, lreg insn 280).
+- Tail 8-byte copy: counter must be the REUSED `cnt` (alarm counter) - a
+  fresh/i-reused counter allocates a0/v1 swapped.
+- do-while respell of the outer loop: 252 (rotation chaos) - KILLED; goto
+  chassis is right.
+- struct-member access EVERYWHERE (no pointer locals): 234 - KILLED (each
+  volatile zero-offset access re-materializes la; loses s2/s4 entirely).
+Remaining 57 = FOUR named clusters:
+1. PROLOGUE home rotation (8 words): target homes a1,a2,a3,a0 (s1,s5,s2,s0
+   pair order after prologue_fix); ours a0-first. Same family as the
+   CD_datasync banked param-seat rotation.
+2. TAIL-COPY beqz delay (1-insn length delta -> ~24 words of branch-offset
+   fallout): ours fills the `beqz a2` delay with `li v1,7`; target leaves
+   nop + li after. reorg fill_eager analysis: target predicted TAKEN
+   (own_thread fails on the multi-pred cw_done label -> nop); ours predicts
+   not-taken and steals from fall-through. Likely loop-note/prediction
+   difference (marionation region-3 dbr-fill family).
+3. intr/saved s1<->s2 SWAP (~10 words): greg-measured priorities intr
+   (p85: 6 refs/132 len = 0.0909) vs saved (p80: 2 refs/23 len = 0.0870) -
+   ours allocates intr first (s1); target allocated saved first (s1).
+   MARGIN IS TINY. Killed: intr1-before-intr order (derives from the a0
+   temp, wrong preamble bytes); direct-struct bottom test (la form, wrong
+   bytes). Untried: anything that adds ~1 ref to saved or drops intr to 5
+   refs while keeping all five required use sites byte-identical - the
+   cpu_side_move_dir_4 s96-s97 nrefs partition is THE SAME FAMILY; solve
+   once, apply twice.
+4. Debug-window arg scheduling (~10 words): target order = both lbu's, lw
+   a1(19C0), tbl[ready] -> sw sp0x10 EARLY, lbu CD_com, lw a2, lw a3 last.
+   Measured: both-staged arg4/arg5 (57, best); arg4-only staged (60);
+   arg5-only (62); byte-staged sy/rd (60); sy+arg5 hybrid (94).
+Clusters 3+4 interact with the twins' contested windows - if Phase 2 cracks
+the nrefs family, mirror here.
+
+**Method note:** greg/lreg dumps for system.c via tmp/closer/cdcw_greg.sh;
+allocation ORDER is the `;; N regs to allocate:` line; pseudo stats are in
+.lreg (`Register N used X times across Y insns`), priorities =
+floor_log2(refs)*refs*size/length.
+
+
 ## SESSION 11 (2026-07-10) - LIBSPU/SPU module batch: _spu_t + _spu_init closed at 0; _spu_FwriteByIO proven bit-exact (banked)
 
 **saTan0GaugeDraw (= _spu_t, dist 57, 49 rules) - COMPLETED at sandbox 0,

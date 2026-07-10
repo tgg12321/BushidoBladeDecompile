@@ -116,3 +116,35 @@ interrupt context and read by CdReadSync spin-waits.
 statics under its splice extent; dist 261, 1 asmfix splice). Candidate:
 memory/closer/candidates/cdread_triple.patch (byte-neutral saEft00Add
 compensation included and verified — tmp/closer/head_cmp.sh).
+
+## Proposal 4 — canonical-asm content edit: C114 header words into bios_CdRemove_A0 — 2026-07-10
+
+**Not a volatile grant — a canonical-asm entry content change (owner-gated
+per the Closer rails).**
+
+**Blocked function:** func_80082D34 (LIBETC INTR module: trapIntr + setIntr +
+stopIntr + restartIntr + memclr; dist 295, 1 asmfix splice). The five
+functions are PROVEN 0/295 bit-exact in pure C
+(memory/closer/candidates/intr_module_close.patch; prover
+tmp/closer/intr_prove.sh -> 0/297 over the full 0x4A4 extent).
+
+**Proposed edit:** prepend two data words to the already-authorized
+`bios_CdRemove_A0` canonical `__asm__` block in src/ings2.c (included in the
+banked patch):
+
+    .word 0x15007350
+    .word 0x0040809C
+
+**Evidence:** ground truth tmp/libscan/psyq40/LIBAPI.LIB module C114 (parser
+tmp/closer/psyq_lib.py): .text = 32 bytes; XDEF `_96_remove` at .text+0x8;
+bytes +0x0..+0x7 are EXACTLY these two words (zero relocs); +0x8..+0x1F are
+exactly the authorized trampoline (addiu $t2,0xA0 / jr $t2 / addiu $t1,0x72 /
+3 nops). The words are Sony's hand-written C114 object header data occupying
+0x800831D0..D7 in the EXE — the last 8 bytes of func_80082D34's splat extent,
+not compiler-emittable from any C. Placing them at the head of the C114
+canonical block is the honest attribution (same Sony object as the
+trampoline).
+
+**On sign-off:** apply intr_module_close.patch + strip asmfix.txt:58 in the
+same commit (splice double-emits otherwise); full-build SHA1 is the gate.
+No inline_asm_canonical.txt entry change needed (entry name unchanged).
