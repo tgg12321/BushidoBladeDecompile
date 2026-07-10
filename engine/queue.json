@@ -354,16 +354,6 @@
       "reopen_reason": "regression: Second-block flag_ptr construct (commit a7629356) fails tests 2 and 3: the spelling '(s16 *)((char *)s0b - 60)' is GCC-internals-driven (defeats combine's (plus symbol const) fold as stated in the com"
     },
     {
-      "func": "sys_SetTimer",
-      "file": "ings2",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: *(volatile s32 *)p write-cast is a volatile-coercion on non-volatile, non-allowlisted global g_sys_timer. Fix: change *(volatile s32 *)p = a0 to *p = a0 (pointer alone produces the lui+addiu match; vo"
-    },
-    {
       "func": "func_80085FD8",
       "file": "main",
       "distance": 0,
@@ -452,16 +442,6 @@
       "status": "active",
       "origin": "regression",
       "reopen_reason": "regression: Two cheat constructs found: (1) empty `do { } while (0);` at src/sound.c:259 is missing the mandatory `/* FAKE */` annotation required by the do-while-zero-exception rule \u2014 hard fail per cheat-reviewe"
-    },
-    {
-      "func": "func_800827D0",
-      "file": "system",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: Call site at src/system.c:1120 uses a type-cast workaround for an incorrect callee declaration. Vu0SetLightColMatrix_80080208 is declared void(void) at line 119, but marionation_Exec (ultimate callee)"
     },
     {
       "func": "func_80040510",
@@ -1607,14 +1587,6 @@
       "rules": 0,
       "status": "active",
       "prologue_fix": 1
-    },
-    {
-      "func": "func_800826CC",
-      "file": "system",
-      "distance": 23,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
     },
     {
       "func": "func_80052788",
@@ -3612,15 +3584,6 @@
       "park_reason": "honest pure-C distance 4 = pure stack-frame size mismatch (target frame=32, natural-C build frame=24). The committed  is a frame-coercion cheat caught by  (expanded catalog 2026-05-31). Index-aligned objdump of target vs sandbox (cheat stripped) shows ALL body instructions byte-identical; only 4 diffs are prologue/epilogue stack ops (/// vs -24/16/16/24). The natural body uses no callee-save registers and takes no local addresses, so the 8 extra bytes target reserves have no semantic source in the current decomp. No structural lever found that produces frame=32 without an unused-local cheat. Park pending either (a) discovery of the original semantic content that justified the extra 8 bytes (the function name suggests SPU DMA but the body is voice-key bookkeeping \u2014 possibly missing register pokes or a real buffer), or (b) canonical-asm authorization.\n"
     },
     {
-      "func": "saEft00Add_sub",
-      "file": "system",
-      "distance": 4,
-      "verdict": "C",
-      "rules": 2,
-      "status": "parked",
-      "park_reason": "sched.c INSN_PRIORITY gap: cc1 schedules lw ,D_800A14F4 BEFORE sw ,D_800A14E4 because the lw chains to jal cdrom_SetCallbackA (priority 2) and the sw is a leaf (priority 1). Target has source order (sw then lw). 2 regfix substs at idx 11/12 paper over the swap. Sandbox can't score (sibling index-anchored regfix breaks pipeline after cheat-asm strip - same as jtbl-infra symptom). Tested structural rewrites (intermediate locals, comma-expr, statement reorder) all produce the same cc1 sched1/sched2 reorder. Forbidden levers (volatile cast on D_800A14F4, alias rename, register pin, asm barrier) are off the table per [[inline-asm-policy]] expanded catalog. Same shape as func_80082A14 (ings2.c) park. Resume avenues: directed permuter from clean single-function target (uncertain ROI for a 2-insn sched.c-only gap)."
-    },
-    {
       "func": "saSeMain_80045600",
       "file": "text1a_c",
       "distance": 4,
@@ -4125,14 +4088,14 @@
     }
   ],
   "counts": {
-    "total": 483,
-    "active": 407,
+    "total": 479,
+    "active": 404,
     "by_status": {
-      "active": 407,
-      "parked": 76
+      "active": 404,
+      "parked": 75
     },
     "by_verdict": {
-      "C": 231,
+      "C": 228,
       "ASM-PARTIAL": 57,
       "ASM-SUSPECT": 119
     }
