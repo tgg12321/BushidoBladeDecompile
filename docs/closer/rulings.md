@@ -64,3 +64,22 @@ SOTN vsync.c `timeout[2]`). It is the original author's idiom, not an
 invented device. Not a precedent for non-Sony functions or other shapes.
 Unlocks: v_wait (removes asm-barrier cheat), _Pad1 (removes forbidden
 unwritten pad[2]) — both with measured sandbox-0 oracle-green candidates.
+
+## Ruling 4 — ground-truth-codegen volatile class — 2026-07-10
+
+**Status: GRANTED (class).**
+
+For census-proven Sony library module state (symbol identity reloc-proven
+against the verbatim-linked SDK object), where the Sony object's code is
+MEASURED unreachable without `volatile` (non-volatile build demonstrably
+collapses ordering/re-reads), volatile is legal as ORIGINAL SEMANTICS — no
+in-binary IRQ-writer prong required. The IRQ prong of
+legitimate-volatile-interrupt-touched was a proxy for original intent; the
+codegen measurement is direct evidence of it. Scope: Sony census state ONLY;
+game-state RAM still requires the two-prong IRQ test.
+
+Provenance: layer-1 reviewer correctly FAILed the _spu_RQ grant's IRQ
+citation (the claimed async flush writer coli_HitPauseKatana_2 is actually
+_SpuSetAnyVoice, a synchronous API; no interrupt consumer of _spu_RQ exists
+in the binary). The 5-symbol grant STANDS under this ruling with corrected
+justification. Owner-granted 2026-07-10.

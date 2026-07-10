@@ -34,11 +34,11 @@ D_800A2D14    # SpuClearReverbWorkArea family: md_game_check_change_main_mode_ka
 # ^ D_800A2D14 entry was agent-proposed in-session (scope warning 2026-07-10 00:36); operator-audited post-hoc same day: all four evidence claims verified (symbol_addrs.txt:111, main.c:26+2224-2226, sotn libspu_internal.h:39). Ratified. Future grants go through memory/closer/volatile-grant-proposals.md.
 D_800F1B00    # SioAnsyncRead buf — IRQ writer: HandleSio read-advance-store @0x8008CBEC-CC00, cleared @0x8008CE5C (asm/funcs/func_8008C464.s; verbatim Sony LIBCOMB COMB module, census). Use-site: ordered-stores-before-IRQ-enable (SioAnsyncRead) + IRQ-mutated-loop-bound (Syncro siblings). Operator-audited grant 2026-07-10 (proposal §1, memory/closer/volatile-grant-proposals.md); kills the flag&&flag wrappers at main.c:2724/2848.
 D_800F1B04    # SioAnsyncRead len — IRQ writer: HandleSio sw $zero @0x8008CA54, cleared @0x8008C880. Same grant as D_800F1B00.
-D_800F1AF0    # SioAnsyncWrite buf — IRQ writer: HandleSio read-advance-store @0x8008CD18-CD2C. Same grant.
-D_800F1AF4    # SioAnsyncWrite len — IRQ writer: HandleSio sw $zero @0x8008C840. Same grant.
-D_800F1AF8    # SioAnsyncWrite CTS/DSR latch — written in the HandleSio handler window. Same grant.
-D_800F7420    # _spu_RQ (u16[4] pending key-on/off queue; MERGED object, subsumes D_800F7424 = _spu_RQ+4 per PsyQ 4.0 LIBSPU S_SK relocs) — consumer: SpuSetKey (func_8008AAD4) ordered stores + re-read-after-test clears; async flush writer: coli_HitPauseKatana_2 @0x80089A48 (verified RMW D_800A28A0 @0x80089B30/B40, gated on _spu_env&1 @0x80089A50), VSync-tick/IRQ path. Operator-audited grant 2026-07-10 (proposal §2).
-D_800F7424    # = _spu_RQ+4 (same object as D_800F7420; kept while the split extern exists). Same grant.
-D_800A28A0    # _spu_RQmask — already volatile at HEAD (ungranted debt); same evidence chain as D_800F7420. Same grant.
-D_800A2CD4    # _spu_env — already volatile at HEAD (ungranted debt); the &1 gate read by the async flush path. Same grant.
-D_800A289C    # _spu_RQvoice — same S_SK family, written under the same async-flush contract. Same grant.
+D_800F1AF0    # SioAnsyncWrite buf — IRQ writer: HandleSio read-advance-store @0x8008CD18-CD2C. Same Ruling-4 class grant.
+D_800F1AF4    # SioAnsyncWrite len — IRQ writer: HandleSio sw $zero @0x8008C840. Same Ruling-4 class grant.
+D_800F1AF8    # SioAnsyncWrite CTS/DSR latch — written in the HandleSio handler window. Same Ruling-4 class grant.
+D_800F7420    # _spu_RQ (u16[4] pending key-on/off queue; MERGED object, subsumes D_800F7424 = _spu_RQ+4 per PsyQ 4.0 LIBSPU S_SK relocs) — RULING 4 class grant (ground-truth codegen): Sony's verbatim S_SK object is measured unreachable without volatile (non-volatile collapses ordering/re-reads, score 63); consumers are synchronous APIs (SpuSetKey, _SpuSetAnyVoice=coli_HitPauseKatana_2); NO in-binary IRQ writer — prior IRQ citation was WRONG, corrected 2026-07-10 per layer-1 reviewer + owner Ruling 4.
+D_800F7424    # = _spu_RQ+4 (same object as D_800F7420; kept while the split extern exists). Same Ruling-4 class grant.
+D_800A28A0    # _spu_RQmask — already volatile at HEAD (ungranted debt); Ruling-4 class (ground-truth codegen), same S_SK evidence.
+D_800A2CD4    # _spu_env — already volatile at HEAD (ungranted debt); the batch-env mode gate (synchronous). Ruling-4 class grant.
+D_800A289C    # _spu_RQvoice — same S_SK family, same S_SK module state. Ruling-4 class grant.
