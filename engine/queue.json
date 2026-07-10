@@ -1139,14 +1139,6 @@
       "status": "active"
     },
     {
-      "func": "saEft03Start2",
-      "file": "main",
-      "distance": 15,
-      "verdict": "C",
-      "rules": 4,
-      "status": "active"
-    },
-    {
       "func": "func_8006B92C",
       "file": "text1b",
       "distance": 15,
@@ -1328,14 +1320,6 @@
       "distance": 19,
       "verdict": "C",
       "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_80083A48",
-      "file": "ings2",
-      "distance": 19,
-      "verdict": "C",
-      "rules": 0,
       "status": "active"
     },
     {
@@ -1553,30 +1537,6 @@
       "distance": 23,
       "verdict": "C",
       "rules": 9,
-      "status": "active"
-    },
-    {
-      "func": "func_80089E30",
-      "file": "main",
-      "distance": 23,
-      "verdict": "C",
-      "rules": 3,
-      "status": "active"
-    },
-    {
-      "func": "func_80089EB0",
-      "file": "main",
-      "distance": 23,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "spu_SetMotionActive",
-      "file": "main",
-      "distance": 23,
-      "verdict": "C",
-      "rules": 0,
       "status": "active"
     },
     {
@@ -2049,14 +2009,6 @@
       "status": "active"
     },
     {
-      "func": "func_80086BFC",
-      "file": "main",
-      "distance": 40,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "efc_rob_set_type_flash",
       "file": "text1a_c",
       "distance": 40,
@@ -2209,14 +2161,6 @@
       "status": "active"
     },
     {
-      "func": "cdrom_FramesToBcd",
-      "file": "system",
-      "distance": 52,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
       "func": "func_800430E4",
       "file": "text1a_c",
       "distance": 52,
@@ -2288,14 +2232,6 @@
       "distance": 57,
       "verdict": "ASM-SUSPECT",
       "rules": 48,
-      "status": "active"
-    },
-    {
-      "func": "coli_HitPauseKatana",
-      "file": "main",
-      "distance": 58,
-      "verdict": "ASM-SUSPECT",
-      "rules": 65,
       "status": "active"
     },
     {
@@ -3529,15 +3465,6 @@
       "park_reason": "3 RA-tiebreaker diffs persist at honest pure-C distance 3 (idx 1: andi reads \u00073 vs target \u00070 after move a3,a0 save; idx 42/51: sll dest is v1 vs target v0, cascading into addu source). Both are register-tiebreaker ties per [[register-alloc-pure-c]] Step 0 (target uses LOWER reg, our cc1 uses HIGHER, so our build is the anomaly). Source carries an unannotated do { } while (0); between sa1 = sa1 << 4; and D_801027F6 = (u8)a1; that is LOAD-BEARING for the score-3 floor: removing it jumps the masked distance to 9-19 because cc1 reorders the D_800F66B8 / D_800F6660 / D_800F6700 lookups and shuffles their argregs (target prefers a1/a0/a2 order, removal yields a0/a2/a1 form). Session-tested negative levers from the score-3 baseline: (a) split shift dest into fresh s32 sa1s local -> score 7; (b) reorder byte stores before shift -> 3 (same diffs); (c) rewrite entry as single expression \u001bntry = *(s32*)((sa1<<4 + v1) + 8) -> 19; (d) \u000b1 + sa1 + 8 reordered operand sum -> 3 (no change); (e) capture s32 a0_full = a0; to drive andi off a0_full -> 5; (f) inline a0_byte / a1_byte locals before sign-extend -> not tested but unlikely (would force a0 save to a different reg). The do-while-0 currently keeps the floor at 3 via opaque scheduling/RA effect (no branch-invert pattern, so NOT a sanctioned [[do-while-zero-exception]] use case). Resume avenues: (1) permuter from score-3 base directed at the andi src and sll dst RA picks; (2) instrumented cc1 ALLOCDBG dump on the standalone function to identify which pseudo conflicts force the saved-a0 to a3 and shift-result to v1; (3) consider whether the do-while-0 can be retired via a structural change that also closes the 3 RA diffs (it may currently be a cheat-by-spelling per [[no-new-park-categories]] -- its mechanism here is not the LABEL_OUTSIDE_LOOP_P / reorg.c interaction)."
     },
     {
-      "func": "md_game_check_change_main_mode_katinuki",
-      "file": "main",
-      "distance": 3,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "CARVE-OUT FAILS BOTH PRONGS (investigated 2026-06-08 per .claude/rules/legitimate-volatile-interrupt-touched.md). PRONG 1 (IRQ writer): D_800A2D14 is written by func_80088740() (src/main.c:1505, SPU init from spu_InitEx), func_800892F8() (src/main.c:1677, SPU shutdown from ings2.c:720), AND by md_game_check_change_main_mode_katinuki itself (src/main.c:2286/2310, fade-pending save/restore). None are installed via SysSetCallback/VSyncCallback/InterruptCallback. The SPU IRQ handler installed via bios_OpenEvent(0xF0000009)+spu_SetCallback(&g_snd_irq_data) is g_snd_irq_data NOT a writer of D_800A2D14. func_800892F8 uses EnterCriticalSection but is invoked from main-loop code (ings2.c:720) - the critical section wraps the WRITER not an IRQ HANDLER. Address 0x800A2D14 is RAM, not MMIO 0x1F8xxxxx. CONCLUSION: D_800A2D14 is a plain main-loop game-state global tracking fade-pending value; NOT IRQ-touched. PRONG 2 (use-site construct): target asm at 0x8008A9E4-0x8008AA0C shows two adjacent lui+lw of D_800A2D14 with NO intervening function call (just beqz+delay-slot s3_flag=1 between them). This is NOT 'double-read-across-sequence-point' which requires x=G; foo(); y=G; with foo() as a real sequence point. NOT spin-wait (no loop). NOT IRQ-mutated-loop-bound. CONCLUSION: use-site does not match any of the three sanctioned shapes. BOTH criteria fail. HEAD's 'extern volatile s32 D_800A2D14;' at src/main.c:64 is a cheat-by-spelling under the expanded catalog (CSE-defeat on a non-IRQ global). The function stays INCOMPLETE. To reach COMPLETED-C requires finding a pure-C structure that forces GCC to re-load D_800A2D14 between the !=0 test and the store WITHOUT volatile - or canonical-asm authorization (since the construct is GCC's CSE folding a tested value into its store, no pure-C lever has been found). DispUpdateStatusMessage shares the same shape and same blocker."
-    },
-    {
       "func": "rob_life_ctrl",
       "file": "text1a",
       "distance": 3,
@@ -3573,15 +3500,6 @@
       "status": "parked",
       "scorable": false,
       "park_reason": "Pure-C floor at sandbox-distance 4. Single 4-insn prologue reorder rule (regfix.txt:3753) flips save+def pairing from cc1's natural [sw s1; move s1,a0; sw s0; move s0,a1] to target's [sw s0; move s0,a1; sw s1; move s1,a0]. Mechanism: cc1's mips.c save_restore_insns iterates GP_REG_LAST->FIRST (3000a) and expand_function_start creates pseudos in DECL_ARGUMENTS order (out=72->s1, r=73->s0). Save-order is structurally fixed by mips machdep + ABI param order. Tried 9 distinct C source levers: early r-temps (3 forms), local alias, K&R-style decl, K&R-with-reversed-decl-order, var_a3=7 init, 3rd-callee-save force, all-temp-stores-at-end - all either CSE'd back or regressed. Sibling func_8007C4B8 has identical issue (twin function, same rule shape). Per [[no-compiler-divergence]] mips.c is frozen; per ABI param swap would break the asm callers. Either accept prologue_config.json as infrastructure (policy decision) or authorize ASM-region for the prologue-only debt."
-    },
-    {
-      "func": "spu_DmaTransfer",
-      "file": "main",
-      "distance": 4,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "honest pure-C distance 4 = pure stack-frame size mismatch (target frame=32, natural-C build frame=24). The committed  is a frame-coercion cheat caught by  (expanded catalog 2026-05-31). Index-aligned objdump of target vs sandbox (cheat stripped) shows ALL body instructions byte-identical; only 4 diffs are prologue/epilogue stack ops (/// vs -24/16/16/24). The natural body uses no callee-save registers and takes no local addresses, so the 8 extra bytes target reserves have no semantic source in the current decomp. No structural lever found that produces frame=32 without an unused-local cheat. Park pending either (a) discovery of the original semantic content that justified the extra 8 bytes (the function name suggests SPU DMA but the body is voice-key bookkeeping \u2014 possibly missing register pokes or a real buffer), or (b) canonical-asm authorization.\n"
     },
     {
       "func": "saSeMain_80045600",
@@ -4088,16 +4006,16 @@
     }
   ],
   "counts": {
-    "total": 479,
-    "active": 404,
+    "total": 469,
+    "active": 396,
     "by_status": {
-      "active": 404,
-      "parked": 75
+      "active": 396,
+      "parked": 73
     },
     "by_verdict": {
-      "C": 228,
+      "C": 222,
       "ASM-PARTIAL": 57,
-      "ASM-SUSPECT": 119
+      "ASM-SUSPECT": 117
     }
   }
 }

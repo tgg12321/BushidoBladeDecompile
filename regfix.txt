@@ -4,7 +4,6 @@
 # Reorder: func_name: reorder i,j,k,... @ start-end
 #   Rearranges instructions in range to new order (i,j,k are original indices).
 # cdrom_FramesToBcd: GCC picks t2 ($10) for mfhi temp, target uses t3 ($11)
-cdrom_FramesToBcd: $10 <-> $11
 
 # PutShadowRmd: v0/v1 swapped in two regions, a2/a3 swapped in OT linking block
 PutShadowRmd: $2 <-> $3 @ 1-5
@@ -353,12 +352,8 @@ func_8002C0DC: subst "bne\t\$3,\$0," "bne $4,$0," @ 35
 func_8002C0DC: subst "addu\t\$16,\$16,\$2" "addu $16,$2,$3" @ 36
 
 # saEft03Start2: register swap v0/v1 in data access blocks
-saEft03Start2: $2 <-> $3 @ 10-14
-saEft03Start2: $2 <-> $3 @ 24-35
 # saEft03Start2: insert nop for load-use delay in case_0 block
-saEft03Start2: insert "nop" @ 11
 # saEft03Start2: reorder case_0: swap sw/lhu after nop insert (post-insert indices 12-13)
-saEft03Start2: reorder 13,12 @ 12-13
 # cpu_check_tubazeri_2: fix a0->v0 register allocation in xor check section
 cpu_check_tubazeri_2: subst "addu	\$4,\$0,\$zero" "sll	$2,$17,1" @ 18
 cpu_check_tubazeri_2: subst "lh	\$4," "lh	$2," @ 19
@@ -374,9 +369,6 @@ cpu_check_tubazeri_2: subst "sh	\$2,0\(\$3\)" "sh	$2,818($3)" @ 40
 # stack offset fix for 5th arg (lhu 66 -> 64)
 
 # func_80089E30: GCC loads g_spu_voice_key_c into v1, target uses v0
-func_80089E30: $2 <-> $3 @ 0-2
-func_80089E30: subst "\$2,\$3,\$zero" "$2,$0,$zero" @ 5
-func_80089E30: subst "\$5,\$3" "$5,$2" @ 9
 
 # Substs on ORIGINAL 0-based indices, inserts on original, reorders on post-insert
 # Loop 1: v0->v1 for hi computation
@@ -1650,96 +1642,31 @@ suDispMentalBar: reorder 64,65,66,63 @ 63-66
 #
 # --- SUBSTS (original TEXT indices) ---
 # Alignment block: D_800A2D04 in v1($3), g_spu_voice_key_c in v0($2)
-coli_HitPauseKatana: subst "\$2" "$3" @ 25
-coli_HitPauseKatana: subst "\$3" "$17" @ 27
-coli_HitPauseKatana: subst "\$2" "$3" @ 27
-coli_HitPauseKatana: subst "\$4" "$2" @ 28
-coli_HitPauseKatana: subst "\$3" "$17" @ 29
-coli_HitPauseKatana: subst "\$2" "$3" @ 29
-coli_HitPauseKatana: subst "0\(\$4\)" "0($2)" @ 30
 # Branch-to-label + delay slot change
-coli_HitPauseKatana: subst "\.L\d+" "{lbl#8}" @ 42
-coli_HitPauseKatana: subst "addiu\t\$2,\$zero,-1" "sll\t$2,$16,3" @ 43
 # Loop init: g_spu_voice_key_c into v1($3)
-coli_HitPauseKatana: subst "\$4" "$3" @ 47
 # Post-search block: tbl in a3($7), field0 in v1($3), 0x40000000 in t0($8)
-coli_HitPauseKatana: subst "\$8" "$7" @ 69
-coli_HitPauseKatana: subst "\$8,\$16" "$16,$7" @ 71
-coli_HitPauseKatana: subst "\$7" "$3" @ 72
-coli_HitPauseKatana: subst "\$10" "$8" @ 73
-coli_HitPauseKatana: subst "\$7" "$3" @ 74
-coli_HitPauseKatana: subst "\$10" "$8" @ 74
 # Stop-flag branch: f4 in v0($2)
-coli_HitPauseKatana: subst "\$9" "$2" @ 82
-coli_HitPauseKatana: subst "\$9" "$2" @ 84
 # Stop-flag alloc: re-read *entry into v0, operand swap, 0x40000000 in t0
-coli_HitPauseKatana: subst "\$8,\$3" "$3,$7" @ 92
-coli_HitPauseKatana: subst "\$7" "$2" @ 93
-coli_HitPauseKatana: subst "\$10" "$8" @ 95
-coli_HitPauseKatana: subst "\$9" "$2" @ 97
 # No-flag branch: f4 in t0($8), g_spu_voice_key_b in a2($6)
-coli_HitPauseKatana: subst "\$9" "$8" @ 108
-coli_HitPauseKatana: subst "\$9" "$8" @ 110
-coli_HitPauseKatana: subst "\$4" "$6" @ 113
-coli_HitPauseKatana: subst "\$4" "$6" @ 116
 # No-flag branch: redirect .L333 to .L339 (skip redundant lui when mask already loaded)
-coli_HitPauseKatana: subst "\.L\d+" "{lbl#12}" @ 117
 # No-flag kb: delay slot + instruction rewrite
-coli_HitPauseKatana: subst "sll\t\$4,\$4,3" "addu\t$3,$3,$17" @ 118
-coli_HitPauseKatana: subst "addu\t\$4,\$8,\$4" "sll\t$2,$6,3" @ 119
-coli_HitPauseKatana: subst "\$7,\$17" "$2,$7" @ 120
-coli_HitPauseKatana: subst "\$3" "$4" @ 121
-coli_HitPauseKatana: subst "\$6" "$5" @ 122
-coli_HitPauseKatana: subst "0\(\$4\)" "0($2)" @ 122
-coli_HitPauseKatana: subst "4\(\$4\)" "4($2)" @ 123
-coli_HitPauseKatana: subst "\$5" "$4" @ 123
-coli_HitPauseKatana: subst "\$2,\$2,\$3" "$3,$3,$4" @ 124
-coli_HitPauseKatana: subst "\$2,0\(\$4\)" "$3,0($2)" @ 125
 # No-flag kb stores: subu f4 in t0($8), kb_ptr in v0($2), g_spu_voice_key_b addiu
-coli_HitPauseKatana: subst "\$9" "$8" @ 127
-coli_HitPauseKatana: subst "\$4" "$2" @ 128
-coli_HitPauseKatana: subst "addu\t\$2,\$2,1" "addiu\t$3,$6,1" @ 129
-coli_HitPauseKatana: subst "\$2" "$3" @ 130
-coli_HitPauseKatana: subst "\$6" "$5" @ 131
-coli_HitPauseKatana: subst "8\(\$4\)" "8($2)" @ 131
-coli_HitPauseKatana: subst "12\(\$4\)" "12($2)" @ 132
-coli_HitPauseKatana: subst "\$5" "$4" @ 132
 # Tail: operand swap in addu, deref base change
-coli_HitPauseKatana: subst "\$3,\$16" "$16,$3" @ 136
-coli_HitPauseKatana: subst "\$2,\$2,\$16" "$16,$16,$2" @ 145
-coli_HitPauseKatana: subst "0\(\$2\)" "0($16)" @ 146
 #
 # --- DELETES (original TEXT indices) ---
-coli_HitPauseKatana: delete @ 26
-coli_HitPauseKatana: delete @ 106
-coli_HitPauseKatana: delete @ 107
-coli_HitPauseKatana: delete @ 126
 #
 # --- INSERTS (post-delete indices) ---
 # Re-read *entry before stop-flag and (PD 91)
-coli_HitPauseKatana: insert "lw\t$2,0($6)" @ 91
 # Re-read entry[1] + nop before stop-flag subu (PD 96; file order: nop first, lw second)
-coli_HitPauseKatana: insert "nop" @ 96
-coli_HitPauseKatana: insert "lw\t$2,4($6)" @ 96
 #
 # --- INSERT_AFTERS (post-Phase-3 indices) ---
 # Loop init: nop + addu after lw g_spu_voice_key_c (PP3 46; file order: addu first, nop second)
-coli_HitPauseKatana: insert_after "addu\t$4,$2,$3" @ 46
-coli_HitPauseKatana: insert_after "nop" @ 46
 # Stop-flag inline return after lw g_spu_voice_key_c (PP3 107; 5 insns, file order = furthest first)
-coli_HitPauseKatana: insert_after "nop" @ 107
-coli_HitPauseKatana: insert_after "j\t{lbl#14}" @ 107
-coli_HitPauseKatana: insert_after "lw\t$2,0($2)" @ 107
-coli_HitPauseKatana: insert_after "addu\t$2,$16,$2" @ 107
-coli_HitPauseKatana: insert_after "nop" @ 107
 #
 # --- REORDERS (post-all-insert indices) ---
 # Swap sra/lw g_spu_voice_key_c (alignment block)
-coli_HitPauseKatana: reorder 27,26 @ 26-27
 # Swap lw *entry / sw g_spu_voice_key_b (stop-flag cleanup)
-coli_HitPauseKatana: reorder 104,103 @ 103-104
 # Move or before lw/lw in no-flag kb block
-coli_HitPauseKatana: reorder 128,131,129,130 @ 128-131
 
 # single_game_VoiceContorol: promote target copy-loop preamble for the post-a728
 # output stores. This is intentionally source-coupled to the current C shape

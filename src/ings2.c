@@ -671,65 +671,39 @@ void sys_Shutdown(void) {
 
 extern u16 D_800A269C;
 extern u16 D_800A26AC;
-extern s32 D_80106FA8;
+extern s32 D_80106FA8[32][16];
 extern s32 D_80104E80;
 extern s32 D_801027E4;
 extern s32 D_800FF630;
 extern void md_game_end(s32);
 
+/* PsyQ 4.0 LIBSND ssinit: _SsInit — verbatim-linked Sony object (census
+   2026-07-09); C ref: sotn-decomp src/main/psxsdk/libsnd/ssinit.c */
 void func_80083A48(void) {
-    /* Loop 1: Copy 8 default regs to each of 24 SPU voices */
-    {
-        register volatile u16 *spu asm("a2") = (volatile u16 *)0x1F801C00;
-        register s32 i asm("a0") = 0;
-        register u16 *base asm("a3") = &D_800A269C;
-    loop1_outer:
-        {
-            register s32 j asm("a1") = 0;
-            register u16 *src asm("v1") = base;
-        loop1_inner:
-            *spu++ = *src++;
-            j++;
-            if (j < 8) goto loop1_inner;
+    u16 *var_a2;
+    int i, j;
+
+    var_a2 = (u16 *)0x1F801C00;
+    for (i = 0; i < 24; i++) {
+        for (j = 0; j < 8; j++) {
+            *var_a2++ = (&D_800A269C)[j];
         }
-        i++;
-        if (i < 0x18) goto loop1_outer;
     }
 
-    /* Loop 2: Copy 16 control regs */
-    {
-        register volatile u16 *spu2 asm("a2") = (volatile u16 *)0x1F801D80;
-        register s32 k asm("a0") = 0;
-        register u16 *src2 asm("v1") = &D_800A26AC;
-    loop2:
-        *spu2++ = *src2++;
-        k++;
-        if (k < 0x10) goto loop2;
+    var_a2 = (u16 *)0x1F801D80;
+    for (i = 0; i < 16; i++) {
+        *var_a2++ = (&D_800A26AC)[i];
     }
 
     md_game_end(0x18);
 
-    /* Loop 3: Clear 32 blocks of 16 words each */
-    {
-        register s32 m asm("a1") = 0;
-        register s32 *tbl asm("v1") = &D_80106FA8;
-    loop3_outer:
-        {
-            register s32 n asm("a0") = 15;
-            s32 *p = tbl + 15;
-        loop3_inner:
-            *p-- = 0;
-            n--;
-            if (n >= 0) goto loop3_inner;
-        }
-        m++;
-        if (m < 0x20) {
-            tbl += 16;
-            goto loop3_outer;
+    for (j = 0; j < 32; j++) {
+        for (i = 0; i < 16; i++) {
+            D_80106FA8[j][i] = 0;
         }
     }
 
-    D_80104E80 = 0x3C;
+    D_80104E80 = 60;
     D_801027E4 = 0;
     D_800FF630 = 0;
 }

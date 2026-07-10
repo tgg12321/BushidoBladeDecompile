@@ -38,3 +38,28 @@ One line each; append as adopted. Renames deferred to an owner-signed pass.
 - D_8009BE76 → debug level byte (v1.129 layout)
 - 0x8009BEE0 → cached DISPENV (memset target in SetDispMask, +0x6A from
   debug byte — one Sony object; struct design pending)
+- cdrom_FramesToBcd -> CdIntToPos (LIBCD/SYS)
+- func_80089E30 -> _SpuIsInAllocateArea (LIBSPU/S_M_UTIL)
+- func_80089EB0 -> _SpuIsInAllocateArea_ (LIBSPU/S_M_UTIL)
+- spu_SetMotionActive -> _SsSndReplay (LIBSND/REPLAY)
+- func_80083A48 -> _SsInit (LIBSND/SSINIT)
+- func_80086BFC -> note2pitch2 (LIBSND/VM_N2P)
+- saEft03Start2 -> SpuSetReverb (LIBSPU/S_SR)
+- md_game_check_change_main_mode_katinuki -> SpuClearReverbWorkArea (LIBSPU/S_CRWA)
+- spu_DmaTransfer -> SpuFree (LIBSPU/S_M_F)
+- coli_HitPauseKatana -> SpuMalloc (LIBSPU/S_M_M)
+- saTan5TakeAnim2_2 -> _SsStart (LIBSND/SSSTART; struct-adopted, byte-identical)
+- SetBloodSpot -> SsSetTickMode-adjacent tick-env writer (LIBSND/SSTICK window)
+- exec_game -> _spu_gcSPU (LIBSPU/S_M_INT; candidate banked at 30)
+
+## Data (LIBSND/LIBSPU adopted this session)
+- D_800A26CC -> _snd_seq_tick_env (SndSeqTickEnv struct: +0 unk0 tick mode, +4 unk4, +0xC unk12 saved cb, +0x10/11/12/13 u8 unk16..unk19)
+- D_800A2D14 -> _spu_transferCallback (= g_spu_init_flag @0x800A2D14; volatile per Sony libspu_internal.h)
+- D_800A2D3C -> D_80033560 (spu memList top index; = g_spu_voice_key_b)
+- D_800A2D40 -> _spu_memList (= g_spu_voice_key_c; SpuMemRec {u32 addr; u32 size;})
+- D_800A2D38 -> D_8003355C (spu memList block count; = g_spu_voice_key_a)
+- D_800A2D04 -> _spu_mem_mode_plus, D_800A2D0C -> _spu_mem_mode_unitM
+- D_800A2D44 -> _spu_rev_startaddr[] , D_800A2884 -> _spu_rev_offsetaddr, D_800A2880 -> _spu_rev_reserve_wa
+- D_800A2CDC -> _spu_RXX (SPU register block pointer; spucnt at +0x1AA, MMIO volatile)
+- D_800A287C -> _spu_rev_flag, D_800A2CF8 -> _spu_transMode, D_800A2870 -> _spu_EVdma, D_800A28D4 -> reverb-clear zero buffer (D_800330F8)
+- D_80101BC8 -> _svm_tn (VagAtr*), D_801027F7 -> _svm_cur.field_7_fake_program, D_801027FC -> _svm_cur.field_C_vag_idx, D_800A26E4 -> pitch table (D_80032F14)

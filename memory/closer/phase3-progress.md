@@ -3,6 +3,72 @@
 Session 1 (2026-07-09). Reference tree: sparse clone at `tmp/sotn-decomp`
 (src/main/psxsdk only). Work list: memory/closer/psyq-queue-hits.json.
 
+## SESSION 2 (2026-07-09/10) — batch 3
+
+**10 functions measured at sandbox --disable all == 0, edits in src/:**
+
+| queue item | Sony name | rules | fix |
+|---|---|---|---|
+| cdrom_FramesToBcd | CdIntToPos | 1 | pins removed; Sony nested `inline int ENCODE_BCD(n)` form (sys.c), returns p |
+| func_80089E30 | _SpuIsInAllocateArea | 3 | pins/asm removed; SOTN s_m_util.c + 4.0 NULL-list guard; SpuMemRec struct |
+| func_80089EB0 | _SpuIsInAllocateArea_ | 0 | same |
+| spu_SetMotionActive | _SsSndReplay | 0 | if(1)/new_var devices removed; sibling spu_ResetMotionEntry idiom |
+| func_80083A48 | _SsInit | 0 | 15+ pins removed; SOTN ssinit.c literal (2D `D_80106FA8[32][16]`) |
+| func_80086BFC | note2pitch2 | 0 | pin + sll/sra asm removed; SOTN vmanager.c literal; VagAtr struct, `VagAtr *D_80101BC8` (_svm_tn) |
+| saEft03Start2 | SpuSetReverb | 4 | SOTN s_sr.c switch; spucnt via `*(volatile u16 *)(ptr+0x1AA)` (MMIO type-level); ARM ORDER: read spucnt FIRST, then flag store (v4.0 order differs from SOTN rev) |
+| md_game_check_change_main_mode_katinuki | SpuClearReverbWorkArea | 0 | do-while(0)/dead v0_cmp removed; SOTN s_crwa.c literal; needed D_800A2D14 volatile GRANT (see below) |
+| spu_DmaTransfer | SpuFree | 0 | volatile pad removed; SOTN s_m_f.c; list referenced DIRECT-GLOBAL in loop (a staged `list` local hoists the load above the count test — 5 vs 0) |
+| coli_HitPauseKatana | SpuMalloc | 65 | full SOTN s_m_m.c adoption; three levers below |
+
+**SpuMalloc levers (s_m_m.c):** (1) Sony's `*(volatile u32*)&list[i].addr`
+re-read is REAL in the target (extra lw) — kept verbatim w/ comment;
+(2) swap block: keep OLD kb pointer for the [D+1] stores (kb[1].addr/.size
+AFTER `g_spu_voice_key_b++`), _addr AND _size as pre-computed locals;
+(3) kb spelled `(SpuMemRec *)((g_spu_voice_key_b << 3) + (s32)_spu_memList)`
+— the s32-add shift-first spelling fixes the final addu operand order
+(`&list[key_b]` and u8*-adds all give base-first = 1 off).
+
+**Volatile grant added:** D_800A2D14 (= g_spu_voice_key_... NO — same
+address as g_spu_init_flag, = Sony _spu_transferCallback) appended to
+volatile_extern_allowlist.txt with ground-truth citation (Sony
+libspu_internal.h declares it volatile; double-read-across-sequence-point
+in SpuClearReverbWorkArea).
+
+**Struct-adopted, byte-identical but sandbox≠0 (reloc addends only) — left
+in src/, NOT in completed list:** saTan5TakeAnim2_2 (_SsStart, SSSTART) —
+sandbox 12, ALL 12 diffs are `%lo(D_800A26CC+K)` vs `%lo(D_800A26DC..+0)`
+addend spellings; K∈{12,16,17,18} maps exactly to the per-member symbols.
+SndSeqTickEnv struct declared at D_800A26CC; SetBloodSpot (SsSetTickMode,
+matched) converted to .unk0/.unk4 members (sandbox 2, same addend class);
+spu_InitEx's `D_800A2884 = D_800A2D44` respelled `D_800A2D44[0]` (array
+decl for _spu_rev_startaddr) — spu_InitEx re-measured 0.
+
+**Banked (candidates/ + measured floors):**
+- cdcontrol_trio_prologue_order.c — CdControl 8 / CdControlF 6 /
+  CdControlB 8 (HEAD: 25/23/8 with pins). v1.86 accumulator form proven
+  (ret=0..ret=-1..return ret+1, ret→s7 needs real-loop weights);
+  LICM of in-loop 1/-1 killed via multi-set `t` reuse
+  (defeat-licm-hoist-var-reuse). Residual = the prologue def-order wall
+  (a1/a2 homes before a0, li s0,3 before andi) — same family as the
+  whole-prologue overrides in tools/prologue_config.json that HEAD uses
+  for all three. src/ reverted to HEAD for these.
+- exec_game_sotn_hybrid.c — _spu_gcSPU at 30 vs HEAD's honest 121.
+  cc1 ICE catalogued: structured pointer-walk scans SIGSEGV cc1 in this
+  function; goto-spelled scan compiles. src/ reverted to HEAD.
+- func_8008BC60 (_spu_pitch2note): SOTN s_n2p.c is a DIFFERENT algorithm
+  (closed form) than BB2 4.0's curve-scan loop — needs self-decomp from
+  the ground-truth object, do not transplant SOTN.
+
+**Metric/process notes:**
+- NEVER run `wteng main build` with dirty src — it clobbers the pristine
+  build/src reference. Recovery used: stash → verify-oracle --rebuild
+  (clean, SHA1 green) → stash pop. Full-oracle proof of this batch is NOT
+  possible locally while claimed functions still carry rules (coli's
+  label-anchored rule breaks the link against the new body) — the driver's
+  strip-then-build path is the proof.
+- cp1252 trap: PowerShell python -c writes non-ASCII as cp1252 (0x97)
+  which breaks the engine's utf-8 read. ASCII-only in code edits.
+
 ## KEY METHOD FINDING — struct adoption vs the sandbox metric
 
 Adopting Sony's module-state STRUCT (the honest form) makes every member
