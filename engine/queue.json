@@ -2123,14 +2123,6 @@
       "status": "active"
     },
     {
-      "func": "func_80088740",
-      "file": "main",
-      "distance": 56,
-      "verdict": "ASM-SUSPECT",
-      "rules": 17,
-      "status": "active"
-    },
-    {
       "func": "marionation_Exec",
       "file": "system",
       "distance": 56,
@@ -2154,14 +2146,6 @@
       "distance": 57,
       "verdict": "ASM-SUSPECT",
       "rules": 2,
-      "status": "active"
-    },
-    {
-      "func": "saTan0GaugeDraw",
-      "file": "main",
-      "distance": 57,
-      "verdict": "ASM-SUSPECT",
-      "rules": 48,
       "status": "active"
     },
     {
@@ -3869,16 +3853,16 @@
     }
   ],
   "counts": {
-    "total": 453,
-    "active": 383,
+    "total": 451,
+    "active": 381,
     "by_status": {
-      "active": 383,
+      "active": 381,
       "parked": 70
     },
     "by_verdict": {
       "C": 214,
       "ASM-PARTIAL": 57,
-      "ASM-SUSPECT": 112
+      "ASM-SUSPECT": 110
     }
   }
 }

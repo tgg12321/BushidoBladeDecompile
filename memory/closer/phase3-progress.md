@@ -1,5 +1,85 @@
 # Closer Phase 3 — PsyQ psxsdk adoption progress ledger
 
+## SESSION 11 (2026-07-10) - LIBSPU/SPU module batch: _spu_t + _spu_init closed at 0; _spu_FwriteByIO proven bit-exact (banked)
+
+**saTan0GaugeDraw (= _spu_t, dist 57, 49 rules) - COMPLETED at sandbox 0,
+unmasked-identical, claimed.** SOTN spu.c switch transcription. Levers (all
+measured):
+- Real stdarg: `va_start(ap,parmN) = (&parmN + 1)` (PsyQ style) is
+  LOAD-BEARING - taking &mode homes the named arg (target's sw a0,24(sp));
+  __builtin_next_arg does NOT emit it. va_arg = manual ptr bump.
+- Timeout loops: u32 counter (sltiu), SOTN `while(read != tsa){if(++i>0xF00)
+  return -2;}` for case 3; cases 1/0 need if+do-while with the ENTRY READ
+  through a fresh u16 temp: `t = volatile-read; i = 0; flag = 0; if ((t &
+  0xFFFF) != tsa) do{...}while(volatile-read != tsa);`. The volatile load into
+  a dying temp keeps the target's explicit andi 0xFFFF (combine refuses
+  substitution through volatile defs) AND reads before the flag store.
+- THE const-1 seat (li a2 vs v1, 4-site exchange - the last 4): `i = 0;`
+  placed BEFORE the flag store in cases 1/0. Mechanism (greg-verified): the
+  switch's CSE-shared const-1 pseudo (dispatch beq + case-0 store + case-3
+  ck2 compare) dies at case-0's flag store; i=0 before the store overlaps it
+  -> conflict -> const1 pushed off v1 (v0/a0/a1/s0 taken) -> a2 = target.
+  Emitted position identical (reorg pulls i=0 into the delay slot either way).
+
+**func_80088740 (= _spu_init, dist 56, 17 rules + memory-barrier cheat-asm) -
+COMPLETED at sandbox 0, unmasked-identical, claimed.** SOTN _spu_init with
+BB2-4.0 deltas (WASTE_TIME = out-of-line spu_WriteReg16 = _spu_Fw1ts; local
+0xF01 timeout counters; PLAIN key_on/key_off assignments not |=). Levers:
+- Status loop: indexed `for (ch=0; ch<10; ch++) D_800F7420[ch] = 0;` - i used
+  in addressing blocks check_dbra reversal; giv reduces to the walking ptr.
+  D_800F7420 decl widened [4]->[10] (Sony object clears 10 halfwords here;
+  grant is symbol-keyed; SpuSetKey re-measured 0 after).
+- Voice loop: `vp = (volatile u16 *)D_800A2CDC;` cached BEFORE the loop +
+  indexed vp[ch*8+k] stores. loop_has_volatile blocks MEM invariant hoisting
+  in 2.7.2 loop.c, so the base load must be a source-level local.
+- kon/koff s32 locals = 0xFFFF/0xFF (ori spelling; live across the Fw1ts
+  call groups -> s1/s0).
+- maspsx_label_nop_funcs.txt += func_80088740 (voice-loop label nop; same
+  gate as spu_DmaTransfer).
+- Return type s32/return 0 (Sony); killed the two lost-codegen insert rules.
+
+**DispUpdateStatusMessage (= _spu_FwriteByIO + _spu_FiDMA + _spu_Fr_, whole
+splice asmfix:123, 206 words) - NOT claimed; candidate banked at
+memory/closer/candidates/spu_writebyio_splice.c; src reverted to HEAD stub
+(claiming would double-emit against the active splice).** Status:
+- _spu_FwriteByIO: BIT-EXACT 132/132 (prover tmp/closer/spu_splice_prove.sh,
+  full Makefile maspsx flags). KEY: Sony's vestigial `volatile s32 sp0, sp4;`
+  WASTE_TIME macro locals (SOTN ships the decls) explain the 0x30 frame -
+  8 bytes of untouched locals. FAKE-annotated Ruling-3-class.
+- _spu_FiDMA: 2 words short - THE NAMED RESIDUAL: (a) our fork SEGFAULTS on
+  Sony's literal `while (volatile-read & 0x30) { if (++i > 0xF00) break; }`
+  (any while/for + break/goto-out spelling; cc1psx compiles it fine ->
+  tmp/closer/spu3/t_psx.s emits the EXACT target bytes incl. the dead
+  `addu $3,$3,-1`); (b) compiling equivalents: jump.c duplicates the
+  [i++; limit-test] entry (empty break arm -> exit test targets loop-end
+  directly -> duplicate_loop_exit_test fires) -> rotation + li-1 fold; goto
+  spellings avoid rotation but lose loop notes -> mostly_true_jump returns
+  likely=0 (DBRDBG-traced, tmp/gccdbg/cc1 BB2_DBR_DEBUG=1) -> reorg's
+  increment-compensation clause (reorg.c:3615, the ONLY producer of the
+  addiu -1) never fires. A dead source-level i-- is flow-deleted (measured).
+  15 variants measured in tmp/closer/spu3/. NEXT LEVERS: (1) find a
+  loop-note-preserving spelling whose exit test does NOT target loop-end
+  (blocks the dup) while keeping body order [i++; limit; cond]; (2) fix the
+  crash class input-side (the segfault IS the divergence - cc1psx exhibit);
+  (3) Ruling-2 material if enumeration completes: "our fork cannot emit;
+  the original compiler can and did" - fork-divergence class like the
+  marionation fp-allocatability finding.
+- _spu_Fr_: 2 masked diffs (ori s0,0x10 fills the jal-ReadReg delay in ours;
+  target leaves nop and puts ori in the lw-CE4p load-delay). Un-ground.
+- _spu_FiDMA is address-referenced only via g_snd_irq_data (=0x80088BA0
+  absolute); _spu_Fr_ is UNREFERENCED Sony dead code (S_SCA precedent).
+
+**Fork-crash finding (REUSABLE):** GCC 2.7.2 decompals fork segfaults on
+`while (<volatile MMIO read expr>) { ... break; }` loop class (volatile read
+in the while condition + any early exit in the body). Workaround: if+do-while
+or goto spellings. cc1psx does NOT crash. Candidate for a technique-index
+entry after sign-off.
+
+**Blast radius checks:** SpuSetKey (func_8008AAD4) sandbox 0 after the [10]
+decl; TU cc1 diagnostics at HEAD parity (same 3 benign conflict pairs);
+main.c label-anchored rules unaffected (exec_game regex, SetPacketData
+splice per session-4 finding).
+
 ## SESSION 10 (2026-07-10) — cdread family REPLAYED+re-proven; DispStuff (SsStart+SSCALL) closed 0/209
 
 **cdread family close (session-9 banked patch) — REPLAYED, re-proven, claimed.**

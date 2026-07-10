@@ -35,7 +35,7 @@ extern void bios_AddDevice_B(s32 *);
 extern s32 g_snd_callback;
 extern s32 D_80106F28;
 extern s32 bios_TestEvent(s32);
-extern void func_80088740(s32);
+extern s32 func_80088740(s32);
 extern void func_80087770(s32, s32, s32, s32);
 extern s16 func_80087CAC(s32, s16 *, s16 *);
 extern void spu_WriteReg(s32, u32, s32);
@@ -85,7 +85,7 @@ extern void spu_WriteReg16(void);
 /* Sony _spu_RQ: ONE u16[4] object (PsyQ 4.0 LIBSPU S_SK relocs: addends 0/2/4/6 —
  * key-on pending [0..1], key-off pending [2..3]); splat split it into two D_
  * symbols. Ruling-4 grant, volatile_extern_allowlist.txt:40-41. */
-extern volatile u16 D_800F7420[4];
+extern volatile u16 D_800F7420[10]; /* _spu_RQ; _spu_init clears all 10 (PsyQ 4.0 spu.c) */
 extern s32 spu_TransferData(s32, s32);
 extern s32 D_800A2D2C;
 extern s32 D_800A2D30;
@@ -1478,205 +1478,192 @@ const char D_800163E8[16] = "wait (reset)";
 const char D_800163F8[20] = "wait (wrdy H -> L)";
 const char D_8001640C[20] = "wait (dmaf clear/W)";
 
-void func_80088740(s32 a0) {
-    s32 base;
-    s32 count;
-    s32 i;
-    s16 *a1_ptr;
+/* PsyQ 4.0 LIBSPU spu.c: _spu_init — verbatim-linked Sony object (census
+   2026-07-09); C ref: sotn-decomp src/main/psxsdk/libspu/spu.c (_spu_init) */
+s32 func_80088740(s32 a0) {
+    u32 i;
+    s32 channel;
 
     *D_800A2CEC |= 0xB0000;
 
-    base = D_800A2CDC;
     D_800A2CF8 = 0;
     D_800A2CFC = 0;
     D_800A2CF4 = 0;
-    *(s16 *)(base + 0x180) = 0;
-    *(s16 *)(base + 0x182) = 0;
-    *(s16 *)(base + 0x1AA) = 0;
+    *(volatile u16 *)(D_800A2CDC + 0x180) = 0;
+    *(volatile u16 *)(D_800A2CDC + 0x182) = 0;
+    *(volatile u16 *)(D_800A2CDC + 0x1AA) = 0;
     spu_WriteReg16();
 
-    base = D_800A2CDC;
-    *(volatile s16 *)(base + 0x180) = 0;
-    *(volatile s16 *)(base + 0x182) = 0;
+    *(volatile u16 *)(D_800A2CDC + 0x180) = 0;
+    *(volatile u16 *)(D_800A2CDC + 0x182) = 0;
 
-    if (*(volatile u16 *)(base + 0x1AE) & 0x7FF) {
-        count = 0;
+    if (*(volatile u16 *)(D_800A2CDC + 0x1AE) & 0x7FF) {
+        i = 0;
         do {
-            count++;
-            if ((u32)count >= 0xF01) {
+            if (++i > 0xF00) {
                 debug_printf(&D_800163D8, &D_800163E8);
-                goto common_init;
+                break;
             }
         } while (*(volatile u16 *)(D_800A2CDC + 0x1AE) & 0x7FF);
     }
 
-common_init:
-    i = 0;
-    a1_ptr = (s16 *)&D_800F7420;
+    channel = 0;
     D_800A2D00 = 2;
     D_800A2D04 = 3;
     D_800A2D08 = 8;
     D_800A2D0C = 7;
-    __asm__ __volatile__("" : : : "memory");
-
-    base = D_800A2CDC;
-    *(s16 *)(base + 0x1AC) = 4;
-    *(s16 *)(base + 0x184) = 0;
-    *(s16 *)(base + 0x186) = 0;
-    *(s16 *)(base + 0x18C) = (s16)0xFFFF;
-    *(s16 *)(base + 0x18E) = (s16)0xFFFF;
-    *(s16 *)(base + 0x198) = 0;
-    *(s16 *)(base + 0x19A) = 0;
-
-loop_10:
-    *a1_ptr = 0;
-    a1_ptr++;
-    i++;
-    if (i < 10) goto loop_10;
-
-    if (a0 != 0) {
-        goto end_init;
+    *(volatile u16 *)(D_800A2CDC + 0x1AC) = 4;
+    *(volatile u16 *)(D_800A2CDC + 0x184) = 0;
+    *(volatile u16 *)(D_800A2CDC + 0x186) = 0;
+    *(volatile u16 *)(D_800A2CDC + 0x18C) = 0xFFFF;
+    *(volatile u16 *)(D_800A2CDC + 0x18E) = 0xFFFF;
+    *(volatile u16 *)(D_800A2CDC + 0x198) = 0;
+    *(volatile u16 *)(D_800A2CDC + 0x19A) = 0;
+    for (channel = 0; channel < 10; channel++) {
+        D_800F7420[channel] = 0;
     }
 
-    {
-        s32 addr;
-        s32 s1_val;
-        s32 s0_val;
-        s16 *p;
-        s16 c_3fff;
-        s16 c_200;
+    if (a0 == 0) {
+        s32 kon;
+        s32 koff;
+        volatile u16 *vp;
 
-        addr = (s32)&D_800A2D1C;
-        base = D_800A2CDC;
         D_800A2CF4 = 0x200;
-        *(s16 *)(base + 0x190) = 0;
-        *(s16 *)(base + 0x192) = 0;
-        *(s16 *)(base + 0x194) = 0;
-        *(s16 *)(base + 0x196) = 0;
-        *(s16 *)(base + 0x1B0) = 0;
-        *(s16 *)(base + 0x1B2) = 0;
-        *(s16 *)(base + 0x1B4) = 0;
-        *(s16 *)(base + 0x1B6) = 0;
-        DispUpdateStatusMessage(addr, 0x10);
+        *(volatile u16 *)(D_800A2CDC + 0x190) = 0;
+        *(volatile u16 *)(D_800A2CDC + 0x192) = 0;
+        *(volatile u16 *)(D_800A2CDC + 0x194) = 0;
+        *(volatile u16 *)(D_800A2CDC + 0x196) = 0;
+        *(volatile u16 *)(D_800A2CDC + 0x1B0) = 0;
+        *(volatile u16 *)(D_800A2CDC + 0x1B2) = 0;
+        *(volatile u16 *)(D_800A2CDC + 0x1B4) = 0;
+        *(volatile u16 *)(D_800A2CDC + 0x1B6) = 0;
+        DispUpdateStatusMessage((s32)&D_800A2D1C, 0x10);
 
-        i = 0;
-        c_3fff = (s16)0x3FFF;
-        c_200 = (s16)0x200;
-        p = (s16 *)D_800A2CDC;
-loop_18:
-        p[0] = 0;
-        p[1] = 0;
-        p[2] = c_3fff;
-        p[3] = c_200;
-        p[4] = 0;
-        p[5] = 0;
-        p += 8;
-        i++;
-        if (i < 0x18) goto loop_18;
+        vp = (volatile u16 *)D_800A2CDC;
+        for (channel = 0; channel < 0x18; channel++) {
+            vp[channel * 8 + 0] = 0;
+            vp[channel * 8 + 1] = 0;
+            vp[channel * 8 + 2] = 0x3FFF;
+            vp[channel * 8 + 3] = 0x200;
+            vp[channel * 8 + 4] = 0;
+            vp[channel * 8 + 5] = 0;
+        }
 
-        s1_val = 0xFFFF;
-        s0_val = 0xFF;
-        base = D_800A2CDC;
-        *(s16 *)(base + 0x188) = s1_val;
-        *(s16 *)(base + 0x18A) = s0_val;
+        kon = 0xFFFF;
+        koff = 0xFF;
+        *(volatile u16 *)(D_800A2CDC + 0x188) = kon;
+        *(volatile u16 *)(D_800A2CDC + 0x18A) = koff;
         spu_WriteReg16();
         spu_WriteReg16();
         spu_WriteReg16();
         spu_WriteReg16();
 
-        base = D_800A2CDC;
-        *(s16 *)(base + 0x18C) = s1_val;
-        *(s16 *)(base + 0x18E) = s0_val;
+        *(volatile u16 *)(D_800A2CDC + 0x18C) = kon;
+        *(volatile u16 *)(D_800A2CDC + 0x18E) = koff;
         spu_WriteReg16();
         spu_WriteReg16();
         spu_WriteReg16();
         spu_WriteReg16();
     }
 
-end_init:
-    base = D_800A2CDC;
     D_800A2D10 = 1;
-    *(s16 *)(base + 0x1AA) = (s16)0xC000;
+    *(volatile u16 *)(D_800A2CDC + 0x1AA) = 0xC000;
     D_800A2D14 = 0;
     D_800A2D18 = 0;
+    return 0;
 }
 void DispUpdateStatusMessage(s32 arg0, s32 arg1) {
 }
-/* kengo:LOW  |  su_menu_home/_DispUpdateStatusMessage  |  206i  |  PS2 UI — reverted */
+/* PsyQ 4.0 LIBSPU spu.c: _spu_t — verbatim-linked Sony object (census
+   2026-07-09); C ref: sotn-decomp src/main/psxsdk/libspu/spu.c (_spu_t) */
+typedef char *va_list;
+#define va_start(ap, parmN) ((ap) = (va_list)(&(parmN) + 1))
+#define va_arg(ap, T) ((ap) += sizeof(T), *(T *)((ap) - sizeof(T)))
+
 s32 saTan0GaugeDraw(s32 mode, ...) {
+    s32 var_a2;
     u32 i;
-    s32 *args = (s32 *)__builtin_next_arg(mode);
-    s32 second;
-    s32 ctrl;
-    s32 mask;
+    va_list args;
+    u32 count;
+    u16 ck2;
+    u16 cnt;
+    u16 t;
 
-    if (mode == 1) goto m1;
-    if (mode >= 2) goto ge2;
-    if (mode == 0) goto m0;
-    return 0;
+    va_start(args, mode);
 
-ge2:
-    if (mode == 2) goto m2;
-    if (mode == 3) goto m3;
-    return 0;
+    switch (mode) {
+    case 2:
+        count = va_arg(args, u32);
+        D_800A2CF4 = count >> D_800A2D04;
+        *(volatile u16 *)(D_800A2CDC + 0x1A6) = D_800A2CF4;
+        break;
 
-m2:
-    {
-        u32 shifted = (u32)args[0] >> D_800A2D04;
-        D_800A2CF4 = (u16)shifted;
-        *(u16 *)(D_800A2CDC + 0x1A6) = (u16)shifted;
-    }
-    return 0;
-
-m1:
-    D_800A2D2C = 0;
-    if ((*(volatile u16 *)(D_800A2CDC + 0x1A6) & 0xFFFFu) != D_800A2CF4) {
+    case 1:
+        t = *(volatile u16 *)(D_800A2CDC + 0x1A6);
         i = 0;
-        do {
-            i++;
-            if (i >= 0xF01) return -2;
-        } while (*(volatile u16 *)(D_800A2CDC + 0x1A6) != D_800A2CF4);
-    }
-    *(volatile u16 *)(D_800A2CDC + 0x1AA) = (u16)((*(volatile u16 *)(D_800A2CDC + 0x1AA) & 0xFFCFu) | 0x20u);
-    return 0;
+        D_800A2D2C = 0;
+        if ((t & 0xFFFF) != D_800A2CF4) {
+            do {
+                if (++i > 0xF00) {
+                    return -2;
+                }
+            } while (*(volatile u16 *)(D_800A2CDC + 0x1A6) != D_800A2CF4);
+        }
+        cnt = *(volatile u16 *)(D_800A2CDC + 0x1AA);
+        cnt &= ~0x30;
+        cnt |= 0x20;
+        *(volatile u16 *)(D_800A2CDC + 0x1AA) = cnt;
+        break;
 
-m0:
-    D_800A2D2C = 1;
-    if ((*(volatile u16 *)(D_800A2CDC + 0x1A6) & 0xFFFFu) != D_800A2CF4) {
+    case 0:
+        t = *(volatile u16 *)(D_800A2CDC + 0x1A6);
         i = 0;
-        do {
-            i++;
-            if (i >= 0xF01) return -2;
-        } while (*(volatile u16 *)(D_800A2CDC + 0x1A6) != D_800A2CF4);
-    }
-    *(volatile u16 *)(D_800A2CDC + 0x1AA) = (u16)(*(volatile u16 *)(D_800A2CDC + 0x1AA) | 0x30u);
-    return 0;
+        D_800A2D2C = 1;
+        if ((t & 0xFFFF) != D_800A2CF4) {
+            do {
+                if (++i > 0xF00) {
+                    return -2;
+                }
+            } while (*(volatile u16 *)(D_800A2CDC + 0x1A6) != D_800A2CF4);
+        }
+        cnt = *(volatile u16 *)(D_800A2CDC + 0x1AA);
+        cnt &= ~0x30;
+        cnt |= 0x30;
+        *(volatile u16 *)(D_800A2CDC + 0x1AA) = cnt;
+        break;
 
-m3:
-    mask = 0x20;
-    if (D_800A2D2C == 1) mask = 0x30;
-    if ((*(volatile u16 *)(D_800A2CDC + 0x1AA) & 0x30u) != (u32)mask) {
+    case 3:
+        if (D_800A2D2C == 1) {
+            ck2 = 0x30;
+        } else {
+            ck2 = 0x20;
+        }
         i = 0;
-        do {
-            i++;
-            if (i >= 0xF01) return -2;
-        } while ((*(volatile u16 *)(D_800A2CDC + 0x1AA) & 0x30u) != ((((u32)mask) & 0xFFFF) & 0xFFFF));
+        while ((*(volatile u16 *)(D_800A2CDC + 0x1AA) & 0x30) != ck2) {
+            if (++i > 0xF00) {
+                return -2;
+            }
+        }
+        if (D_800A2D2C == 1) {
+            spu_ReadReg();
+        } else {
+            spu_ReadStatus();
+        }
+        count = va_arg(args, u32);
+        D_800A2D30 = count;
+        count = va_arg(args, u32);
+        D_800A2D34 = (count / 64);
+        D_800A2D34 += ((count % 64) ? 1 : 0);
+        *D_800A2CE0 = D_800A2D30;
+        *D_800A2CE4 = (D_800A2D34 << 16) | 0x10;
+        if (D_800A2D2C == 1) {
+            var_a2 = 0x1000200;
+        } else {
+            var_a2 = 0x1000201;
+        }
+        *D_800A2CE8 = var_a2;
+        break;
     }
-    if (D_800A2D2C == 1) {
-        args++;
-        spu_ReadReg();
-    } else {
-        args++;
-        spu_ReadStatus();
-    }
-    D_800A2D30 = args[-1];
-    second = (u32)args[0];
-    D_800A2D34 = (second >> 6) + ((second & 0x3F) != 0);
-    *D_800A2CE0 = D_800A2D30;
-    *D_800A2CE4 = (D_800A2D34 << 16) | 0x10;
-    ctrl = 0x01000201;
-    if (D_800A2D2C == 1) ctrl = 0x01000200;
-    *D_800A2CE8 = ctrl;
     return 0;
 }
 /* kengo:MED  |  sa_tan0/saTan0GaugeDraw  |  164i */
