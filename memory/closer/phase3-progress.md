@@ -1,5 +1,79 @@
 # Closer Phase 3 — PsyQ psxsdk adoption progress ledger
 
+## SESSION 6 (2026-07-10) — S_SCA close + S_SRMP near-close
+
+**Review trail:** layer-1 cheat-reviewer initially FAILed func_8008AF9C on the
+threshold gate (read the 229-vs-281 extent split as a non-match and distrusted
+the masked comparator). Re-invoked with NEW evidence per review-discipline:
+tmp/closer/link_sim.py — a relocation-RESOLVING link simulation compared
+BIT-EXACT (zero masking) against disc/SLUS_006.63 itself: 0/281 text words and
+0/16 jtbl words differ. Fresh reviewer independently reproduced every
+measurement (score.py mechanism, objdump symbol layouts, link_sim re-run,
+census cross-check) and PASSed. func_80089F3C's WIP body also PASSed its own
+scoped review (struct adoption + MMIO volatile + degenerate switch all
+cleared). link_sim.py is now THE local proof tool when sandbox-0 is
+structurally unreachable before a reference rebuild.
+
+**Unblock implication for the multi-static splice regions (func_80082D34
+trapIntr + DispStuff):** statics DO get local F symbols (extent splits), BUT
+the claim path works anyway — prove bytes with link_sim vs the EXE, claim, let
+the driver strip + rebuild (reference symbol layout then matches and sandbox
+reads 0). The session-5b "blocker" is procedural, not physical.
+
+
+**func_8008AF9C (SpuSetCommonAttr, was dist-279 whole-body asmfix splice) —
+CANDIDATE-COMPLETE, claimed.** Full SOTN s_sca.c transcription (4.0 block
+order: mvolL/R, cdvolL/R, extvolL/R, cdrev/mix, extrev/mix) PLUS a static
+`SpuRGetAllKeysStatus` after it (Sony SR_GAKS DEAD CODE at 0x8008B330-B3FC —
+unreferenced, no glabel, shares the splat extent; loop body mirrors the
+matched sibling func_8008B400's off/bit idiom, which killed the only real
+register-rotation residual).
+- **Sandbox reads 54 — ENTIRELY the extent-split artifact**: the static gets
+  its own local F symbol (+.size), so my func_8008AF9C extent is 229 insns vs
+  the spliced reference's 281 (proven this session: statics DO get F-typed
+  local symbols through the pipeline — tmp/closer/statictest.sh — answering
+  the session-5b open question NEGATIVELY for the multi-static splice
+  regions; the extent SPLITS, but the score self-heals once the driver's
+  rebuild gives the reference the same symbol layout).
+- **Byte proof** (tmp/closer/region_cmp.py, masked word compare over the full
+  0x464 region): 251/281 bit-exact + 26 reloc-field-identical + 4 assembler
+  artifacts (local-label branch vs PC16 reloc in the spliced ref — displace-
+  ments verified equal, e.g. 0x1A at +0x28). Rodata verified word-identical:
+  the 4 SPU debug strings MOVED up before func_80088740 and the hand
+  jtbl_80016420/40 consts DELETED — the real switches now emit the tables at
+  .rodata+0x60/+0x80 with R_MIPS_32 .text relocs resolving to the target
+  values.
+- **DRIVER MECHANICS (load-bearing):** the asmfix splice (asmfix.txt:56) MUST
+  be stripped in the same commit — the spliced asm references the deleted
+  jtbl symbols, so any rules-ON build of this tree is un-linkable until the
+  rule is gone. Sandbox-0 will only read 0 after the reference rebuild
+  (saTan5TakeAnim2_2 precedent).
+
+**func_80089F3C (SpuSetReverbModeParam, was dist-316 whole-body splice) —
+banked at 3 REAL words** (memory/closer/candidates/
+spusetreverbmodeparam_struct.c; body left in src/ — SAFE, its splice rule
+stays active). 94 → 33 → 23 levers, all measured:
+- **SpuRevAttr struct adoption** (94→33): Sony declares _spu_rev_attr as ONE
+  struct (sotn libspu_internal.h:87); anchored `extern SpuRevAttr D_800A2888`
+  (added to undefined_syms_auto.txt). Struct-member MEM semantics produce the
+  target's store-then-reload of .mode (scalar spelling CSE-folds it — that
+  was most of the 94).
+- **Degenerate switch for the mode gates** (33→23): `switch (mode) case 7:
+  case 8:` — expand_case emits the two-slti bound checks; the `< 9 && >= 7`
+  if-spelling gets tree-range-folded to addiu/sltiu. New reusable finding.
+- **Residual 3 words**: sp58's spill slot sp+0x5C vs target sp+0x58. Named
+  mechanism: our reload runs TWO spill passes ("Spilling reg 8/64" ×2 in the
+  greg dump) leaking two transient slots before sp58's; Sony's compile leaked
+  one. All 315 other words + every register exact. Killed: flag-init reorder
+  (rotates s-regs, 31), shared-quotient local (inert). The other 20 masked
+  diffs are struct-reloc addends (self-heal class).
+
+**Method artifacts:** tmp/closer/region_cmp.py (masked word-level region
+comparator vs reference .o — THE tool for extent-artifact/struct-adoption
+proofs), tmp/closer/statictest.sh (static-symbol pipeline probe),
+tmp/closer/srmp_dump.sh (per-function greg extraction from the sandbox src).
+
+
 ## SESSION 5b (2026-07-10) — post-grant batch
 
 **Completed (sandbox --disable all this session, edits in src/main.c;

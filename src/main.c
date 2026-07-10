@@ -832,7 +832,7 @@ void AllocBukiRmd(void) {
 extern s32 D_800F5750;
 extern s16 D_800F5758;
 extern s16 D_800F575A;
-extern void func_80089F3C(s32 *);
+extern s32 func_80089F3C();
 void func_80085E4C(s16 a0, s16 a1) {
     s32 x = (s16)a0 * 32767 / 127;
     s32 y = (s16)a1 * 32767 / 127;
@@ -1376,6 +1376,15 @@ void spu_InitIrq(void) {
         ExitCriticalSection();
     }
 }
+/* SPU-module debug strings (rodata 0x800163D8..0x80016420). Defined HERE —
+ * before func_80088740 (_spu_init), their first user — so they emit into
+ * .rodata AHEAD of the compiler-emitted jump tables of func_8008AF9C
+ * (SpuSetCommonAttr), matching the original Sony spu.c literal order. */
+const char D_800163D8[16] = "SPU:T/O [%s]\n";
+const char D_800163E8[16] = "wait (reset)";
+const char D_800163F8[20] = "wait (wrdy H -> L)";
+const char D_8001640C[20] = "wait (dmaf clear/W)";
+
 void func_80088740(s32 a0) {
     s32 base;
     s32 count;
@@ -2118,8 +2127,183 @@ s32 func_80089EB0(u32 arg0) {
     }
     return 0;
 }
-void func_80089F3C(s32 *arg0) {
-    (void)arg0;
+/* PsyQ 4.0 LIBSPU s_srmp: SpuSetReverbModeParam — verbatim-linked Sony object
+   (census 2026-07-09); C ref: sotn-decomp src/main/psxsdk/libspu/s_srmp.c.
+   4.0 deltas vs the SOTN revision: the DELAYTIME/FEEDBACK gates are range
+   compares (mode >= ECHO && mode <= DELAY) with no default-arm clears, and
+   the depth/zero split threads off the var_s4 flag. Reverb preset table:
+   D_800A2D94 (= Sony rev_param table, 10 entries x 0x44). */
+typedef struct {
+    /* 0x00 */ u32 flags;
+    /* 0x04 */ u16 dAPF1, dAPF2;
+    /* 0x08 */ u16 vIIR, vCOMB1, vCOMB2, vCOMB3, vCOMB4;
+    /* 0x12 */ u16 vWALL, vAPF1, vAPF2;
+    /* 0x18 */ u16 mLSAME, mRSAME, mLCOMB1, mRCOMB1, mLCOMB2, mRCOMB2;
+    /* 0x24 */ u16 dLSAME, dRSAME;
+    /* 0x28 */ u16 mLDIFF, mRDIFF, mLCOMB3, mRCOMB3, mLCOMB4, mRCOMB4;
+    /* 0x34 */ u16 dLDIFF, dRDIFF;
+    /* 0x38 */ u16 mLAPF1, mRAPF1, mLAPF2, mRAPF2;
+    /* 0x40 */ u16 vLIN, vRIN;
+} RevParamEntry;
+
+typedef struct {
+    /* 0x00 */ u32 mask;
+    /* 0x04 */ s32 mode;
+    /* 0x08 */ SpuVolume depth;
+    /* 0x0C */ s32 delay;
+    /* 0x10 */ s32 feedback;
+} SpuReverbAttr;
+
+extern RevParamEntry D_800A2D94[]; /* rev_param preset table */
+
+/* Sony _spu_rev_attr — ONE struct (sotn libspu_internal.h:87 struct
+   SpuRevAttr), base 0x800A2888. Members == the split splat symbols
+   D_800A288C (mode) / D_800A2890/92 (depth L/R) / D_800A2894 (delay) /
+   D_800A2898 (feedback), which other already-matched functions in this TU
+   still reference by their per-member names (same linked bytes). */
+typedef struct {
+    /* 0x00 */ u32 unk0;
+    /* 0x04 */ s32 mode;
+    /* 0x08 */ SpuVolume depth;
+    /* 0x0C */ s32 delay;
+    /* 0x10 */ s32 feedback;
+} SpuRevAttr;
+extern SpuRevAttr D_800A2888; /* _spu_rev_attr */
+
+void func_8008A434(s32 *arg0);
+s32 md_game_check_change_main_mode_katinuki(u32 rev_mode);
+
+static inline void _memcpy(char *dst, char *src, u32 size) {
+    while (size--) {
+        *dst++ = *src++;
+    }
+}
+
+s32 func_80089F3C(SpuReverbAttr *attr) {
+    RevParamEntry entry;
+    u32 var_s0;
+    u16 cnt;
+
+    s32 var_s7 = 0;
+    s32 var_s4 = 0;
+    s32 var_s6 = 0;
+    s32 sp58 = 0;
+    s32 var_fp = 0;
+
+    u32 mask = attr->mask;
+    s32 bSetAll = attr->mask == 0;
+
+    entry.flags = 0;
+    if (bSetAll || (mask & 0x1)) {
+        var_s0 = attr->mode;
+        if (attr->mode & 0x100) {
+            var_s0 &= ~0x100;
+            sp58 = 1;
+        }
+        if (var_s0 >= 0xA || func_80089EB0(D_800A2D44[var_s0])) {
+            return -1;
+        }
+        var_s4 = 1;
+        D_800A2888.mode = var_s0;
+        D_800A2884 = D_800A2D44[D_800A2888.mode];
+        _memcpy((char *)&entry, (char *)&D_800A2D94[D_800A2888.mode],
+                sizeof(RevParamEntry));
+        switch (D_800A2888.mode) {
+        case 7: /* SPU_REV_MODE_ECHO */
+            D_800A2888.feedback = 0x7F;
+            D_800A2888.delay = 0x7F;
+            break;
+        case 8: /* SPU_REV_MODE_DELAY */
+            D_800A2888.feedback = 0;
+            D_800A2888.delay = 0x7F;
+            break;
+        default:
+            D_800A2888.feedback = 0;
+            D_800A2888.delay = 0;
+            break;
+        }
+    }
+    if (bSetAll || (mask & 0x8)) {
+        switch (D_800A2888.mode) {
+        case 7: /* SPU_REV_MODE_ECHO */
+        case 8: /* SPU_REV_MODE_DELAY */
+            var_s6 = 1;
+            if (!var_s4) {
+                _memcpy((char *)&entry, (char *)&D_800A2D94[D_800A2888.mode],
+                        sizeof(RevParamEntry));
+                entry.flags = 0x0C011C00;
+            }
+            D_800A2888.delay = attr->delay;
+            entry.mLSAME = ((D_800A2888.delay << 0xD) / 0x7F) - entry.dAPF1;
+            entry.mRSAME = ((D_800A2888.delay << 0xC) / 0x7F) - entry.dAPF2;
+            entry.mLCOMB1 = ((D_800A2888.delay << 0xC) / 0x7F) + entry.mRCOMB1;
+            entry.dLSAME = ((D_800A2888.delay << 0xC) / 0x7F) + entry.dRSAME;
+            entry.mLAPF1 = ((D_800A2888.delay << 0xC) / 0x7F) + entry.mLAPF2;
+            entry.mRAPF1 = ((D_800A2888.delay << 0xC) / 0x7F) + entry.mRAPF2;
+            break;
+        default:
+            break;
+        }
+    }
+    if (bSetAll || (mask & 0x10)) {
+        switch (D_800A2888.mode) {
+        case 7: /* SPU_REV_MODE_ECHO */
+        case 8: /* SPU_REV_MODE_DELAY */
+            var_fp = 1;
+            if (!var_s4) {
+                if (!var_s6) {
+                    _memcpy((char *)&entry, (char *)&D_800A2D94[D_800A2888.mode],
+                            sizeof(RevParamEntry));
+                    entry.flags = 0x80;
+                } else {
+                    entry.flags |= 0x80;
+                }
+            }
+            D_800A2888.feedback = attr->feedback;
+            entry.vWALL = (D_800A2888.feedback * 0x8100) / 0x7F;
+            break;
+        default:
+            break;
+        }
+    }
+    if (var_s4) {
+        var_s7 = (*(volatile u16 *)(D_800A2CDC + 0x1AA) >> 7) & 1;
+        if (var_s7) {
+            cnt = *(volatile u16 *)(D_800A2CDC + 0x1AA);
+            cnt &= ~0x80;
+            *(volatile u16 *)(D_800A2CDC + 0x1AA) = cnt;
+        }
+    }
+    if (!var_s4) {
+        if (bSetAll || (mask & 0x2)) {
+            *(u16 *)(D_800A2CDC + 0x184) = attr->depth.left;
+            D_800A2888.depth.left = attr->depth.left;
+        }
+        if (bSetAll || (mask & 0x4)) {
+            *(u16 *)(D_800A2CDC + 0x186) = attr->depth.right;
+            D_800A2888.depth.right = attr->depth.right;
+        }
+    } else {
+        *(u16 *)(D_800A2CDC + 0x184) = 0;
+        *(u16 *)(D_800A2CDC + 0x186) = 0;
+        D_800A2888.depth.left = 0;
+        D_800A2888.depth.right = 0;
+    }
+    if (var_s4 || var_s6 || var_fp) {
+        func_8008A434((s32 *)&entry);
+    }
+    if (sp58) {
+        md_game_check_change_main_mode_katinuki(D_800A2888.mode);
+    }
+    if (var_s4) {
+        spu_WriteReg(0xD1, D_800A2884, 0);
+        if (var_s7) {
+            cnt = *(volatile u16 *)(D_800A2CDC + 0x1AA);
+            cnt |= 0x80;
+            *(volatile u16 *)(D_800A2CDC + 0x1AA) = cnt;
+        }
+    }
+    return 0;
 }
 void func_8008A434(s32 *arg0) {
     s32 flags = arg0[0];
@@ -2405,8 +2589,235 @@ s32 func_8008AF84(void) {
     return g_spu_busy != 1;
 }
 
+/* PsyQ 4.0 LIBSPU s_sca: SpuSetCommonAttr — verbatim-linked Sony object
+   (census 2026-07-09); C ref: sotn-decomp src/main/psxsdk/libspu/s_sca.c
+   (4.0 block order: mvol L/R, cd vol L/R, ext vol L/R, cd rev/mix,
+   ext rev/mix). */
 void func_8008AF9C(void *arg0) {
-    (void)arg0;
+    SpuCommonAttr *attr = arg0;
+    u16 mvol_mode_left;
+    u16 mvol_mode_right;
+    u16 vol_total_left;
+    u16 vol_total_right;
+    u32 mask;
+    s32 bSetAll;
+    u16 cnt;
+
+    vol_total_left = 0;
+    vol_total_right = 0;
+    mask = attr->mask;
+    bSetAll = attr->mask == 0;
+
+    if (bSetAll || (mask & 0x1)) {
+        if (bSetAll || (mask & 0x4)) {
+            switch ((s16)attr->mvolmode.left) {
+            case 1:
+                mvol_mode_left = 0x8000;
+                break;
+            case 2:
+                mvol_mode_left = 0x9000;
+                break;
+            case 3:
+                mvol_mode_left = 0xA000;
+                break;
+            case 4:
+                mvol_mode_left = 0xB000;
+                break;
+            case 5:
+                mvol_mode_left = 0xC000;
+                break;
+            case 6:
+                mvol_mode_left = 0xD000;
+                break;
+            case 7:
+                mvol_mode_left = 0xE000;
+                break;
+            case 0:
+                vol_total_left = attr->mvol.left;
+                mvol_mode_left = 0;
+                break;
+            default:
+                vol_total_left = attr->mvol.left;
+                mvol_mode_left = 0;
+                break;
+            }
+        } else {
+            vol_total_left = attr->mvol.left;
+            mvol_mode_left = 0;
+        }
+
+        if (mvol_mode_left != 0) {
+            if ((s16)attr->mvol.left >= 0x80) {
+                vol_total_left = 0x7F;
+            } else if ((s16)attr->mvol.left < 0) {
+                vol_total_left = 0;
+            } else {
+                vol_total_left = attr->mvol.left;
+            }
+        }
+        vol_total_left &= 0x7FFF;
+        *(u16 *)(D_800A2CDC + 0x180) = vol_total_left | mvol_mode_left;
+    }
+
+    if (bSetAll || (mask & 0x2)) {
+        if (bSetAll || (mask & 0x8)) {
+            switch ((s16)attr->mvolmode.right) {
+            case 1:
+                mvol_mode_right = 0x8000;
+                break;
+            case 2:
+                mvol_mode_right = 0x9000;
+                break;
+            case 3:
+                mvol_mode_right = 0xA000;
+                break;
+            case 4:
+                mvol_mode_right = 0xB000;
+                break;
+            case 5:
+                mvol_mode_right = 0xC000;
+                break;
+            case 6:
+                mvol_mode_right = 0xD000;
+                break;
+            case 7:
+                mvol_mode_right = 0xE000;
+                break;
+            case 0:
+                vol_total_right = attr->mvol.right;
+                mvol_mode_right = 0;
+                break;
+            default:
+                vol_total_right = attr->mvol.right;
+                mvol_mode_right = 0;
+                break;
+            }
+        } else {
+            vol_total_right = attr->mvol.right;
+            mvol_mode_right = 0;
+        }
+
+        if (mvol_mode_right != 0) {
+            if ((s16)attr->mvol.right >= 0x80) {
+                vol_total_right = 0x7F;
+            } else if ((s16)attr->mvol.right < 0) {
+                vol_total_right = 0;
+            } else {
+                vol_total_right = attr->mvol.right;
+            }
+        }
+        vol_total_right &= 0x7FFF;
+        *(u16 *)(D_800A2CDC + 0x182) = vol_total_right | mvol_mode_right;
+    }
+
+    if (bSetAll || (mask & 0x40)) {
+        *(u16 *)(D_800A2CDC + 0x1B0) = attr->cd.volume.left;
+    }
+
+    if (bSetAll || (mask & 0x80)) {
+        *(u16 *)(D_800A2CDC + 0x1B2) = attr->cd.volume.right;
+    }
+
+    if (bSetAll || (mask & 0x400)) {
+        *(u16 *)(D_800A2CDC + 0x1B4) = attr->ext.volume.left;
+    }
+
+    if (bSetAll || (mask & 0x800)) {
+        *(u16 *)(D_800A2CDC + 0x1B6) = attr->ext.volume.right;
+    }
+
+    if (bSetAll || (mask & 0x100)) {
+        if (attr->cd.reverb == 0) {
+            cnt = *(u16 *)(D_800A2CDC + 0x1AA);
+            cnt &= ~4;
+            *(u16 *)(D_800A2CDC + 0x1AA) = cnt;
+        } else {
+            cnt = *(u16 *)(D_800A2CDC + 0x1AA);
+            cnt |= 4;
+            *(u16 *)(D_800A2CDC + 0x1AA) = cnt;
+        }
+    }
+
+    if (bSetAll || (mask & 0x200)) {
+        if (attr->cd.mix == 0) {
+            cnt = *(u16 *)(D_800A2CDC + 0x1AA);
+            cnt &= ~1;
+            *(u16 *)(D_800A2CDC + 0x1AA) = cnt;
+        } else {
+            cnt = *(u16 *)(D_800A2CDC + 0x1AA);
+            cnt |= 1;
+            *(u16 *)(D_800A2CDC + 0x1AA) = cnt;
+        }
+    }
+
+    if (bSetAll || (mask & 0x1000)) {
+        if (attr->ext.reverb == 0) {
+            cnt = *(u16 *)(D_800A2CDC + 0x1AA);
+            cnt &= ~8;
+            *(u16 *)(D_800A2CDC + 0x1AA) = cnt;
+        } else {
+            cnt = *(u16 *)(D_800A2CDC + 0x1AA);
+            cnt |= 8;
+            *(u16 *)(D_800A2CDC + 0x1AA) = cnt;
+        }
+    }
+
+    if (bSetAll || (mask & 0x2000)) {
+        if (attr->ext.mix == 0) {
+            cnt = *(u16 *)(D_800A2CDC + 0x1AA);
+            cnt &= ~2;
+            *(u16 *)(D_800A2CDC + 0x1AA) = cnt;
+        } else {
+            cnt = *(u16 *)(D_800A2CDC + 0x1AA);
+            cnt |= 2;
+            *(u16 *)(D_800A2CDC + 0x1AA) = cnt;
+        }
+    }
+}
+/* PsyQ 4.0 LIBSPU sr_gaks: SpuRGetAllKeysStatus — verbatim-linked Sony object
+   (census 2026-07-09; module SR_GAKS spans 0x8008B330..0x8008B488). This
+   entry point is UNREFERENCED in BB2 (dead code pulled in by whole-object
+   linking) — no glabel exists at 0x8008B330, so it shares func_8008AF9C's
+   splat extent. C ref: sotn-decomp src/main/psxsdk/libspu/sr_gaks.c. */
+static s32 SpuRGetAllKeysStatus(s32 min, s32 max, s8 *status) {
+    s32 voice;
+    u16 volumex;
+
+    if (min < 0) {
+        min = 0;
+    }
+    if (min >= 24) {
+        return -3;
+    }
+    if (max >= 24) {
+        max = 23;
+    }
+    if (max < 0 || max < min) {
+        return -3;
+    }
+
+    max++;
+    for (voice = min; voice < max; voice++) {
+        s32 off = voice << 4;
+        s32 bit;
+        volumex = *(u16 *)((off + D_800A2CDC) + 0xC);
+        bit = D_800A2874 & (1 << voice);
+        if (bit) {
+            if (volumex != 0) {
+                status[voice] = 1;
+            } else {
+                status[voice] = 3;
+            }
+        } else {
+            if (volumex != 0) {
+                status[voice] = 2;
+            } else {
+                status[voice] = 0;
+            }
+        }
+    }
+
+    return 0;
 }
 /* PsyQ LIBSPU sr_gaks.c: SpuGetAllKeysStatus — verbatim-linked Sony object
    (census 2026-07-09); C ref: sotn-decomp src/main/psxsdk/libspu/sr_gaks.c
@@ -3015,18 +3426,11 @@ __asm__(
  * referenced `.L<n>` labels live inside the asmfile-bridged stub function
  * bodies (saTan1MainJump, func_8008AF9C) and aren't visible to C source —
  * the linker produces identical bytes for either form. */
-const char D_800163D8[16] = "SPU:T/O [%s]\n";
-const char D_800163E8[16] = "wait (reset)";
-const char D_800163F8[20] = "wait (wrdy H -> L)";
-const char D_8001640C[20] = "wait (dmaf clear/W)";
-const u32 jtbl_80016420[8] = {
-    0x8008B030, 0x8008AFF8, 0x8008B000, 0x8008B008,
-    0x8008B010, 0x8008B018, 0x8008B020, 0x8008B028,
-};
-const u32 jtbl_80016440[8] = {
-    0x8008B0F8, 0x8008B0C0, 0x8008B0C8, 0x8008B0D0,
-    0x8008B0D8, 0x8008B0E0, 0x8008B0E8, 0x8008B0F0,
-};
+/* jtbl_80016420/jtbl_80016440 (the two SpuSetCommonAttr switch tables) are
+ * now COMPILER-EMITTED by func_8008AF9C's switches (they emit into .rodata
+ * at that function's file position, right after the four SPU debug strings
+ * below, which moved up beside their owner functions for the same reason —
+ * see the comment above D_800163D8). */
 const u32 jtbl_80016460[8] = {
     0x8008B5CC, 0x8008B5D4, 0x8008B5DC, 0x8008B5E4,
     0x8008B5EC, 0x8008B5F4, 0x8008B5FC, 0x00000000,
