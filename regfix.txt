@@ -148,8 +148,6 @@ saEft00Add: insert "nop" @ 105
 saEft00Add: reorder 97,100,98,99,101,102,105,103,104,106 @ 97-106
 
 # saEft00Add_sub: swap D_800A14E4 store and D_800A14F4 load order
-saEft00Add_sub: subst "lw	\$4,D_800A14F4" "sw	$0,D_800A14E4" @ 11
-saEft00Add_sub: subst "sw	\$0,D_800A14E4" "lw	$4,D_800A14F4" @ 12
 
 # func_800477E8: swap t1/t2 and v1/a1 registers
 func_800477E8: $9 <-> $10 @ 26-57

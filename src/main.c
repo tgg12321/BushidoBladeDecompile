@@ -20,7 +20,10 @@ extern s32 g_spu_base_addr;
 
 extern void irq_AcknowledgeVblank(s32, s32);
 extern s32 spu_TransferDirect(s32, s32);
-extern volatile s32 g_spu_init_flag;
+/* PsyQ LIBSPU: _spu_transferCallback — Sony's own header types the SPU
+   transfer callback as a volatile function pointer (sotn-decomp
+   libspu_internal.h:39); volatile is original semantics, not coercion */
+extern void (* volatile g_spu_init_flag)();
 extern s32 D_800A2874;
 extern s32 g_snd_reverb_flag;
 extern s32 g_spu_reverb_mode;
@@ -503,11 +506,13 @@ s32 spu_ReadMotionFrame(s32 arg0, s16 arg1) {
     *(s32 *)((u8 *)base + 0x88) += result;
     return result;
 }
+/* PsyQ LIBSND next.c: _SsSndNextSep — verbatim-linked Sony object (census
+   2026-07-09); C ref: sotn-decomp src/main/psxsdk/libsnd/next.c (mixed
+   score-pointer / full-index accesses are the original's spelling) */
 void spu_ResetMotionEntry(s32 a0, s16 a1) {
     s32 shifted = a0 << 16;
     s32 *addr = (s32 *)&D_80106F28;
     s32 *base_ptr = (s32 *)((u8 *)addr + (shifted >> 14));
-    s32 offset = (s16)a1 * 0xB0;
     s32 base = *base_ptr;
     u8 *entry = (u8 *)(base + (s16)a1 * 0xB0);
     entry[0x20] = 1;
@@ -593,23 +598,54 @@ void func_800853F4(s16 a0) {
 void func_8008541C(s16 a0, s16 a1) {
     func_80085270(a0, a1);
 }
-void func_80085448(s16 a0, s16 a1, s16 a2) {
-    s32 buf[10];
-    if ((u8)a0 == 0) {
-        buf[0] = 0xC0;
-        if ((s16)a1 >= 0x80) a1 = 0x7F;
-        if ((s16)a2 >= 0x80) a2 = 0x7F;
-        *(s16 *)((u8 *)buf + 0x10) = (s16)a1 * 129 * 2;
-        *(s16 *)((u8 *)buf + 0x12) = (s16)a2 * 129 * 2;
+/* PsyQ LIBSND ssvol: SsSetSerialVol — verbatim-linked Sony object (census
+   2026-07-09); C ref: sotn-decomp src/main/psxsdk/libsnd/scssvol.c.
+   SpuCommonAttr per PsyQ libspu.h (sizeof = 0x28 — matches the frame). */
+typedef struct {
+    s16 left, right;
+} SpuVolume;
+typedef struct {
+    /* 0x00 */ u32 mask;
+    /* 0x04 */ SpuVolume mvol;
+    /* 0x08 */ SpuVolume mvolmode;
+    /* 0x0C */ SpuVolume mvolx;
+    struct {
+        /* 0x10 */ SpuVolume volume;
+        /* 0x14 */ s32 reverb;
+        /* 0x18 */ s32 mix;
+    } cd;
+    struct {
+        /* 0x1C */ SpuVolume volume;
+        /* 0x20 */ s32 reverb;
+        /* 0x24 */ s32 mix;
+    } ext;
+} SpuCommonAttr;
+
+void func_80085448(s16 s_num, s16 voll, s16 volr) {
+    SpuCommonAttr attr;
+    if ((u8)s_num == 0) {
+        attr.mask = 0xC0;
+        if (voll >= 0x80) {
+            voll = 0x7F;
+        }
+        if (volr >= 0x80) {
+            volr = 0x7F;
+        }
+        attr.cd.volume.left = voll * 258;
+        attr.cd.volume.right = volr * 258;
     }
-    if ((u8)a0 == 1) {
-        buf[0] = 0xC00;
-        if ((s16)a1 >= 0x80) a1 = 0x7F;
-        if ((s16)a2 >= 0x80) a2 = 0x7F;
-        *(s16 *)((u8 *)buf + 0x1C) = (s16)a1 * 129 * 2;
-        *(s16 *)((u8 *)buf + 0x1E) = (s16)a2 * 129 * 2;
+    if ((u8)s_num == 1) {
+        attr.mask = 0xC00;
+        if (voll >= 0x80) {
+            voll = 0x7F;
+        }
+        if (volr >= 0x80) {
+            volr = 0x7F;
+        }
+        attr.ext.volume.left = voll * 258;
+        attr.ext.volume.right = volr * 258;
     }
-    func_8008AF9C(buf);
+    func_8008AF9C((s32 *)&attr);
 }
 extern s32 D_800A26CC;
 extern s32 D_800A26D0;
@@ -1652,11 +1688,12 @@ void spu_WriteReg16(void) {
 void spu_SetCallback(s32 a0) {
     irq_AcknowledgeVblank(4, a0);
 }
-extern s32 g_spu_timer;
-
-extern s32 g_spu_timer;
-
-extern s32 g_spu_timer;
+/* PsyQ LIBSPU s_q.c: SpuQuit — verbatim-linked Sony object (census
+   2026-07-09); C ref: sotn-decomp src/main/psxsdk/libspu/s_q.c.
+   g_spu_init_flag = _spu_transferCallback, g_spu_timer = _spu_IRQCallback
+   (both volatile fn ptrs per Sony's header), g_snd_init_flag =
+   _spu_isCalled. */
+extern void (* volatile g_spu_timer)();
 
 void func_800892F8(void) {
     if (g_snd_init_flag == 1) {
@@ -1690,23 +1727,22 @@ extern s32 g_spu_voice_key_a;
 extern s32 g_spu_voice_key_b;
 extern s32 g_spu_voice_key_c;
 
-s32 spu_IrqHandler(s32 a0, s32 *a1) {
-    int new_var2;
-    int new_var;
-    s32 v0 = a0;
-    if (v0 <= 0) {
-        new_var2 = 1;
-        if (new_var2) {
-            return 0;
-        }
+/* PsyQ LIBSPU s_m_init.c: SpuInitMalloc — verbatim-linked Sony object
+   (census 2026-07-09); C ref: sotn-decomp src/main/psxsdk/libspu/
+   s_m_init.c */
+s32 spu_IrqHandler(s32 num, s32 *top) {
+    s32 size;
+
+    if (num > 0) {
+        size = 0x10000 << g_spu_addr_shift;
+        top[0] = 0x40001010;
+        g_spu_voice_key_c = (s32)top;
+        g_spu_voice_key_b = 0;
+        g_spu_voice_key_a = num;
+        top[1] = size - 0x1010;
+        return num;
     }
-    new_var = 0x10000 << g_spu_addr_shift;
-    *a1 = 0x40001010;
-    g_spu_voice_key_c = (s32)a1;
-    g_spu_voice_key_b = 0;
-    g_spu_voice_key_a = v0;
-    a1[1] = new_var - 0x1010;
-    return v0;
+    return 0;
 }
 extern void exec_game(void);
 s32 coli_HitPauseKatana(s32 arg0) {
@@ -2427,21 +2463,24 @@ s32 func_8008AE24(s32 a0) {
     g_spu_xfer_addr = (u16)v0;
     return (u32)(u16)v0 << g_spu_addr_shift;
 }
-void func_8008AE7C(s32 a0) {
-    int new_var;
-    s32 v0;
-    new_var = 1;
-    if (a0 == 0) {
-        v0 = 0;
-    } else if (new_var == a0) {
-        v0 = new_var;
-    } else {
-        v0 = 0;
-        v0++;
-        v0--;
+/* PsyQ LIBSPU s_stm.c: SpuSetTransferMode — verbatim-linked Sony object
+   (census 2026-07-09); C ref: sotn-decomp src/main/psxsdk/libspu/s_stm.c */
+s32 func_8008AE7C(s32 mode) {
+    s32 transMode;
+
+    switch (mode) {
+        case 0:
+            transMode = 0;
+            break;
+        case 1:
+            transMode = 1;
+            break;
+        default:
+            transMode = 0;
     }
-    g_snd_reverb_flag = a0;
-    g_spu_reverb_mode = v0;
+    g_snd_reverb_flag = mode;
+    g_spu_reverb_mode = transMode;
+    return transMode;
 }
 s32 func_8008AEB0(s32 arg0) {
     s32 var_v0;
@@ -2480,33 +2519,32 @@ s32 func_8008AF84(void) {
 void func_8008AF9C(void *arg0) {
     (void)arg0;
 }
-void func_8008B400(u8 *a0) {
+/* PsyQ LIBSPU sr_gaks.c: SpuGetAllKeysStatus — verbatim-linked Sony object
+   (census 2026-07-09); C ref: sotn-decomp src/main/psxsdk/libspu/sr_gaks.c
+   (SpuRGetAllKeysStatus inlined with min=0, max=NUM_SPU_CHANNELS) */
+void func_8008B400(u8 *status) {
     s32 limit = 24;
-    s32 i = 0;
-    s32 one = 1;
-    s32 three = 3;
-    s32 two = 2;
-    u8 *buf = a0;
+    s32 voice = 0;
+
     do {
-        s32 off = i << 4;
-        u16 data;
+        s32 off = voice << 4;
+        u16 volumex;
         s32 bit;
-        data = *((u16 *)((off + g_spu_base_addr) + 0xC));
-        bit = D_800A2874 & (one << i);
+        volumex = *((u16 *)((off + g_spu_base_addr) + 0xC));
+        bit = D_800A2874 & (1 << voice);
         if (bit) {
-            if (data != 0) {
-                *buf = one;
+            if (volumex != 0) {
+                status[voice] = 1;
             } else {
-                *buf = three;
+                status[voice] = 3;
             }
-        } else if (data != 0) {
-            *buf = two;
+        } else if (volumex != 0) {
+            status[voice] = 2;
         } else {
-            *buf = 0;
+            status[voice] = 0;
         }
-        i++;
-        buf++;
-    } while (i < limit);
+        voice++;
+    } while (voice < limit);
 }
 void saTan1MainJump(void *a0) {
     (void)a0;
@@ -2752,6 +2790,10 @@ void func_8008BE4C(void) {
 
 void func_8008BE9C(void) {
 }
+/* PsyQ LIBCOMB comb: SioAnsyncRead (static) — verbatim-linked Sony object
+   (census 2026-07-09; ground truth tmp/libscan/psyq40/LIBCOMB.LIB). The
+   SIO async state (D_800F1AFC flag, D_800F1B00/04 buf/len) is mutated by
+   the SIO IRQ trap — volatile is original semantics. */
 extern s32 D_800F1AFC;
 extern s32 D_800F1B00;
 extern s32 D_800F1B04;

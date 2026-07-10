@@ -3488,9 +3488,10 @@ typedef struct GameObj {
 } GameObj;
 extern s16 D_800A0928[];
 
+/* PsyQ LIBGTE ratan: ratan2 — verbatim-linked Sony object (census
+   2026-07-09); C ref: sotn-decomp psxsdk (table-lookup atan2) */
 s32 single_game_getEnemyCharId(s32 arg0, s32 arg1) {
     s32 var_v1;
-    s32 var_v0;
     s32 var_a0;
     s32 var_a1;
     s32 var_a2;

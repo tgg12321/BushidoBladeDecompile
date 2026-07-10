@@ -583,9 +583,10 @@ typedef struct {
     s16 width;
     s16 height;
 } GpuConfig;
+/* PsyQ LIBGPU sys.c v1.129: ResetGraph — verbatim-linked Sony object
+   (census 2026-07-09); C ref: sotn-decomp src/main/psxsdk/libgpu/sys.c */
 u32 gpu_SetMode(s32 a0) {
     GpuConfig *s0;
-    int new_var;
     u32 idx;
     switch (a0 & 7) {
     case 0:
@@ -601,9 +602,8 @@ u32 gpu_SetMode(s32 a0) {
         idx = (u8)idx;
         s0->active = 1;
         s0->width = D_8009BEF4[idx];
-        new_var = -1;
         s0->height = D_8009BF08[idx];
-        bb2_memset((u8 *)s0 + 0x10, new_var, 0x5C);
+        bb2_memset((u8 *)s0 + 0x10, -1, 0x5C);
         bb2_memset((u8 *)s0 + 0x6C, -1, 0x14);
         return s0->mode;
     default:

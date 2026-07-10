@@ -24,11 +24,29 @@ s32 sys_SetVsyncMode(s32 a0) {
     return old;
 }
 
-extern s32 g_sys_timer;
+/* PsyQ 4.0 LIBCD cdread.c: CdReadMode — verbatim-linked Sony object (census
+   2026-07-09); the "timer" word (0x800A1500) is the +0x30 mode-flag member
+   of the volatile cdread module state block (CdlREAD in system.c). */
+typedef struct {
+    /* 0x00 */ s32 sectors;
+    /* 0x04 */ s32 buf;
+    /* 0x08 */ s32 p;
+    /* 0x0C */ s32 mode;
+    /* 0x10 */ s32 size;
+    /* 0x14 */ s32 cnt;
+    /* 0x18 */ s32 t2;
+    /* 0x1C */ s32 t1;
+    /* 0x20 */ s32 pos;
+    /* 0x24 */ s32 cbsync;
+    /* 0x28 */ s32 cbready;
+    /* 0x2C */ s32 cbdata;
+    /* 0x30 */ s32 tslmode;
+} CdlREAD;
+extern volatile CdlREAD D_800A14D0;
+
 s32 sys_SetTimer(s32 a0) {
-    s32 *p = &g_sys_timer;
-    s32 old = p[0];
-    *(volatile s32 *)p = a0;
+    s32 old = D_800A14D0.tslmode;
+    D_800A14D0.tslmode = a0;
     return old;
 }
 

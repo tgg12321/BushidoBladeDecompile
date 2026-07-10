@@ -7,13 +7,11 @@
 /* Forward declarations */
 extern void cdrom_ClearIrq(void);
 extern s32 cpu_side_move_dir_4(s32, u8 *);
-extern void marionation_Exec(void);
+extern s32 marionation_Exec(s32, u8 *);
 extern s32 cdrom_SendCmd();
 extern s32 cdrom_DmaToRam();
 extern s32 cdrom_DmaChain();
-extern s32 func_80080660_ret(s32) asm("tslTmlGetHeda");
-extern void irq_AcknowledgeVblank(s32, s32);
-extern s32 saEft00Add_ret(s32) asm("saEft00Add");
+extern s32 irq_AcknowledgeVblank(s32, s32);
 extern s32 saEft01Init(s32);
 
 /* Externs for globals */
@@ -88,36 +86,34 @@ s32 cdrom_SetDebugLevel(s32 a0) {
     return old;
 }
 
-void *cdrom_GetCmdName(u32 a0) {
-    u32 idx = a0 & 0xFF;
-    void *ret;
-    if (idx < 0x1C) {
-        ret = (void *)g_cd_cmd_table[idx];
-        goto done;
+/* PsyQ 4.0 LIBCD sys: CdComstr — verbatim-linked Sony object (census
+   2026-07-09); C ref: sotn-decomp src/main/psxsdk/libcd/sys.c */
+void *cdrom_GetCmdName(u8 com) {
+    if (com > 0x1B) {
+        return &g_str_none;
     }
-    ret = &g_str_none;
-done:
-    return ret;
+    return (void *)g_cd_cmd_table[com];
 }
 
-void *cdrom_GetResultName(u32 a0) {
-    u32 idx = a0 & 0xFF;
-    void *ret;
-    if (idx < 0x7) {
-        ret = (void *)g_cd_result_table[idx];
-        goto done;
+/* PsyQ 4.0 LIBCD sys: CdIntstr — verbatim-linked Sony object (census
+   2026-07-09); C ref: sotn-decomp src/main/psxsdk/libcd/sys.c */
+void *cdrom_GetResultName(u8 intr) {
+    if (intr > 6) {
+        return &g_str_none;
     }
-    ret = &g_str_none;
-done:
-    return ret;
+    return (void *)g_cd_result_table[intr];
 }
 
-void Vu0SetLightColMatrix_800801E8(void) {
-    cpu_side_move_dir_4();
+/* PsyQ 4.0 LIBCD sys: CdSync — verbatim-linked Sony object (census
+   2026-07-09); C ref: sotn-decomp src/main/psxsdk/libcd/sys.c */
+s32 Vu0SetLightColMatrix_800801E8(s32 mode, u8 *result) {
+    return cpu_side_move_dir_4(mode, result);
 }
 
-void Vu0SetLightColMatrix_80080208(void) {
-    marionation_Exec();
+/* PsyQ 4.0 LIBCD sys: CdReady — verbatim-linked Sony object (census
+   2026-07-09); C ref: sotn-decomp src/main/psxsdk/libcd/sys.c */
+s32 Vu0SetLightColMatrix_80080208(s32 mode, u8 *result) {
+    return marionation_Exec(mode, result);
 }
 
 s32 cdrom_SetCallbackA(s32 a0) {
@@ -296,8 +292,10 @@ s32 Vu0SetLightColMatrix_80080640(void) {
     return cdrom_DmaChain() == 0;
 }
 
-void tslTmlGetHeda(s32 a0) {
-    irq_AcknowledgeVblank(3, a0);
+/* PsyQ 4.0 LIBCD sys: CdDataCallback — verbatim-linked Sony object (census
+   2026-07-09); returns the previous callback */
+s32 tslTmlGetHeda(s32 a0) {
+    return irq_AcknowledgeVblank(3, a0);
 }
 
 void Vu0SetLightColMatrix_80080684(s32 a0) {
@@ -688,31 +686,28 @@ void cdrom_ClearIrq(void) {
     *g_cd_irq_reg = 0;
     *g_cd_dma_madr = 0x1325;
 }
-extern volatile u16 * volatile g_cd_spu_voice;
+extern volatile u16 *g_cd_spu_voice;
+/* PsyQ 4.0 LIBCD bios.c v1.86: CD_initvol — verbatim-linked Sony object
+   (census 2026-07-09); C ref: sotn-decomp src/main/psxsdk/libcd/bios.c */
 s32 cdrom_ConfigSPU(void) {
-    u8 buf[4];
-    volatile u16 *v1;
-    v1 = g_cd_spu_voice;
-    if (v1[0xDC] == 0) {
-        if (v1[0xDD] == 0) {
-            v1[0xC0] = 0x3FFF;
-            v1[0xC1] = 0x3FFF;
-            v1 = g_cd_spu_voice;
-        }
+    u8 vol[4];
+
+    if (g_cd_spu_voice[0xDC] == 0 && g_cd_spu_voice[0xDD] == 0) {
+        g_cd_spu_voice[0xC0] = 0x3FFF;
+        g_cd_spu_voice[0xC1] = 0x3FFF;
     }
-    v1[0xD8] = 0x3FFF;
-    v1[0xD9] = 0x3FFF;
-    v1[0xD5] = 0xC001;
-    buf[2] = 0x80;
-    buf[0] = 0x80;
-    buf[3] = 0;
-    buf[1] = 0;
+
+    g_cd_spu_voice[0xD8] = 0x3FFF;
+    g_cd_spu_voice[0xD9] = 0x3FFF;
+    g_cd_spu_voice[0xD5] = 0xC001;
+    vol[0] = vol[2] = 0x80;
+    vol[1] = vol[3] = 0;
     *g_cd_index_reg = 2;
-    *g_cd_req_reg = buf[0];
-    *g_cd_irq_reg = buf[1];
+    *g_cd_req_reg = vol[0];
+    *g_cd_irq_reg = vol[1];
     *g_cd_index_reg = 3;
-    *g_cd_param_fifo = buf[2];
-    *g_cd_req_reg = buf[3];
+    *g_cd_param_fifo = vol[2];
+    *g_cd_req_reg = vol[3];
     *g_cd_irq_reg = 0x20;
     return 0;
 }
@@ -961,23 +956,48 @@ void tslTm2LoadImage_2(void *a0) {
     (void)a0;
 }
 /* kengo:MED  |  tsl_tm2/tslTm2LoadImage_2  |  253i  |  -10 x2 size collision */
-extern s32 D_800A1500;
-extern s32 D_800A14EC;
-extern s32 D_800A14E8;
-extern s32 D_800A14E4;
-extern s32 D_800A14E0;
-extern s32 D_800A14D0;
-extern s32 D_800A14DC;
-extern s32 D_800A14D4;
-extern s32 D_800A14D8;
-extern s32 D_800A14F0;
-extern s32 D_800A14F4;
-extern s32 D_800A14F8;
-extern s32 D_800A14FC;
 extern s32 D_800162EC;
 extern s32 D_80016304;
 extern s32 D_80082050;
 extern s32 D_80082320;
+
+/* PsyQ 4.0 LIBCD cdread.c module .data block — CD_ReadCallbackFunc followed
+   by the volatile cdread state struct (SOTN psxsdk names it D_80032DBC); BB2
+   links Sony's CDREAD object verbatim (census 2026-07-09), so
+   D_800A14D0..D_800A1500 are one Sony data block (preceded by
+   CD_ReadCallbackFunc at D_800A14CC), not separate globals. Member map
+   recorded in memory/closer/sony-naming-map.md. */
+typedef struct {
+    /* 0x00 */ s32 sectors; /* D_800A14D0 */
+    /* 0x04 */ s32 buf;     /* D_800A14D4 */
+    /* 0x08 */ s32 p;       /* D_800A14D8 */
+    /* 0x0C */ s32 mode;    /* D_800A14DC */
+    /* 0x10 */ s32 size;    /* D_800A14E0 */
+    /* 0x14 */ s32 cnt;     /* D_800A14E4 */
+    /* 0x18 */ s32 t2;      /* D_800A14E8 */
+    /* 0x1C */ s32 t1;      /* D_800A14EC */
+    /* 0x20 */ s32 pos;     /* D_800A14F0 */
+    /* 0x24 */ s32 cbsync;  /* D_800A14F4 */
+    /* 0x28 */ s32 cbready; /* D_800A14F8 */
+    /* 0x2C */ s32 cbdata;  /* D_800A14FC */
+    /* 0x30 */ s32 tslmode; /* D_800A1500 */
+} CdlREAD;
+extern volatile CdlREAD D_800A14D0;
+
+/* PsyQ 4.0 LIBCD cdread.c: cd_read_retry (static) — verbatim-linked Sony
+   object (census 2026-07-09). Body below is the HEAD interim form (still
+   INCOMPLETE, carries rules); the honest struct respell of this one is
+   banked in memory/closer/candidates/ — see phase3-progress.md. These
+   per-member externs are the HEAD-era declarations kept only for this
+   function; they name the same Sony data block the CdlREAD struct spans. */
+extern s32 D_800A1500;
+extern s32 D_800A14EC;
+extern s32 D_800A14E8;
+extern s32 D_800A14E4;
+extern s32 D_800A14DC;
+extern s32 D_800A14D4;
+extern s32 D_800A14D8;
+extern s32 D_800A14F0;
 
 s32 saEft00Add(s32 arg0) {
     u8 sp10;
@@ -1026,97 +1046,77 @@ common_path:
     }
     D_800A14D8 = D_800A14D4;
     func_80080390(6, 0);
-    D_800A14E4 = D_800A14D0;
+    D_800A14E4 = *(s32 *)&D_800A14D0.sectors; /* interim: HEAD parity needs a
+        non-volatile read here; goes away with this function's honest close */
     D_800A14E8 = sys_VSync(-1);
 end:
     return D_800A14E4;
 }
 
+/* PsyQ 4.0 LIBCD cdread.c: CdReadBreak — verbatim-linked Sony object
+   (census 2026-07-09); C ref: sotn-decomp psxsdk shape + v1.86 hooks */
 void saEft00Add_sub(void) {
-    s32 *p = &D_800A1500;
-
-    if (*p & 1) {
+    if (D_800A14D0.tslmode & 1) {
         Vu0SetLightColMatrix_80080684(0);
     }
-    D_800A14E4 = 0;
-    cdrom_SetCallbackA(D_800A14F4);
-    cdrom_SetCallbackB(D_800A14F8);
-    if (*p & 1) {
-        tslTmlGetHeda(D_800A14FC);
+    D_800A14D0.cnt = 0;
+    cdrom_SetCallbackA(D_800A14D0.cbsync);
+    cdrom_SetCallbackB(D_800A14D0.cbready);
+    if (D_800A14D0.tslmode & 1) {
+        tslTmlGetHeda(D_800A14D0.cbdata);
     }
     func_80080390(9, 0);
 }
-/* func_800826CC: cdrom effect startup helper -- pure-C cheat retirement.
- * - Volatile aliases on D_800A14DC/D4/E0/F4/F8/1500 force per-call $a0
- *   re-materialization and prevent GCC from packing `move $a0,$zero` into
- *   cdrom_SetCallbackA/B delay slots (target has nop in both).
- * - Volatile s32 *saved_ptr forces lui+addiu materialization of &D_800A14D0.
- * - switch statement (rather than nested if-else) lets GCC's RA select target's
- *   register allocation (mode in $v1, const 0x20 in $v0) organically. */
-s32 func_800826CC(s32 arg0, s32 arg1, s32 arg2) {
-    extern volatile s32 D_800A14DC_v asm("D_800A14DC");
-    extern volatile s32 D_800A14D4_v asm("D_800A14D4");
-    extern volatile s32 D_800A14E0_v asm("D_800A14E0");
-    extern volatile s32 D_800A14F4_v asm("D_800A14F4");
-    extern volatile s32 D_800A14F8_v asm("D_800A14F8");
-    extern volatile s32 D_800A1500_v asm("D_800A1500");
-    s32 mode;
-    s32 result_code;
-    volatile s32 *saved_ptr;
 
-    D_800A14DC_v = arg2;
-    mode = D_800A14DC_v & 0x30;
-    switch (mode) {
+/* PsyQ 4.0 LIBCD cdread.c: CdRead — verbatim-linked Sony object (census
+   2026-07-09); C ref: sotn-decomp src/main/psxsdk/libcd/cdread.c */
+s32 func_800826CC(s32 sectors, s32 buf, s32 mode) {
+    D_800A14D0.mode = mode;
+    switch (D_800A14D0.mode & 0x30) {
         case 0:
-            result_code = 0x200;
+            D_800A14D0.size = 0x200;
             break;
         case 0x20:
-            result_code = 0x249;
+            D_800A14D0.size = 0x249;
             break;
         default:
-            result_code = 0x246;
+            D_800A14D0.size = 0x246;
             break;
     }
-    D_800A14E0_v = result_code;
-    D_800A14DC_v = D_800A14DC_v | 0x20;
-    saved_ptr = &D_800A14D0;
-    D_800A14D4_v = arg1;
-    *saved_ptr = arg0;
-    D_800A14F4_v = cdrom_SetCallbackA(0);
-    D_800A14F8_v = cdrom_SetCallbackB(0);
-    if (D_800A1500_v & 1) {
-        D_800A14FC = func_80080660_ret(0);
+    D_800A14D0.mode |= 0x20;
+    D_800A14D0.buf = buf;
+    D_800A14D0.sectors = sectors;
+    D_800A14D0.cbsync = cdrom_SetCallbackA(0);
+    D_800A14D0.cbready = cdrom_SetCallbackB(0);
+    if (D_800A14D0.tslmode & 1) {
+        D_800A14D0.cbdata = tslTmlGetHeda(0);
     }
-    D_800A14EC = sys_VSync(-1);
+    D_800A14D0.t1 = sys_VSync(-1);
     if (cdrom_GetMode() & 0xE0) {
         tslPolyF4Init(9, 0, 0);
     }
-    return saEft00Add_ret(0) > 0;
+    return saEft00Add(0) > 0;
 }
 
-s32 func_800827D0(s32 a0, s32 a1) {
-    s32 *p = &D_800A14EC;
-    s32 result;
+/* PsyQ 4.0 LIBCD cdread.c: CdReadSync — verbatim-linked Sony object (census
+   2026-07-09); C ref: sotn-decomp src/main/psxsdk/libcd/cdread.c */
+s32 func_800827D0(s32 mode, s32 result) {
+    s32 var_s0;
 
-    do {
-        s32 tick = sys_VSync(-1);
-        if (*p + 0x4B0 < tick) {
-            result = -1;
-        } else {
-            if (p[-2] < 0) {
-                goto do_seek;
-            }
-            tick = sys_VSync(-1);
-            if (p[-1] + 0x3C < tick) {
-do_seek:
+    while (1) {
+        var_s0 = -1;
+        if (sys_VSync(-1) <= D_800A14D0.t1 + 1200) {
+            if (D_800A14D0.cnt < 0 ||
+                sys_VSync(-1) > D_800A14D0.t2 + 60) {
                 saEft00Add(1);
-                result = p[-7];
+                var_s0 = D_800A14D0.sectors;
             } else {
-                result = p[-2];
+                var_s0 = D_800A14D0.cnt;
             }
         }
-        if (a0 != 0) break;
-    } while (result > 0);
-    ((void (*)(s32, s32))Vu0SetLightColMatrix_80080208)(1, a1);
-    return result;
+        if (mode != 0 || var_s0 <= 0) {
+            Vu0SetLightColMatrix_80080208(1, (u8 *)result);
+            return var_s0;
+        }
+    }
 }
