@@ -1,0 +1,337 @@
+diff --git a/src/system.c b/src/system.c
+index aa1d68fc..7eab89c2 100644
+--- a/src/system.c
++++ b/src/system.c
+@@ -284,12 +284,15 @@ s32 func_80080600(void) {
+     return 1;
+ }
+ 
+-s32 func_80080620(void) {
+-    return cdrom_DmaToRam() == 0;
++/* PsyQ 4.0 LIBCD sys: CdGetSector / CdGetSector2 — verbatim-linked Sony
++   objects (census 2026-07-09); forward (madr, size) honestly (were void(void)
++   register-passthrough accidents; session-2 CdSync/CdReady precedent). */
++s32 func_80080620(s32 madr, s32 size) {
++    return cdrom_DmaToRam(madr, size) == 0;
+ }
+ 
+-s32 Vu0SetLightColMatrix_80080640(void) {
+-    return cdrom_DmaChain() == 0;
++s32 Vu0SetLightColMatrix_80080640(s32 madr, s32 size) {
++    return cdrom_DmaChain(madr, size) == 0;
+ }
+ 
+ /* PsyQ 4.0 LIBCD sys: CdDataCallback — verbatim-linked Sony object (census
+@@ -929,14 +932,27 @@ void cdrom_IrqHandler(void) {
+     } while (1);
+     *g_cd_index_reg = s2;
+ }
++/* PsyQ 4.0 LIBC2 puts: puts — verbatim-linked Sony object (census
++   2026-07-09); no public C ref (absent from sotn psxsdk tree); transcribed
++   from the ground-truth object: putchar loop with "<NULL>" fallback. */
++extern s32 D_800162CC;
++extern void func_8007997C();
+ void tslTm2LoadImage_2(void *a0) {
+-    (void)a0;
++    char *s = a0;
++    char c;
++
++    if (s == NULL) {
++        s = (char *)&D_800162CC;
++    }
++    while ((c = *s++) != 0) {
++        func_8007997C(c);
++    }
+ }
+ /* kengo:MED  |  tsl_tm2/tslTm2LoadImage_2  |  253i  |  -10 x2 size collision */
+ extern s32 D_800162EC;
+ extern s32 D_80016304;
+-extern s32 D_80082050;
+-extern s32 D_80082320;
++static void D_80082050(u8 intr, u8 *result);
++static void D_80082320(void);
+ 
+ /* PsyQ 4.0 LIBCD cdread.c module .data block — CD_ReadCallbackFunc followed
+    by the volatile cdread state struct (SOTN psxsdk names it D_80032DBC); BB2
+@@ -959,7 +975,16 @@ typedef struct {
+     /* 0x2C */ s32 cbdata;  /* D_800A14FC */
+     /* 0x30 */ s32 tslmode; /* D_800A1500 */
+ } CdlREAD;
+-extern volatile CdlREAD D_800A14D0;
++/* No file-scope decl for D_800A14D0: the symbol is CD_sectors AND the block
++   base simultaneously (Sony CDREAD.OBJ ground truth: every member access
++   relocates against the module's own .data section — the state was static
++   in cdread.c; our per-member externs are the granted §3 view of it).
++   func_800827D0 (CdReadSync) declares the one-object CdlREAD view in-body —
++   its target bytes address members via displacements off a cached base,
++   which only a single C object can produce. saEft00Add / func_800826CC
++   declare the CD_sectors scalar view in-body — their target bytes access
++   the word as a plain symbol (macro form / pointer-local la). Per-site
++   citations at each decl. */
+ 
+ /* PsyQ 4.0 LIBCD cdread.c: cd_read_retry (static) — verbatim-linked Sony
+    object (census 2026-07-09). Body below is the HEAD interim form (still
+@@ -967,22 +992,121 @@ extern volatile CdlREAD D_800A14D0;
+    banked in memory/closer/candidates/ — see phase3-progress.md. These
+    per-member externs are the HEAD-era declarations kept only for this
+    function; they name the same Sony data block the CdlREAD struct spans. */
+-extern s32 D_800A1500;
+-extern s32 D_800A14EC;
+-extern s32 D_800A14E8;
+-extern s32 D_800A14E4;
+-extern s32 D_800A14DC;
+-extern s32 D_800A14D4;
+-extern s32 D_800A14D8;
+-extern s32 D_800A14F0;
++/* Per-member view of the same volatile Sony cdread block (CdlREAD above):
++   zero-offset symbol accesses are what Sony's cdread.c v1.86 compiles to
++   (macro-form lw/sw; the struct+addend spelling la-materializes the first
++   access — measured 2026-07-10, cc1psx-confirmed). Volatile pending the
++   Ruling-4 block grant (proposal §3, memory/closer/volatile-grant-proposals.md);
++   saEft00Add's interim HEAD body compensates with de-volatile casts. */
++extern volatile s32 D_800A1500;
++extern volatile s32 D_800A14EC;
++extern volatile s32 D_800A14E8;
++extern volatile s32 D_800A14E4;
++extern volatile s32 D_800A14E0;
++extern volatile s32 D_800A14DC;
++extern volatile s32 D_800A14D4;
++extern volatile s32 D_800A14D8;
++extern volatile s32 D_800A14F0;
++extern volatile s32 D_800A14F4;
++extern volatile s32 D_800A14F8;
++extern volatile s32 D_800A14FC;
++
++extern u8 *D_800A1504;   /* cdread.c v1.86: saved result ptr for cb dispatch */
++extern s32 D_800A14CC;   /* CD_ReadCallbackFunc */
++extern s32 D_800162D4;   /* "CdRead: sector error\n" */
++extern s32 myRobGeneiDraw3(s32, s32); /* CdControlF */
++
++/* PsyQ 4.0 LIBCD cdread: cb_read (static) — verbatim-linked Sony object
++   (census 2026-07-09); C ref: sotn-decomp src/main/psxsdk/libcd/cdread.c
++   cb_read() (v1.86 deltas: saved result ptr D_800A1504, tsl-mode DMA-chain
++   split with deferred advance via the cb_data callback below). */
++static void D_80082050(u8 intr, u8 *result) {
++    s32 pos[3];
++    volatile s32 *pp;
++    volatile s32 *tsl;
++
++    D_800A1504 = result;
++    if (intr == 1) {
++        if (D_800A14E4 > 0) {
++            if (D_800A14E0 == 0x200) {
++                if (D_800A1500 & 1) {
++                    tslTmlGetHeda(0);
++                    Vu0SetLightColMatrix_80080640((s32)pos, 3);
++                    Vu0SetLightColMatrix_80080684(0);
++                    tslTmlGetHeda((s32)&D_80082320);
++                } else {
++                    func_80080620((s32)pos, 3);
++                }
++                pp = &D_800A14F0; /* target la-form read 0x800820F4+ */
++                if (cdrom_BcdToFrames((u8 *)pos) != *pp) {
++                    tslTm2LoadImage_2(&D_800162D4);
++                    D_800A14E4 = -1;
++                }
++            }
++            tsl = &D_800A1500; /* target la-form read */
++            if (*tsl & 1) {
++                Vu0SetLightColMatrix_80080640(D_800A14D8, D_800A14E0);
++            } else {
++                func_80080620(D_800A14D8, D_800A14E0);
++                D_800A14D8 += D_800A14E0 * 4;
++                D_800A14E4--;
++                D_800A14F0++;
++            }
++        }
++    } else {
++        D_800A14E4 = -1;
++    }
++    D_800A14E8 = sys_VSync(-1);
++    if (D_800A14E4 < 0) {
++        saEft00Add(1);
++    }
++    if (sys_VSync(-1) > D_800A14EC + 1200) {
++        D_800A14E4 = -1;
++    }
++    if (D_800A14E4 != 0 && sys_VSync(-1) <= D_800A14EC + 1200) {
++        return;
++    }
++    cdrom_SetCallbackA(D_800A14F4);
++    cdrom_SetCallbackB(D_800A14F8);
++    if (D_800A1500 & 1) {
++        tslTmlGetHeda(D_800A14FC);
++    }
++    myRobGeneiDraw3(9, 0);
++    if (D_800A14CC != 0) {
++        ((void (*)(u8, u8 *))D_800A14CC)(D_800A14E4 == 0 ? 2 : 5, result);
++    }
++}
++
++/* PsyQ 4.0 LIBCD cdread: cb_data (static) — the tsl-mode data-DMA-complete
++   callback installed by cb_read above; performs the deferred buffer advance. */
++static void D_80082320(void) {
++    D_800A14D8 += D_800A14E0 * 4;
++    D_800A14E4--;
++    D_800A14F0++;
++    if (D_800A14E4 != 0) {
++        return;
++    }
++    cdrom_SetCallbackA(D_800A14F4);
++    cdrom_SetCallbackB(D_800A14F8);
++    if (D_800A1500 & 1) {
++        tslTmlGetHeda(D_800A14FC);
++    }
++    myRobGeneiDraw3(9, 0);
++    if (D_800A14CC != 0) {
++        ((void (*)(u8, u8 *))D_800A14CC)(2, D_800A1504);
++    }
++}
+ 
+ s32 saEft00Add(s32 arg0) {
+     u8 sp10;
+     s32 temp_s0;
++    volatile s32 *tsl;
++    volatile s32 *md;
+ 
+     cdrom_SetCallbackA(0);
+     cdrom_SetCallbackB(0);
+-    if (*(volatile s32 *)&D_800A1500 & 1) {
++    tsl = &D_800A1500;
++    if (*tsl & 1) {
+         tslTmlGetHeda(0);
+     }
+     if (cdrom_GetMode() & 0x10) {
+@@ -991,29 +1115,26 @@ s32 saEft00Add(s32 arg0) {
+         }
+         func_80080390(1, 0);
+         D_800A14EC = sys_VSync(-1);
+-        *(volatile s32 *)&D_800A14E4 = -1;
+-        goto end;
++        D_800A14E4 = -1;
++        return D_800A14E4;
+     }
+     if (arg0 != 0) {
+         tslTm2LoadImage_2(&D_80016304);
+         func_80080258(9, 0, 0);
+         temp_s0 = (s32)func_800800CC();
+-        if (func_80080258(2, temp_s0, 0) != 0) {
+-            goto common_path;
++        if (func_80080258(2, temp_s0, 0) == 0) {
++            return D_800A14E4 = -1;
+         }
+-        D_800A14E4 = -1;
+-        __asm__("");
+-        goto end;
+     }
+-common_path:
+     func_80080148();
+-    temp_s0 = *(volatile s32 *)&D_800A14DC;
++    md = &D_800A14DC;
++    temp_s0 = *md;
+     sp10 = temp_s0;
+     temp_s0 = temp_s0 & 0xFF;
+     if (temp_s0 != cdrom_GetReadyFlag() || arg0 != 0) {
+         if (func_80080258(0xE, (s32)&sp10, 0) == 0) {
+             D_800A14E4 = -1;
+-            goto end;
++            return D_800A14E4;
+         }
+     }
+     D_800A14F0 = cdrom_BcdToFrames(func_800800CC());
+@@ -1023,24 +1144,28 @@ common_path:
+     }
+     D_800A14D8 = D_800A14D4;
+     func_80080390(6, 0);
+-    D_800A14E4 = *(s32 *)&D_800A14D0.sectors; /* interim: HEAD parity needs a
+-        non-volatile read here; goes away with this function's honest close */
++    {
++        extern volatile s32 D_800A14D0; /* CD_sectors scalar view: target reads
++            sectors as 2-insn macro-form (0x800825EC lui/lw) */
++        D_800A14E4 = D_800A14D0;
++    }
+     D_800A14E8 = sys_VSync(-1);
+-end:
+     return D_800A14E4;
+ }
+ 
+ /* PsyQ 4.0 LIBCD cdread.c: CdReadBreak — verbatim-linked Sony object
+    (census 2026-07-09); C ref: sotn-decomp psxsdk shape + v1.86 hooks */
+ void saEft00Add_sub(void) {
+-    if (D_800A14D0.tslmode & 1) {
++    volatile s32 *tsl = &D_800A1500; /* target caches &tslmode in $s0
++        (0x80082638 lui/addiu) and re-reads 0($s0) twice */
++    if (*tsl & 1) {
+         Vu0SetLightColMatrix_80080684(0);
+     }
+-    D_800A14D0.cnt = 0;
+-    cdrom_SetCallbackA(D_800A14D0.cbsync);
+-    cdrom_SetCallbackB(D_800A14D0.cbready);
+-    if (D_800A14D0.tslmode & 1) {
+-        tslTmlGetHeda(D_800A14D0.cbdata);
++    D_800A14E4 = 0;
++    cdrom_SetCallbackA(D_800A14F4);
++    cdrom_SetCallbackB(D_800A14F8);
++    if (*tsl & 1) {
++        tslTmlGetHeda(D_800A14FC);
+     }
+     func_80080390(9, 0);
+ }
+@@ -1048,27 +1173,32 @@ void saEft00Add_sub(void) {
+ /* PsyQ 4.0 LIBCD cdread.c: CdRead — verbatim-linked Sony object (census
+    2026-07-09); C ref: sotn-decomp src/main/psxsdk/libcd/cdread.c */
+ s32 func_800826CC(s32 sectors, s32 buf, s32 mode) {
+-    D_800A14D0.mode = mode;
+-    switch (D_800A14D0.mode & 0x30) {
++    extern volatile s32 D_800A14D0; /* CD_sectors scalar view; the store below
++        goes through a pointer local: target materializes the address
++        (0x80082728 lui/addiu) and stores sw $a3,0($v0) */
++    volatile s32 *ps;
++    D_800A14DC = mode;
++    switch (D_800A14DC & 0x30) {
+         case 0:
+-            D_800A14D0.size = 0x200;
++            D_800A14E0 = 0x200;
+             break;
+         case 0x20:
+-            D_800A14D0.size = 0x249;
++            D_800A14E0 = 0x249;
+             break;
+         default:
+-            D_800A14D0.size = 0x246;
++            D_800A14E0 = 0x246;
+             break;
+     }
+-    D_800A14D0.mode |= 0x20;
+-    D_800A14D0.buf = buf;
+-    D_800A14D0.sectors = sectors;
+-    D_800A14D0.cbsync = cdrom_SetCallbackA(0);
+-    D_800A14D0.cbready = cdrom_SetCallbackB(0);
+-    if (D_800A14D0.tslmode & 1) {
+-        D_800A14D0.cbdata = tslTmlGetHeda(0);
++    D_800A14DC |= 0x20;
++    ps = &D_800A14D0;
++    D_800A14D4 = buf;
++    *ps = sectors;
++    D_800A14F4 = cdrom_SetCallbackA(0);
++    D_800A14F8 = cdrom_SetCallbackB(0);
++    if (D_800A1500 & 1) {
++        D_800A14FC = tslTmlGetHeda(0);
+     }
+-    D_800A14D0.t1 = sys_VSync(-1);
++    D_800A14EC = sys_VSync(-1);
+     if (cdrom_GetMode() & 0xE0) {
+         tslPolyF4Init(9, 0, 0);
+     }
+@@ -1078,6 +1208,11 @@ s32 func_800826CC(s32 sectors, s32 buf, s32 mode) {
+ /* PsyQ 4.0 LIBCD cdread.c: CdReadSync — verbatim-linked Sony object (census
+    2026-07-09); C ref: sotn-decomp src/main/psxsdk/libcd/cdread.c */
+ s32 func_800827D0(s32 mode, s32 result) {
++    extern volatile CdlREAD D_800A14D0; /* one-object view REQUIRED by target
++        bytes: 0x800827E8 caches &t1 in $s1 and addresses the other members
++        via displacements off it (lw -0x8($s1)=cnt, -0x4($s1)=t2,
++        -0x1C($s1)=sectors) — cross-member addressing only a single C object
++        can produce; Sony's cdreadStruct (SOTN cdread.c D_80032DBC) */
+     s32 var_s0;
+ 
+     while (1) {

@@ -1,5 +1,60 @@
 # Closer Phase 3 — PsyQ psxsdk adoption progress ledger
 
+## SESSION 9 (2026-07-10) — CDREAD family closed bit-exact (triple + saEft00Add)
+
+**tslTm2LoadImage_2 (puts + cb_read + cb_data, dist 261, 1 asmfix splice) —
+CANDIDATE-COMPLETE, claimed.** Grant §3 ratified (d568759c) unblocked the
+banked patch; applied + re-proven 0/263 bit-exact (triple_prove.sh). Sandbox
+reads 243 = extent-split artifact only (my puts is 20 insns vs the 263-insn
+splice extent; statics get own F symbols; self-heals on driver rebuild —
+S_SCA/SpuSetKey precedent). DRIVER MECHANICS: the asmfix splice must be
+stripped in the SAME commit (in-tree rules-on build is unbuildable until then).
+
+**saEft00Add (cd_read_retry, dist 18, 11 rules) — CANDIDATE-COMPLETE, claimed
+(BONUS: the long-parked coupled-fixpoint function).** 0/133 bit-exact via
+saeft_prove.sh; sandbox 3 = pure reloc-spelling artifacts (struct addend +
+string symbol addends). The honest close, all levers measured this session:
+- Volatile per-member decls (granted §3) + HEAD goto chassis: 18 -> 14.
+- Mixed exit forms (goto end1 / inline return / goto end3 / goto end4, the
+  cross-jump-store-tail-merge recipe): 14 -> 9; one tail pair still merged.
+- INTERIM FINDING (superseded, kept for the record): reloc-spelling variance
+  (`D_800A14D0.cnt = -1` vs scalar) defeats find_cross_jump (non-rtx_equal
+  mems, identical bytes). 9 -> 6. SUPERSEDED because Sony's CDREAD.OBJ
+  ground truth shows ALL tail stores carry the IDENTICAL reloc
+  (.data+0x18) — Sony's mems were identical; the real mechanism is the
+  SOTN-source MIXED INLINE RETURNS: tail2 is `return D_800A14E4 = -1;`
+  (assignment-expression return, no volatile re-read -> different RTL
+  suffix shape; SOTN cdread.c line `return D_80032DBC.unk14 = -1;`), tails
+  1/3 are store+re-read returns. The Sony-literal shapes measure 133/133
+  bit-exact in our fork with zero synthetic devices. Reviewer round-2
+  correctly forced this replacement.
+- KEY NEW FINDING — zero-offset volatile struct access is UNFOLDABLE la-form
+  in this fork (cse.c find_best_addr skips bare-REG addresses; combine
+  refuses substitution into volatile mems; measured in tmp/closer/rtl/
+  dumps). Macro-form volatile access of D_800A14D0+0 therefore REQUIRES the
+  scalar decl; cross-member negative-displacement addressing (CdReadSync's
+  s1-cached base) REQUIRES the struct decl. Since C forbids both at file
+  scope, the views are FUNCTION-SCOPED block externs (no file-scope decl;
+  GCC 2.7.2 accepts sibling-scope type-mismatched externs, warning-only).
+  Final per-site design (reviewer round-2 discipline: every decl cites its
+  target bytes, struct dropped where not required): CdReadSync keeps the
+  ONE in-body CdlREAD object view (cached-base cross-member displacements
+  at 0x800827E8+); saEft00Add + CdRead use in-body CD_sectors scalar views
+  (macro read 0x800825EC / pointer-local la store 0x80082728); sub +
+  cb_read respelled to granted scalars + pointer-locals. All six regions
+  re-proven 0-differing after the respell.
+- saEft00Add_sub 0/39, CdRead 0/65, CdReadSync 0/51 re-proven bit-exact with
+  the scoped decls; head_cmp.sh: emission differs ONLY in the six intended
+  functions; the CdGetSector wrapper signature fixes are emission-identical.
+
+**Review trail:** layer-1 reviewer FAILed the banked patch's de-volatile
+compensation casts (volatile-coercion family, any direction) — the honest
+close above is the fix; second fresh reviewer invoked on the final state.
+Full patch banked: memory/closer/candidates/cdread_family_close.patch.
+
+**Artifacts:** tmp/closer/saeft_prove.sh, tmp/closer/one_prove.sh,
+tmp/closer/rtl_dump.sh + tmp/closer/rtl/ (per-pass dumps), foldscan.sh.
+
 ## SESSION 8 (2026-07-10) — SpuSetKey claimed; CDREAD triple proven 0/263 (grant-gated)
 
 **func_8008AAD4 (SpuSetKey, dist 7, 42 rules) — CANDIDATE-COMPLETE, claimed.**
