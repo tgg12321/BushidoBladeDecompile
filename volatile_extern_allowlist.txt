@@ -42,3 +42,15 @@ D_800F7424    # = _spu_RQ+4 (same object as D_800F7420; kept while the split ext
 D_800A28A0    # _spu_RQmask — already volatile at HEAD (ungranted debt); Ruling-4 class (ground-truth codegen), same S_SK evidence.
 D_800A2CD4    # _spu_env — already volatile at HEAD (ungranted debt); the batch-env mode gate (synchronous). Ruling-4 class grant.
 D_800A289C    # _spu_RQvoice — same S_SK family, same S_SK module state. Ruling-4 class grant.
+D_800A14D4    # cdread.c .buf — per-member view of the granted D_800A14D0 CdlREAD block (same memory, same CDREAD.OBJ ground truth). Ruling-4 + IRQ prong (cb_read IS the CD-ready ISR, installed cdrom_SetCallbackB(&D_80082050) system.c:1043). Per-member decls measured REQUIRED: struct spelling la-materializes (cc1psx-confirmed), per-member = 0/263 bit-exact. Operator-audited 2026-07-10 (proposal §3).
+D_800A14D8    # cdread.c .p — same §3 grant.
+D_800A14DC    # cdread.c .mode — same §3 grant.
+D_800A14E0    # cdread.c .size — same §3 grant.
+D_800A14E4    # cdread.c .cnt — same §3 grant.
+D_800A14E8    # cdread.c .t2 — same §3 grant.
+D_800A14EC    # cdread.c .t1 — same §3 grant.
+D_800A14F0    # cdread.c .pos — same §3 grant.
+D_800A14F4    # cdread.c .cbsync — same §3 grant.
+D_800A14F8    # cdread.c .cbready — same §3 grant.
+D_800A14FC    # cdread.c .cbdata — same §3 grant.
+D_800A1500    # cdread.c .tslmode — same §3 grant.
