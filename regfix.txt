@@ -1962,52 +1962,20 @@ cpu_set_move_command_and_dir_for_no_action_2: subst "\.L\d+" ".Linner" @ 169
 # D_80083418: IRQ handler -- s4/s5 swap, missing outer loop beqz, v0/v1 done section
 
 # s4/s5 swap ($20/$21) in data instructions only (prologue/epilogue saves are correct)
-D_80083418: subst "\$21" "$20" @ 15
-D_80083418: subst "\$20" "$21" @ 18
-D_80083418: subst "\$20" "$21" @ 20
-D_80083418: subst "\$21" "$20" @ 27
 
 # Insert outer loop guard beqz (GCC eliminated as dead code; target keeps it)
-D_80083418: insert "beq	$17,$0,{lbl#4}" @ 19
 
 # Done section: v0/v1 swap ($2/$3) in ctrl-read + mask-test
-D_80083418: subst "\$3" "$2" @ 52
-D_80083418: subst "\$2" "$3" @ 53
-D_80083418: subst "and\t\$2,\$3,\$2" "and	$2,$2,$3" @ 54
-D_80083418: subst "\$3" "$2" @ 58
-D_80083418: subst "\$3" "$2" @ 60
 
 # Debug loop: v0/v1 swap in addu+lw base
-D_80083418: subst "addu\t\$2,\$2,\$3" "addu	$3,$3,$2" @ 71
-D_80083418: subst "\$2" "$3" @ 72
 
 # D_8008359C: register/unregister handler -- a0/a2 role swap, computation reorder, unfill j delay
 
 # Substs (original indices)
-D_8008359C: subst "sll\t\$3,\$4" "sll	$2,$6" @ 0
-D_8008359C: subst "\$2" "$3" @ 1
-D_8008359C: subst "addu\t\$3,\$3,\$2" "addu	$3,$2,$3" @ 2
-D_8008359C: subst "\$6" "$4" @ 4
-D_8008359C: subst "\$6" "$4" @ 5
-D_8008359C: subst "\$6" "$4" @ 7
-D_8008359C: subst "\$6" "$4" @ 11
-D_8008359C: subst "\$6" "$4" @ 13
-D_8008359C: subst "addu\t\$4,\$4,16" "addu	$3,$6,16" @ 14
-D_8008359C: subst "\$6" "$4" @ 15
-D_8008359C: subst "\$6" "$4" @ 15
-D_8008359C: subst "or\t\$3,\$6,\$3" "or	$2,$2,$3" @ 16
-D_8008359C: subst "\$4" "$3" @ 18
-D_8008359C: subst "or\t\$6,\$3,\$2" "or	$4,$4,$2" @ 19
-D_8008359C: subst "\$6" "$4" @ 21
-D_8008359C: subst "\$4,\$4" "$4,$6" @ 26
 
 # Inserts (original indices)
-D_8008359C: insert "addu	$6,$4,$zero" @ 0
-D_8008359C: insert "nop" @ 21
 
 # Reorders (post-insert indices)
-D_8008359C: reorder 2,1 @ 1-2
-D_8008359C: reorder 12,14,15,16,18,19,13,17,20,23,21,22 @ 12-23
 
 # efc_rob_set_type_flash: type==0x12 branch — lw/addu use v0 not s2
 efc_rob_set_type_flash: subst "\$18" "$2" @ 111

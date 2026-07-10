@@ -108,18 +108,22 @@ extern s32 D_80016318;
 extern void tslTm2LoadImage_2(void *);
 extern void bios_ChangeClearPad(s32);
 extern void bios_ChangeClearRCnt(s32, s32);
+/* PsyQ 4.0 LIBETC VSYNC: v_wait (static) — verbatim-linked Sony object
+   (census 2026-07-09); C ref: sotn-decomp src/main/psxsdk/libetc/vsync.c.
+   FAKE(partial-use volatile array, Ruling 3 2026-07-10): only [0] is
+   referenced — SOTN ships the identical `volatile s32 timeout[2]` shape;
+   original author idiom. */
 void func_80082A14(s32 a0, s32 a1) {
-    volatile s32 counter = a1 << 15;
-    asm volatile("" ::: "memory");
-    if (g_sys_dma_region < a0) {
-        do {
-            if (--counter == -1) {
-                tslTm2LoadImage_2(&D_80016318);
-                bios_ChangeClearPad(0);
-                bios_ChangeClearRCnt(3, 0);
-                return;
-            }
-        } while (g_sys_dma_region < a0);
+    volatile s32 timeout[2];
+
+    timeout[0] = a1 << 0xF;
+    while (g_sys_dma_region < a0) {
+        if (timeout[0]-- == 0) {
+            tslTm2LoadImage_2(&D_80016318);
+            bios_ChangeClearPad(0);
+            bios_ChangeClearRCnt(3, 0);
+            return;
+        }
     }
 }
 __asm__(
@@ -362,8 +366,12 @@ void D_80083370(s32 a0, s32 a1) {
     }
 }
 extern s32 D_800A2640[8];
-extern s32 *D_800A263C;
-extern s32 *D_800A2660;
+/* PsyQ 4.0 LIBETC intr_dma.c module state (verbatim-linked Sony object,
+   census 2026-07-09; C ref: sotn-decomp src/main/psxsdk/libetc/intr_dma.c).
+   D_800A263C holds 0x1F8010F4 (DMA Interrupt Register) — Sony declares it
+   `static volatile u_long *` (pointer-to-volatile-MMIO, type-level). */
+extern volatile u32 *D_800A263C;
+extern u32 *D_800A2660;
 extern u8 D_80016394;
 extern u8 D_800163B0;
 
@@ -378,95 +386,50 @@ void sys_MemClear(s32 *a0, s32 a1) {
 }
 s32 conv_matrix_rotation(void) {
     sys_MemClear2((s32 *)&D_800A2640, 8);
-    *(volatile s32 *)D_800A263C = 0;
+    *D_800A263C = 0;
     ((void (*)(s32, void *))irq_EnableInterrupts)(3, (void *)D_80083418);
     return (s32)D_8008359C;
 }
 
+/* PsyQ 4.0 LIBETC INTR_DMA: trapIntrDMA (static) — verbatim-linked Sony
+   object (census 2026-07-09); C ref: sotn-decomp libetc/intr_dma.c */
 void D_80083418(void) {
+    u32 mask;
     s32 i;
-    u32 bits;
-    s32 *tbl;
-    s32 *base;
-    s32 one;
-    u32 mask_const;
 
-    bits = ((u32)*(volatile s32 *)D_800A263C >> 24) & 0x7F;
-    if (bits == 0) goto done;
-
-    one = 1;
-    mask_const = 0x00FFFFFF;
-    base = D_800A2640;
-
-outer:
-    if (bits == 0) goto reload;
-    i = 0;
-    tbl = base;
-inner:
-    if (i >= 7) goto reload;
-    if (bits & 1) {
-        s32 *ctrl = D_800A263C;
-        s32 val = *ctrl;
-        val &= (one << (i + 24)) | mask_const;
-        *ctrl = val;
-
-        if (*tbl != 0) {
-            ((void (*)(void))*tbl)();
+    while ((mask = (*D_800A263C >> 24) & 0x7F) != 0) {
+        for (i = 0; mask != 0 && i < 7; i++, mask >>= 1) {
+            if (mask & 1) {
+                *D_800A263C &= 0xFFFFFF | (1 << (i + 24));
+                if (D_800A2640[i] != 0) {
+                    ((void (*)(void))D_800A2640[i])();
+                }
+            }
         }
     }
-    tbl++;
-    bits >>= 1;
-    i++;
-    if (bits != 0) goto inner;
-reload:
-    bits = ((u32)*(volatile s32 *)D_800A263C >> 24) & 0x7F;
-    if (bits != 0) goto outer;
 
-done:
-    {
-        s32 *ctrl = D_800A263C;
-        s32 val = *ctrl;
-        if ((val & (s32)0xFF000000u) == (s32)0x80000000u) goto error;
-        val = *(volatile s32 *)ctrl;
-        if (!(val & 0x8000)) return;
-    error:
-        debug_printf(&D_80016394, *ctrl);
-        i = 0;
-        do {
-            s32 *p = D_800A2660;
-            debug_printf(&D_800163B0, i, *(s32 *)((u8 *)p + (i << 4)));
-            i++;
-        } while (i < 7);
+    if ((*D_800A263C & 0xFF000000) == 0x80000000 || *D_800A263C & 0x8000) {
+        debug_printf(&D_80016394, *D_800A263C);
+        for (i = 0; i < 7; i++) {
+            debug_printf(&D_800163B0, i, D_800A2660[4 * i]);
+        }
     }
 }
 
+/* PsyQ 4.0 LIBETC INTR_DMA: setIntrDMA (static) — verbatim-linked Sony
+   object (census 2026-07-09); C ref: sotn-decomp libetc/intr_dma.c */
 s32 D_8008359C(s32 a0, s32 a1) {
-    s32 *tbl;
-    s32 old;
-
-    tbl = &D_800A2640[a0];
-    old = *tbl;
-    if (a1 == old) return old;
-
-    if (a1 != 0) {
-        s32 *ctrl = D_800A263C;
-        s32 val;
-        *tbl = a1;
-        val = *ctrl;
-        val &= 0x00FFFFFF;
-        val |= (1 << (a0 + 16)) | 0x00800000;
-        *ctrl = val;
-    } else {
-        s32 *ctrl = D_800A263C;
-        s32 val;
-        *tbl = 0;
-        val = *ctrl;
-        val &= 0x00FFFFFF;
-        val |= 0x00800000;
-        val &= ~(1 << (a0 + 16));
-        *ctrl = val;
+    s32 prev = D_800A2640[a0];
+    if (a1 != prev) {
+        if (a1 != 0) {
+            D_800A2640[a0] = a1;
+            *D_800A263C = (*D_800A263C & 0xFFFFFF) | 0x800000 | (1 << (a0 + 16));
+        } else {
+            D_800A2640[a0] = 0;
+            *D_800A263C = ((*D_800A263C & 0xFFFFFF) | 0x800000) & ~(1 << (a0 + 16));
+        }
     }
-    return old;
+    return prev;
 }
 
 void sys_MemClear2(s32 *a0, s32 a1) {

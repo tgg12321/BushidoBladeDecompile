@@ -2709,11 +2709,12 @@ void func_8008BE9C(void) {
 }
 /* PsyQ LIBCOMB comb: SioAnsyncRead (static) — verbatim-linked Sony object
    (census 2026-07-09; ground truth tmp/libscan/psyq40/LIBCOMB.LIB). The
-   SIO async state (D_800F1AFC flag, D_800F1B00/04 buf/len) is mutated by
-   the SIO IRQ trap — volatile is original semantics. */
+   SIO async state (D_800F1B00/04 buf/len) is mutated at interrupt time by
+   HandleSio (static @0x8008C9F4) — volatile is original semantics
+   (operator-audited grant 2026-07-10, volatile_extern_allowlist.txt). */
 extern s32 D_800F1AFC;
-extern s32 D_800F1B00;
-extern s32 D_800F1B04;
+extern volatile s32 D_800F1B00;
+extern volatile s32 D_800F1B04;
 extern s32 D_800A3044;
 s32 func_8008BEA4(int a0, int a1) {
     s32 *flag = &D_800F1AFC;
@@ -2721,9 +2722,6 @@ s32 func_8008BEA4(int a0, int a1) {
         return -1;
     }
     D_800F1B04 = a1;
-    if ((flag && flag) && flag) {
-        do { } while (0);
-    }
     D_800F1B00 = a0;
     {
         s32 reg = D_800A3044;
@@ -2834,10 +2832,13 @@ return_val:
 }
 
 /* kengo:HIGH  |  nm_cpu/cpu_side_move_dir_3  |  160i  |  x4 size collision */
+/* PsyQ LIBCOMB comb: SioAnsyncWrite (static) — verbatim-linked Sony object.
+   D_800F1AF0/AF4/AF8 are mutated at interrupt time by HandleSio — volatile
+   is original semantics (operator-audited grant 2026-07-10). */
 extern s32 D_800F1AEC;
-extern s32 D_800F1AF0;
-extern s32 D_800F1AF4;
-extern s32 D_800F1AF8;
+extern volatile s32 D_800F1AF0;
+extern volatile s32 D_800F1AF4;
+extern volatile s32 D_800F1AF8;
 extern s32 D_800A3044;
 s32 func_8008C184(int a0, int a1) {
     s32 *flag = &D_800F1AEC;
@@ -2845,14 +2846,11 @@ s32 func_8008C184(int a0, int a1) {
         return -1;
     }
     D_800F1AF4 = a1;
-    if ((flag && flag) && flag) {
-        do { } while (0);
-    }
     D_800F1AF0 = a0;
     {
         s32 reg = D_800A3044;
         *flag = 1;
-        D_800F1AF8 = *(u16 *)(reg + 4) & 0x80;
+        D_800F1AF8 = *(volatile u16 *)(reg + 4) & 0x80;
         *(volatile u16 *)(reg + 0xA) |= 0x400;
     }
     return 0;

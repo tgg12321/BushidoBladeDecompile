@@ -1538,16 +1538,19 @@ s32 func_80078E20(void) {
     ExitCriticalSection();
     return 1;
 }
+/* PsyQ 4.0 LIBAPI PAD: _Pad1 (static) — verbatim-linked Sony object
+   (census 2026-07-09). FAKE(partial-use volatile array, Ruling 3
+   2026-07-10): volatile delay-counter array, only [0] used (frame 16 =
+   i[3]) — SOTN vsync.c precedent; original author idiom. */
 s32 func_80078E58(void) {
-    volatile s32 i;
-    s32 pad[2];
+    volatile s32 i[3];
     *(s16 *)((u8 *)D_8009BD84 + 0xA) = 0;
-    i = 10;
-    i = i - 1;
-    if (i != -1) {
+    i[0] = 10;
+    i[0] = i[0] - 1;
+    if (i[0] != -1) {
         do {
-            i = i - 1;
-        } while (i != -1);
+            i[0] = i[0] - 1;
+        } while (i[0] != -1);
     }
     return 0;
 }

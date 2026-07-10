@@ -374,26 +374,6 @@
       "reopen_reason": "regression: Pointer alias `s16 *ptr = &D_80102806; *ptr = a0; return *ptr;` is a STORE-compute-LOAD codegen lever, not the sanctioned LOAD-compute-STORE RMW shape \u2014 fails tests 1, 2, 3, and 5; next action: try di"
     },
     {
-      "func": "func_8008BEA4",
-      "file": "main",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: src/main.c:2765-2767 contains `if ((flag && flag) && flag) { do { } while (0); }` \u2014 a prohibited double construct: (1) the outer `if` is an always-true wrapper (`flag = &D_800F1AFC` is always non-null"
-    },
-    {
-      "func": "func_8008C184",
-      "file": "main",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: Cheat construct at src/main.c:2889-2891: `if ((flag && flag) && flag) { do { } while (0); }` \u2014 flag is always non-null (&D_800F1AEC), so the condition is always true and the body emits nothing; this i"
-    },
-    {
       "func": "camera_CalcAngles",
       "file": "sound",
       "distance": 0,
@@ -991,14 +971,6 @@
       "status": "active"
     },
     {
-      "func": "D_80083418",
-      "file": "ings2",
-      "distance": 13,
-      "verdict": "C",
-      "rules": 12,
-      "status": "active"
-    },
-    {
       "func": "func_80044098",
       "file": "text1a_c",
       "distance": 13,
@@ -1359,14 +1331,6 @@
       "distance": 20,
       "verdict": "C",
       "rules": 25,
-      "status": "active"
-    },
-    {
-      "func": "D_8008359C",
-      "file": "ings2",
-      "distance": 20,
-      "verdict": "C",
-      "rules": 20,
       "status": "active"
     },
     {
@@ -3420,15 +3384,6 @@
       "park_reason": "Delay-slot fill choice: cc1 reorg.c::fill_simple_delay_slots moves sh \u00071,8(v1) into the outer beqz delay slot; target instead fills with andi v0,a2,0x10 (eager-fill from THEN block's first insn). cc1 raw output already places sh in the slot, so the choice is in cc1 itself not maspsx. Tested store-order swap, array-index form ((s16*)base)[2]/[4], and narrow s16 arg1 \u2014 all still score 2. Permuter from clean single-function target is the named untried avenue. Single regfix: reorder 12,11 @ 11-12."
     },
     {
-      "func": "func_80078E58",
-      "file": "text1b_b",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "Target frame is 0x10 (16 bytes); only used local is volatile s32 i which yields 8 bytes. Current source has s32 pad[2]; forbidden under dead-vars-local-array (unused arrays are codegen-coercion cheats per cheats-by-any-spelling). Sandbox strip removes pad[2] giving sp=-8, distance 2 (just the prologue/epilogue addiu). No legitimate pure-C lever reserves an extra 8 bytes without forbidden constructs: a 2nd volatile s32 j packs into the same 8-byte slot, actually using j adds insns, address-coerced scalar / void-discard / unused struct member all in same forbidden family. The 26-instruction body byte-matches, only the stack adjustment differs."
-    },
-    {
       "func": "myRobGeneiDraw2",
       "file": "code6cac_b",
       "distance": 3,
@@ -3988,14 +3943,14 @@
     }
   ],
   "counts": {
-    "total": 467,
-    "active": 394,
+    "total": 462,
+    "active": 390,
     "by_status": {
-      "active": 394,
-      "parked": 73
+      "active": 390,
+      "parked": 72
     },
     "by_verdict": {
-      "C": 220,
+      "C": 216,
       "ASM-PARTIAL": 57,
       "ASM-SUSPECT": 117
     }

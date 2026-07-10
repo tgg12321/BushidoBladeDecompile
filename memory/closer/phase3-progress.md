@@ -1,5 +1,66 @@
 # Closer Phase 3 — PsyQ psxsdk adoption progress ledger
 
+## SESSION 4 (2026-07-10)
+
+**Completed (sandbox --disable all == 0 this session, edits in src/):**
+
+| queue item | Sony name | proof | notes |
+|---|---|---|---|
+| func_80082A14 | v_wait (LIBETC VSYNC static) | 0 + oracle-green in place | Ruling 3 candidate applied verbatim (asm barrier removed) |
+| func_80078E58 | _Pad1 (LIBAPI PAD static) | 0 + oracle-green in place | Ruling 3 candidate (unwritten pad[2] removed) |
+| func_8008BEA4 | SioAnsyncRead (LIBCOMB static) | 0 + oracle-green in place | granted volatile B00/B04; flag&&flag wrapper removed |
+| func_8008C184 | SioAnsyncWrite (LIBCOMB static) | 0 + oracle-green in place | granted volatile AF0/AF4/AF8 |
+| D_80083418 | trapIntrDMA (LIBETC INTR_DMA static) | 0 (12 rules to strip) | SOTN intr_dma.c literal while/for; goto-form + one/mask_const opaques removed |
+| D_8008359C | setIntrDMA (LIBETC INTR_DMA static) | 0 (20 rules to strip) | SOTN literal; `extern volatile u32 *D_800A263C` (Sony's volatile-MMIO-pointee decl); conv_matrix_rotation respelled `*D_800A263C = 0` — re-measured 0 |
+
+**KEY FINDING — session-3 label-drift blocker DISPROVEN:** SetPacketData is
+a whole-body `replace_with_asmfile` splice (asmfix:130) with address-named
+labels (.L8008Cxxx) — label-count-invariant. asmfix:139-140 (.L761/.L764
+replace_first) are INERT (no .L761 in the spliced text; sandbox with rules
+ON scores 0 under 96-item cheat-strip label renumbering). Full build SHA1
+== oracle measured THIS session with the 4 rule-free edits in place. The
+Ansync pair does NOT need the Syncro pair to land. exec_game's .L rules are
+`\.L\d+` regex (drift-robust). Only literal-.L rules in main.c were
+SetPacketData's two inert ones.
+
+**Full-oracle caveat:** after the DMA-pair edits (rule-carrying), local
+verify-oracle is NOT runnable (old rules mis-apply to new bodies) — the
+driver's strip-then-build is the proof, per session-2 precedent.
+
+**Layer-1 cheat-reviewer: PASS on the 4-function rule-free batch** (v_wait,
+_Pad1, SioAnsyncRead/Write) — IRQ-writer citations independently verified
+against asm/funcs/func_8008C464.s. DMA pair uses only type-level MMIO
+volatile (Sony's own `volatile u_long *` pointee decl) — no new grants.
+
+**saEft01Init (CD_datasync) — measured, NOT closable this session (banked):**
+- HEAD goto-accumulator chassis is structurally CORRECT (the v0=-1/0 join,
+  in-loop 0x3C0000/0x1000000 constants, three hoisted bases) — residual 18
+  = (a) param seat s0-vs-s2 allocation rotation + (b) the do_timeout window
+  seats — the SAME contested family as the twins (evidence.md s36/s39/s53).
+- Faithful SOTN while(1)+ret form: 35 (constants hoist to callee-saves,
+  window loses base caches). NESTED-inline get_alarm: 52 (nested fn forces
+  captured locals to STACK — kill that approach). volatile intr ptr
+  (&g_cd_status_a) + staged sync-first args: 18 (lbu order fixed, deref
+  order wrong). Direct printf args + volatile intr ptr: 24 (com lbu
+  hoists early where target schedules it after the ready deref; window
+  temps a3/v0/v1 rotated). src/ reverted to HEAD.
+- KEY positive: `volatile u8 *intr = &g_cd_status_a` reproduces target's
+  cached-base `lbu a0,0(s1); lbu v0,1(s1)` SHAPE (HEAD's non-volatile
+  D_800A1494 alias also does); the volatile fixes the lbu ORDER (sync
+  first). What remains is deref scheduling + the seat rotation — same knot
+  Phase 2 owns for the twins; solve there once, mirror here.
+
+**func_8007C4B8 (SetDrawEnv2, dist 4):** residual = the two prologue
+save/move pairs swapped (target homes a1->s0 before a0->s1); its 1 rule is
+`reorder 3,4,1,2 @ 1-4`. This is the documented C2A0/C4B8 prologue-order
+wall; the alias lever is the ARCHIVED-FORBIDDEN
+param-local-alias-prologue-pair-flip. Not attempted further.
+
+**func_8008BB24 (_spu_note2pitch, 39):** BB2 links the 4.0 curve-scan
+algorithm (0x103B semitone multiplier loop) — SOTN s_n2p.c is the
+table-lookup revision, NOT transplantable (same finding as func_8008BC60
+in session 2). Needs self-decomp from ground-truth object.
+
 ## SESSION 3 (2026-07-10)
 
 **Completed (measured this session, edits in src/, full build SHA1 == oracle
