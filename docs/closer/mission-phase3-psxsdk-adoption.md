@@ -80,3 +80,19 @@ Set result "progress" (or "candidate-ready" if you also closed a Phase 2
 function). This mission is expected to take MULTIPLE sessions — complete as
 many as cleanly possible, bank the rest with precise notes for the next
 session.
+
+## ADDENDUM 2026-07-10 — LIBSND hunt results (memory/closer/libsnd-hunt-report.md)
+
+BB2's sound libs are a 4.0-lineage INTERIM Sony build (Jun-Sep 1997) not in
+public archives. Consequences for this mission:
+- **func_80085270 = _SsSndStop is now census-proven** (verbatim vs the
+  Jun-06-1997 4.0 build, 118 words 100% masked) — ADD it to the work list;
+  ground-truth object in tmp/libsnd_hunt/.
+- The 9 near-proven items (SsUtKeyOnV, _SsVmKeyOffNow 1/27, SsUtGetDetVVol
+  1/14, SsUtGetVVol 2/42, SsUtSetDetVVol, _SsVmGetSeqLVol/RVol 2/28,
+  _SpuSetAnyVoice, _SsVmDoAllocate) are STRETCH targets only: identity is
+  near-certain but our reference objects differ slightly (interim build).
+  Adoption must reach sandbox-0 honestly against BB2's actual bytes — the
+  reference C + close objects make this tractable, but do NOT force it;
+  bank and move on if the interim delta resists.
+- The remaining LIBSND-gap items stay excluded (unproven identity).
