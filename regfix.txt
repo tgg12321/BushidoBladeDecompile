@@ -92,7 +92,6 @@ func_80080258: $19 <-> $20 @ 11-59
 # func_80080258: interleave argument moves with prologue saves
 func_80080258: reorder 3,18,4,17,5,6,7,19,8,9,10,11,12,13,14,15,16 @ 3-19
 
-
 # func_80036FD4: SpecialCam in $5(a1) -> $3(v1), entry loads $3/$2 -> $4/$5
 # Reorder: put sra after SpecialCam load
 func_80036FD4: reorder 11,13,12,14 @ 11-14
@@ -409,7 +408,6 @@ rob_life_ctrl: subst "addu\t\$5,\$7,4" "addiu	$5,$5,104" @ 88
 func_80019310: insert "nop" @ 3
 # Prologue: reorder TEXT 1-2 (post-insert indices) to swap lw and move
 func_80019310: reorder 2,1 @ 1-2
-
 
 # func_80041988: reorder init block (lui/addu/lbu before constant inits)
 func_80041988: reorder 19,20,21,16,17,22,23,18 @ 16-23
@@ -1557,7 +1555,6 @@ saTan5TakeAnim2: subst "\$6,\$4" "$5,$3" @ 147
 # return result: a2->a1
 saTan5TakeAnim2: subst "\$6" "$5" @ 148
 
-
 # camera_set_zoom: delay slot fills (fix +8 bytes)
 camera_set_zoom: subst "nop" "addiu\t$2,$zero,1" @ 24
 camera_set_zoom: delete @ 25
@@ -2116,7 +2113,6 @@ cpu_set_move_command_and_dir_for_no_action: subst "\$4" "$2" @ 147
 cpu_set_move_command_and_dir_for_no_action: subst "\$4" "$2" @ 154
 cpu_set_move_command_and_dir_for_no_action: subst "\$4" "$2" @ 155
 
-
 # ===== func_8008BB24: compound regfix (79-insn fixed-point attenuation) =====
 # C structure: v7 (2-multiply loop, 3 volatile for 16-byte frame)
 # Strategy: delete labeled insns to detach labels, re-insert at correct positions
@@ -2539,7 +2535,6 @@ saTan0KiWareMoveA: reorder 67,68,69,70,71,72,73,75,63,64,65,76,66,74 @ 63-76
 # Original 94,95 -> post-everything 97,98 (+3 from GTE, no shift from sqrt/end)
 saTan0KiWareMoveA: reorder 98,97 @ 97-98
 
-
 # func_8002304C (tanren_CameraControl) — 16-rule compound regfix
 # LICM unhoist: subst delay-slot fills to nop (s7 materialized in prologue instead)
 func_8002304C: subst "lui\t\$23.*" "nop" @ 26
@@ -2564,7 +2559,6 @@ func_8002304C: insert "andi $3,$4,0xFFFF" @ 168
 # LICM unhoist: insert lui+ori s7 after sw s7,52(sp) (reversed file order for correct layout)
 func_8002304C: insert_after "ori $23,$23,0x02B8" @ 17
 func_8002304C: insert_after "lui $23,0x1F80" @ 17
-
 
 # Prologue: register allocation renames
 
@@ -3247,7 +3241,6 @@ func_8007352C: subst "sll\s+\$2,\$3,16" "sll	$2,$2,16" @ 109
 # Idx 44 binary = idx 45 maspsx (1 nop earlier deleted): change y-check beq target to .L845 (next_compute_v_tail)
 func_8007352C: insert_label ".LCF352C_t:" @ 105
 func_8007352C: subst "beq\s+\$2,\$0,\.L\d+" "beq	$2,$0,.LCF352C_t" @ 45
-func_8007E8DC: fill_delay @ 72 <- 71
 # saTan4FireDisp_80048864: regfix recipe (post strength-reduce inlining)
 saTan4FireDisp_80048864: delete @ 36
 saTan4FireDisp_80048864: delete @ 44
@@ -3582,50 +3575,11 @@ func_8003D39C: reorder 6,14,7,8,9,10,11,13,12 @ 6-14
 
 # func_8006EC0C: u16-typed D_800A3578 emits lhu; target uses lbu for entry byte read
 
-
 # regfix-suggest: auto-generated rules for cpu_check_tubazeri
 cpu_check_tubazeri: delete @ 29
 cpu_check_tubazeri: reorder 31,32,29,30 @ 29-32
 cpu_check_tubazeri: subst "lw \$5, 0x1F800388" "lw $4,0($2)" @ 55
 cpu_check_tubazeri: subst "lw\s+\$4,0\(\$2\)" "lw $5, 0x1F800388" @ 56
-
-# func_8007EA0C: pre-mvmva sign-split needs j->b + fill_delay (negu_t in delay) + dead sra after delay slot
-func_8007EA0C: subst "\bj\b" "b" @ 9
-func_8007EA0C: insert_after "sra	$11,$8,15" @ 10
-func_8007EA0C: subst "\bj\b" "b" @ 18
-func_8007EA0C: insert_after "sra	$12,$9,15" @ 19
-func_8007EA0C: subst "\bj\b" "b" @ 27
-func_8007EA0C: insert_after "sra	$13,$10,15" @ 28
-
-# func_8007EA0C: post-mvmva sll-by-8 — fill_delay (move negu into j delay) + j->b
-func_8007EA0C: fill_delay @ 46 <- 45
-func_8007EA0C: subst "\bj\b" "b" @ 46
-func_8007EA0C: fill_delay @ 54 <- 53
-func_8007EA0C: subst "\bj\b" "b" @ 54
-func_8007EA0C: fill_delay @ 62 <- 61
-func_8007EA0C: subst "\bj\b" "b" @ 62
-
-# func_8007EA0C: jr ra delay slot fill (move addu $v0,$a1,$zero into delay)
-func_8007EA0C: fill_delay @ 75 <- 74
-
-# func_8007E74C: pre-mvmva sign-split needs j->b + dead-sra-insert (branch-likely scheduling artifact)
-func_8007E74C: subst "\bj\b" "b" @ 19
-func_8007E74C: insert_after "sra	$11,$8,15" @ 20
-func_8007E74C: subst "\bj\b" "b" @ 28
-func_8007E74C: insert_after "sra	$12,$9,15" @ 29
-func_8007E74C: subst "\bj\b" "b" @ 37
-func_8007E74C: insert_after "sra	$13,$10,15" @ 38
-
-# func_8007E74C: post-mvmva sll-by-8 — fill_delay (move negu into j delay) + j->b
-func_8007E74C: fill_delay @ 56 <- 55
-func_8007E74C: subst "\bj\b" "b" @ 56
-func_8007E74C: fill_delay @ 64 <- 63
-func_8007E74C: subst "\bj\b" "b" @ 64
-func_8007E74C: fill_delay @ 72 <- 71
-func_8007E74C: subst "\bj\b" "b" @ 72
-
-# func_8007E74C: jr ra delay slot fill (move addu $v0,$a2,$zero into delay)
-func_8007E74C: fill_delay @ 85 <- 84
 
 # $a0/$a1 for the temp pointers; target uses $v0/$a0.  These subst rules
 # rename the registers in-place (no structural change).

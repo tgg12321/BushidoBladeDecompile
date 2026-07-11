@@ -120,3 +120,7 @@ diff tmp/oracle.dump tmp/cur.dump | head -80`
 - **Permanent guard:** `.gitattributes` (uncommitted change)
 - **Verified by:** normalize_lf stripped CRs (CR-bytes: 0 confirmed); .gitattributes eol=lf entry added for tools/gcc-2.7.2/**
 - **Occurrences this incident:** 1
+
+## 2026-07-11 11:22:15 -- DEFERRED (crlf/crlf-build-file)  [known-unfixed]
+- **Triggering command:** `Edit C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile\regfix.txt`
+- **Why unfixable now:** Known signature crlf-via-edit-write already registered; guard caught the CRLF write, normalize_lf.py restored LF (grep -c $'\r' regfix.txt = 0), oracle re-verified build_matches=true. No new permanent fix is available at the Claude Code layer — the incident is the same recurring Windows-side Edit-tool behavior the existing signature already covers.

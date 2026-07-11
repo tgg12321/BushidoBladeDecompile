@@ -295,6 +295,25 @@ func_80052754  # GTE sqr (squared-vector-length) leaf wrapper (text1b.c): mtc2 $
 # ... endlabel")` block, target bytes verbatim. See archived .claude/rules/gte-3x3.md.
 calc_fc_frame_8007EC5C  # Hand-coded GTE 3x3-mvmva matrix transform (display.c). 67 insns, 23 cop2 ops labeled handwritten by disassembler, hardcoded `swc2 $11` source reg, hand-scheduled pipeline. User-authorized 2026-05-31.
 
+# === LIBGTE census-proven modules (display.c, user-authorized 2026-07-11) ===
+# Verbatim-linked Sony PsyQ 4.0 LIBGTE .LIB objects (memory/closer/psyq-library-census.md).
+# Splat tags every cop2 op "handwritten instruction"; cop2 op-codes with no C
+# analog (mtc2/mfc2/lwc2/swc2/ctc2/cfc2/mvmva/rtpt/rtps/gpf/gpl). Cluster
+# corroboration: siblings calc_fc_frame_8007EC5C (ASM-WHOLE 2026-05-31),
+# func_8007E8AC / func_8007F0BC / func_8007F0E4 (canonical-body 2026-06-11).
+# Session 5b flagged the whole cluster as canonical-asm territory; user directed
+# the batch authorization 2026-07-11.
+func_8007E1AC  # LIBGTE MSC06 LoadAverage12: mtc2 $a2->$8, 3x lwc2 <-*a0 -> nop -> gpf 1 -> mfc2 $v0<-$31 -> mtc2 $a3->$8, 3x lwc2 <-*a1 -> nop -> gpl 1 -> lw $t0<-16(sp) -> nop -> 3x swc2 $9-11 -> *t0 -> jr ra. All cop2 (splat-tagged handwritten). No C form.
+func_8007E1FC  # LIBGTE MSC06 LoadAverage0: twin of func_8007E1AC differing only in gpf/gpl sf parameter (0 vs 1). Same shape, same no-C-form rationale.
+func_8007ED6C  # LIBGTE MTX_05 ApplyMatrix: 5x lw <-*a0 -> 5x ctc2 $t0-$t4 (RT11.RT12/RT13.RT21/RT22.RT23/RT31.RT32/RT33 packed) -> 2x lwc2 <-*a1 (vec) -> nop -> mvmva 1,0,0,3,0 -> 3x swc2 $25-$27 (MAC1-3) to *a2 -> addu $v0,$a2 pass-through -> jr ra. All cop2; no C form.
+func_8007F24C  # LIBGTE SMP_03 RotTransPers3: 6x lwc2 $0-$5 (3 SXY0/SXY1/SXY2 pairs) -> nop -> rtpt -> 4x lw <-16..28(sp) (stack args) -> 4x swc2 $12-$14/$8 to *a3 and sp-args -> cfc2 $v1<-$31 (FLAG) -> mfc2 $v0<-$19 (SZ3) -> sw $v1 to sp-arg -> jr with sra $v0,2 in delay slot. All cop2; no C form.
+func_8007F2DC  # LIBGTE CMB_00 RotTransPers4: rtpt on 3 SXY pairs + a 4th rtps on *a3; FLAGs OR'd; returns SZ3>>2. Ten-arg splice reading four stack args. All cop2 (splat-tagged handwritten on cfc2/mfc2); no C form.
+func_8007E4DC  # LIBGTE MTX_000 MulMatrix0: 3x3 matrix-vector transform via 3 mvmva cycles, same shape as calc_fc_frame_8007EC5C (that ASM-WHOLE 2026-05-31; archived gte-3x3.md explicitly names this as cluster sibling). Hardcoded `swc2 $11, 16($a2)` source reg, hand-scheduled cycle-N+1-mfc2 during cycle-N mvmva latency, per-cycle `lui $at, 0xFFFF` re-materialization. No pure-C form.
+func_8007EB4C  # LIBGTE MTX_03 MulMatrix: in-place variant of func_8007E4DC — matrix read from & result written to $a0. Same 3-cycle mvmva hand-scheduled shape; archived gte-3x3.md explicitly names this as cluster sibling.
+func_8007E8DC  # LIBGTE MTX_00A ScaleMatrixL: Q12 fixed-point in-place column scale of 3x3 matrix by 3 scalars; hand-scheduled multu/mflo pairing with sw in jr delay slot. Sibling of packed-multiply-cluster.md's func_8007EDBC (canonical-body 2026-05-21). One `fill_delay @ 72 <- 71` regfix rule retired alongside.
+func_8007E74C  # LIBGTE MTX_004 ApplyMatrixLV: sign-splits input vec (hi=x>>15, lo=x&0x7FFF) with archived dead-branch-scheduling `insert_after sra` regfix pattern; two mvmva cycles (hi 0,0,3,3,0 then lo 1,0,3,3,0); post-scale hi by <<3 via signed branches with j-in-delay-slot form. No pure-C form (regfix bytes come from rule text). All 13 regfix rules retired alongside.
+func_8007EA0C  # LIBGTE MTX_01 ApplyRotMatrixLV: sibling of func_8007E74C — same sign-split + two-cycle mvmva + post-scale shape, different output. Same archived dead-branch-scheduling cheat pattern. All 13 regfix rules retired alongside.
+
 # === GTE leaf vector-load wrappers (display.c, auto-authorized) ===
 # Load 3 s32 fields from a *a0 array into the GTE control registers via `ctc2`.
 # No pure-C form: the hardcoded `ctc2 $tN, $K` encoding requires the loaded

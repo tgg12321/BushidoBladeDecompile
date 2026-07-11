@@ -1189,52 +1189,80 @@ __asm__(
     "    .set at\n"
 );
 PAD_NOPS_3; /* 3 NOPs after func_8007E11C */
-s32 func_8007E1AC(s32 *a0, s32 *a1, s32 a2, s32 a3, s32 *out) {
-    register s32 v0 asm("v0");
-    __asm__ volatile (".word 0x48864000" :: "r"(a2));  /* mtc2 $a2, $8 */
-    __asm__ volatile (".word 0xC8890000" :: "r"(a0));  /* lwc2 $9, 0($a0) */
-    __asm__ volatile (".word 0xC88A0004" :: "r"(a0));  /* lwc2 $10, 4($a0) */
-    __asm__ volatile (".word 0xC88B0008" :: "r"(a0));  /* lwc2 $11, 8($a0) */
-    __asm__ volatile ("nop");
-    __asm__ volatile (".word 0x4B98003D");             /* gpf 1 */
-    __asm__ volatile (".word 0x4802F800" : "=r"(v0));  /* mfc2 $v0, $31 */
-    __asm__ volatile (".word 0x48874000" :: "r"(a3));  /* mtc2 $a3, $8 */
-    __asm__ volatile (".word 0xC8A90000" :: "r"(a1));  /* lwc2 $9, 0($a1) */
-    __asm__ volatile (".word 0xC8AA0004" :: "r"(a1));  /* lwc2 $10, 4($a1) */
-    __asm__ volatile (".word 0xC8AB0008" :: "r"(a1));  /* lwc2 $11, 8($a1) */
-    __asm__ volatile ("nop");
-    __asm__ volatile (".word 0x4BA8003E");             /* gpl 1 */
-    __asm__ volatile (".word 0x8FA80010");             /* lw $t0, 0x10($sp) */
-    __asm__ volatile ("nop");
-    __asm__ volatile (".word 0xE9090000");             /* swc2 $9, 0($t0) */
-    __asm__ volatile (".word 0xE90A0004");             /* swc2 $10, 4($t0) */
-    __asm__ volatile (".word 0xE90B0008");             /* swc2 $11, 8($t0) */
-    (void)out;
-    return v0;
-}
-s32 func_8007E1FC(s32 *a0, s32 *a1, s32 a2, s32 a3, s32 *out) {
-    register s32 v0 asm("v0");
-    __asm__ volatile (".word 0x48864000" :: "r"(a2));  /* mtc2 $a2, $8 */
-    __asm__ volatile (".word 0xC8890000" :: "r"(a0));  /* lwc2 $9, 0($a0) */
-    __asm__ volatile (".word 0xC88A0004" :: "r"(a0));  /* lwc2 $10, 4($a0) */
-    __asm__ volatile (".word 0xC88B0008" :: "r"(a0));  /* lwc2 $11, 8($a0) */
-    __asm__ volatile ("nop");
-    __asm__ volatile (".word 0x4B90003D");             /* gpf 0 */
-    __asm__ volatile (".word 0x4802F800" : "=r"(v0));  /* mfc2 $v0, $31 */
-    __asm__ volatile (".word 0x48874000" :: "r"(a3));  /* mtc2 $a3, $8 */
-    __asm__ volatile (".word 0xC8A90000" :: "r"(a1));  /* lwc2 $9, 0($a1) */
-    __asm__ volatile (".word 0xC8AA0004" :: "r"(a1));  /* lwc2 $10, 4($a1) */
-    __asm__ volatile (".word 0xC8AB0008" :: "r"(a1));  /* lwc2 $11, 8($a1) */
-    __asm__ volatile ("nop");
-    __asm__ volatile (".word 0x4BA0003E");             /* gpl 0 */
-    __asm__ volatile (".word 0x8FA80010");             /* lw $t0, 0x10($sp) */
-    __asm__ volatile ("nop");
-    __asm__ volatile (".word 0xE9090000");             /* swc2 $9, 0($t0) */
-    __asm__ volatile (".word 0xE90A0004");             /* swc2 $10, 4($t0) */
-    __asm__ volatile (".word 0xE90B0008");             /* swc2 $11, 8($t0) */
-    (void)out;
-    return v0;
-}
+/* func_8007E1AC = LIBGTE MSC06 LoadAverage12 â€” verbatim-linked Sony PsyQ 4.0
+ * object (census 2026-07-09). Hand-written GTE asm; disassembler tags every
+ * cop2 op "handwritten instruction". No pure-C form (mtc2/lwc2/gpf/gpl/mfc2/
+ * swc2 have no C analog). Canonical-body authorization 2026-07-11 per
+ * canonical-asm-retirement (STRONG cluster corroboration: sibling
+ * calc_fc_frame_8007EC5C ASM-WHOLE, func_8007E8AC canonical-body). */
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_8007E1AC\n"
+    "    mtc2   $a2, $8\n"
+    "    lwc2   $9, 0($a0)\n"
+    "    lwc2   $10, 4($a0)\n"
+    "    lwc2   $11, 8($a0)\n"
+    "    nop\n"
+    "    .word  0x4B98003D\n"    /* gpf 1 */
+    "    mfc2   $v0, $31\n"
+    "    mtc2   $a3, $8\n"
+    "    lwc2   $9, 0($a1)\n"
+    "    lwc2   $10, 4($a1)\n"
+    "    lwc2   $11, 8($a1)\n"
+    "    nop\n"
+    "    .word  0x4BA8003E\n"    /* gpl 1 */
+    "    lw     $t0, 16($sp)\n"
+    "    nop\n"
+    "    swc2   $9, 0($t0)\n"
+    "    swc2   $10, 4($t0)\n"
+    "    swc2   $11, 8($t0)\n"
+    "    jr     $ra\n"
+    "    nop\n"
+    "endlabel func_8007E1AC\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+/* func_8007E1FC = LIBGTE MSC06 LoadAverage0 â€” verbatim-linked Sony PsyQ 4.0
+ * object (census 2026-07-09). Twin of func_8007E1AC differing only in the
+ * gpf/gpl sf parameter (0 vs 1). Hand-written GTE asm; canonical-body
+ * authorization 2026-07-11. */
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_8007E1FC\n"
+    "    mtc2   $a2, $8\n"
+    "    lwc2   $9, 0($a0)\n"
+    "    lwc2   $10, 4($a0)\n"
+    "    lwc2   $11, 8($a0)\n"
+    "    nop\n"
+    "    .word  0x4B90003D\n"    /* gpf 0 */
+    "    mfc2   $v0, $31\n"
+    "    mtc2   $a3, $8\n"
+    "    lwc2   $9, 0($a1)\n"
+    "    lwc2   $10, 4($a1)\n"
+    "    lwc2   $11, 8($a1)\n"
+    "    nop\n"
+    "    .word  0x4BA0003E\n"    /* gpl 0 */
+    "    lw     $t0, 16($sp)\n"
+    "    nop\n"
+    "    swc2   $9, 0($t0)\n"
+    "    swc2   $10, 4($t0)\n"
+    "    swc2   $11, 8($t0)\n"
+    "    jr     $ra\n"
+    "    nop\n"
+    "endlabel func_8007E1FC\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 __asm__(
     ".section .text\n"
     "    .set\tnoat\n"
@@ -1447,97 +1475,93 @@ __asm__(
     "    .set at\n"
 );
 PAD_NOPS_3; /* 3 NOPs after func_8007E43C */
-s32 *func_8007E4DC(s32 *mat, s32 *vec, s32 *out) {
-    register s32 t0 asm("$8");
-    register s32 t1 asm("$9");
-    register s32 t2 asm("$10");
-    register s32 t3 asm("$11");
-    register s32 t4 asm("$12");
-    register s32 t5 asm("$13");
-    register s32 t6 asm("$14");
-    register s32 t7 asm("$15");
-    register s32 t8 asm("$24");
-    register s32 *v0 asm("v0");
-    /* Load matrix coefficients */
-    t0 = mat[0];
-    t1 = mat[1];
-    t2 = mat[2];
-    t3 = mat[3];
-    t4 = mat[4];
-    __asm__ volatile ("ctc2 %0, $0" :: "r"(t0));
-    __asm__ volatile ("ctc2 %0, $1" :: "r"(t1));
-    __asm__ volatile ("ctc2 %0, $2" :: "r"(t2));
-    __asm__ volatile ("ctc2 %0, $3" :: "r"(t3));
-    __asm__ volatile ("ctc2 %0, $4" :: "r"(t4));
-    /* Cycle 1: rotate (x1,y1,z1) */
-    {
-        register s32 mask asm("$1");
-        t0 = ((u16 *)vec)[0];
-        t1 = vec[1];
-        t2 = vec[3];
-        __asm__ volatile ("lui %0, 0xFFFF" : "=r"(mask));
-        t1 = t1 & mask;
-        t0 = t0 | t1;
-    }
-    __asm__ volatile ("mtc2 %0, $0" :: "r"(t0));
-    __asm__ volatile ("mtc2 %0, $1" :: "r"(t2));
-    __asm__ volatile ("nop");
-    __asm__ volatile (".word 0x4A486012");  /* mvmva 1,0,0,3,0 */
-    /* Cycle 2: rotate (x2,y2,z2), interleaved with cycle 1 mfc2 */
-    t0 = ((u16 *)vec)[1];
-    t1 = vec[2];
-    t2 = (s32)((s16 *)vec)[7];
-    t1 = t1 << 16;
-    t0 = t0 | t1;
-    __asm__ volatile ("mfc2 %0, $9"  : "=r"(t3));
-    __asm__ volatile ("mfc2 %0, $10" : "=r"(t4));
-    __asm__ volatile ("mfc2 %0, $11" : "=r"(t5));
-    __asm__ volatile ("mtc2 %0, $0" :: "r"(t0));
-    __asm__ volatile ("mtc2 %0, $1" :: "r"(t2));
-    __asm__ volatile ("nop");
-    __asm__ volatile (".word 0x4A486012");
-    /* Cycle 3: rotate (x3,y3,z3), interleaved with cycle 2 mfc2 */
-    {
-        register s32 mask asm("$1");
-        t0 = ((u16 *)vec)[2];
-        t1 = vec[2];
-        t2 = vec[4];
-        __asm__ volatile ("lui %0, 0xFFFF" : "=r"(mask));
-        t1 = t1 & mask;
-        t0 = t0 | t1;
-    }
-    __asm__ volatile ("mfc2 %0, $9"  : "=r"(t6));
-    __asm__ volatile ("mfc2 %0, $10" : "=r"(t7));
-    __asm__ volatile ("mfc2 %0, $11" : "=r"(t8));
-    __asm__ volatile ("mtc2 %0, $0" :: "r"(t0));
-    __asm__ volatile ("mtc2 %0, $1" :: "r"(t2));
-    __asm__ volatile ("nop");
-    __asm__ volatile (".word 0x4A486012");
-    /* Output: pack and store rotated components to out (arg2) */
-    t3 = t3 & 0xFFFF;
-    t6 = t6 << 16;
-    t6 = t6 | t3;
-    out[0] = t6;
-    __asm__ volatile ("" ::: "memory");
-    t5 = t5 & 0xFFFF;
-    t8 = t8 << 16;
-    t8 = t8 | t5;
-    out[3] = t8;
-    __asm__ volatile ("mfc2 %0, $9"  : "=r"(t0));
-    __asm__ volatile ("mfc2 %0, $10" : "=r"(t1));
-    t0 = t0 & 0xFFFF;
-    t4 = t4 << 16;
-    t0 = t0 | t4;
-    out[1] = t0;
-    __asm__ volatile ("" ::: "memory");
-    t7 = t7 & 0xFFFF;
-    t1 = t1 << 16;
-    t1 = t1 | t7;
-    out[2] = t1;
-    __asm__ volatile ("swc2 $11, 16(%0)" :: "r"(out));
-    __asm__ volatile ("move %0, %1" : "=r"(v0) : "r"(out));
-    return v0;
-}
+/* func_8007E4DC = LIBGTE MTX_000 MulMatrix0 â€” verbatim-linked Sony PsyQ 4.0
+ * object (census 2026-07-09). 3x3-mvmva matrix transform sibling of
+ * calc_fc_frame_8007EC5C (ASM-WHOLE 2026-05-31). All the same hand-coded
+ * signals: splat-tagged every cop2 op "handwritten instruction", hardcoded
+ * `swc2 $11, 16($a2)` source reg, hand-scheduled cycle-N+1-mfc2 during
+ * cycle-N-mvmva latency, per-cycle `lui $at, 0xFFFF` re-materialization,
+ * addu $v0,$a2 pass-through-at-end. Canonical-body 2026-07-11 per gte-3x3
+ * (archived) explicit sibling-follow directive. */
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_8007E4DC\n"
+    "    lw     $t0, 0($a0)\n"
+    "    lw     $t1, 4($a0)\n"
+    "    lw     $t2, 8($a0)\n"
+    "    lw     $t3, 12($a0)\n"
+    "    lw     $t4, 16($a0)\n"
+    "    ctc2   $t0, $0\n"
+    "    ctc2   $t1, $1\n"
+    "    ctc2   $t2, $2\n"
+    "    ctc2   $t3, $3\n"
+    "    ctc2   $t4, $4\n"
+    "    lhu    $t0, 0($a1)\n"
+    "    lw     $t1, 4($a1)\n"
+    "    lw     $t2, 12($a1)\n"
+    "    lui    $at, 0xFFFF\n"
+    "    and    $t1, $t1, $at\n"
+    "    or     $t0, $t0, $t1\n"
+    "    mtc2   $t0, $0\n"
+    "    mtc2   $t2, $1\n"
+    "    nop\n"
+    "    .word  0x4A486012\n"    /* mvmva 1, 0, 0, 3, 0 */
+    "    lhu    $t0, 2($a1)\n"
+    "    lw     $t1, 8($a1)\n"
+    "    lh     $t2, 14($a1)\n"
+    "    sll    $t1, $t1, 16\n"
+    "    or     $t0, $t0, $t1\n"
+    "    mfc2   $t3, $9\n"
+    "    mfc2   $t4, $10\n"
+    "    mfc2   $t5, $11\n"
+    "    mtc2   $t0, $0\n"
+    "    mtc2   $t2, $1\n"
+    "    nop\n"
+    "    .word  0x4A486012\n"    /* mvmva 1, 0, 0, 3, 0 */
+    "    lhu    $t0, 4($a1)\n"
+    "    lw     $t1, 8($a1)\n"
+    "    lw     $t2, 16($a1)\n"
+    "    lui    $at, 0xFFFF\n"
+    "    and    $t1, $t1, $at\n"
+    "    or     $t0, $t0, $t1\n"
+    "    mfc2   $t6, $9\n"
+    "    mfc2   $t7, $10\n"
+    "    mfc2   $t8, $11\n"
+    "    mtc2   $t0, $0\n"
+    "    mtc2   $t2, $1\n"
+    "    nop\n"
+    "    .word  0x4A486012\n"    /* mvmva 1, 0, 0, 3, 0 */
+    "    andi   $t3, $t3, 0xFFFF\n"
+    "    sll    $t6, $t6, 16\n"
+    "    or     $t6, $t6, $t3\n"
+    "    sw     $t6, 0($a2)\n"
+    "    andi   $t5, $t5, 0xFFFF\n"
+    "    sll    $t8, $t8, 16\n"
+    "    or     $t8, $t8, $t5\n"
+    "    sw     $t8, 12($a2)\n"
+    "    mfc2   $t0, $9\n"
+    "    mfc2   $t1, $10\n"
+    "    andi   $t0, $t0, 0xFFFF\n"
+    "    sll    $t4, $t4, 16\n"
+    "    or     $t0, $t0, $t4\n"
+    "    sw     $t0, 4($a2)\n"
+    "    andi   $t7, $t7, 0xFFFF\n"
+    "    sll    $t1, $t1, 16\n"
+    "    or     $t1, $t1, $t7\n"
+    "    sw     $t1, 8($a2)\n"
+    "    swc2   $11, 16($a2)\n"
+    "    addu   $v0, $a2, $zero\n"
+    "    jr     $ra\n"
+    "    nop\n"
+    "endlabel func_8007E4DC\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 PAD_NOPS_1; /* 1 NOP after func_8007E4DC */
 __asm__(
     ".section .text\n"
@@ -1639,113 +1663,128 @@ __asm__(
     "    .set reorder\n"
     "    .set at\n"
 );
-s32 *func_8007E74C(s32 *mat, s32 *vec_in, s32 *vec_out) {
-    register s32 t0 asm("$8");
-    register s32 t1 asm("$9");
-    register s32 t2 asm("$10");
-    register s32 t3 asm("$11");
-    register s32 t4 asm("$12");
-    register s32 t5 asm("$13");
-    register s32 *v0 asm("v0");
-    /* Load 5-word rotation matrix into GTE cop2 control regs 0-4 */
-    t0 = mat[0];
-    t1 = mat[1];
-    t2 = mat[2];
-    t3 = mat[3];
-    t4 = mat[4];
-    __asm__ volatile ("ctc2 %0, $0" :: "r"(t0));
-    __asm__ volatile ("ctc2 %0, $1" :: "r"(t1));
-    __asm__ volatile ("ctc2 %0, $2" :: "r"(t2));
-    __asm__ volatile ("ctc2 %0, $3" :: "r"(t3));
-    __asm__ volatile ("ctc2 %0, $4" :: "r"(t4));
-    /* Read 3 input components */
-    t0 = vec_in[0];
-    t1 = vec_in[1];
-    t2 = vec_in[2];
-    /* Signed split: hi = sra(x,15), lo = x & 0x7FFF, both sign-preserved */
-    if (t0 < 0) {
-        s32 a = -t0;
-        t3 = a >> 15;
-        a = a & 0x7FFF;
-        t3 = -t3;
-        t0 = -a;
-    } else {
-        t3 = t0 >> 15;
-        t0 = t0 & 0x7FFF;
-    }
-    if (t1 < 0) {
-        s32 a = -t1;
-        t4 = a >> 15;
-        a = a & 0x7FFF;
-        t4 = -t4;
-        t1 = -a;
-    } else {
-        t4 = t1 >> 15;
-        t1 = t1 & 0x7FFF;
-    }
-    if (t2 < 0) {
-        s32 a = -t2;
-        t5 = a >> 15;
-        a = a & 0x7FFF;
-        t5 = -t5;
-        t2 = -a;
-    } else {
-        t5 = t2 >> 15;
-        t2 = t2 & 0x7FFF;
-    }
-    /* High parts -> IR1/IR2/IR3, mvmva 0,0,3,3,0 */
-    __asm__ volatile ("mtc2 %0, $9"  :: "r"(t3));
-    __asm__ volatile ("mtc2 %0, $10" :: "r"(t4));
-    __asm__ volatile ("mtc2 %0, $11" :: "r"(t5));
-    __asm__ volatile ("nop");
-    __asm__ volatile (".word 0x4A41E012");  /* mvmva 0,0,3,3,0 */
-    __asm__ volatile ("mfc2 %0, $25" : "=r"(t3));
-    __asm__ volatile ("mfc2 %0, $26" : "=r"(t4));
-    __asm__ volatile ("mfc2 %0, $27" : "=r"(t5));
-    /* Low parts -> IR1/IR2/IR3, mvmva 1,0,3,3,0 */
-    __asm__ volatile ("mtc2 %0, $9"  :: "r"(t0));
-    __asm__ volatile ("mtc2 %0, $10" :: "r"(t1));
-    __asm__ volatile ("mtc2 %0, $11" :: "r"(t2));
-    __asm__ volatile ("nop");
-    __asm__ volatile (".word 0x4A49E012");  /* mvmva 1,0,3,3,0 */
-    /* Sign-preserving multiply hi result by 8 (single-instruction negu
-     * asm blocks GCC's strength-reduction on the mathematically equal
-     * branches). */
-    if (t3 < 0) {
-        __asm__ volatile ("negu %0, %1" : "=r"(t3) : "r"(t3));
-        t3 = t3 << 3;
-        __asm__ volatile ("negu %0, %1" : "=r"(t3) : "r"(t3));
-    } else {
-        t3 = t3 << 3;
-    }
-    if (t4 < 0) {
-        __asm__ volatile ("negu %0, %1" : "=r"(t4) : "r"(t4));
-        t4 = t4 << 3;
-        __asm__ volatile ("negu %0, %1" : "=r"(t4) : "r"(t4));
-    } else {
-        t4 = t4 << 3;
-    }
-    if (t5 < 0) {
-        __asm__ volatile ("negu %0, %1" : "=r"(t5) : "r"(t5));
-        t5 = t5 << 3;
-        __asm__ volatile ("negu %0, %1" : "=r"(t5) : "r"(t5));
-    } else {
-        t5 = t5 << 3;
-    }
-    /* Low result + hi*8 -> out */
-    __asm__ volatile ("mfc2 %0, $25" : "=r"(t0));
-    __asm__ volatile ("mfc2 %0, $26" : "=r"(t1));
-    __asm__ volatile ("mfc2 %0, $27" : "=r"(t2));
-    t0 = t0 + t3;
-    t1 = t1 + t4;
-    t2 = t2 + t5;
-    vec_out[0] = t0;
-    vec_out[1] = t1;
-    vec_out[2] = t2;
-    __asm__ volatile ("move %0, %1" : "=r"(v0) : "r"(vec_out));
-    return v0;
-}
-/* func_8007E8AC — hand-written GTE mvmva vector-transform wrapper
+/* func_8007E74C = LIBGTE MTX_004 ApplyMatrixLV â€” verbatim-linked Sony PsyQ 4.0
+ * object (census 2026-07-09). Local-vector transform with pre-scaling via sign-
+ * split (hi=x>>15, lo=x&0x7FFF), two mvmva cycles (hi 0,0,3,3,0 then lo
+ * 1,0,3,3,0), post-scale hi result by 8 via signed <<3, sum + store. Hand-
+ * coded evidence: uses the archived dead-branch-scheduling insert_after
+ * `sra $tN,$tM,15` idiom (bytes came from regfix rule text, not compilation)
+ * + subst jâ†’b branch-family rewrites. No compiled C reaches these bytes
+ * under the 2026-05-31 cheat catalog. Canonical-body 2026-07-11; all 13
+ * regfix rules retired alongside. */
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_8007E74C\n"
+    "    lw         $t0, 0($a0)\n"
+    "    lw         $t1, 4($a0)\n"
+    "    lw         $t2, 8($a0)\n"
+    "    lw         $t3, 12($a0)\n"
+    "    lw         $t4, 16($a0)\n"
+    "    ctc2       $t0, $0\n"
+    "    ctc2       $t1, $1\n"
+    "    ctc2       $t2, $2\n"
+    "    ctc2       $t3, $3\n"
+    "    ctc2       $t4, $4\n"
+    "    lw         $t0, 0($a1)\n"
+    "    lw         $t1, 4($a1)\n"
+    "    lw         $t2, 8($a1)\n"
+    "    bgez       $t0, .L8007E7A4\n"
+    "     sra       $t3, $t0, 15\n"
+    "    negu       $t0, $t0\n"
+    "    sra        $t3, $t0, 15\n"
+    "    andi       $t0, $t0, 0x7FFF\n"
+    "    negu       $t3, $t3\n"
+    "    b          .L8007E7A8\n"
+    "     negu      $t0, $t0\n"
+    "    sra        $t3, $t0, 15\n"
+    ".L8007E7A4:\n"
+    "    andi       $t0, $t0, 0x7FFF\n"
+    ".L8007E7A8:\n"
+    "    bgez       $t1, .L8007E7CC\n"
+    "     sra       $t4, $t1, 15\n"
+    "    negu       $t1, $t1\n"
+    "    sra        $t4, $t1, 15\n"
+    "    andi       $t1, $t1, 0x7FFF\n"
+    "    negu       $t4, $t4\n"
+    "    b          .L8007E7D0\n"
+    "     negu      $t1, $t1\n"
+    "    sra        $t4, $t1, 15\n"
+    ".L8007E7CC:\n"
+    "    andi       $t1, $t1, 0x7FFF\n"
+    ".L8007E7D0:\n"
+    "    bgez       $t2, .L8007E7F4\n"
+    "     sra       $t5, $t2, 15\n"
+    "    negu       $t2, $t2\n"
+    "    sra        $t5, $t2, 15\n"
+    "    andi       $t2, $t2, 0x7FFF\n"
+    "    negu       $t5, $t5\n"
+    "    b          .L8007E7F8\n"
+    "     negu      $t2, $t2\n"
+    "    sra        $t5, $t2, 15\n"
+    ".L8007E7F4:\n"
+    "    andi       $t2, $t2, 0x7FFF\n"
+    ".L8007E7F8:\n"
+    "    mtc2       $t3, $9\n"
+    "    mtc2       $t4, $10\n"
+    "    mtc2       $t5, $11\n"
+    "    nop\n"
+    "    mvmva      0, 0, 3, 3, 0\n"
+    "    mfc2       $t3, $25\n"
+    "    mfc2       $t4, $26\n"
+    "    mfc2       $t5, $27\n"
+    "    mtc2       $t0, $9\n"
+    "    mtc2       $t1, $10\n"
+    "    mtc2       $t2, $11\n"
+    "    nop\n"
+    "    mvmva      1, 0, 3, 3, 0\n"
+    "    bgez       $t3, .L8007E844\n"
+    "     nop\n"
+    "    negu       $t3, $t3\n"
+    "    sll        $t3, $t3, 3\n"
+    "    b          .L8007E848\n"
+    "     negu      $t3, $t3\n"
+    ".L8007E844:\n"
+    "    sll        $t3, $t3, 3\n"
+    ".L8007E848:\n"
+    "    bgez       $t4, .L8007E860\n"
+    "     nop\n"
+    "    negu       $t4, $t4\n"
+    "    sll        $t4, $t4, 3\n"
+    "    b          .L8007E864\n"
+    "     negu      $t4, $t4\n"
+    ".L8007E860:\n"
+    "    sll        $t4, $t4, 3\n"
+    ".L8007E864:\n"
+    "    bgez       $t5, .L8007E87C\n"
+    "     nop\n"
+    "    negu       $t5, $t5\n"
+    "    sll        $t5, $t5, 3\n"
+    "    b          .L8007E880\n"
+    "     negu      $t5, $t5\n"
+    ".L8007E87C:\n"
+    "    sll        $t5, $t5, 3\n"
+    ".L8007E880:\n"
+    "    mfc2       $t0, $25\n"
+    "    mfc2       $t1, $26\n"
+    "    mfc2       $t2, $27\n"
+    "    addu       $t0, $t0, $t3\n"
+    "    addu       $t1, $t1, $t4\n"
+    "    addu       $t2, $t2, $t5\n"
+    "    sw         $t0, 0($a2)\n"
+    "    sw         $t1, 4($a2)\n"
+    "    sw         $t2, 8($a2)\n"
+    "    jr         $ra\n"
+    "     addu      $v0, $a2, $zero\n"
+    "endlabel func_8007E74C\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+/* func_8007E8AC â€” hand-written GTE mvmva vector-transform wrapper
  * (8007Exxx hand-asm cluster, sibling of calc_fc_frame_8007EC5C, ASM-WHOLE
  * authorized 2026-05-31; this sibling user-authorized 2026-06-11 per
  * gte-3x3 / canonical-asm-authorization-recipe). Hand-coded evidence: the
@@ -1776,286 +1815,295 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-void *func_8007E8DC(s32 *arg0, s32 *arg1) {
-    register s32 t0 asm("t0");
-    register s32 t1 asm("t1");
-    register s32 t2 asm("t2");
-    register s32 t3 asm("t3");
-    register s32 t4 asm("t4");
-    register s32 t5 asm("t5");
-    s32 *v0;
-
-    asm volatile("lw %0, 0(%1)" : "=r"(t0) : "r"(arg0));
-    asm volatile("lw %0, 0(%1)" : "=r"(t3) : "r"(arg1));
-    asm volatile("andi %0, %1, 0xFFFF" : "=r"(t1) : "r"(t0));
-    asm volatile("sll %0, %1, 16" : "=r"(t1) : "0"(t1));
-    asm volatile("sra %0, %1, 16" : "=r"(t1) : "0"(t1));
-    asm volatile("multu %0, %1" : : "r"(t1), "r"(t3));
-    asm volatile("sra %0, %1, 16" : "=r"(t2) : "r"(t0));
-    asm volatile("lw %0, 4(%1)" : "=r"(t4) : "r"(arg1));
-    asm volatile("lw %0, 8(%1)" : "=r"(t5) : "r"(arg1));
-    asm volatile("lw %0, 4(%1)" : "=r"(t0) : "r"(arg0));
-    asm volatile("addu %0, %1, $0" : "=r"(v0) : "r"(arg0));
-    asm volatile("mflo %0" : "=r"(t1));
-    asm volatile("sra %0, %1, 12" : "=r"(t1) : "0"(t1));
-    asm volatile("andi %0, %1, 0xFFFF" : "=r"(t1) : "0"(t1));
-    asm volatile("multu %0, %1" : : "r"(t2), "r"(t3));
-    asm volatile("mflo %0" : "=r"(t2));
-    asm volatile("sra %0, %1, 12" : "=r"(t2) : "0"(t2));
-    asm volatile("sll %0, %1, 16" : "=r"(t2) : "0"(t2));
-    asm volatile("or %0, %1, %2" : "=r"(t1) : "0"(t1), "r"(t2));
-    asm volatile("sw %0, 0(%1)" : : "r"(t1), "r"(arg0));
-
-    asm volatile("andi %0, %1, 0xFFFF" : "=r"(t1) : "r"(t0));
-    asm volatile("sll %0, %1, 16" : "=r"(t1) : "0"(t1));
-    asm volatile("sra %0, %1, 16" : "=r"(t1) : "0"(t1));
-    asm volatile("multu %0, %1" : : "r"(t1), "r"(t3));
-    asm volatile("sra %0, %1, 16" : "=r"(t2) : "r"(t0));
-    asm volatile("lw %0, 8(%1)" : "=r"(t0) : "r"(arg0));
-    asm volatile("mflo %0" : "=r"(t1));
-    asm volatile("sra %0, %1, 12" : "=r"(t1) : "0"(t1));
-    asm volatile("andi %0, %1, 0xFFFF" : "=r"(t1) : "0"(t1));
-    asm volatile("multu %0, %1" : : "r"(t2), "r"(t4));
-    asm volatile("mflo %0" : "=r"(t2));
-    asm volatile("sra %0, %1, 12" : "=r"(t2) : "0"(t2));
-    asm volatile("sll %0, %1, 16" : "=r"(t2) : "0"(t2));
-    asm volatile("or %0, %1, %2" : "=r"(t1) : "0"(t1), "r"(t2));
-    asm volatile("sw %0, 4(%1)" : : "r"(t1), "r"(arg0));
-
-    asm volatile("andi %0, %1, 0xFFFF" : "=r"(t1) : "r"(t0));
-    asm volatile("sll %0, %1, 16" : "=r"(t1) : "0"(t1));
-    asm volatile("sra %0, %1, 16" : "=r"(t1) : "0"(t1));
-    asm volatile("multu %0, %1" : : "r"(t1), "r"(t4));
-    asm volatile("sra %0, %1, 16" : "=r"(t2) : "r"(t0));
-    asm volatile("lw %0, 12(%1)" : "=r"(t0) : "r"(arg0));
-    asm volatile("mflo %0" : "=r"(t1));
-    asm volatile("sra %0, %1, 12" : "=r"(t1) : "0"(t1));
-    asm volatile("andi %0, %1, 0xFFFF" : "=r"(t1) : "0"(t1));
-    asm volatile("multu %0, %1" : : "r"(t2), "r"(t4));
-    asm volatile("mflo %0" : "=r"(t2));
-    asm volatile("sra %0, %1, 12" : "=r"(t2) : "0"(t2));
-    asm volatile("sll %0, %1, 16" : "=r"(t2) : "0"(t2));
-    asm volatile("or %0, %1, %2" : "=r"(t1) : "0"(t1), "r"(t2));
-    asm volatile("sw %0, 8(%1)" : : "r"(t1), "r"(arg0));
-
-    asm volatile("andi %0, %1, 0xFFFF" : "=r"(t1) : "r"(t0));
-    asm volatile("sll %0, %1, 16" : "=r"(t1) : "0"(t1));
-    asm volatile("sra %0, %1, 16" : "=r"(t1) : "0"(t1));
-    asm volatile("multu %0, %1" : : "r"(t1), "r"(t5));
-    asm volatile("sra %0, %1, 16" : "=r"(t2) : "r"(t0));
-    asm volatile("lw %0, 16(%1)" : "=r"(t0) : "r"(arg0));
-    asm volatile("mflo %0" : "=r"(t1));
-    asm volatile("sra %0, %1, 12" : "=r"(t1) : "0"(t1));
-    asm volatile("andi %0, %1, 0xFFFF" : "=r"(t1) : "0"(t1));
-    asm volatile("multu %0, %1" : : "r"(t2), "r"(t5));
-    asm volatile("mflo %0" : "=r"(t2));
-    asm volatile("sra %0, %1, 12" : "=r"(t2) : "0"(t2));
-    asm volatile("sll %0, %1, 16" : "=r"(t2) : "0"(t2));
-    asm volatile("or %0, %1, %2" : "=r"(t1) : "0"(t1), "r"(t2));
-    asm volatile("sw %0, 12(%1)" : : "r"(t1), "r"(arg0));
-
-    asm volatile("andi %0, %1, 0xFFFF" : "=r"(t1) : "r"(t0));
-    asm volatile("sll %0, %1, 16" : "=r"(t1) : "0"(t1));
-    asm volatile("sra %0, %1, 16" : "=r"(t1) : "0"(t1));
-    asm volatile("multu %0, %1" : : "r"(t1), "r"(t5));
-    asm volatile("mflo %0" : "=r"(t1));
-    asm volatile("sra %0, %1, 12" : "=r"(t1) : "0"(t1));
-    asm volatile("sw %0, 16(%1)" : : "r"(t1), "r"(arg0));
-
-    return v0;
-}
+/* func_8007E8DC = LIBGTE MTX_00A ScaleMatrixL â€” verbatim-linked Sony PsyQ 4.0
+ * object (census 2026-07-09). In-place Q12 fixed-point column scale of a 3x3
+ * matrix by 3 scalars (columns 0,1,2 x scalars *arg1[0/1/2]). Splat tags the
+ * body handwritten; hardcoded $t0..$t5 packed register cadence + hand-scheduled
+ * multu/mflo pairing + sw in jr delay slot are hand-coded signatures. Sibling
+ * of func_8007EDBC (canonical-body 2026-05-21 per packed-multiply-cluster).
+ * Canonical-body 2026-07-11 with the 1 fill_delay regfix rule stripped. */
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_8007E8DC\n"
+    "    lw         $t0, 0($a0)\n"
+    "    lw         $t3, 0($a1)\n"
+    "    andi       $t1, $t0, 0xFFFF\n"
+    "    sll        $t1, $t1, 16\n"
+    "    sra        $t1, $t1, 16\n"
+    "    multu      $t1, $t3\n"
+    "    sra        $t2, $t0, 16\n"
+    "    lw         $t4, 4($a1)\n"
+    "    lw         $t5, 8($a1)\n"
+    "    lw         $t0, 4($a0)\n"
+    "    addu       $v0, $a0, $zero\n"
+    "    mflo       $t1\n"
+    "    sra        $t1, $t1, 12\n"
+    "    andi       $t1, $t1, 0xFFFF\n"
+    "    multu      $t2, $t3\n"
+    "    mflo       $t2\n"
+    "    sra        $t2, $t2, 12\n"
+    "    sll        $t2, $t2, 16\n"
+    "    or         $t1, $t1, $t2\n"
+    "    sw         $t1, 0($a0)\n"
+    "    andi       $t1, $t0, 0xFFFF\n"
+    "    sll        $t1, $t1, 16\n"
+    "    sra        $t1, $t1, 16\n"
+    "    multu      $t1, $t3\n"
+    "    sra        $t2, $t0, 16\n"
+    "    lw         $t0, 8($a0)\n"
+    "    mflo       $t1\n"
+    "    sra        $t1, $t1, 12\n"
+    "    andi       $t1, $t1, 0xFFFF\n"
+    "    multu      $t2, $t4\n"
+    "    mflo       $t2\n"
+    "    sra        $t2, $t2, 12\n"
+    "    sll        $t2, $t2, 16\n"
+    "    or         $t1, $t1, $t2\n"
+    "    sw         $t1, 4($a0)\n"
+    "    andi       $t1, $t0, 0xFFFF\n"
+    "    sll        $t1, $t1, 16\n"
+    "    sra        $t1, $t1, 16\n"
+    "    multu      $t1, $t4\n"
+    "    sra        $t2, $t0, 16\n"
+    "    lw         $t0, 12($a0)\n"
+    "    mflo       $t1\n"
+    "    sra        $t1, $t1, 12\n"
+    "    andi       $t1, $t1, 0xFFFF\n"
+    "    multu      $t2, $t4\n"
+    "    mflo       $t2\n"
+    "    sra        $t2, $t2, 12\n"
+    "    sll        $t2, $t2, 16\n"
+    "    or         $t1, $t1, $t2\n"
+    "    sw         $t1, 8($a0)\n"
+    "    andi       $t1, $t0, 0xFFFF\n"
+    "    sll        $t1, $t1, 16\n"
+    "    sra        $t1, $t1, 16\n"
+    "    multu      $t1, $t5\n"
+    "    sra        $t2, $t0, 16\n"
+    "    lw         $t0, 16($a0)\n"
+    "    mflo       $t1\n"
+    "    sra        $t1, $t1, 12\n"
+    "    andi       $t1, $t1, 0xFFFF\n"
+    "    multu      $t2, $t5\n"
+    "    mflo       $t2\n"
+    "    sra        $t2, $t2, 12\n"
+    "    sll        $t2, $t2, 16\n"
+    "    or         $t1, $t1, $t2\n"
+    "    sw         $t1, 12($a0)\n"
+    "    andi       $t1, $t0, 0xFFFF\n"
+    "    sll        $t1, $t1, 16\n"
+    "    sra        $t1, $t1, 16\n"
+    "    multu      $t1, $t5\n"
+    "    mflo       $t1\n"
+    "    sra        $t1, $t1, 12\n"
+    "    jr         $ra\n"
+    "    sw         $t1, 16($a0)\n"
+    "endlabel func_8007E8DC\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 PAD_NOPS_3; /* 3 NOPs after func_8007E8DC */
-s32 *func_8007EA0C(s32 *vec_in, s32 *vec_out) {
-    register s32 t0 asm("$8");
-    register s32 t1 asm("$9");
-    register s32 t2 asm("$10");
-    register s32 t3 asm("$11");
-    register s32 t4 asm("$12");
-    register s32 t5 asm("$13");
-    register s32 *v0 asm("v0");
-    /* Read 3 input components */
-    t0 = vec_in[0];
-    t1 = vec_in[1];
-    t2 = vec_in[2];
-    /* Signed split: t0_orig = (t3 << 15) + t0_lo, with sign preserved on both halves.
-     * Negative branch goes through abs+sra+andi+negate; positive branch is direct sra+andi. */
-    /* Source order matches target: compute sra+andi first, then negate.
-     * The trailing -t0 conveniently lands in the b's delay slot. */
-    if (t0 < 0) {
-        s32 a = -t0;
-        t3 = a >> 15;
-        a = a & 0x7FFF;
-        t3 = -t3;
-        t0 = -a;
-    } else {
-        t3 = t0 >> 15;
-        t0 = t0 & 0x7FFF;
-    }
-    if (t1 < 0) {
-        s32 a = -t1;
-        t4 = a >> 15;
-        a = a & 0x7FFF;
-        t4 = -t4;
-        t1 = -a;
-    } else {
-        t4 = t1 >> 15;
-        t1 = t1 & 0x7FFF;
-    }
-    if (t2 < 0) {
-        s32 a = -t2;
-        t5 = a >> 15;
-        a = a & 0x7FFF;
-        t5 = -t5;
-        t2 = -a;
-    } else {
-        t5 = t2 >> 15;
-        t2 = t2 & 0x7FFF;
-    }
-    /* High parts → IR1/IR2/IR3, run mvmva with R matrix (m=0,v=0,c=3,sf=3) */
-    __asm__ volatile ("mtc2 %0, $9"  :: "r"(t3));
-    __asm__ volatile ("mtc2 %0, $10" :: "r"(t4));
-    __asm__ volatile ("mtc2 %0, $11" :: "r"(t5));
-    __asm__ volatile ("nop");
-    __asm__ volatile (".word 0x4A41E012");  /* mvmva 0,0,3,3,0 */
-    __asm__ volatile ("mfc2 %0, $25" : "=r"(t3));
-    __asm__ volatile ("mfc2 %0, $26" : "=r"(t4));
-    __asm__ volatile ("mfc2 %0, $27" : "=r"(t5));
-    /* Low parts → IR1/IR2/IR3, run mvmva with L matrix (m=1,v=0,c=3,sf=3) */
-    __asm__ volatile ("mtc2 %0, $9"  :: "r"(t0));
-    __asm__ volatile ("mtc2 %0, $10" :: "r"(t1));
-    __asm__ volatile ("mtc2 %0, $11" :: "r"(t2));
-    __asm__ volatile ("nop");
-    __asm__ volatile (".word 0x4A49E012");  /* mvmva 1,0,3,3,0 */
-    /* Multiply each high result by 8 with sign-preservation. Plain
-     * `if (t<0) -((-t)<<3); else t<<3` strength-reduces to a single sll
-     * because GCC sees the branches as mathematically equivalent.
-     * Use single-instruction `negu` asm to keep the branches opaque. */
-    if (t3 < 0) {
-        __asm__ volatile ("negu %0, %1" : "=r"(t3) : "r"(t3));
-        t3 = t3 << 3;
-        __asm__ volatile ("negu %0, %1" : "=r"(t3) : "r"(t3));
-    } else {
-        t3 = t3 << 3;
-    }
-    if (t4 < 0) {
-        __asm__ volatile ("negu %0, %1" : "=r"(t4) : "r"(t4));
-        t4 = t4 << 3;
-        __asm__ volatile ("negu %0, %1" : "=r"(t4) : "r"(t4));
-    } else {
-        t4 = t4 << 3;
-    }
-    if (t5 < 0) {
-        __asm__ volatile ("negu %0, %1" : "=r"(t5) : "r"(t5));
-        t5 = t5 << 3;
-        __asm__ volatile ("negu %0, %1" : "=r"(t5) : "r"(t5));
-    } else {
-        t5 = t5 << 3;
-    }
-    /* Read low result and add high*8 */
-    __asm__ volatile ("mfc2 %0, $25" : "=r"(t0));
-    __asm__ volatile ("mfc2 %0, $26" : "=r"(t1));
-    __asm__ volatile ("mfc2 %0, $27" : "=r"(t2));
-    t0 = t0 + t3;
-    t1 = t1 + t4;
-    t2 = t2 + t5;
-    vec_out[0] = t0;
-    vec_out[1] = t1;
-    vec_out[2] = t2;
-    __asm__ volatile ("move %0, %1" : "=r"(v0) : "r"(vec_out));
-    return v0;
-}
+/* func_8007EA0C = LIBGTE MTX_01 ApplyRotMatrixLV - verbatim-linked Sony PsyQ
+ * 4.0 object (census 2026-07-09). Sibling of ApplyMatrixLV (func_8007E74C):
+ * sign-splits input vec into hi/lo halves (arithmetic split), runs mvmva
+ * twice (hi 0,0,3,3,0 then lo 1,0,3,3,0), post-scales hi by <<3 with signed
+ * preservation, sums and stores. Uses archived dead-branch-scheduling regfix
+ * cheats + inline-move-aliasing + register asm pins. No pure-C form under
+ * the 2026-05-31 cheat catalog. Canonical-body 2026-07-11; all 13 regfix
+ * rules retired alongside. */
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_8007EA0C\n"
+    "    lw         $t0, 0($a0)\n"
+    "    lw         $t1, 4($a0)\n"
+    "    lw         $t2, 8($a0)\n"
+    "    bgez       $t0, .L8007EA3C\n"
+    "    sra       $t3, $t0, 15\n"
+    "    negu       $t0, $t0\n"
+    "    sra        $t3, $t0, 15\n"
+    "    andi       $t0, $t0, 0x7FFF\n"
+    "    negu       $t3, $t3\n"
+    "    b          .L8007EA40\n"
+    "    negu      $t0, $t0\n"
+    "    sra        $t3, $t0, 15\n"
+    ".L8007EA3C:\n"
+    "    andi       $t0, $t0, 0x7FFF\n"
+    ".L8007EA40:\n"
+    "    bgez       $t1, .L8007EA64\n"
+    "    sra       $t4, $t1, 15\n"
+    "    negu       $t1, $t1\n"
+    "    sra        $t4, $t1, 15\n"
+    "    andi       $t1, $t1, 0x7FFF\n"
+    "    negu       $t4, $t4\n"
+    "    b          .L8007EA68\n"
+    "    negu      $t1, $t1\n"
+    "    sra        $t4, $t1, 15\n"
+    ".L8007EA64:\n"
+    "    andi       $t1, $t1, 0x7FFF\n"
+    ".L8007EA68:\n"
+    "    bgez       $t2, .L8007EA8C\n"
+    "    sra       $t5, $t2, 15\n"
+    "    negu       $t2, $t2\n"
+    "    sra        $t5, $t2, 15\n"
+    "    andi       $t2, $t2, 0x7FFF\n"
+    "    negu       $t5, $t5\n"
+    "    b          .L8007EA90\n"
+    "    negu      $t2, $t2\n"
+    "    sra        $t5, $t2, 15\n"
+    ".L8007EA8C:\n"
+    "    andi       $t2, $t2, 0x7FFF\n"
+    ".L8007EA90:\n"
+    "    mtc2       $t3, $9\n"
+    "    mtc2       $t4, $10\n"
+    "    mtc2       $t5, $11\n"
+    "    nop\n"
+    "    mvmva      0, 0, 3, 3, 0\n"
+    "    mfc2       $t3, $25\n"
+    "    mfc2       $t4, $26\n"
+    "    mfc2       $t5, $27\n"
+    "    mtc2       $t0, $9\n"
+    "    mtc2       $t1, $10\n"
+    "    mtc2       $t2, $11\n"
+    "    nop\n"
+    "    mvmva      1, 0, 3, 3, 0\n"
+    "    bgez       $t3, .L8007EADC\n"
+    "    nop\n"
+    "    negu       $t3, $t3\n"
+    "    sll        $t3, $t3, 3\n"
+    "    b          .L8007EAE0\n"
+    "    negu      $t3, $t3\n"
+    ".L8007EADC:\n"
+    "    sll        $t3, $t3, 3\n"
+    ".L8007EAE0:\n"
+    "    bgez       $t4, .L8007EAF8\n"
+    "    nop\n"
+    "    negu       $t4, $t4\n"
+    "    sll        $t4, $t4, 3\n"
+    "    b          .L8007EAFC\n"
+    "    negu      $t4, $t4\n"
+    ".L8007EAF8:\n"
+    "    sll        $t4, $t4, 3\n"
+    ".L8007EAFC:\n"
+    "    bgez       $t5, .L8007EB14\n"
+    "    nop\n"
+    "    negu       $t5, $t5\n"
+    "    sll        $t5, $t5, 3\n"
+    "    b          .L8007EB18\n"
+    "    negu      $t5, $t5\n"
+    ".L8007EB14:\n"
+    "    sll        $t5, $t5, 3\n"
+    ".L8007EB18:\n"
+    "    mfc2       $t0, $25\n"
+    "    mfc2       $t1, $26\n"
+    "    mfc2       $t2, $27\n"
+    "    addu       $t0, $t0, $t3\n"
+    "    addu       $t1, $t1, $t4\n"
+    "    addu       $t2, $t2, $t5\n"
+    "    sw         $t0, 0($a1)\n"
+    "    sw         $t1, 4($a1)\n"
+    "    sw         $t2, 8($a1)\n"
+    "    jr         $ra\n"
+    "    addu      $v0, $a1, $zero\n"
+    "endlabel func_8007EA0C\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 PAD_NOPS_2; /* 2 NOPs after func_8007EA0C */
-s32 *func_8007EB4C(s32 *out, s32 *vec) {
-    register s32 t0 asm("$8");
-    register s32 t1 asm("$9");
-    register s32 t2 asm("$10");
-    register s32 t3 asm("$11");
-    register s32 t4 asm("$12");
-    register s32 t5 asm("$13");
-    register s32 t6 asm("$14");
-    register s32 t7 asm("$15");
-    register s32 t8 asm("$24");
-    register s32 *v0 asm("v0");
-    /* Load matrix coefficients (out doubles as the matrix-input buffer) */
-    t0 = out[0];
-    t1 = out[1];
-    t2 = out[2];
-    t3 = out[3];
-    t4 = out[4];
-    __asm__ volatile ("ctc2 %0, $0" :: "r"(t0));
-    __asm__ volatile ("ctc2 %0, $1" :: "r"(t1));
-    __asm__ volatile ("ctc2 %0, $2" :: "r"(t2));
-    __asm__ volatile ("ctc2 %0, $3" :: "r"(t3));
-    __asm__ volatile ("ctc2 %0, $4" :: "r"(t4));
-    /* Cycle 1: rotate (x1,y1,z1) */
-    {
-        register s32 mask asm("$1");
-        t0 = ((u16 *)vec)[0];
-        t1 = vec[1];
-        t2 = vec[3];
-        __asm__ volatile ("lui %0, 0xFFFF" : "=r"(mask));
-        t1 = t1 & mask;
-        t0 = t0 | t1;
-    }
-    __asm__ volatile ("mtc2 %0, $0" :: "r"(t0));
-    __asm__ volatile ("mtc2 %0, $1" :: "r"(t2));
-    __asm__ volatile ("nop");
-    __asm__ volatile (".word 0x4A486012");  /* mvmva 1,0,0,3,0 */
-    /* Cycle 2: rotate (x2,y2,z2), interleaved with cycle 1 mfc2 */
-    t0 = ((u16 *)vec)[1];
-    t1 = vec[2];
-    t2 = (s32)((s16 *)vec)[7];
-    t1 = t1 << 16;
-    t0 = t0 | t1;
-    __asm__ volatile ("mfc2 %0, $9"  : "=r"(t3));
-    __asm__ volatile ("mfc2 %0, $10" : "=r"(t4));
-    __asm__ volatile ("mfc2 %0, $11" : "=r"(t5));
-    __asm__ volatile ("mtc2 %0, $0" :: "r"(t0));
-    __asm__ volatile ("mtc2 %0, $1" :: "r"(t2));
-    __asm__ volatile ("nop");
-    __asm__ volatile (".word 0x4A486012");
-    /* Cycle 3: rotate (x3,y3,z3), interleaved with cycle 2 mfc2 */
-    {
-        register s32 mask asm("$1");
-        t0 = ((u16 *)vec)[2];
-        t1 = vec[2];
-        t2 = vec[4];
-        __asm__ volatile ("lui %0, 0xFFFF" : "=r"(mask));
-        t1 = t1 & mask;
-        t0 = t0 | t1;
-    }
-    __asm__ volatile ("mfc2 %0, $9"  : "=r"(t6));
-    __asm__ volatile ("mfc2 %0, $10" : "=r"(t7));
-    __asm__ volatile ("mfc2 %0, $11" : "=r"(t8));
-    __asm__ volatile ("mtc2 %0, $0" :: "r"(t0));
-    __asm__ volatile ("mtc2 %0, $1" :: "r"(t2));
-    __asm__ volatile ("nop");
-    __asm__ volatile (".word 0x4A486012");
-    /* Output: pack and store rotated components into out (was matrix buffer) */
-    t3 = t3 & 0xFFFF;
-    t6 = t6 << 16;
-    t6 = t6 | t3;
-    out[0] = t6;
-    __asm__ volatile ("" ::: "memory");
-    t5 = t5 & 0xFFFF;
-    t8 = t8 << 16;
-    t8 = t8 | t5;
-    out[3] = t8;
-    __asm__ volatile ("mfc2 %0, $9"  : "=r"(t0));
-    __asm__ volatile ("mfc2 %0, $10" : "=r"(t1));
-    t0 = t0 & 0xFFFF;
-    t4 = t4 << 16;
-    t0 = t0 | t4;
-    out[1] = t0;
-    __asm__ volatile ("" ::: "memory");
-    t7 = t7 & 0xFFFF;
-    t1 = t1 << 16;
-    t1 = t1 | t7;
-    out[2] = t1;
-    __asm__ volatile ("swc2 $11, 16(%0)" :: "r"(out));
-    __asm__ volatile ("move %0, %1" : "=r"(v0) : "r"(out));
-    return v0;
-}
+/* func_8007EB4C = LIBGTE MTX_03 MulMatrix â€” verbatim-linked Sony PsyQ 4.0
+ * object (census 2026-07-09). In-place variant of the same 3-cycle mvmva
+ * transform as func_8007E4DC / calc_fc_frame_8007EC5C: reads matrix + vec
+ * from $a0 (out doubles as matrix-input buffer), writes result back to $a0.
+ * archived gte-3x3.md explicitly names this as cluster sibling. All the
+ * calc_fc_frame hand-coded signals hold. Canonical-body 2026-07-11. */
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_8007EB4C\n"
+    "    lw     $t0, 0($a0)\n"
+    "    lw     $t1, 4($a0)\n"
+    "    lw     $t2, 8($a0)\n"
+    "    lw     $t3, 12($a0)\n"
+    "    lw     $t4, 16($a0)\n"
+    "    ctc2   $t0, $0\n"
+    "    ctc2   $t1, $1\n"
+    "    ctc2   $t2, $2\n"
+    "    ctc2   $t3, $3\n"
+    "    ctc2   $t4, $4\n"
+    "    lhu    $t0, 0($a1)\n"
+    "    lw     $t1, 4($a1)\n"
+    "    lw     $t2, 12($a1)\n"
+    "    lui    $at, 0xFFFF\n"
+    "    and    $t1, $t1, $at\n"
+    "    or     $t0, $t0, $t1\n"
+    "    mtc2   $t0, $0\n"
+    "    mtc2   $t2, $1\n"
+    "    nop\n"
+    "    .word  0x4A486012\n"    /* mvmva 1, 0, 0, 3, 0 */
+    "    lhu    $t0, 2($a1)\n"
+    "    lw     $t1, 8($a1)\n"
+    "    lh     $t2, 14($a1)\n"
+    "    sll    $t1, $t1, 16\n"
+    "    or     $t0, $t0, $t1\n"
+    "    mfc2   $t3, $9\n"
+    "    mfc2   $t4, $10\n"
+    "    mfc2   $t5, $11\n"
+    "    mtc2   $t0, $0\n"
+    "    mtc2   $t2, $1\n"
+    "    nop\n"
+    "    .word  0x4A486012\n"    /* mvmva 1, 0, 0, 3, 0 */
+    "    lhu    $t0, 4($a1)\n"
+    "    lw     $t1, 8($a1)\n"
+    "    lw     $t2, 16($a1)\n"
+    "    lui    $at, 0xFFFF\n"
+    "    and    $t1, $t1, $at\n"
+    "    or     $t0, $t0, $t1\n"
+    "    mfc2   $t6, $9\n"
+    "    mfc2   $t7, $10\n"
+    "    mfc2   $t8, $11\n"
+    "    mtc2   $t0, $0\n"
+    "    mtc2   $t2, $1\n"
+    "    nop\n"
+    "    .word  0x4A486012\n"    /* mvmva 1, 0, 0, 3, 0 */
+    "    andi   $t3, $t3, 0xFFFF\n"
+    "    sll    $t6, $t6, 16\n"
+    "    or     $t6, $t6, $t3\n"
+    "    sw     $t6, 0($a0)\n"
+    "    andi   $t5, $t5, 0xFFFF\n"
+    "    sll    $t8, $t8, 16\n"
+    "    or     $t8, $t8, $t5\n"
+    "    sw     $t8, 12($a0)\n"
+    "    mfc2   $t0, $9\n"
+    "    mfc2   $t1, $10\n"
+    "    andi   $t0, $t0, 0xFFFF\n"
+    "    sll    $t4, $t4, 16\n"
+    "    or     $t0, $t0, $t4\n"
+    "    sw     $t0, 4($a0)\n"
+    "    andi   $t7, $t7, 0xFFFF\n"
+    "    sll    $t1, $t1, 16\n"
+    "    or     $t1, $t1, $t7\n"
+    "    sw     $t1, 8($a0)\n"
+    "    swc2   $11, 16($a0)\n"
+    "    addu   $v0, $a0, $zero\n"
+    "    jr     $ra\n"
+    "    nop\n"
+    "endlabel func_8007EB4C\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 PAD_NOPS_1; /* 1 NOP after func_8007EB4C */
 /* calc_fc_frame_8007EC5C: hand-coded GTE 3x3-mvmva matrix transform.
  * Authorized 2026-05-31 as COMPLETED-INLINE-ASM-CANONICAL -- see
@@ -2145,33 +2193,38 @@ __asm__(
     ".set at\n"
 );
 PAD_NOPS_1; /* 1 NOP after calc_fc_frame_8007EC5C */
-s32 *func_8007ED6C(s32 *a0, s32 *a1, s32 *a2) {
-    register s32 t0 asm("$8");
-    register s32 t1 asm("$9");
-    register s32 t2 asm("$10");
-    register s32 t3 asm("$11");
-    register s32 t4 asm("$12");
-    register s32 *v0 asm("v0");
-    t0 = a0[0];
-    t1 = a0[1];
-    t2 = a0[2];
-    t3 = a0[3];
-    t4 = a0[4];
-    __asm__ volatile ("ctc2 %0, $0" :: "r"(t0));
-    __asm__ volatile ("ctc2 %0, $1" :: "r"(t1));
-    __asm__ volatile ("ctc2 %0, $2" :: "r"(t2));
-    __asm__ volatile ("ctc2 %0, $3" :: "r"(t3));
-    __asm__ volatile ("ctc2 %0, $4" :: "r"(t4));
-    __asm__ volatile ("lwc2 $0, 0(%0)" :: "r"(a1));
-    __asm__ volatile ("lwc2 $1, 4(%0)" :: "r"(a1));
-    __asm__ volatile ("nop");
-    __asm__ volatile (".word 0x4A486012");               /* mvmva 1,0,0,3,0 */
-    __asm__ volatile ("swc2 $25, 0(%0)" :: "r"(a2));
-    __asm__ volatile (".word 0xE8DA0004" :: "r"(a2));   /* swc2 $26, 4($a2) */
-    __asm__ volatile (".word 0xE8DB0008" :: "r"(a2));   /* swc2 $27, 8($a2) */
-    __asm__ volatile ("move %0, %1" : "=r"(v0) : "r"(a2));
-    return v0;
-}
+/* func_8007ED6C = LIBGTE MTX_05 ApplyMatrix â€” verbatim-linked Sony PsyQ 4.0
+ * object (census 2026-07-09). Loads a 3x3 R matrix (5 packed s32 words) into
+ * cop2 controls 0-4, transforms *a1 vec by RT matrix (mvmva 1,0,0,3,0),
+ * writes result to *a2. Hand-written GTE asm; canonical-body 2026-07-11. */
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_8007ED6C\n"
+    "    lw     $t0, 0($a0)\n"
+    "    lw     $t1, 4($a0)\n"
+    "    lw     $t2, 8($a0)\n"
+    "    lw     $t3, 12($a0)\n"
+    "    lw     $t4, 16($a0)\n"
+    "    ctc2   $t0, $0\n"
+    "    ctc2   $t1, $1\n"
+    "    ctc2   $t2, $2\n"
+    "    ctc2   $t3, $3\n"
+    "    ctc2   $t4, $4\n"
+    "    lwc2   $0, 0($a1)\n"
+    "    lwc2   $1, 4($a1)\n"
+    "    nop\n"
+    "    .word  0x4A486012\n"    /* mvmva 1, 0, 0, 3, 0 */
+    "    swc2   $25, 0($a2)\n"
+    "    swc2   $26, 4($a2)\n"
+    "    swc2   $27, 8($a2)\n"
+    "    addu   $v0, $a2, $zero\n"
+    "    jr     $ra\n"
+    "    nop\n"
+    "endlabel func_8007ED6C\n"
+);
 
 /* func_8007EDBC: hand-coded asm in the original PSY-Q source (display.c packed
  * fixed-point multiply -- 3x3-matrix column scale: 9 packed s16 values each
@@ -2460,13 +2513,13 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-/* func_8007F0BC / func_8007F0E4 — hand-written GTE sqr leaf wrappers
+/* func_8007F0BC / func_8007F0E4 â€” hand-written GTE sqr leaf wrappers
  * (8007Fxxx cluster, same shape as user-authorized func_8007E8AC
  * f980d67b): lwc2 x3 -> GTE delay nop -> sqr -> swc2 x3 -> jr with
  * hand-pinned `addu $v0,$a1,$zero` return in the delay slot. The return
  * pin is unreachable from compiled C (local-alloc copy-suggestion scan is
  * ascending, so the arg copy always wins the qty and the return copy
- * materializes at function head — measured across volatile/return-local
+ * materializes at function head â€” measured across volatile/return-local
  * variants; the fill_delay regfix rules bridged exactly this). swc2 ops
  * splat-tagged "handwritten instruction". User authorized 2026-06-11. */
 __asm__(
@@ -2611,31 +2664,44 @@ s32 func_8007F21C(s32 *a0, s32 *a1, s32 *a2, s32 *a3) {
     return v0 >> 2;
 }
 PAD_NOPS_1; /* 1 NOP after func_8007F21C */
-s32 func_8007F24C(s16 *a0, s16 *a1, s16 *a2, s32 *a3, s32 *o0, s32 *o1, s32 *o2, s32 *o3) {
-    register s32 v1 asm("v1");
-    register s32 v0 asm("v0");
-    __asm__ volatile (".word 0xC8800000" :: "r"(a0));  /* lwc2 $0, 0($a0) */
-    __asm__ volatile (".word 0xC8810004" :: "r"(a0));  /* lwc2 $1, 4($a0) */
-    __asm__ volatile (".word 0xC8A20000" :: "r"(a1));  /* lwc2 $2, 0($a1) */
-    __asm__ volatile (".word 0xC8A30004" :: "r"(a1));  /* lwc2 $3, 4($a1) */
-    __asm__ volatile (".word 0xC8C40000" :: "r"(a2));  /* lwc2 $4, 0($a2) */
-    __asm__ volatile (".word 0xC8C50004" :: "r"(a2));  /* lwc2 $5, 4($a2) */
-    __asm__ volatile ("nop");
-    __asm__ volatile (".word 0x4A280030");             /* rtpt */
-    __asm__ volatile (".word 0x8FA80010");             /* lw $t0, 0x10($sp) */
-    __asm__ volatile (".word 0x8FA90014");             /* lw $t1, 0x14($sp) */
-    __asm__ volatile (".word 0x8FAA0018");             /* lw $t2, 0x18($sp) */
-    __asm__ volatile (".word 0x8FAB001C");             /* lw $t3, 0x1C($sp) */
-    __asm__ volatile (".word 0xE8EC0000" :: "r"(a3));  /* swc2 $12, 0($a3) */
-    __asm__ volatile (".word 0xE90D0000");             /* swc2 $13, 0($t0) */
-    __asm__ volatile (".word 0xE92E0000");             /* swc2 $14, 0($t1) */
-    __asm__ volatile (".word 0xE9480000");             /* swc2 $8,  0($t2) */
-    __asm__ volatile (".word 0x4843F800" : "=r"(v1));  /* cfc2 $v1, $31 */
-    __asm__ volatile (".word 0x48029800" : "=r"(v0));  /* mfc2 $v0, $19 */
-    __asm__ volatile (".word 0xAD630000");             /* sw $v1, 0x0($t3) */
-    (void)o0; (void)o1; (void)o2; (void)o3;
-    return v0 >> 2;
-}
+/* func_8007F24C = LIBGTE SMP_03 RotTransPers3 â€” verbatim-linked Sony PsyQ 4.0
+ * object (census 2026-07-09). Triple perspective transform: lwc2 3 SXY0/SXY1/SXY2
+ * pairs from *a0/*a1/*a2 -> rtpt -> swc2 SZ/SXY0/SXY1/SXY2 to *a3 & sp-loaded
+ * pointers -> cfc2 FLAG to *(sp+0x1C) -> return mfc2 SZ3 >> 2 (folded into jr
+ * delay slot). Hand-written GTE asm; canonical-body 2026-07-11. */
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_8007F24C\n"
+    "    lwc2   $0, 0($a0)\n"
+    "    lwc2   $1, 4($a0)\n"
+    "    lwc2   $2, 0($a1)\n"
+    "    lwc2   $3, 4($a1)\n"
+    "    lwc2   $4, 0($a2)\n"
+    "    lwc2   $5, 4($a2)\n"
+    "    nop\n"
+    "    rtpt\n"
+    "    lw     $t0, 16($sp)\n"
+    "    lw     $t1, 20($sp)\n"
+    "    lw     $t2, 24($sp)\n"
+    "    lw     $t3, 28($sp)\n"
+    "    swc2   $12, 0($a3)\n"
+    "    swc2   $13, 0($t0)\n"
+    "    swc2   $14, 0($t1)\n"
+    "    swc2   $8, 0($t2)\n"
+    "    cfc2   $v1, $31\n"
+    "    mfc2   $v0, $19\n"
+    "    sw     $v1, 0($t3)\n"
+    "    jr     $ra\n"
+    "    sra    $v0, $v0, 2\n"
+    "endlabel func_8007F24C\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 PAD_NOPS_3; /* 3 NOPs after func_8007F24C */
 void func_8007F2AC(s32 *a0, s32 *a1, s32 *a2) {
     s32 v0;
@@ -2650,40 +2716,48 @@ void func_8007F2AC(s32 *a0, s32 *a1, s32 *a2) {
     *a2 = v0;
 }
 PAD_NOPS_2; /* 2 NOPs after func_8007F2AC */
-s32 func_8007F2DC(s16 *a0, s16 *a1, s16 *a2, s16 *a3, s32 *o0, s32 *o1, s32 *o2, s32 *o3, s32 *o4, s32 *o5) {
-    register s32 v1 asm("v1");
-    register s32 v0 asm("v0");
-    __asm__ volatile (".word 0xC8800000" :: "r"(a0));  /* lwc2 $0, 0($a0) */
-    __asm__ volatile (".word 0xC8810004" :: "r"(a0));  /* lwc2 $1, 4($a0) */
-    __asm__ volatile (".word 0xC8A20000" :: "r"(a1));  /* lwc2 $2, 0($a1) */
-    __asm__ volatile (".word 0xC8A30004" :: "r"(a1));  /* lwc2 $3, 4($a1) */
-    __asm__ volatile (".word 0xC8C40000" :: "r"(a2));  /* lwc2 $4, 0($a2) */
-    __asm__ volatile (".word 0xC8C50004" :: "r"(a2));  /* lwc2 $5, 4($a2) */
-    __asm__ volatile ("nop");
-    __asm__ volatile (".word 0x4A280030");             /* rtpt */
-    __asm__ volatile (".word 0x8FA80010");             /* lw $t0, 0x10($sp) */
-    __asm__ volatile (".word 0x8FA90014");             /* lw $t1, 0x14($sp) */
-    __asm__ volatile (".word 0x8FAA0018");             /* lw $t2, 0x18($sp) */
-    __asm__ volatile (".word 0xE90C0000");             /* swc2 $12, 0($t0) */
-    __asm__ volatile (".word 0xE92D0000");             /* swc2 $13, 0($t1) */
-    __asm__ volatile (".word 0xE94E0000");             /* swc2 $14, 0($t2) */
-    __asm__ volatile (".word 0x4843F800" : "=r"(v1));  /* cfc2 $v1, $31 (FLAG1) */
-    __asm__ volatile (".word 0xC8E00000" :: "r"(a3));  /* lwc2 $0, 0($a3) */
-    __asm__ volatile (".word 0xC8E10004" :: "r"(a3));  /* lwc2 $1, 4($a3) */
-    __asm__ volatile ("nop");
-    __asm__ volatile (".word 0x4A180001");             /* rtps */
-    __asm__ volatile (".word 0x8FA8001C");             /* lw $t0, 0x1C($sp) */
-    __asm__ volatile (".word 0x8FA90020");             /* lw $t1, 0x20($sp) */
-    __asm__ volatile (".word 0x8FAA0024");             /* lw $t2, 0x24($sp) */
-    __asm__ volatile (".word 0xE90E0000");             /* swc2 $14, 0($t0) */
-    __asm__ volatile (".word 0xE9280000");             /* swc2 $8,  0($t1) */
-    __asm__ volatile (".word 0x4848F800");             /* cfc2 $t0, $31 (FLAG2) */
-    __asm__ volatile (".word 0x48029800" : "=r"(v0));  /* mfc2 $v0, $19 (SZ3) */
-    __asm__ volatile (".word 0x01034025" :: "r"(v1));  /* or $t0, $t0, $v1 (combine FLAGs) */
-    __asm__ volatile (".word 0xAD480000");             /* sw $t0, 0($t2) */
-    (void)o0; (void)o1; (void)o2; (void)o3; (void)o4; (void)o5;
-    return v0 >> 2;
-}
+/* func_8007F2DC = LIBGTE CMB_00 RotTransPers4 â€” verbatim-linked Sony PsyQ 4.0
+ * object (census 2026-07-09). Triple perspective transform PLUS a 4th vertex
+ * via rtps: rtpt on 3 SXY pairs, then rtps on the 4th (*a3). Combined FLAGs
+ * OR'd; returns SZ3 >> 2. Hand-written GTE asm; canonical-body 2026-07-11. */
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_8007F2DC\n"
+    "    lwc2   $0, 0($a0)\n"
+    "    lwc2   $1, 4($a0)\n"
+    "    lwc2   $2, 0($a1)\n"
+    "    lwc2   $3, 4($a1)\n"
+    "    lwc2   $4, 0($a2)\n"
+    "    lwc2   $5, 4($a2)\n"
+    "    nop\n"
+    "    rtpt\n"
+    "    lw     $t0, 16($sp)\n"
+    "    lw     $t1, 20($sp)\n"
+    "    lw     $t2, 24($sp)\n"
+    "    swc2   $12, 0($t0)\n"
+    "    swc2   $13, 0($t1)\n"
+    "    swc2   $14, 0($t2)\n"
+    "    cfc2   $v1, $31\n"
+    "    lwc2   $0, 0($a3)\n"
+    "    lwc2   $1, 4($a3)\n"
+    "    nop\n"
+    "    rtps\n"
+    "    lw     $t0, 28($sp)\n"
+    "    lw     $t1, 32($sp)\n"
+    "    lw     $t2, 36($sp)\n"
+    "    swc2   $14, 0($t0)\n"
+    "    swc2   $8, 0($t1)\n"
+    "    cfc2   $t0, $31\n"
+    "    mfc2   $v0, $19\n"
+    "    or     $t0, $t0, $v1\n"
+    "    sw     $t0, 0($t2)\n"
+    "    jr     $ra\n"
+    "    sra    $v0, $v0, 2\n"
+    "endlabel func_8007F2DC\n"
+);
 PAD_NOPS_2; /* 2 NOPs after func_8007F2DC */
 /* motutil_GetWalkDir: hand-coded asm in original PSY-Q source.
  * Cluster sibling of func_8007F5EC (jaccard=0.68): same 3-axis Euler
@@ -3313,7 +3387,7 @@ __asm__(
 );
 PAD_NOPS_2; /* 2 NOPs after func_8007FA1C */
 /* func_8007FBBC: hand-coded asm in original PSY-Q source.
- * Cluster sibling of func_8007F87C (jaccard=1.00 — structurally
+ * Cluster sibling of func_8007F87C (jaccard=1.00 â€” structurally
  * identical, just different stride offsets 0..0xA). All 5 strong
  * signals confirmed by scan_hand_coded: uniform 2-cycle multu pacing,
  * empty-body INT_MIN-guard branch, 0 spills in 102 insns, 6-load burst
@@ -3488,7 +3562,7 @@ typedef struct GameObj {
 } GameObj;
 extern s16 D_800A0928[];
 
-/* PsyQ LIBGTE ratan: ratan2 — verbatim-linked Sony object (census
+/* PsyQ LIBGTE ratan: ratan2 â€” verbatim-linked Sony object (census
    2026-07-09); C ref: sotn-decomp psxsdk (table-lookup atan2) */
 s32 single_game_getEnemyCharId(s32 arg0, s32 arg1) {
     s32 var_v1;
