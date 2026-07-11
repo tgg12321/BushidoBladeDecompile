@@ -750,14 +750,6 @@
       "status": "active"
     },
     {
-      "func": "saEft00Add",
-      "file": "system",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_80045294",
       "file": "text1a_c",
       "distance": 2,
@@ -3768,14 +3760,14 @@
     }
   ],
   "counts": {
-    "total": 441,
-    "active": 372,
+    "total": 440,
+    "active": 371,
     "by_status": {
-      "active": 372,
+      "active": 371,
       "parked": 69
     },
     "by_verdict": {
-      "C": 217,
+      "C": 216,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 108
     }
