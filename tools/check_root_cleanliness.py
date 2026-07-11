@@ -47,6 +47,7 @@ ALLOWED_BUILD_TXT = {
     "multu_funcs.txt", "multu_pad_funcs.txt",
     "reloc_addrs.txt",
     "cheat_retirement_debt.txt",
+    "maspsx_label_nop_funcs.txt", "volatile_extern_allowlist.txt",
 }
 
 # Tracked CSVs (data files referenced by tools/docs)

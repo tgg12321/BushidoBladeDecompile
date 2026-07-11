@@ -1,5 +1,65 @@
 # Closer Phase 3 — PsyQ psxsdk adoption progress ledger
 
+## SESSION 13 (2026-07-11) — LIBGTE canonical-asm authorization pass + saEft00Add close-out
+
+**10 LIBGTE census-proven functions retired as COMPLETED-INLINE-ASM-CANONICAL**
+(commit 9eba9a3e). All are verbatim-linked Sony PsyQ 4.0 LIBGTE .LIB
+objects; splat tags every cop2 op "handwritten instruction"; no pure-C form
+exists under the 2026-05-31 cheat catalog. Whole-body
+`__asm__("glabel ... endlabel")` blocks replacing C bodies with register-
+asm pins, single-instruction `negu`/`lui` general-purpose-opcode asm, and
+inline-move-aliasing constructs.
+
+| Function | LIBGTE module | Sony name | Rules retired |
+|---|---|---|---|
+| func_8007E1AC | MSC06 | LoadAverage12 | 0 |
+| func_8007E1FC | MSC06 | LoadAverage0 | 0 |
+| func_8007ED6C | MTX_05 | ApplyMatrix | 0 |
+| func_8007F24C | SMP_03 | RotTransPers3 | 0 |
+| func_8007F2DC | CMB_00 | RotTransPers4 | 0 |
+| func_8007E4DC | MTX_000 | MulMatrix0 | 0 |
+| func_8007EB4C | MTX_03 | MulMatrix | 0 |
+| func_8007E8DC | MTX_00A | ScaleMatrixL | 1 (fill_delay) |
+| func_8007E74C | MTX_004 | ApplyMatrixLV | 13 (dead-branch-scheduling insert_after `sra` + j→b + fill_delay clusters) |
+| func_8007EA0C | MTX_01 | ApplyRotMatrixLV | 13 (same archived pattern) |
+
+**Cluster corroboration**: siblings calc_fc_frame_8007EC5C (ASM-WHOLE
+2026-05-31), func_8007E8AC (2026-06-11), func_8007F0BC/F0E4 (2026-06-11)
+were already canonical-body under the archived gte-3x3.md — which
+explicitly named E4DC and EB4C as siblings to follow the same path.
+Cheat-reviewer PASS with 9 independent verifications (census cross-check,
+target.s byte-diff, scan_hand_coded S8 STRONG on E8DC, oracle rebuild).
+
+**saEft00Add closed** (commit c7114628, followup). Session 9 landed its
+honest bit-exact CDREAD-family close via cdread_family_close.patch (0/133
+words vs the EXE); the 2 residual sandbox-score words are reloc-spelling
+addend artifacts (per-member symbol addends vs D_800A14D0+K base). `queue
+done saEft00Add` accepted: 0 rules, 0 cheat-asm, SHA1 == oracle →
+COMPLETED-C.
+
+**Infrastructure finding — canonical-asm-authorization-recipe corner case.**
+Emitting `.set reorder\n.set at\n` at the end of a file-scope `__asm__`
+glabel block when the NEXT block opens with `.section .text` causes maspsx
+to insert a stray load-delay nop in the following function (confirmed for
+ED6C→EDBC and F2DC→motutil_GetWalkDir). Fix: omit the trailing
+`.set reorder/at` when the next block starts with `.section .text`.
+
+**Queue net**: 380 → 369 active (11 items closed this session; 1 previously-
+parked flipped back to active during regen).
+
+**Housekeeping** (this session):
+- 9 obsolete banked patches deleted from `memory/closer/candidates/`
+  (cdread_family_close.patch, cdread_triple.patch + README,
+  intr_module_close.patch + README, saeft00add_sony_shape.c,
+  sio_ansync_pair_volatile.c, spusetkey_v40_proven.c,
+  vwait_pad1_volatile_array.c). All target functions COMPLETED; patches
+  served their purpose.
+- 8 stale WIP entries deleted (D_80083418, func_80064E90, func_8007E35C,
+  func_8007F1A8, func_80085270, func_80089EB0, saEft03Start2, spu_InitEx)
+  — all functions are COMPLETED-C or COMPLETED-INLINE-ASM-CANONICAL.
+- `volatile-grant-proposals.md` collapsed to a resolved-proposals audit
+  table (§1-§4 all ratified). Proposal queue is now empty.
+
 ## SESSION 12 (2026-07-10) - LIBETC INTR module proven 0/297 (blocked on Proposal 4); CD_cw banked at 57/263
 
 **func_80082D34 (= trapIntr + setIntr + stopIntr + restartIntr + memclr,
