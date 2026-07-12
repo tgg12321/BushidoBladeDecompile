@@ -1,8 +1,8 @@
 {
  "func": "func_8001B138",
  "file": "code6cac",
- "session_count": 5,
- "current_modality": "permuter",
+ "session_count": 6,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -33,18 +33,19 @@
    "floor": 1,
    "modality": "permuter",
    "headline": "Directed PERM_LINESWAP sweep (6/6 orderings) of the trailing v>>4 block found zero score improvements, exhausting the last open frontier item; clean floor stays 1, only remaining lever is the Judge-fo"
+  },
+  {
+   "session": 6,
+   "floor": 1,
+   "modality": "forensics",
+   "headline": "Instrumented cc1 -da RTL dumps prove the ori-vs-addiu divergence is fixed pre-RTL by the front-end's convert() during build_modify_expr, not by any RTL pass -- no RTL-level lever exists, closing off t"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A structurally different chassis (varying the WHOLE function's control-flow shape rather than just the clamp-store RHS) could give the permuter a genuinely new basin to search.",
-   "mechanism": "unclear -- s3 already measured that the one structural variant tried (else-if merge of the two clamp checks) regresses the score (11 vs 1), and the residual itself is a single-instruction constant-materialization encoding choice (ori vs addiu) with no surrounding structure that plausibly varies it without touching unrelated, already-verified-correct code.",
-   "next_probe": "If a future session wants to spend more permuter time here, the only untried angle is reseeding with PERM_LINESWAP/PERM_GENERAL directed at the trailing v>>4 rounding block (in case some reordering there changes constant-pool/scheduling context for the earlier store) -- low expected yield given s3's structural finding, but it is the one untried chassis."
-  },
-  {
-   "hypothesis": "Re-verify (per the open frontier item carried since s2/s3) whether the trailing block's `v` local could ever legitimately be hoisted to also carry -7168 for a second, real purpose.",
-   "mechanism": "s3 already closed this analytically: target asm ordering requires g_file_vram_timer's read (for v) to happen AFTER the clamp store, so no natural reshuffle lets v hold the pre-clamp constant without inventing an artificial second purpose.",
-   "next_probe": "Effectively exhausted; a future session could still try a permuter PERM_LINESWAP sweep over statement orderings just to have a fully mechanical negative, but confidence this yields anything is very low given s3's ordering-constraint analysis."
+   "hypothesis": "No further avenue is derivable from RTL-pass instrumentation, literal spelling, storage duration, control-flow restructuring, or permuter search (all exhausted s2-s6). The only way to reach addiu is a separately-typed C-level tree node whose constant is fixed independent of the target lvalue's type -- the exact Judge-forbidden typed-holder family.",
+   "mechanism": "Confirmed mechanistically: front-end convert() during build_modify_expr always re-derives a literal RHS through the target lvalue's type at tree-fold time, universally, for any negative-literal-to-unsigned-lvalue assignment in GCC 2.7.2 -- this is generic C semantics, not something specific to this function's structure.",
+   "next_probe": "None with expected yield. A future session could still ask the Judge/owner directly whether ANY construct that creates a separately-typed intermediate (however named/motivated) is permanently inadmissible for this residual, since s2-s6 have now exhausted the full search space (literal spelling, storage duration/linkage, control-flow shape, permuter random+directed search, and RTL-pass-level mechanism) without finding a compliant lever."
   }
  ],
  "judge_constraints": [
