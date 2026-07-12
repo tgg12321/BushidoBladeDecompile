@@ -1,7 +1,7 @@
 {
  "func": "func_8001B138",
  "file": "code6cac",
- "session_count": 4,
+ "session_count": 5,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -27,6 +27,12 @@
    "floor": 1,
    "modality": "permuter",
    "headline": "Permuter (337-iter random campaign, honest single-func workspace) independently rediscovered the SAME forbidden typed-literal-holder cheat s2/s3 already killed by hand -- no legitimate closing lever e"
+  },
+  {
+   "session": 5,
+   "floor": 1,
+   "modality": "permuter",
+   "headline": "Directed PERM_LINESWAP sweep (6/6 orderings) of the trailing v>>4 block found zero score improvements, exhausting the last open frontier item; clean floor stays 1, only remaining lever is the Judge-fo"
   }
  ],
  "frontier": [
