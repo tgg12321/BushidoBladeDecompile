@@ -1,138 +1,138 @@
 # Project Status
 
-> **Historical snapshot.** This file is a hand-pulled, dated point-in-time snapshot and predates
-> the engine workflow (it references `WORK_QUEUE.md` and the `.bb2_active_func` marker, both
-> retired). For current state run `python3 -m engine.cli scan-redundant --all` (worklist) and
-> `verify-oracle` (build health); the workflow itself lives in [`../CLAUDE.md`](../CLAUDE.md).
+**Live snapshot.** Refreshed 2026-07-12 to reflect the current engine
+workflow. For the live worklist run `& tools/wteng.ps1 main queue next`
+(and `queue status` for counters); for build health run
+`verify-oracle`. The workflow itself lives in
+[`../CLAUDE.md`](../CLAUDE.md).
 
-Hand-pulled snapshot of the state of the matching decompilation at a point in time.
-
-To regenerate the headline counts at any time, run the snippet at the bottom of this document.
-
-## Snapshot — 2026-05-16
-
-### Build
+## Build
 
 | | |
 |---|---|
 | Branch | `main` |
-| Last commit author date | 2026-05-16 |
-| Build SHA1 | matches original `disc/SLUS_006.63` |
-| Active marker (`.bb2_active_func`) | function in progress on main: `func_80077B30` |
+| Oracle SHA1 | `62efab4f73f992798c43e8c730aa43baa10bb4fa` |
+| Build match | ✅ (verify-oracle green) |
+| Current worklist top | via `& tools/wteng.ps1 main queue next` |
 
-### Function inventory
+## Function inventory (2026-07-12)
 
 | | Count |
 |---|------:|
-| Total identified functions | 1,410 |
-| `asm/funcs/<name>.s` files (one per function, some now orphaned) | 1,433 |
-| C source files (`src/*.c`) | 21 |
-| C source line count (total) | ~46,892 |
-| Function definitions in C source | ~1,516 (includes static helpers that may not be in the asm count) |
-| Functions with semantic names (across src/ + asm/funcs/) | ~526 |
-| Functions still named `func_<addr>` | ~880 |
-| Bridged functions (`replace_with_asmfile` in asmfix.txt) | ~148 |
-| Authorized canonical inline-asm functions (`inline_asm_canonical.txt`) | ~80 |
+| Total identified functions (`asm/funcs/*.s`) | 1,435 |
+| **COMPLETED-C** (approx: total − queue − canonical) | **~826** |
+| **COMPLETED-INLINE-ASM-CANONICAL** (`inline_asm_canonical.txt`) | 170 |
+| **INCOMPLETE** (queue items) | 439 |
+| — active (worker-eligible) | 370 |
+| — parked (blocked / plateau) | 69 |
 
-Source-file size distribution (in lines):
+Queue verdict breakdown:
 
-| File | Lines | Approximate VRAM range |
+| Verdict | Count | Meaning |
 |---|---:|---|
-| `text1b.c` | 18,566 | `0x80047ED0`–`0x8007A28C` |
-| `code6cac_b.c` | 4,247 | `0x80026DA4`–`0x80035438` |
-| `display.c` | 3,494 | `0x8007B244`–`0x8008008C` |
-| `code6cac.c` | 3,319 | `0x80017FA0`–`0x80026DA4` |
-| `main.c` | 3,095 | `0x80083BE4`–`0x8008D120` |
-| `text1a_c.c` | 1,949 | `0x80042504`–`0x800460E4` |
-| `code6cac_c_mid.c` | 1,855 | `0x80037F08`–`0x8003AB44` |
-| `code6cac_c2.c` | 1,686 | `0x8003B9D0`–`0x8003F168` |
-| `text1a.c` | 1,446 | `0x800401CC`–`0x80042504` |
-| `system.c` | 1,123 | `0x8008008C`–`0x8008289C` |
-| `sound.c` | 1,015 | `0x80046780`–`0x80047ED0` |
-| `ings.c` | 962 | `0x800164AC`–`0x80017FA0` |
-| `ings2.c` | 746 | `0x8008289C`–`0x80083BE4` |
-| `code6cac_b2.c` | 690 | `0x80035438`–`0x800375EC` |
-| `gpu.c` | 678 | `0x8007A28C`–`0x8007B244` |
-| `code6cac_c_ab.c` | 648 | `0x8003AB44`–`0x8003B9D0` |
-| `config.c` | 575 | `0x8003F168`–`0x800401CC` |
-| `code6cac_c.c` | 413 | `0x800375EC`–`0x80037D14` |
-| `text1a_c2.c` | 245 | `0x800460E4`–`0x800466C0` |
-| `code6cac_c0.c` | 108 | `0x80037D14`–`0x80037F08` |
-| `text1a_b.c` | 32 | `0x800466C0`–`0x80046780` |
+| C | 258 | Pure-C reachable |
+| ASM-PARTIAL | 48 | Contains canonical GTE/BIOS/HW asm |
+| ASM-SUSPECT | 107 | Distance >50, no hand-coded signal — try pure-C first |
+| ASM-STRUCTURAL | 26 | Distance >500 + hand-coded tier — surface for user auth |
 
-For finer detail on what lives inside each file, see [`SUBSYSTEM_MAP_2026-05-12.md`](handoffs/2026-05-12-subsystem-map.md).
+Debt indicators:
 
-### Work queue (from `WORK_QUEUE.md`)
+| | Count |
+|---|------:|
+| Functions carrying `regfix.txt` rules | 139 |
+| Functions carrying `asmfix.txt` rules | 153 |
+| Functions with `replace_with_asmfile` bridge splices | 140 |
 
-| Queue | Count |
+## Source-file distribution
+
+| File | Lines |
 |---|---:|
-| Active decomp queue | 62 |
-| Structural split queue | 1 |
-| Asmfix retirement queue | 147 |
-| Permanent out-of-scope | 7 |
-| **Total active / deferred** | **63** |
-| **Total pure-C / asmfix-retirement backlog** | **210** |
+| `text1b.c` | 17,743 |
+| `code6cac_b.c` | 4,252 |
+| `display.c` | 3,703 |
+| `main.c` | 3,695 |
+| `code6cac.c` | 3,407 |
+| `text1a_c.c` | 1,982 |
+| `text1b_b.c` | 1,975 |
+| `code6cac_c_mid.c` | 1,878 |
+| `code6cac_c2.c` | 1,698 |
+| `text1a.c` | 1,467 |
+| `system.c` | 1,234 |
+| `sound.c` | 1,023 |
+| `ings.c` | 962 |
+| `ings2.c` | 817 |
+| `gpu.c` | 652 |
+| `code6cac_c_ab.c` | 645 |
+| `config.c` | 581 |
+| `text1a_filepaths.c` | 574 |
+| Other 13 files | < 550 each |
+| **Total** | **51,002** |
 
-The active decomp queue is currently dominated by GTE-using functions in `text1b.c` that need their inline-asm bodies converted to mostly-C with narrowed inline blocks for the cop2 ops.
+31 C source files total (Phase B of the rodata-cleanup project split
+several files into `_pre` / `_post` sub-TUs).
 
-### Recent velocity
+## Recent velocity
 
 | Window | Commits |
 |---|---:|
-| Last 2 weeks | 484 |
-| Last 1 month | 774 |
-| Total since 2026-03-23 | 1,381 |
+| Last 2 weeks | 421 |
+| Last month | 839 |
+| Total since project start (2026-03-23) | 3,366 |
 
-Most recent commits (`git log --oneline -5`):
+## Standing initiatives
 
-```
-d75a5d6 auto_drift_repair: rollback on no-improvement + detect maspsx-set-stripping
-8f903a0 text1b: authorize func_800526A0 canonical inline-asm (GTE LZCS/LZCR primitive)
-9a1c378 auto-repair: detect SHA1-silent pair-shift drift via MISMATCH line
-cee3dda housekeeping: refresh queue after func_8004C388 match
-6fd1679 text1b: match func_8004C388 (xyz+packed-rgb midpoint averager, ...)
-```
+### Closer Phase 3 — PsyQ psxsdk adoption
+Adopt SOTN-matched psxsdk C source for BB2's 92 census-proven verbatim-linked
+Sony PsyQ 4.0 library functions. **Session 14 (2026-07-12):**
+~46 of 92 census hits closed since the mission started (2026-07-09);
+LIBGTE canonical-asm pass retired 10 functions on 2026-07-11 (10 GTE
+modules, 27 forbidden regfix rules cleared alongside); saTan2Main closed
+2026-07-12 with a newly-sanctioned pure-C lever
+(`hoist-shared-arm-computation-defeats-copy-pref`). Ledger:
+`memory/closer/phase3-progress.md`.
 
-## Health indicators
+### The Grinder — default autonomous pipeline
+`tools/grinder/` is the standing single-lane driver for the queue's top
+active item. It runs on `main`, persists per-function ledgers in
+`memory/grind/<func>/`, and gates every completion through a default-FAIL
+Judge. Spec: `docs/superpowers/specs/2026-07-06-grinder-pipeline-design.md`;
+skill: `decomp-grind`. Owner audits: `docs/grind/decisions.md` +
+`docs/grind/journal.md`.
 
-These are the project's standing technical debt items that the 1.0 release criteria will close out:
+### Manual close-out path
+Manual per-function work uses the `decomp-orchestrate` skill (single focused
+agent on `main` driving the engine as a toolkit). Layer-2 fresh
+`cheat-reviewer` remains mandatory for any completion-class commit per
+[[review-discipline-before-commit]].
 
-| Item | State | Detail |
-|---|---|---|
-| Bridged functions (`replace_with_asmfile`) | ~148 active | Each one is a function whose C body is dead code; the build substitutes raw hand-disassembled MIPS. Retirement is in flight via `dc.sh next-asmfix`. |
-| Inline-asm debt (`inline_asm_debt`) | scanned live | Live-scanned by `tools/gen_work_queue.py` from `src/*.c`. Suspect non-canonical inline asm patterns are tagged and re-injected into the active decomp queue. |
-| `# RETIRE:` lines in asmfix.txt | 3 (as of last check) | These are commented-out bridges from functions whose retirement is half-complete — their C body matches but the bridge line is kept until `dc.sh purge-retirements` verifies and removes it. |
-| Drift-fragile literal `.L<N>` rules | tracked | A `subst` rule with a hardcoded `.L347` silently breaks when a sibling function shifts GCC's per-CU label counter. The `dc.sh start` briefing reports the count; `dc.sh regfix-drift-immune --apply` rewrites the safe ones. |
-| Asm-cheat patterns | tracked | Force-rewrite patterns (wildcard `subst .*`), file-scope `__asm__("glabel ...")` function bodies, and large splice rules are tracked by `tools/audit_asm_cheats.py` and surfaced in the session briefing. |
+## Health / debt
+
+| Item | State |
+|---|---|
+| Root cleanliness | ✅ 0 suspicious, 0 unknown (`tools/check_root_cleanliness.py`) |
+| CLAUDE.md / memory hygiene | Guards active (root-write, LF, CRLF-tooling-error, memory-write) |
+| Oracle | Green (`build/bb2.exe` == `disc/SLUS_006.63`) |
+| Rodata cleanup project | Phase A (block retirement) DONE; Phase B (per-function follow-up) via TU re-split — ongoing per `docs/rodata-cleanup-project.md` |
+| Volatile-grant proposal queue | Empty (§1-§4 all ratified — `memory/closer/volatile-grant-proposals.md`) |
+| Standing banked candidates | 7 (post-session-14): `cdcontrol_trio`, `cdcw_tslTm2LoadImage`, `exec_game_sotn_hybrid`, `marionation_p6_volatile1496`, `marionation_vAT1_notailwrap`, `spu_writebyio_splice`, `spusetreverbmodeparam_struct` |
 
 ## Regenerating this snapshot
 
-To regenerate the headline counts:
+```pwsh
+# Queue counts + verdict breakdown
+& tools/wteng.ps1 main queue status
 
-```bash
-# From the project root, in WSL with the venv active:
-
-# Function count
-grep -c "^\\.glabel " asm/6CAC.s
-
-# C source line counts
+# File inventory (from the project root, WSL side)
+ls asm/funcs/*.s | wc -l
+grep -cE '^[a-zA-Z_]' inline_asm_canonical.txt
+grep -c 'replace_with_asmfile' asmfix.txt
 wc -l src/*.c
 
-# Function definitions in src/
-grep -hcE "^(s32|u32|s16|u16|s8|u8|void|int|char|float|short|long)[ *]+[a-zA-Z_]" src/*.c | awk '{s+=$1} END {print s}'
-
-# Bridged function count
-grep -c "^[a-zA-Z_].*: replace_with_asmfile" asmfix.txt
-
-# Authorized canonical inline-asm function count
-grep -cE "^[a-zA-Z_]" inline_asm_canonical.txt
-
-# Work queue counts (from WORK_QUEUE.md "Backlog Summary" table)
-sed -n '/Backlog Summary/,/^$/p' WORK_QUEUE.md
-
-# Recent commit velocity
-git log --oneline --since="2 weeks ago" | wc -l
+# Velocity
+git log --oneline --since='2 weeks ago' | wc -l
 git log --oneline | wc -l
-```
 
-A future enhancement would be a script under `tools/` that emits this whole document. For now, manual refresh is the convention — the numbers in this file are not load-bearing for any tooling.
+# Oracle
+sha1sum disc/SLUS_006.63
+& tools/wteng.ps1 main verify-oracle
+```

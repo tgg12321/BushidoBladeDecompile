@@ -37,7 +37,7 @@ This directory holds the contributor-facing documentation for the *Bushido Blade
 | [`../BUILD.md`](../BUILD.md) | End-to-end setup: WSL/Linux toolchain, disc extraction, first build, common errors. |
 | [`../CONTRIBUTING.md`](../CONTRIBUTING.md) | How to contribute: work-queue model, active-marker hook, per-function lifecycle, escalation ladder, bridge retirement, PR conventions. |
 | [`../CLAUDE.md`](../CLAUDE.md) | Operating instructions for the Claude Code agent that does most of the decomp work. Useful context for human contributors who want to understand the day-to-day workflow. |
-| `../WORK_QUEUE.md` *(retired 2026-05)* | Former live work list. Replaced by `python3 -m engine.cli scan-redundant --all` — a difficulty-ranked view of the rules the build doesn't actually need. |
+| `../WORK_QUEUE.md` *(retired 2026-05)* | Former live work list. Replaced by `engine/queue.json` — the ordered per-function worklist that the `queue next` / `queue status` CLI drives. |
 | [`handoffs/2026-05-12-subsystem-map.md`](handoffs/2026-05-12-subsystem-map.md) | What lives in each `src/*.c` file and at what VRAM address range. |
 | [`handoffs/2026-05-12-audit.md`](handoffs/2026-05-12-audit.md) | Audit of finished C surface; bridge-signature cleanup; naming-suspect list. |
 | [`naming/2026-05-12-triage.md`](naming/2026-05-12-triage.md) | Per-symbol triage of Kengo-derived names — keep, demote, or rename. |
@@ -61,4 +61,4 @@ This directory holds the contributor-facing documentation for the *Bushido Blade
 1. [`STATUS.md`](STATUS.md) — current numbers, queue, what's on `main` right now.
 2. [`HISTORY.md`](HISTORY.md) — what's changed structurally since you were last here.
 3. `git log --oneline --since="2 weeks ago"` — what's been matched recently.
-4. `python3 -m engine.cli scan-redundant --all` — the current difficulty-ranked worklist.
+4. `& tools/wteng.ps1 main queue next` — the current top of the worklist.

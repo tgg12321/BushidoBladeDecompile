@@ -1,6 +1,16 @@
 # Contributing to the BB2 Decompilation
 
-The Bushido Blade 2 decomp is a long-lived, queue-driven project. Most contributions are one-function-at-a-time matching work: pick a function from the top of [`WORK_QUEUE.md`](WORK_QUEUE.md), write its C body, and iterate until the build still SHA1-matches with your function as real C instead of assembly.
+> **Staleness notice (2026-07-12):** this document was written around the
+> retired `dc.sh` / `WORK_QUEUE.md` workflow (2026-05-26 archive). The
+> per-function lifecycle and PR conventions still apply in spirit, but
+> the concrete commands are outdated. Current authoritative workflow:
+> [`CLAUDE.md`](CLAUDE.md) (the engine loop) and
+> [`docs/STATUS.md`](docs/STATUS.md) (live counts).
+> Current worklist: `& tools/wteng.ps1 main queue next` (or
+> `queue status` for counters). A CONTRIBUTING.md rewrite for the
+> engine-era workflow is standing work.
+
+The Bushido Blade 2 decomp is a long-lived, queue-driven project. Most contributions are one-function-at-a-time matching work: pick the top item from `engine/queue.json`, write its C body, and iterate until the build still SHA1-matches with your function as real C instead of assembly.
 
 This document covers the contribution model, the per-function lifecycle, the tooling, and the PR conventions. If you're trying to set up a build instead, start with [`BUILD.md`](BUILD.md).
 

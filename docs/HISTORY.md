@@ -90,12 +90,44 @@ The current phase: retiring bridges one at a time, formalizing the small canonic
 | 2026-05-26 | **Named-recipe library archived.** With the `dc.sh` workflow retired in favor of the engine, the 16 `tools/recipes/*.json` "fingerprinted technique" files — plus their `capture_recipe.py` registrar and `recipes.py` matcher — were moved to `archive/dcsh_workflow_2026-05-26/recipes/` (the engine never consumed recipes, leaving them orphaned and misleadingly live-looking). Technique *knowledge* survives in `docs/MATCHING.md` and the path-scoped `.claude/rules/*.md` docs. A formalized **"Register findings"** loop step (CLAUDE.md) + a `retire` nudge replaced the old `capture-recipe` flow: agents now record reusable patterns directly into `.claude/rules/`, which the metrics layer fingerprints as technique slugs. |
 | 2026-05-22 | **`active_func_guard.sh` PreToolUse hook deprecated** (unwired from `.claude/settings.local.json`). It blocked `git commit` until match, blocked `git checkout`/revert of in-progress build files, and blocked `dc.sh next*` while a function was active+unmatched — obstructing the natural "try an approach, revert if it fails" loop. Staying-on-task is now enforced solely by the `grind_check` Stop hook. The programmatic commit cheat-audit it ran (`audit_asm_cheats.py --check-new`, "Rule 1a") was **relocated** to `tools/hooks/commit_audit_guard.sh`, so anti-cheat enforcement is unchanged. Script kept (unwired) for reference. |
 
-## Standing items
+## Phase 7 — Engine + rodata cleanup + SOTN-standard alignment (2026-05-27 to 2026-07-05)
 
-- **Bridged functions:** ~148 active `replace_with_asmfile` lines in asmfix.txt. The asmfix retirement queue is the primary work stream pulling these down toward zero.
-- **Inline-asm debt:** live-scanned by `tools/gen_work_queue.py` from `src/*.c`; suspect patterns are surfaced as `inline_asm_debt` in the active queue.
-- **Permanent blockers:** 7 functions in `known_blocked.txt` (BIOS jumptables, overflow-trapping ops, `$sp` swap, data-as-code). Filtered out of the active queue.
-- **Authorized canonical inline-asm:** ~80 functions in `inline_asm_canonical.txt` (BIOS trampolines, GTE primitives, hand-coded math kernels). Tracked as the "1.0 final form" for genuinely non-C code.
+The `dc.sh` workflow retired; the deterministic **engine** (`engine/`,
+`python3 -m engine.cli`) became the standing per-function loop. Big
+infrastructure retirement + rule-catalog crystallization phase.
+
+| Date | Milestone |
+|---|---|
+| 2026-06-01 | **"No new cheat-tolerant park categories" user policy codified** (`.claude/rules/no-new-park-categories.md`). Register-rotation, cross-jump-merge, prologue-order walls are pure-C-reachable — not new infrastructure carve-outs. The bar is SOTN's. |
+| 2026-06-02 | **Techniques audit**: 3 catalog rules retroactively identified as cheats-by-any-spelling. Adversarial `cheat-reviewer` process becomes MANDATORY layer-2 gate for every completion commit. Sanctioned families crystallized after SOTN-master-branch evidence census. |
+| 2026-06-08 | **No-new-regfix-rules policy** (`.claude/rules/no-new-regfix-rules.md`). `commit-msg` hook enforces net-zero rule additions by default; escape-hatch category tags for genuinely-new infrastructure only. |
+| 2026-06-09 | **Rodata cleanup Phase A COMPLETE** (`docs/rodata-cleanup-project.md`). All 12 `asm/data/*.rodata*` blocks retired from `bb2.ld`. Later that day: **26 misrouted ASM-STRUCTURAL items parked** with hand-coded-signal audit; the canonical gate hardened to require BOTH distance>500 AND `scan_hand_coded` tier ≥ POSSIBLE. |
+| 2026-06-10 | **Layer-2 mandatory cheat-reviewer** ratified as ACCEPTANCE gate. First-layer (in-session) reviewer is provisional; a fresh default-FAIL reviewer confirms. |
+| 2026-06-24 | **No-park-permanently** user directive. Every function reaches either COMPLETED-C, COMPLETED-INLINE-ASM-CANONICAL, or stays INCOMPLETE in queue. No "permanent park" bucket. |
+| 2026-07-01 | **SOTN-family research 2026-07-01** ratified 4 new narrow last-resort carve-outs: `dead-store-fake-exception`, `named-local-fake-exception`, `pointer-alias-fake-exception`, `mmio-volatile-type-level`, plus `duplicated-statement-into-arms`. Each requires `/* FAKE */` annotation + documented lever-exhaustion + layer-1/2 review. |
+| 2026-07-06 | **The Grinder** (`tools/grinder/`) — new default autonomous pipeline. Single-lane deterministic driver, per-function persistent ledger (`memory/grind/`), driver-enforced modality ladder, default-FAIL Judge. Supersedes the multi-agent fleet (which is now retired). Spec: `docs/superpowers/specs/2026-07-06-grinder-pipeline-design.md`; skill: `decomp-grind`. |
+
+## Phase 8 — Closer mission (Sony PsyQ library adoption) (2026-07-09 to present)
+
+Manual close-out mission to adopt SOTN-matched Sony PsyQ 4.0 psxsdk C source
+for BB2's census-proven verbatim-linked library functions. Runs in
+parallel with the Grinder on unrelated queue items.
+
+| Date | Milestone |
+|---|---|
+| 2026-07-09 | **PsyQ census landed** (`memory/closer/psyq-library-census.md`, `psyq-queue-hits.json`). 177 verbatim Sony PsyQ 4.0 module placements identified in the EXE (68,208 bytes = 11.3% of the image is bit-verbatim Sony library code). 92 queue items map to Sony library functions and become the closer's work list. |
+| 2026-07-10 | **Sessions 3-11**: ~20 functions closed via SOTN psxsdk transcription. 4 owner-gated volatile-grant proposals filed (§1 SIO, §2 _spu_RQ, §3 cdread per-member, §4 canonical-asm content edit) — all ratified within days. Session 5 discovers the LIBGTE cluster is canonical-asm territory, not pure-C adoptable. |
+| 2026-07-10 | **LIBSND ground-truth hunt** (`memory/closer/libsnd-hunt-report.md`). BB2 links an interim 4.0-lineage sound lib not in public archives (Jun-Sep 1997 build); most LIBSND-gap items remain excluded from the work list. Only `_SsSndStop` gets confirmed and added. |
+| 2026-07-11 | **LIBGTE canonical-asm authorization pass**: 10 functions retired as COMPLETED-INLINE-ASM-CANONICAL in one commit (`9eba9a3e`). 27 forbidden `dead-branch-scheduling` regfix rules cleared alongside. Infrastructure finding: `.set reorder/at` at end of file-scope `__asm__` block combined with a subsequent `.section .text`-opening block causes maspsx to insert a stray load-delay nop — fix documented in `canonical-asm-authorization-recipe.md`. |
+| 2026-07-12 | **`hoist-shared-arm-computation-defeats-copy-pref` sanctioned** as a new pure-C RA lever. Confirmed case: `saTan2Main` (banked at floor 5 since 2026-07-10). Rule doc in `.claude/rules/`. |
+
+## Standing items (2026-07-12)
+
+- **INCOMPLETE queue**: 439 items (370 active, 69 parked). Verdict breakdown: 258 C / 48 ASM-PARTIAL / 107 ASM-SUSPECT / 26 ASM-STRUCTURAL.
+- **COMPLETED-INLINE-ASM-CANONICAL**: 170 functions in `inline_asm_canonical.txt` (BIOS trampolines, GTE primitives, hand-coded math kernels, LIBGTE modules).
+- **Rules**: 139 functions carry `regfix.txt` rules, 153 carry `asmfix.txt` rules, 140 carry `replace_with_asmfile` bridges.
+- **Banked closer candidates**: 7 in `memory/closer/candidates/` (cdcontrol_trio, cdcw_tslTm2LoadImage, exec_game_sotn_hybrid, marionation_p6/vAT1, satan2main_vsvh → CLOSED as of 2026-07-12, spu_writebyio_splice, spusetreverbmodeparam_struct). Each documents a real ongoing investigation.
+- **Retired work streams**: `dc.sh` workflow (2026-05-26), named-recipe library (2026-05-26), multi-agent fleet (2026-07-06), `dc.sh active_func_guard` hook (2026-05-22).
 
 ## Major handoff documents
 

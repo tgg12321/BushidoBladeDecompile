@@ -1,5 +1,48 @@
 # Closer Phase 3 — PsyQ psxsdk adoption progress ledger
 
+## SESSION 14 (2026-07-12) — saTan2Main closed (new sanctioned lever); SpuSetReverbModeParam banked
+
+**saTan2Main (LIBSND vs_vh SsVabOpenHeadWithMode, dist 245 → 0) — CLOSED
+COMPLETED-C** (commit d2e55756). Session 8 (2026-07-10) landed the SOTN
+psxsdk transcription to floor 5 with the per-arm sum form (245/247 insns);
+residual was 4 real words at the malloc-fail/overflow join (sum in `$a0`
+not target's `$v1`) via a named mechanism — `sum` inherits `var_s0`'s
+`$a0` copy-preference through `global.c:expand_preferences` from the
+duplicated `sum = spuAllocMem + var_s0` expression in each branch.
+
+Closing lever: HOIST the shared `sum = spuAllocMem + var_s0;` OUT of both
+branches into a single post-if/else statement. With one sum pseudo, RA
+determines its register from its ONE use (the overflow compare) — GCC
+picks `$v1` naturally. GCC's `jump2` pass duplicates the simple assignment
+back into each arm at codegen time, producing target's per-arm
+`addu $v1, $a3, $s0` bytes. Sandbox 5 → 0 first try; `retire` dropped the
+whole-body asmfix splice; SHA1 == oracle.
+
+Signature promoted to Sony types: `extern s16 saTan2Main(u8 *, s16, s16,
+u32);` (was `(s32, s16, s32, s32)`). Three callers gain `(u8 *)`/`(u32)`
+casts. Oracle stays green.
+
+Review trail: layer-1 cheat-reviewer FAILed on "novel unsanctioned shape"
+grounds — the hoist-shared-arm-computation lever hadn't been catalogued.
+User adjudicated 2026-07-12 (the C is textbook DRY refactoring; `jump2`'s
+duplicate-into-arms is standard codegen pipeline; SOTN's psxsdk uses the
+equivalent inline-compare shape). SANCTIONED as a new pure-C lever:
+`hoist-shared-arm-computation-defeats-copy-pref` (rule doc in
+`.claude/rules/`, indexed in codegen-technique-index.md).
+
+**SpuSetReverbModeParam (func_80089F3C, dist 23) — banked at 23** (no
+change). 4 quick source-level levers tried (`u32 sp58`,
+`sp58`-declared-first, split-init `var_s4`, precompute shifted delay into
+`d12`/`d13` locals) — all inert or worse. Score stays at 23 (20 self-heal
+reloc + 3 REAL sp58-offset words). Named next-avenue (session 6): patch
+cc1's reload pass with BB2_RELOAD_DEBUG dumps to identify the pass-1
+stacked pseudo set. That's multi-session infrastructure work; deferred.
+Candidate `spusetreverbmodeparam_struct.c` updated with the negative-lever
+catalog.
+
+**Queue net (session 13 + 14 combined)**: 380 → 369 active (11 items
+closed since session 12: 10 LIBGTE canonical + saEft00Add + saTan2Main).
+
 ## SESSION 13 (2026-07-11) — LIBGTE canonical-asm authorization pass + saEft00Add close-out
 
 **10 LIBGTE census-proven functions retired as COMPLETED-INLINE-ASM-CANONICAL**
