@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "cpu_get_move_pattern_table_number",
-      "file": "code6cac",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: Line 1898: `if ((double)(D_800A3817 == 2))` \u2014 the `(double)` cast is a semantically-inert codegen trick (optimizer folds it away: target asm shows plain `bne $v1,$v0` with no float instructions). Fail"
-    },
-    {
       "func": "func_8001B138",
       "file": "code6cac",
       "distance": 0,
@@ -3752,14 +3742,14 @@
     }
   ],
   "counts": {
-    "total": 439,
-    "active": 370,
+    "total": 438,
+    "active": 369,
     "by_status": {
-      "active": 370,
+      "active": 369,
       "parked": 69
     },
     "by_verdict": {
-      "C": 216,
+      "C": 215,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }

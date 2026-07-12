@@ -1894,7 +1894,7 @@ void cpu_get_move_pattern_table_number(void) {
         D_800A3834 = 8;
         return;
     }
-    if ((double)(D_800A3817 == 2)) {
+    if (D_800A3817 == 2) {
         func_800372C0();
         func_8001DA2C();
         D_800A3834 = 8;
