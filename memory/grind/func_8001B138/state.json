@@ -1,8 +1,8 @@
 {
  "func": "func_8001B138",
  "file": "code6cac",
- "session_count": 9,
- "current_modality": "rederive",
+ "session_count": 10,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -57,13 +57,19 @@
    "floor": 1,
    "modality": "rederive",
    "headline": "Rederive modality already fully re-run (s9 entries on disk: in-codebase precedent grep, fresh independent m2c, fresh decomp.me search, all KILLED) -- declined to re-run it a 4th time since binding con"
+  },
+  {
+   "session": 10,
+   "floor": 1,
+   "modality": "synthesis",
+   "headline": "Synthesis of 9 sessions/4 modalities re-confirmed floor=1 is a genuine policy deadlock, not a search gap; no new probe run per binding judge_constraints forbidding modality re-runs and further ruling-"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "No further pure-C search action exists in this residual's space; this is a pure policy deadlock.",
-   "mechanism": "The single decision point (c-typeck.c:3987 decl_constant_value/TREE_READONLY gate) is proven front-end-fixed, pre-RTL, and generic to any negative-literal-to-u16-lvalue store in this compiler fork -- not a function-specific RTL/scheduling artifact reachable by any C restructuring.",
-   "next_probe": "Requires an out-of-band OWNER action outside the Grinder's automated Judge-ruling channel (which is now explicitly closed off for this function): either (a) an owner-authored SOTN-list amendment commit naming the u16-lvalue negative-literal-store shape, or (b) an explicit owner-issued `queue park func_8001B138 --reason \"...\"` decision. No worker session can produce either -- this is not a modality question anymore."
+   "hypothesis": "No further pure-C search action exists in this residual's space; this is a pure policy deadlock requiring an out-of-band owner decision.",
+   "mechanism": "The single decision point (c-typeck.c:3987/976 decl_constant_value/TREE_READONLY gate inside convert_for_assignment) is proven front-end-fixed, pre-RTL, and generic to any negative-literal-to-u16-lvalue store in this compiler fork -- not a function-specific artifact reachable by any C restructuring. Confirmed independently by 4 modalities across 9 sessions with zero method overlap.",
+   "next_probe": "Requires a direct owner action outside the Grinder's automated Judge-ruling channel (now closed off for this function after 3 correctly-scoped FAILs): either (a) an owner-authored SOTN-list amendment naming the u16-lvalue negative-literal-store shape, or (b) an explicit owner-issued `queue park func_8001B138 --reason \"...\"`. No worker session can produce either. Any future modality assignment for this function should NOT re-run structural/permuter/forensics/rederive on this exact residual (would just reproduce s2-s9's results) unless the owner has changed the constraints."
   }
  ],
  "judge_constraints": [

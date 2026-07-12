@@ -152,3 +152,13 @@
 - [s9] docs/grind/decisions.md records three Judge rulings on this function (2026-07-12 05:16, 05:25, 05:29), all FAIL on scope grounds: the Judge is pre-authorized to refuse SOTN-amendment/park requests on the owner's behalf, but not to grant them.
 
 - [s9] state.json judge_constraints[3]/[4] explicitly bar both remaining automated moves this session could otherwise make: re-running any of the four exhausted modalities, and re-requesting a ruling.
+
+- [s10] Re-measured this session with the clean Judge-mandated form in src/code6cac.c (plain `g_file_vram_timer = -0x1C00;` + `*arg0 = *arg0 & ~0x10001;`): sandbox --disable all = score 1, target_insns=87, build_insns=87 -- exact match to s2-s9's recorded floor, zero drift across 9 sessions.
+
+- [s10] Four independent modalities (structural s2/s3, permuter s4/s5, forensics s6/s7, rederive s8/s9) converge on the identical root cause with zero method overlap: literal-spelling/storage-duration exhaustion, black-box random+directed search exhaustion, RTL-dump+GCC-source mechanism pinpoint, and fresh-m2c/corpus/in-codebase-precedent exhaustion.
+
+- [s10] Three ruling-requests (docs/grind/decisions.md 2026-07-12 05:16/05:25/05:29) were each correctly FAILed by the Judge on scope grounds: it is pre-authorized to refuse self-authorization on the owner's behalf, not to grant a SOTN amendment or park decision -- that channel is explicitly closed by judge_constraints[3]/[4] against a 4th request.
+
+- [s10] state.json judge_constraints (binding) explicitly forbid: re-running any of the four exhausted modalities, self-authorizing park, committing/recording complete at floor=1, applying named-local-fake-exception or any other SOTN-carve-out spelling without an owner-signed amendment, and re-requesting the Judge ruling. The single named allowed action is escalation via docs/grind/decisions.md, which has already been performed (and refused as out-of-Judge-scope) three times -- the record now needs the actual human owner, not another automated channel.
+
+- [s10] src/code6cac.c working tree left at the clean floor=1 form this session (uncommitted, matching s2-s9 convention); main/HEAD still carries the Judge-flagged forbidden constructs per the standing transition rule ('byte-correct construct stays on main until a clean replacement lands').

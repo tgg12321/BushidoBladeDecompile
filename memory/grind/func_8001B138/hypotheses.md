@@ -155,3 +155,9 @@
 - probe: Reviewed docs/grind/decisions.md full history for this function and cross-checked against state.json judge_constraints.
 - result: Confirmed: the automated loop (rederive-modality respawn <-> Judge ruling-request) is closed on both ends. Genuine forward motion requires an out-of-band owner action (queue park with explicit reason, or a direct SOTN-list amendment commit) that only a human operator can perform -- not something a worker session inside this modality ladder can produce.
 - verdict: CONFIRMED
+
+## [s10] No further pure-C search action exists in this residual's space; the c-typeck.c:3987/976 front-end gate (convert_for_assignment/decl_constant_value TREE_READONLY predicate) is generic C semantics, not a function-specific RTL/scheduling artifact reachable by C restructuring.
+- mechanism: GCC 2.7.2 re-folds any literal/const-expr RHS through the u16 lvalue's type at tree-fold time (pre-RTL); only a non-const, separately-declared local VAR_DECL escapes this because its own INTEGER_CST is fixed at its own declaration -- the exact typed-literal-holder family the Judge has twice ruled a cheat (03:35 ruling, and hand-analysis s2/s3), with no eligible SOTN carve-out (checked against named-local-fake-exception's RA/scheduling mechanism classes -- this is a front-end fold, a different mechanism family, per the 05:25 ruling).
+- probe: Re-read evidence.md/hypotheses.md/all 5 decisions.md rulings in full this session; re-applied the clean Judge-mandated form to src and re-measured sandbox --disable all to confirm no drift.
+- result: score=1, 87/87 insns -- identical to every prior session's measurement (s2,s3,s5,s6,s7,s8,s9)
+- verdict: CONFIRMED
