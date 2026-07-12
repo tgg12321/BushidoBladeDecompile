@@ -1,5 +1,80 @@
 # Closer Phase 3 — PsyQ psxsdk adoption progress ledger
 
+## SESSION 15 (2026-07-12) — Docket sweep across the 7 remaining banked candidates
+
+Ran a triage pass across every remaining banked candidate. Result:
+**no additional closes this session**; each candidate documents a real
+ongoing investigation that either couples to Grinder autonomous work or
+needs infrastructure investment beyond a single session. This entry
+records the assessment so future agents don't re-derive it.
+
+### cdcontrol_trio (func_80080258, func_80080390, tslPolyF4Init) — plateau confirmed
+
+Applied the banked candidate C body to `func_80080258` in a test edit;
+oracle went red immediately. The 3 regfix rules (`$18 <-> $20 @ 11-59`,
+`$19 <-> $20 @ 11-59`, whole-prologue `reorder 3,18,4,17,5,6,7,19,8,9,10,
+11,12,13,14,15,16 @ 3-19`) are anchored to the CURRENT cheat-source body
+(register pin + DImode chain + int-new_var bias). Applying the banked
+honest C shifts indices, rules break, oracle fails. Reverted.
+
+The wall is genuine: sandbox `--disable all` = 8 on `tslPolyF4Init`'s
+current honest body, meaning even with the rules and prologue_config
+stripped, 8 words differ. Same family as the func_8007C2A0/C4B8 prologue
+twin wall (session 5b). No novel lever attempted this session.
+
+Effective state: the current committed forms carry documented cheats
+(register pins, DImode chain, prologue_config overrides) that keep oracle
+green while the pure-C plateau remains at 8/6/8. Banked candidate
+`cdcontrol_trio_prologue_order.c` stays as the reference honest-C form.
+
+### cdcw_tslTm2LoadImage — coupled to marionation Grinder progress
+
+Session 12 banked at 57/263 with 4 named residual clusters. Clusters 3+4
+were explicitly documented as "same family as cpu_side_move_dir_4
+s96-s97 nrefs partition — solve once, apply twice." The Grinder has run
+98 sessions on cpu_side_move_dir_4 (current floor 2) and 57 sessions on
+marionation_Exec (current floor 4); when the nrefs family cracks, CD_cw
+mirrors. Not a productive single-session target.
+
+### spusetreverbmodeparam_struct — cc1 reload-pass instrumentation needed
+
+Session 14's negative-lever catalog covers the quick source-side probes.
+The named next-avenue (patch cc1 with `BB2_RELOAD_DEBUG` dumps to
+identify the pass-1-stacked pseudo set) is multi-session infrastructure
+work.
+
+### spu_writebyio_splice — cc1 fork segfault, needs Ruling-2 or big search
+
+`_spu_FwriteByIO` was landed bit-exact by session 11. `_spu_FiDMA` hits a
+cc1 fork segfault on the target's `while (volatile MMIO) { ... break; }`
+pattern (15 variants measured negative). Session 11's next-avenues: (1)
+loop-note-preserving spelling whose exit test doesn't target loop-end
+(major search), (2) input-side fix (forbidden per no-compiler-divergence),
+(3) Ruling-2 (fork-divergence class) — user policy decision. Not a
+single-session close without owner input.
+
+### exec_game_sotn_hybrid (_spu_gcSPU) — big function, banked at 30
+
+Session 2 got from HEAD's 121 to score 30 via SOTN chassis hybrid; 4
+named residual clusters (cur giv-split, key_b invariant caching,
+p-derivation operand order, prologue li placement). cc1 ICE class
+documented for structured pointer-walk. Substantial dedicated work
+required.
+
+### marionation_p6_volatile1496 / marionation_vAT1_notailwrap — Grinder territory
+
+Phase 2 twins. Grinder ledgers: `memory/grind/marionation_Exec/` (57
+sessions, floor 4) and `memory/grind/cpu_side_move_dir_4/` (98 sessions,
+floor 2). Explicitly Grinder-owned per closer mission scope.
+
+### Conclusion
+
+The 7 legitimately-banked candidates all represent real investigations
+that couple to Grinder autonomy, need infrastructure investment, or need
+owner policy decisions. Documenting this here so future sessions don't
+re-derive the assessment; the candidates themselves stay as the
+authoritative record of each function's state.
+
 ## SESSION 14 (2026-07-12) — saTan2Main closed (new sanctioned lever); SpuSetReverbModeParam banked
 
 **saTan2Main (LIBSND vs_vh SsVabOpenHeadWithMode, dist 245 → 0) — CLOSED
