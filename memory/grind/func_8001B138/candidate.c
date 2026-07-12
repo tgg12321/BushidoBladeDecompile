@@ -16,7 +16,7 @@ void func_8001B138(s32 *arg0) {
                 g_file_vram_timer = (u16)(g_file_vram_timer - 0x4CC);
             }
             if ((s16)g_file_vram_timer < -0x1C00) {
-                *(s16 *)&g_file_vram_timer = -0x1C00;
+                g_file_vram_timer = -0x1C00;
             }
             if ((s16)g_file_vram_timer >= 0x7401) {
                 g_file_vram_timer = 0x7400;

@@ -13,3 +13,19 @@
 - [s1] [fable-blitz 2026-07-07] Supporting style evidence: the sibling mask at src/code6cac.c:1046 (*arg0 &= ~0xB -> li v1,-12; and at 0x8001b24c) is already spelled with plain ~, so ~0x10001 is the consistent clean spelling for line 1057
 
 - [s1] [fable-blitz 2026-07-07] Rest of function verified against target: seven zero-init stores (0x8001b138-0x8001b174), per-if fresh *arg0 reloads (lw at 0x8001b194/0x8001b1b0/0x8001b1dc/0x8001b248), lhu RMW for the +=/-= 0x4CC sites (0x8001b1c8/0x8001b1f4 - confirms u16 declared type is right), and the v>>4 rounding block (0x8001b258-0x8001b278) all follow from the existing clean source lines
+
+- [s2] [2026-07-12] Applied the Judge's mandated clean forms: `g_file_vram_timer = -0x1C00;` (plain assignment, no tmp) and `*arg0 = *arg0 & ~0x10001;` (mask, no cast). Measured sandbox --disable all = 1 (87/87 insns, one encoding-only diff). This is the CLEAN FLOOR for this function under the Judge's constraints - confirmed by direct measurement, not assumed.
+
+- [s2] [2026-07-12] Confirmed mechanism precisely: `(u16)(s16)-0x1C00` cast-on-literal and `0xE400` unsigned-hex literal both also score 1 (same ori encoding) - the front-end folds ANY literal RHS converted through the u16 lvalue's type to the unsigned CST 58368 regardless of how the literal is spelled/cast. Only a separately-typed VARIABLE (its own tree-level INTEGER_CST fixed at declaration, e.g. `s16 tmp` or `s32 lo`) escapes the target-type reconversion and keeps -7168, which materializes as addiu. Tested s32 lo confirms this generalizes beyond s16 - and sandbox score is 0 with it - but it is squarely the typed-literal-holder family the Judge forbade (same intent, different width). Banked as rejected/s32-typed-literal-holder-flagged-by-judge.c.
+
+- [s2] [2026-07-12] Structural else-if merge of the two clamp checks measured KILLED: score jumps to 11 (build_insns 82 vs target 87) - target performs the positive-bound check UNCONDITIONALLY after the negative clamp (two independent `if`s), not a mutually-exclusive else-if. Confirms the existing two-if structure is correct and must not be touched.
+
+- [s2] Clean src (plain g_file_vram_timer = -0x1C00; assignment + *arg0 & ~0x10001; mask, no s16 tmp, no pointer-cast pun, no signed cast on the mask) measures sandbox --disable all score=1, target_insns=87, build_insns=87 - a single encoding-only diff (addiu vs ori) with everything else byte-matched.
+
+- [s2] The mask fix (& ~0x10001 replacing & (s32)0xFFFEFFFE) is confirmed inert/correct on its own - contributes 0 to the residual score.
+
+- [s2] The residual byte is fully isolated to the negative-clamp store's constant-materialization instruction; no other part of the function is affected by any of this session's edits.
+
+- [s2] No literal-RHS spelling (direct, cast-on-literal, or alternate hex base) changes the encoding - the u16 lvalue's type always wins the fold.
+
+- [s2] Only a separately-typed named variable used purely to hold the clamp literal escapes the reconversion, and that construct is the exact family already ruled a cheat by the Judge (generalizes across s16/s32, so width is not an escape hatch).

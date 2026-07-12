@@ -1,31 +1,32 @@
 {
  "func": "func_8001B138",
  "file": "code6cac",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 0,
    "modality": "recon",
    "headline": "fable-blitz recon: (s32) mask cast is inert-likely (SImode const canonicalization makes all three spellings identical RTL); the s16 tmp clamp is load-bearing-LIKELY via constant materialization (targe"
+  },
+  {
+   "session": 2,
+   "floor": 1,
+   "modality": "structural",
+   "headline": "Applied the Judge's mandated clean rewrite (plain g_file_vram_timer assignment, ~0x10001 mask) -> honest clean floor is 1, not 0; the 0-floor required the exact typed-literal-holder construct the Judg"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "UNMEASURED: swap line 1057 to *arg0 = *arg0 & ~0x10001; and line 1041 to plain g_file_vram_timer = -0x1C00; then sandbox - the mask edit should be byte-neutral; the clamp edit is the real test (watch 0x8001b21c: addiu 0x2402e400 vs ori 0x3402e400)",
-   "mechanism": "SImode const_int canonicalization (mask: identical RTL) vs SImode materialization of a u16-truncated constant (clamp: 58368 -> ori unless the cst stays signed)",
-   "next_probe": "make both edits, run sandbox func_8001B138 --disable all; if score is exactly 1 with the li encoding diff, construct-1 is confirmed load-bearing and only the clamp needs a lever"
+   "hypothesis": "A file-scope static const s16 (or similar duration/linkage change, not a function-local block-scoped var) naming the clamp bound might read as a genuine named-constant rather than a bare literal-holder, possibly satisfying both the Judge's semantic-purpose test and the addiu-preserving mechanism.",
+   "mechanism": "unclear whether GCC's constant folding for a static const initializer differs from a local var's - untested; if folding behavior is identical (likely, since it's determined by the object's own type, not storage duration), this also lands in the forbidden bucket and must be vetted, not assumed compliant, even if bytes match.",
+   "next_probe": "declare `static const s16 D_VRAM_TIMER_MIN = -0x1C00;` at file scope (or nearest existing constant-declaration convention in code6cac.c), assign `g_file_vram_timer = D_VRAM_TIMER_MIN;`, measure sandbox; if score 0, still run it through cheat-reviewer before ever proposing - do not assume file-scope escapes the Judge's ruling"
   },
   {
-   "hypothesis": "UNMEASURED: if plain clamp gives ori, respell the store through a signed view: *(s16 *)&g_file_vram_timer = -0x1C00; - HImode signed store keeps cst -7168 -> addiu; consistent with the function's existing (s16) read casts",
-   "mechanism": "expand_assignment through an HImode-signed lvalue truncates/sign-extends the constant at tree level (-7168) so GEN_INT gets the addiu-encodable value",
-   "next_probe": "sandbox the *(s16 *)& spelling; then grep matched COMPLETED-C siblings for prior negative-constant stores to u16 globals to confirm the spelling has precedent (tools/find_duplicates.py or grep '= -0x' over src/)"
-  },
-  {
-   "hypothesis": "UNMEASURED fallback: if the type-pun store is judged too close to the flagged family, try value-flow alternatives: g_file_vram_timer = (s16)-0x1C00; (cast on the literal) or unsigned-arithmetic respelling g_file_vram_timer = 0xE400 - 0x10000; - each changes where the sign-extension happens at tree level",
-   "mechanism": "fold-const keeps (s16)-0x1C00 as signed short cst -7168; the subtraction form folds to SImode -65536+58368 = -7168 signed",
-   "next_probe": "sweep the 3-4 clamp spellings in one sweep_variants call and pick the byte-identical one with the most natural human-programmer reading"
+   "hypothesis": "A dual-purpose variable already alive across the residual (e.g. hoisting the trailing rounding block's `v` local earlier) could legitimately carry -7168 for its OTHER established purpose and incidentally also feed the clamp store, avoiding a single-purpose literal-holder.",
+   "mechanism": "if `v`'s later use (v = (s16)g_file_vram_timer; rounding math) already needs a signed s32 holding a related value, initializing it early with the clamp constant might not read as pure coercion IF the initial value is actually consumed for something before being overwritten",
+   "next_probe": "the obvious version (pre-init v = -0x1C00 before its real assignment two statements later) is a dead-store-before-overwrite antipattern with no consumption of the initial value - almost certainly still fails the Judge's semantic-purpose test; would need a genuinely different control-flow shape where the pre-init value is actually read before reassignment - not yet found; likely a dead end but not fully enumerated"
   }
  ],
  "judge_constraints": [
