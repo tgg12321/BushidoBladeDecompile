@@ -1,8 +1,8 @@
 {
  "func": "func_8001B138",
  "file": "code6cac",
- "session_count": 10,
- "current_modality": "synthesis",
+ "session_count": 12,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -63,13 +63,25 @@
    "floor": 1,
    "modality": "synthesis",
    "headline": "Synthesis of 9 sessions/4 modalities re-confirmed floor=1 is a genuine policy deadlock, not a search gap; no new probe run per binding judge_constraints forbidding modality re-runs and further ruling-"
+  },
+  {
+   "session": 11,
+   "floor": 1,
+   "modality": "structural",
+   "headline": "Driver reassigned an already-exhausted modality (structural, last run s2/s3); per binding judge_constraints[3]/[4] this is named invalid work if re-run -- declined to re-derive, confirmed src/candidate.c unchanged since s10, escalation already on record in docs/grind/decisions.md (3 Judge rulings 2026-07-12)"
+  },
+  {
+   "session": 12,
+   "floor": 1,
+   "modality": "structural",
+   "headline": "Driver reassigned an already-exhausted modality (structural, last run s2/s3); declined to re-derive per binding judge_constraints forbidding ladder re-runs -- src/candidate.c confirmed unchanged, esca"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "No further pure-C search action exists in this residual's space; this is a pure policy deadlock requiring an out-of-band owner decision.",
-   "mechanism": "The single decision point (c-typeck.c:3987/976 decl_constant_value/TREE_READONLY gate inside convert_for_assignment) is proven front-end-fixed, pre-RTL, and generic to any negative-literal-to-u16-lvalue store in this compiler fork -- not a function-specific artifact reachable by any C restructuring. Confirmed independently by 4 modalities across 9 sessions with zero method overlap.",
-   "next_probe": "Requires a direct owner action outside the Grinder's automated Judge-ruling channel (now closed off for this function after 3 correctly-scoped FAILs): either (a) an owner-authored SOTN-list amendment naming the u16-lvalue negative-literal-store shape, or (b) an explicit owner-issued `queue park func_8001B138 --reason \"...\"`. No worker session can produce either. Any future modality assignment for this function should NOT re-run structural/permuter/forensics/rederive on this exact residual (would just reproduce s2-s9's results) unless the owner has changed the constraints."
+   "hypothesis": "No further pure-C search action exists in this residual's space; this is a pure policy deadlock awaiting an out-of-band owner decision.",
+   "mechanism": "The single decision point (c-typeck.c:3987/976 decl_constant_value/TREE_READONLY gate inside convert_for_assignment) is proven front-end-fixed, pre-RTL, and generic to any negative-literal-to-u16-lvalue store in this compiler fork -- confirmed independently by 4 modalities across 10 prior sessions with zero method overlap, and reconfirmed by this session's review finding zero new angles.",
+   "next_probe": "Requires a direct owner action outside the Grinder's automated Judge-ruling channel: (a) an owner-authored SOTN-list amendment naming the u16-lvalue negative-literal-store shape, or (b) an owner-issued `queue park func_8001B138 --reason \"...\"`. No worker session can produce either. Any future modality assignment for this function should NOT re-run structural/permuter/forensics/rederive on this exact residual -- would just reproduce s2-s10's results -- unless the owner has changed the constraints."
   }
  ],
  "judge_constraints": [

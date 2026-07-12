@@ -14,6 +14,10 @@
 
 - [s1] [fable-blitz 2026-07-07] Rest of function verified against target: seven zero-init stores (0x8001b138-0x8001b174), per-if fresh *arg0 reloads (lw at 0x8001b194/0x8001b1b0/0x8001b1dc/0x8001b248), lhu RMW for the +=/-= 0x4CC sites (0x8001b1c8/0x8001b1f4 - confirms u16 declared type is right), and the v>>4 rounding block (0x8001b258-0x8001b278) all follow from the existing clean source lines
 
+- [s11] `git diff src/code6cac.c` vs HEAD is empty — src still carries the Judge-flagged forbidden construct at line 1041 (`{ s16 tmp = -0x1C00; g_file_vram_timer = tmp; }`, byte-correct, per the transition rule "stays on main until a clean replacement lands") and the `(s32)0xFFFEFFFE` cast at line 1057. `memory/grind/func_8001B138/candidate.c` still holds the Judge-mandated clean form (plain `g_file_vram_timer = -0x1C00;` assignment + `*arg0 &= ~0x10001;`), unchanged since s2. No drift since s10.
+
+- [s11] The driver assigned modality "structural" for this session, which state.json's own judge_constraints[3]/[4] name explicitly as one of the four exhausted modalities ("treat any further modality re-run of the exhausted ladder as invalid work and discard/respawn it"). Declined to re-run sandbox sweeps that would only reproduce s2/s3's measured results. docs/grind/decisions.md already carries three Judge rulings (2026-07-12 05:16, 05:25, 05:29) documenting the full 4-modality/9-session exhaustion record and the c-typeck.c:3987 mechanism pinpoint for the owner to act on — the escalation judge_constraints[2] calls for is already on record there; no worker action can add an owner decision to it.
+
 - [s2] [2026-07-12] Applied the Judge's mandated clean forms: `g_file_vram_timer = -0x1C00;` (plain assignment, no tmp) and `*arg0 = *arg0 & ~0x10001;` (mask, no cast). Measured sandbox --disable all = 1 (87/87 insns, one encoding-only diff). This is the CLEAN FLOOR for this function under the Judge's constraints - confirmed by direct measurement, not assumed.
 
 - [s2] [2026-07-12] Confirmed mechanism precisely: `(u16)(s16)-0x1C00` cast-on-literal and `0xE400` unsigned-hex literal both also score 1 (same ori encoding) - the front-end folds ANY literal RHS converted through the u16 lvalue's type to the unsigned CST 58368 regardless of how the literal is spelled/cast. Only a separately-typed VARIABLE (its own tree-level INTEGER_CST fixed at declaration, e.g. `s16 tmp` or `s32 lo`) escapes the target-type reconversion and keeps -7168, which materializes as addiu. Tested s32 lo confirms this generalizes beyond s16 - and sandbox score is 0 with it - but it is squarely the typed-literal-holder family the Judge forbade (same intent, different width). Banked as rejected/s32-typed-literal-holder-flagged-by-judge.c.
@@ -162,3 +166,13 @@
 - [s10] state.json judge_constraints (binding) explicitly forbid: re-running any of the four exhausted modalities, self-authorizing park, committing/recording complete at floor=1, applying named-local-fake-exception or any other SOTN-carve-out spelling without an owner-signed amendment, and re-requesting the Judge ruling. The single named allowed action is escalation via docs/grind/decisions.md, which has already been performed (and refused as out-of-Judge-scope) three times -- the record now needs the actual human owner, not another automated channel.
 
 - [s10] src/code6cac.c working tree left at the clean floor=1 form this session (uncommitted, matching s2-s9 convention); main/HEAD still carries the Judge-flagged forbidden constructs per the standing transition rule ('byte-correct construct stays on main until a clean replacement lands').
+
+- [s12] git diff src/code6cac.c vs HEAD is empty -- src still carries the Judge-flagged forbidden construct at line 1041 ({ s16 tmp = -0x1C00; g_file_vram_timer = tmp; }) and the (s32)0xFFFEFFFE cast at line 1057, byte-correct per the transition rule 'stays on main until a clean replacement lands'.
+
+- [s12] memory/grind/func_8001B138/candidate.c is unchanged since s2: plain g_file_vram_timer = -0x1C00; assignment + *arg0 &= ~0x10001; mask, the Judge's mandated clean pure-C form, honest floor=1.
+
+- [s12] state.json judge_constraints[3] and [4] explicitly name structural/permuter/forensics/rederive as an exhausted ladder for THIS residual and instruct that any further re-run be treated as invalid work and discarded/respawned.
+
+- [s12] docs/grind/decisions.md already carries 3 Judge rulings (2026-07-12 05:16, 05:25, 05:29) documenting the full 4-modality/9-session exhaustion record and the c-typeck.c:3987 mechanism pinpoint -- the owner-facing escalation judge_constraints[2] calls for is already on record there; no worker session can add an owner decision to it.
+
+- [s12] No worker-reachable action remains for this function under the current constraints: not park (self-authorization forbidden), not commit-at-floor-1 (forbidden), not another ruling-request (forbidden), not a re-run of the exhausted ladder (named invalid work).
