@@ -2585,14 +2585,6 @@
       "status": "active"
     },
     {
-      "func": "saTan2Main",
-      "file": "main",
-      "distance": 245,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
       "func": "md_game_end",
       "file": "main",
       "distance": 247,
@@ -3760,16 +3752,16 @@
     }
   ],
   "counts": {
-    "total": 440,
-    "active": 371,
+    "total": 439,
+    "active": 370,
     "by_status": {
-      "active": 371,
+      "active": 370,
       "parked": 69
     },
     "by_verdict": {
       "C": 216,
       "ASM-PARTIAL": 47,
-      "ASM-SUSPECT": 108
+      "ASM-SUSPECT": 107
     }
   }
 }

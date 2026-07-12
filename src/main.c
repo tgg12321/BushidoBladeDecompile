@@ -9,7 +9,7 @@ extern void func_80089D60(s32);
 extern void spu_InitEx(s32);
 extern s32 func_8008AEB0(s32);
 extern void saTan4GaugeInit(s16, s16);
-extern s16 saTan2Main(s32, s16, s32, s32);
+extern s16 saTan2Main(u8 *, s16, s16, u32);
 extern s32 coli_HitPauseKatana_2(s32, u32, s32, s32);
 
 /* Externs for globals */
@@ -1371,17 +1371,180 @@ s16 tslCDFileRead(s16 a0) {
 }
 
 s16 func_80088058(s32 a0, s16 a1) {
-    return saTan2Main(a0, a1, 0, 0);
+    return saTan2Main((u8 *)a0, a1, 0, 0);
 }
 
 s16 coli_CheckBukiPreHit_80088088(s32 a0, s16 a1, s32 a2) {
-    return saTan2Main(a0, a1, 1, a2);
+    return saTan2Main((u8 *)a0, a1, 1, (u32)a2);
 }
 
 s16 coli_CheckBukiPreHit_800880B8(s32 a0, s16 a1, s32 a2) {
-    return saTan2Main(a0, a1, 1, a2);
+    return saTan2Main((u8 *)a0, a1, 1, (u32)a2);
 }
-s16 saTan2Main(s32 arg0, s16 arg1, s32 arg2, s32 arg3) {
+/* PsyQ VabHdr (libsnd) — VAB bank header */
+typedef struct {
+    s32 form;
+    s32 ver;
+    s32 id;
+    u32 fsize;
+    u16 reserved0;
+    u16 ps;
+    u16 ts;
+    u8 vs;
+    u8 vspad;
+    u8 mvol;
+    u8 pan;
+    u8 attr1;
+    u8 attr2;
+    u32 reserved1;
+} VabHdr;
+typedef struct {
+    u8 tones;
+    u8 mvol;
+    u8 prior;
+    u8 mode;
+    u8 mpan;
+    s8 reserved0;
+    s16 attr;
+    u32 reserved1;
+    u16 reserved2;
+    u16 reserved3;
+} ProgAtr;
+extern u16 D_80107808;
+extern s32 D_80107810[];
+extern s32 D_801077C8[];
+extern s32 coli_HitPauseKatana(s32);
+/* PsyQ 4.0 LIBSND vs_vh: SsVabOpenHeadWithMode — verbatim-linked Sony object
+   (census 2026-07-09); C ref: sotn-decomp src/main/psxsdk/libsnd/vs_vh.c */
+s16 saTan2Main(u8 *addr, s16 vabid, s16 arg2, u32 sbaddr) {
+    int vagLens[256];
+    s32 i;
+    s32 var_s0;
+    s16 vabId_2;
+    u16 temp_v1;
+    u16 *ptr_vag_off_table;
+    u32 magic;
+    u32 spuAllocMem;
+    u8 num_vags;
+    ProgAtr *pProgTable;
+    u8 *var_a2;
+    VabHdr *vab_hdr_2;
+    u32 sum;
+    vabId_2 = 0x10;
+    if (func_8008AF84() == 1) {
+        return -1;
+    }
+    ReturnVSMode(1);
+    if (vabid >= 0x10) {
+        ReturnVSMode(0);
+        return -1;
+    }
+    if (vabid == -1) {
+        for (i = 0; i < 16; i++) {
+            if (D_80102A68[i] == 0) {
+                D_80102A68[i] = 1;
+                vabId_2 = i;
+                D_80107808++;
+                break;
+            }
+        }
+    } else {
+        var_a2 = D_80102A68;
+        if (var_a2[vabid] == 0) {
+            D_80102A68[vabid] = 1;
+            vabId_2 = vabid;
+            D_80107808++;
+        }
+    }
+    if (vabId_2 >= 0x10) {
+        ReturnVSMode(0);
+        return -1;
+    }
+    var_a2 = addr;
+    D_800F66B8[vabId_2] = (s32)var_a2;
+
+    var_a2 = var_a2 + 0x20;
+    vab_hdr_2 = (VabHdr *)addr;
+    magic = vab_hdr_2->form;
+    if ((magic >> 8) != ('V' << 0x10 | 'A' << 0x8 | 'B')) {
+        D_80102A68[vabId_2] = 0;
+        ReturnVSMode(0);
+        D_80107808 -= 1;
+        return -1;
+    }
+    if ((magic & 0xFF) == 'p') {
+        if (vab_hdr_2->ver >= 5) {
+            D_800FF634 = 0x80;
+        } else {
+            D_800FF634 = 0x40;
+        }
+    } else {
+        D_800FF634 = 0x40;
+    }
+    if (vab_hdr_2->ps <= D_800FF634) {
+        D_800F6660[vabId_2] = (s32)var_a2;
+        pProgTable = (ProgAtr *)var_a2;
+        var_a2 = var_a2 + (D_800FF634 * 0x10);
+        var_s0 = 0;
+        for (i = 0; i < D_800FF634; i++) {
+            pProgTable[i].reserved1 = var_s0;
+            if (pProgTable[i].tones != 0) {
+                var_s0++;
+            }
+        }
+        var_s0 = 0;
+        D_800F6700[vabId_2] = (s32)var_a2;
+        ptr_vag_off_table = (u16 *)(var_a2 + (vab_hdr_2->ps << 9));
+        num_vags = vab_hdr_2->vs;
+        for (i = 0; i < 256; i++) {
+            if (num_vags >= i) {
+                temp_v1 = *ptr_vag_off_table;
+                if (vab_hdr_2->ver >= 5) {
+                    vagLens[i] = temp_v1 * 8;
+                } else {
+                    vagLens[i] = temp_v1 * 4;
+                }
+                var_s0 += vagLens[i];
+            }
+            ptr_vag_off_table++;
+        }
+        if (arg2 == 0) {
+            spuAllocMem = coli_HitPauseKatana(var_s0);
+            if (spuAllocMem == -1) {
+                D_80102A68[vabId_2] = 0;
+                ReturnVSMode(0);
+                D_80107808 -= 1;
+                return -1;
+            }
+        } else {
+            spuAllocMem = sbaddr;
+        }
+        sum = spuAllocMem + var_s0;
+        if (sum > 0x80000U) {
+        end:
+            D_80102A68[vabId_2] = 0;
+
+            ReturnVSMode(0);
+            D_80107808 -= 1;
+            return -1;
+        }
+        D_80107810[vabId_2] = spuAllocMem;
+        var_s0 = 0;
+        for (i = 0; i <= num_vags; i++) {
+            var_s0 += vagLens[i];
+            if (!(i & 1)) {
+                pProgTable[i / 2].reserved2 = (spuAllocMem + var_s0) >> 3;
+            } else {
+                pProgTable[i / 2].reserved3 = (spuAllocMem + var_s0) >> 3;
+            }
+        }
+
+        D_801077C8[vabId_2] = var_s0;
+        D_80102A68[vabId_2] = 2;
+    } else {
+        goto end;
+    }
+    return vabId_2;
 }
 /* kengo:MED  |  sa_tan2/saTan2Main  |  247i */
 extern u8 g_snd_ch_status[];
