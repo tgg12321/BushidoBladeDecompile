@@ -1,8 +1,8 @@
 {
  "func": "func_8001B138",
  "file": "code6cac",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -21,13 +21,24 @@
    "floor": 1,
    "modality": "structural",
    "headline": "Structural session closed both open frontier leads (file-scope const, arithmetic/enum RHS respellings) \u2014 all score 1, same forbidden-mechanism boundary as s2; floor unchanged at 1"
+  },
+  {
+   "session": 4,
+   "floor": 1,
+   "modality": "permuter",
+   "headline": "Permuter (337-iter random campaign, honest single-func workspace) independently rediscovered the SAME forbidden typed-literal-holder cheat s2/s3 already killed by hand -- no legitimate closing lever e"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A dual-purpose variable already alive across the residual (e.g. hoisting the trailing block's v local earlier) could legitimately carry -7168 for another purpose and incidentally feed the clamp store.",
-   "mechanism": "unclear - the target asm ordering requires the trailing block's read of g_file_vram_timer to happen AFTER the clamp store, so there is no natural control-flow reshuffle that lets a pre-existing variable hold the pre-clamp constant for a genuine second purpose without inventing an artificial one",
-   "next_probe": "effectively exhausted this session (s3) via ordering analysis; no concrete non-cheat instantiation found. A future session could try a full sweep of alternative statement orderings/variable lifetimes just to have an exhaustive negative, but confidence is now low that anything remains here."
+   "hypothesis": "A structurally different chassis (varying the WHOLE function's control-flow shape rather than just the clamp-store RHS) could give the permuter a genuinely new basin to search.",
+   "mechanism": "unclear -- s3 already measured that the one structural variant tried (else-if merge of the two clamp checks) regresses the score (11 vs 1), and the residual itself is a single-instruction constant-materialization encoding choice (ori vs addiu) with no surrounding structure that plausibly varies it without touching unrelated, already-verified-correct code.",
+   "next_probe": "If a future session wants to spend more permuter time here, the only untried angle is reseeding with PERM_LINESWAP/PERM_GENERAL directed at the trailing v>>4 rounding block (in case some reordering there changes constant-pool/scheduling context for the earlier store) -- low expected yield given s3's structural finding, but it is the one untried chassis."
+  },
+  {
+   "hypothesis": "Re-verify (per the open frontier item carried since s2/s3) whether the trailing block's `v` local could ever legitimately be hoisted to also carry -7168 for a second, real purpose.",
+   "mechanism": "s3 already closed this analytically: target asm ordering requires g_file_vram_timer's read (for v) to happen AFTER the clamp store, so no natural reshuffle lets v hold the pre-clamp constant without inventing an artificial second purpose.",
+   "next_probe": "Effectively exhausted; a future session could still try a permuter PERM_LINESWAP sweep over statement orderings just to have a fully mechanical negative, but confidence this yields anything is very low given s3's ordering-constraint analysis."
   }
  ],
  "judge_constraints": [

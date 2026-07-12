@@ -6,6 +6,12 @@
 
 - [s2, CONFIRMED mechanism, but FORBIDDEN] A typed local variable (s16 OR s32) initialized directly from the clamp literal and then assigned to g_file_vram_timer produces addiu (score 0) because the variable's own tree-level constant is fixed at its own type before the store's implicit conversion runs, so GCC never re-derives the unsigned CST. This is the exact "typed-literal coercion" family the Judge banned (previously only demonstrated for s16; s2 confirms it generalizes to s32 — width is not the discriminator, "separately-typed holder used solely to steer store encoding" is). Do not resubmit under any type/width without a genuine non-coercion use for the variable.
 
+## [s4] A random-mode permuter search (no directed PERM_* macros) over the whole function will find a score-0 closing form outside the already-identified forbidden typed-holder family.
+- mechanism: black-box mutation (temp-for-expr, split-assignment, reordering, etc.) explores a much larger combinatorial space than hand-derivation and might surface a legitimate lever s2/s3 missed.
+- probe: built a clean single-function permuter workspace (target.s at offset 0, symbol-name-fixed target.o), ran default-randomization campaign with --stop-on-zero, -j 8, harvested at first zero-score find
+- result: found score=0 at iteration 337 — `int new_var; ...; new_var = 0x1C00; ...; g_file_vram_timer = -new_var;` — the SAME forbidden typed-literal-holder family already identified in s2 (separately-typed local variable escapes the u16-target-type reconversion), just a new surface spelling. No novel non-cheat lever surfaced.
+- verdict: KILLED (as a source of a *legitimate* closing form; CONFIRMS the mechanism identified in s2 generalizes to yet another spelling, all still forbidden)
+
 ## Open frontier (unmeasured, for a future session)
 
 - UNEXPLORED (low confidence, not fully closed): is there a *dual-purpose* variable already alive across this residual (e.g. hoisting the existing `v` local from the trailing rounding block earlier) that could legitimately carry -7168 for OTHER reasons and incidentally also feed the clamp store? s2's quick analysis found the obvious version (pre-init `v = -0x1C00` before its real use) is a dead-store-before-overwrite antipattern — same "no semantic purpose" objection. s3 confirmed the trailing block's read of `g_file_vram_timer` must happen AFTER the clamp per the target asm ordering, so there's no natural control-flow reshuffle that lets `v` legitimately hold the pre-clamp constant for a genuine second purpose without inventing an artificial one (itself a forbidden naming-around-cheat pattern). Effectively exhausted; no further avenue derived.
@@ -58,4 +64,10 @@
 - mechanism: an enumerator's CONST_DECL might create a distinct tree node from a bare literal, potentially dodging the u16-target-type reconversion
 - probe: measured sandbox --disable all with `enum { VRAM_TIMER_MIN = -0x1C00 };` then `g_file_vram_timer = VRAM_TIMER_MIN;`
 - result: score 1, identical ori encoding - CONST_DECL substitutes its INTEGER_CST at reference time exactly like a macro/literal
+- verdict: KILLED
+
+## [s4] A random-mode permuter search (no directed PERM_* macros) over the whole function will find a score-0 closing form outside the already-identified forbidden typed-holder family.
+- mechanism: Black-box mutation (temp-for-expr, split-assignment, reordering, etc.) explores a much larger combinatorial space than hand-derivation and might surface a legitimate lever s2/s3 missed.
+- probe: Built a clean single-function permuter workspace (target.s at offset 0, symbol-name-fixed target.o so the score is honest), ran default-randomization campaign with --stop-on-zero -j 8, harvested at first zero-score find.
+- result: Found score=0 at iteration 337 (~50s after seed): `int new_var; ...; new_var = 0x1C00; ...; g_file_vram_timer = -new_var;` -- the SAME forbidden typed-literal-holder family s2 already identified and the Judge already banned (separately-typed local variable escapes the u16-target-type reconversion), just a new surface spelling. No novel non-cheat lever surfaced.
 - verdict: KILLED
