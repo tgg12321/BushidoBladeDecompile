@@ -8,9 +8,9 @@
 
 ## Open frontier (unmeasured, for a future session)
 
-- UNEXPLORED: is there a *dual-purpose* variable already alive across this residual (e.g. hoisting the existing `v` local from the trailing rounding block earlier) that could legitimately carry -7168 for OTHER reasons and incidentally also feed the clamp store? Quick analysis this session found the obvious version (pre-init `v = -0x1C00` before its real use) is a dead-store-before-overwrite antipattern — same "no semantic purpose" objection — so this looked like a dead end, but a full sweep of dual-use variable placements was not exhaustively measured.
-- UNEXPLORED: whether the ORIGINAL source represented the vram timer clamp bounds as `s16`-typed named constants (`#define`/`enum` won't change type) declared at file scope (not function-local) — a file-scope `static const s16 VRAM_TIMER_MIN = -0x1C00;` participates in genuine "named constant" semantics (not a bare literal-holder local) and might dodge the Judge's specific objection (which targeted a *local*, block-scoped, single-use variable). Untested this session — plausible next probe, but must be checked against whether a file-scope const changes codegen at all (constants folded at compile time typically fold the same way regardless of storage duration, so this may also fail — should be measured, not assumed).
-- Both frontier items above are LOW confidence; the mechanism evidence (s2) suggests the encoding is determined purely by "does a separately-typed tree node exist for the value before the u16-conversion," which is true for any named object regardless of scope/duration — so file-scope constants likely fall in the same forbidden bucket. Worth ONE quick measurement to close it out, but do not assume it will pass Judge review even if bytes match — vet first.
+- UNEXPLORED (low confidence, not fully closed): is there a *dual-purpose* variable already alive across this residual (e.g. hoisting the existing `v` local from the trailing rounding block earlier) that could legitimately carry -7168 for OTHER reasons and incidentally also feed the clamp store? s2's quick analysis found the obvious version (pre-init `v = -0x1C00` before its real use) is a dead-store-before-overwrite antipattern — same "no semantic purpose" objection. s3 confirmed the trailing block's read of `g_file_vram_timer` must happen AFTER the clamp per the target asm ordering, so there's no natural control-flow reshuffle that lets `v` legitimately hold the pre-clamp constant for a genuine second purpose without inventing an artificial one (itself a forbidden naming-around-cheat pattern). Effectively exhausted; no further avenue derived.
+- CLOSED [s3]: whether the ORIGINAL source represented the vram timer clamp bound as a file-scope named constant (`static const s16 D_VRAM_TIMER_MIN = -0x1C00;`) — measured score 1 (identical `ori` encoding via objdump), same as the bare literal. Storage duration/linkage does NOT escape the reconversion; only a block-local variable declaration does. See evidence.md [s3].
+- CLOSED [s3]: arithmetic-expression RHS (`0 - 0x1C00`) and enum-constant RHS both measured score 1 — same fold path as the bare literal.
 
 ## [s2] Any pure literal-RHS respelling of the negative-clamp store (plain -0x1C00, (u16)(s16)-0x1C00 cast-on-literal, 0xE400 unsigned hex) reaches the target's addiu encoding without a typed intermediate variable.
 - mechanism: GCC 2.7.2's c-typeck fold converts any literal RHS through the u16 lvalue's type at tree-fold time, always producing the unsigned CST 58368 regardless of spelling/cast, which materializes as ori not addiu.
@@ -29,3 +29,33 @@
 - probe: measured sandbox --disable all with `s32 lo = -0x1C00; g_file_vram_timer = lo;` (s32, not s16)
 - result: score 0 (byte-identical) - confirms the mechanism generalizes across integer width, but this is squarely the typed-literal-holder family the Judge already forbade for the s16 case; banked as rejected, not proposed
 - verdict: CONFIRMED
+
+## [s3] A file-scope `static const s16` named constant (not a block-local variable) reaches the target's addiu encoding for the clamp store, escaping the reconversion via storage-duration/linkage rather than the forbidden local-variable-holder mechanism.
+- mechanism: speculative — if cc1's expand_expr treats a file-scope const object's initializer the same way as a local variable's (fixing its own INTEGER_CST before the store's u16-conversion), it would produce addiu without being the specific "local block-scoped single-use variable" construct the Judge named.
+- probe: measured sandbox --disable all with `static const s16 D_VRAM_TIMER_MIN = -0x1C00;` declared at file scope, referenced as the clamp-store RHS; confirmed via objdump disassembly of the resulting store instruction
+- result: score 1 (87/87 insns) — store still assembles to `li v0,0xe400` (ori $v0,$zero,0xe400), identical to the plain-literal form, not the target's addiu
+- verdict: KILLED
+
+## [s3] Arithmetic-expression RHS (`0 - 0x1C00`) or an enum-constant RHS (`enum { VRAM_TIMER_MIN = -0x1C00 };`) reach the target's addiu encoding as alternate non-local-variable spellings of the same constant.
+- mechanism: an enumerator's CONST_DECL or a compile-time-foldable arithmetic expression might create a distinct tree node from a bare literal, potentially dodging the u16-target-type reconversion.
+- probe: measured sandbox --disable all for both forms independently
+- result: both score 1 (identical ori encoding) — GCC 2.7.2 folds both to the same INTEGER_CST as the bare literal before the target-type conversion runs; neither creates a distinct code path
+- verdict: KILLED
+
+## [s3] A file-scope static const s16 named constant (not a block-local variable) reaches the target's addiu encoding for the clamp store, escaping the reconversion via storage-duration/linkage rather than the forbidden local-variable-holder mechanism.
+- mechanism: speculative: if cc1's expand_expr treats a file-scope const object's initializer the same way as a local variable's (fixing its own INTEGER_CST before the u16-store conversion), it would produce addiu without being the specific local-variable construct the Judge named
+- probe: measured sandbox --disable all with `static const s16 D_VRAM_TIMER_MIN = -0x1C00;` at file scope as the clamp-store RHS; confirmed via objdump disassembly of the emitted store instruction
+- result: score 1 (87/87 insns) - store assembles to `li v0,0xe400` (ori $v0,$zero,0xe400), identical to the plain-literal form, not target's addiu $v0,$zero,-0x1C00
+- verdict: KILLED
+
+## [s3] An arithmetic-expression RHS (0 - 0x1C00) reaches the target's addiu encoding as an alternate non-local-variable spelling of the clamp constant.
+- mechanism: GCC 2.7.2 might treat a foldable arithmetic expression as a distinct tree node from a bare literal, potentially dodging the u16-target-type reconversion
+- probe: measured sandbox --disable all with `g_file_vram_timer = 0 - 0x1C00;`
+- result: score 1, identical ori encoding - GCC folds the subtraction to the same INTEGER_CST as the bare literal before the target-type conversion runs
+- verdict: KILLED
+
+## [s3] An enum-constant RHS reaches the target's addiu encoding as an alternate non-local-variable spelling of the clamp constant.
+- mechanism: an enumerator's CONST_DECL might create a distinct tree node from a bare literal, potentially dodging the u16-target-type reconversion
+- probe: measured sandbox --disable all with `enum { VRAM_TIMER_MIN = -0x1C00 };` then `g_file_vram_timer = VRAM_TIMER_MIN;`
+- result: score 1, identical ori encoding - CONST_DECL substitutes its INTEGER_CST at reference time exactly like a macro/literal
+- verdict: KILLED

@@ -29,3 +29,23 @@
 - [s2] No literal-RHS spelling (direct, cast-on-literal, or alternate hex base) changes the encoding - the u16 lvalue's type always wins the fold.
 
 - [s2] Only a separately-typed named variable used purely to hold the clamp literal escapes the reconversion, and that construct is the exact family already ruled a cheat by the Judge (generalizes across s16/s32, so width is not an escape hatch).
+
+- [s3] [2026-07-12, structural modality] Applied s2's clean floor to src (plain `g_file_vram_timer = -0x1C00;` + `*arg0 = *arg0 & ~0x10001;`), re-confirmed baseline sandbox --disable all = score 1, 87/87 insns — matches s2's recorded floor exactly.
+
+- [s3] File-scope `static const s16 D_VRAM_TIMER_MIN = -0x1C00;` used as the clamp-store RHS scores 1 (NOT 0). Verified via objdump: the store still assembles to `li v0,0xe400` (raw `3402e400` = `ori $v0,$zero,0xe400`), identical to the plain-literal form, vs target's `addiu $v0,$zero,-0x1C00` at asm/funcs/func_8001B138.s:61. This KILLS the s2/hypotheses.md open frontier item speculating that storage-duration/linkage (file-scope vs block-local) might let a named constant escape the u16-target-type reconversion. It does not — only a block-local variable declaration escapes it; a file-scope const object is folded through the same reconversion path as a bare literal.
+
+- [s3] Arithmetic-expression RHS `g_file_vram_timer = 0 - 0x1C00;` scores 1 — GCC 2.7.2 constant-folds the subtraction to the identical INTEGER_CST as the bare literal before the target-type conversion, so it is not a distinct code path.
+
+- [s3] Enum-constant RHS (`enum { VRAM_TIMER_MIN = -0x1C00 };` then `g_file_vram_timer = VRAM_TIMER_MIN;`) scores 1 — an enumerator's CONST_DECL substitutes its INTEGER_CST at reference time exactly like a macro/literal, so it does not create a separately-typed tree node the way a local variable declaration does.
+
+- [s3] Conclusion: the ONLY construct in this function's search space that reaches the target's `addiu` encoding is a block-scoped variable declaration used solely to hold the clamp literal (any integer width, per s2) — which is exactly the family the Judge already forbade. No storage-duration, linkage, or literal-spelling variant escapes it. src/code6cac.c restored to the s2 clean floor=1 form at session end.
+
+- [s3] Re-confirmed s2's clean floor: plain `g_file_vram_timer = -0x1C00;` + `*arg0 = *arg0 & ~0x10001;` measures sandbox --disable all score=1, 87/87 insns.
+
+- [s3] Verified via direct objdump of the sandbox .o: the residual diff is exactly one instruction, the negative-clamp store, which assembles to `ori $v0,$zero,0xe400` (raw 3402e400) in our build vs target's `addiu $v0,$zero,-0x1C00` at asm/funcs/func_8001B138.s:61.
+
+- [s3] File-scope static const, arithmetic-expression RHS, and enum-constant RHS all produce the identical ori encoding as the bare literal - none of them create the separately-typed tree node that a block-local variable declaration does.
+
+- [s3] This closes both open frontier items from s2/hypotheses.md: the file-scope-const idea is now measured (not just speculated) to fail, and no other named/derived-constant spelling escapes the reconversion either.
+
+- [s3] The only construct in this function's search space that reaches addiu is a block-scoped variable declaration used solely to hold the clamp literal (any integer width, per s2) - exactly the family the Judge already forbade. No storage-duration, linkage, or literal-spelling variant escapes it.

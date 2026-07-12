@@ -1,7 +1,7 @@
 {
  "func": "func_8001B138",
  "file": "code6cac",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,18 +15,19 @@
    "floor": 1,
    "modality": "structural",
    "headline": "Applied the Judge's mandated clean rewrite (plain g_file_vram_timer assignment, ~0x10001 mask) -> honest clean floor is 1, not 0; the 0-floor required the exact typed-literal-holder construct the Judg"
+  },
+  {
+   "session": 3,
+   "floor": 1,
+   "modality": "structural",
+   "headline": "Structural session closed both open frontier leads (file-scope const, arithmetic/enum RHS respellings) \u2014 all score 1, same forbidden-mechanism boundary as s2; floor unchanged at 1"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A file-scope static const s16 (or similar duration/linkage change, not a function-local block-scoped var) naming the clamp bound might read as a genuine named-constant rather than a bare literal-holder, possibly satisfying both the Judge's semantic-purpose test and the addiu-preserving mechanism.",
-   "mechanism": "unclear whether GCC's constant folding for a static const initializer differs from a local var's - untested; if folding behavior is identical (likely, since it's determined by the object's own type, not storage duration), this also lands in the forbidden bucket and must be vetted, not assumed compliant, even if bytes match.",
-   "next_probe": "declare `static const s16 D_VRAM_TIMER_MIN = -0x1C00;` at file scope (or nearest existing constant-declaration convention in code6cac.c), assign `g_file_vram_timer = D_VRAM_TIMER_MIN;`, measure sandbox; if score 0, still run it through cheat-reviewer before ever proposing - do not assume file-scope escapes the Judge's ruling"
-  },
-  {
-   "hypothesis": "A dual-purpose variable already alive across the residual (e.g. hoisting the trailing rounding block's `v` local earlier) could legitimately carry -7168 for its OTHER established purpose and incidentally also feed the clamp store, avoiding a single-purpose literal-holder.",
-   "mechanism": "if `v`'s later use (v = (s16)g_file_vram_timer; rounding math) already needs a signed s32 holding a related value, initializing it early with the clamp constant might not read as pure coercion IF the initial value is actually consumed for something before being overwritten",
-   "next_probe": "the obvious version (pre-init v = -0x1C00 before its real assignment two statements later) is a dead-store-before-overwrite antipattern with no consumption of the initial value - almost certainly still fails the Judge's semantic-purpose test; would need a genuinely different control-flow shape where the pre-init value is actually read before reassignment - not yet found; likely a dead end but not fully enumerated"
+   "hypothesis": "A dual-purpose variable already alive across the residual (e.g. hoisting the trailing block's v local earlier) could legitimately carry -7168 for another purpose and incidentally feed the clamp store.",
+   "mechanism": "unclear - the target asm ordering requires the trailing block's read of g_file_vram_timer to happen AFTER the clamp store, so there is no natural control-flow reshuffle that lets a pre-existing variable hold the pre-clamp constant for a genuine second purpose without inventing an artificial one",
+   "next_probe": "effectively exhausted this session (s3) via ordering analysis; no concrete non-cheat instantiation found. A future session could try a full sweep of alternative statement orderings/variable lifetimes just to have an exhaustive negative, but confidence is now low that anything remains here."
   }
  ],
  "judge_constraints": [

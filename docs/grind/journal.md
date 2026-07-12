@@ -158,3 +158,4 @@
 - 2026-07-12 03:29 cpu_get_move_pattern_table_number COMPLETED-C after 2 sessions.
 - 2026-07-12 03:35 func_8001B138: judge FAILED a bytes-proven candidate — Construct-2 (the mask edit) passes: `*arg0 = *arg0 & ~0x10001;` is exactly the clean form the regression diagnosis in st
 - 2026-07-12 03:44 func_8001B138 s2 [structural] floor=1: Applied the Judge's mandated clean rewrite (plain g_file_vram_timer assignment, ~0x10001 mask) -> honest clean floor is 1, not 0; the 0-floor required the exact typed-literal-holder construct the Judge banned, confirmed to generalize from s16 to s32, not just the s16 case.
+- 2026-07-12 03:53 func_8001B138 s3 [structural] floor=1: Structural session closed both open frontier leads (file-scope const, arithmetic/enum RHS respellings) — all score 1, same forbidden-mechanism boundary as s2; floor unchanged at 1
