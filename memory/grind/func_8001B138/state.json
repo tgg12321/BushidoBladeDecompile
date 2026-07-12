@@ -1,7 +1,7 @@
 {
  "func": "func_8001B138",
  "file": "code6cac",
- "session_count": 6,
+ "session_count": 7,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -39,13 +39,19 @@
    "floor": 1,
    "modality": "forensics",
    "headline": "Instrumented cc1 -da RTL dumps prove the ori-vs-addiu divergence is fixed pre-RTL by the front-end's convert() during build_modify_expr, not by any RTL pass -- no RTL-level lever exists, closing off t"
+  },
+  {
+   "session": 7,
+   "floor": 1,
+   "modality": "forensics",
+   "headline": "Pinpointed the exact GCC source predicate (c-typeck.c:3987 TREE_READONLY gate in decl_constant_value) governing the escape; measured that a const-qualified local holder does NOT escape (scores 1) unli"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "No further avenue is derivable from RTL-pass instrumentation, literal spelling, storage duration, control-flow restructuring, or permuter search (all exhausted s2-s6). The only way to reach addiu is a separately-typed C-level tree node whose constant is fixed independent of the target lvalue's type -- the exact Judge-forbidden typed-holder family.",
-   "mechanism": "Confirmed mechanistically: front-end convert() during build_modify_expr always re-derives a literal RHS through the target lvalue's type at tree-fold time, universally, for any negative-literal-to-unsigned-lvalue assignment in GCC 2.7.2 -- this is generic C semantics, not something specific to this function's structure.",
-   "next_probe": "None with expected yield. A future session could still ask the Judge/owner directly whether ANY construct that creates a separately-typed intermediate (however named/motivated) is permanently inadmissible for this residual, since s2-s6 have now exhausted the full search space (literal spelling, storage duration/linkage, control-flow shape, permuter random+directed search, and RTL-pass-level mechanism) without finding a compliant lever."
+   "hypothesis": "No further avenue is derivable in this residual's search space. s2-s6 exhausted literal spelling, storage duration/linkage, control-flow shape, RTL-pass instrumentation, and random+directed permuter search. s7 additionally closes the one remaining unexamined variant of the local-holder family itself (const-qualification) by reading the actual GCC source predicate and confirming it with a falsifiable measurement -- there is no other qualifier or storage variant of a 'separately-typed holder' left to try, because the escape is now known to require literally TREE_READONLY==false, which is definitionally the same non-const mutable-variable indirection the Judge already forbade.",
+   "mechanism": "convert_for_assignment's decl_constant_value gate (c-typeck.c:3987, TREE_READONLY at c-typeck.c:985) is generic C front-end semantics for ANY optimized build, not something specific to this function -- confirmed at the exact source-line level this session (supersedes s6's RTL-dump-inferred version of the same conclusion with a direct source citation + a falsifiable prediction that measured true).",
+   "next_probe": "None with expected yield remains in pure-C source-structure space for this residual. The only unresolved question is a POLICY one: whether ANY construct that creates a separately-typed intermediate (of which 'const-qualified' is now proven NOT sufficient, so only a non-const mutable holder works) is permanently inadmissible -- this is the same open policy question s6 already surfaced, now with tighter mechanistic grounding. A future session should treat this residual as policy-blocked rather than re-deriving search space that six sessions (s2-s7) have now measured exhaustively."
   }
  ],
  "judge_constraints": [

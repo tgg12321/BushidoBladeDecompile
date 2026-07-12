@@ -106,3 +106,15 @@
 - [s6] Root cause is therefore the C front end's tree-level assignment conversion (convert() in build_modify_expr, c-typeck.c) folding a literal RHS through the u16 lvalue's type into a fresh unsigned INTEGER_CST before RTL exists at all -- exactly the mechanism s2 inferred analytically, now confirmed with hard dump evidence and no RTL-pass-level alternative.
 
 - [s6] Current src/code6cac.c HEAD (main) still carries the Judge-flagged forbidden constructs at lines 1041/1057 (s16 tmp holder + (s32) mask cast) -- sandbox --disable all currently measures score=0 via the forbidden construct; the Judge-compliant clean form (memory/grind/func_8001B138/candidate.c) measures floor=1 per s2/s3/s5 -- unchanged this session (forensics only, no src edits made).
+
+- [s7] c-typeck.c:3987 (tools/gcc-2.7.2/, the project's actual compiler fork) -- convert_for_assignment: `else if (optimize && TREE_CODE (rhs) == VAR_DECL) rhs = decl_constant_value (rhs);` -- runs BEFORE the arithmetic-type convert_and_check fold at line 4015 that reconverts through the lvalue's type.
+
+- [s7] c-typeck.c:976-996 -- decl_constant_value returns DECL_INITIAL(decl) (substituting the literal back in, which then IS reconverted through the lvalue type) only when TREE_READONLY(decl) is true (and !TREE_PUBLIC, !TREE_THIS_VOLATILE, has a TREE_CONSTANT initializer, non-BLKmode) -- i.e. only for const-qualified variables with a constant initializer.
+
+- [s7] Measured: `{ const s16 tmp = -0x1C00; g_file_vram_timer = tmp; }` (block-local, const-qualified) scores 1 via sandbox --disable all -- collapses back to the bare-literal ori encoding, does NOT reach addiu.
+
+- [s7] Measured (from s2, re-confirmed unchanged): `{ s16 tmp = -0x1C00; g_file_vram_timer = tmp; }` (non-const) scores 0 -- reaches addiu -- this is the exact Judge-forbidden construct.
+
+- [s7] Clean Judge-mandated floor (plain `g_file_vram_timer = -0x1C00;` + `*arg0 = *arg0 & ~0x10001;`) re-confirmed unchanged at sandbox --disable all score=1, 87/87 insns, matching s2/s3/s5/s6.
+
+- [s7] src/code6cac.c left at the clean Judge-mandated floor=1 state at session end (const-local-holder test was diagnostic-only, applied and reverted in the same session; no forbidden construct is present in the working tree).
