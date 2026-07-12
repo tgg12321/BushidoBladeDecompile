@@ -27,6 +27,7 @@ difficult-is-not-impossible — still auto-load and are not listed here.)
 - **restore-discarded-return-displaces-v0** — `$v0`→`$v1` subst on a post-call lw/sw pair → capture the return value the void impl discards.
 - **drop-param-alias-local** — param→local alias pins → drop the alias so the param register frees up for reuse.
 - **exit-path-return-set-cse-join** — shared finish label where a copy into `$v0` feeds an op → set the return value in EACH exit path, not at the join.
+- **hoist-shared-arm-computation-defeats-copy-pref** (saTan2Main, 2026-07-12) — two if/else branches duplicate the same `z = x + y` where a downstream compare's residual is register-choice ($v1 vs $a0); the duplicated sum pseudo inherits `y`'s arg-copy-pref via `expand_preferences` → hoist the shared expression OUT of both arms into a single post-if/else statement; single-pseudo RA picks the natural register; jump2 duplicates the assignment back into arms at codegen.
 - **divmod-coalesce-reuse-var** (memory/reference/) — GCC's quotient→move→var divmod allocation.
 - **staged-value-reused-variable** — SANCTIONED 2026-07-03: a load places too LATE (fresh single-set dest gets the scheduler's load-late LAUNCH priority) → stage the value through an EXISTING currently-dead local (`v0 = idx[1]; arg5 = tbl[v0];`), FAKE-annotated + lever-exhaustion; live code only (zero dead stores); SOTN ships the shape ("fake reuse of i", 6 files).
 
