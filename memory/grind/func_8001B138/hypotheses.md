@@ -125,3 +125,21 @@
 - probe: Checked the repo for a Kengo C source tree (only `Kengo/` disc images + function/global NAME-matching CSVs exist -- tools/kengo_match.py, kengo_matches.csv -- no decompiled C body available for any function).
 - result: No Kengo C source exists to transplant from for this or any function; only binary-level name-matching artifacts are present. Not a viable avenue for this residual (or likely any BB2 function without a separate from-scratch Kengo decomp effort).
 - verdict: KILLED
+
+## [s9] The in-codebase corpus of already-COMPLETED-C functions contains a precedent for a negative-literal-to-`u16`-lvalue store that reaches `addiu` without the Judge-forbidden typed-holder construct.
+- mechanism: if some other solved BB2 function assigns a negative literal to a `u16` global and matches target bytes with a plain-literal spelling, it would prove a legitimate lever this residual's search missed.
+- probe: grepped all `src/*.c` for negative-literal-RHS assignments and cross-referenced each target lvalue's declared type against `include/*.h`.
+- result: zero `u16`-typed targets among any negative-literal assignment in the codebase — every hit resolves to `s8`/`s16`/`s32`. No in-codebase precedent exists.
+- verdict: KILLED
+
+## [s9] A second, independently-invoked fresh m2c decompile (re-run this session, not reusing s8's output) will diverge from s8's reconstruction and surface a different chassis.
+- mechanism: m2c's reconstruction could vary run-to-run if any part of its heuristics has non-determinism, or if context files changed since s8.
+- probe: re-ran `python3 tools/m2c/m2c.py --context include/m2c_context.h asm/funcs/func_8001B138.s` fresh.
+- result: byte-for-byte structurally identical to s8's reconstruction — same two-if clamp, same v>>4 block, same plain-literal spellings for both residual constructs (`D_800A3710 = -0x1C00U;`, `*arg0 &= 0xFFFEFFFE;`). Deterministic, no new chassis.
+- verdict: KILLED
+
+## [s9] A second, independently-invoked decomp.me corpus search (re-run this session) will surface a newly-added scratch with a comparable target shape.
+- mechanism: the corpus is a live, growing dataset; a fresh query could return different results than s8's if new scratches were added since.
+- probe: re-ran `tools/decomp_me_scrape.py search --asm-file asm/funcs/func_8001B138.s`.
+- result: identical noise-floor result set (similarity 0.071-0.074, same three low-relevance matches as s8). No new corpus entries with a comparable shape.
+- verdict: KILLED
