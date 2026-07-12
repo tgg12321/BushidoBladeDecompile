@@ -1,8 +1,8 @@
 {
  "func": "func_8001B138",
  "file": "code6cac",
- "session_count": 7,
- "current_modality": "forensics",
+ "session_count": 8,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -45,13 +45,19 @@
    "floor": 1,
    "modality": "forensics",
    "headline": "Pinpointed the exact GCC source predicate (c-typeck.c:3987 TREE_READONLY gate in decl_constant_value) governing the escape; measured that a const-qualified local holder does NOT escape (scores 1) unli"
+  },
+  {
+   "session": 8,
+   "floor": 1,
+   "modality": "rederive",
+   "headline": "Rederive modality: fresh m2c decompile independently converges to the same clean-floor shape; dual-use compare+store bound variable KILLED (regresses to 2); decomp.me corpus has no usable analog (top "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "No further avenue is derivable in this residual's search space. s2-s6 exhausted literal spelling, storage duration/linkage, control-flow shape, RTL-pass instrumentation, and random+directed permuter search. s7 additionally closes the one remaining unexamined variant of the local-holder family itself (const-qualification) by reading the actual GCC source predicate and confirming it with a falsifiable measurement -- there is no other qualifier or storage variant of a 'separately-typed holder' left to try, because the escape is now known to require literally TREE_READONLY==false, which is definitionally the same non-const mutable-variable indirection the Judge already forbade.",
-   "mechanism": "convert_for_assignment's decl_constant_value gate (c-typeck.c:3987, TREE_READONLY at c-typeck.c:985) is generic C front-end semantics for ANY optimized build, not something specific to this function -- confirmed at the exact source-line level this session (supersedes s6's RTL-dump-inferred version of the same conclusion with a direct source citation + a falsifiable prediction that measured true).",
-   "next_probe": "None with expected yield remains in pure-C source-structure space for this residual. The only unresolved question is a POLICY one: whether ANY construct that creates a separately-typed intermediate (of which 'const-qualified' is now proven NOT sufficient, so only a non-const mutable holder works) is permanently inadmissible -- this is the same open policy question s6 already surfaced, now with tighter mechanistic grounding. A future session should treat this residual as policy-blocked rather than re-deriving search space that six sessions (s2-s7) have now measured exhaustively."
+   "hypothesis": "No further avenue is derivable in this residual's search space via ANY method tried across 8 sessions (hand-derivation s2-s3, permuter s4-s5, RTL/source forensics s6-s7, rederivation s8).",
+   "mechanism": "The residual is a single front-end tree-fold decision (convert_for_assignment's decl_constant_value/TREE_READONLY gate, c-typeck.c:3987/985) that is generic C semantics for ANY negative-literal-to-unsigned-lvalue assignment, confirmed at the source-line level (s7) and independently corroborated by an unbiased fresh m2c decompile (s8) that reproduces the identical clean-floor shape with no alternative chassis.",
+   "next_probe": "None with expected yield remains in pure-C source-structure space. This is now a pure POLICY question (already surfaced by s6/s7): is the Judge's ruling against the typed-holder-variable family final and permanent for this residual, in which case the function should be treated as policy-blocked (floor=1 accepted or escalated for a ruling), rather than continuing to re-run search methods that four consecutive modalities (structural, permuter, forensics, rederive) have now each independently exhausted."
   }
  ],
  "judge_constraints": [

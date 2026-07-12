@@ -101,3 +101,27 @@
 - probe: Predict: if the gate is TREE_READONLY, then making the local holder `const`-qualified should re-enable the fold (score back to 1, same as bare literal) even though it is still a separately-declared local VAR_DECL. Tested `{ const s16 tmp = -0x1C00; g_file_vram_timer = tmp; }` via sandbox --disable all.
 - result: Measured score = 1 (87/87 insns) -- identical to the plain-literal clean floor, NOT the 0 that the non-const `s16 tmp` holder scores. Prediction confirmed exactly.
 - verdict: CONFIRMED
+
+## [s8] A named bound variable used in BOTH the clamp comparison and the clamp store has genuine dual semantic purpose (unlike the Judge-forbidden store-only holder) and might legitimately reach the target's addiu encoding without failing the human-programmer test.
+- mechanism: If the variable's own INTEGER_CST survives the front-end's u16-target-type reconversion (per s7's decl_constant_value/TREE_READONLY finding) while also serving a real comparison role, it would not be 'a holder with no semantic purpose' -- a different, non-forbidden shape than the s2-s7 rejected family.
+- probe: Rewrote the negative clamp as `{ s16 min = -0x1C00; if ((s16)g_file_vram_timer < min) { g_file_vram_timer = min; } }` and measured sandbox --disable all.
+- result: score=2 (regression from the clean floor's 1) -- WORSE, not better. Using the variable as the comparison operand defeats the target's `slti $v0,$v0,-7168` immediate-compare encoding (the compiler must load `min` into a register for the branch), changing the branch's instruction shape entirely on top of the pre-existing store-constant residual.
+- verdict: KILLED
+
+## [s8] A fresh, unbiased m2c decompile of the target asm (not derived from or influenced by 7 sessions of prior hand-analysis) will surface a structurally different C chassis for this residual.
+- mechanism: m2c reconstructs plausible original-C structure directly from the target assembly, independent of this ledger's prior reasoning -- a genuine second opinion on the source shape.
+- probe: Ran `python3 tools/m2c/m2c.py --context include/m2c_context.h asm/funcs/func_8001B138.s` (fresh, from the raw target asm only).
+- result: m2c's reconstruction is structurally IDENTICAL to the existing clean-floor candidate (same two-if clamp structure, same v>>4 rounding block, same *arg0 masking) and independently emits the negative bound as a plain literal assignment (`D_800A3710 = -0x1C00U;`) -- no local-holder trick, no alternate control flow. This is strong independent corroboration (via an unbiased method) that no alternative structural shape exists in this residual's search space.
+- verdict: KILLED
+
+## [s8] The decomp.me corpus (BB2 toolchain class: gcc2.7.2-psx / psyq3.5) contains a scratch whose target asm overlaps this function's clamp-store shape closely enough to suggest a legitimate closing C form.
+- mechanism: Coarse pre-filter over solved scratches with similar target bytes; a close analog could reveal how a genuine (non-cheat) closing form was written elsewhere for the same ori-vs-addiu constant-materialization choice.
+- probe: Ran `tools/decomp_me_scrape.py search --asm-file asm/funcs/func_8001B138.s` against the downloaded corpus index.
+- result: Best match similarity 0.074 (essentially noise for a 7-instruction zero-init + tiny-clamp function); no scratch in the corpus has a comparable target shape. No actionable lead.
+- verdict: KILLED
+
+## [s8] A Kengo (PS2 successor) source-level analog exists for this vram-timer clamp logic and could be transplanted as a structurally different, still-correct C shape.
+- mechanism: Kengo reuses Lightweight's engine; prior sessions' successful transplants relied on a decompiled Kengo C source tree for comparable functions.
+- probe: Checked the repo for a Kengo C source tree (only `Kengo/` disc images + function/global NAME-matching CSVs exist -- tools/kengo_match.py, kengo_matches.csv -- no decompiled C body available for any function).
+- result: No Kengo C source exists to transplant from for this or any function; only binary-level name-matching artifacts are present. Not a viable avenue for this residual (or likely any BB2 function without a separate from-scratch Kengo decomp effort).
+- verdict: KILLED

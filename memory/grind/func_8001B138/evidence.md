@@ -118,3 +118,13 @@
 - [s7] Clean Judge-mandated floor (plain `g_file_vram_timer = -0x1C00;` + `*arg0 = *arg0 & ~0x10001;`) re-confirmed unchanged at sandbox --disable all score=1, 87/87 insns, matching s2/s3/s5/s6.
 
 - [s7] src/code6cac.c left at the clean Judge-mandated floor=1 state at session end (const-local-holder test was diagnostic-only, applied and reverted in the same session; no forbidden construct is present in the working tree).
+
+- [s8] Dual-use compare+store bound variable (`s16 min = -0x1C00;` used in both the `<` comparison and the assignment) measures sandbox --disable all score=2, worse than the clean floor's 1 -- confirms the target's negative-bound comparison requires a literal immediate operand (slti), so any variable-ification of the comparison RHS regresses independently of the store-encoding residual.
+
+- [s8] Fresh m2c decompile of asm/funcs/func_8001B138.s (unbiased, not seeded from src/ or the ledger) reproduces the exact same two-if clamp / v>>4-rounding / *arg0-masking structure as the existing s2-s7 clean floor, and independently spells the negative clamp as a plain literal store (`D_800A3710 = -0x1C00U;`) with no local-holder construct -- corroborates via a second, independent method that no alternative C chassis exists for this residual.
+
+- [s8] decomp.me corpus search for this function's target asm returns best similarity 0.074 (noise-level) -- no analog scratch exists in the downloaded corpus for this residual's shape.
+
+- [s8] No decompiled Kengo (PS2 successor) C source tree exists anywhere in the repo -- only disc images and function/global binary-signature name-matching CSVs (tools/kengo_match.py) -- so sibling/Kengo transplant is not an available avenue for this function.
+
+- [s8] src/code6cac.c left at the s2-s7 clean Judge-mandated floor=1 state at session end (plain `g_file_vram_timer = -0x1C00;` + `*arg0 = *arg0 & ~0x10001;`); re-confirmed via sandbox --disable all = score 1, 87/87 insns, matching every prior session's measurement.
