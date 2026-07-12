@@ -1,7 +1,7 @@
 {
  "func": "func_8001B138",
  "file": "code6cac",
- "session_count": 8,
+ "session_count": 9,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -51,13 +51,19 @@
    "floor": 1,
    "modality": "rederive",
    "headline": "Rederive modality: fresh m2c decompile independently converges to the same clean-floor shape; dual-use compare+store bound variable KILLED (regresses to 2); decomp.me corpus has no usable analog (top "
+  },
+  {
+   "session": 9,
+   "floor": 1,
+   "modality": "rederive",
+   "headline": "Rederive modality already fully re-run (s9 entries on disk: in-codebase precedent grep, fresh independent m2c, fresh decomp.me search, all KILLED) -- declined to re-run it a 4th time since binding con"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "No further avenue is derivable in this residual's search space via ANY method tried across 8 sessions (hand-derivation s2-s3, permuter s4-s5, RTL/source forensics s6-s7, rederivation s8).",
-   "mechanism": "The residual is a single front-end tree-fold decision (convert_for_assignment's decl_constant_value/TREE_READONLY gate, c-typeck.c:3987/985) that is generic C semantics for ANY negative-literal-to-unsigned-lvalue assignment, confirmed at the source-line level (s7) and independently corroborated by an unbiased fresh m2c decompile (s8) that reproduces the identical clean-floor shape with no alternative chassis.",
-   "next_probe": "None with expected yield remains in pure-C source-structure space. This is now a pure POLICY question (already surfaced by s6/s7): is the Judge's ruling against the typed-holder-variable family final and permanent for this residual, in which case the function should be treated as policy-blocked (floor=1 accepted or escalated for a ruling), rather than continuing to re-run search methods that four consecutive modalities (structural, permuter, forensics, rederive) have now each independently exhausted."
+   "hypothesis": "No further pure-C search action exists in this residual's space; this is a pure policy deadlock.",
+   "mechanism": "The single decision point (c-typeck.c:3987 decl_constant_value/TREE_READONLY gate) is proven front-end-fixed, pre-RTL, and generic to any negative-literal-to-u16-lvalue store in this compiler fork -- not a function-specific RTL/scheduling artifact reachable by any C restructuring.",
+   "next_probe": "Requires an out-of-band OWNER action outside the Grinder's automated Judge-ruling channel (which is now explicitly closed off for this function): either (a) an owner-authored SOTN-list amendment commit naming the u16-lvalue negative-literal-store shape, or (b) an explicit owner-issued `queue park func_8001B138 --reason \"...\"` decision. No worker session can produce either -- this is not a modality question anymore."
   }
  ],
  "judge_constraints": [

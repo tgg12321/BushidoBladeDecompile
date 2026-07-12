@@ -143,3 +143,15 @@
 - probe: re-ran `tools/decomp_me_scrape.py search --asm-file asm/funcs/func_8001B138.s`.
 - result: identical noise-floor result set (similarity 0.071-0.074, same three low-relevance matches as s8). No new corpus entries with a comparable shape.
 - verdict: KILLED
+
+## [s9] Re-running the rederive modality a further time (m2c, decomp.me corpus, in-codebase precedent grep) will surface a legitimate non-typed-holder closing form for the addiu-vs-ori residual.
+- mechanism: N/A -- this was already independently run this same modality slot (see evidence.md [s9] entries: zero u16-negative-literal precedent anywhere in src/*.c; fresh m2c re-decompile structurally identical to s8 and to the clean floor; fresh decomp.me re-search returns the same noise-floor 0.071-0.074 matches). Re-running it again would reproduce the same KILLED result a third time.
+- probe: None run this session -- declined per judge_constraints[3]/[4] ('treat any further modality re-run of the exhausted ladder as invalid work and discard/respawn'; 'do NOT re-request this ruling').
+- result: Not re-tested; already KILLED twice on record (s8, s9) via three independent evidence channels.
+- verdict: KILLED
+
+## [s9] The Grinder pipeline has an escalation path that will eventually reach the actual owner (Trenton) for a policy decision on this residual.
+- mechanism: Three ruling-requests were already submitted to the Judge (docs/grind/decisions.md 2026-07-12 05:16, 05:25, 05:29). The Judge correctly identifies each time that it is not the owner and cannot self-authorize a SOTN amendment or a park decision -- and judge_constraints now explicitly forbid a 4th ruling-request. There is no other automated channel from the Grinder driver to the human owner.
+- probe: Reviewed docs/grind/decisions.md full history for this function and cross-checked against state.json judge_constraints.
+- result: Confirmed: the automated loop (rederive-modality respawn <-> Judge ruling-request) is closed on both ends. Genuine forward motion requires an out-of-band owner action (queue park with explicit reason, or a direct SOTN-list amendment commit) that only a human operator can perform -- not something a worker session inside this modality ladder can produce.
+- verdict: CONFIRMED
