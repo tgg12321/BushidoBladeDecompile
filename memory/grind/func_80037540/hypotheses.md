@@ -1,6 +1,77 @@
 # Hypothesis ledger — func_80037540
 
+## s5 (structural, 2026-07-13) — **THE "CLOSED SEARCH SPACE" IS FALSE. Item is NOT blocked.**
+
+### H11 — KILLED. Kengo's shipped ELF can attest the original local declarations.
+"The Marionation engine's PS2 successor ships `Kengo/disc/SLUS_200.21` with a
+515 KB `.mdebug` (MIPS ECOFF symbolic) section. If it carries source-level local
+declarations, it attests array bounds directly — the 'evidence external to the
+frame' the Judge demanded, from the SAME team."
+- Probe: `objdump --debugging` reads only the tiny `.stab` (1215 lines of .dsm/.vsm
+  line records) and cannot parse `.mdebug` at all. So I wrote a real MIPS ECOFF
+  parser (tmp/grind/func_80037540/s2/mdebug.py): HDRR -> FDR -> SYMR/AUX.
+  Bitfield packing validated against ground truth (little-endian SYMR is
+  st[0:6] sc[6:11] index[12:32]; check: stFile's index == that FDR's csym == 36).
+- Result: 240 file descriptors, **14,845 local symbols, and ZERO stLocal / stParam.**
+  The symbol stream is Proc/End/Label/Static/File only — Kengo was built at
+  procedure granularity (glevel 0). No locals, no types, no struct definitions.
+- Verdict: **KILLED.** Kengo cannot attest any declared bound. With s3's MOVOVL kill
+  (consumer arity = 6), the external-evidence avenue is now EXHAUSTED. Do not
+  re-propose Kengo debug info as an evidence source (the parser is reusable, but
+  the data simply is not there).
+
+### H12 — **CONFIRMED, and it DEMOLISHES s4's trichotomy.** GCC 2.7.2 reserves frame
+bytes for ORDINARY LIVE LOCALS that no instruction touches — a PHANTOM SLOT.
+"s4's load-bearing step: 'to hold frame bytes an object must defeat scalar-promotion
+=> >=2 elements => >=2 EXTRA STORES.' If a live local can occupy frame bytes with
+ZERO stores, the trichotomy has a third branch and the unwritten tail is not forced."
+- Probe: BB2 in-binary census (args-aware; tmp/.../bb2_frame_slack2.py) for functions
+  whose frame reserves locals they never touch => 28 candidates. Drilled the one that
+  is already COMPLETED: **tslLineG5Init** (src/code6cac_c2.c:1267).
+- Result: **tslLineG5Init is COMPLETED-C — `sandbox --disable all` = 0, rules_dropped
+  = 0, not in the queue, no cheat-asm** (the single regfix.txt hit for it is a `#`
+  COMMENT on line 203, not a rule). And cc1 reports for it:
+      .frame $sp,48,$31   # vars= 8, regs= 4/0, args= 24, extra= 0
+  **get_frame_size() == 8.** Every sp-relative access in the function: the 4 saves
+  (32,36,40,44) and `sw $2,16($sp)` (5th outgoing arg, inside args). **NOTHING
+  touches [24,32).** Eight reserved bytes, never written, never read — and its C
+  declares only five plain scalars, no array, no dead decl, no cheat. The original
+  binary agrees (asm/funcs/tslLineG5Init.s: `addiu $sp,$sp,-0x30`).
+- Mechanism (one-factor bisect + minimal reproducer, minrepro.py): two HImode (`s16`)
+  locals feeding an HImode BITWISE expr (`(a & ~b) & 1`) make cc1 allocate a stack
+  temp for the HImode computation and then never use it. Removing the pair, using one
+  s16, or widening to s32 all give vars=0. A call is not required.
+- Verdict: **CONFIRMED. s4's H9/H8 trichotomy is FALSE** — it enumerated only
+  (a) extra stores and (b) unwritten tail, and MISSED (c) phantom slots from live
+  code. Therefore "the ORIGINAL SOURCE ITSELF declared a locals object strictly
+  larger than what it wrote" does NOT follow, the a-fortiori ruling argument is moot,
+  and **func_80037540 is not blocked on an owner ruling — it has real search left.**
+
+### H13 — KILLED (this port of it). s16/u16/u8 index locals carry the phantom slot here.
+"The two func_80036EA8() results are camera-table INDICES; declaring them s16 is
+semantically natural and adds 4 bytes => get_frame_size 24->28 => ALIGN8 => 32 =>
+frame 0x48, with no extra stores."
+- Probe: sweep on cc1's `vars=` readout (sweep2.py), incl. an s16-RETURNING
+  func_80036EA8 so the sign-extension is free (GCC trusts a callee's s16 return).
+- Result: **every variant stays at vars=24 / frame 0x40** — s16 pair, u16 pair, u8
+  pair, three s16, both indices live across the 2nd call, a long long pair. The
+  phantom slot does NOT appear: func_80037540 has no HImode bitwise semantics (its
+  indices are only shifted, `idx * 8`), so cc1 creates no HImode temp.
+- Verdict: **KILLED.** rejected/s16-index-locals-do-not-port-phantom-slot.c
+  The MECHANISM is real and the space is open; THIS port of it is dead.
+
+## THE NEW INSTRUMENT (s5) — search on get_frame_size directly, not the sandbox
+cc1 prints get_frame_size() in its own `.frame` comment:
+    bash tmp/grind/func_80037540/s2/build.sh <candidate.c>
+    -> .frame $sp,N,$31   # vars= V, regs= R, args= A, extra= E
+V IS get_frame_size(). The target needs **V in [25,32], args=16, regs=6, six stores
+only**. This is a direct gradient on the one free term; the sandbox score only
+reports the aggregate distance and cannot distinguish "wrong frame" from "wrong
+codegen". Every future probe on this function should be measured this way first.
+
 ## s4 (structural, 2026-07-13) — the minimum is proven; the Judge's census is run
+**[s5 NOTE: H8/H9's "trichotomy" conclusion below is REFUTED by H12. The individual
+MEASUREMENTS in s4 remain valid; the INFERENCE drawn from them does not.]**
 
 ### H9 — KILLED. The fully-written branch can cost only ONE extra store.
 "s3 measured `argv[6] + idx[2]` (32B, +2 stores). The cheaper unprobed member is
@@ -166,3 +237,21 @@ so a capacity-declared partially-filled buffer is already accepted project pract
   0x10); reload/spill slots (target has no spill stores).
 - Every remaining candidate reduces to "declare N more bytes because the frame says
   N more bytes."
+
+## [s2] H12: GCC 2.7.2 can reserve locals frame bytes for ORDINARY LIVE LOCALS that no instruction touches (a 'phantom slot'), so s4's trichotomy - 'extra frame bytes require either extra stores or an unwritten-tail array' - has a third branch and is false.
+- mechanism: cc1 allocates a stack temp for an HImode computation (two s16 locals feeding a bitwise expr like (a & ~b) & 1) and then never uses it; get_frame_size counts it, no store is ever emitted. Controls: drop the pair -> vars=0; one s16 -> vars=0; widen to s32 -> vars=0. A call is not required.
+- probe: args-aware in-binary census (bb2_frame_slack2.py) -> 28 BB2 functions reserve untouched locals; drilled tslLineG5Init (src/code6cac_c2.c:1267), the one already COMPLETED. Engine: sandbox tslLineG5Init --disable all -> score 0, rules_dropped 0, absent from queue.json, no cheat-asm (its single regfix.txt hit, line 203, is a '#' comment). cc1: '.frame $sp,48,$31 # vars= 8, regs= 4/0, args= 24, extra= 0'; the ONLY sp accesses are the 4 saves (32-44) and 'sw $2,16($sp)' (5th outgoing arg, inside the args region) - nothing touches [24,32). Original binary agrees: asm/funcs/tslLineG5Init.s is -0x30. Minimal reproducer + one-factor bisect in minrepro.py / bisect2.py.
+- result: get_frame_size()==8 with zero stores into it, in a byte-matching cheat-free function whose C declares only five plain scalars. Independently re-derived mips.c:compute_frame_size to confirm frame = ALIGN8(vars) + ALIGN8(args) + ALIGN8(gp_regs) (so H7 and the [25,32] bound stay valid; only the inference from them collapses).
+- verdict: CONFIRMED
+
+## [s2] H13: the phantom slot ports to func_80037540 via HImode index locals - the two func_80036EA8() results are camera-table indices, so declaring them s16 is semantically natural and would take get_frame_size 24 -> 28 -> ALIGN8 -> 32 -> frame 0x48 with no extra stores.
+- mechanism: HImode locals inducing an unused stack temp, as in tslLineG5Init; an s16-RETURNING func_80036EA8 makes the sign-extension free because GCC trusts a callee's s16 return to arrive sign-extended.
+- probe: sweep2.py, measuring cc1's own vars= readout: s16 pair, u16 pair, u8 pair, three s16, both indices live across the 2nd call, long long pair - each with int- and s16-returning func_80036EA8.
+- result: Every variant stays at vars=24 / frame 0x40. The phantom slot does not appear: func_80037540 has no HImode BITWISE semantics (its indices are only shifted, idx*8), so cc1 creates no HImode temp. The mechanism is real; this port of it is dead.
+- verdict: KILLED
+
+## [s2] H11: Kengo's shipped ELF attests the original local declarations - the Marionation PS2 successor has a 515KB .mdebug (MIPS ECOFF) section, which would give source-level local names/types/array bounds from the SAME team (the 'evidence external to the frame' the Judge demanded).
+- mechanism: External evidence, not codegen. objdump --debugging cannot parse .mdebug (it read only the tiny .stab: 1215 lines of .dsm/.vsm line records), so I wrote a real HDRR->FDR->SYMR/AUX parser; the little-endian SYMR bitfield packing was validated against ground truth (st[0:6] sc[6:11] index[12:32]; check: stFile's index == that FDR's csym == 36).
+- probe: mdebug.py + hist.py over Kengo/disc/SLUS_200.21: full st/sc histogram across all local symbols, plus the nm_special_cam.c symbol stream.
+- result: 240 file descriptors, 14,845 symbols, ZERO stLocal/stParam. The stream is Proc/End/Label/Static/File only - Kengo was built at procedure granularity (glevel 0). No locals, no types, no struct definitions. Combined with s3's MOVOVL kill (consumer arity = 6), the external-evidence avenue is now EXHAUSTED.
+- verdict: KILLED

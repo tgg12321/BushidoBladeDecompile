@@ -187,3 +187,4 @@
 - 2026-07-13 09:49 func_800342A0 COMPLETED-C after 2 sessions.
 - 2026-07-13 11:07 func_800343F0 COMPLETED-C after 2 sessions.
 - 2026-07-13 11:33 mottest_disp COMPLETED-C after 2 sessions.
+- 2026-07-13 13:36 func_80037540 s2 [structural] floor=0: The 'search space is closed' proof is FALSE: GCC 2.7.2 reserves frame bytes for ordinary LIVE locals with zero stores (phantom slot), witnessed by tslLineG5Init - a COMPLETED-C, cheat-free, sandbox-0 function in this tree with get_frame_size()==8 and nothing touching those 8 bytes. func_80037540 is NOT blocked on an owner ruling; it has real un-searched space, now with a direct get_frame_size gradient.

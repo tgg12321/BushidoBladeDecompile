@@ -1,31 +1,37 @@
 {
  "func": "func_80037540",
  "file": "code6cac_b2_post",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 0,
    "modality": "recon",
    "headline": "fable-blitz recon: sp[8] oversize is LOAD-BEARING for the 0x48 frame (saves at 0x30 need array end 0x30); strong clean lead: the 6 slots factor as TWO 4-word entries -> struct entries[2] (2x16B) gives"
+  },
+  {
+   "session": 2,
+   "floor": 0,
+   "modality": "structural",
+   "headline": "The 'search space is closed' proof is FALSE: GCC 2.7.2 reserves frame bytes for ordinary LIVE locals with zero stores (phantom slot), witnessed by tslLineG5Init - a COMPLETED-C, cheat-free, sandbox-0 "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Reshape to `struct {s32 cam; s32 a; s32 b; s32 c;} entries[2]` (or equivalent 8-word 2-record type): entry0 fully written, entry1 half written; count stays 6. Frame 0x48 arises naturally, zero unused declarations",
-   "mechanism": "assign_stack_local frame layout - 2x16-byte aggregate reserves 0x20 regardless of which fields are written; no coercion construct remains",
-   "next_probe": "sandbox func_80037540 --disable all with the struct-pair form; confirm store offsets 0x10-0x24 and prologue -0x48 unchanged"
+   "hypothesis": "A pure-C form exists for func_80037540 with get_frame_size in [25,32] arising from LIVE locals (a phantom slot), emitting only the target's six stores - no unwritten tail, no dead declaration, no owner carve-out needed.",
+   "mechanism": "cc1 allocates stack temps for computations it later register-allocates away (proven: HImode bitwise temps). The hunt is for which live-code construct induces a 1-8 byte temp in THIS function's shape. Do NOT re-try index locals (s16/u16/u8/long long - all measured vars=24).",
+   "next_probe": "Sweep on the vars= instrument (bash tmp/grind/func_80037540/s2/build.sh; extend sweep2.py). Characterize WHICH GCC pass allocates the temp: run cc1 -da on the tslLineG5Init reproducer and find the assign_stack_local/assign_stack_temp call site (expand vs reload), then enumerate every construct that reaches it. Candidates not yet measured: HImode/QImode bitwise ops on the count/index args; a struct-valued temp; a SAVE_EXPR-inducing expression; the (s32)&SpecialCam base as a typed 8-byte-record pointer with sub-word arithmetic."
   },
   {
-   "hypothesis": "If the struct-pair perturbs codegen (e.g. SImode subreg or addressing differences), fall back to declaring the argv buffer by Exec-idiom capacity `s32 sp[8]` WITH an explanatory comment, and seek a ruling that a 6-of-8-used argv capacity buffer is natural C (array IS used, unlike the forbidden declared-with-no-use shape)",
-   "mechanism": "no GCC mechanism - pure policy question on the oversized-but-used buffer reading",
-   "next_probe": "ruling_question below; if accepted, annotate and keep; if rejected, exhaust reshape variants via sweep_variants.py"
+   "hypothesis": "The 28 census functions with untouched reserved locals are a training set: several are already matched, so their C shows exactly which live-code constructs produce phantom slots of each size (4, 8, 12, 16, 32 bytes) under this compiler.",
+   "mechanism": "Empirical catalog of phantom-slot inducers, harvested from functions whose matching C is already known - the fastest route to the specific inducer func_80037540 needs (it needs +1..+8 bytes on top of s32 sp[6]).",
+   "next_probe": "For each of the 28 (tmp/grind/func_80037540/s2/bb2_frame_slack2.txt), if it has a C body in src/, compile it and read vars=; tabulate construct -> phantom bytes. Start with the ones needing a small slot: cpu_get_dist, func_800165F8, func_80023648, func_8003032C, func_80030900, func_800400F8 (all vars=8)."
   },
   {
-   "hypothesis": "Check the exec'd overlay (disc/STR/MOVOVL.EXE or NDATA-packed EXEs) for the argv consumer to see if it indexes argv[6]/argv[7] - would prove the 8 slots semantically real",
-   "mechanism": "external evidence, not codegen",
-   "next_probe": "grep the MOVOVL.EXE / stage-loader dispatch for the Exec target fed by SpecialCam entries; check its main(argc,argv) usage"
+   "hypothesis": "func_8003DBE4's committed 's32 buf[2]' dead array (distance 21, ACTIVE in queue) is unnecessary - the target's 8 extra frame bytes are a phantom slot from its own live locals, exactly as in its caller tslLineG5Init.",
+   "mechanism": "Same phantom-slot mechanism; func_8003DBE4 is in the same file and same call chain, and its dead array was added specifically to 'reserve the target's 8 extra frame bytes'.",
+   "next_probe": "Not this function - hand to the driver. Delete the dead array, compile, read vars=; if it still reaches the target frame, an open cheat retires for free."
   }
  ],
  "judge_constraints": [
