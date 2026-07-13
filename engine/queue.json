@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8001E800",
-      "file": "code6cac",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: volatile-coercion cheat: `volatile u8 *ptr = (volatile u8 *)(&D_80101EC8 + v * 1100)` is an inline volatile cast on a non-volatile game-state global (D_80101EC8 declared extern u8 in code6cac.h:300). "
-    },
-    {
       "func": "func_8001FAE4",
       "file": "code6cac",
       "distance": 0,
@@ -3712,14 +3702,14 @@
     }
   ],
   "counts": {
-    "total": 435,
-    "active": 366,
+    "total": 434,
+    "active": 365,
     "by_status": {
-      "active": 366,
+      "active": 365,
       "parked": 69
     },
     "by_verdict": {
-      "C": 212,
+      "C": 211,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }

@@ -1746,10 +1746,12 @@ void func_8001E6E4(s32 arg0) {
 }
 void func_8001E800(void) {
     s32 v = D_800A36F6;
-    volatile u8 *ptr = (volatile u8 *)(&D_80101EC8 + v * 1100);
-    s32 a1 = -1;
+    u8 *ptr = (u8 *)(&D_80101EC8 + v * 1100);
+    s32 a1;
     if (ptr[0x62] & 1) {
         a1 = *(s16 *)(ptr + 0xE);
+    } else {
+        a1 = -1;
     }
     {
         u32 flags = ptr[0x62] & 4;
