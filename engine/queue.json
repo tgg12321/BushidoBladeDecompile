@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8001CD68",
-      "file": "code6cac",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: Dead local variable `s32 frames;` (src/code6cac.c:1479) is declared inside the inner block, never assigned and never read \u2014 GCC DCEs it entirely, so it has zero semantic purpose. It fails test 1 (no o"
-    },
-    {
       "func": "func_8001E800",
       "file": "code6cac",
       "distance": 0,
@@ -3722,14 +3712,14 @@
     }
   ],
   "counts": {
-    "total": 436,
-    "active": 367,
+    "total": 435,
+    "active": 366,
     "by_status": {
-      "active": 367,
+      "active": 366,
       "parked": 69
     },
     "by_verdict": {
-      "C": 213,
+      "C": 212,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }

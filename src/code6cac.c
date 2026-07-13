@@ -1470,7 +1470,6 @@ void func_8001CD68(s16 *arg0) {
         s32 seconds = val / 30 - minutes * 60;
         *((u8 *)arg0 + 2) = seconds;
         {
-            s32 frames;
             s32 centiseconds = (D_800A3858 % 30) * 100 / 30;
             *(s16 *)arg0 = minutes;
             *((u8 *)arg0 + 3) = centiseconds;
