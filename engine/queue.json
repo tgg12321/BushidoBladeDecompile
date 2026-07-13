@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80033498",
-      "file": "code6cac_b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: Width-coercion cast `*(u16 *)&D_800A36A4` on an `s16`-declared global forces `lhu` instead of `lh` with zero semantic effect \u2014 the outer `(s16)` cast makes the expression identical to a plain read for"
-    },
-    {
       "func": "func_800342A0",
       "file": "code6cac_b",
       "distance": 0,
@@ -3622,14 +3612,14 @@
     }
   ],
   "counts": {
-    "total": 426,
-    "active": 357,
+    "total": 425,
+    "active": 356,
     "by_status": {
-      "active": 357,
+      "active": 356,
       "parked": 69
     },
     "by_verdict": {
-      "C": 203,
+      "C": 202,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }

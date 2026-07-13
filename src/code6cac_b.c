@@ -3314,7 +3314,8 @@ done:
 }
 /* kengo:HIGH  |  nm_cpu/cpu_check_same_dir_timer  |  63i */
 s32 func_80033498(void) {
-    switch ((s16)(*(u16 *)&D_800A36A4 - 2)) {
+    s16 idx = D_800A36A4 - 2;
+    switch (idx) {
     case 0:
         return 0;
     case 2:
