@@ -35,9 +35,9 @@ fork?**
 
 ## Mechanism evidence (independently reproducible)
 
-- **Crash exhibit:** `tmp/closer/spu3/` — 15 measured variants; the faithful
+- **Crash exhibit:** `docs/escalations/spu3-fork-crash-evidence/` — 15 measured variants; the faithful
   `while (volatile & 0x30) { if (++i>0xF00) break; }` SIGSEGVs cc1.
-- **cc1psx counter-exhibit:** `tmp/closer/spu3/t_psx.s` — the ORIGINAL PsyQ
+- **cc1psx counter-exhibit:** `docs/escalations/spu3-fork-crash-evidence/00_cc1psx_output.s` — the ORIGINAL PsyQ
   compiler compiles that exact source and emits the target bytes verbatim,
   incl. the dead `addu $3,$3,-1`.
 - **Why the workaround is 2 short:** goto/if-do-while spellings avoid the
@@ -83,3 +83,90 @@ instrumentation-side (patch cc1 `BB2_RELOAD_DEBUG` to identify the pass-1
 stacked pseudo set), not an owner policy call. Listed here so the owner sees
 the pattern; **no ruling requested on this one yet** — it stays a Grinder
 reference item.
+
+---
+
+## Owner ruling — 2026-07-13 (Ruling-2 GRANTED, narrow form)
+
+**Ruling**: Ruling-2 GRANTED as a narrow authorized-inline-asm sub-class,
+codified in `.claude/rules/fork-divergence-inline-asm.md`. Not
+whole-function canonical.
+
+### What this ruling sanctions
+
+A new sibling carve-out to `jtbl-rodata-split-infrastructure` and
+`gte-wrapper-misroute-park`, defined by: **our decompals fork's cc1
+SIGSEGVs on the exact C source cc1psx compiled to the target bytes,
+and every crash-avoiding rewrite deterministically emits a
+structurally-different shape.**
+
+Every invocation runs a fresh **four-gate evidence check**:
+1. Reproducible crash file (reviewer runs → confirms SIGSEGV).
+2. cc1psx counter-exhibit compiling the same file cleanly.
+3. cc1psx output byte-matches target in the affected region.
+4. Probe grid (≥5 alternatives) each individually documented: crash /
+   structurally-different-shape / target-match. No grid ≠ no gate.
+
+Any gate missing → keeps grinding as an ordinary Grinder search item.
+
+### What this ruling does NOT sanction
+
+- Whole-function canonical-asm on a small residual (the disposition is
+  region-scoped by construction).
+- Register-allocation, scheduling, reload-count, or prologue-order
+  divergences without a crash — those stay as C search work.
+- Hardcoded-`$N` asm templates (still forbidden;
+  [[inline-asm-injection]] unchanged).
+- Toolchain patches (`no-compiler-divergence` unchanged; the fork bug
+  is documented, not fixed).
+- Retroactive unparking of any existing function without fresh four-gate
+  evidence.
+
+### Sharpened class description
+
+Previously framed as "volatile-cond while". Independent probe grid
+(2026-07-13) shows the actual crash class is:
+
+> `while (LOOP_COND) { if (++LOCAL_COUNTER > CONST) break; }` at
+> `-O1`/`-O2` in `tools/gcc-2.7.2/build/cc1`.
+
+Volatile-ness of `LOOP_COND` is incidental (probe4/6/8 crash on plain
+`u16 g`). The `++LOCAL_COUNTER > CONST` break inside a while's body is
+load-bearing (probe7 without the pre-increment compiles fine). Grid
+preserved under `docs/escalations/spu3-fork-crash-evidence/`.
+
+### Disposition for `_spu_FiDMA` (first confirmed case)
+
+- The four gates cleared as documented above.
+- Authorized inline `__asm__` island covering only the pre-increment,
+  delay-slot `+1` fill, and reorg-compensation `-1` (3 instructions).
+- `%N` placeholders bound to `register T x asm("$N")` C-level pins;
+  no hardcoded `$N` in the template.
+- Outer wait-region control-flow stays pure C via the compiling
+  `if (cond) do { ... } while (cond);` shape (probe3).
+- `_spu_FwriteByIO` and `_spu_Fr_` remain pure-C matches around the
+  asm island.
+- Add to `inline_asm_canonical.txt` under a new "fork-divergence
+  sub-class" header, citing this escalation and the rule doc.
+- `retire` drops rules to zero; function reaches
+  COMPLETED-INLINE-ASM-CANONICAL.
+
+### Precedent scope for `func_80089F3C` (SpuSetReverbModeParam)
+
+**Not pre-approved.** No cc1 crash on any tested source shape for that
+function — the divergence is a reload-pass count difference. Fails
+gate 1 today. Stays a Grinder search item until instrumentation or
+source-shape work produces the four-gate pack, at which point the
+ruling applies. Ruling-2 is NOT a general "our fork behaves
+differently, ergo asm" wand.
+
+### Follow-up steps
+
+The paperwork (rule doc + this ruling record + codegen-index entry +
+evidence dir) landed 2026-07-13. The actual `src/code6cac.c` edit +
+`inline_asm_canonical.txt` append + `verify-oracle --rebuild` +
+`retire` + layer-2 `cheat-reviewer` on the src edit are pending — the
+Grinder was live on `func_8001C624` in the same `.c` file during this
+session, so the src edit was deferred to avoid the conflict. Owner
+decision needed: stop Grinder now to land the close, or defer to a
+later session when Grinder is naturally idle.
