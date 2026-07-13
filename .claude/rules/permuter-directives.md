@@ -204,7 +204,11 @@ python3 tools/decomp-permuter/import.py src/<file>.c asm/funcs/<func>.s
 # 2. Replace the auto-generated base.c with your PERM_*-annotated version.
 cp tmp/permuter_candidates/<func>.c tools/decomp-permuter/<dir>/base.c
 # 3. Launch via the campaign wrapper (NOT raw permuter.py — see §Campaign
-#    discipline below; the wrapper records telemetry + enables harvest).
+#    discipline below; the wrapper records telemetry + enables harvest, and
+#    passes --stack-diffs by DEFAULT: without it the scorer normalizes sp
+#    offsets to addr(sp)/imm, so frame-size/stack-offset gaps FALSE-MATCH at
+#    score 0 — measured on func_80037540, 2026-07-13. Raw permuter.py runs
+#    without --stack-diffs are blind to that whole gap class.)
 python3 tools/permuter_campaign.py launch --func <func> --dir tools/decomp-permuter/<dir> \
     --label <chassis-slug> -j 8 --stop-on-zero
 # 4. At the no-novel-find window (or session end), harvest + stop:

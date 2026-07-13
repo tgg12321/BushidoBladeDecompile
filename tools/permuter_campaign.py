@@ -15,7 +15,11 @@ silent, best-effort contract as every engine command):
                      dir, each with seconds_since_launch (mtime - launch ts)
 
 Usage (WSL, repo root, venv active):
-  python3 tools/permuter_campaign.py launch  --func <f> --dir tmp/perm_x [--label chassis] [-j 8] [--stop-on-zero]
+  python3 tools/permuter_campaign.py launch  --func <f> --dir tmp/perm_x [--label chassis] [-j 8] [--stop-on-zero] [--no-stack-diffs]
+
+Launches pass --stack-diffs by DEFAULT (2026-07-13): the permuter's default
+scorer normalizes sp-relative offsets away, so any function whose remaining
+gap is a frame-size/stack-offset shift false-matches at score 0.
   python3 tools/permuter_campaign.py harvest --dir tmp/perm_x [--stop] [--reason "..."]
   python3 tools/permuter_campaign.py status
 
@@ -167,6 +171,13 @@ def cmd_launch(args):
 
     cmd = [_venv_python(), str(ROOT / "tools" / "decomp-permuter" / "permuter.py"),
            str(d), "-j", str(args.jobs)]
+    # Honest scoring by default: without --stack-diffs the permuter normalizes
+    # every sp-relative operand to addr(sp)/imm, so a frame-size or stack-offset
+    # gap scores a FALSE 0 (measured on func_80037540: a 15-insn-wrong form was
+    # indistinguishable from the true match). Opt out only when hunting
+    # non-stack diffs where offset noise drowns the signal.
+    if not args.no_stack_diffs:
+        cmd.append("--stack-diffs")
     if args.stop_on_zero:
         cmd.append("--stop-on-zero")
     logf = open(d / LOG_NAME, "a", encoding="utf-8")
@@ -196,6 +207,7 @@ def cmd_launch(args):
         "launch_ts": _now_iso(),
         "launch_epoch": launch_epoch,
         "jobs": args.jobs,
+        "stack_diffs": not args.no_stack_diffs,
         "base_score": base_score,
         "log_offset": log_offset,
         "preexisting_outputs": [f"output-{s}-{c}" for s, c, _ in _scan_outputs(d)],
@@ -210,6 +222,7 @@ def cmd_launch(args):
     record_event("permuter-launch", args.func, result,
                  extra={"dir": str(d), "label": meta["label"], "jobs": args.jobs,
                         "base_score": base_score, "pid": proc.pid,
+                        "stack_diffs": not args.no_stack_diffs,
                         "stop_on_zero": bool(args.stop_on_zero)})
     print(json.dumps({"launched": True, "pid": proc.pid, "base_score": base_score,
                       "dir": str(d), "label": meta["label"]}, indent=2))
@@ -408,6 +421,9 @@ def main():
     lp.add_argument("--dir", required=True, help="permuter workspace dir")
     lp.add_argument("--label", help="chassis/basin label (default: dir name)")
     lp.add_argument("-j", "--jobs", type=int, default=8)
+    lp.add_argument("--no-stack-diffs", action="store_true",
+                    help="disable --stack-diffs (default ON: without it the scorer "
+                         "normalizes sp offsets away and frame-gap functions false-match)")
     lp.add_argument("--stop-on-zero", action="store_true")
     lp.set_defaults(fn=cmd_launch)
 
