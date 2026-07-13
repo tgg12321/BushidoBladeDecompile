@@ -7,6 +7,15 @@ metadata:
   type: project
 ---
 
+> **ARCHIVED 2026-07-13** (memory/project/ func-note freshness audit). The function
+> this note investigates is **COMPLETED-C** — matched in commit `0c0e56a7`
+> ("Match: func_8007C938 -> COMPLETED-C via new_var2 variable-reuse sibling pattern")
+> and renamed to `initdrawoffset_helper_8007C938` (see `named_syms.txt`). It is off
+> `engine/queue.json`, carries zero rules, and byte-matches. The investigation the note
+> records landed and is now in the source tree, so the note is historical only. The
+> generalizable finding (sibling-pattern `new_var2` variable-reuse to break in-place
+> `$a0` coalescing) is preserved below for reference.
+
 # func_8007C938 — RESOLVED via sibling-pattern variable reuse (new_var2 holds arg0 then const)
 
 `src/display.c:606`. Tiny 17-insn GPU coord-packing leaf:
