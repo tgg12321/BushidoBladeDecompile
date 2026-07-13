@@ -1,5 +1,13 @@
 # cpu_side_move_dir_4 — sandbox 20 → 7 progress (2026-05-30)
 
+> **ARCHIVED 2026-07-13.** Dated progress snapshot from the pre-Grinder era.
+> The function remains active in `engine/queue.json`; its current live state
+> is in the Grinder ledger at `memory/grind/cpu_side_move_dir_4/` (100+
+> sessions with append-only hypothesis + evidence history). The `&D_800A1494 + 1`
+> chain lever and ALLOCDBG evidence documented below are still valid technique
+> reference; the tool invocations (`tmp/gccdbg/cc1`, `bb2_retire.py`) are
+> retired. Preserved for the durable content.
+
 Building on the previous agent's session-1-through-10 work documented in
 `.claude/rules/register-alloc-pure-c.md`, a NEW chain lever this session
 brings cpu_side_move_dir_4 from sandbox 20 to sandbox 7 — with build_insns

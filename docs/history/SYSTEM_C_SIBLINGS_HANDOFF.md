@@ -1,5 +1,13 @@
 # system.c sibling cluster — handoff (2026-05-30)
 
+> **ARCHIVED 2026-07-13.** Dated pre-Grinder handoff. Covers cpu_side_move_dir_4
+> and marionation_Exec (both still active in `engine/queue.json`, both under
+> Grinder ownership: `memory/grind/cpu_side_move_dir_4/` and
+> `memory/grind/marionation_Exec/`). Durable technique content lives in
+> `.claude/rules/register-alloc-pure-c.md` and `cross-jump-store-tail-merge.md`.
+> Tool invocations (`tmp/gccdbg/cc1`, `bb2_permuter`, `bb2_retire`, dc.sh)
+> retired. Preserved for the durable content.
+
 Status of three parked functions in `src/system.c`, after multi-session deep investigation.
 Read this BEFORE re-attempting any of them.
 

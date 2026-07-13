@@ -1,17 +1,23 @@
-# Immutable plateaus — diff types the targeted permuter can't crack
+# Immutable plateaus — diff types no C-only lever can crack
 
-When `bb2_retire.py` reports `min_score > 0` (plateau), run:
+When the current cheat-free floor (`& tools/wteng.ps1 main sandbox <func> --disable all`)
+sits at `min_score > 0`, run:
 
+```powershell
+& tools/wteng.ps1 main diagnose <func>
 ```
-python3 tools/bb2_diag_diff.py <func>
-```
 
-to see the asm-level diff. If the remaining diff matches one of the
-patterns below, **stop investigating**. The current toolchain
-(targeted permuter + 5 BB2 passes + heavy mode + auto-diag) cannot
-solve them, and burning more CPU won't help.
+to classify the residual and see the asm-level diff. If the remaining diff
+matches one of the patterns below, **it's a bounded pure-C plateau** — the
+engine's `canonical` gate + the SOTN community standard both accept these
+narrow classes as legitimate residuals for the regfix rules that address them.
+`engine/diagnose.py` cites this file directly as the pattern catalog.
 
 Document these here so future agents don't re-investigate.
+
+> **Historical note.** The invocation shape here retired in July 2026 alongside
+> the `bb2_retire.py`/`bb2_diag_diff.py` / `dc.sh` workflow. The pattern content
+> below is unchanged — the plateaus are toolchain properties, not tool artifacts.
 
 ---
 
@@ -157,10 +163,10 @@ plateaus at non-zero, you're probably hitting a search-budget issue
 ## Quick triage flowchart
 
 ```
-Plateau at min_score > 0 in bb2_retire.py
+Plateau at min_score > 0 in `sandbox <func> --disable all`
     |
     v
-Run: python3 tools/bb2_diag_diff.py <func>
+Run: `& tools/wteng.ps1 main diagnose <func>`
     |
     +-- mfhi / division intermediate register?    -> PATTERN 1, keep regfix
     |
