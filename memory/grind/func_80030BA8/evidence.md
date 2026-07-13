@@ -13,3 +13,17 @@
 - [s1] [fable-blitz 2026-07-07] asm/funcs/func_80030BA8.s:61: sh $s3 executes in the bne delay slot on BOTH arms -- matches the hoisted `*(s16 *)p = (s16)neg1;` at src/code6cac_b.c:2644 preceding the if/else.
 
 - [s1] [fable-blitz 2026-07-07] Index rule [[named-local-fake-exception]] (sanctioned 2026-07-01) covers constant-holder locals across calls -- SOTN ships `s16 three = 3;` and `new_var` in 9 committed files. The flagged family IS the sanctioned family, minus the mandatory FAKE annotation and exhaustion documentation.
+
+## s2 [structural] — measured, 2026-07-13
+
+- [s2] `new_var` is FULLY RETIRED, no exception needed. `s32 range_sq = 0xF423F;` declared+initialized inside the block that uses it scores **0**. The audit's "function-scope lifetime for an inner-block-only value" objection is answered: that lifetime was never load-bearing. What IS load-bearing is the constant being a distinct pseudo with its own set-insn — the bare literal scores **6** (87/87 insns), i.e. sched1 will NOT lift the lui/ori into the mult/mflo latency window unless a set-insn exists to move. KILLS s1's frontier hypothesis.
+
+- [s2] `neg1` holder is CONFIRMED load-bearing. Literal -1 at both sites: score **14**, build **85** insns vs target 87 — the two missing instructions are `sw $s3,0x1C($sp)` / `lw $s3,0x1C($sp)`. With no single pseudo GCC never gives -1 a callee-save home and re-materializes it per use.
+
+- [s2] Block-scoped `-1` (the Judge's second prescribed remediation) is PHYSICALLY IMPOSSIBLE: score **4** (87/87). Declared in the goto-loop body the init re-executes per iteration, so `li $s3,-1` is emitted INSIDE the loop (it fills the `bnez` delay slot, displacing target's `sll $v0,$v1,16`) and the prologue save order flips (`sw $s0` before `sw $s3`). The sentinel must be initialized ONCE, BEFORE the loop => function scope is forced.
+
+- [s2] **The coupling fixpoint.** The goto-loop emits no NOTE_INSN_LOOP, so LICM never runs. Rewriting it as a real `for` (score **33**, 89 insns) DOES make LICM hoist the body-local `li s3,-1` into the preheader — verified in tmp/grind/func_80030BA8/s2/forloop.txt insn 10 — but LICM hoists *every* invariant at once and also lifts the `lui/ori 0xF423F` (and a base-address `addiu`) OUT of the loop, destroying the mult-latency-window placement the target requires. The absence of loop notes is load-bearing in BOTH directions: it keeps 0xF423F in the mult window AND denies the -1 a preheader to be hoisted into. No real-loop construct can have both.
+
+- [s2] The sentinel is DISTINCT from the return value in the original. Using one `s32 none = -1;` for the compare, the store AND both `return -1;` sites scores **1** (87/87): the shared exit emits `move $v0,$s3` where target emits `addiu $v0,$zero,-1`. Independent corroboration that the original C had a -1-holding local plus literal -1 returns — exactly candidate.c's shape.
+
+- [s2] CLOSING FORM (candidate.c, sandbox 0): `s32 empty_slot = -1;` (function-scope, renamed) + `s32 range_sq = 0xF423F;` (block-local). Lever exhaustion for the surviving `empty_slot` holder is documented above (4 measured negatives). Classification of that holder is a RULING QUESTION, not self-approved.
