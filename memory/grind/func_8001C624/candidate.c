@@ -1,81 +1,112 @@
-/* func_8001C624 — the only form measured at sandbox 0 (127/127).  This is what
- * is COMMITTED ON MAIN today (plus the Judge-approved setVector respell of the
- * t/u round-trip and the `0 != 0` -> `0` normalisation).
+/* func_8001C624 — BEST HONEST FORM (s3, 2026-07-13).  125/127 insns, sandbox 73.
  *
- * *** DO NOT COMMIT THIS.  IT IS NOT A CANDIDATE — IT IS THE REGRESSION. ***
+ * NOT byte-matching, and NOT committable as-is.  It is here because it is the
+ * ONLY wrapper-free, cheat-free form measured so far that is SEMANTICALLY
+ * CORRECT — every block copy reads FRESH data.  Every plain-symbol form (incl.
+ * the 61-scoring baseline and all 14 statement orders swept in s3) emits copies
+ * that read STALE data; see rejected/plain-symbols-wrapper-free-baseline.c.
  *
- * s2 (2026-07-13) settled what the two do-while(0) wrappers actually do, and the
- * answer closes the ruling the s1 ledger left open:
+ * Resume from HERE, not from the committed HEAD body (which is the regression:
+ * two do-while(0) scheduling barriers, killed for sanction in s2).
  *
- *   sched.c:2066-2088 — "If there is a LOOP_{BEG,END} note in the middle of a
- *   basic block, then we must be sure that no instructions are scheduled across
- *   it."  For the insn following a loop note GCC adds an ANTI dep on EVERY
- *   reg_last_uses[i], a dep on EVERY reg_last_sets[i], sets reg_pending_sets_all
- *   = 1, and calls flush_pending_lists() — an all-register + all-memory fence.
+ * WHY IT WORKS (the semantic fix)
+ * Typing each copied region as an aggregate gives the three block copies a base
+ * symbol SHARED with the stores that feed them.  sched.c's memrefs_conflict_p
+ * short-circuits on GET_MODE_SIZE(BLKmode)==0 only once the canonicalised bases
+ * are rtx_equal, so a shared base symbol makes each copy conflict with every
+ * store to that object at any offset.  The copies stop floating.  Statement
+ * order then becomes fully INERT (s3 measured 5 orders: 73/73/73/74/73) because
+ * the dependence graph is saturated and rank_for_schedule's LUID tie-break has
+ * nothing left to decide.
  *
- *   The RTL dump of this exact form shows 0 code_labels and 0 barriers (the
- *   function is ONE basic block) with 2 x LOOP_BEG/LOOP_CONT/LOOP_END notes.
- *   So the wrappers contribute nothing but two total sched1 barriers.
+ * THE TWO REMAINING DELTAS (both register-allocation / CSE artifacts, -2 insns
+ * net).  Neither is a semantic defect; both are named and mechanical:
  *
- * That is the FORBIDDEN "scheduling barrier" family (CLAUDE.md lists it beside
- * register pins), NOT the sanctioned do-while(0) exception — whose mechanism is
- * NOTE_INSN_LOOP_BEG -> LABEL_OUTSIDE_LOOP_P -> reorg.c relax_delay_slots, and
- * s1 already showed this function is straight-line so that mechanism is absent.
- * The wrappers must NOT be re-submitted for sanction under do-while-zero-exception.
+ *  (1) OFFSET-0 MEMBER STORE LOSES ITS at-form `lui` (-1 insn x 3 groups).
+ *      Expand emits every COMPONENT_REF store's address into a pseudo:
+ *          (insn 43 (set (reg:SI 84) (symbol_ref:SI ("D_80101FB0"))))
+ *          (insn 45 (set (mem/s:SI (reg:SI 84)) (const_int 0)))
+ *      For offsets 4/8 the pseudo is (const (plus (symbol_ref FB0) N)) with a
+ *      SINGLE use, and combine folds it back into the MEM — at-form is restored
+ *      (`sw v0,%lo(D_80101FB4)($at)` — verified in the emitted asm).  For the
+ *      OFFSET-0 member the pseudo is the bare (symbol_ref FB0) — rtx-identical
+ *      to what the block copy's copy_addr_to_reg needs — so CSE commons the two,
+ *      the pseudo becomes MULTI-USE, and combine can no longer fold it.  The
+ *      store is stuck at `sw zero,0(v1)`.  Insensitive to statement order
+ *      (it is an expand+CSE fact, not a scheduling one).
  *
- * Worse: with our current symbol spelling the barriers are load-bearing for the
- * program's MEANING, not just its schedule.  Remove them and GCC hoists the
- * D_801020C0 <- D_80101FB0 copy above the D_80101FB4/FB8 stores that feed it, so
- * the code copies stale data (see rejected/plain-symbols-wrapper-free-baseline.c).
- * That is the proof that the SOURCE is wrong, not that the wrapper is needed.
+ *  (2) BLOCK-COPY CHUNKING num_regs=3 INSTEAD OF 2 (net +1 insn).
+ *      mips.md's movstrsi_internal always requests 4 scratch regs; mips.c's
+ *      output_block_move (line 2445) then counts how many do NOT collide with
+ *      the two address registers (`safe_regs`) and recurses with that count.
+ *      The target got 2 (lw,lw,sw,sw pairs); this form gets 3.  Pure
+ *      register-allocation fallout — not spellable in C, but it should fall out
+ *      once the live ranges match.
  *
- * Where to resume: rejected/plain-symbols-wrapper-free-baseline.c is the clean
- * form to sweep STATEMENT ORDER from (sched.c rank_for_schedule breaks ties by
- * INSN_LUID = source order).  Measure with the reloc-normalised diff, not the raw
- * sandbox score.  Full mechanism + the four killed avenues: hypotheses.md.
+ * The arithmetic closes exactly: 125 + 3 (restore the three at-form luis)
+ * - 1 - 1 + 1 (num_regs 3->2 on copy1/copy3/copy2) = 127.
+ *
+ * DECLARATIONS this body requires (all nine words are used ONLY inside this
+ * function — verified by grep over src/ — so the correction is fully contained):
+ *
+ *   file scope in src/code6cac.c:
+ *     typedef struct { s32 a, b, c, d; } Blk16;
+ *     typedef struct { s32 a, b, c; } Blk12;
+ *     extern Blk16 D_80101F80;    extern Blk16 D_80101F90;
+ *     extern Blk12 D_80101FB0;    extern Blk12 D_801020C0;
+ *     extern Blk16 D_80101FCC;    extern Blk16 D_80102114;
+ *   DELETE from include/code6cac.h:
+ *     extern s32 D_80101F80/F84/F88/FB0/FB4/FB8/FCC/FD0/FD4;
+ *   DELETE from src/code6cac.c:
+ *     extern s32 D_80101F90/801020C0/80102114;
+ *
+ * NOTE: this typing is NOT yet Judge-cleared.  It is a header type correction
+ * and must be argued against .claude/rules/header-type-correction-from-use-sites
+ * (four prongs) before any commit.  s2's contrary reading — that the target's
+ * at-form stores PROVE the region was not an aggregate — is strengthened by
+ * delta (1) above: GCC 2.7.2 structurally cannot emit an at-form offset-0 store
+ * for an object it also block-copies.  Whoever picks this up must resolve that
+ * tension, not paper over it.
  */
 void func_8001C624(void) {
-    typedef struct { s32 a, b, c, d; } Blk16;
-    typedef struct { s32 a, b, c; } Blk12;
     s32 local[3];
-    s32 a1;
-    s32 v1;
-    s32 a0_val;
+    s32 x;
+    s32 y;
+    s32 z;
+    s32 i;
 
-    v1 = 0x36;
-    func_80021D10(0, &((s32 *)&D_80101EC8)[v1], (s32)D_800A38E0);
+    /* `i` must stay a VARIABLE: as a literal 0x36, combine folds the address
+     * into the symbol D_80101FA0 and the build loses 2 insns (125 vs 127). */
+    i = 0x36;
+    func_80021D10(0, &((s32 *)&D_80101EC8)[i], (s32)D_800A38E0);
     func_80021D10(1, local, (s32)D_800A38E0);
-    D_80101FB0 = 0;
-    do {   /* SCHEDULING BARRIER (sched.c:2066 flush_pending_lists) — forbidden */
-        a1 = ((s32 *)&D_80101EC8)[0x36];
-        v1 = D_80101FA4;
-        a0_val = D_80101FA8;
-        D_80101FB4 = -0x384;
-        D_80101FB8 = 0;
-        D_80101FBC = a1;
-        D_80101FC0 = v1 - 0x384;
-        D_80101FC4 = a0_val;
-        D_80101F80 = a1;
-        {
-            D_80101F84 = v1;
-            D_80101F88 = a0_val;
-            do {   /* SCHEDULING BARRIER — forbidden */
-                *((Blk16 *)&D_80101F90) = *((Blk16 *)&D_80101F80);
-                *((Blk12 *)&D_801020C0) = *((Blk12 *)&D_80101FB0);
-                D_80101FCC = 0;
-                D_80101FD0 = 0;
-            } while (0);
-            D_80101FD4 = 0;
-            *((Blk16 *)&D_80102114) = *((Blk16 *)&D_80101FCC);
-            local[0] = local[0], local[1] = local[1] - 0x384, local[2] = local[2];
-            D_80101FDC = 0;
-            D_80101FE0 = 0;
-        }
-        D_80101FE4 = 0;
-        D_80101FEC = 0;
-        D_80101FF0 = 0;
-        D_80101FF4 = 0;
-    } while (0);
+    D_80101FB0.a = 0;
+    x = ((s32 *)&D_80101EC8)[0x36];
+    y = D_80101FA4;
+    z = D_80101FA8;
+    D_80101FB0.b = -0x384;
+    D_80101FB0.c = 0;
+    D_80101FBC = x;
+    D_80101FC0 = y - 0x384;
+    D_80101FC4 = z;
+    D_80101F80.a = x;
+    D_80101F80.b = y;
+    D_80101F80.c = z;
+    D_80101F90 = D_80101F80;
+    D_801020C0 = D_80101FB0;
+    D_80101FCC.a = 0;
+    D_80101FCC.b = 0;
+    D_80101FCC.c = 0;
+    D_80102114 = D_80101FCC;
+    /* setVector idiom (Judge-approved respell of the t/u round-trip): the target
+     * genuinely contains the self-copy stores — `local` is address-taken. */
+    local[0] = local[0], local[1] = local[1] - 0x384, local[2] = local[2];
+    D_80101FDC = 0;
+    D_80101FE0 = 0;
+    D_80101FE4 = 0;
+    D_80101FEC = 0;
+    D_80101FF0 = 0;
+    D_80101FF4 = 0;
     D_80101FFC = 0;
     D_80102000 = 0;
     D_80102004 = 0;
@@ -84,6 +115,6 @@ void func_8001C624(void) {
     D_80102018 = 0;
     D_8010201A = 0;
     D_80102016 = 0;
-    D_80102010 = D_80101F84;
+    D_80102010 = D_80101F80.b;
     func_8003FFE0(0);
 }

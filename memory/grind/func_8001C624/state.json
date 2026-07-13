@@ -1,7 +1,7 @@
 {
  "func": "func_8001C624",
  "file": "code6cac",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,23 +15,29 @@
    "floor": 0,
    "modality": "structural",
    "headline": "Root-caused the whole function: the do-while(0) wrappers are sched.c:2066 TOTAL scheduling barriers (flush_pending_lists + all-reg deps), NOT the sanctioned reorg.c do-while(0) mechanism -- so the rul"
+  },
+  {
+   "session": 3,
+   "floor": 0,
+   "modality": "structural",
+   "headline": "Both named frontier levers KILLED with measurements (statement order: 14 orders, 58-67, cannot pin the copies; pending-list flush: real but structurally too late) \u2014 and s2's kill of aggregate typing i"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "STATEMENT ORDER is the un-swept lever. The target's bytes pin BOTH (a) at-form per-symbol stores + per-copy lui/addiu bases = the codegen of separate scalar symbols, and (b) copies that do not float, which under the BLKmode size-0 rule requires a shared base symbol. (a) and (b) are contradictory in pure C -- so a premise about the original source is wrong, and the only variable never swept under the PLAIN spelling is the source order of the statements.",
-   "mechanism": "sched.c's rank_for_schedule breaks INSN_PRIORITY ties by INSN_LUID -- i.e. by SOURCE ORDER. With almost no memory dependences, nearly every store is priority-tied, so source order directly selects the emitted order. The s1-era note 'order is INERT (11 of 12 identical at 75)' was measured under the ANCHORED spelling only and does NOT transfer to the plain one.",
-   "next_probe": "Sweep statement-order permutations from rejected/plain-symbols-wrapper-free-baseline.c (score 61) -- placement of the three loads, the FB0/FB4/FB8 vs FBC/FC0/FC4 vs F80/F84/F88 store groups, and the three copies. Score with tmp/grind/func_8001C624/s2/difffunc.py (reloc-normalised diff), NOT the raw sandbox number."
+   "hypothesis": "The copied regions are members of a WIDER enclosing object, so every store sits at a NON-ZERO offset from that object's symbol \u2014 and the offset-0 collision that defeats combine (and costs the three at-form luis) never arises. This is now the load-bearing question, and it supersedes s2's belief that the region cannot be an aggregate.",
+   "mechanism": "The offset-0 CSE collision happens ONLY when a stored word sits at offset 0 OF THE VERY OBJECT BEING BLOCK-COPIED (that is the one case where the store's address pseudo is the bare symbol_ref the copy also needs). If the copied region is at, say, bigobj+0x30, the store's address is (const (plus (symbol_ref bigobj) 0x30)) \u2014 a DIFFERENT rtx from the copy's base only if the copy's base is a different offset... so the enclosing object must be chosen such that no stored word coincides with a copy base. Critically, at-form addressing SURVIVES bigobj+N (s2's H8: %lo(D_80101FB0) and %lo(bigobj+0x30) are the same reloc after linking), so the target's at-form stores do NOT rule this out.",
+   "next_probe": "Read the .data/.bss layout around 0x80101F80-0x80102120 (splat's segment + bb2.ld + symbol_addrs.txt) and every OTHER function that touches this region, to settle the real object boundaries. Then declare the honest enclosing aggregate and re-measure w1 with the stores at non-zero offsets. Compare against asm/6CAC.s:5019-5147 with tmp/grind/func_8001C624/s3/vdiff.py (which already patches header + src decls and restores them)."
   },
   {
-   "hypothesis": "The pending-list flush (sched.c:1754, `if (pending_lists_length > 32) flush_pending_lists(insn)`) is an honest, source-level scheduling barrier whose POSITION is determined purely by the COUNT of memory refs preceding it -- and it has never been probed.",
-   "mechanism": "flush_pending_lists makes the flushing insn depend on every pending read and write and sets last_pending_memory_flush, which every subsequent memory op then depends on: a total memory fence. Calls also fire it (so the count restarts after each jal). Counting the current body puts the flush inside copy3's third store. Adding, removing, or reordering memory ops upstream MOVES that fence -- a real lever obtainable without any coercion construct.",
-   "next_probe": "Instrument the count (or add a BB2_SCHED_DEBUG-style print) to locate the flush insn exactly; then test source orders that place the flush immediately before copy1, so all three copies land after a genuine barrier that GCC itself created."
+   "hypothesis": "There is an honest aggregate spelling in which the offset-0 store's address pseudo stays SINGLE-USE, so combine folds it back to at-form and the three luis return (125 -> 128, then num_regs 3->2 brings it to exactly 127).",
+   "mechanism": "The pseudo is multi-use only because the block copy needs the SAME bare symbol in a register (copy_addr_to_reg). Any spelling in which the copied object's base is not itself a stored lvalue in this function breaks the collision \u2014 e.g. a wider struct where the copy source is `obj.vec` at a non-zero offset while the zeroed word is a different member.",
+   "next_probe": "Build the enclosing-struct variant from frontier #1 and check the RTL: confirm the offset-0 store's address pseudo has ONE use in the -ds (post-CSE) dump, and that the emitted store is `lui at; sw zero,%lo(...)($at)`. tmp/grind/func_8001C624/s3/rtl.py already dumps -dr/-ds/-dS for any variant."
   },
   {
-   "hypothesis": "If the copies were NOT BLKmode, the size-0 alias pathology disappears entirely and the dependences become exact and honest -- no re-basing, no wrappers.",
-   "mechanism": "The size-0 conflict rule only applies to BLKmode MEMs. An element-wise copy emits SImode MEMs whose offsets memrefs_conflict_p compares exactly. The open question is whether any element-wise C spelling still emits the target's per-copy `lui/addiu` base registers and lw/lw/sw/sw pairing (incl. the odd-word load-delay nop in the 12-byte copy) rather than at-form per-element accesses.",
-   "next_probe": "Write the three copies element-wise through a local pointer pair and compare the emitted shape against asm/6CAC.s:5064-5117; if the pairing/nop survive, re-derive the dependences and re-measure."
+   "hypothesis": "Block-copy chunking (num_regs=3 vs the target's 2) is downstream of live-range pressure and will resolve itself once the addressing deltas are fixed.",
+   "mechanism": "mips.md's movstrsi_internal always requests 4 scratch regs; mips.c's output_block_move (line 2445) counts how many do NOT collide with the two address registers (safe_regs) and recurses with that count. The target got 2 (lw,lw,sw,sw pairs); the aggregate form gets 3. This is a register-allocator outcome, not a C-level choice.",
+   "next_probe": "Do NOT attack in isolation \u2014 it is not spellable in C. Re-check it only AFTER frontier #1/#2 land; if it persists once the schedule and live ranges match the target, THEN dump the post-reload RTL and investigate which pseudo collides."
   }
  ],
  "judge_constraints": [

@@ -156,3 +156,147 @@ the ANCHORED spelling only and does not transfer.
 - probe: v13 links byte-identically (`((s32*)&D_80101F80)[23]` relocates as D_80101F80+92; the target as D_80101FDC+0; the linker resolves both to 0x80101FDC) yet the .o disassembly text differs (`sw zero,92(at)` vs `sw zero,0(at)`).
 - result: NO. v13 scores 33 while being byte-exact. Any reloc-respelled form is structurally unable to reach sandbox 0 even when byte-perfect; only a full build + SHA1 can adjudicate that class. Relevant to the driver's `candidate-ready == sandbox 0` contract.
 - verdict: KILLED
+
+## s3 (structural) — 2026-07-13
+
+All scores are `sandbox func_8001C624 --disable all` (target 127 insns), measured
+through the s2 reloc-normalised diff. s3 swept the two levers the s2 frontier
+named as never-probed, and re-opened the one avenue s2 killed on the wrong grounds.
+
+| # | Hypothesis | Probe | Score / insns | Verdict |
+|---|---|---|---|---|
+| H9  | Statement order under the PLAIN spelling can pin the copies (s2's headline frontier) | 14 source orders (b0, o1-o3, y2, y3, z1-z8) | 58-67 / 127 | **KILLED** |
+| H10 | The `pending_lists_length > 32` flush can fence the copies (s2 frontier #2) | y1: F/E/SV hoisted to stack ~34 mem refs ahead of the copies | 89 / 125 | **KILLED** (mechanism CONFIRMED, lever unusable) |
+| H11 | The copies are BLKmode `movstrsi`, and aggregate typing gives them a shared base symbol -> honest dependence | w1: Blk16/Blk12 typing of the 3 copied regions | 73 / **125** | **CONFIRMED — semantically correct, 2 deltas short** |
+| H12 | Under aggregate typing, statement order is still a lever | x2-x6: 5 orders over w1 | 73/73/73/74/73 | **KILLED** (DAG saturated => order inert) |
+| H13 | s2's "aggregate decl forces the object base into a register" (H3/H4) is the true obstacle | RTL dump of w1 (`-dr`/`-ds`) | offsets +4/+8 ARE at-form | **KILLED — s2's characterisation was wrong** |
+
+### H9 — statement order is a TIE-BREAKER; it cannot create a dependence
+`rank_for_schedule` sorts by INSN_PRIORITY, then by class-vs-`last_scheduled_insn`,
+then by INSN_LUID (source order). The LUID tie-break is real — but under the plain
+spelling each block copy has **exactly one** dependence: the store to its own base
+symbol. The +4/+8 stores are different `symbol_ref`s and `memrefs_conflict_p`'s
+`CONSTANT_P` branch requires `rtx_equal_for_memref_p`, so GCC sees no dependence
+on them at all.
+
+The decisive probe is o1: moving copy2 to the very END of the source still emitted
+it **immediately after `sw zero,%lo(D_80101FB0)`** — and dragged that store to the
+TOP of the block with it. The (store, copy) pair is glued and floats as a unit
+wherever the source puts either half. A tie-break cannot pin an insn the scheduler
+believes is unconstrained. The s2 frontier's premise ("the one variable never
+swept") was correct that it was unswept and wrong that it could matter.
+
+### H10 — the flush is real, fires around memory-op 33, and is structurally too late
+`flush_pending_lists` (sched.c:1754) IS a genuine, coercion-free total memory
+fence, and y1 proves it: with F/E/SV hoisted ahead of the copies, all three copies'
+base registers are materialised AFTER every store that feeds them. But the fence
+only exists *because* 33+ memory ops were pushed ahead of them — which is exactly
+the store order the target does NOT have. In the target's own byte order only **12**
+memory ops precede copy1. There is no source order that both puts >32 memory refs
+before the copies and emits the target's store sequence. Score 89 (worse than 61):
+copies fixed, everything else destroyed. Dead.
+
+(Kept: the flush DOES fire in the normal form, in the D_80101FDC..FF4 group. That
+is why the setVector stack stores land after those six zero stores in BOTH the
+target and every build we make — that part of the schedule is already correct, and
+it is the flush doing it.)
+
+### H11/H13 — s2 killed aggregate typing on the wrong grounds
+s2 recorded (H3/H4): *"GCC 2.7.2 expands a COMPONENT_REF of an aggregate VAR_DECL
+by forcing the object base into a REGISTER (expand_assignment -> store_field), then
+CSE commons it across all members."* **The RTL dump falsifies the general claim.**
+Expand does put every member store's address in a pseudo, but **combine folds it
+back into the MEM whenever the pseudo is single-use** — and it does, for offsets
++4 and +8, which come out at-form in the emitted asm (`sw v0,%lo(D_80101FB4)($at)`).
+
+Only the **offset-0** member degrades, for a precise reason:
+
+```
+(insn 43 (set (reg:SI 84) (symbol_ref:SI ("D_80101FB0"))))     ; bare symbol
+(insn 45 (set (mem/s:SI (reg:SI 84)) (const_int 0)))           ; D_80101FB0.a = 0
+```
+
+The offset-0 pseudo is the **bare `(symbol_ref FB0)`** — rtx-identical to what the
+block copy's `copy_addr_to_reg` needs in a register. CSE commons the two, the
+pseudo becomes MULTI-USE, and combine can no longer fold it. The store is stuck at
+`sw zero,0(v1)` and loses its `lui`. Offsets +4/+8 are `(const (plus (symbol_ref
+FB0) N))`, stay single-use, and fold. Insensitive to statement order (H12) — it is
+an expand+CSE fact, not a scheduling one.
+
+So the aggregate form is NOT "99 insns, degenerate". It is **125/127, semantically
+correct** (every copy reads FRESH data — verified in the emitted stream), and short
+by exactly two mechanical register-allocation artifacts:
+
+1. **offset-0 loses its at-form `lui`** — -1 insn x 3 groups (above).
+2. **block-copy chunking `num_regs=3` instead of 2** — net +1 insn.
+   `mips.md`'s `movstrsi_internal` always requests 4 scratch regs; `mips.c`'s
+   `output_block_move` (line 2445) counts how many do NOT collide with the two
+   address registers (`safe_regs`) and recurses with that count. The target got 2
+   (`lw,lw,sw,sw` pairs); w1 gets 3. Pure RA fallout — not spellable in C.
+
+The arithmetic closes exactly: **125 + 3 - 1 - 1 + 1 = 127.**
+
+### The contradiction, restated more sharply than s2 could
+s2: *"(a) at-form per-symbol stores and (b) copies that do not float are
+contradictory in pure C."* s3 can now name the exact theorem:
+
+> For a copy to fence against a store, `canon_rtx` must resolve both to the SAME
+> base `symbol_ref`. For the store to keep at-form addressing, its address must
+> stay foldable by combine (single-use pseudo, or no pseudo). Under **aggregate**
+> spelling the offset-0 member's address pseudo is necessarily rtx-identical to the
+> copy's base, so it is always commoned and never folds. Under **scalar** spelling
+> the stores keep at-form but only the offset-0 word shares the copy's base symbol,
+> so only it fences. **The cast spelling (`((s32*)&SYM)[k]`) is the unique form with
+> both properties** — it yields a MEM at a compile-time-constant address (never a
+> pseudo) that also shares the base symbol. That is exactly why v13 reached the
+> target byte-for-byte, and exactly why it is a cheat.
+
+This is not a search failure; it is a proof that **one of our premises about the
+symbol layout is wrong**. The remaining honest degrees of freedom are: (i) the
+region's true object boundaries (does the copied object begin at a symbol we have
+not named?), and (ii) whether the target's `sw zero,%lo(D_80101FB0)($at)` is really
+an at-form store of a *scalar* or an at-form store of `%lo(bigobj+0x30)` that splat
+merely NAMED as a symbol.
+
+## Frontier (s4)
+1. **Resolve the symbol-layout premise — this is now the load-bearing question.**
+   `%lo(D_80101FB0)` and `%lo(bigobj+0x30)` are the same reloc after linking (s2's
+   H8). Read the .data/.bss segment around 0x80101F80-0x80102120 and the OTHER
+   functions that touch this region to determine the real object boundaries. If the
+   region is one named object in the original, the honest aggregate declaration puts
+   every store at a NON-zero offset — and delta (1) evaporates, because the offset-0
+   collision that defeats combine only happens when a stored word sits at offset 0
+   of the very object being block-copied.
+2. **Attack delta (1) directly: keep the offset-0 store's address pseudo
+   single-use.** It is multi-use only because the block copy needs the SAME bare
+   symbol in a register. Any honest spelling in which the copied object's base is
+   NOT itself a stored lvalue in this function breaks the collision. Check whether
+   a wider enclosing struct (so that FB0/F80/FCC are all at non-zero offsets) does
+   it — that is the direct test of avenue 1.
+3. **Delta (2) (`num_regs` 3 vs 2) is downstream of live-range pressure** and should
+   NOT be attacked directly. It will fall out if and when delta (1) is fixed and the
+   schedule matches. Do not spend a session on it in isolation.
+
+## [s3] Statement order under the PLAIN (separate-scalar-symbol) spelling can pin the three BLKmode block copies below the stores that feed them. This was the s2 ledger's headline 'un-swept lever'.
+- mechanism: sched.c's rank_for_schedule sorts ready insns by INSN_PRIORITY, then by class-vs-last_scheduled_insn, then by INSN_LUID = SOURCE ORDER. With almost no memory dependences nearly every store is priority-tied, so source order should directly select the emitted order.
+- probe: Swept 14 statement orders over the wrapper-free plain baseline (b0, o1-o3, y2, y3, z1-z8), scoring each with the s2 reloc-normalised diff (tmp/grind/func_8001C624/s2/difffunc.py), not the raw sandbox number.
+- result: Range 58-67 vs baseline 61 (target 127). The copies NEVER land correctly in any order. The decisive probe is o1 (score 58): moving copy2 to the very END of the source still emitted it IMMEDIATELY after `sw zero,%lo(D_80101FB0)` — and dragged that store to the TOP of the block with it. Under the plain spelling each copy has EXACTLY ONE dependence (the store to its own base symbol; the +4/+8 stores are different symbol_refs and memrefs_conflict_p's CONSTANT_P branch requires rtx_equal_for_memref_p). Order is only a TIE-BREAKER, and a tie-breaker cannot CREATE a dependence. The (store, copy) pair is glued and floats as a unit wherever the source puts either half.
+- verdict: KILLED
+
+## [s3] The sched.c:1754 pending-list flush (`if (pending_lists_length > 32) flush_pending_lists(insn)`) is an honest, source-level scheduling barrier whose POSITION is set purely by the COUNT of memory refs preceding it, and it can be moved to fence the three copies.
+- mechanism: flush_pending_lists makes the flushing insn depend on every pending read and write and sets last_pending_memory_flush, which every subsequent memory op then depends on — a total memory fence GCC creates by itself, with no coercion construct.
+- probe: y1: hoisted the F, E and SV groups above the three copies (source order S0,L,A,B,C,F,E,SV,D,P1,P2,P3), stacking ~34 memory refs ahead of copy1 so the flush provably fires before it.
+- result: The mechanism is REAL and it WORKS — in the emitted stream all three copies' base registers are now materialised AFTER every store that feeds them (e.g. `addiu a2,a2,%lo(D_80101FB0)` lands after all of FB0/FB4/FB8). But the fence exists ONLY BECAUSE 33+ memory ops were pushed ahead of the copies, which is precisely the store order the target does NOT have: in the target's own byte order only 12 memory ops precede copy1. There is no source order that both puts >32 memory refs before the copies AND emits the target's store sequence. Score 89 — WORSE than the 61 baseline: copies fixed, everything else destroyed. Confirmed as a mechanism, dead as a lever. (Corollary kept: the flush DOES fire in the normal form, in the D_80101FDC..FF4 group — which is why the setVector stack stores land after those six zero stores in BOTH the target and every build we make. That part of the schedule is already right.)
+- verdict: KILLED
+
+## [s3] s2's H3/H4 verdict — 'a whole-region/per-vector aggregate declaration forces GCC 2.7.2 to materialise the object base in a REGISTER (expand_assignment->store_field) and CSE commons it across all members, so the target's at-form per-symbol stores prove the original did NOT declare this region as an aggregate' — is correct.
+- mechanism: If true, aggregate typing can never reproduce the target's at-form stores, and the (a)/(b) contradiction s2 identified is unresolvable in pure C outside the cast (cheat) spelling.
+- probe: Re-measured aggregate typing with the known-bad `i`-literal construct removed (w1: Blk16/Blk12 typing of the three copied regions, `i` kept as a variable), then dumped cc1's RTL (-dr expand / -ds CSE) via tmp/grind/func_8001C624/s3/rtl.py.
+- result: REFUTED. Expand DOES put every member store's address in a pseudo, but COMBINE FOLDS IT BACK into the MEM whenever the pseudo is SINGLE-USE — and it does: offsets +4 and +8 come out at-form in the emitted asm (`sw v0,%lo(D_80101FB4)($at)`). ONLY the offset-0 member degrades, because its pseudo is the BARE (symbol_ref FB0) — `(insn 43 (set (reg:SI 84) (symbol_ref:SI ("D_80101FB0"))))` / `(insn 45 (set (mem/s:SI (reg:SI 84)) (const_int 0)))` — rtx-identical to what the block copy's copy_addr_to_reg needs in a register, so CSE commons the two, the pseudo becomes MULTI-USE, and combine can no longer fold it. Aggregate typing is therefore NOT degenerate: it is 125/127 insns (sandbox 73) and SEMANTICALLY CORRECT — verified in the emitted stream, every block copy reads FRESH data, the first such wrapper-free cheat-free form measured. It is short by exactly two named register-allocation artifacts and the arithmetic closes exactly: 125 + 3 (restore the three at-form luis) - 1 - 1 + 1 (block-copy chunking num_regs 3->2) = 127.
+- verdict: CONFIRMED
+
+## [s3] Under aggregate typing, statement order remains a lever (so the s2 order hypothesis could still pay off on the corrected spelling).
+- mechanism: Same rank_for_schedule LUID tie-break as H9.
+- probe: x2-x6: five statement orders over the aggregate form w1 (loads first, copies late, C+P1 hoisted, P2 last, grouped-local).
+- result: INERT — 73/73/73/74/73, all 125 insns. Once the shared base symbol creates the real dependences, the DAG is saturated and the LUID tie-break has nothing left to decide. This also independently confirms that the offset-0 at-form loss is an expand+CSE fact, not a scheduling one.
+- verdict: KILLED
