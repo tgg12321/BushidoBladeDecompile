@@ -1,5 +1,10 @@
 # Board Sync (Phase 1) Implementation Plan
 
+> **RETIRED 2026-07-06.** This plan was executed and delivered `tools/board_sync.py`,
+> but the GitHub Projects board itself was retired with the fleet
+> (superseded by the Grinder pipeline). Preserved as historical implementation
+> record.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Build `tools/board_sync.py` — a standalone, idempotent tool that renders the BB2 decomp engine state (`engine/queue.json` + `memory/wip/` + `inline_asm_canonical.txt` + optionally the completed-function inventory) into a GitHub Projects v2 board as a one-way projection, never writing back to engine state.

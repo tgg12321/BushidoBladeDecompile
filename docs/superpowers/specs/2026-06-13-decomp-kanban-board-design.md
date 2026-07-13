@@ -1,5 +1,11 @@
 # Design: GitHub Kanban board + multi-agent coordination for BB2 decomp
 
+> **RETIRED 2026-07-06.** The GitHub Projects board (Phase 1) and multi-agent
+> coordination (Phases 2-5) were part of the fleet era, superseded by the
+> Grinder pipeline (`docs/superpowers/specs/2026-07-06-grinder-pipeline-design.md`).
+> `tools/board_sync.py` and `docs/board.md` are no longer maintained.
+> Preserved as historical design record.
+
 - **Date:** 2026-06-13
 - **Status:** Approved (design) — Phase 1 ready for implementation planning
 - **Author:** Trenton (with Claude)

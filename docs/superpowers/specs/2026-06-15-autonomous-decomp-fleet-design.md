@@ -1,5 +1,12 @@
 # Autonomous Decomp Fleet — design
 
+> **RETIRED 2026-07-06.** The fleet was superseded by the Grinder pipeline
+> (`docs/superpowers/specs/2026-07-06-grinder-pipeline-design.md`). Fleet code
+> at `tools/fleet/` remains in-tree for historical reference; do not launch it.
+> Retirement rationale: 148 lane-cycles → 0 approved / 0 merged (per the
+> Grinder design doc's Problem section). Preserved as the architectural
+> record of what was tried and why it didn't work.
+
 **Date:** 2026-06-15
 **Author:** Claude (Opus 4.8), driven by Trenton's brainstorm before stepping away
 **Status:** approved (build-on-headless_loop substrate, full pre-flight drill), building
