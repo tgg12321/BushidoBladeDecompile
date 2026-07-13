@@ -432,3 +432,29 @@ ON THE ALLEGED CONTRADICTION ('no reachable disposition') -- this is a false dil
 WHAT THE OWNER IS ACTUALLY BEING ASKED (put plainly, for a reader who does not read assembly): The original 1998 programmer declared a scratch buffer on the stack with room for 8 numbers but only ever filled in 6. We can prove this from the compiled game itself -- the machine code sets aside room for 7 or 8 slots (the two are indistinguishable in the final bytes) but only ever writes 6. To reproduce the game's exact bytes, our C must also declare a buffer bigger than it fills. BB2's house rules currently forbid that, on the theory that declaring unused space is a trick to manipulate the compiler rather than real code. The grind has now shown that the reference projects BB2 measures itself against do this 356 times in shipped, matched code -- including SOTN, whose standard BB2 explicitly adopts -- and that SOTN even documents the same 'we can't recover the exact size, only a range' situation with a comment giving the range. BB2's case is milder than all 356: our buffer is not dead padding, it is a real argument list that is 75% filled and handed to a callee. The owner needs to decide whether to open that door. If he does, this function closes at a byte-perfect match immediately. If he does not, it stays unfinished and no amount of further grinding will change that -- the search space is closed by proof, not by fatigue.
 
 NOTHING NEEDS REVERTING. The byte-correct `s32 sp[8]` form is already on main (this is a regression-origin item; the standing rule is that the byte-correct construct stays until a clean replacement lands), so the oracle still builds to 62efab4f73f992798c43e8c730aa43baa10bb4fa. The function simply remains INCOMPLETE in the queue.
+
+## 2026-07-13 18:05 — func_80037540 — OWNER RULING: oversized-locals family carve-out — **GRANTED**
+
+The owner ruled on the evidence request the two 2026-07-13 Judge FAILs
+escalated. Decision (via interactive session, options presented with the
+full packet): **family carve-out granted** — oversized/dead stack locals
+are sanctioned WHEN the target frame equation proves the original declared
+locals strictly larger than the bytes it writes (byte-forced), with a
+required range annotation, documented exhaustion, and dual review. The
+narrow "sp[8] only" and "keep held" options were declined in favor of the
+family form, unblocking the siblings (func_8003DBE4, file_LoadSectors,
+func_800644FC) to be judged case-by-case under the same evidence gate.
+
+Codified in .claude/rules/dead-vars-local-array.md (OVERSIZED-LOCALS
+CARVE-OUT block, five prerequisites). The frame-math proof was
+independently re-derived from asm/funcs/func_80037540.s by the session
+executing the ruling (owner directive the same day: opus-authored
+handoff/audit claims get independent verification) — prologue 0x48, six
+callee-saves 0x30–0x44, six sw into 0x10–0x24, base addiu $a1,$sp,0x10,
+ALIGN8(24)+16+24 = 0x40 ≠ 0x48 — confirming both Judges' arithmetic.
+
+Explicitly NOT relaxed: volatile dead pads, (void)&local coercion,
+asm-based frame tricks, and any pad the frame equation does not force.
+
+func_80037540 closes under prerequisite checks in the same session
+(annotation + layer-2 review + queue done); see the Match: commit.

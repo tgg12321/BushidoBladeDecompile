@@ -2,7 +2,7 @@
 name: dead-vars-local-array
 paths: [".claude/rules/dead-vars-local-array.md"]
 # on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
-description: "FORBIDDEN as of 2026-05-31 (expanded 2026-06-01) — unused local arrays and (void)&scalar address-coercion. NARROW CARVE-OUT 2026-07-01: a WRITTEN-never-read local array is sanctioned (SOTN dra/62DEC.c ships u8 sp70[4] written 4x/read 0x, twice, in matched core) when the TARGET bytes contain the dead stores (oracle-enforced), after exhaustion, FAKE-annotated, dual-reviewed."
+description: "FORBIDDEN as of 2026-05-31 (expanded 2026-06-01) — unused local arrays and (void)&scalar address-coercion. NARROW CARVE-OUT 2026-07-01: a WRITTEN-never-read local array is sanctioned (SOTN dra/62DEC.c ships u8 sp70[4] written 4x/read 0x, twice, in matched core) when the TARGET bytes contain the dead stores (oracle-enforced), after exhaustion, FAKE-annotated, dual-reviewed. OVERSIZED-LOCALS CARVE-OUT 2026-07-13: a locals object with an unwritten tail (written-prefix buffer) or, fallback, a dead pad local is sanctioned when the target frame equation PROVES the original declared locals strictly larger than the bytes it writes — frame-math proof + range annotation + exhaustion + dual review required."
 metadata:
   type: reference
   status: forbidden
@@ -32,8 +32,72 @@ metadata:
 > written-never-read instances all WRITE the array (real stores that
 > survive in the emitted bytes); a never-referenced array emits nothing
 > and is pure frame-size coercion with no SOTN analog in matched code
-> beyond annotated `pad` declarations, which stay out of scope pending
-> their own evidence request.
+> beyond annotated `pad` declarations, which stayed out of scope pending
+> their own evidence request. **That evidence request was made and ruled
+> on 2026-07-13 — see the OVERSIZED-LOCALS carve-out below.**
+
+> **OVERSIZED-LOCALS CARVE-OUT (owner ruling 2026-07-13):** a stack-locals
+> object with an **unwritten tail** (a written-prefix buffer, e.g.
+> func_80037540's `s32 sp[8]` with only `sp[0..5]` stored and the buffer
+> passed live to a callee) — or, as the fallback when no live object
+> exists to extend, a dead pad local — is sanctioned as a last-resort
+> matching construct **when the target bytes PROVE the original declared
+> it**. Granted on the func_80037540 evidence request that the 2026-07-01
+> ruling explicitly anticipated. Evidence packet: census of 356 dead-pad
+> declarations in matched reference-project code (SOTN 40 — incl.
+> `u8 _pad[40]; // n.b.! needs to be 33-40 bytes (inclusive)`
+> (boss/bo4/unk_45354.c:463), documenting the identical
+> size-recoverable-only-as-a-range situation; `byte stackpad[40];`
+> dra/6BF64.c:156; `s32 unused_stack[2];` unk_45354.c:115), re-verified
+> line-by-line against SOTN source on disk by the default-FAIL Judge
+> (docs/grind/decisions.md 2026-07-13 12:51).
+>
+> Prerequisites — the cheat-reviewer / Judge FAILs if ANY is missing:
+> 1. **Frame-math proof from the target bytes alone** that the original
+>    declared a locals object strictly larger than the bytes it writes:
+>    frame size − callee-save bytes − outgoing-args bytes must exceed the
+>    bytes actually stored in the locals region, such that the
+>    fully-written form yields a strictly SMALLER frame. (func_80037540:
+>    0x48 frame − 24 saves − 16 args = 32-byte locals region, only 24
+>    written; ALIGN8(24)+16+24 = 0x40 ≠ 0x48 — no fully-written locals
+>    set can produce the target frame.) This is what separates the
+>    carve-out from ordinary frame coercion: the oracle-checked frame
+>    ATTESTS the slack existed in the original. Where the equation does
+>    NOT force the slack, declaring it remains FORBIDDEN.
+> 2. **Prefer extending a live object.** If a semantically-live locals
+>    object exists (an argv-style buffer partially filled and handed to a
+>    callee), the unwritten tail extends IT; a separate dead pad local is
+>    the fallback only when the function has no live locals object.
+> 3. **Range annotation on the declaration** (SOTN `// n.b.!` convention):
+>    ALIGN8 makes the declared size recoverable only as a range (25–32
+>    bytes ⇒ `s32 [7]` and `[8]` are byte-identical); the annotation
+>    states the frame derivation and the range, and names this carve-out.
+> 4. **Documented lever-exhaustion** in the ledger/WIP (func_80037540:
+>    4 grind sessions, 18,769 permuter samples, 800 frame-band candidates
+>    mechanically classified, 0 clean — every alternative used volatile
+>    coercion, address-escape, or extra stores absent from target).
+> 5. **Layer-1 + layer-2 review** (manual path) or the Grinder's
+>    default-FAIL Judge (autonomous path).
+>
+> Explicitly STILL FORBIDDEN, unchanged by this ruling: volatile-qualified
+> dead pads (`volatile char pad;` — volatile coercion; func_80037540's
+> byte-matching volatile form stays banked as a cheat in
+> memory/grind/func_80037540/rejected/), `(void)&local` scalar coercion,
+> `__asm__`-based frame tricks (func_800644FC's
+> `__asm__ volatile("":"=m"(dummy_pad))` must be REPLACED by a plain
+> carve-out-conformant pad when it is closed, not grandfathered), and any
+> pad whose size the frame equation does not force.
+>
+> Family members waiting on this carve-out (close case-by-case under the
+> five prerequisites when each reaches the queue top): func_80037540
+> (closed with this ruling), func_8003DBE4 (`s32 buf[2]` dead local),
+> file_LoadSectors/func_800165F8 (`s32 _pad[2]`), func_800644FC (asm
+> dummy_pad — see above). NOTE for fully-dead pads: the
+> `find_unused_local_arrays` detector still flags never-referenced
+> arrays and `mark_done` will refuse — wiring a prerequisite-aware
+> allowlist through the engine (with `engine test` kept green) is part
+> of closing the FIRST fully-dead-pad family member; do not weaken the
+> detector silently.
 
 ## Status
 
