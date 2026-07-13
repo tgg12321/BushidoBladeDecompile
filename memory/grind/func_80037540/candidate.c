@@ -5,72 +5,86 @@
  * never written). Do NOT treat as COMPLETED-C. Do NOT commit it as done.
  *
  * ############################################################################
- * # s5 (2026-07-13): THE SEARCH SPACE IS **NOT** CLOSED. The prior "proof"    #
- * # that this function REQUIRES an unwritten-tail array is FALSE. Do not      #
- * # trust the s2/s3/s4 header that used to sit here (it is preserved, with    #
- * # its refutation, in evidence.md + hypotheses.md).                          #
+ * # s3 (2026-07-13): THE SEARCH SPACE IS CLOSED **AGAIN**. s5's "the space is  #
+ * # open" claim is REFUTED — not by argument, but by ~80 measurements. The     #
+ * # phantom-slot mechanism s5 found is REAL, is now fully characterized, and   #
+ * # is PROVABLY UNREACHABLE in this function. Do not re-open it.               #
  * ############################################################################
  *
- * WHAT WAS BELIEVED (s3/s4, and adopted by the Judge as BINDING):
- *   The frame equation (verified — mips.c:compute_frame_size) gives
- *       frame = ALIGN8(get_frame_size) + ALIGN8(args=16) + ALIGN8(gp=24)
- *       => frame 0x48  <=>  get_frame_size in [25,32].            [STILL TRUE]
- *   The target writes exactly 24 bytes (six `sw`, 0x10..0x24).    [STILL TRUE]
- *   s4 then argued a "trichotomy": to hold frame bytes an object must defeat
- *   scalar-promotion => >=2 elements => >=2 EXTRA STORES; so any 0x48 form
- *   either emits stores the target lacks (+2, measured) or declares an
- *   unwritten tail. Hence "the original itself declared a dead tail", hence
- *   the item is a pure policy question for the owner.          [** FALSE **]
+ * THE FRAME EQUATION (unchanged, still true — mips.c:compute_frame_size):
+ *     frame = ALIGN8(get_frame_size) + ALIGN8(args=16) + ALIGN8(gp=24)
+ *     => frame 0x48  <=>  get_frame_size in [25,32].
+ *   The target writes exactly 24 bytes (six `sw`, 0x10..0x24). So 1-8 declared-
+ *   but-unwritten bytes are REQUIRED. There are only three ways to get them:
+ *     (a) WRITE the extra bytes    -> emits stores the target lacks (+2, measured)
+ *     (b) an UNWRITTEN TAIL        -> sp[7]/sp[8]; scores 0; FORBIDDEN family
+ *     (c) a PHANTOM SLOT           -> live locals, zero stores          [s5's hope]
  *
- * WHAT IS ACTUALLY TRUE (s5, measured):
- *   GCC 2.7.2 reserves locals frame bytes for ORDINARY LIVE LOCALS that no
- *   instruction ever touches — a PHANTOM SLOT. There is no dead declaration,
- *   no unwritten-tail array, and no cheat involved. The third branch s4's
- *   trichotomy omitted is simply: **get_frame_size > bytes-written, from
- *   ordinary live code.**
+ * WHAT s3 SETTLED — branch (c) IS UNREACHABLE HERE.
  *
- *   WITNESS (in-tree, byte-verified, no cheat): `tslLineG5Init`
- *   (src/code6cac_c2.c:1267) — COMPLETED-C, `sandbox --disable all` = 0,
- *   rules_dropped = 0, not in the queue. cc1 reports for it:
- *       .frame $sp,48,$31   # vars= 8, regs= 4/0, args= 24, extra= 0
- *   get_frame_size() == 8, and the ONLY sp-relative accesses in the whole
- *   function are the 4 register saves (32..44) and `sw $2,16($sp)` (a 5th
- *   outgoing arg, inside the args region). NOTHING touches [24,32). Eight
- *   reserved bytes, never written, never read — from five plain scalar locals.
- *   The original binary has the same frame (asm/funcs/tslLineG5Init.s: -0x30).
+ * THE MECHANISM (gdb backtrace on assign_stack_local inside cc1 — no longer a
+ * guess). A phantom slot is a GCC 2.7.2 STALE-REF BUG, not a feature:
+ *   1. `flow` (life analysis) records reg_n_refs[P] > 0 for a pseudo P.
+ *   2. `combine` — which runs AFTER flow — deletes every insn referencing P,
+ *      WITHOUT decrementing reg_n_refs.
+ *   3. `regclass` now has no cost data for P, so its preferred class defaults to
+ *      **ST_REGS** (degenerate — holds no integer regs).  [tslLineG5Init: the
+ *      lreg dump literally says "Register 92 ... ST_REGS or none."]
+ *   4. local/global alloc therefore cannot give P a hard register.
+ *   5. `reload` -> alter_reg() (reload1.c:658) sees reg_renumber<0 && reg_n_refs>0
+ *      && no equiv -> assign_stack_local() -> frame_offset grows.
+ *   6. No insn references P, so NO load or store is ever emitted. -> PHANTOM.
  *
- *   MECHANISM (minimal reproducer: tmp/grind/func_80037540/s2/minrepro.py):
- *   two HImode (`s16`) locals feeding an HImode BITWISE expression
- *   (`(a & ~b) & 1`) make cc1 allocate a stack temp for the HImode computation
- *   which it then never uses => vars=8, untouched. (A call is not required.)
+ * THE ENTRY CONDITION — and why it cannot be met here.
+ *   Step 2 only fires for ONE combine path: eliminating a redundant HImode->SImode
+ *   sign-extension (the ashift/ashiftrt pair on a paradoxical subreg). Combine's
+ *   OTHER folds decrement refs correctly and produce NO phantom — measured: a
+ *   two-stage shift (`idx*2` then *4) folds to a single `sll $2,$2,3`, emits the
+ *   IDENTICAL 41 insns, and still gives vars=24.
+ *   Combine can only prove the extension redundant when the narrow value is ALREADY
+ *   sign-extended in its register — i.e. it came from a NARROW LOAD (`lh`/`lb`,
+ *   which extend on load). Every other way a narrow value can enter a function was
+ *   measured and produces NO phantom:
+ *       s16/u16/s8/u8 PARAM      -> promoted subreg, no extension pseudo   (44 variants)
+ *       s16 CALL RETURN          -> promoted subreg, no extension pseudo
+ *       truncated ARITHMETIC     -> extension NOT redundant; emits sll/sra
+ *       lhu / lbu (zero-extend)  -> no phantom
+ *   => a phantom slot REQUIRES at least one `lh`/`lb` in the emitted function.
  *
- * CONSEQUENCE: this function does NOT need an owner carve-out for the
- * unwritten-tail family, and it is NOT blocked. It needs the LIVE-LOCALS form
- * whose get_frame_size lands in [25,32] while emitting only the target's six
- * stores. That form has not been found yet — but the space is open and now has
- * a direct gradient (below), not a policy wall.
+ *   **func_80037540's target contains SEVEN loads, ALL `lw`. Zero narrow loads.**
+ *   And there is no room to add one: the target is 43 insns and the tail-free
+ *   `s32 sp[6]` form already emits 43. Therefore branch (c) is closed.
  *
- * THE INSTRUMENT (use this, not the sandbox, to search):
- *   cc1 prints get_frame_size() itself. Compile any candidate with the project
- *   flags and read the `.frame` comment:
- *     bash tmp/grind/func_80037540/s2/build.sh <file.c>
- *     -> .frame $sp,N,$31  # vars= V, regs= R, args= A, extra= E
- *   V IS get_frame_size(). Search for V in [25,32] with no added stores. This is
- *   a far better gradient than the sandbox score for this function, which only
- *   reports the aggregate distance.
+ * IN-BINARY CORROBORATION (the necessity condition holds across all of BB2).
+ *   Of the 28 census functions that reserve untouched locals, 24 contain a narrow
+ *   load in their target asm. The 4 that do not are ALL non-witnesses:
+ *       func_800520B8, func_8006BD28 -> AUTHORIZED CANONICAL-ASM (not compiled C)
+ *       func_800644FC  -> INCOMPLETE, 13 regfix rules; its "phantom" is a cheat:
+ *                         `s32 dummy_pad; __asm__ volatile("" : "=m"(dummy_pad));`
+ *       file_LoadSectors (=func_800165F8, src/ings.c:163) -> INCOMPLETE, IN QUEUE;
+ *                         ships `s32 _pad[2];` — a dead unwritten pad, i.e. the very
+ *                         family under dispute.
+ *   => NOT ONE cheat-free compiled-C phantom slot in this binary lacks a narrow load.
  *
- * ALREADY RULED OUT for the live-locals hunt (measured, all vars=24):
- *   s16 / u16 / u8 index locals (incl. an s16-returning func_80036EA8, which
- *   makes the sext free), three s16 locals, both indices live across the 2nd
- *   call, a long long pair. See rejected/s16-index-locals-do-not-port-phantom-slot.c
- *   — func_80037540 has no HImode bitwise semantics, so no temp is created.
+ * CONSEQUENCE: s4's trichotomy is RESTORED, with its missing fourth branch now
+ * explicitly measured and killed. This function is NOT a search problem. It is the
+ * POLICY question it was already held on: the target's own prologue reserves 25-32
+ * bytes of locals while the target writes 24, so the ORIGINAL SOURCE declared a
+ * locals object strictly larger than what it wrote. Nothing an agent can write
+ * changes that. Do NOT re-grind branch (c); do NOT re-litigate the ruling.
  *
- * ALSO NOTE (s5): src/code6cac_c2.c:1320, the sibling func_8003DBE4, ships
- *   `s32 buf[2]; /* dead local: reserves the target's 8 extra frame bytes */`
- *   on main. That is the forbidden unwritten-array construct, in a function
- *   still ACTIVE in the queue at distance 21 — so it is NOT precedent for
- *   acceptance; it is an open cheat that the phantom-slot mechanism may well
- *   dissolve. Flagged, not exploited.
+ * MEASURED LADDER (unchanged, all sandbox --disable all):
+ *     s32 sp[6]                 (24B, tail-free)          -> 15   [43 insns, only sp offsets differ]
+ *     s32 argv[6]; s32 idx[1]   (scalar-promoted -> 24B)  -> 15
+ *     s32 argv[6]; s32 idx[2]   (32B, every byte written) ->  2   [PROVEN MIN of branch (a)]
+ *     s32 sp[7] / s32 sp[8]     (28B/32B, unwritten tail) ->  0   [branch (b) — this file]
+ *
+ * DO NOT RE-TRY (all measured, ~80 compiles; tmp/grind/func_80037540/s3/):
+ *   narrow params (any/all of the 5, s16/u16/s8/u8) · narrow index locals ·
+ *   s16-returning callee · two-stage shifts / word-index / byte-index spellings ·
+ *   pointer-arithmetic and CamRec* reshapes · long long index · walking pointer ·
+ *   grafted HImode triggers (they DO give vars=32/frame 0x48 — but only by emitting
+ *   lh/nor/and/andi/branches the target does not have).
  */
 extern s32 func_800392B8(void);
 extern void marionation_camera_Init_80037468(s32, s32 *, s32);
