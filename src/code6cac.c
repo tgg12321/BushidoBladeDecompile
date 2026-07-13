@@ -1382,63 +1382,57 @@ void func_8001C51C(void) {
     func_800392C8();
     func_80021280(1);
 }
+/* Initialise player-entry 0 of the 0x44C-stride player-entry table at
+ * D_80101EC8 -- same table, same byte-offset addressing as func_8001EEB4 /
+ * func_8001EFA0 / func_80021A98 elsewhere in this file. */
 void func_8001C624(void) {
     typedef struct { s32 a, b, c, d; } Blk16;
     typedef struct { s32 a, b, c; } Blk12;
+    u8 *e = (u8 *)&D_80101EC8;
     s32 local[3];
-    s32 a1;
-    s32 v1;
-    s32 a0_val;
+    s32 x, y, z;
 
-    v1 = 0x36;
-    func_80021D10(0, &((s32 *)&D_80101EC8)[v1], (s32)D_800A38E0);
+    func_80021D10(0, (s32 *)(e + 0xD8), (s32)D_800A38E0);
     func_80021D10(1, local, (s32)D_800A38E0);
-    D_80101FB0 = 0;
-    do {
-        a1 = ((s32 *)&D_80101EC8)[0x36];
-        v1 = D_80101FA4;
-        a0_val = D_80101FA8;
-        D_80101FB4 = -0x384;
-        D_80101FB8 = 0;
-        D_80101FBC = a1;
-        D_80101FC0 = v1 - 0x384;
-        D_80101FC4 = a0_val;
-        D_80101F80 = a1;
-        {
-            D_80101F84 = v1;
-            D_80101F88 = a0_val;
-            do {
-                *((Blk16 *)&D_80101F90) = *((Blk16 *)&D_80101F80);
-                *((Blk12 *)&D_801020C0) = *((Blk12 *)&D_80101FB0);
-                D_80101FCC = 0;
-                D_80101FD0 = 0;
-            } while (0);
-            D_80101FD4 = 0;
-            *((Blk16 *)&D_80102114) = *((Blk16 *)&D_80101FCC);
-            {
-                s32 t = local[0];
-                s32 u = local[2];
-                local[0] = t;
-                local[1] -= 0x384;
-                local[2] = u;
-            }
-            D_80101FDC = 0;
-            D_80101FE0 = 0;
-        }
-        D_80101FE4 = 0;
-        D_80101FEC = 0;
-        D_80101FF0 = 0;
-        D_80101FF4 = 0;
-    } while (0 != 0);
-    D_80101FFC = 0;
-    D_80102000 = 0;
-    D_80102004 = 0;
-    D_8010200C = 0;
-    D_80102014 = 0;
-    D_80102018 = 0;
-    D_8010201A = 0;
-    D_80102016 = 0;
-    D_80102010 = D_80101F84;
+    *(s32 *)(e + 0xE8) = 0;
+    x = *(s32 *)(e + 0xD8);
+    y = *(s32 *)(e + 0xDC);
+    z = *(s32 *)(e + 0xE0);
+    *(s32 *)(e + 0xEC) = -0x384;
+    *(s32 *)(e + 0xF0) = 0;
+    *(s32 *)(e + 0xF4) = x;
+    *(s32 *)(e + 0xF8) = y - 0x384;
+    *(s32 *)(e + 0xFC) = z;
+    *(s32 *)(e + 0xB8) = x;
+    *(s32 *)(e + 0xBC) = y;
+    *(s32 *)(e + 0xC0) = z;
+    *(Blk16 *)(e + 0xC8) = *(Blk16 *)(e + 0xB8);
+    *(Blk12 *)(e + 0x1F8) = *(Blk12 *)(e + 0xE8);
+    *(s32 *)(e + 0x104) = 0;
+    *(s32 *)(e + 0x108) = 0;
+    *(s32 *)(e + 0x10C) = 0;
+    *(Blk16 *)(e + 0x24C) = *(Blk16 *)(e + 0x104);
+    /* FAKE: self-assigning round-trip through `local`, which is address-taken by
+     * the func_80021D10 call above.  The target genuinely contains these
+     * self-copy stores (asm/6CAC.s:5101-5119: lw $v0,0x10($sp) / sw $v0,0x10($sp),
+     * lw $v1,0x18($sp) / sw $v1,0x18($sp)); this is the libgte setVector
+     * comma-assign idiom, adjusting only the middle component. */
+    local[0] = local[0], local[1] = local[1] - 0x384, local[2] = local[2];
+    *(s32 *)(e + 0x114) = 0;
+    *(s32 *)(e + 0x118) = 0;
+    *(s32 *)(e + 0x11C) = 0;
+    *(s32 *)(e + 0x124) = 0;
+    *(s32 *)(e + 0x128) = 0;
+    *(s32 *)(e + 0x12C) = 0;
+    *(s32 *)(e + 0x134) = 0;
+    *(s32 *)(e + 0x138) = 0;
+    *(s32 *)(e + 0x13C) = 0;
+    *(s32 *)(e + 0x144) = 0;
+    *(s16 *)(e + 0x14C) = 0;
+    *(s16 *)(e + 0x150) = 0;
+    *(s16 *)(e + 0x152) = 0;
+    *(s16 *)(e + 0x14E) = 0;
+    *(s32 *)(e + 0x148) = *(s32 *)(e + 0xBC);
     func_8003FFE0(0);
 }
 void mario_getMarioVoiceData_8001C820(void) {

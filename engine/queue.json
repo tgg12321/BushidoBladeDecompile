@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8001C624",
-      "file": "code6cac",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: Three distinct cheat constructs found \u2014 two unannotated do-while(0) wrappers (one with variant spelling `0 != 0`) and a dead load/store round-trip pair \u2014 all permuter-discovered, all framed in the com"
-    },
-    {
       "func": "func_8001CD68",
       "file": "code6cac",
       "distance": 0,
@@ -3732,14 +3722,14 @@
     }
   ],
   "counts": {
-    "total": 437,
-    "active": 368,
+    "total": 436,
+    "active": 367,
     "by_status": {
-      "active": 368,
+      "active": 367,
       "parked": 69
     },
     "by_verdict": {
-      "C": 214,
+      "C": 213,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
