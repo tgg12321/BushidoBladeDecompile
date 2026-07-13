@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "se_data_set",
-      "file": "code6cac",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: Two codegen-coercion constructs with no semantic purpose: (1) '(s8)(u16)D_800A36A4' forces lhu vs lh for no semantic gain (sb discards the sign-extension difference); (2) 's8 *p = (s8*)&D_8010277C' ca"
-    },
-    {
       "func": "DispSamnailWindow",
       "file": "code6cac_b",
       "distance": 0,
@@ -3672,14 +3662,14 @@
     }
   ],
   "counts": {
-    "total": 431,
-    "active": 362,
+    "total": 430,
+    "active": 361,
     "by_status": {
-      "active": 362,
+      "active": 361,
       "parked": 69
     },
     "by_verdict": {
-      "C": 208,
+      "C": 207,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }

@@ -1492,17 +1492,24 @@ void se_data_set(void) {
     if (D_800A36A4 != D_800A390E
         || *(&D_8008E5A8 + (s8)D_8010277C) != D_800A30FC
         || *(&D_8008E5A8 + D_8010277D) != D_800A30FD) {
-        s8 *p = (s8 *)&D_8010277C;
+        /* FAKE: block-local address cache for D_8010277C. Every &-free spelling
+         * re-materializes the symbol at both body reads instead of holding it in
+         * a callee-save register across func_8005BA8C (subspace floor 6, swept).
+         * GCC keeps an address pseudo only for a pointer local dereferenced as a
+         * plain scalar; no expression-level form produces one. Precedented in
+         * COMPLETED-C for this same global (func_8003B2C8/func_8003B328).
+         * See memory/grind/se_data_set/. */
+        u8 *p = &D_8010277C;
 
         EndADRSound();
         game_StageCleanup(D_800A36A4, s2);
         func_8002906C();
         func_8005BDF0();
 
-        s1 = func_8005BA8C(s2, D_800A36A4, *(&D_8008E5A8 + *p), *(&D_8008E5A8 + D_8010277D));
+        s1 = func_8005BA8C(s2, D_800A36A4, *(&D_8008E5A8 + (s8)*p), *(&D_8008E5A8 + D_8010277D));
 
-        D_800A390E = (s8)(u16)D_800A36A4;
-        D_800A30FC = *(&D_8008E5A8 + *p);
+        D_800A390E = D_800A36A4;
+        D_800A30FC = *(&D_8008E5A8 + (s8)*p);
         D_800A30FD = *(&D_8008E5A8 + D_8010277D);
 
         if (s1 >= 0x2519) {
