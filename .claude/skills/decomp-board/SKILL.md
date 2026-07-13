@@ -81,4 +81,4 @@ In-Progress card, so your claim survives a board re-mirror.
   only changed cards re-upload).
 - Rebuild the id/claim index after large board changes: `board.py index --rebuild`.
 - Full board-system reference (sync / cards / enrich / ledger / rate limits):
-  `docs/board.md`.
+  `docs/history/board.md` (archived).

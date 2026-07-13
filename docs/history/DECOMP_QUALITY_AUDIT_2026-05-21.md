@@ -1,3 +1,5 @@
+> **ARCHIVED 2026-07-13 — dated one-shot audit; numbers are a 2026-05-21 snapshot.** Reproduce current figures via `tools/decomp_quality_audit.py`. Preserved for historical context only.
+
 # BB2 Decompilation Quality Audit — 2026-05-21
 
 A from-scratch audit of decompilation **quality** (how each function matches),

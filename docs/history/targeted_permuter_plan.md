@@ -1,3 +1,5 @@
+> **ARCHIVED 2026-07-13 — completed design/results log for the `bb2_permuter.py` / `bb2_retire.py` tooling, which no longer exists (dc.sh/permuter era, superseded by the engine).** Preserved for historical context only.
+
 # Targeted permuter plan
 
 **Status:** Phase 0-5 IMPLEMENTED. 9 regfix rules retired across 7 functions.

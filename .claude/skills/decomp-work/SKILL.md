@@ -147,4 +147,4 @@ SHA1 == oracle) is the real completion bar — `board.py done` only reflects it 
 - `decomp-board` — the board CLI reference (commands, efficiency model).
 - `CLAUDE.md` / `decomp-orchestrate` — the engine loop, completion standard, and the
   orchestrator that launches workers + handles review + reintegration.
-- `docs/board.md` — full board-system reference.
+- `docs/history/board.md` — full board-system reference (archived).

@@ -1,3 +1,5 @@
+> **ARCHIVED 2026-07-13 — superseded by the Grinder pipeline (`tools/grinder/`) + `engine/queue.json`.** The GitHub Projects board / fleet era was retired 2026-07-06. Preserved for historical context only.
+
 # BB2 Decomp board (GitHub Projects v2)
 
 `tools/board_sync.py` projects the engine's worklist onto a GitHub Project named

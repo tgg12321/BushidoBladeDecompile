@@ -1,3 +1,5 @@
+> **ARCHIVED 2026-07-13 — superseded by the engine + per-function ledgers (`memory/grind/<func>/`, `memory/wip/<func>/`).** From the retired `dc.sh next-asmfix` workflow; `dc.sh` no longer exists. Preserved for historical per-function attempt notes only.
+
 # asmfix attempt notes
 
 Per-function notes from prior decomp attempts. When picking up an asmfix
