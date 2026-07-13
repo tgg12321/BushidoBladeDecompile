@@ -1,31 +1,37 @@
 {
  "func": "func_8001C624",
  "file": "code6cac",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 0,
    "modality": "recon",
    "headline": "fable-blitz recon: t/u round-trip is byte-real (target has same-slot lw/sw pairs) -> respell as setVector idiom; nested do-while(0) wrappers likely load-bearing sched fences (sanctionable w/ FAKE per "
+  },
+  {
+   "session": 2,
+   "floor": 0,
+   "modality": "structural",
+   "headline": "Root-caused the whole function: the do-while(0) wrappers are sched.c:2066 TOTAL scheduling barriers (flush_pending_lists + all-reg deps), NOT the sanctioned reorg.c do-while(0) mechanism -- so the rul"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "UNMEASURED: respell the t/u round-trip as the setVector comma-assign idiom (local[0]=local[0], local[1]=local[1]-0x384, local[2]=local[2] via a macro or direct comma-expr), leaving wrappers untouched - removes the flagged 'dead temp' spelling while keeping the byte-real self-copy stores",
-   "mechanism": "none needed at codegen level - the self-copy lw/sw pairs are real target bytes; this is a pure source-honesty respell (era-idiomatic PsyQ setVector macro expansion)",
-   "next_probe": "sandbox func_8001C624 --disable all with the setVector spelling substituted for the t/u block; expect distance 0 unchanged"
+   "hypothesis": "STATEMENT ORDER is the un-swept lever. The target's bytes pin BOTH (a) at-form per-symbol stores + per-copy lui/addiu bases = the codegen of separate scalar symbols, and (b) copies that do not float, which under the BLKmode size-0 rule requires a shared base symbol. (a) and (b) are contradictory in pure C -- so a premise about the original source is wrong, and the only variable never swept under the PLAIN spelling is the source order of the statements.",
+   "mechanism": "sched.c's rank_for_schedule breaks INSN_PRIORITY ties by INSN_LUID -- i.e. by SOURCE ORDER. With almost no memory dependences, nearly every store is priority-tied, so source order directly selects the emitted order. The s1-era note 'order is INERT (11 of 12 identical at 75)' was measured under the ANCHORED spelling only and does NOT transfer to the plain one.",
+   "next_probe": "Sweep statement-order permutations from rejected/plain-symbols-wrapper-free-baseline.c (score 61) -- placement of the three loads, the FB0/FB4/FB8 vs FBC/FC0/FC4 vs F80/F84/F88 store groups, and the three copies. Score with tmp/grind/func_8001C624/s2/difffunc.py (reloc-normalised diff), NOT the raw sandbox number."
   },
   {
-   "hypothesis": "UNMEASURED: wrapper inertness split-test - delete the inner do-while(0) and the outer while(0!=0) independently to classify each as inert vs load-bearing",
-   "mechanism": "NOTE_INSN_LOOP_BEG/END emitted by the wrappers fence sched1's interleave (round-trip tail past the FDC..FF4 zero-store run) and/or bias RA ref weights",
-   "next_probe": "two sandbox runs: (a) inner wrapper removed, (b) outer wrapper removed; any score rise = load-bearing -> retain that wrapper with inline FAKE annotation, normalize '0 != 0' to '0', and write the nested-wrap single-level-insufficient justification"
+   "hypothesis": "The pending-list flush (sched.c:1754, `if (pending_lists_length > 32) flush_pending_lists(insn)`) is an honest, source-level scheduling barrier whose POSITION is determined purely by the COUNT of memory refs preceding it -- and it has never been probed.",
+   "mechanism": "flush_pending_lists makes the flushing insn depend on every pending read and write and sets last_pending_memory_flush, which every subsequent memory op then depends on: a total memory fence. Calls also fire it (so the count restarts after each jal). Counting the current body puts the flush inside copy3's third store. Adding, removing, or reordering memory ops upstream MOVES that fence -- a real lever obtainable without any coercion construct.",
+   "next_probe": "Instrument the count (or add a BB2_SCHED_DEBUG-style print) to locate the flush insn exactly; then test source orders that place the flush immediately before copy1, so all three copies land after a genuine barrier that GCC itself created."
   },
   {
-   "hypothesis": "UNMEASURED: natural-geometry wrapper-free variant - move the six zero-store statements D_80101FDC..D_80101FF4 between the setVector reads and its tail writes in source order, reproducing the target interleave without loop notes",
-   "mechanism": "sched1 ready-list priority follows source/RTL order for same-cost insns; explicit source interleave may land the sw 0x18/0x14 placement that the wrappers currently force",
-   "next_probe": "sandbox a variant with wrappers removed and the zero stores textually interleaved into the setVector expansion point"
+   "hypothesis": "If the copies were NOT BLKmode, the size-0 alias pathology disappears entirely and the dependences become exact and honest -- no re-basing, no wrappers.",
+   "mechanism": "The size-0 conflict rule only applies to BLKmode MEMs. An element-wise copy emits SImode MEMs whose offsets memrefs_conflict_p compares exactly. The open question is whether any element-wise C spelling still emits the target's per-copy `lui/addiu` base registers and lw/lw/sw/sw pairing (incl. the odd-word load-delay nop in the 12-byte copy) rather than at-form per-element accesses.",
+   "next_probe": "Write the three copies element-wise through a local pointer pair and compare the emitted shape against asm/6CAC.s:5064-5117; if the pairing/nop survive, re-derive the dependences and re-measure."
   }
  ],
  "judge_constraints": [
