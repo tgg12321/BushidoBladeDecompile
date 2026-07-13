@@ -67,6 +67,7 @@ difficult-is-not-impossible — still auto-load and are not listed here.)
 ## Width / addressing / layout diffs
 
 - **bitfield-direction-divergence** — bitfield access compiles to the OPPOSITE half of the word (srl vs sra direction): our fork allocates bitfields HIGH-first; header-level field-order is the fix surface.
+- **header-type-correction-from-use-sites** (func_8001B138, 2026-07-13) — a global's declared signedness (u16 vs s16 etc.) may be corrected at its single canonical `extern` in a shared header when: (a) codebase-wide grep shows all use sites consistent with the new type AND at least one exhibits signed-specific semantics dead under the old type; (b) the OLD type required *functionally necessary* compensating casts (removing them changes runtime behavior) that PREDATE the residual-chasing session; (c) fix is one extern edit — never alias-rename / pointer-pun / macro-hidden coercion; (d) casts are eliminated at every use site, no residual site keeps the old-type behavior. Same GCC-fold-escape as a banned local-holder coercion is NOT disqualifying — the test is the four prongs, not the mechanism. Layer-2 verifies grep + cast-necessity table against the tree, not the author's summary.
 - **halfword-index-srl-sra** — `subst srl→sra` on a halfword array index → direct byte-offset cast.
 - **u16-global-lhu-lbu-low-byte** — `subst lhu→lbu` on a u16 global dispatch read → read the low byte explicitly.
 - **narrow-stack-param-subword-offset** — sub-word stack-param load at offset ±2 → read the low half explicitly (SOTN-sanctioned cast).
