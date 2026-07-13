@@ -173,3 +173,4 @@
 - 2026-07-13 02:41 func_8001C624 s3 [structural] floor=0: Both named frontier levers KILLED with measurements (statement order: 14 orders, 58-67, cannot pin the copies; pending-list flush: real but structurally too late) — and s2's kill of aggregate typing is REFUTED by RTL: it is semantically correct at 125/127, short by exactly two named register-allocation deltas.
 - 2026-07-13 05:14 func_8001C624 COMPLETED-C after 4 sessions.
 - 2026-07-13 05:25 func_8001CD68 COMPLETED-C after 2 sessions.
+- 2026-07-13 05:44 func_8001E800 COMPLETED-C after 2 sessions.
