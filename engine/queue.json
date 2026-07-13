@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_800342A0",
-      "file": "code6cac_b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: Duplicate file-scope extern declarations immediately before the function (src/code6cac_b.c:3910-3917) are a DECL_UID/LUID codegen coercion cheat. The same four symbols (func_80034200, func_800372C0, D"
-    },
-    {
       "func": "func_800343F0",
       "file": "code6cac_b",
       "distance": 0,
@@ -3612,14 +3602,14 @@
     }
   ],
   "counts": {
-    "total": 425,
-    "active": 356,
+    "total": 424,
+    "active": 355,
     "by_status": {
-      "active": 356,
+      "active": 355,
       "parked": 69
     },
     "by_verdict": {
-      "C": 202,
+      "C": 201,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
