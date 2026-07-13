@@ -2,7 +2,7 @@
 name: maspsx-noreorder-stripping
 paths: ["tools/maspsx/**"]
 # broad src/*.c glob removed 2026-06-11: surfaced via codegen-technique-index
-description: "Maspsx silently strips TAB-form `.set noreorder` / `.set noat` / `.set reorder` / `.set at` directives from file-scope `__asm__()` blocks. The SPACE-form duplicate is required for the directive to survive to `as`. Without it: the asm body itself is in the wrong reorder mode (inserts unwanted nops in branch delay slots), AND subsequent functions in the same .c file inherit the wrong mode (their delay slots also get wrong handling). The symptom shows up as cascade drift in functions AFTER a newly-added canonical-asm block."
+description: "Maspsx silently strips TAB-form `.set noreorder`/`noat`/`reorder`/`at` directives from file-scope `__asm__()` blocks. SPACE-form duplicates are required to reach `as`. Without them the block's own delay slots get nop-filled AND subsequent functions inherit the wrong reorder mode — symptom is cascade drift in later functions in the same .c file after a newly-added canonical-asm block."
 metadata:
   type: reference
 ---
@@ -60,7 +60,7 @@ After adding or modifying a file-scope `__asm__()` block, the build
 shows SHA1 mismatch but the function you just added/edited matches.
 The diff is in a function LATER in the same .c file — usually 1
 instruction off in a branch offset (`bne $X, $Y, .L<N>` jumps to a
-slightly different address). `dc.sh verify --all` reports something
+slightly different address). `& tools/wteng.ps1 main verify-oracle --rebuild` reports something
 like:
 
 ```
@@ -75,7 +75,7 @@ catches this case automatically (see `auto_drift_repair.py`).
 
 ## How to apply: When the auto-repair complains
 
-When `dc.sh build-active` reports SHA1 mismatch on a file-scope
+When `verify-oracle --rebuild` reports SHA1 mismatch on a file-scope
 asm block you just added or modified, the auto-repair (post-
 2026-05-16) automatically runs `_scan_unbalanced_set_directives()`
 and prints a hint if it finds the issue:

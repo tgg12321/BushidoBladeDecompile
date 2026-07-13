@@ -110,7 +110,7 @@ into a C-source `__asm__`. Per this memory:
    [[register-asm-pins]]), the answer is NOT to fall back
    to hardcoded-register asm. It is to **restructure the C** so GCC's natural
    choice matches target, OR to genuinely escalate as canonical asm via
-   `dc.sh scan-hand-coded` (per [[hand-coded-asm-recognition]] —
+   `python3 tools/scan_hand_coded.py --single <func>` (per [[hand-coded-asm-recognition]] —
    STRONG tier with S1/S2/S6 only, user-authorized only).
 4. Asking the user "should I do the hardcoded-register asm anyway" is not
    an option per the skill HARD RULE — but asking "I have exhausted the

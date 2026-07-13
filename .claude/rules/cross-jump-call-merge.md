@@ -88,20 +88,22 @@ call's arg count — it is a signature/declaration change, not a body mutation.
 - m2c's faithful reconstruction, cc1psx on the same C, register pins, the permuter
   from a 1-jalr seed — all 1 jalr.
 
-## Apply (programmatic pipeline)
+## Apply (manual pipeline)
 
 This is a DECLARATION-surface fix; neither the body permuter nor regfix can find it
-(they mutate the body, not the signatures). Two tools automate it:
+(they mutate the body, not the signatures). The retired `dc.sh sig-reconcile` /
+`sig-search` tools that automated this are gone as of 2026-07 (dc.sh workflow
+retirement). Work it manually:
 
-1. `bash tools/dc.sh sig-reconcile <func>` — DETECT: compares build vs target jalr
-   counts and lists the fn-ptr handlers. If build < target, you are on this wall.
-2. `bash tools/dc.sh sig-search <func> --apply` — RESOLVE: searches each handler's arg
-   count (1..declared; m2c over-infers so real <= declared), scored by jalr-count
-   match to target FIRST, then alignment-immune edit distance. Grounded in the target
-   asm, so it cannot manufacture a cheat. Writes reconciled signatures to base.c so
-   build jalr == target jalr. (Reliably nails the structure + major counts; a handler
-   may be ±1 — confirm the exact count against the target's per-call arg setup as you
-   close the residual.)
+1. **DETECT.** Compare build vs target `jalr` counts in the affected function.
+   `objdump -d build/src/<file>.o` for build; `asm/funcs/<func>.s` for target.
+   If build < target, you are on this wall — GCC's `jump2` cross-merged
+   identical CALL suffixes in your build that target compiled distinctly.
+2. **RESOLVE.** For each fn-ptr handler called by the function, read the
+   target's per-call arg setup (which of `$a0..$a3` are live into each call).
+   The arg count comes from THE TARGET — not from m2c (which over-infers
+   trailing args) and not from blind diff-minimising. Update the C-side
+   handler declarations so build jalr == target jalr.
 3. Close the residual ordering/scheduling with the body permuter / manual work.
 
 The arg count comes from the TARGET (which a0-a3 are live into each call), never from

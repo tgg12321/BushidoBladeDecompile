@@ -10,7 +10,7 @@ metadata:
 
 Leaf functions that load packed s16 values, multiply by Q12/Q16 coefficients,
 shift, and repack. Two outcomes depending on whether the original was
-hand-coded asm or compiled C. **Run `dc.sh scan-hand-coded --single <func>`
+hand-coded asm or compiled C. **Run `python3 tools/scan_hand_coded.py --single <func>`
 FIRST** — it now classifies this cluster correctly (signal S8, added 2026-05-21).
 
 ## Recognition: hand-coded vs C (the S8 signal)

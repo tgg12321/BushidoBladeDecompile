@@ -66,7 +66,7 @@ This is the trap I (and prior agents) fell into for 20+ rounds on `calc_fc_frame
 
 # When to suspect this is the unlock
 
-Run `dc.sh diff-summary <func>`. If you see:
+Run `& tools/wteng.ps1 main diagnose <func>` (the retired `dc.sh diff-summary` equivalent). If you see:
 
 ```
 [callee-save] target saves [s0, s1], mine saves [s0, s1, s2]  (+1)

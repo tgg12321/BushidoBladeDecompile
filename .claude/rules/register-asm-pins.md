@@ -60,7 +60,7 @@ Two pins on the same register with overlapping liveness (`tbl asm("a0")` while
 ## How to apply
 
 1. **Use the pin to DIAGNOSE, and verify whether it took.** After a build,
-   `dc.sh dump-text <func>` — if the pinned var isn't in `regname`, the pin was ignored.
+   `mipsel-linux-gnu-objdump -d build/src/<file>.o` and grep for the function — if the pinned var isn't in `regname`, the pin was ignored.
    Either way, the pin tells you which register target wants; that's its only job.
 2. **An ignored pin means your C structure is wrong — not that you should force it.**
    Adding more pins, regfix, or an `__asm__` move to "convince" GCC is forbidden
