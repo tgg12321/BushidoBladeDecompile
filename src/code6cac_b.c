@@ -3990,8 +3990,6 @@ extern s32 func_8005509C(s32);
 INCLUDE_RODATA("asm/rodata", jtbl_8001084C);
 
 void DispSamnailWindow(void) {
-    s32 s0;
-
     func_800343F0();
 
     switch (D_800A38DC) {
@@ -4010,16 +4008,14 @@ void DispSamnailWindow(void) {
         goto skip_clear;
 
     case 1:
-        s0 = 1;
-        D_80102781 = (u8)s0;
+        D_80102781 = 1;
         cpu_set_move_command_and_dir_for_no_action();
-        D_800A3768 = (u8)s0;
+        D_800A3768 = 1;
         mottest_disp();
         goto skip_clear;
 
     case 3:
-        s0 = 1;
-        D_80102781 = (u8)s0;
+        D_80102781 = 1;
         D_8010277F = 0;
         D_8010277E = 0;
         D_800A38E2 = 0;
@@ -4028,7 +4024,7 @@ void DispSamnailWindow(void) {
         D_800A3728 = 0;
         D_800A36A4 = 0x22;
         func_80033DF4();
-        D_800A3768 = (u8)s0;
+        D_800A3768 = 1;
         break;
 
     case 5:

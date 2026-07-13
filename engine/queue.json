@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "DispSamnailWindow",
-      "file": "code6cac_b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: Function-scope `s32 s0;` is used in cases 1 and 3 ONLY to hold the constant 1 in a callee-save register ($s0) across intervening jal calls (cpu_set_move_command_and_dir_for_no_action in case 1; func_8"
-    },
-    {
       "func": "func_8003047C",
       "file": "code6cac_b",
       "distance": 0,
@@ -3662,14 +3652,14 @@
     }
   ],
   "counts": {
-    "total": 430,
-    "active": 361,
+    "total": 429,
+    "active": 360,
     "by_status": {
-      "active": 361,
+      "active": 360,
       "parked": 69
     },
     "by_verdict": {
-      "C": 207,
+      "C": 206,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
