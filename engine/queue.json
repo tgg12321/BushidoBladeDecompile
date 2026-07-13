@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80037540",
-      "file": "code6cac_b2_post",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: s32 sp[8] oversized by 2 elements: sp[6] and sp[7] are never written or read; callee is invoked with count=6, so only sp[0]-sp[5] have semantic purpose. The 2 unused elements inflate the stack frame f"
-    },
-    {
       "func": "func_80035480",
       "file": "code6cac_b2_pre",
       "distance": 0,
@@ -3582,14 +3572,14 @@
     }
   ],
   "counts": {
-    "total": 422,
-    "active": 353,
+    "total": 421,
+    "active": 352,
     "by_status": {
-      "active": 353,
+      "active": 352,
       "parked": 69
     },
     "by_verdict": {
-      "C": 199,
+      "C": 198,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }

@@ -494,6 +494,13 @@ void marionation_camera_Init_80037468(s32 a0, s32 *a1, s32 a2) {
 extern s32 func_800392B8(void);
 extern void marionation_camera_Init_80037468(s32, s32 *, s32);
 void func_80037540(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4) {
+    /* n.b.! needs to be 25-32 bytes (inclusive): target frame 0x48 - callee
+       saves (6 regs @ 0x30-0x44 = 24) - outgoing args (16) = 32-byte locals
+       region, but only sp[0..5] (24 bytes) are ever written (count=6 to the
+       callee) and ALIGN8(24)+16+24 = 0x40 != 0x48 — the original provably
+       declared a larger argv buffer than it fills; s32 [7] and [8] are
+       byte-identical. Oversized-locals carve-out (owner ruling 2026-07-13),
+       see .claude/rules/dead-vars-local-array.md. */
     s32 sp[8];
     s32 v0;
 
