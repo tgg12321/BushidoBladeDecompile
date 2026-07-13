@@ -70,7 +70,7 @@ On other distributions you'll need the equivalent of:
 | `python3` + `python3-venv` | Pipeline scripts and the `decomp-permuter` |
 | `git`, `wget`, `cmake` | Cloning and building the cross-compiler |
 
-The pipeline tools assume the binaries are named `mipsel-linux-gnu-*`. On distributions that name them `mips-linux-gnu-*` you may need to symlink or adjust `tools/dc.sh` and the `Makefile`.
+The pipeline tools assume the binaries are named `mipsel-linux-gnu-*`. On distributions that name them `mips-linux-gnu-*` you may need to symlink or adjust the `Makefile`.
 
 ## Disc image extraction
 
@@ -135,18 +135,19 @@ If you see `MISMATCH: bb2 does not match`, the build linked but produced differe
 |---|---|---|
 | First-time build mismatch after disc extraction | `SLUS_006.63` doesn't match the canonical SHA1 | Verify you have the NTSC-U release (SLUS-00663, NA, 1998). Other regions (PAL `SLES`, NTSC-J `SLPS`) will not match this project. |
 | Mismatch after a `git pull` | Stale build cache picking up old objects | `make clean-check` |
-| Mismatch when iterating on a single function | Cached `.o` files masking a real regression | `bash tools/dc.sh verify --clean` (full rebuild + per-function diagnosis) |
+| Mismatch when iterating on a single function | Cached `.o` files masking a real regression | `& tools/wteng.ps1 main verify-oracle --rebuild` (full rebuild + SHA1 gate) |
 | Mismatch on a fresh WSL setup | `mipsel-linux-gnu-as` version differs | The pipeline assumes binutils ≥ 2.38. Check with `mipsel-linux-gnu-as --version`. |
 
 To narrow a mismatch down to a single function:
 
-```bash
-bash tools/dc.sh verify --all       # quick SHA1 short-circuit, then per-function scan
-bash tools/dc.sh verify <funcname>  # one function
-bash tools/dc.sh diff <funcname>    # side-by-side asm diff against original
+```powershell
+# PowerShell (Windows host); the engine runs under WSL for the actual build
+& tools/wteng.ps1 main verify-oracle --rebuild    # full clean rebuild + SHA1 gate
+& tools/wteng.ps1 main sandbox <funcname> --disable all   # cheat-invisible pure-C distance
+& tools/wteng.ps1 main diagnose <funcname>        # classify the gap (control-flow / plateau / canonical)
 ```
 
-`tools/dc.sh` is the central wrapper for all decomp operations; see [`docs/TOOLS.md`](docs/TOOLS.md) for the full subcommand list.
+The `engine/` CLI (invoked via `tools/wteng.ps1`) is the central wrapper for all decomp operations; see [`docs/TOOLS.md`](docs/TOOLS.md) for the full subcommand list. Under WSL directly you can invoke `python3 -m engine.cli <subcommand>` after activating `.venv`.
 
 ## Common errors
 
@@ -184,18 +185,18 @@ Non-build files (`README.md`, `docs/*.md`, `tools/*.py`, `tools/*.sh`) tolerate 
 
 This is the build-cache regression trap: an edit to one `.c` file recompiles only that one object, and the linked result happens to match by coincidence because other cached `.o` files contain stale code. To force a clean rebuild and re-verify:
 
-```bash
-bash tools/dc.sh verify --clean
+```powershell
+& tools/wteng.ps1 main verify-oracle --rebuild
 ```
 
-This wipes `build/`, rebuilds from source, and runs a per-function verification pass.
+This wipes `build/`, rebuilds from source, and gates on SHA1 equality against the oracle.
 
-### `bash: tools/dc.sh: cannot execute: required file not found`
+### Shell scripts fail with "cannot execute: required file not found"
 
-The script's shebang is `#!/bin/bash`; the file is line-ending sensitive. If you've cloned via Git for Windows or extracted from a zip, run:
+Script shebangs are `#!/bin/bash`; the files are line-ending sensitive. If you've cloned via Git for Windows or extracted from a zip, run:
 
 ```bash
-dos2unix tools/dc.sh tools/*.sh tools/hooks/*.sh
+dos2unix tools/*.sh tools/hooks/*.sh
 ```
 
 ### Splat (`make setup`) complains about missing symbols
