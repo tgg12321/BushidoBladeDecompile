@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8001B138",
-      "file": "code6cac",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: Two codegen-control constructs fail the human-programmer test (test #2) and the semantic-purpose test (test #1): (1) a typed s16 intermediate used to clamp a u16 global \u2014 `{ s16 tmp = -0x1C00; g_file_"
-    },
-    {
       "func": "func_8001C624",
       "file": "code6cac",
       "distance": 0,
@@ -3742,14 +3732,14 @@
     }
   ],
   "counts": {
-    "total": 438,
-    "active": 369,
+    "total": 437,
+    "active": 368,
     "by_status": {
-      "active": 369,
+      "active": 368,
       "parked": 69
     },
     "by_verdict": {
-      "C": 215,
+      "C": 214,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
