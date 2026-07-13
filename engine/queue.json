@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8003047C",
-      "file": "code6cac_b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: Dead-goto label-pad confirmed: `goto loop_start;` immediately before `loop_start:` has no semantic effect (execution falls through anyway) and exists solely to coerce GCC's CFG/loop-analysis. Forbidde"
-    },
-    {
       "func": "func_80030BA8",
       "file": "code6cac_b",
       "distance": 0,
@@ -3652,14 +3642,14 @@
     }
   ],
   "counts": {
-    "total": 429,
-    "active": 360,
+    "total": 428,
+    "active": 359,
     "by_status": {
-      "active": 360,
+      "active": 359,
       "parked": 69
     },
     "by_verdict": {
-      "C": 206,
+      "C": 205,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
