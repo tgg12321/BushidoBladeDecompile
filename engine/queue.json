@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_800343F0",
-      "file": "code6cac_b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: Cheat: `*(s8 *)&D_80102787` where D_80102787 is `extern u8`. This pointer-type-cast is used to force a `lb` (signed byte load) instruction instead of `lbu + sll 24 + sra 24`, compensating for an incor"
-    },
-    {
       "func": "mottest_disp",
       "file": "code6cac_b",
       "distance": 0,
@@ -3602,14 +3592,14 @@
     }
   ],
   "counts": {
-    "total": 424,
-    "active": 355,
+    "total": 423,
+    "active": 354,
     "by_status": {
-      "active": 355,
+      "active": 354,
       "parked": 69
     },
     "by_verdict": {
-      "C": 201,
+      "C": 200,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
