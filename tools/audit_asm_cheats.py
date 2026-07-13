@@ -27,7 +27,7 @@ Anything not on that list is an UNAUTHORIZED cheat.
 Modes:
   --all          : full report, exit 0
   --summary      : one-line counts ("S splices, I inline-asm, B BIOS trampolines"),
-                   exit 0. Used by `dc.sh start` for session briefing.
+                   exit 0.
   --func NAME    : check one function; exit 1 if unauthorized cheat found
   --check-new    : compare current state vs HEAD; exit 1 if new cheats added.
                    (Used by the commit_audit_guard hook before commit — Rule 1a.)
@@ -1672,7 +1672,7 @@ def cmd_summary():
         msg = ", ".join(parts)
         print(f"Cheats:   {total} unauthorized ({msg})")
         print(f"          run 'python3 tools/audit_asm_cheats.py --all' to list, or")
-        print(f"          'dc.sh next-cheat' to pull a cheat-fix work item")
+        print(f"          '& tools/wteng.ps1 main queue next' to pull the top item")
     return 0
 
 

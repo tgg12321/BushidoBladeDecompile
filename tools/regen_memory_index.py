@@ -10,7 +10,7 @@ Fails (non-zero exit) if:
 - Any [[link]] reference doesn't resolve to a file stem
 - The generated MEMORY.md exceeds 200 lines or 24KB
 
-Intended to be run via pre-commit hook or `dc.sh start` so MEMORY.md is
+Intended to be run via pre-commit hook so MEMORY.md is
 never hand-edited and always reflects current memory/ state.
 """
 from __future__ import annotations

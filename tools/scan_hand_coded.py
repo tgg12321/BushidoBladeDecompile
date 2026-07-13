@@ -71,7 +71,8 @@ Output modes:
   --all            : human-readable sorted list of candidates
   --json           : with --all, machine-readable
 
-Run via `dc.sh scan-hand-coded`.
+Run directly: `python3 tools/scan_hand_coded.py --single <func>` (the retired
+`dc.sh scan-hand-coded` wrapper just forwarded here).
 """
 
 from __future__ import annotations

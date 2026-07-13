@@ -5,7 +5,7 @@ name based on `asm/funcs/`.
 The work queue, classifier CSV, and active-marker file may carry stale
 raw `func_<addr>` names from before a function was renamed-in-asm (e.g.
 to `motion_SavePreCalcData_80080014`). When the hook then runs
-`dc.sh verify <raw>` on that stale name it can't find the symbol, and
+`sandbox <raw>` on that stale name it can't find the symbol, and
 the commit gate refuses to clear even though the build matches.
 
 The address suffix is the durable identity: every BB2 function name

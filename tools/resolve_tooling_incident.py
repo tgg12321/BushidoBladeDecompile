@@ -22,7 +22,7 @@ Three resolution modes (exactly one required):
 
 Every resolution is appended to docs/tooling_incidents.md (the running ledger),
 then the marker is cleared. Usually invoked as:
-    bash tools/dc.sh fix-tooling-incident <args>
+    python3 tools/resolve_tooling_incident.py <args>   # (formerly: bash tools/dc.sh fix-tooling-incident)
 """
 from __future__ import annotations
 

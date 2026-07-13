@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""dc.sh memory-check — surface project memory + prior-work context for one
+"""memory-check — surface project memory + prior-work context for one
 function, before any decomp work starts.
 
 The decomp-next skill's §2.5 calls this BEFORE launching the §3 pipeline.
