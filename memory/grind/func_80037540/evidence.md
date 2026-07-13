@@ -149,3 +149,86 @@
   precondition the 2026-07-01 dead-vars-local-array carve-out was written around
   (it requires dead STORES in target bytes). Unwritten-tail is currently still
   forbidden. This is a genuine policy gap; s2 does NOT self-approve it.
+
+## s4 (structural, 2026-07-13) — the trichotomy's minimum is PROVEN, and the Judge's census is RUN
+
+- [s4] **THE "+1 EXTRA STORE" FORM DOES NOT EXIST — s3's +2 is the PROVEN MINIMUM.**
+  s3 measured ONE member of the fully-written branch (`s32 argv[6]; s32 idx[2];`,
+  32B, score 2) and inferred the branch was lossy. The cheaper member it never
+  probed is `s32 argv[6]; s32 idx[1];` (28B, one extra `sw`) — which SHOULD give
+  score 1. MEASURED: **score 15, frame -0x40**, and objdump shows **NO STORE INTO
+  idx[0] AT ALL**. GCC 2.7.2 **scalar-promotes a single-element local array**
+  (constant index, address never taken) into a register — it survives in $v0/$s0
+  across both `jal`s. get_frame_size = 24, NOT 28. The form degenerates exactly to
+  `s32 sp[6]`. Artifact: tmp/grind/func_80037540/s2/idx1_promoted.objdump
+  => To occupy frame bytes at all, the extra object must DEFEAT promotion: it needs
+  >=2 elements (or an address escape — and this function has no callee that takes a
+  pointer: func_80036EA8(int,int), func_800392B8(void), and argv is already the
+  pointer arg). >=2 elements written => >=2 extra stores. o32 MIPS-I has no 8-byte
+  store, so an 8-byte object cannot be fully written in one instruction either.
+  **The fully-written branch's floor is exactly +2, and it is now a proof, not a
+  sample.** The trichotomy (H7) is closed at both ends by measurement.
+      s32 sp[6]                 (24B, tail-free)               -> 15
+      s32 argv[6]; s32 idx[1]   (PROMOTED; degenerates to 24B) -> 15   [s4, new]
+      s32 argv[6]; s32 idx[2]   (32B, every byte written)      ->  2   [PROVEN MIN]
+      s32 sp[7] / s32 sp[8]     (28B/32B, unwritten tail)      ->  0
+  rejected/idx1-scalar-promoted-zero-frame-bytes.c
+
+- [s4] **THE JUDGE'S MANDATED CENSUS IS RUN — and it INVERTS the premise.**
+  The Judge's binding constraint: "the ONLY sanctioned next step is to assemble a
+  SOTN-master-branch (+oot/papermario/MGS/VS/ESA) evidence census on the
+  capacity-declared-partially-filled-buffer family and put it to the owner for a
+  carve-out ruling." Done, mechanically, over fresh clones of each tree.
+  Scripts: tmp/grind/func_80037540/s2/census_unwritten_tail.py (family A),
+           tmp/grind/func_80037540/s2/census_untouched_pad.py  (family B)
+
+  **Family A — the EXACT shape (capacity buffer, constant-index, unwritten tail,
+  base escapes to a callee): ZERO instances in SOTN master.** Detector calibrated
+  against the known `u8 sp70[4]` case (dra/62DEC.c) and against a raw grep (it sees
+  124 of ~151 local fixed-size arrays). Across the entire population, NOT ONE array
+  has its top constant index below N-1. So there is **no direct precedent** for our
+  literal shape. Reported honestly; it is not the end of the story.
+
+  **Family B — the STRICTLY STRONGER shape (local array declared and NEVER TOUCHED
+  AT ALL; its only possible effect is get_frame_size): 356 instances.**
+      SOTN master        40   (dra/, ric/, maria/, boss/, st/, weapon/, psxsdk)
+      oot                38
+      papermario          3
+      Vagrant Story      30   (ser-pounce/rood-reverse — PS1, Square, PsyQ-era)
+      MGS (mgs_reversing) 245
+      ESA                 --  (repo not identified; NOT censused — disclosed, not silently dropped)
+  Representative, all in ordinary matched gameplay functions:
+      SOTN  dra/6BF64.c:156          `byte stackpad[40];`      (in CheckFloor, core DRA)
+      SOTN  boss/bo4/unk_45354.c:115 `s32 unused_stack[2];`    (5-statement function; 8 bytes)
+      SOTN  st/sel/stream.c:80       `volatile u32 pad[4]; // FAKE`
+      VS    BATTLE.PRG/3A1A0.c:7     `int pad04[5];`
+      MGS   chara/torture/johnny.c:38 `char pad1[0x48];`
+  **This is verbatim the construct BB2's inline-asm-policy expanded catalog forbids**
+  ("Unused fixed-size local arrays — `s32 buf[N];` declared with no use, to force GCC
+  to reserve frame bytes") and that the 2026-07-01 dead-vars-local-array ruling
+  explicitly kept forbidden ("The unwritten-array and `(void)&local` forms remain
+  forbidden") while sanctioning only the weaker WRITTEN-never-read form. That ruling's
+  census evidently did not surface these 356 instances.
+
+- [s4] **SOTN ANSWERS THE JUDGE'S CENTRAL OBJECTION VERBATIM.** The Judge's binding
+  reason for refusing every 0x48 form was: *"the oracle attests no bound (sp[7] and
+  sp[8] are byte-indistinguishable), so any such number is a guess."* SOTN ships
+  exactly that situation and documents it as a RANGE:
+      src/boss/bo4/unk_45354.c:463  `u8 _pad[40]; // n.b.! needs to be 33-40 bytes (inclusive)`
+      src/boss/bo4/unk_45354.c:794  `u8 _pad[40]; // any size between 33-40 (inclusive);`
+      src/boss/bo4/unk_46E7C.c:859  `u8 _pad[40]; // must be between 33 & 40`
+  An unrecoverable bound inside a frame-determined range is NORMAL in the community
+  bar BB2 holds itself to; the convention is to pick a value in the range and write
+  the range in a comment. **BB2's range here is get_frame_size in [25,32]** (H7),
+  i.e. `s32 sp[7]` or `s32 sp[8]` — the identical situation, arrived at by the
+  identical reasoning.
+
+- [s4] **BB2's CONSTRUCT IS STRICTLY MILDER THAN THE 356 PRECEDENTS.** func_80037540's
+  array is NOT dead: 6 of its 8 words are written and its base is passed to a callee
+  as the argv of `bios_Exec(hdr, argc=6, argv)` (s3: the consumer, MOVOVL.EXE's main,
+  reads argv[0..5]). It is a capacity-declared, partially-filled parameter buffer —
+  a shape a human writes. The 356 precedents are 100%-dead pads with names that
+  announce the intent (`pad`, `stackpad`, `unused_stack`, `padding`, `dummy`). If a
+  wholly-dead `byte stackpad[40]` clears the SOTN bar inside CheckFloor, a 75%-written
+  argv buffer clears it a fortiori. => a-fortiori argument, NOT a direct-precedent one;
+  s4 does NOT self-approve. -> ruling-request.

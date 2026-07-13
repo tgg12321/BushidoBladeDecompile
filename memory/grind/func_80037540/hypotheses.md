@@ -1,5 +1,51 @@
 # Hypothesis ledger — func_80037540
 
+## s4 (structural, 2026-07-13) — the minimum is proven; the Judge's census is run
+
+### H9 — KILLED. The fully-written branch can cost only ONE extra store.
+"s3 measured `argv[6] + idx[2]` (32B, +2 stores). The cheaper unprobed member is
+`argv[6] + idx[1]` (28B): 25-32 bytes of locals, ONE extra `sw`. Expect score 1."
+- Probe: `s32 argv[6]; s32 idx[1];` with idx[0] written once and read once.
+  sandbox --disable all + objdump.
+- Result: **score 15, frame -0x40, and NO STORE INTO idx[0] EXISTS.** GCC 2.7.2
+  scalar-promotes a single-element local array (constant index, address never taken)
+  into a register — the value lives in $v0/$s0 across both jal's. get_frame_size = 24,
+  not 28. The form degenerates EXACTLY to `s32 sp[6]` (43 insns, score 15, all diffs
+  sp-relative offset shifts).
+- Verdict: **KILLED — and it upgrades s3's inference to a PROOF.** A "+1 extra store"
+  form is not merely worse, it is UNREACHABLE: any object small enough to be written
+  by a single `sw` gets promoted and contributes ZERO frame bytes. To hold frame bytes
+  an object must defeat promotion => >=2 elements => >=2 stores (o32 MIPS-I has no
+  8-byte store; and no callee here takes a pointer, so no address escape is available).
+  **The fully-written branch's floor is exactly +2 — proven, not sampled.**
+  rejected/idx1-scalar-promoted-zero-frame-bytes.c
+
+### H10 — the Judge's mandated census. RUN. Result INVERTS the premise.
+"Assemble a SOTN-master (+oot/papermario/MGS/VS/ESA) census on the
+capacity-declared-partially-filled-buffer family and put it to the owner." (BINDING)
+- Probe: fresh clones of each tree; two mechanical detectors (census_unwritten_tail.py,
+  census_untouched_pad.py), the first calibrated against SOTN's known `u8 sp70[4]`.
+- Result A — our EXACT shape (unwritten tail + escaping base): **0 in SOTN.** No direct
+  precedent. Reported honestly.
+- Result B — the STRICTLY STRONGER shape (local array declared and never touched at
+  all; only possible effect is get_frame_size): **356 instances** — SOTN 40, oot 38,
+  papermario 3, Vagrant Story 30, MGS 245. (ESA repo not identified; not censused.)
+  In ordinary matched gameplay functions: SOTN `byte stackpad[40]` inside CheckFloor
+  (dra/6BF64.c), `s32 unused_stack[2]`, `volatile u32 pad[4]; // FAKE`; VS `int pad04[5]`;
+  MGS `char pad1[0x48]`. **This is verbatim the family BB2's inline-asm-policy forbids**
+  and that the 2026-07-01 ruling explicitly kept forbidden — on a census that evidently
+  missed all 356.
+- Result C — the Judge's central objection ("the bound is attested by nothing, so any
+  number is a guess") is one SOTN **answers explicitly**:
+  `u8 _pad[40]; // n.b.! needs to be 33-40 bytes (inclusive)` (bo4/unk_45354.c:463, and
+  two siblings). The community convention for an unrecoverable bound inside a
+  frame-determined range is: pick a value in the range, document the range. BB2's
+  range is get_frame_size in [25,32] (H7) => `s32 sp[7]` or `s32 sp[8]`.
+- Verdict: **the premise that this family is universally forbidden at the SOTN bar is
+  FALSIFIED.** And BB2's construct is strictly MILDER than all 356 (ours is a live,
+  75%-written argv buffer passed to a callee, not a dead pad). The argument is
+  a fortiori, not direct-precedent — so s4 does **NOT** self-approve. -> ruling-request.
+
 ## s3 (structural, 2026-07-13) — the Judge's mandated probe, run to the end
 
 ### H6 — KILLED. The exec'd program reads argv[6]/argv[7], proving the 8 slots real.
