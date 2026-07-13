@@ -300,3 +300,146 @@ merely NAMED as a symbol.
 - probe: x2-x6: five statement orders over the aggregate form w1 (loads first, copies late, C+P1 hoisted, P2 last, grouped-local).
 - result: INERT — 73/73/73/74/73, all 125 insns. Once the shared base symbol creates the real dependences, the DAG is saturated and the LUID tie-break has nothing left to decide. This also independently confirms that the offset-0 at-form loss is an expand+CSE fact, not a scheduling one.
 - verdict: KILLED
+
+## s4 (permuter) — 2026-07-13
+
+Mandated modality: directed permuter. The campaign ran and was harvested+stopped
+in-session (27,651 iterations, 1,517 finds). It converged entirely on the BANNED
+construct — and that negative result, plus five isolated compiler probes, closes
+the honest search space. **s3's entire frontier (all three items) is FALSE.**
+
+| # | Hypothesis | Probe | Result | Verdict |
+|---|---|---|---|---|
+| H14 | (s3 frontier #1) An enclosing object puts the stores at non-zero offsets, so the offset-0 collision never arises and the 3 at-form `lui`s return | probe_offset0.c: `f_aggN`, copied region at BIG+184 | degrades IDENTICALLY to offset 0 | **KILLED** |
+| H15 | (s3 frontier #2) Some honest aggregate spelling keeps the offset-0 store's address single-use | probe_{array,ptrview,baseptr,arrcast}.c — 7 spellings | all 7 degrade identically | **KILLED** |
+| H16 | (s3 frontier #3) num_regs 3→2 is downstream RA fallout that falls out once #1 lands | same probes | it is the SAME shared base register | **KILLED** |
+| H17 | Our GCC 2.7.2 port diverges from PsyQ's cc1psx here (which would explain everything) | cc1psx_wrapper.sh on every probe | **byte-identical output** | **KILLED** |
+| H18 | `volatile` (true_dependence's other path) fences the copies | probe_volatile.c: `n_vol`, `n_vol_both` | half-volatile: no fence. both-volatile: `jal memcpy` | **KILLED** |
+| H19 | Directed permuter over the plain chassis finds an honest closer | 27,651 iters, 1,517 finds, triaged | every top find is a barrier; best honest 3035 vs 875 | **KILLED** |
+
+### H14–H16 — the aggregate family is structurally dead (the headline)
+
+The target simultaneously contains, for **each** of the three copied regions:
+
+```
+lui $at,%hi(SYM) ; sw $zero,%lo(SYM)($at)      (a) at-form offset-0 store
+lui $a1,%hi(SYM) ; addiu $a1,$a1,%lo(SYM)      (b) INDEPENDENT copy base register
+lw,lw,sw,sw / lw,nop,sw                        (c) block copy, num_regs=2
+```
+
+GCC did **not** common (a)'s address with (b)'s register. Every spelling that gives
+the copy a shared base **symbol** (the dependence that pins it) forces GCC to
+materialise that base in a **register** at the offset-0 access; CSE then commons it
+with the copy's base, so (a) degrades to `sw $0,0($3)` (−1 `lui` × 3 groups) **and**
+(c) degrades to num_regs=3 (3×lw + 3×sw). s3 recorded these as two independent
+deltas. **They are one phenomenon — the shared base register — and neither is
+fixable alone.**
+
+Seven spellings measured, one outcome (`la $3,BASE ; sw $0,0($3)` + num_regs=3):
+struct VAR_DECL at offset 0; struct at a **non-zero** offset in a wider enclosing
+object (BIG+184); array VAR_DECL `ARR[k]`; array via cast `((int*)ARR)[k]`; typed
+struct view through a constant pointer `((Work*)&SYM)->a`; const local pointer;
+base pointer into a real array `int *p = ARR; p[k] = …`.
+
+**Why frontier #1 was wrong.** The collision is between the copy's base address and
+the address of the store to the **first copied word** — and those are the same rtx at
+*any* enclosing offset, because the copy's base **is** the address of the first
+copied word. All three copied regions have their first word stored in this function
+(D_80101F80, D_80101FB0, D_80101FCC — visible in the target asm). No enclosing object
+can remove it.
+
+### H17 — the compiler is not the escape hatch
+The original PsyQ `cc1psx` (GCC 2.7.2.SN.1 — the compiler that actually built the
+game) produces **byte-identical** output to our decompals port on every probe. Zero
+divergence. So the aggregate degradation is real in the original compiler too, and
+the target's at-form offset-0 stores prove the original BB2 source did **not** declare
+this region as an aggregate.
+
+### H19 — permuter converges on the banned construct, and that is the finding
+Base 5615 → best 875, but **every one of the top ~14 finds is a `do{}while(0)`
+barrier**; the best CLEAN find (wrapper-free, no volatile/asm/pin, both calls left in
+their program-mandated positions) is **3035** — a 3.5× gap. Permuter's improvements
+come from exactly two moves, and they are the same move:
+
+1. `do{…}while(0)` — in this straight-line function, purely a `sched.c:2066` total
+   barrier (`flush_pending_lists`). s2 killed it for sanction: the
+   `do-while-zero-exception` rule's mechanism is reorg.c/`LABEL_OUTSIDE_LOOP_P`,
+   which is **absent** here.
+2. **Relocating a call** — a call is also a `flush_pending_lists` barrier, and moving
+   it is a *spec* change, not a respelling. A naive "wrapper-free" filter misses this;
+   `triage.py`'s semantic call-position filter catches it.
+
+**This is how the committed regression was made:** s1's permuter took the top find,
+and on this function the top find is always a barrier. The search space contains
+nothing else — which is itself evidence that no pure-C *statement-level*
+rearrangement fixes the schedule, and that the problem lives in the **declarations**.
+
+### The reframe s2/s3 got backwards
+s2/s3 recorded "the wrapper-free plain form is SEMANTICALLY WRONG, our C's meaning
+depends on the barrier." **It is not.** The C says: store FB0/FB4/FB8, then copy.
+GCC 2.7.2's alias analysis (BLKmode ⇒ `SIZE_FOR_MODE` 0 ⇒ conflicts only with the
+same base symbol) cannot see the +4/+8 dependence and reorders across it. That is a
+GCC **alias deficiency miscompiling legal C** — the source's meaning is correct and
+GCC breaks it. Whatever the original wrote, it did not trigger the miscompile, which
+is further evidence its region-word accesses shared a base symbol.
+
+### Where that leaves the function (the s4 ruling question)
+Both of `true_dependence`'s paths are now exhausted (shared base symbol → H14–H16;
+both-volatile → H18), and the statement-level space is exhausted (H19). The **unique**
+C form with both required properties — constant-address MEMs (so the stores keep
+at-form and the copy keeps num_regs=2) *and* a shared base symbol (so the copies are
+pinned) — is the base+offset re-view over a **scalar** symbol, `((s32 *)&D_80101F80)[k]`,
+because a scalar VAR_DECL never engages GCC's aggregate machinery. That is s2's v13:
+**byte-exact, link-identical, and self-rejected as a cheat.** Note `((int*)ARR)[k]` on
+a *real array* folds back to `ARR[k]` and degrades — so the property comes specifically
+from declaring the base a **scalar and indexing past it**, i.e. from a declaration that
+is *false about the object*.
+
+## Frontier (s5) — there is no search frontier left; there is a ruling question
+1. **RULING (emitted this session).** Given a compiler-confirmed exhaustion proof,
+   how is this function to be closed? The honest declaration space is empty; the one
+   reproducing form requires a declaration that lies about the object.
+2. **The one premise still unexamined: that the three copies are C struct assignments
+   at all.** Everything above assumes `movstrsi` from a `*(Blk*)a = *(Blk*)b`. If the
+   original produced these lw/sw pairs by some other construct, the whole alias
+   analysis is moot. Worth one session of `output_block_move` archaeology before
+   accepting the ruling's answer.
+3. **Do NOT** re-run a naive permuter campaign on the plain chassis (H19), re-try any
+   aggregate spelling (H14–H16), re-try volatile (H18), or re-sweep statement order
+   (s3 H9, independently re-derived from `rank_for_schedule` this session).
+
+## [s4] s3's frontier #1 — an enclosing object puts every store at a non-zero offset, so the offset-0 collision never arises and delta (1) evaporates.
+- mechanism: The collision was believed to need the stored word at offset 0 OF THE COPIED OBJECT's own symbol; at bigobj+0x30 the store's address would be a different rtx from the copy's base.
+- probe: tmp/grind/func_8001C624/s4/probe_offset0.c — f_agg0 (copied struct at offset 0 of its symbol) vs f_aggN (copied struct at BIG+184, inside a wider enclosing object). Isolated TUs, no src/ involvement.
+- result: FALSE. f_aggN degrades IDENTICALLY to f_agg0: `la $3,BIG+184 ; sw $0,0($3)` — the offset-0 store still loses its at-form lui, and the block copy still comes out num_regs=3. The collision is between the COPY'S BASE ADDRESS and the address of the store to the FIRST COPIED WORD, and those are the same rtx at ANY enclosing offset, because the copy's base IS the address of the first copied word. All three copied regions have their first word stored in this function (D_80101F80, D_80101FB0, D_80101FCC).
+- verdict: KILLED
+
+## [s4] s3's frontier #2 — there is an honest aggregate spelling in which the offset-0 store's address pseudo stays SINGLE-USE, so combine folds it back to at-form and the three luis return.
+- mechanism: Believed to be a use-count problem: the pseudo is multi-use only because the block copy needs the same bare symbol in a register.
+- probe: Seven spellings measured in isolated TUs: struct VAR_DECL at offset 0; struct at BIG+184; array VAR_DECL ARR[k]; array via cast ((int*)ARR)[k]; typed struct view through a constant pointer ((Work*)&SYM)->a; const local pointer Work *w = (Work*)&SYM; base pointer into a real array int *p = ARR; p[k] = ...
+- result: FALSE, and it is not a use-count problem. All seven degrade identically (`la $3,BASE ; sw $0,0($3)` + num_regs=3). k_baseptr degrades with only ONE other use of the base. `((int*)ARR)[k]` folds back to `ARR[k]` and degrades — so the at-form-preserving property belongs specifically to `((s32*)&SCALAR_SYM)[k]`, i.e. to declaring the base a SCALAR and indexing past it: a declaration that is FALSE about the object. Any real aggregate engages GCC's aggregate machinery and forces the shared base register.
+- verdict: KILLED
+
+## [s4] s3's frontier #3 — block-copy chunking (num_regs 3 vs the target's 2) is downstream of live-range pressure and will resolve itself once the addressing deltas are fixed.
+- mechanism: Believed to be independent register-allocation fallout, not spellable in C, that would fall out once delta (1) landed.
+- probe: The same seven probes — every form that loses the offset-0 at-form store ALSO comes out num_regs=3; every form that keeps it (f_scalar, g_cast_copy) comes out num_regs=2.
+- result: FALSE as an independent delta. It is the SAME phenomenon: the shared base register held live across the copy is one of the copy's address registers, so mips.c's output_block_move (line 2445) counts fewer safe_regs. It reaches 2 only when the addresses are compile-time constants. s3's "do not attack it in isolation; it will fall out" was right that it is not separately spellable and wrong that it is separately caused.
+- verdict: KILLED
+
+## [s4] Our decompals GCC 2.7.2 port diverges from PsyQ's original cc1psx on aggregate member stores, which would explain the target's at-form offset-0 stores and rescue the aggregate family.
+- mechanism: If the original compiler expanded a COMPONENT_REF store without forcing the base into a register, the original source COULD have been an aggregate and our port simply cannot reproduce it.
+- probe: Ran every probe through tools/cc1psx_wrapper.sh (the original PsyQ cc1psx.exe, GCC 2.7.2.SN.1, via dosemu2) — the sanctioned self-disproof use per the cc1psx-calibration-only rule.
+- result: ZERO DIVERGENCE. cc1psx produces byte-identical output to our port on g_arr_nocopy, g_arr_copy and g_cast_copy — same `la $3,ARR ; sw $0,0($3)` degradation, same at-form preservation on the cast form. The aggregate degradation is real in the compiler that actually built the game. This closes the toolchain escape hatch and turns "the original did not declare this region as an aggregate" from an inference into a compiler-confirmed fact.
+- verdict: KILLED
+
+## [s4] `volatile` — true_dependence's other path to a conflict — fences the copies below the stores that feed them.
+- mechanism: true_dependence returns 1 on `(MEM_VOLATILE_P (x) && MEM_VOLATILE_P (mem))` without consulting memrefs_conflict_p, so volatile could create the dependence WITHOUT a shared base symbol — i.e. keeping at-form stores and num_regs=2. (Measured to close the space, not proposed: volatile coercion is a catalogued cheat absent genuine MMIO/interrupt justification.)
+- probe: tmp/grind/func_8001C624/s4/probe_volatile.c — n_vol (volatile region scalars, ordinary block copy) and n_vol_both (both sides volatile).
+- result: DEAD both ways. n_vol: the copy STILL floats above the +4/+8 stores, byte-identical to the non-volatile form — true_dependence needs BOTH mems volatile and the copy's mem is not. n_vol_both: GCC 2.7.2 REFUSES to inline a volatile block move and emits `jal memcpy` — the target has an inline lw/lw/sw/sw move and no call, so the shape is structurally wrong at any score. Both of true_dependence's paths are therefore exhausted (the two MEM_IN_STRUCT_P clauses are inert: both require rtx_addr_varies_p, false for symbol addresses).
+- verdict: KILLED
+
+## [s4] Directed permuter over the plain-scalar chassis (the mandated modality) finds an honest closing form.
+- mechanism: sched1's placement of the copies is a priority/tie-break outcome that is hard to reason about analytically; permuter searches the C space directly.
+- probe: tools/permuter_campaign.py, workspace tmp/grind/func_8001C624/s4/perm_a (label "plain-scalars"), minimal TU gated byte-identical to the full TU, target.o assembled from asm/6CAC.s so the relocs match and the score is honest. 27,651 iterations, 1,517 finds, harvested + STOPPED in-session. All finds triaged by construct with a semantic call-position filter (s4/triage.py).
+- result: THE BASIN IS A SCHEDULING-BARRIER BASIN. Base 5615 -> best 875, but EVERY ONE of the top ~14 finds is a do-while(0) barrier; the best CLEAN find (wrapper-free, no volatile/asm/pin, both calls in their program-mandated positions) is 3035 — a 3.5x gap. Permuter's improvements come from exactly two moves and they are the same move: (1) do{...}while(0) = a sched.c:2066 total barrier, and (2) RELOCATING A CALL (also a flush_pending_lists barrier — and a SPEC change, not a respelling; the naive wrapper-free filter misses this). This is exactly how the committed regression was made: s1 took the top find, and on this function the top find is always a barrier. The negative result IS the finding: no pure-C statement-level rearrangement fixes the schedule, so the problem lives in the declarations — where s4 proved the honest space is empty.
+- verdict: KILLED
