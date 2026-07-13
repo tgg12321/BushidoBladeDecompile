@@ -1,8 +1,8 @@
 {
  "func": "func_80037540",
  "file": "code6cac_b2_post",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -21,23 +21,29 @@
    "floor": 0,
    "modality": "structural",
    "headline": "Phantom-slot escape route KILLED by ~80 measurements: the mechanism is a GCC stale-ref bug that fires ONLY on a redundant HImode sign-extension, which requires an lh/lb load \u2014 func_80037540's target h"
+  },
+  {
+   "session": 4,
+   "floor": 0,
+   "modality": "permuter",
+   "headline": "Permuter REFUTED s3's closure proof (narrow-load necessity is false: 7,798/18,769 forms reached the frame band with zero narrow loads, and one BYTE-MATCHES from a tail-free sp[6] via `volatile char` d"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The item's disposition is unchanged and correct: HELD, INCOMPLETE, blocked on the single owner yes/no on the unwritten-tail / capacity-declared-partially-filled-buffer family. s5 re-opened it on the phantom-slot branch; that branch is now measured shut, so the Judge's standing constraint stands as written. There is no remaining search.",
-   "mechanism": "The frame equation pins get_frame_size to [25,32]; the target writes 24 bytes; branch (a) costs +2 stores (proven), branch (b) is the forbidden unwritten tail, branch (c) the phantom is unreachable without a narrow load the target does not contain. No fourth branch remains \u2014 this time with all three measured, not inferred.",
-   "next_probe": "NOT a grind probe. Do not re-open the phantom hunt and do not re-litigate the ruling. The evidence packet the owner needs is now strictly stronger than s4's: add (i) the mechanism (a GCC stale-ref bug, so the original authors could not have 'meant' it either) and (ii) the third in-tree instance, file_LoadSectors' `s32 _pad[2]` \u2014 the family is systemic, not a one-off."
+   "hypothesis": "The ruling question is UNCHANGED and the item stays HELD \u2014 but the evidence packet is now materially stronger and partly CORRECTED, and the owner should see the correction before ruling.",
+   "mechanism": "Three things changed under the owner's feet: (1) s3's proof of closure was WRONG (narrow-load necessity is false) \u2014 the disposition was resting on a bad argument even though the disposition itself was right; (2) the correct condition (register-ineligibility) shows the frame is reachable ONLY via a forbidden construct, established over 18,769 samples by an independent instrument; (3) the volatile dead-pad byte-match means the choice is not 'sp[8] vs nothing' but 'WHICH forbidden construct' \u2014 and the held sp[8] (a live, 75%-written argv buffer passed to bios_Exec) is the MILDEST member of the family, strictly milder than SOTN's own shipped `volatile u32 pad[4]; // FAKE` and the 356 dead-pad precedents s4 censused.",
+   "next_probe": "NOT a grind probe. Do not re-open the search and do not re-litigate. Fold the s4 correction into the pending owner packet: the family is unavoidable (0/800 clean), the engine already prices every member at zero (score-inert), and BB2's held construct is the mildest available spelling."
   },
   {
-   "hypothesis": "func_8003DBE4's committed `s32 buf[2]` dead array (ACTIVE in the queue at distance 21) may be dissolvable by the phantom-slot mechanism \u2014 unlike func_80037540, it is NOT excluded by the narrow-load necessity condition.",
-   "mechanism": "Its target asm contains a narrow load (1 `lhu` among 21 loads), so cc1 may already be creating a combine-deletable extension pseudo there; if so, the 8 extra frame bytes arise from its own live locals and the dead array is unnecessary. Caveat measured this session: `lhu`/`lbu` zero-extending loads did NOT induce a phantom in func_80037540's shape \u2014 only sign-extending `lh` did \u2014 so this is a genuine open question, not a safe bet.",
-   "next_probe": "Not this function \u2014 hand to the driver. Delete the dead array from src/code6cac_c2.c:1320, compile, and read cc1's `vars=` (bash tmp/grind/func_80037540/s2/build.sh, or just grep the .frame comment). If it still reaches the target frame, an open cheat retires for free."
+   "hypothesis": "PROJECT-WIDE TOOLING GAP: tools/permuter_campaign.py never passes --stack-diffs, so decomp-permuter is blind to the gap on EVERY frame-shortfall function in the queue \u2014 and will report false matches on them.",
+   "mechanism": "The default Scorer normalizes sp-relative offsets away. Any function whose remaining gap is a frame-size/stack-offset shift scores 0 while still being wrong (proven here: the 15-off sp[6] form scores a perfect 0). With --stop-on-zero the campaign then exits announcing a match. This silently poisons the permuter modality for exactly the class of function the ledger's own frontier flags (func_8003DBE4, file_LoadSectors/func_800165F8, func_800644FC).",
+   "next_probe": "Owner/driver call \u2014 I am contractually barred from editing tools/. Add a --stack-diffs pass-through (or default it on) in tools/permuter_campaign.py launch, and re-score any historical permuter 'find' on a frame-shortfall function. Until then, honest-score every permuter candidate out-of-band (engine sandbox, or Scorer with stack_differences=True)."
   },
   {
-   "hypothesis": "The phantom-slot mechanism is a reusable, project-wide asset that no other BB2 function has been able to name until now, and the 24 narrow-load census functions are a training set for it.",
-   "mechanism": "Any function whose honest pure-C floor is blocked ONLY by a frame-size shortfall of 1-8 bytes, and whose target contains a sign-extending `lh`/`lb`, is a candidate for the phantom rather than for a pad/dead-array cheat. The instrument is cc1's own `vars=` readout (get_frame_size), which is a far better gradient than the sandbox score for frame-shortfall functions since the score cannot separate 'wrong frame' from 'wrong codegen'.",
-   "next_probe": "Cross-check the queue for other items whose only gap is a frame-size shortfall, and route them through the vars= instrument + the narrow-load necessity test before ever reaching for a pad. Candidates to start with: the INCOMPLETE census entries func_800644FC (13 regfix rules + a `\"=m\"` dummy_pad cheat) and file_LoadSectors (`s32 _pad[2]`) \u2014 both currently carry manufactured phantoms where a real one may be available."
+   "hypothesis": "The sibling func_8003DBE4's committed `s32 buf[2]` dead array is STILL possibly dissolvable \u2014 but s3's stated reason for hoping so is now void, and the correct test is different.",
+   "mechanism": "s3 handed this off on the grounds that func_8003DBE4's target contains an `lhu`, so the stale-ref phantom might be reachable there. That rationale is now WORTHLESS: the narrow-load condition is not the frame-band condition (H20), and s3 itself measured that zero-extending lhu/lbu do NOT induce the phantom (only sign-extending lh did). The real question is whether func_8003DBE4's own live locals are register-ineligible for an honest reason \u2014 which is decided by cc1's `vars=` readout, not by a narrow-load census.",
+   "next_probe": "Hand to the driver (not this function). Delete the dead array from src/code6cac_c2.c:1320, compile, and read cc1's `vars=` (bash tmp/grind/func_80037540/s2/build.sh, or grep the .frame comment). If it still reaches the target frame, an open cheat retires for free. Apply the same vars= instrument + the CORRECTED register-ineligibility taxonomy \u2014 not the narrow-load test \u2014 to file_LoadSectors and func_800644FC."
   }
  ],
  "judge_constraints": [
