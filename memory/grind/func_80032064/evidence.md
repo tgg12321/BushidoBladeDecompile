@@ -26,4 +26,10 @@
 
 - [s2] [structural 2026-07-13] `-0xC8` / `0xFFFFFF38` appears NOWHERE ELSE in src/code6cac_b.c (grep). No second use exists, so no natural CSE hoist is reachable; the store is in straight-line code (not a loop), so loop.c LICM is inapplicable. Frontier item 3 from s1 is CONFIRMED and closed.
 
+- [s2] [structural 2026-07-13] **DECISIVE — POSITION, NOT EXISTENCE.** Keeping the holder variable but declaring+initializing it AT THE STORE SITE (`{ s32 vel_y = -0xC8; *(s32*)(s0+0x20) = vel_y; }`) scores **7** — byte-identical to the bare literal. The variable's EXISTENCE is not what materializes the constant in the entry BB; the SOURCE POSITION of its initializing statement is. `expand` emits each statement's RTL where the statement sits and sched.c cannot move it across a BB. This is ordinary C statement-order semantics — the identical mechanism for `speed`, `i`, and `ptr`. There is no coercion device in `vel_y` to remove. Artifact: rejected/blocklocal-holder-at-store-site-scores-7.c.
+
+- [s2] [structural 2026-07-13] Declaration ORDER is byte-load-bearing: swapping the first two decls (`vel_y` before `speed`) scores **2**. The C init-cluster order maps 1:1 onto the entry-BB materialization order (asm lines 5-9) — evidence the original source declared them in exactly this order.
+
+- [s2] [structural 2026-07-13] `vel_y` is FULLY LIVE, not dead: its value is stored to s0+0x20 (the spawned effect's y-velocity, -200) and appears in the emitted output. It therefore is NOT the [[named-local-fake-exception]] "constant-holder" shape (a local with no semantic purpose held across calls to dodge re-materialization) and needs no `/* FAKE */` annotation — it is an ordinary live local.
+
 - [s2] [structural 2026-07-13] CANDIDATE AT FLOOR 0: renamed `sw_val`->`vel_y`, `mul`->`speed`; initializers folded into the declarations; the redundant `i = 0;` statement (which duplicated the for-init) REMOVED — `i` is now initialized once, at its declaration, with an empty for-init clause. Zero dead code, zero redundancy in the final form. sandbox --disable all == 0.

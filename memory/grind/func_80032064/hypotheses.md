@@ -51,6 +51,29 @@ top of the function, semantically named — reaches the target.
 **Result:** score **0**. Zero dead code, zero redundancy.
 **Verdict: CONFIRMED.**
 
+### H6 — CONFIRMED (the decisive structural probe; settles the audit's charge)
+**Statement:** The holder variable's EXISTENCE is not the causal factor. The
+SOURCE POSITION of its initializing statement is.
+**Mechanism:** RTL `expand` emits each statement's set where the statement sits;
+`sched.c` list scheduling is basic-block-local, so nothing crosses a BB
+boundary afterwards. A local initialized at the top of the function expands into
+the entry BB; a local initialized next to its use expands into the use's BB.
+**Probe:** keep `s32 vel_y = -0xC8;` but declare+initialize it in a block at the
+store site instead of at the top of the function → sandbox.
+**Result:** score **7** — byte-identical to the bare literal (H1).
+**Verdict: CONFIRMED.** The audit's premise ("the variable forces GCC to emit the
+constant materialization early — a scheduling coercion") is FALSIFIED. The
+variable forces nothing. Writing an initialization at the top of a function puts
+its code at the top of the function; that is C, not coercion, and it is the same
+mechanism that governs `speed`, `i`, and `ptr`.
+
+### H7 — CONFIRMED (declaration order)
+**Statement:** The init cluster's source ORDER is byte-load-bearing.
+**Probe:** swap the first two declarations (`vel_y` before `speed`) → sandbox.
+**Result:** score **2**.
+**Verdict: CONFIRMED.** The C source order maps 1:1 onto asm lines 5-9 —
+independent evidence that the original source had this cluster, in this order.
+
 ## Open — the classification question (escalated as ruling-request)
 
 Is a mutable, single-use, constant-initialized local (`s32 vel_y = -0xC8;`) whose

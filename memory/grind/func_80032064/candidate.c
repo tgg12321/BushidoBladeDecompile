@@ -7,7 +7,17 @@
  *
  * The four-local init cluster (speed, vel_y, i, ptr) maps 1:1, in source
  * order, onto asm/funcs/func_80032064.s lines 5-9. Every member is
- * byte-load-bearing — see rejected/ for the measured negatives.
+ * byte-load-bearing, and so is their ORDER (swapping the first two scores 2)
+ * — see rejected/ for the measured negatives.
+ *
+ * s2 settled the audit's charge that `vel_y` is a scheduling coercion:
+ * declaring the SAME variable at the store site instead of at the top scores 7,
+ * exactly like the bare literal (rejected/blocklocal-holder-at-store-site-*).
+ * The variable's existence does nothing; the source position of its
+ * initialization is what places the addiu in the entry BB — ordinary C
+ * statement-order semantics, identical for speed/i/ptr. vel_y is fully live
+ * (its value is stored as the effect's y-velocity), so it is not a "fake"
+ * constant-holder and carries no FAKE annotation.
  */
 extern s32 func_80032854(s32, s32, u8 *, s16 *);
 u8 *func_80032064(u8 *src, s32 type) {
