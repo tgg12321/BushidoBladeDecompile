@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80030BA8",
-      "file": "code6cac_b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: Two codegen-coercion constructs identified in src/code6cac_b.c:2600. Primary: `s32 new_var;` at function scope assigned `new_var = 0xF423F` only inside one inner block \u2014 decompiler-artifact name, func"
-    },
-    {
       "func": "func_80032064",
       "file": "code6cac_b",
       "distance": 0,
@@ -3642,14 +3632,14 @@
     }
   ],
   "counts": {
-    "total": 428,
-    "active": 359,
+    "total": 427,
+    "active": 358,
     "by_status": {
-      "active": 359,
+      "active": 358,
       "parked": 69
     },
     "by_verdict": {
-      "C": 205,
+      "C": 204,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }

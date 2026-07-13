@@ -2591,8 +2591,7 @@ done:
 
 s32 func_80030BA8(u8 *arg0) {
     s32 i = 0;
-    s32 new_var;
-    s32 neg1 = -1;
+    s32 empty_slot = -1;
     u8 *p = (u8 *)&D_80106A7A;
     s32 old_val;
 
@@ -2604,7 +2603,7 @@ s32 func_80030BA8(u8 *arg0) {
             goto next;
         }
         sval = (s16)val;
-        if (sval == neg1) {
+        if (sval == empty_slot) {
             goto next;
         }
         if (*(s32 *)(p + 0x4E) != 0) {
@@ -2623,9 +2622,9 @@ s32 func_80030BA8(u8 *arg0) {
         {
             s32 dx = *(s32 *)(arg0 + 0xF4) - *(s32 *)(p + 0x2A);
             s32 dz = *(s32 *)(arg0 + 0xFC) - *(s32 *)(p + 0x32);
-            new_var = 0xF423F;
+            s32 range_sq = 0xF423F;
             i++;
-            if (dx * dx + dz * dz > new_var) {
+            if (dx * dx + dz * dz > range_sq) {
                 goto loop_test;
             }
         }
@@ -2633,7 +2632,7 @@ s32 func_80030BA8(u8 *arg0) {
             return -1;
         }
         old_val = (s32)(*(s16 *)p);
-        *(s16 *)p = (s16)neg1;
+        *(s16 *)p = (s16)empty_slot;
         if (old_val == 0xE) {
             s32 a0val = D_800A36F2 ^ 0xE;
             func_80032854(a0val != 0, 0x2F, arg0 + 0xF4, 0);
