@@ -170,3 +170,59 @@ Grinder was live on `func_8001C624` in the same `.c` file during this
 session, so the src edit was deferred to avoid the conflict. Owner
 decision needed: stop Grinder now to land the close, or defer to a
 later session when Grinder is naturally idle.
+
+---
+
+## Attempted close 2026-07-13 — asm island lands wait loop, outer scheduling residual defers close
+
+Attempted the Ruling-2 close in `src/main.c` (DispUpdateStatusMessage
+sits in main.c, not code6cac.c — Grinder had been stopped as a precaution
+but the file overlap was unnecessary). Wrote the candidate C body for
+all 3 splice functions, removed the asmfix bridge, iterated on the asm
+island form.
+
+### What worked
+
+The asm island for the wait loop closes byte-exact against target:
+- Pre-`if` volatile RMW (0x80088BC8..0x80088BD4): pure-C from candidate,
+  6 insns matching target
+- 2nd volatile read + andi + beqz (0x80088BD8..0x80088BE4): moved
+  INTO the asm block (fully-scoped island) to prevent GCC eliminating
+  the `if (t)` branch when `t` was register-asm-pinned
+- Wait loop proper (0x80088BE8..0x80088C10): 11 insns matching target
+  byte-for-byte — including the delay-slot `+1` fill and reorg
+  compensation `-1` that non-crashing pure-C forms provably cannot reach
+
+### What did not close
+
+Post-loop outer structure (0x80088C14..0x80088C5C) — 4 residual insns
+in the `if (D_800A2D14 != 0) ... else bios_DeliverEvent(...);` region.
+Target does two aggressive scheduler-level optimizations our fork
+declined to reproduce:
+1. Pre-loads `lui $a0, 0xF0000000` into the beqz's delay slot as a
+   speculative constant hoist for the else branch. Our fork emits nop.
+2. Fills `bios_DeliverEvent`'s jal delay slot with `addiu $a1, $zero, 0x20`.
+   Our fork emits nop and places the load AFTER the jal.
+
+Neither is a fork bug (cc1 compiles fine, just different scheduling).
+Both are ordinary register-allocation / scheduling differences — exactly
+the class Ruling-2 does NOT cover (per this rule's "does NOT sanction
+fork-divergences without a crash"). Tried: rewriting `if/else` as
+`if/return; fallthrough` shape (no change). Did not try the
+constant-holder form or wider probe grid — those are ordinary Grinder
+search work and belong there.
+
+### Disposition
+
+Reverted src/main.c and asmfix.txt to HEAD; oracle verified green
+(SHA1 == 62efab4f...). Paperwork commits (rule doc, escalation, evidence
+dir, index entry) remain landed and correct. The specific `_spu_FiDMA`
+close is deferred until either:
+- Owner widens Ruling-2 scope to include region-scoped inline asm for
+  scheduling-class divergences (would need a fresh evidence gate)
+- Or Grinder finds a C form for the outer scheduling residual
+  (ordinary search work, no policy change needed)
+
+DispUpdateStatusMessage remains `active` in the queue with the asmfix
+bridge; when the Grinder reaches it, the fork-divergence rule provides
+the wait-loop lever and the outer scheduling is what needs solving.
