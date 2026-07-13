@@ -151,11 +151,11 @@ Required local deps (gitignored):
 
 Tooling that enforces this:
 - **`tools/hooks/root_write_guard.py`** (Claude Code PreToolUse) — blocks `*.log`, `*.csv`, `gccdump.*`, `*.bak`, `*.orig`, `triage_*`, `_tmp_*`, etc. at root. Suggests `tmp/<name>` as the replacement.
-- **`tools/check_root_cleanliness.py`** — manual or briefing-time audit; reports unknown / suspicious root files. Integrated into `dc.sh start` (silent if clean, flags drift otherwise).
+- **`tools/check_root_cleanliness.py`** — manual or briefing-time audit; reports unknown / suspicious root files (silent if clean, flags drift otherwise).
 
 ## Commit conventions
 
-See [`docs/COMMIT_CONVENTIONS.md`](docs/COMMIT_CONVENTIONS.md) for the subject-prefix catalog and body structure used across this project. The tooling (`tools/dc.sh lessons`, `tools/hooks/llm_audit.sh`) parses commit subjects/bodies for structured information, so consistency improves searchability and audit reliability.
+See [`docs/COMMIT_CONVENTIONS.md`](docs/COMMIT_CONVENTIONS.md) for the subject-prefix catalog and body structure used across this project. The audit tooling (`tools/hooks/llm_audit.sh`) and `git log` searches parse commit subjects/bodies for structured information, so consistency improves searchability and audit reliability.
 
 ## Asset/format reverse engineering
 
@@ -180,4 +180,4 @@ See `docs/HISTORY.md` for the timeline of major milestones (zero-stub completion
 
 ## Getting help
 
-This is a single-person project (Trenton, `tgg12321@gmail.com`). Issues / context for understanding what's been done previously: `docs/HISTORY.md` + git log. The repo's been worked on extensively in Claude Code; references to "the agent" and tools like `dc.sh` are part of that workflow.
+This is a single-person project (Trenton, `tgg12321@gmail.com`). Issues / context for understanding what's been done previously: `docs/HISTORY.md` + git log. The repo's been worked on extensively in Claude Code; references to "the agent" and the engine workflow (`engine/` CLI, the Grinder) are part of that workflow. Older docs and commits mention a retired `dc.sh` driver — see `docs/HISTORY.md`.

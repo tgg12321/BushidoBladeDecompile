@@ -1,6 +1,6 @@
 # Commit conventions
 
-Subject-line prefixes and body structure used across this project. **These are conventions, not enforced rules** — but the project's tooling (especially `dc.sh lessons` / `tools/commit_lessons.py` and `tools/hooks/llm_audit.sh`) parses commit subjects and bodies for structured information, so consistency improves searchability and audit reliability.
+Subject-line prefixes and body structure used across this project. **These are conventions, not enforced rules** — but the project's audit tooling (`tools/hooks/llm_audit.sh`) and `git log` searches parse commit subjects and bodies for structured information, so consistency improves searchability and audit reliability. _(The former `dc.sh lessons` / `tools/commit_lessons.py` "CommitAtlas" query tool is retired — archived under `archive/dcsh_workflow_2026-05-26/`.)_
 
 For the enforcement layer, see `tools/hooks/commit_audit_guard.sh` (commit-time cheat audit: programmatic `audit_asm_cheats.py --check-new` + the adversarial LLM auditor `tools/hooks/llm_audit.sh`). _(The `active_func_guard.sh` active-function commit blocker was deprecated 2026-05-22.)_
 
@@ -23,12 +23,12 @@ docs: AGENTS.md cross-tool standard + slim CLAUDE.md (Claude-specific)
 Guidelines:
 - Target subject ≤ 72 chars where possible (git convention, but not enforced)
 - No trailing period
-- Function names use full `func_XXXXXXXX` form (not shortened) — enables exact match in `dc.sh lessons func_X`
+- Function names use full `func_XXXXXXXX` form (not shortened) — enables exact match in `git log --grep func_X`
 - Use `--` (double-hyphen) or `—` (em-dash) consistently as the prefix → summary separator. Both work; em-dash is preferred for readability.
 
 ## Prefix catalog (what each one means)
 
-These prefixes are the ones `dc.sh lessons --type <prefix>` matches on. Keep them recognizable:
+These prefixes are what `git log --grep '^<prefix>'` matches on. Keep them recognizable:
 
 ### Function-level decomp work
 
@@ -51,7 +51,7 @@ These prefixes are the ones `dc.sh lessons --type <prefix>` matches on. Keep the
 | `hooks: <description>` | Hook script additions or updates. |
 | `skills: <change>` | Changes to `.claude/skills/*/SKILL.md`. |
 | `docs: <change>` | Documentation changes (docs/, README, CLAUDE.md, AGENTS.md). |
-| `dc.sh: <subcommand>` | Changes to `tools/dc.sh` or a specific subcommand. |
+| `engine: <change>` | Changes to the decomp engine (`engine/`) or its CLI. |
 | `.claude/rules: <change>` | Path-scoped rule additions / migrations. |
 
 ### Lifecycle / coordination
@@ -60,7 +60,7 @@ These prefixes are the ones `dc.sh lessons --type <prefix>` matches on. Keep the
 |---|---|
 | `Merge <branch>: <summary>` | Merge commit from a worktree branch (e.g., naming-evidence). Body summarizes what was merged. |
 | `Revert "<original-subject>"` | Standard git revert. Body explains WHY (auditor REJECT, regression caught, etc.). |
-| `queue: <change>` / `refresh-queue: <change>` | `WORK_QUEUE.md` regeneration. |
+| `queue: <change>` | `engine/queue.json` regeneration (`queue regen`). |
 | `audit: <topic>` | Changes to `tools/audit_*.py` or audit policy. |
 | `trace: <topic>` | Investigation notes that don't change source — typically commits to `docs/naming/*` or a research file. |
 | `research: <topic>` | Exploratory work that did or didn't pan out. Document the outcome. |
@@ -103,7 +103,7 @@ Regfix changes:
   - Net delta vs HEAD
 
 Verification:
-  - dc.sh verify --all --force result
+  - verify-oracle --rebuild result (full-build SHA1 == oracle)
   - cascade check on sibling functions
 
 Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
@@ -156,21 +156,15 @@ Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
 
 Add when an agent generated substantive content. Trivial mechanical commits (queue refreshes, file moves) don't need it.
 
-This trailer is **stripped by `tools/commit_lessons.py truncate_body()`** so it doesn't crowd the summary view — but git keeps it for attribution and PR review.
+Put the trailer last; git keeps it for attribution and PR review.
 
-## How CommitAtlas (`dc.sh lessons`) uses these conventions
+## Why the conventions still matter for `git log` search
 
-Direct dependencies:
+_(The `dc.sh lessons` / `tools/commit_lessons.py` "CommitAtlas" query tool that formerly parsed these is retired — archived under `archive/dcsh_workflow_2026-05-26/`. The conventions still pay off for ordinary `git log` search.)_
 
-- `--type <prefix>` does case-insensitive subject-prefix match. Stable prefixes → reliable filter.
-- Function-name auto-detect (regex `^func_[0-9A-F]{8}$`) auto-enables pickaxe search. Spell function names fully and use the canonical form.
-- `truncate_body()` cuts the Co-Authored-By trailer before display. Don't put body content after the trailer.
-- Subject + body text is the primary search corpus. Substantive bodies = better discoverability later.
-
-Loose dependencies (graceful degradation if violated):
-- Variance in prefix capitalization works (`cheat-cleanup` / `Cheat-Cleanup` / `CHEAT-CLEANUP` all match)
-- Function-name search via pickaxe works even if the message text is wrong
-- Free-text search hits any term anywhere in subject + body
+- Stable, recognizable subject prefixes → reliable `git log --grep '^<prefix>'` filtering.
+- Spell function names fully in the canonical `func_[0-9A-F]{8}` form → exact `git log --grep` / pickaxe (`git log -S`) hits.
+- Substantive bodies = better discoverability later; subject + body text is the search corpus.
 
 ## What the audit hook (`llm_audit.sh`) actually enforces
 

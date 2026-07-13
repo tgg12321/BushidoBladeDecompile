@@ -2,7 +2,7 @@
 
 This document describes the engineering structure of the BB2 matching decompilation: the target binary's memory map, the build pipeline that reproduces it, the role of each post-pass tool, and the conventions used to keep the build byte-identical to the 1998 release.
 
-If you want the matching techniques themselves (penalty profiles, C-side tricks, regfix recipes), read [`MATCHING.md`](MATCHING.md). If you want the catalog of every tool and `dc.sh` subcommand, read [`TOOLS.md`](TOOLS.md).
+If you want the matching techniques themselves (penalty profiles, C-side tricks, regfix recipes), read [`MATCHING.md`](MATCHING.md). If you want the catalog of standalone tools, read [`TOOLS.md`](TOOLS.md).
 
 ## Target binary
 
@@ -273,7 +273,7 @@ Authorized categories:
 - **Custom calling conventions** (`$s0` passed in without prologue save).
 - **GTE primitives** that don't have a `gte_*()` macro in PsyQ's `include/gte.h`.
 
-Tools that scan for `inline_asm_debt` skip names listed here. Adding to the list requires per-function evidence (the `dc.sh memory-check`, `dc.sh scan-hand-coded`, and `dc.sh classify` tools provide diagnostic signals).
+Tools that scan for `inline_asm_debt` skip names listed here. Adding to the list requires per-function evidence (the engine's `canonical` gate routes each function ASM-region / ASM-STRUCTURAL / C and provides the diagnostic signal).
 
 ### Other post-passes
 
@@ -327,7 +327,7 @@ The end state is: every function in `src/*.c` is real C, regfix.txt is mostly sm
 | Topic | File |
 |---|---|
 | The matching playbook (techniques, recipes, gotchas) | [`MATCHING.md`](MATCHING.md) |
-| Every `dc.sh` subcommand, every standalone tool | [`TOOLS.md`](TOOLS.md) |
+| Every standalone tool | [`TOOLS.md`](TOOLS.md) |
 | Terminology (PsyQ, MIPS, decomp, BB2-specific) | [`GLOSSARY.md`](GLOSSARY.md) |
 | Per-file source content map | [`handoffs/2026-05-12-subsystem-map.md`](handoffs/2026-05-12-subsystem-map.md) |
 | Build / setup walkthrough | [`../BUILD.md`](../BUILD.md) |

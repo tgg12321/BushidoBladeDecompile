@@ -23,7 +23,7 @@ This directory holds the contributor-facing documentation for the *Bushido Blade
 | File | When to read it |
 |---|---|
 | [`ARCHITECTURE.md`](ARCHITECTURE.md) | You want to understand the build pipeline, the PS1 memory map, the splat split, what regfix/asmfix actually do, or why the project has so many post-passes. |
-| [`TOOLS.md`](TOOLS.md) | You need to find the right `dc.sh` subcommand or a standalone Python tool for a specific task. Catalog of ~60 dc.sh subcommands and ~100 Python tools, grouped by workflow phase. |
+| [`TOOLS.md`](TOOLS.md) | You need to find a standalone Python tool for a specific task. Catalog of ~100 Python tools grouped by workflow phase (plus the retired `dc.sh` subcommand catalog, kept for archaeology). |
 | [`MATCHING.md`](MATCHING.md) | You're stuck on matching a function. Symptom-indexed playbook: penalty-profile routing, C-side techniques, regfix syntax and recipes, named recipes (LICM unhoist, call-loop, early-exit alias, GTE 3x3, etc.), common gotchas, dead ends, decision trees. |
 | [`GLOSSARY.md`](GLOSSARY.md) | You encounter an unfamiliar term (PsyQ, MIPS, decomp jargon, or BB2-specific Japanese romanizations from the Marionation engine). |
 | [`STATUS.md`](STATUS.md) | You want function counts and health indicators (a hand-refreshed, dated snapshot). For the live worklist run `python3 -m engine.cli scan-redundant --all`. |

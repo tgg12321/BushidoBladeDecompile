@@ -1,8 +1,17 @@
 # Permuter vs full-build pipeline divergence
 
-Critical for understanding what `bb2_permuter.py` (and `bb2_retire.py`'s
-`min_score=0` verdict) actually guarantees. **The permuter and the
-full build are NOT the same.**
+Critical for understanding what the permuter's `min_score=0` verdict
+actually guarantees. **The permuter and the full build are NOT the same.**
+
+> **Tooling note (2026-07):** the retired `dc.sh` workflow tools named
+> below (`bb2_permuter.py`, `bb2_apply_match.py`, `bb2_retire.py`,
+> `dc.sh fix-label-drift`, `dc.sh verify --all`) are archived under
+> `archive/dcsh_workflow_2026-05-26/`. The **conceptual lesson is
+> unchanged** and maps directly onto the current engine: the
+> cheat-invisible **`sandbox <func> --disable all`** scores a function in
+> isolation, while only the full-build SHA1 gate (**`verify-oracle` /
+> `make`**) is ground truth. Read the tool names below as the historical
+> equivalents of `sandbox` (isolated score) and `verify-oracle` (authoritative match).
 
 ## What the permuter does
 
@@ -84,15 +93,16 @@ sha1sum .exe vs original
 
 | Source | What it verifies | What it does NOT verify |
 |---|---|---|
-| Permuter `min_score=0` | Function compiles to target bytes IN ISOLATION | The function's match survives splicing back into the full `.c` file |
-| `bb2_apply_match.py --verify` | Full make passes AND SHA1 matches | (this IS ground truth — trust this) |
-| `bb2_retire.py` end-to-end | Match found AND applied AND SHA1 matches | — (this is ground truth too) |
+| Permuter `min_score=0` / `sandbox --disable all` == 0 | Function compiles to target bytes IN ISOLATION | The function's match survives in the full `.c` file + link |
+| `verify-oracle --rebuild` (full-build SHA1) | Full make passes AND SHA1 == oracle | (this IS ground truth — trust this) |
+| `retire <func>` end-to-end | Rules dropped AND rebuilt AND SHA1 == oracle (auto-rollback on mismatch) | — (this is ground truth too) |
 
 ## Practical implications for agents
 
-1. **Never trust `min_score=0` as a retirement readiness signal.** Always
-   complete the apply+verify cycle. The `bb2_retire.py` and
-   `bb2_apply_match.py --verify` tools both do this; use them.
+1. **Never trust an isolated `min_score=0` / `sandbox == 0` as a
+   retirement readiness signal.** Always complete the full-build verify
+   cycle. The engine's `retire <func>` and `verify-oracle --rebuild`
+   both do this; use them.
 
 2. **High-cascade files are dangerous.** `src/text1b.c` (~17000 lines),
    `src/main.c` (~14000 lines), and `src/code6cac.c` (~9000 lines) are
@@ -108,9 +118,9 @@ sha1sum .exe vs original
 4. **A match found by the permuter is a HYPOTHESIS, not a conclusion.**
    Treat the apply+full-build step as the actual test.
 
-5. **`dc.sh verify --all`** is the authoritative function-by-function
-   match check post-apply. Run it after committing a retirement to
-   confirm no sibling function regressed.
+5. **`verify-oracle --rebuild`** (full-build SHA1 == oracle) is the
+   authoritative check post-apply. Run it after a retirement to confirm
+   no sibling function regressed.
 
 ## Future work
 

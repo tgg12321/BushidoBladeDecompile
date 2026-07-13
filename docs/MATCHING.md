@@ -2,10 +2,26 @@
 
 This document distills the project's accumulated knowledge about how to coax GCC 2.7.2 (the PsyQ-era cross-compiler) into producing byte-identical assembly for a given target. Most of this material is symptom-indexed: you see something in your build's diff, you look it up, you apply a recipe.
 
+> **Invocation note (2026-07):** the `dc.sh <subcommand>` commands quoted
+> throughout this doc are from the **retired** `dc.sh` workflow (archived
+> under `archive/dcsh_workflow_2026-05-26/`). The **matching techniques,
+> penalty routing, regfix patterns, and recipes below are still valid** —
+> only the invocation layer changed. The current driver is the engine CLI
+> (`python3 -m engine.cli …` / `& tools/wteng.ps1 main …`). The load-bearing
+> mappings: diff/penalty diagnosis → **`diagnose <func>`**; isolated
+> cheat-free score → **`sandbox <func> --disable all`**; authoritative
+> full-build match → **`verify-oracle --rebuild`** (SHA1 == oracle); rule
+> retirement → **`retire <func>`**. Many one-off `dc.sh` helpers
+> (`add-regfix`, `regfix-suggest`, `frame-shift`, `asmfix-slice`,
+> `fix-label-drift`, `diagnose-hoist`, `verify-c`, `dump-text`, …) have **no
+> engine port** — the diagnosis they automated still applies, but you
+> now hand-write the regfix/asmfix edit and confirm it with `verify-oracle`.
+> See `CLAUDE.md` for the full engine loop.
+
 Companion docs:
 
 - [`ARCHITECTURE.md`](ARCHITECTURE.md) for the build pipeline (what regfix/asmfix mean and where they sit).
-- [`TOOLS.md`](TOOLS.md) for the `dc.sh` subcommand catalog.
+- [`TOOLS.md`](TOOLS.md) for the standalone tool catalog (plus the retired `dc.sh` subcommand catalog).
 - [`CONTRIBUTING.md`](../CONTRIBUTING.md) for the work-queue lifecycle and PR conventions.
 
 If you've read those and need *more* depth (full named-recipe definitions, regfix syntax minutiae, hundreds of distilled gotchas), the project's internal feedback files in `memory/` (read-only — gitignored as a Claude Code agent artifact) contain another ~2,000 lines of refinement.
@@ -24,7 +40,7 @@ The goal of matching is to get to **score = 0 + SHA1 OK** — not score = 0 in i
 
 ## Penalty → technique routing
 
-After your first build attempt, run `bash tools/dc.sh debug <func_dir>` or `bash tools/dc.sh diff-align <func>` and read the penalty list. That tells you what kind of diff you have, which routes the right next step. Use this table:
+After your first build attempt, run `sandbox <func> --disable all` for the honest cheat-free distance and `diagnose <func>` to classify the gap, then read the penalty list. That tells you what kind of diff you have, which routes the right next step. Use this table:
 
 | Penalty profile | Likely cause | First-line technique |
 |---|---|---|
@@ -553,7 +569,7 @@ Step 2 emits `addu $t4, $v0, $zero` (the move-as-addu form target uses). Subsequ
 
 **Cause:** `make` uses cached `build/src/*.o`. Edit one `.c` → only that `.o` recompiles. New C may have different register allocation than the prior `.o`, but link still produces matching bytes because OTHER cached `.o` files happen to cancel out the difference.
 
-**Fix:** `bash tools/dc.sh verify --clean` before commits involving more than 2 register-asm pins, more than 3 regfix rules, or `move`/`addu` placement tricks. The commit hook does this automatically per match; run it yourself when committing a series of related matches in quick succession.
+**Fix:** run a clean full rebuild — `verify-oracle --rebuild` (SHA1 == oracle) — before commits involving more than 2 register-asm pins, more than 3 regfix rules, or `move`/`addu` placement tricks. Always do this when committing a series of related matches in quick succession, so a stale-cache "match" can't slip through.
 
 ### G2. Bridge false-match trap
 
@@ -642,7 +658,7 @@ __asm__ volatile ("move %0, %1" : "=r"(v0) : "r"(a2));
 
 ## Decision tree: "I'm stuck, what now?"
 
-1. **Did you read the penalty list?** (`dc.sh debug <func_dir>`) Route via the table at the top of this doc.
+1. **Did you read the penalty list?** (`sandbox <func> --disable all` + `diagnose <func>`) Route via the table at the top of this doc.
 2. **If only Reg ≥ 1:** regfix swaps. Don't run permuter or `gen-regfix`.
 3. **If Stack Differences dominates:** `dc.sh frame-shift --apply` or 4-5 rule regfix.
 4. **If Ins/Del ≥ 1 with structural pattern:** check `dc.sh diff-align`; pick a named recipe if it matches.
