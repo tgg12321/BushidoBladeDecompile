@@ -1,37 +1,50 @@
 {
  "func": "se_data_set",
  "file": "code6cac",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 3,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 0,
    "modality": "recon",
-   "headline": "recon: lhu likely falls out of a plain truncating store (movhi=lhu; the (s8)(u16) is m2c transcription); $s0 address-caching may be natural block-local CSE of two identical lb reads \u2014 and if not, the "
+   "headline": "recon: lhu likely falls out of a plain truncating store (movhi=lhu; the (s8)(u16) is m2c transcription); $s0 address-caching may be natural block-local CSE of two identical lb reads \u2014 and if not, the pointer alias is a sanctionable last resort"
+  },
+  {
+   "session": 2,
+   "floor": 0,
+   "modality": "structural",
+   "headline": "Flagged construct #1 CLOSED CLEAN (cast-free store; .o register+reloc-exact vs HEAD). &-free subspace SWEPT (6 forms, floor 6) and the corpus check came back POSITIVE (func_8003B2C8/func_8003B328 use `u8 *p = &D_8010277C;` in COMPLETED-C) \u2014 only the permuter gate item remains."
+  },
+  {
+   "session": 3,
+   "floor": 0,
+   "modality": "structural",
+   "headline": "Flagged construct #1 (the (s8)(u16) double cast) CLOSED CLEAN \u2014 removed, and the sandbox .o is register-exact AND reloc-exact identical to HEAD. The &-free subspace is now swept (6 measured forms, flo"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The lhu closes with a cast-free spelling: plain `D_800A390E = D_800A36A4;` (or a u16 local snapshot) emits lhu+sb because the value is only truncated, never SImode-sign-extended",
-   "mechanism": "mips.md movhi plain HImode load = lhu; lh is the fused extendhisi2 form and is only chosen when the consumer needs sign extension \u2014 a truncating sb consumer does not",
-   "next_probe": "Sweep the three spellings (plain assignment / u16 tmp local / single (u16) cast) via tools/sweep_variants.py --func se_data_set --file code6cac, keeping the rest of the body fixed; expect at least one at masked 0"
+   "hypothesis": "The permuter will not find an &-free zero either: the ONLY C construct yielding a surviving address pseudo is a pointer local dereferenced as a plain scalar, and the permuter does not invent pointer aliases",
+   "mechanism": "MEM(reg) is a 1-insn MIPS address so GCC keeps the register (callee-save across a call); MEM(plus(reg,reg)) is no cheaper than MEM(plus(symbol,reg)) so constant-propagation eats the pointer. Measured both directions in s2 (v07 = no la at all; v00 = the la, register-exact).",
+   "next_probe": "LAST GATE ITEM, needs a PERMUTER-modality session (out of scope for structural): directed permuter campaign seeded on memory/grind/se_data_set/rejected/direct-cast-no-address-cache-scores-6.c (score 6, 93/93 insns) under the fresh-seed stopping rule (~20-30 fresh seeds, [[permuter-fresh-seed-discipline]]). A negative completes the lever-exhaustion record and discharges the Judge's third prerequisite."
   },
   {
-   "hypothesis": "The $s0 address-caching closes without the pointer: write `*(&D_8008E5A8 + (s8)D_8010277C)` directly at both body sites; block-local CSE unifies the two identical lb-address computations into a call-surviving pseudo",
-   "mechanism": "cse.c on the single body basic block (calls do not end BBs) CSEs the HIGH/LO_SUM address of the twice-read symbol; a pseudo live across func_8005BA8C gets a callee-save reg -> lui/addiu $s0 + lb 0($s0) x2, matching target",
-   "next_probe": "Replace `s8 *p`/`*p` with the direct expression at src/code6cac.c:1509 and :1512, `& tools/wteng.ps1 main sandbox se_data_set --disable all`; if masked 0, run the lhu sweep on top and check for 0 combined"
-  },
-  {
-   "hypothesis": "If direct spelling does NOT form the $s0 cache (cse declines the address pseudo), the pointer alias is retained as a sanctioned pointer-alias-fake-exception with /* FAKE */ annotation and the probe-2 negative as the documented exhaustion",
-   "mechanism": "pointer-alias-fake-exception (2026-07-01 ruling, post-dating this flag): C-level local pointer alias to a global is a last-resort sanctioned family; the 2026-06-22 judge constraint predates the sanction and the clean-replacement bar can be met by annotation + exhaustion + fresh layer-2 review",
-   "next_probe": "Only after probe 2 measures non-zero: annotate `s8 *p = (s8 *)&D_8010277C; /* FAKE: address-cache; direct spelling scores +N, see ledger s1 */`, bank the measured negative in hypotheses.md, and route to layer-2 review with the ruling question"
+   "hypothesis": "With the permuter negative in hand, the pointer form is routable to layer-2 as a pointer-alias-fake-exception with an unusually strong packet",
+   "mechanism": "The 2026-07-01 pointer-alias sanction post-dates the 2026-06-22 flag. The clean-replacement bar is met by: construct #1 removed outright; construct #2 made type-correct and FAKE-annotated; the &-free subspace swept (floor 6); the audit's 'inconsistency is the tell' premise disproved against the target bytes; and same-global precedent in accepted COMPLETED-C code (func_8003B2C8/func_8003B328).",
+   "next_probe": "After the permuter negative: apply memory/grind/se_data_set/candidate.c to src/code6cac.c, re-verify 0 + register-exact vs HEAD, and route to a fresh layer-2 cheat-reviewer with the H1-H6 packet from hypotheses.md attached."
   }
  ],
  "judge_constraints": [
   "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Two codegen-coercion constructs with no semantic purpose: (1) '(s8)(u16)D_800A36A4' forces lhu vs lh for no semantic gain (sb discards the sign-extension difference); (2) 's8 *p = (s8*)&D_8010277C' caches the address in a callee-save register across a call where a direct cast would suffice \u2014 inconsistency between condition (direct cast) and body (pointer) is the tell. Both fail tests 1+2+3 of the 6-test checklist. Function needs a clean redo: remove the (u16) intermediate cast and replace *p with (s8)D_8010277C throughout, then find the pure-C structure that naturally produces lhu and $s0 address-caching.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)",
   "Do not route the pointer-alias form to layer-2 until the '&'-free subspace has been searched, not merely hand-sampled: run a directed permuter campaign seeded on the score-6 direct-cast body under the fresh-seed stopping rule, run the matched-corpus check for any COMPLETED-C function whose asm caches a global's address in a callee-save register across a call, and bank both outcomes plus the four existing negatives in hypotheses.md with state.json brought current."
  ],
+ "judge_constraint_progress": {
+  "ampersand_free_subspace_searched": "DONE (s2) \u2014 6 measured forms, subspace floor 6: direct cast 6, subscript spelling 6, value-staging 9, table-pointer 16, store re-association 17, hoisted-arg temps 24 (95 insns vs target 93). See hypotheses.md H5.",
+  "matched_corpus_check": "DONE (s2) \u2014 POSITIVE. 16 COMPLETED-C functions cache a global's address in a callee-save reg across a call. func_8003B2C8 + func_8003B328 (src/code6cac_c_ab.c:431,444) do it with `u8 *p = &D_8010277C;` \u2014 the SAME construct on the SAME global, in accepted code. func_800656EC (src/text1b.c:14780, `u16 *s0 = &D_800F0BC2;`) reproduces the exact lui/addiu-$s0-loads-across-two-jal shape. For a scalar global, EVERY accepted spelling of this shape in the tree is a pointer local. (saEft00Add was checked and DISCARDED as precedent \u2014 it is still in the queue.) See hypotheses.md H6.",
+  "permuter_campaign": "OUTSTANDING \u2014 the one remaining gate item. Needs a permuter-modality session. Seed: rejected/direct-cast-no-address-cache-scores-6.c.",
+  "negatives_banked": "DONE (s2) \u2014 hypotheses.md rewritten from empty to H1-H6 with all measurements; rejected/ now holds 6 forms; state.json current."
+ },
  "origin": "regression",
  "created": "2026-07-07T03:55:12.581048+00:00"
 }

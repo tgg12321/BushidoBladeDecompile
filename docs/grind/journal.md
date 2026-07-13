@@ -177,3 +177,4 @@
 - 2026-07-13 05:57 func_8001FAE4 COMPLETED-C after 2 sessions.
 - 2026-07-13 06:03 func_8001FB34 COMPLETED-C after 2 sessions.
 - 2026-07-13 06:11 func_800233AC COMPLETED-C after 2 sessions.
+- 2026-07-13 06:49 se_data_set s2 [structural] floor=0: Flagged construct #1 (the (s8)(u16) double cast) CLOSED CLEAN — removed, and the sandbox .o is register-exact AND reloc-exact identical to HEAD. The &-free subspace is now swept (6 measured forms, floor 6) and the Judge's matched-corpus check came back POSITIVE: two COMPLETED-C functions use `u8 *p = &D_8010277C;` on this exact global. Only the permuter gate item remains.
