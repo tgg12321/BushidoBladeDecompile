@@ -13,3 +13,17 @@
 - [s1] [fable-blitz 2026-07-07] Semantics support a meaningful rename: s0+0x1C/0x20/0x24 form a velocity vector (x from Judge sin table * 0x50, y = -0xC8 constant, z from Judge cos * 0x50) for the projectile/effect slot -- `sw_val` is a decompiler-artifact name for what is plausibly a y-velocity constant (-200).
 
 - [s1] [fable-blitz 2026-07-07] Judge bar (memory/grind/func_80032064/state.json): remove sw_val -> literal, verify oracle; if oracle breaks, clean redo achieving early materialization legitimately. Index rule [[named-local-fake-exception]] (2026-07-01) sanctions constant-holder locals (SOTN `s16 three = 3;`) -- the flagged family is the sanctioned family.
+
+- [s2] [structural 2026-07-13] MEASURED: judge-prescribed literal probe KILLED. `*(s32*)(s0+0x20) = -0xC8;` with no holder local scores **7** (--disable all; 97/97 insns). objdump shows `li v0,-200` emitted INSIDE the mult window (0x42e4, .L800320C4's BB) where target has `addiu $t0,$zero,-0xC8` at instruction 5 in the ENTRY BB. Mechanism confirmed: sched.c list scheduling is basic-block-local; no GCC 2.7.2 pass moves a constant across the search loop into the entry BB. Artifact: tmp/grind/func_80032064/s2/literal_probe_full.txt.
+
+- [s2] [structural 2026-07-13] SYMMETRY PROBE (decisive): the UNFLAGGED twin `mul = 0x50` is load-bearing by the IDENTICAL mechanism. Inlining it as a literal at both use sites scores **12** and emits only **95** insns vs target 97. The audit flagged the single-use holder and not the two-use holder, but both are the same construct: a mutable local initialized at function entry. Single-use-ness is NOT what makes it load-bearing.
+
+- [s2] [structural 2026-07-13] The `i` init is the THIRD load-bearing cluster member: dropping `s32 i = 0;` and relying on `for (i = 0; ...)` scores **2**.
+
+- [s2] [structural 2026-07-13] "NAME IT WITHOUT A MUTABLE PSEUDO" AXIS CLOSED: `const s32 vel_y = -0xC8;` scores **7** — byte-identical to the bare literal (cc1 const-propagates and folds to the use site). `const` local == `#define` == `enum` == file-scope `static const` to cc1: all compile-time constants, all folded to the use site. NONE can materialize in the entry BB. Only a MUTABLE local pseudo can.
+
+- [s2] [structural 2026-07-13] The entry BB (asm lines 5-9) is a 4-member init cluster mapping 1:1 onto the C in SOURCE ORDER: `addiu $a1,0x50`=`speed`, `addiu $t0,-0xC8`=`vel_y`, `addu $v1,$zero,$zero`=`i`, `lui/addiu $a0,%hi/%lo(D_80104E88)`=`ptr`. All four byte-load-bearing (7/12/2/-- when removed). Semantics: s0+0x1C/0x20/0x24 is a velocity vector (vx=sin*speed>>12, vy=-200, vz=cos*speed>>12) — a tuning-constant cluster at the top of an effect-spawn function.
+
+- [s2] [structural 2026-07-13] `-0xC8` / `0xFFFFFF38` appears NOWHERE ELSE in src/code6cac_b.c (grep). No second use exists, so no natural CSE hoist is reachable; the store is in straight-line code (not a loop), so loop.c LICM is inapplicable. Frontier item 3 from s1 is CONFIRMED and closed.
+
+- [s2] [structural 2026-07-13] CANDIDATE AT FLOOR 0: renamed `sw_val`->`vel_y`, `mul`->`speed`; initializers folded into the declarations; the redundant `i = 0;` statement (which duplicated the for-init) REMOVED — `i` is now initialized once, at its declaration, with an empty for-init clause. Zero dead code, zero redundancy in the final form. sandbox --disable all == 0.
