@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8001FAE4",
-      "file": "code6cac",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: char new_var is a dead-constant codegen coercion (permuter-found trick, commit-confirmed). The variable is always 0, both comparisons are semantically identical to != 0, no asm instruction corresponds"
-    },
-    {
       "func": "func_8001FB34",
       "file": "code6cac",
       "distance": 0,
@@ -3702,14 +3692,14 @@
     }
   ],
   "counts": {
-    "total": 434,
-    "active": 365,
+    "total": 433,
+    "active": 364,
     "by_status": {
-      "active": 365,
+      "active": 364,
       "parked": 69
     },
     "by_verdict": {
-      "C": 211,
+      "C": 210,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
