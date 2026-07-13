@@ -3615,10 +3615,10 @@ void mottest_disp(void) {
     u8 a0 = D_800A3783;
     u8 b = D_800A391F;
 
-    if ((a0 & 0xFF) == b) {
+    if (a0 == b) {
         D_800A3768 = 0xFF;
         D_800A36A8 = 0;
-        if ((a0 & 0xFF) == 0x14) {
+        if (a0 == 0x14) {
             u8 z = (&D_8008D9EC)[D_80101ED2];
             s32 val = 2;
             if (z != 0) val = 3;
@@ -3629,24 +3629,22 @@ void mottest_disp(void) {
         }
     } else {
         u8 a1;
-        u8 idx;
         D_800A376B = 0;
         D_800A3783 = a0 + 1;
-        a1 = (&D_801077B0)[a0 & 0xFF];
-        idx = a1 & 0xFF;
-        D_8010277D = (&D_8008D55C)[idx];
-        if (idx == 5) {
+        a1 = (&D_801077B0)[a0];
+        D_8010277D = (&D_8008D55C)[a1];
+        if (a1 == 5) {
             D_8010277F = 6;
-        } else if (idx == 0x10) {
+        } else if (a1 == 0x10) {
             D_8010277F = 7;
         } else {
             u8 x = D_800A37BC;
             s8 y;
             D_800A37BC = x + 1;
-            y = (s8)(&D_8008E748)[x & 0xFF];
+            y = (&D_8008E748)[x];
             D_8010277F = y;
             if (y == 4) {
-                u8 v = (&D_8008D9EC)[idx];
+                u8 v = (&D_8008D9EC)[a1];
                 if (v != 0) {
                     D_8010277F = 5;
                 }
@@ -3654,7 +3652,7 @@ void mottest_disp(void) {
         }
         D_8010277A = 0x800;
         {
-            s16 v = (&D_8008E75C)[(u8)a1];
+            s16 v = (&D_8008E75C)[a1];
             D_800A3834 = 0;
             D_800A36A4 = v;
         }

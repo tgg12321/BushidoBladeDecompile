@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "mottest_disp",
-      "file": "code6cac_b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: Four `u8 & 0xFF` / `(u8)u8var` masks with no semantic purpose: each forces an `andi` instruction that creates a new register for register-allocation/delay-slot scheduling control. They fail the 6-test"
-    },
-    {
       "func": "func_80037540",
       "file": "code6cac_b2_post",
       "distance": 0,
@@ -3592,14 +3582,14 @@
     }
   ],
   "counts": {
-    "total": 423,
-    "active": 354,
+    "total": 422,
+    "active": 353,
     "by_status": {
-      "active": 354,
+      "active": 353,
       "parked": 69
     },
     "by_verdict": {
-      "C": 200,
+      "C": 199,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
