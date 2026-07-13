@@ -2809,19 +2809,14 @@ void func_80032040(void) {
 }
 extern s32 func_80032854(s32, s32, u8 *, s16 *);
 u8 *func_80032064(u8 *src, s32 type) {
-    s32 mul;
-    s32 sw_val;
-    s32 i;
-    u8 *ptr;
+    s32 speed = 0x50;
+    s32 vel_y = -0xC8;
+    s32 i = 0;
+    u8 *ptr = &D_80104E88;
     u8 *s0;
     s16 sp_area[2];
 
-    mul = 0x50;
-    sw_val = -0xC8;
-    i = 0;
-    ptr = &D_80104E88;
-
-    for (i = 0; i < 4; i++) {
+    for (; i < 4; i++) {
         s0 = ptr;
         if (*s0 == 0) break;
         ptr = s0 + 0x2C;
@@ -2839,9 +2834,9 @@ u8 *func_80032064(u8 *src, s32 type) {
         *(s32 *)(s0 + 8) = *(s32 *)(src + 0xBC) - (v1 >> 5);
     }
     *(s32 *)(s0 + 0xC) = *(s32 *)(src + 0xFC);
-    *(s32 *)(s0 + 0x1C) = ((s32)*(&Judge + (*(u16 *)(src + 0x1CA) & 0xFFF)) * mul) >> 12;
-    *(s32 *)(s0 + 0x20) = sw_val;
-    *(s32 *)(s0 + 0x24) = ((s32)*(&Judge + ((*(s16 *)(src + 0x1CA) + 0x400) & 0xFFF)) * mul) >> 12;
+    *(s32 *)(s0 + 0x1C) = ((s32)*(&Judge + (*(u16 *)(src + 0x1CA) & 0xFFF)) * speed) >> 12;
+    *(s32 *)(s0 + 0x20) = vel_y;
+    *(s32 *)(s0 + 0x24) = ((s32)*(&Judge + ((*(s16 *)(src + 0x1CA) + 0x400) & 0xFFF)) * speed) >> 12;
     *(Vec3_copy *)(s0 + 0x10) = *(Vec3_copy *)(s0 + 4);
     *(s32 *)(s0 + 0x28) = *(s32 *)(src + 0xBC);
     sp_area[1] = *(u16 *)(src + 0x1CA);

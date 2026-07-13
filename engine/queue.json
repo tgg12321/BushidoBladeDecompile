@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80032064",
-      "file": "code6cac_b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: sw_val = -0xC8 (src/code6cac_b.c:2829) is a single-use constant variable initialized at function entry and used 32 instructions later as a mult-delay-filling store. The target asm shows addiu $t0, $ze"
-    },
-    {
       "func": "func_80033498",
       "file": "code6cac_b",
       "distance": 0,
@@ -3632,14 +3622,14 @@
     }
   ],
   "counts": {
-    "total": 427,
-    "active": 358,
+    "total": 426,
+    "active": 357,
     "by_status": {
-      "active": 358,
+      "active": 357,
       "parked": 69
     },
     "by_verdict": {
-      "C": 204,
+      "C": 203,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
