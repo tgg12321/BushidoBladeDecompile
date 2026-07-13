@@ -1,5 +1,45 @@
 # Closer Phase 3 — PsyQ psxsdk adoption progress ledger
 
+## FINAL (2026-07-13) — mission CLOSED; 7 candidates triaged; remaining work handed to the Grinder
+
+Closer Phase 3 is **retired**. The adoption mission delivered its closes
+(14+ functions across sessions 4–14: LIBGTE canonical batch, saTan0/2Main,
+_spu_t/_spu_init, cdread family, DispStuff, DMA/Ansync pairs, …). The 7
+still-banked candidates were triaged for a clean wrap-up. **Key framing:**
+every one of the 7 maps to a function that is still `active` in
+`engine/queue.json` — so the autonomous Grinder inherits all remaining work
+by construction. Parking was NOT used (contradicts [[no-deferral-work-to-completion]]
+2026-06-12 + [[no-park-permanently]] 2026-06-24, and queue.json was off-limits
+during this pass — the Grinder was live on func_8001C624). "Keep as reference"
+therefore means: the banked candidate stays as the authoritative record; the
+function stays ACTIVE for the Grinder to reach in queue order.
+
+| # | Candidate | Function(s) | Class | Action |
+|---|---|---|---|---|
+| 1 | cdcontrol_trio_prologue_order.c | func_80080258 / func_80080390 / tslPolyF4Init | B | keep — prologue def-order wall (twin of func_8007C2A0/C4B8); all verdict C, Grinder-reachable |
+| 2 | cdcw_tslTm2LoadImage.c | tslTm2LoadImage (CD_cw) | B | keep — coupled to the marionation nrefs family; authoritative 57/263 record |
+| 3 | exec_game_sotn_hybrid.c | exec_game (_spu_gcSPU) | B | keep — banked 30; cc1 ICE on structured pointer-walk (dodgeable via goto, as HEAD does) |
+| 4 | marionation_p6_volatile1496.c | marionation_Exec | A | **DELETED** — redundant with live Grinder ledger (57 sessions) |
+| 5 | marionation_vAT1_notailwrap.c | marionation_Exec | A | **DELETED** — redundant with live Grinder ledger (57 sessions) |
+| 6 | spu_writebyio_splice.c | DispUpdateStatusMessage (_spu_FiDMA) | C | **ESCALATED** — cc1 fork-segfault, Ruling-2 needed → docs/escalations/closer-cc1-fork-divergence.md |
+| 7 | spusetreverbmodeparam_struct.c | func_80089F3C | B | keep — 3-word reload spill divergence; needs cc1 BB2_RELOAD_DEBUG instrumentation (noted in the escalation as related-but-unproven) |
+
+**Class A (deleted) rationale:** both marionation twins are `marionation_Exec`,
+which has a live driver-managed Grinder ledger (`memory/grind/marionation_Exec/`,
+57 sessions, floor 4). The twins' lower *masked-2* score is achieved through a
+heavy FAKE-device stack (nested do-while(0), opaque `new_var` mask holders,
+pointer-alias staging) — precisely the construct family the default-FAIL Judge
+is currently rejecting (see docs/grind/decisions.md func_8001C624 / func_8001B138
+rulings 2026-07-12/13). The Grinder's floor-4 is the honest floor; its ledger's
+basin catalog already covers 20 distinct masked-4 spellings across these axes.
+The masked-2 mechanism itself is independently preserved in `phase2-closeout.md`
+(§W1) and this ledger (session 12/earlier) — nothing is lost by deleting the .c
+files. No Class-D (novel lever) items exist.
+
+**Mission status:** CLOSED. No further Closer sessions. The 5 kept candidates
+are reference records the Grinder consults when it reaches those active queue
+items; the 1 escalation awaits an owner ruling.
+
 ## SESSION 15 (2026-07-12) — Docket sweep across the 7 remaining banked candidates
 
 Ran a triage pass across every remaining banked candidate. Result:
