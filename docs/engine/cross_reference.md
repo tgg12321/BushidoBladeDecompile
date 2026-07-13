@@ -106,7 +106,8 @@ know which subsystem owns it, look here.
   `md_menu_logo_exec` (asm-only), `game_SetControllerPorts`,
   `game_SetPlayerCount`, `stage_ExecInitFunc`, `stage_InitCollision`,
   `disp_mario_jimaku` (subtitles, asm), `DispPracticeMenuTex_*`,
-  `DispUpdateStatusMessage`, `func_80016E60` (pause submenu),
+  `DispUpdateStatusMessage`,
+  `cpu_exec_match_round_stage_select_80016E60` (match/round stage select),
   `FadeOut_*`, `CheckFadeEnd`, `InitFadePanel`
 - **Key globals:** `g_disp_fade`, `g_game_mode`, `g_game_pause`,
   `g_color_mode` (grayscale flag), `D_80102794` (pad input mask),
@@ -156,8 +157,7 @@ know which subsystem owns it, look here.
 - **Key functions:** `sys_VSync`, `sys_SetVsyncMode`, `sys_SetTimer`,
   `irq_DisableInterrupts`, `irq_AcknowledgeVblank`,
   `irq_EnableInterrupts`, `irq_SetAlarm`, `irq_Reset`,
-  `EnterCriticalSection`, `ExitCriticalSection`, `func_80082A14`
-  (VSync wait loop)
+  `EnterCriticalSection`, `ExitCriticalSection`
 - **Key globals:** `g_sys_irq_vtable`, `g_sys_vblank_count`,
   `g_sys_vsync_mode`, `g_sys_timer`, `g_sys_video_mode`,
   `g_sys_dma_region`
@@ -347,6 +347,6 @@ full traces).  Indexed here by address range for reverse lookup:
 - [recent_naming_findings.md](recent_naming_findings.md) — full cluster
   traces (§1-22) with code/asm evidence and consumer chains
 - `named_syms.txt` and `symbol_addrs.txt` (project root) — primary symbol
-  vocabulary
-- `SUBSYSTEM_MAP_2026-05-12.md` (project root) — object-level address map
-  for the source files (text1b.c landmark map)
+  vocabulary (authoritative name→address map)
+- `engine/queue.json` (project root) — the ordered decomp worklist (functions
+  still carrying cheats)

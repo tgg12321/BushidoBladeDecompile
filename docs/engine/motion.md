@@ -245,8 +245,9 @@ calls to the GTE for vertex projection (`gte_rtpt()` for triangle vertices,
 `gte_rtps()` for single points), then writes the projected screen-space
 coords into a GPU primitive in the OT.
 
-The bone-tree walk is not yet decompiled — it lives in the asmfix-bridged
-functions in `text1b.c` (the 0x10558-0x11227 range per `SUBSYSTEM_MAP_*`).
+The bone-tree walk lives in the asmfix-bridged functions in `text1b.c`
+(the ~0x10558-0x11227 address range). It is decompiled to C but some of those
+functions still carry cheats — check `engine/queue.json` for their status.
 
 ## Pre-calc cache (the `myRobGenei*` family)
 

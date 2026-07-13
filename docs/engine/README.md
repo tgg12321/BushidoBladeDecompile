@@ -13,11 +13,12 @@ names in this project were recovered by name-matching against Kengo.
 
 Companion documents:
 
-- `SUBSYSTEM_MAP_2026-05-12.md` (project root) — object-level address ranges
-  and a line/landmark map for the giant `text1b.c`. This README starts where
-  that map ends: it documents what each subsystem actually does.
-- `named_syms.txt` and `symbol_addrs.txt` (project root) — global-variable
-  vocabulary used throughout these docs.
+- `named_syms.txt` and `symbol_addrs.txt` (project root) — the authoritative
+  name→address vocabulary used throughout these docs. When a name here has
+  drifted, these files are ground truth.
+- The per-subsystem tables below (and each linked subsystem doc) give the
+  object-level address ranges; this README documents what each subsystem
+  actually does.
 - `CLAUDE.md` (project root) — toolchain, decomp workflow, splat config.
 
 ## High-level architecture
@@ -75,8 +76,8 @@ Companion documents:
 
 The names `code6cac*`, `text1a*`, `text1b*`, and `ings*` are **splat/pipeline
 artifacts** named after disassembly section labels — they are **not** semantic
-boundaries. Treat them as containers for the address ranges given in
-`SUBSYSTEM_MAP_2026-05-12.md`.
+boundaries. Treat them as containers for the address ranges given in the
+per-subsystem table below.
 
 | Subsystem | Primary files | Address range | Doc |
 | --- | --- | --- | --- |
@@ -148,12 +149,17 @@ to make sense. Full vocabulary in `symbol_addrs.txt`.
 
 ## Decomp status caveat
 
-Roughly 924 functions are decompiled to C; ~486 are still asm-only. Several
-subsystems have only fragmentary C coverage — for those, this doc cites the
-asm function names so you can follow up. Each subsystem doc calls out areas
-where coverage is sparse.
+The project reached zero-stub completion on 2026-04-27: essentially every
+function is decompiled to C (only a handful of canonical-asm bodies remain as
+`INCLUDE_ASM`). The remaining work is not "asm-only" functions but
+**byte-matching** them without cheats — ~422 functions still carry a
+regfix/asmfix rule or cheat-asm and are tracked in `engine/queue.json` (the
+single worklist). Some subsystem docs still cite bare `func_8XXXXXXX` names
+where `named_syms.txt` has since assigned a semantic name — trust
+`named_syms.txt` when they disagree.
 
-The `WORK_QUEUE.md` at the project root lists the next decomp targets in
-order. The `dc.sh classify <func>` tool tags functions with their blocker
-class. Functions tagged `psyq_stdlib_*` are PsyQ library helpers that should
-not be decomped manually; the rest are open work.
+`engine/queue.json` is the ordered worklist (pre-sorted easiest-first by honest
+pure-C distance); `python3 -m engine.cli queue next` prints the current top.
+The autonomous pipeline that grinds it is the **Grinder** (`tools/grinder/`,
+the `decomp-grind` skill). See `CLAUDE.md` for the full workflow. (The old
+`WORK_QUEUE.md` file and `dc.sh classify` tool are retired.)

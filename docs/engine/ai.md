@@ -53,8 +53,8 @@ are currently legal (from a mask in `D_80106A50` against waza-enable bits in
 1. Walks bits 0..26 of `D_80106A50` masked against the stance's enable
    bitmap; for each enabled bit, appends the move ID to a buffer at
    `D_801077B0`.
-2. Shuffles the buffer 108 times (`func_80079154() % count` is the RNG —
-   `func_80079154` is a pseudo-RNG that returns a 31-bit value).
+2. Shuffles the buffer 108 times (`bb2_rand() % count` is the RNG —
+   `bb2_rand` (0x80079154) is the engine's LFSR pseudo-RNG).
 3. Applies special-case overrides — if both moves 5 and 0x10 (`0x20` and
    `0x10000` bits) are enabled and the AI is in the right stance, prefer
    one over the other based on another coin-flip.
@@ -174,7 +174,7 @@ plausible mechanisms are visible:
 - The RNG seeded from `g_file_heap_base` (set by `rng_SetSeed`,
   `ings.c:574`) is used everywhere — different RNG sequences produce
   different AI behavior.
-- The `func_80079154() % count` shuffling in
+- The `bb2_rand() % count` shuffling in
   `cpu_set_move_command_and_dir_for_no_action` is the primary "AI randomness"
   source.
 - Per-character `D_8008E338`-style tables and a stance-mask
@@ -202,15 +202,14 @@ functions blank fields:
 These run during scene transitions to keep the AI from carrying stale state
 into a new round.
 
-## Where unmatched AI asm still hides
+## Remaining AI work
 
-Many `cpu_*` and `func_8002XXXX` helpers in `code6cac_b.c` and `text1b.c`
-are still asm-only. The 1410-function `asm/funcs/` list includes `cpu_*`
-files such as:
+The AI functions are all decompiled to C (the project is zero-stub since
+2026-04-27). What remains is byte-matching without cheats: any `cpu_*` /
+`func_8002XXXX` helper still carrying a regfix/asmfix rule or cheat-asm is in
+`engine/queue.json`. Run `python3 -m engine.cli queue next` to see the current
+top target; the Grinder (`tools/grinder/`) works the queue autonomously.
 
-- `cpu_check_run_attack.s` — wait, this is in C now; sample listed in
-  `asm/funcs/` may be stale.
-
-Run `bash tools/dc.sh next` against the project's WORK_QUEUE.md to see
-what's next. CPU/AI functions in the queue are tagged with their blocker
-class.
+Note that the `asm/funcs/*.s` files are splat-generated **reference**
+disassembly for every function — they are not a to-do list, and a `.s` file
+existing there does not mean the function is still asm-only.
