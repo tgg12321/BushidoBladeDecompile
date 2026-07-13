@@ -181,3 +181,4 @@
 - 2026-07-13 07:32 se_data_set COMPLETED-C after 5 sessions.
 - 2026-07-13 07:42 DispSamnailWindow COMPLETED-C after 2 sessions.
 - 2026-07-13 07:58 func_8003047C COMPLETED-C after 2 sessions.
+- 2026-07-13 08:29 func_80030BA8 COMPLETED-C after 2 sessions.
