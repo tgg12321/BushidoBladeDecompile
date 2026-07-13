@@ -311,10 +311,10 @@ The strings `Y123.BBM`, `K123.BBM`, etc. live as discrete labels in
 `tools/inspect_bbm.py` — parse and report on a BBM file.
 
 ```
-python tools/inspect_bbm.py <file.bbm>           # summary + section table
-python tools/inspect_bbm.py <file.bbm> --dump 1  # raw dump of section 1
-python tools/inspect_bbm.py <file.bbm> --hex 1   # hex preview of section 1
-python tools/inspect_bbm.py <dir>/               # iterate every BBM in a dir
+python tools/inspect_bbm.py <file.bbm>                    # summary + section table
+python tools/inspect_bbm.py <file.bbm> --dump 1 --out s1.bin  # raw dump of section 1
+python tools/inspect_bbm.py <file.bbm> --hex 1            # hex preview of section 1
+python tools/inspect_bbm.py <dir>/                       # iterate every BBM in a dir
 ```
 
 ## Verified by

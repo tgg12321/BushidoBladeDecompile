@@ -8,7 +8,7 @@ A BBM file is the per-character motion package used by Lightweight's
 Usage:
     inspect_bbm.py FILE.BBM                     summary table for one file
     inspect_bbm.py FILE.BBM --hex N             hex preview of section N (1..5)
-    inspect_bbm.py FILE.BBM --dump N OUT.bin    dump raw section N to file
+    inspect_bbm.py FILE.BBM --dump N --out OUT.bin  dump raw section N to file
     inspect_bbm.py DIR/                         summarise every BBM in a directory
 """
 

@@ -9,9 +9,9 @@ playback from CD via DMA without buffering. BB2 ships exactly one STR file:
 the studio logo / opening cinematic.
 
 The decode path is handled by the **MOVOVL.EXE overlay** (`disc/STR/MOVOVL.EXE`)
-— a 122,880-byte standalone PS-X executable that is loaded over the game
-binary at runtime to provide MDEC video playback, then unloaded once the
-intro is done. The main game does not link the MDEC libraries directly; they
+— a 124,928-byte standalone PS-X executable (122,880-byte text region plus the
+0x800 PS-EXE header) that is loaded over the game binary at runtime to provide
+MDEC video playback, then unloaded once the intro is done. The main game does not link the MDEC libraries directly; they
 live exclusively in this overlay.
 
 ## File layout
@@ -100,7 +100,8 @@ table.
 
 ```
 python tools/inspect_str.py OPENING.STR             summary
-python tools/inspect_str.py OPENING.STR --frames    list first 20 frames
+python tools/inspect_str.py OPENING.STR --frames 20 list first 20 frame headers
+python tools/inspect_str.py OPENING.STR --hex 0     hex-dump sector 0
 ```
 
 Full MDEC decoding to image frames is out of scope for this tool; for that

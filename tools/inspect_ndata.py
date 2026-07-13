@@ -9,11 +9,11 @@ specification.
 
 This tool exposes that archive:
 
-    inspect_ndata.py <NDATA.INF> --list                List every entry
-    inspect_ndata.py <NDATA.INF> --extract <ID> [OUT]  Extract one entry
-    inspect_ndata.py <NDATA.INF> --hex <ID> [N]        Hex preview first N bytes
-    inspect_ndata.py <NDATA.INF> --dump-all <OUTDIR>   Extract all entries
-    inspect_ndata.py <NDATA.INF> --stats               Summary statistics
+    inspect_ndata.py <NDATA.INF> --list                     List every entry
+    inspect_ndata.py <NDATA.INF> --extract <ID> [--out F]   Extract one entry
+    inspect_ndata.py <NDATA.INF> --hex <ID> [--bytes N]     Hex preview first N bytes
+    inspect_ndata.py <NDATA.INF> --dump-all <OUTDIR>        Extract all entries
+    inspect_ndata.py <NDATA.INF> --stats                    Summary statistics
 
 The NDATA.DAT file is auto-located next to the INF (same dir, `.DAT` extension)
 unless `--dat <path>` is given.

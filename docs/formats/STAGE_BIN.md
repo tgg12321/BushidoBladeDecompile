@@ -61,26 +61,33 @@ data records.
 
 ### Header (offset 0x00, 52 bytes)
 
-| Offset | Size | Field      | Meaning                                       |
-|--------|------|------------|-----------------------------------------------|
-| 0x00   | u32  | hdr_size   | Always 0x34 — size of this header             |
-| 0x04   | u32  | rec0_off   | Offset to record 0 (= 0x34 always)            |
-| 0x08   | u32  | rec0_size  | Size in bytes of record 0                     |
-| 0x0C   | u32  | rec1_off   | Offset to record 1                            |
-| 0x10   | u32  | rec1_size  | Size of record 1                              |
-| 0x14   | u32  | rec2_off   | ...                                           |
-| 0x18   | u32  | rec2_size  |                                               |
-| 0x1C   | u32  | rec3_off   |                                               |
-| 0x20   | u32  | rec3_size  |                                               |
-| 0x24   | u32  | rec4_off   |                                               |
-| 0x28   | u32  | rec4_size  |                                               |
-| 0x2C   | u32  | rec5_off   |                                               |
-| 0x30   | u32  | rec5_size  |                                               |
+13 little-endian u32 words. Record 0's offset is **implicit** — it always starts
+at 0x34, immediately after the header — so only its *size* is stored; records
+1..5 each store an explicit `(offset, size)` pair. The final word is the
+end-offset of the last record (= total payload size).
 
-So the format packs 6 records (12 u32 of `(offset, size)` pairs). The very
-first u32 is the header size, leaving exactly room for the 12 record-descriptor
-words — `1 + 12 = 13 u32 = 52 bytes`. The records are stored contiguously
-after the header.
+| Offset | Size | Field      | Meaning                                                  |
+|--------|------|------------|----------------------------------------------------------|
+| 0x00   | u32  | hdr_size   | Always 0x34 — size of this header (record 0 starts here) |
+| 0x04   | u32  | rec0_size  | Size in bytes of record 0 (offset implicit = 0x34)       |
+| 0x08   | u32  | rec1_off   | Offset to record 1                                       |
+| 0x0C   | u32  | rec1_size  | Size of record 1                                         |
+| 0x10   | u32  | rec2_off   | Offset to record 2                                       |
+| 0x14   | u32  | rec2_size  | Size of record 2                                         |
+| 0x18   | u32  | rec3_off   | Offset to record 3                                       |
+| 0x1C   | u32  | rec3_size  | Size of record 3                                         |
+| 0x20   | u32  | rec4_off   | Offset to record 4                                       |
+| 0x24   | u32  | rec4_size  | Size of record 4                                         |
+| 0x28   | u32  | rec5_off   | Offset to record 5                                       |
+| 0x2C   | u32  | rec5_size  | Size of record 5                                         |
+| 0x30   | u32  | data_end   | End offset of record 5 (= total payload size)            |
+
+So the header stores one `size` for record 0, then five `(offset, size)` pairs
+for records 1..5, then a trailing end-offset — `1 + 1 + 10 + 1 = 13 u32 = 52
+bytes`. The records are stored contiguously after the header (each record's
+start equals the previous record's end). This is exactly what
+`inspect_stage.py` decodes: record 0 at 0x34 with `words[1]` as its size,
+records 1..5 from the interleaved `(off, size)` words that follow.
 
 For `STAGE00.BIN` (128,988 bytes):
 
@@ -92,7 +99,8 @@ record 2: off=0x011C00  size=0x36F8  (14,072 B)
 record 3: off=0x0152F8  size=0x3AE8  (15,080 B)
 record 4: off=0x018DE0  size=0x34F8  (13,560 B)
 record 5: off=0x01C2D8  size=0x34F8  (13,560 B)
-total payload = 0x1F7A0; with hdr → 0x1F7D4 (file is 0x1F7DC = +8 B padding)
+data_end (word @ 0x30) = 0x1F7D0  (record 5 ends here; = 0x34 + sum of sizes)
+file is 0x1F7DC (128,988 B) → 12 B trailing padding after record 5
 ```
 
 ### Record layout (each of the 6 records)
@@ -244,15 +252,15 @@ varies by file."
 ### Inspector tools
 
 ```
-python tools/scan_container.py disc/TIM2D/NAR.BIN     # list embedded TIM/VAB
-python tools/scan_container.py disc/TIM2D/            # scan every BIN in dir
 python tools/inspect_stage.py disc/TIM2D/SEL.BIN      # outer-TOC summary
 python tools/inspect_stage.py disc/TIM2D/SEL.BIN --dump OUT   # segment dump
 ```
 
-`scan_container.py` validates TIM headers strictly (only known flag bits, sane
-CLUT/pixel sizes, w/h in 1..2048), so its hit count reflects real embeds
-rather than coincidental `10 00 00 00` byte patterns.
+To recover the embedded TIM/VAB resources catalogued above, extract the
+segments with `inspect_stage.py --dump`, then run `inspect_tim.py` on the TIM
+segments and `inspect_bnk.py` on any VAB (`pBAV`) segment. (The per-file
+findings table was produced this way — by dumping segments and validating each
+embedded TIM/VAB header individually.)
 
 ---
 
@@ -264,6 +272,7 @@ container variants.
 ```
 python tools/inspect_stage.py FILE.BIN              auto-detect + summary
 python tools/inspect_stage.py FILE.BIN --dump OUT/  extract every record
+python tools/inspect_stage.py FILE.BIN --hex N      hex-dump record/segment N
 python tools/inspect_stage.py DIR/                  summarise every BIN in dir
 ```
 

@@ -1,9 +1,11 @@
 # TIM — PlayStation texture image
 
 Files:
-* `disc/TIM2D/*.TIM` (12 files: `LAS_*.TIM`, `LINK.TIM`, `LINK_M.TIM`,
+* `disc/TIM2D/*.TIM` (13 files: 10 × `LAS_*.TIM`, `LINK.TIM`, `LINK_M.TIM`,
   `SEA2_16.TIM`)
 * `disc/STR/TITLE.TIM`
+
+(14 TIM files total across the disc.)
 
 TIM is the PlayStation SDK standard texture format. The PsyQ SDK ships `tim.h`
 and matching loaders; BB2 uses the unmodified format throughout — see
@@ -87,9 +89,9 @@ mask.
 
 | File                  | size    | PMODE  | CLUT             | image (px)    | notes                |
 |-----------------------|--------:|--------|------------------|---------------|----------------------|
-| `TIM2D/LAS_CN.TIM`    | 32,832  | 4-bit  | 1 × 16 @ (0,480) | 64 × 256 px*  | laser/cleaver texture |
-| `TIM2D/LAS_CS.TIM`    | 32,832  | 4-bit  | 1 × 16 @ (0,480) | 64 × 256 px*  | same shape, alt CLUT |
-| `TIM2D/LAS_CT.TIM` ... | 32,832 | 4-bit  | 1 × 16 @ (0,480) | 64 × 256 px*  | (8 more variants)    |
+| `TIM2D/LAS_CN.TIM`    | 32,832  | 4-bit  | 1 × 16 @ (0,480) | 256 × 256 px* | laser/cleaver texture |
+| `TIM2D/LAS_CS.TIM`    | 32,832  | 4-bit  | 1 × 16 @ (0,480) | 256 × 256 px* | same shape, alt CLUT |
+| `TIM2D/LAS_CT.TIM` ... | 32,832 | 4-bit  | 1 × 16 @ (0,480) | 256 × 256 px* | (7 more variants)    |
 | `TIM2D/LINK.TIM`      | 307,220 | 16-bit | (none)           | 640 × 240 px  | full-screen graphic  |
 | `TIM2D/LINK_M.TIM`    | 307,220 | 16-bit | (none)           | 640 × 240 px  | mirror/alt variant   |
 | `TIM2D/SEA2_16.TIM`   | 24,596  | 16-bit | (none)           | 256 × 48 px   | sea/water tile       |
@@ -129,7 +131,8 @@ the image-block pixel rectangle.
 
 ```
 python tools/inspect_tim.py file.tim                  summary
-python tools/inspect_tim.py file.tim --raw            dump pixel bytes
+python tools/inspect_tim.py file.tim --verbose        full header dump
+python tools/inspect_tim.py file.tim --raw out.bin    dump pixel bytes
 python tools/inspect_tim.py file.tim --png out.png    decode to PNG (if PIL)
 python tools/inspect_tim.py DIR/                      summarise dir
 ```

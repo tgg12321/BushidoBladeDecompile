@@ -328,10 +328,15 @@ for this archive document; see the per-format docs for BBM (motion), STAGE_BIN
 ### `tools/inspect_ndata.py` — list / extract NDATA entries
 
 ```
-python tools/inspect_ndata.py <NDATA.INF> [--list | --extract <ID> [OUT]
-                                            | --dump-all <OUTDIR>
-                                            | --hex <ID> [N]]
+python tools/inspect_ndata.py <NDATA.INF> (--list | --extract <ID> [--out FILE]
+                                           | --dump-all <OUTDIR>
+                                           | --hex <ID> [--bytes N]
+                                           | --stats)
 ```
+
+(Exactly one of `--list` / `--extract` / `--hex` / `--dump-all` / `--stats` is
+required. The output filename for `--extract` is given via `--out`, and the
+`--hex` byte count via `--bytes` — they are NOT bare positional arguments.)
 
 Examples:
 
@@ -339,14 +344,17 @@ Examples:
 # Print every directory entry with start/length/preview
 python tools/inspect_ndata.py disc/NDATA/NDATA.INF --list | head
 
-# Extract entry 0 to stdout (binary)
-python tools/inspect_ndata.py disc/NDATA/NDATA.INF --extract 0 entry000.bin
+# Extract entry 0 to a named file (default name: ndata_0000.bin)
+python tools/inspect_ndata.py disc/NDATA/NDATA.INF --extract 0 --out entry000.bin
 
 # Dump first 128 bytes of entry 42
-python tools/inspect_ndata.py disc/NDATA/NDATA.INF --hex 42 128
+python tools/inspect_ndata.py disc/NDATA/NDATA.INF --hex 42 --bytes 128
 
 # Extract every entry into a directory
 python tools/inspect_ndata.py disc/NDATA/NDATA.INF --dump-all extracted/
+
+# Directory-level summary statistics
+python tools/inspect_ndata.py disc/NDATA/NDATA.INF --stats
 ```
 
 The DAT file is auto-located alongside the INF (same directory, `.DAT`
