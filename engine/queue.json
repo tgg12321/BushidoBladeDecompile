@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8001FB34",
-      "file": "code6cac",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: One construct fails tests 2+3: `v0 = (u32)0 < (u32)v0;` mirrors the target instruction `sltu $v0, $zero, $v0` by reversed-operand unsigned comparison rather than natural `v0 != 0`; a worker should ver"
-    },
-    {
       "func": "func_800233AC",
       "file": "code6cac",
       "distance": 0,
@@ -3692,14 +3682,14 @@
     }
   ],
   "counts": {
-    "total": 433,
-    "active": 364,
+    "total": 432,
+    "active": 363,
     "by_status": {
-      "active": 364,
+      "active": 363,
       "parked": 69
     },
     "by_verdict": {
-      "C": 210,
+      "C": 209,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
