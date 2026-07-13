@@ -2877,7 +2877,7 @@ void func_8002304C(u8 *obj, s32 *pos1, s32 *pos2, s32 *arg3)
 
   ;
 }
-typedef struct { s32 a; s32 b; } __attribute__((packed)) PackedPair_233AC;
+typedef struct { s16 a, b, c, d; } SVec8_233AC;
 
 s32 func_800233AC(u8 *arg0, s32 *arg1) {
     s32 pos[3];
@@ -2934,7 +2934,7 @@ s32 func_800233AC(u8 *arg0, s32 *arg1) {
         return 0;
     }
 
-    *(PackedPair_233AC *)(arg0 + 0x98) = *(PackedPair_233AC *)out1;
+    *(SVec8_233AC *)(arg0 + 0x98) = *(SVec8_233AC *)out1;
 
     {
         s32 fwd_angle = single_game_getEnemyCharId(out1[0], out1[2]);

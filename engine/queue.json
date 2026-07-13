@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_800233AC",
-      "file": "code6cac",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: CHEAT: `__attribute__((packed))` on PackedPair_233AC (src/code6cac.c:2896) is an alignment-coercion lever that forces GCC to emit lwl/lwr/swl/swr instead of lw/sw for the 8-byte struct copy at line 29"
-    },
-    {
       "func": "se_data_set",
       "file": "code6cac",
       "distance": 0,
@@ -3682,14 +3672,14 @@
     }
   ],
   "counts": {
-    "total": 432,
-    "active": 363,
+    "total": 431,
+    "active": 362,
     "by_status": {
-      "active": 363,
+      "active": 362,
       "parked": 69
     },
     "by_verdict": {
-      "C": 209,
+      "C": 208,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
