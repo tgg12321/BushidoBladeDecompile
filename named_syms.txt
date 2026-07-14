@@ -3749,7 +3749,7 @@ get_global_800800AC                                = 0x800800AC;  /* structural 
 copy_80080228                                      = 0x80080228;  /* structural role; n=6 */
 copy_80080240                                      = 0x80080240;  /* structural role; n=6 */
 tsltm2loadimage_helper_80080828                    = 0x80080828;  /* first-pass tag(clean-anchor); tsltm2loadimage: <-['cpu_side_move_dir_4', 'tslTm2LoadImage'] ->['tslTm2LoadImage_2'] */
-tsltm2loadimage_helper_800819C4                    = 0x800819C4;  /* first-pass tag(clean-anchor); tsltm2loadimage: <-[] ->['cpu_side_move_dir_4'] */
+tsltm2loadimage_helper_800819C4                    = 0x800819C4;  /* MISNAMED: first-pass auto-tag; body is CD-ROM init (called by cdrom_CheckReady) -- see cdrom_Initialize */
 set_global_800863CC                                = 0x800863CC;  /* structural role; n=4 */
 copy_80089214                                      = 0x80089214;  /* structural role; n=11 */
 copy_80089240                                      = 0x80089240;  /* structural role; n=11 */
@@ -3932,3 +3932,21 @@ DispSleepMenuTexAll_8001A484 = 0x8001A484;  /* loops 22x calling DispSleepMenuTe
 md_game_ExecMode_800460E4 = 0x800460E4;  /* md_game mode dispatcher: dual jumptable (jtbl_800152B4/80015334) on mode id (s5-3), sets D_80099478, per-mode init+update+draw(func_800481E8)+md_game_check_mode+saSeMain+gpu_DrawSync */
 md_game_FlushDeferred_800464C4 = 0x800464C4;  /* if deferred flag D_8009947A set: get slot-7 obj, mode-switch on D_80099478, md_game_check_mode(7)+saSeMain, clear flag */
 game_StageMain_8005490C = 0x8005490C;  /* per-frame stage handler on ctrl struct D_800EFAE8 (built by game_StageSetup); phase machine on [+0] (-1 ret/0 init), first-frame relocates D_800EFB14 data + stage_InitCollision/camera_InitBoneData/FadeOut */
+/* Kengo rename map apply-batch 2026-07-13 (docs/naming/kengo-rename-audit-2026-07-13.md):
+   registry lines for glabel-applied names from 2971df5e that never got symbol-file
+   entries. Names match the existing linker-authoritative glabels (unsuffixed). */
+cdrom_CheckReady = 0x800800DC;  /* mode 2 -> Shutdown; else Initialize (+ ConfigSPU if mode 1); returns 1 ok / 0 fail */
+cdrom_SetDebugLevel = 0x80080168;  /* swaps debug level global D_800A11C0, returns old */
+cdrom_FramesToBcd = 0x800806A4;  /* frames+150 -> min/sec/frame BCD triplet (magic-const div chains) */
+cdrom_BcdToFrames = 0x800807A8;  /* BCD min/sec/frame triplet -> absolute frame count -150 */
+cdrom_SendCmd = 0x80081718;  /* writes cmd via g_cd_index_reg/g_cd_irq_reg register-pointer block */
+cdrom_ClearIrq = 0x800817A0;  /* acks IRQ via g_cd_irq_reg, drains D_800A1496 */
+cdrom_ConfigSPU = 0x80081880;  /* programs CD-audio path regs (g_cd_index_reg block + D_800A1490) */
+cdrom_Shutdown = 0x80081974;  /* irq_DisableInterrupts, clears cd state globals D_800A11B4..C8, irq_EnableInterrupts */
+cdrom_DmaToRam = 0x80081D1C;  /* CD sector DMA -> RAM via g_cd_dma_ctrl + g_cd_index_reg block */
+cdrom_DmaChain = 0x80081E1C;  /* chained CD DMA transfer; calls func_80080828; g_cd_index_reg/g_cd_dma_ctrl */
+stage_ExecInitFunc = 0x8003F168;  /* dispatch D_800948BC[stage_GetId()] per-stage init fn ptr */
+game_SetPlayerCount = 0x8003F218;  /* store D_800F665C + game_SetControllerPorts */
+stage_InitCollision = 0x8003F274;  /* per-player collision setup: game_GetPlayerCount, D_800A8FB0 block */
+stage_ApplyLighting = 0x8003F5CC;  /* 3x sys_StubEmpty3(light_ptr_i, target_ptr_i, i) - stubbed light apply, vestigial */
+cdrom_Initialize = 0x800819C4;  /* glabel-authoritative name; called by cdrom_CheckReady between Shutdown/ConfigSPU */

@@ -165,3 +165,34 @@ opposite and should be dropped from the map entirely.
 Net: the safe, unambiguous forward move is a **14-entry** apply-batch
 (spot-checked), plus a **9-entry deletion** (group C) from the map to stop it
 re-proposing known-wrong names.
+
+---
+
+## Correction + apply record (2026-07-13, verification session)
+
+Independent re-verification before the apply-batch (owner directive: re-derive
+opus-authored audit claims) found two errors in this report:
+
+1. **The 14 "PENDING" entries were NOT name-less.** Each stub's `glabel`
+   already carries the semantic name (e.g. `asm/funcs/func_800800DC.s` opens
+   `glabel cdrom_CheckReady`) — applied long ago by commit `2971df5e`
+   ("readability: 30 config.c/system.c function renames with regfix"). The
+   missing piece was only the `named_syms.txt` registry line. The claim
+   "0x800800DC has ... zero symbol-file entries" was true of the symbol FILES
+   but the "only the func_XXXXXXXX placeholder exists" framing was wrong.
+2. **Group C is 8 entries, not 9.** `0x800819C4 → cdrom_Initialize` is NOT a
+   map false positive: the tree's linker-authoritative glabel IS
+   `cdrom_Initialize`, and the body is called by `cdrom_CheckReady` between
+   `cdrom_Shutdown` and `cdrom_ConfigSPU` (CD-ROM re-init idiom). The
+   "applied name" `tsltm2loadimage_helper_800819C4` was a first-pass
+   auto-tag; it is now marked MISNAMED in `named_syms.txt`.
+
+Applied: 15 registry lines added to `named_syms.txt` (the 14 + cdrom_Initialize),
+unsuffixed to match the existing glabels; bodies spot-checked (cdrom cluster
+verified against the g_cd_index_reg/g_cd_irq_reg/g_cd_dma_ctrl register-pointer
+block; config.c four verified by call-graph). Deleted: the 8 group-C wrong
+entries from `tools/rename_funcs.py` (tombstone comments in place) — deletion
+is protective, not cosmetic: `--apply` renames `jal` sites but skips glabels,
+so a blind apply of a wrong entry would produce undefined linker symbols.
+Group B (11 more-specific-than-auto-name candidates) remains routed to the
+proposal engine, unapplied, as recommended.

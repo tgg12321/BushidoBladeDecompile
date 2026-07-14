@@ -17,13 +17,13 @@ RENAMES = {
     "func_800467B8": "snd_LoadBgm",
     "func_800468B0": "snd_PlayBgm",
     "func_800468DC": "snd_BgmCallback",
-    "func_80046914": "snd_StopBgm",
-    "func_80046934": "snd_AllocSe",
+    # "func_80046914": snd_StopBgm DELETED 2026-07-13 (applied: channel_helper_8; 1-line wrapper func_800453E0(8))
+    # "func_80046934": snd_AllocSe DELETED 2026-07-13 (applied: channel_helper_9; 1-line wrapper func_800455AC(9))
     "func_80046954": "snd_SeNullCallback",
     "func_8004695C": "snd_LoadSe",
     "func_800469A0": "snd_PlaySe",
     "func_800469C4": "snd_LoadSelection",
-    "func_80046A60": "snd_StopSelection",
+    # "func_80046A60": snd_StopSelection DELETED 2026-07-13 (applied: channel_helper_A; 1-line wrapper func_800453E0(0xA))
     "func_80046A80": "snd_SelectionCallback",
     "func_80046AA0": "snd_StopAll",
     "func_80046AE8": "snd_PlaySystemSe",
@@ -52,8 +52,8 @@ RENAMES = {
     "func_800474D0": "game_AnimCleanup",
     "func_800474F0": "game_EffInit2",
     "func_80047510": "game_EffCleanup2",
-    "func_80047530": "game_SndInit",
-    "func_80047550": "game_SndCleanup",
+    # "func_80047530": game_SndInit DELETED 2026-07-13 (body is motion_CheckSituation wrapper; LEGACY audit REJECTED)
+    # "func_80047550": game_SndCleanup DELETED 2026-07-13 (body is saEft03Start wrapper; LEGACY audit REJECTED)
     "func_80047570": "camera_InitBone2",
     "func_80047738": "game_AnimStart",
     "func_8004775C": "game_AnimStop",
@@ -259,7 +259,7 @@ RENAMES = {
     "func_8007ABB8": "initLoadImage",
     "func_8007AC18": "initStoreImage",
     "func_8007AC84": "gpu_CatPacket",
-    "func_8007A87C": "ot_GetTag",
+    # "func_8007A87C": ot_GetTag DELETED 2026-07-13 (applied: ptr_load_kseg0; KSEG0 pointer converter, not an OT walker)
     "func_8007A898": "ot_IsEnd",
     "func_8007A8B4": "ot_Link",
     "func_8007A8F0": "ot_Insert",
@@ -285,8 +285,8 @@ RENAMES = {
     "func_8007B234": "gpu_GetDebugLevel",
     # gpu.c — texture loaders
     "func_8007A4D8": "gpu_LoadTexture",
-    "func_8007A5C4": "gpu_LoadClut256",
-    "func_8007A62C": "gpu_LoadClut16",
+    # "func_8007A5C4": gpu_LoadClut256 DELETED 2026-07-13 (applied: suDraw2DLib family)
+    # "func_8007A62C": gpu_LoadClut16 DELETED 2026-07-13 (applied: suDraw2DLib family)
     # display.c — GTE functions (verified via COP2 control register assignments)
     "func_8007EEEC": "gte_SetRotMatrix",
     "func_8007EF1C": "gte_SetColorMatrix",
