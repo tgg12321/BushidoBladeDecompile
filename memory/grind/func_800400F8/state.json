@@ -29,7 +29,8 @@
   }
  ],
  "judge_constraints": [
-  "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Pre-comparison `s0 = 0;` + `if (s2[0] > s0)` is a blez-delay-slot scheduling coercion; clean fix: reorder `s0 = 0; s1 = s2;` (not `s1 = s2; s0 = 0;`) inside the if block and remove the pre-comparison assignment, which naturally puts `move s0, zero` in the delay slot without dead code.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)"
+  "REGRESSION DIAGNOSIS (completion bar: match must land WITHOUT this construct family): Pre-comparison `s0 = 0;` + `if (s2[0] > s0)` is a blez-delay-slot scheduling coercion; clean fix: reorder `s0 = 0; s1 = s2;` (not `s1 = s2; s0 = 0;`) inside the if block and remove the pre-comparison assignment, which naturally puts `move s0, zero` in the delay slot without dead code.  (committed code flagged by the re-audit patrol; review and re-do in pure C if confirmed. The byte-correct construct stays on main until a clean replacement lands.)",
+  "Complete with candidate.c v6 EXACTLY (no dead inner `s0 = 0;` may return), preceded by a brief source comment citing the frame evidence (target 0x28 frame = combine-leftover of the folded variable-compare guard, phantom slot sp+20) so future audit patrols don't re-flag the shape; this ruling is specific to func_800400F8's measured evidence and does not generally sanction known-zero-variable compares as a steering pocket; bytes must still be proven on main (retire/verify-oracle/queue done) before FINAL CALL."
  ],
  "origin": "regression",
  "created": "2026-07-07T03:55:05.318379+00:00"
