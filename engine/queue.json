@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8003C42C",
-      "file": "code6cac_c2",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: do{} while(0) at src/code6cac_c2.c:592 is completely unannotated \u2014 no '// FAKE' or '/* FAKE: ... */' comment. Per [[do-while-zero-exception]], the annotation is a mandatory transparency requirement; i"
-    },
-    {
       "func": "func_8003D7B4",
       "file": "code6cac_c2",
       "distance": 0,
@@ -3552,14 +3542,14 @@
     }
   ],
   "counts": {
-    "total": 419,
-    "active": 350,
+    "total": 418,
+    "active": 349,
     "by_status": {
-      "active": 350,
+      "active": 349,
       "parked": 69
     },
     "by_verdict": {
-      "C": 196,
+      "C": 195,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }

@@ -552,8 +552,13 @@ void func_8003C42C(void) {
         } while (i < n);
     }
     v0 = counts[0];
+    /* FAKE: D_800A382D store duplicated into all three arms — cross-jump
+       re-merges them at the join with the sb scheduled ahead of the
+       disp_SetFramebufferMode arg setup (single join store gets deferred
+       past the arg moves by sched2) */
     if (v0 != counts[1]) {
         v0 = counts[0] < counts[1];
+        D_800A382D = v0;
     } else {
         v0 = D_800A389B;
         i = 0;
@@ -579,12 +584,12 @@ void func_8003C42C(void) {
         v0 = counts[0];
         if (v0 != counts[1]) {
             v0 = v0 < counts[1];
+            D_800A382D = v0;
         } else {
             v0 = 2;
+            D_800A382D = v0;
         }
     }
-    D_800A382D = v0;
-    do { } while (0);
     disp_SetFramebufferMode(1, 0, 0, 0);
     D_800A37B8 = 0;
     D_800A3834 = 0x15;
