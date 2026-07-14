@@ -1,8 +1,10 @@
-/* func_8003B3A4 — sandbox distance 0 (re-verified s2b, 2026-07-13, annotation in
-   place in src). Judge ruling bd20027f sanctions the FAKE alias per-function, but
-   layer-1 cheat-reviewer returned NEEDS_USER on whether retroactive exhaustion cures
-   the 2026-03-26 first-reach taint — owner answer required before layer-2 +
-   candidate-ready (see tmp/grind/func_8003B3A4/s2/layer1_review_verdicts.md). */
+/* func_8003B3A4 — sandbox distance 0 (re-verified s2c, 2026-07-13, annotation in
+   place in src). Judge rulings bd20027f + 0e606ee0 sanction the FAKE alias
+   per-instance. s2c review: layer-1 PASS; layer-2 FAIL on PROCESS ground only —
+   the 23:04 Judge ruling self-answered the s2b layer-1 NEEDS_USER that hard rule
+   #1 reserves for the human user (all technical prerequisites re-verified intact
+   by BOTH layers). Awaiting Trenton's personal answer / delegation ruling — see
+   tmp/grind/func_8003B3A4/s2/layer2_review_verdict_s2c.md. */
 s32 func_8003B3A4(u8 *arg0) {
     u8 idx;
     u8 a1;
