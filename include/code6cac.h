@@ -454,7 +454,7 @@ extern void func_80049584(s32);
 extern s32 func_8005B8B8(s32);
 extern void func_8005C6D0(void);
 extern void bios_Exec(s32 *, s32, s32 *);
-extern void bios_FormatDevice_B(s32 *);
+extern s32 bios_FormatDevice_B(s32 *);
 extern void func_80079A30(s32 *, s32, s32, s32);
 extern void gpu_SetMode(s32);
 extern void gpu_SetDispMask(s32);

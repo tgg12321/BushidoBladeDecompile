@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "motion_LoadPreCalcData_80037F08",
-      "file": "code6cac_c_mid",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: File-scope __asm__ alias creates a second symbol (func_80037F08_ret) pointing to the void function motion_LoadPreCalcData_80037F08 with a different return type (s32), purely so the call site at line 5"
-    },
-    {
       "func": "func_8003F420",
       "file": "config",
       "distance": 0,
@@ -3492,14 +3482,14 @@
     }
   ],
   "counts": {
-    "total": 413,
-    "active": 344,
+    "total": 412,
+    "active": 343,
     "by_status": {
-      "active": 344,
+      "active": 343,
       "parked": 69
     },
     "by_verdict": {
-      "C": 190,
+      "C": 189,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }

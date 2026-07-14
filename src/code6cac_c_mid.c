@@ -177,21 +177,14 @@ extern s32 func_80037AA4(void);
 extern s32 func_80037B00(s32);
 extern s32 func_80037B90(s32, s32, s32, void *, s32);
 extern s32 func_80037C34(s32, s32, s32, void *, s32, s32, s32);
-extern s32 func_80037F08_ret(s32, s32);
 
 /* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */
 
-void motion_LoadPreCalcData_80037F08(s32 a0, s32 a1) {
+s32 motion_LoadPreCalcData_80037F08(s32 a0, s32 a1) {
     s32 buf[2];
     func_80079A30(buf, &D_800109C8, a0, a1);
-    bios_FormatDevice_B(buf);
+    return bios_FormatDevice_B(buf);
 }
-__asm__(
-    ".globl func_80037F08_ret
-"
-    "func_80037F08_ret = motion_LoadPreCalcData_80037F08
-"
-);
 
 typedef struct { s32 w[4]; } Quad;
 void func_80037F40(u8 *a0) {
@@ -552,7 +545,7 @@ state_5:
     return;
 
 state_7:
-    var_v0 = func_80037F08_ret(0, 0);
+    var_v0 = motion_LoadPreCalcData_80037F08(0, 0);
     if (var_v0 != 0) {
         var_v0 = 0xB;
         goto finish;

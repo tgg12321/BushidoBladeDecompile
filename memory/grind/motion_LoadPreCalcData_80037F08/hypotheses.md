@@ -1,1 +1,4 @@
 # Hypothesis ledger — motion_LoadPreCalcData_80037F08
+
+- [s2] [structural 2026-07-14] H: the 4-part retype (callee void->s32 + return; delete alias extern + __asm__ equate block; direct call at the state_7 arm; header extern s32 bios_FormatDevice_B) is byte-neutral for BOTH the callee and the caller. Probe: applied all 4 edits in src/ + include/, then `sandbox motion_LoadPreCalcData_80037F08 --disable all` and `sandbox pad_FuncAnalog --disable all`. Result: 0 (14/14) and 0 (173/173). VERDICT: CONFIRMED — the judge-constraint alias construct is removed with the honest pure-C spelling at distance 0.
+- [s2] [structural 2026-07-14] H (risk check from s1 frontier): retyping the callee perturbs pad_FuncAnalog's register allocation around the call. Probe: same pad_FuncAnalog sandbox run. Result: 0/173 unchanged. VERDICT: KILLED — identical prototype s32(s32,s32) yields identical caller RTL.
