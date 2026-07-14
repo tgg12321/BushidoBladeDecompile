@@ -536,6 +536,10 @@ void md_option_reset_800400B0(s32 *a0, s32 a1) {
         }
     }
 }
+/* Judge-ruled form (s2 grind, 2026-07-14): the variable compare `s2[0] > s0`
+ * is load-bearing — target's 0x28 frame is the combine-leftover of the folded
+ * guard (phantom slot sp+20); a literal `> 0` compare yields frame 0x20 + RA
+ * swap. Every statement here is live. Do not respell. */
 void func_800400F8(s32 *a0) {
     s16 *s2;
     s16 *s1;
@@ -545,7 +549,6 @@ void func_800400F8(s32 *a0) {
         s0 = 0;
         if (s2[0] > s0) {
             s1 = s2;
-            s0 = 0;
             do {
                 obj_Clear(s1[4]);
                 s1 = (s16 *)((s32)s1 + 0xD0);

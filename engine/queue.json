@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_800400F8",
-      "file": "config",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: Pre-comparison `s0 = 0;` + `if (s2[0] > s0)` is a blez-delay-slot scheduling coercion; clean fix: reorder `s0 = 0; s1 = s2;` (not `s1 = s2; s0 = 0;`) inside the if block and remove the pre-comparison "
-    },
-    {
       "func": "gpu_SetDispMask",
       "file": "display",
       "distance": 0,
@@ -3452,14 +3442,14 @@
     }
   ],
   "counts": {
-    "total": 409,
-    "active": 340,
+    "total": 408,
+    "active": 339,
     "by_status": {
-      "active": 340,
+      "active": 339,
       "parked": 69
     },
     "by_verdict": {
-      "C": 186,
+      "C": 185,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
