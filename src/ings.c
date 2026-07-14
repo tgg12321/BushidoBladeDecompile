@@ -197,14 +197,16 @@ void disp_SetFramebufferMode(s32 a0, s32 a1, s32 a2, s32 a3) {
     i = 0;
     ptr = (u8 *)&g_disp_fb_base;
     offset = 0;
-
-    for (; i < 2; i++) {
-        *(vu8 *)((u8 *)&g_disp_fb_flag + offset) = a0;
-        *(vu8 *)(ptr + 0x19) = a1;
-        *(vu8 *)(ptr + 0x1A) = a2;
-        *(vu8 *)(ptr + 0x1B) = a3;
-        ptr += 0x4090;
-        offset += 0x4090;
+loop:
+    *((u8 *)&g_disp_fb_flag + offset) = a0;
+    *(ptr + 0x19) = a1;
+    *(ptr + 0x1A) = a2;
+    *(ptr + 0x1B) = a3;
+    ptr += 0x4090;
+    offset += 0x4090;
+    i++;
+    if (i < 2) {
+        goto loop;
     }
 }
 

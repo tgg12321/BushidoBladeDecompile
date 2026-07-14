@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "disp_SetFramebufferMode",
-      "file": "ings",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: Active volatile coercion via *(vu8 *) casts on non-allowlisted game RAM globals; removing casts raises sandbox score 0\u21926; the volatile_cheats detector never caught this *(vu8 *)(ptr + N) spelling. Wor"
-    },
-    {
       "func": "math_Distance3D",
       "file": "ings",
       "distance": 0,
@@ -3432,14 +3422,14 @@
     }
   ],
   "counts": {
-    "total": 407,
-    "active": 338,
+    "total": 406,
+    "active": 337,
     "by_status": {
-      "active": 338,
+      "active": 337,
       "parked": 69
     },
     "by_verdict": {
-      "C": 184,
+      "C": 183,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
