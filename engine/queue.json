@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80035480",
-      "file": "code6cac_b2_pre",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: phi-variable-for-delay-slot-steal cheat: `s32 v0` assigned 1 in BOTH branches then `D_800A31D8 = v0` \u2014 both arms assign the same constant, so the intermediate has no semantic purpose; its sole effect "
-    },
-    {
       "func": "cpu_side_move_dir_2",
       "file": "code6cac_c2",
       "distance": 0,
@@ -3572,14 +3562,14 @@
     }
   ],
   "counts": {
-    "total": 421,
-    "active": 352,
+    "total": 420,
+    "active": 351,
     "by_status": {
-      "active": 352,
+      "active": 351,
       "parked": 69
     },
     "by_verdict": {
-      "C": 198,
+      "C": 197,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }

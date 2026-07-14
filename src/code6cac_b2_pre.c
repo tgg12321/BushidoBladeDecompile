@@ -125,7 +125,6 @@ extern u8 D_800A31D8;
 extern void func_8003A41C(void);
 extern void func_80020CDC(void);
 void func_80035480(void) {
-    s32 v0;
     gpu_EnableDisplay();
     gpu_InitDisplay();
     if (D_800A31DA == 0) {
@@ -138,11 +137,8 @@ void func_80035480(void) {
     if (D_800A31D8 != 0) {
         obj_InitAll();
         D_800A390E = -1;
-        v0 = 1;
-    } else {
-        v0 = 1;
     }
-    D_800A31D8 = v0;
+    D_800A31D8 = 1;
     func_80035438();
     func_80077820((s32)0x80118800);
     D_800A37B8 = 0;
