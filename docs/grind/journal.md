@@ -193,3 +193,4 @@
 - 2026-07-13 19:57 func_80035480 COMPLETED-C after 2 sessions.
 - 2026-07-13 20:04 cpu_side_move_dir_2 COMPLETED-C after 2 sessions.
 - 2026-07-13 20:18 func_8003C42C COMPLETED-C after 2 sessions.
+- 2026-07-13 20:47 CIRCUIT-BREAK: 3 consecutive invalid sessions on func_8003D7B4
