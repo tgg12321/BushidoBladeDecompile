@@ -137,7 +137,6 @@ void func_8003F3D4(s16 *a0) {
 }
 void func_8003F420(s32 a0, s32 a1) {
     s32 s3, s2, s1;
-    int new_var;
     s32 s0;
     a0 += 0x7D00;
     a1 += 0x7D00;
@@ -152,7 +151,7 @@ void func_8003F420(s32 a0, s32 a1) {
         s1 = 1;
     }
     if (s0 < 1000) {
-        s0 = (new_var = -1);
+        s0 = -1;
     } else {
         s0 = 1;
     }

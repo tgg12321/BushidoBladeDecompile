@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8003F420",
-      "file": "config",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: Dead-write cheat: `int new_var;` is assigned in `s0 = (new_var = -1);` and never read again. The write to new_var is a pure dead store \u2014 semantically equivalent to `s0 = -1;`. This is a dead-write-thr"
-    },
-    {
       "func": "func_8003FE40",
       "file": "config",
       "distance": 0,
@@ -3482,14 +3472,14 @@
     }
   ],
   "counts": {
-    "total": 412,
-    "active": 343,
+    "total": 411,
+    "active": 342,
     "by_status": {
-      "active": 343,
+      "active": 342,
       "parked": 69
     },
     "by_verdict": {
-      "C": 189,
+      "C": 188,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
