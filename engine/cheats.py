@@ -35,6 +35,37 @@ PROLOGUE_CONFIG = "tools/prologue_config.json"
 DELAY_SLOT_RA = "tools/delay_slot_ra_funcs.txt"
 FRAME_FIX = "tools/frame_fix_funcs.txt"
 
+# Per-function maspsx gate lists — assembler-behavior toggles keyed by function
+# name, adjudicated 2026-07-13 (.claude/rules/maspsx-gate-lists.md). They are
+# part of the CANONICAL build (engine/buildconfig.py), NOT sandbox-stripped:
+# the fidelity-class behaviors model the ORIGINAL toolchain (stripping them
+# would score against a wrong toolchain model). Completion must still be
+# transparent about them, and cheat-pathway lists must never gate a C function
+# (a pure-C spelling exists for those effects — the honest fix is the C).
+#   fidelity      — no C spelling can produce the effect; the gate restores
+#                   original-assembler behavior at oracle-verified sites.
+#   cheat-pathway — a C spelling EXISTS (e.g. unsigned types for multu);
+#                   gating a C function through it is a cheat by config.
+MASPSX_GATE_LISTS: dict[str, str] = {
+    "maspsx_label_nop_funcs.txt": "fidelity",      # ASPSX load-delay nop; fork .L-prefix blind spot
+    "expand_lb_funcs.txt": "fidelity",             # lb->lbu+sll+sra; all C spellings fold to lb (probe 2026-07-13)
+    "expand_dest_funcs.txt": "fidelity",           # $rdest-vs-$at macro-expansion temp; assembler-internal choice
+    "multu_funcs.txt": "cheat-pathway",            # mult->multu; C spelling exists (unsigned operands)
+    "multu_pad_funcs.txt": "cheat-pathway",        # injected nops between mult/mflo; bytes from config
+}
+
+
+def maspsx_gate_entries(func: str) -> list[tuple[str, str]]:
+    """(list_file, classification) for every maspsx gate list that names
+    `func`. Empty list == the function's bytes have no per-function assembler
+    toggle behind them. Names are the first whitespace token per non-comment
+    line (same format as the other one-name-per-line sidecars)."""
+    out: list[tuple[str, str]] = []
+    for path, cls in MASPSX_GATE_LISTS.items():
+        if func in _prologue_txt_funcs(path):
+            out.append((path, cls))
+    return out
+
 
 def canonical_asm_funcs(path: str = INLINE_ASM_CANONICAL) -> set[str]:
     """Functions authorized as COMPLETED-INLINE-ASM-CANONICAL

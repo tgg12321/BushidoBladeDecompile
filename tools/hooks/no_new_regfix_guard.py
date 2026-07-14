@@ -76,6 +76,23 @@ SANCTIONED_CATEGORIES = {
 # Files under guard. The hook silently passes if neither is in the staged diff.
 GUARDED_FILES = ("regfix.txt", "asmfix.txt")
 
+# Per-function maspsx gate lists (adjudicated 2026-07-13 — see
+# .claude/rules/maspsx-gate-lists.md). Net ADDITIONS of function names need
+# the mapped [infra-rule: <category>] tag; lists mapped to None are
+# cheat-pathway (a pure-C spelling exists for their effect) and net additions
+# are blocked unconditionally — fix the C instead.
+GATE_LIST_CATEGORIES: dict[str, str | None] = {
+    "maspsx_label_nop_funcs.txt": "maspsx-label-nop",
+    "expand_lb_funcs.txt": "expand-lb",
+    "expand_dest_funcs.txt": "expand-dest",
+    "multu_funcs.txt": None,
+    "multu_pad_funcs.txt": None,
+}
+SANCTIONED_CATEGORIES |= {c for c in GATE_LIST_CATEGORIES.values() if c}
+
+# Gate-list lines are bare function names (no `func:` prefix).
+GATE_NAME_RE = re.compile(r"^[a-zA-Z_][a-zA-Z_0-9]*\s*$")
+
 # `[infra-rule: <category>]` tag parser.
 INFRA_TAG_RE = re.compile(
     r"\[infra-rule:\s*([a-zA-Z][a-zA-Z0-9_-]*)\s*\]",
@@ -146,11 +163,66 @@ def find_infra_tag(body: str) -> str | None:
     return m.group(1).lower()
 
 
+def count_net_gate_lines(diff: str) -> int:
+    """Net added bare-function-name lines in a gate-list unified diff."""
+    added = removed = 0
+    for line in diff.splitlines():
+        if not line or line.startswith(("+++", "---", "@@", "diff ",
+                                        "index ", "new file", "deleted file")):
+            continue
+        if line.startswith("+") and GATE_NAME_RE.match(line[1:]):
+            added += 1
+        elif line.startswith("-") and GATE_NAME_RE.match(line[1:]):
+            removed += 1
+    return added - removed
+
+
+def check_gate_lists(files: list[str], body: str) -> int:
+    """Guard the per-function maspsx gate lists. Returns 0 to allow."""
+    tag = find_infra_tag(body)
+    for path, category in GATE_LIST_CATEGORIES.items():
+        if path not in files:
+            continue
+        net = count_net_gate_lines(staged_diff_unified0([path]))
+        if net <= 0:
+            continue
+        if category is None:
+            print(
+                f"no_new_regfix_guard: BLOCKED — {net} net function(s) added to "
+                f"{path}, a CHEAT-PATHWAY maspsx gate (a pure-C spelling exists "
+                f"for its effect; e.g. unsigned operands emit multu naturally). "
+                f"Fix the C instead. Adjudication: "
+                f".claude/rules/maspsx-gate-lists.md (2026-07-13).",
+                file=sys.stderr,
+            )
+            return 1
+        if tag == category:
+            print(
+                f"no_new_regfix_guard: ALLOW — {net} net gate entry(ies) in "
+                f"{path} under [infra-rule: {category}]",
+                file=sys.stderr,
+            )
+            continue
+        print(
+            f"no_new_regfix_guard: BLOCKED — {net} net function(s) added to "
+            f"{path} without [infra-rule: {category}] in the commit body. "
+            f"Per-function maspsx gates are fidelity shims with a growth gate: "
+            f"the commit body must carry the tag + a one-line justification "
+            f"citing the target-site evidence (the oracle enforces the bytes; "
+            f"the tag enforces the audit trail). See "
+            f".claude/rules/maspsx-gate-lists.md.",
+            file=sys.stderr,
+        )
+        return 1
+    return 0
+
+
 def main(msg_path: str) -> int:
     # Pre-check: are any guarded files staged? If not, silent exit.
     files = staged_files()
     touched = [p for p in files if p in GUARDED_FILES]
-    if not touched:
+    gate_touched = [p for p in files if p in GATE_LIST_CATEGORIES]
+    if not touched and not gate_touched:
         return 0
 
     try:
@@ -163,6 +235,13 @@ def main(msg_path: str) -> int:
     # Strip git comment lines (start with `#`).
     body = "\n".join(line for line in msg.splitlines()
                      if not line.startswith("#"))
+
+    if gate_touched:
+        rc = check_gate_lists(files, body)
+        if rc != 0:
+            return rc
+    if not touched:
+        return 0
 
     diff = staged_diff_unified0(list(touched))
     net = count_net_rule_lines(diff)

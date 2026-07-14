@@ -222,7 +222,16 @@ def mark_done(func: str) -> dict:
                            f"compile (a cheat; audit 2026-06-15). Delete the entry: if "
                            f"cc1 then byte-matches it is COMPLETED-C, else find the C "
                            f"lever or authorize canonical-asm.")}
+    gates = cheats.maspsx_gate_entries(func)
     if func not in cheats.canonical_asm_funcs():
+        bad_gates = [p for p, cls in gates if cls == "cheat-pathway"]
+        if bad_gates:
+            return {"ok": False, "func": func,
+                    "reason": (f"{func} is gated in {', '.join(bad_gates)} — a "
+                               f"cheat-pathway maspsx gate (a pure-C spelling exists "
+                               f"for that effect; e.g. unsigned operands for multu). "
+                               f"Fix the C and delete the gate entry; see "
+                               f".claude/rules/maspsx-gate-lists.md.")}
         cheat_count = inlineasm.file_func_cheat_asm_count(item["file"], func)
         if cheat_count > 0:
             return {"ok": False, "func": func,
@@ -244,8 +253,14 @@ def mark_done(func: str) -> dict:
     completion_state = ("COMPLETED-INLINE-ASM-CANONICAL"
                         if func in cheats.canonical_asm_funcs()
                         else "COMPLETED-C")
-    return {"ok": True, "func": func, "completion": completion_state,
-            "sha1": v.get("build_sha1")}
+    result = {"ok": True, "func": func, "completion": completion_state,
+              "sha1": v.get("build_sha1")}
+    if gates:
+        # Transparency, not refusal: fidelity-class gates model the original
+        # assembler (no C spelling exists) — record the dependency so the
+        # completion is auditable (.claude/rules/maspsx-gate-lists.md).
+        result["maspsx_gates"] = [p for p, _cls in gates]
+    return result
 
 
 def mark_parked(func: str, reason: str = "") -> dict:

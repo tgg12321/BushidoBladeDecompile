@@ -56,6 +56,7 @@ def main() -> int:
     canon = cheats.canonical_asm_funcs()
 
     violations: list[str] = []
+    gate_notes: list[str] = []
     total_completed_c = 0
     total_completed_canon = 0
 
@@ -76,6 +77,7 @@ def main() -> int:
                      + len(cheats.func_rule_lines(func, cheats.ASMFIX)))
             cheat_count = inlineasm.file_func_cheat_asm_count(stem, func)
             prologue = cheats.func_prologue_count(func)
+            gates = cheats.maspsx_gate_entries(func)
             is_canon = func in canon
 
             if is_canon:
@@ -88,6 +90,11 @@ def main() -> int:
                     violations.append(
                         f"{func} ({stem}.c): COMPLETED-INLINE-ASM-CANONICAL but carries "
                         f"{prologue} prologue_fix entry(ies)")
+                for path, _cls in gates:
+                    gate_notes.append(
+                        f"{func} ({stem}.c): canonical-asm body gated in {path} — "
+                        f"vestigial (glabel bodies never set maspsx current_func); "
+                        f"delete the entry at the next idle rebuild window")
                 continue
 
             # COMPLETED-C invariants: no rules, no cheat constructs, no prologue_fix.
@@ -106,10 +113,31 @@ def main() -> int:
                     f"{cheat_count} cheat construct(s) in source — should be INCOMPLETE")
             else:
                 total_completed_c += 1
+                # COMPLETED-C + maspsx gate: cheat-pathway gates are violations
+                # (a pure-C spelling exists — the completion leaned on config);
+                # fidelity gates are legitimate but must stay VISIBLE
+                # (.claude/rules/maspsx-gate-lists.md, adjudicated 2026-07-13).
+                for path, cls in gates:
+                    if cls == "cheat-pathway":
+                        violations.append(
+                            f"{func} ({stem}.c): COMPLETED-C but gated in {path} "
+                            f"(cheat-pathway: a pure-C spelling exists for that "
+                            f"effect) — should be INCOMPLETE until the C is fixed "
+                            f"and the entry deleted")
+                    else:
+                        gate_notes.append(
+                            f"{func} ({stem}.c): COMPLETED-C depends on {path} "
+                            f"(fidelity-class assembler gate)")
 
     print(f"COMPLETED-C:                    {total_completed_c} functions")
     print(f"COMPLETED-INLINE-ASM-CANONICAL: {total_completed_canon} functions")
     print(f"INCOMPLETE (in queue):          {len(in_queue)} functions")
+
+    if gate_notes:
+        print(f"\nmaspsx gate-dependent completions ({len(gate_notes)}) — "
+              f"legitimate, tracked for transparency:")
+        for n in gate_notes:
+            print(f"  -- {n}")
 
     if violations:
         print(f"\nCOMPLETION-INTEGRITY VIOLATIONS ({len(violations)}):")
