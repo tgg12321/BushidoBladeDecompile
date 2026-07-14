@@ -727,11 +727,11 @@ s32 func_800388A8(void) {
     }
     buttons = D_80102794;
     if (buttons & 0x400040) {
-        result = -1;
         func_8005C650(1, 0x7F, 0x7F);
-        if (D_800A3318 != 0) {
-        } else {
+        if (D_800A3318 == 0) {
             result = 1;
+        } else {
+            result = -1;
         }
     } else if (buttons & (u32)0x80008000) {
         func_8005C650(0, 0x7F, 0x7F);
