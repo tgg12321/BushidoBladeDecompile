@@ -1,7 +1,7 @@
 {
  "func": "func_8003B3A4",
  "file": "code6cac_c_ab",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,13 +15,19 @@
    "floor": 0,
    "modality": "structural",
    "headline": "Structural exhaustion grid COMPLETE: deref-of-address killed (6) and block scope proven LOAD-BEARING (fn-scope pointer = 7); annotated alias restored after FOURTH hygiene drop, sandbox 0 re-verified; "
+  },
+  {
+   "session": 3,
+   "floor": 0,
+   "modality": "structural",
+   "headline": "s3: annotation restored after FIFTH hygiene drop, sandbox 0 re-verified; split decl/init proven same-bytes equivalent (spelling not load-bearing, block position is); HOLD respected \u2014 owner answer + op"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "No structural work remains; the construct is fully vetted and the match is bytes-proven \u2014 the block is owner/operator action only",
-   "mechanism": "Layer-2 FAIL was on the process ground (Judge self-answered a NEEDS_USER reserved for the human), with all technical prerequisites independently re-verified intact by both review layers",
-   "next_probe": "Driver/operator: surface that this function should not consume further grind sessions until Trenton answers the 23:22 decisions.md question; then re-run layer-1/2 per the ruling and emit candidate-ready"
+   "hypothesis": "No structural work remains; the block is owner/operator action only",
+   "mechanism": "Layer-2 FAIL was on process ground (Judge self-answered a NEEDS_USER reserved for the human); all technical prerequisites re-verified intact; HOLD forbids in-pipeline resolution",
+   "next_probe": "Driver/operator: stop scheduling grind sessions on func_8003B3A4 until Trenton answers the decisions.md '2026-07-13 23:22' question; operator should COMMIT the /* FAKE */ annotation at src/code6cac_c_ab.c:467-471 to stop the hygiene revert cycle; then re-run layer-1/2 per the ruling and emit candidate-ready"
   }
  ],
  "judge_constraints": [

@@ -26,8 +26,23 @@
 - result: distance 7 (55/56) — worse than block-scoped 0 AND worse than direct-write 6; block scope is LOAD-BEARING
 - verdict: KILLED
 
+- [s3 2026-07-14] H: the annotated alias still measures 0 after the FIFTH hygiene drop + restore. Probe: sandbox --disable all. Result: 0 (56/56). **CONFIRMED** (s3/sandbox_annotated_alias_s3_restore5.json).
+- [s3 2026-07-14] H: the decl-with-initializer spelling is load-bearing (split `u8 *p; p = &D_8010277D;` would diverge). Probe: sandbox --disable all with the split form. Result: 0 (56/56) — same bytes. **KILLED** — the spelling is an equivalence class; the load-bearing lever is statement position inside the inner block, not the decl form (s3/variantH_split_decl_init.txt). Committed shape unchanged per the Judge's exact-shape constraint.
+
 ## [s2] The annotated block-scoped alias still measures 0 on the current tree after the fourth hygiene drop of the /* FAKE */ annotation
 - mechanism: Annotation is comment-only; codegen unchanged from the s1/s2 matched form
 - probe: restore annotation at src/code6cac_c_ab.c:467-471, sandbox --disable all (sandbox_annotated_alias_s2e_restore4.json)
 - result: distance 0 (56/56, rules_dropped 0)
 - verdict: CONFIRMED
+
+## [s3] The /* FAKE */-annotated block-scoped alias still measures 0 on the current tree after the fifth hygiene drop + restore
+- mechanism: Annotation is comment-only; codegen unchanged from the s1/s2 matched form
+- probe: Restore annotation at src/code6cac_c_ab.c:467-471 from candidate.c; sandbox func_8003B3A4 --disable all
+- result: distance 0 (56/56, rules_dropped 0) — tmp/grind/func_8003B3A4/s3/sandbox_annotated_alias_s3_restore5.json
+- verdict: CONFIRMED
+
+## [s3] The decl-with-initializer spelling is load-bearing: splitting it (u8 *p; p = &D_8010277D;) inside the block would diverge
+- mechanism: If initializer expansion at the declaration point differed from assignment-statement expansion, the address pseudo's materialization slot between the diamonds would move
+- probe: sandbox func_8003B3A4 --disable all with the split decl/init form in src
+- result: distance 0 (56/56) — byte-identical; the load-bearing lever is the statement's position INSIDE the inner block (after the first diamond), not the decl spelling. Consistent with s2e fn-scope=7. Committed shape restored to exact decl-with-init per the Judge's exact-shape constraint. Artifact: tmp/grind/func_8003B3A4/s3/variantH_split_decl_init.txt
+- verdict: KILLED

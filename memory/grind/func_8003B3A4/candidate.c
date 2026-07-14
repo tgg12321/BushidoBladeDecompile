@@ -1,6 +1,9 @@
-/* func_8003B3A4 — sandbox distance 0 (re-verified s2e, 2026-07-14, annotation
-   restored in src after FOURTH hygiene drop — must land in a COMMIT to stick, per
-   the 23:22 Judge ruling). Exhaustion grid COMPLETE after s2e: direct 6 /
+/* func_8003B3A4 — sandbox distance 0 (re-verified s3, 2026-07-14, annotation
+   restored in src after FIFTH hygiene drop — must land in a COMMIT to stick, per
+   the 23:22 Judge ruling). s3 also proved the decl-with-init spelling is an
+   equivalence class (split `u8 *p; p = &...;` also 0) — the lever is statement
+   position inside the block, not the decl form; shape kept exact per the Judge
+   constraint. Exhaustion grid COMPLETE after s2e: direct 6 /
    ternary 6 / diamond-local 8 / offset-fold 6 / multi-use 2 / deref-of-addr 6 /
    fn-scope-pointer 7 / block-scoped annotated alias 0. s2e also proved the inner
    BLOCK SCOPE is load-bearing (fn-scope decl materializes the address into $a2

@@ -49,3 +49,17 @@
 - [s2] Main dropped the /* FAKE */ annotation a FOURTH time; restored and re-verified 0 this session — per the 23:22 Judge ruling only an operator COMMIT of the annotation stops the hygiene revert cycle
 
 - [s2] Per the HOLD constraint no layer-2 re-run and no new ruling-request was made this session; the function's only remaining unblockers are (i) Trenton personally answering the s2b NEEDS_USER on docs/grind/decisions.md '2026-07-13 23:22' and (ii) the operator committing the annotation
+
+- [s3] [structural 2026-07-14] Main had dropped the /* FAKE */ annotation a FIFTH time; restored at src/code6cac_c_ab.c:467-471 and re-measured sandbox 0 (56/56, --disable all, rules_dropped 0; tmp/grind/func_8003B3A4/s3/sandbox_annotated_alias_s3_restore5.json). The drop/restore cycle will continue every session until the operator commits the annotation per the 23:22 ruling.
+
+- [s3] [structural 2026-07-14] NEW equivalence measurement: split decl/init spelling (`u8 *p; p = &D_8010277D;` inside the block) ALSO scores 0 (56/56) — the decl-with-initializer spelling is NOT load-bearing; the lever is the statement's position INSIDE the inner block (after the first diamond), consistent with s2e's fn-scope-pointer=7 kill. Committed shape stays decl-with-init per the binding "exactly this minimal shape" Judge constraint. Artifact: tmp/grind/func_8003B3A4/s3/variantH_split_decl_init.txt (matching form, so NOT placed in rejected/).
+
+- [s3] [structural 2026-07-14] Per the HOLD: no layer-2 run, no ruling-request. Structural exhaustion grid stands closed (8 non-matching forms + 2 matching spellings). Nothing remains for grind sessions; unblockers are owner answer (decisions.md 23:22) + operator commit of the annotation.
+
+- [s3] Main dropped the /* FAKE */ annotation a FIFTH time (alias present un-annotated at src/code6cac_c_ab.c:466-473 at session start); restored and re-verified 0 — the drop/restore cycle will repeat every session until the operator commits the annotation per the 23:22 Judge ruling
+
+- [s3] Split decl/init spelling scores 0 (same-bytes equivalence class with decl-with-init); the structural grid now has 8 measured non-matching forms + 2 matching spellings, confirming the inner-block position is the sole load-bearing lever
+
+- [s3] Per the HOLD constraint: no layer-2 run, no ruling-request spawned this session; nothing remains for grind sessions on this function
+
+- [s3] Final state: annotated candidate form in place in src, sandbox 0 (56/56, --disable all, rules_dropped 0)
