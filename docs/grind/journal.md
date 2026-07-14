@@ -201,3 +201,4 @@
 - 2026-07-14 12:59 CIRCUIT-BREAK: 3 consecutive invalid sessions on func_8003B3A4
 - 2026-07-14 13:45 OWNER RULING: func_8003B3A4 pointer-alias occurrence SANCTIONED (per-instance, fences in decisions.md); HOLD lifted, /* FAKE */ annotation committed; circuit-break cleared, driver relaunched.
 - 2026-07-14 13:52 func_8003B3A4 COMPLETED-C after 5 sessions.
+- 2026-07-14 13:56 func_800388A8 COMPLETED-C after 2 sessions.
