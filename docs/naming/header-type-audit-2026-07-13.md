@@ -223,3 +223,43 @@ target-bytes confirmation.
 3. Consider whether the file-local inconsistent-decl cluster (esp.
    **D_800A3528**) should be hoisted into a header — the cleanest signed
    idioms live there, but they need a home before the four-prong rule applies.
+
+---
+
+## CANDIDATE 1 resolution — attempted 2026-07-13, layer-2 FAIL, REVERTED
+
+The prong-(b) byte check this report requested was run: **every direct
+symbol-addressed load of D_8010277C in the target disassembly is `lb`
+(34/34; the 12 remaining refs are width-agnostic `sb` stores)**. On that
+basis the flip was implemented (header s8 + ~12 scalar-cast eliminations;
+full build SHA1 == oracle, byte-neutral) and sent to layer-2 review per the
+rule's protocol.
+
+**Layer-2 verdict: FAIL — reverted.** Two findings, both independently
+verified by the reviewer against HEAD and the tree:
+
+1. **Prong (d) fails as implemented.** The target emits `lbu` at the two
+   pointer-mediated byte-copy reads in already-COMPLETED-C `func_8003B2C8` /
+   `func_8003B328` (src/code6cac_c_ab.c:431,444). Under the old `u8` decl
+   those sites need no cast; under `s8` they need a NEW `(u8 *)` view cast
+   to keep their bytes. Net effect: ~12 scalar casts removed, 2 new pointer
+   casts created — "a redistribution of the coercion, not an elimination,"
+   which is the rule's named disqualifying shape.
+2. **Prong (a) is not affirmatively met.** Every traceable write is < 0x80
+   (sign-neutral); no use site exhibits sign-dependent program logic. The
+   `lb` opcodes prove the original *expression type* was signed at scalar
+   reads, but not that signedness ever mattered behaviorally — and the one
+   unbounded write path (the D_801027A0-sourced table store at
+   code6cac_b.c:~3928) was not bounded.
+
+**Standing disposition: D_8010277C stays `extern u8`.** The 34-lb evidence
+is preserved here for any future attempt, which per the reviewer must (a)
+bound the runtime value range of the table-store write path, and (b) achieve
+a whole-tree cast elimination that does not touch the two lbu byte-copy
+wrappers. The existing `(s8)` scalar casts remain byte-load-bearing and
+correct as-is.
+
+Also confirmed during this pass: `D_80102787`'s same-day `(s8)` cast
+(`e83bce24`, Grinder Match func_800343F0) is byte-load-bearing (target
+emits `lb` at its read) — it is a match-required spelling, not gratuitous
+residual-chasing; no revert warranted.
