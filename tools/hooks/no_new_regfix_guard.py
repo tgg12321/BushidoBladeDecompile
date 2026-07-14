@@ -88,7 +88,10 @@ GATE_LIST_CATEGORIES: dict[str, str | None] = {
     "multu_funcs.txt": None,
     "multu_pad_funcs.txt": None,
 }
-SANCTIONED_CATEGORIES |= {c for c in GATE_LIST_CATEGORIES.values() if c}
+# NB: gate-list tags are deliberately NOT unioned into SANCTIONED_CATEGORIES —
+# that set authorizes net-new regfix.txt/asmfix.txt RULE lines, a separate
+# guard surface. check_gate_lists() matches `tag == category` directly, so the
+# two surfaces cannot cross-authorize (layer-2 review finding, 2026-07-13).
 
 # Gate-list lines are bare function names (no `func:` prefix).
 GATE_NAME_RE = re.compile(r"^[a-zA-Z_][a-zA-Z_0-9]*\s*$")
