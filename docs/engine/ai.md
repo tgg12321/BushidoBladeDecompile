@@ -14,8 +14,10 @@ BB2 is a one-strike-kill fighting game. There are no combo trees in the
 modern sense — each "move" is a discrete attack with weapon hit-volume,
 direction, and timing. The AI's job is to:
 
-1. Decide what stance to be in (high, middle, low — `D_800A36A4` selects
-   stance / mode group).
+1. Decide what stance to be in (high, middle, low). (NB an earlier
+   revision credited `D_800A36A4` as the stance selector — that global is
+   actually `g_stage_id_current`, the current stage/arena id; the stance
+   variable is not yet identified by name.)
 2. Decide what direction to face the opponent (4-way: forward / back /
    side-left / side-right).
 3. Decide when to commit to an attack.
@@ -47,11 +49,16 @@ committed, the move runs to completion under the per-frame pipeline.
 ### `cpu_set_move_command_and_dir_for_no_action` (`code6cac_b.c:3510`)
 
 "No action" = AI is between moves. Builds a shuffled list of which moves
-are currently legal (from a mask in `D_80106A50` against waza-enable bits in
-`D_8008D538[stance]`):
+are currently legal, starting from the global waza-enable constant
+`0x3EF3DF` (~26 bits) minus one bit disabled for the current character's
+class:
 
-1. Walks bits 0..26 of `D_80106A50` masked against the stance's enable
-   bitmap; for each enabled bit, appends the move ID to a buffer at
+1. Walks bits 0..26 of `D_80106A50` (a per-frame move-enable bitmap)
+   masked against `0x3EF3DF & ~(1 << g_char_class_id_table[char_id])`,
+   where `char_id = (s8)g_practice_lesson_char_id` (D_8010277C) and
+   `g_char_class_id_table` (D_8008D538) is the per-character class-id
+   byte table (values 0..0x1A — NOT a bitmask, and indexed by character,
+   not stance); for each enabled bit, appends the move ID to a buffer at
    `D_801077B0`.
 2. Shuffles the buffer 108 times (`bb2_rand() % count` is the RNG —
    `bb2_rand` (0x80079154) is the engine's LFSR pseudo-RNG).
@@ -119,11 +126,13 @@ position from the stage-bound table `stage_GetDataPtr()`, then advances the
 fighter position toward it. Updates eight body/shadow position offsets
 (0xF4/0xFC + 0xD8/0xE0 + 0xB8/0xC0 + 0x104..0x13C).
 
-The side-move target depends on `D_800A36A4` (stance):
-- Stance 3: hardcoded `(0x2EE0, 0x1770)` (or sign-flipped based on current
-  position).
-- Other stances: read from `stage_ptr + (D_800A36A4*0xC + temp_s2*3) * 2`
-  — per-stance, per-fighter-index lookup.
+The side-move target depends on `g_stage_id_current` (`D_800A36A4`) — the
+current stage/arena id, not a stance:
+- Stage id 3: hardcoded `(0x2EE0, 0x1770)` (or sign-flipped based on
+  current position) — that arena's corner instead of the table.
+- Other stages: read from `stage_ptr + (stage_id*0xC + temp_s2*3) * 2`
+  — per-stage, per-fighter-index lookup, where
+  `stage_ptr = stage_GetDataPtr()`.
 
 ### `cpu_check_move_dir_pattern_enemy_attack` (`code6cac.c:1293`)
 
@@ -177,8 +186,11 @@ plausible mechanisms are visible:
 - The `bb2_rand() % count` shuffling in
   `cpu_set_move_command_and_dir_for_no_action` is the primary "AI randomness"
   source.
-- Per-character `D_8008E338`-style tables and a stance-mask
-  `D_8008D538[stance]` determine which moves are even legal at any time.
+- Per-character `D_8008E338`-style tables and the per-character class-id
+  table `g_char_class_id_table` (D_8008D538, indexed by
+  `g_practice_lesson_char_id`) — which disables one per-class bit in the
+  global waza-enable constant `0x3EF3DF` — determine which moves are even
+  legal at any time.
 - `D_8010277E..D_80102787` (initialized in `func_8001C444`, `code6cac.c:1337`)
   are small tactical AI flags — probably "be aggressive", "be defensive",
   etc.

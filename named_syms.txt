@@ -1177,7 +1177,7 @@ g_record_table_16_800A4750                              = 0x800A4750;  /* 16-byt
 /* === Address-taken buffers passed to named functions (2026-05-17) === */
 /* Each consumer's role identifies the buffer's purpose. */
 g_irq_handler_block_80081F1C                            = 0x80081F1C;  /* passed to irq_EnableInterrupts as the IRQ handler / context */
-g_seq_start_buffer_8008D9EC                             = 0x8008D9EC;  /* passed to seq_Start; SEQ packet or VAB data buffer */
+g_seq_start_buffer_8008D9EC                             = 0x8008D9EC;  /* MISNAMED: per-class 0/1 flag byte table (0x00 x12 then 0x01s), chained after g_char_class_id_table[char_id] at 9 src sites (code6cac_b.c:3593+); not a SEQ buffer */
 g_sys_mem_clear_dst_800A2614                            = 0x800A2614;  /* destination buffer for sys_MemClear */
 g_satan0_gauge_data_block_800A28D4                      = 0x800A28D4;  /* passed to saTan0GaugeDraw; gauge data block */
 g_memcard_file_read_buf                                 = 0x800A3688;  /* passed to bios_FileRead_B; memcard read destination */
@@ -2217,7 +2217,8 @@ g_gpu_shadow_prim_base                                  = 0x800A3D30;  /* base p
 g_cdread_sectors_remaining                              = 0x80101E80;  /* sectors left to read; decremented per chunk; 0 = done, -1 = error, -2 = position mismatch */
 g_cdread_dest_buffer                                    = 0x80101E84;  /* destination buffer ptr; advances by 0x800 (2048 = sector size) per read */
 g_cdread_expected_bcd_frame                             = 0x80101EA0;  /* next-expected CD position in BCD; mismatch with cdrom_BcdToFrames triggers error */
-g_event_class_lookup_table                              = 0x8008EC38;  /* lookup table indexed by `arg0 * 2`; likely PSX BIOS event class IDs */
+g_event_class_lookup_table                              = 0x8008EC38;  /* MISNAMED: not BIOS event classes (no 0xF-prefix words; consumers derive CD sector counts >>11) -- see g_special_cam_lengths */
+g_special_cam_lengths = 0x8008EC38;  /* byte-length column of the SpecialCam cinematic-camera records (stride 8: SpecialCam@+0 = BCD MSF sector addr, this@+4 = length in bytes; ceil(len/0x800) = sectors). Consumers: replay_camera_Init region + func_80036F28 (code6cac_b2_post.c:256-336) */
 
 /* === Mottest (motion test mode) sequencer (2026-05-17) -- 5 highs === */
 /* From code6cac_b.c mottest_disp (line 3622): walks through test slots */

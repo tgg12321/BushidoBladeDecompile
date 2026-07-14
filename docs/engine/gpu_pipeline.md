@@ -235,9 +235,15 @@ backdrop for one stage. `tslDrTex1Init*` family functions
 
 - `func_8007BC08` — `PutDispEnv` wrapper (asmfix-bridged in `display.c:303`)
 - `func_8007D048` — image-LoadImage continuation (asmfix-bridged)
-- All `calc_loc_mat_fw_*` variants (the bone-matrix builders)
-- Many `Vu0SetLightColMatrix*` functions in `system.c` — light-color matrix
-  setup
+- The three `calc_loc_mat_fw_*` symbols — MISNOMERS, not bone-matrix
+  builders (0x8002AB08 = scratchpad-staged fighter/camera state processor;
+  0x8004A940 = u16 display-list opcode dispatcher whose handlers do the
+  GTE matrix setup; 0x80055B60 = targeting/angle helper — see
+  docs/naming/MISNOMERS.md pass-6 and docs/engine/motion.md)
+- The four `Vu0SetLightColMatrix*` symbols in `system.c` — MISNOMERS (VU0
+  is PS2-only hardware; all four are unrelated 1-line wrappers:
+  `cpu_side_move_dir_4` / `marionation_Exec` / `cdrom_DmaChain`-idle-check
+  / `saEft01Init` — see MISNOMERS.md pass-5 Family 1)
 - Most of the `text1b.c` 10558-11227 range (projection/screen helpers)
 
 ## PSX libgpu wrappers identified (2026-05-17)

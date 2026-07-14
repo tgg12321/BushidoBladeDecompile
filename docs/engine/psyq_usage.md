@@ -174,12 +174,16 @@ top of the BIOS A0/B0/C0 jump tables. BB2 calls these as:
 - `func_80083698` = `open` (BIOS A(36h) or wrapper)
 - `bios_FileRead` = `read` (chunked over BIOS A(34h))
 - `func_80078A18` = `close` (BIOS A(33h))
-- `ang_hosei` (the OTHER one at `asm/funcs/ang_hosei.s:1-11`, NOT the
-  rotation helper) = `lseek` (BIOS A(35h))
+- `ang_hosei_800836C8` (`asm/funcs/ang_hosei.s:1-11`) = `lseek`
+  (BIOS A(35h))
 
-The naming collisions ("ang_hosei" matching both a rotation helper and a
-file-seek wrapper) are Kengo-name-table artifacts; BB2 originally had
-distinct PsyQ-style names like `FileSeek`.
+The naming collision is a Kengo-name-table artifact and is THREE-way:
+`ang_hosei` attaches to this file-seek trampoline (0x800836C8), to the
+real angle-correction orchestrator (`ang_hosei_8003F62C`, src/config.c),
+and to `char_disp_offset_80056FE8` (character display-offset lookup via
+the D_8009A830/38/40 byte tables — neither rotation nor file-seek; see
+docs/naming/MISNOMERS.md §ang_hosei). BB2 originally had distinct
+PsyQ-style names like `FileSeek`.
 
 ### Critical sections
 

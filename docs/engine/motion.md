@@ -27,8 +27,10 @@ disc/MOTION/X123.BBM   (per-character bone+motion bundle)
    per-frame: motion_GameCalcMotion + motion_shift_check_*
        |       (interpolate bones, advance frame counter)
        v
-   calc_loc_mat_fw* (per-bone local matrix from rotation+translation)
-       |       (often uses GTE for rotation composition)
+   per-bone local matrix from rotation+translation
+       |       (GTE matrix setup lives in the display-list opcode handlers
+       |        dispatched by exec_loc_mat_list_8004A4E0 — NOT in the
+       |        misnamed calc_loc_mat_fw* symbols; see the naming note below)
        v
    bone-tree walk: accumulate world matrix at each bone
        |
@@ -201,36 +203,32 @@ come from the main character BBM but from a separate "extension" file (a
 special winning pose, victory animation, etc.). Sets the fighter's motion
 to an "extension" type tracked separately from the main waza.
 
-## Local matrix calculation — the `calc_loc_mat_fw_*` family
+## Naming note — the `calc_loc_mat_fw_*` symbols are MISNOMERS
 
-`calc_loc_mat_fw` (full name "calculate local matrix forward") is the
-per-bone matrix builder. It takes a bone's rotation Euler angles and
-translation, and produces a 3x3 rotation matrix + 3-element translation
-ready for GTE multiplication.
+The Kengo-derived name `calc_loc_mat_fw` ("calculate local matrix forward")
+attached to three UNRELATED BB2 functions, none of which is a per-bone
+matrix builder (MISNOMERS.md pass-6; `named_syms.txt` MISNAMED flags;
+verified against the bodies 2026-07-13):
 
-Variants observed:
-- `calc_loc_mat_fw` (`code6cac_b.c:750`) — empty stub in C; the real
-  implementation is in `asm/funcs/calc_loc_mat_fw.s` (1074 instructions,
-  the largest function in the codebase). Hand-unrolled GTE pipeline that
-  builds 3 axis rotations and concatenates them. Kengo's
-  `se_fc/calc_loc_mat_fw` was matched but at -38 / 3.5% no-affinity
-  fallback — so the C is not yet matched.
-- `calc_loc_mat_fw_8004A940` (text1b.c, asmfix bridge) — same function at
-  a different address, called from a different entry point.
-- `calc_loc_mat_fw_80055B60` (text1b.c:11498) — third variant, currently
-  asmfix-bridged.
+- `calc_loc_mat_fw` (0x8002AB08, `asm/funcs/calc_loc_mat_fw.s`, ~1074
+  insns) — a scratchpad-staged per-frame fighter/camera state processor
+  (walks the `D_80101EC8` fighter table at stride 0x44C, stages rows
+  through scratchpad 0x1F8000xx, computes midpoints and bounding min/max,
+  calls `special_camera_Init`). Pass-6 replacement name:
+  `gpu_dma_schedule_8002AB08`.
+- `calc_loc_mat_fw_8004A940` (0x8004A940) — a u16 stream/opcode
+  DISPATCHER (lhu; advance; jalr through a handler table). The GTE
+  matrix work (`ctc2`/`mvmva`) lives in its dispatched handlers. This —
+  not 0x8002AB08 — is what the display-list walker
+  `exec_loc_mat_list_8004A4E0` calls (5 jal sites, text1b.c).
+- `calc_loc_mat_fw_80055B60` (0x80055B60, text1b.c) — enemy targeting /
+  angle-difference helper (0xFFF-truncated deltas, ±0x800 angle wrap,
+  `single_game_getEnemyCharId`).
 
-These are the heart of the per-frame bone-tree walk. They consume:
-- Bone's rotation (3 Euler angles, typically 12-bit fixed point)
-- Bone's translation (3 s32 world units)
-- Optionally a parent matrix to compose with
-
-And produce:
-- A 4x3 matrix in MATRIX-struct format (3x3 rotation + 3-vec translation)
-
-The function is so large because it manually expands the rotation matrix
-elements (sin/cos products) and uses interleaved GTE ops + CPU arithmetic
-for pipelining.
+The actual per-bone local-matrix construction is performed inside the
+opcode handlers dispatched by 0x8004A940 during the
+`exec_loc_mat_list_8004A4E0` display-list walk; no single "calc_loc_mat"
+function exists under that name in BB2.
 
 ## Bone hierarchy walk
 
@@ -264,9 +262,9 @@ previous frame's pose, blended into the framebuffer.
 
 - `motion_GameCalcMotion` (`0x8002872C`) — the per-frame frame advancer
 - `motion_CheckSituation` (`0x800477E8`) — situation check helper
-- The `calc_loc_mat_fw_*` family at `code6cac_b.c:750`, the asmfix-bridged
-  `text1b.c:11498`, and 2-3 more variants — these are the largest single
-  functions in the binary (1000+ instructions each)
+- The three functions carrying the misnomer `calc_loc_mat_fw_*` (see the
+  naming note above — a fighter/camera state processor, a u16 opcode
+  dispatcher, and a targeting helper; 2 of 3 are 1000+ instructions)
 - Much of the `text1b.c` 11421-13840 range (motion utility helpers,
   ex-motion state tables, etc.)
 - `motion_make_table` — now identified at `0x80082D34` (was previously

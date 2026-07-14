@@ -152,8 +152,12 @@ trampolines into PS1 BIOS calls A(34h) / A(35h):
 
 Other BIOS-call trampolines:
 - `func_80083698` — file-open BIOS call (returns fd or -1)
-- `ang_hosei` (`asm/funcs/ang_hosei.s` — note this is the ROTATION helper,
-  not the file helper of the same address range) — wraps BIOS file lseek
+- `ang_hosei_800836C8` (`asm/funcs/ang_hosei.s`) — the BIOS file-lseek
+  trampoline. NB the Kengo name `ang_hosei` covers THREE unrelated
+  functions in-tree: this lseek trampoline (0x800836C8), the real
+  angle-correction orchestrator (`ang_hosei_8003F62C`, src/config.c),
+  and `char_disp_offset_80056FE8` (a character display-offset lookup —
+  neither rotation nor file-seek). See docs/naming/MISNOMERS.md.
 - `func_80078A18` — `BIOS_close` for file descriptors
 - `func_8008386C` — `BIOS B(39h) InitHeap` (called from boot)
 

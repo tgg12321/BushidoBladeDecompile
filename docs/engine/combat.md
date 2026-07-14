@@ -266,8 +266,13 @@ globals. See [sound.md](sound.md) for details.
 
 ## Where unmatched asm still hides in combat
 
-- `action_check_defense` (`0x80086130`, also `_2` at `0x80089EB0`) — combat
-  block/defense check.
+- `action_check_defense2` (`0x80089EB0`) — combat block/defense check.
+  (NB: `0x80086130`, formerly listed here as `action_check_defense`, is
+  actually `char_store_pos_pair_80086130` — a bounds-checked store of a
+  ×129-scaled s16 pair into 16-byte slot records, called from
+  `obj_InitChars` during character setup; its inverse getter
+  `func_80086080` divides by 129. Not a combat function — see
+  `named_syms.txt` supersede note.)
 - `action_CheckHitZangeki` (`asm/funcs/action_CheckHitZangeki.s`) — slash-hit
   test.
 - `coli_calc_motion` (`0x8003D888`, `_2` at `0x8008ACD0`) — motion vs collision
