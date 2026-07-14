@@ -434,15 +434,13 @@ void func_8003FECC(s32 *a0, s32 *a1, s16 *a2)
   s16 v1;
   unsigned int t3;
   s32 *a3;
-  s16 *new_var;
   s32 *t1;
   u16 t0;
   t2 = *((s32 *) (((u8 *) a1) + 0x1C));
   ;
   t0 = (u16) a2[0];
   a1 = (s32 *) (((u8 *) a1) + 0x1C);
-  new_var = &a2[0];
-  if (a2[(*new_var) * 0] == (-2))
+  if (a2[0] == (-2))
   {
     goto end;
   }
@@ -457,10 +455,6 @@ void func_8003FECC(s32 *a0, s32 *a1, s16 *a2)
       v1 = 1;
       v0 = (s32) (((u8 *) a0) + ((s32) ((((s16) t0) * 0x68) + 0x94)));
       t1[v1] = v0;
-      a3++;
-      a3--;
-      t1++;
-      t1--;
     }
     {
       u16 val = (u16) (*(a2++));
@@ -475,15 +469,18 @@ void func_8003FECC(s32 *a0, s32 *a1, s16 *a2)
     *((u16 *) new_var2) = (u16) (*(a2++));
     {
       s32 val78 = (s32) (*(a2++));
-      {
-        s32 *p_next = (s32 *) (((u8 *) a3) + 0x10);
-        a3 = p_next;
-      }
+      /* FAKE: split advance (+8 +8); the extra refs seat this pointer in $a3
+         ahead of the halfword temp (combine re-merges to one addiu). */
+      a3 = (s32 *) (((u8 *) a3) + 8);
+      a3 = (s32 *) (((u8 *) a3) + 8);
       *((s32 *) (((u8 *) t1) + 0x78)) = val78;
     }
     t0 = (u16) (*a2);
-    v1 = (s16) t0;
-    t1 = (s32 *) (((u8 *) t1) + 4);
+    v1 = *a2;
+    /* FAKE: split advance (+2 +2); the extra refs seat this pointer in $t1
+       ahead of the entry counter (combine re-merges to one addiu). */
+    t1 = (s32 *) (((u8 *) t1) + 2);
+    t1 = (s32 *) (((u8 *) t1) + 2);
   }
 
   if (v1 != ((s16) t3))

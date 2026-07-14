@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8003FECC",
-      "file": "config",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: Two dead-operation cheats found: (1) `a3++; a3--;` and `t1++; t1--;` inside the loop \u2014 net zero effect, GCC-internal allocator steering; (2) `new_var = &a2[0]; if (a2[(*new_var) * 0] == (-2))` \u2014 the m"
-    },
-    {
       "func": "func_800400F8",
       "file": "config",
       "distance": 0,
@@ -3462,14 +3452,14 @@
     }
   ],
   "counts": {
-    "total": 410,
-    "active": 341,
+    "total": 409,
+    "active": 340,
     "by_status": {
-      "active": 341,
+      "active": 340,
       "parked": 69
     },
     "by_verdict": {
-      "C": 187,
+      "C": 186,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
