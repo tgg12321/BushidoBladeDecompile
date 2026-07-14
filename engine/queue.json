@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80085FD8",
-      "file": "main",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: Codegen-coercion expression at call site: `func_8008BD88((s16)(a0 << 16 >> 16))` where `a0` is already `s16`. The double-shift is semantically identical to `a0` for every s16 value (fails test 1), no "
-    },
-    {
       "func": "func_80086080",
       "file": "main",
       "distance": 0,
@@ -3412,14 +3402,14 @@
     }
   ],
   "counts": {
-    "total": 405,
-    "active": 336,
+    "total": 404,
+    "active": 335,
     "by_status": {
-      "active": 336,
+      "active": 335,
       "parked": 69
     },
     "by_verdict": {
-      "C": 182,
+      "C": 181,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
