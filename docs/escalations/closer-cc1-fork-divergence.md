@@ -226,3 +226,23 @@ close is deferred until either:
 DispUpdateStatusMessage remains `active` in the queue with the asmfix
 bridge; when the Grinder reaches it, the fork-divergence rule provides
 the wait-loop lever and the outer scheduling is what needs solving.
+
+---
+
+## OWNER RULING 2026-07-13 — scope stays as-is; Grinder works the residual
+
+The owner ruled on the three options (interactive session, same session
+as the oversized-locals carve-out grant): **let the Grinder work it.**
+
+- Ruling-2 is NOT widened to scheduling-class divergence. The crash
+  remains load-bearing for the four-gate evidence bar.
+- Whole-function canonical asm for `_spu_FiDMA` is NOT authorized.
+- The 4 residual insns (0x80088C14..0x80088C5C — beqz delay-slot
+  `lui $a0, 0xF0000000` speculative hoist + bios_DeliverEvent jal
+  delay-slot `addiu $a1, $zero, 0x20`) are ordinary scheduler-level
+  differences and ordinary pure-C grind territory.
+
+DispUpdateStatusMessage stays `active`; when the Grinder reaches it, the
+validated wait-loop asm island is the Ruling-2 lever and the outer
+scheduling residual is what needs solving in C. This escalation is
+RESOLVED as paperwork — no further owner input pending here.
