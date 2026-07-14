@@ -1,5 +1,8 @@
-/* func_8003B3A4 — sandbox distance 0 (s2, 2026-07-13), pending ruling on the
-   FAKE alias (pointer-alias-fake-exception vs judge regression diagnosis). */
+/* func_8003B3A4 — sandbox distance 0 (re-verified s2b, 2026-07-13, annotation in
+   place in src). Judge ruling bd20027f sanctions the FAKE alias per-function, but
+   layer-1 cheat-reviewer returned NEEDS_USER on whether retroactive exhaustion cures
+   the 2026-03-26 first-reach taint — owner answer required before layer-2 +
+   candidate-ready (see tmp/grind/func_8003B3A4/s2/layer1_review_verdicts.md). */
 s32 func_8003B3A4(u8 *arg0) {
     u8 idx;
     u8 a1;
