@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_800392C8",
-      "file": "code6cac_c_mid",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: Comma-expression cheat `j -= (0, 0x10)` in loop2: the left operand `0` is a constant with no side effects and is discarded by the C comma operator, making this semantically identical to `j -= 0x10`. F"
-    },
-    {
       "func": "func_800397A0",
       "file": "code6cac_c_mid",
       "distance": 0,
@@ -3512,14 +3502,14 @@
     }
   ],
   "counts": {
-    "total": 415,
-    "active": 346,
+    "total": 414,
+    "active": 345,
     "by_status": {
-      "active": 346,
+      "active": 345,
       "parked": 69
     },
     "by_verdict": {
-      "C": 192,
+      "C": 191,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }

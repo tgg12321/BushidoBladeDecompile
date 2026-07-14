@@ -1232,7 +1232,7 @@ loop1:
     j = 0xB30;
 loop2:
     *((s16 *)((u8 *)&D_800F68E0 + j)) = new_var;
-    j -= (0, 0x10);
+    j -= 0x10;
     if (j >= 0) goto loop2;
 }
 void func_80039320(void) {
