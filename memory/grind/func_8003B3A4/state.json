@@ -1,31 +1,27 @@
 {
  "func": "func_8003B3A4",
  "file": "code6cac_c_ab",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 0,
    "modality": "recon",
    "headline": "fable-blitz recon: write-only pointer alias is LOAD-BEARING (pre-branch lui/addiu into $v1 + register-indirect sb cannot arise from direct symbolic stores); near-exact fit for the 2026-07-01 pointer-a"
+  },
+  {
+   "session": 2,
+   "floor": 0,
+   "modality": "structural",
+   "headline": "Structural exhaustion grid COMPLETE: deref-of-address killed (6) and block scope proven LOAD-BEARING (fn-scope pointer = 7); annotated alias restored after FOURTH hygiene drop, sandbox 0 re-verified; "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Falsify the judge's prescribed form: direct conditional writes `if (a1 != 0) { D_8010277D = 0xE; } else { D_8010277D = 0x1D; }` - expect NON-match (sb macro form via $at after the diamond, no pre-branch addiu into $v1)",
-   "mechanism": "cc1 symbolic-MEM store expansion ($at macro) vs pointer-variable address pre-materialization",
-   "next_probe": "sandbox func_8003B3A4 --disable all with the direct-write form; diff the 0x2BBF8-0x2BC14 region"
-  },
-  {
-   "hypothesis": "Ternary single store `D_8010277D = (a1 != 0) ? 0xE : 0x1D;` - also expected to stay in $at macro form, but cheap to measure and would be the cleanest human spelling if it lands",
-   "mechanism": "expand_assignment keeps SYMBOL_REF MEM symbolic; value diamond layout unchanged",
-   "next_probe": "include in the same sweep_variants.py call as the direct-write form"
-  },
-  {
-   "hypothesis": "If both clean forms fail as predicted, keep the alias with /* FAKE */ annotation + lever-exhaustion record under pointer-alias-fake-exception (pending the ruling below)",
-   "mechanism": "pointer variable forces the address into an allocated pseudo (RA-visible) instead of the sb macro's $at expansion",
-   "next_probe": "ruling_question resolution, then annotate and re-run layer-1/2 review"
+   "hypothesis": "No structural work remains; the construct is fully vetted and the match is bytes-proven \u2014 the block is owner/operator action only",
+   "mechanism": "Layer-2 FAIL was on the process ground (Judge self-answered a NEEDS_USER reserved for the human), with all technical prerequisites independently re-verified intact by both review layers",
+   "next_probe": "Driver/operator: surface that this function should not consume further grind sessions until Trenton answers the 23:22 decisions.md question; then re-run layer-1/2 per the ruling and emit candidate-ready"
   }
  ],
  "judge_constraints": [

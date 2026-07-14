@@ -1,9 +1,10 @@
-/* func_8003B3A4 — sandbox distance 0 (re-verified s2d, 2026-07-14, annotation
-   restored in src after THIRD hygiene drop — must land in a COMMIT to stick, per
-   the 23:22 Judge ruling). s2d added the final family kill: multi-use pointer
-   over the cluster (p[0]+p[2]) scores 2 — target stores D_8010277F via the $at
-   macro, so the alias is irreducibly write-only single-target. Exhaustion now:
-   direct 6 / ternary 6 / diamond-local 8 / offset-fold 6 / multi-use 2.
+/* func_8003B3A4 — sandbox distance 0 (re-verified s2e, 2026-07-14, annotation
+   restored in src after FOURTH hygiene drop — must land in a COMMIT to stick, per
+   the 23:22 Judge ruling). Exhaustion grid COMPLETE after s2e: direct 6 /
+   ternary 6 / diamond-local 8 / offset-fold 6 / multi-use 2 / deref-of-addr 6 /
+   fn-scope-pointer 7 / block-scoped annotated alias 0. s2e also proved the inner
+   BLOCK SCOPE is load-bearing (fn-scope decl materializes the address into $a2
+   before the first diamond → 7); do not flatten the block.
    BLOCKED ON OWNER ONLY: layer-2 FAIL on process ground (Judge self-answered the
    s2b layer-1 NEEDS_USER reserved for the human); question escalated verbatim to
    Trenton in docs/grind/decisions.md "2026-07-13 23:22". Do NOT re-run layer-2

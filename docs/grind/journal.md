@@ -195,3 +195,4 @@
 - 2026-07-13 20:18 func_8003C42C COMPLETED-C after 2 sessions.
 - 2026-07-13 20:47 CIRCUIT-BREAK: 3 consecutive invalid sessions on func_8003D7B4
 - 2026-07-13 22:39 func_8003D7B4 COMPLETED-C after 2 sessions.
+- 2026-07-14 11:40 func_8003B3A4 s2 [structural] floor=0: Structural exhaustion grid COMPLETE: deref-of-address killed (6) and block scope proven LOAD-BEARING (fn-scope pointer = 7); annotated alias restored after FOURTH hygiene drop, sandbox 0 re-verified; function remains blocked solely on the owner's s2b NEEDS_USER answer + operator commit of the annotation

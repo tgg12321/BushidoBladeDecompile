@@ -9,4 +9,25 @@
 - [s2b 2026-07-13] H: prerequisite 4 clears mechanically under the bd20027f Judge ruling (layer-1 PASS then layer-2). Probe: cheat-reviewer layer-1, twice (second invocation with the decisions.md ruling text after the first FAIL rested on a factually wrong premise). Result: NEEDS_USER — reviewer accepts prerequisites (a)-(d) intact but holds the Judge's "retroactive exhaustion cures first-reach" doctrine needs the human owner's sign-off. **KILLED** (does not clear mechanically; owner answer required before layer-2/candidate-ready).
 - [s2d 2026-07-14] H: a MULTI-USE pointer over the D_8010277C cluster (p[0] diamond + p[2]=0) matches, mooting the store-only-alias question by making the pointer legitimately multi-use. Probe: sandbox --disable all. Result: distance 2 (55/56) — build emits register-indirect `sb $zero,2($v1)` where target has the two-insn $at macro store to D_8010277F. **KILLED** (rejected/multiuse-pointer-cluster.c) — the alias is irreducibly write-only single-target per target bytes.
 - [s2d 2026-07-14] H: the annotated alias still measures 0 on the current tree (annotation restored after third hygiene drop). Probe: sandbox --disable all. Result: 0 (56/56). **CONFIRMED** (sandbox_annotated_alias_s2d_restore3.json).
+- [s2e 2026-07-14] H: deref-of-address `*(&D_8010277D) = k;` escapes the symbolic-MEM fold. Probe: sandbox. Result: 6 (55/56) — folds instantly, identical to direct write. **KILLED** (rejected/deref-of-address-folds.c).
+- [s2e 2026-07-14] H: the inner block around the alias is stylistic — a function-scope `u8 *p` declaration matches too. Probe: sandbox. Result: 7 (55/56) — address materializes into $a2 before the first diamond; block scope is LOAD-BEARING. **KILLED** (rejected/function-scope-pointer-early-materialization.c).
+- [s2e 2026-07-14] H: the annotated alias still measures 0 after the fourth hygiene drop + restore. Probe: sandbox. Result: 0 (56/56). **CONFIRMED** (sandbox_annotated_alias_s2e_restore4.json).
 - [s2c 2026-07-13] H: with the 23:04 Judge ruling (0e606ee0) in hand, prerequisite 4 clears via layer-1 PASS + fresh layer-2 PASS. Probe: both reviewers run this session, sandbox re-verified 0 first. Result: layer-1 PASS; layer-2 FAIL on process ground ONLY — the Judge (PASS/FAIL-only role) self-answered the layer-1 NEEDS_USER that hard rule #1 reserves for the human user; all technical prerequisites re-verified intact by both layers. **KILLED** — prerequisite 4 cannot clear until Trenton personally answers (or delegates NEEDS_USER authority to the Judge). The construct itself is fully vetted; only the sign-off channel is disputed.
+
+## [s2] Deref-of-address spelling *(&D_8010277D) = k; escapes the symbolic-MEM fold and materializes the address pre-branch
+- mechanism: If expand_expr kept the ADDR_EXPR as a computed address it would enter RA as a pseudo; instead GCC folds *&SYM to the SYMBOL_REF MEM immediately, so the store stays in the assembler sb macro ($at) form after the diamond
+- probe: sandbox func_8003B3A4 --disable all with the deref form in src (tmp/grind/func_8003B3A4/s2/variantF_deref_of_address.txt)
+- result: distance 6 (55/56) — byte-identical outcome to the direct conditional write; fold confirmed
+- verdict: KILLED
+
+## [s2] The inner block around the alias is stylistic; declaring u8 *p = &D_8010277D; at function scope with the other locals also matches
+- mechanism: Initializer expansion happens at the declaration point: at function scope the address pseudo is materialized (lui/addiu into $a2) BEFORE the first value diamond (a1 && D_800A37A0==1) instead of into $v1 between the diamonds; scheduler additionally hoists li v0,0x1D into the first beqz delay slot, cascading through both diamonds
+- probe: sandbox func_8003B3A4 --disable all with the flattened form; objdump of the disabled .o (variantG_function_scope_pointer.txt + variantG_objdump_full.txt)
+- result: distance 7 (55/56) — worse than block-scoped 0 AND worse than direct-write 6; block scope is LOAD-BEARING
+- verdict: KILLED
+
+## [s2] The annotated block-scoped alias still measures 0 on the current tree after the fourth hygiene drop of the /* FAKE */ annotation
+- mechanism: Annotation is comment-only; codegen unchanged from the s1/s2 matched form
+- probe: restore annotation at src/code6cac_c_ab.c:467-471, sandbox --disable all (sandbox_annotated_alias_s2e_restore4.json)
+- result: distance 0 (56/56, rules_dropped 0)
+- verdict: CONFIRMED
