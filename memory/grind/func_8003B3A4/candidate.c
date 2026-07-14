@@ -1,10 +1,13 @@
-/* func_8003B3A4 — sandbox distance 0 (re-verified s2c, 2026-07-13, annotation in
-   place in src). Judge rulings bd20027f + 0e606ee0 sanction the FAKE alias
-   per-instance. s2c review: layer-1 PASS; layer-2 FAIL on PROCESS ground only —
-   the 23:04 Judge ruling self-answered the s2b layer-1 NEEDS_USER that hard rule
-   #1 reserves for the human user (all technical prerequisites re-verified intact
-   by BOTH layers). Awaiting Trenton's personal answer / delegation ruling — see
-   tmp/grind/func_8003B3A4/s2/layer2_review_verdict_s2c.md. */
+/* func_8003B3A4 — sandbox distance 0 (re-verified s2d, 2026-07-14, annotation
+   restored in src after THIRD hygiene drop — must land in a COMMIT to stick, per
+   the 23:22 Judge ruling). s2d added the final family kill: multi-use pointer
+   over the cluster (p[0]+p[2]) scores 2 — target stores D_8010277F via the $at
+   macro, so the alias is irreducibly write-only single-target. Exhaustion now:
+   direct 6 / ternary 6 / diamond-local 8 / offset-fold 6 / multi-use 2.
+   BLOCKED ON OWNER ONLY: layer-2 FAIL on process ground (Judge self-answered the
+   s2b layer-1 NEEDS_USER reserved for the human); question escalated verbatim to
+   Trenton in docs/grind/decisions.md "2026-07-13 23:22". Do NOT re-run layer-2
+   until Trenton answers (HOLD constraint). */
 s32 func_8003B3A4(u8 *arg0) {
     u8 idx;
     u8 a1;
