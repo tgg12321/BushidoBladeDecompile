@@ -1465,7 +1465,7 @@ void func_80039680(u8 *a0) {
 }
 void func_800397A0(void) {
     u8 val = D_800A36F8;
-    if ((u8)val == 0x77) {
+    if (val == 0x77) {
         D_800A36F8 = 0;
         D_800A3782 = 1;
     } else {

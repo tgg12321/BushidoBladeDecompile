@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_800397A0",
-      "file": "code6cac_c_mid",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: Redundant `(u8)val` cast where val is already declared u8 fails tests 1+2 (no semantic purpose, human programmer would write `if (val == 0x77)`); may also be a codegen coercion forcing `andi $v1,$a0,0"
-    },
-    {
       "func": "motion_LoadPreCalcData_80037F08",
       "file": "code6cac_c_mid",
       "distance": 0,
@@ -3502,14 +3492,14 @@
     }
   ],
   "counts": {
-    "total": 414,
-    "active": 345,
+    "total": 413,
+    "active": 344,
     "by_status": {
-      "active": 345,
+      "active": 344,
       "parked": 69
     },
     "by_verdict": {
-      "C": 191,
+      "C": 190,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
