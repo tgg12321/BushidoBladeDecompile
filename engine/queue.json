@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "cpu_side_move_dir_2",
-      "file": "code6cac_c2",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: Scheduling cheat confirmed: the csmd2_call: goto-thread block (commit a8f50a1e) was explicitly inserted to make cc1 produce a delay-slot-threaded call to func_8005FBC8 \u2014 the commit message and inline "
-    },
-    {
       "func": "func_8003C42C",
       "file": "code6cac_c2",
       "distance": 0,
@@ -3562,14 +3552,14 @@
     }
   ],
   "counts": {
-    "total": 420,
-    "active": 351,
+    "total": 419,
+    "active": 350,
     "by_status": {
-      "active": 351,
+      "active": 350,
       "parked": 69
     },
     "by_verdict": {
-      "C": 197,
+      "C": 196,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }

@@ -420,7 +420,6 @@ void cpu_side_move_dir_2(void) {
         file_ResetDmaFlag();
     }
     {
-        u8 v = D_800A38A4;
         if (D_800A38A4 == 6) {
             D_8010277C = 8;
             D_8010277E = 6;
@@ -433,7 +432,7 @@ void cpu_side_move_dir_2(void) {
             a0 = 0;
             goto after_dispatch;
         }
-        if (v == 8) {
+        if (D_800A38A4 == 8) {
             a0 = 0;
             D_8010277C = 0x1E;
             goto write_e_zero;
@@ -450,23 +449,19 @@ void cpu_side_move_dir_2(void) {
             kgm_init_hitrect(0);
         }
     }
-    /* goto-thread (not a plain if/else): makes cc1 emit the target's dbr
-       delay-slot-threaded call to func_8005FBC8 */
     if (D_800A38A4 != 9) {
         a0 = D_800A38A4;
-        goto csmd2_call;
+    } else {
+        a0 = 8;
     }
-    a0 = 8;
-csmd2_call:
     func_8005FBC8(a0, (s32)0x80118800);
     {
-        u8 val = D_800A38A4;
-        if (val == 4) {
+        if (D_800A38A4 == 4) {
             if ((&D_8008D9EC)[D_80101ED2] != 0) {
                 goto do_copy;
             }
         }
-        if (val == 5) {
+        if (D_800A38A4 == 5) {
             if ((&D_8008D9EC)[D_80101ED2] != 0) {
                 goto skip_copy;
             }
