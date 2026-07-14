@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "gpu_SetDispMask",
-      "file": "display",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: Pointer-derived address cheat: `u8 *p = &g_gpu_debug_level; bb2_memset(p + 0x6A, -1, 0x14)` uses g_gpu_debug_level (0x8009BE76) as the base to compute g_gpu_disp_env (0x8009BEE0 = 0x8009BE76 + 0x6A), "
-    },
-    {
       "func": "disp_SetFramebufferMode",
       "file": "ings",
       "distance": 0,
@@ -3442,14 +3432,14 @@
     }
   ],
   "counts": {
-    "total": 408,
-    "active": 339,
+    "total": 407,
+    "active": 338,
     "by_status": {
-      "active": 339,
+      "active": 338,
       "parked": 69
     },
     "by_verdict": {
-      "C": 185,
+      "C": 184,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }

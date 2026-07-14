@@ -51,13 +51,30 @@ u32 func_8007B244(s32 a0) {
     g_gpu_draw_mode = a0;
     return old;
 }
+/* PsyQ LIBGPU sys.c models the GPU state block rooted at g_gpu_type as one
+   static struct (C ref: sotn-decomp src/main/psxsdk/libgpu/sys.c) — gpu.c's
+   gpu_SetMode already clears the whole 0x80-byte object and initializes
+   draw_env/disp_env through the same base. */
+typedef struct {
+    u8 type;           /* +0x00 g_gpu_type */
+    u8 interlace;      /* +0x01 g_gpu_interlace */
+    u8 debug_level;    /* +0x02 g_gpu_debug_level */
+    u8 dither;         /* +0x03 g_gpu_dither */
+    s16 disp_x;        /* +0x04 g_gpu_disp_x */
+    s16 disp_y;        /* +0x06 g_gpu_disp_y */
+    u8 unk8[4];        /* +0x08 */
+    u32 draw_mode;     /* +0x0C g_gpu_draw_mode */
+    u8 draw_env[0x5C]; /* +0x10 g_gpu_draw_env */
+    u8 disp_env[0x14]; /* +0x6C g_gpu_disp_env */
+} GpuCtx;              /* size 0x80 */
+
 void gpu_SetDispMask(s32 a0) {
-    u8 *p = &g_gpu_debug_level;
+    u8 *p = &((GpuCtx *)&g_gpu_type)->debug_level;
     if (*p >= 2) {
         g_gpu_debug_func(&g_str_setdispmask, a0);
     }
     if (!a0) {
-        bb2_memset(p + 0x6A, -1, 0x14);
+        bb2_memset(((GpuCtx *)&g_gpu_type)->disp_env, -1, 0x14);
     }
     {
         u32 cmd = GP1_DISP_ENABLE;
