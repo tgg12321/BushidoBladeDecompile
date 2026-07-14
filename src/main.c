@@ -1015,7 +1015,7 @@ s32 func_80086080(s16 a0, s16 *a1, s16 *a2) {
     u16 raw1, raw2;
 
     if ((u16)a0 < 0x18) {
-        func_8008BD88((s16)(a0 << 16 >> 16), &raw1, &raw2);
+        func_8008BD88(a0, &raw1, &raw2);
         *a1 = (s16)raw1 / 129;
         *a2 = (s16)raw2 / 129;
         return 0;
