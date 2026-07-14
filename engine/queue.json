@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "math_Distance3D",
-      "file": "ings",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: out[4] has a dead 4th element (out[3] is never written by the callee or read by the caller) that inflates the array to 16 bytes to coerce $ra to sp+0x30 and the frame to 0x38 \u2014 frame-coercion by dead "
-    },
-    {
       "func": "func_80085FD8",
       "file": "main",
       "distance": 0,
@@ -3422,14 +3412,14 @@
     }
   ],
   "counts": {
-    "total": 406,
-    "active": 337,
+    "total": 405,
+    "active": 336,
     "by_status": {
-      "active": 337,
+      "active": 336,
       "parked": 69
     },
     "by_verdict": {
-      "C": 183,
+      "C": 182,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }

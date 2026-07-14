@@ -782,7 +782,7 @@ extern s32 func_8007F0BC(s32 *, s32 *);
 extern s32 func_8007E43C(s32);
 s32 math_Distance3D(s32 *a0, s32 *a1) {
     s32 in[3];
-    s32 out[4];
+    s32 out[3];
 
     in[0] = (a0[0] - a1[0]) >> 2;
     in[1] = (a0[1] - a1[1]) >> 2;
