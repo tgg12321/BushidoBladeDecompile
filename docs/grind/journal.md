@@ -200,3 +200,4 @@
 - 2026-07-14 12:34 func_8003B3A4 s4 [permuter] floor=0: s4 permuter: 46.7k iterations across two clean alias-free chassis (direct-write base 520 best 315; goto-diamond base 730 best 515) surfaced only known attractor classes and zero score-0 finds — automated corroboration that no alias-free C form reaches the pre-branch $v1 + register-indirect sb; annotation restored after SIXTH hygiene drop, sandbox 0 re-verified
 - 2026-07-14 12:59 CIRCUIT-BREAK: 3 consecutive invalid sessions on func_8003B3A4
 - 2026-07-14 13:45 OWNER RULING: func_8003B3A4 pointer-alias occurrence SANCTIONED (per-instance, fences in decisions.md); HOLD lifted, /* FAKE */ annotation committed; circuit-break cleared, driver relaunched.
+- 2026-07-14 13:52 func_8003B3A4 COMPLETED-C after 5 sessions.
