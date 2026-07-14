@@ -192,3 +192,4 @@
 - 2026-07-13 14:39 func_80037540 s4 [permuter] floor=0: Permuter REFUTED s3's closure proof (narrow-load necessity is false: 7,798/18,769 forms reached the frame band with zero narrow loads, and one BYTE-MATCHES from a tail-free sp[6] via `volatile char` dead pad) — but the CONCLUSION survives on stronger ground: all 8,987 frame-reaching forms use a forbidden construct, 0 clean. Also: decomp-permuter's default scorer is BLIND to this function's entire gap.
 - 2026-07-13 19:57 func_80035480 COMPLETED-C after 2 sessions.
 - 2026-07-13 20:04 cpu_side_move_dir_2 COMPLETED-C after 2 sessions.
+- 2026-07-13 20:18 func_8003C42C COMPLETED-C after 2 sessions.
