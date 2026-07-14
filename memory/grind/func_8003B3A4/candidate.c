@@ -1,6 +1,12 @@
-/* func_8003B3A4 — sandbox distance 0 (re-verified s3, 2026-07-14, annotation
-   restored in src after FIFTH hygiene drop — must land in a COMMIT to stick, per
-   the 23:22 Judge ruling). s3 also proved the decl-with-init spelling is an
+/* func_8003B3A4 — sandbox distance 0 (re-verified s4, 2026-07-14, annotation
+   restored in src after SIXTH hygiene drop — must land in a COMMIT to stick, per
+   the 23:22 Judge ruling). s4 (permuter modality) corroborated the exhaustion
+   grid by automated search: two fresh-seed random campaigns (clean direct-write
+   chassis, 8.7k iters, base 520, best 315; goto-diamond chassis) surfaced ONLY
+   known attractor classes (staged-flag local / constant-holder / param-alias
+   copy / volatile coercion / identity-inline-fn / clean store reorders) — no
+   alias-free form approached the pre-branch $v1 + register-indirect sb shape.
+   s3 proved the decl-with-init spelling is an
    equivalence class (split `u8 *p; p = &...;` also 0) — the lever is statement
    position inside the block, not the decl form; shape kept exact per the Judge
    constraint. Exhaustion grid COMPLETE after s2e: direct 6 /

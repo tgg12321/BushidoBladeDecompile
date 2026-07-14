@@ -41,8 +41,26 @@
 - result: distance 0 (56/56, rules_dropped 0) — tmp/grind/func_8003B3A4/s3/sandbox_annotated_alias_s3_restore5.json
 - verdict: CONFIRMED
 
+## [s4] A clean alias-free pure-C chassis (direct conditional write) can reach the target's pre-branch $v1 address materialization via random permuter exploration
+- mechanism: The hand-built s2/s2e exhaustion grid varied the store block locally (8 forms); a whole-function random permuter campaign mutates the ENTIRE function (temp vars, statement order, types, conditions), so if any global restructure lets a direct symbolic store match, it would surface here
+- probe: TWO fresh-seed campaigns via tools/permuter_campaign.py (--stop-on-zero, --stack-diffs default): (1) `clean-direct-write-randbasin`, base = direct-conditional-write chassis (sandbox 6, permuter base 520) — 8,770 iters, 29 finds, best 315; (2) `goto-diamond-randbasin`, base = goto-CFG diamond chassis (never in the hand grid; permuter base 730) — 26 min, 37,903 iters, 84 finds, best 515
+- result: ~46,700 combined iterations, ZERO score-0 finds, zero novel classes. Every find classified into known attractors: staged-flag local (`new_var = a1 != 0`), constant-holder (`new_var = 1/2`), param-alias pointer copy (`new_var = arg0`), volatile-local coercion, identity `inline_fn` wrapper, clean store reorders (best clean find: hoist `D_8010277F = 0` above the diamond, 330 — still $at macro stores). None produced the pre-branch lui/addiu-into-$v1 + register-indirect sb; a symbolic store cannot acquire that shape without an RA-visible address pseudo, which in C requires the pointer local. Harvest telemetry in metrics/events.jsonl; logs in tmp/grind/func_8003B3A4/s4/.
+- verdict: KILLED (rejected/goto-diamond-chassis.c) — automated whole-function search corroborates the s2/s2e structural exhaustion grid; the annotated block-scoped alias remains the only known C form reaching the target bytes
+
 ## [s3] The decl-with-initializer spelling is load-bearing: splitting it (u8 *p; p = &D_8010277D;) inside the block would diverge
 - mechanism: If initializer expansion at the declaration point differed from assignment-statement expansion, the address pseudo's materialization slot between the diamonds would move
 - probe: sandbox func_8003B3A4 --disable all with the split decl/init form in src
 - result: distance 0 (56/56) — byte-identical; the load-bearing lever is the statement's position INSIDE the inner block (after the first diamond), not the decl spelling. Consistent with s2e fn-scope=7. Committed shape restored to exact decl-with-init per the Judge's exact-shape constraint. Artifact: tmp/grind/func_8003B3A4/s3/variantH_split_decl_init.txt
 - verdict: KILLED
+
+## [s4] A clean alias-free pure-C chassis can reach the target's pre-branch $v1 address materialization via whole-function random permuter exploration (beyond the hand-built s2/s2e local exhaustion grid)
+- mechanism: Random mutation of the ENTIRE function (temp vars, statement order, types, conditions, CFG) could in principle find a global restructure that lets a direct symbolic store schedule/allocate into the target shape
+- probe: Two fresh-seed campaigns via tools/permuter_campaign.py (--stop-on-zero, --stack-diffs): clean-direct-write-randbasin (8,770 iters, base 520) and goto-diamond-randbasin (37,903 iters / 26 min, base 730, structurally different CFG never in the hand grid)
+- result: Zero score-0 finds; best 315 / 515. All 113 finds classified into known attractor classes: staged-flag local, constant-holder, param-alias pointer copy, volatile-local coercion, identity inline_fn wrapper, clean store reorders (best clean 330, stores still in $at macro form). None produced the register-indirect sb through a pre-materialized $v1
+- verdict: KILLED
+
+## [s4] The /* FAKE */-annotated block-scoped alias still measures 0 on the current tree after the SIXTH hygiene drop + restore
+- mechanism: Annotation is comment-only; codegen unchanged from the matched form
+- probe: Restore annotation at src/code6cac_c_ab.c:467-471 from candidate.c; sandbox func_8003B3A4 --disable all
+- result: distance 0 (56/56, rules_dropped 0) — tmp/grind/func_8003B3A4/s4/sandbox_annotated_alias_s4_restore6.json
+- verdict: CONFIRMED

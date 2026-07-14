@@ -1,8 +1,8 @@
 {
  "func": "func_8003B3A4",
  "file": "code6cac_c_ab",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -21,12 +21,18 @@
    "floor": 0,
    "modality": "structural",
    "headline": "s3: annotation restored after FIFTH hygiene drop, sandbox 0 re-verified; split decl/init proven same-bytes equivalent (spelling not load-bearing, block position is); HOLD respected \u2014 owner answer + op"
+  },
+  {
+   "session": 4,
+   "floor": 0,
+   "modality": "permuter",
+   "headline": "s4 permuter: 46.7k iterations across two clean alias-free chassis (direct-write base 520 best 315; goto-diamond base 730 best 515) surfaced only known attractor classes and zero score-0 finds \u2014 automa"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "No structural work remains; the block is owner/operator action only",
-   "mechanism": "Layer-2 FAIL was on process ground (Judge self-answered a NEEDS_USER reserved for the human); all technical prerequisites re-verified intact; HOLD forbids in-pipeline resolution",
+   "hypothesis": "No structural or search work remains; the block is owner/operator action only",
+   "mechanism": "Layer-2 FAIL was on process ground (Judge self-answered a NEEDS_USER reserved for the human); all technical prerequisites re-verified intact; the s4 permuter sweep closes the last automated-search avenue over clean chassis",
    "next_probe": "Driver/operator: stop scheduling grind sessions on func_8003B3A4 until Trenton answers the decisions.md '2026-07-13 23:22' question; operator should COMMIT the /* FAKE */ annotation at src/code6cac_c_ab.c:467-471 to stop the hygiene revert cycle; then re-run layer-1/2 per the ruling and emit candidate-ready"
   }
  ],

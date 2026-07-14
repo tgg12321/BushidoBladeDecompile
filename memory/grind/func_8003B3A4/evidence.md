@@ -63,3 +63,21 @@
 - [s3] Per the HOLD constraint: no layer-2 run, no ruling-request spawned this session; nothing remains for grind sessions on this function
 
 - [s3] Final state: annotated candidate form in place in src, sandbox 0 (56/56, --disable all, rules_dropped 0)
+
+- [s4] [permuter 2026-07-14] Main had dropped the /* FAKE */ annotation a SIXTH time; restored at src/code6cac_c_ab.c:467-471 and re-measured sandbox 0 (56/56, --disable all, rules_dropped 0; tmp/grind/func_8003B3A4/s4/sandbox_annotated_alias_s4_restore6.json). Only an operator COMMIT stops the cycle (23:22 ruling).
+
+- [s4] [permuter 2026-07-14] TWO fresh-seed random campaigns (permuter_campaign.py telemetry in metrics/events.jsonl) over clean alias-free chassis: `clean-direct-write-randbasin` (base 520, 8,770 iters, 29 finds, best 315) and `goto-diamond-randbasin` (base 730, 26 min, 37,903 iters, 84 finds, best 515). ZERO score-0 finds; every find in known attractor classes (staged-flag local / constant-holder / param-alias copy / volatile coercion / identity inline_fn / clean store reorders — best clean find 330, still $at macro stores). Automated corroboration of the s2/s2e exhaustion grid: no alias-free C form reaches the pre-branch $v1 + register-indirect sb. Both campaigns harvested + stopped in-session (0 orphan workers). Rejected chassis banked: rejected/goto-diamond-chassis.c.
+
+- [s4] [permuter 2026-07-14] Permuter-workspace gotcha (reusable): `import.py src/code6cac_c_ab.c` fails — the file's multi-line `__asm__(".section .rodata ...")` block at line 339 breaks cpp preprocessing. Hand-built workspace works (template: nonmatchings/func_80037A20). Second gotcha: compile.sh realpaths its input, and maspsx's `.file` directive parser chokes on the repo path's SPACES ("too many values to unpack (expected 3)") — manual compile.sh checks must go through a space-free path (e.g. /tmp); the permuter's own candidates use /tmp so campaigns are unaffected.
+
+- [s4] Main dropped the /* FAKE */ annotation a SIXTH time; restored and sandbox re-verified 0 (56/56) — only an operator COMMIT stops the cycle per the 23:22 ruling
+
+- [s4] Combined ~46,700 permuter iterations over two structurally different clean chassis found no alias-free path to the byte shape; every improvement was a known cheat-family or scheduling-nudge attractor, corroborating the 8-form structural exhaustion grid by automated search
+
+- [s4] Best CLEAN permuter find (hoist D_8010277F=0 above the diamond, score 330) still emits both stores in the assembler $at sb-macro form — statement reordering cannot create the RA-visible address pseudo the target requires
+
+- [s4] Both campaigns harvested + stopped with telemetry (permuter-launch/permuter-harvest events in metrics/events.jsonl); no orphan workers
+
+- [s4] Reusable tooling gotchas recorded: import.py breaks on this file's multi-line __asm__ rodata block (hand-build the workspace); compile.sh via realpath hits maspsx's space-intolerant .file parser (use a space-free path for manual checks)
+
+- [s4] Per the HOLD: no layer-2 run, no ruling-request; unblockers remain (i) Trenton answering the s2b NEEDS_USER at docs/grind/decisions.md '2026-07-13 23:22' and (ii) operator commit of the annotation at src/code6cac_c_ab.c:467-471
