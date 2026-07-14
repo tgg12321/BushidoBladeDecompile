@@ -211,3 +211,4 @@
 - 2026-07-14 17:51 func_800400F8 COMPLETED-C after 2 sessions.
 - 2026-07-14 18:07 gpu_SetDispMask COMPLETED-C after 2 sessions.
 - 2026-07-14 18:24 disp_SetFramebufferMode COMPLETED-C after 2 sessions.
+- 2026-07-14 18:29 math_Distance3D COMPLETED-C after 2 sessions.
