@@ -59,6 +59,18 @@
 - result: Zero score-0 finds; best 315 / 515. All 113 finds classified into known attractor classes: staged-flag local, constant-holder, param-alias pointer copy, volatile-local coercion, identity inline_fn wrapper, clean store reorders (best clean 330, stores still in $at macro form). None produced the register-indirect sb through a pre-materialized $v1
 - verdict: KILLED
 
+## [s5] The /* FAKE */-annotated block-scoped alias still measures 0 on the current tree after the SEVENTH hygiene drop + restore
+- mechanism: Annotation is comment-only; codegen unchanged from the matched form
+- probe: Restore annotation at src/code6cac_c_ab.c:467-471 from candidate.c; sandbox func_8003B3A4 --disable all
+- result: distance 0 (56/56, rules_dropped 0) — tmp/grind/func_8003B3A4/s5/sandbox_annotated_alias_s5_restore7.json
+- verdict: CONFIRMED
+
+## [s5] Alias-retaining random mutation escapes the committed shape (orphan multiuse-pointer campaign, harvested by s5)
+- mechanism: If any alias-retaining variant scored 0 with a DIFFERENT structure, the committed "exactly this minimal shape" Judge constraint might have alternatives worth vetting
+- probe: Harvest of the discarded session's un-harvested `multiuse-pointer-randbasin` campaign (base 115, seeded from the rejected multiuse chassis): 1,096 iterations, 2 finds
+- result: Best find (15) converges BACK toward the committed form — it drops p[2] usage by respelling it as a direct constant-offset store `(&D_8010277D)[2] = 0` (folds to $at macro) and keeps the alias for p[0] only; remaining delta is cheat-family staging locals. No score-0, no structurally novel alias form
+- verdict: KILLED — random search over the multiuse basin corroborates s2d: the pointer touched ONLY D_8010277D; the committed minimal store-only shape is the attractor
+
 ## [s4] The /* FAKE */-annotated block-scoped alias still measures 0 on the current tree after the SIXTH hygiene drop + restore
 - mechanism: Annotation is comment-only; codegen unchanged from the matched form
 - probe: Restore annotation at src/code6cac_c_ab.c:467-471 from candidate.c; sandbox func_8003B3A4 --disable all

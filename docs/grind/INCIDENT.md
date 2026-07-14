@@ -1,35 +1,35 @@
-# GRINDER CIRCUIT-BREAK — 2026-07-13 20:47
+# GRINDER CIRCUIT-BREAK — 2026-07-14 12:59
 
-**Reason:** 3 consecutive invalid sessions on func_8003D7B4
+**Reason:** 3 consecutive invalid sessions on func_8003B3A4
 
-git HEAD: eb791bdb
+git HEAD: 6216921e
 git status:
 ```
-M  metrics/events.jsonl
-?? memory/grind/func_8003D7B4/candidate.c
-?? memory/grind/func_8003D7B4/rejected/
+ M memory/grind/func_8003B3A4/evidence.md
+ M memory/grind/func_8003B3A4/hypotheses.md
+ M metrics/events.jsonl
 
 ```
 Last 20 log lines:
 ```
-[grind 2026-07-13 19:43:57] grinder stopped.
-[grind 2026-07-13 19:43:58] grinder starting (pid 52668, model fable, judge fable)
-[grind 2026-07-13 19:43:59] pre-flight: oracle green.
-[grind 2026-07-13 19:44:00] func_80035480: session 2 starting, modality=structural
-[grind 2026-07-13 19:44:00] func_80035480: SCOPE VIOLATION —  M regfix.txt — session discarded.
-[grind 2026-07-13 19:44:01] grinder stopped.
-[grind 2026-07-13 19:44:10] grinder starting (pid 40232, model fable, judge fable)
-[grind 2026-07-13 19:44:11] pre-flight: oracle green.
-[grind 2026-07-13 19:44:12] func_80035480: session 2 starting, modality=structural
-[grind 2026-07-13 19:57:45] func_80035480: MERGED — COMPLETED-C.
-[grind 2026-07-13 19:57:46] cpu_side_move_dir_2: session 2 starting, modality=structural
-[grind 2026-07-13 20:04:02] cpu_side_move_dir_2: MERGED — COMPLETED-C.
-[grind 2026-07-13 20:04:03] func_8003C42C: session 2 starting, modality=structural
-[grind 2026-07-13 20:18:19] func_8003C42C: MERGED — COMPLETED-C.
-[grind 2026-07-13 20:18:22] func_8003D7B4: session 2 starting, modality=structural
-[grind 2026-07-13 20:39:41] func_8003D7B4: SCOPE VIOLATION —  M engine/cheats.py |  M engine/queue.py |  M tools/check_completion_integrity.py |  M tools/hooks/no_new_regfix_guard.py | ?? .claude/rules/maspsx-gate-lists.md — session discarded.
-[grind 2026-07-13 20:39:43] func_8003D7B4: session 2 starting, modality=structural
-[grind 2026-07-13 20:43:08] func_8003D7B4: SCOPE VIOLATION — ?? .claude/rules/maspsx-gate-lists.md — session discarded.
-[grind 2026-07-13 20:43:30] func_8003D7B4: session 2 starting, modality=structural
-[grind 2026-07-13 20:47:00] func_8003D7B4: SCOPE VIOLATION — A  .claude/rules/maspsx-gate-lists.md | M  engine/cheats.py | M  engine/queue.py | M  tools/check_completion_integrity.py | M  tools/hooks/no_new_regfix_guard.py — session discarded.
+[grind 2026-07-14 11:24:00] func_8003B3A4: SCOPE VIOLATION —  M regfix.txt — session discarded.
+[grind 2026-07-14 11:24:00] grinder stopped.
+[grind 2026-07-14 11:24:06] grinder starting (pid 7004, model fable, judge fable)
+[grind 2026-07-14 11:24:07] pre-flight: oracle green.
+[grind 2026-07-14 11:24:08] func_8003B3A4: session 2 starting, modality=structural
+[grind 2026-07-14 11:32:54] func_8003B3A4: judge ruling FAIL recorded.
+[grind 2026-07-14 11:33:17] func_8003B3A4: session 2 starting, modality=structural
+[grind 2026-07-14 11:40:07] func_8003B3A4: progress applied — floor=0, 'Structural exhaustion grid COMPLETE: deref-of-address killed (6) and block scope proven LOAD-BEARING (fn-scope pointer = 7); annotated alias restored after FOURTH hygiene drop, sandbox 0 re-verified; function remains blocked solely on the owner's s2b NEEDS_USER answer + operator commit of the annotation'
+[grind 2026-07-14 11:40:31] func_8003B3A4: session 3 starting, modality=structural
+[grind 2026-07-14 11:44:48] func_8003B3A4: progress applied — floor=0, 's3: annotation restored after FIFTH hygiene drop, sandbox 0 re-verified; split decl/init proven same-bytes equivalent (spelling not load-bearing, block position is); HOLD respected — owner answer + operator commit remain the only unblockers'
+[grind 2026-07-14 11:45:11] func_8003B3A4: session 4 starting, modality=permuter
+[grind 2026-07-14 12:34:01] func_8003B3A4: progress applied — floor=0, 's4 permuter: 46.7k iterations across two clean alias-free chassis (direct-write base 520 best 315; goto-diamond base 730 best 515) surfaced only known attractor classes and zero score-0 finds — automated corroboration that no alias-free C form reaches the pre-branch $v1 + register-indirect sb; annotation restored after SIXTH hygiene drop, sandbox 0 re-verified'
+[grind 2026-07-14 12:34:25] func_8003B3A4: session 5 starting, modality=permuter
+[grind 2026-07-14 12:40:42] func_8003B3A4: INVALID session output (no outcome file / unparseable JSON) — discarded, src reverted, respawning.
+[grind 2026-07-14 12:40:42] reaped 9 orphaned permuter process(es) (session boundary).
+[grind 2026-07-14 12:40:43] func_8003B3A4: session 5 starting, modality=permuter
+[grind 2026-07-14 12:51:58] func_8003B3A4: INVALID session output (no outcome file / unparseable JSON) — discarded, src reverted, respawning.
+[grind 2026-07-14 12:51:58] reaped 9 orphaned permuter process(es) (session boundary).
+[grind 2026-07-14 12:51:58] func_8003B3A4: session 5 starting, modality=permuter
+[grind 2026-07-14 12:59:42] func_8003B3A4: INVALID session output (no outcome file / unparseable JSON) — discarded, src reverted, respawning.
 ```

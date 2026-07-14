@@ -464,6 +464,11 @@ s32 func_8003B3A4(u8 *arg0) {
         a1 = 0;
     }
     {
+        /* FAKE: store-only pointer alias — direct symbolic stores expand via the
+           assembler sb macro ($at), so the address never enters RA; the pointer
+           local makes it an RA-visible pseudo materialized into $v1 pre-branch,
+           matching target. Direct/ternary/diamond/offset forms measured 6/6/8/6.
+           Sanctioned per owner ruling 2026-07-14 (decisions.md), per-instance. */
         u8 *p = &D_8010277D;
         if (a1 != 0) {
             *p = 0xE;
