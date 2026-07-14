@@ -204,3 +204,4 @@
 - 2026-07-14 13:56 func_800388A8 COMPLETED-C after 2 sessions.
 - 2026-07-14 14:01 func_800392C8 COMPLETED-C after 2 sessions.
 - 2026-07-14 14:05 func_800397A0 COMPLETED-C after 2 sessions.
+- 2026-07-14 16:35 motion_LoadPreCalcData_80037F08 COMPLETED-C via operator manual path (be23da6f): 4-file retype incl. include/code6cac.h that the driver scope guard rejects by design; user-approved handoff; grinder relaunched.
