@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8003FE40",
-      "file": "config",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: Two named-constant variables neg1=-1 and neg1b=-1 fail the human-programmer and naming tests; they are register-coercion artifacts (originated as asm(\"t1\")/asm(\"t0\") explicit pins) that survived both "
-    },
-    {
       "func": "func_8003FECC",
       "file": "config",
       "distance": 0,
@@ -3472,14 +3462,14 @@
     }
   ],
   "counts": {
-    "total": 411,
-    "active": 342,
+    "total": 410,
+    "active": 341,
     "by_status": {
-      "active": 342,
+      "active": 341,
       "parked": 69
     },
     "by_verdict": {
-      "C": 188,
+      "C": 187,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }

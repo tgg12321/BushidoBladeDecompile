@@ -393,11 +393,11 @@ s16 *func_8003FE40(s16 *a0, s32 a1, s16 *a2) {
     s32 i;
     i = 0;
     if (a1 > i) {
-        s16 t0 = -256;
-        s16 *v1 = a0;
+        s16 fill = -256;
+        s16 *p = a0;
         for (i = 0; i < a1; i++) {
-            *(s16 *)((u8 *)v1 + 6) = t0;
-            v1 = (s16 *)((u8 *)v1 + 8);
+            *(s16 *)((u8 *)p + 6) = fill;
+            p = (s16 *)((u8 *)p + 8);
         }
     }
 
@@ -406,22 +406,18 @@ s16 *func_8003FE40(s16 *a0, s32 a1, s16 *a2) {
         count = a2[0];
         a2++;
         if (count >= 0) {
-            s32 neg1 = -1;
             do {
                 int val;
                 val = a2[0];
                 a2++;
                 count--;
-                if (count != neg1) {
-                    s32 neg1b = -1;
-                    do {
-                        s32 addr;
-                        i = a2[0];
-                        a2++;
-                        count--;
-                        addr = (i << 3) + (s32)a0;
-                        *(s16 *)(addr + 6) = val;
-                    } while (count != neg1b);
+                while (count != -1) {
+                    s32 addr;
+                    i = a2[0];
+                    a2++;
+                    count--;
+                    addr = (i << 3) + (s32)a0;
+                    *(s16 *)(addr + 6) = val;
                 }
                 count = a2[0];
                 a2++;
