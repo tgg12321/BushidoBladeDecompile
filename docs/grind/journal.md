@@ -209,3 +209,4 @@
 - 2026-07-14 16:42 func_8003FE40 COMPLETED-C after 2 sessions.
 - 2026-07-14 17:19 func_8003FECC COMPLETED-C after 2 sessions.
 - 2026-07-14 17:51 func_800400F8 COMPLETED-C after 2 sessions.
+- 2026-07-14 18:07 gpu_SetDispMask COMPLETED-C after 2 sessions.
