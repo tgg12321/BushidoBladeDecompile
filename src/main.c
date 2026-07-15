@@ -1227,6 +1227,7 @@ void func_80087770(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
 extern s16 D_80102806;
 s16 func_80087CAC(s32 a0, s16 *a1, s16 *a2) {
     u8 *base;
+    /* FAKE: materializes &D_80102806 once in a reg for store+reload; all pointer-free spellings measured 12 (s2, tmp/grind/func_80087CAC/s2/) */
     s16 *ptr;
     s32 slot;
     u8 *p;

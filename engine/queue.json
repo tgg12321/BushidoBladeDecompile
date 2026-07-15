@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80087CAC",
-      "file": "main",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: Pointer alias `s16 *ptr = &D_80102806; *ptr = a0; return *ptr;` is a STORE-compute-LOAD codegen lever, not the sanctioned LOAD-compute-STORE RMW shape \u2014 fails tests 1, 2, 3, and 5; next action: try di"
-    },
-    {
       "func": "camera_CalcAngles",
       "file": "sound",
       "distance": 0,
@@ -3392,14 +3382,14 @@
     }
   ],
   "counts": {
-    "total": 403,
-    "active": 334,
+    "total": 402,
+    "active": 333,
     "by_status": {
-      "active": 334,
+      "active": 333,
       "parked": 69
     },
     "by_verdict": {
-      "C": 180,
+      "C": 179,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
