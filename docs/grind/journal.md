@@ -216,3 +216,4 @@
 - 2026-07-14 18:43 func_80086080 COMPLETED-C after 2 sessions.
 - 2026-07-14 19:02 func_80087CAC COMPLETED-C after 2 sessions.
 - 2026-07-14 19:07 camera_CalcAngles COMPLETED-C after 2 sessions.
+- 2026-07-14 19:32 camera_InitBoneData COMPLETED-C after 2 sessions.
