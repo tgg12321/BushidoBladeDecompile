@@ -457,21 +457,26 @@ typedef struct {
     s32 w[8];
 } Block32;
 extern Block32 D_80101E08;
+typedef struct { s16 lo; s16 hi; } CamHalves;
 extern s16 D_800EEDD6;
 extern s16 D_800EEDD8;
 void camera_InitBoneData(void) {
-    s16 *new_var;
+    /* FAKE: sched fence — without it sched1 hoists the lhu of D_800EEDD6
+       above the block copy (renaming the copy's regs). D_800EEDD6/D_800EEDD8
+       physically live INSIDE g_cam_bone_data (+6/+8), so the dependency is
+       real, but the split extern symbols hide it from GCC's alias analysis;
+       no distinct-symbol spelling can express it (measured s2). */
     do { *(Block32 *)&g_cam_bone_data = D_80101E08; } while (0);
-    new_var = &D_800EEDD8;
     {
         s16 h0 = D_800EEDD6;
         s16 h1 = D_800EEDD8;
         D_800EEDD6 = h0 >> 1;
-        {
-            s16 h2;
-            D_800EEDD8 = h1 >> 1;
-            *(new_var + 1) = (*((&D_800EEDD8) + 1)) >> 1;
-        }
+        D_800EEDD8 = h1 >> 1;
+        /* struct-view of the two halfwords at D_800EEDD8 (target relocation
+           D_800EEDD8+0x2 proves the object spans 4 bytes); the direct
+           *((&D_800EEDD8)+1) spelling makes cse common the +2 address into a
+           register (la) where target keeps both accesses symbolic */
+        ((CamHalves *)&D_800EEDD8)->hi = ((CamHalves *)&D_800EEDD8)->hi >> 1;
     }
 }
 

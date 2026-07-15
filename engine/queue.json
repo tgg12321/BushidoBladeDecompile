@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "camera_InitBoneData",
-      "file": "sound",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: Three cheats found in current main source (src/sound.c:462-476): (1) unannotated do-while(0) wrapper \u2014 missing mandatory /* FAKE */ annotation, so the LABEL_OUTSIDE_LOOP_P prerequisite and lever-exhau"
-    },
-    {
       "func": "camera_InitRotation",
       "file": "sound",
       "distance": 0,
@@ -3372,14 +3362,14 @@
     }
   ],
   "counts": {
-    "total": 401,
-    "active": 332,
+    "total": 400,
+    "active": 331,
     "by_status": {
-      "active": 332,
+      "active": 331,
       "parked": 69
     },
     "by_verdict": {
-      "C": 178,
+      "C": 177,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
