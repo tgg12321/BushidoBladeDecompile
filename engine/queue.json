@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "camera_CalcAngles",
-      "file": "sound",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: Dead store `sp18[2] = a1` (line 543, src/sound.c): sp18[2] is written but never read afterward \u2014 the next call uses `a1` directly from register, not sp18[2] from the stack. The store has no semantic p"
-    },
-    {
       "func": "camera_InitBoneData",
       "file": "sound",
       "distance": 0,
@@ -3382,14 +3372,14 @@
     }
   ],
   "counts": {
-    "total": 402,
-    "active": 333,
+    "total": 401,
+    "active": 332,
     "by_status": {
-      "active": 333,
+      "active": 332,
       "parked": 69
     },
     "by_verdict": {
-      "C": 179,
+      "C": 178,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }

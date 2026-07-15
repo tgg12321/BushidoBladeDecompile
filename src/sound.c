@@ -530,7 +530,6 @@ s16 *camera_CalcAngles(void) {
     s32 sp18[3];
     s32 pos[8];
     s16 s0;
-    s32 a1;
 
     func_80042A88((s32 *)((u8 *)*(s32 **)&D_800A3708 + 0x10), pos);
     rot[0] = 0;
@@ -538,10 +537,9 @@ s16 *camera_CalcAngles(void) {
     rot[2] = 0x1000;
     func_8007ED6C(pos, rot, sp18);
     s0 = single_game_getEnemyCharId(sp18[0], sp18[2]);
-    a1 = ((s32)Judge[((s16)s0 + 0x400) & 0xFFF] * sp18[2]
-         + (s32)Judge[s0 & 0xFFF] * sp18[0]) >> 12;
-    sp18[2] = a1;
-    D_800A33C8 = -single_game_getEnemyCharId(sp18[1], a1);
+    sp18[2] = ((s32)Judge[((s16)s0 + 0x400) & 0xFFF] * sp18[2]
+              + (s32)Judge[s0 & 0xFFF] * sp18[0]) >> 12;
+    D_800A33C8 = -single_game_getEnemyCharId(sp18[1], sp18[2]);
     D_800A33CA = s0;
     return &D_800A33C8;
 }
