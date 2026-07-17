@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80065760",
-      "file": "text1b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: Flagged construct: `(s16)v1` in `if ((s16)v1 < 0x11C8)` fails test #1 \u2014 `v1` is already declared `s16`; the cast is a C-language no-op and the function's observable behavior is identical without it. M"
-    },
-    {
       "func": "func_80068F70",
       "file": "text1b",
       "distance": 0,
@@ -3102,14 +3092,14 @@
     }
   ],
   "counts": {
-    "total": 374,
-    "active": 305,
+    "total": 373,
+    "active": 304,
     "by_status": {
-      "active": 305,
+      "active": 304,
       "parked": 69
     },
     "by_verdict": {
-      "C": 151,
+      "C": 150,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }

@@ -14807,7 +14807,7 @@ u8 func_80065760(void) {
     s16 v1 = *p;
     v1 += 0x1C6;
     *p = v1;
-    if ((s16)v1 < 0x11C8) {
+    if (v1 < 0x11C8) {
         return v0;
     }
     return 0;
