@@ -4,14 +4,14 @@
   "build_failures": [],
   "items": [
     {
-      "func": "videoDecCreate",
+      "func": "hirahira_w_frie",
       "file": "text1a_c",
       "distance": 0,
       "verdict": "C",
       "rules": 0,
       "status": "active",
       "origin": "regression",
-      "reopen_reason": "regression: u16 *cntPtr = countPtr; is a semantically-redundant pointer alias in the inner scope \u2014 fails tests 1+2, not mentioned in the completion commit's justification (7c2d2e4c only documents cnt_base/base_ad"
+      "reopen_reason": "regression: Two constructs violate the SOTN bar; primary is a confirmed param-local-alias-prologue-pair-flip (explicitly forbidden). Worker must produce a clean pure-C body that matches the prologue without alias"
     },
     {
       "func": "GetAllocPacketSize",
@@ -2611,16 +2611,6 @@
       "status": "active"
     },
     {
-      "func": "hirahira_w_frie",
-      "file": "text1a_c",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: Two constructs violate the SOTN bar; primary is a confirmed param-local-alias-prologue-pair-flip (explicitly forbidden). Worker must produce a clean pure-C body that matches the prologue without alias"
-    },
-    {
       "func": "func_80049A2C",
       "file": "text1b",
       "distance": 0,
@@ -3252,11 +3242,11 @@
     }
   ],
   "counts": {
-    "total": 389,
+    "total": 388,
     "active": 319,
     "by_status": {
       "active": 319,
-      "parked": 70
+      "parked": 69
     },
     "by_verdict": {
       "C": 165,

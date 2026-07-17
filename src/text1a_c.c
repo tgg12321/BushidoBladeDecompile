@@ -578,7 +578,10 @@ void videoDecCreate(s16 arg0, s16 arg1, s16 arg2, s16 arg3, s32 arg4) {
     {
         s32 **base_addr = D_80103608;
         s32 **basePtr = &base_addr[idx];
-        u16 *cntPtr = countPtr;
+        u16 *cntPtr = countPtr; /* load-bearing named intermediate: countPtr's
+           caller-save home ($a1) must die before the loop's jal; this rebind
+           gives the loop reads their own callee-save home ($s1), reproducing
+           the target's addu $s1,$a1,$zero copy (removal measured +5) */
     loop:
         *(s32 *)0x1F800000 = (*basePtr)[(s16)i];
         func_80043454((s16)arg1, (s16)arg2, (s16)arg3, (s16)arg4_lo);
