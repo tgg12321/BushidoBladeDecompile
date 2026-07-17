@@ -231,3 +231,4 @@
 - 2026-07-17 03:50 hirahira_w_frie s3 [structural] floor=4: Type-narrowing axis measured dead on both entry chains (u32* base = 4; s16 v1 = 21); floor 4 invariant; owner escalation still open in decisions.md — function remains owner-gated
 - 2026-07-17 04:23 CIRCUIT-BREAK: 3 consecutive invalid sessions on hirahira_w_frie
 - 2026-07-17 11:00 mot_data_set COMPLETED-C after 2 sessions.
+- 2026-07-17 11:10 videoDecCreate COMPLETED-C after 2 sessions.
