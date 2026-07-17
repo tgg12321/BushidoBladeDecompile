@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80065590",
-      "file": "text1b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: Type-coercion cheat in `extern s16 D_800F0BB6` declaration: canonical type is `u16` (explicitly named in regressions.md func_80065344 cluster entry as one of ~12 sister globals needing `s16`\u2192`u16` ret"
-    },
-    {
       "func": "func_80065760",
       "file": "text1b",
       "distance": 0,
@@ -3112,14 +3102,14 @@
     }
   ],
   "counts": {
-    "total": 375,
-    "active": 306,
+    "total": 374,
+    "active": 305,
     "by_status": {
-      "active": 306,
+      "active": 305,
       "parked": 69
     },
     "by_verdict": {
-      "C": 152,
+      "C": 151,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
