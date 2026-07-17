@@ -239,3 +239,4 @@
 - 2026-07-17 11:45 func_80049F4C COMPLETED-C after 2 sessions.
 - 2026-07-17 11:52 func_8005344C COMPLETED-C after 2 sessions.
 - 2026-07-17 12:05 func_8005509C COMPLETED-C after 2 sessions.
+- 2026-07-17 12:09 func_8005C5A8 COMPLETED-C after 2 sessions.
