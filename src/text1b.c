@@ -11543,14 +11543,11 @@ void func_8005509C(s32 arg0)
 {
   s32 i;
   u8 *p = ((u8 *) (&D_80101EC8)) + (arg0 * 0x44C);
-  u8 *new_var;
   i = 0;
   do
   {
-    *(p + 0x415) = 0;
-    *(new_var + 0x414) = 0;
-    p += 2;
-    new_var = p;
+    p[i * 2 + 0x415] = 0;
+    p[i * 2 + 0x414] = 0;
   }
   while ((++i) < 8);
 }
