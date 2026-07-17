@@ -14495,7 +14495,7 @@ extern s32 D_800F0CE8;
 extern s32 D_800F0CEC;
 extern s32 D_800F0CF0;
 extern s32 D_800F1100;
-extern s16 D_800F0BB4;
+extern u16 D_800F0BB4;
 void func_8006505C(void) {
     void *p = D_800A347C;
     s32 last;
@@ -14722,11 +14722,11 @@ u8 func_80065484(void) {
     }
     return 0;
 }
-extern s16 D_800F0BB4;
+extern u16 D_800F0BB4;
 u8 func_80065540(void) {
     u8 v0 = motion_SetExMotion(6);
-    s16 *p = &D_800F0BB4;
-    s16 v1 = *p;
+    u16 *p = &D_800F0BB4;
+    u16 v1 = *p;
     v1 += 0x32;
     *p = v1;
     if ((s16)v1 < 0x100) {
