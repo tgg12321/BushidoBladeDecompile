@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80048F58",
-      "file": "text1b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: param-local-alias pair `s32 s1 = a0; s32 s0 = a1;` is a forbidden codegen-coercion cheat: fails Tests 1/2/3/5/6 \u2014 no semantic purpose, no human-from-spec would write it, mechanism is GCC LUID/allocno-"
-    },
-    {
       "func": "func_800493E4",
       "file": "text1b",
       "distance": 0,
@@ -3222,14 +3212,14 @@
     }
   ],
   "counts": {
-    "total": 386,
-    "active": 317,
+    "total": 385,
+    "active": 316,
     "by_status": {
-      "active": 317,
+      "active": 316,
       "parked": 69
     },
     "by_verdict": {
-      "C": 163,
+      "C": 162,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }

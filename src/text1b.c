@@ -648,18 +648,16 @@ extern u8 g_snd_ch_data[];
 extern u16 g_snd_se_bank[];
 extern void InitFadePanel(void);
 void func_80048F58(s32 a0, s32 a1) {
-    s32 s1 = a0;
-    s32 s0 = a1;
     s32 i;
     u16 *src;
     u16 *dst;
     u8 *base;
-    if (s0 > 0) {
+    if (a1 > 0) {
         InitFadePanel();
     }
-    base = g_snd_ch_data + s0 * 308;
+    base = g_snd_ch_data + a1 * 308;
     *(u32 *)base = 0;
-    src = (u16 *)(g_snd_se_bank + s1 * 7);
+    src = (u16 *)(g_snd_se_bank + a0 * 7);
     dst = (u16 *)(base + 0x124);
     i = 0;
     do {
