@@ -34,7 +34,9 @@
    "next_probe": "One sweep_variants call with 3-4 wrap spellings on the honest-0xD body; judge each by full-build SHA1 / raw window diff (masked sandbox is blind here). Bank the negative in the ledger if inert, per the wrap-vs-cross-jump question this recon's source reading predicts."
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "The union-retype/cast-to-union CLOBBER lever \u2014 and ANY respelling that manufactures a bare USE/CLOBBER solely to break find_cross_jump (single-member structs, struct-return call shapes, dead union locals) \u2014 is unsanctioned and must not be committed; next step is to MEASURE frontier F1 (-da jump2 dump of the committed TU, find the real discriminator protecting the -1 pair, respell it honestly at the 13 pair) and bank the result in the ledger; if the union-CLOBBER family is believed community-viable, surface it to the owner as a standalone policy question with SOTN-master-branch evidence, never inside a match."
+ ],
  "origin": "queue",
  "created": "2026-07-07T15:21:59.271930+00:00"
 }
