@@ -17630,7 +17630,7 @@ void func_80077724(s32 arg0, s32 arg1) {
 extern s32 D_800A35E4;
 void func_80068F70(s32, s32 *);
 extern s32 D_8009BD24;
-s32 disp_SetFramebufferMode(s32, s32, s32, s32);
+void disp_SetFramebufferMode(s32, s32, s32, s32);
 s32 func_80077820(s32 a0) {
     func_80068F70(a0, (s32 *)&D_8009BD24);
     disp_SetFramebufferMode(1, 0, 0, 0);
@@ -17719,7 +17719,7 @@ void saTan2InfoInit_80077A60(void) {
 extern s32 D_800A35E8;
 extern s32 D_8009BD24;
 void func_800770B8(s32, s32 *, s32);
-s32 disp_SetFramebufferMode(s32, s32, s32, s32);
+void disp_SetFramebufferMode(s32, s32, s32, s32);
 s32 func_80077A80(s32 a0) {
     func_800770B8(a0, (s32 *)&D_8009BD24, D_800A35E8);
     disp_SetFramebufferMode(1, 0, 0, 0);

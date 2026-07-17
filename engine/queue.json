@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80077A80",
-      "file": "text1b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: s32 disp_SetFramebufferMode redeclaration at text1b.c:17721 overrides a void declaration at 17707 within the same TU; the only effect is coercing GCC $v0 liveness after the jal (prevents 'li $v0,1' fr"
-    },
-    {
       "func": "motion_SetMotion",
       "file": "code6cac_c_mid",
       "distance": 1,
@@ -3032,14 +3022,14 @@
     }
   ],
   "counts": {
-    "total": 367,
-    "active": 298,
+    "total": 366,
+    "active": 297,
     "by_status": {
-      "active": 298,
+      "active": 297,
       "parked": 69
     },
     "by_verdict": {
-      "C": 144,
+      "C": 143,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
