@@ -1005,7 +1005,6 @@ extern void func_80052930(void *, void *, void *);
 extern void func_80052A88(void *, void *, void *);
 void func_800417D0(s32 *a0) {
     void (*func)(s32 *, s32 *);
-    s32 *child;
 
     if (((s16 *)a0)[3] == 1) {
         return;
@@ -1014,10 +1013,9 @@ void func_800417D0(s32 *a0) {
         func = (void (*)(s32 *, s32 *))g_anim_func_table[((s16 *)a0)[4]];
         func(a0 + 4, a0 + 14);
     }
-    child = (s32 *)a0[3];
-    if (child != 0) {
-        if (((s16 *)child)[3] == 0) {
-            func_800417D0(child);
+    if ((s32 *)a0[3] != 0) {
+        if (((s16 *)a0[3])[3] == 0) {
+            func_800417D0((s32 *)a0[3]);
         }
         func_80052930((void *)((u8 *)((s32 *)a0[3]) + 0x18), (void *)((u8 *)a0 + 0x38), (void *)((u8 *)a0 + 0x18));
         func_80052A88((void *)((u8 *)((s32 *)a0[3]) + 0x18), (void *)((u8 *)a0 + 0x4C), (void *)((u8 *)a0 + 0x2C));

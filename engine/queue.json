@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_800417D0",
-      "file": "text1a",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: Mixed child/a0[3] liveness-manipulation: 'child' is cached from a0[3] and used for the null-check, status-check, and recursive call, but (s32 *)a0[3] is re-read directly in the func_80052930 and func_"
-    },
-    {
       "func": "func_800466C0",
       "file": "text1a_b",
       "distance": 0,
@@ -3332,14 +3322,14 @@
     }
   ],
   "counts": {
-    "total": 397,
-    "active": 328,
+    "total": 396,
+    "active": 327,
     "by_status": {
-      "active": 328,
+      "active": 327,
       "parked": 69
     },
     "by_verdict": {
-      "C": 174,
+      "C": 173,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
