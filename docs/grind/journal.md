@@ -257,3 +257,5 @@
 - 2026-07-17 16:39 func_8006F038 COMPLETED-C after 2 sessions.
 - 2026-07-17 16:44 func_80074220 COMPLETED-C after 2 sessions.
 - 2026-07-17 16:50 func_80077A80 COMPLETED-C after 2 sessions.
+- 2026-07-17 17:09 motion_SetMotion: judge FAILED a bytes-proven candidate — The candidate retypes the live selector variable as a single-member union (`union selu { s32 a; } sel;`) and spells one 
+- 2026-07-17 17:24 motion_SetMotion s2 [structural] floor=10: F1 ANSWERED: -1 pair is protected by sched2 slack-hoist non-adjacency (honest but needs block slack the 13 sites have zero byte-room for); structural axis on the 13-pair wall measured dead (r1-r4), leaving only the judge-banned USE/CLOBBER family -> owner policy question
