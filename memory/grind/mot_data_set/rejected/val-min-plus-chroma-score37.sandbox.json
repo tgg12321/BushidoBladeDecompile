@@ -1,0 +1,13 @@
+{
+  "score": 37,
+  "target_insns": 110,
+  "build_insns": 110,
+  "scorable": true,
+  "func": "mot_data_set",
+  "file": "text1a_c",
+  "disable": "all",
+  "strip_cheat_asm": true,
+  "rules_dropped": 0,
+  "cheat_asm_stripped": 78,
+  "disabled_o": "tmp/sandbox/mot_data_set/text1a_c.o"
+}

@@ -1,0 +1,114 @@
+00000180 <mot_data_set>:
+     180:	8c880000 	lw	t0,0(a0)
+     184:	8c890004 	lw	t1,4(a0)
+     188:	8c870008 	lw	a3,8(a0)
+     18c:	0109102a 	slt	v0,t0,t1
+     190:	14400006 	bnez	v0,1ac <mot_data_set+0x2c>
+     194:	0127102a 	slt	v0,t1,a3
+     198:	0107102a 	slt	v0,t0,a3
+     19c:	14400006 	bnez	v0,1b8 <mot_data_set+0x38>
+     1a0:	00e03021 	move	a2,a3
+     1a4:	0800006e 	j	1b8 <mot_data_set+0x38>
+     1a8:	01003021 	move	a2,t0
+     1ac:	14400002 	bnez	v0,1b8 <mot_data_set+0x38>
+     1b0:	00e03021 	move	a2,a3
+     1b4:	01203021 	move	a2,t1
+     1b8:	0128102a 	slt	v0,t1,t0
+     1bc:	14400006 	bnez	v0,1d8 <mot_data_set+0x58>
+     1c0:	00e9102a 	slt	v0,a3,t1
+     1c4:	00e8102a 	slt	v0,a3,t0
+     1c8:	14400006 	bnez	v0,1e4 <mot_data_set+0x64>
+     1cc:	00e01821 	move	v1,a3
+     1d0:	08000079 	j	1e4 <mot_data_set+0x64>
+     1d4:	01001821 	move	v1,t0
+     1d8:	14400002 	bnez	v0,1e4 <mot_data_set+0x64>
+     1dc:	00e01821 	move	v1,a3
+     1e0:	01201821 	move	v1,t1
+     1e4:	00c32023 	subu	a0,a2,v1
+     1e8:	00c07021 	move	t6,a2
+     1ec:	31c3ffff 	andi	v1,t6,0xffff
+     1f0:	1060000e 	beqz	v1,22c <mot_data_set+0xac>
+     1f4:	00041300 	sll	v0,a0,0xc
+     1f8:	0043001a 	div	zero,v0,v1
+     1fc:	14600002 	bnez	v1,208 <mot_data_set+0x88>
+     200:	00000000 	nop
+     204:	0007000d 	break	0x7
+     208:	2401ffff 	li	at,-1
+     20c:	14610004 	bne	v1,at,220 <mot_data_set+0xa0>
+     210:	3c018000 	lui	at,0x8000
+     214:	14410002 	bne	v0,at,220 <mot_data_set+0xa0>
+     218:	00000000 	nop
+     21c:	0006000d 	break	0x6
+     220:	00006012 	mflo	t4
+     224:	0800008c 	j	230 <mot_data_set+0xb0>
+     228:	00000000 	nop
+     22c:	00006021 	move	t4,zero
+     230:	1180003d 	beqz	t4,328 <mot_data_set+0x1a8>
+     234:	00c81023 	subu	v0,a2,t0
+     238:	00021300 	sll	v0,v0,0xc
+     23c:	0044001a 	div	zero,v0,a0
+     240:	14800002 	bnez	a0,24c <mot_data_set+0xcc>
+     244:	00000000 	nop
+     248:	0007000d 	break	0x7
+     24c:	2401ffff 	li	at,-1
+     250:	14810004 	bne	a0,at,264 <mot_data_set+0xe4>
+     254:	3c018000 	lui	at,0x8000
+     258:	14410002 	bne	v0,at,264 <mot_data_set+0xe4>
+     25c:	00000000 	nop
+     260:	0006000d 	break	0x6
+     264:	00006812 	mflo	t5
+     268:	00c91023 	subu	v0,a2,t1
+     26c:	00021300 	sll	v0,v0,0xc
+     270:	0044001a 	div	zero,v0,a0
+     274:	14800002 	bnez	a0,280 <mot_data_set+0x100>
+     278:	00000000 	nop
+     27c:	0007000d 	break	0x7
+     280:	2401ffff 	li	at,-1
+     284:	14810004 	bne	a0,at,298 <mot_data_set+0x118>
+     288:	3c018000 	lui	at,0x8000
+     28c:	14410002 	bne	v0,at,298 <mot_data_set+0x118>
+     290:	00000000 	nop
+     294:	0006000d 	break	0x6
+     298:	00005812 	mflo	t3
+     29c:	00c71023 	subu	v0,a2,a3
+     2a0:	00021300 	sll	v0,v0,0xc
+     2a4:	0044001a 	div	zero,v0,a0
+     2a8:	14800002 	bnez	a0,2b4 <mot_data_set+0x134>
+     2ac:	00000000 	nop
+     2b0:	0007000d 	break	0x7
+     2b4:	2401ffff 	li	at,-1
+     2b8:	14810004 	bne	a0,at,2cc <mot_data_set+0x14c>
+     2bc:	3c018000 	lui	at,0x8000
+     2c0:	14410002 	bne	v0,at,2cc <mot_data_set+0x14c>
+     2c4:	00000000 	nop
+     2c8:	0006000d 	break	0x6
+     2cc:	00001812 	mflo	v1
+     2d0:	15060003 	bne	t0,a2,2e0 <mot_data_set+0x160>
+     2d4:	00000000 	nop
+     2d8:	080000c0 	j	300 <mot_data_set+0x180>
+     2dc:	006b5023 	subu	t2,v1,t3
+     2e0:	15260003 	bne	t1,a2,2f0 <mot_data_set+0x170>
+     2e4:	2462e000 	addiu	v0,v1,-8192
+     2e8:	080000c0 	j	300 <mot_data_set+0x180>
+     2ec:	01a25023 	subu	t2,t5,v0
+     2f0:	14e60004 	bne	a3,a2,304 <mot_data_set+0x184>
+     2f4:	3c022aaa 	lui	v0,0x2aaa
+     2f8:	25a2c000 	addiu	v0,t5,-16384
+     2fc:	01625023 	subu	t2,t3,v0
+     300:	3c022aaa 	lui	v0,0x2aaa
+     304:	3442aaab 	ori	v0,v0,0xaaab
+     308:	01420018 	mult	t2,v0
+     30c:	000a17c3 	sra	v0,t2,0x1f
+     310:	00007810 	mfhi	t7
+     314:	01e25023 	subu	t2,t7,v0
+     318:	05410005 	bgez	t2,330 <mot_data_set+0x1b0>
+     31c:	31c2ffff 	andi	v0,t6,0xffff
+     320:	080000cc 	j	330 <mot_data_set+0x1b0>
+     324:	254a1000 	addiu	t2,t2,4096
+     328:	00005021 	move	t2,zero
+     32c:	31c2ffff 	andi	v0,t6,0xffff
+     330:	acaa0000 	sw	t2,0(a1)
+     334:	acac0004 	sw	t4,4(a1)
+     338:	03e00008 	jr	ra
+     33c:	aca20008 	sw	v0,8(a1)
+

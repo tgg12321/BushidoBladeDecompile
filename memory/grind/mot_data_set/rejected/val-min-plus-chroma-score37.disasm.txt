@@ -1,0 +1,112 @@
+00000180 <mot_data_set>:
+     180:	8c880000 	lw	t0,0(a0)
+     184:	8c890004 	lw	t1,4(a0)
+     188:	8c870008 	lw	a3,8(a0)
+     18c:	0109102a 	slt	v0,t0,t1
+     190:	14400006 	bnez	v0,1ac <mot_data_set+0x2c>
+     194:	0127102a 	slt	v0,t1,a3
+     198:	0107102a 	slt	v0,t0,a3
+     19c:	14400006 	bnez	v0,1b8 <mot_data_set+0x38>
+     1a0:	00e03021 	move	a2,a3
+     1a4:	0800006e 	j	1b8 <mot_data_set+0x38>
+     1a8:	01003021 	move	a2,t0
+     1ac:	14400002 	bnez	v0,1b8 <mot_data_set+0x38>
+     1b0:	00e03021 	move	a2,a3
+     1b4:	01203021 	move	a2,t1
+     1b8:	0128102a 	slt	v0,t1,t0
+     1bc:	14400006 	bnez	v0,1d8 <mot_data_set+0x58>
+     1c0:	00e9102a 	slt	v0,a3,t1
+     1c4:	00e8102a 	slt	v0,a3,t0
+     1c8:	14400006 	bnez	v0,1e4 <mot_data_set+0x64>
+     1cc:	00e02021 	move	a0,a3
+     1d0:	08000079 	j	1e4 <mot_data_set+0x64>
+     1d4:	01002021 	move	a0,t0
+     1d8:	14400002 	bnez	v0,1e4 <mot_data_set+0x64>
+     1dc:	00e02021 	move	a0,a3
+     1e0:	01202021 	move	a0,t1
+     1e4:	00c41823 	subu	v1,a2,a0
+     1e8:	00835821 	addu	t3,a0,v1
+     1ec:	1160000e 	beqz	t3,228 <mot_data_set+0xa8>
+     1f0:	00031300 	sll	v0,v1,0xc
+     1f4:	004b001a 	div	zero,v0,t3
+     1f8:	15600002 	bnez	t3,204 <mot_data_set+0x84>
+     1fc:	00000000 	nop
+     200:	0007000d 	break	0x7
+     204:	2401ffff 	li	at,-1
+     208:	15610004 	bne	t3,at,21c <mot_data_set+0x9c>
+     20c:	3c018000 	lui	at,0x8000
+     210:	14410002 	bne	v0,at,21c <mot_data_set+0x9c>
+     214:	00000000 	nop
+     218:	0006000d 	break	0x6
+     21c:	00006012 	mflo	t4
+     220:	0800008b 	j	22c <mot_data_set+0xac>
+     224:	00000000 	nop
+     228:	00006021 	move	t4,zero
+     22c:	1180003d 	beqz	t4,324 <mot_data_set+0x1a4>
+     230:	00c81023 	subu	v0,a2,t0
+     234:	00021300 	sll	v0,v0,0xc
+     238:	0043001a 	div	zero,v0,v1
+     23c:	14600002 	bnez	v1,248 <mot_data_set+0xc8>
+     240:	00000000 	nop
+     244:	0007000d 	break	0x7
+     248:	2401ffff 	li	at,-1
+     24c:	14610004 	bne	v1,at,260 <mot_data_set+0xe0>
+     250:	3c018000 	lui	at,0x8000
+     254:	14410002 	bne	v0,at,260 <mot_data_set+0xe0>
+     258:	00000000 	nop
+     25c:	0006000d 	break	0x6
+     260:	00006812 	mflo	t5
+     264:	00c91023 	subu	v0,a2,t1
+     268:	00021300 	sll	v0,v0,0xc
+     26c:	0043001a 	div	zero,v0,v1
+     270:	14600002 	bnez	v1,27c <mot_data_set+0xfc>
+     274:	00000000 	nop
+     278:	0007000d 	break	0x7
+     27c:	2401ffff 	li	at,-1
+     280:	14610004 	bne	v1,at,294 <mot_data_set+0x114>
+     284:	3c018000 	lui	at,0x8000
+     288:	14410002 	bne	v0,at,294 <mot_data_set+0x114>
+     28c:	00000000 	nop
+     290:	0006000d 	break	0x6
+     294:	00002012 	mflo	a0
+     298:	00c71023 	subu	v0,a2,a3
+     29c:	00021300 	sll	v0,v0,0xc
+     2a0:	0043001a 	div	zero,v0,v1
+     2a4:	14600002 	bnez	v1,2b0 <mot_data_set+0x130>
+     2a8:	00000000 	nop
+     2ac:	0007000d 	break	0x7
+     2b0:	2401ffff 	li	at,-1
+     2b4:	14610004 	bne	v1,at,2c8 <mot_data_set+0x148>
+     2b8:	3c018000 	lui	at,0x8000
+     2bc:	14410002 	bne	v0,at,2c8 <mot_data_set+0x148>
+     2c0:	00000000 	nop
+     2c4:	0006000d 	break	0x6
+     2c8:	00001812 	mflo	v1
+     2cc:	15060003 	bne	t0,a2,2dc <mot_data_set+0x15c>
+     2d0:	00000000 	nop
+     2d4:	080000bf 	j	2fc <mot_data_set+0x17c>
+     2d8:	00645023 	subu	t2,v1,a0
+     2dc:	15260003 	bne	t1,a2,2ec <mot_data_set+0x16c>
+     2e0:	2462e000 	addiu	v0,v1,-8192
+     2e4:	080000bf 	j	2fc <mot_data_set+0x17c>
+     2e8:	01a25023 	subu	t2,t5,v0
+     2ec:	14e60004 	bne	a3,a2,300 <mot_data_set+0x180>
+     2f0:	3c022aaa 	lui	v0,0x2aaa
+     2f4:	25a2c000 	addiu	v0,t5,-16384
+     2f8:	00825023 	subu	t2,a0,v0
+     2fc:	3c022aaa 	lui	v0,0x2aaa
+     300:	3442aaab 	ori	v0,v0,0xaaab
+     304:	01420018 	mult	t2,v0
+     308:	000a17c3 	sra	v0,t2,0x1f
+     30c:	00007010 	mfhi	t6
+     310:	01c25023 	subu	t2,t6,v0
+     314:	05410004 	bgez	t2,328 <mot_data_set+0x1a8>
+     318:	00000000 	nop
+     31c:	080000ca 	j	328 <mot_data_set+0x1a8>
+     320:	254a1000 	addiu	t2,t2,4096
+     324:	00005021 	move	t2,zero
+     328:	acaa0000 	sw	t2,0(a1)
+     32c:	acac0004 	sw	t4,4(a1)
+     330:	03e00008 	jr	ra
+     334:	acab0008 	sw	t3,8(a1)
+
