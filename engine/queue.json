@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80065344",
-      "file": "text1b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: The `(s16)v1` cast in `if ((s16)v1 < 0x11C8)` where v1 is already declared s16 fails tests 1, 2, and 3: it is a C no-op (s16 cast to s16), no human programmer from spec writes it, and its purpose is t"
-    },
-    {
       "func": "func_80065434",
       "file": "text1b",
       "distance": 0,
@@ -3142,14 +3132,14 @@
     }
   ],
   "counts": {
-    "total": 378,
-    "active": 309,
+    "total": 377,
+    "active": 308,
     "by_status": {
-      "active": 309,
+      "active": 308,
       "parked": 69
     },
     "by_verdict": {
-      "C": 155,
+      "C": 154,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
