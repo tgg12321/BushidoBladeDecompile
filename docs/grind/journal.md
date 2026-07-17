@@ -229,3 +229,4 @@
 - 2026-07-17 03:06 func_800455AC COMPLETED-C after 2 sessions.
 - 2026-07-17 03:42 hirahira_w_frie s2 [structural] floor=4: Sanctioned floor 4 confirmed invariant: all remaining no-rename structural axes measured dead (K&R param-decl order, do-while(0) fence, decl/init permutations); Judge-mandated OWNER-ESCALATION on the param-alias tombstone filed in docs/grind/decisions.md
 - 2026-07-17 03:50 hirahira_w_frie s3 [structural] floor=4: Type-narrowing axis measured dead on both entry chains (u32* base = 4; s16 v1 = 21); floor 4 invariant; owner escalation still open in decisions.md — function remains owner-gated
+- 2026-07-17 04:23 CIRCUIT-BREAK: 3 consecutive invalid sessions on hirahira_w_frie

@@ -60,6 +60,12 @@ CONCLUSION: with H1-H8 the sanctioned pure-C space is measured-closed at floor 4
 - result: score 4, 59/59 — invariant floor, type-inert exactly as predicted; banked rejected/param-type-widen-u32-base-floor4.c
 - verdict: KILLED
 
+## s4 (2026-07-17, permuter)
+
+12. KILLED — "a sanctioned spelling below floor 4 exists in permuter-reachable space". Probe: harvested the discarded prior attempt's three campaigns (clean+stop random 12,090 iters best 38; ws_rand 5,654 iters 0 finds below base 38; ws_dir directed 4,752 iters 0 outputs) + a fresh structurally-different basin this session (inverted-entry no-goto chassis, ~4k+ iters). Result: every basin converges to weighted 38 = the prologue-pair floor and NEVER below, across ~26k+ total iterations and two independent chassis. The stochastic search corroborates the s2 analytic exhaustion: sub-floor requires relocating the a0 entry copy, which only the owner-gated tombstone construct can do.
+
+13. CONFIRMED (floor-corroborating, not floor-lowering) — "the inverted-entry chassis's 2-insn subu-operand gap closes with sanctioned staging". Probe: permuter find `ret = v1 != -2; if (ret)` (staged-value-reused-variable family, sanctioned 2026-07-03); applied to src and sandboxed. Result: 4 (59/59), objdump residual = exactly the same prologue pair. A second independent sanctioned floor-4 chassis (banked rejected/inverted-entry-ret-staged-floor4.c); floor 4 is chassis-invariant.
+
 ## [s3] The a1-chain consumer local can be narrowed (s16 v1) to re-tie the entry-chain priorities
 - mechanism: Narrowing v1 changes its arithmetic uses' RTL; but GCC must insert sll/sra sign-extensions, so byte-neutrality was the open question
 - probe: s16 v1 on the clean+stop base; sandbox --disable all

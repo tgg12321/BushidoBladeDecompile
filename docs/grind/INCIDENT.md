@@ -1,35 +1,37 @@
-# GRINDER CIRCUIT-BREAK — 2026-07-14 12:59
+# GRINDER CIRCUIT-BREAK — 2026-07-17 04:23
 
-**Reason:** 3 consecutive invalid sessions on func_8003B3A4
+**Reason:** 3 consecutive invalid sessions on hirahira_w_frie
 
-git HEAD: 6216921e
+git HEAD: 8b644db9
 git status:
 ```
- M memory/grind/func_8003B3A4/evidence.md
- M memory/grind/func_8003B3A4/hypotheses.md
+ M memory/grind/hirahira_w_frie/evidence.md
+ M memory/grind/hirahira_w_frie/hypotheses.md
  M metrics/events.jsonl
+?? memory/grind/hirahira_w_frie/rejected/inverted-entry-nogoto-floor6.c
+?? memory/grind/hirahira_w_frie/rejected/inverted-entry-ret-staged-floor4.c
 
 ```
 Last 20 log lines:
 ```
-[grind 2026-07-14 11:24:00] func_8003B3A4: SCOPE VIOLATION —  M regfix.txt — session discarded.
-[grind 2026-07-14 11:24:00] grinder stopped.
-[grind 2026-07-14 11:24:06] grinder starting (pid 7004, model fable, judge fable)
-[grind 2026-07-14 11:24:07] pre-flight: oracle green.
-[grind 2026-07-14 11:24:08] func_8003B3A4: session 2 starting, modality=structural
-[grind 2026-07-14 11:32:54] func_8003B3A4: judge ruling FAIL recorded.
-[grind 2026-07-14 11:33:17] func_8003B3A4: session 2 starting, modality=structural
-[grind 2026-07-14 11:40:07] func_8003B3A4: progress applied — floor=0, 'Structural exhaustion grid COMPLETE: deref-of-address killed (6) and block scope proven LOAD-BEARING (fn-scope pointer = 7); annotated alias restored after FOURTH hygiene drop, sandbox 0 re-verified; function remains blocked solely on the owner's s2b NEEDS_USER answer + operator commit of the annotation'
-[grind 2026-07-14 11:40:31] func_8003B3A4: session 3 starting, modality=structural
-[grind 2026-07-14 11:44:48] func_8003B3A4: progress applied — floor=0, 's3: annotation restored after FIFTH hygiene drop, sandbox 0 re-verified; split decl/init proven same-bytes equivalent (spelling not load-bearing, block position is); HOLD respected — owner answer + operator commit remain the only unblockers'
-[grind 2026-07-14 11:45:11] func_8003B3A4: session 4 starting, modality=permuter
-[grind 2026-07-14 12:34:01] func_8003B3A4: progress applied — floor=0, 's4 permuter: 46.7k iterations across two clean alias-free chassis (direct-write base 520 best 315; goto-diamond base 730 best 515) surfaced only known attractor classes and zero score-0 finds — automated corroboration that no alias-free C form reaches the pre-branch $v1 + register-indirect sb; annotation restored after SIXTH hygiene drop, sandbox 0 re-verified'
-[grind 2026-07-14 12:34:25] func_8003B3A4: session 5 starting, modality=permuter
-[grind 2026-07-14 12:40:42] func_8003B3A4: INVALID session output (no outcome file / unparseable JSON) — discarded, src reverted, respawning.
-[grind 2026-07-14 12:40:42] reaped 9 orphaned permuter process(es) (session boundary).
-[grind 2026-07-14 12:40:43] func_8003B3A4: session 5 starting, modality=permuter
-[grind 2026-07-14 12:51:58] func_8003B3A4: INVALID session output (no outcome file / unparseable JSON) — discarded, src reverted, respawning.
-[grind 2026-07-14 12:51:58] reaped 9 orphaned permuter process(es) (session boundary).
-[grind 2026-07-14 12:51:58] func_8003B3A4: session 5 starting, modality=permuter
-[grind 2026-07-14 12:59:42] func_8003B3A4: INVALID session output (no outcome file / unparseable JSON) — discarded, src reverted, respawning.
+[grind 2026-07-17 02:48:27] func_80044B30: session 2 starting, modality=structural
+[grind 2026-07-17 02:54:03] func_80044B30: MERGED — COMPLETED-C.
+[grind 2026-07-17 02:54:05] func_80044F30: session 2 starting, modality=structural
+[grind 2026-07-17 02:58:24] func_80044F30: MERGED — COMPLETED-C.
+[grind 2026-07-17 02:58:26] func_800455AC: session 2 starting, modality=structural
+[grind 2026-07-17 03:06:52] func_800455AC: MERGED — COMPLETED-C.
+[grind 2026-07-17 03:06:54] hirahira_w_frie: session 2 starting, modality=structural
+[grind 2026-07-17 03:30:22] hirahira_w_frie: judge ruling FAIL recorded.
+[grind 2026-07-17 03:30:45] hirahira_w_frie: session 2 starting, modality=structural
+[grind 2026-07-17 03:42:05] hirahira_w_frie: progress applied — floor=4, 'Sanctioned floor 4 confirmed invariant: all remaining no-rename structural axes measured dead (K&R param-decl order, do-while(0) fence, decl/init permutations); Judge-mandated OWNER-ESCALATION on the param-alias tombstone filed in docs/grind/decisions.md'
+[grind 2026-07-17 03:42:29] hirahira_w_frie: session 3 starting, modality=structural
+[grind 2026-07-17 03:50:18] hirahira_w_frie: progress applied — floor=4, 'Type-narrowing axis measured dead on both entry chains (u32* base = 4; s16 v1 = 21); floor 4 invariant; owner escalation still open in decisions.md — function remains owner-gated'
+[grind 2026-07-17 03:50:42] hirahira_w_frie: session 4 starting, modality=permuter
+[grind 2026-07-17 03:59:30] hirahira_w_frie: INVALID session output (no outcome file / unparseable JSON) — discarded, src reverted, respawning.
+[grind 2026-07-17 03:59:30] reaped 9 orphaned permuter process(es) (session boundary).
+[grind 2026-07-17 03:59:31] hirahira_w_frie: session 4 starting, modality=permuter
+[grind 2026-07-17 04:09:32] hirahira_w_frie: INVALID session output (no outcome file / unparseable JSON) — discarded, src reverted, respawning.
+[grind 2026-07-17 04:09:33] reaped 14 orphaned permuter process(es) (session boundary).
+[grind 2026-07-17 04:09:34] hirahira_w_frie: session 4 starting, modality=permuter
+[grind 2026-07-17 04:23:56] hirahira_w_frie: INVALID session output (no outcome file / unparseable JSON) — discarded, src reverted, respawning.
 ```
