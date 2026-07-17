@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "camera_InitRotation",
-      "file": "sound",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: Source carries 26 inline-volatile-cast constructs on game-state struct fields (camera bone data accessed through `u8 *a0`). All follow the pattern `*(volatile T *)(s0 + offset)` \u2014 the forbidden 'inlin"
-    },
-    {
       "func": "game_Init",
       "file": "sound",
       "distance": 0,
@@ -3362,14 +3352,14 @@
     }
   ],
   "counts": {
-    "total": 400,
-    "active": 331,
+    "total": 399,
+    "active": 330,
     "by_status": {
-      "active": 331,
+      "active": 330,
       "parked": 69
     },
     "by_verdict": {
-      "C": 177,
+      "C": 176,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
