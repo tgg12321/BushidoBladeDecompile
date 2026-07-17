@@ -2,13 +2,45 @@
 name: param-local-alias-prologue-pair-flip
 paths: [".claude/rules/param-local-alias-prologue-pair-flip.md"]
 # on-demand only: surfaced via codegen-technique-index (auto-loads on src/*.c)
-description: "ARCHIVED FORBIDDEN — `Rect *_r = r; s32 *_out = out;` literal-rename aliases declared in target's pair order have zero semantic purpose; exist solely to manipulate cc1's expand_function_start LUID assignment so save_restore_insns emits target's prologue save+def pair order."
+description: "NARROWED by owner ruling 2026-07-17 — the reversed-pair / decl-order form (`Rect *_r = r; s32 *_out = out;` in target's pair order) remains FORBIDDEN; a SINGLE forward-order FAKE-annotated param alias is SANCTIONED last-resort under the pointer-alias-fake-exception family with the full per-use dossier (measured exhaustion, named GCC pass, FAKE annotation, Judge + layer-2)."
 metadata:
   type: archived
-  status: forbidden
+  status: narrowed
 ---
 
-# ARCHIVED — param-local-alias-prologue-pair-flip is forbidden
+# NARROWED — reversed-pair form forbidden; single forward-order alias sanctioned last-resort
+
+## OWNER RULING 2026-07-17 (docs/grind/decisions.md, hirahira_w_frie escalation option a)
+
+The blanket tombstone below is narrowed. Two distinct forms:
+
+- **FORBIDDEN (unchanged):** literal param renames declared in target's pair
+  order — the original technique this file archives. The declaration order is
+  a freely tunable prologue-ordering knob; no exhaustion dossier can sanction
+  it.
+- **SANCTIONED (last-resort, per-use dossier, owner authority):** a SINGLE
+  forward-order param alias with a mandatory `/* FAKE */` annotation, e.g.
+  `s32 *b = base; /* FAKE: prologue pair order — see ledger */`, whose sole
+  mechanism is combine merging the now-single-use parameter's entry copy into
+  the alias init at its later position. This is an owner-authorized extension
+  of [[pointer-alias-fake-exception]] (SOTN: `fakeEntity = self; // !FAKE`)
+  from globals to parameters. Prerequisites per use, none waivable:
+  1. Measured mechanism-level lever-exhaustion — every sanctioned axis
+     individually measured dead (the hirahira_w_frie dossier is the bar:
+     cc1 `expand_function_start` param-order emission, sched1
+     `rank_for_schedule` LUID tie-break byte-fixed, combine merge the only
+     C-level relocation);
+  2. The GCC pass named, not asserted;
+  3. The `/* FAKE */` annotation present;
+  4. Default-FAIL Judge + layer-2 cheat-reviewer acceptance as usual.
+  Reaching for this WITHOUT the dossier is the ordinary cheat it always was.
+
+Precedent functions: hirahira_w_frie (ruling case); twins func_8007C2A0 /
+func_8007C4B8 eligible by the same per-function dossier standard.
+
+---
+
+# Original archive (2026-06-02 tombstone) — the FORBIDDEN pair form
 
 This file used to document a technique for flipping cc1's HIGH-to-LOW
 prologue save+def pair order to target's LOW-to-HIGH order by capturing

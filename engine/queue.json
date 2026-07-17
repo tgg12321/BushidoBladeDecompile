@@ -2616,10 +2616,9 @@
       "distance": 0,
       "verdict": "C",
       "rules": 0,
-      "status": "parked",
+      "status": "active",
       "origin": "regression",
-      "reopen_reason": "regression: Two constructs violate the SOTN bar; primary is a confirmed param-local-alias-prologue-pair-flip (explicitly forbidden). Worker must produce a clean pure-C body that matches the prologue without alias",
-      "park_reason": "owner escalation pending: docs/grind/decisions.md 2026-07-17 OWNER-ESCALATION (tombstone narrow-vs-uphold, options a/b)"
+      "reopen_reason": "regression: Two constructs violate the SOTN bar; primary is a confirmed param-local-alias-prologue-pair-flip (explicitly forbidden). Worker must produce a clean pure-C body that matches the prologue without alias"
     },
     {
       "func": "func_80049A2C",
