@@ -16449,11 +16449,8 @@ void func_8006F038(s32 arg0) {
     *((s16 *)(((s32)temp_s0) + 0xE)) = 0xF0;
     *((s8 *)(((s32)temp_s0) + 6)) = v3;
     gpu_SetSemiTransp(temp_s0, 1);
-    {
-        s32 saved = temp_s0;
-        ot_Link(D_800A374C, temp_s0);
-        temp_s0 = saved + 0x10;
-    }
+    ot_Link(D_800A374C, temp_s0);
+    temp_s0 += 0x10;
     *((s32 *)(((s32)arg0) + 0x14)) = temp_s0;
     initTexPage(*((s32 *)(((s32)arg0) + 0x18)), 1, 0, 0x40, 0);
     ot_Link(D_800A374C, *((s32 *)(((s32)arg0) + 0x18)));

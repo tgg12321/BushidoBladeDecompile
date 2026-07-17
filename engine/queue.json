@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8006F038",
-      "file": "text1b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: saved block (src/text1b.c:16447-16451) fails Tests 1+2: `s32 saved = temp_s0; ot_Link(D_800A374C, temp_s0); temp_s0 = saved + 0x10;` is byte-identical to `ot_Link(D_800A374C, temp_s0); temp_s0 += 0x10"
-    },
-    {
       "func": "func_80074220",
       "file": "text1b",
       "distance": 0,
@@ -3052,14 +3042,14 @@
     }
   ],
   "counts": {
-    "total": 369,
-    "active": 300,
+    "total": 368,
+    "active": 299,
     "by_status": {
-      "active": 300,
+      "active": 299,
       "parked": 69
     },
     "by_verdict": {
-      "C": 146,
+      "C": 145,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
