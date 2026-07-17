@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80044F30",
-      "file": "text1a_c",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: Function-pointer cast cheat: definition declares (s32 a0) with ((void (*)(s32))func_80044E74)(a0+0x27), but callers (text1a_c2.c:14,77,79) declare and call it as func_80044F30(s32, s32) \u2014 two explicit"
-    },
-    {
       "func": "func_800455AC",
       "file": "text1a_c",
       "distance": 0,
@@ -3282,14 +3272,14 @@
     }
   ],
   "counts": {
-    "total": 392,
-    "active": 323,
+    "total": 391,
+    "active": 322,
     "by_status": {
-      "active": 323,
+      "active": 322,
       "parked": 69
     },
     "by_verdict": {
-      "C": 169,
+      "C": 168,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }

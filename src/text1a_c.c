@@ -1461,8 +1461,8 @@ void func_80044ED8(s32 a0, s32 a1) {
 extern void func_80044E74(s32, s32);
 extern s32 func_800450F4(s32, s32);
 extern void func_80044E74(s32, s32);
-void func_80044F30(s32 a0) {
-    ((void (*)(s32))func_80044E74)(a0 + 0x27);
+void func_80044F30(s32 a0, s32 a1) {
+    func_80044E74(a0 + 0x27, a1);
 }
 void func_80044F50(s32 a0, s32 a1, s32 a2) {
     if (!a0) {
