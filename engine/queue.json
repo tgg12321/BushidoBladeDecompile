@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80065434",
-      "file": "text1b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: The (s16)v1 cast in the comparison (src/text1b.c:14679) is a same-type cast with no C-level semantic purpose (v1 is already s16). Its only function is to steer GCC from a plain lh+slti sequence to the"
-    },
-    {
       "func": "func_80065540",
       "file": "text1b",
       "distance": 0,
@@ -3132,14 +3122,14 @@
     }
   ],
   "counts": {
-    "total": 377,
-    "active": 308,
+    "total": 376,
+    "active": 307,
     "by_status": {
-      "active": 308,
+      "active": 307,
       "parked": 69
     },
     "by_verdict": {
-      "C": 154,
+      "C": 153,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
