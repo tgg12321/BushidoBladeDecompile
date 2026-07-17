@@ -34,8 +34,34 @@ CONCLUSION: with H1-H8 the sanctioned pure-C space is measured-closed at floor 4
 - result: score 19, build 58 vs target 59 — strictly worse (injected loop notes perturb the real loop's reorg/preheader); also inert for the pair by construction since both copies are emitted adjacently before any statement
 - verdict: KILLED
 
+## s3 (2026-07-17, structural)
+
+9. KILLED — "the owner has ruled on the s2b escalation (either branch)". Probe: read docs/grind/decisions.md tail. Result: file ends at the s2b OWNER-ESCALATION entry; no owner disposition. Function remains owner-gated; floor 4 stands.
+
+10. KILLED — "param TYPE participates in the entry-copy scheduling (type-narrowing lever, param side)". Probe: `u32 *base` on the clean+stop base. Measured: 4, 59/59 — invariant floor, type-inert as the credited mechanism predicts.
+
+11. KILLED — "the a1-chain consumer local can be narrowed (`s16 v1`) to perturb the tie". Measured: 21, build 66 vs 59 — +7 sign-extension insns, strictly worse; not byte-neutral. Type-narrowing axis is dead on both entry chains.
+
 ## [s2] residual declaration-geometry axes (fully reversed uninitialized-decl order; initialized-decl permutation with dest's initializer first) bias the entry-copy pair via pseudo numbering or emission order
 - mechanism: local pseudo regno / RTL emission order of the derived-local defs feeding sched1 tie-breaks
 - probe: two variants on the clean+stop base, each measured with sandbox --disable all
 - result: score 4 and 4, unchanged — sched1 renormalizes the entry block; the two arg copies' LUIDs are untouched by any local declaration geometry
+- verdict: KILLED
+
+## [s3] The owner has ruled on the s2b tombstone escalation (branch a or b)
+- mechanism: docs/grind/decisions.md is the owner's signed-disposition surface; frontier next-probe was to check it
+- probe: Read the decisions.md tail past the s2b OWNER-ESCALATION entry (lines 627-636)
+- result: File ends at the escalation entry; no owner disposition follows. Both branches remain open.
+- verdict: KILLED
+
+## [s3] Param TYPE participates in entry-copy scheduling — retyping base could perturb the prologue-pair order (type-narrowing lever, param side, absent from the s2/s2b grid)
+- mechanism: If type changed the a0 chain's RTL shape or priority, the 4=4 tie could break; credited s2 mechanism predicts inert (copies emitted pre-statement in param order, a0 chain move/lw/addu type-invariant at 32-bit width)
+- probe: u32 *base on the clean+stop floor-4 base; sandbox --disable all
+- result: score 4, 59/59 — invariant floor, type-inert exactly as predicted; banked rejected/param-type-widen-u32-base-floor4.c
+- verdict: KILLED
+
+## [s3] The a1-chain consumer local can be narrowed (s16 v1) to re-tie the entry-chain priorities
+- mechanism: Narrowing v1 changes its arithmetic uses' RTL; but GCC must insert sll/sra sign-extensions, so byte-neutrality was the open question
+- probe: s16 v1 on the clean+stop base; sandbox --disable all
+- result: score 21, build 66 vs target 59 (+7 sign-extension insns) — strictly worse, not byte-neutral; banked rejected/entry-read-local-s16-floor21.c
 - verdict: KILLED

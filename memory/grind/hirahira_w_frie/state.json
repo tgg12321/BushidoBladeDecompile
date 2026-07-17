@@ -1,7 +1,7 @@
 {
  "func": "hirahira_w_frie",
  "file": "text1a_c",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,18 +15,24 @@
    "floor": 4,
    "modality": "structural",
    "headline": "Sanctioned floor 4 confirmed invariant: all remaining no-rename structural axes measured dead (K&R param-decl order, do-while(0) fence, decl/init permutations); Judge-mandated OWNER-ESCALATION on the "
+  },
+  {
+   "session": 3,
+   "floor": 4,
+   "modality": "structural",
+   "headline": "Type-narrowing axis measured dead on both entry chains (u32* base = 4; s16 v1 = 21); floor 4 invariant; owner escalation still open in decisions.md \u2014 function remains owner-gated"
   }
  ],
  "frontier": [
   {
    "hypothesis": "If the owner retires/narrows the tombstone (escalation option a), the banked candidate.c closes the function at sandbox 0",
    "mechanism": "combine merges the single-use param's entry copy into the alias init at the later insn position, flipping the prologue pair; measured 0 on 2026-07-17",
-   "next_probe": "on owner PASS: apply memory/grind/hirahira_w_frie/candidate.c to src/text1a_c.c, sandbox --disable all (expect 0), report candidate-ready"
+   "next_probe": "On owner PASS: apply memory/grind/hirahira_w_frie/candidate.c to src/text1a_c.c, sandbox --disable all (expect 0), report candidate-ready"
   },
   {
-   "hypothesis": "If the owner upholds the tombstone (option b), no grindable pure-C work remains at this function",
-   "mechanism": "policy, not codegen \u2014 the exhaustion is mechanism-level and Judge-credited; floor 4 is invariant across every sanctioned spelling",
-   "next_probe": "await the owner's signed disposition in docs/grind/decisions.md; do not re-grind the killed axes"
+   "hypothesis": "If the owner upholds the tombstone (option b), no grindable pure-C work remains; the function needs an owner-signed disposition per no-park-permanently",
+   "mechanism": "Policy, not codegen \u2014 exhaustion is mechanism-level, Judge-credited, and now type-axis-measured; floor 4 is invariant across every sanctioned spelling",
+   "next_probe": "Await the owner's signed disposition in docs/grind/decisions.md; do not re-grind the killed axes"
   }
  ],
  "judge_constraints": [

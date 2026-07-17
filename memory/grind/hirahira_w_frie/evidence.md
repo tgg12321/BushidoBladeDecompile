@@ -43,3 +43,17 @@
 - [s2] OWNER-ESCALATION item filed in docs/grind/decisions.md per the Judge's mandated next step: binary owner choice — (a) retire/narrow the 2026-06-02 param-local-alias-prologue-pair-flip tombstone for the single forward-order FAKE alias (candidate.c then completes at 0; unlocks parked func_8007C2A0/C4B8 twins), or (b) uphold it (floor 4 permanent; function needs an owner-signed disposition per no-park-permanently)
 
 - [s2] src/text1a_c.c left byte-identical to HEAD (committed pair-alias form) per the standing regression disposition; git diff clean under src/
+
+- [s3] [2026-07-17, structural] OWNER RULING NOT YET LANDED: docs/grind/decisions.md checked this session — the file ends at the s2b OWNER-ESCALATION entry (line 627-636); no owner disposition follows it. Both frontier branches remain open; the function stays owner-gated.
+
+- [s3] [2026-07-17] Integrity re-verified: on-main committed pair-alias form sandboxes 0 (59/59, rules_dropped 0, cheat_asm_stripped active) — artifact tmp/grind/hirahira_w_frie/s3/sandbox_head_form.txt. Src restored byte-identical to HEAD after probes (git checkout; re-verified 0).
+
+- [s3] [2026-07-17] TYPE-NARROWING AXIS KILLED (the one structural lever absent from the s2/s2b grid), both entry chains, on the clean+stop base: (T1) `base` retyped `u32 *` = 4, 59/59 — param type is inert for the prologue pair (expand_function_start emits copies pre-statement in param order regardless of type; a0 chain move/lw/addu is type-invariant at 32-bit width, priority tie 4=4 and LUID tie-break untouched) — artifact s3/sandbox_T1_base_u32ptr.txt, banked rejected/param-type-widen-u32-base-floor4.c. (T2) entry-read local `v1` retyped `s16` = 21, build 66 vs 59 — strictly worse, +7 sign-extension insns; the a1-chain consumer cannot be narrowed byte-neutrally — artifact s3/sandbox_T2_v1_s16.txt, banked rejected/entry-read-local-s16-floor21.c. (`offsets` as `u16 *` not measured: lh->lhu byte divergence is predetermined by the target's signed load, not a scheduling question.) Floor 4 remains invariant; the mechanism-level exhaustion now also covers the type axis by measurement, not just prediction.
+
+- [s3] Integrity: on-main committed pair-alias form sandboxes 0 (59/59, rules_dropped 0, cheat-asm stripping active) at session start; src restored byte-identical to HEAD after probes and re-verified 0
+
+- [s3] docs/grind/decisions.md ends at the s2b OWNER-ESCALATION entry — no owner ruling has landed; sanctioned legal floor remains 4 per the 2026-07-17 03:30 Judge ruling
+
+- [s3] Type-narrowing (the one structural lever absent from the s2/s2b rejected bank) is now measured dead on both entry chains: u32* param = 4 (inert), s16 consumer = 21 (byte-destructive); offsets as u16* not measured because lh->lhu divergence is predetermined by the target's signed load
+
+- [s3] The s2 mechanism-level exhaustion (expand_function_start param-order emission + sched1 priority tie 4=4 + LUID tie-break, only combine can relocate a copy) now covers the type axis by measurement, not just prediction
