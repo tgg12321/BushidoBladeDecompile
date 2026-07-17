@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80044B30",
-      "file": "text1a_c",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: Width-coercion pointer cast `*(u16 *)&D_800A9CF8` on a declared `extern s16` global forces `lhu` (unsigned halfword load) instead of the natural `lh`. Fails tests 1, 2, and 3: no observable semantic p"
-    },
-    {
       "func": "func_80044F30",
       "file": "text1a_c",
       "distance": 0,
@@ -3292,14 +3282,14 @@
     }
   ],
   "counts": {
-    "total": 393,
-    "active": 324,
+    "total": 392,
+    "active": 323,
     "by_status": {
-      "active": 324,
+      "active": 323,
       "parked": 69
     },
     "by_verdict": {
-      "C": 170,
+      "C": 169,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
