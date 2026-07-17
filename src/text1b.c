@@ -1297,7 +1297,7 @@ extern void gte_SetColorMatrix(s32 *);
 extern void gte_SetBackColor(s32, s32, s32);
 
 void func_80049F4C(void) {
-    s32 sp10[12];
+    s32 sp10[11];
     s32 i;
     u8 *base;
     __builtin_memcpy(sp10, &D_800153F0, 44);

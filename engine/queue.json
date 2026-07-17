@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80049F4C",
-      "file": "text1b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: s32 sp10[12] over-declares by one element (48 bytes declared, 44 bytes used). The 12th element sp10[11] is never written (memcpy copies exactly 44 bytes) and never read (func_8004A09C consumes at most"
-    },
-    {
       "func": "func_8005344C",
       "file": "text1b",
       "distance": 0,
@@ -3202,14 +3192,14 @@
     }
   ],
   "counts": {
-    "total": 384,
-    "active": 315,
+    "total": 383,
+    "active": 314,
     "by_status": {
-      "active": 315,
+      "active": 314,
       "parked": 69
     },
     "by_verdict": {
-      "C": 161,
+      "C": 160,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
