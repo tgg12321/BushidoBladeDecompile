@@ -376,6 +376,16 @@ while ($true) {
         $o | ConvertTo-Json -Depth 8 | Set-Content $outPath -Encoding utf8
         $invalidReason = (python tools/grinder/grindlib.py validate . $outPath $modality 2>&1 | Out-String).Trim()
         $valid = ($LASTEXITCODE -eq 0)
+        # owner-gated: the validator can't see $func, so the driver verifies the
+        # cited OWNER-ESCALATION entry actually names THIS function.
+        if ($valid -and [string]$o.result -eq 'owner-gated') {
+            $decTxt = Get-Content (Join-Path $Root 'docs\grind\decisions.md') -Raw -ErrorAction SilentlyContinue
+            $named = @(($decTxt -split "`n") | Where-Object { $_ -match 'OWNER-ESCALATION' -and $_ -match [regex]::Escape($func) })
+            if (-not $named.Count) {
+                $valid = $false
+                $invalidReason = "owner-gated claim rejected: no OWNER-ESCALATION entry in docs/grind/decisions.md names $func"
+            }
+        }
     }
     if (-not $valid) {
         # Preserve the discarded outcome for diagnosis — repeated invalids are
@@ -395,6 +405,22 @@ while ($true) {
     switch ([string]$o.result) {
         'ruling-request' { Invoke-JudgeRuling $func ([string]$o.ruling_question); Revert-SessionEdits }
         'candidate-ready' { Invoke-CandidatePath $func $stem $modality $o }
+        'owner-gated' {
+            # A filed OWNER-ESCALATION (verified above to name $func) blocks
+            # this function on an owner-only ruling and every sanctioned axis is
+            # measured dead. Park it so the queue advances (parked items are
+            # skipped by `queue next`; the escalation stays open in
+            # docs/grind/decisions.md — parking is a wait-state, not a
+            # disposition, per no-park-permanently).
+            python tools/grinder/grindlib.py apply . $func $outPath $modality | Out-Null
+            Revert-SessionEdits
+            $reason = "owner escalation pending: $([string]$o.escalation_ref)"
+            Invoke-Eng @('queue', 'park', $func, '--reason', $reason) | Out-Null
+            Log "${func}: OWNER-GATED — parked pending owner ruling ($([string]$o.escalation_ref))."
+            Journal "$func s$sessionN [$modality] OWNER-GATED — parked pending owner ruling: $($o.headline)"
+            git -C $Root add -- memory/grind docs/grind metrics/events.jsonl 2>$null
+            git -C $Root commit -m "grind: $func parked owner-gated pending ruling [skip-park-src-guard]" 2>$null | Out-Null
+        }
         default {
             python tools/grinder/grindlib.py apply . $func $outPath $modality | Out-Null
             Revert-SessionEdits

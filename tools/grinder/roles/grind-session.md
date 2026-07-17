@@ -53,3 +53,10 @@ and ask; never self-approve.
 - Finish by writing the outcome JSON to the exact path in the brief. Schema and
   validity rules are in the brief. `candidate-ready` only when sandbox printed
   distance 0 THIS session with your edits in place in src/.
+- If a filed OWNER-ESCALATION for your function already exists in
+  docs/grind/decisions.md and the ledger shows every remaining sanctioned axis
+  measured dead, do NOT spin re-measuring dead axes: emit `owner-gated` citing
+  the entry in `escalation_ref`. The driver parks the function until the owner
+  rules and the queue advances. This is NOT an escape hatch for hard-but-
+  grindable work — the driver rejects the claim unless the escalation entry
+  exists and names your function.

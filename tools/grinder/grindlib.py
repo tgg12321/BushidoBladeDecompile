@@ -18,7 +18,7 @@ MODALITIES = ["recon", "structural", "permuter", "forensics", "rederive", "synth
 # Sessions 2..10 cycle through this ladder, then repeat (spec: "ladder repeats from 2").
 LADDER = ["structural", "structural", "permuter", "permuter",
           "forensics", "forensics", "rederive", "rederive", "synthesis"]
-RESULTS = ("progress", "candidate-ready", "ruling-request")
+RESULTS = ("progress", "candidate-ready", "ruling-request", "owner-gated")
 MAX_FRONTIER = 3
 
 
@@ -111,6 +111,26 @@ def validate_outcome(o, modality, root):
     if res == "ruling-request":
         if not str(o.get("ruling_question", "")).strip():
             return False, "ruling-request requires ruling_question"
+        return True, ""
+    if res == "owner-gated":
+        # Only legal when a filed OWNER-ESCALATION already exists for this
+        # function in docs/grind/decisions.md — the session must cite it, and
+        # the driver parks the item so the queue advances while the owner rules.
+        ref = str(o.get("escalation_ref", "")).strip()
+        if not ref:
+            return False, ("owner-gated requires escalation_ref citing the "
+                           "OWNER-ESCALATION entry in docs/grind/decisions.md")
+        dec = os.path.join(root, "docs", "grind", "decisions.md")
+        try:
+            with open(dec, encoding="utf-8") as f:
+                txt = f.read()
+        except OSError:
+            return False, "owner-gated: docs/grind/decisions.md not readable"
+        if "OWNER-ESCALATION" not in txt:
+            return False, ("owner-gated: no OWNER-ESCALATION entry found in "
+                           "docs/grind/decisions.md")
+        # (the driver additionally verifies the entry names THIS function
+        # before parking — validate_outcome does not know the func name)
         return True, ""
     if not isinstance(o.get("floor"), int):
         return False, "floor (int) is required"
@@ -240,12 +260,13 @@ memory/grind/{func}/candidate.c (apply it to src/{st['file']}.c as your starting
 - Save your best form to memory/grind/{func}/candidate.c before finishing (even if it did not improve the floor). Save disproven forms to memory/grind/{func}/rejected/<slug>.c.
 - Scratch space: tmp/grind/{func}/s{st['session_count'] + 1}/ — put permuter logs / cc1 dumps there and list them in artifacts.
 - When finished, write your outcome JSON (single object) to EXACTLY this path: {outcome_path}
-  Schema: {{"result": "progress"|"candidate-ready"|"ruling-request", "floor": <int>,
+  Schema: {{"result": "progress"|"candidate-ready"|"ruling-request"|"owner-gated", "floor": <int>,
   "headline": "<one line>", "hypotheses": [{{"statement","mechanism","probe","result","verdict":"CONFIRMED"|"KILLED"}}],
   "evidence": ["fact ..."], "frontier": [<=3 of {{"hypothesis","mechanism","next_probe"}}],
-  "artifacts": ["tmp/grind/..."], "ruling_question": ""}}
+  "artifacts": ["tmp/grind/..."], "ruling_question": "", "escalation_ref": ""}}
 - "candidate-ready" means: sandbox distance 0 THIS session, edits in place in src/. The driver re-verifies bytes itself — never claim it speculatively.
 - "ruling-request" is for a construct you cannot classify (sanctioned SOTN family vs cheat; genuine hand-written-asm evidence). Ask a precise question.
+- "owner-gated" is ONLY for when a filed OWNER-ESCALATION for {func} already exists in docs/grind/decisions.md AND every remaining sanctioned axis is measured dead — cite the entry in escalation_ref. The driver parks the function (queue advances) until the owner rules. Never use it to defer work that is still grindable.
 - A hypothesis KILLED with measurements is a fully successful session. Eliminating search space IS the job. There is no such thing as a failed session — only an unproven one, and unproven sessions are discarded by the driver as if they never ran.
 """
 
