@@ -1140,6 +1140,9 @@ extern s16 D_800A9CFE;
 extern s32 stage_GetId(void);
 s32 func_80044670(s16 *a0, s16 a1, s32 a2) {
     s32 v0;
+    /* FAKE: keeps reorg.c relax_delay_slots from inverting the two default-path
+       j/nop pairs in the stage-id switch (NOTE_INSN_LOOP_BEG sets
+       LABEL_OUTSIDE_LOOP_P, suppressing the invert-jump peephole) */
     do { } while (0);
     D_800A9CF8 = a1;
     v0 = *(u16 *)a0;

@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80044670",
-      "file": "text1a_c",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: Unannotated empty `do { } while (0);` at src/text1a_c.c:1139 fails do-while-zero-exception's mandatory prerequisites (no `// FAKE` annotation, no lever-exhaustion ledger) \u2014 the exact failing shape alr"
-    },
-    {
       "func": "func_80044B30",
       "file": "text1a_c",
       "distance": 0,
@@ -3302,14 +3292,14 @@
     }
   ],
   "counts": {
-    "total": 394,
-    "active": 325,
+    "total": 393,
+    "active": 324,
     "by_status": {
-      "active": 325,
+      "active": 324,
       "parked": 69
     },
     "by_verdict": {
-      "C": 171,
+      "C": 170,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
