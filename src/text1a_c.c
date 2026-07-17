@@ -1736,15 +1736,15 @@ void saSeMain_80045510(s32 a0, s32 a1) {
 s32 *func_800455AC(s32 a0) {
     s32 idx;
     s32 *ret;
-    s16 (*new_var)[];
+    s16 *slot;
     func_800453E0(a0);
     idx = D_800A33AC;
-    new_var = &D_800EED10;
+    slot = (s16 *)((u8 *)D_800EED10 + idx * 16);
     D_800A33AC = idx + 1;
     ret = (s32 *)D_800A33A0;
-    *((s32 *)((u8 *)(*new_var) + idx * 16 + 4)) = (s32)ret;
-    *((s16 *)((u8 *)(*new_var) + idx * 16)) = a0;
-    *((s32 *)((u8 *)(*new_var) + idx * 16 + 0xC)) = 0;
+    *(s32 *)((u8 *)slot + 4) = (s32)ret;
+    *slot = a0;
+    *(s32 *)((u8 *)slot + 0xC) = 0;
     return ret;
 }
 void saSeMain_80045600(s32 a0, s32 a1) {

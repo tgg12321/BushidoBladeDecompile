@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_800455AC",
-      "file": "text1a_c",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: Pointer-alias cheat: `s16 (*new_var)[] = &D_800EED10` introduces a local pointer indirection that is semantically identical to using D_800EED10 directly (as sibling functions saTan5TakeGetPos_80045694"
-    },
-    {
       "func": "hirahira_w_frie",
       "file": "text1a_c",
       "distance": 0,
@@ -3272,14 +3262,14 @@
     }
   ],
   "counts": {
-    "total": 391,
-    "active": 322,
+    "total": 390,
+    "active": 321,
     "by_status": {
-      "active": 322,
+      "active": 321,
       "parked": 69
     },
     "by_verdict": {
-      "C": 168,
+      "C": 167,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
