@@ -810,6 +810,8 @@ void func_800493E4(s32 arg0) {
     temp_v1 = D_80099CC8[idx];
     if (temp_v1 != 0xFF) {
         D_800EF980[temp_v1] = 1;
+        /* FAKE: loop notes keep the D_80099CC9 lbu below the first sh (target has
+           the unfilled load-delay nop) and keep the shared 1 cached in $v1 */
         do { } while (0);
         D_800EF980[D_80099CC9[idx]] = 1;
     }

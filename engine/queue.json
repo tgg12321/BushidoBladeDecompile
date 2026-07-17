@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_800493E4",
-      "file": "text1b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: do { } while (0); at src/text1b.c:815 is unannotated \u2014 fails the do-while-zero-exception strict prerequisite #3 (requires /* FAKE: <reason> */ or // FAKE annotation). Without the annotation the except"
-    },
-    {
       "func": "func_80049F4C",
       "file": "text1b",
       "distance": 0,
@@ -3212,14 +3202,14 @@
     }
   ],
   "counts": {
-    "total": 385,
-    "active": 316,
+    "total": 384,
+    "active": 315,
     "by_status": {
-      "active": 316,
+      "active": 315,
       "parked": 69
     },
     "by_verdict": {
-      "C": 162,
+      "C": 161,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
