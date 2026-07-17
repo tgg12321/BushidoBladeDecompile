@@ -23,7 +23,7 @@ void func_800466C0(s32 a0, s32 a1) {
         func_80044C70(a1);
         break;
     case 9:
-        ((void (*)(s32))func_80044100)(8);
+        func_80044100(8);
         break;
     case 7:
         func_80047ED0(a1);

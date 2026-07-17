@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_800466C0",
-      "file": "text1a_b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: The construct ((void (*)(s32))func_80044100)(8) fails the 6-test checklist. func_80044100 is declared 'extern void func_80044100(s32, ...);' (varargs). Calling it with a single arg as func_80044100(8)"
-    },
-    {
       "func": "func_80042ED8",
       "file": "text1a_c",
       "distance": 0,
@@ -3322,14 +3312,14 @@
     }
   ],
   "counts": {
-    "total": 396,
-    "active": 327,
+    "total": 395,
+    "active": 326,
     "by_status": {
-      "active": 327,
+      "active": 326,
       "parked": 69
     },
     "by_verdict": {
-      "C": 173,
+      "C": 172,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
