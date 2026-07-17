@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8005C5A8",
-      "file": "text1b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: Two param-local aliases (s32 *s1 = a0; s16 s0 = a1) at function entry are literal renames with MIPS register names, no semantic purpose, declared in a specific order to steer LUID and produce target p"
-    },
-    {
       "func": "func_80060768",
       "file": "text1b",
       "distance": 0,
@@ -3172,14 +3162,14 @@
     }
   ],
   "counts": {
-    "total": 381,
-    "active": 312,
+    "total": 380,
+    "active": 311,
     "by_status": {
-      "active": 312,
+      "active": 311,
       "parked": 69
     },
     "by_verdict": {
-      "C": 158,
+      "C": 157,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }

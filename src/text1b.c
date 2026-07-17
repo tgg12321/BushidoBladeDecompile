@@ -12656,12 +12656,10 @@ void func_80087F64(s32);
 void coli_CheckBukiPreHit_80088088(s32, s16, s32);
 s32 func_800884C4(s32, s16);
 s16 func_8005C5A8(s32 *a0, s16 a1) {
-    s32 *s1 = a0;
-    s16 s0 = a1;
-    func_80087F64(s0);
-    coli_CheckBukiPreHit_80088088(s1[1], s0, D_800A3404);
-    *(s32 *)(s1[1] + 8) = s0;
-    return (s16)func_800884C4(s1[2], s0);
+    func_80087F64(a1);
+    coli_CheckBukiPreHit_80088088(a0[1], a1, D_800A3404);
+    *(s32 *)(a0[1] + 8) = a1;
+    return (s16)func_800884C4(a0[2], a1);
 }
 void func_80083BE4(s32, s32);
 void func_800858D0(s32);
