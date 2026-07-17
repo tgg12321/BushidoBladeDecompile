@@ -15635,15 +15635,13 @@ extern s32 func_8007352C(s32);
 extern s32 initTexPage(s32, s32, s32, s32, s32);
 extern s32 ot_Link(s32, s32);
 void func_8006A3CC(s32 *arg0, u8 *arg1) {
-    s32 v;
     *(s32 *)(arg1 + 0) = *(s32 *)(*(s32 *)(*(s32 *)((u8 *)arg0 + 4) + 0x1C) + 0x10);
-    v = *(volatile s32 *)(arg1 + 0);
     *(s32 *)(arg1 + 0x18) = 0;
     *(s32 *)(arg1 + 0x1C) = 0;
     *(s8 *)(arg1 + 0x28) = 0;
     *(s32 *)(arg1 + 0x10) = 0;
     *(s32 *)(arg1 + 0x14) = 1;
-    *(s32 *)(arg1 + 4) = v + 0xC;
+    *(s32 *)(arg1 + 4) = *(s32 *)(arg1 + 0) + 0xC;
     *(s32 *)(arg1 + 8) = arg0[5];
     arg0[5] = func_8007352C((s32)arg1);
     initTexPage(arg0[7], 1, 0, saMotionSet(*(s32 *)(arg1 + 0), 0), 0);
