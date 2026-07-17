@@ -233,3 +233,4 @@
 - 2026-07-17 11:00 mot_data_set COMPLETED-C after 2 sessions.
 - 2026-07-17 11:10 videoDecCreate COMPLETED-C after 2 sessions.
 - 2026-07-17 11:25 hirahira_w_frie COMPLETED-C after 4 sessions.
+- 2026-07-17 11:29 GetAllocPacketSize COMPLETED-C after 2 sessions.
