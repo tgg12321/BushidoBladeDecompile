@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "hirahira_w_frie",
-      "file": "text1a_c",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: Two constructs violate the SOTN bar; primary is a confirmed param-local-alias-prologue-pair-flip (explicitly forbidden). Worker must produce a clean pure-C body that matches the prologue without alias"
-    },
-    {
       "func": "mot_data_set",
       "file": "text1a_c",
       "distance": 0,
@@ -2631,6 +2621,17 @@
       "status": "active"
     },
     {
+      "func": "hirahira_w_frie",
+      "file": "text1a_c",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "origin": "regression",
+      "reopen_reason": "regression: Two constructs violate the SOTN bar; primary is a confirmed param-local-alias-prologue-pair-flip (explicitly forbidden). Worker must produce a clean pure-C body that matches the prologue without alias",
+      "park_reason": "owner escalation pending: docs/grind/decisions.md 2026-07-17 OWNER-ESCALATION (tombstone narrow-vs-uphold, options a/b)"
+    },
+    {
       "func": "func_80049A2C",
       "file": "text1b",
       "distance": 0,
@@ -3263,13 +3264,13 @@
   ],
   "counts": {
     "total": 390,
-    "active": 321,
+    "active": 320,
     "by_status": {
-      "active": 321,
-      "parked": 69
+      "active": 320,
+      "parked": 70
     },
     "by_verdict": {
-      "C": 167,
+      "C": 166,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
