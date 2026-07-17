@@ -218,3 +218,4 @@
 - 2026-07-14 19:07 camera_CalcAngles COMPLETED-C after 2 sessions.
 - 2026-07-14 19:32 camera_InitBoneData COMPLETED-C after 2 sessions.
 - 2026-07-17 01:23 camera_InitRotation COMPLETED-C after 2 sessions.
+- 2026-07-17 01:34 game_Init COMPLETED-C after 2 sessions.
