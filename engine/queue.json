@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80040510",
-      "file": "text1a",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: Two coupled codegen-coercion cheats: (1) `do { ... } while (0)` used for s0/s1 register-allocation swap (commit f14316f3 explicitly admits 'wrapper trick for GCC 2.7.2 s0/s1 swap') \u2014 NOT the sanctione"
-    },
-    {
       "func": "func_800417D0",
       "file": "text1a",
       "distance": 0,
@@ -3342,14 +3332,14 @@
     }
   ],
   "counts": {
-    "total": 398,
-    "active": 329,
+    "total": 397,
+    "active": 328,
     "by_status": {
-      "active": 329,
+      "active": 328,
       "parked": 69
     },
     "by_verdict": {
-      "C": 175,
+      "C": 174,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }

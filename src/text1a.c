@@ -178,10 +178,10 @@ extern void FadeOut_8003FFC4(s32 *);
 extern void func_8003E120(void);
 s32 *func_80040510(s32 a0) {
     s32 *ptr;
-    s32 idx = a0;
     ptr = func_80045878(a0);
-    g_player_ptrs[idx] = (s32)ptr;
+    g_player_ptrs[a0] = (s32)ptr;
     AllocRobRmd(ptr);
+    /* FAKE: loop-note ref weighting seats ptr in s0 (s0/s1 swap) */
     do { rob_life_ctrl(ptr); rob_calc_2d_position(ptr); func_8003F824(ptr, 1); } while (0);
     FadeOut_8003FFC4(ptr);
     func_80040CB8(ptr);
