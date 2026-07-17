@@ -17075,11 +17075,8 @@ skip_init:
         i++;
     } while (i < 3);
 
-    {
-        s32 _t = *temp_s2;
-        sp[0] = _t;
-        a3 = saMotionSet(_t, 0);
-    }
+    sp[0] = *temp_s2;
+    a3 = saMotionSet(sp[0], 0);
     initTexPage(arg0[6], 1, 0, a3, 0);
     ot_Link(D_800A374C + 0x7C, arg0[6]);
     q = arg0[2];

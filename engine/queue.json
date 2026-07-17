@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80074220",
-      "file": "text1b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: Dead-store delay-slot fill at src/text1b.c:17078 (`sp[0] = _t;` inside the anonymous block before saMotionSet). After the do-while loop, sp[] is never passed to any function again; sp[0] is never read"
-    },
-    {
       "func": "func_80077A80",
       "file": "text1b",
       "distance": 0,
@@ -3042,14 +3032,14 @@
     }
   ],
   "counts": {
-    "total": 368,
-    "active": 299,
+    "total": 367,
+    "active": 298,
     "by_status": {
-      "active": 299,
+      "active": 298,
       "parked": 69
     },
     "by_verdict": {
-      "C": 145,
+      "C": 144,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
