@@ -89,6 +89,10 @@ out:
     rgb[2] = b;
 }
 /* kengo:MED  |  my_rob/rob_life_ctrl_2  |  96i  |  x2 size collision */
+/* RGB -> HSV (4.12 fixed point). Inverse of rob_life_ctrl_2 above.
+ * Outputs a1[] = { hue, sat, val }; val (V) = max(r,g,b) is the third
+ * output channel, held separately from the max used for the chroma
+ * deltas / max-channel compares. */
 void mot_data_set(s32 *a0, s32 *a1) {
     s32 r, g, b;
     s32 max_val, min_val;
@@ -96,7 +100,7 @@ void mot_data_set(s32 *a0, s32 *a1) {
     s32 sat;
     s32 hue;
     s32 dR, dG, dB;
-    s32 max_pin;
+    s32 val;
 
     r = a0[0];
     g = a0[1];
@@ -133,10 +137,11 @@ void mot_data_set(s32 *a0, s32 *a1) {
     }
 
     chroma = max_val - min_val;
-    max_pin = max_val;
+    /* V = max(r,g,b): the value channel, third HSV output */
+    val = max_val;
 
-    if (max_pin != 0) {
-        sat = (chroma << 12) / max_pin;
+    if (val != 0) {
+        sat = (chroma << 12) / val;
     } else {
         sat = 0;
     }
@@ -167,7 +172,7 @@ void mot_data_set(s32 *a0, s32 *a1) {
 
     a1[0] = hue;
     a1[1] = sat;
-    a1[2] = max_pin;
+    a1[2] = val;
 }
 /* kengo:MED  |  se_fc/mot_data_set  |  110i */
 extern s16 D_800F6650;

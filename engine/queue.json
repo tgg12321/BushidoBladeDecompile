@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "mot_data_set",
-      "file": "text1a_c",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: max_pin = max_val is register-cascade coercion-by-spelling: no observable semantic purpose (test #1), no human programmer writing RGB-to-HSV would alias max_val into max_pin and use both throughout (t"
-    },
-    {
       "func": "videoDecCreate",
       "file": "text1a_c",
       "distance": 0,
@@ -3263,14 +3253,14 @@
     }
   ],
   "counts": {
-    "total": 390,
-    "active": 320,
+    "total": 389,
+    "active": 319,
     "by_status": {
-      "active": 320,
+      "active": 319,
       "parked": 70
     },
     "by_verdict": {
-      "C": 166,
+      "C": 165,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
