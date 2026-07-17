@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80060CB8",
-      "file": "text1b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: CHEAT: `unsigned int new_var = arg0;` with asymmetric use (arg0 in v==0 branch, new_var in all others + gpu_LoadImage calls) is a spelling of the forbidden param-local-alias-prologue-pair-flip pattern"
-    },
-    {
       "func": "func_80065344",
       "file": "text1b",
       "distance": 0,
@@ -3152,14 +3142,14 @@
     }
   ],
   "counts": {
-    "total": 379,
-    "active": 310,
+    "total": 378,
+    "active": 309,
     "by_status": {
-      "active": 310,
+      "active": 309,
       "parked": 69
     },
     "by_verdict": {
-      "C": 156,
+      "C": 155,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }

@@ -13421,8 +13421,13 @@ extern s32 D_800A3424;
 
 s32 func_80060CB8(s32 arg0, s32 arg1)
 {
-  unsigned int new_var;
-  typedef struct 
+  unsigned int new_var; /* FAKE: single forward-order param alias — prologue pair order.
+                           Sanctioned per owner ruling 2026-07-17 (docs/grind/decisions.md,
+                           param-local-alias-prologue-pair-flip NARROWED). Mechanism: cse
+                           unifies arg0/new_var, combine sinks the single-use a0 entry copy
+                           below a1's, flipping the s2/s1 save+copy pair order to target.
+                           Exhaustion dossier: memory/grind/func_80060CB8/evidence.md (s2). */
+  typedef struct
   {
     s16 sp10;
     s16 sp12;
