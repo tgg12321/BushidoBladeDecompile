@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80042ED8",
-      "file": "text1a_c",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: The 4-variable form (t0,t1,t2,t3) with a specific partial-read-ahead ordering fails Test 2 (human-programmer test): three independent swaps are most naturally written as 3 sequential single-temp opera"
-    },
-    {
       "func": "func_80044670",
       "file": "text1a_c",
       "distance": 0,
@@ -3312,14 +3302,14 @@
     }
   ],
   "counts": {
-    "total": 395,
-    "active": 326,
+    "total": 394,
+    "active": 325,
     "by_status": {
-      "active": 326,
+      "active": 325,
       "parked": 69
     },
     "by_verdict": {
-      "C": 172,
+      "C": 171,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }

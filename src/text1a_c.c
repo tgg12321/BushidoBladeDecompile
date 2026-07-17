@@ -421,19 +421,23 @@ void func_80042E90(void) {
     D_800F66B4 = (s32)hirahira_w_ctrl_2;
 }
 void func_80042ED8(u16 *a0) {
-    u16 t0, t1, t2, t3;
-    t0 = a0[6];
-    t1 = a0[2];
-    t2 = a0[1];
-    t3 = a0[5];
-    a0[2] = t0;
-    t0 = a0[3];
-    a0[1] = t0;
-    t0 = a0[7];
-    a0[6] = t1;
-    a0[3] = t2;
-    a0[7] = t3;
-    a0[5] = t0;
+    /* FAKE: statement staging (2026-07-06 ALLOWED list) — saving one
+       side of all three pairs up front seats x/y/z in $a1/$v1/$v0 for
+       the whole body with the scratch reloads sharing $a2, and keeps
+       the load-delay nop at +0x18 unfilled, as in the target. */
+    u16 t, x, y, z;
+    y = a0[1];
+    x = a0[2];
+    z = a0[5];
+    t = a0[6];
+    a0[2] = t;
+    a0[6] = x;
+    t = a0[3];
+    a0[1] = t;
+    a0[3] = y;
+    t = a0[7];
+    a0[5] = t;
+    a0[7] = z;
 }
 extern s16 Judge[];
 void func_80042F10(s32 *a0, s32 *a1, s32 a2) {
