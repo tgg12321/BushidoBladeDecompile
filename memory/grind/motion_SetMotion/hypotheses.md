@@ -23,3 +23,9 @@
 - probe: s2b_probe.py r4.
 - result: KILLED: cse/const-prop folds it to the plain set13 before jump2; merged shape (361 insns), identical to the honest-0xD control.
 - verdict: KILLED
+
+## [s3] Some structural spelling outside r1-r4 (goto-sharing, physical case order, jump-thunk, sanctioned split-init, hoisted-common-set) survives to jump2 as a distinct pattern or blocks the merge byte-neutrally.
+- mechanism: Each candidate perturbs a different canonicalization surface: r5 block duplication, r6 emission order, r7 jump_chain shape (m7's sibling), r8 cse const-fold timing, r9 counted-match count (last1==0).
+- probe: tmp/grind/motion_SetMotion/s3/s3_probe.py — label-normalized cc1 asm diff vs m0 for r5-r9.
+- result: r5/r6/r7/r8 all canonicalize to the identical merged 361-insn shape (86 diff lines each — same as honest-0xD); r9 does block the merge (block vanishes, last1==0 confirmed from the zero-insn side) but diverges 619 diff lines. The sanctioned split-init family is specifically measured dead here (cse folds before jump2).
+- verdict: KILLED

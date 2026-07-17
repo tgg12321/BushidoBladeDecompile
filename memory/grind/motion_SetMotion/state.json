@@ -36,7 +36,8 @@
   }
  ],
  "judge_constraints": [
-  "The union-retype/cast-to-union CLOBBER lever \u2014 and ANY respelling that manufactures a bare USE/CLOBBER solely to break find_cross_jump (single-member structs, struct-return call shapes, dead union locals) \u2014 is unsanctioned and must not be committed; next step is to MEASURE frontier F1 (-da jump2 dump of the committed TU, find the real discriminator protecting the -1 pair, respell it honestly at the 13 pair) and bank the result in the ledger; if the union-CLOBBER family is believed community-viable, surface it to the owner as a standalone policy question with SOTN-master-branch evidence, never inside a match."
+  "The union-retype/cast-to-union CLOBBER lever \u2014 and ANY respelling that manufactures a bare USE/CLOBBER solely to break find_cross_jump (single-member structs, struct-return call shapes, dead union locals) \u2014 is unsanctioned and must not be committed; next step is to MEASURE frontier F1 (-da jump2 dump of the committed TU, find the real discriminator protecting the -1 pair, respell it honestly at the 13 pair) and bank the result in the ledger; if the union-CLOBBER family is believed community-viable, surface it to the owner as a standalone policy question with SOTN-master-branch evidence, never inside a match.",
+  "Do not commit any USE/CLOBBER-manufacture spelling (union constructor, cast-to-union, single-member struct, struct-return, dead union local \u2014 any respelling); next modality is the community-evidence research session, then file OWNER-ESCALATION in docs/grind/decisions.md (hirahira_w_frie format, both options, honest about absent evidence) and STOP on this function pending the owner's ruling; regfix.txt:2190 and the committed form stay untouched on main meanwhile."
  ],
  "origin": "queue",
  "created": "2026-07-07T15:21:59.271930+00:00"
