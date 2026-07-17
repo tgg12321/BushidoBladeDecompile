@@ -15150,44 +15150,41 @@ s32 func_80068F70(s32 arg0, s32 *arg1) {
 
         flags &= init_mask;
         D_800A34F8 = flags;
-        if ((u32)outer_cache & 1) goto after_loop;
-        {
-            const u32 mask;
+        if (!((u32)outer_cache & 1)) {
+            u32 mask;
             s32 cache;
+            mask = (u32)-0x10;
+            cache = D_8009BC04;
             do {
-                mask = (u32)-0x10;
-                cache = D_8009BC04;
-            } while (0);
-loop_label:
-            flags = D_800A34F8;
-            {
                 s32 next;
-                s32 lo = flags;
+                s32 lo;
+                flags = D_800A34F8;
+                lo = flags;
                 lo &= 0xF;
                 if (lo >= 7) {
                     D_800A34F8 = flags & mask;
-                } else {
-                    next = lo + 1;
-                    flags = (flags & mask) | (next & 0xF);
-                    D_800A34F8 = flags;
-                    flags &= 0xF;
-                    flags = (u32)cache >> flags;
-                    flags &= 1;
-                    if (!flags) goto loop_label;
+                    break;
                 }
-            }
+                next = lo + 1;
+                flags = (flags & mask) | (next & 0xF);
+                D_800A34F8 = flags;
+                flags &= 0xF;
+                flags = (u32)cache >> flags;
+                flags &= 1;
+            } while (!flags);
         }
-after_loop:
         {
             s32 p_34fc;
             s32 value;
 
             value = 5;
-            do {
+            do { /* FAKE: block fence keeps li v0,5 at the join-block head so
+                    reorg steals it into all three incoming jump delay slots */
             } while (0);
             p_34fc = D_800A34FC;
             D_800A3524 = (s32)arg1;
-            do {
+            do { /* FAKE: sched fence keeps the D_800A3524 store adjacent to the
+                    D_800A34FC load instead of sinking below the zero-stores */
             } while (0);
             D_800A3518 = 0;
             D_800A3528 = 0;

@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80068F70",
-      "file": "text1b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: Three do-while(0) constructs in src/text1b.c lines 15145-15148, 15174-15175, 15178-15179 \u2014 none carry the mandatory '/* FAKE: <reason> */' annotation required by the do-while-zero exception; the secon"
-    },
-    {
       "func": "func_8006A3CC",
       "file": "text1b",
       "distance": 0,
@@ -3092,14 +3082,14 @@
     }
   ],
   "counts": {
-    "total": 373,
-    "active": 304,
+    "total": 372,
+    "active": 303,
     "by_status": {
-      "active": 304,
+      "active": 303,
       "parked": 69
     },
     "by_verdict": {
-      "C": 150,
+      "C": 149,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
