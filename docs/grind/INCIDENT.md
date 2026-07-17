@@ -1,37 +1,33 @@
-# GRINDER CIRCUIT-BREAK — 2026-07-17 04:23
+# GRINDER CIRCUIT-BREAK — 2026-07-17 13:16
 
-**Reason:** 3 consecutive invalid sessions on hirahira_w_frie
+**Reason:** 3 consecutive invalid sessions on func_80065760
 
-git HEAD: 8b644db9
+git HEAD: d3e92edb
 git status:
 ```
- M memory/grind/hirahira_w_frie/evidence.md
- M memory/grind/hirahira_w_frie/hypotheses.md
  M metrics/events.jsonl
-?? memory/grind/hirahira_w_frie/rejected/inverted-entry-nogoto-floor6.c
-?? memory/grind/hirahira_w_frie/rejected/inverted-entry-ret-staged-floor4.c
 
 ```
 Last 20 log lines:
 ```
-[grind 2026-07-17 02:48:27] func_80044B30: session 2 starting, modality=structural
-[grind 2026-07-17 02:54:03] func_80044B30: MERGED — COMPLETED-C.
-[grind 2026-07-17 02:54:05] func_80044F30: session 2 starting, modality=structural
-[grind 2026-07-17 02:58:24] func_80044F30: MERGED — COMPLETED-C.
-[grind 2026-07-17 02:58:26] func_800455AC: session 2 starting, modality=structural
-[grind 2026-07-17 03:06:52] func_800455AC: MERGED — COMPLETED-C.
-[grind 2026-07-17 03:06:54] hirahira_w_frie: session 2 starting, modality=structural
-[grind 2026-07-17 03:30:22] hirahira_w_frie: judge ruling FAIL recorded.
-[grind 2026-07-17 03:30:45] hirahira_w_frie: session 2 starting, modality=structural
-[grind 2026-07-17 03:42:05] hirahira_w_frie: progress applied — floor=4, 'Sanctioned floor 4 confirmed invariant: all remaining no-rename structural axes measured dead (K&R param-decl order, do-while(0) fence, decl/init permutations); Judge-mandated OWNER-ESCALATION on the param-alias tombstone filed in docs/grind/decisions.md'
-[grind 2026-07-17 03:42:29] hirahira_w_frie: session 3 starting, modality=structural
-[grind 2026-07-17 03:50:18] hirahira_w_frie: progress applied — floor=4, 'Type-narrowing axis measured dead on both entry chains (u32* base = 4; s16 v1 = 21); floor 4 invariant; owner escalation still open in decisions.md — function remains owner-gated'
-[grind 2026-07-17 03:50:42] hirahira_w_frie: session 4 starting, modality=permuter
-[grind 2026-07-17 03:59:30] hirahira_w_frie: INVALID session output (no outcome file / unparseable JSON) — discarded, src reverted, respawning.
-[grind 2026-07-17 03:59:30] reaped 9 orphaned permuter process(es) (session boundary).
-[grind 2026-07-17 03:59:31] hirahira_w_frie: session 4 starting, modality=permuter
-[grind 2026-07-17 04:09:32] hirahira_w_frie: INVALID session output (no outcome file / unparseable JSON) — discarded, src reverted, respawning.
-[grind 2026-07-17 04:09:33] reaped 14 orphaned permuter process(es) (session boundary).
-[grind 2026-07-17 04:09:34] hirahira_w_frie: session 4 starting, modality=permuter
-[grind 2026-07-17 04:23:56] hirahira_w_frie: INVALID session output (no outcome file / unparseable JSON) — discarded, src reverted, respawning.
+[grind 2026-07-17 12:09:52] func_80060768: session 2 starting, modality=structural
+[grind 2026-07-17 12:25:34] func_80060768: judge FAILED the candidate — constraint banked, grind continues.
+[grind 2026-07-17 12:25:35] func_80060768: session 2 starting, modality=structural
+[grind 2026-07-17 12:32:23] func_80060768: MERGED — COMPLETED-C.
+[grind 2026-07-17 12:32:24] func_80060CB8: session 2 starting, modality=structural
+[grind 2026-07-17 12:50:40] func_80060CB8: MERGED — COMPLETED-C.
+[grind 2026-07-17 12:50:41] func_80065344: session 2 starting, modality=structural
+[grind 2026-07-17 12:56:22] func_80065344: MERGED — COMPLETED-C.
+[grind 2026-07-17 12:56:23] func_80065434: session 2 starting, modality=structural
+[grind 2026-07-17 13:03:57] func_80065434: MERGED — COMPLETED-C.
+[grind 2026-07-17 13:03:59] func_80065540: session 2 starting, modality=structural
+[grind 2026-07-17 13:11:48] func_80065540: MERGED — COMPLETED-C.
+[grind 2026-07-17 13:11:49] func_80065590: session 2 starting, modality=structural
+[grind 2026-07-17 13:16:44] func_80065590: MERGED — COMPLETED-C.
+[grind 2026-07-17 13:16:45] func_80065760: session 2 starting, modality=structural
+[grind 2026-07-17 13:16:49] func_80065760: INVALID session output (no outcome file / unparseable JSON) — discarded, src reverted, respawning.
+[grind 2026-07-17 13:16:50] func_80065760: session 2 starting, modality=structural
+[grind 2026-07-17 13:16:53] func_80065760: INVALID session output (no outcome file / unparseable JSON) — discarded, src reverted, respawning.
+[grind 2026-07-17 13:16:54] func_80065760: session 2 starting, modality=structural
+[grind 2026-07-17 13:16:58] func_80065760: INVALID session output (no outcome file / unparseable JSON) — discarded, src reverted, respawning.
 ```

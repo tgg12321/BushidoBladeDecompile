@@ -247,3 +247,4 @@
 - 2026-07-17 13:03 func_80065434 COMPLETED-C after 2 sessions.
 - 2026-07-17 13:11 func_80065540 COMPLETED-C after 2 sessions.
 - 2026-07-17 13:16 func_80065590 COMPLETED-C after 2 sessions.
+- 2026-07-17 13:16 CIRCUIT-BREAK: 3 consecutive invalid sessions on func_80065760
