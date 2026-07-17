@@ -16226,35 +16226,37 @@ s32 saMotionSet(u8 *a0, s32 a1) {
     return v0 + v1 + a1;
 }
 s32 func_8006E49C(s32 arg0, s32 *arg1) {
-    s32 a;
-    s32 b;
-    int new_var2;
-    int new_var;
-    s32 c;
+    s32 base1;
+    s32 base2;
+    int tail;
+    s32 base3;
+    s32 base4;
     arg1[0] = arg0;
-    a = (new_var = arg0 + 0x9C40);
-    arg1[2] = a + 0x5DC0;
-    arg1[1] = a;
-    b = a + 0x6838;
-    arg1[3] = a + 0x61F8;
-    arg1[5] = b + 0x1B58;
-    arg1[6] = b + 0x1DB0;
-    arg1[7] = b + 0x1E28;
-    arg1[8] = b + 0x1EA0;
-    arg1[4] = b;
-    arg1[0xB] = b + 0x1FB0;
-    new_var2 = 0x1FB0;
-    a = (b + new_var2) + 0x9C40;
-    arg1[0xD] = a + 0x5DC0;
-    arg1[0xC] = a;
-    c = a + 0x6838;
-    arg1[0xE] = a + 0x61F8;
-    arg1[0x10] = c + 0x1B58;
-    arg1[0x11] = c + 0x1DB0;
-    arg1[0x12] = c + 0x1E28;
-    arg1[0x13] = c + 0x1EA0;
-    arg1[0xF] = c;
-    return c + new_var2;
+    base1 = arg0 + 0x9C40;
+    arg1[2] = base1 + 0x5DC0;
+    arg1[1] = base1;
+    base2 = base1 + 0x6838;
+    arg1[3] = base1 + 0x61F8;
+    arg1[5] = base2 + 0x1B58;
+    arg1[6] = base2 + 0x1DB0;
+    arg1[7] = base2 + 0x1E28;
+    arg1[8] = base2 + 0x1EA0;
+    arg1[4] = base2;
+    arg1[0xB] = base2 + 0x1FB0;
+    tail = 0x1FB0;
+    /* tail must stay a variable: as a literal, (base2 + 0x1FB0) + 0x9C40
+     * folds to a single out-of-range immediate (0xBBF0 > 16 bits). */
+    base3 = (base2 + tail) + 0x9C40;
+    arg1[0xD] = base3 + 0x5DC0;
+    arg1[0xC] = base3;
+    base4 = base3 + 0x6838;
+    arg1[0xE] = base3 + 0x61F8;
+    arg1[0x10] = base4 + 0x1B58;
+    arg1[0x11] = base4 + 0x1DB0;
+    arg1[0x12] = base4 + 0x1E28;
+    arg1[0x13] = base4 + 0x1EA0;
+    arg1[0xF] = base4;
+    return base4 + tail;
 }
 void func_8006E534(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8006E534.s).
