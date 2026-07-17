@@ -240,3 +240,5 @@
 - 2026-07-17 11:52 func_8005344C COMPLETED-C after 2 sessions.
 - 2026-07-17 12:05 func_8005509C COMPLETED-C after 2 sessions.
 - 2026-07-17 12:09 func_8005C5A8 COMPLETED-C after 2 sessions.
+- 2026-07-17 12:25 func_80060768: judge FAILED a bytes-proven candidate — The regression constraint itself is satisfied: the two pointer aliases (p_b4/p_b6) flagged by the audit are deleted, not
+- 2026-07-17 12:32 func_80060768 COMPLETED-C after 2 sessions.
