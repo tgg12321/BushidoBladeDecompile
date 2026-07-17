@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "game_Init",
-      "file": "sound",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: Two cheat constructs found: (1) empty `do { } while (0);` at src/sound.c:259 is missing the mandatory `/* FAKE */` annotation required by the do-while-zero-exception rule \u2014 hard fail per cheat-reviewe"
-    },
-    {
       "func": "func_80040510",
       "file": "text1a",
       "distance": 0,
@@ -3352,14 +3342,14 @@
     }
   ],
   "counts": {
-    "total": 399,
-    "active": 330,
+    "total": 398,
+    "active": 329,
     "by_status": {
-      "active": 330,
+      "active": 329,
       "parked": 69
     },
     "by_verdict": {
-      "C": 176,
+      "C": 175,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }

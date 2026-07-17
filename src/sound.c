@@ -240,15 +240,16 @@ void snd_StopSystemSe(void) {
 }
 
 void game_Init(void) {
+    /* FAKE: constant-holder locals — set in source order ahead of the fence
+       below so 1 seats in $v0 and 2 in $v1 before the store tail, with $v0
+       freed for reuse by 0x23 mid-tail */
     s16 one;
-    unsigned int new_var;
     s16 two;
 
     func_800451A0();
     func_800451D0();
     func_80042E90();
     func_80044498();
-    new_var = 0;
     func_80049E4C();
     func_80049F4C();
     func_8003D91C();
@@ -256,11 +257,14 @@ void game_Init(void) {
     func_8003F7F4();
     one = 1;
     two = 2;
+    /* FAKE: sched.c mid-block loop-note fence — keeps the two pre-fence
+       constant sets from being folded into the store tail (measured: without
+       it CSE/sched collapse 1/2/0x23 into a single serialized $v0) */
     do { } while (0);
     g_game_pause = one;
     D_800F665A = one;
     g_color_mode = 0;
-    D_800F6650 = new_var;
+    D_800F6650 = 0;
     g_game_p1_ctrl = 0;
     g_game_p2_ctrl = two;
     g_game_mirror_mode = 0;
