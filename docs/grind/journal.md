@@ -255,3 +255,4 @@
 - 2026-07-17 16:07 func_8006E49C s2 [structural] floor=25: Clean-form floor 25; single-t respelling is order-EXACT at 28 (pin-validated pure 2-reg swap); root cause named at local-alloc.c:472 — the 1-death cse 0x9C40 pseudo always local-allocates into $v0 before global places t; six eviction levers measured dead.
 - 2026-07-17 16:36 func_8006E49C COMPLETED-C after 3 sessions.
 - 2026-07-17 16:39 func_8006F038 COMPLETED-C after 2 sessions.
+- 2026-07-17 16:44 func_80074220 COMPLETED-C after 2 sessions.
