@@ -220,3 +220,4 @@
 - 2026-07-17 01:23 camera_InitRotation COMPLETED-C after 2 sessions.
 - 2026-07-17 01:34 game_Init COMPLETED-C after 2 sessions.
 - 2026-07-17 02:00 func_80040510 COMPLETED-C after 2 sessions.
+- 2026-07-17 02:06 func_800417D0 COMPLETED-C after 2 sessions.
