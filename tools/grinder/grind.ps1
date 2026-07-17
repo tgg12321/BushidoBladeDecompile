@@ -286,20 +286,24 @@ function Invoke-GrindAgent([string]$BriefPath, [string]$OutcomePath,
         $task = (Get-Content $BriefPath -Raw -Encoding utf8) +
             "`n`nWhen finished, write your outcome JSON to this exact absolute path (overwrite it):`n  $OutcomePath`n"
         $sid = [guid]::NewGuid().ToString()
+        $t0 = Get-Date
         $job = Start-Job -ScriptBlock {
-            param($Task, $RoleFile, $Model, $Sid, $Cwd)
+            param($Task, $RoleFile, $Model, $Sid, $Cwd, $AgentLog)
             Set-Location $Cwd
             $env:CLAUDE_SESSION_ID = $Sid
             $claudeArgs = @('-p', $Task, '--append-system-prompt-file', $RoleFile,
                             '--permission-mode', 'bypassPermissions', '--model', $Model,
                             '--session-id', $Sid, '--output-format', 'json')
-            $null = ($null | & claude @claudeArgs | Out-String)
-        } -ArgumentList $task, $RoleFile, $AgentModel, $sid, $Root
+            # Keep the CLI's result line — it is the only diagnostic when a spawn
+            # dies instantly (usage limit, auth, API error). Overwritten per spawn.
+            ($null | & claude @claudeArgs 2>&1 | Out-String) | Set-Content $AgentLog -Encoding utf8
+        } -ArgumentList $task, $RoleFile, $AgentModel, $sid, $Root, ($OutcomePath + '.agent.log')
         if (-not (Wait-Job $job -Timeout ($SessionTimeoutMin * 60))) {
             Log "session TIMEOUT after $SessionTimeoutMin min; stopping job."
             Stop-Job $job -ErrorAction SilentlyContinue
         }
         Remove-Job $job -Force -ErrorAction SilentlyContinue
+        $script:LastAgentSeconds = ((Get-Date) - $t0).TotalSeconds
     }
     if (-not (Test-Path $OutcomePath)) { return $null }
     try { return (Get-Content $OutcomePath -Raw | ConvertFrom-Json) } catch { return $null }
@@ -322,6 +326,8 @@ function Revert-SessionEdits {
 }
 
 $script:consecutiveInvalid = 0
+$script:spawnFails = 0
+$script:LastAgentSeconds = 9999   # only the real-spawn path sets this; mock/drill paths must never look like spawn failures
 while ($true) {
     # Loop-TOP placement is deliberate: it fires after EVERY session disposition
     # (progress, candidate, scope-violation `continue`, invalid `continue`), at
@@ -388,6 +394,19 @@ while ($true) {
         }
     }
     if (-not $valid) {
+        # SPAWN FAILURE, not a bad session: no outcome at all AND the agent died
+        # near-instantly (usage-limit window, auth expiry, API outage). These are
+        # environmental — back off and retry instead of feeding the circuit
+        # breaker (2026-07-17 incident: three 4-second spawn deaths during a
+        # usage-limit window circuit-broke an otherwise healthy grind).
+        if (-not $o -and $script:LastAgentSeconds -lt 120) {
+            $script:spawnFails++
+            $delay = [int][Math]::Min(1800, 60 * [Math]::Pow(2, $script:spawnFails - 1))
+            Log "${func}: agent SPAWN FAILURE ($([int]$script:LastAgentSeconds)s, no outcome — likely usage-limit/API; see $outPath.agent.log) — attempt $($script:spawnFails), retrying in ${delay}s."
+            Revert-SessionEdits
+            Start-Sleep -Seconds $delay
+            if ($Once) { break } else { continue }
+        }
         # Preserve the discarded outcome for diagnosis — repeated invalids are
         # otherwise unexplainable after the respawn overwrites the file.
         if (Test-Path $outPath) {
@@ -400,6 +419,7 @@ while ($true) {
         if ($Once) { break } else { continue }
     }
     $script:consecutiveInvalid = 0
+    $script:spawnFails = 0
 
     # 7) route by result
     switch ([string]$o.result) {
