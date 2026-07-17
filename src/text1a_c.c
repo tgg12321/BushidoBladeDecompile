@@ -953,51 +953,56 @@ s32 func_80044170(s32 *a0, ...) {
 }
 extern void func_800520B8(s32, s32, s32);
 s32 hirahira_w_frie(s32 *base, s16 *offsets) {
-    s16 *s3 = offsets;
-    s32 *s4 = base;
-    s32 *s5 = s4 + 1;
-    s32 s6 = 0;
-    s32 *s2 = (s32 *)((s32)s4 + s4[1]);
+    s32 *b = base; /* FAKE: prologue pair order — owner ruling 2026-07-17
+                      (decisions.md 10:35, tombstone narrowed): single
+                      forward-order param alias sanctioned under
+                      pointer-alias-fake-exception; combine merges the
+                      single-use param's entry copy into this init at the
+                      later insn position, yielding target's s3-pair-first
+                      prologue */
+    s32 *slots = b + 1;
+    s32 count = 0;
+    s32 *dest = (s32 *)((s32)b + b[1]);
     s32 v1;
-    s32 *s1;
-    s32 s0;
-    s32 a0_val;
+    s32 *walker;
+    s32 size;
+    s32 cur_off;
     s32 ret;
 
-    v1 = *s3;
-    s3++;
+    v1 = *offsets;
+    offsets++;
     if (v1 == -2) {
-        ret = (s32)s2;
+        ret = (s32)dest;
         goto done;
     }
 
     {
-    s32 stop = -2;
-    s1 = s5;
+    s32 stop = -2; /* FAKE: constant-holder, named-local-fake-exception */
+    walker = slots;
     do {
         if (v1 >= 0) {
-            s0 = s1[1];
-            a0_val = s1[0];
-            *s5 = (s32)s2 - (s32)s4;
-            s5++;
-            s6++;
-            s0 = s0 - a0_val;
-            func_800520B8((s32)s4 + a0_val, (s32)s2, s0);
-            s0 = (u32)s0 >> 2;
-            s0 = s0 << 2;
-            s2 = (s32 *)((s32)s2 + s0);
+            size = walker[1];
+            cur_off = walker[0];
+            *slots = (s32)dest - (s32)b;
+            slots++;
+            count++;
+            size = size - cur_off;
+            func_800520B8((s32)b + cur_off, (s32)dest, size);
+            size = (u32)size >> 2;
+            size = size << 2;
+            dest = (s32 *)((s32)dest + size);
         }
-        s1++;
-        v1 = *s3;
-        s3++;
+        walker++;
+        v1 = *offsets;
+        offsets++;
     } while (v1 != stop);
     }
-    ret = (s32)s2;
+    ret = (s32)dest;
 
 done:
-    v1 = ret - (s32)s4;
-    *s4 = s6;
-    *s5 = v1;
+    v1 = ret - (s32)b;
+    *b = count;
+    *slots = v1;
     return ret;
 }
 /* kengo:MED  |  my_hirahira/hirahira_w_frie  |  59i */
