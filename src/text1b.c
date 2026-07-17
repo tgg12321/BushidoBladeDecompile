@@ -13228,8 +13228,6 @@ s32 func_80060768(s32 arg0, s32 arg1, s32 arg2) {
     u16 cur2;
     s32 end_off;
     s32 tile_off;
-    u16 *p_b4 = &D_800A32B4;
-    u16 *p_b6 = &D_800A32B6;
 
     tile_off = arg0 + 0x7D0;
     end_off = arg0 + 0xAC8;
@@ -13244,11 +13242,17 @@ s32 func_80060768(s32 arg0, s32 arg1, s32 arg2) {
         *(u8 *)(arg0 + 0x7D6) = 0;
         *(s16 *)(arg0 + 0x7DA) = (s16)(arg2 * 0x1A + 0x5B);
         cur1 = D_800A32B4;
-        D_800A32B4 = cur1 + 1;
+        /* FAKE: increment staged through t1 (real value, stored next line; t1 is
+           then reused for the product), family staged-value-reused-variable,
+           mechanism: GCC 2.7.2 cse.c - reassignment clobbers the increment
+           pseudo, invalidating the mem==reg equivalence so the clamp re-read
+           emits lh, lever-exhaustion: memory/grind/func_80060768/evidence.md [s2] */
+        t1 = cur1 + 1;
+        D_800A32B4 = t1;
         t1 = (s32)((s16)cur1) * 0x1AA;
         *(s16 *)(arg0 + 0x7DE) = 2;
         *(s16 *)(arg0 + 0x7DC) = (s16)(t1 / 0x1E);
-        if ((s16)*p_b4 >= 0x1F) {
+        if ((s16)D_800A32B4 >= 0x1F) {
             D_800A32B4 = 0x1E;
         }
         gpu_SetSemiTransp((void *)tile_off, 0);
@@ -13262,11 +13266,17 @@ s32 func_80060768(s32 arg0, s32 arg1, s32 arg2) {
     *(u8 *)(tile_off + 6) = 0;
     *(s16 *)(tile_off + 0xA) = 0xBD;
     cur2 = D_800A32B6;
-    D_800A32B6 = cur2 + 1;
+    /* FAKE: increment staged through t2 (real value, stored next line; t2 is
+       then reused for the product), family staged-value-reused-variable,
+       mechanism: GCC 2.7.2 cse.c - reassignment clobbers the increment
+       pseudo, invalidating the mem==reg equivalence so the clamp re-read
+       emits lh, lever-exhaustion: memory/grind/func_80060768/evidence.md [s2] */
+    t2 = cur2 + 1;
+    D_800A32B6 = t2;
     t2 = (s32)((s16)cur2) * 0x144;
     *(s16 *)(tile_off + 0xE) = 2;
     *(s16 *)(tile_off + 0xC) = (s16)(t2 / 0x1E);
-    if ((s16)*p_b6 >= 0x1F) {
+    if ((s16)D_800A32B6 >= 0x1F) {
         D_800A32B6 = 0x1E;
     }
     gpu_SetSemiTransp((void *)tile_off, 0);

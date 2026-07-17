@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80060768",
-      "file": "text1b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: Two single-use pointer aliases (p_b4, p_b6) fall explicitly outside the pointer-rmw-global-sanctioned carve-out \u2014 that rule requires at least one load AND one store through the pointer (an actual RMW "
-    },
-    {
       "func": "func_80060CB8",
       "file": "text1b",
       "distance": 0,
@@ -3162,14 +3152,14 @@
     }
   ],
   "counts": {
-    "total": 380,
-    "active": 311,
+    "total": 379,
+    "active": 310,
     "by_status": {
-      "active": 311,
+      "active": 310,
       "parked": 69
     },
     "by_verdict": {
-      "C": 157,
+      "C": 156,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
