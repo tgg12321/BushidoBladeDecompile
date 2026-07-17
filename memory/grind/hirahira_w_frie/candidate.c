@@ -1,6 +1,12 @@
 /* hirahira_w_frie — s2 best form, sandbox distance 0 (measured 2026-07-17).
  *
- * STATUS: RULING-PENDING — do NOT commit as-is.
+ * STATUS: OWNER-RULING-PENDING — do NOT commit as-is.
+ * Judge ruling 2026-07-17 03:30 (docs/grind/decisions.md): FAIL — construct #1
+ * below is the tombstone family respelled and stays BANNED unless the owner
+ * retires the 2026-06-02 tombstone; construct #2 (`stop`) is SANCTIONED.
+ * OWNER-ESCALATION filed 2026-07-17 (docs/grind/decisions.md); s2b measured
+ * every remaining sanctioned axis (K&R param-decl order, do-while(0) fence,
+ * decl/init permutations) — all land on the invariant legal floor 4.
  * Two steering constructs, each individually classified:
  *   1. `s32 *b = base;` — SINGLE literal param rename (forward order, offsets
  *      kept raw). Mechanism: base becomes single-use, so combine merges the

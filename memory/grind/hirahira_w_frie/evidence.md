@@ -23,3 +23,23 @@
 - [s2] [2026-07-17] PREHEADER-PAIR MECHANISM: loop.c hoists the -2 loop-compare constant to just before NOTE_INSN_LOOP_BEG, i.e. AFTER the `walker = slots` statement; both preheader insns are leaves (priority tie) so LUID keeps emission order → move s1,s5 first (wrong). Target's li-s7-first order requires the -2 materialization to be an explicit statement BEFORE the walker init — the block-local `s32 stop = -2;` constant-holder (named-local-fake-exception family, SOTN `s16 three = 3;`). No clean spelling found that reorders the hoist.
 
 - [s2] [2026-07-17] Src RESTORED to the committed pair-alias form (byte-correct on main per Judge disposition); the 0-distance single-alias form is in candidate.c pending ruling.
+
+- [s2b] [2026-07-17, structural, post-Judge] Judge ruling landed (docs/grind/decisions.md 2026-07-17 03:30, FAIL): single forward-order alias = tombstone family respelled, BANNED pending owner; `stop = -2` constant-holder SANCTIONED; mechanism-level exhaustion CREDITED as complete; sanctioned legal floor = 4.
+
+- [s2b] [2026-07-17] Post-ban structural sweep of every remaining sanctioned emission-order axis, all on the clean+stop base (anchor re-measured = 4, 59/59): K&R old-style defn with REVERSED param-decl block = 4 (store_parm_decls chains DECL_ARGUMENTS by the identifier list, not decl-block order — the last conceivable no-rename emission-order lever is dead); do-while(0) wrap of the entry `v1=*offsets` read = 19 w/ 58 insns (loop notes perturb the real loop's reorg; also mechanism-inert for the pair since both entry copies precede all statements); uninitialized-decl order fully reversed = 4; initialized-decl permutation with dest's initializer first = 4 (sched1 renormalizes initializer emission order in the entry block). Rejected forms banked (knr-reversed-param-decls-floor4.c, dowhile0-entry-read-wrap-floor19.c, decl-and-init-order-permutations-floor4.c).
+
+- [s2b] [2026-07-17] Residual at floor 4 verified instruction-exact as ONLY the first two save+def prologue pairs swapped (built: sw s4/move s4,a0 then sw s3/move s3,a1; target: s3 pair first) — artifact tmp/grind/hirahira_w_frie/s2/sandbox_objdump_floor4.txt lines 1455-1475 vs asm/funcs/hirahira_w_frie.s:3-6; bytes from `addiu s5,s4,4` onward identical.
+
+- [s2b] [2026-07-17] OWNER-ESCALATION item FILED in docs/grind/decisions.md per the Judge's mandated next step: binary owner choice (retire/narrow the 2026-06-02 tombstone for the single forward-order FAKE alias -> candidate.c completes at 0 and unlocks the func_8007C2A0/C4B8 twins; or uphold it -> floor 4 is permanent and the function needs an owner-signed disposition per no-park-permanently). Src left at the committed pair-alias form per the standing regression disposition. NOTHING further is grindable until the owner rules.
+
+- [s2] Judge ruling 2026-07-17 03:30 (docs/grind/decisions.md): single forward-order alias `s32 *b = base;` = tombstone family respelled, BANNED pending owner; `s32 stop = -2;` constant-holder SANCTIONED (named-local-fake-exception); mechanism-level exhaustion credited as complete; sanctioned legal floor = 4
+
+- [s2] Anchor re-measured this session: clean+stop form = sandbox 4 (59/59 insns, rules_dropped 0)
+
+- [s2] Floor-4 residual verified instruction-exact as ONLY the first two save+def prologue pairs swapped (built s4-pair-first vs target s3-pair-first); bytes identical from addiu s5,s4,4 onward — tmp/grind/hirahira_w_frie/s2/sandbox_objdump_floor4.txt lines 1455-1475 vs asm/funcs/hirahira_w_frie.s:3-6
+
+- [s2] With H1-H8 the sanctioned pure-C space is measured-closed: every no-rename spelling lands exactly on floor 4; the only closing lever (combine relocating a single-use param's entry copy, candidate.c) is the banned construct
+
+- [s2] OWNER-ESCALATION item filed in docs/grind/decisions.md per the Judge's mandated next step: binary owner choice — (a) retire/narrow the 2026-06-02 param-local-alias-prologue-pair-flip tombstone for the single forward-order FAKE alias (candidate.c then completes at 0; unlocks parked func_8007C2A0/C4B8 twins), or (b) uphold it (floor 4 permanent; function needs an owner-signed disposition per no-park-permanently)
+
+- [s2] src/text1a_c.c left byte-identical to HEAD (committed pair-alias form) per the standing regression disposition; git diff clean under src/

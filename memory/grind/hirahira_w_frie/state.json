@@ -1,31 +1,32 @@
 {
  "func": "hirahira_w_frie",
  "file": "text1a_c",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 0,
    "modality": "recon",
    "headline": "fable-blitz recon: prologue pair-flip may fall out of clean C via sched1 critical-path ordering (offsets read feeds the entry branch); tombstone-vs-2026-07-06-line tension flagged for ruling"
+  },
+  {
+   "session": 2,
+   "floor": 4,
+   "modality": "structural",
+   "headline": "Sanctioned floor 4 confirmed invariant: all remaining no-rename structural axes measured dead (K&R param-decl order, do-while(0) fence, decl/init permutations); Judge-mandated OWNER-ESCALATION on the "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Clean form: delete both renames, use `base`/`offsets` directly (offsets as the walked pointer, base raw), keep the derived locals and the loop-entered block; sched1 may order a1's callee-save copy first naturally because the *offsets load feeds the entry branch (critical path). Measure before assuming the wall.",
-   "mechanism": "sched1 priority scheduling of the two independent arg-copy insns (longest-path-to-branch) + save_restore_insns/prologue_fix pairing",
-   "next_probe": "apply clean form -> sandbox hirahira_w_frie --disable all; inspect whether the residual diff is exactly the 2-pair prologue order or zero"
+   "hypothesis": "If the owner retires/narrows the tombstone (escalation option a), the banked candidate.c closes the function at sandbox 0",
+   "mechanism": "combine merges the single-use param's entry copy into the alias init at the later insn position, flipping the prologue pair; measured 0 on 2026-07-17",
+   "next_probe": "on owner PASS: apply memory/grind/hirahira_w_frie/candidate.c to src/text1a_c.c, sandbox --disable all (expect 0), report candidate-ready"
   },
   {
-   "hypothesis": "If the pair order regresses: initializer/statement-order geometry sweep - make the *offsets read the lexically-first executable statement, push all base-derived initializers (slots=base+1, dest=base+base[1]) after it, and vary which decls carry initializers vs plain assignments; also sweep `stop` respellings (loop-entered block const vs FAKE-annotated holder).",
-   "mechanism": "RTL emission order of decl initializers biasing sched1's tie-break on the copy pair",
-   "next_probe": "tools/sweep_variants.py over 4-6 ordering variants; attribute the diff per variant to the prologue pair vs the s7 materialization"
-  },
-  {
-   "hypothesis": "If geometry exhausts: surface the tombstone-vs-2026-07-06-line question - literal param renames are semantically-true named intermediates under the new construct-honesty line, so a FAKE-annotated alias pair may now be reviewable where the 2026-06-02 tombstone auto-FAILed it (same disposition would unlock the parked func_8007C2A0/C4B8 twins).",
-   "mechanism": "policy resolution, not codegen - the construct already byte-matches",
-   "next_probe": "write the exhaustion ledger from probes 1-2, then raise the ruling question with both rules cited"
+   "hypothesis": "If the owner upholds the tombstone (option b), no grindable pure-C work remains at this function",
+   "mechanism": "policy, not codegen \u2014 the exhaustion is mechanism-level and Judge-credited; floor 4 is invariant across every sanctioned spelling",
+   "next_probe": "await the owner's signed disposition in docs/grind/decisions.md; do not re-grind the killed axes"
   }
  ],
  "judge_constraints": [

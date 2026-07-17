@@ -227,3 +227,4 @@
 - 2026-07-17 02:54 func_80044B30 COMPLETED-C after 2 sessions.
 - 2026-07-17 02:58 func_80044F30 COMPLETED-C after 2 sessions.
 - 2026-07-17 03:06 func_800455AC COMPLETED-C after 2 sessions.
+- 2026-07-17 03:42 hirahira_w_frie s2 [structural] floor=4: Sanctioned floor 4 confirmed invariant: all remaining no-rename structural axes measured dead (K&R param-decl order, do-while(0) fence, decl/init permutations); Judge-mandated OWNER-ESCALATION on the param-alias tombstone filed in docs/grind/decisions.md

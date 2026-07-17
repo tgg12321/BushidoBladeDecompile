@@ -11,3 +11,31 @@
 4. CONFIRMED — "combine relocates a single-use param's entry copy to its rename-init position, flipping the pair without the reversed-pair shape". Measured: base-only rename `s32 *b = base;` = 2 (prologue pair fixed); + block-local `stop = -2` = 0. Mechanism: combine merges (move pA<-a0) + (move pb<-pA) placing the result at the later insn; a1's untouched entry copy then has lower LUID.
 
 5. CONFIRMED — "the preheader pair (li s7,-2 before move s1,s5) requires an explicit constant statement before the walker init". Measured: clean+stop = 4 (exactly the 2-insn cluster closed vs clean 6). loop.c hoists the literal after the walker stmt; leaf-priority tie keeps emission order.
+
+## s2b (2026-07-17, structural, post-Judge-ban sweep)
+
+6. KILLED — "K&R old-style definition with the param-decl block reversed flips expand_function_start's copy emission order without a rename". Measured: 4, unchanged. c-decl.c store_parm_decls orders DECL_ARGUMENTS by the IDENTIFIER LIST (ABI-fixed a0=base), not by decl-block order. This was the last conceivable no-rename emission-order lever.
+
+7. KILLED — "a do-while(0) loop-note fence near the entry read can touch the arg-copy pair order". Measured: 19 (worse, 58/59 insns — the notes perturb the real loop's reorg). Also inert by construction: both copies are emitted adjacently BEFORE any statement, so no statement-level wrapper can sit between them.
+
+8. KILLED — "residual declaration-geometry axes (uninitialized-decl order; initialized-decl permutation with dest first) bias the pair". Measured: 4 and 4, unchanged. sched1 renormalizes entry-block emission order; local pseudo numbering never touches the two copies' LUIDs.
+
+CONCLUSION: with H1-H8 the sanctioned pure-C space is measured-closed at floor 4 (= exactly the 2 swapped prologue pairs). The only closing lever (H4, single-use-param alias via combine) is Judge-banned pending the owner's tombstone ruling; escalation filed in docs/grind/decisions.md 2026-07-17.
+
+## [s2] K&R old-style definition with the param-decl block reversed (offsets declared before base) flips expand_function_start's entry-copy emission order without a literal rename
+- mechanism: c-decl.c store_parm_decls chaining DECL_ARGUMENTS in decl-block order would give a1's copy the lower LUID, winning sched1's rank_for_schedule tie-break
+- probe: rewrote the definition K&R-style with s16 *offsets; declared first; sandbox hirahira_w_frie --disable all
+- result: score 4, unchanged (59/59) — store_parm_decls orders DECL_ARGUMENTS by the identifier list (ABI-fixed a0=base), decl-block order is inert
+- verdict: KILLED
+
+## [s2] a sanctioned do-while(0) wrapper around the entry v1=*offsets read can fence sched1's entry region in a way that touches the arg-copy pair order
+- mechanism: NOTE_INSN_LOOP_BEG/END emitted by the wrapper acting as a scheduling fence near the copies
+- probe: wrapped the entry read+increment in do{...}while(0) with FAKE annotation; sandbox --disable all
+- result: score 19, build 58 vs target 59 — strictly worse (injected loop notes perturb the real loop's reorg/preheader); also inert for the pair by construction since both copies are emitted adjacently before any statement
+- verdict: KILLED
+
+## [s2] residual declaration-geometry axes (fully reversed uninitialized-decl order; initialized-decl permutation with dest's initializer first) bias the entry-copy pair via pseudo numbering or emission order
+- mechanism: local pseudo regno / RTL emission order of the derived-local defs feeding sched1 tie-breaks
+- probe: two variants on the clean+stop base, each measured with sandbox --disable all
+- result: score 4 and 4, unchanged — sched1 renormalizes the entry block; the two arg copies' LUIDs are untouched by any local declaration geometry
+- verdict: KILLED
