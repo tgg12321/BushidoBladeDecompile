@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8005344C",
-      "file": "text1b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: Unannotated do { ... } while(0) wrapper at src/text1b.c:11254 is an unsanctioned no-semantic-purpose codegen device. The first two reflection stores (lines 11252-11253) are bare statements; only the t"
-    },
-    {
       "func": "func_8005509C",
       "file": "text1b",
       "distance": 0,
@@ -3192,14 +3182,14 @@
     }
   ],
   "counts": {
-    "total": 383,
-    "active": 314,
+    "total": 382,
+    "active": 313,
     "by_status": {
-      "active": 314,
+      "active": 313,
       "parked": 69
     },
     "by_verdict": {
-      "C": 160,
+      "C": 159,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
