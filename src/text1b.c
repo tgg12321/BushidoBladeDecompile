@@ -12010,7 +12010,7 @@ void obj_InitChars(void) {
     } while (s1 < 24);
 }
 void func_800858D0(s32);
-void func_80087F64(s32);
+void func_80087F64(s16);
 extern s32 D_800EFC38;
 extern s32 D_80015470;
 extern s16 Judge;
@@ -12266,7 +12266,7 @@ void GetAllocPacketSize(s32 a0) {
     s32 v;
     func_800858D0(0);
     v = a0 * 2 + a0 + 1;
-    func_80087F64((s16)v);
+    func_80087F64(v);
     *(s32*)((u8*)&D_800EFC38 + (v * 4)) = 0;
     *(s32*)((u8*)&D_800EFB38 + (v * 4)) = 0;
 }

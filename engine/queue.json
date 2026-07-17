@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "GetAllocPacketSize",
-      "file": "text1b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "regression: CODEGEN-CAST CHEAT at text1b.c:12269: func_80087F64((s16)v) forces a sign-extension pair (sll/sra in the jal delay slot) with no semantic purpose. Visible proto at line 12013 is void func_80087F64(s32"
-    },
-    {
       "func": "func_80048F58",
       "file": "text1b",
       "distance": 0,
@@ -3232,14 +3222,14 @@
     }
   ],
   "counts": {
-    "total": 387,
-    "active": 318,
+    "total": 386,
+    "active": 317,
     "by_status": {
-      "active": 318,
+      "active": 317,
       "parked": 69
     },
     "by_verdict": {
-      "C": 164,
+      "C": 163,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
