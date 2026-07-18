@@ -335,3 +335,15 @@
 - probe: Ledger audit: s6 BB2_XJUMP_DEBUG white-box traces (honest/committed/r13 TUs) name the exact win path (jump2 find_cross_jump chain-partner attempt: one counted set13 match at jump.c:2528 + stream-1 CODE_LABEL bonus at 2406-2410) and the committed rule's mechanism (iteration-1 set12-vs-set13 pattern mismatch at jump.c:2469 before the label walk); s7 traced the n1 union form end-to-end (CLOBBER stream-desync GET_CODE break, both directions); F1 (-1-pair sched2-slack protection) confirmed in-trace
 - result: Every divergence mechanism on this wall is already named at pass level with banked artifacts (tmp/grind/motion_SetMotion/s6/, s7/); the forensics deliverable exists in full; the brief forbids re-measuring dead axes when the filed escalation exists
 - verdict: CONFIRMED
+
+## [s34] The owner has ruled on the 2026-07-18 OWNER-ESCALATION since s33, reopening a grindable axis
+- mechanism: An OWNER RULING entry appended after decisions.md:776 would supersede the parked state and reset the frontier
+- probe: Read docs/grind/decisions.md tail past line 776 (requested through 799; file ends at 777) plus the full escalation block at 761-776
+- result: The OWNER-ESCALATION remains the FINAL entry; no owner ruling follows it as of s34 (2026-07-18)
+- verdict: KILLED
+
+## [s34] The mandated forensics modality has an unmeasured deliverable left (exact GCC pass + decision producing the divergence)
+- mechanism: Instrumented-cc1 RTL/pass tracing could name a new mechanism only if the closure theorem left a gap
+- probe: Ledger audit: s6 traces name jump2 find_cross_jump counted-match + stream-1 label-bonus (jump.c:2469/2532) as the merge path and the committed rule as a first-iteration set12-vs-set13 pattern-mismatch manufacturer; s7 trace names the n1 CLOBBER stream-desync GET_CODE break both directions; artifacts banked under tmp/grind/motion_SetMotion/s6/ and s7/
+- result: The forensics deliverable already exists at pass level with nine independent closure-theorem confirmations; the brief forbids re-measuring dead axes when the filed escalation exists
+- verdict: CONFIRMED

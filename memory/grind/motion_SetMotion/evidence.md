@@ -432,3 +432,11 @@ as separate li's near the dispatch (only case-10's 13 at a bne delay)
 - [s33] Binding Judge constraints forbid committing any USE/CLOBBER-manufacture spelling - the only C-reachable byte-free iter1-breaker - pending the owner's option (a)/(b) ruling
 
 - [s33] Ledger bank intact: memory/grind/motion_SetMotion/candidate.c (44,155 bytes, floor-10 byte-correct Wall-1-solved form) + 9 rejected forms including the byte-proven, trace-proven n1 form (judge-fail-0717-1708.c); no src/ edits this session; regfix.txt:2190 and the committed form untouched on main
+
+- [s34] [s34] docs/grind/decisions.md ends at line 777; the 2026-07-18 motion_SetMotion OWNER-ESCALATION (lines 761-776, filed by grind s7) is the FINAL entry with no owner ruling following it — re-verified fresh this session by reading the file tail (Read through 799 returned EOF at 777)
+
+- [s34] [s34] Mandated forensics axis is dead on the ledger with pass-level artifacts: s6 BB2_XJUMP_DEBUG traces (honest form merges via one counted set13 match + jtbl CODE_LABEL stream-1 bonus; committed rule protects via iteration-1 set12-vs-set13 pattern mismatch before the label walk; F1 sched2-slack protection of the -1 pair confirmed in-trace) and s7 trace of the n1 union form (byte-free CLOBBER desyncs both find_cross_jump streams — GET_CODE INSN-vs-JUMP_INSN break at iteration 2, label bonus unreachable)
+
+- [s34] [s34] Binding Judge constraints forbid committing any USE/CLOBBER-manufacture spelling — the only C-reachable byte-free iter1-breaker per the closure theorem — pending the owner's option (a)/(b) ruling
+
+- [s34] [s34] Ledger bank intact: memory/grind/motion_SetMotion/candidate.c (44,155 bytes, floor-10 byte-correct Wall-1-solved form) plus 9 rejected forms including the byte-proven, trace-proven n1 union form (judge-fail-0717-1708.c); no src/ edits made; regfix.txt:2190 and the committed form untouched on main per the 17:34 Judge disposition
