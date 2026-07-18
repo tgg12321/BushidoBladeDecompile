@@ -408,3 +408,11 @@ as separate li's near the dispatch (only case-10's 13 at a bne delay)
 - [s31] Permuter axis closure re-verified from the ledger: s4 perm_a 112,618 + perm_b 2,049 iterations (merged seeds; zero honest finds; scorer floor occupied by false matches) and s5 perm_c 54,087 iterations (unmerged r13 seed; plateau 76-91 word diffs; merge re-forms with a different partner) - both sides of the merge boundary measured
 
 - [s31] src/code6cac_c_mid.c and regfix.txt:2190 untouched on main per the 17:34 Judge disposition; no campaign launched, no edits made this session
+
+- [s32] docs/grind/decisions.md:761-776 — OWNER-ESCALATION for motion_SetMotion filed 2026-07-18 per the Judge's 2026-07-17 17:34 disposition; it is the last entry in the file as of this session (verified by tail read), therefore unruled; the entry itself forbids self-resolution.
+
+- [s32] Permuter axis measured dead two-sided (hypotheses.md [s4]/[s5], re-read this session): merged-seed campaigns perm_a (112,618 iter) and perm_b (2,049 iter directed) yielded only false-zero (swapped jump targets) and semantic-theft finds; unmerged-seed campaign perm_c (54,087 iter, r13 chassis) descended by repairing branch offsets, never restoring the third li13 word — the chassis is structurally one li13 short because the merge picks a different partner when the jtbl label is removed.
+
+- [s32] s6 gccdbg trace (hypotheses.md [s6], CONFIRMED): the 13-pair merge fires via 1 counted set13 match + label bonus; label-bonus dodging is impossible in any honest chassis (r13's blocks cascade-merge via their own heading labels); the only byte-free breaker is the unsanctioned USE/CLOBBER manufacture class — so no permuter basin can contain an honest byte-neutral unmerged form.
+
+- [s32] Floor unchanged at 10 (honest sandbox distance 1 = the single li word governed by regfix.txt:2190); no src/ edits were made this session — the committed byte-correct form and the rule stay untouched on main per the escalation's standing disposition.
