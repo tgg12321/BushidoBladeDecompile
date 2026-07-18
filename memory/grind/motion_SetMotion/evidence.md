@@ -290,3 +290,11 @@ as separate li's near the dispatch (only case-10's 13 at a bne delay)
 - [s18] Ledger intact: memory/grind/motion_SetMotion/candidate.c (44,155 bytes, Wall-1-solved floor-10 form) plus 9 banked rejected forms; frontier is exactly the two owner acts (sanction the CLOBBER family and re-propose judge-fail-0717-1708.c, or refuse and sign a disposition for regfix.txt:2190)
 
 - [s18] Sessions 8-17 across all five modalities (rederive, synthesis, structural, permuter, forensics) each independently verified the same gate; every remaining sanctioned axis is measured dead on the ledger
+
+- [s19] docs/grind/decisions.md is 776 lines; the 2026-07-18 OWNER-ESCALATION for motion_SetMotion occupies lines 761-776 and is the FINAL entry — no owner ruling follows it as of s19 (2026-07-18)
+
+- [s19] Ledger coherence re-confirmed: 25 hypothesis entries s2-s18; all five ladder axes (structural, permuter, forensics, rederive, synthesis) measured dead with the closure theorem carrying eight independent confirmations including two BB2_XJUMP_DEBUG white-box pass traces (s6 honest/committed/r13, s7 union n1 form)
+
+- [s19] s10 three-basin partition re-verified as the synthesis-axis seal: axis kills are quantified over jump2-time RTL invariants of ANY byte-matching compile, not over source spellings, so cross-axis compositions (F1+r13, permuter-find+structural-respelling, split-init+reshaped-arm) all canonicalize inside the enumerated basins
+
+- [s19] Banked artifacts verified on disk: memory/grind/motion_SetMotion/candidate.c (44,155 bytes, floor-10 form) and 9 rejected/ forms including the byte-proven, trace-proven n1 union form (judge-fail-0717-1708.c) referenced by escalation option (a)
