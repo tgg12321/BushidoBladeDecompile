@@ -161,3 +161,9 @@
 - probe: Ledger audit: s6 traced honest/committed/r13 TUs end-to-end with BB2_XJUMP_DEBUG (exact win path: 1 counted set13 match + stream-1 CODE_LABEL bonus; committed rule = set12-vs-set13 mismatch at jump.c:2469 before the label walk; F1 sched2-slack confirmed in-trace), s7 traced the n1 union-CLOBBER form (stream-desync GET_CODE break, both directions, byte-identical modulo the one li word)
 - result: Every find_cross_jump exit condition for both 13-pair directions and both -1-pair directions is trace-accounted; the only C-reachable byte-free breaker is the Judge-banned USE/CLOBBER family - nothing forensics can add without violating the binding constraints
 - verdict: KILLED
+
+## [s17] A structurally different re-derived C shape (fresh m2c, decomp.me corpus, sibling/Kengo transplant) could escape the 13-pair cross-jump merge byte-neutrally.
+- mechanism: The s6 gccdbg white-box trace certifies the closure theorem over the OUTPUT byte constraint, not over any particular C spelling: any C that compiles to the target bytes presents jump2 with the identical [set13; j] twin suffixes plus the stream-1 label bonus, so find_cross_jump merges them regardless of source shape. s8/s9 already banked rederive-dead-by-construction; slog-kengo-dead-end additionally rules out Kengo transplant material for this file family.
+- probe: Verified this session: escalation entry present and unruled at docs/grind/decisions.md:761-776 (tail of file is its References line, no ruling appended); ledger hypotheses.md re-read — closure theorem confirmed from five independent directions (r1-r13 structural, permuter two-sided s4/s5, forensics s6/s7).
+- result: No sanctioned probe exists on the rederive axis: the theorem is quantified over all byte-matching shapes, so producing another shape measures nothing new; the only unmeasured space is the unsanctioned USE/CLOBBER-manufacture family, which the binding Judge constraints forbid re-proposing.
+- verdict: KILLED

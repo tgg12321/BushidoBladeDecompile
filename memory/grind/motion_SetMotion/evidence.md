@@ -274,3 +274,11 @@ as separate li's near the dispatch (only case-10's 13 at a bne delay)
 - [s16] Mandated forensics axis is dead on the ledger with pass-level artifacts: s6 BB2_XJUMP_DEBUG traces (honest/committed/r13 TUs - merge path, rule mechanism, and F1 slack all named at jump.c/sched2 level) and s7 trace of the n1 union form (CLOBBER stream-desync break, both directions); the closure theorem carries nine independent confirmations and binding Judge constraints forbid the only remaining C-reachable mechanism
 
 - [s16] Ledger bank intact: memory/grind/motion_SetMotion/candidate.c (44,155 bytes, floor-10 byte-correct form) + 9 rejected forms; no src/ edits this session; regfix.txt:2190 and the committed form untouched on main per the 17:34 Judge disposition; working tree clean except metrics append
+
+- [s17] 2026-07-18 OWNER-ESCALATION for motion_SetMotion verified on file at docs/grind/decisions.md:761-776 and UNRULED as of 2026-07-18 s17 — it is the final entry; the file ends with its References line and no owner ruling follows.
+
+- [s17] Every sanctioned axis is measured dead on the ledger: structural (s2/s3/s3b r1-r13, five-way closure confirmation), permuter (s4 false-zero/semantic-theft classification + s5 two-sided unmerged-chassis plateau), forensics (s6 end-to-end gccdbg trace certifying the closure theorem; s7 union-form trace + zero community evidence), rederive (s8/s9: dead by construction — the theorem quantifies over all byte-matching C shapes), synthesis (s10 three-basin partition: no cross-axis composition escapes).
+
+- [s17] Binding Judge constraints forbid the only byte-proven closing form (union-constructor CLOBBER family, banked as rejected/judge-fail-0717-1708.c) pending the owner's option (a)/(b) ruling; regfix.txt:2190 and the committed form stay untouched on main meanwhile.
+
+- [s17] candidate.c remains banked at memory/grind/motion_SetMotion/candidate.c (floor 10 chassis); no src edits made this session, per the parked state.
