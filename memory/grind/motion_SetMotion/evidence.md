@@ -138,3 +138,19 @@ as separate li's near the dispatch (only case-10's 13 at a bne delay)
 - [s4] [s4] No orphaned permuter processes at session start (driver reaped the discarded attempt's PIDs 416/1520); both campaign_meta.json + campaign.log banked; harvest telemetry recorded to metrics/events.jsonl this session.
 
 - [s4] [s4] Baseline re-confirmed: sandbox motion_SetMotion --disable all = honest distance 1 (402/402 insns, 1 rule dropped, 34 cheat-asm stripped elsewhere in TU); src untouched, git clean.
+
+- [s5] Permuter axis re-attacked from the OPPOSITE side of the merge boundary and measured dead there too: fresh campaign s5-r13-unmerged-seed (54,087 iterations / ~30 min / -j6 --stack-diffs) seeded from the s3b r13 pre-switch-if chassis (the only honest unmerged form measured; base 408 insns / 136 raw word diffs / perm-score 1125). Best find 660 at ~10 min, then 20 min dry -> fresh-seed stop. Best four finds raw-word-verified (harvest_c.sh): 76-91 word diffs, 403-406 insns — nowhere near the 1-word committed noise floor; all retain the chassis family.
+
+- [s5] NEW micro-fact from calibration: target contains THREE 2410000d (li s0,13) words (==3 arm, case-9/11 jtbl block, case-10 0x400040 path) but the r13 chassis emits only TWO — with the jtbl label removed, cross-jump merges the extracted if-block's set13 with the ==3 arm's set13 instead (both non-jtbl [set13; j] blocks, same jump_chain). Removing the label bonus does NOT protect the pair; find_cross_jump just picks a different partner. The closure theorem gains a sixth independent confirmation: the merge fires in EVERY honest chassis measured, differing only in which pair it eats.
+
+- [s5] Permuter closure is now two-sided: s4 (merged seeds: 112,618-iter random + 2,049-iter directed; only false-zero/semantic-theft sub-100 finds) + s5 (unmerged seed: 54,087 iters, plateau at 82 word diffs). No further permuter chassis class exists — every honest form is on one side of the merge boundary or the other, and both basins are measured dry. Remaining frontier is unchanged: the owner-policy/community-evidence research session + optional gccdbg confirmatory trace (Judge 2026-07-17 17:34 disposition).
+
+- [s5] Baseline re-confirmed: sandbox motion_SetMotion --disable all = honest distance 1 (402/402, 1 rule dropped, 34 cheat-asm stripped elsewhere in TU); campaign harvested+stopped (pid 402 dead, telemetry in metrics/events.jsonl); src untouched, git clean.
+
+- [s5] Permuter closure is now two-sided: s4 merged-seed campaigns (112,618-iter random + 2,049-iter directed, only false-zero/semantic-theft sub-100 finds) + s5 unmerged-seed campaign (54,087 iters, plateau 82 word diffs). Every honest chassis sits on one side of the merge boundary; both basins measured dry.
+
+- [s5] Sixth independent confirmation of the closure theorem: the 13-merge fires in EVERY honest chassis measured, differing only in which pair it eats (r13's extracted if-block merges with the ==3 arm when the jtbl label is gone).
+
+- [s5] No OWNER-ESCALATION for motion_SetMotion is filed yet in docs/grind/decisions.md - the 2026-07-17 17:34 entry is a Judge ruling PRESCRIBING the escalation (research session first, then file in hirahira_w_frie format), not the escalation itself; owner-gated is therefore not yet available.
+
+- [s5] Baseline re-confirmed this session: sandbox motion_SetMotion --disable all = honest distance 1 (402/402 insns, 1 rule dropped, 34 cheat-asm stripped elsewhere in TU); campaign harvested+stopped (pid dead, telemetry banked); src untouched, git clean.

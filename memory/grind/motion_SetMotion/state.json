@@ -1,7 +1,7 @@
 {
  "func": "motion_SetMotion",
  "file": "code6cac_c_mid",
- "session_count": 4,
+ "session_count": 5,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -33,18 +33,24 @@
    "floor": 10,
    "modality": "permuter",
    "headline": "Permuter axis measured DEAD on the 13-pair wall: 112k-iter campaign's score-0 is a scorer FALSE MATCH (swapped jump targets), and every sub-merge-penalty find is a semantics-breaking cross-path insn t"
+  },
+  {
+   "session": 5,
+   "floor": 10,
+   "modality": "permuter",
+   "headline": "Permuter axis closed two-sided: fresh 54k-iter campaign seeded from the UNMERGED r13 chassis plateaus at 82 raw word diffs, and calibration shows the merge just picks a different partner when the jtbl"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Owner policy question (the Judge's prescribed path): is the union-constructor CLOBBER family community-viable (SOTN-master-branch evidence) and thus sanctionable as a standalone family?",
-   "mechanism": "find_cross_jump iter1 GET_CODE(SET)!=GET_CODE(CLOBBER) at jump.c:2469 before any label bonus; USE/CLOBBER emit no bytes at final; s4 adds: this is now the ONLY unmerge mechanism not measured dead (structural r1-r13, slack transplant, label-family, and blind permuter search all closed).",
-   "next_probe": "Research session (not inside a match): survey SOTN/Vagrant Story/ESA master branches for accepted single-member-union / cast-to-union / manufactured-CLOBBER spellings; file the standalone policy question to the owner citing decisions.md 2026-07-17 17:09 FAIL; if refused, file OWNER-ESCALATION for disposition of the last rule."
+   "hypothesis": "Owner policy question (the Judge's prescribed path, 2026-07-17 17:34): is the union-constructor CLOBBER family community-viable (SOTN/Vagrant-Story/ESA master-branch evidence) and thus sanctionable as a standalone family?",
+   "mechanism": "find_cross_jump iter1 GET_CODE(SET)!=GET_CODE(CLOBBER) at jump.c:2469 before any label bonus; USE/CLOBBER emit no bytes at final. After s5 this is the ONLY unmerge mechanism not measured dead (structural r1-r13, slack transplant, label-family, merged-seed permuter, unmerged-seed permuter all closed).",
+   "next_probe": "RESEARCH modality (driver: schedule this next - permuter is exhausted two-sided): survey SOTN/Vagrant Story/ESA master branches for accepted single-member-union / cast-to-union / manufactured-CLOBBER spellings; then file the OWNER-ESCALATION in docs/grind/decisions.md (hirahira_w_frie format, both options, honest about absent evidence) per the 17:34 disposition; grind then stops on this function pending the owner's ruling."
   },
   {
    "hypothesis": "Belt-and-braces exhaustiveness check: a gccdbg find_cross_jump trace on the (arm, case-9/11) pair confirms the merge fires exactly via the iter2 stream-1 label bonus and no other exit condition is reachable.",
-   "mechanism": "BB2_*_DEBUG printf knob in a DIAGNOSTIC cc1 copy (established precedent, never the build compiler) tracing minimum/last1 per iteration for the honest-0xD TU.",
-   "next_probe": "Forensics session: build gccdbg cc1 with the trace knob, compile the honest-0xD standalone TU (tmp/grind/motion_SetMotion/s4/perm_a/honest.c compiles via perm_a/compile.sh), log the pair's iter1/iter2 values; bank the trace. Purely confirmatory."
+   "mechanism": "BB2_*_DEBUG printf knob in a DIAGNOSTIC cc1 copy (established precedent, never the build compiler) tracing minimum/last1 per iteration for the honest-0xD TU; s5 adds a second pair worth tracing (r13's if-block/arm merge) for free.",
+   "next_probe": "FORENSICS modality: build gccdbg cc1 with the trace knob, compile the honest-0xD standalone TU (tmp/grind/motion_SetMotion/s4/perm_a/honest.c via perm_a/compile.sh) and the s5 r13 chassis (s5/perm_c/base.c), log the pairs' iter1/iter2 values; bank the trace. Purely confirmatory - the Judge marked it optional-but-recommended before the escalation is filed."
   }
  ],
  "judge_constraints": [
