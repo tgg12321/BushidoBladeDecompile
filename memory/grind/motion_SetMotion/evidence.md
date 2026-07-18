@@ -240,3 +240,11 @@ as separate li's near the dispatch (only case-10's 13 at a bne delay)
 - [s12] Mandated structural axis is Judge-certified dead: 17:34 ruling certifies exhaustion complete (r1-r9 KILLED, r10-r13 in s3/s3b, F1 slack non-transplantable with zero byte-room at the 13-sites); brief forbids re-measuring dead axes when the filed escalation exists
 
 - [s12] No src/ edits made this session; candidate.c and the 9-form rejected/ bank are unchanged and current; committed byte-correct form + regfix.txt rule stay untouched on main per the 17:34 disposition
+
+- [s13] docs/grind/decisions.md ends at line 776; the 2026-07-18 motion_SetMotion OWNER-ESCALATION block (lines 761-776) is the final entry with no owner ruling following it — verified this session (s13)
+
+- [s13] The escalation presents both owner options: (a) sanction the union-constructor CLOBBER family with per-use dossier (banked n1 form is byte-proven and trace-proven), (b) refuse the family and sign an owner disposition for regfix.txt:2190 per no-park-permanently
+
+- [s13] Mandated permuter modality is dead by the ledger: s4 (112k iters, merged chassis — score-0 was a scorer false match) and s5 (54k iters, unmerged r13 chassis — 82-word-diff plateau; merge re-forms with a different partner) close both basins; the s6 white-box trace certifies the closure theorem that makes any further permuter search converge only on unsanctioned USE/CLOBBER spellings
+
+- [s13] Ledger artifacts intact: memory/grind/motion_SetMotion/{candidate.c,evidence.md,hypotheses.md,state.json} plus 9 rejected forms banked

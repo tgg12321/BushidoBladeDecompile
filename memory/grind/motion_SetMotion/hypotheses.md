@@ -131,3 +131,9 @@
 - probe: Ledger + decisions.md verification this session: r1-r13 all KILLED (s2/s3/s3b), F1 measured non-transplantable, 17:34 Judge ruling certifies 'no honest lever remains unmeasured', s6 BB2_XJUMP_DEBUG trace confirms merge is guaranteed for any byte-matching compile
 - result: Escalation entry confirmed as final unruled entry at decisions.md:761 (read through EOF at line 777, no owner ruling follows); closure theorem carries eight independent confirmations including both structural sweeps and pass-level traces
 - verdict: KILLED
+
+## [s13] A new permuter campaign this session could surface a novel sanctioned form not covered by the s4/s5 closure
+- mechanism: Fresh-seed discipline says a basin yields early or not at all; s4 closed the merged-chassis basin (only score-0 was a scorer false match with swapped jump targets, every sub-merge-penalty find was semantics-breaking cross-path instruction theft) and s5 closed the unmerged r13 basin (plateau at 82 raw word diffs; the find_cross_jump merge re-forms with a different partner when perturbed). The Judge-certified closure theorem (s6 gccdbg white-box trace) proves any byte-matching C shape must pass through the 13-pair label-bonus merge, which only the unsanctioned USE/CLOBBER-manufacture family breaks.
+- probe: Verified the escalation entry exists and is unruled (docs/grind/decisions.md:761-776, final entry, no ruling after); verified both permuter negative results are banked (rejected/s4-permuter-false-zero-swapped-jump-targets.c, rejected/s4-permuter-semantic-theft-store-into-case911.c, rejected/s5-permuter-unmerged-r13-seed-plateau.c) and cited in the escalation's references
+- result: Permuter axis remains closed two-sided; re-running a campaign would re-measure a dead axis in violation of the brief's anti-spin directive. Escalation confirmed filed and awaiting owner ruling.
+- verdict: KILLED
