@@ -392,3 +392,9 @@ as separate li's near the dispatch (only case-10's 13 at a bne delay)
 - [s29] Ledger bank intact: memory/grind/motion_SetMotion/candidate.c = 44,155 bytes; all 9 rejected/ forms present including judge-fail-0717-1708.c (44,478 bytes, the byte-proven trace-proven n1 union form for escalation option (a)).
 
 - [s29] src/code6cac_c_mid.c and regfix.txt:2190 untouched on main this session per the 17:34 disposition; s29 verification entry appended to hypotheses.md.
+
+- [s30] s30: docs/grind/decisions.md is 776 lines; the 2026-07-18 OWNER-ESCALATION for motion_SetMotion at lines 761-776 is the final entry (ends with its References line), still unruled — no OWNER RULING follows it.
+
+- [s30] s30: sandbox motion_SetMotion --disable all = score 1, target 402 / build 402 insns, 1 rule dropped (regfix.txt:2190), 34 cheat-asm stripped elsewhere in TU — byte-identical to the banked s14/s27/s28/s29 measurements.
+
+- [s30] s30: bank intact — candidate.c 44,155 B; 9 rejected forms present incl. judge-fail-0717-1708.c 44,478 B (the byte-proven, trace-proven n1 union form referenced by escalation option (a)).

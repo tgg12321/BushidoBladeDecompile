@@ -1,7 +1,7 @@
 {
  "func": "motion_SetMotion",
  "file": "code6cac_c_mid",
- "session_count": 29,
+ "session_count": 30,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -180,6 +180,12 @@
   },
   {
    "session": 29,
+   "floor": 10,
+   "modality": "structural",
+   "headline": "motion_SetMotion owner-gated: 2026-07-18 OWNER-ESCALATION verified on file and unruled (final entry, docs/grind/decisions.md:761-776); mandated structural axis is measured dead by the Judge-certified "
+  },
+  {
+   "session": 30,
    "floor": 10,
    "modality": "structural",
    "headline": "motion_SetMotion owner-gated: 2026-07-18 OWNER-ESCALATION verified on file and unruled (final entry, docs/grind/decisions.md:761-776); mandated structural axis is measured dead by the Judge-certified "
