@@ -203,3 +203,9 @@
 - probe: First-hand re-verification of the ledger and decisions.md instead of a campaign: the closure theorem (F1 discharged in evidence.md [s2], r1-r9 all KILLED in hypotheses.md) proves any byte-matching compile forces both 13-sites into the guaranteed-merge shape; the s5 fresh-seed plateau and s4 false-zero/semantic-theft finds are banked; permuter sessions s13/s14/s22 confirmed the axis dead two-sided.
 - result: Axis remains dead by construction; the only remaining movers are the two owner acts in the filed escalation. No campaign run - launching one would spin a measured-dead axis, which the brief forbids.
 - verdict: KILLED
+
+## [s24] A new forensics session could name a GCC pass/decision not already in the ledger for the last-word divergence
+- mechanism: cc1 RTL/ALLOCDBG/GREG dumps of the honest vs committed TU
+- probe: Checked ledger: s6 traced honest+committed forms (merge fires via 1 counted set13 match + label bonus; rule's set12-vs-set13 mismatch breaks iteration 1) and s7 traced the union n1 form end-to-end (clobber insn 407 desyncs both stream directions, break at GET_CODE with min=1, before the label walk; reorg fills delay slot to target's exact bytes). Escalation entry itself cites these traces as part of the Judge-certified exhaustion.
+- result: The forensics axis is fully measured: the divergence mechanism is named to the source line (expr.c:2996 CLOBBER emission; jump.c find_cross_jump GET_CODE exit family) with artifacts banked in tmp/grind/motion_SetMotion/s6/ and s7/. No un-dumped decision remains between the honest floor and the target bytes.
+- verdict: KILLED

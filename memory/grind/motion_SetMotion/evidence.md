@@ -332,3 +332,11 @@ as separate li's near the dispatch (only case-10's 13 at a bne delay)
 - [s23] Closure theorem (Judge-certified, F1 discharged): any byte-matching compile forces both 13-sites to [set13; j] with the jtbl label adjacent, guaranteeing jump2's counted-match + label-bonus merge; the only C-reachable iter1-breaker is the unsanctioned USE/CLOBBER class per the binding Judge constraints.
 
 - [s23] memory/grind/motion_SetMotion/candidate.c preserved unchanged (byte-proven floor-10 form); no src/ edits made this session.
+
+- [s24] docs/grind/decisions.md:761-776 — 2026-07-18 OWNER-ESCALATION for motion_SetMotion is the final entry in the file (776 lines total) and carries no owner ruling; re-verified this session (s24).
+
+- [s24] The escalation's exhaustion section certifies the closure theorem with eight independent confirmations including the s6/s7 white-box forensics traces — the mandated modality's deliverable (exact pass + decision) already exists in the ledger.
+
+- [s24] Ledger frontier is exactly the two owner acts: (a) sanction the union-constructor CLOBBER family (banked byte-proven n1 form re-proposed through the normal candidate path) or (b) refuse and sign a disposition for regfix.txt:2190 per no-park-permanently.
+
+- [s24] memory/grind/motion_SetMotion/candidate.c present (floor-10 form, Wall-1 duplicated-store priority lift landed); rejected/ bank intact at 9 forms; no src/ edits made this session.
