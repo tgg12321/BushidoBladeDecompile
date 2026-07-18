@@ -239,3 +239,27 @@
 - probe: Verified candidate.c = 44,155 bytes and all 9 rejected/ forms present including judge-fail-0717-1708.c (44,478 bytes, the byte-proven trace-proven n1 union form)
 - result: Bank intact; src/code6cac_c_mid.c and regfix.txt:2190 untouched on main per the 17:34 disposition
 - verdict: CONFIRMED
+
+## [s27] The 2026-07-18 OWNER-ESCALATION for motion_SetMotion remains the final, unruled entry in docs/grind/decisions.md
+- mechanism: Owner may have ruled since s26; owner-gated is only valid against a live unruled escalation
+- probe: Read decisions.md:740-EOF this session (s27): the escalation block at lines 761-776 ends with its References line at 776 and nothing follows it
+- result: Escalation present and unruled; both owner options and the plainly-stated absent community evidence intact
+- verdict: CONFIRMED
+
+## [s27] The mandated rederive axis (fresh m2c / decomp.me corpus / sibling-Kengo transplant) holds an unmeasured honest lever for the last li-13 word
+- mechanism: The closure theorem quantifies over ALL byte-matching compiles, not source spellings: any byte-matching compile forces both 13-sites to [set13; j] with a heading CODE_LABEL adjacent, guaranteeing the find_cross_jump counted-match + stream-1 label-bonus merge; the only byte-free C-reachable breaker is the Judge-banned USE/CLOBBER class. A rederived chassis is a C shape and cannot leave the s10 three-basin partition (merged / unmerged-with-byte-cost / banned byte-free breaker). slog-kengo-dead-end additionally rules out Kengo transplant material for this file family.
+- probe: First-hand ledger + decisions.md verification this session plus a fresh sandbox measurement: sandbox motion_SetMotion --disable all returned score 1, 402/402 insns, 1 rule dropped, 34 cheat-asm stripped elsewhere in TU — byte-for-byte identical to the banked s14 measurement; bank verified intact (candidate.c 44,155 B, 9 rejected forms incl. the n1 form 44,478 B)
+- result: Rederive axis dead by construction per the s8/s9/s17/s18/s26 kills and the 17:34 Judge certification that no honest lever remains unmeasured; producing another shape would re-measure a dead axis, forbidden while the escalation is on file
+- verdict: KILLED
+
+## [s27] The 2026-07-18 OWNER-ESCALATION for motion_SetMotion has been ruled by the owner since s26, reopening a grindable axis
+- mechanism: An owner ruling appended after docs/grind/decisions.md:776 would supersede the parked state and select option (a) sanction-the-family or (b) refuse-the-family
+- probe: Read decisions.md:740-EOF this session; the OWNER-ESCALATION block at lines 761-776 ends with its References line at 776 and nothing follows it
+- result: No ruling entry follows the escalation; it remains the final, unruled entry, still marked 'awaiting owner ruling - do not self-resolve'
+- verdict: KILLED
+
+## [s27] The mandated rederive axis (fresh m2c / decomp.me corpus / sibling-Kengo transplant producing a structurally different C shape) holds an unmeasured honest lever for the last li-13 word
+- mechanism: The closure theorem quantifies over ALL byte-matching compiles, not source spellings: any byte-matching compile forces both 13-sites to [set13; j] with a heading CODE_LABEL adjacent, guaranteeing find_cross_jump's counted-match + stream-1 label-bonus merge (s6 BB2_XJUMP_DEBUG trace); the only byte-free C-reachable breaker is the Judge-banned USE/CLOBBER class (s7 trace). A rederived chassis is a C shape and cannot leave the s10 three-basin partition; slog-kengo-dead-end additionally rules out Kengo transplant material for this file family
+- probe: First-hand ledger + decisions.md verification plus a fresh gradient measurement: sandbox motion_SetMotion --disable all = score 1, 402/402 insns, 1 rule dropped, 34 cheat-asm stripped elsewhere in TU; bank verified intact (candidate.c 44,155 B; 9 rejected forms incl. judge-fail-0717-1708.c 44,478 B)
+- result: Rederive axis confirmed dead by construction per the s8/s9/s17/s18/s26 kills and the 17:34 Judge certification that no honest lever remains unmeasured; producing another shape would re-measure a dead axis, which the brief forbids while the escalation is on file
+- verdict: KILLED

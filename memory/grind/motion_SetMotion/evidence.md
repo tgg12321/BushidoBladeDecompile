@@ -362,3 +362,13 @@ as separate li's near the dispatch (only case-10's 13 at a bne delay)
 - [s26] [s26] No src/ edits made this session; regfix.txt:2190 and the committed byte-correct form remain untouched on main per the 2026-07-17 17:34 Judge disposition item (3); working tree clean except metrics append
 
 - [s26] [s26] Sessions s11-s25 across all five ladder modalities independently verified this same gate; s26 (rederive) matches s17/s18 findings exactly
+
+- [s27] docs/grind/decisions.md:761-776 OWNER-ESCALATION (filed by s7) re-verified this session as the FINAL entry; no owner ruling follows (file body read through EOF at 776)
+
+- [s27] Fresh sandbox motion_SetMotion --disable all (s27): score 1, target_insns 402, build_insns 402, rules_dropped 1, cheat_asm_stripped 34 - identical to the banked s14 measurement; the honest floor is unchanged
+
+- [s27] Bank intact: memory/grind/motion_SetMotion/candidate.c = 44,155 bytes; all 9 rejected/ forms present including the byte-proven trace-proven n1 union form judge-fail-0717-1708.c (44,478 bytes) required by escalation option (a)
+
+- [s27] Closure theorem standing at nine independent confirmations (r1-r13 structural sweeps, F1 slack-transplant negative, m7/r13 label-family negatives, 168,754 permuter iterations two-sided, s6 honest/committed/r13 gccdbg traces, s7 union-form end-to-end trace, zero community evidence in sotn/rood-reverse/esa masters); 17:34 Judge ruling certifies no honest lever remains unmeasured
+
+- [s27] src/code6cac_c_mid.c and regfix.txt:2190 untouched on main per the 17:34 disposition; hypotheses.md updated with two s27 entries
