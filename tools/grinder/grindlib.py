@@ -207,7 +207,10 @@ MODALITY_PLAYBOOK = {
                  "fresh seed there is no NOVEL find, harvest --stop and reseed a "
                  "structurally different chassis or switch lever; harvest+stop EVERY "
                  "campaign before your session ends (a 0-find harvest is the data point); "
-                 "campaigns must not outlive the session. Findings are PROPOSALS — vet "
+                 "campaigns must not outlive the session — and you are a ONE-SHOT "
+                 "process: ending your turn to 'wait on' a running campaign kills the "
+                 "session with no outcome (it is discarded); wait/poll IN-turn, then "
+                 "harvest --stop, then write your outcome. Findings are PROPOSALS — vet "
                  "against the cheat catalog. Save logs under tmp/grind/<func>/s<N>/ and "
                  "list them in artifacts."),
     "forensics": ("Instrumented cc1: RTL/ALLOCDBG/GREG dumps. Name the exact GCC pass and "

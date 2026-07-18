@@ -34,6 +34,20 @@ and ask; never self-approve.
   the driver as if the session never ran, and a fresh session repeats your
   modality. The only way your effort survives is to record real findings.
 
+## You are a ONE-SHOT process — ending your turn ends your existence
+This is a headless one-shot run. The instant you end your turn, your process
+exits permanently: there is no watcher, no re-invocation, no "waiting" state,
+no coming back. Anything still running when you finish (permuter campaigns,
+background shells, watchers) is orphaned and killed by the driver — and if
+your outcome JSON is not already on disk at that moment, your ENTIRE session
+is discarded as if it never ran. Therefore: NEVER end your turn "waiting" on
+anything. If you launch a permuter campaign, YOU wait for it in-turn (poll +
+harvest inside this same turn), then `harvest --stop` it, then write your
+outcome. Plan the session so the final phase is always: stop campaigns, bank
+artifacts and candidate/rejected forms, write the outcome JSON. (2026-07-18
+incident: three sessions ended their turn "waiting on the watcher" — all
+three were discarded and the driver circuit-broke.)
+
 ## Mechanics
 - Your mandated modality, the function, file, ledger digest, and the outcome
   path are all in the task brief. Work ONLY that function, ONLY in that modality.
