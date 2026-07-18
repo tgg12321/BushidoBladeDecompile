@@ -197,3 +197,9 @@
 - probe: Ledger check before launch: s13/s14 banked the permuter axis dead two-sided (112,618 + 2,049 + 54,087 iterations from both sides of the merge boundary); the closure theorem (8 independent confirmations, Judge-certified complete 2026-07-17 17:34) proves any byte-matching compile forces the merged shape with the USE/CLOBBER class the only C-reachable breaker, and that class is Judge-banned pending the owner ruling
 - result: Axis already measured dead; re-launching would re-measure a banked negative in violation of the ledger contract. Escalation entry re-verified as filed and unruled this session.
 - verdict: KILLED
+
+## [s23] The mandated permuter axis still holds unexplored basins for motion_SetMotion.
+- mechanism: A fresh permuter seed could only matter if some C-reachable spelling breaks jump2's find_cross_jump merge of the two [li s0,13; j sel_dispatch] blocks without the unsanctioned USE/CLOBBER class.
+- probe: First-hand re-verification of the ledger and decisions.md instead of a campaign: the closure theorem (F1 discharged in evidence.md [s2], r1-r9 all KILLED in hypotheses.md) proves any byte-matching compile forces both 13-sites into the guaranteed-merge shape; the s5 fresh-seed plateau and s4 false-zero/semantic-theft finds are banked; permuter sessions s13/s14/s22 confirmed the axis dead two-sided.
+- result: Axis remains dead by construction; the only remaining movers are the two owner acts in the filed escalation. No campaign run - launching one would spin a measured-dead axis, which the brief forbids.
+- verdict: KILLED

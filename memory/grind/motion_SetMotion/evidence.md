@@ -322,3 +322,13 @@ as separate li's near the dispatch (only case-10's 13 at a bne delay)
 - [s22] Judge constraints ban committing any USE/CLOBBER-manufacture spelling (union constructor, cast-to-union, single-member struct, struct-return, dead union local) pending the owner ruling, which is the only C-reachable mechanism left per the closure theorem
 
 - [s22] Both frontier items are owner acts (sanction option (a) via re-proposal of the banked n1 form, or refuse via option (b) rule disposition); neither is reachable by a grind session
+
+- [s23] The 2026-07-18 OWNER-ESCALATION for motion_SetMotion is the FINAL entry in docs/grind/decisions.md (lines 761-776 of 776) and no owner ruling follows it - verified this session by reading the file tail.
+
+- [s23] The escalation presents both options: (a) sanction the union-constructor CLOBBER family (closes via banked n1 form rejected/judge-fail-0717-1708.c through the normal candidate path), (b) refuse the family (owner signs a disposition for regfix.txt:2190 per no-park-permanently). Community survey evidence: NONE FOUND, stated plainly in the entry.
+
+- [s23] Permuter axis dead two-sided on the ledger: s5 fresh-seed plateau (rejected/s5-permuter-unmerged-r13-seed-plateau.c), s4 false-zero (swapped jump targets) and semantic-theft rejections, re-verified by permuter-modality sessions s13, s14, s22.
+
+- [s23] Closure theorem (Judge-certified, F1 discharged): any byte-matching compile forces both 13-sites to [set13; j] with the jtbl label adjacent, guaranteeing jump2's counted-match + label-bonus merge; the only C-reachable iter1-breaker is the unsanctioned USE/CLOBBER class per the binding Judge constraints.
+
+- [s23] memory/grind/motion_SetMotion/candidate.c preserved unchanged (byte-proven floor-10 form); no src/ edits made this session.
