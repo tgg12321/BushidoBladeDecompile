@@ -208,3 +208,19 @@ as separate li's near the dispatch (only case-10's 13 at a bne delay)
 - [s9] Ledger bank intact this session: memory/grind/motion_SetMotion/candidate.c (floor-10 form, 44,155 bytes) plus 9 rejected forms including the byte-proven n1 union form (judge-fail-0717-1708.c, s7 vs_committed.diff = single li word).
 
 - [s9] src/code6cac_c_mid.c, regfix.txt:2190, and the committed byte-correct form left untouched on main per the Judge constraint; no engine mutation commands run.
+
+- [s10] SYNTHESIS (2026-07-18, full write-up tmp/grind/motion_SetMotion/s10/synthesis.md): the 10-session grind reduces to a three-basin partition covering ALL C shapes — (1) merged basin (every honest-0xD spelling canonicalizes to the 361-insn merged shape; wrong bytes), (2) unmerged-with-cost basin (merge broken by real insns/labels/layout, >=2 insns or 76+ word diffs; wrong bytes), (3) byte-free-breaker basin (USE/CLOBBER manufacture; byte-proven via the n1 form but Judge-unsanctioned). No fourth basin exists; the closure theorem quantifies over all byte-matching compiles, so rederive/permuter/synthesis outputs cannot leave the partition. Nine independent confirmations banked (s2 r1-r4, s3 r5-r9, s3b r10-r13, F1 slack-resolution, s4 dual campaigns 114k iters, s5 unmerged campaign 54k iters, s6 white-box trace x3 TUs, s7 n1 white-box trace, s7 zero-community-evidence survey).
+
+- [s10] Frontier RESET to the two owner acts in the filed 2026-07-18 OWNER-ESCALATION (docs/grind/decisions.md final entry, verified unruled this session): (a) sanction the union-constructor CLOBBER family -> re-propose rejected/judge-fail-0717-1708.c through the normal candidate path (driver re-proves bytes, default-FAIL Judge rules); (b) refuse the family -> owner signs a disposition for regfix.txt:2190 per no-park-permanently. No grind modality can advance either option; every sanctioned axis is measured dead.
+
+- [s10] Baseline re-confirmed: sandbox motion_SetMotion --disable all = honest distance 1 (402/402 insns, 1 rule dropped, 34 cheat-asm stripped elsewhere in TU); ledger bank verified intact (candidate.c 44,155 bytes + 9 rejected forms); src untouched, no engine mutation commands run.
+
+- [s10] Three-basin partition (s10 synthesis): (1) merged basin - every honest-0xD spelling canonicalizes to the 361-insn merged shape; (2) unmerged-with-cost basin - merge broken only by real insns/labels/layout at >=2 insns or 76+ word diffs; (3) byte-free-breaker basin - USE/CLOBBER manufacture, byte-proven (n1) but Judge-unsanctioned. No fourth basin; the closure theorem quantifies over all byte-matching compiles, so rederive/permuter/synthesis outputs cannot leave the partition.
+
+- [s10] docs/grind/decisions.md verified this session: the '2026-07-18 - motion_SetMotion - OWNER-ESCALATION' entry (filed by s7, both options, community-evidence absence stated plainly) is the FINAL entry with no owner ruling following it.
+
+- [s10] Closure theorem carries nine independent confirmations: s2 r1-r4, s3 r5-r9, s3b r10-r13, F1 sched2-slack resolution (non-transplantable), s4 merged-seed campaigns (112,618 + 2,049 iters, only false-zero/semantic-theft finds), s5 unmerged-seed campaign (54,087 iters, plateau 76-91 word diffs), s6 white-box gccdbg traces (honest/committed/r13), s7 white-box trace of the n1 union form, s7 zero-community-evidence survey (sotn-decomp/rood-reverse/esa masters).
+
+- [s10] Baseline re-confirmed this session: sandbox motion_SetMotion --disable all = honest distance 1 (402/402 insns, 1 rule dropped = regfix.txt:2190 semantic-lie subst 12->13, 34 cheat-asm stripped elsewhere in TU).
+
+- [s10] Ledger bank verified intact: candidate.c (floor-10 byte-correct form) + 9 rejected forms including the byte-proven n1 union form (judge-fail-0717-1708.c); src/code6cac_c_mid.c and regfix.txt:2190 untouched on main; no engine mutation commands run.
