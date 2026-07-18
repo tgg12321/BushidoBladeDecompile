@@ -323,3 +323,15 @@
 - probe: Read docs/grind/decisions.md:761-776 first-hand this session and checked the file tail: the OWNER-ESCALATION entry (filed by grind s7, 2026-07-18, both options presented, community evidence NONE FOUND stated plainly) is the FINAL entry — no owner ruling follows it.
 - result: Escalation verified on file and unruled. Permuter axis dead per banked s4/s5 measurements (three campaigns, zero honest finds, scorer metric-invalid: score-0 find had swapped jump targets = 6 real word diffs) and the s6 BB2_XJUMP_DEBUG pass-level trace confirming the USE/CLOBBER class is the only byte-free C-reachable iter1-breaker. Sessions s22, s23, s31 already banked this same permuter-axis determination.
 - verdict: CONFIRMED
+
+## [s33] The owner may have ruled on the filed OWNER-ESCALATION since s32, reopening a grind axis
+- mechanism: An OWNER RULING entry appended after docs/grind/decisions.md:761-776 would supersede the parked state and either sanction option (a) (re-propose the banked n1 form) or refuse via option (b)
+- probe: Enumerated all '## ' headings in docs/grind/decisions.md this session: file is 776 lines; the final heading is line 761, the 2026-07-18 motion_SetMotion OWNER-ESCALATION marked 'awaiting owner ruling - do not self-resolve'; nothing follows it
+- result: Escalation remains the final entry and unruled; both frontier items are owner acts unreachable by any grind modality
+- verdict: KILLED
+
+## [s33] The mandated forensics modality has an unmeasured deliverable left (an unnamed GCC pass/decision producing the divergence)
+- mechanism: Forensics = instrumented-cc1 RTL dumps naming the exact pass and decision; if any divergence mechanism were still unnamed, a new dump session could bank it
+- probe: Ledger audit: s6 BB2_XJUMP_DEBUG white-box traces (honest/committed/r13 TUs) name the exact win path (jump2 find_cross_jump chain-partner attempt: one counted set13 match at jump.c:2528 + stream-1 CODE_LABEL bonus at 2406-2410) and the committed rule's mechanism (iteration-1 set12-vs-set13 pattern mismatch at jump.c:2469 before the label walk); s7 traced the n1 union form end-to-end (CLOBBER stream-desync GET_CODE break, both directions); F1 (-1-pair sched2-slack protection) confirmed in-trace
+- result: Every divergence mechanism on this wall is already named at pass level with banked artifacts (tmp/grind/motion_SetMotion/s6/, s7/); the forensics deliverable exists in full; the brief forbids re-measuring dead axes when the filed escalation exists
+- verdict: CONFIRMED

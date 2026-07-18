@@ -416,3 +416,19 @@ as separate li's near the dispatch (only case-10's 13 at a bne delay)
 - [s32] s6 gccdbg trace (hypotheses.md [s6], CONFIRMED): the 13-pair merge fires via 1 counted set13 match + label bonus; label-bonus dodging is impossible in any honest chassis (r13's blocks cascade-merge via their own heading labels); the only byte-free breaker is the unsanctioned USE/CLOBBER manufacture class — so no permuter basin can contain an honest byte-neutral unmerged form.
 
 - [s32] Floor unchanged at 10 (honest sandbox distance 1 = the single li word governed by regfix.txt:2190); no src/ edits were made this session — the committed byte-correct form and the rule stay untouched on main per the escalation's standing disposition.
+
+- [s33] docs/grind/decisions.md re-verified this session (s33, forensics): 776 lines total; the 2026-07-18 motion_SetMotion OWNER-ESCALATION (lines 761-776, filed by s7) is the FINAL heading with no owner ruling following it.
+
+- [s33] Mandated forensics axis remains dead with pass-level artifacts already banked: s6 BB2_XJUMP_DEBUG traces (honest/committed/r13 TUs) and s7 n1 union-form trace name the exact pass (jump2 find_cross_jump, counted set13 match + stream-1 CODE_LABEL bonus; committed rule = iteration-1 set12-vs-set13 pattern mismatch; union CLOBBER = stream-desync GET_CODE break) - the modality's deliverable already exists in the ledger.
+
+- [s33] Ledger bank verified intact: candidate.c 44,155 bytes + 9 rejected forms; no src/ edits made; regfix.txt:2190 and the committed byte-correct form untouched on main per the 17:34 Judge disposition.
+
+- [s33] docs/grind/decisions.md re-verified s33: 776 lines; the 2026-07-18 motion_SetMotion OWNER-ESCALATION (lines 761-776, filed by grind s7 per the 17:34 Judge disposition) is the FINAL heading; no owner ruling follows
+
+- [s33] Forensics axis dead with artifacts: s6 traces certify the closure theorem white-box (merge fires via exactly one path: counted set13 match + stream-1 label bonus; own-label and arm-side attempts provably fail) and s7 traces the unsanctioned n1 union form (byte-identical except the single li 13 word; CLOBBER desyncs streams so both directions break at the GET_CODE insn-code check with min=1)
+
+- [s33] All five ladder axes measured dead on the ledger: structural (r1-r13), permuter (168,754 iterations two-sided), forensics (s6/s7), rederive (dead by construction under the closure theorem), synthesis (s10 three-basin partition)
+
+- [s33] Binding Judge constraints forbid committing any USE/CLOBBER-manufacture spelling - the only C-reachable byte-free iter1-breaker - pending the owner's option (a)/(b) ruling
+
+- [s33] Ledger bank intact: memory/grind/motion_SetMotion/candidate.c (44,155 bytes, floor-10 byte-correct Wall-1-solved form) + 9 rejected forms including the byte-proven, trace-proven n1 form (judge-fail-0717-1708.c); no src/ edits this session; regfix.txt:2190 and the committed form untouched on main
