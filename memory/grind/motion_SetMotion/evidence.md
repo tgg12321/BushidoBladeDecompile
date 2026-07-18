@@ -382,3 +382,13 @@ as separate li's near the dispatch (only case-10's 13 at a bne delay)
 - [s28] Synthesis axis sealed: s10 partition argument (re-verified s19, s28) — all axis kills are jump2-time RTL-invariant statements, so every source-level composition must still present both 13-sites as [set13; j] with adjacent heading CODE_LABEL, guaranteeing the merge; only byte-free breaker is the Judge-banned USE/CLOBBER family
 
 - [s28] s28 verification entry appended to memory/grind/motion_SetMotion/hypotheses.md
+
+- [s29] docs/grind/decisions.md ends with the 2026-07-18 OWNER-ESCALATION References line (verified via tail read this session); no OWNER RULING entry follows — the escalation filed by grind s7 remains unruled.
+
+- [s29] Fresh gradient this session: sandbox motion_SetMotion --disable all = score 1, target 402 / build 402 insns, 1 rule dropped (regfix.txt:2190), 34 cheat-asm stripped elsewhere in TU — byte-identical to the banked s14/s27/s28 measurements.
+
+- [s29] Structural axis dead by Judge-certified exhaustion: r1-r13 sweeps (s2/s3/s3b) all KILLED, F1 slack-transplant non-transplantable, m7/r13 label-family negatives banked, s6/s7 BB2_XJUMP_DEBUG traces seal the closure theorem two-sided; 17:34 Judge ruling certifies 'no honest lever remains unmeasured'.
+
+- [s29] Ledger bank intact: memory/grind/motion_SetMotion/candidate.c = 44,155 bytes; all 9 rejected/ forms present including judge-fail-0717-1708.c (44,478 bytes, the byte-proven trace-proven n1 union form for escalation option (a)).
+
+- [s29] src/code6cac_c_mid.c and regfix.txt:2190 untouched on main this session per the 17:34 disposition; s29 verification entry appended to hypotheses.md.
