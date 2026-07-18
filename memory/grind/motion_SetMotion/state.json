@@ -1,7 +1,7 @@
 {
  "func": "motion_SetMotion",
  "file": "code6cac_c_mid",
- "session_count": 11,
+ "session_count": 12,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -75,6 +75,12 @@
    "floor": 10,
    "modality": "structural",
    "headline": "motion_SetMotion owner-gated: 2026-07-18 OWNER-ESCALATION verified on file, unruled (final entry, decisions.md:761); mandated structural axis is measured dead by the Judge-certified closure theorem (r"
+  },
+  {
+   "session": 12,
+   "floor": 10,
+   "modality": "structural",
+   "headline": "motion_SetMotion owner-gated: 2026-07-18 OWNER-ESCALATION verified on file and unruled (final entry, docs/grind/decisions.md:761); mandated structural axis is measured dead by the Judge-certified clos"
   }
  ],
  "frontier": [

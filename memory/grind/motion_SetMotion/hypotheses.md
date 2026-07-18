@@ -125,3 +125,9 @@
 - probe: Ledger audit this session: hypotheses.md r1-r13 all KILLED (s2/s3/s3b structural sweeps), F1 slack-transplant negative banked (s2), label-family negatives m7/r13 banked, closure theorem carries eight independent confirmations; decisions.md 17:34 ruling certifies 'no honest lever remains unmeasured'
 - result: No unmeasured structural probe exists; the axis is closed by Judge-certified exhaustion and the brief prohibits re-measuring dead axes
 - verdict: KILLED
+
+## [s12] A sanctioned structural lever (block-local split, declaration order, type narrowing, statement re-association) still exists that breaks the 13-pair find_cross_jump merge without bytes
+- mechanism: jump2 find_cross_jump counted-match + stream-1 label-bonus path (jump.c:1966-2001, 2371-2533)
+- probe: Ledger + decisions.md verification this session: r1-r13 all KILLED (s2/s3/s3b), F1 measured non-transplantable, 17:34 Judge ruling certifies 'no honest lever remains unmeasured', s6 BB2_XJUMP_DEBUG trace confirms merge is guaranteed for any byte-matching compile
+- result: Escalation entry confirmed as final unruled entry at decisions.md:761 (read through EOF at line 777, no owner ruling follows); closure theorem carries eight independent confirmations including both structural sweeps and pass-level traces
+- verdict: KILLED

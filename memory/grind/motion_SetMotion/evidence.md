@@ -232,3 +232,11 @@ as separate li's near the dispatch (only case-10's 13 at a bne delay)
 - [s11] Both frontier items are owner acts (sanction the union-constructor CLOBBER family via option (a), or refuse it and sign a rule disposition for regfix.txt:2190 via option (b)); neither is reachable by any grind modality per the s10 three-basin synthesis
 
 - [s11] Judge constraints bind against committing ANY USE/CLOBBER-manufacture spelling, which is the only remaining byte-free C-reachable mechanism — so no structural respelling can be both honest and byte-matching
+
+- [s12] docs/grind/decisions.md:761 OWNER-ESCALATION for motion_SetMotion (filed by grind s7, 2026-07-18) verified present and UNRULED as of this session (2026-07-18): it is the last entry in the file (EOF at line 777), marked 'awaiting owner ruling - do not self-resolve'
+
+- [s12] The escalation presents both owner options: (a) sanction the union-constructor CLOBBER family (closes via banked n1 form rejected/judge-fail-0717-1708.c through the normal candidate path) or (b) refuse the family and sign an owner disposition for regfix.txt:2190 per no-park-permanently
+
+- [s12] Mandated structural axis is Judge-certified dead: 17:34 ruling certifies exhaustion complete (r1-r9 KILLED, r10-r13 in s3/s3b, F1 slack non-transplantable with zero byte-room at the 13-sites); brief forbids re-measuring dead axes when the filed escalation exists
+
+- [s12] No src/ edits made this session; candidate.c and the 9-form rejected/ bank are unchanged and current; committed byte-correct form + regfix.txt rule stay untouched on main per the 17:34 disposition
