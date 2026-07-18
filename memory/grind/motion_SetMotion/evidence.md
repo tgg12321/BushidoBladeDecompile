@@ -298,3 +298,9 @@ as separate li's near the dispatch (only case-10's 13 at a bne delay)
 - [s19] s10 three-basin partition re-verified as the synthesis-axis seal: axis kills are quantified over jump2-time RTL invariants of ANY byte-matching compile, not over source spellings, so cross-axis compositions (F1+r13, permuter-find+structural-respelling, split-init+reshaped-arm) all canonicalize inside the enumerated basins
 
 - [s19] Banked artifacts verified on disk: memory/grind/motion_SetMotion/candidate.c (44,155 bytes, floor-10 form) and 9 rejected/ forms including the byte-proven, trace-proven n1 union form (judge-fail-0717-1708.c) referenced by escalation option (a)
+
+- [s20] OWNER-ESCALATION for motion_SetMotion verified on file at docs/grind/decisions.md:761-776 (filed 2026-07-18 by grind s7 per the 17:34 Judge disposition), and it is the FINAL entry in the 776-line file - no owner ruling follows; the escalation is unruled as of s20
+
+- [s20] Mandated structural axis measured dead on the ledger: r1-r13 structural sweeps banked (rejected/s3-structural-sweep-*.c, s3b-*.c, structural-13pair-axis-closed.c), closure theorem has eight independent confirmations per the escalation text, and the 17:34 Judge ruling certifies exhaustion complete
+
+- [s20] Ledger intact this session: memory/grind/motion_SetMotion/candidate.c (44155 bytes, floor-10 form) and 9 banked rejected forms all present; no src/ edits made, committed form and regfix.txt:2190 untouched per the 17:34 disposition item (3)
