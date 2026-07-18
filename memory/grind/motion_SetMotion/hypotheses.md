@@ -143,3 +143,9 @@
 - probe: Grep + tail-read of docs/grind/decisions.md (headings scan, lines 755-776); ledger evidence.md s4/s5/s6/s10 entries; sandbox motion_SetMotion --disable all re-run
 - result: Escalation block at lines 761-776 is the FINAL entry (file ends at 776), marked 'awaiting owner ruling - do not self-resolve', no ruling after it; permuter closure is two-sided per s4/s5 with the s6 white-box trace certifying the closure theorem; sandbox re-confirmed honest distance 1 (402/402, 1 rule dropped, 34 cheat-asm stripped elsewhere in TU)
 - verdict: CONFIRMED
+
+## [s15] The forensics axis (instrumented-cc1 RTL/jump2 tracing) still has an unmeasured decision point that could name a new honest lever.
+- mechanism: s6 traced the honest and committed TUs with BB2_XJUMP_DEBUG (merge = 1 counted set13 match + stream-1 label bonus, the only reachable path; the rule's set12-vs-set13 mismatch breaks iteration 1) and s7 traced the union-CLOBBER n1 form end-to-end (byte-free clobber desynchronizes both streams, GET_CODE break with min=1 before the label walk, both directions). Every find_cross_jump exit path at the 13-pair is accounted for.
+- probe: Verified this session against the ledger digest and the escalation text (decisions.md:767-769): eight independent confirmations of the closure theorem including both white-box traces; the USE/CLOBBER class is the only byte-free C-reachable breaker and is Judge-forbidden pending the owner ruling.
+- result: No unmeasured forensics decision point exists; the axis is dead by the Judge-certified closure theorem and the banked s6/s7 traces.
+- verdict: KILLED

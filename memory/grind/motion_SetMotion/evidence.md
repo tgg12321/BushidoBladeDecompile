@@ -258,3 +258,11 @@ as separate li's near the dispatch (only case-10's 13 at a bne delay)
 - [s14] Baseline re-confirmed this session: sandbox motion_SetMotion --disable all = honest distance 1 (402/402 insns, rules_dropped 1 = regfix.txt:2190 semantic-lie subst 12->13, cheat_asm_stripped 34 elsewhere in TU)
 
 - [s14] Ledger bank intact: memory/grind/motion_SetMotion/candidate.c (44,155 bytes, floor-10 byte-correct form) + 9 rejected forms; no src/ edits this session; regfix.txt:2190 and the committed form untouched on main per the 17:34 Judge disposition
+
+- [s15] The 2026-07-18 OWNER-ESCALATION for motion_SetMotion is the FINAL entry in docs/grind/decisions.md (lines 761-776); a Select-String sweep for OWNER RULING entries shows none dated after it, so it remains unruled as of 2026-07-18 (session 15).
+
+- [s15] The escalation's exhaustion section (decisions.md:767) is Judge-certified at 17:34 and extended by the s6/s7 white-box traces: structural r1-r13 dead, F1 slack-transplant dead, label-family dead, three permuter campaigns (112,618 + 2,049 + 54,087 iters) dead, both forensics traces banked with artifacts under tmp/grind/motion_SetMotion/s6/ and s7/.
+
+- [s15] Binding Judge constraints forbid committing any USE/CLOBBER-manufacture spelling (the only remaining C-reachable mechanism), so no probe available to this session could change the floor without the owner ruling first.
+
+- [s15] memory/grind/motion_SetMotion/candidate.c remains the banked best form (floor 10, byte-identical with the one rule applied); left untouched per the escalation's standing disposition that main stays as-is pending the ruling.
