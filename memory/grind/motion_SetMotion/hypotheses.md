@@ -41,3 +41,21 @@
 - probe: tmp/grind/motion_SetMotion/s3/s3b_probe.py - label-normalized cc1 asm diff vs committed baseline m0 (363 insns) with honest-0xD control h0 (361 insns / 86 diff lines).
 - result: r10 and r11 byte-identical to the merged h0 signature (361 insns, same 86 diff lines - cross-jump collapses the 9/11 duplicates first, survivor still merges with the ==3 arm); r12 = 362 insns / 149 diff lines (unsigned vacuates the sel>=0 dispatch guard, new j+move tail, still merged); r13 = 369 insns / 126 diff lines (2 extra beq/li compare pairs + rewritten jtbl entries - the label bonus is only avoidable at real byte cost).
 - verdict: KILLED
+
+## [s4] The discarded prior s4 attempt's perm_a output-0-1 (permuter score 0 with --stack-diffs, honest-0xD chassis) is a true byte-match closing form for the 13-pair wall.
+- mechanism: Mutation moved load_sel2 (sel2 = D_800A3350) from case 13/17 into the ==3 arm; at jump2 the arm suffix [set13; lbu; j] cross-jumps its [lbu; j] tail into the shared lbu block, redirecting the arm's jump to a different CODE_LABEL than case-9/11's -> the 13-pair merge cannot fire (both li 13 survive, 402 insns).
+- probe: Recompiled output-0-1/source.c through the exact build pipeline (cc1|prologue_fix|maspsx|as) and raw instruction-word diffed vs target.o (tmp/grind/motion_SetMotion/s4/verify_find.sh); calibrated noise floor with committed.c (exactly 1 li word + 3 jtbl-reloc lws).
+- result: 6 real word diffs: the ==3 arm's beq+j target the lbu block (0x164) instead of sel_dispatch (0x26c) and case-9/11's j targets 0x26c instead of 0x164 — jump destinations SWAPPED vs target. Also semantically wrong both ways (arm dispatches sel2=lbu where target dispatches -1; case-13/17 loses its sel2 load). The permuter scorer's label normalization cannot see swapped branch targets: score 0 != bytes 0 on this function.
+- verdict: KILLED
+
+## [s4] A permuter basin (random honest-0xD chassis A / directed PERM_GENERAL chassis B) contains an honest byte-neutral spelling that keeps both 13-sites unmerged.
+- mechanism: Random mutation explores CFG/statement geometries outside the hand-enumerated r1-r13/m1-m9 space; any iter1-breaking real insn between set13 and j blocks find_cross_jump.
+- probe: Adopted, harvested and stopped both campaigns from the discarded 2026-07-18 attempt (perm_a: 112,618 iterations / 13.1h / 12 finds; perm_b directed: 2,049 iterations / 13 finds, best 100); raw word-diffed ALL 12 perm_a finds vs target (rawdiff_all.sh).
+- result: Every find classified: score 100-200 forms = merged-shape layout divergence (119-125 real word diffs); the only sub-100 wins are score-0 (jump-target swap, above) and score-60/120 (SEMANTIC THEFT: a live store moved from case-10's D_800A3207=5 path into case 9/11 — D_800A3350=0 resp. D_800A334C=0x5A — real sb between set13 and j blocks the merge, but the store executes on the wrong path and sits 11 slots from target's position, 6-8 real word diffs). Zero honest finds. The scorer's floor is occupied by false matches, so scorer-guided search on this wall is metric-invalid by construction.
+- verdict: KILLED
+
+## [s4] The 'two different CODE_LABELs at jump2 time' unmerge family (s1's original WIP conjecture) is honestly reachable in a byte-matching compile.
+- mechanism: If the two set13 jumps target different labels they sit in different jump_chains and find_cross_jump never pairs them; output-0-1 is the first measured instance of this family actually firing.
+- probe: Measured via output-0-1's raw diff + source-level analysis against the s1-mapped do_cross_jump (jump.c:2536-2583): the redirect label is placed BEFORE the partner's matched insns, so the redirected jump's target word can only equal target's 0x26c if the matched insns are byte-free.
+- result: The family fires only by (a) routing one 13-site through the shared lbu block — semantically forbidden on both 13-paths since both must dispatch with sel2=-1 (target words differ, measured) — or (b) byte-free matched insns, i.e. the USE/CLOBBER manufacture family the Judge ruled unsanctioned (decisions.md 2026-07-17 17:09). Closure theorem now confirmed from a fifth independent direction, this time by blind search.
+- verdict: KILLED

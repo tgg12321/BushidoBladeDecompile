@@ -124,3 +124,17 @@ as separate li's near the dispatch (only case-10's 13 at a bne delay)
 - [s3] Baseline re-confirmed this session: sandbox --disable all on the committed form = honest distance 1 (single li 12-vs-13 word, 1 rule dropped); src restored clean after probes (git status empty).
 
 - [s3] Closure theorem has now survived four independent adversarial rounds (s2 r1-r4, s3 r5-r9, s2 wrap-family, s3b r10-r13); no honest structural spelling remains unmeasured.
+
+- [s4] [s4] Permuter scorer is metric-BLIND on this wall, measured: perm_a output-0-1 scored 0 (with --stack-diffs) yet has 6 real word diffs vs target (swapped beq/j destinations between the ==3 arm and case-9/11). Label renumbering in the diff scorer equates swapped branch targets. Any future permuter score-0 on motion_SetMotion REQUIRES raw instruction-word verification before being believed (tmp/grind/motion_SetMotion/s4/verify_find.sh is the harness).
+
+- [s4] [s4] Calibration: committed.c through the standalone pipeline = exactly 1 real word diff vs target (li s0,12 vs 13 at the case-9/11 site) + 3 constant jtbl-reloc lw words (8c220048/78/a8 vs 8c220000) shared by every compile — the raw-diff noise floor for this workspace.
+
+- [s4] [s4] 112,618-iteration honest-0xD random campaign (13.1h, the discarded prior attempt's perm_a, adopted+harvested+stopped this session): 12 finds, all classified by raw word diff. 100-200-score finds = the merged 361-insn-shape family (119-125 word diffs). ALL sub-100 finds break the merge by moving a REAL insn into a 13-site suffix at the cost of semantics: score-0 moves load_sel2 into the ==3 arm (jump-swap), score-60 moves D_800A3350=0 from case-10's =5 path into case 11, score-120 moves D_800A334C=0x5A into case 9. The blind search independently converged on the closure theorem's boundary: iter1-breaking needs a real insn; every real insn is paid in bytes, position, or semantics.
+
+- [s4] [s4] First measured 'different JUMP_LABELs' unmerge (output-0-1): both li 13 survive at 402 insns because the arm's jump was cross-jump-redirected into the shared lbu block. Honest transplant impossible: both 13-sites must dispatch with sel2=-1 so neither may route through the lbu; and do_cross_jump places the redirect label BEFORE the matched insns, so the jump word only matches target if the matched insns are byte-free (the Judge-banned USE/CLOBBER family). The s1 conjecture 'original had two different CODE_LABELs' is now measured dead on honest terms.
+
+- [s4] [s4] perm_b (directed PERM_GENERAL chassis) stalled at 2,049 iterations over 13h with best find 100 (merged family) — the directed cross-product exhausted early with nothing below the merge penalty; harvested+stopped.
+
+- [s4] [s4] No orphaned permuter processes at session start (driver reaped the discarded attempt's PIDs 416/1520); both campaign_meta.json + campaign.log banked; harvest telemetry recorded to metrics/events.jsonl this session.
+
+- [s4] [s4] Baseline re-confirmed: sandbox motion_SetMotion --disable all = honest distance 1 (402/402 insns, 1 rule dropped, 34 cheat-asm stripped elsewhere in TU); src untouched, git clean.
