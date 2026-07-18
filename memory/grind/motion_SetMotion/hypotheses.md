@@ -29,3 +29,15 @@
 - probe: tmp/grind/motion_SetMotion/s3/s3_probe.py — label-normalized cc1 asm diff vs m0 for r5-r9.
 - result: r5/r6/r7/r8 all canonicalize to the identical merged 361-insn shape (86 diff lines each — same as honest-0xD); r9 does block the merge (block vanishes, last1==0 confirmed from the zero-insn side) but diverges 619 diff lines. The sanctioned split-init family is specifically measured dead here (cse folds before jump2).
 - verdict: KILLED
+
+## [s3b] A residual structural spelling class outside r1-r9 (duplicate case-9/case-11 blocks, cond-expr arm, unsigned selector type, pre-switch if-extraction of the jtbl label) survives to jump2 unmerged or blocks the merge byte-neutrally.
+- mechanism: Each attacks a distinct closure assumption: r10 the "one shared C block" premise (two source-level duplicates could change jump_chain pairing order), r11 the cond-expr expansion surface (vs if/else statement forms r1/r3/m8), r12 the set13 RTL mode/guard shape via unsignedness (r2 only measured s16), r13 the stream-1 label bonus itself (no jtbl CODE_LABEL heading the block if 9/11 branch in from an if).
+- probe: tmp/grind/motion_SetMotion/s3/s3b_probe.py — label-normalized cc1 asm diff vs m0 (363 insns) with honest-0xD control h0 (361 insns / 86 diff lines).
+- result: r10 and r11 = byte-identical to the merged h0 signature (361 insns, same 86 diff lines); r12 = 149 diff lines (unsigned vacuates `sel >= 0`, dispatch tail restructured, still merged); r13 = 369 insns / 126 diff lines (2 extra compare pairs + jtbl rewrite — the label bonus is only avoidable at real byte cost). Fourth independent confirmation of the closure theorem.
+- verdict: KILLED
+
+## [s3] A residual structural spelling class outside r1-r9 (duplicate case-9/case-11 blocks, cond-expr arm, unsigned selector type, pre-switch if-extraction of the jtbl label) survives to jump2 unmerged or blocks the 13-pair merge byte-neutrally.
+- mechanism: r10 attacks the one-shared-C-block premise (source-level duplicates could change jump_chain pairing order); r11 the cond-expr expansion surface (vs if/else forms r1/r3/m8); r12 the set13 RTL mode/guard shape via unsignedness (r2 only measured s16); r13 the stream-1 label bonus itself (no jtbl CODE_LABEL heading the block when 9/11 branch in from a pre-switch if).
+- probe: tmp/grind/motion_SetMotion/s3/s3b_probe.py - label-normalized cc1 asm diff vs committed baseline m0 (363 insns) with honest-0xD control h0 (361 insns / 86 diff lines).
+- result: r10 and r11 byte-identical to the merged h0 signature (361 insns, same 86 diff lines - cross-jump collapses the 9/11 duplicates first, survivor still merges with the ==3 arm); r12 = 362 insns / 149 diff lines (unsigned vacuates the sel>=0 dispatch guard, new j+move tail, still merged); r13 = 369 insns / 126 diff lines (2 extra beq/li compare pairs + rewritten jtbl entries - the label bonus is only avoidable at real byte cost).
+- verdict: KILLED

@@ -1,7 +1,7 @@
 {
  "func": "motion_SetMotion",
  "file": "code6cac_c_mid",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -21,18 +21,24 @@
    "floor": 10,
    "modality": "structural",
    "headline": "F1 ANSWERED: -1 pair is protected by sched2 slack-hoist non-adjacency (honest but needs block slack the 13 sites have zero byte-room for); structural axis on the 13-pair wall measured dead (r1-r4), le"
+  },
+  {
+   "session": 3,
+   "floor": 10,
+   "modality": "structural",
+   "headline": "Structural closure re-attacked from 4 new angles (dup-case blocks, ternary arm, u32 sel, pre-switch if) - all KILLED; closure theorem survives, only the owner-policy/forensics frontier remains"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Owner policy question (the Judge's own prescribed path): is the union-constructor CLOBBER family community-viable (SOTN-master-branch evidence) and thus sanctionable as a standalone family? It is the mechanically-proven remaining lever (u1/n1 measured: CLOBBER survives to jump2, blocks the merge; n1 byte-neutral) and the ONLY iter1-breaking RTL class left after this session's structural closure.",
-   "mechanism": "find_cross_jump iter1 GET_CODE(SET)!=GET_CODE(CLOBBER) at jump.c:2469 before any label bonus; USE/CLOBBER emit no bytes at final; reorg unaffected.",
-   "next_probe": "Research session (not inside a match): survey SOTN/Vagrant Story/ESA master branches for accepted single-member-union / cast-to-union / manufactured-CLOBBER spellings; file the standalone policy question to the owner citing decisions.md 2026-07-17 17:09 FAIL. If sanctioned, the n1 form in rejected/judge-fail-0717-1708.c closes the function; if refused, file OWNER-ESCALATION for disposition of the last rule."
+   "hypothesis": "Owner policy question (the Judge's prescribed path): is the union-constructor CLOBBER family community-viable (SOTN-master-branch evidence) and thus sanctionable as a standalone family?",
+   "mechanism": "find_cross_jump iter1 GET_CODE(SET)!=GET_CODE(CLOBBER) at jump.c:2469 before any label bonus; USE/CLOBBER emit no bytes at final; reorg unaffected; n1 measured byte-neutral.",
+   "next_probe": "Research session (not inside a match): survey SOTN/Vagrant Story/ESA master branches for accepted single-member-union / cast-to-union / manufactured-CLOBBER spellings; file the standalone policy question to the owner citing decisions.md 2026-07-17 17:09 FAIL; if refused, file OWNER-ESCALATION for disposition of the last rule."
   },
   {
-   "hypothesis": "Belt-and-braces exhaustiveness check: a gccdbg find_cross_jump trace on the (arm, case-9/11) pair confirms the merge fires exactly via the iter2 stream-1 label bonus and that no other exit condition is reachable \u2014 sealing the closure theorem against a jump.c misreading.",
+   "hypothesis": "Belt-and-braces exhaustiveness check: a gccdbg find_cross_jump trace on the (arm, case-9/11) pair confirms the merge fires exactly via the iter2 stream-1 label bonus and no other exit condition is reachable.",
    "mechanism": "BB2_*_DEBUG printf knob in a DIAGNOSTIC cc1 copy (established precedent, never the build compiler) tracing minimum/last1 per iteration for the honest-0xD TU.",
-   "next_probe": "Forensics session: build gccdbg cc1 with the trace knob, compile the h1 (honest-0xD) preprocessed TU, log the pair's iter1/iter2 values; bank the trace. Purely confirmatory \u2014 does not unblock by itself."
+   "next_probe": "Forensics session: build gccdbg cc1 with the trace knob, compile the h1 preprocessed TU, log the pair's iter1/iter2 values; bank the trace. Purely confirmatory."
   }
  ],
  "judge_constraints": [
