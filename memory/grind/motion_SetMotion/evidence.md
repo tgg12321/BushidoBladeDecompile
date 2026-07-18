@@ -282,3 +282,11 @@ as separate li's near the dispatch (only case-10's 13 at a bne delay)
 - [s17] Binding Judge constraints forbid the only byte-proven closing form (union-constructor CLOBBER family, banked as rejected/judge-fail-0717-1708.c) pending the owner's option (a)/(b) ruling; regfix.txt:2190 and the committed form stay untouched on main meanwhile.
 
 - [s17] candidate.c remains banked at memory/grind/motion_SetMotion/candidate.c (floor 10 chassis); no src edits made this session, per the parked state.
+
+- [s18] docs/grind/decisions.md:761-776 - the 2026-07-18 motion_SetMotion OWNER-ESCALATION is the FINAL entry in the file (776 lines total); no owner ruling follows it as of 2026-07-18 session 18
+
+- [s18] The two binding Judge constraints forbid committing any USE/CLOBBER-manufacture spelling (union constructor, cast-to-union, single-member struct, struct-return, dead union local) - the only byte-free breaker the closure theorem leaves open
+
+- [s18] Ledger intact: memory/grind/motion_SetMotion/candidate.c (44,155 bytes, Wall-1-solved floor-10 form) plus 9 banked rejected forms; frontier is exactly the two owner acts (sanction the CLOBBER family and re-propose judge-fail-0717-1708.c, or refuse and sign a disposition for regfix.txt:2190)
+
+- [s18] Sessions 8-17 across all five modalities (rederive, synthesis, structural, permuter, forensics) each independently verified the same gate; every remaining sanctioned axis is measured dead on the ledger

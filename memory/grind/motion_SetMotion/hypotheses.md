@@ -167,3 +167,9 @@
 - probe: Verified this session: escalation entry present and unruled at docs/grind/decisions.md:761-776 (tail of file is its References line, no ruling appended); ledger hypotheses.md re-read — closure theorem confirmed from five independent directions (r1-r13 structural, permuter two-sided s4/s5, forensics s6/s7).
 - result: No sanctioned probe exists on the rederive axis: the theorem is quantified over all byte-matching shapes, so producing another shape measures nothing new; the only unmeasured space is the unsanctioned USE/CLOBBER-manufacture family, which the binding Judge constraints forbid re-proposing.
 - verdict: KILLED
+
+## [s18] A structurally different C shape (fresh m2c / decomp.me / sibling transplant) could break the 13-pair cross-jump merge without the unsanctioned USE/CLOBBER class
+- mechanism: The Judge-certified closure theorem (17:34 ruling + s6/s7 white-box traces): ANY byte-matching compile forces both 13-sites to exactly [set13; j] with an adjacent heading CODE_LABEL, making find_cross_jump's merge guaranteed via the counted-match + stream-1 label-bonus path; the only byte-free C-reachable breaker is the USE/CLOBBER class, which is Judge-constrained as unsanctioned in every respelling
+- probe: Verified this session: the escalation entry is the final, unruled entry in docs/grind/decisions.md (lines 761-776); the closure theorem carries eight independent confirmations (r1-r13 structural sweeps, F1 slack-transplant negative, m7/r13 label-family negatives, three permuter campaigns totaling 168k+ iterations, s6 BB2_XJUMP_DEBUG pass trace, s7 union-form end-to-end trace) - a rederive session can only produce shapes already inside the sealed three-basin partition (s10)
+- result: Escalation confirmed on file and unruled; rederive axis confirmed dead by construction - any new shape either canonicalizes to the merged topology (honest distance 1), pays real bytes, or lands in the Judge-forbidden CLOBBER family
+- verdict: KILLED
