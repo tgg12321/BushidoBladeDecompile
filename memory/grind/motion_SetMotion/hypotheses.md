@@ -185,3 +185,9 @@
 - probe: Verified the ledger and decisions.md first-hand this session: r1-r13 structural sweeps banked KILLED (s2/s3/s3b), F1 slack-transplant negative banked, s6/s7 pass-level traces seal the closure theorem two-sided; the 2026-07-17 17:34 Judge ruling certifies 'No honest lever remains unmeasured' and s11/s12 already re-verified the structural axis dead
 - result: Escalation entry confirmed as the final, unruled entry in docs/grind/decisions.md (lines 761-776, filed 2026-07-18); no owner ruling follows it; all structural forms are either byte-paying or canonicalize to the merged shape
 - verdict: KILLED
+
+## [s21] A structural lever (block-local split, declaration order, type narrowing, statement re-association) remains unmeasured that could break the 13-pair find_cross_jump merge without bytes
+- mechanism: Judge-certified closure theorem: any byte-matching compile forces both 13-sites to [set13; j] with a heading CODE_LABEL adjacent, guaranteeing the merge via jump.c's counted-match + stream-1 label-bonus path; the only byte-free C-reachable iter1-breaker is the unsanctioned USE/CLOBBER class
+- probe: Verified against the banked ledger: structural sweeps r1-r13 (s2/s3/s3b) all KILLED, label-family negatives m7/r13 KILLED, F1 slack-transplant KILLED, three permuter campaigns (168k+ iterations) negative, s6/s7 white-box pass traces confirm the theorem end-to-end; escalation entry re-verified as final and unruled in decisions.md this session
+- result: No structural axis remains: every spelling in the codegen-technique-index catalog applicable here is banked KILLED; the closure theorem certifies the axis dead by construction, and the Judge's 17:34 ruling states no honest lever remains unmeasured
+- verdict: KILLED

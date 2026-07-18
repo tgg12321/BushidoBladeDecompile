@@ -304,3 +304,13 @@ as separate li's near the dispatch (only case-10's 13 at a bne delay)
 - [s20] Mandated structural axis measured dead on the ledger: r1-r13 structural sweeps banked (rejected/s3-structural-sweep-*.c, s3b-*.c, structural-13pair-axis-closed.c), closure theorem has eight independent confirmations per the escalation text, and the 17:34 Judge ruling certifies exhaustion complete
 
 - [s20] Ledger intact this session: memory/grind/motion_SetMotion/candidate.c (44155 bytes, floor-10 form) and 9 banked rejected forms all present; no src/ edits made, committed form and regfix.txt:2190 untouched per the 17:34 disposition item (3)
+
+- [s21] OWNER-ESCALATION for motion_SetMotion verified on file at docs/grind/decisions.md:761-776 (filed 2026-07-18 by grind s7 per the 17:34 Judge disposition), and verified UNRULED: it is the final entry in the file (ends line 777), with no owner ruling after it
+
+- [s21] The mandated structural modality is measured dead on the ledger: r1-r9 (s2/s3) and r10-r13 (s3b) all KILLED; rejected bank holds structural-13pair-axis-closed.c, s3-structural-sweep-goto-reorder-thunk-splitinit-hoist-dead.c, s3b-dupcase-ternary-u32-preswitch-if-dead.c
+
+- [s21] Judge constraints bind: no USE/CLOBBER-manufacture spelling of any kind may be committed; regfix.txt:2190 and the committed form stay untouched on main pending the owner's ruling
+
+- [s21] Ledger candidate memory/grind/motion_SetMotion/candidate.c preserved as the best form (floor 10, honest distance 1 = the single li 13 word); no src edits made this session per the do-not-self-resolve disposition
+
+- [s21] Sessions s8-s20 across all five modalities (rederive, synthesis, structural, permuter, forensics) each independently verified the same owner-gated state; s10 three-basin partition seals cross-axis composition
