@@ -209,3 +209,15 @@
 - probe: Checked ledger: s6 traced honest+committed forms (merge fires via 1 counted set13 match + label bonus; rule's set12-vs-set13 mismatch breaks iteration 1) and s7 traced the union n1 form end-to-end (clobber insn 407 desyncs both stream directions, break at GET_CODE with min=1, before the label walk; reorg fills delay slot to target's exact bytes). Escalation entry itself cites these traces as part of the Judge-certified exhaustion.
 - result: The forensics axis is fully measured: the divergence mechanism is named to the source line (expr.c:2996 CLOBBER emission; jump.c find_cross_jump GET_CODE exit family) with artifacts banked in tmp/grind/motion_SetMotion/s6/ and s7/. No un-dumped decision remains between the honest floor and the target bytes.
 - verdict: KILLED
+
+## [s25] The 2026-07-18 OWNER-ESCALATION for motion_SetMotion is on file in docs/grind/decisions.md and remains unruled
+- mechanism: Owner-gating precondition check: the escalation must exist, name this function, and have no subsequent owner ruling
+- probe: Read docs/grind/decisions.md:755-777 and scanned all entry headers; the escalation at :761 is the final entry with no OWNER RULING after it
+- result: Escalation present (filed by grind s7 per the 17:34 Judge disposition), presents both owner options, states community evidence NONE FOUND plainly, and is the last entry in the file
+- verdict: CONFIRMED
+
+## [s25] The mandated forensics axis (instrumented cc1 RTL dumps naming the exact GCC pass/decision) is already measured dead on the ledger
+- mechanism: Forensics deliverable = name the pass and decision producing the divergence; the s6/s7 sessions already did this at pass level: jump2 find_cross_jump merges the two [set13; j] blocks via 1 counted set13 match + stream-1 label bonus (honest form, trace shows exactly one merge event); the only C-reachable byte-free iteration-1 breaker is the USE/CLOBBER class (s7 trace: constructor-cast CLOBBER desynchronizes the two streams so GET_CODE compares INSN vs JUMP_INSN and breaks with min=1 before the label walk), which the Judge ruled unsanctioned twice (17:09, 17:34) and the binding judge_constraints forbid respelling
+- probe: Verified banked artifacts exist: tmp/grind/motion_SetMotion/s6/ (honest/committed/r13 traces) and s7/union.xjdbg.log, union.c.jump2, vs_committed.diff; cross-checked the escalation's exhaustion section (eight independent confirmations of the closure theorem)
+- result: Nothing remains for forensics to discover: the pass, the exact jump.c exit, both directions of the break, and the reorg delay-slot fill to target's [j; delay li13] are all already traced and banked; any further cc1 dump would re-measure a dead axis, which the brief forbids
+- verdict: CONFIRMED

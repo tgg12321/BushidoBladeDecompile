@@ -340,3 +340,15 @@ as separate li's near the dispatch (only case-10's 13 at a bne delay)
 - [s24] Ledger frontier is exactly the two owner acts: (a) sanction the union-constructor CLOBBER family (banked byte-proven n1 form re-proposed through the normal candidate path) or (b) refuse and sign a disposition for regfix.txt:2190 per no-park-permanently.
 
 - [s24] memory/grind/motion_SetMotion/candidate.c present (floor-10 form, Wall-1 duplicated-store priority lift landed); rejected/ bank intact at 9 forms; no src/ edits made this session.
+
+- [s25] docs/grind/decisions.md:761-776 is the final entry in the file (verified this session): the motion_SetMotion OWNER-ESCALATION filed 2026-07-18 by grind s7, awaiting owner ruling, do-not-self-resolve
+
+- [s25] No OWNER RULING entry follows the escalation; the last five entry headers end at :761
+
+- [s25] Closure theorem (Judge-certified 17:34, eight confirmations): any byte-matching compile forces both 13-sites to [set13; j] with a heading CODE_LABEL adjacent, guaranteeing the find_cross_jump merge; the only byte-free C-reachable breaker is the USE/CLOBBER class, unsanctioned and constraint-blocked in every respelling
+
+- [s25] Forensics artifacts already banked: s6 BB2_XJUMP_DEBUG traces (honest merge fires exactly once via counted set13 match + label bonus; committed rule's set12-vs-set13 mismatch breaks iteration 1) and s7 union-form end-to-end trace (CLOBBER insn 407 between CODE_LABEL 405 and set13 409; both-direction GET_CODE break with min=1; zero DO_CROSS_JUMP events on any 13-site uid)
+
+- [s25] Ledger candidate memory/grind/motion_SetMotion/candidate.c and the 13-form rejected/ bank verified present; floor unchanged at 10 (honest sandbox distance 1 insn = the single li 13 word covered by regfix.txt:2190)
+
+- [s25] Sessions s11-s24 across all five modalities (structural, permuter, forensics, rederive, synthesis) each independently verified the same gate; s25 forensics matches s15/s16/s24 findings exactly
