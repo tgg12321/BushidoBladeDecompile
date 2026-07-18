@@ -266,3 +266,11 @@ as separate li's near the dispatch (only case-10's 13 at a bne delay)
 - [s15] Binding Judge constraints forbid committing any USE/CLOBBER-manufacture spelling (the only remaining C-reachable mechanism), so no probe available to this session could change the floor without the owner ruling first.
 
 - [s15] memory/grind/motion_SetMotion/candidate.c remains the banked best form (floor 10, byte-identical with the one rule applied); left untouched per the escalation's standing disposition that main stays as-is pending the ruling.
+
+- [s16] docs/grind/decisions.md ends at line 777; the 2026-07-18 motion_SetMotion OWNER-ESCALATION block (lines 761-776, filed by s7) is the FINAL entry with no owner ruling following it - verified fresh this session (s16)
+
+- [s16] The escalation presents the two mutually exclusive owner options: (a) sanction the union-constructor CLOBBER family with per-use dossier (banked n1 form rejected/judge-fail-0717-1708.c is byte-proven and white-box trace-proven), (b) refuse the family and sign an owner disposition for regfix.txt:2190 per no-park-permanently
+
+- [s16] Mandated forensics axis is dead on the ledger with pass-level artifacts: s6 BB2_XJUMP_DEBUG traces (honest/committed/r13 TUs - merge path, rule mechanism, and F1 slack all named at jump.c/sched2 level) and s7 trace of the n1 union form (CLOBBER stream-desync break, both directions); the closure theorem carries nine independent confirmations and binding Judge constraints forbid the only remaining C-reachable mechanism
+
+- [s16] Ledger bank intact: memory/grind/motion_SetMotion/candidate.c (44,155 bytes, floor-10 byte-correct form) + 9 rejected forms; no src/ edits this session; regfix.txt:2190 and the committed form untouched on main per the 17:34 Judge disposition; working tree clean except metrics append

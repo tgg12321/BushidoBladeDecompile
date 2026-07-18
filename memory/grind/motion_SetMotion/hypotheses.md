@@ -149,3 +149,15 @@
 - probe: Verified this session against the ledger digest and the escalation text (decisions.md:767-769): eight independent confirmations of the closure theorem including both white-box traces; the USE/CLOBBER class is the only byte-free C-reachable breaker and is Judge-forbidden pending the owner ruling.
 - result: No unmeasured forensics decision point exists; the axis is dead by the Judge-certified closure theorem and the banked s6/s7 traces.
 - verdict: KILLED
+
+## [s16] The 2026-07-18 OWNER-ESCALATION for motion_SetMotion has been ruled by the owner since s15, reopening a grindable axis
+- mechanism: An owner ruling appended to docs/grind/decisions.md after line 776 would supersede the parked state and select option (a) or (b)
+- probe: Read docs/grind/decisions.md tail this session (lines 755-777, EOF confirmed at 777); escalation block at 761-776 is the final entry, still marked 'awaiting owner ruling - do not self-resolve'
+- result: No ruling entry follows the escalation; it remains unruled as of 2026-07-18 s16
+- verdict: KILLED
+
+## [s16] The mandated forensics axis has an unmeasured probe left (an RTL/jump2 decision not yet named at pass level)
+- mechanism: Instrumented-cc1 dumps could reveal a discriminator not covered by the banked traces
+- probe: Ledger audit: s6 traced honest/committed/r13 TUs end-to-end with BB2_XJUMP_DEBUG (exact win path: 1 counted set13 match + stream-1 CODE_LABEL bonus; committed rule = set12-vs-set13 mismatch at jump.c:2469 before the label walk; F1 sched2-slack confirmed in-trace), s7 traced the n1 union-CLOBBER form (stream-desync GET_CODE break, both directions, byte-identical modulo the one li word)
+- result: Every find_cross_jump exit condition for both 13-pair directions and both -1-pair directions is trace-accounted; the only C-reachable byte-free breaker is the Judge-banned USE/CLOBBER family - nothing forensics can add without violating the binding constraints
+- verdict: KILLED
