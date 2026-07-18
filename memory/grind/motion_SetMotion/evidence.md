@@ -440,3 +440,11 @@ as separate li's near the dispatch (only case-10's 13 at a bne delay)
 - [s34] [s34] Binding Judge constraints forbid committing any USE/CLOBBER-manufacture spelling — the only C-reachable byte-free iter1-breaker per the closure theorem — pending the owner's option (a)/(b) ruling
 
 - [s34] [s34] Ledger bank intact: memory/grind/motion_SetMotion/candidate.c (44,155 bytes, floor-10 byte-correct Wall-1-solved form) plus 9 rejected forms including the byte-proven, trace-proven n1 union form (judge-fail-0717-1708.c); no src/ edits made; regfix.txt:2190 and the committed form untouched on main per the 17:34 Judge disposition
+
+- [s35] sandbox motion_SetMotion --disable all (s35) = score 1, target 402 / build 402 insns, 1 rule dropped, 34 cheat-asm stripped elsewhere in TU - identical to every banked measurement since s14
+
+- [s35] docs/grind/decisions.md read through EOF (777): OWNER-ESCALATION block at 761-776 is the final entry, unruled, filed by grind s7 in hirahira_w_frie format with both owner options and community evidence stated plainly as NONE FOUND
+
+- [s35] Ledger bank intact: candidate.c 44,155 bytes; 9 rejected forms on disk including judge-fail-0717-1708.c (44,478 bytes, the byte-proven trace-proven n1 union form referenced by escalation option (a))
+
+- [s35] Closure theorem standing: nine independent confirmations (r1-r13 structural sweeps, F1 slack-transplant negative, m7/r13 label-family negatives, 168,754 permuter iterations two-sided, s6/s7 white-box BB2_XJUMP_DEBUG traces, zero community evidence in sotn-decomp/rood-reverse/esa masters)
