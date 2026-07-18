@@ -191,3 +191,9 @@
 - probe: Verified against the banked ledger: structural sweeps r1-r13 (s2/s3/s3b) all KILLED, label-family negatives m7/r13 KILLED, F1 slack-transplant KILLED, three permuter campaigns (168k+ iterations) negative, s6/s7 white-box pass traces confirm the theorem end-to-end; escalation entry re-verified as final and unruled in decisions.md this session
 - result: No structural axis remains: every spelling in the codegen-technique-index catalog applicable here is banked KILLED; the closure theorem certifies the axis dead by construction, and the Judge's 17:34 ruling states no honest lever remains unmeasured
 - verdict: KILLED
+
+## [s22] A fresh permuter campaign on motion_SetMotion could surface a novel byte-free spelling that breaks the case-9/11 find_cross_jump merge
+- mechanism: decomp-permuter mutation search over the diverging region around the two [li s0,13; j sel_dispatch] blocks
+- probe: Ledger check before launch: s13/s14 banked the permuter axis dead two-sided (112,618 + 2,049 + 54,087 iterations from both sides of the merge boundary); the closure theorem (8 independent confirmations, Judge-certified complete 2026-07-17 17:34) proves any byte-matching compile forces the merged shape with the USE/CLOBBER class the only C-reachable breaker, and that class is Judge-banned pending the owner ruling
+- result: Axis already measured dead; re-launching would re-measure a banked negative in violation of the ledger contract. Escalation entry re-verified as filed and unruled this session.
+- verdict: KILLED

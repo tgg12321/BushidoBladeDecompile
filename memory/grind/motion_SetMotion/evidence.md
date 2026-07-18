@@ -314,3 +314,11 @@ as separate li's near the dispatch (only case-10's 13 at a bne delay)
 - [s21] Ledger candidate memory/grind/motion_SetMotion/candidate.c preserved as the best form (floor 10, honest distance 1 = the single li 13 word); no src edits made this session per the do-not-self-resolve disposition
 
 - [s21] Sessions s8-s20 across all five modalities (rederive, synthesis, structural, permuter, forensics) each independently verified the same owner-gated state; s10 three-basin partition seals cross-axis composition
+
+- [s22] 2026-07-18 OWNER-ESCALATION for motion_SetMotion is the final entry in docs/grind/decisions.md (lines 761-776); no ruling text follows it as of session 22 (2026-07-18)
+
+- [s22] Permuter axis dead two-sided per ledger: three campaigns totaling 168,754 iterations produced only false-zero (s4-permuter-false-zero-swapped-jump-targets.c) and semantic-theft (s4-permuter-semantic-theft-store-into-case911.c) finds, all below the merge penalty
+
+- [s22] Judge constraints ban committing any USE/CLOBBER-manufacture spelling (union constructor, cast-to-union, single-member struct, struct-return, dead union local) pending the owner ruling, which is the only C-reachable mechanism left per the closure theorem
+
+- [s22] Both frontier items are owner acts (sanction option (a) via re-proposal of the banked n1 form, or refuse via option (b) rule disposition); neither is reachable by a grind session
