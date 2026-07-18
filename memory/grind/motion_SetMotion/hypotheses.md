@@ -293,3 +293,27 @@
 - probe: First-hand verification this session (s30): decisions.md confirmed 776 lines with the OWNER-ESCALATION block at 761-776 ending the file at its References line, no ruling follows; structural kills re-audited on the ledger (r1-r13 s2/s3/s3b sweeps all KILLED, F1 slack-transplant negative, m7/r13 label-family negatives, s11/s12/s20/s21/s29 re-verifications, 17:34 Judge certification 'no honest lever remains unmeasured'); fresh gradient: sandbox motion_SetMotion --disable all = score 1, 402/402 insns, 1 rule dropped, 34 cheat-asm stripped elsewhere in TU; bank verified intact (candidate.c 44,155 B; 9 rejected forms incl. the byte-proven n1 form judge-fail-0717-1708.c 44,478 B).
 - result: No ruling appended — the escalation remains the final, unruled entry; every structural spelling in the codegen-technique-index catalog applicable to the 13-pair wall is banked KILLED, so the axis is dead by Judge-certified exhaustion and re-measuring it would be prohibited spin while the escalation is on file.
 - verdict: KILLED
+
+## [s31] The 2026-07-18 OWNER-ESCALATION for motion_SetMotion has been ruled by the owner since s30, reopening a grindable axis
+- mechanism: An owner ruling appended after docs/grind/decisions.md:776 would supersede the parked state and select option (a) sanction-the-family or (b) refuse-the-family
+- probe: Read decisions.md:740-EOF this session (s31): the OWNER-ESCALATION block at lines 761-776 ends the file at its References line; nothing follows
+- result: No ruling entry follows the escalation; it remains the final, unruled entry, still marked 'awaiting owner ruling - do not self-resolve'
+- verdict: KILLED
+
+## [s31] The mandated permuter axis still holds an unexplored basin that could surface an honest byte-neutral spelling breaking the case-9/11 find_cross_jump merge
+- mechanism: A fresh seed matters only if some C-reachable spelling breaks jump2's counted-match + stream-1 label-bonus merge of the two [set13; j] blocks without bytes; the s6/s7 BB2_XJUMP_DEBUG traces certify the merge is guaranteed for any byte-matching compile and the only byte-free breaker is the Judge-banned USE/CLOBBER class
+- probe: Ledger audit instead of a campaign (re-launching would re-measure a banked-dead axis, forbidden while the escalation is live): s4 merged-seed campaigns (112,618 + 2,049 iterations; only false-zero and semantic-theft finds below the merge penalty; scorer metric-invalid on this wall) and s5 unmerged r13-seed campaign (54,087 iterations, 20-min dry plateau at 76-91 word diffs) banked with rejected/ forms; s13/s14/s22/s23 re-confirmations; fresh gradient this session: sandbox --disable all = score 1, 402/402 insns, 1 rule dropped, 34 cheat-asm stripped elsewhere in TU - identical to banked s14/s27-s30; bank verified intact (candidate.c 44,155 B; 9 rejected forms incl. judge-fail-0717-1708.c 44,478 B)
+- result: Permuter axis confirmed dead two-sided; both basins closed with verified raw-word evidence; the only remaining movers are the two owner acts in the filed escalation. Artifact: tmp/grind/motion_SetMotion/s31/verification.md
+- verdict: KILLED
+
+## [s31] The 2026-07-18 OWNER-ESCALATION for motion_SetMotion has been ruled by the owner since s30, reopening a grindable axis
+- mechanism: An owner ruling appended after docs/grind/decisions.md:776 would supersede the parked state and select option (a) sanction-the-family or (b) refuse-the-family
+- probe: Read decisions.md:740-EOF this session (s31): the OWNER-ESCALATION block at lines 761-776 ends the file at its References line; no ruling entry follows
+- result: Escalation remains the final, unruled entry, still marked 'awaiting owner ruling - do not self-resolve'
+- verdict: KILLED
+
+## [s31] The mandated permuter axis still holds an unexplored basin that could surface an honest byte-neutral spelling breaking the case-9/11 find_cross_jump merge
+- mechanism: A fresh seed matters only if some C-reachable spelling breaks jump2's counted-match + stream-1 label-bonus merge of the two [set13; j] blocks without bytes; the s6/s7 BB2_XJUMP_DEBUG traces certify the merge is guaranteed for any byte-matching compile and the only byte-free breaker is the Judge-banned USE/CLOBBER class
+- probe: Ledger audit instead of a campaign (re-launching would re-measure a banked-dead axis, forbidden while the escalation is live): s4 merged-seed campaigns (112,618 + 2,049 iterations; only false-zero swapped-jump-targets and semantic-theft finds below the merge penalty, zero honest finds, scorer metric-invalid on this wall) and s5 unmerged r13-seed campaign (54,087 iterations, 20-min dry plateau at 76-91 word diffs, chassis structurally short one li13) both banked with rejected/ forms; s13/s14/s22/s23 each re-confirmed the axis dead; fresh gradient this session: sandbox --disable all = score 1, 402/402 insns, 1 rule dropped, 34 cheat-asm stripped elsewhere in TU - identical to banked s14/s27-s30 measurements
+- result: Permuter axis confirmed dead two-sided; both basins (merged and unmerged sides of the merge boundary) closed with verified raw-word evidence; the only remaining movers are the two owner acts in the filed escalation
+- verdict: KILLED

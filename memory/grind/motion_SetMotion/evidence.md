@@ -398,3 +398,13 @@ as separate li's near the dispatch (only case-10's 13 at a bne delay)
 - [s30] s30: sandbox motion_SetMotion --disable all = score 1, target 402 / build 402 insns, 1 rule dropped (regfix.txt:2190), 34 cheat-asm stripped elsewhere in TU — byte-identical to the banked s14/s27/s28/s29 measurements.
 
 - [s30] s30: bank intact — candidate.c 44,155 B; 9 rejected forms present incl. judge-fail-0717-1708.c 44,478 B (the byte-proven, trace-proven n1 union form referenced by escalation option (a)).
+
+- [s31] docs/grind/decisions.md read 740-EOF in s31: file ends at the escalation's References line (line 776); the 2026-07-18 OWNER-ESCALATION for motion_SetMotion at lines 761-776 is the final entry with no owner ruling after it
+
+- [s31] Fresh gradient s31: sandbox motion_SetMotion --disable all = score 1, 402/402 insns, 1 rule dropped, 34 cheat-asm stripped elsewhere in TU - byte-identical to the banked s14/s27/s28/s29/s30 measurements
+
+- [s31] Bank verified intact s31: candidate.c = 44,155 bytes; all 9 rejected/ forms present including the byte-proven n1 form judge-fail-0717-1708.c = 44,478 bytes
+
+- [s31] Permuter axis closure re-verified from the ledger: s4 perm_a 112,618 + perm_b 2,049 iterations (merged seeds; zero honest finds; scorer floor occupied by false matches) and s5 perm_c 54,087 iterations (unmerged r13 seed; plateau 76-91 word diffs; merge re-forms with a different partner) - both sides of the merge boundary measured
+
+- [s31] src/code6cac_c_mid.c and regfix.txt:2190 untouched on main per the 17:34 Judge disposition; no campaign launched, no edits made this session
