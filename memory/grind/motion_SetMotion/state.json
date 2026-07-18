@@ -1,7 +1,7 @@
 {
  "func": "motion_SetMotion",
  "file": "code6cac_c_mid",
- "session_count": 13,
+ "session_count": 14,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -87,6 +87,12 @@
    "floor": 10,
    "modality": "permuter",
    "headline": "motion_SetMotion owner-gated: 2026-07-18 OWNER-ESCALATION verified on file and unruled (final entry, docs/grind/decisions.md:761-776); mandated permuter axis is measured dead two-sided by the banked s"
+  },
+  {
+   "session": 14,
+   "floor": 10,
+   "modality": "permuter",
+   "headline": "motion_SetMotion owner-gated: 2026-07-18 OWNER-ESCALATION verified on file and unruled (final entry, docs/grind/decisions.md:761-776); mandated permuter axis is measured dead two-sided on the ledger ("
   }
  ],
  "frontier": [

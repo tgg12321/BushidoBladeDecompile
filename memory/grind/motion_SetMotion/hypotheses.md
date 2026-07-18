@@ -137,3 +137,9 @@
 - probe: Verified the escalation entry exists and is unruled (docs/grind/decisions.md:761-776, final entry, no ruling after); verified both permuter negative results are banked (rejected/s4-permuter-false-zero-swapped-jump-targets.c, rejected/s4-permuter-semantic-theft-store-into-case911.c, rejected/s5-permuter-unmerged-r13-seed-plateau.c) and cited in the escalation's references
 - result: Permuter axis remains closed two-sided; re-running a campaign would re-measure a dead axis in violation of the brief's anti-spin directive. Escalation confirmed filed and awaiting owner ruling.
 - verdict: KILLED
+
+## [s14] The owner-gate preconditions hold for s14: the filed OWNER-ESCALATION is still the final unruled entry in decisions.md and the mandated permuter axis is banked dead
+- mechanism: Brief rule: owner-gated requires a filed OWNER-ESCALATION naming the function plus every remaining sanctioned axis measured dead; re-measuring dead axes when the escalation exists is forbidden spin
+- probe: Grep + tail-read of docs/grind/decisions.md (headings scan, lines 755-776); ledger evidence.md s4/s5/s6/s10 entries; sandbox motion_SetMotion --disable all re-run
+- result: Escalation block at lines 761-776 is the FINAL entry (file ends at 776), marked 'awaiting owner ruling - do not self-resolve', no ruling after it; permuter closure is two-sided per s4/s5 with the s6 white-box trace certifying the closure theorem; sandbox re-confirmed honest distance 1 (402/402, 1 rule dropped, 34 cheat-asm stripped elsewhere in TU)
+- verdict: CONFIRMED

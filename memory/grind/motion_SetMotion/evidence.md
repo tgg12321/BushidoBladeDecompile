@@ -248,3 +248,13 @@ as separate li's near the dispatch (only case-10's 13 at a bne delay)
 - [s13] Mandated permuter modality is dead by the ledger: s4 (112k iters, merged chassis — score-0 was a scorer false match) and s5 (54k iters, unmerged r13 chassis — 82-word-diff plateau; merge re-forms with a different partner) close both basins; the s6 white-box trace certifies the closure theorem that makes any further permuter search converge only on unsanctioned USE/CLOBBER spellings
 
 - [s13] Ledger artifacts intact: memory/grind/motion_SetMotion/{candidate.c,evidence.md,hypotheses.md,state.json} plus 9 rejected forms banked
+
+- [s14] docs/grind/decisions.md ends at line 776; the 2026-07-18 motion_SetMotion OWNER-ESCALATION block (lines 761-776, filed by s7) is the final entry with no owner ruling following it - verified this session (s14)
+
+- [s14] The escalation presents the two mutually exclusive owner options: (a) sanction the union-constructor CLOBBER family with per-use dossier (banked n1 form rejected/judge-fail-0717-1708.c is byte-proven and white-box trace-proven), (b) refuse the family and sign an owner disposition for regfix.txt:2190 per no-park-permanently
+
+- [s14] Mandated permuter axis is dead by the ledger without re-measurement: s4 merged-seed campaigns (112,618-iter random - the score-0 was a scorer false match with 6 real word diffs; 2,049-iter directed - best find 100) plus s5 unmerged-r13-seed campaign (54,087 iters, plateau 82 raw word diffs, merge re-forms with a different partner) close both basins; s6 BB2_XJUMP_DEBUG trace certifies any further permuter search can only converge on the Judge-banned USE/CLOBBER spellings
+
+- [s14] Baseline re-confirmed this session: sandbox motion_SetMotion --disable all = honest distance 1 (402/402 insns, rules_dropped 1 = regfix.txt:2190 semantic-lie subst 12->13, cheat_asm_stripped 34 elsewhere in TU)
+
+- [s14] Ledger bank intact: memory/grind/motion_SetMotion/candidate.c (44,155 bytes, floor-10 byte-correct form) + 9 rejected forms; no src/ edits this session; regfix.txt:2190 and the committed form untouched on main per the 17:34 Judge disposition
