@@ -154,3 +154,27 @@ as separate li's near the dispatch (only case-10's 13 at a bne delay)
 - [s5] No OWNER-ESCALATION for motion_SetMotion is filed yet in docs/grind/decisions.md - the 2026-07-17 17:34 entry is a Judge ruling PRESCRIBING the escalation (research session first, then file in hirahira_w_frie format), not the escalation itself; owner-gated is therefore not yet available.
 
 - [s5] Baseline re-confirmed this session: sandbox motion_SetMotion --disable all = honest distance 1 (402/402 insns, 1 rule dropped, 34 cheat-asm stripped elsewhere in TU); campaign harvested+stopped (pid dead, telemetry banked); src untouched, git clean.
+
+- [s6] gccdbg white-box trace LANDED (BB2_XJUMP_DEBUG knob in tools/gcc-2.7.2/jump.c, env-gated, verified codegen-inert; in-tree diagnostic cc1 rebuilt, frozen build/cc1 untouched, faithfulness verified per-TU: knob-unset diagnostic .s == build/cc1 .s on all three TUs; fresh binary copied to tmp/gccdbg/cc1). Full trace + uid maps: tmp/grind/motion_SetMotion/s6/analysis.md + {honest,committed,r13}.xjdbg.log.
+
+- [s6] Honest-0xD TU: the 13-pair merge fires EXACTLY as modeled — e1=408 (case-9/11 jtbl block [label 403; set13 406; j 408]) chain-partner attempt vs e2=223 (arm): one counted MATCH (406/211 set13, min 2->1) then stream-1 LABEL-BONUS at the jtbl CODE_LABEL 403 (min->0) -> DO_CROSS_JUMP jump=408 newjpos=406 newlpos=211. The reverse attempt (e1=223) gets the same MATCH but breaks at jump_insn-207-vs-barrier with min=1 -> no; own-label attempts end last1=0. No other exit condition is reachable for the pair. Judge's belt-and-braces check: CONFIRMED.
+
+- [s6] F1 confirmed IN-TRACE (not just from dumps): only ONE set(-1) (case-8 insn 291) ever appears in any find_cross_jump compare; case-10's sched2-hoisted set-1 never does — its block's compares lead with the sb (mem<-0, insn 371, same uid as s2's committed dump) -> PAT-MISMATCH -> 0 counted matches -> the -1 pair is protected both directions in every pass.
+
+- [s6] r13-chassis REFINEMENT of the s5 micro-fact: the label bonus is NOT jtbl-specific — ANY heading CODE_LABEL (plain branch-target labels 236 and 757) grants it. In r13 BOTH non-arm 13-blocks merge away in cascade (jump=242: 240->761 via bonus-236; then jump=763: 761->211 via bonus-757), leaving ONE RTL set13 (final li-13 word count is reorg delay-slot copying). Label-bonus dodging is structurally impossible: every honest chassis gives 13-blocks heading labels.
+
+- [s6] Committed-form control traced: e1=408 vs e2=223 = PAT-MISMATCH set(reg<-12) vs set(reg<-13) at iteration 1 -> last1=0 -> the label bonus is NEVER REACHED (jump.c:2469 mismatch-break precedes the stream-1 label walk). Both directions, all passes; zero 12/13-site DO_CROSS_JUMP events. The regfix rule is precisely a first-iteration pattern-mismatch manufacturer; the only byte-free honest analog remains the Judge-banned USE/CLOBBER family. Closure theorem: seventh (first white-box) independent confirmation.
+
+- [s6] Baseline re-confirmed: sandbox motion_SetMotion --disable all = honest distance 1 (402/402, 1 rule dropped, 34 cheat-asm stripped elsewhere in TU); src untouched, git clean (metrics/events.jsonl append only). Trace-tool note: the XJDBG set(reg<-N) tag prints the const-int SET_SRC of ANY single_set incl. MEM dests (committed uid 371 sb prints as set(reg<-0)).
+
+- [s6] The 13-pair merge has exactly ONE reachable win path: chain-partner attempt from the jtbl-block side, one counted set13 match + stream-1 CODE_LABEL bonus (jump.c label-bonus at the block's heading label); own-label and arm-side attempts provably fail in-trace.
+
+- [s6] The label bonus is not jtbl-specific: in the r13 chassis both non-arm 13-blocks merge via plain branch-target heading labels (cascade 240->761->211), so label-bonus dodging is impossible in any honest chassis.
+
+- [s6] The committed regfix rule's protection mechanism is a first-iteration pattern mismatch (set12 vs set13) that fires BEFORE the label walk — the only byte-free honest analog of that mismatch class remains the Judge-banned USE/CLOBBER manufacture family.
+
+- [s6] F1 (sched2-slack protection of the -1 pair) confirmed live: case-10's set-1 never appears in any find_cross_jump compare; its block leads with the sb -> 0 counted matches both directions.
+
+- [s6] Diagnostic-infrastructure: BB2_XJUMP_DEBUG knob now in tools/gcc-2.7.2/jump.c and compiled into the in-tree cc1 + tmp/gccdbg/cc1 (Jul 18 build); frozen build/cc1 (May 18) untouched; per-TU faithfulness check banked in trace.sh.
+
+- [s6] Baseline re-confirmed: sandbox motion_SetMotion --disable all = honest distance 1 (402/402 insns, 1 rule dropped, 34 cheat-asm stripped elsewhere in TU); src untouched, git clean.
