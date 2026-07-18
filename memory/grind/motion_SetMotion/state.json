@@ -1,8 +1,8 @@
 {
  "func": "motion_SetMotion",
  "file": "code6cac_c_mid",
- "session_count": 7,
- "current_modality": "forensics",
+ "session_count": 8,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 0,
@@ -51,13 +51,24 @@
    "floor": 10,
    "modality": "forensics",
    "headline": "s7 forensics: n1 union-CLOBBER form white-box traced (byte-identical modulo honest 13; CLOBBER breaks find_cross_jump both directions before the label bonus); community survey found ZERO evidence in S"
+  },
+  {
+   "session": 8,
+   "floor": 10,
+   "modality": "rederive",
+   "headline": "motion_SetMotion stays parked: the 2026-07-18 OWNER-ESCALATION is on file unruled and the Judge-certified closure theorem makes the mandated rederive axis dead by construction (any byte-matching C sha"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Owner ruling on the filed OWNER-ESCALATION: sanction the union-constructor CLOBBER family without community precedent (option a, closes via the banked n1 form through the normal candidate path) or refuse it and sign a disposition for regfix.txt:2190 (option b).",
-   "mechanism": "Every honest axis is measured dead (closure theorem, nine confirmations incl. two white-box traces); the union-CLOBBER family is byte-proven and trace-proven but policy-blocked; only an owner act can move either direction.",
-   "next_probe": "None for the grind \u2014 the function is parked pending the owner's ruling per the 17:34 disposition. On option (a): re-propose the n1 form through the normal candidate path with the per-use dossier. On option (b): the rule stays under an owner-signed disposition."
+   "hypothesis": "Owner rules option (a): sanction the union-constructor CLOBBER family.",
+   "mechanism": "Family-level sanction with per-use dossier; the banked n1 form (rejected/judge-fail-0717-1708.c) is byte-proven and trace-proven (s7 vs_committed.diff = single li word).",
+   "next_probe": "Re-propose the n1 form through the normal candidate path with the hirahira_w_frie-style dossier; driver re-proves bytes, default-FAIL Judge makes the final call."
+  },
+  {
+   "hypothesis": "Owner rules option (b): refuse the family.",
+   "mechanism": "Per no-park-permanently only the owner can sign a disposition for regfix.txt:2190; a function carrying a rule is INCOMPLETE by definition.",
+   "next_probe": "Owner signs the rule disposition in docs/grind/decisions.md; the function leaves the grind queue under that owner act."
   }
  ],
  "judge_constraints": [

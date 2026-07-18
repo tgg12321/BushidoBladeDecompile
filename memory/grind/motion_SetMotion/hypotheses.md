@@ -95,3 +95,9 @@
 - probe: Shallow-cloned all three masters (sotn-decomp@2472557, rood-reverse@0ff937b, esa@914e9db) to tmp/grind/motion_SetMotion/s7/repos and grepped: cast-to-union in expression position, single-member union decls, the string 'clobber' (case-insensitive, all file types), and inspected every union declaration hit.
 - result: ZERO evidence: no (union X) cast appears anywhere in any tree; no single-member unions; no 'clobber' occurrences at all; every union present is a genuine multi-member data union (SOTN PrimBuf prim overlay, VS bitfield/u16-s32 punning, ESA include/structs.h data). The escalation states this plainly per the disposition.
 - verdict: KILLED
+
+## [s8] A fresh rederive (m2c / sibling-transplant, structurally different C shape) could break the 13-pair find_cross_jump merge honestly.
+- mechanism: The sealed closure theorem (nine confirmations incl. two white-box gccdbg traces, s2-s7) proves any byte-matching compile forces both 13-sites to exactly [set13; j] with the jtbl CODE_LABEL adjacent, guaranteeing the counted-match + stream-1 label-bonus merge; the only byte-free C-reachable breaker is the unsanctioned USE/CLOBBER class. A structurally different shape either canonicalizes to the merged form or pays real bytes (r1-r13 all KILLED).
+- probe: Verified this session against docs/grind/decisions.md: the 17:34 Judge ruling certifies 'No honest lever remains unmeasured' and the 2026-07-18 OWNER-ESCALATION (filed by s7) is the final entry with no owner ruling following it; candidate.c banked at memory/grind/motion_SetMotion/candidate.c.
+- result: Escalation confirmed on file and unruled; exhaustion Judge-certified complete; rederive falls inside the dead axis covered by the closure theorem, so re-measuring it is prohibited spin per the brief.
+- verdict: CONFIRMED

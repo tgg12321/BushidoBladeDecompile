@@ -190,3 +190,11 @@ as separate li's near the dispatch (only case-10's 13 at a bne delay)
 - [s7] OWNER-ESCALATION filed: docs/grind/decisions.md '2026-07-18 — motion_SetMotion — OWNER-ESCALATION' (hirahira_w_frie format, both options, community-evidence absence stated plainly, s6/s7 trace artifacts referenced). Filed per the 2026-07-17 17:34 Judge disposition; do not self-resolve.
 
 - [s7] Baseline re-confirmed: sandbox motion_SetMotion --disable all = honest distance 1 (402/402 insns, 1 rule dropped, 34 cheat-asm stripped elsewhere in TU); src untouched, git clean except decisions.md (the escalation) + metrics append.
+
+- [s8] docs/grind/decisions.md final entry = '2026-07-18 — motion_SetMotion — OWNER-ESCALATION (filed by grind s7 per the 2026-07-17 17:34 Judge disposition; awaiting owner ruling — do not self-resolve)'; no ruling entry follows it (verified 2026-07-18 this session).
+
+- [s8] The 17:34 Judge ruling in the same file certifies the exhaustion precondition first-hand: F1 discharged, r1-r9 banked KILLED, closure theorem sealed both sides, 'No honest lever remains unmeasured.'
+
+- [s8] Rederive is covered by the dead structural axis: the closure theorem quantifies over ALL byte-matching compiles, not the current source spelling, so a fresh m2c/sibling chassis cannot evade the merge without paying bytes (s5's unmerged-seed campaign plateaued at 82 raw word diffs).
+
+- [s8] memory/grind/motion_SetMotion/candidate.c exists (byte-correct floor-10 form); no src/ edits made this session; regfix.txt:2190 and the committed form untouched per the 17:34 disposition.
