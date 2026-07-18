@@ -119,3 +119,9 @@
 - probe: Full ledger re-read (10 sessions of evidence, 15 hypothesis entries, 9 rejected forms, both Judge rulings + the escalation text) and a composition check against the partition argument, written up in tmp/grind/motion_SetMotion/s10/synthesis.md; honest baseline re-measured (sandbox --disable all = 1, 402/402).
 - result: No composition escapes: every axis kill is a statement about canonicalized jump2-time RTL invariants (any byte-matching compile forces both 13-sites to [set13; j] with a heading CODE_LABEL adjacent), which all source-level combinations must still satisfy — F1+r13 still lacks slack byte-room AND still grants the label bonus via any heading label (s6: bonus not jtbl-specific); sub-merge-penalty permuter finds are semantics-breaking regardless of chassis; split-init folds before jump2 regardless of surrounding shape. The only merged attack remaining IS the escalation itself.
 - verdict: KILLED
+
+## [s11] A structural lever (block-local split, declaration order, type narrowing, statement re-association) remains unmeasured on the 13-pair wall
+- mechanism: Any such spelling must either canonicalize to the merged [set13; j] shape (merge guaranteed by jump.c counted-match + stream-1 label bonus per the s6 BB2_XJUMP_DEBUG trace) or pay real bytes; the only byte-free iter1-breaker is the unsanctioned USE/CLOBBER class per the s6/s7 white-box traces
+- probe: Ledger audit this session: hypotheses.md r1-r13 all KILLED (s2/s3/s3b structural sweeps), F1 slack-transplant negative banked (s2), label-family negatives m7/r13 banked, closure theorem carries eight independent confirmations; decisions.md 17:34 ruling certifies 'no honest lever remains unmeasured'
+- result: No unmeasured structural probe exists; the axis is closed by Judge-certified exhaustion and the brief prohibits re-measuring dead axes
+- verdict: KILLED

@@ -224,3 +224,11 @@ as separate li's near the dispatch (only case-10's 13 at a bne delay)
 - [s10] Baseline re-confirmed this session: sandbox motion_SetMotion --disable all = honest distance 1 (402/402 insns, 1 rule dropped = regfix.txt:2190 semantic-lie subst 12->13, 34 cheat-asm stripped elsewhere in TU).
 
 - [s10] Ledger bank verified intact: candidate.c (floor-10 byte-correct form) + 9 rejected forms including the byte-proven n1 union form (judge-fail-0717-1708.c); src/code6cac_c_mid.c and regfix.txt:2190 untouched on main; no engine mutation commands run.
+
+- [s11] The 2026-07-18 OWNER-ESCALATION for motion_SetMotion is the FINAL entry in docs/grind/decisions.md (line 761 of 776) and is explicitly marked 'awaiting owner ruling — do not self-resolve'; no owner ruling follows it (verified this session by full heading scan of the file)
+
+- [s11] Structural axis dead on the ledger: r1-r9 (s2/s3) + dup-case/ternary/u32-sel/pre-switch-if (s3b) + r13 unmerged-chassis all KILLED; the 17:34 Judge ruling certifies exhaustion complete with F1 discharged
+
+- [s11] Both frontier items are owner acts (sanction the union-constructor CLOBBER family via option (a), or refuse it and sign a rule disposition for regfix.txt:2190 via option (b)); neither is reachable by any grind modality per the s10 three-basin synthesis
+
+- [s11] Judge constraints bind against committing ANY USE/CLOBBER-manufacture spelling, which is the only remaining byte-free C-reachable mechanism — so no structural respelling can be both honest and byte-matching
