@@ -198,3 +198,13 @@ as separate li's near the dispatch (only case-10's 13 at a bne delay)
 - [s8] Rederive is covered by the dead structural axis: the closure theorem quantifies over ALL byte-matching compiles, not the current source spelling, so a fresh m2c/sibling chassis cannot evade the merge without paying bytes (s5's unmerged-seed campaign plateaued at 82 raw word diffs).
 
 - [s8] memory/grind/motion_SetMotion/candidate.c exists (byte-correct floor-10 form); no src/ edits made this session; regfix.txt:2190 and the committed form untouched per the 17:34 disposition.
+
+- [s9] docs/grind/decisions.md line 761: '2026-07-18 - motion_SetMotion - OWNER-ESCALATION (filed by grind s7 ... awaiting owner ruling - do not self-resolve)' is the FINAL entry in the file as of 2026-07-18 s9; no owner ruling follows it (file tail inspected this session).
+
+- [s9] The escalation presents exactly two mutually exclusive owner options: (a) sanction the union-constructor CLOBBER family (banked n1 form rejected/judge-fail-0717-1708.c re-proposed through the normal candidate path), or (b) refuse the family and sign an owner disposition for regfix.txt:2190 per no-park-permanently.
+
+- [s9] Judge ruling 2026-07-17 17:34 certifies honest-lever exhaustion; the closure theorem carries nine independent confirmations (s2 structural r1-r4, s3 r5-r9, s3b r10-r13, s4 two permuter campaigns 112k+2k iters, s5 unmerged-seed campaign 54k iters, s6 white-box gccdbg trace of honest/committed/r13, s7 white-box trace of the n1 union form + zero community evidence in sotn-decomp/rood-reverse/esa masters).
+
+- [s9] Ledger bank intact this session: memory/grind/motion_SetMotion/candidate.c (floor-10 form, 44,155 bytes) plus 9 rejected forms including the byte-proven n1 union form (judge-fail-0717-1708.c, s7 vs_committed.diff = single li word).
+
+- [s9] src/code6cac_c_mid.c, regfix.txt:2190, and the committed byte-correct form left untouched on main per the Judge constraint; no engine mutation commands run.
