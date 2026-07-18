@@ -448,3 +448,11 @@ as separate li's near the dispatch (only case-10's 13 at a bne delay)
 - [s35] Ledger bank intact: candidate.c 44,155 bytes; 9 rejected forms on disk including judge-fail-0717-1708.c (44,478 bytes, the byte-proven trace-proven n1 union form referenced by escalation option (a))
 
 - [s35] Closure theorem standing: nine independent confirmations (r1-r13 structural sweeps, F1 slack-transplant negative, m7/r13 label-family negatives, 168,754 permuter iterations two-sided, s6/s7 white-box BB2_XJUMP_DEBUG traces, zero community evidence in sotn-decomp/rood-reverse/esa masters)
+
+- [s36] s36: OWNER-ESCALATION block at docs/grind/decisions.md:761-776 re-verified as the final entry in the file (read 740-EOF); no owner ruling follows; both options (a) sanction union-CLOBBER family via n1 re-proposal, (b) refuse family + owner rule-disposition for regfix.txt:2190) intact with community evidence stated NONE FOUND
+
+- [s36] s36: fresh gradient sandbox motion_SetMotion --disable all = score 1, 402/402 insns, 1 rule dropped, 34 cheat-asm stripped elsewhere in TU - unchanged from every banked measurement since s14
+
+- [s36] s36: bank intact - candidate.c 44,155 bytes, 9 rejected/ forms present including judge-fail-0717-1708.c (44,478 bytes, the byte-proven trace-proven n1 union form escalation option (a) depends on); src/code6cac_c_mid.c and regfix.txt:2190 untouched on main per the 17:34 disposition
+
+- [s36] Closure theorem remains sealed with nine independent confirmations (r1-r13 structural sweeps, F1 slack-transplant negative, m7/r13 label-family negatives, 168k+ permuter iterations two-sided, s6 BB2_XJUMP_DEBUG pass trace, s7 union-form end-to-end trace, zero community evidence in sotn/rood-reverse/esa masters)

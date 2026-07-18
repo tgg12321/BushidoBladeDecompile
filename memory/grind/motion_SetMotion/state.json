@@ -1,7 +1,7 @@
 {
  "func": "motion_SetMotion",
  "file": "code6cac_c_mid",
- "session_count": 35,
+ "session_count": 36,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -216,6 +216,12 @@
   },
   {
    "session": 35,
+   "floor": 10,
+   "modality": "rederive",
+   "headline": "motion_SetMotion owner-gated: 2026-07-18 OWNER-ESCALATION verified on file and unruled (final entry, docs/grind/decisions.md:761-776); mandated rederive axis is dead by construction under the Judge-ce"
+  },
+  {
+   "session": 36,
    "floor": 10,
    "modality": "rederive",
    "headline": "motion_SetMotion owner-gated: 2026-07-18 OWNER-ESCALATION verified on file and unruled (final entry, docs/grind/decisions.md:761-776); mandated rederive axis is dead by construction under the Judge-ce"
