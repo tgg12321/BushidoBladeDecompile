@@ -1,7 +1,7 @@
 {
  "func": "motion_SetMotion",
  "file": "code6cac_c_mid",
- "session_count": 6,
+ "session_count": 7,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -45,13 +45,19 @@
    "floor": 10,
    "modality": "forensics",
    "headline": "gccdbg white-box trace CONFIRMS the closure theorem end-to-end: 13-pair merge = 1 counted set13 match + stream-1 label bonus (only reachable path); committed 12-vs-13 breaks before the bonus; F1 and t"
+  },
+  {
+   "session": 7,
+   "floor": 10,
+   "modality": "forensics",
+   "headline": "s7 forensics: n1 union-CLOBBER form white-box traced (byte-identical modulo honest 13; CLOBBER breaks find_cross_jump both directions before the label bonus); community survey found ZERO evidence in S"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Owner policy question (the Judge's prescribed path, 2026-07-17 17:34): is the union-constructor CLOBBER family community-viable (SOTN/Vagrant-Story/ESA master-branch evidence) and thus sanctionable as a standalone family?",
-   "mechanism": "find_cross_jump iter1 GET_CODE(SET)!=GET_CODE(CLOBBER) at jump.c:2469 before any label bonus; USE/CLOBBER emit no bytes at final. After s6's white-box confirmation this is the ONLY unmerge mechanism not measured dead (structural r1-r13, slack transplant, label-family, merged-seed + unmerged-seed permuter, and now the full exit-condition trace all closed).",
-   "next_probe": "RESEARCH modality: survey SOTN/Vagrant Story/ESA master branches for accepted single-member-union / cast-to-union / manufactured-CLOBBER spellings; then file the OWNER-ESCALATION in docs/grind/decisions.md (hirahira_w_frie format, both options, honest about absent evidence) per the 17:34 disposition; grind then stops on this function pending the owner's ruling."
+   "hypothesis": "Owner ruling on the filed OWNER-ESCALATION: sanction the union-constructor CLOBBER family without community precedent (option a, closes via the banked n1 form through the normal candidate path) or refuse it and sign a disposition for regfix.txt:2190 (option b).",
+   "mechanism": "Every honest axis is measured dead (closure theorem, nine confirmations incl. two white-box traces); the union-CLOBBER family is byte-proven and trace-proven but policy-blocked; only an owner act can move either direction.",
+   "next_probe": "None for the grind \u2014 the function is parked pending the owner's ruling per the 17:34 disposition. On option (a): re-propose the n1 form through the normal candidate path with the per-use dossier. On option (b): the rule stays under an owner-signed disposition."
   }
  ],
  "judge_constraints": [

@@ -178,3 +178,15 @@ as separate li's near the dispatch (only case-10's 13 at a bne delay)
 - [s6] Diagnostic-infrastructure: BB2_XJUMP_DEBUG knob now in tools/gcc-2.7.2/jump.c and compiled into the in-tree cc1 + tmp/gccdbg/cc1 (Jul 18 build); frozen build/cc1 (May 18) untouched; per-TU faithfulness check banked in trace.sh.
 
 - [s6] Baseline re-confirmed: sandbox motion_SetMotion --disable all = honest distance 1 (402/402 insns, 1 rule dropped, 34 cheat-asm stripped elsewhere in TU); src untouched, git clean.
+
+- [s7] s7 union-TU byte-identity: the n1 union-CLOBBER form compiles byte-identical to the committed+rule TU except the single honest li 13 word (vs_committed.diff: .file line + li 0xc->0xd) — the CLOBBER emits zero bytes and reorg fills the delay slot identically.
+
+- [s7] s7 in-trace mechanism (ninth closure-theorem confirmation, first of the candidate family itself): the CLOBBER protects the 13-pair by stream desynchronization — both find_cross_jump directions break at the GET_CODE insn-code check (INSN vs JUMP_INSN) at iteration 2 with min=1 before the label walk; the label bonus is unreachable; zero DO_CROSS_JUMP events touch the 13-sites while the Wall-1 sel2-tail merge still fires.
+
+- [s7] Mechanism refinement: the union-CLOBBER break is NOT a SET-vs-CLOBBER pattern compare at jump.c:2469 — the CLOBBER is never pattern-compared; the extra byte-free insn desyncs the streams so the opposing stream is already at a jump_insn. Same exit family, different check.
+
+- [s7] Community survey (sotn-decomp master@2472557, rood-reverse main@0ff937b, esa master@914e9db, shallow clones in s7/repos): zero cast-to-union expressions, zero single-member unions, zero 'clobber' strings anywhere; all unions are genuine multi-member data unions. The union-CLOBBER family has NO community precedent.
+
+- [s7] OWNER-ESCALATION filed: docs/grind/decisions.md '2026-07-18 — motion_SetMotion — OWNER-ESCALATION' (hirahira_w_frie format, both options, community-evidence absence stated plainly, s6/s7 trace artifacts referenced). Filed per the 2026-07-17 17:34 Judge disposition; do not self-resolve.
+
+- [s7] Baseline re-confirmed: sandbox motion_SetMotion --disable all = honest distance 1 (402/402 insns, 1 rule dropped, 34 cheat-asm stripped elsewhere in TU); src untouched, git clean except decisions.md (the escalation) + metrics append.
