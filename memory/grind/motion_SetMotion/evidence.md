@@ -372,3 +372,13 @@ as separate li's near the dispatch (only case-10's 13 at a bne delay)
 - [s27] Closure theorem standing at nine independent confirmations (r1-r13 structural sweeps, F1 slack-transplant negative, m7/r13 label-family negatives, 168,754 permuter iterations two-sided, s6 honest/committed/r13 gccdbg traces, s7 union-form end-to-end trace, zero community evidence in sotn/rood-reverse/esa masters); 17:34 Judge ruling certifies no honest lever remains unmeasured
 
 - [s27] src/code6cac_c_mid.c and regfix.txt:2190 untouched on main per the 17:34 disposition; hypotheses.md updated with two s27 entries
+
+- [s28] docs/grind/decisions.md read 755-EOF this session: the 2026-07-18 OWNER-ESCALATION block (lines 761-776) is the final entry, still marked 'awaiting owner ruling — do not self-resolve'; no OWNER RULING follows it
+
+- [s28] Fresh sandbox measurement s28: motion_SetMotion --disable all = score 1, target/build 402/402 insns, 1 rule dropped, 34 cheat-asm stripped elsewhere in TU — byte-for-byte identical to the banked s14/s27 measurements
+
+- [s28] Bank intact: candidate.c 44,155 bytes; 9 rejected/ forms present including judge-fail-0717-1708.c (44,478 bytes, the byte-proven trace-proven n1 union-CLOBBER form referenced by escalation option (a))
+
+- [s28] Synthesis axis sealed: s10 partition argument (re-verified s19, s28) — all axis kills are jump2-time RTL-invariant statements, so every source-level composition must still present both 13-sites as [set13; j] with adjacent heading CODE_LABEL, guaranteeing the merge; only byte-free breaker is the Judge-banned USE/CLOBBER family
+
+- [s28] s28 verification entry appended to memory/grind/motion_SetMotion/hypotheses.md
