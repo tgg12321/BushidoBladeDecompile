@@ -221,3 +221,21 @@
 - probe: Verified banked artifacts exist: tmp/grind/motion_SetMotion/s6/ (honest/committed/r13 traces) and s7/union.xjdbg.log, union.c.jump2, vs_committed.diff; cross-checked the escalation's exhaustion section (eight independent confirmations of the closure theorem)
 - result: Nothing remains for forensics to discover: the pass, the exact jump.c exit, both directions of the break, and the reorg delay-slot fill to target's [j; delay li13] are all already traced and banked; any further cc1 dump would re-measure a dead axis, which the brief forbids
 - verdict: CONFIRMED
+
+## [s26] The 2026-07-18 OWNER-ESCALATION for motion_SetMotion remains the final, unruled entry in docs/grind/decisions.md
+- mechanism: Owner may have ruled since s25; owner-gated is only valid against a live unruled escalation
+- probe: Read decisions.md:755-777 and the file tail this session (s26): the escalation block at lines 761-776 ends with its References line and nothing follows it
+- result: Escalation present, filed by grind s7 in hirahira_w_frie format with both options and the plainly-stated absent community evidence; no OWNER RULING entry after it
+- verdict: CONFIRMED
+
+## [s26] The mandated rederive axis is already measured dead on the ledger and must not be re-measured
+- mechanism: The closure theorem quantifies over ALL byte-matching compiles, not source spellings: any byte-matching compile forces both 13-sites to [set13; j] with a heading CODE_LABEL adjacent, guaranteeing the find_cross_jump merge; the only byte-free C-reachable breaker is the Judge-banned USE/CLOBBER class. A fresh m2c/decomp.me/Kengo chassis cannot leave the s10 three-basin partition (merged / unmerged-with-cost / banned byte-free breaker)
+- probe: Ledger audit this session: s8/s9 rederive kills, s17/s18 rederive re-verification, s10 synthesis partition, nine independent closure confirmations (r1-r13 structural, F1 slack, 168,754 permuter iterations two-sided, s6/s7 white-box gccdbg traces, zero community evidence in sotn/rood-reverse/esa masters)
+- result: All axis-kill evidence intact and internally consistent; no unmeasured honest lever exists per the 17:34 Judge certification
+- verdict: CONFIRMED
+
+## [s26] The banked ledger artifacts referenced by escalation option (a) are intact
+- mechanism: Option (a) closes via re-proposal of the byte-proven n1 form; a missing or corrupted bank would invalidate the escalation's disposition path
+- probe: Verified candidate.c = 44,155 bytes and all 9 rejected/ forms present including judge-fail-0717-1708.c (44,478 bytes, the byte-proven trace-proven n1 union form)
+- result: Bank intact; src/code6cac_c_mid.c and regfix.txt:2190 untouched on main per the 17:34 disposition
+- verdict: CONFIRMED

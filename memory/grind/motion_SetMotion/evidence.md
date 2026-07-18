@@ -352,3 +352,13 @@ as separate li's near the dispatch (only case-10's 13 at a bne delay)
 - [s25] Ledger candidate memory/grind/motion_SetMotion/candidate.c and the 13-form rejected/ bank verified present; floor unchanged at 10 (honest sandbox distance 1 insn = the single li 13 word covered by regfix.txt:2190)
 
 - [s25] Sessions s11-s24 across all five modalities (structural, permuter, forensics, rederive, synthesis) each independently verified the same gate; s25 forensics matches s15/s16/s24 findings exactly
+
+- [s26] [s26] docs/grind/decisions.md: the 2026-07-18 motion_SetMotion OWNER-ESCALATION (lines 761-776, filed by grind s7) is the FINAL entry; file tail read this session ends with the escalation's References line - no owner ruling follows
+
+- [s26] [s26] Mandated rederive axis dead without re-measurement: the closure theorem quantifies over all byte-matching compiles (s10 three-basin partition), so fresh m2c/decomp.me-corpus/Kengo-transplant chassis cannot produce a shape outside the merged basin (wrong bytes), the unmerged-with-cost basin (>=2 insns / 76+ word diffs), or the Judge-banned USE/CLOBBER byte-free-breaker basin
+
+- [s26] [s26] Ledger bank verified intact: memory/grind/motion_SetMotion/candidate.c (44,155 bytes, floor-10 byte-correct form) plus 9 rejected forms including the byte-proven n1 union form judge-fail-0717-1708.c (44,478 bytes)
+
+- [s26] [s26] No src/ edits made this session; regfix.txt:2190 and the committed byte-correct form remain untouched on main per the 2026-07-17 17:34 Judge disposition item (3); working tree clean except metrics append
+
+- [s26] [s26] Sessions s11-s25 across all five ladder modalities independently verified this same gate; s26 (rederive) matches s17/s18 findings exactly
