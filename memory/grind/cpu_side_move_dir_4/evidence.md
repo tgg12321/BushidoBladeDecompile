@@ -1668,3 +1668,17 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s102] s102 sanctioned-axis inventory complete: F1 pointer-alias-fake-exception KILLED s101 (5 shapes); F2 livelen-shortening structural KILLED s102 (6 shapes); all owner-sanctioned pure-C axes now measured dead. Ledger's F3 contingency (OWNER-ESCALATION filing) is the deterministic next step.
 
 - [s102] s102 Judge constraint compliance: no canonical-asm authorization framing surfaced (2026-07-09 FAIL entry respected); no cheat-shaped honest respelling of src/system.c:406 attempted; no forbidden semantic-lie or coercion construct proposed. Modality stayed strictly structural (declaration order, scope, statement re-association) per driver assignment.
+
+- [s103] docs/grind/decisions.md:848 now contains a filed OWNER-ESCALATION for cpu_side_move_dir_4 in the same format as hirahira_w_frie (line 627) and motion_SetMotion (line 761); both mutually exclusive owner options are presented with honest cost.
+
+- [s103] The 2026-07-09 01:25 Judge FAIL (docs/grind/decisions.md:8) settled canonical-asm authorization as FAIL for cpu_side_move_dir_4 and its twins under any framing of 'exhaustion/mechanism-explained/cluster-shared' evidence; judge_constraints[0] directed modality shift to un-run sanctioned axes.
+
+- [s103] Both un-run sanctioned axes the ledger identified are now empirically closed: s101 killed F1 pointer-alias-fake-exception across 5 probe shapes (block/fn-scope × pass-through/from-global × asymmetric/dual-use — every pass-through form combine-folds byte-neutral INERT); s102 killed F2 livelen-shortening structural across 6 probes on probe1 base (defer-into-do-timeout, block-local, prologue-last, pass-through alias, direct-symref, h5-symref+block-local — every deferral form leaves the pair intact).
+
+- [s103] Residual is theorem-locked ONE instruction pair {sll4@54 <-> addu5@55}: both LAUNCH, sched.c LUID decides, A5-before-T0B orders hit the p106/val5 [18,24]/[20,26] L6=L6 birth-tie at 6 (per notes.md/state.json).
+
+- [s103] The only known C-level lever that reaches masked-2 from a base of masked≥15 is the h5 form's cross-symbol arithmetic idiom (`idx_1495 = &D_800A1494[1]` initializer producing the addu-spelling), which s97 forensics named at expr.c::expand_expr RTL insns 34 (subsi3 SYMBOL_REF-diff) + 38 (addsi3 tbl+delta), unfoldable in cse.c/combine.c. s98 rederive killed in-repo transplant (unique to csmd4 in src/); s99 killed 3 symbolic variants (masked=15 regressions or +2/+1insn). This idiom sits OUTSIDE every currently-sanctioned pure-C family — hence the owner-only sanction question.
+
+- [s103] Precedent: motion_SetMotion 2026-07-18 (decisions.md:761) and hirahira_w_frie 2026-07-17 (decisions.md:627) both filed OWNER-ESCALATIONs of this shape after research/structural modality; hirahira_w_frie owner-ruled option (a) TOMBSTONE NARROWED 2026-07-17 10:35; motion_SetMotion owner-ruled option (b) UNSANCTIONED 2026-07-18. Both dispositions were owner acts, not judge or agent acts.
+
+- [s103] candidate.c preserved unchanged at memory/grind/cpu_side_move_dir_4/candidate.c (116 lines, h5 form, masked=2/raw=2). No src/system.c edits by s103. No new rejected forms (nothing new tried this session — the closure inventory is complete).

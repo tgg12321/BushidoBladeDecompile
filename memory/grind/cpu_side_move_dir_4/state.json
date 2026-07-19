@@ -1,8 +1,8 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 102,
- "current_modality": "structural",
+ "session_count": 103,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 0,
@@ -621,6 +621,12 @@
    "floor": 2,
    "modality": "structural",
    "headline": "s102 structural KILLS F2 livelen-shortening axis across 6 probes on probe1 base (defer-into-do-timeout, block-local, prologue-last, pass-through alias, direct-symref, h5-symref+block-local): every def"
+  },
+  {
+   "session": 103,
+   "floor": 2,
+   "modality": "permuter",
+   "headline": "s103 files OWNER-ESCALATION per F3 activation: every sanctioned pure-C axis measured dead across 102 sessions; residual is theorem-locked 2-insn pair {sll4@54<->addu5@55} at sched.c LUID tiebreak; onl"
   }
  ],
  "frontier": [
