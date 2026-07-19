@@ -28,3 +28,27 @@
    (e.g. compute s5 from the reloaded value or a different equivalent expression) while still
    landing addu $21,$20,$19 in the beqz delay slot. NOTE: must stay pure-C semantic — no dead
    stores/barriers.
+
+## [s1] Current candidate.c (v1-before-i init order) sustains sandbox=2 on the honest pure-C sandbox.
+- mechanism: Sandbox --disable all runs the full build with regfix/asmfix disabled and cheat-asm stripped; the resulting objdump score is the honest pure-C distance.
+- probe: tools/wteng.ps1 main sandbox func_80045294 --disable all
+- result: score=2, target_insns=83, build_insns=83, rules_dropped=0, cheat_asm_stripped=78 (file-wide). Artifact: tmp/grind/func_80045294/s1/sandbox_recon.txt.
+- verdict: CONFIRMED
+
+## [s1] The residual is purely a sched2 ordering of two independent prologue insns; RA and all downstream blocks are byte-identical.
+- mechanism: GCC 2.7.2 sched2 priority = longest downstream dependence chain; sll $3,$18,4 feeds sll->addu $1->lw $20->addu $21(beqz delay), while move $16,$18 feeds only slt/beqz. Longer chain wins tie, so sll emits first in build; target emits move16 first.
+- probe: tmp/grind/func_80045294/s1/diff_baseline.txt (prior s1) + current sandbox output shows 83 vs 83 insns with only the 3-insn prologue cluster diverging.
+- result: Residual confirmed 3-insn cluster; every other insn matches.
+- verdict: CONFIRMED
+
+## [s1] Re-ordering C init to place `i = a0` before `v1 = a0<<4` reproduces target's move-before-sll order.
+- mechanism: Statement ordering steers pseudo creation order and thus tree_LUID / RA priority.
+- probe: rejected/i-before-v1-init.c built and sandboxed.
+- result: Score rose 2 -> 11: RA rotated (a0->$21, s4->$18, s5->$20) and CSE rewrote sll operand to $16.
+- verdict: KILLED
+
+## [s1] Folding the shift into s4's initializer and re-deriving v1 after `i = a0` (CSE-reuse spelling) preserves insn count.
+- mechanism: CSE should reuse the single sll; re-derived v1 becomes a copy, but net insn count depends on RA copy elision.
+- probe: rejected/cse-reuse-shift.c built and sandboxed.
+- result: 84 build_insns vs 83 target: one extra copy insn survived CSE.
+- verdict: KILLED

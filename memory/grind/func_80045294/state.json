@@ -1,10 +1,33 @@
 {
  "func": "func_80045294",
  "file": "text1a_c",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 2,
+   "modality": "recon",
+   "headline": "Recon confirmed: honest floor 2 (83/83 insns); sole residual is a 2-insn sched2 tie in the prologue cluster (sll $3,$18,4 vs the $16 save/copy). No rules, no cheat-asm."
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Read the sched2 tie directly and derive a C spelling that inverts INSN_PRIORITY between the sll and the move16.",
+   "mechanism": "sched.c INSN_PRIORITY = longest downstream dependence chain. Instrumented cc1 (or -da RTL dump) will show the exact chain length for each and identify which downstream insn is the pivot.",
+   "next_probe": "Preprocess text1a_c.c to base.i; run tools/gcc-2.7.2/build/cc1 <build-flags> -da base.i; extract sched2 priorities for the prologue-region insns of func_80045294 (or a BB2_SCHED_DEBUG instrumented cc1). Then propose a C spelling that lengthens move16's downstream chain (e.g. immediate consumer of `i` in first arg position) or shortens sll's."
+  },
+  {
+   "hypothesis": "s5 chain restructuring: express `s5 = s4 + a1` so its addu no longer extends sll's downstream chain, while still landing addu $21,$20,$19 in the beqz delay slot.",
+   "mechanism": "The sll priority derives from sll->addu $1->lw $20->addu $21. Breaking that chain at addu $1 (address computation for the table load) or at addu $21 (via a different source for s5) drops sll's priority below move16's.",
+   "next_probe": "Try spellings: (a) reload the table value via a walking pointer so lw $20's address does not derive from sll; (b) derive s5 from a reloaded value or a semantically-equivalent expression; sandbox each. Pure-C only, no dead stores/barriers."
+  },
+  {
+   "hypothesis": "Permuter campaign with a CLEAN single-function target.o sweeping prologue-region spellings.",
+   "mechanism": "Random + directed PERM_* mutations of guard forms (if/do-while vs while vs for), v1/s4/s5 expression spellings, statement placements \u2014 cross-product beyond hand probes. Fresh-seed discipline (~20-30 seeds) per [[permuter-fresh-seed-discipline]]. Clean target.o built from asm/funcs/func_80045294.s + prelude so the base score is the real weighted diff (no ~340k branch-address noise).",
+   "next_probe": "Build target.o via decomp-permuter prelude; run permuter with --stop-on-zero on candidate.c; monitor for closing forms and cheat-vet each one before proposing."
+  }
+ ],
  "judge_constraints": [],
  "origin": "queue",
  "created": "2026-07-19T01:19:29.988705+00:00"
