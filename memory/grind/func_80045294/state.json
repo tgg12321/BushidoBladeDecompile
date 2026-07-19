@@ -1,8 +1,8 @@
 {
  "func": "func_80045294",
  "file": "text1a_c",
- "session_count": 7,
- "current_modality": "forensics",
+ "session_count": 8,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -45,18 +45,24 @@
    "floor": 2,
    "modality": "forensics",
    "headline": "s7 forensics names cse.c operand substitution (a0->i in ashift) as the pass that shortens a0's live range, collapsing its global_alloc priority in every one-tree-late-assign near-hit; upstream of glob"
+  },
+  {
+   "session": 8,
+   "floor": 2,
+   "modality": "rederive",
+   "headline": "s8 rederive: m2c reconstructs same structural shape (i-before-v1 + inline-D_800A33AC); both variants measured \u2014 i-before-v1 rotates RA (score 11, known kill), inline-count NEUTRAL (score 2). No Kengo "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Directed permuter over PERM_STMT_LIST reorderings + PERM_ADD_SUB / PERM_DUMMY_COMMA_EXPR / PERM_REORDER_DECLS mutations finds a spelling that shifts sll's LUID above move16's WITHOUT (a) introducing a second tree-level a0<<4 (which triggers s6's local/global pool split) OR (b) source-ordering i=a0 before v1=a0<<4 in a straight-line block (which triggers s7's cse.c operand substitution).",
-   "mechanism": "s6 and s7 pin two orthogonal pass-level dead ends for hand-derivation. Permuter can explore C shapes that route around BOTH \u2014 e.g. mutations that split blocks so cse.c doesn't see the i=a0 -> v1=a0<<4 sequence in one processing region, or that eliminate the second tree-level shift via non-obvious commutative/associative rewrites.",
-   "next_probe": "Un-block permuter workspace: extract func_80045294 into a MINIMAL single-function .c with only D_800EE*/D_800A33*/callee prototypes; build target.o from disc bytes @0x35A94 (s1 offset/length noted). Launch tools/permuter_campaign.py with PERM_STMT_LIST + PERM_ADD_SUB + PERM_DUMMY_COMMA_EXPR + PERM_REORDER_DECLS weight overrides; fresh-seed 20-30 min basins per feedback/permuter-fresh-seed-discipline."
+   "hypothesis": "Directed permuter over PERM_STMT_LIST reorderings + PERM_ADD_SUB / PERM_DUMMY_COMMA_EXPR / PERM_REORDER_DECLS mutations finds a spelling that shifts sll's LUID above move16's WITHOUT (a) introducing a second tree-level a0<<4 (s6's local/global pool split) OR (b) source-ordering i=a0 before v1=a0<<4 in a straight-line block (s7's cse.c operand substitution).",
+   "mechanism": "s6 and s7 pin two orthogonal pass-level dead ends for hand-derivation. Permuter can explore C shapes routing around BOTH \u2014 e.g. mutations that split blocks so cse.c doesn't see i=a0 -> v1=a0<<4 in one processing region, or eliminate the second tree-level shift via non-obvious commutative/associative rewrites. s8 rederive confirms hand-derivation (including m2c-guided) has exhausted the axis.",
+   "next_probe": "Un-block permuter workspace: extract func_80045294 into a MINIMAL single-function .c with only D_800EE*/D_800A33*/callee prototypes (drop the whole-function __asm__ block for func_80044010 and the cpp-conflict D_80095328/D_800A9D04/func_80042874/func_8004574C decls); build target.o from disc bytes @0x35A94 (s1 offset). Launch tools/permuter_campaign.py with PERM_STMT_LIST + PERM_ADD_SUB + PERM_DUMMY_COMMA_EXPR + PERM_REORDER_DECLS weight overrides; fresh-seed 20-30 min basins per feedback/permuter-fresh-seed-discipline."
   },
   {
    "hypothesis": "A C spelling that expresses `v1 = a0<<4` and `i = a0` across a control-flow join (rather than a straight-line block) prevents cse.c's basic-block-scoped value-numbering from seeing them as value-equivalent, breaking the CSE fold that shortens a0's live range in the rotation branch.",
-   "mechanism": "cse.c's basic_block_extended_end / cse_extended_basic_block bounds value-numbering to a single processing region. Cross-block equivalences are established only at reload/global. If i=a0 lives in one block and v1=a0<<4 in a different block reachable from function entry (not a linear predecessor of i=a0), CSE cannot substitute at insn 17.",
-   "next_probe": "Enumerate small C rewrites that keep the same semantics but split the prologue into two joinable blocks \u2014 e.g. an early-return-if-null guard that jumps around a trivial block containing v1=a0<<4, then falls through to the i=a0 assignment; or a conditional-move idiom. Verify each keeps the sandbox score close and doesn't add insns. Measure whether cse.c picks up the value-equivalence across the split."
+   "mechanism": "cse.c's basic_block_extended_end / cse_extended_basic_block bounds value-numbering to a single processing region. Cross-block equivalences are established only at reload/global. If i=a0 lives in one block and v1=a0<<4 in a different block reachable from function entry (not a linear predecessor of i=a0), CSE cannot substitute at insn 17. s8 note: no obvious semantically-purposeful early-guard exists (a0/a1 have no null/range semantics that would justify a natural if-guard), so this frontier likely requires either (a) a permuter find or (b) a novel semantic-invariant CFG rewrite not yet hand-derived.",
+   "next_probe": "Enumerate small C rewrites that split the prologue into two joinable blocks with semantic purpose \u2014 e.g. a bounds check on a0 vs D_800A33AC before v1 compute (if a0>=count, skip both loops but still update D_800A33A0/A4); or a conditional-move idiom that GCC lowers to a jump. Verify each keeps score close and doesn't add insns. Measure whether cse.c picks up value-equivalence across the split."
   }
  ],
  "judge_constraints": [],

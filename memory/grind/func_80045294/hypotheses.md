@@ -190,3 +190,21 @@
 - probe: Reviewed cse.c substitution logic + verified insn 15 (set 77 72) is what enables the fold at insn 17. Enumerated C-level interventions: (a0 = a0;) self-assign leaves value-equivalence intact; (void)a0; is compiled away pre-CSE; if (a0==a0) guard folds to true and disappears; modifying a0 (a0 = f(a0)) would change semantics because a0 is used later in the function as a parameter.
 - result: No pure-C statement can decouple a0's value from i's value between the assignment and the shift without semantic change. The CSE fold fires deterministically whenever i=a0 precedes v1=a0<<4 in a straight-line block. Mechanism is in cse.c, upstream of both sched2 and global_alloc.
 - verdict: KILLED
+
+## [s8] m2c-reconstructed init order (i=arg0; v1=arg0*0x10) produces a structurally-different lever than the current v1-before-i shape.
+- mechanism: m2c reconstructs from asm without knowledge of sched2/RA constraints; its statement order might reveal a form that the hand-derivation missed.
+- probe: Ran tools/m2c/m2c.py on asm/funcs/saTan0Init.s (--valid-syntax --target mips-gcc-c). Read the reconstruction; then applied its distinctive difference — 'i = arg0; v1 = i << 4;' (Novel 1, with ashift operand spelled `i` instead of `a0`, to test whether cse.c would substitute 77 (i) back to 72 (a0) and preserve a0's long live range) — to src. Sandboxed --disable all. Artifact: tmp/grind/func_80045294/s8/m2c_output.txt + rejected/i-before-v1-with-i-as-shift-operand.c.
+- result: score=11, build_insns=83, identical rotation shape to s3 decl-init-decouple. cse.c does NOT substitute 77->72 back; it accepts (ashift 77) as-emitted, and a0's live range still collapses at insn 15 (i=a0). Third confirmation of the cse.c BB-scoped substitution mechanism (s7's finding).
+- verdict: KILLED
+
+## [s8] Dropping the `count` local and inlining D_800A33AC in both loop guards (per m2c reconstruction) reduces RA priority-list pressure and shifts the sll/move16 sched2 tie.
+- mechanism: One fewer pseudo in the global_alloc priority queue; also matches target's asm shape which uses a scratch reg ($a0) for count in first loop and RELOADS D_800A33AC after the call for the second loop — suggesting original source used D_800A33AC inline.
+- probe: Replaced `s32 count = D_800A33AC;` + `if (i < count) do ... while (i < count);` with `if (i < D_800A33AC) do ... while (i < D_800A33AC);` in the first loop; sandboxed --disable all.
+- result: score=2, build_insns=83, target_insns=83 — NEUTRAL. GCC's licm hoists the D_800A33AC load into a loop-invariant pseudo regardless of the C spelling; RTL is identical to the cached-local form. Removing the C decl does not change codegen. Same 2-insn residual (sched2 tie).
+- verdict: KILLED
+
+## [s8] A Kengo (PS2 successor) source-file transplant for saTan0Init (Kengo's function at 0x00147dc8, size 0x14c = 83 insns, same as BB2 — matched by name+size) surfaces the original C shape.
+- mechanism: Kengo debug symbols name the source file as `src/sato/sa_tan0.c`; if the actual source or a closely-matched decomp existed, transplanting its statement order and idioms could reveal the pre-cheat-vetted form the original devs wrote.
+- probe: Verified Kengo has `saTan0Init` at 0x00147dc8 in src/sato/sa_tan0.c (147dc8+14c = 147f14). Searched Kengo/ dir tree: only kengo_functions_full.txt (symbol names + sizes + source-file NAMES, no source) + the ELF + disc/ are shipped. No Kengo source is available in this repo.
+- result: Kengo transplant is unavailable — only symbol metadata exists, not source. The saTan0Init name + size confirm the current C function boundary is correct.
+- verdict: KILLED

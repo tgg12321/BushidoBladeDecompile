@@ -127,3 +127,15 @@
 - [s7] [s7] The cse.c fold is deterministic given (set new_pseudo a0_pseudo) precedes (ashift a0_pseudo K) in the same basic block. No pure-C intervention (self-assign, void-cast, tautological guard) can break value-equivalence without changing semantics. Combined with s6's named local/global pool split for the two-tree branch, BOTH near-hit branches are pass-level dead ends for hand-derivation.
 
 - [s7] [s7] Corollary for frontier #1 (permuter): the s6/s7 pass-level analyses do NOT preclude a permuter find because permuter mutations can reach C shapes routing through a different expand→cse→global path entirely (e.g. spellings that avoid the cse-fold trigger while achieving the LUID movement). Permuter workspace blocker (s4/s5) unchanged: whole-function inline asm + cpp-conflict decls in TU; extract-and-build path for a single-function .c + target.o from disc bytes remains the un-blocker.
+
+- [s8] [s8] Baseline reconfirmed pre + post: sandbox --disable all -> score=2, target_insns=83, build_insns=83, rules_dropped=0, cheat_asm_stripped=78. src/text1a_c.c reverted to s3 candidate.c after Novel 1 and Novel 2 measurements.
+
+- [s8] [s8] m2c reconstruction (tools/m2c/m2c.py --target mips-gcc-c on asm/funcs/saTan0Init.s) produces the SAME structural shape as the current candidate — nested guarded do-while + sum!=0 branch + two-loop scan — with two distinctive local differences: i-before-v1 init order (H1 shape, known KILLED) and inline D_800A33AC (no cached `count` local, measured NEUTRAL this session). No new structural lever surfaced.
+
+- [s8] [s8] Novel 1 (i-before-v1 with ashift operand SPELLED as `i` rather than `a0`) tested cse.c's substitution-direction preference: does cse.c substitute pseudo 77 (i) back to pseudo 72 (a0) in the ashift, or accept the (ashift 77) as-emitted? Measurement: score=11 identical to s3/s4 rotation shapes. cse.c accepts the initial (ashift 77) and does NOT rewrite it to (ashift 72). a0's live range still collapses at insn 15 (i=a0), reproducing the H1/decl-init-decouple/inner-block-defer-v1 cascade.
+
+- [s8] [s8] Novel 2 (drop `count` local, inline D_800A33AC in first-loop guards) measured NEUTRAL (score=2). GCC 2.7.2's licm allocates a loop-invariant pseudo for the load either way; the C decl vs inline distinction is codegen-invisible for a global read that's used in the loop compare. Confirms caching D_800A33AC in a local is a free axis (like the s1 count/i/s5 permutation cluster).
+
+- [s8] [s8] Kengo symbol confirms function identity: saTan0Init at 0x00147dc8, size 0x14c=83 insns (src/sato/sa_tan0.c). But Kengo source is NOT in the repo — only kengo_functions_full.txt (symbol names + sizes + source-file names) and the ELF. Kengo-source transplant is unavailable.
+
+- [s8] [s8] All three rederive axes — fresh m2c decompile, decomp.me corpus (blocked: curl_cffi missing + Postgres unreachable), Kengo transplant (blocked: no source) — surveyed. Only m2c produced testable output; its two distinctive levers both mapped to known-KILLED or NEUTRAL axes. No new C-shape lever produced by rederive.
