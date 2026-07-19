@@ -512,3 +512,11 @@ as separate li's near the dispatch (only case-10's 13 at a bne delay)
 - [s42] Exhaustion is Judge-certified (2026-07-17 17:34) with eight independent confirmations: r1-r13 structural sweeps, F1 slack-transplant negative, m7/r13 label-family negatives, three permuter campaigns (112,618 + 2,049 + 54,087 iterations, only false-zero/semantic-theft below the merge penalty), and the s6/s7 traces.
 
 - [s42] Sessions s27-s41 (all five modalities) each independently re-verified this same owner-gated state; s33/s34 were the forensics-modality verifications.
+
+- [s43] docs/grind/decisions.md is 776 lines; the 2026-07-18 motion_SetMotion OWNER-ESCALATION (filed by grind s7 per the 17:34 Judge disposition) occupies lines 761-776 and is the FINAL entry with no owner ruling after it - verified by reading the file tail this session (s43)
+
+- [s43] The escalation presents the two mutually exclusive owner options: (a) sanction the union-constructor CLOBBER family (closes via banked byte-proven, trace-proven n1 form rejected/judge-fail-0717-1708.c through the normal candidate path), (b) refuse the family and sign an owner disposition for regfix.txt:2190 per no-park-permanently
+
+- [s43] Mandated forensics axis is dead on the ledger with pass-level artifacts: s6 white-box traces certify the closure theorem (merge fires via counted set13 match + label bonus; the rule is a first-iteration pattern-mismatch manufacturer; F1 slack non-transplantable) and s7 traced the candidate family itself (CLOBBER stream-desync, zero DO_CROSS_JUMP events at 13-sites, byte-identical except the single li 13 word)
+
+- [s43] Ledger bank intact: memory/grind/motion_SetMotion/candidate.c (44,155 bytes, floor-10 byte-correct form) + 9 rejected forms; no src/ edits made this session; regfix.txt:2190 and the committed form untouched on main per the 17:34 Judge disposition item (3)

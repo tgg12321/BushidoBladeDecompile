@@ -425,3 +425,9 @@
 - probe: Re-verified first-hand this session: docs/grind/decisions.md:761-776 is the final entry for the function (no owner ruling after it) and its Exhaustion + s7 white-box sections already carry the complete pass-level attribution: honest form merges via jump.c find_cross_jump 1-counted-match + stream-1 label bonus (s6 trace); the union n1 form breaks iteration 1 via byte-free CLOBBER stream desynchronization at the GET_CODE check in both directions (s7 trace, artifacts tmp/grind/motion_SetMotion/s6/ and s7/). Judge constraints bind: the only remaining C-reachable breaker is the unsanctioned USE/CLOBBER family, which must not be probed or committed.
 - result: No unmeasured forensic question exists; any new cc1 dump would re-measure a Judge-certified-dead axis, which the brief forbids.
 - verdict: KILLED
+
+## [s43] The forensics deliverable (exact GCC pass + decision producing the divergence) is already banked, so no new instrumented-cc1 run can add information
+- mechanism: s6 BB2_XJUMP_DEBUG traces named the merge path (jump2 find_cross_jump: one counted set13 match + stream-1 CODE_LABEL bonus), the committed rule's mechanism (set12-vs-set13 first-iteration pattern mismatch at jump.c:2469 before the label walk), and F1 (sched2 slack-hoisting protects the -1 pair); s7 traced the n1 union form's CLOBBER stream-desync GET_CODE break both directions
+- probe: Verified fresh this session: decisions.md tail read end-to-end (776 lines; escalation block 761-776 is final, no OWNER RULING follows); ledger bank checked on disk (candidate.c 44,155 bytes; 9 rejected forms present including judge-fail-0717-1708.c)
+- result: Escalation on file and unruled; forensics artifacts banked under tmp/grind/motion_SetMotion/s6/ and s7/ per the escalation's References section; binding Judge constraints forbid the only remaining C-reachable mechanism (USE/CLOBBER manufacture family)
+- verdict: CONFIRMED

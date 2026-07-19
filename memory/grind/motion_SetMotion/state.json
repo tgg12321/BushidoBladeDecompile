@@ -1,7 +1,7 @@
 {
  "func": "motion_SetMotion",
  "file": "code6cac_c_mid",
- "session_count": 42,
+ "session_count": 43,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -258,6 +258,12 @@
   },
   {
    "session": 42,
+   "floor": 10,
+   "modality": "forensics",
+   "headline": "motion_SetMotion owner-gated: 2026-07-18 OWNER-ESCALATION verified on file and unruled (final entry, docs/grind/decisions.md:761-776); mandated forensics axis is already measured dead with pass-level "
+  },
+  {
+   "session": 43,
    "floor": 10,
    "modality": "forensics",
    "headline": "motion_SetMotion owner-gated: 2026-07-18 OWNER-ESCALATION verified on file and unruled (final entry, docs/grind/decisions.md:761-776); mandated forensics axis is already measured dead with pass-level "
