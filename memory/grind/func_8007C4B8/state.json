@@ -1,0 +1,35 @@
+{
+ "func": "func_8007C4B8",
+ "file": "display",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 0,
+   "floor": 4,
+   "modality": "wip-import",
+   "headline": "floor imported from memory/wip checkpoint"
+  },
+  {
+   "session": 1,
+   "floor": 4,
+   "modality": "recon",
+   "headline": "recon: floor 4 confirmed; owner ruling 2026-07-17 10:35 opens sanctioned forward-order FAKE-alias path (hirahira_w_frie twin) as primary frontier"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Single forward-order FAKE-annotated alias `s32 *o = out; /* FAKE ... */` at function entry, with all subsequent `out[N]`/`((s8*)out)+3` uses rewritten to `o` \u2014 will land sandbox 0 via combine's single-use entry-copy merge on arg0, relocating arg0's `move s1,a0` past arg1's `move s0,a1`.",
+   "mechanism": "Aliasing arg0 reduces `out` to one remaining use (the alias init). cc1 combine.c substitutes the arg-copy pseudo into the alias init and dead-eliminates the entry copy, so the effective entry copy lands at the alias-init insn position (later in the block). This flips which callee-save pair gets the lower LUID, so save_restore_insns emits s0's pair first \u2014 matching target. Same mechanism verified byte-exact on hirahira_w_frie (aliased arg0 `base`).",
+   "next_probe": "Apply the alias to src/display.c func_8007C4B8; run sandbox --disable all. Expected: score 0. Then run K&R decl-block reversal / do-while(0) entry wrap / init-order permutation as measured negatives to satisfy the per-use dossier's exhaustion prerequisite (mirroring hirahira s2b). Then draft `/* FAKE */` annotation naming cc1 combine's single-use entry-copy merge + exhaustion pointer, invoke layer-1 cheat-reviewer, then layer-2 fresh adversarial cheat-reviewer."
+  },
+  {
+   "hypothesis": "Alias on the WRONG param (`Rect *_r = r;`) leaves the pair order unchanged or worse.",
+   "mechanism": "Would relocate arg1's copy LATER \u2014 target already wants arg1's pair FIRST, so this would preserve or worsen the mis-order. Included for completeness so a synthesis session doesn't need to re-derive its negative.",
+   "next_probe": "One-shot measurement after H1 lands: `Rect *_r = r;` alias alone, sandbox --disable all. Expected: score >= 4."
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-19T14:25:47.614160+00:00"
+}
