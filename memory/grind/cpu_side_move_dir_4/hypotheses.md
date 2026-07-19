@@ -1517,3 +1517,9 @@
 - probe: src edit + sandbox --disable all
 - result: masked=2, build_insns=160 INERT. Byte-identical to h5.
 - verdict: CONFIRMED
+
+## [s100] F97a-refined: natural-semantic-purpose C form emits extra pre-block=3 tbl_125c references via SYMBOL_IDENTITY-PRESERVING + SYMBOL-REF-INCREMENTAL pattern preserving (D_800A1494, D_800A125C) symbol pair AND +1 factorization.
+- mechanism: s97/s98/s99 partitioned the priority-input space: livelen INVARIANT (148), conflicts INVARIANT (bit-identical edge set after 4-pseudo rename), only nrefs VARIANT and only along the cross-symbol arithmetic axis. F97a-refined's search space is any spelling preserving BOTH the (1494,125C) SYMBOL_REF pair AND the +1 factorization; predicted enumeration size = 0 semantic-purpose candidates.
+- probe: Cross-read s89 (decomp.me), s90 (3 initializer respellings), s98 (2 mixed-base respellings), s99 (3 spelling-variant respellings) rederive-exhaustion notes; enumerate any surviving honest semantic-purpose spelling that (a) preserves both SYMBOL_REFs and +1 factorization at expr.c::expand_expr time, (b) has a legitimate human-programmer semantic pretext, (c) is not already in the rejected-forms bank.
+- result: Enumeration size = 0. Every candidate matching (a) either duplicates a rejected form (idx1495_direct_symref_D800A1495, honest_idx_1495_ptrarith, s99_idx1495_cross_sym_D1495_no_plus1, s98_idx1495_all_symref_base, s98_idx1495_all_pseudo_multiref) OR fails (b) (no semantic-purpose pretext survives the human-programmer test for double-touching the same tbl_125c prologue byte). Rederive-modality axis is measurably exhausted per s99 note.
+- verdict: KILLED

@@ -1,8 +1,8 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 99,
- "current_modality": "rederive",
+ "session_count": 100,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 0,
@@ -603,23 +603,29 @@
    "floor": 2,
    "modality": "rederive",
    "headline": "rederive: 3-probe symbolic-variant sweep on the h5 idx_1495 cross-symbol initializer; D_800A1495 substitution KILLED (+2/+1insn), arithmetic-equivalent +1-position and sign-flip both INERT \u2014 h5 basin "
+  },
+  {
+   "session": 100,
+   "floor": 2,
+   "modality": "synthesis",
+   "headline": "s100 synthesis: F97a-refined analytically CLOSED (rederive exhausted, 0 semantic-purpose candidates); frontier reset to F1 pointer-alias-fake-exception (SOTN carve-out + FAKE + layer-2 cheat-reviewer)"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F97b (unchanged) - the pointer-alias-fake-exception `s32 *tbl_alias = tbl_125c;` (2026-07-01 sanction) applied to the arg5-address chain could duplicate p79 references in a byte-neutral way, formally measuring the prediction that pseudo-aliasing splits refs (F97b hypothesis).",
-   "mechanism": "s98 probe2 provided a MECHANISM-CONSISTENT data point (pseudo-based tbl_125c multi-references regress to +13). The formal F97b measurement using the 2026-07-01 pointer-alias-fake-exception sanction (FAKE-annotated + layer-2 cheat-reviewer) is still un-run.",
-   "next_probe": "Structural session with layer-2 cheat-reviewer: annotate `/* FAKE: pointer-alias-fake-exception per 2026-07-01 sanction */`, measure once via sandbox + gccdbg."
+   "hypothesis": "F1 (was F97b, unchanged): pointer-alias-fake-exception `s32 *tbl_alias = tbl_125c;` applied to arg5-address chain duplicates p79 references in a byte-neutral way, restoring h5's pri>675 range under the honest respelling.",
+   "mechanism": "s98 probe2 (pseudo-based tbl_125c multi-references regress to +13) is MECHANISM-CONSISTENT with the F97b prediction that pseudo-aliasing splits refs; the formal measurement using the 2026-07-01 pointer-alias-fake-exception sanction (FAKE annotation + layer-2 cheat-reviewer) remains un-run.",
+   "next_probe": "Structural session: annotate `/* FAKE: pointer-alias-fake-exception per 2026-07-01 sanction */`, draft ONE probe, measure sandbox --disable all + gccdbg ALLOCDBG(p79) to confirm nrefs delta; submit form to layer-2 cheat-reviewer for FAKE-quality verdict BEFORE saving as candidate. Save FAIL as rejected form."
   },
   {
-   "hypothesis": "F97c (unchanged) - attack livelen (not nrefs) to re-enter the pri>675 range. Priority = floor_log2(refs)*refs*size/livelen*10000; if nrefs is locked at 3 (probe1/probe2 profile) but livelen can be shortened from 148 to <60, pri could re-enter h5 territory.",
-   "mechanism": "s97 evidence names the priority formula. s98 data reinforces that h5 basin is priority-driven (two distinct +13 regression basins share the p79 refs=3 profile), so a livelen-shortening lever is orthogonal to the nrefs axis all rederive/structural sweeps have targeted.",
-   "next_probe": "Forensics session with ALLOCDBG-instrumented gccdbg: log luid-per-pseudo per basic block on h5 vs probe1; test whether moving tbl_125c assignment closer to block=3 shrinks livelen without touching nrefs."
+   "hypothesis": "F2 (was F97c, unchanged): shorten p79 livelen from 148 to <60 to re-enter h5's pri>675 range while nrefs remains locked at probe1's 3-ref profile.",
+   "mechanism": "s97 named the priority formula (floor_log2(refs)*refs*size/livelen*10000) and measured livelen(p79)=148 INVARIANT between h5 and probe1. s98 reinforced h5 is priority-driven. Livelen-shortening lever is orthogonal to every closed nrefs axis; no session has attacked it.",
+   "next_probe": "Forensics session with ALLOCDBG-instrumented gccdbg: log luid-per-pseudo per basic block on h5 baseline; identify p79 live-range extremes; enumerate declaration-hoist positions in src/system.c that could shrink livelen without touching nrefs; draft ONE probe per candidate position; measure sandbox + ALLOCDBG(p79)."
   },
   {
-   "hypothesis": "F97a-refined (narrowed by s99) - a natural-semantic-purpose C form emitting extra pre-block=3 references to tbl_125c via SYMBOL_IDENTITY-PRESERVING but SYMBOL-REF-INCREMENTAL pattern (e.g., double-referencing D_800A1494 or D_800A125C in the prologue in a semantically-purposeful way) - narrower than the general F97a since s99 confirmed symbol-identity is load-bearing.",
-   "mechanism": "s99 P1 (KILL) proves cross-symbol delta is symbol-identity-sensitive; s90 P1/P2 already proved same-numeric-delta with different symbol shapes regress. Only spellings preserving BOTH symbol pair (1494/125C) AND the +1 arithmetic profile survive. This restricts F97a's search space to (a) same-symbol reuse under a semantic-purpose pretext, or (b) alternate paths to the same fold RTL emission profile via unrelated flow-level constructs \u2014 enumeration size predicted 0 semantic-purpose candidates.",
-   "next_probe": "Structural session or ALLOCDBG-instrumented forensics: enumerate honest semantic-purpose spellings that pre-touch tbl_125c[N] with either an early bound-check idiom or an initializer-computation. Predicted enumeration size: 0 candidates satisfying human-programmer test; if 0, F97a formally CLOSED."
+   "hypothesis": "F3 (NEW contingency): if F1 (s101) and F2 (s102) both KILLED, every sanctioned axis is measured dead \u2192 file OWNER-ESCALATION in docs/grind/decisions.md citing full closure inventory (structural, do-while(0), carriers, named dispatch, hoists, rederive, m2c, marionation transplants, POLL, permuter x6 chassis, F97a-refined analytic, F97b/c empirical); escalate to owner-gated.",
+   "mechanism": "Judge constraint scopes remaining pure-C axes to exactly {F1, F2}. Their empirical closure completes the sanctioned-axis inventory; owner-gated is the driver-sanctioned next step only after the escalation entry is filed and the axis inventory is empty.",
+   "next_probe": "s103 files the OWNER-ESCALATION entry in docs/grind/decisions.md with the closure inventory and emits `owner-gated` outcome citing escalation_ref. Do not preempt: F1 and F2 must be empirically measured first."
   }
  ],
  "judge_constraints": [

@@ -353,3 +353,4 @@
 - 2026-07-19 09:37 func_8007C4B8 s2 [structural] floor=4: s2 structural: 3 exhaustion axes measured DEAD (K&R decl reversal =4, do-while(0) wrap =27, var_a3 init-at-decl =35); H1 FAKE-alias dossier prerequisites advanced
 - 2026-07-19 09:48 func_8007C4B8 COMPLETED-C after 3 sessions.
 - 2026-07-19 09:56 cpu_side_move_dir_4 s99 [rederive] floor=2: rederive: 3-probe symbolic-variant sweep on the h5 idx_1495 cross-symbol initializer; D_800A1495 substitution KILLED (+2/+1insn), arithmetic-equivalent +1-position and sign-flip both INERT — h5 basin symbol-identity-sensitive, spelling-variant-invariant
+- 2026-07-19 09:59 cpu_side_move_dir_4 s100 [synthesis] floor=2: s100 synthesis: F97a-refined analytically CLOSED (rederive exhausted, 0 semantic-purpose candidates); frontier reset to F1 pointer-alias-fake-exception (SOTN carve-out + FAKE + layer-2 cheat-reviewer) and F2 ALLOCDBG livelen attack.

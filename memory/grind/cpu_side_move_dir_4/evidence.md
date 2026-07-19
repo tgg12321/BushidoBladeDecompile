@@ -1606,3 +1606,19 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s99] src/system.c restored to HEAD (both-named arg4/arg5 form) via git checkout at session end. candidate.c unchanged (h5 form remains masked-2 floor).
 
 - [s99] Kengo-transplant angle re-checked via .claude/worktrees/*/kengo_matches.csv: csmd4 has only 'size-only-ambiguous' Kengo match (SetPacketData in src/amami/am_rmd.c, 160 vs 159 insns, name-mismatch). No name-unique Kengo counterpart; this axis is unavailable without an external Kengo source dump the operator would have to provide.
+
+- [s100] s100 synthesis pass: no src/ edit, no sandbox measurement (synthesis modality); h5 candidate.c remains masked-2 floor baseline; no candidate.c or rejected/ change.
+
+- [s100] Ledger cross-read (s1..s99, 99 prior sessions) merged: floor stable at masked=2 since s85 (16 sessions no floor movement); ~81k+ aggregate permuter iterations across 6 chassis (s5/s13/s14/s86/s94/s95) yield 0 basin-closing novel finds.
+
+- [s100] Judge-constraint-compliant remaining axes fully identified as exactly 2: F1 (SOTN pointer-alias-fake-exception carve-out per 2026-07-01 sanction, requires FAKE annotation + layer-2 cheat-reviewer + one structural measurement) and F2 (ALLOCDBG-instrumented livelen shortening on p79 without touching nrefs).
+
+- [s100] F97a-refined formally CLOSED analytically by exhaustion: s99's rederive-exhaustion note ('no untried rederive-modality C form ... against the h5 basin's specific SYMBOL_REF(1494)-SYMBOL_REF(125C)+1 factorization') satisfies F97a-refined's predicted enumeration size = 0 semantic-purpose candidates.
+
+- [s100] Basin non-composability re-confirmed by cross-read (s6/s7): expmed.c::alg_shift hardcodes NULL_RTX target, so no C spelling can compose h5's pair-swap fix with g3's register-exchange fix; every measured C form falls into exactly one basin.
+
+- [s100] Priority-input partition re-confirmed by cross-read (s96/s97): livelen INVARIANT (148), conflicts INVARIANT (bit-identical edge set after 4-pseudo rename 101->97/120->116/126->122/137->133), nrefs VARIANT (5 vs 3), only nrefs axis is variant and only along the forbidden cross-symbol arithmetic path.
+
+- [s100] Structural block-local axis, do-while(0) at all scopes, multi-set carriers, named dispatch, fn-body hoists, marionation transplants, m2c rederive, spelling variants, POLL-region 9-probe sweep, 6 permuter chassis are all measured KILLED per s3/s4/s5/s8/s9/s11/s12/s13/s14/s85-s99 evidence entries.
+
+- [s100] Ledger merge saved to tmp/grind/cpu_side_move_dir_4/s100/synthesis.md with attack ladder for s101 (F1 structural + FAKE + layer-2), s102 (F2 forensics ALLOCDBG luid-per-pseudo), and s103+ escalation contingency.
