@@ -514,3 +514,21 @@
 - probe: Applied decl order v1,s4,sum,s5,i,count to src/text1a_c.c; sandbox --disable all.
 - result: score=2, target_insns=83, build_insns=83 (unchanged).
 - verdict: KILLED
+
+## [s31] A fresh-seed random-mode permuter campaign on the H1-chassis (base=84) would plateau at the same 60 basin as s13/s14/s20/s22/s23 with no sub-60 finds.
+- mechanism: s23 already ran this exact chassis for 37313 iters producing plateau=60. Fresh seed adds a stochastic-independence sample per fresh-seed discipline; the four pass-level walls (cse.c BB-scoped operand substitution / local-alloc pool split / sched1+sched2 LUID coupling / no pure-C CFG-splitter defeats cse.c) predict plateau=60 again.
+- probe: Copy s23/perm_h1 workspace to s31/perm_h1_freshseed, strip prior output-*/campaign_meta.json/log, launch via tools/permuter_campaign.py with -j 4, wait in-turn, harvest --stop.
+- result: KILLED (against the strong form) — campaign found output-10-1 at 336.4s (well below the plateau of 60 measured across 4 prior campaigns totaling ~69590 iters). The strong form of the hypothesis (H1 basin sealed at 60) is refuted. Complete banked finds: [60,60,69,61,79,10,60,66,70,79] over 21218 iters / 779.6s.
+- verdict: KILLED
+
+## [s31] The permuter's score=10 mutation is a semantically-VALID rewrite reachable in pure C — i.e. the H1 basin has a sub-60 spelling that a pure-C decomp could adopt.
+- mechanism: Random-mode permuter mutations can preserve semantics accidentally; a sub-60 find could be a legitimate structural rewrite hidden in the H1 chassis. If so, translating it to canonical decomp form defeats the four pass-level walls.
+- probe: Read tmp/grind/func_80045294/s31/perm_h1_freshseed/output-10-1/source.c and diff.txt; check whether the mutation preserves the first-loop terminator, sum accumulation, and callback dispatch semantics.
+- result: The mutation inserts 'i = a0;' INSIDE the first do-while body (before v1+=0x10; i+=1). This RESETS i to a0 each iteration, so post-body i is always a0+1 regardless of iteration count. When a0+1 < count, the loop is non-terminating (infinite). When a0+1 >= count, it terminates after exactly 1 iteration (semantically differs from the correct <count-a0>-iteration loop for values that fed sum). Additional mutation: dead 's32 *new_var;' declaration and 'new_var = ...; ptr = new_var;' aliasing in the second loop — this branch is a benign codegen-only reshuffle but is not what dropped the score. The i-reset is what shifted LUID, and it is a SEMANTIC BREAK — no pure-C semantic-invariant construct can emit an equivalent mid-loop 'move t,a0' at that slot without either (a) actually corrupting the loop counter or (b) inline-asm register-pin (canonical-asm cheat class).
+- verdict: KILLED
+
+## [s31] The score=10 mutation reveals a new sanctioned axis to explore: pure-C constructs that force GCC to emit an extra 'move' instruction inside the first-loop body at the same slot the permuter injected 'i = a0'.
+- mechanism: If a use of 'a0' or another register can be materialized into a genuine move inside the loop body via a semantic construct (e.g. a helper local re-initialized each iter for a legitimate downstream use), the same LUID shift may occur without semantic break.
+- probe: Enumerate pure-C constructs that would legitimately emit a 'move t,a0' inside the loop body: (a) using a0 in an expression that GCC materializes into a temp — e.g. 'sum += val + (a0 - a0);' collapses via constant folding; (b) a mid-loop condition on a0 that GCC preserves — but a0 is loop-invariant so GCC hoists; (c) register-asm pin on a downstream local — this is the canonical-asm cheat class per inline-asm-injection rule; (d) volatile-tagged local — cheat class per volatile_cheats detector.
+- result: All pure-C constructs that emit a mid-loop move of a0-into-a-register are either (i) collapsed by cse.c/fold_rtx before codegen (constant-fold, invariant-hoist) OR (ii) cheat-class (register-asm pin, volatile alias). This is the SAME four-wall stack from s28 synthesis, now hit from a fifth angle: the LUID-shift lever the permuter found requires bytecode-level codegen intervention no pure-C form can express. The four pass-level walls are hardened, not refuted, by the score=10 find.
+- verdict: KILLED

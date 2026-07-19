@@ -1,8 +1,8 @@
 {
  "func": "func_80045294",
  "file": "text1a_c",
- "session_count": 30,
- "current_modality": "structural",
+ "session_count": 31,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -183,18 +183,24 @@
    "floor": 2,
    "modality": "structural",
    "headline": "s30 structural: three multi-axis free-axis permutations (2-axis probe A, 2-axis probe B, 3-axis probe C) all NEUTRAL score=2; s29 cross-product frontier formally closed by superposition"
+  },
+  {
+   "session": 31,
+   "floor": 2,
+   "modality": "permuter",
+   "headline": "s31 permuter H1-chassis fresh-seed campaign 21218 iters found NOVEL score=10 mutation (well below the 60 plateau banked across s13/s14/s20/s22/s23), but the mutation is a semantic BREAK (mid-loop 'i ="
   }
  ],
  "frontier": [
   {
-   "hypothesis": "docs/grind/decisions.md OWNER-ESCALATION entry for func_80045294 gets drafted (owner-escalation-drafting modality), citing the four pass-level walls with direct pass-output tier evidence, the 24-form rejected bank, the ~69590-iter 7-chassis permuter budget, the 11 rederive sub-axes, and the s30 formal-closure of the multi-axis free-axis surface; with a precise ruling question distinguishing the four-wall stack from the cpu_side_move_dir_4 register-rotation-infrastructure precedent.",
-   "mechanism": "Contract permits owner-gated emission only when the escalation entry is filed AND every remaining sanctioned axis is measured dead. Second precondition holds across s1-s30 (s30 discharges the last sub-axis-cluster the s29 frontier surfaced). First precondition is the entry itself.",
-   "next_probe": "Compose docs/grind/decisions.md entry with the four walls as pass-output-cited proof of unreachability, then emit owner-gated with escalation_ref pointing to that entry. Framing choice (distinct-category vs practical-limit-closure) is the drafting session's key decision."
+   "hypothesis": "docs/grind/decisions.md OWNER-ESCALATION entry for func_80045294 gets drafted (owner-escalation-drafting modality), now citing FIVE independent walls: the original four pass-level walls PLUS the s31 empirical bank showing the sub-60 basin exists but requires a semantic break (mid-loop i-reset) no pure-C form can emit legitimately.",
+   "mechanism": "The s31 permuter campaign found the first sub-60 mutation in ~90800 iters across 5 random-mode campaigns \u2014 but it is a semantic-break basin. This is direct empirical evidence that the H1 basin's true minimum lies OUTSIDE pure-C-expressible space, hardening the four pass-level walls at a fresh empirical angle.",
+   "next_probe": "Draft docs/grind/decisions.md entry with (a) the four pass-level walls with direct pass-output tier evidence from s6/s7/s15/s16/s24/s25, (b) the 25-form rejected bank (24 hand-derived + 1 permuter semantic-break), (c) the ~90800-iter 7-chassis permuter budget with s31's semantic-break sub-60 as the empirical closure evidence, (d) the 11 rederive sub-axes, (e) the s30 formal-closure of the multi-axis free-axis surface. Then emit owner-gated with escalation_ref pointing to that entry."
   },
   {
-   "hypothesis": "Novel semantic-invariant construct not reachable by decl-order permutation alone (e.g. hoisting sum computation out of the guarded do-while entirely, or a semantically-different but bytes-equivalent formulation of the first-loop body) might shift LUID at a surface untouched by s1-s30's decl/init-position axis enumeration.",
-   "mechanism": "s1-s30 exhaust the decl/init-order axis and the arithmetic-shape axis; the loop-body shape has been locked since s1 per the loop-counter-fills-load-delay recipe. A rewrite that preserves loop-body bytes but restructures the sum-accumulation into a functionally-equivalent but structurally-distinct form (e.g. tail-recursive helper, sum computed inside a hoisted arm) might reach a different expand path \u2014 though the loop-body-preservation constraint is very tight.",
-   "next_probe": "Enumerate loop-body-preserving semantic rewrites of the first-loop; measure sandbox --disable all for each. Likely all KILLED per the four pass-level walls but would close another surface."
+   "hypothesis": "A pure-C construct emitting a genuine mid-loop 'move t,a0' at the same slot the permuter's i-reset landed \u2014 via a non-cheat, non-semantic-break mechanism yet to be enumerated \u2014 could reach the sub-60 basin.",
+   "mechanism": "The score=10 mutation proves the sub-60 basin's structural signature is a specific mid-loop move instruction inserted between the val-load and v1+=0x10. If ANY pure-C legitimate construct emits that specific instruction at that slot (without register-asm pin, without volatile, without semantic break), the basin becomes reachable.",
+   "next_probe": "Enumerate pure-C constructs that legitimately materialize 'a0' into a temp register mid-loop: (i) function call whose arg is 'a0' \u2014 but adding a jal changes control flow drastically; (ii) address-of-a0 use \u2014 a0 is a param, address-of forces stack materialization which changes the frame; (iii) writing a0's value to a memory location \u2014 extra store, not a move; (iv) union-based bit-punning of a0 \u2014 collapses at fold; (v) volatile cast of a0 \u2014 cheat class per inline-asm-policy. All plausibly closed by the four pass-level walls plus the cheat catalog. This frontier is theoretical only; the near-100% prior is that it will also be KILLED, and its exhaustive enumeration is more efficiently handled by owner-escalation-drafting citing the s31 empirical bound."
   }
  ],
  "judge_constraints": [],

@@ -485,3 +485,17 @@
 - [s30] The four pass-level walls (s7 cse.c BB-scoped operand substitution / s6/s24 local_alloc/global_alloc pool split with no coalescer / s16 sched1+sched2 both LUID-committed / s10/s11/s25 no pure-C CFG-splitter defeats cse's BB view) are robust to multi-axis structural combinations. The mechanism is: single-axis free-axis moves are LUID-neutral at both sched1 and sched2 (they preserve the ashift's LUID relation to the move16 insn), so composing them preserves neutrality — no combinatorial cascade emerges.
 
 - [s30] docs/grind/decisions.md STILL has no OWNER-ESCALATION entry for func_80045294 (grep -n 'func_80045294' returns zero hits). Per contract, owner-gated is not emittable this session.
+
+- [s31] s31 fresh-seed campaign: 21218 iters in 779.6s, 10 finds banked. Best score=10 (output-10-1 at 336.4s from launch). Other novel finds: score=66, 70, 79-2 (not present in s23's find set). Campaign log at tmp/grind/func_80045294/s31/perm_h1_freshseed/campaign.log; find bundle at output-*/.
+
+- [s31] output-10-1 diff (tmp/grind/func_80045294/s31/perm_h1_freshseed/output-10-1/diff.txt): 3 changes — (1) dead 's32 *new_var;' decl added, (2) 'i = a0;' inserted mid-loop before 'v1 += 0x10; i += 1;', (3) 'ptr' initialization split into 'new_var = ...; ptr = new_var;' alias in second loop.
+
+- [s31] Semantic analysis: 'i = a0;' inside the loop makes post-body i always equal a0+1. First-loop terminator 'i < count' then compares a0+1 vs count — for a0+1 < count the loop never terminates. Target's honest semantics require i to advance from a0 up to count. The permuter's score-only scoring does not detect this — score=10 is a codegen-similarity measure, not a semantic-correctness measure.
+
+- [s31] This is the FIRST sub-60 permuter find across 5 random-mode campaigns totaling ~90800 iters (s13 17773 + s14 720 + s20 13977 + s23 37313 + s31 21218). All prior sub-60 attempts across 7 chassis plateaued at 60 or above. The sub-60 basin exists but is a semantic-break basin.
+
+- [s31] Consequence: the s28-cited four pass-level walls (cse.c BB-scoped operand substitution, local-alloc/global-alloc pool split with no cross-pool coalescer, sched1+sched2 LUID coupling, no pure-C CFG-splitter defeats cse.c BB view) are re-confirmed at a fresh angle — the LUID-coupling shift that would lower score requires an intervention pure C cannot legitimately emit (either semantic break, or canonical-asm cheat class).
+
+- [s31] s31 candidate.c unchanged from s30 (H1 baseline; not applied to src/ since sandbox floor=2 remains). One rejected form banked: rejected/perm-score10-mid-loop-i-reset-semantic-break.c documents the semantic-break basin for future sessions.
+
+- [s31] OWNER-ESCALATION status: entry NOT yet filed in docs/grind/decisions.md. owner-gated remains inadmissible per driver contract; s31 emits 'progress' with the fifth-angle wall reconfirmation as its banked finding. Owner-escalation-drafting modality is the sole remaining sanctioned move; s31 does not draft it because the mandated modality this session was permuter.
