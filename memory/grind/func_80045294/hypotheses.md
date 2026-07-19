@@ -292,3 +292,21 @@
 - probe: Built tmp/grind/func_80045294/s14/perm_min/{base.c,compile.sh}. base.c is 63 lines (vs 2524 in full-TU) with the same PERM_LINESWAP annotation over the 6-decl free-axis cluster. compile.sh reuses the same pipeline (cc1 -> prologue_fix with empty gates -> maspsx -> multu_pad -> awk-extract -> as). Smoke-compiled cleanly to base.o=1684 bytes. Launched via `permuter_campaign.py launch --label s14-minimal-base-lineswap -j 4 --stop-on-zero`. Campaign ran 720 iters in 112.4s; 0 novel finds, best_new_score null (no improvement over base=60).
 - result: Minimal chassis compiles + runs the permuter cleanly. Zero novel finds and zero sub-60 in 720 iters. The mutation-space benefit did not materialize into a gradient — the directed macros are hitting the same plateau on both chassis. Chassis-independent basin confirmed.
 - verdict: KILLED
+
+## [s15] The sched2 emission order of the sw/move16/sll cluster is a direct deterministic function of the LUID ordering of the two source-level assignments (v1=a0<<4 vs i=a0), with no independent sched2 tiebreaker.
+- mechanism: sched.c rank_for_schedule tiebreaker `INSN_LUID(tmp) - INSN_LUID(tmp2)` in backward-list-sched: higher-LUID insn picked first from ready list, emitted later in forward stream.
+- probe: Dumped -da sched2 for candidate (v1-before-i) and H1 (i-before-v1). Candidate T-9 ready list `22 14 12 6` picks 22 (move16 LUID=22) first, emits sll (14) first in output; H1 T-9/T-10 ready lists `17 12 6`/`15 12 6` pick sll (17, LUID=17) before move16 (15, LUID=15), emit move16 first in output. Final .s confirms: candidate `sll;sw;move16`, H1 `sw;move16;sll` (matches target sched2 order at this cluster).
+- result: H1 form reaches target sched2 order at the sw/move16/sll cluster. Sched2 tie mechanism is (b) — LUID-driven, no independent tiebreaker.
+- verdict: CONFIRMED
+
+## [s15] Every C-source shape that flips LUID at sched2 to reach target order also triggers cse.c BB-scoped operand substitution in the ashift, shortening a0's live range and demoting its global_alloc priority — the (a) mechanism is upstream-coupled to any LUID lever.
+- mechanism: cse.c BB-scoped value-equivalence: when `(set new_pseudo a0_pseudo)` precedes `(ashift a0_pseudo K)` in the same basic block, cse rewrites the ashift's operand to the new pseudo (proven at cse pass output). a0_pseudo's reg_n_refs drops by one; global_alloc's priority scoring demotes it in the allocation queue.
+- probe: Compared cse pass RTL: candidate insn 14 emits `(ashift (reg 72) 4)` — sll uses a0 (pseudo 72) directly; H1 insn 17 emits `(ashift (reg 75) 4)` — sll operand rewritten pseudo 72 -> 75 (i). Compared greg allocation queues: candidate `92 78 75 86 85 79 74 73 72 76 80` puts pseudo 72 at position 9 -> $18; H1 `92 75 76 86 85 79 74 73 77 80 72` puts pseudo 72 at position 11 (last) -> $21. RA rotation fingerprint matches s1 H1 kill (a0->$21, i->$16, sll operand=$16).
+- result: CSE substitution proven at pass RTL. Every LUID lever that reaches target sched2 order goes through this substitution. Coupling confirmed.
+- verdict: CONFIRMED
+
+## [s15] The frontier's (a)/(b) discrimination framing resolves as: (b) is the mechanical sched2 driver, but (a) is upstream-coupled to every C-source LUID lever hand-derivation can reach in this function. Fix must be upstream of cse.c fall-through -- likely impossible in pure C without a genuine semantic BB boundary the function does not have.
+- mechanism: cse.c processes single basic blocks (fall-through spans do not cross real branches). A real BB boundary between i=a0 and v1=a0<<4 would prevent the value-equivalence class from being seen. do-while(0) collapses in jump.c before cse.c runs (s10). statement-expression collapses in c-parse.y before RTL (s11). saTan0Init has no natural semantic conditional between the two statements to insert a real branch.
+- probe: s10, s11 measurements (dowhile0-around-v1-after-i.c and stmt-expr-shift.c both KILLED). This session confirms cse.c is the coupling site via direct pass-output comparison, closing the last hand-derivation avenue via named GCC mechanism.
+- result: Hand-derivation of a cse-defeating pure-C lever is dead. Only permuter-family mutations reaching different expand paths (PERM_RANDOMIZE) remain sanctioned.
+- verdict: CONFIRMED

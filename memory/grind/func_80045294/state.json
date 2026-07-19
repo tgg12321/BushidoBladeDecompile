@@ -1,8 +1,8 @@
 {
  "func": "func_80045294",
  "file": "text1a_c",
- "session_count": 14,
- "current_modality": "permuter",
+ "session_count": 15,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -87,23 +87,24 @@
    "floor": 2,
    "modality": "permuter",
    "headline": "s14 permuter: both directed chassis (full-TU + minimal-base) plateau at score=60; frontier #1 and #2 measured dead across ~6000 cumulative directed iters"
+  },
+  {
+   "session": 15,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "s15 forensics discriminates sched2 (a)/(b): mechanism (b) drives sched2 tie via LUID directly (proven at ready-list), but is (a)-coupled upstream at cse.c BB-scoped operand substitution (proven at cse"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The score-60 basin may be broken by PERM_RANDOMIZE wrapping the specific expressions the ledger's s6/s7 mechanism analysis names (a0<<4 as the operand cse.c substitutes into ashift; the s4+a1 operand order that pins the s5 LUID), rather than by PERM_LINESWAP over decl positions. LineSwap has now been tested exhaustively on both chassis and is dead; RANDOMIZE offers a distinct mutation family (pycparser randomizer inserts/deletes/type-changes within a scope) that may reach the residual sched2 tie from a structural direction the free-axis reordering cannot.",
-   "mechanism": "PERM_RANDOMIZE injects the full pycparser randomizer at a named scope (see tools/decomp-permuter/src/randomizer.py) rather than only shuffling manually-listed lines. Applied to the initial-decl block scope it can invent new intermediate locals, split assignments, or restructure the shift-and-index expression in ways the hand-annotated PERM_LINESWAP + finite PERM_GENERAL alternatives cannot enumerate.",
-   "next_probe": "Rebuild tmp/grind/func_80045294/s15/perm_rand/base.c (start from the s14 minimal chassis for iter speed) with PERM_RANDOMIZE wrapping the entire decl+first-loop block; leave the second half untouched to preserve base score. Launch `permuter_campaign.py launch --func func_80045294 --dir tmp/grind/func_80045294/s15/perm_rand --label s15-randomize-decl-loop -j 4 --stop-on-zero`; harvest --stop after ~4000 iters (natural limit) if no score<60. Fresh-seed re-launch permitted per feedback/permuter-fresh-seed-discipline if the first seed yields nothing."
+   "hypothesis": "PERM_RANDOMIZE wrapping the decl+first-loop scope may reach a C spelling routing through a fundamentally different expand->cse->global pass sequence than any hand-derivable form, breaking the cse.c coupling without incurring RA rotation.",
+   "mechanism": "pycparser randomizer (tools/decomp-permuter/src/randomizer.py) can invent new intermediate locals, split assignments, and restructure the shift-and-index expression in ways hand-annotated PERM_LINESWAP + finite PERM_GENERAL alternatives cannot enumerate. Some spellings may synthesize a code shape where cse.c's substitution trigger does not fire, decoupling the sched2 LUID lever from the RA rotation.",
+   "next_probe": "Rebuild tmp/grind/func_80045294/s16/perm_rand/base.c from s14's minimal-base chassis (63 lines). Add PERM_RANDOMIZE(func_80045294) around the entire initial decl+first-loop block; leave second half untouched to preserve score-60 base. Launch permuter_campaign.py with -j 4 --stop-on-zero. Harvest --stop after natural iteration limit (~4000 iters) if no score<60. Fresh-seed re-launch permitted per feedback/permuter-fresh-seed-discipline."
   },
   {
-   "hypothesis": "The 2-insn sched2 tie may be exposed by an ALLOCDBG/SCHEDDBG-instrumented cc1 dump comparing target vs current candidate at the sched2 boundary, isolating which INSN_LUID ordering triggers the sll-vs-move16 preference reversal. This is the s15 forensics prerequisite the ledger names for eventual OWNER-ESCALATION.",
-   "mechanism": "Ledger s7 named cse.c BB-scoped operand substitution as the pass that shortens a0's live range. An instrumented sched2 dump (BB2_SCHED_DEBUG=1) on both target-reconstructed C and candidate would show the ready-list ranking at the tie point, revealing whether the LUID delta is (a) directly caused by CSE's substitution shortening a0's chain (fix must be upstream of cse.c fall-through \u2014 likely impossible in pure C) or (b) caused by later scheduler tiebreaker choices (potentially reachable via a currently-untried structural lever).",
-   "next_probe": "Build tools/gcc-2.7.2 with BB2_SCHED_DEBUG instrumentation (if not already), dump sched2 ready-list ranking + INSN_LUID assignments for both the target-reconstructed input and candidate.c input at the function's entry BB. Compare LUID deltas at the sched2 tie point. If mechanism (a) confirmed, escalate via OWNER-ESCALATION path per ledger frontier #3. If mechanism (b), enumerate the untried structural levers the LUID delta implies."
-  },
-  {
-   "hypothesis": "OWNER-ESCALATION posture (frontier #3, inherited) \u2014 remains valid but NOT ripe: two chassis are now measured dead with directed permuter (this session's contribution), but the s15 forensics prereq the ledger names is unmet. Do NOT invoke owner-gated in s15 until the sched2/cse.c mechanism dump discriminates (a) from (b) and every remaining sanctioned pure-C axis is measured dead.",
-   "mechanism": "N/A \u2014 posture note.",
-   "next_probe": "N/A \u2014 do not invoke until s15 forensics resolves the (a)/(b) discrimination AND at least one more untried structural lever (e.g. PERM_RANDOMIZE frontier above) is measured dead."
+   "hypothesis": "If PERM_RANDOMIZE measures dead across at least one fresh-seed campaign, every sanctioned axis is dead and OWNER-ESCALATION becomes ripe.",
+   "mechanism": "N/A -- posture note. All hand-derivation axes measured dead s1-s15; all rederive axes measured dead s8-s9; both directed permuter chassis measured dead s13-s14; PERM_RANDOMIZE is the last remaining sanctioned mutation family. Ledger frontier #3 (inherited) explicitly names PERM_RANDOMIZE as the prerequisite for ripeness.",
+   "next_probe": "After PERM_RANDOMIZE campaign completes with no score<60 find, draft owner-escalation entry for docs/grind/decisions.md citing s15 (a)/(b) discrimination + all measured-dead axes s1-s16 + PERM_RANDOMIZE plateau evidence. Emit owner-gated in s17 (or s16 if the campaign is completed in-session). Do NOT emit owner-gated in this session or in s16 until the PERM_RANDOMIZE measurement is banked."
   }
  ],
  "judge_constraints": [],

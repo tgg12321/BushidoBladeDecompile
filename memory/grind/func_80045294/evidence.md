@@ -209,3 +209,19 @@
 - [s14] src/text1a_c.c:1602-1648 currently carries the inherited candidate.c body verbatim (verified line-by-line); no src edits this session. memory/grind/func_80045294/candidate.c is unchanged.
 
 - [s14] Consistent with ledger s6/s7 pass-level dead-ends (local/global_alloc pool split with no coalescer; cse.c BB-scoped operand substitution) — no C-source structural lever tested here moves the residual 2-insn sched2 tie.
+
+- [s15] [s15] Baseline reconfirmed pre and post: sandbox --disable all -> score=2 target_insns=83 build_insns=83 rules_dropped=0 cheat_asm_stripped=78. src/text1a_c.c edits reverted after H1 dump; working tree clean.
+
+- [s15] [s15] Sched2 ready-list dumps proved backward-list-sched picks HIGHER LUID first (emits later). Candidate: LUID(sll=14) < LUID(move16=22) -> sll emitted first (wrong). H1: LUID(move16=15) < LUID(sll=17) -> move16 emitted first (matches target sched2 order). Mechanism (b) fully specified with pass-source citation.
+
+- [s15] [s15] CSE pass RTL directly shows the substitution: candidate insn 14 uses (reg 72) = a0 in the ashift; H1 insn 17 uses (reg 75) = i in the ashift (rewritten from a0). Substitution PROVEN at pass output, not inferred from downstream fingerprints.
+
+- [s15] [s15] Greg reg-alloc queue positions measured: pseudo 72 (a0) at position 9 in candidate (gets $18) vs position 11 in H1 (gets $21). 2-slot demotion caused by reg_n_refs dropping from 2 to 1 due to the cse.c substitution. RA rotation fingerprint identical to s1's H1 kill.
+
+- [s15] [s15] The frontier's (a)/(b) discrimination is resolved as BOTH-COUPLED: (b) is the direct sched2 mechanism; (a) is the upstream trigger for every C-source lever that flips LUID. Fix must be upstream of cse.c fall-through per the ledger's own framing.
+
+- [s15] [s15] Consistent with s10 (do-while(0) kill: jump.c collapses before cse.c) and s11 (statement-expression kill: front-end collapses before RTL): no hand-derivable pure-C mechanism creates a cse.c-respected BB boundary between i=a0 and v1=a0<<4 in this function.
+
+- [s15] [s15] Frontier #3 (OWNER-ESCALATION) still not ripe: PERM_RANDOMIZE (frontier #1 from ledger s14) is the last unmeasured sanctioned axis. Driver policy requires every sanctioned axis measured dead before owner-gated.
+
+- [s15] [s15] No rejected form saved this session: the H1 shape used for the discrimination is already banked as rejected/i-before-v1-init.c. candidate.c unchanged (baseline preserved).
