@@ -952,7 +952,12 @@ void tslTm2LoadImage_2(void *a0) {
 extern s32 D_800162EC;
 extern s32 D_80016304;
 static void D_80082050(u8 intr, u8 *result);
-static void D_80082320(void);
+/* External linkage (Sony's cdread.c had cb_data static): byte-identical
+   either way, but static linkage bakes the section-local offset into the
+   %lo addend, so the sandbox's file-wide cheat strip (which shrinks earlier
+   functions) makes the addend diverge from the reference .o — a scorer
+   artifact, not a codegen diff (measured s1, 2026-07-18). */
+void D_80082320(void);
 
 /* PsyQ 4.0 LIBCD cdread.c module .data block — CD_ReadCallbackFunc followed
    by the volatile cdread state struct (SOTN psxsdk names it D_80032DBC); BB2
@@ -1079,7 +1084,7 @@ static void D_80082050(u8 intr, u8 *result) {
 
 /* PsyQ 4.0 LIBCD cdread: cb_data (static) — the tsl-mode data-DMA-complete
    callback installed by cb_read above; performs the deferred buffer advance. */
-static void D_80082320(void) {
+void D_80082320(void) {
     D_800A14D8 += D_800A14E0 * 4;
     D_800A14E4--;
     D_800A14F0++;
