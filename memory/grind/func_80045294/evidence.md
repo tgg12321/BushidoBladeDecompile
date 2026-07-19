@@ -273,3 +273,31 @@
 - [s18] [s18] The rederive-modality exhaustion is a FIFTH independent argument (alongside s1-s16 hand-derivation exhaustion + s13-s14 directed permuter plateau + s15 (a)/(b) discrimination + s16 sched1+sched2 LUID-coupling + s17 five-sub-axis rederive kill) that only PERM_RANDOMIZE remains as a sanctioned axis before OWNER-ESCALATION becomes ripe.
 
 - [s18] [s18] candidate.c unchanged; no src edits this session; no rejected forms new-banked (all three s18 outputs converge on the already-banked rejected/i-before-v1-init.c form, so no new file needed).
+
+- [s19] [s19] Baseline reconfirmed: sandbox --disable all -> score=2, target_insns=83, build_insns=83, rules_dropped=0, cheat_asm_stripped=78. Working tree clean; no src edits; candidate.c unchanged. Artifact: tmp/grind/func_80045294/s19/baseline_recon.txt.
+
+- [s19] [s19] Synthesis: the residual admits ONE problem statement -- reach INSN_LUID(sll) > INSN_LUID(move16) at both sched1 and sched2 ready-list evaluation -- and four proven pass-level failure modes for any C-source lever hand-derivation can reach: (1) s7/s15 cse.c BB-scoped operand substitution shortening a0's live range and demoting global_alloc priority; (2) s6 local_alloc/global_alloc pool split with no coalescer producing +1 copy for any two-tree-a0<<4 spelling; (3) s16 sched1+sched2 both committing via same LUID mechanism (no scheduler-only flag defeats); (4) s10/s11 no pure-C CFG-splitter defeats cse's BB view (do-while(0) collapses in jump.c; stmt-expr collapses in c-parse.y; saTan0Init has no natural semantic conditional to insert). Full merged writeup: tmp/grind/func_80045294/s19/synthesis.md.
+
+- [s19] [s19] PERM_RANDOMIZE macro clarification (tools/decomp-permuter/src/randomizer.py:151-173 + perm/parse.py:81): the macro emits `_permuter randomizer start`/`end` pragmas that bound the randomization Region for a given iter; absence of any PERM_RANDOMIZE annotation falls back to Region.unbounded() (line 172). Therefore s13's random-mode campaign on the full-TU chassis (17773 iters, plateau 60) was ALREADY EQUIVALENT to whole-function PERM_RANDOMIZE. Scoped PERM_RANDOMIZE (e.g. wrapping just the decl block) is a strict SUBSET of s13's unbounded search -- randomizer picks random.choice(regions) per iter, so narrowing the region set narrows reach, not expands it.
+
+- [s19] [s19] The genuinely un-measured chassis-lever surfaced by comparing s13 and s14: **minimal-base chassis + random-mode (unannotated)**. s13 was full-TU chassis + random-mode; s14 was minimal-base chassis + directed (PERM_LINESWAP + PERM_GENERAL) on both full-TU and minimal-base. Minimal-base + random is a distinct chassis/mode combination not empirically banked. Reasonable expectation: also plateaus at 60 (s14 confirmed chassis-independent basin for directed macros; s13 confirmed random-mode plateau on full-TU), but this is the last sanctioned axis before every combination is measured.
+
+- [s19] [s19] Frontier reset for s20: PRIMARY = minimal-base + random-mode permuter fresh-seed campaign (reuse s14 perm_min/ chassis, strip annotations, launch via permuter_campaign.py). SECONDARY = draft owner-escalation entry if #1 also plateaus at 60 (bank the final sanctioned axis before emitting owner-gated). DEPRIORITIZED = scoped PERM_RANDOMIZE experiments (provably a SUBSET of s13's unbounded search).
+
+- [s19] Baseline reconfirmed: sandbox --disable all -> score=2 target_insns=83 build_insns=83 rules_dropped=0 cheat_asm_stripped=78 (tmp/grind/func_80045294/s19/baseline_recon.txt).
+
+- [s19] PERM_RANDOMIZE macro is a REGION scoper (start/end pragma pair); absence falls back to Region.unbounded() at randomizer.py:172. s13's random-mode (17773 iters, plateau 60) = unbounded PERM_RANDOMIZE on full-TU. Scoped PERM_RANDOMIZE is provably SUBSET, not superset.
+
+- [s19] The residual admits ONE problem statement: reach INSN_LUID(sll) > INSN_LUID(move16) at both sched1 and sched2. Four proven pass-level walls block every C-source lever hand-derivation can reach: (1) cse.c BB-scoped substitution (s7/s15), (2) local/global_alloc pool split with no coalescer (s6), (3) sched1+sched2 both LUID-committed (s16), (4) no pure-C CFG-splitter defeats cse's BB view (s10/s11).
+
+- [s19] 22 rejected forms in memory/grind/func_80045294/rejected/ all map to one of the four pass-level walls; no rejected form escaped classification.
+
+- [s19] Rederive modality dead across EIGHT sub-axes (s8: m2c mips-gcc-c + Kengo source; s9: decomp.me corpus; s17: m2c mipsel-gcc-c + m2c mips-ido-c + Kengo debug/globals + BB2 sibling shapes; s18: m2c --gotos-only + m2c mwcc dialect + m2c mipsee no-stack-spill deterministic-vars).
+
+- [s19] Directed permuter dead across 2 chassis / ~6000 iters (s13/s14: full-TU + minimal-base, PERM_LINESWAP over 6-decl cluster + PERM_GENERAL on a0<<4 / s4+a1, plateau=60 chassis-independent).
+
+- [s19] Random permuter dead on full-TU chassis (s13: 17773 iters / 668s, plateau=60, only novel finds were equivalent-basin sum/v1 swap + broken UB false-match).
+
+- [s19] Genuinely un-measured chassis/mode combination = minimal-base chassis + random-mode (no directed annotations). s14 minimal-base only tested directed; s13 random only tested full-TU. This is the final sanctioned axis before OWNER-ESCALATION becomes ripe.
+
+- [s19] Merged synthesis writeup: tmp/grind/func_80045294/s19/synthesis.md.

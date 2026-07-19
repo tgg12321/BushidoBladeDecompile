@@ -1,8 +1,8 @@
 {
  "func": "func_80045294",
  "file": "text1a_c",
- "session_count": 18,
- "current_modality": "rederive",
+ "session_count": 19,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -111,18 +111,24 @@
    "floor": 2,
    "modality": "rederive",
    "headline": "s18 rederive: three additional m2c cross-mode/cross-target axes converge on H1 shape (KILLED); rederive modality now measured dead across 8 independent sub-axes"
+  },
+  {
+   "session": 19,
+   "floor": 2,
+   "modality": "synthesis",
+   "headline": "s19 synthesis: 4 pass-level walls named + cited; scoped PERM_RANDOMIZE reframed as SUBSET of s13 (KILLED); final sanctioned axis = minimal-base + random-mode for s20, then OWNER-ESCALATION ripe."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "PERM_RANDOMIZE wrapping the decl+first-loop scope may reach a C spelling routing through a fundamentally different expand->cse->global pass sequence than any hand-derivable or m2c-derivable form, breaking the cse.c coupling without incurring RA rotation.",
-   "mechanism": "pycparser randomizer (tools/decomp-permuter/src/randomizer.py) can invent new intermediate locals, split assignments, and restructure the shift-and-index expression in ways hand-annotated PERM_LINESWAP + finite PERM_GENERAL alternatives cannot enumerate. s16 hardens the target: the shape must avoid the LUID-driven decision at BOTH sched1 and sched2. s18 confirms neither m2c cross-dialect nor cross-target nor CFG-representation nor position-derived-var-suffix produces a shape outside the KILLED H1 basin, so the last remaining reachable non-H1 shape family must come from mutation-randomization not hand/m2c derivation.",
-   "next_probe": "Rebuild tmp/grind/func_80045294/s19/perm_rand/base.c from s14's minimal-base chassis (63 lines). Add PERM_RANDOMIZE(func_80045294) around the entire initial decl+first-loop block; leave second half untouched to preserve score-60 base. Launch permuter_campaign.py with -j 4 --stop-on-zero. Harvest --stop after natural iteration limit (~4000 iters) if no score<60. Fresh-seed re-launch permitted per feedback/permuter-fresh-seed-discipline."
+   "hypothesis": "Minimal-base chassis + random-mode permuter (unannotated, unbounded PERM_RANDOMIZE region) reaches a sub-60 score s13's full-TU random-mode did not.",
+   "mechanism": "Minimal-base has ~40x fewer AST nodes than full-TU; pycparser randomizer's per-iter mutation graph is unconstrained by irrelevant top-level decls, potentially reaching deeper effective mutation depth on the function body at the same 6-9 iter/s wall-clock rate. Only chassis/mode combination not empirically banked.",
+   "next_probe": "Reuse tmp/grind/func_80045294/s14/perm_min/ chassis (63-line base.c, empty PROLOGUE_CONFIG). Strip PERM_LINESWAP + PERM_GENERAL annotations from base.c to make it unannotated random-mode. Launch: python3 tools/permuter_campaign.py launch --func func_80045294 --dir tmp/grind/func_80045294/s14/perm_min --label s20-min-random-fresh1 -j 4 --stop-on-zero. Harvest --stop at natural iter limit (~5000 iters). If sub-60: apply to src/text1a_c.c, re-sandbox, save as candidate.c. If plateau=60: bank as final sanctioned axis measured dead."
   },
   {
-   "hypothesis": "If PERM_RANDOMIZE measures dead across at least one fresh-seed campaign, every sanctioned axis is dead and OWNER-ESCALATION becomes ripe.",
-   "mechanism": "Posture note. All hand-derivation axes measured dead s1-s16; all rederive axes measured dead s8-s9-s17-s18 (EIGHT independent sub-axes now including three new s18 confirmations); both directed permuter chassis measured dead s13-s14; both scheduling passes shown LUID-coupled s16. PERM_RANDOMIZE is the last remaining sanctioned mutation family.",
-   "next_probe": "After PERM_RANDOMIZE campaign completes with no score<60 find, draft owner-escalation entry for docs/grind/decisions.md citing s15 (a)/(b) discrimination + s16 sched1/sched2 LUID-coupling + all measured-dead axes s1-s18 + PERM_RANDOMIZE plateau evidence. Emit owner-gated in the following session. Do NOT emit owner-gated before the PERM_RANDOMIZE measurement is banked."
+   "hypothesis": "If minimal-base + random-mode also plateaus at 60, every sanctioned axis is measured dead and OWNER-ESCALATION becomes ripe.",
+   "mechanism": "Posture note. After s20 measurement, the enumeration is complete: hand-derivation (s1-s18), rederive (s8/s9/s17/s18), directed permuter (s13/s14 both chassis), random permuter (s13 full-TU + s20 minimal-base). No further sanctioned mutation family exists in decomp-permuter or in hand-derivation for this function.",
+   "next_probe": "AFTER s20 measurement is banked (not before), draft owner-escalation entry for docs/grind/decisions.md citing the four pass-level walls (s7/s15 cse.c, s6 no-coalescer, s16 sched1+sched2 LUID, s10/s11 no-CFG-splitter) + all measured-dead modalities. Owner ruling options: authorize canonical-inline-asm scoping the 2-insn cluster, OR accept score=2 as pure-C-COMPLETED exception. Do NOT emit owner-gated before s20 measurement is banked."
   }
  ],
  "judge_constraints": [],

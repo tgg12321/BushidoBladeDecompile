@@ -321,3 +321,4 @@
 - 2026-07-19 04:57 func_80045294 s16 [forensics] floor=2: s16 forensics: sched1 already commits to sll-before-move16 by same LUID mechanism as sched2 -- BOTH scheduling passes are LUID-coupled, hardening the s15 (b) mechanism and ruling out any sched-only intervention.
 - 2026-07-19 05:05 func_80045294 s17 [rederive] floor=2: s17 rederive: m2c cross-target convergence + Kengo debug absence + sibling shape enumeration all confirm rederive modality exhausted; three new sub-axes killed
 - 2026-07-19 05:09 func_80045294 s18 [rederive] floor=2: s18 rederive: three additional m2c cross-mode/cross-target axes converge on H1 shape (KILLED); rederive modality now measured dead across 8 independent sub-axes
+- 2026-07-19 05:15 func_80045294 s19 [synthesis] floor=2: s19 synthesis: 4 pass-level walls named + cited; scoped PERM_RANDOMIZE reframed as SUBSET of s13 (KILLED); final sanctioned axis = minimal-base + random-mode for s20, then OWNER-ESCALATION ripe.

@@ -347,8 +347,38 @@
 - result: Init cluster BYTE-IDENTICAL to the gcc/ido runs: var_s1=0; var_s0=arg0; var_v1=arg0*0x10; temp_s4=...; temp_s5=... . The dialect selector affects prologue/epilogue matching but not the decl init printer for this asm shape. The H1 shape convergence extends to a 4th m2c dialect.
 - verdict: KILLED
 
+## [s19] Scoped PERM_RANDOMIZE (wrapping only the decl+first-loop scope) reaches a mutation surface that unbounded random-mode (s13, full-TU chassis, 17773 iters) did NOT, and can break the sll/move16 sched2 tie.
+- mechanism: The s18 ledger frontier claimed scoping PERM_RANDOMIZE to a specific block would let pycparser's randomizer invent intermediate locals / split assignments that unannotated random-mode could not enumerate. Falsifiable: examine decomp-permuter/src/randomizer.py's Region handling.
+- probe: Read tools/decomp-permuter/src/randomizer.py:151-173 + perm/parse.py:81. `get_randomization_region` collects `_permuter randomizer start/end` pragma-bounded regions, returns `random.choice(ret)` per iter. If no annotation, returns `Region.unbounded()` (whole function).
+- result: Scoped PERM_RANDOMIZE is a strict SUBSET of unbounded random-mode -- narrowing the region set can only reduce the randomizer's per-iter choice space, never expand it. s13's random-mode (17773 iters unbounded on full-TU chassis, plateau 60) already ran the maximally-scoped PERM_RANDOMIZE search. The s18 frontier framing was inverted; scoped PERM_RANDOMIZE cannot find gradients s13 didn't. Ledger evidence surface corrected.
+- verdict: KILLED
+
+## [s19] Minimal-base chassis + random-mode permuter (no directed annotations) is a distinct chassis/mode combination not yet empirically banked, and its ~40x-smaller AST surface may let pycparser's randomizer reach mutation depths that full-TU random-mode (s13) or minimal-base directed (s14) did not.
+- mechanism: The pycparser randomizer walks the top-level AST each iter and applies structural transforms (decl reorder, statement swap, expression rewrites). A smaller AST means fewer no-op mutations on irrelevant top-level decls per iter, potentially deeper effective mutation reach on the function body at the same wall-clock. s14 confirmed the minimal-base chassis compiles + iterates cleanly at 6-9 iter/s; s13 confirmed random-mode plateaus on full-TU at 17773 iters. The COMBINATION is untested.
+- probe: Not run this session (synthesis-only). Frontier deferred to s20: reuse tmp/grind/func_80045294/s14/perm_min/ chassis, strip PERM_LINESWAP + PERM_GENERAL annotations, launch via permuter_campaign.py launch --label s20-min-random-fresh1 -j 4 --stop-on-zero, harvest at natural iter limit (~5000 iters).
+- result: Unmeasured this session. Prior evidence weakly suggests plateau=60 (s14 chassis-independent for directed; s13 mode-independent for full-TU) but the combination remains formally un-banked. THIS is the correct final sanctioned axis to measure before OWNER-ESCALATION -- not scoped PERM_RANDOMIZE as the s18 frontier claimed.
+- verdict: (deferred to s20)
+
+## [s19] All pass-level failure modes for hand-derivation of a target-order sched2 emission are already named and cited at pass output, and no new hand-derivation lever remains for s20+ to explore.
+- mechanism: Consolidated across s1-s18 -- (i) s7/s15 cse.c BB-scoped operand substitution proven at cse pass RTL; (ii) s6 local_alloc/global_alloc pool split with no coalescer proven at greg dump; (iii) s16 sched1+sched2 both LUID-committed with reload-preserved LUIDs proven at sched1/sched2 dumps; (iv) s10/s11 no pure-C CFG-splitter defeats cse's BB view proven at score measurement (do-while(0) collapses in jump.c; stmt-expr collapses in c-parse.y). saTan0Init has no natural semantic conditional between i=a0 and v1=a0<<4.
+- probe: Cross-checked every measured axis in s1-s18 against the four failure modes. Every rejected form in memory/grind/func_80045294/rejected/ (22 files) maps to exactly one of (i)-(iv). No hand-derivation axis remains that has not already been shown to hit one of these four walls.
+- result: The hand-derivation modality is TERMINALLY exhausted. Rederive is exhausted across 8 sub-axes (s8/s9/s17/s18). Directed permuter is exhausted across 2 chassis (s13/s14). Random permuter is exhausted on 1 chassis (s13, full-TU). The one remaining sanctioned axis (s19 second entry above) is s20's minimal-base + random-mode combination. After that: OWNER-ESCALATION ripe.
+- verdict: CONFIRMED
+
 ## [s18] m2c with --target mipsee-gcc-c + --no-stack-spill + --deterministic-vars applies PS2-era GCC priors, disables stack-spill temporary introduction, and gives variables ASM-location-stable suffixes, which may surface a different init ordering or expose a variable that hand-derivation would spell differently.
 - mechanism: mipsee target changes ABI/register-usage priors; --no-stack-spill suppresses phantom temporaries; --deterministic-vars binds var suffixes to asm positions so the printer chooses different decl ordering when var creation LUIDs are position-derived instead of increment-derived.
 - probe: python3 tools/m2c/m2c.py --target mipsee-gcc-c --passes 5 --no-stack-spill --deterministic-vars asm/funcs/saTan0Init.s -> tmp/grind/func_80045294/s18/m2c_mipsee_p5.txt
 - result: Init cluster (with position-suffixed names) is: var_s1_8=0; var_s0_10=arg0; var_v1_11=arg0*0x10; temp_s4_17=...; temp_s5_22=... . The numeric suffixes confirm the ASM-position-derived decl creation ORDER is: sum(pos 8) -> i(pos 10) -> v1(pos 11) -> s4(pos 17) -> s5(pos 22). This is the H1 shape's exact init order with independent evidence from position-derived LUIDs.
 - verdict: KILLED
+
+## [s19] Scoped PERM_RANDOMIZE (wrapping only the decl+first-loop scope) reaches mutations that unbounded random-mode (s13, 17773 iters full-TU chassis) cannot.
+- mechanism: s18 frontier claim: scoped region lets pycparser randomizer invent intermediate locals / split assignments unannotated random-mode cannot enumerate.
+- probe: Read tools/decomp-permuter/src/randomizer.py:151-173 + perm/parse.py:81. get_randomization_region returns random.choice(regions) per iter; no annotation -> Region.unbounded() (line 172, whole function).
+- result: Scoped PERM_RANDOMIZE is a strict SUBSET of unbounded random-mode -- narrowing region set narrows randomizer's per-iter choice space. s13 already ran maximally-scoped search. s18 frontier framing was inverted.
+- verdict: KILLED
+
+## [s19] All pass-level failure modes for hand-derivation of a target-order sched2 emission on this function are now named and cited at pass output; no new hand-derivation lever remains.
+- mechanism: Cross-check every measured axis s1-s18 against (i) s7/s15 cse.c BB-scoped substitution, (ii) s6 no-coalescer pool split, (iii) s16 sched1+sched2 LUID commit, (iv) s10/s11 no pure-C CFG-splitter. Every rejected form in memory/grind/func_80045294/rejected/ (22 files) maps to exactly one of (i)-(iv).
+- probe: Enumerated rejected/*.c against the four failure modes; verified each maps.
+- result: Hand-derivation modality TERMINALLY exhausted. Rederive exhausted across 8 sub-axes (s8/s9/s17/s18). Directed permuter exhausted 2 chassis (s13/s14). Random permuter exhausted 1 chassis (s13 full-TU). Only untested combination: minimal-base + random-mode (deferred s20).
+- verdict: CONFIRMED
