@@ -1,7 +1,7 @@
 {
  "func": "func_80057CC8",
  "file": "text1b",
- "session_count": 13,
+ "session_count": 14,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -87,13 +87,19 @@
    "floor": 3,
    "modality": "permuter",
    "headline": "s13 permuter (downstream-ternary chassis, 199 iters, base_score=15): one score-0 close is `s16 *new_var2 = <p2 expr>; p = new_var2;` \u2014 a p2-side pointer-alias holder, same cheat class as s4/s5 finds a"
+  },
+  {
+   "session": 14,
+   "floor": 3,
+   "modality": "permuter",
+   "headline": "s14 permuter (4th chassis: p1/p2 shift-spelling + p2 table-source): base_score=15 -> score-0 at iter 19/40.1s; close-form is p1-side s16* alias holder = same cheat class as s4/s5/s13; permuter modalit"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F3 -- Kengo (PS2, Marionation engine reuse per AGENTS.md) transplant. func_80057CC8 has not been probed in [[slog-kengo-dead-end]] (only func_80023F08 and func_80058580). Angle-interpolation over an arena-point table is plausibly a Lightweight/Marionation-shared routine.",
-   "mechanism": "If a Kengo-source structurally equivalent function exists (walks a 2-point neighbour table, computes prev-index / next-index angle-interp with mid + 0x800 flip on wrap, applies sin/cos-table scaling to (arg2, arg3) outputs), its C shape may reveal a legitimate lever not derivable from BB2 shape alone. Prior [[slog-kengo-dead-end]] memory says Kengo probe on two unrelated funcs returned no match \u2014 but func_80057CC8's shape (angle interpolation with arena-point walk) is distinct from both, so the null result does not transfer.",
-   "next_probe": "REDERIVE modality (s14). Check Kengo corpus availability (via the reference cited in AGENTS.md / project memory). Grep for angle-interp / two-neighbour arena-point patterns / prev-next index reload + call pair + ternary-with-0x800-flip. If a structural match exists, transplant the C shape and measure. If corpus not accessible OR no structural match found, KILL as unfindable \u2014 with F1+F2 already dead and permuter modality exhausted, this exhausts the s10 synthesis frontier and would make an OWNER-ESCALATION filing in docs/grind/decisions.md the correct next disposition (no such entry currently exists for func_80057CC8)."
+   "hypothesis": "F3 Kengo (PS2, Marionation engine reuse) transplant.",
+   "mechanism": "func_80057CC8 has not been probed against the Kengo corpus (memory/project/slog-kengo-dead-end.md covers only func_80023F08 and func_80058580). If a Kengo-source structurally equivalent function exists (walks a 2-point neighbour arena-point table, computes prev-index/next-index angle-interp with mid + 0x800 flip on wrap, applies sin/cos-table scaling to (arg2, arg3) outputs), its C shape may reveal a legitimate lever not derivable from BB2 shape alone.",
+   "next_probe": "REDERIVE modality. Check Kengo corpus accessibility. Grep for angle-interp / two-neighbour arena-point patterns / prev-next index reload + call pair + ternary-with-0x800-flip. If a structural match exists, transplant the C shape and measure. If corpus not accessible OR no structural match found, KILL as unfindable. With F1+F2 dead and permuter now KILLED across 4 chassis, this is the last sanctioned frontier axis before OWNER-ESCALATION becomes the correct filing."
   }
  ],
  "judge_constraints": [
