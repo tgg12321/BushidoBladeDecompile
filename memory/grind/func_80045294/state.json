@@ -1,8 +1,8 @@
 {
  "func": "func_80045294",
  "file": "text1a_c",
- "session_count": 9,
- "current_modality": "rederive",
+ "session_count": 10,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -57,18 +57,29 @@
    "floor": 2,
    "modality": "rederive",
    "headline": "s9 rederive: decomp.me corpus shingle-search un-blocks s8's third axis and KILLS it (top sim 0.127, no structural transplant); all three rederive legs now measured dead for this function."
+  },
+  {
+   "session": 10,
+   "floor": 2,
+   "modality": "synthesis",
+   "headline": "s10 synthesis: do-while(0) CFG-split around v1=a0<<4 after i=a0 KILLED (score 12) -- the ONE sanctioned no-semantic-purpose wrap does NOT defeat s7's cse.c BB-scoped substitution; frontier #2 loses it"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Directed permuter over PERM_STMT_LIST reorderings + PERM_ADD_SUB / PERM_DUMMY_COMMA_EXPR / PERM_REORDER_DECLS finds a spelling that shifts sll's LUID above move16's WITHOUT (a) introducing a second tree-level a0<<4 (s6 local/global pool split, +1 CSE copy) OR (b) source-ordering i=a0 before v1=a0<<4 in a straight-line block (s7 cse.c operand substitution, rotates RA).",
-   "mechanism": "s6 + s7 pin two orthogonal pass-level dead ends for hand-derivation; s8/s9 confirm rederive axis is dead. Permuter can explore C shapes routing around BOTH via mutations that split blocks so cse.c doesn't see i=a0 -> v1=a0<<4 in one processing region, or eliminate the second tree-level shift altogether via non-obvious commutative/associative rewrites.",
-   "next_probe": "Un-block permuter workspace by extracting func_80045294 into a MINIMAL single-function .c (drop the whole-function __asm__ block for func_80044010 and the cpp-conflict D_80095328 / D_800A9D04 / func_80042874 / func_8004574C decls, keep only D_800EE* / D_800A33* / callee prototypes); build target.o from disc bytes @0x35A94 (s1 offset) via tools/decomp-permuter/prelude.inc (r3000 variant, drop .set gp=64). Launch tools/permuter_campaign.py with PERM_STMT_LIST + PERM_ADD_SUB + PERM_DUMMY_COMMA_EXPR + PERM_REORDER_DECLS weight overrides and fresh-seed 20-30min basins per feedback/permuter-fresh-seed-discipline."
+   "hypothesis": "Directed permuter over PERM_STMT_LIST + PERM_ADD_SUB + PERM_DUMMY_COMMA_EXPR + PERM_REORDER_DECLS finds a C spelling that shifts sll's LUID above move16's WITHOUT (a) introducing a second tree-level a0<<4 (s6 local/global pool split, +1 CSE copy), (b) source-ordering i=a0 before v1=a0<<4 in a way cse_extended_basic_block sees as a straight-line region (s7 + s10 confirm cse.c defeats the do-while(0) CFG-split lever), OR (c) triggering the H1-family RA rotation via any spelling that collapses a0's live range at the i-assignment.",
+   "mechanism": "s6 + s7 + s10 pin three orthogonal hand-derivation dead ends. Permuter can explore C shapes routing through a different expand/cse/global path entirely -- mutations that eliminate the second tree-level shift altogether via non-obvious commutative/associative rewrites, or that break up the i/v1 sequence via statement-list splits crossing statement-scope boundaries not equivalent to do-while(0) (e.g. distinct decl-init subexpressions embedded in call-arg lists that GCC 2.7.2 may not extended-BB-span even where it does for fall-through).",
+   "next_probe": "Un-block permuter workspace by extracting func_80045294 into a MINIMAL single-function .c (drop the whole-function __asm__ block for func_80044010 and the cpp-conflict D_80095328 / D_800A9D04 / func_80042874 / func_8004574C decls, keep only D_800EE* / D_800A33* / callee prototypes); build target.o from disc bytes @0x35A94 via tools/decomp-permuter/prelude.inc (r3000 variant, drop .set gp=64). Launch tools/permuter_campaign.py with the four PERM_* macros above and fresh-seed 20-30min basins per feedback/permuter-fresh-seed-discipline."
   },
   {
-   "hypothesis": "A C spelling that expresses `v1 = a0<<4` and `i = a0` across a control-flow join (rather than a straight-line block) prevents cse.c basic-block-scoped value-numbering from folding pseudo 77 into the ashift, preserving a0's long live range and avoiding the s7 RA rotation.",
-   "mechanism": "cse.c basic_block_extended_end / cse_extended_basic_block bounds value-numbering to a single processing region. Cross-block equivalences are established only at reload/global. If i=a0 lives in one block and v1=a0<<4 in a different block reachable from function entry (not a linear predecessor of i=a0), CSE cannot substitute at insn 17. s8 note: no obvious semantic-purposeful early-guard exists (a0/a1 have no null/range semantics justifying a natural if-guard); s9 rederive corpus search offers no transplant precedent for a specific split shape.",
-   "next_probe": "Enumerate small C rewrites that split the prologue into two joinable blocks with semantic purpose -- e.g. a bounds check on a0 vs D_800A33AC before v1 compute (if a0>=count, skip both loops but still update D_800A33A0/A4); or a conditional-move idiom GCC lowers to a jump. Verify each keeps score close and doesn't add insns. Measure whether cse.c picks up value-equivalence across the split. Likely requires frontier #1 (permuter) to discover the exact shape."
+   "hypothesis": "Forensics probe: reading base.i.jump0 (post-jump.c) and base.i.cse (post-cse.c) for the do-while(0) shape distinguishes s10-mechanism (a) from (b). If (a), a construct that survives jump.c folding may still work; if (b), no CFG-split construct can defeat cse.c on this coupling regardless of source-form.",
+   "mechanism": "cc1 -da emits per-pass RTL dumps. jump0 is the first jump-optimization pass output; cse is the CSE pass output. Comparing the BB structure of the two dumps around insns 14/15/17 for the do-while(0) form tells us at which pass the boundary was destroyed.",
+   "next_probe": "Reapply memory/grind/func_80045294/rejected/dowhile0-around-v1-after-i.c to src, run `cc1 <build-flags> -da base.i` in tmp/grind/func_80045294/sN/, then grep the func_80045294 region in base.i.jump0 and base.i.cse for the (set 77 ...) and (ashift ...) insns. Verdict: (a) if jump0 already collapses to one BB, (b) if two BBs survive to cse but cse-extended-basic-block spans them."
+  },
+  {
+   "hypothesis": "OWNER-ESCALATION posture (NOT invoked this session; noted for the driver's ladder): if permuter (#1) exhausts its fresh-seed budget with no closing form AND forensics (#2) confirms mechanism (b) [cse.c spans fall-through, no CFG-split construct can help], then every sanctioned pure-C axis is measured dead. The residual is a 2-insn sched2 tie driven by two pass-level dead ends coupled at C-source level. At that point a filed OWNER-ESCALATION citing s1-s10 evidence would be the correct posture (candidate for canonical-asm authorization or extended park). NOT this session -- one modality remains grindable.",
+   "mechanism": "N/A (posture note).",
+   "next_probe": "N/A (posture note)."
   }
  ],
  "judge_constraints": [],
