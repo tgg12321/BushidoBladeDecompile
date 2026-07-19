@@ -310,3 +310,9 @@
 - probe: s10, s11 measurements (dowhile0-around-v1-after-i.c and stmt-expr-shift.c both KILLED). This session confirms cse.c is the coupling site via direct pass-output comparison, closing the last hand-derivation avenue via named GCC mechanism.
 - result: Hand-derivation of a cse-defeating pure-C lever is dead. Only permuter-family mutations reaching different expand paths (PERM_RANDOMIZE) remain sanctioned.
 - verdict: CONFIRMED
+
+## [s16] sched1 (pre-reload) and sched2 (post-reload) could diverge in their ordering of insn 14 (sll) vs insn 22 (move16), opening a sched1-specific or sched2-specific intervention (e.g. -fno-schedule-insns / -fno-schedule-insns2) that avoids the s7/s15 cse.c (a) coupling.
+- mechanism: sched1 runs after loop.c and combine.c but before reload; sched2 runs after reload has inserted callee-save/restore RTL insns. Different insn sets on the ready list could in principle produce different pick orders even under the same rank_for_schedule tiebreak. If one pass gave target order and the other didn't, disabling the offending pass alone might close the gap without needing a C-source LUID lever.
+- probe: Read s3 cc1 -da dumps: tmp/grind/func_80045294/s3/base.i.sched (sched1) and base.i.sched2 (sched2). Compared block-0 forward stream at the sll/move16 cluster in both.
+- result: sched1 block 0 (8 insns, total_time=8) ready-list at T-6 = `22 14 12` -- backward-list picks 22 first (LUID higher), sll(14) emitted at forward pos 2, move16(22) at forward pos 3. sched2 block 0 (18 insns after reload inserts 195-211; total_time=18) ready-list at T-9 through T-11 picks 22 at T-9 (pos 10), 211 at T-10 (pos 9, hoisted by 'greater potential hazard'), 14 at T-11 (pos 8). BOTH passes emit sll before move16 by the same LUID mechanism; sw's placement between them at sched2 is a hazard-hoist (not LUID) and is sched2-specific but does not decouple the sll/move16 order.
+- verdict: KILLED

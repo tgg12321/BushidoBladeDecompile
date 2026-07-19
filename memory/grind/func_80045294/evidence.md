@@ -225,3 +225,21 @@
 - [s15] [s15] Frontier #3 (OWNER-ESCALATION) still not ripe: PERM_RANDOMIZE (frontier #1 from ledger s14) is the last unmeasured sanctioned axis. Driver policy requires every sanctioned axis measured dead before owner-gated.
 
 - [s15] [s15] No rejected form saved this session: the H1 shape used for the discrimination is already banked as rejected/i-before-v1-init.c. candidate.c unchanged (baseline preserved).
+
+- [s16] [s16] Baseline reconfirmed: sandbox --disable all -> score=2, target_insns=83, build_insns=83, rules_dropped=0, cheat_asm_stripped=78. Working tree clean; no src edits this session.
+
+- [s16] [s16] sched1 block-0 forward order at the cluster (from s3/base.i.sched line 19097-19123): insn 12 (pos 1) -> insn 14 sll (pos 2) -> insn 22 move16 (pos 3) -> insn 19 (pos 4). sll emitted before move16, driven by rank_for_schedule INSN_LUID tiebreak (LUID(14)=14 < LUID(22)=22 -> 22 picked first in backward list -> emitted later in forward).
+
+- [s16] [s16] sched2 block-0 forward order at the cluster (from s3/base.i.sched2 line 20105-20157): pos 8 = insn 14 sll, pos 9 = insn 211 sw (callee-save, LUID=211 from reload), pos 10 = insn 22 move16. The sll<move16 relative order matches sched1; sw's placement between them is driven by the ready-list hazard-hoist rule ('insn 211 has a greater potential hazard'), NOT by LUID.
+
+- [s16] [s16] Reload inserts callee-save/restore/frame-setup insns numbered 195-211 into block 0 between sched1 and sched2. The pre-reload insns (4, 6, 12, 14, 19, 22, 25, 28, 31, 32) preserve their INSN_LUIDs across reload; new insns get monotonic LUIDs from 195 upward. Therefore any LUID relation between pre-reload insns is FROZEN through reload.
+
+- [s16] [s16] The wrong sll-before-move16 order is COMMITTED AT SCHED1, not first at sched2. sched2 makes the same LUID-driven choice for insns 14 and 22 that sched1 made; sched2 does not re-decide this pair.
+
+- [s16] [s16] Corollary: a hypothetical build-flag intervention that ONLY disables sched2 (-fno-schedule-insns2) cannot close the gap -- sched1's already-committed order would carry through to final. Similarly, disabling sched1 (-fno-schedule-insns) would leave the natural pre-sched RTL insn order intact, which is IDENTICAL to sched1's output for these two insns because both derive from the same LUID relation. There is no scheduler-side lever independent of the C-source LUID axis for this pair.
+
+- [s16] [s16] Hardens s15's mechanism-(b) conclusion: the LUID-driven sched decision is made TWICE (sched1 and sched2) by the SAME rank_for_schedule tiebreak against the SAME LUIDs. Therefore the s7 cse.c upstream (a) coupling that pins every C-source LUID lever to RA rotation holds against BOTH scheduling passes, not just sched2. The (a)/(b) coupling is stronger than the ledger stated: not one downstream pass but two, and there is no scheduler-only defeat available.
+
+- [s16] [s16] The sw insn's placement between sll and move16 in the final output is confirmed to be a SCHED2-EXCLUSIVE hazard-hoist decision (log line 'insn 211 has a greater potential hazard'). sched2 groups memory ops away from ALU chains for pipeline reasons. This is not a lever -- it does not alter the sll/move16 relative order -- but it explains why the residual is a 3-insn cluster (sw/move16/sll vs sll/sw/move16) rather than a 2-insn sll/move16 swap.
+
+- [s16] [s16] All hypotheses about scheduler-side interventions for func_80045294 are now exhausted. The LUID axis is provably coupled to cse.c (s7), coupled to RA rotation via reg_n_refs (s6), and now shown coupled to BOTH scheduling passes (s16). Any closing lever must be either (i) a pure-C construct that shifts LUID while avoiding cse.c's BB-scoped substitution -- proven impossible for hand-derivation across s1-s15, PERM_RANDOMIZE unmeasured -- or (ii) an owner-sanctioned canonical-asm authorization.
