@@ -1,7 +1,7 @@
 {
  "func": "func_80045294",
  "file": "text1a_c",
- "session_count": 33,
+ "session_count": 34,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -201,13 +201,19 @@
    "floor": 2,
    "modality": "forensics",
    "headline": "s33 forensics: combine.c mints the LUID(sll)=14 vs LUID(move16)=22 delta at pass boundary \u2014 pseudo 72 (a0) is a 3-BB multi-use pseudo (insns 4, 22, 89) that combine cannot substitute-and-delete, locki"
+  },
+  {
+   "session": 34,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "s34 forensics: 8-UID sll/move16 delta MINTED at EXPAND emit_insn (s4's initializer, insns 17+19); combine deletes insn 17 but insn 19 (s4 load) survives \u2014 sixth pass-level wall named upstream of s33's"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "docs/grind/decisions.md OWNER-ESCALATION entry for func_80045294 gets drafted (owner-escalation-drafting modality), now citing the s33-added combine.c pass-boundary wall alongside the four ledger walls, the 137,752-iter 9-chassis empirical bank, and the s31 semantic-break sub-60 find.",
-   "mechanism": "s33 upgrades the LUID-delta origin from 'inherited by sched1 from prior passes' to 'minted at combine.c pass boundary because pseudo 72 has 3 cross-BB uses and combine.combinable_i3pat refuses substitute-and-delete on multi-use pseudos'. The escalation writeup now has a fifth pass-output citation and can name combine.c specifically as the pass where the sched2 tie's INSN_LUID input is fixed.",
-   "next_probe": "Draft docs/grind/decisions.md entry with the 5-wall stack (combine.c LUID mint / cse.c BB substitution / local+global_alloc pool split / sched1+sched2 LUID coupling / no pure-C CFG-splitter defeats cse), the 25-form rejected bank (24 hand-derived + 1 permuter semantic-break), the ~137,752-iter 9-chassis permuter budget, the 11 rederive sub-axes converging on H1, and the s30 formal-closure of the multi-axis free-axis surface. Then emit owner-gated with escalation_ref pointing to that entry."
+   "hypothesis": "OWNER-ESCALATION entry for func_80045294 gets drafted in docs/grind/decisions.md now citing SIX pass-level walls (adds s34 expand-side structural forcing of insn 19 to the s33 chain).",
+   "mechanism": "s34 upgrades the pass-chain citation from 5 walls (combine.c mint \u2192 cse.c substitution \u2192 local/global_alloc pool split \u2192 sched1+sched2 LUID coupling \u2192 no pure-C CFG splitter) to 6 walls by naming EXPAND emit_insn as the true mint site with s4's initializer producing the two intermediate SETs that create the delta. The escalation writeup can now cite the full chain from expand through reorg with direct pass-output evidence.",
+   "next_probe": "Draft docs/grind/decisions.md entry with the 6-wall stack (expand emit_insn structural forcing of insn 19 via s4 data dep on v1 / combine.c 56/45/2 substitute-and-delete refusal / cse.c BB substitution / local+global_alloc pool split with no coalescer / sched1+sched2 LUID coupling / no pure-C CFG-splitter defeats cse), the 25-form rejected bank, the ~137,752-iter 9-chassis permuter budget, the 11 rederive sub-axes converging on H1, and the s30 formal closure of the multi-axis free-axis surface. Then emit owner-gated with escalation_ref pointing to that entry."
   }
  ],
  "judge_constraints": [],

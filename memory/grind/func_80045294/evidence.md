@@ -521,3 +521,35 @@
 - [s33] s16 sched1+sched2 LUID coupling wall is now traced one pass further upstream: sched1's ready-list input inherits LUIDs 14 and 22 from combine.c's output; combine.c is where the 8-delta between sll and move16 is minted. No prior pass (cse.c, loop.c, jump.c) can shrink the delta because combine's substitute-and-delete is what would collapse either insn, and both insns' destinations are loop-carried multi-use pseudos.
 
 - [s33] 5 forensic sessions (s3, s6, s7, s15, s16, s24, s25, s33) now have direct base.i.<pass> pass-output citations. Chain: flow.c REG_BASIC_BLOCK tag → combine.c 56/45/2 substitute-and-delete leaves both insns → cse.c BB-scoped operand substitution (H1 rotate) → local_alloc/global_alloc pool split (cse-fold +1-copy) → sched1+sched2 rank_for_schedule LUID tiebreak → reorg.c delay-slot fill (unchanged).
+
+- [s34] Sandbox baseline reconfirmed: score=2 target_insns=83 build_insns=83 rules_dropped=0 cheat_asm_stripped=78 (file-wide). No src edits.
+
+- [s34] EXPAND-pass forensics upstream of s33's combine.c wall: base.i.rtl lines 14343-14378 show emit_insn emits — insn 4 (set 72 a0) arg-save; insn 6 (set 73 a1); insn 12 (set 74 0) sum; insn 14 (set 75 (ashift 72 4)) SLL; **insn 17 (set 77 (symbol_ref D_800EED14)) symbol_ref temp**; **insn 19 (set 76 (mem (plus 75 D_800EED14))) s4 load**; insn 22 (set 78 72) MOVE16. The 8-UID delta between sll (14) and move16 (22) is minted by EXPAND: it counts insns 17 and 19 belonging to s4's initializer expansion.
+
+- [s34] base.i.combine lines 12656-12673 show combine SUCCESSFULLY deletes insn 17 (symbol_ref temp) via substitute-and-delete: pseudo 77 is single-use, combine folds symbol_ref into insn 19's mem-plus addressing. Insn 19 SURVIVES (LOG_LINK `insn_list 14` explicit) because pseudo 76 (s4) is used downstream as call-arg to func_800520B8 at insn 82. INSN_UIDs are permanent — never recycled — so 14 and 22 keep their permanent numbers regardless of interposed deletions.
+
+- [s34] Sixth pass-level wall named: insn 19's placement between insns 14 and 22 is structurally forced by s4 = *(&D_800EED14 + v1)'s data dependence on v1. Cannot move insn 19 before insn 14 (v1 = pseudo 75 must be SET first). Cannot move insn 19 after insn 22 without adopting the H1 shape (i-before-v1), which is KILLED via cse.c BB-scoped substitution (s7/s15) causing RA rotation. Cannot delete insn 19 (s4 is a live call-arg). The between-insn count `SLL → ... → MOVE16` is structurally ≥ 1 at expand for every v1-before-i candidate.
+
+- [s34] Upstream chain now: expand emit_insn (s34 mints insn order — s4's load is the load-bearing survivor between SLL and MOVE16) → jump.c pass1 (s25) → cse.c BB-scope (s7/s15/s25) → loop.c (unchanged) → cse2.c (unchanged) → flow.c REG_BASIC_BLOCK (s33) → combine.c 56/45/2 (s33) → local/global_alloc pool split (s6/s24) → sched1/sched2 rank_for_schedule LUID tiebreak (s3/s15/s16) → reorg.c delay-slot fill (unchanged). Six pass-output-cited walls now, from expand through reorg.
+
+- [s34] s33's "combine.c mints the 8-delta" is refined: combine.c is where the delta becomes IRREDUCIBLE (combine can't collapse either endpoint), but the delta itself is minted at EXPAND by s4's initializer producing two intermediate SETs, of which the second (insn 19, the s4 load) survives combine because s4 is downstream-live. Refinement adds precision without changing the escalation posture.
+
+- [s34] docs/grind/decisions.md STILL has no OWNER-ESCALATION entry for func_80045294 (checked: grep -n 'func_80045294' docs/grind/decisions.md → zero hits). Per contract, 'owner-gated' is not emittable this session; owner-escalation-drafting remains the sole sanctioned next move.
+
+- [s34] candidate.c unchanged (baseline v1-before-i shape preserved). No new rejected form banked (this session added forensics evidence, not a new C form to test).
+
+- [s34] Artifact: tmp/grind/func_80045294/s34/expand_luid_origin.md (writeup); cites existing s3/base.i.rtl (lines 14343-14378) + s3/base.i.combine (lines 12656-12673).
+
+- [s34] Sandbox baseline reconfirmed: score=2, target_insns=83, build_insns=83, rules_dropped=0, cheat_asm_stripped=78 (file-wide). No src edits this session.
+
+- [s34] base.i.rtl 14343-14378 (expand output): insns 4,6,12 → insn 14 (sll = ashift 72 4 into pseudo 75) → insn 17 (symbol_ref D_800EED14 into pseudo 77) → insn 19 (mem-plus load of s4 into pseudo 76, reading pseudo 75) → insn 22 (move16 = i = pseudo 72 → pseudo 78) → 25/28. UID delta 8 across insns 14→22 = insns 17+19 (both belonging to s4's initializer).
+
+- [s34] base.i.combine 12656-12673 (post-combine baseline): insn 17 DELETED via substitute-and-delete (symbol_ref folded into insn 19's mem-plus addressing). Insn 19 SURVIVES with LOG_LINK `insn_list 14`. Insns 14 and 22 both survive as independent standalone SETs (s33 finding, reconfirmed).
+
+- [s34] INSN_UIDs are permanent identifiers assigned by emit_insn during expand; combine.c never renumbers surviving insns. This is why the LUID relation sched2 tiebreaks on (INSN_LUID(sll) < INSN_LUID(move16)) is fixed at expand, and combine can only either DELETE endpoints (which it doesn't) or preserve the relation (which it does).
+
+- [s34] The load-bearing survivor between insns 14 and 22 is insn 19 (s4 load). Its placement is structurally forced: s4's address `(plus v1 D_800EED14)` reads pseudo 75, so insn 19 must emit AFTER insn 14. Relocating it after insn 22 requires the H1 shape (i-before-v1), which is banked KILLED at cse.c BB-scoped substitution wall (s7/s15). Deleting it is impossible (s4 is call-arg-live).
+
+- [s34] Sixth pass-level wall named at EXPAND, upstream of the five ledger walls (cse.c BB substitution s7/s15/s25; local/global_alloc pool split s6/s24; sched1+sched2 LUID coupling s16; no pure-C CFG-splitter defeats cse s10/s11/s25; combine.c substitute-and-delete refusal s33). Full chain now spans EXPAND → jump → cse → loop → cse2 → flow → combine → local/global_alloc → sched1/sched2 → reorg, with six of ten passes cited from direct base.i.<pass> dumps.
+
+- [s34] docs/grind/decisions.md STILL has no OWNER-ESCALATION entry for func_80045294 (grep 'func_80045294' → 0 hits). Per contract, 'owner-gated' is not emittable this session; owner-escalation-drafting is the sole remaining sanctioned move (s19-s33 consensus).
