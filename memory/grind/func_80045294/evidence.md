@@ -395,3 +395,21 @@
 - [s25] [s25] docs/grind/decisions.md still contains NO OWNER-ESCALATION entry for func_80045294 (grep confirms zero hits). Per contract, 'owner-gated' is not emittable this session; the required draft entry is next session's mandated modality per the s19-s24 ledger consensus. This s25 forensics contribution supplies the last pass-output citation the drafter will cite for wall (iv).
 
 - [s25] [s25] No new rejected forms banked (dowhile0-around-v1-after-i.c already banked at s10; the s25 measurement reproduces s10's score=12 kill and adds pass-output evidence). candidate.c unchanged (in-src form remains s3 baseline).
+
+- [s26] [s26] Baseline reconfirmed pre-probes: sandbox --disable all -> score=2 target_insns=83 build_insns=83 rules_dropped=0 cheat_asm_stripped=78.
+
+- [s26] [s26] Working tree clean; no src edits this session; candidate.c unchanged (baseline v1-before-i form preserved).
+
+- [s26] [s26] m2c --stack-structs + --descending-regs (novel combination): produces H1 shape (i-before-v1) BYTE-IDENTICAL to s8/s17/s18 init cluster. Artifact: tmp/grind/func_80045294/s26/m2c_stackstructs_descregs.txt.
+
+- [s26] [s26] m2c --context (BB2 SaTanEntry struct + D_800EED10[] array + real prototypes) + --globals all (novel combination): produces H1 shape with chan/delta arg-names from context but IDENTICAL init order and offset arithmetic (raw &D_800EED14 base+offset, no subscript rewrite). Artifact: tmp/grind/func_80045294/s26/m2c_context_globals_all.txt.
+
+- [s26] [s26] Rederive modality now measured dead across TEN independent sub-axes: (1) m2c mips-gcc-c s8, (2) m2c mipsel-gcc-c s17, (3) m2c mips-ido-c s17, (4) Kengo source/debug/globals s8+s17, (5) decomp.me local corpus shingle-search s9, (6) BB2 sibling shape s17, (7) m2c --gotos-only s18, (8) m2c mwcc s18, (9) m2c mipsee no-stack-spill deterministic-vars s18, (10) m2c --stack-structs+--descending-regs AND m2c --context+--globals all s26. Every configuration converges on either H1 (KILLED at s1 via cse.c substitution) or a NEUTRAL free-axis permutation.
+
+- [s26] [s26] The i-before-v1 shape is fixed by the target's asm insn ordering (move-before-sll at insn positions 8-10) and m2c's SSA-to-decl printer against it. No m2c flag can invert this without semantic change to the target asm.
+
+- [s26] [s26] Every previously-cited pass-level wall (s6 pool-split, s7/s15 cse.c BB-scoped substitution, s16 sched1+sched2 LUID coupling, s10/s11/s25 no pure-C CFG-splitter) unchanged and load-bearing.
+
+- [s26] [s26] docs/grind/decisions.md STILL has no entry for func_80045294 (grep -n '80045294\|saTan0Init' docs/grind/decisions.md returns nothing); owner-gated remains unemittable per contract. The owner-escalation-drafting frontier from s19-s25 remains the sole sanctioned move.
+
+- [s26] [s26] No rejected forms new-banked (both s26 probes converge on already-banked rejected/i-before-v1-init.c shape); no new file needed.
