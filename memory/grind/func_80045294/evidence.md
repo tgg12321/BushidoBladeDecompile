@@ -439,3 +439,19 @@
 - [s28] [s28] cpu_side_move_dir_4 precedent (docs/grind/decisions.md 2026-07-09 01:25 FAIL) binds any func_80045294 escalation framed as 'register rotation infrastructure' to a likely FAIL under no-new-park-categories.md. Escalation framing must either (a) argue the four stacked pass-level walls constitute a distinct category, or (b) explicitly request practical-limit closure at floor=2 with the four walls as pass-mechanical proof of unreachability.
 
 - [s28] [s28] Synthesis writeup consolidating four walls, rejected-form bank, modality exhaustion table, and cpu_side_move_dir_4 framing distinction: tmp/grind/func_80045294/s28/synthesis.md.
+
+- [s29] s29 baseline reconfirmed pre and post: sandbox --disable all -> score=2, target_insns=83, build_insns=83, rules_dropped=0, cheat_asm_stripped=78. src/text1a_c.c reverted to canonical candidate.c shape after probes; working tree carries only tmp/ scratch + memory/grind/ ledger touches.
+
+- [s29] s29 refines s12's 'sum decl position 0 LOAD-BEARING' claim: sum's position is a bounded free-axis. Positions {0, 1, 2} (LUID before i=a0's assignment) give score=2; positions {3, 4, 5} (LUID after i=a0) give score=4 with a 2-diff RA cascade.
+
+- [s29] The load-bearing boundary is i=a0's assignment, not sum's absolute position. Same LUID/RA coupling documented by walls (i) s7/s15 cse.c BB-scoped substitution and (ii) s6/s24 local_alloc/global_alloc pool split with no coalescer -- no new mechanism, no new lever.
+
+- [s29] s29 broadens the enumeration surface: the s28 category (A) statement position exhaustion tally now includes 3 new sub-positions (sum at 1, 2, 3) beyond the s1/s3/s11/s12-banked positions. All map to the same two mechanism attractors (score=2 free-axis or score=4 post-i cascade).
+
+- [s29] New rejected form banked: memory/grind/func_80045294/rejected/sum-after-i.c (representing the post-i cascade at positions 3/4/5).
+
+- [s29] No structural axis reachable from this refinement decouples the four pass-level walls. s28 modality exhaustion conclusion holds; s29 only tightens the description of the sum-position sub-axis.
+
+- [s29] docs/grind/decisions.md STILL contains no OWNER-ESCALATION entry for func_80045294 (checked via grep -n 'func_80045294' docs/grind/decisions.md; zero hits). Per contract, 'owner-gated' is not emittable this session.
+
+- [s29] candidate.c unchanged (in-src form remains the s3 baseline v1-before-i shape). src/text1a_c.c line 1602-1608 restored to canonical baseline post-probes.

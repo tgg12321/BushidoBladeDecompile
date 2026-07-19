@@ -472,3 +472,27 @@
 - probe: Enumerated all six axis categories against the 23-rejected-form bank + the H2/H3 free-axis cluster measured neutral at s1/s3/s11. Every reasonable C-source-level variation on the six-decl cluster shape has been measured.
 - result: No un-measured axis exists in any category. The rejected bank is closed against the reachable pure-C search space for this shape.
 - verdict: KILLED
+
+## [s29] Placing s32 sum=0 at decl position 1 (between v1 and s4) rather than 0 flips the sll/move16 sched2 tie.
+- mechanism: sum's assignment LUID falls between v1's and s4's LUIDs; a global_alloc reg_n_refs priority shift could reallocate sum's pseudo away from $17 or reallocate v1's / s4's pseudo, moving the LUID relationship rank_for_schedule uses at the sll/move16 tiebreak.
+- probe: Edited src/text1a_c.c decl block from 'sum,v1,s4,i,count,s5' to 'v1,sum,s4,i,count,s5'; ran & tools/wteng.ps1 main sandbox func_80045294 --disable all.
+- result: score=2, target_insns=83, build_insns=83, rules_dropped=0, cheat_asm_stripped=78 -- NEUTRAL. Byte-identical to baseline; same 2-insn sched2 residual.
+- verdict: KILLED
+
+## [s29] Placing s32 sum=0 at decl position 2 (between s4 and i) rather than 0 flips the sll/move16 sched2 tie.
+- mechanism: sum's assignment LUID falls between s4's and i's LUIDs; if the s7 cse.c BB-scoped substitution or the s6 pool split is sensitive to sum's LUID position within the pre-i decl cluster, the tie could shift.
+- probe: Edited decl block to 'v1,s4,sum,i,count,s5'; ran sandbox --disable all.
+- result: score=2, target_insns=83, build_insns=83 -- NEUTRAL. Byte-identical to baseline.
+- verdict: KILLED
+
+## [s29] Placing s32 sum=0 at decl position 3 (between i and count, first position AFTER i=a0's assignment) flips the sll/move16 sched2 tie or is likewise neutral.
+- mechanism: Testing the boundary between the s12-measured LOAD-BEARING position 5 and the s29-measured NEUTRAL positions 1-2 to pin the transition to a specific LUID relationship (relative to i=a0's LUID).
+- probe: Edited decl block to 'v1,s4,i,sum,count,s5'; ran sandbox --disable all.
+- result: score=4, target_insns=83, build_insns=83 -- PERTURBS (rises by 2 register-choice diffs, same magnitude as s12's position-5 measurement). Boundary is EXACTLY the i=a0 assignment: sum-LUID before i-LUID -> free-axis; sum-LUID after i-LUID -> RA cascade.
+- verdict: KILLED
+
+## [s29] s12's evidence claim that 'sum's decl position is LOAD-BEARING at position 0' is correct as stated.
+- mechanism: s12 measured sum-at-position-0 (score=2) and sum-at-position-5 (score=4) and concluded position 0 was singularly load-bearing. s29 checks whether the intermediate positions preserve or break the tie.
+- probe: s29 measurements at positions 1, 2, 3 give scores 2, 2, 4 respectively.
+- result: Refuted. Sum-position is a bounded free-axis: FREE for positions 0-2 (LUID before i=a0), PERTURBING for positions 3-5 (LUID after i=a0). The load-bearing boundary is i=a0's assignment, not sum's absolute position. Mechanism aligns with walls (i)/(ii): sum's post-i LUID demotes it in global_alloc reg_n_refs priority.
+- verdict: KILLED

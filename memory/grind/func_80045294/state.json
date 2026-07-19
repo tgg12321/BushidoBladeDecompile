@@ -1,8 +1,8 @@
 {
  "func": "func_80045294",
  "file": "text1a_c",
- "session_count": 28,
- "current_modality": "synthesis",
+ "session_count": 29,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -171,13 +171,24 @@
    "floor": 2,
    "modality": "synthesis",
    "headline": "s28 synthesis: 4 pass-level walls + 23 rejected forms + 7 permuter chassis + 11 rederive sub-axes consolidated; owner-escalation-drafting is the sole remaining sanctioned move."
+  },
+  {
+   "session": 29,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "s29 structural: sum-position free-axis bounded to {0,1,2} (before i=a0); s12's 'position 0 load-bearing' claim refined; no new lever, s28 exhaustion holds; owner-escalation entry still not filed so ow"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "docs/grind/decisions.md OWNER-ESCALATION entry for func_80045294 gets drafted (owner-escalation-drafting modality), citing the four walls with direct pass-output tier evidence, the 23-form rejected bank, the ~69590-iter 7-chassis permuter budget, the 11 rederive sub-axes, and a precise ruling question distinguishing the four-wall stack from the cpu_side_move_dir_4 register-rotation-infrastructure precedent.",
-   "mechanism": "Contract permits owner-gated emission only when the escalation entry is filed AND every remaining sanctioned axis is measured dead. Second precondition holds across s1-s28; first precondition is the entry itself. The framing choice (distinct-category vs practical-limit-closure) is the drafting session's key decision.",
+   "hypothesis": "docs/grind/decisions.md OWNER-ESCALATION entry for func_80045294 gets drafted (owner-escalation-drafting modality), citing the four walls with direct pass-output tier evidence, the 24-form rejected bank (23 prior + s29 sum-after-i), the ~69590-iter 7-chassis permuter budget, the 11 rederive sub-axes, and a precise ruling question distinguishing the four-wall stack from the cpu_side_move_dir_4 register-rotation-infrastructure precedent.",
+   "mechanism": "Contract permits owner-gated emission only when the escalation entry is filed AND every remaining sanctioned axis is measured dead. Second precondition holds across s1-s29; first precondition is the entry itself. The framing choice (distinct-category vs practical-limit-closure) is the drafting session's key decision. s29 sharpens the rejected-bank enumeration but does not change the frontier's outer shape.",
    "next_probe": "Compose docs/grind/decisions.md entry with the four walls as pass-output-cited proof of unreachability, then emit owner-gated with escalation_ref pointing to that entry. Alternative framing: request practical-limit closure at floor=2 with the four walls as pass-mechanical evidence, distinguishing this from cpu_side_move_dir_4's search-not-exhausted framing by the pass-output-tier evidence quality."
+  },
+  {
+   "hypothesis": "The remaining un-measured sub-positions in the sum-position axis (positions 4, and any two-simultaneous permutations like sum-at-1 + count-at-3) surface a novel LUID relationship that inverts the sll/move16 tie without triggering the post-i RA cascade.",
+   "mechanism": "s29 measured single-axis moves against baseline. Two-axis combinations against the baseline free-axis cluster {i, s4, count, s5} (s1/s3/s11) plus sum's newly-bounded free-axis {0, 1, 2} have not been enumerated. If any combination shifts sll's LUID above move16's without dragging sum's pseudo below i's, the tie could invert.",
+   "next_probe": "Enumerate cross-product of sum-position in {0,1,2} and count/s5-position permutations from the s1 free-axis cluster (24 combinations minus already-banked); measure sandbox --disable all for each; likely all NEUTRAL per the mechanism (each single-axis is neutral independently so the pair is neutral by superposition), but formal enumeration would close the last unmeasured single-mechanism structural surface."
   }
  ],
  "judge_constraints": [],
