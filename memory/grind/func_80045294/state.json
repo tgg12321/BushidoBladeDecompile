@@ -1,7 +1,7 @@
 {
  "func": "func_80045294",
  "file": "text1a_c",
- "session_count": 40,
+ "session_count": 41,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -243,18 +243,24 @@
    "floor": 2,
    "modality": "permuter",
    "headline": "s40 permuter: exhaustive 6!=720-permutation PERM_LINESWAP over the 6-decl block on minimal-base chassis (fresh seed, -j 8) plateaus at score=60, corroborating s14's 720-iter minimal-base sample with i"
+  },
+  {
+   "session": 41,
+   "floor": 2,
+   "modality": "permuter",
+   "headline": "s41 permuter: 11th chassis/mode combo (count-inlined base + exhaustive PERM_LINESWAP 5!=120, fresh seed) converges on score=60 basin; cumulative permuter budget now 137,872 iters; no sub-60 basin esca"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The sanctioned next move remains drafting the OWNER-ESCALATION entry in docs/grind/decisions.md (unchanged from s29+ frontier). s40's 10th chassis/mode combination banked as an exhaustively-enumerated 720-permutation confirmation on the minimal-base chassis further hardens the permuter-exhaustion argument in the escalation evidence bundle.",
-   "mechanism": "Contract precondition (a) requires the escalation entry to exist. A permuter-modality session cannot file that entry (owner-authored artifact class per hirahira_w_frie / motion_SetMotion precedent). Grinder driver picks the next modality; the escalation should be filed whenever a modality permits it, citing: six pass-level walls (EXPAND->combine->cse->local/global_alloc->sched1+sched2) + 30-form rejected bank + ~138,472-iter permuter across 10 chassis/mode combinations + 14 rederive sub-axes + s30 formal free-axis closure + s38 outer-block-wrap + register-storage-class-v1 NEUTRAL kills + s39 param-signature + addr-base-cast + split-init-s5-a1-first NEUTRAL/HARMFUL kills + s40 exhaustive 6! permutation sweep KILLED.",
-   "next_probe": "Draft docs/grind/decisions.md OWNER-ESCALATION entry titled 'func_80045294 (saTan0Init) -- pure-C floor=2 sched2 sll/move16 tie'; body summarises the six walls + evidence bank + rejected-forms count (30) + permuter iters/chassis counts (now 10 combos, 138k iters, incl s40 exhaustive) + rederive sub-axis kill table + structural closure incl. s38/s39/s40 additions; asks the owner to rule between (i) canonical-asm authorization for the 2-insn prologue reorder and (ii) an owner-directed pure-C form hand-derivation cannot reach."
+   "hypothesis": "Draft the OWNER-ESCALATION entry in docs/grind/decisions.md now that the empirical closure count has advanced to 11 chassis/mode combinations (137,872 iters) with TWO exhaustive PERM_LINESWAP sweeps banked (s40 720-iter + s41 120-iter on distinct chassis).",
+   "mechanism": "Contract precondition (a) requires the entry to exist before owner-gated is emittable. A permuter-modality session cannot file the entry (owner-authored artifact class). The next non-permuter modality (synthesis / rederive / structural) should file the entry citing: six pass-level walls chained upstream-to-downstream (EXPAND -> combine -> cse -> local/global_alloc -> sched1+sched2 with no CFG-splitter), 30-form rejected bank, 137,872-iter permuter across 11 chassis/mode combinations, 14 rederive sub-axes killed, s29/s30 formal structural free-axis closure, s38 outer-block-wrap + register-storage-class-v1 NEUTRAL kills, s39 param-signature + addr-base-cast + split-init-s5-a1-first NEUTRAL/HARMFUL kills, s40 6! + s41 5! exhaustive PERM_LINESWAP kills. Ask the owner to rule between (i) canonical-asm authorization for the 2-insn prologue reorder and (ii) an owner-directed pure-C form hand-derivation cannot reach.",
+   "next_probe": "Not actionable within permuter modality; recorded here for the next non-permuter session's frontier."
   },
   {
-   "hypothesis": "Supplementary rare-fingerprint evidence (block-0-only k=3 s35 max 0.122, tail-block k=3 s36 max 0.156 collapsing to 0.056 at k=4, whole-function k=5 s36 max 0.095) feeds the escalation writeup as supplementary structural rarity evidence. Combined with s40's exhaustive permuter exhaustion, the case for canonical-asm authorization strengthens.",
-   "mechanism": "If the shape were common in the local corpus, at least one narrowed search would surface a hit above 0.15; that none do implies either the original C source used unusual initializer/dispatch clustering that no other decomper has reconstructed, or the shape reflects hand-written asm that no C-source lowering reproduces locally. Independent of s40 findings.",
-   "next_probe": "Not directly actionable within grinder modalities. Include in the escalation writeup as a supplementary bullet under 'why hand-derivation, cross-project transplant, and exhaustive permuter search all fail'."
+   "hypothesis": "PERM_INT-mode campaign on the shift constant `4` (or a PERM_GENERAL exploration of a0<<4 equivalents) as an untried 12th chassis/mode combination.",
+   "mechanism": "s5-family manual probes of arithmetic equivalents to a0<<4 were killed at the individual-form level (`(u32)a0*16u`, `a0*16`, `(u8*)0+a0`, `u32 v1 = (u32)a0<<4`). PERM_INT/PERM_GENERAL would let the permuter itself search a broader lowering surface (subsumes s5's manual axes, may surface a lowering never hand-derived that shifts the ashift RTX's tree_LUID).",
+   "next_probe": "python3 tools/permuter_campaign.py launch --func func_80045294 --dir tmp/grind/func_80045294/s42/perm_int --label s42-perm-int-shiftconst -j 4 (fresh seed on baseline chassis with PERM_INT wrapping the 4 in `a0<<4` and equivalents). Owner-note: this is likely to further empirically corroborate the s5 manual-axes closure but adds real chassis/mode coverage independent of s40/s41's PERM_LINESWAP sweeps."
   }
  ],
  "judge_constraints": [],

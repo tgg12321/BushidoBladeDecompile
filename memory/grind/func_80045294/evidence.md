@@ -640,3 +640,11 @@
 - [s40] [s40] docs/grind/decisions.md STILL contains no OWNER-ESCALATION entry for func_80045294 (grep '80045294' returns 0 hits at session end). Contract precondition (a) for owner-gated remains unmet; owner-gated not emittable this session.
 
 - [s40] [s40] No new rejected form banked: the s40 output-60-1 find belongs to a free-axis equivalent basin already banked at multiple prior sessions (s1/s3/s11/s12/s29/s30) and does not represent a novel divergent form.
+
+- [s41] s41 permuter campaign added 11th chassis/mode combination to the empirical closure count: count-inlined chassis + exhaustive PERM_LINESWAP 5!=120, fresh seed. Prior 10 combos (s13/s14/s20/s22/s22-alt/s23/s31/s32/s32-sum/s40) totaled 137,752 iters; s41 adds 120, cumulative 137,872 iters. All non-outlier finds converge on score=60 basin (only sub-60 point remains s31's score=10 mid-loop-i-reset semantic-break, structurally non-pure-C-expressible).
+
+- [s41] Count-inlined vs count-local chassis equivalence at the permuter tier confirmed: the s8-established neutral-basin equivalence (score=2 unchanged when count decl removed and D_800A33AC inlined in both loop guards) extends to permuter behavior -- the removed LUID slot produces no exploitable window for any of 120 decl permutations.
+
+- [s41] The free-axis basin (v1-before-i preserved) now empirically closed across TWO exhaustive PERM_LINESWAP sweeps on distinct chassis: s40's count-local 6! = 720 (banked in s40 ledger, best_new_score=60) and s41's count-inlined 5! = 120 (this session, best_new_score=60). Combined, they exhaustively enumerate every free-axis permutation for both dominant chassis shapes.
+
+- [s41] OWNER-ESCALATION entry for func_80045294 remains unfiled in docs/grind/decisions.md (verified this session: `grep -c func_80045294 docs/grind/decisions.md` = 0, same result as s24/s37). owner-gated remains inemittable this session per contract precondition (a). Modality (permuter) cannot file the escalation.
