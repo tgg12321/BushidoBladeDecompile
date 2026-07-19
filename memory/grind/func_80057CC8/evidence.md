@@ -102,3 +102,15 @@ Per user 2026-06-22: keep working it; not permanently parked.
 - [s1] Structural asymmetry (from ledger, unmeasured): prev_idx has a two-def live range from `if ((s16)prev_idx<0) { prev_idx = arg0[3]-1; }`; next_idx is set inside a block { ... = tmp; if(..) ...=0; } but its uses reach through a phi too — however next_idx's use flows through s3 (in target/pin); the pin masks this. Even with the pin removed, only the FIRST-p addu coalesces poorly, suggesting the phi shape at the prev_idx use-site is the differentiator.
 
 - [s1] Rejected forms (do not re-derive): block-scope-alias-p1, duplicate-address-expr-pseudo-inline, separate-p1-p2-function-scope-aliases, split-init-off-accumulation, split-lh-px0-px1-locals. Also from evidence.md: explicit s32 off/sidx (floor=4), ternary+explicit sidx (floor=5), pointer-arith table+(sidx<<1) (floor=9), prev_idx s32 with (u16) casts (floor=8), un-reassociated HEAD form (floor=9).
+
+- [s2] Candidate.c applied to src/text1b.c line 11837 (register asm("s3") pin removed, offset+table reassociation for both p adds). sandbox --disable all reports score=3, target_insns=111, build_insns=111, rules_dropped=7, cheat_asm_stripped=395 — replays s1 finding cleanly on current main HEAD.
+
+- [s2] Objdump of candidate baseline localizes the 3-insn gap unchanged from s1: b798 `addu v1,v0,a2` (ours) vs 80057D54 `addu v0,v0,a2` (target); cascading to lh base regs at b7ac/b7b0 (v1) vs 80057D68/80057D6C (v0). Second p addu coalesces correctly in both (b7cc v1,v1,a0 vs 80057D88 v1,v1,a0).
+
+- [s2] Two-def-phi asymmetry is NOT the discriminator. Mirroring next_idx's block-scoped `s32 tmp; = tmp; if(..) = 0;` shape onto prev_idx did NOT fix p1 coalescing — both variables are two-def yet only p1 addu misses. The real discriminator is deeper (probably shifted-offset pseudo lifetime across the next_idx bnez delay-slot scheduling window, or a reg_n_refs priority tiebreaker in global.c on the p1 pseudo).
+
+- [s2] Statement re-ordering (moving prev_idx def, swapping IF blocks, hoisting p1 add) all failed. Target's shape is delay-slot-schedule-critical: swap made it floor 31; hoist p1 made it floor 12. The (prev_idx if-reload) -> (next_idx block with delay-slot fillable bnez) -> (p1 add reading a2=table and a0=prev_idx from the reload's phi) sequence is FIXED at the C level; the RA lever is inside that structural window.
+
+- [s2] Type width (u16 vs s16) of prev_idx and shift-vs-cast spelling of the sign-extend chain are both folded identically by GCC — combine.c reduces them to the same pattern. Not levers.
+
+- [s2] Sibling matched functions in text1b.c (func_8006133C, 800613C8, 80061454, 800614E0) are structurally DIFFERENT — they are s32* pointer-walk-with-post-increment (`D_800F1140 = *p++; ...`) with no phi-shape index. No transferable lever.

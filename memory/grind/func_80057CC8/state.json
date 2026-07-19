@@ -1,8 +1,8 @@
 {
  "func": "func_80057CC8",
  "file": "text1b",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 0,
@@ -15,23 +15,29 @@
    "floor": 3,
    "modality": "recon",
    "headline": "recon: floor-3 candidate replayed on main; gap fully localized to first-p addu coalescing asymmetry"
+  },
+  {
+   "session": 2,
+   "floor": 3,
+   "modality": "structural",
+   "headline": "s2 structural: 5 hypotheses KILLED; candidate floor 3 holds; two-def-phi alone is not the p1-addu coalescing discriminator."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The first-p offset-temp fails to coalesce because prev_idx's use-site pseudo has a two-def phi live range interfering with the addu's dest with hard reg 2 (v0) \u2014 running an ALLOCDBG/-da greg dump from candidate baseline will name the pseudo, its class, and the conflict.",
-   "mechanism": "Per [[register-alloc-pure-c]] Step-0: greg dump + global.c allocno priority tiebreaker; ledger names the two-def prev_idx / single-def next_idx asymmetry as prime suspect but never ran the -da probe. `Register dispositions:` will show whether the pseudo carrying (prev_idx<<16>>16<<2) conflicts with hard reg 2, and whether the addu's dest pseudo is joined to it.",
-   "next_probe": "cpp src/text1b.c > tmp/grind/func_80057CC8/s1/base.i; cc1 <build-flags> -da tmp/grind/func_80057CC8/s1/base.i -o /tmp/ours.s; grep Register dispositions in text1b.c.greg for func_80057CC8; identify pseudo for (prev_idx<<16>>16<<2) source and pseudo for its addu dest; check conflict list and joined-pseudos"
+   "hypothesis": "GCC's global.c reg_n_refs priority tiebreaker or expand_preferences copy-pref is biasing the p1 addu dest pseudo toward v1 rather than the coalesceable v0. A concrete cc1 -da greg dump from the candidate baseline is still not run and would name the pseudo, its conflicts, and the joined-pseudos set.",
+   "mechanism": "The p1 addu dest pseudo (allocated v1 in ours, v0 in target) inherits copy-preferences from surrounding pseudos. Since the shifted-offset source pseudo dies at the addu, coalescing should be trivial \u2014 the fact that GCC chose v1 suggests a higher-priority pseudo or copy-pref grabbed v0 first. Per hoist-shared-arm-computation-defeats-copy-pref, expand_preferences.c can bias the dest to inherit a distant pseudo's copy-pref.",
+   "next_probe": "cpp -E src/text1b.c > tmp/grind/func_80057CC8/s3/base.i; run cc1 -da on base.i (via BB2_ALLOC_DEBUG or gccdbg wrapper) to produce text1b.c.greg; identify pseudo for p1's addu dest and read `;; Register dispositions:` + conflict list + joined-pseudos. Also inspect the shifted-offset source pseudo. If copy-pref is the culprit, look for a distant sibling pseudo that grabbed v0."
   },
   {
-   "hypothesis": "Branchless single-def prev_idx via cmov-style ternary `prev_idx = ((s16)((u16)(arg1-1)) < 0) ? arg0[3]-1 : (u16)(arg1-1);` collapses prev_idx to a single-def SSA-like live range matching next_idx's shape, allowing the same coalescing decision the second p gets.",
-   "mechanism": "The 2026-06 rejected ternary form used an EXPLICIT `sidx` local (adds a def); a pure conditional-init ternary that binds directly to prev_idx has no extra local. GCC 2.7.2 cse/combine will fold the duplicated (arg1-1) computation; then RA sees prev_idx as single-def with the same coalescing opportunity as next_idx. NB: distinguish from disallowed dead-arm computation \u2014 both arms of the ternary have observable effect (produce the returned value), not a cheat.",
-   "next_probe": "Draft the ternary form as tmp/grind/func_80057CC8/s1/probe_ternary_branchless.c; sandbox --disable all; if floor < 3 measure delta; if floor >= 3 objdump to confirm whether the coalescing changed or whether the ternary duplicated the (arg1-1) into a worse shape"
+   "hypothesis": "The `single_game_getEnemyCharId` call's return-value liveness pattern is different between the two calls: the FIRST call's v0 return is combined immediately with `& 0xFFF` into s0 (b7e4/80057DA0 andi s0,v0,0xfff), the SECOND call's return is combined into v1 (b7e8 andi v1,v0,0xfff). If GCC anticipates v0 will be needed shortly for the SECOND call's return, it may avoid using v0 as p1's addu dest earlier.",
+   "mechanism": "Linear scan RA looks ahead. p1's addu at b798 lives from b798 through b7b0 (last use), then the FIRST jal at b7b8 clobbers v0. If GCC's live-range allocator sees the p1 dest as spilling into the jal's v0-clobber window, it may prefer v1. Target does NOT have this bias \u2014 its p1 dest DOES land in v0 despite the same jal proximity, which means our fork's allocator differs at this specific interference/priority computation.",
+   "next_probe": "Structural: separate the FIRST jal from p1's addu by moving the cx/cy sign-extend chain (s1=(s16)cx, s0=(s16)cy) to AFTER p1[0]/p1[1] loads but BEFORE the subu/jal, breaking the sequence into (p1 loads; sign-extend cx/cy; subu; jal). Alternatively use `register` local for the call args to test if arg-passing pseudo pressure changed."
   },
   {
-   "hypothesis": "Matched sibling text1b.c cluster functions (func_8006133C, 800613C8, 80061454, 800614E0 named in ledger \u2014 verify) may show a phi-into-pointer-add pattern that survived pure-C matching; diffing their body structure against func_80057CC8's prev_idx use may reveal the lever",
-   "mechanism": "text1b.c is the highest-cascade file (permuter-closability-evaluated); if any matched sibling has an if-updated-index feeding a pointer add and reaches COMPLETED-C, its C form encodes the RA-friendly shape",
-   "next_probe": "grep src/text1b.c for `if ((s16)` phi-shape then pointer add near a lh; if any matched sibling exhibits the pattern, note structural differences (variable typing, cast placement, block boundaries) for a targeted probe"
+   "hypothesis": "The FAKE-annotated `duplicated-statement-into-arms` (2026-07-01 SOTN-sanctioned) pattern applied to the prev_idx if-reload: duplicate the p1 addu computation into BOTH arms of the if (rather than after) \u2014 this may lift the p1 addu dest pseudo's reg_n_refs and change RA priority.",
+   "mechanism": "Per [[duplicated-statement-into-arms]]: a real statement duplicated into 2+ arms can be byte-neutral when cross-jump re-merges them, but the DUPLICATION doubles the pseudo's refs count in global.c's priority calc, which can shift allocation. Prereqs: byte-neutrality verified via objdump, cross-jump re-merges, `/* FAKE */` annotation, mandatory dual review.",
+   "next_probe": "Write probe form: p1 addu duplicated inside BOTH arms of the prev_idx if \u2014 inside the if-true arm and in an else clause. Sandbox; if score improves + build/target insn count matches, verify byte-neutrality by objdump comparison against candidate.c. If byte-neutral improvement, run cheat-reviewer on the proposed form."
   }
  ],
  "judge_constraints": [],
