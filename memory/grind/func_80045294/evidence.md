@@ -97,3 +97,19 @@
 - [s5] [s5] Combined with s3/s4 evidence: the ONLY spellings that shift LUID are those with either (a) a second tree-level a0<<4 subtree (adds +1 CSE-move copy) or (b) a late-assigned single-tree-level a0<<4 (rotates RA to $21). No pure-C spelling reachable by hand-derivation from the arithmetic-form axis breaks the coupling without incurring one of these costs.
 
 - [s5] [s5] Permuter workspace NOT built this session; s4's blocker (whole-function __asm__ block for func_80044010 + cpp-expansion conflicting decls) still applies. See tmp/grind/func_80045294/s5/permuter_workspace_status.txt for the narrowed search space a future permuter session should target.
+
+- [s6] [s6] Baseline recon reconfirmed at end of session: sandbox --disable all -> score=2, target_insns=83, build_insns=83, rules_dropped=0, cheat_asm_stripped=78. src reverted to s3 candidate.c after RTL dump.
+
+- [s6] [s6] Baseline greg (tmp/grind/func_80045294/s3/base.i.greg:14006-14026): single pseudo 75 allocated to $3 (v1), globally, holding the ashift result AND serving as loop base. No copy insn.
+
+- [s6] [s6] Cse-fold-anon-shift.c greg (tmp/grind/func_80045294/s6/base.i.greg:14006-14030): two pseudos — 76 (anon, `76 in 2`/v0, single-block, local-alloc pool) and 81 (declared v1, `81 in 3`/v1, loop-carried, global-alloc pool). Insn 29 `(set 81 76)` with REG_DEAD 76 survives all passes.
+
+- [s6] [s6] Combine (base.i.combine:12633) declines to substitute insn 14 into insn 29 because pseudo 76 has two uses (insn 18 address + insn 29 copy). Multi-use blocks combine's substitution; MIPS mem addressing cannot accept a nested ashift as a base subexpr so combine cannot fold into insn 18 either.
+
+- [s6] [s6] Named pass and decision producing the divergence: local_alloc() (local-alloc.c) places single-block pseudo 76 in $2 BEFORE global_alloc() (global.c) places multi-block pseudo 81 in $3 — GCC 2.7.2 has no cross-pass coalescer (register coalescing was added in later GCC releases), so the two pools cannot merge equivalent pseudos linked by a copy where source dies.
+
+- [s6] [s6] Two-axis coupling reformulated at pass level: (a) two-tree branch's +1 copy is uneliminable due to local/global pool split with no coalescer; (b) one-tree-late-assign branch's RA rotation is driven by global_alloc's reg_n_refs priority scoring against assignment LUID. Both branches sit on GCC-pass mechanics with no C-source lever known to defeat either.
+
+- [s6] [s6] Frontier #2 KILLED at mechanism: 'make global.c see [76 and 81] as a single equivalence class' has no execution path in GCC 2.7.2 — the pass that would do it does not exist. Any pure-C respelling that keeps v1 loop-live AND introduces a second tree-level a0<<4 recapitulates the pool split.
+
+- [s6] [s6] Frontier #1 (directed permuter over PERM_STMT_LIST / PERM_ADD_SUB) remains un-measured; its search space is over C spellings the hand-derivation has not considered, so pass-split mechanism doesn't preclude a permuter find — the search would look for spellings whose expand routes through a different pass sequence entirely (e.g. mutations that eliminate the second tree-level shift altogether while still shifting sll's LUID).

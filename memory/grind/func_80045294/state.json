@@ -1,8 +1,8 @@
 {
  "func": "func_80045294",
  "file": "text1a_c",
- "session_count": 5,
- "current_modality": "permuter",
+ "session_count": 6,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -33,18 +33,24 @@
    "floor": 2,
    "modality": "permuter",
    "headline": "s5: frontier #1 (walking-pointer) KILLED by target-bytes read; frontier #2 (alt tree shape for a0<<4) KILLED across 3 arithmetic spellings; permuter workspace still not built."
+  },
+  {
+   "session": 6,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "s6 forensics: RTL greg dump names local_alloc/global_alloc pass split (no cross-pool coalescer in GCC 2.7.2) as the pass responsible for the +1 CSE-move copy in every two-tree-level-shift near-hit; fr"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Directed permuter over PERM_STMT_LIST reorderings of the non-v1 init statements (sum, s4, i, count, s5) with weight overrides on perm_add_sub, perm_split_assignment, perm_dummy_comma_expr can find a closing form the hand-derivation has provably not reached.",
-   "mechanism": "The sched2 tie is decided by INSN_LUID (s3 CONFIRMED, sched.c:2398-2456). Every hand-derived C spelling either satisfies the tie by rotating RA (bad) or by adding a CSE-move copy (bad). A permuter sweep over the statement-ordering cross-product with expression-spelling mutation covers a search space beyond hand-reach in a neighborhood the s3/s4 near-hits mark as promising.",
-   "next_probe": "Hand-build the permuter workspace using tools/mar_perm_workspace.sh as template: (1) cpp-preprocess src/text1a_c.c into base.c (with the func_80044010 __asm__ block preserved as file-scope asm since GCC accepts it there); (2) extract target's 83 insns from disc/SLUS_006.63 @ 0x35A94 into target.s + assemble to target.o; (3) settings.toml with func_name=func_80045294 and weight_overrides emphasizing perm_stmt_list, perm_add_sub, perm_dummy_comma_expr, perm_reorder_decls; (4) launch via tools/permuter_campaign.py launch --stop-on-zero with fresh-seed discipline (20-30 min basins). Alternative: temporarily replace the __asm__ block with a stub C function for import.py's parse, then patch base.c."
+   "hypothesis": "Directed permuter over PERM_STMT_LIST reorderings of the non-v1 init statements + PERM_ADD_SUB / PERM_DUMMY_COMMA_EXPR mutations of arithmetic subexpressions finds a spelling that shifts sll's LUID above move16's WITHOUT introducing a second tree-level a0<<4 expression.",
+   "mechanism": "s6 forensics locks two mechanism families (pool split for two-tree; reg_n_refs LUID rotation for one-tree-late). A closing form must side-step BOTH \u2014 either by using a single tree-level a0<<4 whose LUID is somehow decoupled from RA priority (novel), or by a spelling that changes expand's pseudo-creation order so global_alloc places v1 later without rotating other pseudos (also novel). Permuter's structural mutations can reach spellings hand-derivation hasn't.",
+   "next_probe": "Un-block permuter workspace build: rather than fight text1a_c.c's whole-function __asm__ block + cpp-conflict decls (s4/s5 blocker), extract func_80045294 into a MINIMAL single-function .c that includes only the D_800EE*/D_800A33*/callee prototypes it references. Build target.o from disc bytes @0x35A94 (s1 has offset/length noted). Launch tools/permuter_campaign.py with settings.toml weight overrides emphasizing perm_stmt_list, perm_add_sub, perm_dummy_comma_expr, perm_reorder_decls; fresh-seed 20-30 min basins per feedback/permuter-fresh-seed-discipline."
   },
   {
-   "hypothesis": "A CSE-move-copy-elision path exists at RA (global.c coalesce_pseudos) that could absorb the +1 insn in the cse-fold-anon-shift.c / late-v1-assign-with-s4-inline.c near-hits without changing the target schedule.",
-   "mechanism": "The +1 CSE-move copy in both near-hits is `move v1,v0` where v0 is an anonymous pseudo holding a0<<4 and v1 is the declared pseudo. If a spelling can cause global.c to coalesce v0 and v1 into the same hard reg (so no move is needed), the near-hits close.",
-   "next_probe": "Instrumented `cc1 -da base.i` on cse-fold-anon-shift.c to dump greg/reload; check whether v0 and v1 are marked non-coalescable and why. If they are coalescable in principle, seek a C-spelling that makes global.c see them as a single equivalence class. Read tools/gcc-2.7.2/global.c:coalesce_pseudos + reload flow for the coalesce precondition."
+   "hypothesis": "Reading the sched2 tiebreak in a THIRD form \u2014 using a permuter-directed rewrite of the loop that changes how many block-0-live values the addu $21 chain touches \u2014 could shorten the sll's downstream dependency chain enough to demote its INSN_PRIORITY below 1 (currently equal to move16), moving the tie to a different tiebreak axis.",
+   "mechanism": "s3 measured INSN_PRIORITY(sll)==INSN_PRIORITY(move16)==1, tie broken by INSN_LUID. If sll's priority could be reduced to 0 while move16 stays at 1, the priority tiebreak wouldn't fire and sched2 would emit in priority order (move16 first). sched.c INSN_PRIORITY is longest downstream dependence chain; sll feeds sll->addu $1->lw $20->addu $21(delay). If addu $21's dependence on sll's chain could be broken (e.g. by expressing s5 through a value NOT derived from *(base+v1)), the chain length drops.",
+   "next_probe": "Read sched.c compute_priority + downstream chain traversal to identify exactly what edge to sever. Then attempt a C spelling where s5's ADDU sources bypass the sll->lw chain (e.g. compute s5 from a preloaded value or via a route that doesn't extend the sll chain). Must be pure C, must retain the delay-slot fill of addu $21 into the beqz."
   }
  ],
  "judge_constraints": [],

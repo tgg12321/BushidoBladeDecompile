@@ -160,3 +160,21 @@
 - probe: Edited to `s32 v1 = (s32)((u8 *)0 + a0) * 16;` and sandboxed --disable all.
 - result: score=2, target_insns=83, build_insns=83 — NEUTRAL. GCC folds (u8*)0 + a0 -> a0 at the front-end; outer *16 folds to (ashift) identically.
 - verdict: KILLED
+
+## [s6] In cse-fold-anon-shift.c, combine.c substitutes insn 14 (ashift into anon pseudo 76) into insn 29 (v1 = anon), eliminating the copy.
+- mechanism: combine.c can_combine_p/try_combine substitutes single-use pseudos into their user insn.
+- probe: Applied cse-fold-anon-shift.c to src, ran cc1 -da, read tmp/grind/func_80045294/s6/base.i.combine at ;;Function func_80045294 (lines 12633-...).
+- result: Combine stats 56 attempts, 45 substitutions, 2 successes. Insn 14 NOT substituted into insn 29 because pseudo 76 has TWO uses: insn 18 (memory address `(mem (plus (reg 76) SYM))`) and insn 29 (the copy). Multi-use pseudo blocks combine's inline substitution; combine leaves both insns intact and the copy survives.
+- verdict: KILLED
+
+## [s6] In cse-fold-anon-shift.c, GCC's register allocator coalesces pseudo 76 (anon ashift result) and pseudo 81 (declared v1) into the same hard reg, deleting the surviving copy in insn 29.
+- mechanism: Hypothesized global.c coalesce logic would merge two pseudos linked by a copy where source dies (REG_DEAD 76 at insn 29).
+- probe: Read tmp/grind/func_80045294/s6/base.i.greg lines 14006-14030. `;; 11 regs to allocate:` list is `93 81 78 87 86 79 74 73 72 75 80` — pseudo 76 is NOT in the global-alloc queue. Register dispositions show `76 in 2` (v0) and `81 in 3` (v1). Cross-referenced tools/gcc-2.7.2/local-alloc.c + global.c.
+- result: Pseudo 76 dies within block 0 → handled by local_alloc() which picks $2 (first free scratch) BEFORE global_alloc() runs. Pseudo 81 is loop-live → handled by global_alloc() which assigns $3 by reg_n_refs priority WITHOUT visibility into local-alloc's earlier choice. GCC 2.7.2 has NO cross-pass coalescer (register coalescing pass was added in GCC 3+). combine_regs() in local-alloc.c only merges single-block-scope pseudo pairs. The inter-pool copy in insn 29 is thus structurally uneliminable.
+- verdict: KILLED
+
+## [s6] The +1-copy near-hit family (cse-fold-anon-shift + late-v1-assign-with-s4-inline + decl-init-decouple + inner-block-defer-v1) shares one root cause identifiable at pass level, not merely at surface-C level.
+- mechanism: Cross-form pattern check: every near-hit has (a) two tree-level a0<<4 subexpressions producing two distinct expand-time pseudos, one confined to block 0 and one loop-carried, and (b) the block-0 pseudo becomes the address-base of s4's init while the loop-carried one is the declared v1.
+- probe: Compared cse-fold-anon-shift.c greg vs baseline candidate.c greg (tmp/grind/func_80045294/s3/base.i.greg). Baseline: `11 regs to allocate: ... 75 ...`, `75 in 3` — pseudo 75 IS in global queue, no anon pseudo splits off, no copy. Cse-fold: two pseudos as described. Every rejected +1-copy form shares this two-pool split.
+- result: Root cause is the local_alloc/global_alloc pass split, not the surface C. Any C spelling with two tree-level a0<<4 subexpressions where one use is loop-carried and one is block-0-local produces the pass-split condition and the surviving copy. Frontier #2 (make global.c coalesce them) has NO mechanism to reach it in GCC 2.7.2 — the coalescer doesn't exist.
+- verdict: CONFIRMED
