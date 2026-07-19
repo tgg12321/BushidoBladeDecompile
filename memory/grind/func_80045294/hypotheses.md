@@ -256,3 +256,27 @@
 - probe: Edited src/text1a_c.c to `u32 v1 = (u32)a0 << 4;`; other decls unchanged. Ran sandbox.
 - result: score=2, build_insns=83 -- NEUTRAL. Byte-identical bytes to baseline. cc1 expand_shift produces `(ashift (reg:SI a0) (const_int 4))` regardless of destination declared type; the constant shift is signedness-agnostic. Downstream address arith identical.
 - verdict: KILLED
+
+## [s13] Permuter workspace for func_80045294 is un-blockable by using the FULL preprocessed src/text1a_c.c as base.c (bypassing import.py's pycparser choke on whole-func __asm__ + cpp-conflict decls) plus a compile.sh that pipes base.c to cc1 via stdin (positional-filename fails silently with cc1 exit=33; stdin form emits full asm despite the same warnings) and extracts func_80045294's region between .ent/.end.
+- mechanism: s4/s5 blocker was import.py's parse of the raw TU, not cc1's ability to compile it. Bypassing import.py + feeding cc1 via stdin bypasses both. Extraction via awk on .ent/.end + wrapper prelude assembling with as -O1 -G0 produces a per-function base.o without needing single-function isolation.
+- probe: Wrote tmp/grind/func_80045294/s13/setup_workspace.sh + perm/compile.sh; verified base.o extracts + assembles; permuter loads it and reports base score.
+- result: Workspace loads and runs the permuter at 17773 iters/668s with 0 compile errors on the base pass and normal error rate on mutated forms (~4-5%%).
+- verdict: CONFIRMED
+
+## [s13] The engine sandbox's honest floor of 2 for func_80045294 is caused entirely by the disabled `prologue_fix` per-function entry (tools/prologue_config.json line 280) — a TRACKED cheat listed in queue.json as `prologue_fix: 1`, not counted in the `rules: 0` field. When my workspace passes standard PROLOGUE_CONFIG, base.o byte-matches target.o (0 insn diff). Passing an empty PROLOGUE_CONFIG (matching sandbox `disable=all` empty_overrides) reproduces the 2-insn sw/move16/sll sched2 tie exactly.
+- mechanism: engine/pipeline.py L73-80 threads PROLOGUE_CONFIG/DELAY_SLOT_RA_FUNCS/FRAME_FIX_FUNCS env vars into prologue_fix.py; cheats.empty_overrides points them at empty JSON/txt files. prologue_fix.py's per-function entry for func_80045294 reorders sw s0 ; addu s0,s2 ; sll v1,s2 into target order after cc1 emits sll ; sw s0 ; addu s0,s2. Without prologue_fix's reorder, cc1's natural sched2 output IS the 2-off residual.
+- probe: Built base.o with standard prologue_fix (byte-matches target.o), then with empty PROLOGUE_CONFIG env vars (produces sll ; sw s0 ; addu s0,s2 order — 2-insn diff, matching the sandbox exactly).
+- result: Base score in workspace = 60 (permuter weighted score for the 2-insn shift), matches sandbox honest floor. Permuter now sees the same landscape as the engine sandbox.
+- verdict: CONFIRMED
+
+## [s13] Random-mode permuter over the full-TU base.c does NOT reach a score-60 basin escape in 17773 iters / 668s (fresh seed, chassis=s13-random-fresh1).
+- mechanism: decomp-permuter's default randomization pass covers structural rewrites (decl reorder, expression rewrites, statement swaps) without PERM_* directives. In this basin, sched2 tie is coupled to source LUID / RA / cse.c substitution axes measured dead across s1-s12; random mutations that don't route through a different expand/cse/global path cannot shift sll's LUID above move16's without triggering the s6 pool-split copy or s7 cse.c substitution rotation.
+- probe: python3 tools/permuter_campaign.py launch --func func_80045294 --dir tmp/grind/func_80045294/s13/perm --label s13-random-fresh1 -j 4 --stop-on-zero; polled 10 min then harvest --stop.
+- result: 17773 iterations, 668s, 3 finds total, 2 new, ALL AT SCORE 60. Best_new_score = 60. output-60-2 = swap sum/v1 decl order (equivalent-basin, s1 free-axis). output-60-3 = broken UB mutation (v1 undeclared read, permuter false-match).
+- verdict: KILLED
+
+## [s13] The specific directed macros the ledger frontier calls for (PERM_STMT_LIST + PERM_ADD_SUB + PERM_DUMMY_COMMA_EXPR + PERM_REORDER_DECLS) DO NOT EXIST in tools/decomp-permuter/src/. Only PERM_LINESWAP, PERM_GENERAL, PERM_VAR, PERM_INT, PERM_IGNORE, PERM_ONCE, PERM_RANDOMIZE, PERM_FORCE_SAMELINE, PERM_LINESWAP_TEXT, PERM_PRETEND, PERM_FACTORIES are available. Prior sessions authored the frontier text without verifying decomp-permuter's actual macro set.
+- mechanism: grep -rE 'PERM_[A-Z_]+' tools/decomp-permuter/src/ enumerates the available macros. The four ledger-cited names are aspirational placeholders. Closest usable substitutes: PERM_LINESWAP (decl-block reorder), PERM_GENERAL (arbitrary expression variants).
+- probe: grep for PERM_* in decomp-permuter/src; cross-checked with tools/permuter_annotate.py's HINTS registry (which lists no matching hint slugs).
+- result: s13 frontier item #1 must be re-phrased around the ACTUAL macro set. A future session should hand-annotate the func_80045294 body in base.c with PERM_LINESWAP around the decl block + PERM_GENERAL around the a0<<4 expression / s4/s5 init expressions and re-launch a directed campaign.
+- verdict: CONFIRMED

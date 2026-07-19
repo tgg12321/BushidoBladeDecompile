@@ -1,8 +1,8 @@
 {
  "func": "func_80045294",
  "file": "text1a_c",
- "session_count": 12,
- "current_modality": "structural",
+ "session_count": 13,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -75,23 +75,29 @@
    "floor": 2,
    "modality": "structural",
    "headline": "s12 structural: 3 more axes killed (sum-init position HARMFUL at position 5, a0-alias-local NEUTRAL, u32-v1-cast NEUTRAL); sum-decl-at-0 shown load-bearing (distinct from the {i,s4,count,s5} free-axis"
+  },
+  {
+   "session": 13,
+   "floor": 2,
+   "modality": "permuter",
+   "headline": "s13 permuter: workspace un-blocked (full-TU base.c + empty prologue_config strips the tracked prologue_fix cheat; base score 60 = 2-insn sched2 tie); random-mode fresh-seed 17773 iters in 668s produce"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Directed permuter over PERM_STMT_LIST + PERM_ADD_SUB + PERM_DUMMY_COMMA_EXPR + PERM_REORDER_DECLS reaches a C spelling that shifts sll's LUID above move16's WITHOUT (a) two tree-level a0<<4 (pool split), (b) source-ordering i=a0 before v1=a0<<4 (cse.c collapse), OR (c) any spelling that collapses a0's live range at the i-assignment.",
-   "mechanism": "s6/s7/s10/s11/s12 pin every hand-derivable axis as dead across three GCC passes (local_alloc/global_alloc, cse.c, jump.c/c-parse.y CFG splitters). Permuter mutations can explore C shapes routing through a different expand/cse/global path entirely -- shapes hand-derivation cannot enumerate. Fresh-seed discipline per feedback/permuter-fresh-seed-discipline.",
-   "next_probe": "Un-block permuter workspace: extract func_80045294 into a MINIMAL single-function .c (drop whole-function __asm__ for func_80044010 + cpp-conflict D_80095328 / D_800A9D04 / func_80042874 / func_8004574C decls); build target.o from disc bytes @0x35A94 via tools/decomp-permuter/prelude.inc (r3000 variant, drop `.set gp=64`). Launch tools/permuter_campaign.py with the four PERM_* macros."
+   "hypothesis": "A DIRECTED permuter campaign using PERM_LINESWAP around the {sum, v1, s4, i, count, s5} decl block plus PERM_GENERAL around the `a0<<4` / `s4+a1` / `*(base+v1)` expressions can escape the score-60 basin where random-mode cannot. Ledger's PERM_STMT_LIST/PERM_ADD_SUB/PERM_DUMMY_COMMA_EXPR/PERM_REORDER_DECLS are aspirational (do not exist in decomp-permuter) \u2014 PERM_LINESWAP + PERM_GENERAL are the actual usable substitutes.",
+   "mechanism": "Random mode's mutations are broad but shallow; directed macros focus the search on the specific decl/expression cluster the ledger's s6/s7 pass analysis identifies as coupled to the sll/move16 sched2 tie. Fresh-seed discipline (feedback/permuter-fresh-seed-discipline) mandates that a directed sweep runs on a different chassis than the random one, so this is a genuinely un-tried search axis.",
+   "next_probe": "Hand-annotate func_80045294's body in tmp/grind/func_80045294/s13/perm/base.c: wrap the initial decl block with PERM_LINESWAP({s32 sum = 0; s32 v1 = a0 << 4; s32 s4 = *(...); s32 i = a0; s32 count = D_800A33AC; s32 s5 = s4 + a1;}) and PERM_GENERAL over `a0 << 4` and `s4 + a1`. Re-launch via `python3 tools/permuter_campaign.py launch --func func_80045294 --dir tmp/grind/func_80045294/s13/perm --label s14-directed-lineswap-general -j 4 --stop-on-zero`; harvest --stop after 20-30 min if no score<60."
   },
   {
-   "hypothesis": "Forensics probe: reading base.i.jump0 (post-jump.c) and base.i.cse (post-cse.c) for the do-while(0) shape distinguishes s10-mechanism (a) [jump.c collapses while(0) before cse.c runs] from (b) [cse_extended_basic_block spans the fall-through and value-numbers across].",
-   "mechanism": "cc1 -da emits per-pass RTL dumps. jump0 is the first jump-optimization pass output; cse is the CSE pass output. Comparing BB structure around insns 14/15/17 for the do-while(0) form tells us which pass destroyed the boundary.",
-   "next_probe": "Reapply memory/grind/func_80045294/rejected/dowhile0-around-v1-after-i.c to src, run `cc1 <build-flags> -da base.i` in tmp/grind/func_80045294/sN/, then grep the func_80045294 region in base.i.jump0 and base.i.cse for (set 77 ...) and (ashift ...) insns."
+   "hypothesis": "The permuter workspace's default cpp-preprocessed base.c (2313 lines) may exceed pycparser's practical mutation surface \u2014 77 errors out of 2673 initial iters is ~3%%, low but non-zero. A MINIMAL single-function base.c (typedefs + extern decls + func_80045294 body only, ~50 lines) would eliminate the parse-noise floor AND let pycparser's random-mode reach deeper mutation depth in the same wall-clock.",
+   "mechanism": "The full-TU base.c has ~2000 lines of unrelated code from cpp expansion (structs from common.h, sound.h, game.h, code6cac.h; other function definitions in text1a_c.c). Each mutation pass has to parse+regenerate the entire file. A hand-authored minimal .c would fit the same pipeline (cc1 via stdin, awk-extract, as-assemble) with dramatically less permuter overhead.",
+   "next_probe": "Create tmp/grind/func_80045294/s14/perm/base.c with only: struct-free typedefs, extern decls for D_800EED10/14/18/1C, D_800A33A0/4/AC, and gpu_DrawSync / func_800520B8 prototypes, then the func_80045294 body. Reuse the same compile.sh with the same empty-prologue_config env vars. Compare directed-mode iters/sec vs the full-TU workspace over the same wall-clock."
   },
   {
-   "hypothesis": "OWNER-ESCALATION posture (NOT invoked this session): if permuter (#1) exhausts fresh-seed budget with no close AND forensics (#2) confirms mechanism (b) [cse.c spans fall-through], every sanctioned pure-C axis is dead. The residual is a 2-insn sched2 tie coupled by two pass-level dead ends at the C-source level.",
-   "mechanism": "N/A (posture note).",
-   "next_probe": "N/A (posture note). NOT invoked this session -- permuter modality remains grindable."
+   "hypothesis": "OWNER-ESCALATION posture (NOT invoked s13): if s14's directed PERM_LINESWAP + PERM_GENERAL campaign also plateaus at score=60 after ~30 min of fresh-seed budget across two structurally-different chassis, AND s15 forensics can confirm mechanism (b) [cse.c spans fall-through] rather than (a) [jump.c collapses while(0) before cse.c runs], every measured pure-C axis is dead. The residual is a 2-insn sched2 tie coupled to two GCC-pass-level dead ends (s6 local/global-alloc pool split with no coalescer; s7 cse.c BB-scoped substitution) at the C-source level.",
+   "mechanism": "N/A \u2014 posture note.",
+   "next_probe": "N/A \u2014 do not invoke until directed permuter is measured dead across at least two chassis with fresh-seed discipline."
   }
  ],
  "judge_constraints": [],
