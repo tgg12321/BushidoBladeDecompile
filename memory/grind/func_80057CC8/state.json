@@ -1,7 +1,7 @@
 {
  "func": "func_80057CC8",
  "file": "text1b",
- "session_count": 15,
+ "session_count": 16,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -99,23 +99,29 @@
    "floor": 3,
    "modality": "forensics",
    "headline": "s15 forensics: 86 pref set is hard_reg_preferences ({v0,v1} initially), not copy_preferences; v0 pruned by sched1-induced conflict, NOT intrinsic \u2014 s7 downgrade of insn-115-hoist axis is mechanism-wro"
+  },
+  {
+   "session": 16,
+   "floor": 3,
+   "modality": "forensics",
+   "headline": "sched1 hoist named: adjust_priority+birthing_insn_p boosts insn 115 to LAUNCH_PRIORITY (0x7f000001) because reg_n_sets[ang_prev's pseudo 78]==1; split-mask lever measured DEAD (combine folds before sc"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F3 Kengo (PS2, Marionation engine reuse) transplant \u2014 unchanged from prior ledger.",
-   "mechanism": "func_80057CC8 has not been probed against the Kengo corpus. If a structurally-equivalent function exists (2-neighbour arena-point angle-interp with mid + 0x800 flip on wrap, sin/cos-table scaling), its C shape may reveal a lever not derivable from BB2 shape alone.",
-   "next_probe": "REDERIVE modality. Check Kengo corpus accessibility; grep for angle-interp / two-neighbour arena-point patterns / prev-next index reload + call pair + ternary-with-0x800-flip. If structural match exists, transplant and measure. If corpus not accessible OR no structural match, KILL as unfindable."
+   "hypothesis": "F5 corner (double-swap): p1 = table+offset AND p2 = table+offset \u2014 the only un-measured cell of the s8 2x2 operand-order matrix (s8 measured p1-swap-alone byte-neutral, p2-swap-alone regressed to 9, baseline offset+table both is 3). Unlikely to help alone per s7 forensics (propagation asymmetry is a fixed property of addsi3 SET SRC1/SRC2 slot layout, not source-level operand order) but the corner cell is unmeasured.",
+   "mechanism": "STRUCTURAL modality. If the double-swap by symmetry regresses like p2-swap-alone (to 9), F5 is definitively dead. If it lands byte-neutral or better, it may reveal a novel property of the addsi3 reassoc kick.",
+   "next_probe": "Apply p1 = (s16*)((s32)table + <shift>) AND p2 = (s16*)((s32)(*(s16 **)(arg0+4)) + <shift>); measure sandbox --disable all."
   },
   {
-   "hypothesis": "F4 (RE-OPENED) sched1 insn-115 hoist elimination. s7 downgraded this axis on an incorrect intrinsic-pref-{3} assumption; s15 forensics shows the pref set is {v0, v1} pre-prune and only the v0 CONFLICT (from the sched1 hoist) prunes v0 out. Eliminating the hoist would restore v0 to the pref set; find_reg then picks v0 by reg_alloc_order.",
-   "mechanism": "Insn 115 (and $v0, $v0, 0xFFF finalizing ang_prev = call1_ret & 0xFFF) is hoisted by sched1 from RTL position (114,117) to (145,147) \u2014 one slot before call2. This extends v0's live range across insn 124 (the p2 addu redefining 86), producing the 86-vs-v0 conflict that prune_preferences uses to drop v0 from 86's prefs. A pure-C form that forces the mask to be materialized earlier (at the call1 return) or defers it into the compare's use site could eliminate the hoist window.",
-   "next_probe": "STRUCTURAL modality. Candidate C-level shapes: (a) do not cache the mask in the variable \u2014 write `ang_prev = call1(...); ...; if ((ang_next & 0xFFF) < (ang_prev & 0xFFF)) ...` and see whether cse1 folds the mask back into a single hoisted insn or emits per-use masks; (b) evaluate other structural forms that pin the mask's position. Not attempted this session \u2014 session mandate was forensics. Any candidate C form must survive layer-1/2 cheat-reviewer (no volatile coercion, no semantically-empty consumers)."
+   "hypothesis": "F3 Kengo (PS2, Marionation engine reuse) transplant \u2014 unchanged from prior ledger. func_80057CC8 has not been probed against the Kengo corpus.",
+   "mechanism": "REDERIVE modality. If a structurally-equivalent function exists (2-neighbour arena-point angle-interp with mid + 0x800 flip on wrap, sin/cos-table scaling), its C shape may reveal a lever not derivable from BB2 shape alone (though the sched1 birthing mechanism named this session applies to any single-def ang_prev C form).",
+   "next_probe": "Check Kengo corpus accessibility; grep for angle-interp / two-neighbour arena-point patterns. If corpus not accessible OR no structural match, KILL as unfindable."
   },
   {
-   "hypothesis": "F5 (secondary from same forensics) source-level operand order swap at insn 89 to shift set_preference's propagation from pseudo 112 (v0) to pseudo 88 (a2). Not a lever for reaching v0, but a lever for shifting the pref set away from the currently-conflicting operand.",
-   "mechanism": "set_preference walks XEXP(PLUS, 0). At insn 89 the first operand is 112 (offset temp, v0). If C source were written `table + offset` at p1, RTL would emit (plus 88 112) with a2 propagating instead of v0. Ledger s8 measured this p1-swap-alone as byte-neutral (score=3), so no direct improvement, but a paired swap at p2 (offset first stays at p2 to keep coalesce) with p1 swapped might reroute prefs. Full 2x2 matrix not exhausted; s8 measured only two of four combinations.",
-   "next_probe": "STRUCTURAL modality. Measure the un-measured (p1: table+offset, p2: table+offset) combination \u2014 s8 measured p1-swap-alone (byte-neutral) and p2-swap-alone (regressed to 9); the double-swap is un-measured. Also (p1: offset+table, p2: table+offset) is the s8 p2-swap-alone regression (9). Only the double-swap corner remains. Not likely to help alone \u2014 the insight is that operand-order rewriting shifts the SPECIFIC hard reg propagated, not whether a pref is set."
+   "hypothesis": "F6 (new axis): does target's C use an s32 arithmetic idiom that produces two RTL SETs surviving combine? E.g. `ang_prev = call1_ret; ang_prev = ang_prev & 0xFFF;` where an intervening non-C-source operation (like a REG_EQUAL note attached elsewhere) prevents fold. Cross-reference against SOTN masters for canonical patterns of double-set that survive combine.",
+   "mechanism": "REDERIVE modality \u2014 hunt for a real SOTN corpus pattern where two SETs to the same C var survive combine into sched1 with reg_n_sets==2. If found, apply pattern here. If SOTN has no such pattern (likely), owner-gated becomes the correct final disposition after F5-corner and F3 are also measured.",
+   "next_probe": "Grep SOTN dra/menu/weapon for `X = call(...); X &= ` sequences that reach a byte-match. Also inspect their `.combine` dumps if available (SOTN doesn't distribute them). Fallback: cite this axis as unfindable and prepare owner-escalation."
   }
  ],
  "judge_constraints": [

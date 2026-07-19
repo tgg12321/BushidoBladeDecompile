@@ -332,3 +332,21 @@ Per user 2026-06-22: keep working it; not permanently parked.
 - [s15] MIPS reg_alloc_order: v0 (2) precedes v1 (3) among caller-save GPRs. Confirms that if both v0 and v1 are in 86's post-prune pref set, find_reg picks v0.
 
 - [s15] hard_reg_copy_preferences[86] is empty: neither insn 89 nor 124 has a bare-REG SET_SRC; expand_preferences never fires for 86; set_preference's copy=1 branch never fires for 86.
+
+- [s16] Baseline: candidate.c on src/text1b.c line 11837 (s3 pin removed, offset+table reassoc); sandbox --disable all = 3 (target=build=111 insns, rules_dropped=7, cheat_asm_stripped=395). Replays s1-s15 baseline.
+
+- [s16] sched.c mechanism named: LAUNCH_PRIORITY = 0x7f000001 (sched.c:187). Priority boost path: schedule_block picks insn X at cycle T → sets INSN_PRIORITY(X)=LAUNCH_PRIORITY at line 3985 → calls schedule_insn(X) at 3986 → walks LOG_LINKS at 2627 calling adjust_priority(prev) → max_priority = MAX(...) picks up 0x7f000001 at 2601 → adjust_priority (2534) with n_deaths=0 case falls through to birthing_insn_p test at 2566 → on TRUE, INSN_PRIORITY(prev)=max_priority at 2571.
+
+- [s16] birthing_insn_p (sched.c:2496): returns TRUE iff pattern is SET (2504), SET_DEST is a REG (2505), the dest reg is currently live in the backward walk (bb_live_regs check at 2516), and reg_n_sets[i]==1 (2517).
+
+- [s16] Insn 115 = (set (reg/v:SI 78) (and:SI (reg:SI 2 v0) 0xFFF)); reg 78 = ang_prev; candidate.c has a single source-level assignment for ang_prev, so reg_n_sets[78]==1; pseudo 78 is live at insn 115 (used later in BB4 by the ang_next<ang_prev slt). All four birthing conditions satisfied.
+
+- [s16] Ready-list dump line 111 of func_sched: `;; ready list at T-5: 115 (7f000001) 143 (4) 145 (4), now 115 145 143`. Priority 0x7f000001 vs 4 → 115 wins T-5, placed one slot before call2 (T-4 = insn 147).
+
+- [s16] Post-alloc dispositions (greg): pseudo 78 in 16 ($s0, callee-save); pseudo 86 in 3 ($v1); pseudo 112 in 2 ($v0); pseudo 88 in 6 ($a2); pseudo 129 in 3 ($v1); pseudo 130 in 4 ($a0). Both p1 addu (insn 89) and p2 addu (insn 124) emit `addu $v1, ...`.
+
+- [s16] greg conflict list: `;; 86 conflicts: 72 74 75 77 84 86 87 2 4 16 17 29` — includes hard reg 2 (v0). This conflict is the load-bearing block that prune_preferences uses to drop v0 from 86's pre-prune pref set {v0, v1}, leaving only {v1}.
+
+- [s16] Split-mask measurement: `ang_prev = X; ang_prev &= 0xFFF;` → sandbox=3, insn count 111=111, sched dump insn 116 still (7f000001) at T-5. cse1/combine folded the split back before flow.c set reg_n_sets. Route A (multi-set ang_prev) is measured DEAD.
+
+- [s16] Target asm cross-check (asm/funcs/func_80057CC8.s): insn 115 equivalent lands in call2's delay slot at 80057DA0 (`andi $s0, $v0, 0xFFF`) — target ALSO gets the hoist behavior; delay-slot fill happens in dbr.c (not sched1). ang_prev in $s0 matches ours (both allocate 78 to $s0). The divergence is entirely at pseudo 86's allocation (target v0/v1 split vs our shared v1), not at ang_prev's allocation.
