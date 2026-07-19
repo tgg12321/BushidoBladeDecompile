@@ -228,3 +228,29 @@ Per user 2026-06-22: keep working it; not permanently parked.
 - [s9] Both Judge-listed 'open axes' were already measured dead in s8: axis (1) inline-both-call-sites eliminates the bound p local at score=0 but rejected as cheat-by-any-spelling (character-for-character 30+-char address-expression duplication); axis (2) p2 PLUS operand swap regressed 3->9. Neither is a live rederive axis for this session.
 
 - [s9] Sibling functions in text1b.c (func_8006133C, 800613C8, 80061454, 800614E0) confirmed structurally different in s2 (pointer-walk with post-increment, no phi-index); no transferable rederive lever.
+
+- [s10] SYNTHESIS session (no new sandbox measurements). Merged the s1-s9 ledger; see tmp/grind/func_80057CC8/s10/synthesis.md for the full merged attack.
+
+- [s10] Impossibility surface named: (i) s7 CONFIRMED that ONE C-variable `p` cannot reach target's p1=v0 (pseudo 86's {3} pref + v0 conflict both trace to single-pseudo properties); (ii) Judge binding constraint closes ALL two-C-local spellings; (iii) both Judge-suggested axes measured dead in s8 (inline-both-calls -> cheat class at 0; p2-operand-swap -> regression to 9). Remaining sanctioned axes are structural F1 (duplicated-statement-into-arms with cross-jump byte-merge prerequisite), rederive F2 (arg0 struct header-type correction via caller sweep), rederive F3 (Kengo transplant, accessibility unproven).
+
+- [s10] Frontier reset to 3 items (F1 primary structural, F2 secondary rederive, F3 tertiary rederive). F1 mechanism note: reg_n_refs bump on pseudo 86 via source-level duplication enters global.c allocno priority calc; but expand_preferences propagation to 86's copy-pref set is computed from static SET-operand analysis BEFORE realized placements, so a priority-order bump alone likely does NOT alter 86's {3} pref. F1 must actually flip either the {3} pref origin or the v0 conflict to move; refs-count-only is a weak lever unless combined with a schedule shift. Prerequisite for F1: objdump vs candidate must show cross-jump merged the arms byte-identically; if not, SOTN sanction prerequisite fails.
+
+- [s10] Kill-order for the next 1-3 sessions: s11 structural F1 (draft duplicated-arms, objdump-verify byte-neutrality, sandbox; on close invoke layer-1+layer-2 review); s12 rederive F2 (grep callers, evaluate struct evidence, KILL if no consistency); s13 rederive F3 (Kengo accessibility check, KILL if unfindable). If all three KILLED with measurements, function has exhausted sanctioned pure-C axes and OWNER-ESCALATION becomes correct next step — NOT this session (owner-gated requires pre-filed docs/grind/decisions.md entry, which does not yet exist for func_80057CC8).
+
+- [s10] s7 CONFIRMED: pseudo 86 = DECL_RTL(p) with both p1 (insn 89) and p2 (insn 124) SETs targeting the SAME pseudo 86; /v-marked in every dump.
+
+- [s10] s6/s7 CONFIRMED: 86's copy-pref = {3}, originating ONLY from pseudo 129 (v1, shifted next_idx offset) propagating via expand_preferences at insn 124's addsi3. p1 operands (112 v0, 88 a2) and p2 other operand (130 a0) do NOT propagate.
+
+- [s10] s6 CONFIRMED: 86 conflicts with v0 because sched1 hoists insn 115 (and $v0,$v0,0xFFF finalizing ang_prev) from (114,117) to (145,147), extending v0 live across insn 124.
+
+- [s10] s7 EXPLICIT COROLLARY: any pure-C form that keeps `p` as ONE C variable cannot reach target's p1=v0 -- 86 lands in v1 by positive pref {3} and v0 is conflict-blocked.
+
+- [s10] Judge s10 binding constraint: no shared-pointer split into two source-level locals under any spelling (semantic naming, numeric suffix, block-scope, function-scope, or FAKE-annotated). Verified against the 17-form rejected bank.
+
+- [s10] s8 measured both Judge-suggested axes dead: inline-both-call-sites -> score 0 but cheat-class (30+ char address-expr duplicated 4x, identical class to duplicate-address-expr-pseudo-inline); p2 PLUS operand swap -> score 3->9 regression.
+
+- [s10] Combined s1-s9 KILLED count = 18 hypotheses spanning statement order, type width, declaration order, block scoping, named-intermediate, directed permuter + directed+random permuter overlay, consumer-of-ang_prev-early, inline-both-calls, p2-operand-swap, walking-pointer rederive, 2-iter-for-loop rederive.
+
+- [s10] The three remaining unmeasured sanctioned axes are: F1 duplicated-statement-into-arms (structural), F2 arg0 header-type correction (rederive, requires caller sweep), F3 Kengo transplant (rederive, requires corpus access).
+
+- [s10] F1 SOTN-sanction prerequisite: cross-jump find_cross_jump must byte-merge both arms; verify via objdump vs candidate.c BEFORE claiming closure.
