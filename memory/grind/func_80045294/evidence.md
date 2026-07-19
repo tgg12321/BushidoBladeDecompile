@@ -197,3 +197,15 @@
 - [s13] [s13] Ledger-listed directed macros PERM_STMT_LIST / PERM_ADD_SUB / PERM_DUMMY_COMMA_EXPR / PERM_REORDER_DECLS DO NOT EXIST in tools/decomp-permuter (verified by grep of src/ + tools/permuter_annotate.py HINTS). The un-tested surface for this function is: hand-annotated PERM_LINESWAP around the {sum, v1, s4, i, count, s5} decl block, PERM_GENERAL around `a0 << 4` / `s4 + a1` / the s4 init expression.
 
 - [s13] [s13] Bytes-level proof of workspace fidelity: with standard prologue_fix, base.o (from perm/) byte-matches target.o (0 diff via diff on objdump -Mno-aliases -drz). With empty prologue_config env vars, base.o has sll at position 7 while target.o has sll at position 9 (byte 53 differs) — the exact sched2 tie the ledger describes at s1.
+
+- [s14] s14 relaunch of the directed full-TU PERM_LINESWAP+PERM_GENERAL chassis (tmp/grind/func_80045294/s14/perm) ran 4320 iters in 478.7s to the natural permuter iteration limit; 1 new output-60-2 (score=60, seconds_since_launch=28.3), 0 sub-60. Combined with the prior s14 run (929 iters) the chassis has ~5249 directed iters banked at score-60 plateau.
+
+- [s14] Novel minimal-base chassis built at tmp/grind/func_80045294/s14/perm_min/ — 63-line hand-authored base.c (typedefs + 8 extern decls + func_80045294) vs the 2524-line cpp-expanded full-TU base. Same PERM_LINESWAP annotation over the 6-decl cluster. Smoke test: cc1 -> prologue_fix (empty gates) -> maspsx -> multu_pad -> awk extract -> as pipeline produces base.o=1684 bytes cleanly.
+
+- [s14] Minimal-base permuter campaign (label s14-minimal-base-lineswap) ran 720 iters in 112.4s; finds_total=1 (pre-existing output-60-1, not from this run), finds_new=0, best_new_score=null. Iter rate 6.4/s across 4 jobs is COMPARABLE to (not faster than) the full-TU 9/s rate — the frontier #2 hypothesized 5x iters/sec gain did not materialize; the compile pipeline (not pycparser parse) dominates.
+
+- [s14] Both chassis show the SAME score-60 basin with the SAME distribution of near-hits (60/70/84/98 tiers) observed in the s14-original log — the plateau is chassis-independent and mutation-lever-independent for the specific PERM_LINESWAP+PERM_GENERAL surface tested.
+
+- [s14] src/text1a_c.c:1602-1648 currently carries the inherited candidate.c body verbatim (verified line-by-line); no src edits this session. memory/grind/func_80045294/candidate.c is unchanged.
+
+- [s14] Consistent with ledger s6/s7 pass-level dead-ends (local/global_alloc pool split with no coalescer; cse.c BB-scoped operand substitution) — no C-source structural lever tested here moves the residual 2-insn sched2 tie.

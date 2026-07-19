@@ -1,7 +1,7 @@
 {
  "func": "func_80045294",
  "file": "text1a_c",
- "session_count": 13,
+ "session_count": 14,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -81,23 +81,29 @@
    "floor": 2,
    "modality": "permuter",
    "headline": "s13 permuter: workspace un-blocked (full-TU base.c + empty prologue_config strips the tracked prologue_fix cheat; base score 60 = 2-insn sched2 tie); random-mode fresh-seed 17773 iters in 668s produce"
+  },
+  {
+   "session": 14,
+   "floor": 2,
+   "modality": "permuter",
+   "headline": "s14 permuter: both directed chassis (full-TU + minimal-base) plateau at score=60; frontier #1 and #2 measured dead across ~6000 cumulative directed iters"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A DIRECTED permuter campaign using PERM_LINESWAP around the {sum, v1, s4, i, count, s5} decl block plus PERM_GENERAL around the `a0<<4` / `s4+a1` / `*(base+v1)` expressions can escape the score-60 basin where random-mode cannot. Ledger's PERM_STMT_LIST/PERM_ADD_SUB/PERM_DUMMY_COMMA_EXPR/PERM_REORDER_DECLS are aspirational (do not exist in decomp-permuter) \u2014 PERM_LINESWAP + PERM_GENERAL are the actual usable substitutes.",
-   "mechanism": "Random mode's mutations are broad but shallow; directed macros focus the search on the specific decl/expression cluster the ledger's s6/s7 pass analysis identifies as coupled to the sll/move16 sched2 tie. Fresh-seed discipline (feedback/permuter-fresh-seed-discipline) mandates that a directed sweep runs on a different chassis than the random one, so this is a genuinely un-tried search axis.",
-   "next_probe": "Hand-annotate func_80045294's body in tmp/grind/func_80045294/s13/perm/base.c: wrap the initial decl block with PERM_LINESWAP({s32 sum = 0; s32 v1 = a0 << 4; s32 s4 = *(...); s32 i = a0; s32 count = D_800A33AC; s32 s5 = s4 + a1;}) and PERM_GENERAL over `a0 << 4` and `s4 + a1`. Re-launch via `python3 tools/permuter_campaign.py launch --func func_80045294 --dir tmp/grind/func_80045294/s13/perm --label s14-directed-lineswap-general -j 4 --stop-on-zero`; harvest --stop after 20-30 min if no score<60."
+   "hypothesis": "The score-60 basin may be broken by PERM_RANDOMIZE wrapping the specific expressions the ledger's s6/s7 mechanism analysis names (a0<<4 as the operand cse.c substitutes into ashift; the s4+a1 operand order that pins the s5 LUID), rather than by PERM_LINESWAP over decl positions. LineSwap has now been tested exhaustively on both chassis and is dead; RANDOMIZE offers a distinct mutation family (pycparser randomizer inserts/deletes/type-changes within a scope) that may reach the residual sched2 tie from a structural direction the free-axis reordering cannot.",
+   "mechanism": "PERM_RANDOMIZE injects the full pycparser randomizer at a named scope (see tools/decomp-permuter/src/randomizer.py) rather than only shuffling manually-listed lines. Applied to the initial-decl block scope it can invent new intermediate locals, split assignments, or restructure the shift-and-index expression in ways the hand-annotated PERM_LINESWAP + finite PERM_GENERAL alternatives cannot enumerate.",
+   "next_probe": "Rebuild tmp/grind/func_80045294/s15/perm_rand/base.c (start from the s14 minimal chassis for iter speed) with PERM_RANDOMIZE wrapping the entire decl+first-loop block; leave the second half untouched to preserve base score. Launch `permuter_campaign.py launch --func func_80045294 --dir tmp/grind/func_80045294/s15/perm_rand --label s15-randomize-decl-loop -j 4 --stop-on-zero`; harvest --stop after ~4000 iters (natural limit) if no score<60. Fresh-seed re-launch permitted per feedback/permuter-fresh-seed-discipline if the first seed yields nothing."
   },
   {
-   "hypothesis": "The permuter workspace's default cpp-preprocessed base.c (2313 lines) may exceed pycparser's practical mutation surface \u2014 77 errors out of 2673 initial iters is ~3%%, low but non-zero. A MINIMAL single-function base.c (typedefs + extern decls + func_80045294 body only, ~50 lines) would eliminate the parse-noise floor AND let pycparser's random-mode reach deeper mutation depth in the same wall-clock.",
-   "mechanism": "The full-TU base.c has ~2000 lines of unrelated code from cpp expansion (structs from common.h, sound.h, game.h, code6cac.h; other function definitions in text1a_c.c). Each mutation pass has to parse+regenerate the entire file. A hand-authored minimal .c would fit the same pipeline (cc1 via stdin, awk-extract, as-assemble) with dramatically less permuter overhead.",
-   "next_probe": "Create tmp/grind/func_80045294/s14/perm/base.c with only: struct-free typedefs, extern decls for D_800EED10/14/18/1C, D_800A33A0/4/AC, and gpu_DrawSync / func_800520B8 prototypes, then the func_80045294 body. Reuse the same compile.sh with the same empty-prologue_config env vars. Compare directed-mode iters/sec vs the full-TU workspace over the same wall-clock."
+   "hypothesis": "The 2-insn sched2 tie may be exposed by an ALLOCDBG/SCHEDDBG-instrumented cc1 dump comparing target vs current candidate at the sched2 boundary, isolating which INSN_LUID ordering triggers the sll-vs-move16 preference reversal. This is the s15 forensics prerequisite the ledger names for eventual OWNER-ESCALATION.",
+   "mechanism": "Ledger s7 named cse.c BB-scoped operand substitution as the pass that shortens a0's live range. An instrumented sched2 dump (BB2_SCHED_DEBUG=1) on both target-reconstructed C and candidate would show the ready-list ranking at the tie point, revealing whether the LUID delta is (a) directly caused by CSE's substitution shortening a0's chain (fix must be upstream of cse.c fall-through \u2014 likely impossible in pure C) or (b) caused by later scheduler tiebreaker choices (potentially reachable via a currently-untried structural lever).",
+   "next_probe": "Build tools/gcc-2.7.2 with BB2_SCHED_DEBUG instrumentation (if not already), dump sched2 ready-list ranking + INSN_LUID assignments for both the target-reconstructed input and candidate.c input at the function's entry BB. Compare LUID deltas at the sched2 tie point. If mechanism (a) confirmed, escalate via OWNER-ESCALATION path per ledger frontier #3. If mechanism (b), enumerate the untried structural levers the LUID delta implies."
   },
   {
-   "hypothesis": "OWNER-ESCALATION posture (NOT invoked s13): if s14's directed PERM_LINESWAP + PERM_GENERAL campaign also plateaus at score=60 after ~30 min of fresh-seed budget across two structurally-different chassis, AND s15 forensics can confirm mechanism (b) [cse.c spans fall-through] rather than (a) [jump.c collapses while(0) before cse.c runs], every measured pure-C axis is dead. The residual is a 2-insn sched2 tie coupled to two GCC-pass-level dead ends (s6 local/global-alloc pool split with no coalescer; s7 cse.c BB-scoped substitution) at the C-source level.",
+   "hypothesis": "OWNER-ESCALATION posture (frontier #3, inherited) \u2014 remains valid but NOT ripe: two chassis are now measured dead with directed permuter (this session's contribution), but the s15 forensics prereq the ledger names is unmet. Do NOT invoke owner-gated in s15 until the sched2/cse.c mechanism dump discriminates (a) from (b) and every remaining sanctioned pure-C axis is measured dead.",
    "mechanism": "N/A \u2014 posture note.",
-   "next_probe": "N/A \u2014 do not invoke until directed permuter is measured dead across at least two chassis with fresh-seed discipline."
+   "next_probe": "N/A \u2014 do not invoke until s15 forensics resolves the (a)/(b) discrimination AND at least one more untried structural lever (e.g. PERM_RANDOMIZE frontier above) is measured dead."
   }
  ],
  "judge_constraints": [],
