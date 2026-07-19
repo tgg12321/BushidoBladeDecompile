@@ -413,3 +413,13 @@
 - [s26] [s26] docs/grind/decisions.md STILL has no entry for func_80045294 (grep -n '80045294\|saTan0Init' docs/grind/decisions.md returns nothing); owner-gated remains unemittable per contract. The owner-escalation-drafting frontier from s19-s25 remains the sole sanctioned move.
 
 - [s26] [s26] No rejected forms new-banked (both s26 probes converge on already-banked rejected/i-before-v1-init.c shape); no new file needed.
+
+- [s27] Kengo saTan0Init disassembly (tmp/grind/func_80045294/s27/kengo_saTan0Init.s) shows 9 external jal calls vs BB2 func_80045294's 2, 160-byte vs ~32-byte stack frame, tslGlobalMemAlloc allocation pipeline absent from BB2, six-iteration fixed loop vs D_800A33AC dynamic loop.
+
+- [s27] s8's Kengo-transplant conclusion (block was 'no source shipped') is now upgraded to a stronger evidence tier: even with the asm inspectable, the semantic mismatch means transplant was never a live option regardless of source availability.
+
+- [s27] s17's kengo_debug_full.txt / kengo_globals_full.txt emptiness for saTan0Init is corroborated: no debug info exists because the function's structure is unrelated to BB2's — Kengo emits richer info for functions the compiler considered nontrivial, and this one's simplicity in Kengo's compilation offered nothing informative for BB2.
+
+- [s27] Total rederive sub-axes measured dead now: 11 (s8:2, s9:1, s17:3, s18:3, s26:3, s27:1). Rederive modality remains terminally exhausted per the s19/s26 consolidated frontier.
+
+- [s27] candidate.c (v1-before-i baseline) sustains sandbox floor=2 unchanged; no edit applied to src/text1a_c.c this session (rederive session, no LUID/lever measurement).
