@@ -692,3 +692,15 @@
 - [s44] [s44] BB2 function's globals-update semantics (D_800A33A0 += a1; D_800A33A4 -= a1) plus gpu_DrawSync indicate this is a per-frame scroll/advance step, NOT an init in the traditional sense; BB2's saTan0Init label is a role-name that does not correspond to Kengo's saTan0Init role. Second-order evidence that Kengo restructuring separated the roles.
 
 - [s44] [s44] Owner-escalation entry (s42-filed in docs/grind/decisions.md 2026-07-19) contract precondition (a) still satisfied; precondition (b) still awaits the PERM_INT axis measurement (frontier item, deferred by mandated modality this session).
+
+- [s45] Baseline reconfirmed twice this session: pre-edit and post-revert both score=2, target_insns=83, build_insns=83, rules_dropped=0, cheat_asm_stripped=78 -- artifacts tmp/grind/func_80045294/s45/baseline.txt and baseline_reverted.txt.
+
+- [s45] Sub-axis 17 (s4 init array subscript, constant-foldable a0<<2): NEUTRAL score=2, 83/83 -- fold-const collapses ARRAY_REF to PLUS_EXPR at fold time; distinct evidence surface from s5's arithmetic-tree probes and s39's addr-cast probes.
+
+- [s45] Sub-axis 18 (loop body array subscript on runtime v1>>2): HARMFUL score=8, 86/83 -- combine.c cannot cancel the srl/scale pair for the multi-use loop-carried v1 pseudo; runtime-var subscript is a genuinely distinct expand-path branch from the constant-foldable case.
+
+- [s45] src/text1a_c.c reverted to baseline candidate.c form; no residual dirt.
+
+- [s45] Rederive-modality tally advances from 16 (s44) to 18 independent sub-axes; every m2c/decomp.me/Kengo/sibling/expand-path angle explored so far converges on either the H1 KILLED shape, NEUTRAL byte-identity, or HARMFUL degradation.
+
+- [s45] Owner-escalation entry filed at s42 (docs/grind/decisions.md 2026-07-19) remains standing; contract precondition (a) satisfied; precondition (b) still requires the frontier's PERM_INT campaign kill before owner-gated is emittable.
