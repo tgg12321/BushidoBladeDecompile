@@ -236,11 +236,29 @@ $led/rejected/. Write your verdict JSON to the exact path given below.
     if ($v.verdict -eq 'PASS') {
         $qd = Invoke-Eng @('queue', 'done', $func)
         if ($qd -notmatch '"ok"\s*:\s*true') {
-            Log "${func}: queue done REFUSED after judge PASS: $qd"
+            # A Judge-PASSed, bytes-proven candidate that queue done still
+            # refuses means an un-retired config-level cheat remains (a stale
+            # prologue_fix entry retire couldn't drop before the 2026-07-19 fix,
+            # a maspsx cheat-pathway gate, etc.). The oracle is still green, so
+            # this is a per-function "needs more work" signal, NOT pipeline
+            # corruption — bank a constraint and grind on instead of halting the
+            # whole driver (the old Circuit-Break here stopped everything).
+            $reason = ("queue done refused a judge-PASSed candidate — an un-retired config-level " +
+                       "cheat remains (prologue_fix / maspsx cheat-pathway gate / other) that the " +
+                       "honest COMPLETED-C form must eliminate, or the function needs owner " +
+                       "canonical-asm authorization. gate: " + (($qd -replace '["\r\n\t]+', ' ') -replace '\s+', ' ').Trim())
+            $reason = $reason.Substring(0, [Math]::Min(400, $reason.Length))
+            Log "${func}: queue done REFUSED after judge PASS — banking constraint, grind continues."
+            git -C $Root add -- metrics/events.jsonl 2>$null
             git -C $Root checkout -- . 2>$null
-            Circuit-Break "queue done refused a judge-PASSed, bytes-proven candidate for $func — investigate"
+            Invoke-Eng @('verify-oracle', '--rebuild') | Out-Null   # restore canonical build/
+            python tools/grinder/grindlib.py constrain . $func $reason | Out-Null
+            git -C $Root add -- memory/grind docs/grind metrics/events.jsonl 2>$null
+            git -C $Root commit -m "grind: $func queue-done-refusal constraint banked [skip-park-src-guard]" 2>$null | Out-Null
+            Journal "${func}: queue done refused a bytes-proven candidate — un-retired config cheat; constraint banked."
+            return
         }
-        git -C $Root add -- "src/$stem.c" engine/queue.json regfix.txt asmfix.txt 2>$null
+        git -C $Root add -- "src/$stem.c" engine/queue.json regfix.txt regfix_stage2.txt asmfix.txt tools/prologue_config.json tools/frame_fix_funcs.txt tools/delay_slot_ra_funcs.txt 2>$null
         git -C $Root commit -m "Match: $func — COMPLETED-C (grinder, $sessionsTaken sessions)" | Out-Null
         Add-Decision $func 'final call' 'PASS' $v.justification
         Journal "$func COMPLETED-C after $sessionsTaken sessions."

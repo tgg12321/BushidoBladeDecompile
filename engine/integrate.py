@@ -44,7 +44,12 @@ def retire_function(func: str) -> dict:
     mismatch so build/ always ends in the canonical, matching state.
     """
     stem = sandbox.func_file(func)
-    backup = _backup(CONFIGS)
+    # Back up the prologue configs too: retire drops prologue_fix entries (a
+    # tracked cheat, audit 2026-06-15) alongside regfix/asmfix rules, so the
+    # rollback-on-SHA1-mismatch must be able to restore them (2026-07-19: a
+    # stale prologue_config.json entry on tslPolyF4Init — matched in pure C but
+    # never dropped — made queue done refuse and circuit-broke the grinder).
+    backup = _backup(CONFIGS + cheats.PROLOGUE_CONFIGS)
     try:
         dropped = {}
         for c in CONFIGS:
@@ -52,6 +57,9 @@ def retire_function(func: str) -> dict:
             if d:
                 Path(c).write_bytes(txt.encode())  # byte-exact, no newline munging
             dropped[Path(c).name] = d
+        pdropped = cheats.drop_prologue_fix_entries(func)
+        if pdropped:
+            dropped["prologue_fix"] = pdropped
         total = sum(dropped.values())
         if total == 0:
             return {"func": func, "file": stem, "ok": False,

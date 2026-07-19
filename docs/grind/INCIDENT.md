@@ -1,33 +1,25 @@
-# GRINDER CIRCUIT-BREAK — 2026-07-18 01:44
+# GRINDER CIRCUIT-BREAK — 2026-07-19 10:58 — RESOLVED 2026-07-19
 
-**Reason:** 3 consecutive invalid sessions on motion_SetMotion
+**Reason:** queue done refused a judge-PASSed, bytes-proven candidate for tslPolyF4Init
 
-git HEAD: e6d9c70d
-git status:
-```
- M metrics/events.jsonl
+**Root cause:** `tslPolyF4Init` carried a stale `prologue_config.json` entry from
+a prior completion. A grind session found a pure-C form that byte-matches WITHOUT
+prologue_fix (honest sandbox `--disable all` = 0, which strips prologue_fix), but
+`engine.integrate.retire_function` only dropped regfix/asmfix rules
+(`CONFIGS = [regfix, regfix_stage2, asmfix]`) — never the prologue_fix configs.
+So `queue done`'s completion-integrity gate correctly refused (1 prologue_fix
+entry still present), and the driver hard-circuit-broke on the refusal, halting
+the whole pipeline. (The `wsl: Failed to start the systemd user session` line in
+the log was incidental stderr noise; WSL was functional.)
 
-```
-Last 20 log lines:
-```
-[grind 2026-07-18 01:09:58] motion_SetMotion: session 3 starting, modality=structural
-[grind 2026-07-18 01:09:59] motion_SetMotion: INVALID session output (progress requires >=1 hypothesis with verdict CONFIRMED/KILLED and a numeric measurement in result) — discarded, src reverted, respawning.
-[grind 2026-07-18 01:09:59] grinder stopped.
-[grind 2026-07-18 01:10:00] grinder starting (pid 21916, model fable, judge fable)
-[grind 2026-07-18 01:10:00] pre-flight: oracle green.
-[grind 2026-07-18 01:10:01] motion_SetMotion: session 3 starting, modality=structural
-[grind 2026-07-18 01:10:02] motion_SetMotion: SCOPE VIOLATION —  M regfix.txt — session discarded.
-[grind 2026-07-18 01:10:02] grinder stopped.
-[grind 2026-07-18 01:10:08] grinder starting (pid 21936, model fable, judge fable)
-[grind 2026-07-18 01:10:09] pre-flight: oracle green.
-[grind 2026-07-18 01:10:10] motion_SetMotion: session 3 starting, modality=structural
-[grind 2026-07-18 01:16:33] motion_SetMotion: progress applied — floor=10, 'Structural closure re-attacked from 4 new angles (dup-case blocks, ternary arm, u32 sel, pre-switch if) - all KILLED; closure theorem survives, only the owner-policy/forensics frontier remains'
-[grind 2026-07-18 01:16:57] motion_SetMotion: session 4 starting, modality=permuter
-[grind 2026-07-18 01:26:42] motion_SetMotion: INVALID session output (no outcome file / unparseable JSON) — discarded, src reverted, respawning.
-[grind 2026-07-18 01:26:42] reaped 9 orphaned permuter process(es) (session boundary).
-[grind 2026-07-18 01:26:43] motion_SetMotion: session 4 starting, modality=permuter
-[grind 2026-07-18 01:33:01] motion_SetMotion: INVALID session output (no outcome file / unparseable JSON) — discarded, src reverted, respawning.
-[grind 2026-07-18 01:33:01] reaped 12 orphaned permuter process(es) (session boundary).
-[grind 2026-07-18 01:33:02] motion_SetMotion: session 4 starting, modality=permuter
-[grind 2026-07-18 01:44:14] motion_SetMotion: INVALID session output (no outcome file / unparseable JSON) — discarded, src reverted, respawning.
-```
+**Fix (committed 2026-07-19):**
+1. `engine/cheats.py`: `drop_prologue_fix_entries(func)` removes a function's
+   entries from prologue_config.json / delay_slot_ra / frame_fix in place.
+2. `engine/integrate.py`: `retire_function` now drops prologue_fix alongside
+   regfix/asmfix and backs those configs up for SHA1-mismatch rollback.
+3. `tools/grinder/grind.ps1`: the `Match:` commit stages every retire-touchable
+   config (added regfix_stage2 + the 3 prologue configs); a `queue done` refusal
+   now banks a constraint and continues instead of circuit-breaking (oracle stays
+   green — a refusal is a per-function "needs more work" signal, not corruption).
+
+Engine suite: 178 passed. See memory `retire-drops-prologue-fix`.

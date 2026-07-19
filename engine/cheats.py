@@ -201,6 +201,44 @@ def func_prologue_count(func: str) -> int:
     return n
 
 
+PROLOGUE_CONFIGS = [PROLOGUE_CONFIG, DELAY_SLOT_RA, FRAME_FIX]
+
+
+def drop_prologue_fix_entries(func: str) -> int:
+    """Delete every prologue_fix entry keyed to `func` from the REAL configs
+    (prologue_config.json / delay_slot_ra / frame_fix), in place. Returns the
+    number of config files an entry was removed from (0..3).
+
+    prologue_fix is a tracked cheat (audit 2026-06-15): reordering cc1's own
+    prologue into a target order it did not compile. Retiring a function to
+    COMPLETED-C must drop it, exactly like a regfix/asmfix rule — otherwise a
+    pure-C form that matches WITHOUT the fix (honest sandbox 0, which already
+    strips prologue_fix) is refused by mark_done for the stale entry. Callers
+    MUST SHA1-gate the rebuild and roll back on mismatch (integrate.retire):
+    a function that genuinely needs the fix will fail the build once it's gone.
+    """
+    dropped = 0
+    pc = Path(PROLOGUE_CONFIG)
+    if pc.exists():
+        cfg = json.loads(pc.read_text())
+        if func in cfg:
+            del cfg[func]
+            pc.write_text(json.dumps(cfg, indent=2) + "\n")
+            dropped += 1
+    for src in (DELAY_SLOT_RA, FRAME_FIX):
+        sp = Path(src)
+        if not sp.exists():
+            continue
+        lines = sp.read_text(encoding="utf-8").splitlines(keepends=True)
+        kept = [ln for ln in lines
+                if not ((tok := ln.strip().split())
+                        and not tok[0].startswith("#") and tok[0] == func)]
+        if len(kept) != len(lines):
+            sp.write_text("".join(kept))
+            dropped += 1
+    return dropped
+
+
 def _write_prologue_overrides(sd: Path, drop_func: str | None) -> dict:
     """Write FILTERED prologue configs into sd so the sandbox build strips
     prologue_fix. drop_func=None -> remove ALL entries (empty: prologue_fix is a
