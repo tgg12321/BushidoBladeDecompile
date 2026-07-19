@@ -1,8 +1,8 @@
 {
  "func": "func_80057CC8",
  "file": "text1b",
- "session_count": 7,
- "current_modality": "forensics",
+ "session_count": 8,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 0,
@@ -51,23 +51,19 @@
    "floor": 3,
    "modality": "forensics",
    "headline": "s7 forensics: pseudo 86 is /v-marked DECL_RTL of C-source `p`; both p1 and p2 SETs share pseudo 86; global-alloc's pref-3 comes only from pseudo 129's v1 (not v0/a2/a0); ang_prev-consumer axis downgra"
+  },
+  {
+   "session": 8,
+   "floor": 3,
+   "modality": "rederive",
+   "headline": "s8 rederive: both s7-listed open axes measured dead \u2014 inline-both-calls closes to 0 as cheat-by-spelling (same class as duplicate-address-expr-pseudo-inline); p2 PLUS operand swap regresses 3->9 (does"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Inline-expression form for p in both call sites (no local `p` binding, expression written directly in call arg) generates two distinct RTL pseudos, and would land p1's dest in v0.",
-   "mechanism": "expand computes a fresh anonymous SI pseudo for each `((s16*)(offset+table))[N]` in a call arg, since there is no DECL_RTL of p to unify them. CSE MIGHT re-unify them into one pseudo, or MIGHT leave them separate since prev_idx vs next_idx differ. If separate, p1 addu emits `addu $newpseudo_p1, ...` where $newpseudo_p1 is local-alloc-eligible (single-BB single-def) and can land in v0.",
-   "next_probe": "Structural modality (next session). Rewrite ang_prev/ang_next call sites to use inline expressions with no bound `p` local. Confirm rtl-dump pseudo count differs from current (should show 2+ new /v-less pseudos where 86 is today). Sandbox. If score-0 close: layer-1 cheat-reviewer + layer-2 fresh cheat-reviewer for the cheat-by-any-spelling test \u2014 this form has no auxiliary local-holder variable, so it may distinguish from the rejected alias-holder class."
-  },
-  {
-   "hypothesis": "Global.c's `expand_preferences` propagation for a PLUS SET picks up exactly ONE of the two operand hard regs into the dest's copy-prefs, following a specific first-src / dead-src heuristic that a directed C-source spelling can toggle.",
-   "mechanism": "The greg data shows 86 pref is {3} only, coming from 129 (src1 of p2's addu at insn 124). Neither 130's a0 nor either p1 operand appears. Reading gcc-2.7.2/global.c will name the specific propagation code; a source-side lever (e.g. swapping which side of `+` holds the shifted offset vs the table pointer, or nudging pseudo lifetime so 130 has the propagated slot) may redirect the copy-pref away from v1.",
-   "next_probe": "Forensic + structural mixed. Read tools/gcc-2.7.2/global.c expand_preferences implementation. Draft variant PLUS orderings (e.g. `(s32)table + <offset>` for p2 only) and measure whether 86's pref list changes in greg. If pref-3 disappears in favor of pref-4 (a0), 86 could still land in v1 (via conflict avoidance) but with no positive bias \u2014 a second lever might then move it to v0."
-  },
-  {
-   "hypothesis": "FAKE-annotated duplicated-statement-into-arms for the p1 pointer add (frontier item unchanged from s4/s5/s6).",
-   "mechanism": "Per [[duplicated-statement-into-arms]]: cross-jump find_cross_jump re-merges the byte-neutral duplication into identical bytes at codegen, but the SOURCE-level duplication doubles pseudo 86's reg_n_refs count in global.c's priority calc, shifting the RA priority ordering and potentially the preference bias. Concrete probe would duplicate the p1 pointer add inside both arms of the prev_idx if-reload.",
-   "next_probe": "Structural modality (NOT forensics). Draft the duplicated-arms form; verify byte-neutrality via objdump against candidate.c; sandbox; if floor drops with byte-neutral duplication and arms merge identically post-cross-jump, invoke layer-1 cheat-reviewer + layer-2 for FAKE-annotation policy compliance."
+   "hypothesis": "FAKE-annotated duplicated-statement-into-arms per [[duplicated-statement-into-arms]] applied to the p1 pointer add duplicated inside both prev_idx reload arms.",
+   "mechanism": "Per [[duplicated-statement-into-arms]] (SOTN-sanctioned 2026-07-01): cross-jump find_cross_jump re-merges the byte-neutral duplication into identical bytes at codegen, but the SOURCE-level duplication doubles pseudo 86's reg_n_refs count in global.c's priority calc, shifting RA priority ordering and potentially the preference bias. The p1 pointer add is the natural duplication target \u2014 duplicating `p = (s16*)((((s32)(prev_idx<<16)>>16)<<2) + (s32)table);` INSIDE both arms of `if ((s16)prev_idx < 0) { prev_idx = arg0[3] - 1; }` is the concrete probe.",
+   "next_probe": "Structural modality. Draft the duplicated-arms form. Verify byte-neutrality via objdump against candidate.c BEFORE claiming closure (cross-jump should merge identical bytes; if not, form is not byte-neutral and the sanction prerequisite fails). Sandbox. If floor drops with byte-neutral duplication and arms merge identically post-cross-jump, invoke layer-1 cheat-reviewer + layer-2 fresh cheat-reviewer for [[duplicated-statement-into-arms]] policy compliance (mandatory FAKE annotation, exhaustion evidence \u2014 the s1-s8 ledger IS the exhaustion evidence)."
   }
  ],
  "judge_constraints": [

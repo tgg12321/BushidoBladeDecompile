@@ -202,3 +202,15 @@ Per user 2026-06-22: keep working it; not permanently parked.
 - [s7] Insn 115 (and:SI reg 78 = v0 & 0xFFF) is at linked-list position (114,117) in every pre-sched dump; sched dump shows it moved to (145,147), one position before call2 (insn 147/143). sched1 is the sole reorderer (unchanged from s6, reconfirmed on candidate baseline).
 
 - [s7] Consumer-of-ang_prev-early axis is a NECESSARY-but-NOT-sufficient lever: even without the hoist, pseudo 86's pref {3} still steers global-alloc away from v0.
+
+- [s8] [s8] Applied candidate.c to src/text1b.c line 11837 (register asm('s3') pin removed, offset+table reassociation for both p adds). Sandbox --disable all reports score=3, target_insns=111, build_insns=111, rules_dropped=7, cheat_asm_stripped=395 — replays s1-s7 baseline cleanly on current main HEAD.
+
+- [s8] [s8] Inline-both-call-sites form (no `p` local declared, 4x address-expression duplication for [0]/[1] across both calls): sandbox score=0. Rejected as cheat-by-any-spelling per [[no-new-park-categories]] — identical class to rejected/duplicate-address-expr-pseudo-inline.c (2026-06-15). Saved as rejected/inline-both-call-sites-no-p-local.c with cheat-lens annotations.
+
+- [s8] [s8] p2 PLUS operand swap alone (write `table + offset` at p2, keep `offset + table` at p1): sandbox score=9 (regression matching HEAD-form's un-reassociated distance). Confirms source-level operand order at p2 controls reassociation reach, NOT expand_preferences source-slot selection.
+
+- [s8] [s8] p1 PLUS operand swap alone (write `table + offset` at p1, keep `offset + table` at p2): sandbox score=3 (byte-neutral). p1's operand ordering is fold-equivalent when p2 is offset+table.
+
+- [s8] [s8] Combined s1-s8 kill-count: 16 hypotheses KILLED across statement order, type width, declaration order, block scoping, named-intermediate, directed spelling alternatives, directed+random permuter overlay, consumer-of-ang_prev-early axis, inline-both-call-sites, and p2-operand-swap. Both s7-named open frontier axes are now measured dead.
+
+- [s8] [s8] Remaining un-attempted frontier item (unchanged from s5/s6/s7): FAKE-annotated duplicated-statement-into-arms per [[duplicated-statement-into-arms]] applied to the p1 pointer add duplicated inside both prev_idx reload arms. Requires structural modality (draft duplicated-arms C, verify byte-neutrality via objdump vs candidate.c, sandbox; if floor drops with byte-neutral duplication and arms merge identically post-cross-jump, invoke layer-1 + layer-2 cheat-reviewer for FAKE-annotation policy compliance).
