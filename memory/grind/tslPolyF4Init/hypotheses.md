@@ -67,3 +67,45 @@
 - probe: Swap assignment order so count=3 is first; sandbox tslPolyF4Init --disable all.
 - result: sandbox 8 -> 13 (regressed by 5). Reordering s0 alone worsens the other save-slot placements more than it improves s0's.
 - verdict: KILLED
+
+## [s2] H-s3: dropping `base` local (`elem = &g_cd_sector_buf[idx];`) reduces pseudo count and may re-interleave prologue saves toward target
+- mechanism: Fewer named pseudos => different first-use graph; sibling shape without cheat pin.
+- probe: Removed `base` decl, wrote `elem = &g_cd_sector_buf[idx];` in place of the base+add.
+- result: sandbox 8 -> 13 (regressed by 5). Sibling shape without the register-asm pin + dead-scalar coercion does not reach match; fewer pseudos worsens save-slot placement here.
+- verdict: KILLED
+
+## [s2] H-s4: `do { ... } while (--count != -1);` restructure changes basic-block boundaries so save-restore_insns land in target order
+- mechanism: Loop shape affects NOTE_INSN_LOOP_BEG emission and basic-block boundaries.
+- probe: Rewrote loop as do-while with continue-equivalent via goto next; sandbox.
+- result: sandbox 8 -> 17 AND insn count 81 -> 83. do-while emits an extra loop-preservation cycle; not a save-order lever, adds instructions.
+- verdict: KILLED
+
+## [s2] H-s5 (new): placing `count = 3;` BETWEEN `saved` and `idx` (`saved; count=3; idx; base; elem;`) makes count's pseudo the winner for hard reg s0
+- mechanism: In this position count's first-write in the RTL precedes idx's, and its allocno ranks above a1's in global.c's priority sort; a1 shifts from s0 to s1, count from s1 to s0 — matches target's s0=count/s1=a1 assignment. The 4 sw of s0 -> position 4 in the prologue interleave matches target (s0 was 7th in old build, is 4th in target).
+- probe: Wrote `saved = g_cd_callback_a; count = 3; idx = a0 & 0xFF; base = g_cd_sector_buf; elem = base + idx;` in that order; sandbox.
+- result: sandbox 8 -> 4. Confirmed via objdump: build now has s0=count / s1=a1 / s2=a2 / s3=idx / s4=a0 / s5=saved / s6=elem — identical to target allocation. Remaining 4-insn diff is the arg-copy interleave at prologue top (build starts with sw s4/move s4; target starts with sw s1/move s1/sw s2/move s2 THEN sw s4/move s4).
+- verdict: CONFIRMED
+
+## [s2] H-s5b: swapping the local declaration order (`saved` decl first) further shifts allocation
+- mechanism: Decl order affects LUID and secondary allocno tiebreaks.
+- probe: Moved `s32 saved;` to be the first local declaration (init order unchanged).
+- result: sandbox stayed at 4 - neutral. Declaration order has no observable effect once init order is fixed.
+- verdict: KILLED
+
+## [s2] H-s5c: `base = g_cd_sector_buf;` before `idx = a0 & 0xFF;` (base written before touching a0) shifts allocation further
+- mechanism: Loading the global before the a0-touch might delay s4's first-use to after s5/s6.
+- probe: Swapped `base = ...` to precede `idx = a0 & 0xFF;`.
+- result: sandbox 4 -> 8 (regressed). Splits s5/s6 first-uses in a bad way; the count-before-idx placement is the sweet spot.
+- verdict: KILLED
+
+## [s2] H-s5d: `count = 3;` FIRST (before `saved`) further front-loads count
+- mechanism: Increases count's priority even more relative to a1.
+- probe: Moved `count = 3;` to first statement.
+- result: sandbox 4 -> 13 (severely regressed). Duplicates the H-s1 finding: count-alone-first hurts every other save slot; the sweet spot is count SECOND, after saved's global load.
+- verdict: KILLED
+
+## [s2] H-s5e: split-init `count = 4; --count;` increases count's ref count enough to lock in its priority over a1
+- mechanism: Extra ref via decrement.
+- probe: Wrote `count = 4; --count;` above idx; sandbox.
+- result: sandbox stayed at 4 - neutral. GCC folds the decrement away (constant propagation) so refs unchanged.
+- verdict: KILLED

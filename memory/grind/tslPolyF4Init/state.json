@@ -1,31 +1,37 @@
 {
  "func": "tslPolyF4Init",
  "file": "system",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 8,
    "modality": "recon",
    "headline": "Recon: baseline floor 8, gap is prologue callee-save ORDER (not RA); killed H-s1 count-first reorder (8\u219213); frontier H-s2/s3/s4 on axes that shift first-write sequence without cheat-siblings' pin+dum"
+  },
+  {
+   "session": 2,
+   "floor": 4,
+   "modality": "structural",
+   "headline": "H-s5 CONFIRMED: `saved; count=3; idx; base; elem;` drops floor 8->4 by making count's pseudo win s0 (matches target); H-s3/H-s4 KILLED"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "H-s2: hoist `saved = g_cd_callback_a;` to the first assignment (before any arg reference) will change the earliest sw insertion and shift a1/a2's callee-save copies ahead of a0's.",
-   "mechanism": "sched1's arg-copy scheduling picks first-use ordering off the RTL insertion sequence; if s5's first-use comes before any arg reference, GCC may bind the arg-move ordering to non-a0 first.",
-   "next_probe": "Reorder to `saved = g_cd_callback_a; idx = a0 & 0xFF; base = g_cd_sector_buf; elem = base + idx; count = 3;` and sandbox; measure sw-order delta."
+   "hypothesis": "H-s6: force a1's first-use in RTL to precede a0's, e.g. by a legitimate early expression that references a1 without dead-code semantics",
+   "mechanism": "sched1 orders arg-copy insns by first-use position. If a1 is textually first-used before a0, `move s1, a1` may schedule ahead of `move s4, a0`, matching target's sw interleave.",
+   "next_probe": "Identify any legitimate structural reordering that references a1 (or a2) in the block before the `idx = a0 & 0xFF` compute WITHOUT a dead store / self-assign / conditional-dead-store (all forbidden). Consider whether the compare `if (idx != 1)` inside the loop can be replaced by a `switch (a0 & 0xFF)`-shaped dispatch that binds idx via a2-parameterised expression (weak \u2014 likely still uses a0 first)."
   },
   {
-   "hypothesis": "H-s3: replacing `base = g_cd_sector_buf; elem = base + idx;` with `elem = &g_cd_sector_buf[a0 & 0xFF];` (drop base + inline idx) reduces pseudo count and matches the sibling's shape, potentially reordering the andi/sll interleave in the prologue.",
-   "mechanism": "Fewer named locals => different first-use graph; sibling's shape (minus the pin+dummy cheat) may naturally schedule the andi where target has it (post move-s4, pre count-init).",
-   "next_probe": "Rewrite as `elem = &g_cd_sector_buf[a0 & 0xFF];` keep `idx` only if needed for later `idx != 1` compare (or fold to `(a0 & 0xFF) != 1`); sandbox."
+   "hypothesis": "H-s7: type-narrow one arg to alter parameter-pseudo priority",
+   "mechanism": "Parameter types (u16 vs s32) may change GCC 2.7.2 pseudo-numbering or size-priority for global.c's allocno_compare, altering which arg wins first hard-reg pick.",
+   "next_probe": "Grep call sites of tslPolyF4Init (only src/system.c:1208 `tslPolyF4Init(9, 0, 0)` known) to determine if any arg has a natural narrower type; if so, try `s32 tslPolyF4Init(u8 a0, ...)` etc. Since tslPolyF4Init(9,0,0) fits any narrowing, this is safe to probe without touching call sites."
   },
   {
-   "hypothesis": "H-s4: rewrite loop as `do { ... } while (--count != -1);` (removing the label + goto) may steer sched1's basic-block boundaries so save-slot insertions land in target order.",
-   "mechanism": "Basic-block structure determines where GCC inserts prologue insns relative to loop entry; a natural-loop form may relocate the boundary that currently forces sw s0 to the tail.",
-   "next_probe": "Rewrite loop control to `do { ... } while (--count != -1);` preserving all inner semantics; sandbox and inspect sw sequence."
+   "hypothesis": "H-s8: interleave-rule park (owner-gated escalation), citing sibling-evidence that ONLY a regfix `reorder` closes this plateau",
+   "mechanism": "func_80080258/func_80080390 use `reorder 3,18,4,17,5,6,7,19,8,9,10,11,12,13,14,15,16 @ 3-19` alongside their cheat pins to fix the SAME arg-copy interleave. That regfix would be forbidden here, but its existence is evidence the fork's sched1+assign_parms interleave cannot be steered by any C source producing our allocation shape.",
+   "next_probe": "Reserved for a later session AFTER H-s6/H-s7 are measured dead. Do NOT owner-gate now \u2014 this session has open axes."
   }
  ],
  "judge_constraints": [],

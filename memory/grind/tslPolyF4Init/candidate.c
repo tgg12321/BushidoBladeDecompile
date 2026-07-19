@@ -1,3 +1,12 @@
+/* s2 candidate — sandbox floor 4 (down from 8, in place in src/system.c).
+   Key structural change: assignment order `saved; count=3; idx; base; elem;`.
+   This makes count's pseudo win hard reg s0 (allocation now matches target
+   1:1: s0=count, s1=a1, s2=a2, s3=idx, s4=a0, s5=saved, s6=elem).
+   Remaining 4-insn diff: prologue arg-copy interleave — build starts with
+   sw s4/move s4, target starts with sw s1/move s1/sw s2/move s2 then sw s4.
+   Sibling evidence (regfix.txt:93 for func_80080258) shows this interleave
+   is closed by a build-time `reorder` regfix in the cheat template; frontier
+   for next session is a legit way to shift a1's first-use ahead of a0's. */
 s32 tslPolyF4Init(s32 a0, s32 a1, s32 a2) {
     s32 count;
     s32 idx;
@@ -6,11 +15,11 @@ s32 tslPolyF4Init(s32 a0, s32 a1, s32 a2) {
     s32 *base;
     s32 status;
 
-    idx = a0 & 0xFF;
     saved = g_cd_callback_a;
+    count = 3;
+    idx = a0 & 0xFF;
     base = g_cd_sector_buf;
     elem = base + idx;
-    count = 3;
 
 loop:
     g_cd_callback_a = 0;
