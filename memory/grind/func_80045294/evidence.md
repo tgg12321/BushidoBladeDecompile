@@ -600,3 +600,13 @@
 - [s37] Structural free-axis formally closed at s30 (sum-position bounded to {0,1,2}; two-axis A+B and three-axis C superposition all NEUTRAL at score=2).
 
 - [s37] OWNER-ESCALATION entry NOT filed in docs/grind/decisions.md (grep -c = 0 at s37, unchanged from s24); owner-gated emission blocked this session per contract precondition.
+
+- [s38] [s38] Baseline reconfirmed pre and post: sandbox --disable all -> score=2, target_insns=83, build_insns=83, rules_dropped=0, cheat_asm_stripped=78. Working tree clean at session end (both probes reverted).
+
+- [s38] [s38] Outer-block-wrap axis (whole-body bare `{ }` wrapper, distinct from s4 inner-block-defer-v1 because no statement-position v1 assignment is introduced) measured NEUTRAL. Confirms global.c's function-wide allocno phase is agnostic to inner lexical scope boundaries for THIS decl cluster -- extending s4's inner-block-defer-v1 finding to a strictly-structural (non-decl-reordering) surface.
+
+- [s38] [s38] `register` storage-class hint on v1 measured NEUTRAL. Extends s5/s12's arithmetic-form and destination-type-declaration axis kills to the storage-class-declaration surface. Confirms GCC 2.7.2's advisory `register` keyword has no observable effect on the sll pseudo's LUID or allocno priority in this function.
+
+- [s38] [s38] 27 rejected forms now banked (was 25 at s37): two new no-purchase structural surfaces added. Consistent with the s1-s37 exhaustion synthesis + s30 formal free-axis closure; no C-source structural axis reached by hand-derivation shifts the sll/move16 sched2 tie.
+
+- [s38] [s38] OWNER-ESCALATION entry for func_80045294 STILL not present in docs/grind/decisions.md (grep confirmed only hirahira_w_frie 2026-07-17 and motion_SetMotion 2026-07-18 escalations exist). Contract precondition (a) for owner-gated remains unmet; structural session cannot file the escalation (owner-authored artifact class per hirahira_w_frie precedent). Ledger-frontier next-move remains valid: the escalation-drafting session is the sanctioned next step, then owner-gated becomes emittable.

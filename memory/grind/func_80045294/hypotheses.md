@@ -634,3 +634,15 @@
 - probe: `grep -c func_80045294 docs/grind/decisions.md` at s37.
 - result: 0 hits, entry not filed (same result as s24). owner-gated is blocked. The synthesis modality is discharged by consolidation; next session must draft the escalation entry before owner-gated becomes emittable.
 - verdict: KILLED
+
+## [s38] Wrapping the entire function body in a bare outer `{ }` scope (no statement-position v1 assignment introduced, distinct from s4 inner-block-defer-v1) shifts the sll/move16 sched2 tie via a per-block allocno-ordering effect in global_alloc.
+- mechanism: If global.c allocated pseudos in per-block passes, an outer scope would give the entire {sum,v1,s4,i,count,s5} cluster a distinct allocno bucket from the params, potentially shifting the reg_n_refs priority queue at the sll/move16 tiebreak.
+- probe: Edited src/text1a_c.c func_80045294 body to `void func_80045294(s32 a0, s32 a1) { { s32 sum=0; ...; } }` -- outer bare-block wrapper, no other change. Ran sandbox --disable all.
+- result: score=2, target_insns=83, build_insns=83, rules_dropped=0. NEUTRAL. Byte-identical to baseline residual (same sll/sw/move16 vs sw/move16/sll cluster). Rejected form banked at memory/grind/func_80045294/rejected/outer-block-wrap.c.
+- verdict: KILLED
+
+## [s38] Plain `register s32 v1 = a0 << 4;` storage-class hint (NOT a `register T x asm("$N")` cheat pin -- ordinary C) biases GCC 2.7.2's RA priority or LUID assignment enough to shift the sll/move16 sched2 tie.
+- mechanism: If GCC 2.7.2's local-alloc.c or global.c applied a priority boost for `register`-declared locals, v1's pseudo might allocno-rank higher or its assignment LUID might shift within expand_expr's tree walk.
+- probe: Edited src/text1a_c.c to `register s32 v1 = a0 << 4;`; other decls unchanged. Ran sandbox --disable all.
+- result: score=2, target_insns=83, build_insns=83, rules_dropped=0. NEUTRAL. `register` without asm binding is purely advisory in GCC 2.7.2; RA decisions unchanged from baseline. Rejected form banked at memory/grind/func_80045294/rejected/register-storage-class-v1.c.
+- verdict: KILLED
