@@ -1,7 +1,7 @@
 {
  "func": "func_80057CC8",
  "file": "text1b",
- "session_count": 11,
+ "session_count": 12,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -75,18 +75,19 @@
    "floor": 3,
    "modality": "structural",
    "headline": "s11 structural: F1 duplicated-statement-into-arms KILLED across 3 variants (prev_idx-if / next_idx-ifelse / table-reload); candidate floor 3 holds. F1 mechanism disproven."
+  },
+  {
+   "session": 12,
+   "floor": 3,
+   "modality": "structural",
+   "headline": "s12 structural: F2 header-type-correction KILLED by measurement \u2014 struct-typed arg0 is byte-neutral at codegen; frontier collapses to F3 (Kengo transplant) alone."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F2 -- Header-type correction on arg0 as a struct pointer per [[header-type-correction-from-use-sites]] (2026-07-13 sanctioned narrow carve-out). arg0's access pattern (offset 2 u8, offset 3 u8, offset 4 s16**) suggests a game-state struct; if callers reveal a consistent struct at arg0, correcting the extern at its canonical header may change combine.c's substitution surface for the (offset+table) expression at insn 124, altering pseudo 86's copy-pref propagation.",
-   "mechanism": "SOTN-sanctioned four-prong carve-out (grep-consistent use sites, prior compensating casts, single extern edit, casts eliminated everywhere). A struct-member access may present combine a different addsi3 SET_SRC/SET_DEST structure, potentially shifting which operand's hard reg propagates into 86's copy-preference set.",
-   "next_probe": "REDERIVE modality (s12). Grep all callers of func_80057CC8 across src/. Enumerate arg0 type at each call site. If a consistent struct with fields matching offsets 2/3/4 emerges, prototype the struct form and sandbox. If no consistency (arg0 genuinely per-byte u8*), KILL this axis by measurement."
-  },
-  {
    "hypothesis": "F3 -- Kengo (PS2, Marionation engine reuse per AGENTS.md) transplant. func_80057CC8 has not been probed in [[slog-kengo-dead-end]] (only func_80023F08 and func_80058580).",
    "mechanism": "Angle-interpolation over an arena-point table is plausibly a Lightweight/Marionation-shared routine. If a Kengo-source structurally equivalent function exists, its C shape may reveal a legitimate lever not derivable from BB2 shape alone.",
-   "next_probe": "REDERIVE modality (s13). Check Kengo corpus availability. If accessible, grep for angle-interp/two-neighbor arena patterns and attempt transplant. If not accessible, KILL as unfindable."
+   "next_probe": "REDERIVE modality (s13). Check Kengo corpus availability. Grep for angle-interp/two-neighbor arena patterns and attempt transplant. If corpus not accessible or no structural match found, KILL as unfindable \u2014 with F1+F2 already dead, this exhausts the s10 synthesis frontier and would make an OWNER-ESCALATION filing in docs/grind/decisions.md the correct next disposition."
   }
  ],
  "judge_constraints": [

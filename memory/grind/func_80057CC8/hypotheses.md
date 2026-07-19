@@ -233,3 +233,21 @@
 - probe: Applied candidate.c to src/text1b.c line 11837 (removed `register asm("s3")` from next_idx; swapped table+offset -> offset+table for both p adds). Sandbox --disable all.
 - result: score=3, target_insns=111, build_insns=111, rules_dropped=7, cheat_asm_stripped=395 — replays s1-s10 baseline cleanly.
 - verdict: CONFIRMED
+
+## [s12] Candidate.c (offset+table reassociation, s3 pin removed) still measures at sandbox distance 3 on current main HEAD.
+- mechanism: Session-entry precondition check.
+- probe: Applied candidate.c form to src/text1b.c line 11837 (u8 *arg0, offset+table reassociation for both p adds, no s3 pin); ran `tools/wteng.ps1 main sandbox func_80057CC8 --disable all`.
+- result: score=3, target_insns=111, build_insns=111, rules_dropped=7, cheat_asm_stripped=395 — replays s1-s11 baseline cleanly on current main HEAD.
+- verdict: CONFIRMED
+
+## [s12] F2 axis: correcting arg0's type from `u8 *` to a struct pointer (ArenaHdr_57CC8 { u8 flags; u8 _p1; u8 scale_units; u8 count; s16 *table; }) presents combine.c a different SET_SRC/SET_DEST substitution surface for the (offset + table) expression at insn 124, altering pseudo 86's copy-preference propagation and enabling target's p1=v0 allocation.
+- mechanism: SOTN-sanctioned four-prong [[header-type-correction-from-use-sites]] carve-out (2026-07-13). A struct-member access might present combine a different addsi3 pattern, potentially shifting which operand's hard reg propagates into pseudo 86's copy-preference set (per s7 forensics, currently only pseudo 129's v1 propagates via insn 124's addsi3; pseudo 130's a0 does not).
+- probe: Rewrote func_80057CC8 signature to `void func_80057CC8(ArenaHdr_57CC8 *arg0, ...)`; replaced `*(s16**)(arg0+4)` with `arg0->table` at both p1 (via cached `table` local) and p2 (fresh member access); replaced `arg0[3]` with `arg0->count` at both if-boundary tests; replaced `arg0[2]` with `arg0->scale_units` at scale compute. Sandbox --disable all.
+- result: score=3 (unchanged from candidate baseline), target_insns=111, build_insns=111, rules_dropped=7, cheat_asm_stripped=395. Byte-neutral: the type-level change is fold-equivalent under GCC 2.7.2 combine.c. Struct member access `arg0->table` compiles to identical `lw $rD, 0x4(arg0)` as `*(s16**)(arg0+4)`; `arg0->count` compiles to identical `lbu $rD, 0x3(arg0)` as `arg0[3]`. combine.c sees the same addsi3 SET_SRC/SET_DEST structure at insn 124 regardless of arg0's source-level type. Pseudo 86's copy-pref {3} origin (pseudo 129's v1 propagation) is unchanged. Saved memory/grind/func_80057CC8/rejected/struct-typed-arg0-header-correction.c.
+- verdict: KILLED
+
+## [s12] The [[header-type-correction-from-use-sites]] four-prong sanction is applicable to func_80057CC8's arg0 signature (arg0 usage pattern: bytes 2/3 + s16* table at offset 4 = a plausible 8-byte struct).
+- mechanism: Prong (a) 'grep-consistent use sites, at least one signed-specific'; prong (b) 'OLD type required functionally necessary compensating casts'; prong (c) 'one extern edit, never alias-rename/pointer-pun'; prong (d) 'casts eliminated at every use site'.
+- probe: Grep across src/ and include/ for `func_80057CC8`: single C use site (the definition itself). Grep across asm/ for callers: only asm caller is func_80057E84 (three call sites, all passing $s1 = struct-table-base + 8*index). No other C caller exists; there is no shared header extern.
+- result: Prongs (a)/(c) fail: 'grep-consistent use sites' is trivially unfalsifiable with one C use site and no shared extern to correct — the four-prong bar was designed for globals with a canonical header declaration, not for parameter types on a function with only asm callers. Even setting the sanction bar aside, the codegen measurement is byte-neutral (0 gradient), so no closure opportunity exists on this axis regardless of policy fit.
+- verdict: KILLED

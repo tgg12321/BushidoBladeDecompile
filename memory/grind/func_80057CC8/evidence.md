@@ -268,3 +268,19 @@ Per user 2026-06-22: keep working it; not permanently parked.
 - [s11] Total s1-s11 KILLED hypotheses: 21 (s1-s10=18 + s11 F1 variants A/B/C = 3 more).
 
 - [s11] Structural modality is now exhaustively measured: statement order, type width, declaration order, block scoping, named-intermediate, directed spelling alternatives, directed+random permuter overlay, consumer-of-ang_prev-early, inline-both-call-sites, p2-operand-swap, walking-pointer rederive, 2-iter-for-loop rederive, and the F1 duplicated-arms family (3 variants). All C-level structural axes accessible at zero policy cost are dead.
+
+- [s12] s12 baseline replay: candidate.c on src/text1b.c line 11837 measures sandbox --disable all = 3 (target_insns=111, build_insns=111, rules_dropped=7, cheat_asm_stripped=395).
+
+- [s12] s12 caller sweep: func_80057CC8 has ZERO C callers — only asm callers in asm/funcs/func_80057E84.s (three call sites at 80057FCC, 80057FF8, 80058230; all pass $s1 as arg0 where $s1 = a1_outer + 8*index, an 8-byte struct table).
+
+- [s12] s12 arg0 access pattern in func_80057CC8: byte 0 (unused in this fn), byte 2 as u8 (scale_units, `arg0[2]*40`), byte 3 as u8 (count, `arg0[3]` boundary tests), offset 4 as s16* (table, `*(s16**)(arg0+4)`). Consistent with an 8-byte ArenaHdr struct { u8 flags; u8 _p1; u8 scale_units; u8 count; s16 *table; }.
+
+- [s12] s12 F2 struct-typed rewrite: sandbox --disable all = 3 (unchanged from candidate baseline); target=build=111 insns. Byte-neutral: struct member access `arg0->table` folds to identical `lw $rD, 0x4(arg0)` as the byte-cast form; `arg0->count` folds to identical `lbu $rD, 0x3(arg0)` as `arg0[3]`. GCC 2.7.2 combine.c collapses both forms to the same RTL substitution surface at insn 124.
+
+- [s12] s12 sanction-check: [[header-type-correction-from-use-sites]] four-prong requires (a) grep-consistent use sites with at least one signed-specific — func_80057CC8 has ONE C use site and ZERO other C callers; prong is trivially satisfied but produces no evidence. Prong (c) requires a single extern edit — there is no shared header extern for this parameter type. The rule was designed for globals, not for parameter types on a function with only asm callers. Sanction fit fails independent of the byte-neutrality kill.
+
+- [s12] Combined s1-s12 KILLED hypotheses: 22 (s1-s10 = 18 [statement order, type width, declaration order, block scoping, named-intermediate, directed permuter, directed+random permuter overlay, consumer-of-ang_prev-early, inline-both-call-sites, p2-operand-swap, walking-pointer rederive, 2-iter-for-loop rederive]; s11 = 3 [F1 dup-arms A/B/C]; s12 = 1 [F2 struct-typed arg0]).
+
+- [s12] F1 duplicated-statement-into-arms (s11) and F2 header-type-correction (s12) both measured DEAD. Only F3 (Kengo transplant, corpus-accessibility unproven) remains from the s10 synthesis frontier.
+
+- [s12] s7 CONFIRMED single-pseudo impossibility (pseudo 86 = DECL_RTL of `p`) still binding: any single-C-variable `p` binding cannot reach target's p1=v0 (86's {3} pref + v0 conflict). Judge's binding constraint still forbids all two-C-local spellings across the 20-form rejected bank (now +1 with the s12 struct form).
