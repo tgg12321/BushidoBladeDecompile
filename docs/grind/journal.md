@@ -361,3 +361,4 @@
 - 2026-07-19 10:51 tslPolyF4Init s2 [structural] floor=4: H-s5 CONFIRMED: `saved; count=3; idx; base; elem;` drops floor 8->4 by making count's pseudo win s0 (matches target); H-s3/H-s4 KILLED
 - 2026-07-19 10:58 CIRCUIT-BREAK: queue done refused a judge-PASSed, bytes-proven candidate for tslPolyF4Init — investigate
 - 2026-07-19 15:02 tslPolyF4Init COMPLETED-C after 3 sessions.
+- 2026-07-19 15:09 func_80057CC8 s1 [recon] floor=3: recon: floor-3 candidate replayed on main; gap fully localized to first-p addu coalescing asymmetry

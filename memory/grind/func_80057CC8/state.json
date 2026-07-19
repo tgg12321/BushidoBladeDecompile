@@ -1,0 +1,40 @@
+{
+ "func": "func_80057CC8",
+ "file": "text1b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 0,
+   "floor": 3,
+   "modality": "wip-import",
+   "headline": "floor imported from memory/wip checkpoint"
+  },
+  {
+   "session": 1,
+   "floor": 3,
+   "modality": "recon",
+   "headline": "recon: floor-3 candidate replayed on main; gap fully localized to first-p addu coalescing asymmetry"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The first-p offset-temp fails to coalesce because prev_idx's use-site pseudo has a two-def phi live range interfering with the addu's dest with hard reg 2 (v0) \u2014 running an ALLOCDBG/-da greg dump from candidate baseline will name the pseudo, its class, and the conflict.",
+   "mechanism": "Per [[register-alloc-pure-c]] Step-0: greg dump + global.c allocno priority tiebreaker; ledger names the two-def prev_idx / single-def next_idx asymmetry as prime suspect but never ran the -da probe. `Register dispositions:` will show whether the pseudo carrying (prev_idx<<16>>16<<2) conflicts with hard reg 2, and whether the addu's dest pseudo is joined to it.",
+   "next_probe": "cpp src/text1b.c > tmp/grind/func_80057CC8/s1/base.i; cc1 <build-flags> -da tmp/grind/func_80057CC8/s1/base.i -o /tmp/ours.s; grep Register dispositions in text1b.c.greg for func_80057CC8; identify pseudo for (prev_idx<<16>>16<<2) source and pseudo for its addu dest; check conflict list and joined-pseudos"
+  },
+  {
+   "hypothesis": "Branchless single-def prev_idx via cmov-style ternary `prev_idx = ((s16)((u16)(arg1-1)) < 0) ? arg0[3]-1 : (u16)(arg1-1);` collapses prev_idx to a single-def SSA-like live range matching next_idx's shape, allowing the same coalescing decision the second p gets.",
+   "mechanism": "The 2026-06 rejected ternary form used an EXPLICIT `sidx` local (adds a def); a pure conditional-init ternary that binds directly to prev_idx has no extra local. GCC 2.7.2 cse/combine will fold the duplicated (arg1-1) computation; then RA sees prev_idx as single-def with the same coalescing opportunity as next_idx. NB: distinguish from disallowed dead-arm computation \u2014 both arms of the ternary have observable effect (produce the returned value), not a cheat.",
+   "next_probe": "Draft the ternary form as tmp/grind/func_80057CC8/s1/probe_ternary_branchless.c; sandbox --disable all; if floor < 3 measure delta; if floor >= 3 objdump to confirm whether the coalescing changed or whether the ternary duplicated the (arg1-1) into a worse shape"
+  },
+  {
+   "hypothesis": "Matched sibling text1b.c cluster functions (func_8006133C, 800613C8, 80061454, 800614E0 named in ledger \u2014 verify) may show a phi-into-pointer-add pattern that survived pure-C matching; diffing their body structure against func_80057CC8's prev_idx use may reveal the lever",
+   "mechanism": "text1b.c is the highest-cascade file (permuter-closability-evaluated); if any matched sibling has an if-updated-index feeding a pointer add and reaches COMPLETED-C, its C form encodes the RA-friendly shape",
+   "next_probe": "grep src/text1b.c for `if ((s16)` phi-shape then pointer add near a lh; if any matched sibling exhibits the pattern, note structural differences (variable typing, cast placement, block boundaries) for a targeted probe"
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-19T20:02:22.274925+00:00"
+}
