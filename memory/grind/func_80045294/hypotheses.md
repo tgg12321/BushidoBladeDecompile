@@ -220,3 +220,21 @@
 - probe: Applied to src/text1a_c.c: decls-separated + s32 i=a0 first + do { v1 = a0<<4; } while(0) + FAKE annotation + rest as baseline. Sandbox --disable all. Diff/RTL not dumped this session (scope: single measured probe for synthesis-reset).
 - result: score=12, target_insns=83, build_insns=83, rules_dropped=0, cheat_asm_stripped=78. Essentially the H1-family RA rotation (score 11) with +1 register-choice noise. The wrap did NOT create a cse-visible BB boundary. Two mechanism-plausible explanations both dead-end for hand-derivation: (a) jump.c pass 1 folds while(0) to unconditional fall-through BEFORE cse.c runs, collapsing the two would-be BBs; (b) cse_extended_basic_block spans fall-through edges, so cse's value-equivalence class propagates across the wrap's fall-through anyway.
 - verdict: KILLED
+
+## [s11] A comma-separated declarator list `s32 v1 = a0<<4, s4 = *(...);` (packing v1 and s4 onto one `s32` statement) shifts tree_LUID between v1's and s4's assignments differently than two separate single-declarator statements, and could perturb the sched2 sll/move16 tie.
+- mechanism: GCC 2.7.2 c-parse.y processes a declarator list under one DECL context; if declarator-list packing routed the two initializers through a different intermediate tree construction than two separate DECL_STMTs, the assignment LUIDs -- which the s3-measured sched2 tiebreak (INSN_LUID delta in rank_for_schedule) depends on -- could land differently.
+- probe: Edited src/text1a_c.c line 1604 from `s32 v1 = a0 << 4;\n    s32 s4 = *(s32 *)((u8 *)&D_800EED14 + v1);` to `s32 v1 = a0 << 4, s4 = *(s32 *)((u8 *)&D_800EED14 + v1);`. Ran `tools/wteng.ps1 main sandbox func_80045294 --disable all`.
+- result: score=2, target_insns=83, build_insns=83, rules_dropped=0, cheat_asm_stripped=78 -- IDENTICAL to baseline. Declarator-list packing produces the same LUID sequence as separate DECL_STMTs; no sched2 tie movement.
+- verdict: KILLED
+
+## [s11] Placing `s32 count = D_800A33AC;` decl BEFORE `s32 i = a0;` (the last un-permuted position in the s1/s3 {i,s4,count,s5} free-axis cluster, with v1-before-i preserved) shifts sched2's tie between sll and move16.
+- mechanism: s1/s3 measured H2/H3 and the s3 `i between v1 and s4` variant as neutral, but did NOT explicitly measure count-before-i with s4 kept between v1 and count. If any pseudo LUID reshuffle in that ordering nudged rank_for_schedule's INSN_LUID tiebreak between sll (LUID 14) and move16 (LUID 22), the sled tie could invert.
+- probe: Edited src/text1a_c.c to order `sum, v1, s4, count, i, s5`. Ran sandbox --disable all.
+- result: score=2, target_insns=83, build_insns=83 -- IDENTICAL to baseline. The free-axis inference from s1/s3 extends to this specific permutation; count's decl position within the {i,s4,count,s5} cluster is neutral as long as v1-before-i is preserved.
+- verdict: KILLED
+
+## [s11] Wrapping `a0 << 4` in a GCC statement-expression `s32 v1 = ({ a0 << 4; });` creates a compound-statement rvalue that emits a fresh cse-visible basic block between i=a0 (insn 15) and the ashift (insn 17), preventing cse.c's operand substitution (s7 mechanism) via a different C-front-end lowering path than the s10-killed do-while(0) wrap.
+- mechanism: Statement-expression is a GCC extension (c-parse.y stmt_expr rule). Hypothesis: if the compound statement lowers with NOTE_INSN_BLOCK_BEG/BLOCK_END or an intermediate CLEANUP_POINT_EXPR that emerges as a JUMP or block boundary at RTL creation, it would defeat cse_basic_block's straight-line value-equivalence for pseudos 72 and 77 -- independent of jump.c's while(0) folding path (s10 mechanism a) or extended-basic-block spanning (s10 mechanism b).
+- probe: Edited src/text1a_c.c to `s32 v1 = ({ a0 << 4; });`. Ran sandbox --disable all.
+- result: score=2, target_insns=83, build_insns=83 -- IDENTICAL to baseline. GCC 2.7.2's c-parse.y collapses `({ single_expr; })` to the bare expression at parse time; the resulting tree/RTL is byte-identical to `s32 v1 = a0<<4;`. No cse boundary emitted, no LUID shift. Independently corroborates s10's mechanism-agnostic conclusion via a different lowering path.
+- verdict: KILLED
