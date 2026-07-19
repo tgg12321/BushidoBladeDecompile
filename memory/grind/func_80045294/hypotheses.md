@@ -208,3 +208,9 @@
 - probe: Verified Kengo has `saTan0Init` at 0x00147dc8 in src/sato/sa_tan0.c (147dc8+14c = 147f14). Searched Kengo/ dir tree: only kengo_functions_full.txt (symbol names + sizes + source-file NAMES, no source) + the ELF + disc/ are shipped. No Kengo source is available in this repo.
 - result: Kengo transplant is unavailable — only symbol metadata exists, not source. The saTan0Init name + size confirm the current C function boundary is correct.
 - verdict: KILLED
+
+## [s9] The decomp.me corpus contains a scratch whose asm shingles closely match saTan0Init and whose committed pure-C body offers a novel structural transplant (guarded do-while + shift-index accumulator + sum!=0 branch + second base+index loop) for the sll-vs-move16 sched2 tie.
+- mechanism: decomp.me score=0 scratches are pure-C bodies that closed against a target with the SAME toolchain family (gcc2.7.2-psx / gcc2.7.2-cdk / psyq3.5); a high-similarity asm shingle match would signal that the closing C shape is transplantable to our function.
+- probe: Installed curl_cffi in .venv (s8 blocker) and ran tools/decomp_me_scrape.py search --asm-file asm/funcs/saTan0Init.s --corpus <root> for all three local corpora under tmp/grind/cpu_side_move_dir_4/s44/corpus/. Inspected the top four score=0 matches by JSON body.
+- result: Top similarity across all three corpora peaks at 0.127 (gcc272cdk/Z60NJ = func_8002DBF8, GP_SAVE_SCRATCH wrapper around a sfx dispatch, no loop). Other top matched (score=0) hits: KrpLx = 4-arg guard-chain no-loop, 5t0dj = billboard slot allocator single-block, pQrLs = i&0xFF field-match search loop. None has the accumulator+guard+shift-index+sum-branch shape of saTan0Init. No structural transplant available. Artifact: tmp/grind/func_80045294/s9/decomp_me_shingle_search.txt.
+- verdict: KILLED

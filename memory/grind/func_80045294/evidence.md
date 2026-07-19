@@ -139,3 +139,15 @@
 - [s8] [s8] Kengo symbol confirms function identity: saTan0Init at 0x00147dc8, size 0x14c=83 insns (src/sato/sa_tan0.c). But Kengo source is NOT in the repo — only kengo_functions_full.txt (symbol names + sizes + source-file names) and the ELF. Kengo-source transplant is unavailable.
 
 - [s8] [s8] All three rederive axes — fresh m2c decompile, decomp.me corpus (blocked: curl_cffi missing + Postgres unreachable), Kengo transplant (blocked: no source) — surveyed. Only m2c produced testable output; its two distinctive levers both mapped to known-KILLED or NEUTRAL axes. No new C-shape lever produced by rederive.
+
+- [s9] [s9] Baseline reconfirmed pre + post: sandbox --disable all -> score=2, target_insns=83, build_insns=83, rules_dropped=0, cheat_asm_stripped=78. Working tree clean throughout; no src edits this session. Artifact: tmp/grind/func_80045294/s9/baseline_recon.txt.
+
+- [s9] [s9] curl_cffi was already present in .venv (pip verify returned 'Requirement already satisfied'); s8's 'blocked: curl_cffi missing' was a stale diagnosis. tools/decomp_me_scrape.py search runs cleanly against the local corpus roots under tmp/grind/cpu_side_move_dir_4/s44/corpus/{gcc272psx,gcc272cdk,psyq35}.
+
+- [s9] [s9] Shingle-search top similarity across all three toolchain-family corpora (~5.4MB gcc272psx + gcc272cdk + psyq35): 0.127 (gcc272cdk/Z60NJ), 0.124 (KrpLx), 0.098 (psyq35/Tu4L2), 0.089 (gcc272psx/5t0dj). No match crosses even a 0.15 similarity threshold.
+
+- [s9] [s9] Body inspection of the four top-similarity score=0 hits: Z60NJ (func_8002DBF8) is a GP-swap SFX-dispatch wrapper, no accumulator loop; KrpLx (func_8009D174) is a 4-arg guard-chain with no loop; 5t0dj (func_8003AAEC) is a billboard-slot allocator with a single conditional block; pQrLs (func_80024024) is a masked-index field-match search loop with s16-cast prologue. None resembles the guarded do-while + shift-index accumulator + sum!=0 branch + second base+index-loop shape of saTan0Init.
+
+- [s9] [s9] Combined with s8 evidence: all three rederive axes are now measured dead for this function -- m2c reconstruction (s8, produced only i-before-v1 shape KILLED + inline-D_800A33AC NEUTRAL), Kengo source transplant (s8, source not shipped in repo -- only symbol metadata), decomp.me corpus (s9, no >0.15 similarity match anywhere in the local scraped corpus). The rederive modality has no residual hand-derivation lever to explore for this function.
+
+- [s9] [s9] Frontier updates preserved from s8: (1) permuter-workspace un-block via extract-minimal-single-function .c + target.o from disc bytes @0x35A94, then directed PERM_STMT_LIST + PERM_ADD_SUB + PERM_DUMMY_COMMA_EXPR + PERM_REORDER_DECLS sweep; (2) novel semantic-invariant CFG-split rewrite that puts i=a0 and v1=a0<<4 in distinct basic blocks (defeats s7's cse.c BB-scoped substitution) but requires an existing semantic bounds check that saTan0Init lacks -- likely requires (1).
