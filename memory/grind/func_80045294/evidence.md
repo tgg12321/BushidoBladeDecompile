@@ -339,3 +339,23 @@
 - [s22] src/text1a_c.c:1602-1608 restored to baseline candidate.c shape (v1-before-i init order). Sandbox --disable all: score=2, target_insns=83, build_insns=83, rules_dropped=0, cheat_asm_stripped=78.
 
 - [s22] cpu_side_move_dir_4 precedent (docs/grind/decisions.md 2026-07-09 01:25 — FAIL): the exact same LUID tiebreak mechanism was ruled forbidden under no-new-park-categories.md 'Register-rotation infrastructure' as the first archetypal example — 'these are pure-C-reachable, the lever just hasn't been found ... the remaining gap is more search, not a new category.' This binds any OWNER-ESCALATION for func_80045294 with the same framing to a very likely FAIL, but the ledger's per-function measured-dead frontier remains the correct evidence path to file the request.
+
+- [s23] [s23] Baseline reconfirmed post-campaign: sandbox --disable all -> score=2, target_insns=83, build_insns=83, rules_dropped=0, cheat_asm_stripped=78. Working tree clean throughout (only tmp/ scratch + memory/grind/ ledger touches); no src edits this session.
+
+- [s23] [s23] Third distinct permuter chassis basin banked: H1-shape (i-before-v1) minimal-base + random-mode reports base_score=84 in the permuter's weighted scorer. Prior banks: baseline chassis (base=60) at s13/s14/s20/s22; cse-fold-anon-shift chassis (base=105) at s22. Three chassis, three basins, all measured terminal for sub-60 finds.
+
+- [s23] [s23] s23 H1 chassis campaign: 37313 iters / ~26 min, 7 new finds at scores {79,79,60,61,60,69,60}. best_new_score=60. Zero sub-60 finds. Fresh-seed rule satisfied: >>20 min since last novel-score find (last output-60-3 at 956.9s, still above 60).
+
+- [s23] [s23] Cumulative permuter budget across all chassis/mode combinations for this function is now ~69590 iters (s13 5249+17773 + s14 720+720 + s20 13977 + s22 720+1310 + s23 37313) with zero sub-60 finds across the entire budget. Chassis-independent basin claim (s14/s20) hardened by a third seed shape at a distinct base score.
+
+- [s23] [s23] The frontier's specific hypothesis ('m2c-reconstructed H1-shape base with random-mode plausibly-KILLED by s6 mechanism but not yet empirically banked') is now empirically banked. s6's local_alloc/global_alloc pool split with no coalescer predicts every mutation from the H1 basin that decouples ashift into an anonymous pseudo (moving toward cse-fold-anon-shift shape) pays the +1 copy penalty (basin=105+), while every mutation that preserves the H1 direct-shift shape retains the RA rotation penalty. The 60 attractor is reached only by mutations that collapse H1 back to the baseline v1-before-i shape, which cannot go below 60 by construction. The banking matches the mechanism.
+
+- [s23] [s23] Consequence: every empirically-testable permuter chassis/mode combination is now measured dead — full-TU directed (s13), full-TU random (s13), minimal-base directed (s14), minimal-base random (s20), fresh-seed lineswap (s22), cse-fold-anon-shift chassis (s22), and H1-chassis random (s23). Seven independent samples on the same 60 attractor; two independent samples on higher basins (84, 105) collapsing at best to 60. No further permuter axis exists in decomp-permuter's mutation family for this function.
+
+- [s23] [s23] Combined ledger: hand-derivation exhausted (23 rejected forms mapping to four pass-level walls: s7 cse.c BB-scoped substitution / s6 local/global_alloc pool split no-coalescer / s16 sched1+sched2 both LUID-committed / s10-s11 no pure-C CFG-splitter defeats cse.c BB view); rederive exhausted (8 sub-axes at s8/s9/s17/s18); permuter exhausted (7 chassis/mode combinations, ~69590 iters). Every sanctioned axis at the pipeline level is measured dead.
+
+- [s23] [s23] docs/grind/decisions.md has NO OWNER-ESCALATION entry for func_80045294 as of this session (grep confirms zero hits). Per contract, 'owner-gated' is not emittable this session; the required draft entry is next session's mandated modality per the s22 frontier ('owner-escalation-drafting is the only sanctioned remaining move').
+
+- [s23] [s23] Artifacts: tmp/grind/func_80045294/s23/perm_h1/{base.c, compile.sh, settings.toml, empty_*, target.o, campaign.log, campaign_meta.json, output-{60-1,60-2,60-3,61-1,69-1,79-1,79-2}/}. Summary at tmp/grind/func_80045294/s23/campaign_summary.md.
+
+- [s23] [s23] candidate.c unchanged (in-src form remains the s3 baseline shape; H1 was tested as a permuter chassis seed, not as an in-src edit). No new rejected forms banked (the H1 body is already banked at rejected/i-before-v1-init.c since s1; the permuter finds at scores 79/69/61/60 are equivalent-basin variants of already-banked shapes, per the s13 novel-find analysis pattern).
