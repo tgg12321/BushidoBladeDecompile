@@ -496,3 +496,21 @@
 - probe: s29 measurements at positions 1, 2, 3 give scores 2, 2, 4 respectively.
 - result: Refuted. Sum-position is a bounded free-axis: FREE for positions 0-2 (LUID before i=a0), PERTURBING for positions 3-5 (LUID after i=a0). The load-bearing boundary is i=a0's assignment, not sum's absolute position. Mechanism aligns with walls (i)/(ii): sum's post-i LUID demotes it in global_alloc reg_n_refs priority.
 - verdict: KILLED
+
+## [s30] Two-axis simultaneous move (sum@2 + s5/count-swap) shifts LUID relation and breaks sll-before-move16 tie without triggering post-i RA cascade.
+- mechanism: s29 measured single-axis moves independently. Cross-product of two independent free-axis moves might surface a novel LUID relation neither single-axis captured.
+- probe: Applied decl order v1,s4,sum,i,s5,count to src/text1a_c.c; sandbox --disable all.
+- result: score=2, target_insns=83, build_insns=83 (unchanged from baseline).
+- verdict: KILLED
+
+## [s30] Two-axis simultaneous move (sum@1 + count-before-i) creates a new LUID configuration that inverts the sched2 tiebreak.
+- mechanism: Combines s29's sum-position free-axis with s11's count-position free-axis simultaneously; may compose non-linearly at the ready-list evaluation.
+- probe: Applied decl order v1,sum,s4,count,i,s5 to src/text1a_c.c; sandbox --disable all.
+- result: score=2, target_insns=83, build_insns=83 (unchanged).
+- verdict: KILLED
+
+## [s30] Three-axis simultaneous move (sum@2 + s5-before-i + count-last) achieves LUID(sll) > LUID(move16) at sched1/sched2 through combined free-axis cascade.
+- mechanism: Superposition of three free-axis moves; if any non-linearity exists in the LUID assignment for closely-packed decl statements it would surface here.
+- probe: Applied decl order v1,s4,sum,s5,i,count to src/text1a_c.c; sandbox --disable all.
+- result: score=2, target_insns=83, build_insns=83 (unchanged).
+- verdict: KILLED

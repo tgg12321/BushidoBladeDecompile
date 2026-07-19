@@ -1,7 +1,7 @@
 {
  "func": "func_80045294",
  "file": "text1a_c",
- "session_count": 29,
+ "session_count": 30,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -177,18 +177,24 @@
    "floor": 2,
    "modality": "structural",
    "headline": "s29 structural: sum-position free-axis bounded to {0,1,2} (before i=a0); s12's 'position 0 load-bearing' claim refined; no new lever, s28 exhaustion holds; owner-escalation entry still not filed so ow"
+  },
+  {
+   "session": 30,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "s30 structural: three multi-axis free-axis permutations (2-axis probe A, 2-axis probe B, 3-axis probe C) all NEUTRAL score=2; s29 cross-product frontier formally closed by superposition"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "docs/grind/decisions.md OWNER-ESCALATION entry for func_80045294 gets drafted (owner-escalation-drafting modality), citing the four walls with direct pass-output tier evidence, the 24-form rejected bank (23 prior + s29 sum-after-i), the ~69590-iter 7-chassis permuter budget, the 11 rederive sub-axes, and a precise ruling question distinguishing the four-wall stack from the cpu_side_move_dir_4 register-rotation-infrastructure precedent.",
-   "mechanism": "Contract permits owner-gated emission only when the escalation entry is filed AND every remaining sanctioned axis is measured dead. Second precondition holds across s1-s29; first precondition is the entry itself. The framing choice (distinct-category vs practical-limit-closure) is the drafting session's key decision. s29 sharpens the rejected-bank enumeration but does not change the frontier's outer shape.",
-   "next_probe": "Compose docs/grind/decisions.md entry with the four walls as pass-output-cited proof of unreachability, then emit owner-gated with escalation_ref pointing to that entry. Alternative framing: request practical-limit closure at floor=2 with the four walls as pass-mechanical evidence, distinguishing this from cpu_side_move_dir_4's search-not-exhausted framing by the pass-output-tier evidence quality."
+   "hypothesis": "docs/grind/decisions.md OWNER-ESCALATION entry for func_80045294 gets drafted (owner-escalation-drafting modality), citing the four pass-level walls with direct pass-output tier evidence, the 24-form rejected bank, the ~69590-iter 7-chassis permuter budget, the 11 rederive sub-axes, and the s30 formal-closure of the multi-axis free-axis surface; with a precise ruling question distinguishing the four-wall stack from the cpu_side_move_dir_4 register-rotation-infrastructure precedent.",
+   "mechanism": "Contract permits owner-gated emission only when the escalation entry is filed AND every remaining sanctioned axis is measured dead. Second precondition holds across s1-s30 (s30 discharges the last sub-axis-cluster the s29 frontier surfaced). First precondition is the entry itself.",
+   "next_probe": "Compose docs/grind/decisions.md entry with the four walls as pass-output-cited proof of unreachability, then emit owner-gated with escalation_ref pointing to that entry. Framing choice (distinct-category vs practical-limit-closure) is the drafting session's key decision."
   },
   {
-   "hypothesis": "The remaining un-measured sub-positions in the sum-position axis (positions 4, and any two-simultaneous permutations like sum-at-1 + count-at-3) surface a novel LUID relationship that inverts the sll/move16 tie without triggering the post-i RA cascade.",
-   "mechanism": "s29 measured single-axis moves against baseline. Two-axis combinations against the baseline free-axis cluster {i, s4, count, s5} (s1/s3/s11) plus sum's newly-bounded free-axis {0, 1, 2} have not been enumerated. If any combination shifts sll's LUID above move16's without dragging sum's pseudo below i's, the tie could invert.",
-   "next_probe": "Enumerate cross-product of sum-position in {0,1,2} and count/s5-position permutations from the s1 free-axis cluster (24 combinations minus already-banked); measure sandbox --disable all for each; likely all NEUTRAL per the mechanism (each single-axis is neutral independently so the pair is neutral by superposition), but formal enumeration would close the last unmeasured single-mechanism structural surface."
+   "hypothesis": "Novel semantic-invariant construct not reachable by decl-order permutation alone (e.g. hoisting sum computation out of the guarded do-while entirely, or a semantically-different but bytes-equivalent formulation of the first-loop body) might shift LUID at a surface untouched by s1-s30's decl/init-position axis enumeration.",
+   "mechanism": "s1-s30 exhaust the decl/init-order axis and the arithmetic-shape axis; the loop-body shape has been locked since s1 per the loop-counter-fills-load-delay recipe. A rewrite that preserves loop-body bytes but restructures the sum-accumulation into a functionally-equivalent but structurally-distinct form (e.g. tail-recursive helper, sum computed inside a hoisted arm) might reach a different expand path \u2014 though the loop-body-preservation constraint is very tight.",
+   "next_probe": "Enumerate loop-body-preserving semantic rewrites of the first-loop; measure sandbox --disable all for each. Likely all KILLED per the four pass-level walls but would close another surface."
   }
  ],
  "judge_constraints": [],

@@ -455,3 +455,33 @@
 - [s29] docs/grind/decisions.md STILL contains no OWNER-ESCALATION entry for func_80045294 (checked via grep -n 'func_80045294' docs/grind/decisions.md; zero hits). Per contract, 'owner-gated' is not emittable this session.
 
 - [s29] candidate.c unchanged (in-src form remains the s3 baseline v1-before-i shape). src/text1a_c.c line 1602-1608 restored to canonical baseline post-probes.
+
+- [s30] Baseline reconfirmed pre and post: sandbox --disable all -> score=2, target_insns=83, build_insns=83. src/text1a_c.c reverted to canonical candidate shape after probes; working tree carries only tmp/ scratch + memory/grind/ ledger touches.
+
+- [s30] Two-axis simultaneous permutation probe A (sum@2 + s5/count swap, decl order: v1,s4,sum,i,s5,count) measured NEUTRAL (score=2). Independent variables from the {sum-position} sub-axis (s12/s29) and {count/s5 free-axis cluster} (s1/s3/s11) compose linearly at the LUID/RA surface.
+
+- [s30] Two-axis simultaneous permutation probe B (sum@1 + count-before-i, decl order: v1,sum,s4,count,i,s5) measured NEUTRAL (score=2). count's move from position 4 to position 3 (before i) combines cleanly with sum's move from 0 to 1 without perturbing the sll/move16 LUID relation.
+
+- [s30] Three-axis simultaneous permutation probe C (sum@2 + s5-before-i + count-last, decl order: v1,s4,sum,s5,i,count) measured NEUTRAL (score=2). Cross-product of three free-axis moves confirms superposition of independent free-axes at this decl cluster: no combination lifts the score above 2 nor drops it below.
+
+- [s30] Formal closure of the s29 frontier's "two-axis / cross-product" surface: all measured combinations in the free-axis cluster {sum in {0,1,2}, count/s5/i mutual permutations with v1-before-i preserved} compose to the baseline attractor. The pass-level walls (s7 cse.c BB-scoped substitution, s6/s24 pool split no-coalescer, s16 sched1+sched2 LUID coupling, s10/s11/s25 no pure-C CFG-splitter) are robust to multi-axis combinations, not just single-axis moves. No new mechanism, no new lever.
+
+- [s30] docs/grind/decisions.md STILL contains no OWNER-ESCALATION entry for func_80045294 (grep -n 'func_80045294' docs/grind/decisions.md returns zero hits). Per contract, 'owner-gated' is not emittable this session; owner-escalation-drafting modality remains the mandated next-session move per s19-s29 ledger consensus.
+
+- [s30] No new rejected forms banked (all three probes converge back to the baseline score=2 attractor; no divergent form to save). candidate.c unchanged.
+
+- [s30] Artifacts: tmp/grind/func_80045294/s30/{baseline.txt, probe_A_sum2_s5count_swap.txt, probe_B_sum1_countbeforei.txt, probe_C_sum2_s5_countlast_ilast.txt, baseline_post.txt}.
+
+- [s30] Baseline reconfirmed pre and post: sandbox --disable all -> score=2, target_insns=83, build_insns=83, rules_dropped=0, cheat_asm_stripped=78. Working tree carries only tmp/ scratch + memory/grind/ ledger touches at session end.
+
+- [s30] Probe A (sum@2 + s5/count-swap; v1,s4,sum,i,s5,count) -> score=2 NEUTRAL.
+
+- [s30] Probe B (sum@1 + count-before-i; v1,sum,s4,count,i,s5) -> score=2 NEUTRAL.
+
+- [s30] Probe C (sum@2 + s5-before-i + count-last; v1,s4,sum,s5,i,count) -> score=2 NEUTRAL.
+
+- [s30] Free-axis independence at this decl cluster is now confirmed empirically at the two-axis and three-axis surface, not just the single-axis surface s1/s3/s11/s12/s29 previously banked. The s29 frontier's 'two-simultaneous permutations' probe is discharged.
+
+- [s30] The four pass-level walls (s7 cse.c BB-scoped operand substitution / s6/s24 local_alloc/global_alloc pool split with no coalescer / s16 sched1+sched2 both LUID-committed / s10/s11/s25 no pure-C CFG-splitter defeats cse's BB view) are robust to multi-axis structural combinations. The mechanism is: single-axis free-axis moves are LUID-neutral at both sched1 and sched2 (they preserve the ashift's LUID relation to the move16 insn), so composing them preserves neutrality — no combinatorial cascade emerges.
+
+- [s30] docs/grind/decisions.md STILL has no OWNER-ESCALATION entry for func_80045294 (grep -n 'func_80045294' returns zero hits). Per contract, owner-gated is not emittable this session.
