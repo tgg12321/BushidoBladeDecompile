@@ -456,3 +456,11 @@ as separate li's near the dispatch (only case-10's 13 at a bne delay)
 - [s36] s36: bank intact - candidate.c 44,155 bytes, 9 rejected/ forms present including judge-fail-0717-1708.c (44,478 bytes, the byte-proven trace-proven n1 union form escalation option (a) depends on); src/code6cac_c_mid.c and regfix.txt:2190 untouched on main per the 17:34 disposition
 
 - [s36] Closure theorem remains sealed with nine independent confirmations (r1-r13 structural sweeps, F1 slack-transplant negative, m7/r13 label-family negatives, 168k+ permuter iterations two-sided, s6 BB2_XJUMP_DEBUG pass trace, s7 union-form end-to-end trace, zero community evidence in sotn/rood-reverse/esa masters)
+
+- [s37] [s37] docs/grind/decisions.md: the 2026-07-18 motion_SetMotion OWNER-ESCALATION (lines 761-776, filed by grind s7) is the FINAL entry in the file with no owner ruling following it - re-verified this session by reading the file tail
+
+- [s37] [s37] Mandated synthesis axis is sealed by the s10 three-basin partition: (1) merged basin - every honest-0xD spelling canonicalizes to the 361-insn merged shape; (2) unmerged-with-cost basin - merge broken only by real insns/labels/layout at >=2 insns or 76+ word diffs; (3) byte-free-breaker basin - USE/CLOBBER manufacture, byte-proven (n1 form) but forbidden by binding Judge constraints; no fourth basin exists and cross-axis compositions cannot leave the partition
+
+- [s37] [s37] Ledger bank verified intact on disk: memory/grind/motion_SetMotion/candidate.c (44,155 bytes, floor-10 byte-correct Wall-1-solved form) plus 9 rejected forms including the byte-proven, trace-proven n1 union form (judge-fail-0717-1708.c) referenced by escalation option (a)
+
+- [s37] [s37] No src/ edits made this session; src/code6cac_c_mid.c, regfix.txt:2190, and the committed byte-correct form remain untouched on main per the 2026-07-17 17:34 Judge disposition item (3); working tree clean except metrics append

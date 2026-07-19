@@ -371,3 +371,15 @@
 - probe: First-hand ledger + decisions.md verification plus a fresh gradient measurement: sandbox motion_SetMotion --disable all = score 1, 402/402 insns, 1 rule dropped, 34 cheat-asm stripped elsewhere in TU - byte-for-byte identical to the banked s14/s27/s28/s29 measurements; bank verified intact (candidate.c 44,155 B; 9 rejected forms incl. the byte-proven n1 form judge-fail-0717-1708.c 44,478 B)
 - result: Rederive axis confirmed dead by construction per the s8/s9/s17/s18/s26/s27/s35 kills and the 2026-07-17 17:34 Judge certification that no honest lever remains unmeasured; producing another shape would re-measure a dead axis, which the brief forbids while the escalation is on file
 - verdict: KILLED
+
+## [s37] A synthesis pass over the full ledger (evidence s1-s36, hypotheses, 9 rejected forms) can produce a merged attack that escapes the s10 three-basin partition
+- mechanism: Cross-axis composition of banked levers (F1 sched2-slack, r13 chassis, permuter finds, split-init family, label placement) into a spelling not yet measured
+- probe: Re-read the entire ledger; check every banked lever against the closure theorem's jump2-time RTL invariants (any byte-matching compile forces both 13-sites to [set13; j] with a heading CODE_LABEL adjacent, guaranteeing the counted-match + label-bonus merge; only byte-free iter1-breaker is the USE/CLOBBER class)
+- result: No composition escapes: the theorem quantifies over all byte-matching compiles, not source spellings, so every synthesis output canonicalizes into basin 1 (merged, wrong bytes), basin 2 (real-insn cost, wrong bytes), or basin 3 (USE/CLOBBER manufacture, banned by binding Judge constraints). Nine independent confirmations banked incl. two BB2_XJUMP_DEBUG white-box traces (s6, s7). Frontier already reset by s10 to the two owner acts.
+- verdict: KILLED
+
+## [s37] The 2026-07-18 OWNER-ESCALATION for motion_SetMotion is on file and still unruled, and every remaining sanctioned axis is measured dead
+- mechanism: owner-gated validity per the session contract requires the filed escalation plus all-axes-dead on the ledger
+- probe: Read docs/grind/decisions.md tail this session; verify ledger bank (candidate.c + rejected/) on disk
+- result: CONFIRMED: the escalation (filed by grind s7 per the 2026-07-17 17:34 Judge disposition) occupies lines 761-776 and is the FINAL entry, no owner ruling follows; all five ladder axes (structural s2/s3/s3b r1-r13, permuter s4/s5 168,754 iters two-sided, forensics s6/s7 white-box traces, rederive s8/s9 dead by construction, synthesis s10 partition) are measured dead; candidate.c (44,155 bytes) and all 9 rejected forms verified present
+- verdict: CONFIRMED
