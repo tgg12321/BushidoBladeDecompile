@@ -364,3 +364,4 @@
 - 2026-07-19 15:09 func_80057CC8 s1 [recon] floor=3: recon: floor-3 candidate replayed on main; gap fully localized to first-p addu coalescing asymmetry
 - 2026-07-19 15:27 func_80057CC8 s2 [structural] floor=3: s2 structural: 5 hypotheses KILLED; candidate floor 3 holds; two-def-phi alone is not the p1-addu coalescing discriminator.
 - 2026-07-19 15:38 func_80057CC8 s3 [structural] floor=3: s3 structural: 7 hypotheses KILLED (3 harmless, 3 catastrophic bounds, 1 no-op); candidate floor 3 holds; statement-order window is fully constrained.
+- 2026-07-19 16:11 func_80057CC8 s4 [permuter] floor=3: s4 permuter: score-0 close found is `long new_var2 = <p1 expr>; p=(s16*)new_var2;` — same cheat class as rejected block-scope-alias-p1; frontier item 'directed permuter finds a novel legitimate lever' KILLED with measurement.

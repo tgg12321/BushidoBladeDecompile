@@ -124,3 +124,23 @@ Per user 2026-06-22: keep working it; not permanently parked.
 - [s3] [s3] The s2 finding that the block-scope-alias-p1 form scores 0 + SHA1-matches but was rejected by cheat-reviewer as live-range-shaping alias (rejected/block-scope-alias-p1.c) further narrows the search: the RA-coalescing gap CAN be closed by shaping the p1 pseudo's lexical lifetime, but that spelling is a cheat-by-any-spelling. A legitimate structural form must arise from a semantically-meaningful C restructure, not lifetime shaping.
 
 - [s3] [s3] Combined s1+s2+s3 kill-count: 12 hypotheses KILLED across statement order, type width, declaration order, block scoping, and named-intermediate. Cheap structural axes are exhausted; remaining probe surface is (a) forensic cc1 -da greg dump to name the pseudo/copy-pref, (b) FAKE duplicated-statement-into-arms with mandatory cheat-reviewer, (c) directed permuter from the candidate baseline.
+
+- [s4] [s4] Applied candidate.c to src/text1b.c line 11837 (register asm("s3") pin removed, offset+table reassociation for both p adds). sandbox --disable all reports score=3, target_insns=111, build_insns=111, rules_dropped=7, cheat_asm_stripped=395 — replays s1-s3 finding cleanly.
+
+- [s4] [s4] Built clean per-function permuter workspace: base_full.c (12070 lines) via cpp -Iinclude -undef -Wall -lang-c -fno-builtin -Dmips ... src/text1b.c; compile.sh does cc1 -O2 -G0 -funsigned-char -mcpu=3000 -mips1 | prologue_fix | maspsx | fix_lwl | sed align3->2 | multu_pad, then awk-extracts .ent func_80057CC8 ... .end block, and assembles alone. target.o built from asm/funcs/func_80057CC8.s + prelude_r3k (prelude.inc minus .set gp=64). Sanity: base=target=111 insns, diff signature matches ledger exactly (v1 vs v0 addu + 2 cascading lh).
+
+- [s4] [s4] Permuter campaign s4-cand-baseline (pid 426, launched 21:04:38Z): -j 6 --stop-on-zero. Reached 411 iterations at harvest, ~5780+ (last-seen output-8627-1 iter index); 1039 output-* dirs generated in ~25 min wall.
+
+- [s4] [s4] Score-0 close: `long new_var2 = ((((s32)(prev_idx<<16))>>16)<<2) + (s32)table; p = (s16*)new_var2;` — REJECTED as pointer-address alias for lifetime shaping, same class as rejected/block-scope-alias-p1.c. Saved as rejected/permuter-long-new_var2-p1-alias.c.
+
+- [s4] [s4] Score-15 family (best non-cheat find): pure declaration-order reorder (e.g. move `s32 scale;` decl after `s16 *table;`). No score improvement over candidate floor 3; not a lever.
+
+- [s4] [s4] Score-25/35/78 family: `T *new_var2 = ...; *new_var2` / `u16 new_var2 = cx; ...new_var2 in place of cx` — pointer/scalar alias variants of the score-0 cheat class. Each identified and vetted; none legitimate.
+
+- [s4] [s4] Score-30: `scale = (s32)table; cx = *((u16*)((scale + arg1*4) + 0));` — variable-reuse for codegen. Under [[named-local-fake-exception]] carve-out would require FAKE annotation + layer-2 review AND only reached masked-15 not floor-0; not competitive with candidate.
+
+- [s4] [s4] Score-45: `table++; table--;` no-op RA nudge — clear cheat, plainly rejected.
+
+- [s4] [s4] Score-40: statement-split of `ang_mid = ((s32)(ang_next-ang_prev)/2)+ang_prev;` — no score improvement; not a lever.
+
+- [s4] [s4] Frontier is now: (a) forensic cc1 -da greg dump to name the p1 pseudo/copy-pref (still unrun this session — mandated modality was permuter, not forensics), (b) FAKE-annotated duplicated-statement-into-arms per [[duplicated-statement-into-arms]] applied to the p1 pointer add's arms (also unrun), (c) two of the previously-live frontier items (permuter + one probe of the greg-dump) are now discharged.

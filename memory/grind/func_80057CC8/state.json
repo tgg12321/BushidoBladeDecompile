@@ -1,8 +1,8 @@
 {
  "func": "func_80057CC8",
  "file": "text1b",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 0,
@@ -27,23 +27,29 @@
    "floor": 3,
    "modality": "structural",
    "headline": "s3 structural: 7 hypotheses KILLED (3 harmless, 3 catastrophic bounds, 1 no-op); candidate floor 3 holds; statement-order window is fully constrained."
+  },
+  {
+   "session": 4,
+   "floor": 3,
+   "modality": "permuter",
+   "headline": "s4 permuter: score-0 close found is `long new_var2 = <p1 expr>; p=(s16*)new_var2;` \u2014 same cheat class as rejected block-scope-alias-p1; frontier item 'directed permuter finds a novel legitimate lever'"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "GCC's global.c reg_n_refs priority tiebreaker or expand_preferences copy-pref is biasing the p1 addu dest pseudo toward v1 rather than the coalesceable v0. A concrete cc1 -da greg dump from the candidate baseline is still not run and would name the pseudo, its conflicts, and the joined-pseudos set.",
-   "mechanism": "The p1 addu dest pseudo inherits copy-preferences from surrounding pseudos. Per hoist-shared-arm-computation-defeats-copy-pref, expand_preferences.c can bias the dest to inherit a distant pseudo's copy-pref.",
-   "next_probe": "cpp -E src/text1b.c > tmp/grind/func_80057CC8/s4/base.i; run cc1 -da on base.i (via BB2_ALLOC_DEBUG or gccdbg wrapper) to produce text1b.c.greg; identify pseudo for p1's addu dest and read `;; Register dispositions:` + conflict list + joined-pseudos. Also inspect the shifted-offset source pseudo."
+   "hypothesis": "cc1 -da greg dump from candidate baseline names the pseudo, its conflicts, and joined-pseudos for the p1 addu dest \u2014 revealing the copy-pref that biases toward v1.",
+   "mechanism": "Per [[register-alloc-pure-c]] Step-0 anomaly diagnosis and [[hoist-shared-arm-computation-defeats-copy-pref]]: expand_preferences.c biases dest via reg_n_refs / joined-pseudos. Reading the greg dump directly IDs the biasing pseudo.",
+   "next_probe": "cpp -E ... src/text1b.c > tmp/grind/func_80057CC8/s5/base.i; run cc1 -da (BB2_ALLOC_DEBUG) via tools/gccdbg/cc1 to produce text1b.c.greg; identify pseudo for p1 addu dest and its `;; Register dispositions:` + conflict list + joined-pseudos entries. Cross-reference the shifted-offset source pseudo. Compare vs the p2 addu (which coalesces correctly) to isolate the discriminator."
   },
   {
-   "hypothesis": "FAKE-annotated duplicated-statement-into-arms (SOTN-sanctioned 2026-07-01) applied to p1's addu computation \u2014 duplicate the p1 pointer add INSIDE both arms of the prev_idx `if((s16)prev_idx<0)` (with the reload arm computing p1 from arg0[3]-1 form, and the pass-through arm computing p1 from arg1-1 form) \u2014 could lift the p1 dest pseudo's reg_n_refs and shift RA priority.",
-   "mechanism": "Per [[duplicated-statement-into-arms]]: cross-jump re-merges byte-neutral duplication into identical bytes but the DUPLICATION doubles the pseudo's refs count in global.c's priority calc.",
-   "next_probe": "Write a probe form: p1 pointer add duplicated inside BOTH arms of the prev_idx if-reload. Sandbox; verify byte-neutrality by objdump comparison against candidate.c. If byte-neutral improvement, run cheat-reviewer (layer-1 + layer-2)."
+   "hypothesis": "FAKE-annotated duplicated-statement-into-arms (2026-07-01 sanctioned) applied to p1's pointer-add computation duplicated inside BOTH arms of the prev_idx `if((s16)prev_idx<0)` \u2014 the reload arm computing p1 from arg0[3]-1 form and the pass-through arm from arg1-1 form \u2014 lifts the p1 dest pseudo's reg_n_refs, shifting RA priority.",
+   "mechanism": "Per [[duplicated-statement-into-arms]]: cross-jump re-merges the byte-neutral duplication into identical bytes, but the DUPLICATION doubles the pseudo's refs count in global.c's priority calc \u2014 the byte-free ref-lift shown for motion_SetMotion pins.",
+   "next_probe": "Write a probe form: p1 pointer add duplicated INSIDE both arms of the prev_idx if-reload (each arm using its own prev_idx value). Sandbox for floor and byte-neutrality via objdump comparison against candidate.c. If floor drops with byte-neutral duplication, invoke layer-1 cheat-reviewer + layer-2 for FAKE annotation policy compliance."
   },
   {
-   "hypothesis": "Directed permuter run from the candidate-floor-3 baseline using PERM_* macros focused on the p1 addu's expression tree may find a legitimate structural mutation that s1-s3 didn't enumerate.",
-   "mechanism": "s1-s3 hand-derivation has exhausted the low-hanging structural axes. Permuter's random exploration + PERM_* macros can find non-obvious mutations that cheat-reviewer can then filter.",
-   "next_probe": "Build clean single-function target.o per [[difficult-is-not-impossible]] step 3 (asm/funcs/func_80057CC8.s + prelude.inc, no gp=64). Run permuter with --stop-on-zero and vet ALL closing forms against cheat-by-spelling checklist (block-scope-alias-p1 is the known cheat-form that closes; any similar pseudo-lifetime-shaping form is disqualified)."
+   "hypothesis": "A directed permuter chassis targeting the prev_idx reload branch specifically (PERM_GENERAL over the reload C form with a wider PERM_VAR net including opaque-one-style arithmetic wrappers) explores a mutation family the s4 chassis missed.",
+   "mechanism": "The s4 chassis was undirected \u2014 the score-0 finder was random. A directed campaign with PERM_* macros around the prev_idx `if((s16)prev_idx<0)` reload region + p1 addu window gives the permuter smaller mutation neighborhoods and better fresh-seed odds within them.",
+   "next_probe": "tools/permuter_annotate.py --func func_80057CC8 --hint register-asm-pins (or a new prev-idx-reload hint), harvest the candidate C; then launch a fresh campaign, fresh-seed disciplined, targeting only the reload+addu region."
   }
  ],
  "judge_constraints": [],
