@@ -136,3 +136,27 @@
 - probe: Edited src/text1a_c.c: `s32 v1; s32 sum=0; s32 i=a0; s32 count=...; v1 = a0<<4; { s32 s4 = *(base+v1); s32 s5 = s4+a1; ... rest ... }`. Sandbox --disable all + objdump.
 - result: score=11, build_insns=83. RA rotated EXACTLY like H1 (a0->$21, sll operand CSE-propagated to $16). global.c does NOT allocate per-block; it allocates all function-wide pseudos in one phase. THIRD angle confirming RA priority is coupled to assignment LUID at C-source level.
 - verdict: KILLED
+
+## [s5] Target's first-loop bytes reflect a walking-pointer variant, so restructuring v1 as a running pointer could byte-match.
+- mechanism: If target used `lw val,0(ptr); addiu ptr,ptr,0x10;` the bytes would differ from a base+index form. A pointer-walk C spelling would then be a live structural axis.
+- probe: Read tmp/grind/func_80045294/s1/diff_baseline.txt insns 22-29 (first loop body) directly. Target: `lui $1,0x0 ; addu $1,$1,$3 ; lw $2,0($1) ; ... ; addiu $3,$3,16` (v1 is $3). Base+index reload of hi(base) each iteration; $3 is a walking OFFSET, not a walking pointer. The current candidate already emits this shape.
+- result: Target uses base+index addressing with `addu $1,base_hi,$3` and running offset $3. A walking-pointer restructure would produce `lw ,0($ptr)` (no addu) — different bytes. Cannot byte-match via pointer walk.
+- verdict: KILLED
+
+## [s5] An arithmetic-multiplier spelling `(u32)a0 * 16u` delivers a0<<4 through a different tree/LUID than a bare shift, potentially decoupling the RA/LUID coupling.
+- mechanism: If GCC 2.7.2 handles unsigned multiplication via a different tree lowering than bare shift, the sll's assignment LUID could differ from a `v1 = a0<<4;` statement even at the same source position.
+- probe: Edited to `s32 v1 = (s32)((u32)a0 * 16u);` and sandboxed --disable all. Artifact tmp/grind/func_80045294/s5/frontier2_expand_mult_fold.txt.
+- result: score=2, target_insns=83, build_insns=83 — NEUTRAL. Identical bytes. GCC 2.7.2 expand_mult normalizes constant power-of-2 multiplication to (ashift RTX) BEFORE tree_LUID is assigned.
+- verdict: KILLED
+
+## [s5] Signed `a0 * 16` (matching the target's signed a0) may hit a different expand path than the unsigned form.
+- mechanism: Signed vs unsigned multiplication may take different code paths in expand_mult; a MULT_EXPR vs SHIFT_EXPR distinction could alter tree_LUID assignment.
+- probe: Edited to `s32 v1 = a0 * 16;` and sandboxed --disable all.
+- result: score=2, target_insns=83, build_insns=83 — NEUTRAL. Same expand-time fold; identical RTL.
+- verdict: KILLED
+
+## [s5] Pointer-difference route `(s32)((u8*)0 + a0) * 16` may resist expand-time folding because it embeds pointer arithmetic.
+- mechanism: The (u8*)0 + a0 sub-expression is a pointer computation; if front-end fold defers it past tree_LUID assignment, the outer *16 could land at a different LUID.
+- probe: Edited to `s32 v1 = (s32)((u8 *)0 + a0) * 16;` and sandboxed --disable all.
+- result: score=2, target_insns=83, build_insns=83 — NEUTRAL. GCC folds (u8*)0 + a0 -> a0 at the front-end; outer *16 folds to (ashift) identically.
+- verdict: KILLED

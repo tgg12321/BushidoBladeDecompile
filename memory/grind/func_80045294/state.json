@@ -1,7 +1,7 @@
 {
  "func": "func_80045294",
  "file": "text1a_c",
- "session_count": 4,
+ "session_count": 5,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -27,23 +27,24 @@
    "floor": 2,
    "modality": "permuter",
    "headline": "s4: RA/LUID coupling reconfirmed from third angle; two new near-hits killed; permuter workspace unbuildable via import.py (TU has whole-func __asm__ + cpp-conflict decls)."
+  },
+  {
+   "session": 5,
+   "floor": 2,
+   "modality": "permuter",
+   "headline": "s5: frontier #1 (walking-pointer) KILLED by target-bytes read; frontier #2 (alt tree shape for a0<<4) KILLED across 3 arithmetic spellings; permuter workspace still not built."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Express the FIRST loop as a walking-pointer variant (val_ptr walks by 0x10) so v1 disappears from that loop entirely, leaving a SINGLE a0<<4 use for s4/pointer init. This removes the two-tree-a0<<4 constraint. Check the second loop separately: it already re-does `v1 = i<<4` from a0's alias, isolated.",
-   "mechanism": "One tree-level a0<<4 as `s32 shift = a0<<4;` (or inlined into a pointer init) means one sll insn and no CSE-move. Whether sched2 places it target-like depends on whether the pointer init statement's LUID lands after i=a0's. Because a WALKING pointer is a legitimate structural rewrite of the loop (target's body is offset-indexed but bytes might match if RA/scheduling permit), this is a real structural axis \u2014 not a coercion. Verify byte-for-byte the first-loop body still matches (target uses `lw val,off(D_EED18); addiu off,0x10;` \u2014 pointer walk would use `lw val,0(p); addiu p,0x10;` \u2014 DIFFERENT bytes; only viable if target bytes actually reflect a pointer walk, unlikely per s1 evidence).",
-   "next_probe": "Read target's first-loop bytes carefully: is D_EED18 addressed as `lw t0, off($base_reg)` where base_reg holds D_EED18's address (indicating index+base), or is it `lw t0, 0($ptr)` where ptr walks (indicating pointer walk)? If the target uses base+index, this frontier is dead too. If ambiguous, hand-code a pointer-walk candidate and check byte match."
+   "hypothesis": "Directed permuter over PERM_STMT_LIST reorderings of the non-v1 init statements (sum, s4, i, count, s5) with weight overrides on perm_add_sub, perm_split_assignment, perm_dummy_comma_expr can find a closing form the hand-derivation has provably not reached.",
+   "mechanism": "The sched2 tie is decided by INSN_LUID (s3 CONFIRMED, sched.c:2398-2456). Every hand-derived C spelling either satisfies the tie by rotating RA (bad) or by adding a CSE-move copy (bad). A permuter sweep over the statement-ordering cross-product with expression-spelling mutation covers a search space beyond hand-reach in a neighborhood the s3/s4 near-hits mark as promising.",
+   "next_probe": "Hand-build the permuter workspace using tools/mar_perm_workspace.sh as template: (1) cpp-preprocess src/text1a_c.c into base.c (with the func_80044010 __asm__ block preserved as file-scope asm since GCC accepts it there); (2) extract target's 83 insns from disc/SLUS_006.63 @ 0x35A94 into target.s + assemble to target.o; (3) settings.toml with func_name=func_80045294 and weight_overrides emphasizing perm_stmt_list, perm_add_sub, perm_dummy_comma_expr, perm_reorder_decls; (4) launch via tools/permuter_campaign.py launch --stop-on-zero with fresh-seed discipline (20-30 min basins). Alternative: temporarily replace the __asm__ block with a stub C function for import.py's parse, then patch base.c."
   },
   {
-   "hypothesis": "The a0<<4 arithmetic can be delivered by an operation whose RTL is NOT a bare (ashift a0 4) subtree \u2014 e.g., via an inline `*(short*)&packed_local` cast that GCC lowers to a shift, or a struct member access that emits a shift, or a builtin. Different tree shape = different LUID assignment even at the same C statement position, potentially breaking the coupling.",
-   "mechanism": "The RA/LUID coupling s4 confirmed applies to the ASSIGN insn's LUID. If a0<<4 is expressed via a subtree GCC lowers to (ashift) INSIDE a store's addressing computation (not as a standalone SET), the LUID assigned to the shift's pseudo may differ from a plain `v1 = a0<<4` statement.",
-   "next_probe": "Try `s32 v1 = ((u32)a0 * 16);` (arithmetic-multiplier spelling) and `s32 v1 = ((u8*)a0 - (u8*)0) << 4;` (pointer-diff spelling). Sandbox each. If any produces score<=2 at 83 insns, it's a live closing lever."
-  },
-  {
-   "hypothesis": "Fix the permuter workspace (option-a from setup log): wrap or guard the func_80044010 whole-function __asm__ so decomp-permuter's pycparser survives, then launch a directed campaign over PERM_STMT_LIST orderings around the v1/s4 decls with settings.toml weight overrides emphasizing perm_add_sub, perm_split_assignment, perm_dummy_comma_expr, perm_reorder_decls.",
-   "mechanism": "The permuter's search space over cross-product of statement orderings and expression spellings is much larger than hand-derivation can cover; the s3 near-hit and the two s4 near-hits (same closing shape from three C angles) narrow the space to a specific neighborhood the permuter could exhaustively enumerate.",
-   "next_probe": "In a future session (mandated permuter modality): before invoking import.py, temporarily replace text1a_c.c's func_80044010 __asm__ block with a GLOBAL_ASM directive or an INCLUDE_ASM stub for the import step; restore afterwards. Then adjust the generated compile.sh to source `.i`-file directly (skipping cpp) or write a mar-style workspace by hand. Launch via tools/permuter_campaign.py launch with --stop-on-zero, fresh-seed discipline (20-30 min basins), harvest --stop before session end."
+   "hypothesis": "A CSE-move-copy-elision path exists at RA (global.c coalesce_pseudos) that could absorb the +1 insn in the cse-fold-anon-shift.c / late-v1-assign-with-s4-inline.c near-hits without changing the target schedule.",
+   "mechanism": "The +1 CSE-move copy in both near-hits is `move v1,v0` where v0 is an anonymous pseudo holding a0<<4 and v1 is the declared pseudo. If a spelling can cause global.c to coalesce v0 and v1 into the same hard reg (so no move is needed), the near-hits close.",
+   "next_probe": "Instrumented `cc1 -da base.i` on cse-fold-anon-shift.c to dump greg/reload; check whether v0 and v1 are marked non-coalescable and why. If they are coalescable in principle, seek a C-spelling that makes global.c see them as a single equivalence class. Read tools/gcc-2.7.2/global.c:coalesce_pseudos + reload flow for the coalesce precondition."
   }
  ],
  "judge_constraints": [],
