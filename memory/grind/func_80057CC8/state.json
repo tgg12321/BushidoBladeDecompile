@@ -1,7 +1,7 @@
 {
  "func": "func_80057CC8",
  "file": "text1b",
- "session_count": 8,
+ "session_count": 9,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -57,13 +57,29 @@
    "floor": 3,
    "modality": "rederive",
    "headline": "s8 rederive: both s7-listed open axes measured dead \u2014 inline-both-calls closes to 0 as cheat-by-spelling (same class as duplicate-address-expr-pseudo-inline); p2 PLUS operand swap regresses 3->9 (does"
+  },
+  {
+   "session": 9,
+   "floor": 3,
+   "modality": "rederive",
+   "headline": "s9 rederive: 2 fresh-shape hypotheses KILLED (p+=walk score=7, for-loop-over-idx-array score=77); candidate floor 3 holds; rederive-modality axes for loop-collapse and walking-pointer both measured de"
   }
  ],
  "frontier": [
   {
    "hypothesis": "FAKE-annotated duplicated-statement-into-arms per [[duplicated-statement-into-arms]] applied to the p1 pointer add duplicated inside both prev_idx reload arms.",
-   "mechanism": "Per [[duplicated-statement-into-arms]] (SOTN-sanctioned 2026-07-01): cross-jump find_cross_jump re-merges the byte-neutral duplication into identical bytes at codegen, but the SOURCE-level duplication doubles pseudo 86's reg_n_refs count in global.c's priority calc, shifting RA priority ordering and potentially the preference bias. The p1 pointer add is the natural duplication target \u2014 duplicating `p = (s16*)((((s32)(prev_idx<<16)>>16)<<2) + (s32)table);` INSIDE both arms of `if ((s16)prev_idx < 0) { prev_idx = arg0[3] - 1; }` is the concrete probe.",
-   "next_probe": "Structural modality. Draft the duplicated-arms form. Verify byte-neutrality via objdump against candidate.c BEFORE claiming closure (cross-jump should merge identical bytes; if not, form is not byte-neutral and the sanction prerequisite fails). Sandbox. If floor drops with byte-neutral duplication and arms merge identically post-cross-jump, invoke layer-1 cheat-reviewer + layer-2 fresh cheat-reviewer for [[duplicated-statement-into-arms]] policy compliance (mandatory FAKE annotation, exhaustion evidence \u2014 the s1-s8 ledger IS the exhaustion evidence)."
+   "mechanism": "Per [[duplicated-statement-into-arms]] (SOTN-sanctioned 2026-07-01): cross-jump find_cross_jump re-merges the byte-neutral duplication into identical bytes at codegen, but the SOURCE-level duplication doubles pseudo 86's reg_n_refs count in global.c's priority calc, shifting RA priority ordering. The p1 pointer add is the natural duplication target \u2014 duplicating `p = (s16*)((((s32)(prev_idx<<16)>>16)<<2) + (s32)table);` INSIDE both arms of `if ((s16)prev_idx < 0) { prev_idx = arg0[3] - 1; }` is the concrete probe.",
+   "next_probe": "STRUCTURAL modality (not rederive). Draft the duplicated-arms form. Verify byte-neutrality via objdump against candidate.c BEFORE claiming closure (cross-jump should merge identical bytes; if not, form is not byte-neutral and the sanction prerequisite fails). Sandbox. If floor drops with byte-neutral duplication and arms merge identically post-cross-jump, invoke layer-1 cheat-reviewer + layer-2 fresh cheat-reviewer for [[duplicated-statement-into-arms]] policy compliance (mandatory FAKE annotation, exhaustion evidence \u2014 the s1-s9 ledger IS the exhaustion evidence)."
+  },
+  {
+   "hypothesis": "Kengo (PS2 successor to BB2) source disassembly / partial-decomp corpus contains a structurally equivalent angle-interpolation function whose C shape reveals a legitimate lever this project has not derived.",
+   "mechanism": "Per rederive-modality prompt: sibling/Kengo transplant. Kengo reuses Lightweight's Marionation engine (per AGENTS.md). The two known BB2 non-C functions (func_80023F08, func_80058580) were tested for Kengo equivalence in [[slog-kengo-dead-end]] with no match, but that memory notes 'no equivalent at function, sub-region, or callee-signature level' for those two specifically \u2014 func_80057CC8 has not been probed. This is a rederive axis.",
+   "next_probe": "REDERIVE modality (this session or next). Investigate Kengo partial source availability (per no-compiler-divergence rule 'Cross-reference the Kengo source-file naming'). Grep Kengo corpus (if accessible) for angle-interpolation / two-neighbor arena-point patterns. If found, transplant the C shape. If not accessible, KILL this axis as unfindable."
+  },
+  {
+   "hypothesis": "Header-type correction on arg0 as a struct pointer (arg0 is not u8* \u2014 it is a pointer to a game-state struct whose field layout gives natural symbolic names to arg0[2], arg0[3], and the (s16**)(arg0+4) member) may unlock combine-fold shape differences.",
+   "mechanism": "Per [[header-type-correction-from-use-sites]] (SOTN-sanctioned narrow carve-out): when a global/param's declared type is wrong, correcting the extern at its canonical header (with grep-verified consistency across all use sites) can eliminate coercion casts and change codegen. arg0's use sites in this function reference offsets 2 (u8 arena_count?), 3 (u8 point_count?), and 4 (s16** point_table). A struct interpretation lets the code drop the (u8*) index arithmetic and (s16**) cast; may change RTL pseudo generation for the table pointer's dereference.",
+   "next_probe": "REDERIVE modality. Grep all callers of func_80057CC8 to identify the actual struct type of arg0; if a consistent struct emerges with the right field types, rewrite the function using struct-member access. Requires layer-1 review because the correction affects multiple files. If no consistent struct pattern emerges (arg0 is genuinely u8* used with per-byte offsets everywhere), KILL this axis."
   }
  ],
  "judge_constraints": [

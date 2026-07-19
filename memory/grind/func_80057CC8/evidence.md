@@ -214,3 +214,17 @@ Per user 2026-06-22: keep working it; not permanently parked.
 - [s8] [s8] Combined s1-s8 kill-count: 16 hypotheses KILLED across statement order, type width, declaration order, block scoping, named-intermediate, directed spelling alternatives, directed+random permuter overlay, consumer-of-ang_prev-early axis, inline-both-call-sites, and p2-operand-swap. Both s7-named open frontier axes are now measured dead.
 
 - [s8] [s8] Remaining un-attempted frontier item (unchanged from s5/s6/s7): FAKE-annotated duplicated-statement-into-arms per [[duplicated-statement-into-arms]] applied to the p1 pointer add duplicated inside both prev_idx reload arms. Requires structural modality (draft duplicated-arms C, verify byte-neutrality via objdump vs candidate.c, sandbox; if floor drops with byte-neutral duplication and arms merge identically post-cross-jump, invoke layer-1 + layer-2 cheat-reviewer for FAKE-annotation policy compliance).
+
+- [s9] s9 baseline replay: candidate.c applied to src/text1b.c line 11837; sandbox --disable all reports score=3, target_insns=111, build_insns=111, rules_dropped=7, cheat_asm_stripped=395.
+
+- [s9] s9 rederive kill #1 (walking-pointer): `p = base; p += off*2;` for both slots => score=7 (regression). GCC 2.7.2 does not fold compound-assign back to single-add; the two-SET form breaks RA coalescing further. Saved rejected/rederive-p-plus-equals-walk.c.
+
+- [s9] s9 rederive kill #2 (2-iter for-loop with idx[2]/ang[2] arrays): for(i=0;i<2;i++) block replacing both p compute + call sites => score=77, build_insns=118. GCC 2.7.2 -O2 does not unroll; the loop compiles as an actual branch+induction loop, +7 insns beyond target. Saved rejected/rederive-for-loop-idx-array.c.
+
+- [s9] Combined s1-s9 kill-count: 18 hypotheses KILLED across statement order, type width, declaration order, block scoping, named-intermediate, directed spelling alternatives, directed+random permuter overlay, consumer-of-ang_prev-early, inline-both-call-sites, p2-operand-swap, and s9's walking-pointer and 2-iter-for-loop rederives. Both structural-rederive collapse-forms (walking-pointer, unrolled-loop-collapse) are now measured dead.
+
+- [s9] Remaining un-attempted frontier item (unchanged from s5-s8): FAKE-annotated duplicated-statement-into-arms per [[duplicated-statement-into-arms]] applied to the p1 pointer add duplicated inside both prev_idx reload arms. Requires STRUCTURAL modality; NOT a rederive-modality probe. This session was mandated rederive.
+
+- [s9] Both Judge-listed 'open axes' were already measured dead in s8: axis (1) inline-both-call-sites eliminates the bound p local at score=0 but rejected as cheat-by-any-spelling (character-for-character 30+-char address-expression duplication); axis (2) p2 PLUS operand swap regressed 3->9. Neither is a live rederive axis for this session.
+
+- [s9] Sibling functions in text1b.c (func_8006133C, 800613C8, 80061454, 800614E0) confirmed structurally different in s2 (pointer-walk with post-increment, no phi-index); no transferable rederive lever.

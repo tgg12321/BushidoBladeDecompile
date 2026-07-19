@@ -173,3 +173,21 @@
 - probe: Applied p2 form `p = (s16*)((s32)(*(s16 **)(arg0 + 4)) + (((s32)(next_idx << 16) >> 16) << 2))` (table-first) with p1 kept at candidate's offset+table form; sandbox --disable all. Then also tested p1 swap alone (p1 = table+offset, p2 = offset+table).
 - result: p2 swap alone: score=3 -> 9 (regression, matches HEAD-form's un-reassociated distance). p1 swap alone (p1 table+offset, p2 offset+table): score=3 (byte-neutral). This measurement shows the operand-order in the C source has one effect only: it controls whether GCC's late reassociation reaches the coalesce-friendly form for the SECOND p. Swapping p2 back to table-first does not redirect propagation — it just breaks p2's own coalescing (from `v1,v1,X` to `v1,X,v1`-shape or similar). The pseudo-129-source-propagation asymmetry is a fixed property of the addsi3 SET's SRC1/SRC2 slot layout that operand-order rewriting in the C source does not toggle.
 - verdict: KILLED
+
+## [s9] Rewriting the two p computations as a walking-pointer shape (`p = table; p += (s16)prev_idx*2;` then `p = *(s16**)(arg0+4); p += (s16)next_idx*2;`) reinterprets the address-add as a semantic table walk, giving GCC a two-SET-per-p pattern that may bias RA to allocate separate pseudos for the intermediate `p = base` and `p += off` stages.
+- mechanism: Fresh rederive angle: instead of one address expression per slot, split each p into (base-init) then (compound-assign advance). Multiple SETs per p might change GCC's RA priority or copy-pref propagation vs one SET per compound expression.
+- probe: Applied form to src/text1b.c line 11869-11874 (candidate baseline replaced with `p=table; p+=(s16)prev_idx*2;` for slot 1 and `p=*(s16**)(arg0+4); p+=(s16)next_idx*2;` for slot 2). Sandbox `--disable all`.
+- result: score=3 -> 7, target_insns=111, build_insns=111. GCC does NOT fold `p = base; p += off*2;` back to `p = base + off*4;` cleanly — the two-SET form emits extra insns and regresses coalescing. Saved memory/grind/func_80057CC8/rejected/rederive-p-plus-equals-walk.c.
+- verdict: KILLED
+
+## [s9] Collapsing both p-compute + call blocks into a two-iteration `for (i=0; i<2; i++)` loop over `unsigned short idx[2]` / `s32 ang[2]` arrays is the natural human-C shape a fresh reader would derive (both blocks are semantically identical). The loop RA may allocate a fresh pseudo per iteration through PHI structure, giving target's asymmetric p1=v0/p2=v1 allocation.
+- mechanism: Fresh rederive angle: the two call sites compute the same thing (angle from current to arena[idx[i]]); the human C would express this as a loop. GCC 2.7.2 might unroll a 2-iter constant-bound loop, producing structurally distinct RTL from the linear form.
+- probe: Applied form to src/text1b.c line 11837 (function rewritten with idx[2], ang[2], and a for i<2 loop). Sandbox `--disable all`.
+- result: score=3 -> 77, target_insns=111, build_insns=118. GCC 2.7.2 at -O2 does NOT unroll a 2-iter for-loop (needs -funroll-loops, which is NOT in project's canonical flag set per [[compiler-flags-canonical]]). The loop compiles as an actual loop with branch + induction, adding ~7 insns and destroying the scheduling window target uses. Saved memory/grind/func_80057CC8/rejected/rederive-for-loop-idx-array.c.
+- verdict: KILLED
+
+## [s9] Baseline candidate.c (offset+table reassociation, s3 pin removed) replays to sandbox distance 3 on current main HEAD.
+- mechanism: Baseline re-verification: apply memory/grind/func_80057CC8/candidate.c to src/text1b.c line 11837 and re-measure.
+- probe: Applied candidate.c to src/text1b.c; ran `tools/wteng.ps1 main sandbox func_80057CC8 --disable all`.
+- result: score=3, target_insns=111, build_insns=111, rules_dropped=7, cheat_asm_stripped=395. Replays s1-s8 baseline cleanly.
+- verdict: CONFIRMED
