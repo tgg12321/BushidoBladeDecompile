@@ -1,8 +1,8 @@
 {
  "func": "func_80045294",
  "file": "text1a_c",
- "session_count": 36,
- "current_modality": "rederive",
+ "session_count": 37,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -219,18 +219,24 @@
    "floor": 2,
    "modality": "rederive",
    "headline": "s36 rederive: two new sub-axes (tail-block-isolated fingerprint at k=3/k=4 + whole-fn k=5 stricter shingle) both KILLED below the s9-established 0.15 threshold; rederive modality now dead across 14 in"
+  },
+  {
+   "session": 37,
+   "floor": 2,
+   "modality": "synthesis",
+   "headline": "s37 synthesis: six pass-level walls chained EXPAND->combine->cse->local/global_alloc->sched1+sched2 + no-CFG-splitter; 25-form bank + 137,752-iter permuter + 14 rederive sub-axes + s30 structural clos"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "OWNER-ESCALATION entry for func_80045294 in docs/grind/decisions.md is ripe to draft citing: six pass-level walls (expand emit_insn insn 19 structural forcing -> combine.c substitute-and-delete refusal -> cse.c BB-scoped operand substitution -> local/global_alloc pool split with no coalescer -> sched1+sched2 rank_for_schedule LUID tiebreak -> no pure-C CFG-splitter defeats cse.c BB view); 25 rejected forms; ~137,752 permuter iters across 9 chassis/mode combinations with best sub-60 find being the s31 semantic-break; 14 rederive sub-axes measured dead; s30 formal closure of the multi-axis free-axis surface. No sanctioned axis remains un-measured.",
-   "mechanism": "Every sanctioned modality axis has been driven to a measured KILLED result at direct pass-output tier for the four originally-named walls plus the two new expand/combine walls surfaced at s33/s34. The permuter surface is empirically exhausted across every chassis/mode combination in decomp-permuter (s20 named this). The rederive surface is measured dead across 14 independent sub-axes (s8/s9/s17/s18/s26/s27/s35/s36). The structural surface is exhausted including the s30 formal free-axis closure. The one remaining sanctioned move is the owner ruling on canonical-asm authorization vs a pure-C form that hand-derivation cannot reach.",
-   "next_probe": "Next session (whatever modality the driver picks) should file the escalation entry in docs/grind/decisions.md with the six-wall pass-chain + evidence bank + 25-form rejected list + 9-chassis permuter budget summary + 14-sub-axis rederive kill table, then emit owner-gated on the following session. If the driver picks rederive/permuter/forensics/structural again, the ledger already contains sufficient measurement banking to name every sub-surface exhausted; any additional measurement would only tighten a description, not add a lever."
+   "hypothesis": "The next session's sanctioned move is drafting the OWNER-ESCALATION entry in docs/grind/decisions.md; the escalation writeup should cite the six-wall pass-chain + 25-form rejected bank + 137,752-iter permuter budget across 9 chassis/mode combinations + 14 rederive sub-axes + s30 formal free-axis closure. On the session after that, owner-gated becomes emittable (both contract preconditions satisfied).",
+   "mechanism": "Contract precondition (a) requires the escalation entry to exist. A synthesis session cannot file the escalation entry (owner-authored artifact class). Grinder driver picks the next modality; whichever it picks, the outcome should either file the entry (if permitted by the modality) or record redundant measurement and immediately consolidate.",
+   "next_probe": "Draft docs/grind/decisions.md OWNER-ESCALATION entry with title 'func_80045294 (saTan0Init) -- pure-C floor=2 sched2 sll/move16 tie'; body summarizes the six walls + evidence bank + rejected-forms count + permuter iters/chassis counts + rederive sub-axis kill table + structural closure; asks the owner to rule between (i) canonical-asm authorization for the 2-insn prologue reorder and (ii) an owner-directed pure-C form hand-derivation cannot reach."
   },
   {
-   "hypothesis": "The rare-fingerprint diagnostic signal named at s35 (block-0-only max sim 0.122 < 0.15) is reinforced by s36's tail-block-only max sim 0.156-collapsing-to-0.056 across k=3->k=4 AND whole-function k=5 max 0.095. All three narrowed searches produce peaks that either fail the threshold or fail stricter-shingle confirmation, suggesting this function's shape is genuinely uncommon in the surveyed PSX-GCC-2.7.2 corpus.",
-   "mechanism": "If the shape were common, at least one of the three narrowed searches (block-0-only s35, tail-block-only s36, whole-function k=5 s36) would surface a persistent hit above 0.15. That none do implies either (a) the original C source used unusual initializer/dispatch clustering that no other project's decomper has reconstructed, or (b) the shape is hand-optimized asm that no C-source lowering reproduces in the local corpus. (b) is unlikely at score=2 (one sched2-tie away from match), so (a) is more probable. Either way it feeds the escalation writeup as supplementary evidence.",
-   "next_probe": "Not directly actionable within grinder modalities. Feeds into the OWNER-ESCALATION writeup as supplementary evidence: 'even three separate narrowed corpus searches (block-0-only k=3, tail-block-only k=3+k=4, whole-function k=5) across ~1600 PSX-GCC-2.7.2 scratches produce no fingerprint match above sim 0.15 -- this function's shape is not a shared cross-project pattern, and even its distinctive fn-ptr-dispatch closing block does not overlap another scratch's structure.'"
+   "hypothesis": "Supplementary rare-fingerprint evidence -- three narrowed corpus searches (block-0-only k=3 s35 max 0.122, tail-block k=3 s36 max 0.156 collapsing to 0.056 at k=4, whole-function k=5 s36 max 0.095) all produce peaks below the s9-established 0.15 similarity threshold -- feeds the escalation writeup as evidence that this function's shape is not a shared cross-project pattern in the ~1600-scratch PSX-GCC-2.7.2 local corpus.",
+   "mechanism": "If the shape were common in the local corpus, at least one narrowed search would surface a hit above 0.15. That none do implies either (a) the original C source used unusual initializer/dispatch clustering that no other decomper has reconstructed, or (b) the shape reflects hand-written asm that no C-source lowering reproduces locally. (b) is unlikely at score=2 (one sched2-tie away from match), so (a) is more probable and it feeds the escalation as supplementary structural rarity evidence.",
+   "next_probe": "Not directly actionable within grinder modalities. Include in the escalation writeup as a supplementary bullet under 'why hand-derivation and cross-project transplant both fail'."
   }
  ],
  "judge_constraints": [],
