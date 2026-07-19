@@ -284,3 +284,19 @@ Per user 2026-06-22: keep working it; not permanently parked.
 - [s12] F1 duplicated-statement-into-arms (s11) and F2 header-type-correction (s12) both measured DEAD. Only F3 (Kengo transplant, corpus-accessibility unproven) remains from the s10 synthesis frontier.
 
 - [s12] s7 CONFIRMED single-pseudo impossibility (pseudo 86 = DECL_RTL of `p`) still binding: any single-C-variable `p` binding cannot reach target's p1=v0 (86's {3} pref + v0 conflict). Judge's binding constraint still forbids all two-C-local spellings across the 20-form rejected bank (now +1 with the s12 struct form).
+
+- [s13] s13 baseline replay: candidate.c on src/text1b.c line 11837 measures sandbox --disable all = 3 (target_insns=111, build_insns=111, rules_dropped=7, cheat_asm_stripped=395).
+
+- [s13] s13 permuter campaign s13-downstream-ternary: 199 iters, elapsed_s=149.7, base_score=15 (permuter-scored), one score-0 find at 55.5s post-launch. Harvest reported: finds_total=1, finds_new=1, best_new_score=0, procs_killed=0 (self-exited on --stop-on-zero).
+
+- [s13] The score-0 close is a NOVEL sub-form of the alias-holder cheat family: prior permuter finds (s4 permuter-long-new_var2-p1-alias.c, s5 permuter-s16-new_var2-p1-alias.c) all aliased the p1 SET; s13's find aliases the p2 SET via a fresh s16* local `new_var2` binding `p = new_var2`. Same intent — shift pseudo 86's copy-pref origin — different side of the shared pointer.
+
+- [s13] Cumulative permuter data across s4/s5/s13: THREE independent chassis (undirected random + directed PERM_GENERAL enumeration + directed PERM_GENERAL + PERM_RANDOMIZE, now + a fresh downstream-ternary chassis) each converge on the SAME conclusion — the only score-0 basin reachable by the permuter over the candidate-baseline structural window is a pointer-alias holder (either p1 or p2 side). No structural mutation of the ternary or *arg2 write order surfaced any legitimate score-0 close.
+
+- [s13] Combined s1-s13 KILLED hypotheses count: 23 (s1-s10 = 18; s11 = 3 [F1 dup-arms A/B/C]; s12 = 1 [F2 struct-typed arg0]; s13 = 1 [downstream-ternary + p2-alias-basin permuter]).
+
+- [s13] The s5 conclusion 'directed permuter finds a novel legitimate lever' is now re-KILLED by a novel chassis on a fresh axis (downstream-ternary, not previously permuted). Permuter modality is exhaustively measured dead for func_80057CC8: the only score-0 basin reachable by the permuter in ANY chassis explored so far is the pointer-alias-holder family, closed by both [[no-new-park-categories]] and the s10 Judge constraint.
+
+- [s13] s7 CONFIRMED single-pseudo impossibility (pseudo 86 = /v-marked DECL_RTL of `p`) still binding: any single-C-variable `p` binding cannot reach target's p1=v0 (86's {3} pref + v0 conflict); s6/s7 forensics traced this to expand_preferences propagation via pseudo 129 (v1) at insn 124's addsi3 SET.
+
+- [s13] Existing 2026-07-19 17:09 decisions.md entry for func_80057CC8 is a Judge FAIL ruling on the two-variable form, NOT an OWNER-ESCALATION with pending owner disposition. No OWNER-ESCALATION entry for this function exists in docs/grind/decisions.md; owner-gated result is not authorized this session.
