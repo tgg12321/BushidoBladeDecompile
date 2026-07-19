@@ -158,3 +158,27 @@ Per user 2026-06-22: keep working it; not permanently parked.
 - [s5] [s5] Combined s4+s5 permuter kill: TWO independent chassis (undirected random on candidate baseline; directed PERM_GENERAL enumeration; directed PERM_GENERAL + PERM_RANDOMIZE random overlay) each converge on THE SAME conclusion -- the only score-0 closing form for the p1 addu RA-coalescing gap is a pointer/scalar alias holder whose ONLY purpose is to shift the pseudo lifetime. This is the cheat-by-any-spelling class that [[no-new-park-categories]] enumerates and rejects. The remaining frontier item 'directed permuter finds a novel legitimate lever' is now KILLED by measurement across two structurally distinct directed chassis.
 
 - [s5] [s5] Kill-count update: cumulative KILLED hypotheses across s1-s5 = 14 (s1 CONFIRMED baseline; s2 5 KILLED; s3 7 KILLED; s4 2 KILLED; s5 2 KILLED). Cheap structural axes (statement order, type width, declaration order, block scoping, named-intermediate, directed spelling alternatives, directed+random overlay) all exhausted at the C level. Remaining probe surface (unchanged from s4): (a) forensic cc1 -da greg dump to name the p1 pseudo's copy-pref biasing pseudo, (b) FAKE-annotated duplicated-statement-into-arms per [[duplicated-statement-into-arms]] applied to p1's pointer-add duplicated inside both prev_idx reload arms.
+
+- [s6] Applied memory/grind/func_80057CC8/candidate.c to src/text1b.c line 11837; sandbox --disable all reports score=3, target_insns=111, build_insns=111, rules_dropped=7, cheat_asm_stripped=395 (unchanged from s1-s5 baseline).
+
+- [s6] Preprocessed src/text1b.c with build's exact CPP_FLAGS/CPP_DEFS (mipsel-linux-gnu-cpp -Iinclude -undef -Wall -lang-c -fno-builtin -Dmips -D__GNUC__=2 -D__OPTIMIZE__ -D__mips__ -D__mips -Dpsx -D__psx__ -D__psx -D_PSYQ -D__EXTENSIONS__ -D_MIPSEL -D_LANGUAGE_C -DLANGUAGE_C).
+
+- [s6] Ran cc1 -O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -da on the .i and extracted func_80057CC8 blocks from every per-pass dump (rtl/jump/cse/loop/cse2/flow/combine/sched/lreg/greg/jump2/sched2/dbr).
+
+- [s6] greg dump header names 16 global pseudos to allocate (79 86 78 168 73 183 80 72 76 77 88 164 84 87 74 75). Only 4 have copy-preferences: 73 pref 5, 86 pref 3, plus 79 and 78 (via other insns).
+
+- [s6] Pseudo 86 = C variable p (verified: both insn 89 p1 addu dest and insn 124 p2 addu dest are (reg/v:SI 86) in lreg; C uses ONE variable p).
+
+- [s6] Pseudo 86 conflict list (greg): ';; 86 conflicts: 72 74 75 77 84 86 87 2 4 16 17 29' — includes hard reg 2 (v0). Preferences: ';; 86 preferences: 3' — includes hard reg 3 (v1) only.
+
+- [s6] Pseudo 86 disposition: 86 in 3 (allocated to v1). Both p1 addu (insn 89) and p2 addu (insn 124) become `addu $v1, ..., ...`.
+
+- [s6] Insn 115 (and:SI reg/v:SI 78 = reg:SI 2 v0 & 0xFFF, producing ang_prev) is at linked-list position (114,117) in rtl/jump/cse/loop/cse2/flow/combine dumps but at (145,147) in sched/lreg/greg dumps. sched1 is the exclusive reorderer.
+
+- [s6] The hoist places insn 115 immediately before call_147 (getEnemyCharId call2), fitting in the scheduling window between the last p2-support insn (145) and the second call. This extends v0's live range across insn 124 (p2 addu, 86 redef), producing the 86-vs-2 conflict.
+
+- [s6] Pseudo 129 (shifted next_idx offset for p2) is local-allocated to hard reg 3 (v1). Its only use is insn 124 as p2 addu source, dying there. expand_preferences propagates the v1 placement into pseudo 86's hard_reg_copy_preferences via the addsi3 SET operand relation.
+
+- [s6] Target's p1 addu is `addu $v0, $v0, $a2` — target's p1 pointer occupies v0, which is impossible for pseudo 86 given the above conflict. Target must use a DIFFERENT pseudo for p1's dest than for p2's dest, implying target's C source declares two variables (or otherwise ensures the RTL keeps p1's def in a pseudo distinct from p2's).
+
+- [s6] All previously-tried 'declare two C variables' spellings (block-scope-alias-p1, separate-p1-p2-function-scope-aliases, permuter-long-new_var2-p1-alias, permuter-s16-new_var2-p1-alias, ternary-direct-bind-no-local, split-init-off-accumulation) reached sandbox 0 but were rejected as pointer-alias holders whose sole purpose is lifetime shaping (cheat-by-any-spelling per [[no-new-park-categories]] and layer-1/2 reviewer FAILs).
