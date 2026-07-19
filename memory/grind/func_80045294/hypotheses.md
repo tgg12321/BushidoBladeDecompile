@@ -682,3 +682,15 @@
 - probe: python3 tools/permuter_campaign.py launch --func func_80045294 --dir tmp/grind/func_80045294/s41/perm --label s41-count-inlined-lineswap -j 4 (fresh seed on a new workspace copied from s13 template with count inlined and PERM_LINESWAP wrapping the 5-decl block). Polled 10 min via wsl-side sleep; harvest --stop with reason `s41-exhaustive-5perm-count-inlined`.
 - result: 120 iterations (all 5! permutations enumerated), elapsed 635.4s, 1 new find at score=60 (permutation order v1/sum/i/s4/s5 -- member of the s1/s3/s11/s29/s30 free-axis basin extended to count-inlined chassis). best_new_score=60. No sub-60 find. Artifact: tmp/grind/func_80045294/s41/perm/output-60-1/source.c; rejected form banked as memory/grind/func_80045294/rejected/s41-count-inlined-perm-lineswap-v1-sum-i-s4-s5.c.
 - verdict: KILLED
+
+## [s42] The s41-frontier-listed OWNER-ESCALATION entry for func_80045294 can be filed by a non-permuter session (s42 forensics) consolidating the pass-level dossier already banked across s3/s6/s7/s15/s16/s33/s34, satisfying contract precondition (a) for future owner-gated emission.
+- mechanism: docs/grind/decisions.md is not on the forbidden-file list (regfix/asmfix/.claude/rules/engine/tools/Makefile/*.ld). The frontier item explicitly identifies filing as the sole remaining actionable move outside permuter modality. Forensics-modality synthesis is the natural vehicle because every relevant GCC pass has already been dumped and named at pass-source level.
+- probe: Appended entry to docs/grind/decisions.md dated 2026-07-19 with mutually-exclusive owner options (a) canonical-asm authorization mirroring func_80037540 oversized-locals carve-out (2026-07-13 18:05) vs (b) uphold pure-C bar (park at INCOMPLETE-owner-accepted). Dossier cites 6 pass-level walls (EXPAND emit_insn / combine multi-use block / cse.c BB-scoped subst / local_alloc-global_alloc pool split no-coalescer / sched1 rank_for_schedule LUID tiebreak / sched2 same-mechanism re-decision), 30-form rejected bank, 137,872-iter permuter across 11 chassis/mode combos, 14 rederive sub-axes, s29/s30 structural closure, s38/s39/s40/s41 recent axis kills.
+- result: Entry filed; contract precondition (a) now satisfied. Owner-gated becomes emittable by subsequent sessions once PERM_INT-mode (s41 frontier item 2) is also measured dead.
+- verdict: CONFIRMED
+
+## [s42] Baseline is unchanged from s41 (floor=2, 83/83 insns, 0 rules, 78 cheat-asm-stripped file-wide, current in-src candidate is the s3 v1-before-i form).
+- mechanism: sandbox --disable all runs the full build with regfix/asmfix disabled and cheat-asm stripped; the resulting objdump score is the honest pure-C distance.
+- probe: & tools/wteng.ps1 main sandbox func_80045294 --disable all (artifact: tmp/grind/func_80045294/s42/baseline_recon.txt).
+- result: score=2, target_insns=83, build_insns=83, scorable=true, rules_dropped=0, cheat_asm_stripped=78, disabled_o=tmp/sandbox/func_80045294/text1a_c.o. Identical to s41.
+- verdict: CONFIRMED

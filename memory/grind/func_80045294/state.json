@@ -1,8 +1,8 @@
 {
  "func": "func_80045294",
  "file": "text1a_c",
- "session_count": 41,
- "current_modality": "permuter",
+ "session_count": 42,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -249,18 +249,24 @@
    "floor": 2,
    "modality": "permuter",
    "headline": "s41 permuter: 11th chassis/mode combo (count-inlined base + exhaustive PERM_LINESWAP 5!=120, fresh seed) converges on score=60 basin; cumulative permuter budget now 137,872 iters; no sub-60 basin esca"
+  },
+  {
+   "session": 42,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "s42 forensics: OWNER-ESCALATION entry filed in docs/grind/decisions.md consolidating 6 pass-level walls + 30-form bank + 137,872-iter permuter + 14 rederive sub-axes; contract precondition (a) now sat"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Draft the OWNER-ESCALATION entry in docs/grind/decisions.md now that the empirical closure count has advanced to 11 chassis/mode combinations (137,872 iters) with TWO exhaustive PERM_LINESWAP sweeps banked (s40 720-iter + s41 120-iter on distinct chassis).",
-   "mechanism": "Contract precondition (a) requires the entry to exist before owner-gated is emittable. A permuter-modality session cannot file the entry (owner-authored artifact class). The next non-permuter modality (synthesis / rederive / structural) should file the entry citing: six pass-level walls chained upstream-to-downstream (EXPAND -> combine -> cse -> local/global_alloc -> sched1+sched2 with no CFG-splitter), 30-form rejected bank, 137,872-iter permuter across 11 chassis/mode combinations, 14 rederive sub-axes killed, s29/s30 formal structural free-axis closure, s38 outer-block-wrap + register-storage-class-v1 NEUTRAL kills, s39 param-signature + addr-base-cast + split-init-s5-a1-first NEUTRAL/HARMFUL kills, s40 6! + s41 5! exhaustive PERM_LINESWAP kills. Ask the owner to rule between (i) canonical-asm authorization for the 2-insn prologue reorder and (ii) an owner-directed pure-C form hand-derivation cannot reach.",
-   "next_probe": "Not actionable within permuter modality; recorded here for the next non-permuter session's frontier."
+   "hypothesis": "PERM_INT-mode campaign on the shift constant 4 (or PERM_GENERAL exploration of a0<<4 equivalents) as the last un-measured 12th chassis/mode combination.",
+   "mechanism": "s5-family manual probes of arithmetic equivalents were killed at individual-form level; PERM_INT/PERM_GENERAL lets the permuter itself search a broader lowering surface (subsumes s5's manual axes, may surface a lowering never hand-derived that shifts the ashift RTX's tree_LUID).",
+   "next_probe": "python3 tools/permuter_campaign.py launch --func func_80045294 --dir tmp/grind/func_80045294/s43/perm_int --label s43-perm-int-shiftconst -j 4 (fresh seed on baseline chassis with PERM_INT wrapping the 4 in a0<<4 and equivalents). Likely corroborates s5 manual-axes closure but adds real chassis/mode coverage independent of s40/s41 PERM_LINESWAP sweeps. Once measured dead, all sanctioned axes are exhausted and the next session can emit owner-gated citing this filed entry."
   },
   {
-   "hypothesis": "PERM_INT-mode campaign on the shift constant `4` (or a PERM_GENERAL exploration of a0<<4 equivalents) as an untried 12th chassis/mode combination.",
-   "mechanism": "s5-family manual probes of arithmetic equivalents to a0<<4 were killed at the individual-form level (`(u32)a0*16u`, `a0*16`, `(u8*)0+a0`, `u32 v1 = (u32)a0<<4`). PERM_INT/PERM_GENERAL would let the permuter itself search a broader lowering surface (subsumes s5's manual axes, may surface a lowering never hand-derived that shifts the ashift RTX's tree_LUID).",
-   "next_probe": "python3 tools/permuter_campaign.py launch --func func_80045294 --dir tmp/grind/func_80045294/s42/perm_int --label s42-perm-int-shiftconst -j 4 (fresh seed on baseline chassis with PERM_INT wrapping the 4 in `a0<<4` and equivalents). Owner-note: this is likely to further empirically corroborate the s5 manual-axes closure but adds real chassis/mode coverage independent of s40/s41's PERM_LINESWAP sweeps."
+   "hypothesis": "Once PERM_INT is measured dead, emit owner-gated citing the s42-filed escalation entry.",
+   "mechanism": "Contract precondition (a) satisfied by s42; precondition (b) satisfied once PERM_INT is killed. Owner-gated parks func_80045294 (queue advances) until the owner rules between canonical-asm authorization and pure-C bar upheld.",
+   "next_probe": "Emit owner-gated with escalation_ref='docs/grind/decisions.md 2026-07-19 func_80045294 OWNER-ESCALATION' after the s43 PERM_INT kill lands. No further hand-derivation, rederive, structural, or synthesis axes remain."
   }
  ],
  "judge_constraints": [],
