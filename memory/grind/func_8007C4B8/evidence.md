@@ -129,3 +129,15 @@ canonical-asm yet."
 - [s1] Body-level restructures cannot shift prologue LUIDs (expand_function_start runs before body RTL) — dead lever class
 
 - [s1] Sibling cross-check in display.c: only B3A8 matches without a prologue rule; B3A8 avoids the wall by keeping arg0 in $t0 (short lifetime), impossible for C4B8 where both args span 6+ JALs
+
+- [s2] [s2] baseline sandbox --disable all confirmed: score=4, target_insns=164, build_insns=164, rules_dropped=1 (regfix.txt:3619 reorder 3,4,1,2 @ 1-4), cheat_asm_stripped=150
+
+- [s2] [s2] structural axis 'local decl-block reversal' measured DEAD: score=4 unchanged. Confirms twin lever kill — LUIDs of `move sN, aN` are param-decl LUIDs, not local-decl LUIDs; body-side decl order has no effect on the prologue pair.
+
+- [s2] [s2] structural axis 'do-while(0) full-body entry wrap' measured DEAD: score=27 (actively worsens). Loop note fires sched1's loop-aware pass on body, reshuffling non-prologue pseudos; prologue pair unchanged.
+
+- [s2] [s2] structural axis 'var_a3 init-at-decl' measured DEAD: score=35, +2 build insns. Init-at-decl emits `li` in prologue where target does it lazily just before `if (r->flag)`.
+
+- [s2] [s2] Three structural exhaustion axes now banked as measured negatives for the H1 FAKE-alias per-use dossier — mirrors hirahira_w_frie s2b exhaustion set.
+
+- [s2] [s2] src/display.c restored to baseline candidate.c after all probes; sandbox reconfirmed score=4.

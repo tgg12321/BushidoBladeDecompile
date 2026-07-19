@@ -55,3 +55,21 @@ State.json currently carries no judge_constraints for this function. If H1 fails
 - probe: Reviewed memory/grind/func_8007C4B8/rejected/ and WIP meta.json sessions log.
 - result: 3 disproven body variants + sibling cross-check confirm no body-level lever exists in this allocation class.
 - verdict: KILLED
+
+## [s2] K&R decl-block reversal (locals declared s32/s16/s16/s16/u16 vs baseline u16/s16/s16/s16/s32) shifts the prologue save+def pair emit order
+- mechanism: cc1's expand_function_start walks PARAM decls (not local decls) to assign LUIDs to `move sN, aN`; save_restore_insns pairs `sw sN` with first def in LUID order. Local decl block is processed AFTER expand_function_start, so cannot shift param LUIDs.
+- probe: Reverse local decl block, sandbox --disable all
+- result: score=4 (unchanged), 164/164 insns, identical build.o — floor unchanged
+- verdict: KILLED
+
+## [s2] do-while(0) wrap of the entire function body shifts codegen enough to flip the prologue pair order
+- mechanism: do-while(0) emits NOTE_INSN_LOOP_BEG at entry; sanctioned lever for reorg.c invert-jump peephole suppression (LABEL_OUTSIDE_LOOP_P). Could plausibly reshuffle prologue via loop-note-aware sched1.
+- probe: Wrap full body in `do { ... } while (0);` sandbox --disable all
+- result: score=27 (WORSENED from 4), same 164/164 insns — loop note reshuffles body pseudo allocation to different callee-saves without touching prologue pair order (LUIDs still set in expand_function_start before loop-note insertion)
+- verdict: KILLED
+
+## [s2] Initializing var_a3 at its declaration (`s32 var_a3 = 7;`) instead of the body-level assignment shifts prologue pair order via changed LUID for var_a3's first def
+- mechanism: Move the `var_a3 = 7;` assignment from body to decl-time initializer; if GCC emits the `li $tN, 7` in a different position it might reorder save_restore_insns pairing decisions on adjacent pseudos.
+- probe: Move `var_a3 = 7` to `s32 var_a3 = 7;`, remove body assignment, sandbox --disable all
+- result: score=35 (WORSENED), build_insns=166 (+2 vs target 164) — init hoists `li` to prologue where target does it lazily, adding 2 spurious insns; prologue pair order unchanged (still wrong)
+- verdict: KILLED
