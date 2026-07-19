@@ -1,8 +1,8 @@
 {
  "func": "func_80045294",
  "file": "text1a_c",
- "session_count": 27,
- "current_modality": "rederive",
+ "session_count": 28,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -165,13 +165,19 @@
    "floor": 2,
    "modality": "rederive",
    "headline": "s27 rederive: direct asm-level semantic comparison proves Kengo saTan0Init is a different function (init+alloc pipeline, 9 jals, 160B frame) \u2014 invalidates s8/s17 same-name-transplant premise at a stro"
+  },
+  {
+   "session": 28,
+   "floor": 2,
+   "modality": "synthesis",
+   "headline": "s28 synthesis: 4 pass-level walls + 23 rejected forms + 7 permuter chassis + 11 rederive sub-axes consolidated; owner-escalation-drafting is the sole remaining sanctioned move."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "docs/grind/decisions.md OWNER-ESCALATION entry for func_80045294 gets drafted, citing four pass-level walls at direct dump output + 23 rejected forms + 7 permuter chassis/mode combinations + 11 rederive sub-axes (including s27 Kengo semantic-diff) + cpu_side_move_dir_4 2026-07-09 FAIL precedent + a precise ruling question.",
-   "mechanism": "Contract permits owner-gated emission only when the escalation entry is filed AND every remaining sanctioned axis is measured dead. Every axis is now measured dead across s1-s27; the missing precondition is the filed entry itself.",
-   "next_probe": "Next session (owner-escalation-drafting modality): compose the entry, then emit owner-gated with escalation_ref pointing to it."
+   "hypothesis": "docs/grind/decisions.md OWNER-ESCALATION entry for func_80045294 gets drafted (owner-escalation-drafting modality), citing the four walls with direct pass-output tier evidence, the 23-form rejected bank, the ~69590-iter 7-chassis permuter budget, the 11 rederive sub-axes, and a precise ruling question distinguishing the four-wall stack from the cpu_side_move_dir_4 register-rotation-infrastructure precedent.",
+   "mechanism": "Contract permits owner-gated emission only when the escalation entry is filed AND every remaining sanctioned axis is measured dead. Second precondition holds across s1-s28; first precondition is the entry itself. The framing choice (distinct-category vs practical-limit-closure) is the drafting session's key decision.",
+   "next_probe": "Compose docs/grind/decisions.md entry with the four walls as pass-output-cited proof of unreachability, then emit owner-gated with escalation_ref pointing to that entry. Alternative framing: request practical-limit closure at floor=2 with the four walls as pass-mechanical evidence, distinguishing this from cpu_side_move_dir_4's search-not-exhausted framing by the pass-output-tier evidence quality."
   }
  ],
  "judge_constraints": [],

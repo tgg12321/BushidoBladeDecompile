@@ -423,3 +423,19 @@
 - [s27] Total rederive sub-axes measured dead now: 11 (s8:2, s9:1, s17:3, s18:3, s26:3, s27:1). Rederive modality remains terminally exhausted per the s19/s26 consolidated frontier.
 
 - [s27] candidate.c (v1-before-i baseline) sustains sandbox floor=2 unchanged; no edit applied to src/text1a_c.c this session (rederive session, no LUID/lever measurement).
+
+- [s28] [s28] Baseline reconfirmed: sandbox --disable all -> score=2, target_insns=83, build_insns=83, rules_dropped=0, cheat_asm_stripped=78. Working tree clean; no src edits; candidate.c unchanged. Artifact: tmp/grind/func_80045294/s28/baseline_recon.txt.
+
+- [s28] [s28] Four pass-level walls consolidated with direct-pass-output citations: (i) s7/s15 cse.c BB-scoped operand substitution [base.i.cse insn 17]; (ii) s6/s24 local_alloc/global_alloc pool split no coalescer [base.i.lreg claim lines]; (iii) s16 sched1+sched2 both LUID-committed [base.i.sched + base.i.sched2 ready-list]; (iv) s10/s11/s25 no pure-C CFG-splitter defeats cse.c BB view [base.i.jump + base.i.cse block partitioner header]. All four elevated to direct-dump tier.
+
+- [s28] [s28] 23 rejected forms in memory/grind/func_80045294/rejected/ enumerated against the four walls; every form maps to exactly one wall or is a NEUTRAL free-axis probe. Rejected bank closed against reachable pure-C search space for this shape.
+
+- [s28] [s28] Permuter budget totalled across all sessions: ~69590 iters over 7 chassis/mode combinations (s13 full-TU directed 5249 + full-TU random 17773; s14 min directed 720+4320; s20 min random 13977; s22 fresh lineswap 720 + alt-chassis reclaim 1310; s23 H1-chassis random 37313). Three basin base scores (60/84/105) all measured terminal for sub-base finds. No sub-60 finds anywhere in the budget.
+
+- [s28] [s28] Rederive modality dead across 11 sub-axes (s8: m2c mips-gcc-c + Kengo source absent; s9: decomp.me corpus 0.127 max similarity; s17: mipsel-gcc-c + mips-ido-c + Kengo debug/globals empty + BB2 sibling non-analogue; s18: --gotos-only + mwcc + mipsee no-stack-spill deterministic-vars; s26: --stack-structs+--descending-regs + --context+--globals all; s27: Kengo saTan0Init asm-semantic-diff proves same-name-transplant premise dead). All configurations converge on H1 (KILLED at s1) or a NEUTRAL free-axis permutation.
+
+- [s28] [s28] docs/grind/decisions.md has NO OWNER-ESCALATION entry for func_80045294 as of this session (grep -n '80045294\|saTan0Init' returns zero hits). Per contract, 'owner-gated' is not emittable this session; the owner-escalation-drafting modality is the required next-session move.
+
+- [s28] [s28] cpu_side_move_dir_4 precedent (docs/grind/decisions.md 2026-07-09 01:25 FAIL) binds any func_80045294 escalation framed as 'register rotation infrastructure' to a likely FAIL under no-new-park-categories.md. Escalation framing must either (a) argue the four stacked pass-level walls constitute a distinct category, or (b) explicitly request practical-limit closure at floor=2 with the four walls as pass-mechanical proof of unreachability.
+
+- [s28] [s28] Synthesis writeup consolidating four walls, rejected-form bank, modality exhaustion table, and cpu_side_move_dir_4 framing distinction: tmp/grind/func_80045294/s28/synthesis.md.
