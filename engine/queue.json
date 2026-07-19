@@ -2399,7 +2399,7 @@
       "verdict": "C",
       "rules": 1,
       "status": "parked",
-      "park_reason": "owner escalation pending: docs/grind/decisions.md 2026-07-18 OWNER-ESCALATION (union-constructor CLOBBER family, options a/b; NO community precedent)"
+      "park_reason": "OWNER-ACCEPTED EXCEPTION (ruling b, 2026-07-19): CLOBBER family refused; byte-correct form + regfix.txt:2190 kept on main; INCOMPLETE-owner-accepted, no further grinding"
     },
     {
       "func": "InitHiraRmd_80047FBC",

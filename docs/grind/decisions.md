@@ -778,3 +778,34 @@ RULING REQUEST on the union-constructor CLOBBER family and disposition of motion
 ## 2026-07-18 20:17 — D_80082050 — final call — **PASS**
 
 The candidate diff contains exactly one construct: dropping `static` from the declaration and definition of D_80082320 (src/system.c:960, 1087), plus an in-source rationale comment. Checklist: (1) Semantic purpose — linkage is a genuine C-level property, not a codegen coercion; the emitted machine code is identical either way (the HEAD static form already matched the oracle, and the external form was re-proven this run: full clean build SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa, evidence.md s1 lines 20-23 and 31-34). Because the bytes do not change, this cannot be GCC-steering — it changes only how the %lo relocation is SPELLED in the intermediate .o (named-global+0 vs section+offset), which is what the engine's scorer compares. (2) Human-writable — `void f(void)` is ordinary C; the shipped PS-EXE carries no symbol or linkage information (per splat-symbol-names-are-not-evidence), so external linkage is an equally valid decompilation of these bytes, and the honest deviation from Sony's believed-static cdread.c original is annotated in-source rather than hidden. (3-6) No FAKE construct, no forbidden family, no intent-announcing names, no annotation required since nothing here is a codegen technique — the SOTN list governs byte-steering constructs and this steers none. Verified myself: git diff matches the presented candidate verbatim; regfix.txt and asmfix.txt contain zero rules for D_80082050/D_80082320 (grep); sandbox --disable all re-run by this Judge returned score 0, 180/180, rules_dropped 0; the function bodies are unchanged HEAD code and their volatile externs (D_800A14D4/D8/E0/E4/F0 etc.) are pre-existing operator-granted entries in volatile_extern_allowlist.txt lines 45-52 (§3 grant, operator-audited 2026-07-10) untouched by this diff. judge_constraints is empty (queue-origin, not a regression item). The ledger's hypotheses.md H1/H2 are both probe-confirmed: the residual distance-1 was a scorer artifact (section-local addend shifted by the file-wide cheat strip shrinking earlier system.c functions by 0x9A0 bytes), not a codegen diff — positional diff vs the original EXE at 0x80082050 showed 0/180 real differences. In plain terms: the function already compiled to the right bytes; the only change is telling the linker the callback's name is visible file-externally instead of file-locally, which produces the same executable and lets the scoring tool stop miscounting. Follow-up for the operator (not a blocker): score.py's assumption that relocations render identically at the .o level breaks for static-symbol addends under the file-wide strip; evidence.md notes saEft00Add may hit the same artifact via the still-static D_80082050.
+
+## 2026-07-19 — motion_SetMotion — OWNER RULING (escalation option b) — **FAMILY REFUSED**
+
+The owner rules on the 2026-07-18 OWNER-ESCALATION: **option (b)**. The
+**union-constructor CLOBBER family is REFUSED** — it is not sanctioned, now or
+as a standalone family. Basis: the SOTN-tier bar requires community viability,
+and the s7 survey found ZERO precedent across sotn-decomp, rood-reverse
+(Vagrant Story), and esa — no cast-to-union expressions, no single-member
+unions, no "clobber" anywhere. A no-precedent, GCC-internals-only construct
+(the 17:09 checklist: single-member union has no semantic purpose; no human
+writes `(union selu)0xD` from spec; justification names only GCC passes) fails
+the standard regardless of it being the last remaining lever — "last resort"
+does not lower the bar. This differs from the hirahira_w_frie param-alias
+(2026-07-17 option a), which WAS sanctioned precisely because SOTN master
+ships the shape (`fakeEntity = self`). The `(union X)0xN` constructor cast
+remains a forbidden coercion; do not re-propose it for any function.
+
+**Disposition of motion_SetMotion (owner-signed exception):** with the family
+refused, neither COMPLETED state is reachable — COMPLETED-C is 1 word short
+(Judge-certified-complete exhaustion: 8 independent confirmations, 168k+
+permuter iters, white-box RTL traces; every honest axis dead) and canonical-asm
+does not apply (the gate routes the body C; it is ordinary compiled C, not
+hand-written asm). The owner accepts the committed byte-correct form carrying
+regfix.txt:2190 (the case-9/11 `li 13` semantic-lie subst) on main as an
+explicit **owner-signed permanent exception** — the state the 17:34 ruling noted
+only the owner can grant. The function stays PARKED (out of the active grind
+queue); it is INCOMPLETE-owner-accepted, NOT COMPLETED-C, and does not count
+toward the match total. This is an owner-granted exception for one function
+after certified exhaustion, NOT a grinder-initiated permanent park (which
+no-park-permanently forbids). If the owner intended a different disposition,
+amend here.
