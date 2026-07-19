@@ -209,3 +209,27 @@
 - probe: s11 (structural): draft duplicated-arms form, objdump vs candidate.c to verify cross-jump merged arms byte-identically (SOTN sanction prerequisite), sandbox --disable all. If floor drops AND merge is byte-neutral, invoke layer-1 + layer-2 cheat-reviewer for [[duplicated-statement-into-arms]] policy compliance (mandatory FAKE annotation, s1-s9 ledger as exhaustion evidence).
 - result: Not measured this session. Reasoning-only kill would be inappropriate given SOTN sanction; must be sandbox-measured.
 - verdict: CONFIRMED
+
+## [s11] F1 variant A: duplicate p1 assignment into both arms of the prev_idx if (implicitly moves p1 before next_idx block, cross-jump expected to merge byte-neutrally).
+- mechanism: Per [[duplicated-statement-into-arms]] + s10 F1 mechanism note: extra RTL SETs of pseudo 86 bump reg_n_refs, potentially shifting global-alloc priority order or perturbing sched1's hoist of insn 115. Cross-jump find_cross_jump merges the identical p= tails byte-neutrally.
+- probe: Applied F1 variant A to src/text1b.c line 11857 (if((s16)prev_idx<0){prev_idx=...; p=<expr>;} else {p=<expr>;}). Sandbox --disable all.
+- result: score=12, target_insns=111, build_insns=111. Matches s3's rejected hoist-p1-before-nextidx-block score-12 kill exactly. Cross-jump did NOT merge to byte-neutrality — p1 assignment out of its scheduling window kills delay-slot fill regardless of duplication. Saved rejected/dup-arms-prev_idx-if.c.
+- verdict: KILLED
+
+## [s11] F1 variant B: split the next_idx `default; if(...) override;` block into a proper if/else and duplicate p1 into both arms of THAT (keeps p1 in its natural post-next_idx scheduling window position).
+- mechanism: Attempt to preserve the scheduling window while still injecting extra RTL SETs of pseudo 86. If cross-jump merges the tails, only the reg_n_refs bump survives.
+- probe: Applied F1 variant B: {s32 tmp=arg1+1; if((s16)tmp>=(s32)arg0[3]){next_idx=0; p=<expr>;} else {next_idx=tmp; p=<expr>;}} then ang_prev use. Sandbox --disable all.
+- result: score=8, target_insns=111, build_insns=111. Regression from candidate baseline 3. Rewriting the next_idx `default; override;` shape into if/else disturbs sched1's delay-slot fill (target's shape packs prev_idx sll into the next_idx bnez delay slot at 80057D48); the duplicated p1 does NOT compensate. Cross-jump did not merge. Saved rejected/dup-arms-next_idx-ifelse.c.
+- verdict: KILLED
+
+## [s11] F1 variant C: duplicate `table = *(s16**)(arg0+4);` (non-p statement, sibling [[split-read-defeats-hoist]] pattern) into both arms of the prev_idx if, keeping natural next_idx block and single post-block p= assignment.
+- mechanism: Avoids moving p= out of its scheduling window. If GCC preserves the two loads (as split-read-defeats-hoist expects), the table pseudo's reg_n_refs bumps and may perturb schedule around insn 124 or shift RA of pseudos 88/130 (p1/p2 table operands).
+- probe: Applied F1 variant C: added redundant `table = *(s16**)(arg0+4);` inside both prev_idx arms; kept single p= after next_idx block. Sandbox --disable all.
+- result: score=3 (byte-neutral, no change from baseline). GCC's cse1 pass merges the two redundant reloads back into ONE before global-alloc sees them; reg_n_refs on table's pseudo is NOT bumped, and no priority lift reaches pseudo 86. The duplicated statement disappears at CSE, so no downstream effect on p1 coalescing. Saved rejected/dup-arms-table-reload.c.
+- verdict: KILLED
+
+## [s11] Baseline replay: candidate.c (offset+table reassoc, s3 pin removed) still measures at sandbox distance 3 on current main HEAD.
+- mechanism: Session-entry precondition check.
+- probe: Applied candidate.c to src/text1b.c line 11837 (removed `register asm("s3")` from next_idx; swapped table+offset -> offset+table for both p adds). Sandbox --disable all.
+- result: score=3, target_insns=111, build_insns=111, rules_dropped=7, cheat_asm_stripped=395 — replays s1-s10 baseline cleanly.
+- verdict: CONFIRMED

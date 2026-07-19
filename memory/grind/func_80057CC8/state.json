@@ -1,8 +1,8 @@
 {
  "func": "func_80057CC8",
  "file": "text1b",
- "session_count": 10,
- "current_modality": "synthesis",
+ "session_count": 11,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 0,
@@ -69,23 +69,24 @@
    "floor": 3,
    "modality": "synthesis",
    "headline": "s10 synthesis: single-pseudo impossibility (s7) + Judge no-two-locals + s8 dead axes leave 3-item frontier (F1 duplicated-arms structural, F2 arg0 struct header-type, F3 Kengo transplant); no unmeasur"
+  },
+  {
+   "session": 11,
+   "floor": 3,
+   "modality": "structural",
+   "headline": "s11 structural: F1 duplicated-statement-into-arms KILLED across 3 variants (prev_idx-if / next_idx-ifelse / table-reload); candidate floor 3 holds. F1 mechanism disproven."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F1 -- FAKE-annotated duplicated-statement-into-arms per [[duplicated-statement-into-arms]] applied to the p1 pointer add duplicated inside both prev_idx reload arms.",
-   "mechanism": "Duplicating `p = (s16*)((((s32)(prev_idx<<16)>>16)<<2) + (s32)table);` in BOTH arms of the `if ((s16)prev_idx<0)` reload (a) bumps pseudo 86's reg_n_refs entering global.c allocno-priority calc, and more importantly (b) inserts extra RTL insns in the prev_idx-if scheduling window, which may perturb sched1's hoist decision for insn 115 (potentially removing the 86-vs-v0 conflict). Cross-jump find_cross_jump re-merges byte-neutral duplication.",
-   "next_probe": "STRUCTURAL modality (s11). Draft duplicated-arms form. Objdump-verify byte-neutrality vs candidate.c (cross-jump merge prerequisite -- if not, sanction fails). Sandbox --disable all. If floor drops with byte-neutral duplication, invoke layer-1 + layer-2 cheat-reviewer for policy compliance (mandatory FAKE annotation, s1-s9 as exhaustion evidence)."
+   "hypothesis": "F2 -- Header-type correction on arg0 as a struct pointer per [[header-type-correction-from-use-sites]] (2026-07-13 sanctioned narrow carve-out). arg0's access pattern (offset 2 u8, offset 3 u8, offset 4 s16**) suggests a game-state struct; if callers reveal a consistent struct at arg0, correcting the extern at its canonical header may change combine.c's substitution surface for the (offset+table) expression at insn 124, altering pseudo 86's copy-pref propagation.",
+   "mechanism": "SOTN-sanctioned four-prong carve-out (grep-consistent use sites, prior compensating casts, single extern edit, casts eliminated everywhere). A struct-member access may present combine a different addsi3 SET_SRC/SET_DEST structure, potentially shifting which operand's hard reg propagates into 86's copy-preference set.",
+   "next_probe": "REDERIVE modality (s12). Grep all callers of func_80057CC8 across src/. Enumerate arg0 type at each call site. If a consistent struct with fields matching offsets 2/3/4 emerges, prototype the struct form and sandbox. If no consistency (arg0 genuinely per-byte u8*), KILL this axis by measurement."
   },
   {
-   "hypothesis": "F2 -- Header-type correction on arg0 as a struct pointer per [[header-type-correction-from-use-sites]]. arg0's field access pattern (offset 2 u8, offset 3 u8, offset 4 s16**) suggests a game-state struct, not raw u8*.",
-   "mechanism": "SOTN-sanctioned narrow carve-out: correcting the extern at its canonical header (with grep-verified consistency across all use sites) eliminates coercion casts. A struct member access may produce different combine.c substitution surface for the (s16*)(offset+table) expression, potentially altering the addsi3 SET structure that biases pseudo 86's copy-pref.",
-   "next_probe": "REDERIVE modality (s12). Grep all callers of func_80057CC8 (` tools/wteng.ps1 main call-graph` if available; else `Grep func_80057CC8` across src/). Enumerate the arg0 type at each call site. If a consistent struct emerges with fields matching offsets 2/3/4 shapes, prototype the struct form and sandbox. If no consistency (arg0 genuinely per-byte-offset u8*), KILL this axis by measurement."
-  },
-  {
-   "hypothesis": "F3 -- Kengo (PS2, Marionation engine reuse per AGENTS.md) transplant. func_80057CC8 has not been probed in [[slog-kengo-dead-end]] (only func_80023F08 and func_80058580 were).",
-   "mechanism": "Angle-interpolation over an arena-point table is a plausibly-shared Lightweight/Marionation routine. If a Kengo-source structurally equivalent function exists, its C shape may reveal a legitimate lever not derivable from the BB2 shape alone.",
-   "next_probe": "REDERIVE modality (s13). Check Kengo corpus availability (per no-compiler-divergence rule 'Cross-reference the Kengo source-file naming'). If accessible, grep for angle-interp / two-neighbor arena patterns and attempt transplant. If not accessible, KILL as unfindable."
+   "hypothesis": "F3 -- Kengo (PS2, Marionation engine reuse per AGENTS.md) transplant. func_80057CC8 has not been probed in [[slog-kengo-dead-end]] (only func_80023F08 and func_80058580).",
+   "mechanism": "Angle-interpolation over an arena-point table is plausibly a Lightweight/Marionation-shared routine. If a Kengo-source structurally equivalent function exists, its C shape may reveal a legitimate lever not derivable from BB2 shape alone.",
+   "next_probe": "REDERIVE modality (s13). Check Kengo corpus availability. If accessible, grep for angle-interp/two-neighbor arena patterns and attempt transplant. If not accessible, KILL as unfindable."
   }
  ],
  "judge_constraints": [

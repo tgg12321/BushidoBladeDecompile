@@ -254,3 +254,17 @@ Per user 2026-06-22: keep working it; not permanently parked.
 - [s10] The three remaining unmeasured sanctioned axes are: F1 duplicated-statement-into-arms (structural), F2 arg0 header-type correction (rederive, requires caller sweep), F3 Kengo transplant (rederive, requires corpus access).
 
 - [s10] F1 SOTN-sanction prerequisite: cross-jump find_cross_jump must byte-merge both arms; verify via objdump vs candidate.c BEFORE claiming closure.
+
+- [s11] s11 baseline replay: candidate.c form on src/text1b.c line 11837 measures sandbox --disable all = 3 (target_insns=111, build_insns=111, rules_dropped=7, cheat_asm_stripped=395).
+
+- [s11] F1 variant A (duplicate p1 into prev_idx-if arms): score 3 -> 12. Matches s3's hoist-p1-before-nextidx-block kill; cross-jump does NOT merge byte-neutrally when p1 is moved out of its post-next_idx scheduling window.
+
+- [s11] F1 variant B (duplicate p1 into next_idx if/else arms, preserving position): score 3 -> 8. Rewriting the next_idx default+override into if/else disturbs sched1's delay-slot fill; the duplicated p1 does not compensate.
+
+- [s11] F1 variant C (duplicate table load into prev_idx-if arms per split-read pattern): score 3 -> 3 (byte-neutral). GCC's cse1 pass merges the redundant reloads before global-alloc; no reg_n_refs bump reaches pseudo 86.
+
+- [s11] F1 mechanism is DEAD by measurement across 3 variants: (a) any duplication that moves p1 out of its scheduling window regresses (matches prior hoist kill); (b) duplicating around the natural p1 position requires disturbing the next_idx block shape, which regresses; (c) duplicating a non-p statement gets CSE-folded before RA. The reg_n_refs priority-lift mechanism cannot be realized on pseudo 86 for this function without regression.
+
+- [s11] Total s1-s11 KILLED hypotheses: 21 (s1-s10=18 + s11 F1 variants A/B/C = 3 more).
+
+- [s11] Structural modality is now exhaustively measured: statement order, type width, declaration order, block scoping, named-intermediate, directed spelling alternatives, directed+random permuter overlay, consumer-of-ang_prev-early, inline-both-call-sites, p2-operand-swap, walking-pointer rederive, 2-iter-for-loop rederive, and the F1 duplicated-arms family (3 variants). All C-level structural axes accessible at zero policy cost are dead.
