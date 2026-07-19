@@ -509,3 +509,15 @@
 - [s32] src/text1a_c.c func_80045294 body unchanged from banked candidate.c (baseline v1-before-i shape); sandbox floor=2 reconfirmed by no-edit invariant.
 
 - [s32] docs/grind/decisions.md contains ZERO hits for '80045294' or 'saTan0Init' -- OWNER-ESCALATION entry not yet filed; owner-gated not emittable this session per contract.
+
+- [s33] Sandbox baseline reconfirmed s33: score=2, target_insns=83, build_insns=83, rules_dropped=0, cheat_asm_stripped=78 (file-wide).
+
+- [s33] combine.c pass output (tmp/grind/func_80045294/s3/base.i.combine line 12633) shows func_80045294 combiner statistics: 56 attempts, 45 substitutions (23 requiring new space), 2 successes. Insn 4 (set 72 a0), insn 14 (set 75 (ashift 72 4)), insn 22 (set 78 72), insn 89 (set 78 72) all surviving as independent SETs.
+
+- [s33] Pseudo 72 (a0) at flow.c pass output (tmp/grind/func_80045294/s3/base.i.flow line 632): '4 times across 5 insns in block 0; pointer' — pseudo 72 is block-0-scoped at flow.c's REG_BASIC_BLOCK tagging, which is what feeds local_alloc's pool split decision (s6/s24) but is upstream of combine.c's substitution decision.
+
+- [s33] Combine slice (baseline) at tmp/grind/func_80045294/s33/combine_baseline_slice.txt (178 lines); flow slice at tmp/grind/func_80045294/s33/flow_baseline_pseudo_refs.txt (29 lines).
+
+- [s33] s16 sched1+sched2 LUID coupling wall is now traced one pass further upstream: sched1's ready-list input inherits LUIDs 14 and 22 from combine.c's output; combine.c is where the 8-delta between sll and move16 is minted. No prior pass (cse.c, loop.c, jump.c) can shrink the delta because combine's substitute-and-delete is what would collapse either insn, and both insns' destinations are loop-carried multi-use pseudos.
+
+- [s33] 5 forensic sessions (s3, s6, s7, s15, s16, s24, s25, s33) now have direct base.i.<pass> pass-output citations. Chain: flow.c REG_BASIC_BLOCK tag → combine.c 56/45/2 substitute-and-delete leaves both insns → cse.c BB-scoped operand substitution (H1 rotate) → local_alloc/global_alloc pool split (cse-fold +1-copy) → sched1+sched2 rank_for_schedule LUID tiebreak → reorg.c delay-slot fill (unchanged).
