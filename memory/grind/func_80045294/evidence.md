@@ -499,3 +499,13 @@
 - [s31] s31 candidate.c unchanged from s30 (H1 baseline; not applied to src/ since sandbox floor=2 remains). One rejected form banked: rejected/perm-score10-mid-loop-i-reset-semantic-break.c documents the semantic-break basin for future sessions.
 
 - [s31] OWNER-ESCALATION status: entry NOT yet filed in docs/grind/decisions.md. owner-gated remains inadmissible per driver contract; s31 emits 'progress' with the fifth-angle wall reconfirmation as its banked finding. Owner-escalation-drafting modality is the sole remaining sanctioned move; s31 does not draft it because the mandated modality this session was permuter.
+
+- [s32] s32 baseline-chassis fresh-seed campaign (tmp/grind/func_80045294/s32/perm_baseline_fresh): iters=39420, elapsed=947.4s, base=60, 2 finds at score=60, no sub-60. Plateau reconfirmed.
+
+- [s32] s32 orphan sum-at-2 chassis (tmp/grind/func_80045294/s32/perm_sum_at_end): iters=772, elapsed=1191.7s, base=60, 1 find at score=60, no sub-60. Structurally distinct decl order also plateaus at 60.
+
+- [s32] Cumulative permuter budget for func_80045294 now ~137,752 iters across 9 chassis/mode combinations, all plateau=60 except cse-fold-anon-shift (105) and the s31 semantic-break find (10).
+
+- [s32] src/text1a_c.c func_80045294 body unchanged from banked candidate.c (baseline v1-before-i shape); sandbox floor=2 reconfirmed by no-edit invariant.
+
+- [s32] docs/grind/decisions.md contains ZERO hits for '80045294' or 'saTan0Init' -- OWNER-ESCALATION entry not yet filed; owner-gated not emittable this session per contract.
