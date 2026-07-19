@@ -364,3 +364,23 @@ Per user 2026-06-22: keep working it; not permanently parked.
 - [s17] Ledger frontier now collapses. Sanctioned axes measured dead across s1–s17: statement order, type width, declaration order, block scoping, named-intermediate, directed permuter (5 chassis) + directed+random overlay, consumer-of-ang_prev-early, inline-both-calls, p1/p2 operand swap alone (both), walking-pointer rederive, 2-iter for-loop rederive, F1 duplicated-arms (3 variants), F2 struct-typed arg0 header correction, split-mask ang_prev (Route A), deferred-mask (s17), F3 Kengo transplant (unfindable), F6 SOTN domain corpus (unfindable in accessible slice). Only remaining structural axis is F5 corner (double-swap p1 AND p2 to table+offset) — not this session's modality (structural).
 
 - [s17] docs/grind/decisions.md contains no OWNER-ESCALATION entry for func_80057CC8. Only entry is the 2026-07-19 17:09 Judge FAIL ruling on the two-variable form. Therefore `owner-gated` is NOT authorized this session per the s13 note and contract; the correct next session must either measure F5 (structural modality) or a fresh forensics angle before an OWNER-ESCALATION entry can be filed by a synthesis session.
+
+- [s18] [s18] Baseline replay: candidate.c on src/text1b.c line 11837 measures sandbox --disable all = 3 (target=build=111 insns, rules_dropped=7, cheat_asm_stripped=395). Replays s1-s17 baseline cleanly on current main HEAD.
+
+- [s18] [s18] Fresh m2c decompile of asm/funcs/func_80057CC8.s produces a C shape that (a) uses combined shift `((s32)(x<<0x10)>>0xE)` for p1/p2 offset, (b) introduces a `cur`-like pointer intermediate for cx/cy reads, (c) precomputes BOTH p addresses as SEPARATE C locals (temp_v0_3, temp_v1_2) before either call. Artifact: tmp/grind/func_80057CC8/s18/m2c_output.c.
+
+- [s18] [s18] m2c shape (c) — precomputing both p1 and p2 addresses as separate C locals — is the exact two-local split forbidden by Judge s10 binding constraint. Not measurable in this session.
+
+- [s18] [s18] Combined-shift `<<16>>14` measurement: score=3 byte-neutral. GCC 2.7.2 combine.c folds this AST variant to the same RTL as candidate's `<<16>>16<<2` and s2's `(s32)(s16)x<<2`. All 3 shift-spelling variants fold identically. Saved rejected/rederive-combined-shift-16-14.c.
+
+- [s18] [s18] cur-pointer-cx-cy measurement: score=4 (+1 regression). Introducing `u16 *cur = (u16*)((s32)table + arg1*4)` for cx/cy reads regresses by 1 insn; fresh pseudo interferes with p1/p2 scheduling window. NOT a cheat-class form (cur has genuine semantic purpose — one node's address); measurably worse. Saved rejected/rederive-cur-pointer-cx-cy.c.
+
+- [s18] [s18] decomp.me corpus (3754 cached scratches under gcc2.7.2-cdk/psx compilers) sampled for `& 0xFFF` 12-bit-angle-mask signature: 5 hits, first 3 inspected (func_801E2820, func_8006A370, func_80149D90). None are 2-neighbour arena-boundary angle interpolation. F3-equivalent corpus route KILLED via decomp.me too.
+
+- [s18] [s18] Combined s1-s18 KILLED hypotheses count: 27 (s1-s17 = 25; s18 combined-shift = 1; s18 cur-pointer = 1; s18 corpus-transplant-decomp.me = 1). Rederive modality is exhaustively measured dead across three corpora (Kengo unfindable, SOTN accessible slice psxsdk-only, decomp.me cached corpus has no structural match) AND across three m2c-derived fresh shapes (combined-shift byte-neutral, cur-pointer +1 regression, split-p Judge-banned).
+
+- [s18] [s18] s7 CONFIRMED single-pseudo impossibility (pseudo 86 = /v-marked DECL_RTL of `p` binding) still holds: any single-C-variable `p` cannot reach target's p1=v0 by mechanism (86's {3} pref from pseudo 129's v1 propagation via expand_preferences at insn 124's addsi3; 86's v0 conflict from sched1's insn-115 hoist). Not toggleable by rederive-axis shape changes.
+
+- [s18] [s18] docs/grind/decisions.md contains no OWNER-ESCALATION entry for func_80057CC8. Only entry is the 2026-07-19 17:09 Judge FAIL ruling on the two-variable form. owner-gated is NOT authorized this session per contract.
+
+- [s18] [s18] Frontier unchanged from s17: F5 corner (double-swap p1 AND p2 to table+offset) remains the last un-measured sanctioned cell (STRUCTURAL modality — not this rederive session's mandate).
