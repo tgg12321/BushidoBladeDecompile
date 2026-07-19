@@ -1,8 +1,8 @@
 {
  "func": "func_80057CC8",
  "file": "text1b",
- "session_count": 16,
- "current_modality": "forensics",
+ "session_count": 17,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 0,
@@ -105,23 +105,29 @@
    "floor": 3,
    "modality": "forensics",
    "headline": "sched1 hoist named: adjust_priority+birthing_insn_p boosts insn 115 to LAUNCH_PRIORITY (0x7f000001) because reg_n_sets[ang_prev's pseudo 78]==1; split-mask lever measured DEAD (combine folds before sc"
+  },
+  {
+   "session": 17,
+   "floor": 3,
+   "modality": "rederive",
+   "headline": "s17 rederive: F3 Kengo unfindable (no source), F6 SOTN corpus scope unfindable (psxsdk-only), novel deferred-mask rederive KILLED (score 40, +3 insns); frontier collapses to owner-escalation next."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F5 corner (double-swap): p1 = table+offset AND p2 = table+offset \u2014 the only un-measured cell of the s8 2x2 operand-order matrix (s8 measured p1-swap-alone byte-neutral, p2-swap-alone regressed to 9, baseline offset+table both is 3). Unlikely to help alone per s7 forensics (propagation asymmetry is a fixed property of addsi3 SET SRC1/SRC2 slot layout, not source-level operand order) but the corner cell is unmeasured.",
-   "mechanism": "STRUCTURAL modality. If the double-swap by symmetry regresses like p2-swap-alone (to 9), F5 is definitively dead. If it lands byte-neutral or better, it may reveal a novel property of the addsi3 reassoc kick.",
-   "next_probe": "Apply p1 = (s16*)((s32)table + <shift>) AND p2 = (s16*)((s32)(*(s16 **)(arg0+4)) + <shift>); measure sandbox --disable all."
+   "hypothesis": "F5 corner (double-swap): write p1 = table+offset AND p2 = table+offset (the only un-measured cell of the s8 2x2 operand-order matrix). Unlikely per s7 propagation-asymmetry forensics, but the corner cell is uniquely unmeasured across the s1\u2013s17 pool. STRUCTURAL modality.",
+   "mechanism": "By symmetry with s8's p2-swap-alone regression (3->9) and p1-swap-alone byte-neutral (3), the corner is either 9 (p2-swap dominates) or something new (novel property of addsi3 reassoc kick with both operands swapped).",
+   "next_probe": "Apply p1 = (s16*)((s32)table + (((s32)(prev_idx<<16)>>16)<<2)) AND p2 = (s16*)((s32)(*(s16**)(arg0+4)) + (((s32)(next_idx<<16)>>16)<<2)); sandbox --disable all. If regresses to 9, F5 KILLED. If byte-neutral or better, a novel property of addsi3 propagation is exposed."
   },
   {
-   "hypothesis": "F3 Kengo (PS2, Marionation engine reuse) transplant \u2014 unchanged from prior ledger. func_80057CC8 has not been probed against the Kengo corpus.",
-   "mechanism": "REDERIVE modality. If a structurally-equivalent function exists (2-neighbour arena-point angle-interp with mid + 0x800 flip on wrap, sin/cos-table scaling), its C shape may reveal a lever not derivable from BB2 shape alone (though the sched1 birthing mechanism named this session applies to any single-def ang_prev C form).",
-   "next_probe": "Check Kengo corpus accessibility; grep for angle-interp / two-neighbour arena-point patterns. If corpus not accessible OR no structural match, KILL as unfindable."
+   "hypothesis": "OWNER-ESCALATION filing prerequisites are met AFTER F5 corner measurement. The impossibility surface is now closed at every sanctioned axis except that one corner cell; a synthesis session can produce the escalation entry once F5 is measured.",
+   "mechanism": "The s10 kill-order projected owner-escalation as the correct disposition once F1/F2/F3 measured dead. s11 killed F1, s12 killed F2, s17 killed F3 (unfindable) + F6 (unfindable in accessible corpus) + deferred-mask. F5 corner is the last un-measured sanctioned axis. Once measured, either the function is COMPLETED-C (unlikely) or every sanctioned axis is measurably dead and OWNER-ESCALATION becomes the correct disposition.",
+   "next_probe": "Session 18: measure F5 corner (structural modality). If KILLED, session 19 or later files a synthesis-modality OWNER-ESCALATION entry to docs/grind/decisions.md citing the s1\u2013s17 exhaustion + s7/s16 mechanism forensics + Judge 2026-07-19 17:09 binding. Options for the owner: (a) narrow the Judge binding to permit a documented two-scope-`p` form for RA-coalescing walls with target-asm evidence of two distinct pseudos, (b) authorize canonical-asm carve-out per fork-divergence-inline-asm's crash-driven analogue but adapted for scheduling-driven single-pseudo impossibility, (c) hold the function INCOMPLETE indefinitely."
   },
   {
-   "hypothesis": "F6 (new axis): does target's C use an s32 arithmetic idiom that produces two RTL SETs surviving combine? E.g. `ang_prev = call1_ret; ang_prev = ang_prev & 0xFFF;` where an intervening non-C-source operation (like a REG_EQUAL note attached elsewhere) prevents fold. Cross-reference against SOTN masters for canonical patterns of double-set that survive combine.",
-   "mechanism": "REDERIVE modality \u2014 hunt for a real SOTN corpus pattern where two SETs to the same C var survive combine into sched1 with reg_n_sets==2. If found, apply pattern here. If SOTN has no such pattern (likely), owner-gated becomes the correct final disposition after F5-corner and F3 are also measured.",
-   "next_probe": "Grep SOTN dra/menu/weapon for `X = call(...); X &= ` sequences that reach a byte-match. Also inspect their `.combine` dumps if available (SOTN doesn't distribute them). Fallback: cite this axis as unfindable and prepare owner-escalation."
+   "hypothesis": "Aggressive forensics on WHY GCC 2.7.2 fails to live-range-split pseudo 86 across BB4 despite both def-use chains dying cleanly within BB4 (multi-def-in-single-BB local-alloc rejection).",
+   "mechanism": "s7 noted local-alloc SKIPS pseudo 86 despite single-BB residency because 86 has 'two independent def-use chains within BB4'. This is a local-alloc bail-out condition (block_alloc in local-alloc.c). If forensics identifies the exact bail-out condition and it turns out to be a scoring heuristic rather than a semantic requirement, a C-source restructure that makes local-alloc take 86 (single def-use chain) could split its live range across the p1 and p2 uses at local-alloc time \u2014 producing distinct hard regs without splitting the C-source local.",
+   "next_probe": "Session 18 FORENSICS: read tools/gcc-2.7.2/local-alloc.c block_alloc; identify the exact multi-def-in-BB bail-out; determine whether a C-source form exists that presents 86 as a single-def-use chain per fragment without introducing a second C local. If a mechanism-consistent C form exists, measure. If the local-alloc bail-out is unconditional on multi-def-in-BB, mark F5 as the final un-measured cell and file OWNER-ESCALATION next session."
   }
  ],
  "judge_constraints": [
