@@ -431,3 +431,15 @@
 - probe: Verified fresh this session: decisions.md tail read end-to-end (776 lines; escalation block 761-776 is final, no OWNER RULING follows); ledger bank checked on disk (candidate.c 44,155 bytes; 9 rejected forms present including judge-fail-0717-1708.c)
 - result: Escalation on file and unruled; forensics artifacts banked under tmp/grind/motion_SetMotion/s6/ and s7/ per the escalation's References section; binding Judge constraints forbid the only remaining C-reachable mechanism (USE/CLOBBER manufacture family)
 - verdict: CONFIRMED
+
+## [s44] An owner ruling on the motion_SetMotion OWNER-ESCALATION may have landed since s43, reopening a grindable axis.
+- mechanism: decisions.md is append-only; a ruling would appear as a new entry after line 776 naming motion_SetMotion.
+- probe: Read decisions.md:755-781 + grep every motion_SetMotion mention + enumerate the last six '## ' entry headers (file now 425 headers/781+ lines after the D_80082050 entry).
+- result: The escalation block (lines 761-776) remains the final motion_SetMotion entry; the sole entry after it is '2026-07-18 20:17 - D_80082050 - final call - PASS' for a different function. No owner ruling exists.
+- verdict: KILLED
+
+## [s44] The rederive modality could still produce a structurally different C shape that evades the 13-pair cross-jump merge without paying bytes.
+- mechanism: Fresh m2c decompile / decomp.me corpus / sibling transplant would yield a new chassis outside the measured spelling bank.
+- probe: Ledger check against the Judge-certified closure theorem: it quantifies over jump2-time RTL invariants of ALL byte-matching compiles (any such compile forces both 13-sites to [set13; j] with a heading CODE_LABEL, guaranteeing the counted-match + label-bonus merge), not over source spellings; nine independent confirmations banked incl. two white-box BB2_XJUMP_DEBUG traces; s35/s36 rederive sessions already verified this axis dead.
+- result: Any rederived chassis lands in one of the s10 three basins (merged / unmerged-with-cost / unsanctioned USE-CLOBBER breaker); the only byte-free breaker class is forbidden by the binding Judge constraints pending the owner ruling.
+- verdict: KILLED

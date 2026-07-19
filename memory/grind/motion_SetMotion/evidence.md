@@ -520,3 +520,11 @@ as separate li's near the dispatch (only case-10's 13 at a bne delay)
 - [s43] Mandated forensics axis is dead on the ledger with pass-level artifacts: s6 white-box traces certify the closure theorem (merge fires via counted set13 match + label bonus; the rule is a first-iteration pattern-mismatch manufacturer; F1 slack non-transplantable) and s7 traced the candidate family itself (CLOBBER stream-desync, zero DO_CROSS_JUMP events at 13-sites, byte-identical except the single li 13 word)
 
 - [s43] Ledger bank intact: memory/grind/motion_SetMotion/candidate.c (44,155 bytes, floor-10 byte-correct form) + 9 rejected forms; no src/ edits made this session; regfix.txt:2190 and the committed form untouched on main per the 17:34 Judge disposition item (3)
+
+- [s44] docs/grind/decisions.md OWNER-ESCALATION for motion_SetMotion (lines 761-776, filed by grind s7) verified present and UNRULED this session (s44); the only entry following it is the 2026-07-18 20:17 D_80082050 PASS - unrelated function, not a ruling.
+
+- [s44] Mandated rederive axis is dead by construction on the ledger: the closure theorem quantifies over all byte-matching compiles (s8), sealed by the s10 three-basin partition and nine confirmations (s2 r1-r4, s3 r5-r9, s3b r10-r13, F1 slack non-transplantable, s4 dual campaigns 114k iters, s5 unmerged campaign 54k iters, s6 white-box traces x3 TUs, s7 n1 union trace, s7 zero-community-evidence survey); rederive sessions s35/s36 previously confirmed.
+
+- [s44] Ledger bank intact: memory/grind/motion_SetMotion/candidate.c (44,155 bytes, byte-proven floor-10 Wall-1-solved form) + 9 rejected forms including the byte-proven, trace-proven n1 union form (judge-fail-0717-1708.c) referenced by escalation option (a).
+
+- [s44] No src/ edits made; regfix.txt:2190 and the committed byte-correct form untouched on main per the 2026-07-17 17:34 Judge disposition item (3); working tree clean except the metrics/events.jsonl append.
