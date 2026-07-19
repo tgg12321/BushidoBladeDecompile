@@ -382,3 +382,9 @@
 - probe: Enumerated rejected/*.c against the four failure modes; verified each maps.
 - result: Hand-derivation modality TERMINALLY exhausted. Rederive exhausted across 8 sub-axes (s8/s9/s17/s18). Directed permuter exhausted 2 chassis (s13/s14). Random permuter exhausted 1 chassis (s13 full-TU). Only untested combination: minimal-base + random-mode (deferred s20).
 - verdict: CONFIRMED
+
+## [s20] Minimal-base chassis (~40x fewer AST nodes than full-TU) + unannotated PERM_RANDOMIZE region reaches sub-60 where s13's full-TU random-mode did not.
+- mechanism: pycparser randomizer's per-iter mutation graph unconstrained by irrelevant top-level decls should reach deeper effective mutation depth on the function body at the same iter/s wall-clock rate; only chassis/mode combination not empirically banked.
+- probe: Copied s14/perm_min chassis (63-line base.c, empty prologue_config, cheat-invisible sandbox target.o); stripped PERM_LINESWAP wrapper to make it unannotated random-mode; launched via tools/permuter_campaign.py -j 4 --stop-on-zero; harvested at 13977 iters (531.6s wall-clock).
+- result: iterations=13977 across 4 jobs (~26 iters/s), 2 finds both at score=60 (base tie, seconds_since_launch 39s and 433s), best_new_score=60, no sub-60 variants discovered; well past the 5000-iter fresh-seed budget from the ledger.
+- verdict: KILLED

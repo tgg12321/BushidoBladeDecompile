@@ -301,3 +301,17 @@
 - [s19] Genuinely un-measured chassis/mode combination = minimal-base chassis + random-mode (no directed annotations). s14 minimal-base only tested directed; s13 random only tested full-TU. This is the final sanctioned axis before OWNER-ESCALATION becomes ripe.
 
 - [s19] Merged synthesis writeup: tmp/grind/func_80045294/s19/synthesis.md.
+
+- [s20] s20 permuter campaign at tmp/grind/func_80045294/s20/perm_min: base_score=60, 13977 iters over 531.6s, best_new_score=60, finds=[output-60-1@39s, output-60-2@433s], stopped=true, procs_killed=5.
+
+- [s20] Minimal-base chassis reproduced from s14: 63-line base.c with narrowed extern decls (D_800EED10/14/18/1C, D_800A33A0/A4/AC), gpu_DrawSync, func_800520B8; PERM_LINESWAP wrapper removed to expose the whole function body to random-mode mutation.
+
+- [s20] empty_prologue.json + empty_delay_slot.txt + empty_frame_fix.txt = cheat-invisible ground truth (matches sandbox --disable all gradient).
+
+- [s20] Every empirically-testable chassis/mode combination now measured dead: full-TU directed (s13/s14 lineswap), full-TU random (s13), minimal-base directed (s14 lineswap), minimal-base random (s20). No further permuter axis exists in decomp-permuter's mutation family for this function.
+
+- [s20] Hand-derivation enumeration exhausted across s1-s12 structural + s8/s9/s17/s18 rederive: 22 rejected forms banked (a0-alias-local, combined-decl-v1-s4, count-before-i, cse-fold-anon-shift, cse-reuse-shift, decl-init-decouple, dowhile0-around-v1-after-i, i-before-v1-init, i-before-v1-with-i-as-shift-operand, inline-count-no-local, inner-block-defer-v1, late-v1-assign-with-s4-inline, s5-inside-sum-block, shift-as-signed-mult, shift-as-unsigned-mult, shift-via-ptrdiff, split-init-s5, stmt-expr-shift, sum-init-at-end, swap-s5-operands, u32-v1-cast, v1-guard-scoped).
+
+- [s20] Four pass-level walls named + cited across s6/s7/s10/s11/s15/s16 forensics: (1) s7 cse.c BB-scoped operand substitution collapses a0's live range; (2) s6 no cross-pool coalescer in GCC 2.7.2 local_alloc/global_alloc; (3) s16 sched1 + s15 sched2 both LUID-coupled (scheduling-only intervention insufficient); (4) s10/s11 no CFG-splitter defeats cse.c BB-scoped substitution (do-while(0) does not create a distinct BB in this pass).
+
+- [s20] docs/grind/decisions.md contains no OWNER-ESCALATION entry for func_80045294; per contract 'owner-gated' is not emittable yet.

@@ -1,8 +1,8 @@
 {
  "func": "func_80045294",
  "file": "text1a_c",
- "session_count": 19,
- "current_modality": "synthesis",
+ "session_count": 20,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -117,18 +117,19 @@
    "floor": 2,
    "modality": "synthesis",
    "headline": "s19 synthesis: 4 pass-level walls named + cited; scoped PERM_RANDOMIZE reframed as SUBSET of s13 (KILLED); final sanctioned axis = minimal-base + random-mode for s20, then OWNER-ESCALATION ripe."
+  },
+  {
+   "session": 20,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "s20 minimal-base + random-mode permuter plateau=60 across 13977 iters; final sanctioned axis measured dead, OWNER-ESCALATION now ripe."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Minimal-base chassis + random-mode permuter (unannotated, unbounded PERM_RANDOMIZE region) reaches a sub-60 score s13's full-TU random-mode did not.",
-   "mechanism": "Minimal-base has ~40x fewer AST nodes than full-TU; pycparser randomizer's per-iter mutation graph is unconstrained by irrelevant top-level decls, potentially reaching deeper effective mutation depth on the function body at the same 6-9 iter/s wall-clock rate. Only chassis/mode combination not empirically banked.",
-   "next_probe": "Reuse tmp/grind/func_80045294/s14/perm_min/ chassis (63-line base.c, empty PROLOGUE_CONFIG). Strip PERM_LINESWAP + PERM_GENERAL annotations from base.c to make it unannotated random-mode. Launch: python3 tools/permuter_campaign.py launch --func func_80045294 --dir tmp/grind/func_80045294/s14/perm_min --label s20-min-random-fresh1 -j 4 --stop-on-zero. Harvest --stop at natural iter limit (~5000 iters). If sub-60: apply to src/text1a_c.c, re-sandbox, save as candidate.c. If plateau=60: bank as final sanctioned axis measured dead."
-  },
-  {
-   "hypothesis": "If minimal-base + random-mode also plateaus at 60, every sanctioned axis is measured dead and OWNER-ESCALATION becomes ripe.",
-   "mechanism": "Posture note. After s20 measurement, the enumeration is complete: hand-derivation (s1-s18), rederive (s8/s9/s17/s18), directed permuter (s13/s14 both chassis), random permuter (s13 full-TU + s20 minimal-base). No further sanctioned mutation family exists in decomp-permuter or in hand-derivation for this function.",
-   "next_probe": "AFTER s20 measurement is banked (not before), draft owner-escalation entry for docs/grind/decisions.md citing the four pass-level walls (s7/s15 cse.c, s6 no-coalescer, s16 sched1+sched2 LUID, s10/s11 no-CFG-splitter) + all measured-dead modalities. Owner ruling options: authorize canonical-inline-asm scoping the 2-insn cluster, OR accept score=2 as pure-C-COMPLETED exception. Do NOT emit owner-gated before s20 measurement is banked."
+   "hypothesis": "OWNER-ESCALATION is ripe: file entry in docs/grind/decisions.md citing the four pass-level walls + all measured-dead modalities; request owner ruling between (a) authorize canonical-inline-asm scoping the 2-insn cluster or (b) accept score=2 as pure-C-COMPLETED exception.",
+   "mechanism": "Every sanctioned axis (hand-derivation structural, m2c/decomp.me rederive, directed permuter, random permuter across both chassis) is measured dead. No further probe exists within pipeline rules. The 2-insn gap is a load-scheduling artifact of the s7/s15 cse.c + sched1/2 LUID interaction that no user-controllable C spelling can defeat.",
+   "next_probe": "Next session (mandated modality = owner-escalation-drafting or ruling-request per driver): compose docs/grind/decisions.md entry naming func_80045294, the four pass-level walls (cse.c BB-scoped operand substitution s7/s15, GCC 2.7.2 no cross-pool coalescer s6, sched1+sched2 LUID coupling s15/s16, absent CFG-splitter s10/s11), the 22 rejected forms, and both permuter chassis exhaustions (s13 full-TU random, s14 full-TU + minimal directed lineswap, s20 minimal random). Then emit result=owner-gated with escalation_ref pointing to that entry."
   }
  ],
  "judge_constraints": [],
