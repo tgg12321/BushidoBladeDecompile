@@ -118,3 +118,21 @@
 - probe: Edited to `s32 s4 = *(s32*)((u8*)&D_800EED14 + (a0<<4)); s32 i = a0; ... s32 v1 = a0<<4;`. Sandboxed + objdump.
 - result: score = 2, build_insns = 84 (target 83). Schedule order MATCHES target: `sw s0,16(sp) ; move s0,s2 ; sll v0,s2,4`. But the CSE-fold produces one extra insn: `move v1,v0` after the sll, because a0<<4 goes to an anonymous pseudo (v0) and v1 is a separate declared pseudo — RA emits a copy. Saved as rejected/cse-fold-anon-shift.c with the closing-lever hypothesis in comments.
 - verdict: CONFIRMED
+
+## [s4] Moving v1 into the guard-block scope (v1 declared inside `if (i<count) { s32 v1 = a0<<4; do { ... } }` with a0<<4 inlined anonymously into s4's file-scope init) will let CSE fold the two a0<<4 uses to one insn while removing v1's outer pseudo, avoiding the CSE-move copy that killed cse-fold-anon-shift.
+- mechanism: Cross-scope CSE across (outer-block s4-init subexpression) and (inner-loop-scope v1-init) hypothetically shares the anon shift pseudo; removing v1's outer scope removes one pseudo class from RA priority accounting.
+- probe: Edited src/text1a_c.c to move `s32 v1 = a0<<4;` inside the `if (i<count)` guard, inlined a0<<4 into s4's file-scope init. Sandbox --disable all.
+- result: score=35, build_insns=84 (target 83). Cross-scope CSE did NOT fold: the loop's inner `v1 = a0<<4` produces a fresh pseudo, extra insn survives, RA cascades a 35-point register-choice diff.
+- verdict: KILLED
+
+## [s4] Declaring `s32 v1;` uninitialized before all other decls and assigning `v1 = a0<<4;` late (as a statement after s5's init) while s4's init inlines a0<<4 anonymously will decouple RA priority from sched2 LUID and give the target schedule at 83 insns.
+- mechanism: Early decl gives v1 its RA priority slot; late statement pushes the explicit v1 assignment's LUID after i's, satisfying the sched2 tiebreak; s4's inline anon shift provides the actual sll for the schedule.
+- probe: Edited src/text1a_c.c to `s32 v1; s32 sum=0; s32 s4 = *(base + (a0<<4)); s32 i = a0; s32 count = ...; s32 s5 = s4+a1; v1 = a0 << 4;`. Sandbox --disable all + objdump.
+- result: score=2, build_insns=84. Schedule order MATCHES target (`sw $16 ; move $16 ; sll $2,$18,4`) — from a different C angle than cse-fold-anon-shift — but the CSE-move copy (`move $3,$2`) is present as always. Confirms the LUID lever works from a DIFFERENT SPELLING; the +1 insn blocker is inherent to any C with two tree-level a0<<4 expressions.
+- verdict: KILLED
+
+## [s4] Wrapping s4/s5 decls (and the whole function body) in an inner `{ }` block AFTER a statement-position `v1 = a0<<4;` will create a scoping boundary that decouples RA priority (which follows global.c allocno order across the whole function) from the ASSIGNMENT LUID axis, letting the late v1 assignment steer sched2 without rotating a0's register.
+- mechanism: Hypothesized global.c might allocate pseudos scoped by block, so an outer-block v1 with a late statement position could have a low RA priority while the inner-block s4/s5/loop pseudos allocate independently.
+- probe: Edited src/text1a_c.c: `s32 v1; s32 sum=0; s32 i=a0; s32 count=...; v1 = a0<<4; { s32 s4 = *(base+v1); s32 s5 = s4+a1; ... rest ... }`. Sandbox --disable all + objdump.
+- result: score=11, build_insns=83. RA rotated EXACTLY like H1 (a0->$21, sll operand CSE-propagated to $16). global.c does NOT allocate per-block; it allocates all function-wide pseudos in one phase. THIRD angle confirming RA priority is coupled to assignment LUID at C-source level.
+- verdict: KILLED

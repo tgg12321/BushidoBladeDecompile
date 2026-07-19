@@ -1,8 +1,8 @@
 {
  "func": "func_80045294",
  "file": "text1a_c",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -21,23 +21,29 @@
    "floor": 2,
    "modality": "structural",
    "headline": "s3 structural: sched2 dump MEASURED \u2014 chain-length hypothesis DISPROVEN (sll and move16 both priority 1); tie broken by INSN_LUID with HIGHER LUID picked first (backward-list-sched stability). 3 new s"
+  },
+  {
+   "session": 4,
+   "floor": 2,
+   "modality": "permuter",
+   "headline": "s4: RA/LUID coupling reconfirmed from third angle; two new near-hits killed; permuter workspace unbuildable via import.py (TU has whole-func __asm__ + cpp-conflict decls)."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Give the sll a HIGHER assignment LUID than move16 by expressing `v1 = a0<<4` at a later STATEMENT position while leaving RA order untouched \u2014 e.g., materialize v1 lazily by writing `s32 v1;` up top, then `s4 = *(s32*)((u8*)&D_800EED14 + a0*16); i = a0; ...; v1 = a0<<4;` deferred to just before the loop entry. Distinct from decl-init-decouple: here `i = a0` is initialized at its own decl (RA stays), but `v1 = a0<<4` is assigned in a LATE statement that lands AFTER i's assignment.",
-   "mechanism": "sched2 LUID follows assignment tree position. If v1's assignment statement lives lexically after i's, sll's INSN_LUID > move16's INSN_LUID \u2192 sll ranks higher in ready list \u2192 picked first in backward sched \u2192 emitted later in forward stream \u2192 target's `sw;move16;sll`. RA priority derives from where the pseudo is FIRST WRITTEN; if the FIRST write to v1 is late, the allocno spans less range and may still land in $3.",
-   "next_probe": "Write `s32 sum = 0; s32 s4 = *(s32*)((u8*)&D_800EED14 + a0*16); s32 i = a0; s32 count = D_800A33AC; s32 s5 = s4 + a1; s32 v1 = a0<<4;` \u2014 v1 as a top-level decl+init but placed AFTER all others. Sandbox + dump sched2 for the new LUID ordering. Also try declaring v1 uninitialized at top then assigning after s5 (variant to ensure no decl-order artifact). If either lowers, save as candidate."
+   "hypothesis": "Express the FIRST loop as a walking-pointer variant (val_ptr walks by 0x10) so v1 disappears from that loop entirely, leaving a SINGLE a0<<4 use for s4/pointer init. This removes the two-tree-a0<<4 constraint. Check the second loop separately: it already re-does `v1 = i<<4` from a0's alias, isolated.",
+   "mechanism": "One tree-level a0<<4 as `s32 shift = a0<<4;` (or inlined into a pointer init) means one sll insn and no CSE-move. Whether sched2 places it target-like depends on whether the pointer init statement's LUID lands after i=a0's. Because a WALKING pointer is a legitimate structural rewrite of the loop (target's body is offset-indexed but bytes might match if RA/scheduling permit), this is a real structural axis \u2014 not a coercion. Verify byte-for-byte the first-loop body still matches (target uses `lw val,off(D_EED18); addiu off,0x10;` \u2014 pointer walk would use `lw val,0(p); addiu p,0x10;` \u2014 DIFFERENT bytes; only viable if target bytes actually reflect a pointer walk, unlikely per s1 evidence).",
+   "next_probe": "Read target's first-loop bytes carefully: is D_EED18 addressed as `lw t0, off($base_reg)` where base_reg holds D_EED18's address (indicating index+base), or is it `lw t0, 0($ptr)` where ptr walks (indicating pointer walk)? If the target uses base+index, this frontier is dead too. If ambiguous, hand-code a pointer-walk candidate and check byte match."
   },
   {
-   "hypothesis": "Move v1 into the guard-block scope so it exists ONLY inside the loop; a0<<4 is inlined into s4's init at file scope; loop v1 is declared inside `if (i < count) { s32 v1 = a0<<4; do { ... } while(...); }`.",
-   "mechanism": "Scoping v1 to the loop removes its file-scope pseudo. GCC's CSE across scopes may still fold both a0<<4 uses to one insn. If it doesn't, at least the scheduler sees only the anonymous a0<<4 pseudo at block 0 (like near-hit) but without the extra copy \u2014 the second a0<<4 sll for the loop is inside a later BB.",
-   "next_probe": "Edit src/text1a_c.c to hoist s4's a0<<4 inline and declare `s32 v1 = a0<<4;` as first stmt of the outer `if(i<count)` guard block. Sandbox. If block 0 emits `sw;move16;sll` at target insn count 83, sandbox reports 0. If insn count rises above 83, CSE didn't fold and we need a different vehicle."
+   "hypothesis": "The a0<<4 arithmetic can be delivered by an operation whose RTL is NOT a bare (ashift a0 4) subtree \u2014 e.g., via an inline `*(short*)&packed_local` cast that GCC lowers to a shift, or a struct member access that emits a shift, or a builtin. Different tree shape = different LUID assignment even at the same C statement position, potentially breaking the coupling.",
+   "mechanism": "The RA/LUID coupling s4 confirmed applies to the ASSIGN insn's LUID. If a0<<4 is expressed via a subtree GCC lowers to (ashift) INSIDE a store's addressing computation (not as a standalone SET), the LUID assigned to the shift's pseudo may differ from a plain `v1 = a0<<4` statement.",
+   "next_probe": "Try `s32 v1 = ((u32)a0 * 16);` (arithmetic-multiplier spelling) and `s32 v1 = ((u8*)a0 - (u8*)0) << 4;` (pointer-diff spelling). Sandbox each. If any produces score<=2 at 83 insns, it's a live closing lever."
   },
   {
-   "hypothesis": "Permuter campaign in directed-PERM mode over the a0<<4 expression's spellings (comma-expression, pointer-cast, offset-alias) using the CLEAN target.o from s1's diff_target.sh scaffolding.",
-   "mechanism": "The s3 CSE-fold near-hit narrows the search space: correct schedule with +1 copy. The permuter's PERM_STMT_LIST / PERM_EXPR / PERM_VAR_INIT macros can enumerate the spelling variants of `a0<<4` and v1's placement across seed variety greater than hand-probes can cover. Fresh-seed discipline per feedback/permuter-fresh-seed-discipline.",
-   "next_probe": "Build target.o from asm/funcs/func_80045294.s + decomp-permuter prelude (per tmp/grind/func_80045294/s1/diff_target.sh scaffolding). Set candidate.c to the s3 CSE-fold near-hit as the seed (proven direction toward target). Run `permuter --stop-on-zero` with 20-30 fresh seeds, cheat-vet every closing form. IMPORTANT: run in-turn and harvest --stop BEFORE writing outcome."
+   "hypothesis": "Fix the permuter workspace (option-a from setup log): wrap or guard the func_80044010 whole-function __asm__ so decomp-permuter's pycparser survives, then launch a directed campaign over PERM_STMT_LIST orderings around the v1/s4 decls with settings.toml weight overrides emphasizing perm_add_sub, perm_split_assignment, perm_dummy_comma_expr, perm_reorder_decls.",
+   "mechanism": "The permuter's search space over cross-product of statement orderings and expression spellings is much larger than hand-derivation can cover; the s3 near-hit and the two s4 near-hits (same closing shape from three C angles) narrow the space to a specific neighborhood the permuter could exhaustively enumerate.",
+   "next_probe": "In a future session (mandated permuter modality): before invoking import.py, temporarily replace text1a_c.c's func_80044010 __asm__ block with a GLOBAL_ASM directive or an INCLUDE_ASM stub for the import step; restore afterwards. Then adjust the generated compile.sh to source `.i`-file directly (skipping cpp) or write a mar-style workspace by hand. Launch via tools/permuter_campaign.py launch with --stop-on-zero, fresh-seed discipline (20-30 min basins), harvest --stop before session end."
   }
  ],
  "judge_constraints": [],
