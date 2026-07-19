@@ -182,3 +182,23 @@ Per user 2026-06-22: keep working it; not permanently parked.
 - [s6] Target's p1 addu is `addu $v0, $v0, $a2` — target's p1 pointer occupies v0, which is impossible for pseudo 86 given the above conflict. Target must use a DIFFERENT pseudo for p1's dest than for p2's dest, implying target's C source declares two variables (or otherwise ensures the RTL keeps p1's def in a pseudo distinct from p2's).
 
 - [s6] All previously-tried 'declare two C variables' spellings (block-scope-alias-p1, separate-p1-p2-function-scope-aliases, permuter-long-new_var2-p1-alias, permuter-s16-new_var2-p1-alias, ternary-direct-bind-no-local, split-init-off-accumulation) reached sandbox 0 but were rejected as pointer-alias holders whose sole purpose is lifetime shaping (cheat-by-any-spelling per [[no-new-park-categories]] and layer-1/2 reviewer FAILs).
+
+- [s7] s7 baseline replay: candidate.c applied to src/text1b.c line 11837; sandbox --disable all reports score=3, target_insns=111, build_insns=111, rules_dropped=7, cheat_asm_stripped=395.
+
+- [s7] s7 dumps regenerated to tmp/grind/func_80057CC8/s7/ via dump.sh + extract.sh (cc1 -da over candidate baseline).
+
+- [s7] greg header on candidate baseline: 16 global pseudos to allocate; 86 conflicts: 72 74 75 77 84 86 87 2 4 16 17 29; 86 preferences: 3; 86 in 3.
+
+- [s7] Pseudo 86 is /v-marked (`reg/v:SI 86`) across every dump — user variable, DECL_RTL of C local `p`.
+
+- [s7] Both p1 SET (insn 89, plus 112 + 88) and p2 SET (insn 124, plus 129 + 130) target pseudo 86; two independent def-use chains within BB4.
+
+- [s7] lreg summary: 'Register 86 used 6 times across 10 insns in block 4; dies in 2 places; GR_REGS or none; pointer.' — single-BB but multi-def, promoted to global-alloc pool.
+
+- [s7] p1 chain dispositions: 110 in v0 (subreg-of-prev_idx << 16), 112 in v0 (110>>14 via quantity reuse), 88 in a2 (table pointer). p1's operand hard regs (v0, a2) DO NOT appear in 86's preference set.
+
+- [s7] p2 chain dispositions: 127 in v1 (subreg-of-next_idx << 16), 129 in v1 (127>>14 via quantity reuse), 130 in a0 (*(arg0+4) reload). Only 129's v1 propagates into 86's copy-prefs — 130's a0 does NOT.
+
+- [s7] Insn 115 (and:SI reg 78 = v0 & 0xFFF) is at linked-list position (114,117) in every pre-sched dump; sched dump shows it moved to (145,147), one position before call2 (insn 147/143). sched1 is the sole reorderer (unchanged from s6, reconfirmed on candidate baseline).
+
+- [s7] Consumer-of-ang_prev-early axis is a NECESSARY-but-NOT-sufficient lever: even without the hoist, pseudo 86's pref {3} still steers global-alloc away from v0.

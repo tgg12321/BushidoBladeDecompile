@@ -1,7 +1,7 @@
 {
  "func": "func_80057CC8",
  "file": "text1b",
- "session_count": 6,
+ "session_count": 7,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -45,23 +45,29 @@
    "floor": 3,
    "modality": "forensics",
    "headline": "sched1 hoists ang_prev&=0xFFF past p2 addu; pseudo 86 (shared p) then conflicts with v0 and copy-prefers v1 via local-alloc'd offset pseudo 129 at insn 124."
+  },
+  {
+   "session": 7,
+   "floor": 3,
+   "modality": "forensics",
+   "headline": "s7 forensics: pseudo 86 is /v-marked DECL_RTL of C-source `p`; both p1 and p2 SETs share pseudo 86; global-alloc's pref-3 comes only from pseudo 129's v1 (not v0/a2/a0); ang_prev-consumer axis downgra"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A legitimate downstream use of ang_prev between call1 and the p2 compute would create a real dependency that prevents sched1 from hoisting insn 115 past insn 124, dropping v0's overlap with pseudo 86 and eliminating the 86-vs-2 conflict.",
-   "mechanism": "sched.c list-scheduling respects true dependencies; if ang_prev is consumed (or its computation is source-order-adjacent to a fenced compute) before insn 124, the hoist cannot happen. Without the conflict, pseudo 86's preference-3 is still present but 2 becomes viable \u2014 a second lever would then be needed to redirect the preference.",
-   "next_probe": "Enumerate legitimate C forms where ang_prev is used between call1 and the p2 compute WITHOUT introducing a dead-store / self-assign / dead-load coercion. Candidates: (a) an unavoidable common subexpression across ang_prev and the p2 chain (none apparent \u2014 p2 uses next_idx and table, not ang_prev); (b) a genuine algorithm change that reads ang_prev early. Analytical review suggests NO natural C form fits \u2014 the algorithm has no early consumer for ang_prev. If confirmed dead, this axis KILLED and the mechanism becomes owner-gated (target's C form necessarily splits the pseudo, and every non-cheat splitting mechanism is exhausted). Structural or ruling-request modality."
+   "hypothesis": "Inline-expression form for p in both call sites (no local `p` binding, expression written directly in call arg) generates two distinct RTL pseudos, and would land p1's dest in v0.",
+   "mechanism": "expand computes a fresh anonymous SI pseudo for each `((s16*)(offset+table))[N]` in a call arg, since there is no DECL_RTL of p to unify them. CSE MIGHT re-unify them into one pseudo, or MIGHT leave them separate since prev_idx vs next_idx differ. If separate, p1 addu emits `addu $newpseudo_p1, ...` where $newpseudo_p1 is local-alloc-eligible (single-BB single-def) and can land in v0.",
+   "next_probe": "Structural modality (next session). Rewrite ang_prev/ang_next call sites to use inline expressions with no bound `p` local. Confirm rtl-dump pseudo count differs from current (should show 2+ new /v-less pseudos where 86 is today). Sandbox. If score-0 close: layer-1 cheat-reviewer + layer-2 fresh cheat-reviewer for the cheat-by-any-spelling test \u2014 this form has no auxiliary local-holder variable, so it may distinguish from the rejected alias-holder class."
   },
   {
-   "hypothesis": "Disturbing local-alloc's placement of pseudo 129 (the p2 shifted offset) so it lands in a hard reg other than v1 would drop pseudo 86's copy-preference bias for v1.",
-   "mechanism": "local-alloc walks pseudos in a BB, picking the first free caller-save; pseudo 129's placement depends on which regs are live at insn 118-124. If a preceding C construct increases register pressure in the window so that v1 is unavailable when local-alloc processes 129, 129 lands in a different hard reg and 86's copy-preference for 3 disappears.",
-   "next_probe": "Read the flow-live range table for the [118, 124] window (extract from func_lreg / func_flow). Enumerate hard regs that pseudo 129 could land in. Identify a C-side lever that increases pressure at that specific point without adding dead code (candidates: earlier hoist of the mult scale computation to move pseudo 168's LO/HI setup earlier \u2014 but that's an integer multiply, may not affect the GP window; or a genuine earlier use of arg0[2] to force the scale hard reg live). Forensic + structural mixed modality; measure via sandbox after C form landed."
+   "hypothesis": "Global.c's `expand_preferences` propagation for a PLUS SET picks up exactly ONE of the two operand hard regs into the dest's copy-prefs, following a specific first-src / dead-src heuristic that a directed C-source spelling can toggle.",
+   "mechanism": "The greg data shows 86 pref is {3} only, coming from 129 (src1 of p2's addu at insn 124). Neither 130's a0 nor either p1 operand appears. Reading gcc-2.7.2/global.c will name the specific propagation code; a source-side lever (e.g. swapping which side of `+` holds the shifted offset vs the table pointer, or nudging pseudo lifetime so 130 has the propagated slot) may redirect the copy-pref away from v1.",
+   "next_probe": "Forensic + structural mixed. Read tools/gcc-2.7.2/global.c expand_preferences implementation. Draft variant PLUS orderings (e.g. `(s32)table + <offset>` for p2 only) and measure whether 86's pref list changes in greg. If pref-3 disappears in favor of pref-4 (a0), 86 could still land in v1 (via conflict avoidance) but with no positive bias \u2014 a second lever might then move it to v0."
   },
   {
-   "hypothesis": "FAKE-annotated duplicated-statement-into-arms for the p1 pointer add (frontier item unchanged from s4/s5).",
+   "hypothesis": "FAKE-annotated duplicated-statement-into-arms for the p1 pointer add (frontier item unchanged from s4/s5/s6).",
    "mechanism": "Per [[duplicated-statement-into-arms]]: cross-jump find_cross_jump re-merges the byte-neutral duplication into identical bytes at codegen, but the SOURCE-level duplication doubles pseudo 86's reg_n_refs count in global.c's priority calc, shifting the RA priority ordering and potentially the preference bias. Concrete probe would duplicate the p1 pointer add inside both arms of the prev_idx if-reload.",
-   "next_probe": "Structural modality (NOT this forensics session). Draft the duplicated-arms form; verify byte-neutrality via objdump against candidate.c; sandbox; if floor drops with byte-neutral duplication and arms merge identically post-cross-jump, invoke layer-1 cheat-reviewer + layer-2 for FAKE-annotation policy compliance."
+   "next_probe": "Structural modality (NOT forensics). Draft the duplicated-arms form; verify byte-neutrality via objdump against candidate.c; sandbox; if floor drops with byte-neutral duplication and arms merge identically post-cross-jump, invoke layer-1 cheat-reviewer + layer-2 for FAKE-annotation policy compliance."
   }
  ],
  "judge_constraints": [],
