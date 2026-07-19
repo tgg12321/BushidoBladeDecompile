@@ -384,3 +384,13 @@ Per user 2026-06-22: keep working it; not permanently parked.
 - [s18] [s18] docs/grind/decisions.md contains no OWNER-ESCALATION entry for func_80057CC8. Only entry is the 2026-07-19 17:09 Judge FAIL ruling on the two-variable form. owner-gated is NOT authorized this session per contract.
 
 - [s18] [s18] Frontier unchanged from s17: F5 corner (double-swap p1 AND p2 to table+offset) remains the last un-measured sanctioned cell (STRUCTURAL modality — not this rederive session's mandate).
+
+- [s19] s19 synthesis is analytical only (matches s10 precedent) — candidate.c floor-3 baseline unchanged; kill-count remains 28 across s1-s18.
+
+- [s19] The 2x2 operand-order matrix from s8 has 3 of 4 cells measured (offset+table both = 3 baseline; p1 swap alone = 3; p2 swap alone = 9). The F5 corner cell (double-swap: p1 = table+offset AND p2 = table+offset) is the ONE un-measured cell. Expected: regression to 9 by s8's finding that p2 operand order controls late reassociation reach.
+
+- [s19] docs/grind/decisions.md contains the 2026-07-19 17:09 Judge FAIL ruling on the two-variable form for func_80057CC8. It is NOT an OWNER-ESCALATION entry with pending owner disposition. Therefore owner-gated is NOT authorized this session per contract.
+
+- [s19] Local-alloc block_alloc forensics is un-attempted since s7 first named 'multi-def-in-BB' as the reason local-alloc skips pseudo 86 — the exact bail-out condition (scoring-heuristic vs unconditional-semantic) is unread, and would gate whether a C-source form exists that presents 86's def-use chain as local-alloc-eligible without introducing a second C local.
+
+- [s19] OWNER-ESCALATION precedents in this repo (hirahira_w_frie 2026-07-17, motion_SetMotion 2026-07-18, func_80045294 2026-07-19, cpu_side_move_dir_4 2026-07-19) all filed after full sanctioned-axis exhaustion with the same escalation format: options honestly presented, agent does not self-resolve, owner rules in decisions.md.
