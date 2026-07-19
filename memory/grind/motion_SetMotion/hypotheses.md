@@ -395,3 +395,9 @@
 - probe: Verified the rejected bank on disk (9 forms including structural-13pair-axis-closed.c, s3-structural-sweep-goto-reorder-thunk-splitinit-hoist-dead.c, s3b-dupcase-ternary-u32-preswitch-if-dead.c) and the evidence.md axis-kill entries s2/s3/s3b/s10.
 - result: Structural axis measured dead; the closure theorem carries nine independent confirmations including two BB2_XJUMP_DEBUG white-box traces (s6, s7); no honest structural spelling remains unmeasured.
 - verdict: CONFIRMED
+
+## [s39] An unmeasured structural spelling class for the 13-pair wall exists outside the banked r1-r13 sweep, making structural work still grindable this session.
+- mechanism: The structural catalog (block-local splits, declaration order, type narrowing, re-association, case duplication/reorder, goto-sharing, cond-expr, pre-switch extraction) would have to contain a spelling that survives to jump2 unmerged byte-neutrally.
+- probe: Re-read memory/grind/motion_SetMotion/hypotheses.md and docs/grind/decisions.md:755-776 first-hand this session; cross-checked every structural family in the codegen-technique-index against the banked KILLED set and the binding Judge constraints.
+- result: No unmeasured class exists: r1-r13 cover the full catalog and are all KILLED (merged 361-insn canonical shape or real byte cost, e.g. r13 +6 insns); the sanctioned split-init family is specifically measured dead (cse folds before jump2); the closure theorem (any byte-matching compile forces both 13-sites to [set13; j] with adjacent CODE_LABEL, merge guaranteed, USE/CLOBBER the only byte-free breaker) holds with eight independent confirmations including the s6 BB2_XJUMP_DEBUG pass-level trace. The sole remaining lever is the union-CLOBBER family, forbidden by binding Judge constraints pending the owner ruling.
+- verdict: KILLED

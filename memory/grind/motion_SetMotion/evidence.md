@@ -478,3 +478,11 @@ as separate li's near the dispatch (only case-10's 13 at a bne delay)
 - [s38] git status clean on src/ and regfix.txt: no edits made this session; the committed byte-correct form and regfix.txt:2190 stay untouched on main per the 17:34 Judge disposition item (3).
 
 - [s38] Structural axis dead per ledger without re-measurement: r1-r13 KILLED (s2/s3/s3b), F1 sched2-slack non-transplantable (zero byte-room at the 13-sites), label-bonus undodgeable in any honest chassis (s6 r13 trace); the only remaining C-reachable byte-free breaker is the Judge-banned USE/CLOBBER manufacture family.
+
+- [s39] OWNER-ESCALATION for motion_SetMotion verified on file at docs/grind/decisions.md:761-776 (dated 2026-07-18, filed by grind s7 per the 2026-07-17 17:34 Judge disposition, marked 'awaiting owner ruling — do not self-resolve'); it is the FINAL entry in the file — no owner ruling follows it as of s39 (2026-07-18).
+
+- [s39] Structural axis dead on the ledger: hypotheses.md banks r1-r13 all KILLED across s2/s3/s3b (re-association, branch-sense swap, s16 and unsigned narrowing, const split, goto-share, case reorder, jump-thunk, split-init, hoist, duplicate-case, cond-expr, pre-switch if-extraction) — every spelling canonicalizes to the merged shape before jump2 or pays real bytes.
+
+- [s39] Judge constraints bind: no USE/CLOBBER-manufacture spelling of any kind may be committed; regfix.txt:2190 and the committed byte-correct form stay untouched on main pending the owner ruling; both frontier items are owner acts (sanction family (a) vs refuse family (b)), not grindable work.
+
+- [s39] Floor unchanged at 10 (honest pure-C distance 1 = the single li 13 word protected by the last rule); candidate.c retained in memory/grind/motion_SetMotion/ as the best banked form.
