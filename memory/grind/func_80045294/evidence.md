@@ -610,3 +610,17 @@
 - [s38] [s38] 27 rejected forms now banked (was 25 at s37): two new no-purchase structural surfaces added. Consistent with the s1-s37 exhaustion synthesis + s30 formal free-axis closure; no C-source structural axis reached by hand-derivation shifts the sll/move16 sched2 tie.
 
 - [s38] [s38] OWNER-ESCALATION entry for func_80045294 STILL not present in docs/grind/decisions.md (grep confirmed only hirahira_w_frie 2026-07-17 and motion_SetMotion 2026-07-18 escalations exist). Contract precondition (a) for owner-gated remains unmet; structural session cannot file the escalation (owner-authored artifact class per hirahira_w_frie precedent). Ledger-frontier next-move remains valid: the escalation-drafting session is the sanctioned next step, then owner-gated becomes emittable.
+
+- [s39] s39 baseline pre + post: sandbox --disable all -> score=2, target_insns=83, build_insns=83, rules_dropped=0, cheat_asm_stripped=78. src/text1a_c.c reverted to baseline candidate after all four probe measurements; working tree clean at end of session.
+
+- [s39] s39 P1 (u32 a0 signature): score=2, byte-identical to baseline. Signature-level parameter-type variation on a0 alone is codegen-invisible. Extends s5 (operand-side type) and s12 (destination-decl-side type) signedness-agnostic findings to the PARAM-SIGNATURE surface previously un-enumerated.
+
+- [s39] s39 P2 (u32 a0 + u32 a1 signature): score=2, byte-identical. Composite signature axis also neutral. addu is signedness-agnostic in expand; a1's DECL type does not ripple through s5's addu path.
+
+- [s39] s39 P3 (u32 base-cast on s4 init): score=2, byte-identical. GCC 2.7.2 fold reduces (u8*)&Sym+v1 and (u32)&Sym+v1 to the same (plus (symbol_ref) (reg:SI)) tree at expand time; TYPE_UNSIGNED distinction is discarded before tree_LUID assignment.
+
+- [s39] s39 P4 (split-init s5 a1-first): score=3, +1 diff. Both operand-orders of s5 split-init are killed forms (s3 s4-first score=11 via cascade; s39 a1-first score=3 via single addu operand-order swap). Confirms s3's kill mechanism and independently corroborates s2's addu operand-order asymmetry.
+
+- [s39] Consistent with s6/s7/s15/s16 pass-level walls: no signature-surface or address-arithmetic surface variation reaches the LUID axis. All three neutral kills route through expand-time fold that discards TYPE_UNSIGNED before tree_LUID is assigned; the split-init kill routes through the s6 local/global pool split with no coalescer.
+
+- [s39] 30-form rejected bank (27 pre-s39 + 3 new: param-u32-a0.c, addr-cast-u32-base.c, split-init-s5-a1-first.c). candidate.c unchanged (still the s3 baseline body).

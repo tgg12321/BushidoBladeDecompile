@@ -646,3 +646,27 @@
 - probe: Edited src/text1a_c.c to `register s32 v1 = a0 << 4;`; other decls unchanged. Ran sandbox --disable all.
 - result: score=2, target_insns=83, build_insns=83, rules_dropped=0. NEUTRAL. `register` without asm binding is purely advisory in GCC 2.7.2; RA decisions unchanged from baseline. Rejected form banked at memory/grind/func_80045294/rejected/register-storage-class-v1.c.
 - verdict: KILLED
+
+## [s39] Changing the a0 parameter signature from s32 to u32 shifts the sll/move16 sched2 tie by re-typing pseudo 72's DECL_MODE.
+- mechanism: Hypothesis: PARAM-signature-level sign vs unsigned might route through a different expand_shift path than operand-side or destination-decl-side casts (already killed at s5 and s12). If TYPE_UNSIGNED on the DECL propagates to the ashift RTX's mode, downstream cse/global might behave differently.
+- probe: Edited src/text1a_c.c signature from `void func_80045294(s32 a0, s32 a1)` to `void func_80045294(u32 a0, s32 a1)`; body unchanged. Ran sandbox --disable all.
+- result: score=2, target_insns=83, build_insns=83 -- byte-identical to baseline candidate.c. GCC 2.7.2 expand_shift normalises constant power-of-2 shifts to (ashift SI) regardless of param signedness; DECL_MODE stays SI on the arg pseudo.
+- verdict: KILLED
+
+## [s39] Changing BOTH a0 and a1 to u32 (rather than just a0) shifts the tie.
+- mechanism: Composite param-signature axis; a1's type could ripple through s5's addu path.
+- probe: Edited signature to `void func_80045294(u32 a0, u32 a1)`. Sandbox --disable all.
+- result: score=2, 83/83 -- byte-identical to baseline. addu is signedness-agnostic in expand.
+- verdict: KILLED
+
+## [s39] Casting the address base as `(u32)&D_800EED14` (integer arithmetic) instead of `(u8 *)&D_800EED14` (pointer arithmetic) shifts s4's initializer LUID.
+- mechanism: Different declared type at the addr-base surface could route through a distinct expand-addr path (PLUS on integer vs pointer). Un-tested by s1-s38 (which varied operand-side + destination-decl-side + arithmetic-tree shape but not the addr-base cast).
+- probe: Edited s4's init to `s32 s4 = *(s32 *)((u32)&D_800EED14 + v1)`. Sandbox --disable all.
+- result: score=2, 83/83 -- byte-identical to baseline. GCC fold reduces both spellings to the same (plus (symbol_ref) (reg:SI)) tree before tree_LUID is assigned.
+- verdict: KILLED
+
+## [s39] Split-init on s5 seeded with a1 (mirror of s3's a4-seed split-init) is a lever for the tie.
+- mechanism: s3 killed `s32 s5 = s4; s5 += a1;` (seed s4, +1 copy displaces $21 addu). The mirror seed (a1) has not been tested; addu operand-order asymmetry (s2) suggests seed=a1 might land the operand-order differently.
+- probe: Edited s5 init to `s32 s5 = a1; s5 += s4;`. Sandbox --disable all.
+- result: score=3, 83/83 -- +1 diff versus baseline. Split-init on s5 is HARMFUL in both operand-order variants; a1-seed adds one addu-operand-order diff on top of the s3 s4-seed kill.
+- verdict: KILLED

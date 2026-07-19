@@ -1,7 +1,7 @@
 {
  "func": "func_80045294",
  "file": "text1a_c",
- "session_count": 38,
+ "session_count": 39,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -231,17 +231,23 @@
    "floor": 2,
    "modality": "structural",
    "headline": "s38 structural: two new axes measured KILLED (outer-block-wrap + register-storage-class-v1); 27 rejected forms banked; owner-escalation still not filed so owner-gated remains inemittable"
+  },
+  {
+   "session": 39,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "s39 structural: three new signature/addressing-surface axes measured NEUTRAL (u32 a0, u32 a0+a1, u32 base-cast) + split-init s5 a1-first measured HARMFUL; 30-form rejected bank; floor unchanged at 2."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The next session's sanctioned move remains drafting the OWNER-ESCALATION entry in docs/grind/decisions.md (unchanged from s29+ frontier). s38's two new NEUTRAL structural probes further harden the exhaustion evidence bundle without producing a lever.",
-   "mechanism": "Contract precondition (a) requires the escalation entry to exist. A structural session cannot file that entry (owner-authored). Grinder driver picks the next modality; the escalation should be filed whenever a modality permits it, citing: six pass-level walls (EXPAND->combine->cse->local/global_alloc->sched1+sched2) + 27-form rejected bank + ~137,752-iter permuter across 9 chassis/mode combinations + 14 rederive sub-axes + s30 formal free-axis closure + s38 outer-block-wrap + register-storage-class-v1 NEUTRAL kills.",
-   "next_probe": "Draft docs/grind/decisions.md OWNER-ESCALATION entry with title 'func_80045294 (saTan0Init) -- pure-C floor=2 sched2 sll/move16 tie'; body summarizes the six walls + evidence bank + rejected-forms count (27) + permuter iters/chassis counts + rederive sub-axis kill table + structural closure incl. s38 additions; asks the owner to rule between (i) canonical-asm authorization for the 2-insn prologue reorder and (ii) an owner-directed pure-C form hand-derivation cannot reach."
+   "hypothesis": "The sanctioned next move remains drafting the OWNER-ESCALATION entry in docs/grind/decisions.md (unchanged from s29+ frontier). s39's three additional signature/addressing-surface NEUTRAL kills + one split-init HARMFUL kill further harden the exhaustion evidence bundle without producing a lever.",
+   "mechanism": "Contract precondition (a) requires the escalation entry to exist. A structural session cannot file that entry (owner-authored). Grinder driver picks the next modality; the escalation should be filed whenever a modality permits it, citing: six pass-level walls (EXPAND->combine->cse->local/global_alloc->sched1+sched2) + 30-form rejected bank + ~137,752-iter permuter across 9 chassis/mode combinations + 14 rederive sub-axes + s30 formal free-axis closure + s38 outer-block-wrap + register-storage-class-v1 NEUTRAL kills + s39 param-signature + addr-base-cast + split-init-s5-a1-first NEUTRAL/HARMFUL kills.",
+   "next_probe": "Draft docs/grind/decisions.md OWNER-ESCALATION entry with title 'func_80045294 (saTan0Init) -- pure-C floor=2 sched2 sll/move16 tie'; body summarises the six walls + evidence bank + rejected-forms count (30) + permuter iters/chassis counts + rederive sub-axis kill table + structural closure incl. s38 and s39 additions; asks the owner to rule between (i) canonical-asm authorization for the 2-insn prologue reorder and (ii) an owner-directed pure-C form hand-derivation cannot reach."
   },
   {
-   "hypothesis": "Supplementary rare-fingerprint evidence (block-0-only k=3 s35 max 0.122, tail-block k=3 s36 max 0.156 collapsing to 0.056 at k=4, whole-function k=5 s36 max 0.095, all narrowed corpus searches produce peaks below the s9-established 0.15 similarity threshold) feeds the escalation writeup as supplementary structural rarity evidence.",
-   "mechanism": "If the shape were common in the local corpus, at least one narrowed search would surface a hit above 0.15. That none do implies either the original C source used unusual initializer/dispatch clustering that no other decomper has reconstructed, or the shape reflects hand-written asm that no C-source lowering reproduces locally. (Unchanged from s37 frontier.)",
+   "hypothesis": "Supplementary rare-fingerprint evidence (block-0-only k=3 s35 max 0.122, tail-block k=3 s36 max 0.156 collapsing to 0.056 at k=4, whole-function k=5 s36 max 0.095) feeds the escalation writeup as supplementary structural rarity evidence.",
+   "mechanism": "If the shape were common in the local corpus, at least one narrowed search would surface a hit above 0.15. That none do implies either the original C source used unusual initializer/dispatch clustering that no other decomper has reconstructed, or the shape reflects hand-written asm that no C-source lowering reproduces locally. (Unchanged from s37/s38 frontier.)",
    "next_probe": "Not directly actionable within grinder modalities. Include in the escalation writeup as a supplementary bullet under 'why hand-derivation and cross-project transplant both fail'."
   }
  ],
