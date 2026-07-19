@@ -438,7 +438,13 @@ while ($true) {
             Invoke-Eng @('queue', 'park', $func, '--reason', $reason) | Out-Null
             Log "${func}: OWNER-GATED — parked pending owner ruling ($([string]$o.escalation_ref))."
             Journal "$func s$sessionN [$modality] OWNER-GATED — parked pending owner ruling: $($o.headline)"
-            git -C $Root add -- memory/grind docs/grind metrics/events.jsonl 2>$null
+            # engine/queue.json is where `queue park` wrote the parked status — it
+            # MUST be staged, or the park stays as working-tree dirt and the next
+            # session's scope check (engine/ is not in AllowedDirtyPattern) reverts
+            # it via `git checkout -- .`, un-parking the function and bouncing it
+            # straight back to the queue top forever (2026-07-18: ~40 sessions
+            # burned re-parking motion_SetMotion; see grinder-park-queue-dirt-deadlock).
+            git -C $Root add -- memory/grind docs/grind metrics/events.jsonl engine/queue.json 2>$null
             git -C $Root commit -m "grind: $func parked owner-gated pending ruling [skip-park-src-guard]" 2>$null | Out-Null
         }
         default {
