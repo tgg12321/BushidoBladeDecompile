@@ -263,3 +263,27 @@
 - probe: Cloned s13/perm -> s14/perm. Replaced s13's PERM_GENERAL over (prev_idx if-reload, ang_mid ternary, *arg2 write-order) with 4-alt PERM_GENERAL on p1 shift, 4-alt PERM_GENERAL on p2 shift, 3-alt PERM_GENERAL on p2 table source. Launched `permuter_campaign.py launch --func func_80057CC8 --label s14-p1p2-shift-and-table-source -j 6 --stop-on-zero`, pid 410, base_score=15.
 - result: score-0 found at iter 19 / 40.1s. Form: `s16 *new_var2 = (s16 *)((((s32)((s16)prev_idx))<<2) + (s32)table); p = new_var2;` for the p1 SET. This is a p1-side pointer-alias holder — same cheat class as s5 rejected/permuter-s16-new_var2-p1-alias.c (character-for-character equivalent under Judge s10 binding constraint's `no shared-pointer split into two source-level locals under any spelling, incl. numeric suffix`). Saved to memory/grind/func_80057CC8/rejected/permuter-s14-p1-shift-cast-alias.c.
 - verdict: KILLED
+
+## [s15] The ';; 86 preferences: 3' line in the greg dump reflects hard_reg_preferences[86], not hard_reg_copy_preferences[86]. dump_conflicts in global.c:1741-1745 iterates hard_reg_preferences[i] when emitting that line.
+- mechanism: Read tools/gcc-2.7.2/global.c dump_conflicts: the ';; N preferences:' line iterates TEST_HARD_REG_BIT(hard_reg_preferences[i], j). hard_reg_copy_preferences is a distinct array populated only by set_preference(copy=1) and expand_preferences.
+- probe: Read tools/gcc-2.7.2/global.c dump_conflicts (line 1702-1748). Cross-checked expand_preferences (line 798-841) and set_preference (line 1591-1675).
+- result: CONFIRMED. The greg dump line reports hard_reg_preferences, not hard_reg_copy_preferences. Ledger s6/s7 phrasing 'copy-preference = {3}' is imprecise — it is hard_reg_preferences {3}. Refines s6/s7 mechanism attribution.
+- verdict: CONFIRMED
+
+## [s15] hard_reg_preferences[86] is populated by set_preference on BOTH insns 89 and 124 with the FIRST operand of each PLUS SET_SRC. Post-population it is {v0, v1}; the greg dump shows {v1} only because prune_preferences removes v0 due to 86's v0 conflict.
+- mechanism: set_preference (global.c:1591) is called from mark_reg_store on every SET during global_conflicts. When SET_SRC is an expression (GET_RTX_FORMAT[0]=='e'), it walks src = XEXP(src, 0) — the FIRST operand — and sets copy=0. For insn 89 (plus 112 88), src=reg112, reg_renumber[112]=v0 → hard_reg_preferences[86] |= {v0}. For insn 124 (plus 129 130), src=reg129, reg_renumber[129]=v1 → hard_reg_preferences[86] |= {v1}. prune_preferences (global.c:851) then ANDs out hard_reg_conflicts, and 86 conflicts with v0 (from s6/s7 sched1 insn-115 hoist), so v0 is removed. Post-prune: {v1}.
+- probe: Traced set_preference logic. Read RTL for insns 89, 124 in tmp/grind/func_80057CC8/s15/func_lreg (lines 427-432, 513-518). Verified reg_renumber via post-alloc greg dispositions: 112 in 2, 88 in 6, 129 in 3, 130 in 4 (tmp/grind/func_80057CC8/s15/func_greg lines 29-40). Read prune_preferences (global.c:851-877) and dump_conflicts ordering (global_alloc calls prune_preferences BEFORE dump_conflicts).
+- result: CONFIRMED. Both v0 and v1 propagate; v0 is pruned by the sched1-induced 86-vs-v0 conflict, leaving {v1} in the dump. The pref set is NOT intrinsically {v1}.
+- verdict: CONFIRMED
+
+## [s15] s7's downgrade of the 'consumer-of-ang_prev-early / eliminate insn-115 hoist' axis to necessary-but-NOT-sufficient is mechanism-wrong. Eliminating the sched1 hoist of insn 115 (removing the v0 conflict) IS sufficient to steer 86 to v0.
+- mechanism: s7 wrote: 'even without the hoist, pseudo 86's pref {3} still steers away from v0.' That assumed pref {3} was intrinsic. Per hypothesis 2, pref {3} is post-prune; the pre-prune set is {v0, v1}. Removing the v0 conflict restores hard_reg_preferences[86] to {v0, v1}. find_reg (global.c:921-1140) selects best_reg by iterating reg_alloc_order (MIPS: v0=2 before v1=3 among caller-saves) and then confirms against the pref set. With v0 in the pref set and not in the conflict set, find_reg picks v0. Target's p1=v0 is reachable IF a legitimate pure-C form suppresses sched1's hoist of insn 115 (and $v0, $v0, 0xFFF finalizing ang_prev).
+- probe: Read find_reg (global.c:921-1140) two-pass structure. Confirmed reg_alloc_order (MIPS caller-save order: 2,3,4,5,6,7,8,9,10,11,...). Cross-checked hard_reg_copy_preferences[86]: empty (no reg-reg SET involves 86; both defs are PLUS SETs); expand_preferences never fires for 86.
+- result: CONFIRMED (analytical). The 'insn-115 hoist elimination' axis is RE-OPENED as a live frontier item, subject to finding a legitimate pure-C form that defers or suppresses the mask hoist without cheat coercion.
+- verdict: CONFIRMED
+
+## [s15] hard_reg_copy_preferences[86] is empty (neither set_preference nor expand_preferences ever populates it for pseudo 86).
+- mechanism: set_preference sets hard_reg_copy_preferences only when copy=1, which happens only when SET_SRC is a bare REG (not an expression). Both defs of 86 (insn 89, insn 124) have PLUS SET_SRC. expand_preferences gates on `XEXP(link, 0) == SET_SRC(set)` — again requires a bare REG SET_SRC. Neither fires for 86.
+- probe: Read set_preference (line 1601-1602 sets copy=0 for expression sources). Read expand_preferences (line 824 gates on XEXP(link,0) == SET_SRC(set)). Traced 86's def-use: no REG-REG SET where 86 is dest OR source.
+- result: CONFIRMED. 86's copy_prefs empty. find_reg falls through to general hard_reg_preferences after skipping the copy-pref restriction (line 1057-1091).
+- verdict: CONFIRMED

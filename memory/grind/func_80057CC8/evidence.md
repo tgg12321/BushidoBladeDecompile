@@ -314,3 +314,21 @@ Per user 2026-06-22: keep working it; not permanently parked.
 - [s14] The mechanism-level reason is single-pseudo (from s7): pseudo 86 = DECL_RTL(p) is /v-marked and receives both p1 (insn 89) and p2 (insn 124) SETs. Its {3} preference originates from pseudo 129 (v1) at insn 124's addsi3 SET, and v0 is in its conflict set from sched1's insn-115 hoist. No spelling change to the p1 shift/mask, no cached-vs-reload swap on p2's table source, alters that copy-pref origin or the v0 conflict, because both depend on pseudo 129's local-alloc placement (unchanged by the surface-level respellings) and on sched1's hoist (unchanged by respelling anything before insn 115).
 
 - [s14] Permuter modality is now KILLED across FOUR structurally distinct directed chassis. All prior directed chassis (s5-1, s5-2, s13, s14) plus the undirected s4 have converged on the pointer-alias-holder cheat family; no permuter axis is now proposed as un-tried without a rederive-level structural change that itself would have to clear the Judge constraint independently.
+
+- [s15] Baseline: candidate.c applied to src/text1b.c line 11837 (s3 pin removed, offset+table reassoc). sandbox --disable all = 3; target_insns=111; build_insns=111; rules_dropped=7; cheat_asm_stripped=395.
+
+- [s15] greg dump: ';; 86 conflicts: 72 74 75 77 84 86 87 2 4 16 17 29' includes hard reg 2 (v0). ';; 86 preferences: 3' includes only hard reg 3 (v1).
+
+- [s15] greg dispositions: 86 in 3 (v1); 112 in 2 (v0); 88 in 6 (a2); 129 in 3 (v1); 130 in 4 (a0). Verified insn 89 rendered as (set (reg v1) (plus (reg v0) (reg a2))) and insn 124 as (set (reg v1) (plus (reg v1) (reg a0))) post-alloc.
+
+- [s15] set_preference (global.c:1591): GET_RTX_FORMAT(GET_CODE(src))[0]=='e' branch walks src = XEXP(src, 0) and sets copy=0. Only hard_reg_preferences (not hard_reg_copy_preferences) receives the bit.
+
+- [s15] dump_conflicts (global.c:1702-1748): the ';; N preferences:' line reports hard_reg_preferences[i], NOT hard_reg_copy_preferences[i]. s6/s7 phrasing 'copy-preference' was imprecise.
+
+- [s15] global_alloc call order (global.c:504-551): global_conflicts -> AND_COMPL with eliminable_regset -> expand_preferences -> allocno_order sort -> prune_preferences -> dump_conflicts. Dump reflects post-prune state.
+
+- [s15] find_reg (global.c:921-1140): pass-0 selects best_reg by iterating reg_alloc_order excluding `used` (which includes hard_reg_conflicts + regs_someone_prefers). Then checks hard_reg_copy_preferences first, then hard_reg_preferences, keeping best_reg if it matches or upgrading if a preferred reg in same class exists.
+
+- [s15] MIPS reg_alloc_order: v0 (2) precedes v1 (3) among caller-save GPRs. Confirms that if both v0 and v1 are in 86's post-prune pref set, find_reg picks v0.
+
+- [s15] hard_reg_copy_preferences[86] is empty: neither insn 89 nor 124 has a bare-REG SET_SRC; expand_preferences never fires for 86; set_preference's copy=1 branch never fires for 86.
