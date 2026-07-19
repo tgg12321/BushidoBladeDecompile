@@ -359,3 +359,19 @@
 - [s23] [s23] Artifacts: tmp/grind/func_80045294/s23/perm_h1/{base.c, compile.sh, settings.toml, empty_*, target.o, campaign.log, campaign_meta.json, output-{60-1,60-2,60-3,61-1,69-1,79-1,79-2}/}. Summary at tmp/grind/func_80045294/s23/campaign_summary.md.
 
 - [s23] [s23] candidate.c unchanged (in-src form remains the s3 baseline shape; H1 was tested as a permuter chassis seed, not as an in-src edit). No new rejected forms banked (the H1 body is already banked at rejected/i-before-v1-init.c since s1; the permuter finds at scores 79/69/61/60 are equivalent-basin variants of already-banked shapes, per the s13 novel-find analysis pattern).
+
+- [s24] [s24] Baseline reconfirmed: & tools/wteng.ps1 main sandbox func_80045294 --disable all -> score=2, target_insns=83, build_insns=83, rules_dropped=0, cheat_asm_stripped=78. Working tree clean; no src edits this session.
+
+- [s24] [s24] Novel forensic surface banked (new to the s1-s23 ledger): local-alloc.c pass output (base.i.lreg) directly shows the two-pool split. Baseline (v1-before-i) has no block-0-scoped anon pseudo for the shift — pseudo 75 (v1) is multi-block (11 uses / 17 insns) and goes to global_alloc; no local claim exists for the shift's destination.
+
+- [s24] [s24] cse-fold-anon-shift.c lreg shows pseudo 76 tagged '2 uses / 2 insns in block 0' → local_alloc emits `;; Register 76 in 2.` (hard reg $v0). Pseudo 81 (declared v1) is un-tagged, 11 uses / 16 insns, goes to global_alloc which picks $v1 ($3). Two distinct hard regs across the pool boundary → (set 81 76) at insn 29 cannot fold to a self-move; the +1-copy penalty s6 named is generated exactly at this pass boundary.
+
+- [s24] [s24] Named GCC pass and decision at the divergence for the two-tree branch: flow.c live-range analysis classifies pseudo 76 as block-0-local; local-alloc.c claims a hard reg for it before global-alloc.c runs; global-alloc.c has no coalescer to merge across the pool boundary. The absent GCC 2.7.2 pass is a register coalescer (first added in GCC 3.x).
+
+- [s24] [s24] All four pass-level walls now have direct pass-output citations: (i) s6 local/global pool split via local-alloc.c — NOW DIRECTLY BANKED at lreg; (ii) s7 cse.c BB-scoped substitution — banked at s7 base.i.cse insn 17 operand rewrite; (iii) s15/s16 sched1+sched2 LUID coupling — banked at base.i.sched + base.i.sched2 ready-list dumps; (iv) s10/s11 no pure-C CFG-splitter defeats cse's BB view — banked at score measurements + pass-source cite.
+
+- [s24] [s24] docs/grind/decisions.md has NO OWNER-ESCALATION entry for func_80045294 (grep confirms zero hits at 811-line file). Per contract, `owner-gated` is not emittable this session; the required draft entry is next session's mandated modality per the s22/s23 frontier and the ledger consensus.
+
+- [s24] [s24] candidate.c unchanged (in-src form remains the s3 baseline shape). No new rejected forms banked this session (no new src edits measured; the two lreg slices come from prior s3/s6 dump artifacts).
+
+- [s24] [s24] Artifacts: tmp/grind/func_80045294/s24/forensics_lreg_pool_split.md + baseline_lreg_slice.txt + csefold_lreg_slice.txt.
