@@ -1,7 +1,7 @@
 {
  "func": "func_80057CC8",
  "file": "text1b",
- "session_count": 4,
+ "session_count": 5,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -33,23 +33,29 @@
    "floor": 3,
    "modality": "permuter",
    "headline": "s4 permuter: score-0 close found is `long new_var2 = <p1 expr>; p=(s16*)new_var2;` \u2014 same cheat class as rejected block-scope-alias-p1; frontier item 'directed permuter finds a novel legitimate lever'"
+  },
+  {
+   "session": 5,
+   "floor": 3,
+   "modality": "permuter",
+   "headline": "s5 permuter (directed): 261 iters across 2 chassis, both close-forms are s16*/long alias holders (same cheat class as rejected block-scope-alias-p1); directed-permuter frontier item KILLED \u2014 no legiti"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "cc1 -da greg dump from candidate baseline names the pseudo, its conflicts, and joined-pseudos for the p1 addu dest \u2014 revealing the copy-pref that biases toward v1.",
-   "mechanism": "Per [[register-alloc-pure-c]] Step-0 anomaly diagnosis and [[hoist-shared-arm-computation-defeats-copy-pref]]: expand_preferences.c biases dest via reg_n_refs / joined-pseudos. Reading the greg dump directly IDs the biasing pseudo.",
-   "next_probe": "cpp -E ... src/text1b.c > tmp/grind/func_80057CC8/s5/base.i; run cc1 -da (BB2_ALLOC_DEBUG) via tools/gccdbg/cc1 to produce text1b.c.greg; identify pseudo for p1 addu dest and its `;; Register dispositions:` + conflict list + joined-pseudos entries. Cross-reference the shifted-offset source pseudo. Compare vs the p2 addu (which coalesces correctly) to isolate the discriminator."
+   "hypothesis": "cc1 -da greg dump from candidate baseline names the pseudo, its conflicts, and joined-pseudos for the p1 addu dest -- revealing the copy-pref that biases toward v1 (instead of coalescing into v0 like the p2 addu does).",
+   "mechanism": "Per [[register-alloc-pure-c]] Step-0 anomaly diagnosis + [[hoist-shared-arm-computation-defeats-copy-pref]]: expand_preferences.c biases pseudo dest via reg_n_refs / joined-pseudos. Reading the greg dump directly IDs the biasing pseudo AND the C-level pseudo whose ref count / arg-copy-pref is skewing p1's choice. The cross-reference against p2 (which coalesces correctly) isolates the exact discriminator.",
+   "next_probe": "cpp -Iinclude -undef -Wall -lang-c -fno-builtin -Dmips ... src/text1b.c > tmp/grind/func_80057CC8/s6/base.i; run cc1 -da (BB2_ALLOC_DEBUG=1 optional) via tools/gccdbg/cc1 (or hand-instrumented tools/gcc-2.7.2/build/cc1) to produce text1b.c.greg; identify the pseudo backing the p1 addu dest, its ';; Register dispositions:' entry, its conflict list, and its joined-pseudos. Cross-reference the shifted-offset source pseudo. Compare against the p2 addu (which coalesces correctly at v1) to isolate the discriminator. Frontier discharge: forensics modality, NOT permuter."
   },
   {
-   "hypothesis": "FAKE-annotated duplicated-statement-into-arms (2026-07-01 sanctioned) applied to p1's pointer-add computation duplicated inside BOTH arms of the prev_idx `if((s16)prev_idx<0)` \u2014 the reload arm computing p1 from arg0[3]-1 form and the pass-through arm from arg1-1 form \u2014 lifts the p1 dest pseudo's reg_n_refs, shifting RA priority.",
-   "mechanism": "Per [[duplicated-statement-into-arms]]: cross-jump re-merges the byte-neutral duplication into identical bytes, but the DUPLICATION doubles the pseudo's refs count in global.c's priority calc \u2014 the byte-free ref-lift shown for motion_SetMotion pins.",
-   "next_probe": "Write a probe form: p1 pointer add duplicated INSIDE both arms of the prev_idx if-reload (each arm using its own prev_idx value). Sandbox for floor and byte-neutrality via objdump comparison against candidate.c. If floor drops with byte-neutral duplication, invoke layer-1 cheat-reviewer + layer-2 for FAKE annotation policy compliance."
+   "hypothesis": "FAKE-annotated duplicated-statement-into-arms (2026-07-01 sanctioned per [[duplicated-statement-into-arms]]) applied to p1's pointer-add duplicated inside BOTH arms of the prev_idx `if((s16)prev_idx<0)` -- the reload arm computing p1 from arg0[3]-1 form and the pass-through arm from arg1-1 form -- byte-neutrally lifts the p1 dest pseudo's reg_n_refs, shifting RA priority.",
+   "mechanism": "Per [[duplicated-statement-into-arms]]: cross-jump `find_cross_jump` re-merges the byte-neutral duplication into identical bytes at codegen, but the SOURCE-level DUPLICATION doubles the pseudo's refs count in global.c's priority calc -- the byte-free ref-lift shown for the motion_SetMotion pin retirements. Sibling of the [[hoist-shared-arm-computation-defeats-copy-pref]] mechanism.",
+   "next_probe": "Draft a probe form: duplicate the p1 pointer add INSIDE both arms of the prev_idx if-reload (each arm using its own local prev_idx value). Verify byte-neutrality via objdump comparison against candidate.c. If floor drops with byte-neutral duplication AND arms compile identically post-cross-jump, invoke layer-1 cheat-reviewer + layer-2 for FAKE-annotation policy compliance. Frontier discharge: structural modality, NOT permuter."
   },
   {
-   "hypothesis": "A directed permuter chassis targeting the prev_idx reload branch specifically (PERM_GENERAL over the reload C form with a wider PERM_VAR net including opaque-one-style arithmetic wrappers) explores a mutation family the s4 chassis missed.",
-   "mechanism": "The s4 chassis was undirected \u2014 the score-0 finder was random. A directed campaign with PERM_* macros around the prev_idx `if((s16)prev_idx<0)` reload region + p1 addu window gives the permuter smaller mutation neighborhoods and better fresh-seed odds within them.",
-   "next_probe": "tools/permuter_annotate.py --func func_80057CC8 --hint register-asm-pins (or a new prev-idx-reload hint), harvest the candidate C; then launch a fresh campaign, fresh-seed disciplined, targeting only the reload+addu region."
+   "hypothesis": "A carefully-constructed opaque-one arithmetic wrapping (per SOTN-sanctioned [[loop-rotation-two-shift]]) around a specific shift count in the p1 offset chain shifts the combine-pass fold surface enough to break the ties-with-v1 bias without altering byte behavior.",
+   "mechanism": "The [[loop-rotation-two-shift]] rule sanctions `(Random() & 3) + 1 - 1` opaque-one arithmetic for shift counts to defeat GCC bit-test transforms. If a legitimate variant applies to the `<<16` or `<<2` in the p1 chain (WITHOUT introducing a semantically-dead local), it would be a structurally-distinct spelling class not yet enumerated by s5-directed.",
+   "next_probe": "Read [[loop-rotation-two-shift]] carefully to confirm the sanction's exact prerequisites (loop-rotation two-shift context, not general purpose). If applicable to func_80057CC8's shift chain, construct a legitimate opaque-one form; sandbox; if score drops without a semantically-dead auxiliary, escalate to cheat-reviewer. If prerequisites don't fit (likely, given the rule's narrow scope), record as inapplicable and KILL."
   }
  ],
  "judge_constraints": [],

@@ -144,3 +144,17 @@ Per user 2026-06-22: keep working it; not permanently parked.
 - [s4] [s4] Score-40: statement-split of `ang_mid = ((s32)(ang_next-ang_prev)/2)+ang_prev;` — no score improvement; not a lever.
 
 - [s4] [s4] Frontier is now: (a) forensic cc1 -da greg dump to name the p1 pseudo/copy-pref (still unrun this session — mandated modality was permuter, not forensics), (b) FAKE-annotated duplicated-statement-into-arms per [[duplicated-statement-into-arms]] applied to the p1 pointer add's arms (also unrun), (c) two of the previously-live frontier items (permuter + one probe of the greg-dump) are now discharged.
+
+- [s5] [s5] Applied candidate.c to src/text1b.c line 11837 (register asm('s3') pin removed, offset+table reassociation for both p adds). sandbox --disable all reports score=3, target_insns=111, build_insns=111, rules_dropped=7, cheat_asm_stripped=395 -- replays s1-s4 baseline cleanly on current main HEAD.
+
+- [s5] [s5] Cloned tmp/grind/func_80057CC8/s4/perm workspace to s5, reset campaign state (removed prior output-*, campaign.log, campaign_meta.json), verified base.c==base_full.c (both 12070 lines, candidate form).
+
+- [s5] [s5] Chassis 1 (s5-directed): PERM_GENERAL over (prev_idx if-reload, p1 addu, p2 addu). 24-iteration deterministic enumeration; base_score=15 permuter-scored; NO improvement below baseline. All 3-alt x 4-alt x 2-alt combinations scored 15 or 25. Enumerated space is EXHAUSTED and DOES NOT contain a score-0 close. Campaign harvested + stopped clean; procs_killed=0, pid_alive_at_harvest=false (self-exited).
+
+- [s5] [s5] Chassis 2 (s5-random+directed): PERM_RANDOMIZE wrapping the same PERM_GENERAL alternatives. 237 iterations in 134s wall; one score-0 close at iter 237. Score progression: base 15 -> repeatedly 15/25 -> transient explosions to 300-5042 during aggressive mutations -> 0. Campaign harvested + stopped clean.
+
+- [s5] [s5] Score-0 form vetted against cheat-by-any-spelling per [[no-new-park-categories]] + [[review-discipline-before-commit]]: rejected in-session as pointer-alias holder = same class as block-scope-alias-p1.c (dual layer FAIL) and permuter-long-new_var2-p1-alias.c (s4 rejected). Saved as rejected/permuter-s16-new_var2-p1-alias.c with cheat-lens annotations.
+
+- [s5] [s5] Combined s4+s5 permuter kill: TWO independent chassis (undirected random on candidate baseline; directed PERM_GENERAL enumeration; directed PERM_GENERAL + PERM_RANDOMIZE random overlay) each converge on THE SAME conclusion -- the only score-0 closing form for the p1 addu RA-coalescing gap is a pointer/scalar alias holder whose ONLY purpose is to shift the pseudo lifetime. This is the cheat-by-any-spelling class that [[no-new-park-categories]] enumerates and rejects. The remaining frontier item 'directed permuter finds a novel legitimate lever' is now KILLED by measurement across two structurally distinct directed chassis.
+
+- [s5] [s5] Kill-count update: cumulative KILLED hypotheses across s1-s5 = 14 (s1 CONFIRMED baseline; s2 5 KILLED; s3 7 KILLED; s4 2 KILLED; s5 2 KILLED). Cheap structural axes (statement order, type width, declaration order, block scoping, named-intermediate, directed spelling alternatives, directed+random overlay) all exhausted at the C level. Remaining probe surface (unchanged from s4): (a) forensic cc1 -da greg dump to name the p1 pseudo's copy-pref biasing pseudo, (b) FAKE-annotated duplicated-statement-into-arms per [[duplicated-statement-into-arms]] applied to p1's pointer-add duplicated inside both prev_idx reload arms.
