@@ -113,3 +113,17 @@
 - [s6] [s6] Frontier #2 KILLED at mechanism: 'make global.c see [76 and 81] as a single equivalence class' has no execution path in GCC 2.7.2 — the pass that would do it does not exist. Any pure-C respelling that keeps v1 loop-live AND introduces a second tree-level a0<<4 recapitulates the pool split.
 
 - [s6] [s6] Frontier #1 (directed permuter over PERM_STMT_LIST / PERM_ADD_SUB) remains un-measured; its search space is over C spellings the hand-derivation has not considered, so pass-split mechanism doesn't preclude a permuter find — the search would look for spellings whose expand routes through a different pass sequence entirely (e.g. mutations that eliminate the second tree-level shift altogether while still shifting sll's LUID).
+
+- [s7] [s7] Baseline reconfirmed pre + post: sandbox --disable all -> score=2, target_insns=83, build_insns=83, rules_dropped=0, cheat_asm_stripped=78. Rotation form (decl-init-decouple applied to src) measured score=11 with edits, then reverted.
+
+- [s7] [s7] Rotation cse pass dump (tmp/grind/func_80045294/s7/base.i.cse:12610+) shows the ashift at insn 17 has operand (reg/v:SI 77) — pseudo 77 is `i`, not pseudo 72 (a0). Baseline cse pass dump (s3/base.i.cse:12610+) shows the ashift at insn 14 has operand (reg/v:SI 72) — pseudo 72 is a0. CSE substitution proven at pass boundary, not inferred.
+
+- [s7] [s7] a0's live-range measurement: baseline pseudo 72 has TWO reads (insn 14 ashift + insn 22 i-move) → live range 4→22; rotation pseudo 72 has ONE read (insn 15 i-move only, then substituted away by CSE) → live range 4→15. ~50% shortening of a0's live range.
+
+- [s7] [s7] global_alloc queue order shift measured directly in greg dumps: pseudo 72 moves from position 8 (baseline) to position 10 (rotation). By position 10, $16-$20 are claimed by higher-priority pseudos, forcing 72 into $21 — reproducing the H1 cascade (a0->$21, s4->$18, s5->$20).
+
+- [s7] [s7] Pass identified as ROOT CAUSE of the one-tree-late-assign branch RA rotation: cse.c operand substitution at insn 17 (ashift). s6's global_alloc reg_n_refs naming is a downstream effect, not the primary driver.
+
+- [s7] [s7] The cse.c fold is deterministic given (set new_pseudo a0_pseudo) precedes (ashift a0_pseudo K) in the same basic block. No pure-C intervention (self-assign, void-cast, tautological guard) can break value-equivalence without changing semantics. Combined with s6's named local/global pool split for the two-tree branch, BOTH near-hit branches are pass-level dead ends for hand-derivation.
+
+- [s7] [s7] Corollary for frontier #1 (permuter): the s6/s7 pass-level analyses do NOT preclude a permuter find because permuter mutations can reach C shapes routing through a different expand→cse→global path entirely (e.g. spellings that avoid the cse-fold trigger while achieving the LUID movement). Permuter workspace blocker (s4/s5) unchanged: whole-function inline asm + cpp-conflict decls in TU; extract-and-build path for a single-function .c + target.o from disc bytes remains the un-blocker.

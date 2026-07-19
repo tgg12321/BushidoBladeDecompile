@@ -178,3 +178,15 @@
 - probe: Compared cse-fold-anon-shift.c greg vs baseline candidate.c greg (tmp/grind/func_80045294/s3/base.i.greg). Baseline: `11 regs to allocate: ... 75 ...`, `75 in 3` — pseudo 75 IS in global queue, no anon pseudo splits off, no copy. Cse-fold: two pseudos as described. Every rejected +1-copy form shares this two-pool split.
 - result: Root cause is the local_alloc/global_alloc pass split, not the surface C. Any C spelling with two tree-level a0<<4 subexpressions where one use is loop-carried and one is block-0-local produces the pass-split condition and the surviving copy. Frontier #2 (make global.c coalesce them) has NO mechanism to reach it in GCC 2.7.2 — the coalescer doesn't exist.
 - verdict: CONFIRMED
+
+## [s7] The RA rotation observed in every one-tree-late-assign near-hit (i-before-v1-init, decl-init-decouple, late-v1-assign-with-s4-inline, inner-block-defer-v1) is caused by global.c reg_n_refs LUID-driven allocno priority alone (s6 wording).
+- mechanism: s6 named global_alloc reg_n_refs priority. Not measured against baseline priority queue numerically; live-range contribution not disentangled from n_refs contribution.
+- probe: Applied decl-init-decouple rewrite (s32 v1; s32 s4; s32 i=a0; s32 count; s32 s5; v1=a0<<4; s4=...) to src/text1a_c.c. cc1 -da dumped tmp/grind/func_80045294/s7/base.i.cse + base.i.greg. Compared cse pass output against baseline s3 dumps.
+- result: REFINED: rotation greg allocation queue is '92 77 75 86 85 78 74 73 76 79 72' with pseudo 72 (a0) at position 10 vs. baseline's '92 78 75 86 85 79 74 73 72 76 80' at position 8. But the primary driver is UPSTREAM: cse.c substituted pseudo 77 (i) for pseudo 72 (a0) in the ashift operand at insn 17 because (set 77 72) at insn 15 established value-equivalence. That fold eliminated a0's second read, cutting live range from insn 4->22 to insn 4->15. The live-length collapse dominates the reg_n_refs collapse in allocno_compare, demoting a0 to end of queue where only $21 remains.
+- verdict: KILLED
+
+## [s7] A C-level intervening statement between i=a0 and v1=a0<<4 could break CSE's value-equivalence of pseudos 72 and 77, preventing the ashift-operand substitution and preserving a0's long live range.
+- mechanism: cse.c's value-numbering treats pseudos linked by (set N M) as equivalent from that point forward until either is redefined. Redefining a0 or introducing a memory clobber that invalidates the equivalence class would prevent the fold.
+- probe: Reviewed cse.c substitution logic + verified insn 15 (set 77 72) is what enables the fold at insn 17. Enumerated C-level interventions: (a0 = a0;) self-assign leaves value-equivalence intact; (void)a0; is compiled away pre-CSE; if (a0==a0) guard folds to true and disappears; modifying a0 (a0 = f(a0)) would change semantics because a0 is used later in the function as a parameter.
+- result: No pure-C statement can decouple a0's value from i's value between the assignment and the shift without semantic change. The CSE fold fires deterministically whenever i=a0 precedes v1=a0<<4 in a straight-line block. Mechanism is in cse.c, upstream of both sched2 and global_alloc.
+- verdict: KILLED

@@ -1,7 +1,7 @@
 {
  "func": "func_80045294",
  "file": "text1a_c",
- "session_count": 6,
+ "session_count": 7,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -39,18 +39,24 @@
    "floor": 2,
    "modality": "forensics",
    "headline": "s6 forensics: RTL greg dump names local_alloc/global_alloc pass split (no cross-pool coalescer in GCC 2.7.2) as the pass responsible for the +1 CSE-move copy in every two-tree-level-shift near-hit; fr"
+  },
+  {
+   "session": 7,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "s7 forensics names cse.c operand substitution (a0->i in ashift) as the pass that shortens a0's live range, collapsing its global_alloc priority in every one-tree-late-assign near-hit; upstream of glob"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Directed permuter over PERM_STMT_LIST reorderings of the non-v1 init statements + PERM_ADD_SUB / PERM_DUMMY_COMMA_EXPR mutations of arithmetic subexpressions finds a spelling that shifts sll's LUID above move16's WITHOUT introducing a second tree-level a0<<4 expression.",
-   "mechanism": "s6 forensics locks two mechanism families (pool split for two-tree; reg_n_refs LUID rotation for one-tree-late). A closing form must side-step BOTH \u2014 either by using a single tree-level a0<<4 whose LUID is somehow decoupled from RA priority (novel), or by a spelling that changes expand's pseudo-creation order so global_alloc places v1 later without rotating other pseudos (also novel). Permuter's structural mutations can reach spellings hand-derivation hasn't.",
-   "next_probe": "Un-block permuter workspace build: rather than fight text1a_c.c's whole-function __asm__ block + cpp-conflict decls (s4/s5 blocker), extract func_80045294 into a MINIMAL single-function .c that includes only the D_800EE*/D_800A33*/callee prototypes it references. Build target.o from disc bytes @0x35A94 (s1 has offset/length noted). Launch tools/permuter_campaign.py with settings.toml weight overrides emphasizing perm_stmt_list, perm_add_sub, perm_dummy_comma_expr, perm_reorder_decls; fresh-seed 20-30 min basins per feedback/permuter-fresh-seed-discipline."
+   "hypothesis": "Directed permuter over PERM_STMT_LIST reorderings + PERM_ADD_SUB / PERM_DUMMY_COMMA_EXPR / PERM_REORDER_DECLS mutations finds a spelling that shifts sll's LUID above move16's WITHOUT (a) introducing a second tree-level a0<<4 (which triggers s6's local/global pool split) OR (b) source-ordering i=a0 before v1=a0<<4 in a straight-line block (which triggers s7's cse.c operand substitution).",
+   "mechanism": "s6 and s7 pin two orthogonal pass-level dead ends for hand-derivation. Permuter can explore C shapes that route around BOTH \u2014 e.g. mutations that split blocks so cse.c doesn't see the i=a0 -> v1=a0<<4 sequence in one processing region, or that eliminate the second tree-level shift via non-obvious commutative/associative rewrites.",
+   "next_probe": "Un-block permuter workspace: extract func_80045294 into a MINIMAL single-function .c with only D_800EE*/D_800A33*/callee prototypes; build target.o from disc bytes @0x35A94 (s1 offset/length noted). Launch tools/permuter_campaign.py with PERM_STMT_LIST + PERM_ADD_SUB + PERM_DUMMY_COMMA_EXPR + PERM_REORDER_DECLS weight overrides; fresh-seed 20-30 min basins per feedback/permuter-fresh-seed-discipline."
   },
   {
-   "hypothesis": "Reading the sched2 tiebreak in a THIRD form \u2014 using a permuter-directed rewrite of the loop that changes how many block-0-live values the addu $21 chain touches \u2014 could shorten the sll's downstream dependency chain enough to demote its INSN_PRIORITY below 1 (currently equal to move16), moving the tie to a different tiebreak axis.",
-   "mechanism": "s3 measured INSN_PRIORITY(sll)==INSN_PRIORITY(move16)==1, tie broken by INSN_LUID. If sll's priority could be reduced to 0 while move16 stays at 1, the priority tiebreak wouldn't fire and sched2 would emit in priority order (move16 first). sched.c INSN_PRIORITY is longest downstream dependence chain; sll feeds sll->addu $1->lw $20->addu $21(delay). If addu $21's dependence on sll's chain could be broken (e.g. by expressing s5 through a value NOT derived from *(base+v1)), the chain length drops.",
-   "next_probe": "Read sched.c compute_priority + downstream chain traversal to identify exactly what edge to sever. Then attempt a C spelling where s5's ADDU sources bypass the sll->lw chain (e.g. compute s5 from a preloaded value or via a route that doesn't extend the sll chain). Must be pure C, must retain the delay-slot fill of addu $21 into the beqz."
+   "hypothesis": "A C spelling that expresses `v1 = a0<<4` and `i = a0` across a control-flow join (rather than a straight-line block) prevents cse.c's basic-block-scoped value-numbering from seeing them as value-equivalent, breaking the CSE fold that shortens a0's live range in the rotation branch.",
+   "mechanism": "cse.c's basic_block_extended_end / cse_extended_basic_block bounds value-numbering to a single processing region. Cross-block equivalences are established only at reload/global. If i=a0 lives in one block and v1=a0<<4 in a different block reachable from function entry (not a linear predecessor of i=a0), CSE cannot substitute at insn 17.",
+   "next_probe": "Enumerate small C rewrites that keep the same semantics but split the prologue into two joinable blocks \u2014 e.g. an early-return-if-null guard that jumps around a trivial block containing v1=a0<<4, then falls through to the i=a0 assignment; or a conditional-move idiom. Verify each keeps the sandbox score close and doesn't add insns. Measure whether cse.c picks up the value-equivalence across the split."
   }
  ],
  "judge_constraints": [],
