@@ -394,3 +394,15 @@
 - probe: Applied the comma-expression form to src/text1a_c.c:1602-1608 (baseline candidate + swap the two-stmt v1/s4 init for the comma form). Ran `& tools/wteng.ps1 main sandbox func_80045294 --disable all`. Read tmp/sandbox/func_80045294/text1a_c.o via mipsel-linux-gnu-objdump -Mno-aliases -drz to inspect the prologue byte order. Reverted src and reconfirmed baseline.
 - result: score=2, target_insns=83, build_insns=83, rules_dropped=0. Prologue order sll(2630)/sw s0(2634)/move16(2638) — IDENTICAL to baseline candidate.c, not cse-fold-anon-shift's sw/move16/sll+copy shape. Same 2-insn residual, no shape change.
 - verdict: KILLED
+
+## [s22] A fresh-seed re-run of the s14 minimal-base + PERM_LINESWAP chassis discovers a sub-60 gradient the prior 5249-iter s14 directed budget missed.
+- mechanism: s14 cumulative directed budget was split across two runs on the same chassis; fresh-seed discipline (permuter-directives Campaign discipline) says basins yield early or not at all, so 720 more iters with a new seed either surface a novel find or reconfirm the basin.
+- probe: Re-cloned tmp/grind/func_80045294/s14/perm_min to s22/perm (unchanged PERM_LINESWAP over the {sum,v1,s4,i,count,s5} decl block). Launched permuter_campaign.py --label s22-lineswap-fresh -j 4 --stop-on-zero; harvested at 720 iters / 137.5s. Artifacts: tmp/grind/func_80045294/s22/perm/campaign.log + output-60-1/.
+- result: iterations=720, finds_total=1 (all at score=60, basin-equivalent), best_new_score=60. First novel find at 29.3s after launch (score=60 basin tie). No sub-60 mutations discovered. Basin plateau reconfirmed on this chassis with a fresh seed.
+- verdict: KILLED
+
+## [s22] An orphaned prior-session campaign on an alt-chassis (cse-fold-anon-shift base, score=105, target-order sched2 but +1-copy) discovers a sub-105 gradient (approaching 60 or below) under unannotated random-mode.
+- mechanism: cse-fold-anon-shift is a +1-copy near-hit with the target's sw/move16/sll schedule order already in place — its basin differs from the baseline chassis (score=60, wrong schedule order). If the permuter can eliminate the surviving copy via any single mutation, the +1 would drop and the score would collapse toward baseline or below.
+- probe: Reclaimed orphaned campaign at tmp/grind/func_80045294/s22/perm_alt (PID 605, dead, launched 2026-07-19T10:37:45 by a prior discarded session). Harvested via permuter_campaign.py harvest --stop. Artifact: tmp/grind/func_80045294/s22/perm_alt/campaign.log.
+- result: iterations=1310, elapsed=442.3s, finds_total=0, finds_new=0, best_new_score=null. Alt-chassis basin=105 plateaus terminally under 1310 iters of random-mode. The s6 pool-split copy is uneliminable by random permuter mutation (as predicted by s6 verdict: 'no cross-pass coalescer in GCC 2.7.2').
+- verdict: KILLED

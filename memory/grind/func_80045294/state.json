@@ -1,8 +1,8 @@
 {
  "func": "func_80045294",
  "file": "text1a_c",
- "session_count": 21,
- "current_modality": "structural",
+ "session_count": 22,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -129,13 +129,19 @@
    "floor": 2,
    "modality": "structural",
    "headline": "s21 structural: comma-expression v1-assign inside s4 init KILLED (score=2, baseline shape) \u2014 last non-permuter middle-path between baseline (83 insns) and cse-fold-anon-shift (84 insns) measured dead;"
+  },
+  {
+   "session": 22,
+   "floor": 2,
+   "modality": "permuter",
+   "headline": "s22 permuter: two banked plateau measurements (720-iter fresh-seed lineswap chassis @60 + 1310-iter reclaimed alt-chassis @105) reconfirm both known basins terminal; owner-escalation-drafting is the o"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "OWNER-ESCALATION is ripe: file entry in docs/grind/decisions.md citing the four pass-level walls (s7 cse.c BB-scoped substitution, s6 no cross-pool coalescer, s15/s16 sched1+sched2 LUID coupling, s10/s11 no CFG-splitter defeats cse.c BB view) + all measured-dead modalities (23 rejected structural forms, both permuter chassis exhausted, 8 rederive sub-axes converged on KILLED shapes) + the s21 middle-path kill; request owner ruling between (a) authorize canonical-inline-asm scoping the 2-insn cluster or (b) accept score=2 as pure-C-COMPLETED exception.",
-   "mechanism": "Every sanctioned axis is now measured dead including the last hand-derivable middle-path (s21 comma-expression). No further probe exists within pipeline rules; the 2-insn gap is a load-scheduling artifact of the s7/s15 cse.c + sched1/2 LUID interaction that no user-controllable C spelling can defeat.",
-   "next_probe": "Next session (mandated modality = owner-escalation-drafting or ruling-request per driver): compose docs/grind/decisions.md entry naming func_80045294, the four pass-level walls, the 23 rejected forms (22 pre-s21 + s21 comma-expression), both permuter chassis exhaustions, and the exhaustion of front-end middle-paths between the two RTL attractor shapes. Then emit result=owner-gated with escalation_ref pointing to that entry."
+   "hypothesis": "OWNER-ESCALATION is ripe and s22 confirms it: file docs/grind/decisions.md entry naming func_80045294, the four pass-level walls (s7 cse.c BB-scoped substitution, s6 no cross-pool coalescer, s15/s16 sched1+sched2 LUID coupling, s10/s11 no CFG-splitter defeats cse.c BB view), the 23 rejected forms + 3 exhausted chassis (s13 full-TU / s14+s22 minimal-lineswap / s22 alt-cse-fold), and the cpu_side_move_dir_4 precedent for the owner to consider.",
+   "mechanism": "Every sanctioned axis (hand-derivation, rederive, directed permuter, random permuter on 3 chassis) is now measured dead with per-axis mechanism cited at GCC pass RTL. No further probe exists within pipeline rules. cpu_side_move_dir_4 (2026-07-09 FAIL) is the direct precedent \u2014 the owner must rule whether func_80045294 is treated as another archetype of that policy (continue grinding via a modality not yet named) or granted a per-function carve-out (canonical-inline-asm scoping the 2-insn cluster / accept score=2 as pure-C-COMPLETED exception).",
+   "next_probe": "Next session (mandated modality = owner-escalation-drafting per driver): compose docs/grind/decisions.md entry naming this function, the four pass-level walls, the 23 rejected forms, the 3 exhausted permuter chassis, the cpu_side_move_dir_4 precedent, and a precise ruling question. Then emit result=owner-gated with escalation_ref pointing to that entry. If the driver instead re-mandates permuter, a novel chassis remaining is: (i) m2c-reconstructed H1-shape base with random-mode (score=11 basin, distinct from 60 and 105 basins measured to date) \u2014 plausibly-KILLED by s6 mechanism but not yet empirically banked."
   }
  ],
  "judge_constraints": [],

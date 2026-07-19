@@ -329,3 +329,13 @@
 - [s21] [s21] Rejected form banked: memory/grind/func_80045294/rejected/comma-expr-v1-assign.c.
 
 - [s21] [s21] Consolidated across s1-s21: EVERY sanctioned structural axis reachable by hand-derivation is measured dead. The remaining sanctioned axis at the pipeline level is OWNER-ESCALATION per the s19/s20 ledger. No entry exists yet in docs/grind/decisions.md for func_80045294; per contract 'owner-gated' is not emittable this session.
+
+- [s22] s22 fresh-seed lineswap chassis: 720 iters / 137.5s, base=60, 1 find at score=60 (basin), best_new_score=60. Adds to s14's 5249 directed iters as third independent lineswap-chassis exhaustion sample. Cumulative directed-mode budget on this chassis: 5969 iters, 0 sub-60 finds.
+
+- [s22] s22 reclaimed alt-chassis (cse-fold-anon-shift): 1310 iters / 442.3s, base=105, 0 finds. Newly-banked measurement — the +1-copy near-hit basin is empirically terminal under random-mode permuter, corroborating s6's mechanism verdict at a distinct chassis.
+
+- [s22] Ledger state entering s22 already recorded: hand-derivation exhausted (23 rejected forms across s1-s21, all mapping to one of four pass-level walls: cse.c BB-scoped operand substitution / local_alloc-global_alloc pool split / sched1+sched2 LUID coupling / no pure-C CFG-splitter defeats cse.c BB view); rederive exhausted across 8 sub-axes (s8/s9/s17/s18); directed permuter exhausted on 2 chassis (s13/s14); random permuter exhausted on 2 chassis (s13 full-TU / s20 minimal). s22 adds a 3rd chassis (cse-fold-anon-shift) and a 3rd sample on the s14 chassis.
+
+- [s22] src/text1a_c.c:1602-1608 restored to baseline candidate.c shape (v1-before-i init order). Sandbox --disable all: score=2, target_insns=83, build_insns=83, rules_dropped=0, cheat_asm_stripped=78.
+
+- [s22] cpu_side_move_dir_4 precedent (docs/grind/decisions.md 2026-07-09 01:25 — FAIL): the exact same LUID tiebreak mechanism was ruled forbidden under no-new-park-categories.md 'Register-rotation infrastructure' as the first archetypal example — 'these are pure-C-reachable, the lever just hasn't been found ... the remaining gap is more search, not a new category.' This binds any OWNER-ESCALATION for func_80045294 with the same framing to a very likely FAIL, but the ledger's per-function measured-dead frontier remains the correct evidence path to file the request.
