@@ -375,3 +375,23 @@
 - [s24] [s24] candidate.c unchanged (in-src form remains the s3 baseline shape). No new rejected forms banked this session (no new src edits measured; the two lreg slices come from prior s3/s6 dump artifacts).
 
 - [s24] [s24] Artifacts: tmp/grind/func_80045294/s24/forensics_lreg_pool_split.md + baseline_lreg_slice.txt + csefold_lreg_slice.txt.
+
+- [s25] [s25] Baseline reconfirmed pre and post: sandbox --disable all -> score=2, target_insns=83, build_insns=83, rules_dropped=0, cheat_asm_stripped=78. src/text1a_c.c edits reverted to canonical candidate.c shape after dump; working tree clean (only metrics/events.jsonl dirty as expected).
+
+- [s25] [s25] With do-while(0)-around-v1-after-i applied to src, sandbox --disable all -> score=12 (reconfirms s10 KILLED measurement at same score; s10 recorded score=12 as well).
+
+- [s25] [s25] Pre-jump.c CFG structure (base.i.rtl:14365-14396): do-while(0) wrap generates code_label 18 (loop head), note 19, insn 20 ashift, note 21 LOOP_CONT, code_label 22, jump_insn 23 unconditional to label 29, barrier 24, code_label 25, jump_insn 26 unconditional to label 18 (dead back-edge), barrier 27, note 28 LOOP_END, code_label 29 (loop exit). Real CFG structure present.
+
+- [s25] [s25] Post-jump.c (base.i.jump:13599-13612): all 4 code_labels, 2 jump_insns, 2 barriers DELETED. Only the 3 LOOP notes (17 LOOP_BEG, 21 LOOP_CONT, 28 LOOP_END) plus insn 20 ashift survive. jump.c's jump_optimize collapsed the trivially-nested exit + back-edge into straight-line insn stream. MECHANISM (a) DIRECTLY WITNESSED.
+
+- [s25] [s25] cse.c basic-block partitioner (base.i.cse:12612 header): 'Processing block from 2 to 28, 5 sets.' — cse.c spans the 3 remaining LOOP notes (17, 21, 28) as ONE block, treating them as BB-transparent. Even if mechanism (a) had NOT fired, mechanism (b) would still collapse the do-while(0) into cse.c's value-numbering scope. MECHANISM (b) DIRECTLY WITNESSED.
+
+- [s25] [s25] Pre-cse.c ashift operand (base.i.jump:13603): (ashift (reg/v:SI 72) (const_int 4)) — reg 72 is a0. Post-cse.c ashift operand (base.i.cse:12649-12651): (ashift (reg/v:SI 75) (const_int 4)) — reg 75 is i. cse.c substituted 75 for 72 in the ashift because insn 15 (set 75 72) is in the same block. Identical fingerprint to s7's insn 17 substitution on canonical H1 shape; the score=12 is H1 basin (11) plus one insn from LOOP-note overhead.
+
+- [s25] [s25] Wall (iv) UPGRADED to direct pass-output tier. All four pass-level walls now cited at direct dump output: (i) s24 base.i.lreg — local/global pool split; (ii) s7 base.i.cse — cse.c BB-scoped substitution; (iii) s15+s16 base.i.sched+sched2 — sched1+sched2 LUID coupling; (iv) s25 base.i.jump+base.i.cse — jump.c CFG-collapse + cse.c LOOP-note-spanning, TWO STACKED walls (both fire independently).
+
+- [s25] [s25] Consequence for the OWNER-ESCALATION draft: mechanism (a) and (b) from the s10 evidence-bank entry (two competing hypothesis explanations for the do-while(0) kill) can be re-stated as TWO CONFIRMED STACKED WALLS. Any future proposed CFG-splitter (whether the sanctioned do-while(0), a hypothetical semantic conditional insert, or another construct) must EACH survive both jump.c's optimizer AND cse.c's LOOP-note-transparent block partitioner. This tightens the escalation ask.
+
+- [s25] [s25] docs/grind/decisions.md still contains NO OWNER-ESCALATION entry for func_80045294 (grep confirms zero hits). Per contract, 'owner-gated' is not emittable this session; the required draft entry is next session's mandated modality per the s19-s24 ledger consensus. This s25 forensics contribution supplies the last pass-output citation the drafter will cite for wall (iv).
+
+- [s25] [s25] No new rejected forms banked (dowhile0-around-v1-after-i.c already banked at s10; the s25 measurement reproduces s10's score=12 kill and adds pass-output evidence). candidate.c unchanged (in-src form remains s3 baseline).

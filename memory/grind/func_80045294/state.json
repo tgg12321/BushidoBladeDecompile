@@ -1,7 +1,7 @@
 {
  "func": "func_80045294",
  "file": "text1a_c",
- "session_count": 24,
+ "session_count": 25,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -147,13 +147,19 @@
    "floor": 2,
    "modality": "forensics",
    "headline": "s24 forensics banks local-alloc pass output directly proving the s6 two-pool split; owner-escalation remains maximally ripe (no entry in docs/grind/decisions.md yet, so owner-gated not emittable per c"
+  },
+  {
+   "session": 25,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "s25 forensics banks direct base.i.jump + base.i.cse pass-output witness of do-while(0) collapse: mechanism (a) jump.c strips all CFG (4 labels/2 jumps/2 barriers deleted) AND mechanism (b) cse.c spans"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "OWNER-ESCALATION drafting is the sole remaining sanctioned move; every measurable axis is now measured dead with direct pass-output citations for all four walls.",
-   "mechanism": "Hand-derivation exhausted (23 rejected forms mapping to four pass-level walls, each now cited at pass output); rederive exhausted (8 sub-axes s8/s9/s17/s18); permuter exhausted (7 chassis/mode combinations, ~69590 iters across s13-s23, chassis-independent 60-attractor). s24 adds no new axis \u2014 it upgrades s6 from greg-inferred to lreg-direct. There is no un-banked mechanism or un-measured axis left within pipeline rules.",
-   "next_probe": "Next session (owner-escalation-drafting): compose docs/grind/decisions.md entry naming func_80045294, the four pass-level walls with pass-output citations (s6/s24 local/global pool split via local-alloc.c; s7/s15 cse.c BB-scoped substitution at insn 17; s15/s16 sched1+sched2 LUID coupling at base.i.sched/sched2 ready-list; s10/s11 no pure-C CFG-splitter defeats cse's BB view), the 23 rejected forms, the 7 permuter chassis/mode combinations, the cpu_side_move_dir_4 2026-07-09 FAIL precedent, and a precise ruling question. Then emit result=owner-gated with escalation_ref pointing to that entry."
+   "hypothesis": "OWNER-ESCALATION drafting is the sole remaining sanctioned move; every measurable axis has direct pass-output citations across s6/s7/s15/s16/s24/s25 for all four walls.",
+   "mechanism": "Hand-derivation exhausted (23 rejected forms mapping to four pass-level walls, all now cited at direct pass output). Rederive exhausted (8 sub-axes s8/s9/s17/s18). Permuter exhausted (7 chassis/mode combinations, ~69590 iters s13-s23, chassis-independent 60-attractor). s25 upgrades wall (iv) to direct-pass-output tier matching walls (i)/(ii)/(iii) via base.i.jump + base.i.cse dumps of the do-while(0) collapse; mechanism (a) and (b) shown STACKED not alternatives.",
+   "next_probe": "Next session (owner-escalation-drafting): compose docs/grind/decisions.md entry naming func_80045294 with the four pass-level walls each cited at direct dump output ((i) s24 lreg / (ii) s7 cse / (iii) s15+s16 sched+sched2 / (iv) s25 jump+cse), the 23 rejected forms, the 7 permuter chassis/mode combinations, the cpu_side_move_dir_4 2026-07-09 FAIL precedent, and a precise ruling question. Then emit result=owner-gated with escalation_ref pointing to that entry."
   }
  ],
  "judge_constraints": [],

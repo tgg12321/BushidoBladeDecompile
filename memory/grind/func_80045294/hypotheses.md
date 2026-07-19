@@ -424,3 +424,15 @@
 - probe: grep -n '80045294\|saTan0Init' docs/grind/decisions.md
 - result: Zero hits. No entry filed. owner-gated is not emittable this session. The next-session frontier per s22-s23 ledger (owner-escalation-drafting) remains the sanctioned move.
 - verdict: KILLED
+
+## [s25] The s10 kill of do-while(0)-around-v1-after-i (score 2->12) was mechanism (a) jump.c collapse, OR mechanism (b) cse.c spanning fall-through edges; both were plausible from score alone.
+- mechanism: Applied rejected/dowhile0-around-v1-after-i.c to src, dumped cc1 -da at every pass, compared base.i.rtl (pre-jump.c) vs base.i.jump (post) vs base.i.cse to witness each mechanism at the pass boundary where it fires.
+- probe: cc1 -O2 -G0 -da on preprocessed src/text1a_c.c; extract func_80045294 slices from base.i.{rtl,jump,cse}; compare CFG structure and ashift operand at insn 20 across pass boundaries.
+- result: BOTH mechanisms independently confirmed at pass output. Pre-jump.c RTL has 4 code_labels + 2 unconditional jump_insns + 2 barriers + 3 LOOP notes bracketing insn 20. Post-jump.c has ONLY the 3 LOOP notes; every CFG-splitting insn deleted (mechanism a fires). cse.c dump header 'Processing block from 2 to 28' spans the LOOP_BEG/CONT/END notes as one block (mechanism b would fire even without a). Post-cse.c insn 20 ashift operand rewrites from (reg 72) a0 to (reg 75) i, reproducing the s7 substitution fingerprint.
+- verdict: CONFIRMED
+
+## [s25] Wall (iv) 'no pure-C CFG-splitter defeats cse.c BB view' can be strengthened from s10/s11's score+source-cite evidence to direct pass-output evidence.
+- mechanism: The s10 do-while(0) probe and s11 statement-expression probe both measured the kill via score only, then attributed the mechanism to jump.c collapse (s10) or c-parse.y collapse (s11) by reading pass source. s25 upgrades s10 to direct base.i.jump + base.i.cse dumps.
+- probe: Same dump pipeline as above; compare CFG structure at each pass boundary against s10's source-level hypothesis.
+- result: Wall (iv) now carries direct base.i.jump + base.i.cse pass-output citations matching the evidence tier of walls (i) s24 base.i.lreg / (ii) s7 base.i.cse / (iii) s15+s16 base.i.sched+sched2. All four pass-level walls now have direct dump citations. The two mechanisms (a) and (b) are STACKED (both fire independently), not alternatives — any future CFG-splitter proposal must survive both.
+- verdict: CONFIRMED
