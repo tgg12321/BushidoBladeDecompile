@@ -323,3 +323,4 @@
 - 2026-07-19 05:09 func_80045294 s18 [rederive] floor=2: s18 rederive: three additional m2c cross-mode/cross-target axes converge on H1 shape (KILLED); rederive modality now measured dead across 8 independent sub-axes
 - 2026-07-19 05:15 func_80045294 s19 [synthesis] floor=2: s19 synthesis: 4 pass-level walls named + cited; scoped PERM_RANDOMIZE reframed as SUBSET of s13 (KILLED); final sanctioned axis = minimal-base + random-mode for s20, then OWNER-ESCALATION ripe.
 - 2026-07-19 05:27 func_80045294 s20 [structural] floor=2: s20 minimal-base + random-mode permuter plateau=60 across 13977 iters; final sanctioned axis measured dead, OWNER-ESCALATION now ripe.
+- 2026-07-19 05:32 func_80045294 s21 [structural] floor=2: s21 structural: comma-expression v1-assign inside s4 init KILLED (score=2, baseline shape) — last non-permuter middle-path between baseline (83 insns) and cse-fold-anon-shift (84 insns) measured dead; owner-escalation drafting still required.

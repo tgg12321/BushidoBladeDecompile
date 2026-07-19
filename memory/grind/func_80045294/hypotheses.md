@@ -388,3 +388,9 @@
 - probe: Copied s14/perm_min chassis (63-line base.c, empty prologue_config, cheat-invisible sandbox target.o); stripped PERM_LINESWAP wrapper to make it unannotated random-mode; launched via tools/permuter_campaign.py -j 4 --stop-on-zero; harvested at 13977 iters (531.6s wall-clock).
 - result: iterations=13977 across 4 jobs (~26 iters/s), 2 finds both at score=60 (base tie, seconds_since_launch 39s and 433s), best_new_score=60, no sub-60 variants discovered; well past the 5000-iter fresh-seed budget from the ledger.
 - verdict: KILLED
+
+## [s21] A comma-expression `s32 s4 = (v1 = a0<<4, deref(v1))` will make v1 the SOLE pseudo for the shift (no anonymous CSE-move copy) AND position the ashift LUID inside s4's init tree, reaching sw/move16/sll order at 83 insns — closing the gap left by cse-fold-anon-shift's +1-copy near-hit.
+- mechanism: COMPOUND_EXPR routes the LHS side effect through expand_expr's expand_stmt path, so the assignment `v1 = a0<<4` executes as its own statement while producing the value that the RHS deref uses. If the ashift RTX were emitted as a subexpression of s4's init tree (rather than as a standalone stmt), its LUID would fall between s4's compute and the following i=a0 move16, flipping the sched1/sched2 LUID tiebreak.
+- probe: Applied the comma-expression form to src/text1a_c.c:1602-1608 (baseline candidate + swap the two-stmt v1/s4 init for the comma form). Ran `& tools/wteng.ps1 main sandbox func_80045294 --disable all`. Read tmp/sandbox/func_80045294/text1a_c.o via mipsel-linux-gnu-objdump -Mno-aliases -drz to inspect the prologue byte order. Reverted src and reconfirmed baseline.
+- result: score=2, target_insns=83, build_insns=83, rules_dropped=0. Prologue order sll(2630)/sw s0(2634)/move16(2638) — IDENTICAL to baseline candidate.c, not cse-fold-anon-shift's sw/move16/sll+copy shape. Same 2-insn residual, no shape change.
+- verdict: KILLED

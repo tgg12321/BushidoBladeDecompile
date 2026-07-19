@@ -1,7 +1,7 @@
 {
  "func": "func_80045294",
  "file": "text1a_c",
- "session_count": 20,
+ "session_count": 21,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -123,13 +123,19 @@
    "floor": 2,
    "modality": "structural",
    "headline": "s20 minimal-base + random-mode permuter plateau=60 across 13977 iters; final sanctioned axis measured dead, OWNER-ESCALATION now ripe."
+  },
+  {
+   "session": 21,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "s21 structural: comma-expression v1-assign inside s4 init KILLED (score=2, baseline shape) \u2014 last non-permuter middle-path between baseline (83 insns) and cse-fold-anon-shift (84 insns) measured dead;"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "OWNER-ESCALATION is ripe: file entry in docs/grind/decisions.md citing the four pass-level walls + all measured-dead modalities; request owner ruling between (a) authorize canonical-inline-asm scoping the 2-insn cluster or (b) accept score=2 as pure-C-COMPLETED exception.",
-   "mechanism": "Every sanctioned axis (hand-derivation structural, m2c/decomp.me rederive, directed permuter, random permuter across both chassis) is measured dead. No further probe exists within pipeline rules. The 2-insn gap is a load-scheduling artifact of the s7/s15 cse.c + sched1/2 LUID interaction that no user-controllable C spelling can defeat.",
-   "next_probe": "Next session (mandated modality = owner-escalation-drafting or ruling-request per driver): compose docs/grind/decisions.md entry naming func_80045294, the four pass-level walls (cse.c BB-scoped operand substitution s7/s15, GCC 2.7.2 no cross-pool coalescer s6, sched1+sched2 LUID coupling s15/s16, absent CFG-splitter s10/s11), the 22 rejected forms, and both permuter chassis exhaustions (s13 full-TU random, s14 full-TU + minimal directed lineswap, s20 minimal random). Then emit result=owner-gated with escalation_ref pointing to that entry."
+   "hypothesis": "OWNER-ESCALATION is ripe: file entry in docs/grind/decisions.md citing the four pass-level walls (s7 cse.c BB-scoped substitution, s6 no cross-pool coalescer, s15/s16 sched1+sched2 LUID coupling, s10/s11 no CFG-splitter defeats cse.c BB view) + all measured-dead modalities (23 rejected structural forms, both permuter chassis exhausted, 8 rederive sub-axes converged on KILLED shapes) + the s21 middle-path kill; request owner ruling between (a) authorize canonical-inline-asm scoping the 2-insn cluster or (b) accept score=2 as pure-C-COMPLETED exception.",
+   "mechanism": "Every sanctioned axis is now measured dead including the last hand-derivable middle-path (s21 comma-expression). No further probe exists within pipeline rules; the 2-insn gap is a load-scheduling artifact of the s7/s15 cse.c + sched1/2 LUID interaction that no user-controllable C spelling can defeat.",
+   "next_probe": "Next session (mandated modality = owner-escalation-drafting or ruling-request per driver): compose docs/grind/decisions.md entry naming func_80045294, the four pass-level walls, the 23 rejected forms (22 pre-s21 + s21 comma-expression), both permuter chassis exhaustions, and the exhaustion of front-end middle-paths between the two RTL attractor shapes. Then emit result=owner-gated with escalation_ref pointing to that entry."
   }
  ],
  "judge_constraints": [],

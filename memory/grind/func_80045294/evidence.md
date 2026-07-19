@@ -315,3 +315,17 @@
 - [s20] Four pass-level walls named + cited across s6/s7/s10/s11/s15/s16 forensics: (1) s7 cse.c BB-scoped operand substitution collapses a0's live range; (2) s6 no cross-pool coalescer in GCC 2.7.2 local_alloc/global_alloc; (3) s16 sched1 + s15 sched2 both LUID-coupled (scheduling-only intervention insufficient); (4) s10/s11 no CFG-splitter defeats cse.c BB-scoped substitution (do-while(0) does not create a distinct BB in this pass).
 
 - [s20] docs/grind/decisions.md contains no OWNER-ESCALATION entry for func_80045294; per contract 'owner-gated' is not emittable yet.
+
+- [s21] [s21] Baseline reconfirmed pre and post: sandbox --disable all -> score=2 target_insns=83 build_insns=83 rules_dropped=0 cheat_asm_stripped=78; src/text1a_c.c reverted to canonical candidate.c after the s21 measurement.
+
+- [s21] [s21] Comma-expression form `s32 v1; s32 s4 = (v1 = a0<<4, *(s32*)((u8*)&D_800EED14 + v1));` measured: score=2, target_insns=83, build_insns=83. Objdump prologue: sll v1,s2,0x4 at 0x2630, sw s0,16(sp) at 0x2634, move s0,s2 at 0x2638 — same sll-before-move16 order as baseline.
+
+- [s21] [s21] Mechanism: GCC 2.7.2's expand_expr on COMPOUND_EXPR calls expand_stmt for the LHS effect (v1 assignment) and returns the RHS value — the ashift RTX is NOT nested inside s4's init tree; it is emitted as its own standalone stmt at the SAME LUID position as the two-statement form `s32 v1 = a0<<4; s32 s4 = tbl_deref;`. LUID relationship to i=a0's move16 is unchanged.
+
+- [s21] [s21] The cse-fold-anon-shift.c 'NEXT LEVER' comment (2026-07-18) specifically proposed the comma-expression candidate to eliminate the +1 CSE-move copy without pushing sll's LUID back down. s21 empirically disproves the hypothesis: the comma form collapses to the baseline shape (wrong order, no copy) rather than to a new sw/move16/sll shape without copy.
+
+- [s21] [s21] Consequence for the search space: NO intermediate middle-path exists between baseline (sll/sw/move16, 83 insns) and cse-fold-anon-shift (sw/move16/sll+copy, 84 insns) at the C-front-end level. The two shapes are the only two attractor states hand-derivation can reach for this cluster, corresponding to the two mechanically-distinct RTL LUID relations (`ashift-before-move16` vs `ashift-inside-s4-tree`).
+
+- [s21] [s21] Rejected form banked: memory/grind/func_80045294/rejected/comma-expr-v1-assign.c.
+
+- [s21] [s21] Consolidated across s1-s21: EVERY sanctioned structural axis reachable by hand-derivation is measured dead. The remaining sanctioned axis at the pipeline level is OWNER-ESCALATION per the s19/s20 ledger. No entry exists yet in docs/grind/decisions.md for func_80045294; per contract 'owner-gated' is not emittable this session.
