@@ -496,3 +496,11 @@ as separate li's near the dispatch (only case-10's 13 at a bne delay)
 - [s40] Binding Judge constraints forbid committing any USE/CLOBBER-manufacture spelling — the only C-reachable byte-free mechanism left — pending the owner's option (a)/(b) ruling
 
 - [s40] Ledger bank verified intact this session: memory/grind/motion_SetMotion/candidate.c (floor-10 byte-correct form) + 9 rejected forms including the byte-proven, trace-proven n1 union form (judge-fail-0717-1708.c); src/code6cac_c_mid.c and regfix.txt:2190 untouched on main per the 17:34 disposition; no campaigns launched, no engine mutation commands run
+
+- [s41] docs/grind/decisions.md:761-776 contains the 2026-07-18 OWNER-ESCALATION for motion_SetMotion (filed s7 per the 17:34 Judge disposition); it is the final entry in the file with no owner ruling after it — verified by direct read this session
+
+- [s41] Permuter axis dead per ledger: campaigns of 112,618 + 2,049 + 54,087 iterations from both sides of the merge boundary produced only false-zero and semantic-theft finds below the merge penalty (banked in rejected/)
+
+- [s41] Closure theorem sealed with eight independent confirmations (structural r1-r13, F1 slack-transplant negative, label-family negatives m7/r13, three permuter campaigns, s6 pass-level BB2_XJUMP_DEBUG trace): any byte-matching compile forces both 13-sites to [set13; j] adjacent to the jtbl label, merge guaranteed, only byte-free breaker is the Judge-constrained USE/CLOBBER class
+
+- [s41] candidate.c banked at memory/grind/motion_SetMotion/candidate.c (floor-10 form, Wall-1 solved); 9 rejected forms banked including judge-fail-0717-1708.c (the byte-proven n1 union form awaiting option (a))

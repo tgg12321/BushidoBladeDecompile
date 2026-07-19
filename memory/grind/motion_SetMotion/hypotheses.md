@@ -413,3 +413,9 @@
 - probe: Ledger review per the brief's no-respin rule: rejected/s4-permuter-false-zero-swapped-jump-targets.c, rejected/s4-permuter-semantic-theft-store-into-case911.c, rejected/s5-permuter-unmerged-r13-seed-plateau.c all banked; permuter-modality sessions s13/s14/s22/s31/s32 independently re-verified the same closure
 - result: Both basins measured dry; no permuter chassis class remains; brief forbids re-measuring a dead axis when the filed escalation exists
 - verdict: CONFIRMED
+
+## [s41] A new permuter campaign this session could surface a novel byte-free iter1-breaker for the 13-pair cross-jump merge
+- mechanism: find_cross_jump merge at the [li s0,13; j sel_dispatch] pair is guaranteed by the counted-match + label-bonus path per the s6 BB2_XJUMP_DEBUG trace; the closure theorem (8 independent confirmations) proves the only C-reachable byte-free breaker is the unsanctioned USE/CLOBBER class
+- probe: Ledger re-verification instead of re-launch: three prior campaigns from both sides of the merge boundary (s4 112,618 iters, s4b 2,049 iters, s5 54,087 iters) plus banked rejected forms s4-permuter-false-zero-swapped-jump-targets.c, s4-permuter-semantic-theft-store-into-case911.c, s5-permuter-unmerged-r13-seed-plateau.c
+- result: Axis already measured dead two-sided; Judge constraints bind any USE/CLOBBER-manufacture respelling a campaign could find; OWNER-ESCALATION at decisions.md:761-776 verified present, final entry, unruled
+- verdict: KILLED
