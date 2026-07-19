@@ -435,17 +435,30 @@ void func_8007C2A0(s32 *out, Rect *r)
 }
 void func_8007C4B8(s32 *out, Rect *r)
 {
+  s32 *o = out; /* FAKE: prologue pair order — owner ruling 2026-07-17
+                   (decisions.md 10:35), tombstone narrowed to sanction a
+                   single forward-order param alias under
+                   pointer-alias-fake-exception for the twins func_8007C2A0
+                   / func_8007C4B8. cc1 combine's single-use entry-copy
+                   merge relocates arg0's `move s1,a0` past arg1's
+                   `move s0,a1`, flipping the prologue save+def pair
+                   emit order to match target (s0-pair first). Structural
+                   exhaustion measured s2: K&R decl-block reversal (=4),
+                   do-while(0) entry wrap (=27), var_a3 init-at-decl (=35),
+                   var_a3 hoist-early (=35, s3); arg1-alias (=4, s3, pair
+                   unchanged). Twin verified byte-exact on hirahira_w_frie
+                   (src/text1a_c.c:955, sandbox 0, 2026-07-17 11:25). */
   u16 buf[4];
   s16 var_v0;
   s16 var_v0_2;
   s16 new_var;
   s32 var_a3;
-  out[1] = func_8007C7A0(r->x, r->y);
-  out[2] = func_8007C86C((s16) ((((u16) r->w) + ((u16) r->x)) - 1), (s16) ((((u16) r->y) + ((u16) r->h)) - 1));
-  out[3] = func_8007C938(r->u, r->v);
-  out[4] = func_8007C748(*(((u8 *) r) + 23), *(((u8 *) r) + 22), *((u16 *) (((u8 *) r) + 20)));
-  out[5] = func_8007C97C(((u8 *) r) + 12);
-  out[6] = (s32) 0xE6000000;
+  o[1] = func_8007C7A0(r->x, r->y);
+  o[2] = func_8007C86C((s16) ((((u16) r->w) + ((u16) r->x)) - 1), (s16) ((((u16) r->y) + ((u16) r->h)) - 1));
+  o[3] = func_8007C938(r->u, r->v);
+  o[4] = func_8007C748(*(((u8 *) r) + 23), *(((u8 *) r) + 22), *((u16 *) (((u8 *) r) + 20)));
+  o[5] = func_8007C97C(((u8 *) r) + 12);
+  o[6] = (s32) 0xE6000000;
   var_a3 = 7;
   if (r->flag != 0)
   {
@@ -490,20 +503,20 @@ void func_8007C4B8(s32 *out, Rect *r)
     {
       buf[0] -= (u16) r->u;
       buf[1] -= (u16) r->v;
-      out[var_a3++] = ((((*(((u8 *) r) + 27)) << 16) | 0x60000000) | ((*(((u8 *) r) + 26)) << 8)) | (*(((u8 *) r) + 25));
-      out[var_a3++] = ((u32 *) buf)[0];
-      out[var_a3++] = ((u32 *) buf)[1];
+      o[var_a3++] = ((((*(((u8 *) r) + 27)) << 16) | 0x60000000) | ((*(((u8 *) r) + 26)) << 8)) | (*(((u8 *) r) + 25));
+      o[var_a3++] = ((u32 *) buf)[0];
+      o[var_a3++] = ((u32 *) buf)[1];
       buf[0] += (u16) r->u;
       buf[1] += (u16) r->v;
     }
     else
     {
-      out[var_a3++] = ((((*(((u8 *) r) + 27)) << 16) | 0x02000000) | ((*(((u8 *) r) + 26)) << 8)) | (*(((u8 *) r) + 25));
-      out[var_a3++] = ((u32 *) buf)[0];
-      out[var_a3++] = ((u32 *) buf)[1];
+      o[var_a3++] = ((((*(((u8 *) r) + 27)) << 16) | 0x02000000) | ((*(((u8 *) r) + 26)) << 8)) | (*(((u8 *) r) + 25));
+      o[var_a3++] = ((u32 *) buf)[0];
+      o[var_a3++] = ((u32 *) buf)[1];
     }
   }
-  *(((s8 *) out) + 3) = (s8) (var_a3 - 1);
+  *(((s8 *) o) + 3) = (s8) (var_a3 - 1);
 }
 s32 func_8007C748(s32 arg0, s32 arg1, s32 arg2) {
     s32 var_v1;

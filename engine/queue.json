@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8007C4B8",
-      "file": "display",
-      "distance": 4,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active"
-    },
-    {
       "func": "cpu_side_move_dir_4",
       "file": "system",
       "distance": 7,
@@ -3016,14 +3008,14 @@
     }
   ],
   "counts": {
-    "total": 365,
-    "active": 294,
+    "total": 364,
+    "active": 293,
     "by_status": {
-      "active": 294,
+      "active": 293,
       "parked": 71
     },
     "by_verdict": {
-      "C": 140,
+      "C": 139,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
