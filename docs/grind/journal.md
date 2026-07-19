@@ -304,3 +304,4 @@
 - 2026-07-18 20:17 D_80082050 COMPLETED-C after 1 sessions.
 - 2026-07-18 20:19 motion_SetMotion s44 [rederive] OWNER-GATED — parked pending owner ruling: motion_SetMotion owner-gated: 2026-07-18 OWNER-ESCALATION verified on file and unruled (docs/grind/decisions.md:761-776; only later entry is the D_80082050 PASS at :778); mandated rederive axis is dead by construction under the Judge-certified closure theorem (s8/s35/s36) - no fresh m2c/sibling chassis can leave the s10 three-basin partition.
 - 2026-07-19 01:32 func_80045294 s1 [recon] floor=2: Recon confirmed: honest floor 2 (83/83 insns); sole residual is a 2-insn sched2 tie in the prologue cluster (sll $3,$18,4 vs the $16 save/copy). No rules, no cheat-asm.
+- 2026-07-19 01:40 func_80045294 s2 [structural] floor=2: s2 structural: 3 more hypotheses killed (guard-form neutral, s5-hoist and operand-swap harmful); sched2 tie still 2-insn residual, no C-structural lever hand-derived so far.

@@ -1,31 +1,37 @@
 {
  "func": "func_80045294",
  "file": "text1a_c",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 2,
    "modality": "recon",
    "headline": "Recon confirmed: honest floor 2 (83/83 insns); sole residual is a 2-insn sched2 tie in the prologue cluster (sll $3,$18,4 vs the $16 save/copy). No rules, no cheat-asm."
+  },
+  {
+   "session": 2,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "s2 structural: 3 more hypotheses killed (guard-form neutral, s5-hoist and operand-swap harmful); sched2 tie still 2-insn residual, no C-structural lever hand-derived so far."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Read the sched2 tie directly and derive a C spelling that inverts INSN_PRIORITY between the sll and the move16.",
-   "mechanism": "sched.c INSN_PRIORITY = longest downstream dependence chain. Instrumented cc1 (or -da RTL dump) will show the exact chain length for each and identify which downstream insn is the pivot.",
-   "next_probe": "Preprocess text1a_c.c to base.i; run tools/gcc-2.7.2/build/cc1 <build-flags> -da base.i; extract sched2 priorities for the prologue-region insns of func_80045294 (or a BB2_SCHED_DEBUG instrumented cc1). Then propose a C spelling that lengthens move16's downstream chain (e.g. immediate consumer of `i` in first arg position) or shortens sll's."
+   "hypothesis": "Instrumented cc1 -da RTL dump on current candidate.c reveals the exact INSN_PRIORITY of the sll pseudo vs the move16 pseudo in sched2 and the pivot downstream chain member (currently believed: sll->addu $1->lw $20->addu $21 = length 4 vs move16->slt->beqz = length 3). Confirming which insn's chain terminator dominates lets us target the C for exactly that dependence.",
+   "mechanism": "sched.c INSN_PRIORITY = length of longest downstream data-dependence chain within the basic block; ties broken by insn UID (creation order). The chain terminator identity tells us which downstream insn to relocate/shorten in C.",
+   "next_probe": "Preprocess text1a_c.c to base.i via cc1 -E path; run `tools/gcc-2.7.2/build/cc1 <build-flags> -da base.i` in tmp/grind/func_80045294/s3/; parse the .sched2 dump for func_80045294 and extract priorities for prologue-region insns. Cross-reference sched2 tiebreak logic to confirm the mechanism."
   },
   {
-   "hypothesis": "s5 chain restructuring: express `s5 = s4 + a1` so its addu no longer extends sll's downstream chain, while still landing addu $21,$20,$19 in the beqz delay slot.",
-   "mechanism": "The sll priority derives from sll->addu $1->lw $20->addu $21. Breaking that chain at addu $1 (address computation for the table load) or at addu $21 (via a different source for s5) drops sll's priority below move16's.",
-   "next_probe": "Try spellings: (a) reload the table value via a walking pointer so lw $20's address does not derive from sll; (b) derive s5 from a reloaded value or a semantically-equivalent expression; sandbox each. Pure-C only, no dead stores/barriers."
+   "hypothesis": "Expressing the loop iterator differently (e.g. `for (i = a0; i < count; i++)` with the initializer inside for's init-clause) rearranges tree_LUID and RTL creation order enough to change the sched2 tiebreaker without disturbing the RA fingerprint.",
+   "mechanism": "GCC 2.7.2 expands `for`-init as the FIRST statement of the loop nest; this can steer pseudo creation order for i differently than a bare `s32 i = a0;` declaration.",
+   "next_probe": "Rewrite the guard+loop as `for (i = a0; i < count; i++) { ... }` (moving i's init into the for-clause) while keeping v1-before-i by declaring v1/s4 first. Sandbox. If it moves the tie, expand to other init-clause placements."
   },
   {
-   "hypothesis": "Permuter campaign with a CLEAN single-function target.o sweeping prologue-region spellings.",
-   "mechanism": "Random + directed PERM_* mutations of guard forms (if/do-while vs while vs for), v1/s4/s5 expression spellings, statement placements \u2014 cross-product beyond hand probes. Fresh-seed discipline (~20-30 seeds) per [[permuter-fresh-seed-discipline]]. Clean target.o built from asm/funcs/func_80045294.s + prelude so the base score is the real weighted diff (no ~340k branch-address noise).",
-   "next_probe": "Build target.o via decomp-permuter prelude; run permuter with --stop-on-zero on candidate.c; monitor for closing forms and cheat-vet each one before proposing."
+   "hypothesis": "Permuter campaign with a CLEAN single-function target.o (base score = weighted diff without ~340k branch-address noise) will find a directed-PERM prologue-region spelling that hand-probes missed.",
+   "mechanism": "Random + PERM_* directed mutations of guard/loop/init spellings across 20-30 fresh seeds \u2014 the cross-product of forms is far larger than hand-probes can cover.",
+   "next_probe": "Build target.o from asm/funcs/func_80045294.s + decomp-permuter prelude (per tmp/grind/func_80045294/s1/diff_target.sh scaffolding). Run permuter --stop-on-zero on candidate.c; monitor for closing forms and cheat-vet each before proposing."
   }
  ],
  "judge_constraints": [],
