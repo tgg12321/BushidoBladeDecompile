@@ -363,3 +363,4 @@
 - 2026-07-19 15:02 tslPolyF4Init COMPLETED-C after 3 sessions.
 - 2026-07-19 15:09 func_80057CC8 s1 [recon] floor=3: recon: floor-3 candidate replayed on main; gap fully localized to first-p addu coalescing asymmetry
 - 2026-07-19 15:27 func_80057CC8 s2 [structural] floor=3: s2 structural: 5 hypotheses KILLED; candidate floor 3 holds; two-def-phi alone is not the p1-addu coalescing discriminator.
+- 2026-07-19 15:38 func_80057CC8 s3 [structural] floor=3: s3 structural: 7 hypotheses KILLED (3 harmless, 3 catastrophic bounds, 1 no-op); candidate floor 3 holds; statement-order window is fully constrained.

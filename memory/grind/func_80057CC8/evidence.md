@@ -114,3 +114,13 @@ Per user 2026-06-22: keep working it; not permanently parked.
 - [s2] Type width (u16 vs s16) of prev_idx and shift-vs-cast spelling of the sign-extend chain are both folded identically by GCC — combine.c reduces them to the same pattern. Not levers.
 
 - [s2] Sibling matched functions in text1b.c (func_8006133C, 800613C8, 80061454, 800614E0) are structurally DIFFERENT — they are s32* pointer-walk-with-post-increment (`D_800F1140 = *p++; ...`) with no phi-shape index. No transferable lever.
+
+- [s3] [s3] Candidate.c applied to src/text1b.c line 11837 replays cleanly on current main HEAD: sandbox --disable all reports score=3, target_insns=111, build_insns=111, rules_dropped=7, cheat_asm_stripped=395.
+
+- [s3] [s3] Statement-order structural window is FULLY CONSTRAINED at the C level: any reordering that moves the next_idx block, scale computation, or table use out of its current position pushes the score sharply UP (32/35/41). The prev_idx-if -> next_idx-block -> p1-addu -> jal1 -> p2-addu -> jal2 sequence is a fixed point.
+
+- [s3] [s3] Named-intermediate scheduling levers (dx/dy locals around calls, moved table def, cx/cy type-narrow) are all folded by GCC's combine/CSE to bytes identical to the inline candidate form. These structural axes are not levers.
+
+- [s3] [s3] The s2 finding that the block-scope-alias-p1 form scores 0 + SHA1-matches but was rejected by cheat-reviewer as live-range-shaping alias (rejected/block-scope-alias-p1.c) further narrows the search: the RA-coalescing gap CAN be closed by shaping the p1 pseudo's lexical lifetime, but that spelling is a cheat-by-any-spelling. A legitimate structural form must arise from a semantically-meaningful C restructure, not lifetime shaping.
+
+- [s3] [s3] Combined s1+s2+s3 kill-count: 12 hypotheses KILLED across statement order, type width, declaration order, block scoping, and named-intermediate. Cheap structural axes are exhausted; remaining probe surface is (a) forensic cc1 -da greg dump to name the pseudo/copy-pref, (b) FAKE duplicated-statement-into-arms with mandatory cheat-reviewer, (c) directed permuter from the candidate baseline.
