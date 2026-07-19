@@ -486,3 +486,13 @@ as separate li's near the dispatch (only case-10's 13 at a bne delay)
 - [s39] Judge constraints bind: no USE/CLOBBER-manufacture spelling of any kind may be committed; regfix.txt:2190 and the committed byte-correct form stay untouched on main pending the owner ruling; both frontier items are owner acts (sanction family (a) vs refuse family (b)), not grindable work.
 
 - [s39] Floor unchanged at 10 (honest pure-C distance 1 = the single li 13 word protected by the last rule); candidate.c retained in memory/grind/motion_SetMotion/ as the best banked form.
+
+- [s40] docs/grind/decisions.md:761-776 (2026-07-18 OWNER-ESCALATION, filed by s7 per the 17:34 Judge disposition) is the FINAL entry in the 777-line file with no owner ruling following it — re-verified fresh this session (s40)
+
+- [s40] Permuter axis dead two-sided: s4 merged-seed campaigns (112,618-iter random, lone score-0 a scorer false match with 6 real word diffs; 2,049-iter directed, best find 100) + s5 unmerged-r13-seed campaign (54,087 iters, plateau 82 raw word diffs, merge re-forms with a different partner)
+
+- [s40] Closure theorem carries nine independent confirmations (structural r1-r13, F1 sched2-slack non-transplantable, three permuter campaigns, s6 white-box traces of honest/committed/r13 TUs, s7 white-box trace of the n1 union form, s7 zero-community-evidence survey of sotn-decomp/rood-reverse/esa masters)
+
+- [s40] Binding Judge constraints forbid committing any USE/CLOBBER-manufacture spelling — the only C-reachable byte-free mechanism left — pending the owner's option (a)/(b) ruling
+
+- [s40] Ledger bank verified intact this session: memory/grind/motion_SetMotion/candidate.c (floor-10 byte-correct form) + 9 rejected forms including the byte-proven, trace-proven n1 union form (judge-fail-0717-1708.c); src/code6cac_c_mid.c and regfix.txt:2190 untouched on main per the 17:34 disposition; no campaigns launched, no engine mutation commands run

@@ -401,3 +401,15 @@
 - probe: Re-read memory/grind/motion_SetMotion/hypotheses.md and docs/grind/decisions.md:755-776 first-hand this session; cross-checked every structural family in the codegen-technique-index against the banked KILLED set and the binding Judge constraints.
 - result: No unmeasured class exists: r1-r13 cover the full catalog and are all KILLED (merged 361-insn canonical shape or real byte cost, e.g. r13 +6 insns); the sanctioned split-init family is specifically measured dead (cse folds before jump2); the closure theorem (any byte-matching compile forces both 13-sites to [set13; j] with adjacent CODE_LABEL, merge guaranteed, USE/CLOBBER the only byte-free breaker) holds with eight independent confirmations including the s6 BB2_XJUMP_DEBUG pass-level trace. The sole remaining lever is the union-CLOBBER family, forbidden by binding Judge constraints pending the owner ruling.
 - verdict: KILLED
+
+## [s40] The filed OWNER-ESCALATION for motion_SetMotion remains the final, unruled entry in docs/grind/decisions.md
+- mechanism: owner-gated requires the escalation to exist and be unruled; only the owner can advance either option (a) sanction the union-constructor CLOBBER family or (b) refuse and sign a disposition for regfix.txt:2190
+- probe: Read docs/grind/decisions.md tail this session (s40): the 2026-07-18 OWNER-ESCALATION block occupies lines 761-776, the file ends at line 777, and no OWNER RULING entry follows it
+- result: Escalation present, final, and unruled as of 2026-07-18 s40
+- verdict: CONFIRMED
+
+## [s40] The mandated permuter axis is already measured dead and a fresh campaign cannot produce a sanctioned honest find
+- mechanism: s10 three-basin partition: every honest chassis is in the merged basin (wrong bytes) or the unmerged-with-cost basin (>=2 insns / 76+ word diffs); the only byte-free breaker is the Judge-banned USE/CLOBBER family. s4's 112,618-iter random + 2,049-iter directed campaigns (merged seeds) yielded only false-zero (scorer-blind, 6 real word diffs) and semantic-theft sub-100 finds; s5's 54,087-iter unmerged-r13-seed campaign plateaued at 82 raw word diffs; the s6 BB2_XJUMP_DEBUG trace certifies the closure theorem at pass level
+- probe: Ledger review per the brief's no-respin rule: rejected/s4-permuter-false-zero-swapped-jump-targets.c, rejected/s4-permuter-semantic-theft-store-into-case911.c, rejected/s5-permuter-unmerged-r13-seed-plateau.c all banked; permuter-modality sessions s13/s14/s22/s31/s32 independently re-verified the same closure
+- result: Both basins measured dry; no permuter chassis class remains; brief forbids re-measuring a dead axis when the filed escalation exists
+- verdict: CONFIRMED
