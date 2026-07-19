@@ -553,3 +553,15 @@
 - [s34] Sixth pass-level wall named at EXPAND, upstream of the five ledger walls (cse.c BB substitution s7/s15/s25; local/global_alloc pool split s6/s24; sched1+sched2 LUID coupling s16; no pure-C CFG-splitter defeats cse s10/s11/s25; combine.c substitute-and-delete refusal s33). Full chain now spans EXPAND → jump → cse → loop → cse2 → flow → combine → local/global_alloc → sched1/sched2 → reorg, with six of ten passes cited from direct base.i.<pass> dumps.
 
 - [s34] docs/grind/decisions.md STILL has no OWNER-ESCALATION entry for func_80045294 (grep 'func_80045294' → 0 hits). Per contract, 'owner-gated' is not emittable this session; owner-escalation-drafting is the sole remaining sanctioned move (s19-s33 consensus).
+
+- [s35] [s35] Baseline reconfirmed pre + post: sandbox --disable all -> score=2, target_insns=83, build_insns=83, rules_dropped=0, cheat_asm_stripped=78. src/text1a_c.c unchanged; working tree clean (only metrics/events.jsonl modified, engine capture).
+
+- [s35] [s35] Novel rederive sub-axis: block-0-isolated fingerprint (23-line prologue+block-0 slice) shingle-searched (k=3, top=8) across all three corpora. Max similarity 0.122 (gcc272psx 6LWWm), below the 0.15 relevance threshold established at s9.
+
+- [s35] [s35] Cross-corpus zero-score matched scratches at reduced similarity (hvTSS/Z60NJ/KrpLx/AFJQk/sdH51/DTKlm/wnwX1 all sub-0.12): none carry a transplantable form of the sll/move16/sw prologue cluster. Their matched C shapes solve different block-0 structures.
+
+- [s35] [s35] Direct comparison to s9: whole-function shingle top=0.127, block-0-only shingle top=0.122. Narrowing the input REDUCES overlap because most PSX-GCC-2.7.2 scratches don't share the 4-callee-save preserve + a0<<4 shift-index derivation prologue. This function's block-0 fingerprint appears unique in the local corpus.
+
+- [s35] [s35] Rederive modality dead across a 12th independent sub-axis (adds to the 11 banked at s26): (1) single-target m2c mips-gcc-c (s8), (2) cross-target m2c mipsel/ido (s17), (3) Kengo source/debug/globals (s8/s17), (4) whole-function decomp.me shingle (s9), (5) BB2 sibling shape (s17), (6) m2c --gotos-only (s18), (7) m2c mwcc dialect (s18), (8) m2c mipsee no-stack-spill (s18), (9) m2c stack-structs+desc-regs (s26), (10) m2c context-populated+globals-all (s26), (11) Kengo asm-level semantic comparison (s27, different function proved), (12) block-0-isolated corpus shingle (s35).
+
+- [s35] [s35] Consistent with the six pass-level walls named across s6/s7/s10/s11/s15/s16/s33/s34: expand emit_insn structural forcing of insn 19 (s34) -> combine 56/45/2 substitute-and-delete refusal (s33) -> cse.c BB substitution (s7) -> local+global_alloc pool split with no coalescer (s6) -> sched1+sched2 LUID coupling (s15/s16) -> no pure-C CFG-splitter (s10/s11). No rederive-reachable C shape defeats this chain.

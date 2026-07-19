@@ -1,8 +1,8 @@
 {
  "func": "func_80045294",
  "file": "text1a_c",
- "session_count": 34,
- "current_modality": "forensics",
+ "session_count": 35,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -207,13 +207,24 @@
    "floor": 2,
    "modality": "forensics",
    "headline": "s34 forensics: 8-UID sll/move16 delta MINTED at EXPAND emit_insn (s4's initializer, insns 17+19); combine deletes insn 17 but insn 19 (s4 load) survives \u2014 sixth pass-level wall named upstream of s33's"
+  },
+  {
+   "session": 35,
+   "floor": 2,
+   "modality": "rederive",
+   "headline": "s35 rederive: block-0-isolated corpus fingerprint search KILLED (top sim 0.122 <0.15); 12th independent rederive sub-axis dead; owner-escalation still not filed"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "OWNER-ESCALATION entry for func_80045294 gets drafted in docs/grind/decisions.md now citing SIX pass-level walls (adds s34 expand-side structural forcing of insn 19 to the s33 chain).",
-   "mechanism": "s34 upgrades the pass-chain citation from 5 walls (combine.c mint \u2192 cse.c substitution \u2192 local/global_alloc pool split \u2192 sched1+sched2 LUID coupling \u2192 no pure-C CFG splitter) to 6 walls by naming EXPAND emit_insn as the true mint site with s4's initializer producing the two intermediate SETs that create the delta. The escalation writeup can now cite the full chain from expand through reorg with direct pass-output evidence.",
-   "next_probe": "Draft docs/grind/decisions.md entry with the 6-wall stack (expand emit_insn structural forcing of insn 19 via s4 data dep on v1 / combine.c 56/45/2 substitute-and-delete refusal / cse.c BB substitution / local+global_alloc pool split with no coalescer / sched1+sched2 LUID coupling / no pure-C CFG-splitter defeats cse), the 25-form rejected bank, the ~137,752-iter 9-chassis permuter budget, the 11 rederive sub-axes converging on H1, and the s30 formal closure of the multi-axis free-axis surface. Then emit owner-gated with escalation_ref pointing to that entry."
+   "hypothesis": "OWNER-ESCALATION entry for func_80045294 in docs/grind/decisions.md is ripe to draft citing the 6-wall pass-chain (expand->combine->cse->pool-split->sched1+sched2->no-CFG-splitter), 25 rejected forms, ~137,752 iters across 9 permuter chassis/mode combinations, 12 rederive sub-axes all dead, and the s30 formal closure of the multi-axis free-axis surface. No sanctioned axis remains un-measured.",
+   "mechanism": "Every sanctioned modality axis has been driven to a measured KILLED result. The pass-chain evidence is direct (pass-output witnessed at expand, combine, cse, greg, sched1, sched2). The permuter surface has been exhausted across every chassis/mode combination in decomp-permuter (s20 named this). The rederive surface is measured dead across 12 independent sub-axes. The structural surface is exhausted across s1-s12+s29+s30 including the formal free-axis closure. The one remaining sanctioned move is the owner ruling on canonical-asm authorization vs a pure-C form that hand-derivation cannot reach.",
+   "next_probe": "Next session (whatever modality the driver picks) should either (a) file the escalation entry in docs/grind/decisions.md with the 6-wall stack + evidence bank + 25-form rejected list + 9-chassis permuter budget summary, then emit owner-gated on the following session; or (b) if the driver picks permuter/forensics/structural again, bank one more measurement pass to further pin the escalation stack (though every reachable axis is already dead)."
+  },
+  {
+   "hypothesis": "The block-0 fingerprint uniqueness observed at s35 (sim 0.122 max) is itself a diagnostic signal: this function's prologue shape may be truly rare in the PSX-GCC-2.7.2 corpus, indicating either (a) the original source used an unusual initializer clustering that no other project has re-derived from asm, or (b) the shape is hand-optimized asm that no C-source lowering reproduces in the surveyed corpus.",
+   "mechanism": "If (b) were true, that would be direct evidence supporting canonical-asm authorization (STRONG-tier via hand-coded-asm-recognition). But the pattern is fully reachable from C (candidate.c does score=2, one sched-tie away from match), so (b) is unlikely at this signal strength. (a) is more likely and reinforces owner-escalation rather than canonical-asm.",
+   "next_probe": "Not directly actionable within grinder modalities. Feeds into the OWNER-ESCALATION writeup as supplementary evidence: 'even a corpus-wide search across ~1600 PSX-GCC-2.7.2 scratches produces no block-0 fingerprint match above sim 0.15 \u2014 this function's residual is not a shared cross-project pattern.'"
   }
  ],
  "judge_constraints": [],
