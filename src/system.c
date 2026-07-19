@@ -225,7 +225,7 @@ next:
 done:
     return result + 1;
 }
-s32 tslPolyF4Init(s32 a0, s32 a1, s32 a2) {
+s32 tslPolyF4Init(u8 a0, s32 a1, s32 a2) {
     s32 count;
     s32 idx;
     s32 saved;
@@ -233,11 +233,11 @@ s32 tslPolyF4Init(s32 a0, s32 a1, s32 a2) {
     s32 *base;
     s32 status;
 
-    idx = a0 & 0xFF;
     saved = g_cd_callback_a;
+    count = 3;
+    idx = a0 & 0xFF;
     base = g_cd_sector_buf;
     elem = base + idx;
-    count = 3;
 
 loop:
     g_cd_callback_a = 0;

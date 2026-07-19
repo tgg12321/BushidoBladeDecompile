@@ -4,15 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "tslPolyF4Init",
-      "file": "system",
-      "distance": 8,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "prologue_fix": 1
-    },
-    {
       "func": "func_80057CC8",
       "file": "text1b",
       "distance": 9,
@@ -3009,14 +3000,14 @@
     }
   ],
   "counts": {
-    "total": 364,
-    "active": 292,
+    "total": 363,
+    "active": 291,
     "by_status": {
-      "active": 292,
+      "active": 291,
       "parked": 72
     },
     "by_verdict": {
-      "C": 138,
+      "C": 137,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
