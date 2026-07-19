@@ -238,3 +238,21 @@
 - probe: Edited src/text1a_c.c to `s32 v1 = ({ a0 << 4; });`. Ran sandbox --disable all.
 - result: score=2, target_insns=83, build_insns=83 -- IDENTICAL to baseline. GCC 2.7.2's c-parse.y collapses `({ single_expr; })` to the bare expression at parse time; the resulting tree/RTL is byte-identical to `s32 v1 = a0<<4;`. No cse boundary emitted, no LUID shift. Independently corroborates s10's mechanism-agnostic conclusion via a different lowering path.
 - verdict: KILLED
+
+## [s12] Moving `s32 sum = 0;` from decl position 0 to position 5 (after v1/s4/i/count/s5) is a neutral extension of the {i,s4,count,s5} free-axis cluster (s1/s3/s11).
+- mechanism: Free-axis inference: if {i,s4,count,s5} positions are all sched2-neutral (only v1-before-i binds), sum's position may also be free since sum's assignment is a constant.
+- probe: Edited src/text1a_c.c to place `s32 sum=0;` after `s32 s5=s4+a1;`. Ran `wteng sandbox func_80045294 --disable all`.
+- result: score=2 -> 4, build_insns=83. Two register-choice diffs surface; sched2 sll/move16 residual persists. sum's assignment LUID after s5's rotates sum's RA away from $17, cascading through the accumulator loop.
+- verdict: KILLED
+
+## [s12] Introducing a named intermediate local `s32 aa = a0;` and deriving both `v1 = aa<<4` and `i = aa` from the alias shifts sched2's INSN_LUID tiebreak between sll and move16 by inserting an extra pseudo-creation LUID between a0's arg-set and the shift.
+- mechanism: cse.c's value-equivalence tables may treat the aa pseudo as a distinct value-class until the (set aa a0) is folded, delaying the substitution that collapses a0's live range; alternatively the added assignment LUID shifts the sll and move16 LUIDs symmetrically.
+- probe: Edited src/text1a_c.c to insert `s32 aa=a0;` before `s32 v1=aa<<4;` and changed `s32 i=a0;` to `s32 i=aa;`. Ran sandbox.
+- result: score=2, build_insns=83 -- NEUTRAL. cse.c value-numbers {a0, aa, i} into the same class; the added pseudo does not shift the LUID delta between sll (insn 14) and move16 (insn 22). Rules out named-alias intermediate as a LUID lever for this tie.
+- verdict: KILLED
+
+## [s12] Declaring v1 as `u32` with an explicit `(u32)a0` cast on the shift operand routes through a different expand-shift path than `s32 v1 = a0 << 4;`, shifting the ashift RTX's tree_LUID position or its combine-visibility.
+- mechanism: The width/signedness axis at the destination-type surface is untested by s5's arithmetic-form probes (which only varied operand-side type: `(u32)a0*16u`, `a0*16`, `(u8*)0+a0`). If the destination type ripples into expand_shift's TRUNCATE/ZERO_EXTEND handling, a distinct RTL sequence could emerge.
+- probe: Edited src/text1a_c.c to `u32 v1 = (u32)a0 << 4;`; other decls unchanged. Ran sandbox.
+- result: score=2, build_insns=83 -- NEUTRAL. Byte-identical bytes to baseline. cc1 expand_shift produces `(ashift (reg:SI a0) (const_int 4))` regardless of destination declared type; the constant shift is signedness-agnostic. Downstream address arith identical.
+- verdict: KILLED

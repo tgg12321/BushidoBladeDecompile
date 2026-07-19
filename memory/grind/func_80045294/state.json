@@ -1,7 +1,7 @@
 {
  "func": "func_80045294",
  "file": "text1a_c",
- "session_count": 11,
+ "session_count": 12,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -69,23 +69,29 @@
    "floor": 2,
    "modality": "structural",
    "headline": "s11 structural: 3 more untested axes killed (combined-declarator NEUTRAL, count-before-i free-axis NEUTRAL, GCC statement-expression NEUTRAL) -- all hand-derivable pure-C structural spellings for the "
+  },
+  {
+   "session": 12,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "s12 structural: 3 more axes killed (sum-init position HARMFUL at position 5, a0-alias-local NEUTRAL, u32-v1-cast NEUTRAL); sum-decl-at-0 shown load-bearing (distinct from the {i,s4,count,s5} free-axis"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Directed permuter over PERM_STMT_LIST + PERM_ADD_SUB + PERM_DUMMY_COMMA_EXPR + PERM_REORDER_DECLS reaches a C spelling that shifts sll's LUID above move16's WITHOUT (a) introducing a second tree-level a0<<4 (s6 local/global pool split, +1 CSE copy), (b) source-ordering i=a0 before v1=a0<<4 in a way cse_extended_basic_block sees as straight-line (s7 + s10 + s11 statement-expression all confirm cse.c is robust to hand-derivable CFG-splits), OR (c) triggering the H1-family RA rotation via any spelling that collapses a0's live range at the i-assignment.",
-   "mechanism": "s6 + s7 + s10 + s11 pin four orthogonal hand-derivation dead ends across three distinct GCC passes (local_alloc/global_alloc, cse.c, jump.c). Permuter mutations can explore C shapes routing through a different expand/cse/global path entirely -- shapes hand-derivation cannot enumerate. Fresh-seed discipline per feedback/permuter-fresh-seed-discipline: ~20-30min basins per seed, stop at first budget hit with no new floor.",
-   "next_probe": "Un-block permuter workspace: extract func_80045294 into a MINIMAL single-function .c (drop the whole-function __asm__ block for func_80044010 + cpp-conflict D_80095328 / D_800A9D04 / func_80042874 / func_8004574C decls, keep only D_800EE* / D_800A33* / callee prototypes); build target.o from disc bytes @0x35A94 via tools/decomp-permuter/prelude.inc (r3000 variant, drop `.set gp=64`). Launch tools/permuter_campaign.py with the four PERM_* macros above."
+   "hypothesis": "Directed permuter over PERM_STMT_LIST + PERM_ADD_SUB + PERM_DUMMY_COMMA_EXPR + PERM_REORDER_DECLS reaches a C spelling that shifts sll's LUID above move16's WITHOUT (a) two tree-level a0<<4 (pool split), (b) source-ordering i=a0 before v1=a0<<4 (cse.c collapse), OR (c) any spelling that collapses a0's live range at the i-assignment.",
+   "mechanism": "s6/s7/s10/s11/s12 pin every hand-derivable axis as dead across three GCC passes (local_alloc/global_alloc, cse.c, jump.c/c-parse.y CFG splitters). Permuter mutations can explore C shapes routing through a different expand/cse/global path entirely -- shapes hand-derivation cannot enumerate. Fresh-seed discipline per feedback/permuter-fresh-seed-discipline.",
+   "next_probe": "Un-block permuter workspace: extract func_80045294 into a MINIMAL single-function .c (drop whole-function __asm__ for func_80044010 + cpp-conflict D_80095328 / D_800A9D04 / func_80042874 / func_8004574C decls); build target.o from disc bytes @0x35A94 via tools/decomp-permuter/prelude.inc (r3000 variant, drop `.set gp=64`). Launch tools/permuter_campaign.py with the four PERM_* macros."
   },
   {
-   "hypothesis": "Forensics probe: reading base.i.jump0 (post-jump.c) and base.i.cse (post-cse.c) for the do-while(0) shape distinguishes s10-mechanism (a) [jump.c collapses while(0) before cse.c runs] from (b) [cse_extended_basic_block spans the fall-through and value-numbers across].  If (a), a construct that survives jump.c folding may still work; if (b), no CFG-split construct can defeat cse.c on this coupling regardless of source-form.",
-   "mechanism": "cc1 -da emits per-pass RTL dumps. jump0 is the first jump-optimization pass output; cse is the CSE pass output. Comparing the BB structure of the two dumps around insns 14/15/17 for the do-while(0) form tells us at which pass the boundary was destroyed. s11's statement-expression NEUTRAL kill is compatible with either mechanism -- both would collapse `({expr;})` at parse time, upstream of both -- so does not resolve the distinction on its own.",
-   "next_probe": "Reapply memory/grind/func_80045294/rejected/dowhile0-around-v1-after-i.c to src, run `cc1 <build-flags> -da base.i` in tmp/grind/func_80045294/sN/, then grep the func_80045294 region in base.i.jump0 and base.i.cse for the (set 77 ...) and (ashift ...) insns. Verdict: (a) if jump0 already collapses to one BB, (b) if two BBs survive to cse but cse-extended-basic-block spans them."
+   "hypothesis": "Forensics probe: reading base.i.jump0 (post-jump.c) and base.i.cse (post-cse.c) for the do-while(0) shape distinguishes s10-mechanism (a) [jump.c collapses while(0) before cse.c runs] from (b) [cse_extended_basic_block spans the fall-through and value-numbers across].",
+   "mechanism": "cc1 -da emits per-pass RTL dumps. jump0 is the first jump-optimization pass output; cse is the CSE pass output. Comparing BB structure around insns 14/15/17 for the do-while(0) form tells us which pass destroyed the boundary.",
+   "next_probe": "Reapply memory/grind/func_80045294/rejected/dowhile0-around-v1-after-i.c to src, run `cc1 <build-flags> -da base.i` in tmp/grind/func_80045294/sN/, then grep the func_80045294 region in base.i.jump0 and base.i.cse for (set 77 ...) and (ashift ...) insns."
   },
   {
-   "hypothesis": "OWNER-ESCALATION posture (NOT invoked this session; noted for the driver's ladder): if permuter (#1) exhausts its fresh-seed budget with no closing form AND forensics (#2) confirms mechanism (b) [cse.c spans fall-through, no CFG-split construct can help], then every sanctioned pure-C axis is measured dead. The residual is a 2-insn sched2 tie driven by two pass-level dead ends coupled at C-source level. At that point a filed OWNER-ESCALATION citing s1-s11 evidence would be the correct posture (candidate for canonical-asm authorization or extended park). NOT this session -- one modality (permuter) remains grindable.",
+   "hypothesis": "OWNER-ESCALATION posture (NOT invoked this session): if permuter (#1) exhausts fresh-seed budget with no close AND forensics (#2) confirms mechanism (b) [cse.c spans fall-through], every sanctioned pure-C axis is dead. The residual is a 2-insn sched2 tie coupled by two pass-level dead ends at the C-source level.",
    "mechanism": "N/A (posture note).",
-   "next_probe": "N/A (posture note)."
+   "next_probe": "N/A (posture note). NOT invoked this session -- permuter modality remains grindable."
   }
  ],
  "judge_constraints": [],
