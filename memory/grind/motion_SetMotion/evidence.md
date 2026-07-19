@@ -464,3 +464,17 @@ as separate li's near the dispatch (only case-10's 13 at a bne delay)
 - [s37] [s37] Ledger bank verified intact on disk: memory/grind/motion_SetMotion/candidate.c (44,155 bytes, floor-10 byte-correct Wall-1-solved form) plus 9 rejected forms including the byte-proven, trace-proven n1 union form (judge-fail-0717-1708.c) referenced by escalation option (a)
 
 - [s37] [s37] No src/ edits made this session; src/code6cac_c_mid.c, regfix.txt:2190, and the committed byte-correct form remain untouched on main per the 2026-07-17 17:34 Judge disposition item (3); working tree clean except metrics append
+
+- [s38] docs/grind/decisions.md tail verified this session (structural modality): the 2026-07-18 motion_SetMotion OWNER-ESCALATION (filed by grind s7) is the FINAL entry - the file ends with its References line and no owner ruling follows; escalation remains unruled as of 2026-07-18 s38.
+
+- [s38] Mandated structural axis dead on the ledger without re-measurement: r1-r13 all KILLED (s2/s3/s3b), 17:34 Judge ruling certifies exhaustion complete, s10 three-basin partition quantifies over all byte-matching compiles; binding Judge constraints forbid the only byte-free breaker (USE/CLOBBER manufacture).
+
+- [s38] Ledger bank intact: candidate.c 44,155 bytes (floor-10 form) + 9 rejected forms; src/ and regfix.txt clean, no edits made; committed form and regfix.txt:2190 untouched on main per the 17:34 disposition.
+
+- [s38] docs/grind/decisions.md tail verified this session (s38): the file ends with the 2026-07-18 motion_SetMotion OWNER-ESCALATION References line; no owner ruling follows - the escalation is unruled.
+
+- [s38] Ledger bank verified intact this session: memory/grind/motion_SetMotion/candidate.c present at 44,155 bytes (floor-10 byte-correct Wall-1-solved form) and rejected/ holds 9 banked forms including the byte-proven, trace-proven n1 union form (judge-fail-0717-1708.c).
+
+- [s38] git status clean on src/ and regfix.txt: no edits made this session; the committed byte-correct form and regfix.txt:2190 stay untouched on main per the 17:34 Judge disposition item (3).
+
+- [s38] Structural axis dead per ledger without re-measurement: r1-r13 KILLED (s2/s3/s3b), F1 sched2-slack non-transplantable (zero byte-room at the 13-sites), label-bonus undodgeable in any honest chassis (s6 r13 trace); the only remaining C-reachable byte-free breaker is the Judge-banned USE/CLOBBER manufacture family.

@@ -383,3 +383,15 @@
 - probe: Read docs/grind/decisions.md tail this session; verify ledger bank (candidate.c + rejected/) on disk
 - result: CONFIRMED: the escalation (filed by grind s7 per the 2026-07-17 17:34 Judge disposition) occupies lines 761-776 and is the FINAL entry, no owner ruling follows; all five ladder axes (structural s2/s3/s3b r1-r13, permuter s4/s5 168,754 iters two-sided, forensics s6/s7 white-box traces, rederive s8/s9 dead by construction, synthesis s10 partition) are measured dead; candidate.c (44,155 bytes) and all 9 rejected forms verified present
 - verdict: CONFIRMED
+
+## [s38] The 2026-07-18 OWNER-ESCALATION for motion_SetMotion remains on file and unruled, so the owner-gated exit condition holds for session 38.
+- mechanism: Per the brief, owner-gated requires a filed OWNER-ESCALATION in docs/grind/decisions.md plus every remaining sanctioned axis measured dead; the escalation was filed by grind s7 per the 2026-07-17 17:34 Judge disposition and is marked do-not-self-resolve.
+- probe: Read docs/grind/decisions.md:755-776 and the file tail this session: the OWNER-ESCALATION block is the FINAL entry and the file ends with its References line - no owner ruling follows it as of 2026-07-18 s38.
+- result: Escalation present and unruled; both mutually exclusive owner options (a) sanction the union-constructor CLOBBER family / (b) refuse and sign a disposition for regfix.txt:2190 stand open; community-evidence absence stated plainly in the entry.
+- verdict: CONFIRMED
+
+## [s38] The mandated structural axis has no unmeasured lever left; re-measuring it would only re-derive banked kills.
+- mechanism: Ledger: r1-r4 (s2), r5-r9 (s3), r10-r13 (s3b) all KILLED - every structural spelling either canonicalizes to the merged 361-insn shape or pays real bytes; the s10 three-basin partition quantifies over ALL byte-matching compiles; the 17:34 Judge ruling certifies exhaustion complete with F1 discharged; binding Judge constraints forbid the only byte-free breaker (USE/CLOBBER manufacture).
+- probe: Verified the rejected bank on disk (9 forms including structural-13pair-axis-closed.c, s3-structural-sweep-goto-reorder-thunk-splitinit-hoist-dead.c, s3b-dupcase-ternary-u32-preswitch-if-dead.c) and the evidence.md axis-kill entries s2/s3/s3b/s10.
+- result: Structural axis measured dead; the closure theorem carries nine independent confirmations including two BB2_XJUMP_DEBUG white-box traces (s6, s7); no honest structural spelling remains unmeasured.
+- verdict: CONFIRMED
