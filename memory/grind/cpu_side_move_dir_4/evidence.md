@@ -1622,3 +1622,19 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s100] Structural block-local axis, do-while(0) at all scopes, multi-set carriers, named dispatch, fn-body hoists, marionation transplants, m2c rederive, spelling variants, POLL-region 9-probe sweep, 6 permuter chassis are all measured KILLED per s3/s4/s5/s8/s9/s11/s12/s13/s14/s85-s99 evidence entries.
 
 - [s100] Ledger merge saved to tmp/grind/cpu_side_move_dir_4/s100/synthesis.md with attack ladder for s101 (F1 structural + FAKE + layer-2), s102 (F2 forensics ALLOCDBG luid-per-pseudo), and s103+ escalation contingency.
+
+- [s101] candidate.c (h5) re-verified sandbox --disable all -> masked=2 build_insns=160 (baseline confirmed twice, before and after probe restoration)
+
+- [s101] Probe A (block-scope pass-through, arg5 only) masked=2 build_insns=160 = byte-identical to baseline; combine.c substitution folds tbl_alias references back onto tbl_125c pseudo (SAME mechanism s11/s12 measured on arg5_addr two-SET decompositions)
+
+- [s101] Probe B (block-scope from-global) masked=16 build_insns=161; the second lui/addiu of D_800A125C creates an independent tbl-carrier pseudo but adds an insn — matches s13 D_800F19C0 fn-body-hoist +13 signature (second-global-mat catastrophic)
+
+- [s101] Probe C (block-scope pass-through, dual-use on t0 and arg5) masked=2 build_insns=160 INERT; combine folds both routes to tbl_125c
+
+- [s101] Probe D (fn-scope pass-through, dual-use) masked=2 build_insns=160 INERT; longer livelen on the alias pseudo does not defeat combine — pass-through equivalence is expressed pre-local-alloc
+
+- [s101] Probe E (fn-scope pass-through, asymmetric use) masked=10 build_insns=163 (+8/+3insn); single-block-side reference to tbl_alias survives fold and forces separate materialization; register web catastrophically rotated
+
+- [s101] Mechanism attribution: tbl_125c is itself a local (assigned from D_800A125C at fn entry), so pass-through pointer aliases fold in combine.c even at fn-scope. The pointer-alias-fake-exception SANCTION explicitly targets aliases-to-GLOBALS (SOTN `tilemap = &g_Tilemap;` shape); csmd4's tbl_125c does not qualify as an alias TARGET in the sanctioned sense — the direct-global form was measured KILLED as probe B
+
+- [s101] Sanctioned axis inventory now: F1 pointer-alias-fake-exception KILLED (this session); F2 livelen-shortening remains un-measured (needs ALLOCDBG forensics s102 per frontier); F3 owner-escalation contingent on F2 close
