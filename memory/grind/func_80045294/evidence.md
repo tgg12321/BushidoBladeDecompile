@@ -624,3 +624,19 @@
 - [s39] Consistent with s6/s7/s15/s16 pass-level walls: no signature-surface or address-arithmetic surface variation reaches the LUID axis. All three neutral kills route through expand-time fold that discards TYPE_UNSIGNED before tree_LUID is assigned; the split-init kill routes through the s6 local/global pool split with no coalescer.
 
 - [s39] 30-form rejected bank (27 pre-s39 + 3 new: param-u32-a0.c, addr-cast-u32-base.c, split-init-s5-a1-first.c). candidate.c unchanged (still the s3 baseline body).
+
+- [s40] [s40] Baseline reconfirmed at session start: sandbox --disable all -> score=2, target_insns=83, build_insns=83, rules_dropped=0, cheat_asm_stripped=78. No src edits this session; candidate.c unchanged.
+
+- [s40] [s40] s40-min-lineswap-freshseed campaign (tmp/grind/func_80045294/s40/perm_min_lineswap): base_score=60, iterations=720 (natural exhaustion of the 6! PERM_LINESWAP permutation space), elapsed=699.4s, finds_new=1, best_new_score=60, stopped=exhausted (pid_alive_at_harvest=false).
+
+- [s40] [s40] The single new find (output-60-1) is a decl-order permutation v1,s4,s5,sum,count,i that preserves H1's v1-before-i constraint; source diff shows it belongs to the free-axis equivalent basin banked at s1/s3/s11/s12/s29/s30. No sll/move16 sched2 tie shift.
+
+- [s40] [s40] 10th chassis/mode combination now banked: s13 full-TU random (17773) + s14 full-TU directed lineswap (5249) + s14 minimal-base directed lineswap (720, -j 4) + s20 minimal-base random unbounded (13977) + s22 lineswap-fresh (720) + s22 cse-fold-alt (1310) + s23 H1 chassis (37313) + s31 H1 freshseed (21218) + s32 baseline-fresh (39420) + s32 sum-at-2 (772) + s40 minimal-base lineswap freshseed -j 8 (720) = cumulative ~138,472 permuter iters across 10 chassis/mode combinations, all plateau at 60 except s31 semantic-break at score=10 and cse-fold-anon-shift near-hit at 105.
+
+- [s40] [s40] The s40 chassis/mode combination (minimal-base + directed PERM_LINESWAP + fresh seed + -j 8) is the parallelism-scaled corroboration of s14's under-sampled minimal-base run (720 iters, -j 4, single find). Iteration count is identical because PERM_LINESWAP is exhaustive over the 6! permutation space; parallelism only shortens wall-clock. Both seeds land the same equivalent-basin find.
+
+- [s40] [s40] Consistent with the six pass-level walls (s6/s7/s10/s11/s15/s16/s33/s34): expand emit_insn insn 19 structural forcing -> combine 56/45/2 substitute-and-delete refusal -> cse.c BB-scoped ashift-operand substitution -> local/global_alloc pool split with no coalescer -> sched1+sched2 rank_for_schedule LUID tiebreak -> no pure-C CFG-splitter defeats cse's BB view. No decl-permutation exhaustive sweep escapes the LUID coupling.
+
+- [s40] [s40] docs/grind/decisions.md STILL contains no OWNER-ESCALATION entry for func_80045294 (grep '80045294' returns 0 hits at session end). Contract precondition (a) for owner-gated remains unmet; owner-gated not emittable this session.
+
+- [s40] [s40] No new rejected form banked: the s40 output-60-1 find belongs to a free-axis equivalent basin already banked at multiple prior sessions (s1/s3/s11/s12/s29/s30) and does not represent a novel divergent form.

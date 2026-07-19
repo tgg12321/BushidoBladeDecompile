@@ -670,3 +670,9 @@
 - probe: Edited s5 init to `s32 s5 = a1; s5 += s4;`. Sandbox --disable all.
 - result: score=3, 83/83 -- +1 diff versus baseline. Split-init on s5 is HARMFUL in both operand-order variants; a1-seed adds one addu-operand-order diff on top of the s3 s4-seed kill.
 - verdict: KILLED
+
+## [s40] Exhaustively enumerating all 6! = 720 permutations of the {sum, v1, s4, i, count, s5} decl block via PERM_LINESWAP on the minimal-base chassis (fresh seed, -j 8) will surface a score<60 basin not reached by s14's under-sampled 720-iter minimal-base run or by prior random-mode campaigns.
+- mechanism: PERM_LINESWAP enumerates the ordered set of parenthesized lines; with 6 items the search space is fully covered by 720 iterations. If any decl permutation shifted the sll/move16 LUID delta or defeated the s7 cse.c BB-scoped operand substitution mechanism, it would surface as a sub-60 find in the exhaustive sweep.
+- probe: python3 tools/permuter_campaign.py launch --func func_80045294 --dir tmp/grind/func_80045294/s40/perm_min_lineswap --label s40-min-lineswap-freshseed -j 8 --stop-on-zero (base score 60, PERM_LINESWAP over the 6-decl block); polled until natural iteration limit; harvest --stop
+- result: 720 iterations in 699.4s, 1 new find at score=60 (28.3s from launch, decl order v1/s4/s5/sum/count/i preserving H1's v1-before-i constraint -- member of the s1/s3/s11/s12/s29/s30 free-axis equivalent basin). best_new_score=60; no sub-60 find.
+- verdict: KILLED
