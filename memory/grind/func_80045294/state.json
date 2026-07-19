@@ -1,8 +1,8 @@
 {
  "func": "func_80045294",
  "file": "text1a_c",
- "session_count": 45,
- "current_modality": "rederive",
+ "session_count": 46,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -273,18 +273,19 @@
    "floor": 2,
    "modality": "rederive",
    "headline": "s45 rederive: two new expand-path sub-axes measured (array-subscript at s4 init NEUTRAL, array-subscript in loop body HARMFUL); 18th independent rederive sub-axis banked; owner-escalation still pendin"
+  },
+  {
+   "session": 46,
+   "floor": 2,
+   "modality": "synthesis",
+   "headline": "s46 synthesis: PERM_INT shift-constant surface measured KILLED (shift=3/4/5 all score=2, sandbox does not discriminate the sll immediate); owner-escalation contract precondition (b) satisfied on top o"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "PERM_INT-mode campaign on the shift constant 4 (or PERM_GENERAL over a0<<4 equivalents) plateaus at 60, satisfying owner-escalation contract precondition (b).",
-   "mechanism": "s5-family and s45 manual arithmetic/expand-path probes are all killed at individual-form level; PERM_INT lets the permuter search a broader constant-lowering surface. s43's reload-LUID theoretical closure strongly predicts plateau=60.",
-   "next_probe": "python3 tools/permuter_campaign.py launch --func func_80045294 --dir tmp/grind/func_80045294/s46/perm_int --label s46-perm-int-shiftconst -j 4 (baseline chassis with PERM_INT wrapping the 4 in a0<<4)."
-  },
-  {
-   "hypothesis": "Once PERM_INT is measured dead, emit owner-gated citing the s42-filed escalation entry hardened by s43/s44/s45 (seven pass-level walls + 16->18 rederive sub-axes + 137,872-iter permuter across 11 chassis/mode combos + 32-form rejected bank).",
-   "mechanism": "Contract precondition (a) satisfied by s42; precondition (b) satisfied once PERM_INT kill lands. Owner-gated parks func_80045294 (queue advances) until the owner rules between canonical-asm authorization and pure-C bar upheld.",
-   "next_probe": "Emit owner-gated with escalation_ref='docs/grind/decisions.md 2026-07-19 func_80045294 OWNER-ESCALATION' after PERM_INT kill lands."
+   "hypothesis": "Owner ruling on the s42 escalation (canonical-asm authorization mirroring func_80037540 oversized-locals carve-out, decisions.md 2026-07-13 18:05, GRANTED) vs upholding the pure-C bar (park at INCOMPLETE-owner-accepted at honest floor 2 per no-park-permanently's owner-granted-exception carve-out).",
+   "mechanism": "Every axis reachable by hand-derivation, rederive, and permuter modality is measured dead across s1-s46 (7 pass-level walls, 32-form rejected bank, 137,872-iter permuter across 11 chassis/mode combos, 18 rederive sub-axes, PERM_INT sandbox-scoring-architecture kill). Only owner decision remains as an actionable move.",
+   "next_probe": "Await owner ruling on docs/grind/decisions.md 2026-07-19 entry; driver parks func_80045294 (queue advances) until owner rules between (a) and (b)."
   }
  ],
  "judge_constraints": [],

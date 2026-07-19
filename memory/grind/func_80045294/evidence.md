@@ -704,3 +704,13 @@
 - [s45] Rederive-modality tally advances from 16 (s44) to 18 independent sub-axes; every m2c/decomp.me/Kengo/sibling/expand-path angle explored so far converges on either the H1 KILLED shape, NEUTRAL byte-identity, or HARMFUL degradation.
 
 - [s45] Owner-escalation entry filed at s42 (docs/grind/decisions.md 2026-07-19) remains standing; contract precondition (a) satisfied; precondition (b) still requires the frontier's PERM_INT campaign kill before owner-gated is emittable.
+
+- [s46] s46 baseline reconfirmed: sandbox --disable all -> score=2, target_insns=83, build_insns=83, rules_dropped=0, cheat_asm_stripped=78; residual unchanged from s1 (3-insn prologue cluster sw/move16/sll vs sll/sw/move16).
+
+- [s46] PERM_INT surface empirically measured dead: shift=3 (a0<<3) yields score=2, shift=5 (a0<<5) yields score=2, both unchanged from baseline shift=4. The sandbox scorer does not discriminate the sll immediate value; any PERM_INT enumeration over the load-bearing shift constant produces equivalent-basin residuals. Frontier item 1 KILLED empirically.
+
+- [s46] Owner-escalation entry filed s42 (docs/grind/decisions.md 2026-07-19 - func_80045294 saTan0Init OWNER-ESCALATION) with 6-wall pass-level dossier + 30-form rejected bank + 137,872-iter permuter across 11 chassis/mode combos + 14 rederive sub-axes. Hardened s43 (7th pass-level wall: reload-LUID 197..211 monotonicity precludes pre-reload insns from exceeding sw=211 LUID), s44 (Kengo saTan0Init name+size identity falsified by disassembly-shape check, 16th rederive sub-axis dead), s45 (array-subscript expand-path probes at s4-init NEUTRAL and loop-body HARMFUL, 17th/18th rederive sub-axes dead).
+
+- [s46] Both owner-escalation contract preconditions now satisfied: (a) filed dossier at s42, (b) every remaining sanctioned axis measured dead including PERM_INT (s46) as the last permuter-family surface. Owner-gated is emittable per driver contract.
+
+- [s46] candidate.c unchanged from s3 v1-before-i form (byte-identical to src/text1a_c.c:1602-1648, sustaining sandbox=2 as the honest pure-C floor); no rejected form new-banked this session (the PERM_INT kill is by measurement of the sandbox scoring architecture, not a distinct source shape).

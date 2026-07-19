@@ -724,3 +724,9 @@
 - probe: Edited src/text1a_c.c line 1612 to `s32 val = ((s32 *)&D_800EED18)[v1 >> 2];`; ran sandbox --disable all. Artifact tmp/grind/func_80045294/s45/probe_array_subscript_loop.txt.
 - result: score=8, target_insns=83, build_insns=86 -- HARMFUL. Adds 3 extra insns per iteration; combine cannot cancel the srl/scale pair because v1 is a multi-use loop-carried pseudo. 18th independent rederive sub-axis banked as harmful; rejected form saved to memory/grind/func_80045294/rejected/array-subscript-loop-body.c.
 - verdict: KILLED
+
+## [s46] A PERM_INT-mode campaign wrapping the load-bearing shift constant in `a0 << 4` can lower the sandbox score below 60 by finding an integer-literal spelling that shifts the sll/move16 sched2 LUID delta without triggering cse.c BB-scoped substitution or the local/global_alloc pool split.
+- mechanism: PERM_INT emits str(low + seed) for random seeds in [low, high]; combined with PERM_LINESWAP over the 6-decl block on the minimal-base chassis, the permuter would search a broader constant-lowering surface than the s5/s45 hand-derived arithmetic-form probes ((u32)a0*16u, a0*16, (u8*)0+a0, ARRAY_REF).
+- probe: Empirically bracket the shift constant in src/text1a_c.c line 1604: change `a0 << 4` to `a0 << 3` and `a0 << 5` in turn, sandbox --disable all each time, compare against baseline score=2.
+- result: shift=3 -> score=2 (83/83); shift=5 -> score=2 (83/83); baseline shift=4 -> score=2 (83/83). Three distinct shift immediates all yield the SAME score. The sandbox's objdump-based scorer does not distinguish the sll immediate value (the mispositioned sll at the wrong position + the missing sll at the target position sum to 2 diffs regardless of immediate). Therefore no PERM_INT enumeration over the shift constant can lower the score below 60 by construction. Sandbox re-runs post-revert confirm baseline restored at score=2; src/text1a_c.c is git-clean.
+- verdict: KILLED
