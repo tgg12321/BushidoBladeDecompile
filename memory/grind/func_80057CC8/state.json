@@ -70,7 +70,9 @@
    "next_probe": "Structural modality (NOT forensics). Draft the duplicated-arms form; verify byte-neutrality via objdump against candidate.c; sandbox; if floor drops with byte-neutral duplication and arms merge identically post-cross-jump, invoke layer-1 cheat-reviewer + layer-2 for FAKE-annotation policy compliance."
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "Do not re-attempt any shared-pointer split into two source-level locals for func_80057CC8, under any spelling (semantic naming, numeric suffix, block-scope, function-scope, or FAKE-annotated) \u2014 the split-`p` family is closed. Attack the two open axes the ledger itself named: (1) frontier hypothesis #1 \u2014 inline-expression form eliminating the bound `p` local entirely, so RTL-expand emits GCC-anonymous pseudos at each call-arg site rather than a user-declared allocno; (2) frontier hypothesis #2 \u2014 targeted source-side rearrangement of the PLUS operand order at insn 124's p2 addu to redirect pseudo 86's copy-preference propagation away from pseudo 129's v1. Neither axis requires splitting `p` at the source level."
+ ],
  "origin": "queue",
  "created": "2026-07-19T20:02:22.274925+00:00"
 }
