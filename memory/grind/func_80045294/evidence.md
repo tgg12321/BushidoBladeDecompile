@@ -662,3 +662,19 @@
 - [s42] [s42] Exhaustion budget banked to disk: 30-form rejected bank in memory/grind/func_80045294/rejected/ (every free-axis permutation, decl/init decouple, arithmetic-tree respelling, storage-class axis, CFG-splitter attempt); 14 rederive sub-axes killed across 6 sessions (s8/s9/s17/s18/s35/s36); 137,872-iter permuter across 11 chassis/mode combinations (s13-s41) all plateau at score=60; s29/s30 formal structural free-axis closure (multi-axis probe A/B/C cross-product NEUTRAL, sum-position axis bounded to {0,1,2}); s38 outer-block-wrap + register-storage-class-v1 KILLED; s39 param u32/base-cast NEUTRAL + split-init-s5-a1-first HARMFUL; s40 exhaustive 6!=720 PERM_LINESWAP over 6-decl block KILLED; s41 exhaustive 5!=120 PERM_LINESWAP on count-inlined chassis KILLED.
 
 - [s42] [s42] Contract precondition (a) for owner-gated emission now satisfied: filed OWNER-ESCALATION entry in docs/grind/decisions.md names func_80045294 with the full mechanism-level dossier and mutually-exclusive owner options. Precondition (b) (every remaining sanctioned axis measured dead) is NOT yet satisfied: s41 frontier item 2 identifies PERM_INT-mode as an un-measured 12th chassis/mode combination sanctioned for the next permuter session. Owner-gated becomes ripe only after PERM_INT is also measured dead.
+
+- [s43] s43 baseline: sandbox --disable all -> score=2, target_insns=83, build_insns=83, rules_dropped=0, cheat_asm_stripped=78 (tmp/grind/func_80045294/s43/baseline_recon.txt). No src edits this session; candidate.c unchanged.
+
+- [s43] Reload emits seven callee-save stores at monotonic LUIDs 199 (sw $ra @40), 201 (sw $s5 @36), 203 (sw $s4 @32), 205 (sw $s3 @28), 207 (sw $s2 @24), 209 (sw $s1 @20), 211 (sw $s0 @16); sp adjust at LUID 197. Post-sched2 RTL: base.i.sched2 lines 20321-20389.
+
+- [s43] sw $s0's LUID (211) is the HIGHEST of the seven callee-save stores. This is not arbitrary — GCC 2.7.2's reload iterates hard-reg saves in a fixed order per mips.md FUNCTION_PROLOGUE; changing which reg holds `i` cannot lower sw $s0's LUID below 197 (reload's floor).
+
+- [s43] sched2 block-0 ready-list at T-10 shows 'insn 211 has a greater potential hazard, now 211 14 12 6' — the hazard-hoist rule (memory-op prioritization) is the direct sched.c mechanism placing sw between sll and move16.
+
+- [s43] REG_DEP_ANTI on insn 22 (move $s0=$s2) points to insn 211 (sw $s0) — insn 22 WRITES the reg insn 211 READS (caller's $s0), forcing 211→22 in forward stream. This anti-dep is uneliminable: any func using $s0 as callee-save needs the save before overwrite.
+
+- [s43] Named seventh pass-level wall: reload_as_needed/emit_prologue LUID monotonicity + sched2 hazard-hoist. Together these prove target's 3-insn cluster is pass-mechanically unreachable at score<2 by any pure-C mutation, independent of the s7 cse.c substitution wall.
+
+- [s43] This finding is COMPLEMENTARY to (not overlapping with) s34's 6 pass-level walls: s34 named the LUID-8-delta at expand between sll(14) and move16(22); s43 names a SECOND LUID relation (pre-reload vs reload-emitted, gap ~197) that is even more constrained and independently forbids target order.
+
+- [s43] Corollary for the frontier PERM_INT campaign: even if PERM_INT surfaces a novel lowering of a0<<4 that shifts insn 14's LUID or eliminates it, the sw(211)-vs-move(22) LUID relation remains unshiftable by C-source. PERM_INT can at best corroborate s5's arithmetic-form closure; it cannot invert the reload LUID relation.

@@ -694,3 +694,15 @@
 - probe: & tools/wteng.ps1 main sandbox func_80045294 --disable all (artifact: tmp/grind/func_80045294/s42/baseline_recon.txt).
 - result: score=2, target_insns=83, build_insns=83, scorable=true, rules_dropped=0, cheat_asm_stripped=78, disabled_o=tmp/sandbox/func_80045294/text1a_c.o. Identical to s41.
 - verdict: CONFIRMED
+
+## [s43] The sw $s0,16($sp) callee-save (insn 211) is minted by reload with the highest LUID (211) of the seven callee-save stores, and its position between sll(insn 14) and move16(insn 22) at sched2 forward emission is driven by (i) REG_DEP_ANTI 211 on insn 22 forcing sw→move in forward stream and (ii) hazard-hoist elevating memory ops in the T-10 ready list.
+- mechanism: reload_as_needed/emit_prologue in GCC 2.7.2 iterates hard-regs per mips.md FUNCTION_PROLOGUE and emits callee-save stores at monotonically increasing LUIDs starting after every expand-emitted insn (LUIDs 197..211 vs pre-reload max ~32). sched2.rank_for_schedule (sched.c:2398-2456) hazard-hoists the ready-list to prioritize memory-op insns at the same-priority T-10 tick.
+- probe: Read tmp/grind/func_80045294/s3/base.i.sched2 lines 20105-20368 for the block-0 initial priorities, ready-list trace T-1..T-18, and the post-sched2 RTL insn sequence with insn 211's insn_list 197 dep and insn 22's REG_DEP_ANTI 211.
+- result: Directly observed at pass output: reload assigns LUID 211 to sw $s0; ready-list at T-10 emits 'insn 211 has a greater potential hazard, now 211 14 12 6'; forward emit order is sll(14) at pos 8, sw(211) at pos 9, move16(22) at pos 10 — matches build's 3-insn cluster and rules out sw hoisting further away.
+- verdict: CONFIRMED
+
+## [s43] Target's forward order 'sw ; move ; sll' is unreachable by any pure-C mutation through cc1's emission alone, because it would require BOTH LUID(sll) > LUID(move) AND LUID(move) > LUID(sw=211); pre-reload LUIDs cannot exceed reload-minted LUIDs by construction of GCC 2.7.2's reload pass.
+- mechanism: Backward-list-sched at T-9 must pick sll to place it at pos 10 (LUID(sll) > LUID(move)); at T-10 the ready list is {move, 211(sw), 12, 6} and rank_for_schedule LUID-descending tiebreak (plus hazard-hoist for mem ops) forces sw to pos 9 unless LUID(move) > LUID(sw). But every pre-reload insn (LUID <= 32 in this function) is emitted before reload allocates LUIDs 197..211; there is no C-source axis that shifts a pre-reload insn's LUID above 197.
+- probe: Analytical: if LUID(sll)>LUID(move), simulate the T-9..T-11 rank_for_schedule picks with insn 211's LUID unchanged and dep set intact — forward emission yields 'move ; sw ; sll' (not target). Combined with s7/s15's proof that LUID(sll)>LUID(move) itself forces cse.c BB-scoped substitution + RA rotation (banked KILLED at H1 and 30+ rejected forms), both required conditions for target order are independently impossible via pure C.
+- result: Both conditions independently blocked at named GCC-pass level. Reload LUID monotonicity confirmed by tmp/grind/func_80045294/s3/base.i.rtl vs base.i.greg diff (pre-reload max LUID 32; reload adds 195, 197, 199, 201, 203, 205, 207, 209, 211).
+- verdict: CONFIRMED
