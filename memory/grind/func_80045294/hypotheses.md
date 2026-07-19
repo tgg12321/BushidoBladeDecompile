@@ -70,3 +70,51 @@
 - probe: Edited `s5 = s4 + a1` to `s5 = a1 + s4`; sandboxed.
 - result: score=3 (up from 2), build_insns=83. Same insn count but +1 register-choice diff — addu $21 now uses different pseudo assignments. sll-vs-move16 tie unchanged. Net worse.
 - verdict: KILLED
+
+## [s3] GCC 2.7.2 sched2 assigns sll(a0<<4) a HIGHER INSN_PRIORITY than move(s0=s2) because its downstream chain is longer (s1/s2 CONFIRMED evidence).
+- mechanism: sched.c INSN_PRIORITY = longest downstream data-dependence chain.
+- probe: Ran `tools/gcc-2.7.2/build/cc1 <build-flags> -da base.i` on the current candidate; parsed tmp/grind/func_80045294/s3/base.i.sched2 (line 20111-20155 for block 0).
+- result: sched2 dump shows insn 14 (sll) priority=1 AND insn 22 (move16) priority=1. BOTH have priority 1. The chain-length hypothesis is falsified by measurement — the priorities are equal, so the tie is not decided by priority at all.
+- verdict: KILLED
+
+## [s3] sched2 tie between equal-priority ready insns is broken by INSN_LUID with LOWER LUID emitted FIRST (naive tie-stability reading).
+- mechanism: sched.c rank_for_schedule() final tiebreak returns INSN_LUID(tmp) - INSN_LUID(tmp2), i.e., INSN_LUID(y) - INSN_LUID(x).
+- probe: Read tools/gcc-2.7.2/sched.c:2398-2456. Cross-referenced insn UIDs (sll=14, move16=22) against the T-9 ready-list order in sched2 dump: `now 22 14 12 6` (HIGHER LUID at front). qsort compare(x=22,y=14) = 14-22 = -8 < 0 → x=22 sorts BEFORE y=14. sched2 is backward-list-sched: picked-first = scheduled at deeper T = emitted LATER.
+- result: Higher LUID is picked first at the ready list → emitted LATER in forward stream. Move16 (LUID 22) emitted at position 10; sll (LUID 14) at position 8. To flip to target order (move16 at 9, sll at 10), sll's assignment LUID must EXCEED move16's LUID — i.e., `i = a0` (source of move16) must appear BEFORE `v1 = a0<<4` (source of sll) in the C.
+- verdict: CONFIRMED
+
+## [s3] Splitting declaration from initialization (`s32 v1; s32 i = a0; ... v1 = a0<<4;`) decouples RA allocno priority from sched2 LUID.
+- mechanism: Hypothesis: global.c's allocno priority might follow declaration LUID rather than assignment LUID; if so, declaring v1 first while assigning it later would keep RA correct (a0->$18) while giving move16 a lower LUID.
+- probe: src/text1a_c.c edited to `s32 v1; s32 s4; s32 i = a0; s32 count; s32 s5; v1 = a0<<4; s4 = ...; count = D_800A33AC; s5 = s4 + a1;`. Sandboxed.
+- result: score rose 2 -> 11 (identical shape to H1). RA rotated as under H1 (a0->$21, s4->$18, s5->$20) AND sll operand rewrote to $16. Confirmed: RA priority follows ASSIGNMENT LUID, not declaration LUID. sched2 LUID and RA priority are NOT independently steerable via decl/init split. Saved as rejected/decl-init-decouple.c.
+- verdict: KILLED
+
+## [s3] Splitting s5 into two-statement accumulation (`s32 s5 = s4; s5 += a1;`) is neutral or perturbs the sched2 tie beneficially.
+- mechanism: User-sanctioned split-init-accumulation lever (feedback/split-init-accumulation-sanctioned.md). Two-insn form for s5 could shift the ready-list membership at the s5 scheduling step.
+- probe: Edited to `s32 s5 = s4; s5 += a1;`. Sandboxed.
+- result: score rose 2 -> 11. The extra copy insn breaks the addu $21 delay-slot fill AND cascades the same RA rotation as H1. Split-init-accumulation is HARMFUL here because target's RTL has NO extra copy at s5. Saved as rejected/split-init-s5.c.
+- verdict: KILLED
+
+## [s3] Init-order permutation `sum, v1, i, s4, count, s5` (i between v1 and s4, keeping v1-before-i) is neutral.
+- mechanism: Additional axis of the H2/H3 neutral cluster in s1; the constraint from H1 is only v1-before-i, other permutations should be neutral.
+- probe: Edited i's init to line 3 (between v1 and s4). Sandboxed.
+- result: score = 2, build_insns = 83 (neutral). Confirms init position of i within {i, s4, count, s5} is a free axis as long as v1-before-i.
+- verdict: KILLED
+
+## [s3] Rewriting the guard+loop as `for (i = a0; i < count; ) { ... i += 1; ... }` (i's init inside the for-clause) shifts sched2's tiebreak.
+- mechanism: GCC 2.7.2 expands for-init as the first stmt of the loop nest, which could steer i's assignment LUID differently than a bare `s32 i = a0;`.
+- probe: Kept `s32 i;` at the pre-guard position; moved i's assignment into `for (i = a0; i < count; )`. Sandboxed.
+- result: score = 2, build_insns = 83 (neutral). The for-init shape lowers to the same RTL LUID for i's assignment as the bare `s32 i = a0;` — no tie movement.
+- verdict: KILLED
+
+## [s3] Comma-assignment sub-expression `s32 v1; s32 s4 = *(s32*)((u8*)&D_800EED14 + (v1 = a0<<4));` yields the target schedule while emitting sll directly into v1 (no extra copy).
+- mechanism: The comma-assignment could steer GCC's tree so the sll's assignment LUID lives INSIDE s4's initializer tree (later than i=a0's LUID), while forcing the sll's result to land in v1's pseudo without a temp.
+- probe: Edited to `s32 v1; s32 s4 = *(s32*)((u8*)&D_800EED14 + (v1 = a0<<4)); s32 i = a0; ...`. Sandboxed + objdump.
+- result: score = 2, build_insns = 83 — IDENTICAL to baseline shape. objdump shows `sll v1,s2,4 ; sw s0,16(sp) ; move s0,s2` unchanged. GCC 2.7.2 desugars the comma-assignment sub-expression to the same tree as a preceding `s32 v1 = a0<<4;` — no LUID movement. Frontier hypothesis #1 killed at first probe.
+- verdict: KILLED
+
+## [s3] Inlining a0<<4 into s4's initializer (with v1 re-declared after as CSE-reuse) is a near-hit that gets the target's schedule ORDER right.
+- mechanism: The anonymous subexpression `(a0<<4)` inside `s4 = *(...+(a0<<4))` creates the sll's pseudo at a LATER tree LUID than move16's; move16's LUID then wins the sched2 tie in target's direction (emitted later, matching target's `sw ; move16 ; sll` order).
+- probe: Edited to `s32 s4 = *(s32*)((u8*)&D_800EED14 + (a0<<4)); s32 i = a0; ... s32 v1 = a0<<4;`. Sandboxed + objdump.
+- result: score = 2, build_insns = 84 (target 83). Schedule order MATCHES target: `sw s0,16(sp) ; move s0,s2 ; sll v0,s2,4`. But the CSE-fold produces one extra insn: `move v1,v0` after the sll, because a0<<4 goes to an anonymous pseudo (v0) and v1 is a separate declared pseudo — RA emits a copy. Saved as rejected/cse-fold-anon-shift.c with the closing-lever hypothesis in comments.
+- verdict: CONFIRMED
