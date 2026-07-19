@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "motion_SetMotion",
-      "file": "code6cac_c_mid",
-      "distance": 1,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active"
-    },
-    {
       "func": "func_80045294",
       "file": "text1a_c",
       "distance": 2,
@@ -2401,6 +2393,15 @@
       "park_reason": "File-scope volatile-extern cheat pattern: body is clean pure-C but blocked by file-scope cheats in src/text1b.c. Speed-parked during batch grind."
     },
     {
+      "func": "motion_SetMotion",
+      "file": "code6cac_c_mid",
+      "distance": 1,
+      "verdict": "C",
+      "rules": 1,
+      "status": "parked",
+      "park_reason": "owner escalation pending: docs/grind/decisions.md 2026-07-18 OWNER-ESCALATION (union-constructor CLOBBER family, options a/b; NO community precedent)"
+    },
+    {
       "func": "InitHiraRmd_80047FBC",
       "file": "text1b",
       "distance": 1,
@@ -3015,13 +3016,13 @@
   ],
   "counts": {
     "total": 365,
-    "active": 296,
+    "active": 295,
     "by_status": {
-      "active": 296,
-      "parked": 69
+      "active": 295,
+      "parked": 70
     },
     "by_verdict": {
-      "C": 142,
+      "C": 141,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
