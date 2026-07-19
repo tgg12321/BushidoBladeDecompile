@@ -504,3 +504,11 @@ as separate li's near the dispatch (only case-10's 13 at a bne delay)
 - [s41] Closure theorem sealed with eight independent confirmations (structural r1-r13, F1 slack-transplant negative, label-family negatives m7/r13, three permuter campaigns, s6 pass-level BB2_XJUMP_DEBUG trace): any byte-matching compile forces both 13-sites to [set13; j] adjacent to the jtbl label, merge guaranteed, only byte-free breaker is the Judge-constrained USE/CLOBBER class
 
 - [s41] candidate.c banked at memory/grind/motion_SetMotion/candidate.c (floor-10 form, Wall-1 solved); 9 rejected forms banked including judge-fail-0717-1708.c (the byte-proven n1 union form awaiting option (a))
+
+- [s42] OWNER-ESCALATION for motion_SetMotion filed 2026-07-18 at docs/grind/decisions.md:761-776 (hirahira_w_frie format, both options, community evidence honestly NONE) remains the final entry for the function as of s42 - no owner ruling appended; Select-String over decisions.md confirms no later motion_SetMotion or OWNER RULING entry.
+
+- [s42] Forensics closure is internal to the escalation: s6 BB2_XJUMP_DEBUG trace (merge fires exactly once via counted set13 match + label bonus; committed rule's set12-vs-set13 mismatch breaks iteration 1) and s7 union-form end-to-end trace (clobber insn 407 between CODE_LABEL 405 and set13 409; both-direction iteration-2 INSN-vs-JUMP_INSN GET_CODE break, min=1, label walk never reached; reorg fills [j; delay li 13] exactly).
+
+- [s42] Exhaustion is Judge-certified (2026-07-17 17:34) with eight independent confirmations: r1-r13 structural sweeps, F1 slack-transplant negative, m7/r13 label-family negatives, three permuter campaigns (112,618 + 2,049 + 54,087 iterations, only false-zero/semantic-theft below the merge penalty), and the s6/s7 traces.
+
+- [s42] Sessions s27-s41 (all five modalities) each independently re-verified this same owner-gated state; s33/s34 were the forensics-modality verifications.

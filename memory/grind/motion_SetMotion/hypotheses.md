@@ -419,3 +419,9 @@
 - probe: Ledger re-verification instead of re-launch: three prior campaigns from both sides of the merge boundary (s4 112,618 iters, s4b 2,049 iters, s5 54,087 iters) plus banked rejected forms s4-permuter-false-zero-swapped-jump-targets.c, s4-permuter-semantic-theft-store-into-case911.c, s5-permuter-unmerged-r13-seed-plateau.c
 - result: Axis already measured dead two-sided; Judge constraints bind any USE/CLOBBER-manufacture respelling a campaign could find; OWNER-ESCALATION at decisions.md:761-776 verified present, final entry, unruled
 - verdict: KILLED
+
+## [s42] The forensics axis (instrumented-cc1 pass attribution of the 1-word divergence) still contains an unmeasured question for motion_SetMotion.
+- mechanism: If any RTL/jump2/xjump-debug measurement were missing, a new dump could name a new pass/decision and reopen an honest lever.
+- probe: Re-verified first-hand this session: docs/grind/decisions.md:761-776 is the final entry for the function (no owner ruling after it) and its Exhaustion + s7 white-box sections already carry the complete pass-level attribution: honest form merges via jump.c find_cross_jump 1-counted-match + stream-1 label bonus (s6 trace); the union n1 form breaks iteration 1 via byte-free CLOBBER stream desynchronization at the GET_CODE check in both directions (s7 trace, artifacts tmp/grind/motion_SetMotion/s6/ and s7/). Judge constraints bind: the only remaining C-reachable breaker is the unsanctioned USE/CLOBBER family, which must not be probed or committed.
+- result: No unmeasured forensic question exists; any new cc1 dump would re-measure a Judge-certified-dead axis, which the brief forbids.
+- verdict: KILLED
