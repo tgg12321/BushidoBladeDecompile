@@ -1,7 +1,7 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 98,
+ "session_count": 99,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -597,23 +597,29 @@
    "floor": 2,
    "modality": "rederive",
    "headline": "s98 rederive: cross-symbol subtraction idiom is UNIQUE to csmd4 in src/ (in-repo transplant KILLED); 2 novel h5 initializer respellings measured masked=15 - h5 basin is spelling-fragile at expr.c::exp"
+  },
+  {
+   "session": 99,
+   "floor": 2,
+   "modality": "rederive",
+   "headline": "rederive: 3-probe symbolic-variant sweep on the h5 idx_1495 cross-symbol initializer; D_800A1495 substitution KILLED (+2/+1insn), arithmetic-equivalent +1-position and sign-flip both INERT \u2014 h5 basin "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F97a (unchanged) - a natural-semantic-purpose C form emitting >=2 additional pre-block=3 references to tbl_125c (p79) without cross-symbol arithmetic could preserve masked=2; s98 additionally shows the cross-symbol arithmetic itself is the sole in-repo instance so no external transplant exists.",
-   "mechanism": "Any spelling would need to raise flow.c REG_N_REFS[p79] to >=5 via insns that survive cse.c fold_rtx as p79-referencing (i.e., not folded into const:SI). Candidates require a variable operand (non-const_int) upstream. s98 probe2 measured a runtime-pseudo respelling and confirmed the pseudo-refs path does NOT lift p79 refs.",
-   "next_probe": "Structural session: enumerate honest semantic-purpose spellings that pre-touch tbl_125c[N] (e.g., early bound-checking; but the C spec has no such check). Predicted enumeration size: 0 candidates satisfying human-programmer test. If 0, F97a formally CLOSED."
+   "hypothesis": "F97b (unchanged) - the pointer-alias-fake-exception `s32 *tbl_alias = tbl_125c;` (2026-07-01 sanction) applied to the arg5-address chain could duplicate p79 references in a byte-neutral way, formally measuring the prediction that pseudo-aliasing splits refs (F97b hypothesis).",
+   "mechanism": "s98 probe2 provided a MECHANISM-CONSISTENT data point (pseudo-based tbl_125c multi-references regress to +13). The formal F97b measurement using the 2026-07-01 pointer-alias-fake-exception sanction (FAKE-annotated + layer-2 cheat-reviewer) is still un-run.",
+   "next_probe": "Structural session with layer-2 cheat-reviewer: annotate `/* FAKE: pointer-alias-fake-exception per 2026-07-01 sanction */`, measure once via sandbox + gccdbg."
   },
   {
-   "hypothesis": "F97b (unchanged) - pointer-alias-fake-exception `s32 *tbl_alias = tbl_125c;` (2026-07-01 sanction) applied to duplicate p79 references. Predicted KILL: the alias creates a NEW pseudo, splitting refs rather than lifting.",
-   "mechanism": "s98 probe2 provides a MECHANISM-CONSISTENT data point: pseudo-based tbl_125c multi-references DO regress to +13 (matches ref-splitting prediction). Formal F97b measurement still un-run.",
-   "next_probe": "Structural session with layer-2 cheat-reviewer: annotate `/* FAKE: pointer-alias-fake-exception per 2026-07-01 sanction */`, measure once via sandbox + gccdbg to formally close F97b."
+   "hypothesis": "F97c (unchanged) - attack livelen (not nrefs) to re-enter the pri>675 range. Priority = floor_log2(refs)*refs*size/livelen*10000; if nrefs is locked at 3 (probe1/probe2 profile) but livelen can be shortened from 148 to <60, pri could re-enter h5 territory.",
+   "mechanism": "s97 evidence names the priority formula. s98 data reinforces that h5 basin is priority-driven (two distinct +13 regression basins share the p79 refs=3 profile), so a livelen-shortening lever is orthogonal to the nrefs axis all rederive/structural sweeps have targeted.",
+   "next_probe": "Forensics session with ALLOCDBG-instrumented gccdbg: log luid-per-pseudo per basic block on h5 vs probe1; test whether moving tbl_125c assignment closer to block=3 shrinks livelen without touching nrefs."
   },
   {
-   "hypothesis": "F97c (unchanged) - attack the non-nrefs priority inputs (livelen, size) rather than nrefs.",
-   "mechanism": "priority = floor_log2(refs)*refs*size/livelen*10000. If nrefs is locked at 3 (probe1/probe2 profile) but livelen can be shortened from 148 to <60, pri could re-enter the >675 range. s98 evidence reinforces: the h5 basin is priority-driven, not just nrefs-driven, since two distinct +13 regression basins both share p79 refs=3 profiles.",
-   "next_probe": "Forensics session: instrument flow.c::mark_regs_live_at_end to log luid-per-pseudo per basic block on h5 vs probe1; test whether moving the tbl_125c assignment closer to block=3 shrinks livelen without touching nrefs."
+   "hypothesis": "F97a-refined (narrowed by s99) - a natural-semantic-purpose C form emitting extra pre-block=3 references to tbl_125c via SYMBOL_IDENTITY-PRESERVING but SYMBOL-REF-INCREMENTAL pattern (e.g., double-referencing D_800A1494 or D_800A125C in the prologue in a semantically-purposeful way) - narrower than the general F97a since s99 confirmed symbol-identity is load-bearing.",
+   "mechanism": "s99 P1 (KILL) proves cross-symbol delta is symbol-identity-sensitive; s90 P1/P2 already proved same-numeric-delta with different symbol shapes regress. Only spellings preserving BOTH symbol pair (1494/125C) AND the +1 arithmetic profile survive. This restricts F97a's search space to (a) same-symbol reuse under a semantic-purpose pretext, or (b) alternate paths to the same fold RTL emission profile via unrelated flow-level constructs \u2014 enumeration size predicted 0 semantic-purpose candidates.",
+   "next_probe": "Structural session or ALLOCDBG-instrumented forensics: enumerate honest semantic-purpose spellings that pre-touch tbl_125c[N] with either an early bound-check idiom or an initializer-computation. Predicted enumeration size: 0 candidates satisfying human-programmer test; if 0, F97a formally CLOSED."
   }
  ],
  "judge_constraints": [

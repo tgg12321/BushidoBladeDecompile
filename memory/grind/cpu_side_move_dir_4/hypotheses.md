@@ -1499,3 +1499,21 @@
 - probe: grep for debug_printf sites; sandbox each for status
 - result: 3 relevant sites: display.c:993 func_8007DC9C (masked=9, cheat_asm_stripped=437 - INCOMPLETE), system.c marionation_Exec (masked=56 - INCOMPLETE), ings2.c:99 func_80082A14 (masked=0 but 39 cheat_asm stripped and relies on volatile counter + memory barrier - both are forbidden constructs). Zero COMPLETED-C 5-arg debug_printf transplant sources.
 - verdict: KILLED
+
+## [s99] Substituting &D_800A1495 for &D_800A1494 in the cross-symbol delta ((s32)&D_800A1495 - (s32)D_800A125C) preserves the h5 basin because the numeric-delta value (0x23A vs 0x239+1) is arithmetically equivalent.
+- mechanism: s97's ledger attribution names insns 34 (subsi3 SYMBOL_REF-diff) + 38 (addsi3 tbl+delta) as p79 nrefs drivers. If the mechanism were delta-numeric-value-driven, symbol-swap of the minuend to an adjacent-address symbol should preserve fold behavior and RTL emission profile.
+- probe: src/system.c line 384 → idx_1495 = (u8*)((u8*)tbl_125c + ((s32)&D_800A1495 - (s32)D_800A125C)); sandbox cpu_side_move_dir_4 --disable all
+- result: masked=4 (+2 vs h5), build_insns=161 (+1 insn). h5 basin lost; RTL emission adds one insn.
+- verdict: KILLED
+
+## [s99] Moving the +1 constant INSIDE the parenthesized subtraction (((s32)&D_800A1494 + 1 - (s32)D_800A125C)) preserves the h5 basin masked=2 because cse.c canonicalizes ((A+1) - B) and ((A - B) + 1) to the same fold profile.
+- mechanism: cse.c fold_rtx handles both parenthesization forms equivalently; the addsi3/subsi3 pair that emits at RTL is normalized before combine reaches try_combine (s7 mechanism trace).
+- probe: src edit + sandbox --disable all
+- result: masked=2, build_insns=160 INERT. Byte-identical to h5.
+- verdict: CONFIRMED
+
+## [s99] Sign-flipping the subtraction ((u8*)tbl_125c - ((s32)D_800A125C - (s32)&D_800A1494) + 1) preserves the h5 basin because cse.c fold_rtx symmetrizes the SUB direction.
+- mechanism: MINUS commutativity via unary negation is canonicalized at expmed / cse fold to the same underlying SYMBOL_REF-diff RTL insn 34 shape.
+- probe: src edit + sandbox --disable all
+- result: masked=2, build_insns=160 INERT. Byte-identical to h5.
+- verdict: CONFIRMED

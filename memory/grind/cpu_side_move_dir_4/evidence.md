@@ -1590,3 +1590,19 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s98] func_80082A14 (ings2.c: tslTm2LoadImage_2 timeout guard, same target callee as csmd4): score 0 but 39 cheat_asm stripped - shape relies on `volatile s32 counter = a1<<15;` + `asm volatile('' ::: 'memory');` barrier; both are forbidden constructs. Not transplantable.
 
 - [s98] Baseline candidate.c re-verified at masked=2/build_insns=160 after all probes; src restored to h5 form.
+
+- [s99] s99 baseline: HEAD both-named form scored masked=7, build_insns=160; applying h5 candidate to src/system.c restored masked=2 (target_insns=160, build_insns=160). h5 basin confirmed intact on current tree.
+
+- [s99] s99 P1 measurement: idx_1495 = (u8*)((u8*)tbl_125c + ((s32)&D_800A1495 - (s32)D_800A125C)); scored masked=4, build_insns=161. First measured axis where a symbol-swap of the SUB minuend to an ADJACENT-BYTE symbol (D_800A1495 = &D_800A1494 + 1) does not preserve the h5 RTL profile — refines s97's attribution to symbol-identity-sensitive, not delta-numeric-value-sensitive.
+
+- [s99] s99 P2 measurement: idx_1495 = (u8*)((u8*)tbl_125c + ((s32)&D_800A1494 + 1 - (s32)D_800A125C)); scored masked=2, build_insns=160 INERT. Confirms cse.c canonicalizes (+1) position across the SUB boundary.
+
+- [s99] s99 P3 measurement: idx_1495 = (u8*)((u8*)tbl_125c - ((s32)D_800A125C - (s32)&D_800A1494) + 1); scored masked=2, build_insns=160 INERT. Confirms cse.c canonicalizes SUB direction (sign-flip via outer negation).
+
+- [s99] Aggregate: 3 novel symbolic-variant respellings measured; the h5 cross-symbol basin is INVARIANT to +1-position and SUB-direction (canonicalized by cse.c) but is SENSITIVE to symbol-identity (D_800A1494 vs D_800A1495 substitution regresses). The forbidden semantic-lie family this basin depends on cannot be replaced by any spelling variation that preserves both the symbol pair AND the +1 factorization.
+
+- [s99] Modality-exhaustion (rederive across s89/s90/s98/s99): decomp.me tool unavailable (curl_cffi missing); in-repo cross-symbol arithmetic grep = 1 hit (csmd4 itself); marionation sibling transplant KILLED s9 P1-P4; m2c KILLED s8; 3 honest-form initializer respellings KILLED s90; 2 mixed-base respellings KILLED s98; 3 spelling-variant respellings this session KILL/INERT. No untried rederive-modality C form has been identified against the h5 basin's specific SYMBOL_REF(1494)-SYMBOL_REF(125C)+1 factorization.
+
+- [s99] src/system.c restored to HEAD (both-named arg4/arg5 form) via git checkout at session end. candidate.c unchanged (h5 form remains masked-2 floor).
+
+- [s99] Kengo-transplant angle re-checked via .claude/worktrees/*/kengo_matches.csv: csmd4 has only 'size-only-ambiguous' Kengo match (SetPacketData in src/amami/am_rmd.c, 160 vs 159 insns, name-mismatch). No name-unique Kengo counterpart; this axis is unavailable without an external Kengo source dump the operator would have to provide.
