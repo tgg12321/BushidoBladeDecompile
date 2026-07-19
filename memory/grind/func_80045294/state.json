@@ -1,7 +1,7 @@
 {
  "func": "func_80045294",
  "file": "text1a_c",
- "session_count": 17,
+ "session_count": 18,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -105,18 +105,24 @@
    "floor": 2,
    "modality": "rederive",
    "headline": "s17 rederive: m2c cross-target convergence + Kengo debug absence + sibling shape enumeration all confirm rederive modality exhausted; three new sub-axes killed"
+  },
+  {
+   "session": 18,
+   "floor": 2,
+   "modality": "rederive",
+   "headline": "s18 rederive: three additional m2c cross-mode/cross-target axes converge on H1 shape (KILLED); rederive modality now measured dead across 8 independent sub-axes"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "PERM_RANDOMIZE wrapping the decl+first-loop scope may reach a C spelling routing through a fundamentally different expand->cse->global pass sequence than any hand-derivable form, breaking the cse.c coupling without incurring RA rotation.",
-   "mechanism": "pycparser randomizer (tools/decomp-permuter/src/randomizer.py) can invent new intermediate locals, split assignments, and restructure the shift-and-index expression in ways hand-annotated PERM_LINESWAP + finite PERM_GENERAL alternatives cannot enumerate. Some spellings may synthesize a code shape where cse.c's substitution trigger does not fire, decoupling the sched2 LUID lever from the RA rotation. s16 hardens the target: the shape must avoid the LUID-driven decision at BOTH sched1 and sched2, since both passes are coupled.",
-   "next_probe": "Rebuild tmp/grind/func_80045294/s18/perm_rand/base.c from s14's minimal-base chassis (63 lines). Add PERM_RANDOMIZE(func_80045294) around the entire initial decl+first-loop block; leave second half untouched to preserve score-60 base. Launch permuter_campaign.py with -j 4 --stop-on-zero. Harvest --stop after natural iteration limit (~4000 iters) if no score<60. Fresh-seed re-launch permitted per feedback/permuter-fresh-seed-discipline."
+   "hypothesis": "PERM_RANDOMIZE wrapping the decl+first-loop scope may reach a C spelling routing through a fundamentally different expand->cse->global pass sequence than any hand-derivable or m2c-derivable form, breaking the cse.c coupling without incurring RA rotation.",
+   "mechanism": "pycparser randomizer (tools/decomp-permuter/src/randomizer.py) can invent new intermediate locals, split assignments, and restructure the shift-and-index expression in ways hand-annotated PERM_LINESWAP + finite PERM_GENERAL alternatives cannot enumerate. s16 hardens the target: the shape must avoid the LUID-driven decision at BOTH sched1 and sched2. s18 confirms neither m2c cross-dialect nor cross-target nor CFG-representation nor position-derived-var-suffix produces a shape outside the KILLED H1 basin, so the last remaining reachable non-H1 shape family must come from mutation-randomization not hand/m2c derivation.",
+   "next_probe": "Rebuild tmp/grind/func_80045294/s19/perm_rand/base.c from s14's minimal-base chassis (63 lines). Add PERM_RANDOMIZE(func_80045294) around the entire initial decl+first-loop block; leave second half untouched to preserve score-60 base. Launch permuter_campaign.py with -j 4 --stop-on-zero. Harvest --stop after natural iteration limit (~4000 iters) if no score<60. Fresh-seed re-launch permitted per feedback/permuter-fresh-seed-discipline."
   },
   {
    "hypothesis": "If PERM_RANDOMIZE measures dead across at least one fresh-seed campaign, every sanctioned axis is dead and OWNER-ESCALATION becomes ripe.",
-   "mechanism": "Posture note. All hand-derivation axes measured dead s1-s16; all rederive axes measured dead s8-s9-s17 (five independent sub-axes now); both directed permuter chassis measured dead s13-s14; both scheduling passes shown LUID-coupled s16. PERM_RANDOMIZE is the last remaining sanctioned mutation family.",
-   "next_probe": "After PERM_RANDOMIZE campaign completes with no score<60 find, draft owner-escalation entry for docs/grind/decisions.md citing s15 (a)/(b) discrimination + s16 sched1/sched2 LUID-coupling + all measured-dead axes s1-s17 + PERM_RANDOMIZE plateau evidence. Emit owner-gated in the following session. Do NOT emit owner-gated before the PERM_RANDOMIZE measurement is banked."
+   "mechanism": "Posture note. All hand-derivation axes measured dead s1-s16; all rederive axes measured dead s8-s9-s17-s18 (EIGHT independent sub-axes now including three new s18 confirmations); both directed permuter chassis measured dead s13-s14; both scheduling passes shown LUID-coupled s16. PERM_RANDOMIZE is the last remaining sanctioned mutation family.",
+   "next_probe": "After PERM_RANDOMIZE campaign completes with no score<60 find, draft owner-escalation entry for docs/grind/decisions.md citing s15 (a)/(b) discrimination + s16 sched1/sched2 LUID-coupling + all measured-dead axes s1-s18 + PERM_RANDOMIZE plateau evidence. Emit owner-gated in the following session. Do NOT emit owner-gated before the PERM_RANDOMIZE measurement is banked."
   }
  ],
  "judge_constraints": [],

@@ -334,3 +334,21 @@
 - probe: grep for D_800EED10/14/18/1C uses across text1a_c.c and inspected each sibling function body (saTan5TakeGetPos_80045694, func_800456F0, func_8004574C, func_800457A0).
 - result: All four siblings use a single-target search shape (`if (*(s16*)((u8*)D_800EED10 + i) == a0) return ...; i += 0x10;`) with a `while (i < count*16)` bound. None has a sum accumulator, none has a two-loop shape, none has the guarded-do-while + branch-on-sum idiom. No transplantable structural analogue exists in the file for this shape family.
 - verdict: KILLED
+
+## [s18] m2c with --gotos-only (goto-only CFG representation, mips-gcc-c, passes=5) reaches a structural shape distinct from the natural if/do-while lowering, potentially disturbing the s7 cse.c BB-scoped substitution that couples LUID and RA rotation.
+- mechanism: --gotos-only disables control flow generation and emits explicit gotos for every branch, producing a different textual C surface for the same asm. If the m2c IR-to-C printer routes through a different template that reorders the initial decls, a new structural axis might be produced.
+- probe: python3 tools/m2c/m2c.py --target mips-gcc-c --passes 5 --gotos-only asm/funcs/saTan0Init.s -> tmp/grind/func_80045294/s18/m2c_gotosonly_p5.txt
+- result: Init cluster BYTE-IDENTICAL to s8/s17: var_s1=0; var_s0=arg0; var_v1=arg0*0x10; temp_s4=...; temp_s5=temp_s4+arg1. The CFG surface differs (explicit loop_1/block_2 labels + gotos) but the decl init order is fixed by m2c's SSA-to-decl printer and is invariant across CFG representation.
+- verdict: KILLED
+
+## [s18] m2c with --target mipsel-mwcc-c (Metrowerks CodeWarrior compiler dialect) applies a different codegen-model prior, potentially producing a distinct init order or arithmetic spelling than the gcc/ido dialects.
+- mechanism: mwcc's SDA/GPR-usage priors differ from GCC 2.7.2's; the m2c dialect selector adjusts prologue/epilogue matching and stack-spill inference, which could shift how temporaries and s-regs are surfaced.
+- probe: python3 tools/m2c/m2c.py --target mipsel-mwcc-c --passes 5 asm/funcs/saTan0Init.s -> tmp/grind/func_80045294/s18/m2c_mwcc_p5.txt
+- result: Init cluster BYTE-IDENTICAL to the gcc/ido runs: var_s1=0; var_s0=arg0; var_v1=arg0*0x10; temp_s4=...; temp_s5=... . The dialect selector affects prologue/epilogue matching but not the decl init printer for this asm shape. The H1 shape convergence extends to a 4th m2c dialect.
+- verdict: KILLED
+
+## [s18] m2c with --target mipsee-gcc-c + --no-stack-spill + --deterministic-vars applies PS2-era GCC priors, disables stack-spill temporary introduction, and gives variables ASM-location-stable suffixes, which may surface a different init ordering or expose a variable that hand-derivation would spell differently.
+- mechanism: mipsee target changes ABI/register-usage priors; --no-stack-spill suppresses phantom temporaries; --deterministic-vars binds var suffixes to asm positions so the printer chooses different decl ordering when var creation LUIDs are position-derived instead of increment-derived.
+- probe: python3 tools/m2c/m2c.py --target mipsee-gcc-c --passes 5 --no-stack-spill --deterministic-vars asm/funcs/saTan0Init.s -> tmp/grind/func_80045294/s18/m2c_mipsee_p5.txt
+- result: Init cluster (with position-suffixed names) is: var_s1_8=0; var_s0_10=arg0; var_v1_11=arg0*0x10; temp_s4_17=...; temp_s5_22=... . The numeric suffixes confirm the ASM-position-derived decl creation ORDER is: sum(pos 8) -> i(pos 10) -> v1(pos 11) -> s4(pos 17) -> s5(pos 22). This is the H1 shape's exact init order with independent evidence from position-derived LUIDs.
+- verdict: KILLED

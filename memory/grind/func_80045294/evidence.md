@@ -257,3 +257,19 @@
 - [s17] [s17] The rederive modality is now measured dead across four independent sub-axes: (1) single-target m2c (s8), (2) cross-target m2c convergence (s17), (3) Kengo source+debug+globals (s8+s17), (4) decomp.me local corpus shingle-search (s9), (5) BB2 sibling shape (s17). Every rederive lever this modality can reach has been enumerated and killed.
 
 - [s17] [s17] Consistent with ledger s6/s7/s15/s16 pass-level conclusions: sched1+sched2 LUID coupling to cse.c BB-scoped substitution is upstream of any C-source shape change hand-derivation or m2c can reach; only permuter-family mutations reaching a different expand/cse/global path remain sanctioned. PERM_RANDOMIZE (frontier #1) is the last unmeasured axis before OWNER-ESCALATION becomes ripe.
+
+- [s18] [s18] Baseline reconfirmed pre and post: sandbox --disable all -> score=2, target_insns=83, build_insns=83, rules_dropped=0, cheat_asm_stripped=78. Working tree clean throughout; no src edits this session.
+
+- [s18] [s18] m2c --gotos-only with mips-gcc-c passes=5 produces a distinct CFG surface (explicit block_2 / loop_1 / block_5 / block_7 / block_8 labels + gotos) but the initial decl cluster init order is IDENTICAL to s8/s17: var_s1=0; var_s0=arg0; var_v1=arg0*0x10; temp_s4=...; temp_s5=temp_s4+arg1. CFG representation is orthogonal to decl-print order in m2c.
+
+- [s18] [s18] m2c --target mipsel-mwcc-c produces byte-identical init cluster to gcc-c and ido-c dialects. The mwcc dialect selector adjusts prologue/epilogue matching but not the decl init printer. 4th distinct m2c dialect surface confirms init order is fixed by asm structure, not m2c dialect priors.
+
+- [s18] [s18] m2c --target mipsee-gcc-c --no-stack-spill --deterministic-vars produces init order sum(pos 8) -> i(pos 10) -> v1(pos 11) -> s4(pos 17) -> s5(pos 22). The ASM-position-derived numeric suffixes give independent evidence that m2c's decl creation ORDER is: sum, i, v1, s4, s5. This is the i-before-v1 shape banked KILLED at s1 (H1 rejected/i-before-v1-init.c).
+
+- [s18] [s18] The three new sub-axes converge on the SAME KILLED shape (H1 / i-before-v1) via three DIFFERENT paths: CFG representation (gotos-only), compiler dialect (mwcc), and analysis flags + position-derived variable suffixes (mipsee + no-stack-spill + deterministic-vars). Independent convergence hardens s8/s9/s17's rederive-exhaustion conclusion.
+
+- [s18] [s18] Rederive modality is now measured dead across EIGHT independent sub-axes: (1) single-target m2c mips-gcc-c (s8), (2) cross-target m2c mipsel-gcc-c + mips-ido-c (s17), (3) Kengo source (s8) + Kengo debug + globals (s17), (4) decomp.me local corpus shingle-search (s9), (5) BB2 sibling shape (s17), (6) m2c --gotos-only (s18), (7) m2c mwcc dialect (s18), (8) m2c mipsee + no-stack-spill + deterministic-vars (s18). Every rederive lever reachable by this modality has been enumerated and converges on either the H1 shape (KILLED) or a NEUTRAL free-axis permutation.
+
+- [s18] [s18] The rederive-modality exhaustion is a FIFTH independent argument (alongside s1-s16 hand-derivation exhaustion + s13-s14 directed permuter plateau + s15 (a)/(b) discrimination + s16 sched1+sched2 LUID-coupling + s17 five-sub-axis rederive kill) that only PERM_RANDOMIZE remains as a sanctioned axis before OWNER-ESCALATION becomes ripe.
+
+- [s18] [s18] candidate.c unchanged; no src edits this session; no rejected forms new-banked (all three s18 outputs converge on the already-banked rejected/i-before-v1-init.c form, so no new file needed).
