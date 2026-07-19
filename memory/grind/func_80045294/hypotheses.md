@@ -316,3 +316,21 @@
 - probe: Read s3 cc1 -da dumps: tmp/grind/func_80045294/s3/base.i.sched (sched1) and base.i.sched2 (sched2). Compared block-0 forward stream at the sll/move16 cluster in both.
 - result: sched1 block 0 (8 insns, total_time=8) ready-list at T-6 = `22 14 12` -- backward-list picks 22 first (LUID higher), sll(14) emitted at forward pos 2, move16(22) at forward pos 3. sched2 block 0 (18 insns after reload inserts 195-211; total_time=18) ready-list at T-9 through T-11 picks 22 at T-9 (pos 10), 211 at T-10 (pos 9, hoisted by 'greater potential hazard'), 14 at T-11 (pos 8). BOTH passes emit sll before move16 by the same LUID mechanism; sw's placement between them at sched2 is a hazard-hoist (not LUID) and is sched2-specific but does not decouple the sll/move16 order.
 - verdict: KILLED
+
+## [s17] m2c with alternate targets (mipsel-gcc-c, mips-ido-c) not tried in s8 surfaces a structurally different C shape than s8's mips-gcc-c reconstruction, providing a novel rederive lever.
+- mechanism: m2c's reconstruction heuristics differ across --target selections (compiler family, ABI conventions, register-name idioms); if any target's decompilation biases toward a different init order or expression tree, it could reveal a hand-derivation axis not yet enumerated.
+- probe: Ran `python3 tools/m2c/m2c.py --target mipsel-gcc-c --passes 3 --valid-syntax asm/funcs/saTan0Init.s` and same with --target mips-ido-c. Diffed both against s8's mips-gcc-c output (memory reference: s8 evidence entry).
+- result: Both alternate targets produce first-loop init exactly `var_s1=0; var_s0=arg0; var_v1=arg0*0x10; temp_s4=...; temp_s5=...; if (var_s0<D_800A33AC) do..while`. Byte-identical to s8's reconstruction. This is the H1 shape (i-before-v1 + arg0*K), already banked as rejected/i-before-v1-init.c (s1 kill, score=11 via cse.c substitution) and rejected/shift-as-{signed,unsigned}-mult.c (s5 NEUTRAL). Three independent m2c targets converge on the same KILLED shape.
+- verdict: KILLED
+
+## [s17] Kengo debug/globals metadata for saTan0Init contains local-variable names, struct field layouts, or source-file annotations beyond the symbol+size entry s8 observed, providing a Kengo-source-inspired structural transplant hint.
+- mechanism: kengo_debug_full.txt and kengo_globals_full.txt could carry DWARF-derived typing/local information that would reveal how the original devs structured saTan0Init even without shipped source.
+- probe: `grep -c saTan0Init Kengo/kengo_debug_full.txt Kengo/kengo_functions_full.txt Kengo/kengo_globals_full.txt`.
+- result: Zero hits in kengo_debug_full.txt and kengo_globals_full.txt; only kengo_functions_full.txt has the symbol name+size line. Kengo's exported metadata is empty for this function — no locals, no types, no field info. Kengo-transplant block is at debug-info level, not just source level. s8's conclusion is independently corroborated at a distinct evidence surface.
+- verdict: KILLED
+
+## [s17] A matched sibling function in text1a_c.c that uses the D_800EED10/14/18/1C table has the same guarded-do-while + shift-index-accumulator + sum!=0 branch + second base+index-loop shape as saTan0Init and its committed pure-C body is directly transplantable.
+- mechanism: Sibling structural transplant: if a text1a_c.c neighbor uses the same table with a similar guarded-do-while + accumulator + branch idiom and is in matched state, its statement order / decl block / init spelling would be an evidence-backed rederive lever.
+- probe: grep for D_800EED10/14/18/1C uses across text1a_c.c and inspected each sibling function body (saTan5TakeGetPos_80045694, func_800456F0, func_8004574C, func_800457A0).
+- result: All four siblings use a single-target search shape (`if (*(s16*)((u8*)D_800EED10 + i) == a0) return ...; i += 0x10;`) with a `while (i < count*16)` bound. None has a sum accumulator, none has a two-loop shape, none has the guarded-do-while + branch-on-sum idiom. No transplantable structural analogue exists in the file for this shape family.
+- verdict: KILLED

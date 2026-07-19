@@ -243,3 +243,17 @@
 - [s16] [s16] The sw insn's placement between sll and move16 in the final output is confirmed to be a SCHED2-EXCLUSIVE hazard-hoist decision (log line 'insn 211 has a greater potential hazard'). sched2 groups memory ops away from ALU chains for pipeline reasons. This is not a lever -- it does not alter the sll/move16 relative order -- but it explains why the residual is a 3-insn cluster (sw/move16/sll vs sll/sw/move16) rather than a 2-insn sll/move16 swap.
 
 - [s16] [s16] All hypotheses about scheduler-side interventions for func_80045294 are now exhausted. The LUID axis is provably coupled to cse.c (s7), coupled to RA rotation via reg_n_refs (s6), and now shown coupled to BOTH scheduling passes (s16). Any closing lever must be either (i) a pure-C construct that shifts LUID while avoiding cse.c's BB-scoped substitution -- proven impossible for hand-derivation across s1-s15, PERM_RANDOMIZE unmeasured -- or (ii) an owner-sanctioned canonical-asm authorization.
+
+- [s17] [s17] Baseline reconfirmed pre and post: sandbox --disable all -> score=2, target_insns=83, build_insns=83, rules_dropped=0, cheat_asm_stripped=78. No src edits this session; candidate.c unchanged.
+
+- [s17] [s17] m2c cross-target reconstructions (mipsel-gcc-c passes=3, mips-ido-c passes=3) BYTE-IDENTICAL to s8's mips-gcc-c output for the first-loop init cluster (`var_s1=0; var_s0=arg0; var_v1=arg0*0x10; temp_s4=...; temp_s5=...`). Artifact: tmp/grind/func_80045294/s17/m2c_mipsel_gcc_p3.txt + m2c_mips_ido_p3.txt.
+
+- [s17] [s17] The convergent m2c reconstruction is the H1 shape (i-before-v1 + `arg0 * 0x10`) — banked KILLED at s1 (score=11 via cse.c substitution rewriting the ashift operand from a0 to i, RA rotates a0->$21) and at s5/s8 (arg0*K -> ashift fold measured NEUTRAL versus a0<<4 spelling). Three m2c targets provide independent convergence on a KILLED shape.
+
+- [s17] [s17] Kengo exported metadata for saTan0Init is a symbol+size line only. kengo_debug_full.txt and kengo_globals_full.txt have ZERO hits. s8's Kengo-source-absent finding extended to debug-info-absent at a distinct evidence surface.
+
+- [s17] [s17] text1a_c.c sibling functions on D_800EED10/14/18/1C (saTan5TakeGetPos_80045694, func_800456F0, func_8004574C, func_800457A0) use single-target search loops without accumulator/branch — no shape-family transplant available.
+
+- [s17] [s17] The rederive modality is now measured dead across four independent sub-axes: (1) single-target m2c (s8), (2) cross-target m2c convergence (s17), (3) Kengo source+debug+globals (s8+s17), (4) decomp.me local corpus shingle-search (s9), (5) BB2 sibling shape (s17). Every rederive lever this modality can reach has been enumerated and killed.
+
+- [s17] [s17] Consistent with ledger s6/s7/s15/s16 pass-level conclusions: sched1+sched2 LUID coupling to cse.c BB-scoped substitution is upstream of any C-source shape change hand-derivation or m2c can reach; only permuter-family mutations reaching a different expand/cse/global path remain sanctioned. PERM_RANDOMIZE (frontier #1) is the last unmeasured axis before OWNER-ESCALATION becomes ripe.
