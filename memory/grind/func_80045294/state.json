@@ -1,8 +1,8 @@
 {
  "func": "func_80045294",
  "file": "text1a_c",
- "session_count": 43,
- "current_modality": "forensics",
+ "session_count": 44,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -261,18 +261,24 @@
    "floor": 2,
    "modality": "forensics",
    "headline": "s43 forensics: reload's LUID-211 emission for sw $s0 + sched2 hazard-hoist named as 7th pass-level wall; target order sw;move;sll shown pass-mechanically unreachable by any pure-C mutation because it "
+  },
+  {
+   "session": 44,
+   "floor": 2,
+   "modality": "rederive",
+   "headline": "s44 rederive: Kengo saTan0Init name+size identity FALSIFIED by direct ELF disassembly (16th rederive sub-axis KILLED); shapes don't match (9 vs 2 calls, 6-slot init loop vs table-scan accumulator) des"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "PERM_INT-mode campaign on the shift constant 4 (or PERM_GENERAL exploration of a0<<4 equivalents) \u2014 the last un-measured 12th chassis/mode combination.",
-   "mechanism": "s5-family manual probes of arithmetic equivalents were killed at individual-form level; PERM_INT/PERM_GENERAL lets the permuter itself search a broader lowering surface. s43's reload-LUID theoretical closure strongly predicts it plateaus at 60 (like the 11 prior chassis/mode combinations), but it remains the last sanctioned axis contract-required to be measured before owner-gated.",
-   "next_probe": "python3 tools/permuter_campaign.py launch --func func_80045294 --dir tmp/grind/func_80045294/s44/perm_int --label s44-perm-int-shiftconst -j 4 (fresh seed on baseline chassis with PERM_INT wrapping the 4 in a0<<4 and equivalents)."
+   "hypothesis": "PERM_INT-mode campaign on the shift constant 4 (or PERM_GENERAL exploration of a0<<4 equivalents) plateaus at 60 like the 11 prior chassis/mode combinations, satisfying owner-escalation contract precondition (b).",
+   "mechanism": "s5-family manual probes of arithmetic equivalents were killed at individual-form level; PERM_INT/PERM_GENERAL lets the permuter itself search a broader lowering surface. s43's reload-LUID theoretical closure strongly predicts plateau=60, but remains the last sanctioned axis contract-required to be measured before owner-gated.",
+   "next_probe": "python3 tools/permuter_campaign.py launch --func func_80045294 --dir tmp/grind/func_80045294/s45/perm_int --label s45-perm-int-shiftconst -j 4 (fresh seed on baseline chassis with PERM_INT wrapping the 4 in a0<<4 and equivalents)."
   },
   {
-   "hypothesis": "Once PERM_INT is measured dead, emit owner-gated citing the s42-filed escalation entry (now hardened by s43's seventh pass-level wall).",
-   "mechanism": "Contract precondition (a) satisfied by s42; precondition (b) satisfied once PERM_INT is killed. Owner-gated parks func_80045294 (queue advances) until the owner rules between canonical-asm authorization and pure-C bar upheld. s43's reload-LUID theoretical closure adds an independent second impossibility argument to the dossier.",
-   "next_probe": "Emit owner-gated with escalation_ref='docs/grind/decisions.md 2026-07-19 func_80045294 OWNER-ESCALATION' after the s44 PERM_INT kill lands."
+   "hypothesis": "Once PERM_INT is measured dead, emit owner-gated citing the s42-filed escalation entry hardened by s43's seventh pass-level wall and s44's 16-sub-axis rederive kill.",
+   "mechanism": "Contract precondition (a) satisfied by s42; precondition (b) satisfied once PERM_INT is killed. Owner-gated parks func_80045294 (queue advances) until the owner rules between canonical-asm authorization and pure-C bar upheld. s43+s44 independently harden the impossibility dossier.",
+   "next_probe": "Emit owner-gated with escalation_ref='docs/grind/decisions.md 2026-07-19 func_80045294 OWNER-ESCALATION' after the s45 PERM_INT kill lands."
   }
  ],
  "judge_constraints": [],

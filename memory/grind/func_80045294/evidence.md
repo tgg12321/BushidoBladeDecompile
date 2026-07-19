@@ -678,3 +678,17 @@
 - [s43] This finding is COMPLEMENTARY to (not overlapping with) s34's 6 pass-level walls: s34 named the LUID-8-delta at expand between sll(14) and move16(22); s43 names a SECOND LUID relation (pre-reload vs reload-emitted, gap ~197) that is even more constrained and independently forbids target order.
 
 - [s43] Corollary for the frontier PERM_INT campaign: even if PERM_INT surfaces a novel lowering of a0<<4 that shifts insn 14's LUID or eliminates it, the sw(211)-vs-move(22) LUID relation remains unshiftable by C-source. PERM_INT can at best corroborate s5's arithmetic-form closure; it cannot invert the reload LUID relation.
+
+- [s44] [s44] Baseline reconfirmed: sandbox --disable all -> score=2, target_insns=83, build_insns=83, rules_dropped=0, cheat_asm_stripped=78. No src edits; candidate.c unchanged.
+
+- [s44] [s44] Kengo saTan0Init disassembly at 0x00147dc8..0x00147f14 (tmp/grind/func_80045294/s44/kengo_saTan0Init.asm) shows ~9 function calls (saRobInit/saTanMainDataCreate/tslGlobalMemAlloc/saFidLoad/tslSmdInitObj/motion_SetMotion/motion_CalcMotion/saTan0InitPrim/saSePlaySeq), single 6-iteration init loop bounded by `slti v0,s4,6 ; bne`, 160-byte frame with 9 callee-saves, terminating with `sb v0,-29548(gp) ; sb v0,-29545(gp)`.
+
+- [s44] [s44] BB2 func_80045294 shape (candidate.c + target diff): 2 calls (gpu_DrawSync(0), func_800520B8(s4,s5,sum)), TWO scan loops over per-slot table D_800EED10-1C (running index += 0x10) bounded by `i < D_800A33AC`, fn-ptr dispatch through +0x1C offset with s16 arg loaded from +0x00, terminates with `D_800A33A0 += a1; D_800A33A4 -= a1;`.
+
+- [s44] [s44] The 83-insn size match between Kengo saTan0Init and BB2 func_80045294 is COINCIDENCE, not source identity. s8's 'Kengo symbol confirms function identity: saTan0Init at 0x00147dc8, size 0x14c=83 insns' name+size identity claim is falsified by direct disassembly at the ASM-shape level.
+
+- [s44] [s44] 16th independent rederive sub-axis killed (previously enumerated in s37/s10/s18/s34/s36: 15 sub-axes). Rederive-modality-dead inference from s8/s9/s17/s18/s35/s36 HARDENED: even a disassembly-based m2c rederive of Kengo's saTan0Init would produce a different function's C, not this function's; no future session should attempt Kengo-ASM transplant on the shape argument alone.
+
+- [s44] [s44] BB2 function's globals-update semantics (D_800A33A0 += a1; D_800A33A4 -= a1) plus gpu_DrawSync indicate this is a per-frame scroll/advance step, NOT an init in the traditional sense; BB2's saTan0Init label is a role-name that does not correspond to Kengo's saTan0Init role. Second-order evidence that Kengo restructuring separated the roles.
+
+- [s44] [s44] Owner-escalation entry (s42-filed in docs/grind/decisions.md 2026-07-19) contract precondition (a) still satisfied; precondition (b) still awaits the PERM_INT axis measurement (frontier item, deferred by mandated modality this session).
