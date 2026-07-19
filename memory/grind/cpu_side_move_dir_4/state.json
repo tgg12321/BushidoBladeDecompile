@@ -1,7 +1,7 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 101,
+ "session_count": 102,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -615,18 +615,19 @@
    "floor": 2,
    "modality": "structural",
    "headline": "s101 structural KILLS F1 pointer-alias-fake-exception across 5 probe shapes (block/fn-scope x pass-through/from-global x asymmetric/dual-use); every pass-through form combine-folds byte-neutral INERT "
+  },
+  {
+   "session": 102,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "s102 structural KILLS F2 livelen-shortening axis across 6 probes on probe1 base (defer-into-do-timeout, block-local, prologue-last, pass-through alias, direct-symref, h5-symref+block-local): every def"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F2 (unchanged from s100 frontier): shorten p79 livelen from 148 to <60 to re-enter h5's pri>675 range while nrefs remains locked at probe1's 3-ref profile.",
-   "mechanism": "s97 named the priority formula floor_log2(refs)*refs*size/livelen*10000 and measured livelen(p79)=148 INVARIANT between h5 and probe1. s98 reinforced h5 is priority-driven. Livelen-shortening lever is orthogonal to every closed nrefs axis; no session has attacked it. s101 confirms nrefs-split axis (F1) is empirically closed by tbl_125c-is-a-pseudo (combine-fold on pass-through, +insn on independent).",
-   "next_probe": "s102 forensics session with ALLOCDBG-instrumented gccdbg: log luid-per-pseudo per basic block on h5 baseline; identify p79 live-range extremes (first/last luid); enumerate declaration-hoist positions in src/system.c prologue that could shrink p79 livelen without touching nrefs (e.g., defer tbl_125c=D_800A125C to just before block=3, or fold tbl_125c materialization into the block itself); draft ONE probe per candidate position; measure sandbox --disable all + ALLOCDBG(p79)."
-  },
-  {
-   "hypothesis": "F3 (contingency): if F2 (s102) also KILLED, every sanctioned axis is measured dead -> file OWNER-ESCALATION in docs/grind/decisions.md citing full closure inventory and escalate to owner-gated.",
-   "mechanism": "Judge constraint scopes remaining pure-C axes to {F1, F2}; s101 closes F1; F2 closure completes the sanctioned-axis inventory. owner-gated is the driver-sanctioned next step only after the escalation entry is filed and the axis inventory is empty.",
-   "next_probe": "s103 files the OWNER-ESCALATION entry in docs/grind/decisions.md with the closure inventory (structural, do-while(0), carriers, named dispatch, hoists, rederive, m2c, marionation transplants, POLL, permuter x6 chassis, F97a-refined analytic, F97b/c empirical, s101 pointer-alias-fake-exception 5-shape empirical, s102 livelen-shortening ALLOCDBG-instrumented empirical) and emits owner-gated citing escalation_ref."
+   "hypothesis": "F3 (contingent, now activated): every remaining sanctioned pure-C axis is measured dead \u2014 F1 pointer-alias-fake-exception KILLED s101 5 shapes; F2 livelen-shortening structural KILLED s102 6 shapes. File OWNER-ESCALATION entry in docs/grind/decisions.md citing the full closure inventory and emit owner-gated on next session citing escalation_ref.",
+   "mechanism": "Per Judge constraint (2026-07-09 FAIL, judge_constraints[0]): canonical-asm authorization is settled-FAIL; agent must SHIFT MODALITY to un-run sanctioned axes. Both F1 and F2 (the only two axes the ledger identified as un-run and sanctioned) are now empirically closed with measurements. Per task-brief owner-gated contract: emit only when a filed OWNER-ESCALATION exists AND every sanctioned axis is measured dead \u2014 F3 is the driver-sanctioned path to reach that state.",
+   "next_probe": "s103 files the OWNER-ESCALATION entry in docs/grind/decisions.md in hirahira_w_frie format with full closure inventory: structural 46+ probes (s3/s4/s5/s11/s12/s13/s21/s27/s29/s30/s38/s39/s47/s48/s56/s57/s65/s66/s74/s75/s83/s84/s85/s93/s101/s102), do-while(0) at all scopes s4/s5/s48/s85/s93, carriers s4/s5, named dispatch s5, fn-body hoists s13/s31, marionation transplants s9/s2/s4, m2c KILLED s8, spelling variants s90/s98/s99, POLL 9-probe sweep s93, permuter 6 chassis (s5/s13/s14/s86/s94/s95, ~81k+ aggregate iters, 0 novel basin closures), F97a-refined analytic closure s100, F97b/c empirical s90/s98, s101 pointer-alias-fake-exception 5-shape empirical, s102 livelen-shortening structural 6-shape empirical. Present both options honestly: (a) sanction cross-symbol arithmetic idiom as SOTN-family carve-out contingent on evidence (would close via existing h5 candidate.c on candidate-ready path), (b) owner accepts function as permanent INCOMPLETE (no-park-permanently forbids agent-side, requires owner disposition). Then emit owner-gated citing docs/grind/decisions.md entry."
   }
  ],
  "judge_constraints": [

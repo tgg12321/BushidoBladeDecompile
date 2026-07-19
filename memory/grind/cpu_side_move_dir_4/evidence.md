@@ -1638,3 +1638,33 @@ lw-dest split. See marionation notes.md region-1 for the full argument.
 - [s101] Mechanism attribution: tbl_125c is itself a local (assigned from D_800A125C at fn entry), so pass-through pointer aliases fold in combine.c even at fn-scope. The pointer-alias-fake-exception SANCTION explicitly targets aliases-to-GLOBALS (SOTN `tilemap = &g_Tilemap;` shape); csmd4's tbl_125c does not qualify as an alias TARGET in the sanctioned sense — the direct-global form was measured KILLED as probe B
 
 - [s101] Sanctioned axis inventory now: F1 pointer-alias-fake-exception KILLED (this session); F2 livelen-shortening remains un-measured (needs ALLOCDBG forensics s102 per frontier); F3 owner-escalation contingent on F2 close
+
+- [s102] s102 baseline: h5 candidate applied to src/system.c scores masked=2, target_insns=160, build_insns=160 via sandbox cpu_side_move_dir_4 --disable all (rules_dropped=5, cheat_asm_stripped=7).
+
+- [s102] s102 P1 probe1-honest reproduction: idx_1495=idx_1494+1 with tbl_125c=D_800A125C at fn scope top scores masked=15 build_insns=160 — matches s97/s99 probe1 signature (nrefs(p79)=3, livelen=148, pri=202, ord=14).
+
+- [s102] s102 P2 (probe1 + defer tbl_125c=D_800A125C to just-before-do_timeout, fn-scope decl retained): masked=22 build_insns=158 (-2 insns). Target retains the prologue lui/addiu; deferring the SET drops them from build, +7 masked regression.
+
+- [s102] s102 P3 (probe1 + block-local `s32 *tbl_125c=D_800A125C;` inside block=3 compound; fn-scope decl removed): masked=22 build_insns=158 (-2 insns). Same -2 signature as P2; block-local hoist collapses to identical basin.
+
+- [s102] s102 P4 (probe1 + tbl_125c=D_800A125C reordered to LAST fn-prologue assignment, immediately before loop:): masked=17 build_insns=160 (+2 regression, no insn delta). RTL scheduler re-emits SET early; C statement position steers ord differently but does not shorten livelen enough to re-enter pri>675.
+
+- [s102] s102 P5 (probe1 + fn-scope tbl_125c retained + block-scope `s32 *tbl_alias=tbl_125c;` used exclusively inside block=3): masked=15 build_insns=160 INERT — combine.c substitution folds tbl_alias back onto tbl_125c pseudo (same mechanism s11/s12/s101 measured on multi-SET decompositions); pass-through equivalence expressed pre-local-alloc.
+
+- [s102] s102 P6 (probe1 + no local tbl_125c, direct D_800A125C symref at both block=3 uses): masked=35 build_insns=159 (-1 insn, +20 catastrophic). Direct-symref eliminates the shared base pseudo; block=3 emits two independent lui/addiu D_800A125C sequences replacing one shared base.
+
+- [s102] s102 P7 (h5-form cross-symbol init respelled with D_800A125C symref + block-local tbl_125c inside block=3): masked=22 build_insns=158 (-2 insns). H5's cross-symbol basin does not compose with block-local tbl_125c; symref-init loses the local-tbl_125c-pseudo re-use that h5 relies on.
+
+- [s102] s102 mechanism attribution: p79 livelen (148) is architecturally locked by target's fn-prologue tbl_125c materialization. Any structural hoist that succeeds in delaying the RTL SET past prologue drops the prologue lui/addiu from build (asymmetric with target which keeps them, verified by build_insns=158 vs target 160). Structural declaration order cannot shorten p79 livelen without asymmetric prologue insn loss — the two constraints (short livelen ∧ target prologue-emit) are mutually incompatible under structural modality.
+
+- [s102] s102 modality closure: F2 livelen-shortening structural axis measured across all reachable declaration positions (top-of-prologue, mid-prologue, last-of-prologue, block-local hoist, block-scope pass-through alias, direct-symref removal, cross-form composition). Every position measured; every measurement KILLED or INERT. No un-run structural position remains.
+
+- [s102] s102 candidate.c unchanged (h5 form remains masked=2 floor, 88 sessions unchanged since s4).
+
+- [s102] s102 rejected/ additions: 6 new banked forms (s102_probe1_defer_tbl_into_do_timeout.c, s102_probe1_block_local_tbl.c, s102_probe1_tbl_last_in_prologue.c, s102_probe1_block_alias_pass_through.c, s102_probe1_no_local_direct_symref.c, s102_h5_symref_block_local_tbl.c). Total rejected/ population: 112 (was 106).
+
+- [s102] s102 src/system.c restored to HEAD (both-named arg4/arg5 form, masked=7) via git checkout at session end. Sandbox re-verified masked=7 on HEAD.
+
+- [s102] s102 sanctioned-axis inventory complete: F1 pointer-alias-fake-exception KILLED s101 (5 shapes); F2 livelen-shortening structural KILLED s102 (6 shapes); all owner-sanctioned pure-C axes now measured dead. Ledger's F3 contingency (OWNER-ESCALATION filing) is the deterministic next step.
+
+- [s102] s102 Judge constraint compliance: no canonical-asm authorization framing surfaced (2026-07-09 FAIL entry respected); no cheat-shaped honest respelling of src/system.c:406 attempted; no forbidden semantic-lie or coercion construct proposed. Modality stayed strictly structural (declaration order, scope, statement re-association) per driver assignment.
