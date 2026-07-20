@@ -29,6 +29,19 @@
  *        by text1b.c INCLUDE_ASM sibling func_8004A348 tripping both
  *        the permuter parser and the workspace maspsx pipeline —
  *        banked as tmp/grind/func_80049A2C/s4/permuter-blocked-summary.txt.
+ *   s5 — permuter (mandated modality) INDEPENDENTLY reconfirmed the s4
+ *        infrastructure blocker: fresh `import.py` warned on the
+ *        _permuter_ignore_line __asm__(...) sibling parse; fresh
+ *        `bash compile.sh base.c` on the generated workspace died at
+ *        `MASPSX: too many values to unpack (expected 2)`. Both are
+ *        project-tooling fixes outside grind-session scope. Filed
+ *        OWNER-ESCALATION to docs/grind/decisions.md (line 954,
+ *        2026-07-20 header) presenting options (a) canonical-asm
+ *        authorization without hand-coded evidence — not supportable
+ *        under owner's 2026-07-20 criterion — and (b) INCOMPLETE-
+ *        owner-accepted per endgame-lock-disposition. Precedent:
+ *        saTan0Init + cpu_side_move_dir_4 both ruled option (b) on
+ *        2026-07-20. Outcome: owner-gated.
  *
  * Standing disposition per rules:
  *   Every sanctioned pure-C axis (phantom-firing H4, phantom-injection

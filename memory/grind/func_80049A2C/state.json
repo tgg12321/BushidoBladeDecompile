@@ -1,7 +1,7 @@
 {
  "func": "func_80049A2C",
  "file": "text1b",
- "session_count": 4,
+ "session_count": 5,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -27,18 +27,19 @@
    "floor": 0,
    "modality": "permuter",
    "headline": "s4 permuter: H8 struct-aggregate KILLED (same +8 slot, same reviewer defect); scan_hand_coded LOW 0/8; permuter campaign blocked by text1b.c INCLUDE_ASM sibling tripping parser+maspsx \u2014 aggregate-only"
+  },
+  {
+   "session": 5,
+   "floor": 0,
+   "modality": "permuter",
+   "headline": "s5 permuter (mandated modality) independently reconfirmed the s4 workspace blocker (import.py __asm__ parse + maspsx TU exception, both project-tooling fixes out of scope); every sanctioned axis measu"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "H7 \u2014 file OWNER-ESCALATION in docs/grind/decisions.md so the driver parks the function under owner-gated disposition per [[endgame-lock-disposition]] (2026-07-20).",
-   "mechanism": "Task-brief contract: 'owner-gated' is ONLY valid when a filed OWNER-ESCALATION for the function already exists and every remaining sanctioned axis is measured dead. After s4, every axis IS measured dead (phantom-firing s3, phantom-injection s2, scalar-widening s2, scalar-dummy H6, struct-aggregate s4-H8), scan_hand_coded certifies LOW, and the endgame-lock-disposition rule is filed. The ONLY missing artifact is the OWNER-ESCALATION entry itself.",
-   "next_probe": "Append an entry to docs/grind/decisions.md under a `## OWNER-ESCALATION \u2014 func_80049A2C \u2014 <date>` header listing: (a) both closing options (canonical-asm requires user auth despite LOW scan_hand_coded; INCOMPLETE-owner-accepted retaining `s32 dummy[2]` solely to hold the byte match per endgame-lock-disposition), (b) the completed lever-exhaustion ledger (s1 noise-triage, s2 H1/H2/H3 KILLED, s3 H4 KILLED with cc1 -da mechanism proof, s4 H8 KILLED, rejected/scalar-dummy-no-frame.c), (c) plainly: no SOTN precedent found for a fully-dead 8-byte pad (func_80037540 escalation surveyed capacity-declared PARTIALLY-FILLED buffers \u2014 different shape), (d) reference the standing 2026-07-20 rule .claude/rules/endgame-lock-disposition.md as the governing policy. Then the next session emits result='owner-gated' with escalation_ref set."
-  },
-  {
-   "hypothesis": "Permuter modality could be revived by fixing the text1b.c workspace infrastructure hazard, but this is a project-tooling fix (out of grind-session scope) whose expected yield is bounded by the s3 mechanism proof.",
-   "mechanism": "Two independent blockers: (1) permuter's `_permuter_ignore_line` directive is not honored on canonical-asm __asm__ blocks emitted by INCLUDE_ASM_USE_MACRO_INC \u2014 a permuter/scripts patch is needed; (2) the import.py-generated workspace compile.sh maspsx pipeline exceptions on the text1b.c TU \u2014 a maspsx or workspace-generation fix is needed. Even with both fixes, s3's cc1 -da instrumentation on the working baseline vs counterfactual proves the phantom-slot mechanism does NOT fire anywhere in this function's RTL pipeline, so a permuter search would need to discover a codegen mechanism the mechanism proof missed \u2014 extremely unlikely.",
-   "next_probe": "Not this function. If a future session wants to revive permuter for text1b.c functions generally, add a strip-canonical-asm-siblings pre-pass to permuter's parser and diagnose the maspsx exception on the enlarged TU \u2014 that's a tooling-track task, not a func_80049A2C grinding task."
+   "hypothesis": "Owner rules on the 2026-07-20 func_80049A2C OWNER-ESCALATION.",
+   "mechanism": "The escalation presents two mutually exclusive options: (a) authorize canonical-asm for func_80049A2C despite scan_hand_coded LOW 0/8 \u2014 not supportable under the owner's 2026-07-20 governing criterion (asm allowed only where evidence the original was hand-written); (b) refuse canonical-asm and accept INCOMPLETE-owner-accepted per endgame-lock-disposition \u2014 precedent saTan0Init 2026-07-20 + cpu_side_move_dir_4 2026-07-20 both went (b).",
+   "next_probe": "Owner audits docs/grind/decisions.md:954 escalation entry, rules in decisions.md via an `auth:` commit (the reserved commit class for owner rulings), driver un-parks or accepts the ruling per queue-side machinery. No further grind-session action required until then; the driver advances the queue past func_80049A2C automatically per the 'owner-gated' contract."
   }
  ],
  "judge_constraints": [

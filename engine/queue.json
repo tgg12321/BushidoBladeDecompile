@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80049A2C",
-      "file": "text1b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "mario_getMarioVoiceData_8005BE84",
       "file": "text1b",
       "distance": 0,
@@ -2678,6 +2670,15 @@
       "status": "active"
     },
     {
+      "func": "func_80049A2C",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "owner escalation pending: docs/grind/decisions.md:954 \u2014 ## 2026-07-20 \u2014 func_80049A2C (src/text1b.c) \u2014 **OWNER-ESCALATION** (filed by grind s5 per the 2026-07-19 23:46 + 2026-07-20 00:36 Judge FAILs and the standing 2026-07-20 endgame-lock-disposition rule; awaiting owner ruling \u2014 do not self-resolve)"
+    },
+    {
       "func": "motion_SetMotion",
       "file": "code6cac_c_mid",
       "distance": 1,
@@ -2960,13 +2961,13 @@
   ],
   "counts": {
     "total": 363,
-    "active": 332,
+    "active": 331,
     "by_status": {
-      "active": 332,
-      "parked": 31
+      "active": 331,
+      "parked": 32
     },
     "by_verdict": {
-      "C": 178,
+      "C": 177,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
