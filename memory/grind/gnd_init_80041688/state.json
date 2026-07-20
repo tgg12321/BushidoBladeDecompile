@@ -1,7 +1,7 @@
 {
  "func": "gnd_init_80041688",
  "file": "text1a",
- "session_count": 6,
+ "session_count": 7,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -39,18 +39,24 @@
    "floor": 2,
    "modality": "forensics",
    "headline": "s6 forensics: instrumented cc1 (BB2_SCHED_DEBUG/ALLOC_DEBUG/PRIO_DEBUG) identifies sched.c insn_priority hazard-tag as the exact lever; RA is identical between baseline and score-10 cheat form \u2014 the s"
+  },
+  {
+   "session": 7,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "s7 forensics: raw-halfword staging b=lh(p+2); if(b>=0) reproduces the FALSE-arm sched1 flip (mechanism confirmed) but non-neutrally \u2014 displaces p out of $v1 via greg conflict \u2192 net sandbox 2\u219211. In-lo"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A LIVE (non-dead-store) source form that stages a semantically-purposeful value through `b` (or a coalescing-equivalent identifier) across loop1's iterations reproduces the pseudo-78 live-range extension WITHOUT crossing func_800486FC, hitting the same sched1 hazard-tag flip legitimately.",
-   "mechanism": "The forensics show the lever is purely flow.c live-range coalescing \u2192 sched1 insn_priority hazard-tag. Any earlier LIVE def of source-level `b` that reaches BB18's b-reload via flow analysis fuses into pseudo 78 and produces the same SCHEDDBG priority differential. The cheat form's dead-per-iteration store is one spelling; other spellings exist that don't dead-store.",
-   "next_probe": "Try `b = *(s16*)(p+2); if (b >= 0) { ... }` in loop1 (stages the raw halfword field into b before consuming it in the if). This is closer to normal C staging than the boolean-result form the s4 permuter found. Sandbox --disable all + save to candidate or rejected/. Vet against [[dead-store-fake-exception]] + [[staged-value-reused-variable]] + s2 ledger entry for block-local-fb-first (killed for color-var; this uses the SAME name b for both loop1-halfword and FALSE-arm-color-byte, likely a semantic-purpose failure)."
+   "hypothesis": "A DIFFERENT loop1-scope variable (not `b`) whose live range naturally overlaps p's can be structured to contribute the SAME greg conflict-graph widening on pseudo 78's neighbor set (74/79/80) as the cheat10 form does \u2014 indirectly triggering the sched1 hazard-tag flip through conflict-graph pressure rather than through direct source-level identifier fusion.",
+   "mechanism": "s6 .greg showed pseudo 78's neighbor set widens from `78 2 4 29` (baseline) to `74 78 79 80 2 4 29` (cheat10) \u2014 the neighbors 74/79/80 are what alters the ALLOCDBG priority differential. If a distinct loop1-scope pseudo (e.g. a diagnostic-counter accumulator over player-relative bytes at 0x18-0x1A range) contributes those same neighbors WITHOUT fusing with `b` at the source level, it might reproduce the flip without the dead-store or RA-cascade objections. Speculative: it's unclear whether the priority-formula input requires DIRECT fusion into pseudo 78 or merely the conflict-graph shape.",
+   "next_probe": "Try `s32 diag = *(u8*)(player+0x18) + *(u8*)(player+0x19); (void)diag;` inserted between loop1 exit and the FALSE arm \u2014 measure via instrumented cc1 whether pseudo 78's conflict list widens to include the diag pseudo, and whether ALLOCDBG priority-formula inputs (nrefs*Kloop / livelen) shift to reproduce the cheat10 differential. If they don't, the flip requires direct source-level identifier fusion (not just conflict-graph shape) and this frontier is dead too."
   },
   {
-   "hypothesis": "A DIFFERENT variable (not `b`) with a natural loop1 lifespan can be structured so its live range's end overlaps the FALSE-arm b-def in a way that shifts pseudo 78's priority formula THROUGH conflict-graph pressure rather than through direct fusion.",
-   "mechanism": "The greg conflict-graph shows pseudo 78 gains conflicts with pseudos 74, 79, 80 in the cheat. If a different loop1-scope pseudo is engineered to widen 78's neighbor set the same way, the ALLOCDBG priority (nrefs*Kloop / livelen) could reproduce the required value shift. Speculative \u2014 this may or may not couple through sched1's specific tag.",
-   "next_probe": "Instrument a loop1-scope u8/s16 local that reads and USES `player`-relative bytes at the same offset range as b/r/g would touch, e.g. a diagnostic counter or accumulator. Verify pseudo 78's greg conflict list \u2014 needs to widen the SAME neighbor set (74/79/80) as the cheat's cheat pseudo 78 does. Sandbox --disable all."
+   "hypothesis": "Re-attacking the register-allocation of `p` itself \u2014 steering p to $v1 during loop1 by construction (not by staging into `b`) \u2014 reproduces target's natural `p in $v1 / b in $v1` reuse without needing pseudo-78 fusion at all.",
+   "mechanism": "Target puts p in $v1 during loop1 AND b in $v1 during FALSE arm via non-overlapping live ranges. In baseline, p is in $v1(3) and b is in $v1(3) as well \u2014 but sched1 chain-length priority still emits the FALSE-arm b LAST. So the fusion / hazard-tag differential must be doing MORE than just RA convergence. Actually \u2014 this hypothesis may be redundant: baseline already has p and b in $v1 (pseudos 76 and 78 both allocated to hard reg 3), and the FALSE-arm order is still [r,g,b]. So the fix isn't RA-driven, it's flow-driven. Deprioritize.",
+   "next_probe": "Read baseline .flow more carefully to understand what defs/uses of pseudo 78 exist absent the loop1 staging. If pseudo 78's live range in baseline is confined to BB18 (FALSE arm only), then cheat10's fusion literally EXTENDS the live range across loop1 into BB18 \u2014 which is what causes the sched1 priority differential. A non-cheat lever for this must extend pseudo 78's live range into loop1 through a means OTHER than a new store to source-level `b` \u2014 e.g. a preceding LIVE read of `b` before loop1 that survives to BB18. But s5 KILLED all such pre-loop hoists (callee-save spill across func_800486FC). Frontier is likely genuinely closed to pure-C spellings; owner-escalation candidate."
   }
  ],
  "judge_constraints": [],

@@ -91,3 +91,25 @@
 - [s6] [s6] BB18 sched1 SCHEDDBG trace, cheat: `PICK clock=8 picked=194 (pri=1 luid=4)` — insn 194 (b-lbu) has plain pri=1, unboosted. Ready lists at clock=4/5/6/7 all show `194(p=1,l=4)` sitting at the tail while other pri=0x7F000001 insns launch first. Insn 194 finally emits at clock=8 (last-scheduled = first-in-code slot).
 
 - [s6] [s6] Reverse-order interpretation: sched1's clock=1 slot picks the block-terminating jump (`picked=200 pri=2147483528` baseline; `picked=203` cheat). Higher clock = earlier in code emission. So baseline's b-lbu at clock=4 emits AFTER r/g (clock=7/8), matching baseline .s [r,g,b]; cheat's b-lbu at clock=8 emits BEFORE r/g (clock=6/7), matching cheat .s [b,r,g].
+
+- [s7] [s7] sandbox --disable all after applying raw-halfword form to src (`b = *(s16*)(p+2); if (b >= 0) { ... }` in loop1): score REGRESSED 2 -> 11, target_insns=82, build_insns=81, rules_dropped=3, cheat_asm_stripped=23. Restored src to baseline after measurement; sandbox re-verified at score=2.
+
+- [s7] [s7] Standalone instrumented-cc1 compile of raw-halfword form (tmp/grind/gnd_init_80041688/s7/s7raw_standalone.{c,s,greg,flow,sched,...}) confirms the FALSE-arm lbu order DOES flip to target's [b,r,g]: baseline .s FALSE 127-129 = [lbu $4,24 / lbu $2,25 / lbu $3,26]; s7raw .s FALSE 125-127 = [lbu $3,26 / lbu $4,24 / lbu $2,25]. Same target-order flip cheat10 produces. Mechanism (pseudo-78 fusion -> sched1 hazard-tag flip) reproduces via raw-halfword staging.
+
+- [s7] [s7] .greg pseudo dispositions reveal loop1 RA cascade unique to raw-halfword (not present in cheat10): baseline pseudo 75(i)->4($a0), 76(p)->3($v1), 78(b)->3($v1); cheat10 IDENTICAL to baseline; s7raw pseudo 75(i)->6($a2), 76(p)->4($a0), 78(b)->3($v1). Raw-halfword form displaces p from $v1 to $a0 and i from $a0 to $a2 because b's intra-iter live range (lh -> bltz) conflicts with p's live range across the loop1 body (p used as base of lh AND for the p[1] store downstream). cheat10 avoids the cascade because `b = (X >= 0)` is a setcc/slt with near-zero intra-iter live range (def-use back-to-back), so greg keeps 76 and 78 both in $v1 via non-overlapping intra-iter allocation.
+
+- [s7] [s7] Loop1 label placement diverges: baseline/cheat10 = `addu $3,$3,104` BEFORE `.L21` (first-iter pre-inc); .L21: `lh $2,2($3)` ... bnez ... `addu $3,$3,104` in DELAY SLOT (next-iter post-inc). s7raw = `.L5:` ABOVE `addu $4,$4,104`, then `lh $3,2($4)` — reorg.c chose a different loop rotation because the extra staged pseudo (78) interferes with the delay-slot fill of the loop back-branch. Adds another 2-3 emit diffs beyond the FALSE-arm flip.
+
+- [s7] [s7] Net s7 forensic finding: raw-halfword staging IS a byte-non-neutral spelling of the cheat10 mechanism. The FALSE-arm flip is real (mechanism CONFIRMED to be reproducible via loop1-scope defs of source-level `b`) but comes with compensating loop1 RA/reorg regressions that raise the total sandbox score from 2 to 11. There is no in-loop1 spelling of the axis that is BOTH byte-neutral AND non-cheat: zero-intra-iter-live-range spellings are dead stores (cheat10 shape); non-zero-live-range spellings displace p from $v1 (s7 shape).
+
+- [s7] s7 sandbox --disable all with raw-halfword form applied: score=11, target_insns=82, build_insns=81, rules_dropped=3, cheat_asm_stripped=23. Restored src, sandbox re-verified score=2.
+
+- [s7] s7 standalone instrumented-cc1 compile: s7raw_standalone.s FALSE-arm color-lbu emission (lines 125-127) = [lbu $3,26 / lbu $4,24 / lbu $2,25] — byte-identical to cheat10_standalone.s FALSE 127-129, both matching target [b=$v1,r=$a0,g=$v0] order.
+
+- [s7] s7 .greg pseudo dispositions: baseline 75→4($a0), 76→3($v1), 78→3($v1); cheat10 IDENTICAL to baseline for these; s7raw 75→6($a2), 76→4($a0), 78→3($v1). Raw-halfword displaces loop1 registers where cheat10 does not.
+
+- [s7] s7 loop1 rotation divergence: baseline/cheat10 have `addu $3,$3,104` BEFORE `.L21` (pre-inc first iter) and again in delay slot of the loop back-branch (post-inc next iter); s7raw has `.L5:` label ABOVE `addu $4,$4,104`, then `lh $3,2($4)` — reorg.c picked a different rotation because the extra staged pseudo (78) interferes with delay-slot fill on the back-branch.
+
+- [s7] s7 mechanistic explanation for the cheat10 vs s7raw divergence: cheat10's `b = (X >= 0)` compiles to setcc/slt with near-zero intra-iter live range (def-use back-to-back), so greg keeps pseudos 76(p) and 78(b) both in $v1 via non-overlapping intra-iter allocation. s7raw's `b = X; if (b >= 0)` gives b a 2-insn live range (lh through bltz) that overlaps p's live range across the loop1 body, forcing a greg conflict and hardreg split.
+
+- [s7] s7 policy vetting: raw-halfword staging is a dead store to `b` for RA/scheduling coercion per [[no-new-park-categories]] cheats-by-any-spelling — same intent as loop1-boolean-stage-b-reuse.c, different spelling. The value stored to `b` in loop1 is immediately dead after `if (b >= 0)` (b is unread until the FALSE-arm reassignment overwrites it). Rejected on policy grounds even before the measurement showed it wasn't byte-neutral.
