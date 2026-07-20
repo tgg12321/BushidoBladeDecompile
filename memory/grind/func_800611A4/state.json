@@ -1,0 +1,40 @@
+{
+ "func": "func_800611A4",
+ "file": "text1b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 0,
+   "floor": 9,
+   "modality": "wip-import",
+   "headline": "floor imported from memory/wip checkpoint"
+  },
+  {
+   "session": 1,
+   "floor": 9,
+   "modality": "recon",
+   "headline": "Recon: floor=9 reconfirmed on pin-free candidate; m2c shows target reconstructs WITHOUT a load-temp (direct inlined stores) and WITHOUT the v1 pointer alias \u2014 an untried structural shape; sibling func"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Instrumented cc1 -da .greg dump reveals the exact priority tiebreaker between the load-temp pseudo (3-web, 3 defs/3 uses) and the mask pseudo (1 def, 1 use for a 2-insn lui+ori literal). Without this dump, every lever tried so far has been guess-and-check; the ledger's 12+ probes all scored 9 or 11 because the actual tiebreak axis was never identified.",
+   "mechanism": "GCC local/global RA orders pseudos by (a) n_refs weighted by loop depth, (b) n_calls_crossed, (c) pseudo number (declaration order). One of these is the deciding tie for $v0 assignment; the dump exposes which.",
+   "next_probe": "Preprocess src/text1b.c to base.i, run `tools/gcc-2.7.2/build/cc1 <flags> -da base.i -o /tmp/ours.s`, read `;; Register dispositions:` for func_800611A4. Identify the pseudo numbers for `t` and `mask`, their conflict list, priorities. Cross-reference with regfix cheat pin (which forces $2/$3) to see the delta the pin introduces."
+  },
+  {
+   "hypothesis": "Direct inlined stores (no `t` local at all), matching m2c's reconstruction shape \u2014 `D_800F1140 = arg0[0]; D_800F1144 = arg0[1]; D_800A3464 = 0xFFFFEF; D_800F1148 = arg0[2];`. Distinct from the rejected 3-named-temps and pointer-deref forms: no named local means GCC allocates three anonymous single-use expression pseudos rather than one reused-web pseudo, which changes the RA class relative to the mask.",
+   "mechanism": "Named-local reuse produces one web with 3 defs+3 uses (n_refs=6). Anonymous inlined loads produce three distinct short-life pseudos (n_refs=2 each). The mask remains n_refs=2. That changes the tiebreak surface entirely \u2014 the load-temp is no longer a heavyweight 6-ref web dominating the mask's 2-ref pseudo.",
+   "next_probe": "Rewrite the post-call body inline (no `s32 t;` decl). Sandbox. If score changes (either direction), that isolates the temp-web shape as a lever. Follow up with declaration-order sweeps (mask decl first vs t decl first if any local is kept) as a cheap secondary probe."
+  },
+  {
+   "hypothesis": "Drop the `s32 *v1 = &D_800F116C;` pointer alias and write `D_800F116C = 0x21001A;` directly, matching m2c's reconstruction of the pre-call setup. The alias creates an extra long-lived pseudo that likely shifts pre-call allocation state, which propagates into the post-call cluster's initial hard-reg freelist ordering.",
+   "mechanism": "The `v1` alias pseudo lives from function entry through past the call (used at both `D_800A3468 = (s32)v1;` and `*v1 = 0x21001A;`). Removing it frees an early-computed hard reg (target's asm uses $v1 for this pointer, so removal would free $v1 pre-call). Post-call RA state carries into the tail cluster's tie ordering.",
+   "next_probe": "Two-variant sweep: (a) drop the alias entirely, write `D_800F116C = 0x21001A;` and `D_800A3468 = (s32)&D_800F116C;`; (b) keep alias but move the `*v1 = 0x21001A;` store to immediately after the D_800A3468 assignment (tighten liveness). Sandbox both; compare scores to isolate alias-lifetime effect."
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-20T01:36:44.073720+00:00"
+}

@@ -1,0 +1,80 @@
+# Evidence bank — func_800611A4
+
+- WIP rejected_form: {'form': '3 separate per-load temps (s32 t0,t1,t2)', 'score': 11, 'why': 'loads hoist together, breaks the interleave'}
+
+- WIP rejected_form: {'form': '3 block-local temps { s32 tN = arg0[N]; ... }', 'score': 11, 'why': 'same hoisting; live-range split made it worse'}
+
+- WIP rejected_form: {'form': 'split constant mask = 0xFF0000; mask |= 0xFFEF', 'score': 9, 'why': 'GCC combine re-merges to single li in v0; swap persists'}
+
+- WIP rejected_form: {'form': 'mask declared/assigned before the call (live across)', 'score': 9, 'why': 'no allocation change'}
+
+- WIP rejected_form: {'form': 'mask assigned after 3rd load / mask block-scoped', 'score': 9, 'why': 'no allocation change'}
+
+- WIP rejected_form: {'form': 'pointer-deref loads (*arg0, *(arg0+1)...)', 'score': 9, 'why': 'identical codegen to array index'}
+
+- == imported from memory/wip notes.md ==
+# func_800611A4 (text1b.c) — WIP / BLOCKED on RA wall
+
+## TL;DR
+Honest pure-C floor = **9**, and all 9 diffs are a **single v0<->v1 register-name
+swap** on the post-call cluster. The build is otherwise byte-identical to target
+(same instructions, same order, same load/store interleave). HEAD only "matches"
+via two `register asm("$2")`/`asm("$3")` pins (cheat-asm). The swap is **NOT
+reachable from correct pure C** — confirmed against BOTH our GCC 2.7.2 port AND
+the original PsyQ cc1psx (both put load-temp in $v1, mask in $v0; target is the
+reverse). BLOCKED pending canonical-asm authorization or a family-wide RA lever.
+
+## The exact gap
+Post-call body does, for i in {0,1,2}: `t = arg0[i]; D_800F114{0,4,8} = t;`
+plus `D_800A3464 = 0xFFFFEF;` interleaved.
+
+- **Target:** load-temp `t` -> `$v0`, mask `0xFFFFEF` -> `$v1`.
+- **Ours (pin-free):** load-temp `t` -> `$v1`, mask -> `$v0`.
+
+GCC's allocno priority hands the lower register (`$v0`) to the short-live-range,
+CSE'd/REG_EQUIV'd constant mask, displacing the 3x-reused (fragmented, 3-web)
+load temp to `$v1`. Target wants the opposite.
+
+## Why it's a wall (not just "untried")
+- ~12 pure-C levers tried (see meta.json rejected_forms + next_hypotheses):
+  temp split, block-local split, const split, mask live-across-call, ptr deref,
+  reorder. All score 9 or worse. None flip the swap.
+- **cc1psx calibration (decisive):** the original PsyQ compiler produces the SAME
+  allocation as our port (load-temp `$3`, mask `$2`). So target's swap is not what
+  EITHER compiler emits from the semantically-correct C — the original source
+  must have had a structurally different form, or this is a genuine RA wall.
+- Only ways to force the swap are FORBIDDEN cheats: the `$2`/`$3` register-asm
+  pins (current HEAD) or a regfix `subst $2 $3`.
+
+## Resume guidance
+1. Apply `candidate.c` (pin-free) and confirm `sandbox --disable all` == 9.
+   Do NOT re-derive the rejected_forms.
+2. Treat as a FAMILY: func_800618B4 (already PARKED, same "register-rotation pin
+   cluster"), func_80061250, func_80061658 share the identical $2/$3 pin +
+   post-call mask/load shape. A real lever here likely retires all of them.
+3. Promising untried avenues (meta.json next_hypotheses): permuter from the
+   floor-9 base; check if mask 0xFFFFEF is legitimately a non-constant in the
+   original (would change allocno priority); instrumented-cc1 PRIO dump to find
+   the minimal C change that inverts the two pseudos' priorities.
+
+## Status
+Source left at HEAD (oracle green). Card BLOCKED with reason pointing here.
+This needs USER canonical-asm authorization (if the $2/$3 pins are accepted as
+the canonical finished form for the family) OR a future family-wide RA lever.
+
+
+- [s1] Baseline: sandbox --disable all == 9, target_insns=43, build_insns=43, rules_dropped=0 on pin-free candidate.c.
+
+- [s1] Canonical verdict: C, distance=9 (`pure-C distance 9 <= 50 -- pure-C target`). Not asm-region / asm-structural.
+
+- [s1] Diff shape: entirely v0<->v1 rename on the post-call load-temp/mask cluster — same 43 insns in same order, per WIP notes and reconfirmed here.
+
+- [s1] Family: func_80061250 (mask=0xFF0060), func_80061658 (mask=0x10FFFF), func_800611A4 (mask=0xFFFFEF) all share the SAME post-call tail cadence with the SAME v0/v1 layout (load-temp->$v0, mask->$v1). All three carry the same $2/$3 pin cheat at HEAD.
+
+- [s1] Sibling asymmetry: func_800618B4 has mask=0xFF0000 (1-insn `lui` only, ori-clean); target there emits `lw $v1, 0x8($s0); lui $v0, 0xFF; sw $v0, mask; sw $v1, ...` — mask in $v0, third load-temp in $v1. RA inversion is driven by mask insn-count.
+
+- [s1] Caller code6cac_b.c:3166 `func_800611A4(arg2, arg3);` — return not captured; func_80060A68 body is genuinely void.
+
+- [s1] m2c reconstruction of target (tmp/grind/func_800611A4/s1/m2c.txt): stores are DIRECT `D_800F1140 = M2C_FIELD(arg0, s32 *, 0);` with NO named `t` local. Also no `s32 *v1` pointer alias — writes `D_800F116C = 0x21001A;` directly. This structural shape has NOT been probed per the rejected-forms bank (the 3-separate-named-temps and pointer-deref forms were tried but not the no-temp inlined-expression form).
+
+- [s1] Rejected-forms bank (do NOT re-probe): 3 separate per-load temps (11); 3 block-local temps (11); split constant mask 0xFF0000|0xFFEF (9, combine re-merges); mask live-across-call (9); mask block-scoped after 3rd load (9); pointer-deref loads (9).
