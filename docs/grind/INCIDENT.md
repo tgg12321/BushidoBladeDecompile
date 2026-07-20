@@ -1,25 +1,24 @@
-# GRINDER CIRCUIT-BREAK — 2026-07-19 10:58 — RESOLVED 2026-07-19
+# GRINDER CIRCUIT-BREAK — 2026-07-19 22:59 — RESOLVED 2026-07-19
 
-**Reason:** queue done refused a judge-PASSed, bytes-proven candidate for tslPolyF4Init
+**Reason:** 3 consecutive invalid sessions on func_800611A4 (all
+`SCOPE VIOLATION — ?? nonmatchings/`)
 
-**Root cause:** `tslPolyF4Init` carried a stale `prologue_config.json` entry from
-a prior completion. A grind session found a pure-C form that byte-matches WITHOUT
-prologue_fix (honest sandbox `--disable all` = 0, which strips prologue_fix), but
-`engine.integrate.retire_function` only dropped regfix/asmfix rules
-(`CONFIGS = [regfix, regfix_stage2, asmfix]`) — never the prologue_fix configs.
-So `queue done`'s completion-integrity gate correctly refused (1 prologue_fix
-entry still present), and the driver hard-circuit-broke on the refusal, halting
-the whole pipeline. (The `wsl: Failed to start the systemd user session` line in
-the log was incidental stderr noise; WSL was functional.)
+**Root cause:** `tools/decomp-permuter/import.py:224` runs
+`os.makedirs("nonmatchings/")` relative to the current directory. It is
+normally invoked from `tools/decomp-permuter/` (which gitignores its own
+`nonmatchings/`), but a grind permuter session ran it from the repo ROOT,
+creating a root-level `nonmatchings/`. The root `.gitignore` did not cover it,
+so `git status --porcelain` showed `?? nonmatchings/`; `nonmatchings/` is not in
+the driver's `AllowedDirtyPattern`, so the scope check discarded the session.
+Three permuter respawns in a row each recreated it → circuit-break.
 
 **Fix (committed 2026-07-19):**
-1. `engine/cheats.py`: `drop_prologue_fix_entries(func)` removes a function's
-   entries from prologue_config.json / delay_slot_ra / frame_fix in place.
-2. `engine/integrate.py`: `retire_function` now drops prologue_fix alongside
-   regfix/asmfix and backs those configs up for SHA1-mismatch rollback.
-3. `tools/grinder/grind.ps1`: the `Match:` commit stages every retire-touchable
-   config (added regfix_stage2 + the 3 prologue configs); a `queue done` refusal
-   now banks a constraint and continues instead of circuit-breaking (oracle stays
-   green — a refusal is a per-function "needs more work" signal, not corruption).
+1. `.gitignore`: added `/nonmatchings/` — a permuter scratch artifact is never
+   committed, and now can't be seen by the scope check regardless of where the
+   permuter runs.
+2. `tools/grinder/grind.ps1`: `Reap-PermuterOrphans` (runs every session
+   boundary) now also removes any stray root `nonmatchings/`, so it can't
+   accumulate.
 
-Engine suite: 178 passed. See memory `retire-drops-prologue-fix`.
+This is the permuter-modality sibling of the other config/artifact stop-causes;
+see memory `grinder-nonmatchings-scope-break`.

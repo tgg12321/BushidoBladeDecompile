@@ -154,3 +154,8 @@ asm/data/800.rodata.s
 # ARE committed; only the rendered HTML is ignored.
 metrics/report.html
 metrics/*.html
+
+# decomp-permuter import.py makes a "nonmatchings/" dir relative to cwd; when a
+# grind permuter session runs it from the repo root it lands here (root). Always
+# a scratch artifact, never committed — tools/decomp-permuter has its own ignore.
+/nonmatchings/

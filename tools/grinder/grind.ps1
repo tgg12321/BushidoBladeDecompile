@@ -106,6 +106,14 @@ function Reap-PermuterOrphans([string]$When) {
             Log "reaped $n orphaned permuter process(es) ($When)."
         }
     } catch { }
+    # decomp-permuter's import.py does os.makedirs("nonmatchings/") relative to
+    # cwd; a session that runs it from the repo root (instead of
+    # tools/decomp-permuter/) drops a root-level nonmatchings/ that the scope
+    # check flags as out-of-surface dirt — three such discards circuit-broke the
+    # grinder on func_800611A4 (2026-07-19). It is gitignored now, but sweep the
+    # physical dir too so it can't accumulate across sessions.
+    $nm = Join-Path $Root 'nonmatchings'
+    if (Test-Path $nm) { Remove-Item $nm -Recurse -Force -ErrorAction SilentlyContinue }
 }
 
 Log "grinder starting (pid $PID, model $Model, judge $JudgeModel)"
