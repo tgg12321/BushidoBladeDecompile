@@ -1,7 +1,7 @@
 {
  "func": "InitHiraRmd_80047FBC",
  "file": "text1b",
- "session_count": 11,
+ "session_count": 12,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -69,18 +69,24 @@
    "floor": 1,
    "modality": "structural",
    "headline": "s11 structural: F1 CONFIRMED \u2014 s6 arg0=0 /* FAKE */ form applied in-tree sandbox --disable all == 0 (65/65 insns, scorable, FAKE-bypass path in engine/volatile_cheats.py:815 verified); discharges Judg"
+  },
+  {
+   "session": 12,
+   "floor": 1,
+   "modality": "structural",
+   "headline": "s12 escalation modality: OWNER-ESCALATION filed at docs/grind/decisions.md:985 per s11 F2 frontier; every sanctioned pure-C axis measured dead across s1-s11; species criteria of endgame-lock-dispositi"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F2 - file OWNER-ESCALATION for InitHiraRmd_80047FBC per [[endgame-lock-disposition]] protocol; present both options honestly ((a) sanction unwritten-buf[8]-as-frame-carrier family contingent on SOTN evidence \u2014 NONE FOUND per s7/s10 \u2014 closing via composite arg0=0 FAKE + buf[8]; (b) refuse family and classify INCOMPLETE-owner-accepted retaining current cheat form on main to hold the oracle). Do NOT self-resolve. Same-species precedent since 2026-07-18 (motion_SetMotion, func_80057CC8, saTan0Init, cpu_side_move_dir_4, func_80049A2C) all resolved as refused / owner-accepted INCOMPLETE \u2014 the 2026-07-20 endgame-lock policy predicts option (b) given zero SOTN precedent for unwritten frame carrier.",
-   "mechanism": "F1 s11 discharge closes Judge constraint (a). Constraint (b) is unresolvable within sanctioned families (dead-vars-local-array WRITTEN carve-out fails target-writes test per s7; no other family covers unwritten frame carriers). Species criteria met per [[endgame-lock-disposition]]. Precedent format: docs/grind/decisions.md 'hirahira_w_frie 2026-07-17' / 'motion_SetMotion 2026-07-18' / 'func_80049A2C 2026-07-19' / 'saTan0Init 2026-07-19' / 'cpu_side_move_dir_4 2026-07-19' / 'func_80049A2C 2026-07-20'.",
-   "next_probe": "s12 (escalation modality \u2014 not structural rederive): file the OWNER-ESCALATION entry in docs/grind/decisions.md following the hirahira_w_frie s2b / motion_SetMotion s7 / func_80049A2C s42 format with the full s1-s11 dossier (cite: F1 CONFIRMED sandbox=0 with s6 form; composite candidate at memory/grind/InitHiraRmd_80047FBC/composite_candidate.c; 13 banked rejected forms across 5 modalities; both AND-gates of endgame-lock-disposition proven fail). Then per driver protocol emit owner-gated with escalation_ref citing the new decisions.md line. Function parks until owner rules; queue advances."
+   "hypothesis": "Owner ruling on the escalation. Predicted (per 6-case precedent since 2026-07-20 endgame-lock-disposition): option (b) REFUSED / OWNER-ACCEPTED INCOMPLETE. If option (a) sanctioned (unlikely given zero SOTN precedent for unwritten frame carrier), apply composite_candidate.c to src/text1b.c in-tree and route to fresh layer-2 adversarial cheat-reviewer on the composite before commit.",
+   "mechanism": "Standing 2026-07-20 policy: RA/scheduler-locked cheat-matched with LOW hand-coded certification and no SOTN precedent for the residual construct routes to INCOMPLETE-owner-accepted.",
+   "next_probe": "Driver parks the function on owner-gated; queue advances. No further grind sessions on InitHiraRmd_80047FBC until an owner ruling appears in docs/grind/decisions.md."
   },
   {
-   "hypothesis": "F3 - one wider phantom-frame-slots-gcc272 trigger survey pass (LOW priority; only if F2 owner ruling declines INCOMPLETE-accepted): (a) struct-typed local with 32-byte internal padding aligned to sp+0x18..sp+0x37, (b) call-through-fn-pointer table whose captured pointer types force alignment, (c) tail-call/sibcall shape that changes get_frame_size accounting.",
-   "mechanism": "s7's 5-variant phantom-frame probe (v4 s16-bitwise, v6 s32-cascade, v8 u64-cross-mul, v9 buf-read, v11 addr-of-8) all yielded vars=0 or naming-cheat vars=32. Unsurveyed: struct types with dead padding, extern-help escape patterns. Predicted outcome: all likely fail either (a) target-zero-writes constraint (structs GCC would tail-store) or (b) cheat-by-any-spelling naming test \u2014 but genuinely unmeasured.",
-   "next_probe": "s12+ (structural, CONDITIONAL on F2 owner declining INCOMPLETE): compile 3-4 struct-typed variants with instrumented cc1 (BB2_ALLOC_DEBUG) and check .frame + sp-store count; abort at first sw at sp+0x18+ or first naming-announces-intent variant."
+   "hypothesis": "F3 (LOW-priority, CONDITIONAL on owner declining INCOMPLETE): wider phantom-frame-slots-gcc272 trigger survey \u2014 struct-typed local with 32-byte internal padding, fn-pointer-table alignment forcing, tail-call/sibcall shapes changing get_frame_size accounting.",
+   "mechanism": "s7's 5-variant probe was scalar-typed. Struct types with dead padding + extern-help escape patterns unmeasured. Likely fail either target-zero-writes constraint (GCC would tail-store) or cheat-by-any-spelling naming test \u2014 but genuinely unmeasured.",
+   "next_probe": "IF owner declines INCOMPLETE: compile 3-4 struct-typed variants with instrumented cc1 (BB2_ALLOC_DEBUG); check .frame + sp-store count; abort at first sw at sp+0x18+ or first naming-announces-intent variant."
   }
  ],
  "judge_constraints": [

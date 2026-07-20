@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "InitHiraRmd_80047FBC",
-      "file": "text1b",
-      "distance": 1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "gnd_init_80041688",
       "file": "text1a",
       "distance": 2,
@@ -2680,6 +2672,15 @@
       "park_reason": "OWNER-ACCEPTED EXCEPTION (ruling b, 2026-07-19): CLOBBER family refused; byte-correct form + regfix.txt:2190 kept on main; INCOMPLETE-owner-accepted, no further grinding"
     },
     {
+      "func": "InitHiraRmd_80047FBC",
+      "file": "text1b",
+      "distance": 1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "owner escalation pending: docs/grind/decisions.md:985 \u2014 '2026-07-20 \u2014 InitHiraRmd_80047FBC (src/text1b.c) \u2014 OWNER-ESCALATION (filed by grind s12 per the 2026-07-20 03:22 Judge PASS (isolated-lever, not final-commit) and the standing 2026-07-20 endgame-lock-disposition rule; awaiting owner ruling \u2014 do not self-resolve)'"
+    },
+    {
       "func": "func_80045294",
       "file": "text1a_c",
       "distance": 2,
@@ -2953,13 +2954,13 @@
   ],
   "counts": {
     "total": 362,
-    "active": 330,
+    "active": 329,
     "by_status": {
-      "active": 330,
-      "parked": 32
+      "active": 329,
+      "parked": 33
     },
     "by_verdict": {
-      "C": 176,
+      "C": 175,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }

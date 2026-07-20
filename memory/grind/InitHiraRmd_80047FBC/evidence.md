@@ -233,3 +233,13 @@ carve-outs, OR a genuinely different C shape that makes arg0-copy → $s4 natura
 - [s11] The composite still carries `s32 buf[8]; (void)buf;` (unchanged from HEAD). Per s7 grep evidence (memory/grind/InitHiraRmd_80047FBC/evidence.md), the target has ZERO sw stores in sp+0x18..sp+0x37, so the SOTN dead-vars-local-array WRITTEN carve-out does NOT ground the buf[8]. Judge FINAL CALL constraint (b) is UNRESOLVED — this session did NOT attempt to resolve it (per task brief, the F1 discharge is the sole s11 structural target).
 
 - [s11] cheat_asm_stripped=392 in the sandbox output reflects OTHER functions in text1b.c (siblings InitHiraRmd_800480C0 uses register asm("$N") pins on $18/$19/$20/$21/$22 and func_800481E8 uses INLINE_MOVE_ALIASING with $16 pin per src/text1b.c:146-217). Not attributable to InitHiraRmd_80047FBC's edits.
+
+- [s12] [s12] OWNER-ESCALATION entry filed at docs/grind/decisions.md:985 with full s1-s11 dossier, both owner options (a) sanction composite / (b) refuse+INCOMPLETE-owner-accepted, and cited precedent (motion_SetMotion 2026-07-18 REFUSED, saTan0Init/cpu_side_move_dir_4/func_80057CC8 2026-07-20 REFUSED/OWNER-ACCEPTED INCOMPLETE, func_80049A2C 2026-07-20 awaiting ruling). grep 'InitHiraRmd_80047FBC.*OWNER-ESCALATION' docs/grind/decisions.md returns exactly one match at line 985.
+
+- [s12] [s12] src/text1b.c untouched this session; git diff --stat empty. No engine/regfix/asmfix/build-file writes. Only writes were docs/grind/decisions.md (append escalation entry) and tmp/grind/InitHiraRmd_80047FBC/s12/escalation_entry.md (source of the append).
+
+- [s12] [s12] Sandbox baseline UNCHANGED — no new form measured this session (escalation modality; not structural rederive). s11's floor=1 (un-annotated arg0=0 stripped) and s11's composite sandbox=0 (FAKE-annotated in-tree measurement) both stand as the ledger baselines; the F1 discharge is complete.
+
+- [s12] [s12] Judge constraint (b) — independent buf[8] resolution — is confirmed unresolvable within sanctioned families per s7 target-writes grep + s7 phantom-frame-slots-gcc272 5-variant probe + 2026-07-20 00:36 OVERSIZED-LOCALS refusal. No new probe attempted this session per escalation-modality contract.
+
+- [s12] [s12] Same-species precedent count now 6 (motion_SetMotion + saTan0Init + cpu_side_move_dir_4 + func_80057CC8 + func_80049A2C + InitHiraRmd_80047FBC); every ruled case has been option (b) since the 2026-07-20 endgame-lock-disposition policy was written. Predicted outcome for InitHiraRmd_80047FBC: option (b) REFUSED / OWNER-ACCEPTED INCOMPLETE, contingent on owner ruling (agent does not self-resolve).
