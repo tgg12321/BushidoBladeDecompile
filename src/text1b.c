@@ -13978,7 +13978,7 @@ end:
 }
 extern s16 D_800A34F0;
 extern s16 D_800A34F2;
-void func_80061C00(s32 arg0, s16 arg1, s32 arg2) {
+void func_80061C00(s32 arg0, s32 arg1, s32 arg2) {
     s16 sp10[4];
     s16 sp18[4];
     s32 sp20[3];
