@@ -131,3 +131,17 @@ carve-outs, OR a genuinely different C shape that makes arg0-copy → $s4 natura
 - [s5] [s5] campaign s5_chassis_c_arg0_direct (jobs=6, --stop-on-zero, --stack-diffs default): base_score=170 (permuter metric); 2747 iterations over ~15 min elapsed; 0 finds; harvest+stop completed with reason logged. Fresh-seed discipline satisfied (single basin, no novel find within cap → harvest)
 
 - [s5] [s5] cluster-wide implication: the residual is not chassis-choice-solvable in either direction. The prologue-staging axis (satisfied by base_addr in a callee-save) and the copy-prop-tiebreaker axis (satisfied by dropping base_addr) are anti-correlated with the current cluster-mate chassis catalog. Any solution must satisfy BOTH — e.g. a 3-variable chain (`tmp = arg0; base = tmp; p = tmp + shift`) forced to survive CSE, OR a construct that raises arg0's reg_n_refs across the loop without eliminating base_addr. Both are outside the auto-permuter mutation space (which permutes existing shape rather than adding a variable) and outside the s1-s4 lever set already killed
+
+- [s6] sandbox --disable all baseline this turn: score=1, 65/65 insns, cheat_asm_stripped=393 (unchanged from s3-s5 baseline; confirms current committed src still hits the same single residual at insn #18).
+
+- [s6] s6 dump inventory: 14 per-pass RTL dumps + greg + allocdbg for s3-candidate form (text1b.i.{rtl,cse,loop,cse2,combine,flow,jump,jump2,lreg,greg,sched,sched2,dbr}); parallel 14-pass dump tree under probe_arg0zero/ with arg0=0 injected; func.greg (363 lines isolated section) + allocdbg.stderr (1034 ALLOCDBG lines) + insn36_evolution.txt.
+
+- [s6] Per insn36_evolution.txt: insn 36 stays `(set (reg/v:SI 78) (plus:SI (reg/v:SI 79) (reg:SI 86)))` through rtl/cse/loop; at cse2 the RHS becomes `(plus:SI (reg/v:SI 72) (reg:SI 86))` — the reg-79→reg-72 rewrite; combine/lreg preserve it; greg maps reg 78→$s0, reg 72→$a0, reg 2→$v0 yielding `addu $s0, $a0, $v0` (sandbox residual).
+
+- [s6] probe_arg0zero raw cc1 output (text1b.s:141) and post-maspsx final.s:134 both emit `addu $16,$20,$2` = `addu $s0, $s4, $v0` — target-matching bytes.
+
+- [s6] engine/volatile_cheats.py:791 find_dead_param_assigns strips un-annotated `arg0 = 0;` before scoring; line 815 `_stmt_fake_annotated` bypasses the strip when the statement carries a `/* FAKE */` marker (verified paths cited in FINDINGS.md).
+
+- [s6] Judge ruling 2026-07-20 03:22 in docs/grind/decisions.md line 981 (commit 94ba752b) — PASS on isolated arg0=0 FAKE lever qualification under dead-store-fake-exception; explicitly scoped, NOT a final commit gate; buf[8] independently unresolved.
+
+- [s6] Cluster impact: sibling functions AddTbpOfst_80047EE8, InitHiraRmd_800480C0, func_800481E8 share the same shape (parallel derivations of p and base from arg0) and would benefit from the same mechanism if closed.

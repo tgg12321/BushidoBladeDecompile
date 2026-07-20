@@ -159,3 +159,15 @@ function's shape.
 - probe: Comparison of chassis C disasm vs s3-candidate disasm vs target asm.
 - result: Chassis C's insn 0x120 IS `addu s0,s4,v0` (matches target), but its prologue has 7 insns (vs target's 8) and register-choice diffs on the staging insns. s3 candidate's prologue matches target exactly (8 insns) but its insn #18 is `addu s0,a0,v0`. Two axes cannot be closed independently by chassis choice.
 - verdict: CONFIRMED
+
+## [s6] cse2 (second CSE pass) rewrites operand (reg 79) into canonical class member (reg 72) at insn 36, causing greg to emit `(reg 16 s0) = (plus (reg 4 a0) (reg 2 v0))` instead of target's `(plus (reg 20 s4) (reg 2 v0))`.
+- mechanism: cse.c canon_reg/find_qty_regno places regs 72 (arg0), 78 (p), 79 (base_addr) in one equivalence class rooted at reg 72; cse2 walks insn 36 and substitutes the class root. Confirmed by RTL pass-dumps: reg 79 is preserved through rtl/cse/loop and rewritten to reg 72 ONLY at cse2, then unchanged through combine/lreg/greg. Named pass: `cse2` invoked via toplev.c `rerun_cse_after_loop`.
+- probe: Re-verified prior s6 dumps in tmp/grind/InitHiraRmd_80047FBC/s6/: insn36_evolution.txt matches text1b.i.rtl..text1b.i.greg per-pass grep; sandbox --disable all baseline this turn score=1 (65/65) confirms current committed src still hits the same residual; probe_arg0zero/ dumps show cse2 fold suppressed when arg0=0 is present, greg then emits target-shape `(reg 16 s0) = (plus (reg 20 s4) (reg 2 v0))`, raw cc1 asm `addu $16,$20,$2` and post-maspsx final.s line 134 both target-matching.
+- result: cse2 canonical-reg substitution at insn 36 is the named pass and decision producing the s1-s5 residual. arg0=0 defeats it at compile time; the sandbox stripper (engine/volatile_cheats.py:791 find_dead_param_assigns) removes un-annotated arg0=0 before scoring, so all s1-s5 sandbox measurements of this lever were of the stripped form — the KILLED verdict was about the stripper, not the compiler. FAKE-annotated instances bypass the stripper (line 815 `_stmt_fake_annotated` guard) and IS visible to cc1.
+- verdict: CONFIRMED
+
+## [s6] The FAKE-annotated `arg0 = 0; /* FAKE: defeats cse2... */` form banked in rejected/s6_arg0zero_faked.c qualifies under the [[dead-store-fake-exception]] 2026-07-01 carve-out.
+- mechanism: All four rule prerequisites are met: (1) lever-exhaustion documented across s1-s5 (~14 measured-KILLED hypotheses); (2) GCC pass named (cse2 canonical-reg substitution at insn 36, {reg 72, 78, 79} equivalence class); (3) `/* FAKE */` annotation present verbatim on the statement; (4) the exact spelling `arg0 = 0;` is enumerated in dead-store-fake-exception.md line 34 as the archetype.
+- probe: Judge ruling filed 2026-07-20 03:22 in docs/grind/decisions.md (committed as 94ba752b).
+- result: Judge PASS — legitimacy of the isolated arg0=0 FAKE lever confirmed. Scope explicitly does NOT clear a FINAL CALL: composite candidate still carries `s32 buf[8]; (void)buf;` (independent blocker per s3 evidence: load-bearing for 0x50 frame, fails dead-vars-local-array WRITTEN test).
+- verdict: CONFIRMED
