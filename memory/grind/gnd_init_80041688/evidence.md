@@ -27,3 +27,17 @@
 - [s2] Four s2 structural axes measured dead at floor=2: MEM_IN_STRUCT_P (struct cast), MEM_ALIAS_SET (walking pointer), CFG restructure (ternary hoist), pseudo/decl order (block-local split). None move sched1's priority-driven emission.
 
 - [s2] or-tree-shape-shift (repartner `(b|r)|g` to give b a longer chain) is FORBIDDEN per codegen-technique-index; not a lever.
+
+- [s3] s3 baseline (unchanged from s2): sandbox --disable all -> score=2, target_insns=82, build_insns=82, 3 rules_dropped.
+
+- [s3] s3 rg (block-local named intermediate): score=2. objdump FALSE @0x15cc-0x15e4: lbu a0,0x18 -> lbu v0,0x19 -> lbu v1,0x1A -> sll a0<<16 -> sll v0<<8 -> or a0,a0,v0 -> or a0,v1,a0. Byte-identical to baseline. `rg` folded pre-sched1.
+
+- [s3] s3 cp (block-local): score=2. Base register in the three lbu's is $s0 (= player), not a distinct pseudo. Emission still [r,g,b]. cp -> player via GCC copy-prop before sched1 sees a distinct MEM.
+
+- [s3] s3 cp (function-scope): score=15. Whole-function RA regression; cp's extended liveness costs more than any FALSE-branch gain. Function-scope liveness of a redundant pointer alias is inert for this reschedule AND destructive on total score.
+
+- [s3] Cumulative structural axes measured dead across s1-s3: statement-reorder-b-first, struct-cast /s flip, walking-pointer bp arithmetic, ternary/hoist consolidation, block-local fb/fr/fg split, block-local cp copy, function-scope cp, block-local named-intermediate rg. Nine forms; all sched1 chain-length dominates.
+
+- [s3] Structural conclusion: within block-local structural rearrangements of the FALSE arm, no axis moves sched1's INSN_PRIORITY-driven emission because r/g's chain-length-4 vs b's chain-length-2 is a HARD ordering — LUID/DECL/COPY-based tie-break only applies at equal priority. Every attempted axis either (a) folded before sched1 (rg, cp-block-local), (b) collapsed via combine (walking-pointer, struct-cast), or (c) net-regressed via broader RA cost (cp-function-scope, hoisted-loads).
+
+- [s3] or-tree-shape-shift (repartner `(b|r)|g` to give b longer chain) FORBIDDEN per codegen-technique-index.

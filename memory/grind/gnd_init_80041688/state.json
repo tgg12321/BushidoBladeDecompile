@@ -1,7 +1,7 @@
 {
  "func": "gnd_init_80041688",
  "file": "text1a",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,23 +15,29 @@
    "floor": 2,
    "modality": "structural",
    "headline": "s2 structural: struct-cast, walking-pointer, ternary-hoist, block-local-split all KILLED at floor=2; two-block lbu structure is load-bearing (cannot consolidate)"
+  },
+  {
+   "session": 3,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "s3 structural: named-intermediate rg, block-local cp, and function-scope cp all KILLED at floor=2 (function-scope cp regressed to 15); CSE/copy-prop collapse leaves sched1 dependence DAG untouched, ch"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Add a use of `b` between its load and the OR-chain that combine/CSE cannot fold away, extending b's INSN_PRIORITY chain length to >=4 without changing final bytes.",
-   "mechanism": "sched1 priority = longest reverse chain to end-of-block; a real (non-DCE-able) intermediate consumer of b bumps its chain length, tying with or exceeding r/g.",
-   "next_probe": "Any concrete C shape that survives combine without being DCE'd AND leaves the emitted 7-insn FALSE block bytes intact is expected to be either (a) impossible-by-construction (the extra chain link would show as an extra insn), or (b) cheat-shaped (side-effect-free op inserted for codegen only). Enumerate to prove dead."
+   "hypothesis": "Reuse the EXISTING function-scope local `v` (currently written only in the TRUE arm) as the OR-tree intermediate in the FALSE arm: `v = (r<<16) | (g<<8); gnd_load_tex(b | v);`. Differs from block-local `rg` only in LUID (v was declared at function-top alongside b/r/g), so the fold behavior may differ if combine treats v's cross-arm write as escape-inhibiting.",
+   "mechanism": "A local written in BOTH arms of the if/else has a merged live range at the join point (or in this case a pre-existing decl). If GCC's combine treats v's cross-arm assignments as an escape barrier that prevents folding the FALSE arm's SET into the outer OR, `v = ...` would materialize as a distinct RTL SET and re-alter sched1's dependence structure.",
+   "next_probe": "Edit FALSE arm to `v = (r<<16) | (g<<8); gnd_load_tex(b | v);`; sandbox. If score changes at all (up or down), the cross-arm decl matters and the axis is worth extending; if inert (score=2, emission [r,g,b] unchanged), CSE won."
   },
   {
-   "hypothesis": "The original C was written such that TRUE and FALSE arms share NO code from `b/r/g` upward \u2014 perhaps the FALSE arm was written as a helper function inlined by hand: e.g., `gnd_load_tex(pack_bgr(player))` where pack_bgr is defined inline right above and takes player, loading through a distinct pointer local.",
-   "mechanism": "A distinct pointer local materialized fresh (not aliased with `p`/`q` from the loops earlier) may cause GCC's alias-tracking / register-renumbering to give the three lbu's different pseudos with priority order matching target.",
-   "next_probe": "Try `u8 *cp = (u8*)player; b=cp[0x1A]; r=cp[0x18]; g=cp[0x19];` with cp declared fresh in the block. Note: this is one axis away from the walking-pointer that was KILLED; the difference is `cp` is not derived arithmetically from the target address. Predict same fold-collapse but measure. If still 2, try declaring cp OUTSIDE the else block (function scope) so its liveness spans the whole tail."
+   "hypothesis": "The FALSE arm's diff is not driven by structure at all but by REGISTER-CLASS drift at BB entry: on FALSE-branch entry, target's live-in set has specific registers occupied differently than our build's, and sched1 backward-scheduling with different available-register pressure orders the ready list [b,r,g] vs [r,g,b] as a pressure-sensitive tie-break. Fix would be upstream \u2014 an outer-function edit that changes what registers are live at 80041798.",
+   "mechanism": "sched1's ready-list tie-break can be pressure-sensitive when moving an insn earlier would spill a callee-save; the tie between r's chain-4 and b's chain-2 is fixed but the ORDER within priority-equals-K can hinge on which base register is unpinnable at that cycle.",
+   "next_probe": "Read cc1 -da .greg dump for gnd_init_80041688 (BB2_ALLOC_DEBUG + BB2_SCHED_DEBUG) at the FALSE-block entry; enumerate hard-reg live-in set for target vs build. If they differ, the lever is in the code BEFORE the FALSE branch (post-func_800486FC arg cleanup, loop2 exit register recycling). Restructure the code between the loops and the else-arm to change what's live-in at 15cc without touching arithmetic."
   },
   {
-   "hypothesis": "The FALSE arm was originally written with an inline helper like `PACK_RGB(b,r,g)` macro that expanded to a different RTL sequence (e.g., using a temp local for one of the sub-ORs), so that the intermediate variable's def-use extended a chain onto b.",
-   "mechanism": "Explicit named intermediate lifts one sub-computation's LUID/pseudo lifetime and reshuffles sched1 without touching final register assignment.",
-   "next_probe": "Try `s32 rg = (r<<16) | (g<<8); gnd_load_tex(b | rg);` -- introduces a named intermediate for the r,g sub-tree. Does NOT change parenthesization (still `b | (rg)`), does NOT dead-store (rg is used), stays outside or-tree-shape-shift ban. Predict this may re-schedule if sched1 sees rg's def as a separate BB or a live-out. Sandbox and measure."
+   "hypothesis": "Original source made b's lbu HIGHER-priority than r/g by declaring b's load through a distinct-type pointer that produces a fundamentally different RTL insn (not `(mem:QI (plus reg K))` but e.g. `(mem:QI (reg))` after pre-adjusted base), so that combine cannot fuse it with the OR chain and its dependency chain length is COMPUTED as longer.",
+   "mechanism": "sched.c's INSN_PRIORITY walk credits a chain link per intermediate USE that combine failed to eliminate. If the b lbu has an extra insn between load and consume (e.g. an explicit `(subreg:SI ...)` widen that combine can't fold), its chain becomes length 3 tying with r/g's length 4 minus one, plus tie-break puts b first.",
+   "next_probe": "Try `b = (s32)*((u8*)player + 0x1A);` with an explicit intermediate SI-mode variable holding the widened byte: `s32 bw = *(u8*)((u8*)player + 0x1A); ... gnd_load_tex(bw | ((r<<16)|(g<<8)));`. Compare with the s3 rg experiment \u2014 probably folds the same way \u2014 but if not, examine cc1 dump for a preserved (zero_extend) node."
   }
  ],
  "judge_constraints": [],
