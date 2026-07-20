@@ -95,7 +95,9 @@
    "next_probe": "Rederive/sibling-scrape modality session: check tools/decomp_me_scrape.py output for gnd_* / palette-loader kin; grep any Kengo dump for gnd_init or its callees; verify four-prong test (all use-sites consistent + at least one signed-semantics site + one-extern edit + no residual coercions)."
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "Do NOT authorize canonical-asm for gnd_init_80041688. Next session MUST execute state.json frontier[1]: sibling-scrape / Kengo header-type-correction for g_player_ptrs per [[header-type-correction-from-use-sites]] four-prong test (all use-sites consistent + at least one signed-semantics site + one-extern edit + no residual coercions); check tools/decomp_me_scrape.py output for gnd_* / palette-loader kin and grep Kengo dumps for gnd_init and its callees. Only after that axis is measured DEAD may the grind file an OWNER-ESCALATION at docs/grind/decisions.md for owner disposition under endgame-lock-disposition-policy \u2014 canonical-asm authorization is the owner's call, not the Judge's."
+ ],
  "origin": "queue",
  "created": "2026-07-20T09:22:10.899841+00:00"
 }
