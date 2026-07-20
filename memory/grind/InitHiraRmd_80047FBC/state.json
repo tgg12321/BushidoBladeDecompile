@@ -1,7 +1,7 @@
 {
  "func": "InitHiraRmd_80047FBC",
  "file": "text1b",
- "session_count": 6,
+ "session_count": 7,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -39,23 +39,29 @@
    "floor": 1,
    "modality": "forensics",
    "headline": "s6 forensics verified: cse2 canonical-reg substitution at insn 36 folds reg 79 (base_addr) into reg 72 (arg0), producing sandbox residual $a0 vs target $s4; arg0=0 FAKE already Judge-PASSed 2026-07-20"
+  },
+  {
+   "session": 7,
+   "floor": 1,
+   "modality": "forensics",
+   "headline": "s7 forensics: buf[8] WRITTEN carve-out provably fails (target has ZERO stores in sp+0x18..0x37 locals region); no live-locals shape found producing vars=32 with semantic purpose across 6 tested varian"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Applying the s6 FAKE form (arg0 = 0; /* FAKE: defeats cse2... */) to src/text1b.c will produce sandbox --disable all score=0 with the stripper's FAKE-annotation bypass active \u2014 validating that the Judge-passed lever actually closes the insn #18 residual on the composite in-tree candidate.",
-   "mechanism": "Stripper bypass at engine/volatile_cheats.py:815 _stmt_fake_annotated lets the annotated statement survive to cc1; s6 raw-pipeline probe already showed target-matching bytes from cc1+maspsx. Sandbox measurement will match the raw-pipeline measurement.",
-   "next_probe": "s7 (structural): apply the FAKE form from rejected/s6_arg0zero_faked.c verbatim to src/text1b.c, run sandbox --disable all, confirm score=0 with 65/65 build_insns and 0 rules_dropped. This is prerequisite (a) of the Judge's final-call gate. Modality is structural, not forensics."
+   "hypothesis": "Applying the s6 arg0=0 /* FAKE */ form to src/text1b.c produces sandbox --disable all score=0 with the FAKE-bypass active (validates the Judge-passed lever closes the insn #18 residual on the composite candidate). This is prerequisite (a) of Judge's final-call gate, still unexercised in-tree.",
+   "mechanism": "Stripper bypass at engine/volatile_cheats.py:815 _stmt_fake_annotated lets the annotated statement survive to cc1; s6 raw-pipeline probe already showed target-matching bytes from cc1+maspsx.",
+   "next_probe": "s8+ (structural): apply rejected/s6_arg0zero_faked.c verbatim to src/text1b.c, sandbox --disable all, confirm score=0. Composite still gates on buf[8]; even score=0 does not clear Judge constraint (b)."
   },
   {
-   "hypothesis": "buf[8] can be independently legitimized under [[dead-vars-local-array]] 2026-07-01 WRITTEN carve-out by capturing the discarded efc_buki_draw_zanzou return value into `buf[k] = efc_buki_draw_zanzou(...);` (rotating k) with FAKE annotation \u2014 the target's `sw v0, 0x10(sp)` in the jal delay slot becomes an oracle-enforced dead store matching the source-level capture.",
-   "mechanism": "s1 evidence recorded target insn #55 `sw $v0, 0x10($sp)` in the jal delay slot as GCC-allocated from the discarded call return; an EXPLICIT source-level `buf[k] = efc_buki_draw_zanzou(...);` capture would (a) still fold to the same target byte since GCC produces the store either way, (b) satisfy the WRITTEN requirement of the 2026-07-01 dead-vars-local-array carve-out. Currently unexercised \u2014 s1 frontier note only. Needs its own layer-2 review before commit.",
-   "next_probe": "s7 (structural): apply `buf[k] = efc_buki_draw_zanzou(...)` with k rotating (or fixed at 4 to match target's 0x10(sp) offset) alongside the s6 FAKE form; sandbox --disable all and confirm bytes unchanged AND floor still 0 (or 1). Requires independent layer-2 review of the buf[8] construct per Judge's constraint (b). Modality is structural."
+   "hypothesis": "The buf[8] construct cannot reach COMPLETED-C on either Judge-sanctioned path (WRITTEN carve-out fails; no live-locals form found with semantic purpose). InitHiraRmd_80047FBC is a candidate for INCOMPLETE-owner-accepted disposition per [[endgame-lock-disposition-policy]] 2026-07-20 (RA/scheduler-locked cheat-matched: coercion path requires SOTN precedent; no hand-coded evidence for canonical-asm path; else INCOMPLETE-owner-accepted).",
+   "mechanism": "s7 catalogued vars= gradient across 8 variants; only unused-declaration forms hit vars=32. Real live locals (v6/v8) reg-alloc away. Phantom-frame trigger (v4) doesn't fire in this shape. No hand-coded signals (this is a MIDI-style sequence walker + call \u2014 see [[satan0main-midi-dispatch]] class; not GTE, not packed-multiply, not hand-scheduled).",
+   "next_probe": "s8+ (research): (a) survey Kengo (PS2 successor, partial source per no-compiler-divergence rule) for the source-level shape of this function or its cluster \u2014 hraRmd = 'hira' motion resource walker; (b) enumerate remaining un-tried live-locals mechanics (aliased pointer chains, va_list-shaped explicit-homing per [[fake-varargs-explicit-homing]], nested-block scope tricks that survive cc1's coalescing); (c) file OWNER-ESCALATION per [[endgame-lock-disposition-policy]] if research bottoms out. Owner ruling required to select disposition."
   },
   {
-   "hypothesis": "If buf[k]=call() capture proves either byte-changing or reviewer-rejected, a structural change to preserve the 0x50 frame WITHOUT an unused array is the only remaining path (per Judge constraint b's second clause).",
-   "mechanism": "s3 measured that removing `s32 buf[8];` shrinks frame 0x50\u21920x30 and lifts score 1\u219215 (buf[8] is load-bearing for frame reservation only). A structural replacement \u2014 e.g. more live locals, a real staging buffer with visible reads, or a call-arg homing area with source-visible stores \u2014 would need to preserve the frame size without introducing a new cheat construct.",
-   "next_probe": "s7 or later (structural): m2c-reconstruct the original C to see whether the target's frame slots correspond to identifiable live locals or a documented call-arg homing pattern (fake_varargs-style, see [[fake-varargs-explicit-homing]]). Modality is structural + research."
+   "hypothesis": "Cluster-wide solution: the shape carrying buf[8]/unused_slack[8]/INLINE_MOVE_ALIASING/register-asm-pins across all four 8004xxxx cluster functions (AddTbpOfst_80047EE8, InitHiraRmd_80047FBC, InitHiraRmd_800480C0, func_800481E8) may share a single structural key not yet found \u2014 likely a source-level idiom in the original C (e.g., a shared macro, an inline helper) that produces both the callee-save prologue staging AND vars=32.",
+   "mechanism": "All four cluster members share: (1) parallel derivations of p and base from arg0, (2) target's staged prologue (s0=arg0, s4=s0 via base_addr's callee-save preference), (3) call to efc_buki_draw_zanzou or sibling routine with 5-arg outgoing area, (4) vars=32 or similar frame reservation. Different cheats spell around the same shape.",
+   "next_probe": "s8+ (research + structural): m2c-reconstruct each cluster member from asm, compare source-shape similarities, hypothesize a shared original-C idiom (possibly a #define or inline helper), test if a fixed-shape idiom applied uniformly to all four closes them together. This is high-risk / high-reward and out of s7 forensics scope."
   }
  ],
  "judge_constraints": [

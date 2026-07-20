@@ -145,3 +145,25 @@ carve-outs, OR a genuinely different C shape that makes arg0-copy → $s4 natura
 - [s6] Judge ruling 2026-07-20 03:22 in docs/grind/decisions.md line 981 (commit 94ba752b) — PASS on isolated arg0=0 FAKE lever qualification under dead-store-fake-exception; explicitly scoped, NOT a final commit gate; buf[8] independently unresolved.
 
 - [s6] Cluster impact: sibling functions AddTbpOfst_80047EE8, InitHiraRmd_800480C0, func_800481E8 share the same shape (parallel derivations of p and base from arg0) and would benefit from the same mechanism if closed.
+
+- [s7] [s7] baseline sandbox --disable all this session: score=1, 65/65 insns, rules_dropped=0 (unchanged from s3-s6 baseline; current committed src carries `s32 buf[8]; (void)buf;` + `arg0 = 0;` (un-annotated); measured via existing s6 dumps + engine gradient consistency).
+
+- [s7] [s7] cc1 .frame comment on current committed src: `.frame $sp,80,$31 # vars= 32, regs= 6/0, args= 24, extra= 0` for InitHiraRmd_80047FBC. Frame equation: ALIGN8(vars=32)+ALIGN8(args=20→24)+ALIGN8(gp_regs=24)=80=0x50 ✓ matches target.
+
+- [s7] [s7] Target's ONLY sp-relative stores: sw v0 at 0x10 (jal delay slot) + sw s0/s1/s2/s3/s4/ra at 0x38/0x3C/0x40/0x44/0x48/0x4C. Zero stores in the sp+0x18..0x37 (32-byte) locals region. Verified by grep of asm/funcs/InitHiraRmd_80047FBC.s.
+
+- [s7] [s7] args=24 = ALIGN8(5*4) proves the outgoing-arg area is sp+0..sp+0x17 (24 bytes for a 5-arg call). sw v0,0x10(sp) in the delay slot IS the 5th outgoing arg — NOT a dead store into locals. This corrects the s1 evidence claim (recorded in ledger evidence.md as the primary motivator for the buf[k]=call() capture avenue).
+
+- [s7] [s7] efc_buki_draw_zanzou is declared `void efc_buki_draw_zanzou(s32,s32,s32,s32)` at include/m2c_context.h:647 — 4-arg void. The candidate calls it with 5 s32 args; GCC 2.7.2 with -w accepts the arity mismatch and places arg #5 at the o32 5th-arg slot sp+0x10.
+
+- [s7] [s7] vars= gradient across 8 variants (baseline + v1/v3/v4/v6/v8/v9/v11): only buf[8]/buf[8]+read (baseline/v9) and address-of'd scalar arrays (v11) reach vars=32 with sp-stores=7. All are structurally the same cheat (frame-reservation via a declaration with no semantic purpose).
+
+- [s7] [s7] v3_bufwritten (buf[0]=arg1) achieves vars=32 but adds sp-stores=8 (new sw at sp+0x18 for the buf[0] write) — verified by count in variant .s. Target has 7 sp-stores — the extra write is a byte diff. WRITTEN carve-out approach (Judge constraint b option i) is provably byte-changing.
+
+- [s7] [s7] Live-locals shapes that GCC WON'T reg-alloc away (v6 8 s32 cascade, v8 4 u64 cross-mul, v4 8 s16 bitwise ladder — the phantom-frame-slots-gcc272 documented trigger) all yielded vars=0 in this function's shape — the trigger does not fire when the s16 values feed HImode→SImode widening for call args (as this function does).
+
+- [s7] [s7] Named GCC pass producing the s1-s6 residual (re-confirmed): cse2 canonical-reg substitution at insn 36 folds reg 79 (base_addr, → $s4) into reg 72 (arg0, → $a0), yielding sandbox `addu $s0,$a0,$v0` vs target `addu $s0,$s4,$v0`. See tmp/grind/InitHiraRmd_80047FBC/s6/insn36_evolution.txt.
+
+- [s7] [s7] No OWNER-ESCALATION entry for InitHiraRmd_80047FBC exists in docs/grind/decisions.md — only the 2026-07-20 03:22 Judge PASS for the isolated arg0=0 FAKE lever (line 981). owner-gated outcome invalid this session.
+
+- [s7] [s7] artifacts saved: tmp/grind/InitHiraRmd_80047FBC/s7/{baseline,v1_nobuf,v3_bufwritten,v4_himode_bitwise,v6_cascade_s32,v8_u64_locals,v9_bufread,v11_addrof_8scalars}.{c,i,s}; FINDINGS.md; gen_variants.py; gen_variants2.py; probe_frame.sh; probe_all.sh; probe_all2.sh. Rejected forms banked to memory/grind/InitHiraRmd_80047FBC/rejected/{s7_bufwritten_written_carveout_fails.c, s7_addrof_8scalars_no_purpose.c}.
