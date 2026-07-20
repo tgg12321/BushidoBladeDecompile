@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "mario_getMarioVoiceData_8005BE84",
-      "file": "text1b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "InitHiraRmd_80047FBC",
       "file": "text1b",
       "distance": 1,
@@ -2960,14 +2952,14 @@
     }
   ],
   "counts": {
-    "total": 363,
-    "active": 331,
+    "total": 362,
+    "active": 330,
     "by_status": {
-      "active": 331,
+      "active": 330,
       "parked": 32
     },
     "by_verdict": {
-      "C": 177,
+      "C": 176,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
