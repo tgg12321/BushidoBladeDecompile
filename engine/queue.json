@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "myRobGeneiDraw2",
-      "file": "code6cac_b",
-      "distance": 3,
-      "verdict": "C",
-      "rules": 2,
-      "status": "active"
-    },
-    {
       "func": "AddTbpOfst",
       "file": "main",
       "distance": 3,
@@ -2914,14 +2906,14 @@
     }
   ],
   "counts": {
-    "total": 357,
-    "active": 323,
+    "total": 356,
+    "active": 322,
     "by_status": {
-      "active": 323,
+      "active": 322,
       "parked": 34
     },
     "by_verdict": {
-      "C": 169,
+      "C": 168,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }

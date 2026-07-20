@@ -2849,36 +2849,32 @@ u8 *func_80032064(u8 *src, s32 type) {
     }
     return s0;
 }
-/* TABLED: same size, score 1450 — GCC body scheduling entirely different from target (delay slot fill choices, register allocation for intermediates) */
 void myRobGeneiDraw2(void) {
     s32 *sp = (s32 *)0x1F8002B8;
     u8 *base = &D_80104E88;
     s32 i;
-    u8 *s0;
 
     i = 0;
     do {
         if (*base != 0) {
-            s0 = base + 4;
-            s0[-2] += 1;
-            *(Vec3_copy *)(s0 + 0xC) = *(Vec3_copy *)s0;
-            *(s32 *)(s0 + 0x1C) += 0xD;
-            sp[0] = *(s32 *)s0 + *(s32 *)(s0 + 0x18);
-            sp[1] = *(s32 *)(s0 + 4) + *(s32 *)(s0 + 0x1C);
+            *(u8 *)(base + 2) += 1;
+            *(Vec3_copy *)(base + 0x10) = *(Vec3_copy *)(base + 4);
+            *(s32 *)(base + 0x20) += 0xD;
+            sp[0] = *(s32 *)(base + 4) + *(s32 *)(base + 0x1C);
+            sp[1] = *(s32 *)(base + 8) + *(s32 *)(base + 0x20);
             {
                 s32 arg5 = (s32)sp + 0x38;
-                sp[2] = *(s32 *)(s0 + 8) + *(s32 *)(s0 + 0x20);
-                arg5++;
-                arg5--;
-                if (func_8005344C((s32 *)s0, sp, (s32 *)((u8 *)sp + 0x10), (s32 *)((u8 *)sp + 0x30), arg5) != 0 || *(s32 *)(s0 + 0x24) < *(s32 *)(s0 + 4)) {
+                sp[2] = *(s32 *)(base + 0xC) + *(s32 *)(base + 0x24);
+                arg5++; /* FAKE: +1-1 pair (SOTN-wiki redundant-arithmetic class) makes arg5 multi-set so loop.c */
+                arg5--; /* cannot hoist the loop-invariant sp+0x38 into a callee-save; target recomputes it inline */
+                if (func_8005344C((s32 *)(base + 4), sp, (s32 *)((u8 *)sp + 0x10), (s32 *)((u8 *)sp + 0x30), arg5) != 0 || *(s32 *)(base + 8) > *(s32 *)(base + 0x28)) {
                     *base = 0;
                 } else {
-                    *(Vec3_copy *)s0 = *(Vec3_copy *)sp;
+                    *(Vec3_copy *)(base + 4) = *(Vec3_copy *)sp;
                 }
             }
         }
         i++;
-        s0 += 0x2C;
         base += 0x2C;
     } while (i < 4);
 }
