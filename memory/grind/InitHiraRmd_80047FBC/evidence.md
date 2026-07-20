@@ -221,3 +221,15 @@ carve-outs, OR a genuinely different C shape that makes arg0-copy → $s4 natura
 - [s10] [s10] Escalation precedent (5 recent same-species cases): motion_SetMotion (2026-07-18) refused; func_80057CC8 / saTan0Init / cpu_side_move_dir_4 (2026-07-19-20) refused / INCOMPLETE-owner-accepted; func_80049A2C (2026-07-20) filed. All by the same protocol. No self-resolution
 
 - [s10] [s10] Ledger unchanged: no new form measured this session (synthesis modality); no new banked reject; candidate.c body unchanged from s3/s4/s9, header updated with s10 disposition
+
+- [s11] s11 sandbox measurement: applying s6 rejected/s6_arg0zero_faked.c form in-tree produces `& tools/wteng.ps1 main sandbox InitHiraRmd_80047FBC --disable all` == {"score": 0, "target_insns": 65, "build_insns": 65, "scorable": true} (log: tmp/grind/InitHiraRmd_80047FBC/s11/sandbox_s6form.log). This is the first sandbox=0 measurement for this function in the s1-s11 grind.
+
+- [s11] The score delta 1 -> 0 attributable purely to adding `/* FAKE */` on `arg0 = 0;` (plus the base_addr s32 rename that turns `(s32)base` into `base_addr` — semantic no-op) proves engine/volatile_cheats.py:815 _stmt_fake_annotated is wired correctly and lets the assignment through to cc1. Prior s1/s3/s4/s9 sandbox=1 measurements were on the STRIPPED form (per engine/volatile_cheats.py:791 find_dead_param_assigns), consistent with the 2026-07-20 03:22 Judge ruling's mechanism-verification note.
+
+- [s11] src/text1b.c is byte-identical to HEAD after revert (git diff --stat empty). No stray edits to build files.
+
+- [s11] Composite candidate memory/grind/InitHiraRmd_80047FBC/composite_candidate.c preserves the sandbox=0 form for the next session to hand to the OWNER-ESCALATION dossier without re-deriving it.
+
+- [s11] The composite still carries `s32 buf[8]; (void)buf;` (unchanged from HEAD). Per s7 grep evidence (memory/grind/InitHiraRmd_80047FBC/evidence.md), the target has ZERO sw stores in sp+0x18..sp+0x37, so the SOTN dead-vars-local-array WRITTEN carve-out does NOT ground the buf[8]. Judge FINAL CALL constraint (b) is UNRESOLVED — this session did NOT attempt to resolve it (per task brief, the F1 discharge is the sole s11 structural target).
+
+- [s11] cheat_asm_stripped=392 in the sandbox output reflects OTHER functions in text1b.c (siblings InitHiraRmd_800480C0 uses register asm("$N") pins on $18/$19/$20/$21/$22 and func_800481E8 uses INLINE_MOVE_ALIASING with $16 pin per src/text1b.c:146-217). Not attributable to InitHiraRmd_80047FBC's edits.
