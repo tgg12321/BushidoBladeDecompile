@@ -167,3 +167,21 @@ carve-outs, OR a genuinely different C shape that makes arg0-copy → $s4 natura
 - [s7] [s7] No OWNER-ESCALATION entry for InitHiraRmd_80047FBC exists in docs/grind/decisions.md — only the 2026-07-20 03:22 Judge PASS for the isolated arg0=0 FAKE lever (line 981). owner-gated outcome invalid this session.
 
 - [s7] [s7] artifacts saved: tmp/grind/InitHiraRmd_80047FBC/s7/{baseline,v1_nobuf,v3_bufwritten,v4_himode_bitwise,v6_cascade_s32,v8_u64_locals,v9_bufread,v11_addrof_8scalars}.{c,i,s}; FINDINGS.md; gen_variants.py; gen_variants2.py; probe_frame.sh; probe_all.sh; probe_all2.sh. Rejected forms banked to memory/grind/InitHiraRmd_80047FBC/rejected/{s7_bufwritten_written_carveout_fails.c, s7_addrof_8scalars_no_purpose.c}.
+
+- [s8] [s8] baseline sandbox --disable all: score=1, 65/65 insns (unchanged from s3-s7 baseline; current committed src carries `s32 buf[8]; (void)buf;` + `arg0 = 0;` un-annotated)
+
+- [s8] [s8] Kengo/disc/SLUS_200.21 is ELF32 MIPS-III (PS2); disassembled InitHiraRmd @ 0x1077f8 (276 bytes/69 insns), HiraRmdAddTbpOfst @ 0x1073d8, PutHiraRmd @ 0x10adf8; ALL structurally unrelated to BB2's cluster (different signatures, different callees, different control flow)
+
+- [s8] [s8] Kengo InitHiraRmd is a 3-arg struct-header initializer (packet setup, calls GetAllocPacketSize + InitPartsVertColData); BB2's InitHiraRmd_80047FBC is a 4-arg table walker calling efc_buki_draw_zanzou (weapon afterimage). The name is a splat auto-name coincidence, not a Kengo rename — cluster is likely something like DrawWeaponTrailFromTable per callee semantics
+
+- [s8] [s8] Fresh m2c decompile (tools/m2c/m2c.py -t mips-ido-c) produces chassis-C-equivalent shape (no base_addr, arg0 used directly); identical to s5's rejected/s5_chassis_c_arg0_direct_no_base.c which was KILLED at score=5 (loses staged prologue). m2c re-confirms the s5-documented anti-correlation between copy-prop tiebreaker and prologue staging
+
+- [s8] [s8] s16*-walker variant (`s16 *hp = (s16*)((s32)p+4); a1v=*hp++;...`) applied to src: score=31 (30 new diffs); GCC assigns hp to a different register than $s0 and the whole hword-load block cadence diverges. Confirms u32*+byte-cast walker is load-bearing for target register cadence
+
+- [s8] [s8] const-qualified base initializer (`const u32 *const base = (const u32*)arg0;`) applied to src: score=1 byte-identical; GCC 2.7.2's cse2 discards const at RTL level, {reg 72, reg 78, reg 79} equivalence class forms identically
+
+- [s8] [s8] rederive-modality avenues catalog now complete: Kengo transplant KILLED (false cognate), m2c fresh KILLED (reproduces s5 chassis C), decomp.me corpus not applicable (no PSX BB2 project), structural variants KILLED across 16+ probes s2-s8. All four canonical rederive lanes exhausted for this function
+
+- [s8] [s8] no OWNER-ESCALATION entry for InitHiraRmd_80047FBC exists in docs/grind/decisions.md — only the 2026-07-20 03:22 Judge PASS at line 981 (scoped to isolated arg0=0 FAKE lever qualification, explicitly NOT a final-commit gate). owner-gated outcome invalid this session
+
+- [s8] [s8] artifacts saved: tmp/grind/InitHiraRmd_80047FBC/s8/{FINDINGS.md, v1_s16_walker.c}; rejected forms banked: memory/grind/InitHiraRmd_80047FBC/rejected/{s8_s16_hword_walker.c, s8_const_qualified_base.c}

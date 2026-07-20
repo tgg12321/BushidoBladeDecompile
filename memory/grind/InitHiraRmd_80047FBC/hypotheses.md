@@ -189,3 +189,27 @@ function's shape.
 - probe: Not executed this session (mandate: forensics, not structural). Session focused on the buf[8] resolution question (Judge constraint b) which is the composite gate.
 - result: Deferred to a structural-modality session; forensics established that Judge constraint b cannot be satisfied by either sanctioned path, so applying arg0=0 alone is insufficient for candidate-ready.
 - verdict: CONFIRMED
+
+## [s8] Kengo (PS2 successor) InitHiraRmd / HiraRmdAddTbpOfst / PutHiraRmd are source-level relatives of BB2's cluster and their source-shape can be transplanted to close BB2's cluster.
+- mechanism: Kengo's Marionation engine reuses SquareSoft Lightweight code; the cluster's shared name prefix suggests a common ancestor whose C shape reproduces target codegen when compiled through our fork.
+- probe: Disassembled Kengo InitHiraRmd (0x1077f8, 276 bytes, 69 insns) + HiraRmdAddTbpOfst (0x1073d8) + PutHiraRmd (0x10adf8) via mips-linux-gnu-objdump. Compared signatures, callees, and control-flow shapes.
+- result: Kengo InitHiraRmd is a 3-arg struct-header initializer that populates packet fields via sll-4 (16-byte-aligned VU addresses), calls GetAllocPacketSize and InitPartsVertColData. BB2's InitHiraRmd_80047FBC is a 4-arg (s32,s32,s16,s16) weapon-afterimage table walker calling efc_buki_draw_zanzou (5-arg). NO callee-signature / control-flow / sub-region overlap. The name is a splat auto-name collision, not a rename.
+- verdict: KILLED
+
+## [s8] A fresh m2c decompile of the target asm surfaces a structurally-different C shape that our fork's cc1 can compile to target bytes.
+- mechanism: m2c reconstructs the original C-level structure from the asm; if the s1-s7 candidate is a poor structural reconstruction, m2c's output may reveal a cleaner shape.
+- probe: python3 tools/m2c/m2c.py -t mips-ido-c --context include/m2c_context.h -f InitHiraRmd_80047FBC asm/funcs/InitHiraRmd_80047FBC.s.
+- result: m2c emits chassis-C-equivalent shape (no base_addr local; arg0 used directly as `arg0 + ((word>>2)*4)` in both pre-loop and call-arg positions). Structurally identical to s5 rejected/s5_chassis_c_arg0_direct_no_base.c which was measured score=5 and KILLED (loses target's staged prologue). m2c re-derives the same anti-correlated pair the s5 finding documented; no new shape.
+- verdict: KILLED
+
+## [s8] Restructuring the inner hword-load block to walk via `s16 *hp` post-increment (m2c-suggested for the hword reads) instead of `u32 *p` with byte-cast increments produces a shape closer to target.
+- mechanism: Native-type walker for the hword reads might let GCC choose a register cadence that matches target's $s0-anchored increments.
+- probe: Applied `s16 *hp = (s16*)((s32)p+4); a1v=*hp++; ...; p=(u32*)hp;` to src/text1b.c (s8/v1_s16_walker.c). Sandbox --disable all.
+- result: score=31 (30 new diffs). GCC allocates hp to a different register than $s0, so the entire load-address emission cadence diverges from target across the hword block. The u32*+byte-cast walker is load-bearing for target's $s0 cadence.
+- verdict: KILLED
+
+## [s8] Declaring base with const qualifiers (`const u32 *const base = (const u32*)arg0`) steers cse2's canon_reg substitution to keep base separate from arg0's equivalence class.
+- mechanism: const-qualified copies might not participate in cse2's canonicalization if the pass treats them as distinct value expressions.
+- probe: Applied `const u32 *const base = (const u32*)arg0;` to src/text1b.c. Sandbox --disable all.
+- result: score=1, byte-identical to baseline. GCC 2.7.2 discards const at the RTL level; cse2 forms the same {reg 72, reg 78, reg 79} equivalence class and folds insn 36 identically. const is inert as an RA/CSE lever in this compiler.
+- verdict: KILLED
