@@ -114,6 +114,12 @@ function Reap-PermuterOrphans([string]$When) {
     # physical dir too so it can't accumulate across sessions.
     $nm = Join-Path $Root 'nonmatchings'
     if (Test-Path $nm) { Remove-Item $nm -Recurse -Force -ErrorAction SilentlyContinue }
+    # Clear stale campaign-registry 'active' flags. Reaping above kills orphan
+    # PROCESSES but leaves tmp/permuter_campaigns.json marking them active, which
+    # would make the grind_check.sh Stop-gate false-positive on a NEXT session of
+    # the same func. Zeroing active at every boundary makes the invariant exact:
+    # an active entry at Stop time was orphaned by THE CURRENT session.
+    try { python tools/permuter_campaign.py deactivate-all 2>$null | Out-Null } catch { }
 }
 
 Log "grinder starting (pid $PID, model $Model, judge $JudgeModel)"
@@ -299,7 +305,7 @@ $led/rejected/. Write your verdict JSON to the exact path given below.
 # ── session spawn (pattern from tools/fleet/_fleet_common.ps1:132-170) ────────
 function Invoke-GrindAgent([string]$BriefPath, [string]$OutcomePath,
                            [string]$RoleFile, [string]$AgentModel,
-                           [string]$MockScript) {
+                           [string]$MockScript, [string]$Func) {
     Remove-Item $OutcomePath -ErrorAction SilentlyContinue
     if ($MockScript) {
         $env:GRIND_BRIEF_PATH = $BriefPath; $env:GRIND_OUTCOME_PATH = $OutcomePath
@@ -314,16 +320,20 @@ function Invoke-GrindAgent([string]$BriefPath, [string]$OutcomePath,
         $sid = [guid]::NewGuid().ToString()
         $t0 = Get-Date
         $job = Start-Job -ScriptBlock {
-            param($Task, $RoleFile, $Model, $Sid, $Cwd, $AgentLog)
+            param($Task, $RoleFile, $Model, $Sid, $Cwd, $AgentLog, $Func)
             Set-Location $Cwd
             $env:CLAUDE_SESSION_ID = $Sid
+            # Arms the grind_check.sh Stop-gate for THIS session only: the hook
+            # no-ops unless GRIND_FUNC is set, so interactive/operator sessions
+            # and this session's own subagents (Stop-only wiring) are unaffected.
+            $env:GRIND_FUNC = $Func
             $claudeArgs = @('-p', $Task, '--append-system-prompt-file', $RoleFile,
                             '--permission-mode', 'bypassPermissions', '--model', $Model,
                             '--session-id', $Sid, '--output-format', 'json')
             # Keep the CLI's result line — it is the only diagnostic when a spawn
             # dies instantly (usage limit, auth, API error). Overwritten per spawn.
             ($null | & claude @claudeArgs 2>&1 | Out-String) | Set-Content $AgentLog -Encoding utf8
-        } -ArgumentList $task, $RoleFile, $AgentModel, $sid, $Root, ($OutcomePath + '.agent.log')
+        } -ArgumentList $task, $RoleFile, $AgentModel, $sid, $Root, ($OutcomePath + '.agent.log'), $Func
         if (-not (Wait-Job $job -Timeout ($SessionTimeoutMin * 60))) {
             Log "session TIMEOUT after $SessionTimeoutMin min; stopping job."
             Stop-Job $job -ErrorAction SilentlyContinue
@@ -387,7 +397,7 @@ while ($true) {
     Log "${func}: session $sessionN starting, modality=$modality"
 
     # 4) spawn
-    $o = Invoke-GrindAgent $briefPath $outPath (Join-Path $RolesDir 'grind-session.md') $Model $MockSessionScript
+    $o = Invoke-GrindAgent $briefPath $outPath (Join-Path $RolesDir 'grind-session.md') $Model $MockSessionScript $func
 
     # 5) scope check — any edit outside the allowed surface invalidates the session
     $dirty = Assert-CleanTree

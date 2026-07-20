@@ -73,6 +73,10 @@
           {
             "type": "command",
             "command": "bash \"$CLAUDE_PROJECT_DIR/tools/hooks/tooling_incident_stop_guard.sh\""
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/tools/hooks/grind_check.sh\""
           }
         ]
       }

@@ -411,6 +411,22 @@ def cmd_status(args):
           file=sys.stderr)
 
 
+def cmd_deactivate_all(args):
+    """Mark every registry entry inactive. The grinder calls this at each session
+    boundary (after reaping orphan processes) so the grind_check.sh Stop-gate sees
+    a clean slate — any entry still 'active' at Stop time was orphaned by the
+    current session, never a stale leftover. Does NOT kill anything; reap does."""
+    reg = _load_registry()
+    changed = 0
+    for info in reg.values():
+        if info.get("active"):
+            info["active"] = False
+            changed += 1
+    if changed:
+        _save_registry(reg)
+    print(json.dumps({"ok": True, "deactivated": changed}))
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -442,6 +458,9 @@ def main():
                     help="max campaign lifetime in seconds (default 3600 = 60 min)")
     rp.add_argument("--dry-run", action="store_true", help="report what would be killed, kill nothing")
     rp.set_defaults(fn=cmd_reap)
+
+    dp = sub.add_parser("deactivate-all", help="mark all registry entries inactive (session-boundary reset)")
+    dp.set_defaults(fn=cmd_deactivate_all)
 
     args = ap.parse_args()
     args.fn(args)
