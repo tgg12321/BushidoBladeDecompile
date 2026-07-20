@@ -1,10 +1,33 @@
 {
  "func": "func_80049A2C",
  "file": "text1b",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "Recon: 3 of 4 judge-flagged constructs are score-inert noise; only dummy[2] is load-bearing (frame slot for target's ALIGN8(vars)=8)."
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Replace dummy[2] with a live-then-DCE'd scalar (phantom-frame-slots pattern) that adds 8 bytes to get_frame_size()",
+   "mechanism": "phantom-frame-slots-gcc272 \u2014 a live local whose all uses fold to a reg still bumps get_frame_size(); no dead-decl / no cheat.",
+   "next_probe": "Add `int fp_slot = temp_v1 & 0xFF;` (or equivalent live use), remove dummy[2]; measure sandbox score and cc1 -da .frame comment (vars= should be 8, frame should stay 0x30, score should be 0)."
+  },
+  {
+   "hypothesis": "Widen an existing narrow local (a1_val s16 -> s32 or introduce s32 tmp = (*p_anim)*2) forces the same phantom slot",
+   "mechanism": "Widening changes the RTL mode / register-class needs and can push a spill into locals; same phantom-frame mechanism.",
+   "next_probe": "For each of {a1_val widened, new_var2 widened, new s32 tmp capturing (*p_anim)*2}, remove dummy[2] and sandbox; correlate vars= with score."
+  },
+  {
+   "hypothesis": "Restructure the two consecutive obj-init blocks to share an intermediate that lands as a stack temp",
+   "mechanism": "The two 0x68-byte init blocks share fields (offset 4 = 6, offset 8 = 0, offset A, offset 2 = a1_val{,+1}, offset C = ptr, offset 58). Hoisting a shared intermediate may reserve the +8 slot from ordinary source structure rather than a padding decl.",
+   "next_probe": "Build a variant that hoists a1_val's recomputation into one local reused across both blocks and/or captures a header word; measure."
+  }
+ ],
  "judge_constraints": [
   "Grind must retire dummy[2], new_var4, the empty `if (a1_val) { }`, and the inline-assign `(new_var = new_var3)` \u2014 reach the same target bytes with pure C where every local has a semantic role and no un-annotated dead-store/dead-declaration constructs remain; if any construct proves genuinely unavoidable it must land as a documented FAKE carve-out with full lever-exhaustion evidence in the ledger and layer-2 review."
  ],
