@@ -15484,11 +15484,11 @@ void func_80069AE4(s32 *arg0, s32 mode, s32 unused_arg) {
     i = 0;
     do {
         s32 v = *q;
-        q++;
         s.sp18 = v;
         s.sp1C = v + 0xC;
         s.sp20 = arg0[5];
         arg0[5] = func_8007352C((s32)&s.sp18);
+        q++;
         i++;
     } while (i < 3);
 
