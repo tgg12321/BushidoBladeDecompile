@@ -90,3 +90,29 @@ the canonical finished form for the family) OR a future family-wide RA lever.
 - [s2] Target disasm (asm/funcs/func_800611A4.s): post-call cluster loads at 0x0/0x4/0x8($s0) — no pointer bumps. Target-shape uses ARRAY-INDEXED loads (not walking) with $v0=load-temp, $v1=mask.
 
 - [s2] Killed levers (ruled out this session): dropping v1 alias (+1 insn), tightening *v1 liveness (perturbs pre-call), decl order of t/mask (not tiebreak), mask assignment position (combine re-merges), load-temp type width (u32 vs s32), fully-inlined stores without walking (worse), partial walking (worse), mask position variants.
+
+- [s3] Pre-call is BYTE-IDENTICAL to target on the pin-free baseline (verified via disassembly of tmp/sandbox/func_800611A4/text1b.o). The divergence is EXCLUSIVELY post-call — the s2 frontier hypothesis "pre-call freelist sets the post-call RA state" is architecturally impossible to close via pre-call reordering because the pre-call byte sequence already matches.
+
+- [s3] Post-call structural sweep discovered a NEW floor: mask assign+store atomically hoisted to the FIRST post-call statement (V4/V7: `D_800A3464 = 0xFFFFEF; t = arg0[0]; ... t = arg0[2]; D_800F1148 = t;` — mask local optional, folded either way) scores 6 with 43 insns. Baseline pin-free = 9. Floor lowered 9 → 6.
+
+- [s3] V4/V7 shape produces mask=$v0 AND load-temp=$v0 (both use $v0 since mask is dead before load 1). Target produces load-temp=$v0 AND mask=$v1 (interleaved). V4/V7 has fewer register-rename diffs than baseline but structurally-different scheduling (mask hoisted vs interleaved).
+
+- [s3] Every mask-placement variant OTHER than "atomic-first" measured this session (mask-at-end, mask-between-loads-1-and-2, mask-between-loads-2-and-3, mask-alive-across-2-loads V9/V16, mask-alive-across-all-loads V5) scores 9 — GCC schedules them all to the target's interleaved shape but allocates mask→$v0 and load-temp→$v1 (opposite of target). This is the same 9-diff wall the s1/s2 sessions documented; s3 confirms it survives every mask-position and mask-liveness variant reachable without a pin.
+
+- [s3] u32 vs s32 mask type (V11) makes no difference (score 9). Type width axis KILLED for mask (was already killed for `t` in s2).
+
+- [s3] Pure m2c-suggested shape (V10: no `t`, no `mask`, no v1 alias, direct writes) scores 22 with build=44. Confirms the m2c reconstruction is not the C GCC would compile back to target — the v1 alias is load-bearing for address CSE (drop = +1 insn as banked in s2), and dropping the `t` load-temp further hurts RA.
+
+- [s3] Hoisting `D_800A3468 = (s32)v1;` above the halfword reads (V2) or moving `*v1 = 0x21001A;` early (V12) both score 19-20 — pre-call byte sequence must not change. Reconfirms pre-call is at its optimal ordering.
+
+- [s3] Pre-call disassembly of tmp/sandbox/func_800611A4/text1b.o (V0 baseline pin-free candidate) is BYTE-IDENTICAL to asm/funcs/func_800611A4.s through the JAL and its delay slot. Divergence is 100% post-call. The s2 pre-call-freelist frontier hypothesis is therefore not just under-explored -- it is architecturally impossible to move, because pre-call has no bytes left to change.
+
+- [s3] V7 (`D_800A3464 = 0xFFFFEF;` as first post-call statement) drops the pin-free floor from 9 to 6 on 43 build_insns == 43 target_insns. Emitted post-call: `lui $v0,0xff; ori $v0,$v0,0xffef; sw $v0,gp(D_800A3464); lw $v0,0($s0); ...; sw $v0,%lo(D_800F1148)($at)` -- both mask and load-temp reuse $v0 because mask dies before load 1.
+
+- [s3] In interleaved-mask forms (V5/V6/V9/V16/V21/V22) GCC produces target's exact interleave shape (mask lui slots between load 2 and store 2, mask ori and store slot between load 3 and store 3) but allocates mask -> $v0 and load-temp -> $v1 -- the exact reverse of target. This is a genuine RA priority inversion, not a scheduling difference.
+
+- [s3] The v1 alias `s32 *v1 = &D_800F116C;` remains load-bearing: dropping it (V10, or s2's drop_v1_alias.c) adds one insn because GCC cannot share the %hi/%lo lui/addiu between D_800A3468=(s32)&D_800F116C and D_800F116C=0x21001A.
+
+- [s3] The `s32 t` load-temp local is also load-bearing at the CURRENT floor: dropping it (V8 keep-mask, V23 inline-mask+no-t) scored 11 and 10 respectively -- the named load-temp helps GCC recognize the 6-ref web that keeps priority balanced.
+
+- [s3] Type-width of mask (u32 vs s32, V11) has zero effect on this RA tiebreak. Type-width of `t` was also zero-effect per s2 rejected_forms.

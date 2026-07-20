@@ -1,7 +1,7 @@
 {
  "func": "func_800611A4",
  "file": "text1b",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -21,23 +21,29 @@
    "floor": 9,
    "modality": "structural",
    "headline": "Structural sweep (13 forms). Floor held at 9; killed 8 named structural levers; walking-pointer lowers score to 7 but adds an insn so it's architecturally blocked from match \u2014 proves the RA tiebreak I"
+  },
+  {
+   "session": 3,
+   "floor": 6,
+   "modality": "structural",
+   "headline": "s3 structural sweep lowered pin-free floor 9 -> 6 via mask atomically-first post-call (V7); pre-call proven byte-identical to target so pre-call-freelist hypothesis KILLED."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The target's flip is driven by pre-call RA state, not the post-call cluster shape. Something upstream of the call (arg saves, sp[] setup, alias liveness) sets the initial hard-reg freelist so the post-call allocator opens with the opposite ordering.",
-   "mechanism": "Post-call RA state inherits the pre-call freelist; if the freelist has $v0 marked USED-recently (or $v1 free-longer), the mask pseudo gets $v0 as first-fit.",
-   "next_probe": "Sweep pre-call variants: (a) reorder the 5 pre-call global stores (D_800F117C/1178/1180/A3468 + *v1) \u2014 the ordering is not semantically constrained; (b) hoist the arg1 halfword loads into a single copy pattern; (c) declare a callee-save-eligible local pinned pre-call (via structural declaration, not asm). Measure each with sandbox."
+   "hypothesis": "Target's exact bytes require load-temp -> $v0 AND mask -> $v1 with mask alive across all three loads. Only a pin (`register mask asm(\"$3\")`) forces the swap in pure C reachable-space. Pure-C RA tiebreak axes measured exhausted this session; any further pin-free progress needs a genuinely novel lever OR canonical-asm authorization for the pin family (siblings func_80061250/func_80061658 share the identical shape).",
+   "mechanism": "GCC 2.7.2's global.c allocno priority formula log2(refs)*freq*size/live_length gives mask (2 refs, ~7 insn liveness) higher priority than load-temp (6 refs across 3 short webs, or 1 wider web) in the interleaved shape, so mask allocates first to $v0.",
+   "next_probe": "Read tools/gcc-2.7.2/global.c allocno_compare and prioritize_allocno_regs; then dump `-da` .greg for both the pin-free interleaved form (score 9) and target's shape (via cc1psx if it hits 9 too) to see the exact priority ordering. If cc1psx also swaps, the pin family is not pure-C-reachable and canonical-asm authorization is the escape (siblings same shape) -- filing OWNER-ESCALATION becomes justified."
   },
   {
-   "hypothesis": "The extra addiu in walking-pointer form could be absorbed via a walk-and-restore pattern (`s32 *p = arg0; ... *p++ = ...; ... = *p--;`) \u2014 sometimes GCC collapses adjacent inverse addiu.",
-   "mechanism": "If two addiu ops on the same register net to zero across a scheduling window, combine may drop both.",
-   "next_probe": "Try `p = arg0; D_800F1140 = *p++; D_800F1144 = *p++; D_800F1148 = *(p--);` variants and confirm insn count. If it lands 43, the walking-pointer's score-7 becomes a real candidate."
+   "hypothesis": "The V4/V7 score-6 form (mask atomic-first, all-$v0) may be reachable to score 0 by transforming its 6 remaining diffs -- those diffs are scheduling ORDER, not register-renames.",
+   "mechanism": "V7 emits all-$v0 but with mask block at top vs target's mask-interleaved; if a structural nudge slotted the mask lui into the load 2 delay slot of the V7 shape (matching target's cycle-2 fill), the mask/load-temp sharing of $v0 might preserve into a byte match.",
+   "next_probe": "Directed permuter run seeded from V7 (score 6, all-$v0) rather than V0 (score 9, interleaved-swap) -- PERM_INT_TYPE / PERM_VAR_ORDER around the mask expression; also try (a) mask value written as `0xFF0000 | 0xEF` split across statements, (b) mask via a paired-store to a different global to change the RTL DAG, (c) inserting an inert extra global load whose delay-slot fill target uses."
   },
   {
-   "hypothesis": "The score-7 walking-pointer form contains 6 non-insn-add diffs; identifying which 6 differ (register names on which insns) narrows the remaining tiebreak axes.",
-   "mechanism": "Compare tmp/sandbox/func_800611A4/text1b.o disasm (walking-pointer form) against asm/funcs/func_800611A4.s: register-name diffs are RA axis; ordering diffs are scheduler axis.",
-   "next_probe": "Diff the walking-pointer objdump vs target line-by-line; classify each of the 7 diffs. That reveals whether the residual gap is 6 register-renames + 1 insn-add, or 4 renames + 3 reorderings + 1 add \u2014 steers the next lever choice."
+   "hypothesis": "Sibling functions func_80061250 (mask=0xFF0060) and func_80061658 (mask=0x10FFFF) share the identical shape and identical $2/$3 pin cheat. A single lever that closes any one closes the family -- so testing V7 (mask-atomic-first) on a sibling and measuring the sibling's score change would triangulate whether V7 is a universal family lever or is specific to 0xFFFFEF's constant shape.",
+   "mechanism": "The RA tiebreak is between a 2-insn mask pseudo and a 3x-reused load-temp pseudo. Different 2-insn mask constants (0xFF0060 vs 0xFFFFEF) should have identical priority calc if refs, freq, size, live_length are equal.",
+   "next_probe": "Apply V7 shape to func_80061250 or func_80061658 in a scratch sandbox; measure. If both drop 9->6 identically, the family lever exists and lifting the family's remaining 6 diffs closes them all together (worth prioritizing over per-function grind)."
   }
  ],
  "judge_constraints": [],
