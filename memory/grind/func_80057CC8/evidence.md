@@ -448,3 +448,25 @@ Per user 2026-06-22: keep working it; not permanently parked.
 - [s23] All prerequisites for OWNER-ESCALATION filing remain met (unchanged from s22): s7 single-pseudo impossibility CONFIRMED; s10 Judge binding on two-C-locals; s6/s7/s15/s16 forensics fully name the pseudo-86 {v0,v1}→{v1} pref path via pseudo 129's local-alloc; s21 KILLED local-alloc bail-out axis by-construction (local-alloc.c:472 unconditional-semantic reg_n_deaths==1 hard test); s11 F1 dup-arms A/B/C KILLED; s12 F2 struct-typed arg0 KILLED; s17 F3 Kengo unfindable + F6 SOTN slice psxsdk-only + deferred-mask KILLED; s18 combined-shift + cur-pointer KILLED; s20 F5-corner KILLED; s22 permuter modality KILLED across 6 alias-family chassis; s23 permuter modality further KILLED across the sole non-alias-family chassis (block-scope-p null lever).
 
 - [s23] docs/grind/decisions.md has one Judge FAIL ruling for func_80057CC8 (2026-07-19 17:09, rejecting the two-variable prev_p/next_p split) but NO owner-escalation entry yet — owner-gated outcome not currently available (rule: owner-gated requires a filed OWNER-ESCALATION entry existing in decisions.md AND every remaining sanctioned axis measured dead).
+
+- [s24] s24 sandbox baseline replay: candidate.c on src/text1b.c line 11837 measures --disable all = 3 (target_insns=111 build_insns=111 rules_dropped=7 cheat_asm_stripped=395); unchanged from s1-s23 baseline.
+
+- [s24] s24 instrumented cc1 dump: 142343 lines of ALLOC/PRIO/QTY/SCHED/RANK debug on cc1.err (tmp/grind/func_80057CC8/s24/cc1.err). BB2_FINDREG_DEBUG produced no output.
+
+- [s24] s24 func_80057CC8 ALLOCDBG block located at cc1.err:37630-37645; 16 allocnos in identical order to s7 greg header (79 86 78 168 73 183 80 72 76 77 88 164 84 87 74 75).
+
+- [s24] s24 direct disposition measurement: pseudo 86 (p) → hardreg=3 (v1), ord=1, pri=12000, nrefs=6, livelen=10; pseudo 79 (predecessor sharing v1 by non-conflicting live range) → hardreg=3, ord=0, pri=13333; pseudo 78 (ang_prev) → hardreg=16 ($s0); pseudo 88 (table) → hardreg=6 ($a2); pseudo 130 (arg0+4 reload for p2) → hardreg=4 ($a0). Matches s6/s7/s15/s16 forensics chain exactly.
+
+- [s24] s24 direct absence measurement: reg1=86 appears in ZERO QTYDBG lines within func_80057CC8's cc1.err region (block 4 local-alloc entries lines 37596-37612), verifying s21's code-read finding (local-alloc.c:472 reg_n_deaths==1 hard gate) by direct instrumentation.
+
+- [s24] s24 direct block-4 local-alloc: reg1=112 got=2 (v0, ord=0, qty=0) — prev_idx offset temp; reg1=129 got=3 (v1, ord=1, qty=5) — next_idx offset temp; reg1=130 got=4 (a0, ord=5, qty=6) — p2 table reload. Together these are the local-alloc placements that expand_preferences walks at insns 89/124 to build 86's pre-prune pref set {v0, v1}.
+
+- [s24] s24 spill artifacts: pseudos 168 and 183 hardreg=65; pseudo 164 hardreg=-1. Internal RTL temporaries, not user-level C variables; do not participate in 86's pref-set mechanism.
+
+- [s24] s24 cross-check with s8/s20 C-level measurement: (a) p1 operand swap alone byte-neutral (3), (b) p2 operand swap alone regression (9), (c) F5-corner double-swap regression (9). The C source order at `+` does not shift the expand_preferences walk direction because combine's PLUS canonicalization has already placed the pseudo-typed operand ahead of the a2-typed operand before global-alloc runs.
+
+- [s24] src/text1b.c reverted to HEAD via git checkout after measurement; candidate.c (floor-3 baseline) preserved at memory/grind/func_80057CC8/candidate.c for the next session. No new rejected/ form this session (KILL is of a mechanism-level lever, not of a new candidate C form).
+
+- [s24] docs/grind/decisions.md still contains only the 2026-07-19 17:09 Judge FAIL ruling for func_80057CC8; NO OWNER-ESCALATION entry filed yet. owner-gated result NOT authorized this session per contract (requires filed entry AND every sanctioned axis measured dead; the entry-filing itself is a synthesis-modality task).
+
+- [s24] Cumulative s1-s24 KILLED hypothesis count: 29 (s1-s23=28 per ledger; s24 adds one — expand_preferences source-operand direction as C-lever).

@@ -1,8 +1,8 @@
 {
  "func": "func_80057CC8",
  "file": "text1b",
- "session_count": 23,
- "current_modality": "permuter",
+ "session_count": 24,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 0,
@@ -147,13 +147,19 @@
    "floor": 3,
    "modality": "permuter",
    "headline": "s23 permuter: block-scope-p narrowing chassis KILLED as byte-neutral null lever (score=3, delta=0); scope-narrowing family closed; single-pseudo impossibility confirmed scope-insensitive per s7 DECL_R"
+  },
+  {
+   "session": 24,
+   "floor": 3,
+   "modality": "forensics",
+   "headline": "s24 forensics: instrumented cc1 ALLOCDBG/QTYDBG bottom-outs the pseudo-86 pref-propagation mechanism chain with direct measurement"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "File an OWNER-ESCALATION entry in docs/grind/decisions.md for func_80057CC8 following the hirahira_w_frie / motion_SetMotion / func_80045294 / cpu_side_move_dir_4 precedent format (options presented honestly, agent does not self-resolve).",
-   "mechanism": "Every sanctioned axis on the ledger is now measurably dead or killed-by-construction across s1-s23, including the s23 addition of block-scope-p null lever closing the last non-alias-family permuter chassis. Options for owner: (a) narrow Judge binding to permit a documented two-scope-p form for RA-coalescing walls with target-asm evidence of two distinct pseudos + forensics-named single-pseudo-impossibility + local-alloc-bail-out-by-construction; (b) authorize canonical-asm carve-out per fork-divergence-inline-asm's crash-driven analogue adapted for scheduling-driven single-pseudo impossibility; (c) hold INCOMPLETE indefinitely.",
-   "next_probe": "Next session (synthesis modality): draft the OWNER-ESCALATION entry with the three options above, cite s1-s23 exhaustion evidence, cite s6/s7/s15/s16 forensics chain, cite s21 local-alloc.c:472 semantic-requirement finding, cite s22 six-chassis permuter convergence on alias-holder cheat family, cite s23 block-scope-p null-lever measurement closing the sole non-alias structural axis. Append to docs/grind/decisions.md. Once filed, the driver parks the function and future sessions on func_80057CC8 can legitimately emit owner-gated citing that entry."
+   "hypothesis": "OWNER-ESCALATION entry for func_80057CC8 filing in docs/grind/decisions.md following hirahira_w_frie / motion_SetMotion / func_80045294 / cpu_side_move_dir_4 precedent",
+   "mechanism": "All s1-s24 sanctioned axes measured dead: statement/type/decl-order, block-scoping, named-intermediate, 6+ directed permuter chassis (all convergent on pointer-alias-holder cheat family), consumer-of-ang_prev-early, inline-both-calls, p1/p2/double-swap operand-order 2x2, walking-pointer/for-loop rederives, F1 dup-arms A/B/C, F2 struct-typed arg0, F3 Kengo unfindable, F6 SOTN slice psxsdk-only, deferred-mask, combined-shift, cur-pointer, F5-corner, split-mask, self-ref-p-delta, block-scope-p, expand_preferences-source-op-direction. s7 single-pseudo impossibility + s10 Judge binding on two-C-locals + s21 local-alloc.c:472 hard-gate + s24 instrumentation-verified mechanism chain.",
+   "next_probe": "Next session (synthesis modality): draft the OWNER-ESCALATION entry with three options (narrow Judge to permit documented two-scope-p form with target-asm+forensics evidence; canonical-asm carve-out per fork-divergence-inline-asm crash-driven analogue adapted for scheduling-driven single-pseudo impossibility; hold INCOMPLETE indefinitely). Cite s1-s24 exhaustion evidence, s6/s7/s15/s16/s24 forensics chain, s21 local-alloc semantic-requirement, s22-s23 permuter modality closure across 7 chassis, s24 direct-instrumentation confirmation. Append to docs/grind/decisions.md. Once filed, the driver parks the function and future sessions can legitimately emit owner-gated."
   }
  ],
  "judge_constraints": [
