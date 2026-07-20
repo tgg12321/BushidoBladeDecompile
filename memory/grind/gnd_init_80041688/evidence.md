@@ -143,3 +143,21 @@
 - [s8] s8 mechanistic finding: target achieves arm-distinct final-or shapes (blocking cross-jump merge) because b lands in $v1 preserved through the FALSE arm's ORs (`or a0,v1,a0` = b LEFT operand). This requires target's [b,r,g] lbu order — the same sched1 chain-length priority wall s1-s7 hit. The m2c-shape rederive path converges back to the same wall from a different angle rather than routing around it.
 
 - [s8] s8 conclusion: fresh-decompile axis measured dead. The remaining pseudo-78-fusion / cross-jump defeat surface for this function is narrow enough that s7's case-exhaustion proof (dead-store OR RA-cascade dichotomy) plus s8's shared-call-shape measurement close the standard rederive frontiers. What remains unmeasured: (a) using loop2's q-walker to establish live values reaching the FALSE arm that alter conflict-graph shape without direct b-fusion (speculative — likely dead-code-adjacent), (b) header-type-correction for g_player_ptrs' target type (currently s32* — would only matter if the u8 loads at +0x18/+0x19/+0x1A become non-byte, breaking match); (c) a whole owner escalation on the sched1 hazard-tag mechanism which s6 pinpointed.
+
+- [s9] [s9] sandbox --disable all baseline: score=2, target_insns=82, build_insns=82, rules_dropped=3, cheat_asm_stripped=23 (unchanged from s1-s8).
+
+- [s9] [s9] Frontier probe #2 variant (b): FALSE arm as `v = *((u8*)player+0x1A); v |= (s32)*((u8*)player+0x18)<<16; v |= (s32)*((u8*)player+0x19)<<8; gnd_load_tex(v);` with per-arm gnd_load_tex — sandbox --disable all: score=11, build_insns=81.
+
+- [s9] [s9] Frontier probe #2 variant (c): reversed to `v = (s32)*((u8*)player+0x18)<<16; v |= (s32)*((u8*)player+0x19)<<8; v |= *((u8*)player+0x1A);` — sandbox --disable all: score=11, build_insns=81 (byte-identical to variant b — combine folds accumulation order).
+
+- [s9] [s9] Frontier probe #2 variant (a): shared gnd_load_tex(v) outside arms + split-init FALSE — sandbox --disable all: score=11, build_insns=81.
+
+- [s9] [s9] Variant (b) disasm FALSE arm (tmp/grind/gnd_init_80041688/s9/split_init_per_arm.dis): 15cc lbu v0,0x18; 15d0 lbu v1,0x1A (b lands in $v1!); 15d4 lbu a0,0x19; 15d8 sll v0,v0,0x10; 15dc or v1,v1,v0; 15e0 sll a0,a0,0x8; 15e4 jal gnd_load_tex; 15e8 or a0,v1,a0 (delay). Final delay-slot or IS `or a0,v1,a0` — matches target FALSE shape!
+
+- [s9] [s9] Variant (b) TRUE arm still merges via `j 15e4; or a0,a0,v0 (delay)` — both arms terminate at shared jal at 15e4 with arm-distinct delay-slot or's. Cross-jump merged only the jal itself, not the final or (as split-init hoped) — but the FALSE arm lost one intermediate `or` that got hoisted into the jal delay slot.
+
+- [s9] [s9] FALSE-arm lbu emission order in split-init form: [r=v0@0x18, b=v1@0x1A, g=a0@0x19] = [r,b,g]. Target is [b,r,g]. Split-init does NOT flip lbu order, though it DOES land b in $v1 for the final or. This confirms the sched1 chain-length priority wall (s1-s8) is orthogonal to the OR-tree structural axis: even when b's destination register matches target, the LOAD emission order stays chain-length-driven.
+
+- [s9] [s9] Baseline src re-verified after all variants: sandbox --disable all -> score=2 (state restored).
+
+- [s9] [s9] Sanctioned-form space now exhaustively swept: fresh-decompile (s8 m2c-shared-v) KILLED; sibling-shape-with-split-init-FALSE (s9) KILLED. Every remaining live-code respelling of the FALSE-arm OR-tree either (a) folds pre-sched1 via combine (s2-s3 named-intermediate/walking-pointer/struct-cast/split), (b) merges via jump2 when using shared-v shape (s8, s9), or (c) leaves the sched1 chain-length wall intact (s1-s5).

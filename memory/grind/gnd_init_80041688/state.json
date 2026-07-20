@@ -1,7 +1,7 @@
 {
  "func": "gnd_init_80041688",
  "file": "text1a",
- "session_count": 8,
+ "session_count": 9,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -51,18 +51,24 @@
    "floor": 2,
    "modality": "rederive",
    "headline": "s8 [rederive] floor=2: m2c fresh decompile suggests shared-v/shared-jal structure (matching target's ONE jal gnd_load_tex at .L800417B4). Applied form regresses 2->12 because jump2/find_cross_jump mer"
+  },
+  {
+   "session": 9,
+   "floor": 2,
+   "modality": "rederive",
+   "headline": "s9 rederive: split-init FALSE arm KILLED (2->11); FALSE-arm b DOES land in $v1 as target's `or a0,v1,a0` but lbu order still [r,b,g] not [b,r,g] and jump2 absorbs one or; final unmeasured pure-C axis "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Defeat jump2/find_cross_jump on the shared-v/shared-jal m2c-shape by making the TRUE and FALSE final `or` insns structurally distinct (different operand orders or intermediate register assignments) so cross-jump refuses to merge them \u2014 this preserves target's byte layout WHILE keeping the shared jal site.",
-   "mechanism": "jump2 refuses to merge tails when they differ in any register operand. If FALSE arm can be structured so its final or emits as `or a0,v1,a0` (b LEFT in $v1) while TRUE arm's final or remains `or a0,a0,v0`, the tails differ and merge is blocked. The remaining wall is the same: getting b into $v1 requires target's [b,r,g] emission order. But in the shared-v shape, RA context differs (v is cross-arm-live) which MAY steer sched1 differently than the arm-local case. Unmeasured in s7 (s7 measured raw-halfword in arm-local baseline shape, not m2c-shape).",
-   "next_probe": "Re-apply m2c-shape (shared v, shared gnd_load_tex(v)) but ALSO stage the raw halfword `b_stage = *(s16*)(p+2); if (b_stage >= 0)` in loop1 to force pseudo-78 fusion. Measure whether the combined shared-v + loop1-fusion form reaches score < 12 (or better, unlocks target byte layout). Two axes together may produce different sched1/jump2 interaction than either alone. NB: loop1 raw-halfword staging was s7-KILLED in ARM-LOCAL shape (2->11); the question is whether the shared-v shape has different RA that no longer displaces p."
+   "hypothesis": "The gnd_init_80041688 function has an owner-gatable disposition: 9 sessions have measurement-KILLED every sanctioned axis (statement-reorder, struct-cast, walking-pointer, ternary-hoist, block-local-split, named-intermediate, block-local cp, function-scope cp, LIVE-b-hoist above loops, color-byte pre-load, permuter chassis-1 basin dual-seed, raw-halfword-in-loop1, m2c-shared-v-shared-call, inlined-loads FALSE-only, inlined-loads both-arms, split-init FALSE per-arm/shared/b-last). The wall is sched1 INSN_PRIORITY hazard-tag on the FALSE-arm lbu triple (s6 forensics CONFIRMED via BB2_SCHED_DEBUG). Every axis to fuse pseudo 78 across loop1 is either a dead-store cheat (s4 loop1-boolean-stage-b, s7 raw-halfword staging) OR causes an RA cascade displacing p from $v1 (s7 dichotomy proof). Every axis to defeat jump2 arm-tail merge either merges anyway (s8, s9) or requires target's [b,r,g] lbu order which needs pseudo-78 fusion.",
+   "mechanism": "Case-exhaustion synthesis of s1-s9. The remaining surface (pure-C forms that both fuse pseudo 78 AND avoid callee-save spill AND avoid loop1 RA cascade AND avoid jump2 merge collapse) has zero measured members and no next-un-tried lever the s1-s9 evidence chain hasn't already ruled out.",
+   "next_probe": "This is likely a candidate for OWNER-ESCALATION filing under docs/grind/decisions.md, per the sched1 hazard-tag mechanism s6 pinpointed. Until then, the only remaining unmeasured axis is combinatorial: pair the s9 split-init form with a novel loop1 legitimate live pseudo (from Kengo/sibling structure not yet scraped). Not yet scoped this session."
   },
   {
-   "hypothesis": "The m2c reconstruction of the ORIGINAL source structure (shared v, shared jal) is the correct semantic shape but our fork's cross-jump is more aggressive than cc1psx's \u2014 an unmeasured axis is whether the shared-v with explicit intermediate arithmetic (splitting the OR into separate statements per arm) can produce enough arm-distinct RTL that jump2 doesn't merge past the final or.",
-   "mechanism": "If FALSE arm is `v = *(u8*)(player+0x1A); v |= *(u8*)(player+0x18)<<16; v |= *(u8*)(player+0x19)<<8;` (three separate |= statements building v), the RTL has three SETs to v accumulating. TRUE arm builds v as `v = func_8004881C(...); v = (v<<16)|(v<<8)|v;`. Different structure per arm may leave jump2 with tails too dissimilar to merge past the final or.",
-   "next_probe": "Apply shared-v + three-`|=`-statement FALSE arm form; sandbox --disable all; if score < 12, dump disasm to see whether jump2 kept arm-distinct final or's. Compare to raw m2c-shape (single-OR-expression) result."
+   "hypothesis": "Kengo (PS2 successor with partial source) or SOTN-adjacent decompiled sibling for a gnd_init/palette-loader pattern may reveal a source shape our fork can compile to target bytes \u2014 e.g. an inline-of-color-loads into the gnd_load_tex arg with a specific parenthesization that we haven't tried and that isn't a forbidden or-tree-shape-shift.",
+   "mechanism": "Fresh sibling evidence may reveal a legitimate C shape that produces target's [b,r,g] lbu order \u2014 e.g. a header type change on g_player_ptrs (struct with padded fields) that we haven't explored per [[header-type-correction-from-use-sites]] preconditions.",
+   "next_probe": "Read tools/decomp_me_scrape.py output for adjacent palette/color loader functions; examine Kengo naming for gnd_* functions; check if g_player_ptrs' target type could plausibly change to a struct pointer per header-type-correction-from-use-sites four-prong test."
   }
  ],
  "judge_constraints": [],

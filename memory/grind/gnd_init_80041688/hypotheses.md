@@ -143,3 +143,15 @@
 - probe: Applied `gnd_load_tex(*((u8*)player+0x1A) | ((*((u8*)player+0x18)<<16) | (*((u8*)player+0x19)<<8)));` in FALSE arm (kept TRUE arm intact). sandbox --disable all. Then extended to BOTH arms (inlined loads in TRUE arm's func_8004881C call too).
 - result: Score stayed at 2 in both variants — byte-identical to baseline. Combine folds inlined loads back to the same RTL before sched1 sees them; no LUID/DAG effect. Load-inlining is inert for this function.
 - verdict: KILLED
+
+## [s9] Frontier probe #2 (s8 live): shared-v with split-init `|=` chain in FALSE arm produces enough arm-distinct RTL SETs to defeat jump2/find_cross_jump merge past the shared jal, unlocking target's arm-distinct final-or shapes without a cheat.
+- mechanism: Split-init `v = b; v |= r<<16; v |= g<<8;` (or reordered) creates three separate SET-RTL nodes on `v` per arm vs TRUE arm's single `v = (v<<16)|(v<<8)|v` after func call. Different SET topology per arm may leave jump2 with tails too dissimilar to merge past the final or.
+- probe: Three variants applied to src/text1a.c: (a) shared gnd_load_tex(v) outside arms + split-init b-first FALSE, (b) per-arm gnd_load_tex(v) + split-init b-first FALSE, (c) per-arm gnd_load_tex(v) + split-init b-LAST FALSE. sandbox --disable all each. Disasm dumped to tmp/grind/gnd_init_80041688/s9/split_init_per_arm.dis.
+- result: All three variants: score=11, build_insns=81 (regressed 2->11, one insn merged). Combine folds accumulation order pre-sched1 — b-first vs b-last produce byte-identical output. Cross-jump/find_cross_jump still merged one FALSE-arm `or` into the shared jal delay slot despite the multi-statement structure. HOWEVER: FALSE-arm b DOES land in $v1 and final delay-slot or IS `or a0,v1,a0` — matching target's shape. But lbu emission order stays [r,b,g] not target's [b,r,g], and the missing insn (folded into delay slot) costs 11 masked score points.
+- verdict: KILLED
+
+## [s9] Frontier probe #1 (s8 live): shared-v + loop1-raw-halfword staging combined produces different RA than either axis alone (s7's raw-halfword displaced p in arm-local shape; shared-v shape may have different RA).
+- mechanism: Two axes together may produce different sched1/jump2 interaction than either alone; shared-v shape has different cross-arm liveness for v that may steer greg differently than the arm-local case.
+- probe: Not measured. loop1-raw-halfword staging (`b = *(s16*)(p+2); if (b >= 0)`) is a dead store to b per s7 policy vetting ([[no-new-park-categories]] cheats-by-any-spelling — the store to b is immediately dead until FALSE-arm overwrites it). Combining a cheat-axis with a legitimate axis does not sanitize the cheat.
+- result: Skipped on policy grounds. The raw-halfword axis is banked in rejected/loop1-raw-halfword-stage-b.c as a cheat and cannot be re-proposed even as a combining axis.
+- verdict: KILLED
