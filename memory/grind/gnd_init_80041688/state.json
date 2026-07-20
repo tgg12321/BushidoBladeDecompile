@@ -1,7 +1,7 @@
 {
  "func": "gnd_init_80041688",
  "file": "text1a",
- "session_count": 4,
+ "session_count": 5,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -27,23 +27,24 @@
    "floor": 2,
    "modality": "permuter",
    "headline": "s4 permuter chassis-1 basin exhausted (~32k iters, ~24 min): best novel score=10 (loop1 boolean staged through existing `b` \u2014 dead-store cheat); every sub-40 basin form is variable-reuse / dead-store "
+  },
+  {
+   "session": 5,
+   "floor": 2,
+   "modality": "permuter",
+   "headline": "s5 permuter: 4 new hoist axes KILLED (r/g/b above if, b above/between loops all regress via callee-save spill across call); chassis-1 fresh-seed run (~15 min, 19k iters) reproduced s4 basin \u2014 score-10"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A LIVE-code extension of `b`'s liveness across loop1 (not a dead per-iteration store) \u2014 e.g. accumulating an early-loaded copy of `*(u8*)(player+0x1A)` in `b` BEFORE loop1, then re-loading it in the FALSE arm as the same variable \u2014 perturbs FALSE-arm entry register pressure the same way the dead-store cheat does but with semantic purpose. Corroborated by the s4 permuter finding that the reuse-`b` axis moves sched1 (40->10).",
-   "mechanism": "If `b` is set to the eventual color byte early (before loop1) as `b = *(u8*)(player+0x1A);` and consumed unchanged in the FALSE arm, b's live range spans the loops and cc1's register allocator may pin b to a callee-save distinct from the current build's choice at 0x15cc. The value is genuinely computed (used later); no dead store. Risk: cross-arm live b may cost a callee-save spill in the TRUE arm (which overwrites b via v = func_8004881C(b,g,r); return through gnd_load_tex(v<<16|v<<8|v)).",
-   "next_probe": "Edit FALSE arm's prologue: hoist `b = *(u8*)(player+0x1A);` to BEFORE loop1 (top of function, after player NULL check). In FALSE arm, drop the `b = ...0x1A` re-assignment (b already holds it). In TRUE arm, keep `b = ...0x1A` (may need re-read since TRUE arm passes b as an arg then overwrites via v; check whether TRUE arm sandbox regresses). Sandbox --disable all. If FALSE-arm floor moves AND TRUE-arm doesn't regress, this axis has a legitimate spelling. If TRUE-arm regresses more than FALSE gains, need a variant that only extends b's liveness on the FALSE path (e.g. compute b twice \u2014 once early, once in FALSE arm \u2014 jumping into arm from a shared prologue)."
+   "hypothesis": "Frontier #2 (remaining) \u2014 instrumented cc1 dump (BB2_ALLOC_DEBUG + BB2_SCHED_DEBUG per register-alloc-pure-c) to identify WHICH pseudo/hard-reg differs at FALSE-arm entry (.L80041798) between the s4 baseline and the score-10 cheat form. The pseudo-diff names the exact register-pressure lever a legitimate C form must reproduce WITHOUT extending liveness across the call.",
+   "mechanism": "cc1's `;; Register dispositions:` in .greg lists per-pseudo hard-reg assignments + conflict lists. The score-10 form's byte-diff dropped from 2 to ~1 partial because one pseudo landed in a different hard reg. Diffing that section at the FALSE-arm block header will show the exact allocation delta. Since ALL hoist-across-call axes regress, the lever must be either (a) purely inside the FALSE arm block (source order, decl order, block-local liveness) that has not yet been attempted, or (b) a construct that changes RA at the FALSE-arm entry without extending any value's live range past func_800486FC.",
+   "next_probe": "Bootstrap tmp/gccdbg/cc1 with BB2_ALLOC_DEBUG=1 BB2_SCHED_DEBUG=1. Preprocess text1a.c to two forms (baseline + score-10 cheat form). Capture .greg for both. Diff `;; Register dispositions:` filtered to insns at 0x15cc-0x15e4. Identify moved pseudo(s). Enumerate C constructs that force that same allocation WITHIN the FALSE arm (no cross-call liveness): candidates include (i) reordering the three lbu source statements combined with a block-local pseudo-init pattern that makes b's SET LUID earlier than r/g's SETs (the frontier of the s2 block-local-split-fb axis, but with a live consumer that CSE cannot fold \u2014 perhaps an int-literal-mask ternary like `b = (*(u8*)(player+0x1A)) & 0xFF;` where the &0xFF creates a distinct RTL SET), (ii) computing `b` from a DIFFERENT base pointer that combine cannot collapse (e.g., a global-relative addressing form vs player-relative), (iii) an inline `s32 sp; sp = *(u8*)&player[0x1A/4]` word-load + shift pattern that changes the MEM's mode/size on the RTL and gives b a distinct dependency chain."
   },
   {
-   "hypothesis": "Run cc1 -da with BB2_ALLOC_DEBUG + BB2_SCHED_DEBUG on both the s3 candidate AND the score-10 permuter form; compare .greg output at .L80041798 to identify EXACTLY which pseudo/hard-reg differs at FALSE-arm entry. That difference names the register-pressure lever a legitimate C form must reproduce.",
-   "mechanism": "The score-10 form's byte-diff dropped from 2 to ~1 due to a specific pseudo landing in a different hard reg at 0x15cc. cc1's .greg dump lists Register dispositions per pseudo + conflict lists. Diffing the two dumps at the FALSE-arm block header will show the exact allocation delta the reuse-`b` axis induces.",
-   "next_probe": "Bootstrap tmp/gccdbg/cc1 with BB2_ALLOC_DEBUG=1 BB2_SCHED_DEBUG=1 (per register-alloc-pure-c doc). Preprocess src/text1a.c to two variants (s3 baseline + s4 loop1-boolean-stage form). Compile both with the instrumented cc1, capture .greg output. Diff `;; Register dispositions:` sections filtered to insns inside .L80041798 block. Identify which pseudo(s) moved between hard regs. Enumerate C constructs that would force that same allocation legitimately (arg-passing tweaks, param typing changes, structural liveness extensions of a semantically-used value)."
-  },
-  {
-   "hypothesis": "An EARLIER load of one of the FALSE-arm color bytes into a live-across-call temporary \u2014 e.g. `s32 rr = *(u8*)((u8*)player + 0x18);` computed BEFORE the loops and consumed in BOTH arms (in FALSE as `r`, in TRUE arm as an arg to func_8004881C via `r` param) \u2014 is a live-code duplicated-read that perturbs pressure similarly. Aligns with [[duplicated-statement-into-arms]] and [[split-read-defeats-hoist]] SOTN-sanctioned families.",
-   "mechanism": "Duplicating a color-byte load into both arms (rather than in each arm block-locally) extends r/g/b's live range across the loops. cc1's register allocator sees the value as live-across-loop and picks a callee-save differently than current build. Byte-neutrality: the load itself is real (unchanged bytes), just relocated. sanction applies if permuter shows byte-neutral form exists AND lever-exhaustion documented.",
-   "next_probe": "Edit gnd_init_80041688 to hoist `s32 r0 = *(u8*)((u8*)player + 0x18);` (and/or g0/b0) BEFORE the p[1] flag pokes, then use r0 as the FALSE-arm's `r` (drop the re-load); in TRUE arm consume `func_8004881C(b, g, r0)` (or re-read the byte, testing which). Sandbox each of the 6 hoist combinations (r only / g only / b only / r+g / r+b / g+b) with --disable all. If any drops floor to 0 or below 2 with byte-neutral effect on TRUE arm, vet the closing form via cheat-reviewer (checking dead-store prong and duplicated-statement-into-arms prerequisites)."
+   "hypothesis": "Chassis-2 (structurally different from chassis-1) permuter run \u2014 the s2/s3/s5 direct probes ruled out every simple structural variant (ternary-hoist, struct-cast, walking-pointer, block-local split, named-intermediate, block-local cp, function-scope cp, LIVE-b-hoist, color-byte hoist) as REGRESSIVE from baseline. Any chassis-2 must be a shape none of those cover: e.g., splitting the function into a called helper for the color-emit branch, or restructuring the two loops so their exit code merges with the color-emit block via a shared switch/dispatch.",
+   "mechanism": "Permuter operates on random C-source mutations around a fixed chassis. If chassis-1 (current baseline) exhausts, chassis-2 must start from structurally different C \u2014 but the constraint is that chassis-2's baseline sandbox must not be much WORSE than chassis-1's baseline, else permuter searches a further-from-target neighborhood and can't find sub-2 legitimately.",
+   "next_probe": "Design chassis-2 candidates whose direct sandbox stays within +/-5 of baseline while structurally differing from chassis-1. Ideas: (a) extract FALSE-arm color computation into a static-inline helper receiving `player` (may change RA around the call), (b) unify the two arms via a `s32 v; if (func_800486FC()) v = func_8004881C(...); else v = ...OR...;` shape with a single trailing `gnd_load_tex(...)` (already tested s2 ternary-hoist for a similar shape \u2014 score exploded to 32 due to two-block lbu structure being load-bearing; skip), (c) reshape loop2 exit (goto-vs-do-while) to change block layout preceding the color-emit region. Sandbox each, promote the best to chassis-2 permuter workspace."
   }
  ],
  "judge_constraints": [],

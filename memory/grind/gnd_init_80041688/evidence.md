@@ -57,3 +57,17 @@
 - [s4] All 9 chassis-1 finds are cheat family: 5 variable-reuse-with-dead-store, 3 or-tree-shape-shifts (FORBIDDEN per codegen-technique-index), 1 pointer alias + dead-code, 1 alias rename. Detailed catalog in memory/grind/gnd_init_80041688/rejected/loop1-boolean-stage-b-reuse.c commentary.
 
 - [s4] Cross-check against ledger: score-10 axis (extending b's live range across loop1) DIRECTLY corroborates s3 frontier hypothesis #2 (register-class drift at FALSE-arm entry). The axis IS load-bearing; the byte-neutral spelling of it via dead-store is the only shape random permutation discovered.
+
+- [s5] s5 baseline sandbox --disable all: score=2, target_insns=82, build_insns=82, rules_dropped=3, cheat_asm_stripped=23 (unchanged from s1-s4).
+
+- [s5] s5 hypothesis-1 sandbox measurements (LIVE-b-hoist above loops): variant 1a score=9/insns=84, variant 1b score=11/insns=83, variant 1c score=9/insns=84. All REGRESSED from baseline; extending b's live range across the func_800486FC call forces a callee-save spill.
+
+- [s5] s5 hypothesis-3 sandbox measurements (color-byte pre-load above if): r-hoist score=12/insns=83, g-hoist score=13/insns=82, b-hoist score=11/insns=83. All REGRESSED; same call-crossing spill mechanism.
+
+- [s5] s5 permuter chassis-1 fresh-seed run: base_score=40, elapsed=934.7s, 19204 iters, 5 novel finds (1×10, 2×20, 1×30, 1×40). Best legit find = 40 (no score-drop). All sub-40 = cheat family (b=arg1 staged, loop1-boolean-stage-b, float NULL cast).
+
+- [s5] score-10 form output-10-1 is BYTE-IDENTICAL by structure to s4's score-10: `b = (*((s16*)(p+2))) >= 0; if (b) { ... }` in loop1. Same dead-store cheat, already in memory/grind/gnd_init_80041688/rejected/loop1-boolean-stage-b-reuse.c. Two independent seeds converged to it.
+
+- [s5] Chassis-1 permuter basin definitively exhausted: two seeds × ~15-24 min each, ~50k iters combined, zero legitimate sub-40 findings across all 14 novel outputs (9 in s4 + 5 in s5).
+
+- [s5] The reuse-`b` axis moves sched1 (40->10) but ONLY when b is dead across the loops (per-iteration boolean staging that gets overwritten each iter and finally by the FALSE arm color load). Any LIVE spelling of the axis that keeps b usable at 0x15cc must extend b's live range across the func_800486FC call, which the s5 direct probes proved is net-regressive.
