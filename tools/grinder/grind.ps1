@@ -159,7 +159,9 @@ function Invoke-Judge([string]$func, [string]$TaskText) {
     $briefPath = Join-Path $GrindTmp "judge_brief_$func.md"
     Set-Content $briefPath -Value $TaskText -Encoding utf8
     for ($try = 1; $try -le 5; $try++) {
-        $v = Invoke-GrindAgent $briefPath $outPath (Join-Path $RolesDir 'judge.md') $JudgeModel $MockJudgeScript
+        # NB: $Func deliberately NOT passed (judges never launch campaigns, so the
+        # GRIND_FUNC Stop-gate stays unarmed); UsageFunc carries it for telemetry.
+        $v = Invoke-GrindAgent $briefPath $outPath (Join-Path $RolesDir 'judge.md') $JudgeModel $MockJudgeScript -UsageFunc $func -UsageRole 'judge'
         if ($v -and $v.verdict -in @('PASS', 'FAIL')) { return $v }
         Log "judge attempt $try returned no valid verdict; backing off $([math]::Pow(2,$try) * 30)s."
         Start-Sleep -Seconds ([math]::Pow(2, $try) * 30)
@@ -305,7 +307,8 @@ $led/rejected/. Write your verdict JSON to the exact path given below.
 # ── session spawn (pattern from tools/fleet/_fleet_common.ps1:132-170) ────────
 function Invoke-GrindAgent([string]$BriefPath, [string]$OutcomePath,
                            [string]$RoleFile, [string]$AgentModel,
-                           [string]$MockScript, [string]$Func) {
+                           [string]$MockScript, [string]$Func,
+                           [string]$UsageFunc, [string]$UsageRole = 'session') {
     Remove-Item $OutcomePath -ErrorAction SilentlyContinue
     if ($MockScript) {
         $env:GRIND_BRIEF_PATH = $BriefPath; $env:GRIND_OUTCOME_PATH = $OutcomePath
@@ -340,6 +343,13 @@ function Invoke-GrindAgent([string]$BriefPath, [string]$OutcomePath,
         }
         Remove-Job $job -Force -ErrorAction SilentlyContinue
         $script:LastAgentSeconds = ((Get-Date) - $t0).TotalSeconds
+        # Durable per-spawn usage telemetry: the agent.log result JSON (tokens,
+        # turns, duration, cost, error state) is OVERWRITTEN by the next spawn of
+        # the same func, so bank it into metrics/events.jsonl now as a
+        # "grind-agent-usage" event. Best-effort by the metrics contract — never
+        # raises, never blocks the driver (tools/grinder/record_usage.py).
+        $uFunc = if ($UsageFunc) { $UsageFunc } else { $Func }
+        try { python tools/grinder/record_usage.py ($OutcomePath + '.agent.log') $uFunc $UsageRole 2>$null | Out-Null } catch { }
     }
     if (-not (Test-Path $OutcomePath)) { return $null }
     try { return (Get-Content $OutcomePath -Raw | ConvertFrom-Json) } catch { return $null }
