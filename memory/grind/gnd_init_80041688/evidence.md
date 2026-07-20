@@ -260,3 +260,23 @@
 - [s14] mechanistic disconnect: s6-CONFIRMED lever is sched.c insn_priority hazard-tag on pseudo-78 in BB18; player is loaded once at entry and thereafter aliased via u8*; g_player_ptrs' element type has zero downstream RTL effect on BB18 — the byte-identical measurement result confirms this predicted disconnection
 
 - [s14] existing decisions.md entry 2026-07-20 13:32 (docs/grind/decisions.md:1019) previously ruled FAIL on canonical-asm authorization, directing this axis be exhausted first; that direction is now discharged
+
+- [s15] s15 sandbox --disable all baseline: score=2, target_insns=82, build_insns=82, rules_dropped=3, cheat_asm_stripped=23 (unchanged from s1-s14)
+
+- [s15] s15 fresh cc1 -da dump on tmp/grind/gnd_init_80041688/s15/s15_baseline.c (extracted from s6 baseline_standalone.c) with instrumented cc1 (tmp/gccdbg/cc1): 14 pass dumps generated (.rtl/.cse/.loop/.cse2/.combine/.flow/.jump/.jump2/.lreg/.greg/.sched/.sched2/.dbr)
+
+- [s15] s15 SCHEDDBG trace at BB18 clock=4: ready list [191(p=2130706433,l=4) 194(p=2130706433,l=6) 193(p=2130706433,l=5)] -- byte-identical to s6 evidence entry
+
+- [s15] s15 ALLOCDBG pseudo 78 (source-level `b`): hardreg=3 ($v1), nrefs=4, livelen=3, pri=26666 -- byte-identical to s6 evidence entry
+
+- [s15] s15 scan_hand_coded --single gnd_init_80041688: HAND_CODED tier=LOW score=0/8, no S1-S8 signals; prong 1 of endgame-lock-disposition.md fails
+
+- [s15] docs/grind/decisions.md 2026-07-20 13:32 Judge ruling (line 1019-1029) refused canonical-asm at Judge layer; directed sibling-scrape/header-type-correction axis be exhausted first (discharged by s14)
+
+- [s15] s14 four-prong test on U32 flip: FAILs prongs (a)(b)(d) [zero signed sites, no compensating cast necessary, no casts eliminated]; VOIDPTR flip OUT OF SCOPE per rule
+
+- [s15] s14 Kengo/*.txt grep for g_player_ptrs / D_800A9A10 = 0 hits; tmp/decomp_me_corpus grep for 800A9A10 = 5 hits, all unrelated-game false positives; no sibling evidence exists
+
+- [s15] Cumulative rejected bank now 27 forms across 6 modalities (recon/structural/permuter/rederive/synthesis/forensics); zero legitimate sub-baseline forms discovered across ~54k permuter iters + 3 chassis + 2 seeds
+
+- [s15] OWNER-ESCALATION entry filed at docs/grind/decisions.md tail (2026-07-20 section) presenting both options (a) canonical-asm + (b) INCOMPLETE-owner-accepted honestly, citing the 5 same-species precedents (motion_SetMotion, saTan0Init, cpu_side_move_dir_4, func_80057CC8, func_80049A2C, InitHiraRmd_80047FBC) and stating plainly `no SOTN precedent found`

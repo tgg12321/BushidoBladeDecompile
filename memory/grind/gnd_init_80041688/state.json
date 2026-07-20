@@ -1,8 +1,8 @@
 {
  "func": "gnd_init_80041688",
  "file": "text1a",
- "session_count": 14,
- "current_modality": "permuter",
+ "session_count": 15,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -87,6 +87,12 @@
    "floor": 2,
    "modality": "permuter",
    "headline": "s14 KILLS frontier[1]: header-type-correction (u32 and void*) both sandbox-byte-identical; four-prong test fails (a)(b)(d); axis mechanistically disconnected from s6 sched1 hazard-tag lever. Every san"
+  },
+  {
+   "session": 15,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "s15 forensics: fresh cc1 -da dump on current baseline reconfirms s6 sched.c insn_priority hazard-tag mechanism verbatim (BB18 ready list [191(p=0x7F000001,l=4) 194(p=0x7F000001,l=6) 193(p=0x7F000001,l"
   }
  ],
  "frontier": [
