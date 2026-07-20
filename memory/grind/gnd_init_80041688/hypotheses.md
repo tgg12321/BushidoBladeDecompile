@@ -216,3 +216,21 @@
 - probe: Edited loop2 to `while (*(s32*)(q+0x57) != 0) { if (arg1) *q |= 1; else *q &= ~1; q += 0x68; }`; ran sandbox.
 - result: score REGRESSED 2 -> 11, build_insns 82 -> 84. Loop2's exit-in-middle shape is particularly poorly served by natural-loop lowering — two extra insns vs goto/label. goto/label form is strongly optimal for loop2 as well. FALSE-arm untouched (regression is entirely in loop2 body). Axis KILLED.
 - verdict: KILLED
+
+## [s13] Chassis-2 (split-init FALSE-arm form) as a permuter starting point opens a search neighborhood not reachable from chassis-1 and reaches sub-baseline sandbox scores.
+- mechanism: Split-init `v=b; v|=r<<16; v|=g<<8;` produces distinct arm-local RTL SET topology vs chassis-1's `v=b|((r<<16)|(g<<8));`. A different starting neighborhood in permuter space might expose mutations invisible to chassis-1's basin.
+- probe: Launched permuter campaign in tmp/grind/gnd_init_80041688/s13/perm/ (label=s13-chassis2-splitinit, base_score=625, -j 4). Ran ~100s / 3112 iters / 6 novel finds. Best = score 390 (permuter weights) — one-line mutation staging `(*(u8*)player+0x19)<<8` through the previously-unused `r` local (variable-reuse pattern).
+- result: Best chassis-2 permuter score = 390 vs chassis-1's best = 10 (both permuter units). Chassis-2 basin is over an order of magnitude worse than chassis-1. No mutation approaches sandbox floor 0. The split-init structural axis (already KILLED at score=11 sandbox in s9) does not become a productive permuter chassis either.
+- verdict: KILLED
+
+## [s13] Chassis-3 (m2c-shape: shared v + shared gnd_load_tex outside arms) as a permuter starting point exposes cross-arm shape mutations that reach or beat chassis-1's basin.
+- mechanism: Shared-v/shared-jal shape has different jump2/find_cross_jump interaction (per s8 measurement: base regresses 2->12 because jump2 merges the trailing OR into shared position). A permuter operating from that shape might discover mutations that break the merge without regressing lbu order.
+- probe: Launched permuter campaign in tmp/grind/gnd_init_80041688/s13/chassis3/ (label=chassis3-shared-v-shared-call, base_score=745, -j 4). Ran ~1200 iters / ~30 novel finds. Best = score 185 (permuter weights) — output-185-1 splits FALSE-arm OR into two statements (`v=(r<<16)|(g<<8); v=b|v;`) — pure OR-tree partitioning, no byte-improvement.
+- result: Best chassis-3 permuter score = 185 vs chassis-1's best = 10 (permuter units). Chassis-3 basin ~18x worse than chassis-1. All ~30 sub-745 findings are OR-tree splits, decl-order shuffles, or variable-reuse patterns — the shared-v shape's structural degrees of freedom are consumed by jump2 merging, leaving the permuter no path back through chassis-1's basin.
+- verdict: KILLED
+
+## [s13] SYNTHESIS: no unexplored permuter chassis with a lower or equal base_score than chassis-1 exists for this function; the permuter modality is exhausted.
+- mechanism: All alternative score=2-baseline C source forms (s2 struct-cast, s3 named-intermediate-rg, s3 block-local cp, s8 inlined-loads FALSE-only, s8 inlined-loads both-arms) collapse to identical RTL as chassis-1 pre-sched1 via combine/CSE (documented as sandbox-byte-identical to chassis-1 in ledger). Any permuter run on those chassis would search the same neighborhood chassis-1 already dual-seed-exhausted. Higher-baseline chassis (chassis-2 base=625, chassis-3 base=745) proven decisively worse this session. No fourth chassis class remains.
+- probe: Cross-session synthesis: chassis-1 dual-seed exhaustion (s4 + s5, ~50k iters combined), chassis-2 measurement this session (~3k iters), chassis-3 measurement this session (~1.2k iters). No sandbox-baseline-2 C form exists that produces different pre-sched1 RTL than chassis-1 per the s2/s3/s8 combine-collapse measurements.
+- result: Every distinct permuter chassis in the reachable form space has been either fully searched (chassis-1) or proven basin-wise worse than the fully-searched one (chassis-2, chassis-3). No further chassis expansion is available.
+- verdict: CONFIRMED

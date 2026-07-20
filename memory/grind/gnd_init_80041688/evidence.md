@@ -222,3 +222,19 @@
 - [s12] [s12] Cumulative rejected bank now 21 forms (s12 adds three loop-shape variants).
 
 - [s12] [s12] The ledger's frontier action (OWNER-ESCALATION filing at docs/grind/decisions.md) is unchanged and now empirically justified: the last un-measured structural sub-axis (loop shape) has been directly probed and killed. No sanctioned in-function lever axis remains.
+
+- [s13] [s13] Sandbox baseline re-verified: sandbox --disable all -> score=2, target_insns=82, build_insns=82, rules_dropped=3, cheat_asm_stripped=23 (unchanged from s1-s12).
+
+- [s13] [s13] Chassis-2 permuter (tmp/grind/gnd_init_80041688/s13/perm/, label=s13-chassis2-splitinit): base_score=625, ~3112 iters, 6 novel finds ranging from score=390 to score=610. Best (output-390-1) = variable-reuse of previously-unused `r` local for staged shift expression. All finds cheat-family or structurally worse than baseline.
+
+- [s13] [s13] Chassis-3 permuter (tmp/grind/gnd_init_80041688/s13/chassis3/, label=chassis3-shared-v-shared-call): base_score=745, ~1200 iters, ~30 novel finds ranging from score=185 to score=745. Best (output-185-1) = OR-tree split `v=(r<<16)|(g<<8); v=b|v;` — no byte-improvement. All finds are OR-tree partitions, decl-order shuffles, or variable-reuse.
+
+- [s13] [s13] Comparative basin quality: chassis-1 best=10 (sandbox 2 masked+ dead-store cheat, s4/s5), chassis-2 best=390, chassis-3 best=185. Chassis-2 is 39x worse than chassis-1; chassis-3 is 18x worse. Neither approaches chassis-1 basin let alone sub-baseline.
+
+- [s13] [s13] All score=2-baseline C form variants documented in prior ledger (s2 struct-cast, s3 named-intermediate-rg, s3 block-local cp, s8 inlined-loads FALSE-only, s8 inlined-loads both-arms) produce byte-identical sandbox output to chassis-1 baseline, meaning their pre-sched1 RTL collapses to chassis-1's via combine/CSE. Permuter runs on any of them would search chassis-1's already-exhausted neighborhood.
+
+- [s13] [s13] Cumulative permuter exhaustion: chassis-1 (base=40) dual-seed ~50k iters s4+s5; chassis-2 (base=625) ~3k iters s13; chassis-3 (base=745) ~1.2k iters s13. Total across all chassis and seeds: ~54k iters, ~50 distinct novel finds, zero legitimate sub-baseline forms.
+
+- [s13] [s13] Baseline sandbox re-verified after all measurements: score=2 (state clean; no src edits held).
+
+- [s13] [s13] Two rejected forms banked this session: memory/grind/gnd_init_80041688/rejected/chassis2-splitinit-permuter-basin.c (chassis-2 shape + basin analysis), chassis3-shared-v-shared-call-permuter-basin.c (chassis-3 shape + basin analysis).

@@ -1,8 +1,8 @@
 {
  "func": "gnd_init_80041688",
  "file": "text1a",
- "session_count": 12,
- "current_modality": "structural",
+ "session_count": 13,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -75,18 +75,24 @@
    "floor": 2,
    "modality": "structural",
    "headline": "s12 structural: loop-shape axis measured dead across 3 variants (do-while +5, while +5, loop2-while +9) \u2014 goto/label is codegen-optimal; direct-measurement confirms s11's synthesis that no in-function"
+  },
+  {
+   "session": 13,
+   "floor": 2,
+   "modality": "permuter",
+   "headline": "s13 permuter: chassis-2 (split-init base=625, best=390) and chassis-3 (m2c-shared-v base=745, best=185) both KILLED \u2014 decisively worse than chassis-1's already-exhausted basin; permuter modality now e"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "File OWNER-ESCALATION at docs/grind/decisions.md for gnd_init_80041688 citing complete case-exhaustion over the sanctioned in-function lever surface, requesting owner ruling on narrow carve-out applicability.",
-   "mechanism": "s6-CONFIRMED mechanism: sched.c insn_priority hazard-tag on FALSE-arm b-lbu, boosted-vs-unboosted driven by pseudo-78 live-range width. s5/s7/s10 case-exhaust the three CFG sites for pseudo-78 fusion (loop1-defs are dead-store cheat OR RA cascade dichotomy; pre-branch hoist forces callee-save spill; intra-BB init DCE'd). s8/s9/s11 exhaust cross-jump structural axis. s12 exhausts loop-shape axis by direct measurement. OR-tree shape shift FORBIDDEN. Permuter chassis-1 dual-seed exhausted (all sub-40 = cheat family).",
-   "next_probe": "Draft docs/grind/decisions.md entry with (a) mechanism = sched.c insn_priority hazard-tag on FALSE-arm color-lbu; (b) case-exhaustion tables from s1-s12; (c) explicit ruling on: (i) [[duplicated-statement-into-arms]] sanction applicability for one FALSE-arm color-lbu; (ii) [[do-while-zero-exception]] four-prong test \u2014 does `do { b = 0; } while(0);` wrapper survive DCE where s10's plain `b=0;` did not (loop note might block combine.c DCE); (iii) canonical-asm authorization for the FALSE-arm color-lbu triple. Session owner emits `ruling-request` outcome with the drafted entry attached."
+   "hypothesis": "File OWNER-ESCALATION at docs/grind/decisions.md for gnd_init_80041688 citing complete case-exhaustion over BOTH the sanctioned in-function lever surface (s1-s12) AND the permuter modality across all three structurally-distinct chassis (chassis-1 s4/s5, chassis-2 s13, chassis-3 s13).",
+   "mechanism": "s6-CONFIRMED mechanism: sched.c insn_priority hazard-tag on FALSE-arm b-lbu driven by pseudo-78 live-range width. s5/s7/s10 case-exhaust the three CFG sites for pseudo-78 fusion; s8/s9/s11 exhaust cross-jump structural axis; s12 exhausts loop-shape axis; s13 exhausts permuter modality across all three chassis. OR-tree shape shift FORBIDDEN. No sanctioned lever remains anywhere in the function or in its permuter neighborhood.",
+   "next_probe": "Draft docs/grind/decisions.md entry with (a) mechanism = sched.c insn_priority hazard-tag on FALSE-arm color-lbu; (b) full case-exhaustion tables from s1-s13 (structural + permuter); (c) explicit ruling on: (i) [[duplicated-statement-into-arms]] sanction applicability for one FALSE-arm color-lbu; (ii) [[do-while-zero-exception]] four-prong test \u2014 does `do { b = 0; } while(0);` wrapper survive DCE where s10's plain `b=0;` did not; (iii) canonical-asm authorization for the FALSE-arm color-lbu triple. Emit ruling-request outcome with entry attached."
   },
   {
-   "hypothesis": "Sibling-scrape / Kengo header-type-correction for g_player_ptrs' target type per [[header-type-correction-from-use-sites]] four-prong test \u2014 the only remaining un-scoped angle. Orthogonal to structural modality.",
-   "mechanism": "A different g_player_ptrs target-type declaration might change the LUID/RTL shape of the three color reads enough to alter sched1's ready-set ordering \u2014 a lever orthogonal to pseudo-78 fusion. Kengo (PS2 successor) may show a struct shape for the player record.",
-   "next_probe": "Rederive/sibling-scrape modality session: read tools/decomp_me_scrape.py output for gnd_* / palette-loader kin; grep any Kengo dump for gnd_init or its callees; verify four-prong test (all use-sites consistent + at least one signed-semantics site + one-extern edit + no residual coercions). Structural modality does not cover this."
+   "hypothesis": "Sibling-scrape / Kengo header-type-correction for g_player_ptrs' target type per [[header-type-correction-from-use-sites]] four-prong test \u2014 the only remaining un-scoped angle, fully orthogonal to permuter/structural modalities.",
+   "mechanism": "A different g_player_ptrs target-type declaration (e.g. Kengo-derived struct) might change the LUID/RTL shape of the three color reads enough to alter sched1's ready-set ordering \u2014 a lever fully orthogonal to pseudo-78 fusion and to permuter search-space topology.",
+   "next_probe": "Rederive/sibling-scrape modality session: check tools/decomp_me_scrape.py output for gnd_* / palette-loader kin; grep any Kengo dump for gnd_init or its callees; verify four-prong test (all use-sites consistent + at least one signed-semantics site + one-extern edit + no residual coercions)."
   }
  ],
  "judge_constraints": [],
