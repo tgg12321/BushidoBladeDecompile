@@ -182,3 +182,21 @@
 - [s10] Rejected form banked: memory/grind/gnd_init_80041688/rejected/intra-bb-b-zero-init.c.
 
 - [s10] Cumulative rejected bank now 17 forms; cumulative KILLED hypothesis families: statement-reorder, struct-cast, walking-pointer, ternary-hoist, block-local-split, named-intermediate, cp-block-local, cp-function-scope, LIVE-b-hoist-above-loops, color-byte-pre-load, permuter chassis-1 basin (dual-seed), raw-halfword-in-loop1, m2c-shared-v-shared-call, inlined-loads-FALSE-only, inlined-loads-both-arms, split-init-FALSE (a/b/c), intra-BB-b-init.
+
+- [s11] s11 baseline sandbox --disable all: score=2, target_insns=82, build_insns=82, rules_dropped=3, cheat_asm_stripped=23 (unchanged from s1-s10).
+
+- [s11] s11 variant A (goto+label between color-triple and gnd_load_tex, FALSE arm): sandbox score=2, build_insns=82 — byte-identical to baseline.
+
+- [s11] s11 variant B (labeled entry before color triple, FALSE arm): sandbox score=2, build_insns=82 — byte-identical to baseline.
+
+- [s11] s11 variant C (distinct trailing labels in BOTH arms via `goto x; x:;`): sandbox score=2, build_insns=82 — byte-identical to baseline.
+
+- [s11] GCC 2.7.2 jump.c strips redundant labels (no cross-referencing jump) and elides `goto NEXT_STATEMENT;` forms before jump2/reorg/find_cross_jump see them. All three label-placement variants produce identical RTL to baseline at the jump2 entry point.
+
+- [s11] s11 src restored after all probes; sandbox re-verified at score=2 (rules_dropped=3, cheat_asm_stripped=23, build_insns=82).
+
+- [s11] SYNTHESIS: the cross-jump structural axis surface for this function is now complete — shared-tail-merged forms (s8 m2c-shared-v, s9 split-init variants a/b/c) regress via genuine insn-collapse (2→11/12); non-merged label forms (s11) are stripped inert by jump.c. There is no intermediate label form that both survives jump.c AND steers jump2 differently than the baseline.
+
+- [s11] Combined with s10's pseudo-78-fusion case-exhaustion (loop1 defs KILLED s7; pre-branch hoist KILLED s5; intra-BB init KILLED s10), every sanctioned lever axis reachable from within the function body is now measurement-dead. The only remaining un-scoped angle is header/type-level (Kengo sibling-scrape → header-type-correction for g_player_ptrs' target type), which is orthogonal to the structural modality.
+
+- [s11] Cumulative rejected bank now 18 forms (s11 adds label-placement-goto-arm-tails.c).

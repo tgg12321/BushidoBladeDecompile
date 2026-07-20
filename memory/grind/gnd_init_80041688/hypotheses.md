@@ -180,3 +180,21 @@
 - probe: Cross-session synthesis of s5, s6, s7, s10 measurements; no new sandbox run required — this is a proof-of-exhaustion over the sanctioned lever surface documented in the ledger.
 - result: Every source-shape mutation reachable in pure C either (a) leaves pseudo 78 un-fused (inert; floor stays 2) or (b) fuses pseudo 78 via one of the three sites already measured dead. The residual score-2 diff is bounded by the closed sanctioned-lever surface.
 - verdict: CONFIRMED
+
+## [s11] A `goto call_tex_false; call_tex_false: gnd_load_tex(...);` inserted between the FALSE-arm color-lbu triple and the gnd_load_tex call shifts LUID/jump2 topology enough to perturb sched1's tiebreak on the b-lbu.
+- mechanism: Explicit label between color loads and the call would create a CODE_LABEL insn that (a) potentially blocks jump2/find_cross_jump merging past that point, or (b) shifts LUID assignment on the three color-lbu insns enough to affect sched1's ready-list ordering.
+- probe: Edited FALSE arm to add `goto call_tex_false; call_tex_false: gnd_load_tex(...)`. Ran sandbox gnd_init_80041688 --disable all.
+- result: score=2, target_insns=82, build_insns=82, rules_dropped=3, cheat_asm_stripped=23 — BYTE-IDENTICAL to baseline. GCC 2.7.2 jump.c strips the redundant label and elides the `goto NEXT_STMT;` before jump2/reorg see them; no LUID shift, no jump2 steering effect, no sched1 perturbation.
+- verdict: KILLED
+
+## [s11] A labeled ENTRY point BEFORE the FALSE-arm color triple (`goto load_rgb_false; load_rgb_false: r=...`) shifts LUID assignment on the color-lbu triple by inserting a CODE_LABEL ahead of them.
+- mechanism: Same as variant A but with label ahead of the loads rather than between loads and call. Might affect the LUID base for the block.
+- probe: Edited FALSE arm to prepend `goto load_rgb_false; load_rgb_false:` before the r/g/b loads. Ran sandbox.
+- result: score=2, build_insns=82 — byte-identical to baseline. Same jump.c strip behavior; label is redundant, elided pre-jump2.
+- verdict: KILLED
+
+## [s11] Distinct trailing labels in BOTH arms (`goto tex_done_true; tex_done_true:;` in TRUE, `goto tex_done_false; tex_done_false:;` in FALSE) prevent jump2 from finding a cross-jump merge past the shared join point, leaving arm-distinct RTL for sched1.
+- mechanism: If arm-terminator labels emit distinct CODE_LABEL insns, jump2's find_cross_jump may see two distinct suffix chains rather than one merge candidate.
+- probe: Edited BOTH arms with distinct `goto x; x:;` at each arm's tail. Ran sandbox.
+- result: score=2, build_insns=82 — byte-identical to baseline. Empty labeled statement + trailing `goto NEXT_STMT;` both stripped by jump.c before jump2 runs.
+- verdict: KILLED
