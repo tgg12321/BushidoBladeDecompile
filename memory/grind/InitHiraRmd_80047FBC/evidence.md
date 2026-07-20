@@ -103,3 +103,19 @@ carve-outs, OR a genuinely different C shape that makes arg0-copy → $s4 natura
 - [s3] [s3] the residual is a robust GCC-internal tiebreaker between $a0 (arg-register-alias-via-copy-prop) and $s4 (callee-save-holding-base_addr) — five distinct structural probes have failed to invert it. This is exactly the shape the s2 frontier flagged as a permuter-directed problem rather than a manual-lever problem.
 
 - [s3] [s3] rejected forms banked: rejected/p1_word_offset_split_recompute.c (score 3), rejected/p5_new_var_deferred_to_end.c (score 13).
+
+- [s4] [s4] baseline sandbox (s3 candidate applied): score=1, 65/65 insns, single residual at insn #18
+
+- [s4] [s4] permuter workspace built: pre-preprocessed base.c (491k), compile.sh mirrors sandbox pipeline (cpp -> cc1 -> prologue_fix -> maspsx -> multu_pad -> extract InitHiraRmd_80047FBC region -> as), target.o assembled from asm/funcs/InitHiraRmd_80047FBC.s at offset 0; baseline diff was the exact single residual (addu s0,a0,v0 vs addu s0,s4,v0), matching sandbox metric
+
+- [s4] [s4] campaign s4_chassis1 (jobs=6, --stop-on-zero): base_score=5 (permuter metric = one reg-diff x 5); converged to score=0 at iter 217 / 9.6s elapsed; harvest+stop completed with reason logged. Metrics in metrics/events.jsonl.
+
+- [s4] [s4] permuter closing form APPLIED to src/text1b.c: sandbox --disable all score=0 confirmed (65/65 insns, cheat_asm_stripped=392, rules_dropped=0). Then REVERTED to s3 candidate after cheat vetting; sandbox=1 restored.
+
+- [s4] [s4] closing form's THREE constructs each fail the vetting checklist ([[no-new-park-categories]]): (1) buf[8] unused - not the WRITTEN carve-out (zero source stores; target's sw v0,0x10(sp) is GCC-allocated from discarded call return, not source-level); (2) `int new_var3 = 16;` used only in `arg1 << new_var3` - natural spelling is the immediate 16; no semantic purpose; potentially reviewable under [[named-local-fake-exception]] constant-holder carve-out but only individually with FAKE + exhaustion + review; (3) `new_var2 = sx_arg2;` mid-loop - same-value local alias of a live var, not covered by [[staged-value-reused-variable]] (which requires the target var to be currently-dead), not covered by [[duplicated-statement-into-arms]] (which requires cross-arm duplication).
+
+- [s4] [s4] stacking three no-semantic-purpose codegen-steering constructs in a 65-insn function exceeds any single SOTN 2026-07-01 sanctioned-family precedent; vetting checklist answers all four smell-test questions in the cheat direction (no semantic purpose, no human would write it, justification references RA internals, 'necessary only because permuter said so')
+
+- [s4] [s4] hypothesis killed: directed permuter's search space over the base_addr/p init chain + type variants + PERM_VAR/PERM_LINESWAP mutations. The mutations available to permuter (constant hoisting, value aliasing, declaration reorder, type substitution) all resolve this specific RA tiebreaker only through cheat family constructs. A permuter re-seed with different chassis is unlikely to yield a non-cheat closing form given the residual's shape (single-insn copy-prop vs callee-save tiebreaker).
+
+- [s4] [s4] artifacts: campaign converged in 217 iters (~292s wall) with fresh-seed budget well under the 20-30 min per-basin cap; harvest recorded 1 find and stopped before session end (fresh-seed discipline satisfied)

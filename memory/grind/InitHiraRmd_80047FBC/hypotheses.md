@@ -141,3 +141,9 @@ function's shape.
 - probe: s3 (structural): move new_var compute to after v0v load; sandbox
 - result: score 13. Late placement changes scheduling of the multi-lhu block AND the call-arg materialization; 12 new diffs across the load and pre-call region. Mid-loop position (between a2v and a3v reads) is load-bearing for match. Not a winning direction.
 - verdict: KILLED
+
+## [s4] A fresh-seed PERM_* directed campaign over the s3 candidate can find a byte-closing form that lifts base_addr into $s4 at insn #18 via a legitimate C structural mutation
+- mechanism: auto-search sampling over declaration order / int-type / constant-hoisting / value-aliasing per [[permuter-directives]]; the residual is a single-insn RA tiebreaker exactly the shape permuter is designed for
+- probe: s4 (permuter modality): built permuter workspace (tmp/grind/InitHiraRmd_80047FBC/s4/perm_ws/) with pre-preprocessed base.c, per-func compile.sh extracting the InitHiraRmd_80047FBC region, target.o at offset 0 (base_score=5 = one reg-diff x 5). Launched detached campaign s4_chassis1 -j 6 --stop-on-zero; polled in-turn; harvest+stop before session end.
+- result: converged in 9.6s (217 iterations); single output-0-1 at score 0. The closing form stacks THREE no-semantic-purpose constructs: (1) inherited buf[8] unused array, (2) `int new_var3 = 16;` used only as the shift count in `arg1 << new_var3` (constant-holder scalar), (3) `s32 new_var2; ... new_var2 = sx_arg2;` used in 2/4 call-arg summands (same-value local alias of live sx_arg2). Applied to src/text1b.c: sandbox=0, 65/65 insns confirmed. Reverted to s3 form after cheat vetting. Bytes proven; classification determined by inspection.
+- verdict: KILLED

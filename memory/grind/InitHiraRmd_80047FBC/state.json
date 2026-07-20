@@ -1,8 +1,8 @@
 {
  "func": "InitHiraRmd_80047FBC",
  "file": "text1b",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -21,23 +21,29 @@
    "floor": 1,
    "modality": "structural",
    "headline": "s3 structural: killed 5 more axes (buf[8] load-bearing for frame; word-offset split, init reorder, new_var mid-loop hoist/defer inert or worse); floor unchanged at 1; frontier narrows to duplicated-st"
+  },
+  {
+   "session": 4,
+   "floor": 1,
+   "modality": "permuter",
+   "headline": "s4 permuter modality: fresh-seed campaign converged to sandbox=0 in 9.6s / 217 iters via triple-stacked cheat form (buf[8] unused + new_var3=16 constant-holder + new_var2=sx_arg2 value-alias); rejecte"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "a REAL duplicated statement inside the loop's DO-WHILE body \u2014 same-computation of `base_addr + word_offset` binding to a fresh local \u2014 could lift base_addr's reg_n_refs past CSE (which does not eliminate independent lexical uses when they are separated by clobbering intervening stores/calls)",
-   "mechanism": "[[duplicated-statement-into-arms]] 2026-07-01 sanction: bytes-neutral duplication that survives CSE via intervening `efc_buki_draw_zanzou` call clobber, lifting reg_n_refs for global-RA tiebreaker; requires layer-2 review + FAKE annotation per the rule if the duplicate has no observable behaviour",
-   "next_probe": "s4 (structural or judge-request): duplicate `new_var = base_addr + (((u32)word)>>2)<<2;` into a second lexical position in the loop body (before AND after the call is bytes-neutral if the second assignment is dead-stored to a new named local, but that is a cheat spelling; alternative: use base_addr in a legitimate additional computation \u2014 e.g. pass `base_addr` as a spare arg or use it in a bounds check that is dead after DCE but survives to reg-alloc). Even the cleanest form here likely needs a judge ruling on whether it is a real duplication (sanctioned) vs a dead reference (cheat)."
+   "hypothesis": "A DIFFERENTLY-SHAPED chassis (e.g. drop base_addr entirely and derive both p uses from arg0 via a computed expression that makes GCC track arg0's value through a callee-save naturally) - not a mutation of the s3 form but a rewrite of the C structure",
+   "mechanism": "The residual is a copy-prop tie between $a0 (arg-reg with arg0) and $s4 (callee-save with base_addr). All s1-s3 structural probes and the s4 permuter mutations keep the same overall C shape (p and base_addr as parallel derivations from arg0). A structurally different shape - e.g. eliminating base_addr and letting GCC's own arg-live-across-call analysis materialize arg0 into $s4 - may sidestep the tiebreaker without codegen-steering constructs.",
+   "next_probe": "s5 (structural/deep-dive): try (a) drop base_addr, use arg0 in both uses with an intervening operation on p that visibly extends arg0's live range across the loop; (b) inspect matched siblings for the arg0->$s4 pattern in cluster (AddTbpOfst_80047EE8 has register asm pins per s1 evidence, so its natural form is unknown - m2c-reconstruct target's original C shape to compare); (c) inspect target asm's staged prologue (`move s0,a0; move s4,s0; addu s0,s0,a1`) - the staged copy through $s0 first is a strong hint about original source structure (arg0 -> local1 -> local2 chain?)"
   },
   {
-   "hypothesis": "a PERM_* directed permuter campaign over the base_addr/p init chain + type variants can search the RA tiebreaker space more broadly than the ~10 manual probes across s1-s3",
-   "mechanism": "auto-search sampling per [[permuter-directives]] + [[permuter-fresh-seed-discipline]]; the residual is a single-insn RA tie and matches the shape permuter is designed for",
-   "next_probe": "s4 (permuter modality): build permuter workspace seeded with the s3 candidate form; PERM_VAR / PERM_INT_TYPE / PERM_LINESWAP over base_addr and p; fresh-seed budget ~20-30 per macro; vet every closing form against the cheat catalog"
+   "hypothesis": "Owner ruling on whether ANY of the three permuter-found constructs qualifies individually under a 2026-07-01 sanctioned-family carve-out here, given documented s1-s4 lever-exhaustion",
+   "mechanism": "The individual constructs each map to a distinct 2026-07-01 carve-out family (dead-vars-local-array WRITTEN carve-out for buf[8]; named-local-fake-exception constant-holder for new_var3; potentially staged-value-reused-variable for new_var2 though it doesn't cleanly fit). Layer-2 cheat-reviewer + owner sanction gate is the disposition mechanism for exactly this class of borderline finding.",
+   "next_probe": "s5 or later (ruling-request): after s5 structural exhaustion, surface the specific question to layer-2 cheat-reviewer: 'given documented s1-s4 exhaustion, does the s3 candidate + FAKE-annotated new_var3=16 alone (no new_var2, no buf[8] carve-out) qualify under [[named-local-fake-exception]]?' The answer bounds the permuter-cheat catalog for RA-tiebreaker residuals cluster-wide."
   },
   {
-   "hypothesis": "buf[8] can be legitimized via the [[dead-vars-local-array]] 2026-07-01 WRITTEN-never-read carve-out if the loop body contains a matched dead store into buf[k] that pairs with target's `sw v0,0x10(sp)` in the jal delay slot",
-   "mechanism": "the target dead-store discipline: pair a source-level `buf[k] = ...` store with the target byte, satisfying the WRITTEN carve-out; the store must be dead (no reload)",
-   "next_probe": "s4 (structural/judge-request): try `buf[4] = efc_buki_draw_zanzou(new_var, ...);` (capture the discarded return into the array slot at sp+0x10 \u2014 buf[4] since buf is s32) and measure; requires cheat-reviewer judgment on whether this qualifies under the 2026-07-01 carve-out without a matched dead store already being present in target"
+   "hypothesis": "The buf[8] unused array itself is the load-bearing lever - the WRITTEN-never-read carve-out could apply if the C source captures the efc_buki_draw_zanzou return into buf[k]",
+   "mechanism": "Target's sw v0,0x10(sp) in the jal delay slot IS a written store into what would be buf[4] if buf starts at sp+0. s1-s2 evidence showed GCC allocates this store on its own without a source-level store. But an EXPLICIT source `buf[k] = efc_buki_draw_zanzou(...);` would (a) still produce the same target byte (GCC folds the discarded-return store either way), (b) satisfy the WRITTEN-never-read literal source requirement in the 2026-07-01 carve-out.",
+   "next_probe": "s5 (structural): try `buf[4] = efc_buki_draw_zanzou(new_var, ...);` (capture discarded return into buf[4]); sandbox and confirm bytes unchanged. If bytes match AND score stays at 1 (or drops), the WRITTEN carve-out is satisfied for buf[8] - reducing the s3 candidate's cheat count from 1 to 0 for buf[8]. The residual at insn #18 remains but frontier item 1 (structural rewrite) applies to close it."
   }
  ],
  "judge_constraints": [],
