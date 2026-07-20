@@ -161,3 +161,24 @@
 - [s9] [s9] Baseline src re-verified after all variants: sandbox --disable all -> score=2 (state restored).
 
 - [s9] [s9] Sanctioned-form space now exhaustively swept: fresh-decompile (s8 m2c-shared-v) KILLED; sibling-shape-with-split-init-FALSE (s9) KILLED. Every remaining live-code respelling of the FALSE-arm OR-tree either (a) folds pre-sched1 via combine (s2-s3 named-intermediate/walking-pointer/struct-cast/split), (b) merges via jump2 when using shared-v shape (s8, s9), or (c) leaves the sched1 chain-length wall intact (s1-s5).
+
+- [s10] s10 baseline sandbox --disable all: score=2, target_insns=82, build_insns=82, rules_dropped=3, cheat_asm_stripped=23 (unchanged s1-s9).
+
+- [s10] s10 intra-BB init probe: `b = 0;` inserted at top of FALSE arm ahead of the r/g/b color-lbu triple → sandbox score=2, build_insns=82 (byte-identical to baseline). GCC DCE eliminates the `b = 0;` store before flow.c/life_analysis coalesces defs; pseudo 78's live range is NOT widened; sched1 insn_priority hazard-tag on b-lbu stays boosted. Axis INERT.
+
+- [s10] s10 case-exhaustion synthesis of pseudo-78-fusion surface: (a) loop1-scope def — s7 dichotomy KILLED (dead-store cheat OR RA cascade); (b) pre-branch hoist — s5 KILLED (callee-save spill across func_800486FC); (c) intra-BB pre-color init — s10 KILLED (DCE'd inert). No fourth site exists for widening pseudo 78's live range to reach the FALSE-arm b-lbu. The sched1 hazard-tag lever has zero remaining sanctioned surface.
+
+- [s10] Rejected form banked: memory/grind/gnd_init_80041688/rejected/intra-bb-b-zero-init.c.
+
+
+- [s10] s10 baseline sandbox --disable all: score=2, target_insns=82, build_insns=82, rules_dropped=3, cheat_asm_stripped=23 (unchanged s1-s9).
+
+- [s10] s10 intra-BB init probe (`b=0;` FALSE-arm-local, ahead of color triple): score=2, byte-identical to baseline. DCE eats the store before flow.c fusion runs; pseudo 78 not widened; hazard-tag on b-lbu stays boosted.
+
+- [s10] s10 case-exhaustion synthesis: three CFG sites for widening pseudo 78's live range are ALL measurement-dead — loop1 (s7 dichotomy), pre-branch (s5 spill), intra-BB (s10 DCE). No fourth site exists.
+
+- [s10] Src restored after s10 probe; sandbox re-verified at score=2.
+
+- [s10] Rejected form banked: memory/grind/gnd_init_80041688/rejected/intra-bb-b-zero-init.c.
+
+- [s10] Cumulative rejected bank now 17 forms; cumulative KILLED hypothesis families: statement-reorder, struct-cast, walking-pointer, ternary-hoist, block-local-split, named-intermediate, cp-block-local, cp-function-scope, LIVE-b-hoist-above-loops, color-byte-pre-load, permuter chassis-1 basin (dual-seed), raw-halfword-in-loop1, m2c-shared-v-shared-call, inlined-loads-FALSE-only, inlined-loads-both-arms, split-init-FALSE (a/b/c), intra-BB-b-init.

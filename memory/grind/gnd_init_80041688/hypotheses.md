@@ -155,3 +155,28 @@
 - probe: Not measured. loop1-raw-halfword staging (`b = *(s16*)(p+2); if (b >= 0)`) is a dead store to b per s7 policy vetting ([[no-new-park-categories]] cheats-by-any-spelling — the store to b is immediately dead until FALSE-arm overwrites it). Combining a cheat-axis with a legitimate axis does not sanitize the cheat.
 - result: Skipped on policy grounds. The raw-halfword axis is banked in rejected/loop1-raw-halfword-stage-b.c as a cheat and cannot be re-proposed even as a combining axis.
 - verdict: KILLED
+
+## [s10] Intra-BB pre-color `b = 0;` init inside the FALSE arm (before the r/g/b color-lbu triple) fuses pseudo 78's live range without crossing loop1 or the func_800486FC call, reproducing the s6/s7 sched1 hazard-tag flip without loop1 collateral OR call-crossing spill.
+- mechanism: A def of source-level `b` inside BB18 ahead of the FALSE-arm color lbu triple. If flow.c/life_analysis sees the `b = 0;` def before the color-lbu overwrite, it fuses defs into a single pseudo 78 whose live range now spans two intra-BB defs — the same hazard-tag differential that s6 measured. Constraint: def must not be DCE'd before the fusion pass runs.
+- probe: Edited src/text1a.c FALSE arm to `b = 0; r = ...; g = ...; b = ...; gnd_load_tex(...)`. sandbox --disable all.
+- result: score=2, target_insns=82, build_insns=82. Byte-identical to baseline. GCC's dead-store elimination (in the .cse/.combine passes upstream of flow.c) removes the `b = 0;` store before life_analysis sees it, so pseudo 78 is NOT re-fused and the hazard-tag stays boosted. The intra-BB fusion axis is INERT — not a cheat, but not a lever either.
+- verdict: KILLED
+
+## [s10] SYNTHESIS: the pseudo-78-fusion axis (s6-CONFIRMED mechanism for the FALSE-arm lbu-order flip) has zero remaining sanctioned surface across the whole function.
+- mechanism: Case exhaustion. To flip sched1's insn_priority hazard-tag on the b-lbu (the confirmed mechanism), pseudo 78's live range must widen. Pseudo 78 lives ENTIRELY inside BB18 in baseline; any widening requires a def of source-level `b` at one of three sites: (a) inside loop1, (b) between loop2 and the branch (hoist above func_800486FC call), or (c) inside BB18 ahead of the color-lbu. s7 dichotomy KILLED (a): loop1-scope defs are dead-store cheats (zero intra-iter live range) or RA cascades (non-zero live range displaces p from $v1). s5 KILLED (b): all hoist axes force callee-save spill across the call. s10 KILLED (c): intra-BB inits DCE'd before flow.c sees them. No fourth site exists in the function's CFG.
+- probe: Synthesis of s5/s6/s7/s10 measurements. No new sandbox run needed; this is a proof-of-exhaustion over the sanctioned axis surface.
+- result: CONFIRMED. The sched1 hazard-tag lever is not reachable by any pure-C form that avoids the three closed families above. Every remaining source-shape mutation either (a) doesn't fuse pseudo 78 (inert; floor=2) or (b) fuses it via one of the three sites already measured dead. The function's residual score-2 diff is measurement-bounded on sanctioned lever surface.
+- verdict: CONFIRMED (kills the pseudo-78-fusion frontier as approachable via sanctioned axes on this function)
+
+
+## [s10] Intra-BB pre-color `b = 0;` init inside FALSE arm fuses pseudo 78 without loop1/call-cross collateral, reproducing the s6/s7 hazard-tag flip cleanly.
+- mechanism: A def of source-level `b` inside BB18 ahead of the color-lbu triple would let flow.c/life_analysis coalesce two intra-BB defs into a single widened pseudo 78 — the same fusion signature s6 measured as flipping sched1's insn_priority hazard-tag on the b-lbu from boosted (pri=0x7F000001) to unboosted (pri=1), which reorders emission from [r,g,b] to target's [b,r,g].
+- probe: Edited src/text1a.c FALSE arm to `b=0; r=...; g=...; b=...; gnd_load_tex(...)`. Ran sandbox --disable all. Restored src, re-verified sandbox=2.
+- result: score=2, target_insns=82, build_insns=82 — byte-identical to baseline. GCC's DCE (upstream of flow.c) eliminates the `b=0;` store before life_analysis sees it; pseudo 78 is NOT re-fused; hazard-tag stays boosted; lbu emission unchanged.
+- verdict: KILLED
+
+## [s10] SYNTHESIS — the pseudo-78-fusion axis (s6-CONFIRMED mechanism for the FALSE-arm lbu-order flip) has zero remaining sanctioned surface anywhere in the function.
+- mechanism: Case exhaustion over the three possible CFG sites for widening pseudo 78's live range: (a) loop1-scope def, (b) between loop2 and the branch (pre-call hoist), (c) intra-BB pre-color init inside BB18. s7 dichotomy KILLED (a): loop1 defs are dead-store cheats OR RA cascades displacing p from $v1. s5 KILLED (b): callee-save spill across func_800486FC dominates any FALSE-arm gain. s10 KILLED (c): intra-BB inits DCE'd before flow.c fusion. No fourth site exists in the CFG.
+- probe: Cross-session synthesis of s5, s6, s7, s10 measurements; no new sandbox run required — this is a proof-of-exhaustion over the sanctioned lever surface documented in the ledger.
+- result: Every source-shape mutation reachable in pure C either (a) leaves pseudo 78 un-fused (inert; floor stays 2) or (b) fuses pseudo 78 via one of the three sites already measured dead. The residual score-2 diff is bounded by the closed sanctioned-lever surface.
+- verdict: CONFIRMED

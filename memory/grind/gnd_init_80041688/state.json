@@ -1,8 +1,8 @@
 {
  "func": "gnd_init_80041688",
  "file": "text1a",
- "session_count": 9,
- "current_modality": "rederive",
+ "session_count": 10,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -57,18 +57,29 @@
    "floor": 2,
    "modality": "rederive",
    "headline": "s9 rederive: split-init FALSE arm KILLED (2->11); FALSE-arm b DOES land in $v1 as target's `or a0,v1,a0` but lbu order still [r,b,g] not [b,r,g] and jump2 absorbs one or; final unmeasured pure-C axis "
+  },
+  {
+   "session": 10,
+   "floor": 2,
+   "modality": "synthesis",
+   "headline": "s10 synthesis: pseudo-78-fusion frontier case-exhausted across all three CFG sites; intra-BB init measured INERT (DCE'd), closing the last unmeasured sliver."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The gnd_init_80041688 function has an owner-gatable disposition: 9 sessions have measurement-KILLED every sanctioned axis (statement-reorder, struct-cast, walking-pointer, ternary-hoist, block-local-split, named-intermediate, block-local cp, function-scope cp, LIVE-b-hoist above loops, color-byte pre-load, permuter chassis-1 basin dual-seed, raw-halfword-in-loop1, m2c-shared-v-shared-call, inlined-loads FALSE-only, inlined-loads both-arms, split-init FALSE per-arm/shared/b-last). The wall is sched1 INSN_PRIORITY hazard-tag on the FALSE-arm lbu triple (s6 forensics CONFIRMED via BB2_SCHED_DEBUG). Every axis to fuse pseudo 78 across loop1 is either a dead-store cheat (s4 loop1-boolean-stage-b, s7 raw-halfword staging) OR causes an RA cascade displacing p from $v1 (s7 dichotomy proof). Every axis to defeat jump2 arm-tail merge either merges anyway (s8, s9) or requires target's [b,r,g] lbu order which needs pseudo-78 fusion.",
-   "mechanism": "Case-exhaustion synthesis of s1-s9. The remaining surface (pure-C forms that both fuse pseudo 78 AND avoid callee-save spill AND avoid loop1 RA cascade AND avoid jump2 merge collapse) has zero measured members and no next-un-tried lever the s1-s9 evidence chain hasn't already ruled out.",
-   "next_probe": "This is likely a candidate for OWNER-ESCALATION filing under docs/grind/decisions.md, per the sched1 hazard-tag mechanism s6 pinpointed. Until then, the only remaining unmeasured axis is combinatorial: pair the s9 split-init form with a novel loop1 legitimate live pseudo (from Kengo/sibling structure not yet scraped). Not yet scoped this session."
+   "hypothesis": "Owner-escalation filing under docs/grind/decisions.md is the correct next action for gnd_init_80041688: the sanctioned pure-C lever surface for the sched1 insn_priority hazard-tag mechanism is measurement-exhausted (10 sessions, 17 rejected forms, 3 case-exhaustion proofs). Draft the entry so a future session can emit `owner-gated` per the grind contract.",
+   "mechanism": "Per [[no-new-park-categories]] the two-carve-out surface (jtbl-infra, GTE-wrappers) does not fit \u2014 this function has C forms; the wall is a codegen-coercion axis (fuse pseudo 78) with no non-cheat spelling. Per [[review-discipline-before-commit]] the owner's ruling is required for any narrow do-while(0) / duplicated-statement / dead-store-fake-exception carve-out that would apply here. The mechanism is precisely pinpointed (s6 sched.c insn_priority hazard-tag; PRIO_DEBUG dumps in tmp/grind/gnd_init_80041688/s6/) and the case-exhaustion is complete (this synthesis).",
+   "next_probe": "Draft a decisions.md entry with: (a) mechanism = sched.c insn_priority hazard-tag on FALSE-arm color-lbu triple, boosted-vs-unboosted differential driven by pseudo-78 live-range width; (b) case-exhaustion proof (three CFG sites all measurement-dead); (c) explicit ruling question \u2014 is any of (i) a duplicated-statement-into-arms sanction for one color-lbu, (ii) a `do { b = 0; } while(0);` wrapper before the color triple to survive DCE (per [[do-while-zero-exception]] four-prong test), (iii) canonical-asm authorization, applicable here?"
   },
   {
-   "hypothesis": "Kengo (PS2 successor with partial source) or SOTN-adjacent decompiled sibling for a gnd_init/palette-loader pattern may reveal a source shape our fork can compile to target bytes \u2014 e.g. an inline-of-color-loads into the gnd_load_tex arg with a specific parenthesization that we haven't tried and that isn't a forbidden or-tree-shape-shift.",
-   "mechanism": "Fresh sibling evidence may reveal a legitimate C shape that produces target's [b,r,g] lbu order \u2014 e.g. a header type change on g_player_ptrs (struct with padded fields) that we haven't explored per [[header-type-correction-from-use-sites]] preconditions.",
-   "next_probe": "Read tools/decomp_me_scrape.py output for adjacent palette/color loader functions; examine Kengo naming for gnd_* functions; check if g_player_ptrs' target type could plausibly change to a struct pointer per header-type-correction-from-use-sites four-prong test."
+   "hypothesis": "Sibling-scrape / Kengo header-type-correction is the ONLY remaining un-scoped angle. The ledger has speculated about this since s6 without actually running the scrape.",
+   "mechanism": "A different g_player_ptrs target-type declaration (per [[header-type-correction-from-use-sites]] four-prong test) might change the LUID/RTL shape of the three color reads enough to alter sched1's ready-set ordering \u2014 a lever orthogonal to pseudo-78 fusion. Kengo (PS2 successor) partial source may show a struct shape for the player record that our u8-offset-cast form disguises.",
+   "next_probe": "Read tools/decomp_me_scrape.py output for gnd_* / palette-loader / player-record kin; grep any Kengo dump for gnd_init or its callees; check if g_player_ptrs' target could plausibly change to a struct type per header-type-correction's four-prong test (all use-sites in codebase consistent + at least one signed-semantics site + one-extern edit + no residual coercions)."
+  },
+  {
+   "hypothesis": "Cross-jump structural probe (arm-tail label placement steering) \u2014 the last unmeasured non-fusion axis. s8/s9 established that shared-v shapes merge past the final or (regression 2->11/12); no session has probed the INVERSE \u2014 using distinct arm-terminator labels + duplicated final-or to steer jump2 AWAY from merging in ways that also flip lbu order via LUID shift.",
+   "mechanism": "Placing an explicit label BEFORE the FALSE-arm's `gnd_load_tex(...)` call (via a `goto`-style terminator) might change jump2's find_cross_jump decision without triggering merge \u2014 and if the label sits between the color triple and the call, LUID assignment on the color-lbu triple could shift, potentially perturbing sched1 tiebreak (though chain-length priority likely still dominates). Speculative; would need instrumented cc1 (BB2_SCHED_DEBUG) to interpret.",
+   "next_probe": "Try FALSE arm with an inner `goto` structure or an explicit terminator label between the color triple and the gnd_load_tex call. Measure sandbox; if it flips lbu order at any cost, instrument to see whether the mechanism is LUID or a jump2 side effect. Low prior on this producing a byte-neutral win, but it's the only structural axis not yet probed."
   }
  ],
  "judge_constraints": [],
