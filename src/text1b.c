@@ -12428,23 +12428,25 @@ extern void obj_InitPair(void);
 extern void func_800858D0(s32);
 extern void replay_camera_Init(s32, s32);
 s32 func_8005B8B8(s32 arg0) {
-    s32 t0, t1, ret_a, t0_2, t1_2;
+    s32 t0;
+    s32 size;
+    s32 ret;
+    s32 t0_2;
 
     obj_InitPair();
     func_800858D0(0);
     t0 = func_80036EA8(2, 0x5D);
     game_FrameLoop();
     replay_camera_Init(t0, arg0);
-    t1 = func_80036F28(t0);
+    size = func_80036F28(t0);
     game_FrameLoop();
-    asm volatile("" : "=r"(t0) : "0"(t0));
-    ret_a = tslGlobalMemFree_8005C2A8(arg0, 8, arg0 + t1);
+    ret = tslGlobalMemFree_8005C2A8(arg0, 8, arg0 + size);
     t0_2 = func_80036EA8(2, 0x5E);
     game_FrameLoop();
-    replay_camera_Init(t0_2, arg0 + ret_a);
-    t1_2 = func_80036F28(t0_2) + ret_a;
+    replay_camera_Init(t0_2, arg0 + ret);
+    size = func_80036F28(t0_2) + ret;
     game_FrameLoop();
-    return tslGlobalMemFree_8005C2A8(arg0 + ret_a, 4, arg0 + t1_2) + ret_a;
+    return tslGlobalMemFree_8005C2A8(arg0 + ret, 4, arg0 + size) + ret;
 }
 void saFidLoad(s32, s32);
 void motion_LoadPreCalcData_8005B98C(s32 a0) {
