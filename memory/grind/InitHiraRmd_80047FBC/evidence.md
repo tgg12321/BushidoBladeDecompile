@@ -119,3 +119,15 @@ carve-outs, OR a genuinely different C shape that makes arg0-copy → $s4 natura
 - [s4] [s4] hypothesis killed: directed permuter's search space over the base_addr/p init chain + type variants + PERM_VAR/PERM_LINESWAP mutations. The mutations available to permuter (constant hoisting, value aliasing, declaration reorder, type substitution) all resolve this specific RA tiebreaker only through cheat family constructs. A permuter re-seed with different chassis is unlikely to yield a non-cheat closing form given the residual's shape (single-insn copy-prop vs callee-save tiebreaker).
 
 - [s4] [s4] artifacts: campaign converged in 217 iters (~292s wall) with fresh-seed budget well under the 20-30 min per-basin cap; harvest recorded 1 find and stopped before session end (fresh-seed discipline satisfied)
+
+- [s5] [s5] baseline sandbox with s3 candidate applied: score=1, 65/65 insns (unchanged from s3/s4 baseline)
+
+- [s5] [s5] chassis C (drop base_addr; arg0 used directly in both `p = arg0+shift` init and `new_var = arg0+wshift` loop compute; buf[8] retained for frame): sandbox --disable all score=5, build_insns=64, target_insns=65
+
+- [s5] [s5] chassis C disasm normalized to 65/65 lines. Confirmed structural diffs vs target: (1) target `sw s0,56(sp)` + `move s0,a0` (2 insns) missing in chassis C; (2) chassis C `move s4,a0` vs target `move s4,s0`; (3) chassis C `addu s0,s4,a1` vs target `addu s0,s0,a1`. Chassis C DOES have the target-matching `addu s0,s4,v0` at 0x120 (the s1-s4 residual insn), so the copy-prop tie IS resolved by dropping base_addr — but at the cost of collapsing the prologue staging
+
+- [s5] [s5] permuter workspace tmp/grind/InitHiraRmd_80047FBC/s5/perm_ws/ (base.c 491k preprocessed from chassis C src, compile.sh mirrors sandbox pipeline, target.o copied from s4)
+
+- [s5] [s5] campaign s5_chassis_c_arg0_direct (jobs=6, --stop-on-zero, --stack-diffs default): base_score=170 (permuter metric); 2747 iterations over ~15 min elapsed; 0 finds; harvest+stop completed with reason logged. Fresh-seed discipline satisfied (single basin, no novel find within cap → harvest)
+
+- [s5] [s5] cluster-wide implication: the residual is not chassis-choice-solvable in either direction. The prologue-staging axis (satisfied by base_addr in a callee-save) and the copy-prop-tiebreaker axis (satisfied by dropping base_addr) are anti-correlated with the current cluster-mate chassis catalog. Any solution must satisfy BOTH — e.g. a 3-variable chain (`tmp = arg0; base = tmp; p = tmp + shift`) forced to survive CSE, OR a construct that raises arg0's reg_n_refs across the loop without eliminating base_addr. Both are outside the auto-permuter mutation space (which permutes existing shape rather than adding a variable) and outside the s1-s4 lever set already killed

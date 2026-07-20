@@ -1,7 +1,7 @@
 {
  "func": "InitHiraRmd_80047FBC",
  "file": "text1b",
- "session_count": 4,
+ "session_count": 5,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -27,23 +27,29 @@
    "floor": 1,
    "modality": "permuter",
    "headline": "s4 permuter modality: fresh-seed campaign converged to sandbox=0 in 9.6s / 217 iters via triple-stacked cheat form (buf[8] unused + new_var3=16 constant-holder + new_var2=sx_arg2 value-alias); rejecte"
+  },
+  {
+   "session": 5,
+   "floor": 1,
+   "modality": "permuter",
+   "headline": "s5 permuter: chassis C (drop base_addr, arg0 direct \u2014 frontier probe 1) baseline sandbox=5 (WORSE than s3 baseline 1); permuter campaign 2747 iters / ~15 min at base_score=170 found 0 score-0 basins. "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A DIFFERENTLY-SHAPED chassis (e.g. drop base_addr entirely and derive both p uses from arg0 via a computed expression that makes GCC track arg0's value through a callee-save naturally) - not a mutation of the s3 form but a rewrite of the C structure",
-   "mechanism": "The residual is a copy-prop tie between $a0 (arg-reg with arg0) and $s4 (callee-save with base_addr). All s1-s3 structural probes and the s4 permuter mutations keep the same overall C shape (p and base_addr as parallel derivations from arg0). A structurally different shape - e.g. eliminating base_addr and letting GCC's own arg-live-across-call analysis materialize arg0 into $s4 - may sidestep the tiebreaker without codegen-steering constructs.",
-   "next_probe": "s5 (structural/deep-dive): try (a) drop base_addr, use arg0 in both uses with an intervening operation on p that visibly extends arg0's live range across the loop; (b) inspect matched siblings for the arg0->$s4 pattern in cluster (AddTbpOfst_80047EE8 has register asm pins per s1 evidence, so its natural form is unknown - m2c-reconstruct target's original C shape to compare); (c) inspect target asm's staged prologue (`move s0,a0; move s4,s0; addu s0,s0,a1`) - the staged copy through $s0 first is a strong hint about original source structure (arg0 -> local1 -> local2 chain?)"
+   "hypothesis": "A 3-variable chain form (tmp=arg0; base=tmp; p=tmp+shift) with an explicit use of `tmp` between the two assignments preventing CSE-collapse (e.g. a real intervening read `*(u16*)tmp` folded into an arg computation) simultaneously produces the prologue staging (3 insns) AND the copy-prop-defeating callee-save pin at insn #18.",
+   "mechanism": "The s5 anti-correlation observation constrains the solution space: any winning chassis must have BOTH an explicit intermediate variable that GCC materializes into $s0 (for the `move s0,a0; move s4,s0` staging) AND base_addr as a distinct callee-save survivor (for the insn #18 addu $s0,$s4,$v0). A 3-var chain with an intervening REAL use (not a dead read) forces GCC to keep all three distinct. The intervening use must be program-logic-necessary (not FAKE) to survive vetting per [[no-new-park-categories]] cheat-by-any-spelling test 3 (would a human write this).",
+   "next_probe": "s6 (structural): search src/text1b.c cluster and matched siblings for an existing early-use of arg0-derived value that current s3 form has combined/CSE'd; try re-splitting to force the intermediate variable. Concrete candidate: `p += a1 >> 14` computes an offset into the header \u2014 is there a legitimate early read of that header field that predates the loop and could serve as the intervening real use? m2c-reconstruct the original target C to check."
   },
   {
-   "hypothesis": "Owner ruling on whether ANY of the three permuter-found constructs qualifies individually under a 2026-07-01 sanctioned-family carve-out here, given documented s1-s4 lever-exhaustion",
-   "mechanism": "The individual constructs each map to a distinct 2026-07-01 carve-out family (dead-vars-local-array WRITTEN carve-out for buf[8]; named-local-fake-exception constant-holder for new_var3; potentially staged-value-reused-variable for new_var2 though it doesn't cleanly fit). Layer-2 cheat-reviewer + owner sanction gate is the disposition mechanism for exactly this class of borderline finding.",
-   "next_probe": "s5 or later (ruling-request): after s5 structural exhaustion, surface the specific question to layer-2 cheat-reviewer: 'given documented s1-s4 exhaustion, does the s3 candidate + FAKE-annotated new_var3=16 alone (no new_var2, no buf[8] carve-out) qualify under [[named-local-fake-exception]]?' The answer bounds the permuter-cheat catalog for RA-tiebreaker residuals cluster-wide."
+   "hypothesis": "Ruling-request: given documented s1-s5 exhaustion (5 sessions, 12+ measured hypotheses killed, 6 rejected forms banked, one permuter cheat-form measured and one alternate chassis measured worse), does the s3 candidate + FAKE-annotated new_var3=16 alone from the s4 permuter triple stack (WITHOUT buf[8] carve-out attempt and WITHOUT new_var2 value-alias) qualify under [[named-local-fake-exception]] constant-holder carve-out?",
+   "mechanism": "The s4 permuter proved three constructs individually needed to close bytes. Individually, only new_var3=16 (constant-holder scalar `int new_var3 = 16; ... arg1 << new_var3`) cleanly maps to a 2026-07-01 sanctioned family \u2014 see [[named-local-fake-exception]]. The other two (buf[8] unused, new_var2 value-alias) do NOT cleanly fit. The layer-2 cheat-reviewer + owner sanction gate is the mechanism for exactly this class of borderline finding. Per [[review-discipline-before-commit]] the worker cannot self-sanction.",
+   "next_probe": "s6 (ruling-request): after exhausting s6 structural probe above, surface the specific question to layer-2 cheat-reviewer. Bounds the permuter-cheat catalog for RA-tiebreaker residuals cluster-wide (sibling functions AddTbpOfst_80047EE8, InitHiraRmd_800480C0, func_800481E8 share the same shape)."
   },
   {
-   "hypothesis": "The buf[8] unused array itself is the load-bearing lever - the WRITTEN-never-read carve-out could apply if the C source captures the efc_buki_draw_zanzou return into buf[k]",
-   "mechanism": "Target's sw v0,0x10(sp) in the jal delay slot IS a written store into what would be buf[4] if buf starts at sp+0. s1-s2 evidence showed GCC allocates this store on its own without a source-level store. But an EXPLICIT source `buf[k] = efc_buki_draw_zanzou(...);` would (a) still produce the same target byte (GCC folds the discarded-return store either way), (b) satisfy the WRITTEN-never-read literal source requirement in the 2026-07-01 carve-out.",
-   "next_probe": "s5 (structural): try `buf[4] = efc_buki_draw_zanzou(new_var, ...);` (capture discarded return into buf[4]); sandbox and confirm bytes unchanged. If bytes match AND score stays at 1 (or drops), the WRITTEN carve-out is satisfied for buf[8] - reducing the s3 candidate's cheat count from 1 to 0 for buf[8]. The residual at insn #18 remains but frontier item 1 (structural rewrite) applies to close it."
+   "hypothesis": "The buf[8] unused array itself is the load-bearing lever \u2014 the WRITTEN-never-read carve-out could apply if the C source captures the efc_buki_draw_zanzou return into buf[k] (per s4 frontier item 3, not yet probed).",
+   "mechanism": "Target's `sw v0,0x10(sp)` in the jal delay slot IS a written store into what would be buf[4] if buf starts at sp+0. s1-s2 evidence showed GCC allocates this store on its own without a source-level store. But an EXPLICIT source `buf[k] = efc_buki_draw_zanzou(...);` would (a) still produce the same target byte (GCC folds the discarded-return store either way), (b) satisfy the WRITTEN-never-read literal source requirement in the 2026-07-01 [[dead-vars-local-array]] carve-out.",
+   "next_probe": "s6 (structural): try `buf[k] = efc_buki_draw_zanzou(...)` (capture discarded return into buf[k], k rotating with loop counter or fixed). Sandbox and confirm bytes unchanged AND floor stays at 1 (or drops). If bytes match, the WRITTEN carve-out is satisfied for buf[8] \u2014 reducing the s3 candidate's cheat count from 1 to 0 for buf[8]. The residual at insn #18 remains but frontier probe 1's failure means it must be addressed by a chassis change (the 3-var chain above), not by buf[8] alone."
   }
  ],
  "judge_constraints": [],
