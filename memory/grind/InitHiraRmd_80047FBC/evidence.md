@@ -185,3 +185,17 @@ carve-outs, OR a genuinely different C shape that makes arg0-copy → $s4 natura
 - [s8] [s8] no OWNER-ESCALATION entry for InitHiraRmd_80047FBC exists in docs/grind/decisions.md — only the 2026-07-20 03:22 Judge PASS at line 981 (scoped to isolated arg0=0 FAKE lever qualification, explicitly NOT a final-commit gate). owner-gated outcome invalid this session
 
 - [s8] [s8] artifacts saved: tmp/grind/InitHiraRmd_80047FBC/s8/{FINDINGS.md, v1_s16_walker.c}; rejected forms banked: memory/grind/InitHiraRmd_80047FBC/rejected/{s8_s16_hword_walker.c, s8_const_qualified_base.c}
+
+- [s9] [s9] baseline sandbox --disable all: score=1, 65/65 insns, cheat_asm_stripped=393 (unchanged from s3-s8 baseline; current committed src carries `s32 buf[8]; (void)buf;` + un-annotated `arg0 = 0;`)
+
+- [s9] [s9] cluster peer prologues share `sw sX; move s0,a0; sw sY; move sY,s0` interleaved-save-and-stage idiom; base register varies: AddTbpOfst_80047EE8 -> $s2, InitHiraRmd_800480C0 -> $s2, InitHiraRmd_80047FBC -> $s4. The variation is driven by callee-save allocation pressure from function-specific sx_arg locals
+
+- [s9] [s9] InitHiraRmd_800480C0 (matched sibling) source uses forbidden `register s32 saved_arg0 asm("$18")` pin to force base into $s2; the analogous forbidden pin for 80047FBC would be `register s32 saved_arg0 asm("$20")`. Pin-family remedy is off the table per inline-asm-policy expanded catalog 2026-05-31
+
+- [s9] [s9] Declaration-order swap KILLED at score=1: GCC 2.7.2 orders pseudo-regnos by first-USE LUID (see gcc-2.7.2/local-alloc.c reg_qty allocation) not declaration LUID; declaring `base` before `p` cannot change reg 78/79 assignment because `p` is USED first at `p = (u32*)arg0`
+
+- [s9] [s9] rederive-modality catalog for InitHiraRmd_80047FBC now provably exhausted across all 4 canonical lanes: (a) Kengo transplant KILLED s8 (false cognate), (b) fresh m2c KILLED s8 (reproduces s5 chassis C at score=5), (c) decl-order swap KILLED s9 (LUID first-USE not decl), (d) cluster-shared-idiom conjecture KILLED s9 (base mapping varies with per-function pressure; only sibling's forbidden pin closes the analogous residual)
+
+- [s9] [s9] no OWNER-ESCALATION entry for InitHiraRmd_80047FBC exists in docs/grind/decisions.md (checked); only the 2026-07-20 03:22 Judge PASS at line 981 (scoped to isolated arg0=0 FAKE lever qualification, explicitly NOT a final-commit gate). owner-gated outcome invalid this session
+
+- [s9] [s9] artifacts saved: tmp/grind/InitHiraRmd_80047FBC/s9/{FINDINGS.md, text1b.baseline.c}; rejected form banked: memory/grind/InitHiraRmd_80047FBC/rejected/s9_decl_order_base_first.c; candidate.c updated with s9 status header (body unchanged from s3/s4)

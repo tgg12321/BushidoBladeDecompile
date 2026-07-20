@@ -1,7 +1,7 @@
 {
  "func": "InitHiraRmd_80047FBC",
  "file": "text1b",
- "session_count": 8,
+ "session_count": 9,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -51,23 +51,29 @@
    "floor": 1,
    "modality": "rederive",
    "headline": "s8 rederive: Kengo transplant is false-cognate dead end; fresh m2c reproduces killed chassis C; s16-walker score=31; const-base inert. All four rederive lanes measured KILLED."
+  },
+  {
+   "session": 9,
+   "floor": 1,
+   "modality": "rederive",
+   "headline": "s9 rederive: cluster-idiom hypothesis KILLED + decl-order swap KILLED; rederive modality now provably exhausted across all 4 canonical lanes"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Applying the s6 arg0=0 /* FAKE */ form (rejected/s6_arg0zero_faked.c) to src/text1b.c produces sandbox --disable all score=0 with the FAKE-bypass active (validates the Judge-passed lever closes insn #18 on the composite candidate). Prerequisite (a) of Judge's final-call gate; still unexercised in-tree after s6/s7/s8.",
-   "mechanism": "engine/volatile_cheats.py:815 _stmt_fake_annotated bypasses the stripper for /* FAKE */-annotated statements; s6 raw-pipeline probe already showed target-matching bytes from cc1+maspsx with the FAKE form.",
-   "next_probe": "s9+ (structural): apply rejected/s6_arg0zero_faked.c verbatim to src/text1b.c, measure sandbox --disable all with FAKE-bypass active (not the stripped form), confirm score=0. Composite still gates on buf[8] resolution."
+   "hypothesis": "Apply the s6 arg0=0 /* FAKE */ form (rejected/s6_arg0zero_faked.c) to src/text1b.c and measure sandbox --disable all with FAKE-bypass active \u2014 Judge prerequisite (a) of the final-call gate; still unexercised in-tree after s6/s7/s8/s9.",
+   "mechanism": "engine/volatile_cheats.py:815 _stmt_fake_annotated bypasses the stripper for /* FAKE */-annotated statements; s6 raw-pipeline probe already showed target-matching bytes from cc1+maspsx with the FAKE form. Composite candidate still gates on buf[8] resolution.",
+   "next_probe": "s10+ (structural, not rederive): apply s6_arg0zero_faked.c verbatim to src/text1b.c, measure sandbox --disable all with FAKE-bypass active, confirm score=0. Modality: structural."
   },
   {
-   "hypothesis": "InitHiraRmd_80047FBC has reached endgame-lock per [[endgame-lock-disposition-policy]] 2026-07-20 (RA/scheduler-locked cheat-matched, no SOTN-precedent coercion path, no hand-coded evidence). Owner ruling required to select disposition (INCOMPLETE-owner-accepted vs canonical-asm vs coercion sanction).",
-   "mechanism": "s7 catalogued vars= gradient across 8 variants; only unused-declaration forms hit vars=32. WRITTEN carve-out fails (target has zero stores in sp+0x18..0x37 locals region). Live-locals shapes (v4/v6/v8) all reg-alloc away. Phantom-frame trigger doesn't fire. Not GTE/packed-multiply/hand-scheduled \u2014 no S1-S8 hand-coded signals. s8 rederive-lane sweep adds Kengo-DEAD + m2c-reproduces-killed-chassis + s16-walker-worse + const-inert.",
-   "next_probe": "s9+ (escalation): file OWNER-ESCALATION per [[endgame-lock-disposition-policy]] with the s1-s8 evidence dossier. Then per driver: parks function until owner rules, queue advances."
+   "hypothesis": "InitHiraRmd_80047FBC has reached endgame-lock per [[endgame-lock-disposition-policy]] 2026-07-20 (RA/scheduler-locked cheat-matched, no SOTN-precedent coercion path, no hand-coded evidence). Owner ruling required to select disposition.",
+   "mechanism": "s1-s9 catalogued vars= gradient across 8+ variants, all sanctioned axes measured dead, no hand-coded signals per scan_hand_coded, rederive-modality now provably exhausted across all 4 canonical lanes (s8 Kengo/m2c + s9 decl-order/cluster-idiom).",
+   "next_probe": "s10+ (escalation, not rederive): file OWNER-ESCALATION per [[endgame-lock-disposition-policy]] with the s1-s9 evidence dossier. Then per driver: parks function until owner rules, queue advances."
   },
   {
-   "hypothesis": "The cluster-wide shape (AddTbpOfst_80047EE8, InitHiraRmd_80047FBC, InitHiraRmd_800480C0, func_800481E8) shares a single structural key not yet found \u2014 likely a source-level idiom (macro / inline helper) producing both the callee-save prologue staging AND vars=32 uniformly. High-risk / high-reward; out of s8 rederive scope.",
-   "mechanism": "All four cluster members share parallel derivations of p and base from arg0, target staged prologue (s0=arg0, s4=s0), 5-arg outgoing area to efc_buki_draw_zanzou or sibling, vars=32 frame reservation. Different cheats spell around the same underlying shape.",
-   "next_probe": "s9+ (research + structural): m2c-reconstruct each cluster member from asm, compare source-shape similarities, hypothesize a shared original-C idiom (possibly a #define or inline helper), test if a fixed-shape idiom applied uniformly closes all four."
+   "hypothesis": "Independently resolve buf[8] (Judge constraint b): either legitimize under dead-vars-local-array via explicit source-level `buf[k] = efc_buki_draw_zanzou(...)` \u2014 impossible since s7 established efc_buki_draw_zanzou is void-typed and target has zero stores in sp+0x18..0x37 locals region \u2014 or find a structural change that preserves the 0x50 frame without an unused array.",
+   "mechanism": "buf[8] is currently the only known frame-32 reservation carrier for this function's shape; s7 demonstrated live-locals shapes (s16/s32/u64 cascades) all reg-alloc away, and phantom-frame-slots-gcc272 trigger does not fire.",
+   "next_probe": "s10+ (structural, not rederive): survey wider phantom-frame trigger space (mixed-type spills, address-taken volatile locals, escape via extern helper pointer). Modality: structural or forensics."
   }
  ],
  "judge_constraints": [

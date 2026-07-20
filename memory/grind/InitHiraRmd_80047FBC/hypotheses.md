@@ -213,3 +213,15 @@ function's shape.
 - probe: Applied `const u32 *const base = (const u32*)arg0;` to src/text1b.c. Sandbox --disable all.
 - result: score=1, byte-identical to baseline. GCC 2.7.2 discards const at the RTL level; cse2 forms the same {reg 72, reg 78, reg 79} equivalence class and folds insn 36 identically. const is inert as an RA/CSE lever in this compiler.
 - verdict: KILLED
+
+## [s9] Declaring `base` BEFORE `p` (pure declaration-order swap, unchanged init chain `p=arg0; base=p;`) shifts cse2's canon_reg equivalence-class root selection so insn #36's canonicalization substitutes reg 72 -> reg 79 ($s4) instead of the current reg 79 -> reg 72 ($a0), closing insn #18 residual.
+- mechanism: cse2's canon_reg picks a canonical representative from each equivalence class; earlier-declared pseudos may have lower LUIDs and become the root.
+- probe: Applied decl-order swap (base declared before p, init lines unchanged) to src/text1b.c; ran sandbox --disable all.
+- result: score=1 unchanged (65/65 insns, single residual still `addu $s0,$a0,$v0` at insn #18). GCC 2.7.2 assigns pseudo-regnos by first-USE LUID not declaration LUID; `p = (u32*)arg0` uses p first so reg 78 -> p and reg 79 -> base regardless of decl order. cse2 class root selection unchanged.
+- verdict: KILLED
+
+## [s9] The cluster (AddTbpOfst_80047EE8 + InitHiraRmd_80047FBC + InitHiraRmd_800480C0) shares a single source-level idiom (macro / inline helper / struct-typed arg) that produces both the staged prologue AND cse2-fold-invariance uniformly across all members.
+- mechanism: Cluster peers show parallel target shapes (staged move s0,a0; move sN,s0 prologue + vars=32 frame + 5-arg efc_buki_draw_zanzou call) suggesting a shared original source construct.
+- probe: Read all three peers' asm/funcs/*.s. Tabulated callee-save mapping: 80047EE8 base=$s2 (3 gp saves), 80047FBC base=$s4 (5 gp saves), 800480C0 base=$s2 (7 gp saves). Diffed prologue idioms.
+- result: The staged double-copy `move s0,a0; move sN,s0` idiom IS shared, and the current src ALREADY expresses it via `p=arg0; base=p;`. BUT base's callee-save mapping varies with function-specific pressure ($s2 in 80047EE8/800480C0, $s4 in 80047FBC because sx_arg2/sx_arg3 crowd earlier callee-saves). Sibling 800480C0 uses `register asm("$18") saved_arg0;` pin to force the mapping — forbidden per inline-asm-policy expanded catalog. No shared pure-C idiom produces both the staging AND correct cse2 canonicalization across all cluster members without an explicit register pin.
+- verdict: KILLED
