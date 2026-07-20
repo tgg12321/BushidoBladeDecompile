@@ -500,3 +500,11 @@ Per user 2026-06-22: keep working it; not permanently parked.
 - [s26] docs/grind/decisions.md contains only the 2026-07-19 17:09 Judge FAIL ruling for func_80057CC8 (line 877); NO OWNER-ESCALATION entry filed yet. owner-gated result NOT authorized this session per contract (requires filed entry AND every sanctioned axis measured dead).
 
 - [s26] Cumulative s1-s26 KILLED hypothesis count: 32 (s1-s25 = 30 per ledger; s26 adds two — reused-p walking pointer + expanded decomp.me composite-signature corpus).
+
+- [s27] Baseline replay: candidate.c (offset+table reassoc, s3 pin removed) applied to src/text1b.c line 11837 measured sandbox --disable all = 3, target=build=111, rules_dropped=7, cheat_asm_stripped=395 (session-entry precondition check).
+
+- [s27] HEAD state at session entry: src/text1b.c had `register unsigned short next_idx asm("s3")` pin + both p-adds in table+offset form (F5-corner shape, s20-measured score 9). Applied candidate.c form (removed pin, swapped both to offset+table) before measuring baseline.
+
+- [s27] Call-order-swap form measured 16 (target=111, build=112, +1 insn regression) — extends the scheduling-topology asymmetry findings from s2 (31 swap-if-block-order), s3 (12 hoist-p1-before-next, 41 defer-next-after-call1), s11 (12 dup-arms-prev-if, 8 dup-arms-next-ifelse). Cross-consistent evidence: the target's insn-115 hoist and insn-89/124 pseudo-86 SET topology is intolerant to permutation of the four blocks (prev_idx-if, next_idx-tmp, p1-call, p2-call) beyond the ONE topology candidate.c encodes.
+
+- [s27] Baseline restored to score=3 after measurement (edits reverted to candidate.c form: prev-first call order); src/text1b.c line 11869-11872 back to `p = (offset+table); ang_prev = call(...) & 0xFFF; p = (offset+*(arg0+4)); ang_next = call(...) & 0xFFF;`.
