@@ -437,3 +437,4 @@
 - 2026-07-20 16:50 func_80061C00 COMPLETED-C after 4 sessions.
 - 2026-07-20 17:16 func_80069AE4 s1 [recon] floor=2: Recon s1: full scheduler-mechanism map — slot-3 addiu is LUID-forced (combine pins it to the call site); 2 lever families killed; jump2-after-sched2 pass-order fact opens the multi-block-body frontier
 - 2026-07-20 17:38 func_80069AE4 COMPLETED-C after 2 sessions.
+- 2026-07-20 17:50 func_80078A68 COMPLETED-C after 1 sessions.
