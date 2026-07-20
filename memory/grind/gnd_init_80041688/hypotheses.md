@@ -198,3 +198,21 @@
 - probe: Edited BOTH arms with distinct `goto x; x:;` at each arm's tail. Ran sandbox.
 - result: score=2, build_insns=82 — byte-identical to baseline. Empty labeled statement + trailing `goto NEXT_STMT;` both stripped by jump.c before jump2 runs.
 - verdict: KILLED
+
+## [s12] loop1 rewritten as natural `do { ... } while (i < 18);` produces different RTL than the manual goto/label form and could steer reorg.c's loop rotation to match target.
+- mechanism: GCC 2.7.2's c-parse.y lowers do-while to a distinct RTL sequence (top NOTE_INSN_LOOP_BEG + condition-at-tail branch) which reorg.c's `relax_delay_slots` and loop-note-driven passes handle differently than an explicit `if (cond) goto label;` back-branch. If reorg picks a rotation with different LUID assignments, sched1's ready-list ordering on the FALSE-arm color triple could shift.
+- probe: Edited src/text1a.c gnd_init_80041688 loop1 from goto/label to do-while form; ran `sandbox gnd_init_80041688 --disable all`.
+- result: score REGRESSED 2 -> 7, build_insns 82 -> 83. Loop-shape lowering adds one insn (compensating uncond branch or duplicated test); natural form is strictly worse than goto/label. FALSE-arm sched1 lbu order unchanged.
+- verdict: KILLED
+
+## [s12] loop1 rewritten as top-tested `while (i < 18) { ... }` gives a different loop-note topology than do-while and might avoid the do-while regression while still perturbing reorg.
+- mechanism: Top-tested `while` emits NOTE_INSN_LOOP_BEG immediately before the compare, with the fall-through path being the loop-exit; do-while has the compare at tail. Different note placement can steer reorg's delay-slot fill decisions on the back-branch.
+- probe: Edited loop1 to `while (i < 18) { p += 0x68; ... i++; }`; ran sandbox.
+- result: score REGRESSED 2 -> 7, build_insns 82 -> 83. Identical regression signature to do-while. GCC 2.7.2 lowers both natural-loop shapes to functionally equivalent RTL (both cost +1 insn vs manual goto/label). Exhausts the loop1-shape sub-axis.
+- verdict: KILLED
+
+## [s12] loop2 (currently goto/label with exit-in-middle test) rewritten as natural `while (*(s32*)(q+0x57) != 0)` — a head-tested loop that pulls the exit condition to the top — may alter q's live-range shape reaching the FALSE-arm and perturb pseudo/hardreg assignment.
+- mechanism: loop2's current shape has a mid-block `if (... == 0) goto after2;` exit followed by an unconditional back-branch; converting to head-tested while makes the exit-test the loop-back branch itself. Different RTL loop structure could alter q's live-out set into the FALSE arm and shift greg conflict lists that affect the color-lbu triple's pseudo assignments (pseudos 78/79/80).
+- probe: Edited loop2 to `while (*(s32*)(q+0x57) != 0) { if (arg1) *q |= 1; else *q &= ~1; q += 0x68; }`; ran sandbox.
+- result: score REGRESSED 2 -> 11, build_insns 82 -> 84. Loop2's exit-in-middle shape is particularly poorly served by natural-loop lowering — two extra insns vs goto/label. goto/label form is strongly optimal for loop2 as well. FALSE-arm untouched (regression is entirely in loop2 body). Axis KILLED.
+- verdict: KILLED

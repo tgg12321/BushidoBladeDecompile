@@ -200,3 +200,25 @@
 - [s11] Combined with s10's pseudo-78-fusion case-exhaustion (loop1 defs KILLED s7; pre-branch hoist KILLED s5; intra-BB init KILLED s10), every sanctioned lever axis reachable from within the function body is now measurement-dead. The only remaining un-scoped angle is header/type-level (Kengo sibling-scrape → header-type-correction for g_player_ptrs' target type), which is orthogonal to the structural modality.
 
 - [s11] Cumulative rejected bank now 18 forms (s11 adds label-placement-goto-arm-tails.c).
+
+- [s12] [s12] baseline sandbox --disable all: score=2, target_insns=82, build_insns=82, rules_dropped=3, cheat_asm_stripped=23 (unchanged from s1-s11).
+
+- [s12] [s12] loop1 = do-while: score=7, build_insns=83 (+1 insn vs baseline).
+
+- [s12] [s12] loop1 = while(top-tested): score=7, build_insns=83 (+1 insn; identical regression signature to do-while).
+
+- [s12] [s12] loop2 = while(head-tested): score=11, build_insns=84 (+2 insns; worse than loop1-shape variants).
+
+- [s12] [s12] Both natural loop1 spellings produce identical regression (score=7/insns=83) — GCC 2.7.2 lowers do-while and while to functionally equivalent RTL that costs +1 insn vs manual goto/label.
+
+- [s12] [s12] loop2's exit-in-middle shape is strongly optimized by manual goto/label; head-tested while loses 2 insns via the compensating loop-exit branch structure.
+
+- [s12] [s12] Baseline src restored after all three probes; sandbox re-verified score=2 (target_insns=82, build_insns=82).
+
+- [s12] [s12] Rejected forms banked: memory/grind/gnd_init_80041688/rejected/{loop1-do-while.c, loop1-while-top-tested.c, loop2-as-while.c}.
+
+- [s12] [s12] SYNTHESIS: loop-shape axis measured dead by DIRECT MEASUREMENT across all three natural-loop spellings — the sole un-probed sub-axis after s11's label-placement synthesis. Confirms s11's proof-of-completion for the in-function structural surface empirically: no natural-loop restructuring improves (or leaves neutral) the sandbox score. Combined with s10's pseudo-78-fusion case-exhaustion (loop1-defs KILLED s7, pre-branch KILLED s5, intra-BB KILLED s10) and s11's cross-jump axis completion (m2c-shared-v KILLED s8, split-init KILLED s9, label-placement inert s11), every in-function structural axis is now measurement-dead.
+
+- [s12] [s12] Cumulative rejected bank now 21 forms (s12 adds three loop-shape variants).
+
+- [s12] [s12] The ledger's frontier action (OWNER-ESCALATION filing at docs/grind/decisions.md) is unchanged and now empirically justified: the last un-measured structural sub-axis (loop shape) has been directly probed and killed. No sanctioned in-function lever axis remains.
