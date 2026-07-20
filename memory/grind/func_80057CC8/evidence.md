@@ -470,3 +470,17 @@ Per user 2026-06-22: keep working it; not permanently parked.
 - [s24] docs/grind/decisions.md still contains only the 2026-07-19 17:09 Judge FAIL ruling for func_80057CC8; NO OWNER-ESCALATION entry filed yet. owner-gated result NOT authorized this session per contract (requires filed entry AND every sanctioned axis measured dead; the entry-filing itself is a synthesis-modality task).
 
 - [s24] Cumulative s1-s24 KILLED hypothesis count: 29 (s1-s23=28 per ledger; s24 adds one — expand_preferences source-operand direction as C-lever).
+
+- [s25] s25 baseline: candidate.c on src/text1b.c line 11837 = sandbox --disable all 3 (target_insns=111, build_insns=111, rules_dropped=7, cheat_asm_stripped=395)
+
+- [s25] s25 pseudo 79 identity: text1b.i.lreg line 21743 (insn 150 sets reg/v:SI 79 = v0 & 0xFFF); /v-marker = DECL_RTL of C source `ang_next`; greg block 18113-18153 shows `79 in 3` disposition matching target's `andi $v1, $v0, 0xFFF` at 80057DA4
+
+- [s25] s25 cx/cy base addu measurement: our build at b750 emits `addu $v0, $v0, $a2` in-place-coalesced identical to target at 80057D0C; both then lhu $s4, 0($v0) / lhu $s5, 2($v0)
+
+- [s25] s25 divergence localization (unchanged from s1-s24): the ONLY differing insn in the p-computation window is p1 addu at b798 (`addu $v1, $v0, $a2` ours vs `addu $v0, $v0, $a2` target 80057D54); cascades to two `lh` base regs at b7ac/b7b0 vs 80057D68/D6C
+
+- [s25] s25 structural contrast: single-def single-use pseudos (cx/cy base) local-alloc AND coalesce in-place; multi-def multi-use pseudo 86 global-alloc AND pref-driven to v1. Confirms s21 local-alloc.c:472 reg_n_deaths==1 hard-gate + s24 QTYDBG absence of pseudo 86 by direct instrumentation.
+
+- [s25] s25 no OWNER-ESCALATION entry in docs/grind/decisions.md for func_80057CC8 (only 2026-07-19 17:09 Judge FAIL ruling on two-variable form); owner-gated NOT authorized this session per contract
+
+- [s25] s25 cumulative hypothesis kill count: 30 (s1-s24 = 29 per ledger; s25 adds one — 'target has an extra $v0-establishing early addu' KILLED via objdump direct measurement)
