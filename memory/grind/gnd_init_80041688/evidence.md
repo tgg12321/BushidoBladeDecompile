@@ -71,3 +71,23 @@
 - [s5] Chassis-1 permuter basin definitively exhausted: two seeds × ~15-24 min each, ~50k iters combined, zero legitimate sub-40 findings across all 14 novel outputs (9 in s4 + 5 in s5).
 
 - [s5] The reuse-`b` axis moves sched1 (40->10) but ONLY when b is dead across the loops (per-iteration boolean staging that gets overwritten each iter and finally by the FALSE arm color load). Any LIVE spelling of the axis that keeps b usable at 0x15cc must extend b's live range across the func_800486FC call, which the s5 direct probes proved is net-regressive.
+
+- [s6] [s6] sandbox --disable all: score=2, target_insns=82, build_insns=82, rules_dropped=3, cheat_asm_stripped=23 (unchanged from s1-s5).
+
+- [s6] [s6] Standalone TUs baseline_standalone.c and cheat10_standalone.c (both containing gnd_init_80041688 with same extern decls) compiled with tmp/gccdbg/cc1 -O2 -G0 -funsigned-char -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -da (BB2_ALLOC_DEBUG=1 BB2_SCHED_DEBUG=1 BB2_PRIO_DEBUG=1).
+
+- [s6] [s6] .s diff between the two forms: single lbu-position swap. baseline: `lbu $3,26($16)` at line 129 (LAST of FALSE-arm lbu triple); cheat: `lbu $3,26($16)` at line 127 (FIRST). All three lbu operands identical, all registers identical, all other insns identical. Confirms the s1-s5 finding that the sole delta is emission order.
+
+- [s6] [s6] RA is IDENTICAL between baseline and cheat: `;; Register dispositions:` shows `73→5 74→16 75→4 76→3 77→3 78→3 79→4 80→2` in both; `;; Hard regs used: 2 3 4 5 6 16 31` in both.
+
+- [s6] [s6] Pseudo 78 identified as source-level `b` bound to $v1(3) in FALSE arm. From .sched RTL: `(insn 191 ... (set (reg/v:SI 78) (zero_extend:SI (mem/s:QI (plus:SI (reg/v:SI 74) (const_int 26))))))` in baseline; equivalent (insn 194) in cheat. Also from .loop/.flow: pseudo 78 has additional defs at insns 65-66 in the cheat form (`b = (*(s16*)(p+2)) >= 0`) — no such loop1 defs in baseline.
+
+- [s6] [s6] `;; 78 conflicts:` widens from `78 2 4 29` (baseline, trivial) to `74 78 79 80 2 4 29` (cheat, spans player+$a0+$v0 pseudos). Correlated widening on 74/79/80 conflict lists. This confirms pseudo 78's live range crosses loop1 into the FALSE arm in the cheat form.
+
+- [s6] [s6] ALLOCDBG per-pseudo priority-formula inputs: baseline pseudo 78 nrefs=4 livelen=3 pri=26666; cheat pseudo 78 nrefs=8 livelen=7 pri=34285 (both allocate to hardreg=3). Allocation delta measurable in the priority formula but nrefs/livelen change is not enough to force a different hardreg because the RA order still gives pseudo 78 first pick.
+
+- [s6] [s6] BB18 (FALSE arm) sched1 SCHEDDBG trace, baseline: `PICK clock=4 picked=191 (pri=2130706433 luid=4)` — ready list `[191(p=2130706433,l=4) 194(p=2130706433,l=6) 193(p=2130706433,l=5)]`. All three lbu-family insns share the hazard-boosted priority 0x7F000001, tiebreak by luid ascending puts insn 191 (b-lbu) at clock=4 (mid-block).
+
+- [s6] [s6] BB18 sched1 SCHEDDBG trace, cheat: `PICK clock=8 picked=194 (pri=1 luid=4)` — insn 194 (b-lbu) has plain pri=1, unboosted. Ready lists at clock=4/5/6/7 all show `194(p=1,l=4)` sitting at the tail while other pri=0x7F000001 insns launch first. Insn 194 finally emits at clock=8 (last-scheduled = first-in-code slot).
+
+- [s6] [s6] Reverse-order interpretation: sched1's clock=1 slot picks the block-terminating jump (`picked=200 pri=2147483528` baseline; `picked=203` cheat). Higher clock = earlier in code emission. So baseline's b-lbu at clock=4 emits AFTER r/g (clock=7/8), matching baseline .s [r,g,b]; cheat's b-lbu at clock=8 emits BEFORE r/g (clock=6/7), matching cheat .s [b,r,g].
