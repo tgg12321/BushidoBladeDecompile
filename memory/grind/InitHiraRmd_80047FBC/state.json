@@ -52,7 +52,9 @@
    "next_probe": "s6 (structural): try `buf[k] = efc_buki_draw_zanzou(...)` (capture discarded return into buf[k], k rotating with loop counter or fixed). Sandbox and confirm bytes unchanged AND floor stays at 1 (or drops). If bytes match, the WRITTEN carve-out is satisfied for buf[8] \u2014 reducing the s3 candidate's cheat count from 1 to 0 for buf[8]. The residual at insn #18 remains but frontier probe 1's failure means it must be addressed by a chassis change (the 3-var chain above), not by buf[8] alone."
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "PASS is scoped to the isolated arg0=0 /* FAKE */ lever's qualification under dead-store-fake-exception. It does NOT clear a FINAL CALL: the candidate still carries `s32 buf[8]; (void)buf;` (pre-existing s1 cheat, load-bearing for the 0x50 frame per s3 measurement, fails dead-vars-local-array WRITTEN requirement per s1/s3 evidence \u2014 target's sw v0,0x10(sp) is GCC-allocated from the discarded call return, not source-level). Before FINAL CALL: (a) apply the s6 form to src/text1b.c and measure sandbox --disable all to confirm bytes close to score=0 with the FAKE-bypass active (not the stripped form); (b) independently resolve buf[8] (either legitimize under dead-vars-local-array via explicit source-level `buf[k] = efc_buki_draw_zanzou(...);` capture \u2014 s1 frontier probe not yet exercised \u2014 with FAKE annotation and its own layer-2 review, or find a structural change that preserves the 0x50 frame without an unused array); (c) full-build SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa; (d) fresh layer-2 adversarial cheat-reviewer per .claude/rules/review-discipline-before-commit.md on the composite commit (auditing arg0=0 AND buf[8] together, worker's verdict not credited)."
+ ],
  "origin": "queue",
  "created": "2026-07-20T06:35:14.236346+00:00"
 }
