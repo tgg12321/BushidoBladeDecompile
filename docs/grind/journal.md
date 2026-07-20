@@ -436,3 +436,4 @@
 - 2026-07-20 16:19 func_80061C00 s3 [structural] floor=2: s3 structural: const-carrier host space measured-exhausted (call-arg frame addrs fold, D+3 carriers substituted to canonical reg95, arg1-third-set rotates); n_deaths + combine loopholes source-read dead; H19: target lw order requires a0lw boosted, so the s2 swap is unfixable inside the val-carrier shape
 - 2026-07-20 16:50 func_80061C00 COMPLETED-C after 4 sessions.
 - 2026-07-20 17:16 func_80069AE4 s1 [recon] floor=2: Recon s1: full scheduler-mechanism map — slot-3 addiu is LUID-forced (combine pins it to the call site); 2 lever families killed; jump2-after-sched2 pass-order fact opens the multi-block-body frontier
+- 2026-07-20 17:38 func_80069AE4 COMPLETED-C after 2 sessions.
