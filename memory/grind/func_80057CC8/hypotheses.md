@@ -359,3 +359,15 @@
 - probe: Verified HEAD src is exactly the F5-corner shape (both p-adds spelled table_expr+offset, git status clean, s3 pin present but score-invisible under --disable all mask). Ran `& tools/wteng.ps1 main sandbox func_80057CC8 --disable all` — score=9, target_insns=111, build_insns=111, rules_dropped=7, cheat_asm_stripped=397.
 - result: F5 corner measures 9 — matches p2-swap-alone value; no novel reassoc behavior. p1 operand order remains scoring-inert even under the p2-swap regression, confirming p2's PLUS operand order fully determines late-reassoc reach.
 - verdict: KILLED
+
+## [s21] local-alloc's block_alloc bail-out on pseudo 86 is a scoring-heuristic (C-tweakable) rather than a semantic requirement (untweakable), so a C form presenting 86 as single-def-use per fragment could get 86 into local-alloc.
+- mechanism: local-alloc.c:470-478 checks reg_basic_block[i]>=0 && reg_n_deaths[i]==1 to set reg_qty[i]=-2 (local-alloc-eligible); else reg_qty[i]=-1 (skip -> global-alloc). Pseudo 86 has reg_n_deaths==2 per s7 lreg dump ('Register 86 used 6 times across 10 insns in block 4; dies in 2 places').
+- probe: Read tools/gcc-2.7.2/local-alloc.c:470-478 and 1978-2029 (reg_is_set / reg_is_born). Confirmed the check is a single hard gate on reg_n_deaths==1 with NO fall-through; every pseudo with two or more deaths is unconditionally promoted. Two-SET-of-p C forms produce two distinct RTL live-ranges (last-use death of first SET + last-use death of second SET) => reg_n_deaths>=2 => triggered without exception.
+- result: The bail-out is unconditional-semantic. Any C form that assigns p twice (which target-asm requires by having two DIFFERENT hard regs for p1 and p2) produces reg_n_deaths>=2 and gets skipped by local-alloc. Only two-C-local forms produce two distinct pseudos (Judge-banned). Single-C-local forms are separately killed by s6/s7 (expand_preferences + sched1-hoist).
+- verdict: KILLED
+
+## [s21] A self-referential SET (`p = p + (off_next - off_prev)`) could reduce pseudo 86's reg_n_deaths to 1 by making the second SET reference the first as source operand, keeping p's live-range contiguous.
+- mechanism: If GCC's flow.c treats a self-referential SET (SET_DEST==reg appearing in SET_SRC) as a modification rather than a full rebirth, no REG_DEAD note fires at the source-side use of p, and reg_n_deaths could stay at 1. combine.c should also fold the (next-prev) delta cancellation with off_prev in p's value.
+- probe: Applied self-referential form `p = (s16*)((s32)p + (((s32)(next_idx<<16)>>16)<<2 - ((s32)(prev_idx<<16)>>16)<<2))` to src/text1b.c line 11871; sandbox --disable all measured.
+- result: sandbox=64; target_insns=111 build_insns=115 (+4 regression). GCC 2.7.2 does NOT fold the delta cancellation; combine.c treats the two shift-and-subtract chain as independent of the original off_prev inside p. Additionally, the self-ref adds a live-through requirement for prev_idx across call1, further disturbing scheduling. Byte-neutral single-death shape is not reachable; flow.c places REG_DEAD on p's use in the subtraction expression normally.
+- verdict: KILLED

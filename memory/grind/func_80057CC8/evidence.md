@@ -406,3 +406,17 @@ Per user 2026-06-22: keep working it; not permanently parked.
 - [s20] Structural modality is now exhausted for the operand-order axis (2x2 fully measured; all four cells recorded).
 
 - [s20] Frontier collapses per the ledger's own s10 kill-order projection: only s21 local-alloc block_alloc forensics remains before OWNER-ESCALATION filing prerequisites are met.
+
+- [s21] s21 baseline replay: candidate.c edits (offset+table reassoc, no s3 pin) on src/text1b.c line 11837 measure sandbox --disable all = 3 (target_insns=111, build_insns=111, rules_dropped=7, cheat_asm_stripped=395); replays s1-s20 baseline cleanly.
+
+- [s21] local-alloc.c:470-478 (Determine which pseudo-registers can be allocated by local-alloc): `if (reg_basic_block[i] >= 0 && reg_n_deaths[i] == 1 && (reg_alternate_class(i) == NO_REGS || !CLASS_LIKELY_SPILLED_P(reg_preferred_class(i)))) reg_qty[i] = -2; else reg_qty[i] = -1;`. The reg_n_deaths==1 test is a hard gate with no exception.
+
+- [s21] local-alloc.c:1978-2029 (reg_is_set / reg_is_born): local-alloc calls alloc_qty only when reg_qty[regno]==-2 (line 2022). Pseudos with reg_qty==-1 are silently skipped and never get a qty, forcing global-alloc to handle them.
+
+- [s21] s7 lreg dump verbatim: 'Register 86 used 6 times across 10 insns in block 4; dies in 2 places; GR_REGS or none; pointer.' reg_n_deaths[86]==2 => reg_qty[86]==-1 => local-alloc bail-out => promoted to global-alloc pool.
+
+- [s21] s21 self-ref-p-delta measurement: sandbox=64, build_insns=115 (+4). Saved as memory/grind/func_80057CC8/rejected/structural-self-ref-p-delta.c with mechanism annotations.
+
+- [s21] Src reverted to HEAD (register asm(s3) pin + rules) via git checkout; git status shows only the metrics/events.jsonl append and the new rejected-form file. No src/text1b.c dirt.
+
+- [s21] docs/grind/decisions.md STILL contains no OWNER-ESCALATION entry for func_80057CC8 (only the 2026-07-19 17:09 Judge FAIL ruling on the two-variable form). owner-gated is NOT authorized THIS session per contract.
