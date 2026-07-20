@@ -395,3 +395,4 @@
 - 2026-07-19 22:59 CIRCUIT-BREAK: 3 consecutive invalid sessions on func_800611A4
 - 2026-07-20 00:08 func_80049A2C s1 [recon] floor=0: Recon: 3 of 4 judge-flagged constructs are score-inert noise; only dummy[2] is load-bearing (frame slot for target's ALIGN8(vars)=8).
 - 2026-07-20 00:21 func_80049A2C s2 [structural] floor=0: Phantom-frame-slot mechanism KILLED on H1/H2 axes; no lh+HImode-bitwise trigger fires in this shape without adding non-target insns.
+- 2026-07-20 00:36 func_80049A2C: judge FAILED a bytes-proven candidate — The candidate satisfies three of the four judge_constraints cleanly: new_var4, the empty `if (a1_val) { }`, and the `(ne
