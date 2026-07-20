@@ -238,3 +238,25 @@
 - [s13] [s13] Baseline sandbox re-verified after all measurements: score=2 (state clean; no src edits held).
 
 - [s13] [s13] Two rejected forms banked this session: memory/grind/gnd_init_80041688/rejected/chassis2-splitinit-permuter-basin.c (chassis-2 shape + basin analysis), chassis3-shared-v-shared-call-permuter-basin.c (chassis-3 shape + basin analysis).
+
+- [s14] baseline sandbox --disable all -> score=2, target_insns=82, build_insns=82, rules_dropped=3, cheat_asm_stripped=23 (unchanged from s1-s13)
+
+- [s14] variant U32 (extern u32 g_player_ptrs[]) sandbox --disable all -> score=2, build_insns=82 — byte-identical to baseline
+
+- [s14] variant VOIDPTR (extern void *g_player_ptrs[]) sandbox --disable all -> score=2, build_insns=82 — byte-identical to baseline
+
+- [s14] baseline sandbox --disable all re-verified after both probes: score=2 (src state clean)
+
+- [s14] Kengo/*.txt grep for g_player_ptrs and D_800A9A10: 0 hits — no sibling evidence
+
+- [s14] tmp/decomp_me_corpus/ grep for 800A9A10: 5 hits, ALL unrelated-game false positives (aliased addresses)
+
+- [s14] src/text1a.c use-site census: 12 hits (2 extern decls + 10 use sites); ZERO have signed-specific semantics — every use is NULL check (`== 0`), pointer cast (`(s16*)`, `(s32*)`), or zero write
+
+- [s14] four-prong test on U32 flip: (a) FAIL zero signed sites, (b) FAIL no compensating cast is functionally necessary, (c) PASS one-extern-per-file (two identical edits, form-clean), (d) FAIL no casts eliminated — three of four prongs fail
+
+- [s14] four-prong test on VOIDPTR flip: OUT OF SCOPE per rule line 183-185 (scalar<->pointer flip excluded from rule regardless of measurement)
+
+- [s14] mechanistic disconnect: s6-CONFIRMED lever is sched.c insn_priority hazard-tag on pseudo-78 in BB18; player is loaded once at entry and thereafter aliased via u8*; g_player_ptrs' element type has zero downstream RTL effect on BB18 — the byte-identical measurement result confirms this predicted disconnection
+
+- [s14] existing decisions.md entry 2026-07-20 13:32 (docs/grind/decisions.md:1019) previously ruled FAIL on canonical-asm authorization, directing this axis be exhausted first; that direction is now discharged

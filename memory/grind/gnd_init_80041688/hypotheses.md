@@ -234,3 +234,21 @@
 - probe: Cross-session synthesis: chassis-1 dual-seed exhaustion (s4 + s5, ~50k iters combined), chassis-2 measurement this session (~3k iters), chassis-3 measurement this session (~1.2k iters). No sandbox-baseline-2 C form exists that produces different pre-sched1 RTL than chassis-1 per the s2/s3/s8 combine-collapse measurements.
 - result: Every distinct permuter chassis in the reachable form space has been either fully searched (chassis-1) or proven basin-wise worse than the fully-searched one (chassis-2, chassis-3). No further chassis expansion is available.
 - verdict: CONFIRMED
+
+## [s14] Flipping g_player_ptrs' element type from s32 to u32 at its two extern decls in src/text1a.c will restructure the .rtl on the color reads enough to alter sched1's ready-set ordering on the FALSE-arm color-lbu triple (ledger frontier[1] mechanism claim).
+- mechanism: Header-type-correction under [[header-type-correction-from-use-sites]] four-prong test; hypothesized to change LUID/RTL shape of the three color reads via a different global type declaration, orthogonal to pseudo-78 fusion and permuter search-space topology.
+- probe: Edited both `extern s32 g_player_ptrs[];` sites (text1a.c:163, 898) to `extern u32 g_player_ptrs[];`. Ran `& tools/wteng.ps1 main sandbox gnd_init_80041688 --disable all`. Restored src, re-verified baseline.
+- result: sandbox score=2, target_insns=82, build_insns=82, rules_dropped=3, cheat_asm_stripped=23 — BYTE-IDENTICAL to baseline. Mechanistically disconnected from s6 lever (player is loaded once at entry then aliased via u8*; array-element type has no downstream RTL effect on BB18). Also FAILS four-prong test: prong (a) zero signed-specific use sites (every use is NULL check, ptr cast, or zero write), prong (b) no compensating cast is functionally necessary under s32, prong (d) no casts eliminated under u32.
+- verdict: KILLED
+
+## [s14] Flipping g_player_ptrs to `void*[]` (scalar->pointer) will restructure array-element reads enough to change sched1 ordering.
+- mechanism: Same target-type-correction hypothesis, extended to the actual-semantic type (pointer array) rather than sign flip only. OUT OF SCOPE per rule line 183-185 ('Does NOT sanction changing a type from a struct/union/pointer to a scalar or vice versa'); measured purely for exhaustion.
+- probe: Edited both extern sites to `extern void *g_player_ptrs[];`. Ran sandbox --disable all. Restored src.
+- result: sandbox score=2, byte-identical to baseline. Combine/CSE folds the array-element load to the same RTL as under s32. Even a hypothetical byte-improvement here could not be committed via [[header-type-correction-from-use-sites]] — the rule excludes scalar<->pointer flips.
+- verdict: KILLED
+
+## [s14] A Kengo/scrape sibling function or use-site census provides positive-evidence signed semantics (or width/pointer-shape evidence) that would let a header-type flip clear prong (a) of the four-prong test.
+- mechanism: Cross-project sibling ground-truth per [[header-type-correction-from-use-sites]] prong (a) tightening for sparsely-used globals — at least one qualifying signed-specific use-site is required.
+- probe: grep g_player_ptrs / D_800A9A10 over Kengo/*.txt (all 0 hits — Kengo dumps are ASM/symbol tables only, addresses do not correspond to BB2's 0x800A9A10). grep 800A9A10 over tmp/decomp_me_corpus/ (5 hits, all false positives from unrelated games: func_8009E550/func_800A8E84/func_800A99A8). grep 'gnd' over corpus (2 hits: GZGND=func_800200A0 POLY_F4 setup unrelated; TIgnD=SOTN EntityNumericDamage). In-repo use-site census (12 sites in src/text1a.c): zero sites have signed-specific semantics (no `< 0`, no signed shift, no clamp, no round-toward-zero); every use is NULL check, pointer cast, or zero write.
+- result: Zero sibling evidence available. Zero in-repo positive-evidence signed-semantics sites. Prong (a) unclearable regardless of measurement outcome — the 'absence of contradiction is not evidence of correctness' clause (rule line 45) forbids passing on the basis of consistency alone.
+- verdict: KILLED
