@@ -113,3 +113,33 @@
 - [s7] s7 mechanistic explanation for the cheat10 vs s7raw divergence: cheat10's `b = (X >= 0)` compiles to setcc/slt with near-zero intra-iter live range (def-use back-to-back), so greg keeps pseudos 76(p) and 78(b) both in $v1 via non-overlapping intra-iter allocation. s7raw's `b = X; if (b >= 0)` gives b a 2-insn live range (lh through bltz) that overlaps p's live range across the loop1 body, forcing a greg conflict and hardreg split.
 
 - [s7] s7 policy vetting: raw-halfword staging is a dead store to `b` for RA/scheduling coercion per [[no-new-park-categories]] cheats-by-any-spelling — same intent as loop1-boolean-stage-b-reuse.c, different spelling. The value stored to `b` in loop1 is immediately dead after `if (b >= 0)` (b is unread until the FALSE-arm reassignment overwrites it). Rejected on policy grounds even before the measurement showed it wasn't byte-neutral.
+
+- [s8] s8 baseline sandbox --disable all: score=2, target_insns=82, build_insns=82, rules_dropped=3, cheat_asm_stripped=23 (unchanged from s1-s7).
+
+- [s8] Fresh m2c decompile of asm/funcs/gnd_init_80041688.s (tmp/grind/gnd_init_80041688/s8/m2c_fresh.c): produces STRUCTURALLY DIFFERENT shape — no r/g/b locals in FALSE arm (loads inlined into OR expression); TRUE arm's func_8004881C call takes inlined lbu args; both arms assign to a SINGLE `var_a0_2` intermediate consumed by ONE gnd_load_tex(var_a0_2) OUTSIDE the if/else. Matches target's actual asm: one shared `jal gnd_load_tex` at .L800417B4 (TRUE arm reaches via `j .L800417B4`; FALSE arm falls through).
+
+- [s8] m2c-shape variant (shared v + shared gnd_load_tex(v) outside arms): sandbox --disable all → score=12, build_insns=80 (regressed 2→12). jump2/find_cross_jump merged the trailing `or v0,v0,v1` (intermediate) and `or a0,a0,v0` (final, in delay slot) into a SHARED tail — collapsing 2 insns vs target. Target keeps arm-distinct final or's blocked from merge: TRUE `or a0,a0,v0` (v RIGHT), FALSE `or a0,v1,a0` (b LEFT in $v1).
+
+- [s8] Inlined-loads FALSE-arm-only variant (drop r/g/b locals, keep separate gnd_load_tex per arm): sandbox score=2 (byte-identical to baseline). Combine folds inlined loads back to same RTL pre-sched1; no LUID/DAG effect.
+
+- [s8] Inlined-loads BOTH-arms variant (also inline func_8004881C args): sandbox score=2 (unchanged). Load-inlining is inert for this function.
+
+- [s8] m2c-shape disasm shared-tail region (tmp/grind/gnd_init_80041688/s8/m2c_shape.dis): `or v0,v0,v1; jal gnd_load_tex; or a0,a0,v0(delay)` — the shared tail spans FALSE's intermediate or + shared jal + shared final or. Target's shared region is just `jal gnd_load_tex; nop`. The m2c-shape collapses too much.
+
+- [s8] Mechanistic finding: target achieves arm-distinct final-or shapes (blocking cross-jump merge past the jal) because b lands preserved in $v1 through the FALSE arm's ORs (`or a0,v1,a0` = b LEFT). This requires target's [b,r,g] lbu order — same sched1 chain-length wall as s1-s7. The rederive-via-m2c-shape path CONVERGES back to the same wall from a different angle rather than routing around it.
+
+- [s8] Rederive-modality conclusion: fresh m2c does not reveal a new axis. The remaining unmeasured surfaces are (a) COMBINING axes (m2c-shape + loop1-raw-halfword; may have different RA than s7's arm-local raw-halfword form), (b) shared-v with |= statement chain per arm (may leave arm-distinct enough RTL to block jump2 merge past final or). Both are speculative combinatorial extensions of already-KILLED single axes.
+
+- [s8] s8 baseline sandbox --disable all: score=2, target_insns=82, build_insns=82, rules_dropped=3, cheat_asm_stripped=23 (unchanged from s1-s7).
+
+- [s8] s8 fresh m2c decompile (tmp/grind/gnd_init_80041688/s8/m2c_fresh.c): m2c reconstructs the FALSE arm without any r/g/b locals (loads inlined into OR expression), TRUE arm's func_8004881C call with inlined lbu args, AND crucially uses a SINGLE `var_a0_2` intermediate assigned in each arm consumed by ONE gnd_load_tex(var_a0_2) outside the if/else. This matches target's actual asm layout: one shared `jal gnd_load_tex` at .L800417B4 that both arms reach.
+
+- [s8] s8 m2c-shape variant applied to src (shared v + shared gnd_load_tex(v)): sandbox score=12, build_insns=80. Regressed by 2 insns because jump2/find_cross_jump merged the final or's into shared position — build has `or v0,v0,v1; jal; or a0,a0,v0(delay)` shared while target keeps arm-distinct final or's (TRUE: `or a0,a0,v0` in `j` delay; FALSE: `or a0,v1,a0`).
+
+- [s8] s8 inlined-loads FALSE-only variant: sandbox score=2 (unchanged). FALSE arm disassembly identical to baseline (still [r,g,b] order with intermediate r/g/b pseudos synthesized by combine).
+
+- [s8] s8 inlined-loads BOTH-arms variant: sandbox score=2 (unchanged). Combine folds inlined loads back to same RTL; no effect on sched1.
+
+- [s8] s8 mechanistic finding: target achieves arm-distinct final-or shapes (blocking cross-jump merge) because b lands in $v1 preserved through the FALSE arm's ORs (`or a0,v1,a0` = b LEFT operand). This requires target's [b,r,g] lbu order — the same sched1 chain-length priority wall s1-s7 hit. The m2c-shape rederive path converges back to the same wall from a different angle rather than routing around it.
+
+- [s8] s8 conclusion: fresh-decompile axis measured dead. The remaining pseudo-78-fusion / cross-jump defeat surface for this function is narrow enough that s7's case-exhaustion proof (dead-store OR RA-cascade dichotomy) plus s8's shared-call-shape measurement close the standard rederive frontiers. What remains unmeasured: (a) using loop2's q-walker to establish live values reaching the FALSE arm that alter conflict-graph shape without direct b-fusion (speculative — likely dead-code-adjacent), (b) header-type-correction for g_player_ptrs' target type (currently s32* — would only matter if the u8 loads at +0x18/+0x19/+0x1A become non-byte, breaking match); (c) a whole owner escalation on the sched1 hazard-tag mechanism which s6 pinpointed.

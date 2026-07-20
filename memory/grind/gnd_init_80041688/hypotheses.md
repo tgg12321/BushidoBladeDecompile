@@ -119,3 +119,27 @@
 - probe: Synthesis of s4/s5 evidence (cheat10 = shape (a) → forbidden) + s7 measurement (raw-halfword = shape (b) → RA cascade). No third spelling class exists: a loop1-scope def of `b` either produces a value dead before use OR live to use.
 - result: CONFIRMED by case exhaustion. Kills the entire `loop1-b-staging` family as a viable frontier for reaching floor 0 without other regressions.
 - verdict: CONFIRMED
+
+## [s8] m2c fresh decompile reveals structurally-different shape (shared v + shared gnd_load_tex outside arms) that when applied unlocks a new schedule/RA path around the sched1 lbu-emission wall.
+- mechanism: target has ONE jal gnd_load_tex at .L800417B4 shared between arms (m2c reconstructs this original-source structure). Providing this to our fork should let jump2 preserve target byte layout (2 or's per arm, then shared jal).
+- probe: Rewrote FALSE arm to `v = *((u8*)player+0x1A) | ((*((u8*)player+0x18)<<16) | (*((u8*)player+0x19)<<8));`, TRUE arm to `v = func_8004881C(...); v = (v<<16)|(v<<8)|v;`, then `gnd_load_tex(v);` outside both arms. sandbox --disable all.
+- result: score REGRESSED 2→12, build_insns 82→80. jump2/find_cross_jump merged the trailing intermediate + final or's into a shared tail spanning both arms (dropping 2 insns vs target). Target blocks the merge via arm-distinct final-or shapes (TRUE `or a0,a0,v0`, FALSE `or a0,v1,a0` with b in $v1) — which requires the [b,r,g] lbu order (the s1-s7 wall). m2c-shape converges back to the same wall.
+- verdict: KILLED
+
+## [s8] Dropping intermediate r/g/b locals (inlining loads into OR expression) alters sched1 LUID topology enough to swap lbu emission order.
+- mechanism: Without intermediate SETs pinning r/g/b to pseudos before the OR, sched1 sees a smaller RTL region with potentially different LUID assignments.
+- probe: Inlined loads in FALSE-arm-only, then BOTH arms; sandbox --disable all each.
+- result: Score stayed 2 (byte-identical to baseline) in both variants. Combine folds inlined loads back to same RTL pre-sched1. Load-inlining is inert.
+- verdict: KILLED
+
+## [s8] m2c fresh decompile of gnd_init_80041688.s reveals a structurally-different C shape (shared function-scope v, single shared gnd_load_tex(v) call outside both if/else arms) that when applied will unlock a new schedule/RA path around the sched1 lbu-emission wall.
+- mechanism: The target has ONE jal gnd_load_tex at .L800417B4 shared between arms (TRUE arm jumps there via `j .L800417B4`; FALSE arm falls through). This matches m2c's reconstructed shape: `if(...) v=...; else v=...; gnd_load_tex(v);`. Providing this original-source-like structure to our fork should let jump2 preserve the target's byte layout (2 or's in each arm, then shared jal).
+- probe: Rewrote FALSE arm to `v = *((u8*)player+0x1A) | ((*((u8*)player+0x18)<<16) | (*((u8*)player+0x19)<<8));` and TRUE arm to `v = func_8004881C(...); v = (v<<16)|(v<<8)|v;`, then `gnd_load_tex(v);` outside both arms. sandbox --disable all.
+- result: score REGRESSED 2 -> 12, build_insns 82 -> 80. objdump: jump2/find_cross_jump merged the trailing `or v0,v0,v1` and `or a0,a0,v0` (delay slot) into a SHARED tail spanning both arms — collapsing 2 insns vs target. Target keeps arm-distinct final-or shapes (TRUE final: `or a0,a0,v0` in `j` delay slot; FALSE final: `or a0,v1,a0` — b on LEFT in $v1). To match target's byte layout in shared-jal shape, b must land preserved in $v1 across the FALSE arm ORs, which requires target's [b,r,g] lbu order — the same wall s1-s7 hit. m2c-shape does NOT unlock a new path.
+- verdict: KILLED
+
+## [s8] Dropping intermediate r/g/b locals in the FALSE arm (inlining the loads directly into the OR expression) will alter sched1's LUID topology enough to swap the lbu emission order to target's [b,r,g].
+- mechanism: With no intermediate SET nodes between the three lbus and the OR-tree, cfganal/sched1 sees a smaller RTL region and may assign LUIDs differently — the intermediate SETs in the current form pin r/g/b to specific pseudos before the OR combines them.
+- probe: Applied `gnd_load_tex(*((u8*)player+0x1A) | ((*((u8*)player+0x18)<<16) | (*((u8*)player+0x19)<<8)));` in FALSE arm (kept TRUE arm intact). sandbox --disable all. Then extended to BOTH arms (inlined loads in TRUE arm's func_8004881C call too).
+- result: Score stayed at 2 in both variants — byte-identical to baseline. Combine folds inlined loads back to the same RTL before sched1 sees them; no LUID/DAG effect. Load-inlining is inert for this function.
+- verdict: KILLED
