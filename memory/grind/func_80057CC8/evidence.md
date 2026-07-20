@@ -508,3 +508,17 @@ Per user 2026-06-22: keep working it; not permanently parked.
 - [s27] Call-order-swap form measured 16 (target=111, build=112, +1 insn regression) — extends the scheduling-topology asymmetry findings from s2 (31 swap-if-block-order), s3 (12 hoist-p1-before-next, 41 defer-next-after-call1), s11 (12 dup-arms-prev-if, 8 dup-arms-next-ifelse). Cross-consistent evidence: the target's insn-115 hoist and insn-89/124 pseudo-86 SET topology is intolerant to permutation of the four blocks (prev_idx-if, next_idx-tmp, p1-call, p2-call) beyond the ONE topology candidate.c encodes.
 
 - [s27] Baseline restored to score=3 after measurement (edits reverted to candidate.c form: prev-first call order); src/text1b.c line 11869-11872 back to `p = (offset+table); ang_prev = call(...) & 0xFFF; p = (offset+*(arg0+4)); ang_next = call(...) & 0xFFF;`.
+
+- [s28] candidate.c form floor = 3 (offset+table reassociation for both p adds, s3 pin removed) — replays across s1/s9/s11/s12 baseline checks under & tools/wteng.ps1 main sandbox func_80057CC8 --disable all (score=3, target_insns=111, build_insns=111, rules_dropped=7, cheat_asm_stripped=395).
+
+- [s28] HEAD form floor = 9 with s3 pin present (score-invisible under --disable all mask). p1 pointer addu at 0x80057D54: target `addu $v0,$v0,$a2`, build `addu $v1,$v0,$a2`; cascades to two dependent lh base regs at 0x80057D68 / 0x80057D6C.
+
+- [s28] Pseudo 86 mechanism chain (s6/s7/s15/s16/s21/s24/s25 forensics): /v-marked DECL_RTL(p) single global-alloc allocno with two SETs at insns 89 (PLUS pseudo112 pseudo88) and 124 (PLUS pseudo129 pseudo130). Sched1 hoists insn 115 to LAUNCH_PRIORITY=0x7f000001 via adjust_priority + birthing_insn_p (reg_n_sets[78]==1 for ang_prev). Post-sched linear order places 115 immediately before call2 (147), extending v0 live range across insn 124. set_preference walks XEXP(src, 0) at each SET; pre-prune hard_reg_preferences[86] = {v0, v1}; prune_preferences drops v0 by conflict; post-prune {v1}. hard_reg_copy_preferences[86] empty. find_reg picks v1 by reg_alloc_order fallthrough. local-alloc.c:472 reg_n_deaths==2 unconditional-semantic bail-out skips pseudo 86.
+
+- [s28] Judge FAIL 2026-07-19 17:09 REJECTED two-C-locals split under cheats-by-any-spelling (docs/grind/decisions.md line 877). Frontier axes it left open: (1) inline-expression form eliminating bound `p` local; (2) p2 PLUS operand-order rearrangement. Both closed in ledger: s8 inline-both-calls=0 but cheat-class rejected in-session per [[no-new-park-categories]]; s8/s20 p2 operand-swap regresses 3->9, F5-corner double-swap=9.
+
+- [s28] 32 rejected forms banked in memory/grind/func_80057CC8/rejected/ across all measured modalities: 12 structural, 6 permuter alias-holder finds, 8 rederive shapes, 6 Judge-precluded two-local spellings.
+
+- [s28] Corpus rederive routes closed: Kengo unfindable (Kengo/ is PS2 disc + symbol dump only, no C source — s17); SOTN accessible slice psxsdk-only, no 12-bit-angle domain code (s17); decomp.me corpus 11-of-11 exhaustive composite-signature sample (`<<16>>16<<2` x `0xFFF` at gcc272-cdk/psx/psyq3.5 hits) has zero 2-neighbor arena-angle-interpolation functions (s26).
+
+- [s28] OWNER-ESCALATION filed at docs/grind/decisions.md line 895 (this session, s28) per hirahira_w_frie / motion_SetMotion / func_80045294 / cpu_side_move_dir_4 precedent format. Two mutually exclusive options presented; agent does not self-resolve.

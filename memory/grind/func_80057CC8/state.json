@@ -1,8 +1,8 @@
 {
  "func": "func_80057CC8",
  "file": "text1b",
- "session_count": 27,
- "current_modality": "rederive",
+ "session_count": 28,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 0,
@@ -171,13 +171,19 @@
    "floor": 3,
    "modality": "rederive",
    "headline": "s27 rederive: call-order swap (next-first, prev-second) KILLED at 16/+1insn; extends s2/s3/s9 scheduling-topology asymmetry findings \u2014 target-shape not freely permutable across call sites either."
+  },
+  {
+   "session": 28,
+   "floor": 3,
+   "modality": "synthesis",
+   "headline": "s28 synthesis: 27-session ledger consolidated; OWNER-ESCALATION filed in docs/grind/decisions.md line 895 with two options (inline-both-calls carve-out per duplicated-statement-into-arms adapted / INC"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "SYNTHESIS-MODALITY: file the OWNER-ESCALATION entry in docs/grind/decisions.md for func_80057CC8 per s10/s17/s19/s22/s23/s24/s25/s26/s27 ledger prescription and OWNER-ESCALATION precedents (hirahira_w_frie / motion_SetMotion / func_80045294 / cpu_side_move_dir_4).",
-   "mechanism": "s7 single-pseudo impossibility CONFIRMED + s10 Judge binding on two-C-locals + s21 local-alloc.c:472 hard-gate + s22-s23 permuter modality KILLED across 7 chassis + s24 instrumentation-verified mechanism chain + s25 cx/cy vs p1 structural contrast + s26 reused-p walking-pointer regression + s27 call-order-swap regression prove the divergence is bound to pseudo 86's multi-def multi-use property AND the four-block scheduling topology is target-fixed. All s1-s27 sanctioned axes measured dead across structural, permuter, forensics, and rederive modalities.",
-   "next_probe": "Next synthesis-modality session: draft OWNER-ESCALATION entry with three options (narrow Judge to permit documented two-scope-p form; canonical-asm carve-out per fork-divergence-inline-asm analogue adapted for scheduling-driven single-pseudo impossibility; hold INCOMPLETE indefinitely). Cite s1-s27 exhaustion evidence, s6/s7/s15/s16/s24/s25 forensics chain, s21 local-alloc semantic-requirement, s26 reused-p regression + s27 call-order regression as final rederive-axis kills. Append to docs/grind/decisions.md."
+   "hypothesis": "OWNER-ESCALATION filed; awaiting owner ruling on option (a) inline-both-calls carve-out under [[duplicated-statement-into-arms]] adapted for compound-address expression duplication across independent call arg-lists, versus option (b) accept INCOMPLETE-owner-accepted with candidate.c (floor 3) standing on main.",
+   "mechanism": "The residual is register-allocation-only at pseudo 86's p1-addu allocation; RA at every other instruction is target-identical (108 of 111 insns byte-match target under candidate.c form). Sanction of option (a) closes bytes via a form measured score=0 at s8. Sanction of option (b) accepts the honest pure-C floor 3 as the standing state.",
+   "next_probe": "Driver parks func_80057CC8 until owner rules. No further grind session should re-measure sanctioned axes (all measured dead). If owner rules option (a), a subsequent session applies the s8 inline-both-calls form with mandatory /* FAKE */ annotation citing the mechanism + exhaustion dossier and re-proves bytes through the normal candidate path with default-FAIL Judge + layer-2 review. If owner rules option (b), function moves to INCOMPLETE-owner-accepted disposition and queue advances."
   }
  ],
  "judge_constraints": [

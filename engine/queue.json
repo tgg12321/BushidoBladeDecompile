@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80057CC8",
-      "file": "text1b",
-      "distance": 9,
-      "verdict": "C",
-      "rules": 7,
-      "status": "active"
-    },
-    {
       "func": "func_800611A4",
       "file": "text1b",
       "distance": 9,
@@ -2677,6 +2669,15 @@
       "park_reason": "AUTO-PARK (batch-cadence): WIP-stuck 1 iter(s) at queue top; the worker lowered the floor but did not close, and cold re-attempts re-derive the same plateau. WIP checkpoint preserved in memory/wip/func_8004954C/ (resume there). Parked per the 50-item-goal set-aside-walls directive; orchestrator batch-reviews auto-parks (unpark + deep-dive the closest floors). Resume: modality change per the WIP notes (orchestrator deep-dive / directed permuter / instrumented cc1)."
     },
     {
+      "func": "func_80057CC8",
+      "file": "text1b",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 7,
+      "status": "parked",
+      "park_reason": "owner escalation pending: docs/grind/decisions.md:895 (2026-07-19 \u2014 func_80057CC8 (src/text1b.c) \u2014 OWNER-ESCALATION, filed by grind s28 synthesis)"
+    },
+    {
       "func": "func_8007CA00",
       "file": "display",
       "distance": 13,
@@ -3001,13 +3002,13 @@
   ],
   "counts": {
     "total": 363,
-    "active": 291,
+    "active": 290,
     "by_status": {
-      "active": 291,
-      "parked": 72
+      "active": 290,
+      "parked": 73
     },
     "by_verdict": {
-      "C": 137,
+      "C": 136,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
