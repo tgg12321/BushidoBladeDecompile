@@ -7,7 +7,7 @@
   Drill C (live, -WithJudge): the judge MUST FAIL a known-cheat candidate.
 #>
 [CmdletBinding()]
-param([switch]$WithJudge)
+param([switch]$WithJudge, [string]$JudgeModel = 'fable')
 $ErrorActionPreference = 'Stop'
 $Root = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 Set-Location $Root
@@ -67,7 +67,7 @@ to this exact path: $judgeOut
 "@
     $sid = [guid]::NewGuid().ToString(); $env:CLAUDE_SESSION_ID = $sid
     $claudeArgs = @('-p', $task, '--append-system-prompt-file', 'tools/grinder/roles/judge.md',
-                    '--permission-mode', 'bypassPermissions', '--model', 'fable',
+                    '--permission-mode', 'bypassPermissions', '--model', $JudgeModel,
                     '--session-id', $sid, '--output-format', 'json')
     $null = ($null | & claude @claudeArgs | Out-String)
     Remove-Item Env:\CLAUDE_SESSION_ID -ErrorAction SilentlyContinue
