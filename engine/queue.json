@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80078A68",
-      "file": "text1b_b",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active"
-    },
-    {
       "func": "myRobGeneiDraw2",
       "file": "code6cac_b",
       "distance": 3,
@@ -2922,14 +2914,14 @@
     }
   ],
   "counts": {
-    "total": 358,
-    "active": 324,
+    "total": 357,
+    "active": 323,
     "by_status": {
-      "active": 324,
+      "active": 323,
       "parked": 34
     },
     "by_verdict": {
-      "C": 170,
+      "C": 169,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }

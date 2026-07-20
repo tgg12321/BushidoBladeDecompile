@@ -1383,8 +1383,8 @@ s32 func_80078A68(s32 arg0, s32 arg1, s32 arg2) {
         return 0;
     }
     base = (t0 * 0x10) + D_8009BD6C;
-    *((s16 *) (base + 4)) = 0;
-    *((s16 *) (base + 8)) = (s16) arg1;
+    *(volatile u16 *) (base + 4) = 0;
+    *(volatile u16 *) (base + 8) = arg1;
     if (((u32) t0) < 2U) {
         if (arg2 & 0x10) {
             a3 = 0x49;
@@ -1405,7 +1405,7 @@ s32 func_80078A68(s32 arg0, s32 arg1, s32 arg2) {
     if ((arg2 & 0x1000) != 0) {
         a3 |= 0x10;
     }
-    *((s16 *) (((t0 * 0x10) + D_8009BD6C) + 4)) = a3;
+    *(volatile u16 *) (((t0 * 0x10) + D_8009BD6C) + 4) = a3;
     return 1;
 }
 s32 func_80078B04(s32 arg0) {
