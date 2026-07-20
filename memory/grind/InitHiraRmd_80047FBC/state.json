@@ -1,0 +1,34 @@
+{
+ "func": "InitHiraRmd_80047FBC",
+ "file": "text1b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 1,
+   "modality": "recon",
+   "headline": "recon: honest floor=1 with two forbidden constructs live in src; single residual is target insn #18 addu $s0,$s4,$v0 vs sandbox addu $s0,$a0,$v0 (copy-prop base==arg0)"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "force $s4 retention by making `base` visibly diverge from `arg0` \u2014 try declaration-order reshuffle: assign `base = (u32*)arg0` FIRST and derive `p` from base with a real live range across the loop body",
+   "mechanism": "give `base` a data-dependent live range spanning the callees so RA promotes it to $s4 without copy-prop folding it back to $a0",
+   "next_probe": "s2: rewrite as `u32 *base = (u32*)arg0; u32 *p = (u32*)((s32)base + shifted_a1);` (drop the intermediate `p = arg0; base = p;` chain and the `arg0 = 0;` cheat), sandbox, read insn #18"
+  },
+  {
+   "hypothesis": "explicit-store version of the dead-store carve-out plus a base-CSE fence \u2014 `buf[4] = <expr involving base>;` inside the loop makes buf actually written AND anchors base into a callee-save",
+   "mechanism": "combine dead-vars-local-array 2026-07-01 carve-out (with explicit writes matching target dead stores) with a base live-range extender",
+   "next_probe": "s2/s3: after H1 form is measured, try `buf[i&7] = 0;` or capturing the call return into buf; probe whether any variant lowers insn #18 to $s4"
+  },
+  {
+   "hypothesis": "directed permuter campaign varying the base/p declaration chain and copy shape",
+   "mechanism": "auto-search over C forms with PERM_* macros; per permuter-directives + permuter-fresh-seed-discipline",
+   "next_probe": "s3 (permuter modality): seed WITHOUT the current `arg0 = 0;` cheat and WITHOUT `s32 buf[8];`, target a single-diff residual; fresh-seed budget ~20-30 seeds per rule"
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-20T06:35:14.236346+00:00"
+}
