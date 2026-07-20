@@ -1,0 +1,13 @@
+{
+ "func": "func_80049A2C",
+ "file": "text1b",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "Grind must retire dummy[2], new_var4, the empty `if (a1_val) { }`, and the inline-assign `(new_var = new_var3)` \u2014 reach the same target bytes with pure C where every local has a semantic role and no un-annotated dead-store/dead-declaration constructs remain; if any construct proves genuinely unavoidable it must land as a documented FAKE carve-out with full lever-exhaustion evidence in the ledger and layer-2 review."
+ ],
+ "origin": "queue",
+ "created": "2026-07-20T04:41:36.948250+00:00"
+}
