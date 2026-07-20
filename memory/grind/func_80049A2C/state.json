@@ -35,7 +35,8 @@
   }
  ],
  "judge_constraints": [
-  "Grind must retire dummy[2], new_var4, the empty `if (a1_val) { }`, and the inline-assign `(new_var = new_var3)` \u2014 reach the same target bytes with pure C where every local has a semantic role and no un-annotated dead-store/dead-declaration constructs remain; if any construct proves genuinely unavoidable it must land as a documented FAKE carve-out with full lever-exhaustion evidence in the ledger and layer-2 review."
+  "Grind must retire dummy[2], new_var4, the empty `if (a1_val) { }`, and the inline-assign `(new_var = new_var3)` \u2014 reach the same target bytes with pure C where every local has a semantic role and no un-annotated dead-store/dead-declaration constructs remain; if any construct proves genuinely unavoidable it must land as a documented FAKE carve-out with full lever-exhaustion evidence in the ledger and layer-2 review.",
+  "To close via the OVERSIZED-LOCALS carve-out fully-dead-pad case: first wire the prerequisite-aware `find_unused_local_arrays` allowlist through the engine (annotation-recognizing, engine test green) so the pad can stand WITHOUT a `(void) _pad;` shim; drop the void-cast reference in the candidate; and fix the annotation's frame arithmetic (5 saves = 20 bytes + 4 alignment pad, not `24 gp-saves`). Alternatively, keep grinding for a lever that eliminates the pad entirely (H4 cc1 -da instrumentation on the working baseline is still open in state.json.frontier)."
  ],
  "origin": "queue",
  "created": "2026-07-20T04:41:36.948250+00:00"
