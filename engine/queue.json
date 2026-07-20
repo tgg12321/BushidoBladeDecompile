@@ -2694,7 +2694,7 @@
       "rules": 0,
       "status": "parked",
       "prologue_fix": 1,
-      "park_reason": "owner escalation pending: docs/grind/decisions.md 2026-07-19 - func_80045294 (saTan0Init, src/text1a_c.c) - OWNER-ESCALATION (filed s42 2026-07-19, hardened s43-s46)"
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-20): canonical-asm refused (no hand-coded evidence, scan 0/8); prologue_fix retained to hold match; not sanctioned, eligible for re-attempt"
     },
     {
       "func": "cpu_side_move_dir_4",
@@ -2703,7 +2703,7 @@
       "verdict": "C",
       "rules": 5,
       "status": "parked",
-      "park_reason": "owner escalation pending: docs/grind/decisions.md:848 \u2014 2026-07-19 \u2014 cpu_side_move_dir_4 (src/system.c) \u2014 OWNER-ESCALATION (filed by grind s103 per the 2026-07-09 01:25 Judge constraint + F3 activation)"
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-20): cross-symbol idiom refused (no SOTN precedent); 5 rules retained to hold match; not sanctioned, eligible for re-attempt"
     },
     {
       "func": "func_8002BEA0",
@@ -2721,7 +2721,7 @@
       "verdict": "C",
       "rules": 7,
       "status": "parked",
-      "park_reason": "owner escalation pending: docs/grind/decisions.md:895 (2026-07-19 \u2014 func_80057CC8 (src/text1b.c) \u2014 OWNER-ESCALATION, filed by grind s28 synthesis)"
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-20): compound-address duplication refused (no SOTN precedent); 7 rules retained to hold match; not sanctioned, eligible for re-attempt"
     },
     {
       "func": "special_camera_set_win_cam",
