@@ -431,3 +431,4 @@
 - 2026-07-20 14:02 rob_life_ctrl_2 s2 [structural] floor=2: s2 structural: 4 block-local named-intermediate + decl-order forms all measured DIFF-identical to HEAD (bytes byte-for-byte the same at 0xC4/0xCC); GCC folds C-level rewrites to the same RTL DAG. Structural axis exhausted for this diff class; escalate to instrumented allocno-priority dump (forensics).
 - 2026-07-20 14:16 rob_life_ctrl_2 COMPLETED-C after 3 sessions.
 - 2026-07-20 14:29 func_8005B8B8 COMPLETED-C after 1 sessions.
+- 2026-07-20 14:58 func_80061C00 s1 [recon] floor=2: Recon: distance-2 = one sunk a1->v1 param copy; root cause proven (sched.c birthing LAUNCH boost on single-set live pseudo); multi-set defeats it but both value-reuse spellings cascade RA — frontier set

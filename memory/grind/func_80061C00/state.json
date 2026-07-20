@@ -1,0 +1,34 @@
+{
+ "func": "func_80061C00",
+ "file": "text1b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 2,
+   "modality": "recon",
+   "headline": "Recon: distance-2 = one sunk a1->v1 param copy; root cause proven (sched.c birthing LAUNCH boost on single-set live pseudo); multi-set defeats it but both value-reuse spellings cascade RA \u2014 frontier s"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "A second live set of arg1 whose lifetime stays inside the entry->sh(0x1A) window defeats the boost without creating segment 2, keeping RA on $v1",
+   "mechanism": "reg_n_sets>=2 kills birthing boost (proven); a3-allocation came from the second segment overlapping post-call temps",
+   "next_probe": "stage one of the pre-call s16 constant stores through arg1 (e.g. arg1 = constant; sp10[k] = arg1) and measure; sweep placements"
+  },
+  {
+   "hypothesis": "Permuter finds a natural respelling of the clamp/init region with the copy at slot 3 and no post-call rotation",
+   "mechanism": "small statement/type mutation space around the distance-2 baseline; boost-defeating forms are reachable by PERM var/statement moves",
+   "next_probe": "permuter campaign seeded from baseline with clean single-function target.o, fresh-seed stopping rule, harvest before turn end"
+  },
+  {
+   "hypothesis": "sched2 can be induced to lift the copy the remaining two slots (boost is off after reload)",
+   "mechanism": "sched2 already moved it up one slot; block-0 dependence reshaping could push lui/addiu earlier and let the copy trail at slot 3",
+   "next_probe": "cc1 -dR/-dS post-reload dump of block 0; enumerate C shapes giving the lui chain an earlier consumer"
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-20T19:29:28.026465+00:00"
+}
