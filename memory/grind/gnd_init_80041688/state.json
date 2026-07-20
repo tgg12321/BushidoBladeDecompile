@@ -1,0 +1,34 @@
+{
+ "func": "gnd_init_80041688",
+ "file": "text1a",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 2,
+   "modality": "recon",
+   "headline": "recon: floor=2 is pure sched1 lbu-emission-order swap in FALSE-color branch; regs+opcodes identical, only [b,r,g] vs [r,g,b]; statement-reorder KILLED"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "player is a struct type; casting via a struct with named u8 fields at 0x18/0x19/0x1A changes MEM_IN_STRUCT_P (`/s` flag) on the lbu MEMs, altering sched.c true_dependence edges enough to push b earlier. Proven-spelling-class family carve-out (InitHiraRmd_80041AC8 precedent).",
+   "mechanism": "sched.c `true_dependence` in-struct escape clause: `/s`=1 MEMs skip dependence with certain other MEMs, changing sched1 ready-set / priority evaluation.",
+   "next_probe": "Cast player through `struct { u8 pad18[0x18]; u8 r,g,b,pad; } *p = (\u2026)player;` and access `p->r/g/b`. Run sandbox; if score drops to 0, run cheat-reviewer (proven-spelling-class needs mechanism proof)."
+  },
+  {
+   "hypothesis": "Rewrite the else branch to load b via a separate pre-expression walking pointer while r,g load via a different pointer/base \u2014 the resulting dependence graph may reorder loads without changing bytes.",
+   "mechanism": "Different base-pointer pseudos \u2192 distinct MEM alias sets \u2192 sched.c dependence graph re-organized; may bump b's priority via a longer dependence chain from a walking-pointer post-increment (walking-pointer-serializes-parallel-loads family, opposite polarity).",
+   "next_probe": "Try `u8 *bp = (u8*)player + 0x1A; b = *bp; r = *(bp-2); g = *(bp-1);` and permute. Sandbox each variant. Report chain-length delta via cc1 `-da` .sched dump under tmp/grind/gnd_init_80041688/s2/."
+  },
+  {
+   "hypothesis": "Ternary consolidation: `gnd_load_tex(func_800486FC() ? complex_true : complex_false)` \u2014 replaces the if/else with a conditional expression, might restructure the whole basic block graph so the FALSE-color loads schedule differently (or the true+false blocks unify via cross-jump).",
+   "mechanism": "if/else \u2192 COND_EXPR RTL changes BB boundaries and could allow jump.c cross-jump merge of the tail; sched1 sees a different block layout.",
+   "next_probe": "Rewrite the tail as `gnd_load_tex(func_800486FC() ? (...v...) : (b|((r<<16)|(g<<8))));`, sandbox, and diff. Confirm no cheat-by-any-spelling per no-new-park-categories."
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-20T09:22:10.899841+00:00"
+}
