@@ -78,3 +78,15 @@ the canonical finished form for the family) OR a future family-wide RA lever.
 - [s1] m2c reconstruction of target (tmp/grind/func_800611A4/s1/m2c.txt): stores are DIRECT `D_800F1140 = M2C_FIELD(arg0, s32 *, 0);` with NO named `t` local. Also no `s32 *v1` pointer alias — writes `D_800F116C = 0x21001A;` directly. This structural shape has NOT been probed per the rejected-forms bank (the 3-separate-named-temps and pointer-deref forms were tried but not the no-temp inlined-expression form).
 
 - [s1] Rejected-forms bank (do NOT re-probe): 3 separate per-load temps (11); 3 block-local temps (11); split constant mask 0xFF0000|0xFFEF (9, combine re-merges); mask live-across-call (9); mask block-scoped after 3rd load (9); pointer-deref loads (9).
+
+- [s2] s2 baseline pin-free candidate applied to src/text1b.c scored 9 (target_insns=43, build_insns=43, cheat_asm_stripped=393, rules_dropped=0).
+
+- [s2] 13 structural forms measured this session (see tmp/grind/func_800611A4/s2/sweep_log.txt).
+
+- [s2] The RA tiebreak between the load-temp pseudo and the 2-insn (lui+ori 0xFFFFEF) mask pseudo IS movable — Variant I (`*arg0++` walking-pointer) inverts the RA direction so load-temp lands in $v0 (matches target).
+
+- [s2] The walking-pointer form is not a valid match candidate: it produces build_insns=44 vs target 43. The extra addiu is semantically intrinsic to `*p++` and cannot be optimized away.
+
+- [s2] Target disasm (asm/funcs/func_800611A4.s): post-call cluster loads at 0x0/0x4/0x8($s0) — no pointer bumps. Target-shape uses ARRAY-INDEXED loads (not walking) with $v0=load-temp, $v1=mask.
+
+- [s2] Killed levers (ruled out this session): dropping v1 alias (+1 insn), tightening *v1 liveness (perturbs pre-call), decl order of t/mask (not tiebreak), mask assignment position (combine re-merges), load-temp type width (u32 vs s32), fully-inlined stores without walking (worse), partial walking (worse), mask position variants.

@@ -1,8 +1,8 @@
 {
  "func": "func_800611A4",
  "file": "text1b",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 0,
@@ -15,23 +15,29 @@
    "floor": 9,
    "modality": "recon",
    "headline": "Recon: floor=9 reconfirmed on pin-free candidate; m2c shows target reconstructs WITHOUT a load-temp (direct inlined stores) and WITHOUT the v1 pointer alias \u2014 an untried structural shape; sibling func"
+  },
+  {
+   "session": 2,
+   "floor": 9,
+   "modality": "structural",
+   "headline": "Structural sweep (13 forms). Floor held at 9; killed 8 named structural levers; walking-pointer lowers score to 7 but adds an insn so it's architecturally blocked from match \u2014 proves the RA tiebreak I"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Instrumented cc1 -da .greg dump reveals the exact priority tiebreaker between the load-temp pseudo (3-web, 3 defs/3 uses) and the mask pseudo (1 def, 1 use for a 2-insn lui+ori literal). Without this dump, every lever tried so far has been guess-and-check; the ledger's 12+ probes all scored 9 or 11 because the actual tiebreak axis was never identified.",
-   "mechanism": "GCC local/global RA orders pseudos by (a) n_refs weighted by loop depth, (b) n_calls_crossed, (c) pseudo number (declaration order). One of these is the deciding tie for $v0 assignment; the dump exposes which.",
-   "next_probe": "Preprocess src/text1b.c to base.i, run `tools/gcc-2.7.2/build/cc1 <flags> -da base.i -o /tmp/ours.s`, read `;; Register dispositions:` for func_800611A4. Identify the pseudo numbers for `t` and `mask`, their conflict list, priorities. Cross-reference with regfix cheat pin (which forces $2/$3) to see the delta the pin introduces."
+   "hypothesis": "The target's flip is driven by pre-call RA state, not the post-call cluster shape. Something upstream of the call (arg saves, sp[] setup, alias liveness) sets the initial hard-reg freelist so the post-call allocator opens with the opposite ordering.",
+   "mechanism": "Post-call RA state inherits the pre-call freelist; if the freelist has $v0 marked USED-recently (or $v1 free-longer), the mask pseudo gets $v0 as first-fit.",
+   "next_probe": "Sweep pre-call variants: (a) reorder the 5 pre-call global stores (D_800F117C/1178/1180/A3468 + *v1) \u2014 the ordering is not semantically constrained; (b) hoist the arg1 halfword loads into a single copy pattern; (c) declare a callee-save-eligible local pinned pre-call (via structural declaration, not asm). Measure each with sandbox."
   },
   {
-   "hypothesis": "Direct inlined stores (no `t` local at all), matching m2c's reconstruction shape \u2014 `D_800F1140 = arg0[0]; D_800F1144 = arg0[1]; D_800A3464 = 0xFFFFEF; D_800F1148 = arg0[2];`. Distinct from the rejected 3-named-temps and pointer-deref forms: no named local means GCC allocates three anonymous single-use expression pseudos rather than one reused-web pseudo, which changes the RA class relative to the mask.",
-   "mechanism": "Named-local reuse produces one web with 3 defs+3 uses (n_refs=6). Anonymous inlined loads produce three distinct short-life pseudos (n_refs=2 each). The mask remains n_refs=2. That changes the tiebreak surface entirely \u2014 the load-temp is no longer a heavyweight 6-ref web dominating the mask's 2-ref pseudo.",
-   "next_probe": "Rewrite the post-call body inline (no `s32 t;` decl). Sandbox. If score changes (either direction), that isolates the temp-web shape as a lever. Follow up with declaration-order sweeps (mask decl first vs t decl first if any local is kept) as a cheap secondary probe."
+   "hypothesis": "The extra addiu in walking-pointer form could be absorbed via a walk-and-restore pattern (`s32 *p = arg0; ... *p++ = ...; ... = *p--;`) \u2014 sometimes GCC collapses adjacent inverse addiu.",
+   "mechanism": "If two addiu ops on the same register net to zero across a scheduling window, combine may drop both.",
+   "next_probe": "Try `p = arg0; D_800F1140 = *p++; D_800F1144 = *p++; D_800F1148 = *(p--);` variants and confirm insn count. If it lands 43, the walking-pointer's score-7 becomes a real candidate."
   },
   {
-   "hypothesis": "Drop the `s32 *v1 = &D_800F116C;` pointer alias and write `D_800F116C = 0x21001A;` directly, matching m2c's reconstruction of the pre-call setup. The alias creates an extra long-lived pseudo that likely shifts pre-call allocation state, which propagates into the post-call cluster's initial hard-reg freelist ordering.",
-   "mechanism": "The `v1` alias pseudo lives from function entry through past the call (used at both `D_800A3468 = (s32)v1;` and `*v1 = 0x21001A;`). Removing it frees an early-computed hard reg (target's asm uses $v1 for this pointer, so removal would free $v1 pre-call). Post-call RA state carries into the tail cluster's tie ordering.",
-   "next_probe": "Two-variant sweep: (a) drop the alias entirely, write `D_800F116C = 0x21001A;` and `D_800A3468 = (s32)&D_800F116C;`; (b) keep alias but move the `*v1 = 0x21001A;` store to immediately after the D_800A3468 assignment (tighten liveness). Sandbox both; compare scores to isolate alias-lifetime effect."
+   "hypothesis": "The score-7 walking-pointer form contains 6 non-insn-add diffs; identifying which 6 differ (register names on which insns) narrows the remaining tiebreak axes.",
+   "mechanism": "Compare tmp/sandbox/func_800611A4/text1b.o disasm (walking-pointer form) against asm/funcs/func_800611A4.s: register-name diffs are RA axis; ordering diffs are scheduler axis.",
+   "next_probe": "Diff the walking-pointer objdump vs target line-by-line; classify each of the 7 diffs. That reveals whether the residual gap is 6 register-renames + 1 insn-add, or 4 renames + 3 reorderings + 1 add \u2014 steers the next lever choice."
   }
  ],
  "judge_constraints": [],
