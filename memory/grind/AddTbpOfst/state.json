@@ -1,0 +1,34 @@
+{
+ "func": "AddTbpOfst",
+ "file": "main",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 3,
+   "modality": "recon",
+   "headline": "Recon: floor 3 mapped to 2 mechanisms; sll/addu regs now match via fresh-subexpr shift; 5 hypotheses measured (4 killed)"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "A guard/store spelling exists where the sb value reaches RTL as pseudo-73-derived (param var single-use) with no extra insn, unlocking combine's zero_extend fold -> andi $v0,$a0",
+   "mechanism": "combine.c added_sets_2 single-use restriction + cse subreg-chain folding (folds subregs, not bare REG equivalences)",
+   "next_probe": "read tmp/grind/AddTbpOfst/s1/main.i.combine for the refused attempt on insn 16; sweep guard spellings ((u32)a0<<16>>16, (a0^0)&0xFFFF, guard-on-separate-u32-local) each sandboxed; widen the asm grep for completed u16 functions keeping a copy AND raw andi"
+  },
+  {
+   "hypothesis": "The fresh sll can be scheduled ahead of the sb pair without breaking the fence (target order: sll, sb, sb, addu, lw)",
+   "mechanism": "sched1 region priorities: fresh single-set shift gets low launch priority; in-place shift hoists (measured) but has the wrong dest reg",
+   "next_probe": "read main.i.sched for the A1 form's region-2 priority list; then permuter with clean single-function target.o sweeping statement order / PERM macros on the tail block"
+  },
+  {
+   "hypothesis": "Fixing cluster 1 and cluster 2 compose without RA interference",
+   "mechanism": "disjoint code regions but shared allocno graph (named-temp probe showed global RA churn)",
+   "next_probe": "re-score any cluster-1 winner on top of the A1 form immediately"
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-20T23:29:12.823666+00:00"
+}
