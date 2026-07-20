@@ -1,31 +1,37 @@
 {
  "func": "gnd_init_80041688",
  "file": "text1a",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 2,
    "modality": "recon",
    "headline": "recon: floor=2 is pure sched1 lbu-emission-order swap in FALSE-color branch; regs+opcodes identical, only [b,r,g] vs [r,g,b]; statement-reorder KILLED"
+  },
+  {
+   "session": 2,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "s2 structural: struct-cast, walking-pointer, ternary-hoist, block-local-split all KILLED at floor=2; two-block lbu structure is load-bearing (cannot consolidate)"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "player is a struct type; casting via a struct with named u8 fields at 0x18/0x19/0x1A changes MEM_IN_STRUCT_P (`/s` flag) on the lbu MEMs, altering sched.c true_dependence edges enough to push b earlier. Proven-spelling-class family carve-out (InitHiraRmd_80041AC8 precedent).",
-   "mechanism": "sched.c `true_dependence` in-struct escape clause: `/s`=1 MEMs skip dependence with certain other MEMs, changing sched1 ready-set / priority evaluation.",
-   "next_probe": "Cast player through `struct { u8 pad18[0x18]; u8 r,g,b,pad; } *p = (\u2026)player;` and access `p->r/g/b`. Run sandbox; if score drops to 0, run cheat-reviewer (proven-spelling-class needs mechanism proof)."
+   "hypothesis": "Add a use of `b` between its load and the OR-chain that combine/CSE cannot fold away, extending b's INSN_PRIORITY chain length to >=4 without changing final bytes.",
+   "mechanism": "sched1 priority = longest reverse chain to end-of-block; a real (non-DCE-able) intermediate consumer of b bumps its chain length, tying with or exceeding r/g.",
+   "next_probe": "Any concrete C shape that survives combine without being DCE'd AND leaves the emitted 7-insn FALSE block bytes intact is expected to be either (a) impossible-by-construction (the extra chain link would show as an extra insn), or (b) cheat-shaped (side-effect-free op inserted for codegen only). Enumerate to prove dead."
   },
   {
-   "hypothesis": "Rewrite the else branch to load b via a separate pre-expression walking pointer while r,g load via a different pointer/base \u2014 the resulting dependence graph may reorder loads without changing bytes.",
-   "mechanism": "Different base-pointer pseudos \u2192 distinct MEM alias sets \u2192 sched.c dependence graph re-organized; may bump b's priority via a longer dependence chain from a walking-pointer post-increment (walking-pointer-serializes-parallel-loads family, opposite polarity).",
-   "next_probe": "Try `u8 *bp = (u8*)player + 0x1A; b = *bp; r = *(bp-2); g = *(bp-1);` and permute. Sandbox each variant. Report chain-length delta via cc1 `-da` .sched dump under tmp/grind/gnd_init_80041688/s2/."
+   "hypothesis": "The original C was written such that TRUE and FALSE arms share NO code from `b/r/g` upward \u2014 perhaps the FALSE arm was written as a helper function inlined by hand: e.g., `gnd_load_tex(pack_bgr(player))` where pack_bgr is defined inline right above and takes player, loading through a distinct pointer local.",
+   "mechanism": "A distinct pointer local materialized fresh (not aliased with `p`/`q` from the loops earlier) may cause GCC's alias-tracking / register-renumbering to give the three lbu's different pseudos with priority order matching target.",
+   "next_probe": "Try `u8 *cp = (u8*)player; b=cp[0x1A]; r=cp[0x18]; g=cp[0x19];` with cp declared fresh in the block. Note: this is one axis away from the walking-pointer that was KILLED; the difference is `cp` is not derived arithmetically from the target address. Predict same fold-collapse but measure. If still 2, try declaring cp OUTSIDE the else block (function scope) so its liveness spans the whole tail."
   },
   {
-   "hypothesis": "Ternary consolidation: `gnd_load_tex(func_800486FC() ? complex_true : complex_false)` \u2014 replaces the if/else with a conditional expression, might restructure the whole basic block graph so the FALSE-color loads schedule differently (or the true+false blocks unify via cross-jump).",
-   "mechanism": "if/else \u2192 COND_EXPR RTL changes BB boundaries and could allow jump.c cross-jump merge of the tail; sched1 sees a different block layout.",
-   "next_probe": "Rewrite the tail as `gnd_load_tex(func_800486FC() ? (...v...) : (b|((r<<16)|(g<<8))));`, sandbox, and diff. Confirm no cheat-by-any-spelling per no-new-park-categories."
+   "hypothesis": "The FALSE arm was originally written with an inline helper like `PACK_RGB(b,r,g)` macro that expanded to a different RTL sequence (e.g., using a temp local for one of the sub-ORs), so that the intermediate variable's def-use extended a chain onto b.",
+   "mechanism": "Explicit named intermediate lifts one sub-computation's LUID/pseudo lifetime and reshuffles sched1 without touching final register assignment.",
+   "next_probe": "Try `s32 rg = (r<<16) | (g<<8); gnd_load_tex(b | rg);` -- introduces a named intermediate for the r,g sub-tree. Does NOT change parenthesization (still `b | (rg)`), does NOT dead-store (rg is used), stays outside or-tree-shape-shift ban. Predict this may re-schedule if sched1 sees rg's def as a separate BB or a live-out. Sandbox and measure."
   }
  ],
  "judge_constraints": [],

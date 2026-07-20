@@ -13,3 +13,17 @@
 - [s1] TRUE-color branch matches target: `func_8004881C(b,g,r)` arg-setup lbu's are ordered by argN (a0=b,a1=g,a2=r) — GCC's arg-passing naturally pins the emission order. No diff on that branch.
 
 - [s1] or-tree-shape-shift (parenthesization reshuffle of the OR chain to give b a longer chain via `((b|r)|g)` etc.) is FORBIDDEN per the technique index — not a lever.
+
+- [s2] s2 baseline (unchanged from s1): sandbox --disable all -> score=2, target_insns=82, build_insns=82, rules_dropped=3.
+
+- [s2] Target FALSE branch (.L80041798): lbu v1,0x1A -> lbu a0,0x18 -> lbu v0,0x19 -> sll a0,a0,16 -> sll v0,v0,8 -> or a0,a0,v0 -> or a0,v1,a0. Registers b=v1, r=a0, g=v0.
+
+- [s2] Build FALSE branch: lbu a0,0x18 -> lbu v0,0x19 -> lbu v1,0x1A -> sll a0,a0,16 -> sll v0,v0,8 -> or a0,a0,v0 -> or a0,v1,a0. IDENTICAL registers, IDENTICAL OR-tree shape (`or a0,v1,a0` final has b on LEFT). ONLY diff: the three lbu's emit in [r,g,b] instead of [b,r,g]. Diff = 3 lbu-swap-position insns => score=2 (masked weight).
+
+- [s2] Target has TWO SEPARATE lbu blocks (TRUE arm @ 80041770-78 loading a0=0x1A, a1=0x19, a2=0x18 for `func_8004881C(b,g,r)` call; FALSE arm @ .L80041798). The TRUE-arm order is arg-passing-driven and matches naturally.
+
+- [s2] sched1 chain-length priority: r,g each have 4-insn chain to final or; b has 2-insn chain. Priority-ordering places r,g ahead; b emits last regardless of declared/statement order.
+
+- [s2] Four s2 structural axes measured dead at floor=2: MEM_IN_STRUCT_P (struct cast), MEM_ALIAS_SET (walking pointer), CFG restructure (ternary hoist), pseudo/decl order (block-local split). None move sched1's priority-driven emission.
+
+- [s2] or-tree-shape-shift (repartner `(b|r)|g` to give b a longer chain) is FORBIDDEN per codegen-technique-index; not a lever.
