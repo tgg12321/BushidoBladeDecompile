@@ -420,3 +420,15 @@ Per user 2026-06-22: keep working it; not permanently parked.
 - [s21] Src reverted to HEAD (register asm(s3) pin + rules) via git checkout; git status shows only the metrics/events.jsonl append and the new rejected-form file. No src/text1b.c dirt.
 
 - [s21] docs/grind/decisions.md STILL contains no OWNER-ESCALATION entry for func_80057CC8 (only the 2026-07-19 17:09 Judge FAIL ruling on the two-variable form). owner-gated is NOT authorized THIS session per contract.
+
+- [s22] s22 permuter campaign (chassis #6): base_score=15, elapsed_s=796.8, iterations=4265, finds_total=1, best_new_score=0, procs_killed=0 (self-exited). Labeled s22-downstream-ternary-and-write-order.
+
+- [s22] s22 score-0 close-form (output-0-1 at iter 4265): identical alias-holder pattern (`s16 *new_var2 = (s16*)((((s32)(prev_idx<<16)>>16)<<2) + (s32)table); p = new_var2;`) as s4/s5/s13/s14 finds. Ternary and write-order PERM_GENERAL alternatives in the closing form are the original baseline variants — the alias-holder was PERM_RANDOMIZE-injected outside my defined alternatives.
+
+- [s22] Cumulative permuter data across s4/s5-1/s5-2/s13/s14/s22 (SIX chassis): every score-0 basin discovered is the pointer-alias-holder cheat family (p1-side or p2-side, s16* or long, block-scope or function-scope, alias-only or through-a-fresh-downstream-variable). No legitimate lever appears in any chassis.
+
+- [s22] src/text1b.c is at HEAD (unmodified this session); memory/grind/func_80057CC8/candidate.c (floor-3 baseline) preserved for next session; new rejected form saved to memory/grind/func_80057CC8/rejected/permuter-s22-downstream-ternary-p1-alias.c.
+
+- [s22] docs/grind/decisions.md contains only the 2026-07-19 17:09 Judge FAIL ruling for func_80057CC8 (line 877). NO OWNER-ESCALATION entry exists. Therefore per this session's contract, `owner-gated` is NOT authorized — even though the ledger's live frontier states OWNER-ESCALATION prerequisites are met (s21 KILLED local-alloc block_alloc axis by-construction, F1/F2/F3/F5-corner + all rederive corpora measured dead). Filing the OWNER-ESCALATION entry is a synthesis-modality task for a future session; this session's mandated modality was permuter and its output was one measured KILL.
+
+- [s22] s7 CONFIRMED single-pseudo impossibility (pseudo 86 = /v-marked DECL_RTL of `p`) unchanged: any single-C-variable `p` binding cannot reach target's p1=v0 by the mechanism chain s6/s7/s15/s16 confirmed. Any two-C-local form is closed by Judge s10 binding. s21 CONFIRMED local-alloc.c:472 reg_n_deaths==1 is a hard-gate unconditional-semantic bail-out. The impossibility surface remains closed on all sides.
