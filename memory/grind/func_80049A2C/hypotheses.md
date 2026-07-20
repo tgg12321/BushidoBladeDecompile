@@ -65,3 +65,33 @@
 - probe: Apply all four deletions together. Run sandbox --disable all.
 - result: score=12, build_insns=126.
 - verdict: CONFIRMED
+
+## [s2] Dead HImode-bitwise pair (s16 fp_a = *p_anim; s16 fp_b = (s16)temp_v1; if ((fp_a & ~fp_b) & 1) {(void)fp_a;}) inserted after the fade-check triggers the reload/alter_reg stale-ref phantom slot.
+- mechanism: phantom-frame-slots-gcc272 s3 mechanism: combine eliminates the redundant HImode->SImode sign-ext on paradoxical subreg; flow's stale reg_n_refs makes alter_reg reserve a frame slot.
+- probe: Applied over baseline (dummy[2] removed, sandbox=12). Two variants: (A) mixed lh + lbu-derived pair; (B) two independent lh loads via *p_anim and *((s16*)new_var8).
+- result: Both A and B: score 12, build_insns 126 (unchanged from dummy-removed baseline). The if-block is fully DCE'd BEFORE combine, so no sign-ext to elide, no stale ref, no phantom.
+- verdict: KILLED
+
+## [s2] Widen a1_val from s16 to s32 forces a phantom-frame slot via changed RTL mode/register-class.
+- mechanism: H2 (state.json frontier) — mode widening pushes a spill into locals via the same phantom mechanism.
+- probe: s16 a1_val -> s32 a1_val; measure sandbox.
+- result: Score 12, build_insns 126. No frame effect; the sh-truncating stores still allow scalar promotion.
+- verdict: KILLED
+
+## [s2] Widen new_var2 from s16 to s32 forces a phantom-frame slot.
+- mechanism: H2 sibling probe.
+- probe: s16 new_var2 -> s32 new_var2; measure sandbox.
+- result: Score 13, build_insns 126. STRICTLY WORSE than baseline (new_var2 codegen diverges from target).
+- verdict: KILLED
+
+## [s2] Live HImode-bitwise embedded in a1_val's computation (constant-fold-neutral): a1_val = (fp_a*2) | ((fp_a & ~fp_b) & 0) survives dead-code elimination and triggers the phantom.
+- mechanism: Same as H1 but with the bitwise expression flowing into a live variable used in a real store.
+- probe: Inserted at the a1_val assignment site; measure sandbox.
+- result: Score 12, build_insns 126. GCC's constant-fold eliminates the '& 0' clause at the tree level, before combine sees it. No phantom.
+- verdict: KILLED
+
+## [s2] H3 — share a1_val across the two obj-init blocks (compute once, drop the recomputation) forces the value into a callee-save/frame slot across the func_800417D0 call.
+- mechanism: Extending a1_val's live range across a call demands a stack home or callee-save; per s1 frontier note about shared intermediate.
+- probe: Removed the second `a1_val = (*p_anim) * 2;` recomputation; measure sandbox.
+- result: Score 34, build_insns 123 (LOST 3 target insns). Target contains a genuine second `lh 0x0($s3); nop; sll $a1,1` sequence at 3A2CC-3A2D8 — the recomputation is real target bytes, not compiler-hallucinated. Cannot share.
+- verdict: KILLED
