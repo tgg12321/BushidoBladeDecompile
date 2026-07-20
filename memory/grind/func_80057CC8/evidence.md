@@ -394,3 +394,15 @@ Per user 2026-06-22: keep working it; not permanently parked.
 - [s19] Local-alloc block_alloc forensics is un-attempted since s7 first named 'multi-def-in-BB' as the reason local-alloc skips pseudo 86 — the exact bail-out condition (scoring-heuristic vs unconditional-semantic) is unread, and would gate whether a C-source form exists that presents 86's def-use chain as local-alloc-eligible without introducing a second C local.
 
 - [s19] OWNER-ESCALATION precedents in this repo (hirahira_w_frie 2026-07-17, motion_SetMotion 2026-07-18, func_80045294 2026-07-19, cpu_side_move_dir_4 2026-07-19) all filed after full sanctioned-axis exhaustion with the same escalation format: options honestly presented, agent does not self-resolve, owner rules in decisions.md.
+
+- [s20] 2026-07-19 sandbox measurement: HEAD src (identical shape to F5 corner) --disable all = score 9 (target_insns=111 build_insns=111 rules_dropped=7 cheat_asm_stripped=397).
+
+- [s20] s8 recorded p1-swap-alone = 3 and p2-swap-alone = 9. Adding this session's F5 corner = 9 completes the 2x2 (no-swap,no-swap)=3 / (p1,no)=3 / (no,p2)=9 / (p1,p2)=9.
+
+- [s20] Interpretation: p2 PLUS operand order is the sole reassociation lever; p1 is scoring-inert with or without p2's regression present. Whatever combine/reassoc pass runs against the p2 addu at insn 124 has no dependence on the p1 addu's operand-order spelling.
+
+- [s20] Src remains at HEAD (git status clean); candidate.c unchanged; floor 3 baseline preserved via candidate.c for the next session.
+
+- [s20] Structural modality is now exhausted for the operand-order axis (2x2 fully measured; all four cells recorded).
+
+- [s20] Frontier collapses per the ledger's own s10 kill-order projection: only s21 local-alloc block_alloc forensics remains before OWNER-ESCALATION filing prerequisites are met.

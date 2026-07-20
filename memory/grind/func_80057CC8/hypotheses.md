@@ -353,3 +353,9 @@
 - probe: Analytical synthesis only (session modality=synthesis, matches s10 precedent). Re-read evidence.md + hypotheses.md (350 lines) + 27 rejected forms. Cross-checked Judge 2026-07-19 17:09 binding against the 25-form rejected bank + 3 additional s17/s18 rederive rejects. Verified docs/grind/decisions.md contains no OWNER-ESCALATION entry for func_80057CC8 (only the 17:09 Judge FAIL).
 - result: Frontier consolidated to (1) F5 corner double-swap (structural, s20), (2) local-alloc block_alloc bail-out forensics (s21), (3) OWNER-ESCALATION filing contingent on (1) KILLED + (2) either KILLED-by-construction or the identified C form measured dead (s22+). Synthesis document at tmp/grind/func_80057CC8/s19/synthesis.md.
 - verdict: CONFIRMED
+
+## [s20] F5 corner: writing BOTH p1 = (table + offset) AND p2 = (table_expr + offset) simultaneously either dominates via p2-swap (=> 9) or exposes novel addsi3 reassociation behavior at a distinct value.
+- mechanism: s8 established p1-swap byte-neutral (3) and p2-swap regresses (3->9) via the p2 addu's PLUS operand order steering combine.c's late reassoc reach at insn 124. The double-swap corner tests whether p1's byte-neutrality persists when combined with p2's regression, OR whether the combination unlocks a new codegen shape.
+- probe: Verified HEAD src is exactly the F5-corner shape (both p-adds spelled table_expr+offset, git status clean, s3 pin present but score-invisible under --disable all mask). Ran `& tools/wteng.ps1 main sandbox func_80057CC8 --disable all` — score=9, target_insns=111, build_insns=111, rules_dropped=7, cheat_asm_stripped=397.
+- result: F5 corner measures 9 — matches p2-swap-alone value; no novel reassoc behavior. p1 operand order remains scoring-inert even under the p2-swap regression, confirming p2's PLUS operand order fully determines late-reassoc reach.
+- verdict: KILLED

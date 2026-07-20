@@ -1,8 +1,8 @@
 {
  "func": "func_80057CC8",
  "file": "text1b",
- "session_count": 19,
- "current_modality": "synthesis",
+ "session_count": 20,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 0,
@@ -123,23 +123,24 @@
    "floor": 3,
    "modality": "synthesis",
    "headline": "s19 synthesis: 28 kills merged, frontier consolidated to F5-corner + local-alloc-forensics + OWNER-ESCALATION path; no measurement (matches s10 precedent)."
+  },
+  {
+   "session": 20,
+   "floor": 3,
+   "modality": "structural",
+   "headline": "s20 STRUCTURAL: F5 corner (double-swap p1+p2 to table_expr+offset) KILLED \u2014 measured 9, collapses to p2-swap outcome; last un-measured 2x2 cell discharged."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F5 corner (double-swap): write p1 = table+offset AND p2 = table+offset simultaneously \u2014 the last un-measured cell of the s8 2x2 operand-order matrix.",
-   "mechanism": "By s8: p2-swap alone regressed 3->9 (p2 operand order controls late reassociation reach); p1-swap alone was byte-neutral. The double-swap corner is either 9 (p2-swap dominates) or a novel value exposing new addsi3 reassoc behavior. Discharging this cell is prerequisite to OWNER-ESCALATION per contract.",
-   "next_probe": "s20 STRUCTURAL: Apply p1 = (s16*)((s32)(*(s16**)(arg0+4)) + (((s32)(prev_idx<<16)>>16)<<2)) [wait: p1 uses `table` cached local, so write p1 = (s16*)((s32)table + (((s32)(prev_idx<<16)>>16)<<2)) AND p2 = (s16*)((s32)(*(s16**)(arg0+4)) + (((s32)(next_idx<<16)>>16)<<2)); sandbox --disable all. If regresses to 9, F5 KILLED and s21 forensics + s22 OWNER-ESCALATION path is unblocked."
-  },
-  {
-   "hypothesis": "Local-alloc block_alloc bail-out on pseudo 86 is a scoring-heuristic (C-tweakable) rather than a semantic requirement (untweakable): a C-source form presenting 86's def-use chain as single-def-use per fragment (without a second C local) could make local-alloc split 86's live range across p1 and p2 uses at local-alloc time \u2014 producing distinct hard regs from a single C binding.",
-   "mechanism": "s7 noted local-alloc SKIPS 86 because 86 has 'two independent def-use chains within BB4' \u2014 promoted to global-alloc pool where the {v1} pref locks it. If local-alloc took 86, it would allocate each def-use chain independently (block-scope live range coloring), potentially producing p1=v0 + p2=v1. The exact bail-out condition (block_alloc in local-alloc.c) has NOT been read.",
+   "hypothesis": "Local-alloc block_alloc bail-out on pseudo 86 is a scoring-heuristic (C-tweakable) rather than a semantic requirement (untweakable): a C-source form presenting 86's def-use chain as single-def-use per fragment (without a second C local) could make local-alloc split 86's live range across p1 and p2 uses at local-alloc time, producing distinct hard regs from a single C binding.",
+   "mechanism": "s7 noted local-alloc SKIPS 86 because 86 has two independent def-use chains within BB4 => promoted to global-alloc pool where the {v1} pref locks it. If local-alloc took 86, it would allocate each def-use chain independently (block-scope live range coloring), potentially producing p1=v0 + p2=v1. The exact bail-out condition (block_alloc in local-alloc.c) has NOT been read yet.",
    "next_probe": "s21 FORENSICS: read tools/gcc-2.7.2/local-alloc.c block_alloc; identify the exact multi-def-in-BB bail-out; determine whether a C-source form exists that presents 86 as a single-def-use chain per fragment. If a mechanism-consistent C form exists, measure structurally in s22. If bail-out is unconditional on multi-def-in-BB, mark axis KILLED-by-construction and s22 files OWNER-ESCALATION."
   },
   {
-   "hypothesis": "OWNER-ESCALATION filing prerequisites are met after F5 corner measurement + local-alloc forensics discharge. Every remaining sanctioned axis is measurably dead OR killed-by-construction, and the s10 kill-order projection reaches its terminal disposition.",
-   "mechanism": "s10 kill-order projected OWNER-ESCALATION as correct disposition after F1/F2/F3 measured dead. s11 killed F1, s12 killed F2, s17 killed F3+F6+deferred-mask, s18 killed combined-shift+cur-pointer+decomp.me-corpus. F5 corner + local-alloc bail-out are the last two live axes. Once both discharged, filing in the hirahira_w_frie / motion_SetMotion / cpu_side_move_dir_4 format is the correct next step.",
-   "next_probe": "s22 SYNTHESIS: if (F5 KILLED AND local-alloc forensics either KILLED-by-construction or the identified C form measured dead), file OWNER-ESCALATION entry in docs/grind/decisions.md citing s1-s21 exhaustion + s6/s7/s15/s16 mechanism forensics + 2026-07-19 17:09 Judge binding + s7 local-alloc block_alloc semantic-requirement finding. Options for owner: (a) narrow Judge binding to permit a documented two-scope-`p` form for RA-coalescing walls with target-asm evidence of two distinct pseudos + forensics-named single-pseudo impossibility; (b) authorize canonical-asm carve-out per fork-divergence-inline-asm's crash-driven analogue adapted for scheduling-driven single-pseudo impossibility; (c) hold INCOMPLETE indefinitely."
+   "hypothesis": "OWNER-ESCALATION filing prerequisites are met after the local-alloc forensics axis is discharged (KILLED-by-construction OR the identified C form measured dead). Every remaining sanctioned axis is then measurably dead OR killed-by-construction, and the s10 kill-order projection reaches its terminal disposition.",
+   "mechanism": "s10 kill-order projected OWNER-ESCALATION as correct disposition after F1/F2/F3 measured dead. s11 killed F1, s12 killed F2, s17 killed F3+F6+deferred-mask, s18 killed combined-shift+cur-pointer+decomp.me-corpus, s20 (this session) killed F5. Only s21 local-alloc block_alloc forensics remains before filing.",
+   "next_probe": "s22 SYNTHESIS: if s21 discharges local-alloc axis (KILLED-by-construction or measured dead), file OWNER-ESCALATION entry in docs/grind/decisions.md citing s1-s21 exhaustion + s6/s7/s15/s16 mechanism forensics + s20 F5-corner closure + s7 local-alloc block_alloc semantic-requirement finding. Options for owner: (a) narrow Judge binding to permit a documented two-scope-`p` form for RA-coalescing walls with target-asm evidence of two distinct pseudos + forensics-named single-pseudo impossibility; (b) authorize canonical-asm carve-out per fork-divergence-inline-asm's crash-driven analogue adapted for scheduling-driven single-pseudo impossibility; (c) hold INCOMPLETE indefinitely."
   }
  ],
  "judge_constraints": [
