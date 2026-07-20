@@ -6,9 +6,41 @@
  * + 24 gp-regs).
  *
  * This candidate DROPS the three noise constructs but KEEPS dummy[2].
- * Sandbox = 0 (verified this session). Judge would still FAIL on dummy[2]
- * — the next-session job is to reproduce the +8-byte frame via a live
- * DCE'd local per phantom-frame-slots-gcc272.md.
+ * Sandbox = 0 (verified). Judge FAILs on dummy[2] as an
+ * [[inline-asm-policy]] unused-fixed-size-local-array cheat (rulings
+ * 2026-07-19 23:46 + 2026-07-20 00:36 in docs/grind/decisions.md).
+ *
+ * Cumulative lever exhaustion across s1..s4 on the aggregate-only
+ * conclusion:
+ *   s1 — 3-of-4 noise KILLED, dummy[2] SOLE load-bearing.
+ *   s2 — phantom-slot mechanism (H1/H2/H3) KILLED via dead-HImode-bitwise
+ *        variants and scalar-widening; recomputation H3 KILLED (target
+ *        insn count depends on real recomputation).
+ *   s3 — cc1 -da greg dump on working baseline vs counterfactual proves
+ *        phantom-slot mechanism DOES NOT FIRE anywhere in this function's
+ *        RTL pipeline (7 pseudos, all hard-reg allocated, delta between
+ *        dummy-in and dummy-out greg passes = ZERO).
+ *   s4 — H8 KILLED: struct-typed aggregate `struct { s32 a; s32 b; } dummy;`
+ *        also sandbox=0 (same +8 slot; GCC 2.7.2 does not scalarize the
+ *        two-field struct) and has the same reviewer-visible "no semantic
+ *        purpose / fully-dead aggregate" defect as dummy[2]. Not a
+ *        sanctioned distinct closing form. scan_hand_coded --single =
+ *        LOW 0/8 (no canonical-asm signals). Permuter modality blocked
+ *        by text1b.c INCLUDE_ASM sibling func_8004A348 tripping both
+ *        the permuter parser and the workspace maspsx pipeline —
+ *        banked as tmp/grind/func_80049A2C/s4/permuter-blocked-summary.txt.
+ *
+ * Standing disposition per rules:
+ *   Every sanctioned pure-C axis (phantom-firing H4, phantom-injection
+ *   H1/H2, scalar-widening, scalar-dummy H6, struct-aggregate H8) is
+ *   measured dead. Canonical-asm route certified LOW by scan_hand_coded.
+ *   [[endgame-lock-disposition]] (2026-07-20) codifies this species:
+ *   INCOMPLETE-owner-accepted with cheat retained solely to hold the
+ *   byte match, OR canonical-asm ONLY with hand-coded evidence
+ *   (unavailable here), OR coercion families ONLY with SOTN precedent
+ *   (none found for a fully-dead 8-byte pad). Next session should file
+ *   docs/grind/decisions.md OWNER-ESCALATION to trigger "owner-gated"
+ *   disposition.
  */
 void func_80049A2C(s32 arg0, s32 arg1, s32 arg2) {
     u8 *new_var6;

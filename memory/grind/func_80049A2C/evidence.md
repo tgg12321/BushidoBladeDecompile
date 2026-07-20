@@ -69,3 +69,17 @@ load-bearing cheat; three of the four judge-flagged items can just be deleted.
 - [s3] [s3] Two prior Judge FAIL rulings on this function (docs/grind/decisions.md 2026-07-19 23:46 and 2026-07-20 00:36) rejected: (a) the raw `s32 dummy[2]; (void) dummy;` shape as an [[inline-asm-policy]] catalog cheat with zero lever-exhaustion, and (b) the `s32 _pad[2]` FAKE-annotated OVERSIZED-LOCALS carve-out attempt as a fully-dead-pad first-family closure lacking the prerequisite engine `find_unused_local_arrays` allowlist wiring plus a `(void) _pad;` shim that syntactically defeats the detector.
 
 - [s3] [s3] Owner endgame-lock-disposition rule filed 2026-07-20 (commit 717584ec, .claude/rules/endgame-lock-disposition.md) codifies the standing disposition for RA/scheduler-locked functions: canonical-asm ONLY with hand-coded evidence (scan_hand_coded STRONG signals); coercion families ONLY with SOTN precedent; absent both, INCOMPLETE-owner-accepted with cheat retained solely to hold the byte match. func_80049A2C fits the species (RA-locked +8-byte frame slot, exhausted phantom axis, no hand-coded signals per Judge's 2026-07-13 finding on the same asm-shape sibling func_80037540).
+
+- [s4] [s4] Baseline reconfirmed with current src (3 s1-noise dropped, dummy[2] kept): sandbox --disable all = 0, target_insns=126, build_insns=126, cheat_asm_stripped=397.
+
+- [s4] [s4] H8 measurement: `struct { s32 a; s32 b; } dummy;` sandbox = 0 (same +8 frame slot as s32 dummy[2]; GCC 2.7.2 does not scalarize the two-field struct). Rejected form banked at memory/grind/func_80049A2C/rejected/struct-dummy-h8-same-frame-same-defect.c.
+
+- [s4] [s4] scan_hand_coded.py --single func_80049A2C = HAND_CODED tier LOW score 0/8 (S1..S8 all negative). Canonical-asm-refusal certified: [[endgame-lock-disposition]] path (b) 'canonical-asm ONLY with hand-coded evidence' UNAVAILABLE.
+
+- [s4] [s4] Permuter campaign infrastructure blocker: text1b.c INCLUDE_ASM_USE_MACRO_INC sibling func_8004A348 (~100-line embedded GTE asm block) trips (a) permuter's syntax parser — `_permuter_ignore_line __asm__(...)` prefix is ignored, and (b) the import.py-generated maspsx-based full-TU compile.sh pipeline — 'too many values to unpack (expected 2)'. A bespoke leaner workspace (tmp/grind/func_80049A2C/s4/build_perm_workspace.sh) hit the same maspsx exception. Setting up a running permuter workspace for func_80049A2C requires a project-tooling fix outside the grind-session contract.
+
+- [s4] [s4] Cumulative aggregate-only conclusion is now exhausted across every sanctioned pure-C axis: phantom-firing H4 KILLED (s3 cc1 -da: mechanism does not fire), phantom-injection H1/H2/H3 KILLED (s2), scalar-widening KILLED (s2), scalar-dummy H6 KILLED (rejected/scalar-dummy-no-frame.c), struct-aggregate H8 KILLED (s4). The +8 frame slot is aggregate-only, and every aggregate spelling carries the same reviewer-visible 'no semantic purpose / fully-dead' defect that failed rulings 2026-07-19 23:46 + 2026-07-20 00:36.
+
+- [s4] [s4] docs/grind/decisions.md grep(func_80049A2C) shows 4 hits (2 FAIL rulings + 2 headers, no OWNER-ESCALATION entry filed). Session-5 next action is filing that entry so 'owner-gated' disposition becomes valid per driver contract.
+
+- [s4] [s4] End-of-session src state: restored to s1 candidate form (drop 3 noise, keep s32 dummy[2] + `(void) dummy;` sink). Sandbox = 0 reconfirmed post-restore.
