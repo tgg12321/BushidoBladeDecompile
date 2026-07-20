@@ -41,3 +41,19 @@
 - [s3] Structural conclusion: within block-local structural rearrangements of the FALSE arm, no axis moves sched1's INSN_PRIORITY-driven emission because r/g's chain-length-4 vs b's chain-length-2 is a HARD ordering — LUID/DECL/COPY-based tie-break only applies at equal priority. Every attempted axis either (a) folded before sched1 (rg, cp-block-local), (b) collapsed via combine (walking-pointer, struct-cast), or (c) net-regressed via broader RA cost (cp-function-scope, hoisted-loads).
 
 - [s3] or-tree-shape-shift (repartner `(b|r)|g` to give b longer chain) FORBIDDEN per codegen-technique-index.
+
+- [s4] s4 baseline sandbox --disable all: score=2, target_insns=82, build_insns=82, rules_dropped=3 (unchanged from s3).
+
+- [s4] Permuter workspace built (tmp/grind/gnd_init_80041688/s4/perm/): base.c 1987 lines (text1a.c preprocessed with same CPP_FLAGS/DEFS as Makefile); compile.sh replicates cc1 -O2 -G0 -funsigned-char -mcpu=3000 -mips1 -mno-abicalls -fno-builtin | prologue_fix | maspsx (aspsx-version=2.34, sdata/expand-lb/multu/label-nop gates from repo config) | multu_pad; extract_fn.py isolates the .ent gnd_init_80041688 .. .end region; target.o assembled from prelude_r3k.inc (prelude.inc minus .set gp=64) + asm/funcs/gnd_init_80041688.s.
+
+- [s4] Base-vs-target objdump diff (baseline s4): single lbu swap — target has `lbu v1,26(s0)` at position 69 (b-first); build has it at position 71 (b-last). Same registers (b=v1, r=a0, g=v0), same OR-tree shape, only emission-order differs. Consistent with s1-s3 finding: sched1 chain-length priority (r/g=4 vs b=2) is the hard ordering.
+
+- [s4] Permuter base_score = 40 (default weights: reg=10, insn=100; here 40 corresponds to the 2-line lbu swap under the workspace's weight profile). Ran 32k+ iters at -j 4 over ~24 min.
+
+- [s4] Novel finds by score: 10×1, 20×2, 30×4, 40×2 (9 total, all fresh). Time-to-first-find below base = 88.7s (score 20); time-to-basin = 242.3s (score 10). No improvement in the following ~1200s window (per fresh-seed discipline).
+
+- [s4] Score-10 mutation (best novel): stages loop1's `(*(s16*)(p+2)) >= 0` boolean through the existing function-scope local `b`. Semantically identical (b is 0 or 1 each iter). Cheat: b's stored value is dead every iteration (overwritten next iter; final value overwritten by `b = *(u8*)(player+0x1A)` in the FALSE arm). No LIVE-code spelling of this axis found by the permuter.
+
+- [s4] All 9 chassis-1 finds are cheat family: 5 variable-reuse-with-dead-store, 3 or-tree-shape-shifts (FORBIDDEN per codegen-technique-index), 1 pointer alias + dead-code, 1 alias rename. Detailed catalog in memory/grind/gnd_init_80041688/rejected/loop1-boolean-stage-b-reuse.c commentary.
+
+- [s4] Cross-check against ledger: score-10 axis (extending b's live range across loop1) DIRECTLY corroborates s3 frontier hypothesis #2 (register-class drift at FALSE-arm entry). The axis IS load-bearing; the byte-neutral spelling of it via dead-store is the only shape random permutation discovered.

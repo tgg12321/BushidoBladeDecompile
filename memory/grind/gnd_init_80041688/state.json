@@ -1,8 +1,8 @@
 {
  "func": "gnd_init_80041688",
  "file": "text1a",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -21,23 +21,29 @@
    "floor": 2,
    "modality": "structural",
    "headline": "s3 structural: named-intermediate rg, block-local cp, and function-scope cp all KILLED at floor=2 (function-scope cp regressed to 15); CSE/copy-prop collapse leaves sched1 dependence DAG untouched, ch"
+  },
+  {
+   "session": 4,
+   "floor": 2,
+   "modality": "permuter",
+   "headline": "s4 permuter chassis-1 basin exhausted (~32k iters, ~24 min): best novel score=10 (loop1 boolean staged through existing `b` \u2014 dead-store cheat); every sub-40 basin form is variable-reuse / dead-store "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Reuse the EXISTING function-scope local `v` (currently written only in the TRUE arm) as the OR-tree intermediate in the FALSE arm: `v = (r<<16) | (g<<8); gnd_load_tex(b | v);`. Differs from block-local `rg` only in LUID (v was declared at function-top alongside b/r/g), so the fold behavior may differ if combine treats v's cross-arm write as escape-inhibiting.",
-   "mechanism": "A local written in BOTH arms of the if/else has a merged live range at the join point (or in this case a pre-existing decl). If GCC's combine treats v's cross-arm assignments as an escape barrier that prevents folding the FALSE arm's SET into the outer OR, `v = ...` would materialize as a distinct RTL SET and re-alter sched1's dependence structure.",
-   "next_probe": "Edit FALSE arm to `v = (r<<16) | (g<<8); gnd_load_tex(b | v);`; sandbox. If score changes at all (up or down), the cross-arm decl matters and the axis is worth extending; if inert (score=2, emission [r,g,b] unchanged), CSE won."
+   "hypothesis": "A LIVE-code extension of `b`'s liveness across loop1 (not a dead per-iteration store) \u2014 e.g. accumulating an early-loaded copy of `*(u8*)(player+0x1A)` in `b` BEFORE loop1, then re-loading it in the FALSE arm as the same variable \u2014 perturbs FALSE-arm entry register pressure the same way the dead-store cheat does but with semantic purpose. Corroborated by the s4 permuter finding that the reuse-`b` axis moves sched1 (40->10).",
+   "mechanism": "If `b` is set to the eventual color byte early (before loop1) as `b = *(u8*)(player+0x1A);` and consumed unchanged in the FALSE arm, b's live range spans the loops and cc1's register allocator may pin b to a callee-save distinct from the current build's choice at 0x15cc. The value is genuinely computed (used later); no dead store. Risk: cross-arm live b may cost a callee-save spill in the TRUE arm (which overwrites b via v = func_8004881C(b,g,r); return through gnd_load_tex(v<<16|v<<8|v)).",
+   "next_probe": "Edit FALSE arm's prologue: hoist `b = *(u8*)(player+0x1A);` to BEFORE loop1 (top of function, after player NULL check). In FALSE arm, drop the `b = ...0x1A` re-assignment (b already holds it). In TRUE arm, keep `b = ...0x1A` (may need re-read since TRUE arm passes b as an arg then overwrites via v; check whether TRUE arm sandbox regresses). Sandbox --disable all. If FALSE-arm floor moves AND TRUE-arm doesn't regress, this axis has a legitimate spelling. If TRUE-arm regresses more than FALSE gains, need a variant that only extends b's liveness on the FALSE path (e.g. compute b twice \u2014 once early, once in FALSE arm \u2014 jumping into arm from a shared prologue)."
   },
   {
-   "hypothesis": "The FALSE arm's diff is not driven by structure at all but by REGISTER-CLASS drift at BB entry: on FALSE-branch entry, target's live-in set has specific registers occupied differently than our build's, and sched1 backward-scheduling with different available-register pressure orders the ready list [b,r,g] vs [r,g,b] as a pressure-sensitive tie-break. Fix would be upstream \u2014 an outer-function edit that changes what registers are live at 80041798.",
-   "mechanism": "sched1's ready-list tie-break can be pressure-sensitive when moving an insn earlier would spill a callee-save; the tie between r's chain-4 and b's chain-2 is fixed but the ORDER within priority-equals-K can hinge on which base register is unpinnable at that cycle.",
-   "next_probe": "Read cc1 -da .greg dump for gnd_init_80041688 (BB2_ALLOC_DEBUG + BB2_SCHED_DEBUG) at the FALSE-block entry; enumerate hard-reg live-in set for target vs build. If they differ, the lever is in the code BEFORE the FALSE branch (post-func_800486FC arg cleanup, loop2 exit register recycling). Restructure the code between the loops and the else-arm to change what's live-in at 15cc without touching arithmetic."
+   "hypothesis": "Run cc1 -da with BB2_ALLOC_DEBUG + BB2_SCHED_DEBUG on both the s3 candidate AND the score-10 permuter form; compare .greg output at .L80041798 to identify EXACTLY which pseudo/hard-reg differs at FALSE-arm entry. That difference names the register-pressure lever a legitimate C form must reproduce.",
+   "mechanism": "The score-10 form's byte-diff dropped from 2 to ~1 due to a specific pseudo landing in a different hard reg at 0x15cc. cc1's .greg dump lists Register dispositions per pseudo + conflict lists. Diffing the two dumps at the FALSE-arm block header will show the exact allocation delta the reuse-`b` axis induces.",
+   "next_probe": "Bootstrap tmp/gccdbg/cc1 with BB2_ALLOC_DEBUG=1 BB2_SCHED_DEBUG=1 (per register-alloc-pure-c doc). Preprocess src/text1a.c to two variants (s3 baseline + s4 loop1-boolean-stage form). Compile both with the instrumented cc1, capture .greg output. Diff `;; Register dispositions:` sections filtered to insns inside .L80041798 block. Identify which pseudo(s) moved between hard regs. Enumerate C constructs that would force that same allocation legitimately (arg-passing tweaks, param typing changes, structural liveness extensions of a semantically-used value)."
   },
   {
-   "hypothesis": "Original source made b's lbu HIGHER-priority than r/g by declaring b's load through a distinct-type pointer that produces a fundamentally different RTL insn (not `(mem:QI (plus reg K))` but e.g. `(mem:QI (reg))` after pre-adjusted base), so that combine cannot fuse it with the OR chain and its dependency chain length is COMPUTED as longer.",
-   "mechanism": "sched.c's INSN_PRIORITY walk credits a chain link per intermediate USE that combine failed to eliminate. If the b lbu has an extra insn between load and consume (e.g. an explicit `(subreg:SI ...)` widen that combine can't fold), its chain becomes length 3 tying with r/g's length 4 minus one, plus tie-break puts b first.",
-   "next_probe": "Try `b = (s32)*((u8*)player + 0x1A);` with an explicit intermediate SI-mode variable holding the widened byte: `s32 bw = *(u8*)((u8*)player + 0x1A); ... gnd_load_tex(bw | ((r<<16)|(g<<8)));`. Compare with the s3 rg experiment \u2014 probably folds the same way \u2014 but if not, examine cc1 dump for a preserved (zero_extend) node."
+   "hypothesis": "An EARLIER load of one of the FALSE-arm color bytes into a live-across-call temporary \u2014 e.g. `s32 rr = *(u8*)((u8*)player + 0x18);` computed BEFORE the loops and consumed in BOTH arms (in FALSE as `r`, in TRUE arm as an arg to func_8004881C via `r` param) \u2014 is a live-code duplicated-read that perturbs pressure similarly. Aligns with [[duplicated-statement-into-arms]] and [[split-read-defeats-hoist]] SOTN-sanctioned families.",
+   "mechanism": "Duplicating a color-byte load into both arms (rather than in each arm block-locally) extends r/g/b's live range across the loops. cc1's register allocator sees the value as live-across-loop and picks a callee-save differently than current build. Byte-neutrality: the load itself is real (unchanged bytes), just relocated. sanction applies if permuter shows byte-neutral form exists AND lever-exhaustion documented.",
+   "next_probe": "Edit gnd_init_80041688 to hoist `s32 r0 = *(u8*)((u8*)player + 0x18);` (and/or g0/b0) BEFORE the p[1] flag pokes, then use r0 as the FALSE-arm's `r` (drop the re-load); in TRUE arm consume `func_8004881C(b, g, r0)` (or re-read the byte, testing which). Sandbox each of the 6 hoist combinations (r only / g only / b only / r+g / r+b / g+b) with --disable all. If any drops floor to 0 or below 2 with byte-neutral effect on TRUE arm, vet the closing form via cheat-reviewer (checking dead-store prong and duplicated-statement-into-arms prerequisites)."
   }
  ],
  "judge_constraints": [],
