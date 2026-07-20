@@ -199,3 +199,25 @@ carve-outs, OR a genuinely different C shape that makes arg0-copy → $s4 natura
 - [s9] [s9] no OWNER-ESCALATION entry for InitHiraRmd_80047FBC exists in docs/grind/decisions.md (checked); only the 2026-07-20 03:22 Judge PASS at line 981 (scoped to isolated arg0=0 FAKE lever qualification, explicitly NOT a final-commit gate). owner-gated outcome invalid this session
 
 - [s9] [s9] artifacts saved: tmp/grind/InitHiraRmd_80047FBC/s9/{FINDINGS.md, text1b.baseline.c}; rejected form banked: memory/grind/InitHiraRmd_80047FBC/rejected/s9_decl_order_base_first.c; candidate.c updated with s9 status header (body unchanged from s3/s4)
+
+- [s10] [s10] baseline sandbox --disable all: score=1, 65/65 insns, cheat_asm_stripped=393 (unchanged from s3-s9; committed src carries s32 buf[8]+(void)buf + un-annotated arg0=0)
+
+- [s10] [s10] SYNTHESIS distills s1-s9 into one merged attack. The residual is a single-insn cse2 canon_reg fold (s6 named the pass: reg 79 base_addr -> reg 72 arg0 in the {72,78,79} equivalence class rooted at reg 72; greg emits addu $s0,$a0,$v0 instead of target addu $s0,$s4,$v0)
+
+- [s10] [s10] The Judge-PASSed isolated arg0=0 /* FAKE */ lever (2026-07-20 03:22, decisions.md line 981) has NEVER been applied in-tree and measured with FAKE-bypass active. All s3-s9 sandbox measurements used the un-annotated form which the stripper (engine/volatile_cheats.py:791 find_dead_param_assigns) removes before scoring. This is the sole remaining bytes-level unknown for the arg0=0 axis — but the composite still gates on buf[8]
+
+- [s10] [s10] buf[8] is provably unresolvable via any sanctioned lever: dead-vars-local-array 2026-07-01 WRITTEN carve-out requires target to contain matching dead stores in the locals region; s7 grep of asm/funcs/InitHiraRmd_80047FBC.s shows ZERO sw's in sp+0x18..sp+0x37 (the vars=32 locals region). Target's sw v0,0x10(sp) is the 5th outgoing arg (args=24=ALIGN8(5*4)) of the K&R-arity efc_buki_draw_zanzou call, not a locals dead store
+
+- [s10] [s10] All 4 rederive-modality lanes provably exhausted (s8+s9): Kengo false cognate (3-arg struct-header initializer, no BB2 overlap), fresh m2c reproduces s5 chassis C (loses staged prologue), decl-order swap KILLED (GCC first-USE LUID not decl LUID), cluster-shared-idiom KILLED (siblings rely on forbidden register-asm pins)
+
+- [s10] [s10] All 5 modalities have been exercised end-to-end: recon (s1), structural (s2/s3/s7 across 16+ variants), permuter (s4 217 iters chassis1 + s5 2747 iters chassis C, both KILLED by fresh-seed discipline), forensics (s6 named cse2 canon_reg + s7 named get_frame_size at pass level), rederive (s8/s9 all 4 lanes)
+
+- [s10] [s10] Species per [[endgame-lock-disposition]] confirmed: (1) main byte-matches only via cheat (buf[8]+arg0=0), (2) 1 insn short in honest pure-C, (3) sanctioned levers exhausted with GCC-pass mechanism named. Both AND-gates fail: (a) canonical-asm refused (no STRONG scan_hand_coded signals — ordinary GCC-scheduled table walker), (b) coercion family refused (no SOTN precedent for unwritten local-array frame carrier)
+
+- [s10] [s10] Sibling cluster confirmed cheat-carrying (s1+s9): AddTbpOfst_80047EE8, InitHiraRmd_800480C0, func_800481E8 all use register-asm pins + INLINE_MOVE_ALIASING + unused_slack arrays. 800480C0 uses `register asm("$18")` pin — analogous $20 pin for 80047FBC equally forbidden per [[inline-asm-policy]] expanded catalog
+
+- [s10] [s10] Judge PASS 2026-07-20 03:22 at docs/grind/decisions.md line 981 explicitly scopes to isolated arg0=0 FAKE lever qualification under [[dead-store-fake-exception]]; NOT a final-commit gate. No OWNER-ESCALATION entry for InitHiraRmd_80047FBC exists (checked this session)
+
+- [s10] [s10] Escalation precedent (5 recent same-species cases): motion_SetMotion (2026-07-18) refused; func_80057CC8 / saTan0Init / cpu_side_move_dir_4 (2026-07-19-20) refused / INCOMPLETE-owner-accepted; func_80049A2C (2026-07-20) filed. All by the same protocol. No self-resolution
+
+- [s10] [s10] Ledger unchanged: no new form measured this session (synthesis modality); no new banked reject; candidate.c body unchanged from s3/s4/s9, header updated with s10 disposition

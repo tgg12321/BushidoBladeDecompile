@@ -1,4 +1,19 @@
-/* s9 candidate — unchanged from s3/s4 (score=1, single residual at insn #18
+/* s10 candidate — body unchanged from s3/s4/s9 (score=1, single residual at insn #18
+ * target `addu $s0,$s4,$v0` vs sandbox `addu $s0,$a0,$v0`).
+ * s10 (synthesis) merged the s1-s9 ledger into three findings: (1) cse2
+ * canon_reg fold at insn 36 is the named cause; (2) the isolated arg0=0
+ * FAKE lever is Judge-PASSed but the composite still gates on buf[8],
+ * which has NO sanctioned resolution path (WRITTEN carve-out requires
+ * target dead-stores in the locals region, s7 grep proved zero); (3)
+ * endgame-lock species criteria are met and both AND-gates of
+ * [[endgame-lock-disposition]] fail (no hand-coded signals, no SOTN
+ * precedent for unwritten frame carrier). Frontier reset to: F1 apply s6
+ * form in-tree and CONFIRM sandbox=0 in FAKE-bypass path (Judge constraint a);
+ * F2 file OWNER-ESCALATION per endgame-lock protocol; F3 low-priority
+ * unsurveyed phantom-frame axes only if owner declines INCOMPLETE-accepted.
+ *
+ * Prior s9 header preserved below:
+ * s9 candidate — unchanged from s3/s4 (score=1, single residual at insn #18
  * target `addu $s0,$s4,$v0` vs sandbox `addu $s0,$a0,$v0`).
  * Still carries `s32 buf[8]` unused (frame reservation carrier;
  * s3 confirmed load-bearing) + `arg0 = 0;` un-annotated (s6 established
