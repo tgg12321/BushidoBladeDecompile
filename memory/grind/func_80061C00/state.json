@@ -1,7 +1,7 @@
 {
  "func": "func_80061C00",
  "file": "text1b",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,23 +15,29 @@
    "floor": 2,
    "modality": "structural",
    "headline": "s2 structural: block-0 boost DEFEATED (copy at slot 3, all regs match) via arg1 arm-1-reload reuse + val const-carrier; new distance-2 attractor with post-call lw-swap residual; frontier #3 (sched2 le"
+  },
+  {
+   "session": 3,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "s3 structural: const-carrier host space measured-exhausted (call-arg frame addrs fold, D+3 carriers substituted to canonical reg95, arg1-third-set rotates); n_deaths + combine loopholes source-read de"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Permuter campaign from TWO seeds (baseline attractor + s2 candidate) finds a boost-symmetric respelling of the post-call repack",
-   "mechanism": "small statement/type mutation space; target order requires the three repack loads all-LAUNCH (luid-desc) or an equivalent readiness pattern",
-   "next_probe": "permuter with clean single-function target.o, seed both forms, fresh-seed stopping rule, harvest before turn end"
+   "hypothesis": "Permuter campaign from TWO seeds (baseline attractor + s2 candidate) finds a form outside the s3 constraint web",
+   "mechanism": "the winning form must produce the $a0 occupancy chain (boosted a0lw + globalized const) from a different pseudo population; small statement/type mutation space around each attractor",
+   "next_probe": "permuter with clean single-function target.o, both seeds, fresh-seed stopping rule, harvest before turn end"
   },
   {
-   "hypothesis": "The original avoided a separate 0x10016 const temp in arm 1 entirely (no val carrier needed), keeping all repack loads single-set",
-   "mechanism": "if arm-1's const rides an insn shape that is not a block-local SET-to-REG, local_alloc never sees a v1-eligible const temp after arg1 takes the reload",
-   "next_probe": "enumerate arm-1 respellings that change the const's RTL shape (e.g. computed expressions, u16/u32 composition) and measure each; check what insn shapes MIPS movsi splits allow"
+   "hypothesis": "A post-call respelling that changes WHICH pseudos exist (not their set counts) reaches target - e.g. walking-pointer sp10 access, different base spelling for the +0xC/+0x10 stores",
+   "mechanism": "the s3 exhaustion argument assumes the current pseudo census fixed; model-breaking respellings void it",
+   "next_probe": "enumerate and sandbox walking-pointer and alternate-base spellings of the repack + pointer stores"
   },
   {
-   "hypothesis": "A C shape exists where sp20[1]'s load is unboosted with target-consistent RA",
-   "mechanism": "would restore luid-desc ordering among all three loads (v1lw's LAUNCH is the sole remaining asymmetry)",
-   "next_probe": "sweep respellings of the sp10[1] repack that alter the load's dataflow without adding insns; note STRICT_LOW_PART/subreg-dest shapes are analytically dead (lw needs plain REG dest)"
+   "hypothesis": "H19's pick-order argument holds empirically in the candidate's sched1 trace",
+   "mechanism": "rank_for_schedule ordering at the a0lw pick moment",
+   "next_probe": "-dS trace of the candidate post-call block; cheap, further constrains permuter mutation space"
   }
  ],
  "judge_constraints": [],

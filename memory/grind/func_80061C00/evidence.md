@@ -61,3 +61,29 @@
 - [s2] Two distance-2 attractors now banked: baseline (block-0 copy sink) and s2 candidate (post-call lw swap); both are birthing-boost asymmetry residuals
 
 - [s2] Instrumented cc1 lives at tmp/gccdbg/cc1 (BB2_ALLOC_DEBUG/BB2_RANK_DEBUG); production tools/gcc-2.7.2/build/cc1 lacks the hooks
+
+## s3 (structural, 2026-07-20)
+
+- **Floor unchanged: 2** (s2 candidate re-verified in src at session end). Three structural probes measured, all KILLED; the const-carrier host space is now measured-exhausted.
+- **P1 kill-law (score 7):** frame-address second sets survive cse only at STORE-OPERAND uses (variant H), never at CALL-ARG uses — cse folds the arg copy `a0 = val` into a direct `addiu a0,sp,K` (equally cheap), val's set goes dead, flow deletes it, const collapses to local (probe-1 leak). Kills (s32)sp18/(s32)sp10/(s32)sp30 call-arg hosts as a class.
+- **Side-confirmation from P1 dump:** with the repack natural (all three loads single-set), emission is lw v0/v1/a0 = exact target order AND the whole check region matches byte-perfect, including the delay-slot `addiu a0,v1,1` — that addiu is cse's canonical D+3 pseudo (reg 95, born at the (D+2)[1] lbu address), NOT a C-level variable.
+- **P4 generalizes H10 (score 7):** the check-region D+2/D+3 values have canonical anonymous pseudos (regs 92/95 in fn.cse); ANY C-level named carrier of them is substituted away (val's set became `val = reg95`, arm-2 use substituted to 95, set flow-deleted) regardless of source placement. Placement upstream of the first materialization = variant F (naming = const-fold, +4). No spelling of a D+2/D+3 carrier can survive.
+- **P3 (score 17):** arg1 as sp20[1] repack carrier ON TOP of the s2 shape rotates RA (arg1→a3, val→v1, gp-reload→a0, sh reorder) — H11 family; extra refs shift the conflict walk.
+- **sched.c n_deaths lever is DEAD (source-read):** adjust_priority's `n_deaths` switch (defer insns with REG_DEAD notes) never fires — schedule_block's pre-pass unlinks ALL REG_DEAD notes onto dead_notes before scheduling (sched.c:3596-3618); the `???` comment at 2544 is accurate. Both compiles identical here; not an asymmetry source.
+- **combine's reg_n_sets decrement loophole (source-read, combine.c:2307-2314):** when combine eliminates an i2 set it decrements reg_n_sets UNLESS `added_sets_2 || newi2pat || i2dest_in_i2src`. A self-referencing second set (`arg1 = arg1 OP k`) merged away by combine would leave reg_n_sets==2 at sched1 with no emitted insn — but no such op can merge here: arg1's only consumer is the `sh` whose operand must be a plain REG, so the op insn always survives (+1 insn). Analytically closed for THIS function; possibly useful elsewhere.
+- **Swap-unfixability argument (analytic, from s1 trace mechanics + target pick order):** to byte-match, our backward pick order must equal target's exactly; in that order, when lw-a0(0x28) is picked, sh 0x12 and sh 0x10 are already scheduled, so lw-v1/lw-v0 are READY — an unboosted a0lw (priority 1) can then never be picked over the boosted (LAUNCH) v1lw. Target order therefore REQUIRES a0lw boosted = its dest pseudo single-set = the const cannot ride the sp20[2] repack temp. Combined with the host exhaustion above, every C shape in the "const-carrier" family is dead; the matching form must break some assumption of this model (e.g. a post-call region respelling that changes which pseudo needs $a0 at all).
+- Artifacts: tmp/grind/func_80061C00/s3/{dump.sh, fn.rtl, fn.cse, fn.flow, text1b.i.*}.
+
+- [s3] Kill-law: frame-address second sets survive cse only at store-operand uses (variant H); at call-arg uses cse folds the arg copy into a direct addiu and flow deletes the carrier set (P1, score 7)
+
+- [s3] Generalized H10: the check-region D+2/D+3 values have canonical anonymous pseudos (regs 92/95); any C-level named carrier is substituted away at any source placement (P4 fn.cse, score 7)
+
+- [s3] With the repack natural, emission is lw v0/v1/a0 = exact target order and the check region incl. the delay-slot addiu a0,v1,1 is byte-perfect (P1 objdump) - the residual is purely the const-globalization coupling
+
+- [s3] arg1 as sp20[1] carrier on the s2 shape rotates RA: arg1->a3, val->v1, gp-reload->a0, sh reorder (P3, score 17)
+
+- [s3] sched.c:3596 pre-pass strips all REG_DEAD notes before scheduling; adjust_priority's n_deaths switch never fires (source-read)
+
+- [s3] combine.c:2307 decrements reg_n_sets on i2 elimination unless added_sets_2/newi2pat/i2dest_in_i2src - the loophole needs a mergeable consumer, which arg1 lacks (sh operand must be plain REG)
+
+- [s3] Floor unchanged at 2; s2 candidate re-verified in src at session end (sandbox score 2, 93/93)

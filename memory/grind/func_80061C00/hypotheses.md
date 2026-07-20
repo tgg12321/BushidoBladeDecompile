@@ -116,3 +116,54 @@
 - probe: measured swap
 - result: Byte-identical, score 2 either way
 - verdict: KILLED
+
+## s3 (structural)
+
+- H14 **KILLED (measured, 7):** const carrier with frame-address first set at a CALL-ARG use (val = (s32)sp18; motutil_GetWalkDir((s16*)val, ...)) — cse folds the arg copy into a direct addiu, set flow-deleted, const collapses local (leak). Law: frame-address second sets survive only at store-operand uses.
+- H15 **KILLED (measured, 17):** arg1 as sp20[1] repack third-set on top of s2 shape — RA rotation (arg1→a3, val→v1, reload→a0, sh reorder); H11 family.
+- H16 **KILLED (measured, 7):** const carrier with hoisted D+3 first set (val = (s32)(D_800F1164+3) before the re-test, arm 2 stores val) — cse rewrote the set to `val = reg95` (canonical lbu-address pseudo) and substituted the arm-2 use to reg95; set flow-deleted. Generalizes H10: D+2/D+3 have canonical anonymous pseudos; no named carrier survives at any placement.
+- H17 **KILLED (source-read):** sched.c adjust_priority n_deaths deferral as the block-0 asymmetry — schedule_block strips all REG_DEAD notes before scheduling (sched.c:3596); n_deaths is always 0.
+- H18 **KILLED (analytic):** combine i2dest_in_i2src loophole (self-referencing second set of arg1 merged away leaving reg_n_sets==2) — arg1's only consumer is the sh whose operand must be a plain REG, so the op insn always survives (+1 insn). No mergeable consumer exists in this function.
+- H19 **CONFIRMED (analytic):** target's post-call lw order requires a0lw LAUNCH-boosted (at its pick moment v1lw/v0lw are ready, and priority dominates luid) — so the const cannot ride the sp20[2] repack temp; the s2 candidate's swap is unfixable inside the val-carrier shape by any statement order.
+
+## Frontier (for s4+)
+
+1. **Permuter campaign, TWO seeds** (unchanged from s2 frontier #1; now the sole live axis this model sees): baseline attractor + s2 candidate; the winning form must evade the s3 constraint web, i.e. respell the post-call region so the $a0 occupancy chain (repack a0lw → const) is produced by a different pseudo population entirely.
+2. **Model-breaking respellings of the post-call block:** forms that change WHICH pseudos exist rather than their set counts — e.g. sp10 accessed via a walking pointer, the +0xC/+0x10 stores through a different base spelling, or the repack written as a loop GCC fully unrolls. None probed; each changes the pseudo census the s3 exhaustion argument assumes fixed.
+3. **Verify H19 empirically** with a sched1 -dS trace of the candidate's post-call block (cheap, constrains the permuter's mutation space further).
+
+## [s3] A const carrier whose first set is a frame address at a call-arg use ((s32)sp18 into motutil_GetWalkDir) survives cse and globalizes 0x10016 past local_alloc
+- mechanism: s2 law said frame addresses survive as second sets; no later sp+0x18 recomputation exists to trigger substitution
+- probe: val=(s32)sp18 as call-1 arg + val=0x10016 in arm 1, repack natural; sandbox + objdump
+- result: Score 7 (probe-1 leak): cse folds the arg copy a0=val into a direct addiu a0,sp,0x18, set flow-deleted, const collapses to local -> $v1. Frame addresses survive only at STORE-OPERAND uses, never call-arg uses
+- verdict: KILLED
+
+## [s3] Routing the sp20[1] repack through arg1 (third set) on top of the s2 shape unboosts v1lw symmetrically and fixes the lw swap
+- mechanism: both v1lw and a0lw unboosted -> luid-order emission; loads' dests are the target registers
+- probe: arg1 = sp20[1]; sp10[1] = (s16)arg1; added to candidate; sandbox + objdump
+- result: Score 17: full RA rotation (arg1->a3, val->v1, gp-reload->a0, sh order 0x10/0x14/0x12) - extra refs shift the global conflict walk (H11 family)
+- verdict: KILLED
+
+## [s3] The hoisted D+3 pointer (set before the re-test, consumed by arm 2's +0x14 store) is a surviving global const carrier mirroring target's delay-slot addiu a0,v1,1
+- mechanism: live code (arm 2 uses it), first materialization of D+3, so H10's substitution should not apply
+- probe: val=(s32)(D_800F1164+3) before the re-test; arm 2 stores val; val=0x10016 in arm 1; sandbox + full cc1 pass dumps (-drsctflgSR)
+- result: Score 7: fn.cse shows the (D+2)[1] lbu address already materializes D+3 as reg 95; cse rewrote val's set to val=reg95 and substituted arm-2's use to reg95 directly; set flow-deleted. Check-region bytes (incl. delay-slot addiu) were already correct without help
+- verdict: KILLED
+
+## [s3] sched.c adjust_priority's n_deaths deferral (insns with REG_DEAD notes lose priority) is the block-0 asymmetry the original exploited
+- mechanism: the a1 copy kills $a1, so a REG_DEAD note would defer it to exactly target's T-6 pick slot
+- probe: read sched.c 2496-2580 + 3585-3630
+- result: Dead: schedule_block's pre-pass unlinks ALL REG_DEAD notes onto dead_notes before scheduling; n_deaths is always 0 (the ??? comment at sched.c:2544 is accurate)
+- verdict: KILLED
+
+## [s3] combine's reg_n_sets decrement skip (i2dest_in_i2src, combine.c:2307) allows a self-referencing second set of arg1 (arg1 = arg1 OP k) to be merged away leaving reg_n_sets==2 at sched1 with no emitted insn
+- mechanism: combine only decrements reg_n_sets for eliminated i2 sets when the dest is not in its own src
+- probe: read combine.c 2295-2345 + consumer analysis of arg1
+- result: Closed for this function: arg1's only consumer is the sh whose operand must be a plain REG - the OP insn cannot merge into it and always survives (+1 insn). Loophole possibly useful elsewhere
+- verdict: KILLED
+
+## [s3] Target's post-call lw order (v0,v1,a0) requires a0lw LAUNCH-boosted, so the const cannot ride the sp20[2] repack temp and the s2 candidate's swap is unfixable by any statement order
+- mechanism: byte-match forces our backward pick order to equal target's; at a0lw's pick moment both sh 0x12 and sh 0x10 are already scheduled, so v1lw/v0lw are ready and priority (LAUNCH) dominates luid - an unboosted a0lw can never be picked first
+- probe: replay of target emission against s1's block-0 trace mechanics + s2's variant-A measurement
+- result: Confirmed analytically; combined with host exhaustion (P1/P3/P4 + s2 kills), every shape in the const-carrier family is dead - the matching form must change the pseudo population of the post-call region, not set counts
+- verdict: CONFIRMED
