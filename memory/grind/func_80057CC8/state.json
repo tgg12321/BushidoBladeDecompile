@@ -1,7 +1,7 @@
 {
  "func": "func_80057CC8",
  "file": "text1b",
- "session_count": 22,
+ "session_count": 23,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -141,13 +141,19 @@
    "floor": 3,
    "modality": "permuter",
    "headline": "s22 permuter chassis #6 (downstream-ternary + *arg2/*arg3 write-order): score-0 at iter 4265 is same p1-alias-holder cheat class as s4/s5/s13/s14 \u2014 permuter modality exhaustively KILLED across six str"
+  },
+  {
+   "session": 23,
+   "floor": 3,
+   "modality": "permuter",
+   "headline": "s23 permuter: block-scope-p narrowing chassis KILLED as byte-neutral null lever (score=3, delta=0); scope-narrowing family closed; single-pseudo impossibility confirmed scope-insensitive per s7 DECL_R"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "File an OWNER-ESCALATION entry in docs/grind/decisions.md for func_80057CC8 following the hirahira_w_frie/motion_SetMotion/func_80045294/cpu_side_move_dir_4 precedent format (options presented honestly, agent does not self-resolve). All prerequisites met per ledger live frontier: s7 single-pseudo impossibility CONFIRMED; s10 Judge binding on two-C-locals; s6/s7/s15/s16 forensics fully name the pseudo 86 {v0,v1}\u2192{v1} pref path; s21 KILLED local-alloc bail-out axis by-construction; s11 F1 dup-arms A/B/C KILLED; s12 F2 struct-typed arg0 KILLED; s17 F3 Kengo unfindable + F6 SOTN slice psxsdk-only + deferred-mask KILLED; s18 combined-shift + cur-pointer + decomp.me corpus KILLED; s20 F5-corner double-swap KILLED; s22 (this session) permuter modality KILLED across six chassis.",
-   "mechanism": "Every sanctioned axis on the ledger is measurably dead or killed-by-construction. Options for owner: (a) narrow Judge binding to permit a documented two-scope-p form for RA-coalescing walls with target-asm evidence of two distinct pseudos + forensics-named single-pseudo-impossibility + local-alloc-bail-out-by-construction; (b) authorize canonical-asm carve-out per fork-divergence-inline-asm's crash-driven analogue adapted for scheduling-driven single-pseudo impossibility; (c) hold INCOMPLETE indefinitely.",
-   "next_probe": "Next session (synthesis modality): draft the OWNER-ESCALATION entry with the three options above, cite s1-s22 exhaustion evidence, cite s6/s7/s15/s16 forensics chain, cite s21 local-alloc.c:472 semantic-requirement finding, cite s22 six-chassis permuter convergence on alias-holder cheat family, append to docs/grind/decisions.md. Once filed, the driver parks the function and future sessions on func_80057CC8 can legitimately emit owner-gated citing that entry."
+   "hypothesis": "File an OWNER-ESCALATION entry in docs/grind/decisions.md for func_80057CC8 following the hirahira_w_frie / motion_SetMotion / func_80045294 / cpu_side_move_dir_4 precedent format (options presented honestly, agent does not self-resolve).",
+   "mechanism": "Every sanctioned axis on the ledger is now measurably dead or killed-by-construction across s1-s23, including the s23 addition of block-scope-p null lever closing the last non-alias-family permuter chassis. Options for owner: (a) narrow Judge binding to permit a documented two-scope-p form for RA-coalescing walls with target-asm evidence of two distinct pseudos + forensics-named single-pseudo-impossibility + local-alloc-bail-out-by-construction; (b) authorize canonical-asm carve-out per fork-divergence-inline-asm's crash-driven analogue adapted for scheduling-driven single-pseudo impossibility; (c) hold INCOMPLETE indefinitely.",
+   "next_probe": "Next session (synthesis modality): draft the OWNER-ESCALATION entry with the three options above, cite s1-s23 exhaustion evidence, cite s6/s7/s15/s16 forensics chain, cite s21 local-alloc.c:472 semantic-requirement finding, cite s22 six-chassis permuter convergence on alias-holder cheat family, cite s23 block-scope-p null-lever measurement closing the sole non-alias structural axis. Append to docs/grind/decisions.md. Once filed, the driver parks the function and future sessions on func_80057CC8 can legitimately emit owner-gated citing that entry."
   }
  ],
  "judge_constraints": [
