@@ -1,7 +1,7 @@
 {
  "func": "func_80049A2C",
  "file": "text1b",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,23 +15,24 @@
    "floor": 0,
    "modality": "structural",
    "headline": "Phantom-frame-slot mechanism KILLED on H1/H2 axes; no lh+HImode-bitwise trigger fires in this shape without adding non-target insns."
+  },
+  {
+   "session": 3,
+   "floor": 0,
+   "modality": "structural",
+   "headline": "H4 KILLED with cc1 -da instrumentation: phantom reload/alter_reg slot is NOT firing in func_80049A2C's shape. dummy-in vs dummy-out greg dumps are byte-identical (all 7 pseudos allocated hard regs bot"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "H4 \u2014 pinpoint via cc1 -da the exact reload/alter_reg trigger conditions in a MATCHING BUILD of func_80049A2C (running with dummy[2] in place). Build the .greg and .lreg dumps; look for pseudos with reg_n_refs>0 that got no hard register but no explicit sw/lw touch. If ANY pseudo already sits in that state cheat-freely, the phantom is already firing on live code \u2014 replicate its ENTRY CONDITION in a form without dummy[2].",
-   "mechanism": "Directly instrument the reload pass on the working (dummy[2]-carrying) baseline to find any pre-existing phantom-slot firing that the s1/s2 axis-sweeps missed. If the current dummy[2]+(void)dummy IS what triggers it (i.e. dummy IS the semantic role that keeps reg_n_refs>0), then the mechanism is unreachable without a replacement decl of the same class.",
-   "next_probe": "cd tmp/grind/func_80049A2C/s2 ; write build.sh mirroring the func_80037540 s2 harness (project cc1 flags + -da) targeting text1b.c with the s1 candidate; inspect the .greg output; identify any pseudo with reg_n_refs>0 && reg_renumber<0 that receives NO hard reg; correlate with the dummy[2] slot."
+   "hypothesis": "H7 \u2014 file OWNER-ESCALATION per endgame-lock-disposition rule with the completed lever-exhaustion ledger (s1 noise-triage, s2 phantom-injection H1/H2/H3 KILLED, s3 phantom-firing H4 KILLED, rejected/scalar-dummy H6 KILLED). Both options + honest 'no SOTN precedent for a fully-dead 8-byte pad without prerequisite engine allowlist' + scan_hand_coded --single func_80049A2C output for the canonical-asm option.",
+   "mechanism": "endgame-lock-disposition owner-policy path. Every sanctioned pure-C axis (phantom-firing, phantom-injection, scalar-widening, scalar-dummy) is now measured dead across s1+s2+s3. The +8 slot is aggregate-only. The three fallback formal paths (fully-dead-pad first-family closure, capacity-declared partial-fill via func_80037540 sanction, endgame-lock INCOMPLETE-owner-accepted) all require owner adjudication.",
+   "next_probe": "Run `python3 tools/scan_hand_coded.py --single func_80049A2C` to certify the canonical-asm-refusal prong. Then file docs/grind/decisions.md OWNER-ESCALATION with both options: (a) INCOMPLETE-owner-accepted with `s32 dummy[2]` retained solely to hold the byte match under endgame-lock, (b) grant the dead-pad first-family closure with the prerequisite engine allowlist wiring done by the same or next session. State plainly: no SOTN precedent found for a fully-dead 8-byte pad in the community reference set (the func_80037540 escalation surveyed capacity-declared PARTIALLY-FILLED buffers, a different shape)."
   },
   {
-   "hypothesis": "H5 \u2014 the target's +8 frame slot is genuinely a source-declared unwritten-tail (the func_80037540 'capacity-declared buffer' family). Judge FAIL requires FAKE annotation + lever-exhaustion; s1+s2 now provide the exhaustion prong for the phantom axis. Await the func_80037540 OWNER-ESCALATION ruling \u2014 if it sanctions the family, dummy[2] here retires with a FAKE annotation and a documented mechanism pointer.",
-   "mechanism": "SOTN-precedent-based: 356 in-tree analogues in SOTN/oot/papermario/VS/MGS (func_80037540 s4 census). BB2's construct here is milder (dummy[2] is an obvious 8-byte pad; the function's semantics fully account for every non-frame effect).",
-   "next_probe": "Do NOT re-file an escalation here \u2014 the func_80037540 escalation covers the family and this function is a WEAKER instance (fully-dead 8-byte pad, no partial-write ambiguity). Watch docs/grind/decisions.md; if the func_80037540 escalation lands option (a) (sanction), replay this function under the sanction with `s32 dummy[2]; /* FAKE: capacity-declared partial-fill local, mechanism=reload/alter_reg stale-ref phantom-slot per phantom-frame-slots-gcc272 s3; H1/H2 phantom-injection routes measured dead this session */` and re-run layer-2."
-  },
-  {
-   "hypothesis": "H6 \u2014 named-local-fake-exception spelled as a single scalar (not an array). SOTN evidence supports `s16 three = 3;` shape; a `s32 fp_slot = 0; /* FAKE */` might qualify under [[named-local-fake-exception]] if paired with the documented HImode-bitwise-DCE evidence from H1.",
-   "mechanism": "The 2026-07-01 named-local-fake-exception sanction covers dead SCALAR (not array) declarations that shift RA. Requires: measured RA-effect (dummy[2] measured +12 score when removed IS the RA effect), documented GCC-pass mechanism (reload/alter_reg stale-ref per phantom-frame-slots-gcc272 s3), FAKE annotation, layer-2 review.",
-   "next_probe": "Try `s32 dummy;` (single scalar, no array) + `(void)dummy;` + `/* FAKE: ... */` and measure. If it holds sandbox=0, the H6 spelling is strictly BETTER than the current dummy[2] (single scalar aligns with the sanctioned family; arrays are disputed). Then file for layer-2 review with the H1/H2 exhaustion ledger."
+   "hypothesis": "H8 (weak lever, worth one measurement) \u2014 struct-typed aggregate spelling. `struct { s32 a; s32 b; } dummy;` + `(void) dummy;` as a semantically-distinct aggregate might a. have the same +8 frame reservation but a different reviewer disposition (struct-shaped dead locals appear in SOTN as PSP-required carve-outs), or b. get scalarized by GCC 2.7.2 into scalars and disappear like `s32 dummy;` did.",
+   "mechanism": "GCC 2.7.2 does not have full SRA but does scalarize simple aggregates whose address is not taken (via `flow_delete_insn` + register-promotion). If the struct scalarizes, the frame goes to 0 (same as scalar-dummy). If it doesn't, the frame reserves 8 bytes exactly like the array, and the review disposition question is whether SOTN treats a two-field dead struct as a distinct sanctioned family. Very unlikely to close but cheap to measure.",
+   "next_probe": "Edit src/text1b.c: replace `s32 dummy[2];` + `(void) dummy;` with `struct { s32 a; s32 b; } dummy;` + `(void) dummy;`. Run `sandbox func_80049A2C --disable all`. If score=0 AND scan_hand_coded/dead-store detectors treat structs differently from arrays, it's a genuinely new spelling; otherwise it's dummy[2] with syntactic paint and inherits the same Judge FAIL. If score=12 (struct scalarized), that's the H8 KILL and reinforces the aggregate-only conclusion. Time-box to 1 sandbox call."
   }
  ],
  "judge_constraints": [
