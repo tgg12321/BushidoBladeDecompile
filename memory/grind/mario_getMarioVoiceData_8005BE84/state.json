@@ -1,0 +1,40 @@
+{
+ "func": "mario_getMarioVoiceData_8005BE84",
+ "file": "text1b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 0,
+   "floor": 4,
+   "modality": "wip-import",
+   "headline": "floor imported from memory/wip checkpoint"
+  },
+  {
+   "session": 1,
+   "floor": 4,
+   "modality": "recon",
+   "headline": "s1 recon: floor 4 confirmed (46/46 insns, all 4 diffs CONTROL-FLOW); root-cause is RA coalescing temp_a0 back into s0 + delay-slot filler picking addiu over sll."
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "H1 \u2014 Block-scoped `s32 doubled = arg0 << 1;` OUTSIDE the if, with `doubled` READ inside the if AFTER the md_game_check call (as source of +1). Forces `doubled` to live across callee-save boundary => RA keeps s0=arg0<<1 through the call chain, matches target.",
+   "mechanism": "RA won't coalesce a variable that spans callee-save call boundaries into a caller-save slot; only s0 (callee-save) fits. Target's shape corresponds precisely to `doubled` living in s0 across all calls. Distinct from rejected variants e/i/j which did `arg_save <<= 1` INSIDE the if (same-block as read, breaks addu operand order).",
+   "next_probe": "Rewrite candidate as: `s32 doubled = arg0 << 1; base = &D_8009AD1C[0][0]; p = base + arg0 * 2; if (*p >= 0) { ... temp_a0 = (s16)(doubled + 1); func_80085E4C(temp_a0, temp_a0); ... }` and sandbox --disable all. Confirm/refute that delay slot flips to sll AND +1 lands into a0."
+  },
+  {
+   "hypothesis": "H2 \u2014 Force the bltz delay-slot candidate set to contain ONLY `sll` (no `addi`) by moving the +1 computation past the branch decision boundary \u2014 e.g., inline shifting as a comma-expression side effect (`if ((arg0 <<= 1, *p) >= 0)`) so `+1` lives strictly in the fallthrough block, out of reorg.c's backward-scan window.",
+   "mechanism": "reorg.c fill_slots_from_thread scans candidates within the source block and its safe fall-through prefix. Confining the addi to the taken-arm proper (not the header) leaves sll as the only pre-branch shift candidate. Comma-expression / statement-expression shifts inline may parse differently from previously-rejected `arg_save <<= 1` inside the if body.",
+   "next_probe": "Write a variant using `s16 v = *p; arg0 <<= 1; if (v >= 0) { ...; temp_a0 = (s16)(arg0 + 1); ... }` \u2014 key differences from rejected e/i/j: shift is BEFORE the if (own block) rather than inside; lh is anchored to a named local `v` before the bltz uses it. Sandbox --disable all."
+  },
+  {
+   "hypothesis": "H3 \u2014 Permuter-directed scheduling search using PERM_TEMPLATE around the (arg0<<1)+1 expression: 2-3 forms crossed with 2 lh-anchoring variants, ~20-30 fresh seeds per per-permuter-fresh-seed-discipline. This is the WIP's noted 'next idea' and hasn't been run.",
+   "mechanism": "Permuter mutates C forms and rescores; can find surprising RA/scheduling that manual derivation misses. Reasonable given tight 4-insn diff window. Must vet all zero-forms against cheat catalog (register pins, dead stores, etc.) per no-new-park-categories.",
+   "next_probe": "In a future session (not s1 recon budget), stage a PERM_TEMPLATE campaign around lines 12542-12559 of src/text1b.c using the H1/H2 candidates as base seeds; harvest with fresh-seed discipline; layer-2 review any zero-form."
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-20T06:16:46.118069+00:00"
+}
