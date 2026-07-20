@@ -1,31 +1,37 @@
 {
  "func": "InitHiraRmd_80047FBC",
  "file": "text1b",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 1,
    "modality": "recon",
    "headline": "recon: honest floor=1 with two forbidden constructs live in src; single residual is target insn #18 addu $s0,$s4,$v0 vs sandbox addu $s0,$a0,$v0 (copy-prop base==arg0)"
+  },
+  {
+   "session": 2,
+   "floor": 1,
+   "modality": "structural",
+   "headline": "structural sweep: killed 3 declaration/scope reorderings; arg0=0 cheat proven inert (dropped from candidate); floor unchanged at 1, cheat count reduced 2\u21921"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "force $s4 retention by making `base` visibly diverge from `arg0` \u2014 try declaration-order reshuffle: assign `base = (u32*)arg0` FIRST and derive `p` from base with a real live range across the loop body",
-   "mechanism": "give `base` a data-dependent live range spanning the callees so RA promotes it to $s4 without copy-prop folding it back to $a0",
-   "next_probe": "s2: rewrite as `u32 *base = (u32*)arg0; u32 *p = (u32*)((s32)base + shifted_a1);` (drop the intermediate `p = arg0; base = p;` chain and the `arg0 = 0;` cheat), sandbox, read insn #18"
+   "hypothesis": "increase base's reg_n_refs via a legitimate additional use in the loop body \u2014 e.g. compute `count` initialization from base explicitly, or duplicate `new_var = base + word_offset` into a real second use \u2014 to make GCC's allocator prefer $s4 over the $a0 copy-prop alias at insn #18",
+   "mechanism": "GCC's local-alloc uses reg_n_refs as a tiebreaker; more references to `base` should raise its priority for allocation and picking-at-use per [[duplicated-statement-into-arms]] (2026-07-01 sanction for legitimate duplication effects)",
+   "next_probe": "s3 (structural): duplicate the `new_var = (s32)base + word_offset` computation once outside the loop (byte-neutral shape TBD), or replace the standalone `count = *(p++)` with `count = *(u32*)(base_addr + word_offset); p = (u32*)(base_addr + word_offset + 4);` to add a second explicit base reference in the pre-loop block"
   },
   {
-   "hypothesis": "explicit-store version of the dead-store carve-out plus a base-CSE fence \u2014 `buf[4] = <expr involving base>;` inside the loop makes buf actually written AND anchors base into a callee-save",
-   "mechanism": "combine dead-vars-local-array 2026-07-01 carve-out (with explicit writes matching target dead stores) with a base live-range extender",
-   "next_probe": "s2/s3: after H1 form is measured, try `buf[i&7] = 0;` or capturing the call return into buf; probe whether any variant lowers insn #18 to $s4"
+   "hypothesis": "the residual is a permuter-shape problem, not a manual-lever problem \u2014 the copy-prop\u2192RA-tie is one of many small pseudo-cost adjustments GCC makes; a directed PERM_* campaign over `base`/`p` chain + copy shape can search the space more broadly than manual probes",
+   "mechanism": "auto-search over C forms with PERM_INT_TYPE, PERM_VAR, PERM_LINESWAP macros can sample the RA tiebreaker space per [[permuter-directives]] + [[permuter-fresh-seed-discipline]]",
+   "next_probe": "s3 (permuter modality): build a permuter workspace seeded with the H1d form (drops the arg0=0 cheat) targeting a single-insn residual; fresh-seed budget ~20-30 seeds per PERM_* variant; MUST vet any closing form against the cheat catalog"
   },
   {
-   "hypothesis": "directed permuter campaign varying the base/p declaration chain and copy shape",
-   "mechanism": "auto-search over C forms with PERM_* macros; per permuter-directives + permuter-fresh-seed-discipline",
-   "next_probe": "s3 (permuter modality): seed WITHOUT the current `arg0 = 0;` cheat and WITHOUT `s32 buf[8];`, target a single-diff residual; fresh-seed budget ~20-30 seeds per rule"
+   "hypothesis": "the `s32 buf[8]` unused array is providing frame reservation that is NOT needed for the discarded-return spill (GCC schedules `sw v0, 0x10(sp)` because target has such a slot; removing buf shrinks frame and drops the spill, but may not affect insn #18)",
+   "mechanism": "isolate whether the frame reservation is load-bearing for the score by removing buf[8] AND measuring whether the discarded-return sw disappears; this determines whether the WRITTEN-never-read carve-out is required for the closing form",
+   "next_probe": "s3 (structural/policy): remove `s32 buf[8]` and `(void)buf;` from H1d, sandbox, disasm \u2014 if the sw v0,0x10(sp) survives (via GCC's own frame allocation for register saves) the buf[8] is decorative and can be dropped; if it disappears the buf[8] is providing real frame semantics and a WRITTEN-never-read form (with actual stores) is required per [[dead-vars-local-array]] 2026-07-01 carve-out"
   }
  ],
  "judge_constraints": [],

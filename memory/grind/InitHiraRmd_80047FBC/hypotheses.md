@@ -81,3 +81,33 @@ function's shape.
 - probe: objdump sandbox .o at jal delay slot
 - result: sandbox ALREADY emits `sw v0, 16(sp)` at offset 0x1b4 with no explicit buf[k]= in the C — GCC schedules the discarded return into the free frame slot on its own. The store is not the residual; the copy-prop is.
 - verdict: KILLED
+
+## [s2] H1a: assigning base FIRST (u32 *base = (u32*)arg0) then deriving p from base fixes insn #18 to $s4
+- mechanism: removing the intermediate `p = arg0; base = p` chain makes base the primary reference so GCC materializes it directly into $s4
+- probe: s2 sandbox --disable all: base = (u32*)arg0; p = base + shifted; p = base + word
+- result: score 5, build 64 insns. Insn 0x120 IS now addu s0,s4,v0 (matches target), but prologue emits `move s4,a0` directly (single move) instead of target's staged `move s0,a0; move s4,s0` — save order flips (s4 saved before s0) and one insn is eliminated. Net: fixes one diff, introduces multiple new diffs.
+- verdict: KILLED
+
+## [s2] H1b: parallel init (p = arg0; base = arg0) produces a different codegen than the chained (p = arg0; base = p) form
+- mechanism: distinct initializers might give GCC different value-numbering / copy-prop analysis
+- probe: s2 sandbox --disable all: p = (u32*)arg0; base = (u32*)arg0; p = base + shifted; p = base + word
+- result: score 1, byte-identical to the chained baseline. GCC folds parallel and chained inits to identical output — copy-prop collapses base==arg0 either way. Same single residual at insn #18.
+- verdict: KILLED
+
+## [s2] H1c: declaring base in an inner scope (after p is derived) shortens its lifetime and improves allocation
+- mechanism: narrower live-range of base might let GCC pick a different register or avoid the copy-prop tie
+- probe: s2 sandbox --disable all: outer p = arg0; p += shifted; then inner { u32 *base = (u32*)arg0; ... loop ... }
+- result: score 8, build 63 insns. Inner-scope base drops the s4 setup entirely and shifts the loop-body allocation, introducing multiple new diffs. Strictly worse.
+- verdict: KILLED
+
+## [s2] H1d: declaring base as s32 base_addr (integer) instead of u32 *base (pointer) gives GCC a different aliasing/allocation profile
+- mechanism: s32 vs pointer type might affect pointer-aliasing analysis, address-mode selection, or RA cost model
+- probe: s2 sandbox --disable all: p = (u32*)arg0; base_addr = arg0 (as s32); p = (u32*)(base_addr + shifted); p = (u32*)(base_addr + word)
+- result: score 1, byte-identical to H1b. GCC treats s32 and u32* the same after copy-prop; the address arithmetic collapses to identical MIPS. Same single residual, BUT reaches score=1 WITHOUT the arg0=0 cheat (previously believed load-bearing).
+- verdict: KILLED (bytes) / CONFIRMED as inert-cheat-eliminator (progress: reduces committed candidate from 2 cheats to 1)
+
+## [s2] H3 confirmation: the `arg0 = 0;` dead self-assignment in the s1-committed candidate is INERT for insn #18
+- mechanism: prior belief (per s1) was that this KILLED the copy-prop severance mechanism; H1d now confirms score is identical WITHOUT it, so it is providing zero codegen effect
+- probe: s2: removed arg0 = 0; from src, re-ran sandbox with H1d form
+- result: score 1 (unchanged from with the cheat). The construct provides zero benefit. Committed candidate carries it purely as a failed hypothesis remnant.
+- verdict: CONFIRMED (arg0=0 is inert here — safe to drop from candidate)

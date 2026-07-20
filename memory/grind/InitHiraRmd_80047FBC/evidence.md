@@ -75,3 +75,19 @@ carve-outs, OR a genuinely different C shape that makes arg0-copy → $s4 natura
 - [s1] prologue and epilogue byte-match target — frame=0x50, save order $s0/$s4/$ra/$s3/$s2/$s1 all correct; the `buf[8]` declaration IS load-bearing for the 32-byte frame reservation
 
 - [s1] sibling cluster (AddTbpOfst_80047EE8, InitHiraRmd_800480C0, func_800481E8) all remain cheat-carrying INCOMPLETE (register-asm pins, INLINE_MOVE_ALIASING __asm__ moves, unused_slack arrays) — NOT templates to copy
+
+- [s2] [s2] baseline sandbox (as-committed src): score=1, 65/65 insns, single residual at insn #18 (target `addu $s0,$s4,$v0` vs sandbox `addu $s0,$a0,$v0`)
+
+- [s2] [s2] the target prologue `move s0,a0; move s4,s0; addu s0,s0,a1` (staged copy through $s0) is produced BY BOTH chained-form (`p=arg0; base=p`) AND parallel-form (`p=arg0; base=arg0`) — GCC's copy-prop coalesces them
+
+- [s2] [s2] the target prologue is NOT produced by declaration reorder that puts base first — H1a form emits `move s4,a0` directly (1 move, not staged) and flips save order
+
+- [s2] [s2] H1d proves `arg0 = 0;` in the s1 candidate is inert — removing it leaves score=1 unchanged, so the committed candidate can be simplified to eliminate one of two cheats
+
+- [s2] [s2] tried inner-scope base (H1c) as an alternative liveness lever; strictly worse (score 8, -2 insns) — narrower base lifetime is not the answer
+
+- [s2] [s2] declaration type (s32 vs u32*) for `base` is codegen-neutral after copy-prop — H1b and H1d produce byte-identical .o
+
+- [s2] [s2] the residual is a genuine RA tie-breaker: at insn #18 GCC picks $a0 (which still equals base after copy-prop) over $s4 (the callee-save copy). None of the 4 statement-level structural probes attempted budged this choice while preserving the target prologue.
+
+- [s2] [s2] frontier: the split-init-accumulation form `base = arg0; base += shifted; base -= shifted;` proposed in s1 hypotheses is a cheat-by-any-spelling per [[no-new-park-categories]] — no-op arithmetic with the sole purpose of steering RA. NOT probed. Should be marked KILLED-BY-POLICY in future ledger updates.

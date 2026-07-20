@@ -402,3 +402,4 @@
 - 2026-07-20 01:29 mario_getMarioVoiceData_8005BE84 s1 [recon] floor=4: s1 recon: floor 4 confirmed (46/46 insns, all 4 diffs CONTROL-FLOW); root-cause is RA coalescing temp_a0 back into s0 + delay-slot filler picking addiu over sll.
 - 2026-07-20 01:35 mario_getMarioVoiceData_8005BE84 COMPLETED-C after 2 sessions.
 - 2026-07-20 01:42 InitHiraRmd_80047FBC s1 [recon] floor=1: recon: honest floor=1 with two forbidden constructs live in src; single residual is target insn #18 addu $s0,$s4,$v0 vs sandbox addu $s0,$a0,$v0 (copy-prop base==arg0)
+- 2026-07-20 01:56 InitHiraRmd_80047FBC s2 [structural] floor=1: structural sweep: killed 3 declaration/scope reorderings; arg0=0 cheat proven inert (dropped from candidate); floor unchanged at 1, cheat count reduced 2→1
