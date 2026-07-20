@@ -403,3 +403,4 @@
 - 2026-07-20 01:35 mario_getMarioVoiceData_8005BE84 COMPLETED-C after 2 sessions.
 - 2026-07-20 01:42 InitHiraRmd_80047FBC s1 [recon] floor=1: recon: honest floor=1 with two forbidden constructs live in src; single residual is target insn #18 addu $s0,$s4,$v0 vs sandbox addu $s0,$a0,$v0 (copy-prop base==arg0)
 - 2026-07-20 01:56 InitHiraRmd_80047FBC s2 [structural] floor=1: structural sweep: killed 3 declaration/scope reorderings; arg0=0 cheat proven inert (dropped from candidate); floor unchanged at 1, cheat count reduced 2→1
+- 2026-07-20 02:08 InitHiraRmd_80047FBC s3 [structural] floor=1: s3 structural: killed 5 more axes (buf[8] load-bearing for frame; word-offset split, init reorder, new_var mid-loop hoist/defer inert or worse); floor unchanged at 1; frontier narrows to duplicated-statement-into-arms in-loop or permuter modality

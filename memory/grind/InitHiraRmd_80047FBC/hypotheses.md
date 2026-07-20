@@ -111,3 +111,33 @@ function's shape.
 - probe: s2: removed arg0 = 0; from src, re-ran sandbox with H1d form
 - result: score 1 (unchanged from with the cheat). The construct provides zero benefit. Committed candidate carries it purely as a failed hypothesis remnant.
 - verdict: CONFIRMED (arg0=0 is inert here — safe to drop from candidate)
+
+## [s3] removing the unused `s32 buf[8]` local shrinks the frame and preserves the sw v0,0x10(sp) delay-slot store (GCC allocates the slot itself)
+- mechanism: test whether buf[8] is decorative frame padding or genuinely load-bearing per the s2 frontier probe
+- probe: s3 (structural): edit src to remove `s32 buf[8];` + `(void)buf;`; sandbox --disable all; disasm
+- result: score 1→15, target_insns 65 vs build_insns 65. Frame shrinks 0x50→0x30. `sw v0,0x10(sp)` still emerges (GCC-allocated) but many stack offsets shift by 0x20 causing 15 differing instructions across the function. buf[8] IS load-bearing for the frame reservation — it is NOT decorative.
+- verdict: KILLED
+
+## [s3] splitting `count = *p++` into `word_offset = ((*p)>>2)<<2; count = *(base_addr+word_offset); p = (base_addr+word_offset+4)` lifts base_addr's reg_n_refs to 3 pre-loop, tilting GCC's local-alloc tiebreaker toward $s4 at insn #18
+- mechanism: add explicit legitimate base_addr uses to raise its allocation priority per [[duplicated-statement-into-arms]] / [[difficult-is-not-impossible]] Lever D-style RA steering
+- probe: s3 (structural): apply the split-recompute form; sandbox --disable all
+- result: score 3, 65/65 insns. Insn #18 becomes `addu a0,a0,v0` (a0 still holds the base value); the two explicit `base_addr + word_offset` uses fold via CSE into a single computation folded through $a0 — the split does not increase distinct references seen by local-alloc AFTER CSE. New downstream diff at addr-materialization for subsequent lw. Copy-prop still wins the tie.
+- verdict: KILLED
+
+## [s3] swapping the initialization order to `base_addr = arg0; p = (u32*)arg0;` changes LUID/reg_n_deaths analysis and may retain base_addr in $s4 at insn #18
+- mechanism: declaration-order structural probe (part of the s3 structural modality catalog: `.claude/rules/codegen-technique-index.md`)
+- probe: s3 (structural): swap init order; sandbox --disable all
+- result: score 1 unchanged, byte-identical to the p-first form. Copy-prop analysis identical regardless of statement order. LUID reshuffle does not budge insn #18. (Retained in candidate as no-cost stylistic preference.)
+- verdict: KILLED
+
+## [s3] hoisting `new_var = base_addr + ((word>>2)<<2)` earlier in the loop body (right after the first `p += 4;`) shortens base_addr's post-hoist idle live range and might change RA weighting at insn #18
+- mechanism: loop-body statement reorder — within-scope structural axis
+- probe: s3 (structural): move new_var compute above the a1v load; sandbox
+- result: score 1 unchanged. GCC scheduler recovers the same placement regardless of source position within the load block. Insn #18 diff unaffected.
+- verdict: KILLED
+
+## [s3] deferring `new_var = base_addr + ((word>>2)<<2)` to the very end of the loop body (immediately before the call) frees base_addr's live range across the reads and may relocate the residual
+- mechanism: opposite-direction loop-body reorder
+- probe: s3 (structural): move new_var compute to after v0v load; sandbox
+- result: score 13. Late placement changes scheduling of the multi-lhu block AND the call-arg materialization; 12 new diffs across the load and pre-call region. Mid-loop position (between a2v and a3v reads) is load-bearing for match. Not a winning direction.
+- verdict: KILLED

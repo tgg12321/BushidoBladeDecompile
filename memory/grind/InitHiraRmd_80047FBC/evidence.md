@@ -91,3 +91,15 @@ carve-outs, OR a genuinely different C shape that makes arg0-copy → $s4 natura
 - [s2] [s2] the residual is a genuine RA tie-breaker: at insn #18 GCC picks $a0 (which still equals base after copy-prop) over $s4 (the callee-save copy). None of the 4 statement-level structural probes attempted budged this choice while preserving the target prologue.
 
 - [s2] [s2] frontier: the split-init-accumulation form `base = arg0; base += shifted; base -= shifted;` proposed in s1 hypotheses is a cheat-by-any-spelling per [[no-new-park-categories]] — no-op arithmetic with the sole purpose of steering RA. NOT probed. Should be marked KILLED-BY-POLICY in future ledger updates.
+
+- [s3] [s3] baseline sandbox with s2 candidate applied (H1d form, no arg0=0): score=1, 65/65 insns, single residual at insn #18
+
+- [s3] [s3] `s32 buf[8]` local is load-bearing for FRAME reservation — removing it: score 1→15, frame 0x50→0x30, ~15 stack offsets shift; NOT decorative. Remains a forbidden un-written array unless legitimized under [[dead-vars-local-array]] 2026-07-01 carve-out (which requires actual STORES matching target dead stores; target's `sw v0,0x10(sp)` in the jal delay slot IS GCC-allocated on its own and does not by itself satisfy the written-not-read requirement).
+
+- [s3] [s3] split-recompute form (`count = *(base+off); p = base+off+4`) does NOT lift base_addr's ref count as seen by local-alloc — CSE folds the two base+off computes into one before reg-alloc, so priority tiebreaker is unchanged; introduces new $a0-anchored diff.
+
+- [s3] [s3] within-scope declaration-order and loop-body statement reorderings do not budge the insn #18 copy-prop tie (measured across 3 orderings, all score 1 or score 13).
+
+- [s3] [s3] the residual is a robust GCC-internal tiebreaker between $a0 (arg-register-alias-via-copy-prop) and $s4 (callee-save-holding-base_addr) — five distinct structural probes have failed to invert it. This is exactly the shape the s2 frontier flagged as a permuter-directed problem rather than a manual-lever problem.
+
+- [s3] [s3] rejected forms banked: rejected/p1_word_offset_split_recompute.c (score 3), rejected/p5_new_var_deferred_to_end.c (score 13).

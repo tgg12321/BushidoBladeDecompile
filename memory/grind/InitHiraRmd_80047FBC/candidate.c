@@ -1,8 +1,9 @@
-/* s2 candidate — same score=1 residual as s1, but one fewer cheat: dropped
- * `arg0 = 0;` (proven inert in s1). Remaining cheat: `s32 buf[8]` unused
- * (frame reservation carrier). Only diff: insn #18 target `addu $s0,$s4,$v0`
- * vs sandbox `addu $s0,$a0,$v0`. Copy-prop keeps $a0 == base after `move
- * s4,s0`; GCC's RA picks $a0 for the second base+word add. */
+/* s3 candidate — same as s2 (score=1, single residual at insn #18
+ * target `addu $s0,$s4,$v0` vs sandbox `addu $s0,$a0,$v0`).
+ * Still carries 1 forbidden construct: `s32 buf[8]` unused (frame
+ * reservation carrier). s3 CONFIRMED buf[8] is load-bearing for the
+ * frame size (removing it: score 1→15, frame 0x50→0x30).
+ * arg0=0 self-assign already dropped in s2. */
 void InitHiraRmd_80047FBC(s32 arg0, s32 arg1, s16 arg2, s16 arg3)
 {
     s32 buf[8];
@@ -10,8 +11,8 @@ void InitHiraRmd_80047FBC(s32 arg0, s32 arg1, s16 arg2, s16 arg3)
     s32 base_addr;
     s32 count;
     s32 new_var;
-    p = (u32 *)arg0;
     base_addr = arg0;
+    p = (u32 *)arg0;
     p = (u32 *)((s32)p + (((s32)(arg1 << 16)) >> 14));
     p = (u32 *)(base_addr + (((*p) >> 2) << 2));
     count = *(p++);
