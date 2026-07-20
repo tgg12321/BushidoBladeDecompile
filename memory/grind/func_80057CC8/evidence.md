@@ -484,3 +484,19 @@ Per user 2026-06-22: keep working it; not permanently parked.
 - [s25] s25 no OWNER-ESCALATION entry in docs/grind/decisions.md for func_80057CC8 (only 2026-07-19 17:09 Judge FAIL ruling on two-variable form); owner-gated NOT authorized this session per contract
 
 - [s25] s25 cumulative hypothesis kill count: 30 (s1-s24 = 29 per ledger; s25 adds one — 'target has an extra $v0-establishing early addu' KILLED via objdump direct measurement)
+
+- [s26] s26 baseline replay: candidate.c on src/text1b.c line 11837 measures sandbox --disable all = 3 (target_insns=111, build_insns=111, rules_dropped=7, cheat_asm_stripped=395); replays s1-s25 baseline cleanly on current main HEAD.
+
+- [s26] s26 reused-p walking-pointer measurement: score=3 -> 12, build_insns=112 (+1 insn). Novel rederive angle (three SETs of pseudo 86 in BB4 via `p = table+arg1*4; cx=*(u16*)p; cy=*(u16*)((s32)p+2);` reuse) measured DEAD. Semantically legitimate reuse pattern; not a cheat-class form; measurably worse than candidate. Saved memory/grind/func_80057CC8/rejected/rederive-reused-p-walking-cx-cy.c.
+
+- [s26] s26 decomp.me corpus expansion: 11 composite-signature hits (`<<16>>16<<2` intersect `0xFFF|0xfff|4095`) inspected via tmp/grind/func_80057CC8/s26/inspect.py. All are Frog Frenzy movement/matrix work, font glyph descriptors, or unrelated bit-extracts. ZERO 2-neighbor arena-boundary angle interpolation. s18 F3-equivalent kill re-extended from 3 to 11 samples — corpus route DEAD.
+
+- [s26] src/text1b.c reverted to HEAD via git checkout after measurement; candidate.c (floor-3 baseline) preserved at memory/grind/func_80057CC8/candidate.c for the next session. New rejected form saved: memory/grind/func_80057CC8/rejected/rederive-reused-p-walking-cx-cy.c.
+
+- [s26] s7 CONFIRMED single-pseudo impossibility (pseudo 86 = /v-marked DECL_RTL of `p`) unchanged: any single-C-variable `p` binding cannot reach target's p1=v0 by the mechanism chain s6/s7/s15/s16/s24/s25 confirmed. Three-SET reuse (s26) does not break this — pseudo 86 remains the single allocno for all three SETs.
+
+- [s26] s21 CONFIRMED local-alloc.c:472 reg_n_deaths==1 hard-gate: three-SET p (this session) gives reg_n_deaths[86]==3, still bails to global-alloc (same reason two-SET does).
+
+- [s26] docs/grind/decisions.md contains only the 2026-07-19 17:09 Judge FAIL ruling for func_80057CC8 (line 877); NO OWNER-ESCALATION entry filed yet. owner-gated result NOT authorized this session per contract (requires filed entry AND every sanctioned axis measured dead).
+
+- [s26] Cumulative s1-s26 KILLED hypothesis count: 32 (s1-s25 = 30 per ledger; s26 adds two — reused-p walking pointer + expanded decomp.me composite-signature corpus).
