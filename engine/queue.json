@@ -1,8 +1,274 @@
 {
-  "generated_at": "2026-07-11T12:26:55",
+  "generated_at": "2026-07-19T23:40:49",
   "oracle_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
   "build_failures": [],
   "items": [
+    {
+      "func": "func_80049A2C",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "mario_getMarioVoiceData_8005BE84",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "InitHiraRmd_80047FBC",
+      "file": "text1b",
+      "distance": 1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "gnd_init_80041688",
+      "file": "text1a",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 3,
+      "status": "active"
+    },
+    {
+      "func": "rob_life_ctrl_2",
+      "file": "text1a_c",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 2,
+      "status": "active"
+    },
+    {
+      "func": "func_8005B8B8",
+      "file": "text1b",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80061C00",
+      "file": "text1b",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80069AE4",
+      "file": "text1b",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 3,
+      "status": "active"
+    },
+    {
+      "func": "func_80078A68",
+      "file": "text1b_b",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "myRobGeneiDraw2",
+      "file": "code6cac_b",
+      "distance": 3,
+      "verdict": "C",
+      "rules": 2,
+      "status": "active"
+    },
+    {
+      "func": "AddTbpOfst",
+      "file": "main",
+      "distance": 3,
+      "verdict": "C",
+      "rules": 3,
+      "status": "active"
+    },
+    {
+      "func": "rob_life_ctrl",
+      "file": "text1a",
+      "distance": 3,
+      "verdict": "C",
+      "rules": 2,
+      "status": "active"
+    },
+    {
+      "func": "func_800550E8",
+      "file": "text1b",
+      "distance": 3,
+      "verdict": "C",
+      "rules": 3,
+      "status": "active"
+    },
+    {
+      "func": "func_80033550",
+      "file": "code6cac_b",
+      "distance": 4,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8007C2A0",
+      "file": "display",
+      "distance": 4,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "saSeMain_80045600",
+      "file": "text1a_c",
+      "distance": 4,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_800618B4",
+      "file": "text1b",
+      "distance": 4,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8003B20C",
+      "file": "code6cac_c_ab",
+      "distance": 5,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "initDrawMode",
+      "file": "gpu",
+      "distance": 5,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "kgm_clamp_patch_init",
+      "file": "ings",
+      "distance": 5,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80053694",
+      "file": "text1b",
+      "distance": 5,
+      "verdict": "C",
+      "rules": 5,
+      "status": "active"
+    },
+    {
+      "func": "func_8007B844",
+      "file": "display",
+      "distance": 7,
+      "verdict": "C",
+      "rules": 6,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "cpu_get_dist",
+      "file": "code6cac_b",
+      "distance": 8,
+      "verdict": "C",
+      "rules": 4,
+      "status": "active"
+    },
+    {
+      "func": "func_80087D10",
+      "file": "main",
+      "distance": 8,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80087D58",
+      "file": "main",
+      "distance": 8,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80041988",
+      "file": "text1a",
+      "distance": 8,
+      "verdict": "C",
+      "rules": 2,
+      "status": "active"
+    },
+    {
+      "func": "saSeMain_80045510",
+      "file": "text1a_c",
+      "distance": 8,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "AddTbpOfst_80047EE8",
+      "file": "text1b",
+      "distance": 8,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80069E18",
+      "file": "text1b",
+      "distance": 8,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "cpu_check_tubazeri_2",
+      "file": "code6cac_b",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 9,
+      "status": "active"
+    },
+    {
+      "func": "damage_DebugDisp",
+      "file": "code6cac_c_mid",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 8,
+      "status": "active"
+    },
+    {
+      "func": "func_8007DC9C",
+      "file": "display",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 4,
+      "status": "active"
+    },
+    {
+      "func": "func_8004954C",
+      "file": "text1b",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
     {
       "func": "func_800611A4",
       "file": "text1b",
@@ -172,6 +438,15 @@
       "status": "active"
     },
     {
+      "func": "func_8007CA00",
+      "file": "display",
+      "distance": 13,
+      "verdict": "C",
+      "rules": 13,
+      "status": "active",
+      "scorable": false
+    },
+    {
       "func": "func_80044098",
       "file": "text1a_c",
       "distance": 13,
@@ -201,6 +476,14 @@
       "distance": 13,
       "verdict": "C",
       "rules": 3,
+      "status": "active"
+    },
+    {
+      "func": "func_80068ECC",
+      "file": "text1b",
+      "distance": 13,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
@@ -454,6 +737,14 @@
       "status": "active"
     },
     {
+      "func": "func_8003D9A0",
+      "file": "code6cac_c2",
+      "distance": 19,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
       "func": "func_80044CCC",
       "file": "text1a_c",
       "distance": 19,
@@ -493,6 +784,24 @@
       "verdict": "C",
       "rules": 10,
       "status": "active"
+    },
+    {
+      "func": "func_8007C7A0",
+      "file": "display",
+      "distance": 20,
+      "verdict": "C",
+      "rules": 21,
+      "status": "active",
+      "scorable": false
+    },
+    {
+      "func": "func_8007C86C",
+      "file": "display",
+      "distance": 20,
+      "verdict": "C",
+      "rules": 21,
+      "status": "active",
+      "scorable": false
     },
     {
       "func": "cpu_set_move_command_and_dir_for_no_action_2",
@@ -581,6 +890,15 @@
       "verdict": "C",
       "rules": 21,
       "status": "active"
+    },
+    {
+      "func": "func_8007B6C8",
+      "file": "display",
+      "distance": 21,
+      "verdict": "C",
+      "rules": 19,
+      "status": "active",
+      "scorable": false
     },
     {
       "func": "motion_Close",
@@ -1228,6 +1546,15 @@
       "status": "active"
     },
     {
+      "func": "func_8007CE0C",
+      "file": "display",
+      "distance": 48,
+      "verdict": "C",
+      "rules": 23,
+      "status": "active",
+      "scorable": false
+    },
+    {
       "func": "func_8007526C",
       "file": "text1b",
       "distance": 48,
@@ -1539,6 +1866,15 @@
       "verdict": "ASM-SUSPECT",
       "rules": 1,
       "status": "active"
+    },
+    {
+      "func": "func_8007CBB0",
+      "file": "display",
+      "distance": 149,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
     },
     {
       "func": "func_80054604",
@@ -1989,6 +2325,15 @@
       "status": "active"
     },
     {
+      "func": "func_8007BC08",
+      "file": "display",
+      "distance": 296,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "scorable": false
+    },
+    {
       "func": "func_8002F770",
       "file": "code6cac_b",
       "distance": 297,
@@ -2333,24 +2678,6 @@
       "status": "active"
     },
     {
-      "func": "func_80049A2C",
-      "file": "text1b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "Frame-coercion cheats: s32 dummy[2] (unused-local-array, name announces intent) and char new_var4 (declared, never assigned, only (void)-discarded). Both FORBIDDEN per [[dead-vars-local-array]]. Used to reserve frame bytes. Function has no natural use for these locals \u2014 removing them would shrink frame and break byte match."
-    },
-    {
-      "func": "mario_getMarioVoiceData_8005BE84",
-      "file": "text1b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "File-scope volatile-extern cheat pattern: body is clean pure-C but blocked by file-scope cheats in src/text1b.c. Speed-parked during batch grind."
-    },
-    {
       "func": "motion_SetMotion",
       "file": "code6cac_c_mid",
       "distance": 1,
@@ -2358,24 +2685,6 @@
       "rules": 1,
       "status": "parked",
       "park_reason": "OWNER-ACCEPTED EXCEPTION (ruling b, 2026-07-19): CLOBBER family refused; byte-correct form + regfix.txt:2190 kept on main; INCOMPLETE-owner-accepted, no further grinding"
-    },
-    {
-      "func": "InitHiraRmd_80047FBC",
-      "file": "text1b",
-      "distance": 1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "File-scope volatile-extern cheat pattern: body is clean pure-C but blocked by file-scope cheats in src/text1b.c. Speed-parked during batch grind."
-    },
-    {
-      "func": "gnd_init_80041688",
-      "file": "text1a",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 3,
-      "status": "parked",
-      "park_reason": "FALSE-branch lbu schedule diff at 3 independent loads (idx 68/69/70). Registers + OR-tree match; only cc1's load order differs (r/g/b vs target b/r/g). Mechanism: b's INSN_PRIORITY < r/g's (chain depth 1 vs 2), so sched.c picks r/g first. All clean pure-C levers tried (source reorder, inline, bit-descending, named intermediate) either no-op or regress. Remaining levers (OR-operand permute, chain-extender, dead store) forbidden by no-new-park-categories. Standing search avenue: directed permuter targeting idx 68-70."
     },
     {
       "func": "func_80045294",
@@ -2388,170 +2697,6 @@
       "park_reason": "owner escalation pending: docs/grind/decisions.md 2026-07-19 - func_80045294 (saTan0Init, src/text1a_c.c) - OWNER-ESCALATION (filed s42 2026-07-19, hardened s43-s46)"
     },
     {
-      "func": "rob_life_ctrl_2",
-      "file": "text1a_c",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 2,
-      "status": "parked",
-      "park_reason": "2-rule mflo-dest plateau: GCC RA picks  () for the 5th mflo (t = v*(0x1000-((s*(0x1000-f))>>12))>>12); target picks  () for in-place sra in beqz delay slot. Pseudos 104 (mult result) and 81 (t value) don't conflict per greg dump (line 13 + 21) yet greg allocates 104-> not . Same shape as q's mflo (97/80 -> shared ) but t pair doesn't coalesce. register asm() pin on t was IGNORED (only binds the named pseudo 81 which was already in ; doesn't bind the unnamed mult pseudo 104). Levers tested NEGATIVE: (1) reorder t after bounds check, (2) split t mult and >>12 into 2 statements, (3) local fc = 0x1000-f, (4) swap q/t order, (5) decl order swap (s32 i,f,p,t,q). All produce different bytes than HEAD AND than target. Next session: try volatile-bump on tbl_125c-analog (none here), make t live longer artificially, restructure 0x1000-f computation, or instrumented allocno-priority dump (BB2_ALLOC_DEBUG) to see why 104 doesn't get  despite no conflict."
-    },
-    {
-      "func": "func_8005B8B8",
-      "file": "text1b",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "register-rotation wall \u2014 carries 1 cheat-asm barrier (asm volatile(\"\" : \"=r\"(t0) : \"0\"(t0));). Source removal causes GCC to coalesce t0+t1 into same register (s0) since t0 dies at func_80036F28(t0) before t1 is born. Target wants t0 in s0 (sequential with ret_a) and t1 in s1 (sequential with t0_2). Tested in session 2026-06-06: (a) sibling-style single-variable reuse (s0=t0/ret_a, s1=t1/t0_2) produces structurally identical asm but with 3-way register rotation (arg0\u2192s2 not s3, frame_off\u2192s1 not s2, t1\u2192s3 not s1); (b) adding explicit frame_off local for arg0+ret_a didn't shift allocation. The barrier forces t0 alive past t1's birth, blocking coalesce. No pure-C source structure tested extends t0's natural lifetime past func_80036F28(t0) without semantic invention. No semantic use of t0 exists after that point; combine-folded uses (t0-t0, t0&0, 0x5E+(t0-t0)) all collapse before flow.c. Resume avenues: (1) instrumented cc1 ALLOCDBG to confirm exact priority ordering \u2014 may reveal pseudo number / decl-order lever; (2) directed permuter from clean single-function target with PERM_GENERAL on variable decl order / type. NOT canonical-asm-candidate (thin wrapper, no GTE/BIOS/HW)."
-    },
-    {
-      "func": "func_80061C00",
-      "file": "text1b",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 1,
-      "status": "parked",
-      "park_reason": "Blocked by file-scope \u001bxtern volatile s32 D_800A3468; (text1b.c:14408) \u2014 D_800A3468 is referenced by func_80061C00's body so volatile_cheats counts it as cheat_asm=1 even with the body pure C. Removing the regfix reorder rule alone (retire) yields SHA1 8aa8592... != oracle (full SHA1 mismatch from prologue-order divergence), so the rule IS load-bearing for matching; AND the file-wide volatile-extern cluster (~68 such decls, kept for func_80065000 et al.) blocks queue done regardless. De-cheating requires (a) finding pure-C prologue lever to drop the regfix reorder AND (b) project-wide cleanup of file-scope volatile externs across text1b.c \u2014 policy/architecture scope, not single-function."
-    },
-    {
-      "func": "func_80069AE4",
-      "file": "text1b",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 3,
-      "status": "parked",
-      "park_reason": "Sandbox unmeasurable (cheat-asm strip causes sibling func_8006BD28 .L8006BDF4 label collision in asmfix delete_between/insert_before, truncating whole-file build); 3 scheduling-paperwork rules (reorder 94,92,93 + insert_label + subst .L#) encode target hoisting \u0007ddiu a0,sp,24 to the loop top before lw v0,0(s0); addiu s0,s0,4 in the qbase do-while loop (lines 15419-15427, calling func_8007352C(&s.sp18)). Pure-C lever tried: pre-materialize s32 *p = &s.sp18 inside the loop body and route stores + call arg through p \u2014 retire failed (sha1 e207b1e7\u2026). Reverted; oracle green. Next levers to try: (1) instrumented cc1 -da .sched/.greg dump on the loop to see why GCC's scheduler places addiu a0 last in the 3-insn window; (2) restructure loop body to make &s.sp18 a long-live local set BEFORE the loop with q++ moved to bottom; (3) directed permuter from a clean single-function target since random search at masked-loop-scheduling needs the structural seed."
-    },
-    {
-      "func": "func_80078A68",
-      "file": "text1b_b",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 1,
-      "status": "parked",
-      "park_reason": "Delay-slot fill choice: cc1 reorg.c::fill_simple_delay_slots moves sh \u00071,8(v1) into the outer beqz delay slot; target instead fills with andi v0,a2,0x10 (eager-fill from THEN block's first insn). cc1 raw output already places sh in the slot, so the choice is in cc1 itself not maspsx. Tested store-order swap, array-index form ((s16*)base)[2]/[4], and narrow s16 arg1 \u2014 all still score 2. Permuter from clean single-function target is the named untried avenue. Single regfix: reorder 12,11 @ 11-12."
-    },
-    {
-      "func": "myRobGeneiDraw2",
-      "file": "code6cac_b",
-      "distance": 3,
-      "verdict": "C",
-      "rules": 2,
-      "status": "parked",
-      "park_reason": "cheat-by-spelling (arg5++/--) + cheat-free pure-C floor 6 plateau on RA/sched in call-args region; see commit body"
-    },
-    {
-      "func": "AddTbpOfst",
-      "file": "main",
-      "distance": 3,
-      "verdict": "C",
-      "rules": 3,
-      "status": "parked",
-      "park_reason": "3 RA-tiebreaker diffs persist at honest pure-C distance 3 (idx 1: andi reads \u00073 vs target \u00070 after move a3,a0 save; idx 42/51: sll dest is v1 vs target v0, cascading into addu source). Both are register-tiebreaker ties per [[register-alloc-pure-c]] Step 0 (target uses LOWER reg, our cc1 uses HIGHER, so our build is the anomaly). Source carries an unannotated do { } while (0); between sa1 = sa1 << 4; and D_801027F6 = (u8)a1; that is LOAD-BEARING for the score-3 floor: removing it jumps the masked distance to 9-19 because cc1 reorders the D_800F66B8 / D_800F6660 / D_800F6700 lookups and shuffles their argregs (target prefers a1/a0/a2 order, removal yields a0/a2/a1 form). Session-tested negative levers from the score-3 baseline: (a) split shift dest into fresh s32 sa1s local -> score 7; (b) reorder byte stores before shift -> 3 (same diffs); (c) rewrite entry as single expression \u001bntry = *(s32*)((sa1<<4 + v1) + 8) -> 19; (d) \u000b1 + sa1 + 8 reordered operand sum -> 3 (no change); (e) capture s32 a0_full = a0; to drive andi off a0_full -> 5; (f) inline a0_byte / a1_byte locals before sign-extend -> not tested but unlikely (would force a0 save to a different reg). The do-while-0 currently keeps the floor at 3 via opaque scheduling/RA effect (no branch-invert pattern, so NOT a sanctioned [[do-while-zero-exception]] use case). Resume avenues: (1) permuter from score-3 base directed at the andi src and sll dst RA picks; (2) instrumented cc1 ALLOCDBG dump on the standalone function to identify which pseudo conflicts force the saved-a0 to a3 and shift-result to v1; (3) consider whether the do-while-0 can be retired via a structural change that also closes the 3 RA diffs (it may currently be a cheat-by-spelling per [[no-new-park-categories]] -- its mechanism here is not the LABEL_OUTSIDE_LOOP_P / reorg.c interaction)."
-    },
-    {
-      "func": "rob_life_ctrl",
-      "file": "text1a",
-      "distance": 3,
-      "verdict": "C",
-      "rules": 2,
-      "status": "parked",
-      "park_reason": "cc1 prologue beq slot-fill + loop SR resist pure-C levers (distance 3, 2 rules); see commit message"
-    },
-    {
-      "func": "func_800550E8",
-      "file": "text1b",
-      "distance": 3,
-      "verdict": "C",
-      "rules": 3,
-      "status": "parked",
-      "park_reason": "Single-displacement loop access (*(p+0x415) inside do-while where p = &D_80101EC8 + arg0*0x44C). cc1 combine pass folds &D_80101EC8 + 0x415 into the la symbol+addend, encoding the addressing mode as la(symbol+1045)+lbu/sb 0(reg) instead of target's la(symbol)+lbu/sb 1045(reg). 3 regfix substs reciprocally re-encode the same memory access (same bytes at runtime, different operand encoding). Tested 5 pure-C variants 2026-06-07: original baseline 3; sibling's uninit dual-pointer trick (new_var unset, accessed for 2nd displacement) regressed to 9 because we only have ONE displacement (can't justify keeping base separate); split base+offset into 2 statements regressed to 12; for-loop variant equal at 3; step-based 'p[step + 0x415]' index regressed to 10 (extra addu). Sibling func_8005509C matches because it has 2 distinct displacements 0x414+0x415 forcing cc1 to keep base separate. Single-displacement case has no degree of freedom for cc1's combine pass. Hand-coded scan: LOW (0/8) \u2014 not canonical-asm. Compiler-patch forbidden per [[no-compiler-divergence]]. No clear remaining lever."
-    },
-    {
-      "func": "func_80033550",
-      "file": "code6cac_b",
-      "distance": 4,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "Pure-C plateau at distance 4-5. Two coupled gaps remain: (1) RA tie picks  (mine) vs  (target) to save arg0; (2) sched.c places sll v0,v0,0x2 AFTER the 3 lw loads while target places it BEFORE. Tested 27+ structural variants (for/do-while/goto loops; idx as i*12, (i<<1)+i)<<2, i*3 then *4; reads-first vs reads-after; block-local locals; pointer pre-compute; u32/int types; array-index forms). All variants scored 5 except v2_reads_first (10). HEAD form scores 4 via a do-while-zero on (idx = new_var; w0 = a3_arg[0]) \u2014 but do-while-zero used for general scheduling is NOT sanctioned per [[do-while-zero-exception]] (only LABEL_OUTSIDE_LOOP_P / reorg.c invert-jump peephole). HEAD also carries a register-asm pin (cheat-asm). No legitimate pure-C lever found in this session."
-    },
-    {
-      "func": "func_8007C2A0",
-      "file": "display",
-      "distance": 4,
-      "verdict": "C",
-      "rules": 1,
-      "status": "parked",
-      "scorable": false,
-      "park_reason": "Pure-C floor at sandbox-distance 4. Single 4-insn prologue reorder rule (regfix.txt:3753) flips save+def pairing from cc1's natural [sw s1; move s1,a0; sw s0; move s0,a1] to target's [sw s0; move s0,a1; sw s1; move s1,a0]. Mechanism: cc1's mips.c save_restore_insns iterates GP_REG_LAST->FIRST (3000a) and expand_function_start creates pseudos in DECL_ARGUMENTS order (out=72->s1, r=73->s0). Save-order is structurally fixed by mips machdep + ABI param order. Tried 9 distinct C source levers: early r-temps (3 forms), local alias, K&R-style decl, K&R-with-reversed-decl-order, var_a3=7 init, 3rd-callee-save force, all-temp-stores-at-end - all either CSE'd back or regressed. Sibling func_8007C4B8 has identical issue (twin function, same rule shape). Per [[no-compiler-divergence]] mips.c is frozen; per ABI param swap would break the asm callers. Either accept prologue_config.json as infrastructure (policy decision) or authorize ASM-region for the prologue-only debt."
-    },
-    {
-      "func": "saSeMain_80045600",
-      "file": "text1a_c",
-      "distance": 4,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "Cheats: volatile s32 sp_pad (frame coercion: target frame=32, removing drops to 24) + register asm pin. Frame coercion via volatile-local is FORBIDDEN per [[dead-vars-local-array]] but the function has no natural reason to allocate a 32-byte frame. The sp_pad was load-bearing for the byte match. Needs structural rework to find a real reason for the larger frame."
-    },
-    {
-      "func": "func_800618B4",
-      "file": "text1b",
-      "distance": 4,
-      "verdict": "C",
-      "rules": 1,
-      "status": "parked",
-      "park_reason": "register-rotation pin cluster (text1b transform-block siblings: t asm(), mask asm() + 1 regfix subst <-> @42-46). honest pure-C distance 4 - target wants arg0[0]/[1] in  + arg0[2] in  + mask in ; without pins GCC picks  for t throughout, mask in . Tested levers (all failed): drop register kw (still 4), drop register kw + inline mask literal (4), block-scoped t per stmt (10), preload arg0[2] into local before stores (8-10), inline all arg0[N] direct (10). The pin pattern is shared across ~10 sibling functions in text1b.c (func_800611A4, func_80061250, func_8006156C, func_80061658, func_80061710, func_800617C8, func_80061ACC, func_80061EC0, func_80061FAC, this one) - all carry the same register-rotation infrastructure. Per no-new-park-categories policy, this is NOT a new auto-park category; it stays INCOMPLETE pending a pure-C lever that cracks the cluster."
-    },
-    {
-      "func": "func_8003B20C",
-      "file": "code6cac_c_ab",
-      "distance": 5,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "scheduling-gap plateau, candidate_floor=6 (see memory/wip/func_8003B20C/). HEAD carries register-asm pin + dead-local alias cheats; removing them gives honest pure-C floor 6 (GCC INSN_PRIORITY hoists array load past D_80102780/D_80102781 stores). Prior session ruled out 4 lever forms; same family as parked cpu_side_move_dir_4/marionation_Exec/saEft00Add scheduling walls. Resume avenues in WIP next_hypotheses."
-    },
-    {
-      "func": "initDrawMode",
-      "file": "gpu",
-      "distance": 5,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "Honest pure-C floor 5->1 via val|cmd source order (pin-free), but the remaining 1-byte diff is the final OR's commutative operand order: build emits or v0,v0,v1 (00431025), target has or v0,v1,v0 (00621025). Both encode cmd | val; bytes differ. Reaching target requires cmd | val source order WITH val landing in v0 (cmd in v1), but in cmd|val source GCC combine folds val's andi-dest into the dying a3 (or v0,v0,a3, wrong reg). No pure-C lever found that keeps a3 alive past val's andi without falling into the forbidden cheats-by-any-spelling family (dead self-assign / \u00073 & 0 chain-extender / volatile-coerce). WIP candidate.c + meta.json + notes.md committed at memory/wip/initDrawMode/."
-    },
-    {
-      "func": "kgm_clamp_patch_init",
-      "file": "ings",
-      "distance": 5,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "Heavy cheat load: 4 register-asm pins (i/c/tmp/p), 1 asm move-via-output (addu), 3 inline volatile casts on game-state (((volatile u8 *)p)[8]=0; etc.). The volatile coercions force GCC to emit separate byte stores instead of combining adjacent bytes. Not a quick pin-removal \u2014 needs structural rework to produce separate stores from clean C (struct-of-bytes, etc.)."
-    },
-    {
-      "func": "func_80053694",
-      "file": "text1b",
-      "distance": 5,
-      "verdict": "C",
-      "rules": 5,
-      "status": "parked",
-      "park_reason": "Stable RA tie: \result lands in , target wants . 5 regfix rules paper-over the cluster (result reg-rename + lhu/sh reg-rename + tail move elision). Tried: statement-order swap (no change), early-return (regresses +3 insns), bool-from-comparison (regresses +5), narrow type char result (no change), if/else explicit form (no change), \result=1 at start of if (no change), decl order swap (no change), block-local read of *(s32*)(p+0) (no change). Build_insns == target 48 across all variants; diff is purely the 5 RA decisions at the if-flag pattern. Lever A (block-local split) N/A \u2014 result IS the return value. No callers capture a return that could seed . No sibling matched function in text1b.c with same s32 result = 0; if (cond) {body; result = 1;} return result; shape to mimic. Resume avenues untried: directed permuter from clean single-fn target; instrumented cc1 .greg dump to identify allocno priority gap; lever for if-result-via-call seeding ([[call-return-if-result-reuse-v0]]) but no call exists here."
-    },
-    {
-      "func": "func_8007B844",
-      "file": "display",
-      "distance": 7,
-      "verdict": "C",
-      "rules": 6,
-      "status": "parked",
-      "scorable": false,
-      "park_reason": "Session 3 (2026-06-02) re-park under SOTN-aligned policy (commit 161c6c3: defeat-licm var-reuse, opaque arithmetic, sub-word param read casts, mixed exit forms, duplicate-read into branch arms, named-intermediate declaration-order are all ALLOWED). Honest floor remains 6 via Lever B (named-intermediate u32 mask reuse). Tested 17 NEW structural variants this session applying the now-allowed levers: (v1) named mask + named addr -> 7 folded; (v3) u32 *p = ot pointer reuse -> 7 folded; (v4) goto end + mixed-exit on Lever B -> 6 same; (v5) opaque offset *(ot+zero) -> 6 (zero folded); (v6) duplicate-read into branch arms -> 22 regress (cross-jump-merge cost); (v7) u32 *ret_val = ot decl early -> 6 same; (v8) reuse single p for dev_table + return ptr -> 6 (CSE'd dead store); (v9) opaque arith 0xFFFFFF+1-1 -> 6 (constant folded); (v10) decl-order block-scoped result + mask -> 6 same; (v11) opaque addr arith (u32)&ot_end + (u32)zero -> 7 regress; (v12) hi|lo mask split -> 7 folded (lui+ori still single chain); (v13) opaque +1-1 on mask -> 6 folded; (v14) store inside dispatch block -> 20 regress; (v15) mask declared at top (pre-dispatch) -> 19 regress (mask spilled across call to callee-save); (v16) reuse n parameter for mask (defeat-licm var-reuse pattern) -> 17 regress (n lives in $s1 callee-save, mask cascades wrong); (v17) reuse v for (u32)dev_table + mask -> 10 regress BUT shows lever is real: move v0,s0 staged BEFORE store (target order!), but mask landed in $v1 not $a0 + addr in $v0 not $v1 (different cycle); (v18) keep vp scope + reuse v -> 6 (dead store DCE'd back to Lever B). Permuter ~12,845 iters from Lever B base (score 135), zero improvements (no candidate beat 135). MECHANISM CONFIRMED: target requires `move $v0, $s0` (return-staging) scheduled at idx 23 BEFORE the mask/addr chain (idx 24-26). cc1's sched.c gives return-staging priority 1 (chain depth to jr ra is 1); the mask/addr chain has priority 4 (lui->addiu->and->sw). Target's schedule requires return-staging priority >=4. The only way to extend the return-staging pseudo's chain depth in pure C is to make a later instruction (the store) consume the return-value register $v0 \u2014 which in turn requires GCC to keep `ret_val` as a separate pseudo from `ot` after copy-prop. No pure-C SOTN-allowed construct prevents this copy-prop (every tested `u32 *p = ot; *p = ...; return p;` form folds to ot). The previously-rejected closing forms (conditional dead-store, function-pointer return-type lie) both manipulate $v0 liveness differently and remain FORBIDDEN per the expanded cheat catalog. Function stays INCOMPLETE in queue; per [[no-new-park-categories]] no new park category requested. Honest floor 6 stable across 3 evidence-driven C-exhaustion sessions (50+ structural variants + ~50k permuter iters total)."
-    },
-    {
       "func": "cpu_side_move_dir_4",
       "file": "system",
       "distance": 7,
@@ -2559,78 +2704,6 @@
       "rules": 5,
       "status": "parked",
       "park_reason": "owner escalation pending: docs/grind/decisions.md:848 \u2014 2026-07-19 \u2014 cpu_side_move_dir_4 (src/system.c) \u2014 OWNER-ESCALATION (filed by grind s103 per the 2026-07-09 01:25 Judge constraint + F3 activation)"
-    },
-    {
-      "func": "cpu_get_dist",
-      "file": "code6cac_b",
-      "distance": 8,
-      "verdict": "C",
-      "rules": 4,
-      "status": "parked",
-      "park_reason": "Hardest item in the queue; multi-session wall. 2026-06-13: NEW clean lever (algebraic factoring) lowered honest floor 21->15 (reviewer PASS), refuting the prior floor=21 conclusion \u2014 but still not 0. Residual is sched1 register allocation. Set aside per user 50-item-goal directive (set-aside-walls). Resume: directed permuter re-seeded from the score-15 candidate.c (memory/wip/cpu_get_dist/)."
-    },
-    {
-      "func": "func_80087D10",
-      "file": "main",
-      "distance": 8,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "sched1 INSN_PRIORITY anti-dep shift (sched.c:2543 >>=3) on store-to-D_80102806 caused by a0-kill at a0&=0xFF00 demotes store to ready-list priority 1 vs siblings ~7f000001; sched1 picks store at T-14 (exec pos 1) and load at T-5 (exec pos 10); target needs load at pos 5, store at pos 7. 23 pure-C variants (Lever A block-local var splits, Lever B narrow int types, statement reorderings, pointer intermediates [copy-prop'd], u8* array reformulations, return-via-temp, inline-expression collapse, separate slot var, alternate slot bit extraction) all plateau at sandbox=8. Existing barrier __asm__ volatile('' ::: 'memory') is a BB-boundary sched fence; cc1psx produces byte-identical target without fence (different sched1 priority calc, no fork switch per no-compiler-divergence). do { D_80102806=a0; } while(0); ALSO produces byte-identical target via the BB-boundary mechanism but is OUT-OF-SCOPE for do-while-zero-exception (sanctioned only for LABEL_OUTSIDE_LOOP_P / reorg.c, NOT sched1 store/load ordering). Same wall applies to sibling func_80087D58 (identical structure). Resume avenues: (1) directed permuter targeted at store-priority levers; (2) SOTN-master-branch research for sched1-fence sanction precedent."
-    },
-    {
-      "func": "func_80087D58",
-      "file": "main",
-      "distance": 8,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "Structurally IDENTICAL twin of func_80087D10 (verified: same body, same __asm__ volatile('' ::: 'memory') sched-barrier, only the final return offset differs 0x5A vs 0x58). Same sched1 INSN_PRIORITY anti-dep wall (store-to-D_80102806 demoted; store-first schedule unfindable in pure C). func_80087D10's worker exhausted 23 pure-C variants on the identical structure 2026-06-13; parking this twin on that confirmed evidence to avoid a redundant cold-worker iteration. Same resume avenues: directed permuter targeting store-priority levers; the do-while(0) form matches but is out-of-scope for do-while-zero-exception (sched1, not LABEL_OUTSIDE_LOOP_P)."
-    },
-    {
-      "func": "func_80041988",
-      "file": "text1a",
-      "distance": 8,
-      "verdict": "C",
-      "rules": 2,
-      "status": "parked",
-      "park_reason": "sched1 backward LUID-descending tiebreaker places id=1 EARLY of LICM-hoisted s5/s6 in prologue init block (3 insns); local-alloc spills v1 for const-1 in dispatch (2 insns); both cheat-reviewer FAILed score-lowering forms (s32 mask_table widening + ox/oy named locals). Resume: instrumented cc1 BB2_*_DEBUG + directed permuter; see commit body for RTL evidence."
-    },
-    {
-      "func": "saSeMain_80045510",
-      "file": "text1a_c",
-      "distance": 8,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "vars=0 wall: function's only cheat is volatile s32 sp_pad which forces frame 32->40 via vars=8; diff is 100% stack-offset (3 saves + 8 frame-size mismatches, no insn-shape diffs). natural pure-C compile (cc1 -da on probe.c) reports vars=0,regs=3,args=16,frame=32. Tested variants via instrumented cc1: long long diff, long long sum-accumulator, union, struct local, address-taken local, 6-arg call signature - none produce vars=8 with matching codegen (6-arg adds visible move/sw arg-setup; long long stays in registers; struct/union folded; address-taken needs volatile/cheat to keep allocation). No semantic content in body (table search + 2-arg call + global store) justifies pure-C local-array or address-taken use. RTL mechanism: GCC compute_frame_size returns 32 because var_size=0; target needs var_size=8 from a stack-allocated local with no obvious source in this body. Scanner: LOW tier."
-    },
-    {
-      "func": "AddTbpOfst_80047EE8",
-      "file": "text1b",
-      "distance": 8,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "Frame=0x48 requires 32 bytes of locals that no semantic content in the function fills. The committed source uses 's32 unused_slack[8]; (void)unused_slack;' which is the dead-vars-local-array idiom forbidden as of 2026-05-31 (engine/volatile_cheats.find_unused_local_arrays). It also carries 'register asm' pins on s0/s2 and an INLINE_MOVE_ALIASING __asm__('move %0,%1') barrier, both in the expanded cheat catalog. Pure-C body (no cheats, natural pointer-walk loop) reaches sandbox-distance 14: loop body is byte-identical to target; ALL 14 diffs are (a) frame size 0x28 vs 0x48 (32-byte locals gap) and (b) prologue scheduling cascade that follows from the smaller frame. No legitimate pure-C lever produces 32 bytes of unused frame; cluster sibling InitHiraRmd_80047FBC is in the same situation per dead-vars-local-array re-evaluation note. Path forward: project-wide policy decision (re-sanction dead-vars idiom or canonical-asm-authorize the cluster); cannot be closed by single-function pure-C grind."
-    },
-    {
-      "func": "func_80069E18",
-      "file": "text1b",
-      "distance": 8,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "addsi3 2-op merge wall: v pseudo dies at the addiu so RA collapses (v+0xC) to reg 2; target uses reg 3 (higher reg) for the +0xC result, requiring v alive past the addiu \u2014 achievable in pure C only by reversing source statement order [s.p0;s.p1], which reverses store order in asm and worsens distance (v7=10)."
-    },
-    {
-      "func": "cpu_check_tubazeri_2",
-      "file": "code6cac_b",
-      "distance": 9,
-      "verdict": "C",
-      "rules": 9,
-      "status": "parked",
-      "park_reason": "WIP floor 9->4 (worker 324bb63b, reviewer PASS; candidate in memory/wip/cpu_check_tubazeri_2/). 4 residual diffs = 2 coupled hard issues: (1) commutative addu operand swap idx25 (ours addu s2,s0,v0 vs target addu s2,v0,s0); (2) loop strength-reduction idx37/38/40 -- our GCC strength-reduces ptr+0x332/0x334 into BIVs (small disp 0/2 per iter), target keeps base v1=ptr with large disp 818/820. 9+ pure-C levers ruled out (meta.json). SR-defeat has no clean lever (old recipe is forbidden-cheat; -fno-strength-reduce is a frozen flag). Parked per 50-item-goal set-aside-walls; floor-4 WIP preserved. Resume: legitimate SR-defeat C structure + addu operand-order swap, or directed permuter from candidate.c."
     },
     {
       "func": "func_8002BEA0",
@@ -2642,33 +2715,6 @@
       "park_reason": "WIP floor 9->4 (worker 670a62bb, reviewer PASS; memory/wip/func_8002BEA0/). GTE-LZCS cluster sibling (func_8001A67C/func_800274BC authorized 2026-06-10); the GTE block is canonical inline asm and matches. Residual floor-4 is a pure-C RA/strength-reduce diff in the /100 division subtree (mfhi  vs target ; delay-slot li vs addiu) -- NOT in the GTE block, so this is compiled C that should match. Same wall class as cpu_check_tubazeri_2. Parked per 50-item-goal set-aside; floor-4 WIP preserved. Resume: pure-C lever for the /100 strength-reduce mfhi-reg + delay-slot, or directed permuter from candidate.c."
     },
     {
-      "func": "damage_DebugDisp",
-      "file": "code6cac_c_mid",
-      "distance": 9,
-      "verdict": "C",
-      "rules": 8,
-      "status": "parked",
-      "park_reason": "AUTO-PARK (batch-cadence): WIP-stuck 1 iter(s) at queue top; the worker lowered the floor but did not close, and cold re-attempts re-derive the same plateau. WIP checkpoint preserved in memory/wip/damage_DebugDisp/ (resume there). Parked per the 50-item-goal set-aside-walls directive; orchestrator batch-reviews auto-parks (unpark + deep-dive the closest floors). Resume: modality change per the WIP notes (orchestrator deep-dive / directed permuter / instrumented cc1)."
-    },
-    {
-      "func": "func_8007DC9C",
-      "file": "display",
-      "distance": 9,
-      "verdict": "C",
-      "rules": 4,
-      "status": "parked",
-      "park_reason": "AUTO-PARK (batch-cadence): WIP-stuck 1 iter(s) at queue top; the worker lowered the floor but did not close, and cold re-attempts re-derive the same plateau. WIP checkpoint preserved in memory/wip/func_8007DC9C/ (resume there). Parked per the 50-item-goal set-aside-walls directive; orchestrator batch-reviews auto-parks (unpark + deep-dive the closest floors). Resume: modality change per the WIP notes (orchestrator deep-dive / directed permuter / instrumented cc1)."
-    },
-    {
-      "func": "func_8004954C",
-      "file": "text1b",
-      "distance": 9,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "AUTO-PARK (batch-cadence): WIP-stuck 1 iter(s) at queue top; the worker lowered the floor but did not close, and cold re-attempts re-derive the same plateau. WIP checkpoint preserved in memory/wip/func_8004954C/ (resume there). Parked per the 50-item-goal set-aside-walls directive; orchestrator batch-reviews auto-parks (unpark + deep-dive the closest floors). Resume: modality change per the WIP notes (orchestrator deep-dive / directed permuter / instrumented cc1)."
-    },
-    {
       "func": "func_80057CC8",
       "file": "text1b",
       "distance": 9,
@@ -2676,94 +2722,6 @@
       "rules": 7,
       "status": "parked",
       "park_reason": "owner escalation pending: docs/grind/decisions.md:895 (2026-07-19 \u2014 func_80057CC8 (src/text1b.c) \u2014 OWNER-ESCALATION, filed by grind s28 synthesis)"
-    },
-    {
-      "func": "func_8007CA00",
-      "file": "display",
-      "distance": 13,
-      "verdict": "C",
-      "rules": 13,
-      "status": "parked",
-      "scorable": false,
-      "park_reason": "cross-jump merge DIRECTION wall: GCC merges case 1 and case 2 tails into a shared .L139 mini-block instead of target's case 2 -> case 1 backjump structure. Honest pure-C floor LOWERED 11 -> 10 (2026-06-01) via three combined levers documented in memory/project/func-8007ca00-m2c-shape-floor.md: (1) m2c-shape body adoption (single switch with shared block_5 label, default-at-end so it merges with shared tail); (2) var_a0 split (case 1 BE77!=0 pre-loads arg0[0] into var_a0 before goto block_5; case 2 BE77!=0 does the same); (3) 2-statement subtract { s32 tmp = 0x400 - var_v1; tmp -= var_a0; return tmp; } block-local form (vs single expression \u2014 controls subu order and keeps tmp in $v0). All pure-C, no cheats. Residual 10 diffs are reorg.c delay-slot-fill decisions (case 1 beqz delay should be li v0,1024 per target; case 2 BE77!=0 j delay should be li v0,1024 not sra v1,v1,1) and case 2 BE77==0 register chain ( vs ). Resume avenues (untried this session): directed permuter from new sandbox-10 base in permuter/ca00/; instrumented tmp/gccdbg/cc1 with BB2_FILL_DEBUG to find why reorg declines the li v0,1024 copy into beqz delay; rule UPDATE (the 13 existing rules are calibrated for the OLD body and can't retire on the new shape \u2014 need new rules for case 1 beqz delay fill + case 2 j delay fill + case 2 BE77==0 v0/v1 swap). NOT a documented auto-park category."
-    },
-    {
-      "func": "func_80068ECC",
-      "file": "text1b",
-      "distance": 13,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "File-scope volatile-extern cheat pattern: body is clean pure-C but blocked by file-scope cheats in src/text1b.c. Speed-parked during batch grind."
-    },
-    {
-      "func": "func_8003D9A0",
-      "file": "code6cac_c2",
-      "distance": 19,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "Prologue-fix coupled cheat: register asm pin + asm barrier on s1 force EARLY materialization (move s1,a2 at insn 4 in prologue). Without them GCC defers to insn 12 (after early-exit check). prologue_config.json entry can't fix missing-early-mat. Need deeper rework per prologue-fix-redundant-reorder.md to retire both cheats together. Pure-C floor 2 (verified score=2 with pins removed)."
-    },
-    {
-      "func": "func_8007C7A0",
-      "file": "display",
-      "distance": 20,
-      "verdict": "C",
-      "rules": 21,
-      "status": "parked",
-      "scorable": false,
-      "park_reason": "Session D 2026-06-02: SOTN-allowed duplicate-read lever lowers honest floor 16 to 12; structural ceiling = -vs- X-preserve tiebreaker; raw_arg0 chain reaches 10 but forbidden as literal-rename cheat"
-    },
-    {
-      "func": "func_8007C86C",
-      "file": "display",
-      "distance": 20,
-      "verdict": "C",
-      "rules": 21,
-      "status": "parked",
-      "scorable": false,
-      "park_reason": "Honest pure-C floor 20 to 12 via SOTN duplicate-read lever (session 4 / 2026-06-02 post-161c6c3). Same structural ceiling as sibling C7A0 (missing target-idx-16 move a3,v0 park-merge; -vs- X-preserve register cascade). 21 rules in regfix.txt:3073-3094 do not accommodate the score-12 form. See memory/project/func-8007c86c-sotn-duplicate-read-lever.md."
-    },
-    {
-      "func": "func_8007B6C8",
-      "file": "display",
-      "distance": 21,
-      "verdict": "C",
-      "rules": 19,
-      "status": "parked",
-      "scorable": false,
-      "park_reason": "New evidence (2026-06-01): m2c-shape adoption [var_v0 accumulator + nested if (rect[2]!=0) { if (rect[3]==0) return -1; ...body...; return call(); } + outer return -1;] reduces honest cheat-free distance 21 -> 7 (build_insns 49=49). Defeats cross-jump merge by mixing exit forms (TWO inline return -1 + one tail return-via-call) so jump2 cannot merge the early-return suffixes. Verified: bnez->body / j end / li v0,-1 split form emerges; sll v0,s1,16 fills bnez delay slot via reorg. The residual 7 diffs are PURE register-allocation choices the cc1 local_alloc makes: target lw a0,0(s0) for arg0[0] vs sandbox lw v0,0(s0); cascades to sw a0,0(a1) vs sw v0,0(a1). lreg dump (tmp/b6c8.i.lreg) shows pseudo 94 (arg0[0] temp) is a local allocno that local_alloc picks  for because  is freed by the BF28 store scheduled EARLY. Target keeps packed live in  across the load via LATE BF28 store scheduling (delays sw v0,(BF28) past arg0[0] load). Mechanism: GCC 2.7.2 sched2 priority for the BF28 store depends on its downstream dep chain depth (0 hops in cc1's natural form) - to delay it past arg0[0] requires either (a) extending the BF28 store's anti-dep chain so it cannot fire early, or (b) preventing local_alloc from picking  for pseudo 94. Adding any function-scope local (s32 packed; s32 a0_val; etc) breaks the early-return split (regresses to 21) due to frame-shift impact on jump2. NEXT untried levers: (1) declare bf24 as a callee-save register-class hinted pseudo to lengthen its live range so it cannot share with arg0[0]; (2) write arg0[0] read as a chained store-then-load through bf24+offset alias so the load-store dependency chain explicitly extends BF28's store priority; (3) probe BB2_SCHED_DEBUG/BB2_PRIO_DEBUG instrumented cc1 dump of THIS function (tmp/gccdbg/cc1 SHA1 a17fc6bbcb... May 30) to see exact INSN_PRIORITY of BF28 store vs arg0[0] load in the new structure; (4) restructure the call to take arg0[0] as a register-promoted arg (e.g. pass through a wrapper) that forces a0 allocation upstream of the body. The 19-rule cluster remains entirely register-renames after m2c-shape adoption; if any of these levers brings cc1 to pick  for arg0[0] naturally, all 19 rules collapse together."
-    },
-    {
-      "func": "func_8007CE0C",
-      "file": "display",
-      "distance": 48,
-      "verdict": "C",
-      "rules": 23,
-      "status": "parked",
-      "scorable": false,
-      "park_reason": "Semantic frame investigation (memory/project/func-8007ce0c-semantic-investigation.md, 2026-06-01): 32-byte vars region (0x10-0x2F) in target frame=80 is entirely UNREFERENCED in func body \u2014 confirmed by reading every -relative access in asm/funcs/func_8007CE0C.s. cc1 emits frame=64 from any tested pure-C source; only forbidden patterns (s32 buf[N], (void)&local \u2014 both detected by engine/volatile_cheats) reproduce target frame size. NOT canonical-asm: scan_hand_coded tier=LOW score=1/8 (only S4); diagnose's CANONICAL-ASM verdict is false positive (mflo heuristic over-fires). Pure-C floor 41 reachable via compare-flip + drop cheat-asm pin (vs HEAD 48), but no rule retirement so not committed. Per [[no-new-park-categories]] no frame-size-infrastructure carve-out; per [[dead-vars-local-array]] no padding workaround. 23 rules remain (now drift-robust via {lbl#N} per db690e7, so this function is no longer a sibling-coupling blocker). REVISIT WHEN: new C lever discovered (e.g. via instrumented cc1 alloc/sched dumps in the BB2_*_DEBUG family), OR hand-coded-signal reassessment reveals evidence the scan_hand_coded heuristic missed."
-    },
-    {
-      "func": "func_8007CBB0",
-      "file": "display",
-      "distance": 149,
-      "verdict": "C",
-      "rules": 1,
-      "status": "parked",
-      "scorable": false,
-      "park_reason": "PURE-C-DRAFT-PROGRESS: sandbox 76 \u2192 52 honest distance, build_insns 151 == target 151 EXACTLY. Structural decomp complete: 2-arg sig (arg2/arg3 unused), goto-form clamps mirroring sibling func_8007CE0C, &D_800F187C captured into local p187C to share the symbol-ref (saves 1 lui;sw pair AND makes cc1 use  matching target; also auto-grows frame to 0x40), *(u16*)arg0 & 0x3F for flag check (lhu matching target). Levers verified: arg0 in , arg1 in , 0xE3/E5 in /, both clamps in 6+9-insn shape. Residual 52 is list-scheduler INSN_PRIORITY in big-packet store sub-block (idx 50-89) and small-packet (117-137) \u2014 same coupling family as cpu_side_move_dir_4 / marionation_Exec. Draft preserved tmp/cbb0_score52_draft.c. Resume avenues (UNTRIED this session, untriable from old 149-cheat-strip-corrupted base): (1) directed permuter from clean offset-0 target at score-52 base, (2) BB2_SCHED_DEBUG + BB2_PRIO_DEBUG on score-52 source, (3) reorder big-packet path to delay 0x03FFFFFF materialization. NOT viable per policy: pad arrays, register pins, volatile coercion, dead stores, scheduling-barrier __asm__. See memory/project/func-8007cbb0-pure-c-draft.md."
-    },
-    {
-      "func": "func_8007BC08",
-      "file": "display",
-      "distance": 296,
-      "verdict": "C",
-      "rules": 1,
-      "status": "parked",
-      "scorable": false,
-      "park_reason": "ASM-SUSPECT/structural \u2014 298-insn gpu_PutDispEnv-style display environment setup (cached-diff + GP1 packet sends via g_gpu_dev_table[0x10]). Asmfix rule replace_with_asmfile bridges. Partial pure-C reconstruction from m2c brings sandbox 296 -> 132 (286/298 insns). Remaining 132-distance gap: 6 missing lhu+sll/sra cast-pattern pairs (GCC combine folds (s32)(s16)u16var to lh; needs structural lever to defeat fold), plus scheduling/register-allocation cascade through the 4-comparison + video-mode + GP1 packet build region. Multi-session pure-C work; needs same depth as defeat-licm-hoist-var-reuse class fixes. Oracle SHA1 green throughout (asmfix continues to provide target bytes)."
     },
     {
       "func": "special_camera_set_win_cam",
@@ -3002,13 +2960,13 @@
   ],
   "counts": {
     "total": 363,
-    "active": 290,
+    "active": 332,
     "by_status": {
-      "active": 290,
-      "parked": 73
+      "active": 332,
+      "parked": 31
     },
     "by_verdict": {
-      "C": 136,
+      "C": 178,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
