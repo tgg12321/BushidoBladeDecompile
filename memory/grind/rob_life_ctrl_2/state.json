@@ -1,8 +1,8 @@
 {
  "func": "rob_life_ctrl_2",
  "file": "text1a_c",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 0,
@@ -15,23 +15,29 @@
    "floor": 2,
    "modality": "recon",
    "headline": "recon: baseline floor=2 reconfirmed at HEAD 08f1aa37; 2-insn diff = mflo dest ($8 vs target $5) + dependent sra src at offsets 0xC4/0xCC; frontier built with 3 mechanism-grounded un-tried hypotheses"
+  },
+  {
+   "session": 2,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "s2 structural: 4 block-local named-intermediate + decl-order forms all measured DIFF-identical to HEAD (bytes byte-for-byte the same at 0xC4/0xCC); GCC folds C-level rewrites to the same RTL DAG. Stru"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Instrumented allocno-priority dump will explain why the t-mult pseudo (~104 per prior notes) is placed in $8 instead of the dying a1(=4096); the question is a specific liveness/tiebreaker one, not a general wall",
-   "mechanism": "Build tmp/gccdbg/cc1 with BB2_ALLOC_DEBUG / BB2_PRIO_DEBUG per memory/project/register-alloc-deep-dive.md. Compile an isolated standalone of rob_life_ctrl_2 (single-function preprocess of text1a_c.c) with the debug cc1. Read (a) allocno-priority table entry for the t-mult pseudo, (b) its conflict list at that point, (c) the 0x1000-constant pseudo's live range around 0xB0-0xC4. If the dump shows a global.c:624 priority-tiebreaker wall (cpu_side_move_dir_4 / marionation_Exec class per register-alloc-deep-dive.md), that changes disposition; otherwise it names the exact lever to attack.",
-   "next_probe": "1) preprocess isolated .i for text1a_c.c; 2) build/patch tmp/gccdbg/cc1 with the debug macros; 3) run cc1 -da <flags> on the .i and dump the allocno/priority tables; 4) diff against a matched sibling in same file to isolate what's different"
+   "hypothesis": "The instrumented allocno-priority dump (BB2_ALLOC_DEBUG / BB2_PRIO_DEBUG tmp/gccdbg/cc1 per memory/project/register-alloc-deep-dive.md) will show the priority computation at 0xC4 and either name the exact tiebreaker input to attack, or confirm this is the global.c:624 cpu_side_move_dir_4-class wall.",
+   "mechanism": "Global RA (global.c) assigns hard regs to pseudos in priority order; when two candidate hard regs are eligible for one pseudo, a tiebreaker (reg-alloc-order or reg_n_refs cost) decides. The dump surfaces the exact priority and conflict-list for pseudo 104 at its birth, and the free-reg-list state, letting us either (a) find the C-side lever that shifts the tiebreaker, or (b) prove parity-with-cpu_side_move_dir_4 class.",
+   "next_probe": "1) preprocess an isolated standalone .i for rob_life_ctrl_2 from src/text1a_c.c; 2) build/patch tmp/gccdbg/cc1 with BB2_ALLOC_DEBUG + BB2_PRIO_DEBUG per register-alloc-deep-dive.md; 3) run cc1 -da on the .i and capture the greg + priority tables; 4) compare pseudo-104's priority and conflict list against a matched sibling in text1a_c.c (mot_data_set)."
   },
   {
-   "hypothesis": "Extending the 0x1000 constant's live range so it dies EXACTLY at t's subu (0xB0) \u2014 without splitting the constant into a second pseudo (q's use at 0x88 must stay CSE'd with t's use) \u2014 will cause GCC RA to reuse a1 for the t-mult's mflo destination",
-   "mechanism": "In target, `li a1,4096` is emitted once and used as minuend at three subu sites (0x88, 0xA0, 0xB0). The mflo at 0xC4 reuses a1 because pseudo(0x1000) dies at 0xB0 and pseudo(t-mult) is born at 0xC4 with a1 free. Any C form that (a) delays the 0x1000-constant pseudo's DEATH past t's subu, or (b) creates a second 0x1000 pseudo that q uses but t doesn't, would fail. So the C must keep exactly one 0x1000 pseudo, kill it at t's subu, and NOT introduce any competing live range in $8/t0 at 0xC4.",
-   "next_probe": "After the ALLOCDBG dump names the priority tiebreaker at 0xC4, try C forms that (1) hoist the `0x1000 - ...` outer subtraction into a named s32 declared inline (`s32 tsub = 0x1000 - ((s * (0x1000 - f)) >> 12); t = (v * tsub) >> 12;`) and see whether the named intermediate's pseudo death changes the tiebreaker without duplicating the constant; (2) reorder the subexpression evaluation so the innermost `(0x1000 - f)` computes AFTER q's subu but before t's mult, keeping the outer constant use last"
+   "hypothesis": "A ref-lift via duplicated-statement-into-arms on a REAL statement whose destination is `t` (case 0 `g=t` and case 4 `r=t`) would raise pseudo-104's reg_n_refs enough to flip the priority tiebreaker toward $a1, per the motion_SetMotion closure precedent (2026-07-01).",
+   "mechanism": "Global RA priority = f(refs, cost, loop_depth); adding a real use of `t` in another switch arm raises reg_n_refs 2\u21923, potentially crossing the $a1-vs-$t0 tiebreaker threshold. Cross-jump would re-merge duplicates to byte-neutral if the case body shape allows.",
+   "next_probe": "After the ALLOCDBG dump confirms which ref count would flip the tiebreaker, look for a case body restructuring where `g = t;` or `r = t;` can honestly appear in an additional arm (e.g. if case bodies can be rewritten as `r = X; g = Y; b = Z;` with real cross-jump-mergeable overlap). NOTE: dead stores are INERT here (flow.c deletes before counting) per the rule text; only REAL statements count."
   },
   {
-   "hypothesis": "Retyping/narrowing the intermediate `(s * (0x1000 - f)) >> 12` \u2014 e.g. to a named `s16`/`u16` local \u2014 will change the t-mult pseudo's conflict graph enough to flip the tiebreaker, per Lever A/B of register-alloc-pure-c",
-   "mechanism": "Pseudo 104's placement depends on its conflict set at 0xC4; adding a fresh short-lived narrower pseudo can perturb the priority function without changing emitted arithmetic (mult/sra still emit 32-bit ops for s16 promotion). If it produces the same bytes, it's a legitimate structural lever; if it changes bytes, it's ruled out.",
-   "next_probe": "After the ALLOCDBG dump, test `s16 sf = (s16)(s * (0x1000 - f)); q = (v * (0x1000 - (sf >> 12))) >> 12;` and the analogous form for the t-subexpression; sandbox each; if bytes drift on the other 94 insns it's out; if only 0xC4/0xCC change, examine whether they moved TOWARD target."
+   "hypothesis": "The 2-insn residual is a genuine global.c:624 priority-tiebreaker wall in the cpu_side_move_dir_4 / marionation_Exec class \u2014 if the ALLOCDBG dump shows the tiebreaker resolving on REG_ALLOC_ORDER alone (no reg_n_refs / cost gradient), THIS FUNCTION is at the same class as those and the disposition question is escalation policy, not more C search.",
+   "mechanism": "cpu_side_move_dir_4 and marionation_Exec are documented as the two known walls where every RA-priority lever has been measured dead; the dump either places rob_life_ctrl_2 in that class (dump-based owner-gated escalation candidate) or names a lever.",
+   "next_probe": "ALLOCDBG output \u2192 cross-reference against register-alloc-deep-dive.md's known-wall signatures. If matches: owner-gated escalation per endgame-lock-disposition-policy (with the two-line residual quantified against the endgame criteria). If differs: attack the named lever."
   }
  ],
  "judge_constraints": [],

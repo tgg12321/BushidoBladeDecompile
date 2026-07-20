@@ -73,3 +73,15 @@ priority tiebreaker picks $8 first).
 - [s1] Prior sessions exhausted structural levers: HEAD-body/rules-off (DIFF), split t mult and >>12 into 2 stmts (DIFF), collapse p into single stmt (DIFF), register asm() pin on t (IGNORED, cheat), reorder-t/local-fc/swap-q-t/decl-order-swap (all DIFF), plus 4 more rules-removed full-build variants (all DIFF, session s1 2026-06-14)
 
 - [s1] The named next un-tried modality (ledger next_hypotheses[0], notes.md resume-step 1) is the INSTRUMENTED ALLOCNO DUMP (BB2_ALLOC_DEBUG/BB2_PRIO_DEBUG tmp/gccdbg/cc1 per memory/project/register-alloc-deep-dive.md) — has NOT been run
+
+- [s2] s2 baseline confirmed: score=2, cheat_asm_stripped=78, rules_dropped=2 at HEAD 08e1a3f0 (post s1 ledger update commit 8e9d1138).
+
+- [s2] s2 objdump byte-diff (probe1..probe4 all identical): the residual is ONLY at offset 0xC4 (`mflo t0` should be `mflo a1`) and 0xCC (`sra a1,t0,0xc` should be `sra a1,a1,0xc`). All 94 other insns byte-match, including the entire prologue/scheduling of the mult latencies (targets sras and sltiu are perfectly hoisted into mult-latency window, IDENTICAL to target).
+
+- [s2] s2 negative axis measured: 4 distinct block-local-named-intermediate + decl-order structural forms ALL produce byte-identical output to HEAD. This confirms that GCC's RTL-level CSE/scheduler has already normalized the arithmetic DAG to its canonical form for this expression — additional C-level named intermediates and declaration-order shuffles are folded away before allocation and cannot affect the pseudo-104 tiebreaker.
+
+- [s2] s2 mechanism eliminated: source-level extraction of `0x1000 - f` explicitly (probe2) reproduces target's target-0x32D8C `subu v0,a1,v0` position IDENTICALLY to HEAD's implicit CSE — the CSE was never the issue; RA tiebreaker at 0xC4 is downstream of it.
+
+- [s2] s2 target vs ours structural review: target 0x32D6C..0x32DD0 vs ours 0x30..0xCC are byte-identical except at 0xC4/0xCC. Both builds schedule sltiu-before-mflo, both hoist the 3 post-mult sras into the mult-latency window, both make a1 (the 0x1000 constant pseudo) die at t's outer subu. The ONLY divergence is which hard reg GCC picks for the mult-result pseudo when both $a1 (freed) and $t0 (never used) are eligible.
+
+- [s2] s2 conclusion: the residual is a pure global.c allocno-priority TIEBREAKER, not a C-source structural gap. Structural axis (frontier hypotheses 2 & 3) is exhausted for THIS diff shape. The remaining sanctioned modality is the forensics axis — the instrumented allocno-priority dump (frontier hypothesis 1) — which is what the s1 ledger and WIP notes named as the un-run resume avenue.

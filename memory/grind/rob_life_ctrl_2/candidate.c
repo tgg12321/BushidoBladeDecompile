@@ -2,8 +2,12 @@
  * This is HEAD's body. It matches ONLY WITH the 2 regfix subst rules
  * (mflo $8->$5, sra $5,$8,12 -> $5,$5,12). No pure-C form found yet that
  * reaches target's RA for the 5th mflo (t's mult result) without the rules.
- * See notes.md — documented mflo-dest plateau, instrumented allocno dump is
- * the next un-tried modality. */
+ *
+ * s2 update: measured KILLED — structural rewrites at C level fold to the
+ * same RTL DAG and same allocation. Bytes 0x30..end are byte-identical to
+ * target except for the 2-insn RA diff at 0xC4/0xCC. See s2 rejected/*.c
+ * and evidence.md. Instrumented allocno-priority dump (forensics modality)
+ * remains the next un-tried avenue. */
 void rob_life_ctrl_2(s32 *hsv, s32 *rgb) {
     s32 h = hsv[0];
     s32 s = hsv[1];
