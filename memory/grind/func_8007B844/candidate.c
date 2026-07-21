@@ -1,5 +1,22 @@
 /* func_8007B844 — grind candidate body (sandbox --disable all == 6, HEAD == 7).
  *
+ * s5 (permuter, 2026-07-21): floor 6 re-confirmed start+end. Three MORE
+ * fresh-seed campaigns on chassis geometries never randomized before
+ * (172k iters total, all harvested+stopped in-session): D debug-split +
+ * goto-end (60k iters), E struct-typed GpuDevice dispatch (62k iters),
+ * F directed debug-arm x tail cross-product (51k iters). Every find was
+ * score-equal 135 and fell into the three known classes: fold-transparent
+ * temps/rebinds (fn-ptr dispatch temp sandbox-measured NEUTRAL 6 —
+ * rejected/permuter_s5_fnptr_dispatch_temp.c; debug-split+two-local combo
+ * NEUTRAL 6 — rejected/permuter_s5_debugsplit_twolocal_combo.c), seed
+ * re-derivations, and the SAME wrong-semantics store-to-global attractor
+ * from s4 (now reproduced in the struct-dispatch basin — 3 of 6 lifetime
+ * chassis converge on it). One dead-temp-chain form vetted out as cheat
+ * family (dead local written never read). Permuter modality is now dead
+ * across FIVE chassis geometries + TWO directed cross-products, ~293k
+ * lifetime iters. Frontier: F2 (sched forensics) + F3 (cross-project
+ * ClearOTagR research) ONLY — both non-permuter.
+ *
  * s4 (permuter, 2026-07-21): floor 6 re-confirmed start+end. Three fresh-seed
  * campaigns (~28 min each, 121k iters total, telemetry in metrics/events.jsonl):
  * A leverB-full-random (43k iters, only find = wrong-semantics store-to-global

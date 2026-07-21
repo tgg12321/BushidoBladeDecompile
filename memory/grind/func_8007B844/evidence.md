@@ -174,3 +174,27 @@ No new park category requested (per [[no-new-park-categories]]).
 - [s4] Cross-basin attractor: the only byte-shape the permuter finds near the plateau requires rewiring the terminator store to &g_gpu_ot_end (semantics-breaking) — direct search-space evidence that no nearby pure-C spelling reaches the return-staging schedule flip
 
 - [s4] Permuter modality now measured dead for this function: historical ~50k directed iters + s4's 121k fresh-seed iters across 3 chassis geometries agree; live frontier remains F2 (BB2_SCHED_DEBUG forensics) and F3 (cross-project ClearOTagR research), both non-permuter
+
+- [s5] s5 baseline re-confirmed start AND end: candidate.c (Lever B) in src/display.c -> sandbox --disable all = 6, build_insns 38 == target 38; src left in candidate form
+
+- [s5] Three fresh-seed campaigns on chassis geometries NEVER randomized before (all via tools/permuter_campaign.py, all harvested+stopped in-session, 172,468 iters total): D=debug-split+goto-end combined (60,137 iters), E=struct-typed GpuDevice dispatch (61,543 iters), F=directed debug-arm-shape x tail-geometry cross-product (50,788 iters)
+
+- [s5] Campaign D find (output-135-1, 15s): named fn-ptr dispatch temp (`fn = (fnptr)v0[11]; fn(ot,n);`) — never-measured spelling; sandbox-measured NEUTRAL at 6 (build_insns 38). Fold-transparent like all rebinds. Banked rejected/permuter_s5_fnptr_dispatch_temp.c; D's other two outputs were seed re-derivations
+
+- [s5] Campaign F find (output-135-1): debug-split + two-local AND-into-mask COMBINATION (both s3-neutral alone, joint cell never measured) — sandbox NEUTRAL at 6. Banked rejected/permuter_s5_debugsplit_twolocal_combo.c. F's output-135-2 was a chained dead-temp staging (`new_var2=g_gpu_debug_level; lvl=(new_var=new_var2);` with new_var never read) — dead-local cheat family, vetted out at design time, not measured as a candidate
+
+- [s5] Campaign E (struct-dispatch basin) late finds: output-135-1 = classic `new_var = ot` rebind + u8 debug temp (known fold-transparent family); output-135-2 = the SAME wrong-semantics store-to-global attractor as s4 (`new_var = &g_gpu_ot_end; *new_var = mask;`) — the attractor is now reproduced in a THIRD chassis geometry (3 of 6 lifetime chassis converge on it)
+
+- [s5] Permuter modality now measured dead across FIVE chassis geometries (leverB, twolocal, debugsplit+gotoend, struct-dispatch, plus the two directed cross-products covering dispatch x AND-order x exit and debug-arm x tail) — ~293k lifetime iterations; every find class is fold-transparent rebind, seed re-derivation, neutral-lever recombination, wrong-semantics attractor, or cheat-family dead-temp. No sub-135 weighted find has EVER occurred in any basin. Frontier is exclusively non-permuter: F2 (BB2_SCHED_DEBUG forensics) + F3 (cross-project ClearOTagR research)
+
+- [s5] Floor 6 re-confirmed start AND end of session (sandbox --disable all = 6, build_insns 38 == target 38) with candidate.c (Lever B) applied to src/display.c; src left in candidate form
+
+- [s5] 172,468 s5 iterations across 3 fresh-seed basins (60,137 / 61,543 / 50,788), all launched via tools/permuter_campaign.py with telemetry, all harvested and stopped in-session; campaign status confirms zero alive pids
+
+- [s5] Named fn-ptr dispatch temp (fn = (fnptr)v0[11]; fn(ot,n);) — a never-measured spelling — is sandbox-NEUTRAL at 6: the call RTL (lw 0x2C; jalr) is unchanged, so the post-call pseudo landscape driving sched.c return-staging priority is untouched
+
+- [s5] The debug-split + two-local combination (both s3-neutral alone) is jointly NEUTRAL at 6 — closes the last unmeasured cell of the neutral-lever cross-product space
+
+- [s5] The wrong-semantics store-to-global attractor (new_var = &g_gpu_ot_end; *new_var = mask;) reproduced in the struct-dispatch basin — 3 of 6 lifetime chassis geometries converge on it; the only byte-shape the permuter ever finds near the plateau breaks the store target
+
+- [s5] Permuter modality is now measured dead across FIVE chassis geometries plus TWO directed cross-products, ~293k lifetime iterations, with zero sub-135 weighted finds ever; remaining live frontier is exclusively non-permuter (F2 sched forensics, F3 cross-project research)

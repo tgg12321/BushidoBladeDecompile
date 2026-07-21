@@ -1,7 +1,7 @@
 {
  "func": "func_8007B844",
  "file": "display",
- "session_count": 4,
+ "session_count": 5,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -33,13 +33,19 @@
    "floor": 6,
    "modality": "permuter",
    "headline": "s4 permuter: floor 6 holds; 3 fresh-seed campaigns (121k iters, all harvested+stopped) measured the permuter modality DEAD around the plateau \u2014 one novel find was sandbox-neutral, the only cross-basin"
+  },
+  {
+   "session": 5,
+   "floor": 6,
+   "modality": "permuter",
+   "headline": "s5 permuter: floor 6 holds; 3 fresh-seed campaigns on never-randomized chassis (172k iters, all stopped) confirm the permuter axis dead across 5 lifetime chassis geometries \u2014 no sub-135 find has ever "
   }
  ],
  "frontier": [
   {
    "hypothesis": "BB2_SCHED_DEBUG instrumented cc1 dump on the score-6 form names the exact REG_DEP_TRUE predecessors of the return-staging insn, narrowing the required C dataflow carrier",
    "mechanism": "sched.c INSN_PRIORITY = chain depth to jr; target needs return-staging depth >=4 via the store consuming the return pseudo",
-   "next_probe": "cc1 -da/BB2_SCHED_DEBUG on the sandbox .i; dump to tmp/grind/func_8007B844/s5/; enumerate non-copy-prop-foldable store-base carriers"
+   "next_probe": "cc1 -da/BB2_SCHED_DEBUG on the sandbox .i; dump to tmp/grind/func_8007B844/s6/; enumerate non-copy-prop-foldable store-base carriers"
   },
   {
    "hypothesis": "An existing GCC 2.7.2 PSX decomp has byte-matched libgpu ClearOTagR; its exact C spelling + TU context is the answer",

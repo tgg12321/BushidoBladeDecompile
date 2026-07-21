@@ -195,3 +195,43 @@ Baseline re-confirmed start+end: candidate.c applied -> sandbox 6, build_insns 3
 - probe: Campaign C: tmp/grind/func_8007B844/s4/perm_c, directed 2x2x2 cross-product + randomize, 36k iters
 - result: No combination scored below base 135; only output was the same wrong-semantics store-to-global attractor as chassis A
 - verdict: KILLED
+
+## s5 (permuter, 2026-07-21)
+
+Baseline re-confirmed start+end: candidate.c applied -> sandbox 6, build_insns 38.
+
+## [s5] A fresh-seed basin on the debug-split + goto-end combined chassis (both levers s3-neutral, AST never randomized) reaches mutation neighborhoods the leverB/twolocal basins cannot
+- mechanism: the permuter mutates the AST it is given; a structurally different (score-equal) seed changes the reachable mutation space even when the seed's codegen is identical
+- probe: campaign D tmp/grind/func_8007B844/s5/perm_d, 60,137 iters, wait windows in-turn, harvest --stop
+- result: 3 finds, all score-equal 135 — one novel spelling (named fn-ptr dispatch temp, sandbox-measured NEUTRAL 6, banked rejected/) and two seed re-derivations; no sub-135
+- verdict: KILLED
+
+## [s5] The struct-typed GpuDevice member-access dispatch chassis (s2-neutral, member-access AST) opens a random basin with a different attractor landscape
+- mechanism: member-access expression nodes give the mutation pass different expression-level material (field refs vs array index + cast) than any prior basin
+- probe: campaign E tmp/grind/func_8007B844/s5/perm_e, 61,543 iters
+- result: 2 late finds (1107s, 1484s), both score-equal 135 — a known fold-transparent ot-rebind, and the SAME wrong-semantics store-to-global attractor as s4 chassis A/C (third geometry to converge on it); no sub-135
+- verdict: KILLED
+
+## [s5] The debug-arm-shape x tail-geometry directed cross-product (the one joint axis s4's campaign C omitted) contains a non-additive interaction that moves the residual
+- mechanism: PERM_GENERAL enumerates the joint cells; s3 measured each lever alone, s4 crossed dispatch x AND-order x exit but never debug-arm x tail
+- probe: campaign F tmp/grind/func_8007B844/s5/perm_f, 50,788 iters; the never-measured combo cell (debug-split + two-local) applied to src and sandbox-measured
+- result: all finds score-equal 135; the combo cell = sandbox 6 NEUTRAL (banked rejected/permuter_s5_debugsplit_twolocal_combo.c); one dead-temp-chain form vetted out as cheat family (dead local written, never read); no sub-135
+- verdict: KILLED
+
+## [s5] A fresh-seed basin on the debug-split + goto-end combined chassis (s3-neutral levers, AST never randomized) reaches mutation neighborhoods the leverB/twolocal basins cannot
+- mechanism: The permuter mutates the AST it is given; a structurally different score-equal seed changes the reachable mutation space even when the seed's codegen is identical
+- probe: Campaign D (tmp/grind/func_8007B844/s5/perm_d), 60,137 iters, in-turn wait windows, harvest --stop; novel find sandbox-measured in src
+- result: 3 finds, all score-equal 135: one novel spelling (named fn-ptr dispatch temp) sandbox-measured NEUTRAL at 6 (banked rejected/permuter_s5_fnptr_dispatch_temp.c) and two seed re-derivations; no sub-135
+- verdict: KILLED
+
+## [s5] The struct-typed GpuDevice member-access dispatch chassis (s2-neutral) opens a random basin with a different attractor landscape
+- mechanism: Member-access expression nodes give the mutation pass different expression-level material (field refs vs array-index + cast) than any prior basin
+- probe: Campaign E (tmp/grind/func_8007B844/s5/perm_e), 61,543 iters; single typed extern handle (no asm-alias — the alias-rename spelling was rejected at design time per inline-asm-injection sibling-cheat family)
+- result: 2 late finds, both score-equal 135: a known fold-transparent ot-rebind, and the SAME wrong-semantics store-to-global attractor as s4 — now reproduced in a third chassis geometry (3 of 6 lifetime chassis converge on it); no sub-135
+- verdict: KILLED
+
+## [s5] The debug-arm-shape x tail-geometry directed cross-product (the one joint axis s4's directed campaign omitted) contains a non-additive interaction that moves the residual
+- mechanism: PERM_GENERAL enumerates the joint cells; s3 measured each lever alone, s4 crossed dispatch x AND-order x exit but never debug-arm x tail
+- probe: Campaign F (tmp/grind/func_8007B844/s5/perm_f), 50,788 iters; the never-measured combo cell (debug-split + two-local AND-into-mask) applied to src and sandbox-measured
+- result: All finds score-equal 135; the combo cell = sandbox 6 NEUTRAL (banked rejected/permuter_s5_debugsplit_twolocal_combo.c); one chained dead-temp form (dead local written, never read) vetted out as cheat family without measurement; no sub-135
+- verdict: KILLED
