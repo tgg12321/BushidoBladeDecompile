@@ -219,3 +219,55 @@
 - [s4] Driver had reset src to the old pinned form (stripped 371); pin-free candidate re-applied at session start and verified in place at session end (final sandbox 4/369)
 
 - [s4] All four campaigns launched via tools/permuter_campaign.py, waited in-turn, and harvest --stop'd before session end (fresh-seed discipline; zero orphaned campaigns)
+
+## s5 (2026-07-20, permuter)
+
+- **Floor unchanged: 4.** Two fresh-basin campaigns via tools/permuter_campaign.py
+  (~34k iters, both harvested + stopped in-session): c5 DImode-pair chassis seed
+  (rejected Z1 form, base 325, 17,078 iters) and c6 walker/flags-pointer chassis
+  seed (rejected L7 form, base 450, 16,887 iters). Neither basin was searched in
+  s4. Src reset by driver again — candidate re-applied at session start,
+  verified 4/369 (sandbox JSON identical to s2-s4 baselines).
+- **Both basins converge to the SAME score-20 ptr=a1 attractor as all four s4
+  basins** (6 basins total now): c5 reaches 20 by degrading t to int (split
+  multiply — known attractor member); c6 reaches 20 by folding the flags
+  pointer away entirely (direct global addressing = the candidate itself).
+  Zero sub-20 finds in either basin over full ~30-min fresh-seed windows.
+- **NEW MECHANISM FACT (c5 output-30-1, score 30 = 6 reg diffs, 0 ins/del):**
+  mutation moved `t = i;` below the `(s32)t * 12` read → upward-exposed
+  uninit use. The DImode pseudo SURVIVED TO RA BYTE-FREE and occupied $a3
+  (build idx chain reads a3-garbage; honest diff banked at
+  tmp/grind/func_80033550/s5/out30_vs_target.diff). First zero-byte
+  register occupant ever observed on this function. ptr did NOT flip
+  (loads still via a1). Semantically invalid (garbage idx) — banked as
+  rejected/permuter-uninit-dimode-read-garbage-a3-30.c. Implication: the
+  post-conflict-build / dead-def occupancy channel is REAL in this GCC, but
+  the only spelling that reaches it is an uninit read; any valid init
+  re-emits the pair-half bytes (22+). Frontier-3 (FAKE-family occupants)
+  should target this channel; frontier-1 forensics should read how flow
+  keeps upward-exposed uses in the conflict graph.
+- **Tooling fact (root-caused, no fix applied — tools/ frozen):** standalone
+  invocations of the permuter workspace compile.sh die in maspsx
+  (`.file` split: `_, num, filename = line.split()`, maspsx/__init__.py:940)
+  because the repo path contains spaces; the permuter itself compiles from
+  space-free temp dirs, so campaigns are unaffected. Measure finds by
+  copying source.c to /tmp first (tmp/grind/func_80033550/s5/measure30.sh).
+- Artifacts: tmp/grind/func_80033550/s5/{setup.sh,c5_base.c,c6_base.c,
+  c5_campaign.log,c5_campaign_meta.json,c6_campaign.log,c6_campaign_meta.json,
+  measure30.sh,out30_vs_target.diff,watch.sh,finds/}.
+
+- [s5] Six independent permuter basins (s4's four + s5 DImode + s5 walker) all converge to the score-20 ptr=a1 attractor; zero sub-20 finds anywhere — permuter modality is now measured DEAD for this function
+
+- [s5] c5 output-30-1: uninit-read DImode pseudo survives to RA byte-free and occupies $a3 (0 ins/del, 6 reg diffs) — first zero-byte occupant ever observed; channel real but only reachable via semantically-invalid uninit read
+
+- [s5] compile.sh standalone is broken by the space-containing repo path (maspsx .file split crash); permuter campaigns unaffected (space-free temp dirs) — measure finds from /tmp copies
+
+- [s5] Six independent permuter basins across s4+s5 (~138k cumulative iterations) all terminate in the score-20 ptr=a1 attractor with zero sub-20 finds — permuter modality measured DEAD for func_80033550
+
+- [s5] c5 output-30-1: uninit-read DImode pseudo survives to RA byte-free and occupies $a3 (first zero-byte register occupant ever observed on this function); banked as rejected/permuter-uninit-dimode-read-garbage-a3-30.c with honest diff tmp/grind/func_80033550/s5/out30_vs_target.diff
+
+- [s5] c6 walker basin: every score improvement removes the pointer variable — no materialized-pointer form below 50; the basin floor IS the candidate
+
+- [s5] Driver reset src to the old pinned form again; pin-free candidate re-applied at session start and verified 4/369 at session start and end
+
+- [s5] Tooling: standalone permuter-workspace compile.sh crashes in maspsx (.file line split, maspsx/__init__.py:940) because the repo path contains spaces; campaigns unaffected (permuter compiles from space-free temp dirs); measure finds via /tmp copies (measure30.sh pattern)

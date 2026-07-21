@@ -244,3 +244,42 @@ inheritance) + cc1psx calibration cross-check.
 - probe: campaign c4 s4-c3-20-neighborhood seeded at the c3 best find, 31k iters, harvested+stopped
 - result: 2 finds, both equal-score attractor members (alias handle + split multiply); the attractor is locally rigid
 - verdict: KILLED
+
+## [s5] The DImode-pair basin (Z1 seed, base 325) contains a mutation path that sheds the pair-half bytes while keeping the pair pseudo alive across ptr
+- mechanism: s3 proved a byte-free DImode pseudo would pair-home a1+a2 and push ptr to a3; stochastic search might find a spelling manual sweeps missed
+- probe: campaign c5 s5-dimode-basin, 17,078 iters, full fresh-seed window, harvested+stopped
+- result: basin descends 325->120->80->50->30->20 but every sub-30 step DEGRADES the s64 (int/long/uchar) into the known attractor; the sole pair-preserving byte-free form (output-30-1, score 30) does it via an upward-exposed UNINIT read (def moved below use) — semantically invalid, and ptr still a1
+- verdict: KILLED
+
+## [s5] The walker/flags-pointer basin (L7 seed, base 450) contains a pointer spelling matching target's at-macro addressing while keeping the conflicting pseudo
+- mechanism: pseudo 75 genuinely conflicts with ptr; mutation might find an address form whose bytes match target
+- probe: campaign c6 s5-walker-basin, 16,887 iters, full fresh-seed window, harvested+stopped
+- result: every descent step REMOVES the pointer (folds back to direct global addressing) — score 20 reached exactly at the candidate's own form; no materialized-pointer member below 50
+- verdict: KILLED
+
+## [s5] PERMUTER MODALITY NOW FULLY DEAD: six independent basins (s4 random,
+directed-staged, v07-flip, c3-20 + s5 DImode-pair, walker-pointer) across
+~138k cumulative iterations all terminate in the score-20 ptr=a1 attractor
+with zero sub-20 finds. NEW mechanism fact for the remaining axes: a
+dead-def/uninit-use pseudo occupies a register byte-free (c5 output-30-1,
+$a3) — the zero-byte-occupant channel EXISTS; frontier-1 cc1 forensics and
+frontier-3 FAKE-family sweeps should target how flow/conflict-build treats
+upward-exposed uses and whether any VALID construct reaches the same channel.
+
+## [s5] The DImode-pair basin (Z1 seed, base 325) contains a mutation path shedding the pair-half bytes while keeping the pair pseudo alive across ptr
+- mechanism: s3 proved a byte-free DImode pseudo would pair-home a1+a2 and push ptr to a3; stochastic search over exotic geometries might find a spelling manual sweeps missed
+- probe: campaign c5 s5-dimode-basin via tools/permuter_campaign.py, 17,078 iters, full fresh-seed window, harvested+stopped
+- result: descends 325->120->80->50->30->20 but every sub-30 step degrades the s64 into the known attractor; the sole pair-preserving byte-free form (output-30-1, score 30, 0 ins/del) uses an upward-exposed UNINIT read (def below use) — semantically invalid, ptr still a1
+- verdict: KILLED
+
+## [s5] The walker/flags-pointer basin (L7 seed, base 450) contains a pointer spelling matching target's at-macro addressing while keeping the conflicting pseudo
+- mechanism: the walker pseudo genuinely conflicts with ptr (s3 .greg); mutation might find an address form whose emitted bytes match target
+- probe: campaign c6 s5-walker-basin, 16,887 iters, full fresh-seed window, harvested+stopped
+- result: every descent step removes the pointer (folds to direct global addressing); score 20 reached exactly at the candidate's own form; no materialized-pointer member below 50
+- verdict: KILLED
+
+## [s5] A dead-def pseudo can occupy a hard register with zero emitted bytes in this GCC
+- mechanism: upward-exposed uninit use keeps the pseudo in the conflict graph after flow deletes/never-emits the def
+- probe: honest asm diff of c5 output-30-1 vs target from a space-free /tmp copy (measure30.sh)
+- result: CONFIRMED: 0 ins/del, 6 reg diffs; the DImode t occupies $a3 byte-free (build idx chain reads a3 garbage); ptr did not flip; only reachable spelling found is semantically invalid
+- verdict: CONFIRMED

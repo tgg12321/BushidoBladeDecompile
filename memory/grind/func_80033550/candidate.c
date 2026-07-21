@@ -6,8 +6,14 @@
  * campaigns, ~104k iters): whole-function stochastic search measured
  * near-dead — every basin (random, directed-staged, v07-flip-neighborhood,
  * c3-20-neighborhood) converges to the score-20 ptr=a1 attractor; zero
- * sub-20 finds. Remaining axes: cc1 forensics (post-conflict-build
- * deletions), cc1psx calibration check.
+ * sub-20 finds. s5 (permuter, 2 fresh basins, ~34k iters): DImode-pair and
+ * walker-pointer chassis basins ALSO converge to the same attractor —
+ * permuter modality now fully dead (6 basins, ~138k cumulative iters).
+ * s5 new fact: an uninit-read pseudo occupies a register byte-free
+ * (rejected/permuter-uninit-dimode-read-garbage-a3-30.c) — the zero-byte
+ * occupant channel exists but no valid spelling reaches it yet.
+ * Remaining axes: cc1 forensics (post-conflict-build deletions / upward-
+ * exposed uses), cc1psx calibration check, FAKE-family occupant sweep.
  * The do-while(0) wrap is sanctioned per do-while-zero-exception (2026-07-06
  * owner ruling, any codegen effect, single-level, FAKE-annotated).
  * Residual 4 = arg0's pointer pseudo homed in $a1 (build) vs $a3 (target):
