@@ -125,3 +125,33 @@ Baseline re-confirmed: candidate.c applied -> sandbox 6, build_insns 38.
 - probe: Full dispatch+tail+return duplicated into the debug-if arm alongside the shared copy; sandbox
 - result: 22, build_insns 44 vs target 38 — cross-jump fails to re-merge the duplicated suffix (+6 insns): not byte-neutral (fails the sanction prerequisite) and a large regression
 - verdict: KILLED
+
+## [s3] Splitting the debug-level load into a named u8 local (lvl = g_gpu_debug_level; if (lvl >= 2)) shifts pre-call pseudo numbering and perturbs the tail RA/sched cascade
+- mechanism: Pre-call pseudo creation order feeds allocno ordering and sched.c dependence chains; the debug arm was the one body region s2 never touched
+- probe: Applied to candidate base in src/display.c; sandbox func_8007B844 --disable all
+- result: score 6 — byte-identical build; pre-call pseudo creation never reaches the tail cascade
+- verdict: KILLED
+
+## [s3] Re-associating the dispatch load as byte-offset arithmetic ((*(void(**)(u32*,s32))((u32)g_gpu_dev_table + 0x2C))(ot,n)) stages the call address through different pseudos than the v0[11] index form
+- mechanism: Address-arithmetic surface shape could produce a different RTL chain at the call boundary feeding the post-call landscape
+- probe: Applied to candidate base; sandbox
+- result: score 6 — combine folds to the identical lw 0x2C($v0) dispatch; joins the s2 dispatch-surface-type kill
+- verdict: KILLED
+
+## [s3] goto-end tail (*ot = mask; goto end; end: return ot;) changes jump-opt/sched interaction at the function exit
+- mechanism: shared-end-label family — label between store and return could affect scheduling regions
+- probe: Applied to candidate base; sandbox
+- result: score 6 — trivial goto folded before sched; single-exit function gains nothing from shared-end-label
+- verdict: KILLED
+
+## [s3] Two-local form with the AND folded into MASK (mask=0xFFFFFF; addr=(u32)&g_gpu_ot_end; mask=addr&mask; *ot=mask) — the one 2-local permutation s2 did not measure — moves the residual
+- mechanism: s2's AND-into-addr variant scored 7; the AND-into-mask variant preserves Lever B's named-intermediate rebinding and could differ
+- probe: Applied to candidate base; sandbox
+- result: score 6 — addr copy-props into the lui/addiu chain; byte-identical to 3-statement Lever B. Refines the Lever B constraint: a named addr local is copy-prop-transparent iff the AND dest is mask
+- verdict: KILLED
+
+## [s3] Hoisting mask = 0xFFFFFF between the debug arm and the dispatch call (live across ONE call only, vs round-1's hoist across both = 19) reshapes the tail without full callee-save blowup
+- mechanism: Constant materialization before the last call would change what sched.c sees at the post-call boundary
+- probe: Applied to candidate base; sandbox
+- result: score 20, build_insns 40 vs target 38 — mask forced into a callee-save reg across the dispatch call, prologue/epilogue +2 insns; can never match by construction
+- verdict: KILLED

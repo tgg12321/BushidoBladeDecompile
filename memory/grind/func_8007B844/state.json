@@ -1,7 +1,7 @@
 {
  "func": "func_8007B844",
  "file": "display",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -21,6 +21,12 @@
    "floor": 6,
    "modality": "structural",
    "headline": "s2 structural: floor 6 holds; structural axis EXHAUSTED \u2014 F1 struct-typed dispatch killed (neutral), addr-rebind/decl-placement/retype/arm-duplication all measured dead; F2 (sched forensics) + F3 (cro"
+  },
+  {
+   "session": 3,
+   "floor": 6,
+   "modality": "structural",
+   "headline": "s3 structural: floor 6 holds; the five unmeasured structural gaps (debug-arm split, dispatch byte-offset, goto-end, two-local AND-into-mask, cross-call mask hoist) all measured dead \u2014 structural axis "
   }
  ],
  "frontier": [

@@ -144,3 +144,13 @@ No new park category requested (per [[no-new-park-categories]]).
 - [s2] RA-side confirmation of the sched diagnosis: in every 2-local tail split the stored pseudo takes $v0 because the folded return only hard-uses $v0 at the very end; target's mask-in-$a0 requires $v0 live across the tail, i.e. the return-staging schedule flip
 
 - [s2] Structural modality is exhausted: dispatch surface type, var splits, decl order/placement/timing, type retype, statement re-association (killed s1), and arm duplication are all measured dead around floor 6
+
+- [s3] s3 baseline re-confirmed start AND end: candidate.c (Lever B) in src/display.c -> sandbox --disable all = 6, build_insns 38 == target 38; src left in candidate form
+
+- [s3] Structural axis is now exhaustively MEASURED (s1+s2+s3 combined): debug arm (local split 6), dispatch load shape (typed struct 6, index cast 6, byte-offset re-association 6), tail statement forms (1/2/3-statement, both AND dests, both operand orders), decl order/placement/timing, s32 retype, control flow (goto-end 6, arm duplication 22), cross-call placement (hoist before both calls 19, before dispatch only 20). Every neutral form lowers to identical RTL; every non-neutral form regresses
+
+- [s3] New Lever B refinement from P4: a named addr intermediate is tolerated (copy-prop-transparent, score 6) when the AND destination is mask; it breaks the alignment (7) only when the AND destination is addr — the load-bearing constraint is the AND-dest pseudo, not the local count
+
+- [s3] P5 extends the round-1 hoist kill: 0xFFFFFF materialization must occur strictly AFTER the LAST call (live-across-one-call = 20/build 40, live-across-both = 19); any pre-call constant staging is dead by prologue construction
+
+- [s3] Target-asm re-verified this session: store base $v0 is the return-staging register (addu $v0,$s0 BEFORE lui/addiu $v1/and/sw), mask materializes as lui/ori into $a0, debug load is lbu (g_gpu_debug_level correctly u8 in include/gpu.h)

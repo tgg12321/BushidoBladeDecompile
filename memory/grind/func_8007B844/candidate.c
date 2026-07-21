@@ -1,5 +1,14 @@
 /* func_8007B844 — grind candidate body (sandbox --disable all == 6, HEAD == 7).
  *
+ * s3 (structural, 2026-07-21): floor 6 re-confirmed start+end. Filled the five
+ * structural gaps s2's exhaustion claim had not measured: debug-guard local
+ * split (6), dispatch byte-offset re-association (6), goto-end tail (6),
+ * two-local AND-into-mask (6 — contrast s2's AND-into-addr = 7), mask-init
+ * hoisted before dispatch only (20, build 40 — rejected/
+ * mask_init_hoist_before_dispatch.c). Structural axis now exhaustively
+ * MEASURED, not just claimed. Live frontier unchanged: F2 (sched-dump
+ * forensics) + F3 (cross-project ClearOTagR research), both non-structural.
+ *
  * s2 (structural, 2026-07-21): floor 6 re-confirmed; STRUCTURAL AXIS EXHAUSTED.
  * Killed this session: F1 struct-typed dispatch (both spellings neutral at 6),
  * two-local addr-rebind AND (7, decl-order-invariant), block-local/hoisted decl
