@@ -1726,10 +1726,9 @@ L_exit:
     return;
 }
 void saSeMain_80045510(s32 a0, s32 a1) {
-    volatile s32 sp_pad;
     s32 i = 0;
     s32 count = D_800A33AC;
-    if (count <= 0) return;
+    if (i >= count) return;
     {
         s16 *s0 = (s16 *)&D_800EED18;
         s32 v1 = 0;
