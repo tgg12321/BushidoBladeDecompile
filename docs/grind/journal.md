@@ -457,3 +457,4 @@
 - 2026-07-21 11:35 func_800618B4 COMPLETED-C after 1 sessions.
 - 2026-07-21 11:57 func_8003B20C COMPLETED-C after 1 sessions.
 - 2026-07-21 12:17 initDrawMode COMPLETED-C after 1 sessions.
+- 2026-07-21 12:24 kgm_clamp_patch_init COMPLETED-C after 1 sessions.
