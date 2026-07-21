@@ -460,3 +460,4 @@
 - 2026-07-21 12:24 kgm_clamp_patch_init COMPLETED-C after 1 sessions.
 - 2026-07-21 12:34 func_80053694 COMPLETED-C after 1 sessions.
 - 2026-07-21 12:41 func_8007B844 s1 [recon] floor=6: Recon: func_8007B844 identified as PsyQ libgpu ClearOTagR; floor 6 re-confirmed; 2 operand-order forms measured (1 killed, 1 neutral); duplicate axis dead; 3-item frontier banked
+- 2026-07-21 12:54 func_8007B844 s2 [structural] floor=6: s2 structural: floor 6 holds; structural axis EXHAUSTED — F1 struct-typed dispatch killed (neutral), addr-rebind/decl-placement/retype/arm-duplication all measured dead; F2 (sched forensics) + F3 (cross-project research) are the only live axes

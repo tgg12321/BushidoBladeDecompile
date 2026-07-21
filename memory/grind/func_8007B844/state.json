@@ -1,8 +1,8 @@
 {
  "func": "func_8007B844",
  "file": "display",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 0,
@@ -15,14 +15,15 @@
    "floor": 6,
    "modality": "recon",
    "headline": "Recon: func_8007B844 identified as PsyQ libgpu ClearOTagR; floor 6 re-confirmed; 2 operand-order forms measured (1 killed, 1 neutral); duplicate axis dead; 3-item frontier banked"
+  },
+  {
+   "session": 2,
+   "floor": 6,
+   "modality": "structural",
+   "headline": "s2 structural: floor 6 holds; structural axis EXHAUSTED \u2014 F1 struct-typed dispatch killed (neutral), addr-rebind/decl-placement/retype/arm-duplication all measured dead; F2 (sched forensics) + F3 (cro"
   }
  ],
  "frontier": [
-  {
-   "hypothesis": "Struct-typed device-table dispatch (`Gpu_dev->otc(ot,n)` via a faithful GpuDevice struct with named fn-ptr fields) changes the post-call pseudo landscape that sched.c sees, unlike the measured-neutral untyped `v0[11]` cast",
-   "mechanism": "RTL-gen pseudo allocation at the call boundary feeds RA conflicts and sched.c dependence chains; this is the KNOWN original-source shape (semantically faithful, not a coercion)",
-   "next_probe": "Declare the struct (fields to offset 0x2C, otc typed void(*)(u32*,s32)), retype the extern at header level use-site-consistently, dispatch dev->otc(ot,n); sandbox"
-  },
   {
    "hypothesis": "BB2_SCHED_DEBUG instrumented cc1 dump on the score-6 form names the exact REG_DEP_TRUE predecessors of the return-staging insn, narrowing the required C dataflow carrier",
    "mechanism": "sched.c INSN_PRIORITY = chain depth to jr; target needs return-staging depth >=4 via the store consuming the return pseudo",

@@ -1,4 +1,12 @@
-/* func_8007B844 — WIP candidate body (sandbox --disable all == 6, HEAD == 7).
+/* func_8007B844 — grind candidate body (sandbox --disable all == 6, HEAD == 7).
+ *
+ * s2 (structural, 2026-07-21): floor 6 re-confirmed; STRUCTURAL AXIS EXHAUSTED.
+ * Killed this session: F1 struct-typed dispatch (both spellings neutral at 6),
+ * two-local addr-rebind AND (7, decl-order-invariant), block-local/hoisted decl
+ * placement (6), s32 mask retype (6), duplicated-tail-into-debug-arm ref-lift
+ * (22 — cross-jump fails to re-merge, not byte-neutral). Remaining live axes
+ * are F2 (instrumented sched.c dump forensics) and F3 (cross-project
+ * ClearOTagR research) — see hypotheses.md.
  *
  * Apply to src/display.c (replace HEAD's func_8007B844 body) to resume from
  * the score-6 floor. Verify:

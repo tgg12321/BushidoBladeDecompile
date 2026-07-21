@@ -73,3 +73,55 @@ build_insns 38 == target 38, verdict C. Function identified as PsyQ libgpu
 - probe: tools/find_duplicates.py --threshold 0.75 over asm/funcs; grep pairs for 8007B844
 - result: zero pairs involving func_8007B844; only informative sibling remains gpu_ClearOTag (already exploited in ledger)
 - verdict: KILLED
+
+## s2 (structural, 2026-07-21)
+
+Baseline re-confirmed: candidate.c applied -> sandbox 6, build_insns 38.
+
+## [s2] F1: struct-typed device-table dispatch (Gpu_dev->otc via faithful GpuDevice struct) changes the post-call pseudo landscape
+- mechanism: RTL-gen pseudo allocation at the call boundary feeds RA conflicts and sched.c dependence chains; typed member access is the known original-source shape
+- probe: GpuDevice struct (pad[11] + otc fn-ptr at 0x2C); measured typed-local form AND direct member-call form; sandbox each
+- result: 6 and 6 — both identical to untyped v0[11] cast; no codegen change whatsoever
+- verdict: KILLED
+
+## [s2] Two-local const-first form with AND rebound into addr reproduces target's and-dest ($v1) and frees mask toward $a0
+- mechanism: target's `and $v1,$v1,$a0` has dest = addr register; a 2-set addr pseudo receiving the AND could mirror it
+- probe: `mask=0xFFFFFF; addr=(u32)&g_gpu_ot_end; addr=addr&mask; *ot=addr;` + decl-order swap variant; sandbox + objdump
+- result: 7 both ways; stored pseudo always takes $v0, other local $v1; decl order RA-invariant
+- verdict: KILLED
+
+## [s2] Pseudo creation order/timing (block-local tail decls, hoisted dispatch decl) or mask signedness flips the RA/sched tiebreak
+- mechanism: pseudo numbering feeds allocno ordering; block entry timing shifts numbering relative to the call boundary
+- probe: tail wrapped in own block with mask decl inside (6); `u32 *dev;` at fn scope (6); `s32 mask` retype (6)
+- result: all neutral at 6
+- verdict: KILLED
+
+## [s2] Duplicated-statement-into-arms ref-lift (dispatch+tail duplicated into debug arm, cross-jump re-merges byte-neutrally) lifts mask/ot ref counts and flips the RA cascade
+- mechanism: doubled reg_n_refs before jump2 merge = the sanctioned byte-free priority lift (motion_SetMotion precedent)
+- probe: full tail duplicated into the debug-if arm + shared copy; sandbox
+- result: 22, build_insns 44 — cross-jump fails to re-merge (+6 insns), not byte-neutral, regression
+- verdict: KILLED
+
+## [s2] F1: struct-typed device-table dispatch (faithful GpuDevice struct, otc fn-ptr field at offset 0x2C) changes the post-call pseudo landscape vs the untyped v0[11] cast
+- mechanism: RTL-gen pseudo allocation at the call boundary feeds RA conflicts and sched.c dependence chains; typed member access is the known original-source shape
+- probe: Measured typed-local form (dev->otc(ot,n)) and direct member-call form (((GpuDevice*)g_gpu_dev_table)->otc(ot,n)); sandbox each
+- result: 6 and 6 — both byte-identical to the untyped cast; dispatch surface type never reaches the cascade
+- verdict: KILLED
+
+## [s2] Two-local const-first form with the AND rebound into addr (mask=0xFFFFFF; addr=(u32)&g_gpu_ot_end; addr=addr&mask; *ot=addr) mirrors target's and-dest $v1 and frees mask toward $a0
+- mechanism: Target's `and $v1,$v1,$a0` dest is the addr register; a 2-set addr pseudo receiving the AND could reproduce the dest-choice
+- probe: Measured the form plus its decl-order-swapped variant; objdumped the sandbox .o to read register assignment
+- result: 7 both ways; the STORED pseudo always seizes $v0 (first free in REG_ALLOC_ORDER across the tail), decl order is RA-invariant; mask-in-$a0 is unreachable without $v0 occupied across the tail (= the known copy-prop wall)
+- verdict: KILLED
+
+## [s2] Pseudo creation order/timing (block-local tail decl, fn-scope hoisted dispatch pointer decl) or mask signedness retype flips the RA/sched tiebreak
+- mechanism: Pseudo numbering feeds allocno ordering; block-entry timing shifts numbering relative to the call boundary
+- probe: Tail wrapped in own block with mask decl inside; u32 *dev hoisted to fn scope (gpu_SendPacket spelling); s32 mask retype; sandbox each
+- result: 6 / 6 / 6 — all neutral; plateau insensitive to numbering, timing, and tree-type signedness
+- verdict: KILLED
+
+## [s2] Duplicated-statement-into-arms ref-lift (dispatch+tail duplicated into the debug arm, jump2 cross-jump re-merges byte-neutrally) lifts mask/ot reg_n_refs and flips the RA cascade
+- mechanism: Doubled refs before post-RA cross-jump merge — the sanctioned byte-free priority lift (motion_SetMotion precedent)
+- probe: Full dispatch+tail+return duplicated into the debug-if arm alongside the shared copy; sandbox
+- result: 22, build_insns 44 vs target 38 — cross-jump fails to re-merge the duplicated suffix (+6 insns): not byte-neutral (fails the sanction prerequisite) and a large regression
+- verdict: KILLED

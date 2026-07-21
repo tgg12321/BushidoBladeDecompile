@@ -126,3 +126,21 @@ No new park category requested (per [[no-new-park-categories]]).
 - [s1] Const-first single-statement store = 7 (killed); Lever B AND-operand swap = 6 (neutral); operand-order axis around the AND is fully dead
 
 - [s1] Duplicate scan (opcode-class Levenshtein, threshold 0.75): no near-clones of func_8007B844 anywhere in asm/funcs
+
+- [s2] Frontier F1 KILLED: struct-typed device-table dispatch (faithful GpuDevice struct, otc fn-ptr field at offset 0x2C) = sandbox 6 in BOTH spellings (typed local `dev->otc(ot,n)` AND direct `((GpuDevice*)g_gpu_dev_table)->otc(ot,n)`) — identical to untyped v0[11]; the dispatch-load surface type never reaches the post-call pseudo landscape.
+
+- [s2] Two-local addr-rebind AND (`mask=0xFFFFFF; addr=(u32)&g_gpu_ot_end; addr=addr&mask; *ot=addr;` — the only unmeasured shape mirroring target's `and $v1,$v1,$a0` dest-choice) = 7; decl-order swap (addr first) also = 7. Disassembly (tmp/grind/func_8007B844/s2/): the STORED pseudo always seizes $v0 (first free in REG_ALLOC_ORDER across the tail), the other local gets $v1; declaration order is RA-invariant. No 2-local permutation can reproduce target's mask-in-$a0 without $v0 being occupied across the tail — RA-side confirmation of the sched cascade diagnosis.
+
+- [s2] Pseudo-numbering/placement axis dead: block-local tail decl (`{ u32 mask; ... }` after the call) = 6; fn-scope dispatch-pointer decl (`u32 *dev;` hoisted, gpu_SendPacket spelling) = 6; s32 retype of mask = 6. All neutral — the plateau is insensitive to pseudo creation order/timing and tree-type signedness.
+
+- [s2] Duplicated-tail-into-debug-arm ref-lift (sanctioned duplicated-statement-into-arms shape) = 22, build_insns 44: jump2 cross-jump does NOT re-merge the duplicated dispatch+tail suffix (+6 insns) — not byte-neutral, fails the sanction prerequisite AND regresses. The technique is inapplicable to this single-flow function.
+
+- [s2] Structural modality is now EXHAUSTED for this function: every catalog structural lever (var splits, decl order/placement, type retype, statement re-association, dispatch surface type, arm duplication) is measured dead around the floor-6 plateau. Remaining live axes are non-structural: F2 (instrumented sched dump forensics) and F3 (cross-project ClearOTagR research).
+
+- [s2] Floor 6 re-confirmed at session start and end with candidate.c applied to src/display.c (build_insns 38 == target 38); src left in the candidate (Lever B) form
+
+- [s2] Disassembly of the score-6 build banked (tmp/grind/func_8007B844/s2/build_form_c.dis): our AND dest is the mask pseudo in $v0 (`and v0,v1,v0; sw v0,0(s0); move v0,s0` last) vs target `and v1,v1,a0; sw v1,0(v0)` with return-staging early — the full 6-diff residual is visible as one coupled cascade
+
+- [s2] RA-side confirmation of the sched diagnosis: in every 2-local tail split the stored pseudo takes $v0 because the folded return only hard-uses $v0 at the very end; target's mask-in-$a0 requires $v0 live across the tail, i.e. the return-staging schedule flip
+
+- [s2] Structural modality is exhausted: dispatch surface type, var splits, decl order/placement/timing, type retype, statement re-association (killed s1), and arm duplication are all measured dead around floor 6
