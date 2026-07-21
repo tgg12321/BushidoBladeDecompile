@@ -214,15 +214,18 @@ u32 *gpu_ClearOTag(u32 *a0, s32 a1) {
 extern u32 D_80015F98;
 
 u32 *func_8007B844(u32 *ot, s32 n) {
+    u32 *new_var;
     if (g_gpu_debug_level >= 2) {
         g_gpu_debug_func(&D_80015F98, ot, n);
+        new_var = ot; /* FAKE: cse.c make_regs_eqv beyond-block gate; flow-deleted pre-RA */
     }
     {
         u32 *v0 = g_gpu_dev_table;
         ((void (*)(u32 *, s32))v0[11])(ot, n);
     }
-    *ot = ((u32)&g_gpu_ot_end) & 0xFFFFFF;
-    return ot;
+    new_var = ot;
+    *new_var = ((u32)&g_gpu_ot_end) & 0xFFFFFF;
+    return new_var;
 }
 void gpu_SendPacket(u8 *a0) {
     u32 *dev = g_gpu_dev_table;

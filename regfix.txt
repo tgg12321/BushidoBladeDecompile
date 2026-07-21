@@ -3522,12 +3522,6 @@ replay_camera_Init: fill_delay @ 26 <- 15
 # func_8007B844: register-alloc fix for final masking block
 # mine: $3=mask, $2=addr, store via $16, return via $2 (late)
 # target: $4=mask, $3=addr, store via $2 (=copy of $16, early), return via $2
-func_8007B844: subst "lui\s+\$3,\(16711680 >> 16\) & 0xFFFF" "lui	$4,(16711680 >> 16) & 0xFFFF" @ 21
-func_8007B844: subst "ori\s+\$3,\$3,0xffff" "ori	$4,$4,0xffff" @ 22
-func_8007B844: subst "la\s+\$2,g_gpu_ot_end" "la	$3,g_gpu_ot_end" @ 23
-func_8007B844: subst "and\s+\$2,\$2,\$3" "and	$3,$3,$4" @ 24
-func_8007B844: subst "sw\s+\$2,0\(\$16\)" "sw	$3,0($2)" @ 25
-func_8007B844: reorder 26,23,24,25 @ 23-26
 func_80052B44: fill_delay @ 13 <- 12
 func_80052B00: fill_delay @ 16 <- 15
 game_2d_CheckLifeGaugeNoDisp: fill_delay @ 24 <- 23
