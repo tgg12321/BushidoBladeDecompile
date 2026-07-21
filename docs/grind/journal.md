@@ -440,3 +440,4 @@
 - 2026-07-20 17:50 func_80078A68 COMPLETED-C after 1 sessions.
 - 2026-07-20 18:29 myRobGeneiDraw2 COMPLETED-C after 1 sessions.
 - 2026-07-20 18:54 AddTbpOfst s1 [recon] floor=3: Recon: floor 3 mapped to 2 mechanisms; sll/addu regs now match via fresh-subexpr shift; 5 hypotheses measured (4 killed)
+- 2026-07-20 19:32 AddTbpOfst COMPLETED-C after 2 sessions.
