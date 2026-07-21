@@ -1763,23 +1763,24 @@ s32 *func_800455AC(s32 a0) {
     return ret;
 }
 void saSeMain_80045600(s32 a0, s32 a1) {
-    volatile s32 sp_pad;
     s32 i = 0;
     s32 count = D_800A33AC;
     s16 *a3;
-    if (count <= 0) goto not_found;
+    if (i >= count) goto not_found;
     {
         s16 *a2 = D_800EED10;
         do {
+            s16 cur;
             a3 = a2;
-            if (*(s16 *)a3 == a0) goto found;
+            cur = *a3;
+            if (cur == a0) goto found;
             i++;
             a2 = (s16 *)((u8 *)a3 + 0x10);
         } while (i < count);
     }
 found:
     if (i < D_800A33AC) {
-        register s32 old_a0 asm("v0") = D_800A33A0;
+        s32 old_a0 = D_800A33A0;
         s32 old_a4 = D_800A33A4;
         a0 = a1 - old_a0;
         old_a0 = old_a0 + a0;
