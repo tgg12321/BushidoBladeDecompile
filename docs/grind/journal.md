@@ -454,3 +454,4 @@
 - 2026-07-21 01:01 saSeMain_80045600 s1 [recon] floor=4: Residual is purely the +8-byte phantom frame slot; phantom CONFIRMED reachable here (positive control vars=8) and two zero-cost in-tree witnesses found; 6 spellings measured (5 killed) via a new vars= probe harness; src cheats (volatile pad + v0 pin) removed at no cost
 - 2026-07-21 01:48 CIRCUIT-BREAK: 3 consecutive invalid sessions on saSeMain_80045600
 - 2026-07-21 11:19 saSeMain_80045600 COMPLETED-C after 3 sessions.
+- 2026-07-21 11:35 func_800618B4 COMPLETED-C after 1 sessions.
