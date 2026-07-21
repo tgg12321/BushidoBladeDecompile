@@ -465,3 +465,4 @@
 - 2026-07-21 13:39 func_8007B844 s4 [permuter] floor=6: s4 permuter: floor 6 holds; 3 fresh-seed campaigns (121k iters, all harvested+stopped) measured the permuter modality DEAD around the plateau — one novel find was sandbox-neutral, the only cross-basin attractor is a wrong-semantics store
 - 2026-07-21 14:13 func_8007B844 s5 [permuter] floor=6: s5 permuter: floor 6 holds; 3 fresh-seed campaigns on never-randomized chassis (172k iters, all stopped) confirm the permuter axis dead across 5 lifetime chassis geometries — no sub-135 find has ever occurred; frontier is exclusively F2 sched-forensics + F3 cross-project research
 - 2026-07-21 14:54 func_8007B844 COMPLETED-C after 6 sessions.
+- 2026-07-21 15:04 cpu_get_dist s1 [recon] floor=15: Recon: floor 15 re-confirmed on main; duplicate lead killed (func_8003032C is a same-address stale twin); m2c = natural rx-first shape; fresh 15-form RTL dumps banked; rz-addend-lead swap measured KILLED at 25.
