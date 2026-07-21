@@ -1,31 +1,37 @@
 {
  "func": "func_80033550",
  "file": "code6cac_b",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 4,
    "modality": "recon",
    "headline": "Recon: honest floor lowered 5->4 CHEAT-FREE (pin removed; sanctioned do-while fences the sll/lw hoist); residual mapped to a single global.c first-free outcome (arg0 ptr homed a1 vs target a3) with .g"
+  },
+  {
+   "session": 2,
+   "floor": 4,
+   "modality": "structural",
+   "headline": "Structural sweep (24 variants): floor holds at 4; v07 staged-load form flipped ptr a1->a2 (first movement ever, .greg-proven conflict injection), and the geometry space is now closed \u2014 numeric alloc o"
   }
  ],
  "frontier": [
   {
    "hypothesis": "A permuter-discoverable true-C form flips the pointer home to a3",
-   "mechanism": "random/directed mutation can surface forms creating a1+a2 conflicts (extra folded pseudos, statement geometry) that manual sweep missed",
-   "next_probe": "permuter campaign seeded from candidate.c (schedule already matches; every non-flip diff is 0) with PERM variants on tail statement order/temp introduction; wait + harvest in-session"
+   "mechanism": "random/directed mutation can surface statement geometries creating a1+a2 conflicts that the now-closed manual geometry space missed (search must move BEYOND tail geometry: loop-region and whole-function shapes)",
+   "next_probe": "permuter campaign seeded from candidate.c with PERM variants on loop spelling + tail temp introduction; wait + harvest in-session"
   },
   {
-   "hypothesis": "Some C shape makes local-alloc seat overlapping pseudos in a1 AND a2 during ptr's range via no-op-move-coalesced copies",
-   "mechanism": "insns deleted post-RA (no-op moves) still contribute conflicts at global.c time \u2014 the only byte-invisible conflict source identified",
-   "next_probe": "BB2_ALLOC_DEBUG / -da dumps over targeted variants (e.g. copies of w-values/i that coalesce), checking 72's conflict set for hard 5/6 entries"
+   "hypothesis": "GCC 2.7.2 has a mechanism recording a1/a2 conflicts for pseudos that emit no bytes (REG_EQUIV-folded, reload-inherited, or subreg/DImode paired regs)",
+   "mechanism": "conflict lists are built in global.c global_conflicts before final deletions; a pseudo whose uses all fold away post-RA could still have shaped the scan",
+   "next_probe": "read global.c/local-alloc.c/reload for zero-byte conflict sources; BB2_ALLOC_DEBUG dumps over candidate shapes exercising REG_EQUIV consts and s64 temps, checking 72's conflict set"
   },
   {
-   "hypothesis": "A sanctioned-FAKE construct (staged-value reuse / duplicated-statement-into-arms / named-local) extends an a1/a2 occupant across ptr's range byte-neutrally",
-   "mechanism": "reg_n_refs/conflict lift per the 2026-07-01 sanctioned families; must not disturb w-value homes (measured trap: extending i across the loads steals v1 from w0)",
-   "next_probe": "sweep the three sanctioned families on the tail, sandbox each; verify byte-neutrality outside the 4 target insns"
+   "hypothesis": "A loop-region respelling (same emitted lui/addu/lbu loop bytes, different pseudo census) supplies the invisible a1/a2 occupants",
+   "mechanism": "occupants need not live in the tail \u2014 any pseudo overlapping ptr's whole range counts; the s1 park swept tail forms pre-wrap, not loop-region pseudo-census variants on the floor-4 base",
+   "next_probe": "sweep loop spellings on top of the floor-4 base (index+temp hybrids, u8* walker with explicit index reload, split flag-read temps) verifying loop bytes unchanged, then check .greg conflicts"
   }
  ],
  "judge_constraints": [],

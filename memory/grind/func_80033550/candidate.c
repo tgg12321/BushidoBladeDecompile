@@ -1,4 +1,6 @@
-/* func_80033550 — best honest form, session 1 (floor 4, zero cheat-asm).
+/* func_80033550 — best honest form, sessions 1-2 (floor 4, zero cheat-asm).
+ * s2 (structural, 24 variants): floor confirmed 4; this body is applied in
+ * src/. See evidence.md s2 for the conflict-injection findings (v07 a1→a2).
  * The do-while(0) wrap is sanctioned per do-while-zero-exception (2026-07-06
  * owner ruling, any codegen effect, single-level, FAKE-annotated).
  * Residual 4 = arg0's pointer pseudo homed in $a1 (build) vs $a3 (target):

@@ -56,8 +56,83 @@
 - result: score 4, schedule matches target exactly; residual is purely the 4 pointer-home insns
 - verdict: CONFIRMED
 
+## [s2] Pointer-alias second handles create a1/a2 conflicts byte-free
+- mechanism: overlapping ptr pseudos from `s32 *p = arg0;` forms
+- probe: 7 alias variants (w2-only, w12, all, block, late-init, two-handle, first-two)
+- result: every variant score 4 with ptr=a1 (handle ties to a0 no-op, or becomes THE copy); overlapping un-tied pair emits a 2nd move (13)
+- verdict: KILLED
+
+## [s2] Staged value through dead new_var injects an a1 conflict and flips ptr
+- mechanism: staged load's pseudo + w-home shift put a1 in 72's conflict set
+- probe: v07 + 5 placement variants; .greg dumps
+- result: CONFIRMED for the flip (a1→a2, conflicts {v0,a0,a1}, first ever movement) but inherently rotates w-homes (staged pseudo takes v1) — best staged score 5, none preserves homes
+- verdict: CONFIRMED (mechanism) / KILLED (as a closing lever on its own)
+
+## [s2] Load-order / wrap-content geometry flips ptr while keeping homes
+- mechanism: reorder which load is ptr's last use
+- probe: w2-in-wrap, w2-before-w1, w0+w1-in-wrap, idx-only wrap, w2-before-wrap, early-stage
+- result: all either 4 with ptr=a1 (sched restores order; last-use unchanged at RA) or 5 (ptr-copy deleted, loads via a0)
+- verdict: KILLED
+
+## [s2] Promoting w's to global pseudos (per-load wraps) changes the RA fill
+- probe: v21 triple wrap
+- result: byte-identical to base
+- verdict: KILLED
+
+## [s2] Uncoalesced i-copy (found_idx) or constant-holder (one=1) adds pressure
+- probe: v22, v23
+- result: both byte-identical (copy ties+deleted; holder folds)
+- verdict: KILLED
+
+## [s2] Original signature had extra params occupying a1/a2
+- probe: caller asm inspection (only caller: DispPracticeMenuTex_C)
+- result: caller sets only a0; unused params are flow-deleted pre-RA anyway
+- verdict: KILLED
+
+## [s2] STRUCTURAL CONCLUSION (mechanism, CONFIRMED): numeric alloc order
+(no REG_ALLOC_ORDER) + 5-value census ⇒ a3 requires TWO zero-byte a1/a2
+occupants conflicting with ptr; the w's are the only candidates and
+re-homing them costs ≥2 diffs. The original's RA input had conflict
+sources invisible in the bytes — not reachable by tail geometry.
+
 ## [s1] a1-vs-a3 is a global.c first-free allocation outcome, not scheduling
 - mechanism: ptr pseudo 72 conflicts {v0,v1,a0} only; w2 (local, a1) shares a1 via death/birth adjacency at its own lw; first free = a1. Target's a3 requires BOTH a1 and a2 to conflict with ptr
 - probe: cc1 -da full dump; read .greg conflict lists + dispositions
 - result: confirmed from probe.i.greg: '72 conflicts: 72 73 2 3 4 29', dispositions 72->a1, 76(w2)->a1 shared; no visible a2 occupant exists in target either — original RA input had byte-invisible pressure
 - verdict: CONFIRMED
+
+## [s2] Pointer-alias second handles to arg0 create a1/a2 conflicts byte-free
+- mechanism: overlapping ptr pseudos from s32 *p = arg0 forms occupy arg regs during ptr's range
+- probe: 7 alias variants (w2-only, w12, all, block-local, late-init, two-handle, first-two), sandbox + normalized diff each
+- result: every variant scores 4 with ptr=a1 — the handle either ties to incoming a0 (copy no-op-deleted) or becomes THE single a1 copy; two overlapping un-tied handles emit a second move (score 13)
+- verdict: KILLED
+
+## [s2] Staging w2 through dead new_var injects an a1 conflict that flips ptr's home
+- mechanism: staged load's global pseudo + shifted w-homes put hard-reg 5 in pseudo 72's conflict set; first-free skips to a2
+- probe: v07 + 5 placement variants, sandbox + .greg dumps (72 conflicts: 74 2 4 5 29)
+- result: CONFIRMED as mechanism: ptr moved a1->a2, the only movement across all sessions. KILLED as a closing lever alone: staged pseudo grabs v1, local-alloc rotates w-homes to a0/a1/v1 (target v1/a0/a1), best staged score 5, none preserves homes
+- verdict: CONFIRMED
+
+## [s2] Load-order / wrap-content geometry can flip ptr while keeping w-homes
+- mechanism: reorder which load is ptr's last use so earlier-born w's conflict
+- probe: w2-in-wrap, w2-before-w1, w0+w1-in-wrap, idx-only-wrap, w2-before-wrap, early-stage variants
+- result: all 4 with ptr=a1 (sched restores RA-time order) or 5 (ptr copy vanishes, loads via a0)
+- verdict: KILLED
+
+## [s2] Promoting w's to block-crossing pseudos (per-load do-while wraps) changes the RA fill
+- mechanism: global.c priority allocation instead of local-alloc first-free
+- probe: v21 triple wrap, sandbox + diff
+- result: byte-identical to base
+- verdict: KILLED
+
+## [s2] An uncoalesced i-copy (found_idx) or a constant-holder (one=1) adds RA pressure
+- mechanism: extra pseudo range overlapping ptr
+- probe: v22 found_idx split, v23 one-holder, sandbox + diff
+- result: both byte-identical (copy ties to v1 and is no-op-deleted; holder folds to the same li)
+- verdict: KILLED
+
+## [s2] The original signature had extra params whose incoming a1/a2 pressured RA
+- mechanism: live-in arg regs conflict with ptr at entry
+- probe: inspected the single caller's asm (DispPracticeMenuTex_C @19BA4)
+- result: caller sets only a0 in the jal delay slot; a1 holds a stale callee return; unused param copies are flow-deleted pre-RA anyway
+- verdict: KILLED

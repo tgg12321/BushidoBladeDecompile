@@ -55,3 +55,55 @@
 - [s1] sibling func_8001CD68 (COMPLETED-C) gets a0->a3 naturally because real values (div magic consts, reload) occupy a0-a2 — confirms the required mechanism
 
 - [s1] engine stripper counts a plain `register` (no asm) pointer alias as cheat-asm (369->370) — avoid that spelling in candidates
+
+## s2 (2026-07-20, structural)
+
+- **Floor unchanged: 4.** Pin-free candidate applied to src (HEAD's asm("a3")
+  pin removed from the tree); 24 structural variants measured across 3 rounds
+  (logs: tmp/grind/func_80033550/s2/logs/*.{json,diff,greg,lreg}).
+- **THE FLIP IS POSSIBLE — v07 moved ptr a1→a2** (first movement ever):
+  staging w2 through dead new_var (`new_var = arg0[2]; w2 = new_var;` after
+  w1's load) makes .greg read `72 conflicts: 74 + hard {v0,a0,a1}` → first
+  free = a2. Score 7: the staged global pseudo (74) takes v1 in global RA,
+  and local-alloc then rotates w-homes to w0=a0, w1=a1, w2=v1 (target needs
+  v1,a0,a1) = 3 extra diffs. Every staged placement tried: after-w1 7,
+  mid 6, in-wrap 19, pre-idx 5 (kills the move entirely, like v09),
+  stage-w1 6, double-stage-via-i 14 (i lands a1, ptr lands v1!).
+- **No REG_ALLOC_ORDER in tools/gcc-2.7.2/config/mips/mips.h** → global.c
+  find_reg scans hard regs numerically: v0,v1,a0,a1,a2,a3. ptr reaches a3
+  ONLY if a1 AND a2 both conflict. Confirmed empirically (v07 skipped
+  exactly the conflict set).
+- **Value census closes the geometry space:** the tail has exactly 5 values
+  (i→v1, idx-chain→v0, w0→v1, w1→a0, w2→a1-after-ptr-death) + at-temps.
+  The only possible a1/a2 occupants are the w's; any form where a w
+  conflicts with ptr necessarily re-homes it off its target reg (measured
+  min +2). Byte-free double-conflict therefore requires TWO zero-byte
+  occupants: X in a1 conflicting {v0,v1,a0}+ptr, Y in a2 conflicting X+ptr
+  — no C construct found this session produces one.
+- **Copies cannot conjure conflicts byte-free** (measured): a second pointer
+  handle either ties to incoming a0 (no-op deleted, v11/v19) or *becomes*
+  the single a1 copy (v01-v04, v12); two overlapping un-tied handles emit a
+  second move (v02: 13). found_idx=i at the found label ties to v1, no-op
+  deleted, byte-identical (v22).
+- **Inert probes (byte-identical to base):** per-load do-while wraps
+  promoting w's to global pseudos (v21), constant-holder one=1 for the sb
+  immediate (v23), decl order (v10), u32 idx/new_var (v15), i*3 (s1).
+- **Wider-signature theory dead:** single caller (DispPracticeMenuTex_C,
+  19BA4) sets ONLY a0 (from s4) in the jal delay slot; a1 holds a stale
+  callee return. No evidence for extra live-in params (which are RA-inert
+  anyway once flow deletes unused param copies).
+- Artifacts: tmp/grind/func_80033550/s2/{sweep.sh,sweep2.sh,sweep3.sh,
+  sweep4.sh,differ.py,splice.py,variants*/,logs/} (24 variant bodies,
+  per-variant sandbox JSON + normalized diff, greg/lreg for rounds 2-3).
+
+- [s2] No REG_ALLOC_ORDER in tools/gcc-2.7.2/config/mips/mips.h -> find_reg scans numerically v0,v1,a0,a1,a2,a3; ptr reaches a3 only if a1 AND a2 both conflict (v07 empirically consistent)
+
+- [s2] v07 .greg: '72 conflicts: 72 74 2 4 5 29', dispositions 72->a2, 74(staged new_var)->v1, w0(75)->a0, w1(76)->a1 — conflict injection works but rotates homes
+
+- [s2] Tail value census: exactly 5 values (i, idx-chain, w0, w1, w2) + at-temps; the w's are the only possible a1/a2 occupants; every conflicting arrangement re-homes them off target (min +2 diffs measured)
+
+- [s2] Copies cannot create conflicts byte-free: tied copies coalesce to no-op (deleted), un-tied copies emit real moves (v02=13); found_idx=i byte-identical
+
+- [s2] Closing requirement now precise: TWO zero-byte occupants — X in a1 conflicting {v0,v1,a0}+ptr, Y in a2 conflicting X+ptr — no C construct found produces one
+
+- [s2] Floor-4 candidate (pin-free, FAKE-annotated do-while wrap) applied in src/code6cac_b.c; final sandbox 4, cheat_asm_stripped 369 (file baseline)

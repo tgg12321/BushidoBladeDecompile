@@ -444,3 +444,4 @@
 - 2026-07-20 19:57 rob_life_ctrl COMPLETED-C after 1 sessions.
 - 2026-07-20 20:10 func_800550E8 COMPLETED-C after 1 sessions.
 - 2026-07-20 20:34 func_80033550 s1 [recon] floor=4: Recon: honest floor lowered 5->4 CHEAT-FREE (pin removed; sanctioned do-while fences the sll/lw hoist); residual mapped to a single global.c first-free outcome (arg0 ptr homed a1 vs target a3) with .greg conflict-set proof
+- 2026-07-20 20:58 func_80033550 s2 [structural] floor=4: Structural sweep (24 variants): floor holds at 4; v07 staged-load form flipped ptr a1->a2 (first movement ever, .greg-proven conflict injection), and the geometry space is now closed — numeric alloc order + 5-value census proves a3 needs two zero-byte a1/a2 occupants the tail cannot supply
