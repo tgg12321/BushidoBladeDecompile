@@ -1,0 +1,34 @@
+{
+ "func": "func_80087D10",
+ "file": "main",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 6,
+   "modality": "recon",
+   "headline": "Recon: floor 8 -> 6 by folding p into multi-set base (removes load-late launch priority; index reg now matches target); residual is one 3-insn block move (base lw vs sh/andi/sra cluster), fully schedu"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The exact dependence/priority ranking that emits sh/andi/sra ahead of the lw macro can be read from cc1 -da .sched/.sched2 dumps, and a C spelling exists that flips that one ranking",
+   "mechanism": "GCC 2.7.2 list scheduler orders by INSN_PRIORITY (longest path to end, ties by source order); the residual is a single 3-insn block transposition, so one priority or dependence edge decides it",
+   "next_probe": "cc1 -da on the V1 .i (sandbox src/main.c), extract the func_80087D10 region of .sched and .sched2 dumps into tmp/grind/func_80087D10/s2/, identify the deciding edge and which pass moves the lw, then enumerate spellings targeting it"
+  },
+  {
+   "hypothesis": "A legitimate C spelling exists where the store address stays reg-opaque at sched time (forcing sh to stay after the possibly-aliasing lw) yet still emits the direct $at-macro sh after reload",
+   "mechanism": "sched1 cannot disambiguate a (mem (reg)) store against the reg+symbol table load, preserving source order; reload's REG_EQUIV substitution would restore the direct form - plain single-use pointer measured dead (cse folds first), so candidates must defeat the cse fold without dead code",
+   "next_probe": "Sweep multi-set / non-constant-foldable pointer spellings; vet every candidate against the cheat catalog (pointer-alias family = sanctioned-with-prereqs) before proposing"
+  },
+  {
+   "hypothesis": "Directed permuter from the V1 base (score 6, 18-insn leaf) finds the order-flipping spelling cheaply",
+   "mechanism": "Residual is one block move; permuter mutation space over decls/expressions covers spellings manual enumeration misses",
+   "next_probe": "permuter_campaign.py on V1 base with clean single-function target.o, fresh-seed discipline, wait/harvest in-turn"
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-21T21:59:43.186484+00:00"
+}

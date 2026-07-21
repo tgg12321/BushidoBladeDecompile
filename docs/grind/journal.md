@@ -468,3 +468,4 @@
 - 2026-07-21 15:04 cpu_get_dist s1 [recon] floor=15: Recon: floor 15 re-confirmed on main; duplicate lead killed (func_8003032C is a same-address stale twin); m2c = natural rx-first shape; fresh 15-form RTL dumps banked; rz-addend-lead swap measured KILLED at 25.
 - 2026-07-21 16:14 CIRCUIT-BREAK: judge unreachable/invalid after 5 attempts for cpu_get_dist
 - 2026-07-21 16:58 cpu_get_dist COMPLETED-C after 2 sessions.
+- 2026-07-21 17:16 func_80087D10 s1 [recon] floor=6: Recon: floor 8 -> 6 by folding p into multi-set base (removes load-late launch priority; index reg now matches target); residual is one 3-insn block move (base lw vs sh/andi/sra cluster), fully scheduler-determined
