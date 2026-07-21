@@ -107,3 +107,64 @@
 - [s2] Closing requirement now precise: TWO zero-byte occupants — X in a1 conflicting {v0,v1,a0}+ptr, Y in a2 conflicting X+ptr — no C construct found produces one
 
 - [s2] Floor-4 candidate (pin-free, FAKE-annotated do-while wrap) applied in src/code6cac_b.c; final sandbox 4, cheat_asm_stripped 369 (file baseline)
+
+## s3 (2026-07-20, structural)
+
+- **Floor unchanged: 4.** 14 variants measured (12 loop-region + 2 refinement
+  probes; logs: tmp/grind/func_80033550/s3/logs/*.{json,diff,greg,lreg}).
+  Src reset by driver between sessions — candidate.c re-applied (baseline 4,
+  stripped 369) and left in place at session end (final.json: 4/369).
+- **Loop-region census-invariance PROVEN:** for / do-while / while /
+  goto+flag-temp(s32) / goto+flag-temp(u8) / per-iteration address-temp
+  (`p = &D_800A3918 + i`) ALL score 4 with literally identical .greg:
+  `2 regs to allocate: 74 72; 72 conflicts: 72 74 2 3 4 29`. cse/flow
+  canonicalize every loop spelling to the same RTL pre-RA. The loop region
+  CANNOT change the pseudo census — frontier item "loop-region respelling
+  supplies invisible occupants" is dead.
+- **Live loop pointers always cost bytes:** flags[] loop+store 19,
+  loop-only 10, walker+index hybrid 9, store-via-addr-temp 11. They DO add
+  a conflicting pseudo (75) but target's at-macro address forms make any
+  materialized pointer diverge.
+- **REG_EQUIV path structurally dead:** three const table pointers
+  (t0/t1/t2 = &D_8010785x) → byte-identical, .greg has only 2 allocnos —
+  cse folds uses + flow deletes the sets PRE-RA (global.c never sees them).
+  Same result with the inits inside a do-while(0) fake loop (Z4): loop
+  notes do not keep them alive. Conflict lists cannot be shaped by
+  const-address pseudos from any C spelling found.
+- **DImode pair-occupant mechanism CONFIRMED / spelling KILLED:** s64 t=i
+  (22) and u64 t=(u32)i (22, zero high half = cheapest possible) both emit
+  unavoidable pair-half insns; but their .greg conflict set is exactly
+  {v0,v1,a0}+ptr — a byte-free DImode pseudo WOULD pair-home a1+a2 and push
+  ptr to a3. No C spelling makes one byte-free (GCC 2.7.2 always emits both
+  half-sets even when the high half is dead/zero).
+- **Full disposition record (base):** `72 in 5 (ptr→a1); 74 in 3 (i→v1);
+  local-alloc 75→v1 (w0), 76→a0 (w1), 77→a1 (w2); hard regs used 2 3 4 5`.
+  Allocation order i-then-ptr (priority), irrelevant to first-free outcome.
+- **Combined s2+s3 closure:** tail geometry (s2) + loop-region census (s3) +
+  REG_EQUIV + DImode structural spellings (s3) all measured dead. The
+  structural modality is EXHAUSTED for this function; remaining axes are
+  permuter search (whole-function exotic geometries) and cc1 forensics
+  (post-conflict-build deletions: no-op-move coalescence/reg_may_share,
+  reload inheritance; plus a cc1psx calibration cross-check).
+- Artifacts: tmp/grind/func_80033550/s3/{baseline.sh,sweep.sh,sweep2.sh,
+  greg.sh,extract.py,conflicts.py,variants/,variants2/,logs/}.
+
+- [s3] Loop respellings are RA-census-invariant: 6 spellings, identical conflict sets and bytes (score 4) — the loop cannot supply a1/a2 occupants
+
+- [s3] Const-address pointer pseudos are deleted pre-RA (2 allocnos, byte-identical), even inside a do-while(0) fake loop — REG_EQUIV conflict-shaping unreachable from C spellings
+
+- [s3] DImode temp conflict set {v0,v1,a0}+ptr proves a byte-free pair pseudo would flip ptr to a3 via a1+a2 pair-homing; s64=22, u64-zero-high=22 — no byte-free spelling exists
+
+- [s3] Structural modality EXHAUSTED (s2 tail + s3 loop/REG_EQUIV/DImode); remaining: permuter whole-function search, cc1 forensics on post-conflict-build deletions, cc1psx calibration cross-check
+
+- [s3] s3 baseline: candidate.c re-applied to src (driver had reset it to the old pinned form); sandbox 4, stripped 369; final state re-verified 4/369 with candidate in place
+
+- [s3] Loop respellings are RA-census-invariant: 6 spellings, identical conflict sets and bytes — the loop region cannot supply a1/a2 occupants
+
+- [s3] Const-address pointer pseudos are deleted pre-RA (2 allocnos, byte-identical) even inside a do-while(0) fake loop — REG_EQUIV conflict-shaping is unreachable from C spellings
+
+- [s3] DImode conflict set {v0,v1,a0}+ptr proves a byte-free pair pseudo WOULD flip ptr to a3 via a1+a2 pair-homing; s64=22, u64-zero-high=22 — no byte-free spelling
+
+- [s3] Full base dispositions banked: 72->a1(ptr), 74->v1(i), local-alloc w0->v1 w1->a0 w2->a1, hard regs 2 3 4 5, allocation order i-then-ptr
+
+- [s3] Structural modality EXHAUSTED: s2 closed tail geometry, s3 closed loop-region census + REG_EQUIV + DImode spellings

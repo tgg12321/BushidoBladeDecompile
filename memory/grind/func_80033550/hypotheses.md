@@ -136,3 +136,57 @@ sources invisible in the bytes — not reachable by tail geometry.
 - probe: inspected the single caller's asm (DispPracticeMenuTex_C @19BA4)
 - result: caller sets only a0 in the jal delay slot; a1 holds a stale callee return; unused param copies are flow-deleted pre-RA anyway
 - verdict: KILLED
+
+## [s3] A loop-region respelling (same loop bytes, different pseudo census) supplies the invisible a1/a2 occupants
+- mechanism: any pseudo overlapping ptr's whole-function range counts; loop spellings might create extra pseudos that fold to identical bytes
+- probe: 6 spellings (for, do-while, while, goto+flag-temp s32/u8, per-iteration address temp), sandbox + per-variant .greg
+- result: ALL score 4 with byte-for-byte identical .greg (2 allocnos, 72 conflicts {i,v0,v1,a0}) — cse/flow canonicalize every spelling to the same pre-RA RTL
+- verdict: KILLED
+
+## [s3] A live flags/walker pointer in the loop injects an a1/a2 conflict cheaply
+- mechanism: base-pointer pseudo overlaps ptr and takes an arg reg
+- probe: flags[] loop+store, loop-only, walker+index hybrid, store-via-addr-temp
+- result: pseudo 75 does conflict with ptr, but scores 19/10/9/11 — target's at-macro address forms make any materialized pointer diverge
+- verdict: KILLED
+
+## [s3] Const-address (REG_EQUIV-class) pointer pseudos survive to conflict construction and shape the scan byte-free
+- mechanism: frontier-2 conjecture — conflict lists built before final deletions could include folded pseudos
+- probe: t0/t1/t2 = &D_8010785x table pointers, plain (Z2) and inside a do-while(0) fake loop (Z4); .greg allocno census
+- result: both byte-identical (4) with only 2 allocnos — the sets are cse-folded + flow-deleted PRE-RA; global.c never sees them; loop notes don't preserve them
+- verdict: KILLED (as a C-spelling lever; the pre-RA-deletion argument is now empirical)
+
+## [s3] A DImode temp pair-homes into a1+a2 as a single zero-byte double occupant
+- mechanism: multi-reg pseudo needs 2 consecutive hard regs; conflicts {v0,v1,a0} force exactly a1+a2, pushing ptr to a3
+- probe: s64 t=i (Z1) and u64 t=(u32)i (Z3, zero high half = cheapest conceivable), sandbox + .greg
+- result: mechanism CONFIRMED by .greg (DImode pseudo conflicts exactly {v0,v1,a0}+ptr) but both score 22 — GCC 2.7.2 always emits both half-sets; no byte-free DImode spelling exists
+- verdict: KILLED (spelling) / CONFIRMED (mechanism — a pair occupant is the single-construct answer if one could ever be byte-free)
+
+## [s3] STRUCTURAL MODALITY EXHAUSTED (s2 tail geometry + s3 loop census +
+REG_EQUIV + DImode). Remaining live axes are permuter whole-function search
+and cc1 forensics: post-conflict-build deletions (no-op-move coalescence /
+reg_may_share, reload inheritance) + a cc1psx calibration cross-check
+(does the SN cc1psx home ptr in a3 for this same C?).
+
+## [s3] A loop-region respelling (same loop bytes, different pseudo census) supplies the invisible a1/a2 occupants
+- mechanism: any pseudo overlapping ptr's whole-function range counts; loop spellings might create extra pseudos that fold to identical bytes
+- probe: 6 spellings (for, do-while, while, goto+flag-temp s32/u8, per-iteration address temp), sandbox + per-variant .greg extraction
+- result: ALL score 4 with byte-for-byte identical .greg (2 allocnos, 72 conflicts {i,v0,v1,a0}); cse/flow canonicalize every spelling to the same pre-RA RTL
+- verdict: KILLED
+
+## [s3] A live flags/walker pointer in the loop injects an a1/a2 conflict cheaply
+- mechanism: base-pointer pseudo overlaps ptr's range and takes an arg reg
+- probe: flags[] loop+store (L6), loop-only (L7), walker+index hybrid (L8), store-via-addr-temp (L10)
+- result: pseudo 75 does conflict with ptr but scores 19/10/9/11 — target's at-macro address forms make any materialized pointer diverge
+- verdict: KILLED
+
+## [s3] Const-address (REG_EQUIV-class) pointer pseudos survive to conflict construction and shape the first-free scan byte-free
+- mechanism: conflict lists are built before final deletions, so folded pseudos could still have shaped the scan
+- probe: t0/t1/t2 = &D_8010785x table pointers, plain (Z2) and inside a do-while(0) fake loop (Z4); .greg allocno census
+- result: both byte-identical (score 4) with only 2 allocnos — sets are cse-folded + flow-deleted PRE-RA; global.c never sees them; loop notes do not preserve them
+- verdict: KILLED
+
+## [s3] A DImode temp pair-homes into a1+a2 as a single zero-byte double occupant, pushing ptr to a3
+- mechanism: multi-reg pseudo needs 2 consecutive hard regs; with conflicts {v0,v1,a0} the pair lands exactly a1+a2
+- probe: s64 t=i (Z1) and u64 t=(u32)i (Z3, zero high half = cheapest conceivable), sandbox + .greg
+- result: mechanism CONFIRMED by .greg (DImode pseudo conflicts exactly {v0,v1,a0}+ptr) but both score 22 — GCC 2.7.2 always emits both half-sets; no byte-free DImode spelling exists
+- verdict: KILLED
