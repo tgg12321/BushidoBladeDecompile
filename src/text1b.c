@@ -13858,8 +13858,7 @@ extern s32 D_800F117C;
 void func_800618B4(s32 *arg0, s32 arg1) {
     s32 *v1 = (s32 *)&D_800F116C;
     u8 *new_var;
-    register s32 t asm("$2");
-    register s32 mask asm("$3");
+    s32 *p;
     D_800A3468 = (s32)v1;
     D_800F1178 = (s32)arg0;
     D_800F117C = arg1;
@@ -13881,11 +13880,11 @@ check_one_zero:
     }
 end:
     func_80060A68();
-    t = arg0[0]; D_800F1140 = t;
-    t = arg0[1]; D_800F1144 = t;
-    mask = 0xFF0000;
-    D_800A3464 = mask;
-    t = arg0[2]; D_800F1148 = t;
+    p = arg0;
+    D_800F1140 = *p++;
+    D_800F1144 = *p++;
+    D_800F1148 = *p;
+    D_800A3464 = 0xFF0000;
 }
 extern s32 D_800F116C;
 extern s32 D_800A3468;
