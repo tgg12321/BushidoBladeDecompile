@@ -1,0 +1,40 @@
+{
+ "func": "func_8007B844",
+ "file": "display",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 0,
+   "floor": 6,
+   "modality": "wip-import",
+   "headline": "floor imported from memory/wip checkpoint"
+  },
+  {
+   "session": 1,
+   "floor": 6,
+   "modality": "recon",
+   "headline": "Recon: func_8007B844 identified as PsyQ libgpu ClearOTagR; floor 6 re-confirmed; 2 operand-order forms measured (1 killed, 1 neutral); duplicate axis dead; 3-item frontier banked"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Struct-typed device-table dispatch (`Gpu_dev->otc(ot,n)` via a faithful GpuDevice struct with named fn-ptr fields) changes the post-call pseudo landscape that sched.c sees, unlike the measured-neutral untyped `v0[11]` cast",
+   "mechanism": "RTL-gen pseudo allocation at the call boundary feeds RA conflicts and sched.c dependence chains; this is the KNOWN original-source shape (semantically faithful, not a coercion)",
+   "next_probe": "Declare the struct (fields to offset 0x2C, otc typed void(*)(u32*,s32)), retype the extern at header level use-site-consistently, dispatch dev->otc(ot,n); sandbox"
+  },
+  {
+   "hypothesis": "BB2_SCHED_DEBUG instrumented cc1 dump on the score-6 form names the exact REG_DEP_TRUE predecessors of the return-staging insn, narrowing the required C dataflow carrier",
+   "mechanism": "sched.c INSN_PRIORITY = chain depth to jr; target needs return-staging depth >=4 via the store consuming the return pseudo",
+   "next_probe": "cc1 -da/BB2_SCHED_DEBUG on the sandbox .i; dump to tmp/grind/func_8007B844/sN/; enumerate non-copy-prop-foldable store-base carriers"
+  },
+  {
+   "hypothesis": "An existing GCC 2.7.2 PSX decomp has byte-matched libgpu ClearOTagR; its exact C spelling + TU context is the answer",
+   "mechanism": "Same compiler family, same library object \u2014 a matched cross-project source eliminates the search",
+   "next_probe": "Research pass (web/GitHub: SOTN psxsdk tree, psy-q lib decomp repos) for matched ClearOTagR; transcribe and measure each spelling"
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-21T17:34:11.845619+00:00"
+}
