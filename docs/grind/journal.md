@@ -452,3 +452,4 @@
 - 2026-07-21 00:27 func_80033550 s7 [forensics] OWNER-GATED — parked pending owner ruling: s8 forensics: Judge FAIL closed channel (f); scan_hand_coded LOW 0/8 measured; every sanctioned axis dead -> OWNER-ESCALATION filed in docs/grind/decisions.md (2026-07-21), function proceeds to owner-gated park
 - 2026-07-21 00:38 func_8007C2A0 COMPLETED-C after 1 sessions.
 - 2026-07-21 01:01 saSeMain_80045600 s1 [recon] floor=4: Residual is purely the +8-byte phantom frame slot; phantom CONFIRMED reachable here (positive control vars=8) and two zero-cost in-tree witnesses found; 6 spellings measured (5 killed) via a new vars= probe harness; src cheats (volatile pad + v0 pin) removed at no cost
+- 2026-07-21 01:48 CIRCUIT-BREAK: 3 consecutive invalid sessions on saSeMain_80045600

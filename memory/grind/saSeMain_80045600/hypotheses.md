@@ -75,3 +75,9 @@
 - probe: frame equation + target store audit
 - result: a 5th arg requires a sw 16($sp) the target lacks; only jal InitFadePanel exists
 - verdict: KILLED
+
+## [s2] The duplicate_loop_exit_test compare-fold phantom (proven by the m5 for-rotation probe, score 11) can be relocated onto the entry GUARD itself, keeping the byte-exact guard+do-while body, by spelling the guard in terms of the zero-initialized induction variable: if (i >= count) goto not_found;
+- mechanism: cse substitutes the known i=0 into the guard's slt/beq pair; combine folds (eq (lt 0 count) 0) into the direct blez-count branch and deletes the slt insn without decrementing the compare pseudo's refs; reload assigns the stale pseudo a stack slot -> get_frame_size=8 -> frame 0x20. The folded blez is byte-identical to the target guard, so none of the for-rotation family's residuals (la hoist, $7/$8 RA swap, branch-dest) appear.
+- probe: tmp/grind/saSeMain_80045600/s2/p1_guard_ge_induction.c + p2_guard_le_operand_swap.c via s1 probe.py vars= gradient; body diff vs s1 v0_baseline.func.s; then edit applied to src/text1a_c.c and engine sandbox
+- result: p1 AND p2 both vars=8, frame 0x20; body diff vs baseline = ONLY the 4 frame insns, all now == target. Applied p1 to src: sandbox saSeMain_80045600 --disable all = 0, target_insns 37 == build_insns 37, rules_dropped 0.
+- verdict: CONFIRMED

@@ -71,3 +71,11 @@
 - [s1] Built reusable probe harness tmp/grind/saSeMain_80045600/s1/probe.py: splices a candidate body into text1a_c.c, compiles with exact Makefile flags, reports the function's .frame vars= and emitted body — direct gradient the sandbox score cannot give (frame vs codegen)
 
 - [s1] Permuter caveat re-flagged: default scorer normalizes sp offsets, so this function's entire gap is invisible to it — campaigns must score via engine sandbox or --stack-diffs
+
+- [s2] sandbox --disable all printed score 0 (37/37) THIS session with the p1 guard form live in src/text1a_c.c; src also now carries the s1 cheat-free body (volatile sp_pad and asm(v0) pin removed, s16 cur local kept)
+
+- [s2] Two independent guard spellings fire identically (p1 'i >= count' and p2 'count <= i' emit byte-identical bodies, both vars=8) — the firing condition is the const-substituted slt/branch fold on the guard, not a fragile spelling accident
+
+- [s2] The candidate is clean semantic C: the guard is real program logic spelled via the genuinely live, genuinely zero-initialized induction variable; no dead code, no wrapper, no FAKE construct, no volatile, no pins — i=0 (target's addu $v1,$zero,$zero) and every other insn remain live and byte-exact
+
+- [s2] For-rotation family (rejected/rotated-top-test-loop-fires-phantom-but-score-11.c) is confirmed permanently dead as a candidate route: its dup-test blez targets the after-loop found-check by construction while target's blez targets InitFadePanel, a semantically pinned >=1 divergence; the guard-respelling route sidesteps it entirely

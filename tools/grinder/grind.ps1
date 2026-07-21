@@ -416,6 +416,14 @@ while ($true) {
         Log "${func}: SCOPE VIOLATION — $($violations -join ' | ') — session discarded."
         git -C $Root add -- metrics/events.jsonl 2>$null   # staged telemetry survives the checkout
         git -C $Root checkout -- . 2>$null; git -C $Root clean -fd -- tmp 2>$null
+        # ALSO purge untracked out-of-surface dirt: checkout only restores TRACKED
+        # files, and `clean -fd -- tmp` skips gitignored tmp — so an untracked junk
+        # file elsewhere (2026-07-21: a zero-byte root file named `]<U+F022>`)
+        # survives the discard and poisons EVERY respawn's scope check -> guaranteed
+        # circuit-break, with innocent sessions discarded (one had closed
+        # saSeMain_80045600 to sandbox 0). Keep the allowed untracked surfaces;
+        # remove everything else the check would flag again.
+        git -C $Root clean -fdq -e memory -e docs -e src -e include 2>$null
         $script:consecutiveInvalid++
         if ($script:consecutiveInvalid -ge 3) { Circuit-Break "3 consecutive invalid sessions on $func" }
         if ($Once) { break } else { continue }

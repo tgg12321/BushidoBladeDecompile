@@ -1,14 +1,20 @@
 {
  "func": "saSeMain_80045600",
  "file": "text1a_c",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 4,
    "modality": "recon",
    "headline": "Residual is purely the +8-byte phantom frame slot; phantom CONFIRMED reachable here (positive control vars=8) and two zero-cost in-tree witnesses found; 6 spellings measured (5 killed) via a new vars="
+  },
+  {
+   "session": 2,
+   "floor": 0,
+   "modality": "structural",
+   "headline": "CLOSED to sandbox 0 (37/37): guard respelled via the induction variable (if (i >= count)) fires the compare-fold phantom slot at zero body cost \u2014 frame 0x20/ra@0x18 now byte-exact"
   }
  ],
  "frontier": [
