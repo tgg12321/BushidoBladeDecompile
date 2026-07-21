@@ -152,21 +152,69 @@ function Add-Decision([string]$func, [string]$kind, [string]$verdict, [string]$j
       "", $justification) | Add-Content $Decisions
 }
 
+function Get-JudgeLimitReset([string]$AgentLog) {
+    # If the last spawn died on a plan usage-limit 429, return the [datetime]
+    # the limit resets (parsed from the CLI result text, plan-local time, e.g.
+    # "resets 4pm (America/Chicago)"); 429 with unparseable text -> now+30min;
+    # anything else (no 429, no log, parse error) -> $null. Best-effort.
+    try {
+        if (-not (Test-Path $AgentLog)) { return $null }
+        $raw = Get-Content $AgentLog -Raw
+        $lo = $raw.IndexOf('{'); $hi = $raw.LastIndexOf('}')
+        if ($lo -lt 0 -or $hi -le $lo) { return $null }
+        $d = $raw.Substring($lo, $hi - $lo + 1) | ConvertFrom-Json
+        if ([int]$d.api_error_status -ne 429) { return $null }
+        $m = [regex]::Match([string]$d.result, 'resets\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)', 'IgnoreCase')
+        if (-not $m.Success) { return (Get-Date).AddMinutes(30) }
+        $h = [int]$m.Groups[1].Value % 12
+        if ($m.Groups[3].Value -match '(?i)pm') { $h += 12 }
+        $min = 0; if ($m.Groups[2].Success) { $min = [int]$m.Groups[2].Value }
+        $t = (Get-Date).Date.AddHours($h).AddMinutes($min)
+        if ($t -le (Get-Date)) { $t = $t.AddDays(1) }
+        return $t
+    } catch { return $null }
+}
+
 function Invoke-Judge([string]$func, [string]$TaskText) {
     # Retry transient failures with backoff (a proven candidate is never
-    # discarded because of an API hiccup).
+    # discarded because of an API hiccup). Usage-limit 429s are NOT transient
+    # hiccups: they last hours, so they get their own limit-aware wait and do
+    # not consume retry attempts (2026-07-21 incident: five instant 429 deaths
+    # in a 32-min backoff window circuit-broke an otherwise healthy grind with
+    # a bytes-proven candidate waiting).
     $outPath = Join-Path $GrindTmp "judge_$func.json"
     $briefPath = Join-Path $GrindTmp "judge_brief_$func.md"
     Set-Content $briefPath -Value $TaskText -Encoding utf8
-    for ($try = 1; $try -le 5; $try++) {
+    $try = 0; $limitWaits = 0
+    while ($true) {
         # NB: $Func deliberately NOT passed (judges never launch campaigns, so the
         # GRIND_FUNC Stop-gate stays unarmed); UsageFunc carries it for telemetry.
         $v = Invoke-GrindAgent $briefPath $outPath (Join-Path $RolesDir 'judge.md') $JudgeModel $MockJudgeScript -UsageFunc $func -UsageRole 'judge'
         if ($v -and $v.verdict -in @('PASS', 'FAIL')) { return $v }
+        $reset = if ($MockJudgeScript) { $null } else { Get-JudgeLimitReset ($outPath + '.agent.log') }
+        if ($reset) {
+            $limitWaits++
+            if ($limitWaits -gt 12) { Circuit-Break "judge still usage-limited after 12 wait cycles for $func" }
+            # Cap each cycle at 4h so a mis-parsed far-future reset can't hang the
+            # driver for a day; +120s slack past the stated reset.
+            $waitS = [int][Math]::Min(4 * 3600, [Math]::Max(60, ($reset - (Get-Date)).TotalSeconds + 120))
+            Log "judge hit usage-limit 429 (stated reset $($reset.ToString('HH:mm'))); waiting $([int]($waitS/60)) min, candidate preserved (limit-wait $limitWaits)."
+            $end = (Get-Date).AddSeconds($waitS)
+            while ((Get-Date) -lt $end) {
+                if (Test-Path $StopFile) {
+                    # Owner asked for a stop mid-wait: exit via circuit-break so the
+                    # proven-candidate state is preserved + documented. Benign.
+                    Circuit-Break "STOP requested during judge usage-limit wait for $func (benign: candidate preserved; relaunch after the limit resets)"
+                }
+                Start-Sleep -Seconds 60
+            }
+            continue   # a limit window never consumes a retry attempt
+        }
+        $try++
+        if ($try -ge 5) { Circuit-Break "judge unreachable/invalid after 5 attempts for $func" }
         Log "judge attempt $try returned no valid verdict; backing off $([math]::Pow(2,$try) * 30)s."
         Start-Sleep -Seconds ([math]::Pow(2, $try) * 30)
     }
-    Circuit-Break "judge unreachable/invalid after 5 attempts for $func"
 }
 
 function Invoke-JudgeRuling([string]$func, [string]$question) {
