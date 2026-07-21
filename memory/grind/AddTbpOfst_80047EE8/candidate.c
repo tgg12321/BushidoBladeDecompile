@@ -18,10 +18,13 @@
  *  3. FAKE-annotated arg0 = 0 dead store (dead-store-fake-exception family,
  *     sanctioned 2026-07-01) breaks cse2's {arg0,p,saved} canonical-reg
  *     class so the second pointer binds addu s0,s2,v0 (not a0): 11 -> 10.
- *     Same lever the sibling's s6 Judge-PASSed. PREREQUISITE NOT YET
- *     DISCHARGED on this function: pure-C alternatives for THIS residual
- *     must be measured dead here (sibling killed them s2-s9; transfer
- *     argued but unmeasured) before this construct can ship.
+ *     Same lever the sibling's s6 Judge-PASSed. PREREQUISITE DISCHARGED
+ *     s2 (2026-07-21): 6 pure spellings of the saved/p init chain measured
+ *     dead ON THIS BODY (const decl-init, decl-order, split-init reversal,
+ *     u32 retype, two-statement rebind = 11; mask offset spelling = 14
+ *     byte-diverging; FAKE removed = 11). See rejected/pure-*.c +
+ *     tmp/grind/AddTbpOfst_80047EE8/s2/spelling_sweep.md. The FAKE
+ *     construct's lever-exhaustion requirement is met on this function.
  *
  * Remaining gap: the 32-byte unused frame. Sibling s7 evidence (identical
  * species): target has ZERO stores in the vars region, so the written-array

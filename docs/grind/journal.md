@@ -474,3 +474,4 @@
 - 2026-07-21 18:00 func_80041988 COMPLETED-C after 1 sessions.
 - 2026-07-21 18:08 saSeMain_80045510 COMPLETED-C after 1 sessions.
 - 2026-07-21 18:23 AddTbpOfst_80047EE8 s1 [recon] floor=10: Recon drove floor 15->10: single-walker + live first-arg precompute reproduce target prologue staging exactly; residual is purely the 32-byte unused-frame gap (same species as sibling InitHiraRmd_80047FBC's pending owner-escalation)
+- 2026-07-21 18:29 AddTbpOfst_80047EE8 s2 [structural] floor=10: Structural s2: FAKE-arg0 exhaustion prerequisite DISCHARGED on this body — 6 pure spellings of the saved/p init chain measured dead (all 11+ vs FAKE's 10); floor stands at 10, residual purely the 32-byte frame gap (forensics next)

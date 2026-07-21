@@ -58,3 +58,15 @@ With all three -> SHA1 matches. Without -> sandbox 15 (frame + prologue + 1 move
 - [s1] The shipped candidate carries arg0=0 /* FAKE */ (dead-store-fake-exception family): mechanism named (cse2 canonical-reg substitution), but the per-function pure-C lever-exhaustion prerequisite is NOT yet discharged — sibling killed the pure alternatives (const-qualified base, decl-order, split-init, s2-s9) on its body; they must be measured (or transfer-argued with probes) on this body before the construct can ship.
 
 - [s1] src/text1b.c reverted to HEAD after measurement (git status clean except metrics + memory/grind); the committed 3-cheat form still holds the oracle match on main.
+
+- [s2] [s2] Baseline re-confirmed: s1 candidate (single-walker + first precompute + FAKE arg0=0) measures sandbox --disable all = 10, 53/53 insns
+
+- [s2] [s2] FAKE removal control = 11: the FAKE arg0=0 store is worth exactly 1 insn (addu s0,a0,v0 vs addu s0,s2,v0), nothing else moves
+
+- [s2] [s2] Exhaustion sweep: const decl-init / decl-order swap / split-init reversal / u32 retype / two-statement rebind ALL measure 11 (53/53) on THIS body — the sibling s8/s9 kills transfer with direct measurement; mask offset spelling measures 14 (52 insns, loses target's srl/sll pair)
+
+- [s2] [s2] The dead-store-fake-exception prerequisite (documented per-function lever-exhaustion + named mechanism cse2 canonical-register substitution) is now DISCHARGED for arg0=0 /* FAKE */ on AddTbpOfst_80047EE8; candidate.c header updated; 6 rejected forms banked in memory/grind/AddTbpOfst_80047EE8/rejected/
+
+- [s2] [s2] docs/grind/decisions.md checked: sibling InitHiraRmd_80047FBC OWNER-ESCALATION (filed 2026-07-20, identical 32-byte unwritten-frame species) still AWAITING RULING; precedent block shows same-species escalations ruled option (b) INCOMPLETE-owner-accepted (motion_SetMotion, saTan0Init, cpu_side_move_dir_4, func_80057CC8)
+
+- [s2] [s2] src/text1b.c reverted to HEAD after measurements (git status clean except metrics + memory/grind); committed 3-cheat form still holds the oracle on main

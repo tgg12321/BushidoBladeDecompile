@@ -47,3 +47,15 @@
 - probe: arg0=0 /* FAKE */ after saved=(s32)p on the H1+H2 form; sandbox + full-stream diff
 - result: 11 -> 10; instruction stream now identical to target EXCEPT the 10 frame-offset insns
 - verdict: CONFIRMED
+
+## [s2] A pure spelling of the saved/p init chain (const, decl-order, split-init, retype, rebind) can flip the second-pointer binding to addu s0,s2,v0 without the FAKE arg0=0 store
+- mechanism: cse2 canonical-register substitution puts {arg0, p, saved} in one equivalence class and picks $a0 for the add; the question was whether any C-level spelling changes the class or the canonical pick
+- probe: On the floor-10 chassis, swept: V2 const decl-init saved, V3 decl-order swap, V4 split-init reversal (saved=arg0; p=(u32*)saved), V5 u32-typed saved, V6 two-statement rebind from saved; each measured with sandbox --disable all; control V1 = FAKE removed
+- result: V1 control 11; V2=V3=V4=V5=V6 all 11 (53/53 insns) — byte-identical to the no-FAKE control; the FAKE form remains uniquely 10. Matches sibling s8 (const discarded at RTL) and s9 (pseudo order is first-USE LUID) exactly
+- verdict: KILLED
+
+## [s2] Re-associating the second-pointer offset as a mask (saved + (v_off & ~3)) instead of the srl/sll shift pair reaches the target binding
+- mechanism: different RTL for the offset computation could break the cse2 substitution site or change combine's shape
+- probe: V7: p = (u32*)(saved + (s32)(v_off & ~3)) on the floor-10 chassis; sandbox --disable all
+- result: 14, build insns 52 vs target 53 — WORSE and byte-diverging: target carries the two-shift pair, the mask spelling emits andi and cascades
+- verdict: KILLED
