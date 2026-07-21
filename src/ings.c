@@ -225,24 +225,20 @@ u32 file_GetFlag2(void) {
 }
 
 void kgm_clamp_patch_init(void) {
-    register s32 i asm("a0") = 0;
-    register u32 c asm("a1") = 0x1A5E0;
-    register u8 *tmp asm("v0");
-    register u8 *p asm("v1");
+    s32 i = 0;
+    u32 c = 0x1A5E0;
+    u8 *p;
 
     g_file_vram_timer = 0;
     g_file_flags = 0;
-    tmp = (u8 *)&g_file_disc_size;
-    asm("addu %0,%1,$zero" : "=r"(p) : "r"(tmp));
+    p = (u8 *)&g_file_disc_size;
     *(s32 *)p = 0x7007;
     g_file_disc_type = 0;
-    do {
-        ((volatile u8 *)p)[8] = 0;
-        ((volatile u8 *)p)[9] = 0;
-        *(volatile u32 *)(p + 0xC) = c;
-        p += 8;
-        i++;
-    } while (i < 3);
+    for (i = 0; i < 3; i++) {
+        p[i * 8 + 8] = 0;
+        p[i * 8 + 9] = 0;
+        *(u32 *)(p + i * 8 + 0xC) = c;
+    }
     D_80106A5C = 0x6978;
     func_8001945C();
 }
