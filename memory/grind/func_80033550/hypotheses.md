@@ -343,3 +343,21 @@ upward-exposed uses and whether any VALID construct reaches the same channel.
 - probe: ANSI 4-param, 2-param, K&R 4-param variants; .greg census + asm diff each
 - result: all three byte-identical, identical conflict sets, ptr in a1; unused parm copies flow-deleted with zero residual entry liveness
 - verdict: KILLED
+
+## [s7] Dead-store / named-local FAKE placements supply a1/a2 occupants byte-free (frontier-3, ds/nl half)
+- mechanism: a dead-store or named-copy pseudo overlapping ptr's range could enter the conflict graph
+- probe: 5 variants (fake=i tail, fake=arg0[0] entry, two dead stores, k0/k1/k2 keep-copies, slot=i live copy), per-variant -da dumps
+- result: ALL byte-identical, census-identical (2 allocnos); dead-store pseudo present in .rtl, gone in .jump — jump_optimize pass 1 deletes it pre-cse/pre-RA; named copies coalesce in cse. s6 prediction confirmed (stronger: jump1, not flow)
+- verdict: KILLED
+
+## [s7] Duplicated-statement-into-arms placements are RA-inert here (s6 theorem prediction)
+- mechanism: s6 predicted duplication only lifts allocation priority, order outcome-irrelevant
+- probe: 22 arms variants across 4 rounds (natural preds, invented conds, arm content sweeps), .greg + sdiff each
+- result: PREDICTION WRONG — arms duplication reshapes the conflict graph byte-free: duplicated arm pseudos are real at RA, jump2 cross-jump merges the identical arms (.greg 21 -> .jump2 16 insns), jump.c delete_computation deletes cond computes (sltiu in .greg, absent in final). ptr moved off a1 in multiple forms; dupU homed ptr in a3 (first valid-C ever) with w0=v1, w1=a0 correct
+- verdict: KILLED as stated (the family is NOT inert) — replaced by the channel-(f) frontier
+
+## [s7] Some arms geometry reaches the full target seating (idx v0, w0 v1, w1 a0, w2 a1, ptr a3) byte-free
+- mechanism: merged-away duplicate/cond pseudos fill a1+a2 during ptr's range while locals keep target seats
+- probe: 22 variants: arm content {sw3, sw2+sw3, loads, whole tail, shadow copies idx2/w2b}, conds {i<6, i<3, arg0!=0, (u32)arg0<2U, <3U, big-const, reg-reg equality, nested/3-arm}; honest sandbox on dupX1 and dupM
+- result: two rigid outcomes only — sw3-arms attractor (idx a1, w2 a2, ptr a0-coalesced; honest 11) and big-const rotation (w0/w1 correct, ptr a2, w2 a3, idx a1, stray li; honest 11). Globalized idx always loses v0; deletable temps seat low; reg-reg conds self-destruct via cse else-arm specialization. No form beat 4
+- verdict: KILLED for every spelling tried (family floor 11 so far); residue: temps seated exactly at a2, label-placement merge steering — pending the sanctioning ruling

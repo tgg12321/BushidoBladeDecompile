@@ -363,3 +363,79 @@
 - [s6] Wider signatures (ANSI-4/2/K&R-4 with unused params) measured byte- and census-identical — s2's reasoning-kill now .greg-proven
 
 - [s6] Baseline re-verified at session start: sandbox 4, cheat_asm_stripped 369 (driver had reset src to the old pinned form again; pin-free candidate re-applied and left in place)
+
+## s7 (2026-07-21, forensics)
+
+- **Floor unchanged: 4.** Src reset by driver again (old pinned form) — pin-free
+  candidate re-applied at session start (sandbox 4/369) and re-verified in place
+  at session end (4/369). FAKE-family sweep (frontier-3, last unmeasured
+  sanctioned axis) measured across 5 rounds / 27 variants with per-variant
+  cc1 -da dumps (tmp/grind/func_80033550/s7/out*/).
+- **Dead-store + named-local families: INERT, .greg-proven** (5 variants:
+  fake=i tail, fake=arg0[0] entry, two dead stores, k0/k1/k2 keep-copies,
+  slot=i live copy — ALL byte-identical to base, census identical 2 allocnos).
+  Pass named: the dead-store pseudo (79) exists in .rtl and is ALREADY GONE in
+  .jump — **jump_optimize pass 1** deletes it (earlier than s6's flow.c:1479
+  prediction; same conclusion: never reaches conflict construction). Named
+  copies coalesce in cse. Frontier-3's ds/nl prediction confirmed.
+- **Duplicated-statement-into-arms family: NOT inert — NEW byte-free conflict
+  channel (f), missed by the s6 closure enumeration.** Identical duplicated
+  arms survive to RA as real pseudos/conflicts, then post-reload
+  jump_optimize cross_jump (jump2) merges them (dup2: .greg 21 insns ->
+  .jump2 16) and jump.c delete_computation deletes the dead cond computes
+  (X1: sltiu present in .greg, absent in final asm). The branch + compare
+  can be FULLY byte-free (single 2-arm merge) while having reshaped
+  global.c's conflict graph. This empirically amends the s6 closure theorem:
+  its channel enumeration (a)-(e) did not include post-RA cross-jump deletion.
+- **First valid-C ptr->a3 EVER: dupU** (arms={sw3} x3, two big-const unsigned
+  ptr compares): loads via $7/a3, entry copy `move $7,$4` present, w0=v1 and
+  w1=a0 BOTH target-correct — but idx->a1, w2->a2 and ~5 residual cond bytes
+  (partial 3-arm merge; two li + sltu + beq survive). s6's "no valid C homes
+  ptr in a3" is DISPROVEN as a general claim (it survives only as "...at
+  distance <= 4 within the exact 34-insn shape").
+- **The family's rotation algebra (measured):** arms={sw3} globalizes idx+w2.
+  (1) Temp-free/small-const conds (arg0!=0, (u32)arg0<2U, shadow copies,
+  2-3 arms — SIX spellings, identical census) -> rigid attractor idx=a1,
+  w2=a2, ptr=a0-coalesced (move deleted, 33 insns), w0=v0, w1=v1: honest
+  sandbox **11**. (2) Big-const cond (dupM): the lui/sltu temps seat in the
+  v0 region, pushing locals to TARGET seats (w0=v1, w1=a0) and rotating
+  ptr=a2, w2=a3, idx=a1 + ONE stray li survives delete_computation: honest
+  sandbox **11**. Musical chairs invariant: filling a1+a2 vacates a0 ->
+  ptr coalesces there unless the lui/sltu pressure holds the low seats.
+- **Reg-reg equality conds self-destruct:** (u32)arg0 != (u32)w2 -> cse
+  specializes the else arm (substitutes the known-equal reg), arms diverge,
+  merge fails, branch survives (dupS2/S3). Viable opaque conds are only:
+  null-compare arg0!=0 (temp-free) and (u32)arg0 < N (sltiu, deletable).
+- **Why distance-0 stays out of reach in this family (so far):** target needs
+  seats idx=v0, w0=v1, w1=a0, w2=a1, ptr=a3 with a byte-free a2 occupant
+  conflicting with ptr. Any arm-use of a store operand globalizes it;
+  globalized idx always loses v0 (locals/temps grab it first); deletable
+  cond temps seat LOW (local-alloc first-free), displacing idx/w's from
+  their target seats. Every measured rotation is a cyclic shift, min
+  honest score 11. The un-searched residue: cond/temp spellings whose
+  deleted temps seat EXACTLY at a2, and label-placement merge steering
+  (motion_SetMotion precedent).
+- **Sanctioning status OPEN:** duplicated-statement-into-arms is owner-
+  sanctioned (2026-07-01) including cross-jump re-merge + reg_n_refs lift,
+  but the rule presupposes arms that EXIST in control flow (SOTN 7-arm/
+  11-arm switches). This function's tail is straight-line: the only way to
+  place arms after the sb is an INVENTED opaque always-true/unknown
+  condition with identical arms, fully merged away by jump2. Whether the
+  invented branch is within the sanction or is itself a cheat-by-spelling
+  is unclassifiable from existing rules -> s7 outcome is ruling-request.
+- Artifacts: tmp/grind/func_80033550/s7/{mkvariants*.py,dump.sh,sweep*.sh,
+  diffs.sh,forensic*.sh,variants*/,out/,out2/,out3/,out4/,out5/}.
+
+- [s7] Dead-store/named-local FAKE families INERT (5 variants byte-identical, census-identical): dead-store pseudo deleted by jump_optimize pass 1 (present .rtl, gone .jump) — never reaches RA
+
+- [s7] NEW channel (f): identical duplicated arms are real conflicts pre-RA, then jump2 cross-jump merges them and jump.c delete_computation kills the cond compute — byte-free conflict-graph reshaping missed by the s6 closure enumeration
+
+- [s7] dupU = first valid-C ptr->a3 (loads via $7, entry move present, w0=v1 w1=a0 correct); s6's blanket "no valid C homes ptr in a3" disproven — survives only as "not at distance <=4 in the 34-insn shape"
+
+- [s7] Family rotation algebra: sw3-arms attractor (6 spellings census-identical) = idx a1/w2 a2/ptr a0-coalesced, honest 11; big-const cond rotation = w0 v1+w1 a0 CORRECT, ptr a2/w2 a3/idx a1 + stray li, honest 11
+
+- [s7] Reg-reg equality conds self-destruct (cse specializes the else arm); viable opaque conds: arg0!=0 (temp-free) and (u32)arg0<N (sltiu, deleted with branch)
+
+- [s7] Distance-0 blocker in the arms family: globalized idx always loses v0, deletable temps seat low; every rotation is a cyclic shift (min 11); unsearched: temps seating exactly a2 + label-placement merge steering
+
+- [s7] Sanctioning question OPEN (ruling requested): invented opaque identical-arms branch, fully merged away — within duplicated-statement-into-arms or cheat-by-spelling?

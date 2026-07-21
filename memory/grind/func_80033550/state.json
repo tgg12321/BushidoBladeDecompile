@@ -53,7 +53,9 @@
    "next_probe": "after the FAKE-family sweep measures dead, draft the OWNER-ESCALATION entry for docs/grind/decisions.md citing the s1-s6 ledger (driver/operator files it; only then is owner-gated valid)"
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "duplicated-statement-into-arms applies ONLY to control-flow arms the function's real logic already contains; inventing a branch (any opaque/no-semantic-content condition, merged away or not) to carry duplicated statements is a cheat by spelling - do not respell it (nested arms, 3-arm, computed conds); channel (f) via manufactured branches is closed; draft the OWNER-ESCALATION entry per endgame-lock-disposition citing the s1-s7 ledger."
+ ],
  "origin": "queue",
  "created": "2026-07-21T01:10:44.133966+00:00"
 }

@@ -17,9 +17,14 @@
  * source level (mips.c:3447 even-pair rule; global.c find_reg prefs empty,
  * set_preference needs a hard-reg SET = calls; final.c:1800 no-op deletion
  * needs same-reg; flow.c:1479 dead defs die pre-RA): no semantically-valid C
- * producing THIS 34-insn shape can home ptr in a3. Remaining: FAKE-family
- * occupant sweep (predicted inert), then owner escalation per
- * endgame-lock-disposition policy.
+ * producing THIS 34-insn shape can home ptr in a3.
+ * s7 (forensics): FAKE-family sweep measured — dead-store/named-local INERT
+ * (jump1 deletes pre-RA, .rtl->.jump proven); duplicated-arms NOT inert:
+ * NEW channel (f) = jump2 cross-jump merges identical duplicated arms whose
+ * pseudos were real RA conflicts (dupU homed ptr in a3, first valid-C ever;
+ * best family rotations honest 11). s6 theorem amended. Sanctioning of the
+ * invented identical-arms branch is the open ruling-request; family residue
+ * (a2-seated deletable temps, label-steered merges) pending that ruling.
  * The do-while(0) wrap is sanctioned per do-while-zero-exception (2026-07-06
  * owner ruling, any codegen effect, single-level, FAKE-annotated).
  * Residual 4 = arg0's pointer pseudo homed in $a1 (build) vs $a3 (target):
