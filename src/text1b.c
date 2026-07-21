@@ -11285,7 +11285,6 @@ extern u16 D_800A33F8;
 s32 func_80053694(s32 *arg0, s16 *arg1) {
     u8 *p = D_800A33F4;
     s32 t;
-    s32 result = 0;
     if (*(s32 *)(p + 0) != 0x7FFFFFFF) {
         t = (*(s16 *)(p + 0x48) * 0x7D0) - 0x7D00;
         arg0[0] = *(s32 *)(p + 0x38) + t;
@@ -11295,10 +11294,10 @@ s32 func_80053694(s32 *arg0, s16 *arg1) {
         arg1[0] = *(s32 *)(p + 0x28) >> 2;
         arg1[1] = *(s32 *)(p + 0x2C) >> 2;
         arg1[2] = *(s32 *)(p + 0x30) >> 2;
-        result = 1;
         D_800A33F8 = *(u16 *)(p + 4);
+        return 1;
     }
-    return result;
+    return 0;
 }
 void func_80053754(s32 arg0, s32 arg1) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80053754.s).
