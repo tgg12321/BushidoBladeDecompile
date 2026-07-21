@@ -169,7 +169,13 @@ def cmd_launch(args):
         if _pid_alive(old.get("pid")):
             sys.exit(f"ERROR: campaign already RUNNING in {d} (pid {old['pid']}) — harvest --stop it first")
 
-    cmd = [_venv_python(), str(ROOT / "tools" / "decomp-permuter" / "permuter.py"),
+    # Launch at low CPU + idle IO priority (owner policy 2026-07-21): campaign
+    # workers hammer the /mnt/c 9P bridge with per-iteration compile pipelines,
+    # which starves the HOST desktop's disk IO even when CPU/RAM look fine.
+    # Idle-class IO means workers yield instantly to any interactive IO; measured
+    # throughput cost on an otherwise-idle box is ~nil.
+    cmd = ["ionice", "-c", "3", "nice", "-n", "10",
+           _venv_python(), str(ROOT / "tools" / "decomp-permuter" / "permuter.py"),
            str(d), "-j", str(args.jobs)]
     # Honest scoring by default: without --stack-diffs the permuter normalizes
     # every sp-relative operand to addr(sp)/imm, so a frame-size or stack-offset
