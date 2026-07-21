@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "AddTbpOfst",
-      "file": "main",
-      "distance": 3,
-      "verdict": "C",
-      "rules": 3,
-      "status": "active"
-    },
-    {
       "func": "rob_life_ctrl",
       "file": "text1a",
       "distance": 3,
@@ -2906,14 +2898,14 @@
     }
   ],
   "counts": {
-    "total": 356,
-    "active": 322,
+    "total": 355,
+    "active": 321,
     "by_status": {
-      "active": 322,
+      "active": 321,
       "parked": 34
     },
     "by_verdict": {
-      "C": 168,
+      "C": 167,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }

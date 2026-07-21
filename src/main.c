@@ -1292,35 +1292,41 @@ extern u8 D_801027F1;
 extern u8 D_801027F6;
 extern s32 D_80101BC4;
 extern s32 D_800FF6A0;
-s32 AddTbpOfst(u16 a0, s16 a1) {
+s32 AddTbpOfst(s32 a0, s32 a1) {
+    u16 a0h;
+    s16 a1h;
     s32 idx;
     s32 sa1;
     s32 v0;
     int v1;
     s32 v2;
     s32 entry;
-    if ((a0 & 0xFFFF) >= 0x10) goto fail;
-    idx = (s16)a0;
+    s32 ret;
+    a0h = a0;
+    a1h = a1;
+    if ((a0 & 0xFFFFu) >= 0x10) goto fail;
+    idx = (s16)a0h;
     if (D_80102A68[idx] != 1) return -1;
-    sa1 = (s16)a1;
+    sa1 = a1h;
     if (sa1 < D_800FF634) goto ok;
 fail:
     return -1;
 ok:
-    v0 = D_800F66B8[idx];
-
-    v1 = D_800F6660[idx];
-    v2 = D_800F6700[idx];
-    D_801027F1 = (u8) a0;
-    sa1 = sa1 << 4;
-    do { } while (0);
-    D_801027F6 = (u8) a1;
-    entry = *((s32 *) ((sa1 + v1) + 8));
+    ret = idx << 2;
+    v0 = *(s32 *)((u8 *)D_800F66B8 + ret);
+    v1 = *(s32 *)((u8 *)D_800F6660 + ret);
+    v2 = *(s32 *)((u8 *)D_800F6700 + ret);
+    ret = sa1 << 4;
+    D_801027F1 = (u8) a0h;
+    D_801027F6 = (u8) a1h;
+    ret += v1;
+    entry = *((s32 *) (ret + 8));
     D_80101BC4 = v0;
     D_800FF6A0 = v1;
     D_80101BC8 = (VagAtr *)v2;
     D_801027F7 = (u8)entry;
-    return 0;
+    ret = 0;
+    return ret;
 }
 /* kengo:MED  |  am_rmd/AddTbpOfst  |  49i */
 extern u8 g_memcard_data;

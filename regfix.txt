@@ -485,9 +485,6 @@ gnd_init_80041688: subst "\$3,26\(\$16\)" "$2,25($16)" @ 70
 
 # AddTbpOfst: sa1<<4 lives in v1 ($3), target uses v0 ($2).
 # Fix sll dest and addu source at indices 30 and 33.
-AddTbpOfst: subst "andi	\$2,\$7,0xffff" "andi	$2,$4,0xffff" @ 1
-AddTbpOfst: subst "sll	\$3,\$3,4" "sll	$2,$3,4" @ 30
-AddTbpOfst: subst "addu	\$2,\$3,\$4" "addu	$2,$2,$4" @ 33
 
 # SetCurrentCursor: LICM unhoist of /1800 magic constant 0x91A2B3C5.
 # GCC 2.7.2 hoists lui/ori to preheader in $t1 ($9); target keeps it inline
