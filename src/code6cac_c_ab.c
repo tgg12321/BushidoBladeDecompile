@@ -407,19 +407,16 @@ void func_8003B10C(s32 arg0) {
     func_80049584(addr);
 }
 void func_8003B20C(s32 arg0) {
-    u8 *new_var;
-    register s32 one asm("v1") = 1;
-    D_80102780 = 0;
-    D_80102781 = one;
-    arg0 = ((s32 *)(new_var = &D_800900EC))[arg0];
+    (&D_8010277C)[4] = 0;
+    (&D_8010277C)[5] = 1;
     D_800A3894 = 0;
     D_800A385C = 0;
     D_800A3836 = 0xFF;
     D_800A3915 = 0xFF;
-    D_800A37C6 = one;
+    D_800A37C6 = 1;
     D_800A37A0 = 0;
     D_800A37A4 = 0;
-    D_800A3844 = arg0;
+    D_800A3844 = ((s32 *)&D_800900EC)[arg0];
     file_LoadOverlay();
     func_8003AE5C(D_800A3844);
     func_8003AF40(0);
