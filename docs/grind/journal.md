@@ -473,3 +473,4 @@
 - 2026-07-21 17:37 func_80087D58 COMPLETED-C after 1 sessions.
 - 2026-07-21 18:00 func_80041988 COMPLETED-C after 1 sessions.
 - 2026-07-21 18:08 saSeMain_80045510 COMPLETED-C after 1 sessions.
+- 2026-07-21 18:23 AddTbpOfst_80047EE8 s1 [recon] floor=10: Recon drove floor 15->10: single-walker + live first-arg precompute reproduce target prologue staging exactly; residual is purely the 32-byte unused-frame gap (same species as sibling InitHiraRmd_80047FBC's pending owner-escalation)

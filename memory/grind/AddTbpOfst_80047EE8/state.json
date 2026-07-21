@@ -1,0 +1,40 @@
+{
+ "func": "AddTbpOfst_80047EE8",
+ "file": "text1b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 0,
+   "floor": 15,
+   "modality": "wip-import",
+   "headline": "floor imported from memory/wip checkpoint"
+  },
+  {
+   "session": 1,
+   "floor": 10,
+   "modality": "recon",
+   "headline": "Recon drove floor 15->10: single-walker + live first-arg precompute reproduce target prologue staging exactly; residual is purely the 32-byte unused-frame gap (same species as sibling InitHiraRmd_8004"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Discharge the FAKE-prerequisite exhaustion for the arg0=0 lever on THIS body: const-qualified saved, decl-order swaps, split-init and other pure spellings of the second-pointer binding all measure dead (as they did on sibling s8/s9)",
+   "mechanism": "cse2 canonical-register substitution discards const/decl-order at RTL level (sibling s8: const-qualified byte-identical; s9: pseudo order is first-USE LUID, not decl order)",
+   "next_probe": "structural session: sweep 4-6 pure spellings of the saved/p init chain on the floor-10 chassis, bank each; if all dead, the FAKE construct's prerequisites are met and floor 10 stands with a compliant candidate"
+  },
+  {
+   "hypothesis": "The 32-byte frame gap has a function-specific phantom-frame trigger not covered by the sibling's 5 dead probes (this body has s16 locals feeding HImode->SImode call-arg widening plus a u32 word local)",
+   "mechanism": "phantom-frame-slots-gcc272: GCC 2.7.2 reserves frame bytes for LIVE locals no instruction touches under specific shapes (struct/u64/s16-widening); sibling probes measured vars=0 on ITS body \u2014 transfer is likely but unmeasured here",
+   "next_probe": "forensics session: cc1 .frame dump on the floor-10 form (confirm vars=0, args=24, regs check), then run the phantom-frame variant grid adapted to this body's locals; artifacts to tmp/grind/AddTbpOfst_80047EE8/s2/"
+  },
+  {
+   "hypothesis": "If F1+F2 measure dead, this function is the same endgame-lock species as sibling InitHiraRmd_80047FBC and follows its owner-escalation path \u2014 and the pending sibling ruling may settle the whole cluster (also InitHiraRmd_800480C0, func_800481E8)",
+   "mechanism": "endgame-lock-disposition standing policy 2026-07-20: no sanctioned family produces an unwritten 32-byte vars region; sibling escalation already surveys SOTN precedent (none)",
+   "next_probe": "check docs/grind/decisions.md for the InitHiraRmd_80047FBC ruling before filing a separate escalation; if the owner rules on the family, apply the disposition here"
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-21T23:08:21.753979+00:00"
+}
