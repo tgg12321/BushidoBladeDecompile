@@ -411,6 +411,46 @@ def cmd_status(args):
           file=sys.stderr)
 
 
+def cmd_wait(args):
+    """Block until the campaign produces a NEW find, dies, or the window elapses.
+
+    Token-economy verb (owner policy 2026-07-20): a grind session waiting on a
+    detached campaign must burn ONE tool call per wait window, not one polling
+    turn per check. Each call blocks up to --timeout-min (default 9 — agent tool
+    calls cap at 10 min); call it repeatedly to cover a fresh-seed window
+    (~20-30 min = ~3 calls). Returns JSON with reason: "novel" (an output-* dir
+    appeared that was not present when THIS wait started), "dead" (campaign
+    process gone), or "timeout". Kills nothing; harvest does that."""
+    d = (ROOT / args.dir).resolve() if not os.path.isabs(args.dir) else Path(args.dir)
+    meta = {}
+    meta_path = d / META_NAME
+    if meta_path.exists():
+        meta = json.loads(meta_path.read_text(encoding="utf-8"))
+    pid = meta.get("pid")
+    at_start = {f"output-{s}-{c}" for s, c, _ in _scan_outputs(d)}
+    t0 = time.time()
+    deadline = t0 + args.timeout_min * 60
+    reason = "timeout"
+    novel = []
+    while time.time() < deadline:
+        now_outputs = {f"output-{s}-{c}" for s, c, _ in _scan_outputs(d)}
+        novel = sorted(now_outputs - at_start)
+        if novel:
+            reason = "novel"
+            break
+        if pid and not _pid_alive(pid) and not _find_campaign_pids(d):
+            reason = "dead"
+            break
+        time.sleep(args.poll_s)
+    iters, _ = _parse_log(d / LOG_NAME, meta.get("log_offset", 0))
+    out = {"reason": reason, "waited_s": round(time.time() - t0, 1),
+           "novel": novel, "outputs_at_start": len(at_start),
+           "iterations": iters, "pid_alive": _pid_alive(pid) if pid else None,
+           "dir": str(d)}
+    record_event("permuter-wait", meta.get("func"), {"ok": True}, extra=out)
+    print(json.dumps(out, indent=2))
+
+
 def cmd_deactivate_all(args):
     """Mark every registry entry inactive. The grinder calls this at each session
     boundary (after reaping orphan processes) so the grind_check.sh Stop-gate sees
@@ -458,6 +498,13 @@ def main():
                     help="max campaign lifetime in seconds (default 3600 = 60 min)")
     rp.add_argument("--dry-run", action="store_true", help="report what would be killed, kill nothing")
     rp.set_defaults(fn=cmd_reap)
+
+    wp = sub.add_parser("wait", help="block until a NEW find / campaign death / timeout (one tool call per wait window)")
+    wp.add_argument("--dir", required=True)
+    wp.add_argument("--timeout-min", type=float, default=9.0,
+                    help="max minutes to block (default 9 — agent tool calls cap at 10)")
+    wp.add_argument("--poll-s", type=float, default=15.0, help="internal poll interval seconds")
+    wp.set_defaults(fn=cmd_wait)
 
     dp = sub.add_parser("deactivate-all", help="mark all registry entries inactive (session-boundary reset)")
     dp.set_defaults(fn=cmd_deactivate_all)
