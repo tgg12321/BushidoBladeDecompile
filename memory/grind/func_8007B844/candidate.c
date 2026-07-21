@@ -1,5 +1,28 @@
 /* func_8007B844 — grind candidate body (sandbox --disable all == 6, HEAD == 7).
  *
+ * s6 (forensics, 2026-07-21): floor 6 re-confirmed start+end. THE MECHANISM
+ * IS NOW NAMED TO THE SOURCE LINE, and the old "sched.c priority >= 4" model
+ * is CORRECTED: sched1/sched2 priorities of ALL six tail insns are EQUAL (3);
+ * the store-before-staging order is forced by REG_DEP_ANTI edges created by
+ * RA's choice of $v0 for the mask pseudo, and that choice cascades from cse1.
+ * The gate is cse.c make_regs_eqv (tools/gcc-2.7.2/cse.c:853-858): a reg-reg
+ * copy's dest becomes the quantity's canonical register ONLY if its live
+ * range extends beyond the current cse basic block. Every single-set tail
+ * rebind fails that by construction (copy folded, deleted); an arm-block
+ * first-use satisfies it. Verified end-to-end on the banked sandbox-0 form
+ * (rejected/conditional_dead_store.c): cse keeps the copy -> flow.c deletes
+ * the dead arm store (byte-neutral) -> global.c assigns the copy pseudo $v0
+ * via return preference (greg: 74 in 2, 82 in 3, 84 in 4 = target exactly)
+ * -> store truly depends on the copy -> emitted bytes == target.
+ * The LIVE-arm-use alternative family (assignment-in-arg) was measured DEAD
+ * (rejected/live_arm_arg_copy_family.c: 6/6 with rotation residual, 8/8 with
+ * +1 insn) — the live arm segment deflates the copy's allocno priority; only
+ * the flow-deleted dead store yields target's RA. Dumps in
+ * tmp/grind/func_8007B844/s6/. OUTCOME: ruling-request filed — the sandbox-0
+ * form is the construct no-new-park-categories.md explicitly marks as TODAY
+ * reviewable under dead-store-fake-exception; prerequisites 1 (exhaustion,
+ * s1-s6) and 2 (named mechanism) are now complete.
+ *
  * s5 (permuter, 2026-07-21): floor 6 re-confirmed start+end. Three MORE
  * fresh-seed campaigns on chassis geometries never randomized before
  * (172k iters total, all harvested+stopped in-session): D debug-split +

@@ -53,7 +53,9 @@
    "next_probe": "Research pass (web/GitHub: SOTN psxsdk tree, psy-q lib decomp repos) for matched ClearOTagR; transcribe and measure each spelling"
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "Adopt ONLY the banked form's exact construct \u2014 one dead conditional store to the local in the debug arm, /* FAKE: cse.c make_regs_eqv beyond-block gate; flow-deleted pre-RA */ annotation ON the statement, no pins, no other dead constructs; layer-1 + fresh layer-2 cheat-reviewer must both pass before commit, then bytes proven on main (retire + full-build SHA1 == oracle) before the FINAL CALL Judge."
+ ],
  "origin": "queue",
  "created": "2026-07-21T17:34:11.845619+00:00"
 }

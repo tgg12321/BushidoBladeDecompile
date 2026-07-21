@@ -235,3 +235,25 @@ Baseline re-confirmed start+end: candidate.c applied -> sandbox 6, build_insns 3
 - probe: Campaign F (tmp/grind/func_8007B844/s5/perm_f), 50,788 iters; the never-measured combo cell (debug-split + two-local AND-into-mask) applied to src and sandbox-measured
 - result: All finds score-equal 135; the combo cell = sandbox 6 NEUTRAL (banked rejected/permuter_s5_debugsplit_twolocal_combo.c); one chained dead-temp form (dead local written, never read) vetted out as cheat family without measurement; no sub-135
 - verdict: KILLED
+
+## s6 (forensics, 2026-07-21)
+
+Baseline re-confirmed start+end: candidate.c applied -> sandbox 6, build_insns 38.
+
+## [s6] The residual is caused by a sched.c INSN_PRIORITY differential (return-staging priority 1 vs chain 4 — the inherited ledger model)
+- mechanism: priority = chain depth to jr; flipping requires depth >= 4
+- probe: instrumented cc1 (-da + BB2_SCHED_DEBUG/BB2_PRIO_DEBUG) on the score-6 form; read sched1+sched2 priority tables and dependence lists (tmp/grind/func_8007B844/s6/display.i.sched{,2})
+- result: ALL six tail insns have EQUAL priority 3 in both passes; the order is forced by REG_DEP_ANTI edges (staging writes $v0 which the and/sw hold as the mask register) — a dependence-topology problem created by RA, not a priority tie
+- verdict: KILLED
+
+## [s6] The copy-prop wall has a nameable single gate in cse.c that the sandbox-0 form threads
+- mechanism: make_regs_eqv (cse.c:853-858) promotes a copy dest to canonical only if its live range extends beyond the current cse basic block; an arm-block set provides the beyond-block first-use
+- probe: dual-form instrumented dump (run_forms.py): form X = banked conditional-dead-store, form Y = single-set rebind; diff .rtl/.cse/.flow/.greg per pass
+- result: Y's copy folds at cse1 exactly at the gate (uses rewritten to ot, copy deleted); X's copy survives, flow deletes the dead arm store, global.c assigns the copy $v0 + target rotation (74 in 2, 82 in 3, 84 in 4), emitted asm == target
+- verdict: CONFIRMED
+
+## [s6] A LIVE arm use (assignment-in-arg `p = ot` in the debug call) satisfies the beyond-block gate without a dead store and reaches the bytes
+- mechanism: same cse gate, but the arm set's value feeds the call arg (live), avoiding the dead-store carve-out
+- probe: measured 4 cells: Z Lever-B tail (6/38), Z2 fused X-tail (8/39), Z3 two-local AND-into-addr (8/39), Z5 copy-mid Lever-B (6/38); dumped Z/Z3/Z5 asm
+- result: topology holds in Z/Z5 (store base = surviving copy) but the residual becomes a register rotation (mask $v1 vs $a0, addr $v0 vs $v1); fused/two-local variants lose $v0 (+1 insn). The live arm segment deflates p's allocno priority; target RA requires the arm store DELETED pre-RA (flow), i.e. dead. No live spelling reaches the bytes
+- verdict: KILLED
