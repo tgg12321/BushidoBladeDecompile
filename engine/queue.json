@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "rob_life_ctrl",
-      "file": "text1a",
-      "distance": 3,
-      "verdict": "C",
-      "rules": 2,
-      "status": "active"
-    },
-    {
       "func": "func_800550E8",
       "file": "text1b",
       "distance": 3,
@@ -2898,14 +2890,14 @@
     }
   ],
   "counts": {
-    "total": 355,
-    "active": 321,
+    "total": 354,
+    "active": 320,
     "by_status": {
-      "active": 321,
+      "active": 320,
       "parked": 34
     },
     "by_verdict": {
-      "C": 167,
+      "C": 166,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
