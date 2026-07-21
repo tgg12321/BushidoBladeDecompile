@@ -1,0 +1,34 @@
+{
+ "func": "func_80033550",
+ "file": "code6cac_b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 4,
+   "modality": "recon",
+   "headline": "Recon: honest floor lowered 5->4 CHEAT-FREE (pin removed; sanctioned do-while fences the sll/lw hoist); residual mapped to a single global.c first-free outcome (arg0 ptr homed a1 vs target a3) with .g"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "A permuter-discoverable true-C form flips the pointer home to a3",
+   "mechanism": "random/directed mutation can surface forms creating a1+a2 conflicts (extra folded pseudos, statement geometry) that manual sweep missed",
+   "next_probe": "permuter campaign seeded from candidate.c (schedule already matches; every non-flip diff is 0) with PERM variants on tail statement order/temp introduction; wait + harvest in-session"
+  },
+  {
+   "hypothesis": "Some C shape makes local-alloc seat overlapping pseudos in a1 AND a2 during ptr's range via no-op-move-coalesced copies",
+   "mechanism": "insns deleted post-RA (no-op moves) still contribute conflicts at global.c time \u2014 the only byte-invisible conflict source identified",
+   "next_probe": "BB2_ALLOC_DEBUG / -da dumps over targeted variants (e.g. copies of w-values/i that coalesce), checking 72's conflict set for hard 5/6 entries"
+  },
+  {
+   "hypothesis": "A sanctioned-FAKE construct (staged-value reuse / duplicated-statement-into-arms / named-local) extends an a1/a2 occupant across ptr's range byte-neutrally",
+   "mechanism": "reg_n_refs/conflict lift per the 2026-07-01 sanctioned families; must not disturb w-value homes (measured trap: extending i across the loads steals v1 from w0)",
+   "next_probe": "sweep the three sanctioned families on the tail, sandbox each; verify byte-neutrality outside the 4 target insns"
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-21T01:10:44.133966+00:00"
+}

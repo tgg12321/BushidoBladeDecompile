@@ -443,3 +443,4 @@
 - 2026-07-20 19:32 AddTbpOfst COMPLETED-C after 2 sessions.
 - 2026-07-20 19:57 rob_life_ctrl COMPLETED-C after 1 sessions.
 - 2026-07-20 20:10 func_800550E8 COMPLETED-C after 1 sessions.
+- 2026-07-20 20:34 func_80033550 s1 [recon] floor=4: Recon: honest floor lowered 5->4 CHEAT-FREE (pin removed; sanctioned do-while fences the sll/lw hoist); residual mapped to a single global.c first-free outcome (arg0 ptr homed a1 vs target a3) with .greg conflict-set proof
