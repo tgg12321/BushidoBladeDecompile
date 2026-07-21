@@ -439,3 +439,51 @@
 - [s7] Distance-0 blocker in the arms family: globalized idx always loses v0, deletable temps seat low; every rotation is a cyclic shift (min 11); unsearched: temps seating exactly a2 + label-placement merge steering
 
 - [s7] Sanctioning question OPEN (ruling requested): invented opaque identical-arms branch, fully merged away — within duplicated-statement-into-arms or cheat-by-spelling?
+
+## s8 (2026-07-21, forensics — post-ruling escalation session)
+
+- **Judge ruled on the s7 ruling-request (2026-07-21 00:19, decisions.md): FAIL.**
+  The invented identical-arms branch is a cheat-by-spelling, outside the
+  duplicated-statement-into-arms sanction (whose SOTN/MGS evidence all uses
+  pre-existing arms). Channel (f) via manufactured branches is CLOSED; the
+  family residue (a2-seated deletable temps, label-placement merge steering)
+  is unreachable without the manufactured branch and dies with it. The ruling
+  itself verifies: "with the invented-branch spelling ruled out, every
+  sanctioned axis is measured dead" and directs OWNER-ESCALATION per
+  endgame-lock-disposition.
+- **Floor unchanged: 4.** Src found at HEAD's pinned form; measured BOTH ways
+  this session: pinned form sandbox 4 / cheat_asm_stripped 371 (the asm("a3")
+  pin is strippable cheat-asm and score-inert), pin-free candidate re-applied
+  sandbox 4 / 369 (identical JSON to s2-s7 baselines). Candidate left in
+  place in src at session end.
+- **Hand-coded certification measured: scan_hand_coded LOW 0/8** (no S1 multu
+  pacing, no S2 empty branch, S3/S4 N/A at 34 insns, no S5 sibling cluster,
+  no S6 BIOS jumptable, no S7 unsaved $sN, no S8 redundant mask) —
+  dispositive REFUSE for canonical-asm under endgame-lock-disposition
+  criterion 1.
+- **OWNER-ESCALATION FILED** in docs/grind/decisions.md (2026-07-21 entry,
+  "filed by grind s8 forensics"): options (a) canonical-asm (not supportable,
+  LOW 0/8 + cc1psx instruction-identity) vs (b) INCOMPLETE-owner-accepted
+  with the asm("a3") pin retained solely to hold the oracle match. Same
+  species/protocol as motion_SetMotion, saTan0Init, cpu_side_move_dir_4,
+  func_80057CC8 (all ruled option (b)). Awaiting owner ruling; grind parks.
+- Artifacts: tmp/grind/func_80033550/s8/{scan_hand_coded.txt,
+  sandbox_pinned.json,sandbox_candidate.json,escalation_entry.md}.
+
+- [s8] Judge FAIL 2026-07-21 00:19: invented identical-arms branch = cheat-by-spelling; channel (f) closed; every sanctioned axis now measured dead per the ruling's own verification
+
+- [s8] Pinned HEAD form measured: sandbox 4 / stripped 371 — the asm("a3") pin is strippable cheat-asm and score-inert; it exists on main solely to hold the oracle byte match
+
+- [s8] scan_hand_coded --single func_80033550: LOW 0/8, no strong signals — canonical-asm refused by endgame-lock-disposition criterion 1
+
+- [s8] OWNER-ESCALATION filed in docs/grind/decisions.md (2026-07-21, grind s8); function proceeds to owner-gated park until the owner rules
+
+- [s7] Judge FAIL 2026-07-21 00:19 (docs/grind/decisions.md): invented identical-arms branch is a cheat-by-spelling; channel (f) via manufactured branches is CLOSED; ruling verifies every sanctioned axis measured dead and directs OWNER-ESCALATION per endgame-lock-disposition
+
+- [s7] scan_hand_coded --single func_80033550: LOW 0/8 (no S1-S8 signals) — canonical-asm refused by endgame-lock-disposition criterion 1; artifact tmp/grind/func_80033550/s8/scan_hand_coded.txt
+
+- [s7] HEAD pinned form measured this session: sandbox 4 / stripped 371 — the register s32 *a3_arg asm("a3") pin is strippable cheat-asm and score-inert; it holds the oracle byte match on main (0 regfix/asmfix rules)
+
+- [s7] Pin-free candidate re-applied to src/code6cac_b.c: sandbox 4 / stripped 369, identical to s2-s7 baselines; left in place at session end (driver restores the pinned form on park to keep the oracle green)
+
+- [s7] OWNER-ESCALATION filed: docs/grind/decisions.md entry '2026-07-21 — func_80033550 (src/code6cac_b.c) — OWNER-ESCALATION (filed by grind s8 forensics...)' with both options honestly stated (option (a) not supportable at LOW 0/8 + cc1psx instruction-identity; option (b) INCOMPLETE-owner-accepted per the 4-for-4 same-species precedent)

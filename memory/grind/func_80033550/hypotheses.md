@@ -361,3 +361,35 @@ upward-exposed uses and whether any VALID construct reaches the same channel.
 - probe: 22 variants: arm content {sw3, sw2+sw3, loads, whole tail, shadow copies idx2/w2b}, conds {i<6, i<3, arg0!=0, (u32)arg0<2U, <3U, big-const, reg-reg equality, nested/3-arm}; honest sandbox on dupX1 and dupM
 - result: two rigid outcomes only — sw3-arms attractor (idx a1, w2 a2, ptr a0-coalesced; honest 11) and big-const rotation (w0/w1 correct, ptr a2, w2 a3, idx a1, stray li; honest 11). Globalized idx always loses v0; deletable temps seat low; reg-reg conds self-destruct via cse else-arm specialization. No form beat 4
 - verdict: KILLED for every spelling tried (family floor 11 so far); residue: temps seated exactly at a2, label-placement merge steering — pending the sanctioning ruling
+
+## [s8] The s7 channel-(f) residue (a2-seated deletable temps, label-steered merges) remains a live sanctioned axis
+- mechanism: those spellings all require the manufactured identical-arms branch as the carrier
+- probe: 2026-07-21 00:19 Judge ruling on the s7 ruling-request (docs/grind/decisions.md)
+- result: FAIL — the invented branch is a cheat-by-spelling outside the duplicated-statement-into-arms sanction; channel (f) via manufactured branches is CLOSED and the residue dies with it; ruling verifies every sanctioned axis is now measured dead
+- verdict: KILLED
+
+## [s8] func_80033550 qualifies for canonical-asm under endgame-lock-disposition criterion 1
+- mechanism: authorization requires STRONG scan_hand_coded signals (S1/S2/S6 class)
+- probe: python3 tools/scan_hand_coded.py --single func_80033550 (tmp/grind/func_80033550/s8/scan_hand_coded.txt)
+- result: LOW 0/8, "no strong hand-coded indicators"; corroborated by s6 cc1psx instruction-identity (ordinary GCC 2.7.2 output, RA tiebreak artifact)
+- verdict: KILLED (canonical-asm refused; escalation option (a) stated as not supportable)
+
+## [s8] ESCALATION FILED: every sanctioned axis measured dead (s2/s3 structural, s4/s5 permuter 6 basins ~138k iters, s6 closure theorem + cc1psx, s7 FAKE-family sweep + Judge-closed channel (f)); OWNER-ESCALATION filed in docs/grind/decisions.md 2026-07-21 per endgame-lock-disposition; options (a) canonical-asm (not supportable, LOW 0/8) vs (b) INCOMPLETE-owner-accepted with the asm("a3") pin retained to hold the match. Awaiting owner ruling — do not self-resolve, do not re-grind dead axes.
+
+## [s7] The s7 channel-(f) residue (a2-seated deletable temps, label-steered merges) remains a live sanctioned axis
+- mechanism: all such spellings require the manufactured identical-arms branch as carrier
+- probe: 2026-07-21 00:19 Judge ruling on the s7 ruling-request (docs/grind/decisions.md)
+- result: FAIL: the invented branch is a cheat-by-spelling outside the duplicated-statement-into-arms sanction; channel (f) via manufactured branches is closed and the residue dies with it; the ruling itself verifies every sanctioned axis is now measured dead
+- verdict: KILLED
+
+## [s7] func_80033550 qualifies for canonical-asm under endgame-lock-disposition criterion 1
+- mechanism: authorization requires STRONG scan_hand_coded signals (S1/S2/S6 class); LOW is dispositive refuse
+- probe: python3 tools/scan_hand_coded.py --single func_80033550 (tmp/grind/func_80033550/s8/scan_hand_coded.txt)
+- result: LOW 0/8, no strong hand-coded indicators; corroborated by s6 cc1psx instruction-identity (ordinary GCC output, RA tiebreak artifact)
+- verdict: KILLED
+
+## [s7] The floor and the pin's score-inertness are unchanged at escalation time
+- mechanism: sandbox strips the asm("a3") pin before scoring, so pinned and pin-free forms measure identically
+- probe: sandbox func_80033550 --disable all on HEAD's pinned form, then on the re-applied pin-free candidate
+- result: pinned form 4 / cheat_asm_stripped 371; pin-free candidate 4 / 369 (identical JSON to s2-s7 baselines); candidate left in place in src
+- verdict: CONFIRMED

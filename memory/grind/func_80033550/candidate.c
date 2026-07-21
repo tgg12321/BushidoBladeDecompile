@@ -22,9 +22,14 @@
  * (jump1 deletes pre-RA, .rtl->.jump proven); duplicated-arms NOT inert:
  * NEW channel (f) = jump2 cross-jump merges identical duplicated arms whose
  * pseudos were real RA conflicts (dupU homed ptr in a3, first valid-C ever;
- * best family rotations honest 11). s6 theorem amended. Sanctioning of the
- * invented identical-arms branch is the open ruling-request; family residue
- * (a2-seated deletable temps, label-steered merges) pending that ruling.
+ * best family rotations honest 11). s6 theorem amended.
+ * s8 (forensics, post-ruling): Judge FAIL 2026-07-21 00:19 — the invented
+ * identical-arms branch is a cheat-by-spelling; channel (f) via manufactured
+ * branches is CLOSED and the family residue dies with it. scan_hand_coded
+ * LOW 0/8 measured. Every sanctioned axis measured dead -> OWNER-ESCALATION
+ * filed in docs/grind/decisions.md (2026-07-21); awaiting owner ruling
+ * (option (b) precedent: pin retained on main to hold the oracle match,
+ * function INCOMPLETE-owner-accepted).
  * The do-while(0) wrap is sanctioned per do-while-zero-exception (2026-07-06
  * owner ruling, any codegen effect, single-level, FAKE-annotated).
  * Residual 4 = arg0's pointer pseudo homed in $a1 (build) vs $a3 (target):

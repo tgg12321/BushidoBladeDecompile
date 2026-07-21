@@ -1,7 +1,7 @@
 {
  "func": "func_80033550",
  "file": "code6cac_b",
- "session_count": 6,
+ "session_count": 7,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -39,18 +39,19 @@
    "floor": 4,
    "modality": "forensics",
    "headline": "s6 forensics: floor holds at 4; cc1psx is instruction-identical (fork-divergence KILLED), and source-level closure theorem proven \u2014 no valid C with this 34-insn shape can home ptr in a3 (all byte-free"
+  },
+  {
+   "session": 7,
+   "floor": 4,
+   "modality": "forensics",
+   "headline": "s8 forensics: Judge FAIL closed channel (f); scan_hand_coded LOW 0/8 measured; every sanctioned axis dead -> OWNER-ESCALATION filed in docs/grind/decisions.md (2026-07-21), function proceeds to owner-"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A sanctioned-FAKE-family construct (dead-store / named-local / duplicated-statement) supplies a1+a2 occupants byte-free (frontier-3, last unmeasured sanctioned axis)",
-   "mechanism": "s6 theorem PREDICTS inert: dead stores are flow-deleted pre-RA (flow.c:1479), named-locals fold or emit bytes, duplicated-statement only lifts allocation priority which is outcome-irrelevant here \u2014 but the families were never SWEPT as a1/a2 conflict sources on this function",
-   "next_probe": "one structural session: FAKE-annotated dead-store/named-local/duplicated-statement placements targeting a1+a2 occupancy, .greg per variant; a confirmed-inert sweep completes lever-exhaustion documentation"
-  },
-  {
-   "hypothesis": "func_80033550 is an endgame RA-lock: byte-match reachable only via a cheat, 4 insns short, every sanctioned axis measured dead",
-   "mechanism": "s1-s6 record: structural (s2+s3) + permuter (6 basins, ~138k iters, s4+s5) + forensic closure theorem (s6) leave no valid-C channel to ptr=a3; owner standing policy 2026-07-20 (endgame-lock-disposition) governs disposition of exactly this class",
-   "next_probe": "after the FAKE-family sweep measures dead, draft the OWNER-ESCALATION entry for docs/grind/decisions.md citing the s1-s6 ledger (driver/operator files it; only then is owner-gated valid)"
+   "hypothesis": "Owner rules on the filed escalation (option (a) canonical-asm vs option (b) INCOMPLETE-owner-accepted)",
+   "mechanism": "endgame-lock-disposition standing policy 2026-07-20; all four ruled same-species precedents chose option (b): pin retained on main solely to hold the match, function parked out of active grind",
+   "next_probe": "none for grind sessions \u2014 awaiting owner ruling; do not self-resolve, do not re-measure dead axes; eligible for re-attempt only if the owner rules otherwise or a genuinely new pure-C lever/tooling emerges"
   }
  ],
  "judge_constraints": [
