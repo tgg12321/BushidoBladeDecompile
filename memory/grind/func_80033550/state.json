@@ -1,8 +1,8 @@
 {
  "func": "func_80033550",
  "file": "code6cac_b",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -21,23 +21,29 @@
    "floor": 4,
    "modality": "structural",
    "headline": "s3 structural: floor holds at 4; loop-region census-invariance proven (6 spellings identical .greg), REG_EQUIV pseudos die pre-RA, DImode a1+a2 pair mechanism confirmed but never byte-free \u2014 structura"
+  },
+  {
+   "session": 4,
+   "floor": 4,
+   "modality": "permuter",
+   "headline": "s4 permuter: floor holds at 4; four campaigns (~104k iters, 4 basins incl. the v07-flip neighborhood) all converge to the score-20 ptr=a1 attractor with zero sub-20 finds \u2014 permuter whole-function axi"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A permuter-discoverable whole-function true-C form flips the pointer home to a3",
-   "mechanism": "manual geometry space (tail s2 + loop s3) is closed; only exotic whole-function statement geometries remain, which random/directed mutation can reach",
-   "next_probe": "permuter campaign seeded from candidate.c with PERM variants on whole-function shape; wait + harvest in-session per grinder-permuter-orphan-stop-gate"
-  },
-  {
    "hypothesis": "GCC 2.7.2 records a1/a2 conflicts for pseudos deleted AFTER conflict construction (no-op-move coalescence via reg_may_share, reload inheritance)",
-   "mechanism": "pre-RA deletion paths are now empirically closed (s3); only post-conflict-build deletion windows remain as zero-byte conflict sources",
+   "mechanism": "pre-RA deletion paths are empirically closed (s3) and stochastic C-geometry search is now measured near-dead (s4); only post-conflict-build deletion windows remain as zero-byte conflict sources",
    "next_probe": "forensics read of global.c/local-alloc.c/reload.c for the deletion-vs-conflict-build ordering; targeted dumps on shapes exercising tied copies that coalesce post-scan"
   },
   {
    "hypothesis": "The SN cc1psx homes ptr in a3 for this same C (compiler-fork RA divergence, not a C-geometry issue)",
    "mechanism": "if the original compiler's global.c differs (alloc order/sharing), no C spelling under our pinned toolchain reproduces the home without a real occupant",
    "next_probe": "cc1psx calibration cross-check (tools/cc1psx_wrapper.sh, calibration-only per rules) on candidate.c; if cc1psx yields a3, escalate the finding for an owner ruling on disposition"
+  },
+  {
+   "hypothesis": "A sanctioned-FAKE-family construct (dead-store / named-local / duplicated-statement) supplies the two zero-byte a1/a2 occupants",
+   "mechanism": "s2 closure requires TWO zero-byte occupants conflicting with ptr; the 2026-07-01 sanctioned families were never systematically swept as conflict sources under the s3 disposition map",
+   "next_probe": "structural sweep of FAKE-annotated dead-store/named-local placements targeting a1+a2 occupancy with .greg verification of byte-neutrality (last-resort family, lever-exhaustion now fully documented)"
   }
  ],
  "judge_constraints": [],

@@ -1,10 +1,13 @@
-/* func_80033550 — best honest form, sessions 1-3 (floor 4, zero cheat-asm).
+/* func_80033550 — best honest form, sessions 1-4 (floor 4, zero cheat-asm).
  * s2 (structural, 24 variants): tail geometry closed. s3 (structural, 14
  * variants): loop-region census-invariance proven (6 spellings, identical
  * .greg), REG_EQUIV const-pointer pseudos deleted pre-RA, DImode pair
- * occupant mechanism confirmed but never byte-free. Structural modality
- * EXHAUSTED — remaining axes: permuter whole-function search, cc1
- * forensics (post-conflict-build deletions), cc1psx calibration check.
+ * occupant mechanism confirmed but never byte-free. s4 (permuter, 4
+ * campaigns, ~104k iters): whole-function stochastic search measured
+ * near-dead — every basin (random, directed-staged, v07-flip-neighborhood,
+ * c3-20-neighborhood) converges to the score-20 ptr=a1 attractor; zero
+ * sub-20 finds. Remaining axes: cc1 forensics (post-conflict-build
+ * deletions), cc1psx calibration check.
  * The do-while(0) wrap is sanctioned per do-while-zero-exception (2026-07-06
  * owner ruling, any codegen effect, single-level, FAKE-annotated).
  * Residual 4 = arg0's pointer pseudo homed in $a1 (build) vs $a3 (target):

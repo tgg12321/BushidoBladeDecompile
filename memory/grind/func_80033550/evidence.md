@@ -168,3 +168,54 @@
 - [s3] Full base dispositions banked: 72->a1(ptr), 74->v1(i), local-alloc w0->v1 w1->a0 w2->a1, hard regs 2 3 4 5, allocation order i-then-ptr
 
 - [s3] Structural modality EXHAUSTED: s2 closed tail geometry, s3 closed loop-region census + REG_EQUIV + DImode spellings
+
+## s4 (2026-07-20, permuter)
+
+- **Floor unchanged: 4.** Four permuter campaigns via tools/permuter_campaign.py
+  (~104k total iterations, all harvested + stopped in-session): c1 candidate-seed
+  random (26.5k iters, 2 finds), c2 directed staged-load PERM cross-product
+  (31.7k, 1 find), c3 v07-flip-neighborhood (15k, 12 finds), c4 c3-20-seed
+  neighborhood (31k, 2 finds). Src reset by driver again (old pinned form) —
+  candidate re-applied at session start; final state verified 4/369.
+- **Permuter base score for the candidate = 20** (4 reg-diffs x 5), consistent
+  with the known ptr a1-vs-a3 residual. NOTHING sub-20 found in any basin.
+- **The score-20 attractor class is universal:** every basin converges to
+  equal-score members of one family — pointer-alias second handles
+  (`new_var2 = arg0;` feeding 1-2 loads; the s2-killed class), split/staged
+  idx computation (`new_var2 = i; new_var2 *= 12;` or idx-before-sb), and
+  w2 staging through dead-at-that-point new_var. All are byte-equivalent to
+  the candidate residual.
+- **c3 (v07 staged-flip seed, base 50) descended 50->40->30->20 within 5
+  minutes** — but the descent leads back INTO the ptr=a1 attractor, not to a
+  home-preserving flip: its best find (idx-presb + double-staged w2) was
+  honest-measured sandbox 4 with the IDENTICAL diff (move a1,a0 + three lw
+  via a1 vs target a3). Banked as rejected/permuter-idx-presb-double-stage-
+  still-a1-4.c. Late find output-25-1 (score 25) also above floor-class.
+- **c4 proves the attractor is locally rigid:** 31k mutations seeded AT the
+  new score-20 geometry produced only equal-score attractor members (alias
+  handle + split multiply), never sub-20.
+- **Permuter whole-function axis is now measured near-dead:** random +
+  directed + two distinct sub-basins all fail to find any C geometry whose
+  RA outcome differs from ptr=a1 (or the known byte-costing flips). This
+  independently corroborates the s2/s3 structural closure by stochastic
+  search over exotic statement geometries.
+- Artifacts: tmp/grind/func_80033550/s4/{setup.sh,chassis2_base.c,
+  chassis3_base.c,*_campaign.log,*_campaign_meta.json,*_base.c,finds/}.
+
+- [s4] Permuter candidate base score 20 = 4 reg-diffs x 5; four campaigns (~104k iters, 4 basins: random, directed-staged, v07-flip-neighborhood, c3-20-neighborhood) found NOTHING sub-20
+
+- [s4] Universal score-20 attractor: alias handles / split multiplies / idx-presb staging — all byte-equivalent to the candidate residual (ptr=a1); c3-20 form honest-measured sandbox 4 with identical diff
+
+- [s4] c3 v07-flip basin descends 50->20 in <5 min but lands back in the ptr=a1 attractor — mutation cannot preserve the a2-flip while restoring w-homes
+
+- [s4] Permuter whole-function axis measured near-dead; corroborates s2/s3 structural closure stochastically; remaining live axes: cc1 forensics (post-conflict-build deletions) + cc1psx calibration cross-check
+
+- [s4] Permuter base score for the floor-4 candidate is 20 (4 reg-diffs x 5), consistent with the known ptr a1-vs-a3 residual
+
+- [s4] Universal score-20 attractor class across all 4 basins: pointer-alias second handles, split/staged idx computation (incl. idx-before-sb), w2 staging through new_var — all byte-equivalent to the candidate residual
+
+- [s4] c3 best find honest-measured in sandbox: score 4, cheat_asm_stripped 369, diff identical to candidate (build move a1,a0 + lw via a1; target addu a3,a0,zero + lw via a3) — banked as rejected/permuter-idx-presb-double-stage-still-a1-4.c
+
+- [s4] Driver had reset src to the old pinned form (stripped 371); pin-free candidate re-applied at session start and verified in place at session end (final sandbox 4/369)
+
+- [s4] All four campaigns launched via tools/permuter_campaign.py, waited in-turn, and harvest --stop'd before session end (fresh-seed discipline; zero orphaned campaigns)

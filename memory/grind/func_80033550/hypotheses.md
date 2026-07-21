@@ -190,3 +190,57 @@ reg_may_share, reload inheritance) + a cc1psx calibration cross-check
 - probe: s64 t=i (Z1) and u64 t=(u32)i (Z3, zero high half = cheapest conceivable), sandbox + .greg
 - result: mechanism CONFIRMED by .greg (DImode pseudo conflicts exactly {v0,v1,a0}+ptr) but both score 22 — GCC 2.7.2 always emits both half-sets; no byte-free DImode spelling exists
 - verdict: KILLED
+
+## [s4] Random whole-function permuter mutation from the floor-4 candidate reaches a sub-20 (sub-floor) geometry
+- mechanism: exotic statement geometries outside the manual s2/s3 sweeps could shift the RA census
+- probe: campaign c1 (s4-rand-whole), 26.5k iters, fresh-seed window discipline
+- result: 2 finds, both score-20 pointer-alias-handle attractor members (the s2-killed class); nothing sub-20
+- verdict: KILLED
+
+## [s4] Directed staged-load PERM cross-product (stagings x random) finds a home-preserving conflict injection
+- mechanism: v07 proved staging flips ptr a1->a2; cross-product of staged spellings x random mutation might find a placement preserving w-homes
+- probe: campaign c2 (s4-directed-staged), PERM_GENERAL staged forms on all three loads + PERM_RANDOMIZE, 31.7k iters
+- result: 1 find, the same score-20 alias attractor; no staged variant beat base
+- verdict: KILLED
+
+## [s4] The v07-flip basin (ptr in a2, base 50) contains a mutation path to a home-preserving a3 flip
+- mechanism: search the neighborhood of the ONLY known form with a flipped ptr-home for refinements restoring w0=v1/w1=a0/w2=a1
+- probe: campaign c3 (s4-v07-flip-neighborhood) seeded from the v07 staged form, 15k iters, 12 finds
+- result: basin descends 50->40->30->20 in <5 min but the descent RE-ENTERS the ptr=a1 attractor (best find honest-measured sandbox 4, identical residual); late 25; nothing sub-20
+- verdict: KILLED
+
+## [s4] The new c3-20 geometry's own neighborhood (idx-presb + double-staged w2) contains a sub-20 mutation
+- mechanism: a different point in the score-20 attractor has a different local mutation neighborhood than the candidate
+- probe: campaign c4 (s4-c3-20-neighborhood) seeded at the c3 best find, 31k iters
+- result: 2 finds, both equal-score attractor members (alias handle + split multiply); the attractor is locally rigid
+- verdict: KILLED
+
+## [s4] PERMUTER MODALITY MEASURED NEAR-DEAD: 4 basins, ~104k iterations, zero
+sub-20 finds; stochastic whole-function search independently corroborates the
+s2/s3 structural closure. Remaining live axes: cc1 forensics on
+post-conflict-build deletions (no-op-move coalescence / reg_may_share, reload
+inheritance) + cc1psx calibration cross-check.
+
+## [s4] Random whole-function permuter mutation from the floor-4 candidate reaches a sub-20 geometry
+- mechanism: exotic statement geometries outside the manual s2/s3 sweeps could shift the RA census
+- probe: campaign c1 s4-rand-whole, 26.5k iters, fresh-seed window discipline, harvested+stopped
+- result: 2 finds, both score-20 pointer-alias-handle attractor members (the s2-killed class); nothing sub-20
+- verdict: KILLED
+
+## [s4] Directed staged-load PERM cross-product finds a home-preserving conflict injection
+- mechanism: v07 proved staging flips ptr a1->a2; PERM_GENERAL staged spellings on all three loads x PERM_RANDOMIZE might find a placement preserving w-homes
+- probe: campaign c2 s4-directed-staged, 31.7k iters, harvested+stopped
+- result: 1 find, the same score-20 alias attractor; no staged variant beat base
+- verdict: KILLED
+
+## [s4] The v07-flip basin (ptr in a2, base 50) contains a mutation path to a home-preserving a3 flip
+- mechanism: search the neighborhood of the only known ptr-home-flipping form for refinements restoring w0=v1/w1=a0/w2=a1
+- probe: campaign c3 s4-v07-flip-neighborhood seeded from the v07 staged form, 15k iters, 12 finds, harvested+stopped
+- result: basin descends 50->40->30->20 in under 5 min but re-enters the ptr=a1 attractor: best find (idx-presb + double-staged w2) honest-measured sandbox 4 with the IDENTICAL residual (move a1,a0 + three lw via a1 vs target a3); nothing sub-20
+- verdict: KILLED
+
+## [s4] The c3-20 geometry's own mutation neighborhood contains a sub-20 form
+- mechanism: a different point in the score-20 attractor has a different local neighborhood than the candidate seed
+- probe: campaign c4 s4-c3-20-neighborhood seeded at the c3 best find, 31k iters, harvested+stopped
+- result: 2 finds, both equal-score attractor members (alias handle + split multiply); the attractor is locally rigid
+- verdict: KILLED
