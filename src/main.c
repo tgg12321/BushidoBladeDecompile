@@ -1244,13 +1244,11 @@ s16 func_80087CAC(s32 a0, s16 *a1, s16 *a2) {
 s16 func_80087D10(s32 a0) {
     u8 *base;
     s32 slot;
-    u8 *p;
-    base = (u8 *)((s32 *)&D_80106F28)[(u8)a0];
-    __asm__ volatile("" ::: "memory");
+    base = (u8 *)*(s32 *)((u8 *)&D_80106F28 + (u8)a0 * 4);
     D_80102806 = a0;
     slot = (a0 & 0xFF00) >> 8;
-    p = base + slot * 176;
-    return *(s16 *)(p + 0x58);
+    base += slot * 176;
+    return *(s16 *)(base + 0x58);
 }
 
 s16 func_80087D58(s32 a0) {
