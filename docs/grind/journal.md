@@ -469,3 +469,4 @@
 - 2026-07-21 16:14 CIRCUIT-BREAK: judge unreachable/invalid after 5 attempts for cpu_get_dist
 - 2026-07-21 16:58 cpu_get_dist COMPLETED-C after 2 sessions.
 - 2026-07-21 17:16 func_80087D10 s1 [recon] floor=6: Recon: floor 8 -> 6 by folding p into multi-set base (removes load-late launch priority; index reg now matches target); residual is one 3-insn block move (base lw vs sh/andi/sra cluster), fully scheduler-determined
+- 2026-07-21 17:31 func_80087D10 COMPLETED-C after 2 sessions.
