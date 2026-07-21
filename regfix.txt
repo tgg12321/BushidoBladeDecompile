@@ -2577,9 +2577,6 @@ func_8002304C: insert_after "lui $23,0x1F80" @ 17
 
 # REORDER rules (Phase 4: post-delete + post-insert indices)
 # func_800550E8: byte-array indexing into D_80101EC8 -- target keeps 0x415 offset on lbu/sb; GCC pre-folds it. Reverse via 3 substs.
-func_800550E8: subst "la\s+\$3,D_80101EC8\+1045" "la	$3,D_80101EC8" @ 8
-func_800550E8: subst "lbu\s+\$2,0\(\$3\)" "lbu	$2,1045($3)" @ 10
-func_800550E8: subst "sb\s+\$2,0\(\$3\)" "sb	$2,1045($3)" @ 13
 # func_8005B7C4: GCC picked $v0 for the latest D_800A3404 read; target uses $v1
 # func_80078B3C: GCC scheduled sw into jr delay slot; target keeps nop there. drain_delay reverses it.
 # func_80078B70: same as func_80078B3C clear-flag form

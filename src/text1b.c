@@ -11556,10 +11556,8 @@ void func_800550E8(s32 arg0) {
     u8 *p = (u8 *)&D_80101EC8 + arg0 * 0x44C;
     i = 0;
     do {
-        i += 1;
-        *(p + 0x415) = *(p + 0x415) >> 1;
-        p += 2;
-    } while (i < 8);
+        p[i * 2 + 0x415] = p[i * 2 + 0x415] >> 1;
+    } while (++i < 8);
 }
 void single_game_SetStatusUpData(s32 arg0, s32 arg1, s32 arg2) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/single_game_SetStatusUpData.s).
