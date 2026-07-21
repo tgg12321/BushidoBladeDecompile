@@ -442,3 +442,4 @@
 - 2026-07-20 18:54 AddTbpOfst s1 [recon] floor=3: Recon: floor 3 mapped to 2 mechanisms; sll/addu regs now match via fresh-subexpr shift; 5 hypotheses measured (4 killed)
 - 2026-07-20 19:32 AddTbpOfst COMPLETED-C after 2 sessions.
 - 2026-07-20 19:57 rob_life_ctrl COMPLETED-C after 1 sessions.
+- 2026-07-20 20:10 func_800550E8 COMPLETED-C after 1 sessions.
