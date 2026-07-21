@@ -1,5 +1,18 @@
 /* func_8007B844 — grind candidate body (sandbox --disable all == 6, HEAD == 7).
  *
+ * s4 (permuter, 2026-07-21): floor 6 re-confirmed start+end. Three fresh-seed
+ * campaigns (~28 min each, 121k iters total, telemetry in metrics/events.jsonl):
+ * A leverB-full-random (43k iters, only find = wrong-semantics store-to-global
+ * attractor at equal score), B twolocal-random (42k iters, one novel find
+ * output-125-1: arg-staging + tail scalar rebind — permuter 135->125 but
+ * sandbox NEUTRAL at 6; banked rejected/permuter_s4_addr_arg_staging_rebind.c),
+ * C directed cross-product of neutral levers dispatch x AND-order x exit
+ * (36k iters, only the same wrong-semantics attractor). Permuter modality is
+ * now measured DEAD around this plateau: random and directed basins converge
+ * on fold-transparent rebinds or semantic drift; the weighted permuter metric
+ * diverges from the masked honest distance on this residual. Frontier remains
+ * F2 (sched-dump forensics) + F3 (cross-project ClearOTagR research).
+ *
  * s3 (structural, 2026-07-21): floor 6 re-confirmed start+end. Filled the five
  * structural gaps s2's exhaustion claim had not measured: debug-guard local
  * split (6), dispatch byte-offset re-association (6), goto-end tail (6),

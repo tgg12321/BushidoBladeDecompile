@@ -154,3 +154,23 @@ No new park category requested (per [[no-new-park-categories]]).
 - [s3] P5 extends the round-1 hoist kill: 0xFFFFFF materialization must occur strictly AFTER the LAST call (live-across-one-call = 20/build 40, live-across-both = 19); any pre-call constant staging is dead by prologue construction
 
 - [s3] Target-asm re-verified this session: store base $v0 is the return-staging register (addu $v0,$s0 BEFORE lui/addiu $v1/and/sw), mask materializes as lui/ori into $a0, debug load is lbu (g_gpu_debug_level correctly u8 in include/gpu.h)
+
+- [s4] s4 baseline re-confirmed start AND end: candidate.c (Lever B) in src/display.c -> sandbox --disable all = 6, build_insns 38 == target 38; src left in candidate form
+
+- [s4] Three fresh-seed permuter campaigns (telemetry via tools/permuter_campaign.py, ~28 min each, 121k iters total, all harvested+stopped in-session): A=leverB full-random 43k iters; B=twolocal(AND-into-mask) full-random 42k iters; C=directed PERM_GENERAL cross-product (dispatch shape x AND operand order x return-vs-goto-end exit) + PERM_RANDOMIZE, 36k iters
+
+- [s4] Chassis B novel find (output-125-1, 813s post-seed): `addr = n;` staged into the debug-call arg + tail scalar rebind `addr = mask; *ot = addr;` — permuter weighted score 135->125 but sandbox = 6 (NEUTRAL). The permuter metric and the masked honest distance DIVERGE on this residual: register-weighted raw diffs improve while the masked per-insn distance is unchanged. Banked rejected/permuter_s4_addr_arg_staging_rebind.c
+
+- [s4] Cross-basin attractor identified: chassis A and C both converged on the SAME wrong-semantics form (`new_var = &g_gpu_ot_end; ... *new_var = mask;` — stores the terminator into the global instead of *ot) at score-equal 135. The permuter is semantics-blind; the only byte-shape it finds near the plateau requires breaking the store target. No sub-125 find in any basin
+
+- [s4] Permuter modality is measured DEAD around the floor-6 plateau: random basins (2 chassis geometries) and the directed neutral-lever cross-product all yield only fold-transparent rebinds or semantic drift within the ~30-min fresh-seed windows; historical ~50k-iter runs plus s4's 121k iters agree
+
+- [s4] Floor 6 re-confirmed at session start AND end with candidate.c (Lever B) in src/display.c: sandbox --disable all = 6, build_insns 38 == target 38; src left in candidate form
+
+- [s4] 121k total iterations across 3 fresh-seed basins (43k/42k/36k), all launched via tools/permuter_campaign.py with telemetry (metrics/events.jsonl), all harvested and stopped in-session; campaign status confirms zero alive pids
+
+- [s4] Permuter-vs-sandbox metric divergence measured concretely: chassis B's 135->125 weighted improvement maps to masked honest distance 6 -> 6 (the residual's register-rotation diffs are already mask-normalized per-insn)
+
+- [s4] Cross-basin attractor: the only byte-shape the permuter finds near the plateau requires rewiring the terminator store to &g_gpu_ot_end (semantics-breaking) — direct search-space evidence that no nearby pure-C spelling reaches the return-staging schedule flip
+
+- [s4] Permuter modality now measured dead for this function: historical ~50k directed iters + s4's 121k fresh-seed iters across 3 chassis geometries agree; live frontier remains F2 (BB2_SCHED_DEBUG forensics) and F3 (cross-project ClearOTagR research), both non-permuter

@@ -155,3 +155,43 @@ Baseline re-confirmed: candidate.c applied -> sandbox 6, build_insns 38.
 - probe: Applied to candidate base; sandbox
 - result: score 20, build_insns 40 vs target 38 — mask forced into a callee-save reg across the dispatch call, prologue/epilogue +2 insns; can never match by construction
 - verdict: KILLED
+
+## s4 (permuter, 2026-07-21)
+
+Baseline re-confirmed start+end: candidate.c applied -> sandbox 6, build_insns 38.
+
+## [s4] A fresh-seed full-random basin on the Lever B chassis finds a sub-floor form the historical directed runs missed
+- mechanism: random mutation pass (temp-for-expr, expr-expansion, statement moves) explores neighborhoods directed PERM runs never reach
+- probe: campaign A (43k iters, ~28 min, -j4, --stack-diffs); wait windows + harvest
+- result: only find = wrong-semantics store-to-global attractor at equal weighted score 135; no sub-135 form
+- verdict: KILLED
+
+## [s4] The two-local AND-into-mask chassis (different pseudo geometry) opens a random basin with a different attractor landscape
+- mechanism: s3 showed the named addr local is copy-prop-transparent when the AND dest is mask; its pseudo landscape differs from Lever B and could randomize differently
+- probe: campaign B (42k iters); novel find output-125-1 applied to src/display.c and sandbox-measured
+- result: find = arg-staging + scalar tail rebind, permuter 135->125 but sandbox 6 NEUTRAL; both mutation families already known fold-transparent; no further finds in 41k subsequent iters
+- verdict: KILLED
+
+## [s4] Cross-products of individually-neutral levers (dispatch shape x AND operand order x exit shape) interact non-additively and move the residual
+- mechanism: each lever alone is measured-neutral (s1-s3); PERM_GENERAL cross-product + PERM_RANDOMIZE tests all combinations, which hand-search never measured jointly
+- probe: campaign C (36k iters over the 2x2x2 cross-product + random)
+- result: no combination scored below 135; only output was the same wrong-semantics attractor as chassis A
+- verdict: KILLED
+
+## [s4] A fresh-seed full-random basin on the Lever B chassis finds a sub-floor form the historical directed runs missed
+- mechanism: Random mutation pass (temp-for-expr, expr expansion, statement moves) explores neighborhoods directed PERM runs never reach
+- probe: Campaign A: tmp/grind/func_8007B844/s4/perm_a, 43k iters ~28 min -j4 --stack-diffs, in-turn wait windows, harvest --stop
+- result: Only output was a wrong-semantics attractor (*new_var = mask with new_var = &g_gpu_ot_end — stores to the global, not *ot) at equal weighted score 135; no sub-135 find
+- verdict: KILLED
+
+## [s4] The two-local AND-into-mask chassis (different pseudo geometry, s3-neutral) opens a random basin with a different attractor landscape containing a sub-floor form
+- mechanism: Different pseudo geometry at the tail could let random mutations reach a schedule the Lever B basin cannot
+- probe: Campaign B: tmp/grind/func_8007B844/s4/perm_b, 42k iters; novel find output-125-1 transcribed into src/display.c and sandbox-measured
+- result: Find = `addr = n;` arg-staging + tail scalar rebind `addr = mask; *ot = addr;` — permuter weighted 135->125 but sandbox NEUTRAL at 6 (build_insns 38); the permuter metric diverges from the masked honest distance on this residual; no further finds in 41k subsequent iters; banked memory/grind/func_8007B844/rejected/permuter_s4_addr_arg_staging_rebind.c
+- verdict: KILLED
+
+## [s4] Cross-products of individually-neutral levers (dispatch shape x AND operand order x return-vs-goto-end exit) interact non-additively and lower the floor
+- mechanism: Each lever alone measured neutral in s1-s3; joint combinations were never measured — PERM_GENERAL cross-product + PERM_RANDOMIZE enumerates them
+- probe: Campaign C: tmp/grind/func_8007B844/s4/perm_c, directed 2x2x2 cross-product + randomize, 36k iters
+- result: No combination scored below base 135; only output was the same wrong-semantics store-to-global attractor as chassis A
+- verdict: KILLED
