@@ -484,16 +484,19 @@ void initPolyG4_dither(u8 *p) {
 }
 
 void initDrawMode(u8 *a0, s32 a1, s32 a2, u32 a3) {
-    register u32 cmd asm("v1");
-    register u32 val asm("v0");
+    u32 cmd;
+    u32 val;
     a0[3] = 1;
     cmd = GP0_DRAW_MODE;
     if (a2) {
         cmd = (GP0_DRAW_MODE | GPU_DRAW_MODE_DITHER);
     }
-    val = a3 & GPU_DRAW_MODE_MASK;
     if (a1) {
-        val |= GPU_DRAW_MODE_TEXOFF;
+        /* the a3&MASK subexpression duplication across the arms is
+           byte-neutral (one andi emitted) */
+        val = (a3 & GPU_DRAW_MODE_MASK) | GPU_DRAW_MODE_TEXOFF;
+    } else {
+        val = a3 & GPU_DRAW_MODE_MASK;
     }
     *(u32 *)(a0 + 4) = cmd | val;
 }

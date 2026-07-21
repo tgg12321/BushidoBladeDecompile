@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "initDrawMode",
-      "file": "gpu",
-      "distance": 5,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "kgm_clamp_patch_init",
       "file": "ings",
       "distance": 5,
@@ -2850,14 +2842,14 @@
     }
   ],
   "counts": {
-    "total": 349,
-    "active": 314,
+    "total": 348,
+    "active": 313,
     "by_status": {
-      "active": 314,
+      "active": 313,
       "parked": 35
     },
     "by_verdict": {
-      "C": 160,
+      "C": 159,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
