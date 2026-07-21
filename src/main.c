@@ -1254,13 +1254,11 @@ s16 func_80087D10(s32 a0) {
 s16 func_80087D58(s32 a0) {
     u8 *base;
     s32 slot;
-    u8 *p;
-    base = (u8 *)((s32 *)&D_80106F28)[(u8)a0];
-    __asm__ volatile("" ::: "memory");
+    base = (u8 *)*(s32 *)((u8 *)&D_80106F28 + (u8)a0 * 4);
     D_80102806 = a0;
     slot = (a0 & 0xFF00) >> 8;
-    p = base + slot * 176;
-    return *(s16 *)(p + 0x5A);
+    base += slot * 176;
+    return *(s16 *)(base + 0x5A);
 }
 extern u8 g_memcard_slot;
 extern s16 D_800F4E28[];
