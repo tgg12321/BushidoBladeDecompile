@@ -209,7 +209,9 @@ MODALITY_PLAYBOOK = {
                  "campaign before your session ends (a 0-find harvest is the data point); "
                  "campaigns must not outlive the session — and you are a ONE-SHOT "
                  "process: ending your turn to 'wait on' a running campaign kills the "
-                 "session with no outcome (it is discarded); wait/poll IN-turn, then "
+                 "session with no outcome (it is discarded); wait IN-turn via "
+                 "`tools/permuter_campaign.py wait --dir <ws>` (ONE blocking call per "
+                 "~9-min window — never hand-poll across turns), then "
                  "harvest --stop, then write your outcome. Findings are PROPOSALS — vet "
                  "against the cheat catalog. Save logs under tmp/grind/<func>/s<N>/ and "
                  "list them in artifacts."),

@@ -48,6 +48,18 @@ artifacts and candidate/rejected forms, write the outcome JSON. (2026-07-18
 incident: three sessions ended their turn "waiting on the watcher" — all
 three were discarded and the driver circuit-broke.)
 
+## Turn economy (cost discipline — never a cap on effort)
+Tokens are spent per TURN: every turn re-reads your entire context. Do the
+same work in fewer, bigger turns (owner policy 2026-07-20):
+- Waiting on a permuter campaign: `python3 tools/permuter_campaign.py wait
+  --dir <ws>` — ONE blocking call per ~9-min window (repeat calls to cover a
+  fresh-seed window; returns on novel find / campaign death / timeout).
+  NEVER hand-poll a campaign across separate turns.
+- Batch independent tool calls into one message; tail long output
+  (build: tail -5, campaign logs: tail -20).
+- Never re-read a file already in your context; Read big files with
+  offset/limit slices.
+
 ## Mechanics
 - Your mandated modality, the function, file, ledger digest, and the outcome
   path are all in the task brief. Work ONLY that function, ONLY in that modality.
