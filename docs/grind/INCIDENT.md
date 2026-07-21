@@ -1,55 +1,51 @@
-# GRINDER CIRCUIT-BREAK — 2026-07-21 01:48 — RESOLVED 2026-07-21
+# GRINDER CIRCUIT-BREAK — 2026-07-21 16:14 — RESOLVED 2026-07-21
 
-**Reason:** 3 consecutive invalid sessions on saSeMain_80045600 (all
-`SCOPE VIOLATION — ?? "]\357\200\242"`)
+**Reason:** judge unreachable/invalid after 5 attempts for cpu_get_dist
 
-**Root cause:** a zero-byte root file named `]` + U+F022 (mangled redirect
-artifact, created once at 01:08 during the first s2 attempt; no generating
-script survives — one-off). The scope-violation cleanup only did
-`git checkout -- .` (tracked files) + `git clean -fd -- tmp` (skips gitignored
-tmp), so a root-level UNTRACKED junk file survived the discard and re-tripped
-the scope check of every respawn: sessions 2 and 3 were discarded for dirt they
-did not create. The third discarded session had CLOSED saSeMain_80045600 to
-sandbox 0 (candidate-ready) — its outcome survived on disk and was banked to
-the ledger by the operator (s2 apply, 2026-07-21); the closing form re-derives
-from the ledger + tmp/grind/saSeMain_80045600/s2/p1_guard_ge_induction.c.
+**Root cause:** plan usage limit — every judge spawn died instantly with
+`429 "You've hit your session limit · resets 4pm (America/Chicago)"`
+(tmp/grind/judge_cpu_get_dist.json.agent.log). Environmental, not a pipeline
+defect; the driver's backoff (60s→960s) correctly outlasted only ~32 min, all
+inside the limit window. The s2 candidate was bytes-proven mid-flight (src +
+regfix retire state left dirty by the break, per design: candidate waits).
 
-**Fix (committed 2026-07-21):** the scope-violation path now also runs
-`git clean -fdq -e memory -e docs -e src -e include`, purging any untracked
-out-of-surface dirt it just flagged so junk can never poison respawns. Sibling
-of the nonmatchings/ scope-break (2026-07-19) — same sticky-untracked-dirt
-class, now closed for ALL junk paths, not just known ones.
+**Recovery (operator, 2026-07-21):** fable probe OK post-4pm-reset; s2 closing
+form banked in memory/grind/cpu_get_dist/candidate.c (committed); src/regfix
+reverted to HEAD + verify-oracle green; relaunched. s3 inherits candidate.c and
+re-runs the candidate path with the judge reachable.
 
-git HEAD: aeb77dd6
+git HEAD: 17377cb3
 git status:
 ```
-M  metrics/events.jsonl
-?? "]\357\200\242"
-?? memory/grind/saSeMain_80045600/rejected/dead-index-use-dce-before-reload-vars0.c
-?? memory/grind/saSeMain_80045600/rejected/rotated-top-test-loop-fires-phantom-but-score-11.c
-?? memory/grind/saSeMain_80045600/rejected/s16-derivation-respellings-13-forms-all-memfold-vars0.c
+ M memory/grind/cpu_get_dist/candidate.c
+ M metrics/events.jsonl
+ M regfix.txt
+ M src/code6cac_b.c
+?? memory/grind/cpu_get_dist/rejected/staged-splitinit-all-variants-27-33.c
+?? memory/grind/cpu_get_dist/rejected/store-stage-dead-var-reuse-26.c
+?? memory/grind/cpu_get_dist/rejected/wrap-alone-without-dead-store-27.c
 
 ```
 Last 20 log lines:
 ```
-[grind 2026-07-20 21:11:24] func_80033550: session 4 starting, modality=permuter
-[grind 2026-07-20 22:37:24] func_80033550: progress applied — floor=4, 's4 permuter: floor holds at 4; four campaigns (~104k iters, 4 basins incl. the v07-flip neighborhood) all converge to the score-20 ptr=a1 attractor with zero sub-20 finds — permuter whole-function axis measured near-dead, corroborating the s2/s3 structural closure'
-[grind 2026-07-20 22:37:47] func_80033550: session 5 starting, modality=permuter
-[grind 2026-07-20 23:19:33] func_80033550: progress applied — floor=4, 's5 permuter: floor holds at 4; two fresh basins (DImode-pair 17k iters, walker-pointer 17k iters) both converge to the score-20 ptr=a1 attractor — permuter modality now fully dead (6 basins, ~138k cumulative); NEW fact: uninit-read pseudo occupies $a3 byte-free (first zero-byte occupant ever observed)'
-[grind 2026-07-20 23:19:56] func_80033550: session 6 starting, modality=forensics
-[grind 2026-07-20 23:39:49] func_80033550: progress applied — floor=4, 's6 forensics: floor holds at 4; cc1psx is instruction-identical (fork-divergence KILLED), and source-level closure theorem proven — no valid C with this 34-insn shape can home ptr in a3 (all byte-free a1/a2-occupancy channels closed: DImode even-pair rule mips.c:3447, empty/unreachable preferences, coalesce=same-reg-only final.c:1800, dead-defs die pre-RA flow.c:1479, uninit-use invalid)'
-[grind 2026-07-20 23:40:13] func_80033550: session 7 starting, modality=forensics
-[grind 2026-07-21 00:19:44] func_80033550: judge ruling FAIL recorded.
-[grind 2026-07-21 00:20:07] func_80033550: session 7 starting, modality=forensics
-[grind 2026-07-21 00:27:30] func_80033550: OWNER-GATED — parked pending owner ruling (docs/grind/decisions.md — '2026-07-21 — func_80033550 (src/code6cac_b.c) — OWNER-ESCALATION' (filed by grind s8 forensics per the 2026-07-21 00:19 Judge FAIL disposition and the standing 2026-07-20 endgame-lock-disposition rule)).
-[grind 2026-07-21 00:27:32] func_8007C2A0: session 1 starting, modality=recon
-[grind 2026-07-21 00:38:52] func_8007C2A0: MERGED — COMPLETED-C.
-[grind 2026-07-21 00:38:53] saSeMain_80045600: session 1 starting, modality=recon
-[grind 2026-07-21 01:01:07] saSeMain_80045600: progress applied — floor=4, 'Residual is purely the +8-byte phantom frame slot; phantom CONFIRMED reachable here (positive control vars=8) and two zero-cost in-tree witnesses found; 6 spellings measured (5 killed) via a new vars= probe harness; src cheats (volatile pad + v0 pin) removed at no cost'
-[grind 2026-07-21 01:01:31] saSeMain_80045600: session 2 starting, modality=structural
-[grind 2026-07-21 01:17:14] saSeMain_80045600: SCOPE VIOLATION — ?? "]\357\200\242" — session discarded.
-[grind 2026-07-21 01:17:37] saSeMain_80045600: session 2 starting, modality=structural
-[grind 2026-07-21 01:38:23] saSeMain_80045600: SCOPE VIOLATION — ?? "]\357\200\242" — session discarded.
-[grind 2026-07-21 01:38:46] saSeMain_80045600: session 2 starting, modality=structural
-[grind 2026-07-21 01:48:41] saSeMain_80045600: SCOPE VIOLATION — ?? "]\357\200\242" — session discarded.
+[grind 2026-07-21 13:40:38] func_8007B844: session 5 starting, modality=permuter
+[grind 2026-07-21 13:40:38] func_8007B844: SCOPE VIOLATION —  M regfix.txt — session discarded.
+[grind 2026-07-21 13:40:38] grinder stopped.
+[grind 2026-07-21 13:40:39] grinder starting (pid 12556, model fable, judge fable)
+[grind 2026-07-21 13:40:40] pre-flight: oracle green.
+[grind 2026-07-21 13:40:40] func_8007B844: session 5 starting, modality=permuter
+[grind 2026-07-21 14:13:27] func_8007B844: progress applied — floor=6, 's5 permuter: floor 6 holds; 3 fresh-seed campaigns on never-randomized chassis (172k iters, all stopped) confirm the permuter axis dead across 5 lifetime chassis geometries — no sub-135 find has ever occurred; frontier is exclusively F2 sched-forensics + F3 cross-project research'
+[grind 2026-07-21 14:13:51] func_8007B844: session 6 starting, modality=forensics
+[grind 2026-07-21 14:40:07] func_8007B844: judge ruling PASS recorded.
+[grind 2026-07-21 14:40:30] func_8007B844: session 6 starting, modality=forensics
+[grind 2026-07-21 14:54:07] func_8007B844: MERGED — COMPLETED-C.
+[grind 2026-07-21 14:54:08] cpu_get_dist: seeded ledger from memory/wip checkpoint.
+[grind 2026-07-21 14:54:08] cpu_get_dist: session 1 starting, modality=recon
+[grind 2026-07-21 15:04:56] cpu_get_dist: progress applied — floor=15, 'Recon: floor 15 re-confirmed on main; duplicate lead killed (func_8003032C is a same-address stale twin); m2c = natural rx-first shape; fresh 15-form RTL dumps banked; rz-addend-lead swap measured KILLED at 25.'
+[grind 2026-07-21 15:05:20] cpu_get_dist: session 2 starting, modality=structural
+[grind 2026-07-21 15:42:58] judge attempt 1 returned no valid verdict; backing off 60s.
+[grind 2026-07-21 15:44:01] judge attempt 2 returned no valid verdict; backing off 120s.
+[grind 2026-07-21 15:46:04] judge attempt 3 returned no valid verdict; backing off 240s.
+[grind 2026-07-21 15:50:08] judge attempt 4 returned no valid verdict; backing off 480s.
+[grind 2026-07-21 15:58:12] judge attempt 5 returned no valid verdict; backing off 960s.
 ```
