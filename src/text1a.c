@@ -1034,10 +1034,10 @@ void func_800418D0(s32 *a0) {
     ((Block16 *)(a0 + 6))[1] = ((Block16 *)(a0 + 14))[1];
 }
 void func_80041988(s32 a0, s32 a1, s32 a2, s32 a3) {
-    u8 mask_table;
+    s32 mask_table;
     s32 bit;
     s32 i;
-    s32 id;
+    s32 one;
 
     if ((u32)a0 >= 2) {
         return;
@@ -1045,36 +1045,45 @@ void func_80041988(s32 a0, s32 a1, s32 a2, s32 a3) {
     mask_table = D_80094D40[a1];
     bit = 0x10;
     i = 0;
-    id = 1;
     do {
         if (!(mask_table & bit) || !(a2 & bit)) {
-            goto next;
+            goto shift;
         }
+        /* FAKE: opaque-one holder (SOTN-sanctioned shape, [[loop-rotation-two-shift]] /
+         * [[named-local-fake-exception]]). Mechanism: a literal `a0 == 1` compare
+         * materializes the 1 into a compiler temp that loop.c move_movables hoists to
+         * the preheader (eligible via its !REG_USERVAR_P clause); the hoisted pseudo
+         * crosses the loop's 6 calls, gets no hard reg, and reload rematerializes it
+         * in-loop picking $v1 (order_regs_for_reload prefers zero-use regs). Target has
+         * $v0, only reachable by an RA-allocated pseudo: a user variable set here and
+         * used in the next basic block fails all three movable conditions (maybe_never
+         * is set), stays in-loop, and global RA assigns $v0. The store is live — it IS
+         * the target's `addiu v0,zero,1`. Literal/switch/if-else spellings measured:
+         * 8, 8, 7 (see memory/grind/func_80041988/). */
+        one = 1;
         if (a0 == 0) {
             goto case0;
         }
-        if (a0 == 1) {
+        if (a0 == one) {
             goto case1;
         }
         goto shift;
     case0:
         if (single_game_SetStageId() == 0) {
-            InitHiraRmd_800480C0(a3, id, 0, 0, -0x140, 0xE8);
+            InitHiraRmd_800480C0(a3, i + 1, 0, 0, -0x140, 0xE8);
         } else {
-            AddTbpOfst_80047EE8(a3, id);
+            AddTbpOfst_80047EE8(a3, i + 1);
         }
         goto shift;
     case1:
         if (single_game_SetStageId() == a0) {
-            InitHiraRmd_800480C0(a3, id, 0x80, 0, -0x140, 0xE8);
+            InitHiraRmd_800480C0(a3, i + 1, 0x80, 0, -0x140, 0xE8);
         } else {
-            InitHiraRmd_80047FBC(a3, id, 0x80, 0);
+            InitHiraRmd_80047FBC(a3, i + 1, 0x80, 0);
         }
-    next:
     shift:
         bit >>= 1;
         i++;
-        id++;
     } while (i < 5);
 }
 

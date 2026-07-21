@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80041988",
-      "file": "text1a",
-      "distance": 8,
-      "verdict": "C",
-      "rules": 2,
-      "status": "active"
-    },
-    {
       "func": "saSeMain_80045510",
       "file": "text1a_c",
       "distance": 8,
@@ -2793,14 +2785,14 @@
     }
   ],
   "counts": {
-    "total": 342,
-    "active": 307,
+    "total": 341,
+    "active": 306,
     "by_status": {
-      "active": 307,
+      "active": 306,
       "parked": 35
     },
     "by_verdict": {
-      "C": 153,
+      "C": 152,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }

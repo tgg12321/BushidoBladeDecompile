@@ -402,9 +402,7 @@ func_80019310: insert "nop" @ 3
 func_80019310: reorder 2,1 @ 1-2
 
 # func_80041988: reorder init block (lui/addu/lbu before constant inits)
-func_80041988: reorder 19,20,21,16,17,22,23,18 @ 16-23
 # func_80041988: swap v0<->v1 in dispatch (li and beq)
-func_80041988: $2 <-> $3 @ 30-31
 
 # rob_calc_2d_position: global data_ptr/t2 swap
 rob_calc_2d_position: $10 <-> $11
