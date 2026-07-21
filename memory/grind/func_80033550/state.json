@@ -1,8 +1,8 @@
 {
  "func": "func_80033550",
  "file": "code6cac_b",
- "session_count": 5,
- "current_modality": "permuter",
+ "session_count": 6,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -33,23 +33,24 @@
    "floor": 4,
    "modality": "permuter",
    "headline": "s5 permuter: floor holds at 4; two fresh basins (DImode-pair 17k iters, walker-pointer 17k iters) both converge to the score-20 ptr=a1 attractor \u2014 permuter modality now fully dead (6 basins, ~138k cum"
+  },
+  {
+   "session": 6,
+   "floor": 4,
+   "modality": "forensics",
+   "headline": "s6 forensics: floor holds at 4; cc1psx is instruction-identical (fork-divergence KILLED), and source-level closure theorem proven \u2014 no valid C with this 34-insn shape can home ptr in a3 (all byte-free"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "GCC 2.7.2 records conflicts for pseudos deleted after conflict construction; the s5 uninit-read result proves the zero-byte-occupancy channel exists",
-   "mechanism": "upward-exposed uses keep a def-less pseudo in the conflict graph with zero emitted instructions (empirical, c5 output-30-1); question is whether any VALID construct (def present but deleted post-conflict-build) reaches the same channel",
-   "next_probe": "cc1 forensics: read flow.c/global.c for how upward-exposed uses and post-conflict-build deletions enter conflict lists; targeted -da dumps on shapes whose def is deleted late (tied copies, reg_may_share)"
+   "hypothesis": "A sanctioned-FAKE-family construct (dead-store / named-local / duplicated-statement) supplies a1+a2 occupants byte-free (frontier-3, last unmeasured sanctioned axis)",
+   "mechanism": "s6 theorem PREDICTS inert: dead stores are flow-deleted pre-RA (flow.c:1479), named-locals fold or emit bytes, duplicated-statement only lifts allocation priority which is outcome-irrelevant here \u2014 but the families were never SWEPT as a1/a2 conflict sources on this function",
+   "next_probe": "one structural session: FAKE-annotated dead-store/named-local/duplicated-statement placements targeting a1+a2 occupancy, .greg per variant; a confirmed-inert sweep completes lever-exhaustion documentation"
   },
   {
-   "hypothesis": "The SN cc1psx homes ptr in a3 for this same C (compiler-fork RA divergence)",
-   "mechanism": "if the original compiler's global.c differs (alloc order/sharing), no C spelling under our pinned toolchain reproduces the home without a real occupant",
-   "next_probe": "cc1psx calibration cross-check (tools/cc1psx_wrapper.sh, calibration-only) on candidate.c; if cc1psx yields a3, escalate for an owner ruling on disposition"
-  },
-  {
-   "hypothesis": "A sanctioned-FAKE-family construct (dead-store / named-local / duplicated-statement) supplies two zero-byte a1/a2 occupants via the now-proven occupancy channel",
-   "mechanism": "s5 proved byte-free occupancy exists for def-less pseudos; the FAKE families were never swept as conflict sources targeting a1+a2 specifically",
-   "next_probe": "structural sweep of FAKE-annotated dead-store/named-local placements targeting a1+a2 occupancy with .greg verification of byte-neutrality (lever-exhaustion documented s1-s5)"
+   "hypothesis": "func_80033550 is an endgame RA-lock: byte-match reachable only via a cheat, 4 insns short, every sanctioned axis measured dead",
+   "mechanism": "s1-s6 record: structural (s2+s3) + permuter (6 basins, ~138k iters, s4+s5) + forensic closure theorem (s6) leave no valid-C channel to ptr=a3; owner standing policy 2026-07-20 (endgame-lock-disposition) governs disposition of exactly this class",
+   "next_probe": "after the FAKE-family sweep measures dead, draft the OWNER-ESCALATION entry for docs/grind/decisions.md citing the s1-s6 ledger (driver/operator files it; only then is owner-gated valid)"
   }
  ],
  "judge_constraints": [],

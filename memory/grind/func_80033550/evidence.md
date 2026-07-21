@@ -271,3 +271,95 @@
 - [s5] Driver reset src to the old pinned form again; pin-free candidate re-applied at session start and verified 4/369 at session start and end
 
 - [s5] Tooling: standalone permuter-workspace compile.sh crashes in maspsx (.file line split, maspsx/__init__.py:940) because the repo path contains spaces; campaigns unaffected (permuter compiles from space-free temp dirs); measure finds via /tmp copies (measure30.sh pattern)
+
+## s6 (2026-07-20, forensics)
+
+- **Floor unchanged: 4.** Src reset by driver again — pin-free candidate re-applied
+  at session start, sandbox 4 / stripped 369 (identical JSON to s2-s5 baselines).
+  No src edits after that measurement.
+- **cc1psx cross-check KILLS the compiler-fork theory:** GCC 2.7.2.SN.1 (the real
+  PsyQ cc1psx via tools/cc1psx_wrapper.sh) compiled the exact candidate C
+  (minimal TU, same input to both) → INSTRUCTION-IDENTICAL output to our fork:
+  `move $5,$4`, all three lw via $5 (a1), same schedule; only label syntax
+  ($L vs .L) and banner differ (s6/ours.s vs s6/psx.s). The original a3 did NOT
+  come from a different compiler — it came from different SOURCE.
+- **s3's DImode mechanism claim CORRECTED (architectural):** mips.c:3446-3447
+  `mips_hard_regno_mode_ok`: GP-reg multi-word values require EVEN regno
+  (`(regno & 1) == 0 || size <= UNITS_PER_WORD`). A DImode pseudo can never
+  start at $5/a1; legal pairs are (v0,v1) ($2,$3), (a0,a1) ($4,$5), (a2,a3)
+  ($6,$7). With conflicts {v0,v1,a0} the ONLY legal placement is a2+a3 — which
+  BLOCKS a3 and leaves a1 free. This exactly explains c5 output-30-1 (uninit
+  DImode landed a2+a3, reads seen on $7, ptr stayed a1). "Byte-free DImode
+  would pair-home a1+a2 and push ptr to a3" is impossible; the DImode axis is
+  closed by HARD_REGNO_MODE_OK, not merely by spelling failures.
+- **The exact allocation decision, fully instrumented** (tmp/gccdbg/cc1
+  BB2_FINDREG_DEBUG=72, dump s6/findreg_72_74.txt; dbg cc1 output verified
+  identical to build cc1): find_reg (global.c:920) for pseudo 72:
+  conflicts {2,3,4,29}, own_copy_prefs EMPTY, own_full_prefs EMPTY,
+  someone_prefers EMPTY; pass-0 numeric scan (global.c:1018-1043, no
+  REG_ALLOC_ORDER) picks first free = 5 (a1). a1 was NOT excluded by
+  ¬used_so_far (local-alloc already used 2,3,4,5 for w/temp qtys). To get 7
+  (a3), regs 5 AND 6 must both be in `used` — with all preference sets empty,
+  ONLY hard_reg_conflicts[72] ⊇ {5,6} can do it.
+- **Preference channel closed at source level:** set_preference (global.c:
+  1590-1675) fires only on SET insns pairing a hard reg with a global pseudo;
+  find_reg's copy-preference override (global.c:1057-1090) could seat ptr in
+  a3 over a free a1, but the only hard-reg SET in a call-free leaf is the
+  incoming `ptr = $a0` copy. No call → no a1/a2/a3-rooted preference exists
+  for ANY C spelling. (Target has no calls, so the original couldn't use this
+  channel either.)
+- **Byte-free occupancy channels enumerated and ALL closed for valid C:**
+  (a) real-def SImode occupant → emits bytes (s2/s3 measured, v07 class);
+  (b) coalesced copy → final.c:1800-1806 deletes reg-reg moves only when
+  REGNO(src)==REGNO(dst), so a byte-free copy-occupant necessarily sits in
+  its source's home ∈ {v0,v1,a0} — can never occupy a1/a2;
+  (c) DImode pair → a2+a3 only (above);
+  (d) dead-def pseudo → flow.c:1479 insn_dead_p deletion runs PRE-RA, pseudo
+  never reaches conflict construction (s3 empirical);
+  (e) upward-exposed-use pseudo → the one REAL byte-free channel (c5-30), but
+  a semantically valid read must carry a defined value, which forces a def
+  (bytes) or aliasing an existing same-reg value (no new conflict); the only
+  byte-free spelling is an uninit read whose garbage flows into the stores —
+  invalid. CONCLUSION: no semantically-valid C producing THIS exact 34-insn
+  shape can home ptr in a3 under this compiler. The original source must
+  differ in pre-RA census in a way that still emits these 34 bytes — and by
+  the closure above, no such valid C exists within the searched shape space;
+  frontier-3's FAKE families are predicted inert (dead stores flow-deleted
+  pre-RA per (d); named-locals fold or emit bytes; duplicated-statement only
+  lifts priority, and allocation ORDER is outcome-irrelevant here — s3).
+- **Wider-signature axis now MEASURED dead (was reasoning-only in s2):**
+  ANSI 4-param (3 unused), 2-param, and K&R-style 4-param variants all
+  compile to byte-identical asm with IDENTICAL conflict sets (72 conflicts
+  {i,2,3,4,29}) and ptr in a1 (s6/p4.c.greg, p2.c.greg, pk.c.greg). Unused
+  parm copies are flow-deleted with no residual entry liveness for a1-a3.
+- Artifacts: tmp/grind/func_80033550/s6/{psxcheck.sh,probe.c,ours.s,psx.s,
+  findreg.sh,findreg2.sh,findreg_72_74.txt,probe.c.greg,parmtest.sh,
+  p4.c.greg,p4.s,p2.c.greg,p2.s,pkdiag.sh,pk.c.greg,pk.s}.
+
+- [s6] cc1psx (GCC 2.7.2.SN.1) output is instruction-identical to our fork on the candidate C (ptr in a1, same schedule) — compiler-fork RA divergence KILLED; the original a3 came from different source, not a different compiler
+
+- [s6] mips.c:3447 even-regno rule for multi-word GP values: DImode can only pair-home (v0,v1)/(a0,a1)/(a2,a3); with conflicts {v0,v1,a0} only a2+a3 is legal — s3's a1+a2 pair-home mechanism is architecturally impossible; explains c5-30 exactly
+
+- [s6] BB2_FINDREG_DEBUG on pseudo 72: conflicts {2,3,4,29}, ALL preference sets empty, someone_prefers empty; pass-0 numeric scan picks 5; a3 requires hard_reg_conflicts ⊇ {5,6} — no other channel exists
+
+- [s6] Preference channel to a3 is source-closed: set_preference needs a hard-reg SET; a call-free leaf has only the a0 parm copy; target has no calls either
+
+- [s6] Closure theorem: channels (a) real-def=bytes, (b) coalesce=source-home-only (final.c:1800), (c) DImode=a2+a3-only, (d) dead-def=flow-deleted-pre-RA (flow.c:1479), (e) uninit-use=invalid — no valid C with this 34-insn shape homes ptr in a3
+
+- [s6] Wider signatures (ANSI-4/2-param/K&R-4, unused extras) measured census-identical and byte-identical — s2's reasoning-kill now .greg-proven
+
+- [s6] cc1psx (GCC 2.7.2.SN.1) output is instruction-identical to our fork on the candidate C — the original a3 came from different SOURCE, not a different compiler
+
+- [s6] mips.c:3447: GP multi-word values need even start regno; DImode pairs are only (v0,v1)/(a0,a1)/(a2,a3) — s3's a1+a2 pair-home claim was architecturally impossible; c5-30's a2+a3 landing exactly explained
+
+- [s6] BB2_FINDREG_DEBUG=72: conflicts {2,3,4,29}, own_copy_prefs/full_prefs/someone_prefers ALL empty; pass-0 numeric scan picks 5(a1); ptr->a3 requires hard_reg_conflicts >= {5,6} — conflicts are the ONLY channel
+
+- [s6] set_preference (global.c:1590) fires only on hard-reg<->pseudo SETs; call-free leaf has only the a0 parm copy, so no a1/a2/a3 preference is reachable from C
+
+- [s6] final.c:1800-1806: post-RA no-op move deletion requires same src/dst reg — a byte-free coalesced occupant can only sit in its source's home ({v0,v1,a0}), never a1/a2
+
+- [s6] Closure theorem: no semantically-valid C producing this exact 34-insn shape homes ptr in a3 under this compiler; FAKE-family occupants predicted inert (dead stores flow-deleted pre-RA; named-locals fold or emit bytes; duplicated-statement lifts only priority, and order is outcome-irrelevant here per s3)
+
+- [s6] Wider signatures (ANSI-4/2/K&R-4 with unused params) measured byte- and census-identical — s2's reasoning-kill now .greg-proven
+
+- [s6] Baseline re-verified at session start: sandbox 4, cheat_asm_stripped 369 (driver had reset src to the old pinned form again; pin-free candidate re-applied and left in place)

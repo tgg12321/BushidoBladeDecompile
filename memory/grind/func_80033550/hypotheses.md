@@ -283,3 +283,63 @@ upward-exposed uses and whether any VALID construct reaches the same channel.
 - probe: honest asm diff of c5 output-30-1 vs target from a space-free /tmp copy (measure30.sh)
 - result: CONFIRMED: 0 ins/del, 6 reg diffs; the DImode t occupies $a3 byte-free (build idx chain reads a3 garbage); ptr did not flip; only reachable spelling found is semantically invalid
 - verdict: CONFIRMED
+
+## [s6] The SN cc1psx homes ptr in a3 for this same C (compiler-fork RA divergence)
+- mechanism: if the original compiler's global.c/local-alloc differed, no C spelling under our pinned toolchain reproduces the home without a real occupant
+- probe: minimal TU of the candidate compiled by both tools/gcc-2.7.2/build/cc1 and tools/cc1psx_wrapper.sh (identical input, identical flags subset); full diff
+- result: INSTRUCTION-IDENTICAL output — cc1psx also homes ptr in $5/a1 (move $5,$4 + three lw via $5), same schedule; only label syntax and banner differ
+- verdict: KILLED
+
+## [s6] A byte-free DImode pair-occupant would home a1+a2 and push ptr to a3 (s3 mechanism claim)
+- mechanism: multi-reg pseudo with conflicts {v0,v1,a0} takes the first free consecutive pair
+- probe: read mips.c mips_hard_regno_mode_ok init (lines 3439-3465)
+- result: GP multi-word values require EVEN start regno; a1+a2 ($5,$6) is not a legal DImode placement — only (a2,a3) is available given the conflicts, which BLOCKS a3 and leaves a1 free; exactly matches c5 output-30-1's observed landing
+- verdict: KILLED (architecturally impossible, stronger than s3's spelling-level kill)
+
+## [s6] A preference (copy-pref or full-pref) could seat ptr in a3 over a free a1
+- mechanism: find_reg's preference override (global.c:1057-1090) replaces the scanned best_reg with a preferred same-class reg
+- probe: BB2_FINDREG_DEBUG=72 via instrumented tmp/gccdbg/cc1 (output verified identical to build cc1); read set_preference (global.c:1590-1675)
+- result: all preference sets for pseudo 72 are EMPTY; preferences root only in SET insns pairing a hard reg with a pseudo; a call-free leaf has only the incoming a0 copy, so no a1/a2/a3 preference is reachable from any C spelling (original has no calls either)
+- verdict: KILLED
+
+## [s6] Some post-conflict-build deletion channel yields a VALID byte-free a1/a2 occupant (frontier-1)
+- mechanism: pseudo present at conflict construction, its def deleted before final emission
+- probe: source forensics — flow.c:1479 (insn_dead_p deletion, PRE-RA), final.c:1800-1806 (no-op move deletion, requires REGNO(src)==REGNO(dst)), plus the s5 uninit channel
+- result: enumeration closes every channel for valid C: dead defs die pre-RA (never reach conflicts); coalesced copies occupy only the SOURCE's home ∈ {v0,v1,a0}; DImode lands a2+a3; a valid upward-exposed use must alias an existing same-reg value (no new conflict) or force a real def (bytes); the sole byte-free spelling is the invalid uninit read
+- verdict: KILLED (no valid C with this 34-insn shape can home ptr in a3 — closure theorem, s6 evidence)
+
+## [s6] The original had a wider signature whose unused params pressured RA (re-test of s2 kill with measurement)
+- mechanism: unused parm copies or entry liveness of a1-a3 conflict with ptr
+- probe: ANSI 4-param, 2-param, K&R-style 4-param variants; .greg census + asm diff each
+- result: all three byte-identical with identical conflict sets ({i,2,3,4,29}) and ptr in a1; unused parm copies flow-deleted, zero residual entry liveness
+- verdict: KILLED (now measured, was reasoning-only)
+
+## [s6] The SN cc1psx homes ptr in a3 for this same C (compiler-fork RA divergence)
+- mechanism: if the original compiler's allocator differed, no C under our pinned toolchain reproduces a3 without a real occupant
+- probe: minimal TU of the candidate compiled by both our cc1 and tools/cc1psx_wrapper.sh (identical input); full asm diff
+- result: instruction-identical output — cc1psx also homes ptr in $5/a1 (move $5,$4 + three lw via $5), same schedule; only label syntax and banner differ
+- verdict: KILLED
+
+## [s6] A byte-free DImode pair-occupant would home a1+a2 and push ptr to a3 (s3 mechanism)
+- mechanism: multi-reg pseudo with conflicts {v0,v1,a0} takes the first free consecutive pair
+- probe: mips.c mips_hard_regno_mode_ok init (3439-3465)
+- result: GP multi-word values require EVEN start regno: a1+a2 ($5,$6) is illegal; only (a2,a3) fits the conflicts, which blocks a3 and leaves a1 free — exactly matches c5 output-30-1's landing
+- verdict: KILLED
+
+## [s6] A copy/full preference could seat ptr in a3 over a free a1
+- mechanism: find_reg's preference override (global.c:1057-1090) replaces the scanned best_reg
+- probe: BB2_FINDREG_DEBUG=72 via instrumented tmp/gccdbg/cc1 (output verified identical to build cc1) + set_preference source read (global.c:1590-1675)
+- result: all preference sets for pseudo 72 EMPTY; preferences root only in hard-reg SETs; a call-free leaf has only the incoming a0 copy — channel unreachable from any C spelling (target has no calls either)
+- verdict: KILLED
+
+## [s6] Some post-conflict-build deletion channel yields a VALID byte-free a1/a2 occupant (frontier-1)
+- mechanism: pseudo present at conflict construction whose def is deleted before final emission
+- probe: source forensics: flow.c:1479 (dead-def deletion PRE-RA), final.c:1800-1806 (no-op move deletion requires REGNO(src)==REGNO(dst)), s5 uninit channel semantics
+- result: closure: dead defs never reach conflicts; coalesced copies occupy only the source's home ({v0,v1,a0} here); DImode lands a2+a3; a valid upward-exposed use must alias an existing same-reg value (no new conflict) or force a real def (bytes); only the invalid uninit read is byte-free
+- verdict: KILLED
+
+## [s6] The original had a wider signature whose unused params pressured RA (s2 kill re-tested with measurement)
+- mechanism: unused parm copies or a1-a3 entry liveness conflict with ptr
+- probe: ANSI 4-param, 2-param, K&R 4-param variants; .greg census + asm diff each
+- result: all three byte-identical, identical conflict sets, ptr in a1; unused parm copies flow-deleted with zero residual entry liveness
+- verdict: KILLED

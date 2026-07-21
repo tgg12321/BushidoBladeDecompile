@@ -12,8 +12,14 @@
  * s5 new fact: an uninit-read pseudo occupies a register byte-free
  * (rejected/permuter-uninit-dimode-read-garbage-a3-30.c) — the zero-byte
  * occupant channel exists but no valid spelling reaches it yet.
- * Remaining axes: cc1 forensics (post-conflict-build deletions / upward-
- * exposed uses), cc1psx calibration check, FAKE-family occupant sweep.
+ * s6 (forensics): cc1psx output is INSTRUCTION-IDENTICAL to our fork on this
+ * C (ptr in a1) — no compiler-fork divergence. Closure theorem proven at
+ * source level (mips.c:3447 even-pair rule; global.c find_reg prefs empty,
+ * set_preference needs a hard-reg SET = calls; final.c:1800 no-op deletion
+ * needs same-reg; flow.c:1479 dead defs die pre-RA): no semantically-valid C
+ * producing THIS 34-insn shape can home ptr in a3. Remaining: FAKE-family
+ * occupant sweep (predicted inert), then owner escalation per
+ * endgame-lock-disposition policy.
  * The do-while(0) wrap is sanctioned per do-while-zero-exception (2026-07-06
  * owner ruling, any codegen effect, single-level, FAKE-annotated).
  * Residual 4 = arg0's pointer pseudo homed in $a1 (build) vs $a3 (target):
