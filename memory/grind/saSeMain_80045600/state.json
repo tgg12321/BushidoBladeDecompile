@@ -1,0 +1,34 @@
+{
+ "func": "saSeMain_80045600",
+ "file": "text1a_c",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 4,
+   "modality": "recon",
+   "headline": "Residual is purely the +8-byte phantom frame slot; phantom CONFIRMED reachable here (positive control vars=8) and two zero-cost in-tree witnesses found; 6 spellings measured (5 killed) via a new vars="
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The zero-cost phantom rider transplants from func_800493E4/func_80030900 once the exact orphan path is known",
+   "mechanism": "combine deletion path that skips reg_n_refs decrement \u2014 identify which consumer shapes (index-use, call-arg-use, truncating RMW) route through it",
+   "next_probe": "cc1 -da lreg/greg dumps of func_800493E4 and func_80030900; locate the ST_REGS-or-none orphan pseudo; then replay the firing consumer shape in saSeMain probe grid"
+  },
+  {
+   "hypothesis": "A byte-neutral respelling of saSeMain's compare/walk gives the s16 value a second non-compare consumer that fold-eliminates",
+   "mechanism": "mixed-kind dual use blocks the clean mem-fold, forcing a reg-form extension combine later deletes stale",
+   "next_probe": "probe grid via s1 probe.py: dual-use spellings built only from the function's real semantics (pointer-walk via s16-element arithmetic, found-block store through the s16* base, compare+index-like use)"
+  },
+  {
+   "hypothesis": "If forensics prove every zero-cost rider needs an insn the target lacks, the slot is aggregate-only and this is the endgame-lock species (cf. func_80049A2C owner-gated)",
+   "mechanism": "register-ineligibility exhaustion per the func_80037540 s4 corrected condition",
+   "next_probe": "only after F1/F2 measured dead: assemble the exhaustion dossier; do not owner-gate before that"
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-21T05:38:53.554311+00:00"
+}
