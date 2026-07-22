@@ -216,3 +216,17 @@ don't move it.
 - [s7] CORROBORATION (rules out a file-wide quirk): the byte-matched sibling func_80030900 (same TU, genuine pointer-domain index-off-a0 loop) has 20 add-family insns but ZERO genuine rr-adds (`grep addu|grep -v zero`=0) — it does all address arithmetic via addiu displacement, never materializing a scaled-index+base rr-add. So idx25's index-first rr-add is a source-shape SPECIFIC to cpu_check_tubazeri_2's original code, not a compiler-wide artifact of the file.
 - [s7] BEARING ON DISPOSITION: this whole-function census is NEW evidence the s2 cheat-reviewer did NOT have when it FAILED `v0+(s32)a0` as a commutative-operand-order "coercion". It flagged the int cast as gratuitous order-steering; the census shows the int-domain add is the compiler-forced SIGNATURE of the original source's domain, not a coercion device. This is exactly the faithfulness-vs-coercion judgment the endgame-lock disposition (feedback/endgame-lock-disposition-policy) exists to resolve — and it requires the owner/Judge, not self-approval.
 - [s7] Artifact: tmp/grind/cpu_check_tubazeri_2/s7/operand_census.md (full classified census table + inference). Candidate.c unchanged (floor-1 form re-verified). No new rejected form (no new C spelling tried; this session is pure forensics on the existing lock).
+
+- [s7] s7 floor re-verified live: candidate.c applied to src/code6cac_b.c (was old floor-9 walking-ptr + (0,...) comma form); sandbox --disable all = score 1, target_insns=build_insns=76, 9 rules dropped, cheat_asm_stripped 371, scorable.
+
+- [s7] s7 NEW type-matrix RTL census: 8 pointer spellings (u8*/s16*/s32* x int/unsigned/long x idx-written-left x array-subscript x exact tubazeri shape) ALL lower base-first unconditionally; p6 (idx+base) base-first confirms c-typeck.c:1988 int+ptr swap; p7 &base[idx] base-first.
+
+- [s7] s7 integer-domain forms preserve WRITTEN order: i1 v0+(s32)a0 -> initial RTL (plus reg74=v0 reg72=a0) -> final addu $2,$2,$4 index-first (= target idx25 addu s2,v0,s0); i2 (s32)a0+v0 -> (plus reg72 reg74) -> addu $2,$4,$2 base-first.
+
+- [s7] s7 inference (tightens 02:10 Judge point #2): target idx25 index-first proves the original source was integer-domain-index-first, i.e. scaled_index + (int)base_pointer, not merely 'integer domain' -- i2 shows even integer domain is base-first when the base is written first, so index-first uniquely selects the index-operand-first family.
+
+- [s7] 2026-07-22 02:10 Judge ruling (docs/grind/decisions.md) FAILED the int-cast ruling-request: independently verified the s6/s7 forensics SOUND (read c-typeck.c 1986/1988/2696 itself) but ruled FAIL per endgame-lock-disposition-policy AND-gate #2 (novel in-house justification, no community precedent) and directed hold-floor-1-INCOMPLETE + escalate.
+
+- [s7] Every sanctioned pure-C axis measured dead: structural (s2/s3 cc1 -da RTL, 7 pointer spellings), permuter (s4/s5 ~144k iters, 3 basins), front-end forensics (s6 exact-source-line + s7 type-matrix). Function is cheat-free at floor-1 (no cheat retained to hold a byte-match).
+
+- [s7] OWNER-ESCALATION filed this session to docs/grind/decisions.md (2026-07-22, cpu_check_tubazeri_2) in the AddTbpOfst_80047EE8 / hirahira_w_frie format, presenting owner options (a) sanction int-domain reconstruction with per-use dossier / (b) INCOMPLETE-owner-accepted at floor-1; agent does not self-resolve.

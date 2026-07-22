@@ -1,7 +1,7 @@
 {
  "func": "cpu_check_tubazeri_2",
  "file": "code6cac_b",
- "session_count": 6,
+ "session_count": 7,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -45,13 +45,19 @@
    "floor": 1,
    "modality": "forensics",
    "headline": "Forensics: idx25 operand-order lock proven at exact GCC source line (c-typeck.c pointer_int_sum:2696 forces PLUS_EXPR ptr-first); pseudo-regno/RA lever DISPROVEN via identical-numbering ptr-vs-int cou"
+  },
+  {
+   "session": 7,
+   "floor": 1,
+   "modality": "forensics",
+   "headline": "s7 forensics: type-matrix RTL census proves idx25 base-first is UNIVERSAL across all 8 pointer spellings (type/width/sign/written-order/subscript) and integer-domain preserves written order, so target"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "cpu_check_tubazeri_2 is a confirmed 1-insn commutative-operand-order endgame-lock whose sole distance-0 C is the reviewer-rejected int-cast operand swap; structural, permuter, AND front-end tree-build forensic axes are all measured dead.",
-   "mechanism": "idx25 addu operand order is hardcoded base-first at the C front-end tree build (c-typeck.c pointer_int_sum:2696 builds PLUS_EXPR pointer-first for any pointer operand); immovable by RA/scheduling/decl-order/pseudo-numbering (pseudo numbering is identical between ptr and int forms) and by loop/combine (no RTL pass reorders two-register commutative plus). Only both-operands-integer source (v0+(s32)a0) yields index-first, and that is the reviewer-FAILED coercion.",
-   "next_probe": "Owner action / non-permuter modality: file an OWNER-ESCALATION in docs/grind/decisions.md for the endgame-lock disposition of cpu_check_tubazeri_2 (hirahira_w_frie/func_80033550 format), citing s3 RTL proof + s4/s5 permuter triple-kill + the s6 exact-source-line forensic proof (c-typeck.c:1986/1988/2696 + identical-pseudo-numbering ptr-vs-int counterfactual). A later session may then emit owner-gated with escalation_ref. NB for the owner: because the same GCC compiles all pointer arithmetic base-first, the target's index-first order implies the ORIGINAL source used integer-domain address arithmetic for this add \u2014 the reviewer flagged v0+(s32)a0 as coercion, but this is precisely the faithfulness-vs-coercion judgment the escalation exists to resolve."
+   "hypothesis": "cpu_check_tubazeri_2's disposition requires an owner faithfulness-vs-coercion ruling; all agent-reachable axes are exhausted and the sole distance-0 form is not autonomously approvable.",
+   "mechanism": "idx25 index-first is a front-end tree-build property provably unreachable from any pointer spelling (s7 type-matrix); only integer-domain-index-first source (v0+(s32)a0) reaches it, which the s2 reviewer FAILED and the 02:10 Judge FAILED per AND-gate #2 (no community precedent). No cheat is retained -- the function is cheat-free at honest floor-1.",
+   "next_probe": "OWNER action: rule on the filed 2026-07-22 OWNER-ESCALATION -- (a) sanction the int-domain address-arithmetic reconstruction as an SOTN-family per-use exception (then it closes via the normal candidate path, bytes re-proven by the driver), or (b) authorize INCOMPLETE-owner-accepted at floor-1. Alternatively, owner/community SOTN-master/VS/ESA precedent research for casting a pointer param to int to reproduce a proven integer-domain operand order. No further pure-C grinding is warranted."
   }
  ],
  "judge_constraints": [

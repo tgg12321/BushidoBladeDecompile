@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "cpu_check_tubazeri_2",
-      "file": "code6cac_b",
-      "distance": 9,
-      "verdict": "C",
-      "rules": 9,
-      "status": "active"
-    },
-    {
       "func": "damage_DebugDisp",
       "file": "code6cac_c_mid",
       "distance": 9,
@@ -2517,6 +2509,15 @@
       "park_reason": "owner escalation pending: docs/grind/decisions.md line 1191 \u2014 '2026-07-21 \u2014 AddTbpOfst_80047EE8 (src/text1b.c) \u2014 OWNER-ESCALATION' (filed by grind s11)"
     },
     {
+      "func": "cpu_check_tubazeri_2",
+      "file": "code6cac_b",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 9,
+      "status": "parked",
+      "park_reason": "owner escalation pending: docs/grind/decisions.md \u2014 2026-07-22 \u2014 cpu_check_tubazeri_2 \u2014 OWNER-ESCALATION (filed by grind s7 per the 2026-07-22 02:10 Judge FAIL + endgame-lock-disposition-policy AND-gate #2)"
+    },
+    {
       "func": "func_8002BEA0",
       "file": "code6cac_b",
       "distance": 9,
@@ -2771,13 +2772,13 @@
   ],
   "counts": {
     "total": 339,
-    "active": 303,
+    "active": 302,
     "by_status": {
-      "active": 303,
-      "parked": 36
+      "active": 302,
+      "parked": 37
     },
     "by_verdict": {
-      "C": 149,
+      "C": 148,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
