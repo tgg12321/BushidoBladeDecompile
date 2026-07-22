@@ -54,7 +54,9 @@
    "next_probe": "Owner action / non-permuter modality: file an OWNER-ESCALATION in docs/grind/decisions.md for the endgame-lock disposition of cpu_check_tubazeri_2 (hirahira_w_frie/func_80033550 format), citing s3 RTL proof + s4/s5 permuter triple-kill + the s6 exact-source-line forensic proof (c-typeck.c:1986/1988/2696 + identical-pseudo-numbering ptr-vs-int counterfactual). A later session may then emit owner-gated with escalation_ref. NB for the owner: because the same GCC compiles all pointer arithmetic base-first, the target's index-first order implies the ORIGINAL source used integer-domain address arithmetic for this add \u2014 the reviewer flagged v0+(s32)a0 as coercion, but this is precisely the faithfulness-vs-coercion judgment the escalation exists to resolve."
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "Do NOT commit the int-cast v0+(s32)a0 as COMPLETED-C on the forensic argument alone; hold cpu_check_tubazeri_2 at honest floor-1 (cheat-free, INCOMPLETE) and file an OWNER-ESCALATION in docs/grind/decisions.md carrying the verified s6/s7 proof for a human faithfulness-vs-coercion ruling (or SOTN/VS/ESA precedent research), per endgame-lock-disposition-policy AND-gate #2."
+ ],
  "origin": "queue",
  "created": "2026-07-22T04:30:07.458431+00:00"
 }
