@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "damage_DebugDisp",
-      "file": "code6cac_c_mid",
-      "distance": 9,
-      "verdict": "C",
-      "rules": 8,
-      "status": "active"
-    },
-    {
       "func": "func_8007DC9C",
       "file": "display",
       "distance": 9,
@@ -2527,6 +2519,15 @@
       "park_reason": "WIP floor 9->4 (worker 670a62bb, reviewer PASS; memory/wip/func_8002BEA0/). GTE-LZCS cluster sibling (func_8001A67C/func_800274BC authorized 2026-06-10); the GTE block is canonical inline asm and matches. Residual floor-4 is a pure-C RA/strength-reduce diff in the /100 division subtree (mfhi  vs target ; delay-slot li vs addiu) -- NOT in the GTE block, so this is compiled C that should match. Same wall class as cpu_check_tubazeri_2. Parked per 50-item-goal set-aside; floor-4 WIP preserved. Resume: pure-C lever for the /100 strength-reduce mfhi-reg + delay-slot, or directed permuter from candidate.c."
     },
     {
+      "func": "damage_DebugDisp",
+      "file": "code6cac_c_mid",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 8,
+      "status": "parked",
+      "park_reason": "owner escalation pending: docs/grind/decisions.md 2026-07-22 damage_DebugDisp OWNER-ESCALATION (filed by grind s15 forensics)"
+    },
+    {
       "func": "func_80057CC8",
       "file": "text1b",
       "distance": 9,
@@ -2772,13 +2773,13 @@
   ],
   "counts": {
     "total": 339,
-    "active": 302,
+    "active": 301,
     "by_status": {
-      "active": 302,
-      "parked": 37
+      "active": 301,
+      "parked": 38
     },
     "by_verdict": {
-      "C": 148,
+      "C": 147,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }

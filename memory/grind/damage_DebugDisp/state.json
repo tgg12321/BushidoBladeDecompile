@@ -1,8 +1,8 @@
 {
  "func": "damage_DebugDisp",
  "file": "code6cac_c_mid",
- "session_count": 14,
- "current_modality": "permuter",
+ "session_count": 15,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 0,
@@ -93,18 +93,24 @@
    "floor": 2,
    "modality": "permuter",
    "headline": "s14 permuter: duplicated-compare-into-arms measured structurally inapplicable + folds pre-flow (byte-neutral, no ref lift); directed def-mechanism permuter (33k iters) dry. All sanctioned axes now dea"
+  },
+  {
+   "session": 15,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "Forensics closes the last allocno_compare input: sum live_length=9 proven a structural floor (birth=latest preheader init, death=mandatory post-loop compare); all 3 priority inputs pinned -> Region A/"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "OWNER-ESCALATION readiness: every sanctioned axis (structural s1-s3/s10-s12, forensics s6/s7, rederive s8/s9, blind permuter s4/s5/s13, directed permuter + duplicated-into-arms s14) is now measured dead; the score-2 residual (Region A') is an exact allocno/sched1 tiebreak requiring sum's weighted reg_n_refs to reach 11 with sum=0 unbracketed, which has no byte-neutral pure-C source.",
-   "mechanism": "sum has exactly two real refs (def + compare); both promotions (do-while0-def s4/s6/s7, compare-bracket s11) force sum=0 to schedule last (A'); sum-first + promotion are mutually exclusive (s12); the only precedented byte-free ref-lift (duplicated-into-arms) is structurally inapplicable because sum is dead after its single compare and the outer loop has no non-complementary split (s14). Per endgame-lock-disposition-policy both AND-gates fail.",
-   "next_probe": "File an OWNER-ESCALATION entry for damage_DebugDisp in docs/grind/decisions.md so a future session can invoke owner-gated; owner rules keep-cheat/INCOMPLETE-owner-accepted vs any newly-precedented mechanism. (No entry exists yet, so this session records progress rather than owner-gated.)"
+   "hypothesis": "Owner ruling on the filed OWNER-ESCALATION (PRIMARY).",
+   "mechanism": "Every sanctioned axis measured dead and every allocno_compare input forensically pinned (n_refs=10 max non-bracket, live_length=9 incompressible, size=1). Both endgame-lock AND-gates fail: #1 scan_hand_coded LOW 2/8 -> no canonical-asm; #2 duplicated-into-arms inapplicable, no SOTN-precedented family -> no coercion family.",
+   "next_probe": "None by a grind session -- await owner ruling: (a) any newly-precedented mechanism / canonical-asm vs (b) INCOMPLETE-owner-accepted (8 cheats retained to hold the byte-match). Future sessions emit owner-gated citing the decisions.md entry until the owner rules."
   },
   {
    "hypothesis": "Frontier #2 (drop j's weighted refs 11->10 so plain sum(10) ties and wins $a0 with the byte-perfect plain preheader = score 0).",
-   "mechanism": "j = j0(w2,d1) + j++[2 refs](w3,d2) + j<0x24(w3,d2) = 11; only j0 is movable and must reset per outer iteration (depth 1). No byte-neutral -1 exists by exact weight arithmetic (s11/s12).",
-   "next_probe": "Re-open ONLY if a future mechanism keeps the three j bytes (addiu a1,a1,1 / sltiu ...,0x24 / j=0) while shedding one flow-counted ref via a loop shape where one j use lands one level shallower. Lowest priority."
+   "mechanism": "j = j0(w2,d1) + j++[2 refs](w3,d2) + j<0x24(w3,d2) = 11; only j0 is movable and must reset per outer iteration (depth 1). No byte-neutral -1 by exact weight arithmetic (s11/s12), reconfirmed by this session's pinning.",
+   "next_probe": "Re-open ONLY if a future mechanism keeps the three j bytes (addiu a1,a1,1 / sltiu ...,0x24 / j=0) while shedding one flow-counted ref via a loop shape landing one j use a level shallower. Lowest priority."
   }
  ],
  "judge_constraints": [

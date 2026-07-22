@@ -509,3 +509,41 @@ pos6). The whole game is: give sum its 11th weighted ref WITHOUT bracketing sum=
 - probe: s14/ws = cpp of the score-2 candidate, PERM_GENERAL(do{sum=0}while(0);, sum=0;) inside PERM_RANDOMIZE(...) over the body; base_score 10; 33,071 iters / ~19 min / -j8 / --stop-on-zero across two fresh-seed wait windows; harvest --stop.
 - result: 0 novel finds, 0 sub-10, base 10 never moved. The directed def-mechanism sweep is dry — reproduces s13's ~140k blind result and the s11/s12 exact-arithmetic proof that no byte-neutral perturbation flips the score-2 residual.
 - verdict: KILLED
+
+## [s15] Some non-bracket pure-C construct can shorten sum's live_length to <=8, giving sum priority (37500 > j 36666) and $a0 at n_refs=10 with sum=0 emitted first (score 0).
+- mechanism: allocno_compare priority = floor_log2(n)*n/live_length*1e4*size; sum LL 9->8 raises 33333->37500 > j 36666 without a bracket (which is what forces sum=0-last). This is the last un-interrogated allocno_compare input (s7 measured LL=9; s12 only ASSERTED LL<=8 needs a bracket).
+- probe: fresh cc1 -da .lreg on the plain chassis (tmp/grind/damage_DebugDisp/s15); extract sum(reg77)'s live-range ENDPOINTS from the RTL, not just the length number.
+- result: sum DEF = insn 33 (the LAST of 3 preheader inits: 27=j,30=bp,33=sum -> already latest non-bracket LUID); DEATH = insn 67 (the post-loop `sum==chk` compare, REG_DEAD 77 -> semantically mandatory after the loop since the checksum needs all 0x24 bytes). Both endpoints structurally pinned => LL=9 is INCOMPRESSIBLE on any non-bracket chassis. Moving the def later = into the loop (bracket -> A'); moving the compare earlier = byte/semantic change. Moving sum=0 source-first shifts birth 33->27 (+insns 27,30) -> LL rises to ~11 -> WORSE (matches s10/s12).
+- verdict: KILLED. live_length is not a lever. Combined with size=1 (fixed) and n_refs=10 max non-bracket (s11), all three priority inputs are pinned => plain-sum priority 33333 hard-pinned below j 36666 => Region A (sum=$a0) and A' (sum=0 first) are MUTUALLY EXCLUSIVE at every allocno_compare input, reconfirming s6/s7/s10/s11/s12 coupling at the deepest level. The forensic axis is exhaustively closed.
+
+## FRONTIER (s15) — permuter + forensics + structural + rederive ALL exhausted; OWNER-ESCALATION filed.
+1. **OWNER RULING (PRIMARY — filed this session).** OWNER-ESCALATION for damage_DebugDisp filed in
+   docs/grind/decisions.md (2026-07-22, grind s15). Every sanctioned axis is measured dead and every
+   allocno_compare input is now forensically pinned (n_refs=10 max non-bracket, live_length=9
+   incompressible, size=1). Both endgame-lock AND-gates fail: #1 scan_hand_coded LOW 2/8 -> no
+   canonical-asm; #2 duplicated-into-arms structurally inapplicable, no SOTN-precedented family -> no
+   coercion family. next_probe: NONE by a grind session — await owner ruling ((a) any newly-precedented
+   mechanism / canonical-asm vs (b) INCOMPLETE-owner-accepted, cheat retained to hold the byte-match).
+   A future session emits owner-gated citing the entry until the owner rules.
+2. **Frontier #2 (drop j 11->10)** remains dead by exact weight arithmetic (s11/s12) + this session's
+   pinning. Re-open ONLY if a future mechanism keeps the three j bytes (addiu a1,a1,1 / sltiu ...,0x24 /
+   j=0) while shedding one flow-counted ref via a loop shape landing one j use a level shallower. Lowest
+   priority.
+
+## [s15] Some non-bracket pure-C construct can shorten sum's live_length to <=8, giving sum allocno priority above j (37500 > 36666) and $a0 at n_refs=10 with sum=0 emitted first (score 0).
+- mechanism: allocno_compare priority = floor_log2(n_refs)*n_refs/live_length*10000*size. LL is the one input measured (=9, s7) but never proven incompressible; s12 only asserted 'LL<=8 needs a bracket'. If a non-bracket source drops sum LL to 8, sum wins $a0 while sum=0 stays first.
+- probe: Fresh cc1 -da .lreg on the plain chassis (tmp/grind/damage_DebugDisp/s15/dumps/dd_plain.c.lreg); extract sum(reg77)'s live-range ENDPOINTS from the RTL, not just the length number.
+- result: sum DEF = insn 33 (the LAST of 3 preheader inits 27=j/30=bp/33=sum -> latest non-bracket LUID); DEATH = insn 67 (post-loop sum==chk compare, REG_DEAD 77 -> semantically mandatory after the loop). Both endpoints structurally pinned => LL=9 incompressible without a bracket (def into loop -> A') or a byte change (compare into loop). Moving sum=0 source-first shifts birth 33->27, LL rises to ~11, WORSE (matches s10/s12).
+- verdict: KILLED
+
+## [s15] damage_DebugDisp qualifies for canonical-asm authorization on the Region A' residual (endgame-lock AND-gate #1).
+- mechanism: endgame-lock-disposition #1: canonical-asm allowed only with STRONG hand-coded-asm signals (scan_hand_coded S1 multu-pacing / S2 empty-branch / S6 BIOS-jumptable).
+- probe: python3 tools/scan_hand_coded.py --single damage_DebugDisp.
+- result: LOW tier 2/8, 'no strong hand-coded indicators'. S1/S2/S6 STRONG-tier all absent; only S3 no-spills + S4 front-loads set (neither STRONG). A compiler RA/scheduling artifact is ordinary GCC output, not a hand-coded signature.
+- verdict: KILLED
+
+## [s15] The allocno_compare priority axis has a remaining pure-C lever after n_refs and live_length are pinned.
+- mechanism: priority = floor_log2(n_refs)*n_refs/live_length*10000*size; three inputs. If any is a byte-neutral lever, sum can win $a0 with sum=0 first.
+- probe: Pin each input from the fresh dumps: size (word GP reg), live_length (endpoint analysis, this session), reg_n_refs (s11 exact model + this session's greg reproduction).
+- result: size=1 fixed; live_length=9 proven incompressible (this session); reg_n_refs(sum)=10 max non-bracket (only def+compare refs). plain-sum priority 33333 is HARD-pinned below j 36666, so sum is always allocated after j (sum=$a1 swap) on any non-bracket chassis. The sole escape reg_n_refs(sum)>=11 needs a loop-note bracket that relocates the ref to block-bottom -> sched1 emits sum=0 last (A'). Region A and A' are mutually exclusive at every priority input. Both reg_n_refs directions already dead (s11/s12 arithmetic + ~173k permuter iters).
+- verdict: KILLED
