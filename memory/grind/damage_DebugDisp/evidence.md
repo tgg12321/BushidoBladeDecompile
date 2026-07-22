@@ -533,3 +533,57 @@ constants' priority. To flip, the constants would need higher priority OR lower 
 - [s10] Sibling func_80037F40 (src 190-239) re-read in full: its checksum accumulates ONCE before the outer loop (depth 1) and is WRITTEN then reused across 3 outer iterations; damage RECOMPUTES sum INSIDE the outer loop (depth 2) and READS/compares it. The depth-2 recompute is the root of damage's extra-weight requirement; the sibling's shallower shape is semantically unavailable (no transplant value; confirms s7/s9).
 
 - [s10] The Region-B index rewrite renumbered the whole-function pseudos/LUIDs vs the s4/s5 permuter campaigns (old explicit-ap/a2p chassis), so those campaigns are STALE for Region A'; a fresh directed permuter on the score-2 chassis is genuinely unexplored.
+
+## s11 (structural, 2026-07-22) — exact reg_n_refs weight model DERIVED; compare-depth-promotion solves Region A but does NOT decouple A'
+- Floor 2 reconfirmed (candidate.c applied -> sandbox --disable all = 2, 79/79, 8 rules dropped, 34 cheat-asm stripped). src reverted to clean HEAD after measurement.
+- **EXACT WEIGHT MODEL DERIVED + CONFIRMED (sharpens/completes s7):** from the surviving s7 .lreg
+  `dump_flow_info` numbers (plain sum=10, do-while0 sum=11, j=11 all three chassis), the per-ref
+  weight is `reg_n_refs += (1 + loop_depth)` (depth 0=top, 1=outer loop, 2=inner loop), i.e. weight
+  1 / 2 / 3 for a top / outer / inner reference. Reproduces ALL THREE data points exactly:
+  * sum(plain) = sum0(d1,w2) + accum[2 refs: set+use](d2,w3+w3) + compare(d1,w2) = 2+6+2 = **10**.
+  * j = j0(d1,w2) + j++[2 refs](d2,w3+w3) + j<0x24(d2,w3) = 2+6+3 = **11**.
+  * sum(do-while0) = sum0 bracketed(d2,w3) + accum(6) + compare(2) = 3+6+2 = **11**.
+  The RA win needs sum weighted refs >= 11 (tie j=11, win $a0 by pseudo 77<79). Only two sum refs
+  exist to promote: the def (sum=0) and the compare (sum==chk); there is NO third sum ref.
+- **NEW MECHANISM — compare-depth-promotion lifts sum to $a0 WITHOUT a do-while(0) on sum=0.**
+  Bracketing ONLY the post-loop compare in a do-while(0) `do { if (sum==chk) goto found; } while(0);`
+  (chk pre-loaded OUTSIDE the bracket, so chkptr stays at depth 1) promotes the compare d1->d2
+  (w2->w3), +1 => sum=11. Measured: sandbox = **5**, and objdump idx8/9/10 = addiu a1,a1,1 / addu
+  a0,a0,v0 / sltiu v0,a1,0x24 => sum=$a0, j=$a1 == TARGET inner alloc. Region A SOLVED by a second,
+  non-def mechanism (validates frontier #3's RA-win half is reachable). rejected/regionA-compare-depth-promote-goto.c
+- **BUT it does NOT decouple A':** preheader STILL emits j=0(pos4), bp(pos5), sum=0(pos6) — the same
+  sum,bp,j->j,bp,sum swap — even though sum=0 is PLAIN (unbracketed) here. Whenever sum reaches 11
+  refs (wins $a0), the preheader reschedules sum=0 LAST. Plus goto-out-of-do-while(0) control flow
+  adds ~3 positional diffs (extra `j` + reorganized i==3 test) => total 5. INLINE-chk variant (chk
+  inside the bracket) = **16** (chkptr load pulled to depth 2, cascades offset->t0/chkptr->a2).
+- **SHARPENED KILL of the manual structural axis:** sum has exactly TWO promotable references (def,
+  compare). Promoting the def (do-while0) => sum=0 last. Promoting the compare (this probe) => sum=0
+  last + goto noise. BOTH paths to sum=11 force sum=0 to schedule last (A'). Target reaches 11 with
+  sum=0 FIRST, so target's 11th weighted ref comes from NEITHER promotion — it is a whole-function
+  loop_depth/LUID-numbering effect, unreachable by manual source promotion of sum's two refs. This is
+  the directed-permuter axis (frontier #1, permuter modality — not structural).
+- **Frontier #2 (drop j 11->10) KILLED by exact weight arithmetic:** j's refs are j0(w2,d1),
+  j++(w3+w3,d2), j<0x24(w3,d2). The only reducible weight is j0 (w2): dropping it to w1 needs depth 0,
+  but j=0 must RESET each outer iteration (depth 1). Any full drop of j0 = -2 (overshoots to 9, and
+  impossible). No byte-neutral single-weight j reduction exists on this chassis.
+
+- [s11] EXACT weight model: reg_n_refs += (1+loop_depth) per ref (w=1/2/3 for top/outer/inner). Reproduces plain sum=10, j=11, do-while0 sum=11 exactly. sum has ONLY two promotable refs (def, compare); RA win needs sum>=11.
+- [s11] NEW mechanism: compare-depth-promotion `do{ if(sum==chk) goto found; }while(0);` (chk pre-loaded outside) promotes the compare d1->d2 (+1), sum=11 => sum=$a0/j=$a1 (Region A solved WITHOUT a do-while0 on sum=0). sandbox=5. Validates frontier #3's RA-win half is reachable by a second mechanism.
+- [s11] compare-depth-promotion does NOT decouple A': sum=0 (plain) still emits LAST (pos6) whenever sum wins $a0; +goto noise ~3 diffs => 5. Inline-chk variant = 16 (chkptr cascades). Both of sum's two promotable refs (def, compare) force sum=0-last at 11 refs. Target's 11th ref is a whole-function numbering effect (permuter axis), not a manual promotion.
+- [s11] Frontier #2 (j 11->10) killed by weight arithmetic: j's only reducible ref is j0 (w2,d1); dropping to w1 needs depth 0, but j=0 must reset per outer iteration. No byte-neutral j-ref drop.
+
+- [s11] Floor 2 reconfirmed this session (candidate.c applied -> sandbox --disable all = 2, target 79 / build 79, 8 rules dropped, 34 cheat-asm stripped); src reverted to clean HEAD after measurement.
+
+- [s11] EXACT weight model: reg_n_refs += (1 + loop_depth), weights 1/2/3 for top/outer/inner refs. Reproduces the three s7 .lreg data points (plain sum=10, j=11, do-while0 sum=11) exactly. Sharpens/completes the s7 loop-depth-weight finding.
+
+- [s11] sum has exactly TWO promotable references on this chassis: the def (sum=0) and the post-loop compare (sum==chk). No third sum ref exists.
+
+- [s11] NEW mechanism: compare-depth-promotion (do-while(0) bracket on the compare, chk pre-loaded outside) lifts sum to 11 refs and wins $a0 (objdump idx8/9/10 = target inner alloc) WITHOUT a do-while(0) on sum=0 -- a second, non-def path to the Region-A RA win. sandbox=5.
+
+- [s11] compare-depth-promotion does NOT decouple A': the preheader still emits j=0(pos4), bp(pos5), sum=0(pos6) even with sum=0 plain. Whenever sum reaches 11 refs (wins $a0), the preheader reschedules sum=0 LAST -- true for BOTH promotions (def do-while0 AND compare bracket). Plus goto-out-of-do-while(0) adds ~3 positional diffs => 5.
+
+- [s11] Inline-chk compare bracket = 16: the chkptr load is pulled into the depth-2 bracket, cascading the outer allocation (offset->t0, chkptr->a2, bp recomputed). Confirms the s8 rule that any outer-IV memory ref inside the bracket cascades.
+
+- [s11] SHARPENED KILL: both of sum's two promotable refs force sum=0 to schedule last when promoted to reach 11; target reaches 11 with sum=0 FIRST, so target's 11th weighted ref comes from neither promotion -- a whole-function loop_depth/LUID-numbering effect, unreachable by manual source promotion. Directed-permuter axis only.
+
+- [s11] Frontier #2 (j 11->10) killed by exact weight arithmetic: j's only reducible ref is j0 (w2,d1); w2->w1 needs depth 0 but j=0 must reset per outer iteration. Reconfirms s7/s10 with the exact model.

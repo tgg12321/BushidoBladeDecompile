@@ -392,3 +392,33 @@ pos6). The whole game is: give sum its 11th weighted ref WITHOUT bracketing sum=
 - probe: Edit do{sum=0}while(0) -> plain sum=0; sandbox --disable all (=4); extract_ops.py per-function objdump of plain vs do-while0 vs target.
 - result: plain-in-position = 4; A' = 2-insn preheader reg=0 emit-order swap; the s10 'plain=9' referred to moving sum=0 to first position, a different perturbation. Both residual insns are addu $reg,zero,zero (byte 0x2120/0x2128 0000).
 - verdict: CONFIRMED
+
+## [s11] Compare-depth-promotion (do-while(0) bracket on the post-loop compare, chk pre-loaded) gives sum its 11th weighted ref and wins $a0 WITHOUT bracketing sum=0's def, decoupling A'.
+- mechanism: weight model reg_n_refs += (1+loop_depth) [w=1/2/3 top/outer/inner]. sum(plain)=10 = sum0(w2)+accum(w3+w3)+compare(w2). Promote the compare d1->d2 (w2->w3): sum=11 (tie j), sum wins $a0 by pseudo 77<79. sum=0 stays PLAIN at low LUID (would emit first = target A' order).
+- probe: `do { if (sum == chk) goto found; } while (0);` with `chk = *(s32*)((u8*)chkptr+0x6C);` pre-loaded OUTSIDE the bracket (keeps chkptr at depth 1); outer loop exits to `return 0` (i==3) / `found:` (match). sandbox --disable all + objdump.
+- result: sandbox=5. Region A SOLVED (objdump sum=$a0/j=$a1 == target inner alloc) — confirms the compare-promotion RA mechanism. BUT A' NOT decoupled: preheader still emits j=0,bp,sum=0 (sum=0 LAST at pos6) even with sum=0 plain; goto-out-of-do-while(0) adds ~3 diffs. Inline-chk variant (chkptr in bracket) = 16 (cascade).
+- verdict: RA-win mechanism CONFIRMED (new, second path to sum=$a0); A'-decoupler KILLED — sum=0 schedules last whenever sum reaches 11 refs, by either promotion (def or compare); no third sum ref exists. rejected/regionA-compare-depth-promote-goto.c
+
+## [s11] Frontier #2 (drop j's weighted refs 11->10 so plain sum=10 ties and wins $a0 with byte-perfect preheader) has a byte-neutral structural lever.
+- mechanism: j=11 = j0(w2,d1) + j++[2 refs](w3,d2) + j<0x24(w3,d2). Need -1. The inner refs (j++/j<0x24) are byte-fixed by target (addiu a1,a1,1 / sltiu ...,0x24). Only j0 (w2) is movable; w2->w1 requires depth 0.
+- probe: exact weight arithmetic on the confirmed model + the per-outer-iteration reset constraint.
+- result: KILLED. j=0 must reset each of the 3 outer iterations (depth 1); it cannot be hoisted to depth 0 without breaking the per-block checksum semantics. Dropping j0 entirely = -2 (overshoots to 9, and impossible). No single-weight (-1) byte-neutral j reduction exists. Reconfirms s7/s10.
+- verdict: KILLED (by exact weight model, not just prior approximate argument).
+
+## [s11] The reg_n_refs loop-depth weight is exactly (1 + loop_depth) per reference, giving weights 1/2/3 for top/outer/inner refs.
+- mechanism: flow.c reg_n_refs += (1+loop_depth). Reproduces all three surviving s7 .lreg data points exactly: sum(plain)=sum0(w2)+accum[2 refs](w3+w3)+compare(w2)=10; j=j0(w2)+j++[2](w3+w3)+j<0x24(w3)=11; sum(do-while0)=sum0-bracketed(w3)+accum(6)+compare(2)=11. RA win needs sum>=11 to tie j and win $a0 by pseudo 77<79.
+- probe: Derived from the s7 dump_flow_info numbers (10/11/11) and cross-checked against the confirmed allocations.
+- result: Model reproduces all three chassis ref-counts exactly; sum has exactly TWO promotable references (def sum=0, compare sum==chk) and no third.
+- verdict: CONFIRMED
+
+## [s11] Bracketing ONLY the post-loop compare (chk pre-loaded outside) in a do-while(0) promotes it depth 1->2, lifting sum to 11 refs and winning $a0 WITHOUT a do-while(0) on sum=0's def, decoupling A'.
+- mechanism: Compare ref weight 2->3 => sum=11; sum=0 stays PLAIN at low LUID so it would schedule first (target A' order). chk pre-loaded into a local keeps chkptr at depth 1 (out of the bracket).
+- probe: do { if (sum == chk) goto found; } while (0); with chk = *(s32*)((u8*)chkptr+0x6C) before it; outer exits to return 0 (i==3) / found: (match). sandbox --disable all + per-function objdump.
+- result: sandbox=5. Region A SOLVED (objdump sum=$a0/j=$a1 == target inner alloc) — the RA-win mechanism works. BUT preheader still emits j,bp,sum (sum=0 LAST at pos6) even with sum=0 plain; goto-out-of-bracket adds ~3 diffs. Inline-chk variant = 16 (chkptr cascades into the bracket). A' NOT decoupled.
+- verdict: KILLED
+
+## [s11] Frontier #2 — drop j's weighted refs 11->10 so plain sum(10) ties and wins $a0 with the already-byte-perfect plain preheader (score 0).
+- mechanism: j=11 = j0(w2,d1)+j++[2 refs](w3,d2)+j<0x24(w3,d2). Only j0 (w2) is movable; the inner refs are byte-fixed by target (addiu a1,a1,1 / sltiu ...,0x24).
+- probe: Exact weight arithmetic on the confirmed model plus the per-outer-iteration reset constraint.
+- result: j=0 must reset each of the 3 outer iterations (depth 1); cannot hoist to depth 0. w2->w1 impossible; full drop = -2 (overshoots to 9). No single-weight (-1) byte-neutral j reduction exists.
+- verdict: KILLED
