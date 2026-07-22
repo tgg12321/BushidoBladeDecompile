@@ -232,3 +232,50 @@ constants' priority. To flip, the constants would need higher priority OR lower 
 - [s3] Target's sum has the SAME isolated inner-loop range as build's (in both, `lw chk; nop; beq` sits between loop-exit and sum's death), so target's sum>j priority comes from the whole-function conflict graph / absolute LUID numbering, not the isolated range. This is why no manual source lever isolates the flip and only the directed permuter can reach it.
 
 - [s3] Region B: constants are LICM-controlled and only referenceable inside the k-loop; source order cannot place them before the ap/a2p moves without the rejected constant-holder cheat.
+
+## s4 (permuter, 2026-07-22) — FLOOR 8 -> 6: do-while(0) on sum=0 solves Region A
+- **Directed permuter on the REAL full-TU basin.** Built workspace tmp/grind/damage_DebugDisp/s4/ws:
+  base.c = cpp(src/code6cac_c_mid.c) (full TU, real types), compile.sh = honest pipeline
+  (cc1|prologue_fix|maspsx|align-sed|multu_pad, NO regfix/asmfix) extracting the
+  damage_DebugDisp region, target.o from asm/funcs (prelude minus `.set gp=64`).
+  Validated: base reproduces the EXACT sandbox diff (79 insns, Region A a0/a1 swap +
+  Region B move/const order). This basin is CORRECT, unlike the s2 hand-built standalone
+  (which gave sum=$a2) — the full preprocessed TU carries the real extern types/context.
+- **KEY FIND (output-130-1, permuter-score 130 vs base 150): `do { sum = 0; } while (0);`
+  SOLVES Region A.** The do-while(0) wrapper on the inner accumulator init delays sum's
+  def LUID so sum's global-allocno priority rises above j's; sum takes $a0 == target,
+  WITHOUT lengthening j (unlike the rejected offset+=j). Applied to src -> **sandbox
+  --disable all = 6** (from floor 8). do-while(0)-for-any-codegen-effect is SANCTIONED
+  per the FINAL 2026-07-06 do-while-zero-exception ruling (not a cheat). New candidate.c.
+- **Remaining gap = 6 objdump diffs:** (A') a NEW 2-insn Region-A preheader reorder the
+  do-while(0) introduced — target orders `addu $v1,$t1,$a3` (bp) before `move $a1,$zero`
+  (sum), build swaps them; (B) the 4-insn Region B moves-vs-consts order (unchanged).
+- **Region B has NO clean permuter lever (KILLED in the floor-6 chassis).** Reseeded a
+  fresh campaign from the floor-6 (do-while0) base (ws6). Every sub-130 find was invalid:
+  * output-75-1 (score 75): `chkptr = a2p` alias, but chkptr is s32* -> chkptr+0xD0 =
+    a2p+0x340 (byte). SEMANTICALLY BROKEN (`lhu 832(a2)` vs target `208`). Wrong-pointer-
+    type-offset trap. rejected/regionB-chkptr-alias-wrong-offset.c
+  * output-70-1 (score 70): `base = a2p` alias (u8*, offset CORRECT) but emits 89 insns
+    (+10 load-delay nops) — objectively longer, not a byte-match path.
+    rejected/regionB-base-alias-nop-bloat.c
+  * output-90-1 (score 90, from the floor-8 ws campaign): `src = a2p` (u8*, correct)
+    reduced Region B 4->1 diff but lacked do-while(0) so Region A unsolved; also a
+    dead-local-reuse aliasing that needs cheat-vetting and still short of match.
+  Region B's moves-vs-consts LICM tie only "flips" via wrong-type offset aliasing (broken)
+  or nop-bloat — no clean spelling reaches it in this basin. Confirms the ledger's s1-s3
+  read that Region B is a context-dependent scheduling tie with no non-cheat source lever.
+
+- [s4] Full-TU permuter basin (base.c = cpp of the real file) reproduces the exact sandbox allocation (Region A a0/a1 swap + Region B order); the s2 hand-built standalone did NOT — real extern types/context are load-bearing for the workspace to be valid.
+- [s4] `do { sum = 0; } while (0);` (do-while(0), sanctioned for any codegen effect) lowers sandbox --disable all from 8 to 6 by flipping Region A's sum/j $a0<->$a1 swap: it delays sum's def LUID, raising sum's allocno priority above j's WITHOUT lengthening j. Applied to src; new floor 6. First clean Region A solve (offset+=j was value-equal but a cheat).
+- [s4] Region B (4-insn moves-vs-consts LICM order) has NO clean permuter lever in the floor-6 chassis: permuter sub-130 finds are all invalid — chkptr(s32*)=a2p alias gives wrong offset 0x340 (broken), base(u8*)=a2p alias bloats to 89 insns (+10 nops). Confirms Region B is a context-dependent scheduling tie with no non-cheat source lever.
+- [s4] do-while(0) introduced a NEW 2-insn Region-A preheader scheduling tie: target emits `addu $v1,$t1,$a3` (bp=base+offset) before `move $a1,$zero` (sum=0); build swaps them. Permuter did not crack it cleanly in-window.
+
+- [s4] do { sum = 0; } while (0); lowers sandbox --disable all from 8 to 6 (applied in src/code6cac_c_mid.c) by flipping Region A's sum/j $a0<->$a1 swap; sanctioned do-while(0) RA-weighting, not a cheat.
+
+- [s4] The full-TU permuter basin (base.c = cpp of the real file) is the valid chassis; a hand-built standalone (s2) does NOT reproduce the allocation because real extern types/context are load-bearing.
+
+- [s4] Region A is fully solved by do-while(0); the residual is a NEW 2-insn preheader scheduling tie the do-while(0) introduced: target emits `addu $v1,$t1,$a3` (bp=base+offset) before `move $a1,$zero` (sum=0), build swaps them.
+
+- [s4] Region B (4-insn moves-vs-consts) has no clean permuter lever from the floor-6 chassis: chkptr(s32*)=a2p alias gives wrong offset 0x340 (broken); base(u8*)=a2p alias bloats to 89 insns (+10 nops). Both rejected/banked.
+
+- [s4] output-90-1 (score 90, floor-8 ws campaign): `src=a2p` (u8*, correct offset) cut Region B 4->1 diff but lacked do-while(0) so Region A was unsolved and it is a dead-local-reuse alias needing cheat-vetting; still short of match.

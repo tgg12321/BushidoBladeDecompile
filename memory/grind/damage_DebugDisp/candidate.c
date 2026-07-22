@@ -1,16 +1,22 @@
-/* Candidate body for damage_DebugDisp — score 8 vs HEAD's 9.
- * Sole lever: for-loop fence on the 4-block CopyBlock loop
- * (loop-exit-work-inside-loop-sched-fence; user-sanctioned 2026-06-11).
- * Materialises the load-delay nop and places k=0 after the sw, matching
- * target's strictly source-ordered post-loop region. Retires the
- * `insert "nop" @ 53` and `reorder 55,54 @ 54-55` regfix rules.
+/* Candidate body for damage_DebugDisp — score 6 vs prior floor 8 (HEAD 9).
+ * Levers:
+ *   1) for-loop fence on the 4-block CopyBlock loop
+ *      (loop-exit-work-inside-loop-sched-fence; user-sanctioned 2026-06-11).
+ *   2) `do { sum = 0; } while (0);` — do-while(0) RA-weighting wrapper on the
+ *      inner accumulator init (sanctioned for ANY codegen effect per the FINAL
+ *      2026-07-06 do-while-zero-exception ruling). Found by the s4 directed
+ *      permuter (full-TU basin, output-130-1). RESOLVES Region A: the inner
+ *      loop sum/j $a0<->$a1 register swap is gone — the do-while(0) delays sum's
+ *      def LUID so sum's global-allocno priority rises above j's and sum takes
+ *      $a0 (== target), WITHOUT lengthening j (unlike the rejected `offset+=j`).
  *
- * Remaining gap (8 diffs, all reg-alloc/scheduling — no clean lever found):
- *   1) Inner sum-loop $a0/$a1 swap (~3-4 diffs) — target $a0=sum/$a1=j,
- *      build $a0=j/$a1=sum.
- *   2) Second-loop preheader: target emits the 3 const-load insns
- *      (lui $t0,0x8000; lui $a3,0x1f; ori $a3,0xffff) BEFORE the 2 moves
- *      (ap=base; a2p=ap), build emits moves first (~5 diffs).
+ * Remaining gap (6 objdump diffs):
+ *   A') Inner-loop preheader (2 diffs): target orders `addu $v1,$t1,$a3`
+ *       (bp=base+offset) BEFORE `move $a1,$zero` (sum=0); build emits them
+ *       swapped. New 2-insn scheduling tie introduced by the do-while(0).
+ *   B)  Second-loop preheader (4 diffs): target emits the 3 const-load insns
+ *       (lui $t0,0x8000; lui $a3,0x1f; ori $a3,0xffff) BEFORE the 2 moves
+ *       (ap=base; a2p=ap); build emits moves first (LICM-hoist LUID tie).
  */
 s32 damage_DebugDisp(s32 *arg0) {
     u8 *base = (u8 *)arg0;
@@ -28,7 +34,7 @@ s32 damage_DebugDisp(s32 *arg0) {
 
         j = 0;
         bp = base + offset;
-        sum = 0;
+        do { sum = 0; } while (0);
         do {
             sum += *bp;
             bp++;

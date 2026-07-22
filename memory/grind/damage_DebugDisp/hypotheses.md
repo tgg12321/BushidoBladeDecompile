@@ -136,3 +136,33 @@ LUID were tried and REJECTED as cheat-by-spelling (magic_base/magic_max, score 4
 - probe: Re-examined source-order control (s2 already measured init-swap=8-nochange). The constants are only referenced inside the loop, so LICM places them; source order cannot move them earlier.
 - result: The only form that places the constants before the moves is the already-rejected magic_base constant-holder (cheat, score 4). No non-cheat manual lever exists; Region B is a context/permuter tie.
 - verdict: KILLED
+
+## [s4] do-while(0) wrapper on the inner `sum=0` init flips Region A's sum/j $a0<->$a1 swap and lowers the floor 8->6.
+- mechanism: `do { sum = 0; } while (0);` delays sum's def LUID relative to j, raising sum's global-allocno priority above j's so sum allocates $a0 first (== target), WITHOUT lengthening j's live range (the offset+=j trap). do-while(0)-for-any-codegen-effect is sanctioned (FINAL 2026-07-06 do-while-zero-exception ruling).
+- probe: directed permuter on the real full-TU basin (tmp/grind/damage_DebugDisp/s4/ws) found output-130-1; applied `do{sum=0}while(0)` to src; sandbox --disable all.
+- result: sandbox score 6 (from floor 8). Region A inner-loop swap RESOLVED (4 diffs -> a residual 2-insn preheader reorder). New candidate.c / new floor.
+- verdict: CONFIRMED — clean, sanctioned floor-lowering lever.
+
+## [s4] Region B (LICM moves-vs-consts order) is permuter-closable from the floor-6 chassis.
+- mechanism: reseed the permuter from the floor-6 (do-while0) base and let it flip the ap/a2p-moves vs LICM-const scheduling order.
+- probe: fresh campaign ws6 (base_score 130); harvested all sub-130 finds and checked each with objdump vs target.
+- result: KILLED. Every sub-130 find is invalid — output-75-1 (`chkptr=a2p`, s32*) reads wrong offset 0x340 (semantically broken); output-70-1 (`base=a2p`, u8*) is correct but emits 89 insns (+10 load-delay nops). Region B's tie only "moves" via wrong-type offset aliasing or nop bloat; no clean spelling reaches it in this basin.
+- verdict: KILLED — no clean permuter lever for Region B (consistent with s1-s3 manual kills).
+
+## [s4] A do-while(0) wrapper on the inner accumulator init `do { sum = 0; } while (0);` flips Region A's sum/j $a0<->$a1 register swap and lowers the floor 8->6.
+- mechanism: The do-while(0) delays sum's def LUID relative to j, raising sum's global-allocno priority above j's so sum allocates $a0 first (== target), WITHOUT lengthening j's live range (unlike the rejected offset+=j which value-folded but cheated). do-while(0)-for-any-codegen-effect is sanctioned per the FINAL 2026-07-06 do-while-zero-exception ruling.
+- probe: Built a permuter workspace on the REAL full-TU basin (base.c = cpp of src/code6cac_c_mid.c, honest pipeline, target.o from asm/funcs); campaign found output-130-1; applied `do{sum=0}while(0)` to src and ran sandbox --disable all.
+- result: sandbox --disable all = 6 (from floor 8); Region A inner-loop swap RESOLVED (4 diffs -> a residual 2-insn preheader reorder). New candidate.c.
+- verdict: CONFIRMED
+
+## [s4] The full preprocessed-TU permuter basin reproduces the real allocation, unlike the s2 hand-built standalone.
+- mechanism: The real cpp output carries the true extern types/context that drive damage_DebugDisp's register allocation; the s2 standalone guessed types and gave sum=$a2 instead of $a1.
+- probe: Compiled base.c via the honest workspace pipeline and diffed damage_DebugDisp objdump vs target.o.
+- result: 79 insns, exact sandbox diff reproduced (Region A a0/a1 swap + Region B move/const order). Basin validated as correct.
+- verdict: CONFIRMED
+
+## [s4] Region B (4-insn LICM moves-vs-consts order) is permuter-closable from the floor-6 do-while(0) chassis.
+- mechanism: Reseed the permuter from the floor-6 base and let it flip the ap/a2p-moves vs LICM-const scheduling order.
+- probe: Fresh campaign ws6 (base_score 130, 11k iters); harvested every sub-130 find and checked each with objdump vs target.
+- result: KILLED. output-75-1 (`chkptr=a2p`, s32*) reads wrong byte offset 0x340 (semantically broken: `lhu 832(a2)` vs target `208`); output-70-1 (`base=a2p`, u8*, correct) emits 89 insns (+10 load-delay nops). Region B's tie only 'moves' via wrong-type offset aliasing or nop bloat; no clean spelling reaches it in this basin.
+- verdict: KILLED

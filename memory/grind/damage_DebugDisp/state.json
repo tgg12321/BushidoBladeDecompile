@@ -1,8 +1,8 @@
 {
  "func": "damage_DebugDisp",
  "file": "code6cac_c_mid",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 0,
@@ -27,18 +27,24 @@
    "floor": 8,
    "modality": "structural",
    "headline": "Region A range-mechanism CONFIRMED: offset+=j flips the sum/j a0/a1 swap (score 7) but is not match-viable; zero-cost manual flips killed, so the flip needs the directed permuter's whole-function LUID"
+  },
+  {
+   "session": 4,
+   "floor": 6,
+   "modality": "permuter",
+   "headline": "Directed permuter (real full-TU basin) found do-while(0) on sum=0 that solves Region A and lowers the honest floor 8->6; Region B has no clean permuter lever (all sub-130 finds invalid)."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The directed permuter, seeded from the floor-8 form, sweeps the whole-function LUID cross-product that manual source order cannot reach, flipping Region A (sum/j) with the literal offset intact and/or the Region B const-vs-move order.",
-   "mechanism": "s3 proved Region A flips purely on j-vs-sum global-allocno priority and that the target register order (sum=a0/j=a1) IS reachable (offset+=j reaches it). The permuter must reach the same allocation without an emitted j-consumer, by perturbing whole-function statement order / LUID context. PERM_* over statement order in both regions + the range-check spelling. Vet any closing form against the cheat catalog (offset+=j-style range steering, constant-holder, dead-store are the known traps).",
-   "next_probe": "Build clean single-fn target.o (asm/funcs/damage_DebugDisp.s + prelude, drop .set gp=64), seed base from candidate.c, run permuter_campaign with fresh-seed stopping rule; log to tmp/grind/damage_DebugDisp/sN/. Watch for the qty_order 78 77 79 signal at score<=8 with the literal `addiu $a3,$a3,0x24` preserved."
+   "hypothesis": "The residual 2-insn Region-A preheader tie (bp-addu vs sum-move order) is closable by a source/scheduling perturbation stacked on the do-while(0).",
+   "mechanism": "The do-while(0) reordered the preheader so sum's move now precedes bp's addu (opposite of target). A different init spelling/placement (e.g. wrapping bp=base+offset, or moving the do-while(0) earlier/later) may restore target order without disturbing the solved Region A allocation.",
+   "next_probe": "From the floor-6 chassis, permute ONLY the inner-loop preheader statement order (j=0; bp=base+offset; do{sum=0}while(0);) via PERM_LINESWAP / do-while(0) placement variants; keep any variant holding score<=6 that emits `addu $v1,$t1,$a3` before `move $a1,$zero`. Watch the objdump lines 5-7."
   },
   {
-   "hypothesis": "Region B: a surrounding-code change makes the LICM range-check constants schedule (lower LUID) before the ap/a2p pre-loop moves without a constant-holder.",
-   "mechanism": "Constants are hoisted to preheader END (higher LUID) so sched1 picks the lower-LUID moves first. Only the permuter's cross-product (or a genuine control-flow change to where the range check materializes) can reorder them; every manual source lever measured is either no-change or the rejected magic_base cheat.",
-   "next_probe": "In the same permuter campaign, include PERM_* over the k-loop preheader / range-check form; keep only variants that hold score<=8 and emit lui $t0/lui $a3/ori $a3 before move $a0/move $a2."
+   "hypothesis": "Region B needs a genuine control-flow change (not an alias) to make the LICM range-check constants materialize before the ap/a2p moves.",
+   "mechanism": "The constants (0x80000000, 0x1FFFFF) are LICM-hoisted to preheader END; only restructuring WHERE the range check materializes (e.g. computing the check bound outside the loop legitimately, or a different loop shape) can lower their LUID below the moves without a constant-holder cheat or wrong-type alias.",
+   "next_probe": "Diagnose whether the pointer-range test `(u32)(ptr-0x80000000)<=0x1FFFFF` can be spelled so GCC does NOT LICM-hoist the two constants into the same preheader block; vet any form against the constant-holder / offset-steering cheat catalog before proposing."
   }
  ],
  "judge_constraints": [],
