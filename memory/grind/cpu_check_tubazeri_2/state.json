@@ -1,7 +1,7 @@
 {
  "func": "cpu_check_tubazeri_2",
  "file": "code6cac_b",
- "session_count": 4,
+ "session_count": 5,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -33,13 +33,19 @@
    "floor": 1,
    "modality": "permuter",
    "headline": "Permuter axis KILLED: two structurally-distinct fresh seeds (~102k iters) find no sub-10 legit form; sole novel find is a score-neutral pointer-alias variant that leaves idx25 base-first, corroboratin"
+  },
+  {
+   "session": 5,
+   "floor": 1,
+   "modality": "permuter",
+   "headline": "Permuter axis triply-dead: a 3rd structurally-distinct basin (guarded do-while index-off-a0 + array-subscript head, 42k iters) finds no sub-10 legit form; idx25 addu operand-order endgame-lock stands;"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "cpu_check_tubazeri_2 is a confirmed 1-insn operand-order-only endgame-lock: the sole distance-0 C is the reviewer-rejected integer-cast operand swap; the structural axis (s3 RTL proof) AND the permuter axis (this session, ~102k iters, 2 chassis) are both now measured dead.",
-   "mechanism": "idx25 addu operand order is fixed at tree-lowering (pointer_int_sum base-first); every pointer-domain spelling scores 1, only int-domain v0+(s32)a0 scores 0 and is a commutative-operand-order coercion cheat (rejected/int-cast-operand-swap.c).",
-   "next_probe": "Owner action: file an OWNER-ESCALATION in docs/grind/decisions.md for the endgame-lock disposition of cpu_check_tubazeri_2, citing the s3 RTL proof + this s4 permuter-dead result (cf. feedback/endgame-lock-disposition-policy). Once that entry exists, a later session may emit owner-gated with escalation_ref."
+   "hypothesis": "cpu_check_tubazeri_2 is a confirmed 1-insn commutative-operand-order-only endgame-lock whose only distance-0 C is the reviewer-rejected integer-cast operand swap; the structural axis (s3 RTL proof) and the permuter axis (s4 two chassis + s5 third chassis, ~144k iters) are all measured dead.",
+   "mechanism": "idx25 addu operand order is fixed at tree-lowering (pointer_int_sum -> base-first PLUS_EXPR(ptr,int)), preserved unchanged through combine->greg; every pointer-domain spelling scores 1, only int-domain v0+(s32)a0 scores 0 and is a commutative-operand-order coercion cheat.",
+   "next_probe": "Owner action / non-permuter modality: file an OWNER-ESCALATION in docs/grind/decisions.md for the endgame-lock disposition of cpu_check_tubazeri_2 (hirahira_w_frie/func_80033550 format), citing the s3 RTL proof + s4/s5 triple permuter kill (cf. feedback/endgame-lock-disposition-policy). Once that entry exists, a later session may emit owner-gated with escalation_ref."
   }
  ],
  "judge_constraints": [],

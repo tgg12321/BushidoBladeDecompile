@@ -167,3 +167,24 @@ don't move it.
 - [s4] No OWNER-ESCALATION entry for cpu_check_tubazeri_2 exists in docs/grind/decisions.md, so owner-gated is not yet available this session; recorded as progress.
 
 - [s4] Artifacts: tmp/grind/cpu_check_tubazeri_2/s4/ws (seed1) + ws2 (seed2) workspaces with base.c/compile.sh/target.o + output-10-1; validate*.log show 76==76 with the single idx25 diff; ws/campaign.log + ws2/campaign.log carry the per-iteration telemetry.
+
+## == s5 [permuter] ==
+- [s5] Floor confirmed 1 at session start (HEAD src was floor 9; candidate.c re-applied to src/code6cac_b.c -> sandbox --disable all score 1, target_insns=build_insns=76, 9 rules dropped, cheat_asm_stripped 371, scorable).
+- [s5] Built + validated a THIRD structurally-distinct offset-0 permuter chassis (tmp/grind/cpu_check_tubazeri_2/s5/ws3): guarded do-while index-off-a0 copy loop (`i=s1; if(i<n-1){do{...;i++;}while(i<n-1);}`) + array-subscript head `s2=(s32*)&((s16*)a0)[s1]`, a0 kept direct (preserves the `move a0,s0` liveness). Distinct from s4 seed1 (for-loop/direct-cast) and seed2 (while-loop/s16*-scaled). base validated 76==76 with the SOLE stripped-operand diff `addu s2,s0,v0` (ours, base-first) vs `addu s2,v0,s0` (target) = the known idx25 residual; permuter base_score=10.
+- [s5] First named-base attempt (`u8 *base=(u8*)a0;` threaded through) was REJECTED as a chassis: the copy consumed a0's provenance and DROPPED the `move a0,s0` before the coli_hit_body_weapon call -> base=75 vs target=76 (2 residuals, shifted branch targets = noisier basin). Kept a0 direct instead.
+- [s5] Campaign (seed3, --stop-on-zero, -j8, --stack-diffs, 42,048 iters over ~19.5 min / two wait windows): ZERO novel finds, best_new_score=null. Harvested + --stop cleanly (9 procs killed); reap --ttl 1 --dry-run groups_seen:0 -> no orphan permuter procs.
+- [s5] The permuter axis is now TRIPLY corroborated dead: s4 seed1 (~58k) + s4 seed2 (~44k) + s5 seed3 (~42k) = ~144k iterations across 3 structurally-distinct basins, none producing a sub-10 (sub-sandbox-1) legitimate form; the permuter never even synthesized the known int-cast score-0 cheat. Empirically re-confirms the s3 cc1 -da RTL proof: pointer_int_sum canonicalizes ptr+int base-first at tree-lowering, so no pointer-domain restructuring (loop chassis, head spelling, alias, reassoc, s16* scaling) can flip idx25. Sole distance-0 form remains integer-domain offset-first `v0+(s32)a0` (rejected/int-cast-operand-swap.c, reviewer-FAILED commutative-operand-order coercion).
+- [s5] No OWNER-ESCALATION entry for cpu_check_tubazeri_2 exists in docs/grind/decisions.md (verified this session), so owner-gated is not yet available; recorded as progress. The permuter axis (this session's mandated modality) is now exhausted; the remaining disposition path is an OWNER-ESCALATION per feedback/endgame-lock-disposition-policy citing the s3 RTL proof + s4/s5 triple permuter kill.
+- [s5] Banked rejected/permuter-seed3-guarded-dowhile-arrsub-score10.c (third dead basin). Artifacts under tmp/grind/cpu_check_tubazeri_2/s5/ws3 (base.c/base.o/compile.sh/target.o + campaign.log telemetry) and s5/{validate3,launch3,wait3,harvest3}.sh.
+
+- [s5] Floor confirmed 1 at session start: HEAD src was floor 9; candidate.c re-applied to src/code6cac_b.c -> sandbox --disable all score 1 (target_insns=build_insns=76, 9 rules dropped, cheat_asm_stripped 371, scorable).
+
+- [s5] seed3 chassis (guarded do-while index-off-a0 + array-subscript head, a0 direct) validated base 76==target 76 with the SOLE stripped-operand diff addu s2,s0,v0 (ours base-first) vs addu s2,v0,s0 (target index-first) = the known idx25 residual; permuter base_score=10.
+
+- [s5] seed3 campaign: 42,048 iters over ~19.5 min (two wait windows), 0 novel finds, best_new_score=null; harvested + --stop cleanly (9 procs killed); reap --ttl 1 --dry-run groups_seen:0 -> no orphan permuter processes left.
+
+- [s5] Permuter axis now TRIPLY corroborated dead: s4 seed1 (~58k) + s4 seed2 (~44k) + s5 seed3 (~42k) = ~144k iterations across 3 structurally-distinct basins, none producing a sub-10 legitimate form; empirically re-confirms the s3 cc1 -da RTL proof that pointer_int_sum canonicalizes ptr+int base-first at tree-lowering, before any RA/scheduling/declaration-order/loop-chassis lever can act.
+
+- [s5] Sole distance-0 form remains integer-domain offset-first v0+(s32)a0 (rejected/int-cast-operand-swap.c), reviewer-FAILED as a commutative-operand-order coercion. No pointer-domain restructuring (loop chassis, head spelling, alias, reassoc, s16* scaling) can flip idx25.
+
+- [s5] No OWNER-ESCALATION entry for cpu_check_tubazeri_2 exists in docs/grind/decisions.md (verified this session), so owner-gated is not yet available; the permuter modality is now exhausted and the remaining disposition path is an OWNER-ESCALATION per feedback/endgame-lock-disposition-policy.
