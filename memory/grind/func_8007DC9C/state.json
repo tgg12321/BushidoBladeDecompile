@@ -1,8 +1,8 @@
 {
  "func": "func_8007DC9C",
  "file": "display",
- "session_count": 7,
- "current_modality": "forensics",
+ "session_count": 8,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 0,
@@ -51,13 +51,19 @@
    "floor": 9,
    "modality": "forensics",
    "headline": "s7 forensics REFUTES the axis-A cross-TU sibling avenue: combine is per-function, so func_8007D3F8 can never supply the second &D_8009BF68 use; only intra-function reproduction is a cheat. Both axes n"
+  },
+  {
+   "session": 8,
+   "floor": 9,
+   "modality": "rederive",
+   "headline": "Rederive modality KILLED: fresh m2c reproduces HEAD, Kengo has no donor, goto/nested-if control-flow restructure gives byte-identical codegen; all 5 modalities now measured dead, clean owner-escalatio"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "func_8007DC9C is a clean OWNER-ESCALATION candidate: axis A (combine offset-0 single-use fold; sibling avenue refuted) and axis B (sched1 volatile-MEM anti-dep priority) both have no legitimate pure-C lever, single-function or cross-function, across structural/permuter x3/forensics x2 modalities.",
-   "mechanism": "Axis A = combine.c:1458 added_sets_2 multi-use retention, per-function scope (toplev.c:3004) means the required 2nd &D_8009BF68 use must be intra-function and dead-in-output = coercion. Axis B = sched.c INSN_PRIORITY critical-path height set by a volatile-MEM anti-dep (sched_analyze) that cannot be removed without changing observable volatile order.",
-   "next_probe": "File an OWNER-ESCALATION entry for func_8007DC9C in docs/grind/decisions.md citing both mechanisms (volatile-locked sched1 priority for axis B; per-function-combine single-use fold with the cross-TU sibling avenue now refuted for axis A). Once that entry exists, a subsequent session emits owner-gated and the queue advances. No further single- or cross-function pure-C modality remains."
+   "hypothesis": "func_8007DC9C is a fully-characterized OWNER-ESCALATION candidate: axis A (combine offset-0 single-use fold; sibling avenue refuted per-function in s7) and axis B (sched1 volatile-MEM anti-dep priority) have no legitimate pure-C lever across ALL FIVE modalities (structural, permuter x3, forensics x2, rederive).",
+   "mechanism": "Axis A = combine.c:1458 added_sets_2 multi-use retention, per-function scope (toplev.c:3004) means the required 2nd &D_8009BF68 use must be intra-function and dead-in-output = coercion. Axis B = sched.c INSN_PRIORITY critical-path height set by a volatile-MEM anti-dep (sched_analyze) unremovable without changing observable volatile order. s8 adds: neither axis is reachable by control-flow restructuring, fresh m2c, or a Kengo transplant.",
+   "next_probe": "The owner should file an OWNER-ESCALATION entry for func_8007DC9C in docs/grind/decisions.md citing both mechanisms (volatile-locked sched1 priority for axis B; per-function-combine single-use fold with the cross-TU sibling avenue refuted for axis A) and now the rederive-modality KILL. Once that entry exists, a subsequent session emits owner-gated and the queue advances. No further single- or cross-function pure-C modality remains."
   }
  ],
  "judge_constraints": [],

@@ -234,3 +234,25 @@ args is NOT a sanctioned use-site shape) and stripped by `volatile_cheats`.
 - [s7] Axis B unchanged: s6 CONFIRMED sched1 INSN_PRIORITY(dead *g_gpu_stat_reg read)=2 > PRIORITY(fmt)=1 via the volatile-MEM anti-dep 38->45; unflippable without altering observable volatile order.
 
 - [s7] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (grep NONE), so owner-gated is not claimable this session despite both axes now measured dead across single- AND cross-function modalities.
+
+- [s8] REDERIVE modality. Baseline re-confirmed: sandbox --disable all score 9, target 91 / build 90, rules_dropped 4, cheat_asm_stripped 150. src restored to clean HEAD after the experiment (no dirt).
+
+- [s8] Fresh m2c (tools/m2c/m2c.py --valid-syntax --target mipsel-gcc-c) reconstructs HEAD's structure: reads D_8009BF68 as a SCALAR VALUE (folds, axis-A 2-insn form) and DCE's the dead *g_gpu_stat_reg read (m2c body would be 1 insn short = the banked score-19 collapse). No structurally-different shape offered by m2c; artifact tmp/grind/func_8007DC9C/s8/m2c_fresh.txt.
+
+- [s8] Kengo transplant leg: the Kengo (PS2 successor) corpus contains the CALLEE motion_make_table (0x118710) + VSync/VSync2/SetVSyncFlag, but NO equivalent of the GPU-timeout debug reporter func_8007DC9C itself (grep of kengo_functions_full.txt / kengo_func_names_sorted.txt for vsync/timeout/gpu/watchdog/make_table). No donor function exists -> Kengo-transplant lever is empty for this function.
+
+- [s8] Structurally-different control-flow rederivation MEASURED DEAD: dissolved the comma-expression condition into explicit statements, re-expressed the `||` short-circuit as an early `goto report` guard + nested `if (count > 0xF0000)`, split the draw-count increment into two named statements (semantics identical: increment only when g_gpu_vcount >= sys_VSync(-1)). sandbox -> score 9, target 91 / build 90, rules_dropped 4, cheat_asm_stripped 150 — the IDENTICAL fingerprint to every prior form. Axis A (per-expression combine fold) and axis B (volatile-MEM anti-dep sched priority) are both insensitive to control-flow shape. Rejected: rejected/rederive-goto-nested-if-control-flow.c.
+
+- [s8] CONSOLIDATED across ALL FIVE modalities: structural (s2/s3), permuter x3 (s4/s5), forensics x2 (s6/s7), rederive (s8) — every one measured both axes dead. Fresh m2c reproduces HEAD; Kengo has no donor; control-flow restructure is byte-identical. func_8007DC9C has NO legitimate pure-C lever, single-function or cross-function, in any modality. Clean OWNER-ESCALATION candidate; still NO OWNER-ESCALATION entry in docs/grind/decisions.md (grep NONE), so owner-gated is not claimable this session -> result progress with escalation-ready frontier.
+
+- [s8] s8 baseline re-confirmed: sandbox --disable all score 9, target_insns 91, build_insns 90, rules_dropped 4, cheat_asm_stripped 150; src restored to clean HEAD after the experiment (no dirt).
+
+- [s8] Fresh m2c reconstructs HEAD's structure: D_8009BF68 read as a scalar VALUE (folds to axis-A 2-insn form), dead stat-read DCE'd. No structurally-different shape offered. Artifact tmp/grind/func_8007DC9C/s8/m2c_fresh.txt.
+
+- [s8] Kengo (PS2 successor) corpus contains the callee motion_make_table (0x118710) + VSync/VSync2/SetVSyncFlag but NO equivalent of the GPU-timeout reporter func_8007DC9C -> sibling/Kengo-transplant lever is empty for this function.
+
+- [s8] Structurally-different control-flow rederivation (comma-expr dissolved into explicit statements + early 'goto report' guard + nested if(count>0xF0000) + split increment; short-circuit semantics preserved) measured score 9 / build 90 = identical fingerprint. Axis A is per-expression combine fold; axis B is volatile-order-locked sched priority; both insensitive to control-flow shape. Rejected: rejected/rederive-goto-nested-if-control-flow.c.
+
+- [s8] CONSOLIDATED: all five modalities now measured both axes dead — structural (s2/s3), permuter x3 (s4/s5), forensics x2 (s6/s7), rederive (s8). No legitimate pure-C lever single- or cross-function in any modality.
+
+- [s8] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (grep NONE), so owner-gated is not claimable this session despite full modality exhaustion.
