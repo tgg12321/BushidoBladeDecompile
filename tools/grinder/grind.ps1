@@ -460,7 +460,11 @@ while ($true) {
     $outPath  = Join-Path $GrindTmp "outcome_$func.json"
     $briefPath = Join-Path $GrindTmp "brief_$func.md"
     python tools/grinder/grindlib.py brief . $func $modality $outPath | Set-Content $briefPath -Encoding utf8
-    $sessionN = ((Get-Content $state -Raw | ConvertFrom-Json).session_count + 1)
+    $stObj = Get-Content $state -Raw | ConvertFrom-Json
+    $sessionN = ($stObj.session_count + 1)
+    # Floor entering this session — the escalation backstop uses it to tell a real
+    # floor-drop (progress) from a flat-floor dodge in `escalation` modality.
+    $priorFloor = if ($stObj.floor_history -and $stObj.floor_history.Count) { [int]$stObj.floor_history[-1].floor } else { $null }
     Log "${func}: session $sessionN starting, modality=$modality"
 
     # 4) spawn
@@ -559,12 +563,36 @@ while ($true) {
             git -C $Root commit -m "grind: $func parked owner-gated pending ruling [skip-park-src-guard]" 2>$null | Out-Null
         }
         default {
-            python tools/grinder/grindlib.py apply . $func $outPath $modality | Out-Null
-            Revert-SessionEdits
-            Log "${func}: progress applied — floor=$($o.floor), '$($o.headline)'"
-            Journal "$func s$sessionN [$modality] floor=$($o.floor): $($o.headline)"
-            git -C $Root add -- memory/grind docs/grind metrics/events.jsonl 2>$null
-            git -C $Root commit -m "grind: $func ledger s$sessionN update [skip-park-src-guard]" 2>$null | Out-Null
+            # ESCALATION BACKSTOP: in `escalation` modality the session was mandated
+            # to file the OWNER-ESCALATION + return owner-gated (or DROP the floor with
+            # a real lever). If it dodged — returned progress without lowering the floor
+            # — the driver files the escalation itself so an exhausted function can never
+            # loop (2026-07-22: func_8007DC9C ground 40 flat sessions this way). A real
+            # floor drop is honored as ordinary progress (the exhaustion counter resets).
+            $dodged = ($modality -eq 'escalation' -and $null -ne $priorFloor -and
+                       $null -ne $o.floor -and [int]$o.floor -ge $priorFloor)
+            if ($dodged) {
+                python tools/grinder/grindlib.py apply . $func $outPath $modality | Out-Null
+                Revert-SessionEdits
+                $tier = 'LOW'
+                try { $sc = (python tools/scan_hand_coded.py --single $func 2>$null | Out-String)
+                      if ($sc -match 'tier=(\w+)') { $tier = $Matches[1] } } catch { }
+                $rc = 0
+                try { $rc = @(Select-String -Path (Join-Path $Root 'regfix.txt'),(Join-Path $Root 'asmfix.txt') -Pattern "^$([regex]::Escape($func)):" -ErrorAction SilentlyContinue).Count } catch { }
+                $ref = (python tools/grinder/grindlib.py autoescalate . $func $stem $tier $rc (Get-Date -Format 'yyyy-MM-dd')).Trim()
+                Invoke-Eng @('queue', 'park', $func, '--reason', "owner escalation pending (auto-filed backstop): $ref") | Out-Null
+                Log "${func}: ESCALATION BACKSTOP — session dodged in escalation modality (floor $($o.floor) >= prior $priorFloor); driver auto-filed + parked."
+                Journal "$func s$sessionN [escalation] AUTO-ESCALATED by driver backstop (session did not self-file): $ref"
+                git -C $Root add -- memory/grind docs/grind metrics/events.jsonl engine/queue.json 2>$null
+                git -C $Root commit -m "grind: $func auto-escalated owner-gated (backstop) [skip-park-src-guard]" 2>$null | Out-Null
+            } else {
+                python tools/grinder/grindlib.py apply . $func $outPath $modality | Out-Null
+                Revert-SessionEdits
+                Log "${func}: progress applied — floor=$($o.floor), '$($o.headline)'"
+                Journal "$func s$sessionN [$modality] floor=$($o.floor): $($o.headline)"
+                git -C $Root add -- memory/grind docs/grind metrics/events.jsonl 2>$null
+                git -C $Root commit -m "grind: $func ledger s$sessionN update [skip-park-src-guard]" 2>$null | Out-Null
+            }
         }
     }
     # spec: oracle checked around every session — src is reverted (or merged) by

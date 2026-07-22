@@ -158,11 +158,48 @@ def validate_outcome(o, modality, root):
     return True, ""
 
 
-def assign_modality(session_count):
-    """Modality for the NEXT session given completed count. Session 1 = recon;
-    sessions 2..10 walk LADDER; then the ladder repeats from 'structural'."""
+# Escalation trigger (2026-07-22): the ladder used to repeat forever with no way
+# to transition a genuinely-exhausted function to a disposition. Sessions kept
+# returning `progress` with "escalation-ready, no owner entry filed" — obeying the
+# keep-going directive while the owner-gated brief's chicken-and-egg wording made
+# them think they couldn't self-file. func_8007DC9C burned 40 sessions at a flat
+# floor this way. When the floor has been FLAT for this many sessions across at
+# least this many DISTINCT modalities (real multi-modality exhaustion, not a
+# premature give-up while the floor is still moving), assign_modality forces the
+# `escalation` modality: file the OWNER-ESCALATION + return owner-gated.
+ESCALATION_FLAT_SESSIONS = 8
+ESCALATION_MIN_MODALITIES = 4
+
+
+def _exhaustion_ready(state):
+    """True when the honest floor is stuck > 0 across a long, modality-diverse
+    run — the signal that pure-C levers are genuinely exhausted and the function
+    should be dispositioned, not ground further."""
+    if not state:
+        return False
+    hist = state.get("floor_history", [])
+    if len(hist) < ESCALATION_FLAT_SESSIONS:
+        return False
+    window = hist[-ESCALATION_FLAT_SESSIONS:]
+    floors = [e.get("floor") for e in window]
+    top = floors[0]
+    if top is None or top <= 0:            # already matched / unknown → never escalate
+        return False
+    if any(f != top for f in floors):      # floor still moving → keep grinding
+        return False
+    mods = {e.get("modality") for e in window}
+    return len(mods) >= ESCALATION_MIN_MODALITIES
+
+
+def assign_modality(session_count, state=None):
+    """Modality for the NEXT session. Session 1 = recon; then walk/repeat LADDER —
+    UNLESS the function is exhaustion-ready (flat floor across many modalities), in
+    which case force `escalation` so the run reaches a disposition instead of
+    looping. `state` is optional for back-compat; without it the trigger never fires."""
     if session_count == 0:
         return "recon"
+    if _exhaustion_ready(state):
+        return "escalation"
     return LADDER[(session_count - 1) % len(LADDER)]
 
 
@@ -189,6 +226,40 @@ def add_judge_constraint(root, func, text):
     st = load_state(root, func)
     st["judge_constraints"].append(text)
     save_state(root, func, st)
+
+
+def autoescalate(root, func, file_stem, scan_tier, rule_count, date):
+    """Deterministic backstop: append a valid OWNER-ESCALATION entry for `func` to
+    docs/grind/decisions.md from the ledger's exhaustion record, and return the
+    escalation_ref line. The driver calls this when an `escalation`-modality session
+    fails to self-file (dodges with a flat-floor progress), so the function can never
+    loop unresolved. The owner still rules on the filed escalation."""
+    st = load_state(root, func) or {}
+    hist = st.get("floor_history", [])
+    floor = hist[-1].get("floor") if hist else "?"
+    sessions = st.get("session_count", len(hist))
+    mods = sorted({e.get("modality") for e in hist if e.get("modality")})
+    ref = f"{date} — {func} — OWNER-ESCALATION (auto-filed by driver, exhaustion backstop)"
+    entry = f"""
+## {ref}
+
+**Auto-filed by the grinder driver ({date})** after {sessions} sessions held the honest
+floor flat at {floor} across {len(mods)} distinct modalities ({', '.join(mods)}) without a
+session self-filing — the escalation-modality backstop (grind.ps1). This is the endgame-lock
+species per the standing 2026-07-20 endgame-lock-disposition policy: byte-matches on main only
+via a cheat ({rule_count} regfix/asmfix rule(s) or cheat-asm), honest pure-C floor {floor},
+sanctioned levers exhausted across the full modality ladder (see memory/grind/{func}/
+evidence.md + hypotheses.md for the per-session kill record). Both AND-gates fail on the
+ledger evidence: canonical-asm — `scan_hand_coded --single {func}` = **{scan_tier}** (ordinary
+GCC RA/scheduler artifact, no hand-coded signature); coercion family — no SOTN-master precedent
+recorded for the residual axes. Awaiting owner ruling (option (a) authorize a non-pure-C/
+new-family mechanism, or (b) REFUSED / OWNER-ACCEPTED INCOMPLETE with the cheat retained only
+to hold the byte-match). The driver does not self-resolve; it parks {func} until the owner rules.
+"""
+    dec = os.path.join(root, "docs", "grind", "decisions.md")
+    with open(dec, "a", encoding="utf-8", newline="\n") as f:
+        f.write(entry)
+    return ref
 
 
 MODALITY_PLAYBOOK = {
@@ -224,6 +295,22 @@ MODALITY_PLAYBOOK = {
     "synthesis": ("Re-read the ENTIRE ledger (evidence.md + hypotheses.md + rejected/). "
                   "Write the best merged attack. Reset the frontier to the strongest 1-3 "
                   "hypotheses for the next ladder pass."),
+    "escalation": ("DISPOSITION SESSION — the honest floor has been FLAT across many "
+                   "sessions and >=4 distinct modalities, so the driver has determined the "
+                   "pure-C levers are exhausted. Your job THIS session is to REACH A "
+                   "DISPOSITION, not to grind another variant. Two valid outcomes: (1) if you "
+                   "find a genuinely un-tried lever that DROPS the floor, use it — return "
+                   "candidate-ready (if it hits 0) or progress WITH THE LOWER FLOOR (this "
+                   "resets the exhaustion counter). (2) Otherwise FILE the OWNER-ESCALATION "
+                   "yourself THIS session: (a) run `python3 tools/scan_hand_coded.py --single "
+                   "<func>` and note the tier; (b) confirm what holds the byte-match (regfix/"
+                   "asmfix rule count, or cheat-asm); (c) APPEND an `## <date> — <func> — "
+                   "**OWNER-ESCALATION**` entry to docs/grind/decisions.md stating both "
+                   "endgame-lock AND-gates (canonical-asm: scan tier; coercion: SOTN "
+                   "precedent) and the exhaustion (sessions/modalities/permuter iters from the "
+                   "ledger); then return result=owner-gated with escalation_ref citing that "
+                   "entry. A flat-floor `progress` is NOT an acceptable outcome this session — "
+                   "the driver will auto-file the escalation if you dodge."),
 }
 
 
@@ -271,7 +358,7 @@ memory/grind/{func}/candidate.c (apply it to src/{st['file']}.c as your starting
   "artifacts": ["tmp/grind/..."], "ruling_question": "", "escalation_ref": ""}}
 - "candidate-ready" means: sandbox distance 0 THIS session, edits in place in src/. The driver re-verifies bytes itself — never claim it speculatively.
 - "ruling-request" is for a construct you cannot classify (sanctioned SOTN family vs cheat; genuine hand-written-asm evidence). Ask a precise question.
-- "owner-gated" is ONLY for when a filed OWNER-ESCALATION for {func} already exists in docs/grind/decisions.md AND every remaining sanctioned axis is measured dead — cite the entry in escalation_ref. The driver parks the function (queue advances) until the owner rules. Never use it to defer work that is still grindable.
+- "owner-gated" is for when every remaining sanctioned axis is measured dead. FILE the OWNER-ESCALATION entry in docs/grind/decisions.md YOURSELF THIS session (docs/grind/ is in your allowed surface), THEN return owner-gated with escalation_ref citing it — you do not wait for an entry to pre-exist, you create it. The driver verifies the entry names {func} and parks the function (queue advances) until the owner rules. Never use it to defer work that is still grindable (a floor still dropping is grindable). This is the mandated outcome in `escalation` modality.
 - A hypothesis KILLED with measurements is a fully successful session. Eliminating search space IS the job. There is no such thing as a failed session — only an unproven one, and unproven sessions are discarded by the driver as if they never ran.
 """
 
@@ -347,9 +434,13 @@ if __name__ == "__main__":
         convert_wip(sys.argv[2], sys.argv[3], sys.argv[4])
     elif cmd == "modality":
         st = load_state(sys.argv[2], sys.argv[3])
-        print(assign_modality(st["session_count"] if st else 0))
+        print(assign_modality(st["session_count"] if st else 0, st))
     elif cmd == "constrain":
         add_judge_constraint(sys.argv[2], sys.argv[3], sys.argv[4])
+    elif cmd == "autoescalate":
+        # autoescalate <root> <func> <file_stem> <scan_tier> <rule_count> <date>
+        print(autoescalate(sys.argv[2], sys.argv[3], sys.argv[4],
+                           sys.argv[5], sys.argv[6], sys.argv[7]))
     else:
         print(f"unknown cmd {cmd}")
         sys.exit(2)
