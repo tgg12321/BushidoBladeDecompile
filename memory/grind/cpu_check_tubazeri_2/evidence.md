@@ -151,3 +151,19 @@ don't move it.
 - [s3] ENDGAME-LOCK CANDIDATE confirmed: sole residual = 1 insn, operand-order-only, matchable only via a reviewer-rejected cheat. Frontier item-1 (RTL confirmation) discharged.
 
 - [s3] No OWNER-ESCALATION entry for cpu_check_tubazeri_2 exists in docs/grind/decisions.md yet, and the permuter axis (different modality) is un-run, so owner-gated is not yet available; recorded as progress.
+
+- [s4] s4 floor confirmed 1 at session start (candidate.c re-applied to src; sandbox --disable all: score 1, target_insns=build_insns=76, 9 rules dropped, scorable).
+
+- [s4] Built + validated an offset-0 permuter workspace for cpu_check_tubazeri_2: reduced self-contained base.c (5 typedefs + 3 externs + the score-1 body) compiled through the full cc1->prologue_fix->maspsx(sdata/expand-lb)->multu_pad pipeline, function region extracted, assembled with r3000 prelude; base=76 insns == target=76 with the SOLE stripped diff `addu s2,s0,v0` (ours) vs `addu s2,v0,s0` (target) = the known idx25 operand order. permuter base_score=10 (the 2-register commutative operand swap).
+
+- [s4] Seed1 (default index-for-loop chassis, --stop-on-zero, -j8, 58,328 iters): only novel output = output-10-1, score 10 = base. Its diff is `new_var=(u8*)a0;` hoisted and threaded through the byte-offset casts; s2=(s32*)(new_var+v0) STILL emits addu s2,s0,v0 base-first. Score-neutral -> banked rejected/permuter-newvar-alias-score10.c.
+
+- [s4] Seed2 (structurally-distinct chassis: s2=(s16*)a0+s1 scaled pointer arith + while copy loop, 44,141 iters): ZERO novel finds. Base also validated 76==76 with the identical single base-first residual, so even scaled-s16*-pointer arithmetic lowers base-first.
+
+- [s4] Both campaigns harvested + --stop cleanly (9 procs killed each); reap --ttl 1 --dry-run reports groups_seen:0 -> no orphan permuter processes left running.
+
+- [s4] The permuter result empirically corroborates the s3 cc1 -da RTL proof: pointer_int_sum canonicalizes ptr+int to base-first at tree-lowering, before RA/scheduling/declaration-order can act, so no pointer-domain restructuring (alias, reassoc, temp split, s16* scaling, for-vs-while) can flip idx25. The only distance-0 form remains the integer-domain offset-first `v0+(s32)a0` (rejected/int-cast-operand-swap.c, reviewer-FAILED commutative-operand-order coercion).
+
+- [s4] No OWNER-ESCALATION entry for cpu_check_tubazeri_2 exists in docs/grind/decisions.md, so owner-gated is not yet available this session; recorded as progress.
+
+- [s4] Artifacts: tmp/grind/cpu_check_tubazeri_2/s4/ws (seed1) + ws2 (seed2) workspaces with base.c/compile.sh/target.o + output-10-1; validate*.log show 76==76 with the single idx25 diff; ws/campaign.log + ws2/campaign.log carry the per-iteration telemetry.

@@ -1,8 +1,8 @@
 {
  "func": "cpu_check_tubazeri_2",
  "file": "code6cac_b",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 0,
@@ -27,18 +27,19 @@
    "floor": 1,
    "modality": "structural",
    "headline": "Structural axis for the idx25 addu operand swap KILLED via cc1 -da RTL proof: (plus a0 v0) is base-first at initial RTL and preserved unchanged through combine->greg (no regno swap); 1-insn operand-or"
+  },
+  {
+   "session": 4,
+   "floor": 1,
+   "modality": "permuter",
+   "headline": "Permuter axis KILLED: two structurally-distinct fresh seeds (~102k iters) find no sub-10 legit form; sole novel find is a score-neutral pointer-alias variant that leaves idx25 base-first, corroboratin"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "decomp-permuter re-seeded from the score-1 base may find a non-manual structural lever the hand-derived pointer-vs-integer sweep missed.",
-   "mechanism": "randomized/directed structural search from the closer base explores forms outside the hand-derived pointer-spelling axis; any closing form must be vetted against the cheat catalog (int-cast form already known-rejected).",
-   "next_probe": "PERMUTER-modality session: build a clean single-function target.o (offset 0 via asm/funcs + prelude.inc), run decomp-permuter from candidate.c with --stop-on-zero under fresh-seed discipline, harvest in-turn, vet any closing form."
-  },
-  {
-   "hypothesis": "If the permuter axis comes up dry, cpu_check_tubazeri_2 is a 1-insn operand-order-only endgame-lock: matchable only via the reviewer-rejected integer-cast operand swap.",
-   "mechanism": "the addu operand order is fixed at tree-lowering (proven this session); the only distance-0 C is the int-cast commutative-operand-order coercion the cheat-reviewer already FAILED. cf. endgame-lock-disposition-policy (feedback/endgame-lock-disposition-policy).",
-   "next_probe": "Owner action: file an OWNER-ESCALATION in docs/grind/decisions.md for endgame-lock disposition citing the s3 RTL proof; a later session may then emit owner-gated once the permuter axis is also measured dead."
+   "hypothesis": "cpu_check_tubazeri_2 is a confirmed 1-insn operand-order-only endgame-lock: the sole distance-0 C is the reviewer-rejected integer-cast operand swap; the structural axis (s3 RTL proof) AND the permuter axis (this session, ~102k iters, 2 chassis) are both now measured dead.",
+   "mechanism": "idx25 addu operand order is fixed at tree-lowering (pointer_int_sum base-first); every pointer-domain spelling scores 1, only int-domain v0+(s32)a0 scores 0 and is a commutative-operand-order coercion cheat (rejected/int-cast-operand-swap.c).",
+   "next_probe": "Owner action: file an OWNER-ESCALATION in docs/grind/decisions.md for the endgame-lock disposition of cpu_check_tubazeri_2, citing the s3 RTL proof + this s4 permuter-dead result (cf. feedback/endgame-lock-disposition-policy). Once that entry exists, a later session may emit owner-gated with escalation_ref."
   }
  ],
  "judge_constraints": [],
