@@ -4,12 +4,17 @@ Floor = 9 (verdict C, target 91 / build 90 insns). Gap decomposes into two
 independent axes: Axis A = 1 combine-fold insertion (BF68[0]); Axis B = 8-op
 sched1 reorder cluster in the first debug_printf setup.
 
-## Live frontier — RESET by s10 synthesis (2026-07-22)
+## Live frontier — RE-MERGED by s19 synthesis (2026-07-22; supersedes s10)
 
-s10 merged all nine prior sessions. The original s1 frontier (H-A1, H-A2, H-B1)
-is now fully resolved — every one is KILLED and must NOT be re-proposed. The
-frontier collapses to a SINGLE escalation-ready item. Full dossier:
-tmp/grind/func_8007DC9C/s10/MERGED-ATTACK.md.
+s10 merged s1–s9. s19 re-merges ALL of s1–s18 into the strengthened dossier
+tmp/grind/func_8007DC9C/s19/MERGED-ATTACK-s19.md (adds: permuter QUINTUPLE-
+confirm ~118k iters s13/s14; forensics QUADRUPLE-run with combine.c:1458
+SOURCE-verified + rule-completeness proof s15/s16; rederive control-flow leg
+TRIPLY-confirmed dead s8/s17/s18). The original s1 frontier (H-A1, H-A2, H-B1)
+is fully resolved — every one KILLED, do NOT re-propose. The frontier remains a
+SINGLE escalation-ready item; s11–s18 empirically prove re-running any pure-C
+modality only re-confirms the mechanism-pinned dead result (8 sessions, zero
+movement). The ONLY unblock is the OWNER filing the escalation entry.
 
 ### RESOLVED (do NOT re-open) — s1 frontier, all KILLED
 - **H-A1** (offset-0 combine fold decl/access lever) — KILLED s2/s3/s6/s9.
@@ -267,4 +272,16 @@ tmp/grind/func_8007DC9C/s10/MERGED-ATTACK.md.
 - mechanism: The flag-accumulator form presents a different overall control-flow skeleton to combine (axis A) / sched1 (axis B) than HEAD's comma-expression form (90/floor 9), s8's goto/nested-if (90/floor 9), and s17's inverted early-return guard (88/score 12). Refuted in advance by s8/s15/s17 (axis A per-expression combine.c:1458 offset-0 fold; axis B whole-block volatile-MEM REG_DEP_ANTI priority; both proven control-flow-insensitive), tested empirically for a fresh measured negative in the rederive modality.
 - probe: Applied the two-if flag skeleton (do_report = (vcount < sys_VSync(-1)); if(!do_report){ temp=g_gpu_draw_count; g_gpu_draw_count=temp+1; do_report=(temp>0xF0000);} if(do_report){<report>return -1;} return 0;) — short-circuit semantics preserved (draw_count++ only on the A-false path) — and ran sandbox func_8007DC9C --disable all; then git checkout restored src to clean HEAD.
 - result: score 12, build_insns 88 (two FEWER than the 90-insn floor build; target 91), rules_dropped 4, cheat_asm_stripped 150. WORSE than floor: splitting the guard into a flag + two ifs lets GCC MERGE the two exit paths (post-first-if fall-through and the final return 0), collapsing to 88 insns and moving away from target's 91. Lands at the SAME 88/12 fingerprint as s17's inverted-return: any control-flow shape that coalesces the two exit paths drops to 88. Neither pinned axis moved. Rejected: rejected/rederive-computed-flag-two-if.c.
+- verdict: KILLED
+
+## [s19] SYNTHESIS: re-merging all 18 prior sessions surfaces some un-banked pure-C lever OR strengthens the escalation dossier to the point the disposition is unambiguous.
+- mechanism: A second synthesis pass (s10 was first, over s1-s9 only) cross-reads the post-s10 accumulation — permuter s13/s14, forensics s15/s16, rederive s17/s18 — for any lever that survives the individual KILLs but only becomes visible when merged. Axis A = combine.c:1458 added_sets_2 (source-verified s15); axis B = sched1 REG_DEP_ANTI volatile-MEM priority (s6/s15); rule-set proven complete 2+2 (s16).
+- probe: No sandbox re-run (mechanism-pinned; frontier + s11-s18 empirically show re-measurement only re-confirms). Full cross-read of evidence.md (460 lines) + hypotheses.md + all 12 rejected/ forms + docs/grind/decisions.md; wrote consolidated dossier tmp/grind/func_8007DC9C/s19/MERGED-ATTACK-s19.md.
+- result: NO un-banked lever exists. Both axes remain orthogonal and mechanism-pinned dead across all five modalities (structural s2/s3/s11/s12, permuter x5 ~118k iters s4/s5/s13/s14, forensics x4 s6/s7/s15/s16, rederive x4 s8/s9/s17/s18, synthesis s10/s19). The 4 regfix rules are a proven 1:1 cover (s16, no hidden 3rd axis). endgame-lock-disposition-policy: gate #1 REFUSE (scan_hand_coded LOW), gate #2 REFUSE (no coercion precedent) -> keep 4 rules, INCOMPLETE-owner-accepted. STILL no OWNER-ESCALATION entry in docs/grind/decisions.md (grep 8007DC9C = No matches this session) -> owner-gated NOT claimable; the only unblock is the OWNER filing the entry.
+- verdict: KILLED (no lever; escalation dossier strengthened and re-merged)
+
+## [s19] Re-merging all 18 prior sessions surfaces some un-banked pure-C lever, OR strengthens the escalation dossier to the point the endgame-lock disposition is unambiguous.
+- mechanism: A 2nd synthesis pass (s10 covered only s1-s9) cross-reads the post-s10 accumulation for a lever that survives the individual KILLs but only becomes visible when merged. Axis A = combine.c:1458 added_sets_2 multi-use retention (single pure offset-0 rvalue read folds to 2-insn; SOURCE-verified s15). Axis B = sched1 INSN_PRIORITY via volatile-MEM REG_DEP_ANTI dead-read->BF7C (s6/s15). Rule-set proven complete 2+2 (s16).
+- probe: No sandbox re-run (mechanism-pinned; s11-s18 empirically show re-measurement only re-confirms). Full cross-read of evidence.md (460 lines) + hypotheses.md + all 12 rejected/ forms + docs/grind/decisions.md; wrote consolidated dossier tmp/grind/func_8007DC9C/s19/MERGED-ATTACK-s19.md.
+- result: No un-banked lever exists. Both axes remain orthogonal and mechanism-pinned dead across all five modalities (structural s2/s3/s11/s12, permuter x5 ~118k iters s4/s5/s13/s14, forensics x4 s6/s7/s15/s16, rederive x4 s8/s9/s17/s18, synthesis s10/s19). endgame-lock-disposition-policy: gate #1 REFUSE (scan_hand_coded LOW), gate #2 REFUSE (no coercion precedent) -> keep 4 rules, INCOMPLETE-owner-accepted. Still no OWNER-ESCALATION entry (grep = No matches) -> owner-gated NOT claimable.
 - verdict: KILLED

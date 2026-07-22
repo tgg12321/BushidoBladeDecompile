@@ -457,3 +457,29 @@ args is NOT a sanctioned use-site shape) and stripped by `volatile_cheats`.
 - [s18] Both pinned axes unmoved and mechanism-pinned dead: axis A = combine.c:1458 added_sets_2 multi-use retention (single pure offset-0 rvalue read folds to 2-insn; s15 source-verified); axis B = sched1 INSN_PRIORITY via volatile-MEM REG_DEP_ANTI dead-read->BF7C (s6/s15). Both proven control-flow-insensitive (s8/s15) — s18 empirically re-confirms via a distinct skeleton.
 
 - [s18] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (Grep 8007DC9C = No matches), so owner-gated is NOT claimable this session despite full five-modality exhaustion (structural s2/s3/s11/s12, permuter x5 s4/s5/s13/s14, forensics x4 s6/s7/s15/s16, rederive s8/s9/s17/s18, synthesis s10).
+
+- [s19] SYNTHESIS modality (2nd synthesis; s10 was 1st over s1-s9 only). No sandbox re-run (mechanism-pinned dead; floor 9 unchanged; the frontier + s11-s18 empirically prove re-measuring any pure-C axis only re-confirms — 8 sessions, zero movement). src/display.c clean at HEAD (candidate.c byte-equivalent, no dirt). Full cross-read of evidence.md (460 lines) + hypotheses.md + all 12 rejected/ forms + docs/grind/decisions.md.
+
+- [s19] Re-merged ALL 18 prior sessions into tmp/grind/func_8007DC9C/s19/MERGED-ATTACK-s19.md, superseding s10's s1-s9-only dossier. Adds the post-s10 accumulation: permuter QUINTUPLE-confirm ~118k iters (s13/s14), forensics QUADRUPLE-run with combine.c:1458 SOURCE-verified (`added_sets_2 = ! dead_or_set_p (i3, i2dest);`) + rule-completeness 2+2 proof (s15/s16), rederive control-flow leg TRIPLY-confirmed dead across 3 exit-path topologies (s8 goto/nested-if=90, s17 inverted-return=88, s18 computed-flag=88; none reaches target 91).
+
+- [s19] NO un-banked pure-C lever exists (single- or cross-function, any modality). Axis A = combine.c:1458 added_sets_2 multi-use retention (single pure offset-0 rvalue read folds to 2-insn; 2nd use only reproducible as a dead coercion s7; cross-fn mechanically impossible per per-function combine, toplev.c:3004). Axis B = sched1 INSN_PRIORITY via volatile-MEM REG_DEP_ANTI dead-read->BF7C (unflippable without altering observable volatile order). Orthogonal (axis A per-expression, axis B whole-block; s10). The 4 regfix rules are a proven 1:1 cover (s16); no hidden 3rd axis.
+
+- [s19] Disposition per endgame-lock-disposition-policy (owner 2026-07-20): byte-matches only via 4 regfix rules, 9 insns short in honest pure C. Gate #1 (canonical asm) REFUSE (scan_hand_coded LOW, ordinary GCC output). Gate #2 (coercion family) REFUSE (no SOTN/VS/ESA precedent for a dead-2nd-use combine coercion or a volatile-order sched coercion). Both fail -> keep 4 rules, classify INCOMPLETE-owner-accepted. Owner ruling to record, not agent self-authorization.
+
+- [s19] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (Grep 8007DC9C = No matches, verified this session; commit d6bc0904 covered 7 OTHER endgame-lock funcs), so owner-gated is NOT claimable this session. The single remaining action is the OWNER filing the escalation entry; once filed, the next session emits owner-gated and the queue advances. No further pure-C modality remains to run.
+
+- [s19] s19 re-merged all 18 prior sessions into tmp/grind/func_8007DC9C/s19/MERGED-ATTACK-s19.md, superseding s10's s1-s9-only dossier; no un-banked pure-C lever exists single- or cross-function in any modality.
+
+- [s19] Axis A (1 op): combine.c:1458 `added_sets_2 = ! dead_or_set_p (i3, i2dest);` (source-verified s15) keeps the 3-insn &D_8009BF68 materialization only for a multi-use address pseudo; func reads BF68[0] as a single pure offset-0 rvalue (exactly one target ref, s3) so it folds to 2-insn. Single-fn reproduction is a dead-2nd-use coercion (s7); cross-fn is mechanically impossible (per-function combine, toplev.c:3004).
+
+- [s19] Axis B (8 ops): sched1 INSN_PRIORITY dead *g_gpu_stat_reg read (priority 2) out-ranks fmt la (priority 1) by the volatile-MEM anti-dep REG_DEP_ANTI dead-read->D_8009BF7C (both mem/v); unflippable without altering observable volatile order. Body-shape-invariant (s15 +3 UID shift, identical priorities/decision).
+
+- [s19] The 4 regfix rules (regfix.txt:2830-2835) are a proven 1:1 cover of the two axes (s16 completeness proof): 2830+2831=axis A, 2833+2835=axis B; honest gap 9 = 1+8; no 5th rule, no hidden 3rd divergence.
+
+- [s19] Permuter QUINTUPLE-confirmed dead across 5 structurally-distinct chassis (~118k iters s4/s5/s13/s14): only sub-floor finds are banked coercions (volatile-BF68 / long-long-width / fmt-corrupt junk); axis B never legitimately reordered.
+
+- [s19] Rederive control-flow leg triply-confirmed dead: HEAD comma-expr=90/floor9, s8 goto/nested-if=90/floor9, s17 inverted-return=88/score12, s18 computed-flag=88/score12; none reaches target's 91. m2c reproduces HEAD; Kengo/decomp.me corpus (3754) offer no donor / only genuine multi-use materializations.
+
+- [s19] No OWNER-ESCALATION entry for func_8007DC9C in docs/grind/decisions.md (grep 8007DC9C = No matches, verified s19; d6bc0904 covered 7 OTHER endgame-lock funcs) -> owner-gated not claimable; the only unblock is the OWNER filing the entry.
+
+- [s19] Baseline unchanged (no re-run needed, mechanism-pinned): floor 9, target 91 / build 90, rules_dropped 4, cheat_asm_stripped 150. src/display.c clean at HEAD (candidate.c byte-equivalent, no dirt).
