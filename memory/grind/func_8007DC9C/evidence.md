@@ -403,3 +403,25 @@ args is NOT a sanctioned use-site shape) and stripped by `volatile_cheats`.
 - [s15] Forensics now triple-run (s6/s7/s15); both opus-authored (s6/s7) mechanism pins hold up under independent fresh-dump + source scrutiny per verify-opus-handoff-claims. No new pure-C lever surfaced.
 
 - [s15] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (grep 8007DC9C = no matches), so owner-gated is not claimable this session.
+
+- [s16] FORENSICS (4th run). Baseline re-confirmed: sandbox --disable all score 9, target 91 / build 90, rules_dropped 4, cheat_asm_stripped 150 (identical fingerprint s1-s15). Fresh cc1 -da -dr dumps over committed src/display.c: tmp/grind/func_8007DC9C/s16/display.i.{rtl,flow,combine,cse,cse2,loop,jump,jump2,lreg,greg,sched,sched2,dbr} + display.s + FORENSICS.md. src/display.c clean at HEAD (only tmp/ written; git status src/+regfix.txt = clean).
+
+- [s16] NEW forensic result: regfix rule <-> axis COMPLETENESS cross-map (un-covered by s6/s7/s15, which pinned mechanisms but never enumerated the rules against the gap). The 4 rules (regfix.txt:2830-2835) partition EXACTLY into the two pinned axes: AXIS A = 2830 `subst lw $5,BF68 -> la $2,BF68` + 2831 `insert_after lw $5,0($2)` (the single materialization insertion); AXIS B = 2833 `subst lw $4,0($3) -> lw $2,0($3)` (dead-read reg $a0->$v0) + 2835 `reorder 21,20,19,18 @ 18-21` (4-insn sched permutation). No 5th rule, no unaccounted divergence => the honest 9-op gap = 1 (axis A) + 8 (axis B) is FULLY closed by these 4 rules, each traceable to one mechanism-pinned pass (combine.c:1458 / sched1 REG_DEP_ANTI). Forecloses the last open worry that a hidden third lever hides in the masked-Levenshtein cluster.
+
+- [s16] Axis A re-confirmed FIRST-HAND from fresh s16 combine dump: line 10051 `(mem/s:SI (symbol_ref:SI ("D_8009BF68")))` symbol-direct/folded (2-insn). Line 8422 = sibling func_8007D3F8's `(set (mem:SI (symbol_ref D_8009BF68)))` store in its OWN combine section (corroborates s7 per-function-combine: sibling use invisible here).
+
+- [s16] Axis B corroborated from fresh s16 sched priority block (func region insns 335-351, priorities 1-5 = critical-path heights, 69 mem/v insns dump-wide); mechanism (dead volatile *g_gpu_stat_reg read out-ranks fmt la by +1 via volatile-MEM REG_DEP_ANTI) unchanged from s6/s7/s15 triple-confirm. Not re-traced insn-by-insn (would be spinning per frontier).
+
+- [s16] No OWNER-ESCALATION entry for func_8007DC9C in docs/grind/decisions.md (Grep 8007DC9C = No matches), so owner-gated NOT claimable this session -> result progress, escalation-ready frontier unchanged. Forensics now 4x-run (s6/s7/s15/s16); both axes mechanism-pinned dead AND the rule-set proven complete (no hidden 3rd axis).
+
+- [s16] s16 baseline re-confirmed: sandbox --disable all score 9, target_insns 91, build_insns 90, rules_dropped 4, cheat_asm_stripped 150 (identical fingerprint to s1-s15). src/display.c + regfix.txt clean at HEAD (git status = clean); only tmp/ written.
+
+- [s16] Fresh s16 cc1 -da -dr dumps generated over committed src/display.c (13 display.i.* passes + display.s + FORENSICS.md).
+
+- [s16] NEW: regfix rule <-> axis completeness cross-map. Rules 2830+2831 = axis A (combine.c:1458 added_sets_2 materialization); rules 2833+2835 = axis B (sched1 volatile-MEM REG_DEP_ANTI priority). No 5th rule -> the 9-op gap (1 axis-A + 8 axis-B) is fully accounted; no hidden third lever inside the masked-Levenshtein cluster.
+
+- [s16] Axis A re-confirmed first-hand from fresh s16 combine dump line 10051: (mem/s:SI (symbol_ref D_8009BF68)) symbol-direct/folded 2-insn form; a single pure offset-0 rvalue read always folds (combine.c:1458).
+
+- [s16] Axis B corroborated from fresh s16 sched priority block (func insns 335-351, priorities 1-5); mechanism (dead volatile *g_gpu_stat_reg read out-ranks fmt la via volatile-MEM anti-dep) unchanged from the s6/s7/s15 triple-confirm; not re-traced insn-by-insn (would be spinning per frontier).
+
+- [s16] Forensics now 4x-run (s6/s7/s15/s16). Both axes mechanism-pinned dead across all five modalities AND the regfix rule-set proven complete. No OWNER-ESCALATION entry for func_8007DC9C in docs/grind/decisions.md (Grep = No matches) -> owner-gated not claimable this session.
