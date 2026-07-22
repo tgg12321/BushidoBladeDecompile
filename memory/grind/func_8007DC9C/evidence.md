@@ -669,3 +669,19 @@ args is NOT a sanctioned use-site shape) and stripped by `volatile_cheats`.
 - [s29] Structural modality re-confirmed exhausted (8th time): block-local var splits (s2/s29), decl order (s2 sweep), type narrowing (s2/s4/s5), statement re-association (s2/s8), struct/array grouping (s3), multi-lever combos (s20/s21), 2nd-printf read-hoist (s29) all dead.
 
 - [s29] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (grep NONE this session), so owner-gated is not claimable despite full six-modality exhaustion.
+
+- [s30] STRUCTURAL. Baseline re-confirmed: sandbox --disable all score 9, target 91 / build 90, rules_dropped 4, cheat_asm_stripped 150 (identical to s1-s29). src/display.c restored to clean HEAD after the experiment (git diff empty); candidate cleanup preserved.
+
+- [s30] Novel structural probe (un-banked placement): hoisted the 2nd debug_printf's three independent global reads into tightly-scoped block-local temps declared in REVERSE source order immediately before the call `{ s32 r3=D_8009BF70; s32 r2=D_8009BF6C; s32 r1=D_8009BF68[0]; debug_printf(&D_80016044,r1,r2,r3); }`. Distinct regime from s29 (block-top hoist -> score 35 strictly worse) and s23 (permuter chassis-7 block-top temps): minimal register pressure, temps live across zero calls, reversed evaluation order. Purpose: isolate whether axis-A BF68[0] materialization is sensitive to sibling-read evaluation order/placement. -> score 9, IDENTICAL floor fingerprint. BF68[0] stays combine-folded to the 2-insn form; axis B unchanged. KILLED: the axis-A combine offset-0 single-use fold (combine.c:1458 added_sets_2, s6/s25) is per-expression and insensitive to sibling-read evaluation order/placement; axis B pressure-insensitive (corroborates s24/s29). Rejected: rejected/structural-s30-reverse-order-2ndprintf-temps.c. Artifact: tmp/grind/func_8007DC9C/s30/NOTES.md.
+
+- [s30] Structural modality now exhausted across 9 distinct probes; both axes mechanism-pinned dead across six modalities. No OWNER-ESCALATION entry for func_8007DC9C in docs/grind/decisions.md (grep NONE), so owner-gated not claimable -> result progress, escalation-ready.
+
+- [s30] s30 baseline re-confirmed: sandbox --disable all score 9, target_insns 91, build_insns 90, rules_dropped 4, cheat_asm_stripped 150 (identical fingerprint to s1-s29).
+
+- [s30] s30 novel structural probe (reverse-order 2nd-printf sibling-read temps, minimal pressure, un-banked placement distinct from s29 block-top/s23 permuter) -> score 9, identical floor fingerprint. Axis-A BF68[0] materialization is per-expression combine single-use fold (combine.c:1458 added_sets_2) and independent of sibling-read evaluation order/placement; axis B unchanged. Rejected: rejected/structural-s30-reverse-order-2ndprintf-temps.c.
+
+- [s30] Structural modality now exhausted across 9 distinct probes (s2/s3/s11/s12/s20/s21/s29/s30 + this): block-local var splits, declaration order, type narrowing, statement re-association, struct/array grouping, multi-lever combos, 2nd-printf read hoists at every placement/order -- all floor 9 or worse.
+
+- [s30] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (grep NONE this session), so owner-gated is not claimable despite full six-modality exhaustion.
+
+- [s30] src/display.c restored to clean HEAD after the experiment (git diff empty); candidate cleanup form preserved in memory/grind/func_8007DC9C/candidate.c.

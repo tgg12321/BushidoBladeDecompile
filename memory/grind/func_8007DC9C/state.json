@@ -1,7 +1,7 @@
 {
  "func": "func_8007DC9C",
  "file": "display",
- "session_count": 29,
+ "session_count": 30,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -183,13 +183,19 @@
    "floor": 9,
    "modality": "structural",
    "headline": "s29 structural: novel 2nd-printf read-hoist KILLED (score 35/build 95, strictly worse) \u2014 proves axis-B sched priority is volatile-anti-dep-driven, not register-pressure-driven; structural modality re-"
+  },
+  {
+   "session": 30,
+   "floor": 9,
+   "modality": "structural",
+   "headline": "s30 structural: novel reverse-order 2nd-printf sibling-read temp hoist KILLED (score 9, identical floor fingerprint); axis-A combine fold proven insensitive to sibling-read evaluation order/placement;"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "func_8007DC9C is a fully-characterized ENDGAME-LOCK; both residual axes are compiler-internal, orthogonal, and dump-pinned dead on both sides with NO legitimate pure-C lever single- or cross-function across all six modalities (structural x8, permuter x7 ~189k iters, forensics x6, rederive x6, synthesis x3).",
-   "mechanism": "Axis A = combine.c:1458 added_sets_2 single-use fold (COMBINE-pinned both sides, s25): BF68[0] address pseudo is single-use so combine deletes the materialization; single-fn reproduction = dead 2nd use = coercion (s7); cross-fn mechanically impossible (per-function combine, toplev.c:3004). Axis B = sched1 OVER-DETERMINED lock (s24): volatile-MEM anti-dep priority (38->45, s6/s15) + MIPS-I load-delay hazard + LUID tie-break, three independent backstops; s29 adds empirical proof it is pressure-insensitive (added liveness only worsens, never reorders).",
-   "next_probe": "OWNER files an OWNER-ESCALATION entry for func_8007DC9C in docs/grind/decisions.md citing both dump-pinned mechanisms (axis A combine.c:1458 added_sets_2 both sides s25; axis B over-determined sched lock s24 + s29 pressure-insensitivity), six-modality exhaustion incl. seven-chassis permuter (~189k iters) + six forensics runs + eight structural probes, the s16 rule-completeness proof (4 rules = 2+2), and the endgame-lock-disposition-policy outcome (gate #1 REFUSE canonical-asm, gate #2 REFUSE coercion). Once filed, the next session emits owner-gated and the queue advances. No further pure-C modality or un-pinned forensic detail remains."
+   "hypothesis": "func_8007DC9C is a fully-characterized ENDGAME-LOCK; both residual axes are compiler-internal, orthogonal, and dump-pinned dead on both sides with NO legitimate pure-C lever single- or cross-function across all six modalities (structural x9, permuter x7 ~189k iters, forensics x6, rederive x6, synthesis x3).",
+   "mechanism": "Axis A = combine.c:1458 added_sets_2 single-use fold (COMBINE-pinned both sides, s25; s30 re-confirms sibling-read-order insensitivity): BF68[0] address pseudo is single-use so combine deletes the materialization; single-fn reproduction = dead 2nd use = coercion (s7); cross-fn mechanically impossible (per-function combine, toplev.c:3004). Axis B = sched1 OVER-DETERMINED lock (s24): volatile-MEM anti-dep priority (REG_DEP_ANTI 38->45, s6/s15) + MIPS-I load-delay hazard + LUID tie-break, three independent backstops; pressure-insensitive (s29/s30).",
+   "next_probe": "OWNER files an OWNER-ESCALATION entry for func_8007DC9C in docs/grind/decisions.md citing both dump-pinned mechanisms (axis A combine.c:1458 added_sets_2 both sides s25/s30; axis B over-determined sched lock s24 + s29/s30 pressure-insensitivity), six-modality exhaustion incl. nine structural probes + seven-chassis permuter (~189k iters) + six forensics runs, the s16 rule-completeness proof (4 rules = 2+2), and the endgame-lock-disposition-policy outcome (gate #1 REFUSE canonical-asm, gate #2 REFUSE coercion). Once filed, the next session emits owner-gated and the queue advances. No further pure-C modality or un-pinned forensic detail remains."
   }
  ],
  "judge_constraints": [],
