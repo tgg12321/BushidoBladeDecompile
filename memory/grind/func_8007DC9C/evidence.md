@@ -256,3 +256,29 @@ args is NOT a sanctioned use-site shape) and stripped by `volatile_cheats`.
 - [s8] CONSOLIDATED: all five modalities now measured both axes dead — structural (s2/s3), permuter x3 (s4/s5), forensics x2 (s6/s7), rederive (s8). No legitimate pure-C lever single- or cross-function in any modality.
 
 - [s8] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (grep NONE), so owner-gated is not claimable this session despite full modality exhaustion.
+
+- [s9] REDERIVE modality, decomp.me-corpus leg (the un-run rederive avenue; s8 covered m2c+Kengo+control-flow). Baseline re-confirmed: sandbox --disable all score 9, target 91 / build 90, rules_dropped 4, cheat_asm_stripped 150. src/display.c clean at HEAD (untouched). curl_cffi absent -> searched the CACHED corpus tmp/decomp_me_corpus/ = 3754 GCC-2.7.2 PSX scratches (each JSON has source_code + target_assembly).
+
+- [s9] AXIS A cross-corpus prior-art: searched every matching scratch for a single pure rvalue word-read of a global at offset 0 that materializes as target's 3-insn `lui;addiu R,R,%lo(SYM);lw X,0(R)` (func_8007DC9C's shape) instead of folding to 2-insn `lui;lw %lo`. Regex validated (8011 same-reg addiu+%lo corpus-wide; func_8007DC9C's own form is `addiu $v0,$v0,%lo(D_8009BF68)`+`lw $a1,0x0($v0)`; offset renders `0x0(` not `0(`). STRICT filter (addiu %lo IMMEDIATELY -> offset-0 load, no intervening index math) = 541 hits, 25 in MATCHING scratches. Classified all 25: EVERY one is a genuine C-source MULTI-USE access -- RMW at [0] (D_800AF9D8[0]|=0x8000, &=0x7FFF, D_80097C40[0]++, if(D_80072F16[0]==0)[0]=0x20 => load+store=2 addr uses), struct multi-field (BtlDrawFlag.fade/.chr/.theEnd/.invi/.panel, g_Pad.m_Down, ButtonsRelated.ButtonTapped), struct-member-as-index (D_800B2384.bankIndex x7, D_800719D0.DAT_), matrix/struct copy (cameraMat=D_800AFA64), or repeated reads (D_800AF93A[0] used x2 -> two materializations). NONE is a single pure word-read at offset-0. Materialization ALWAYS traces to a real >=2-use access in the C.
+
+- [s9] AXIS A VERDICT: KILLED, corroborates s2/s3/s6/s7 with independent cross-corpus prior-art. func_8007DC9C reads D_8009BF68[0] as a single pure rvalue (s3: exactly one target reference) -> folds to 2-insn. The corpus offers NO declaration/access shape that materializes a single pure read; the 3-insn form only ever comes from a genuine 2nd use, which single-function pure C can only supply as a dead/fake use = coercion (s7 banked axisA-dead-addr-store-multiuse.c). Rejected: rejected/rederive-decompme-corpus-multiuse-only.c. Artifact tmp/grind/func_8007DC9C/s9/FINDINGS.md + corpus_*.py/classify.py.
+
+- [s9] AXIS B: no corpus lever possible -- axis B is a frozen-toolchain sched fact (INSN_PRIORITY dead-read=2 > fmt=1 via volatile-MEM anti-dep, s6), provably control-flow-insensitive (s8); a corpus donor cannot change a compiler-pass mechanism. Keyword search surfaced reporter-adjacent donors (VsyncHandler, InitHardware, cdReadSectors) but NONE is a GPU-timeout debug reporter analogous to func_8007DC9C -- consistent with s8 Kengo "no reporter donor".
+
+- [s9] CONSOLIDATED: rederive modality now FULLY exhausted incl. the decomp.me-corpus leg. All five modalities (structural s2/s3, permuter x3 s4/s5, forensics x2 s6/s7, rederive s8+s9) measure both axes dead. func_8007DC9C is a clean OWNER-ESCALATION candidate; still NO OWNER-ESCALATION entry in docs/grind/decisions.md (grep NONE; commit d6bc0904's owner ruling covered 7 OTHER endgame-lock funcs, not this one), so owner-gated is not claimable this session -> result progress, escalation-ready.
+
+- [s9] s9 baseline re-confirmed: sandbox --disable all score 9, target 91 / build 90, rules_dropped 4, cheat_asm_stripped 150; src/display.c clean at HEAD (untouched this session).
+
+- [s9] Cached decomp.me corpus tmp/decomp_me_corpus/ = 3754 GCC-2.7.2 PSX matching-decomp scratches (gcc2.7.2-psx / gcc2.7.2-cdk / psyq3.5), each with source_code + target_assembly. curl_cffi not installed so searched offline.
+
+- [s9] Regex validated: 8011 same-reg 'addiu R,R,%lo(SYM)' corpus-wide; func_8007DC9C's own axis-A form is 'addiu $v0,$v0,%lo(D_8009BF68)' + 'lw $a1,0x0($v0)' (offset renders 0x0( not 0(); first-pass regex miss corrected).
+
+- [s9] STRICT axis-A filter (materialized addr IMMEDIATELY -> offset-0 load, no intervening index math): 541 hits, 25 in MATCHING scratches. All 25 classified by C source = genuine multi-use (RMW / struct multi-field / struct-member-as-index / matrix copy / repeated reads). NONE is a single pure word-read at offset-0.
+
+- [s9] Corroborates s2/s3/s6/s7 axis-A KILL with independent cross-corpus prior-art: a single pure offset-0 rvalue read always folds to 2-insn; the 3-insn materialization is combine multi-use retention of a genuine 2nd use, which single-function pure C can only supply as a dead/fake use = coercion (banked s7 axisA-dead-addr-store-multiuse.c).
+
+- [s9] Axis B is a frozen-toolchain sched fact (INSN_PRIORITY dead-read=2 > fmt=1 via volatile-MEM anti-dep, s6) proven control-flow-insensitive (s8); a corpus donor cannot change a compiler-pass mechanism. Keyword search found reporter-adjacent donors (VsyncHandler/InitHardware/cdReadSectors) but NO GPU-timeout debug reporter analogue -- consistent with s8 Kengo 'no reporter donor'.
+
+- [s9] Rederive modality now FULLY exhausted incl. the decomp.me-corpus leg. All five modalities (structural s2/s3, permuter x3 s4/s5, forensics x2 s6/s7, rederive s8+s9) measure both axes dead.
+
+- [s9] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (grep NONE); commit d6bc0904's owner ruling covered 7 OTHER endgame-lock functions, not this one. So owner-gated is not claimable this session despite full modality exhaustion.
