@@ -1,8 +1,8 @@
 {
  "func": "func_8007DC9C",
  "file": "display",
- "session_count": 16,
- "current_modality": "forensics",
+ "session_count": 17,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 0,
@@ -105,13 +105,19 @@
    "floor": 9,
    "modality": "forensics",
    "headline": "s16 forensics: the 4 regfix rules map 1:1 onto the two pinned axes (no hidden third divergence); both axes mechanism-pinned dead, escalation-ready (no owner entry filed)."
+  },
+  {
+   "session": 17,
+   "floor": 9,
+   "modality": "rederive",
+   "headline": "s17 rederive: fresh inverted-guard control-flow variant KILLED (88 insns/score 12, worse than floor); m2c re-reproduces HEAD; both axes stay mechanism-pinned dead, escalation-ready (no owner entry fil"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "func_8007DC9C is a fully-characterized ENDGAME-LOCK: axis A (combine.c:1458 added_sets_2 multi-use retention, needs a 2nd &D_8009BF68 use the function lacks) and axis B (sched1 volatile-MEM anti-dep priority) are orthogonal, mechanism-pinned, and have no legitimate pure-C lever single- or cross-function across all five modalities; the 4 regfix rules are now proven a complete 1:1 cover of the two axes (no hidden third).",
-   "mechanism": "Matches endgame-lock-disposition-policy (owner 2026-07-20): byte-matches only via 4 regfix rules, 9 insns short in honest pure C. Gate #1 (canonical asm) REFUSE (scan_hand_coded LOW). Gate #2 (coercion family) REFUSE (no SOTN/VS/ESA precedent for a dead-2nd-use combine coercion or a volatile-order sched coercion). Both fail -> keep the 4 regfix rules, classify INCOMPLETE-owner-accepted.",
-   "next_probe": "OWNER files an OWNER-ESCALATION entry for func_8007DC9C in docs/grind/decisions.md citing both pinned mechanisms (combine.c:1458 / sched1 REG_DEP_ANTI), the five-modality exhaustion (structural s2/s3/s11/s12, permuter x5 s4/s5/s13/s14, forensics x4 s6/s7/s15/s16, rederive s8/s9, synthesis s10), the rule-completeness proof (s16), and the endgame-lock policy outcome. Once filed, the next session emits owner-gated and the queue advances. No further pure-C modality remains to run."
+   "hypothesis": "func_8007DC9C is a fully-characterized ENDGAME-LOCK: axis A (combine.c:1458 added_sets_2 multi-use retention) and axis B (sched1 volatile-MEM anti-dep REG_DEP_ANTI priority) are orthogonal, mechanism-pinned, and have NO legitimate pure-C lever single- OR cross-function across all five modalities. The 4 regfix rules are a complete 1:1 cover (s16). No further pure-C modality remains to run.",
+   "mechanism": "Matches endgame-lock-disposition-policy (owner 2026-07-20): byte-matches only via 4 regfix rules, 9 insns short in honest pure C. Gate #1 (canonical asm) REFUSE (scan_hand_coded LOW, ordinary GCC output). Gate #2 (coercion family) REFUSE (no SOTN/VS/ESA precedent for a dead-2nd-use combine coercion or a volatile-order sched coercion). Both fail -> keep the 4 regfix rules, classify INCOMPLETE-owner-accepted.",
+   "next_probe": "OWNER files an OWNER-ESCALATION entry for func_8007DC9C in docs/grind/decisions.md citing both pinned mechanisms (combine.c:1458 / sched1 REG_DEP_ANTI), the five-modality exhaustion, the rule-completeness proof (s16), and the endgame-lock policy outcome. Once filed, the next session emits owner-gated and the queue advances."
   }
  ],
  "judge_constraints": [],

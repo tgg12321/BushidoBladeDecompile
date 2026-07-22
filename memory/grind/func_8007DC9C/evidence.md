@@ -425,3 +425,25 @@ args is NOT a sanctioned use-site shape) and stripped by `volatile_cheats`.
 - [s16] Axis B corroborated from fresh s16 sched priority block (func insns 335-351, priorities 1-5); mechanism (dead volatile *g_gpu_stat_reg read out-ranks fmt la via volatile-MEM anti-dep) unchanged from the s6/s7/s15 triple-confirm; not re-traced insn-by-insn (would be spinning per frontier).
 
 - [s16] Forensics now 4x-run (s6/s7/s15/s16). Both axes mechanism-pinned dead across all five modalities AND the regfix rule-set proven complete. No OWNER-ESCALATION entry for func_8007DC9C in docs/grind/decisions.md (Grep = No matches) -> owner-gated not claimable this session.
+
+- [s17] REDERIVE modality. Baseline re-confirmed: sandbox --disable all score 9, target 91 / build 90, rules_dropped 4, cheat_asm_stripped 150 (identical fingerprint s1-s16); src at clean HEAD after the experiment (git checkout restored, no dirt).
+
+- [s17] Fresh m2c (tools/m2c/m2c.py --valid-syntax --target mipsel-gcc-c) reproduces HEAD's structure AGAIN: reads D_8009BF68 as a SCALAR VALUE (folds -> axis-A 2-insn form) and DCE's the dead *g_gpu_stat_reg read (single-read collapse = banked score-19 form). No structurally-different skeleton offered. Artifact tmp/grind/func_8007DC9C/s17/m2c_fresh.txt. Corroborates s8/s9 m2c leg.
+
+- [s17] NEW rederive control-flow variant MEASURED (not previously banked): inverted early-return guard -- `if (g_gpu_vcount >= sys_VSync(-1)) { temp=g_gpu_draw_count; g_gpu_draw_count=temp+1; if (temp<=0xF0000) return 0; }` then the divergent debug-report block hoisted to straight-line FUNCTION scope (distinct from s8's goto-report + nested-if, which kept the block nested; short-circuit semantics preserved -- draw_count++ runs only on the A-false path). sandbox --disable all -> score 12, build_insns 88 (TWO FEWER than the 90-insn floor build; target 91). WORSE than floor: hoisting to fn-scope + inverting the guard lets GCC merge the two return paths and emit 88 insns, moving AWAY from target's 91. Rejected: rejected/rederive-inverted-early-return-guard.c.
+
+- [s17] REDERIVE conclusion: control-flow rederivation leg now doubly-confirmed dead from BOTH directions -- s8 goto/nested-if ties the floor (90/score 9), s17 inverted-return worsens it (88/score 12); ONLY HEAD's comma-expression guard reaches the 90-insn floor and none reaches target's 91. Both pinned axes (combine offset-0 fold; sched1 volatile-MEM anti-dep priority) unmoved -- consistent with s8/s15 structure-insensitivity. All five modalities (structural s2/s3/s11/s12, permuter x5 s4/s5/s13/s14, forensics x4 s6/s7/s15/s16, rederive s8/s9/s17, synthesis s10) measure both axes dead.
+
+- [s17] No OWNER-ESCALATION entry for func_8007DC9C in docs/grind/decisions.md (Grep 8007DC9C = No matches) -> owner-gated not claimable this session despite full modality exhaustion. Escalation-ready; the only remaining action is the OWNER filing the entry.
+
+- [s17] s17 baseline re-confirmed: sandbox --disable all score 9, target_insns 91, build_insns 90, rules_dropped 4, cheat_asm_stripped 150 (identical fingerprint s1-s16); src/display.c restored to clean HEAD after experiment (git checkout, no dirt).
+
+- [s17] Fresh m2c reproduces HEAD's structure again (scalar BF68 read folds to axis-A 2-insn form; dead stat-read DCE'd); no structurally-different skeleton. Artifact tmp/grind/func_8007DC9C/s17/m2c_fresh.txt. Corroborates s8/s9 m2c leg.
+
+- [s17] NEW control-flow rederivation (inverted early-return guard, report block hoisted to fn scope) measured score 12 / build_insns 88 -- two fewer than the floor build, moving AWAY from target's 91. Rejected: rejected/rederive-inverted-early-return-guard.c.
+
+- [s17] Control-flow rederivation leg now doubly-confirmed dead from both directions: s8 goto/nested-if ties the floor (90/score 9), s17 inverted-return worsens it (88/score 12); only HEAD's comma-expression guard reaches the 90-insn floor and none reaches target's 91 -- both pinned axes unmoved (consistent with s8/s15 structure-insensitivity).
+
+- [s17] All five modalities now measure both axes dead: structural s2/s3/s11/s12, permuter x5 s4/s5/s13/s14, forensics x4 s6/s7/s15/s16, rederive s8/s9/s17, synthesis s10. Axis A = combine.c:1458 added_sets_2 multi-use retention (needs a 2nd &D_8009BF68 use the fn lacks; single-fn reproduction is a dead-2nd-use coercion, cross-fn mechanically impossible per per-function combine). Axis B = sched1 INSN_PRIORITY via volatile-MEM REG_DEP_ANTI (dead *g_gpu_stat_reg read out-ranks fmt la by +1; unflippable without altering observable volatile order). The 4 regfix rules are a proven 1:1 cover of the two axes (s16).
+
+- [s17] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (Grep 8007DC9C = No matches) -> owner-gated NOT claimable this session despite full five-modality exhaustion.
