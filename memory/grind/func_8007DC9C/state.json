@@ -1,8 +1,8 @@
 {
  "func": "func_8007DC9C",
  "file": "display",
- "session_count": 39,
- "current_modality": "structural",
+ "session_count": 40,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 0,
@@ -243,13 +243,19 @@
    "floor": 9,
    "modality": "structural",
    "headline": "s39 structural: novel live-printf-arg *stat read hoist KILLED (score 20, strictly worse) \u2014 first probe to move the LIVE stat read, proves it is schedule-position-locked inline at the call; corroborate"
+  },
+  {
+   "session": 40,
+   "floor": 9,
+   "modality": "permuter",
+   "headline": "s40 permuter chassis-10 (long-live arg-temps, base 695) KILLED: only sub-floor find is the banked volatile-BF68 coercion (axis A); axis B never legitimately reordered \u2014 permuter now DECUPLE-confirmed "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "func_8007DC9C is a fully-characterized ENDGAME-LOCK; both residual axes are compiler-internal, orthogonal, and have NO legitimate pure-C lever single- OR cross-function across all six modalities.",
-   "mechanism": "Axis A = combine.c:1458 added_sets_2 single-use fold for the BF68 address pseudo (2nd &BF68 use single-fn = coercion s7; cross-fn mechanically impossible per per-function combine s7; insensitive to live-range length s38 and to structural shape s39). Axis B = over-determined sched1 lock (volatile-MEM anti-dep priority 2>1 + MIPS-I load-delay hazard + LUID backstop; register $a0-vs-$v0 greg-downstream of sched1 s33); now corroborated from the live-read side (s39: moving the live printf-arg read strictly worsens).",
-   "next_probe": "OWNER files an OWNER-ESCALATION entry for func_8007DC9C in docs/grind/decisions.md citing both dump-pinned mechanisms (axis A combine.c:1458; axis B over-determined sched1 lock), six-modality exhaustion, the s16/s33 rule-completeness proof (4 rules = 2 combine + 1 sched1 root), and endgame-lock-disposition-policy (gate #1 REFUSE canonical-asm; gate #2 REFUSE coercion). Once filed, the next session emits owner-gated and the queue advances. No further pure-C modality remains."
+   "hypothesis": "func_8007DC9C is a fully-characterized ENDGAME-LOCK; both residual axes are compiler-internal, orthogonal, and have NO legitimate pure-C lever single- OR cross-function across all six modalities (structural, permuter, forensics, rederive, synthesis, structural-hoist).",
+   "mechanism": "Axis A = combine.c:1458 added_sets_2 single-use fold for the BF68 address pseudo (2nd &BF68 use single-fn = coercion s7; cross-fn mechanically impossible per per-function combine s7; insensitive to live-range length s38, structural shape s39, and now to a 10th permuter register-pressure regime s40). Axis B = over-determined sched1 lock (volatile-MEM anti-dep priority 2>1 + MIPS-I load-delay hazard + LUID backstop; register $a0-vs-$v0 greg-downstream of sched1 s33).",
+   "next_probe": "OWNER files an OWNER-ESCALATION entry for func_8007DC9C in docs/grind/decisions.md citing both dump-pinned mechanisms (axis A combine.c:1458; axis B over-determined sched1 lock), six-modality exhaustion (permuter now 10 chassis), the s16/s33 rule-completeness proof (4 rules = 2 combine + 1 sched1 root), and endgame-lock-disposition-policy (gate #1 REFUSE canonical-asm; gate #2 REFUSE coercion). Once filed, the next session emits owner-gated and the queue advances. No further pure-C permuter modality remains."
   }
  ],
  "judge_constraints": [],

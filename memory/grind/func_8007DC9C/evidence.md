@@ -850,3 +850,21 @@ args is NOT a sanctioned use-site shape) and stripped by `volatile_cheats`.
 - [s39] Both axes stay mechanism-pinned dead across seven structural sessions (s2/s3/s11/s12/s29/s30/s38 + s39). Axis A = combine.c:1458 added_sets_2 single-use fold for the BF68 address pseudo (per-expression, structure-insensitive). Axis B = over-determined sched1 lock (volatile-MEM anti-dep priority 2>1 + load-delay hazard + LUID backstop), now corroborated on both the dead-read and live-read sides.
 
 - [s39] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (grep NONE this session), so owner-gated is NOT claimable despite full six-modality exhaustion.
+
+- [s40] PERMUTER modality, TENTH chassis (chassis-10 "long-live arg-temps"): base.c pre-stages the 2nd-printf source reads (BF68[0]/BF6C/BF70) into outer-scope named temps with live ranges crossing the axis-B cluster + splits BF78-BF7C difference (hi=BF78; diff=(hi-BF7C)&0x3F). base_score 695, base 90 / target 91 insns, reproduces both ledger axes. Distinct register-pressure regime vs s5(whole-body)/s13(tail)/s14(low-pressure-blockscope)/s31(goto)/s32(reused-scratch).
+- [s40] Campaign s40-chassis10-longlive-argtemps (-j8, base 695): 18,527 iters over ~10 min in-turn wait windows. Legitimate finds ceiling at 630 (== floor 9; recovers floor by inlining the diff temp) — NEVER below 630 legitimately. The ONLY sub-floor find (565) = `extern volatile int D_8009BF68[]` = the banked volatile-BF68 coercion (s4 axisA-permuter-volatile-bf68.c), closes axis A only via volatile-prevents-combine-fold; stripped by engine.volatile_cheats, forbidden by [[legitimate-volatile-interrupt-touched]] crit#2 (single printf-arg read). Axis B 8-op sched1 cluster NEVER legitimately reordered (the arg_a=*stat split of the dead read is a rename, no schedule change). Harvested --stop in-turn; status alive:false, registered_active:false; 0 orphan permuter procs.
+- [s40] PERMUTER now DECUPLE-confirmed dead across 10 structurally-distinct chassis (~277k+ iters s4/s5/s13/s14/s31/s32/s40): axis A reachable in permuter space ONLY via type/volatile coercion of D_8009BF68 (all cheats); axis B volatile-order-locked, never reorders. Identical signature to every prior chassis. No legitimate sub-floor pure-C form exists in permuter space. Artifacts tmp/grind/func_8007DC9C/s40/.
+
+- [s40] s40 baseline re-confirmed: sandbox --disable all score 9, target_insns 91, build_insns 90, rules_dropped 4, cheat_asm_stripped 150 (identical fingerprint to s1-s39). src/display.c untouched this session (all work in standalone permuter workspace).
+
+- [s40] Chassis-10 base.c compiled to 90 insns vs target 91; base-vs-target reproduces the axis-A 3-insn BF68 materialization gap; base_score 695 (distinct basin, same as s13/s14 magnitude but different topology).
+
+- [s40] Campaign 18,527 iters, ~10 min in-turn. Legitimate find ceiling 630 == floor 9 (non-improving); ONLY sub-floor find 565 = extern volatile int D_8009BF68[] = banked volatile coercion (axis A only), a cheat stripped by volatile_cheats.
+
+- [s40] Axis B 8-op fmt-vs-deadread sched1 cluster never legitimately reordered in any of 18,527 iters, corroborating the s6/s33/s34 forensics that the ordering is a volatile-MEM anti-dep critical-path lock, not a register-pressure or source-order effect.
+
+- [s40] PERMUTER now DECUPLE-confirmed dead across 10 structurally-distinct chassis (s4 x2, s5, s13, s14, s31, s32, s40) / ~277k+ cumulative iters: axis A reachable in permuter space ONLY via type/volatile coercion of D_8009BF68 (all cheats); axis B is volatile-order-locked and never reorders.
+
+- [s40] Campaign harvested --stop in-turn; status shows alive:false, registered_active:false, 0 live campaigns, 0 stale registry entries, no orphan permuter processes remain.
+
+- [s40] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (per ledger through s39), so owner-gated is not claimable this session.
