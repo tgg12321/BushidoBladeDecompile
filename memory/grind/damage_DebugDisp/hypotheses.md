@@ -283,3 +283,27 @@ LUID were tried and REJECTED as cheat-by-spelling (magic_base/magic_max, score 4
 - probe: kengo_matches.csv lookup + kengo_ref.py disassembly dump of the Kengo equivalent.
 - result: Match is name-only (is_damage_calc, 0.00 confidence). Kengo's damage_DebugDisp @0x11fd88 is an unrelated font/matrix debug-display function (fnt_locate/fnt_print/conv_matrix_rotation/atan2), NOT the checksum validator. No structural transplant source.
 - verdict: KILLED
+
+## [s9] A fresh m2c-reconstructed structure (its inner-body order and/or a value-preserving accumulate rederivation) closes Region A' or Region B.
+- mechanism: rederive the original C shape; a different inner-body statement order or a peeled/first-element accumulate might give sum a non-bracketed depth-weighted reference (closing A' while keeping the RA win), or reveal a Region-B structure with the consts naturally before the ap/a2p moves.
+- probe: ran tools/m2c/m2c.py on asm/funcs/damage_DebugDisp.s (artifact s9/m2c_out.c); measured (a) m2c inner order `j++; sum+=*bp; bp++` on the floor-6 do-while0 chassis, (b) accumulate-peel `sum=*bp; bp++; j=1; do{...}while(j<0x24)`. sandbox --disable all each.
+- result: m2c reproduces the candidate structure (outer goto == s8; Region B = plain preloop moves + identical (u32)(ptr-0x80000000)<=0x1FFFFF check — no alt structure). (a) = 8 (reorder undoes the do-while0 sum=$a0 RA win; candidate order is load-bearing). (b) = 12 (extra pre-loop insns + altered trip count diverge). A byte-neutral +1 sum ref is unavailable by rederivation; it only comes from sum's own def bracket (do-while0 -> couples A').
+- verdict: KILLED. Rederive (m2c / inner-order / peel / sibling func_80037F40) yields no clean sub-6 form; reconfirms s6/s7 irreducible A'/A coupling and s1-s8 Region-B constant-holder dead-end from a fresh angle.
+
+## [s9] A fresh m2c-reconstructed inner-body order closes Region A' while keeping the do-while(0) sum=$a0 RA win.
+- mechanism: m2c reconstructs the inner accumulate as `j++; sum+=*bp; bp++` (var_a1+=1; var_a0+=*var_v1; var_v1+=1); a different body order might shift sum's def/use LUID to let sched1 emit sum=0 first (target A' order) without losing the RA win.
+- probe: Applied m2c's `j++; sum+=*bp; bp++` on the floor-6 do-while0 chassis; sandbox --disable all.
+- result: score 8 (from 6): the reorder shifts sum's def/use LUID and UNDOES the do-while0 sum=$a0 RA win (Region A reopens). Candidate's `sum+=*bp; bp++; j++` order is load-bearing.
+- verdict: KILLED
+
+## [s9] Peeling the first accumulate iteration gives sum a real, non-bracketed depth-1 reference (raising its weighted refs without the do-while0 def-relocation that couples A').
+- mechanism: sum=*bp (first byte) at low LUID is a value-identical rederivation of the 0x24-byte checksum; a genuine surviving sum reference could raise its allocno priority above j without a loop-note bracket.
+- probe: `bp=base+offset; sum=*bp; bp++; j=1; do{sum+=*bp;bp++;j++}while(j<0x24)`; sandbox --disable all.
+- result: score 12 (from 6): peeling emits an extra pre-loop lbu+addu and changes j's init/trip-count, diverging from target's clean 0x24-iteration do-while with plain sum=0. A byte-neutral +1 sum ref is unavailable by peeling.
+- verdict: KILLED
+
+## [s9] A fresh m2c decompile reveals an alternative Region-B source structure that places the range constants before the ap/a2p moves without a constant-holder cheat.
+- mechanism: If the original C referenced 0x80000000/0x1FFFFF pre-loop for a genuine reason, LICM would not control their placement and they would precede the plain preloop moves (target order).
+- probe: Ran tools/m2c/m2c.py --target mips-gcc-c on asm/funcs/damage_DebugDisp.s (artifact s9/m2c_out.c); inspected the k-loop reconstruction.
+- result: m2c reconstructs Region B as plain preloop moves (var_a0_2=arg0; var_a2_3=var_a0_2) plus the identical `(u32)(ptr-0x80000000)<=0x1FFFFF` check — the constants are referenced only inside the loop. No alternative structure exists; the target's consts-before-moves imply an original pre-loop constant reference = constant-holder cheat for us.
+- verdict: KILLED
