@@ -4,17 +4,21 @@ Floor = 9 (verdict C, target 91 / build 90 insns). Gap decomposes into two
 independent axes: Axis A = 1 combine-fold insertion (BF68[0]); Axis B = 8-op
 sched1 reorder cluster in the first debug_printf setup.
 
-## Live frontier — RE-MERGED by s19 synthesis (2026-07-22; supersedes s10)
+## Live frontier — RE-MERGED by s28 synthesis (2026-07-22; supersedes s10/s19)
 
-s10 merged s1–s9. s19 re-merges ALL of s1–s18 into the strengthened dossier
-tmp/grind/func_8007DC9C/s19/MERGED-ATTACK-s19.md (adds: permuter QUINTUPLE-
-confirm ~118k iters s13/s14; forensics QUADRUPLE-run with combine.c:1458
-SOURCE-verified + rule-completeness proof s15/s16; rederive control-flow leg
-TRIPLY-confirmed dead s8/s17/s18). The original s1 frontier (H-A1, H-A2, H-B1)
-is fully resolved — every one KILLED, do NOT re-propose. The frontier remains a
-SINGLE escalation-ready item; s11–s18 empirically prove re-running any pure-C
-modality only re-confirms the mechanism-pinned dead result (8 sessions, zero
-movement). The ONLY unblock is the OWNER filing the escalation entry.
+s10 merged s1–s9; s19 merged s1–s18; s28 re-merges ALL of s1–s27 into the
+strengthened dossier tmp/grind/func_8007DC9C/s28/MERGED-ATTACK-s28.md. Post-s19
+additions folded in: structural 2-/3-lever combos (s20/s21, both floor 9);
+permuter SEPTUPLE-confirm ~189k iters (s22 chassis-6 min-pressure + s23 chassis-7
+high-pressure basin plateaus at 1186, never nears 630); forensics SEXTUPLE-run
+(s24 axis-B OVER-DETERMINED — volatile anti-dep priority + MIPS-I load-delay
+hazard + LUID, three independent backstops; s25 axis-A fold pinned to COMBINE not
+expand, both sides dump-verified); rederive SEXTUPLE (s26 ternary + s27
+post-increment operator, both floor 9). The original s1 frontier (H-A1, H-A2,
+H-B1) is fully resolved — every one KILLED, do NOT re-propose. The frontier
+remains a SINGLE escalation-ready item; s11–s27 empirically prove re-running any
+pure-C modality only re-confirms the mechanism-pinned dead result (17 sessions,
+zero floor movement). The ONLY unblock is the OWNER filing the escalation entry.
 
 ### RESOLVED (do NOT re-open) — s1 frontier, all KILLED
 - **H-A1** (offset-0 combine fold decl/access lever) — KILLED s2/s3/s6/s9.
@@ -368,4 +372,16 @@ movement). The ONLY unblock is the OWNER filing the escalation entry.
 - mechanism: Distinct AST at the exact axis-B surrounding region (increment side effect), untested at the operator level (all prior rederive/structural banks are skeleton-level). Post-increment eliminates temp_v1 + the new_var2 volatile-ptr indirection, a genuinely different expression shape.
 - probe: Applied the post-increment form to src/display.c; sandbox --disable all; then git checkout -- src/display.c (no dirt).
 - result: score 9, target 91 / build 90, rules_dropped 4, cheat_asm_stripped 150 = IDENTICAL floor-9 fingerprint. Reaches the 90-insn floor (exit-distinct skeleton). Neither axis moved: post-increment lowers to the same read-then-increment RTL as the comma-expr temp, so axis A (combine.c:1458 offset-0 fold, s25) and axis B (sched1 over-determined volatile-MEM/load-delay/LUID lock, s24) are insensitive to the increment-operator spelling.
+- verdict: KILLED
+
+## [s28] SYNTHESIS (3rd pass): re-merging all 27 prior sessions surfaces some un-banked pure-C lever OR renders the endgame-lock disposition unambiguous.
+- mechanism: A third synthesis pass (s10 over s1-9, s19 over s1-18) cross-reads the post-s19 accumulation — structural combos s20/s21, permuter chassis-6/7 s22/s23 (~189k iters total across 7 chassis), forensics s24 (axis-B over-determination: volatile anti-dep priority + MIPS-I load-delay hazard + LUID, 3 independent backstops) + s25 (axis-A fold pinned to COMBINE not expand, both sides dump-verified), rederive s26/s27 (ternary + post-increment operator) — for any lever visible only when merged. Axis A = combine.c:1458 added_sets_2 (single pure offset-0 rvalue read folds to 2-insn; SOURCE-verified s15, COMBINE-pinned s25). Axis B = sched1 over-determined lock (s24). Rule-set proven complete 2+2 (s16).
+- probe: One sandbox --disable all baseline this session (mechanism-pinned; s11-s27 empirically show re-measurement only re-confirms); full cross-read of evidence.md (624 lines) + hypotheses.md (372 lines) + all 17 rejected/ forms + docs/grind/decisions.md; wrote consolidated dossier tmp/grind/func_8007DC9C/s28/MERGED-ATTACK-s28.md.
+- result: score 9, target_insns 91, build_insns 90, rules_dropped 4, cheat_asm_stripped 150 — IDENTICAL fingerprint to s1-s27; src/display.c clean at HEAD (candidate byte-equivalent, no diff). NO un-banked lever exists. Both axes remain orthogonal (s10) and mechanism-pinned dead across all six modalities (structural s2/s3/s11/s12/s20/s21, permuter x7 ~189k iters s4/s5/s13/s14/s22/s23, forensics x6 s6/s7/s15/s16/s24/s25, rederive x6 s8/s9/s17/s18/s26/s27, synthesis s10/s19/s28). The 4 regfix rules are a proven 1:1 cover (s16, no hidden 3rd axis). endgame-lock-disposition-policy: gate #1 REFUSE (scan_hand_coded LOW), gate #2 REFUSE (no coercion precedent) -> keep 4 rules, INCOMPLETE-owner-accepted. STILL no OWNER-ESCALATION entry in docs/grind/decisions.md (grep 8007DC9C = No matches this session) -> owner-gated NOT claimable; the only unblock is the OWNER filing the entry.
+- verdict: KILLED (no lever; escalation dossier re-merged and strengthened to third full pass)
+
+## [s28] A third synthesis pass re-merging all 27 prior sessions surfaces some un-banked pure-C lever visible only when merged, OR renders the endgame-lock disposition unambiguous.
+- mechanism: Cross-read the post-s19 accumulation (structural combos s20/s21; permuter chassis-6/7 s22/s23; forensics s24 axis-B over-determination + s25 axis-A COMBINE-pass correction; rederive s26/s27) against axis A = combine.c:1458 added_sets_2 single-use fold (source-verified s15, COMBINE-pinned both sides s25) and axis B = sched1 over-determined lock (volatile-MEM anti-dep priority + MIPS-I load-delay hazard + LUID tie-break, s24); rule-set proven complete 2+2 (s16).
+- probe: One sandbox --disable all baseline this session; full cross-read of evidence.md (624 lines) + hypotheses.md (372 lines) + all 17 rejected/ forms + docs/grind/decisions.md; wrote tmp/grind/func_8007DC9C/s28/MERGED-ATTACK-s28.md.
+- result: score 9, target_insns 91, build_insns 90, rules_dropped 4, cheat_asm_stripped 150 (identical fingerprint to s1-s27); src/display.c clean at HEAD (candidate byte-equivalent, git diff empty). No un-banked lever exists; both axes orthogonal and mechanism-pinned dead across all six modalities. No OWNER-ESCALATION entry in docs/grind/decisions.md (grep 8007DC9C = No matches), so owner-gated not claimable.
 - verdict: KILLED

@@ -621,3 +621,31 @@ args is NOT a sanctioned use-site shape) and stripped by `volatile_cheats`.
 - [s27] Rederive modality now confirmed dead at BOTH the skeleton level (s8/s17/s18/s26) AND the expression-operator level (s27).
 
 - [s27] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (grep NONE, re-verified s27); owner-gated NOT claimable this session.
+
+- [s28] SYNTHESIS (3rd pass; s10 over s1-9, s19 over s1-18, s28 over s1-27). Baseline re-confirmed THIS session: sandbox --disable all score 9, target_insns 91, build_insns 90, rules_dropped 4, cheat_asm_stripped 150 — identical fingerprint to s1-s27. src/display.c clean at HEAD (git diff --stat empty; candidate byte-equivalent, no dirt).
+
+- [s28] Full cross-read of the complete ledger (evidence.md 624 lines + hypotheses.md 372 lines + all 17 rejected/ forms + docs/grind/decisions.md). Confirmed NO un-banked pure-C lever exists in any of the six modalities, single- or cross-function. Merged dossier: tmp/grind/func_8007DC9C/s28/MERGED-ATTACK-s28.md.
+
+- [s28] Axis A synthesized (COMBINE-pinned, s25 correction of s6): array subscript BF68[0] materializes the address in a separate single-use pseudo (insn77 reg93=symbol_ref -> insn85 mem/s(reg93)) at expand, survives CSE, then combine deletes insn77 via added_sets_2=!dead_or_set_p(i3,i2dest)=FALSE (single-use) -> 2-insn fold. Target retains it (reg93 multi-use). Scalars BF6C/BF70 expand symbol-direct (access-shape asymmetry). No lever: single pure offset-0 read always folds (s2/s9 corpus); only single-fn reproduction is a dead 2nd &BF68 use = coercion (s7, over-shoots +2); cross-fn impossible (per-function combine, toplev.c:3004).
+
+- [s28] Axis B synthesized (OVER-DETERMINED, s24 strengthens s6/s15): three independent backstops each force dead-read-before-fmt at sched1 T-42 — (1) volatile-MEM anti-dep REG_DEP_ANTI 41->48 priority 2>1, (2) MIPS-I load-delay actual_hazard(41)=1 (holds even at equal priority), (3) LUID tie-break (holds even neutralising priority AND hazard). Unflippable without removing the load = non-volatile read DCE'd = banked score-19 collapse. Body-shape-invariant (s15).
+
+- [s28] Modality exhaustion matrix (all measure both axes dead): structural x4+2 combos (s2/s3/s11/s12/s20/s21), permuter x7 chassis ~189k iters (s4 27k/s5 40k/s13 31k/s14 20k/s22 35k/s23 36k; every sub-floor find a coercion, axis B never legitimately reordered, chassis-7 basin plateaus 1186 never near 630), forensics x6 (s6/s7/s15/s16/s24/s25), rederive x6 (s8/s9/s17/s18/s26/s27; only exit-coalescing skeletons drop below floor build=worse, exit-distinct tie floor 9, none reach target 91), synthesis x3 (s10/s19/s28). Rule-set proven complete 2+2 (s16).
+
+- [s28] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (grep 8007DC9C = No matches; d6bc0904's owner ruling covered 7 OTHER endgame-lock funcs, not this one). owner-gated NOT claimable this session despite full six-modality exhaustion -> result progress, escalation-ready. The ONLY unblock is the OWNER filing the entry.
+
+- [s28] s28 baseline re-confirmed: sandbox --disable all score 9, target 91 / build 90, rules_dropped 4, cheat_asm_stripped 150 - identical fingerprint to s1-s27; src/display.c clean at HEAD (no dirt).
+
+- [s28] Axis A = COMBINE offset-0 fold (s25 corrects s6's 'expand' framing): array subscript BF68[0] materializes the address in a separate single-use pseudo (insn77 reg93=symbol_ref -> insn85 mem/s(reg93)) at expand, survives CSE, then combine deletes insn77 via combine.c:1458 added_sets_2=!dead_or_set_p(i3,i2dest)=FALSE (single-use) -> 2-insn fold; target retains it (reg93 multi-use). Scalars BF6C/BF70 expand symbol-direct.
+
+- [s28] Axis A has no lever single- or cross-function: single pure offset-0 read always folds (s2 sweep; s9 corpus of 3754 scratches - every offset-0 materialization is genuine multi-use); only single-fn reproduction is a dead 2nd &BF68 use = coercion (s7, over-shoots +2 build 93); cross-fn impossible (per-function combine, toplev.c:3004; sibling store in its own combine section).
+
+- [s28] Axis B = OVER-DETERMINED sched1 lock (s24 strengthens s6/s15): three independent backstops each force dead-read-before-fmt at T-42 - (1) volatile-MEM anti-dep REG_DEP_ANTI 41->48 priority 2>1, (2) MIPS-I load-delay actual_hazard(41)=1 even at equal priority, (3) LUID tie-break even neutralising priority AND hazard. Unflippable without removing the load = non-volatile read DCE'd = banked score-19 collapse. Body-shape-invariant (s15).
+
+- [s28] 4 regfix rules (2830-2835) are a proven 1:1 cover of the two axes (2+2, s16); honest gap 9 = 1 (axis A) + 8 (axis B); no 5th rule, no hidden third divergence.
+
+- [s28] Six-modality exhaustion: structural x4+2 combos (s2/s3/s11/s12/s20/s21), permuter x7 chassis ~189k iters (s4/s5/s13/s14/s22/s23; every sub-floor find a coercion, axis B never legitimately reordered, chassis-7 basin plateaus 1186 never near 630), forensics x6 (s6/s7/s15/s16/s24/s25), rederive x6 (s8/s9/s17/s18/s26/s27; exit-distinct skeletons tie floor 9, exit-coalescing drop to 88/worse, none reach target 91), synthesis x3 (s10/s19/s28).
+
+- [s28] endgame-lock-disposition-policy: gate #1 REFUSE canonical-asm (scan_hand_coded LOW), gate #2 REFUSE coercion (no precedent; both axes' only single-fn reproductions are coercions) -> keep 4 rules, INCOMPLETE-owner-accepted.
+
+- [s28] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (grep 8007DC9C = No matches; d6bc0904 covered 7 OTHER endgame-lock funcs). owner-gated not claimable this session.
