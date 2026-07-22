@@ -1,8 +1,8 @@
 {
  "func": "cpu_check_tubazeri_2",
  "file": "code6cac_b",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 0,
@@ -15,23 +15,29 @@
    "floor": 4,
    "modality": "recon",
    "headline": "Recon: honest floor 4 confirmed (candidate applied, HEAD was 9); m2c proves target C shape == our candidate, so the 4-insn gap is two GCC-internal optimizer decisions, not a missing source shape."
+  },
+  {
+   "session": 2,
+   "floor": 1,
+   "modality": "structural",
+   "headline": "Structural: index-off-a0 loop (sibling func_80030900) killed the 3-insn strength-reduce; floor 4->1. Sole residual = idx25 commutative addu operand swap, only closable by a reviewer-FAILED integer-cas"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "H1 strength-reduce suppression: get GCC to keep biv `ptr` with 0x332/0x334 displacement instead of combining the two givs into new biv q=ptr+0x332.",
-   "mechanism": "loop.c strength_reduce + combine_givs allocates a giv-biv for ptr+0x332 and expresses ptr+0x334 as +2; target leaves both as replaceable (cost-0) displacement givs off ptr.",
-   "next_probe": "Instrumented cc1 loop.c / -da RTL dump on the candidate .i to read the combine_givs benefit calc; derive a C form that keeps both accesses replaceable-displacement givs. (WIP already killed u16-stride-1, for-index, comma-init, no-guard do-while.)"
+   "hypothesis": "The idx25 operand swap may have NO non-coercive pure-C form (commutative addu operand order is fixed base-first by pointer_int_sum pre-RA); if a greg/combine RTL dump confirms no legitimate C flips it, this is a 1-insn operand-order-only endgame-lock candidate (cf. endgame-lock-disposition-policy).",
+   "mechanism": "front-end pointer arithmetic lowering canonicalizes ptr+int to base-first; only integer-domain offset-first (a cheat) reorders it.",
+   "next_probe": "cc1 -da greg/combine RTL dump on the score-1 .i at the s2 add; confirm the plus operand order is set at tree-lowering and no live-range/declaration lever moves it. If confirmed dead, file for endgame-lock disposition (1 insn, operand-order-only, matches only via reviewer-rejected cheat)."
   },
   {
-   "hypothesis": "H2 operand-swap: flip the pointer add so the shift-result pseudo sorts before the param pseudo, yielding `addu s2,v0,s0`.",
-   "mechanism": "GCC canonicalizes commutative plus by pseudo regno; param a0 < local v0, so a0 lands rs. Target had the shift-result pseudo lower.",
-   "next_probe": "greg/RTL dump to read the two pseudos + conflicts; try copying a0 into a fresh local consumed only by the add (materialized after the shift) to reorder pseudo assignment. (WIP killed source-order rewrites: uintptr cast, byteptr-first, explicit s2_int \u2014 all add conversion insns.)"
+   "hypothesis": "decomp-permuter re-seeded from the score-1 base may find a non-manual structural lever for the last insn that the pointer-spelling sweep missed.",
+   "mechanism": "randomized/directed structural search from the closer base explores forms outside the hand-derived pointer-vs-integer axis.",
+   "next_probe": "Build a clean single-function target.o (offset 0 via asm/funcs + prelude.inc) and run decomp-permuter from the score-1 candidate.c with --stop-on-zero under fresh-seed discipline; harvest in-turn; vet any closing form against the cheat catalog (the int-cast form is already known-rejected)."
   },
   {
-   "hypothesis": "H3 permuter from the floor-4 base may find a structural lever outside the manual playbook.",
-   "mechanism": "randomized/directed structural search re-seeded from the closer base (score 4) explores forms the hand-derived levers missed.",
-   "next_probe": "Build a clean single-function target.o (offset 0 via asm/funcs + prelude.inc) and run decomp-permuter from candidate.c with --stop-on-zero under fresh-seed discipline; harvest in-turn."
+   "hypothesis": "A deeper struct-typing restructure where the index is naturally the pointer base could yield index-first legitimately.",
+   "mechanism": "if the original modelled a0 such that the s1-scaled value is the pointer operand and a0 the offset in a semantically-honest way, GCC would lower index-first without a coercion cast.",
+   "next_probe": "Reconstruct the likely original struct/array typing at 0x330/0x332 (count + u16 slot array) and see whether a faithful `&arr[s1]`-style expression off a differently-typed base emits index-first without an integer cast; measure + re-review."
   }
  ],
  "judge_constraints": [],

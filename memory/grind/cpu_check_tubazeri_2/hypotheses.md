@@ -45,3 +45,15 @@ The 4 residual diffs are TWO independent GCC-internal decisions:
 - probe: python3 tools/m2c/m2c.py --valid-syntax asm/funcs/cpu_check_tubazeri_2.s -> tmp/grind/.../s1/m2c.c
 - result: m2c loop == candidate loop; residual = strength_reduce/combine_givs (idx37/38/40) + commutative-plus operand order (idx25).
 - verdict: CONFIRMED
+
+## [s2] Rewriting the copy-down loop to index off base param a0 (for i=s1; ... *(u16*)((u8*)a0+0x332+i*2)=*(...+0x334+i*2)) instead of walking a pointer off s2 keeps the biv anchored, eliminating the combine_givs strength-reduction (idx37/38/40, 3 insns).
+- mechanism: loop.c strength_reduce/combine_givs folds the 0x332 displacement into a new giv-biv q=ptr+0x332 when the walking pointer's base s2 is used only to init ptr. Indexing off a0 (which is ALSO re-read each iter for the count reload at 0x330) keeps a0/s2 as the anchored biv, both accesses expressed as displacement givs 0x332/0x334 off it. Directly evidenced: same-file sibling func_80030900 uses the identical index-off-a0 loop and compiles (same TU) to the exact biv-kept form.
+- probe: Applied the index-based for-loop; `sandbox cpu_check_tubazeri_2 --disable all`; objdump vs target.
+- result: score 4 -> 1. Loop asm now byte-identical to target (move v1,s2; lhu 0x334(v1); addiu; sh 0x332(v1); slt; bnez; addiu v1,v1,2). cheat-reviewer PASS (normal C loop, real semantics, sibling-mirrored).
+- verdict: CONFIRMED
+
+## [s2] The residual idx25 operand swap (target `addu s2,v0,s0` scaled-index-first vs ours `addu s2,s0,v0` base-first) is NOT reachable by any pure-pointer-C spelling; the only distance-0 form is an integer-domain offset-first add, which the cheat-reviewer FAILED.
+- mechanism: Front-end pointer_int_sum canonicalizes ptr+int to base-first, so every pointer spelling emits base-first. Only integer-domain `v0 + (s32)a0` (offset written first) preserves source order and emits index-first -> score 0, but its sole purpose is flipping the commutative addu operand order (or-tree-shape-shift analogue); reviewer FAIL on tests 1/2/3/5.
+- probe: 5 spellings measured at the fixed-loop base: (u8*)a0+v0=1, v0+(u8*)a0=1, &((s16*)a0)[s1]=1 (with and without explicit v0=s1<<1), inlined *(a0+v0+0x332) with no named s2=1 (CSE re-forms base-first addu), (s32)a0+v0=1; v0+(s32)a0=0. cheat-reviewer invoked on the score-0 form.
+- result: All pointer/base-first forms score 1. Integer-offset-first scores 0 but is a reviewer-rejected commutative-operand-order coercion. Clean legitimate floor = 1 (single operand-order-only insn).
+- verdict: KILLED

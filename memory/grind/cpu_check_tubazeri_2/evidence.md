@@ -108,3 +108,25 @@ don't move it.
 - [s1] m2c (tmp/grind/.../s1/m2c.c) target C loop shape is identical to our candidate -> the gap is optimizer-internal, confirming the WIP diagnosis rather than an un-tried source shape.
 
 - [s1] No sibling/duplicate lead: tmp/duplicates_leads.txt has no tubazeri entry; same-file code6cac_b.c loops do not share the 0x332/0x334 copy-down shape.
+
+## == s2 [structural] ==
+- [s2] FLOOR 4 -> 1. Loop rewritten from walking-pointer do-while to INDEX-off-a0 for-loop `for(i=s1;i<*(s16*)((u8*)a0+0x330)-1;i++) *(u16*)((u8*)a0+0x332+i*2)=*(u16*)((u8*)a0+0x334+i*2);`. Fixed idx37/38/40 (strength_reduce/combine_givs). Loop asm now byte-identical to target (move v1,s2; lhu 0x334(v1); sh 0x332(v1); addiu v1,v1,2). cheat-reviewer PASS on this loop.
+- [s2] EVIDENCE: same-file sibling func_80030900 uses the identical index-off-a0 copy-down loop (i from 0) and compiles in the SAME .o to the biv-kept/large-disp form. Key: a0 is re-read each iter (count reload at 0x330), so indexing off a0 keeps it the anchored biv; walking a pointer off s2 (used only to init) let combine_givs fold 0x332 into a new biv. Since v0=s1*2, s2+0x332==a0+0x332+i*2 at i=s1.
+- [s2] idx25 operand swap (target `addu s2,v0,s0` index-first vs ours base-first) is set by front-end pointer_int_sum (base-first) BEFORE RA. KILLED all pointer spellings: (u8*)a0+v0, v0+(u8*)a0, &((s16*)a0)[s1], inlined *(a0+v0+0x332) -> all score 1 (base-first). Only integer-domain `v0+(s32)a0` scores 0 (index-first) but cheat-reviewer FAILED it (commutative-operand-order coercion, or-tree-shape-shift analogue). Banked rejected/int-cast-operand-swap.c.
+- [s2] Clean legitimate floor = 1 (single operand-order-only insn). Candidate updated. Frontier: greg/combine RTL dump to prove no non-coercive C flips the addu order (-> possible 1-insn endgame-lock), permuter from score-1 base, or faithful struct-typing restructure.
+
+- [s2] Floor 4 confirmed at session start (candidate.c applied; target_insns=build_insns=76, 9 rules dropped).
+
+- [s2] The 4 residual diffs at floor 4 were idx25 addu operand swap (1) + idx37/38/40 strength-reduce (3).
+
+- [s2] Sibling func_80030900 (same file code6cac_b.c, next function) uses `for(i=0;i<*(s16*)(a0+0x330)-1;i++) *(u16*)(a0+0x332+i*2)=*(u16*)(a0+0x334+i*2);` and its loop compiles in the SAME sandbox .o to biv v1=a0 kept with disp 0x334/0x332 and v1+=2 in the delay slot — the exact form the target wants for cpu_check_tubazeri_2.
+
+- [s2] Because v0=s1<<1=s1*2, s2+0x332 == a0+0x332+i*2 at i=s1, so indexing off a0 with i starting at s1 reproduces the target addresses exactly. This dropped the floor to 1 and matched the loop byte-for-byte.
+
+- [s2] The score-1 loop reuses s2 (=a0+v0) as the giv-biv init (move v1,s2), matching target's `move v1,s2` exactly.
+
+- [s2] idx25 operand order is set by the front-end (pointer_int_sum forces base-first) BEFORE register allocation, so no RA/pseudo-numbering or declaration-order lever can flip it; verified across 5 pointer spellings + 1 inlined form, all base-first.
+
+- [s2] The integer-domain `v0+(s32)a0` reaches distance 0 but cheat-reviewer (agent ac7c6289260829f13) FAILED it as an operand-order coercion (or-tree-shape-shift family analogue); banked to rejected/int-cast-operand-swap.c, do not re-propose.
+
+- [s2] Clean floor-1 candidate left applied in src/code6cac_b.c and saved to memory/grind/cpu_check_tubazeri_2/candidate.c.

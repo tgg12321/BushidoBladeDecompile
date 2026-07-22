@@ -1,3 +1,14 @@
+/* cpu_check_tubazeri_2 — honest sandbox floor 1 (was 4).
+ * s2 loop-copy rewritten from a walking-pointer do-while to an INDEX-off-a0
+ * for-loop, mirroring the byte-matched sibling func_80030900 (same file/TU).
+ * That fixed the loop.c strength_reduce/combine_givs divergence (idx37/38/40,
+ * 3 insns) — cheat-reviewer PASSED this loop shape.
+ * Sole residual diff (1 insn): idx25 `addu s2,s0,v0` (ours, base-first) vs
+ * target `addu s2,v0,s0` (index-first). Only reachable via integer-domain
+ * offset-first add `(s32*)(v0 + (s32)a0)` — cheat-reviewer FAILED that as a
+ * commutative-operand-order coercion (rejected/int-cast-operand-swap.c).
+ * All pointer-domain spellings canonicalize base-first (front-end pointer_int_sum).
+ */
 s32 cpu_check_tubazeri_2(s32 *a0) {
     s32 count;
     s32 s1;
@@ -7,7 +18,6 @@ s32 cpu_check_tubazeri_2(s32 *a0) {
     s32 s3;
     s32 *a2;
     s32 i;
-    s32 *ptr;
 
     count = *(s16 *)((u8 *)a0 + 0x330);
     if (count == 0) {
@@ -29,14 +39,8 @@ do_sll:
     s2 = (s32 *)((u8 *)a0 + v0);
     s3 = *(s16 *)((u8 *)s2 + 0x332);
     a2 = coli_hit_body_weapon(a0, s3);
-    i = s1;
-    if (i < *(s16 *)((u8 *)a0 + 0x330) - 1) {
-        ptr = s2;
-        do {
-            *(u16 *)((u8 *)ptr + 0x332) = *(u16 *)((u8 *)ptr + 0x334);
-            i++;
-            ptr = (s32 *)((u8 *)ptr + 2);
-        } while (i < *(s16 *)((u8 *)a0 + 0x330) - 1);
+    for (i = s1; i < *(s16 *)((u8 *)a0 + 0x330) - 1; i++) {
+        *(u16 *)((u8 *)a0 + 0x332 + i * 2) = *(u16 *)((u8 *)a0 + 0x334 + i * 2);
     }
 
     *(u16 *)((u8 *)a0 + 0x330) = *(u16 *)((u8 *)a0 + 0x330) - 1;
