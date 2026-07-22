@@ -176,3 +176,23 @@ args is NOT a sanctioned use-site shape) and stripped by `volatile_cheats`.
 - [s4] Both campaigns harvested with --stop in-turn; permuter_campaign status shows both alive:false, registered_active:false; no orphan permuter processes remain.
 
 - [s4] Permuter corroborates s2/s3 structural KILLs: axis B is a volatile-critical-path priority tie unreachable by pure-C reordering; axis A materialization needs a multi-use &D_8009BF68 that only the cross-TU sibling func_8007D3F8 can supply.
+
+- [s5] PERMUTER modality, THIRD chassis. Baseline re-confirmed: sandbox --disable all score 9, target 91 / build 90, rules_dropped 4, cheat_asm_stripped 150. src/display.c untouched (s3 candidate applied).
+
+- [s5] Built + validated chassis-3 (tmp/perm_dc9c_s5): whole-body named-temp base.c (fmt1/fmt2 pointer handles + diff + arg_a/b/c second-printf reads all as named temps; two volatile *g_gpu_stat_reg reads + volatile D_8009BF7C read stay inline+ordered). Compiles to 90 insns; base-vs-target raw diff reproduces EXACTLY axis-A (BF68 3-insn lui;addiu;lw materialization vs folded 2-insn) + axis-B (fmt/BF78/deadread reorder cluster). Structurally distinct from s4 chassis-1 (default random) and chassis-2 (arg-homing single diff temp) - a different register-pressure regime.
+
+- [s5] GOTCHA: the standalone permuter compile.sh runs cc1 DIRECTLY with no cpp pass. C /* */ comments in base.c cause a parse error (symptom: line-N `parse error before /`, whole body then parsed at file scope, cc1 emits locals as .globl/.comm and no .ent). base.c MUST be comment-free. (s4 base had no comments; my first chassis-3 draft crashed on the header comment.)
+
+- [s5] Chassis-3 campaign (s5-chassis3-wholebody-temps, -j8, base_score 630): 40,054 iterations over ~27 min across THREE in-turn wait windows (cumulative 14062 / 26802 / 39477 iters). ONLY output: output-630-1 = `extern unsigned long long D_8009BF68[]` at score 630 == baseline floor 9 (NON-improving) - a width coercion of the game-state global, same coercion cheat family as s4's volatile-BF68 / long-long-holder junk. Doubly dead (coercion AND does not lower the floor). Rejected: rejected/axisA-permuter-longlong-width-coercion.c. Harvested --stop in-turn; status alive:false, registered_active:false; no orphan permuter processes.
+
+- [s5] Axis-B 8-op sched1 cluster never reordered in chassis-3; chassis-3 did not even stumble into the volatile cheat s4 found -> confirms it explored a genuinely different region and still found nothing legitimate. PERMUTER modality now TRIPLE-confirmed dead across 3 structurally-distinct chassis (~67k total iters s4+s5): axis A reachable in permuter space ONLY via type/volatile coercion of D_8009BF68 (all cheats); axis B is volatile-order-locked. Both remaining axes have NO legitimate single-function pure-C lever. Next legitimate moves are non-permuter: axis A = cross-TU sibling func_8007D3F8 (still active/unmatched, queue dist 43); axis B = forensics/RTL confirmation of volatile-locked sched1 priority, then likely owner escalation (no OWNER-ESCALATION entry exists for func_8007DC9C yet).
+
+- [s5] s5 baseline re-confirmed: sandbox --disable all score 9, target_insns 91, build_insns 90, rules_dropped 4, cheat_asm_stripped 150 (identical to s1-s4). src/display.c untouched this session (s3 candidate applied).
+
+- [s5] Built + validated a THIRD permuter chassis (tmp/perm_dc9c_s5): whole-body named-temp base.c compiles to 90 insns, base-vs-target raw diff reproduces exactly axis-A (BF68 3-insn lui;addiu;lw materialization vs our folded 2-insn) + axis-B (fmt/BF78/deadread reorder cluster). Structurally distinct from s4 chassis-1 (default random) and chassis-2 (arg-homing single diff temp).
+
+- [s5] Gotcha recorded: the standalone permuter compile.sh runs cc1 DIRECTLY with no cpp pass, so C /* */ comments in base.c are a parse error (line-26 crash symptom = whole body parsed at file scope). base.c must be comment-free.
+
+- [s5] Chassis-3 campaign: 40,054 iterations, ~27 min, -j8, base_score 630. Three in-turn wait windows (14062, 26802, 39477 iters cumulative). Only output: output-630-1 = extern unsigned long long D_8009BF68[] at score 630 (== floor 9, NON-improving) - width-coercion cheat, doubly dead. Harvested --stop in-turn; status shows alive:false, registered_active:false; no orphan permuter processes.
+
+- [s5] Chassis-3 corroborates s2/s3/s4: axis A materialization is reachable in permuter space ONLY via type/volatile coercion of D_8009BF68 (all cheats); axis B 8-op sched1 cluster never legitimately reorders (volatile-order-locked critical-path priority). Permuter modality now TRIPLE-confirmed dead across 3 structurally-distinct chassis (~67k total iters s4+s5).

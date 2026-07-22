@@ -104,3 +104,15 @@ sched1 reorder cluster in the first debug_printf setup.
 - probe: Same two campaigns; inspected every sub-630 find.
 - result: The only axis-A closing form found is extern volatile <T> D_8009BF68[] (volatile coercion, forbidden). No non-volatile pure-C form materialized the address. Confirms s3: axis A has no legitimate single-function pure-C lever.
 - verdict: KILLED
+
+## [s5] A structurally-distinct permuter chassis (whole-body named-temp topology; different register-pressure regime than s4's default-random / arg-homing) finds a legitimate pure-C form closing axis A or axis B.
+- mechanism: Named temps for every non-volatile value (fmt1/fmt2, diff, arg_a/b/c) maximize randomizer reorder freedom and vary live-ranges feeding sched1 priority, WITHOUT touching the volatile-ordered reads. Base validated at 90 insns reproducing both ledger axes exactly.
+- probe: permuter_campaign chassis-3 (s5-chassis3-wholebody-temps, -j8, base 630), 40,054 iters / ~27 min, three in-turn wait windows, harvested --stop in-turn.
+- result: NO legitimate sub-baseline find. Only output = extern unsigned long long D_8009BF68[] at score 630 == floor 9 (NON-improving width-coercion cheat, same family as s4). Axis-B cluster never reordered; chassis-3 did not even hit s4's volatile cheat (different region, still nothing legitimate). Permuter TRIPLE-confirmed dead across 3 chassis / ~67k iters.
+- verdict: KILLED
+
+## [s5] A structurally-different permuter chassis (whole-body named-temp topology giving the randomizer maximal reorder freedom over the non-volatile surface under a different register-pressure regime than s4's default-random or single-diff arg-homing) finds a legitimate pure-C form that closes axis A (BF68 materialization) or axis B (8-op sched1 reorder).
+- mechanism: Named temps for every non-volatile value (fmt1/fmt2 pointers, diff, arg_a/b/c second-printf reads) alter live-range/register pressure feeding sched1 priority; the two volatile *g_gpu_stat_reg reads and the volatile D_8009BF7C read stay inline+ordered (collapsing them is the banked score-19 cheat). base validated at 90 insns reproducing exactly both ledger axes.
+- probe: permuter_campaign chassis-3 s5-chassis3-wholebody-temps (-j8, base_score 630), 40,054 iterations over ~27 min across three in-turn wait windows; harvested --stop in-turn.
+- result: No legitimate sub-baseline find. The ONLY output (output-630-1) is at score 630 == baseline floor 9 (NO improvement) and is a width coercion: extern unsigned long long D_8009BF68[] to fake the axis-A materialization bytes - same coercion cheat family as s4's volatile-BF68 / long-long-holder junk. Axis-B reorder cluster never moved; chassis-3 did not even stumble into the volatile cheat s4 found (explored a genuinely different region). Floor held at 9 the entire campaign.
+- verdict: KILLED
