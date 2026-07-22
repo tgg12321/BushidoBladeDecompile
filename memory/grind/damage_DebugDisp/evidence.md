@@ -670,3 +670,53 @@ constants' priority. To flip, the constants would need higher priority OR lower 
 - [s13] ~140k combined iters across two structurally-distinct chassis, 0 sub-2 finds. The permuter independently re-derives the do-while0 sum-flip lever (matching s4) but finds NO byte-neutral 11th-sum-ref variant. The s6/s7/s10/s11/s12 A'/A coupling holds on genuinely fresh (renumbered) numbering — it is NOT a stale-chassis artifact.
 
 - [s13] No OWNER-ESCALATION entry for damage_DebugDisp exists in docs/grind/decisions.md (owner-gated unavailable).
+
+## s14 (permuter, 2026-07-22) — duplicated-compare KILLED (folds pre-flow); directed def-mechanism permuter dry
+- Floor 2 reconfirmed: candidate.c applied -> sandbox --disable all = 2 (79/79, 8 rules dropped, 34 cheat-asm stripped). src reverted to clean HEAD after the session.
+- **FRONTIER #1 manual construction (duplicated-statement-into-arms) MEASURED DEAD.** Probed the
+  duplicated `sum==chk` compare into the continue arm (plain sum=0, no do-while0):
+  `chk=*(chkptr+0x6C); if(sum==chk){break;} if(sum!=chk){chkptr++;i++;offset+=0x24;}`.
+  RESULT: sandbox = 4, build_insns = 79 (BYTE-NEUTRAL — the `sum!=chk` copy was fully
+  eliminated). Score == plain sum=0 (inner a0<->a1 swap, sum=$a1): the duplicate did NOT lift
+  sum's reg_n_refs. MECHANISM: the two outer-loop arms (break vs continue) are COMPLEMENTARY, so
+  the continue-arm compare is the provable negation of the break test and jump1/cse folds it BEFORE
+  flow.c runs its reg_n_refs count -> no extra weighted ref reaches allocation. STRUCTURALLY
+  INAPPLICABLE: target asm has exactly ONE `beq $a0,$v0` and sum is DEAD after it (no genuine 2nd
+  sum use); the outer loop has no multi-way split at sum-live scope to duplicate a REAL sum
+  statement into (unlike motion_SetMotion's non-complementary switch cases that survive to jump2).
+  Also a cheat-by-spelling (dead re-compare) even had it worked.
+  rejected/regionA-duplicated-compare-folds-early.c
+- **DIRECTED permuter (genuinely new vs s13's blind runs) DRY.** Built s14/ws = cpp of the score-2
+  candidate with a DIRECTED `PERM_GENERAL(do{sum=0}while(0);, sum=0;)` on the def (offering BOTH
+  RA mechanisms: do-while0-def-promotion vs plain) wrapped in `PERM_RANDOMIZE(...)` over the whole
+  body, so the permuter swept {def-mechanism} x {randomizer structural mutations}. base_score 10
+  (= the 2-insn preheader reorder residual). 33,071 iters / ~19 min / -j8 / --stop-on-zero across
+  two fresh-seed wait windows: 0 novel finds, 0 sub-10, base 10 NEVER moved. Directed def-mechanism
+  search is dry — matches s13's ~140k blind result and the s11/s12 exact-arithmetic proof.
+- **NET:** frontier #1 (duplicated-into-arms) is measured structurally-inapplicable AND ineffective;
+  the directed-permuter axis is dry. Per the endgame-lock-disposition-policy (owner, 2026-07-20)
+  damage_DebugDisp is the endgame species (byte-matches on main only via 8 regfix/asmfix rules, a
+  few insns short in honest pure C at score 2, sanctioned levers exhausted, residual = RA/sched
+  tiebreak). Both AND-gates fail: (1) it is a compiler-scheduling/RA artifact (LOW hand-coded
+  signal) -> no canonical-asm; (2) the one precedented spelling family (duplicated-into-arms) is
+  structurally inapplicable here -> no coercion family. Escalation-ready; no OWNER-ESCALATION entry
+  filed yet, so owner-gated remains unavailable this session.
+- artifacts: tmp/grind/damage_DebugDisp/s14/{build_ws.sh, ws/base.c, ws/campaign.log, ws/campaign_meta.json, ws/base_insns.txt, ws/tgt_insns.txt}
+
+- [s14] Frontier #1 duplicated-compare-into-arms MEASURED DEAD: `if(sum==chk)break; if(sum!=chk){incr}` = sandbox 4, build 79 (byte-neutral). The continue-arm compare is the complement of the break test -> jump1/cse folds it BEFORE flow.c counts reg_n_refs, so sum gets no ref lift (stays $a1). sum is dead after its single compare and the two arms are complementary -> no REAL sum statement to duplicate into a non-complementary split. Structurally inapplicable + cheat-by-spelling.
+- [s14] Directed permuter (PERM_GENERAL def-mechanism x PERM_RANDOMIZE, base 10) 33,071 iters / ~19 min: 0 novel, base never moved. Directed def-mechanism sweep dry, matching s13 blind (~140k) + s11/s12 exact arithmetic.
+- [s14] Per endgame-lock-disposition-policy (2026-07-20): damage_DebugDisp fits the endgame species; both AND-gates fail (RA-artifact -> no canonical-asm; no applicable precedented spelling family). Escalation-ready; no OWNER-ESCALATION entry exists yet (owner-gated unavailable).
+
+- [s14] Floor 2 reconfirmed: candidate.c applied -> sandbox --disable all = 2 (79/79, 8 rules dropped, 34 cheat-asm stripped); src reverted to clean HEAD after the session.
+
+- [s14] Duplicated `sum!=chk` compare in the continue arm = sandbox 4, build_insns 79 (byte-neutral). It is the complement of the break test so jump1/cse folds it before flow.c's reg_n_refs count -> sum gets no ref lift (stays $a1 = plain behavior). Structurally inapplicable: sum is dead after its single compare and the two arms are complementary, so there is no non-complementary split with a REAL sum reference to duplicate into.
+
+- [s14] Target asm (asm/funcs/damage_DebugDisp.s) has exactly ONE sum compare (beq $a0,$v0 at 80038048) and sum=0 ($a0) is the FIRST preheader insn (.L8003801C); sum is dead after the compare. Confirms there is no genuine second sum use to anchor a duplicated-into-arms ref lift.
+
+- [s14] Directed permuter s14/ws (PERM_GENERAL def-mechanism x PERM_RANDOMIZE, base_score 10): 33,071 iters / ~19 min, 0 novel / 0 sub-10, base 10 held. Genuinely new vs s13's blind runs (offered both RA mechanisms explicitly); still dry.
+
+- [s14] Permuter modality now exhaustively dry across blind (s4/s5/s13 ~140k iters) and directed (s14 33k iters) on this function.
+
+- [s14] Per endgame-lock-disposition-policy (owner 2026-07-20) damage_DebugDisp is the endgame species (byte-matches on main only via 8 regfix/asmfix rules + 34 cheat-asm; a few insns short in honest pure C at score 2; sanctioned levers exhausted; residual = exact allocno/sched1 RA/scheduling tiebreak). Both AND-gates fail: (1) RA/scheduling artifact -> LOW hand-coded signal -> no canonical-asm; (2) the one precedented byte-free ref-lift family (duplicated-into-arms) is structurally inapplicable -> no coercion/spelling family.
+
+- [s14] No OWNER-ESCALATION entry for damage_DebugDisp exists in docs/grind/decisions.md (confirmed s6/s13/s14), so owner-gated is unavailable this session.

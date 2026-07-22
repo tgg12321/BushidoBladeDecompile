@@ -470,3 +470,42 @@ pos6). The whole game is: give sum its 11th weighted ref WITHOUT bracketing sum=
 - probe: Workspace s13/ws2 (plain sum=0, Region B still index+do-while0-k so B stays byte-exact; sandbox=4). Fresh -j8 --stop-on-zero, base_score 30; 56,956 iters / ~21 min.
 - result: Single novel output-10-1 (30->10) = the permuter RE-DERIVING do{sum=0}while(0) (converges plain -> the existing score-2 candidate; confirmed by reading output-10-1/source.c). Then stalled at 10, no sub-10. No byte-neutral variant decoupled A'.
 - verdict: KILLED
+
+## [s14] Frontier #1: a duplicated `sum==chk` compare into the continue arm gives sum a byte-neutral 11th weighted reg_n_refs (raising it above/to j) with sum=0 unbracketed, so sum wins $a0 AND sum=0 emits first (score 0).
+- mechanism: duplicated-statement-into-arms (owner-sanctioned 2026-07-01): flow.c counts reg_n_refs BEFORE jump2 cross-jumps, so a duplicate compare in two arms lifts sum's ref count then re-merges byte-neutrally.
+- probe: `chk=*(chkptr+0x6C); if(sum==chk){break;} if(sum!=chk){chkptr++;i++;offset+=0x24;}` (plain sum=0, no do-while0); sandbox --disable all.
+- result: sandbox = 4, build_insns = 79 (byte-neutral). Score == plain sum=0 (inner a0<->a1 swap, sum=$a1) — NO ref lift. The continue-arm compare is the provable COMPLEMENT of the break test, so jump1/cse folds it BEFORE flow.c counts reg_n_refs. sum is DEAD after its single compare (target: one `beq $a0,$v0`); the outer loop has no multi-way split at sum-live scope, so there is no REAL sum statement to duplicate into a NON-complementary arm (unlike motion_SetMotion's switch cases). Also a cheat-by-spelling (dead re-compare).
+- verdict: KILLED. Duplicated-statement-into-arms is structurally inapplicable to damage (no non-complementary split with a live/real sum reference) AND ineffective (complementary duplicate folds pre-flow). rejected/regionA-duplicated-compare-folds-early.c
+
+## [s14] A DIRECTED permuter (PERM_GENERAL over the sum-def RA mechanism + PERM_RANDOMIZE) surfaces a byte-neutral sub-2 form that s13's blind randomization missed.
+- mechanism: offer both RA mechanisms (do-while0-def vs plain sum=0) explicitly and let the randomizer combine each with structural mutations, directing the search rather than relying on random rediscovery.
+- probe: s14/ws = cpp of the score-2 candidate, `PERM_GENERAL(do{sum=0}while(0);, sum=0;)` inside `PERM_RANDOMIZE(...)` over the body; base_score 10; 33,071 iters / ~19 min / -j8 / --stop-on-zero across two fresh-seed windows.
+- result: 0 novel finds, 0 sub-10, base 10 never moved. The directed def-mechanism sweep is dry — reproduces s13's ~140k blind result and the s11/s12 exact-arithmetic proof that no ref-count-preserving/byte-neutral perturbation flips the score-2 residual.
+- verdict: KILLED. The permuter modality (blind s4/s5/s13 + directed s14) is now exhaustively dry on this function.
+
+## FRONTIER (s14) — permuter modality exhausted; endgame-lock disposition reached.
+1. **OWNER-ESCALATION readiness (PRIMARY).** Every sanctioned axis is now measured dead: structural
+   (s1-s3/s10-s12), forensics (s6/s7), rederive (s8/s9), blind permuter (s4/s5/s13), directed permuter
+   + duplicated-into-arms (s14). The score-2 residual is an exact allocno/sched1 tiebreak (Region A':
+   sum's weighted reg_n_refs must reach 11 with sum=0 unbracketed; no byte-neutral source produces the
+   11th ref — sum has exactly two real refs (def+compare), both promotions force sum=0-last, and the
+   only precedented byte-free ref-lift family (duplicated-into-arms) is structurally inapplicable).
+   Per endgame-lock-disposition-policy (owner 2026-07-20) both AND-gates fail (RA-artifact -> no
+   canonical-asm; no applicable precedented spelling family). next_probe: file an OWNER-ESCALATION
+   entry for damage_DebugDisp in docs/grind/decisions.md so a future session can invoke owner-gated;
+   the owner rules keep-cheat/INCOMPLETE-owner-accepted vs any newly-precedented mechanism.
+2. **Frontier #2 (drop j 11->10)** remains dead by exact weight arithmetic (s11/s12). Re-open only if a
+   future mechanism keeps the three j bytes (addiu a1,a1,1 / sltiu ...,0x24 / j=0) while shedding one
+   flow-counted ref. Lowest priority.
+
+## [s14] Frontier #1: a duplicated `sum==chk` compare into the continue arm (duplicated-statement-into-arms family) gives sum a byte-neutral 11th weighted reg_n_refs with sum=0 unbracketed, so sum wins $a0 AND sum=0 emits first (score 0).
+- mechanism: flow.c counts reg_n_refs BEFORE jump2 cross-jumps, so a duplicate compare in two arms lifts sum's ref count then re-merges byte-neutrally (owner-sanctioned 2026-07-01).
+- probe: chk=*(chkptr+0x6C); if(sum==chk){break;} if(sum!=chk){chkptr++;i++;offset+=0x24;} (plain sum=0, no do-while0); sandbox --disable all.
+- result: sandbox = 4, build_insns = 79 (BYTE-NEUTRAL — duplicate fully eliminated). Score == plain sum=0 (inner a0<->a1 swap, sum=$a1): NO ref lift. The continue-arm compare is the provable COMPLEMENT of the break test, so jump1/cse folds it BEFORE flow.c counts reg_n_refs. sum is DEAD after its single compare (target has one `beq $a0,$v0`); the outer loop has no multi-way split at sum-live scope, so no REAL sum statement exists to duplicate into a NON-complementary arm (unlike motion_SetMotion's switch cases). Cheat-by-spelling even had it worked.
+- verdict: KILLED
+
+## [s14] A DIRECTED permuter (PERM_GENERAL over the sum-def RA mechanism + PERM_RANDOMIZE) surfaces a byte-neutral sub-2 form that s13's blind randomization missed.
+- mechanism: Offer both RA mechanisms (do-while0-def vs plain sum=0) explicitly and let the randomizer combine each with structural mutations, directing the search rather than relying on random rediscovery.
+- probe: s14/ws = cpp of the score-2 candidate, PERM_GENERAL(do{sum=0}while(0);, sum=0;) inside PERM_RANDOMIZE(...) over the body; base_score 10; 33,071 iters / ~19 min / -j8 / --stop-on-zero across two fresh-seed wait windows; harvest --stop.
+- result: 0 novel finds, 0 sub-10, base 10 never moved. The directed def-mechanism sweep is dry — reproduces s13's ~140k blind result and the s11/s12 exact-arithmetic proof that no byte-neutral perturbation flips the score-2 residual.
+- verdict: KILLED

@@ -1,7 +1,7 @@
 {
  "func": "damage_DebugDisp",
  "file": "code6cac_c_mid",
- "session_count": 13,
+ "session_count": 14,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -87,23 +87,24 @@
    "floor": 2,
    "modality": "permuter",
    "headline": "Permuter s13: 2 fresh-seed campaigns (~140k iters) on distinct chassis (index-B do-while0 + plain byte-perfect-preheader) both stall at the do-while0 floor-2 residual; 0 sub-2 finds. A'/A coupling rec"
+  },
+  {
+   "session": 14,
+   "floor": 2,
+   "modality": "permuter",
+   "headline": "s14 permuter: duplicated-compare-into-arms measured structurally inapplicable + folds pre-flow (byte-neutral, no ref lift); directed def-mechanism permuter (33k iters) dry. All sanctioned axes now dea"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A DIRECTED permuter (PERM_* macro annotation via tools/permuter_annotate.py) targeting the compare/preheader, or a hand-built duplicated-compare-into-arms form, synthesizes the byte-neutral 11th sum ref that blind randomization could not reach.",
-   "mechanism": "s13 exhausted BLIND randomization on both chassis; the closing form (frontier #3) is a specific structural mutation (duplicated-statement-into-arms family the jump2 re-merges byte-neutrally) that random mutation is unlikely to hit but a directed macro or manual construction might. s8 killed tail-bracket decouplers, but a duplicate INTO the existing exit arms (not a new do-while0 bracket) is untried.",
-   "next_probe": "permuter_annotate --func damage_DebugDisp --hint duplicated-statement-into-arms on the score-2 candidate; OR manually construct a compare duplicated into the match/continue arms and measure sandbox --disable all, vetting byte-neutrality + cheat-reviewer. Requires the damage outer loop grow a diamond around sum without adding net branches."
+   "hypothesis": "OWNER-ESCALATION readiness: every sanctioned axis (structural s1-s3/s10-s12, forensics s6/s7, rederive s8/s9, blind permuter s4/s5/s13, directed permuter + duplicated-into-arms s14) is now measured dead; the score-2 residual (Region A') is an exact allocno/sched1 tiebreak requiring sum's weighted reg_n_refs to reach 11 with sum=0 unbracketed, which has no byte-neutral pure-C source.",
+   "mechanism": "sum has exactly two real refs (def + compare); both promotions (do-while0-def s4/s6/s7, compare-bracket s11) force sum=0 to schedule last (A'); sum-first + promotion are mutually exclusive (s12); the only precedented byte-free ref-lift (duplicated-into-arms) is structurally inapplicable because sum is dead after its single compare and the outer loop has no non-complementary split (s14). Per endgame-lock-disposition-policy both AND-gates fail.",
+   "next_probe": "File an OWNER-ESCALATION entry for damage_DebugDisp in docs/grind/decisions.md so a future session can invoke owner-gated; owner rules keep-cheat/INCOMPLETE-owner-accepted vs any newly-precedented mechanism. (No entry exists yet, so this session records progress rather than owner-gated.)"
   },
   {
-   "hypothesis": "Frontier #2 (drop j 11->10) remains dead by exact weight arithmetic (s11/s12); re-open ONLY if a directed permuter surfaces a counter reformulation keeping the three j bytes (addiu a1,a1,1 / sltiu ...,0x24 / j=0) while shedding one flow-counted ref via a loop shape where one j use lands shallower.",
-   "mechanism": "j=11 = j0(w2,d1)+j++[2](w3,d2)+j<0x24(w3,d2). Only j0 is movable and must reset per outer iteration (depth1,w2). No manual byte-neutral -1 exists.",
-   "next_probe": "On the index-B numbering dump .lreg reg_n_refs for j under directed-permuter mutations; check whether any lands a j use one loop level shallower while preserving the three j bytes. Lowest priority."
-  },
-  {
-   "hypothesis": "Escalation readiness: if a directed-permuter pass + duplicated-into-arms attempt also fail, every sanctioned axis (structural s1-s3/s10-s12, forensics s6/s7, rederive s8/s9, blind permuter s4/s5/s13) will be measured dead and an OWNER-ESCALATION for damage_DebugDisp may be warranted.",
-   "mechanism": "s12 exact arithmetic proves the only reachable score-0 path is a permuter-synthesized byte-neutral 11th sum ref; two fresh 140k-iter campaigns failed to find it. The remaining unexplored lever is directed (not blind) mutation.",
-   "next_probe": "Run the directed-permuter/duplicated-into-arms frontier #1 above FIRST; only file an escalation (docs/grind/decisions.md) after it is measured dead \u2014 no escalation entry exists yet, so owner-gated is not available this session."
+   "hypothesis": "Frontier #2 (drop j's weighted refs 11->10 so plain sum(10) ties and wins $a0 with the byte-perfect plain preheader = score 0).",
+   "mechanism": "j = j0(w2,d1) + j++[2 refs](w3,d2) + j<0x24(w3,d2) = 11; only j0 is movable and must reset per outer iteration (depth 1). No byte-neutral -1 exists by exact weight arithmetic (s11/s12).",
+   "next_probe": "Re-open ONLY if a future mechanism keeps the three j bytes (addiu a1,a1,1 / sltiu ...,0x24 / j=0) while shedding one flow-counted ref via a loop shape where one j use lands one level shallower. Lowest priority."
   }
  ],
  "judge_constraints": [
