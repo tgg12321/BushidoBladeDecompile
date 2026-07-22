@@ -318,3 +318,15 @@ args is NOT a sanctioned use-site shape) and stripped by `volatile_cheats`.
 - [s11] Both axes orthogonal and mechanism-pinned dead across all five modalities: structural (s2/s3/s11), permuter x3 (s4/s5), forensics x2 (s6/s7), rederive x2 (s8/s9), synthesis (s10).
 
 - [s11] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (Grep 8007DC9C = No matches; commit d6bc0904's owner ruling covered 7 OTHER endgame-lock funcs, not this one), so owner-gated is not claimable this session.
+
+- [s12] s12 baseline re-confirmed: sandbox --disable all score 9, target_insns 91, build_insns 90, rules_dropped 4, cheat_asm_stripped 150 (identical to s1-s11). src/display.c clean at HEAD; candidate.c byte-equivalent, already reflected. No dirt.
+
+- [s12] Structural modality re-affirmed EXHAUSTED by proven mechanism (not just sweep): axis A is a per-EXPRESSION combine offset-0 fold (combine.c:1458 added_sets_2), axis B is a whole-block sched1 INSN_PRIORITY tie via volatile-MEM anti-dep REG_DEP_ANTI 38->45 (s6). Both structurally insensitive a priori; every structural lever category is banked (s2/s3/s11).
+
+- [s12] Axis A single-function reproduction is only a dead 2nd &D_8009BF68 use = coercion (s7 empirical: 9->8 but build 90->93 with undeletable dead sw); cross-function is mechanically impossible (per-function combine, toplev.c:3004).
+
+- [s12] Axis B is unflippable without changing observable volatile order (target keeps two volatile *g_gpu_stat_reg reads); permuter-immovable ~67k iters (s4/s5), control-flow-insensitive (s8), no corpus donor (s9).
+
+- [s12] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (Grep 8007DC9C = No matches; d6bc0904's owner ruling covered 7 OTHER endgame-lock funcs), so owner-gated is NOT claimable this session.
+
+- [s12] func_8007DC9C matches endgame-lock-disposition-policy (owner 2026-07-20) verbatim: byte-matches only via 4 regfix rules, 9 insns short in honest pure C. Gate #1 (canonical asm) REFUSE (scan_hand_coded LOW, s1). Gate #2 (coercion family) REFUSE (no SOTN/VS/ESA precedent). Both fail -> keep cheat, INCOMPLETE-owner-accepted (owner ruling, not agent self-authorization).

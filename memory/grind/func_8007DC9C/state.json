@@ -1,7 +1,7 @@
 {
  "func": "func_8007DC9C",
  "file": "display",
- "session_count": 11,
+ "session_count": 12,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -75,13 +75,19 @@
    "floor": 9,
    "modality": "structural",
    "headline": "s11 structural modality re-affirmed exhausted: no un-banked structural lever exists; both axes mechanism-pinned dead; escalation-ready (no owner entry yet)."
+  },
+  {
+   "session": 12,
+   "floor": 9,
+   "modality": "structural",
+   "headline": "s12 structural modality re-affirmed EXHAUSTED: baseline 9 (identical fingerprint), both axes proven structure-insensitive by compiler-source mechanism; escalation-ready, no owner entry yet."
   }
  ],
  "frontier": [
   {
    "hypothesis": "func_8007DC9C is a fully-characterized ENDGAME-LOCK with NO legitimate pure-C lever in any modality; the only remaining action is an OWNER escalation ruling.",
-   "mechanism": "Axis A = combine.c:1458 added_sets_2 multi-use retention (needs a 2nd &D_8009BF68 use the function lacks; any is a coercion). Axis B = sched.c INSN_PRIORITY via volatile-MEM anti-dep REG_DEP_ANTI 38->45 (unflippable without changing observable volatile order). Matches endgame-lock-disposition-policy: gate #1 (canonical asm) REFUSE (scan_hand_coded LOW), gate #2 (coercion family) REFUSE (no SOTN/VS/ESA precedent) => keep 4 regfix rules, classify INCOMPLETE-owner-accepted.",
-   "next_probe": "OWNER files an OWNER-ESCALATION entry for func_8007DC9C in docs/grind/decisions.md citing both pinned mechanisms + five-modality exhaustion + endgame-lock policy outcome. Once filed, the next session emits owner-gated and the queue advances. No further pure-C modality remains to run."
+   "mechanism": "Axis A = combine.c:1458 added_sets_2 multi-use retention (needs a 2nd &D_8009BF68 use the function lacks; any is a coercion). Axis B = sched.c INSN_PRIORITY via volatile-MEM anti-dep REG_DEP_ANTI 38->45 (unflippable without changing observable volatile order). Matches endgame-lock-disposition-policy: gate #1 REFUSE (scan_hand_coded LOW), gate #2 REFUSE (no precedent) => keep 4 regfix rules, classify INCOMPLETE-owner-accepted.",
+   "next_probe": "OWNER files an OWNER-ESCALATION entry for func_8007DC9C in docs/grind/decisions.md citing both pinned mechanisms + five-modality exhaustion (structural s2/s3/s11, permuter x3 s4/s5, forensics x2 s6/s7, rederive x2 s8/s9, synthesis s10) + endgame-lock policy outcome. Once filed, the next session emits owner-gated and the queue advances. No further pure-C modality remains to run."
   }
  ],
  "judge_constraints": [],
