@@ -605,3 +605,19 @@ args is NOT a sanctioned use-site shape) and stripped by `volatile_cheats`.
 - [s26] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (grep = No matches, s26), so owner-gated is NOT claimable this session despite full six-modality exhaustion.
 
 - [s26] candidate.c unchanged (HEAD-equivalent best form at floor 9); s26 ternary saved to rejected/rederive-ternary-conditional-expr.c.
+
+- [s27] REDERIVE modality. Baseline re-confirmed: sandbox --disable all score 9, target 91 / build 90, rules_dropped 4, cheat_asm_stripped 150 (identical to s1-s26). src/display.c clean at HEAD before + after (reverted, no dirt).
+
+- [s27] Novel EXPRESSION-OPERATOR-level rederive KILLED: A-false guard side effect written with the native post-increment operator `g_gpu_draw_count++ > 0xF0000` in place of HEAD's comma-expression temp dance (`temp_v1 = g_gpu_draw_count, g_gpu_draw_count = temp_v1 + 1, (temp_v1 > 0xF0000) != 0`); also drops the new_var2 volatile-ptr indirection. Distinct AST from every banked skeleton (all skeleton-level: HEAD comma-if, s8 goto/nested-if, s17 inverted-early-return, s18 computed-flag-two-if, s26 ternary). sandbox --disable all -> score 9, target 91 / build 90, rules_dropped 4, cheat_asm_stripped 150 = IDENTICAL floor-9 fingerprint. Reaches the 90-insn floor (exit-distinct skeleton). Neither axis moved: post-increment lowers to the same read-then-increment RTL as the comma-expr temp -> axis A (combine.c:1458 offset-0 fold, s25) and axis B (sched1 over-determined volatile-MEM/load-delay/LUID lock, s24) are insensitive to the increment operator's spelling. Rejected: rejected/rederive-postincrement-operator-condition.c. Artifact tmp/grind/func_8007DC9C/s27/FINDINGS.md.
+
+- [s27] Rederive modality now confirmed dead at BOTH the skeleton level (s8/s17/s18/s26) AND the expression-operator level (s27). No OWNER-ESCALATION entry for func_8007DC9C in docs/grind/decisions.md (grep NONE, re-verified s27) -> owner-gated NOT claimable. Both axes remain mechanism-pinned dead across all six modalities (structural, permuter x7 ~189k iters, forensics x6, rederive x6+s27, synthesis x2); escalation-ready, still no owner entry filed.
+
+- [s27] s27 baseline re-confirmed: sandbox --disable all score 9, target_insns 91, build_insns 90, rules_dropped 4, cheat_asm_stripped 150 (identical fingerprint to s1-s26); src/display.c clean at HEAD before and after (reverted, no dirt).
+
+- [s27] Novel post-increment-operator condition form (g_gpu_draw_count++ > 0xF0000, dropping temp_v1 + the new_var2 volatile-ptr dance) measured score 9 / build 90 = identical floor-9 fingerprint. Distinct AST from every banked skeleton (HEAD comma-if, s8 goto/nested-if, s17 inverted-early-return, s18 computed-flag-two-if, s26 ternary). Rejected: rejected/rederive-postincrement-operator-condition.c.
+
+- [s27] Post-increment lowers to the same read-then-increment RTL as the comma-expression temp; axis A (combine.c:1458 added_sets_2 offset-0 fold on the single pure BF68[0] rvalue) and axis B (sched1 over-determined volatile-MEM anti-dep / MIPS-I load-delay / LUID lock) are both insensitive to increment-operator spelling.
+
+- [s27] Rederive modality now confirmed dead at BOTH the skeleton level (s8/s17/s18/s26) AND the expression-operator level (s27).
+
+- [s27] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (grep NONE, re-verified s27); owner-gated NOT claimable this session.
