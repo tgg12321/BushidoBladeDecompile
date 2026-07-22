@@ -80,3 +80,27 @@ sched1 reorder cluster in the first debug_printf setup.
 - probe: Read all 96 lines of asm/funcs/func_8007DC9C.s and enumerate every D_8009BF68 reference in the emitted target.
 - result: Target references &D_8009BF68 EXACTLY ONCE (lines 43-45). No second visible reference exists. The materialization is a combine-time multi-use retention of a use that a LATER pass DCE'd from output — not a visible second reference. Any single-function pure-C reproduction would be a dead second use of &D_8009BF68 = a forbidden coercion (no semantic purpose, dead in output, justified only by combine internals).
 - verdict: KILLED
+
+## [s4] H-B1 (permuter modality): a directed/random permuter over the first debug_printf arg-setup region finds a pure-C statement-order/liveness form that schedules fmt ahead of the dead *g_gpu_stat_reg read (target byte order), closing the 8-op axis-B cluster.
+- mechanism: axis B is a sched1 critical-path tie — the dead read is volatile-ordered before the volatile D_8009BF7C read, giving it fixed high priority so it schedules early into $a0; target instead loads fmt first (dead read -> $v0). Permuter random reordering / arg-homing chassis explores the statement-order space the s2 structural enumeration may have missed.
+- probe: two campaigns (standalone single-fn workspace, base_score 630). Chassis-1 random (20,157 iters). Chassis-2 arg-homing AST with named `diff` temp (7,137 iters). ~27.3k iters total.
+- result: NO legitimate sub-baseline find. Only finds: `extern volatile [long|int] D_8009BF68[]` (volatile-coercion cheat, axis A only) and a pointer-alias/long-long-holder junk form (cheat-by-spelling). The axis-B cluster never reordered in any legitimate form. Corroborates s2: volatile ordering is observable and unswappable; no pure-C reorder reaches target's schedule.
+- verdict: KILLED
+
+## [s4] H-A1/H-A2 (permuter modality): permuter finds a pure-C declaration/access form for D_8009BF68[0] that emits target's 3-insn materialized address.
+- mechanism: combine offset-0 fold; only a multi-use address pseudo survives (s2/s3).
+- probe: same two campaigns.
+- result: the ONLY axis-A closing form the permuter found is `extern volatile <T> D_8009BF68[]` — volatile coercion (forbidden, stripped by volatile_cheats). No non-volatile pure-C form materialized the address. Confirms s3: axis A has no legitimate single-function pure-C lever (any is a dead-second-use/volatile coercion); closes only via the cross-TU sibling func_8007D3F8.
+- verdict: KILLED
+
+## [s4] A directed/random permuter over the first debug_printf arg-setup region finds a pure-C statement-order/liveness form that schedules fmt ahead of the dead *g_gpu_stat_reg read (target byte order), closing the 8-op axis-B cluster.
+- mechanism: Axis B is a sched1 critical-path tie: the dead *g_gpu_stat_reg read is volatile-ordered before the volatile D_8009BF7C read, giving it fixed high priority so it schedules early into $a0; target loads fmt first (dead read -> $v0). Permuter random reordering + an arg-homing chassis explore the statement-order space.
+- probe: Two campaigns on a validated standalone single-function workspace (base_score 630): chassis-1 random (20,157 iters, ~12 min) + chassis-2 arg-homing AST with a named diff temp (7,137 iters, ~5 min). ~27.3k iters total; every campaign harvested + stopped in-turn.
+- result: No legitimate sub-baseline find. Only finds: extern volatile [long|int] D_8009BF68[] (volatile-coercion cheat, axis A only, stripped by volatile_cheats) and a pointer-alias/long-long-holder junk form (cheat-by-spelling). The axis-B cluster never reordered in any legitimate form.
+- verdict: KILLED
+
+## [s4] The permuter finds a pure-C declaration/access form for D_8009BF68[0] that emits target's 3-insn materialized address (closing axis A).
+- mechanism: combine offset-0 fold on (mem (plus symbol_ref 0)); only a multi-use address pseudo survives unfolded (combine.c:1458 added_sets_2).
+- probe: Same two campaigns; inspected every sub-630 find.
+- result: The only axis-A closing form found is extern volatile <T> D_8009BF68[] (volatile coercion, forbidden). No non-volatile pure-C form materialized the address. Confirms s3: axis A has no legitimate single-function pure-C lever.
+- verdict: KILLED
