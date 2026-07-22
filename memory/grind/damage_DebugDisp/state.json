@@ -1,7 +1,7 @@
 {
  "func": "damage_DebugDisp",
  "file": "code6cac_c_mid",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -21,23 +21,24 @@
    "floor": 8,
    "modality": "structural",
    "headline": "Region A quantified as a pure sum/j $a0<->$a1 swap (all surroundings match target); naive structural levers KILLED, pointing to the directed permuter."
+  },
+  {
+   "session": 3,
+   "floor": 8,
+   "modality": "structural",
+   "headline": "Region A range-mechanism CONFIRMED: offset+=j flips the sum/j a0/a1 swap (score 7) but is not match-viable; zero-cost manual flips killed, so the flip needs the directed permuter's whole-function LUID"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Directed permuter seeded from the floor-8 form sweeps the whole-function LUID cross-product that manual source order cannot reach, flipping the sum/j $a0 tie and/or the Region B const-vs-move order.",
-   "mechanism": "The sum/j swap is a context-dependent local-alloc priority/birth-death tie (j 20000 > sum 13333) with identical surroundings; PERM_* over statement order in both regions + the range-check spelling explores the alloc/schedule cross-product. Vet any closing form against the cheat catalog (constant-holder / dead-store are the known traps here).",
-   "next_probe": "Build clean single-fn target.o (asm/funcs/damage_DebugDisp.s + prelude, drop .set gp=64), seed base from candidate.c, run permuter_campaign with fresh-seed stopping rule; log to tmp/grind/damage_DebugDisp/sN/."
+   "hypothesis": "The directed permuter, seeded from the floor-8 form, sweeps the whole-function LUID cross-product that manual source order cannot reach, flipping Region A (sum/j) with the literal offset intact and/or the Region B const-vs-move order.",
+   "mechanism": "s3 proved Region A flips purely on j-vs-sum global-allocno priority and that the target register order (sum=a0/j=a1) IS reachable (offset+=j reaches it). The permuter must reach the same allocation without an emitted j-consumer, by perturbing whole-function statement order / LUID context. PERM_* over statement order in both regions + the range-check spelling. Vet any closing form against the cheat catalog (offset+=j-style range steering, constant-holder, dead-store are the known traps).",
+   "next_probe": "Build clean single-fn target.o (asm/funcs/damage_DebugDisp.s + prelude, drop .set gp=64), seed base from candidate.c, run permuter_campaign with fresh-seed stopping rule; log to tmp/grind/damage_DebugDisp/sN/. Watch for the qty_order 78 77 79 signal at score<=8 with the literal `addiu $a3,$a3,0x24` preserved."
   },
   {
-   "hypothesis": "Lengthening j's live range past the loop (dropping j priority below sum's 13333) would flip Region A without touching bp.",
-   "mechanism": "priority = log2(refs)*refs/range; j needs range>6 to fall under sum. Requires a genuine post-loop consumer of j's final value - none currently exists (offset+=0x24 is a literal in target; offset+=j either folds (no range extension) or changes the instruction).",
-   "next_probe": "Search for a semantically-real post-loop use of the byte count; if none exists this axis is dead (offset+=j is a fold-or-diverge trap, not pursued)."
-  },
-  {
-   "hypothesis": "A surrounding-code (outer-loop) structural change shifts the inner-loop birth/death LUIDs enough to lift sum above j while keeping bp highest.",
-   "mechanism": "The tie is whole-function context-dependent; changing pseudo liveness in the outer loop / chkptr-offset handling could reorder the inner qty priorities.",
-   "next_probe": "Perturb outer-loop tail / chkptr-offset derivation forms and dump greg qty_order for 77/78/79 each; keep only variants that hold score<=8 and move the order toward 78 77 79."
+   "hypothesis": "Region B: a surrounding-code change makes the LICM range-check constants schedule (lower LUID) before the ap/a2p pre-loop moves without a constant-holder.",
+   "mechanism": "Constants are hoisted to preheader END (higher LUID) so sched1 picks the lower-LUID moves first. Only the permuter's cross-product (or a genuine control-flow change to where the range check materializes) can reorder them; every manual source lever measured is either no-change or the rejected magic_base cheat.",
+   "next_probe": "In the same permuter campaign, include PERM_* over the k-loop preheader / range-check form; keep only variants that hold score<=8 and emit lui $t0/lui $a3/ori $a3 before move $a0/move $a2."
   }
  ],
  "judge_constraints": [],

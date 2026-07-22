@@ -71,6 +71,18 @@ LUID were tried and REJECTED as cheat-by-spelling (magic_base/magic_max, score 4
   byte count (none exists; offset+=j is a fold-or-diverge trap). See evidence.md s2 for numbers.
 - verdict: manual structural approaches KILLED; permuter (item 3) is the live path.
 
+## [s3] Lengthening j's live range past the inner loop drops j's priority below sum's and flips the Region A a0/a1 swap.
+- mechanism: global.c allocno priority = numerator/live_length. Baseline j 20000 > sum 13333 (j range 4 < sum range 6). `offset += j` (value-identical to +=0x24 since j==0x24 at exit) makes j live into the tail addu, raising j's live_length so its priority falls below sum's; sum then allocates first and takes $a0.
+- probe: `offset += j;` in the outer tail; sandbox --disable all + qty_order dump.
+- result: score 7 (from 8); qty_order 78 79 77 -> 78 77 79; dispositions sum=$a0/j=$a1/bp=$v1 == TARGET. FIRST measured flip of Region A. BUT emits `addu $a3,$a3,$a1` vs target literal `addiu $a3,$a3,0x24` (cannot byte-match) AND is RA-motivated cheat-by-spelling. Rejected; kept as evidence.
+- verdict: CONFIRMED (mechanism real; Region A swap = pure j-vs-sum range/priority effect) / form REJECTED.
+
+## [s3] A zero-cost outer-loop context perturbation can flip Region A without the offset instruction cost.
+- mechanism: shift whole-function LUID/conflict context to lift sum's priority while leaving the outer emitted code (t1/a2/t0/a3 all matched) intact.
+- probe: tail reorder `offset+=0x24;chkptr++;i++;` and index-based chk `((s32*)base)[i+0x1B]` (drop chkptr IV); sandbox each.
+- result: tail-reorder=10, index-chk=14. Both disturb the matched outer registers and cascade worse. No zero-cost manual flip exists.
+- verdict: KILLED. Target's sum has the same isolated inner range as build's (lw chk;nop;beq in both), so the target's sum>j priority is a whole-function conflict-graph effect only the directed permuter can sweep.
+
 ## [s1] Region B is an independent scheduling diff: LICM-hoisted range-check constants vs pre-loop pointer moves are emitted in opposite order to target.
 - mechanism: The two invariants (0x80000000, 0x1FFFFF) are LICM-hoisted into the k-loop preheader; sched1 ties break to lower-LUID insns and LICM appends hoisted insns after the ap/a2p moves, so build emits moves-first while target emits constants-first. Naming constant-holder locals to bias LUID was already rejected as cheat-by-spelling.
 - probe: objdump build 0x1e8-0x1f8 vs target 0x800380F0-
@@ -105,4 +117,22 @@ LUID were tried and REJECTED as cheat-by-spelling (magic_base/magic_max, score 4
 - mechanism: sched1 ties break to lower LUID; LICM appends hoisted constants after the moves.
 - probe: Swapped a2p=base; ap=(s32*)base; init order; sandbox --disable all.
 - result: score 8 (unchanged) - GCC normalises the two base-copies. The constants (0x80000000, 0x1FFFFF) are hard literals with no semantic link to base, so no non-cheat lever makes them materialise earlier; a named constant-holder is the already-rejected magic_base cheat.
+- verdict: KILLED
+
+## [s3] Lengthening j's live range past the inner loop drops j's global-allocno priority below sum's and flips the Region A a0/a1 register swap to match target.
+- mechanism: global.c priority = numerator/live_length. Baseline j 20000 (range 4) > sum 13333 (range 6), so j wins $a0. `offset += j` is value-identical to `offset += 0x24` (j==0x24 at loop exit) but makes j live into the tail addu, raising j's live_length so its priority falls below sum's; sum then allocates first and takes $a0.
+- probe: Replaced `offset += 0x24;` with `offset += j;`; ran sandbox --disable all and dumped qty_order (tmp/grind/damage_DebugDisp/s2/dump.sh).
+- result: score 7 (from 8). qty_order among inner pseudos 78 79 77 -> 78 77 79; dispositions sum=$a0(77 in 4), j=$a1(79 in 5), bp=$v1(78 in 3) == TARGET. First measured flip of Region A. But emits `addu $a3,$a3,$a1` vs target literal `addiu $a3,$a3,0x24` (cannot byte-match) and is RA-motivated cheat-by-spelling (no-new-park-categories test #4). Rejected as a form; kept as evidence.
+- verdict: CONFIRMED
+
+## [s3] A zero-cost outer-loop context perturbation can flip Region A without the offset instruction cost.
+- mechanism: Shift whole-function LUID/conflict context to lift sum's priority while leaving the already-matched outer emitted code (base=t1, i=a2, chkptr=t0, offset=a3) intact.
+- probe: Tail reorder `offset+=0x24; chkptr++; i++;` and index-based chk `((s32*)base)[i+0x1B]` (drops the chkptr walking-pointer IV); sandbox each.
+- result: tail-reorder=10, index-chk=14. Both disturb the matched outer registers and cascade worse. No zero-cost manual flip found.
+- verdict: KILLED
+
+## [s3] Region B (LICM range-check constants vs pre-loop pointer moves) has a non-cheat structural lever that emits the constants before the ap/a2p moves.
+- mechanism: The two constants (0x80000000, 0x1FFFFF) are LICM-hoisted from inside the k-loop; getting them to lower LUID than the moves would flip the sched1 tie.
+- probe: Re-examined source-order control (s2 already measured init-swap=8-nochange). The constants are only referenced inside the loop, so LICM places them; source order cannot move them earlier.
+- result: The only form that places the constants before the moves is the already-rejected magic_base constant-holder (cheat, score 4). No non-cheat manual lever exists; Region B is a context/permuter tie.
 - verdict: KILLED

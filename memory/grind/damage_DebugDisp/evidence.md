@@ -185,3 +185,50 @@ constants' priority. To flip, the constants would need higher priority OR lower 
 - [s2] A standalone single-function TU does NOT reproduce the real allocation (standalone sum=$a2 vs real $a1) - the sum/j tie is a whole-function LUID/context interaction, not isolable, so manual source levers cascade and only the real full-file build (permuter) can sweep it.
 
 - [s2] chk-hoist=17, init-reorder bp;sum;j / sum;bp;j =13, sum-split(acc coalesced)=8-nochange, Region B init-swap=8-nochange. All structural manual levers on both regions exhausted for direct approaches.
+
+## s3 (structural, 2026-07-22) — Region A range-mechanism CONFIRMED by measurement; zero-cost flip unavailable
+- Confirmed floor 8 (candidate applied). Modality: structural.
+- **`offset += j` (tail) => score 7 and FLIPS Region A completely.** qty_order among
+  the inner pseudos: baseline `78 79 77` (bp=v1, j=a0, sum=a1) -> with offset+=j
+  `78 77 79` (bp=v1, sum=a0, j=a1) == TARGET ORDER. dispositions confirm 77 in 4(a0=sum),
+  78 in 3(v1=bp), 79 in 5(a1=j). This is the FIRST measured flip of the sum/j swap.
+  Mechanism CONFIRMED: at loop exit j==0x24 so offset+=j is value-identical to +=0x24,
+  but j now lives past the loop into the tail addu, raising j's live_length and dropping
+  its global-allocno priority below sum's (was j 20000 > sum 13333). sum then wins a0.
+- **offset+=j is NOT the match** (two independent reasons): (1) emits `addu $a3,$a3,$a1`
+  vs target's literal `addiu $a3,$a3,0x24` -> can never byte-match that instruction, so
+  cannot reach 0; (2) cheat-by-spelling (no-new-park-categories test #4) — value is
+  identical to the literal, the only reason to spell it `+= j` is to steer RA via j's
+  range. Rejected. Kept as EVIDENCE: Region A's swap is a pure j-vs-sum live-range/priority
+  effect. rejected/offset-plus-j-flips-regionA-but-cheat.c
+- **Zero-cost context perturbations both KILLED** (goal: flip A without the offset instr cost):
+  * tail reorder `offset+=0x24; chkptr++; i++;` => score 10 (sched1 tie cascade).
+  * index-based chk (drop chkptr walking-pointer IV, `((s32*)base)[i+0x1B]`) => score 14
+    (forces base+i*4 recompute, diverges from target's matched `addiu $t0,$t0,4` walker).
+    Confirms outer regs t1/a2/t0/a3 are load-bearing — any outer IV restructure cascades worse.
+    rejected/tail-reorder-and-index-chk.c
+- **Region B has no non-cheat structural lever** (re-confirmed): the two range-check constants
+  (0x80000000, 0x1FFFFF) are LICM-hoisted from inside the k-loop; source order cannot place
+  them before the ap/a2p moves because they are only referenced inside the loop. The only
+  form that places them earlier is the already-rejected magic_base constant-holder (cheat).
+- **KEY IMPLICATION for the permuter axis:** target's sum has the SAME isolated inner-loop
+  range as build's (in both, `lw chk; nop; beq` sits between loop-exit and sum's death). So
+  target lifts sum's priority WITHOUT lengthening j and WITHOUT shortening sum's isolated
+  range — it must do so via the whole-function conflict graph / absolute LUID numbering. A
+  match therefore needs the directed permuter's whole-function LUID sweep (frontier item 1),
+  NOT a manual inner/outer source lever (all now measured dead). offset+=j proves the target
+  register order is reachable; the permuter's job is to reach it with the literal offset intact.
+
+- [s3] offset+=j => score 7, qty_order 78 77 79 (sum=a0,j=a1 == target): FIRST measured Region A flip; confirms it is a pure j-live-range/priority effect. Not match-viable (addu vs target addiu literal) + RA-motivated cheat -> rejected, kept as evidence.
+- [s3] Zero-cost flips KILLED: tail-reorder offset-first=10, index-chk drop-chkptr-IV=14. Outer regs t1/a2/t0/a3 load-bearing; no zero-cost manual flip of Region A exists.
+- [s3] Target's sum has identical isolated inner-loop range to build's (lw chk;nop;beq between loop-exit and sum death in both) => the sum>j priority in target comes from whole-function conflict-graph/LUID context, not the isolated range. Match requires the directed permuter LUID sweep, not a manual source lever.
+
+- [s3] offset += j => sandbox score 7 (from floor 8): FIRST measured flip of Region A, qty_order 78 79 77 -> 78 77 79, dispositions sum=$a0/j=$a1/bp=$v1 == target. Confirms Region A is a pure j-vs-sum live-range/priority effect.
+
+- [s3] offset += j is NOT match-viable: emits `addu $a3,$a3,$a1` where target has literal `addiu $a3,$a3,0x24`, and its only motivation is RA range-steering (cheat-by-spelling). Correctly rejected, retained as mechanism evidence.
+
+- [s3] Zero-cost manual flips of Region A do not exist: tail-reorder offset-first=10, index-based chk (drop chkptr IV)=14. Outer regs t1/a2/t0/a3 are load-bearing; any outer IV restructure cascades worse.
+
+- [s3] Target's sum has the SAME isolated inner-loop range as build's (in both, `lw chk; nop; beq` sits between loop-exit and sum's death), so target's sum>j priority comes from the whole-function conflict graph / absolute LUID numbering, not the isolated range. This is why no manual source lever isolates the flip and only the directed permuter can reach it.
+
+- [s3] Region B: constants are LICM-controlled and only referenceable inside the k-loop; source order cannot place them before the ap/a2p moves without the rejected constant-holder cheat.
