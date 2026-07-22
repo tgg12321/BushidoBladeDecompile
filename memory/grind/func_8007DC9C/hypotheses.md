@@ -445,3 +445,21 @@ zero floor movement). The ONLY unblock is the OWNER filing the escalation entry.
 - probe: fresh cc1 -da -dr over committed src/display.c (tmp/grind/func_8007DC9C/s33); located dead read insn 41 + fmt insn 63 in .sched/.lreg/.greg; identified the hard-assigning pass and the live regs at the dead read's scheduled slot; re-ran sandbox --disable all baseline (score 9).
 - result: REFUTED/foreclosed: the register is a deterministic downstream consequence of the sched1 order, not an independent lever. Rules 2833 (register) + 2835 (reorder) are ONE sched1 root cause (sharpens s16's 4=2+2 into 2 combine + 1 sched1-rooted-manifesting-as-2). No register-steering pure-C construct can flip $a0->$v0 without flipping the s24-over-determined-dead schedule; a register-asm pin is a cheat.
 - verdict: KILLED
+
+## [s34] A fresh instrumented-cc1 dump this session exposes a new axis-B degree of freedom, OR the actual printed scheduler priorities differ from the s6/s24-reasoned values (2 vs 1).
+- mechanism: sched1 INSN_PRIORITY + load-delay hazard decide the dead-*g_gpu_stat_reg-read vs fmt-la order at T-42; s6/s24 stated priority 2 vs 1 from analysis/source-reasoning, never captured from the scheduler's own -da -dr trace output.
+- probe: cc1 -O2 -G0 -da -dr over cpp'd src/display.c into tmp/grind/func_8007DC9C/s34/; extracted the per-insn priority/ref_count listing (display.i.sched:15404-15413), the T-42 ready-list decision (:15499-15506), and the post-sched emission chain.
+- result: Printed values match the reasoned ones EXACTLY: insn41 dead read priority 2 / ref_count 5 (REG_UNUSED, REG_DEP_ANTI 41 on insns 48/61/67 = volatile-ordering fan-out); insn63 fmt priority 1 / ref_count 1. Scheduler trace: 'ready list at T-42: 63 (1) 41 (2)' -> 'blocking insn 41 for 1 cycles, now 63' -> fmt at T-42, dead read at T-44 (higher T = earlier program position) -> dead read before fmt. No new degree of freedom.
+- verdict: KILLED
+
+## [s34] The binding cause of the axis-B divergence at T-42 is separable from the volatile anti-dep priority — identifying it exposes a lever.
+- mechanism: At T-42 the priority gap (41=2 > 63=1) makes the scheduler ATTEMPT the dead read first; the 1-cycle load-delay hazard ('blocking insn 41 for 1 cycles') defers it to T-44 and assigns fmt to T-42.
+- probe: Traced the T-42 decision line + the actual_hazard block in the fresh s34 sched dump against the printed ready-list transitions T-40..T-46.
+- result: The load-delay HAZARD is the binding constraint and persists independent of the priority value (corroborates s24: no priority-equalising pure-C construct flips it). Removing the hazard requires removing the load = volatile+semantically-required dead read dropped = the banked score-19 collapse (body one insn short of target). No legitimate pure-C lever. Refines, does not overturn, s24 over-determination.
+- verdict: KILLED
+
+## [s34] Axis A (BF68[0] 3-insn materialization) shows any change on a fresh dump vs s25's combine.c:1458 single-use fold.
+- mechanism: array subscript BF68[0] materializes the address in a single-use pseudo; combine deletes it (added_sets_2 FALSE) -> 2-insn fold; target retains it via a genuine 2nd use.
+- probe: Read display.i.combine + display.s for the BF68 read-site in the fresh s34 dump.
+- result: combine:10051 (mem/s (symbol_ref D_8009BF68)) folded; asm:54 lw $5,D_8009BF68 (2-insn) vs target 3-insn; BF6C/BF70 fold (asm:55-56). Sibling func_8007D3F8 store at combine:8422 (insn 133) in its own combine section -> cross-fn retention mechanically impossible. Identical to s25.
+- verdict: KILLED

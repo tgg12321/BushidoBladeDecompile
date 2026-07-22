@@ -1,7 +1,7 @@
 {
  "func": "func_8007DC9C",
  "file": "display",
- "session_count": 33,
+ "session_count": 34,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -207,13 +207,19 @@
    "floor": 9,
    "modality": "forensics",
    "headline": "s33 forensics: axis-B dead-read register ($a0 vs $v0, rule 2833) dump-traced as a GREG consequence of the sched1 order \u2014 no independent register-allocation lever; the two axis-B rules are ONE sched1 r"
+  },
+  {
+   "session": 34,
+   "floor": 9,
+   "modality": "forensics",
+   "headline": "s34 forensics (8th run): both axes re-measured dead on a fresh cc1 dump with concrete PRINTED scheduler values (dead-read priority 2/ref_count 5 vs fmt priority 1/ref_count 1); load-delay hazard ident"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "func_8007DC9C is a fully-characterized ENDGAME-LOCK: axis A = combine.c:1458 added_sets_2 offset-0 fold (single-use, cross-fn impossible per-function combine); axis B = ONE sched1 root cause (over-determined order per s24 + greg-downstream register per s33). Both orthogonal, dump-pinned dead, no legitimate pure-C lever across all six modalities (structural x9, permuter x9 ~258k iters, forensics x7, rederive x6, synthesis x3).",
-   "mechanism": "Axis A: BF68[0] address pseudo single-use -> combine.c:1458 added_sets_2 FALSE deletes the materialization (s25); dead 2nd use = coercion (s7); cross-fn mechanically impossible (per-function combine, toplev.c:3004). Axis B: sched1 dead-read-before-fmt order over-determined (volatile-MEM anti-dep priority + MIPS-I load-delay hazard + LUID, s24); the $a0-vs-$v0 register is a greg allocation forced by schedule-induced pressure ($v0/$v1 busy at the dead read's slot, s33), not an independent lever.",
-   "next_probe": "OWNER files an OWNER-ESCALATION entry for func_8007DC9C in docs/grind/decisions.md citing both dump-pinned mechanisms, six-modality exhaustion, the s16 rule-completeness proof now sharpened (axis-B's 2 rules = 1 sched1 root cause), and the endgame-lock-disposition-policy outcome (gate #1 REFUSE canonical-asm, gate #2 REFUSE coercion). Once filed, the next session emits owner-gated and the queue advances. No further pure-C forensic detail remains un-pinned on either axis."
+   "hypothesis": "func_8007DC9C is a fully-characterized ENDGAME-LOCK: axis A = combine.c:1458 added_sets_2 offset-0 single-use fold; axis B = one over-determined sched1 lock (load-delay hazard binding + volatile-MEM anti-dep priority 2>1 + LUID backstop), register a greg downstream of the order (s33).",
+   "mechanism": "Both axes compiler-internal, orthogonal, dump-pinned dead on both sides across all six modalities. Axis B's binding constraint (load-delay hazard, s34) cannot be removed without dropping the volatile read (= score-19 collapse); axis A needs a 2nd &BF68 use single-fn (coercion) or cross-fn (mechanically impossible, per-function combine).",
+   "next_probe": "OWNER files an OWNER-ESCALATION entry for func_8007DC9C in docs/grind/decisions.md citing both dump-pinned mechanisms (axis A combine.c:1458; axis B load-delay-hazard-binding over-determined sched1 lock, register greg-downstream), six-modality exhaustion, the s16/s33 rule-completeness proof (4 rules = 2 combine + 1 sched1 root cause as 2), and endgame-lock-disposition-policy (gate #1 REFUSE canonical-asm scan_hand_coded LOW, gate #2 REFUSE coercion). Once filed, the next session emits owner-gated and the queue advances. No un-pinned pure-C forensic detail remains on either axis."
   }
  ],
  "judge_constraints": [],

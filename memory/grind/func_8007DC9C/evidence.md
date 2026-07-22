@@ -742,3 +742,29 @@ args is NOT a sanctioned use-site shape) and stripped by `volatile_cheats`.
 - [s33] Axis B is now fully pass-pinned across sched1->greg (order over-determined per s24; register a greg downstream of that order per s33) with no legitimate pure-C degree of freedom. Axis A unchanged (combine.c:1458 added_sets_2 offset-0 fold, dump-verified both sides s25).
 
 - [s33] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (grep 8007DC9C = no matches), so owner-gated is not claimable this session despite full six-modality exhaustion.
+
+- [s34] FORENSICS (8th run; s6/s7/s15/s16/s24/s25/s33 prior). Baseline re-confirmed: sandbox --disable all score 9, target 91 / build 90, rules_dropped 4, cheat_asm_stripped 150 (identical fingerprint s1-s33). src/display.c clean at HEAD (untouched; only tmp/ written). Fresh cc1 -da -dr dumps tmp/grind/func_8007DC9C/s34/display.i.* (13 passes) + display.s + dump.sh + FORENSICS.md (cc1.err = benign typedef-redefinition messages, s25-noted).
+
+- [s34] NOVEL forensic measurement (first PRINTED scheduler values banked; s6/s24 gave these by analysis/source-reasoning, never captured from the scheduler's own trace): display.i.sched per-insn listing (:15404-15413) prints INSN_PRIORITY/ref_count = insn41 (dead *g_gpu_stat_reg read, reg/v75 REG_UNUSED) priority 2 / ref_count 5; insn63 (fmt la g_str_gpu_timeout -> a0) priority 1 / ref_count 1; insn39 (stat ptr) pri1/rc3; insn57 (madr ptr) pri1/rc2; insn59 (*madr) pri2/rc2. The dead read's REG_UNUSED value fans out over the volatile-ordering chain (ref_count 5 via REG_DEP_ANTI 41 on insns 48/61/67) = the quantitative basis for its priority 2 vs fmt's 1.
+
+- [s34] AXIS B decision dump-captured verbatim (display.i.sched:15499-15506): `;; ready list at T-42: 63 (1) 41 (2)` then `;; blocking insn 41 for 1 cycles, now 63` then `;; ready list at T-44: 41 (2), now 41`. Backward scheduler (higher T = earlier program position): fmt insn63 committed T-42, dead read insn41 committed T-44 -> dead read EARLIER = emitted before fmt. Post-sched emission chain (prev/next) 39->57->41->59->63->61->48->67 confirms dead *g_gpu_stat_reg read precedes fmt la. Identical to s6/s24/s33 order.
+
+- [s34] BINDING-CONSTRAINT refinement (novel, consistent with s24 over-determination, does NOT overturn it): at T-42 the priority gap (41=2>63=1) makes the scheduler ATTEMPT the dead read first, but it is the 1-cycle LOAD-DELAY HAZARD ('blocking insn 41 for 1 cycles') that actually assigns fmt to T-42 and defers the dead read to T-44. The hazard is the binding constraint at this decision and persists independent of the priority value -> corroborates s24's conclusion that no priority-equalising pure-C construct flips the order. Removing the hazard requires removing the load = volatile+semantically-required read dropped = banked score-19 collapse. No new degree of freedom.
+
+- [s34] AXIS A re-confirmed on fresh dump: display.i.combine:10051 (set (reg 5 a1) (mem/s (symbol_ref D_8009BF68))) = folded symbol-direct load (address pseudo deleted, combine.c:1458 added_sets_2 FALSE single-use); final asm display.s:54 `lw $5,D_8009BF68` (2-insn) vs target 3-insn; BF6C/BF70 fold (asm:55-56). Sibling func_8007D3F8 store (set (mem (symbol_ref D_8009BF68))) at combine:8422 (insn 133) in its OWN combine section, disjoint from this read -> cross-fn retention mechanically impossible (per-function combine, s7/s25).
+
+- [s34] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (grep 8007DC9C = 0 matches this session), so owner-gated is NOT claimable despite full six-modality exhaustion + both axes re-measured dead on a fresh dump with concrete printed values. Escalation-ready since s7 (28 sessions); the only unblock is the OWNER filing the entry. No further un-pinned forensic detail remains -> result progress.
+
+- [s34] s34 baseline: sandbox --disable all score 9, target 91 / build 90, rules_dropped 4, cheat_asm_stripped 150 — identical fingerprint to s1-s33; src/display.c clean at HEAD (only tmp/ + evidence.md written).
+
+- [s34] NOVEL printed scheduler values (first banked from the -da -dr trace): dead *g_gpu_stat_reg read (insn41, reg/v75, REG_UNUSED) INSN_PRIORITY 2 / ref_count 5; fmt la g_str_gpu_timeout->a0 (insn63) INSN_PRIORITY 1 / ref_count 1 (display.i.sched:15404-15413). The dead read's ref_count 5 fans out over REG_DEP_ANTI 41 on insns 48(D_8009BF7C mem/v)/61/67 = quantitative basis for the +1 priority.
+
+- [s34] Scheduler T-42 decision captured verbatim (display.i.sched:15499-15506): 'ready list at T-42: 63 (1) 41 (2)' -> 'blocking insn 41 for 1 cycles, now 63' -> fmt committed T-42, dead read committed T-44; backward scheduler (higher T = earlier) -> dead read before fmt. Emission chain 39->57->41->59->63->61->48->67.
+
+- [s34] Binding constraint = the 1-cycle load-delay hazard on the dead read (not the priority value, which merely orders the ready list); persists independent of priority, corroborating s24 over-determination. Load is volatile+semantically required -> cannot be removed in legitimate pure C.
+
+- [s34] Axis A re-confirmed on fresh dump: combine:10051 folded (mem/s (symbol_ref D_8009BF68)); asm:54 lw $5,D_8009BF68 (2-insn) vs target 3-insn; sibling store at combine:8422 in its own per-function combine section (cross-fn retention impossible, s7/s25).
+
+- [s34] No OWNER-ESCALATION entry for func_8007DC9C in docs/grind/decisions.md (grep count 0 this session, matching s24-s33). owner-gated NOT claimable. Escalation-ready since s7 (28 sessions).
+
+- [s34] Six-modality exhaustion intact: structural (s2/s3/s11/s12/s20/s21/s29/s30), permuter x9 ~258k iters (s4/s5/s13/s14/s22/s23/s31/s32), forensics x8 (s6/s7/s15/s16/s24/s25/s33/s34), rederive x6 (s8/s9/s17/s18/s26/s27), synthesis x3 (s10/s19/s28). 4 regfix rules = 2 combine (axis A) + 1 sched1 root cause surfacing as 2 rules (axis B, s33).
