@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80069E18",
-      "file": "text1b",
-      "distance": 8,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "cpu_check_tubazeri_2",
       "file": "code6cac_b",
       "distance": 9,
@@ -2778,14 +2770,14 @@
     }
   ],
   "counts": {
-    "total": 340,
-    "active": 304,
+    "total": 339,
+    "active": 303,
     "by_status": {
-      "active": 304,
+      "active": 303,
       "parked": 36
     },
     "by_verdict": {
-      "C": 150,
+      "C": 149,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }

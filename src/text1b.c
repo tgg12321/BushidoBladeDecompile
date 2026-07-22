@@ -15560,7 +15560,8 @@ void func_80069E18(s32 arg0) {
     s32 tile;
     s32 ptr;
     S69E18 s;
-    s32 motion_v0;
+    s32 p0;
+    s32 p1;
 
     tile = *(s32 *)(arg0 + 0x18);
     initTile(tile);
@@ -15587,28 +15588,23 @@ void func_80069E18(s32 arg0) {
     ot_Link(D_800A374C + 0x44, *(s32 *)(arg0 + 0x1C));
     *(s32 *)(arg0 + 0x1C) = *(s32 *)(arg0 + 0x1C) + 0xC;
 
-    {
-        register s32 p0v asm("$2") = (s32)s.p0;
-        register s32 p1v asm("$3") = p0v + 0xC;
-        s.p1 = (s32 *)p1v;
-        (void)p0v;
-    }
+    p0 = (s32)s.p0;
+    p1 = p0 + 0xC;
+    s.p1 = (s32 *)p1;
     s.in_tex = *(s32 *)(arg0 + 0x14);
     *(s32 *)(arg0 + 0x14) = func_8007352C((s32)&s);
 
-    s.p0 = (s32 *)*(s32 *)(ptr + 4);
-    {
-        register s32 p1v asm("$3") = (s32)s.p0 + 0xC;
-        s.p1 = (s32 *)p1v;
-    }
+    p0 = *(s32 *)(ptr + 4);
+    p1 = p0 + 0xC;
+    s.p0 = (s32 *)p0;
+    s.p1 = (s32 *)p1;
     s.in_tex = *(s32 *)(arg0 + 0x14);
     *(s32 *)(arg0 + 0x14) = func_8007352C((s32)&s);
 
-    s.p0 = (s32 *)*(s32 *)(ptr + 8);
-    {
-        register s32 p1v asm("$3") = (s32)s.p0 + 0xC;
-        s.p1 = (s32 *)p1v;
-    }
+    p0 = *(s32 *)(ptr + 8);
+    p1 = p0 + 0xC;
+    s.p0 = (s32 *)p0;
+    s.p1 = (s32 *)p1;
     s.in_tex = *(s32 *)(arg0 + 0x14);
     *(s32 *)(arg0 + 0x14) = func_8007352C((s32)&s);
 }
