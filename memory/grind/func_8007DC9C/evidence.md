@@ -282,3 +282,27 @@ args is NOT a sanctioned use-site shape) and stripped by `volatile_cheats`.
 - [s9] Rederive modality now FULLY exhausted incl. the decomp.me-corpus leg. All five modalities (structural s2/s3, permuter x3 s4/s5, forensics x2 s6/s7, rederive s8+s9) measure both axes dead.
 
 - [s9] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (grep NONE); commit d6bc0904's owner ruling covered 7 OTHER endgame-lock functions, not this one. So owner-gated is not claimable this session despite full modality exhaustion.
+
+- [s10] SYNTHESIS modality. No sandbox re-run needed (mechanism-pinned dead result; floor 9 unchanged, src/display.c clean at HEAD, no dirt). Merged all nine prior sessions into one attack map: tmp/grind/func_8007DC9C/s10/MERGED-ATTACK.md. Confirmed the 9-op gap is TWO orthogonal compiler-internal axes with NO joint lever possible (axis A per-expression combine fold, s8; axis B whole-block volatile-order sched priority, s2/s6 — each proven insensitive to the other's lever surface).
+
+- [s10] Axis A synthesized verdict: KILLED. 3-insn BF68 materialization = combine.c:1458 added_sets_2 multi-use retention; requires a 2nd &D_8009BF68 use the function does not have (s3: exactly one target ref). Single-function reproduction = dead 2nd use = coercion (s7 empirical); cross-function mechanically impossible (s7 per-function-combine proof, toplev.c:3004); cross-corpus prior-art (s9) shows every offset-0 materialization traces to a genuine C multi-use, never a single pure read.
+
+- [s10] Axis B synthesized verdict: no pure-C lever. sched1 INSN_PRIORITY(dead-read insn 38)=2 > PRIORITY(fmt insn 60)=1, the +1 being the volatile-MEM anti-dep REG_DEP_ANTI 38->45 (s6). Unflippable without changing observable volatile order (= cheat + semantically wrong, target keeps two volatile reads). Control-flow-insensitive (s8), permuter-immovable (s4/s5), no corpus donor (s9).
+
+- [s10] Disposition: func_8007DC9C matches [[endgame-lock-disposition-policy]] (owner 2026-07-20) verbatim — byte-matches only via 4 regfix rules, 9 insns short in honest pure C, all sanctioned levers exhausted, residual is an RA/scheduling + combine-retention tiebreak. AND-gate #1 (canonical asm) = REFUSE (scan_hand_coded LOW, s1 = ordinary GCC output). AND-gate #2 (coercion family) = REFUSE (no SOTN/VS/ESA precedent for a dead-2nd-use combine coercion or a volatile-order sched coercion). Both gates fail => policy outcome = keep the cheat, classify INCOMPLETE-owner-accepted, park. This is an OWNER ruling to record, not an agent self-authorization.
+
+- [s10] FRONTIER RESET: s1 hypotheses H-A1/H-A2/H-B1 all marked KILLED in hypotheses.md; the live frontier is now a SINGLE escalation-ready item. Verified again this session: NO OWNER-ESCALATION entry for func_8007DC9C in docs/grind/decisions.md (Grep 8007DC9C = No matches). owner-gated therefore still not claimable -> result progress, escalation dossier ready. The only remaining action is the OWNER filing the escalation entry; no further pure-C modality exists to run.
+
+- [s10] s10 synthesis merged s1-s9 into tmp/grind/func_8007DC9C/s10/MERGED-ATTACK.md; floor 9 unchanged, src/display.c clean at HEAD (no dirt), no sandbox re-run needed (results mechanism-pinned).
+
+- [s10] The 9-op gap = axis A (1 op, combine.c:1458 added_sets_2 multi-use retention of &D_8009BF68) + axis B (8 ops, sched.c INSN_PRIORITY via volatile-MEM anti-dep REG_DEP_ANTI 38->45). Orthogonal: axis A per-expression (s8), axis B whole-block volatile-order (s2/s6); no joint construct possible.
+
+- [s10] Axis A KILLED across structural(s2/s3)/permuter x3(s4/s5)/forensics x2(s6/s7)/rederive x2(s8/s9): every single-function reproduction is a dead-2nd-use coercion; cross-function is mechanically impossible (per-function combine, toplev.c:3004); corpus prior-art shows single pure offset-0 reads always fold.
+
+- [s10] Axis B: mechanism CONFIRMED (s6), no pure-C lever; volatile-order-locked, control-flow-insensitive (s8), permuter-immovable ~67k iters (s4/s5), no corpus donor (s9).
+
+- [s10] func_8007DC9C matches endgame-lock-disposition-policy (owner 2026-07-20) verbatim: byte-matches only via 4 regfix rules, 9 insns short in honest pure C. Gate #1 (canonical asm) REFUSE (scan_hand_coded LOW, s1). Gate #2 (coercion family) REFUSE (no SOTN/VS/ESA precedent). Both fail -> keep cheat, INCOMPLETE-owner-accepted, park (owner ruling, not agent self-authorization).
+
+- [s10] Frontier reset: s1 hypotheses H-A1/H-A2/H-B1 all marked KILLED in hypotheses.md; live frontier is a single escalation-ready item.
+
+- [s10] Re-verified this session: NO OWNER-ESCALATION entry for func_8007DC9C in docs/grind/decisions.md (Grep 8007DC9C = No matches; d6bc0904 covered 7 OTHER endgame-lock funcs). owner-gated NOT claimable -> result progress.

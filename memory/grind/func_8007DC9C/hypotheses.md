@@ -4,46 +4,42 @@ Floor = 9 (verdict C, target 91 / build 90 insns). Gap decomposes into two
 independent axes: Axis A = 1 combine-fold insertion (BF68[0]); Axis B = 8-op
 sched1 reorder cluster in the first debug_printf setup.
 
-## Live frontier (mechanism-grounded, built s1 recon)
+## Live frontier — RESET by s10 synthesis (2026-07-22)
 
-### H-A1 — offset-0 combine fold on D_8009BF68[0] (Axis A, 1 op)
-- statement: target keeps a 3-insn materialized address for D_8009BF68[0]; our
-  build combine-folds it to 2 insns. A declaration/access shape exists that
-  suppresses the offset-0 fold in pure C.
-- mechanism: combine.c folds `(mem (plus symbol_ref 0))` → `(mem symbol_ref)`.
-  [[defeat-combine-symbol-fold]] excludes offset 0.
-- next_probe: read tools/gcc-2.7.2/combine.c symbol+0 simplification path; test
-  a declaration consistent with BF68's real function-pointer type (see H-A2).
-- status: OPEN. Fold-defeat family already exhausted in the imported rejected
-  bank (sized array / fn-ptr cast / intervening-call precompute all → 9). Do NOT
-  re-run those; the un-tried lever is a combine.c-informed decl shape.
+s10 merged all nine prior sessions. The original s1 frontier (H-A1, H-A2, H-B1)
+is now fully resolved — every one is KILLED and must NOT be re-proposed. The
+frontier collapses to a SINGLE escalation-ready item. Full dossier:
+tmp/grind/func_8007DC9C/s10/MERGED-ATTACK.md.
 
-### H-A2 — D_8009BF68 real type is a function pointer, not an int array (Axis A)
-- statement: the two in-tree block-scope externs disagree (line 872 fn-ptr vs
-  line 965 array); func_8007D3F8 assigns `D_8009BF68 = arg0` (scalar fn-ptr) and
-  fills a fn-ptr table. Declaring/accessing BF68 consistent with its true scalar
-  fn-ptr type may emit the materialized (non-folded) load target wants.
-- mechanism: a scalar (non-array) symbol read vs an array[0] read can differ in
-  the address RTL combine sees.
-- next_probe: after func_8007D3F8 matches (queue ~43, only other user), adopt its
-  committed decl shape here; or probe the scalar-read shape directly now.
-- status: OPEN, partly a sibling dependency (non-blocking; can probe scalar-read now).
+### RESOLVED (do NOT re-open) — s1 frontier, all KILLED
+- **H-A1** (offset-0 combine fold decl/access lever) — KILLED s2/s3/s6/s9.
+  Every decl/access shape folds; the 3-insn form is combine multi-use
+  retention (combine.c:1458), needs a 2nd address use the function does not
+  have. Cross-corpus prior-art (s9): a single pure offset-0 read ALWAYS folds.
+- **H-A2** (BF68 real type = fn-ptr, adopt sibling decl) — KILLED s2 (scalar &
+  fn-ptr reads both fold) + s7 (combine is per-function → sibling's use is
+  mechanically invisible; the "wait for sibling" probe is impossible).
+- **H-B1** (sched1 fmt-vs-deadread tie-break C lever) — KILLED s2/s4/s5, root
+  CONFIRMED s6: priority is set by a volatile-MEM anti-dep (38→45), unflippable
+  without changing observable volatile order (= cheat + semantically wrong).
 
-### H-B1 — sched1 fmt-vs-BF78 load-order tie-breaker (Axis B, 8 ops)
-- statement: target schedules the fmt address load BEFORE the BF78 load chain, so
-  the early *stat_reg read allocates to $v0; our build loads BF78 first, pushing
-  the early read to $a0 and fmt later. A C statement-order / liveness lever flips
-  the tie-break.
-- mechanism: sched.c insn priority / LUID tie-break in the first debug_printf
-  argument setup. Closed by regfix `reorder 21,20,19,18` + `subst lw $4→$2`.
-- next_probe: run instrumented cc1 (tmp/gccdbg/cc1, WSL) with BB2_SCHED_DEBUG=1
-  BB2_PRIO_DEBUG=1 on the sandbox .i; read the priority values for the fmt-LUI vs
-  BF78-LUI nodes; derive the C lever (arg-order / local-hoist / liveness). The
-  imported block-scope/fmt-local/(void)-read levers did NOT move the schedule —
-  the dump is the missing map.
-- status: OPEN, highest-value un-run probe (8 of 9 ops).
+### FRONTIER-1 (the only remaining item) — escalation-ready
+- statement: func_8007DC9C is a fully-characterized ENDGAME-LOCK. Both residual
+  axes are compiler-internal (axis A = combine multi-use retention; axis B =
+  sched1 volatile-MEM anti-dep priority), orthogonal, and have NO legitimate
+  pure-C lever single- OR cross-function across all five modalities.
+- mechanism: see MERGED-ATTACK.md §Axis A / §Axis B — both pinned to exact
+  compiler passes (combine.c:1458 added_sets_2 / sched.c INSN_PRIORITY via
+  REG_DEP_ANTI 38→45). Matches [[endgame-lock-disposition-policy]] exactly:
+  scan_hand_coded LOW (gate #1 refuse asm), no coercion precedent (gate #2
+  refuse coercion) → keep 4 regfix rules, classify INCOMPLETE-owner-accepted.
+- next_probe: OWNER files an OWNER-ESCALATION entry for func_8007DC9C in
+  docs/grind/decisions.md (none exists as of s10). Once filed, a subsequent
+  session emits `owner-gated` and the queue advances. No further pure-C
+  modality remains to run — re-measuring any axis only re-confirms a
+  mechanism-pinned dead result.
 
-## Rejected forms — see evidence.md (imported WIP bank). Do NOT re-propose.
+## Rejected forms — see evidence.md (imported WIP bank) + rejected/. Do NOT re-propose.
 
 ## [s1] Honest floor is 9 and the 9-op gap decomposes into 1 combine-fold insertion (D_8009BF68[0]) plus an 8-op sched1 reorder cluster in the first debug_printf setup.
 - mechanism: canonical gate + cheat-invisible sandbox score, cross-read against asm/funcs/func_8007DC9C.s: target materializes BF68 address (3 insns) where our build folds (2), and target orders fmt-load before the BF78 chain where ours loads BF78 first.
@@ -163,4 +159,22 @@ sched1 reorder cluster in the first debug_printf setup.
 - mechanism: Prior-art mining: a known-good scratch might exhibit a declaration/access shape that materializes a single-use offset-0 read without a 2nd use (axis A combine fold), or a volatile-read + la-fmt ordering donor (axis B sched priority). Cached corpus at tmp/decomp_me_corpus/ carries both source_code and target_assembly per scratch.
 - probe: Offline (curl_cffi absent). Regex-validated STRICT search for 'addiu R,R,%lo(SYM)' immediately followed by an offset-0 load 0x0(R) with no intervening index math = 541 hits / 25 in MATCHING scratches; classified all 25 by their C source. Keyword donor search for vsync/gpu/timeout/debug reporter analogues.
 - result: All 25 matching axis-A materializations are genuine C-source MULTI-USE: RMW at [0] (D_800AF9D8[0]|=0x8000 / &=0x7FFF / D_80097C40[0]++ = load+store, 2 addr uses), struct multi-field (BtlDrawFlag.fade/.chr, g_Pad.m_Down), struct-member-as-index (D_800B2384.bankIndex x7), matrix copy (cameraMat=D_800AFA64), or repeated reads (D_800AF93A[0] x2). NONE is a single pure word-read at offset-0. func_8007DC9C reads D_8009BF68[0] as a single pure rvalue (s3: one target reference) so it folds to 2-insn; the 3-insn form only ever comes from a genuine 2nd use = coercion single-function (s7). Axis B: no corpus lever possible (frozen sched mechanism s6, control-flow-insensitive s8); no GPU-timeout reporter donor exists (consistent with s8 Kengo).
+- verdict: KILLED
+
+## [s10] The 9-op gap is two INDEPENDENT compiler-internal axes with no possible joint pure-C lever (a single construct cannot close both).
+- mechanism: Axis A is a per-EXPRESSION combine offset-0 fold (control-flow-insensitive, s8); axis B is a whole-block sched1 priority tie set by volatile ordering (expression/decl-shape-insensitive, s2/s6). Each proven insensitive to the other's lever surface, so orthogonal.
+- probe: s10 synthesis cross-read of s1-s9 evidence + hypotheses; no re-run needed (mechanism-pinned).
+- result: Orthogonality confirmed; the two axes must be closed independently and each is independently dead. Merged into tmp/grind/func_8007DC9C/s10/MERGED-ATTACK.md.
+- verdict: CONFIRMED
+
+## [s10] Axis A (3-insn D_8009BF68[0] materialization) has no legitimate pure-C lever single- OR cross-function.
+- mechanism: combine.c:1458 added_sets_2 multi-use retention keeps the 3-insn form only when the address pseudo has >=2 uses; combine_instructions runs per-function (toplev.c:3004) so a sibling use is invisible. Function has exactly one &D_8009BF68 ref (s3); any single-function 2nd use is dead-in-output = coercion (s7). Cross-corpus prior-art (s9): every offset-0 materialization traces to a genuine C multi-use, never a single pure read.
+- probe: Consolidated s2 (decl/access shapes fold) + s3 (full-asm one-ref, struct-triple KILLED) + s6 (combine dump) + s7 (per-function proof + empirical dead-store) + s9 (3754-scratch corpus classification).
+- result: All decl/access shapes fold to 2-insn; only reproduction is a forbidden dead 2nd use; sibling avenue mechanically impossible.
+- verdict: KILLED
+
+## [s10] Axis B (8-op fmt-vs-deadread sched cluster) has no pure-C lever.
+- mechanism: sched.c INSN_PRIORITY: dead-read insn 38 (mem/v) priority=2 vs fmt insn 60 priority=1; the +1 is the volatile-MEM anti-dep REG_DEP_ANTI 38->45 (added only because both are volatile). Flipping it requires deleting the anti-dep = non-volatile/dropped read = cheat + semantically wrong (target keeps two volatile reads).
+- probe: Consolidated s2 (8 order/liveness variants all 9), s4/s5 (permuter x3 ~67k iters never reorder), s6 (sched dump root), s8 (control-flow-insensitive), s9 (no corpus donor).
+- result: Priority is volatile-order-derived and control-flow/expression-insensitive; unflippable in legitimate pure C.
 - verdict: KILLED

@@ -1,8 +1,8 @@
 {
  "func": "func_8007DC9C",
  "file": "display",
- "session_count": 9,
- "current_modality": "rederive",
+ "session_count": 10,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 0,
@@ -63,13 +63,19 @@
    "floor": 9,
    "modality": "rederive",
    "headline": "Rederive/decomp.me-corpus leg (3754 GCC-2.7.2 PSX scratches) KILLED: no matching scratch materializes a single pure offset-0 word-read; every 3-insn materialization is genuine multi-use. Axis A corrob"
+  },
+  {
+   "session": 10,
+   "floor": 9,
+   "modality": "synthesis",
+   "headline": "s10 synthesis: merged all 9 sessions into one escalation dossier; both residual axes (combine multi-use retention + sched volatile anti-dep) are orthogonal, mechanism-pinned, and dead in all five moda"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "func_8007DC9C is a fully-characterized OWNER-ESCALATION candidate: axis A (combine offset-0 single-use fold) and axis B (sched1 volatile-MEM anti-dep priority) have no legitimate pure-C lever across ALL FIVE modalities, now including the decomp.me-corpus rederive leg.",
-   "mechanism": "Axis A = combine.c:1458 added_sets_2 multi-use retention, per-function (toplev.c:3004); the required 2nd &D_8009BF68 use must be intra-function and dead-in-output = coercion (sibling avenue refuted s7). 3754-scratch corpus confirms no pure-C shape materializes a single pure offset-0 read. Axis B = sched.c INSN_PRIORITY set by a volatile-MEM anti-dep, unremovable without changing observable volatile order; control-flow- and corpus-insensitive.",
-   "next_probe": "Owner should file an OWNER-ESCALATION entry for func_8007DC9C in docs/grind/decisions.md citing both mechanisms plus the now-complete five-modality exhaustion (rederive incl. decomp.me corpus). Once that entry exists, a subsequent session emits owner-gated and the queue advances. No further single- or cross-function pure-C modality remains."
+   "hypothesis": "func_8007DC9C is a fully-characterized endgame-lock with NO legitimate pure-C lever in any of the five modalities; the only remaining action is an owner escalation ruling.",
+   "mechanism": "axis A = combine.c:1458 added_sets_2 multi-use retention (needs a 2nd &D_8009BF68 use the function lacks; any is a coercion); axis B = sched.c INSN_PRIORITY set by volatile-MEM anti-dep 38->45 (unflippable without changing observable volatile order). Both dead single- AND cross-function. Matches endgame-lock-disposition-policy (both AND-gates refuse).",
+   "next_probe": "OWNER files an OWNER-ESCALATION entry for func_8007DC9C in docs/grind/decisions.md citing both pinned mechanisms + five-modality exhaustion + endgame-lock policy outcome (keep 4 regfix rules, INCOMPLETE-owner-accepted). Once filed, the next session emits owner-gated and the queue advances. No further pure-C modality remains to run."
   }
  ],
  "judge_constraints": [],
