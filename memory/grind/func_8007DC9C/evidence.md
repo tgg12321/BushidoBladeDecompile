@@ -358,3 +358,28 @@ args is NOT a sanctioned use-site shape) and stripped by `volatile_cheats`.
 - [s13] PERMUTER modality now QUADRUPLE-confirmed dead across 4 structurally-distinct chassis (~98k total iters s4 27k + s5 40k + s13 31k): the only permuter-reachable sub-floor form is the banked volatile coercion of D_8009BF68 (axis A); axis B is volatile-order-locked and never moves.
 
 - [s13] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (Grep 8007DC9C = No matches), so owner-gated is not claimable this session.
+
+- [s14] PERMUTER modality, 5th chassis. Baseline re-confirmed: sandbox --disable all score 9, target_insns 91, build_insns 90, rules_dropped 4, cheat_asm_stripped 150 (identical fingerprint to s1-s13). src/display.c clean at HEAD (candidate.c byte-equivalent, already reflected); no dirt.
+- [s14] Built + validated chassis-5 (tmp/perm_dc9c_s14): low-register-pressure block-scoped topology — first-printf diverging pieces (fmt/dead-read/BF78-subtraction) as tightly block-scoped temps, 2nd-printf args (D_8009BF68[0]/BF6C/BF70) left INLINE. OPPOSITE pressure regime to s5 chassis-3 (whole-body temps) and s13 chassis-4 (tail+2nd-printf hoisted). base_score 695, compiles to 90 insns / target 91, reproduces both ledger axes.
+- [s14] tools/permuter_annotate.py directed-permuter is INAPPLICABLE to func_8007DC9C: its hint catalog (register-asm-pins, shared-end-label, loop-rotation-two-shift, loop-counter-fills-load-delay) maps to none of the diverging region (axis A = combine offset-0 fold; axis B = volatile-MEM sched-priority tie). No directed annotation exists for either axis; random chassis is the only permuter avenue.
+- [s14] Chassis-5 campaign (s14-chassis5-lowpressure-blockscope, -j8): 20,344 iterations across in-turn wait windows; harvested --stop in-turn; status alive=False, registered_active=False, 0 live campaigns, 0 orphan permuter processes.
+- [s14] Finds (floor=630): legitimate reordering ceiling 635-695 ALL ABOVE the 630 floor (chassis-5 never even recovers the true floor legitimately); output-630-1 ties floor via a null 0x800-constant-hoist reshuffle (non-improving). Only two strictly-sub-floor finds, BOTH cheats: output-500-1 (500) = corrupted fmt pointer (g_gpu_dma_madr substituted for &g_str_gpu_timeout — masked-Levenshtein false-match) + `char` width-coercion of D_8009BF78-D_8009BF7C + dead `new_var3=new_var2` alias self-assign (banked permuter-alias-longlong-junk family; rejected/permuter-s14-fmt-corrupt-char-narrow-junk.c); output-580-1 (580) = `extern volatile int D_8009BF68[]` = banked volatile-BF68 coercion, axis A only, stripped by engine.volatile_cheats (rejected/axisA-permuter-volatile-bf68.c). output-635-1 = `unsigned short new_var=-1; return new_var` u16 constant-holder cheat (banked family, non-improving).
+- [s14] Axis A (BF68[0] 3-insn materialization) never legitimately materialized in any legitimate chassis-5 find (stays inline combine-folded 2-insn); axis B 8-op fmt-vs-deadread sched1 cluster never legitimately reordered — consistent with the s6 forensic root (dead-read insn 38 priority=2 > fmt insn 60 priority=1 via volatile-MEM anti-dep REG_DEP_ANTI 38->45, unflippable without changing observable volatile order).
+- [s14] PERMUTER modality now QUINTUPLE-confirmed dead across 5 structurally-distinct chassis (~118k total iters: s4 27k + s5 40k + s13 31k + s14 20k). Only permuter-reachable sub-floor forms are banked coercions of D_8009BF68 (axis A) or fmt-corruption/width-coercion junk (semantically wrong); axis B is volatile-order-locked and never moves.
+- [s14] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (Grep 8007DC9C = No matches), so owner-gated is NOT claimable this session -> result progress, escalation-ready frontier unchanged.
+
+- [s14] s14 baseline re-confirmed: sandbox --disable all score 9, target 91 / build 90, rules_dropped 4, cheat_asm_stripped 150 (identical fingerprint to s1-s13); src/display.c clean at HEAD, no dirt.
+
+- [s14] Chassis-5 (tmp/perm_dc9c_s14) = low-register-pressure block-scoped topology (first-printf diverging pieces as block temps, 2nd-printf args inline), base_score 695, 90 insns/target 91, reproduces both ledger axes — a distinct pressure regime from s4/s5/s13.
+
+- [s14] Campaign 20,344 iters, harvested --stop in-turn; alive=False, registered_active=False, 0 live campaigns, 0 orphan permuter processes.
+
+- [s14] Both strictly-sub-floor finds are cheats: output-500-1 (fmt-pointer corruption + char width-coercion + dead alias self-assign, banked) and output-580-1 (volatile-BF68 coercion, banked, stripped by engine.volatile_cheats). Above-floor 635-695 = legitimate reorder ceiling (non-improving); 630 ties floor (null constant-hoist).
+
+- [s14] Axis A (BF68[0]) never legitimately materialized (stays 2-insn combine-folded); axis B 8-op sched cluster never legitimately reordered — consistent with s6 forensic root (dead-read insn 38 prio 2 > fmt insn 60 prio 1 via volatile-MEM anti-dep REG_DEP_ANTI 38->45).
+
+- [s14] tools/permuter_annotate.py directed-permuter is INAPPLICABLE: its hint catalog (register-asm-pins/shared-end-label/loop-rotation-two-shift/loop-counter-fills-load-delay) maps to none of func_8007DC9C's diverging region (axis A = combine offset-0 fold; axis B = volatile-MEM sched-priority tie).
+
+- [s14] PERMUTER modality now QUINTUPLE-confirmed dead across 5 structurally-distinct chassis (~118k total iters: s4 27k + s5 40k + s13 31k + s14 20k).
+
+- [s14] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (Grep 8007DC9C = No matches), so owner-gated is NOT claimable this session.

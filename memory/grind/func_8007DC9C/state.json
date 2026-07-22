@@ -1,7 +1,7 @@
 {
  "func": "func_8007DC9C",
  "file": "display",
- "session_count": 13,
+ "session_count": 14,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -87,13 +87,19 @@
    "floor": 9,
    "modality": "permuter",
    "headline": "s13 permuter chassis-4 (tail-temp topology, ~30.8k iters) KILLED: no legitimate sub-floor find; only sub-floor form is the banked volatile-BF68 coercion; axis B never reordered. Permuter now quadruple"
+  },
+  {
+   "session": 14,
+   "floor": 9,
+   "modality": "permuter",
+   "headline": "s14 permuter chassis-5 (low-pressure block-scope, 20.3k iters) KILLED: permuter now QUINTUPLE-confirmed dead across 5 structurally-distinct chassis; both sub-floor finds are banked cheats, axis B neve"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "func_8007DC9C is a fully-characterized ENDGAME-LOCK: both residual axes (A = combine.c:1458 added_sets_2 multi-use retention needing a 2nd &D_8009BF68 use the function lacks; B = sched.c INSN_PRIORITY via volatile-MEM anti-dep REG_DEP_ANTI 38->45) are orthogonal, mechanism-pinned, and have NO legitimate pure-C lever single- or cross-function across all five modalities (structural s2/s3/s11/s12, permuter x4 s4/s5/s13, forensics s6/s7, rederive s8/s9, synthesis s10).",
+   "hypothesis": "func_8007DC9C is a fully-characterized ENDGAME-LOCK: both residual axes (A = combine.c:1458 added_sets_2 multi-use retention needing a 2nd &D_8009BF68 use the function lacks; B = sched.c INSN_PRIORITY via volatile-MEM anti-dep REG_DEP_ANTI 38->45) are orthogonal, mechanism-pinned, and have NO legitimate pure-C lever single- or cross-function across all five modalities.",
    "mechanism": "Matches endgame-lock-disposition-policy (owner 2026-07-20) verbatim: byte-matches only via 4 regfix rules, 9 insns short in honest pure C. Gate #1 (canonical asm) REFUSE (scan_hand_coded LOW). Gate #2 (coercion family) REFUSE (no SOTN/VS/ESA precedent for a dead-2nd-use combine coercion or a volatile-order sched coercion). Both fail -> keep the 4 regfix rules, classify INCOMPLETE-owner-accepted.",
-   "next_probe": "OWNER files an OWNER-ESCALATION entry for func_8007DC9C in docs/grind/decisions.md citing both pinned mechanisms + five-modality exhaustion + endgame-lock policy outcome. Once filed, the next session emits owner-gated and the queue advances. No further pure-C modality remains to run; permuter is now quadruple-confirmed dead."
+   "next_probe": "OWNER files an OWNER-ESCALATION entry for func_8007DC9C in docs/grind/decisions.md citing both pinned mechanisms + five-modality exhaustion (structural s2/s3/s11/s12, permuter x5 s4/s5/s13/s14, forensics s6/s7, rederive s8/s9, synthesis s10) + endgame-lock policy outcome. Once filed, the next session emits owner-gated and the queue advances. No further pure-C modality remains to run; permuter is now quintuple-confirmed dead."
   }
  ],
  "judge_constraints": [],
