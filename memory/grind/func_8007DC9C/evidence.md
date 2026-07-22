@@ -649,3 +649,23 @@ args is NOT a sanctioned use-site shape) and stripped by `volatile_cheats`.
 - [s28] endgame-lock-disposition-policy: gate #1 REFUSE canonical-asm (scan_hand_coded LOW), gate #2 REFUSE coercion (no precedent; both axes' only single-fn reproductions are coercions) -> keep 4 rules, INCOMPLETE-owner-accepted.
 
 - [s28] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (grep 8007DC9C = No matches; d6bc0904 covered 7 OTHER endgame-lock funcs). owner-gated not claimable this session.
+
+- [s29] STRUCTURAL modality. Baseline re-confirmed: sandbox --disable all score 9, target 91 / build 90, rules_dropped 4, cheat_asm_stripped 150 (identical fingerprint s1-s28). src/display.c clean at HEAD before + after (restored, no dirt).
+
+- [s29] NOVEL un-banked structural lever MEASURED DEAD: hoist the SECOND debug_printf's global reads D_8009BF6C + D_8009BF70 into named temps (arg_c/arg_d) computed at the TOP of the if-body BEFORE the first debug_printf, extending both live ranges across the axis-B scheduling region. Every prior banked structural form (fmt-ptr, diff-temp, deadread-first, and their s20/s21 combos) touched only the FIRST printf's diverging args; this is the first directed structural probe on the SECOND printf's read liveness. Result: score 35 / build_insns 95 (STRICTLY WORSE, +5 insns vs floor's build 90). Rejected: rejected/structural-hoist-2ndprintf-reads-temps.c.
+
+- [s29] MECHANISM of the +5 worsening: holding two values live across the first debug_printf call forces them into callee-saved $sN registers -> extra prologue save/restore + spill. Axis B did NOT flip (dead *g_gpu_stat_reg read still schedules before fmt) -> confirms empirically that the fmt-vs-deadread sched1 priority is set by the volatile-MEM anti-dep 38->45 (s6/s15), NOT by surrounding register pressure. This is a NEW corroboration of the s2/s6 axis-B KILL from the opposite direction: added cross-call liveness moves the build STRICTLY AWAY from target's natural low-pressure schedule, so the target uses the minimal-pressure allocation and no pressure-inflating structural form can reach it.
+
+- [s29] Structural modality now re-confirmed exhausted (8th time). All structural categories measured dead: block-local var splits (s2, s29), declaration order (s2 8-form sweep), type narrowing (s2 scalar/fn-ptr/pointer; s4/s5 coercions), statement re-association (s2; s8 goto/nested-if), struct/array grouping (s3 struct-triple -> 11), multi-lever combos (s20/s21), and now 2nd-printf read-hoist (s29 -> 35). Both axes remain mechanism-pinned dead. No un-banked structural form remains.
+
+- [s29] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (grep NONE this session), so owner-gated is not claimable despite full six-modality exhaustion. Result progress, escalation-ready frontier unchanged.
+
+- [s29] s29 baseline re-confirmed: sandbox --disable all score 9, target_insns 91, build_insns 90, rules_dropped 4, cheat_asm_stripped 150 (identical fingerprint s1-s28); src/display.c clean at HEAD before and after (restored, no dirt).
+
+- [s29] Novel un-banked structural lever (hoist 2nd-printf reads D_8009BF6C+D_8009BF70 into named temps computed before the first printf) measured score 35 / build 95 — strictly worse than floor 9. Rejected: memory/grind/func_8007DC9C/rejected/structural-hoist-2ndprintf-reads-temps.c.
+
+- [s29] NEW corroboration of axis-B KILL from the opposite direction: added cross-call liveness forces callee-saved allocation (+5 insns) but does NOT reorder fmt vs the dead *g_gpu_stat_reg read -> the sched1 priority is set by the volatile-MEM anti-dep 38->45 (s6/s15), not by register pressure. Target uses the natural minimal-pressure allocation; every pressure-inflating structural form moves strictly away from it.
+
+- [s29] Structural modality re-confirmed exhausted (8th time): block-local var splits (s2/s29), decl order (s2 sweep), type narrowing (s2/s4/s5), statement re-association (s2/s8), struct/array grouping (s3), multi-lever combos (s20/s21), 2nd-printf read-hoist (s29) all dead.
+
+- [s29] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (grep NONE this session), so owner-gated is not claimable despite full six-modality exhaustion.
