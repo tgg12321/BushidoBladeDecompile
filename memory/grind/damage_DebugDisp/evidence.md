@@ -138,3 +138,50 @@ constants' priority. To flip, the constants would need higher priority OR lower 
 - [s1] Region B: LICM inserts hoisted invariants at preheader END (higher LUID) => sched1 schedules the lower-LUID ap/a2p moves first; target had constants at lower LUID.
 
 - [s1] Both regions are pure-C reachable reg-alloc/scheduling ties (no compiler divergence; matching C exists per no-compiler-divergence).
+
+## s2 (structural, 2026-07-22) — Region A quantified; naive structural levers KILLED
+- Confirmed floor 8 with candidate.c applied. Modality: structural.
+- **Full-file greg disposition proves the diff is a PURE sum/j swap with ALL surroundings matching target.**
+  My build: base=t1(73), i=a2(74), chkptr=t0(75), offset=a3(76), sum=$a1(77),
+  bp=$v1(78), j=$a0(79). Target: identical EXCEPT sum=$a0, j=$a1. So 4 Region-A
+  diffs = sum($a1<->$a0) / j($a0<->$a1) swap only.
+- **Register hand-out order for this class/range = v1 -> a0 -> a1** (1st/2nd/3rd
+  qty allocated). qty_order among the three (baseline) = `78(bp) 79(j) 77(sum)`
+  => bp=v1, j=a0, sum=a1. Target requires order `78 77 79` (bp,sum,j) i.e.
+  priority **bp > sum > j**; baseline is bp > j > sum. Must lift sum above j.
+- **Priority numbers (BB2_QTY_DEBUG via tmp/gccdbg/cc1):** local-alloc priority
+  = floor_log2(refs)*refs*size/(death-birth)*10000. Inner loop: j range 4 refs 4
+  -> 20000; sum range 6 refs 4 -> 13333 (sum lives to the post-loop `beq`, j dies
+  at the in-loop `sltiu`). j strictly outranks sum => j takes the earlier reg.
+  Both refs=4 are FIXED by the target loop shape (init+accumulate(r/w)+compare);
+  the ONLY free variable is the birth/death LUID span, which is CONTEXT-DEPENDENT
+  (full-file), not isolable — a standalone single-fn TU reproduces neither the
+  pseudo numbering nor the allocation (standalone gives sum=$a2, real gives $a1).
+- **KILLED structural levers (all measured this session):**
+  * chk-hoist before inner loop (frontier probe 1): score 17 — loop-carried load
+    poisons the whole allocation. rejected/chk-hoist-loop-carried.c
+  * init reorder `bp;sum;j` and `sum;bp;j` (== inherited V11): score 13 — bp drops
+    below j and cascades into $a0. Source order cannot swap sum/j without
+    disturbing bp. rejected/inner-init-reorder-bp-cascade.c
+  * block-local sum split (acc inner + sum=acc outer, hypothesis #2): score 8,
+    79 insns — GCC coalesces acc->sum, byte-identical to baseline. Hypothesis #2
+    DEAD. rejected/sum-split-acc-coalesced.c
+- **Region B quick check:** swapping the ap/a2p pre-loop init order = score 8
+  (GCC normalises the two base-copies). The LICM range constants (0x80000000,
+  0x1FFFFF) are hard literals with no semantic tie to base, so no non-cheat lever
+  makes them materialise before the pointer moves (a named constant-holder is the
+  already-rejected magic_base cheat). Region B remains a context-dependent sched tie.
+- **Net:** structural manual levers on both regions are exhausted for direct
+  approaches — every one either cascades bp/a0 (worse) or coalesces to baseline.
+  The remaining path is the directed permuter (real full-file build) sweeping the
+  LUID cross-product that manual source order cannot reach surgically.
+
+- [s2] Full-file greg proves the 8 diffs = Region A sum/j $a0<->$a1 swap (all other regs match target: base=t1, i=a2, chkptr=t0, offset=a3, bp=v1) + Region B const/move scheduling order.
+
+- [s2] Register hand-out order for the inner-loop caller-saved class/range is v1 -> a0 -> a1 (1st/2nd/3rd qty allocated). Target needs qty_order 78(bp) 77(sum) 79(j) i.e. priority bp>sum>j; baseline is bp>j>sum.
+
+- [s2] BB2_QTY_DEBUG (tmp/gccdbg/cc1) priority: j range4 refs4 => 20000; sum range6 refs4 => 13333. sum outlives the loop (post-loop beq) so it is genuinely lower priority; refs=4 for both are fixed by the target loop shape.
+
+- [s2] A standalone single-function TU does NOT reproduce the real allocation (standalone sum=$a2 vs real $a1) - the sum/j tie is a whole-function LUID/context interaction, not isolable, so manual source levers cascade and only the real full-file build (permuter) can sweep it.
+
+- [s2] chk-hoist=17, init-reorder bp;sum;j / sum;bp;j =13, sum-split(acc coalesced)=8-nochange, Region B init-swap=8-nochange. All structural manual levers on both regions exhausted for direct approaches.

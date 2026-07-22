@@ -1,8 +1,8 @@
 {
  "func": "damage_DebugDisp",
  "file": "code6cac_c_mid",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 0,
@@ -15,23 +15,29 @@
    "floor": 8,
    "modality": "recon",
    "headline": "Recon: floor 8 confirmed; 8 diffs are TWO independent reg-alloc/scheduling ties (inner sum/j $a0 swap; 2nd-loop LICM-const vs move preheader order) \u2014 both pure-C, greg-characterized, frontier built."
+  },
+  {
+   "session": 2,
+   "floor": 8,
+   "modality": "structural",
+   "headline": "Region A quantified as a pure sum/j $a0<->$a1 swap (all surroundings match target); naive structural levers KILLED, pointing to the directed permuter."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Flip Region A sum/j $a0 tie by lifting sum's local-alloc priority (or dropping j's) with a structural change, no dead code.",
-   "mechanism": "local-alloc qty priority tiebreak assigns $a0 to counter j over accumulator sum.",
-   "next_probe": "read .lreg qty priority for pseudo 77(sum)/79(j); try hoisting `s32 chk = *(s32*)((u8*)chkptr+0x6C);` before the inner loop (changes sum's post-loop consumer to a local compare) and other init/consumer relocations; sandbox each."
+   "hypothesis": "Directed permuter seeded from the floor-8 form sweeps the whole-function LUID cross-product that manual source order cannot reach, flipping the sum/j $a0 tie and/or the Region B const-vs-move order.",
+   "mechanism": "The sum/j swap is a context-dependent local-alloc priority/birth-death tie (j 20000 > sum 13333) with identical surroundings; PERM_* over statement order in both regions + the range-check spelling explores the alloc/schedule cross-product. Vet any closing form against the cheat catalog (constant-holder / dead-store are the known traps here).",
+   "next_probe": "Build clean single-fn target.o (asm/funcs/damage_DebugDisp.s + prelude, drop .set gp=64), seed base from candidate.c, run permuter_campaign with fresh-seed stopping rule; log to tmp/grind/damage_DebugDisp/sN/."
   },
   {
-   "hypothesis": "Make Region B LICM constants schedule before the ap/a2p moves structurally (no constant-holder cheat).",
-   "mechanism": "preheader LUID/priority ordering in sched1 after LICM hoist.",
-   "next_probe": "restructure the range-check spelling or defer the ap/a2p init (e.g. derive a2p from ap inside the loop) so moves' LUID rises above the hoisted constants, or the constants are not hoisted into the same preheader block; sandbox each."
+   "hypothesis": "Lengthening j's live range past the loop (dropping j priority below sum's 13333) would flip Region A without touching bp.",
+   "mechanism": "priority = log2(refs)*refs/range; j needs range>6 to fall under sum. Requires a genuine post-loop consumer of j's final value - none currently exists (offset+=0x24 is a literal in target; offset+=j either folds (no range extension) or changes the instruction).",
+   "next_probe": "Search for a semantically-real post-loop use of the byte count; if none exists this axis is dead (offset+=j is a fold-or-diverge trap, not pursued)."
   },
   {
-   "hypothesis": "Directed permuter seeded from the floor-8 form sweeps both ties/schedules.",
-   "mechanism": "PERM_* over statement order in the two regions + range-check form explores the alloc/schedule cross-product the manual levers can't fully enumerate.",
-   "next_probe": "build clean single-fn target.o (asm/funcs + prelude), seed base from candidate.c, run campaign with fresh-seed stopping rule; vet any closing form against the cheat catalog (dead-store/constant-holder are the known trap)."
+   "hypothesis": "A surrounding-code (outer-loop) structural change shifts the inner-loop birth/death LUIDs enough to lift sum above j while keeping bp highest.",
+   "mechanism": "The tie is whole-function context-dependent; changing pseudo liveness in the outer loop / chkptr-offset handling could reorder the inner qty priorities.",
+   "next_probe": "Perturb outer-loop tail / chkptr-offset derivation forms and dump greg qty_order for 77/78/79 each; keep only variants that hold score<=8 and move the order toward 78 77 79."
   }
  ],
  "judge_constraints": [],

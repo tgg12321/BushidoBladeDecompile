@@ -61,8 +61,48 @@ LUID were tried and REJECTED as cheat-by-spelling (magic_base/magic_max, score 4
 - result: 4 positional diffs at 0x124/0x128/0x12c/0x140; confirmed pure allocation tie, no cheat needed
 - verdict: CONFIRMED
 
+## [s2] Region A naive structural levers are DEAD; the tie is whole-function context-dependent (permuter-only).
+- Frontier item 1 (manual Region A flip) downgraded: chk-hoist=17, init-reorder=13 (bp cascades to $a0),
+  sum-split coalesces to baseline=8. Register hand-out order is v1->a0->a1; target needs qty_order
+  78(bp) 77(sum) 79(j) = priority bp>sum>j, but sum(range6,13333) genuinely ranks below j(range4,20000)
+  and refs=4 are fixed by the target loop shape. A standalone TU does NOT reproduce the real allocation,
+  so no manual source lever isolates the sum/j pick — only the real full-file build (permuter, frontier
+  item 3) can sweep the LUID cross-product. Lengthening j's range needs a real post-loop consumer of the
+  byte count (none exists; offset+=j is a fold-or-diverge trap). See evidence.md s2 for numbers.
+- verdict: manual structural approaches KILLED; permuter (item 3) is the live path.
+
 ## [s1] Region B is an independent scheduling diff: LICM-hoisted range-check constants vs pre-loop pointer moves are emitted in opposite order to target.
 - mechanism: The two invariants (0x80000000, 0x1FFFFF) are LICM-hoisted into the k-loop preheader; sched1 ties break to lower-LUID insns and LICM appends hoisted insns after the ap/a2p moves, so build emits moves-first while target emits constants-first. Naming constant-holder locals to bias LUID was already rejected as cheat-by-spelling.
 - probe: objdump build 0x1e8-0x1f8 vs target 0x800380F0-
 - result: 5 positional diffs; region independent of Region A
 - verdict: CONFIRMED
+
+## [s2] Hoisting the post-loop check value (s32 chk = *(s32*)((u8*)chkptr+0x6C)) before the inner loop reprioritizes sum and flips the sum/j $a0 tie.
+- mechanism: chk becomes a preheader consumer of sum's value; intended to shorten sum's effective post-loop live range / lift its ref-priority.
+- probe: Applied the hoist; sandbox --disable all.
+- result: score 17 (from floor 8), build_insns 79->78. The hoisted load is a loop-carried pseudo live across the whole inner loop, adding pressure that cascades the entire allocation.
+- verdict: KILLED
+
+## [s2] Reordering the three inner-loop inits (j, bp, sum) surgically swaps sum/j so sum wins $a0.
+- mechanism: qty creation/priority order follows init order; putting sum's def before j's should give sum the earlier register.
+- probe: Tried bp;sum;j (VA-2) and sum;bp;j (VA-3 == inherited V11); sandbox + greg qty_order dump each.
+- result: Both score 13. Register hand-out order is v1->a0->a1; moving bp later drops bp below j in priority so bp (or j) grabs the v1 slot and bp cascades into $a0. qty_order flips to 79(j) 78(bp) 77(sum). Source order cannot swap sum/j without disturbing bp.
+- verdict: KILLED
+
+## [s2] Block-local sum split (accumulate into short-lived acc, then sum=acc after the loop) shortens the accumulator live range to match j, letting the qty tiebreak favor sum.
+- mechanism: acc dies at loop exit like j; equal ranges => tiebreak by qty number toward sum(77) < j(79).
+- probe: s32 acc=0; loop accumulates acc; sum=acc; if(sum==chk)break; sandbox --disable all.
+- result: score 8, build_insns 79 (unchanged). GCC copy-propagates/coalesces acc into sum (single qty); RTL byte-identical to baseline. The separate short-lived pseudo never exists. Hypothesis #2 dead.
+- verdict: KILLED
+
+## [s2] Region A is a pure sum/j register swap; every other register already matches target.
+- mechanism: Full-file greg dispositions: base=t1, i=a2, chkptr=t0, offset=a3, bp=v1 all match target; only sum($a1 vs target $a0) and j($a0 vs target $a1) differ.
+- probe: cpp|cc1 -da greg disposition dump of the sandbox-generated src, diffed vs asm/funcs/damage_DebugDisp.s.
+- result: Confirmed: the 4 Region-A diffs are exactly the sum<->j a0/a1 swap. Local-alloc priority: j range4 refs4 => 20000 > sum range6 refs4 => 13333 (sum lives past the loop). refs are fixed by the target loop shape; only the birth/death LUID span (context-dependent, not isolable in a standalone TU) is free.
+- verdict: CONFIRMED
+
+## [s2] Region B ap/a2p pre-loop init order controls whether the LICM range constants schedule before the pointer moves.
+- mechanism: sched1 ties break to lower LUID; LICM appends hoisted constants after the moves.
+- probe: Swapped a2p=base; ap=(s32*)base; init order; sandbox --disable all.
+- result: score 8 (unchanged) - GCC normalises the two base-copies. The constants (0x80000000, 0x1FFFFF) are hard literals with no semantic link to base, so no non-cheat lever makes them materialise earlier; a named constant-holder is the already-rejected magic_base cheat.
+- verdict: KILLED
