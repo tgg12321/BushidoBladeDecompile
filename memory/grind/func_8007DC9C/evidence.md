@@ -685,3 +685,20 @@ args is NOT a sanctioned use-site shape) and stripped by `volatile_cheats`.
 - [s30] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (grep NONE this session), so owner-gated is not claimable despite full six-modality exhaustion.
 
 - [s30] src/display.c restored to clean HEAD after the experiment (git diff empty); candidate cleanup form preserved in memory/grind/func_8007DC9C/candidate.c.
+
+- [s31] PERMUTER modality, EIGHTH chassis + FIRST from a restructured control-flow topology. Baseline re-confirmed: sandbox --disable all score 9, target 91 / build 90, rules_dropped 4, cheat_asm_stripped 150. src/display.c clean at HEAD (worked only in tmp/).
+- [s31] Built + validated chassis-8 (tmp/perm_dc9c_s31): goto/nested-if base.c (hoisted vsync_lim; split draw-count increment; nested `if (count <= 0xF0000) return 0;`; short-circuit `||` semantics preserved exactly). Compiles to 88 insns; base reproduces BOTH ledger axes (objdump: axis B dead-read `lw a0,0(v1)` @0x68 BEFORE fmt `lui/addiu a0` @0x6c-0x70 = HEAD wrong-order; axis A `lui a1; lw a1,0(a1)` @0xa0 = 2-insn combine-fold, target has 3). The leaner pre-branch region diverges from target -> base_score 1110 (disjoint higher-distance basin, ~480 above the ~630 floor).
+- [s31] Chassis-8 campaign (s31-chassis8-prebranch-goto, -j8, base_score 1110): 16,934 iters over seven in-turn wait windows. Basin plateaued at 955, NEVER approached the 630 floor let alone 0. ALL sub-base finds are coercions: 955=volatile-BF78/BF7C coercion (stripped); 995=extern volatile long D_8009BF68[] (banked volatile-BF68 axis-A coercion); 960=dead pointer-alias `new_var=&D_80016044` junk. Axis A never legitimately materialized; axis B 8-op sched cluster never legitimately reordered. Harvested --stop in-turn; 0 live campaigns, 0 orphan permuter procs. Rejected: rejected/permuter-s31-chassis8-goto-basin.c.
+- [s31] CONCLUSION: seeding the permuter from a fundamentally different control-flow topology does NOT open a path to target — the goto basin is disjoint from and farther than the comma-expression floor basin and yields only the same coercion families. Directly corroborates s8 (axis A control-flow-insensitive; axis B block-structure-insensitive). Permuter EIGHT-chassis confirmed dead (~206k cumulative iters). No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md, so owner-gated is not claimable this session despite full modality exhaustion -> result progress, escalation-ready.
+
+- [s31] s31 baseline re-confirmed: sandbox --disable all score 9, target_insns 91, build_insns 90, rules_dropped 4, cheat_asm_stripped 150. src/display.c clean at HEAD (worked only in tmp/).
+
+- [s31] Chassis-8 is the FIRST permuter chassis seeded from a restructured control-flow topology; all 7 prior chassis (s4 x2, s5, s13, s14, s22, s23) reused the HEAD comma-expression || body. Base compiles to 88 insns and reproduces both ledger axes; base_score 1110 (disjoint, ~480 above the ~630 floor basin).
+
+- [s31] 16,934 iters (-j8): basin plateaued at 955 and never approached the 630 floor let alone score 0. All sub-base finds are coercions (volatile-BF78/BF7C, banked volatile-BF68 axis-A, dead pointer-alias) — zero legitimate sub-floor form.
+
+- [s31] Corroborates s8: axis A is per-expression / control-flow-insensitive and axis B is volatile-order-locked / block-structure-insensitive; a control-flow reshuffle changes neither. Permuter now EIGHT-chassis confirmed dead (~206k cumulative iters).
+
+- [s31] Campaign harvested --stop in-turn; status shows 0 live campaigns, 0 orphan permuter processes.
+
+- [s31] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md, so owner-gated is not claimable this session despite six-modality exhaustion.
