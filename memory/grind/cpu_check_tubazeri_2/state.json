@@ -1,8 +1,8 @@
 {
  "func": "cpu_check_tubazeri_2",
  "file": "code6cac_b",
- "session_count": 5,
- "current_modality": "permuter",
+ "session_count": 6,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 0,
@@ -39,13 +39,19 @@
    "floor": 1,
    "modality": "permuter",
    "headline": "Permuter axis triply-dead: a 3rd structurally-distinct basin (guarded do-while index-off-a0 + array-subscript head, 42k iters) finds no sub-10 legit form; idx25 addu operand-order endgame-lock stands;"
+  },
+  {
+   "session": 6,
+   "floor": 1,
+   "modality": "forensics",
+   "headline": "Forensics: idx25 operand-order lock proven at exact GCC source line (c-typeck.c pointer_int_sum:2696 forces PLUS_EXPR ptr-first); pseudo-regno/RA lever DISPROVEN via identical-numbering ptr-vs-int cou"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "cpu_check_tubazeri_2 is a confirmed 1-insn commutative-operand-order-only endgame-lock whose only distance-0 C is the reviewer-rejected integer-cast operand swap; the structural axis (s3 RTL proof) and the permuter axis (s4 two chassis + s5 third chassis, ~144k iters) are all measured dead.",
-   "mechanism": "idx25 addu operand order is fixed at tree-lowering (pointer_int_sum -> base-first PLUS_EXPR(ptr,int)), preserved unchanged through combine->greg; every pointer-domain spelling scores 1, only int-domain v0+(s32)a0 scores 0 and is a commutative-operand-order coercion cheat.",
-   "next_probe": "Owner action / non-permuter modality: file an OWNER-ESCALATION in docs/grind/decisions.md for the endgame-lock disposition of cpu_check_tubazeri_2 (hirahira_w_frie/func_80033550 format), citing the s3 RTL proof + s4/s5 triple permuter kill (cf. feedback/endgame-lock-disposition-policy). Once that entry exists, a later session may emit owner-gated with escalation_ref."
+   "hypothesis": "cpu_check_tubazeri_2 is a confirmed 1-insn commutative-operand-order endgame-lock whose sole distance-0 C is the reviewer-rejected int-cast operand swap; structural, permuter, AND front-end tree-build forensic axes are all measured dead.",
+   "mechanism": "idx25 addu operand order is hardcoded base-first at the C front-end tree build (c-typeck.c pointer_int_sum:2696 builds PLUS_EXPR pointer-first for any pointer operand); immovable by RA/scheduling/decl-order/pseudo-numbering (pseudo numbering is identical between ptr and int forms) and by loop/combine (no RTL pass reorders two-register commutative plus). Only both-operands-integer source (v0+(s32)a0) yields index-first, and that is the reviewer-FAILED coercion.",
+   "next_probe": "Owner action / non-permuter modality: file an OWNER-ESCALATION in docs/grind/decisions.md for the endgame-lock disposition of cpu_check_tubazeri_2 (hirahira_w_frie/func_80033550 format), citing s3 RTL proof + s4/s5 permuter triple-kill + the s6 exact-source-line forensic proof (c-typeck.c:1986/1988/2696 + identical-pseudo-numbering ptr-vs-int counterfactual). A later session may then emit owner-gated with escalation_ref. NB for the owner: because the same GCC compiles all pointer arithmetic base-first, the target's index-first order implies the ORIGINAL source used integer-domain address arithmetic for this add \u2014 the reviewer flagged v0+(s32)a0 as coercion, but this is precisely the faithfulness-vs-coercion judgment the escalation exists to resolve."
   }
  ],
  "judge_constraints": [],
