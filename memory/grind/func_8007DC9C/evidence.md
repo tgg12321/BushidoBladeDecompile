@@ -483,3 +483,13 @@ args is NOT a sanctioned use-site shape) and stripped by `volatile_cheats`.
 - [s19] No OWNER-ESCALATION entry for func_8007DC9C in docs/grind/decisions.md (grep 8007DC9C = No matches, verified s19; d6bc0904 covered 7 OTHER endgame-lock funcs) -> owner-gated not claimable; the only unblock is the OWNER filing the entry.
 
 - [s19] Baseline unchanged (no re-run needed, mechanism-pinned): floor 9, target 91 / build 90, rules_dropped 4, cheat_asm_stripped 150. src/display.c clean at HEAD (candidate.c byte-equivalent, no dirt).
+
+- [s20] s20 baseline re-confirmed: sandbox --disable all score 9, target_insns 91, build_insns 90, rules_dropped 4, cheat_asm_stripped 150 (identical fingerprint s1-s19); src/display.c clean at HEAD, no dirt.
+
+- [s20] s20 combined-lever structural form (fmt0 pointer precompute declared first + diff0 named-temp for the masked subtraction, a combination s2 only swept individually) measured score 9 / identical fingerprint. Axis B unchanged (s15 body-shape-invariance: priority 2>1 via volatile-MEM REG_DEP_ANTI, invariant modulo UID shift); axis A unchanged (BF68[0] single pure offset-0 rvalue folds to 2-insn, combine.c:1458 added_sets_2). Rejected: rejected/structural-combined-fmtptr-difftemp.c.
+
+- [s20] Structural modality now re-confirmed EXHAUSTED a 6th time (s2/s3/s11/s12/s20 + full lever-surface enumeration): block-local splits, decl order, type narrowing, statement re-association, struct/array grouping, and now lever-combinations all measure 9 or worse; both axes provably insensitive to structural shape.
+
+- [s20] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (grep 8007DC9C = No matches this session); owner-gated is NOT claimable despite full modality exhaustion.
+
+- [s20] func_8007DC9C matches endgame-lock-disposition-policy: gate #1 REFUSE (scan_hand_coded LOW, ordinary GCC output), gate #2 REFUSE (no SOTN/VS/ESA precedent for a dead-2nd-use combine coercion or a volatile-order sched coercion) -> keep the 4 regfix rules, classify INCOMPLETE-owner-accepted.
