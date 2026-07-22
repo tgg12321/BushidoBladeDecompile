@@ -166,3 +166,15 @@ LUID were tried and REJECTED as cheat-by-spelling (magic_base/magic_max, score 4
 - probe: Fresh campaign ws6 (base_score 130, 11k iters); harvested every sub-130 find and checked each with objdump vs target.
 - result: KILLED. output-75-1 (`chkptr=a2p`, s32*) reads wrong byte offset 0x340 (semantically broken: `lhu 832(a2)` vs target `208`); output-70-1 (`base=a2p`, u8*, correct) emits 89 insns (+10 load-delay nops). Region B's tie only 'moves' via wrong-type offset aliasing or nop bloat; no clean spelling reaches it in this basin.
 - verdict: KILLED
+
+## [s5] The residual Region A' 2-insn preheader scheduling tie is closable by permuting the inner-loop preheader statement order (PERM_LINESWAP over j=0 / bp=base+offset / do{sum=0}while(0)).
+- mechanism: Frontier item 1: a different init spelling/placement stacked on the do-while(0) restores target's bp-addu-before-sum-move order while holding the solved Region A allocation (score<=6).
+- probe: Exhaustively sandboxed (--disable all) all 3!=6 orderings of the three preheader statements on the floor-6 chassis.
+- result: (j,bp,dw)=6 [candidate, UNIQUELY optimal]; (j,dw,bp)=10; (bp,j,dw)=11; (bp,dw,j)=13; (dw,j,bp)=10; (dw,bp,j)=13. Every neighbor of the candidate regresses.
+- verdict: KILLED
+
+## [s5] A fresh-seed directed permuter campaign on the floor-6 (do-while(0)) chassis finds a clean pure-C lever that lowers the floor below 6 (closing Region A' or Region B).
+- mechanism: Reseed a structurally-fresh full-TU basin from the floor-6 base (base_score 130) and sweep the whole-function LUID/scheduling cross-product that manual source reorder cannot reach surgically.
+- probe: Launched floor6-s5-freshseed campaign (base.c = do-while(0) form, honest pipeline, target.o from asm/funcs), 20,895 iterations, 8 jobs; harvested every novel find and inspected/compiled each vs target.
+- result: All sub-130 finds are the known-invalid Region B dead-variable-alias family: output-75-1 (chkptr=a2p, s32*+0xD0=+0x340 bytes, BROKEN), output-90-1 (src=a2p dead alias, cheat), output-70-1 (base=a2p dead reassignment, cheat, 79i), output-100-1 (u8*new_var=src redundant dead alias, cheat, score 100). No find touches the Region A' preheader tie; none reach floor<6; none clean. Exactly reproduces s4's floor-6 result with a fresh seed.
+- verdict: KILLED

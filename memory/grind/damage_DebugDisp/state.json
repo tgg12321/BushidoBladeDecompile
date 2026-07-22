@@ -1,7 +1,7 @@
 {
  "func": "damage_DebugDisp",
  "file": "code6cac_c_mid",
- "session_count": 4,
+ "session_count": 5,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -33,18 +33,24 @@
    "floor": 6,
    "modality": "permuter",
    "headline": "Directed permuter (real full-TU basin) found do-while(0) on sum=0 that solves Region A and lowers the honest floor 8->6; Region B has no clean permuter lever (all sub-130 finds invalid)."
+  },
+  {
+   "session": 5,
+   "floor": 6,
+   "modality": "permuter",
+   "headline": "Fresh-seed floor-6 permuter (20.9k iters) + exhaustive preheader lineswap reconfirm no clean lever: Region A' tie unreachable by statement reorder, Region B yields only dead-alias cheats."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The residual 2-insn Region-A preheader tie (bp-addu vs sum-move order) is closable by a source/scheduling perturbation stacked on the do-while(0).",
-   "mechanism": "The do-while(0) reordered the preheader so sum's move now precedes bp's addu (opposite of target). A different init spelling/placement (e.g. wrapping bp=base+offset, or moving the do-while(0) earlier/later) may restore target order without disturbing the solved Region A allocation.",
-   "next_probe": "From the floor-6 chassis, permute ONLY the inner-loop preheader statement order (j=0; bp=base+offset; do{sum=0}while(0);) via PERM_LINESWAP / do-while(0) placement variants; keep any variant holding score<=6 that emits `addu $v1,$t1,$a3` before `move $a1,$zero`. Watch the objdump lines 5-7."
+   "hypothesis": "The Region A' preheader tie can be flipped by a whole-function context change that raises bp's addu priority above the sum/j moves in the preheader BB, without a preheader statement reorder (all reorders killed) and without disturbing the solved Region A allocation.",
+   "mechanism": "The tie lives in cc1 sched1 (basic-block list scheduler) over the outer-loop-body preheader BB; the emit order is set by INSN_PRIORITY / absolute LUID, which is a whole-function effect (manual reorder only rotates the three inits' relative LUID, insufficient).",
+   "next_probe": "Instrument cc1 with BB2_SCHED_DEBUG (tmp/gccdbg/cc1) on the floor-6 build and read the priorities/LUIDs of bp's addu vs the two moves in the preheader BB; identify what upstream context lifts bp's addu (e.g. a legitimately-earlier real consumer of bp) that isn't a dead store."
   },
   {
-   "hypothesis": "Region B needs a genuine control-flow change (not an alias) to make the LICM range-check constants materialize before the ap/a2p moves.",
-   "mechanism": "The constants (0x80000000, 0x1FFFFF) are LICM-hoisted to preheader END; only restructuring WHERE the range check materializes (e.g. computing the check bound outside the loop legitimately, or a different loop shape) can lower their LUID below the moves without a constant-holder cheat or wrong-type alias.",
-   "next_probe": "Diagnose whether the pointer-range test `(u32)(ptr-0x80000000)<=0x1FFFFF` can be spelled so GCC does NOT LICM-hoist the two constants into the same preheader block; vet any form against the constant-holder / offset-steering cheat catalog before proposing."
+   "hypothesis": "Region B closes only via a loop-shape change that legitimately computes the pointer-range bound before the ap/a2p moves, materializing the two LICM constants at lower LUID than the moves without a constant-holder or dead-alias cheat.",
+   "mechanism": "LICM hoists the two constants to preheader END (higher LUID) so sched1 ties to the lower-LUID ap/a2p moves; the target had them at lower LUID. No source form referencing the constants only inside the loop can move them earlier without a cheat.",
+   "next_probe": "Design and sandbox a Region B loop shape where the range test's invariant is part of a genuinely loop-carried/hoisted computation with a real dependency chain to the pointer moves (raising the moves' LUID above the constants), vetting every candidate against the constant-holder / dead-alias cheat catalog before proposing."
   }
  ],
  "judge_constraints": [],

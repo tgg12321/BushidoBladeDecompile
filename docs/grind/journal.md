@@ -496,3 +496,4 @@
 - 2026-07-22 03:00 damage_DebugDisp s2 [structural] floor=8: Region A quantified as a pure sum/j $a0<->$a1 swap (all surroundings match target); naive structural levers KILLED, pointing to the directed permuter.
 - 2026-07-22 03:15 damage_DebugDisp s3 [structural] floor=8: Region A range-mechanism CONFIRMED: offset+=j flips the sum/j a0/a1 swap (score 7) but is not match-viable; zero-cost manual flips killed, so the flip needs the directed permuter's whole-function LUID sweep.
 - 2026-07-22 04:02 damage_DebugDisp s4 [permuter] floor=6: Directed permuter (real full-TU basin) found do-while(0) on sum=0 that solves Region A and lowers the honest floor 8->6; Region B has no clean permuter lever (all sub-130 finds invalid).
+- 2026-07-22 04:24 damage_DebugDisp s5 [permuter] floor=6: Fresh-seed floor-6 permuter (20.9k iters) + exhaustive preheader lineswap reconfirm no clean lever: Region A' tie unreachable by statement reorder, Region B yields only dead-alias cheats.

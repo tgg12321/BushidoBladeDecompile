@@ -279,3 +279,13 @@ constants' priority. To flip, the constants would need higher priority OR lower 
 - [s4] Region B (4-insn moves-vs-consts) has no clean permuter lever from the floor-6 chassis: chkptr(s32*)=a2p alias gives wrong offset 0x340 (broken); base(u8*)=a2p alias bloats to 89 insns (+10 nops). Both rejected/banked.
 
 - [s4] output-90-1 (score 90, floor-8 ws campaign): `src=a2p` (u8*, correct offset) cut Region B 4->1 diff but lacked do-while(0) so Region A was unsolved and it is a dead-local-reuse alias needing cheat-vetting; still short of match.
+
+- [s5] Floor 6 reconfirmed this session (candidate.c applied to src, sandbox --disable all = 6).
+
+- [s5] PERM_LINESWAP space over the inner-loop preheader is EXHAUSTED: all 6 statement orderings measured; (j=0; bp=base+offset; do{sum=0}while(0)) is a strict local optimum at 6, every neighbor 10-13. The Region A' preheader tie is a sched1 whole-function LUID effect, NOT reachable by preheader statement reordering.
+
+- [s5] Fresh-seed floor-6 permuter campaign (20,895 iters, structurally distinct seed from s4 ws6) yields ONLY: score-130 laterals (output-130-1/2/3) and the Region B dead-alias family (75/90/70/100), every one a cheat-by-spelling or semantically broken, none reaching floor<6.
+
+- [s5] output-75-1 (chkptr=a2p) is BROKEN not just a cheat: chkptr is s32* so chkptr+0xD0 addresses a2p+0x340 bytes vs target's a2p+0xD0 (lhu 832 vs 208). Confirms the wrong-pointer-type-offset trap for any Region B pointer-alias through a s32* handle.
+
+- [s5] Region B has no clean permuter lever from the floor-6 chassis (reconfirmed twice now, s4 + s5 fresh seed): the LICM range constants (0x80000000, 0x1FFFFF) are only referenceable inside the k-loop, so LICM controls their placement; the only source forms that flip the moves-vs-consts order are dead-alias cheats or nop-bloat. Region B needs a genuine control-flow change, which the permuter's local mutations cannot synthesize.
