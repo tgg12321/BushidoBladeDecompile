@@ -1,8 +1,8 @@
 {
  "func": "func_8007DC9C",
  "file": "display",
- "session_count": 36,
- "current_modality": "rederive",
+ "session_count": 37,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 0,
@@ -225,13 +225,19 @@
    "floor": 9,
    "modality": "rederive",
    "headline": "s36 rederive: novel switch-dispatch skeleton KILLED (score 18 / build 95, strictly worse) \u2014 switch materializes the ||-condition into a 0/1 truth value, adding 5 guard-region insns that touch neither "
+  },
+  {
+   "session": 37,
+   "floor": 9,
+   "modality": "synthesis",
+   "headline": "s37 synthesis (4th pass, s1-s36): no un-banked pure-C lever; both axes mechanism-pinned dead across six modalities; endgame-lock escalation-ready, no owner entry filed."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "func_8007DC9C is a fully-characterized ENDGAME-LOCK: axis A = combine.c:1458 added_sets_2 offset-0 single-use fold (needs an impossible 2nd &BF68 use; single-fn = coercion, cross-fn mechanically impossible per-function combine); axis B = one over-determined sched1 lock (load-delay hazard binding + volatile-MEM anti-dep priority 2>1 + LUID backstop; register a greg-downstream consequence, s33).",
-   "mechanism": "Both axes compiler-internal, orthogonal, dump-pinned dead on both sides across all six modalities (structural/permuter/forensics/rederive/synthesis). Rederive now exhausted across 8 sessions (s8/s9/s26/s27/s35/s36 + synthesis) at both skeleton and expression-operator levels; the switch skeleton is strictly worse, not merely neutral. Axis B's binding load-delay hazard cannot be removed without dropping the volatile read (= score-19 collapse); axis A needs a 2nd &BF68 use single-fn (coercion) or cross-fn (impossible).",
-   "next_probe": "OWNER files an OWNER-ESCALATION entry for func_8007DC9C in docs/grind/decisions.md citing both dump-pinned mechanisms (axis A combine.c:1458; axis B over-determined sched1 lock, register greg-downstream), six-modality exhaustion, the s16/s33 rule-completeness proof (4 rules = 2 combine + 1 sched1 root cause manifesting as 2), and endgame-lock-disposition-policy (gate #1 REFUSE canonical-asm scan_hand_coded LOW, gate #2 REFUSE coercion). Once filed, the next session emits owner-gated and the queue advances."
+   "hypothesis": "func_8007DC9C is a fully-characterized ENDGAME-LOCK; both residual axes are compiler-internal, orthogonal, and have NO legitimate pure-C lever single- OR cross-function across all six modalities.",
+   "mechanism": "Axis A = combine.c:1458 added_sets_2 single-use fold (2nd &BF68 use single-fn = coercion, cross-fn mechanically impossible per per-function combine). Axis B = over-determined sched1 lock (volatile-MEM anti-dep priority + MIPS-I load-delay hazard + LUID backstop; register greg-downstream of sched1).",
+   "next_probe": "OWNER files an OWNER-ESCALATION entry for func_8007DC9C in docs/grind/decisions.md citing both dump-pinned mechanisms (axis A combine.c:1458; axis B over-determined sched1 lock, register greg-downstream s33), six-modality exhaustion, the s16/s33 rule-completeness proof (4 rules = 2 combine + 1 sched1 root), and endgame-lock-disposition-policy (gate #1 REFUSE canonical-asm; gate #2 REFUSE coercion). Once filed, the next session emits owner-gated and the queue advances. No further pure-C modality remains to run."
   }
  ],
  "judge_constraints": [],

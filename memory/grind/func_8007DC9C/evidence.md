@@ -798,3 +798,23 @@ args is NOT a sanctioned use-site shape) and stripped by `volatile_cheats`.
 - [s36] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (grep NONE), so owner-gated is not claimable this session despite full six-modality exhaustion.
 
 - [s36] src/display.c restored to HEAD after the experiment; git status clean (only metrics/events.jsonl dirty, engine-appended). No dirt left.
+
+- [s37] SYNTHESIS (4th pass, s10/s19/s28 precedent). Baseline re-confirmed: sandbox --disable all score 9, target_insns 91, build_insns 90, rules_dropped 4, cheat_asm_stripped 150 — IDENTICAL fingerprint to s1-s36. src/display.c clean at HEAD (git status empty; candidate.c byte-equivalent). No OWNER-ESCALATION entry in docs/grind/decisions.md (grep func_8007DC9C = 0 matches).
+
+- [s37] Full re-read of evidence.md (801 lines) + hypotheses.md (484 lines) + rejected bank. NO un-banked pure-C lever surfaces on merge. Both axes remain orthogonal (s10) and mechanism-pinned dead across SIX modalities: structural (s2/s3/s11/s12/s20/s21/s29/s30), permuter x9 chassis ~258k iters (s4/s5/s13/s14/s22/s23/s31/s32), forensics x8 dump-pinned (s6/s7/s15/s16/s24/s25/s33/s34), rederive x8 skeleton+operator (s8/s9/s17/s18/s26/s27/s35/s36), synthesis x4 (s10/s19/s28/s37).
+
+- [s37] Consolidated mechanism (dump-verified both sides): Axis A = combine.c:1458 `added_sets_2 = !dead_or_set_p(i3,i2dest)` FALSE for the single-use BF68 address pseudo (reg93) -> COMBINE deletes the materialization (s25 pins fold pass = combine, not expand). Reproduction needs a 2nd &BF68 use: single-fn = dead-store coercion (s7 banked, 90->93 undeletable), cross-fn mechanically impossible (per-function combine, toplev.c:3004; sibling store in its own combine section, s7). Axis B = OVER-DETERMINED sched1 lock (s24/s34): volatile-MEM anti-dep priority 2>1 + MIPS-I load-delay hazard (binding, alone reproduces the order) + LUID tie-break; register $a0-vs-$v0 is greg-downstream-of-sched1 (s33), NOT independent. Rule-set complete: 4 rules = 2 combine + 1 sched1-root-manifesting-as-2 (s16 sharpened by s33).
+
+- [s37] Disposition unchanged and unambiguous: endgame-lock-disposition-policy gate #1 REFUSE (scan_hand_coded LOW, pure-C match exists) + gate #2 REFUSE (no coercion precedent) -> keep 4 rules, INCOMPLETE-owner-accepted. owner-gated NOT claimable this session (no escalation entry). Result = progress, escalation-ready. Artifact tmp/grind/func_8007DC9C/s37/MERGED-ATTACK-s37.md.
+
+- [s37] s37 baseline re-confirmed: sandbox --disable all score 9, target_insns 91, build_insns 90, rules_dropped 4, cheat_asm_stripped 150 — identical fingerprint to s1-s36; src/display.c clean at HEAD.
+
+- [s37] Axis A dump-verified BOTH sides (s25): combine.c:1458 added_sets_2 = !dead_or_set_p(i3,i2dest) FALSE for the single-use BF68 address pseudo (reg93) -> COMBINE deletes the materialization (fold pass = combine, not expand). 2nd &BF68 use single-fn = dead-store coercion (s7, 90->93 undeletable); cross-fn mechanically impossible (per-function combine, toplev.c:3004; sibling store in its own combine section).
+
+- [s37] Axis B OVER-DETERMINED (s24, printed-confirmed s34): volatile-MEM anti-dep priority 2/ref_count5 > fmt 1/1 + MIPS-I load-delay hazard (binding, alone reproduces dead-read-before-fmt at T-42) + LUID tie-break. Register $a0-vs-$v0 (rule 2833) is greg-downstream-of-sched1 (s33), NOT an independent lever -> rules 2833+2835 are ONE sched1 root cause.
+
+- [s37] Rule-set complete (s16 sharpened by s33): 4 regfix rules = 2 combine (axis A) + 1 sched1 root manifesting as 2 (axis B); honest gap 9 = 1 insertion + 8-op cluster, no hidden 3rd divergence.
+
+- [s37] Exhaustion: 36 sessions, zero floor movement. Structural (s2/s3/s11/s12/s20/s21/s29/s30) all fold or worsen; permuter 9 chassis ~258k iters (s4/s5/s13/s14/s22/s23/s31/s32) yield only coercion cheats, axis B never legitimately reordered; forensics x8 dump-pinned both axes; rederive x8 (m2c/Kengo/corpus no donor; if/goto/ternary/postinc reach floor-90; inverted/flag/switch/accumulator strictly worse).
+
+- [s37] Disposition per endgame-lock-disposition-policy: gate #1 REFUSE (scan_hand_coded LOW, pure-C match exists), gate #2 REFUSE (no coercion precedent) -> keep 4 rules, INCOMPLETE-owner-accepted. No OWNER-ESCALATION entry exists in docs/grind/decisions.md (grep func_8007DC9C = 0 matches).
