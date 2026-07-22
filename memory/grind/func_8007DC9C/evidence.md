@@ -196,3 +196,17 @@ args is NOT a sanctioned use-site shape) and stripped by `volatile_cheats`.
 - [s5] Chassis-3 campaign: 40,054 iterations, ~27 min, -j8, base_score 630. Three in-turn wait windows (14062, 26802, 39477 iters cumulative). Only output: output-630-1 = extern unsigned long long D_8009BF68[] at score 630 (== floor 9, NON-improving) - width-coercion cheat, doubly dead. Harvested --stop in-turn; status shows alive:false, registered_active:false; no orphan permuter processes.
 
 - [s5] Chassis-3 corroborates s2/s3/s4: axis A materialization is reachable in permuter space ONLY via type/volatile coercion of D_8009BF68 (all cheats); axis B 8-op sched1 cluster never legitimately reorders (volatile-order-locked critical-path priority). Permuter modality now TRIPLE-confirmed dead across 3 structurally-distinct chassis (~67k total iters s4+s5).
+
+- [s6] s6 baseline re-confirmed: sandbox --disable all score 9, target_insns 91, build_insns 90, rules_dropped 4, cheat_asm_stripped 150. Candidate.c (s3-cleaned, drop new_var2 volatile-ptr dance; D_8009BF78 = D_8009BF7C direct) applied to src/display.c; byte-equivalent, floor unchanged.
+
+- [s6] Generated full RTL pass dumps for func_8007DC9C via instrumented cc1 -da -dr over real src/display.c (tmp/grind/func_8007DC9C/s6/display.i.{rtl,flow,combine,cse,cse2,loop,jump,jump2,lreg,greg,sched,sched2,dbr}). Prior gccdbg/standalone.* dumps are stale (PutShadowRmd), not this function.
+
+- [s6] AXIS B ROOT (sched1, display.i.sched BB2): dead-read insn 38 (mem/v *g_gpu_stat_reg) priority=2; fmt insn 60 (la g_str_gpu_timeout, non-mem) priority=1. The +1 is the volatile-MEM anti-dep edge REG_DEP_ANTI 38 present on insn 45 (mem/v D_8009BF7C read), insn 64 (2nd mem/v *stat read) and call_insn 68. Two plain reads would not depend; the edge exists ONLY because both are mem/v (volatile).
+
+- [s6] AXIS B decision trace: ready list at T-42 = {60(1) 38(2)}; 'blocking insn 38 for 1 cycles' (load hazard) so 60 fills that cycle; 38 committed at T-43/44. Emitted order (backward scheduler, T-46 first): 36 stat-ptr, 54 madr-ptr, 38 dead-read, 56 *madr, 60 fmt -> dead read BEFORE fmt (our wrong order). greg then puts the dead read in $a0. Target wants fmt before dead read (dead read -> $v0).
+
+- [s6] AXIS B CONCLUSION: the priority ordering is volatile-order-derived; no pure-C lever can flip it (fmt's critical-path height is structurally 1; lowering the dead read's height requires removing the volatile anti-dep = non-volatile/drop = cheat + semantically wrong). Corroborates s2 structural KILL and s4/s5 permuter KILL with the exact sched1 mechanism named.
+
+- [s6] AXIS A ROOT (combine, display.i.combine): D_8009BF68[0] => (mem/s:SI (symbol_ref D_8009BF68)) folded symbol-direct (offset-0 const simplified pre-substitution); target keeps 3-insn materialized addr via combine.c:1458 added_sets_2 multi-use retention. s3 proved single in-function use -> closes only via cross-TU sibling func_8007D3F8.
+
+- [s6] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (grep NONE), so owner-gated is not available this session despite all single-function modalities now measured dead.

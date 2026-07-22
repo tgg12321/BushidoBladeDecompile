@@ -1,8 +1,8 @@
 {
  "func": "func_8007DC9C",
  "file": "display",
- "session_count": 5,
- "current_modality": "permuter",
+ "session_count": 6,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 0,
@@ -39,18 +39,24 @@
    "floor": 9,
    "modality": "permuter",
    "headline": "Permuter re-KILLED via structurally-distinct chassis-3 (whole-body named-temp, ~40k iters/~27min): zero legitimate sub-baseline finds; both axes triple-confirmed dead."
+  },
+  {
+   "session": 6,
+   "floor": 9,
+   "modality": "forensics",
+   "headline": "Forensics/RTL CONFIRMS axis-B order is volatile-MEM anti-dep-derived in sched1 (prio 38=2 > fmt 60=1); no single-function pure-C lever for either axis \u2014 owner-escalation candidate (no entry filed yet)"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Axis A (1 op, BF68 materialization) closes only via sibling func_8007D3F8's genuine second use of &D_8009BF68 (same TU, only other user, queue dist 43, still active/unmatched this session).",
-   "mechanism": "combine.c:1458 added_sets_2 keeps the address pseudo materialized only when it is multi-use; the second use must be a real semantic reference (not a dead/volatile/width coercion), which only the cross-function/TU context supplies. No in-function 2nd reference exists (s3 full-asm read); no non-volatile decl shape and no permuter form (s2/s4/s5) materializes it legitimately.",
-   "next_probe": "When func_8007D3F8 is matched, read its committed D_8009BF68 decl/access shape and any shared-address usage; check whether the real source structure gives &D_8009BF68 a second use reachable from func_8007DC9C's TU. Non-structural / cross-function - outside single-function modalities."
+   "hypothesis": "Axis B (8 ops) has NO single-function pure-C lever: the dead *g_gpu_stat_reg read's sched1 priority (2) exceeds fmt's (1) via a volatile-MEM anti-dependency that cannot be removed without changing observable volatile order.",
+   "mechanism": "sched.c INSN_PRIORITY = critical-path height; the volatile anti-dep 38->45->...->68 (mem/v edge from sched_analyze) gives the dead read height 2 vs fmt's 1. Confirmed by s6 RTL dump priority values + decision trace; triple-corroborated (s2 structural, s4/s5 permuter).",
+   "next_probe": "Non-single-function: file OWNER-ESCALATION in docs/grind/decisions.md for func_8007DC9C citing volatile-locked sched1 priority (axis B, 8 of 9 ops). Once filed AND with axis A cross-TU-only, the function is owner-gated. No further single-function modality remains."
   },
   {
-   "hypothesis": "Axis B (8 ops, sched1 fmt-vs-deadread critical-path tie) has NO pure-C lever in any single-function modality (structural KILLED s2, permuter KILLED s4 AND s5).",
-   "mechanism": "The dead *g_gpu_stat_reg read is volatile-ordered before the volatile D_8009BF7C read, fixing it on the critical path (high sched1 priority); no pure-C reordering changes chain lengths without altering observable volatile order. 3 permuter chassis + full structural enumeration never reordered it.",
-   "next_probe": "Forensics/RTL modality only: instrumented cc1 -da .greg/.sched RTL dump to read exact sched1 priority values for the fmt-LUI vs BF78-LUI/deadread nodes and confirm priority is volatile-order-derived. If confirmed volatile-locked, axis B has no single-function pure-C lever and the function is a candidate for owner escalation (no escalation entry exists yet)."
+   "hypothesis": "Axis A (1 op) closes only via sibling func_8007D3F8's genuine second use of &D_8009BF68 in the same TU (combine multi-use retention), not by any single-function form.",
+   "mechanism": "combine offset-0 symbol fold; only a >1-use address pseudo survives (combine.c:1458 added_sets_2). s6 combine dump confirms folded symbol-direct MEM; s3 proved exactly one in-function reference.",
+   "next_probe": "When func_8007D3F8 (queue dist 43, only other BF68 user, still active) is matched, read its committed D_8009BF68 decl/access shape; check whether the real source structure gives &D_8009BF68 a second use reachable from func_8007DC9C's TU. Cross-function, outside single-function modalities."
   }
  ],
  "judge_constraints": [],
