@@ -341,3 +341,56 @@ constants' priority. To flip, the constants would need higher priority OR lower 
 - [s6] Region B PASS named: loop.c move_movables emit_insn_before(loop_start) (loop.c:1652) places hoisted invariants at preheader END -> higher LUID than ap/a2p moves -> sched1 LUID order emits moves-first; target needs consts at lower LUID = a pre-loop reference = constant-holder cheat.
 
 - [s6] No OWNER-ESCALATION entry for damage_DebugDisp exists in docs/grind/decisions.md (owner-gated not available).
+
+## s7 (forensics, 2026-07-22) — CORRECTION: Region A is a reg_n_refs loop-depth-weight tie, NOT live_length
+- Floor 6 reconfirmed (candidate applied, sandbox --disable all = 6; src reverted to HEAD).
+  Dumps: tmp/grind/damage_DebugDisp/s7/dumps/{dd.c,dd_plain.c}.{lreg,greg}; FORENSIC_SUMMARY_s7.md.
+- **The .lreg `dump_flow_info` (flow.c:2890) prints reg_n_refs + reg_live_length verbatim.** Measured:
+  * do-while0: 77(sum)=11 refs / LL 9 ; 79(j)=11 refs / LL 9 ; 78(bp)=11/8.
+  * plain:     77(sum)=**10** refs / LL 9 ; 79(j)=11 refs / LL 9 ; 78(bp)=11/8.
+  **live_length is 9 for BOTH 77 and 79 on BOTH chassis — it never moves.** s6's "do-while(0)
+  shortens sum's live_length" is FALSE. The ONLY change is reg_n_refs(sum): 10 -> 11.
+- **Mechanism = loop-depth-weighted refs:** `reg_n_refs[regno] += loop_depth;` (flow.c:2081/2329/
+  2515/2725). plain `sum=0` is in the outer-do preheader at loop_depth 1 (contributes 1) -> sum=10.
+  The `do{sum=0}while(0)` emits NOTE_INSN_LOOP_BEG/END around sum=0, raising that block's loop_depth
+  to 2 (contributes 2, +1) -> sum=11 = ties j(11).
+- **Tie broken by allocno number:** global.c allocno_compare pri = floor_log2(n_refs)*n_refs/LL*1e4*size;
+  floor_log2(10)=floor_log2(11)=3, size1, LL9 -> plain sum 33333 < j 36666 (j=a0); do-while0 sum 36666
+  == j 36666 -> TIE -> `return *v1 - *v2` (allocno diff); allocnos ascend by pseudo (global.c:384-397),
+  sum pseudo 77 < j 79 -> sum sorts first -> sum=$a0. greg alloc order plain `100 78 79 77` /
+  do-while0 `100 78 77 79`. => RA win is an EXACT tie decided by sum's lower pseudo number (fragile).
+- **Coupling recharacterized (supersedes s6):** the SAME NOTE_INSN_LOOP_BEG (a) raises loop_depth at
+  sum=0 (+1 ref -> tie -> a0) AND (b) forces sum=0 to the bracketed block bottom = highest preheader
+  LUID -> sched1 rank_for_schedule LUID tiebreak emits sum=0 LAST (Region A'). s5's 6-ordering
+  exhaustion explained: +1 ref present in all 6 (do-while always brackets) so sum=a0 in all 6; only the
+  schedule differs; pulling sum=0 earlier cascades (dw-first=10).
+- **New axes measured dead:** (1) add +1 to sum weight without the loop bracket = a synthetic extra
+  depth>=1 sum ref = dead code = cheat; `if(1){}` emits no loop note (adds 0). (2) drop j 11->10:
+  j=0 must reset each outer iteration (can't hoist to depth 0), j++/j<0x24 are minimal depth-2 refs.
+  Both blocked.
+- **Sibling corroboration:** func_80037F40 (same file, COMPLETED-C, src ~line 190) is a near-twin
+  (checksum accumulate + for(;;) CopyBlock fence + k-loop) whose accumulate runs ONCE before the outer
+  loop (depth 0/1) -> matched pure C with NO do-while(0). Confirms the depth-weighting mechanism across
+  functions; damage cannot adopt the shape (its accumulate MUST be inside the outer loop, re-checksums
+  each of 3 candidate blocks).
+
+- [s7] CORRECTION of s6: Region A's sum a1->a0 flip is a reg_n_refs LOOP-DEPTH-WEIGHT effect, not live_length. .lreg dump_flow_info: 77(sum) and 79(j) both have live_length=9 on plain AND do-while0; only reg_n_refs(sum) changes 10->11. `reg_n_refs += loop_depth` (flow.c) — the do-while(0)'s NOTE_INSN_LOOP_BEG raises sum=0's block depth 1->2, +1 weighted ref.
+- [s7] do-while0 makes sum n_refs==j n_refs==11 => global.c allocno_compare priority TIE (both 36666) => tiebreak `return *v1-*v2` (allocno number); allocnos ascend by pseudo (global.c:384-397) so sum(77)<j(79) wins $a0. The RA win is an exact priority tie decided by sum's lower pseudo number — fragile to renumbering.
+- [s7] Coupling recharacterized: ONE NOTE_INSN_LOOP_BEG both (a) raises loop_depth for the +1 ref (RA win) and (b) forces sum=0 to block-bottom/highest-LUID (sched1 emits it last = A'). Explains s5's 6-ordering exhaustion mechanistically (sum=a0 in all 6; only schedule differs).
+- [s7] New Region-A axes measured dead: add sum weight without a loop-note bracket = synthetic dead ref (cheat) / if(1){} adds 0 note; drop j 11->10 blocked (j=0 must reset per outer iter, j++/j<0x24 minimal). Sibling func_80037F40 (singly-nested accumulate) matched with NO do-while(0) — cross-function confirmation; damage can't adopt its shallower nesting (semantics).
+
+- [s7] Floor 6 reconfirmed: candidate.c applied to src, `sandbox damage_DebugDisp --disable all` = 6; src then reverted to clean HEAD.
+
+- [s7] .lreg dump_flow_info (flow.c:2890): do-while0 chassis 77(sum)=11 refs/LL9, 79(j)=11 refs/LL9, 78(bp)=11/8; plain chassis 77(sum)=10 refs/LL9, 79(j)=11 refs/LL9. live_length is 9 for sum and j on BOTH chassis.
+
+- [s7] reg_n_refs is loop-depth-weighted: `reg_n_refs[regno] += loop_depth` (flow.c:2081,2329,2515,2725). The do-while(0)'s NOTE_INSN_LOOP_BEG raises sum=0's block loop_depth 1->2, adding exactly +1 weighted ref (sum 10->11).
+
+- [s7] global.c allocno_compare pri = floor_log2(n_refs)*n_refs/live_length*10000*size; floor_log2(10)=floor_log2(11)=3. plain sum=33333 < j=36666 (j=a0); do-while0 sum=36666 == j=36666 -> exact TIE.
+
+- [s7] At a tie allocno_compare returns `*v1 - *v2` (allocno-number diff); allocnos are assigned ascending by pseudo number (global.c:384-397), so sum pseudo 77 < j pseudo 79 -> sum sorts first -> $a0. greg alloc order confirms: plain `100 78 79 77`, do-while0 `100 78 77 79`.
+
+- [s7] Coupling (supersedes s6): the SINGLE NOTE_INSN_LOOP_BEG both (a) raises loop_depth for the +1 ref (RA win) and (b) forces sum=0 to the bracketed block bottom = highest preheader LUID -> sched1 rank_for_schedule LUID tiebreak emits sum=0 LAST (Region A'). Explains s5's 6-ordering exhaustion (sum=a0 in all 6; only schedule differs).
+
+- [s7] Sibling func_80037F40 (same file, COMPLETED-C, src ~line 190): near-twin (checksum accumulate + for(;;) CopyBlock fence + k-loop) whose accumulate runs ONCE before the outer loop (depth 0/1) -> matched pure C with NO do-while(0). Cross-function confirmation of the depth-weighting mechanism; damage cannot adopt the shape (its accumulate must be inside the outer loop, re-checksumming each of 3 candidate blocks).
+
+- [s7] Region B unchanged from s6: loop.c move_movables emit_insn_before(loop_start) places hoisted invariants at preheader END (higher LUID than ap/a2p moves) -> sched1 emits moves-first; target needs consts at lower LUID = a pre-loop reference = constant-holder cheat. Dead.

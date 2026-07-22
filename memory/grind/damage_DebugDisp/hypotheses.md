@@ -206,3 +206,44 @@ LUID were tried and REJECTED as cheat-by-spelling (magic_base/magic_max, score 4
 - probe: dd_greg.txt insns 213-288 chain order + dd_sched.txt BB13 ready-list.
 - result: sched BB13 emits 213,216,281,287,288 = moves-first. Constants are referenced ONLY inside the k-loop, so the only source form placing them earlier is a pre-loop reference = the rejected constant-holder cheat family (magic_base / regionB-*-alias). Dead s1-s6.
 - verdict: CONFIRMED
+
+## [s7] Region A's sum $a1->$a0 flip is a live_length effect (s6 claim). FALSIFIED.
+- mechanism (s6): do-while(0) shortens pseudo-77 live_length -> global.c priority > j(79).
+- probe: .lreg `dump_flow_info` (flow.c:2890) prints reg_n_refs + reg_live_length for 77/78/79 on
+  do-while0 (dd.c) and plain (dd_plain.c) chassis.
+- result: live_length(77)=live_length(79)=9 on BOTH chassis — unchanged. The lever is reg_n_refs:
+  plain sum=10, do-while0 sum=11 (=j). `reg_n_refs += loop_depth` (flow.c:2081+); the do-while(0)'s
+  NOTE_INSN_LOOP_BEG raises sum=0's block depth 1->2, adding +1 weighted ref. Tie then broken by
+  allocno number (sum 77 < j 79) via global.c allocno_compare `return *v1-*v2`.
+- verdict: s6 live_length mechanism KILLED; replaced with CONFIRMED reg_n_refs loop-depth-weight tie.
+
+## [s7] A sanctioned construct can add sum's +1 loop-depth-weighted ref WITHOUT forcing sum=0 to block-bottom (decoupling A' from the RA win).
+- mechanism: the RA win needs sum weighted-n_refs>=11 with sum=0 at low LUID; if achievable without a
+  loop-note bracket at sum's def, sched1 could emit sum=0 first (A' closed) while sum still wins a0.
+- probe: enumerate depth-raising constructs. do-while(0)/for(i<1)/while(1){break} all emit
+  NOTE_INSN_LOOP_BEG (couple placement); if(1){} emits no loop note (adds 0 weight); an extra explicit
+  sum ref at depth>=1 = dead code. Also the inverse: drop j 11->10 (j=0 hoist to depth0).
+- result: KILLED. Every depth-raising wrapper re-introduces the bracket coupling; if(1){} adds nothing;
+  extra sum ref = cheat (no-new-park-categories). j=0 can't leave depth1 (must reset each outer
+  iteration). Sibling func_80037F40 achieves the natural allocation only because its accumulate is
+  shallower-nested (runs once pre-outer-loop) — a shape damage's semantics forbid.
+- verdict: KILLED. A' remains coupled to the RA win through the loop-note bracket; no clean decoupler
+  found. Whole-function permuter axis (s4/s5) also found none.
+
+## [s7] Region A's sum $a1->$a0 flip is caused by the do-while(0) shortening pseudo-77's live_length (s6's named mechanism).
+- mechanism: s6: do-while(0) relocates sum's def to preheader block-bottom, shortening reg_live_length(77) so global.c allocno priority rises above j(79).
+- probe: cc1 -da .lreg dump (flow.c:2890 dump_flow_info prints reg_n_refs + reg_live_length verbatim) for pseudos 77/78/79 on do-while0 (dd.c) and plain (dd_plain.c) chassis.
+- result: live_length(77)=live_length(79)=9 on BOTH chassis — never changes. The only delta is reg_n_refs(sum): plain 10 -> do-while0 11. s6's live_length story is false.
+- verdict: KILLED
+
+## [s7] The do-while(0)'s Region-A win is a loop-depth-weighted reg_n_refs effect producing an exact global.c priority tie broken by allocno number (sum pseudo 77 < j 79).
+- mechanism: reg_n_refs[regno] += loop_depth (flow.c:2081/2329/2515/2725): the do-while(0)'s NOTE_INSN_LOOP_BEG raises sum=0's block loop_depth 1->2, +1 weighted ref (10->11=j). allocno_compare pri = floor_log2(n_refs)*n_refs/LL*1e4*size; floor_log2(10)=floor_log2(11)=3, LL9, size1 -> 33333<36666 (plain, j=a0) vs 36666==36666 (do-while0, TIE); tie -> `return *v1-*v2`; allocnos ascend by pseudo (global.c:384-397) so sum(77)<j(79) wins a0.
+- probe: greg alloc order (plain `100 78 79 77` vs do-while0 `100 78 77 79`) + global.c allocno_compare/allocno-assignment source read + the .lreg n_refs/LL numbers.
+- result: Confirmed exactly. The RA solve is a fragile exact priority tie decided by sum's lower pseudo number. Coupling recharacterized: the SAME NOTE_INSN_LOOP_BEG both grants the +1 ref (win) and forces sum=0 to block-bottom/highest-LUID (sched1 emits it last = A' residual).
+- verdict: CONFIRMED
+
+## [s7] A sanctioned construct can add sum's +1 loop-depth-weighted ref WITHOUT forcing sum=0 to block-bottom, decoupling Region A' from the RA win.
+- mechanism: If sum reaches weighted-n_refs>=11 with sum=0 at low LUID (no loop-note bracket at its def), sched1 could emit sum=0 first (A' closed) while sum still wins a0; alternatively drop j 11->10 so plain-sum's 10 ties.
+- probe: Enumerate depth-raising constructs (do-while(0)/for(i<1)/while(1){break} all emit NOTE_INSN_LOOP_BEG; if(1){} emits none; extra explicit sum ref = dead code) and the j-reduction axis (hoist j=0 to depth 0).
+- result: KILLED. Every loop-note wrapper re-couples placement; if(1){} adds 0 weight; a synthetic extra sum ref is a cheat (no-new-park-categories). j=0 must reset each outer iteration (can't leave depth 1); j++/j<0x24 are minimal depth-2 refs. Sibling func_80037F40 lands the natural allocation only because its accumulate is shallower-nested (runs once pre-outer-loop) — a shape damage's semantics forbid.
+- verdict: KILLED

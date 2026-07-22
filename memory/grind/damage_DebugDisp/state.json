@@ -1,7 +1,7 @@
 {
  "func": "damage_DebugDisp",
  "file": "code6cac_c_mid",
- "session_count": 6,
+ "session_count": 7,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -45,18 +45,29 @@
    "floor": 6,
    "modality": "forensics",
    "headline": "Forensics: both floor-6 residuals named to one GCC decision each (A'=sched.c rank_for_schedule INSN_LUID tiebreak coupled to the do-while(0) def-relocation; B=loop.c move_movables emit_insn_before(loo"
+  },
+  {
+   "session": 7,
+   "floor": 6,
+   "modality": "forensics",
+   "headline": "Forensics: CORRECTED Region A mechanism \u2014 the do-while(0)'s sum=a0 flip is a loop-depth-weighted reg_n_refs TIE (10->11) broken by allocno number (sum 77<j 79), NOT live_length (LL=9 unchanged on both"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A whole-function context change raises pseudo-77 (sum) global.c allocno priority above pseudo-79 (j) with sum's def kept at LOW LUID (so sched1 emits sum=0 first == target), decoupling the RA win from the scheduling loss.",
-   "mechanism": "global.c allocno_compare priority = floor_log2(n_refs)*n_refs*size/live_length*10000. Target has sum=a0 with sum=0 emitted first (long preheader def span) and the SAME isolated inner range as build, so target's sum>j must come from whole-function live_length/allocno-numbering, not a late def. The do-while(0) only achieves sum>j via a late def, which loses A'.",
-   "next_probe": "Directed permuter on the floor-6 full-TU basin restricted to whole-function structure OUTSIDE the preheader (e.g. the outer-loop tail / CopyBlock region) that shifts absolute LUIDs so pseudo-77's live_length drops below pseudo-79's without moving sum=0's def; vet every closing form against the constant-holder/dead-alias/offset+=j cheat catalog. s4/s5 fresh-seed campaigns found no clean sub-6 form, so bias new seeds toward structural (non-preheader) mutations."
+   "hypothesis": "A whole-function structure gives sum weighted-n_refs >= 11 (tie/beat j) WITHOUT a loop-note bracket at sum=0's def, so sum=0 keeps low LUID (emitted first, A' closed) while still winning $a0 via the allocno tiebreak.",
+   "mechanism": "reg_n_refs += loop_depth (flow.c): sum needs one more depth-weighted reference than the plain-form's 10. The do-while(0) supplies it via a NOTE_INSN_LOOP_BEG that also block-bottoms sum=0. Any lever that raises sum's ref weight through a DIFFERENT block (e.g. a genuine loop-carried use, or deeper nesting of the accumulate that the target's semantics actually admit) would add the +1 without the preheader-schedule coupling.",
+   "next_probe": "Directed permuter on the floor-6 full-TU basin biased to structural mutations OUTSIDE the preheader that add a real depth>=1 sum reference or rebalance the accumulate nesting; reject any synthetic/dead extra ref (cheat). s4/s5 fresh-seed campaigns found none \u2014 seed toward accumulate-region restructures, not preheader reorders (measured dead)."
   },
   {
-   "hypothesis": "Region B closes only if the two LICM invariants get LOWER LUID than the ap/a2p moves without a pre-loop reference (constant-holder cheat).",
-   "mechanism": "loop.c move_movables emit_insn_before(loop_start) hard-codes the hoist point at preheader END. The invariants are referenced only inside the k-loop, so LICM controls placement; no source form referencing them only in-loop can lower their LUID below the moves.",
-   "next_probe": "Design a k-loop shape where the range-test bound is part of a genuinely loop-carried computation with a real dependency chain to the pointer moves (raising the moves' LUID above the constants) rather than a bare literal pair; vet against constant-holder/dead-alias before proposing. Prior attempts (regionB-* family) all invalid/cheat."
+   "hypothesis": "Drop j's loop-depth-weighted reg_n_refs from 11 to 10 so the plain (low-LUID) sum=0 form ties j and wins $a0 via the allocno tiebreak with NO do-while(0) at all.",
+   "mechanism": "j total 11 = j=0(depth1) + j++(set+use,depth2) + j<0x24(depth2). Moving any j ref to a shallower depth drops the weight. j=0 at depth 0 would give j=10.",
+   "next_probe": "Find a loop shape where the counter is initialized once at function scope yet still resets per outer iteration without a depth-1 store (measured-blocked so far: j must be 0 at each inner-loop entry). Explore whether a pointer-end / difference counter reformulation legitimately removes a depth-2 j reference while keeping target's `sltiu ...,0x24` byte \u2014 prior pointer-end attempts diverged from target's integer counter."
+  },
+  {
+   "hypothesis": "Region B closes only if the two LICM invariants get LOWER LUID than the ap/a2p moves without a pre-loop reference (constant-holder cheat) \u2014 unchanged from s6.",
+   "mechanism": "loop.c move_movables emit_insn_before(loop_start) hard-codes the hoist point at preheader END; invariants referenced only inside the k-loop => LICM controls placement.",
+   "next_probe": "Design a k-loop where the range-test bound is genuinely loop-carried with a real dependency chain to the pointer moves (raising the moves' LUID above the constants); vet against constant-holder/dead-alias. All regionB-* attempts invalid/cheat s1-s6."
   }
  ],
  "judge_constraints": [],

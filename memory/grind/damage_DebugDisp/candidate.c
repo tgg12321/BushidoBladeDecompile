@@ -6,9 +6,14 @@
  *      inner accumulator init (sanctioned for ANY codegen effect per the FINAL
  *      2026-07-06 do-while-zero-exception ruling). Found by the s4 directed
  *      permuter (full-TU basin, output-130-1). RESOLVES Region A: the inner
- *      loop sum/j $a0<->$a1 register swap is gone — the do-while(0) delays sum's
- *      def LUID so sum's global-allocno priority rises above j's and sum takes
- *      $a0 (== target), WITHOUT lengthening j (unlike the rejected `offset+=j`).
+ *      loop sum/j $a0<->$a1 register swap is gone.
+ *      MECHANISM (s7 correction; s6's "live_length" story was wrong — measured
+ *      live_length=9 for sum(77) and j(79) on BOTH chassis): the do-while(0)'s
+ *      NOTE_INSN_LOOP_BEG raises sum=0's block loop_depth 1->2, so its
+ *      loop-depth-weighted reg_n_refs (`reg_n_refs += loop_depth`, flow.c) goes
+ *      10 -> 11 = a TIE with j(11). global.c allocno_compare then breaks the tie
+ *      by allocno number (sum pseudo 77 < j 79) -> sum takes $a0 (== target).
+ *      Fragile: an exact priority tie decided by sum's lower pseudo number.
  *
  * Remaining gap (6 objdump diffs):
  *   A') Inner-loop preheader (2 diffs): target orders `addu $v1,$t1,$a3`
