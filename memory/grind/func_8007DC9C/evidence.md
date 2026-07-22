@@ -522,3 +522,20 @@ args is NOT a sanctioned use-site shape) and stripped by `volatile_cheats`.
 - [s22] Permuter modality now SEXTUPLE-confirmed dead across 6 structurally-distinct chassis (~153k total iters: s4 27k + s5 40k + s13 31k + s14 20k + s22 35k). The only permuter-reachable sub-floor form remains the banked volatile/width coercion of D_8009BF68 (axis A only); the axis-B 8-op sched1 cluster has never legitimately reordered in ANY chassis, corroborating the s6/s15 sched1 volatile-MEM anti-dep root.
 
 - [s22] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md, so owner-gated is not claimable this session despite full six-chassis permuter exhaustion + all five modalities dead.
+
+- [s23] PERMUTER modality, 7th chassis. src/display.c untouched (never edited; git status clean). Built chassis-7 (tmp/grind/func_8007DC9C/s23/perm_s23) = second-printf reads (BF68[0]/BF6C/BF70) hoisted to block-top named temps rep_a/rep_b/rep_c. Base compiles to 98 insns (vs target 91) — the three temps spill across the intervening calls, +8 insns of spill code; a genuinely distinct HIGH-register-pressure regime vs all 6 prior 90-insn near-floor chassis. base_score 2826.
+- [s23] Chassis-7 campaign (s23-chassis7-secondprintf-hoisted-temps, -j8, base_score 2826): 36,103 iterations across in-turn wait windows + one consolidated 30-cycle grind window. Min score descended 2367 -> 1763 -> 1186 and PLATEAUED at 1186 — never approached the ~630 legitimate floor. 517 outputs, ALL >= 1186 (>> 630). ZERO sub-floor find: this high-pressure seed cannot descend into the region where chassis 1/2/4/5/6 stumbled onto the banked `extern volatile ... D_8009BF68[]` coercion (515-590). Axis A never legitimately materialized (BF68[0] stays combine-folded — it is still a single pure offset-0 rvalue read, combine.c:1458 folds it); axis-B 8-op sched cluster never legitimately reordered.
+- [s23] Harvested --stop in-turn: campaign alive=false, registered_active=false, 0 live campaigns, 0 stale registry entries, 0 orphan permuter procs (reap: 0 groups). src/display.c clean (never edited this session). candidate.c unchanged (floor held at 9). Permuter now SEPTUPLE-confirmed dead across 7 structurally-distinct chassis (~189k total iters s4+s5+s13+s14+s22+s23).
+- [s23] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (Grep 8007DC9C = No matches this session), so owner-gated is NOT claimable despite full seven-chassis permuter exhaustion + all five modalities dead. The only unblock remains the OWNER filing the escalation entry.
+
+- [s23] s23 chassis-7 base compiles to 98 insns (vs target 91): hoisting the second-printf reads to block-top temps spills them across the intervening calls (+8 insns), a genuinely distinct HIGH-register-pressure basin vs all 6 prior 90-insn chassis. base_score 2826.
+
+- [s23] 36,103-iteration campaign (-j8): min score plateaued at 1186, never approaching the ~630 legitimate floor; 517 outputs, all >= 1186; ZERO sub-floor find (seed cannot reach the coercion region other chassis hit).
+
+- [s23] rep_a=D_8009BF68[0] hoisted is still a single pure offset-0 rvalue read -> combine.c:1458 added_sets_2 folds to 2-insn exactly as HEAD; the hoist is non-improving on axis A by construction (confirms s2/s3/s6/s9).
+
+- [s23] Permuter now SEPTUPLE-confirmed dead across 7 structurally-distinct chassis (~189k total iters: s4 27k + s5 40k + s13 31k + s14 20k + s22 35k + s23 36k). Only permuter-reachable sub-floor forms across all chassis are the banked volatile/width coercions of D_8009BF68 (axis A only); axis B never legitimately reordered in any chassis.
+
+- [s23] src/display.c never edited this session (git status clean); candidate.c unchanged (floor held at 9).
+
+- [s23] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (Grep 8007DC9C = No matches), so owner-gated is NOT claimable despite seven-chassis permuter exhaustion + all five modalities measured dead.

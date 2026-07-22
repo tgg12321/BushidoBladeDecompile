@@ -1,7 +1,7 @@
 {
  "func": "func_8007DC9C",
  "file": "display",
- "session_count": 22,
+ "session_count": 23,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -141,13 +141,19 @@
    "floor": 9,
    "modality": "permuter",
    "headline": "s22 permuter chassis-6 (fully-inline min-pressure, 35.3k iters) KILLED: only sub-floor find is the banked volatile-BF68 axis-A coercion (515); axis B never reordered. Permuter now SEXTUPLE-confirmed d"
+  },
+  {
+   "session": 23,
+   "floor": 9,
+   "modality": "permuter",
+   "headline": "s23 permuter chassis-7 (second-printf reads hoisted to block-top temps, high-pressure 98-insn base_score 2826, 36.1k iters) KILLED: basin plateaus at min 1186, never nears the ~630 floor, ZERO sub-flo"
   }
  ],
  "frontier": [
   {
    "hypothesis": "func_8007DC9C is a fully-characterized ENDGAME-LOCK with no legitimate pure-C lever (single- or cross-function) in any of the five modalities; the 4 regfix rules are a proven 1:1 cover of two orthogonal compiler-internal axes.",
-   "mechanism": "Axis A = combine.c:1458 added_sets_2 multi-use retention (needs a 2nd &D_8009BF68 use the function lacks; single-fn = dead coercion, cross-fn mechanically impossible per per-function combine). Axis B = sched1 REG_DEP_ANTI volatile-MEM priority (dead-read out-ranks fmt by +1; unflippable without changing observable volatile order). Both proven structure/control-flow-insensitive (s8/s15/s20/s21) and permuter-immovable across 6 chassis (s4/s5/s13/s14/s22).",
-   "next_probe": "OWNER files an OWNER-ESCALATION entry for func_8007DC9C in docs/grind/decisions.md citing both pinned mechanisms (combine.c:1458 added_sets_2 / sched1 REG_DEP_ANTI dead-read->BF7C), five-modality exhaustion incl. six-chassis permuter, the rule-completeness proof (s16), and the endgame-lock-disposition-policy outcome. Once filed, the next session emits owner-gated and the queue advances. No further pure-C modality remains to run."
+   "mechanism": "Axis A = combine.c:1458 added_sets_2 multi-use retention (single-fn = dead coercion, cross-fn mechanically impossible per per-function combine). Axis B = sched1 REG_DEP_ANTI volatile-MEM priority (dead-read out-ranks fmt by +1; unflippable without changing observable volatile order). Both structure/control-flow-insensitive (s8/s15/s20/s21) and permuter-immovable across SEVEN chassis (s4/s5/s13/s14/s22/s23).",
+   "next_probe": "OWNER files an OWNER-ESCALATION entry for func_8007DC9C in docs/grind/decisions.md citing both pinned mechanisms, five-modality exhaustion incl. seven-chassis permuter (~189k iters), the rule-completeness proof (s16), and the endgame-lock-disposition-policy outcome. Once filed, the next session emits owner-gated and the queue advances. No further pure-C modality remains to run."
   }
  ],
  "judge_constraints": [],
