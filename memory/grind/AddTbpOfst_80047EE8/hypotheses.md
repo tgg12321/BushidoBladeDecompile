@@ -77,3 +77,15 @@
 - probe: Applied candidate.c to src/text1b.c; `& tools/wteng.ps1 main sandbox AddTbpOfst_80047EE8 --disable all`.
 - result: score 10, target_insns 53, build_insns 53, scorable true. Confirmed floor=10 this session.
 - verdict: CONFIRMED
+
+## [s4] A whole-function permuter search over statement orderings finds a pressure profile that reserves the target's 32 phantom frame bytes with no divergent stores (frontier F2 permuter avenue)
+- mechanism: reload spill-slot reservation is emergent from register pressure; a random search over C forms might surface a pressure profile reserving 8 phantom words that structural sweeps missed
+- probe: built a full-TU permuter workspace on the floor-10 clean chassis (--stack-diffs; base_score 266), ran a fresh-seed campaign 9451 iterations; harvested + stopped
+- result: 3 novel finds, best score 202, NEVER 0. Descent came ONLY from inserting a volatile dead-frame local (`volatile long`/`unsigned long long pad`) — a forbidden volatile-coercion/dead-vars cheat reserving ~8 bytes; plateau at 202, next novel WORSE (207). No legitimate pure-C frame-growth form exists in the searched space.
+- verdict: KILLED. The permuter modality independently corroborates s3: the 32-byte phantom frame is reachable only via forbidden dead/volatile-local cheats. All sanctioned axes (F1 arg0 lever-exhaustion s2, F2 structural s3 + permuter s4) now measured dead; endgame-lock exhaustion state, same species as sibling InitHiraRmd_80047FBC.
+
+## [s4] A whole-function permuter search over statement orderings finds a register-pressure profile that reserves the target's 32 phantom frame bytes with no divergent stores (frontier F2 permuter avenue).
+- mechanism: Reload spill-slot reservation is emergent from register pressure; a random search over C forms might surface a pressure profile reserving 8 phantom words that the structural sweeps (s3) could not construct by hand.
+- probe: Built a full-TU permuter workspace on the floor-10 clean chassis (tmp/grind/AddTbpOfst_80047EE8/s4/ws; text1b cc1|prologue_fix|maspsx|fix_lwl|multu_pad pipeline; --stack-diffs so frame offsets score; base_score 266). Ran a fresh-seed campaign 9451 iterations via permuter_campaign.py, waited in-turn, harvested + stopped.
+- result: 3 novel finds, best score 202, NEVER 0. Descent 266->242->202 came from ONE lever only: a volatile dead-frame local (`volatile long pad;` widened to `volatile unsigned long long pad;`) reserving ~8 phantom bytes. That is a forbidden volatile-coercion/dead-vars frame cheat. It plateaus at 202 (8 bytes reserved, not the needed 32); the next novel emitted was WORSE (207 at 444s). No legitimate pure-C frame-growth form appeared in the searched space.
+- verdict: KILLED

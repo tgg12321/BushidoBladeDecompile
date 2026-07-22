@@ -92,3 +92,20 @@ With all three -> SHA1 matches. Without -> sandbox 15 (frame + prologue + 1 move
 - [s3] docs/grind/decisions.md: sibling InitHiraRmd_80047FBC OWNER-ESCALATION (filed 2026-07-20) STILL AWAITING RULING; no escalation filed for AddTbpOfst_80047EE8 itself yet. Precedent block: 4 same-species escalations (motion_SetMotion, saTan0Init, cpu_side_move_dir_4, func_80057CC8) all ruled option (b) INCOMPLETE-owner-accepted.
 
 - [s3] Exhaustion state: F1 (FAKE arg0 pure-spelling exhaustion, s2) + F2 (phantom-frame structural axis, s3) both discharged with measurements; canonical-asm signals negative (ordinary table walker, same as sibling s10). No sanctioned pure-C lever remains.
+
+- [s4] [permuter] Whole-function permuter campaign on the floor-10 clean chassis (tmp/grind/AddTbpOfst_80047EE8/s4/ws, --stack-diffs so frame offsets score; base_score 266, 9451 iters, fresh seed): 3 novel finds, best 202, NEVER 0. Descent 266->242->202 came from ONE lever only — a volatile dead-frame local (`volatile long pad;` widened to `volatile unsigned long long pad;`) reserving phantom frame bytes. That is a FORBIDDEN volatile-coercion / dead-vars frame cheat (inline-asm-policy expanded catalog). It reserves only ~8 bytes so it plateaus at 202; the next novel was a WORSE 207 at 444s. The permuter found NO legitimate pure-C frame-growth form.
+- [s4] [permuter] Independent corroboration of s3: the 32-byte phantom frame is not reachable by any non-cheat C shape in this body. Structural sweep (s3, 9-variant grid + v08 decisive control) and random permuter search (s4, ~9500 iters) BOTH conclude the only frame-growth levers are forbidden dead/volatile-local cheats. Frontier F2's permuter avenue is now measured DEAD in the permuter modality.
+- [s4] Artifacts: tmp/grind/AddTbpOfst_80047EE8/s4/build_ws.sh (workspace builder), tmp/grind/AddTbpOfst_80047EE8/s4/ws/ (base.c/target.o/compile.sh/settings.toml + output-{242,202,207}-1). Rejected form banked: memory/grind/AddTbpOfst_80047EE8/rejected/permuter-volatile-pad-frame-coercion.c. Campaign stopped clean (7 procs killed, no orphans).
+- [s4] Floor unchanged at 10; candidate.c form re-confirmed sandbox --disable all = 10 (53/53) this session before the campaign. src/text1b.c reverted to HEAD after (git clean except metrics + memory/grind). docs/grind/decisions.md unchanged since s3: sibling InitHiraRmd_80047FBC OWNER-ESCALATION (2026-07-20) still AWAITING RULING; no escalation filed for AddTbpOfst_80047EE8 itself.
+
+- [s4] Permuter campaign base_score 266 (--stack-diffs, frame offsets scored); best-new 202 over 9451 iters; all 3 finds non-zero and volatile-pad cheat-forms.
+
+- [s4] The permuter's sole frame-growth lever is inserting a volatile dead local (volatile long / unsigned long long pad) to reserve phantom frame bytes — the forbidden volatile-coercion/dead-vars cheat family (inline-asm-policy expanded catalog 2026-05-31).
+
+- [s4] 202 plateau reserves only ~8 bytes; 32 needed. Next novel was a WORSE 207 — the basin yielded its improvement early and then only sideways/worse variants (fresh-seed 'basin yields early or not at all' signal).
+
+- [s4] Independent corroboration of s3: structural sweep (9-variant grid + v08 decisive control) and random permuter search (~9500 iters) BOTH conclude the 32-byte phantom frame is unreachable by any non-cheat C shape in this body.
+
+- [s4] Floor unchanged at 10; candidate.c re-confirmed sandbox --disable all = 10 (53/53) this session; src/text1b.c reverted to HEAD (git clean except metrics + memory/grind). Committed 3-cheat form still holds the oracle on main.
+
+- [s4] docs/grind/decisions.md unchanged since s3: sibling InitHiraRmd_80047FBC OWNER-ESCALATION (2026-07-20) still AWAITING RULING; no escalation filed for AddTbpOfst_80047EE8 itself yet.

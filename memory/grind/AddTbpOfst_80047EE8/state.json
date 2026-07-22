@@ -1,8 +1,8 @@
 {
  "func": "AddTbpOfst_80047EE8",
  "file": "text1b",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 0,
@@ -27,18 +27,19 @@
    "floor": 10,
    "modality": "structural",
    "headline": "Structural s3: phantom-frame grid measured DEAD (9 variants, cc1 .frame instrument) \u2014 no pure-C live-locals shape reserves target's vars=32; last structural axis exhausted, floor stands at 10, same en"
+  },
+  {
+   "session": 4,
+   "floor": 10,
+   "modality": "permuter",
+   "headline": "Permuter modality (9451 iters, fresh seed, --stack-diffs) killed the F2 permuter avenue: frame-growth descent comes ONLY from forbidden volatile dead-frame locals, never a legit form, never 0 \u2014 indepe"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "AddTbpOfst_80047EE8 is the same endgame-lock species as sibling InitHiraRmd_80047FBC; the residual is exactly the 32-byte phantom frame with no covering sanctioned family.",
-   "mechanism": "endgame-lock-disposition standing policy 2026-07-20; both AND-gates fail (canonical-asm signals negative; no SOTN precedent for an unwritten 32-byte phantom-frame carrier). All sanctioned pure-C axes now measured dead (F1 s2, F2 s3).",
-   "next_probe": "File the mirroring OWNER-ESCALATION for AddTbpOfst_80047EE8 (citing F1 discharge s2 + F2 phantom-frame grid s3) once the sibling InitHiraRmd_80047FBC family ruling lands; do not self-resolve. Until then this is progress-recorded exhaustion, not owner-gated (no escalation entry exists for this function yet)."
-  },
-  {
-   "hypothesis": "A permuter/forensics modality could surface a non-structural lever for the 32-byte frame that structural sweeps cannot reach.",
-   "mechanism": "reload spill-slot reservation is emergent from register pressure; a whole-function permuter search over statement orderings might (very unlikely) find a pressure profile reserving 8 phantom words with no stores.",
-   "next_probe": "Low-priority: a permuter campaign on the floor-10 chassis targeting frame growth; expected dead given v08 shows the documented trigger inert here, but not yet run in the permuter modality."
+   "hypothesis": "AddTbpOfst_80047EE8 is at the endgame-lock exhaustion state: all sanctioned pure-C axes measured dead (F1 arg0 lever-exhaustion s2, F2 phantom-frame structural s3 + permuter s4); the residual is exactly the 32-byte unwritten phantom frame with no covering sanctioned family, same species as sibling InitHiraRmd_80047FBC.",
+   "mechanism": "endgame-lock-disposition standing policy 2026-07-20; both AND-gates fail (canonical-asm signals negative \u2014 ordinary table walker; no SOTN precedent for an unwritten 32-byte phantom-frame carrier).",
+   "next_probe": "File the mirroring OWNER-ESCALATION for AddTbpOfst_80047EE8 (citing F1 discharge s2, F2 structural s3, F2 permuter s4) once the sibling InitHiraRmd_80047FBC family ruling lands. Until an escalation entry naming this function exists in docs/grind/decisions.md, this remains progress-recorded exhaustion, not owner-gated. Do not self-resolve."
   }
  ],
  "judge_constraints": [],

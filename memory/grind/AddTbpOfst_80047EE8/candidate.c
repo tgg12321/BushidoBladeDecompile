@@ -36,6 +36,14 @@
  * (forbidden dead-array). See tmp/grind/AddTbpOfst_80047EE8/s3/frame_grid.md.
  * Structural axis exhausted; same endgame-lock species as sibling
  * InitHiraRmd_80047FBC (owner-escalation filed 2026-07-20, awaiting ruling).
+ *
+ * s4 (2026-07-21, permuter): whole-function campaign on THIS floor-10 chassis
+ * (--stack-diffs, base_score 266, 9451 iters, fresh seed) lowered the weighted
+ * score to 202 ONLY via a volatile dead-frame local (`volatile long`/`unsigned
+ * long long pad`) — a forbidden volatile/dead-vars frame cheat reserving ~8
+ * bytes; never reached 0, next novel WORSE (207). No legit pure-C frame-growth
+ * form. Permuter modality independently corroborates s3's structural DEAD.
+ * See rejected/permuter-volatile-pad-frame-coercion.c.
  */
 void AddTbpOfst_80047EE8(s32 arg0, s32 arg1)
 {
