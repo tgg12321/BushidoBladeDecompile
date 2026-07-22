@@ -1,7 +1,7 @@
 {
  "func": "damage_DebugDisp",
  "file": "code6cac_c_mid",
- "session_count": 11,
+ "session_count": 12,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -75,22 +75,28 @@
    "floor": 2,
    "modality": "structural",
    "headline": "Structural: derived exact reg_n_refs weight model (1+loop_depth); compare-depth-promotion solves Region A (sum=$a0) via a 2nd non-def mechanism but still emits sum=0 last (A' not decoupled) + goto noi"
+  },
+  {
+   "session": 12,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "Structural: compare-promotion + sum-first KILLED (sum=$a0 and sum=0-first are mutually exclusive); plain-sum flip ruled out by exact allocno arithmetic \u2014 manual Region-A' axis exhausted, permuter-only"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A directed permuter on the score-2 index-B chassis (fresh whole-function numbering) surfaces a structural variant where sum reaches weighted refs>=11 from a whole-function loop_depth/LUID source (NOT a promotion of sum's def or compare), so sum wins $a0 with sum=0 emitted first (closes A', score 0).",
-   "mechanism": "s11 proved sum's only two promotable refs (def, compare) BOTH force sum=0-last at 11 refs. Target reaches 11 with sum=0 first => its 11th ref is a whole-function numbering effect the permuter can sweep but manual source cannot reach. The index-B Region-B rewrite renumbered pseudos/LUIDs vs the stale s4/s5 campaigns.",
-   "next_probe": "PERMUTER MODALITY (not structural). Build ws from cpp(src) with the committed score-2 body; target.o from asm/funcs/damage_DebugDisp.s + prelude (drop .set gp=64); honest pipeline; --stop-on-zero; ~20-30k fresh-seed iters. Vet every sub-2 find against dead-store/constant-holder."
+   "hypothesis": "A directed permuter on the score-2 index-B chassis (fresh whole-function numbering) surfaces a structural variant where sum reaches weighted refs>=11 from a whole-function loop_depth/LUID source that is NOT a promotion of sum's def or compare, so sum wins $a0 with sum=0 emitted first (closes A', score 0).",
+   "mechanism": "s11+s12 proved sum's only two promotable refs (def, compare) BOTH force sum=0-last when promoted to 11, and s12 proved sum-first + compare-promotion loses the RA win outright. Target reaches 11 with sum=0 first => its 11th ref is a whole-function numbering effect the permuter can sweep but no manual source lever (promotion, reorder, decl-order) can reach. The index-B Region-B rewrite renumbered pseudos/LUIDs vs the stale s4/s5 campaigns.",
+   "next_probe": "PERMUTER MODALITY (not structural). Build ws from cpp(src) with the committed score-2 body; target.o from asm/funcs/damage_DebugDisp.s + prelude (drop .set gp=64); honest pipeline; --stop-on-zero; ~20-30k fresh-seed iters. Vet every sub-2 find against dead-store/constant-holder; a duplicated-statement-into-arms find must clear byte-neutrality + cheat-reviewer."
   },
   {
-   "hypothesis": "Frontier #3 refined+narrowed by s11: the natural non-bracket sum 11th ref exists in target but is NOT a promotion of either of sum's two refs; it is a second non-coalescing sum pseudo or a loop_depth topology effect the permuter must find.",
-   "mechanism": "reg_n_refs += (1+loop_depth). sum(plain)=10; the +1 to 11 must be a weight-1 (depth-0) ref (impossible for a loop-scoped accumulator) OR a byte-neutral cross-jump-merged duplicate (duplicated-statement-into-arms family, last-resort). Manual promotion of def/compare both reschedule sum=0 last (s11 KILLED both).",
-   "next_probe": "On the index-B chassis, seek a non-coalescing second live sum pseudo used post-loop (the s2 acc-split coalesced; find a variant GCC will NOT coalesce) OR a duplicated-compare-into-arms that jump2 re-merges byte-neutrally. Vet against dead-store; requires cheat-reviewer if it lands."
+   "hypothesis": "Frontier #3 (narrowed by s12): the natural non-bracket sum 11th ref exists in target as a NEW byte-neutral sum reference the permuter must synthesize \u2014 a second non-coalescing sum pseudo used post-loop OR a duplicated-compare-into-arms that jump2 re-merges byte-neutrally (duplicated-statement-into-arms family).",
+   "mechanism": "reg_n_refs += (1+loop_depth): sum(plain)=10, needs +1 to tie j=11. A depth-1 duplicate adds +2 (overshoot); the +1 must be a depth-0 (w1) byte-neutral ref. damage's outer-loop body has NO existing if/else diamond around sum to ride the duplication on (unlike the motion_SetMotion closure), so creating one adds branches \u2014 only the permuter can find a mutation where GCC keeps the extra flow ref but merges the bytes.",
+   "next_probe": "On the index-B chassis seek a non-coalescing second live sum pseudo used post-loop (the s2 acc-split coalesced; find a variant GCC will NOT coalesce) OR a duplicated compare/def GCC re-merges byte-neutrally. Requires cheat-reviewer if it lands."
   },
   {
    "hypothesis": "Frontier #2 (drop j 11->10) remains dead by exact weight arithmetic; re-open ONLY if the permuter surfaces a counter reformulation that keeps the three j bytes (addiu a1,a1,1 / sltiu ...,0x24 / j=0) but sheds one flow-counted ref via a loop shape where one j use lands shallower.",
-   "mechanism": "j=11 = j0(w2,d1)+j++[2](w3,d2)+j<0x24(w3,d2). Only j0 is movable and it must reset per outer iteration (depth 1, w2). No manual byte-neutral -1 exists.",
+   "mechanism": "j=11 = j0(w2,d1)+j++[2](w3,d2)+j<0x24(w3,d2). Only j0 is movable and it must reset per outer iteration (depth 1, w2). No manual byte-neutral -1 exists (reconfirmed s11).",
    "next_probe": "Permuter-surfaced only; on the index-B numbering dump .lreg reg_n_refs for j and check whether any mutation lands a j use one loop level shallower while preserving the three j bytes. Lowest priority."
   }
  ],

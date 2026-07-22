@@ -587,3 +587,55 @@ constants' priority. To flip, the constants would need higher priority OR lower 
 - [s11] SHARPENED KILL: both of sum's two promotable refs force sum=0 to schedule last when promoted to reach 11; target reaches 11 with sum=0 FIRST, so target's 11th weighted ref comes from neither promotion -- a whole-function loop_depth/LUID-numbering effect, unreachable by manual source promotion. Directed-permuter axis only.
 
 - [s11] Frontier #2 (j 11->10) killed by exact weight arithmetic: j's only reducible ref is j0 (w2,d1); w2->w1 needs depth 0 but j=0 must reset per outer iteration. Reconfirms s7/s10 with the exact model.
+
+## s12 (structural, 2026-07-22) — compare-promotion + sum-first KILLED; plain-sum-flip ruled out by exact arithmetic
+- Floor 2 reconfirmed (candidate.c applied -> sandbox --disable all = 2, 79/79, 8 rules dropped,
+  34 cheat-asm stripped). src reverted to clean HEAD after measurement.
+- **NEW PROBE (the last untested Region-A' angle): compare-depth-promotion WITH sum=0 moved to
+  source-position FIRST.** s11 proved compare-promotion (bracket the post-loop compare, chk pre-loaded)
+  lifts sum to 11 refs and wins $a0 with sum=0 PLAIN — but s11 kept sum=0 in candidate position (LAST:
+  j;bp;sum) and concluded "sum=0 reschedules last whenever sum hits 11 refs." That conclusion never
+  isolated ref-count coupling from source ORDER (all preheader inits are prio=1 => sched1 tiebreak is
+  pure INSN_LUID = source order, per s6). So sum=0-first + compare-promotion SHOULD schedule sum=0 first
+  IF the s11 "last-regardless" claim were merely a source-order artifact.
+- **RESULT: sandbox = 7 (WORSE than s11's 5 AND floor 2), build_insns = 78** (one fewer than target).
+  objdump (tmp/grind/damage_DebugDisp/s12/probe_compare_sumfirst_objdump.txt): preheader emits
+  `move a1,zero (0x114); move a0,zero (0x118); addu v1,t1,a3 (0x11c)`; inner `addiu a0,a0,1 / addu
+  a1,a1,v0 / sltiu v0,a0,36 / beq a1,v0` => **sum=$a1, j=$a0 (RA LOSS, the swap)**. Moving sum=0 first
+  did NOT recover sum=0-first — it DESTROYED the compare-promotion RA win entirely.
+- **KEY FINDING (stronger than s11): sum=$a0 and sum=0-emitted-first are MUTUALLY EXCLUSIVE, not merely
+  "A' undecoupled".** The compare-promotion RA win is POSITION-DEPENDENT on sum=0's source LUID: it holds
+  only when sum=0 sits at its natural late position; moving sum=0 to low LUID flips the allocno outcome
+  back to j=$a0. Both goals actively conflict on this chassis. Reconfirms the s6/s7/s10/s11 A'/A coupling
+  from the final untested angle (sum-first + non-def promotion). rejected/regionA-compare-promote-sumfirst.c
+- **ARITHMETIC COROLLARY (rules out the "cheap whole-function perturbation flips plain-sum" hope without
+  a search):** plain-sum is sum n_refs=10 / j n_refs=11, both live_length=9. allocno_compare priority =
+  floor_log2(n)*n/LL*1e4 => sum 33333 < j 36666. These do NOT TIE, so j wins $a0 OUTRIGHT regardless of
+  pseudo/declaration order — no decl-reorder or prologue-reorder that leaves ref-counts unchanged can
+  flip plain-sum to $a0 (the pseudo-number tiebreak only fires on an exact priority tie). A flip strictly
+  requires sum n_refs>=11 (relocates the def -> A') OR sum LL<=8 (needs a bracket) OR j n_refs<=10 / j
+  LL>=10 (all byte-fixed by target's `sltiu ...,0x24` / `addiu a1,a1,1`). So the whole-function-numbering
+  hope lives ONLY on the permuter axis (a structural mutation producing a NEW byte-neutral sum ref),
+  unreachable by manual declaration/order perturbation. This narrows frontier #1/#3 to strictly permuter.
+
+- [s12] Compare-promotion + sum=0-first = 7 (build 78), objdump sum=$a1/j=$a0 (RA LOSS): moving sum=0 to
+  low LUID DESTROYS the s11 compare-promotion RA win. sum=$a0 and sum=0-emitted-first are MUTUALLY
+  EXCLUSIVE on this chassis (position-dependent RA win), not merely "A' undecoupled". Final untested
+  Region-A' structural angle KILLED. rejected/regionA-compare-promote-sumfirst.c
+- [s12] Arithmetic corollary: plain-sum (n_refs 10 vs j 11, LL both 9) priorities 33333<36666 do NOT tie,
+  so NO ref-count-preserving whole-function/decl perturbation flips plain-sum to $a0 (pseudo tiebreak
+  needs an exact tie). Flip requires sum>=11 refs (relocates def) / sum LL<=8 (bracket) / j<=10 refs or
+  j LL>=10 (byte-fixed). Whole-function-numbering hope is permuter-only; manual structural axis exhausted.
+- [s12] Floor 2 reconfirmed (candidate applied, sandbox --disable all = 2); src reverted to clean HEAD.
+
+- [s12] Floor 2 reconfirmed this session: candidate.c applied -> sandbox --disable all = 2, target 79 / build 79, 8 rules dropped, 34 cheat-asm stripped; src reverted to clean HEAD.
+
+- [s12] Compare-promotion + sum=0-first = sandbox 7 (build 78); objdump proves sum=$a1/j=$a0 (RA loss). sum=$a0 and sum=0-emitted-first are MUTUALLY EXCLUSIVE on the index-B chassis: the compare-promotion RA win is position-dependent on sum=0's natural late source LUID; moving sum=0 to low LUID flips the allocno outcome back to j=$a0.
+
+- [s12] This closes the LAST untested manual Region-A' angle (sum-first + non-def promotion) and strengthens s11 from 'A' not decoupled' to 'the two goals actively conflict'. Reconfirms the s6/s7/s10/s11 A'/A coupling.
+
+- [s12] Exact arithmetic corollary: plain-sum priorities (33333 vs 36666) do not tie, so NO decl/order/prologue perturbation that preserves ref-counts can flip plain-sum to $a0 — the whole-function-numbering hope requires a structural mutation synthesizing a NEW byte-neutral sum reference, which is a permuter effect, not a manual source lever.
+
+- [s12] Target's Region-A' preheader (asm/funcs): .L8003801C addu $a0,0,0 (sum=0, FIRST) / addu $v1,$t1,$a3 (bp) / addu $a1,0,0 (j=0, LAST) — sum=$a0 with sum=0 emitted first, requiring sum weighted reg_n_refs>=11 from a source that does NOT relocate sum=0's def.
+
+- [s12] Sibling func_80037F40 (COMPLETED-C, same file): accumulates its checksum ONCE pre-outer-loop (depth 1) then stores it; damage RECOMPUTES sum inside the outer loop (depth 2) and compares it — the depth-2 recompute is the root of damage's extra-weight requirement, so the sibling's shallower shape is semantically unavailable (no transplant value).

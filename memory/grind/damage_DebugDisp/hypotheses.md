@@ -422,3 +422,27 @@ pos6). The whole game is: give sum its 11th weighted ref WITHOUT bracketing sum=
 - probe: Exact weight arithmetic on the confirmed model plus the per-outer-iteration reset constraint.
 - result: j=0 must reset each of the 3 outer iterations (depth 1); cannot hoist to depth 0. w2->w1 impossible; full drop = -2 (overshoots to 9). No single-weight (-1) byte-neutral j reduction exists.
 - verdict: KILLED
+
+## [s12] Compare-depth-promotion + sum=0 moved to source-position FIRST decouples A' (sum=$a0 with sum=0 emitted first).
+- mechanism: s11 compare-promotion lifts sum to 11 refs -> $a0 with sum=0 PLAIN; sched1 tiebreak is pure INSN_LUID (all preheader inits prio=1, s6), so placing sum=0 at lowest source LUID should emit it first (pos4), giving target's exact preheader while retaining the RA win.
+- probe: outer-loop body reordered `sum=0; j=0; bp=base+offset; do{accum}while; chk=...; do{if(sum==chk)goto found;}while(0); incr;` with `found:` at Region B; sandbox --disable all + objdump.
+- result: sandbox=7 (build 78, WORSE than s11's 5 and floor 2). objdump preheader `move a1,0; move a0,0; addu v1` + inner `addiu a0 / addu a1 / sltiu a0` => sum=$a1, j=$a0 (RA LOSS). Moving sum=0 first DESTROYED the compare-promotion RA win rather than recovering sum=0-first.
+- verdict: KILLED. sum=$a0 and sum=0-emitted-first are MUTUALLY EXCLUSIVE on this chassis — the compare-promotion RA win is position-dependent on sum=0's late source LUID. Final untested manual Region-A' angle closed; reconfirms s6/s7/s10/s11 A'/A coupling. rejected/regionA-compare-promote-sumfirst.c
+
+## [s12] A ref-count-preserving whole-function/declaration perturbation can flip plain-sum to $a0 (byte-perfect preheader, score 0).
+- mechanism: plain-sum has a byte-perfect preheader; if some numbering perturbation makes sum win $a0 at 10 refs, score->0 with no relocation.
+- probe: exact allocno_compare arithmetic on the confirmed weight/priority model (no search needed — the reasoning is exhaustive over ref-count-preserving perturbations).
+- result: KILLED. plain-sum priority 33333 (n=10) < j 36666 (n=11), LL both 9; these do NOT TIE, so j wins $a0 outright independent of pseudo/decl order (the allocno-number tiebreak fires only on an exact tie). Flipping plain-sum requires sum n_refs>=11 (relocates def -> A') OR sum LL<=8 (needs bracket) OR j n_refs<=10 / j LL>=10 (byte-fixed by target). No manual axis reaches any of these byte-neutrally.
+- verdict: KILLED (by exact arithmetic). The whole-function-numbering hope is PERMUTER-ONLY — it needs a structural mutation that synthesizes a NEW byte-neutral sum reference (frontier #1/#3), not a manual decl/order change.
+
+## [s12] Compare-depth-promotion (RA win via the post-loop compare, sum=0 left PLAIN) combined with sum=0 moved to source-position FIRST decouples Region A': sum wins $a0 AND sum=0 emits first (target preheader), since all preheader inits are prio=1 so sched1's tiebreak is pure INSN_LUID = source order.
+- mechanism: s11 showed the compare bracket lifts sum's weighted reg_n_refs 10->11 (ties j) so sum wins $a0 by pseudo, with sum=0 unbracketed. s11 kept sum=0 in candidate position (last), never isolating ref-count coupling from source order; moving sum=0 to lowest LUID should schedule it first while retaining the RA win.
+- probe: Outer-loop body reordered to `sum=0; j=0; bp=base+offset; do{accum}while; chk=*(chkptr+0x6C); do{if(sum==chk)goto found;}while(0); incr;` with `found:` at Region B start; sandbox --disable all + objdump of the preheader/inner loop.
+- result: sandbox=7 (build 78, WORSE than s11's 5 and floor 2). objdump preheader `move a1,0; move a0,0; addu v1,t1,a3`; inner `addiu a0,a0,1 / addu a1,a1,v0 / sltiu v0,a0,36 / beq a1,v0` => sum=$a1, j=$a0 (RA LOSS). Moving sum=0 first DESTROYED the compare-promotion RA win instead of recovering sum=0-first.
+- verdict: KILLED
+
+## [s12] A ref-count-preserving whole-function/declaration perturbation (decl order, prologue-init order) can flip plain-sum to $a0, giving a byte-perfect preheader at score 0 with no def relocation.
+- mechanism: plain-sum's preheader is already byte-perfect (s10); if numbering shifts sum to win $a0 at 10 refs the residual closes without a bracket. Tested by exact allocno_compare arithmetic over all ref-count-preserving perturbations rather than a search.
+- probe: allocno_compare priority = floor_log2(n_refs)*n_refs/live_length*1e4 on the confirmed s11 weight model (sum n=10/LL=9, j n=11/LL=9).
+- result: sum priority 33333 < j 36666 and they do NOT TIE, so j wins $a0 outright regardless of pseudo/declaration order (the allocno-number tiebreak only fires on an exact tie). A flip strictly requires sum n_refs>=11 (relocates the def -> reopens A'), sum LL<=8 (needs a loop-note bracket), or j n_refs<=10 / j LL>=10 (byte-fixed by target's sltiu 0x24 / addiu a1,a1,1).
+- verdict: KILLED
