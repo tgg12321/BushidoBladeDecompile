@@ -44,6 +44,17 @@
  * bytes; never reached 0, next novel WORSE (207). No legit pure-C frame-growth
  * form. Permuter modality independently corroborates s3's structural DEAD.
  * See rejected/permuter-volatile-pad-frame-coercion.c.
+ *
+ * s5 (2026-07-21, permuter): fresh-seed campaign on a STRUCTURALLY DIFFERENT
+ * chassis — the no-FAKE floor-11 form (distinct RA basin, base_score 5200 vs
+ * s4's 266). 17057 iters, --stack-diffs. Descended 5200 -> 207 and plateaued
+ * FLAT at 207 from iter ~12753 to 17057 (zero novel improvement), never 0.
+ * The sole frame-growth lever was again a forbidden volatile dead-frame local
+ * (`volatile unsigned int pad;`, ~8 bytes). Two structurally-distinct basins
+ * + ~26500 combined permuter iters both conclude: the 32-byte phantom frame
+ * is reachable ONLY via forbidden dead/volatile-local cheats. Permuter
+ * modality now measured DEAD across BOTH chassis basins.
+ * See rejected/permuter-volatile-uint-pad-nofake-basin.c.
  */
 void AddTbpOfst_80047EE8(s32 arg0, s32 arg1)
 {

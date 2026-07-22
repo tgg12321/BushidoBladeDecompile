@@ -1,7 +1,7 @@
 {
  "func": "AddTbpOfst_80047EE8",
  "file": "text1b",
- "session_count": 4,
+ "session_count": 5,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -33,13 +33,19 @@
    "floor": 10,
    "modality": "permuter",
    "headline": "Permuter modality (9451 iters, fresh seed, --stack-diffs) killed the F2 permuter avenue: frame-growth descent comes ONLY from forbidden volatile dead-frame locals, never a legit form, never 0 \u2014 indepe"
+  },
+  {
+   "session": 5,
+   "floor": 10,
+   "modality": "permuter",
+   "headline": "s5 permuter on a 2nd, structurally-different basin (no-FAKE floor-11 chassis, base 5200, 17057 iters) plateaus flat at 207 via the same forbidden volatile dead-frame-local cheat, never 0 \u2014 permuter mo"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "AddTbpOfst_80047EE8 is at the endgame-lock exhaustion state: all sanctioned pure-C axes measured dead (F1 arg0 lever-exhaustion s2, F2 phantom-frame structural s3 + permuter s4); the residual is exactly the 32-byte unwritten phantom frame with no covering sanctioned family, same species as sibling InitHiraRmd_80047FBC.",
-   "mechanism": "endgame-lock-disposition standing policy 2026-07-20; both AND-gates fail (canonical-asm signals negative \u2014 ordinary table walker; no SOTN precedent for an unwritten 32-byte phantom-frame carrier).",
-   "next_probe": "File the mirroring OWNER-ESCALATION for AddTbpOfst_80047EE8 (citing F1 discharge s2, F2 structural s3, F2 permuter s4) once the sibling InitHiraRmd_80047FBC family ruling lands. Until an escalation entry naming this function exists in docs/grind/decisions.md, this remains progress-recorded exhaustion, not owner-gated. Do not self-resolve."
+   "hypothesis": "AddTbpOfst_80047EE8 is at the endgame-lock exhaustion state: all sanctioned pure-C axes measured dead \u2014 F1 arg0 lever-exhaustion (s2), F2 phantom-frame structural (s3), F2 permuter across BOTH chassis basins (s4 floor-10, s5 floor-11). The residual is exactly the 32-byte unwritten phantom frame with no covering sanctioned family, same species as sibling InitHiraRmd_80047FBC.",
+   "mechanism": "endgame-lock-disposition standing policy 2026-07-20; both AND-gates fail (canonical-asm signals negative \u2014 ordinary table walker; no SOTN precedent for an unwritten 32-byte phantom-frame carrier). The permuter's only frame-growth lever is the forbidden volatile/dead-local cheat, confirmed across two distinct RA basins.",
+   "next_probe": "File the mirroring OWNER-ESCALATION for AddTbpOfst_80047EE8 (citing F1 discharge s2, F2 structural s3, F2 permuter two-basin s4/s5) once the sibling InitHiraRmd_80047FBC family ruling lands. Until an escalation entry naming this function exists in docs/grind/decisions.md, this remains progress-recorded exhaustion, not owner-gated. Do not self-resolve. The permuter modality is now fully exhausted; no un-run permuter avenue remains."
   }
  ],
  "judge_constraints": [],
