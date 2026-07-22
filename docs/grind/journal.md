@@ -485,3 +485,4 @@
 - 2026-07-21 23:06 AddTbpOfst_80047EE8 s10 [synthesis] floor=10: Synthesis: full 6-rung ladder merged; both endgame-lock AND-gates measured dead directly on this function (scan_hand_coded LOW 1/8; no SOTN precedent) — species CONFIRMED, mirroring owner-escalation drafted.
 - 2026-07-21 23:14 AddTbpOfst_80047EE8 s11 [structural] OWNER-GATED — parked pending owner ruling: Structural axis measured dead (no un-run lever; mechanism upstream of all C-structure per s6/s7); filed mirroring OWNER-ESCALATION for AddTbpOfst_80047EE8 -> owner-gated.
 - 2026-07-21 23:30 func_80069E18 COMPLETED-C after 1 sessions.
+- 2026-07-21 23:38 cpu_check_tubazeri_2 s1 [recon] floor=4: Recon: honest floor 4 confirmed (candidate applied, HEAD was 9); m2c proves target C shape == our candidate, so the 4-insn gap is two GCC-internal optimizer decisions, not a missing source shape.

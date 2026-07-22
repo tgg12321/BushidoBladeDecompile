@@ -1,0 +1,40 @@
+{
+ "func": "cpu_check_tubazeri_2",
+ "file": "code6cac_b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 0,
+   "floor": 4,
+   "modality": "wip-import",
+   "headline": "floor imported from memory/wip checkpoint"
+  },
+  {
+   "session": 1,
+   "floor": 4,
+   "modality": "recon",
+   "headline": "Recon: honest floor 4 confirmed (candidate applied, HEAD was 9); m2c proves target C shape == our candidate, so the 4-insn gap is two GCC-internal optimizer decisions, not a missing source shape."
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "H1 strength-reduce suppression: get GCC to keep biv `ptr` with 0x332/0x334 displacement instead of combining the two givs into new biv q=ptr+0x332.",
+   "mechanism": "loop.c strength_reduce + combine_givs allocates a giv-biv for ptr+0x332 and expresses ptr+0x334 as +2; target leaves both as replaceable (cost-0) displacement givs off ptr.",
+   "next_probe": "Instrumented cc1 loop.c / -da RTL dump on the candidate .i to read the combine_givs benefit calc; derive a C form that keeps both accesses replaceable-displacement givs. (WIP already killed u16-stride-1, for-index, comma-init, no-guard do-while.)"
+  },
+  {
+   "hypothesis": "H2 operand-swap: flip the pointer add so the shift-result pseudo sorts before the param pseudo, yielding `addu s2,v0,s0`.",
+   "mechanism": "GCC canonicalizes commutative plus by pseudo regno; param a0 < local v0, so a0 lands rs. Target had the shift-result pseudo lower.",
+   "next_probe": "greg/RTL dump to read the two pseudos + conflicts; try copying a0 into a fresh local consumed only by the add (materialized after the shift) to reorder pseudo assignment. (WIP killed source-order rewrites: uintptr cast, byteptr-first, explicit s2_int \u2014 all add conversion insns.)"
+  },
+  {
+   "hypothesis": "H3 permuter from the floor-4 base may find a structural lever outside the manual playbook.",
+   "mechanism": "randomized/directed structural search re-seeded from the closer base (score 4) explores forms the hand-derived levers missed.",
+   "next_probe": "Build a clean single-function target.o (offset 0 via asm/funcs + prelude.inc) and run decomp-permuter from candidate.c with --stop-on-zero under fresh-seed discipline; harvest in-turn."
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-22T04:30:07.458431+00:00"
+}
