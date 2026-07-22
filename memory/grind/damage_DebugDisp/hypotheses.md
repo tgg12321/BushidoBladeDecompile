@@ -247,3 +247,39 @@ LUID were tried and REJECTED as cheat-by-spelling (magic_base/magic_max, score 4
 - probe: Enumerate depth-raising constructs (do-while(0)/for(i<1)/while(1){break} all emit NOTE_INSN_LOOP_BEG; if(1){} emits none; extra explicit sum ref = dead code) and the j-reduction axis (hoist j=0 to depth 0).
 - result: KILLED. Every loop-note wrapper re-couples placement; if(1){} adds 0 weight; a synthetic extra sum ref is a cheat (no-new-park-categories). j=0 must reset each outer iteration (can't leave depth 1); j++/j<0x24 are minimal depth-2 refs. Sibling func_80037F40 lands the natural allocation only because its accumulate is shallower-nested (runs once pre-outer-loop) — a shape damage's semantics forbid.
 - verdict: KILLED
+
+## [s8] Rederiving the outer loop via m2c (negated-compare + goto, increments inside the if) yields a structurally different shape that flips Region A or A'.
+- mechanism: a different outer-loop BB layout changes the sched1 preheader LUID ordering (Region A') and/or the whole-function conflict graph feeding Region A.
+- probe: applied m2c's goto/negated-compare shape (PLAIN sum=0, then +do{sum=0}while(0)); sandbox --disable all + objdump vs target.
+- result: PLAIN=8 (Region A unsolved, == plain break form); +do-while0=6 with objdump residual IDENTICAL to candidate (A' preheader j,bp,sum vs target sum,bp,j + Region B). Outer CFG does not move the preheader inits' LUIDs.
+- verdict: KILLED. Rederive of the outer loop is score/residual-equivalent to candidate.
+
+## [s8] Region A' can be decoupled from the RA win by raising sum's loop-depth-weighted refs to 11 via a NON-def sum reference (the post-loop compare) in a do-while(0), keeping sum=0 plain at low LUID.
+- mechanism (s7 frontier item 1): if sum reaches weighted-refs 11 (tie j) without relocating sum=0's def, sched1 emits sum=0 first (A' matches target) while sum still wins $a0 via the allocno tiebreak.
+- probe: (a) `do{ if(sum!=chk){incr;goto} }while(0)`; (b) `do{ matched=(sum==chk); }while(0); if(!matched){incr}`. sandbox --disable all each.
+- result: BOTH score 12 (from 6). The loop-note bracket around the tail raises loop_depth for the matched outer IVs (i=a2/chkptr=t0/offset=a3) and/or materializes a boolean, cascading the outer allocation.
+- verdict: KILLED. The +1 sum ref cannot be sourced from the tail region; it must come from sum's own def or the inner accumulate, both re-introducing the s6/s7 A'/A coupling. No manual decoupler exists.
+
+## [s8] Kengo transplant supplies the original source structure for damage_DebugDisp.
+- mechanism: Marionation engine structure is preserved BB2(PS1)->Kengo(PS2); the matched Kengo source reveals the original C shape.
+- probe: kengo_matches.csv + kengo_ref.py dump of the Kengo equivalent.
+- result: KILLED. Match is name-only (is_damage_calc, 0.00 confidence); Kengo's damage_DebugDisp @0x11fd88 is an unrelated font/matrix debug-display function (fnt_print/atan2/conv_matrix_rotation), not the checksum validator. No structural transplant source. decomp.me scrape env-blocked (curl_cffi/network absent).
+- verdict: KILLED.
+
+## [s8] Rederiving the outer loop via m2c (negated compare + goto, increments inside the if) yields a structurally different shape that flips Region A or A'.
+- mechanism: A different outer-loop BB layout changes sched1's preheader LUID ordering (Region A') and/or the whole-function conflict graph feeding Region A's sum/j allocation.
+- probe: Applied m2c's goto/negated-compare shape with PLAIN sum=0, then with do{sum=0}while(0); sandbox --disable all + objdump vs target.
+- result: PLAIN=8 (Region A unsolved, identical to plain break form); +do-while0=6 with objdump residual IDENTICAL to candidate (A' preheader j,bp,sum vs target sum,bp,j + Region B). Outer CFG does not move the preheader inits' LUIDs.
+- verdict: KILLED
+
+## [s8] Region A' can be decoupled from the RA win by raising sum's loop-depth-weighted refs to 11 via a NON-def sum reference (the post-loop sum==chk compare) inside a do-while(0), keeping sum=0 plain at low LUID so it emits first (target A' order).
+- mechanism: s7 frontier item 1: if sum reaches weighted-refs 11 (tie j) without relocating sum=0's def, sched1 emits sum=0 first while sum still wins $a0 via the allocno-number tiebreak (sum 77 < j 79).
+- probe: Two spellings: (a) do{ if(sum!=chk){incr;goto} }while(0); (b) do{ matched=(sum==chk); }while(0); if(!matched){incr}. sandbox --disable all each.
+- result: BOTH score 12 (from floor 6). The loop-note bracket around the tail raises loop_depth for the matched outer IVs (i=a2, chkptr=t0, offset=a3) and/or materializes a boolean, cascading the outer allocation.
+- verdict: KILLED
+
+## [s8] The Kengo (PS2 successor) match supplies the original source structure for damage_DebugDisp for transplant.
+- mechanism: Marionation engine structure is preserved BB2(PS1)->Kengo(PS2); the matched Kengo source reveals the original C shape.
+- probe: kengo_matches.csv lookup + kengo_ref.py disassembly dump of the Kengo equivalent.
+- result: Match is name-only (is_damage_calc, 0.00 confidence). Kengo's damage_DebugDisp @0x11fd88 is an unrelated font/matrix debug-display function (fnt_locate/fnt_print/conv_matrix_rotation/atan2), NOT the checksum validator. No structural transplant source.
+- verdict: KILLED

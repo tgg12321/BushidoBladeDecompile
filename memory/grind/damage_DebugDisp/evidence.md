@@ -394,3 +394,54 @@ constants' priority. To flip, the constants would need higher priority OR lower 
 - [s7] Sibling func_80037F40 (same file, COMPLETED-C, src ~line 190): near-twin (checksum accumulate + for(;;) CopyBlock fence + k-loop) whose accumulate runs ONCE before the outer loop (depth 0/1) -> matched pure C with NO do-while(0). Cross-function confirmation of the depth-weighting mechanism; damage cannot adopt the shape (its accumulate must be inside the outer loop, re-checksumming each of 3 candidate blocks).
 
 - [s7] Region B unchanged from s6: loop.c move_movables emit_insn_before(loop_start) places hoisted invariants at preheader END (higher LUID than ap/a2p moves) -> sched1 emits moves-first; target needs consts at lower LUID = a pre-loop reference = constant-holder cheat. Dead.
+
+## s8 (rederive, 2026-07-22) — m2c/goto shape score-equivalent; tail-bracket decoupler KILLED; Kengo dead
+- Floor 6 reconfirmed via the goto shape + do-while(0) (sandbox --disable all = 6); src reverted to clean HEAD.
+- **Fresh m2c decompile** of asm/funcs/damage_DebugDisp.s reconstructs the outer search loop as a
+  NEGATED compare with increments INSIDE the if and a `goto` loop-back (no `break`):
+  `loop_1:{sum=0;bp;j;accum} if(sum!=chk){chkptr++;i++;offset+=0x24;if(i<3)goto loop_1;}`.
+  Genuinely different outer BB layout than candidate's `do{...if(sum==chk)break;incr}while(i<3)`.
+  * goto shape, PLAIN sum=0 -> score **8** (Region A UNSOLVED, identical to plain break form).
+  * goto shape + do{sum=0}while(0) -> score **6**, objdump residual IDENTICAL to candidate
+    (Region A solved: inner loop sum=$a0/j=$a1; residual = A' preheader order j,bp,sum vs target
+    sum,bp,j + Region B). The outer control-flow shape does NOT move the preheader LUID ordering.
+  KILL: rederiving the outer loop via m2c is score/residual-equivalent; A' emit order is set by the
+  preheader inits' own LUIDs (do-while0 def relocation), not the surrounding CFG.
+  rejected/m2c-goto-negated-compare-equivalent.c
+- **Region A' decoupler probe (s7 frontier item 1): raise sum's weighted refs to 11 via a NON-def
+  sum reference (the post-loop `sum==chk` compare) inside a do-while(0), keeping sum=0 plain/low-LUID.**
+  Two spellings, BOTH score **12** (from floor 6):
+  * `do{ if(sum!=chk){incr; goto} }while(0)` — the bracket raises loop_depth for chkptr++/i++/offset+=
+    too, cascading the matched outer IVs (i=a2, chkptr=t0, offset=a3).
+  * `do{ matched=(sum==chk); }while(0); if(!matched){incr}` — bracket only the compare via an
+    intermediate; still 12 (boolean materialization + tail lw/beq reschedule).
+  KILL: the tail region (compare + outer IVs) cannot absorb a loop-note bracket without cascading the
+  outer allocation. The +1 sum ref for Region A can ONLY come from sum's own def (sanctioned
+  do-while0 on sum=0) or the inner accumulate — both re-introduce the A'/A coupling. Reconfirms
+  s6/s7 irreducible coupling from a fresh structural angle.
+  rejected/regionA-tail-bracket-cascades-outer-iv.c
+- **Kengo transplant DEAD (name-only match).** kengo_matches.csv maps damage_DebugDisp -> is_damage_calc
+  (name-unique, 0.00 confidence). kengo_ref.py dump: Kengo's `damage_DebugDisp` @0x11fd88 is an
+  UNRELATED font/matrix debug-display function (fnt_locate/fnt_print/conv_matrix_rotation/atan2), NOT a
+  checksum validator. No structural transplant source. The BB2 function is really an is_damage_calc
+  data-block checksum validator.
+- **decomp.me corpus scrape UNAVAILABLE** in this env: tools/decomp_me_scrape.py needs curl_cffi
+  (not installed) + network. Avenue environment-blocked, not measured.
+
+- [s8] m2c goto/negated-compare outer-loop shape: PLAIN=8, +do-while0=6 with residual IDENTICAL to candidate; outer CFG structure does not move the A' preheader LUID order. Rederive of the outer loop is score-equivalent.
+- [s8] Region A' decoupler KILLED: raising sum's weighted refs via a do-while0 bracket on the tail compare (both `if`-wrapped and `matched`-intermediate spellings) scores 12 — the bracket cascades the matched outer IVs (i/chkptr/offset at depth 1). The +1 sum ref cannot be sourced outside sum's own def/accumulate; s6/s7 coupling reconfirmed structurally.
+- [s8] Kengo transplant dead: name-only match (is_damage_calc, 0.00 conf); Kengo's damage_DebugDisp is an unrelated font/debug-display function. decomp.me scrape env-blocked (no curl_cffi/network).
+
+- [s8] Floor 6 reconfirmed this session: goto-shape + do{sum=0}while(0) -> sandbox --disable all = 6; src reverted to clean HEAD after measurement.
+
+- [s8] m2c fresh decompile reconstructs the outer search loop as a negated compare with increments INSIDE the if and a goto loop-back (no break) - a genuinely different BB layout from candidate.c's do-while+break.
+
+- [s8] goto shape with PLAIN sum=0 scores 8 (Region A sum/j swap unsolved); the inner loop is byte-identical target vs build, so control-flow reshape cannot change the inner-loop sum/j allocation.
+
+- [s8] goto shape + do-while0 scores 6 with objdump residual IDENTICAL to candidate (A' preheader order + Region B); the outer control-flow structure does not move sched1's preheader-init LUID ordering.
+
+- [s8] Region A' tail-bracket decoupler (both if-wrapped and matched-intermediate spellings) scores 12: bracketing the tail raises loop_depth for the matched outer IVs (i/chkptr/offset at depth 1) and cascades the outer allocation. The +1 sum ref for Region A cannot be sourced outside sum's own def/accumulate - s6/s7 A'/A coupling reconfirmed structurally.
+
+- [s8] Kengo transplant dead: name-only match; Kengo's damage_DebugDisp is an unrelated font/debug-display function. decomp.me corpus scrape env-blocked (curl_cffi not installed, no network).
+
+- [s8] Residual unchanged from s6/s7: Region A' = sched1 rank_for_schedule INSN_LUID tiebreak fed by the do-while0 def relocation of sum=0 to preheader block-bottom; Region B = loop.c move_movables emit_insn_before(loop_start) hoisting the range constants AFTER the ap/a2p moves.

@@ -1,8 +1,8 @@
 {
  "func": "damage_DebugDisp",
  "file": "code6cac_c_mid",
- "session_count": 7,
- "current_modality": "forensics",
+ "session_count": 8,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 0,
@@ -51,23 +51,29 @@
    "floor": 6,
    "modality": "forensics",
    "headline": "Forensics: CORRECTED Region A mechanism \u2014 the do-while(0)'s sum=a0 flip is a loop-depth-weighted reg_n_refs TIE (10->11) broken by allocno number (sum 77<j 79), NOT live_length (LL=9 unchanged on both"
+  },
+  {
+   "session": 8,
+   "floor": 6,
+   "modality": "rederive",
+   "headline": "Rederive: m2c goto-shape is score-equivalent to candidate (A' unmoved); tail-bracket A' decoupler cascades outer IVs (=12); Kengo match is name-only/unrelated. Region A' coupling reconfirmed structura"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A whole-function structure gives sum weighted-n_refs >= 11 (tie/beat j) WITHOUT a loop-note bracket at sum=0's def, so sum=0 keeps low LUID (emitted first, A' closed) while still winning $a0 via the allocno tiebreak.",
-   "mechanism": "reg_n_refs += loop_depth (flow.c): sum needs one more depth-weighted reference than the plain-form's 10. The do-while(0) supplies it via a NOTE_INSN_LOOP_BEG that also block-bottoms sum=0. Any lever that raises sum's ref weight through a DIFFERENT block (e.g. a genuine loop-carried use, or deeper nesting of the accumulate that the target's semantics actually admit) would add the +1 without the preheader-schedule coupling.",
-   "next_probe": "Directed permuter on the floor-6 full-TU basin biased to structural mutations OUTSIDE the preheader that add a real depth>=1 sum reference or rebalance the accumulate nesting; reject any synthetic/dead extra ref (cheat). s4/s5 fresh-seed campaigns found none \u2014 seed toward accumulate-region restructures, not preheader reorders (measured dead)."
+   "hypothesis": "A whole-function structure gives sum weighted-n_refs >= 11 (tie/beat j) WITHOUT a loop-note bracket at sum=0's def AND without deepening the tail (which cascades i/chkptr/offset).",
+   "mechanism": "reg_n_refs += loop_depth (flow.c): sum needs +1 depth-weighted ref over plain's 10. s8 proved it cannot come from the tail compare (cascade=12) nor from control-flow reshape (equivalent). It must come from a real depth>=1 sum reference in a block that does NOT contain the outer IVs, or from a genuine loop-carried sum use the target's semantics admit.",
+   "next_probe": "Directed permuter on the floor-6 full-TU basin biased to accumulate-region restructures that add a real depth-2 sum reference (NOT sum=0's def, NOT the tail) - e.g. an inner-loop shape carrying a second live sum use; reject any synthetic/dead ref. Also probe splitting the accumulate into two depth-2 references of a single sum pseudo that GCC does not coalesce (s2's acc-split coalesced - seek a non-coalescing variant)."
   },
   {
-   "hypothesis": "Drop j's loop-depth-weighted reg_n_refs from 11 to 10 so the plain (low-LUID) sum=0 form ties j and wins $a0 via the allocno tiebreak with NO do-while(0) at all.",
-   "mechanism": "j total 11 = j=0(depth1) + j++(set+use,depth2) + j<0x24(depth2). Moving any j ref to a shallower depth drops the weight. j=0 at depth 0 would give j=10.",
-   "next_probe": "Find a loop shape where the counter is initialized once at function scope yet still resets per outer iteration without a depth-1 store (measured-blocked so far: j must be 0 at each inner-loop entry). Explore whether a pointer-end / difference counter reformulation legitimately removes a depth-2 j reference while keeping target's `sltiu ...,0x24` byte \u2014 prior pointer-end attempts diverged from target's integer counter."
+   "hypothesis": "Drop j's loop-depth-weighted reg_n_refs from 11 to 10 so plain (low-LUID) sum=0 ties j and wins $a0 via the allocno tiebreak with NO do-while(0) at all (closes A and A' together).",
+   "mechanism": "j total 11 = j=0(depth1) + j++(depth2) + j<0x24(depth2). Both depth-2 j refs are mandatory (target keeps sltiu ...,0x24 and the increment). j=0 at depth 0 would give 10 but j must reset each outer iteration.",
+   "next_probe": "Find a loop shape where the counter is initialized once at function scope yet still resets per outer iteration without a depth-1 store, OR a pointer-difference reformulation that legitimately removes one depth-2 j reference while keeping target's sltiu ...,0x24 byte (prior pointer-end attempts diverged from target's integer counter)."
   },
   {
-   "hypothesis": "Region B closes only if the two LICM invariants get LOWER LUID than the ap/a2p moves without a pre-loop reference (constant-holder cheat) \u2014 unchanged from s6.",
-   "mechanism": "loop.c move_movables emit_insn_before(loop_start) hard-codes the hoist point at preheader END; invariants referenced only inside the k-loop => LICM controls placement.",
-   "next_probe": "Design a k-loop where the range-test bound is genuinely loop-carried with a real dependency chain to the pointer moves (raising the moves' LUID above the constants); vet against constant-holder/dead-alias. All regionB-* attempts invalid/cheat s1-s6."
+   "hypothesis": "Region B closes only if the two LICM range constants get LOWER LUID than the ap/a2p moves without a pre-loop reference (constant-holder cheat).",
+   "mechanism": "loop.c move_movables emit_insn_before(loop_start) hard-codes the hoist point at preheader END (after the ap/a2p moves); the constants are referenced only inside the k-loop so LICM controls placement. Unchanged s1-s8.",
+   "next_probe": "Design a k-loop where the range-test bound is genuinely loop-carried with a real dependency chain to the pointer moves (raising the moves' LUID above the constants), or where ap/a2p init is NOT a preheader insn (computed later/derived), so the hoisted constants become the first preheader insns. Vet against constant-holder/dead-alias."
   }
  ],
  "judge_constraints": [],
