@@ -563,3 +563,33 @@ args is NOT a sanctioned use-site shape) and stripped by `volatile_cheats`.
 - [s24] Axis A unchanged: fresh s24 combine section re-shows (mem/s:SI (symbol_ref D_8009BF68)) symbol-direct/folded (combine.c:1458 added_sets_2, s15 source-verified) — single pure offset-0 rvalue read folds to 2-insn.
 
 - [s24] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (Grep 8007DC9C = No matches this session), so owner-gated is NOT claimable despite full five-modality exhaustion + the strengthened over-determined axis-B mechanism.
+
+- [s25] FORENSICS (6th run; s6/s7/s15/s16/s24 prior). Baseline re-confirmed: sandbox --disable all score 9, target 91 / build 90, rules_dropped 4, cheat_asm_stripped 150 (identical fingerprint s1-s24). src/display.c + regfix.txt + asmfix.txt clean at HEAD (git status empty); only tmp/ written. Fresh cc1 -da -dr dumps tmp/grind/func_8007DC9C/s25/display.i.* + display.s + dump.sh + FORENSICS.md (cc1.err = benign display.c-internal typedef-redefinition messages; all 13 pass dumps present, display.s emitted).
+
+- [s25] NEW forensic result (sharpens/CORRECTS s6 axis-A framing): the axis-A 2-insn fold in OUR build is a COMBINE event, NOT a pre-combine/expand simplification. s6 said "const_int-0 simplified BEFORE combine's substitution -> emits folded lui;lw". The dumps show otherwise: at EXPAND the array-subscript D_8009BF68[0] MATERIALIZES the address in a separate single-use pseudo -> insn 77 `(set (reg 93) (symbol_ref D_8009BF68))` REG_EQUAL symbol_ref (rtl:10708) feeding insn 85 `(set (reg 5 a1) (mem/s (reg 93)))` (rtl:10726) = 2 insns present at expand. Scalars BF6C/BF70 expand DIRECTLY to `(mem (symbol_ref))` (C-access-shape asymmetry: array subscript forces the address to a reg; bare scalar does not).
+
+- [s25] CSE keeps reg93 separate (cse:9863, still `(set (reg 93) (symbol_ref BF68))`). The collapse to 1 insn is a COMBINE deletion: reg93 has EXACTLY ONE use in func_8007DC9C (def@77, consumer@85; other `(reg 93)` in the dump are other functions — cc1 renumbers pseudos per function), so combine.c:1458 `added_sets_2 = !dead_or_set_p(i3,i2dest)` is FALSE -> combine substitutes the symbol into the mem and DELETES insn 77 (`(note 77 75 79 NOTE_INSN_DELETED)`, combine:~10041), giving combine:10051 `(set (reg 5 a1) (mem/s (symbol_ref D_8009BF68)))` -> final asm `lw $5,D_8009BF68` (display.s:3170).
+
+- [s25] This dump-verifies the SAME combine.c:1458 predicate from BOTH sides: OUR fold = single-use address pseudo -> added_sets_2 FALSE -> materialization deleted (2-insn); TARGET retention = multi-use address pseudo -> added_sets_2 TRUE -> materialization kept (3-insn lui;addiu;lw 0(reg)). The last residual axis-A framing ambiguity (fold at expand vs combine?) is resolved: COMBINE. No new lever: added_sets_2 TRUE needs a 2nd use of reg93 = dead 2nd &BF68 use = coercion (banked s7 axisA-dead-addr-store-multiuse.c); cross-fn mechanically impossible (per-function combine; sibling func_8007D3F8 store `sw $19,D_8009BF68` at display.s:2693 sits in its own combine section, disjoint from this read at display.s:3170).
+
+- [s25] Axis B re-verified UID-stable in the fresh s25 sched dump (dead *g_gpu_stat_reg read scheduled before fmt via volatile-MEM REG_DEP_ANTI to volatile D_8009BF7C, both mem/v; s24 over-determination — anti-dep priority + load-delay hazard + LUID backstop — intact). Both axes now have their divergence-producing pass named and dump-captured on BOTH sides; no un-pinned forensic detail remains.
+
+- [s25] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (grep 8007DC9C = 0 matches this session), so owner-gated is NOT claimable despite full five-modality exhaustion + both axes now fully dump-pinned on both sides. Escalation-ready since s7 (18 sessions); the ONLY unblock is the OWNER filing the entry. No further forensic detail to pin and no pure-C modality remains.
+
+- [s25] s25 baseline re-confirmed: sandbox --disable all score 9, target 91 / build 90, rules_dropped 4, cheat_asm_stripped 150 (identical fingerprint s1-s24). src/display.c + regfix.txt + asmfix.txt clean at HEAD; only tmp/ written.
+
+- [s25] AXIS A fold pass PINNED to COMBINE (dump-verified): expand materializes BF68[0]'s address in single-use pseudo reg93 (insn77, REG_EQUAL symbol_ref, rtl:10708) + load (mem/s (reg93)) (insn85, rtl:10726); cse keeps it separate (cse:9863); combine deletes insn77 (NOTE_INSN_DELETED) and folds to (mem/s (symbol_ref)) (combine:10051) -> asm:3170 lw $5,D_8009BF68. Corrects s6's 'fold at expand' framing.
+
+- [s25] combine.c:1458 added_sets_2 = !dead_or_set_p(i3,i2dest) now dump-verified from BOTH sides: OUR fold = single-use reg93 -> FALSE -> materialization deleted (2-insn); TARGET retention = multi-use address pseudo -> TRUE -> materialization kept (3-insn lui;addiu;lw 0(reg)).
+
+- [s25] C-access-shape asymmetry is the root: BF68[0] is an array subscript (address forced to a reg pseudo) while BF6C/BF70 are bare scalar reads (direct (mem (symbol_ref))). Only the subscripted access presents a foldable address pseudo to combine.
+
+- [s25] No new lever: making added_sets_2 TRUE needs a 2nd use of reg93 = dead 2nd &D_8009BF68 use = coercion (banked s7 axisA-dead-addr-store-multiuse.c, which reproduced target's 3-insn form, sandbox 9->8/build93). Cross-fn impossible: per-function combine; sibling store sw $19,D_8009BF68 (asm:2693) in its own combine section, disjoint from this read (asm:3170).
+
+- [s25] AXIS B re-verified UID-stable in the fresh s25 sched dump: dead *g_gpu_stat_reg read scheduled before fmt via volatile-MEM REG_DEP_ANTI to volatile D_8009BF7C (both mem/v); s24 over-determination (anti-dep priority + load-delay hazard + LUID backstop) intact. No re-derivation attempted (forensics modality).
+
+- [s25] Both axes now have their divergence-producing pass named and dump-captured on BOTH sides (axis A = combine single-use added_sets_2-FALSE deletion vs target multi-use retention; axis B = sched1 over-determined lock). No un-pinned forensic detail remains.
+
+- [s25] NO OWNER-ESCALATION entry for func_8007DC9C in docs/grind/decisions.md (grep = 0 matches this session). Escalation-ready since s7 (18 sessions confirmed); owner-gated NOT claimable without the entry. The only unblock is the OWNER filing it.
+
+- [s25] Six-modality exhaustion stands: structural (s2/s3/s11/s12/s20/s21), permuter x7 ~189k iters (s4/s5/s13/s14/s22/s23), forensics x6 (s6/s7/s15/s16/s24/s25), rederive (s8/s9/s17/s18), synthesis (s10/s19). 4 regfix rules a proven 1:1 cover (s16).
