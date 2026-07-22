@@ -539,3 +539,27 @@ args is NOT a sanctioned use-site shape) and stripped by `volatile_cheats`.
 - [s23] src/display.c never edited this session (git status clean); candidate.c unchanged (floor held at 9).
 
 - [s23] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (Grep 8007DC9C = No matches), so owner-gated is NOT claimable despite seven-chassis permuter exhaustion + all five modalities measured dead.
+
+- [s24] FORENSICS (5th run; s6/s7/s15/s16 prior). Baseline re-confirmed: sandbox --disable all score 9, target 91 / build 90, rules_dropped 4, cheat_asm_stripped 150 (identical fingerprint s1-s23). src/display.c clean at HEAD; fresh cc1 -da -dr dumps tmp/grind/func_8007DC9C/s24/display.i.* + display.s + FORENSICS.md + dump.sh (cc1.err = benign display.c-internal-typedef redefinition warnings; body compiles+dumps in full).
+
+- [s24] NEW forensic result (sharpens s6/s7/s15/s16 axis-B framing): axis B is an OVER-DETERMINED lock, not the single-cause volatile-anti-dep-priority lock all four prior forensics recorded. Traced the exact schedule_block decision at T-42 in the fresh dump against tools/gcc-2.7.2/sched.c. Backward list scheduler (higher clock T = earlier program position; sched.c:3735 last=next_tail, splice-before at 3742). At T-42 ready={insn63 fmt pri1, insn41 dead-read pri2}: hazard scan sched.c:2664 finds actual_hazard(41)=1 (41 is a MIPS-I load with a load-delay slot) -> "blocking insn 41 for 1 cycles" -> 63 fills T-42, 41 issues T-43 = BEFORE 63 (our wrong order; target wants fmt first).
+
+- [s24] Counterfactual (source-derived, rank_for_schedule sched.c:2399 = priority, then dep-class, then INSN_LUID): equalising 41's priority to fmt's 1 does NOT flip the order -- the single priority group still has 41 hazard-queued (still a load) so 63 fills T-42 and 41 lands at T-43 before 63, IDENTICAL result. The load-delay hazard alone reproduces axis B independent of the anti-dep priority. Third backstop: even neutralising priority AND hazard, LUID tie-break (LUID(41)<LUID(63), dead read precedes fmt in source) still emits dead read first. Removing the load hazard requires removing the load (non-volatile => DCE'd => banked score-19 collapse). => no priority-equalising pure-C construct can flip axis B; over-determined KILL.
+
+- [s24] Insn identities confirmed in fresh post-sched RTL: insn 41 = (set (reg/v 75) (mem/v (reg 82))) dead *g_gpu_stat_reg read (display.i.sched:15665, emitted BEFORE fmt); insn 63 = (set (reg 4 a0) (symbol_ref g_str_gpu_timeout)) fmt la (:15675); insn 48 = (set (reg 85) (mem/v D_8009BF7C)) carrying (insn_list:REG_DEP_ANTI 41) (:15687) -- both 41 and 48 mem/v => anti-dep purely volatile-ordering (UID-stable vs s15). Axis A unchanged: combine section re-shows (mem/s:SI (symbol_ref D_8009BF68)) symbol-direct/folded (combine.c:1458, s15 source-verified).
+
+- [s24] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (Grep 8007DC9C = No matches this session), so owner-gated is NOT claimable despite full five-modality exhaustion + the strengthened over-determined axis-B mechanism. Escalation-ready; only unblock is the OWNER filing the entry.
+
+- [s24] s24 baseline re-confirmed: sandbox --disable all score 9, target_insns 91, build_insns 90, rules_dropped 4, cheat_asm_stripped 150 (identical fingerprint s1-s23). src/display.c + regfix.txt clean at HEAD (git status empty); only tmp/ written.
+
+- [s24] NEW (sharpens s6/s7/s15/s16): axis B is an OVER-DETERMINED lock, not the single-cause volatile-anti-dep-priority lock the 4 prior forensics recorded. Backward list scheduler; at T-42 the dead read (insn 41) is queued 1 cycle by its own load-delay hazard (actual_hazard=1, sched.c:2664 'blocking insn 41 for 1 cycles'), so hazard-free fmt (insn 63) fills T-42 and 41 lands at T-43 = earlier in program order.
+
+- [s24] Counterfactual proof (source-derived from rank_for_schedule/actual_hazard, sched.c:2399/2664): equalising the dead read's priority to fmt's does NOT flip the order — the load hazard alone reproduces 41-before-63. Third backstop: rank_for_schedule's final INSN_LUID tie-break (LUID(41)<LUID(63), dead read precedes fmt in source) also emits the dead read first even absent priority+hazard.
+
+- [s24] The dead read must stay volatile to survive DCE and match target's two *g_gpu_stat_reg reads; a volatile load inseparably carries BOTH the volatile-MEM anti-dep (priority 2) AND the load-delay hazard (actual_hazard 1). The two locks cannot be split.
+
+- [s24] Insn identities confirmed in fresh post-sched RTL: 41=(set (reg/v 75)(mem/v (reg 82))) dead read (display.i.sched:15665, emitted before fmt); 63=(set (reg 4 a0)(symbol_ref g_str_gpu_timeout)) fmt la (:15675); 48=(set (reg 85)(mem/v D_8009BF7C)) carrying (insn_list:REG_DEP_ANTI 41) (:15687) — both 41 and 48 mem/v => anti-dep purely volatile-ordering (UID-stable vs s15).
+
+- [s24] Axis A unchanged: fresh s24 combine section re-shows (mem/s:SI (symbol_ref D_8009BF68)) symbol-direct/folded (combine.c:1458 added_sets_2, s15 source-verified) — single pure offset-0 rvalue read folds to 2-insn.
+
+- [s24] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (Grep 8007DC9C = No matches this session), so owner-gated is NOT claimable despite full five-modality exhaustion + the strengthened over-determined axis-B mechanism.
