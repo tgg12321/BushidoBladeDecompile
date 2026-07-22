@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "AddTbpOfst_80047EE8",
-      "file": "text1b",
-      "distance": 8,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_80069E18",
       "file": "text1b",
       "distance": 8,
@@ -2524,6 +2516,15 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-20): cross-symbol idiom refused (no SOTN precedent); 5 rules retained to hold match; not sanctioned, eligible for re-attempt"
     },
     {
+      "func": "AddTbpOfst_80047EE8",
+      "file": "text1b",
+      "distance": 8,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "owner escalation pending: docs/grind/decisions.md line 1191 \u2014 '2026-07-21 \u2014 AddTbpOfst_80047EE8 (src/text1b.c) \u2014 OWNER-ESCALATION' (filed by grind s11)"
+    },
+    {
       "func": "func_8002BEA0",
       "file": "code6cac_b",
       "distance": 9,
@@ -2778,13 +2779,13 @@
   ],
   "counts": {
     "total": 340,
-    "active": 305,
+    "active": 304,
     "by_status": {
-      "active": 305,
-      "parked": 35
+      "active": 304,
+      "parked": 36
     },
     "by_verdict": {
-      "C": 151,
+      "C": 150,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }

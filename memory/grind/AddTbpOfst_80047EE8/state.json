@@ -1,8 +1,8 @@
 {
  "func": "AddTbpOfst_80047EE8",
  "file": "text1b",
- "session_count": 10,
- "current_modality": "synthesis",
+ "session_count": 11,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 0,
@@ -69,13 +69,19 @@
    "floor": 10,
    "modality": "synthesis",
    "headline": "Synthesis: full 6-rung ladder merged; both endgame-lock AND-gates measured dead directly on this function (scan_hand_coded LOW 1/8; no SOTN precedent) \u2014 species CONFIRMED, mirroring owner-escalation d"
+  },
+  {
+   "session": 11,
+   "floor": 10,
+   "modality": "structural",
+   "headline": "Structural axis measured dead (no un-run lever; mechanism upstream of all C-structure per s6/s7); filed mirroring OWNER-ESCALATION for AddTbpOfst_80047EE8 -> owner-gated."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "AddTbpOfst_80047EE8 is at full endgame-lock exhaustion: every sanctioned pure-C axis (F1 arg0-FAKE s2, F2 structural s3, F2 permuter two-basin s4/s5, forensics source-DECL mechanism s6/s7, rederive m2c/Kengo/decomp.me s8, rederive sibling-chassis s9) and all 6 modality rungs are measured dead; both endgame-lock-disposition AND-gates now measured dead DIRECTLY (s10 synthesis). The 32-byte residual is the s6/s7-named function.c source-DECL phantom (dead >=32-byte local array), chassis-invariant, reproducible only by the forbidden dead-vars-local-array.",
-   "mechanism": "endgame-lock-disposition standing policy 2026-07-20; both AND-gates fail (canonical-asm NEGATIVE: scan_hand_coded LOW 1/8, ordinary table walker; coercion-family NEGATIVE: no SOTN precedent for an unwritten >=32-byte phantom-frame carrier, array-only, WRITTEN carve-out inapplicable).",
-   "next_probe": "ESCALATION-MODALITY session: file the mirroring OWNER-ESCALATION for AddTbpOfst_80047EE8 into docs/grind/decisions.md (draft ready verbatim at memory/grind/AddTbpOfst_80047EE8/escalation_draft.md, frame numbers adapted: 0x48/72, 4 saved regs, vars 0x18-0x37=32 phantom), then emit owner-gated citing that entry. Per the parallel-filing precedent (func_80049A2C, gnd_init_80041688, InitHiraRmd_80047FBC all filed while awaiting ruling), it need NOT wait for the sibling ruling to land. No un-run sanctioned pure-C axis remains; do not re-run dead axes."
+   "hypothesis": "Owner rules on the filed AddTbpOfst_80047EE8 OWNER-ESCALATION (decisions.md line 1191): option (a) sanction the buf[] coercion family, or option (b) REFUSE / accept INCOMPLETE-owner-accepted.",
+   "mechanism": "endgame-lock-disposition standing policy 2026-07-20; both AND-gates measured dead directly (s10) + re-confirmed exhaustion (s11). Precedent (motion_SetMotion, saTan0Init, cpu_side_move_dir_4, func_80057CC8) all ruled option (b).",
+   "next_probe": "Await owner ruling. Do NOT re-run any dead axis; the function is parked and the queue advances. If ruled (b), the current cheat form on main is retained solely to hold the oracle; if a genuinely new pure-C lever emerges it becomes eligible for re-attempt."
   }
  ],
  "judge_constraints": [],
