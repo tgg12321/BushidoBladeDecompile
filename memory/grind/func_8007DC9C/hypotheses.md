@@ -68,3 +68,15 @@ sched1 reorder cluster in the first debug_printf setup.
 - probe: sandbox: extern s32 (*D_8009BF68)(s32*,s32) with the value passed directly as the printf arg; also plain extern s32 D_8009BF68 scalar.
 - result: Both scalar forms fold to lui;lw %lo (2 insns, score 9) — a scalar read never materializes the address. Same fold as the array form. H-A2 does not produce the 3-insn shape.
 - verdict: KILLED
+
+## [s3] Reading BF68/BF6C/BF70 through a single struct pointer at &D_8009BF68 gives the base a multi-use address pseudo, so combine keeps it materialized (la; lw 0(reg)) as target does for BF68 (combine.c:1458 added_sets_2 retention, same as func_8007EDBC).
+- mechanism: combine keeps def + 2nd-use insn only for a multi-use address; a shared struct base gives the base pseudo >1 use.
+- probe: sandbox --disable all with debug_printf(&D_80016044, ((struct{s32 a,b,c;}*)&D_8009BF68)->a, ->b, ->c).
+- result: score 11 (worse than floor 9), build_insns 90. Shared base emits ONE materialized base + offset loads (lw 0/4/8(base)); target reads BF6C/BF70 as SEPARATE folded %lo(D_8009BF6C)/%lo(D_8009BF70) scalar symbols.
+- verdict: KILLED
+
+## [s3] The original func_8007DC9C had a second visible &D_8009BF68 reference (address compare/store) that pure-C would emit, forcing the materialized load target has (s2/frontier H-A3 probe).
+- mechanism: A genuine second in-function use of the address pseudo defeats the combine offset-0 fold.
+- probe: Read all 96 lines of asm/funcs/func_8007DC9C.s and enumerate every D_8009BF68 reference in the emitted target.
+- result: Target references &D_8009BF68 EXACTLY ONCE (lines 43-45). No second visible reference exists. The materialization is a combine-time multi-use retention of a use that a LATER pass DCE'd from output — not a visible second reference. Any single-function pure-C reproduction would be a dead second use of &D_8009BF68 = a forbidden coercion (no semantic purpose, dead in output, justified only by combine internals).
+- verdict: KILLED

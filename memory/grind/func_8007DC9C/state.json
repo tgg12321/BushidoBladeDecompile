@@ -1,7 +1,7 @@
 {
  "func": "func_8007DC9C",
  "file": "display",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -21,18 +21,24 @@
    "floor": 9,
    "modality": "structural",
    "headline": "Structural session: killed H-A1/H-A2 (combine offset-0 fold) and H-B1 (sched1 tie-break) with ~17 measured variants; floor holds at 9. Both axes are now mechanism-pinned, remaining levers are non-stru"
+  },
+  {
+   "session": 3,
+   "floor": 9,
+   "modality": "structural",
+   "headline": "Structural modality exhausted for func_8007DC9C: full-asm read proves target has exactly ONE visible &D_8009BF68 reference (kills the 'second reference' probe); struct-triple shared-base form KILLED ("
   }
  ],
  "frontier": [
   {
-   "hypothesis": "H-A3 (cross-function): target materializes &D_8009BF68 because the ORIGINAL translation unit referenced the address of D_8009BF68 a second time (giving the address pseudo >1 use so combine keeps it in a register). This is not reachable by any single-function decl/access shape (all fold). The lever, if it exists, is a source-structure fact coupled to sibling func_8007D3F8 (only other user, queue ~43) or a different TU/function boundary.",
-   "mechanism": "combine.c will not propagate a multi-use address pseudo into a (mem reg); a genuine second use of &D_8009BF68 forces the materialized la;lw form target has.",
-   "next_probe": "When func_8007D3F8 matches, read its committed D_8009BF68 decl and check whether that shape (plus any shared access) makes the address multi-use. Otherwise, look for a second &D_8009BF68 reference the original had (e.g. an address compare / store) that pure-C would emit; verify with sandbox."
+   "hypothesis": "Axis A (1 op, BF68 materialization) closes only via the sibling func_8007D3F8's genuine second use of &D_8009BF68 (same TU, only other user, queue ~43), which would give the address pseudo a real multi-use surviving to combine.",
+   "mechanism": "combine.c:1458 added_sets_2 keeps the address materialized when the pseudo is multi-use; the second use must be a real semantic reference (not a dead coercion), which only the cross-function/TU context can supply.",
+   "next_probe": "When func_8007D3F8 matches, read its committed D_8009BF68 decl/access shape and any shared-address usage; check whether the real source structure gives &D_8009BF68 a second use reachable from func_8007DC9C's TU. Non-structural / cross-function \u2014 outside this modality."
   },
   {
-   "hypothesis": "Axis B (8 ops) is a genuine sched1 critical-path tie that structural levers cannot flip; the closing lever is likely non-structural (directed permuter over the arg-setup region, or an RA-steering form that changes the dead read's allocation without a pin).",
-   "mechanism": "fmt (chain length 1) must outrank the deadread->BF7C->subu->call chain in sched1 priority; no pure-C statement reordering changes those chain lengths without altering volatile semantics.",
-   "next_probe": "Hand off to a non-structural modality: directed permuter (PERM_* over the first debug_printf arg block, fresh-seed) or a register-allocation-focused pass; measure whether any form schedules fmt ahead of the dead read (target byte order at 6E4EC-6E520)."
+   "hypothesis": "Axis B (8 ops, sched1 fmt-vs-deadread critical-path tie) closes only via a non-structural lever.",
+   "mechanism": "The dead *g_gpu_stat_reg read is volatile-ordered before D_8009BF7C, putting it on the critical path (high sched1 priority); no pure-C statement reordering changes chain lengths without altering volatile semantics (KILLED across 8 structural forms in s2).",
+   "next_probe": "Directed permuter (PERM_* over the first debug_printf arg-setup region, fresh seed) or an RA-steering pass; measure whether any form schedules fmt ahead of the dead read (target byte order at 6E4EC-6E520)."
   }
  ],
  "judge_constraints": [],

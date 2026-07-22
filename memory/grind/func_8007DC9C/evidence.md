@@ -140,3 +140,21 @@ args is NOT a sanctioned use-site shape) and stripped by `volatile_cheats`.
 - [s2] s32* pointer-deref of D_8009BF68 uniquely reaches build_insns=91 (== target) but with opcode lw instead of addiu at the BF68 slot -> score 12. Confirms target materializes the ADDRESS (addiu), not a pointer value load.
 
 - [s2] Mapping confirmed: g_gpu_stat_reg=D_8009BF48 (volatile u32*), g_gpu_dma_madr=D_8009BF4C, g_gpu_dma_chcr=D_8009BF54; first-printf arg3($a3)=*chcr, arg4(sp+0x10)=*madr — the committed arg order (fmt, arg1, *stat, *chcr, *madr) is correct; the s1 arg-swap remains a wrong-direction masked-Levenshtein artifact.
+
+- [s3] Baseline re-confirmed: score 9, target 91 / build 90, rules_dropped 4, cheat_asm_stripped 150. Candidate cleanup (drop the new_var2 volatile-ptr dance; write D_8009BF78 = D_8009BF7C directly) is byte-equivalent — score 9 — and is now applied in src.
+
+- [s3] FULL-ASM READ (all 96 lines of asm/funcs/func_8007DC9C.s): target references &D_8009BF68 EXACTLY ONCE (lines 43-45 lui;addiu;lw 0($v0)). There is NO second visible &D_8009BF68 reference (address compare / store) anywhere in the function. => KILLS the s2/frontier "look for a second &BF68 reference the original had" probe: it does not exist in the emitted target. Axis-A materialization is combine-time multi-use retention (combine.c:1458 added_sets_2, same mechanism as func_8007EDBC) of a second use that a LATER pass DCE'd from output. Reproducing that in single-function pure C requires a dead second use of &D_8009BF68 = a forbidden coercion (no semantic purpose, dead in output, justified only by combine internals) per cheats-by-any-spelling. So axis A has NO legitimate single-function structural lever.
+
+- [s3] axisA struct-triple shared base ((struct{s32 a,b,c;}*)&D_8009BF68 read as ->a/->b/->c) -> score 11 (worse), build_insns 90. KILLED: a shared struct base emits ONE materialized base + offset loads (lw 0/4/8(base)); target reads BF6C/BF70 as SEPARATE folded %lo(D_8009BF6C)/%lo(D_8009BF70) scalar symbols. So BF68/BF6C/BF70 are independent scalars, not a contiguous struct/array — closes the shared-base branch of axis A (confirms the s2 one-array negative from the opposite direction). Rejected: rejected/axisA-struct-triple-shared-base.c.
+
+- [s3] CONCLUSION: single-function STRUCTURAL modality is exhausted for func_8007DC9C. Axis A (1 op) needs either the sibling func_8007D3F8's genuine second use of &D_8009BF68 (cross-TU, non-structural) or is a combine artifact with no legitimate single-fn pure-C form. Axis B (8 ops) is a sched1 critical-path tie already KILLED across structural forms in s2 — closing lever is non-structural (directed permuter / RA-steering). Both remaining frontiers are OUTSIDE the structural modality.
+
+- [s3] Baseline re-confirmed s3: score 9, target 91 / build 90, rules_dropped 4, cheat_asm_stripped 150.
+
+- [s3] Candidate cleanup (drop new_var2 volatile-ptr dance; D_8009BF78 = D_8009BF7C direct) is byte-equivalent (score 9) and is applied in src/display.c.
+
+- [s3] Full-asm read: target has exactly ONE &D_8009BF68 reference; the axis-A materialization is combine-retained-then-DCE'd multi-use (combine.c:1458), not a visible second in-function use.
+
+- [s3] Struct-triple shared base -> score 11: BF68/BF6C/BF70 are independent scalar symbols in target (separate %lo loads), not a contiguous struct/array. Closes the shared-base branch of axis A.
+
+- [s3] Single-function structural modality is exhausted: axis A has no legitimate single-fn pure-C lever (any would be a dead-second-use coercion); axis B was already KILLED across structural forms in s2.
