@@ -786,3 +786,15 @@ args is NOT a sanctioned use-site shape) and stripped by `volatile_cheats`.
 - [s35] No OWNER-ESCALATION entry for func_8007DC9C in docs/grind/decisions.md (exact grep 8007DC9C = 0 matches this session, consistent s7-s34; the 71 decisions.md hits are all the word 'escalation' for other functions). owner-gated NOT claimable; escalation-ready since s7 (29 sessions).
 
 - [s35] Rederive modality now dead at skeleton, expression-operator, control-flow, m2c, Kengo, decomp.me-corpus, AND return-value-accumulator levels (s8/s9/s17/s18/s26/s27/s35). Both axes mechanism-pinned dead across all six modalities (structural, permuter x9, forensics x8, rederive x7, synthesis x3).
+
+- [s36] s36 baseline re-confirmed (src clean at HEAD): sandbox --disable all score 9, target_insns 91, build_insns 90, rules_dropped 4, cheat_asm_stripped 150 — identical fingerprint to s1-s35.
+
+- [s36] Novel switch-dispatch skeleton (switch on the ||-guard, case 0 -> return 0, default -> report; return -1) measured score 18 / build_insns 95 = STRICTLY WORSE (+9 score, +5 body insns over floor). New rederive data point: unlike the if/ternary/goto/accumulator skeletons which all scored 9 (identical fingerprint), the switch ADDS instructions because it materializes the short-circuit result into a 0/1 truth value instead of branching on it.
+
+- [s36] The +5 insns are a guard-region truth-value cluster; they do not touch axis A (combine offset-0 BF68 fold in the 2nd printf) or axis B (sched1 volatile-MEM anti-dep priority in the 1st printf setup). Corroborates s8's control-flow-insensitivity proof: the report body is unchanged regardless of guard skeleton.
+
+- [s36] Rejected form saved: memory/grind/func_8007DC9C/rejected/rederive-switch-dispatch-skeleton.c. Skeleton-level rederive now dead at if/nested-if+goto (s8), ternary (s26), post-increment condition (s27), single-exit accumulator (s35), inverted-early-return / computed-flag-two-if (banked), and switch-dispatch (s36).
+
+- [s36] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (grep NONE), so owner-gated is not claimable this session despite full six-modality exhaustion.
+
+- [s36] src/display.c restored to HEAD after the experiment; git status clean (only metrics/events.jsonl dirty, engine-appended). No dirt left.
