@@ -383,3 +383,23 @@ args is NOT a sanctioned use-site shape) and stripped by `volatile_cheats`.
 - [s14] PERMUTER modality now QUINTUPLE-confirmed dead across 5 structurally-distinct chassis (~118k total iters: s4 27k + s5 40k + s13 31k + s14 20k).
 
 - [s14] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (Grep 8007DC9C = No matches), so owner-gated is NOT claimable this session.
+
+- [s15] FORENSICS (3rd run; independent re-verification of s6/s7 opus claims per verify-opus-handoff-claims). Baseline re-confirmed: sandbox --disable all score 9, target 91 / build 90, rules_dropped 4, cheat_asm_stripped 150 (identical fingerprint s1-s14). Fresh cc1 -da -dr dumps over committed src/display.c: tmp/grind/func_8007DC9C/s15/display.i.{rtl,flow,combine,cse,cse2,loop,jump,jump2,lreg,greg,sched,sched2,dbr} + FORENSICS.md. src/display.c clean at HEAD (only tmp/ written).
+
+- [s15] AXIS A source-verified: tools/gcc-2.7.2/combine.c:1458 reads verbatim `added_sets_2 = ! dead_or_set_p (i3, i2dest);` (comment: "SETs in I1 or I2 need to be kept around ... whenever the value set there is still needed past I3"). combine keeps the 3-insn address-materialization ONLY when I2DEST (address pseudo) is live past I3 = multi-use. func_8007DC9C's single pure offset-0 rvalue read (s3: one &BF68 ref) => I2DEST dies in I3 => folds to 2-insn. s15 combine dump confirms `(mem/s:SI (symbol_ref "D_8009BF68"))` symbol-direct (no plus 0). s6/s7 citation is EXACT (verified against source, not merely quoted). CONFIRMED.
+
+- [s15] AXIS B reproduced from fresh RTL (insn UIDs +3 vs s6: dead-read 38->41, fmt 60->63, BF7C 45->48, uniform shift because HEAD body carries 3 more prior insns than s6's candidate; byte-equivalent, floor 9). s15 sched priority list: insn[41] priority=2 ref_count=5 (dead read *g_gpu_stat_reg), insn[63] priority=1 ref_count=1 (fmt la). Post-sched RTL: insn 41 = (set (reg/v:SI 75) (mem/v:SI (reg 82))); insn 48 = (set (reg 85) (mem/v:SI (symbol_ref "D_8009BF7C"))) carrying (insn_list:REG_DEP_ANTI 41 (nil)); 2nd stat read + tail also carry REG_DEP_ANTI 41/48. Both 41 and 48 are mem/v => the ANTI edge exists ONLY because both are volatile. Decision T-42 {63(1),41(2)}: "blocking insn 41 for 1 cycles, now 63" then "launching 41 before 63" => dead read emitted before fmt (our order); target wants fmt first. CONFIRMED.
+
+- [s15] The +3 UID shift with identical priorities/anti-dep/decision proves axis B is INVARIANT to the exact body shape (HEAD vs candidate) — independently corroborates s8/s11/s12 structure-insensitivity. No new pure-C lever surfaced; both axes remain mechanism-pinned dead. Forensics now TRIPLE-run (s6/s7/s15). No OWNER-ESCALATION entry for func_8007DC9C in docs/grind/decisions.md (grep = no matches) => owner-gated not claimable; result progress, escalation-ready.
+
+- [s15] Baseline re-confirmed s15: sandbox --disable all score 9, target_insns 91, build_insns 90, rules_dropped 4, cheat_asm_stripped 150 (identical fingerprint to s1-s14). src/display.c clean at HEAD; only tmp/ dumps written.
+
+- [s15] Axis A source-verified: tools/gcc-2.7.2/combine.c:1458 = `added_sets_2 = ! dead_or_set_p (i3, i2dest);` — the exact mechanism s6/s7 cited; combine keeps the 3-insn materialization only for a multi-use address pseudo, so this function's single pure offset-0 read folds to 2-insn.
+
+- [s15] Axis B reproduced from fresh RTL: dead read insn 41 = (mem/v (reg 82)) priority 2; fmt insn 63 = la into a0 priority 1; volatile D_8009BF7C read insn 48 carries (insn_list:REG_DEP_ANTI 41); both 41 and 48 are mem/v so the anti-dep edge is purely volatile-ordering. Scheduler emits dead read before fmt (our order); target wants fmt first.
+
+- [s15] Insn UIDs shifted uniformly +3 vs s6 (HEAD body carries 3 more prior insns than s6's candidate; byte-equivalent, floor 9) with otherwise-identical priorities/anti-deps/decision => axis B invariant to body shape.
+
+- [s15] Forensics now triple-run (s6/s7/s15); both opus-authored (s6/s7) mechanism pins hold up under independent fresh-dump + source scrutiny per verify-opus-handoff-claims. No new pure-C lever surfaced.
+
+- [s15] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (grep 8007DC9C = no matches), so owner-gated is not claimable this session.
