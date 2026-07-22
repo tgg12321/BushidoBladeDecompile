@@ -1,7 +1,7 @@
 {
  "func": "AddTbpOfst_80047EE8",
  "file": "text1b",
- "session_count": 8,
+ "session_count": 9,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -57,13 +57,19 @@
    "floor": 10,
    "modality": "rederive",
    "headline": "Rederive modality KILLED (m2c/Kengo/decomp.me): no structurally-different pure-C shape escapes the 32-byte source-DECL phantom-frame endgame-lock; floor holds at 10."
+  },
+  {
+   "session": 9,
+   "floor": 10,
+   "modality": "rederive",
+   "headline": "Rederive s9: sibling-committed-chassis (u32*base pointer-carry) transplant \u2014 a lane s8 did not run \u2014 reaches floor 10 with the IDENTICAL 32-byte frame-only residual; third distinct chassis converging "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "AddTbpOfst_80047EE8 is at full endgame-lock exhaustion: no sanctioned pure-C axis (F1 arg0-FAKE, F2 structural, F2 permuter two-basin, forensics-named source-DECL mechanism, rederive m2c/Kengo/decomp.me) can reach the 32-byte phantom frame; the only reproducing construct is the forbidden dead-vars-local-array.",
-   "mechanism": "endgame-lock-disposition standing policy 2026-07-20; both AND-gates fail (canonical-asm negative: ordinary table walker; no SOTN precedent for an unwritten >=32-byte phantom-frame carrier). s6/s7 name + cluster-pin the mechanism (function.c assign_stack_local at RTL-expand from a dead 7-8 word int array); s8 rederive independently re-confirms via m2c that no structurally-different reconstruction escapes it.",
-   "next_probe": "File the mirroring OWNER-ESCALATION for AddTbpOfst_80047EE8 in docs/grind/decisions.md (citing F1 discharge s2, F2 structural s3, F2 permuter two-basin s4/s5, s6 forensic mechanism-naming, s7 cluster-invariant + array size/type pin, and s8 rederive triple-lane kill) once the sibling InitHiraRmd_80047FBC family ruling lands. Until an escalation entry naming THIS function exists, this stays progress-recorded exhaustion, not owner-gated. Do not self-resolve. No un-run modality remains."
+   "hypothesis": "AddTbpOfst_80047EE8 is at full endgame-lock exhaustion: no sanctioned pure-C axis (F1 arg0-FAKE s2, F2 structural s3, F2 permuter two-basin s4/s5, forensics-named source-DECL mechanism s6/s7, rederive m2c/Kengo/decomp.me s8, rederive sibling-chassis transplant s9) reaches the 32-byte phantom frame; the residual is chassis-invariant across all three reaching C shapes.",
+   "mechanism": "endgame-lock-disposition standing policy 2026-07-20; both AND-gates fail (canonical-asm negative: ordinary table walker, no STRONG scan_hand_coded signals; no SOTN precedent for an unwritten >=32-byte phantom-frame carrier). The only reproducing construct is the forbidden dead-vars-local-array (function.c assign_stack_local at RTL-expand from a dead 7-8 word int array; struct substitute scalarized to vars=0 per s7; WRITTEN carve-out inapplicable \u2014 zero region stores).",
+   "next_probe": "File the mirroring OWNER-ESCALATION for AddTbpOfst_80047EE8 in docs/grind/decisions.md (citing F1 discharge s2, F2 structural s3, F2 permuter two-basin s4/s5, s6 forensic mechanism-naming, s7 cluster-invariant + array size/type pin, s8 rederive triple-lane kill, s9 sibling-chassis fourth-lane chassis-invariance kill) once the sibling InitHiraRmd_80047FBC family ruling lands. Until an escalation entry naming THIS function exists, this stays progress-recorded exhaustion, not owner-gated. Do not self-resolve. No un-run modality remains."
   }
  ],
  "judge_constraints": [],
