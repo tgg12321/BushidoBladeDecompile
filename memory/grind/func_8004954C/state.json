@@ -1,0 +1,40 @@
+{
+ "func": "func_8004954C",
+ "file": "text1b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 0,
+   "floor": 6,
+   "modality": "wip-import",
+   "headline": "floor imported from memory/wip checkpoint"
+  },
+  {
+   "session": 1,
+   "floor": 6,
+   "modality": "recon",
+   "headline": "Recon: floor 6 reconfirmed; wall is a two-axis allocno-priority race (counter i beats accumulator sum on both loop-ref-count and live-length) forcing sum->$a3/i->$v1, the inverse of target. Permuter a"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Directed permuter campaign from candidate.c closes the 6-token RA rename.",
+   "mechanism": "All structure (frame, 14 insns, delay slots, opcode order) is already correct; only which of {sum,i} gets $v1 differs. This dense single-axis space is exactly what decomp-permuter closes; a byte-neutral C mutation may lift sum's allocno priority above i's without a dead use.",
+   "next_probe": "Build target.o from asm/funcs/func_8004954C.s + permuter prelude at offset 0 (avoid whole-file offset noise); run tools/permuter_campaign.py with fresh-seed discipline, wait in-turn + harvest --stop before ending the turn; cheat-vet any sandbox-0 form before proposing."
+  },
+  {
+   "hypothesis": "A semantically-faithful post-loop use of i (== arg1 at exit) equalizes live_length so the allocno-number tiebreak picks sum(75) first.",
+   "mechanism": "If i lived to the return like sum, priority becomes a near-tie and allocno-number order (sum=75 < i=76) allocates sum first -> sum gets $v1.",
+   "next_probe": "Search for any faithful form using i post-loop that still emits subu v0,a2,a1 (i's reg != $a1, so likely impossible); measure to KILL. Expect dead-end \u2014 dead-use would be a cheat."
+  },
+  {
+   "hypothesis": "Raise sum's per-iteration ref count via a genuinely-motivated recompute to flip the freq term.",
+   "mechanism": "sum loses partly on freq (2 loop refs vs i's 3); a faithful loop body referencing the accumulator more could flip it.",
+   "next_probe": "Check whether any faithful body keeps the exact 'addu v1,v1,a0' loop bytes while adding a sum ref (likely none); otherwise feed the permuter as a seed variant."
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-22T23:28:53.422504+00:00"
+}
