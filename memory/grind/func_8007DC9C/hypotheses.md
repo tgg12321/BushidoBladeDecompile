@@ -501,3 +501,9 @@ is the OWNER filing the escalation entry.
 - probe: One sandbox --disable all baseline; full cross-read of evidence.md (801 lines) + hypotheses.md (484 lines) + all 23 rejected forms + docs/grind/decisions.md; wrote tmp/grind/func_8007DC9C/s37/MERGED-ATTACK-s37.md.
 - result: score 9, target 91 / build 90, rules_dropped 4, cheat_asm_stripped 150 (identical fingerprint to s1-s36); src clean at HEAD. No un-banked lever exists; both axes orthogonal and mechanism-pinned dead across structural(8)/permuter(9 chassis)/forensics(8)/rederive(8)/synthesis(4). No OWNER-ESCALATION entry (grep func_8007DC9C = 0 matches) -> owner-gated not claimable.
 - verdict: KILLED
+
+## [s38] Isolating the axis-A read D_8009BF68[0] into a top-of-block temp computed before the first debug_printf (cross-call live range, forces a callee-save) changes combine's single-use fold and materializes target's 3-insn address.
+- mechanism: combine.c:1458 added_sets_2 = !dead_or_set_p(i3,i2dest) keeps the def+2nd-use insn only when the ADDRESS pseudo has >=2 uses; s3/s6/s7/s9 proved the read is a single pure offset-0 rvalue so it always folds to 2-insn. The probe tests whether extending the VALUE's live range across a call (not adding an address use) alters the fold.
+- probe: Edit src/display.c: s32 t68 = D_8009BF68[0]; at block top before the first debug_printf, pass t68 as the 2nd printf arg. sandbox func_8007DC9C --disable all.
+- result: score 25, target_insns 91, build_insns 92 (strictly worse than floor 9 / build 90). The read still folds at its read site (address pseudo stays single-use); the cross-call live range only adds a callee-save save/restore + schedule disruption. Live-range length is orthogonal to the offset-0 fold.
+- verdict: KILLED

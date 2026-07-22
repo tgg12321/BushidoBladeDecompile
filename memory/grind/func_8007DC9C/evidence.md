@@ -818,3 +818,17 @@ args is NOT a sanctioned use-site shape) and stripped by `volatile_cheats`.
 - [s37] Exhaustion: 36 sessions, zero floor movement. Structural (s2/s3/s11/s12/s20/s21/s29/s30) all fold or worsen; permuter 9 chassis ~258k iters (s4/s5/s13/s14/s22/s23/s31/s32) yield only coercion cheats, axis B never legitimately reordered; forensics x8 dump-pinned both axes; rederive x8 (m2c/Kengo/corpus no donor; if/goto/ternary/postinc reach floor-90; inverted/flag/switch/accumulator strictly worse).
 
 - [s37] Disposition per endgame-lock-disposition-policy: gate #1 REFUSE (scan_hand_coded LOW, pure-C match exists), gate #2 REFUSE (no coercion precedent) -> keep 4 rules, INCOMPLETE-owner-accepted. No OWNER-ESCALATION entry exists in docs/grind/decisions.md (grep func_8007DC9C = 0 matches).
+
+- [s38] STRUCTURAL modality. Baseline re-confirmed: sandbox --disable all score 9, target 91 / build 90, rules_dropped 4, cheat_asm_stripped 150. src/display.c clean at HEAD; reverted after the experiment (no dirt).
+
+- [s38] NOVEL structural probe (un-banked): isolate the axis-A read D_8009BF68[0] into a top-of-block temp `t68` computed BEFORE the first debug_printf, giving its VALUE a live range spanning the first call (forces a callee-save) — distinct from the banked s29/s30 forms that hoisted BOTH 2nd-printf reads together. Hypothesis: a cross-call live range might change combine's single-use fold and materialize the 3-insn address. RESULT: score 25, build_insns 92 (STRICTLY WORSE). The hoisted read STILL folds at its read site (the ADDRESS pseudo stays single-use — combine.c:1458 added_sets_2 counts address uses, NOT the value's live-range length), and the cross-call range adds a callee-save save/restore + schedule disruption. NEW DATAPOINT: axis-A offset-0 fold is insensitive to live-range LENGTH; only a genuine 2nd ADDRESS use defeats it (= coercion single-fn per s7, mechanically impossible cross-fn per s7 per-function combine). KILLED. Rejected: rejected/structural-s38-bf68-crosscall-hoist.c.
+
+- [s38] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (grep NONE), so owner-gated is not claimable this session despite full six-modality exhaustion -> result progress, escalation-ready. Structural modality re-confirmed dead (now with the live-range-length negative added to the s2/s3/s11/s12/s29/s30 structural KILLs).
+
+- [s38] s38 baseline re-confirmed: sandbox --disable all score 9, target_insns 91, build_insns 90, rules_dropped 4, cheat_asm_stripped 150; src/display.c clean at HEAD, reverted after experiment (no dirt).
+
+- [s38] NEW DATAPOINT: axis-A offset-0 combine fold (combine.c:1458 added_sets_2) is insensitive to the read value's live-range LENGTH — a cross-call live range (score 25/build 92) does NOT materialize the 3-insn address; it only adds spill overhead. The address pseudo stays single-use and folds. Only a genuine 2nd ADDRESS use defeats the fold (= coercion single-fn per s7; mechanically impossible cross-fn per s7 per-function combine).
+
+- [s38] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (grep NONE), so owner-gated is not claimable this session.
+
+- [s38] Structural modality re-confirmed dead: the live-range-length negative adds to the s2/s3/s11/s12/s29/s30 structural KILLs. Both axes remain mechanism-pinned dead across all six modalities (structural, permuter x9, forensics x8, rederive x8, synthesis x4).
