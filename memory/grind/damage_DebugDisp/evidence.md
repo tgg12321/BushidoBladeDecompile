@@ -639,3 +639,34 @@ constants' priority. To flip, the constants would need higher priority OR lower 
 - [s12] Target's Region-A' preheader (asm/funcs): .L8003801C addu $a0,0,0 (sum=0, FIRST) / addu $v1,$t1,$a3 (bp) / addu $a1,0,0 (j=0, LAST) — sum=$a0 with sum=0 emitted first, requiring sum weighted reg_n_refs>=11 from a source that does NOT relocate sum=0's def.
 
 - [s12] Sibling func_80037F40 (COMPLETED-C, same file): accumulates its checksum ONCE pre-outer-loop (depth 1) then stores it; damage RECOMPUTES sum inside the outer loop (depth 2) and compares it — the depth-2 recompute is the root of damage's extra-weight requirement, so the sibling's shallower shape is semantically unavailable (no transplant value).
+
+## s13 (permuter, 2026-07-22) — fresh-seed campaigns on TWO distinct chassis; both stall at the do-while0 floor-2 residual
+- Floor 2 reconfirmed: candidate.c applied to src -> sandbox --disable all = 2 (79/79, 8 rules dropped, 34 cheat-asm stripped). src reverted to clean HEAD after the session.
+- Built fresh full-TU permuter workspaces (both renumbered vs the STALE s4/s5 explicit-ap/a2p chassis):
+  * ws  = score-2 index-B do-while0 candidate (base_score 10 = the 2-insn preheader reg=0 reorder).
+  * ws2 = plain sum=0 on the index-B Region-B (base_score 30 = the 6-reg inner a0<->a1 swap; preheader byte-perfect).
+  Honest pipeline (cc1|prologue_fix|maspsx|align-sed|multu_pad, NO regfix/asmfix), target.o from asm/funcs minus `.set gp=64`. Both validated: base insns 79 == target 79, diff = exactly the known residual.
+- **Workspace gotcha fixed (degraded WSL session):** `/tmp` writes vanish (systemd user session fails), so compile.sh mktemp+prelude were moved to a repo-local scratch dir (per-invocation mktemp for -j parallel safety). Also the file-scope `asm(".section .rodata <NL> .space 4 <NL> .previous")` is a multi-line string literal cpp preserves verbatim — pycparser rejects it; a post-cpp fixup collapses its internal newlines to `\n` (byte-identical assembler output, valid C). base.c parses after the fixup.
+- **ws campaign (index-B, base10):** 84,953 iters / ~31 min / -j8 / --stop-on-zero. 0 novel finds, base_score 10 never moved. Blind randomization on the do-while0 basin is dry.
+- **ws2 campaign (plain, base30):** 56,956 iters / ~21 min. ONE novel: output-10-1 (score 30->10) = the permuter re-adding `do{sum=0}while(0)` (converges plain -> the existing candidate). Then STALLED at 10; no sub-10. output-10-1/source.c confirms the sole mutation is the re-added do-while0 wrapper.
+- **Net:** ~140k combined iters across two structurally-distinct chassis, 0 sub-2 finds. The permuter independently re-derives the do-while0 sum-flip lever (matching s4) from the plain side, but finds NO byte-neutral 11th-sum-ref variant that decouples Region A'. Reconfirms the s6/s7/s10/s11/s12 A'/A coupling on genuinely fresh (renumbered) numbering — the coupling is NOT an artifact of the stale s4/s5 chassis.
+- artifacts: tmp/grind/damage_DebugDisp/s13/{build_ws.sh,build_ws2.sh}, ws/campaign.log, ws/campaign_meta.json, ws2/campaign_meta.json, ws2/output-10-1/{source.c,diff.txt,score.txt}
+
+- [s13] Floor 2 reconfirmed (candidate applied, sandbox --disable all = 2); src reverted to clean HEAD.
+- [s13] Fresh index-B do-while0 permuter (base10, 84,953 iters, --stop-on-zero) = 0 novel finds, base never moved. The renumbered index-B chassis does NOT expose a random-reachable sum-11th-ref; A'/A coupling holds on fresh numbering.
+- [s13] Plain-chassis permuter (base30, byte-perfect preheader, 56,956 iters) found ONLY output-10-1 = the permuter re-deriving do{sum=0}while(0) (converges to the score-2 candidate), then stalled at 10. No byte-neutral variant decouples A'.
+- [s13] Both distinct chassis converge to / stall at the identical do-while0 floor-2 residual. ~140k combined iters, 0 sub-2 finds. Permuter modality on this function is exhausted for the fresh index-B numbering (s4/s5 stale-chassis result reproduced from two fresh angles).
+
+- [s13] Floor 2 reconfirmed: candidate.c -> sandbox --disable all = 2 (79/79, 8 rules dropped, 34 cheat-asm stripped); src reverted to clean HEAD.
+
+- [s13] Two fresh full-TU permuter workspaces built on renumbered index-B numbering (vs the STALE s4/s5 explicit-ap/a2p chassis): ws (index-B do-while0, base10) and ws2 (plain sum=0, base30, preheader byte-perfect). Both validated 79==79 insns with diff = exactly the known residual.
+
+- [s13] Degraded WSL /tmp writes vanish (systemd user session fails); compile.sh scratch moved to a repo-local dir with per-invocation mktemp for -j safety. The file-scope multi-line asm(.section .rodata) string was collapsed to \n form post-cpp so pycparser parses base.c (byte-identical assembler output).
+
+- [s13] ws campaign: 84,953 iters, 0 novel, base_score 10 never moved.
+
+- [s13] ws2 campaign: 56,956 iters, 1 novel (output-10-1 = permuter re-adding do-while0, converging to the candidate), then stalled at 10.
+
+- [s13] ~140k combined iters across two structurally-distinct chassis, 0 sub-2 finds. The permuter independently re-derives the do-while0 sum-flip lever (matching s4) but finds NO byte-neutral 11th-sum-ref variant. The s6/s7/s10/s11/s12 A'/A coupling holds on genuinely fresh (renumbered) numbering — it is NOT a stale-chassis artifact.
+
+- [s13] No OWNER-ESCALATION entry for damage_DebugDisp exists in docs/grind/decisions.md (owner-gated unavailable).

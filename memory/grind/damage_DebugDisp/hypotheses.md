@@ -446,3 +446,27 @@ pos6). The whole game is: give sum its 11th weighted ref WITHOUT bracketing sum=
 - probe: allocno_compare priority = floor_log2(n_refs)*n_refs/live_length*1e4 on the confirmed s11 weight model (sum n=10/LL=9, j n=11/LL=9).
 - result: sum priority 33333 < j 36666 and they do NOT TIE, so j wins $a0 outright regardless of pseudo/declaration order (the allocno-number tiebreak only fires on an exact tie). A flip strictly requires sum n_refs>=11 (relocates the def -> reopens A'), sum LL<=8 (needs a loop-note bracket), or j n_refs<=10 / j LL>=10 (byte-fixed by target's sltiu 0x24 / addiu a1,a1,1).
 - verdict: KILLED
+
+## [s13] Fresh-seed directed permuter on the score-2 index-B chassis (renumbered vs stale s4/s5) finds the natural sum-11th-ref that closes Region A' (sum=$a0 with sum=0 emitted first, score 0).
+- mechanism (frontier #1): the Region-B index rewrite renumbered whole-function pseudos/LUIDs vs the s4/s5 explicit-ap/a2p campaigns; a random/structural mutation may synthesize a byte-neutral depth>=2 sum reference (non-coalescing 2nd pseudo, or duplicated-compare-into-arms the jump2 re-merges) that lifts sum's weighted reg_n_refs to 11 WITHOUT bracketing sum=0's def, decoupling A'.
+- probe: built fresh full-TU workspace tmp/grind/damage_DebugDisp/s13/ws (base.c = cpp of the score-2 candidate src, honest pipeline, target.o from asm/funcs minus .set gp=64), --stop-on-zero, -j8; base_score 10 (= the 2-insn preheader reorder). Ran 84,953 iters (~31 min) across three fresh-seed windows.
+- result: 0 novel finds, 0 sub-10, base_score 10 NEVER moved. Blind randomization on the do-while0 index-B basin is dry.
+- verdict: KILLED. The fresh index-B numbering does NOT expose a random-reachable sum-11th-ref; reconfirms the s6/s7/s10/s11/s12 A'/A coupling on a genuinely fresh (renumbered) chassis.
+
+## [s13] A permuter seeded from the PLAIN-sum chassis (byte-perfect preheader, only the inner a0<->a1 swap remains) reaches score 0 by synthesizing a byte-neutral 11th sum ref that flips the inner swap WITHOUT bracketing sum=0's def.
+- mechanism (frontier #1, opposite side): plain sum=0 keeps the preheader byte-perfect (s10 = 4); if the permuter finds any structural mutation giving sum weighted refs>=11, the inner swap flips to sum=$a0 AND sum=0 stays first (unbracketed) => score 0. This basin is distinct from the do-while0 basin (byte-perfect-preheader start, base_score 30 = the 6-reg inner swap).
+- probe: built tmp/grind/damage_DebugDisp/s13/ws2 (plain sum=0, Region B still index+do-while0-k so B stays byte-exact; sandbox=4). Launched fresh -j8 --stop-on-zero, base_score 30; ran 56,956 iters (~21 min).
+- result: single novel find output-10-1 (score 30->10) — the permuter REDISCOVERED `do { sum = 0; } while (0);` (i.e. it converged the plain chassis back to the EXISTING score-2 do-while0 candidate). It then STALLED at 10 for the remaining ~50k iters; NO sub-10 find. Confirmed by reading output-10-1/source.c: the only mutation vs base is the re-added do-while0 wrapper.
+- verdict: KILLED. Both structurally-distinct chassis (do-while0 index-B AND plain byte-perfect-preheader) converge to / stall at the identical do-while0 floor-2 residual; the permuter independently re-derives the do-while0 as the sum-flip lever (matching s4) but finds NO byte-neutral 11th-ref variant that decouples A'. ~140k combined iters, 0 sub-2 finds.
+
+## [s13] A fresh-seed directed permuter on the score-2 index-B chassis (renumbered vs the stale s4/s5 campaigns) surfaces a byte-neutral 11th sum ref that closes Region A' (sum=$a0 with sum=0 emitted first, score 0).
+- mechanism: The Region-B index rewrite renumbered whole-function pseudos/LUIDs; a structural mutation might synthesize a non-coalescing depth>=2 sum reference (2nd pseudo or duplicated-compare-into-arms jump2 re-merges) lifting sum's weighted reg_n_refs to 11 WITHOUT bracketing sum=0's def (which forces sum=0 last).
+- probe: Fresh full-TU workspace s13/ws (cpp of the score-2 candidate, honest pipeline, target.o from asm/funcs minus .set gp=64), --stop-on-zero -j8, base_score 10; 84,953 iters / ~31 min across 3 fresh-seed windows.
+- result: 0 novel finds, base_score 10 never moved. The renumbered index-B basin is dry to blind randomization.
+- verdict: KILLED
+
+## [s13] A permuter seeded from the PLAIN-sum chassis (byte-perfect preheader, only the inner a0<->a1 swap remains) reaches score 0 by synthesizing a byte-neutral 11th sum ref that flips the inner swap without bracketing sum=0's def.
+- mechanism: Plain sum=0 keeps the preheader byte-perfect (s10=4); any structural mutation giving sum weighted refs>=11 flips the inner swap to sum=$a0 while sum=0 stays first (unbracketed) => score 0. Distinct basin from the do-while0 chassis (base_score 30 = 6-reg inner swap).
+- probe: Workspace s13/ws2 (plain sum=0, Region B still index+do-while0-k so B stays byte-exact; sandbox=4). Fresh -j8 --stop-on-zero, base_score 30; 56,956 iters / ~21 min.
+- result: Single novel output-10-1 (30->10) = the permuter RE-DERIVING do{sum=0}while(0) (converges plain -> the existing score-2 candidate; confirmed by reading output-10-1/source.c). Then stalled at 10, no sub-10. No byte-neutral variant decoupled A'.
+- verdict: KILLED

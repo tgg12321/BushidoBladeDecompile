@@ -1,8 +1,8 @@
 {
  "func": "damage_DebugDisp",
  "file": "code6cac_c_mid",
- "session_count": 12,
- "current_modality": "structural",
+ "session_count": 13,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 0,
@@ -81,23 +81,29 @@
    "floor": 2,
    "modality": "structural",
    "headline": "Structural: compare-promotion + sum-first KILLED (sum=$a0 and sum=0-first are mutually exclusive); plain-sum flip ruled out by exact allocno arithmetic \u2014 manual Region-A' axis exhausted, permuter-only"
+  },
+  {
+   "session": 13,
+   "floor": 2,
+   "modality": "permuter",
+   "headline": "Permuter s13: 2 fresh-seed campaigns (~140k iters) on distinct chassis (index-B do-while0 + plain byte-perfect-preheader) both stall at the do-while0 floor-2 residual; 0 sub-2 finds. A'/A coupling rec"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A directed permuter on the score-2 index-B chassis (fresh whole-function numbering) surfaces a structural variant where sum reaches weighted refs>=11 from a whole-function loop_depth/LUID source that is NOT a promotion of sum's def or compare, so sum wins $a0 with sum=0 emitted first (closes A', score 0).",
-   "mechanism": "s11+s12 proved sum's only two promotable refs (def, compare) BOTH force sum=0-last when promoted to 11, and s12 proved sum-first + compare-promotion loses the RA win outright. Target reaches 11 with sum=0 first => its 11th ref is a whole-function numbering effect the permuter can sweep but no manual source lever (promotion, reorder, decl-order) can reach. The index-B Region-B rewrite renumbered pseudos/LUIDs vs the stale s4/s5 campaigns.",
-   "next_probe": "PERMUTER MODALITY (not structural). Build ws from cpp(src) with the committed score-2 body; target.o from asm/funcs/damage_DebugDisp.s + prelude (drop .set gp=64); honest pipeline; --stop-on-zero; ~20-30k fresh-seed iters. Vet every sub-2 find against dead-store/constant-holder; a duplicated-statement-into-arms find must clear byte-neutrality + cheat-reviewer."
+   "hypothesis": "A DIRECTED permuter (PERM_* macro annotation via tools/permuter_annotate.py) targeting the compare/preheader, or a hand-built duplicated-compare-into-arms form, synthesizes the byte-neutral 11th sum ref that blind randomization could not reach.",
+   "mechanism": "s13 exhausted BLIND randomization on both chassis; the closing form (frontier #3) is a specific structural mutation (duplicated-statement-into-arms family the jump2 re-merges byte-neutrally) that random mutation is unlikely to hit but a directed macro or manual construction might. s8 killed tail-bracket decouplers, but a duplicate INTO the existing exit arms (not a new do-while0 bracket) is untried.",
+   "next_probe": "permuter_annotate --func damage_DebugDisp --hint duplicated-statement-into-arms on the score-2 candidate; OR manually construct a compare duplicated into the match/continue arms and measure sandbox --disable all, vetting byte-neutrality + cheat-reviewer. Requires the damage outer loop grow a diamond around sum without adding net branches."
   },
   {
-   "hypothesis": "Frontier #3 (narrowed by s12): the natural non-bracket sum 11th ref exists in target as a NEW byte-neutral sum reference the permuter must synthesize \u2014 a second non-coalescing sum pseudo used post-loop OR a duplicated-compare-into-arms that jump2 re-merges byte-neutrally (duplicated-statement-into-arms family).",
-   "mechanism": "reg_n_refs += (1+loop_depth): sum(plain)=10, needs +1 to tie j=11. A depth-1 duplicate adds +2 (overshoot); the +1 must be a depth-0 (w1) byte-neutral ref. damage's outer-loop body has NO existing if/else diamond around sum to ride the duplication on (unlike the motion_SetMotion closure), so creating one adds branches \u2014 only the permuter can find a mutation where GCC keeps the extra flow ref but merges the bytes.",
-   "next_probe": "On the index-B chassis seek a non-coalescing second live sum pseudo used post-loop (the s2 acc-split coalesced; find a variant GCC will NOT coalesce) OR a duplicated compare/def GCC re-merges byte-neutrally. Requires cheat-reviewer if it lands."
+   "hypothesis": "Frontier #2 (drop j 11->10) remains dead by exact weight arithmetic (s11/s12); re-open ONLY if a directed permuter surfaces a counter reformulation keeping the three j bytes (addiu a1,a1,1 / sltiu ...,0x24 / j=0) while shedding one flow-counted ref via a loop shape where one j use lands shallower.",
+   "mechanism": "j=11 = j0(w2,d1)+j++[2](w3,d2)+j<0x24(w3,d2). Only j0 is movable and must reset per outer iteration (depth1,w2). No manual byte-neutral -1 exists.",
+   "next_probe": "On the index-B numbering dump .lreg reg_n_refs for j under directed-permuter mutations; check whether any lands a j use one loop level shallower while preserving the three j bytes. Lowest priority."
   },
   {
-   "hypothesis": "Frontier #2 (drop j 11->10) remains dead by exact weight arithmetic; re-open ONLY if the permuter surfaces a counter reformulation that keeps the three j bytes (addiu a1,a1,1 / sltiu ...,0x24 / j=0) but sheds one flow-counted ref via a loop shape where one j use lands shallower.",
-   "mechanism": "j=11 = j0(w2,d1)+j++[2](w3,d2)+j<0x24(w3,d2). Only j0 is movable and it must reset per outer iteration (depth 1, w2). No manual byte-neutral -1 exists (reconfirmed s11).",
-   "next_probe": "Permuter-surfaced only; on the index-B numbering dump .lreg reg_n_refs for j and check whether any mutation lands a j use one loop level shallower while preserving the three j bytes. Lowest priority."
+   "hypothesis": "Escalation readiness: if a directed-permuter pass + duplicated-into-arms attempt also fail, every sanctioned axis (structural s1-s3/s10-s12, forensics s6/s7, rederive s8/s9, blind permuter s4/s5/s13) will be measured dead and an OWNER-ESCALATION for damage_DebugDisp may be warranted.",
+   "mechanism": "s12 exact arithmetic proves the only reachable score-0 path is a permuter-synthesized byte-neutral 11th sum ref; two fresh 140k-iter campaigns failed to find it. The remaining unexplored lever is directed (not blind) mutation.",
+   "next_probe": "Run the directed-permuter/duplicated-into-arms frontier #1 above FIRST; only file an escalation (docs/grind/decisions.md) after it is measured dead \u2014 no escalation entry exists yet, so owner-gated is not available this session."
   }
  ],
  "judge_constraints": [
