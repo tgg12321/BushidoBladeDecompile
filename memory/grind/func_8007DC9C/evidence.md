@@ -306,3 +306,15 @@ args is NOT a sanctioned use-site shape) and stripped by `volatile_cheats`.
 - [s10] Frontier reset: s1 hypotheses H-A1/H-A2/H-B1 all marked KILLED in hypotheses.md; live frontier is a single escalation-ready item.
 
 - [s10] Re-verified this session: NO OWNER-ESCALATION entry for func_8007DC9C in docs/grind/decisions.md (Grep 8007DC9C = No matches; d6bc0904 covered 7 OTHER endgame-lock funcs). owner-gated NOT claimable -> result progress.
+
+- [s11] s11 baseline re-confirmed: sandbox --disable all score 9, target_insns 91, build_insns 90, rules_dropped 4, cheat_asm_stripped 150 (identical to s1-s10). src/display.c clean at HEAD (candidate.c byte-equivalent, already reflected).
+
+- [s11] Structural lever surface fully banked: block-local var splits (s2), declaration/source order (s2 8-form sweep), type narrowing (s2 scalar/fn-ptr/pointer fold + s4/s5 coercion forms stripped), statement re-association (s2 + s8 goto/nested-if byte-identical), struct/array grouping (s3 struct-triple -> score 11). No un-banked structural form remains.
+
+- [s11] Axis A per-EXPRESSION combine offset-0 fold (combine.c:1458 added_sets_2 multi-use retention): control-flow/decl-order-insensitive (s8); single-function reproduction requires a dead 2nd &D_8009BF68 use = coercion (s7); cross-function impossible (per-function combine, toplev.c:3004).
+
+- [s11] Axis B whole-block sched1 priority tie (sched.c INSN_PRIORITY): dead-read insn 38 mem/v priority=2 > fmt insn 60 priority=1 via volatile-MEM anti-dep REG_DEP_ANTI 38->45 (s6); expression/decl-shape-insensitive (s2/s6); unflippable without changing observable volatile order.
+
+- [s11] Both axes orthogonal and mechanism-pinned dead across all five modalities: structural (s2/s3/s11), permuter x3 (s4/s5), forensics x2 (s6/s7), rederive x2 (s8/s9), synthesis (s10).
+
+- [s11] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (Grep 8007DC9C = No matches; commit d6bc0904's owner ruling covered 7 OTHER endgame-lock funcs, not this one), so owner-gated is not claimable this session.

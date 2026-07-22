@@ -1,8 +1,8 @@
 {
  "func": "func_8007DC9C",
  "file": "display",
- "session_count": 10,
- "current_modality": "synthesis",
+ "session_count": 11,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 0,
@@ -69,13 +69,19 @@
    "floor": 9,
    "modality": "synthesis",
    "headline": "s10 synthesis: merged all 9 sessions into one escalation dossier; both residual axes (combine multi-use retention + sched volatile anti-dep) are orthogonal, mechanism-pinned, and dead in all five moda"
+  },
+  {
+   "session": 11,
+   "floor": 9,
+   "modality": "structural",
+   "headline": "s11 structural modality re-affirmed exhausted: no un-banked structural lever exists; both axes mechanism-pinned dead; escalation-ready (no owner entry yet)."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "func_8007DC9C is a fully-characterized endgame-lock with NO legitimate pure-C lever in any of the five modalities; the only remaining action is an owner escalation ruling.",
-   "mechanism": "axis A = combine.c:1458 added_sets_2 multi-use retention (needs a 2nd &D_8009BF68 use the function lacks; any is a coercion); axis B = sched.c INSN_PRIORITY set by volatile-MEM anti-dep 38->45 (unflippable without changing observable volatile order). Both dead single- AND cross-function. Matches endgame-lock-disposition-policy (both AND-gates refuse).",
-   "next_probe": "OWNER files an OWNER-ESCALATION entry for func_8007DC9C in docs/grind/decisions.md citing both pinned mechanisms + five-modality exhaustion + endgame-lock policy outcome (keep 4 regfix rules, INCOMPLETE-owner-accepted). Once filed, the next session emits owner-gated and the queue advances. No further pure-C modality remains to run."
+   "hypothesis": "func_8007DC9C is a fully-characterized ENDGAME-LOCK with NO legitimate pure-C lever in any modality; the only remaining action is an OWNER escalation ruling.",
+   "mechanism": "Axis A = combine.c:1458 added_sets_2 multi-use retention (needs a 2nd &D_8009BF68 use the function lacks; any is a coercion). Axis B = sched.c INSN_PRIORITY via volatile-MEM anti-dep REG_DEP_ANTI 38->45 (unflippable without changing observable volatile order). Matches endgame-lock-disposition-policy: gate #1 (canonical asm) REFUSE (scan_hand_coded LOW), gate #2 (coercion family) REFUSE (no SOTN/VS/ESA precedent) => keep 4 regfix rules, classify INCOMPLETE-owner-accepted.",
+   "next_probe": "OWNER files an OWNER-ESCALATION entry for func_8007DC9C in docs/grind/decisions.md citing both pinned mechanisms + five-modality exhaustion + endgame-lock policy outcome. Once filed, the next session emits owner-gated and the queue advances. No further pure-C modality remains to run."
   }
  ],
  "judge_constraints": [],
