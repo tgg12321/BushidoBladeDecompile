@@ -1,8 +1,8 @@
 {
  "func": "damage_DebugDisp",
  "file": "code6cac_c_mid",
- "session_count": 5,
- "current_modality": "permuter",
+ "session_count": 6,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 0,
@@ -39,18 +39,24 @@
    "floor": 6,
    "modality": "permuter",
    "headline": "Fresh-seed floor-6 permuter (20.9k iters) + exhaustive preheader lineswap reconfirm no clean lever: Region A' tie unreachable by statement reorder, Region B yields only dead-alias cheats."
+  },
+  {
+   "session": 6,
+   "floor": 6,
+   "modality": "forensics",
+   "headline": "Forensics: both floor-6 residuals named to one GCC decision each (A'=sched.c rank_for_schedule INSN_LUID tiebreak coupled to the do-while(0) def-relocation; B=loop.c move_movables emit_insn_before(loo"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The Region A' preheader tie can be flipped by a whole-function context change that raises bp's addu priority above the sum/j moves in the preheader BB, without a preheader statement reorder (all reorders killed) and without disturbing the solved Region A allocation.",
-   "mechanism": "The tie lives in cc1 sched1 (basic-block list scheduler) over the outer-loop-body preheader BB; the emit order is set by INSN_PRIORITY / absolute LUID, which is a whole-function effect (manual reorder only rotates the three inits' relative LUID, insufficient).",
-   "next_probe": "Instrument cc1 with BB2_SCHED_DEBUG (tmp/gccdbg/cc1) on the floor-6 build and read the priorities/LUIDs of bp's addu vs the two moves in the preheader BB; identify what upstream context lifts bp's addu (e.g. a legitimately-earlier real consumer of bp) that isn't a dead store."
+   "hypothesis": "A whole-function context change raises pseudo-77 (sum) global.c allocno priority above pseudo-79 (j) with sum's def kept at LOW LUID (so sched1 emits sum=0 first == target), decoupling the RA win from the scheduling loss.",
+   "mechanism": "global.c allocno_compare priority = floor_log2(n_refs)*n_refs*size/live_length*10000. Target has sum=a0 with sum=0 emitted first (long preheader def span) and the SAME isolated inner range as build, so target's sum>j must come from whole-function live_length/allocno-numbering, not a late def. The do-while(0) only achieves sum>j via a late def, which loses A'.",
+   "next_probe": "Directed permuter on the floor-6 full-TU basin restricted to whole-function structure OUTSIDE the preheader (e.g. the outer-loop tail / CopyBlock region) that shifts absolute LUIDs so pseudo-77's live_length drops below pseudo-79's without moving sum=0's def; vet every closing form against the constant-holder/dead-alias/offset+=j cheat catalog. s4/s5 fresh-seed campaigns found no clean sub-6 form, so bias new seeds toward structural (non-preheader) mutations."
   },
   {
-   "hypothesis": "Region B closes only via a loop-shape change that legitimately computes the pointer-range bound before the ap/a2p moves, materializing the two LICM constants at lower LUID than the moves without a constant-holder or dead-alias cheat.",
-   "mechanism": "LICM hoists the two constants to preheader END (higher LUID) so sched1 ties to the lower-LUID ap/a2p moves; the target had them at lower LUID. No source form referencing the constants only inside the loop can move them earlier without a cheat.",
-   "next_probe": "Design and sandbox a Region B loop shape where the range test's invariant is part of a genuinely loop-carried/hoisted computation with a real dependency chain to the pointer moves (raising the moves' LUID above the constants), vetting every candidate against the constant-holder / dead-alias cheat catalog before proposing."
+   "hypothesis": "Region B closes only if the two LICM invariants get LOWER LUID than the ap/a2p moves without a pre-loop reference (constant-holder cheat).",
+   "mechanism": "loop.c move_movables emit_insn_before(loop_start) hard-codes the hoist point at preheader END. The invariants are referenced only inside the k-loop, so LICM controls placement; no source form referencing them only in-loop can lower their LUID below the moves.",
+   "next_probe": "Design a k-loop shape where the range-test bound is part of a genuinely loop-carried computation with a real dependency chain to the pointer moves (raising the moves' LUID above the constants) rather than a bare literal pair; vet against constant-holder/dead-alias before proposing. Prior attempts (regionB-* family) all invalid/cheat."
   }
  ],
  "judge_constraints": [],

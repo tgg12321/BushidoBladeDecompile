@@ -178,3 +178,31 @@ LUID were tried and REJECTED as cheat-by-spelling (magic_base/magic_max, score 4
 - probe: Launched floor6-s5-freshseed campaign (base.c = do-while(0) form, honest pipeline, target.o from asm/funcs), 20,895 iterations, 8 jobs; harvested every novel find and inspected/compiled each vs target.
 - result: All sub-130 finds are the known-invalid Region B dead-variable-alias family: output-75-1 (chkptr=a2p, s32*+0xD0=+0x340 bytes, BROKEN), output-90-1 (src=a2p dead alias, cheat), output-70-1 (base=a2p dead reassignment, cheat, 79i), output-100-1 (u8*new_var=src redundant dead alias, cheat, score 100). No find touches the Region A' preheader tie; none reach floor<6; none clean. Exactly reproduces s4's floor-6 result with a fresh seed.
 - verdict: KILLED
+
+## [s6] Forensics: name the exact GCC pass+decision for each floor-6 residual (Region A' preheader tie, Region B LICM order).
+- mechanism: cc1 -da full RTL dumps on the floor-6 src; extract sched1 ready-lists + global.c allocation order + loop.c hoist point; A/B greg do-while(0) vs plain sum=0.
+- probe: tmp/grind/damage_DebugDisp/s6/{gen_dumps.sh,diff_ops.sh,ab_greg.sh}; dumps/dd.c.* ; FORENSIC_SUMMARY.md.
+- result:
+  * Region A' = sched.c sched1 `rank_for_schedule` INSN_LUID tiebreak (sched.c:54-57) over preheader BB1 (insns 27 j / 30 bp / 36 sum, all prio=1). sum=0 (insn 36) is the block-bottom ref_count=0 leaf -> emits LAST; target emits it FIRST.
+  * do-while(0) A/B PROVEN as sole cause of the sum/j allocation-order swap: global.c `allocno_compare` priority = floor_log2(n_refs)*n_refs*size/live_length*10000; n_refs=4/size=1 equal for 77&79, so the wrapper's live_length shortening (def relocated to block bottom) is what lifts sum(77) above j(79). Alloc order `100 78 79 77` (plain) -> `100 78 77 79` (do-while0).
+  * IRREDUCIBLE COUPLING: RA win and scheduling loss both flow from sum's def LUID; A' is unflippable on the do-while(0) chassis by def position (explains s5's 6-ordering exhaustion).
+  * Region B = loop.c `move_movables` `emit_insn_before(loop_start)` (loop.c:1652) puts hoisted invariants at preheader END (higher LUID than ap/a2p moves) -> sched1 LUID order emits moves-first. Target needs consts at lower LUID = pre-loop reference = constant-holder cheat. Dead.
+- verdict: CONFIRMED (both mechanisms named with measurements). Neither residual is closable by preheader statement order; both require a whole-function LUID/priority change (directed-permuter axis, s4/s5 found no clean sub-6 form).
+
+## [s6] Region A' (preheader emit order j,bp,sum vs target sum,bp,j) is set by sched.c sched1's INSN_LUID tiebreak, fed by the do-while(0)'s def-relocation of sum=0 to the preheader block-bottom.
+- mechanism: sched.c rank_for_schedule (sched.c:54-57): after equal INSN_PRIORITY (all preheader inits are prio=1) and equal dep-class, the final tiebreak is INSN_LUID(tmp)-INSN_LUID(tmp2) = original insn order. In BB1 (insns 27 j:a1 / 30 bp:v1 / 36 sum:a0), sum=0 (insn 36) is the sole ref_count=0 leaf at block bottom -> scheduled to the last slot; the remaining {27,30} emit in LUID order -> net j,bp,sum. Target = sum,bp,j.
+- probe: cc1 -da full RTL dump (tmp/grind/damage_DebugDisp/s6/dumps/dd.c.sched, dd_sched.txt BB1) + ready-list trace.
+- result: sched BB1 ready init={36}; T-2 {27,30}->picks 30; T-3->27; emit j,bp,sum. Matches build objdump (build_ops.txt lines 5-7).
+- verdict: CONFIRMED
+
+## [s6] The do-while(0) is the SOLE cause of sum(pseudo77) allocating a0 vs a1 (Region A), via global.c allocno live_length priority — and that same def-relocation is what forces sum=0 to emit last (Region A'). RA win and scheduling loss are one coupled cause.
+- mechanism: global.c allocno_compare: priority = floor_log2(n_refs)*n_refs*size/live_length*10000. For 77(sum) and 79(j), n_refs=4 and size=1 are equal, so only live_length decides. do-while(0) moves sum's def to insn 36 (block bottom, after NOTE_INSN_LOOP_BEG 285) -> shortens pseudo-77 live_length -> priority > j(79) -> sum allocated first -> a0. The identical relocation makes insn 36 the highest-LUID preheader insn -> sched1 LUID tiebreak emits sum=0 last.
+- probe: A/B greg on identical TU, do{sum=0}while(0) vs plain sum=0 (tmp/grind/damage_DebugDisp/s6/ab_greg.sh, dd.c.greg vs dd_plain.c.greg).
+- result: plain alloc order 100 78 79 77 -> 77=a1,79=a0 (floor-8 swap); do-while0 alloc order 100 78 77 79 -> 77=a0,79=a1 (target). Only 77<->79 differ. Explains s5's 6-ordering exhaustion: sum's a0 REQUIRES its def at block bottom = the exact slot sched1 emits last, so A' is unflippable by preheader statement order on this chassis.
+- verdict: CONFIRMED
+
+## [s6] Region B (build ap,a2p,C0,C1,C2 vs target C0,C1,C2,ap,a2p) is set by loop.c LICM inserting the hoisted invariants at the preheader END (higher LUID than the ptr moves), then sched1's LUID tiebreak emitting moves-first.
+- mechanism: loop.c move_movables hoists invariants via emit_insn_before(newpat, loop_start) (loop.c:1652) = immediately before NOTE_INSN_LOOP_BEG, i.e. AFTER the pre-existing ap/a2p preheader init. Hoisted consts (insns 281/287/288) thus always get higher LUID than the moves (213/216); sched1 (all prio=1) emits in LUID order -> moves-first. Target = constants-first, so target's invariants had lower LUID (positioned before the ptr init).
+- probe: dd_greg.txt insns 213-288 chain order + dd_sched.txt BB13 ready-list.
+- result: sched BB13 emits 213,216,281,287,288 = moves-first. Constants are referenced ONLY inside the k-loop, so the only source form placing them earlier is a pre-loop reference = the rejected constant-holder cheat family (magic_base / regionB-*-alias). Dead s1-s6.
+- verdict: CONFIRMED
