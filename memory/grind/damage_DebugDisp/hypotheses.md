@@ -337,3 +337,58 @@ LUID were tried and REJECTED as cheat-by-spelling (magic_base/magic_max, score 4
    AND sum=0 emits first. mechanism: j total 11 = j=0(d1) + j++(d2) + j<0x24(d2), all byte-fixed
    by target (sltiu ...,0x24). Prior sessions found no byte-neutral j-ref drop; re-examine only
    if the permuter surfaces a counter reformulation keeping the sltiu 0x24 byte.
+
+## [s10-synth] Floor 2 reverified; A' localized to 2 preheader reg=0 moves; plain-in-position=4 (corrects ledger's 9).
+- mechanism: per-function objdump (tmp/grind/damage_DebugDisp/s10/{plain,dw0}_ops.txt vs asm/funcs).
+  PLAIN sum=0 (unbracketed, in candidate position): preheader BYTE-PERFECT (insn4 addu a0,zero,zero /
+  insn5 addu v1,t1,a3 / insn6 addu a1,zero,zero == target .L8003801C), only 4 diffs = inner a0<->a1
+  swap (j=$a0/sum=$a1) at insns 8/9/10/15 -> score 4. DO-WHILE0 (floor 2): inner loop byte-identical
+  to target (sum=$a0/j=$a1), residual = exactly 2 diffs — the emit-POSITION swap of insn4/insn6:
+  build j=0 at pos4 & sum=0 at pos6 vs target sum=0 at pos4 & j=0 at pos6. The bracket forces sum=0
+  to block-bottom (highest LUID) -> sched1 rank_for_schedule INSN_LUID tiebreak emits it at pos6.
+- probe: apply candidate (=2) and plain-in-position (=4); objdump each vs target; src reverted to HEAD.
+- result: floor 2 reverified; plain-in-position = 4 (NOT 9 — the s10 "plain=9" was sum-first-position);
+  A' = 2-insn preheader reg=0 emit-order swap; do-while0 trade = -4 inner swap +2 preheader = 2.
+- verdict: CONFIRMED. A' is purely the schedule slot of sum=0's def; both residual insns are `addu $reg,zero,zero`.
+
+## FRONTIER RESET (s10 synthesis pass) — SUPERSEDES the s10 reset above. Region A' is the SOLE residual (score 2).
+Sharpened picture: target = sum=$a0 with sum=0 emitted FIRST (pos4, unbracketed) => target's sum has
+weighted reg_n_refs>=11 (tie j=11) from a source that does NOT relocate sum=0's def. On our chassis we
+can get EITHER a byte-perfect preheader (plain, but sum=$a1 swap) OR sum=$a0 (do-while0, but sum=0 at
+pos6). The whole game is: give sum its 11th weighted ref WITHOUT bracketing sum=0's def, OR drop j to 10.
+
+1. **Directed permuter on the score-2 index-B chassis (PRIMARY).** The Region-B index rewrite renumbered
+   the whole-function pseudos/LUIDs vs the STALE s4/s5 campaigns (old explicit-ap/a2p chassis). This is
+   the single highest-value unexplored lead and is a permuter-modality job. mechanism: sum needs a
+   non-coalescing depth>=2 ref target keeps but our chassis drops; the changed tail topology (index givs
+   vs walking pointers) may have shifted the sum/j numbering enough that a structural mutation surfaces
+   the natural 11th ref. next_probe: build ws from cpp(src) with the committed score-2 body, target.o
+   from asm/funcs (drop `.set gp=64`), honest pipeline, --stop-on-zero, ~20-30k fresh-seed iters; vet
+   every sub-2 find against dead-store/constant-holder (the Region-B alias trap is now MOOT, B is closed).
+2. **Drop j 11->10 (closes A AND A' in ONE move -> score 0, no do-while0).** NEW crisp framing: plain's
+   preheader is ALREADY byte-perfect, so if j drops to 10, plain sum(10) ties j(10), sum wins $a0 by
+   lower pseudo -> sum=$a0 with sum=0 at pos4 = target EXACTLY. mechanism: j's depth-2 refs (j++, j<0x24)
+   are byte-fixed (target sltiu ...,0x24 / addiu a1,a1,1); the only movable weight is j=0's depth-1 def,
+   which must reset per outer iteration (can't hoist to depth 0). next_probe: on the index-B numbering,
+   dump .lreg reg_n_refs for j; seek a counter reformulation keeping the three j bytes but shedding one
+   flow-counted ref (permuter-surfaced or a loop-shape where one j use lands shallower). Highest payoff.
+3. **Natural sum-11th-ref decoupler (frontier #1 refined).** Target's sum reaches 11 with sum=0 at low
+   LUID. The inner body, sum=0 def, and sum==chk compare are ALL byte-identical to ours, so the extra ref
+   is a loop_depth effect GCC keeps in flow-counting but drops in codegen. mechanism: reg_n_refs +=
+   loop_depth (flow.c); the +1 must come from a genuine depth>=2 sum reference in a block free of the
+   outer IVs (s7-s9 killed peel/reorder/tail-bracket as the source). next_probe: on the index-B chassis,
+   test whether the changed tail loop_depth topology admits a sum reference one level deeper without a
+   bracket; a SECOND live sum pseudo used post-loop that GCC will NOT coalesce (s2's acc-split coalesced —
+   seek a non-coalescing variant). Vet against dead-store.
+
+## [s10] The committed floor-2 index-B candidate (do-while(0) on sum=0 + index-based Region-B k-loop + do-while(0) on k) still measures honest distance 2 on this chassis, with Region B byte-exact and judge-PASSed.
+- mechanism: Applied candidate.c to src/code6cac_c_mid.c; sandbox --disable all builds the honest object with regfix/asmfix disabled and cheat-asm stripped. Region A solved by do-while(0) sum=0 (reg_n_refs loop-depth bump ties j, allocno-number tiebreak gives sum $a0); Region B closed by index reformulation (strength_reduce giv-inits land after LICM range constants) — judge ruling docs/grind/decisions.md 2026-07-22 06:02 PASS.
+- probe: cp candidate body into src; & tools/wteng.ps1 main sandbox damage_DebugDisp --disable all
+- result: score 2, target_insns 79, build_insns 79, 8 rules dropped, 34 cheat-asm stripped. src reverted to clean HEAD after measurement.
+- verdict: CONFIRMED
+
+## [s10] Plain sum=0 (unbracketed, in candidate position) on the index-B chassis scores 4 (NOT 9 as the s10 note implied), and the sole floor-2 residual (Region A') is exactly the emit-position swap of the two preheader `addu $reg,zero,zero` moves (sum=0 vs j=0).
+- mechanism: Per-function objdump of both builds vs asm/funcs/damage_DebugDisp.s. PLAIN: preheader byte-perfect (insn4 addu a0,zero,zero / insn5 addu v1,t1,a3 / insn6 addu a1,zero,zero == target .L8003801C); only 4 diffs = inner-loop a0<->a1 swap (j=$a0/sum=$a1) at insns 8/9/10/15 -> score 4. DO-WHILE0: inner loop byte-identical to target (sum=$a0/j=$a1), residual = 2 diffs: build emits j=0 at pos4 & sum=0 at pos6 vs target sum=0 at pos4 & j=0 at pos6. The do-while(0) bracket forces sum=0 to the mini-loop block-bottom (highest preheader LUID); sched1 rank_for_schedule INSN_LUID tiebreak emits the block-bottom leaf last. Trade: do-while0 = -4 inner swap +2 preheader order = score 2.
+- probe: Edit do{sum=0}while(0) -> plain sum=0; sandbox --disable all (=4); extract_ops.py per-function objdump of plain vs do-while0 vs target.
+- result: plain-in-position = 4; A' = 2-insn preheader reg=0 emit-order swap; the s10 'plain=9' referred to moving sum=0 to first position, a different perturbation. Both residual insns are addu $reg,zero,zero (byte 0x2120/0x2128 0000).
+- verdict: CONFIRMED

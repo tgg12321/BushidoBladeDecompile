@@ -1,8 +1,8 @@
 {
  "func": "damage_DebugDisp",
  "file": "code6cac_c_mid",
- "session_count": 9,
- "current_modality": "rederive",
+ "session_count": 10,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 0,
@@ -63,23 +63,29 @@
    "floor": 6,
    "modality": "rederive",
    "headline": "Rederive: fresh m2c reproduces candidate structure; m2c inner-body order (j++ first) = 8 and accumulate-peel = 12 both KILLED \u2014 candidate's inner order is load-bearing for the do-while0 RA win and a b"
+  },
+  {
+   "session": 10,
+   "floor": 2,
+   "modality": "synthesis",
+   "headline": "Synthesis: floor 2 reverified on committed index-B chassis; A' localized to a 2-insn preheader reg=0 emit-order swap; plain-in-position=4 corrects the ledger's implied 9; merged frontier reset (permut"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A whole-function structure gives sum weighted-n_refs >= 11 (tie/beat j) WITHOUT a loop-note bracket at sum=0's def AND without deepening the tail, so sum wins $a0 (Region A) AND sum=0 emits first (Region A').",
-   "mechanism": "reg_n_refs += loop_depth (flow.c): sum needs +1 depth-weighted ref over plain's 10. s9 reconfirmed from the rederive angle that this ref cannot come from a peeled accumulate (diverges, =12) nor a body reorder (undoes the RA win, =8) nor the tail (s8, cascades). It must come from a genuine depth>=2 sum reference GCC keeps in flow-counting but drops in codegen, in a block free of the outer IVs.",
-   "next_probe": "Directed permuter on the floor-6 full-TU basin biased to accumulate-region restructures that add a non-coalescing depth-2 sum reference (the s2 acc-split coalesced; seek a variant GCC will NOT coalesce, e.g. a second live sum pseudo used post-loop). Vet against dead-store/constant-holder."
+   "hypothesis": "A directed permuter on the score-2 index-B chassis (fresh whole-function numbering) surfaces a structural variant giving sum a non-coalescing depth>=2 ref that wins $a0 with sum=0 emitted first (closes A', score 0).",
+   "mechanism": "Region-B index rewrite renumbered pseudos/LUIDs vs the stale s4/s5 campaigns; sum needs weighted reg_n_refs>=11 (tie j) from a source that does NOT relocate sum=0's def. The changed tail topology (strength-reduced givs vs walking pointers) may shift the sum/j tie enough that a mutation reaches it.",
+   "next_probe": "Build ws from cpp(src) with the committed score-2 body; target.o from asm/funcs/damage_DebugDisp.s + prelude (drop .set gp=64); honest pipeline; --stop-on-zero; ~20-30k fresh-seed iters. Vet every sub-2 find against dead-store/constant-holder (Region-B alias trap now moot). Permuter-modality session."
   },
   {
-   "hypothesis": "Drop j's loop-depth-weighted reg_n_refs from 11 to 10 so plain (low-LUID) sum=0 ties j and wins $a0 via the allocno tiebreak with NO do-while(0) (closes A and A' together).",
-   "mechanism": "j total 11 = j=0(depth1) + j++(depth2) + j<0x24(depth2). Target keeps the exact bytes addu a1,zero,zero / addiu a1,a1,1 / sltiu v0,a1,0x24, so all three j references are byte-fixed; s9's asm read confirms j is a genuine up-counter (sltiu ...,0x24). No byte-neutral way to drop a j reference was found.",
-   "next_probe": "Find a loop shape where the counter is initialized once at function scope yet still resets per outer iteration without a depth-1 store, OR a pointer-difference reformulation that removes one depth-2 j reference while keeping target's sltiu ...,0x24 byte (prior pointer-end attempts diverged from the integer counter)."
+   "hypothesis": "Dropping j's loop-depth-weighted reg_n_refs from 11 to 10 closes A AND A' in ONE move (score 0, no do-while(0)): plain's preheader is already byte-perfect, so if j ties sum at 10, sum wins $a0 by lower pseudo and sum=0 stays at pos4 = target exactly.",
+   "mechanism": "j total 11 = j=0(depth1) + j++(depth2) + j<0x24(depth2). j's depth-2 refs are byte-fixed (target sltiu ...,0x24 / addiu a1,a1,1 / addu a1,zero,zero); the only movable weight is j=0's depth-1 def, which must reset per outer iteration (cannot hoist to depth 0). Prior sessions found no byte-neutral j-ref drop.",
+   "next_probe": "On the index-B numbering, dump .lreg reg_n_refs for j (flow.c dump_flow_info); seek a counter reformulation that keeps the three j bytes but sheds one flow-counted ref (permuter-surfaced, or a loop shape where one j use lands shallower). Highest payoff route."
   },
   {
-   "hypothesis": "Region B closes only if the two LICM range constants get LOWER LUID than the ap/a2p moves without a pre-loop reference (constant-holder cheat).",
-   "mechanism": "loop.c move_movables emit_insn_before(loop_start) hard-codes the hoist point at preheader END (after ap/a2p moves); the constants are referenced only inside the k-loop so LICM controls placement. s9 m2c confirms the original had plain preloop moves + the constants referenced only inside the loop \u2014 no alternative source structure. Unchanged s1-s9.",
-   "next_probe": "Design a k-loop where the range-test bound is genuinely loop-carried with a real dependency chain to the pointer moves (raising the moves' LUID above the constants), or where ap/a2p init is NOT a preheader insn (computed later/derived), so the hoisted constants become the first preheader insns. Vet against constant-holder/dead-alias."
+   "hypothesis": "The natural sum-11th-ref decoupler: give sum a genuine depth>=2 reference GCC keeps in flow-counting but drops in codegen, in a block free of the outer IVs, without bracketing sum=0's def.",
+   "mechanism": "reg_n_refs += loop_depth (flow.c). Inner body/def/compare are byte-identical to target, so the +1 must come from a loop_depth topology effect. s7-s9 killed peel (=12), inner-reorder (=8), tail-bracket (=12) as the source; s2's acc-split coalesced.",
+   "next_probe": "On the index-B chassis, test whether the changed tail loop_depth admits a sum reference one level deeper without a bracket, or a SECOND live sum pseudo used post-loop that GCC will NOT coalesce (seek a non-coalescing variant of the s2 acc-split). Vet against dead-store."
   }
  ],
  "judge_constraints": [
