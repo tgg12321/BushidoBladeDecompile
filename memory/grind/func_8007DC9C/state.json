@@ -1,8 +1,8 @@
 {
  "func": "func_8007DC9C",
  "file": "display",
- "session_count": 25,
- "current_modality": "forensics",
+ "session_count": 26,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 0,
@@ -159,13 +159,19 @@
    "floor": 9,
    "modality": "forensics",
    "headline": "s25 forensics: axis-A fold pass pinned to COMBINE (not expand) via dumps, correcting s6 \u2014 combine deletes the single-use BF68 address pseudo (added_sets_2 FALSE); both axes now dump-verified on both s"
+  },
+  {
+   "session": 26,
+   "floor": 9,
+   "modality": "rederive",
+   "headline": "s26 rederive: novel whole-function ternary/conditional-expression form KILLED (score 9, identical floor-9 fingerprint); both axes stay mechanism-pinned dead; escalation-ready, still no owner entry fil"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "func_8007DC9C is a fully-characterised ENDGAME-LOCK with both axes now dump-pinned on both sides; no legitimate pure-C lever exists in any modality single- or cross-function.",
-   "mechanism": "Axis A = combine.c:1458 added_sets_2: our single-use BF68 address pseudo is deleted at combine (fold to 2-insn), target's multi-use pseudo is retained (3-insn); the only single-fn reproduction is a dead 2nd &BF68 use = coercion (s7), cross-fn mechanically impossible (per-function combine). Axis B = sched1 over-determined lock (volatile-MEM anti-dep priority + load-delay hazard + LUID, s24) unflippable without making the read non-volatile (DCE'd = score-19 collapse).",
-   "next_probe": "OWNER files an OWNER-ESCALATION entry for func_8007DC9C in docs/grind/decisions.md citing both dump-pinned mechanisms (axis A combine.c:1458 added_sets_2 fold, both sides s25; axis B over-determined sched lock s24), six-modality exhaustion incl. seven-chassis permuter (~189k iters) and six forensics runs, the s16 rule-completeness proof, and the endgame-lock-disposition-policy outcome (gate #1 REFUSE canonical-asm, gate #2 REFUSE coercion). Once filed, the next session emits owner-gated and the queue advances. No further pure-C modality remains and no un-pinned forensic detail remains to run."
+   "hypothesis": "func_8007DC9C is a fully-characterised ENDGAME-LOCK; both residual axes are compiler-internal, orthogonal, and dump-pinned dead on both sides with NO legitimate pure-C lever single- or cross-function across all six modalities (structural, permuter x7 ~189k iters, forensics x6, rederive x6, synthesis x2).",
+   "mechanism": "Axis A = combine.c:1458 added_sets_2 fold: our single-use BF68 address pseudo (reg93 at expand, s25) is deleted at combine (single-use -> added_sets_2 FALSE), target retains it via a genuine 2nd use = single-fn reproduction is a dead 2nd &BF68 use (coercion, s7), cross-fn mechanically impossible (per-function combine, toplev.c:3004). Axis B = sched1 OVER-DETERMINED lock (volatile-MEM anti-dep priority + MIPS-I load-delay hazard + LUID tie-break, s24), unflippable without making the read non-volatile (DCE'd = score-19 collapse).",
+   "next_probe": "OWNER files an OWNER-ESCALATION entry for func_8007DC9C in docs/grind/decisions.md citing both dump-pinned mechanisms (axis A combine.c:1458 added_sets_2, both sides s25; axis B over-determined sched lock s24), six-modality exhaustion incl. seven-chassis permuter (~189k iters) and six forensics runs, the s16 rule-completeness proof (4 rules = 2+2, no hidden 3rd axis), and the endgame-lock-disposition-policy outcome (gate #1 REFUSE canonical-asm, gate #2 REFUSE coercion). Once filed, the next session emits owner-gated and the queue advances. No further pure-C modality or un-pinned forensic detail remains."
   }
  ],
  "judge_constraints": [],

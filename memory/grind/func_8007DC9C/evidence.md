@@ -593,3 +593,15 @@ args is NOT a sanctioned use-site shape) and stripped by `volatile_cheats`.
 - [s25] NO OWNER-ESCALATION entry for func_8007DC9C in docs/grind/decisions.md (grep = 0 matches this session). Escalation-ready since s7 (18 sessions confirmed); owner-gated NOT claimable without the entry. The only unblock is the OWNER filing it.
 
 - [s25] Six-modality exhaustion stands: structural (s2/s3/s11/s12/s20/s21), permuter x7 ~189k iters (s4/s5/s13/s14/s22/s23), forensics x6 (s6/s7/s15/s16/s24/s25), rederive (s8/s9/s17/s18), synthesis (s10/s19). 4 regfix rules a proven 1:1 cover (s16).
+
+- [s26] s26 baseline re-confirmed: sandbox --disable all score 9, target_insns 91, build_insns 90, rules_dropped 4, cheat_asm_stripped 150 (identical fingerprint s1-s25). src/display.c clean at HEAD after the experiment (git checkout, verified: if-form restored at line 1037, no dirt).
+
+- [s26] s26 rederive: whole-function ternary/conditional-expression form (report block as comma-expression rvalue inside `?:`) measured score 9 / build 90 = identical floor-9 fingerprint. Structurally distinct AST from all 4 banked rederive forms; neither pinned axis moved.
+
+- [s26] s26 finding: the ternary reaches the 90-insn floor build (distinct -1/0 exit paths preserved), NOT s17/s18's 88-insn coalesced form. Confirms the s17/s18 exit-coalescing threshold: HEAD statement-if + s8 goto/nested-if + s26 ternary all keep the two exits separate -> 90/floor-9; s17 inverted-return + s18 computed-flag-two-if coalesce the exits -> 88/score-12. No rederive skeleton reaches target's 91.
+
+- [s26] Rederive modality now SEXTUPLY exhausted (s8 m2c+Kengo+goto/nested-if, s9 decompme-corpus, s17 inverted-return, s18 computed-flag-two-if, s26 ternary conditional-expression). Axis A is per-expression combine.c:1458 offset-0 fold (control-flow-insensitive, s8/s25); axis B is an over-determined sched1 lock (volatile-MEM anti-dep priority + MIPS-I load-delay hazard + LUID backstop, s24), body-shape-invariant (s15). Both insensitive to any function-level skeleton.
+
+- [s26] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (grep = No matches, s26), so owner-gated is NOT claimable this session despite full six-modality exhaustion.
+
+- [s26] candidate.c unchanged (HEAD-equivalent best form at floor 9); s26 ternary saved to rejected/rederive-ternary-conditional-expr.c.
