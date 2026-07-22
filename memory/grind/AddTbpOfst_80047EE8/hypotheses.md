@@ -113,3 +113,27 @@
 - probe: cc1 -da full-pass RTL dump of the floor-10 candidate (.rtl post-expand + .greg post-reload); decoded target frame from asm/funcs/AddTbpOfst_80047EE8.s; positive control compiling declared `int buf[8]` locals (addressed ctlA + unused ctlB).
 - result: FALSIFIED. (1) Candidate get_frame_size()=0 at BOTH expand and post-reload; .greg shows all 22 pseudos (74-99) in hard regs (2 4 5 6 7 16 17 18 29 31), zero spills, no frame pointer. (2) Target vars region 0x18-0x37 has ZERO sw/lw; a reload spill slot ALWAYS emits store+reload, so it is not a reload artifact. (3) Positive control: declared `int buf[8]` (addressed ctlA=.frame $sp,56 vars=32 OR unused ctlB=vars=32) reserves the region with ZERO stores, byte-shape-identical to target.
 - verdict: KILLED
+
+## [s7] The target's 32-byte phantom vars region is produced by a per-function register-allocation accident, so it varies with each function's pressure (a residual doubt after s6 named the function.c source-DECL mechanism on AddTbpOfst alone)
+- mechanism: if the phantom were an RA/reload emergent artifact it would scale with each cluster member's register pressure (different saved-reg counts); if it is a shared source-level dead-aggregate DECL it would be INVARIANT across the cluster regardless of pressure
+- probe: decoded the frame layout (frame size, every sp-relative sw/lw) of all 4 cluster members directly from asm/funcs/; computed each one's args/vars/reg-save regions
+- result: KILLED. All 4 (AddTbpOfst_80047EE8 72B/4regs, InitHiraRmd_80047FBC 80B/6regs, InitHiraRmd_800480C0 88B/8regs, func_800481E8 72B/4regs) reserve EXACTLY 32 phantom bytes at 0x18-0x37 with ZERO region accesses, despite 4/6/8/4 saved regs. The phantom is invariant under pressure -> a SHARED source-level dead ~32-byte local aggregate, corroborating (not a per-function RA accident). Directly supports the family/species escalation framing.
+- verdict: KILLED (RA-accident theory falsified; source-DECL mechanism corroborated cluster-wide)
+
+## [s7] The target's source aggregate can be pinned in size and type by mapping cc1's aggregate-size -> reserved-vars function, and a non-array (struct) construct might reproduce the zero-store 32-byte phantom legitimately
+- mechanism: function.c assign_stack_local rounds the DECL size to 8-byte frame alignment; if a struct (a legitimate SDK type like MATRIX) reproduced the shape, a genuinely-used struct could be a non-cheat path
+- probe: cc1 -O2 -G0 -mips1 on a size grid (int[6/7/8/9], addressed + dead) and a 32-byte MATRIX-shaped struct (addressed mtx_used, dead mtx_dead); read .frame vars= and sp-store presence (tmp/grind/AddTbpOfst_80047EE8/s7/probe/agg.{c,s})
+- result: size map int[6]=24->vars24, int[7]=28->vars32, int[8]=32->vars32, int[9]=36->vars40; target vars=32 pins the source aggregate at 25-32 bytes (7-8 word int array); a8_dead reproduces target shape exactly (vars=32, ZERO sp stores). BUT the 32-byte STRUCT reserved vars=0 in BOTH addressed and dead forms (GCC scalarized/eliminated it) — only the ARRAY form reserves the zero-store slot. So the sole reproducing construct is a dead local ARRAY = the forbidden dead-vars-local-array; no legit struct substitute exists; WRITTEN carve-out inapplicable (zero region stores).
+- verdict: KILLED (no legit non-array construct; forensic size/type pin re-confirms s6 endgame-lock, upstream of all RA/scheduling)
+
+## [s7] The 32-byte phantom vars region is a per-function register-allocation accident, so it would vary with each cluster member's pressure.
+- mechanism: RA/reload emergent artifacts scale with register pressure; a shared source-level dead-aggregate DECL would be invariant across the cluster.
+- probe: Decoded frame layout (size + every sp-relative sw/lw) of all 4 cluster members directly from asm/funcs/; computed each one's args/vars/reg-save regions.
+- result: All 4 (AddTbpOfst_80047EE8 72B/4regs, InitHiraRmd_80047FBC 80B/6regs, InitHiraRmd_800480C0 88B/8regs, func_800481E8 72B/4regs) reserve EXACTLY 32 phantom bytes at 0x18-0x37 with ZERO region accesses despite 4/6/8/4 saved regs. Phantom invariant under pressure => shared source-level dead ~32B local aggregate.
+- verdict: KILLED
+
+## [s7] A non-array (struct) local could reproduce the zero-store 32-byte phantom, opening a legit (SDK-type) non-cheat path.
+- mechanism: function.c assign_stack_local rounds a DECL size to 8-byte frame alignment; if a struct reproduced the shape, a genuinely-used struct could be non-cheat.
+- probe: cc1 -O2 -G0 -mips1 on int[6/7/8/9] (addressed+dead) and a 32-byte MATRIX-shaped struct (addressed+dead); read .frame vars= and sp-store presence. tmp/grind/AddTbpOfst_80047EE8/s7/probe/agg.{c,s}.
+- result: Size map: int[6]=24->vars24, int[7]=28->vars32, int[8]=32->vars32, int[9]=36->vars40. Target vars=32 pins source aggregate at 25-32B (7-8 word int array); a8_dead reproduces target shape (vars=32, ZERO sp stores). The 32-byte STRUCT reserved vars=0 in BOTH forms (GCC scalarized/eliminated it) — only the ARRAY reserves the zero-store slot. Sole reproducing construct = dead local ARRAY = forbidden dead-vars-local-array; WRITTEN carve-out inapplicable.
+- verdict: KILLED

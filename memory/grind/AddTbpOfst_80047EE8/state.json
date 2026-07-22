@@ -1,7 +1,7 @@
 {
  "func": "AddTbpOfst_80047EE8",
  "file": "text1b",
- "session_count": 6,
+ "session_count": 7,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -45,13 +45,19 @@
    "floor": 10,
    "modality": "forensics",
    "headline": "Forensics NAMES the 32-byte divergence: function.c assign_stack_local at RTL-EXPAND from a source-level dead local aggregate DECL \u2014 NOT reload spill; falsifies the s3-s5 phantom-frame/reload-slot theo"
+  },
+  {
+   "session": 7,
+   "floor": 10,
+   "modality": "forensics",
+   "headline": "Forensics s7: cluster-wide 32-byte phantom is INVARIANT under register pressure + cc1 size-map pins it to a dead 7-8 word local ARRAY (forbidden), re-confirming s6's function.c source-DECL mechanism u"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "AddTbpOfst_80047EE8 is at endgame-lock exhaustion with a now-precisely-named mechanism: the 32-byte residual originates at function.c RTL-expand (assign_stack_local from a dead source-level local-aggregate DECL), upstream of all RA/scheduling \u2014 so no sanctioned pure-C axis (F1 arg0 s2, F2 structural s3, F2 permuter two-basin s4/s5) can reach it, and forensics (s6) confirms the origin is a source DECL, reproducible only via the forbidden dead-vars-local-array.",
-   "mechanism": "endgame-lock-disposition standing policy 2026-07-20; both AND-gates fail (canonical-asm negative: ordinary table walker; no SOTN precedent for an unwritten >=32-byte phantom-frame carrier). Forensics upgrades the mechanism claim from 'reload phantom slot' to the true 'function.c expand-stage source-DECL slot'.",
-   "next_probe": "File the mirroring OWNER-ESCALATION for AddTbpOfst_80047EE8 (citing F1 discharge s2, F2 structural s3, F2 permuter two-basin s4/s5, and the s6 forensic mechanism-naming) once the sibling InitHiraRmd_80047FBC family ruling lands. Until an escalation entry naming this function exists in docs/grind/decisions.md, this remains progress-recorded exhaustion, not owner-gated. Do not self-resolve. All modalities (recon/structural/permuter/forensics) are now exhausted; no un-run axis remains."
+   "hypothesis": "AddTbpOfst_80047EE8 is at endgame-lock exhaustion: the 32-byte residual originates at function.c RTL-expand (assign_stack_local from a shared, pressure-invariant dead 7-8 word local ARRAY DECL), upstream of all RA/scheduling \u2014 no sanctioned pure-C axis (F1 arg0 s2, F2 structural s3, F2 permuter two-basin s4/s5) can reach it, and the only reproducing construct is the forbidden dead-vars-local-array (no struct substitute; WRITTEN carve-out inapplicable).",
+   "mechanism": "endgame-lock-disposition standing policy 2026-07-20; both AND-gates fail (canonical-asm negative: ordinary table walker; no SOTN precedent for an unwritten >=32-byte phantom-frame carrier). s7 upgrades the mechanism from a single-function forensic to a cluster-wide invariant (4/4 members reserve exactly 32B) + a size/type pin (dead 7-8 word int array, not a struct).",
+   "next_probe": "File the mirroring OWNER-ESCALATION for AddTbpOfst_80047EE8 in docs/grind/decisions.md (citing F1 discharge s2, F2 structural s3, F2 permuter two-basin s4/s5, the s6 forensic mechanism-naming, and the s7 cluster-invariant + array-size/type pin) once the sibling InitHiraRmd_80047FBC family ruling lands. Until an escalation entry naming THIS function exists, this stays progress-recorded exhaustion, not owner-gated. Do not self-resolve. All modalities (recon/structural/permuter/forensics) exhausted; no un-run axis remains."
   }
  ],
  "judge_constraints": [],
