@@ -1,7 +1,7 @@
 {
  "func": "func_8007DC9C",
  "file": "display",
- "session_count": 20,
+ "session_count": 21,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -129,12 +129,18 @@
    "floor": 9,
    "modality": "structural",
    "headline": "s20 structural: combined fmt-ptr-first + diff-temp form KILLED (score 9, identical fingerprint); structural modality re-confirmed exhausted 6th time; both axes mechanism-pinned dead; escalation-ready,"
+  },
+  {
+   "session": 21,
+   "floor": 9,
+   "modality": "structural",
+   "headline": "s21 structural: novel three-lever combo (deadread-first + fmt-ptr + diff-temp) KILLED (score 9, identical fingerprint); structural modality re-confirmed exhausted 7th time; both axes mechanism-pinned "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "func_8007DC9C is a fully-characterized ENDGAME-LOCK with no legitimate pure-C lever, single- or cross-function, in any of the five modalities; the 4 regfix rules are a proven 1:1 cover (s16) of two orthogonal compiler-internal axes.",
-   "mechanism": "Axis A = combine.c:1458 added_sets_2 multi-use retention (needs a 2nd &D_8009BF68 use the function lacks; single-fn = dead coercion, cross-fn mechanically impossible per per-function combine, s7). Axis B = sched1 REG_DEP_ANTI volatile-MEM priority (dead-read out-ranks fmt by +1; unflippable without changing observable volatile order). Both proven structure/control-flow-insensitive (s8/s15/s20).",
+   "hypothesis": "func_8007DC9C is a fully-characterized ENDGAME-LOCK with no legitimate pure-C lever (single- or cross-function) in any of the five modalities; the 4 regfix rules are a proven 1:1 cover of two orthogonal compiler-internal axes.",
+   "mechanism": "Axis A = combine.c:1458 added_sets_2 multi-use retention (needs a 2nd &D_8009BF68 use the function lacks; single-fn = dead coercion, cross-fn mechanically impossible per per-function combine). Axis B = sched1 REG_DEP_ANTI volatile-MEM priority (dead-read out-ranks fmt by +1; unflippable without changing observable volatile order). Both proven structure/control-flow-insensitive (s8/s15/s20/s21).",
    "next_probe": "OWNER files an OWNER-ESCALATION entry for func_8007DC9C in docs/grind/decisions.md citing both pinned mechanisms (combine.c:1458 added_sets_2 / sched1 REG_DEP_ANTI dead-read->BF7C), five-modality exhaustion, the rule-completeness proof (s16), and the endgame-lock-disposition-policy outcome. Once filed, the next session emits owner-gated and the queue advances. No further pure-C modality remains to run."
   }
  ],

@@ -493,3 +493,17 @@ args is NOT a sanctioned use-site shape) and stripped by `volatile_cheats`.
 - [s20] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (grep 8007DC9C = No matches this session); owner-gated is NOT claimable despite full modality exhaustion.
 
 - [s20] func_8007DC9C matches endgame-lock-disposition-policy: gate #1 REFUSE (scan_hand_coded LOW, ordinary GCC output), gate #2 REFUSE (no SOTN/VS/ESA precedent for a dead-2nd-use combine coercion or a volatile-order sched coercion) -> keep the 4 regfix rules, classify INCOMPLETE-owner-accepted.
+
+- [s21] STRUCTURAL. Baseline re-confirmed (fresh sandbox, src clean at HEAD): score 9, target 91 / build 90, rules_dropped 4, cheat_asm_stripped 150 (identical fingerprint s1-s20). Measured ONE novel un-banked structural form: three-lever combo (dead stat-read new_var staged FIRST + fmt pointer precompute fmt0 + masked-subtraction home diff0) — distinct from s2 (each lever individually, all 9) and s20 (fmt-ptr-FIRST + diff-temp, i.e. fmt before dead read, 9). Applied to src/display.c, sandbox -> score 9, IDENTICAL fingerprint; neither axis moved. KILLED. src restored clean (git checkout). Rejected: rejected/structural-deadread-first-fmtptr-difftemp.c. Artifact: tmp/grind/func_8007DC9C/s21/FINDINGS.md.
+- [s21] Confirms s15 body-shape-invariance empirically once more: axis B sched1 priority (dead-read=2 > fmt=1 via volatile-MEM REG_DEP_ANTI) is unchanged by declaration/LUID topology; axis A per-expression combine.c:1458 offset-0 fold untouched by statement-level levers. Structural modality re-confirmed EXHAUSTED (7th time: s2/s3/s11/s12/s20 + s21).
+- [s21] NO OWNER-ESCALATION entry for func_8007DC9C in docs/grind/decisions.md (grep 8007DC9C = No matches this session) -> owner-gated NOT claimable. Escalation-ready; only unblock is the OWNER filing the entry.
+
+- [s21] s21 baseline re-confirmed (fresh sandbox, src clean at HEAD): score 9, target_insns 91, build_insns 90, rules_dropped 4, cheat_asm_stripped 150 — identical fingerprint s1-s20.
+
+- [s21] Novel three-lever structural form (deadread-first + fmt0 precompute + diff0 home) measured score 9, identical fingerprint; distinct from s2 (each lever individually) and s20 (fmt-ptr-first + diff-temp). KILLED. src restored clean via git checkout (no dirt).
+
+- [s21] Empirically re-confirms s15 body-shape-invariance: axis B sched1 priority (dead-read=2 > fmt=1 via volatile-MEM REG_DEP_ANTI) is unchanged by declaration/LUID topology; axis A per-expression combine.c:1458 offset-0 fold is untouched by statement-level levers.
+
+- [s21] Structural modality re-confirmed EXHAUSTED (7th time: s2/s3/s11/s12/s20 + s21). Both axes orthogonal and mechanism-pinned dead across all five modalities; the 4 regfix rules are a proven 1:1 cover (s16, no hidden 3rd axis).
+
+- [s21] NO OWNER-ESCALATION entry for func_8007DC9C in docs/grind/decisions.md (grep 8007DC9C = No matches this session) -> owner-gated NOT claimable; only unblock is the OWNER filing the entry.

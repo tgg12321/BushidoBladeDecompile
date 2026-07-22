@@ -291,3 +291,15 @@ movement). The ONLY unblock is the OWNER filing the escalation entry.
 - probe: Applied const s32 *fmt0 = &g_str_gpu_timeout (declared first) + s32 diff0 = (D_8009BF78 - D_8009BF7C) & 0x3F, then debug_printf(fmt0, diff0, ...) in src/display.c; ran sandbox func_8007DC9C --disable all; restored src to clean HEAD.
 - result: score 9, target_insns 91, build_insns 90, rules_dropped 4, cheat_asm_stripped 150 — IDENTICAL fingerprint to s1-s19. Neither axis moved. Rejected: rejected/structural-combined-fmtptr-difftemp.c.
 - verdict: KILLED
+
+## [s21] A novel un-banked structural three-lever combination (dead stat-read staged FIRST + fmt-pointer precompute + masked-subtraction diff-temp, as a UNIT) moves axis A (BF68[0] combine offset-0 fold) or axis B (fmt-vs-deadread 8-op sched1 cluster).
+- mechanism: The combination reshapes declaration/LUID/statement topology of the axis-B cluster in a way no single s2 form (fmt-precompute-first, new_var-declared-first, bf78/diff-temp — all 9) nor s20 (fmt-ptr-FIRST + diff-temp — fmt before the dead read, 9) covered. Refuted in advance by s15 (axis B priority body-shape-invariant: dead-read priority 2 > fmt priority 1 via volatile-MEM REG_DEP_ANTI, identical modulo uniform UID shift) and by axis A being a per-expression combine.c:1458 added_sets_2 offset-0 fold on a single pure rvalue.
+- probe: Applied const s32 *fmt0=&g_str_gpu_timeout + s32 diff0=(D_8009BF78-D_8009BF7C)&0x3F with `new_var=*g_gpu_stat_reg` staged as the FIRST if-body statement, then debug_printf(fmt0, diff0, ...); ran sandbox func_8007DC9C --disable all; restored src to clean HEAD.
+- result: score 9, target_insns 91, build_insns 90, rules_dropped 4, cheat_asm_stripped 150 — IDENTICAL fingerprint to s1-s20. Neither axis moved. Rejected: rejected/structural-deadread-first-fmtptr-difftemp.c.
+- verdict: KILLED
+
+## [s21] A novel un-banked structural three-lever combination — dead stat-read `new_var` staged FIRST + fmt-pointer precompute (fmt0) + masked-subtraction home (diff0), as a UNIT — moves axis A (BF68[0] combine offset-0 fold) or axis B (fmt-vs-deadread 8-op sched1 cluster).
+- mechanism: The combo reshapes declaration/LUID/statement topology of the axis-B cluster in a way no single s2 form (fmt-precompute-first, new_var-declared-first, bf78/diff-temp) nor s20 (fmt-ptr-FIRST + diff-temp) covered. Refuted in advance by s15 (axis B priority body-shape-invariant: dead-read priority 2 > fmt priority 1 via volatile-MEM REG_DEP_ANTI, identical modulo uniform UID shift) and by axis A being a per-expression combine.c:1458 added_sets_2 offset-0 fold on a single pure rvalue.
+- probe: Applied const s32 *fmt0=&g_str_gpu_timeout + s32 diff0=(D_8009BF78-D_8009BF7C)&0x3F with new_var=*g_gpu_stat_reg staged as the FIRST if-body statement, then debug_printf(fmt0, diff0, ...); sandbox func_8007DC9C --disable all; restored src to clean HEAD.
+- result: score 9, target_insns 91, build_insns 90, rules_dropped 4, cheat_asm_stripped 150 — identical fingerprint to s1-s20; neither axis moved. Rejected: rejected/structural-deadread-first-fmtptr-difftemp.c.
+- verdict: KILLED
