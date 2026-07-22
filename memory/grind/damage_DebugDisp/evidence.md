@@ -466,3 +466,41 @@ constants' priority. To flip, the constants would need higher priority OR lower 
 - [s9] Accumulate-peel `sum=*bp; bp++; j=1; do{...}while(j<0x24)` = 12: extra pre-loop lbu+addu + altered j init/trip-count diverge from target. A byte-neutral +1 sum ref is unavailable by peeling — reconfirms s6/s7 that sum's +1 weighted ref only comes from its own def bracket (do-while0, which couples Region A').
 
 - [s9] Sibling func_80037F40 (src line 190) re-read: its k-loop writes ZERO with NO range-check constants (no 0x80000000/0x1FFFFF) so it does not exhibit Region B's LICM tie; its accumulate runs once pre-outer-loop (shallower nesting) so it does not inform Region A. No transplant value for either residual (confirms s7).
+
+## s10 (synthesis, 2026-07-22) — FLOOR 6 -> 2: Region B CLOSED (refutes the 9-session constant-holder-cheat conclusion)
+- Confirmed floor 6 (candidate applied). Modality: synthesis. New candidate.c = floor 2.
+- **BREAKTHROUGH: Region B is NOT a constant-holder-cheat wall.** s1-s9 concluded the
+  consts-before-moves order needed a pre-loop constant reference (magic_base cheat). FALSE.
+  Rewriting the k-loop INDEX-BASED (`base + k*4` / `base + k*2`) instead of explicit
+  `ap=base; a2p=base;` walking pointers removes the explicit preheader moves, so GCC
+  strength-reduces the pointers into GIVS whose inits are created by strength_reduce
+  (runs AFTER loop.c move_movables/LICM) -> the hoisted range constants (0x80000000,
+  0x1FFFFF) emit FIRST (== target order). Pure C, no cheat.
+- **The giv-init FOLD is coupled to k's biv-init structure:**
+  * index form + two-path k=0 (decl + CopyBlock, OR if/else both branches): consts-first
+    + CORRECT regs (ap=$a0, a2p=$a2, k=$a1) but giv-init BLOATED to `sll;addu` x2 (k not
+    proven const-0 at the immediate preheader) -> score 6, build 81. No net gain.
+  * index form + SINGLE dominating k=0 after merge: immediate const-0 biv init -> giv init
+    FOLDS to plain `move a0,t1; move a2,a0` (target structure) BUT swaps k/a2p regs
+    (k=$a2, a2p=$a1) — folding removes k's use in the giv-init sll, dropping k's ref
+    priority so the a2p giv wins $a1. score 9. rejected/regionB-single-k0-after-merge-regswap.c
+  * **index form + `do { k = 0; } while (0);` -> score 2, build 79, Region B BYTE-EXACT.**
+    The do-while(0) (a) is the dominating const-0 init that folds the giv inits AND (b) its
+    loop-depth-weighted reg_n_refs bump wins k the $a1 tiebreak over the a2p giv (== target
+    k=$a1, a2p=$a2). This is the EXACT Region A do-while(0) mechanism applied to Region B's
+    counter. Disasm: `lui t0; lui a3; ori a3; move a0,t1; move a2,a0; lw 0x78(a0); ...
+    lhu 0xD0(a2)` == target .L800380F0. Both do-while(0)s FAKE-annotated.
+- **Region A' (the sole score-2 residual) reconfirmed coupled on the NEW index-B chassis:**
+  target inner preheader sum=0($a0), bp($v1), j=0($a1) = order sum,bp,j; build (do-while(0)
+  relocates sum=0 to bracketed block-bottom = highest LUID) = j,bp,sum. sched1 rank_for_schedule
+  INSN_LUID tiebreak emits block-bottom leaf last. Re-measured on the score-2 chassis:
+  plain sum-first=9 (RA reopens, sum=$a1), do-while(0) sum-first=9, co-bracket {sum,bp}=21
+  (bp cascade), index-accumulate (base[offset+j])=12 (offset outer-variant, no clean reduce).
+  The A'/A coupling (s6/s7) HOLDS independent of Region B. The natural sum weighted-refs>=11
+  WITHOUT a bracket (target's mechanism) remains the open question -> directed permuter on the
+  score-2 chassis is the next probe (numbering changed vs the s4/s5 old-chassis campaigns).
+
+- [s10] FLOOR 6 -> 2. Region B closed: index-based k-loop (base+k*4 / base+k*2) makes ap/a2p strength-reduced givs whose inits land AFTER the LICM range constants (move_movables runs before strength_reduce) -> consts-first == target. `do{k=0}while(0)` folds the giv inits to plain moves AND wins k the $a1 tiebreak over the a2p giv. REFUTES s1-s9 "Region B needs a constant-holder cheat".
+- [s10] Region B fold/reg-alloc is coupled to k's biv init: two-path k=0 -> correct regs but bloated giv init (score 6); single merged k=0 -> folded but k/a2p reg swap (score 9); do-while(0) on k=0 -> folded AND correct regs (score 2, byte-exact). The do-while(0)'s loop-depth ref bump is what wins k=$a1 after the fold removes k's giv-init refs.
+- [s10] Region A' remains the sole residual at score 2 and is coupled on the index-B chassis too (plain sum-first=9, do-while0 sum-first=9, co-bracket sum+bp=21, index-accumulate=12). The A'/A do-while(0) coupling (s6/s7) is independent of Region B. Next: directed permuter on the score-2 chassis for the natural sum-11th-ref that lets sum win $a0 with sum=0 emitted first.
+- [s10] The index trick is Region-B-specific: it needs a loop-invariant base. It DIVERGES on the accumulate loop (base+offset is outer-variant) -> score 12. Target's accumulate uses an explicit bp=base+offset walker (byte-identical to candidate).

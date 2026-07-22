@@ -307,3 +307,33 @@ LUID were tried and REJECTED as cheat-by-spelling (magic_base/magic_max, score 4
 - probe: Ran tools/m2c/m2c.py --target mips-gcc-c on asm/funcs/damage_DebugDisp.s (artifact s9/m2c_out.c); inspected the k-loop reconstruction.
 - result: m2c reconstructs Region B as plain preloop moves (var_a0_2=arg0; var_a2_3=var_a0_2) plus the identical `(u32)(ptr-0x80000000)<=0x1FFFFF` check — the constants are referenced only inside the loop. No alternative structure exists; the target's consts-before-moves imply an original pre-loop constant reference = constant-holder cheat for us.
 - verdict: KILLED
+
+## [s10] Region B closable in pure C via index-based k-loop + do-while(0) on k (REFUTES s1-s9 constant-holder-cheat conclusion).
+- mechanism: explicit ap/a2p preheader moves force LICM range-consts to hoist AFTER them (move_movables emit_insn_before(loop_start)); index form (base+k*4/base+k*2) makes ap/a2p strength-reduced givs whose inits land AFTER the consts (strength_reduce runs after move_movables) -> consts-first == target. do-while(0) on k=0 gives a dominating const-0 biv init (folds the giv inits to plain moves) AND its loop-depth ref bump wins k the $a1 tiebreak over the a2p giv (== target k=$a1/a2p=$a2).
+- probe: index-based k-loop + `do{k=0}while(0)`; sandbox --disable all + objdump.
+- result: score 2 (from floor 6), build 79, Region B BYTE-EXACT (lui/lui/ori; move a0,t1; move a2,a0; lw 0x78(a0); lhu 0xD0(a2)). Waypoints: two-path k=0 = correct-regs-but-bloated (6); single merged k=0 = folded-but-regswap (9).
+- verdict: CONFIRMED — Region B closed in pure C, floor 6->2.
+
+## FRONTIER RESET (s10) — Region A' is the SOLE residual (score 2). Next ladder pass:
+1. **Directed permuter on the score-2 index-B chassis.** The whole-function pseudo/LUID
+   numbering CHANGED vs the s4/s5 campaigns (those ran on the old explicit-ap/a2p Region-B
+   chassis). Re-run a fresh full-TU directed permuter seeded from the score-2 candidate to
+   sweep for the Region A' fix (sum=0 emitted first while sum still wins $a0). mechanism:
+   the 2 residual insns are the inner-preheader emit order (target sum,bp,j vs build j,bp,sum);
+   sched1 rank_for_schedule INSN_LUID tiebreak emits the do-while(0)-bracketed block-bottom
+   sum=0 LAST. next_probe: build ws from cpp(src) with the score-2 body, target.o from
+   asm/funcs, honest pipeline; --stop-on-zero; vet any closing form (the a2p/const-holder
+   dead-alias family is the known Region-B trap, now moot since B is closed).
+2. **Natural sum-11th-ref (the A'/A decoupler).** Target reaches sum=$a0 with sum=0 emitted
+   FIRST (low LUID, no bracket) => target's sum has weighted reg_n_refs>=11 (or ties j)
+   WITHOUT a do-while(0). Inner loop is byte-identical build/target, so the extra ref is NOT
+   in the loop body. mechanism: reg_n_refs += loop_depth (flow.c). s7-s9 killed peel/tail-
+   bracket/inner-reorder as the source. next_probe: read flow.c reg-ref counting for what
+   distinguishes a depth-2 sum ref target keeps but our chassis drops; check if the index-B
+   numbering shifted the sum/j tie (measured: plain sum-first still 9, so tie unchanged — but
+   a permuter-found structural variant may still exist).
+3. **Drop j 11->10 on the index-B chassis (closes A AND A' with NO do-while(0)).** If j's
+   weighted refs drop to 10, plain low-LUID sum=0 (10) ties j and wins $a0 on pseudo -> sum=$a0
+   AND sum=0 emits first. mechanism: j total 11 = j=0(d1) + j++(d2) + j<0x24(d2), all byte-fixed
+   by target (sltiu ...,0x24). Prior sessions found no byte-neutral j-ref drop; re-examine only
+   if the permuter surfaces a counter reformulation keeping the sltiu 0x24 byte.

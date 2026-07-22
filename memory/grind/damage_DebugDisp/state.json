@@ -82,7 +82,9 @@
    "next_probe": "Design a k-loop where the range-test bound is genuinely loop-carried with a real dependency chain to the pointer moves (raising the moves' LUID above the constants), or where ap/a2p init is NOT a preheader insn (computed later/derived), so the hoisted constants become the first preheader insns. Vet against constant-holder/dead-alias."
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "The index/pointer-reformulation sanction is contingent on semantic faithfulness \u2014 the index expressions must address exactly the memory the walking-pointer form does (verified here: byte-exact Region B, correct 0x78/0xD0 offsets). A reformulation that reads wrong memory (e.g. an s32*-typed alias yielding 0x340) remains broken/cheat. This ruling sanctions the floor-2 anchor's Region-B construct only; it does not certify completion \u2014 Region A' is still open and the match must reach score 0 before a FINAL CALL."
+ ],
  "origin": "queue",
  "created": "2026-07-22T07:24:27.749556+00:00"
 }
