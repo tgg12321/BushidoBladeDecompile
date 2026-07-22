@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8007DC9C",
-      "file": "display",
-      "distance": 9,
-      "verdict": "C",
-      "rules": 4,
-      "status": "active"
-    },
-    {
       "func": "func_8004954C",
       "file": "text1b",
       "distance": 9,
@@ -2528,6 +2520,15 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-22): preheader emit-order (8 rules); both endgame-lock gates fail (scan 2/8, no SOTN precedent); cheat retained only to hold byte-match, not sanctioned"
     },
     {
+      "func": "func_8007DC9C",
+      "file": "display",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 4,
+      "status": "parked",
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-22): RA/sched endgame-lock (axis-A combine offset-0 fold + axis-B sched1 8-op volatile-order lock); held by 4 regfix rules; both endgame-lock gates fail (scan LOW 1/8, no SOTN precedent) across 40 sessions/6 modalities/258k permuter iters; cheat retained only to hold byte-match, not sanctioned"
+    },
+    {
       "func": "func_80057CC8",
       "file": "text1b",
       "distance": 9,
@@ -2773,13 +2774,13 @@
   ],
   "counts": {
     "total": 339,
-    "active": 301,
+    "active": 300,
     "by_status": {
-      "active": 301,
-      "parked": 38
+      "active": 300,
+      "parked": 39
     },
     "by_verdict": {
-      "C": 147,
+      "C": 146,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
