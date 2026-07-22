@@ -130,3 +130,24 @@ don't move it.
 - [s2] The integer-domain `v0+(s32)a0` reaches distance 0 but cheat-reviewer (agent ac7c6289260829f13) FAILED it as an operand-order coercion (or-tree-shape-shift family analogue); banked to rejected/int-cast-operand-swap.c, do not re-propose.
 
 - [s2] Clean floor-1 candidate left applied in src/code6cac_b.c and saved to memory/grind/cpu_check_tubazeri_2/candidate.c.
+
+## == s3 [structural] ==
+- [s3] FLOOR stays 1 (candidate re-applied, 76/76, 9 rules dropped). Modality: structural. Result: idx25 operand-order structural axis exhaustively KILLED; no floor movement possible on this axis.
+- [s3] DEFINITIVE RTL PROOF (cc1 -da on the real build flags; artifacts full.i.{rtl,combine,greg} in tmp/grind/.../s3): the pointer add `s2=(u8*)a0+v0` is generated at INITIAL RTL as insn 77 = (plus (reg72=a0) (reg75=v0)), base-first, and this spelled operand order is preserved UNCHANGED through jump->cse->loop->combine->greg into the final asm (greg insn 77 = (plus s0=a0 v0) -> addu s2,s0,v0). Combine does NOT reorder commutative (plus reg reg) by pseudo regno (reg72 < reg75, a0 still first). => operand order is fixed at tree-lowering (pointer_int_sum PLUS_EXPR(ptr,int)=base-first), before RA/scheduling/declaration-order can act.
+- [s3] Therefore NO structural lever (decl order, block-local split, fresh-local copy, statement re-association, type narrowing) can flip idx25 — they all act after the operand order is already committed. Measured this session (all base-first, score 1): fresh-local `base=a0; s2=base+v0` = 1 (closes H2's explicitly-named un-run probe); inline shift `(u8*)a0+(s1<<1)` no-named-v0 = 1. Combined with s1/s2's 5 pointer spellings + inline = all base-first.
+- [s3] The only distance-0 form remains the integer-domain offset-first `v0+(s32)a0` (rejected/int-cast-operand-swap.c, reviewer-FAILED as commutative-operand-order coercion). ENDGAME-LOCK CANDIDATE confirmed: residual = 1 insn, operand-order-only, matchable only via a reviewer-rejected cheat. Frontier item-1 (RTL confirmation) DISCHARGED. Remaining non-structural frontier: permuter re-seed (permuter modality) and struct-typing where index is naturally the pointer base (measured-equivalent to array-index spellings already scoring 1; any int-index-as-pointer-base is the int-cast cheat in disguise).
+- [s3] rejected/structural-operand-order-tree-fixed.c banked with the full RTL proof.
+
+- [s3] Floor confirmed 1 at session start and end (candidate.c re-applied to src; target_insns=build_insns=76, 9 rules dropped, scorable).
+
+- [s3] cc1 -da RTL: pointer add s2=(u8*)a0+v0 is generated as insn 77 (plus (reg72=a0) (reg75=v0=s1<<1)), base-first, and that spelled order is preserved unchanged through jump->cse->loop->combine->greg into final asm (greg insn 77 = (plus s0=a0 v0) -> addu s2,s0,v0).
+
+- [s3] combine.c does NOT reorder a two-register commutative plus by pseudo regno: reg72(a0) < reg75(v0) but a0 still emits first. => operand order is a tree-lowering property (pointer_int_sum, base-first), not an RA/scheduling/declaration-order property.
+
+- [s3] New structural measurements this session, both base-first (score 1): fresh-local a0 copy consumed only by the add materialized after the shift; inline shift with no named v0. Combined with s1/s2's 5 pointer spellings + inline form, every pointer-domain spelling is base-first.
+
+- [s3] Only distance-0 form remains integer-domain offset-first v0+(s32)a0 (rejected/int-cast-operand-swap.c), reviewer-FAILED as a commutative-operand-order coercion.
+
+- [s3] ENDGAME-LOCK CANDIDATE confirmed: sole residual = 1 insn, operand-order-only, matchable only via a reviewer-rejected cheat. Frontier item-1 (RTL confirmation) discharged.
+
+- [s3] No OWNER-ESCALATION entry for cpu_check_tubazeri_2 exists in docs/grind/decisions.md yet, and the permuter axis (different modality) is un-run, so owner-gated is not yet available; recorded as progress.

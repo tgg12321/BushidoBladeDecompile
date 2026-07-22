@@ -487,3 +487,4 @@
 - 2026-07-21 23:30 func_80069E18 COMPLETED-C after 1 sessions.
 - 2026-07-21 23:38 cpu_check_tubazeri_2 s1 [recon] floor=4: Recon: honest floor 4 confirmed (candidate applied, HEAD was 9); m2c proves target C shape == our candidate, so the 4-insn gap is two GCC-internal optimizer decisions, not a missing source shape.
 - 2026-07-22 00:05 cpu_check_tubazeri_2 s2 [structural] floor=1: Structural: index-off-a0 loop (sibling func_80030900) killed the 3-insn strength-reduce; floor 4->1. Sole residual = idx25 commutative addu operand swap, only closable by a reviewer-FAILED integer-cast cheat.
+- 2026-07-22 00:17 cpu_check_tubazeri_2 s3 [structural] floor=1: Structural axis for the idx25 addu operand swap KILLED via cc1 -da RTL proof: (plus a0 v0) is base-first at initial RTL and preserved unchanged through combine->greg (no regno swap); 1-insn operand-order-only endgame-lock candidate confirmed. Floor stays 1.

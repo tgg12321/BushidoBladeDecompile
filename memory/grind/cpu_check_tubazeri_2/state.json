@@ -1,7 +1,7 @@
 {
  "func": "cpu_check_tubazeri_2",
  "file": "code6cac_b",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -21,23 +21,24 @@
    "floor": 1,
    "modality": "structural",
    "headline": "Structural: index-off-a0 loop (sibling func_80030900) killed the 3-insn strength-reduce; floor 4->1. Sole residual = idx25 commutative addu operand swap, only closable by a reviewer-FAILED integer-cas"
+  },
+  {
+   "session": 3,
+   "floor": 1,
+   "modality": "structural",
+   "headline": "Structural axis for the idx25 addu operand swap KILLED via cc1 -da RTL proof: (plus a0 v0) is base-first at initial RTL and preserved unchanged through combine->greg (no regno swap); 1-insn operand-or"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The idx25 operand swap may have NO non-coercive pure-C form (commutative addu operand order is fixed base-first by pointer_int_sum pre-RA); if a greg/combine RTL dump confirms no legitimate C flips it, this is a 1-insn operand-order-only endgame-lock candidate (cf. endgame-lock-disposition-policy).",
-   "mechanism": "front-end pointer arithmetic lowering canonicalizes ptr+int to base-first; only integer-domain offset-first (a cheat) reorders it.",
-   "next_probe": "cc1 -da greg/combine RTL dump on the score-1 .i at the s2 add; confirm the plus operand order is set at tree-lowering and no live-range/declaration lever moves it. If confirmed dead, file for endgame-lock disposition (1 insn, operand-order-only, matches only via reviewer-rejected cheat)."
+   "hypothesis": "decomp-permuter re-seeded from the score-1 base may find a non-manual structural lever the hand-derived pointer-vs-integer sweep missed.",
+   "mechanism": "randomized/directed structural search from the closer base explores forms outside the hand-derived pointer-spelling axis; any closing form must be vetted against the cheat catalog (int-cast form already known-rejected).",
+   "next_probe": "PERMUTER-modality session: build a clean single-function target.o (offset 0 via asm/funcs + prelude.inc), run decomp-permuter from candidate.c with --stop-on-zero under fresh-seed discipline, harvest in-turn, vet any closing form."
   },
   {
-   "hypothesis": "decomp-permuter re-seeded from the score-1 base may find a non-manual structural lever for the last insn that the pointer-spelling sweep missed.",
-   "mechanism": "randomized/directed structural search from the closer base explores forms outside the hand-derived pointer-vs-integer axis.",
-   "next_probe": "Build a clean single-function target.o (offset 0 via asm/funcs + prelude.inc) and run decomp-permuter from the score-1 candidate.c with --stop-on-zero under fresh-seed discipline; harvest in-turn; vet any closing form against the cheat catalog (the int-cast form is already known-rejected)."
-  },
-  {
-   "hypothesis": "A deeper struct-typing restructure where the index is naturally the pointer base could yield index-first legitimately.",
-   "mechanism": "if the original modelled a0 such that the s1-scaled value is the pointer operand and a0 the offset in a semantically-honest way, GCC would lower index-first without a coercion cast.",
-   "next_probe": "Reconstruct the likely original struct/array typing at 0x330/0x332 (count + u16 slot array) and see whether a faithful `&arr[s1]`-style expression off a differently-typed base emits index-first without an integer cast; measure + re-review."
+   "hypothesis": "If the permuter axis comes up dry, cpu_check_tubazeri_2 is a 1-insn operand-order-only endgame-lock: matchable only via the reviewer-rejected integer-cast operand swap.",
+   "mechanism": "the addu operand order is fixed at tree-lowering (proven this session); the only distance-0 C is the int-cast commutative-operand-order coercion the cheat-reviewer already FAILED. cf. endgame-lock-disposition-policy (feedback/endgame-lock-disposition-policy).",
+   "next_probe": "Owner action: file an OWNER-ESCALATION in docs/grind/decisions.md for endgame-lock disposition citing the s3 RTL proof; a later session may then emit owner-gated once the permuter axis is also measured dead."
   }
  ],
  "judge_constraints": [],

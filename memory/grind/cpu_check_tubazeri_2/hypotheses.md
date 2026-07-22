@@ -57,3 +57,15 @@ The 4 residual diffs are TWO independent GCC-internal decisions:
 - probe: 5 spellings measured at the fixed-loop base: (u8*)a0+v0=1, v0+(u8*)a0=1, &((s16*)a0)[s1]=1 (with and without explicit v0=s1<<1), inlined *(a0+v0+0x332) with no named s2=1 (CSE re-forms base-first addu), (s32)a0+v0=1; v0+(s32)a0=0. cheat-reviewer invoked on the score-0 form.
 - result: All pointer/base-first forms score 1. Integer-offset-first scores 0 but is a reviewer-rejected commutative-operand-order coercion. Clean legitimate floor = 1 (single operand-order-only insn).
 - verdict: KILLED
+
+## [s3] The idx25 addu operand order is FIXED at tree-lowering (base-first) and cannot be moved by any structural lever.
+- mechanism: c-typeck pointer_int_sum lowers `ptr + int` to PLUS_EXPR(ptr,int) = base-first. Expand emits (plus a0 v0) at initial RTL (insn 77). combine.c does NOT canonicalize a two-register commutative plus by pseudo regno, so the generation-time spelled order survives to final asm. RA / declaration order / block-local splits / statement re-association all act AFTER this order is committed, so none can flip it.
+- probe: cc1 -da RTL dump (real build flags) on the score-1 src; traced insn 77 across full.i.rtl (initial), full.i.combine, full.i.greg (final). Plus measured 2 new structural forms (fresh-local a0 copy after shift; inline shift no-named-v0) via sandbox.
+- result: insn 77 = (plus a0 v0) base-first at initial RTL, UNCHANGED through combine and greg (reg72=a0 < reg75=v0, a0 still first — no regno swap). Both new structural forms score 1 (base-first). Only int-domain `v0+(s32)a0` reaches 0 (reviewer-rejected cheat).
+- verdict: KILLED (structural axis for idx25 is dead; 1-insn operand-order-only endgame-lock candidate confirmed).
+
+## [s3] The idx25 addu operand order (target index-first `addu s2,v0,s0` vs ours base-first `addu s2,s0,v0`) is fixed at tree-lowering and cannot be moved by any structural lever (declaration order, block-local split, fresh-local copy, statement re-association, type narrowing).
+- mechanism: c-typeck pointer_int_sum lowers `ptr + int` to PLUS_EXPR(ptr,int) = base-first. Expand emits (plus a0 v0) at initial RTL (insn 77). combine.c does NOT canonicalize a two-register commutative plus by pseudo regno, so the generation-time spelled order survives to final asm. RA / declaration order / block-local splits / statement re-association all act AFTER the operand order is already committed, so none can flip it.
+- probe: cc1 -da RTL dump with the real build flags on the score-1 src; traced insn 77 across full.i.rtl (initial), full.i.combine, full.i.greg (final). Also measured 2 new structural forms via sandbox: fresh-local `base=a0; s2=base+v0` (H2's explicitly-named un-run probe) and inline shift `(u8*)a0+(s1<<1)` with no named v0.
+- result: insn 77 = (plus reg72=a0 reg75=v0) base-first at initial RTL, UNCHANGED through combine and greg (reg72<reg75 yet a0 still emits first -> no regno swap) -> addu s2,s0,v0. Both new structural forms score 1 (base-first). Only integer-domain `v0+(s32)a0` reaches distance 0, and that is the reviewer-FAILED int-cast cheat.
+- verdict: KILLED
