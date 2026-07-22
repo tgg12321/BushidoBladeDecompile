@@ -492,8 +492,12 @@ void initDrawMode(u8 *a0, s32 a1, s32 a2, u32 a3) {
         cmd = (GP0_DRAW_MODE | GPU_DRAW_MODE_DITHER);
     }
     if (a1) {
-        /* the a3&MASK subexpression duplication across the arms is
-           byte-neutral (one andi emitted) */
+        /* FAKE: `a3 & MASK` duplicated into both arms (duplicated-statement-into-arms,
+         * owner ruling 2026-07-01) instead of the compound `val = a3 & MASK; if (a1)
+         * val |= TEXOFF;`. The single-def compound form ties val's andi dest into dying
+         * $a3 via GCC 2.7.2 local-alloc combine_regs (floor 5); the two-arm spelling
+         * keeps the masked temp in $v0 so the final IOR reproduces target's
+         * cmd=$v1/val=$v0 `or v0,v1,v0`. Byte-neutral: one andi (delay slot), 11 insns. */
         val = (a3 & GPU_DRAW_MODE_MASK) | GPU_DRAW_MODE_TEXOFF;
     } else {
         val = a3 & GPU_DRAW_MODE_MASK;

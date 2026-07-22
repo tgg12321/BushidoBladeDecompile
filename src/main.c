@@ -1321,8 +1321,7 @@ ok:
     D_800FF6A0 = v1;
     D_80101BC8 = (VagAtr *)v2;
     D_801027F7 = (u8)entry;
-    ret = 0;
-    return ret;
+    return 0;
 }
 /* kengo:MED  |  am_rmd/AddTbpOfst  |  49i */
 extern u8 g_memcard_data;

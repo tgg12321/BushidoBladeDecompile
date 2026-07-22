@@ -1049,17 +1049,14 @@ void func_80041988(s32 a0, s32 a1, s32 a2, s32 a3) {
         if (!(mask_table & bit) || !(a2 & bit)) {
             goto shift;
         }
-        /* FAKE: opaque-one holder (SOTN-sanctioned shape, [[loop-rotation-two-shift]] /
-         * [[named-local-fake-exception]]). Mechanism: a literal `a0 == 1` compare
-         * materializes the 1 into a compiler temp that loop.c move_movables hoists to
-         * the preheader (eligible via its !REG_USERVAR_P clause); the hoisted pseudo
-         * crosses the loop's 6 calls, gets no hard reg, and reload rematerializes it
-         * in-loop picking $v1 (order_regs_for_reload prefers zero-use regs). Target has
-         * $v0, only reachable by an RA-allocated pseudo: a user variable set here and
-         * used in the next basic block fails all three movable conditions (maybe_never
-         * is set), stays in-loop, and global RA assigns $v0. The store is live — it IS
-         * the target's `addiu v0,zero,1`. Literal/switch/if-else spellings measured:
-         * 8, 8, 7 (see memory/grind/func_80041988/). */
+        /* FAKE: constant-holder biasing RA (named-local-fake-exception,
+         * SOTN `s16 three = 3;`). A literal `a0 == 1` materializes the 1 as a
+         * compiler-generated pseudo (!REG_USERVAR_P) that loop.c move_movables
+         * hoists to the preheader; reload then rematerializes it in-loop as $v1.
+         * A named local (REG_USERVAR_P) is not movable, stays in-loop, and global
+         * RA assigns $v0 — matching target's in-loop `addiu v0,zero,1`. The store
+         * is live (feeds the compare). Measured exhaustion (memory/grind/func_80041988/):
+         * literal if-chain = 2, switch(a0) = 2, holder = 0. */
         one = 1;
         if (a0 == 0) {
             goto case0;
