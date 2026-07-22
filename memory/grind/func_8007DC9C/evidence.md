@@ -447,3 +447,13 @@ args is NOT a sanctioned use-site shape) and stripped by `volatile_cheats`.
 - [s17] All five modalities now measure both axes dead: structural s2/s3/s11/s12, permuter x5 s4/s5/s13/s14, forensics x4 s6/s7/s15/s16, rederive s8/s9/s17, synthesis s10. Axis A = combine.c:1458 added_sets_2 multi-use retention (needs a 2nd &D_8009BF68 use the fn lacks; single-fn reproduction is a dead-2nd-use coercion, cross-fn mechanically impossible per per-function combine). Axis B = sched1 INSN_PRIORITY via volatile-MEM REG_DEP_ANTI (dead *g_gpu_stat_reg read out-ranks fmt la by +1; unflippable without altering observable volatile order). The 4 regfix rules are a proven 1:1 cover of the two axes (s16).
 
 - [s17] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (Grep 8007DC9C = No matches) -> owner-gated NOT claimable this session despite full five-modality exhaustion.
+
+- [s18] s18 baseline re-confirmed: sandbox --disable all score 9, target_insns 91, build_insns 90, rules_dropped 4, cheat_asm_stripped 150 (identical fingerprint s1-s17); src/display.c restored to clean HEAD after the experiment (git checkout, no dirt).
+
+- [s18] s18 rederive NEW form (not previously banked): computed-boolean-flag two-if skeleton -> score 12, build_insns 88 (two fewer than the 90-insn floor; target 91). Same 88/12 fingerprint as s17's inverted early-return guard — confirming any control-flow shape that lets GCC merge the two exit paths worsens to 88.
+
+- [s18] Control-flow rederivation leg now TRIPLY-confirmed dead across three distinct exit-path topologies: HEAD comma-expr guard = 90/floor 9 (only form reaching the floor build); s8 goto/nested-if = 90/floor 9 (report block kept nested, paths separate); s17 inverted-return hoisted = 88/score 12; s18 computed-flag two-if = 88/score 12. None reaches target's 91.
+
+- [s18] Both pinned axes unmoved and mechanism-pinned dead: axis A = combine.c:1458 added_sets_2 multi-use retention (single pure offset-0 rvalue read folds to 2-insn; s15 source-verified); axis B = sched1 INSN_PRIORITY via volatile-MEM REG_DEP_ANTI dead-read->BF7C (s6/s15). Both proven control-flow-insensitive (s8/s15) — s18 empirically re-confirms via a distinct skeleton.
+
+- [s18] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (Grep 8007DC9C = No matches), so owner-gated is NOT claimable this session despite full five-modality exhaustion (structural s2/s3/s11/s12, permuter x5 s4/s5/s13/s14, forensics x4 s6/s7/s15/s16, rederive s8/s9/s17/s18, synthesis s10).
