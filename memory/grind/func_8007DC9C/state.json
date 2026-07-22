@@ -1,7 +1,7 @@
 {
  "func": "func_8007DC9C",
  "file": "display",
- "session_count": 38,
+ "session_count": 39,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -237,12 +237,18 @@
    "floor": 9,
    "modality": "structural",
    "headline": "s38 structural: novel isolated axis-A read cross-call hoist KILLED (score 25/build 92, strictly worse) \u2014 proves axis-A offset-0 combine fold is insensitive to live-range LENGTH; only a genuine 2nd ADD"
+  },
+  {
+   "session": 39,
+   "floor": 9,
+   "modality": "structural",
+   "headline": "s39 structural: novel live-printf-arg *stat read hoist KILLED (score 20, strictly worse) \u2014 first probe to move the LIVE stat read, proves it is schedule-position-locked inline at the call; corroborate"
   }
  ],
  "frontier": [
   {
    "hypothesis": "func_8007DC9C is a fully-characterized ENDGAME-LOCK; both residual axes are compiler-internal, orthogonal, and have NO legitimate pure-C lever single- OR cross-function across all six modalities.",
-   "mechanism": "Axis A = combine.c:1458 added_sets_2 single-use fold for the BF68 address pseudo (single-fn 2nd address use = coercion s7; cross-fn mechanically impossible per per-function combine s7); NOW also proven insensitive to live-range length (s38). Axis B = over-determined sched1 lock (volatile-MEM anti-dep priority 2>1 + MIPS-I load-delay hazard + LUID backstop; register $a0-vs-$v0 greg-downstream of sched1 s33).",
+   "mechanism": "Axis A = combine.c:1458 added_sets_2 single-use fold for the BF68 address pseudo (2nd &BF68 use single-fn = coercion s7; cross-fn mechanically impossible per per-function combine s7; insensitive to live-range length s38 and to structural shape s39). Axis B = over-determined sched1 lock (volatile-MEM anti-dep priority 2>1 + MIPS-I load-delay hazard + LUID backstop; register $a0-vs-$v0 greg-downstream of sched1 s33); now corroborated from the live-read side (s39: moving the live printf-arg read strictly worsens).",
    "next_probe": "OWNER files an OWNER-ESCALATION entry for func_8007DC9C in docs/grind/decisions.md citing both dump-pinned mechanisms (axis A combine.c:1458; axis B over-determined sched1 lock), six-modality exhaustion, the s16/s33 rule-completeness proof (4 rules = 2 combine + 1 sched1 root), and endgame-lock-disposition-policy (gate #1 REFUSE canonical-asm; gate #2 REFUSE coercion). Once filed, the next session emits owner-gated and the queue advances. No further pure-C modality remains."
   }
  ],
