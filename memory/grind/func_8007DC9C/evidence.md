@@ -126,3 +126,17 @@ args is NOT a sanctioned use-site shape) and stripped by `volatile_cheats`.
 - [s1] Instrumented cc1 present at tmp/gccdbg/cc1 (needs WSL) for the axis-B sched-priority dump - not yet run.
 
 - [s1] scan_hand_coded (imported) tier LOW; pure-C match provably exists.
+
+- [s2] Baseline re-confirmed this session: sandbox --disable all score 9, target_insns 91, build_insns 90, rules_dropped 4, cheat_asm_stripped 150.
+
+- [s2] The instrumented cc1 at tmp/gccdbg/cc1 has NO BB2_SCHED_DEBUG/BB2_PRIO_DEBUG instrumentation (verified via strings) — it is a standard debug-build cc1 supporting -da RTL dumps. The prior frontier's env-var probe plan was based on a wrong assumption; the standard .greg/.combine/.sched dumps are the actual map. The stale tmp/gccdbg/standalone.c files belong to a DIFFERENT function (PutShadowRmd), not func_8007DC9C.
+
+- [s2] Axis B root cause (greg dump): the dead read new_var=*g_gpu_stat_reg (insn 38) allocates to reg/v 4 a0 with REG_UNUSED; fmt (insn 60, la g_str_gpu_timeout) schedules AFTER it and reloads a0. Our .s order for the first-printf cluster: statptr, madrptr, BF78, deadread(->a0), fmt, BF7C, ... Target order: statptr, fmt, deadread(->v0), BF78, madrptr, ... The 8-op gap is a rotation of {fmt, deadread, BF78, madrptr} plus the deadread reg (a0 vs v0). The deadread reg follows directly from whether fmt is scheduled before it.
+
+- [s2] Axis B is priority-driven, not LUID-driven: 8 source-order/precompute variants all scored 9. The dead read's priority comes from volatile ordering with D_8009BF7C (both volatile), which matches target and cannot be reordered without changing observable behavior.
+
+- [s2] Axis A root cause (combine dump): D_8009BF68[0] folds to (mem/s (symbol_ref D_8009BF68)); BF6C/BF70 are (mem (symbol_ref ...)) scalars folded normally. Target materializes only BF68's address (la;lw 0(reg)) — reachable in pure C ONLY if the address pseudo has >1 use, which requires a second reference to &D_8009BF68 absent from this function.
+
+- [s2] s32* pointer-deref of D_8009BF68 uniquely reaches build_insns=91 (== target) but with opcode lw instead of addiu at the BF68 slot -> score 12. Confirms target materializes the ADDRESS (addiu), not a pointer value load.
+
+- [s2] Mapping confirmed: g_gpu_stat_reg=D_8009BF48 (volatile u32*), g_gpu_dma_madr=D_8009BF4C, g_gpu_dma_chcr=D_8009BF54; first-printf arg3($a3)=*chcr, arg4(sp+0x10)=*madr — the committed arg order (fmt, arg1, *stat, *chcr, *madr) is correct; the s1 arg-swap remains a wrong-direction masked-Levenshtein artifact.

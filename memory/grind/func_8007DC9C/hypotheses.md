@@ -50,3 +50,21 @@ sched1 reorder cluster in the first debug_printf setup.
 - probe: canonical func_8007DC9C; sandbox func_8007DC9C --disable all; read asm/funcs/func_8007DC9C.s lines 23-53.
 - result: canonical verdict C distance 9; sandbox score 9 (target_insns 91, build_insns 90, rules_dropped 4, cheat_asm_stripped 150). Axis A + Axis B confirmed as documented.
 - verdict: CONFIRMED
+
+## [s2] H-B1: a C statement-order/liveness lever flips the sched1 fmt-vs-deadread order so fmt schedules first (into $a0) and the dead *g_gpu_stat_reg read lands in $v0 (as target does).
+- mechanism: .greg dump: dead read (insn 38) is volatile-ordered before the volatile D_8009BF7C read (insn 45), putting it on the critical path dead-read->BF7C->subu(arg1)->call. That gives it high sched1 PRIORITY (critical-path length), so it schedules early and grabs $a0; fmt (a lone `la`, chain length 1) schedules after and reloads $a0. Ordering is priority-driven, not LUID/source-order driven.
+- probe: sandbox sweep of 8 structural forms: fmt-precompute-first, fmt-stmt-first, bare-(void)-read+fmt, arg1-temp, madr-temp, bf78-temp, new_var-declared-first, split-subtraction. Cross-checked against the greg dump insn allocation (insn 38 dead read -> reg/v 4 a0, REG_UNUSED; insn 60 fmt la later).
+- result: All fmt/arg-precompute/decl-order forms scored 9 (no schedule change); split-subtraction 12; chcr-cache 19. The volatile ordering dead-read<BF7C matches target and is unswappable (observable), so the dead read stays high-priority regardless of source order.
+- verdict: KILLED
+
+## [s2] H-A1: a declaration/access shape suppresses the combine offset-0 symbol+0 fold so D_8009BF68[0] emits target's 3-insn materialized-address load (la sym; lw 0(reg)).
+- mechanism: Our combine dump represents the access as (mem/s:SI (symbol_ref D_8009BF68)) -> folded to 2-insn lui;lw %lo. Target keeps the address in a register (la=lui+addiu) then lw 0(reg); combine only preserves (set reg sym)(mem reg) unmerged when the address pseudo has MULTIPLE uses (it will not propagate a multi-use reg into the mem). func_8007DC9C has exactly one use of &D_8009BF68, so combine always folds.
+- probe: sandbox: array[0] (baseline), sized array[][1] 2D, scalar s32, scalar fn-ptr, s32* pointer-deref, local-base pointer precompute, one-array (BF6C/BF70 as bf68[1]/[2]).
+- result: All fold to the 2-insn form (score 9) EXCEPT s32* pointer-deref, which gives build_insns=91 (target count!) but the middle insn is `lw` (load pointer value) where target has `addiu` (materialize address) -> score 12. So BF68 is not a pointer global, and no decl shape materializes the address for a single-use offset-0 access.
+- verdict: KILLED
+
+## [s2] H-A2: declaring/accessing D_8009BF68 consistent with its true scalar function-pointer type (per sibling func_8007D3F8, line 872) emits the materialized non-folded load.
+- mechanism: A scalar (non-array) symbol read presents a different address RTL to combine than array[0].
+- probe: sandbox: extern s32 (*D_8009BF68)(s32*,s32) with the value passed directly as the printf arg; also plain extern s32 D_8009BF68 scalar.
+- result: Both scalar forms fold to lui;lw %lo (2 insns, score 9) — a scalar read never materializes the address. Same fold as the array form. H-A2 does not produce the 3-insn shape.
+- verdict: KILLED
