@@ -210,3 +210,27 @@ args is NOT a sanctioned use-site shape) and stripped by `volatile_cheats`.
 - [s6] AXIS A ROOT (combine, display.i.combine): D_8009BF68[0] => (mem/s:SI (symbol_ref D_8009BF68)) folded symbol-direct (offset-0 const simplified pre-substitution); target keeps 3-insn materialized addr via combine.c:1458 added_sets_2 multi-use retention. s3 proved single in-function use -> closes only via cross-TU sibling func_8007D3F8.
 
 - [s6] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (grep NONE), so owner-gated is not available this session despite all single-function modalities now measured dead.
+
+- [s7] s7 baseline re-confirmed: sandbox --disable all score 9, target 91 / build 90, rules_dropped 4, cheat_asm_stripped 150. src/display.c restored to clean HEAD after the experiment (no dirt).
+
+- [s7] AXIS A cross-TU sibling theory REFUTED (compiler-source proof): combine_instructions is called per-function from rest_of_compilation (tools/gcc-2.7.2/toplev.c:3004 `combine_instructions(insns, max_reg_num())`; def combine.c:453 walks only the passed insn chain). combine has ZERO cross-function visibility. func_8007D3F8's `sw $19, D_8009BF68` store lives in its OWN combine section (display.i.combine insn 133 / display.s:2693), separate from func_8007DC9C's folded read (display.s:3170). => matching sibling func_8007D3F8 CANNOT close axis A; the "wait for sibling" frontier probe is mechanically impossible. KILLED.
+
+- [s7] AXIS A mechanism CONFIRMED empirically: adding a 2nd intra-function use of &D_8009BF68 (`D_8009BF88 = (s32)&D_8009BF68[0];` dead store before the 2nd printf) makes objdump of tmp/sandbox/.../display.o emit EXACTLY target asm lines 43-45: `1e84 lui v0,%hi(BF68); 1e8c addiu v0,v0,%lo(BF68); 1e90 lw a1,0(v0)`. The address is materialized in a pseudo (combine.c:1458 added_sets_2 multi-use retention). sandbox 9->8, build 90->93 (the dead `sw s3,%lo(BF68)` at 195c is NOT DCE'd — store to a game global can't be proven dead across the intervening calls, so it persists +2).
+
+- [s7] AXIS A disposition: the ONLY single-function reproduction is a dead second use of &D_8009BF68 = cheat-by-any-spelling (no semantic purpose, exists only to change combine's fold analysis, references GCC internals). Rejected: rejected/axisA-dead-addr-store-multiuse.c. Combined with the per-function-combine refutation of the sibling avenue, axis A has NO legitimate lever single-function OR cross-function.
+
+- [s7] CONSOLIDATED: both axes measured dead across structural (s2/s3), permuter x3 (s4/s5), forensics (s6/s7); the last grindable avenue (cross-TU sibling for axis A) is refuted by the per-function-combine proof. func_8007DC9C is a clean OWNER-ESCALATION candidate. No OWNER-ESCALATION entry exists yet in docs/grind/decisions.md, so owner-gated is not claimable this session -> result progress with escalation-ready frontier.
+
+- [s7] s7 baseline re-confirmed: sandbox --disable all score 9, target 91 / build 90, rules_dropped 4, cheat_asm_stripped 150. src/display.c restored to clean HEAD after the experiment (no dirt).
+
+- [s7] combine_instructions is called per-function from rest_of_compilation (tools/gcc-2.7.2/toplev.c:3004; def combine.c:453 walks only the passed insn chain) -> combine has NO cross-function visibility, so sibling func_8007D3F8's use of &D_8009BF68 cannot suppress func_8007DC9C's offset-0 fold. The 'wait for sibling' frontier probe is mechanically impossible.
+
+- [s7] Confirmed by s6 combine dump: func_8007D3F8's store `sw $19,D_8009BF68` (display.i.combine insn 133 / display.s:2693) is in its OWN combine section, disjoint from func_8007DC9C's folded read (display.s:3170).
+
+- [s7] Empirical: adding a 2nd intra-function use `D_8009BF88=(s32)&D_8009BF68[0]` (dead store) makes objdump of tmp/sandbox/func_8007DC9C/display.o emit target asm lines 43-45 verbatim (1e84 lui v0,%hi; 1e8c addiu v0,v0,%lo; 1e90 lw a1,0(v0)) via combine.c:1458 added_sets_2 multi-use retention. sandbox 9->8, build 90->93 (dead `sw s3,%lo(BF68)` at 195c not DCE'd: store to a game global can't be proven dead across intervening debug_printf/motion_make_table calls).
+
+- [s7] Axis A disposition: the only single-function reproduction is a dead second use of &D_8009BF68 = cheat-by-any-spelling (no semantic purpose, exists only to change combine's fold analysis). Rejected: rejected/axisA-dead-addr-store-multiuse.c. With the sibling avenue refuted, axis A has NO legitimate lever single-function OR cross-function.
+
+- [s7] Axis B unchanged: s6 CONFIRMED sched1 INSN_PRIORITY(dead *g_gpu_stat_reg read)=2 > PRIORITY(fmt)=1 via the volatile-MEM anti-dep 38->45; unflippable without altering observable volatile order.
+
+- [s7] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (grep NONE), so owner-gated is not claimable this session despite both axes now measured dead across single- AND cross-function modalities.

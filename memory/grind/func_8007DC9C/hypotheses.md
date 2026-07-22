@@ -128,3 +128,15 @@ sched1 reorder cluster in the first debug_printf setup.
 - probe: Read the BF68/BF6C access RTL in tmp/grind/func_8007DC9C/s6/display.i.combine within the func region.
 - result: BF68 => (mem/s (symbol_ref D_8009BF68)), BF6C => (mem (symbol_ref D_8009BF6C)); both symbol-direct/folded. Confirms combine single-use fold. Closes only via the cross-TU sibling's genuine 2nd use.
 - verdict: CONFIRMED
+
+## [s7] Axis A's 3-insn BF68 materialization can be closed by matching the cross-TU sibling func_8007D3F8 (its genuine 2nd use of &D_8009BF68 supplies combine's multi-use retention).
+- mechanism: claimed combine multi-use retention (combine.c:1458 added_sets_2) fed by a second &D_8009BF68 use somewhere in the TU.
+- probe: (1) read the combine call site in tools/gcc-2.7.2/toplev.c + combine.c to establish combine's scope; (2) empirically add a 2nd intra-function use of &D_8009BF68 and objdump the sandbox .o.
+- result: combine_instructions runs PER-FUNCTION (toplev.c:3004, inside rest_of_compilation; combine.c:453 walks only the passed chain) — a sibling's use is invisible to func_8007DC9C's combine. The 2nd use MUST be intra-function: a dead store `D_8009BF88=(s32)&D_8009BF68[0]` reproduced target's exact lui;addiu;lw 0(v0) form (objdump 1e84-1e90 == asm 43-45), sandbox 9->8/build 93, but is a coercion (dead store, persists undeleted, no semantic purpose).
+- verdict: KILLED (sibling avenue mechanically impossible; only intra-function reproduction is a cheat).
+
+## [s7] Axis A's 3-insn BF68[0] materialization closes only via the cross-TU sibling func_8007D3F8's genuine second use of &D_8009BF68 (combine multi-use retention).
+- mechanism: Claimed combine.c:1458 added_sets_2 multi-use retention fed by a second &D_8009BF68 use elsewhere in the TU. Refuted: combine_instructions runs PER-FUNCTION (tools/gcc-2.7.2/toplev.c:3004 combine_instructions(insns, max_reg_num()) inside rest_of_compilation; def combine.c:453 walks only the passed insn chain) -> zero cross-function visibility. A use in a sibling function cannot appear in func_8007DC9C's RTL.
+- probe: Read the combine call site (toplev.c) + combine.c scope; then empirically add a 2nd intra-function use `D_8009BF88=(s32)&D_8009BF68[0];` and objdump the sandbox .o.
+- result: Per-function combine proven from source + s6 combine dump (sibling's `sw $19,D_8009BF68` sits in its own combine section, display.s:2693, separate from func_8007DC9C's folded read display.s:3170). Empirically, an intra-function 2nd use reproduces target's exact `lui v0,%hi; addiu v0,v0,%lo; lw a1,0(v0)` (objdump 1e84-1e90 == asm/funcs/func_8007DC9C.s:43-45), sandbox 9->8, build 90->93, but is a coercion (dead store, undeleted, no semantic purpose).
+- verdict: KILLED
