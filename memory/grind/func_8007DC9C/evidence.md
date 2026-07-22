@@ -507,3 +507,18 @@ args is NOT a sanctioned use-site shape) and stripped by `volatile_cheats`.
 - [s21] Structural modality re-confirmed EXHAUSTED (7th time: s2/s3/s11/s12/s20 + s21). Both axes orthogonal and mechanism-pinned dead across all five modalities; the 4 regfix rules are a proven 1:1 cover (s16, no hidden 3rd axis).
 
 - [s21] NO OWNER-ESCALATION entry for func_8007DC9C in docs/grind/decisions.md (grep 8007DC9C = No matches this session) -> owner-gated NOT claimable; only unblock is the OWNER filing the entry.
+
+- [s22] PERMUTER modality, 6th chassis. Baseline re-confirmed: sandbox --disable all score 9, target 91 / build 90, rules_dropped 4, cheat_asm_stripped 150. src/display.c clean at HEAD (all work in standalone workspace tmp/grind/func_8007DC9C/s22/perm_s22).
+- [s22] Built + validated chassis-6 (fully-inline min-pressure base.c, no named temps): 90 insns; base-vs-target objdump diff reproduces exactly axis-A (target lui;addiu;lw 0(v0) 3-insn vs base folded 2-insn lui;lw) + axis-B (fmt/BF78/deadread reorder cluster). base_score 630 == floor 9. Distinct regime from chassis-1 (HEAD-block), chassis-2 (arg-homing temp), chassis-3 (whole-body temps), chassis-4 (tail temps), chassis-5 (low-pressure block-scope).
+- [s22] Campaign 35,277 iters ~21 min -j8; single novel find output-515-1 (515) = extern volatile unsigned long D_8009BF68[] = banked volatile/width-coercion cheat (axis A only), stripped by volatile_cheats. Axis-B sched cluster never reordered. Harvested --stop in-turn (stopped=true, procs_killed=9, 0 orphan s22 procs).
+- [s22] Permuter now SEXTUPLE-confirmed dead across 6 structurally-distinct chassis (~153k total iters). Only permuter-reachable sub-floor form is the banked volatile/width coercion of D_8009BF68 (axis A); axis B never legitimately reorders, corroborating s6/s15 sched1 volatile-MEM anti-dep root. No OWNER-ESCALATION entry in docs/grind/decisions.md, so owner-gated not claimable.
+
+- [s22] s22 baseline re-confirmed: sandbox --disable all score 9, target_insns 91, build_insns 90, rules_dropped 4, cheat_asm_stripped 150 (identical fingerprint to s1-s21). src/display.c clean at HEAD (untouched this session; all work in the standalone workspace).
+
+- [s22] Built + validated chassis-6 workspace tmp/grind/func_8007DC9C/s22/perm_s22: fully-inline minimal-pressure base.c (no named temps), compiles to 90 insns; base-vs-target objdump diff reproduces exactly axis-A (BF68 3-insn materialization vs 2-insn fold) + axis-B (fmt/BF78/deadread reorder cluster). base_score 630 == floor 9.
+
+- [s22] Chassis-6 campaign: 35,277 iters, ~21 min (elapsed_s 1262.7), -j8, base_score 630. Single novel find output-515-1 (515) = extern volatile unsigned long D_8009BF68[] = banked volatile-BF68 axis-A coercion, stripped by volatile_cheats. Axis B never reordered. Harvested --stop in-turn (stopped=true, procs_killed=9); pgrep confirms 0 orphan s22 permuter procs.
+
+- [s22] Permuter modality now SEXTUPLE-confirmed dead across 6 structurally-distinct chassis (~153k total iters: s4 27k + s5 40k + s13 31k + s14 20k + s22 35k). The only permuter-reachable sub-floor form remains the banked volatile/width coercion of D_8009BF68 (axis A only); the axis-B 8-op sched1 cluster has never legitimately reordered in ANY chassis, corroborating the s6/s15 sched1 volatile-MEM anti-dep root.
+
+- [s22] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md, so owner-gated is not claimable this session despite full six-chassis permuter exhaustion + all five modalities dead.
