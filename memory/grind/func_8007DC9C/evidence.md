@@ -768,3 +768,21 @@ args is NOT a sanctioned use-site shape) and stripped by `volatile_cheats`.
 - [s34] No OWNER-ESCALATION entry for func_8007DC9C in docs/grind/decisions.md (grep count 0 this session, matching s24-s33). owner-gated NOT claimable. Escalation-ready since s7 (28 sessions).
 
 - [s34] Six-modality exhaustion intact: structural (s2/s3/s11/s12/s20/s21/s29/s30), permuter x9 ~258k iters (s4/s5/s13/s14/s22/s23/s31/s32), forensics x8 (s6/s7/s15/s16/s24/s25/s33/s34), rederive x6 (s8/s9/s17/s18/s26/s27), synthesis x3 (s10/s19/s28). 4 regfix rules = 2 combine (axis A) + 1 sched1 root cause surfacing as 2 rules (axis B, s33).
+
+- [s35] REDERIVE (7th rederive session). Baseline re-confirmed: sandbox --disable all score 9, target_insns 91, build_insns 90, rules_dropped 4, cheat_asm_stripped 150 (identical fingerprint s1-s34). src/display.c restored clean HEAD after the experiment (git diff empty, no dirt).
+
+- [s35] NOVEL rederive form MEASURED DEAD: single-exit result-accumulator skeleton (`s32 result=0; if(cond){...; result=-1;} return result;`) — a natural human-writable shape distinct from all six banked rederive forms (HEAD dual comma-if return, s8 goto/nested-if, s17 inverted-early-return-guard, s18 computed-flag-two-if, s26 ternary, s27 post-increment). NOT a cheat (accumulator has real semantic purpose = the return value). Score 19 / build 90 — STRICTLY WORSE (+10 vs floor 9). Rejected: rejected/rederive-single-exit-result-accumulator.c.
+
+- [s35] NEW DATA POINT on the exit-skeleton taxonomy: three classes now measured — (a) distinct-exit (HEAD/s8/s26/s27) -> build 90 / score 9 (floor); (b) exit-coalescing (s17/s18) -> build 88 / score 12; (c) single-exit accumulator (s35) -> build 90 / score 19 (NEW, worst). The accumulator neither coalesces exits NOR reaches the floor build — the shared `result` pseudo threads both paths, forcing an extra $v0 materialization on the A-false fall-through (return loads the accumulator vs `li $v0,0`) + reshuffles the tail return set = added divergence atop both mechanism-pinned axes. Confirms axis A (combine.c:1458 offset-0 fold) and axis B (sched1 over-determined volatile-MEM lock) are both insensitive to return-value skeleton — no skeleton reaches below the floor 9.
+
+- [s35] No OWNER-ESCALATION entry for func_8007DC9C in docs/grind/decisions.md (exact grep `8007DC9C` = 0 matches this session, matching s7-s34; the 71 decisions.md hits are all the word "escalation" for OTHER functions). owner-gated NOT claimable. Escalation-ready since s7 (29 sessions). The only unblock remains the OWNER filing the entry.
+
+- [s35] s35 baseline re-confirmed: sandbox --disable all score 9, target_insns 91, build_insns 90, rules_dropped 4, cheat_asm_stripped 150 (identical fingerprint s1-s34); src/display.c restored to clean HEAD (git diff empty, no dirt).
+
+- [s35] Novel single-exit result-accumulator rederive form measured score 19 / build 90 — strictly worse than floor 9. Rejected: memory/grind/func_8007DC9C/rejected/rederive-single-exit-result-accumulator.c.
+
+- [s35] NEW exit-skeleton taxonomy data point: distinct-exit (HEAD/s8/s26/s27) -> build90/score9 (floor); exit-coalescing (s17/s18) -> build88/score12; single-exit accumulator (s35) -> build90/score19 (worst). No return-value skeleton reaches below floor 9 — axis A (combine.c:1458 offset-0 fold) and axis B (sched1 over-determined volatile-MEM lock) both insensitive to exit skeleton.
+
+- [s35] No OWNER-ESCALATION entry for func_8007DC9C in docs/grind/decisions.md (exact grep 8007DC9C = 0 matches this session, consistent s7-s34; the 71 decisions.md hits are all the word 'escalation' for other functions). owner-gated NOT claimable; escalation-ready since s7 (29 sessions).
+
+- [s35] Rederive modality now dead at skeleton, expression-operator, control-flow, m2c, Kengo, decomp.me-corpus, AND return-value-accumulator levels (s8/s9/s17/s18/s26/s27/s35). Both axes mechanism-pinned dead across all six modalities (structural, permuter x9, forensics x8, rederive x7, synthesis x3).
