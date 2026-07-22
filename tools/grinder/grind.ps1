@@ -322,7 +322,16 @@ $led/rejected/. Write your verdict JSON to the exact path given below.
             Journal "${func}: queue done refused a bytes-proven candidate — un-retired config cheat; constraint banked."
             return
         }
-        git -C $Root add -- "src/$stem.c" engine/queue.json regfix.txt regfix_stage2.txt asmfix.txt tools/prologue_config.json tools/frame_fix_funcs.txt tools/delay_slot_ra_funcs.txt 2>$null
+        # Stage the per-function ledger INTO the Match commit so its exhaustion
+        # evidence is durable in git history BEFORE line 329 deletes the working
+        # copy. Without this, a function that closes in one session (candidate-ready
+        # with no prior 'grind: ledger sN' progress commit) has its ledger created,
+        # never committed, then deleted — never reaching git. That gap let
+        # func_80041988's FAKE annotation cite a memory/grind/ ledger that never
+        # existed (2026-07-22 backlog audit); a fabricated-evidence cheat then passed
+        # the same-tier fable judge unverifiable. Committing the ledger makes every
+        # COMPLETED-C function's evidence auditable after the fact.
+        git -C $Root add -- "src/$stem.c" engine/queue.json regfix.txt regfix_stage2.txt asmfix.txt tools/prologue_config.json tools/frame_fix_funcs.txt tools/delay_slot_ra_funcs.txt "memory/grind/$func" 2>$null
         git -C $Root commit -m "Match: $func — COMPLETED-C (grinder, $sessionsTaken sessions)" | Out-Null
         Add-Decision $func 'final call' 'PASS' $v.justification
         Journal "$func COMPLETED-C after $sessionsTaken sessions."
