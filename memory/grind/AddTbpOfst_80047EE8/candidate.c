@@ -55,6 +55,22 @@
  * is reachable ONLY via forbidden dead/volatile-local cheats. Permuter
  * modality now measured DEAD across BOTH chassis basins.
  * See rejected/permuter-volatile-uint-pad-nofake-basin.c.
+ *
+ * s6 (2026-07-21, forensics): cc1 -da full-pass RTL dump NAMES the exact
+ * divergence pass. Candidate get_frame_size()=0 at BOTH .rtl (post-expand)
+ * and .greg (post-reload); .greg dispositions put all 22 pseudos in hard regs
+ * ("Hard regs used: 2 4 5 6 7 16 17 18 29 31"), ZERO spills. Target vars
+ * region 0x18-0x37 has ZERO sw/lw, so it CANNOT be a reload spill slot (spills
+ * always emit store+reload) — this FALSIFIES the phantom-frame-slots-gcc272 /
+ * tslLineG5Init reload-spill theory s3-s5 operated under. Positive control
+ * (s6/control/ctl.c): a declared local `int buf[8]` (addressed ctlA OR unused
+ * ctlB) reserves vars=32 with zero stores, byte-shape-identical to target.
+ * MECHANISM NAMED: function.c stack-frame layout (assign_stack_local at
+ * RTL-EXPAND from a source-level local-aggregate DECL) — UPSTREAM of register
+ * allocation, so the entire s3/s4/s5 RA+scheduling search space provably cannot
+ * reach it. Only pure-C reproduction is a >=32-byte dead local aggregate =
+ * forbidden dead-vars-local-array (WRITTEN carve-out inapplicable, zero region
+ * stores). See tmp/grind/AddTbpOfst_80047EE8/s6/ dumps.
  */
 void AddTbpOfst_80047EE8(s32 arg0, s32 arg1)
 {
