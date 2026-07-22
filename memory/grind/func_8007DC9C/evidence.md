@@ -330,3 +330,31 @@ args is NOT a sanctioned use-site shape) and stripped by `volatile_cheats`.
 - [s12] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (Grep 8007DC9C = No matches; d6bc0904's owner ruling covered 7 OTHER endgame-lock funcs), so owner-gated is NOT claimable this session.
 
 - [s12] func_8007DC9C matches endgame-lock-disposition-policy (owner 2026-07-20) verbatim: byte-matches only via 4 regfix rules, 9 insns short in honest pure C. Gate #1 (canonical asm) REFUSE (scan_hand_coded LOW, s1). Gate #2 (coercion family) REFUSE (no SOTN/VS/ESA precedent). Both fail -> keep cheat, INCOMPLETE-owner-accepted (owner ruling, not agent self-authorization).
+
+- [s13] PERMUTER modality, 4th chassis. Baseline re-confirmed: sandbox --disable all score 9, target 91 / build 90, rules_dropped 4, cheat_asm_stripped 150. src/display.c clean (candidate byte-equivalent, in place).
+
+- [s13] Built + validated chassis-4 (tmp/perm_dc9c_s13): tail-temp topology (tail-store values AND second-printf args ALL hoisted to top-computed named temps arg_a/arg_b/arg_c/diff; volatile reads inline+ordered). base_score 695 (HIGHER than prior chassis's 630 — extra temps add reorderings/regs, a distinct higher-register-pressure regime), 90 insns, base-vs-target reproduces both ledger axes. Structurally distinct from s4 chassis-1 (default-random), s4 chassis-2 (arg-homing single temp), s5 chassis-3 (whole-body named-temp).
+
+- [s13] Chassis-4 campaign (s13-chassis4-tail-temps, -j8): 30,817 iterations across in-turn wait windows; harvested --stop in-turn; status alive:false, registered_active:false, 0 live campaigns, no orphan permuter processes.
+
+- [s13] Finds (floor = 630 == sandbox 9): 695/690/685/680/670/655 ALL ABOVE the 630 floor (legitimate reordering ceilings ~680; chassis-4 never even recovers the true floor legitimately). Only sub-floor find (590) = `extern volatile int D_8009BF68[]` = the banked volatile-BF68 coercion (axis A only; s1 WIP + s4 rejected/axisA-permuter-volatile-bf68.c), stripped by engine.volatile_cheats -> scores 9 under sandbox. 655 find = `(long long)D_8009BF70` width coercion (banked family) AND non-improving; 635 find = `new_var2=-1` dead constant-holder laundering sys_VSync(-1), also a cheat + non-improving. Axis B 8-op sched1 cluster NEVER legitimately reordered.
+
+- [s13] PERMUTER modality now QUADRUPLE-confirmed dead across 4 structurally-distinct chassis (~98k total iters s4 27k + s5 40k + s13 31k): only permuter-reachable sub-floor form is the banked volatile coercion of D_8009BF68 (axis A); axis B is volatile-order-locked (s6 root) and never moves. Both axes remain mechanism-pinned dead.
+
+- [s13] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (Grep 8007DC9C = No matches), so owner-gated is NOT claimable this session -> result progress, escalation-ready frontier unchanged.
+
+- [s13] s13 baseline re-confirmed: sandbox --disable all score 9, target_insns 91, build_insns 90, rules_dropped 4, cheat_asm_stripped 150 (identical fingerprint to s1-s12). src/display.c clean; candidate.c byte-equivalent, already in place.
+
+- [s13] Built + validated a 4th structurally-distinct permuter chassis (tmp/perm_dc9c_s13): tail-temp topology, base_score 695 (higher than prior chassis's 630 because the extra temps add reorderings/regs), compiles to 90 insns, base-vs-target reproduces both ledger axes.
+
+- [s13] Campaign 30,817 iterations, -j8, harvested --stop in-turn; status alive:false, registered_active:false, 0 live campaigns, no orphan permuter processes.
+
+- [s13] Every novel find: 695/690/685/680/670/655 all ABOVE the 630 floor (legitimate reordering ceilings ~680); only sub-floor find (590) is the volatile-BF68 coercion `extern volatile int D_8009BF68[]` already banked (s1 WIP + s4 rejected/axisA-permuter-volatile-bf68.c), stripped by volatile_cheats.
+
+- [s13] 655 find = `(long long) D_8009BF70` (long-long width coercion, same family as s4 permuter-alias-longlong-junk / s5 axisA-permuter-longlong-width-coercion) AND non-improving; 635 find = `new_var2 = -1` dead constant-holder laundering the sys_VSync(-1) literal, also a cheat and non-improving.
+
+- [s13] Axis B 8-op sched1 cluster never legitimately reordered in chassis-4, consistent with the s6 forensic root cause (dead-read insn 38 priority=2 > fmt insn 60 priority=1 via volatile-MEM anti-dep REG_DEP_ANTI 38->45, unflippable without changing observable volatile order).
+
+- [s13] PERMUTER modality now QUADRUPLE-confirmed dead across 4 structurally-distinct chassis (~98k total iters s4 27k + s5 40k + s13 31k): the only permuter-reachable sub-floor form is the banked volatile coercion of D_8009BF68 (axis A); axis B is volatile-order-locked and never moves.
+
+- [s13] No OWNER-ESCALATION entry for func_8007DC9C exists in docs/grind/decisions.md (Grep 8007DC9C = No matches), so owner-gated is not claimable this session.
