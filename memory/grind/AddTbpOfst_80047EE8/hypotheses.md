@@ -59,3 +59,21 @@
 - probe: V7: p = (u32*)(saved + (s32)(v_off & ~3)) on the floor-10 chassis; sandbox --disable all
 - result: 14, build insns 52 vs target 53 — WORSE and byte-diverging: target carries the two-shift pair, the mask spelling emits andi and cascades
 - verdict: KILLED
+
+## [s3] A pure-C LIVE-locals shape reserves the target's phantom 32-byte frame (vars=32) without emitting stores or changing the 53-insn stream
+- mechanism: phantom-frame-slots-gcc272 — GCC 2.7.2 reload reserves spill slots (counted by get_frame_size) for pseudos it keeps in registers; witnessed at vars=8 in tslLineG5Init from an s16 pair feeding `(a&~b)&1`. Frontier F2 claimed this body's s16->SImode call-arg widening + u32 word local would trigger a comparable (32-byte) reservation.
+- probe: cc1 .frame instrument (framedump.sh) + 9-variant grid (sweep.py, frame_grid.md): base, fn-scope hoist, u64 word, struct record, staged temps, folded himode-pair, written array, u64 pair, and a genuinely-live tslLineG5Init-clone guard (v08).
+- result: EVERY stream-preserving variant = vars=0 (frame 40, distance 10). v08 (exact tslLineG5Init trigger, live guard on a real global store) = vars=0 — the mechanism does NOT fire here. Only a WRITTEN s32 rec[6] reaches vars=24, at +6 diverging stores the target lacks (forbidden dead-array, no carve-out).
+- verdict: KILLED. The 32-byte phantom reservation is not reproducible by any pure-C live-locals shape in this body; it requires the forbidden unwritten/written dead array. Structural axis exhausted. Same endgame-lock species as sibling InitHiraRmd_80047FBC.
+
+## [s3] A pure-C LIVE-locals shape reserves the target's phantom 32-byte frame (vars=32) without emitting stores or diverging from the 53-insn stream.
+- mechanism: phantom-frame-slots-gcc272: GCC 2.7.2 reload reserves spill slots (counted by get_frame_size) for pseudos it keeps in registers; witnessed vars=8 in tslLineG5Init from an s16 pair feeding (a&~b)&1. Frontier F2 claimed this body's s16->SImode call-arg widening + u32 word local would trigger a ~32-byte reservation.
+- probe: Built the cc1 .frame instrument (framedump.sh); ran a 9-variant grid (sweep.py) reading vars= and sp-store count: base, fn-scope hoist, u64 word, struct record, staged temps, folded himode-pair, written array, u64 pair, and v08 = the exact tslLineG5Init trigger (live s16 pair (hv&~hm)&1 guarding a real global store).
+- result: Every stream-preserving variant = vars=0 (frame 40, distance 10). v08 (exact tslLineG5Init trigger) = vars=0 — the mechanism does NOT fire in this body. Only a written s32 rec[6] reaches vars=24, at +6 diverging sp-stores the target lacks (forbidden dead-array; no carve-out, matching sibling s7: target has ZERO sw in the vars region).
+- verdict: KILLED
+
+## [s3] The candidate floor-10 form re-measures distance 10 this session.
+- mechanism: single-walker + first-arg precompute + FAKE arg0=0 staging (s1/s2 levers); residual is purely the frame-offset insns.
+- probe: Applied candidate.c to src/text1b.c; `& tools/wteng.ps1 main sandbox AddTbpOfst_80047EE8 --disable all`.
+- result: score 10, target_insns 53, build_insns 53, scorable true. Confirmed floor=10 this session.
+- verdict: CONFIRMED

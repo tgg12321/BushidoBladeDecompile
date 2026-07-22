@@ -26,10 +26,16 @@
  *     tmp/grind/AddTbpOfst_80047EE8/s2/spelling_sweep.md. The FAKE
  *     construct's lever-exhaustion requirement is met on this function.
  *
- * Remaining gap: the 32-byte unused frame. Sibling s7 evidence (identical
- * species): target has ZERO stores in the vars region, so the written-array
- * carve-out byte-diverges; phantom-frame-slots probes dead; unwritten array
- * forbidden. No sanctioned lever known.
+ * Remaining gap: the 32-byte unused frame (target vars=32 phantom; this form
+ * vars=0, cc1 .frame). s3 (2026-07-21, structural) DIRECTLY measured the
+ * phantom-frame grid DEAD on this body: 9 variants via the cc1 .frame
+ * instrument, NO stream-preserving shape moves vars off 0. Decisive control
+ * v08 = the exact tslLineG5Init phantom trigger (s16 pair `(a&~b)&1` guarding a
+ * real store) reserves vars=0 here — the mechanism does not fire. Only a
+ * written s32 rec[6] reaches vars=24, at +6 diverging stores the target lacks
+ * (forbidden dead-array). See tmp/grind/AddTbpOfst_80047EE8/s3/frame_grid.md.
+ * Structural axis exhausted; same endgame-lock species as sibling
+ * InitHiraRmd_80047FBC (owner-escalation filed 2026-07-20, awaiting ruling).
  */
 void AddTbpOfst_80047EE8(s32 arg0, s32 arg1)
 {

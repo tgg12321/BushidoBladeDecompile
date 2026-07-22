@@ -70,3 +70,25 @@ With all three -> SHA1 matches. Without -> sandbox 15 (frame + prologue + 1 move
 - [s2] [s2] docs/grind/decisions.md checked: sibling InitHiraRmd_80047FBC OWNER-ESCALATION (filed 2026-07-20, identical 32-byte unwritten-frame species) still AWAITING RULING; precedent block shows same-species escalations ruled option (b) INCOMPLETE-owner-accepted (motion_SetMotion, saTan0Init, cpu_side_move_dir_4, func_80057CC8)
 
 - [s2] [s2] src/text1b.c reverted to HEAD after measurements (git status clean except metrics + memory/grind); committed 3-cheat form still holds the oracle on main
+
+- [s3] [structural] cc1 .frame instrument built (tmp/grind/AddTbpOfst_80047EE8/s3/framedump.sh): floor-10 form = `.frame $sp,40 # vars=0, regs=4/0, args=24`; TARGET = `.frame $sp,72` vars=32 phantom (ZERO stores in vars region 0x18-0x37). Gap = ALIGN8(vars): need vars in [25,32] with SAME 5 sp-stores + byte-identical 53-insn stream.
+
+- [s3] [structural] PHANTOM-FRAME GRID MEASURED DEAD (9 variants, tmp/grind/AddTbpOfst_80047EE8/s3/frame_grid.md + sweep.py). NO stream-preserving structural variant moves vars off 0 (frame stays 40): fn-scope hoist, u64 word, struct record (adds saved reg -> regs=5 wrong), staged temps, himode-pair-folded — all vars=0. Only a WRITTEN s32 rec[6] reaches vars=24, at the cost of +6 diverging sp-stores the target lacks (forbidden dead-vars-local-array; no carve-out, same as sibling s7).
+
+- [s3] [structural] DECISIVE CONTROL v08_live_guard: the EXACT phantom-frame-slots-gcc272 trigger (two s16 locals feeding `(hv & ~hm) & 1` guarding a REAL global store, the tslLineG5Init mechanism that reserves vars=8) reserves vars=0 in THIS body — it only emits the guard insns, no phantom slot. The reservation is a reload spill-slot artifact of tslLineG5Init's cross-call live HImode temps; this loop consumes every value immediately at the efc call so reload never reserves an unused slot. The frontier F2 mechanism claim ("function-specific phantom-frame trigger, s16->SImode widening + u32 word local") is FALSIFIED: those shapes do not trigger reservation here.
+
+- [s3] [structural] Sandbox re-confirmed floor=10 (`& tools/wteng.ps1 main sandbox AddTbpOfst_80047EE8 --disable all` -> score 10, 53/53 insns) with the candidate.c form applied. src reverted to HEAD after measurement.
+
+- [s3] docs/grind/decisions.md: sibling InitHiraRmd_80047FBC OWNER-ESCALATION (filed 2026-07-20) STILL AWAITING RULING; NO escalation filed for AddTbpOfst_80047EE8 itself yet. Both F1 (FAKE arg0 lever-exhaustion, s2) and F2 (phantom-frame structural axis, s3) now discharged; canonical-asm signals negative (same ordinary table-walker as sibling s10). Function is at the endgame-lock exhaustion state; remaining action = mirroring owner-escalation once the sibling family ruling lands.
+
+- [s3] cc1 .frame instrument: floor-10 form = `.frame $sp,40 # vars=0, regs=4/0, args=24`; TARGET = `.frame $sp,72` vars=32 phantom (zero stores in vars region 0x18-0x37). Gap = ALIGN8(vars): need vars in [25,32] with the same 5 sp-stores and byte-identical 53-insn stream.
+
+- [s3] 9-variant phantom-frame grid: NO stream-preserving structural variant moves vars off 0 (frame stays 40, distance 10). fn-scope hoist / u64 word / staged temps / folded himode-pair all vars=0; struct record adds a saved reg (regs=5, wrong); u64 pair adds 3 saved regs (regs=7, diverges); only a written s32 rec[6] reserves vars (24) but adds 6 diverging sp-stores the target does not contain.
+
+- [s3] DECISIVE: v08_live_guard reproduces the exact phantom-frame-slots-gcc272 trigger (two s16 locals feeding (a&~b)&1 guarding a real global store — the tslLineG5Init mechanism that yields vars=8) and gets vars=0 here. The reservation is a reload spill-slot artifact of tslLineG5Init's cross-call live HImode temps; this loop consumes every value immediately at the efc_buki_draw_zanzou call, so reload never reserves an unused slot. Frontier F2's mechanism claim is falsified.
+
+- [s3] Sandbox re-confirmed floor=10 (53/53 insns) with candidate.c applied; src reverted to HEAD after measurement (committed cheat form still holds the oracle on main).
+
+- [s3] docs/grind/decisions.md: sibling InitHiraRmd_80047FBC OWNER-ESCALATION (filed 2026-07-20) STILL AWAITING RULING; no escalation filed for AddTbpOfst_80047EE8 itself yet. Precedent block: 4 same-species escalations (motion_SetMotion, saTan0Init, cpu_side_move_dir_4, func_80057CC8) all ruled option (b) INCOMPLETE-owner-accepted.
+
+- [s3] Exhaustion state: F1 (FAKE arg0 pure-spelling exhaustion, s2) + F2 (phantom-frame structural axis, s3) both discharged with measurements; canonical-asm signals negative (ordinary table walker, same as sibling s10). No sanctioned pure-C lever remains.

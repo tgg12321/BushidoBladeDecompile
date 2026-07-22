@@ -1,7 +1,7 @@
 {
  "func": "AddTbpOfst_80047EE8",
  "file": "text1b",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -21,18 +21,24 @@
    "floor": 10,
    "modality": "structural",
    "headline": "Structural s2: FAKE-arg0 exhaustion prerequisite DISCHARGED on this body \u2014 6 pure spellings of the saved/p init chain measured dead (all 11+ vs FAKE's 10); floor stands at 10, residual purely the 32-b"
+  },
+  {
+   "session": 3,
+   "floor": 10,
+   "modality": "structural",
+   "headline": "Structural s3: phantom-frame grid measured DEAD (9 variants, cc1 .frame instrument) \u2014 no pure-C live-locals shape reserves target's vars=32; last structural axis exhausted, floor stands at 10, same en"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The 32-byte frame gap has a function-specific phantom-frame trigger (this body has s16 locals feeding HImode->SImode call-arg widening plus a u32 word local) not covered by the sibling's 5 dead probes",
-   "mechanism": "phantom-frame-slots-gcc272: GCC 2.7.2 reserves frame bytes for LIVE locals no instruction touches under specific shapes (struct/u64/s16-widening)",
-   "next_probe": "forensics session: cc1 .frame dump on the floor-10 form (confirm vars=0, args=24), then run the phantom-frame variant grid adapted to this body's locals; artifacts to tmp/grind/AddTbpOfst_80047EE8/s3/"
+   "hypothesis": "AddTbpOfst_80047EE8 is the same endgame-lock species as sibling InitHiraRmd_80047FBC; the residual is exactly the 32-byte phantom frame with no covering sanctioned family.",
+   "mechanism": "endgame-lock-disposition standing policy 2026-07-20; both AND-gates fail (canonical-asm signals negative; no SOTN precedent for an unwritten 32-byte phantom-frame carrier). All sanctioned pure-C axes now measured dead (F1 s2, F2 s3).",
+   "next_probe": "File the mirroring OWNER-ESCALATION for AddTbpOfst_80047EE8 (citing F1 discharge s2 + F2 phantom-frame grid s3) once the sibling InitHiraRmd_80047FBC family ruling lands; do not self-resolve. Until then this is progress-recorded exhaustion, not owner-gated (no escalation entry exists for this function yet)."
   },
   {
-   "hypothesis": "If the phantom-frame grid measures dead, this function is the same endgame-lock species as sibling InitHiraRmd_80047FBC and the pending family ruling settles it (also InitHiraRmd_800480C0, func_800481E8)",
-   "mechanism": "endgame-lock-disposition standing policy 2026-07-20; sibling escalation filed 2026-07-20 awaiting ruling; same-species precedents all ruled option (b)",
-   "next_probe": "re-check docs/grind/decisions.md for the InitHiraRmd_80047FBC ruling; if ruled, apply the family disposition here (file the mirroring escalation citing the F1 discharge from this session + F2 forensics results); do NOT file before F2 is measured dead"
+   "hypothesis": "A permuter/forensics modality could surface a non-structural lever for the 32-byte frame that structural sweeps cannot reach.",
+   "mechanism": "reload spill-slot reservation is emergent from register pressure; a whole-function permuter search over statement orderings might (very unlikely) find a pressure profile reserving 8 phantom words with no stores.",
+   "next_probe": "Low-priority: a permuter campaign on the floor-10 chassis targeting frame growth; expected dead given v08 shows the documented trigger inert here, but not yet run in the permuter modality."
   }
  ],
  "judge_constraints": [],
