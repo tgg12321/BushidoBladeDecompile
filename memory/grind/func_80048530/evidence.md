@@ -1,5 +1,41 @@
 # Evidence bank — func_80048530
 
+## s4 (permuter, 2026-07-23) — floor held at 1; permuter axis KILLED, all 13 zeros are the forbidden swap; OWNER-ESCALATION filed
+
+- **Floor unchanged = 1** (re-confirmed live: sandbox --disable all = 1, build 47
+  == target 47, rules_dropped 5). Applied candidate.c (floor-1 form) to src to
+  establish the baseline, then restored src to HEAD (byte-match held by the 5
+  regfix rules).
+- **Clean single-function permuter workspace built** (tmp/grind/func_80048530/s4):
+  base.c = the floor-1 candidate form; base.o == floor-1 bytes; target.o from
+  asm/funcs/func_80048530.s via prelude_r3k.inc so the function sits at offset 0;
+  base weighted score = 10 (the sole operand-order instruction). Verified the base
+  vs target objdump diff is EXACTLY one line: `addu v1,v1,v0` vs `addu v1,v0,v1`.
+- **PERMUTER AXIS KILLED (definitive).** Two fresh-seed windows from the floor-1
+  base (plain base.c -> random mutation, "No perm macros found. Defaulting to
+  randomization."):
+    * window 1 (--stop-on-zero): score 0 at iteration 17.
+    * window 2 (no stop-on-zero, ~2378 iters): 13 total score-0 outputs, 6
+      distinct normalized forms.
+  EVERY one of the 13 zeros carries the SAME load-bearing mutation
+  `arg0 = base + off;` -> `arg0 = off + base;` — the forbidden or-tree-shape-shift
+  commutative swap (banked s3, rejected/offbase-operand-shuffle-cheat.c). The 6
+  "distinct" forms differ ONLY by permuter cosmetic noise on top of the swap
+  (a `new_var` alias temp for *(s32*)arg0; a redundant `(long long)` cast; a
+  `do{arg0+=2;}while(0)` wrapper); none is the closer. Random search NEVER lowered
+  the score below 10 by any NON-swap route. This empirically confirms the s3
+  structural proof: off-first + v1-walker are mutually exclusive except via the
+  swap. rejected/permuter-13zeros-all-offbase-swap.c.
+- **All four sanctioned axes now measured dead:** structural (s3), permuter (s4),
+  canonical-asm (scan_hand_coded LOW 1/8, s3 -> refused), fork-vs-cc1psx (s3,
+  cc1psx also base-first). Residual = one commutative-operand-order RA tie whose
+  only closer is the forbidden swap. Textbook endgame-lock species
+  (.claude/rules/endgame-lock-disposition.md): both owner AND-gates fail.
+- **OWNER-ESCALATION FILED** in docs/grind/decisions.md (2026-07-23, func_80048530).
+  Returned owner-gated. Artifacts: tmp/grind/func_80048530/s4/ (base.c, base.o,
+  target.o/.s, compile.sh, settings.toml, campaign.log, campaign_meta.json,
+  cmp.sh, analyze_zeros.sh, output-0-*).
+
 ## s3 (structural, 2026-07-23) — NEW FLOOR 10 -> 1; the "combine lh-fold wall" was NOT a wall
 
 - **NEW CLEAN FLOOR = 1** (sandbox --disable all, confirmed on the canonical
@@ -157,3 +193,19 @@
 - [s3] MEASUREMENT CAUTION for the next session: score is sensitive to the c/d spelling. Walking-pointer `c=*p; p+=2; d=*p;` = score 1; fixed-offset `c=*p; d=*(p+2);` = score 20 (walker misroutes to $t0, c folds to lh). Always use the walking-pointer read.
 
 - [s3] Endgame-lock species (.claude/rules/endgame-lock-disposition.md): byte-matches on main only via 5 regfix rules; 1 insn short in honest pure C; residual is a commutative-operand-order RA tie; only closer forbidden; no SOTN precedent for ADD operand-order-for-codegen; no hand-coded evidence. Both owner AND-gates fail -> textbook INCOMPLETE-owner-accepted candidate.
+
+- [s4] Floor re-confirmed = 1 live (sandbox --disable all: score 1, build_insns 47 == target 47, rules_dropped 5). src restored to HEAD after measurement; byte-match on main held by the 5 regfix rules.
+
+- [s4] Clean single-function permuter workspace (tmp/grind/func_80048530/s4): base weighted score 10; objdump base-vs-target diff is EXACTLY one line: addu v1,v1,v0 (base-first) vs addu v1,v0,v1 (off-first).
+
+- [s4] Permuter (two fresh-seed windows, ~2378 iters, 13 score-0 finds / 6 distinct normalized forms): 100% of zeros are the forbidden swap arg0 = off + base. No non-swap route ever went below score 10. Empirically confirms the s3 structural proof that off-first and v1-walker are mutually exclusive except via the swap. Banked rejected/permuter-13zeros-all-offbase-swap.c.
+
+- [s4] or-tree-shape-shift (commutative operand-order swap for codegen) is FORBIDDEN per no-new-park-categories.md; not on the frozen SOTN-accepted list; no ADD-operand-order-for-codegen precedent has ever been exhibited. AND-GATE 2 (coercion/SOTN precedent) FAILS.
+
+- [s4] scan_hand_coded --single func_80048530 = tier LOW, score 1/8 (only S4; no S1/S2/S6 STRONG signal); a byte-0 pure-C form provably exists via the swap, so canonical-asm would launder the pre-banned swap into inline asm (inline-asm-injection trap). AND-GATE 1 (canonical-asm) FAILS.
+
+- [s4] cc1psx (original compiler, s3) also emits base-first from natural base+off; the original SOURCE used off-first order; NOT a fork divergence. difficult-is-not-impossible obligation discharged.
+
+- [s4] All four sanctioned axes measured dead (structural s1-s3, permuter s2/s4, canonical-asm s3, fork-vs-cc1psx s3); residual = a single commutative-operand-order RA tie whose only closer is forbidden. Textbook endgame-lock species; both owner AND-gates fail.
+
+- [s4] OWNER-ESCALATION filed in docs/grind/decisions.md (2026-07-23, func_80048530) with both AND-gates stated and both owner options (a canonical-asm / b OWNER-ACCEPTED INCOMPLETE). Both permuter campaigns harvested+stopped in-turn; reap confirms no orphaned worker.

@@ -10,6 +10,18 @@
 - H1 (s1): sibling func_800483DC base-routing idiom (mutate arg0 as walker +
   separate `base=arg0` local for final add) -> floor 10, from 11. Pure C.
 
+## KILLED (s4)
+- H9 (s4): a permuter campaign from the floor-1 base finds a LEGITIMATE off-first
+  structure keeping the walker in v1 (an RA arrangement no hand-derived structural
+  spelling found). Clean single-function workspace (base weighted score 10 = the
+  one operand-order instruction), random mutation, two fresh-seed windows
+  (~2378 iters, 13 score-0 finds, 6 distinct normalized forms). RESULT: EVERY zero
+  is the forbidden or-tree-shape-shift swap `arg0 = off + base;` (with cosmetic
+  permuter noise); no non-swap route ever went below score 10. KILLED — the
+  permuter axis is dead, corroborating the s3 structural proof. All four sanctioned
+  axes now dead; OWNER-ESCALATION filed (docs/grind/decisions.md 2026-07-23);
+  returned owner-gated. rejected/permuter-13zeros-all-offbase-swap.c.
+
 ## KILLED (s3)
 - H7: reach target's off-first walker add via a NON-swap C spelling. off+=base
   (->22, walker misroutes $a1), off+=base;arg0=off (->22 $t0), mem-inline
@@ -118,4 +130,10 @@ stack store) WITHOUT introducing a dead store.
 - mechanism: difficult-is-not-impossible obligation: run both compilers on the natural base+off form.
 - probe: cpp'd the natural-order form, compiled with the fork cc1 and with cc1psx, compared the walker add (tmp/grind/func_80048530/s3/n1.psx.s vs n1.fork.s).
 - result: cc1psx ALSO emits base-first (addu $8,$8,$2) from natural base+off; it does not reproduce target's off-first either. So the original SOURCE used the off-first order; not a fork divergence (our fork reaches byte-0 from the off+base swap, sandbox=0).
+- verdict: KILLED
+
+## [s4] A permuter campaign from the floor-1 base finds a LEGITIMATE off-first structure keeping the walker in $v1 (an RA arrangement no hand-derived structural spelling reached).
+- mechanism: The sole residual is one commutative-operand-order instruction (build addu $v1,$v1,$v0 vs target addu $v1,$v0,$v1). A random hill-climber might reach an RA/scheduling arrangement that emits off-first without the forbidden source swap.
+- probe: Built a clean single-function permuter workspace from candidate.c (base.o == floor-1 bytes, target.o from asm/funcs at offset 0, base weighted score 10 = the one operand-order insn; objdump-verified the base-vs-target diff is exactly that one line). Ran two fresh-seed windows via permuter_campaign.py: window 1 --stop-on-zero (zero at iter 17); window 2 no-stop-on-zero (~2378 iters). Harvested --stop; normalized+deduped all score-0 outputs.
+- result: 13 score-0 finds across 6 distinct normalized forms. EVERY zero carries the same load-bearing mutation arg0 = base + off -> arg0 = off + base (the or-tree-shape-shift commutative swap). The 6 variants differ only by permuter cosmetic noise (new_var alias temp, redundant (long long) cast, do{arg0+=2;}while(0) wrapper); none is the closer. Random search never lowered the score below 10 by any non-swap route.
 - verdict: KILLED

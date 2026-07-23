@@ -1,8 +1,8 @@
 {
  "func": "func_80048530",
  "file": "text1b",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 0,
@@ -27,18 +27,19 @@
    "floor": 1,
    "modality": "structural",
    "headline": "Floor 10->1 (clean pure C): fresh-assign walker `arg0=base+off` + walking-pointer c/d reads make c,d emit lhu+sll+sra reusing the dead walker; sole residual is the walker-relocation add's commutative "
+  },
+  {
+   "session": 4,
+   "floor": 1,
+   "modality": "permuter",
+   "headline": "Permuter axis KILLED from the floor-1 base: 13 score-0 finds, all the forbidden or-tree-shape-shift swap; every sanctioned axis now dead; OWNER-ESCALATION filed."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A permuter campaign from the floor-1 base (a far better start than s2's floor-10 run) finds a legitimate off-first structure keeping the walker in v1.",
-   "mechanism": "The residual is a single commutative-operand-order/RA tie; the permuter may reach an RA arrangement no hand-derived structural spelling found. Directed PERM_* macros over the walker-relocation add and the c/d read cadence.",
-   "next_probe": "Build a clean single-function permuter workspace from candidate.c (base.o == floor-1 bytes, function at offset 0), run --stop-on-zero with fresh-seed windows; VET any zero against or-tree-shape-shift (reject if it is arg0=off+base by any spelling)."
-  },
-  {
-   "hypothesis": "No legitimate off-first form exists; the residual is a commutative-operand-order lock whose only closer is the forbidden off+base swap.",
-   "mechanism": "Structural axis measured dead this session; cc1psx confirms the original source used off-first; or-tree-shape-shift forbids the swap with no SOTN precedent; scan_hand_coded LOW refuses canonical-asm.",
-   "next_probe": "If the floor-1 permuter is also dead, file an OWNER-ESCALATION for func_80048530 in docs/grind/decisions.md per .claude/rules/endgame-lock-disposition.md (options: canonical-asm REFUSED [LOW 1/8]; INCOMPLETE-owner-accepted keeping the 5 regfix rules to hold the byte match) and return owner-gated. This is the escalation-modality job, not structural."
+   "hypothesis": "No pure-C form emits the walker-relocation add off-first (addu $v1,$v0,$v1) while keeping the walker in $v1; the only closer is the forbidden or-tree-shape-shift swap arg0 = off + base.",
+   "mechanism": "Structural (s3) AND permuter (s4) both dead: every non-swap off-first spelling misroutes the walker off $v1 (measured 22/20/12), and the permuter's only route to zero from the floor-1 base is the swap (13/13 zeros). off-first and v1-walker are mutually exclusive except via the swap.",
+   "next_probe": "Owner ruling required (endgame-lock policy): (a) authorize canonical-asm for the one add [NOT supportable \u2014 LOW 1/8, pure-C byte-0 form exists], or (b) OWNER-ACCEPTED INCOMPLETE keeping the 5 regfix rules to hold the byte-match. Re-attempt only if a genuine non-swap pure-C lever emerges (outside structural + permuter axes). See escalation entry."
   }
  ],
  "judge_constraints": [],

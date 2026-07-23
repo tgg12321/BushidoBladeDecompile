@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80048530",
-      "file": "text1b",
-      "distance": 11,
-      "verdict": "C",
-      "rules": 5,
-      "status": "active"
-    },
-    {
       "func": "func_80049718",
       "file": "text1b",
       "distance": 11,
@@ -2489,6 +2481,15 @@
       "park_reason": "owner escalation pending: docs/grind/decisions.md 2026-07-23 \u2014 func_80022F34 (src/code6cac.c) \u2014 OWNER-ESCALATION (endgame-lock disposition, forensics s6)"
     },
     {
+      "func": "func_80048530",
+      "file": "text1b",
+      "distance": 11,
+      "verdict": "C",
+      "rules": 5,
+      "status": "parked",
+      "park_reason": "owner escalation pending: docs/grind/decisions.md \u2014 '2026-07-23 \u2014 func_80048530 (src/text1b.c) \u2014 OWNER-ESCALATION' (permuter modality, grind s4; both endgame-lock AND-gates fail; options a canonical-asm REFUSED, b OWNER-ACCEPTED INCOMPLETE)"
+    },
+    {
       "func": "special_camera_set_win_cam",
       "file": "code6cac_b2_post",
       "distance": 510,
@@ -2725,13 +2726,13 @@
   ],
   "counts": {
     "total": 332,
-    "active": 286,
+    "active": 285,
     "by_status": {
-      "active": 286,
-      "parked": 46
+      "active": 285,
+      "parked": 47
     },
     "by_verdict": {
-      "C": 132,
+      "C": 131,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
