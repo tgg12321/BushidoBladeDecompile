@@ -566,3 +566,4 @@
 - 2026-07-23 00:18 func_80061710 s4 [permuter] OWNER-GATED — parked pending owner ruling: Permuter axis measured DEAD natively on 710: sole score-0 basin is the constant-staging cheat; deny-copy-source (~19k iters) yields no score-0. Every grind-advanceable axis now dead; owner-gated under 658's SOTN census (names 710).
 - 2026-07-23 00:37 func_800617C8 COMPLETED-C after 1 sessions.
 - 2026-07-23 00:53 func_80061ACC COMPLETED-C after 1 sessions.
+- 2026-07-23 01:05 func_80061EC0 COMPLETED-C after 1 sessions.
