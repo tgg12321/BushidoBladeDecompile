@@ -176,3 +176,25 @@ shipped as candidate.c with the 13 rules retired.
 - [s2] Dichotomy re-confirmed at the register level: every fold-defeat construct (memory dual-read OR register-level narrow-type PHI) belongs to the banned signedness-split family; the ONLY clean forms fold to raw*2 (floor 8). No clean sub-8 lever exists.
 
 - [s2] src/ left at the clean floor-8 form; func_8001F938 stays INCOMPLETE (search continues, per the standing owner ruling — family banned pending NEW SOTN-master-branch evidence).
+
+## s3 structural (2026-07-23) — pure UNSIGNED single-read: fold-defeat WITHOUT a dual view; ledger over-claim corrected; dichotomy re-proven
+- [s3] Independently re-derived the +0x270 residual from raw target asm (asm/funcs/func_8001F938.s, NOT handoff): .L8001FA60 = `lh v0,0x270; lhu v1,0x270; slti v0,v0,4; bnez; sll v0,v1,16(delay); addiu v1,0,3; sll v0,v1,16; sra v0,v0,15` — signed load drives the compare, UNSIGNED load drives the index, index UNFOLDED. Sibling .L8001FA98 (+0x27E) matches cleanly with a single `sll ,1` because its operand is a genuine SUM (vv0+vv1) written `*2` in C — no dual read there. Confirms the +0x270 dual-read asymmetry is intrinsic to that block.
+- [s3] Baseline re-confirmed THIS session (own measurement): clean floor-8 form (kind-split + branch-flip + single s16 read) = sandbox score 8, build_insns 105 (target 107). src/ had drifted back to HEAD's guarded dual-read (reviewer-FAILED) + non-split kind; re-applied the clean candidate.c form first.
+- [s3] NEW PROBE (never measured; NOT in the rejected bank): pure UNSIGNED single read `u32 probe=*(u16*)(a0+0x270); if(probe>=4U)raw=3; else raw=probe; idx=(raw<<16)>>15;` -> sandbox floor 6, build_insns 106. Disasm: ONE `lhu 0x270`, `sltiu v0,v1,4`, `sll v0,v1,16; sll; sra v0,v0,15` — the fold is DEFEATED (unfolded sll16;sra15 matching target) by a SINGLE typed read, no dual view / cast / split / branch-PHI. (tmp/grind/func_8001F938/s3/region_0x270_dichotomy.txt)
+- [s3] *** CORRECTS the s2/s2c over-claim *** "NO single-typed read defeats the fold; only a second TYPED memory view works." FALSE. A plain unsigned read defeats it (floor 6). Mechanism: GCC cannot prove a u16-typed value (bit15 may be set) fits signed-16, so `(x<<16)>>15 != x<<1` for it -> no fold. The signed s16 form folds (s16 provably fits) -> floor 8. So read-signedness alone toggles the fold.
+- [s3] NOT a candidate / KILLED: the unsigned read forfeits target's SIGNED compare — it emits `sltiu`, target has `slti` (semantically different for field>=0x8000: signed<0<4 uses field, unsigned>=4 uses 3). Floor 6 has BOTH the missing 2nd load AND the wrong compare; cannot reach 0 without adding a signed view = the pre-banned dual read. Strictly dominated by the floor-0 signed-cast-single-read.c.
+- [s3] DICHOTOMY re-proven from a fresh angle: a single typed read of +0x270 delivers {signed => fold => floor 8} XOR {unsigned => unfold-but-sltiu => floor 6}, never both. Target needs signed-compare AND unsigned/opaque-index of ONE field simultaneously; that requires two typed views = the pre-banned signedness-split family (already owner-ruled FAIL twice: decisions.md 2026-07-23 10:19 + 10:46). Structural axis remains EXHAUSTED for a clean sub-8; no owner-escalation/park state (owner directed "keep INCOMPLETE, search continues"). Next needed axis is NON-structural: the SOTN signedness-split-family census. src/ kept at the clean floor-8 form; candidate.c unchanged.
+
+- [s3] Independently re-derived (from raw asm/funcs/func_8001F938.s, not handoff) that target .L8001FA60 = `lh v0,0x270; lhu v1,0x270; slti v0,v0,4; bnez; sll v0,v1,16(delay); addiu v1,0,3; sll v0,v1,16; sra v0,v0,15`: the SIGNED load drives the compare and the UNSIGNED load drives the unfolded index.
+
+- [s3] Sibling .L8001FA98 (+0x27E) byte-matches with a single `sll ,1` because its operand is a genuine sum (vv0+vv1) written `*2` in C — no dual read — confirming the +0x270 dual-read asymmetry is intrinsic to that block, not a global codegen quirk.
+
+- [s3] Baseline this session (own measurement): clean floor-8 form = sandbox score 8, build_insns 105 (target 107). src/ had drifted back to HEAD's reviewer-FAILED guarded dual-read + non-split kind; re-applied clean candidate.c form.
+
+- [s3] NEW: pure unsigned single read -> sandbox floor 6, build_insns 106; disasm confirms fold defeated with ONE lhu (no dual view), but compare is sltiu (target: slti).
+
+- [s3] Dichotomy re-proven from a fresh angle: a single typed read of +0x270 gives {signed=fold=floor 8} XOR {unsigned=unfold-but-sltiu=floor 6}, never both. Target needs signed-compare AND unsigned/opaque-index of ONE field simultaneously = two typed views = the pre-banned signedness-split family.
+
+- [s3] Two owner ruling-requests already stand for this function (docs/grind/decisions.md 2026-07-23 10:19 and 10:46), both FAIL on (a) sanction-family and (b) canonical-asm-authorize; disposition (c) keep INCOMPLETE, search continues, NOT parked. So this is neither owner-gated nor a new ruling-request.
+
+- [s3] src/ left at the clean floor-8 form (candidate.c unchanged); no cheat in tree; 13 regfix rules remain (function INCOMPLETE).

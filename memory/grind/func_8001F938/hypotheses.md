@@ -95,8 +95,26 @@ dichotomy confirmed at register level. src/ kept at clean floor-8.
 - result: sandbox floor 4, build_insns 106 (target 107) — beats clean floor 8. But only ONE dereference: the u16 truncation materializes in-register (andi) where target has a SECOND memory load (lhu), so it is 1 insn short and cannot reach 0 without becoming the memory dual-read. Fresh cheat-reviewer FAIL (Tests 1/2/3/5): the u16 type has ZERO observable effect (algebraically verified ((s32)(u16)probe<<16)>>15 == (probe<<16)>>15 for all probe), so it exists only to defeat the fold = same signedness-split/CSE-defeat intent the Judge pre-banned in ANY spelling. 5th spelling; strictly dominated by the known floor-0 memory dual-read cheat.
 - verdict: KILLED
 
+## [s3] A pure UNSIGNED single read of +0x270 (no dual view/cast/split/PHI) defeats the (raw<<16)>>15 -> raw*2 fold and beats the clean floor 8.
+- mechanism: `u32 probe=*(u16*)(a0+0x270); if(probe>=4U)raw=3; else raw=probe; idx=(raw<<16)>>15;`. GCC cannot prove a u16-typed value (bit15 may be set) fits signed-16, so it does NOT fold (x<<16)>>15 to x<<1 (unlike the s16 form, which fits and folds). Emits unfolded sll16;sra15 matching target's shape.
+- probe: Applied the unsigned read to the +0x270 block (rest = clean floor-8 form); sandbox --disable all + objdump.
+- result: sandbox floor 6, build_insns 106 (target 107). Disasm: ONE lhu, sltiu, sll16;sll16;sra15 (fold defeated). CORRECTS the s2/s2c over-claim that "only a second TYPED memory view defeats the fold" — a single unsigned read does. BUT it forfeits target's SIGNED compare (emits sltiu, target has slti; semantically different for field>=0x8000). Floor 6 has the missing 2nd load AND the wrong compare; cannot reach 0 without adding a signed view = the pre-banned dual read. Dominated by floor-0 signed-cast-single-read.c.
+- verdict: KILLED. Re-proves the dichotomy from a fresh angle: single typed read gives {signed=fold=floor8} XOR {unsigned=unfold-but-sltiu=floor6}, never both. src/ kept at clean floor-8. rejected/unsigned-single-read.c.
+
 ## [s2] The s2 P2b claim 'NO register-level construct can force the opaque shape; only a second TYPED memory view of the field works' is correct.
 - mechanism: s2 only tested the NON-branched register mask `raw_or_3 = probe & 0xFFFF`, which GCC eliminates (subsumed by <<16) then folds on probe's sign-extension knowledge -> floor 8.
 - probe: Tested a DIFFERENT register-level construct: a branch-PHI narrow-type (u16) truncation, which s2 never measured.
 - result: FALSE. The branch-PHI u16 truncation IS a register-level (single-dereference) construct that defeats the fold and reaches floor 4. The correct statement: register-level fold-defeat exists, but it is still the signedness-split family (no semantic purpose) and still cannot byte-match without the 2nd memory load.
+- verdict: KILLED
+
+## [s3] A pure UNSIGNED single read of +0x270 (one deref, no cast/split/union/branch-PHI) defeats the (raw<<16)>>15 -> raw*2 fold and beats the clean floor 8.
+- mechanism: GCC 2.7.2 cannot prove a u16-typed value (bit15 may be set) fits signed-16, so (x<<16)>>15 is NOT equivalent to x<<1 for it and it keeps the unfolded sll16;sra15 pair matching target. The signed s16 form folds because s16 provably fits signed-16 (floor 8). Read-signedness alone toggles the fold.
+- probe: Applied `u32 probe=*(u16*)(a0+0x270); if(probe>=4U)raw=3; else raw=probe; idx=(raw<<16)>>15;` (rest of function = clean floor-8 form); sandbox --disable all + mipsel objdump of the sandbox .o.
+- result: sandbox floor 6, build_insns 106 (target 107). Disasm: ONE `lhu 0x270`, `sltiu v0,v1,4`, `sll v0,v1,16; sll; sra v0,v0,15` (fold DEFEATED). But it emits sltiu where target has slti (signed) and is missing target's 2nd load; cannot reach 0 without adding a signed view = the pre-banned dual read; semantically different for field>=0x8000; strictly dominated by the floor-0 signed-cast-single-read.c.
+- verdict: KILLED
+
+## [s3] The s2/s2c ledger claim 'NO single-typed read defeats the fold; only a second TYPED memory view of the field works' holds.
+- mechanism: s2/s2c only tested signed single-read (folds->floor8), the non-branched `&0xFFFF` register mask (GCC eliminates+folds->floor8), and the u16 branch-PHI truncation (floor4). They never tested a plain unsigned single-read comparison.
+- probe: Measured the untested pure-unsigned single-read spelling directly.
+- result: FALSE. A plain unsigned single read defeats the fold (floor 6, unfolded sll16;sra15) with ONE deref and no dual view. The corrected statement: read-signedness alone toggles the fold; unsigned unfolds (but forfeits the signed compare), signed folds.
 - verdict: KILLED
