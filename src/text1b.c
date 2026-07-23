@@ -836,22 +836,14 @@ void func_800494D4(s32 idx, s32 val) {
 }
 s32 func_8004954C(s32 arg0, s32 arg1, s32 arg2)
 {
-  register s32 var_a3 asm("$7") = 0;
-  register s32 var_v1 asm("$3") = 0;
-  volatile unsigned int pad;
-  s32 var_a0 = arg0;
-  if (arg1 > 0)
-  {
-    do
-    {
-      var_v1 += var_a0;
-      var_a3 += 1;
-      var_a0 -= 1;
+    s32 sum = 0;
+    s32 i;
+    for (i = 0; i < arg1; i++) {
+        /* FAKE: do-while(0) loop-note ref weighting flips the sum/i allocno
+           priority so sum seats in $v1 and i in $a3 (matches target). */
+        do { sum += arg0; arg0 -= 1; } while (0);
     }
-    while (var_a3 < arg1);
-  }
-  (void) var_a3;
-  return var_v1 + (arg2 - arg1);
+    return sum + (arg2 - arg1);
 }
 extern s16 D_80099C50[];
 extern s16 D_800EF980[];
