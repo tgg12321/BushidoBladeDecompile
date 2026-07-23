@@ -178,3 +178,50 @@ param-reuse-base-copy-cse-canon).
 - [s3] arm-split: build 108, score 11; else recompute at position N-3 (build 2c6c) vs target LAST (0x800458F8); higher sched1 launch priority from feeding the next call arg, not a tie.
 
 - [s3] Both residuals are RA/scheduling coin-flips; per difficult-is-not-impossible the matching C exists and the named remaining tool is the directed permuter on a clean single-function target.o.
+
+## s4 (permuter, 2026-07-23)
+- Clean single-function permuter workspace stood up (tmp/perm_80045878{,_arm,_arm2,_dir}):
+  full-TU honest-pipeline base.c (no regfix/asmfix), func region extracted .ent..end,
+  clean target.o from asm/funcs/func_80045878.s at offset 0 (prelude minus `.set gp=64`
+  for r3000). base_score 580 (HEAD chassis) / 540 (arm-split chassis). Setup + validate
+  scripts in tmp/grind/func_80045878/s4/.
+- FOUR chassis measured, --stack-diffs on, --stop-on-zero, all harvested+stopped:
+  * HEAD (fulltu random):      ~45.9k iters, base 580, BEST 250, no zero.
+  * arm-split (random):        ~45k iters,   base 540, BEST 210, no zero.
+  * arm-split perm_inline=0:   ~45k iters,   base 540, BEST 210, no zero.
+  * DIRECTED (this session):   21.5k iters,  base 540, BEST 210, no zero.
+- The DIRECTED chassis (frontier item 1, the axis the prior random-only runs skipped):
+  PERM_LINESWAP over the Gap-A else tail {s1[4]=-1; s1[3]=0; s3=recompute} +
+  PERM_GENERAL over the recompute spelling (a0--3 / a0+3 / (a0+1)+2), AND PERM_LINESWAP
+  over the 6 Gap-B tail stores + PERM_GENERAL for s1[11] value (a0+3 / live s3). This
+  EXHAUSTIVELY enumerates every statement ordering of BOTH residual regions (~26k combos).
+  Result: plateau 210 (== arm-split floor), NO sub-plateau find, NO zero.
+- The best forms across all chassis are re-finds of the known arm-split plateau (Gap A
+  recompute materialized-but-sched-early) + permuter synthetic temps (inline_fn wraps,
+  named `new_var`/`new_var2` intermediates — none of which are closing forms; all sit
+  at the same 210 plateau, i.e. noise-equivalent, not cheat-forms that matched).
+- CONCLUSION: the permuter (random over 3 chassis @~135k iters + directed exhaustive
+  ordering sweep) does NOT close either residual. This CONFIRMS the s3 verdict at the
+  search level: both residuals (Gap A recompute launch-priority; Gap B base-copy
+  callee->caller choice) are decided by cc1 local-alloc/sched1 tie-breakers BELOW the
+  reach of any C-statement ordering/spelling the permuter can produce. C-source mutation
+  is not the lever. Permuter modality is now measured dead for this function.
+- Artifacts: tmp/grind/func_80045878/s4/{setup_perm.sh,setup_arm.sh,setup_arm2.sh,
+  setup_dir.sh,monitor.sh,show_best.sh,dbg*.sh}; permuter workspaces
+  tmp/perm_80045878{,_arm,_arm2,_dir}/ (base.c, compile.sh, target.o, output-*);
+  telemetry in metrics/events.jsonl (4 permuter-launch + 4 permuter-harvest events).
+
+- [s4] Directed PERM_LINESWAP+PERM_GENERAL exhaustive sweep of BOTH residual regions (~26k orderings, 21.5k iters) plateaued at 210 == arm-split floor; no zero. C-statement ordering is not the lever for either coin-flip.
+- [s4] Random permuter over 3 structurally-distinct chassis (~135k iters total) + the directed sweep all top out at the same plateau (250 HEAD / 210 arm). Permuter modality measured dead: both residuals are cc1 local-alloc/sched1 tie-breaks below C-source-mutation reach.
+
+- [s4] Floor unchanged: sandbox --disable all score 10 (build_insns 107 vs target 108), src/text1a_c.c untouched this session.
+
+- [s4] Directed PERM_LINESWAP+PERM_GENERAL exhaustive sweep of BOTH residual regions (~26k orderings, 21.5k iters, -j8) plateaued at permuter-score 210 == arm-split floor; no zero. C-statement ordering/spelling is not the lever for either coin-flip.
+
+- [s4] Four permuter chassis total (HEAD-random, arm-split-random, arm-split-perm_inline=0, directed), all --stack-diffs --stop-on-zero, all harvested+stopped: best 250/210/210/210, ~156k iters combined, ZERO closing forms found.
+
+- [s4] Best-scoring permuter outputs are re-finds of the known arm-split plateau plus synthetic named temps (inline_fn, new_var/new_var2) — all sit at the same 210 plateau (noise-equivalent), none are cheat-forms that matched, none close the gap.
+
+- [s4] This CONFIRMS the s3 structural verdict at the search level: Gap A (else-recompute launch priority) and Gap B (base-copy callee->caller choice) are decided by cc1 local_alloc/sched1 tie-breakers below the reach of any C-source mutation the permuter can produce. Permuter modality is measured dead for this function.
+
+- [s4] All 4 permuter-launch + 4 permuter-harvest events logged to metrics/events.jsonl. No permuter processes left alive; no build-pipeline/rules/engine files touched.

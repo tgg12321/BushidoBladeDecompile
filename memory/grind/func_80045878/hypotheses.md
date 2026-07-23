@@ -40,6 +40,31 @@ applied the arm-split (Gap A materialized, build 108) and disassembled the tail
 — byte-identical to HEAD's tail (base=s1, move v0,s2). Gap A's presence does not
 touch Gap B. The gaps are INDEPENDENT; each needs its own solution.
 
+## [s4] Directed permuter on a clean single-function target.o closes one/both residuals (frontier item 1) — KILLED
+Statement: a directed permuter over the whole function (clean single-fn target.o at
+offset 0) finds a pure-C spelling that flips the Gap-B base-copy choice and/or anchors
+the Gap-A recompute last, reaching sandbox 0.
+Mechanism (premise): both residuals are RA/sched ties; permuter's structural mutations
+explore orderings/spellings outside the hand-search space.
+Probe: FOUR permuter chassis, --stack-diffs, --stop-on-zero, fresh-seed discipline:
+HEAD-random (base 580, 45.9k iters), arm-split-random (540, 45k), arm-split-perm_inline=0
+(540, 45k), and a DIRECTED chassis (this session): PERM_LINESWAP over the Gap-A else tail
++ PERM_GENERAL recompute spelling, AND PERM_LINESWAP over the 6 Gap-B tail stores +
+PERM_GENERAL for s1[11] — exhaustively enumerating every ordering of BOTH residual
+regions (~26k combos, 21.5k iters).
+Result: every chassis plateaus (250 HEAD / 210 arm-split); NO chassis reaches a
+sub-plateau find, NO zero. Best forms are re-finds of the known arm-split plateau +
+permuter synthetic temps (inline_fn/new_var), all at the same 210 — noise-equivalent,
+not closing forms. C-statement ordering/spelling is NOT the lever for either coin-flip.
+verdict: KILLED. Permuter modality measured dead. Both residuals are decided by cc1
+local-alloc/sched1 tie-breakers below the reach of any C-source mutation the permuter
+produces — consistent with the s3 structural verdict. The matching C (if it exists per
+difficult-is-not-impossible) is NOT reachable by permuter's C-source search; the remaining
+avenue is a novel structural insight not yet found, or (given ALL sanctioned axes —
+structural s2/s3 + permuter s4 — now measured dead and the function byte-matches only via
+10 regfix rules a few insns short in pure C) the endgame-lock disposition
+([[endgame-lock-disposition]] / owner policy 2026-07-20) at owner discretion.
+
 ## [s3] Structural levers exhausted for BOTH gaps — measured dead; residuals are RA/sched coin-flips
 - Gap B re-derived at greg RTL: ONE callee->caller copy, flipped choice.
   Fork `move v0,s2` (a0 dies mid-tail, base stays s1); target `addu v0,s1,zero`
@@ -126,4 +151,10 @@ touch Gap B. The gaps are INDEPENDENT; each needs its own solution.
 - mechanism: no pre-if dominating def => cse cannot fold the else recompute; scheduler should place it after the two else stores.
 - probe: Applied rejected/armsplit form; sandbox --disable all + disassembly of the else block.
 - result: build_insns 108 (recompute present), score 11. The recompute lands at build 2c6c (position N-3, before li v0,-1; sh v0,8(s1); sh zero,6(s1)); target keeps it LAST (0x800458F8). It is NOT a priority tie: the fresh single-def recompute feeds the next block's call arg (a0=s3), so sched1 gives it genuinely higher launch priority. No clean structural lever lowers that priority without changing bytes.
+- verdict: KILLED
+
+## [s4] A directed permuter over a clean single-function target.o finds a pure-C spelling that flips the Gap-B base-copy choice and/or anchors the Gap-A else recompute last, reaching sandbox 0 (frontier item 1).
+- mechanism: Both residuals are RA/scheduling ties; permuter's structural mutations were expected to explore orderings/spellings outside the hand-search space. Directed chassis: PERM_LINESWAP over the Gap-A else tail {s1[4]=-1;s1[3]=0;s3=recompute} + PERM_GENERAL over the recompute spelling (a0--3 / a0+3 / (a0+1)+2), AND PERM_LINESWAP over the 6 Gap-B tail stores + PERM_GENERAL for s1[11] value (a0+3 / live s3) — exhaustively enumerating every ordering of BOTH residual regions (~26k combos).
+- probe: Built clean workspace tmp/perm_80045878_dir (full-TU honest-pipeline base.c, func region extracted, clean target.o from asm/funcs/func_80045878.s at offset 0, prelude minus .set gp=64 for r3000). Launched via permuter_campaign.py --stack-diffs --stop-on-zero -j8; waited one in-turn ~8.5-min window; harvested+stopped.
+- result: 21519 iterations, base_score 540, BEST permuter-score 210 (== plain arm-split floor), NO zero, NO sub-plateau find. Corroborated by the 3 prior random chassis (HEAD base 580 best 250; arm-split base 540 best 210; arm-split perm_inline=0 base 540 best 210), ~135k iters combined, none reaching zero. Best forms across all chassis are re-finds of the arm-split plateau + permuter synthetic temps (inline_fn/new_var), all noise-equivalent at 210, none a closing form.
 - verdict: KILLED
