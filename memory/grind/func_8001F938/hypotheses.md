@@ -55,3 +55,22 @@ Applied in candidate.c. Fully consumed (no further gain expected alone).
 - probe: u16-first unconditional read then s16 read; disassemble.
 - result: floor 10 (worse). Single lhu + sll;sra sign-extend; NEVER two loads. Both read orders collapse to one load. The 2nd lhu is unreachable in pure C.
 - verdict: KILLED
+
+## s2 structural update (2026-07-23)
+
+### H2 — the +0x270 dual-load CSE wall — frontier item 2 EXHAUSTED / KILLED
+Structural probes measured this session:
+- union { s16 s; u16 u; } same-offset -> floor 5, ONE load (CSE merges). KILLED.
+- clean single-read (reuse probe, no re-read) -> floor 8 (honest clean floor).
+No semantically-purposeful pure-C construct produces the two adjacent same-address loads:
+the target's two loads have NO intervening op (no legit memory invalidation), +0x270 is an
+ordinary u16 accumulator (no dual-view field / union member / MMIO). Every two-load source is
+CSE-merged OR the reviewer-FAILED dual-typed read. VERDICT: KILLED (no natural two-load source).
+
+### H1 — kind-split: reviewer PASS this session (banked clean). floor 6 alone / part of floor 8 clean.
+
+### H-new (s2) — the dual-typed read is reviewer-FAILED but target PROVABLY requires it -> RULING
+Fresh cheat-reviewer FAILED the guarded dual-typed read (Tests 1/3/5) and the unconditional form
+was FAILED prior. Yet target's .L8001FA60 has `lh $v0,0x270; lhu $v1,0x270` adjacent, which under
+GCC 2.7.2 only comes from dual-typed C source. Reviewer routes this to the OWNER as a new-family
+policy question. => ruling-request (frontier item 3). Honest clean floor without it = 8.

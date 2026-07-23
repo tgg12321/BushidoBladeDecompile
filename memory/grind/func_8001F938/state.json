@@ -34,7 +34,9 @@
    "next_probe": "After exhausting frontier item 2, emit ruling-request asking whether the guarded dual-typed read already in HEAD (and the target) is sanctioned for this function."
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "Do NOT commit the dual-typed same-address read (any spelling: guarded, unconditional, union, or two-pointer). It is not SOTN-sanctioned and target-asm 'provably requires it' is not evidence that lowers the bar. If the grinder wants to pursue this construct it must first run a SOTN-master-branch evidence census for the signedness-split CSE-defeat family and bring that census back for an owner ruling; until then keep src/ at the clean floor-8 form and the function stays INCOMPLETE (search continues, not parked)."
+ ],
  "origin": "queue",
  "created": "2026-07-23T14:45:17.428783+00:00"
 }

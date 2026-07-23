@@ -136,3 +136,12 @@ shipped as candidate.c with the 13 rules retired.
 - [s1] Fields +0x6A/+0x270 are ordinary game-state entity-struct fields (entity base D_80101EC8, stride 0x44C, per sibling func_8001EEB4) - not MMIO/volatile.
 
 - [s1] Function is GRINDABLE (floor dropped this session) - NOT owner-gated.
+
+## s2 structural (2026-07-23) — floor-5 was NOT clean; honest clean floor is 8; dual-read -> ruling
+- [s2] Applied candidate (kind-split + branch-flip + guarded dual-typed read): sandbox floor 5, build_insns 108 CONFIRMED.
+- [s2] Instruction diff pins the ENTIRE residual to .L8001FA60 (+0x270 clamp/index). All other regions byte-match. Coupled fixpoint: target's `lhu $v1,0x270` (2nd same-address load, also fills lh's load-delay slot) is the SINGLE lever; if emitted, all 5 residual insns collapse (nop, move, andi->sll, li v0->v1, sll reg). Build CSE-merges to one `lh` + `move`+`andi`.
+- [s2] union { s16 s; u16 u; } at +0x270: floor 5, still ONE load. GCC 2.7.2 CSE merges union same-offset dual-typed reads too. KILLED (frontier item 2 union sub-probe).
+- [s2] CLEAN single-read form (else arm reuses `probe`, no re-read): floor 8, build_insns 105. This is the honest floor using ONLY reviewer-PASSED constructs. The s1 "floor 5 clean levers" was mischaracterized — 5 always relied on the dual-typed read in the else arm.
+- [s2] Fresh adversarial cheat-reviewer: kind-split = PASS (split-init family); guarded dual-typed read = FAIL (Tests 1/3/5, no semantic purpose — s16 and u16 provably equal in-range; only justification is "GCC CSE would merge"). Reviewer routes CSE-defeat-via-dual-typed-access to the OWNER as a NEW borderline-construct family needing SOTN evidence + ruling. (tmp/grind/func_8001F938/s2/cheat_reviewer_verdict.txt)
+- [s2] Frontier item 2 EXHAUSTED: no semantically-purposeful pure-C construct keeps two loads. The two target loads are adjacent with NO intervening op (no legit memory-invalidation); +0x270 is an ordinary u16 game-state accumulator (func_80027438 `*(u16*)(a0+0x270)+=a2`), no dual-view field/union member/MMIO. Every two-load source is either CSE-merged (union/alias/single-read) or the reviewer-FAILED dual-typed read.
+- [s2] => Frontier item 3 active: the target PROVABLY contains a construct (adjacent lh+lhu same address) the reviewer's Test-1 rejects. RULING-REQUEST emitted. src/ left at the CLEAN floor-8 form (no cheat in tree). candidate.c = clean floor-8 form.

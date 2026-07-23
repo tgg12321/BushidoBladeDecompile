@@ -1,36 +1,30 @@
-/* func_8001F938 (code6cac.c) — BEST FORM, honest sandbox floor 5 (build_insns 108).
- * Session s1 (recon). HEAD floor was 11. This form drops it to 5 with TWO pure-C
- * levers, both applied here:
+/* func_8001F938 (code6cac.c) — CLEAN best form, honest sandbox floor 8 (build_insns 105).
+ * Session s2 (structural). This is the best form using ONLY reviewer-PASSED constructs
+ * (no reviewer-FAILED dual-typed read). It is what src/ is left at.
  *
- *  1. kind-split  — `u32 kind_full = lhu(0x6A); u32 kind = kind_full & 0xFFFF;`
- *     provokes target's redundant `lhu $a1,0x6A; andi $v1,$a1,0xFFFF` and fully
- *     matches the KIND comparison region ($5/$3 split + the andi). BORDERLINE:
- *     it is a redundant-mask / split-init-family construct; the 2026-06-15
- *     reviewer called it "codegen-steering but secondary, dual-use with the
- *     SANCTIONED split-init-accumulation". Needs a fresh cheat-reviewer PASS
- *     before it can be banked as the clean floor. Removing it alone raises floor
- *     back toward 11.
+ * IMPORTANT CORRECTION (s2): the s1 ledger recorded "floor 5 with clean pure-C levers
+ * (kind-split + branch-flip)". That 5 was NOT clean — it always relied on the guarded
+ * dual-typed read `else raw_or_3 = (u16)*p;` (HEAD carried it). A FRESH adversarial
+ * cheat-reviewer FAILED that construct this session (Tests 1/3/5 — no semantic purpose;
+ * see rejected/guarded-dual-typed-read.c + tmp/grind/func_8001F938/s2/cheat_reviewer_verdict.txt).
+ * With that construct EXCLUDED, the honest floor is 8, not 5.
  *
- *  2. branch-sense flip — write the ternary as `if (probe >= 4) raw_or_3 = 3;
- *     else raw_or_3 = (u16)*p;` (a plain if/else, single guarded read). This is
- *     UNAMBIGUOUSLY clean C and flips GCC's compare from `slti;beqz` to target's
- *     `slti;bnez`. Worth ~1 distance on top of kind-split.
+ * PASSED constructs kept here:
+ *   1. kind-split — `u32 kind_full = lhu(0x6A); u32 kind = kind_full & 0xFFFF;`
+ *      Reviewer PASS: legitimate split-init-family reuse (kind_full -> range checks,
+ *      kind -> == checks; mirrors target `lhu $a1; andi $v1,$a1,0xFFFF`).
+ *   2. branch-sense flip — `if (probe >= 4) raw = 3; else raw = probe;` UNAMBIGUOUS clean C.
  *
- * RESIDUAL 5 (all trace to ONE root cause — see rejected/dual-type-probe-load.c):
- *   Target's ternary emits TWO unconditional same-address loads
- *   `lh $v0,0x270; lhu $v1,0x270`. GCC 2.7.2 CSE ALWAYS merges two same-address
- *   HImode reads into ONE load, materializing the other signedness in-register
- *   (sign->zero via `andi`, zero->sign via `sll;sra`). Measured this session:
- *     - s16-first guarded  -> lh + move + andi  (this form's shape)
- *     - u16-first          -> lhu + sll;sra     (score 10, worse)
- *   So the second `lhu` is UNREACHABLE from pure C under this compiler. The 5
- *   residual insns are: nop+move (the missing 2nd load), andi-vs-sll delay slot,
- *   and the coupled $v0-vs-$v1 register choice for the `= 3` arm (target's value
- *   lives in $v1 from the lhu; our build derives it into $v0).
- *   The only measured way past 5 (floor 2) was the UNCONDITIONAL split-into-two-
- *   variables preload, which the 2026-06-15 reviewer FAILED as codegen-steering
- *   (rejected/dual-type-probe-load.c) — and even THAT did not produce two loads,
- *   it only matched more register/branch shape.
+ * RESIDUAL 8 root cause (coupled fixpoint, see s2/region_0x270_analysis.txt):
+ *   Target's .L8001FA60 emits TWO adjacent same-address loads `lh $v0,0x270; lhu $v1,0x270`
+ *   (the lhu also fills lh's load-delay slot). GCC 2.7.2 CSE ALWAYS merges two same-address
+ *   HImode reads because they are provably equal in-range (field<4 => top bit 0 => sign/zero
+ *   extension identical). No semantically-purposeful pure-C form produces the second load:
+ *   union member access (s2, floor 5), two-pointer alias, volatile, and both read orders all
+ *   fail. The ONLY C form that emits the two loads is the dual-typed read — which the reviewer
+ *   FAILS. => RULING-REQUEST: is the dual-typed read (which target PROVABLY contains) sanctioned
+ *   for this function? If sanctioned, the guarded form reaches floor 5 and the unconditional
+ *   form floor 2 (bi=108, still +1 vs target 107 — even then not byte-proven).
  */
 void func_8001F938(u8 *arg0)
 {
@@ -79,7 +73,7 @@ multpath_start:
         if (probe >= 4) {
             raw_or_3 = 3;
         } else {
-            raw_or_3 = (s32)*((u16 *)(arg0 + 0x270));
+            raw_or_3 = probe;
         }
         idx = ((raw_or_3 << 16) >> 15);
     }
