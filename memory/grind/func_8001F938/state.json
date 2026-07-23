@@ -1,8 +1,8 @@
 {
  "func": "func_8001F938",
  "file": "code6cac",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 0,
@@ -15,23 +15,19 @@
    "floor": 5,
    "modality": "recon",
    "headline": "Recon: floor 11->5 with clean pure-C levers (kind-split + branch-flip); residual 5 all traces to GCC 2.7.2 CSE merging the +0x270 dual-typed read to one load (target's 2nd lhu unreachable in pure C)."
+  },
+  {
+   "session": 2,
+   "floor": 8,
+   "modality": "structural",
+   "headline": "Structural: u16-local-PHI truncation DOES defeat the +0x270 fold at register level (floor 4) but is a 5th spelling of the pre-banned signedness-split family (reviewer FAIL); corrects s2 over-claim; cl"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "kind-split is a sanctioned (split-init/duplicated-statement family) construct, banking floor 6 cleanly.",
-   "mechanism": "Redundant-mask into a second pseudo; mirrors sibling codegen; 2026-06-15 reviewer called it dual-use with sanctioned split-init-accumulation.",
-   "next_probe": "Run cheat-reviewer on the kind-split in isolation; if PASS, banked floor is 5-6 with H3."
-  },
-  {
-   "hypothesis": "A semantically-purposeful C construct keeps two HImode loads of +0x270 (union/overlapping field, or a genuine memory-invalidating op between reads).",
-   "mechanism": "CSE only merges when the MEM stays available; a real intervening store or a distinct union member could keep both loads without codegen-steering.",
-   "next_probe": "Inspect the entity struct layout at +0x270 for a legit dual-view field; grep other +0x270 accessors for signed+unsigned use with purpose."
-  },
-  {
-   "hypothesis": "If no natural two-load source exists, the +0x270 second-lhu gap is a reviewer-tension/ruling item (target provably contains a construct the reviewer's Test-1 rejects).",
-   "mechanism": "GCC 2.7.2 CSE makes the 2nd lhu unreachable from any single-purpose C; only codegen-steering reaches it, yet the shipped binary has it.",
-   "next_probe": "After exhausting frontier item 2, emit ruling-request asking whether the guarded dual-typed read already in HEAD (and the target) is sanctioned for this function."
+   "hypothesis": "No pure-C construct outside the pre-banned signedness-split family can beat the clean floor 8 at +0x270.",
+   "mechanism": "The +0x270 clamp inherently needs a signed compare (slti) AND an unsigned/opaque index value (to prevent the (raw<<16)>>15 -> raw*2 fold that target does NOT do). A single non-cheat value cannot be simultaneously known-signed and unsigned-opaque. Every fold-defeat measured to date (memory dual-read, union, two-pointer, single-u16+cast, and now register-level u16-PHI truncation) is the banned family.",
+   "next_probe": "Structural axis is exhausted for a clean sub-8. The remaining disposition is the standing OWNER ruling item: sanction the signedness-split family for this function with NEW SOTN-master-branch evidence, canonical-asm-authorize the .L8001FA60 region, or keep INCOMPLETE. A future non-structural session should run the SOTN signedness-split-family census if that axis is opened; do NOT re-measure the structural fold-defeat spellings (memory dual-read, union, two-pointer, u16-cast, u16-local-PHI all measured dead / banned)."
   }
  ],
  "judge_constraints": [
