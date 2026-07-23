@@ -151,3 +151,25 @@ The two sanctioned structural floors predicted from siblings (H2) were UNMEASURE
 - [s2] Mechanism (confirmed on 710): interleaved mask is live-across-loads -> local-alloc gives longer-lived pseudo the lower reg -> mask=$v0/loads=$v1 = v0<->v1 wall (9); mask-first frees the conflict but loses the interleave (6). Only the constant-staging copy-preference reaches interleave+mask=$v1 (=0, policy-blocked, candidate.c).
 
 - [s2] src/text1b.c restored to HEAD pinned form after all measurements; git diff clean; oracle intact.
+
+## == grind s3 (STRUCTURAL modality), 2026-07-22 ==
+
+Mandate: structural. s2 already reported structural dead (floor 6); before rubber-stamping that per difficult-is-not-impossible, I swept the mask-position permutations NOT in the s2 rejected bank or WIP list. Four genuinely-untried positions measured, all pin-free. Artifact: tmp/grind/func_80061710/s3/structural_permutation_measurements.txt; rejected/mask-position-permutation-sweep-floor9.c.
+
+- [s3] baseline pin-free re-confirmed = 9 (46/46, 0 rules).
+- [s3] Form [C] mask split across load2 (mask=... after load1, D_800A3464=mask after load2's store) = sandbox 9.
+- [s3] Form [A] mask atomic block after load1 = sandbox 9.
+- [s3] Form [E] compute-early/store-late (mask computed before all loads, stored interleaved late) = sandbox 9.
+- [s3] restored HEAD pinned form = 9 (oracle sanity; git diff clean).
+- [s3] DECISIVE: only mask-dies-before-load1 (V7 leading block) reaches sub-9 (=6); EVERY mask position at/after load1 -> 9. The mask-position permutation space is now exhaustively mapped (V7=6, MLS=7, all four interleave/late positions=9, constant-staging copy=0/policy-blocked). Interleave (target schedule) and mask=$v1 are mutually exclusive in pure structure — confirmed independently on 710, not just inherited from siblings.
+- [s3] STRUCTURAL AXIS re-confirmed DEAD with fresh 710 measurements. Floor unchanged at 6 sanctioned. No structural form reaches committable 0. Remaining disposition is the owner SOTN census (policy, not grind) under func_80061658's escalation which names 710. Next grind modality per ladder: escalation (file owner-gated citing the 658 census). src restored; oracle intact.
+
+- [s3] s3 pin-free baseline re-confirmed = 9 (46/46, 0 rules); restored HEAD pinned form also = 9 (oracle sanity, git diff clean).
+
+- [s3] Four genuinely-untried mask-position permutations measured on 710, none in the s2 bank/WIP: [C] mask split across load2 = 9, [A] mask atomic after load1 = 9, [E] compute-early/store-late = 9, [HEAD-posn] mask atomic after load2 = 9.
+
+- [s3] Mask-position permutation space now exhaustively mapped: V7 leading block = 6 (unique sub-9 sanctioned form), middle-load block-local split = 7 (s2), all interleave/late positions = 9, constant-staging copy = 0 (policy-blocked coercion, candidate.c).
+
+- [s3] Mechanism confirmed independently on 710 (not just inherited from siblings): interleave (target schedule) and mask=$v1 are mutually exclusive in pure structure because an interleaved mask is live-across the loads and GCC 2.7.2 local-alloc gives the longer-lived pseudo the lower-numbered reg.
+
+- [s3] STRUCTURAL AXIS re-confirmed DEAD with fresh 710 measurements; sanctioned floor unchanged at 6. The sole 0-basin is the constant-staging copy-preference coercion, owner-gated under func_80061658's OWNER-ESCALATION (docs/grind/decisions.md 2026-07-23) which explicitly names func_80061710 as a cluster member the SOTN census closes in one pass.
