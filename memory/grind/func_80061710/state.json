@@ -1,8 +1,8 @@
 {
  "func": "func_80061710",
  "file": "text1b",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 0,
@@ -15,23 +15,29 @@
    "floor": 9,
    "modality": "recon",
    "headline": "Recon: 710 is the func_80061658 subfamily \u2014 constant-staging reaches sandbox 0 but is the Judge-FAILed pending-census coercion; sanctioned floor 9. Cluster owner-gated under 658's escalation."
+  },
+  {
+   "session": 2,
+   "floor": 6,
+   "modality": "structural",
+   "headline": "Structural axis measured DEAD on 710: V7 mask-atomic-first=6, middle-load split=7 (both pin-free, confirming sibling predictions); no structural form reaches committable 0, the sole 0-basin is the pol"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The 710 disposition is a policy ruling reserved to the owner, resolved by func_80061658's pending SOTN-master-branch census on the constant-staging family.",
-   "mechanism": "710's only sandbox-0 form is the constant-staging coercion (local-alloc.c:472 copy-preference); 658's escalation names 710 as a cluster member the census closes in one pass. No grindable axis remains.",
-   "next_probe": "ESCALATION-modality session: file/point owner-gated for 710 citing func_80061658's escalation (docs/grind/decisions.md 2026-07-23), or let the driver park the cluster with 658 pending the owner ruling."
+   "hypothesis": "Best SANCTIONED (committable) floor for 710 is 6 (V7 mask-atomic-first); no structural form reaches 0.",
+   "mechanism": "Interleave (target schedule) vs register-layout are mutually exclusive in pure structure: interleaved mask is longer-lived -> gets $v0 -> v0<->v1 wall=9; mask-first frees registers but drops the interleave -> 6.",
+   "next_probe": "None grindable in structural modality \u2014 floor 6 is the sanctioned wall. Do not re-run structural forms."
   },
   {
-   "hypothesis": "Best SANCTIONED (committable) floor for 710 is 6-7, never 0.",
-   "mechanism": "mask-atomic-first V7 (both reuse $v0) -> 6 on 611A4; middle-load block-local split -> 7 on 658; every interleaved mask position sits at the v0<->v1 wall (9).",
-   "next_probe": "If structural modality is assigned, confirm the 6/7 sanctioned floor on 710 (apply V7 + middle-load block-local split); do NOT expect a committable 0."
+   "hypothesis": "The only sandbox-0 form is the constant-staging copy-preference (H1), a register-CHOICE coercion outside every sanctioned family, owner-gated under func_80061658's SOTN census.",
+   "mechanism": "val=0x10FF10; mask=val; injects a local-alloc.c:472 copy-suggestion steering find_free_reg off $v0 for the interleaved mask; identical construct the Judge FAILed for sibling 658.",
+   "next_probe": "ESCALATION-modality session: file/point owner-gated for 710 citing func_80061658's OWNER-ESCALATION (docs/grind/decisions.md 2026-07-23), which names 710 as a cluster member the census closes in one pass."
   },
   {
-   "hypothesis": "No clean permuter basin exists for 710.",
-   "mechanism": "658 s4b deny-copy-source (30,762 iters) produced no score-0; the score-0 basin is uniquely the constant-staging copy the Judge FAILed.",
-   "next_probe": "Skip permuter for 710 unless the owner sanctions the constant-staging family; a run would only re-find the H1 coercion."
+   "hypothesis": "No clean permuter basin exists for 710 (H3, KILLED at family level).",
+   "mechanism": "658 s4b deny-copy-source (30,762 iters) produced no score-0; the score-0 basin is uniquely the constant-staging copy.",
+   "next_probe": "Skip permuter \u2014 it would only re-find the H1 coercion."
   }
  ],
  "judge_constraints": [],

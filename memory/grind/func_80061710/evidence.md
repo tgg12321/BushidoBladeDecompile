@@ -129,3 +129,25 @@ is resolved by the same owner ruling pending under func_80061658's escalation.
 - [s1] Do-not-re-derive (exhausted on siblings, same tail/residual/root cause): structural splits >=7 (block-local middle-load -> 7; mask-atomic-first V7 -> 6; interleaved mask -> 9 wall); walking-pointer *p++ adds an addiu (insn count breaks); permuter deny-copy-source (658 s4b, 30,762 iters) -> NO score-0; cc1psx calibration hits the same wall; scan_hand_coded LOW 0/8.
 
 - [s1] src restored to HEAD pinned form after measurement (main oracle intact). Best form (constant-staging, sandbox 0) saved to candidate.c annotated POLICY-BLOCKED; not surfaced as a match per no-new-park-categories 'vet before surfacing'.
+
+## == grind s2 (STRUCTURAL modality), 2026-07-22 ==
+
+The two sanctioned structural floors predicted from siblings (H2) were UNMEASURED on 710 until now. Measured both, plus diffed the V7 residual at instruction level. Artifact: tmp/grind/func_80061710/s2/structural_measurements.txt.
+
+- [s2] Baseline re-confirmed: HEAD pinned form, sandbox --disable all = 9 (46/46, 0 rules).
+- [s2] V7 mask-atomic-first (pin-free, mask store hoisted before the 3 loads) = sandbox 6 (46/46, 0 rules). CONFIRMS H2's sibling-611A4 prediction on 710. Best SANCTIONED (non-coercion, 0-rule) floor for 710 = 6. Saved rejected/v7-mask-atomic-first-floor6.c.
+- [s2] Middle-load block-local split (2nd load in a { } scope) = sandbox 7 (46/46, 0 rules). CONFIRMS H2's sibling-658 prediction on 710. Saved rejected/middle-load-block-local-split-floor7.c.
+- [s2] V7 residual diffed (objdump sandbox .o vs asm/text1b.s): the 6 is PURELY schedule. V7 emits mask as a LEADING BLOCK -> mask+all 3 loads reuse $v0 (register conflict freed); target INTERLEAVES the mask lui/ori/sw between the load/store pairs with loads=$v0, mask=$v1. Interleaved (target-schedule) forms make mask live-across-loads -> GCC 2.7.2 local-alloc gives the longer-lived mask the lower reg ($v0), loads get $v1 -> v0<->v1 wall = 9. Only the constant-staging copy-preference reaches interleave+mask=$v1 (=0, policy-blocked).
+- [s2] STRUCTURAL AXIS MEASURED DEAD on 710: best sanctioned floor 6 (V7), no structural form reaches committable 0. Sanctioned floor improved 9->6 this session. src restored to HEAD pinned form (oracle re-verified = sandbox 9). No permuter/forensics run (H3 killed at family level; forensics done on 611A4 s6/s7).
+
+- [s2] Baseline HEAD pinned form: sandbox --disable all = 9 (46/46, 0 rules); re-verified after src restore = 9 (oracle intact).
+
+- [s2] V7 mask-atomic-first (pin-free, mask block hoisted before the 3 loads) = sandbox 6 (46/46, 0 rules) — new best sanctioned floor for 710 (was 9); confirms sibling 611A4 prediction. Saved memory/grind/func_80061710/rejected/v7-mask-atomic-first-floor6.c.
+
+- [s2] Middle-load block-local split (2nd load in a { } scope) = sandbox 7 (46/46, 0 rules); confirms sibling 658 prediction. Saved memory/grind/func_80061710/rejected/middle-load-block-local-split-floor7.c.
+
+- [s2] V7 residual diffed at instruction level (objdump tmp/sandbox/func_80061710/text1b.o vs asm/text1b.s): V7 emits mask+all 3 loads in $v0 as a leading block; target interleaves mask lui/ori/sw into the load/store web with loads=$v0, mask=$v1. The 6 diffs are purely the schedule (leading-block vs interleave).
+
+- [s2] Mechanism (confirmed on 710): interleaved mask is live-across-loads -> local-alloc gives longer-lived pseudo the lower reg -> mask=$v0/loads=$v1 = v0<->v1 wall (9); mask-first frees the conflict but loses the interleave (6). Only the constant-staging copy-preference reaches interleave+mask=$v1 (=0, policy-blocked, candidate.c).
+
+- [s2] src/text1b.c restored to HEAD pinned form after all measurements; git diff clean; oracle intact.
