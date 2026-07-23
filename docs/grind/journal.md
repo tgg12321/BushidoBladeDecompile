@@ -564,3 +564,4 @@
 - 2026-07-22 23:36 func_80061710 s2 [structural] floor=6: Structural axis measured DEAD on 710: V7 mask-atomic-first=6, middle-load split=7 (both pin-free, confirming sibling predictions); no structural form reaches committable 0, the sole 0-basin is the policy-blocked constant-staging copy-preference.
 - 2026-07-22 23:44 func_80061710 s3 [structural] floor=6: Structural re-confirmed DEAD on 710: 4 untried mask-position permutations all =9; only V7 leading-block reaches sub-9 (=6). Ladder should advance to escalation.
 - 2026-07-23 00:18 func_80061710 s4 [permuter] OWNER-GATED — parked pending owner ruling: Permuter axis measured DEAD natively on 710: sole score-0 basin is the constant-staging cheat; deny-copy-source (~19k iters) yields no score-0. Every grind-advanceable axis now dead; owner-gated under 658's SOTN census (names 710).
+- 2026-07-23 00:37 func_800617C8 COMPLETED-C after 1 sessions.
