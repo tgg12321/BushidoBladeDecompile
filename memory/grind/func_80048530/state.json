@@ -1,0 +1,40 @@
+{
+ "func": "func_80048530",
+ "file": "text1b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 0,
+   "floor": 12,
+   "modality": "wip-import",
+   "headline": "floor imported from memory/wip checkpoint"
+  },
+  {
+   "session": 1,
+   "floor": 10,
+   "modality": "recon",
+   "headline": "Sibling func_800483DC base-routing idiom drops floor 11->10 (clean pure C); c/d sign-extend fix killed (cascades to 22 via v1-walker scratch collision)."
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Make the walker register DEAD-and-reusable at the d-load so GCC reuses it as the d sign-extend scratch, mirroring target's lhu v0,0(v1); lhu v1,2(v1).",
+   "mechanism": "The walker's last live use must be the d-load itself; nothing after (incl. entry+=base) may reference it. Then GCC can allocate the d sign-extend scratch onto the just-freed walker reg instead of pushing the walker out.",
+   "next_probe": "From candidate.c (floor 10), reorder so d is the final walker read and entry+=base precedes the c/d loads; try loading d before c, or read c/d off a fixed base with no post-increment past c so the pointer is dead at d; sandbox each."
+  },
+  {
+   "hypothesis": "Fix the move t0,v1 prologue scheduling (target emits the base copy before the sw ra/sw s0 stores).",
+   "mechanism": "Emitting base=arg0 earlier in source may schedule the copy into the prologue region ahead of the register saves.",
+   "next_probe": "Assign base=arg0 as the very first statement (before the index computation); sandbox."
+  },
+  {
+   "hypothesis": "Permuter campaign from the floor-10 base can find the combined register/scheduling lever.",
+   "mechanism": "Clean single-function target at offset 0; the base score is now real weighted diff (10), so randomization + directed PERM macros have gradient.",
+   "next_probe": "permuter_campaign from candidate.c, --stop-on-zero, fresh-seed windows via wait; harvest --stop in-turn."
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-23T21:08:18.169432+00:00"
+}
