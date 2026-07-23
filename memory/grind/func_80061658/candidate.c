@@ -1,35 +1,37 @@
-/* func_80061658 — best NON-CHEAT form. Floor 7 (honest sandbox --disable all),
- * improved from s1 floor 9 via Lever A (block-local split, register-alloc-pure-c.md).
- * Pure C, zero pins/rules. Apply this body to src/text1b.c to resume from floor 7.
+/* func_80061658 — BYTES-PROVEN pure-C form (honest sandbox --disable all = 0,
+ * rules_dropped 0, zero pins/__asm__ this func). Found by the s4 directed
+ * permuter (7 independent score-0 finds). PENDING OWNER RULING — see
+ * tmp/grind/outcome_func_80061658.json (result: ruling-request) and the s4
+ * evidence entry. NOT yet accepted; src is reverted to the HEAD pinned form
+ * until the owner classifies the construct.
  *
- * MECHANISM (s2, RTL-confirmed): the honest gap is a register-allocation choice.
- *   - HEAD byte-match needs pins t->$2(v0), mask->$3(v1) (cheat, stripped by sandbox).
- *   - Unpinned single-temp form (s1 floor-9): load-temp t=$3(v1), mask const=$2(v0)
- *     — a PURE v0<->v1 swap, target-identical schedule. Root cause: mask's two sets
- *     (li + ori) are RMW-chained => ONE contiguous quantity => handled by local_alloc,
- *     which runs BEFORE global_alloc and grabs v0. t's three loads are DISJOINT ranges
- *     => t goes to global_alloc => gets leftover v1. local-before-global seats mask@v0.
- *   - This Lever-A form (below): splitting the MIDDLE load into a block-local `u`
- *     makes `u` a local pseudo born before mask => u grabs v0, mask correctly takes v1.
- *     But the shared t (loads 1&3, still 2 disjoint global ranges) scatters to a0, and
- *     the block-local (no anti-dep) lets the scheduler hoist load2, DISTORTING the
- *     interleave. Net: mask@v1 (target-correct) but load1/load3@a0 + schedule shift = 7.
+ * THE LEVER (all 7 finds agree): stage the mask constant 0x10FFFF through the
+ * ALREADY-USED local `val` (`val = 0x10FFFF; mask = val;`) instead of the
+ * natural `mask = 0x10FFFF;`. `val` already holds 0x21000C/D in the switch and
+ * is dead after it; reusing it to carry the mask gives `mask = val` a COPY
+ * source. Net RA effect (permuter-measured, matches s1-s3 RTL): mask lands in
+ * $v1 and the reused 3-death load-temp `t` wins $v0 — the exact target
+ * allocation that the pins forced. Placement of `val = 0x10FFFF;` among the
+ * loads varies across finds; the copy chain is the invariant.
  *
- * TENSION (the wall to 0): single-t gives the TARGET SCHEDULE but wrong RA (mask@v0);
- * any split gives better RA (mask@v1) but breaks the SCHEDULE. To reach 0 you need BOTH
- * — the single reused load-temp @ v0 (for the interleave) AND mask @ v1. That requires
- * the disjoint-range shared load-temp to win v0 over the RMW-chained local mask, which
- * local-before-global allocation forbids for these value shapes. No grouping-preserving
- * structural transform flips the local/global classification. Path to 0 = directed
- * permuter over the tail RA structure (different modality), NOT more structural splits.
+ * MECHANISM (why it flips the s1-s3 wall): the wall was local-alloc.c:472 —
+ * mask (reg_n_deaths==1) → local_alloc → grabs $v0 (lowest free reg, MIPS has
+ * no REG_ALLOC_ORDER, no copy-suggestion); the 3-death load-temp → global_alloc
+ * → leftover $v1. Staging through `val` makes `mask` a copy of a reused pseudo,
+ * so mask carries a copy-preference and val's multi-death changes the class
+ * disposition — steering find_free_reg off $v0 for mask. This is precisely the
+ * "copy-suggestion" escape the s2/s3 frontier named as the unmet need.
  *
- * ALTERNATIVE PERMUTER BASE (floor-9, pure RA swap, CORRECT target schedule) — likely a
- * cleaner permuter start than the 7-form since only RA differs (see evidence.md):
- *   func_80060A68();
- *   t = arg0[0]; D_800F1140 = t;
- *   t = arg0[1]; D_800F1144 = t;
- *   mask = 0x10FFFF; D_800A3464 = mask;
- *   t = arg0[2]; D_800F1148 = t;
+ * CLASSIFICATION UNCERTAINTY (why ruling-request, not candidate-ready):
+ * live code (no dead store), FAKE-annotated, lever-exhaustion documented (s1-s3)
+ * — it is in the SPIRIT of the SOTN-sanctioned "variable reuse for RA control"
+ * family (`randy = basePoint.x; baseX = randy;`). BUT layer-1 cheat-reviewer
+ * FAILed it: the existing BB2 sanctions (staged-value-reused-variable = sched.c
+ * priority mechanism, staging a LOAD; defeat-licm-hoist-var-reuse = loop-scoped)
+ * do NOT cover staging a CONSTANT through a reused local to change local-alloc
+ * register CHOICE on STRAIGHT-LINE code. That is arguably a new technique-family
+ * application requiring an SOTN evidence pass + owner sign-off per
+ * review-discipline-before-commit. Cannot self-approve (prime directive).
  */
 void func_80061658(s32 *arg0, s32 arg1) {
     s32 *v1 = (s32 *)&D_800F116C;
@@ -57,8 +59,11 @@ void func_80061658(s32 *arg0, s32 arg1) {
     }
     func_80060A68();
     t = arg0[0]; D_800F1140 = t;
-    { s32 u = arg0[1]; D_800F1144 = u; }   /* Lever A: block-local split -> mask@v1 */
-    mask = 0x10FFFF;
+    t = arg0[1]; D_800F1144 = t;
+    val = 0x10FFFF; /* FAKE: stage mask const through reused `val` so the copy
+                       lands mask in $v1 and the load-temp wins $v0 (local-alloc
+                       copy-preference); structural axis exhausted s1-s3. */
+    mask = val;
     D_800A3464 = mask;
     t = arg0[2]; D_800F1148 = t;
 }

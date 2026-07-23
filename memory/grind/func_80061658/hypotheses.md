@@ -122,3 +122,25 @@ constant; its placement is inert, KILLED s1).
 - probe: Regenerated greg/lreg dumps from the floor-9 pure form (s1/s2 dumps were gitignored+gone); confirmed pseudo 75 (t) in global list -> v1, pseudo 76 (mask) absent from global list -> v0 via local alloc. Read local-alloc.c:460-478 and :1533-1556; grepped REG_ALLOC_ORDER; measured the struct-copy escape.
 - result: Structural modality exhausted with a source-level proof. Best floor stays 7 (s2 middle-split; correct-schedule pure-swap base stays 9). Residual is class-wall, not tie.
 - verdict: CONFIRMED
+
+## [s4] Directed permuter finds a byte-neutral pure-C form reaching honest sandbox 0.
+- statement: A permuter over the floor-9 pure-swap tail finds a byte-neutral structure that steers local-alloc off $v0 for the mask, letting the load-temp win $v0 while mask stays $v1.
+- mechanism: Stage the mask constant through the already-used local `val` (`val = 0x10FFFF; mask = val;`). The `mask = val` copy gives mask a copy-preference and val's reuse (multi-death) changes the class disposition, so find_free_reg does not hand mask $v0. mask -> $v1, reused 3-death load-temp -> $v0 = target.
+- probe: s4 permuter campaign (7 score-0 finds); output-0-2 applied to src -> engine sandbox --disable all = 0 (46/46, rules_dropped 0, zero pins/asm).
+- result: FRONTIER #1 CONFIRMED — a pure-C sandbox-0 form exists and is bytes-proven. The residual was never a genuine wall.
+- verdict: CONFIRMED (bytes), but layer-1 cheat-reviewer FAIL on classification -> ruling-request (not accepted; awaiting owner).
+
+## s4 frontier (for the owner / next session)
+1. OWNER RULING NEEDED: is `val = 0x10FFFF; mask = val;` (staging a constant through a
+   reused live local to change local-alloc register CHOICE on straight-line code)
+   sanctioned as COMPLETED-C (SOTN variable-reuse spirit), or does it need its own
+   SOTN-master evidence pass + sign-off as a new technique-family application? All
+   prereqs present: live code, FAKE annotation, lever-exhaustion (s1-s3), named GCC
+   mechanism (local-alloc.c:472 copy-preference).
+2. If SANCTIONED: apply candidate.c to src (revert the 2 pins to `s32 t; s32 mask;`,
+   swap the mask store to the staged form), sandbox=0 is already proven, retire +
+   queue done. The cluster siblings (func_80061710/617C8/618B4/611A4/6133C) share the
+   t=$2/mask=$3 pattern — the SAME lever likely closes them (verify each).
+3. If NOT sanctioned: the function is a genuine endgame lock; owner-gate per
+   endgame-lock-disposition-policy (but a proven pure-C form exists, so it is NOT a
+   register-class wall — the block is purely policy, not reachability).

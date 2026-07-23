@@ -151,3 +151,36 @@ proposal — no-new-park-categories forbids register-rotation infrastructure.)
 - [s3] KILLED frontier #2: 3-word struct block copy scores 22 (build_insns 34 vs 46) -- lw/sw pairs still die 3x and the mask interleave is dropped; no block-copy spelling makes the load-temp one contiguous live range.
 
 - [s3] Floor unchanged this session (best 7 = s2 middle-load block-local split; pure-swap base 9). Structural axis measured-dead; permuter (frontier #1) remains open, so still grindable / NOT owner-gated.
+
+## s4 — PERMUTER FOUND A BYTES-PROVEN pure-C form (floor 7 -> 0) — PENDING OWNER RULING
+- [s4] Built a clean single-fn permuter workspace (tmp/grind/func_80061658/s4):
+  base.c = full text1b.c TU with func_80061658 in the floor-9 pure-swap form (pins
+  stripped); target.o from asm/funcs/func_80061658.s + r3k prelude at offset 0;
+  compile.sh = real cc1|prologue_fix|maspsx|multu_pad pipeline, extract func region.
+  Validated base 46 insns / target 46 insns, diff = exactly the 9-insn v0<->v1 tail
+  swap. Permuter base_score 50 (weighted). Campaign s4-floor9-pureswap, -j8.
+- [s4] Campaign yielded SEVEN independent score-0 finds within ~161s (output-0-1..7).
+  ALL SEVEN share ONE lever: stage the mask constant through the reused local `val`
+  (`val = 0x10FFFF; mask = val;` instead of `mask = 0x10FFFF;`). Placement of the
+  `val = 0x10FFFF;` among the 3 loads varies; the copy chain `mask = val` is invariant.
+  This is the copy-suggestion escape s2/s3 named as the unmet need.
+- [s4] ENGINE-VERIFIED (authoritative): with output-0-2's placement applied to
+  src/text1b.c (pins removed), `sandbox func_80061658 --disable all` = 0,
+  target_insns 46, build_insns 46, rules_dropped 0, func carries zero pins/__asm__.
+  The honest pure-C distance is 0. Mechanism confirmed: staging through `val` gives
+  `mask` a copy source; mask -> $v1, reused 3-death load-temp -> $v0 = target RA,
+  flipping the s1-s3 local-alloc.c:472 class wall via a copy-preference.
+- [s4] LAYER-1 cheat-reviewer verdict = FAIL (recorded, not overturned). Grounds:
+  the construct changes local-alloc register CHOICE (copy-preference) on STRAIGHT-LINE
+  code; the sanctioned families it resembles are scoped elsewhere — staged-value-
+  reused-variable is a sched.c adjust_priority mechanism staging a LOAD;
+  defeat-licm-hoist-var-reuse is loop-scoped ("do not cite for straight-line code").
+  Staging a CONSTANT through a reused local for RA choice on straight-line code is
+  arguably a NEW technique-family application needing an SOTN evidence pass + owner
+  sign-off per review-discipline-before-commit. Verified the rule-scoping claims are
+  accurate (read both rule files).
+- [s4] DISPOSITION: ruling-request (never self-approve a SOTN exception; prime
+  directive). src reverted to HEAD pinned form. Bytes-proven form saved to
+  candidate.c and tmp/grind/func_80061658/s4/output-0-*/source.c. Structural axis
+  was already dead (s3); the residual is NOT a wall — a pure-C sandbox-0 form EXISTS
+  and is proven. The only open question is policy classification of the construct.

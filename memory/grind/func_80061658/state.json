@@ -41,7 +41,9 @@
    "next_probe": "Apply endgame-lock-disposition-policy only AFTER the permuter modality is run and measured dead; NOT owner-gated while any modality is unrun."
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "Do NOT commit func_80061658 (or the t=$2/mask=$3 cluster siblings) on this construct via spirit/cluster analogy to the existing variable-reuse rules; staging a constant through a reused live local to steer local-alloc register CHOICE on straight-line code is an unsanctioned new technique-family application that requires its own SOTN-master-branch evidence pass plus explicit owner sign-off (per review-discipline-before-commit.md no-self-sanctioning-rule-docs) before it may be accepted as COMPLETED-C."
+ ],
  "origin": "queue",
  "created": "2026-07-23T02:27:46.340345+00:00"
 }
