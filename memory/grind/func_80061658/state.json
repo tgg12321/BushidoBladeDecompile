@@ -1,8 +1,8 @@
 {
  "func": "func_80061658",
  "file": "text1b",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 0,
@@ -15,23 +15,29 @@
    "floor": 9,
    "modality": "recon",
    "headline": "Honest gap is a pure v0<->v1 RA swap (t->v1, mask->v0), scheduling byte-identical; mask-before-call KILLED (const remats after call)."
+  },
+  {
+   "session": 2,
+   "floor": 7,
+   "modality": "structural",
+   "headline": "Lever-A block-local split of the MIDDLE load lowered the honest floor 9->7; RTL pins the root cause to local-vs-global allocation asymmetry (RMW-chained mask is LOCAL and grabs v0 before the disjoint-"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Shorten t's live range (or otherwise raise its allocno priority) so t wins v0 over mask, without touching the (inert) mask placement.",
-   "mechanism": "t is one reused variable => single long allocno with priority below mask's. Splitting into 3 short webs that reuse v0 would give t->v0, mask->v1 (target); prior split measured 11 but the RTL cause was never captured.",
-   "next_probe": "Split t into t0/t1/t2, dump greg, check whether the 3 short webs reuse v0 (target) or scatter to v1/a0 (cause of +2); if scatter is due to two loads being simultaneously live, reorder so each load is dead before the next load's def."
+   "hypothesis": "A directed permuter over the tail RA structure finds a pure-C form that keeps the single-temp interleave AND steers the shared load-temp to v0 (mask to v1).",
+   "mechanism": "Random+directed PERM mutation of the 3-load + const-store tail against a clean single-function target exposes RA-steering structures manual analysis misses; base from the floor-9 pure-swap form (only RA differs).",
+   "next_probe": "Build target.o from asm/funcs/func_80061658.s + prelude at offset 0; run permuter with fresh-seed discipline from the floor-9 form; vet any sandbox-0 form against the cheat catalog before proposing. PERMUTER modality (not structural)."
   },
   {
-   "hypothesis": "A directed permuter over the tail RA structure finds a legitimate pure-C form that steers t->v0.",
-   "mechanism": "Random+directed PERM mutation of the 3-load + const-store tail against a clean single-function target exposes RA-steering structures manual analysis misses.",
-   "next_probe": "Build target.o from asm/funcs/func_80061658.s + prelude at offset 0; run permuter with fresh-seed discipline; vet any sandbox-0 form against the cheat catalog before proposing."
+   "hypothesis": "Some structure makes the shared 3-load temp a LOCAL contiguous quantity (or makes mask GLOBAL), letting the load-temp win v0 while staying a single reused register.",
+   "mechanism": "The local/global split is decided by whether a pseudo's sets combine into one contiguous quantity; the load-temp's 3 disjoint loads currently force it global. A structure that chains them (without a dead/cheat computation) would make it local and born-first.",
+   "next_probe": "Investigate whether any legitimate pure-C flow chains the three loads into one live range that preserves the interleave; if none exists without a dead store, this axis is dead and only the permuter remains."
   },
   {
-   "hypothesis": "The winning pure-C form generalizes to the sibling pin cluster.",
-   "mechanism": "Siblings share the identical t=$2/mask=$3 pattern; a genuine RA-structure fix (not a pin) should reproduce across them.",
-   "next_probe": "After a form flips 61658 to 0, apply the same structure to func_80061710 and sandbox it as a generality check."
+   "hypothesis": "The winning form generalizes to the sibling pin cluster (func_80061710/617C8/618B4/611A4/6133C, identical t=$2/mask=$3 pattern).",
+   "mechanism": "Siblings share the identical structure; a genuine RA-structure fix (not a pin) should reproduce across them.",
+   "next_probe": "After a form flips 61658 to 0, apply the same structure to func_80061710 and sandbox as a generality check."
   }
  ],
  "judge_constraints": [],

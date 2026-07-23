@@ -557,3 +557,4 @@
 - 2026-07-22 21:17 func_800611A4 s7 [forensics] OWNER-GATED — parked pending owner ruling: s7 forensics: both live-frontier RA axes + a new aggregate-copy axis KILLED with cc1 -da; v0<->v1 wall is a local-before-global pass-ordering invariant at 43 insns. Every sanctioned axis dead across 4 modalities; OWNER-ESCALATION filed (endgame-lock).
 - 2026-07-22 21:27 func_8006156C COMPLETED-C after 1 sessions.
 - 2026-07-22 21:40 func_80061658 s1 [recon] floor=9: Honest gap is a pure v0<->v1 RA swap (t->v1, mask->v0), scheduling byte-identical; mask-before-call KILLED (const remats after call).
+- 2026-07-22 22:08 func_80061658 s2 [structural] floor=7: Lever-A block-local split of the MIDDLE load lowered the honest floor 9->7; RTL pins the root cause to local-vs-global allocation asymmetry (RMW-chained mask is LOCAL and grabs v0 before the disjoint-range global load-temp).

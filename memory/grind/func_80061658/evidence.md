@@ -58,3 +58,42 @@ proposal — no-new-park-categories forbids register-rotation infrastructure.)
 - [s1] Prior banked negatives (do not re-run): split t into t0/t1/t2 = 11; move mask after 3rd load = 9; compute mask early = 9; inline loads no-temp = 11.
 
 - [s1] Family sharing t=$2/mask=$3 pins: func_80061710, 617C8, 618B4, 611A4, 6133C — a real pure-C fix should generalize.
+
+## s2 — floor lowered 9 -> 7 (Lever A), root cause = local-vs-global RMW asymmetry
+- [s2] RTL root cause (cur.i.lreg/greg, current src): mask (pseudo 76) has two sets
+  li(insn105)+ori(insn106) that are RMW-CHAINED -> ONE contiguous quantity -> allocated
+  by local_alloc, which runs BEFORE global_alloc and grabs v0. Load-temp t (pseudo 75)
+  has THREE disjoint load ranges -> local_alloc can't combine -> t goes to global_alloc
+  -> gets leftover v1. local-before-global is why mask seats @v0. This is the mechanism
+  behind the s1 "pure v0<->v1 swap".
+- [s2] Lever A (register-alloc-pure-c.md, block-local split) LOWERS the floor:
+  splitting the MIDDLE load into `{ s32 u = arg0[1]; D_800F1144 = u; }` makes `u` a local
+  pseudo born before mask => u@v0, mask correctly @v1. Floor 9 -> 7. Emitted: load1@a0,
+  load2(u)@v0, mask@v1(target!), load3@a0, with load2 hoisted (interleave distorted).
+- [s2] Split-load3 = 8; split-load2 = 7 (best); split-load1 = 11; split loads1&3 = 11;
+  3 scoped block-locals = 11; 3 named temps t0/t1/t2 = 11 (re-confirmed). Only the
+  MIDDLE-load split reaches 7; outer/multi splits scatter temps to v0/v1/a0/a1 and break
+  the interleave (scheduler hoists all no-anti-dep loads).
+- [s2] Measured INERT (all floor 9, grouping-preserving reorders of single-t form):
+  mask between load1/load2 (variant A); declaration-order swap (mask decl before t);
+  [s1 banked] mask-early, mask-late, mask-before-call. Confirms pure reorder/decl-order
+  of the single-temp form cannot flip the tiebreak.
+- [s2] THE WALL to 0: single-t gives the TARGET SCHEDULE but wrong RA (mask@v0); every
+  split gives target RA (mask@v1) but breaks the SCHEDULE. Reaching 0 needs BOTH: the
+  single reused load-temp @v0 (for the interleave) AND mask@v1 — i.e. the disjoint-range
+  shared load-temp must win v0 over the RMW-chained LOCAL mask, which local-before-global
+  allocation forbids for these value shapes. No grouping-preserving structural transform
+  changes the local/global classification. Next lever is the directed permuter (frontier
+  #2), a different modality — NOT more structural splitting.
+
+- [s2] Honest sandbox --disable all floor lowered 9 -> 7 this session (clean pure C, 0 rules/pins) via Lever A block-local split of the middle load.
+
+- [s2] RTL root cause: mask (pseudo 76) is RMW-chained (li+ori) -> one contiguous LOCAL quantity -> local_alloc grabs v0 before global_alloc places the disjoint-range load-temp t (pseudo 75) into v1. local-before-global is the swap mechanism.
+
+- [s2] Split-load sweep: load1=11, load2=7(best), load3=8, loads1&3=11, 3-scoped=11, t0/t1/t2=11. Only the middle-load split keeps the shared t=$loads1&3 and improves.
+
+- [s2] Reorder/decl sweep (single-temp form): mask-mid=9, decl-order-swap=9, [banked] mask-early/late/before-call=9 - pure reorder cannot flip the tiebreak.
+
+- [s2] The wall to 0: single-t gives the TARGET SCHEDULE but wrong RA (mask@v0); any split gives target RA (mask@v1) but breaks the SCHEDULE. Reaching 0 needs the disjoint-range shared load-temp to win v0 over the RMW-chained LOCAL mask - which local-before-global forbids for these value shapes; no grouping-preserving structural transform changes that classification.
+
+- [s2] Both floor forms are clean pure C: the floor-9 form is a pure RA swap with the correct target schedule (cleaner permuter base); the floor-7 form has mask@v1 but a distorted interleave.
