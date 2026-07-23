@@ -98,3 +98,31 @@ the sandbox score) plus the delay-slot-fill consequence.
 - [s2] Head-structural forms all dead: s16 var_v0 adds a truncating `sll 16`; pointer-local reload, var-before-base decl order, and named-lookup-local give the identical candidate allocation (var_v0->$a1, reload_first).
 
 - [s2] Restored src/text1b.c to the clean floor-10 candidate; sandbox reconfirms score 10 / build_insns 42.
+
+- == s3 structural (2026-07-23) — structural axis fully closed; mechanism refined to load-front-loading ==
+- Baseline reconfirmed: sandbox score 10, target_insns 43, build_insns 42, verdict C. Applied clean candidate to src (HEAD carried the forbidden `register asm("$5")` pin + asm-volatile barrier again; removed).
+- NEW SUB-HYPOTHESIS TESTED (not in s2): duplicate the partial-add `partial = base+var_v0` into EVERY arm (vA), or fold `+ base` into var_v0 inside each arm (vB), so the partial-add sits in a PREDECESSOR block. Rationale: GCC 2.7.2 sched1 is basic-block-LOCAL, so it cannot hoist the join-block reload above a partial-add living in a predecessor. In the standalone mini this WORKS — produces the exact target tail (partial -> reload -> nop -> lookup -> nop -> sum), var_v0 -> $v0, and the 43rd (2nd) load-delay nop appears.
+- BUT vA/vB DIE in full context: sandbox 16 / build_insns 47 (5 OVER). objdump shows THREE physical partial-adds — `addu v1,a2,v0` (arm1), `addu v1,a2,v0` (arm2), `addu v1,a3,v0` (arm3): base occupies DIFFERENT hard regs per arm ($a2 vs $a3), so cross-jump (find_cross_jump) cannot suffix-merge the non-identical bytes. Duplication persists as +5 insns. Forcing base to one reg = register pin = cheat. KILLED.
+- NEW SWEEP (sweep3.py, 7 single-partial-add forms s2 did NOT test): G1 staged-0x12C-on-partial, G2 p+0x12C+lk, G3 double-stage, G4 lk-named-after-p, G5 commuted sum, G6 0x12C-in-base, G7 named-reload. ALL 7 remain `reload_first`. Chain-length balancing (making partial->p2->sum equal-depth to reload->lookup->sum) does NOT flip the tie.
+- MECHANISM REFINED: the divergence is NOT merely "reload chain is one load longer" (s2's framing) — it is sched1 FRONT-LOADING the memory reload `lw $v0,0($a0)` to the top of the join block to hide load latency. A load-priority boost, independent of add-side reassociation. That is why 15+ single-basic-block structural forms (8 s2 tail + 4 s2 head + 7 s3) ALL hoist the reload. The only thing that keeps the load after the partial-add is a real basic-block boundary between them; pure straight-line C expresses that only via arm-duplication, which cross-jump then cannot re-merge here.
+- greg (v0): base=pseudo77 computed directly into $a3 (`insn23 set (reg7 a3) (ashift (reg2 v0) 3)`), var_v0=pseudo82 in $a1 — both downstream consequences of the sched1 reload-hoist. Allocator never routes base to $a1 in any structural form because var_v0 (evicted from $v0 by the manufactured conflict) claims $a1 first.
+- CONCLUSION: the STRUCTURAL axis (reassociation + declaration-order + type-narrowing + statement-placement + arm-duplication/cross-jump) is comprehensively closed. The target fixpoint {base->$a1, var_v0->$v0, partial-before-reload} requires suppressing the sched1 load-hoist, which no single-basic-block C form does and which arm-duplication cannot buy (cross-jump merge blocked by per-arm base-reg divergence). Indicated next modality is NON-structural: directed permuter (frontier 1) or scheduling-technique catalog re: suppressing the load front-load (frontier 2).
+- Artifacts: tmp/grind/ang_hosei_80056FE8/s3/{probe.sh,v0.c,vA.c,vB.c,sweep3.py,v0.i.greg,sw3.s,...}. Rejected forms: rejected/dup-partial-into-arms-cross-jump-fails.c, rejected/staged-chain-balance-loses-to-load-frontload.c.
+
+- [s3] Baseline reconfirmed sandbox 10 / build 42 vs target 43 after re-applying the clean candidate (HEAD had reverted to the pin+barrier form).
+- [s3] Arm-duplication of the partial-add (vA/vB) reproduces the TARGET tail structure (partial-first, var_v0->$v0, 43rd nop) in the standalone mini but is WORSE in full context: sandbox 16 / build 47, because base lands in different hard regs per arm ($a2 x2, $a3 x1) and cross-jump cannot merge the 3 non-identical partial-adds.
+- [s3] 7 new single-partial-add chain-balance forms (sweep3.py G1-G7) all stay reload_first; staging +0x12C onto the partial side to tie the dep-chain length does not flip the sched1 order.
+- [s3] Mechanism refined: sched1 front-loads the arg0 reload (load-latency hiding), a load-priority boost independent of add-side reassociation — the reason every single-basic-block structural form hoists the reload and manufactures var_v0's $v0 conflict.
+- [s3] Restored src/text1b.c to the clean floor-10 candidate; sandbox reconfirms score 10 / build_insns 42.
+
+- [s3] Baseline reconfirmed: sandbox score 10, target_insns 43, build_insns 42, verdict C. HEAD had reverted to the forbidden register-asm-$5 pin + asm-volatile barrier; clean candidate re-applied (cheat_asm_stripped 352).
+
+- [s3] Arm-duplication (vA/vB) reproduces the target tail structure (partial-first, var_v0->$v0, 43rd nop) in the standalone mini but is WORSE in full context (sandbox 16 / build 47): base lands in $a2 x2 and $a3 x1 across arms, so cross-jump cannot merge the three non-identical partial-adds.
+
+- [s3] 7 new single-partial-add chain-balance forms (sweep3 G1-G7) all stay reload_first; staging +0x12C onto the partial side to tie dep-chain length does not flip the sched1 order.
+
+- [s3] Mechanism refined: sched1 front-loads the arg0 reload lw $v0,0($a0) (load-latency hiding) to the top of the join block in every single-basic-block form, manufacturing var_v0's hard conflict with $v0 and evicting it to $a1, which then denies base the $a1 slot.
+
+- [s3] greg(v0): base=pseudo77 computed directly into $a3 (insn23 set (reg7 a3) (ashift (reg2 v0) 3)); var_v0=pseudo82 in $a1 — both downstream of the reload-hoist.
+
+- [s3] Structural axis CLOSED: union of s2 (8 tail-reassoc + 4 head decl/type/pointer) and s3 (7 chain-balance + 2 arm-duplication) = 21 measured forms, none reaching {base->$a1, var_v0->$v0, partial-before-reload}. Floor unchanged at 10; src restored to clean candidate (sandbox 10 / build 42).

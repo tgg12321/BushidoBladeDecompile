@@ -1,7 +1,7 @@
 {
  "func": "ang_hosei_80056FE8",
  "file": "text1b",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -21,18 +21,24 @@
    "floor": 10,
    "modality": "structural",
    "headline": "Structural-reassociation axis KILLED with RTL proof: sched1 hoists the intrinsically-longer *arg0 reload chain above the partial-add, so no dataflow-preserving C form reaches {base->$a1, var_v0->$v0, "
+  },
+  {
+   "session": 3,
+   "floor": 10,
+   "modality": "structural",
+   "headline": "Structural axis CLOSED (21 measured forms): sched1 front-loads the arg0 reload in every single-BB form; arm-duplication reaches the target tail but cross-jump can't merge it (per-arm base-reg divergen"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A directed/randomized permuter on a clean single-function target closes the coupled sched1/RA fixpoint that structural reassociation provably cannot.",
-   "mechanism": "The target occupies a scheduler+allocator fixpoint {a2=$a2,base=$a1,var_v0=$v0,partial-first} that local dataflow-preserving transforms cannot reach (sched1 deterministically hoists the longer reload chain). A permuter search over structural mutations may find a non-obvious form that perturbs sched1's priority tie or register pressure into the target fixpoint.",
-   "next_probe": "Build target.o from asm/funcs/ang_hosei_80056FE8.s + prelude at offset 0 (drop .set gp=64); run tools/permuter_campaign.py with --stop-on-zero + PERM_* directives seeded from the clean candidate; fresh-seed ~20-30 min windows, wait in-turn, harvest --stop before ending."
+   "hypothesis": "A directed/randomized permuter on a clean single-function target closes the coupled sched1/RA fixpoint that structural transforms provably cannot.",
+   "mechanism": "The target sits at a scheduler+allocator fixpoint {base->$a1, var_v0->$v0, partial-before-reload}. sched1 deterministically front-loads the arg0 reload in every single-basic-block structural form; a permuter search over the mutation space (incl. non-dataflow-preserving spellings the manual sweep won't try) may perturb sched1's load-hoist / register pressure into the fixpoint.",
+   "next_probe": "Build target.o from asm/funcs/ang_hosei_80056FE8.s + prelude at offset 0 (drop .set gp=64); run tools/permuter_campaign.py with --stop-on-zero + PERM_* directives seeded from the clean candidate; fresh-seed ~20-30 min windows, wait in-turn, harvest --stop before ending. NON-structural modality."
   },
   {
-   "hypothesis": "Preventing sched1 from hoisting the reload requires making the partial-add an illegal filler for the lh delay slot without changing dataflow.",
-   "mechanism": "The 43rd nop survives only if no instruction independent of the lh result is available to fill its delay slot; the partial-add is that independent filler in every structural form. A form where the only remaining tail insn depends on the lookup would leave the slot empty.",
-   "next_probe": "Investigate whether a sanctioned do-while(0)/LABEL_OUTSIDE_LOOP_P interaction or a reorg-level effect (NOT sched1) can suppress the delay-slot steal here; check .dbr dump behavior. Non-structural \u2014 needs the scheduling-technique catalog, likely a separate modality."
+   "hypothesis": "A scheduling-technique lever (NOT structural reassociation) can suppress sched1's front-load of the arg0 reload without changing dataflow, keeping the partial-add before it.",
+   "mechanism": "The 43rd nop survives only if the reload is NOT hoisted above the partial-add. The hoist is a load-latency-hiding priority boost; suppressing it needs a scheduling-level effect (e.g. a sanctioned do-while(0)/LABEL_OUTSIDE_LOOP_P / reorg-level interaction) rather than an add-side rewrite. Arm-duplication achieves the block boundary but is defeated by cross-jump's per-arm base-reg divergence.",
+   "next_probe": "Investigate whether a sanctioned do-while(0) wrapper or a reorg-level (relax_delay_slots / .dbr) effect can keep the reload after the partial-add; check .dbr/.sched dump behavior. Verify any wrapper against the do-while-zero-exception prerequisites. Separate (scheduling-technique) modality."
   }
  ],
  "judge_constraints": [],
