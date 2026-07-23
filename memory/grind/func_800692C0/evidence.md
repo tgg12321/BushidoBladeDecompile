@@ -203,3 +203,58 @@ deeper RA/sched lever, or user canonical-asm authorization.
 - [s3] Structural modality is exhausted: s2 killed init/live-range/recompute/shared-accum; s3 killed the sanctioned duplicated-statement lift and confirmed const1 placement has no source lever. Remaining axis is the permuter (scheduling fixpoint), a different modality.
 
 - [s3] src/text1b.c restored to HEAD (pinned form); tree oracle-green; candidate.c unchanged (pin-free floor-9 form).
+
+== s4 (permuter, 2026-07-23) — FLOOR 9 -> 0. Pure-C MATCH found. ==
+- Permuter harness (mar_perm_workspace pattern) rebuilt so the STANDALONE
+  candidate reproduces the full-TU 67-insn form: compile.sh runs the real
+  pipeline (cc1 | prologue_fix | maspsx | multu_pad), extracts func region,
+  strips GCC framing directives (mawk: no \b; directives at col 0), assembles
+  with prelude (.set noat/noreorder/.globl). target.o = asm/funcs/*.s + prelude
+  (drop .set gp=64) at offset 0. VALIDATED: base 67 / target 67, diff = the
+  EXACT known 9 (sum/bitpos t1<->t2 swap + li t6,1 const1 slot 8 vs 4).
+  Harness: tmp/grind/func_800692C0/s4/build_ws.sh, reseed.sh, eval_out.sh.
+- The maspsx "too many values to unpack" that blocked s1/s2 permuter import was
+  NOT the sibling inline-asm — it was the candidate.c comment header fed to a
+  no-cpp cc1 (garbage cc1 output). Fixed by a preprocessed-style standalone
+  base.c (typedefs+externs, no comment). Sibling func_8004A348 __asm__ is
+  irrelevant to a single-fn standalone workspace.
+- CAMPAIGN 1 (ws, base=pin-free floor-9 form, -j8, 22453 iters): best score 60
+  = objdump distance 2. output-60-1 FLIPPED the sum/bitpos RA tie via a
+  single-level do{}while(0) wrap around the preheader+loop+return. Residual =
+  only the const1 li-slot. Applied to src: sandbox --disable all score 2 (67/67)
+  — CONFIRMED floor 9->2 in the real engine.
+- CAMPAIGN 2 (ws2, RESEEDED base = the dist-2 do-while0 form, -j8, 11141 iters,
+  ~5min): output-0-1 = score 0. Closed const1 by adding an opaque constant-
+  holder `new_var=1` used for both `1` sites (materializes li t6,1 early at the
+  preheader = target slot). (Its `inline_fn` wrapper was an inert artifact.)
+- MINIMIZED in src sandbox: do{}while(0) + `s32 one; one=1;` SHARED across BOTH
+  `1` uses (*arg3=one; sum+=one<<bitpos;) -> score 0, 67/67. Using `one` on only
+  the shift -> 68 insns/score 3 (splits into two li). Sharing is load-bearing.
+  Dropped inline_fn: still score 0 (confirmed inert).
+- RESULT: sandbox --disable all = 0, rules_dropped=1 (matches WITHOUT the regfix
+  rule). Both devices sanctioned pure-C: do-while(0) for ANY codegen effect incl
+  RA ([[do-while-zero-exception]], owner 2026-07-06); `one=1` named-constant
+  holder ([[named-local-fake-exception]]/[[loop-rotation-two-shift]] SOTN class),
+  semantically-true, non-dead (read at both sites). FAKE-annotated.
+- NB s2's `one` rejection (68 insns, cheat) was WITHOUT the do-while(0): the wrap
+  is what lets the shared holder land at 67. The two devices are coupled.
+- Artifacts: tmp/grind/func_800692C0/s4/{build_ws,reseed,eval_out}.sh, ws/
+  (campaign1 outputs incl output-60-1), ws2/ (campaign2 output-0-1).
+
+== s4 DECISIVE — target genuinely CSE-shares the single `li $t6,1` ==
+- asm/funcs/func_800692C0.s proves the const1 `1` is materialized ONCE and
+  shared across BOTH `1` use sites in the ORIGINAL binary:
+    line 5:  addiu $t6,$zero,0x1   (the single li $t6,1, prologue slot 4)
+    line 28: sh    $t6,0x0($a3)     = `*arg3 = 1`  (stores $t6 directly)
+    line 54: sllv  $v0,$t6,$t1      = `1 << bitpos` (uses $t6 as shift source)
+- => The shared `one` holder (used at BOTH sites) is the FAITHFUL C for the
+  target's real shared-constant codegen. It is NOT the s2 cheat: s2's rejected
+  `one`-at-one-site form ADDED a phantom SECOND li (68 insns) absent from
+  target; the s4 shared form REPRODUCES target's exact 67-insn stream (one
+  shared li). The device recovers the target's genuine constant-sharing that
+  the naive `1`/`1` source loses to a LICM-split (shift's 1 hoisted, store's 1
+  inline -> not shared -> wrong const1 slot = the residual-2).
+- Layer-1 cheat-reviewer (call 1) FAILed the `one` holder citing the s2 ledger
+  WITHOUT the target asm; re-invoked a fresh reviewer with this target-asm fact
+  per review-discipline ("add NEW facts, re-invoke"). do-while(0) wrap ruled
+  legitimate by both.

@@ -97,3 +97,28 @@
 - probe: pri arithmetic on measured base (ll57->4736, 56->4820, 55->4908) + s2 floor-56 (10 orderings) + target-asm slot analysis.
 - result: Gap is exactly 1 LUID; const1 is a compiler-hoisted invariant with no source statement, so source reordering cannot move it (all structural orderings s2+s3 dead). Pure scheduler-placement fixpoint (const1 vs bitpos-def).
 - verdict: CONFIRMED
+
+## [s4] RESOLVED — permuter closes floor 9 -> 0 with a pure-C form.
+- mechanism: A properly-built single-fn permuter workspace (standalone base
+  through the REAL maspsx pipeline reproduces the full-TU 67-insn form; target.o
+  at offset 0) reduces the base to the exact 9-diff. Campaign 1 found the
+  do{}while(0) RA-tie flip (dist 9->2); reseeding from the dist-2 chassis,
+  campaign 2 found the const1 close via a shared `one=1` constant-holder (dist
+  2->0). Both are sanctioned semantically-true pure-C devices.
+- probe: build_ws.sh/reseed.sh permuter campaigns (-j8); minimized + measured in
+  the real engine sandbox (`sandbox func_800692C0 --disable all`).
+- result: sandbox score 0, target_insns 67, build_insns 67, rules_dropped 1
+  (pure-C form matches WITHOUT the regfix rule). do-while(0) + shared `one`
+  holder; inline_fn permuter artifact confirmed inert and dropped.
+- verdict: CONFIRMED — CANDIDATE-READY (pending driver retire+SHA1 + Judge).
+
+## [s4] The floor-9 "unreachable in pure C" wall (s2/s3) was a SEARCH limit, not a wall.
+- mechanism: s2/s3 proved source ORDERING can't flip the RA tie / const1 slot,
+  and correctly reframed it as a scheduler-placement fixpoint reachable only by
+  PERM over the sched space. s4 built the permuter harness (blocked in s1/s2 by a
+  comment-header/base-parse bug, NOT the sibling inline-asm) and the permuter
+  found it: do-while(0) reweights the allocno tie; the shared `one` holder
+  materializes const1 early. Confirms difficult-is-not-impossible.
+- probe: two -j8 permuter campaigns (33k iters total), sandbox confirmation.
+- result: pure-C match at 67 insns, zero rules needed.
+- verdict: CONFIRMED

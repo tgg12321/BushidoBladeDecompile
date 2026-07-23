@@ -2775,7 +2775,6 @@ func_8006288C: reorder 4,1,2,3 @ 1-4
 # func_80060B70: schedule 3rd s32 store into jal delay slot,
 # remove 2 redundant nops, reorder lw $6/lw $2 to match target.
 # Move li t6,1 to early position (target #3)
-func_800692C0: reorder 6,3,4,5 @ 3-6
 func_800485EC: subst "\$8" "$3" @ 10
 func_800485EC: subst "lw\s+\$4," "lhu	$4," @ 11
 func_800485EC: subst "lw\s+\$6," "lhu	$5," @ 12
