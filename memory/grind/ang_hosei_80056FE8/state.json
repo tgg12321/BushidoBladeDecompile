@@ -1,7 +1,7 @@
 {
  "func": "ang_hosei_80056FE8",
  "file": "text1b",
- "session_count": 4,
+ "session_count": 5,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -33,23 +33,29 @@
    "floor": 10,
    "modality": "permuter",
    "headline": "Permuter (2 campaigns, 65k iters): clean-candidate chassis plateaus at pure reg-rename (build 42); NEW base-reuse chassis reaches build 43 in full context, isolating residual to a 6-reg tail RA swap c"
+  },
+  {
+   "session": 5,
+   "floor": 9,
+   "modality": "permuter",
+   "headline": "FLOOR 10->9: double variable-reuse tail (base+=var_v0; var_v0=*arg0) is target-faithful and reaches build 43; residual is a single $a1<->$a2 RA tiebreak (base needs more refs to win $a1, cheat-only)."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A clean register-alloc-pure-c lever can flip the tail coalescing on the base-reuse 43-insn chassis so partial coalesces with base ($a1) and the reload reuses var_v0's reg ($v0), reaching a byte match without a dead-op cheat.",
-   "mechanism": "The residual is now a single, well-isolated tail RA coalescing tie (head byte-matches). Target coalesces the partial-add result with base (dies into $a1); our build coalesces it with var_v0 (dies into $v0). An RTL .greg dump on the base-reuse chassis would show WHY partial prefers var_v0's reg (reg_n_refs / allocno priority / operand order), pointing at a clean steering lever.",
-   "next_probe": "cc1 -da on the base-reuse-chassis .i; read the partial-add pseudo's coalescing/preference and conflict lists; apply register-alloc-pure-c levers (operand order, block-local split, narrow type, natural coalescing bias) to steer partial->$a1 + reload->$v0. Non-permuter (register-steering) modality."
+   "hypothesis": "A legitimate copy-preference can bias base->$a1 (or a2local->$a2) without adding dead refs, flipping the RA tiebreak on the double-reuse floor-9 chassis to reach byte-0.",
+   "mechanism": "greg shows neither base(77) nor a2local(73) carries a register preference, so coloring is pure priority order (a2local's 5 refs beat base's 2). A source structure that routes base through a copy/move preferring $a1 \u2014 or gives a2local a $a2 preference \u2014 would steer the color without the forbidden dead-op ref-padding.",
+   "next_probe": "Register-steering (non-permuter) modality on f_doublereuse: try tail/return forms that create a $a1-copy-preference for base (e.g. staging the partial through a value the ABI/return path prefers in $a1), and forms that make a2local's live range prefer $a2. Read global.c prune_preferences/allocno_compare + the greg preference lists to target the lever precisely."
   },
   {
-   "hypothesis": "The base-reuse (`base = *arg0`) construct required to reach build 43 is itself a SOTN-sanctioned variable-reuse (defeat-licm/RA-reuse), so a clean tail-flip on that chassis would be an acceptable FAKE-annotated match rather than a cheat.",
-   "mechanism": "Reaching build_insns 43 empirically REQUIRES reusing a dying variable's register for the reload (candidate without reuse = 42). That reuse is the defeat-licm-hoist-var-reuse family (SOTN ships it FAKE-annotated). If a clean tail-flip lands sandbox 0 on this chassis, the disposition question is whether the variable-reuse qualifies.",
-   "next_probe": "If frontier-1 lands a sandbox-0 form on the base-reuse chassis, emit a ruling-request / run layer-2 cheat-reviewer on the variable-reuse construct with the SOTN defeat-licm-reuse precedent + FAKE annotation before claiming candidate-ready."
+   "hypothesis": "The function is an endgame-lock: byte-match reachable ONLY via a dead-op cheat (base++/base--), clean floor a 1-logical-swap RA tie a few insns short \u2014 matching the owner endgame-lock-disposition policy.",
+   "mechanism": "s4 (base-reuse chassis) and s5 (double-reuse chassis) both prove the permuter's sole weighted-0 closure is base++; base--; (illegitimate ref-padding). Target-faithful base has exactly 2 refs; no clean structure supplies the extra refs to win $a1. If the copy-preference frontier is also exhausted, every sanctioned axis is dead.",
+   "next_probe": "If frontier-1 (copy-preference steering) is measured dead, file the OWNER-ESCALATION entry in docs/grind/decisions.md and return owner-gated per feedback/endgame-lock-disposition-policy (do NOT owner-gate now \u2014 the floor just dropped this session, so it is still grindable)."
   },
   {
-   "hypothesis": "A do-while(0) / LABEL_OUTSIDE_LOOP_P (reorg) scheduling lever can suppress the sched1 load front-load directly (inherited s3 frontier, still un-run).",
-   "mechanism": "The 43rd nop survives only if the reload is not hoisted above the partial-add. base-reuse achieves this via register pressure; a reorg-level scheduling effect might achieve it without variable reuse.",
-   "next_probe": "Verify do-while-zero-exception prerequisites; check .dbr/.sched dump behavior for a do-while(0) wrapper around the tail. Separate scheduling-technique modality."
+   "hypothesis": "A scheduling-technique lever (do-while(0)/LABEL_OUTSIDE_LOOP_P or reorg-level) suppresses the a2local-first coloring pressure without dead refs.",
+   "mechanism": "do-while(0) alone on this chassis did not flip the swap (diff 9), but it did contribute in the (broken) output-10-1 combination. A correct scheduling lever that changes base/a2local live-range overlap could shift priority.",
+   "next_probe": "Sweep do-while(0) placements (around the whole body vs the tail vs the multiply) and other sanctioned scheduling wrappers on f_doublereuse, reading greg after each to see if base's live_length shrinks enough to out-prioritize a2local."
   }
  ],
  "judge_constraints": [],

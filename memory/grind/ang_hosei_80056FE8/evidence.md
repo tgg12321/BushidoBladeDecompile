@@ -154,3 +154,29 @@ the sandbox score) plus the delay-slot-fill consequence.
 - [s4] Directed clean-form flips (commute, var_v0-reuse, base-reuse) all measured sandbox 10/11/16 - none <10. Floor unchanged at sandbox 10 / build 42 (clean candidate re-verified in src after all probes).
 
 - [s4] Both campaigns harvested --stop before session end; 0 permuter processes alive at final reap (--ttl 0 --dry-run: groups_seen 0).
+
+- == s5 permuter (2026-07-23) — FLOOR IMPROVED 10 -> 9; double-reuse chassis; residual = pure $a1<->$a2 RA tiebreak ==
+- NEW CHASSIS (not tried s1-s4): the DOUBLE variable-reuse tail `base += var_v0; var_v0 = *((s32*)arg0);` — partial computed in base's reg, arg0 reload reuses var_v0's dying reg. Measured live: sandbox score 9 / build_insns 43 (== target). This LOWERS THE FLOOR from 10 to 9 (first floor drop since import). src/text1b.c holds this form; re-verified score 9 twice.
+- TARGET-FAITHFUL, not gratuitous: target tail asm is `addu a1,a1,v0 ; lw v0,0(a0) ; nop ; lh v0,1034(v0) ; nop ; addu v0,a1,v0` = partial in base's $a1 (base dead) + reload in var_v0's $v0 (var_v0 dead). The double-reuse encodes exactly this. Both reuses load-bearing: drop `base+=` -> diff 16; drop reload-reuse (fC: `partial=base+var_v0; var_v0=*arg0`) -> diff 16; reload into a2 instead (fD) -> 41 insns/diff 17. Only the base+=var_v0 AND var_v0=reload combo gives 43/9.
+- RESIDUAL FULLY ISOLATED (objdump vs target): a single $a1<->$a2 swap. Target: a2local(*arg0)->$a2, base(a3*40)->$a1. Ours: a2local->$a1, base->$a2. All 9 diff lines are that one swap propagating (lw a1 vs a2, sll a1 vs a2, the field reads lh v0,x(a1) vs (a2), addu a1 vs a2 x2).
+- greg PROOF (tmp/grind/ang_hosei_80056FE8/s5/f_doublereuse.c.greg): 4 pseudos, colored priority order 82,73,77,72. Dispositions: 82->$v0(var_v0), 73->$a1, 77->$a2, 72->$a0(arg0). insn10 `set (reg 5 a1) (mem (reg 4 a0))` => pseudo 73 = a2local (5 refs). pseudo 77 = base (2 refs). a2local(73) colored BEFORE base(77) => a2local grabs $a1, base forced to $a2. Neither has a copy-preference (only 82 pref $v0, 72 pref $a0). To flip, base must out-prioritize a2local; priority ~ floor_log2(n_refs)/live_length, base's 2 refs lose to a2local's 5. Target-faithful base has EXACTLY 2 refs (def + partial-add), so no clean structure adds refs without diverging from target's instruction stream.
+- PERMUTER (fresh seed = double-reuse, base_score weighted 50, 28560 iters / ~16 min, --stop-on-zero): gradient 50->40->10->0. The ONLY weighted-0 form = double-reuse + `base++; base--;` (dead-op pair supplies base's 2 missing refs -> flips the tiebreak). SAME forbidden dead-op cheat s4 found on the base-reuse chassis, reconfirmed on the better double-reuse chassis. The weighted-10 forms (output-10-1/-2) overwrite `base = <arm load>` inside an if/else arm (corrupts base=a3*40 before the tail add) = semantically divergent from target (target computes arms into fresh $v0, never touches base) -> cheats/non-matches. NO clean permuter form beat sandbox 9.
+- do-while(0) alone on the double-reuse chassis (f_dowhile) = diff 9 (no help); the swap-flip in output-10-1 came from the else-arm base-reuse, not the do-while. a3-reuse-as-base + do-while (w2) = 42 insns / diff 8 (loses the reload nop).
+- Campaign harvested --stop; reap --ttl 0 dry-run groups_seen 0, pgrep permuter empty (no orphans).
+- Artifacts: tmp/grind/ang_hosei_80056FE8/s5/{f_doublereuse.c, f_doublereuse.c.greg, fB/fC/fD_*.c, f_dowhile.c, v3/v5/v6_*.c, w1/w2_*.c, f_out10.c, perm/ (campaign ws + output-*), *.sh}. candidate.c updated to double-reuse (floor 9). Rejected: double-reuse-plus-baseincdec-deadop.c.
+
+- [s5] FLOOR IMPROVED 10 -> 9. Double-reuse chassis (base += var_v0; var_v0 = *((s32*)arg0);) measured live sandbox --disable all: score 9, build_insns 43 == target 43, verdict C. src/text1b.c holds this form; re-verified score 9 twice (no campaign contention).
+
+- [s5] The chassis is TARGET-FAITHFUL: target tail asm computes partial in base's reg ($a1, base dead) and reloads *arg0 into var_v0's reg ($v0, var_v0 dead) — exactly this dataflow. Contradicts s1-s4's 'single-BB stuck at 42' framing (reaching 43 needs the reuse, confirmed).
+
+- [s5] Both reuses load-bearing: dropping base+= -> diff 16; dropping the var_v0 reload-reuse (fC) -> diff 16; reload into a2 (fD) -> 41 insns / diff 17. Only base+=var_v0 AND var_v0=reload together gives 43 insns / score 9.
+
+- [s5] Residual fully isolated (objdump vs target): a single $a1<->$a2 swap. Target a2local(*arg0)->$a2, base(a3*40)->$a1; ours swapped. All 9 diff lines are that one swap propagating through field reads + tail adds.
+
+- [s5] greg proof (tmp/grind/ang_hosei_80056FE8/s5/f_doublereuse.c.greg): 4 pseudos colored priority order 82,73,77,72. 82->$v0(var_v0), 73->$a1, 77->$a2, 72->$a0(arg0). insn10 sets (reg 5 a1)=(mem (reg 4 a0)) => pseudo 73 = a2local (5 refs); pseudo 77 = base (2 refs). a2local colored before base -> a2local takes $a1, base forced to $a2. Neither has a copy-preference.
+
+- [s5] Permuter (fresh double-reuse seed, weighted base_score 50, 28560 iters/~16 min, --stop-on-zero): gradient 50->40->10->0. ONLY weighted-0 form = double-reuse + `base++; base--;` (dead-op adds base's 2 missing refs, flipping the tiebreak) = the same forbidden dead-op cheat s4 found, reconfirmed on the better chassis. Weighted-10 forms overwrite base inside an if/else arm (corrupt base=a3*40) = semantically divergent from target. No clean form beat sandbox 9.
+
+- [s5] do-while(0) alone on the double-reuse chassis = diff 9 (no help); output-10-1's swap-flip came from the else-arm base-reuse, not the do-while.
+
+- [s5] Campaign harvested --stop; reap --ttl 0 dry-run groups_seen 0; pgrep permuter empty (no orphans).

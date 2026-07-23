@@ -116,3 +116,27 @@ CLOSED. Union of s2 (8 tail-reassoc + 4 head decl/type/pointer) and s3 (7 chain-
 - probe: Measured 3 base-reuse/var-reuse single-BB forms live in the full-context sandbox: form-50 (a2=base+var_v0; base=*arg0), clean base-reuse-in-tail, var_v0-reuse-for-reload.
 - result: KILLED. A single-BB 'reuse base for the reload' form reaches build_insns 43 in the REAL full-context sandbox (form-50: sandbox 10 / build 43; clean base-reuse: 11/43; var_v0-reuse: 16/43). So 42 is NOT intrinsic to single-BB forms. HOWEVER reaching 43 does not lower the floor: the freed insn is replaced by an equivalent register-rename residual (sandbox 10-16, never <10). The wall moved from 'insn count' to 'tail RA coalescing', not removed.
 - verdict: KILLED
+
+## [s5] A double variable-reuse tail (`base += var_v0; var_v0 = *arg0;`) reaches the target 43-insn structure AND lowers the floor below 10.
+- mechanism: partial computed in base's register (target $a1), arg0 reload reuses var_v0's dying register (target $v0) — exactly target's tail dataflow. Reaching build_insns 43 (the load-delay nop) requires this reuse; single-BB non-reuse forms stall at 42 (s2/s3).
+- probe: Wrote f_doublereuse.c, measured live in the real sandbox (--disable all); objdump-diffed vs target; scored 3 partial variants (fB/fC/fD) to confirm both reuses are load-bearing.
+- result: CONFIRMED + FLOOR IMPROVED 10 -> 9. Sandbox score 9 / build_insns 43 == target (first floor drop since import). Both reuses load-bearing (dropping either -> diff 16/17). The entire score-9 residual is a single $a1<->$a2 register swap between a2local(*arg0) and base(a3*40): target a2local->$a2/base->$a1; ours swapped.
+- verdict: CONFIRMED
+
+## [s5] The score-9 residual is a pure RA priority tiebreak; flipping base->$a1 needs base to out-ref a2local, unreachable by any target-faithful clean structure.
+- mechanism: global.c colors pseudos by priority (~floor_log2(n_refs)/live_length). a2local (pseudo 73, 5 refs) outranks base (pseudo 77, 2 refs), so a2local is colored first and grabs $a1, forcing base to $a2. Target has base->$a1, i.e. base must be colored first.
+- probe: cc1 -da greg dump on f_doublereuse (f_doublereuse.c.greg): read the 4-pseudo priority order + dispositions + conflict/preference lists. Tried clean flips: declare-base-first (v3), base-via-shifts (v5), a2-as-pointer (v6), a3-reuse-as-base (w1/w2), do-while(0) wrap (f_dowhile). Ran a 28.5k-iter directed permuter from the score-9 seed.
+- result: KILLED (clean flip). v3/v6 = diff 9 (same swap), v5 = diff 12, w2 = 42/diff8 (loses reload nop), do-while alone = diff 9. The permuter's ONLY weighted-0 form is `base++; base--;` (dead-op supplying base's 2 missing refs) = forbidden dead-op cheat (same as s4, reconfirmed on better chassis). Its weighted-10 forms overwrite base inside an arm = semantically broken. Target-faithful base has exactly 2 refs (def + partial-add); no clean structure adds refs without diverging from target's instruction stream. Neither a2local nor base carries a copy-preference to steer via, either.
+- verdict: KILLED (for the clean-flip levers tried); floor now 9. Un-tried: manufacturing a legitimate copy-preference to bias base->$a1 (frontier).
+
+## [s5] A double variable-reuse tail (base += var_v0; var_v0 = *arg0;) reaches the target 43-insn structure and lowers the floor below 10.
+- mechanism: partial is computed in base's register (target $a1) and the arg0 reload reuses var_v0's dying register (target $v0) — exactly target's tail asm (addu a1,a1,v0; lw v0,0(a0); nop; lh v0,1034(v0); nop; addu v0,a1,v0). Reaching build_insns 43 (the load-delay nop) requires this reuse; single-BB non-reuse forms stall at 42.
+- probe: Wrote f_doublereuse.c, measured live in the real sandbox --disable all (score 9, build_insns 43); objdump-diffed vs target; scored partial variants fB/fC/fD to confirm both reuses are load-bearing.
+- result: CONFIRMED: sandbox 9 / build 43 == target (first floor drop since import). Both reuses load-bearing (drop either -> diff 16/17). Entire residual is a single $a1<->$a2 swap of a2local(*arg0) and base(a3*40).
+- verdict: CONFIRMED
+
+## [s5] The score-9 residual is a pure RA priority tiebreak; flipping base->$a1 needs base to out-reference a2local, unreachable by any target-faithful clean structure.
+- mechanism: global.c colors pseudos by priority (~floor_log2(n_refs)/live_length). a2local (pseudo 73, 5 refs) outranks base (pseudo 77, 2 refs) so a2local is colored first and grabs $a1, forcing base to $a2. Target has base->$a1 (base must be colored first). Neither carries a copy-preference to steer.
+- probe: cc1 -da greg dump on f_doublereuse (priority order 82,73,77,72; dispositions + conflicts + preferences). Clean-flip attempts: declare-base-first (v3), base-via-shifts (v5), a2-as-pointer (v6), a3-reuse-as-base (w2), do-while(0) wrap (f_dowhile). 28.5k-iter directed permuter from the score-9 seed.
+- result: KILLED for clean flips: v3/v6 diff 9 (same swap), v5 diff 12, w2 42/diff8, do-while-alone diff 9. Permuter's ONLY weighted-0 form = base++; base--; (dead-op supplies base's 2 missing refs) = forbidden dead-op cheat, same as s4, reconfirmed on the better chassis. Its weighted-10 forms overwrite base inside an arm = semantically broken (target computes arms into fresh $v0). No clean form beat sandbox 9.
+- verdict: KILLED
