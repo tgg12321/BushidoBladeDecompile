@@ -156,3 +156,58 @@ for the rest.
 - [s1] HEAD src carried cheats (register asm($7/$3) pins + volatile pad + (void)var_a3) at floor 9; replaced with clean floor-6 candidate.
 
 - [s1] Permuter axis is UNTRIED (prior session named it highest-EV, never launched) — floor is grindable, not owner-gated.
+
+## s2 (2026-07-22, structural) — structural axis measured DEAD; floor 6 holds
+- **Floor 6 reconfirmed** with clean candidate applied (score 6, build 14, target 14).
+- **The RA-flip mechanism is precisely quantified (greg + isolated-TU dumps in
+  tmp/grind/func_8004954C/s2/greg/):** priority formula (tools/gcc-2.7.2/global.c:604
+  allocno_compare) = `flog2(nrefs)*nrefs/live_length * 10000 * size`. Baseline iso
+  dispositions: sum(75)->$a3(7), i(76)->$v1(3) WRONG, subu at END. To flip, sum must
+  outrank i; the ONLY structural way is to SHORTEN sum's live range — which is the
+  forbidden reassoc family.
+- **off-early form (`s32 off = arg2 - arg1;` hoisted before loop; `return sum + off`)
+  reaches score 4** — RA becomes CORRECT (iso dump: sum(76)->$v1, i(77)->$a3, off(75)
+  ->$a2). Mechanism: single final `addu v0,sum,off` (vs baseline `subu;addu`) shortens
+  sum's live range by one insn -> sum's priority rises above i's. Residual 4 = pure
+  delay-slot scheduling (subu carried in $a2 lands in the blez delay slot; target
+  computes subu post-loop with sum=0 in the delay slot).
+- **off-early REJECTED by cheat-reviewer (s2, FAIL):** same species as paren_reassoc —
+  cross-loop live-range steering of sum vs i, re-spelled as a named local. Decisive
+  tell: my own `off_temp_late` counter-experiment (offset computed near natural use at
+  END) reverts to floor 6 — no programmer-natural placement yields the RA benefit, so
+  it is codegen-motivated live-range manipulation, not the SOTN named-intermediate
+  mechanism (SOTN E4 names adjacent to use; this relocates across the loop). Saved to
+  rejected/off_early_livrange_steer.c.
+- **Structural sweep (25 forms, tmp/grind/func_8004954C/s2/sweep*.py) — ALL subu-at-end
+  forms stay at 6:** cmp-operand-swap (`arg1 > i`), do-while, postdec (`sum+=arg0--`),
+  sum-explicit (`sum = sum + arg0`), pre-increment, all declaration/statement orders of
+  {off,sum,i}, off-split, off-late-assign, bound-var (`s32 bound=arg1`), off commuted
+  (`off+sum`). NONE flips the RA with subu-at-end.
+- **Type-narrowing measured dead:** i as s16 -> score 5 but build_insns 17 (extra
+  sign-extends, worse structure); i as u32 -> score 7 (worse). Not viable.
+- **Count-down measured dead (confirms s1 reasoning):** separate `n=arg1; while(n>0)`
+  -> score 9 build 10; `for(i=arg1;i!=0;i--)` -> score 10 build 10. Break the 14-insn
+  structure and the slt-vs-a1 bytes.
+- **`sum = arg2 - arg1` seed (accumulate into offset-seeded sum) -> score 6 build 13:**
+  collapses the frame, worse structure. Dead.
+- **Conclusion:** the structural axis (block-local splits, decl/stmt order, type
+  narrowing, re-association) is measured DEAD for reaching below 6 legitimately. The
+  only structural form that lowers the score (off-early, 4) is a live-range-steering
+  cheat. The floor-6 RA wall is not breakable by legitimate structural C — sum cannot
+  be made to outrank i without shortening sum's live range (forbidden). Remaining
+  live axis: F1 permuter (different modality, still UNTRIED) may find a byte-neutral
+  mutation; that is the next non-structural avenue. NOT owner-gated (permuter untried).
+
+- [s2] Floor 6 reconfirmed (clean candidate: score 6, build_insns 14, target_insns 14, 0 rules).
+
+- [s2] allocno priority formula confirmed from tools/gcc-2.7.2/global.c:604 allocno_compare = (flog2(n_refs)*n_refs / live_length) * 10000 * size; tie broken by lower allocno (pseudo) number.
+
+- [s2] Isolated-TU greg dumps (tmp/grind/func_8004954C/s2/greg/): baseline dispositions sum(75)->$a3, i(76)->$v1 (WRONG, subu at END); off-early sum(76)->$v1, i(77)->$a3, off(75)->$a2 (CORRECT RA, subu in blez delay slot).
+
+- [s2] The RA flip requires shortening sum's live range, which is exactly the forbidden reassoc family (or-tree-shape-shift). Every legitimate structural form leaves i strictly outranking sum -> floor 6.
+
+- [s2] off-early (score 4) cheat-reviewer verdict FAIL: cross-loop live-range steering, sibling of rejected paren_reassoc; saved to rejected/off_early_livrange_steer.c.
+
+- [s2] 25 structural variants swept total (sweep.py/sweep2.py/sweep3.py); only the live-range-steering off-early family drops below 6, and it is a cheat.
+
+- [s2] Structural modality is exhausted for this function; the floor-6 RA wall is not breakable by legitimate structural C. Next live avenue is the F1 permuter campaign (different modality, still UNTRIED) — floor remains grindable, not owner-gated.

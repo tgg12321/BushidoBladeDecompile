@@ -1,8 +1,8 @@
 {
  "func": "func_8004954C",
  "file": "text1b",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 0,
@@ -15,23 +15,24 @@
    "floor": 6,
    "modality": "recon",
    "headline": "Recon: floor 6 reconfirmed; wall is a two-axis allocno-priority race (counter i beats accumulator sum on both loop-ref-count and live-length) forcing sum->$a3/i->$v1, the inverse of target. Permuter a"
+  },
+  {
+   "session": 2,
+   "floor": 6,
+   "modality": "structural",
+   "headline": "Structural axis measured DEAD: 25 forms swept, all legitimate subu-at-end forms stay at 6; the one form that reaches 4 (off-early) is a cheat-reviewer FAIL (cross-loop live-range steering, paren-reass"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Directed permuter campaign from candidate.c closes the 6-token RA rename.",
-   "mechanism": "All structure (frame, 14 insns, delay slots, opcode order) is already correct; only which of {sum,i} gets $v1 differs. This dense single-axis space is exactly what decomp-permuter closes; a byte-neutral C mutation may lift sum's allocno priority above i's without a dead use.",
-   "next_probe": "Build target.o from asm/funcs/func_8004954C.s + permuter prelude at offset 0 (avoid whole-file offset noise); run tools/permuter_campaign.py with fresh-seed discipline, wait in-turn + harvest --stop before ending the turn; cheat-vet any sandbox-0 form before proposing."
+   "hypothesis": "A directed permuter campaign from the clean candidate finds a byte-neutral C mutation that lifts sum's allocno priority above i without shortening sum's live range or a dead use.",
+   "mechanism": "The gap is a single-axis, dense RA tiebreak (sum vs i for $v1, all structure/frame/delay-slots correct). Structural C cannot flip it legitimately (proven s2); the permuter's random/PERM_* space may surface a byte-neutral form the structural sweep can't reach.",
+   "next_probe": "Build target.o from asm/funcs/func_8004954C.s at offset 0 (avoid whole-file offset noise); run tools/permuter_campaign.py with fresh-seed discipline, wait in-turn + harvest --stop; cheat-vet any sandbox-0 form (reject live-range-steering / dead-use / reassoc forms) before proposing. This is the mandated next modality."
   },
   {
-   "hypothesis": "A semantically-faithful post-loop use of i (== arg1 at exit) equalizes live_length so the allocno-number tiebreak picks sum(75) first.",
-   "mechanism": "If i lived to the return like sum, priority becomes a near-tie and allocno-number order (sum=75 < i=76) allocates sum first -> sum gets $v1.",
-   "next_probe": "Search for any faithful form using i post-loop that still emits subu v0,a2,a1 (i's reg != $a1, so likely impossible); measure to KILL. Expect dead-end \u2014 dead-use would be a cheat."
-  },
-  {
-   "hypothesis": "Raise sum's per-iteration ref count via a genuinely-motivated recompute to flip the freq term.",
-   "mechanism": "sum loses partly on freq (2 loop refs vs i's 3); a faithful loop body referencing the accumulator more could flip it.",
-   "next_probe": "Check whether any faithful body keeps the exact 'addu v1,v1,a0' loop bytes while adding a sum ref (likely none); otherwise feed the permuter as a seed variant."
+   "hypothesis": "If the permuter also fails, the floor-6 sum/i allocno tiebreak wall may be an endgame-lock candidate (byte-match only via a live-range-steering cheat, a few insns short).",
+   "mechanism": "Structural axis dead + off-early(4) proven to be the only lowering lever and it is a cheat; if permuter finds nothing, every sanctioned pure-C axis is dead and the endgame-lock disposition policy (feedback/endgame-lock-disposition-policy.md) may apply.",
+   "next_probe": "Only after the permuter modality is measured dead: file an OWNER-ESCALATION in docs/grind/decisions.md and return owner-gated. Do NOT do this now \u2014 permuter is untried."
   }
  ],
  "judge_constraints": [],

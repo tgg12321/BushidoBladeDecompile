@@ -36,6 +36,17 @@ assignment differs. See evidence.md s1 for the measured wall mechanism.
   measure to KILL or to feed the permuter a better seed.
 
 ## Rejected forms bank (do NOT re-propose — all measured dead)
+- `s32 off = arg2 - arg1;` HOISTED before loop, `return sum + off` (score 4, s2) —
+  REJECTED cheat-reviewer FAIL. Shortens sum's live range across the loop (single final
+  `addu` vs `subu;addu`) to flip sum/i allocno priority; same species as paren-reassoc,
+  spelled as a named local. `off_temp_late` (same code, offset computed at END) reverts
+  to 6 — proving the placement is codegen-motivated. See rejected/off_early_livrange_steer.c.
+- [s2] ALL subu-at-end structural forms measured at 6: cmp-swap (`arg1 > i`), do-while,
+  postdec (`sum+=arg0--`), sum-explicit, pre-increment, every decl/stmt order of
+  {off,sum,i}, off-split, off-late-assign, bound-var, off-commute. No structural form
+  flips RA with subu-at-end.
+- [s2] Type narrowing dead: i=s16 -> 5 (build 17, worse); i=u32 -> 7.
+- [s2] Count-down dead: `n=arg1;while(n>0)` -> 9; `for(i=arg1;i!=0;i--)` -> 10.
 - `(sum + arg2) - arg1` paren-reassoc (score 2) — FORBIDDEN or-tree-shape-shift.
   See rejected/paren_reassoc.c.
 - `sum = sum + arg2; return sum - arg1;` two-statement split (score 2) — same family.
@@ -58,3 +69,21 @@ assignment differs. See evidence.md s1 for the measured wall mechanism.
 - probe: Enumerated the byte constraints from target asm against candidate structures (count-down, i-- > 0, arg2-i offset).
 - result: Every alternative loop form breaks target's 'slt vs a1' and/or 'subu v0,a2,a1' bytes, so i's separate test-ref is structurally mandatory. The counting-up i inherently has 3 loop refs.
 - verdict: CONFIRMED
+
+## [s2] A named-intermediate hoist `s32 off = arg2 - arg1;` before the loop is a legitimate structural lever that flips the sum/i register allocation.
+- mechanism: Hoisting off makes the final return a single `addu v0,sum,off` instead of baseline `subu;addu`, shortening sum's live range by one insn; that raises sum's allocno priority (global.c:604 = flog2(nrefs)*nrefs/live_length) above counter i's, so sum wins $v1 and i wins $a3 (matches target). Sandbox drops 6->4.
+- probe: Applied off-early, sandbox --disable all -> score 4 (RA correct per isolated greg dump: sum(76)->$v1, i(77)->$a3, off(75)->$a2); residual 4 is pure delay-slot scheduling (subu carried in $a2 fills the blez delay slot). Submitted to cheat-reviewer.
+- result: score 4, RA correct, but cheat-reviewer FAIL: same species as the already-rejected paren-reassoc (allocno-priority steering by shortening sum's live range), re-spelled as a named local. Decisive: my own off_temp_late counter-experiment (offset computed near natural use at END) reverts to 6, proving placement is codegen-motivated, not SOTN named-intermediate.
+- verdict: KILLED
+
+## [s2] Some legitimate subu-at-end structural form (compare-swap, do-while, postdec, explicit accumulate, pre-increment, declaration/statement reorder, split, bound-var) flips the RA so sum wins $v1 without shortening sum's live range.
+- mechanism: If a structural variant raises sum's priority or lowers i's without moving the subtraction pre-loop, it would match target (subu-at-end AND sum->$v1) at score 0.
+- probe: Swept 12 subu-at-end variants via tmp/grind/func_8004954C/s2/sweep3.py + sweep2.py measuring sandbox --disable all.
+- result: Every subu-at-end form stays at score 6. i strictly outranks sum in all of them (3 loop refs + shorter live length vs sum's 2 refs + longer live). No structural lever flips RA with subu-at-end.
+- verdict: KILLED
+
+## [s2] Type narrowing the counter/accumulator (s16/u32) or a count-down loop reaches below 6.
+- mechanism: Different integer width or loop direction could change ref counts / codegen shape favorably.
+- probe: i=s16, i=u32, separate down-counter n, for(i=arg1;i!=0;i--) — sandbox each.
+- result: i=s16 -> 5 but build_insns 17 (extra sign-extends, worse structure, not a real improvement); i=u32 -> 7; down-counter n -> 9; for-down -> 10 (break the 14-insn/slt-vs-a1 structure). All worse.
+- verdict: KILLED
