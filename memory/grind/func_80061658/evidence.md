@@ -184,3 +184,45 @@ proposal — no-new-park-categories forbids register-rotation infrastructure.)
   candidate.c and tmp/grind/func_80061658/s4/output-0-*/source.c. Structural axis
   was already dead (s3); the residual is NOT a wall — a pure-C sandbox-0 form EXISTS
   and is proven. The only open question is policy classification of the construct.
+
+## s4b — PERMUTER fresh-seed "deny-the-copy-source" chassis (floor unchanged; owner-gated filed)
+- [s4b] Independently RE-VERIFIED the s4 bytes THIS session (s4 was an opus session; per
+  verify-opus-handoff-claims): applied the `val = 0x10FFFF; mask = val;` form to
+  src/text1b.c (pins removed) and ran engine sandbox --disable all = 0, target_insns 46,
+  build_insns 46, rules_dropped 0, zero pins/__asm__. src then reverted to HEAD (clean).
+  The bytes-proven pure-C-0 form is confirmed real, not a handoff claim.
+- [s4b] Tested whether the s4 `val`-staging copy is the UNIQUE score-0 basin or whether a
+  structurally-different chassis yields a differently-classifiable form. Built a fresh
+  chassis (tmp/grind/func_80061658/s4/noval/base.c) that REMOVES the reused local `val`
+  by inlining the switch constants (`*v1 = 0x21000C;` / `0x21000D;`) — denying the permuter
+  the natural copy source all 7 s4 finds used. base 46 insns / target 46, base_score 510.
+- [s4b] Campaign s4b-noval-freshseed, -j8, 30,762 iterations (~16.7 min), harvest+stop
+  in-session (fresh-seed discipline satisfied): best_new_score = 50 (the pure v0<->v1 swap),
+  NO score-0 produced. output-50-1 synthesized its own temp `new_var` but staged arg0/p
+  through it (NOT the mask) so RA did not flip. Denied the natural copy source, the permuter
+  CANNOT reach a match.
+- [s4b] CONCLUSION: the score-0 basin is UNIQUELY "stage the mask constant 0x10FFFF through a
+  copy source" (matches the s3 GCC-source proof: find_free_reg has no lever to move mask off
+  $v0 except a copy-suggestion, and the constant has no natural copy source). Every score-0
+  form is the coercion the Judge FAILed 2026-07-22 22:50. The permuter modality is exhausted
+  of any SANCTIONED closing form.
+- [s4b] DISPOSITION: owner-gated. Structural axis dead (s3), permuter axis measured dead of
+  sanctioned forms (s4 + s4b). The residual is purely policy: an owner SOTN-master census
+  must decide whether the constant-staging-through-a-reused-local family is community-viable.
+  OWNER-ESCALATION filed docs/grind/decisions.md 2026-07-23 (both options presented; direct
+  sibling func_800611A4 was ruled option (b) REFUSED 2026-07-22). rejected form banked:
+  rejected/noval-inline-constants-plateau-50.c. Artifacts: tmp/grind/func_80061658/s4/noval/.
+
+- [s4] s4b independently RE-VERIFIED the s4 bytes THIS session (s4 was an opus session): val-staging form applied to src -> engine sandbox --disable all = 0, target_insns 46, build_insns 46, rules_dropped 0, zero pins/__asm__; src then reverted to HEAD clean.
+
+- [s4] s4b fresh-seed noval chassis (reused local `val` removed, base_score 510) ran 30,762 iters and plateaued at best_new_score 50 (pure v0<->v1 swap) with NO score-0 -- denied the copy source, the permuter cannot reach a match.
+
+- [s4] All 7 s4 pure-swap-chassis score-0 finds use the identical `mask = val;` copy lever (verified: output-0-1..7 each contain `mask=val;`); the noval result confirms this is the unique score-0 basin.
+
+- [s4] s3 GCC-source proof (unchanged): local-alloc.c:472 death-count gate routes the 3-death load-web to GLOBAL and the 1-death mask to LOCAL; no MIPS REG_ALLOC_ORDER, so find_free_reg hands the lone local mask $v0 -- only a copy-suggestion can move it, and a constant has none. Structural axis dead.
+
+- [s4] Direct sibling func_800611A4 (same src/text1b.c cluster, same $2/$3 pins, same v0<->v1 swap, same local-alloc.c:472 mechanism) was filed as OWNER-ESCALATION 2026-07-22 and ruled option (b) REFUSED / OWNER-ACCEPTED INCOMPLETE, alongside func_80049A2C / InitHiraRmd_80047FBC / AddTbpOfst_80047EE8 and others.
+
+- [s4] KEY DISTINCTION from siblings: func_80061658 HAS a bytes-proven pure-C-0 form (the val-staging), so it is NOT a reachability wall; the block is purely the policy classification the Judge FAILed 2026-07-22 22:50 (route-to-sign-off), which requires an owner SOTN-master census to sanction or refuse the constant-staging family.
+
+- [s4] OWNER-ESCALATION filed docs/grind/decisions.md 2026-07-23 (both options presented honestly); driver parks the function until the owner rules.

@@ -144,3 +144,26 @@ constant; its placement is inert, KILLED s1).
 3. If NOT sanctioned: the function is a genuine endgame lock; owner-gate per
    endgame-lock-disposition-policy (but a proven pure-C form exists, so it is NOT a
    register-class wall — the block is purely policy, not reachability).
+
+## [s4b] The s4 `val`-staging copy is the UNIQUE score-0 basin; no sanctioned pure-C form reaches a match.
+- statement: Every byte-neutral pure-C form that reaches honest sandbox 0 for func_80061658
+  requires staging the mask constant 0x10FFFF through a copy source (the local-alloc
+  copy-preference). No other mechanism moves mask off $v0. Denied a copy source, the permuter
+  plateaus at the pure v0<->v1 swap (floor 50 weighted / 9 insns) and cannot reach 0.
+- mechanism: s3 GCC-source proof — find_free_reg (no MIPS REG_ALLOC_ORDER) gives the lone
+  single-death LOCAL mask the lowest free reg $v0; the only lever to steer it off $v0 is a
+  copy-suggestion, and a bare constant has no natural copy source. So a match REQUIRES
+  introducing an artificial copy (val-staging or a synthesized temp) = the coercion family.
+- probe: fresh-seed campaign s4b-noval-freshseed on a chassis with `val` removed (switch
+  constants inlined), base_score 510, 30,762 iters; best_new_score 50, zero score-0. Plus
+  independent engine re-verification of the s4 val-staging form = sandbox 0 (46/46, 0 rules).
+- result: CONFIRMED — the score-0 basin is uniquely the constant-staging coercion; the
+  permuter modality yields no SANCTIONED closing form. Combined with the s3 structural
+  closure, every grind-advanceable axis is measured dead. Residual is policy-only.
+- verdict: CONFIRMED. Disposition: owner-gated (OWNER-ESCALATION filed 2026-07-23).
+
+## [s4] The s4 `val = 0x10FFFF; mask = val;` copy is the UNIQUE score-0 basin; no sanctioned pure-C form reaches a match for func_80061658.
+- mechanism: s3 GCC-source proof: find_free_reg (no MIPS REG_ALLOC_ORDER) gives the lone single-death LOCAL mask the lowest free reg $v0; the only lever to move mask off $v0 is a copy-suggestion, and a bare constant has no natural copy source. A match therefore REQUIRES introducing an artificial copy of the constant (val-staging or a synthesized dead temp) = the coercion family the Judge FAILed.
+- probe: Fresh-seed campaign s4b-noval-freshseed on a structurally-different chassis with the reused local `val` REMOVED (switch constants inlined: `*v1 = 0x21000C;` / `0x21000D;`), base_score 510, -j8, 30,762 iterations, harvest+stop in-session. Plus independent engine re-verification of the s4 val-staging form.
+- result: best_new_score = 50 (the pure v0<->v1 swap), NO score-0 produced. output-50-1 synthesized its own temp `new_var` but staged arg0/p through it (not the mask), so RA did not flip. The val-staging form re-verified this session at engine sandbox --disable all = 0 (46/46, rules_dropped 0, zero pins). Denied the natural copy source, the permuter cannot reach a match.
+- verdict: CONFIRMED

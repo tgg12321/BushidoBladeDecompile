@@ -1,8 +1,8 @@
 {
  "func": "func_80061658",
  "file": "text1b",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 0,
@@ -27,18 +27,19 @@
    "floor": 7,
    "modality": "structural",
    "headline": "Structural modality exhausted with GCC-source proof: the v0<->v1 residual is a local-vs-global allocation-CLASS wall (local-alloc.c:472 reg_n_deaths==1 gate + no MIPS REG_ALLOC_ORDER), not a flippable"
+  },
+  {
+   "session": 4,
+   "floor": 0,
+   "modality": "permuter",
+   "headline": "Permuter modality measured dead of SANCTIONED forms: the s4 val-staging is the UNIQUE score-0 basin (fresh-seed noval chassis, 30,762 iters, best 50, no 0). Bytes-proven pure-C-0 form exists but is th"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A directed permuter over the tail RA finds a byte-neutral structure that steers local-alloc's find_free_reg off v0 for the mask qty (via a copy-suggestion or a hard-v0 conflict), letting the 3-death GLOBAL load-temp win v0 while mask stays local at v1.",
-   "mechanism": "The unmet need is a source shape that makes v0 unavailable to the lone local mask qty at its birth WITHOUT introducing a split (which hoists/scatters). This is not constructible by manual grouping-preserving transforms; PERM_* mutation of the 3-load+const-store tail against a clean single-function target may expose it.",
-   "next_probe": "PERMUTER modality: build target.o from asm/funcs/func_80061658.s + prelude at offset 0; run with fresh-seed discipline from the floor-9 pure-swap form (correct schedule, only RA differs); vet any sandbox-0 form against the cheat catalog before proposing."
-  },
-  {
-   "hypothesis": "If the permuter also plateaus, the residual is a genuine register-class endgame lock (few insns short, byte-matches only via the t=$2/mask=$3 pins).",
-   "mechanism": "reg_n_deaths==1 local/global gate + ascending REG_ALLOC_ORDER is a structural property of GCC 2.7.2 on this value shape; the shared cluster (func_80061710/617C8/618B4/611A4/6133C) has the identical t=$2/mask=$3 pattern.",
-   "next_probe": "Apply endgame-lock-disposition-policy only AFTER the permuter modality is run and measured dead; NOT owner-gated while any modality is unrun."
+   "hypothesis": "OWNER RULING: sanction OR refuse the 'stage a constant through a reused live local to steer local-alloc register CHOICE on straight-line code' family.",
+   "mechanism": "First-reach coercion outside the two scoped SOTN variable-reuse sanctions (staged-value-reused-variable = scheduler ORDER via a real load; defeat-licm-hoist-var-reuse = loop-scoped). Sanctioning a new family is an owner act (review-discipline no-self-sanctioning-rule-docs); the Judge cannot self-approve.",
+   "next_probe": "Owner runs the SOTN-master-branch census for the construct (FAKE-annotated). If community precedent exists -> option (a): candidate.c closes func_80061658 + likely the 61710/617C8/618B4/611A4/6133C cluster via the normal candidate path (bytes re-proven, default-FAIL final call). If not -> option (b) REFUSED / INCOMPLETE-owner-accepted, matching the 611A4 ruling; retain the $2/$3 pins on main."
   }
  ],
  "judge_constraints": [
