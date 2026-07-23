@@ -1,8 +1,8 @@
 {
  "func": "func_80061710",
  "file": "text1b",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 0,
@@ -27,18 +27,19 @@
    "floor": 6,
    "modality": "structural",
    "headline": "Structural re-confirmed DEAD on 710: 4 untried mask-position permutations all =9; only V7 leading-block reaches sub-9 (=6). Ladder should advance to escalation."
+  },
+  {
+   "session": 4,
+   "floor": 6,
+   "modality": "permuter",
+   "headline": "Permuter axis measured DEAD natively on 710: sole score-0 basin is the constant-staging cheat; deny-copy-source (~19k iters) yields no score-0. Every grind-advanceable axis now dead; owner-gated under"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Cluster resolution is owner-gated on the constant-staging SOTN census (dominant; all grind-advanceable axes now dead).",
-   "mechanism": "710's only pure-C sandbox-0 form is val=0x10FF10; mask=val; (constant-staging through a reused live local to steer local-alloc.c:472 copy-preference off $v0 for the mask) \u2014 a register-CHOICE coercion outside every sanctioned family, Judge-FAILed for sibling 658.",
-   "next_probe": "ESCALATION-modality session: emit owner-gated for 710 citing func_80061658's OWNER-ESCALATION (docs/grind/decisions.md 2026-07-23, escalation_ref) which names 710 as a cluster member the census resolves; the driver parks the cluster until the owner rules. Do NOT re-run structural or permuter (both dead family-wide)."
-  },
-  {
-   "hypothesis": "Best SANCTIONED committable floor for 710 is 6; no structural form reaches 0.",
-   "mechanism": "V7 mask-atomic-first (mask dies before load1, both reuse $v0) = 6; every interleaved/late mask position = 9 (v0<->v1 wall). Interleave vs register-layout mutually exclusive in pure structure.",
-   "next_probe": "None grindable in structural modality \u2014 mask-position permutation space exhaustively mapped this session (s3). Do not re-run structural forms."
+   "hypothesis": "The constant-staging-through-a-reused-live-local family is community-viable (SOTN-master precedent exists), which would sanction the bytes-proven `val=0x10FF10; mask=val;` form and close the whole t=$2/mask=$3 cluster in one pass.",
+   "mechanism": "Owner-run SOTN-master-branch census for 'stage a CONSTANT through a reused live local to steer local-alloc register CHOICE on straight-line code' (annotated /* FAKE */). Reserved to the owner per review-discipline-before-commit (no self-sanctioning new families).",
+   "next_probe": "OWNER RULING on func_80061658's escalation (which names 710). No grind action - do NOT re-run structural or permuter (both measured dead natively on 710)."
   }
  ],
  "judge_constraints": [],

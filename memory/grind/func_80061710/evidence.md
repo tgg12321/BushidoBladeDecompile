@@ -173,3 +173,52 @@ Mandate: structural. s2 already reported structural dead (floor 6); before rubbe
 - [s3] Mechanism confirmed independently on 710 (not just inherited from siblings): interleave (target schedule) and mask=$v1 are mutually exclusive in pure structure because an interleaved mask is live-across the loads and GCC 2.7.2 local-alloc gives the longer-lived pseudo the lower-numbered reg.
 
 - [s3] STRUCTURAL AXIS re-confirmed DEAD with fresh 710 measurements; sanctioned floor unchanged at 6. The sole 0-basin is the constant-staging copy-preference coercion, owner-gated under func_80061658's OWNER-ESCALATION (docs/grind/decisions.md 2026-07-23) which explicitly names func_80061710 as a cluster member the SOTN census closes in one pass.
+
+## == grind s4 (PERMUTER modality), 2026-07-23 ==
+
+Mandate: permuter. Prior permuter kills (H3) were inherited from sibling 658
+s4/s4b; this session ran decomp-permuter NATIVELY on func_80061710 to confirm
+whether any committable (non-cheat) score-0 basin exists. Two telemetried
+campaigns (tools/permuter_campaign.py). Artifacts: tmp/grind/func_80061710/s4/
+{permuter_summary.md, scores.txt, campaign1_pinfree.log, campaign2_denycopy.log,
+permuter_score0_constant_staging_cheat.c}; rejected/permuter-constant-staging-cheat-s4.c.
+
+- [s4] Workspace built full-TU (src/text1b.c) for correct codegen context; func
+  region extracted vs target.o (asm/funcs/func_80061710.s, offset-0). Pin-free
+  base reproduces the exact 9-line v0<->v1 tail residual (base 46 == target 46).
+- [s4] Campaign 1 (pinfree-floor9, base_score 50, ~4574 iters): 4× score-0 finds
+  (output-0-1..0-4), first at ~635 iters/15s. EVERY score-0 = the constant-staging
+  coercion (`mask = (val = 0x10FF10);` or `val = 0x10FF10; ... mask = val;`) —
+  the reused live local `val` staging the constant. IDENTICAL to the construct
+  Judge-FAILed for func_80061658. Vetted per no-new-park-categories auto-search
+  clause -> REJECTED, not surfaced.
+- [s4] Campaign 2 (denycopy-blockscope-val, base_score 125, ~19k iters, ~23 min):
+  `val` block-scoped inside each switch case so it is NOT a live copy source in
+  the tail (decisive deny-copy-source test, replicating 658 s4b natively on 710).
+  Best score 50 (pure tail v0<->v1 residual); scores 125/95/75/50; ZERO score-0;
+  plateaued (>5 min no novel find at harvest --stop). With the copy source denied,
+  NO score-0 form exists.
+- [s4] PERMUTER AXIS MEASURED DEAD on 710 (native): the sole score-0 basin is the
+  policy-blocked constant-staging cheat; denying the reused-live-local copy source
+  eliminates all score-0 (matches 658 s4b, 30,762 iters). No committable permuter
+  form exists. H3 (no clean permuter basin) now CONFIRMED natively on 710, not just
+  inherited from siblings. src never modified (git clean; oracle intact — only
+  temp copies tmp/perm_710_s4*_*.c preprocessed).
+- [s4] Every grind-advanceable axis now measured dead on 710: structural (s2/s3 —
+  V7 floor-6 best sanctioned, all interleave positions =9) + permuter (s4). Sole
+  0-basin is the constant-staging coercion, owner-gated under func_80061658's
+  OWNER-ESCALATION (docs/grind/decisions.md 2026-07-23, line ~1361) which names
+  func_80061710 as a cluster member the SOTN census resolves in one pass. Filed a
+  dedicated OWNER-ESCALATION for func_80061710 this session; returned owner-gated.
+
+- [s4] s4 permuter workspace built full-TU (src/text1b.c) for correct codegen context; func region extracted vs target.o (asm/funcs/func_80061710.s, offset-0, .set noreorder r3000); pin-free base = 46 insns == target 46, diff is exactly the 9-line v0<->v1 tail rename.
+
+- [s4] Campaign 1 (pinfree, ~4574 iters): 4x score-0, all the constant-staging coercion; vetted per no-new-park-categories auto-search clause -> REJECTED (cheat by any spelling, no semantic purpose, justified only by local-alloc.c:472 copy-preference), not surfaced.
+
+- [s4] Campaign 2 (deny-copy-source, ~19k iters/~23 min): best 50, ZERO score-0, plateaued - the score-0 basin is UNIQUELY the constant-staging copy, confirmed natively on 710 (matches 658 s4b).
+
+- [s4] Every grind-advanceable axis now dead on 710: structural (s2/s3 - V7 floor-6 best sanctioned; all interleave/late mask positions = 9) + permuter (s4 native). Sole 0-basin is the policy-blocked constant-staging cheat.
+
+- [s4] func_80061658's OWNER-ESCALATION (docs/grind/decisions.md 2026-07-23) option (a) explicitly names func_80061710 as a cluster member its SOTN-master census resolves in one pass; sibling func_800611A4 (no pure-C-0 form) was ruled option (b) REFUSED/OWNER-ACCEPTED INCOMPLETE.
+
+- [s4] src/text1b.c never modified this session (git clean, oracle intact); all edits were temp preprocessed copies (tmp/perm_710_s4*_*.c). Filed a dedicated OWNER-ESCALATION for func_80061710 this session.

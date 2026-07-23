@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80061710",
-      "file": "text1b",
-      "distance": 9,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_800617C8",
       "file": "text1b",
       "distance": 9,
@@ -2524,6 +2516,15 @@
       "park_reason": "owner escalation pending: docs/grind/decisions.md 2026-07-23 \u2014 func_80061658 (src/text1b.c) \u2014 OWNER-ESCALATION (filed by grind s4 permuter per the 2026-07-22 22:50 Judge FAIL + standing 2026-07-20 endgame-lock-disposition rule)"
     },
     {
+      "func": "func_80061710",
+      "file": "text1b",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "owner escalation pending: docs/grind/decisions.md 2026-07-23 func_80061710 OWNER-ESCALATION (subsumed by the 2026-07-23 func_80061658 OWNER-ESCALATION option (a), which names func_80061710 as a cluster member the SOTN-master census resolves)"
+    },
+    {
       "func": "special_camera_set_win_cam",
       "file": "code6cac_b2_post",
       "distance": 510,
@@ -2760,13 +2761,13 @@
   ],
   "counts": {
     "total": 337,
-    "active": 296,
+    "active": 295,
     "by_status": {
-      "active": 296,
-      "parked": 41
+      "active": 295,
+      "parked": 42
     },
     "by_verdict": {
-      "C": 142,
+      "C": 141,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }

@@ -32,14 +32,20 @@
   constant-staging copy-preference (H1), owner-gated under 658's census. An
   ESCALATION-modality session files owner-gated citing 658's escalation.
 
-### H3 — No clean permuter basin (deny-copy-source proven dead on 658)
+### H3 — No clean permuter basin (deny-copy-source proven dead on 658 AND NOW ON 710)
 - **mechanism:** 658 s4b removed the reused `val` source (30,762 iters) → NO
   score-0. The score-0 basin is uniquely the constant-staging copy; find_free_reg
   has no lever to move mask off $v0 except a copy-suggestion, and the constant has
   no natural copy source.
-- **status:** KILLED at the family level. A permuter-modality session on 710 will
-  re-find only the val-staging basin (the H1 coercion) — no committable output.
-- **next_probe:** none worth spending; would duplicate 658 s4/s4b.
+- **status:** CONFIRMED NATIVELY ON 710 (grind s4, permuter modality). Campaign 1
+  (pin-free floor-9 chassis, ~4574 iters) re-found only the val-staging basin —
+  4× score-0, all the H1 constant-staging coercion (rejected/permuter-constant-
+  staging-cheat-s4.c). Campaign 2 (deny-copy-source: `val` block-scoped so it is
+  not a live copy source, ~19k iters/~23 min) plateaued at best 50 with ZERO
+  score-0, exactly replicating 658 s4b. The score-0 basin is UNIQUELY the
+  constant-staging copy-preference; no committable permuter form exists on 710.
+- **next_probe:** none — permuter axis measured dead natively; do NOT re-run.
+  Disposition is the owner SOTN census under 658's escalation (names 710).
 
 ## Rejected forms bank
 - middle-load-block-local-split-floor7.c (s2)
@@ -82,3 +88,15 @@
 - probe: Each form applied pin-free to src/text1b.c; sandbox --disable all. See tmp/grind/func_80061710/s3/structural_permutation_measurements.txt.
 - result: All three = sandbox 9 (46/46, 0 rules). Only mask-dies-before-load1 (V7) reaches sub-9 (=6). Every position at/after load1 leaves the interleaved mask live-across a load -> local-alloc.c:472 gives the longer-lived pseudo the lower reg ($v0) -> loads pushed to $v1 -> full v0<->v1 rename = 9.
 - verdict: KILLED
+
+## [s4] A committable (non-cheat) score-0 permuter basin exists for func_80061710 (native measurement, not inherited from siblings).
+- mechanism: If find_free_reg could be steered to put the reused 3-load web in $v0 and the 0x10FF10 mask in $v1 without the constant-staging copy-preference, some pure-C structural mutation would reach score 0. Directed permuter over the full mutation space would find it if it exists.
+- probe: Campaign 1 pinfree-floor9 chassis (base_score 50, ~4574 iters): base pin-free reproduces the exact 9-line v0<->v1 tail residual (46==46 insns). tmp/perm_710_s4.
+- result: 4x score-0 finds (output-0-1..0-4, first at ~635 iters), EVERY one the constant-staging coercion (`mask=(val=0x10FF10);` / `val=0x10FF10;...mask=val;`) - identical to the func_80061658 Judge-FAILed construct. No non-cheat score-0.
+- verdict: KILLED
+
+## [s4] The constant-staging copy-preference is the UNIQUE score-0 basin on 710; denying the reused-live-local copy source eliminates all score-0.
+- mechanism: The score-0 layout requires local-alloc.c:472 copy-preference to move the mask off $v0, which needs an existing live pseudo as copy source (the switch's `val`). A fresh temp introduced right before the tail has no prior live range -> same allocation as a direct assignment. Block-scoping `val` inside each switch case removes it as a live copy source.
+- probe: Campaign 2 denycopy-blockscope-val chassis (base_score 125, ~19k iters / ~23 min, harvest --stop after >5 min no novel find): `val` block-scoped so not live across the tail. tmp/perm_710_s4b.
+- result: Best score 50 (pure tail v0<->v1 residual, switch-region diff fixed); scores 125/95/75/50; ZERO score-0. Natively replicates sibling 658 s4b (30,762 iters, no score-0). With the copy source denied, no score-0 form exists.
+- verdict: CONFIRMED
