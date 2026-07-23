@@ -1,0 +1,40 @@
+{
+ "func": "ang_hosei_80056FE8",
+ "file": "text1b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 0,
+   "floor": 10,
+   "modality": "wip-import",
+   "headline": "floor imported from memory/wip checkpoint"
+  },
+  {
+   "session": 1,
+   "floor": 10,
+   "modality": "recon",
+   "headline": "Recon: floor 10 (build 42 vs 43) reconfirmed; 1-insn gap is a coupled RA load-delay NOP; no sibling analog; frontier = .greg dump + clean-target permuter."
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "base->$a3 (instead of $a1) is a resolvable allocno-priority tiebreaker, not a hard liveness conflict.",
+   "mechanism": "GCC 2.7.2 local-alloc allocno priority ordering assigns var_v0's test load $a1 first; the .greg conflict list reveals whether base actually conflicts with $a1 or merely lost the priority tie.",
+   "next_probe": "cc1 -da on the candidate base.i; read ';; Register dispositions:' for the base and var_v0 pseudos and their conflict sets (the mandated pre-claim diagnostic, never run for this fn)."
+  },
+  {
+   "hypothesis": "A directed/randomized permuter on a clean single-function target closes the a1/a3 swap.",
+   "mechanism": "target.o at offset 0 (asm/funcs + prelude, drop .set gp=64) makes the base score the real weighted RA diff instead of ~340k address noise, so the search has usable gradient.",
+   "next_probe": "Build clean target.o; run permuter_campaign.py with --stop-on-zero + PERM_* directives; fresh-seed discipline (~20-30 min windows), wait in-turn, harvest --stop before ending."
+  },
+  {
+   "hypothesis": "Shrinking var_v0's competing live range lets the allocator keep base in $a1.",
+   "mechanism": "If var_v0's test-load live range no longer overlaps $a1's assignment window, base (arg-reg-resident, live to the join) wins $a1 and var_v0 falls to $v0.",
+   "next_probe": "Derive the specific C form (e.g. delayed materialization / narrowed type of var_v0) from the .greg conflict evidence in frontier item 1, then sandbox + full-build SHA1 check."
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-23T12:12:42.376365+00:00"
+}
