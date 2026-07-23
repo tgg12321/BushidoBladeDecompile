@@ -211,3 +211,71 @@ for the rest.
 - [s2] 25 structural variants swept total (sweep.py/sweep2.py/sweep3.py); only the live-range-steering off-early family drops below 6, and it is a cheat.
 
 - [s2] Structural modality is exhausted for this function; the floor-6 RA wall is not breakable by legitimate structural C. Next live avenue is the F1 permuter campaign (different modality, still UNTRIED) — floor remains grindable, not owner-gated.
+
+## s3 (2026-07-22, structural) — F2 + F3 (the two remaining live-frontier structural hypotheses) measured DEAD; floor 6 holds
+- **Floor 6 reconfirmed** (clean candidate applied to src: score 6, build 14, target 14).
+  Sweep harness tmp/grind/func_8004954C/s3/sweep_f2f3.py; results
+  tmp/grind/func_8004954C/s3/sweep_f2f3_results.json.
+- **F2 (extend counter i's live-length to the return) KILLED — makes it WORSE, not
+  better.** `return sum + (arg2 - i)` -> score 7 (baseline 6). `bound=arg1` for the
+  test + i in the return -> 7. Forced-correct `if(arg1<=0) i=arg1;` -> 10/build 17.
+  Mechanism (confirms s1 two-axis theory): equalizing live_length does NOT flip
+  priority because i STILL outranks sum on the OTHER axis — frequency (3 loop refs
+  vs 2). Worse, keeping i live to the return forces i to hold a hard reg through the
+  epilogue, so the subtraction no longer emits as target `subu v0,a2,a1` (it emits
+  against i's reg) -> +1 diff. Also NOT faithful: at loop exit i==arg1 only for
+  arg1>0 (i=0 for arg1<=0). No faithful post-loop use of i equals arg1. Saved to
+  rejected/f2_extend_i_liverange.c.
+- **F3 (raise sum's per-iteration ref count) — mechanism CONFIRMED but only via a
+  cheat-form; F3-as-legitimate-lever KILLED.** `f3_split_add`
+  (`sum += arg0/2; sum += arg0 - arg0/2;`, arithmetically == `sum += arg0` for all
+  int arg0) -> **score 3, build_insns 14**. The extra source-level ref to sum lifts
+  reg_n_refs(sum) in global.c:604 allocno_compare, flipping RA priority toward sum;
+  GCC folds the redundant split back so the insn COUNT is unchanged (14). This is the
+  F3 mechanism working — proving raising sum's n_refs DOES lower the score — but the
+  only construct that raises sum's refs is a no-semantic-purpose redundant-arithmetic
+  split = a cheat by spelling (same species as s2 off-early / paren-reassoc). Does not
+  even reach 0 (residual 3 = delay-slot/subu scheduling). Saved to
+  rejected/f3_split_add_nref_lift.c.
+- **f3_split_add cheat-reviewer verdict FAIL (s3, independent agent):** fails tests
+  1 (no semantic purpose — worker's own analysis says it's algebraically identical),
+  2 (no programmer writes x/2+(x-x/2) for x), 3 (justification names global.c/
+  allocno_compare/nrefs — GCC-internals, disqualifying), 4/5 (iterating spellings of
+  an inert ref-multiplier until DCE doesn't eat it; not among the SOTN-sanctioned
+  families). Confirmed KILL.
+- **Faithful ref-raise is impossible:** `f3_sum_temp` (`s32 t = sum + arg0; sum = t;`,
+  a real extra read) stays at 6 — flow deletes the bare read before n_refs counting.
+  The triangular sum genuinely references the accumulator once per iteration; no
+  semantically-natural restructure changes that. So there is NO faithful form that
+  raises sum's refs.
+- **Combined form f3f2_both (split-add + i-in-return) -> 4** — still a cheat (contains
+  the split_add) and still not 0. Not proposed.
+- **Conclusion:** the two remaining named live-frontier structural hypotheses (F2, F3)
+  are now measured DEAD with data, joining s2's 25-form subu-at-end sweep and the
+  off-early/paren-reassoc rejections. The structural modality is COMPREHENSIVELY
+  exhausted: every legitimate structural lever leaves i strictly outranking sum on at
+  least one priority axis (freq or live_length), and the only forms that flip RA
+  (off-early=4, split-add=3, paren-reassoc=2) are all no-semantic-purpose
+  allocno-priority steering cheats. Floor 6 holds. Next avenue is F1 permuter
+  (DIFFERENT modality, still UNTRIED) — floor remains grindable, NOT owner-gated
+  (a sanctioned axis, the permuter, has not been measured).
+
+- [s3] F2 measured DEAD: extending i's live-range to the return raises score to 7 (worse), not lower; i still wins the freq axis (3 refs vs 2) and forcing i live through the epilogue breaks target's subu v0,a2,a1. Also unfaithful (i==arg1 only for arg1>0).
+
+- [s3] F3 mechanism CONFIRMED but only via cheat: split-add (arg0/2 + (arg0-arg0/2)) drops score 6->3 with build_insns 14 by lifting reg_n_refs(sum); cheat-reviewer FAIL (no semantic purpose, GCC-internals-justified). Faithful extra-read (f3_sum_temp) stays at 6 (DCE'd pre-count). No faithful ref-raise exists.
+
+- [s3] Structural modality comprehensively exhausted: F2+F3 now measured dead alongside s2's 25-form sweep. Every legitimate structural form leaves i outranking sum on freq or live_length; only cheat-forms (off-early=4, split-add=3, paren-reassoc=2) flip RA. Floor 6. Next modality is F1 permuter (untried) — not owner-gated.
+
+- [s3] Floor 6 reconfirmed with clean candidate applied to src/text1b.c:837 (sandbox --disable all: score 6, build_insns 14, target_insns 14, 0 rules).
+
+- [s3] F2 KILLED: `return sum + (arg2 - i)` -> 7; bound-var+i-return -> 7; forced-correct -> 10/build17. Extending i to the return is worse because i still wins the freq axis (3 refs vs 2) and holding i live through the epilogue breaks target's subu v0,a2,a1. Also unfaithful (i==arg1 only for arg1>0). rejected/f2_extend_i_liverange.c.
+
+- [s3] F3 mechanism confirmed but cheat-only: split-add `sum += arg0/2; sum += arg0 - arg0/2;` (==sum+=arg0) drops score 6->3, build_insns 14, by lifting reg_n_refs(sum) in global.c:604 allocno_compare; GCC folds the split back so insn count is unchanged. rejected/f3_split_add_nref_lift.c.
+
+- [s3] f3_split_add cheat-reviewer verdict FAIL (independent agent): no semantic purpose (algebraically identical), no programmer writes x/2+(x-x/2), justification names GCC allocno internals, not among SOTN-sanctioned families (iterating spellings of an inert ref-multiplier).
+
+- [s3] Faithful ref-raise is impossible: real-temp extra read (f3_sum_temp) stays at 6 — flow deletes the bare read before n_refs counting. The triangular sum genuinely references its accumulator once per iteration.
+
+- [s3] Structural modality now comprehensively exhausted: F2+F3 measured dead join s2's 25-form subu-at-end sweep + off-early(4)/paren-reassoc(2) rejections. Every legitimate structural form leaves i outranking sum on at least one priority axis (freq or live_length); only no-semantic-purpose allocno-steering cheats (off-early=4, split-add=3, paren-reassoc=2) flip RA.
+
+- [s3] Not owner-gated: the F1 permuter modality (a sanctioned axis) is still UNTRIED; the floor remains grindable via a different modality.

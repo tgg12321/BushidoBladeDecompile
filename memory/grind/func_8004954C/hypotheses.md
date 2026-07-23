@@ -19,21 +19,34 @@ assignment differs. See evidence.md s1 for the measured wall mechanism.
   --stop before ending the turn. Vet any sandbox-0 form against the cheat
   catalog BEFORE proposing (no dead stores / pins / reassoc).
 
-### F2 — Natural post-loop use of i that faithfully equals arg1  (LOW EV)
+### F2 — Natural post-loop use of i that faithfully equals arg1  (KILLED s3)
 - mechanism: equalizing i.live_length up to sum's (both to the return) would
   make priority a near-tie; the allocno-number tiebreak (sum=75 < i=76) then
-  allocates sum first → sum gets $v1. BUT: any post-loop use of i emits with
-  i's register (not $a1), breaking the target `subu v0,a2,a1`; and a use that
-  doesn't affect output is a dead-use cheat. Recorded as the theory of the
-  wall; probe only to CONFIRM it's a dead-end (measure a faithful form if one
-  exists). Expect KILLED.
+  allocates sum first → sum gets $v1.
+- result (s3): KILLED. Extending i to the return RAISES the score (6→7), not
+  lowers it — i still outranks sum on the freq axis (3 refs vs 2), and forcing i
+  to hold a hard reg through the epilogue breaks target's `subu v0,a2,a1`.
+  Also unfaithful: i==arg1 only for arg1>0. No faithful post-loop use of i
+  exists. See rejected/f2_extend_i_liverange.c.
 
-### F3 — Raise sum's loop-ref count via a semantically-motivated recompute (LOW EV)
+### F3 — Raise sum's loop-ref count via a semantically-motivated recompute (KILLED s3)
 - mechanism: sum loses the priority race partly on freq (2 loop refs vs i's 3).
-  A form where the accumulator is genuinely referenced more per iteration could
-  flip freq — but the target loop body is exactly `addu v1,v1,a0` (2 refs); any
-  extra ref changes the emitted loop bytes. Likely no faithful form exists;
-  measure to KILL or to feed the permuter a better seed.
+  Raising sum's per-iteration refs would flip freq.
+- result (s3): mechanism CONFIRMED but only via a cheat. split-add
+  (`sum += arg0/2; sum += arg0 - arg0/2;`, == `sum += arg0`) drops score 6→3
+  (build 14) by lifting reg_n_refs(sum) — but it is a no-semantic-purpose
+  redundant-arithmetic split, cheat-reviewer FAIL. A faithful extra read
+  (`s32 t = sum+arg0; sum=t;`) stays at 6 (DCE'd before n_refs counting).
+  No faithful ref-raise exists → F3-as-legitimate-lever KILLED.
+  See rejected/f3_split_add_nref_lift.c.
+
+### F1 — Directed permuter campaign from candidate.c  (HIGHEST EV, UNTRIED — DIFFERENT MODALITY)
+- Now the ONLY remaining live avenue after structural is comprehensively dead.
+  This is the permuter modality, not structural — for a future permuter session.
+  mechanism/probe unchanged from the s1 F1 entry below (build target.o from
+  asm/funcs/func_8004954C.s at offset 0, fresh-seed campaign, wait+harvest
+  in-turn, cheat-vet any sandbox-0 form). If the permuter also fails, every
+  sanctioned pure-C axis is dead → endgame-lock / owner-gated.
 
 ## Rejected forms bank (do NOT re-propose — all measured dead)
 - `s32 off = arg2 - arg1;` HOISTED before loop, `return sum + off` (score 4, s2) —
@@ -86,4 +99,16 @@ assignment differs. See evidence.md s1 for the measured wall mechanism.
 - mechanism: Different integer width or loop direction could change ref counts / codegen shape favorably.
 - probe: i=s16, i=u32, separate down-counter n, for(i=arg1;i!=0;i--) — sandbox each.
 - result: i=s16 -> 5 but build_insns 17 (extra sign-extends, worse structure, not a real improvement); i=u32 -> 7; down-counter n -> 9; for-down -> 10 (break the 14-insn/slt-vs-a1 structure). All worse.
+- verdict: KILLED
+
+## [s3] Extending counter i's live-length to the return (F2) equalizes live_length with sum and lets the allocno-number tiebreak allocate sum first, flipping RA so sum wins $v1 (match).
+- mechanism: global.c:604 allocno_compare priority = flog2(nrefs)*nrefs/live_length; if i.live_length rises to equal sum's, priority becomes a near-tie broken by lower allocno number (sum=75 < i=76).
+- probe: Measured `return sum + (arg2 - i)`, a bound-var decoupled variant, and a forced-correct `if(arg1<=0) i=arg1;` form via cheat-invisible sandbox (tmp/grind/func_8004954C/s3/sweep_f2f3.py).
+- result: Scores rose to 7, 7, and 10/build17 respectively (baseline 6). Extending i to the return makes it WORSE: i still outranks sum on the freq axis (3 loop refs vs 2), and forcing i to hold a hard reg through the epilogue breaks target's subu v0,a2,a1 (emits against i's reg, +1 diff). Also unfaithful: i==arg1 only for arg1>0.
+- verdict: KILLED
+
+## [s3] Raising sum's per-iteration reference count (F3) flips the freq axis so sum outranks i and wins $v1, via a semantically-faithful restructure.
+- mechanism: sum loses partly on freq (2 loop refs vs i's 3). Raising reg_n_refs(sum) lifts sum's allocno_compare priority (flog2(nrefs)*nrefs term).
+- probe: Measured split-add `sum += arg0/2; sum += arg0 - arg0/2;` (==sum+=arg0), a real-temp extra read `s32 t=sum+arg0; sum=t;`, and the split+F2 combo; sandbox each; ran cheat-reviewer on the split-add.
+- result: Split-add drops score 6->3 (build_insns unchanged at 14) — the mechanism WORKS (lifts reg_n_refs(sum), flips RA toward sum) — but it is a no-semantic-purpose redundant-arithmetic split; independent cheat-reviewer verdict FAIL (fails semantic-purpose, human-programmer, GCC-internals-justification, family tests). The faithful real-temp form stays at 6 (DCE deletes the extra read before n_refs counting). No faithful ref-raise exists, so F3 as a legitimate lever is dead; it also never reaches 0 (residual 3).
 - verdict: KILLED
