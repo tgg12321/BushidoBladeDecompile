@@ -1,0 +1,40 @@
+{
+ "func": "func_80061658",
+ "file": "text1b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 0,
+   "floor": 9,
+   "modality": "wip-import",
+   "headline": "floor imported from memory/wip checkpoint"
+  },
+  {
+   "session": 1,
+   "floor": 9,
+   "modality": "recon",
+   "headline": "Honest gap is a pure v0<->v1 RA swap (t->v1, mask->v0), scheduling byte-identical; mask-before-call KILLED (const remats after call)."
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Shorten t's live range (or otherwise raise its allocno priority) so t wins v0 over mask, without touching the (inert) mask placement.",
+   "mechanism": "t is one reused variable => single long allocno with priority below mask's. Splitting into 3 short webs that reuse v0 would give t->v0, mask->v1 (target); prior split measured 11 but the RTL cause was never captured.",
+   "next_probe": "Split t into t0/t1/t2, dump greg, check whether the 3 short webs reuse v0 (target) or scatter to v1/a0 (cause of +2); if scatter is due to two loads being simultaneously live, reorder so each load is dead before the next load's def."
+  },
+  {
+   "hypothesis": "A directed permuter over the tail RA structure finds a legitimate pure-C form that steers t->v0.",
+   "mechanism": "Random+directed PERM mutation of the 3-load + const-store tail against a clean single-function target exposes RA-steering structures manual analysis misses.",
+   "next_probe": "Build target.o from asm/funcs/func_80061658.s + prelude at offset 0; run permuter with fresh-seed discipline; vet any sandbox-0 form against the cheat catalog before proposing."
+  },
+  {
+   "hypothesis": "The winning pure-C form generalizes to the sibling pin cluster.",
+   "mechanism": "Siblings share the identical t=$2/mask=$3 pattern; a genuine RA-structure fix (not a pin) should reproduce across them.",
+   "next_probe": "After a form flips 61658 to 0, apply the same structure to func_80061710 and sandbox it as a generality check."
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-23T02:27:46.340345+00:00"
+}

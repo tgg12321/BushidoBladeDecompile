@@ -556,3 +556,4 @@
 - 2026-07-22 21:00 func_800611A4 s6 [forensics] floor=6: Forensics: v0<->v1 wall traced to local-alloc.c:472 reg_n_deaths==1 gate; reused load-temp (3 deaths) punted to global, single-death mask grabs v0 locally first. Flip needs a fresh single-death local pseudo (invented cheat) + reverse load order; existing-var carrier (v1) killed. Floor held 6.
 - 2026-07-22 21:17 func_800611A4 s7 [forensics] OWNER-GATED — parked pending owner ruling: s7 forensics: both live-frontier RA axes + a new aggregate-copy axis KILLED with cc1 -da; v0<->v1 wall is a local-before-global pass-ordering invariant at 43 insns. Every sanctioned axis dead across 4 modalities; OWNER-ESCALATION filed (endgame-lock).
 - 2026-07-22 21:27 func_8006156C COMPLETED-C after 1 sessions.
+- 2026-07-22 21:40 func_80061658 s1 [recon] floor=9: Honest gap is a pure v0<->v1 RA swap (t->v1, mask->v0), scheduling byte-identical; mask-before-call KILLED (const remats after call).
