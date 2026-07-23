@@ -1,0 +1,40 @@
+{
+ "func": "func_80045878",
+ "file": "text1a_c",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 0,
+   "floor": 10,
+   "modality": "wip-import",
+   "headline": "floor imported from memory/wip checkpoint"
+  },
+  {
+   "session": 1,
+   "floor": 10,
+   "modality": "recon",
+   "headline": "Recon: floor 10 reconfirmed (build 107 vs target 108); mapped 2 coupled gaps (A=folded else recompute, B=tail base-copy) and PROVED Gap A's insn is pure-C-reachable via arm-split (107->108), residual "
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Gap A: keep the else recompute materialized (arm-split) AND anchor it last to match target position, eliminating the +1 sched diff.",
+   "mechanism": "sched1 launch-priority: a fresh single-def s3 feeding the next call arg is hoisted early; a redefinition of a live s3 is anti-dep-anchored but cse folds it. Need a form that both survives cse AND is anchored (e.g. s3 live-in + structural fold-defeat, or reorder to drop its launch priority).",
+   "next_probe": "Build variants: (a) s3 live-in via pre-if init but else-arm recompute forced distinct enough to escape cse fold without a barrier; (b) reorder else stores/recompute; measure build_insns==108 AND score<10. Read tools/gcc-2.7.2/sched.c priority + cse.c fold conditions."
+  },
+  {
+   "hypothesis": "Gap B: materialize the tail base copy (addu v0,s1,zero) by keeping s1 as the long-lived record pseudo while a separate caller-save tail base survives copy-prop.",
+   "mechanism": "local-alloc prefers caller-save for a short-lived tail-base pseudo; single-set alias copy-props away. Per param-reuse-base-copy-cse-canon, a multi-set / kept-live spelling can force the copy.",
+   "next_probe": "Try s1 kept live past the tail (reference after the block) or a multi-set base cursor; inspect cc1 -da .greg dump for s1's pseudo disposition; measure tail block against target."
+  },
+  {
+   "hypothesis": "Gap A+B coupling via param types: m2c infers (s16 arg0, s16 arg1, u32 *arg2) vs source all-s32; correcting them may shift RA/scheduling for both gaps at once.",
+   "mechanism": "narrower param types change value-tracking and RA pressure, possibly changing both the recompute placement and the tail base allocation.",
+   "next_probe": "Change signature to s16/s16/u32*, adjust the a2 use sites, sandbox; low priority \u2014 try after H-A/H-B."
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-23T09:09:52.873291+00:00"
+}
