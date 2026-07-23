@@ -1,0 +1,40 @@
+{
+ "func": "func_80061710",
+ "file": "text1b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 0,
+   "floor": 9,
+   "modality": "wip-import",
+   "headline": "floor imported from memory/wip checkpoint"
+  },
+  {
+   "session": 1,
+   "floor": 9,
+   "modality": "recon",
+   "headline": "Recon: 710 is the func_80061658 subfamily \u2014 constant-staging reaches sandbox 0 but is the Judge-FAILed pending-census coercion; sanctioned floor 9. Cluster owner-gated under 658's escalation."
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The 710 disposition is a policy ruling reserved to the owner, resolved by func_80061658's pending SOTN-master-branch census on the constant-staging family.",
+   "mechanism": "710's only sandbox-0 form is the constant-staging coercion (local-alloc.c:472 copy-preference); 658's escalation names 710 as a cluster member the census closes in one pass. No grindable axis remains.",
+   "next_probe": "ESCALATION-modality session: file/point owner-gated for 710 citing func_80061658's escalation (docs/grind/decisions.md 2026-07-23), or let the driver park the cluster with 658 pending the owner ruling."
+  },
+  {
+   "hypothesis": "Best SANCTIONED (committable) floor for 710 is 6-7, never 0.",
+   "mechanism": "mask-atomic-first V7 (both reuse $v0) -> 6 on 611A4; middle-load block-local split -> 7 on 658; every interleaved mask position sits at the v0<->v1 wall (9).",
+   "next_probe": "If structural modality is assigned, confirm the 6/7 sanctioned floor on 710 (apply V7 + middle-load block-local split); do NOT expect a committable 0."
+  },
+  {
+   "hypothesis": "No clean permuter basin exists for 710.",
+   "mechanism": "658 s4b deny-copy-source (30,762 iters) produced no score-0; the score-0 basin is uniquely the constant-staging copy the Judge FAILed.",
+   "next_probe": "Skip permuter for 710 unless the owner sanctions the constant-staging family; a run would only re-find the H1 coercion."
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-23T04:22:17.594910+00:00"
+}
