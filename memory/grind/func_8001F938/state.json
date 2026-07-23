@@ -1,8 +1,8 @@
 {
  "func": "func_8001F938",
  "file": "code6cac",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 0,
@@ -27,13 +27,19 @@
    "floor": 8,
    "modality": "structural",
    "headline": "Structural: pure UNSIGNED single-read defeats the +0x270 fold (floor 6) WITHOUT a dual view \u2014 corrects the s2 'only a 2nd typed memory view works' over-claim and re-proves the signed-compare-vs-unsign"
+  },
+  {
+   "session": 4,
+   "floor": 8,
+   "modality": "permuter",
+   "headline": "Permuter modality exhausted: clean floor-8 chassis plateaus at score 320 over ~95k iters, never reaching a match nor generating any clean sub-8 lever; frame is a coupled byproduct of the banned dual-r"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "No pure-C construct outside the pre-banned signedness-split family can beat the clean floor 8 at +0x270; the structural axis is exhausted.",
-   "mechanism": "The +0x270 clamp inherently needs a SIGNED compare (slti/lh) AND an unsigned/opaque index value (unfolded lhu) of ONE field. A single typed read delivers exactly one of the two (signed=fold=floor8 / unsigned=unfold-but-sltiu=floor6). Every construct that supplies both is a dual typed view = the banned family. Now measured dead across: memory dual-read, guarded ternary, union, two-pointer, signed-cast-single-read (floor 0), u16-local branch-PHI (floor 4), redundant `&0xFFFF` mask, literal `*2`, signed single-read (floor 8), and now pure unsigned single-read (floor 6).",
-   "next_probe": "Non-structural axis only: run the SOTN-master-branch signedness-split-family (CSE-defeat-via-dual-typed-access) evidence census and bring it to the owner. If ESTABLISHED, the distance-0 signed-cast-single-read.c form becomes committable; if NOT ESTABLISHED (as the F2 2026-07-01 census returned), the function stays INCOMPLETE at clean floor 8. Do NOT re-measure any structural fold-defeat spelling \u2014 all are dead/banned."
+   "hypothesis": "Both grindable code-search axes are now exhausted for a clean sub-8: structural fold-defeat (s1-s3, every spelling dead/banned) and permuter random search (s4, plateau 320 with no clean lever).",
+   "mechanism": "The +0x270 clamp inherently needs a SIGNED compare (slti/lh) AND an unsigned/opaque index (unfolded lhu) of ONE field; a single typed read delivers exactly one (signed=fold=floor8 / unsigned=unfold-but-sltiu=floor6). Every construct supplying both is a dual typed view = the pre-banned signedness-split family. Random mutation over ~95k iters neither escaped this nor even generated the dual view.",
+   "next_probe": "Non-structural axis only (as s3 frontier already stated): run the SOTN-master-branch signedness-split-family (CSE-defeat-via-dual-typed-access) evidence census and bring it to the owner. If ESTABLISHED, the distance-0 signed-cast-single-read.c form becomes committable; if NOT ESTABLISHED (F2 2026-07-01 census returned NOT ESTABLISHED), the function stays INCOMPLETE at clean floor 8. Do NOT re-measure any structural fold-defeat spelling or re-run the permuter on the clean chassis \u2014 both are dead."
   }
  ],
  "judge_constraints": [

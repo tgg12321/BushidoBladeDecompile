@@ -113,8 +113,20 @@ dichotomy confirmed at register level. src/ kept at clean floor-8.
 - result: sandbox floor 6, build_insns 106 (target 107). Disasm: ONE `lhu 0x270`, `sltiu v0,v1,4`, `sll v0,v1,16; sll; sra v0,v0,15` (fold DEFEATED). But it emits sltiu where target has slti (signed) and is missing target's 2nd load; cannot reach 0 without adding a signed view = the pre-banned dual read; semantically different for field>=0x8000; strictly dominated by the floor-0 signed-cast-single-read.c.
 - verdict: KILLED
 
+## [s4] A decomp-permuter campaign from the clean floor-8 chassis (random type/expr mutation) finds a clean sub-8 lever or byte-match that the manual structural search missed.
+- mechanism: The permuter mutates types (s16<->u16, casts), statement order, and expression shape; if any clean construct beats the folding dichotomy, ~95k iterations of simulated annealing should surface it (base score 615 -> target 0 achievable only if a closing form exists in the clean search space).
+- probe: Hand-built workspace (minimal self-contained base.c, target.o at offset 0, --stack-diffs ON; base=105 insns vs target 107, permuter base score 615). Launched `permuter_campaign.py`, waited in-turn ~40 min / ~95k iters, harvested + stopped.
+- result: KILLED. Best score plateaued at 320 (from 615) and never improved past it over ~85k further iters. The 320 form is NOT a match and reached 320 only via TWO cheats: `volatile short pad;` (dead frame-forcer) + `raw_or_3 = raw_or_3;` (dead self-assign). Even with the cheats the +0x270 fold gap is untouched. The randomizer never generated the banned dual-typed read (only distance-0 form). Confirms the s1-s3 dichotomy from a fresh angle: no clean sub-8 lever exists; the 8-byte frame is a coupled byproduct of the dual-read, not an independent clean lever. rejected/permuter-volatile-pad-frame.c.
+- verdict: KILLED
+
 ## [s3] The s2/s2c ledger claim 'NO single-typed read defeats the fold; only a second TYPED memory view of the field works' holds.
 - mechanism: s2/s2c only tested signed single-read (folds->floor8), the non-branched `&0xFFFF` register mask (GCC eliminates+folds->floor8), and the u16 branch-PHI truncation (floor4). They never tested a plain unsigned single-read comparison.
 - probe: Measured the untested pure-unsigned single-read spelling directly.
 - result: FALSE. A plain unsigned single read defeats the fold (floor 6, unfolded sll16;sra15) with ONE deref and no dual view. The corrected statement: read-signedness alone toggles the fold; unsigned unfolds (but forfeits the signed compare), signed folds.
+- verdict: KILLED
+
+## [s4] A decomp-permuter campaign from the clean floor-8 chassis (random type/expr/order mutation) finds a clean sub-8 lever or byte-match that the manual structural search (s1-s3) missed.
+- mechanism: Simulated-annealing mutation of read signedness (s16<->u16), value casts, statement order, and expression shape; if any clean construct beats the (raw<<16)>>15 -> raw*2 fold at +0x270, ~95k iterations should surface it (base permuter score 615; a byte-match at 0 is reachable only if a clean closing form exists in the search space).
+- probe: Hand-built permuter workspace (tmp/grind/func_8001F938/s4/ws): minimal self-contained base.c (int typedefs + the fn only; verified isolated compile == full-TU, base 105 insns vs target 107 == sandbox build_insns), target.o from asm/funcs at offset 0, --stack-diffs ON (target has a real 8-byte frame). Launched permuter_campaign.py, waited in-turn ~40 min / ~95k iters, harvested + --stop.
+- result: Best score plateaued at 320 (from base 615) at ~11 min and never improved across ~85k further iters. The 320 form is NOT a match and reached 320 only via two cheats: `volatile short pad;` (dead frame-forcer for target's 8-byte frame) + `raw_or_3 = raw_or_3;` (dead self-assign, Lever-D). Even with both cheats the +0x270 fold gap is untouched; the randomizer never generated the banned dual-typed read (the only distance-0 form).
 - verdict: KILLED
