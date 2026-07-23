@@ -89,3 +89,31 @@ volatile would force re-reads but is a forbidden codegen-coercion cheat
 - [s1] [fable-blitz 2026-07-07] Compile-verified sibling template: func_8003AF40 (same file, src/code6cac_c_ab.c:~350-385, COMPLETED-C - 0 regfix rules, not in queue) uses the identical `*(s16 *)((u8 *)&D_80101ED2 + s0)` / `*(tbl + ED2*8 + ED6)` expression spellings, same callees (493E4/494D4/49584), same addr=0x80190800 pattern with s2. Its accepted spellings are the syntax baseline for reconstructing v9.
 
 - [s1] [fable-blitz 2026-07-07] Prologue is rule-free at HEAD: all 12 rules sit in the branch region (post-delete idx 34-44), so the current single-call C already lands s1=arg0, s2=addr, s0=offset with the correct lui/ori delay-slot split. v9's frame regression is therefore INDUCED by the arm/call restructure, not a pre-existing prologue problem - the fix must neutralize the web split without disturbing the (already correct) three callee-save assignments.
+
+== s2 [structural, 2026-07-23] ==
+
+- [s2] CONFIRMED (solved) the frontier's #1 hypothesis (web split). RECOMPUTE-INLINE of `arg0 * 1100` at every offset use (delete the `s0` variable entirely; write the multiply inline in the EDA read and in both arms) makes the offset a SINGLE cse.c temp (assigned s0). The `move s2,s0` / `move s1,s0` copy DISAPPEARS, frame returns -32, and the 493E4 jal delay-slot NOP is restored. Verified by reading sandbox asm, not just score. This eliminates v9's entire residual (copy + s3 save + frame -40). Root cause of v9's copy pinned in RTL: expand emits the mult result into temp pseudo 85, insn34 copies it into the reg/v variable pseudo 74 (`s0=...`); cse canon_reg makes 85 canonical in the fall-through EBB (if-arm+EDA use 85) while the else-arm keeps 74 -> two co-live pseudos -> local-alloc can't coalesce -> copy survives. No variable = no copy = no split.
+
+- [s2] FLOOR IMPROVED 10 -> 8. Pure-C HOISTED form (recompute-inline + `s32 e2` temp staging ED2 + inline ED6 read in the call expr) scores 8 at 61 insns. Prologue+mult+EDA+branch (29 insns) byte-match target exactly. Clean: e2/v0/tbl all live, no dead stores/pins/volatile. BUT this family is a MATCHING DEAD-END: target is 64 insns (ED6 read duplicated per-arm); a single-read 61-insn form is 3 insns short of 0 forever. Saved as candidate.c.
+
+- [s2] The `e2` temp (stage ED2 through its own local before the *N multiply) fixes the if-arm: ED2 -> v1 and the *3 mult (sll v0,v1,1; addu v0,v0,v1) now byte-match target. Without e2, ED2 lands in v0 (the product dest) and the mult uses swapped temps. e2 must be used in BOTH arms (asymmetric = 16 vs symmetric = 15) for cross-jump symmetry.
+
+- [s2] 0-PATH CHASSIS (saved tmp/grind/func_8003B10C/s2/dup13_form.c, sandbox=13, 64 insns, ED6 DUPLICATED per-arm). Built from recompute-inline + e2 + a `v1` ED6 variable + splitting the if-arm *6 as `v0 = ED2*3; v1 = ED6; v0 *= 2;`. The *2-after-ED6 gives each arm arm-specific code AFTER the ED6 read so cross-jump does NOT merge it (stays per-arm, 64 insns). This is a strictly CLEANER 13 than historic v9 (v9 had the move copy + frame -40; this has frame -32, no copy). ENTIRE residual = TWO register assignments: tbl->a1 (target a0) and ED6->a0 (target v1), appearing in both arms + the tail addu pair (~8 core insns, 13 with position shift).
+
+- [s2] The 2-register residual is a sched1 hoisting decision, NOT a structural one. Target reads ED6 AFTER the ED2 multiply (v1 freed by the mult -> ED6 reuses v1; tbl keeps a0 uncontested). Our sched1 hoists the independent ED6 load ABOVE the mult (ED2 still live in v1 -> ED6 forced to a0; tbl bumped to a1). Structural levers CANNOT move it: statement-reorder (scheduler overrides), decl-order (qty-inert), split-init (inert), branch-swap (worse), tbl-inline (worse). Getting ED6 to schedule after the mult (into the j delay-slot region, as target does with `sll v0,v0,1`) needs the SCHEDULING or PERMUTER modality.
+
+- [s2] Whenever the ED6 read feeds the IDENTICAL call-arg expression `func_800494D4(arg0, *(tbl+v0+ED6))`, jump2 cross-jump merges it into the shared tail -> hoisted 61-insn form (score 8). Keeping ED6 per-arm REQUIRES arm-specific code after the ED6 read (the *3/*2 split). This is the fork in the road: 8 (merged/dead-end) vs 13 (per-arm/0-path).
+
+- [s2] Recompute-inline of arg0*1100 (delete the s0 variable) eliminates the cse.c canon_reg web split: no move copy, frame -32, 493E4 delay-slot nop restored. Verified in sandbox asm + cc1 -da RTL (insn34 copy 74<-85).
+
+- [s2] Pure-C floor improved 10 -> 8 (hoisted form, 61 insns, all vars live, no cheats) -> saved as candidate.c.
+
+- [s2] Hoisted family (single ED6 read, 61 insns) is a matching dead-end: cannot reach target's 64 insns (per-arm ED6 duplication).
+
+- [s2] 0-path duplicated chassis at sandbox 13 (dup13_form.c, 64 insns, ED6 per-arm) has residual = exactly two register assignments: tbl->a1 vs target a0, ED6->a0 vs target v1.
+
+- [s2] The 2-register residual is caused by sched1 hoisting the ED6 load above the ED2 multiply; target reads ED6 after the mult (reuses freed v1). Structural levers exhausted: statement-reorder/decl-order/split-init all inert, branch-swap and tbl-inline worse.
+
+- [s2] The `e2` ED2-staging temp fixes the if-arm ED2->v1 and *3 mult ordering (byte-match); must be symmetric in both arms.
+
+- [s2] Any form where the ED6 read feeds the identical call-arg expression gets jump2 cross-jump-merged into the shared tail -> hoisted 61-insn/score-8 form; per-arm retention needs arm-specific code after the ED6 read.
