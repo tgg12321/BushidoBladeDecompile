@@ -1,0 +1,40 @@
+{
+ "func": "func_80022F34",
+ "file": "code6cac",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 0,
+   "floor": 11,
+   "modality": "wip-import",
+   "headline": "floor imported from memory/wip checkpoint"
+  },
+  {
+   "session": 1,
+   "floor": 11,
+   "modality": "recon",
+   "headline": "Prior s3/s4/s5-over-promotion diagnosis is FALSE; real floor = a +8 phantom frame slot (combine reload stale-ref) + maspsx nop. vH (m2c-inlined) dissolves the phantom (prologue now byte-matches target"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "From the vH base (frame already correct), defeat GCC's CSE of &D_801027BC so each (&D_801027BC)[idx*5] re-materializes %hi/%lo per access like target.",
+   "mechanism": "cse2/combine share the symbol_ref across the two inlined accesses into one la base; target keeps them independent (per-access %lo fold)",
+   "next_probe": "permuter from vH base (valid: residual is not sp-offset-only) + defeat-combine-symbol-fold / store-const-reload-cse variants (named per-arm temps, distinct base expressions); score with engine sandbox"
+  },
+  {
+   "hypothesis": "Fix the a0 self-reload register ($v0 in vH vs target $a0).",
+   "mechanism": "vH's double-indirection *(u8**)a0 lands in $v0 then lh a0,74(v0); target reuses $a0 (lw a0,0(a0); lh a0,74(a0)) \u2014 coupled to a0 liveness / arg eval order",
+   "next_probe": "vary arg2/arg3 eval order and a0-reload placement so a0 is dead at the reload; measure objdump distance in the reload region"
+  },
+  {
+   "hypothesis": "Blend the tension: a form with per-access %lo AND no phantom (removes the stray (use reg100) at the switch merge without CSE or an extra reg).",
+   "mechanism": "the strand is combine mis-placing (use reg100) at code_label 85; isolating the idx1/val1 block from the switch's control-flow merge may prevent it",
+   "next_probe": "hoist the if-body tail out of the switch merge region or add an intervening statement that blocks the mis-placed use; keep named-temp per-access %lo; check vars via .frame probe"
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-23T18:38:12.205527+00:00"
+}
