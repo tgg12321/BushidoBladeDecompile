@@ -23,8 +23,18 @@
  *   union member access (s2, floor 5), two-pointer alias, volatile, and both read orders all
  *   fail. The ONLY C form that emits the two loads is the dual-typed read — which the reviewer
  *   FAILS. => RULING-REQUEST: is the dual-typed read (which target PROVABLY contains) sanctioned
- *   for this function? If sanctioned, the guarded form reaches floor 5 and the unconditional
- *   form floor 2 (bi=108, still +1 vs target 107 — even then not byte-proven).
+ *   for this function?
+ *
+ * UPDATE (s2 structural, 2026-07-23): a DISTANCE-0 pure-C form now provably EXISTS —
+ *   `s32 u=*(u16*)(a0+0x270); if((s16)u>=4)raw=3; else raw=u; idx=(raw<<16)>>15;`
+ *   -> sandbox score 0, build_insns 107 == target (first true byte-match ever; disasm-confirmed).
+ *   It is ONE u16 dereference + a `(s16)` value cast; GCC materializes the signed view as a 2nd
+ *   lh load. FRESH cheat-reviewer FAIL (Tests 1/2/3/4/5) — third respelling of the pre-banned
+ *   signedness-split family; F2 SOTN census (2026-07-01) already NOT ESTABLISHED. Saved to
+ *   rejected/signed-cast-single-read.c. Structural search for a sub-8 CLEAN floor is EXHAUSTED
+ *   (fold is spelling-invariant: literal *2 and redundant `&0xFFFF` mask both stay floor 8).
+ *   Now an OWNER ruling item: sanction-family / canonical-asm-authorize-region / keep-INCOMPLETE.
+ *   This file remains the clean floor-8 form src/ is kept at.
  */
 void func_8001F938(u8 *arg0)
 {

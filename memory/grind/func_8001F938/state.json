@@ -35,7 +35,8 @@
   }
  ],
  "judge_constraints": [
-  "Do NOT commit the dual-typed same-address read (any spelling: guarded, unconditional, union, or two-pointer). It is not SOTN-sanctioned and target-asm 'provably requires it' is not evidence that lowers the bar. If the grinder wants to pursue this construct it must first run a SOTN-master-branch evidence census for the signedness-split CSE-defeat family and bring that census back for an owner ruling; until then keep src/ at the clean floor-8 form and the function stays INCOMPLETE (search continues, not parked)."
+  "Do NOT commit the dual-typed same-address read (any spelling: guarded, unconditional, union, or two-pointer). It is not SOTN-sanctioned and target-asm 'provably requires it' is not evidence that lowers the bar. If the grinder wants to pursue this construct it must first run a SOTN-master-branch evidence census for the signedness-split CSE-defeat family and bring that census back for an owner ruling; until then keep src/ at the clean floor-8 form and the function stays INCOMPLETE (search continues, not parked).",
+  "Keep src/ at the clean floor-8 form in candidate.c; func_8001F938 stays INCOMPLETE (search continues, not parked). Do NOT commit the signedness-split dual-view read of +0x270 in ANY spelling (guarded ternary, unconditional split, union, two-pointer, or single-u16-read + (s16) cast) and do NOT authorize canonical-asm for .L8001FA60 -- a pure-C form provably exists, so it is not a no-C-form region. Both are pre-banned; re-raising either requires NEW established SOTN-master-branch evidence for the signedness-split family, not a re-argument that the target provably contains it."
  ],
  "origin": "queue",
  "created": "2026-07-23T14:45:17.428783+00:00"
