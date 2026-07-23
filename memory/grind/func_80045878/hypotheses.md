@@ -158,3 +158,36 @@ structural s2/s3 + permuter s4 — now measured dead and the function byte-match
 - probe: Built clean workspace tmp/perm_80045878_dir (full-TU honest-pipeline base.c, func region extracted, clean target.o from asm/funcs/func_80045878.s at offset 0, prelude minus .set gp=64 for r3000). Launched via permuter_campaign.py --stack-diffs --stop-on-zero -j8; waited one in-turn ~8.5-min window; harvested+stopped.
 - result: 21519 iterations, base_score 540, BEST permuter-score 210 (== plain arm-split floor), NO zero, NO sub-plateau find. Corroborated by the 3 prior random chassis (HEAD base 580 best 250; arm-split base 540 best 210; arm-split perm_inline=0 base 540 best 210), ~135k iters combined, none reaching zero. Best forms across all chassis are re-finds of the arm-split plateau + permuter synthetic temps (inline_fn/new_var), all noise-equivalent at 210, none a closing form.
 - verdict: KILLED
+
+## [s5] A fresh-seed reseed of the arm-split chassis (5th chassis) escapes the 210 plateau to a sub-plateau / zero form — KILLED
+Statement: per fresh-seed discipline, a genuinely fresh seed on the closest chassis
+(arm-split, base 540 / floor 210) explores a novel basin that flips the Gap-B base
+copy or anchors the Gap-A recompute last, reaching a sub-210 (ultimately zero) form.
+- mechanism (premise): s4's two arm-split runs may have exhausted only their seed's
+  basins; a fresh seed samples a structurally distinct trajectory of the same random
+  mutation set.
+- probe: Relaunched tmp/perm_80045878_arm (arm-split base.c, no PERM annotations = pure
+  random mutation) via permuter_campaign.py launch --stop-on-zero -j8, fresh seed;
+  waited in-turn (~7-min window); harvested --stop.
+- result: 13,769 iterations, base_score 540, best_new_score 210, 147 finds, MIN score
+  210 — NO sub-plateau, NO zero. Byte-for-byte the same plateau as s4's two arm-split
+  runs. A THIRD fresh arm-split seed confirms the basin is dry.
+- verdict: KILLED. Permuter modality re-confirmed dead across a 5th chassis. Combined
+  with s2/s3 (structural) and s4 (4 chassis), EVERY sanctioned grind axis is now
+  measured dead for a committable COMPLETED-C form. scan_hand_coded = LOW 0/8 (ordinary
+  GCC RA/sched output) rules out canonical-asm. No pure-C sandbox-0 form exists
+  (reachability/RA-class wall, sibling of func_800611A4). => OWNER-ESCALATION filed
+  (docs/grind/decisions.md, 2026-07-23); disposition INCOMPLETE-owner-accepted per
+  endgame-lock-disposition; outcome owner-gated.
+
+## [s5] A fresh-seed reseed of the arm-split chassis (5th chassis) escapes the 210 plateau to a sub-plateau/zero form.
+- mechanism: s4's two arm-split runs may have exhausted only their seed's basins; a fresh seed samples a structurally distinct trajectory of the same pure-random mutation set over the Gap-A-materializing (build 108) chassis.
+- probe: Relaunched tmp/perm_80045878_arm (arm-split base.c, no PERM annotations = pure random) via permuter_campaign.py launch --stop-on-zero -j8, fresh seed; waited in-turn ~7-min window; harvest --stop.
+- result: 13,769 iterations, base_score 540, best_new_score 210, 147 finds, MIN score 210 - NO sub-plateau, NO zero. Byte-for-byte the same plateau as s4's two arm-split runs. A third fresh arm-split seed confirms the basin is dry.
+- verdict: KILLED
+
+## [s5] func_80045878 qualifies for canonical-asm (original was hand-written asm).
+- mechanism: endgame-lock-disposition: STRONG hand-coded signals (S1/S2/S6) would authorize inline-asm as the finished form.
+- probe: tools/scan_hand_coded.py --single func_80045878 (read-only).
+- result: tier=LOW score=0/8 (108 insns, 7 spills, 11 regs; no S1 multu pacing, no S2 empty branch, no S4 front-load burst, no S5 sibling cluster, no S6 BIOS jumptable, no S7 unsaved $sN, no S8 redundant mask). Ordinary GCC 2.7.2 RA/sched output; canonical-asm unsupportable.
+- verdict: KILLED

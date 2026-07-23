@@ -225,3 +225,53 @@ param-reuse-base-copy-cse-canon).
 - [s4] This CONFIRMS the s3 structural verdict at the search level: Gap A (else-recompute launch priority) and Gap B (base-copy callee->caller choice) are decided by cc1 local_alloc/sched1 tie-breakers below the reach of any C-source mutation the permuter can produce. Permuter modality is measured dead for this function.
 
 - [s4] All 4 permuter-launch + 4 permuter-harvest events logged to metrics/events.jsonl. No permuter processes left alive; no build-pipeline/rules/engine files touched.
+
+## s5 (permuter, 2026-07-23)
+- Baseline reconfirmed: sandbox --disable all score=10, build_insns=107 vs
+  target 108, 10 rules dropped. src/text1a_c.c untouched (permuter runs in a
+  separate honest-pipeline workspace, not src).
+- FRESH-SEED reseed on the arm-split chassis (the closest, permuter base 540 /
+  floor 210) per fresh-seed discipline — a 5th chassis beyond s4's four:
+  launched via permuter_campaign.py --stop-on-zero -j8, waited in-turn (~7 min
+  window), harvested+stopped. Result: 13,769 iters, base_score 540,
+  best_new_score 210, 147 finds, MIN score 210 — NO sub-plateau, NO zero.
+  Distinct scores {210,215,220,250,260,...}; the 210 floor is a re-find of the
+  known arm-split plateau (Gap A recompute materialized-but-sched-early). This
+  is BYTE-FOR-BYTE the same plateau s4's two arm-split random runs hit (both
+  210) — a THIRD fresh arm-split seed confirms the basin yields nothing new.
+- scan_hand_coded.py --single func_80045878 = tier=LOW score=0/8 (108 insns):
+  no S1 multu pacing, no S2 empty branch, S3 7 spills/11 regs (ordinary), no
+  S4 front-load burst, no S5 sibling cluster, no S6 BIOS jumptable, no S7
+  unsaved $sN, no S8 redundant mask. => ordinary GCC 2.7.2 RA/sched output;
+  canonical-asm is NOT supportable (no hand-written-asm evidence). Per
+  endgame-lock-disposition the disposition is INCOMPLETE-owner-accepted.
+- CONCLUSION: permuter modality re-confirmed dead across a 5th chassis; every
+  sanctioned grind axis (structural s2/s3 + permuter s4/s5) is now measured
+  dead for a committable COMPLETED-C form. No pure-C sandbox-0 form exists
+  (unlike the func_80061658 cluster) — this is a reachability / RA-class wall,
+  sibling to func_800611A4 / func_80049A2C / InitHiraRmd_80047FBC. Filed
+  OWNER-ESCALATION in docs/grind/decisions.md (2026-07-23, func_80045878);
+  outcome = owner-gated.
+- Artifacts: tmp/grind/func_80045878/s5/{launch_arm_freshseed.sh,monitor_loop.sh,
+  harvest_final.json,scan_hand_coded.txt,status_raw.txt}; workspace
+  tmp/perm_80045878_arm/ (output-* finds); permuter-launch + permuter-harvest
+  events in metrics/events.jsonl. No campaign left alive; no build-pipeline/
+  rules/engine files touched.
+
+- [s5] Fresh-seed arm-split reseed (5th chassis, 13,769 iters, base 540) plateaued at permuter-score 210 == s4 arm-split floor; MIN 210, no sub-plateau, no zero. Third fresh arm-split seed confirms the basin is dry — permuter modality re-confirmed dead.
+- [s5] scan_hand_coded --single func_80045878 = LOW 0/8 (ordinary GCC RA/sched output); canonical-asm unsupportable, disposition = INCOMPLETE-owner-accepted per endgame-lock-disposition.
+- [s5] All sanctioned grind axes (structural s2/s3 + permuter s4/s5) measured dead; no pure-C sandbox-0 form exists (reachability/RA-class wall, sibling of func_800611A4). Filed OWNER-ESCALATION; outcome owner-gated. src/text1a_c.c untouched; no campaign left alive.
+
+- [s5] Floor reconfirmed: sandbox --disable all score=10 (build_insns 107 vs target 108, 10 rules dropped). src/text1a_c.c untouched this session.
+
+- [s5] s5 fresh-seed arm-split reseed (5th chassis): 13,769 iters, base 540, best_new_score 210, MIN score 210, 147 finds, no sub-plateau, no zero - identical to s4's two arm-split runs (both 210). Permuter modality re-confirmed dead.
+
+- [s5] scan_hand_coded.py --single func_80045878 = LOW 0/8 -> canonical-asm not supportable (no hand-written-asm evidence); disposition INCOMPLETE-owner-accepted per endgame-lock-disposition.
+
+- [s5] Both residuals are cc1 local_alloc/sched1 coin-flips (RTL-proven s2/s3): Gap A = cse.c available-expression fold (else recompute deleted) + sched1 launch-priority (arm-split materializes it but hoists 3 slots early, genuinely higher priority feeding next call arg); Gap B = local_alloc live-range split of the 2-pred join .L800459DC (cse copy-props any C-level p=s1).
+
+- [s5] All sanctioned grind axes measured dead: structural s2/s3 (param types s16->score43, arm-split, tail reorder, s1[11]=s3 pressure, mixed p/s1 base copy, SI-temp) + permuter s4 (4 chassis ~156k iters, plateau 250/210) + permuter s5 (5th chassis). No pure-C sandbox-0 form exists (reachability/RA-class wall), unlike the func_80061658 cluster.
+
+- [s5] OWNER-ESCALATION filed in docs/grind/decisions.md (2026-07-23, func_80045878) with two owner options: (a) canonical-asm NOT supportable (LOW 0/8); (b) REFUSE -> OWNER-ACCEPTED INCOMPLETE as sibling func_800611A4 et al. No campaign left alive; no build-pipeline/rules/engine files touched.
+
+- [s5] PID-reuse noise: permuter_campaign status shows recycled PID 417 as alive across many historical entries, but only armsplit-freshseed-s5 was registered ACTIVE and it was harvested --stop (0 active after).

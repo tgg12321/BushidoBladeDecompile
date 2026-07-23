@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80045878",
-      "file": "text1a_c",
-      "distance": 10,
-      "verdict": "C",
-      "rules": 10,
-      "status": "active"
-    },
-    {
       "func": "ang_hosei_80056FE8",
       "file": "text1b",
       "distance": 10,
@@ -2485,6 +2477,15 @@
       "park_reason": "owner escalation pending: docs/grind/decisions.md 2026-07-23 func_80061710 OWNER-ESCALATION (subsumed by the 2026-07-23 func_80061658 OWNER-ESCALATION option (a), which names func_80061710 as a cluster member the SOTN-master census resolves)"
     },
     {
+      "func": "func_80045878",
+      "file": "text1a_c",
+      "distance": 10,
+      "verdict": "C",
+      "rules": 10,
+      "status": "parked",
+      "park_reason": "owner escalation pending: docs/grind/decisions.md \u2014 2026-07-23 \u2014 func_80045878 (src/text1a_c.c) \u2014 OWNER-ESCALATION (endgame-lock reachability wall; structural s2/s3 + permuter s4/s5 all dead; scan_hand_coded LOW 0/8; options (a) canonical-asm unsupportable, (b) REFUSE -> OWNER-ACCEPTED INCOMPLETE as sibling func_800611A4)"
+    },
+    {
       "func": "special_camera_set_win_cam",
       "file": "code6cac_b2_post",
       "distance": 510,
@@ -2721,13 +2722,13 @@
   ],
   "counts": {
     "total": 332,
-    "active": 290,
+    "active": 289,
     "by_status": {
-      "active": 290,
-      "parked": 42
+      "active": 289,
+      "parked": 43
     },
     "by_verdict": {
-      "C": 136,
+      "C": 135,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }

@@ -1,7 +1,7 @@
 {
  "func": "func_80045878",
  "file": "text1a_c",
- "session_count": 4,
+ "session_count": 5,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -33,18 +33,19 @@
    "floor": 10,
    "modality": "permuter",
    "headline": "Permuter modality KILLED: 4 chassis (3 random ~135k iters + 1 directed exhaustive ordering sweep 21.5k iters) all plateau at 250/210, no zero \u2014 both residuals are cc1 local-alloc/sched1 tie-breaks bel"
+  },
+  {
+   "session": 5,
+   "floor": 10,
+   "modality": "permuter",
+   "headline": "Permuter re-confirmed dead (5th chassis, fresh-seed arm-split 13.8k iters plateau 210, no zero); scan_hand_coded LOW 0/8; all sanctioned axes dead, no pure-C-0 form -> OWNER-ESCALATION filed (endgame-"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "All sanctioned pure-C axes are now measured dead: structural (s2/s3: param types, arm-split, tail reorder, p=s1 alias, pressure hooks) and permuter (s4: random x3 + directed exhaustive ordering). The function byte-matches only via 10 regfix rules and is a few insns short in honest pure C, residual = two independent RA/scheduling coin-flips. This is the endgame-lock species (owner policy 2026-07-20).",
-   "mechanism": "Gap A = 1-insn else-recompute that cse folds (pre-if init anchors it) vs materializes-but-sched-hoisted (arm-split); Gap B = ~9-diff tail base-copy that is a local_alloc live-range split of the 2-pred join, cse copy-props any C-level p=s1. Neither is reachable by C-statement ordering/spelling (permuter-proven) nor by clean structure (s2/s3-proven).",
-   "next_probe": "Escalation modality: run tools/scan_hand_coded.py --single func_80045878 to check for STRONG (S1/S2/S6) hand-coded signals per endgame-lock-disposition; if LOW (expected \u2014 this is ordinary GCC RA/sched output), the owner disposition is INCOMPLETE-owner-accepted (retain the 10 regfix rules to hold the byte-match, park, eligible for re-attempt on a novel structural insight). File an OWNER-ESCALATION entry citing structural+permuter exhaustion."
-  },
-  {
-   "hypothesis": "A novel structural insight not yet found (outside the measured structural + permuter axes) reshapes cc1's local_alloc/sched1 tie-break for one or both residuals.",
-   "mechanism": "The matching pure-C provably exists (difficult-is-not-impossible); the levers found so far (param types, arm-split, tail reorder, alias, pressure, exhaustive ordering) are all measured dead, so any close requires a lever of a different kind (e.g. a whole-function CFG reshape or a callee-signature/type change that shifts the join-block allocation).",
-   "next_probe": "Forensics/rederive modality: instrument cc1 with BB2_ALLOC_DEBUG / BB2_SCHED_DEBUG / BB2_PRIO_DEBUG on the arm-split chassis to read the exact local_alloc split decision at .L800459DC and the sched1 launch-priority computation for the else recompute; look for a C-visible input to those decisions not yet varied."
+   "hypothesis": "A novel structural insight outside the measured structural + permuter axes reshapes cc1's local_alloc/sched1 tie-break for one or both residuals.",
+   "mechanism": "The matching pure-C provably exists (difficult-is-not-impossible); all levers found so far are measured dead, so any close requires a lever of a different kind - a whole-function CFG reshape or a callee-signature/type change that shifts the .L800459DC join-block allocation.",
+   "next_probe": "Owner ruling pending (parked). If re-attempted: forensics/rederive modality - instrument cc1 with BB2_ALLOC_DEBUG / BB2_SCHED_DEBUG / BB2_PRIO_DEBUG on the arm-split chassis to read the exact local_alloc split decision at .L800459DC and the sched1 launch-priority for the else recompute; look for a C-visible input to those decisions not yet varied."
   }
  ],
  "judge_constraints": [],
