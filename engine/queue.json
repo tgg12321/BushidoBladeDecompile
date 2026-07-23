@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8001F938",
-      "file": "code6cac",
-      "distance": 11,
-      "verdict": "C",
-      "rules": 13,
-      "status": "active"
-    },
-    {
       "func": "func_80022F34",
       "file": "code6cac",
       "distance": 11,
@@ -2487,6 +2479,15 @@
       "park_reason": "owner escalation pending: docs/grind/decisions.md \u2014 '2026-07-23 \u2014 ang_hosei_80056FE8 (src/text1b.c) \u2014 OWNER-ESCALATION' (filed by grind s6 forensics; endgame-lock, honest floor 9 = single <-> RA swap named at global.c find_reg, byte-match held by register-asm- pin, scan_hand_coded LOW 0/8, all sanctioned axes measured dead)."
     },
     {
+      "func": "func_8001F938",
+      "file": "code6cac",
+      "distance": 11,
+      "verdict": "C",
+      "rules": 13,
+      "status": "parked",
+      "park_reason": "owner escalation pending: docs/grind/decisions.md line 1474 \u2014 '## 2026-07-23 \u2014 func_8001F938 \u2014 **OWNER-ESCALATION**' (endgame-lock disposition: both AND-gates FAIL \u2014 canonical-asm scan tier LOW/no-C-form-disproven; coercion SOTN signedness-split NOT ESTABLISHED)."
+    },
+    {
       "func": "special_camera_set_win_cam",
       "file": "code6cac_b2_post",
       "distance": 510,
@@ -2723,13 +2724,13 @@
   ],
   "counts": {
     "total": 332,
-    "active": 288,
+    "active": 287,
     "by_status": {
-      "active": 288,
-      "parked": 44
+      "active": 287,
+      "parked": 45
     },
     "by_verdict": {
-      "C": 134,
+      "C": 133,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }

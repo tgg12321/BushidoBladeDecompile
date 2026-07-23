@@ -226,3 +226,9 @@ dichotomy confirmed at register level. src/ kept at clean floor-8.
 - probe: Combine the census (field proven u16) with s3's measured pure-unsigned read of +0x270 (floor 6): does the correct u16 type close the function?
 - result: Reading +0x270 consistently u16 forfeits target's SIGNED compare -- s3 measured floor 6 (emits sltiu; target has slti). Target's compare is intrinsically signed AND its index intrinsically unsigned OF THE SAME FIELD; no single type serves both roles. header-type-correction is a one-edit remedy; this needs two simultaneous typed views of one field = the banned construct. The correct type cannot close it.
 - verdict: KILLED
+
+## [s10] A genuinely un-tried pure-C lever exists that drops the honest clean floor below 8 without the pre-banned signedness-split dual-typed read of +0x270.
+- mechanism: Distance-0 requires combine to keep the (x<<16)>>15 index UNFOLDED (16-sign-copy shift operand) AND to deliver that operand as a 2nd memory load (target's lhu); s6/s7 dump-proof shows (i)+(ii) are jointly reachable only via a 2nd typed memory view of the field = the banned family, and register-level fold-defeat caps at floor 4.
+- probe: Re-surveyed the full ledger (s1-s9) across structural/permuter/forensics/rederive; re-measured the clean floor-8 chassis live (sandbox --disable all = 8, build_insns 105 vs target 107); ran scan_hand_coded (tier LOW 0/8); confirmed the byte-match is held by 13 regfix rules (0 asmfix, 0 cheat-asm).
+- result: No un-tried lever. Every fold-defeat spelling is either CSE/combine-folded back to floor 8 or is the signedness-split family; the distance-0 form (rejected/signed-cast-single-read.c) is that family and is SOTN NOT ESTABLISHED. The floor is a proven dichotomy, not a search gap.
+- verdict: KILLED

@@ -323,3 +323,15 @@ shipped as candidate.c with the 13 rules retired.
 - [s9] header-type-correction inapplicable: field genuinely u16, but consistent-u16 read yields floor 6 (sltiu, wrong compare per s3) -- signed compare and unsigned index of one field cannot both be served by any single type.
 
 - [s9] All four grindable axes now dead: structural (s1-s3) + permuter (s4-s5) + forensics (s6-s7) + rederive (s8 external corpora + s9 internal field model). Only the non-structural SOTN-master-branch signedness-split census remains (escalation modality). Owner FAILed the family twice (docs/grind/decisions.md 2026-07-23 10:19 + 10:46; disposition 'keep INCOMPLETE, search continues, NOT parked').
+
+- [s10] s10 live re-measurement: HEAD src reads honest floor 11; the clean floor-8 chassis (kind-split + branch-flip + single s16 read, = candidate.c) reads sandbox --disable all score 8, build_insns 105, target 107, 13 rules dropped.
+
+- [s10] scan_hand_coded.py --single func_8001F938 = tier LOW, score 0/8, no strong hand-coded indicators (no S1 multu, S2 empty-branch, S3 spills, S6 BIOS jumptable) -> canonical-asm authorization gate FAILS.
+
+- [s10] Byte-match is held by 13 regfix rules (regfix.txt lines 638-656: 4x $3<->$5 swaps + andi insert for +0x6A kind region; subst/delete/insert_label patch reconstructing target's +0x270 dual-load .L8001FA60), 0 asmfix, 0 cheat-asm.
+
+- [s10] Endgame-lock AND-gate 2 FAILS: the distance-0 pure-C form is the signedness-split/redundant dual-typed-read CSE-defeat family (one +0x270 field read signed for slti compare AND unsigned for sll index, provably identical program behavior); F2 SOTN-master-branch census (2026-07-01) = NOT ESTABLISHED, no-new-park-categories.md names 'redundant width casts (F2)' as unsupported.
+
+- [s10] Exhaustion: 9 sessions, floor flat at 8 since s2; structural (s1-s3), permuter (s4 ~95k iters/floor-8 basin + s5 36k iters/floor-6 basin), forensics (s6-s7 combine simplify_shift_const pass-level proof), rederive (s8 m2c+corpus+transplant, s9 BB2-internal field census) all measured dead; two prior ruling-requests (2026-07-23 10:19 + 10:46) answered FAIL.
+
+- [s10] Filed the formal OWNER-ESCALATION entry at docs/grind/decisions.md line 1474 ('## 2026-07-23 — func_8001F938 — **OWNER-ESCALATION**') stating both endgame-lock AND-gates and the exhaustion; src reverted to HEAD (git clean); candidate.c unchanged (clean floor-8 form).

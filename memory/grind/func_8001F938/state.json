@@ -1,8 +1,8 @@
 {
  "func": "func_8001F938",
  "file": "code6cac",
- "session_count": 9,
- "current_modality": "rederive",
+ "session_count": 10,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 0,
@@ -63,13 +63,19 @@
    "floor": 8,
    "modality": "rederive",
    "headline": "Rederive: BB2-internal write-site census proves +0x270 is a SINGLE u16 accumulator (not a union/multi-width field) -- kills the genuine-dual-view-field and header-type-correction escapes; target's sig"
+  },
+  {
+   "session": 10,
+   "floor": 8,
+   "modality": "escalation",
+   "headline": "Escalation/disposition: all 4 grindable axes dead over 9 sessions; both endgame-lock AND-gates FAIL (canonical-asm scan tier LOW; signedness-split coercion SOTN NOT ESTABLISHED). Filed the formal OWNE"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "NEW established SOTN-master-branch evidence for the signedness-split / redundant-dual-typed-memory-read CSE-defeat family could relax the ban and permit the known distance-0 form (signed-cast-single-read.c).",
-   "mechanism": "s6/s7 give the pass-level proof (combine num_sign_bit_copies gate; distance-0 needs a 2nd typed MEMORY view). s8 adds independent-decompiler (m2c) + gcc2.7.2-corpus corroboration (clean corpus dual-loads are all sign-INSENSITIVE). s9 adds a BB2-INTERNAL write-site census proving +0x270 is a single u16 accumulator, so the target's sign-sensitive dual read has no genuine second-field purpose -- it is the banned construct, not a func_800A3320-style multi-field access. The F2 SOTN census (2026-07-01) returned NOT ESTABLISHED; nothing here overturns it.",
-   "next_probe": "Run the SOTN-master-branch signedness-split-family evidence census (escalation modality) -- NOT structural/permuter/forensics/rederive (all measured dead). Bring the s6/s7 pass-level proof + the s8 sign-sensitivity distinction + the s9 single-field census to the owner. If the census stays NOT ESTABLISHED, func_8001F938 remains INCOMPLETE at clean floor 8 pending owner disposition."
+   "hypothesis": "NEW established SOTN-master-branch evidence for the signedness-split / redundant dual-typed-memory-read CSE-defeat family could relax the ban and permit the known distance-0 form (signed-cast-single-read.c).",
+   "mechanism": "s6/s7 give the pass-level proof (combine num_sign_bit_copies gate; distance-0 needs the 16-copy operand as a 2nd typed MEMORY load); s8 adds independent m2c + gcc2.7.2-corpus corroboration; s9 adds a BB2-internal census proving +0x270 is a single u16 accumulator (no genuine second-field purpose). F2 SOTN census (2026-07-01) returned NOT ESTABLISHED; nothing here overturns it.",
+   "next_probe": "OWNER decision (not a grind modality): rule among (a) sanction the family with NEW SOTN evidence, (b) canonical-asm .L8001FA60 (FAILS scan-tier + inline-asm-injection trap), (c) keep INCOMPLETE at clean floor-8. Parked pending ruling per the filed escalation."
   }
  ],
  "judge_constraints": [
