@@ -79,3 +79,50 @@ param-reuse-base-copy-cse-canon).
 - [s1] Duplicates scan: no useful analog for func_80045878 in the near-clone report.
 
 - [s1] src/text1a_c.c reverted to the score-10 HEAD form; sandbox re-verified score=10. No rules/pipeline/engine files touched.
+
+## s2 (structural, 2026-07-23)
+- Full target asm captured (asm/funcs/func_80045878.s). Confirms HEAD source is
+  STRUCTURALLY the target up to Gap A: pre-if `s3=a0+3` lands in the beqz delay
+  slot (0x800458AC == HEAD 2c2c), else recompute at 0x800458F8 (else last).
+- Gap A mechanism NAILED via cc1 -da dumps (tmp/grind/func_80045878/s2/): the
+  else recompute is RTL insn 74 `(set reg75 (plus reg72 3))` — CSE DELETES it
+  (gone in dump.i.cse: insn 71->code_label 76 directly) because reg75 already
+  == reg72+3 (reg72=a0 in callee-save s2, unchanged across the else calls;
+  reg75 untouched). Pre-if init (needed to anti-dep-anchor the redefinition for
+  sched) is EXACTLY what feeds cse the available expression => catch-22. No
+  value-neutral spelling escapes: cse constant-folds `a0-(-3)`, `(a0+1)+2`, etc.
+  to (plus a0 3) BEFORE the availability check.
+- Gap B root cause NAILED via RTL: our fork expands `s1[11]=a0+3` by truncating
+  a0 to HImode FIRST (insn 213 `reg100=(HI)a0`; insn 215 `reg101=(SI)reg100+3`),
+  then cse REUSES reg100 for the three `s1[N]=a0` HI stores (insns 220/226/229
+  substitute reg100 for (subreg:HI reg72)). Net: base kept in s1, a0-HI CSE'd
+  into v0, `move v0,s2`. TARGET instead adds 3 to full s2 (`addiu v1,s2,3`),
+  stores s2 DIRECTLY 3x, and COPIES base `addu v0,s1,zero`.
+- KILLED H-C (param types s16/s16/u32*): score 10->43, build 107->112. s16
+  params inject sign-extends on every a0/a1 use; target has ZERO. Original params
+  are register-width s32. m2c's narrow inference is wrong here.
+- KILLED frontier item 3 (A+B coupling): applied arm-split (Gap A materialized,
+  build 108) and disassembled the tail — BYTE-IDENTICAL to HEAD's tail
+  (`sh v0,4(s1)...; li v0,0x8000; sh s5,8(s1); sw v0,24(s1)`, base=s1). Gap A's
+  presence does NOT change Gap B. The two gaps are FULLY INDEPENDENT.
+- KILLED Gap B lever H-B (mixed p/s1 base copy): `s16 *p=s1; p[..]=..;` for the
+  HI stores + s1 referenced in the trailing word store -> score 10, build 107.
+  cse copy-propagates `p=s1` regardless (both are the same available value).
+  Target's base copy is a local_alloc live-range-split of the join block
+  (.L800459DC, 2 preds), NOT a C-level pointer copy — unreproducible by any
+  clean `p=s1`. Probed SI-temp for a0+3 (`s32 t=a0+3; s1[11]=t;`) -> build 106
+  (drops the (HI)a0 truncation) but score stays 10; wrong direction.
+- Artifacts: tmp/grind/func_80045878/s2/{dump.i.rtl,dump.i.cse,dump.i.greg,
+  f_rtl.txt,f_cse.txt,f_greg.txt,dump.sh,dis.sh}.
+
+- [s2] Full target asm (asm/funcs/func_80045878.s): HEAD source is structurally the target up to Gap A; pre-if s3=a0+3 lands in the beqz delay slot (0x800458AC), else recompute at 0x800458F8 (else last).
+
+- [s2] Gap A = cse deletion of RTL insn 74 (else recompute); confirmed via dump.i.rtl (present) vs dump.i.cse (gone). reg72=a0 stays in callee-save s2 across the else calls so a0+3 is an available expression.
+
+- [s2] Gap B = fork truncates a0->HImode for the s1[11]=a0+3 store (RTL insn 213 reg100=(HI)a0; insn 215 (SI)reg100+3), then cse reuses reg100 for the three s1[N]=a0 HI stores (base kept in s1, move v0,s2). Target adds 3 to full s2 and stores s2 directly, with base copied `addu v0,s1,zero`.
+
+- [s2] Gap A and Gap B are INDEPENDENT: arm-split tail is byte-identical to HEAD tail.
+
+- [s2] Param narrowing (s16/s16/u32*) is dead: original params are register-width s32 (target has zero sign-extends).
+
+- [s2] Target's tail base copy is a local_alloc live-range split of the 2-predecessor join block (.L800459DC), not reproducible by a C-level p=s1 copy (cse always copy-propagates it).

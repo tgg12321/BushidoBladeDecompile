@@ -29,9 +29,28 @@ Next probe: keep s1 referenced/live past the tail base copy, or multi-set the
 base per param-reuse-base-copy-cse-canon; inspect .greg dump to see s1's pseudo
 disposition. NOT yet attempted beyond the ruled-out single-set alias.
 
-## H-C (param types) — untested, low priority
-m2c infers (s16 arg0, s16 arg1, u32 *arg2); source declares all s32. Could shift
-RA/scheduling for both gaps. Cheap to try; test after H-A/H-B if they stall.
+## H-C (param types) — KILLED (s2)
+m2c infers (s16 arg0, s16 arg1, u32 *arg2). Tried: score 10->43, build 107->112.
+s16 params inject sign-extends on every a0/a1 use; target has ZERO (params flow
+straight into s2/s5). Original params are register-width s32. Dead axis.
+
+## A+B COUPLING (frontier item 3) — KILLED (s2)
+Hypothesis: correcting types / fixing one gap shifts RA for both. FALSIFIED:
+applied the arm-split (Gap A materialized, build 108) and disassembled the tail
+— byte-identical to HEAD's tail (base=s1, move v0,s2). Gap A's presence does not
+touch Gap B. The gaps are INDEPENDENT; each needs its own solution.
+
+## [s2] Gap A is a cse deletion, Gap B is a local_alloc live-range split — both nailed at RTL, clean structural levers measured dead
+- Gap A: else recompute = RTL insn 74 `(set reg75 (plus reg72 3))`; cse deletes
+  it (reg75 already holds reg72+3, reg72=a0 preserved across else). Pre-if init
+  (sched anchor) is what makes cse fold => catch-22. No value-neutral spelling
+  survives (cse folds all a0+3 spellings pre-availability-check).
+- Gap B: fork truncates a0->HI for the `s1[11]=a0+3` store then cse reuses that
+  (HI)a0 for the 3 a0 stores (base stays s1). Target adds 3 to full s2, stores
+  s2 directly, copies base to v0. The v0 base copy is a local_alloc live-range
+  split of the 2-pred join block; cse copy-propagates any C-level `p=s1`.
+- verdict: KILLED (structural modality's clean levers exhausted; NOT proven
+  impossible — see frontier for the remaining non-structural avenues).
 
 ## [s1] Target recomputes `addiu s3,s2,3` (=a0+3) at the end of the else arm; our build folds it into the pre-if s3 init (cse.c), leaving build 1 insn short (107 vs 108).
 - mechanism: cse.c: pre-if `s3=a0+3` dominates the else; a0 and s3 (callee-save) are unchanged across the else calls, so the else `s3=a0-(-3)` is a redundant available expression and is folded.
@@ -43,4 +62,28 @@ RA/scheduling for both gaps. Cheap to try; test after H-A/H-B if they stall.
 - mechanism: local-alloc assigns a short-lived tail-base pseudo to caller-save v0; a single-set `s16 *p=s1` alias is copy-propagated away (s1 dead after) so no base copy materializes.
 - probe: Not re-run this session (WIP already ruled out single-set alias at 107/floor 10); mapped only.
 - result: Confirmed as the dominant residual chunk via objdump alignment of the tail store block against target.
+- verdict: CONFIRMED
+
+## [s2] Narrowing the signature to m2c's inferred types (s16 a0, s16 a1, u32 *a2) shifts RA to close the gaps.
+- mechanism: narrower param types change value-tracking and RA pressure.
+- probe: Changed signature + cast a2 uses; sandbox --disable all.
+- result: score 10->43, build_insns 107->112. s16 params inject sign-extends (sll/sra) on every a0/a1 use; target has ZERO sign-extends (a0/a1 flow straight into s2/s5). Original params are register-width s32.
+- verdict: KILLED
+
+## [s2] Gap A and Gap B are coupled: materializing the else recompute (Gap A) shifts RA and also fixes the tail base copy (Gap B).
+- mechanism: frontier item 3 premise: one structural change alters allocation for both.
+- probe: Applied arm-split (Gap A materialized, build 108) and disassembled the tail.
+- result: Tail is BYTE-IDENTICAL to HEAD's tail (base=s1, move v0,s2, sh v0/s5 stores). Gap A presence does not touch Gap B. The two gaps are fully independent.
+- verdict: KILLED
+
+## [s2] Gap B tail base copy (addu v0,s1,zero) can be materialized by keeping s1 the record pseudo while a separate C-level tail base pointer survives copy-prop.
+- mechanism: local-alloc gives a short-lived tail-base pseudo a caller-save; a kept-live spelling forces the copy (param-reuse-base-copy-cse-canon).
+- probe: s16 *p=s1 for the 5 HI stores + s1 referenced in the trailing word store (mixed, both live); also SI-temp s32 t=a0+3;s1[11]=t.
+- result: Mixed p/s1: score 10, build 107 (cse copy-propagates p=s1 regardless; copy vanishes, == WIP single-set result). SI-temp: build 106 (drops the (HI)a0 truncation) but score stays 10. Target's base copy is a local_alloc live-range split of the 2-pred join block, not a C-level pointer copy.
+- verdict: KILLED
+
+## [s2] Gap A: our fork drops the else recompute `addiu s3,s2,3` (folded), leaving build 1 insn short (107 vs 108).
+- mechanism: cse deletes RTL insn 74 (set reg75 (plus reg72 3)) because reg75 already holds reg72+3 (reg72=a0 preserved across the else calls, reg75 untouched); the pre-if init that anti-dep-anchors the redefinition for sched is exactly what feeds cse the available expression.
+- probe: cc1 -da dumps: insn 74 present in dump.i.rtl, DELETED in dump.i.cse (insn 71 links straight to code_label 76). Confirmed no value-neutral spelling escapes (cse constant-folds a0-(-3), (a0+1)+2, etc. to (plus a0 3) before the availability check).
+- result: Root cause confirmed. Structural spellings that keep the pre-if init all fold; dropping it (arm-split) materializes the insn but sched1 hoists it 3 slots early (score 11). Catch-22 between cse-fold and sched-anchor stands.
 - verdict: CONFIRMED

@@ -574,3 +574,4 @@
 - 2026-07-23 03:55 func_8003B10C s2 [structural] floor=8: Solved v9's web split via recompute-inline (frame -32, no move copy, delay-nop restored); pure-C floor 10->8 (hoisted, capped); clean duplicated 0-path chassis at 13 with residual = 2 register assignments gated by sched1 hoisting the ED6 load.
 - 2026-07-23 04:09 func_8003B10C COMPLETED-C after 3 sessions.
 - 2026-07-23 04:20 func_80045878 s1 [recon] floor=10: Recon: floor 10 reconfirmed (build 107 vs target 108); mapped 2 coupled gaps (A=folded else recompute, B=tail base-copy) and PROVED Gap A's insn is pure-C-reachable via arm-split (107->108), residual is sched placement only.
+- 2026-07-23 04:48 func_80045878 s2 [structural] floor=10: Structural session: both gaps nailed at RTL (Gap A = cse deletion of the else recompute; Gap B = local_alloc live-range split of the join-block base). Clean structural levers (param types, A+B coupling, mixed base copy, SI-temp) measured dead; floor holds at 10.
