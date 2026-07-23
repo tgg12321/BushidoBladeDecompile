@@ -173,3 +173,39 @@
 - probe: (a) cheat-free reverse-order, plain t, no new_var2; (b) new_var2 stage offset-0 forward; (c) new_var2 stage offset-2 forward.
 - result: (a)=9 (wall; reorder alone does nothing). (b)=11. (c)=8. Only reverse-order + stage-offset-0-last = 2. Every staged form matching target's forward ORDER fails to flip the RA; the only form that flips it has reverse order. new_var2 is a cheat (invented staging local, prereq #2); the fn's existing dead locals (new_var u16 truncates; v1 s32* needs int/ptr pun) are unusable as sanctioned carriers.
 - verdict: CONFIRMED
+
+## [s6] The v0<->v1 wall is a LOCAL-allocator (local-alloc.c:472 death-count gate) decision, not global.c.
+- mechanism: local-alloc.c:472 marks a pseudo LOCAL only if reg_n_deaths==1. The reused load-temp `t` (3 loads/3 stores = reg_n_deaths 3) is punted to global; the single-death interleaved mask is local. Local-alloc runs first, find_free_reg gives the mask the lowest free reg v0 (no MIPS REG_ALLOC_ORDER; mask is an unconstrained constant with no copy-suggestion). Global-alloc then gets the load-web and, v0 taken, assigns v1. => loads=$v1/mask=$v0 (reverse of target).
+- probe: instrumented cc1 -da on formA (flip)/formC (wall). Read .greg dispositions + "N regs to allocate", .lreg reg_n_deaths ("dies in N places"), .combine pseudo structure. Confirmed target=formC structure via asm/funcs disasm.
+- result: FORM C load-web(pseudo75,deaths3)->global->v1, mask(81)->local->v0 = sandbox 9. FORM A: new_var2 splits offset-0 load to pseudo75(deaths1)->local->v0, mask(82)->v1, 2-web(76)->global->v0 = sandbox 2 = target's exact layout. greg: "1 regs to allocate" (the load-web) in every form.
+- verdict: CONFIRMED — the wall is local-alloc.c:472 + find_free_reg lowest-reg-first; the staging var's sole effect is converting one load into a single-death local pseudo that wins v0 and evicts the mask to v1.
+
+## [s6] Reusing an EXISTING var (v1 s32*) as the staged carrier reproduces the flip cheat-free (frontier bullet 2).
+- mechanism: if v1 (already used pre-call, dead post-call) can carry the staged last load, it is an existing var (pointer-alias-fake-exception candidate), not an invented one, so it could clear cheat-reviewer.
+- probe: FORM D (forward) + FORM E (reverse) stage the last load through `v1 = (s32*)arg0[k]; t=(s32)v1;`. Standalone cc1 asm.
+- result: BOTH fail to flip. v1 is live across the call, so reusing it post-call extends its range across the call boundary -> allocated as a call-crossing pseudo to $a2($6); load spreads 3-way; mask stays $v0. Worse than floor. Banked rejected/s6_v1carrier_{forward_spread,reverse_noflip}.c.
+- verdict: KILLED — the flip needs a FRESH single-death local pseudo; no existing dead local qualifies (new_var u16 truncates; v1 s32* crosses the call -> wrong reg class). The frontier's "sanctioned existing-carrier" path is closed.
+
+## [s6] The RA flip is reconcilable with target's FORWARD load order via a cheat-free structure (frontier bullet 1).
+- mechanism: if some forward-order C makes the staged/last load a single-death local that grabs v0 without overlapping the interleaved mask, the flip would occur in forward order (= target).
+- probe: FORM B (forward + new_var2 stage offset-2 last) and FORM D asm/greg vs FORM A (reverse). Compared liveness geometry of staged load vs interleaved mask.
+- result: forward-staging spreads to a 3rd register (sandbox 8), never flips. Reason is geometric: target builds the mask AFTER load-8 (ori/sw follow the last load), so a forward staged-last (offset-8) load's live range OVERLAPS the still-live mask -> conflict -> spill to $a0/$a2. Only reverse order gives the staged last (offset-0) load a live range that starts after the mask's sw (non-overlap), letting both reuse v0. Target's forward-order mask->$v1 is exactly what the $3 pin forces by fiat.
+- verdict: KILLED for cheat-free forward match — the flip is geometrically incompatible with target's forward-order-plus-interleaved-mask layout on this toolchain; the only forms that flip use reverse order (residual 2 = load offsets) AND an invented carrier (cheat).
+
+## [s6] The v0<->v1 register wall is decided in LOCAL register allocation (local-alloc.c:472), not global.c.
+- mechanism: local-alloc.c:472 marks a pseudo LOCAL only if reg_n_deaths==1. The reused load-temp t (3 loads + 3 stores = 3 deaths) is punted to global-alloc; the single-death interleaved mask (in-place lui/ori RMW = 1 death) is local. Local-alloc runs first; find_free_reg picks the lowest free reg (MIPS defines no REG_ALLOC_ORDER -> default v0=reg2 before v1=reg3), and the mask is an unconstrained li constant with no copy-suggestion, so it grabs v0. Global-alloc then allocates the punted load-web and, v0 taken, gives it v1 -> loads=$v1/mask=$v0, the reverse of target.
+- probe: Instrumented cc1 -da (RTL/lreg/greg/combine dumps) on formA (flip, sandbox 2) vs formC (wall, sandbox 9). Read .greg 'Register dispositions' + 'N regs to allocate', .lreg reg_n_deaths ('dies in N places'), .combine pseudo structure. Cross-checked target = formC structure via asm/funcs/func_800611A4.s.
+- result: FORM C: load-web pseudo 75 (deaths=3)->global->v1, mask 81->local->v0 = wall. FORM A: new_var2 splits the offset-0 load into pseudo 75 (deaths=1)->local->v0, mask 82->v1, 2-load-web 76->global->v0 = target's exact 3-way layout. greg shows '1 regs to allocate' (the load-web) in every form.
+- verdict: CONFIRMED
+
+## [s6] Reusing an EXISTING var (the v1 s32* pointer) as the staged carrier reproduces the flip cheat-free (frontier bullet 2 / pointer-alias-fake-exception).
+- mechanism: v1 is used pre-call and dead post-call, so if it can carry the staged last load it is an existing var (sanctionable) rather than an invented one.
+- probe: FORM D (forward) and FORM E (reverse) stage the last load via `v1 = (s32*)arg0[k]; t=(s32)v1;`. Standalone cc1 asm.
+- result: Both FAIL to flip. v1 is live across the call, so reusing it post-call extends its range across the call boundary -> it is allocated as a call-crossing pseudo to $a2($6); the load spreads 3-way and the mask stays $v0. Worse than floor. The flip needs a FRESH single-death local pseudo; no existing dead local qualifies (new_var is u16 -> truncates s32; v1 is s32* and crosses the call -> wrong reg class).
+- verdict: KILLED
+
+## [s6] The RA flip can be reconciled with target's FORWARD load order (0x0,0x4,0x8) via a cheat-free structure (frontier bullet 1).
+- mechanism: If some forward-order C makes the staged/last load a single-death local pseudo that grabs v0 without overlapping the interleaved mask, the flip occurs in forward order = target.
+- probe: FORM B (forward + stage offset-2 last) and FORM D asm/greg vs FORM A (reverse). Compared liveness geometry of the staged load against the interleaved mask.
+- result: Forward-staging spreads to a 3rd register (sandbox 8), never flips. Geometric: target builds the mask AFTER load-8 (ori/sw follow the last load), so a forward staged-last (offset-8) load's live range overlaps the still-live mask -> conflict -> spill to $a0/$a2. Only reverse order gives the staged last (offset-0) load a range starting after the mask's sw (non-overlap), letting both reuse v0. Target's forward-order mask->$v1 is what the $3 pin forces by fiat.
+- verdict: KILLED

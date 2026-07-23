@@ -1,8 +1,8 @@
 {
  "func": "func_800611A4",
  "file": "text1b",
- "session_count": 5,
- "current_modality": "permuter",
+ "session_count": 6,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 0,
@@ -39,23 +39,24 @@
    "floor": 6,
    "modality": "permuter",
    "headline": "s5 directed permuter (PERM_LINESWAP+RANDOMIZE, pre-call frozen): no cheat-free sub-6, but reached sandbox 2 (closest ever) via an invented-var stage that reproduces target's exact load=$v0/mask=$v1 la"
+  },
+  {
+   "session": 6,
+   "floor": 6,
+   "modality": "forensics",
+   "headline": "Forensics: v0<->v1 wall traced to local-alloc.c:472 reg_n_deaths==1 gate; reused load-temp (3 deaths) punted to global, single-death mask grabs v0 locally first. Flip needs a fresh single-death local "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "target's layout IS reachable (staging flips it); the true unsolved residual is producing the same RA flip WITH target's forward load order (0x0,0x4,0x8).",
-   "mechanism": "The invented-var stage flips load=$v0/mask=$v1 but only when the staged load is the LAST-emitted in reverse order. Forward-order staged forms (11, 8) never flip. The lever needed is a cheat-free structure that flips the RA while keeping the loads in forward order.",
-   "next_probe": "Instrumented cc1 .greg/allocno-priority dump comparing the sandbox-2 form (reverse, flipped) vs a forward-order staged form (no flip) to identify WHICH pseudo-ordering property the staging changes, then search for a forward-order C shape (statement geometry / mask liveness) that reproduces that property without an invented carrier."
+   "hypothesis": "A cheat-free C shape could give the reused load-web reg_n_deaths==1 (making it LOCAL and higher-priority than the mask so it grabs v0) while preserving target's interleaved lw/sw scheduling.",
+   "mechanism": "local-alloc.c:472 punts the load-web to global only because reuse creates 3 deaths. If the web were single-death it would be local and win v0 over the mask (target layout). But reuse is what creates the WAR anti-deps that preserve the interleave; separate single-use temps (single-death, local) let sched1 hoist the loads together (s2: score 11), breaking the interleave. The tension (reuse-for-schedule vs single-death-for-RA) is the crux.",
+   "next_probe": "Search for a forward-order C structure that yields single-death load pseudos (local) that local-alloc COALESCES into one v0 qty via combine_regs (move coalescing) WITHOUT sched1 hoisting the loads -- e.g. an anti-dependence source other than temp-reuse (a store-to-load ordering fence expressible in pure C) that serializes the loads while keeping each load pseudo single-death. Verify via .lreg reg_n_deaths + .sched insn order."
   },
   {
-   "hypothesis": "A sanctioned carrier (pointer-alias-fake-exception or staged-value-reused-variable via an EXISTING var) could reproduce the flip legitimately.",
-   "mechanism": "new_var2 is the flip lever but is an invented cheat. The fn's existing dead locals are type-incompatible (new_var u16, v1 s32*). A legitimate carrier would need to already exist post-call with s32 width, or be a sanctioned pointer alias whose liveness overlaps the loads the way new_var2 does.",
-   "next_probe": "Structural/forensic session (out of permuter scope): test whether reusing v1 as an s32-typed carrier under pointer-alias-fake-exception reproduces the flip, and whether it clears cheat-reviewer; if not, the flip is invented-var-only and the frontier is the forward-order reconciliation above."
-  },
-  {
-   "hypothesis": "Making the MASK pseudo itself the interleaved carrier (rather than a separate staging local) flips the RA in forward order.",
-   "mechanism": "Target's flip coincides with the mask lui/ori being materialized interleaved into the load gaps and alive across load 3. A mask-liveness shape that forces GCC to keep the mask in $v1 across all three FORWARD-order loads may be the cheat-free analogue of the staging flip.",
-   "next_probe": "Directed permuter constraining only mask materialization/liveness position (PERM_LINESWAP of the mask lui/ori split points) with loads pinned in forward 0,4,8 order and no invented locals."
+   "hypothesis": "A cheat-free C shape could make the interleaved MASK a multi-death pseudo so it too is punted to global, where the higher-ref load-web (n_refs 6) outranks it and takes v0, leaving the mask v1 (target).",
+   "mechanism": "If the mask had reg_n_deaths>=2 it fails the local-alloc.c:472 gate and both pseudos go to global.c, ordered by allocno priority (n_refs*freq/length): the 6-ref load-web beats the 2-ref mask for v0. The mask is single-death today because lui/ori is an in-place RMW (flow counts 1 death at the final sw).",
+   "next_probe": "Find a pure-C mask construction whose value genuinely dies and is reborn (2 deaths) without a dead store and without adding an insn -- combine currently re-merges split constants (s3, score 9). Check whether any pure-C expression of 0xFFFFEF produces two REG_DEAD notes in the .flow dump while still assembling to lui/ori."
   }
  ],
  "judge_constraints": [],
