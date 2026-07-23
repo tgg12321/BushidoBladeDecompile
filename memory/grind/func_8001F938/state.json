@@ -1,8 +1,8 @@
 {
  "func": "func_8001F938",
  "file": "code6cac",
- "session_count": 7,
- "current_modality": "forensics",
+ "session_count": 8,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 0,
@@ -51,13 +51,19 @@
    "floor": 8,
    "modality": "forensics",
    "headline": "Forensics: refined the +0x270 fold gate to num_sign_bit_copies of the SHIFT OPERAND (not load signedness), and proved distance-0 additionally needs the 16-copy operand as a 2nd MEMORY load \u2014 jointly r"
+  },
+  {
+   "session": 8,
+   "floor": 8,
+   "modality": "rederive",
+   "headline": "Rederive exhausted: fresh m2c independently reconstructs the +0x270 dual view (crux is structure-invariant), the func_8009AA68 clean-scratch transplant is KILLED (score 9, sign-sensitivity blocks it),"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The only remaining sanctioned axis is non-structural: a SOTN-master-branch evidence census for the signedness-split / fold-defeat-via-dual-typed-memory-access family, brought back for an owner ruling.",
-   "mechanism": "The s6+s7 forensics now give the precise 'why the target source did it' proof (the shipped bytes require GCC to have been handed two typed MEMORY views of +0x270 to get both the unfold and the 2nd load) to accompany the census. Prior F2 census (2026-07-01) returned NOT ESTABLISHED; only NEW SOTN-master-branch evidence for THIS family could relax the ban.",
-   "next_probe": "Run the SOTN signedness-split-family census (escalation modality, not forensics). Do NOT re-run the permuter (both basins dead) or re-derive the combine/num_sign_bit_copies dichotomy (fully mechanized). If the census stays NOT ESTABLISHED, the function remains INCOMPLETE at clean floor 8 pending owner disposition."
+   "hypothesis": "Only NEW SOTN-master-branch evidence for the signedness-split / CSE-defeat-via-dual-typed-memory family could relax the ban; s8 adds independent-decompiler + gcc2.7.2-corpus corroboration but the specific sign-sensitive redundant-split construct remains without clean community precedent.",
+   "mechanism": "s6/s7 gave the pass-level proof (combine num_sign_bit_copies gate; distance-0 needs a 2nd typed MEMORY view). s8 adds: (a) m2c reconstructs the dual view independently; (b) the ONLY clean gcc2.7.2 corpus dual-loads are sign-INSENSITIVE (narrowing / multi-width), which DISTINGUISHES func_8001F938's sign-SENSITIVE index as genuinely requiring the programmer-authored dual view. The F2 SOTN census (2026-07-01) returned NOT ESTABLISHED; s8 does not overturn it.",
+   "next_probe": "Run the SOTN-master-branch signedness-split-family evidence census (escalation modality) -- NOT structural/permuter/forensics/rederive (all dead). Bring the s6/s7 pass-level proof + the s8 sign-sensitivity distinction to the owner. If the census stays NOT ESTABLISHED, func_8001F938 remains INCOMPLETE at clean floor 8 pending owner disposition."
   }
  ],
  "judge_constraints": [
