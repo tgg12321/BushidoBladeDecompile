@@ -160,3 +160,33 @@ dichotomy confirmed at register level. src/ kept at clean floor-8.
 - probe: grep -c '(const_int 624)' and zero_extend/sign_extend mem:HI across C_dist0's per-pass dumps.
 - result: The load count goes 1->2 exactly at combine; cse/flow keep 1. The empirical dichotomy is unchanged; only the pass attribution (cse -> combine) is corrected.
 - verdict: CONFIRMED
+
+## [s7] The combine fold gate is num_sign_bit_copies of the SHIFT OPERAND, not the memory LOAD's signedness (s6's framing is imprecise).
+- mechanism: simplify_shift_const folds (ashiftrt (ashift X 16) 15)->(ashift X 1) iff num_sign_bit_copies(X)>16, where X is the shift operand AS combine sees it after its own simplifications. The load's signedness only sets this indirectly.
+- probe: New control variant B_u16phi (signed `s16` lh read for the compare, but a `u16`-typed branch-PHI raw_or_3 as the index operand) compiled through instrumented cc1; compared combine RTL + emitted asm + mem-ref count vs A_clean/C_dist0. s6 had only dumped A and C.
+- result: CONFIRMED. B_u16phi emits a SIGNED `lh` load (mem-count stays 1, byte-identical load to A) yet the index UNFOLDS: combine operand `(ashift:SI (subreg:SI (reg/v:HI 125) 0) 16)` is a HImode subreg = 16 sign copies -> fold refused, same as C. asm `lh $2,624; move $3,$2; slt; bne; sll $3,16; sra 15` = floor 4. A signed load that unfolds decouples fold-refusal from load-signedness -> the gate is the operand's sign-copies. Reconfirmed by D_andmask (branched `probe & 0xFFFF` -> operand `(and reg 0xFFFF)` = 16 copies -> unfold, single lh + andi). D also clarifies s2 P2b: the &0xFFFF folds ONLY in the non-branched inline form (combine drops the redundant AND, recovers 17 copies); across a PHI join the AND survives -> 16 copies -> unfold. rejected/branched-and-mask-register-fold-defeat.c.
+- verdict: CONFIRMED
+
+## [s7] Reaching target's distance-0 byte shape requires the 16-sign-copy shift operand to be a SECOND MEMORY LOAD, obtainable only from a second typed MEMORY view; register-level fold-defeat caps at floor 4.
+- mechanism: Target's byte-exact .L8001FA60 is `lh;lhu;…;sll16` — the 16-copy index operand is a 2nd memory load (lhu). combine manufactures that 2nd load ONLY by rewriting the sign-extend-via-shifts of a zero-extended lhu (the `(s16)u` dual TYPED memory view) into a direct `(sign_extend:SI (mem:HI))`=2nd lh (mem-count 1->2 at combine). A register-level 16-copy value is materialized by `move`/`andi` (mem stays 1) and can never become the 2nd lhu.
+- probe: Compared mem-ref counts + operand provenance across A_clean (fold, 1 load), C_dist0 (unfold, 2 loads), B_u16phi (unfold, 1 load), D_andmask (unfold, 1 load).
+- result: CONFIRMED. Distance-0 requires BOTH (i) 16-copy operand (unfold) AND (ii) that operand delivered as a 2nd memory load. (i) alone -> floor 4 (B/D, register-level). (i)+(ii) jointly satisfiable ONLY by a 2nd typed memory view of +0x270 = the pre-banned signedness-split family. Pass-level proof that the shipped bytes required two typed memory views. No clean sub-8 lever exists; disposition unchanged (owner FAILed the family twice; keep INCOMPLETE; only the non-structural SOTN census remains).
+- verdict: CONFIRMED
+
+## [s7] The combine fold gate is num_sign_bit_copies of the SHIFT OPERAND, not the memory LOAD's signedness (s6's 'signed load->fold / unsigned load->no-fold' framing is imprecise).
+- mechanism: simplify_shift_const folds (ashiftrt (ashift X 16) 15)->(ashift X 1) iff num_sign_bit_copies(X)>16, X = the shift operand as combine sees it after its own simplifications; the load signedness only sets it indirectly.
+- probe: New control B_u16phi (signed s16 lh read for the compare + u16-typed branch-PHI raw_or_3 as index operand) through instrumented cc1; compared combine RTL, emitted asm, and const_int-624 mem-ref count vs A_clean/C_dist0 (s6 dumped only A and C). Plus D_andmask (branched probe & 0xFFFF).
+- result: B_u16phi emits a SIGNED lh (mem-count stays 1, byte-identical load to A) yet UNFOLDS: combine operand (ashift (subreg:SI (reg/v:HI 125) 0) 16) is a HImode subreg = 16 sign copies -> fold refused; asm lh;move;slt;bne;sll16;sra15 = floor 4. A signed load that unfolds decouples fold-refusal from load signedness. D_andmask reconfirms (operand (and reg 0xFFFF)=16 copies -> unfold, single lh + andi) and clarifies s2 P2b: &0xFFFF folds only in the NON-branched inline form (combine drops the redundant AND, recovers 17 copies); across a PHI join the AND survives -> unfold.
+- verdict: CONFIRMED
+
+## [s7] Reaching target's distance-0 byte shape requires the 16-sign-copy shift operand to be a SECOND MEMORY LOAD, obtainable only from a second typed MEMORY view; register-level fold-defeat caps at floor 4.
+- mechanism: Target .L8001FA60 = lh;lhu;...;sll16 — the 16-copy index operand is a 2nd memory load. combine manufactures it ONLY by rewriting the sign-extend-via-shifts of a zero-extended lhu (the (s16)u dual typed memory view) into a direct sign_extend(mem:HI)=2nd lh (const_int-624 count 1->2 at combine). A register-level 16-copy value is materialized by move/andi (mem stays 1) and can never become the 2nd lhu.
+- probe: Compared mem-ref counts + operand provenance across A_clean (fold, 1 load), C_dist0 (unfold, 2 loads), B_u16phi (unfold, 1 load), D_andmask (unfold, 1 load).
+- result: Distance-0 requires BOTH (i) a 16-copy operand (unfold) AND (ii) that operand delivered as a 2nd memory load. (i) alone -> floor 4 (B/D). (i)+(ii) jointly satisfiable ONLY by a 2nd typed memory view of +0x270 = the pre-banned signedness-split family. Pass-level proof that the shipped bytes required two typed memory views of the field.
+- verdict: CONFIRMED
+
+## [s7] s6 FINDING 1 (fold is a combine event) and FINDING 2 (the 2nd same-address load is a combine byproduct, not a cse merge) reproduce exactly on an independent recompile.
+- mechanism: verify-opus-handoff-claims: s6 (opus) corrected three prior sessions' 'CSE' attribution to 'combine'; that correction itself warranted independent confirmation.
+- probe: Fresh cpp|cc1 -O2 -G0 with -dr -dj -ds -dc -dl -dg -dR -df on A_clean and C_dist0; checked ashift/ashiftrt collapse per pass and const_int-624 mem-ref count per pass.
+- result: A_clean collapses to (ashift (reg/v:SI 125) 1) at combine; C_dist0 keeps (ashift 124 16)+(ashiftrt 128 15); cse/jump/flow keep the pair in both. C_dist0 mem-ref count = 1 through cse/flow, 2 at combine (lreg/greg/sched2). Byte-identical to s6's committed dumps. s6 confirmed.
+- verdict: CONFIRMED

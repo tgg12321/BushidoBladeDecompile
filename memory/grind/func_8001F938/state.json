@@ -1,7 +1,7 @@
 {
  "func": "func_8001F938",
  "file": "code6cac",
- "session_count": 6,
+ "session_count": 7,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -45,13 +45,19 @@
    "floor": 8,
    "modality": "forensics",
    "headline": "Forensics: named the +0x270 divergence to the exact pass \u2014 GCC 2.7.2 `combine` (simplify_shift_const), gated on num_sign_bit_copies==16; both the index-fold and the target's 2nd load are combine event"
+  },
+  {
+   "session": 7,
+   "floor": 8,
+   "modality": "forensics",
+   "headline": "Forensics: refined the +0x270 fold gate to num_sign_bit_copies of the SHIFT OPERAND (not load signedness), and proved distance-0 additionally needs the 16-copy operand as a 2nd MEMORY load \u2014 jointly r"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "No clean sub-8 lever exists; the target's unfolded +0x270 index requires combine to REFUSE the shift fold (num_sign_bit_copies==16), which needs an unsigned/opaque view of the field WHILE the compare stays signed.",
-   "mechanism": "A single typed read gives combine either 17 sign-copies (signed -> folds the index, floor 8) or 16 (unsigned -> unfolds but emits sltiu not slti, floor 6). Supplying both a 16-copy index and a signed compare of one field = two typed views = the pre-banned signedness-split family. This is a combine-level dichotomy, not a search gap.",
-   "next_probe": "Non-structural only: the SOTN-master-branch signedness-split-family (CSE/fold-defeat-via-dual-typed-access) evidence census -> owner. Do NOT re-run the permuter (both basins measured dead) or re-derive the dichotomy. The combine/num_sign_bit_copies mechanism now documented can accompany that census as the precise 'why the target source did it' proof."
+   "hypothesis": "The only remaining sanctioned axis is non-structural: a SOTN-master-branch evidence census for the signedness-split / fold-defeat-via-dual-typed-memory-access family, brought back for an owner ruling.",
+   "mechanism": "The s6+s7 forensics now give the precise 'why the target source did it' proof (the shipped bytes require GCC to have been handed two typed MEMORY views of +0x270 to get both the unfold and the 2nd load) to accompany the census. Prior F2 census (2026-07-01) returned NOT ESTABLISHED; only NEW SOTN-master-branch evidence for THIS family could relax the ban.",
+   "next_probe": "Run the SOTN signedness-split-family census (escalation modality, not forensics). Do NOT re-run the permuter (both basins dead) or re-derive the combine/num_sign_bit_copies dichotomy (fully mechanized). If the census stays NOT ESTABLISHED, the function remains INCOMPLETE at clean floor 8 pending owner disposition."
   }
  ],
  "judge_constraints": [
