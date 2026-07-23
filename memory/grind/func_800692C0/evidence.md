@@ -107,3 +107,49 @@ deeper RA/sched lever, or user canonical-asm authorization.
 - [s1] No duplicate analog: grep 800692C0 in tmp/duplicates_leads.txt = 0 hits.
 
 - [s1] src/text1b.c restored to HEAD after measurement (oracle-green); pin-free floor-9 form preserved in candidate.c.
+
+== s2 (structural, 2026-07-23) — greg ALLOCDBG isolation of the RA tie ==
+- EXACT allocno numbers (tmp/gccdbg/cc1 BB2_ALLOC_DEBUG on standalone sa.c):
+  sum=pseudo76 nrefs=10 livelen=62 pri=4838 -> $t1($9);
+  bitpos=pseudo79 nrefs=9 livelen=57 pri=4736 -> $t2($10);
+  i=pseudo77 nrefs=9 livelen=60 pri=4500. TARGET wants bitpos->$t1, sum->$t2.
+  global.c allocno_compare: pri=flog2(nrefs)*nrefs*size/live_length, ties by
+  allocno# (sum# < bitpos# -> sum wins ties). ALLOC ORDER == REGISTER ORDER
+  (no prefs on these temps; caller-saved handed out $t0,$t1,... in pri order).
+- To flip: need pri(bitpos) > pri(sum) while keeping BOTH above i(4500).
+  Deterministic: with nrefs(10,9) fixed by the byte-identical (post-jump2)
+  loop body, flip requires sum livelen>=63 OR bitpos livelen<=55.
+- MEASURED DEAD (clean structural):
+  * 10 preheader init orderings (ABCDEF..): sum ll PINNED at 62, bitpos ll
+    floor 56 (candidate order=57). const1(li t6) always schedules AFTER
+    bitpos's def -> can't shave bitpos below 56. Gap always >=17. Init-order
+    CANNOT flip. (confirms + supersedes prior "source-not-orderable".)
+  * recompute bitpos=a3_off<<3 (and i<<4): flips RA correctly (bitpos ll->24,
+    pri 5000, return move $2,$10) BUT drops carried `addiu $t1,0x10` ->
+    build_insns 66 vs 67, score 14. Target's bitpos IS carried; recompute
+    family DEAD regardless of source var.
+  * shared-goto accumulate (matches target's merged .L8006938C addu): jump2
+    merges the tail AFTER alloc, so target's alloc-time form is TWO
+    accumulates (=candidate, sum nrefs 10). Writing the merge in source drops
+    sum nrefs->6, pri 4838->2033 -> sum lands $t5. score 16. DEAD.
+- PROOF-OF-CONCEPT (cheat, NOT banked): `s32 one=1; sum += one<<bitpos;` +
+  bitpos=0 last. Injects a redundant preheader li in sum's live range ->
+  sum ll 62->63 pri 4761, bitpos ll 56 pri 4821 -> FLIPS to target RA,
+  return move $2,$10, sandbox 9->5. REJECTED: build_insns 68 vs 67 (extra
+  li has no semantic purpose beyond RA-steering; target is 67/one-li). Score-5
+  is cheat-assisted; HONEST FLOOR STAYS 9. Proves RA-flip is worth ~4 pts and
+  the sole obstacle to a clean 67-insn flip is +1 sum-livelen at constant
+  insn count (unreachable by ordering). Artifacts: tmp/grind/func_800692C0/s2/
+  allocdbg_base.txt, allocdbg_combo_flip.txt, func692C0.greg.txt.
+
+- [s2] greg ALLOCDBG (BB2_ALLOC_DEBUG): sum=pseudo76 nrefs=10 livelen=62 pri=4838 ->$t1($9); bitpos=pseudo79 nrefs=9 livelen=57 pri=4736 ->$t2($10); i=pseudo77 nrefs=9 livelen=60 pri=4500. Target wants bitpos->$t1, sum->$t2.
+
+- [s2] allocno_compare is deterministic (pri=flog2(nrefs)*nrefs*size/live_length, ties by allocno#); alloc order == register order (no register prefs on these caller-saved temps).
+
+- [s2] 10 preheader init orderings measured: sum livelen invariant at 62, bitpos livelen floor 56 (candidate order 57). const1 (li t6,1) always schedules AFTER bitpos's def -> bitpos livelen cannot drop below 56. Gap >=17 always.
+
+- [s2] Target's merged single `addu $t2` (.L8006938C) is produced by jump2 cross-jump AFTER register allocation -> target's allocation-time form is our candidate (two separate accumulates, sum nrefs=10), not a source-level shared accumulate.
+
+- [s2] `one` opaque-var flip: sandbox 9->5 with build_insns 68 (extra redundant li). Cheat (RA-steering, no semantic purpose, not the 67-insn original) -> not banked; proves RA-flip worth ~4pts.
+
+- [s2] src/text1b.c restored to HEAD (pinned form) after measurement; tree oracle-green. Pin-free floor-9 form preserved in candidate.c.
