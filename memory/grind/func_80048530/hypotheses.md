@@ -1,8 +1,27 @@
 # Hypothesis ledger — func_80048530
 
 ## CONFIRMED
+- H6 (s3): fresh-assign walker `arg0 = base + off` (NOT `arg0 += off`) + walking-
+  pointer c,d reads (`c=*p; p+=2; d=*p;`, (s16) at call) -> FLOOR 1, from 10.
+  Clean pure C. c/d emit lhu+sll+sra reusing the dead walker (`lhu v0,0(v1);
+  lhu v1,2(v1)`), matching target; the s2 "combine lh-fold wall" was an artifact
+  of the accumulate form + fixed-offset d read, DISPROVEN. Sole residual = the
+  walker-relocation add operand order (build addu v1,v1,v0 vs target v1,v0,v1).
 - H1 (s1): sibling func_800483DC base-routing idiom (mutate arg0 as walker +
   separate `base=arg0` local for final add) -> floor 10, from 11. Pure C.
+
+## KILLED (s3)
+- H7: reach target's off-first walker add via a NON-swap C spelling. off+=base
+  (->22, walker misroutes $a1), off+=base;arg0=off (->22 $t0), mem-inline
+  `base+((s32*)base)[arg1]` (->20 $t0), fresh-walker `base+off` (->12/22),
+  natural `arg0=base+off` (->1 base-first). All base-first or misrouted. MIPS
+  addu is 3-operand; commutative canonicalization orders two plain pseudos by
+  source order (only `off+base` swap = off-first), and raising off's precedence
+  drags the walker off $v1. off-first + v1-walker mutually exclusive except via
+  the or-tree-shape-shift swap. rejected/offfirst-structural-misroutes.c.
+- H8: settle fork-vs-cc1psx (difficult-is-not-impossible). cc1psx emits base-
+  first from natural `base+off` too (n1.psx.s); target required off-first source.
+  Not a fork divergence (fork reaches byte-0 from the swap). KILLED as an avenue.
 
 ## KILLED
 - H2 (s1): give c,d the target's lhu+sll+sra shape via value spelling (either
@@ -81,4 +100,22 @@ stack store) WITHOUT introducing a dead store.
 - mechanism: Clean single-function target at offset 0; randomization + directed macros explore the c/d scheduling/RA space.
 - probe: Built a validated standalone permuter workspace (base.o == floor-10 bytes), ran launch -j6 --stop-on-zero, 10,593 iterations across fresh-seed wait windows, harvest --stop in-turn.
 - result: No score-0 find. Best candidates are byte-identical to the floor-10 form or SEMANTIC-BREAKERS (drop the (s16) cast on c). The permuter diff metric is mis-aligned/noisy for this function (identical source scored 1020 at launch vs 750 as an output), giving no reliable gradient. Random C mutation does not crack the combine-fold RA tie.
+- verdict: KILLED
+
+## [s3] A fresh-assign walker (arg0 = base + off, not arg0 += off) plus reading c,d with the same walking-pointer idiom as a,b (c=*p; p+=2; d=*p; (s16) at call) drops the floor below 10.
+- mechanism: The accumulate form arg0+=off pins arg0 two-address in v1 and the downstream RA folds c,d to lh; the fresh assignment changes the walker RA so c,d emit lhu+sll+sra like a,b. Advancing the walker between c and d kills it at the d-load, so GCC reuses it (lhu v0,0(v1); lhu v1,2(v1)) exactly as target. The s2 'combine lh-fold wall' was an artifact of the accumulate form + a fixed-offset d read, not a hard wall.
+- probe: Edited src to the fresh-assign + walking-pointer form; sandbox --disable all on the canonical wteng path (deterministic), objdump vs target.
+- result: score 1, build 47 == target 47 insns, byte-identical except the single walker-relocation add operand order. candidate.c updated to this form.
+- verdict: CONFIRMED
+
+## [s3] Target's off-first walker add (addu v1,v0,v1) is reachable in pure C via a NON-swap spelling that keeps the walker in v1.
+- mechanism: MIPS addu is 3-operand, so GCC orders commutative operands by canonicalization; for two plain pseudos (off, base) source order controls (only off+base yields off-first), and raising off's precedence (MEM operand or accumulator) drags the walker OFF v1. off-first and v1-walker are mutually exclusive except via the operand swap.
+- probe: Swept off+=base, off+=base;arg0=off, arg0=mem+arg0, base+((s32*)base)[arg1] (mem inline), fresh-walker base+off, and natural arg0=base+off; sandbox + objdump each.
+- result: off+=base ->22 (walker misroutes $a1); mem-inline ->20/22 ($t0 walker); fresh-walker ->12/22; natural base+off ->1 (base-first). No non-swap form reaches off-first with v1 routing. rejected/offfirst-structural-misroutes.c.
+- verdict: KILLED
+
+## [s3] The residual is a fork-vs-cc1psx divergence the natural source could resolve on the original compiler.
+- mechanism: difficult-is-not-impossible obligation: run both compilers on the natural base+off form.
+- probe: cpp'd the natural-order form, compiled with the fork cc1 and with cc1psx, compared the walker add (tmp/grind/func_80048530/s3/n1.psx.s vs n1.fork.s).
+- result: cc1psx ALSO emits base-first (addu $8,$8,$2) from natural base+off; it does not reproduce target's off-first either. So the original SOURCE used the off-first order; not a fork divergence (our fork reaches byte-0 from the off+base swap, sandbox=0).
 - verdict: KILLED

@@ -1,7 +1,7 @@
 {
  "func": "func_80048530",
  "file": "text1b",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -21,23 +21,24 @@
    "floor": 10,
    "modality": "structural",
    "headline": "Floor held at 10; RTL-confirmed the residual is a combine lh-fold wall (c,d fold to lh; forcing lhu+sll+sra evicts the walker), and a 10.6k-iter permuter campaign found no zero."
+  },
+  {
+   "session": 3,
+   "floor": 1,
+   "modality": "structural",
+   "headline": "Floor 10->1 (clean pure C): fresh-assign walker `arg0=base+off` + walking-pointer c/d reads make c,d emit lhu+sll+sra reusing the dead walker; sole residual is the walker-relocation add's commutative "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A C structure that separates c,d's load from their sign-extension the way ABI arg-setup separates a,b's, so combine cannot fold c,d into lh, WITHOUT introducing a dead store or reversing evaluation order.",
-   "mechanism": "a,b reach lhu+sll+sra because their zero-extended load and their (s16) cast are far apart in the insn stream (arg-reg setup interposes). If c,d's u16 values are forced to reside in a register across an intervening real computation before the stack store, combine may leave lhu+sll+sra while the walker stays in v1.",
-   "next_probe": "Route c,d through a register-resident intermediate that is genuinely used (e.g. participate in the entry+=base or count computation ordering), or reorder so the c,d sexts are emitted after entry+=base with maximal load/sext distance; sandbox each and read the RTL to check both (a) no lh fold and (b) walker retained in v1."
+   "hypothesis": "A permuter campaign from the floor-1 base (a far better start than s2's floor-10 run) finds a legitimate off-first structure keeping the walker in v1.",
+   "mechanism": "The residual is a single commutative-operand-order/RA tie; the permuter may reach an RA arrangement no hand-derived structural spelling found. Directed PERM_* macros over the walker-relocation add and the c/d read cadence.",
+   "next_probe": "Build a clean single-function permuter workspace from candidate.c (base.o == floor-1 bytes, function at offset 0), run --stop-on-zero with fresh-seed windows; VET any zero against or-tree-shape-shift (reject if it is arg0=off+base by any spelling)."
   },
   {
-   "hypothesis": "The original source declared a,b,c,d as short struct fields and the target's uniform lhu+sll+sra comes from a specific field-access/type shape, not from per-value casts.",
-   "mechanism": "Uniform treatment of all four halfwords in target suggests a homogeneous array/struct read; the fold difference is positional (stack vs reg), not type.",
-   "next_probe": "Model the source as reading a[0..3] from a short/u16 array or struct and passing (s16) of each; sandbox and compare the c,d region against target."
-  },
-  {
-   "hypothesis": "This is an RA/scheduling tie that may be owner-gated if the separated-load structural axis is measured dead.",
-   "mechanism": "If no pure-C spelling reconciles c,d-as-lhu+sll+sra with walker-in-v1, the remaining gap is a combine/RA tie akin to the endgame-lock cluster.",
-   "next_probe": "Exhaust the separated-load and struct-array axes above; if both measured dead with the walker still evicted, consider owner-escalation per endgame-lock-disposition-policy (few-insns-short, combine-fold-locked)."
+   "hypothesis": "No legitimate off-first form exists; the residual is a commutative-operand-order lock whose only closer is the forbidden off+base swap.",
+   "mechanism": "Structural axis measured dead this session; cc1psx confirms the original source used off-first; or-tree-shape-shift forbids the swap with no SOTN precedent; scan_hand_coded LOW refuses canonical-asm.",
+   "next_probe": "If the floor-1 permuter is also dead, file an OWNER-ESCALATION for func_80048530 in docs/grind/decisions.md per .claude/rules/endgame-lock-disposition.md (options: canonical-asm REFUSED [LOW 1/8]; INCOMPLETE-owner-accepted keeping the 5 regfix rules to hold the byte match) and return owner-gated. This is the escalation-modality job, not structural."
   }
  ],
  "judge_constraints": [],

@@ -1,38 +1,47 @@
 /* func_80048530 — CLEAN pure-C form (no pins, no __asm__, no barriers).
- * sandbox --disable all = 10 (s1, 2026-07-23). NEW FLOOR: improved from the
- * prior clean floor of 12 / HEAD honest 11 by adopting the COMPLETED-C sibling
- * func_800483DC's base-routing idiom: mutate the arg0 parameter itself as the
- * walking pointer and hold `base = arg0` in a SEPARATE local for the final
- * `entry += base`. This forces the target's `move t0,v1` 2nd-copy-of-arg0 +
- * v1-as-walker routing (diffs #1/#2 of the WIP notes essentially resolved:
- * move a1,a3 now lands naturally in the beqz delay slot; move t0,v1 appears,
- * just scheduled after `lw v0` instead of before the sw's).
+ * sandbox --disable all = 1  (s3, 2026-07-23). NEW FLOOR: improved from the
+ * prior clean floor of 10 by (a) computing the walker as a fresh assignment
+ * `arg0 = base + off` (NOT the `arg0 += off` accumulate) and (b) reading c,d
+ * with the SAME walking-pointer idiom as a,b — advance arg0 by 2 after every
+ * halfword and read `*arg0` (never a fixed `*(arg0+2)` offset), casting (s16)
+ * at the call symmetrically with a,b.
  *
- * RESIDUAL (score 10, 43 vs 47 insns):
- *   (a) 4-insn count gap: c,d compile to `lh` (the (s32)(s16)*(u16*) fold);
- *       target loads `lhu`+`sll`+`sra` (6 insns for c,d) like a,b.
- *   (b) scheduling: `move t0,v1` placed after `lw v0` vs before the `sw ra/sw
- *       s0` prologue stores in target.
+ * Why this reaches floor 1 (build 47 == target 47 insns):
+ *   - `arg0 = base + off` (fresh assign) instead of `arg0 += off` (accumulate)
+ *     changes the walker RA so c,d NO LONGER fold to `lh`: they emit
+ *     lhu+sll+sra like a,b (the s1/s2 "combine lh-fold wall" was an artifact of
+ *     the accumulate form + the fixed-offset d read, NOT a hard wall).
+ *   - advancing the walker between c and d (`c=*p; p+=2; d=*p;`) kills the
+ *     walker at the d-load, so GCC reuses it: `lhu v0,0(v1); lhu v1,2(v1)` —
+ *     exactly target's routing (old frontier F1, now genuinely satisfied).
+ *   - `move t0,v1` schedules early (prologue), `move a1,a3` lands in place.
  *
- * DO NOT re-try the "give c,d the lhu+sll+sra shape" fix in isolation — it
- * cascades to score 22 (walker v1->t0, base t0->t1 full register rename),
- * because the c/d sign-extend needs v0+v1 scratch which collides with the
- * v1-walker. Target REUSES the dead walker v1 as the d-scratch
- * (`lhu v0,0(v1); lhu v1,2(v1)`); our build won't. See
- * memory/grind/func_80048530/rejected/cd-signext-cascade22.c and
- * tmp/grind/func_80048530/s1/cd_signext_cascade22.txt. */
+ * THE SOLE RESIDUAL (score 1): the walker-relocation add.
+ *   build : addu $v1,$v1,$v0   (base-first)
+ *   target: addu $v1,$v0,$v1   (off-first)
+ * The two operands (off = the stored relative offset, base = arg0) compute the
+ * same value; only off-FIRST matches. The only C that emits off-first WITH the
+ * v1-walker routing is `arg0 = off + base` — a commutative-operand-order
+ * swap (or-tree-shape-shift, FORBIDDEN; banked rejected/offbase-operand-
+ * shuffle-cheat.c, byte-0). cc1psx (the original compiler) ALSO emits base-
+ * first from the natural `base + off` (tmp/grind/func_80048530/s3/n1.psx.s),
+ * so target required off-first *source*; no non-shuffle spelling reaches it
+ * (every off-first structural variant misroutes the walker to a1/t0 and
+ * cascades — see rejected/offfirst-structural-misroutes.c).
+ *
+ * => honest pure-C floor = 1; residual is a single commutative-operand-order
+ *    RA tie whose only closer is the forbidden shuffle. Endgame-lock species
+ *    (.claude/rules/endgame-lock-disposition.md): scan_hand_coded LOW 1/8,
+ *    no SOTN precedent for ADD operand-order-for-codegen. Next: permuter from
+ *    this floor-1 base; then owner-escalation if permuter is also dead. */
 s32 func_80048530(s32 arg0, s32 arg1, u32 arg2, s32 arg3) {
-    s32 base;
-    s32 count;
-    s32 entry;
-    s32 a, b, c, d;
-    s32 off;
+    s32 base, count, entry, a, b, c, d, off;
     off = ((s32 *)arg0)[arg1];
     base = arg0;
-    arg0 += off;
+    arg0 = base + off;
     count = *(s32 *)arg0;
-    if (arg2 >= (u32)count) return -1;
     arg0 += 4;
+    if (arg2 >= (u32)count) return -1;
     arg0 += arg2 * 0xC;
     entry = *(s32 *)arg0;
     arg0 += 4;
@@ -40,9 +49,10 @@ s32 func_80048530(s32 arg0, s32 arg1, u32 arg2, s32 arg3) {
     arg0 += 2;
     b = (s32)*(u16 *)arg0;
     arg0 += 2;
-    c = (s32)(s16)*(u16 *)arg0;
-    d = (s32)(s16)*(u16 *)(arg0 + 2);
+    c = (s32)*(u16 *)arg0;
+    arg0 += 2;
+    d = (s32)*(u16 *)arg0;
     entry += base;
-    func_800485EC(entry, arg3, (s16)a, (s16)b, c, d);
+    func_800485EC(entry, arg3, (s16)a, (s16)b, (s16)c, (s16)d);
     return count;
 }

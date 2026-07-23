@@ -1,5 +1,53 @@
 # Evidence bank — func_80048530
 
+## s3 (structural, 2026-07-23) — NEW FLOOR 10 -> 1; the "combine lh-fold wall" was NOT a wall
+
+- **NEW CLEAN FLOOR = 1** (sandbox --disable all, confirmed on the canonical
+  wteng path, deterministic, build 47 == target 47). candidate.c updated.
+  Two coupled structural changes vs the s1/s2 floor-10 candidate:
+    1. Walker as a FRESH assignment `arg0 = base + off` (NOT `arg0 += off`).
+    2. c,d read with the SAME walking-pointer idiom as a,b — `c=*p; p+=2; d=*p;`
+       (advance the walker, never a fixed `*(arg0+2)`), (s16) at the call.
+- **The s2 "combine lh-fold wall" is DISPROVEN.** With the fresh-assign walker +
+  walking-pointer c,d, c/d emit lhu+sll+sra (NOT lh) and REUSE the dead walker:
+  `lhu v0,0(v1); lhu v1,2(v1)` — exactly target. The old frontier F1 ("make the
+  walker dead-reusable at the d-load") is genuinely satisfied. The lh-fold was an
+  artifact of the accumulate form + fixed-offset d read, not a hard combine wall.
+- **THE SOLE RESIDUAL (score 1) is one instruction — the walker-relocation add:**
+    build : addu $v1,$v1,$v0   (base-first)
+    target: addu $v1,$v0,$v1   (off-first)
+  Everything else is byte-identical (move t0,v1 early; move a1,a3; entry+=base
+  as addu a0,a0,t0; all four halfwords lhu+sll+sra).
+- **The off-first order is reachable in C ONLY via `arg0 = off + base`** — a
+  commutative operand swap (or-tree-shape-shift, FORBIDDEN; byte-0, banked
+  rejected/offbase-operand-shuffle-cheat.c). Every NON-swap off-first spelling
+  MISROUTES the walker and regresses (measured, rejected/offfirst-structural-
+  misroutes.c): off+=base ->22 ($a1 walker), mem-inline ->20/22 ($t0 walker),
+  fresh-walker base+off ->12/22. MIPS addu is 3-operand so GCC orders commutative
+  operands by canonicalization; for two plain pseudos source order controls, and
+  raising off's precedence (MEM/accumulator) drags the walker OFF $v1. off-first
+  and v1-walker are mutually exclusive except via the swap.
+- **cc1psx CONFIRMS (difficult-is-not-impossible obligation discharged).** The
+  ORIGINAL compiler cc1psx emits base-first (`addu $8,$8,$2`) from the natural
+  `base + off` too (tmp/grind/func_80048530/s3/n1.psx.s) — it does NOT reproduce
+  target's off-first from the natural order either. So the original SOURCE used
+  the off-first order; no non-swap C reaches it on either compiler. This is NOT
+  a fork divergence (our fork reaches byte-0 from the swap, sandbox=0).
+- **scan_hand_coded = LOW 1/8** (only S4 front-loads; no S1/S2/S6 STRONG signals)
+  -> canonical-asm refused per endgame-lock-disposition.
+- **Endgame-lock species (.claude/rules/endgame-lock-disposition.md):** byte-
+  matches on main only via 5 regfix rules; 1 insn short in honest pure C;
+  residual = commutative-operand-order RA tie; only closer forbidden; no SOTN
+  precedent for ADD operand-order-for-codegen; no hand-coded evidence. Both owner
+  AND-gates fail => textbook INCOMPLETE-owner-accepted candidate. NOT escalated
+  this session (structural modality; floor just dropped): NEXT is a permuter pass
+  from the floor-1 base, then owner-escalation if that is also dead.
+- CAUTION for the next session: measuring this function is SENSITIVE to the exact
+  c/d spelling. `c=*p; p+=2; d=*p;` (walking) = score 1; `c=*p; d=*(p+2);`
+  (fixed offset) = score 20 (walker misroutes to $t0, c folds to lh). Always use
+  the walking-pointer read. Artifacts: tmp/grind/func_80048530/s3/ (sweep*.py,
+  n1.psx.s, n1.fork.s, cc1psx_cmp.sh).
+
 ## s2 (structural, 2026-07-23) — FLOOR held at 10; combine-fold wall CONFIRMED via RTL
 
 - **ROOT-CAUSE NAILED (RTL greg dump).** The ONLY residual at floor 10 is c,d
@@ -93,3 +141,19 @@
 - [s2] The symmetric ((s16)-at-call) form is the only spelling that prevents the fold, but combine's fold is asymmetric (offset-0 c folds to lh, offset-2 d does not), so c,d occupy both temps and the walker is evicted v1->t0 / base t0->t1 (cascade, score 22).
 
 - [s2] Permuter: 10,593 iters, no zero; metric unreliable (identical source 1020 vs 750). Campaign stopped in-turn (0 live campaigns).
+
+- [s3] NEW clean floor = 1 (sandbox --disable all, canonical wteng path, deterministic, build 47 == target 47). Down from floor 10 (s1/s2). candidate.c = fresh-assign walker + walking-pointer c/d.
+
+- [s3] The s2 'combine lh-fold wall' is DISPROVEN: with the fresh-assign walker + walking-pointer c,d, c/d emit lhu+sll+sra and REUSE the dead walker (lhu v0,0(v1); lhu v1,2(v1)) exactly as target; the old frontier F1 is genuinely satisfied.
+
+- [s3] The sole residual (score 1) is ONE instruction: the walker-relocation add, build addu $v1,$v1,$v0 (base-first) vs target addu $v1,$v0,$v1 (off-first). Everything else is byte-identical.
+
+- [s3] off-first with v1-walker routing is reachable only via arg0 = off + base (or-tree-shape-shift, FORBIDDEN; byte-0, banked rejected/offbase-operand-shuffle-cheat.c). Every non-swap off-first spelling misroutes the walker (22/20/12) — rejected/offfirst-structural-misroutes.c.
+
+- [s3] cc1psx emits base-first from the natural base+off too (n1.psx.s); the original source used the off-first order. Not a fork divergence.
+
+- [s3] scan_hand_coded = LOW 1/8 (only S4 front-loads) -> canonical-asm refused per endgame-lock-disposition.
+
+- [s3] MEASUREMENT CAUTION for the next session: score is sensitive to the c/d spelling. Walking-pointer `c=*p; p+=2; d=*p;` = score 1; fixed-offset `c=*p; d=*(p+2);` = score 20 (walker misroutes to $t0, c folds to lh). Always use the walking-pointer read.
+
+- [s3] Endgame-lock species (.claude/rules/endgame-lock-disposition.md): byte-matches on main only via 5 regfix rules; 1 insn short in honest pure C; residual is a commutative-operand-order RA tie; only closer forbidden; no SOTN precedent for ADD operand-order-for-codegen; no hand-coded evidence. Both owner AND-gates fail -> textbook INCOMPLETE-owner-accepted candidate.
