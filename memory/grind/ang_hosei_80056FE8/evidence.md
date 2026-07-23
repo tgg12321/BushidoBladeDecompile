@@ -180,3 +180,38 @@ the sandbox score) plus the delay-slot-fill consequence.
 - [s5] do-while(0) alone on the double-reuse chassis = diff 9 (no help); output-10-1's swap-flip came from the else-arm base-reuse, not the do-while.
 
 - [s5] Campaign harvested --stop; reap --ttl 0 dry-run groups_seen 0; pgrep permuter empty (no orphans).
+
+- == s6 forensics (2026-07-23) — copy-preference + scheduling frontiers KILLED; mechanism named at global.c find_reg; OWNER-ESCALATION filed ==
+- Baseline reconfirmed: applied s5 double-reuse candidate to src, sandbox --disable all = score 9, build_insns 43 == target 43, verdict C. (src RESTORED to HEAD pin form at session end to hold the byte-match while parked.)
+- INSTRUMENTED CC1 (tmp/gccdbg/cc1) ALLOCDBG dump — allocno priority (floor_log2(nref)*nref/live_length*10000*size): p82 var_v0 24000 [8ref/len10]; p73 a2local 8571 [6ref/len14]; p77 base 3809 [4ref/len21]; p72 arg0 3333 [4ref/len24]. Priority order 82,73,77,72. a2local(73) colored BEFORE base(77).
+- FINDREGDBG (77=base): own_copy_prefs EMPTY, own_full_prefs EMPTY, someone_prefers {4=$a0}. FINDREGDBG(73=a2local): prefs EMPTY, someone_prefers {4}. FINDREGDBG(82=var_v0): own_full_prefs {2=$v0} (return-value pref). FINDREGDBG(72=arg0): own_copy/full_prefs {4=$a0} (incoming-arg pref). Neither base nor a2local carries ANY register preference.
+- MECHANISM NAMED: the a1<->a2 swap is a global.c find_reg decision. a2local (higher priority, colored first) takes lowest free reg $a1 (find_reg pass-0, line 970 excludes only regs_someone_prefers={$a0}); base takes $a2. Target needs base->$a1, reachable ONLY if base has a full-preference for $a1 -> prune_preferences(global.c:851) would then add reg5 to a2local's regs_someone_prefers -> a2local avoids $a1 -> takes $a2 -> base gets $a1. Verified against find_reg source (lines 946-1126) + prune_preferences.
+- COPY-PREFERENCE FRONTIER KILLED: set_preference(global.c:1591) makes a hard-reg preference ONLY from a reg<->hard-reg COPY insn. $a1 has NO ABI anchor in this 1-arg leaf (base def'd by sll, consumed by addu; no move to a hard reg). expand_preferences(global.c:797) can't merge one in (base conflicts with var_v0, the only set-insn that kills a live reg). No target-faithful C creates a base->$a1 preference.
+- PRIORITY-FLIP DEAD (empirical, sweep.py): declare-base-last (v1) + a2-via-pointer (v2) = identical alloc (a2local->$a1). Cutting a2local refs by hoisting the 0xE read (v3) DROPS refs 6->5 but SHORTENS live range 14->11 -> pri RISES 8571->9090 (backfires) AND diverges from target (target reads 0xE twice). base MUST cross the join (len21); a2local MUST die at join (43rd nop needs a FRESH *arg0 reload, not a2 reuse) -> a2local inherently shorter-lived/higher-priority.
+- SCHEDULING-WRAPPER FRONTIER KILLED (empirical, sweep_sched.py): do-while(0) around tail / whole-body / the multiply all keep base->$a2, a2local->$a1; base's live_length stays 21 in every case (do-while inflates ref counts via loop notes but never shrinks base's live range). No sanctioned scheduling wrapper flips the priority.
+- COUPLING PROOF (confirm.py + verify_pin.sh): a diagnostic `register base asm("$5")` pin removes base from the allocno set; a2local then colors to $a2 (correct swap!). BUT the pinned build reschedules to 41 insns (loses 2 load-delay nops) because the register-asm hard-reg is visible to sched1. So even a blunt pin does NOT reproduce the coupled {base$a1, a2local$a2, 43-insn} fixpoint — only the anchor-less soft preference would. The 43-insn (fresh reload) and base->$a1 (a2local must avoid $a1) requirements are mutually locked.
+- DISPOSITION: scan_hand_coded --single ang_hosei_80056FE8 = LOW 0/8 (canonical-asm not supportable). Every sanctioned axis (structural s2/s3, permuter s4/s5, copy-preference s6, scheduling-wrapper s6, ref-lift=s3-killed) measured dead. OWNER-ESCALATION filed docs/grind/decisions.md 2026-07-23; returned owner-gated.
+- Artifacts: tmp/grind/ang_hosei_80056FE8/s6/{base.c, dump.sh, dump.allocdbg.txt, dump.findreg72/73/77/82.txt, sweep.py, sw_*.c/.allocdbg, confirm.py, confirm_pinned.c, verify_pin.sh, sweep_sched.py, sc_*.c}.
+
+- [s6] Instrumented-cc1 ALLOCDBG names the swap: allocno priority a2local(p73)=8571 > base(p77)=3809, so a2local colored first takes $a1, base takes $a2. FINDREGDBG confirms neither base nor a2local carries any register preference (only var_v0->$v0 return-pref and arg0->$a0 arg-pref exist).
+- [s6] Copy-preference frontier KILLED: base needs a full-preference for $a1 to flip it (prune_preferences->regs_someone_prefers->find_reg pass0), but set_preference only creates hard-reg prefs from reg<->hard-reg copies and $a1 has no ABI anchor in this 1-arg leaf; expand_preferences can't merge one (base conflicts with var_v0). No target-faithful C creates the anchor.
+- [s6] Scheduling-wrapper frontier KILLED: do-while(0) at 3 placements never shrinks base's live_length (21) nor flips the priority; base stays $a2.
+- [s6] Priority-flip dead: base must cross the join (long live range), a2local must die at the join (43rd nop needs fresh *arg0 reload) -> a2local inherently higher priority; cutting a2local refs backfires (shorter live range raises priority).
+- [s6] Coupling proof: diagnostic register base asm("$5") pin gives base->$a1/a2local->$a2 but reschedules to 41 insns (loses 2 nops) — even a pin can't reproduce {base$a1, a2local$a2, 43-insn}; only the anchor-less soft preference would.
+- [s6] scan_hand_coded LOW 0/8; OWNER-ESCALATION filed; owner-gated. src restored to HEAD pin form (byte-match held) with no net diff.
+
+- [s6] Baseline reconfirmed: s5 double-reuse candidate in src, sandbox --disable all = score 9, build_insns 43 == target 43, verdict C. src RESTORED to HEAD register-asm-$5 pin form at session end (git diff clean) to hold the byte-match while parked.
+
+- [s6] The entire 9-diff residual is one $a1<->$a2 register swap: target a2local(*arg0)->$a2, base(a3*40)->$a1; ours swapped. Scheduled instruction streams are otherwise byte-identical (43 insns each).
+
+- [s6] ALLOCDBG (instrumented cc1) allocno priority: var_v0(p82) 24000, a2local(p73) 8571, base(p77) 3809, arg0(p72) 3333; order 82,73,77,72. a2local colored before base, takes lowest free reg $a1; base takes $a2. This IS the swap.
+
+- [s6] Mechanism named: to flip, base needs a full-preference for $a1 so a2local's regs_someone_prefers gains reg 5 (prune_preferences) and a2local avoids $a1 in find_reg pass 0. set_preference only creates hard-reg prefs from reg<->hard-reg copies; $a1 has no ABI anchor in this 1-arg leaf; expand_preferences blocked by the base/var_v0 conflict. Frontier-1 mechanically unreachable.
+
+- [s6] do-while(0) at 3 placements never shrinks base's live_length (21) nor flips the priority (sweep_sched). Frontier-3 dead. Priority ref-lift to n_refs>=8 reduces to the s3-killed cross-jump-merge-fails arm-duplication.
+
+- [s6] Coupling proof: register base asm("$5") pin yields base->$a1/a2local->$a2 (target alloc) but reschedules to 41 insns (2 nops lost) -- the 43-insn (fresh reload) and base->$a1 (a2local avoids $a1) requirements are mutually locked; only an anchor-less soft preference would satisfy both.
+
+- [s6] scan_hand_coded.py --single ang_hosei_80056FE8 = LOW 0/8 (no S1-S8; 43 insns, 0 spills, 5 regs) -> ordinary GCC RA output, canonical-asm NOT supportable.
+
+- [s6] All sanctioned axes dead: structural (s2/s3, 21 forms), permuter (s4/s5, 4 chassis ~150k iters, only weighted-0 = base++;base-- dead-op cheat), copy-preference (s6), scheduling-wrapper (s6), ref-lift (=s3). OWNER-ESCALATION filed docs/grind/decisions.md 2026-07-23 naming ang_hosei_80056FE8.

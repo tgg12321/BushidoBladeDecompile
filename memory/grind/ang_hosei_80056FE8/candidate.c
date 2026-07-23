@@ -28,6 +28,30 @@
  * reconfirmed on this better chassis. No target-faithful structure supplies the
  * extra refs. NOT candidate-ready (score 9, not 0).
  *
+ * s6 FORENSICS (instrumented cc1, tmp/gccdbg/cc1; ALLOCDBG+FINDREGDBG): the
+ * a1<->a2 swap is a global.c find_reg decision. allocno_compare priority
+ * (floor_log2(nref)*nref/live_length*10000*size): var_v0(p82) 24000, a2local
+ * (p73) 8571 [6 refs, len14], base(p77) 3809 [4 refs, len21], arg0(p72) 3333.
+ * a2local is colored BEFORE base; with NO reg preference it takes the lowest
+ * free reg = $a1; base then takes $a2. Target needs base->$a1: reachable ONLY
+ * if base carries a full-preference for $a1, which prune_preferences would put
+ * into a2local's regs_someone_prefers so a2local avoids $a1 (find_reg pass-0,
+ * global.c:970). BUT set_preference (global.c:1591) only makes a hard-reg pref
+ * from a reg<->hard-reg COPY insn, and $a1 has NO ABI anchor in this 1-arg leaf
+ * (base is def'd by `sll` and consumed by `addu` -- no copy to a hard reg;
+ * expand_preferences can't merge one in because base conflicts with var_v0).
+ * => the copy-preference frontier is MECHANICALLY UNREACHABLE (KILLED s6).
+ * Priority-flip is also dead: base MUST cross the join (len21) while a2local
+ * MUST die at the join (the 43rd nop needs a FRESH *arg0 reload, not a2 reuse),
+ * so a2local is inherently shorter-lived/higher-priority; cutting a2local refs
+ * backfires (shortens its live range -> raises priority, sweep v3). do-while(0)
+ * placements never shrink base's len21 nor flip priority (sweep_sched). A
+ * diagnostic `register base asm("$5")` pin DOES yield base->$a1/a2local->$a2 but
+ * RESCHEDULES to 41 insns (loses 2 nops) -- so even a blunt pin doesn't
+ * reproduce the coupled {base$a1, a2local$a2, 43-insn} fixpoint; only the soft
+ * preference (no anchor) would. Every sanctioned pure-C axis measured dead ->
+ * OWNER-ESCALATION filed docs/grind/decisions.md (owner-gated).
+ *
  * FAKE note: `base += var_v0` / `var_v0 = *arg0` are variable-reuse (SOTN
  * defeat-licm/RA-reuse family). Here they are target-faithful (the asm proves
  * the reuse), so they are the honest floor-9 form rather than a coercion. */
