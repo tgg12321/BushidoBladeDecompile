@@ -1,7 +1,7 @@
 {
  "func": "func_8001F938",
  "file": "code6cac",
- "session_count": 4,
+ "session_count": 5,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -33,13 +33,19 @@
    "floor": 8,
    "modality": "permuter",
    "headline": "Permuter modality exhausted: clean floor-8 chassis plateaus at score 320 over ~95k iters, never reaching a match nor generating any clean sub-8 lever; frame is a coupled byproduct of the banned dual-r"
+  },
+  {
+   "session": 5,
+   "floor": 8,
+   "modality": "permuter",
+   "headline": "Permuter fresh-seed from the untested unsigned floor-6 basin plateaus at 505 over 36k iters WITHOUT touching the +0x270 crux; permuter modality now exhausted from BOTH basins, dichotomy re-proven from"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Both grindable code-search axes are now exhausted for a clean sub-8: structural fold-defeat (s1-s3, every spelling dead/banned) and permuter random search (s4, plateau 320 with no clean lever).",
-   "mechanism": "The +0x270 clamp inherently needs a SIGNED compare (slti/lh) AND an unsigned/opaque index (unfolded lhu) of ONE field; a single typed read delivers exactly one (signed=fold=floor8 / unsigned=unfold-but-sltiu=floor6). Every construct supplying both is a dual typed view = the pre-banned signedness-split family. Random mutation over ~95k iters neither escaped this nor even generated the dual view.",
-   "next_probe": "Non-structural axis only (as s3 frontier already stated): run the SOTN-master-branch signedness-split-family (CSE-defeat-via-dual-typed-access) evidence census and bring it to the owner. If ESTABLISHED, the distance-0 signed-cast-single-read.c form becomes committable; if NOT ESTABLISHED (F2 2026-07-01 census returned NOT ESTABLISHED), the function stays INCOMPLETE at clean floor 8. Do NOT re-measure any structural fold-defeat spelling or re-run the permuter on the clean chassis \u2014 both are dead."
+   "hypothesis": "Permuter modality is now EXHAUSTED from BOTH available basins (s4 clean floor-8 signed chassis -> plateau 320 / 95k iters; s5 unsigned floor-6 chassis -> plateau 505 / 36k iters). Neither random search touched the +0x270 crux nor generated the pre-banned dual-typed read; there is no third structurally-distinct clean chassis to reseed (the floor-4 u16-local-PHI chassis is itself a banned-family form, not a clean seed).",
+   "mechanism": "The +0x270 clamp inherently needs a SIGNED compare (slti/lh) AND an unsigned/opaque index (unfolded lhu) of ONE field; a single typed read delivers exactly one, and every construct supplying both is a dual typed view = the pre-banned signedness-split family. Random mutation from either basin cannot cross this dichotomy.",
+   "next_probe": "Do NOT re-run the permuter on any clean chassis (both basins now measured dead). The only remaining sanctioned axis is NON-structural: the SOTN-master-branch signedness-split-family (CSE-defeat-via-dual-typed-access) evidence census -> owner. The F2 census (2026-07-01) already returned NOT ESTABLISHED and the owner ruled FAIL twice; unless NEW SOTN evidence is produced, the function stays INCOMPLETE at clean floor 8 (search continues per owner disposition, not parked)."
   }
  ],
  "judge_constraints": [
