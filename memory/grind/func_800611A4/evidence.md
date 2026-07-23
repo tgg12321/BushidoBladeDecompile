@@ -116,3 +116,25 @@ the canonical finished form for the family) OR a future family-wide RA lever.
 - [s3] The `s32 t` load-temp local is also load-bearing at the CURRENT floor: dropping it (V8 keep-mask, V23 inline-mask+no-t) scored 11 and 10 respectively -- the named load-temp helps GCC recognize the 6-ref web that keeps priority balanced.
 
 - [s3] Type-width of mask (u32 vs s32, V11) has zero effect on this RA tiebreak. Type-width of `t` was also zero-effect per s2 rejected_forms.
+
+- [s4] MODALITY=permuter. Prior s4 attempts ran two V7-seed (mask-atomic-first) random campaigns (~25k iters, zero cheat-free sub-6). This session ran a NEW, structurally-different chassis: fresh permuter campaign seeded DIRECTLY from the V0 INTERLEAVED target-shape (mask alive across loads, sandbox=9, permuter base_score=50) rather than V7 — the shape whose SCHEDULING already matches target, giving random mutation a fresh clock at the shape closest to target. Workspace tmp/grind/func_800611A4/s4/perm2/. 69119 iters, 6 jobs, 30 min, harvested+stopped (7 procs killed, no orphans).
+
+- [s4] Campaign found 3 novel sub-50 finds: output-50-1 (perm 50 = interleaved-9 shape, cheat-free but the known 9-wall), output-40-1 (perm 40, sandbox 7), output-30-1 (perm 30, sandbox 5). NO cheat-free form below the sandbox-6 floor. Floor HELD at 6 (clean V7 candidate reconfirmed score=6, 43/43, 0 rules).
+
+- [s4] output-30-1 (sandbox 5, 43 insns) is the LOWEST-scoring find but is a CHEAT-FORM: cheat-reviewer FAIL (2026-07-22). It dual-purposes a freshly-INVENTED local `new_var2` across the pre-call arg1+2 halfword (sp[1]) AND the post-call mask (D_800A3464). Fails staged-value-reused-variable prereq #2 (inventing a new var to borrow is the named excluded case; must reuse a var the fn ALREADY uses for a real job); defeat-licm-hoist-var-reuse is loop-scoped and this fn has no loop; no /* FAKE */; no exhaustion; and it does not close the match. Banked rejected/s4_perm2_new_var2_dualpurpose_reuse.c.
+
+- [s4] MECHANISTIC FINDING (the session's real value): output-30-1's variable-reuse is the FIRST measured form that flips ALL THREE post-call load-temps to $v0 — matching target's load side EXACTLY. Disasm (tmp/grind/func_800611A4/s4/out30_disasm.txt): residual 5 diffs = mask 0xFFFFEF displaced to $a0 (target wants $v1; 3 insns: lui/ori/sw) + pre-call arg1+2 halfword regressed to $a0 (target $v0; 2 insns). So load-temp->$v0 IS reachable, but every lever that achieves it also displaces the mask OFF $v1 (to $a0 here, to $v0 in the atomic V7). Target uniquely needs load-temp=$v0 AND mask=$v1 SIMULTANEOUSLY; no cheat-free form measured reaches both. This refines the s1-s3 wall: it is not just "mask wins $v0", it is "any C that gives the load side $v0 pushes the mask to a THIRD register, never $v1".
+
+- [s4] output-40-1 (sandbox 7, cheat-shaped: fresh pointer alias `&arg0[1]` + staged intermediate `new_var3`) flips ONLY load 1 to $v0; strictly worse than V7. Banked rejected/s4_perm2_pointer_alias_staged.c. Self-rejected (worse-than-floor + obvious coercion).
+
+- [s4] Floor HELD at 6: clean pin-free V7 candidate reconfirmed sandbox --disable all = 6, target_insns=43 == build_insns=43, rules_dropped=0. src/text1b.c left at the clean V7 candidate.
+
+- [s4] Fresh interleaved-V0-seed permuter campaign (tmp/grind/func_800611A4/s4/perm2): base_score=50, 69119 iters, 6 jobs, 30 min; harvested+stopped cleanly (7 procs killed, pid not orphaned).
+
+- [s4] output-30-1 (perm score 30, sandbox 5, 43 insns) is the lowest find but a CHEAT-FORM: cheat-reviewer FAIL. Freshly-INVENTED local new_var2 dual-purposed across pre-call arg1+2 halfword (sp[1]) and post-call mask (D_800A3464). Fails staged-value-reused-variable prereq #2 (must reuse a var the fn ALREADY uses, not invent one); defeat-licm-hoist-var-reuse is loop-scoped and this fn has no loop; no /* FAKE */; no exhaustion; and does not close the match. Banked rejected/s4_perm2_new_var2_dualpurpose_reuse.c.
+
+- [s4] Mechanistic gain: output-30-1's variable-reuse is the FIRST measured form to flip all three post-call load-temps to $v0 (target's load side exactly). Residual 5 diffs = mask on $a0 (target $v1) + pre-call halfword on $a0 (target $v0).
+
+- [s4] output-40-1 (perm 40, sandbox 7, cheat-shaped: fresh pointer-alias &arg0[1] + staged new_var3) flips only load 1 to $v0; strictly worse than the V7 floor. Banked rejected/s4_perm2_pointer_alias_staged.c.
+
+- [s4] Cumulative permuter coverage on func_800611A4 now spans two seed chassis (V7 atomic-first ~25k iters across prior s4 attempts + interleaved-V0 69k iters this session): zero cheat-free finds below sandbox 6 in either basin.

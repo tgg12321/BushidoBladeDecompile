@@ -113,3 +113,27 @@
 - probe: V10 wrote the pure m2c shape verbatim; sandbox.
 - result: Score 22, build_insns=44. The v1 alias drop adds one insn (already banked as rejected/drop_v1_alias.c in s2); combined with no-t-local, RA also degrades. m2c's shape is NOT what our fork compiles back to target bytes.
 - verdict: KILLED
+
+## [s4] Seeding the permuter DIRECTLY from the V0 interleaved target-shape (fresh basin, not the V7 seed the prior s4 attempts used) finds a cheat-FREE form below the sandbox-6 floor.
+- mechanism: The interleaved shape's scheduling already matches target (mask lui/ori interleaved into load gaps); permuter's weighted metric ranks it ~50 (vs V7's 610). Seeding there gives random mutation a fresh 20-30 min clock at the shape closest to target, so a mutation that flips the mask/load-temp RA tiebreak within the interleaved shape could reach 0 without adding an insn.
+- probe: New workspace tmp/grind/func_800611A4/s4/perm2 seeded from the interleaved V0 form (base_score=50). 69119 iters / 6 jobs / 30 min, harvest+stop. Measured every sub-50 find's honest sandbox --disable all.
+- result: 3 novel finds. Cheat-free finds plateau at the same interleaved 9-wall (output-50-1). The only sub-6 finds require coercion locals: output-30-1 (sandbox 5) dual-purposes an invented variable (cheat-reviewer FAIL); output-40-1 (sandbox 7, above floor) uses a pointer-alias + staged intermediate. NO cheat-free form below 6.
+- verdict: KILLED — the interleaved-V0 basin, like the V7 basin before it, contains no cheat-free form below the sandbox-6 floor. Every sub-9 form in this basin is coercion-gated.
+
+## [s4] The mask/load-temp RA tiebreak refined: giving the load side $v0 displaces the mask to a THIRD register, never $v1.
+- mechanism: In every form where the three post-call load-temps land in $v0 (matching target), the mask pseudo is pushed OUT of the $v0/$v1 pair entirely — to $a0 in the variable-reuse form (output-30-1). Target uniquely places load-temp=$v0 AND mask=$v1 interleaved. GCC's allocno priority never co-schedules the load web to $v0 while leaving the 2-insn mask pseudo in $v1; whichever pseudo the C structure hands $v0, the other is displaced to the next free caller-save, which is $a0 (freed by the pre-call homing) rather than $v1.
+- probe: Disassembled output-30-1 (out30_disasm.txt): all 3 loads = $v0 (match), mask = $a0 (target $v1), pre-call halfword = $a0 (target $v0). 5 residual diffs.
+- result: Confirms the wall is a THREE-way register interaction (load-temp web, mask pseudo, pre-call halfword pseudo competing for $v0/$v1/$a0), not a simple 2-pseudo swap. The pin ($3) forces mask into $v1 by fiat; no cheat-free lever measured this session reproduces that placement while keeping load-temp in $v0.
+- verdict: CONFIRMED (mechanistic refinement of the s1-s3 tiebreak model).
+
+## [s4] Seeding the permuter DIRECTLY from the V0 interleaved target-shape (a structurally-different chassis from the V7 atomic-first seed the two prior s4 campaigns used) finds a cheat-FREE form below the sandbox-6 floor.
+- mechanism: The interleaved shape's scheduling already matches target (mask lui/ori interleaved into the load-delay gaps); permuter's weighted metric ranks it ~50 vs V7's 610. Seeding there gives random mutation a fresh 20-30 min clock at the shape closest to target, so a mutation flipping the mask/load-temp RA tiebreak WITHIN the interleaved shape could reach 0 without adding an insn.
+- probe: New workspace tmp/grind/func_800611A4/s4/perm2 seeded from the interleaved V0 form (base_score=50). 69119 iters / 6 jobs / 30 min via tools/permuter_campaign.py, harvest --stop. Measured every sub-50 find's honest sandbox --disable all and disassembled the best.
+- result: 3 novel finds. Cheat-free finds plateau at the same interleaved 9-wall (output-50-1). Only sub-6 finds require coercion locals: output-30-1 (sandbox 5) dual-purposes an INVENTED variable new_var2 across two unrelated statements (cheat-reviewer FAIL 2026-07-22); output-40-1 (sandbox 7, above floor) uses a fresh pointer-alias &arg0[1] + staged intermediate. NO cheat-free form below 6.
+- verdict: KILLED
+
+## [s4] The mask/load-temp RA tiebreak is a simple 2-pseudo v0<->v1 swap (the s1-s3 model).
+- mechanism: s1-s3 characterized the 9-wall as mask->$v0 / load-temp->$v1 (reverse of target). If it were purely 2-pseudo, a lever giving the load side $v0 would hand the mask $v1 (target's placement).
+- probe: output-30-1's variable-reuse is the first measured form to flip ALL THREE load-temps to $v0 (matching target's load side exactly). Disassembled tmp/sandbox/func_800611A4/text1b.o -> tmp/grind/func_800611A4/s4/out30_disasm.txt.
+- result: When the load side gets $v0, the mask pseudo is displaced OUT of the $v0/$v1 pair entirely -- to $a0 (target wants $v1; 3 residual diffs), and the pre-call arg1+2 halfword also regresses to $a0 (target $v0; 2 diffs). The wall is a THREE-way register interaction (load web / mask pseudo / pre-call halfword competing for $v0/$v1/$a0), not a 2-pseudo swap. No cheat-free lever reproduces target's load=$v0 AND mask=$v1 simultaneously.
+- verdict: CONFIRMED

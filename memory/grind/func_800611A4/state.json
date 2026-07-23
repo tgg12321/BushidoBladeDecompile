@@ -1,8 +1,8 @@
 {
  "func": "func_800611A4",
  "file": "text1b",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 0,
@@ -27,23 +27,29 @@
    "floor": 6,
    "modality": "structural",
    "headline": "s3 structural sweep lowered pin-free floor 9 -> 6 via mask atomically-first post-call (V7); pre-call proven byte-identical to target so pre-call-freelist hypothesis KILLED."
+  },
+  {
+   "session": 4,
+   "floor": 6,
+   "modality": "permuter",
+   "headline": "Permuter reseeded from interleaved-V0 target-shape (fresh basin, not prior s4's V7 seed): no cheat-free sub-6 form; sub-6 finds all coercion-gated (output-30-1 sandbox 5 cheat-reviewer FAIL). Floor ho"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Target's exact bytes require load-temp -> $v0 AND mask -> $v1 with mask alive across all three loads. Only a pin (`register mask asm(\"$3\")`) forces the swap in pure C reachable-space. Pure-C RA tiebreak axes measured exhausted this session; any further pin-free progress needs a genuinely novel lever OR canonical-asm authorization for the pin family (siblings func_80061250/func_80061658 share the identical shape).",
-   "mechanism": "GCC 2.7.2's global.c allocno priority formula log2(refs)*freq*size/live_length gives mask (2 refs, ~7 insn liveness) higher priority than load-temp (6 refs across 3 short webs, or 1 wider web) in the interleaved shape, so mask allocates first to $v0.",
-   "next_probe": "Read tools/gcc-2.7.2/global.c allocno_compare and prioritize_allocno_regs; then dump `-da` .greg for both the pin-free interleaved form (score 9) and target's shape (via cc1psx if it hits 9 too) to see the exact priority ordering. If cc1psx also swaps, the pin family is not pure-C-reachable and canonical-asm authorization is the escape (siblings same shape) -- filing OWNER-ESCALATION becomes justified."
+   "hypothesis": "A cheat-free lever exists that reproduces output-30-1's load-temp->$v0 flip WITHOUT the invented dual-purpose variable and WITHOUT displacing the mask off $v1 -- i.e. that simultaneously pins load-temp=$v0 and mask=$v1 as target does.",
+   "mechanism": "output-30-1 proved the load side CAN be forced to $v0; the residual is purely the mask landing on $a0 instead of $v1 (plus a pre-call halfword regression). The question is what cheat-free C structure gives the load web $v0 while leaving the 2-insn mask pseudo in $v1 -- the exact allocation the $3 pin forces by fiat.",
+   "next_probe": "Instrumented cc1 .greg dump (BB2_ALLOC_DEBUG / -da) on BOTH the V7 floor-6 form AND output-30-1, comparing allocno priority ordering of the load web vs mask vs pre-call-halfword pseudos. Identify which pseudo GCC hands $v0 first and why the mask never gets $v1 when the load side wins $v0. Then search for a cheat-free C shape (statement geometry, not an invented carrier) that produces the target 3-way assignment."
   },
   {
-   "hypothesis": "The V4/V7 score-6 form (mask atomic-first, all-$v0) may be reachable to score 0 by transforming its 6 remaining diffs -- those diffs are scheduling ORDER, not register-renames.",
-   "mechanism": "V7 emits all-$v0 but with mask block at top vs target's mask-interleaved; if a structural nudge slotted the mask lui into the load 2 delay slot of the V7 shape (matching target's cycle-2 fill), the mask/load-temp sharing of $v0 might preserve into a byte match.",
-   "next_probe": "Directed permuter run seeded from V7 (score 6, all-$v0) rather than V0 (score 9, interleaved-swap) -- PERM_INT_TYPE / PERM_VAR_ORDER around the mask expression; also try (a) mask value written as `0xFF0000 | 0xEF` split across statements, (b) mask via a paired-store to a different global to change the RTL DAG, (c) inserting an inert extra global load whose delay-slot fill target uses."
+   "hypothesis": "The pre-call arg1+2 halfword regression to $a0 in output-30-1 is avoidable, isolating the mask-register problem.",
+   "mechanism": "output-30-1 coupled the load-flip with a pre-call regression because the reused carrier stole $a0 from the halfword. A form that flips the load side to $v0 without touching the pre-call region would leave only the 3 mask-register diffs, a cleaner target for a subsequent lever.",
+   "next_probe": "Directed-PERM (PERM_LINESWAP over the post-call cluster only, pre-call frozen byte-identical) seeded from a form that keeps the mask store interleaved but reshapes ONLY the load side, measuring whether the load->$v0 flip is reachable without a pre-call carrier."
   },
   {
-   "hypothesis": "Sibling functions func_80061250 (mask=0xFF0060) and func_80061658 (mask=0x10FFFF) share the identical shape and identical $2/$3 pin cheat. A single lever that closes any one closes the family -- so testing V7 (mask-atomic-first) on a sibling and measuring the sibling's score change would triangulate whether V7 is a universal family lever or is specific to 0xFFFFEF's constant shape.",
-   "mechanism": "The RA tiebreak is between a 2-insn mask pseudo and a 3x-reused load-temp pseudo. Different 2-insn mask constants (0xFF0060 vs 0xFFFFEF) should have identical priority calc if refs, freq, size, live_length are equal.",
-   "next_probe": "Apply V7 shape to func_80061250 or func_80061658 in a scratch sandbox; measure. If both drop 9->6 identically, the family lever exists and lifting the family's remaining 6 diffs closes them all together (worth prioritizing over per-function grind)."
+   "hypothesis": "Sibling triangulation (func_80061250 mask=0xFF0060 / func_80061658 mask=0x10FFFF, identical $2/$3 pin shape) would show whether the 3-way register wall is family-universal or constant-specific -- but is OUT OF THIS SESSION'S SCOPE (contract: work ONLY func_800611A4).",
+   "mechanism": "All three siblings share the post-call mask/load cadence and the same pin cheat. A lever that closes the 3-way assignment on one likely closes the family; a future cross-function session (or owner ruling) could triangulate.",
+   "next_probe": "A future session authorized for the family should apply the load->$v0 lever candidates to a sibling in a scratch sandbox and measure whether the mask-displacement behaves identically across mask constants."
   }
  ],
  "judge_constraints": [],
