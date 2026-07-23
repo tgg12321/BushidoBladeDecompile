@@ -214,3 +214,15 @@ dichotomy confirmed at register level. src/ kept at clean floor-8.
 - probe: Fresh m2c decompile; decomp.me whole-function similarity + clamp-idiom scan + dual-load census over 3754 gcc2.7.2 scratches; Kengo match lookup.
 - result: KILLED. m2c INDEPENDENTLY reconstructs the +0x270 block with TWO typed views ((u16) index read + signed compare read) despite a switch+nested-if shape -> crux is structure-invariant. No similar corpus function (top 0.082); 0 clean clamp-idiom scratches; the only clean corpus dual-loads (func_8009AA68 narrowing, func_800A3320 word+halfword) are sign-INSENSITIVE, no precedent for the sign-sensitive redundant split. Kengo match is size-only-ambiguous (insn-count coincidence, opseq 0.24), no semantic sibling.
 - verdict: KILLED
+
+## [s9] +0x270 is a genuine dual-view / multi-width / union field, so target's lh;lhu is a legitimate multi-purpose access (like s8's clean corpus precedents func_800A3320 word+halfword and func_8009AA68 narrowing store) rather than the banned signedness-split -- which would permit a clean distance-0 form.
+- mechanism: If +0x270 were two overlapping fields or a multi-width field, reading it signed for the compare and unsigned for the index would carry real semantic purpose (two fields) and escape the no-semantic-purpose cheat test, unlike a redundant split of one field.
+- probe: BB2-INTERNAL write-site census of the +0x26E/+0x270/+0x272 cluster (distinct from s8's external decomp.me/Kengo corpora): grep all read/write/address-taken sites in src/ and read the field types at the write sites.
+- result: Write sites in src/code6cac_b.c (func_80027438, per-status-byte damage accumulator) are `*(u16*)(a0+0x270)+=a2` / `+0x272` / `+0x26E` -- SINGLE u16 accumulator fields, no union, no multi-width. Address-taken at text1a.c:142 as a table base. Target reads the IDENTICAL single u16 field both signed (lh->slti compare) and unsigned (lhu->sll index); the roles differ only in signedness of one field. Sign-SENSITIVE with no second field, unlike the clean corpus precedents (distinct sub-fields / sign-insensitive narrowing).
+- verdict: KILLED
+
+## [s9] header-type-correction-from-use-sites applies: the field is genuinely u16, so correcting its type and reading it consistently u16 yields a clean byte-match.
+- mechanism: A one-extern-edit signedness correction is a sanctioned lever when the correct type produces target bytes at every use site.
+- probe: Combine the census (field proven u16) with s3's measured pure-unsigned read of +0x270 (floor 6): does the correct u16 type close the function?
+- result: Reading +0x270 consistently u16 forfeits target's SIGNED compare -- s3 measured floor 6 (emits sltiu; target has slti). Target's compare is intrinsically signed AND its index intrinsically unsigned OF THE SAME FIELD; no single type serves both roles. header-type-correction is a one-edit remedy; this needs two simultaneous typed views of one field = the banned construct. The correct type cannot close it.
+- verdict: KILLED

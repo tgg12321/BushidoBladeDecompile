@@ -1,7 +1,7 @@
 {
  "func": "func_8001F938",
  "file": "code6cac",
- "session_count": 8,
+ "session_count": 9,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -57,13 +57,19 @@
    "floor": 8,
    "modality": "rederive",
    "headline": "Rederive exhausted: fresh m2c independently reconstructs the +0x270 dual view (crux is structure-invariant), the func_8009AA68 clean-scratch transplant is KILLED (score 9, sign-sensitivity blocks it),"
+  },
+  {
+   "session": 9,
+   "floor": 8,
+   "modality": "rederive",
+   "headline": "Rederive: BB2-internal write-site census proves +0x270 is a SINGLE u16 accumulator (not a union/multi-width field) -- kills the genuine-dual-view-field and header-type-correction escapes; target's sig"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Only NEW SOTN-master-branch evidence for the signedness-split / CSE-defeat-via-dual-typed-memory family could relax the ban; s8 adds independent-decompiler + gcc2.7.2-corpus corroboration but the specific sign-sensitive redundant-split construct remains without clean community precedent.",
-   "mechanism": "s6/s7 gave the pass-level proof (combine num_sign_bit_copies gate; distance-0 needs a 2nd typed MEMORY view). s8 adds: (a) m2c reconstructs the dual view independently; (b) the ONLY clean gcc2.7.2 corpus dual-loads are sign-INSENSITIVE (narrowing / multi-width), which DISTINGUISHES func_8001F938's sign-SENSITIVE index as genuinely requiring the programmer-authored dual view. The F2 SOTN census (2026-07-01) returned NOT ESTABLISHED; s8 does not overturn it.",
-   "next_probe": "Run the SOTN-master-branch signedness-split-family evidence census (escalation modality) -- NOT structural/permuter/forensics/rederive (all dead). Bring the s6/s7 pass-level proof + the s8 sign-sensitivity distinction to the owner. If the census stays NOT ESTABLISHED, func_8001F938 remains INCOMPLETE at clean floor 8 pending owner disposition."
+   "hypothesis": "NEW established SOTN-master-branch evidence for the signedness-split / redundant-dual-typed-memory-read CSE-defeat family could relax the ban and permit the known distance-0 form (signed-cast-single-read.c).",
+   "mechanism": "s6/s7 give the pass-level proof (combine num_sign_bit_copies gate; distance-0 needs a 2nd typed MEMORY view). s8 adds independent-decompiler (m2c) + gcc2.7.2-corpus corroboration (clean corpus dual-loads are all sign-INSENSITIVE). s9 adds a BB2-INTERNAL write-site census proving +0x270 is a single u16 accumulator, so the target's sign-sensitive dual read has no genuine second-field purpose -- it is the banned construct, not a func_800A3320-style multi-field access. The F2 SOTN census (2026-07-01) returned NOT ESTABLISHED; nothing here overturns it.",
+   "next_probe": "Run the SOTN-master-branch signedness-split-family evidence census (escalation modality) -- NOT structural/permuter/forensics/rederive (all measured dead). Bring the s6/s7 pass-level proof + the s8 sign-sensitivity distinction + the s9 single-field census to the owner. If the census stays NOT ESTABLISHED, func_8001F938 remains INCOMPLETE at clean floor 8 pending owner disposition."
   }
  ],
  "judge_constraints": [
