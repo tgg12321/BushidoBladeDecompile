@@ -142,3 +142,21 @@ dichotomy confirmed at register level. src/ kept at clean floor-8.
 - probe: Built tmp/grind/func_8001F938/s5/ws (minimal self-contained base.c = unsigned floor-6 chassis, verified compiles to 106 insns; reused s4's target.o at offset 0; --stack-diffs ON). Launched permuter_campaign.py (pid 405), drove the fresh-seed window in-turn (~19 min, 36,031 iterations) via wait/monitor loops, then harvest --stop. Inspected the best form's +0x270 region and disasm-relevant structure.
 - result: Best score plateaued at 505 (from base 705) and stayed flat for the entire observation window (5 stale samples / ~7 min continuous, observer loop saw best=505 from t=5s to campaign death). The best form's +0x270 crux is UNTOUCHED: still the plain unsigned read with sltiu; the fold stays defeated but the signed compare stays forfeited. The 505 gain over 705 traces entirely to unrelated branch-address / frame scheduling noise, NOT to closing the +0x270 gap. The randomizer NEVER restored the signed compare and NEVER generated the banned dual-typed read (the only distance-0 form) in 36k iters.
 - verdict: KILLED
+
+## [s6] The fold (raw<<16)>>15 -> raw*2 that keeps the clean floor-8 form from matching target's unfolded +0x270 index is performed by the `combine` pass, not cse/loop.
+- mechanism: Instrumented cc1 dumps: in RTL/cse/jump/flow the index is TWO insns `(ashift X 16)`+`(ashiftrt Y 15)` in BOTH the clean (A) and distance-0 (C) forms. Only in the combine dump does A collapse to a single `(ashift (reg/v 125) 1) 181{ashlsi3}`, while C keeps `(ashift (reg/v 124) 16)`+`(ashiftrt (reg 128) 15) 191{ashrsi3}` intact. The collapse appears at exactly one pass boundary = combine.
+- probe: Compiled A_clean.c (single s16 read) and C_dist0.c (u16 read + (s16) cast) through cpp|cc1 -O2 -G0 with -dr -dj -ds -dc -dl -dg -dR -df; grep ashift/ashiftrt across the per-pass dumps.
+- result: A folds to `sll,1` at combine (floor-8 divergence); C's pair survives combine unfolded and byte-matches target .L8001FA60. cse/flow keep the pair in both.
+- verdict: CONFIRMED
+
+## [s6] combine folds only when the shift operand has >16 sign-bit copies; a signed (lh) read gives 17 -> fold, an unsigned (lhu) read gives exactly 16 -> fold refused. This IS the s1-s5 signedness dichotomy, at the pass level.
+- mechanism: combine.c simplify_shift_const rewrites (ashiftrt (ashift X 16) 15)->(ashift X 1) iff num_sign_bit_copies(X) > 16. The only difference between reg/v 125 (A, folds) and reg/v 124 (C, does not) is the else-arm value of raw_or_3: probe=sign_extend(mem)=17 copies vs u=zero_extend(mem)=16 copies (bit15 significant). The {3,else} PHI keeps the min; 3 exceeds 16 so the read signedness alone toggles the fold at the ==16 boundary.
+- probe: Compared the folded (A) vs unfolded (C) combine-dump insns and traced each shift operand's provenance to lh(sign_extend) vs lhu(zero_extend) in the RTL dump.
+- result: Signed single read => 17 => fold => floor 8 (wrong, folded index). Unsigned single read => 16 => unfold but sltiu compare (s3 floor 6). Only a dual/typed-cast view supplies both 16-copy-index AND signed-compare = distance 0 = the pre-banned family.
+- verdict: CONFIRMED
+
+## [s6] The prior ledger claim that 'GCC 2.7.2 CSE always merges two same-address HImode reads into ONE load' is imprecise; the second load in the distance-0 form is manufactured by combine, and cse never merges anything (clean sources have only one deref).
+- mechanism: Per-pass count of mem refs at +0x270 (const_int 624) in C_dist0: rtl=1 jump=1 cse=1 flow=1 | combine=2 lreg=2 greg=2 sched2=2. combine simplifies the (s16)u compare operand (sign_extend-via-shifts of the zero-extended lhu) into a direct (sign_extend:SI (mem:HI)) second lh, cheaper than shifting. cse holds a single ref throughout.
+- probe: grep -c '(const_int 624)' and zero_extend/sign_extend mem:HI across C_dist0's per-pass dumps.
+- result: The load count goes 1->2 exactly at combine; cse/flow keep 1. The empirical dichotomy is unchanged; only the pass attribution (cse -> combine) is corrected.
+- verdict: CONFIRMED

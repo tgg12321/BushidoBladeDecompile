@@ -239,3 +239,28 @@ shipped as candidate.c with the 13 rules retired.
 - [s5] Two owner rulings already stand for this function (docs/grind/decisions.md 2026-07-23 10:19 + 10:46), both FAIL on (a) sanction the signedness-split family and (b) canonical-asm-authorize .L8001FA60; disposition (c) keep INCOMPLETE, search continues (NOT parked). So this is neither owner-gated nor a new ruling-request.
 
 - [s5] src/ left at the clean floor-8 form (candidate.c unchanged); no cheat in tree; 13 regfix rules remain (function INCOMPLETE). Campaign confirmed stopped (observer saw pid death; harvest --stop succeeded).
+
+## s6 forensics (2026-07-23) — divergence named to the exact GCC pass: combine, gated on num_sign_bit_copies==16; ledger "CSE" claim corrected
+- [s6] Instrumented cc1 (tools/gcc-2.7.2/build/cc1, -O2 -G0, dumps -dr -dj -ds -dc -dl -dg -dR -df) on two self-contained variants (isolated==full-TU per s4): A_clean (clean floor-8, single s16 read) and C_dist0 (distance-0, u16 read + (s16) cast). A_clean +0x270 = ONE lh + FOLDED sll,1; C_dist0 +0x270 = lh;lhu + UNFOLDED sll16;sra15 == target .L8001FA60 byte-for-byte.
+- [s6] FINDING 1: the index fold (raw<<16)>>15 -> raw<<1 is a COMBINE event, not cse. RTL (pre-combine) has the pair as two insns in BOTH variants (A rtl:581 ashift16 + :586 ashiftrt15; C rtl:585/:590). After combine: A collapses to `(ashift (reg/v 125) 1) 181{ashlsi3}` (folded); C keeps `(ashift (reg/v 124) 16) 181{ashlsi3}` + `(ashiftrt (reg 128) 15) 191{ashrsi3}` (unfolded). cse/jump/flow dumps show the pair intact in both -> collapse is uniquely combine.
+- [s6] FINDING 1 mechanism (the exact combine decision variable): combine simplify_shift_const rewrites (ashiftrt (ashift X 16) 15)->(ashift X 1) iff num_sign_bit_copies(X) > 16. Signed load (lh=sign_extend mem) -> 17 sign copies -> FOLD -> floor-8 divergence. Unsigned load (lhu=zero_extend mem) -> exactly 16 (bit15 significant) -> FOLD REFUSED -> target's unfolded shape. The PHI of {const 3, else-arm} keeps the min sign-copies (3 has >16), so the else-arm read signedness alone toggles the fold at the ==16 boundary. This IS the s1-s5 signedness dichotomy, mechanized: a single typed read gives 17(fold, wrong index) XOR 16(unfold, but sltiu), never both.
+- [s6] FINDING 2: the target's SECOND same-address load (lh;lhu) is ALSO a combine event, not a cse merge. mem-ref count at +0x270 (const_int 624) in C_dist0 per pass: rtl=1 jump=1 cse=1 flow=1 | combine=2 lreg=2 greg=2 sched2=2. combine turns the (s16)u compare operand — sign_extend-via-shifts of the zero-extended lhu — into a direct (sign_extend:SI (mem:HI)) second lh (cheaper than shifting). One C deref + a signedness cast -> two memory loads, manufactured by combine.
+- [s6] LEDGER CORRECTION (verify-opus-handoff-claims): s1/s2/candidate.c say "GCC 2.7.2 CSE ALWAYS merges two same-address HImode reads into ONE load." Dumps show cse keeps a single ref in every clean form (only one source deref exists; nothing for cse to merge) and it is COMBINE, not cse, that both folds the clean index and manufactures the dual load. Empirical dichotomy stands; the "CSE-merge" framing was imprecise. Disposition unchanged: the fold-refusal target needs is reachable only via an unsigned/dual view = pre-banned signedness-split family (owner FAILed twice); keep INCOMPLETE, search continues. src/ untouched; candidate.c = clean floor-8. Artifacts: tmp/grind/func_8001F938/s6/ (FINDINGS.md + A_clean/C_dist0 .i.{rtl,cse,combine,flow,...} dumps + .s).
+
+- [s6] cc1 dump execution order (GCC 2.7.2): rtl -> jump -> cse -> flow -> combine -> sched -> lreg -> greg -> sched2.
+
+- [s6] A_clean (single s16 read) +0x270: lh $2,624; move $3,$2; slt $2,$3,4; bne; sll $2,$3,1(delay); li $3,3; sll $2,$3,1 -> ONE load, index FOLDED to *2 (floor 8).
+
+- [s6] C_dist0 (u16 read + (s16) cast) +0x270: lh $2,624; lhu $3,624; slt $2,$2,4; bne; sll $2,$3,16(delay); li $3,3; sll $2,$3,16; sra $2,$2,15 -> TWO loads, index UNFOLDED == target .L8001FA60 byte-for-byte (distance 0).
+
+- [s6] FINDING 1: index fold is a combine event. A_clean.i.combine:488 `(ashift (reg/v 125) 1) 181{ashlsi3}` (folded); C_dist0.i.combine:493 `(ashift (reg/v 124) 16)` + :499 `(ashiftrt (reg 128) 15) 191{ashrsi3}` (unfolded). Pair intact in rtl/cse/jump/flow for both.
+
+- [s6] FINDING 1 decision variable: combine simplify_shift_const folds (ashiftrt (ashift X 16) 15)->(ashift X 1) iff num_sign_bit_copies(X)>16. lh=17 (fold), lhu=16 (refuse). The read signedness of the else-arm alone toggles the fold at the ==16 boundary.
+
+- [s6] FINDING 2: the 2nd same-address load is combine, not cse. mem-ref count at +0x270 per pass in C_dist0: rtl=1 cse=1 flow=1 | combine=2 greg=2. combine rewrites sign_extend-via-shifts of the zero-extended lhu into a direct sign_extend(mem)=2nd lh.
+
+- [s6] LEDGER CORRECTION: 'CSE merges the two same-address loads' (s1/s2/candidate.c header) is imprecise — cse keeps a single ref in every clean form; combine both folds the clean index and manufactures the dual load. Empirical dichotomy stands; disposition unchanged.
+
+- [s6] Sibling .L8001FA98 (+0x27E) folds to sll,1 in both variants because its C source is a literal *2 (RTL enters combine already as (ashift X 1)); no fold decision is involved there — confirming the +0x270 asymmetry is intrinsic to that block's operand provenance.
+
+- [s6] src/code6cac.c untouched (HEAD, git clean); candidate.c unchanged (clean floor-8 form).

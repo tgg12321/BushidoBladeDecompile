@@ -1,8 +1,8 @@
 {
  "func": "func_8001F938",
  "file": "code6cac",
- "session_count": 5,
- "current_modality": "permuter",
+ "session_count": 6,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 0,
@@ -39,13 +39,19 @@
    "floor": 8,
    "modality": "permuter",
    "headline": "Permuter fresh-seed from the untested unsigned floor-6 basin plateaus at 505 over 36k iters WITHOUT touching the +0x270 crux; permuter modality now exhausted from BOTH basins, dichotomy re-proven from"
+  },
+  {
+   "session": 6,
+   "floor": 8,
+   "modality": "forensics",
+   "headline": "Forensics: named the +0x270 divergence to the exact pass \u2014 GCC 2.7.2 `combine` (simplify_shift_const), gated on num_sign_bit_copies==16; both the index-fold and the target's 2nd load are combine event"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Permuter modality is now EXHAUSTED from BOTH available basins (s4 clean floor-8 signed chassis -> plateau 320 / 95k iters; s5 unsigned floor-6 chassis -> plateau 505 / 36k iters). Neither random search touched the +0x270 crux nor generated the pre-banned dual-typed read; there is no third structurally-distinct clean chassis to reseed (the floor-4 u16-local-PHI chassis is itself a banned-family form, not a clean seed).",
-   "mechanism": "The +0x270 clamp inherently needs a SIGNED compare (slti/lh) AND an unsigned/opaque index (unfolded lhu) of ONE field; a single typed read delivers exactly one, and every construct supplying both is a dual typed view = the pre-banned signedness-split family. Random mutation from either basin cannot cross this dichotomy.",
-   "next_probe": "Do NOT re-run the permuter on any clean chassis (both basins now measured dead). The only remaining sanctioned axis is NON-structural: the SOTN-master-branch signedness-split-family (CSE-defeat-via-dual-typed-access) evidence census -> owner. The F2 census (2026-07-01) already returned NOT ESTABLISHED and the owner ruled FAIL twice; unless NEW SOTN evidence is produced, the function stays INCOMPLETE at clean floor 8 (search continues per owner disposition, not parked)."
+   "hypothesis": "No clean sub-8 lever exists; the target's unfolded +0x270 index requires combine to REFUSE the shift fold (num_sign_bit_copies==16), which needs an unsigned/opaque view of the field WHILE the compare stays signed.",
+   "mechanism": "A single typed read gives combine either 17 sign-copies (signed -> folds the index, floor 8) or 16 (unsigned -> unfolds but emits sltiu not slti, floor 6). Supplying both a 16-copy index and a signed compare of one field = two typed views = the pre-banned signedness-split family. This is a combine-level dichotomy, not a search gap.",
+   "next_probe": "Non-structural only: the SOTN-master-branch signedness-split-family (CSE/fold-defeat-via-dual-typed-access) evidence census -> owner. Do NOT re-run the permuter (both basins measured dead) or re-derive the dichotomy. The combine/num_sign_bit_copies mechanism now documented can accompany that census as the precise 'why the target source did it' proof."
   }
  ],
  "judge_constraints": [
