@@ -1,27 +1,38 @@
-/* func_80022F34 — candidate (grind s1, recon, 2026-07-23)
+/* func_80022F34 — candidate (grind s2, structural, 2026-07-23)  floor STILL 11
  *
- * BEST FORM = vH (m2c-faithful, fully inlined). floor STILL 11 but the
- * composition of the 11 is COMPLETELY DIFFERENT from HEAD — this form SOLVES
- * the hard part (the +8 phantom frame slot) and byte-matches the target's
- * prologue/epilogue (-0x20, s0/s1/s2/ra at 0x10/0x14/0x18/0x1C, vars=0).
+ * CHANGED from s1's candidate (which was vH, the frame-correct/CSE form). s2
+ * proved that THIS form (base = HEAD's named-temp body) has a BYTE-PERFECT body
+ * vs target — 2x per-access `lw D_801027BC(idx)` + in-place a0 reload
+ * `lw $4,0($4)` in $a0 — and its ENTIRE residual 11 is a single defect: a +8
+ * phantom frame slot (reg100 combine strand). Remove that ONE artifact and the
+ * floor drops to 1 (the maspsx nop, retirable via maspsx_label_nop_funcs.txt).
+ * That makes this the highest-value launch point: 1 combine-artifact from match.
  *
- * NEXT SESSION: apply this to src/code6cac.c as the starting point (NOT HEAD's
- * body). NB: the 10 frame-offset regfix substs on HEAD were correcting the OLD
- * phantom frame; with THIS body the frame is already correct, so those 10 substs
- * become WRONG and the DONE path must retire them (+ maspsx_label_nop_funcs.txt
- * for the 1 nop). That is why src was reverted to HEAD this session (leaving this
- * body + the stale regfix would corrupt the oracle build).
+ * This IS the current src/code6cac.c HEAD body (applying it is a no-op from HEAD).
+ * NB: HEAD's 10 frame-offset regfix substs currently CORRECT this phantom frame
+ * (the INCOMPLETE cheat state). A COMPLETED-C match needs the phantom gone in
+ * PURE C (no substs), then retire the 10 substs + allowlist the 1 nop.
  *
- * REMAINING 11 (all in the D_801027BC access region, frame is perfect):
- *   - GCC CSEs &D_801027BC into a shared base reg (la $a1; addu ...,$a1;
- *     lw ...,0($n)) while target re-materializes %hi/%lo(D_801027BC) PER ACCESS.
- *   - the a0 self-reload lands in $v0 (lw v0,0(a0); lh a0,74(v0)) vs target's
- *     in-place $a0 (lw a0,0(a0); lh a0,74(a0)).
- *   - 1 maspsx .L-label load-delay nop (lhu v0,0(s2); .L: nop; sh v0,8(a0)) —
- *     retirable via maspsx_label_nop_funcs.txt (store-value-consumer variant).
+ * THE ONE DEFECT (s2, fully characterized):
+ *   reg100 = &D_801027BC + idx1*20 (val1's address). combine folds it into
+ *   `lw val1,D_801027BC(idx1*20)` (per-access, GOOD) but strands a bare
+ *   `(use reg:SI 100)` UPSTREAM of its own def, at the switch-merge code_label
+ *   (before the val1 sub-block's NOTE_INSN_BLOCK_BEG). reg100 then gets no hard
+ *   reg -> alter_reg reserves an unreferenced slot -> vars=8 (+8 frame).
+ *   Only val1 strands (long lifetime, loaded early in a sub-block, USED in the
+ *   outer-scope call); val2 (loaded late, consumed in-block) folds clean.
  *
- * Measured: standalone probe .frame -> vars=0, regs=4/0, args=16 (frame 0x20);
- * full-TU sandbox --disable all -> score 11, build_insns 69, target 70.
+ * WHY NOT STRUCTURALLY FIXABLE (s2, ~24 forms measured):
+ *   per-access <-> phantom are COUPLED. val1 loaded early-in-subblock => per-access
+ *   + strand (this form). val1 loaded late => cse2 shares the `la` base => vars=0
+ *   but NOT per-access (vH/vMIRROR, also 11). val1 before the switch => vars=0 +
+ *   per-access but gross reorder => sandbox 28. No structural val1-placement escapes.
+ *
+ * NEXT LEVER (non-structural): permuter / cse.c study to remove the reg100 strand
+ * (H-A option b) OR force cse2 symbol re-materialization on a frame-correct base
+ * (H-D). Residual is NOT sp-offset-only -> permuter scorer is valid here.
+ *
+ * Measured: sandbox --disable all = 11, build_insns 69, target 70.
  */
 void func_80022F34(void) {
     s32 i;
@@ -37,7 +48,9 @@ loop_22F34:
         u8 *a0 = (u8 *)&D_80101EC8 + offset;
 
         if (*(s16 *)(a0 + 6) != 0) {
-            switch (D_800A38DC) {
+            s32 val = D_800A38DC;
+
+            switch (val) {
                 case 0:
                     *(s16 *)(a0 + 8) = (&D_80102782)[i] << 4;
                     break;
@@ -50,9 +63,15 @@ loop_22F34:
                     break;
             }
 
-            single_game_SetStatusUpData(i,
-                (&D_801027BC)[*(s16 *)(a0 + 0x4A) * 5],
-                (&D_801027BC)[*(s16 *)(*(u8 **)a0 + 0x4A) * 5]);
+            {
+                s16 idx1 = *(s16 *)(a0 + 0x4A);
+                s32 val1 = (&D_801027BC)[idx1 * 5];
+                a0 = *(u8 **)a0;
+                {
+                    s16 idx2 = *(s16 *)(a0 + 0x4A);
+                    single_game_SetStatusUpData(i, val1, (&D_801027BC)[idx2 * 5]);
+                }
+            }
         }
 
         tbl++;

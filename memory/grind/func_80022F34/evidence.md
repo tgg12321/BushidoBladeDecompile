@@ -151,3 +151,40 @@ callee-saved over-promotion is a register-allocation plateau.
 - [s1] src reverted to HEAD: HEAD's 10 frame-offset regfix substs correct the OLD phantom frame; with vH the frame is already correct so those substs would corrupt the oracle. DONE path = vH + retire the 10 substs + maspsx_label_nop_funcs.txt for the nop.
 
 - [s1] The permuter is a VALID lever here (unlike the siblings) because vH's residual is NOT sp-offset-only; the frame is correct so the stack-normalized scorer sees the real reg/CSE diffs.
+
+## s2 (structural, 2026-07-23) — per-access<->phantom coupling MAPPED across ~24 forms; floor firmly 11 on the structural axis
+
+- [s2] Baseline reconfirmed: HEAD (base named-temp form) sandbox --disable all = 11, build_insns 69, target 70, 11 rules_dropped.
+
+- [s2] **base's BODY is BYTE-PERFECT vs target** (2x per-access `lw D_801027BC(idx)` + in-place a0 reload `lw $4,0($4)` in $a0). Its ENTIRE 11 = the +8 phantom frame slot (10 diffs: sp-adjust x2 + 4 saves + 4 restores at wrong offsets) + 1 maspsx nop. Removing the phantom (keeping the body) would drop the floor to 1 (the nop, retirable via maspsx_label_nop_funcs.txt on the DONE path).
+
+- [s2] **The phantom (reg100 strand) and per-access are COUPLED through the val1 sub-block + lifetime.** Measured .frame(vars=)/per-access(count of `lw D_801027BC`) across ~24 structural forms:
+  * val1 loaded AFTER switch, BEFORE reload, in a sub-block (base/vFLAT/vFLAT2/vARR/vQ/vPTR): 2x per-access + vars=8 (STRAND). Right instruction ORDER.
+  * val1 loaded AFTER reload/idx2 (vW/vMIRROR/vK1/vU/vY/vP/vH/vSPLIT): CSE'd `la $5` base (0-1x per-access) + vars=0. Frame byte-matches target.
+  * val1 loaded BEFORE the switch (vPRESW): 2x per-access + vars=0 — the ONLY form with BOTH — but hoisting reorders the whole chain and pushes a0 off $a0 => real sandbox = 28. Rejected.
+
+- [s2] **The reg100 strand mechanism (combine note-relocation wart).** cse2 has reg95=symbol_ref(D_801027BC), reg99=idx1*20, reg102: reg100=reg99+reg95, reg104: val1=*reg100. combine folds reg104 into `lw val1,D_801027BC(reg99)` (per-access) and DELETES reg100's def, but strands a bare `(insn 163 (use (reg:SI 100)) REG_DEAD)` placed UPSTREAM of reg100's own def — right after switch-merge code_label 85, before the val1 sub-block's NOTE_INSN_BLOCK_BEG (note 87). reg100 is thus in greg's "6 regs to allocate: 100 80 75 72 74 73" list, gets NO hard reg (absent from Register dispositions), => alter_reg reserves an unreferenced slot => vars=8. Only val1 (long lifetime, loaded early in a sub-block, USED in the outer-scope call) strands; val2 (loaded late in the same block, consumed in-block) folds cleanly.
+
+- [s2] **Frame-correct CSE form == base's floor.** vMIRROR (target-order, both CSE, vars=0) and vSPLIT (val2 per-access + val1 CSE, vars=0) BOTH = sandbox 11, build_insns 64. The CSE'd base + a0-reload-in-$v0 + nop sum to 11 — no better than base's phantom. Neither regime is < 11.
+
+- [s2] The per-access difference is a genuine fork cse2 divergence: standalone AND full-TU our-fork cse2 keeps &D_801027BC in one reg (`la`); cc1psx re-materializes %hi/%lo per load. base gets per-access only via register-pressure SEPARATION (val1's `la` reg reused across the long gap), NOT a cse2 barrier — and that separation is exactly what strands reg100.
+
+- [s2] KILLED forms not previously banked: val1-before-switch (vars0+per-access, reorder=28); val1 in if-body no-subblock (vSPLIT/vSPLIT2/vSPLIT3 => CSE); flat single-block (vFLAT/vFLAT2 => strand; vFLAT3 => CSE); array-typed D_801027BC (vARR => strand, decl type irrelevant); explicit displaced pointer p1=&(&D)[idx1*5] (vPTR => strand); named scaled-index k1 (vK1/vMIRROR => CSE); idx1-before-switch val1-after (vIDXSW => val1 CSE).
+
+- [s2] Artifacts: tmp/grind/func_80022F34/s2/{probe.sh, show.sh, _prelude.h, base.c, vH.c, vP.c vU.c vW.c vY.c vK1.c vMIRROR.c vSPLIT*.c vFLAT*.c vPRESW.c vARR.c vPTR.c + their .s}. rejected/val1-before-switch-per-access-vars0-but-reorder-28.c, rejected/frame-correct-cse-base-still-11.c.
+
+- [s2] Baseline sandbox --disable all = 11 (build 69 / target 70), 11 rules_dropped, verdict C.
+
+- [s2] base's body is BYTE-PERFECT vs target (2x per-access `lw D_801027BC(idx)` + in-place a0 reload `lw $4,0($4)` in $a0); the whole 11 = +8 phantom frame slot (10 diffs) + 1 maspsx nop.
+
+- [s2] The phantom = reg100 (val1's folded address) stranded by combine placing a bare `(use reg:SI 100)` upstream of its def at switch-merge code_label 85 (before the val1 sub-block's NOTE_INSN_BLOCK_BEG); reg100 gets no hard reg -> unreferenced frame slot -> vars=8.
+
+- [s2] per-access and phantom are COUPLED via val1's sub-block lifetime: val1 loaded early-in-subblock => per-access + strand (base); val1 loaded late => cse2 shares `la` base => vars=0 but not per-access (vH/vMIRROR); val1 before switch => vars=0 + per-access but gross reorder => sandbox 28.
+
+- [s2] All non-reordered structural regimes floor at exactly 11: base (phantom body) 11, vMIRROR/vSPLIT (frame-correct CSE) 11.
+
+- [s2] Only val1 strands (long lifetime, used in outer-scope call); val2 (loaded late, consumed in-block) folds clean => the strand is a lifetime/scope-crossing artifact, not inherent to the D_801027BC access.
+
+- [s2] Type of D_801027BC (scalar+& vs array[]) is irrelevant to the strand (vARR strands identically); explicit displaced pointer (vPTR) strands too.
+
+- [s2] The per-access gap is a genuine fork cse2 divergence: standalone AND full-TU our-fork cse2 keeps &D_801027BC in one reg (`la`); cc1psx re-materializes %hi/%lo per load. base gets per-access only via register-pressure separation, which is exactly what strands reg100.

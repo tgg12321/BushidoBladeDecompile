@@ -57,3 +57,54 @@ done/retire actions outside a grind session's surface.
 - probe: standalone .frame probe of vH_m2c.c; apply to src + full-TU sandbox --disable all; objdump the prologue
 - result: vH -> vars=0, regs=4/0, frame 0x20 (byte-matches target prologue/epilogue). Full-TU sandbox = 11, but the 11 moved entirely into the D_801027BC access region (base-CSE + a0-reload register).
 - verdict: CONFIRMED
+
+## [s2] H-C (structural blend: per-access %lo AND no phantom) — KILLED on the val1-placement axis.
+- mechanism: per-access requires val1 loaded early in a sub-block (long lifetime, register-pressure separation of the two &D_801027BC loads); that exact structure strands reg100 via combine's misplaced (use) note at the switch-merge label => vars=8. Loading val1 late collapses the separation => cse2 shares the base (`la`) => vars=0 but not per-access.
+- probe: ~24 structural forms, .frame vars= + per-access `lw D_801027BC` count + real sandbox on base(11)/vSPLIT(11)/vMIRROR(11)/vPRESW(28).
+- result: NO structural form has right-order + 2x per-access + vars=0. The only vars0+per-access form (val1 before switch, vPRESW) reorders to 28. All frame-correct forms CSE and floor at 11; all per-access forms strand and floor at 11.
+- verdict: KILLED (structural / val1-placement axis). The coupling is a fork-level cse2+combine interaction, not a C-statement-order artifact.
+
+## Revised frontier (grind s2) — floor 11; structural val1-placement axis exhausted
+
+H-A (TOP LEAD, NON-structural): permuter from a frame-correct base. NB s2 shows the
+byte-perfect body (base) needs only the reg100 strand removed to reach floor 1 — the
+permuter base choice is now a real fork: (a) vH/vMIRROR (frame-correct, defeat the
+&D_801027BC cse2 share to get per-access), OR (b) base (byte-perfect body, defeat the
+reg100 combine strand to get vars=0). Option (b) is 1 combine-artifact away from a
+near-match and is the higher-value permuter target. Levers: [[defeat-combine-symbol-fold]]
+(inverse direction), register-pressure injection to force symbol re-materialization.
+next_probe: permuter both bases with PERM_* directives; the residual is NOT sp-offset-only
+so decomp-permuter's stack-normalized scorer sees the real reg/CSE/strand diffs.
+
+H-D (NEW, non-structural — cse2/combine internals): the target's per-access comes from
+cc1psx NOT sharing the &D_801027BC symbol_ref; our fork's cse2 shares it (`la`). Read
+tools/gcc-2.7.2/cse.c around symbol_ref cost / CSE of constants to find what C-visible
+condition (register pressure, intervening clobber) makes our cse2 re-materialize instead
+of share. This is the root of both the per-access gap AND (via the separation it forces)
+the reg100 strand — a form that makes cse2 re-materialize WITHOUT the long val1 lifetime
+would break the coupling.
+
+H-B (still open): a0 self-reload lands in $v0 (CSE forms) vs target $a0. Sub-issue worth
+~1-2 diffs; only matters once the per-access/frame is resolved.
+
+DONE-path unchanged: whichever base lands the match needs the 10 frame-offset regfix substs
+retired (redundant once frame is correct) + func_80022F34 in maspsx_label_nop_funcs.txt for
+the 1 load-delay nop.
+
+## [s2] A structural form exists with target's instruction order AND per-access %lo on both D_801027BC loads AND no phantom frame slot (vars=0).
+- mechanism: per-access requires val1 loaded early in a sub-block (long lifetime => register-pressure separation of the two &D_801027BC loads); that exact structure strands reg100 via combine's misplaced (use) note at the switch-merge label => vars=8. Loading val1 late collapses the separation => cse2 shares the base (la $5) => vars=0 but not per-access.
+- probe: ~24 structural forms measured by cc1 .frame vars= + per-access `lw D_801027BC` count, plus real sandbox --disable all on base(11)/vSPLIT(11)/vMIRROR(11)/vPRESW(28).
+- result: No form achieves all three. The ONLY vars=0 + 2x per-access form loads val1 before the switch (vPRESW) and reorders the whole chain => sandbox 28 (worse). Every frame-correct form CSEs the symbol; every per-access form strands reg100. All non-reordered regimes floor at exactly 11.
+- verdict: KILLED
+
+## [s2] base (HEAD named-temp) body is byte-perfect vs target and its entire 11 is a single defect (the +8 phantom frame slot), not a codegen-body difference.
+- mechanism: cse2: reg100 = idx1*20 + symbol_ref(D_801027BC); val1 = *reg100. combine folds reg104 into `lw val1,D_801027BC(reg99)` (per-access) and deletes reg100's def, but strands `(insn 163 (use (reg:SI 100)) REG_DEAD)` UPSTREAM of the def at switch-merge code_label 85. reg100 gets no hard reg (greg allocate-list, absent from dispositions) => alter_reg reserves an unreferenced slot => vars=8 => sp-adjust x2 + 4 saves + 4 restores at +8 offsets (10 diffs) + 1 maspsx nop = 11.
+- probe: objdump of base.s body vs asm/funcs/func_80022F34.s; cc1 -da greg/combine/cse2 dumps; sandbox --disable all = 11, build_insns 69, target 70.
+- result: Body (both per-access lw D_801027BC + in-place `lw $4,0($4)` a0 reload in $a0) is identical to target; only the frame differs. Remove the reg100 strand and floor would drop to 1 (the nop, retirable via maspsx_label_nop_funcs.txt).
+- verdict: CONFIRMED
+
+## [s2] A frame-correct (vars=0) CSE form scores below 11 because CSE costs fewer instructions than the +8 phantom.
+- mechanism: CSE'd shared `la $5` base for both accesses is shorter than per-access %hi/%lo; if the CSE + a0-reload-in-$v0 diffs total < 10, a frame-correct form would beat the phantom.
+- probe: Applied vMIRROR (target-order both-CSE) and vSPLIT (val2 per-access, val1 CSE) to src; sandbox --disable all.
+- result: vMIRROR = 11 (build_insns 64), vSPLIT = 11 (build_insns 64). The CSE'd base + a0-reload-in-$v0 (vs target $a0) + nop sum to exactly 11. No frame-correct structural form beats base.
+- verdict: KILLED
