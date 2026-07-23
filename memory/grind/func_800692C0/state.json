@@ -1,7 +1,7 @@
 {
  "func": "func_800692C0",
  "file": "text1b",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -21,23 +21,24 @@
    "floor": 9,
    "modality": "structural",
    "headline": "greg ALLOCDBG pins the sum/bitpos tie (pri 4838 vs 4736, gap 17); clean structural init/live-range levers KILLED with exact allocno numbers; RA-flip proven worth ~4pts (9->5) but every clean flip is b"
+  },
+  {
+   "session": 3,
+   "floor": 9,
+   "modality": "structural",
+   "headline": "Structural modality exhausted: frontier-1 duplicated-statement byte-neutral bitpos ref-lift KILLED (target's merged suffix has no bitpos read; live dup=+2 insns, dead dup=inert); floor-9 wall reframed"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A byte-neutral duplicated-statement-into-arms ref-lift raises bitpos nrefs 9->10 (bitpos ll56 < sum 62 -> pri 5357 > sum) flipping RA WITHOUT an extra emitted insn, since jump2 re-merges the duplicate.",
-   "mechanism": "SANCTIONED [[duplicated-statement-into-arms]] = the proven byte-free ref-lift for global-RA priority walls; cross-jump collapses the duplicated statement so final bytes are unchanged while reg_n_refs is lifted at allocation time.",
-   "next_probe": "Find a bitpos-reading statement duplicable into both sval arms that jump2 merges (arms shift by different consts 1 vs 2 -> non-trivial). Measure ALLOCDBG + build_insns==67. This is a FAKE-annotated last-resort exception -> emit ruling-request before adopting, never self-approve."
+   "hypothesis": "The permuter can place const1 (li $t6,1) before bitpos's def at constant 67 insns, dropping bitpos ll 56->55 and flipping the RA tie to target (sum=$t2, bitpos=$t1) -> floor 9->~5.",
+   "mechanism": "The wall is a pure scheduler-placement fixpoint (const1 vs bitpos-def) coupled to the RA tie; source ordering cannot reach it but directed/random PERM over the sched space can. Seed candidate.c with the exact allocno target known (flip sum<->bitpos, keep 67 insns).",
+   "next_probe": "Build target.o from asm/funcs/func_800692C0.s + prelude.inc (drop .set gp=64) at offset 0; seed candidate.c; --stop-on-zero; logs to tmp/grind/func_800692C0/s3(or s4)/. NB the s1-2 import pulled sibling func_8004A348 inline-asm -> maspsx 'too many values to unpack'; hand-trim the import to JUST this function's context first."
   },
   {
-   "hypothesis": "Permuter on a clean single-fn target (offset 0) drives the coupled const1-li-slot + sum/bitpos fixpoint that source-ordering alone cannot.",
-   "mechanism": "Seed from candidate.c with the EXACT allocno target known (flip sum<->bitpos, keep 67 insns); random+directed PERM over the coupled sched+RA space.",
-   "next_probe": "Build target.o from asm/funcs/func_800692C0.s + prelude.inc (drop .set gp=64) at offset 0; --stop-on-zero; logs to tmp/grind/func_800692C0/s2/."
-  },
-  {
-   "hypothesis": "The const1 (li t6,1) scheduling slot (~3 of 9 diffs) is only movable together with the RA fix, not independently.",
-   "mechanism": "const1 sits at target slot 4 vs ours slot 6-8; purely scheduler placement, coupled to preheader pressure which the RA choice feeds.",
-   "next_probe": "If a clean RA flip is found, re-check whether const1 lands at slot 4 automatically; otherwise the residual is a scheduling-only gap."
+   "hypothesis": "BB2_SCHED_DEBUG / sched dumps may reveal WHY const1 schedules late (its sched priority vs bitpos-def) and whether any pre-sched RTL shape (not source order) biases it early.",
+   "mechanism": "const1 is LICM-hoisted; its preheader slot is chosen by sched1 priority. Understanding the priority inputs could surface a legitimate structural bias not yet tried (or confirm none exists, hardening the permuter-only conclusion).",
+   "next_probe": "Dump sched1 for the preheader block on standalone; compare const1 vs bitpos-def ready-time/priority; check if the shift-operand form (1<<bitpos) can be expressed so the hoisted li gets higher sched priority without adding an insn."
   }
  ],
  "judge_constraints": [],

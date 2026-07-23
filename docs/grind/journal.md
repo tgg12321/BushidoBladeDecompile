@@ -569,3 +569,4 @@
 - 2026-07-23 01:05 func_80061EC0 COMPLETED-C after 1 sessions.
 - 2026-07-23 01:12 func_800692C0 s1 [recon] floor=9: Recon: floor re-confirmed 9; isolated to ONLY 2 disagreeing allocnos (sum/bitpos $t1<->$t2 tie) + coupled li-t6 preheader slot; i/a3_off/p/const1 all register-identical to target; no sibling analog.
 - 2026-07-23 02:13 func_800692C0 s2 [structural] floor=9: greg ALLOCDBG pins the sum/bitpos tie (pri 4838 vs 4736, gap 17); clean structural init/live-range levers KILLED with exact allocno numbers; RA-flip proven worth ~4pts (9->5) but every clean flip is blocked by a +1 sum-livelen unreachable at constant insn count.
+- 2026-07-23 02:28 func_800692C0 s3 [structural] floor=9: Structural modality exhausted: frontier-1 duplicated-statement byte-neutral bitpos ref-lift KILLED (target's merged suffix has no bitpos read; live dup=+2 insns, dead dup=inert); floor-9 wall reframed to a single 1-LUID const1 scheduling gap for the permuter.

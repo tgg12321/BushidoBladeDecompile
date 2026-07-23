@@ -73,3 +73,27 @@
 - probe: `s32 one=1; sum += one<<bitpos;` (opaque var) + bitpos=0 last: injects a preheader li inside sum's live range, sum ll 62->63 pri 4761, bitpos ll 56 pri 4821.
 - result: REFUTED: the flip IS reachable — RA matches target (return move $2,$10), sandbox 9->5. But it costs a redundant li (build_insns 68 vs 67), a coercion/cheat -> honest floor stays 9. Proves RA-flip is worth ~4pts; sole clean-flip obstacle is +1 sum-livelen at constant insn count.
 - verdict: CONFIRMED
+
+## [s3] Duplicated-statement-into-arms can lift bitpos nrefs 9->10 byte-neutrally to flip the RA tie (frontier #1).
+- mechanism: SANCTIONED [[duplicated-statement-into-arms]] byte-free ref-lift; duplicate a REAL bitpos-reading statement into both sval arms, jump2 re-merges it -> +1 nref at alloc, +0 emitted insns -> bitpos pri (nrefs10/ll57 ~5262) > sum 4838 -> flip at 67 insns.
+- probe: constructed `probe=4<<bitpos` duplicated into both arms; measured live (`return sum+probe`) and dead (`return sum`) via standalone tmp/gccdbg/cc1 ALLOCDBG + insn count (rejected/dup-bitpos-read-not-byte-neutral.c).
+- result: (a) target's cross-jump-merged suffix .L8006938C reads bitpos ZERO times => no byte-neutral merge slot for any bitpos read; (b) live duplicate = 62 insns (+2, not byte-neutral); (c) dead duplicate = 60 insns but bitpos nrefs stays 9 (flow deletes dead store before ref-count, INERT). No real+byte-neutral+mergeable bitpos-reading statement exists.
+- verdict: KILLED. Byte-neutrality precondition provably fails; NOT a ruling-request (mechanical, not policy).
+
+## [s3] The floor-9 wall reduces to exactly 1 LUID of bitpos livelen, gated entirely by const1 (`li $t6,1`) scheduling.
+- mechanism: bitpos nrefs=9 is fixed by the byte-identical post-jump2 loop body. pri(bitpos)=flog2(9)*9/ll=269952/ll. Flip (pri>4838) needs ll<=55. Achievable floor is 56 because const1 (LICM-hoisted `1`) schedules AFTER bitpos's def, lengthening bitpos's range by 1. Target schedules const1 before bitpos's def (preheader slot 4 vs 6) -> ll=55 -> flip.
+- probe: pri arithmetic on measured base (ll57->4736, 56->4820, 55->4908) + s2's 10-ordering floor-56 measurement + target-asm slot analysis.
+- result: gap is exactly 1 LUID; const1 is a compiler-hoisted invariant with no source statement, so source reordering cannot move it (all structural orderings s2+s3 dead). Pure scheduler-placement fixpoint.
+- verdict: CONFIRMED (reframing). The remaining lever is the permuter driving the const1-vs-bitpos-def scheduling to place const1 early at constant 67 insns (frontier #2). Structural modality exhausted.
+
+## [s3] duplicated-statement-into-arms can lift bitpos nrefs 9->10 byte-neutrally to flip the sum/bitpos RA tie at 67 insns (frontier #1).
+- mechanism: SANCTIONED [[duplicated-statement-into-arms]]: duplicate a REAL bitpos-reading statement into both sval arms; jump2 re-merges -> +1 nref at alloc, +0 emitted insns -> bitpos pri(nrefs10/ll57 ~5262) > sum 4838 -> flip.
+- probe: constructed probe=4<<bitpos duplicated into both arms; measured live (return sum+probe) and dead (return sum) via standalone tmp/gccdbg/cc1 ALLOCDBG + insn count.
+- result: Target's cross-jump-merged suffix .L8006938C (addu sum; sh 0,($a3); sh 0,($a2)) reads bitpos ZERO times -> no byte-neutral merge slot. Live duplicate=62 insns (+2, not byte-neutral). Dead duplicate=60 insns but bitpos nrefs STAYS 9 (flow deletes dead store before ref-count, INERT). No real+byte-neutral+mergeable bitpos read exists; NOT a ruling-request (mechanical, not policy).
+- verdict: KILLED
+
+## [s3] The floor-9 wall reduces to exactly 1 LUID of bitpos livelen, gated entirely by const1 (li $t6,1) scheduling position.
+- mechanism: bitpos nrefs=9 fixed by byte-identical post-jump2 loop body; pri(bitpos)=269952/ll. Flip (pri>sum 4838) needs ll<=55; floor is 56 because const1 (LICM-hoisted 1) schedules AFTER bitpos's def. Target schedules const1 at preheader slot 4 (before bitpos init slot 6) -> ll=55 -> flip (sum=$t2, bitpos=$t1, return move $2,$10).
+- probe: pri arithmetic on measured base (ll57->4736, 56->4820, 55->4908) + s2 floor-56 (10 orderings) + target-asm slot analysis.
+- result: Gap is exactly 1 LUID; const1 is a compiler-hoisted invariant with no source statement, so source reordering cannot move it (all structural orderings s2+s3 dead). Pure scheduler-placement fixpoint (const1 vs bitpos-def).
+- verdict: CONFIRMED

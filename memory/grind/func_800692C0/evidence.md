@@ -153,3 +153,53 @@ deeper RA/sched lever, or user canonical-asm authorization.
 - [s2] `one` opaque-var flip: sandbox 9->5 with build_insns 68 (extra redundant li). Cheat (RA-steering, no semantic purpose, not the 67-insn original) -> not banked; proves RA-flip worth ~4pts.
 
 - [s2] src/text1b.c restored to HEAD (pinned form) after measurement; tree oracle-green. Pin-free floor-9 form preserved in candidate.c.
+
+== s3 (structural, 2026-07-23) — frontier #1 (duplicated-statement ref-lift) KILLED; wall reframed to a 1-LUID scheduling gap ==
+- Harness rebuilt & validated: tmp/grind/func_800692C0/s3/probe.sh (standalone
+  sa.c via tmp/gccdbg/cc1 BB2_ALLOC_DEBUG; standalone baseline=60 insns).
+  Reproduces s2 base EXACTLY: sum=pseudo76 nrefs=10 ll=62 pri=4838 ->$t1($9);
+  bitpos=pseudo79 nrefs=9 ll=57 pri=4736 ->$t2($10); return `move $2,$9` (no flip).
+- FRONTIER #1 KILLED (sanctioned duplicated-statement-into-arms byte-neutral
+  bitpos ref-lift). Two independent measured grounds:
+  * NO MERGE SLOT: target's cross-jump-merged suffix .L8006938C =
+    `addu $t2,$t2,$v0 ; sh $zero,($a3) ; sh $zero,($a2)` reads bitpos ZERO
+    times. The only target bitpos reads are the two per-arm `sllv $v0,...,$t1`
+    in UN-merged blocks (differ: const 1 vs 2). No bitpos-read has a
+    byte-neutral merge destination.
+  * MEASURED both branches (rejected/dup-bitpos-read-not-byte-neutral.c):
+    live duplicated `probe=4<<bitpos` (kept via `return sum+probe`) -> 62 insns
+    (+2, NOT byte-neutral). Dead variant (`return sum`) -> 60 insns but bitpos
+    nrefs STAYS 9 (flow deletes the dead store before ref-counting -> INERT for
+    global RA, exactly as duplicated-statement-into-arms.md states).
+  => A real bitpos read costs an insn; a dead one lifts no refs. No real,
+     byte-neutral, mergeable bitpos-reading statement exists in this function's
+     semantics. NO ruling-request warranted: the byte-neutrality precondition
+     provably fails (not a policy question, a mechanical one).
+- REFRAME (the load-bearing s3 finding): the honest floor-9 wall reduces to
+  EXACTLY ONE LUID of bitpos livelen. With bitpos nrefs=9 FIXED by the
+  byte-identical post-jump2 loop body, K=flog2(9)*9=4736*57=269952, so
+  pri(bitpos)=269952/ll:  ll=57 -> 4736 (base); ll=56 (s2 floor) -> 4820
+  (<4838, STILL no flip); ll=55 -> 4908 (>4838, FLIPS to target: sum=$t2,
+  bitpos=$t1, return move $2,$10). So the clean 67-insn flip needs bitpos
+  ll<=55, and the achievable floor is 56 -> gap of exactly 1.
+- The ll=56 floor is set ENTIRELY by const1 (`li $t6,1`, the LICM-hoisted
+  shift operand `1`) scheduling AFTER bitpos's def, pushing bitpos's def one
+  LUID earlier in its own range. Target schedules const1 at preheader slot 4
+  (BEFORE bitpos init at slot 6) -> bitpos ll=55 -> the RA flip. const1 is a
+  compiler-hoisted invariant with NO corresponding source statement, so no
+  source reordering can move it (s2: 10 orderings dead; s3 arg1<<=4 / init
+  permutations already dead). => the wall is a pure SCHEDULER-placement
+  fixpoint (const1 vs bitpos-def), the permuter's exact target.
+- src/text1b.c restored to HEAD (pinned form); tree oracle-green. Floor stays 9.
+
+- [s3] s3 harness (tmp/grind/func_800692C0/s3/probe.sh, tmp/gccdbg/cc1 BB2_ALLOC_DEBUG, standalone baseline=60 insns) reproduces s2 base EXACTLY: sum=p76 nrefs10/ll62/pri4838->$t1; bitpos=p79 nrefs9/ll57/pri4736->$t2; return move $2,$9 (no flip).
+
+- [s3] sandbox --disable all on pin-free candidate = score 9, target_insns=67, build_insns=67, rules_dropped=1, cheat_asm_stripped=355 (floor re-confirmed this session).
+
+- [s3] Frontier #1 (duplicated-statement byte-neutral bitpos ref-lift) is mechanically impossible: target's jump2-merged suffix contains no bitpos-reading instruction, so a real bitpos read costs +1 insn (measured live=62) and a dead one is deleted pre-ref-count (measured dead=60, nrefs unchanged at 9).
+
+- [s3] Flip threshold: bitpos ll<=55 flips (pri 4908>4838); s2-measured floor is 56 (pri 4820, still short) -> exactly 1 LUID gap, set solely by const1 scheduling after bitpos's def.
+
+- [s3] Structural modality is exhausted: s2 killed init/live-range/recompute/shared-accum; s3 killed the sanctioned duplicated-statement lift and confirmed const1 placement has no source lever. Remaining axis is the permuter (scheduling fixpoint), a different modality.
+
+- [s3] src/text1b.c restored to HEAD (pinned form); tree oracle-green; candidate.c unchanged (pin-free floor-9 form).
