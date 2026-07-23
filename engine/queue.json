@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80061ACC",
-      "file": "text1b",
-      "distance": 9,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_80061EC0",
       "file": "text1b",
       "distance": 9,
@@ -2752,14 +2744,14 @@
     }
   ],
   "counts": {
-    "total": 336,
-    "active": 294,
+    "total": 335,
+    "active": 293,
     "by_status": {
-      "active": 294,
+      "active": 293,
       "parked": 42
     },
     "by_verdict": {
-      "C": 140,
+      "C": 139,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }
