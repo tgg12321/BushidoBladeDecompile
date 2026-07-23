@@ -1,0 +1,18 @@
+{
+ "func": "func_80061EC0",
+ "file": "text1b",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [
+  {
+   "session": 0,
+   "floor": 5,
+   "modality": "wip-import",
+   "headline": "floor imported from memory/wip checkpoint"
+  }
+ ],
+ "frontier": [],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-23T05:53:40.646375+00:00"
+}
