@@ -572,3 +572,4 @@
 - 2026-07-23 02:28 func_800692C0 s3 [structural] floor=9: Structural modality exhausted: frontier-1 duplicated-statement byte-neutral bitpos ref-lift KILLED (target's merged suffix has no bitpos read; live dup=+2 insns, dead dup=inert); floor-9 wall reframed to a single 1-LUID const1 scheduling gap for the permuter.
 - 2026-07-23 03:20 func_800692C0 COMPLETED-C after 4 sessions.
 - 2026-07-23 03:55 func_8003B10C s2 [structural] floor=8: Solved v9's web split via recompute-inline (frame -32, no move copy, delay-nop restored); pure-C floor 10->8 (hoisted, capped); clean duplicated 0-path chassis at 13 with residual = 2 register assignments gated by sched1 hoisting the ED6 load.
+- 2026-07-23 04:09 func_8003B10C COMPLETED-C after 3 sessions.
