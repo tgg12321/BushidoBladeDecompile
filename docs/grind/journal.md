@@ -567,3 +567,4 @@
 - 2026-07-23 00:37 func_800617C8 COMPLETED-C after 1 sessions.
 - 2026-07-23 00:53 func_80061ACC COMPLETED-C after 1 sessions.
 - 2026-07-23 01:05 func_80061EC0 COMPLETED-C after 1 sessions.
+- 2026-07-23 01:12 func_800692C0 s1 [recon] floor=9: Recon: floor re-confirmed 9; isolated to ONLY 2 disagreeing allocnos (sum/bitpos $t1<->$t2 tie) + coupled li-t6 preheader slot; i/a3_off/p/const1 all register-identical to target; no sibling analog.

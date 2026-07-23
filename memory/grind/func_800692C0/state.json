@@ -1,0 +1,40 @@
+{
+ "func": "func_800692C0",
+ "file": "text1b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 0,
+   "floor": 9,
+   "modality": "wip-import",
+   "headline": "floor imported from memory/wip checkpoint"
+  },
+  {
+   "session": 1,
+   "floor": 9,
+   "modality": "recon",
+   "headline": "Recon: floor re-confirmed 9; isolated to ONLY 2 disagreeing allocnos (sum/bitpos $t1<->$t2 tie) + coupled li-t6 preheader slot; i/a3_off/p/const1 all register-identical to target; no sibling analog."
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "A greg RTL dump will show the exact n_refs/live_length delta that makes local-alloc assign sum->$t1 instead of $t2, pinpointing the minimal C lever to flip the sum/bitpos tie.",
+   "mechanism": "GCC 2.7.2 local-alloc.c orders qtys by priority ~ n_refs/live_length; only these 2 allocnos disagree, so the tie-break is the whole gap.",
+   "next_probe": "cc1 <build-flags> -da base.i on candidate.c; read ';; Register dispositions' + qty ordering for the sum/bitpos pseudos; dump to tmp/grind/func_800692C0/s2/."
+  },
+  {
+   "hypothesis": "Restructuring sum's live range (explicit return temp ending sum before bitpos's final +=0x10, or lengthening bitpos) flips the t1/t2 allocation to match target without any cheat.",
+   "mechanism": "sum=return value=longest live range=lowest priority in ours; target gives sum the higher reg. Adjusting which of sum/bitpos dies first changes refs/live_length priority. Only decl/init ORDER was tried before, never live-range SPAN.",
+   "next_probe": "Sweep `s32 ret; ...; ret = sum; return ret;` placements + accumulator-into-separate-var variants; sandbox --disable all each; save winners/losers to rejected/."
+  },
+  {
+   "hypothesis": "A hand-trimmed single-function permuter target can drive the coupled li-slot + t1/t2 fixpoint that source-ordering alone cannot.",
+   "mechanism": "Prior import failed on sibling func_8004A348 inline-asm (maspsx 'too many values to unpack'); a clean offset-0 target.o gives a real weighted base score of 9 and a working search over the coupled sched+RA space.",
+   "next_probe": "Build target.o from asm/funcs/func_800692C0.s + prelude.inc (drop `.set gp=64`) at offset 0 per difficult-is-not-impossible \u00a73; seed candidate.c; random + directed PERM_* with --stop-on-zero; logs to tmp/grind/func_800692C0/s2/."
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-23T06:05:38.414413+00:00"
+}
