@@ -1,7 +1,7 @@
 {
  "func": "func_800611A4",
  "file": "text1b",
- "session_count": 6,
+ "session_count": 7,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -45,18 +45,19 @@
    "floor": 6,
    "modality": "forensics",
    "headline": "Forensics: v0<->v1 wall traced to local-alloc.c:472 reg_n_deaths==1 gate; reused load-temp (3 deaths) punted to global, single-death mask grabs v0 locally first. Flip needs a fresh single-death local "
+  },
+  {
+   "session": 7,
+   "floor": 6,
+   "modality": "forensics",
+   "headline": "s7 forensics: both live-frontier RA axes + a new aggregate-copy axis KILLED with cc1 -da; v0<->v1 wall is a local-before-global pass-ordering invariant at 43 insns. Every sanctioned axis dead across 4"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A cheat-free C shape could give the reused load-web reg_n_deaths==1 (making it LOCAL and higher-priority than the mask so it grabs v0) while preserving target's interleaved lw/sw scheduling.",
-   "mechanism": "local-alloc.c:472 punts the load-web to global only because reuse creates 3 deaths. If the web were single-death it would be local and win v0 over the mask (target layout). But reuse is what creates the WAR anti-deps that preserve the interleave; separate single-use temps (single-death, local) let sched1 hoist the loads together (s2: score 11), breaking the interleave. The tension (reuse-for-schedule vs single-death-for-RA) is the crux.",
-   "next_probe": "Search for a forward-order C structure that yields single-death load pseudos (local) that local-alloc COALESCES into one v0 qty via combine_regs (move coalescing) WITHOUT sched1 hoisting the loads -- e.g. an anti-dependence source other than temp-reuse (a store-to-load ordering fence expressible in pure C) that serializes the loads while keeping each load pseudo single-death. Verify via .lreg reg_n_deaths + .sched insn order."
-  },
-  {
-   "hypothesis": "A cheat-free C shape could make the interleaved MASK a multi-death pseudo so it too is punted to global, where the higher-ref load-web (n_refs 6) outranks it and takes v0, leaving the mask v1 (target).",
-   "mechanism": "If the mask had reg_n_deaths>=2 it fails the local-alloc.c:472 gate and both pseudos go to global.c, ordered by allocno priority (n_refs*freq/length): the 6-ref load-web beats the 2-ref mask for v0. The mask is single-death today because lui/ori is an in-place RMW (flow counts 1 death at the final sw).",
-   "next_probe": "Find a pure-C mask construction whose value genuinely dies and is reborn (2 deaths) without a dead store and without adding an insn -- combine currently re-merges split constants (s3, score 9). Check whether any pure-C expression of 0xFFFFEF produces two REG_DEAD notes in the .flow dump while still assembling to lui/ori."
+   "hypothesis": "The v0<->v1 wall is a local-before-global pass-ordering invariant: at 43 insns no cheat-free C can put the multi-death reused load-web in $v0 while the single-death mask takes $v1, because local-alloc (mask) always precedes global-alloc (web).",
+   "mechanism": "local-alloc.c:472 routes the reused web (deaths=3) to global and the interleaved mask (deaths=1, one block) to local; find_free_reg gives the local mask the lowest free reg ($v0); the global web then conflicts with $v0 and takes $v1. Equalizing the pass (mask->global needs +1 death/store or +1 block/branch; web->local needs no-reuse which breaks the interleave) is impossible at 43 insns.",
+   "next_probe": "Owner ruling on the filed escalation (option a vs b). No cheat-free grindable axis remains across recon/structural/permuter/forensics; if the owner rules (b), retain the $2/$3 pins and park. Any future re-attempt would need a genuinely new whole-function structural idiom (not the reused-t + interleaved-mask topology all 8 sessions assume) or new tooling."
   }
  ],
  "judge_constraints": [],

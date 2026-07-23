@@ -187,3 +187,17 @@ the canonical finished form for the family) OR a future family-wide RA lever.
 - [s6] Existing-var carrier v1 killed (forms D/E): crossing the call mis-allocates it to $a2; no flip. new_var (u16) truncates. No existing dead local can serve as the fresh single-death carrier.
 
 - [s6] Floor HELD at 6: clean V7 pin-free candidate applied to src/text1b.c, sandbox --disable all = 6 (target_insns=43 == build_insns=43, rules_dropped=0). src left at the clean candidate.
+
+- [s7] s7 baseline: HEAD pinned ($2/$3 register-asm) form sandbox --disable all = 9 (43/43, cheat_asm_stripped 375, pins score-inert); pin-free floor = 6 (memory/grind/func_800611A4/candidate.c, V7 mask-atomic-first).
+
+- [s7] scan_hand_coded.py --single func_800611A4 = LOW, score 0/8 (S1-S8 all absent) — ordinary GCC RA/scheduler artifact, no hand-written-asm signature. AND-gate #1 (canonical-asm) of endgame-lock-disposition fails.
+
+- [s7] FORM F (target's exact forward-interleaved instruction shape) greg: '1 regs to allocate: 75'; '75 conflicts: 75 2 16 29' — the global reused load-web (reg75, 'dies in 3 places') conflicts with hard reg 2 ($v0) because the local single-death mask already occupies $v0 across the overlapping interleaved interval, forcing the web to $v1(reg3). Dispositions: web reg75->reg3, mask reg76->reg2.
+
+- [s7] Root cause named at exact source lines: local-alloc.c:472 death-count routing gate (reg_n_deaths==1 && reg_basic_block>=0 -> LOCAL, else GLOBAL) + find_free_reg lowest-free-reg scan (local-alloc.c:2182-2206, no MIPS REG_ALLOC_ORDER). Local-alloc runs BEFORE global-alloc, so the local mask grabs $v0 with zero knowledge of the not-yet-allocated global web.
+
+- [s7] The wall is a pass-ordering invariant: target (multi-death reused web -> $v0, single-death mask -> $v1) requires the GLOBAL quantity to win $v0 over the LOCAL quantity, impossible while local-alloc precedes global-alloc. The two routing levers that would equalize the pass (death count, block count) each cost +1 insn; the two structure levers (single-death web, aggregate copy) each break the interleave or add an insn. Confirmed by WIP-s1 cc1psx calibration emitting the identical wall (load-web $v1, mask $v0) from the clean C.
+
+- [s7] FORM G proves single-death load pseudos split into 3 distinct registers ($3/$4/$5) and sched1 hoists them (no reused web); FORM H proves aggregate copy adds a la base insn. Both banked in memory/grind/func_800611A4/rejected/.
+
+- [s7] OWNER-ESCALATION filed in docs/grind/decisions.md (2026-07-22, func_800611A4) presenting options (a) canonical-asm [not supportable: hand-coded 0/8] and (b) INCOMPLETE-owner-accepted [retain $2/$3 pins to hold the byte-match]. Same species as the 2026-07-22 batch (func_80049A2C, InitHiraRmd_80047FBC, AddTbpOfst_80047EE8 siblings in text1b.c) all ruled option (b).

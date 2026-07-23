@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_800611A4",
-      "file": "text1b",
-      "distance": 9,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_8006156C",
       "file": "text1b",
       "distance": 9,
@@ -2530,6 +2522,15 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-20): compound-address duplication refused (no SOTN precedent); 7 rules retained to hold match; not sanctioned, eligible for re-attempt"
     },
     {
+      "func": "func_800611A4",
+      "file": "text1b",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "owner escalation pending: docs/grind/decisions.md \u2014 '2026-07-22 \u2014 func_800611A4 (src/text1b.c) \u2014 OWNER-ESCALATION (filed by grind s7 forensics ...)'"
+    },
+    {
       "func": "special_camera_set_win_cam",
       "file": "code6cac_b2_post",
       "distance": 510,
@@ -2766,13 +2767,13 @@
   ],
   "counts": {
     "total": 338,
-    "active": 299,
+    "active": 298,
     "by_status": {
-      "active": 299,
-      "parked": 39
+      "active": 298,
+      "parked": 40
     },
     "by_verdict": {
-      "C": 145,
+      "C": 144,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }

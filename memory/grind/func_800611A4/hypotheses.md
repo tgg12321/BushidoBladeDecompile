@@ -209,3 +209,21 @@
 - probe: FORM B (forward + stage offset-2 last) and FORM D asm/greg vs FORM A (reverse). Compared liveness geometry of the staged load against the interleaved mask.
 - result: Forward-staging spreads to a 3rd register (sandbox 8), never flips. Geometric: target builds the mask AFTER load-8 (ori/sw follow the last load), so a forward staged-last (offset-8) load's live range overlaps the still-live mask -> conflict -> spill to $a0/$a2. Only reverse order gives the staged last (offset-0) load a range starting after the mask's sw (non-overlap), letting both reuse v0. Target's forward-order mask->$v1 is what the $3 pin forces by fiat.
 - verdict: KILLED
+
+## [s7] FRONTIER-2: a cheat-free C shape can make the interleaved 0xFFFFEF mask a multi-death pseudo so it is punted to global-alloc, where the 6-ref load-web outranks the 2-ref mask for $v0 (leaving mask $v1 = target).
+- mechanism: local-alloc.c:472 routes a pseudo to GLOBAL if reg_n_deaths!=1 OR reg_basic_block<0. A global mask + global web are ordered by qty priority floor_log2(refs)*refs*size/(death-birth); web (6 refs) beats mask (2 refs) for the lowest reg. But routing the mask to global requires >=2 deaths or >=2 blocks.
+- probe: FORM F (target's exact forward-interleaved instruction shape) dumped via cc1 -da: .lreg shows the mask pseudo (reg76) 'used 2 times', single-death, and '1 basic blocks'. The mask has exactly ONE consumer (the single sw to D_800A3464) in one straight-line block.
+- result: Mask reg_n_deaths==1 and reg_basic_block>=0 are structural invariants: a 2nd death needs a 2nd store (+1 insn), a 2nd block needs a branch (+1 insn) — both break target's 43-insn count. Mask can never be routed to global at 43 insns.
+- verdict: KILLED
+
+## [s7] FRONTIER-1: a cheat-free C shape can give the reused load-web reg_n_deaths==1 (LOCAL, higher priority than the mask so it grabs $v0) while preserving target's interleaved lw/sw scheduling.
+- mechanism: A single-death load-web would be local and, ordered before the mask by qty priority, would take $v0, evicting the mask to $v1 (target). But single-death requires no pseudo reuse; the interleave is preserved only by the WAR anti-dependence that reuse creates.
+- probe: FORM G (3 separate single-use temps t0/t1/t2) dumped via cc1 -da: .greg shows '0 regs to allocate' (all local); dispositions put the three loads in reg3/reg4/reg5 (three DISTINCT regs, no reused-$v0 web); the emitted .s HOISTS all three loads to the top (interleave destroyed). GCC disambiguates the fixed-symbol D_800F114x stores from the arg0[] pointer loads, so no memory anti-dep serializes them.
+- result: Single-death (local) and interleave-preserving are mutually exclusive: the only interleave-preserving anti-dep is pseudo reuse, which is exactly what makes the web multi-death (global). No pure-C serialization exists (memory disambiguation defeats the alternative).
+- verdict: KILLED
+
+## [s7] NEW AXIS: expressing the 3 stores as an aggregate/struct copy (different pseudo topology) yields a single-death local load-web that wins $v0 and interleaves with the mask.
+- mechanism: A block move might materialize a single reused temp routed differently than the named-t idiom.
+- probe: FORM H (*(struct S3*)&D_800F1140 = *(struct S3*)arg0) dumped + emitted: the block move introduces an extra 'la $5,D_800F1140' base-address insn (+1 vs target's gp-relative %lo stores), hoists the loads into 3 distinct regs ($2/$3/$4), and does not interleave with the mask.
+- result: Aggregate copy is +1 insn (build 44 > target 43) and structurally non-interleaved; strictly worse and not target's shape.
+- verdict: KILLED
