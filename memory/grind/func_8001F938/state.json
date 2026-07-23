@@ -1,0 +1,40 @@
+{
+ "func": "func_8001F938",
+ "file": "code6cac",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 0,
+   "floor": 11,
+   "modality": "wip-import",
+   "headline": "floor imported from memory/wip checkpoint"
+  },
+  {
+   "session": 1,
+   "floor": 5,
+   "modality": "recon",
+   "headline": "Recon: floor 11->5 with clean pure-C levers (kind-split + branch-flip); residual 5 all traces to GCC 2.7.2 CSE merging the +0x270 dual-typed read to one load (target's 2nd lhu unreachable in pure C)."
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "kind-split is a sanctioned (split-init/duplicated-statement family) construct, banking floor 6 cleanly.",
+   "mechanism": "Redundant-mask into a second pseudo; mirrors sibling codegen; 2026-06-15 reviewer called it dual-use with sanctioned split-init-accumulation.",
+   "next_probe": "Run cheat-reviewer on the kind-split in isolation; if PASS, banked floor is 5-6 with H3."
+  },
+  {
+   "hypothesis": "A semantically-purposeful C construct keeps two HImode loads of +0x270 (union/overlapping field, or a genuine memory-invalidating op between reads).",
+   "mechanism": "CSE only merges when the MEM stays available; a real intervening store or a distinct union member could keep both loads without codegen-steering.",
+   "next_probe": "Inspect the entity struct layout at +0x270 for a legit dual-view field; grep other +0x270 accessors for signed+unsigned use with purpose."
+  },
+  {
+   "hypothesis": "If no natural two-load source exists, the +0x270 second-lhu gap is a reviewer-tension/ruling item (target provably contains a construct the reviewer's Test-1 rejects).",
+   "mechanism": "GCC 2.7.2 CSE makes the 2nd lhu unreachable from any single-purpose C; only codegen-steering reaches it, yet the shipped binary has it.",
+   "next_probe": "After exhausting frontier item 2, emit ruling-request asking whether the guarded dual-typed read already in HEAD (and the target) is sanctioned for this function."
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-23T14:45:17.428783+00:00"
+}
