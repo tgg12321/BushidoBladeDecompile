@@ -1,5 +1,26 @@
 # Hypothesis ledger — func_8003B10C
 
+## s3 [structural, 2026-07-23] — SOLVED, floor 8 -> 0
+- CONFIRMED (candidate-ready): the dup13 residual's sched1 hoist of the ED6 load
+  above the *3 mult is a birthing_insn priority artifact, NOT an irreducible
+  scheduler tie. s2 called structural levers "exhausted"; they were not — the
+  UNTRIED lever was making the ED6 holder single-set.
+  - mechanism: GCC 2.7.2 sched.c adjust_priority -> birthing_insn_p boosts a
+    reg's FIRST-set insn (its load) to schedule LATE only when reg_n_sets==1.
+    dup13's function-scope `v1` is assigned in BOTH arms (reg_n_sets==2) -> no
+    boost -> ED6 load hoists above the mult -> ED2 live in v1 -> ED6 forced a0,
+    tbl bumped a1. Declaring `v1` block-local INSIDE each arm makes each a
+    distinct single-set pseudo (reg_n_sets==1) -> ED6 load gets the late boost
+    -> scheduled after the *3 mult, reusing the freed v1 -> tbl keeps a0.
+  - probe: reconstructed dup13 (sandbox 13, residual re-confirmed in disasm:
+    ED6 lh into a0 at 0x658 before the mult), then moved the `s32 v1;` decl from
+    function scope into each `if`/`else` block. sandbox --disable all -> 0.
+  - result: sandbox 0, 64/64 insns, byte-match verified in disasm
+    (tmp/grind/func_8003B10C/s3/match_disasm.txt). if-arm now: lh v1,ED2;
+    lui/addiu a0,E6A4; sll/addu v0=v1*3; lh v1,ED6 (after mult); j; sll v0,v0,1.
+  - verdict: CONFIRMED. Pure C, ordinary block-local scoping of a real used
+    value; no pin/asm/dead-store/volatile/FAKE.
+
 ## s2 [structural, 2026-07-23]
 - KILLED-BY-SOLVING: web split (v9 move copy). Recompute-inline of arg0*1100 removes the variable pseudo -> single CSE temp -> no copy, frame -32, delay nop. CONFIRMED via RTL (insn34 copy 74<-85) + sandbox asm.
 - CONFIRMED: floor 8 achievable in pure C (hoisted family) but capped (61 insns vs target 64; ED6 not duplicated -> never 0).

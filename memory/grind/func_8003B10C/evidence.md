@@ -90,6 +90,18 @@ volatile would force re-reads but is a forbidden codegen-coercion cheat
 
 - [s1] [fable-blitz 2026-07-07] Prologue is rule-free at HEAD: all 12 rules sit in the branch region (post-delete idx 34-44), so the current single-call C already lands s1=arg0, s2=addr, s0=offset with the correct lui/ori delay-slot split. v9's frame regression is therefore INDUCED by the arm/call restructure, not a pre-existing prologue problem - the fix must neutralize the web split without disturbing the (already correct) three callee-save assignments.
 
+== s3 [structural, 2026-07-23] — SOLVED (sandbox 0) ==
+
+- [s3] SOLVED: sandbox --disable all = 0, 64/64 insns, byte-match. The dup13 chassis (score 13) closes by declaring the ED6-holder `v1` as a BLOCK-LOCAL inside each if/else arm instead of one function-scope variable. Pure C, no cheats.
+
+- [s3] Mechanism (confirmed by disasm before/after): dup13's residual was sched1 hoisting the ED6 load ABOVE the *3 mult (disasm 0x658: `lh a0,ED6` before `sll v0,v1,1` at 0x65c; ED2 still live in v1 -> ED6 forced a0, tbl bumped a1). A function-scope `v1` set in BOTH arms has reg_n_sets==2, so GCC 2.7.2 sched.c adjust_priority/birthing_insn_p does NOT give its load the single-set "schedule late" boost. Block-scoping `v1` per arm makes each pseudo single-set (reg_n_sets==1) -> late-load boost -> ED6 scheduled AFTER the mult, reusing freed v1 -> tbl stays a0, ED6 lands v1. Matched if-arm disasm: `lh v1,ED2` / `lui+addiu a0,E6A4` / `sll v0,v1,1; addu v0,v0,v1` / `lh v1,ED6` / `j; sll v0,v0,1`.
+
+- [s3] CORRECTS s2's claim "structural levers exhausted / residual is a sched1 decision not structural." The reg_n_sets single-set lever (block-local var split) is a STRUCTURAL lever that s2 did not try, and it moves the schedule. s2's swept forms (split-init/decl-order/statement-reorder/branch-swap/tbl-inline/asymmetric-e2) all kept `v1` function-scoped (reg_n_sets==2), which is why none moved the ED6 load.
+
+- [s3] The earlier "per-branch ed6 variable score 32" (evidence line 3, pre-recompute-inline chassis) does NOT contradict this: that was measured before recompute-inline stabilized the frame at -32 and used the OLD offset-variable chassis where per-arm ed6 promoted to callee-saved. On the recompute-inline dup13 chassis, per-arm single-set ED6 seats correctly with no frame growth.
+
+- [s3] Cleanliness: block-local scoping of a real, immediately-used value. No register pin, no inline asm, no dead store, no volatile, no alias, no do-while(0), no FAKE annotation required (this is ordinary C lexical scoping, not a coercion construct). Artifact: tmp/grind/func_8003B10C/s3/match_disasm.txt.
+
 == s2 [structural, 2026-07-23] ==
 
 - [s2] CONFIRMED (solved) the frontier's #1 hypothesis (web split). RECOMPUTE-INLINE of `arg0 * 1100` at every offset use (delete the `s0` variable entirely; write the multiply inline in the EDA read and in both arms) makes the offset a SINGLE cse.c temp (assigned s0). The `move s2,s0` / `move s1,s0` copy DISAPPEARS, frame returns -32, and the 493E4 jal delay-slot NOP is restored. Verified by reading sandbox asm, not just score. This eliminates v9's entire residual (copy + s3 save + frame -40). Root cause of v9's copy pinned in RTL: expand emits the mult result into temp pseudo 85, insn34 copies it into the reg/v variable pseudo 74 (`s0=...`); cse canon_reg makes 85 canonical in the fall-through EBB (if-arm+EDA use 85) while the else-arm keeps 74 -> two co-live pseudos -> local-alloc can't coalesce -> copy survives. No variable = no copy = no split.

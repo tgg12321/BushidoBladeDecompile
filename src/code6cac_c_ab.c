@@ -385,25 +385,29 @@ loop:
 }
 void func_8003B10C(s32 arg0) {
     s32 addr = (s32)0x80190800;
-    s32 s0;
-    u8 *tbl;
     s32 v0;
+    u8 *tbl;
 
     gpu_EnableDisplay();
     EndADRSound();
     gnd_close_8004939C();
 
-    s0 = arg0 * 1100;
-    func_800493E4(*(s16 *)((u8 *)&D_80101EDA + s0));
+    func_800493E4(*(s16 *)((u8 *)&D_80101EDA + arg0 * 1100));
 
     if (D_800A38DC == 5) {
+        s32 v1;
         tbl = &D_8008E6A4;
-        v0 = *(s16 *)((u8 *)&D_80101ED2 + s0) * 6;
+        v0 = *(s16 *)((u8 *)&D_80101ED2 + arg0 * 1100) * 3;
+        v1 = *(s16 *)((u8 *)&D_80101ED6 + arg0 * 1100);
+        v0 *= 2;
+        func_800494D4(arg0, *(tbl + v0 + v1));
     } else {
+        s32 v1;
         tbl = &D_8008E5CC;
-        v0 = *(s16 *)((u8 *)&D_80101ED2 + s0) * 8;
+        v0 = *(s16 *)((u8 *)&D_80101ED2 + arg0 * 1100) * 8;
+        v1 = *(s16 *)((u8 *)&D_80101ED6 + arg0 * 1100);
+        func_800494D4(arg0, *(tbl + v0 + v1));
     }
-    func_800494D4(arg0, *(tbl + v0 + *(s16 *)((u8 *)&D_80101ED6 + s0)));
     func_80049584(addr);
 }
 void func_8003B20C(s32 arg0) {
