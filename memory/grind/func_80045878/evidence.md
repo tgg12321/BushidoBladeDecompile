@@ -126,3 +126,55 @@ param-reuse-base-copy-cse-canon).
 - [s2] Param narrowing (s16/s16/u32*) is dead: original params are register-width s32 (target has zero sign-extends).
 
 - [s2] Target's tail base copy is a local_alloc live-range split of the 2-predecessor join block (.L800459DC), not reproducible by a C-level p=s1 copy (cse always copy-propagates it).
+
+## s3 (structural, 2026-07-23)
+- Re-derived Gap B at the greg RTL (full dump this session): the fork's
+  divergence is ONE callee->caller copy with the OPPOSITE choice of which
+  value gets it. Fork: `move v0,s2` materializes (HI)a0 (greg insn 213,
+  REG_DEAD s2) and reuses v0 for the 3 s1[N]=a0 HI stores => a0 dies mid-tail,
+  base stays in s1. Target: stores s2 DIRECTLY (`sh s2,off(v0)`, s2 lives)
+  and copies base s1->v0 (`addu v0,s1,zero`), a0+3 into v1. Same one copy,
+  flipped. A cse+local-alloc coin-flip, not a value/structure bug.
+- KILLED (measured) three structural Gap-B/A levers:
+  * s1[11]=s3 (reuse live s3 for a0+3, pressure probe): build 107->105,
+    score 10. Reuses s3 (target recomputes; s3 dead pre-tail) => wrong bytes,
+    shorter build, no base-copy triggered. rejected/tail-s3-reuse-and-reorder.
+  * Tail-store reorder (interleave a0/a0+3/word): build 107, score 10 —
+    IDENTICAL to HEAD. cse re-clusters the 3 (subreg:HI s2) stores and
+    re-materializes the shared (HI)s2 temp regardless of source order.
+    Statement order is NOT a lever for the (HI)s2 CSE.
+  * Register-pressure at the .L800459DC join: no legitimate hook — the tail
+    only consumes s1,s2,s5 + constants; any 4th live value would be a dead
+    (cheat) value. Dead axis for structural.
+- Re-confirmed arm-split (Gap A materialize): build 108, score 11; the else
+  recompute lands at build 2c6c (position N-3, before `li v0,-1; sh; sh`),
+  target keeps it LAST (0x800458F8). It is NOT a priority tie — the fresh
+  single-def recompute feeds the next block's call arg (a0=s3), giving it
+  genuinely higher sched1 launch priority; no clean structural lever lowers
+  that priority without changing bytes. Anchoring it last would be worth
+  ~1 (10->9); it is a scheduling-priority tie -> directed-permuter axis.
+- Artifacts: tmp/grind/func_80045878/s3/armsplit.c; reused s2 dis.sh/greg.
+- VERDICT: structural modality's clean levers are now exhaustively measured
+  dead for BOTH gaps. Both residuals are RA/scheduling coin-flips (Gap B:
+  which callee-save gets the caller-save copy; Gap A: recompute launch
+  priority). Per difficult-is-not-impossible the matching C exists; the
+  named remaining tool is the directed permuter on a clean single-function
+  target.o (frontier item 3), a permuter-modality session.
+
+- [s3] Gap B is ONE callee->caller copy with flipped choice: fork copies a0 (move v0,s2, base stays s1); target copies base (addu v0,s1,zero, s2 direct). cse+local-alloc coin-flip.
+- [s3] s1[11]=s3 probe: build 107->105 score 10, reuses s3 (wrong bytes, target recomputes), no base-copy triggered. KILLED.
+- [s3] Tail-store reorder: build 107 score 10 identical to HEAD; cse re-clusters the (HI)s2 stores order-insensitively. KILLED.
+- [s3] Register pressure at 2-pred join has no legitimate semantic hook (tail uses only s1/s2/s5+consts); dead axis for structural.
+- [s3] arm-split recompute sched-early is NOT a tie — recompute feeds next call arg -> genuinely higher launch priority; no clean structural lever lowers it. Anchoring worth ~1 (10->9) but is a scheduling-priority tie -> permuter.
+
+- [s3] Floor reconfirmed: sandbox --disable all score=10, build_insns=107 vs target 108, 10 rules dropped.
+
+- [s3] Gap B re-derived at greg RTL (full dump this session): the fork/target divergence is ONE callee->caller copy with the OPPOSITE choice of which value gets it. Fork: `move v0,s2` materializes (HI)a0 (greg insn 213, REG_DEAD s2) and reuses v0 for the three s1[N]=a0 HI stores, so a0 dies mid-tail and the base stays in s1. Target: stores s2 DIRECTLY (`sh s2,off(v0)`, s2 stays live), copies the base s1->v0 (`addu v0,s1,zero`), and puts a0+3 in v1.
+
+- [s3] The shared (HI)s2 temp (greg insn 213) is what forces base-in-s1; it is created by cse from the three repeated (subreg:HI s2) a0 stores and is order-insensitive (tail reorder left build/score unchanged).
+
+- [s3] s1[11]=s3 reuse: build 107->105, score 10 (wrong bytes; target recomputes a0+3, s3 dead before tail).
+
+- [s3] arm-split: build 108, score 11; else recompute at position N-3 (build 2c6c) vs target LAST (0x800458F8); higher sched1 launch priority from feeding the next call arg, not a tie.
+
+- [s3] Both residuals are RA/scheduling coin-flips; per difficult-is-not-impossible the matching C exists and the named remaining tool is the directed permuter on a clean single-function target.o.

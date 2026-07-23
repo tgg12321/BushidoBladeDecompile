@@ -40,6 +40,22 @@ applied the arm-split (Gap A materialized, build 108) and disassembled the tail
 — byte-identical to HEAD's tail (base=s1, move v0,s2). Gap A's presence does not
 touch Gap B. The gaps are INDEPENDENT; each needs its own solution.
 
+## [s3] Structural levers exhausted for BOTH gaps — measured dead; residuals are RA/sched coin-flips
+- Gap B re-derived at greg RTL: ONE callee->caller copy, flipped choice.
+  Fork `move v0,s2` (a0 dies mid-tail, base stays s1); target `addu v0,s1,zero`
+  (s2 stored direct, base copied). cse materializes shared (HI)s2 (insn 213).
+- s1[11]=s3 (reuse s3 / pressure probe): build 107->105, score 10, wrong bytes
+  (target recomputes; s3 dead pre-tail). KILLED.
+- Tail-store reorder: build 107, score 10 == HEAD (cse re-clusters (HI)s2
+  order-insensitively). KILLED.
+- Register-pressure at .L800459DC join: no legitimate hook (tail uses only
+  s1/s2/s5+consts). Dead axis. KILLED.
+- arm-split recompute (Gap A) sched-early is genuinely higher priority (feeds
+  next call arg), NOT a tie; no clean structural lever lowers it. worth ~1
+  (10->9) if anchored. -> directed permuter.
+- verdict: KILLED (structural modality exhausted). Next modality = directed
+  permuter on clean single-function target.o (frontier item 3).
+
 ## [s2] Gap A is a cse deletion, Gap B is a local_alloc live-range split — both nailed at RTL, clean structural levers measured dead
 - Gap A: else recompute = RTL insn 74 `(set reg75 (plus reg72 3))`; cse deletes
   it (reg75 already holds reg72+3, reg72=a0 preserved across else). Pre-if init
@@ -87,3 +103,27 @@ touch Gap B. The gaps are INDEPENDENT; each needs its own solution.
 - probe: cc1 -da dumps: insn 74 present in dump.i.rtl, DELETED in dump.i.cse (insn 71 links straight to code_label 76). Confirmed no value-neutral spelling escapes (cse constant-folds a0-(-3), (a0+1)+2, etc. to (plus a0 3) before the availability check).
 - result: Root cause confirmed. Structural spellings that keep the pre-if init all fold; dropping it (arm-split) materializes the insn but sched1 hoists it 3 slots early (score 11). Catch-22 between cse-fold and sched-anchor stands.
 - verdict: CONFIRMED
+
+## [s3] Keeping s3 (=a0+3) live into the tail by using it for s1[11] raises register pressure at the 2-pred join and triggers the target's s1->v0 base-copy split.
+- mechanism: local-alloc splits a callee-save pseudo into a caller-save block-local copy under pressure; forcing s3 (reg19) live across .L800459DC adds a live value.
+- probe: s1[11] = s3; (instead of a0+3); sandbox --disable all + greg reasoning.
+- result: build_insns 107->105, score stayed 10. Reuses s3 (WRONG bytes: target recomputes addiu v1,s2,3; s3 is REG_DEAD before the tail) and build got SHORTER, not the extra base copy. No split triggered.
+- verdict: KILLED
+
+## [s3] Reordering the tail store statements breaks cse's clustering of the three (subreg:HI s2) a0 stores, stopping the shared (HI)s2 materialization (greg insn 213) that keeps the base in s1.
+- mechanism: cse materializes the repeated (HI)s2 into one reg (v0) and reuses it, so a0 dies mid-tail and s1 stays as base with a `move v0,s2`.
+- probe: Interleaved order s1[2];s1[11];s1[10];word;s1[8];s1[4]; sandbox --disable all.
+- result: build_insns 107, score 10 — IDENTICAL to HEAD. cse re-clusters the HI stores and re-materializes the shared (HI)s2 regardless of source order. Statement order is not a lever for this CSE.
+- verdict: KILLED
+
+## [s3] Legitimately raising register pressure across the .L800459DC 2-pred join forces s1's tail use into a block-local caller-save copy (the target's addu v0,s1,zero).
+- mechanism: more simultaneously-live values at the join push local-alloc to split s1's live range.
+- probe: Enumerated the tail's live set: it consumes only s1(base), s2(a0), s5(a1) + constants. Any additional live value would have no semantic purpose.
+- result: No legitimate hook exists — a 4th live value at the join would be a dead (cheat) value. Dead axis for the structural modality.
+- verdict: KILLED
+
+## [s3] Arm-split (set s3 in both arms, drop pre-if init) materializes the Gap-A else recompute at the target's last position, closing Gap A.
+- mechanism: no pre-if dominating def => cse cannot fold the else recompute; scheduler should place it after the two else stores.
+- probe: Applied rejected/armsplit form; sandbox --disable all + disassembly of the else block.
+- result: build_insns 108 (recompute present), score 11. The recompute lands at build 2c6c (position N-3, before li v0,-1; sh v0,8(s1); sh zero,6(s1)); target keeps it LAST (0x800458F8). It is NOT a priority tie: the fresh single-def recompute feeds the next block's call arg (a0=s3), so sched1 gives it genuinely higher launch priority. No clean structural lever lowers that priority without changing bytes.
+- verdict: KILLED

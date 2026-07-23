@@ -1,7 +1,7 @@
 {
  "func": "func_80045878",
  "file": "text1a_c",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -21,23 +21,29 @@
    "floor": 10,
    "modality": "structural",
    "headline": "Structural session: both gaps nailed at RTL (Gap A = cse deletion of the else recompute; Gap B = local_alloc live-range split of the join-block base). Clean structural levers (param types, A+B couplin"
+  },
+  {
+   "session": 3,
+   "floor": 10,
+   "modality": "structural",
+   "headline": "Structural modality exhausted for both gaps; both residuals proven RA/scheduling coin-flips (Gap B = which callee-save gets the caller-save copy; Gap A = recompute launch priority) -> directed-permute"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Gap A: break cse's extended-BB propagation into the else block so the a0+3 available-expression does not reach insn 74 (then the recompute survives AND, being live-in from pre-if, is anti-dep-anchored last by sched).",
-   "mechanism": "cse extends the pre-if equivalence into the else because the else is a single-predecessor branch target. A control-flow structural change that gives the else block a second predecessor (or otherwise breaks cse_basic_block's path continuation) would stop the fold without touching semantics.",
-   "next_probe": "Read tools/gcc-2.7.2/cse.c cse_basic_block path/next-branch logic; try structural refactors of the if/else that alter the else block's predecessor set (e.g. hoisting a shared post-call statement to create a merge) and measure whether insn 74 survives; if it survives, verify sched anchors it last (target 108, score down from 10)."
+   "hypothesis": "A directed permuter run over the whole function (fresh-seed, clean single-function target.o) finds a pure-C spelling that flips the Gap-B callee->caller copy choice (base s1->v0, store s2 directly) and/or anchors the Gap-A recompute last.",
+   "mechanism": "both residuals are RA/scheduling ties; the permuter's structural mutations explore orderings/spellings (incl. the (HI)s2 cse materialization and the local-alloc copy choice) outside the hand-search space.",
+   "next_probe": "Build a clean target.o from asm/funcs/func_80045878.s + tools/decomp-permuter/prelude.inc (drop `.set gp=64` for r3000); run permuter_campaign.py with --stop-on-zero and fresh-seed discipline; harvest+stop in-turn; vet any closing form against the cheat catalog (the (HI)s2/base-copy region is RA, so a legitimate close must be a real value/order spelling, not a dead-value pressure hack)."
   },
   {
-   "hypothesis": "Gap B: the tail base copy requires a local_alloc live-range split at the join; raise register pressure across .L800459DC (legitimately) so s1's tail use gets a block-local caller-save copy.",
-   "mechanism": "local-alloc assigns block-local pseudos (used only in the no-call tail block) to caller-save regs (v0/v1); it currently keeps s1 (global, callee-save) as the direct base. More live values at the join, or a genuinely block-local base pseudo cse cannot fold, would trigger the split copy.",
-   "next_probe": "Inspect dump.i.greg/lreg for s1 (reg 77) allocation vs a hypothetical block-local; try directed permuter (PERM_ macros) over tail-store orderings / base-pointer spellings with the clean single-function target.o; measure the tail against `addu v0,s1,zero`."
+   "hypothesis": "Gap A (worth ~1: 10->9 alone) closes by anchoring the arm-split else recompute LAST via lowering its sched1 launch priority (structurally shorten its downstream critical path to the next call arg).",
+   "mechanism": "sched1 hoists the recompute because s3 feeds the immediately-following func_8004574C(s3) call arg; a C shape where s3's first post-else use is not a high-latency call would drop its priority so the two else stores schedule first.",
+   "next_probe": "From the arm-split base, restructure the first tail statement `if (func_8004574C(s3) != 0)` so s3's first use is delayed/decoupled (e.g. an intervening independent computation the target also has), then re-measure else-block placement; treat as a permuter PERM_ ordering sweep if hand forms don't anchor it."
   },
   {
-   "hypothesis": "Directed permuter on the whole function (fresh-seed) can find a pure-C form that closes one or both RA/scheduling artifacts that hand-derivation has not.",
-   "mechanism": "both residuals are RA/scheduling ties; the permuter's structural mutations explore orderings/spellings outside the hand-search space (difficult-is-not-impossible mandates it before any pessimistic claim).",
-   "next_probe": "Build a clean single-function target.o (asm/funcs/func_80045878.s + prelude, no .set gp=64), run permuter_campaign.py with --stop-on-zero and fresh-seed discipline; harvest + stop in-turn; vet any closing form against the cheat catalog before proposing."
+   "hypothesis": "Gap B closes by presenting a0 to the three tail stores so cse does NOT materialize the shared (HI)s2 temp (keeping s2 live and stored directly), which is the precondition for the target's base-copy allocation.",
+   "mechanism": "eliminating greg insn 213 makes the a0 stores `sh s2` direct; the remaining divergence is only the s1-vs-v0 base register, a narrower local-alloc split.",
+   "next_probe": "Sweep spellings that stop the (subreg:HI s2) CSE without dead values (e.g. distinct-provenance a0 reads that survive cse, or a permuter PERM_ over the a0-store value expressions); measure whether `move v0,s2` disappears and count the residual base-register diffs."
   }
  ],
  "judge_constraints": [],
