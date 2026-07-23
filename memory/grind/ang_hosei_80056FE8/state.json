@@ -1,8 +1,8 @@
 {
  "func": "ang_hosei_80056FE8",
  "file": "text1b",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 0,
@@ -27,18 +27,29 @@
    "floor": 10,
    "modality": "structural",
    "headline": "Structural axis CLOSED (21 measured forms): sched1 front-loads the arg0 reload in every single-BB form; arm-duplication reaches the target tail but cross-jump can't merge it (per-arm base-reg divergen"
+  },
+  {
+   "session": 4,
+   "floor": 10,
+   "modality": "permuter",
+   "headline": "Permuter (2 campaigns, 65k iters): clean-candidate chassis plateaus at pure reg-rename (build 42); NEW base-reuse chassis reaches build 43 in full context, isolating residual to a 6-reg tail RA swap c"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A directed/randomized permuter on a clean single-function target closes the coupled sched1/RA fixpoint that structural transforms provably cannot.",
-   "mechanism": "The target sits at a scheduler+allocator fixpoint {base->$a1, var_v0->$v0, partial-before-reload}. sched1 deterministically front-loads the arg0 reload in every single-basic-block structural form; a permuter search over the mutation space (incl. non-dataflow-preserving spellings the manual sweep won't try) may perturb sched1's load-hoist / register pressure into the fixpoint.",
-   "next_probe": "Build target.o from asm/funcs/ang_hosei_80056FE8.s + prelude at offset 0 (drop .set gp=64); run tools/permuter_campaign.py with --stop-on-zero + PERM_* directives seeded from the clean candidate; fresh-seed ~20-30 min windows, wait in-turn, harvest --stop before ending. NON-structural modality."
+   "hypothesis": "A clean register-alloc-pure-c lever can flip the tail coalescing on the base-reuse 43-insn chassis so partial coalesces with base ($a1) and the reload reuses var_v0's reg ($v0), reaching a byte match without a dead-op cheat.",
+   "mechanism": "The residual is now a single, well-isolated tail RA coalescing tie (head byte-matches). Target coalesces the partial-add result with base (dies into $a1); our build coalesces it with var_v0 (dies into $v0). An RTL .greg dump on the base-reuse chassis would show WHY partial prefers var_v0's reg (reg_n_refs / allocno priority / operand order), pointing at a clean steering lever.",
+   "next_probe": "cc1 -da on the base-reuse-chassis .i; read the partial-add pseudo's coalescing/preference and conflict lists; apply register-alloc-pure-c levers (operand order, block-local split, narrow type, natural coalescing bias) to steer partial->$a1 + reload->$v0. Non-permuter (register-steering) modality."
   },
   {
-   "hypothesis": "A scheduling-technique lever (NOT structural reassociation) can suppress sched1's front-load of the arg0 reload without changing dataflow, keeping the partial-add before it.",
-   "mechanism": "The 43rd nop survives only if the reload is NOT hoisted above the partial-add. The hoist is a load-latency-hiding priority boost; suppressing it needs a scheduling-level effect (e.g. a sanctioned do-while(0)/LABEL_OUTSIDE_LOOP_P / reorg-level interaction) rather than an add-side rewrite. Arm-duplication achieves the block boundary but is defeated by cross-jump's per-arm base-reg divergence.",
-   "next_probe": "Investigate whether a sanctioned do-while(0) wrapper or a reorg-level (relax_delay_slots / .dbr) effect can keep the reload after the partial-add; check .dbr/.sched dump behavior. Verify any wrapper against the do-while-zero-exception prerequisites. Separate (scheduling-technique) modality."
+   "hypothesis": "The base-reuse (`base = *arg0`) construct required to reach build 43 is itself a SOTN-sanctioned variable-reuse (defeat-licm/RA-reuse), so a clean tail-flip on that chassis would be an acceptable FAKE-annotated match rather than a cheat.",
+   "mechanism": "Reaching build_insns 43 empirically REQUIRES reusing a dying variable's register for the reload (candidate without reuse = 42). That reuse is the defeat-licm-hoist-var-reuse family (SOTN ships it FAKE-annotated). If a clean tail-flip lands sandbox 0 on this chassis, the disposition question is whether the variable-reuse qualifies.",
+   "next_probe": "If frontier-1 lands a sandbox-0 form on the base-reuse chassis, emit a ruling-request / run layer-2 cheat-reviewer on the variable-reuse construct with the SOTN defeat-licm-reuse precedent + FAKE annotation before claiming candidate-ready."
+  },
+  {
+   "hypothesis": "A do-while(0) / LABEL_OUTSIDE_LOOP_P (reorg) scheduling lever can suppress the sched1 load front-load directly (inherited s3 frontier, still un-run).",
+   "mechanism": "The 43rd nop survives only if the reload is not hoisted above the partial-add. base-reuse achieves this via register pressure; a reorg-level scheduling effect might achieve it without variable reuse.",
+   "next_probe": "Verify do-while-zero-exception prerequisites; check .dbr/.sched dump behavior for a do-while(0) wrapper around the tail. Separate scheduling-technique modality."
   }
  ],
  "judge_constraints": [],

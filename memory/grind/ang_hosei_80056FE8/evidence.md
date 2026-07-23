@@ -126,3 +126,31 @@ the sandbox score) plus the delay-slot-fill consequence.
 - [s3] greg(v0): base=pseudo77 computed directly into $a3 (insn23 set (reg7 a3) (ashift (reg2 v0) 3)); var_v0=pseudo82 in $a1 — both downstream of the reload-hoist.
 
 - [s3] Structural axis CLOSED: union of s2 (8 tail-reassoc + 4 head decl/type/pointer) and s3 (7 chain-balance + 2 arm-duplication) = 21 measured forms, none reaching {base->$a1, var_v0->$v0, partial-before-reload}. Floor unchanged at 10; src restored to clean candidate (sandbox 10 / build 42).
+
+- == s4 permuter (2026-07-23) — clean single-function-target campaigns; NEW chassis reaches build 43 ==
+- Built the honest standalone permuter workspace (tmp/grind/ang_hosei_80056FE8/s4): base.c=clean candidate, target.o from asm/funcs+prelude (gp=64 dropped), single-fn maspsx assembled whole (no extraction). Base vs target objdump reproduces the exact known gap (var_v0->$a1/base->$a3, 42 insns vs target var_v0->$v0/base->$a1, 43 insns). permuter base_score 345 (weighted) <-> sandbox 10 (raw) — same gap, different metric.
+- CHASSIS 1 (clean candidate), 20115 iters / ~9 min, --stop-on-zero: best weighted score 70 = PURE register-rename (14 reg diffs), still build 42 (1 insn short). Plateaued fast, never improved. Search-based confirmation of s2/s3: semantics-preserving mutation on the single-BB candidate cannot manufacture the reload-clobbers-var_v0 fixpoint.
+- CHASSIS 2 (base-reuse-for-reload: `base = *arg0` after the partial-add), seeded from chassis-1's score-70 find, 45349 iters / ~19 min: gradient 70->60->50->30. score-50/60 forms are build_insns 43 (== target) with pure register residual. score-30 (best) matches the ENTIRE HEAD byte-for-byte; residual is a 6-register TAIL swap only. BUT score-30 uses `base++; base--;` (dead no-op pair) — a forbidden dead-computation coercion. No CLEAN form beat weighted 50.
+- KEY NEW FINDING (contradicts s2/s3 "only arm-duplication reaches 43"): a SINGLE-basic-block variable-reuse form reaches build_insns 43 in the REAL full-context sandbox. Measured live: form-50 (`a2 = base+var_v0; partial=a2; base=*arg0; ...`) => sandbox 10 / build 43. clean base-reuse-in-tail => sandbox 11 / build 43. var_v0-reuse-for-reload => sandbox 16 / build 43. ALL reach 43 but NONE lower the floor — the 1-insn shortfall is traded for an equivalent register-rename residual.
+- RESIDUAL PINNED: on the base-reuse chassis the head byte-matches; the wall is now a pure tail RA coalescing choice: target coalesces partial with base ($a1, base dead) and reloads into $v0 (var_v0 dead); our build coalesces partial with var_v0 ($v0) and reloads into $a1 (base dead). The permuter flips this only via a dead-op cheat. This is the SAME coupled sched1/RA fixpoint from s1-s3, now isolated to a clean 6-reg tail swap on a 43-insn chassis.
+- Directed clean-form attempts to flip the tail coalescing (commute, var_v0-reuse, base-reuse) all measured sandbox 10/11/16 — none < 10. Floor unchanged at 10.
+- Both campaigns harvested --stop before session end (0 permuter procs alive at reap). Artifacts: tmp/grind/ang_hosei_80056FE8/s4/{base.c,compile.sh,target.o,build_ws.sh,diffform.sh,campaign.log, output-*/, c2/campaign.log, c2/output-*/}. Rejected form: rejected/base-reuse-reload-reaches43-tail-ra-swap-residual.c.
+
+- [s4] Standalone permuter workspace built + validated (base 42 vs target 43, exact known gap). Chassis1 (clean candidate) 20k iters plateau weighted-70 pure-reg, build 42. Chassis2 (base-reuse) 45k iters, gradient to weighted-30 with full head-match; best clean 50.
+- [s4] NEW: base-reuse-for-reload single-BB form reaches build_insns 43 in full-context sandbox (form-50 sandbox 10/build 43; measured live). Contradicts s2/s3 "only arm-dup reaches 43". Does NOT lower floor — trades missing insn for equal register residual (sandbox 10-16).
+- [s4] Residual isolated to a pure 6-register TAIL swap (partial/reload coalescing) on the 43-insn base-reuse chassis; permuter flips it only via `base++;base--;` dead-op cheat (weighted 30, still not 0). No clean sub-floor form.
+- [s4] Floor holds at sandbox 10 / build 42 (clean candidate re-verified in src after all probes).
+
+- [s4] Standalone permuter workspace validated: base.o 42 insns vs target.o 43 insns, reproducing the exact known gap (var_v0->$a1/base->$a3 vs target var_v0->$v0/base->$a1). permuter weighted base_score 345 <-> sandbox raw 10 (same gap, different metric).
+
+- [s4] Chassis1 (clean candidate): 20115 iters / ~9 min, best weighted 70 = 14 pure register-rename diffs, still build 42. Plateaued immediately; search-based confirmation of s2/s3 that semantics-preserving mutation on the single-BB candidate cannot manufacture the reload-clobbers-var_v0 fixpoint.
+
+- [s4] Chassis2 (base-reuse-for-reload, seeded from chassis1 best): 45349 iters / ~19 min, gradient weighted 70->60->50->30. score-50/60 forms are build 43 with pure register residual; score-30 byte-matches the ENTIRE HEAD (residual = 6-register tail swap only) but uses `base++; base--;` dead-op cheat.
+
+- [s4] NEW (contradicts s2/s3 'only arm-duplication reaches 43'): a single-basic-block variable-reuse form reaches build_insns 43 in the REAL full-context sandbox. Live measurements: form-50 sandbox 10/build 43; clean base-reuse-in-tail 11/43; var_v0-reuse 16/43. None lower the floor.
+
+- [s4] Residual pinned: on the base-reuse 43-insn chassis the head byte-matches; the wall is a pure tail RA coalescing choice - target coalesces partial with base ($a1, base dead) and reloads into $v0 (var_v0 dead); our build coalesces partial with var_v0 ($v0) and reloads into $a1 (base dead). Permuter flips it only via a dead-op cheat.
+
+- [s4] Directed clean-form flips (commute, var_v0-reuse, base-reuse) all measured sandbox 10/11/16 - none <10. Floor unchanged at sandbox 10 / build 42 (clean candidate re-verified in src after all probes).
+
+- [s4] Both campaigns harvested --stop before session end; 0 permuter processes alive at final reap (--ttl 0 --dry-run: groups_seen 0).

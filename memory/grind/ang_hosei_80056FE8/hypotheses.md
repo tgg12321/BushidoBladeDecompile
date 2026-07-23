@@ -92,3 +92,27 @@ CLOSED. Union of s2 (8 tail-reassoc + 4 head decl/type/pointer) and s3 (7 chain-
 - probe: sweep3.py: 7 single-partial-add forms (staged +0x12C on partial, p+0x12C+lk, double-stage, lk-named-after-p, commuted sum, 0x12C-in-base, named-reload) through the mini proxy reading reg alloc + reload/partial order.
 - result: All 7 stay reload_first. The divergence is NOT a chain-length tie: sched1 FRONT-LOADS the memory reload to hide load latency (a load-priority boost independent of add-side reassociation), so no reassociation/staging of the ADD side suppresses the hoist. Refines s2's 'reload chain is one load longer' to 'loads are front-loaded regardless of add structure.'
 - verdict: KILLED
+
+## [s4] A directed/randomized permuter on a clean single-function target closes the coupled sched1/RA fixpoint that structural transforms cannot.
+- mechanism: A permuter search over the mutation space (incl. non-dataflow-preserving spellings) may perturb sched1's load-hoist / register pressure into the target fixpoint {base->$a1, var_v0->$v0, partial-before-reload}.
+- probe: Built the honest standalone workspace (target.o offset-0 from asm/funcs+prelude). Ran 2 campaigns --stop-on-zero, fresh-seed discipline, waited in-turn, harvested --stop both. Chassis1 = clean candidate (20k iters); chassis2 = base-reuse-for-reload seeded from chassis1's best (45k iters).
+- result: PARTIALLY KILLED / MAJOR REFINEMENT. Chassis1 plateaued at weighted-70 (pure reg-rename, build 42) — search confirms no semantics-preserving mutation on the single-BB candidate reaches the fixpoint. Chassis2 (base-reuse) DID reach build_insns 43 (== target) in full context and matched the entire HEAD, isolating the residual to a pure 6-register TAIL coalescing swap — but the only permuter form that flips that swap uses a `base++; base--;` dead-op cheat (weighted 30, still not a byte match). No CLEAN permuter form beat weighted-50 / sandbox-10. The permuter cannot close it cleanly; it flips the tail RA only via forbidden coercions.
+- verdict: KILLED (clean permuter closure). The permuter reproduces the s2/s3 structural wall from the search angle and additionally proves the base-reuse chassis's 43-insn residual is closable only by a dead-op cheat.
+
+## [s4] The build-42 (1-insn-short) wall is intrinsic to every single-basic-block C form.
+- mechanism: s2/s3 claimed only arm-duplication reaches build 43 (and cross-jump defeats it). Tested whether a single-BB variable-reuse form can reach 43.
+- probe: Measured 3 base-reuse/var-reuse single-BB forms live in the full-context sandbox.
+- result: KILLED. A single-BB "reuse `base` for the *arg0 reload" form reaches build_insns 43 in full context (form-50: sandbox 10 / build 43). So the 1-insn shortfall is NOT intrinsic to single-BB forms — reusing a dying variable's register for the reload creates the pressure that forces the partial-add before the reload (the 43rd nop appears). HOWEVER reaching 43 does not lower the floor: the freed 1-insn is replaced by an equivalent register-rename residual (sandbox 10-16, never < 10). The wall moved from "insn count" to "tail RA coalescing", not removed.
+- verdict: KILLED (the "42 is intrinsic" framing); floor unchanged.
+
+## [s4] A directed/randomized permuter on a clean single-function target closes the coupled sched1/RA fixpoint that structural transforms cannot.
+- mechanism: A permuter search over the mutation space may perturb sched1's load-hoist / register pressure into the target fixpoint {base->$a1, var_v0->$v0, partial-before-reload}.
+- probe: Built honest standalone workspace (target.o offset-0 from asm/funcs+prelude, single-fn maspsx assembled whole; base 42 vs target 43 reproduces the exact known gap). Ran 2 campaigns --stop-on-zero with fresh-seed discipline, waited in-turn, harvested --stop both. Chassis1=clean candidate 20115 iters; chassis2=base-reuse-for-reload seeded from chassis1 best, 45349 iters.
+- result: Chassis1 plateaued at weighted-70 (pure register-rename, build 42) fast and never improved. Chassis2 reached build_insns 43 (==target) and byte-matched the entire HEAD, isolating the residual to a pure 6-register TAIL coalescing swap; but the only permuter form that flips it uses `base++; base--;` (dead no-op pair = forbidden dead-computation coercion, weighted 30, still not a byte match). No CLEAN form beat weighted-50 / sandbox-10.
+- verdict: KILLED
+
+## [s4] The build-42 (1-insn-short) wall is intrinsic to every single-basic-block C form (s2/s3 claimed only arm-duplication reaches 43).
+- mechanism: Reusing a dying variable's register for the *arg0 reload creates register pressure that forces the partial-add before the reload, so the lh load-delay nop (43rd insn) survives even in a single basic block.
+- probe: Measured 3 base-reuse/var-reuse single-BB forms live in the full-context sandbox: form-50 (a2=base+var_v0; base=*arg0), clean base-reuse-in-tail, var_v0-reuse-for-reload.
+- result: KILLED. A single-BB 'reuse base for the reload' form reaches build_insns 43 in the REAL full-context sandbox (form-50: sandbox 10 / build 43; clean base-reuse: 11/43; var_v0-reuse: 16/43). So 42 is NOT intrinsic to single-BB forms. HOWEVER reaching 43 does not lower the floor: the freed insn is replaced by an equivalent register-rename residual (sandbox 10-16, never <10). The wall moved from 'insn count' to 'tail RA coalescing', not removed.
+- verdict: KILLED
