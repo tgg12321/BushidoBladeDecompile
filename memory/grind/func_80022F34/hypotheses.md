@@ -109,6 +109,26 @@ the 1 load-delay nop.
 - result: BOTH keep vars=8 + per-access x2 (strand intact). do-while(0) is optimized away before combine → no real CFG edge → note stays on the merge label. vVALDW additionally wastes the `lh` load-delay slot (extra maspsx #nop) → strictly worse. A real CFG separation would require a branch that adds a body insn (breaks the byte-perfect body).
 - verdict: KILLED. The strand is CFG/scope-invariant; both structural axes (s2 placement + s3 control-boundary) are now dead. Escape is non-structural only.
 
+## [s4] The permuter (random codegen mutation) removes the reg100 combine strand from base's byte-perfect body, or defeats vH's CSE to get per-access %lo without the phantom => a form scoring below floor 11.
+- mechanism: register allocation / CSE / scheduling are the permuter's domain; a randomized transform keeping reg100 out of greg's allocate-list (or letting combine attach its note to a real insn) removes vars=8 without touching the body. Residual is not sp-offset-only, and with --stack-diffs the phantom frame is scorer-visible, so the permuter can gradient on it.
+- probe: two codegen-faithful decomp-permuter chassis (base = byte-perfect body weighted 174; vH = frame-correct CSE'd weighted 1250), ~35k iters total, --stack-diffs, campaign telemetry via tools/permuter_campaign.py.
+- result: base 30640 iters => ZERO sub-174 finds (nothing beat the byte-perfect-body chassis). vH best find = 224 (> base 174), only re-finds known base/vSPLIT/vH classes, never target's per-access+no-phantom. Absolute best across both chassis = 224, worse than base's own 174, nowhere near 0.
+- verdict: KILLED. Random codegen mutation over either chassis cannot produce target's (per-access %hi/%lo AND vars=0) form. Mechanically corroborates the s1-s3 finding that the coupling is a fork-level cse2+combine interaction, not C-reachable.
+
+## Revised frontier (grind s4) — floor 11; structural (s2/s3) AND permuter (s4) axes exhausted
+
+Only ONE sanctioned axis remains un-measured: **H-D (cse.c forensics, non-permuter)**. All
+statement-order / control-boundary (structural) and random-codegen (permuter) axes are now
+dead. H-D: read tools/gcc-2.7.2/cse.c around symbol_ref / CSE-of-constants cost to find the
+C-visible condition (register pressure, intervening clobber, cost threshold) that makes our
+fork's cse2 RE-MATERIALIZE %hi/%lo(D_801027BC) per load instead of sharing the `la` reg —
+WITHOUT the long val1 lifetime that strands reg100. The tension (s2): per-access arises ONLY
+via register-pressure separation of the two `la` loads, and that separation is EXACTLY what
+strands reg100, so H-D must find a cse2-cost lever that decouples the two. If cse.c shows no
+such C-visible lever exists (the share-vs-rematerialize decision is driven only by inputs our
+C cannot vary), that is the evidence for OWNER-ESCALATION — the target's per-access form would
+then be a cc1psx-vs-our-fork cse2 divergence with no pure-C bridge, mirroring the sibling walls.
+
 ## [s2] A frame-correct (vars=0) CSE form scores below 11 because CSE costs fewer instructions than the +8 phantom.
 - mechanism: CSE'd shared `la $5` base for both accesses is shorter than per-access %hi/%lo; if the CSE + a0-reload-in-$v0 diffs total < 10, a frame-correct form would beat the phantom.
 - probe: Applied vMIRROR (target-order both-CSE) and vSPLIT (val2 per-access, val1 CSE) to src; sandbox --disable all.
@@ -119,4 +139,10 @@ the 1 load-delay nop.
 - mechanism: combine strands (use reg100) on the switch-merge code_label because no real insn sits between the merge and reg100's def; a control boundary was hypothesized to give it a real anchor or split the region.
 - probe: vTAIL (switch wrapped in do{}while(0)) and vVALDW (val1 sub-block wrapped in do{}while(0)); cc1 .frame vars= + per-access D_801027BC-ref count + asm diff vs base; sandbox anchor on src = 11.
 - result: Both keep vars=8 + per-access x2 (strand intact). do-while(0) is folded before combine -> no real CFG edge/label -> the note stays on the switch-merge code_label. vVALDW additionally wastes the lh 74($4) load-delay slot (extra maspsx #nop), strictly worse than base's schedule. A real CFG separation would need a branch that adds a body insn, breaking the byte-perfect body.
+- verdict: KILLED
+
+## [s4] The permuter (random codegen mutation) removes the reg100 combine strand from base's byte-perfect body, or defeats vH's CSE to get per-access %lo without the phantom, yielding a form below floor 11.
+- mechanism: RA/CSE/scheduling are the permuter's domain; a randomized transform that keeps reg100 out of greg's allocate-list (or lets combine attach its note to a real insn) removes vars=8 without touching the byte-perfect body. Residual is not sp-offset-only and with --stack-diffs the +8 phantom frame is scorer-visible, so the permuter can gradient on it.
+- probe: Two codegen-faithful decomp-permuter chassis (base = byte-perfect body, weighted base score 174; vH = frame-correct CSE'd body, weighted 1250), ~35k iters total, --stack-diffs default, telemetry via tools/permuter_campaign.py; harvested + stopped both.
+- result: base: 30640 iters, ZERO output dirs (nothing beat 174) - random mutation over the byte-perfect base cannot remove the reg100 strand. vH: best find score 224 (>base 174), only re-finds the known base/vSPLIT/vH classes, never target's (per-access %hi/%lo AND vars=0). Absolute best across both chassis = 224, worse than base's own 174, nowhere near 0.
 - verdict: KILLED

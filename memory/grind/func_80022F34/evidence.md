@@ -214,3 +214,31 @@ callee-saved over-promotion is a register-allocation plateau.
 - [s3] The strand vanishes ONLY when val1's def is lexically before the merge label (vPRESW: vars=0+per-access) which reorders the whole chain to sandbox 28 - and that ordering is fixed by the a0-reload data dependency (val1 must live across the reload), an algorithmic not stylistic constraint.
 
 - [s3] CONCLUSION: both structural axes are dead - s2 killed val1-placement across ~24 forms; s3 kills control-boundary re-association. No statement-order or scope lever removes the +8 phantom without breaking the byte-perfect body.
+
+## s4 (permuter, 2026-07-23) — H-A permuter axis KILLED on TWO chassis; corroborates the s1-s3 structural kills
+
+- [s4] Built a codegen-faithful decomp-permuter workspace (tmp/perm_22F34) using the real code6cac pipeline (cpp full-defs | cc1 | prologue_fix | maspsx --expand-div | fix_lwl | multu_pad; regfix/asmfix cheat stages omitted since sandbox --disable all strips them). GOTCHA banked: the repo abs-path contains spaces ("Bushido Blade 2 Decompile") so cc1's `.file` directive splits to >3 tokens and crashes maspsx line 940 (`_, num, filename = line.split()`); strip the `.file` line before maspsx. target.o built at offset 0 from asm/funcs. base.o validated: frame -40 vs target -32 (+8 phantom), save/restore offsets +8, +1 maspsx nop — the exact expected residual.
+
+- [s4] Campaigns run --stack-diffs (DEFAULT) so the +8 phantom frame stays VISIBLE to the scorer (without it the sp-offset residual normalizes to score 0 and the permuter couldn't gradient on the phantom).
+
+- [s4] **base chassis (weighted base score 174, byte-perfect body + phantom frame): 30640 iterations, ZERO output dirs (nothing beat 174).** Random codegen mutation over the byte-perfect base CANNOT remove the reg100 combine strand. This is the CLOSEST chassis (weighted 174) and the permuter found no sub-174 form.
+
+- [s4] **vH chassis (weighted base score 1250, frame-correct CSE'd body): best find = score 224** (rejected/permuter-vH-basin-best-still-224.c). The permuter only descends toward and re-finds the KNOWN base/vSPLIT/vH classes (named val1 temp + inlined arg3 => CSE'd `la` base, frame-correct but NOT per-access); it NEVER produces target's (per-access %hi/%lo AND vars=0) form. 224 > base 174, so vH is a strictly worse basin.
+
+- [s4] **CONCLUSION: the permuter (H-A top frontier lead) is KILLED.** Neither the byte-perfect base (weighted 174) nor the frame-correct vH (weighted 1250) yields any form approaching a match; the absolute best find across ~35k iters on both chassis is 224, worse than base's own 174. This mechanically corroborates s1-s3: the per-access<->phantom coupling is a fork-level cse2+combine interaction, not reachable by any C the permuter can spell. Both campaigns harvested + stopped (0 orphans); src unchanged (floor 11). Artifacts under tmp/grind/func_80022F34/s4/ + tmp/perm_22F34{,_vH}/.
+
+- [s4] Remaining live axis is H-D (non-permuter): read tools/gcc-2.7.2/cse.c symbol_ref/constant CSE cost model to find the C-visible condition that makes our fork's cse2 re-materialize %hi/%lo per load WITHOUT the long val1 lifetime (which is what strands reg100). s2 already noted per-access arises ONLY via register-pressure separation of the two `la` loads, and that separation IS what strands reg100 — so H-D must find a cse2 cost lever that decouples them; this is a cse.c-forensics session, not permuter/structural.
+
+- [s4] Built a codegen-faithful permuter workspace using the real code6cac pipeline (cpp full-defs | cc1 | prologue_fix | maspsx --expand-div | fix_lwl | multu_pad); regfix/asmfix omitted (sandbox --disable all strips them). base.o validated: frame -40 vs target -32 (+8 phantom), save/restore offsets +8, +1 maspsx nop - the exact expected residual.
+
+- [s4] GOTCHA (banked): the repo abs-path contains spaces ('Bushido Blade 2 Decompile'), so cc1's .file directive splits to >3 whitespace tokens and crashes maspsx line 940 (`_, num, filename = line.split()`); strip the .file line before maspsx in any standalone/permuter pipeline for this repo.
+
+- [s4] Campaigns run --stack-diffs (default) so the +8 phantom frame stays scorer-visible; without it the sp-offset residual normalizes to 0 and the permuter could not gradient on the phantom.
+
+- [s4] base chassis (weighted 174, byte-perfect body + phantom frame): 30640 iterations, ZERO sub-174 finds. This is the CLOSEST chassis and the permuter found no improvement.
+
+- [s4] vH chassis (weighted 1250, frame-correct CSE'd body): best find score 224 (rejected/permuter-vH-basin-best-still-224.c) = base's named-temp class re-derived from vH's chassis; never target's per-access+no-phantom form.
+
+- [s4] Mechanically corroborates s1-s3: the per-access<->phantom coupling is a fork-level cse2+combine interaction, not reachable by any C the permuter can spell. Both campaigns harvested+stopped (0 orphans); src unchanged (sandbox --disable all still 11, git status clean).
+
+- [s4] structural (s2 placement across ~24 forms + s3 control-boundary) AND permuter (s4 two chassis) axes are all now measured dead; only H-D (cse.c symbol_ref cost forensics, non-permuter) remains un-measured.

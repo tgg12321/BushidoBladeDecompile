@@ -1,8 +1,8 @@
 {
  "func": "func_80022F34",
  "file": "code6cac",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 0,
@@ -27,23 +27,24 @@
    "floor": 11,
    "modality": "structural",
    "headline": "Structural axis fully exhausted: control-boundary re-association (do-while0 around switch/val1 block) is inert to the reg100 combine strand; the strand is CFG/scope-invariant, so both structural axes "
+  },
+  {
+   "session": 4,
+   "floor": 11,
+   "modality": "permuter",
+   "headline": "Permuter (H-A top lead) KILLED on two codegen-faithful chassis: ~35k iters, best find 224 > base's 174, nothing approaches a match; reg100 strand not C-reachable by random mutation."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Remove the reg100 combine strand from base's byte-perfect body (=> floor 1) via the permuter (non-structural).",
-   "mechanism": "combine strands a dead (use reg100) at the switch-merge label because val1's folded address lives across the reload+block boundary; a randomized transform that keeps reg100 out of greg's allocate-list (or lets combine attach the note to a real insn) removes vars=8 without touching the body.",
-   "next_probe": "permuter campaign from base with PERM_* directives targeting the reg100 strand; residual is NOT sp-offset-only so decomp-permuter's stack-normalized scorer is valid. Wait in-turn, harvest --stop before finishing."
+   "hypothesis": "H-D: a C-visible cse2 cost condition forces our fork to re-materialize %hi/%lo(D_801027BC) per load WITHOUT the long val1 lifetime that strands reg100 (decoupling per-access from the phantom).",
+   "mechanism": "target's per-access comes from cc1psx NOT sharing the &D_801027BC symbol_ref; our fork's cse2 shares it (la). s2 showed per-access arises ONLY via register-pressure separation of the two `la` loads, and that separation IS what strands reg100 - so H-D must find a cse2-cost lever in tools/gcc-2.7.2/cse.c (symbol_ref / CSE-of-constants cost) that decouples the two.",
+   "next_probe": "Read tools/gcc-2.7.2/cse.c CSE-of-constants / symbol_ref cost model; inject C-visible register pressure between the two loads on a frame-correct base and measure per-access count (.frame probe + sandbox). If no C-visible lever exists (share-vs-rematerialize is driven only by inputs our C cannot vary), that is the evidence for OWNER-ESCALATION - a cc1psx-vs-fork cse2 divergence with no pure-C bridge (mirrors the sibling walls)."
   },
   {
-   "hypothesis": "Force our-fork cse2 to re-materialize %hi/%lo(D_801027BC) per load on a frame-correct base WITHOUT the long val1 lifetime - breaks the per-access<->phantom coupling from the CSE side.",
-   "mechanism": "target's per-access comes from cc1psx NOT sharing the &D_801027BC symbol_ref; our fork's cse2 shares it (la). Find the C-visible condition (register pressure, intervening clobber) in tools/gcc-2.7.2/cse.c symbol_ref/constant CSE cost that makes cse2 re-materialize instead of share the la reg.",
-   "next_probe": "read cse.c CSE-of-constants cost model; inject register pressure between the two loads on a vMIRROR/vH base and check per-access count via .frame probe + sandbox."
-  },
-  {
-   "hypothesis": "a0 self-reload lands in $v0 (CSE forms) vs target $a0 - a ~1-2 diff sub-issue, only relevant once per-access/frame is resolved.",
+   "hypothesis": "H-B (sub-issue, ~1-2 diffs): a0 self-reload lands in $v0 (CSE forms) vs target $a0.",
    "mechanism": "vH's *(u8**)a0 becomes a fresh temp in $v0 then lh a0,74($v0); target reuses $a0. Coupled to a0 liveness / arg eval order.",
-   "next_probe": "vary arg2/arg3 eval order so a0 is dead at the reload; measure objdump distance in the reload region."
+   "next_probe": "Only relevant once per-access/frame is resolved (H-D). Vary arg2/arg3 eval order so a0 is dead at the reload; measure objdump distance in the reload region."
   }
  ],
  "judge_constraints": [],

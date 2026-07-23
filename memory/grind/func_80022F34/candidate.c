@@ -38,6 +38,14 @@
  * (H-A option b) OR force cse2 symbol re-materialization on a frame-correct base
  * (H-D). Residual is NOT sp-offset-only -> permuter scorer is valid here.
  *
+ * s4 (permuter, 2026-07-23): H-A permuter axis KILLED. Two chassis, ~35k iters,
+ * --stack-diffs (phantom frame visible). base (weighted 174, byte-perfect body):
+ * 30640 iters, ZERO sub-174 finds — random codegen mutation cannot remove the
+ * reg100 combine strand. vH (weighted 1250, frame-correct CSE'd): best find 224,
+ * only re-finds the known base/vSPLIT/vH classes, never target's per-access+no-
+ * phantom. Corroborates s1-s3: the coupling is a fork-level cse2+combine
+ * interaction, not C-reachable. base remains the best form (this file).
+ *
  * Measured: sandbox --disable all = 11, build_insns 69, target 70.
  */
 void func_80022F34(void) {
