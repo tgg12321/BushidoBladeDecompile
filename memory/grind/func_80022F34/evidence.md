@@ -188,3 +188,29 @@ callee-saved over-promotion is a register-allocation plateau.
 - [s2] Type of D_801027BC (scalar+& vs array[]) is irrelevant to the strand (vARR strands identically); explicit displaced pointer (vPTR) strands too.
 
 - [s2] The per-access gap is a genuine fork cse2 divergence: standalone AND full-TU our-fork cse2 keeps &D_801027BC in one reg (`la`); cc1psx re-materializes %hi/%lo per load. base gets per-access only via register-pressure separation, which is exactly what strands reg100.
+
+## s3 (structural, 2026-07-23) — control-boundary re-association axis KILLED; reg100 strand is CFG-invariant, not statement-order
+
+- [s3] Baseline reconfirmed: current src/code6cac.c sandbox --disable all = 11 (build_insns 69, target 70, rules_dropped 11, verdict C). base probe: vars=8, regs=4/0, sp=-40, D_801027BC-refs x2 (per-access, phantom strand). Unchanged from s1/s2.
+
+- [s3] **NEW structural axis measured: control-boundary re-association (do-while(0) wrapping).** s2 exhausted the val1-PLACEMENT axis (where val1 loads relative to switch/reload); s3 attacked the ORTHOGONAL axis — inserting a control boundary between the switch-merge label and the val1 sub-block to relocate combine's stranded `(use reg100)` note off the merge label (the H-C frontier's two untried probes).
+  * **vTAIL** (switch wrapped in do{}while(0)): vars=8, per-access x2 — STRAND PERSISTS. asm is base-equivalent modulo an arbitrary tbl/i register-name swap ($17<->$18); no change to the strand or frame.
+  * **vVALDW** (val1 sub-block wrapped in do{}while(0)): vars=8, per-access x2 — STRAND PERSISTS, and STRICTLY WORSE: the scheduler no longer fills the `lh $2,74($4)` load-delay slot with the a0 reload (`lw $4,0($4)` moves 3 insns later, leaving a maspsx `#nop`). base's tighter schedule dominates.
+
+- [s3] **CONCLUSION: the reg100 combine strand is CFG/scope-invariant.** do-while(0) is optimized away before combine, so it creates NO real CFG edge/label between the switch merge and the val1 def — combine still places `(use reg100)` on the switch-merge code_label. To actually separate them at the CFG level requires a REAL branch/label between switch and val1, which necessarily adds a body insn (breaks the byte-perfect body). The strand is therefore not removable by any statement-order OR control-boundary structural lever. This CONFIRMS + EXTENDS s2's KILL: BOTH structural axes (placement + control-boundary) are dead.
+
+- [s3] The only vars=0+per-access datapoint remains vPRESW (val1 def before switch merge → no strand) which reorders the whole chain → sandbox 28. That the strand vanishes ONLY when val1's def is lexically before the merge label (not when merely wrapped in a scope after it) pins the mechanism to def-vs-label ordering, which is fixed by the a0-reload data dependency (val1 must live across the reload) — an algorithmic, not stylistic, constraint.
+
+- [s3] Structural axis is exhausted. Remaining live axes are NON-structural (next session's modality): (a) permuter from base targeting the reg100 strand specifically (residual not sp-offset-only → scorer valid); (b) cse.c symbol_ref-cost study to force per-access re-materialization on a frame-correct base without the long val1 lifetime. Artifacts: tmp/grind/func_80022F34/s3/{probe.sh, _prelude.h, base2.c/.s, vTAIL.c/.s, vVALDW.c/.s}.
+
+- [s3] Baseline reconfirmed: src/code6cac.c sandbox --disable all = 11 (build_insns 69, target 70, rules_dropped 11, verdict C); base probe vars=8 regs=4/0 sp=-40 per-access x2.
+
+- [s3] vTAIL (switch in do-while(0)): vars=8, per-access x2 - strand persists; asm base-equivalent modulo an arbitrary tbl/i register-name swap.
+
+- [s3] vVALDW (val1 block in do-while(0)): vars=8, per-access x2 - strand persists AND worse (a0 reload lw $4,0($4) moves 3 insns later, leaving a maspsx #nop where base fills the lh load-delay slot).
+
+- [s3] do-while(0) is optimized away before combine, so it creates no real CFG edge between switch-merge and the val1 def; combine still anchors (use reg100) on the switch-merge code_label. The reg100 strand is CFG/scope-invariant.
+
+- [s3] The strand vanishes ONLY when val1's def is lexically before the merge label (vPRESW: vars=0+per-access) which reorders the whole chain to sandbox 28 - and that ordering is fixed by the a0-reload data dependency (val1 must live across the reload), an algorithmic not stylistic constraint.
+
+- [s3] CONCLUSION: both structural axes are dead - s2 killed val1-placement across ~24 forms; s3 kills control-boundary re-association. No statement-order or scope lever removes the +8 phantom without breaking the byte-perfect body.

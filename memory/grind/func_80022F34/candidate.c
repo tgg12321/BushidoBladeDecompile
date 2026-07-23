@@ -28,6 +28,12 @@
  *   but NOT per-access (vH/vMIRROR, also 11). val1 before the switch => vars=0 +
  *   per-access but gross reorder => sandbox 28. No structural val1-placement escapes.
  *
+ * s3 (structural, 2026-07-23): confirmed base is STILL the best form (floor 11).
+ * s3 killed the control-boundary re-association axis (do-while(0) around the
+ * switch OR the val1 block — vTAIL/vVALDW — both keep vars=8; strand is
+ * CFG/scope-invariant since do-while(0) is folded before combine). Both
+ * structural axes (s2 placement + s3 control-boundary) are now dead.
+ *
  * NEXT LEVER (non-structural): permuter / cse.c study to remove the reg100 strand
  * (H-A option b) OR force cse2 symbol re-materialization on a frame-correct base
  * (H-D). Residual is NOT sp-offset-only -> permuter scorer is valid here.

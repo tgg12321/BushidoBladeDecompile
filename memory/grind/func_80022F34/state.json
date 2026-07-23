@@ -1,7 +1,7 @@
 {
  "func": "func_80022F34",
  "file": "code6cac",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -21,23 +21,29 @@
    "floor": 11,
    "modality": "structural",
    "headline": "Structural axis exhausted: per-access<->phantom coupling mapped across ~24 forms; base body is byte-perfect, only the reg100 combine strand (+8 phantom frame) remains, and it is not removable by any v"
+  },
+  {
+   "session": 3,
+   "floor": 11,
+   "modality": "structural",
+   "headline": "Structural axis fully exhausted: control-boundary re-association (do-while0 around switch/val1 block) is inert to the reg100 combine strand; the strand is CFG/scope-invariant, so both structural axes "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Remove the reg100 combine strand from base's byte-perfect body (=> floor 1) via non-structural search \u2014 the highest-value launch point (1 combine-artifact from match).",
-   "mechanism": "combine strands a dead (use reg100) at the switch-merge label because val1's address lives across the reload+block boundary; a C form that lets combine attach the note to a real insn (or keeps reg100 out of the allocate-list) removes vars=8 without touching the body.",
-   "next_probe": "permuter from base with PERM_* directives (residual is not sp-offset-only, so the stack-normalized scorer is valid); target the reg100 strand specifically."
+   "hypothesis": "Remove the reg100 combine strand from base's byte-perfect body (=> floor 1) via the permuter (non-structural).",
+   "mechanism": "combine strands a dead (use reg100) at the switch-merge label because val1's folded address lives across the reload+block boundary; a randomized transform that keeps reg100 out of greg's allocate-list (or lets combine attach the note to a real insn) removes vars=8 without touching the body.",
+   "next_probe": "permuter campaign from base with PERM_* directives targeting the reg100 strand; residual is NOT sp-offset-only so decomp-permuter's stack-normalized scorer is valid. Wait in-turn, harvest --stop before finishing."
   },
   {
-   "hypothesis": "Force our-fork cse2 to re-materialize %hi/%lo(D_801027BC) per load (per-access) on a frame-correct base WITHOUT the long val1 lifetime \u2014 breaks the coupling from the CSE side.",
-   "mechanism": "read tools/gcc-2.7.2/cse.c symbol_ref/constant CSE cost; find the C-visible condition (register pressure, intervening clobber) that makes cse2 re-materialize instead of share the `la` reg.",
-   "next_probe": "inject register pressure between the two loads in a vMIRROR/vH base and check per-access count via .frame probe + sandbox."
+   "hypothesis": "Force our-fork cse2 to re-materialize %hi/%lo(D_801027BC) per load on a frame-correct base WITHOUT the long val1 lifetime - breaks the per-access<->phantom coupling from the CSE side.",
+   "mechanism": "target's per-access comes from cc1psx NOT sharing the &D_801027BC symbol_ref; our fork's cse2 shares it (la). Find the C-visible condition (register pressure, intervening clobber) in tools/gcc-2.7.2/cse.c symbol_ref/constant CSE cost that makes cse2 re-materialize instead of share the la reg.",
+   "next_probe": "read cse.c CSE-of-constants cost model; inject register pressure between the two loads on a vMIRROR/vH base and check per-access count via .frame probe + sandbox."
   },
   {
-   "hypothesis": "a0 self-reload lands in $v0 (CSE forms) vs target $a0 \u2014 a ~1-2 diff sub-issue.",
-   "mechanism": "vH's `*(u8**)a0` becomes a fresh temp in $v0 then `lh a0,74($v0)`; target reuses $a0. Coupled to a0 liveness / arg eval order.",
-   "next_probe": "only relevant once per-access/frame is resolved; vary arg2/arg3 eval order so a0 is dead at the reload."
+   "hypothesis": "a0 self-reload lands in $v0 (CSE forms) vs target $a0 - a ~1-2 diff sub-issue, only relevant once per-access/frame is resolved.",
+   "mechanism": "vH's *(u8**)a0 becomes a fresh temp in $v0 then lh a0,74($v0); target reuses $a0. Coupled to a0 liveness / arg eval order.",
+   "next_probe": "vary arg2/arg3 eval order so a0 is dead at the reload; measure objdump distance in the reload region."
   }
  ],
  "judge_constraints": [],

@@ -103,8 +103,20 @@ the 1 load-delay nop.
 - result: Body (both per-access lw D_801027BC + in-place `lw $4,0($4)` a0 reload in $a0) is identical to target; only the frame differs. Remove the reg100 strand and floor would drop to 1 (the nop, retirable via maspsx_label_nop_funcs.txt).
 - verdict: CONFIRMED
 
+## [s3] The reg100 combine strand can be relocated off the switch-merge label by inserting a control boundary (do-while(0)) between the switch and the val1 sub-block.
+- mechanism: combine strands `(use reg100)` on the switch-merge code_label because no real insn/label sits between the merge and reg100's def; a control boundary might give it a different anchor or split the region.
+- probe: vTAIL (switch in do{}while(0)) and vVALDW (val1 block in do{}while(0)); cc1 .frame vars= + per-access D_801027BC count + asm diff vs base.
+- result: BOTH keep vars=8 + per-access x2 (strand intact). do-while(0) is optimized away before combine → no real CFG edge → note stays on the merge label. vVALDW additionally wastes the `lh` load-delay slot (extra maspsx #nop) → strictly worse. A real CFG separation would require a branch that adds a body insn (breaks the byte-perfect body).
+- verdict: KILLED. The strand is CFG/scope-invariant; both structural axes (s2 placement + s3 control-boundary) are now dead. Escape is non-structural only.
+
 ## [s2] A frame-correct (vars=0) CSE form scores below 11 because CSE costs fewer instructions than the +8 phantom.
 - mechanism: CSE'd shared `la $5` base for both accesses is shorter than per-access %hi/%lo; if the CSE + a0-reload-in-$v0 diffs total < 10, a frame-correct form would beat the phantom.
 - probe: Applied vMIRROR (target-order both-CSE) and vSPLIT (val2 per-access, val1 CSE) to src; sandbox --disable all.
 - result: vMIRROR = 11 (build_insns 64), vSPLIT = 11 (build_insns 64). The CSE'd base + a0-reload-in-$v0 (vs target $a0) + nop sum to exactly 11. No frame-correct structural form beats base.
+- verdict: KILLED
+
+## [s3] A control boundary (do-while(0)) between the switch and the val1 sub-block relocates combine's stranded (use reg100) note off the switch-merge label, removing the +8 phantom frame slot (vars 8 -> 0) while keeping per-access %lo.
+- mechanism: combine strands (use reg100) on the switch-merge code_label because no real insn sits between the merge and reg100's def; a control boundary was hypothesized to give it a real anchor or split the region.
+- probe: vTAIL (switch wrapped in do{}while(0)) and vVALDW (val1 sub-block wrapped in do{}while(0)); cc1 .frame vars= + per-access D_801027BC-ref count + asm diff vs base; sandbox anchor on src = 11.
+- result: Both keep vars=8 + per-access x2 (strand intact). do-while(0) is folded before combine -> no real CFG edge/label -> the note stays on the switch-merge code_label. vVALDW additionally wastes the lh 74($4) load-delay slot (extra maspsx #nop), strictly worse than base's schedule. A real CFG separation would need a branch that adds a body insn, breaking the byte-perfect body.
 - verdict: KILLED
