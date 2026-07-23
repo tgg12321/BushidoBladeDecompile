@@ -137,3 +137,39 @@
 - probe: output-30-1's variable-reuse is the first measured form to flip ALL THREE load-temps to $v0 (matching target's load side exactly). Disassembled tmp/sandbox/func_800611A4/text1b.o -> tmp/grind/func_800611A4/s4/out30_disasm.txt.
 - result: When the load side gets $v0, the mask pseudo is displaced OUT of the $v0/$v1 pair entirely -- to $a0 (target wants $v1; 3 residual diffs), and the pre-call arg1+2 halfword also regresses to $a0 (target $v0; 2 diffs). The wall is a THREE-way register interaction (load web / mask pseudo / pre-call halfword competing for $v0/$v1/$a0), not a 2-pseudo swap. No cheat-free lever reproduces target's load=$v0 AND mask=$v1 simultaneously.
 - verdict: CONFIRMED
+
+## [s5] Directed PERM_LINESWAP + PERM_RANDOMIZE over the post-call cluster ONLY (pre-call frozen) finds a cheat-free form below the sandbox-6 floor.
+- mechanism: s4's two random campaigns randomized the WHOLE function, wasting iterations perturbing the byte-identical pre-call region. Freezing pre-call (outside the PERM_RANDOMIZE region) + adding an explicit PERM_LINESWAP enumeration of the 4 post-call units concentrates the search on the only region with gradient — the mask/load statement geometry.
+- probe: Workspace tmp/grind/func_800611A4/s5/permA, base_score=50, 6 jobs, ~34k iters / ~20 min, harvest --stop. Measured each novel find's honest sandbox.
+- result: 5 novel finds, ALL coercion-gated (invented staging vars / pointer aliases / dead stores). No cheat-free form below the interleaved-50 plateau; a full 9-min window closed with zero novel finds. KILLED — the directed-lineswap-frozen-precall basin, like both s4 basins, has no cheat-free sub-6 form.
+- verdict: KILLED
+
+## [s5] The three-way RA wall (load->$v0 + mask->$v1 interleaved) is unreachable by ANY C structure, cheat or not.
+- mechanism: s1-s4 model said giving the load side $v0 displaces the mask to a THIRD register ($a0), never $v1. If true even for cheat forms, no C reaches target's layout.
+- probe: output-30-1 (invented-var staging the offset-0 load, reverse load order) honest sandbox=2; disassembled tmp/grind/func_800611A4/s5/out30_s5_disasm.txt.
+- result: REFUTED for this form's LAYOUT — the invented-var staging DOES reproduce target's exact three-way layout (load=$v0 all three, mask=$v1 interleaved lui/ori/sw). The wall is NOT "mask can never reach $v1". The residual 2 diffs are purely load-offset ORDER (form emits 0x8,0x4,0x0; target 0x0,0x4,0x8). So s4's "mask displaced to $a0" was specific to s4's forms, not universal.
+- verdict: CONFIRMED (refines the wall model: the RA layout IS reachable; the true residual is reconciling the flip with target's forward load order).
+
+## [s5] The staging var is the RA-flip lever, not the load reordering; and the flip cannot be reconciled with target's forward load order.
+- mechanism: isolate whether new_var2 (staging) or the reverse load order produces the flip; then test whether the flip survives forward order (which target uses).
+- probe: (a) cheat-free reverse-order form, plain `t`, no new_var2; (b) new_var2 staging offset-0 load with forward order; (c) new_var2 staging offset-2 load with forward order.
+- result: (a) = 9 (the wall — reordering alone does nothing; staging is the lever). (b) = 11. (c) = 8. Only reverse-order + stage-offset-0-last = 2. Every staged form matching target's forward ORDER fails to flip the RA; the only form that flips it has reverse order. Target's forward-order + flipped-RA is what the $3 pin forces by fiat and is not produced by our GCC from any staged C measured.
+- verdict: CONFIRMED. And new_var2 is a cheat (invented staging local, prereq #2 violation); the fn's existing dead locals (`new_var` u16 truncates; `v1` s32* needs int/ptr pun) are unusable as sanctioned carriers. Floor stays 6.
+
+## [s5] A directed PERM_LINESWAP+PERM_RANDOMIZE campaign over the post-call cluster only (pre-call frozen) finds a cheat-free form below the sandbox-6 floor.
+- mechanism: s4's two random campaigns randomized the whole function, wasting iterations on the byte-identical pre-call. Freezing pre-call outside the PERM_RANDOMIZE region + an explicit PERM_LINESWAP over the 4 post-call units concentrates the search on the only region with gradient.
+- probe: Workspace tmp/grind/func_800611A4/s5/permA, base_score=50, 6 jobs, ~34k iters/~20 min, harvest --stop. Honest sandbox of every novel find.
+- result: 5 novel finds, ALL coercion-gated (invented staging vars, pointer aliases, dead self-assigns, dead branches). No cheat-free form below the interleaved-50 plateau; a full 9-min window closed with zero novel finds.
+- verdict: KILLED
+
+## [s5] The three-way RA layout target uses (load-temp->$v0 all three, mask 0xFFFFEF->$v1 interleaved) is unreachable by any C structure (s1-s4 said giving the loads $v0 always displaces the mask to a THIRD register, never $v1).
+- mechanism: If the mask can never land on $v1 while the loads take $v0, no C reaches target's layout and only the $3 pin forces it.
+- probe: output-30-1 (invented new_var2 staging the offset-0 load, reverse load order) honest sandbox=2; disassembled out30_s5_disasm.txt.
+- result: REFUTED for the LAYOUT: the invented-var staging DOES reproduce target's exact layout (load=$v0 all three, mask=$v1 built interleaved lui/ori/sw). The residual 2 diffs are purely load-offset ORDER (form emits 0x8,0x4,0x0; target 0x0,0x4,0x8). The wall is not 'mask can never reach $v1'; it is 'the RA flip only occurs with reverse load order'.
+- verdict: CONFIRMED
+
+## [s5] The staging var (not the load reordering) is the RA-flip lever, and the flip cannot be reconciled with target's forward load order.
+- mechanism: Isolate lever (staging vs reorder) then test whether the flip survives forward order (which target uses).
+- probe: (a) cheat-free reverse-order, plain t, no new_var2; (b) new_var2 stage offset-0 forward; (c) new_var2 stage offset-2 forward.
+- result: (a)=9 (wall; reorder alone does nothing). (b)=11. (c)=8. Only reverse-order + stage-offset-0-last = 2. Every staged form matching target's forward ORDER fails to flip the RA; the only form that flips it has reverse order. new_var2 is a cheat (invented staging local, prereq #2); the fn's existing dead locals (new_var u16 truncates; v1 s32* needs int/ptr pun) are unusable as sanctioned carriers.
+- verdict: CONFIRMED

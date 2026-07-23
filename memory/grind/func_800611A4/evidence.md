@@ -138,3 +138,29 @@ the canonical finished form for the family) OR a future family-wide RA lever.
 - [s4] output-40-1 (perm 40, sandbox 7, cheat-shaped: fresh pointer-alias &arg0[1] + staged new_var3) flips only load 1 to $v0; strictly worse than the V7 floor. Banked rejected/s4_perm2_pointer_alias_staged.c.
 
 - [s4] Cumulative permuter coverage on func_800611A4 now spans two seed chassis (V7 atomic-first ~25k iters across prior s4 attempts + interleaved-V0 69k iters this session): zero cheat-free finds below sandbox 6 in either basin.
+
+- [s5] MODALITY=permuter. DIRECTED chassis distinct from both s4 basins: PERM_RANDOMIZE + PERM_LINESWAP wrapping ONLY the post-call cluster (4 brace-blocks: 3 load/store pairs + mask store), pre-call region FROZEN outside the randomizer region (s4's whole-function random wasted iters mutating the byte-identical pre-call). Workspace tmp/grind/func_800611A4/s5/permA, base_score=50, 6 jobs, ~34k iters / ~20 min, harvest --stop (7 procs killed, no orphans).
+
+- [s5] 5 novel finds, ALL coercion-gated (output-45-1, 30-1, 30-2, 45-2, 40-1): invented staging locals (new_var2/new_var3), invented pointer aliases (&arg0[1]), dead self-assigns (t=t;), dead branches (if(1){}). ZERO cheat-free form below the interleaved-50 plateau. A full ~9-min window (545s) ran with zero novel finds -> fresh-seed discipline satisfied. Directed-lineswap-frozen-precall basin KILLED for cheat-free sub-6, consistent with both s4 basins.
+
+- [s5] MAJOR MECHANISTIC ADVANCE: output-30-1 honest sandbox = 2 (43/43) — the CLOSEST-EVER form (s4 best was 5; floor is 6). It reproduces target's EXACT three-way register layout: load-temp->$v0 (all three) AND mask 0xFFFFEF->$v1 built INTERLEAVED (lui after load2, ori after load3, sw) — the layout s1-s4 declared unreachable. Disasm tmp/grind/func_800611A4/s5/out30_s5_disasm.txt.
+
+- [s5] The residual 2 diffs are PURELY load-offset ORDER: the sandbox-2 form emits loads 0x8,0x4,0x0($s0); target emits 0x0,0x4,0x8. Register assignment is otherwise byte-identical to target.
+
+- [s5] The RA flip is caused by the invented `new_var2` staging local, NOT by the load reordering: the cheat-FREE reverse-order form (plain `t`, no new_var2, loads 2/1/0) scores 9 (the wall). Staging IS the lever; reordering alone does nothing.
+
+- [s5] The flip is order-AND-position-specific and does NOT reconcile with target's forward order. Measured: reverse order + stage offset-0 load (last) = 2; forward order + stage offset-0 load (first) = 11; forward order + stage offset-2 load (last) = 8. Every staged form that matches target's FORWARD order fails to flip the RA; the only form that flips the RA (reverse) has the wrong order. Target's forward-order + flipped-RA is what the $3 pin forces by fiat; no staged C measured produces both simultaneously.
+
+- [s5] new_var2 is a CHEAT (invented staging local; staged-value-reused-variable prereq #2 requires reusing an EXISTING var the fn already uses, not inventing one). func_800611A4's existing dead locals are unusable as sanctioned carriers: `new_var` is u16 (staging an s32 truncates -> real bug, not a match); `v1` is s32* (would need an int<->ptr type-pun). Banked rejected/s5_reverse_stage_lastload_sandbox2.c. Floor HELD at 6 (clean V7 candidate reconfirmed sandbox=6, 43/43, 0 rules; src left at clean candidate).
+
+- [s5] s5 directed permuter chassis (PERM_LINESWAP+PERM_RANDOMIZE over post-call cluster only, pre-call frozen): base_score=50, ~34k iters/~20 min, 6 jobs, harvest --stop clean (7 procs killed, no orphans). 5 novel finds ALL coercion-gated; zero cheat-free sub-6.
+
+- [s5] output-30-1 honest sandbox = 2 (43/43) is the CLOSEST-EVER form (s4 best 5, floor 6). It reproduces target's EXACT three-way register layout (load-temp->$v0 all three, mask->$v1 interleaved). The residual 2 diffs are purely load-offset ORDER (0x8,0x4,0x0 vs target 0x0,0x4,0x8). Disasm: tmp/grind/func_800611A4/s5/out30_s5_disasm.txt.
+
+- [s5] The RA flip is caused by the invented new_var2 staging local, NOT the load reordering: cheat-free reverse-order form (plain t) scores 9 (the wall).
+
+- [s5] The flip is order-and-position-specific and does not reconcile with target's forward order: reverse+stage-offset0-last=2, forward+stage-offset0-first=11, forward+stage-offset2-last=8. Target's forward-order + flipped-RA is what the $3 pin forces by fiat.
+
+- [s5] new_var2 is a cheat (invented staging local; staged-value-reused-variable prereq #2 requires reusing an EXISTING var). Existing dead locals unusable as sanctioned carriers: new_var is u16 (truncates s32); v1 is s32* (int/ptr pun). Banked rejected/s5_reverse_stage_lastload_sandbox2.c.
+
+- [s5] Floor HELD at 6: clean V7 candidate reconfirmed sandbox --disable all = 6, 43/43, 0 rules; src/text1b.c left at the clean pin-free candidate.

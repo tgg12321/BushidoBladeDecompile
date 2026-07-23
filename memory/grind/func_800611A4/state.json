@@ -1,7 +1,7 @@
 {
  "func": "func_800611A4",
  "file": "text1b",
- "session_count": 4,
+ "session_count": 5,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -33,23 +33,29 @@
    "floor": 6,
    "modality": "permuter",
    "headline": "Permuter reseeded from interleaved-V0 target-shape (fresh basin, not prior s4's V7 seed): no cheat-free sub-6 form; sub-6 finds all coercion-gated (output-30-1 sandbox 5 cheat-reviewer FAIL). Floor ho"
+  },
+  {
+   "session": 5,
+   "floor": 6,
+   "modality": "permuter",
+   "headline": "s5 directed permuter (PERM_LINESWAP+RANDOMIZE, pre-call frozen): no cheat-free sub-6, but reached sandbox 2 (closest ever) via an invented-var stage that reproduces target's exact load=$v0/mask=$v1 la"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A cheat-free lever exists that reproduces output-30-1's load-temp->$v0 flip WITHOUT the invented dual-purpose variable and WITHOUT displacing the mask off $v1 -- i.e. that simultaneously pins load-temp=$v0 and mask=$v1 as target does.",
-   "mechanism": "output-30-1 proved the load side CAN be forced to $v0; the residual is purely the mask landing on $a0 instead of $v1 (plus a pre-call halfword regression). The question is what cheat-free C structure gives the load web $v0 while leaving the 2-insn mask pseudo in $v1 -- the exact allocation the $3 pin forces by fiat.",
-   "next_probe": "Instrumented cc1 .greg dump (BB2_ALLOC_DEBUG / -da) on BOTH the V7 floor-6 form AND output-30-1, comparing allocno priority ordering of the load web vs mask vs pre-call-halfword pseudos. Identify which pseudo GCC hands $v0 first and why the mask never gets $v1 when the load side wins $v0. Then search for a cheat-free C shape (statement geometry, not an invented carrier) that produces the target 3-way assignment."
+   "hypothesis": "target's layout IS reachable (staging flips it); the true unsolved residual is producing the same RA flip WITH target's forward load order (0x0,0x4,0x8).",
+   "mechanism": "The invented-var stage flips load=$v0/mask=$v1 but only when the staged load is the LAST-emitted in reverse order. Forward-order staged forms (11, 8) never flip. The lever needed is a cheat-free structure that flips the RA while keeping the loads in forward order.",
+   "next_probe": "Instrumented cc1 .greg/allocno-priority dump comparing the sandbox-2 form (reverse, flipped) vs a forward-order staged form (no flip) to identify WHICH pseudo-ordering property the staging changes, then search for a forward-order C shape (statement geometry / mask liveness) that reproduces that property without an invented carrier."
   },
   {
-   "hypothesis": "The pre-call arg1+2 halfword regression to $a0 in output-30-1 is avoidable, isolating the mask-register problem.",
-   "mechanism": "output-30-1 coupled the load-flip with a pre-call regression because the reused carrier stole $a0 from the halfword. A form that flips the load side to $v0 without touching the pre-call region would leave only the 3 mask-register diffs, a cleaner target for a subsequent lever.",
-   "next_probe": "Directed-PERM (PERM_LINESWAP over the post-call cluster only, pre-call frozen byte-identical) seeded from a form that keeps the mask store interleaved but reshapes ONLY the load side, measuring whether the load->$v0 flip is reachable without a pre-call carrier."
+   "hypothesis": "A sanctioned carrier (pointer-alias-fake-exception or staged-value-reused-variable via an EXISTING var) could reproduce the flip legitimately.",
+   "mechanism": "new_var2 is the flip lever but is an invented cheat. The fn's existing dead locals are type-incompatible (new_var u16, v1 s32*). A legitimate carrier would need to already exist post-call with s32 width, or be a sanctioned pointer alias whose liveness overlaps the loads the way new_var2 does.",
+   "next_probe": "Structural/forensic session (out of permuter scope): test whether reusing v1 as an s32-typed carrier under pointer-alias-fake-exception reproduces the flip, and whether it clears cheat-reviewer; if not, the flip is invented-var-only and the frontier is the forward-order reconciliation above."
   },
   {
-   "hypothesis": "Sibling triangulation (func_80061250 mask=0xFF0060 / func_80061658 mask=0x10FFFF, identical $2/$3 pin shape) would show whether the 3-way register wall is family-universal or constant-specific -- but is OUT OF THIS SESSION'S SCOPE (contract: work ONLY func_800611A4).",
-   "mechanism": "All three siblings share the post-call mask/load cadence and the same pin cheat. A lever that closes the 3-way assignment on one likely closes the family; a future cross-function session (or owner ruling) could triangulate.",
-   "next_probe": "A future session authorized for the family should apply the load->$v0 lever candidates to a sibling in a scratch sandbox and measure whether the mask-displacement behaves identically across mask constants."
+   "hypothesis": "Making the MASK pseudo itself the interleaved carrier (rather than a separate staging local) flips the RA in forward order.",
+   "mechanism": "Target's flip coincides with the mask lui/ori being materialized interleaved into the load gaps and alive across load 3. A mask-liveness shape that forces GCC to keep the mask in $v1 across all three FORWARD-order loads may be the cheat-free analogue of the staging flip.",
+   "next_probe": "Directed permuter constraining only mask materialization/liveness position (PERM_LINESWAP of the mask lui/ori split points) with loads pinned in forward 0,4,8 order and no invented locals."
   }
  ],
  "judge_constraints": [],
