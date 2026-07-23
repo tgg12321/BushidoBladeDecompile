@@ -1,7 +1,7 @@
 {
  "func": "func_80061658",
  "file": "text1b",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -21,23 +21,24 @@
    "floor": 7,
    "modality": "structural",
    "headline": "Lever-A block-local split of the MIDDLE load lowered the honest floor 9->7; RTL pins the root cause to local-vs-global allocation asymmetry (RMW-chained mask is LOCAL and grabs v0 before the disjoint-"
+  },
+  {
+   "session": 3,
+   "floor": 7,
+   "modality": "structural",
+   "headline": "Structural modality exhausted with GCC-source proof: the v0<->v1 residual is a local-vs-global allocation-CLASS wall (local-alloc.c:472 reg_n_deaths==1 gate + no MIPS REG_ALLOC_ORDER), not a flippable"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A directed permuter over the tail RA structure finds a pure-C form that keeps the single-temp interleave AND steers the shared load-temp to v0 (mask to v1).",
-   "mechanism": "Random+directed PERM mutation of the 3-load + const-store tail against a clean single-function target exposes RA-steering structures manual analysis misses; base from the floor-9 pure-swap form (only RA differs).",
-   "next_probe": "Build target.o from asm/funcs/func_80061658.s + prelude at offset 0; run permuter with fresh-seed discipline from the floor-9 form; vet any sandbox-0 form against the cheat catalog before proposing. PERMUTER modality (not structural)."
+   "hypothesis": "A directed permuter over the tail RA finds a byte-neutral structure that steers local-alloc's find_free_reg off v0 for the mask qty (via a copy-suggestion or a hard-v0 conflict), letting the 3-death GLOBAL load-temp win v0 while mask stays local at v1.",
+   "mechanism": "The unmet need is a source shape that makes v0 unavailable to the lone local mask qty at its birth WITHOUT introducing a split (which hoists/scatters). This is not constructible by manual grouping-preserving transforms; PERM_* mutation of the 3-load+const-store tail against a clean single-function target may expose it.",
+   "next_probe": "PERMUTER modality: build target.o from asm/funcs/func_80061658.s + prelude at offset 0; run with fresh-seed discipline from the floor-9 pure-swap form (correct schedule, only RA differs); vet any sandbox-0 form against the cheat catalog before proposing."
   },
   {
-   "hypothesis": "Some structure makes the shared 3-load temp a LOCAL contiguous quantity (or makes mask GLOBAL), letting the load-temp win v0 while staying a single reused register.",
-   "mechanism": "The local/global split is decided by whether a pseudo's sets combine into one contiguous quantity; the load-temp's 3 disjoint loads currently force it global. A structure that chains them (without a dead/cheat computation) would make it local and born-first.",
-   "next_probe": "Investigate whether any legitimate pure-C flow chains the three loads into one live range that preserves the interleave; if none exists without a dead store, this axis is dead and only the permuter remains."
-  },
-  {
-   "hypothesis": "The winning form generalizes to the sibling pin cluster (func_80061710/617C8/618B4/611A4/6133C, identical t=$2/mask=$3 pattern).",
-   "mechanism": "Siblings share the identical structure; a genuine RA-structure fix (not a pin) should reproduce across them.",
-   "next_probe": "After a form flips 61658 to 0, apply the same structure to func_80061710 and sandbox as a generality check."
+   "hypothesis": "If the permuter also plateaus, the residual is a genuine register-class endgame lock (few insns short, byte-matches only via the t=$2/mask=$3 pins).",
+   "mechanism": "reg_n_deaths==1 local/global gate + ascending REG_ALLOC_ORDER is a structural property of GCC 2.7.2 on this value shape; the shared cluster (func_80061710/617C8/618B4/611A4/6133C) has the identical t=$2/mask=$3 pattern.",
+   "next_probe": "Apply endgame-lock-disposition-policy only AFTER the permuter modality is run and measured dead; NOT owner-gated while any modality is unrun."
   }
  ],
  "judge_constraints": [],

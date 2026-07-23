@@ -97,3 +97,57 @@ proposal — no-new-park-categories forbids register-rotation infrastructure.)
 - [s2] The wall to 0: single-t gives the TARGET SCHEDULE but wrong RA (mask@v0); any split gives target RA (mask@v1) but breaks the SCHEDULE. Reaching 0 needs the disjoint-range shared load-temp to win v0 over the RMW-chained LOCAL mask - which local-before-global forbids for these value shapes; no grouping-preserving structural transform changes that classification.
 
 - [s2] Both floor forms are clean pure C: the floor-9 form is a pure RA swap with the correct target schedule (cleaner permuter base); the floor-7 form has mask@v1 but a distorted interleave.
+
+## s3 — GCC-SOURCE-LEVEL confirmation of the local/global wall (floor unchanged 7)
+- [s3] Regenerated the greg/lreg dumps (s1/s2 dumps were gitignored & gone) from the
+  floor-9 pure form. greg: "6 regs to allocate: 77 75 78 73 72 74" — pseudo 75
+  (load-temp t) IS in the global list -> disposition 75->reg3(v1); pseudo 76 (mask)
+  is ABSENT from the global list -> disposition 76->reg2(v0), i.e. allocated by
+  LOCAL alloc. Exactly the s1/s2 v0<->v1 swap, now re-confirmed on fresh dumps.
+  Artifacts: tmp/grind/func_80061658/s3/dumps/{text1b.i.greg,text1b.i.lreg,func_greg.txt}.
+- [s3] lreg: "Register 75 used 6 times across 9 insns in block 5; dies in 3 places";
+  "Register 76 used 2 times across 5 insns in block 5" (dies once). Both in the SAME
+  block 5 (post-call).
+- [s3] ROOT CAUSE pinned to GCC source: tools/gcc-2.7.2/local-alloc.c:472 gates a
+  pseudo to LOCAL alloc iff `reg_basic_block[i] >= 0 && reg_n_deaths[i] == 1`. The
+  load-temp loads 3 DISTINCT values -> reg_n_deaths==3 -> reg_qty=-1 -> DEFERRED to
+  global_alloc (unconditional; not a priority tie). mask is a single constant ->
+  reg_n_deaths==1 -> local-allocatable.
+- [s3] Register CHOICE pinned: MIPS backend defines NO REG_ALLOC_ORDER (grep of
+  config/mips = 0 matches) -> find_free_reg iterates hard regs in ASCENDING number.
+  In block 5 the ONLY local qty is mask; find_free_reg gives it the lowest free
+  caller-saved reg = v0(2). No copy-suggestion exists (constant has no copy src).
+  So the lone local mask qty DETERMINISTICALLY takes v0; the global load-temp gets
+  leftover v1. This is mechanical, not a tiebreak that C reordering can flip.
+- [s3] To reach 0 you must EITHER (a) make the load-temp reg_n_deaths==1 (one
+  contiguous live range) so it becomes local & born-first -> impossible: 3 distinct
+  loaded values = 3 deaths regardless of C spelling; OR (b) make mask reg_n_deaths>=2
+  so it goes global where the higher-ref (6 vs 2) load-temp outranks it for v0 ->
+  no byte-neutral pure C exists (mask's store is on the single post-call path; a 2nd
+  use = an extra emitted insn); OR (c) introduce a v0-blocking single-death LOCAL
+  across mask's range -> that is a load SPLIT, and every split was measured 7-11
+  because the split temp has no anti-dep and the scheduler hoists it (distorting the
+  interleave) and/or steals v0 from the shared global load-temp (scatters it to a0).
+- [s3] KILLED frontier #2 (chain-loads-into-one-quantity): 3-word struct block copy
+  `*(struct{s32 a,b,c;}*)&D_800F1140 = *(struct{...}*)arg0;` scored 22 (build_insns
+  34 vs 46). GCC lowers it to lw/sw pairs that STILL die 3x AND drops the mask
+  interleave / folds addressing -> wholly different shape. No block-copy spelling
+  creates a single contiguous load-temp live range. rejected/struct-block-copy.c.
+- [s3] CONCLUSION: the structural modality is exhausted with a source-level proof.
+  The residual 7 (best) / 9 (pure-swap) is a local-vs-global allocation-CLASS wall
+  (reg_n_deaths==1 gate + ascending REG_ALLOC_ORDER), not a priority tie any
+  grouping-preserving structural transform can flip. Floor still potentially movable
+  via the directed PERMUTER (frontier #1, different modality) — NOT owner-gated
+  (still grindable). No new structural lever remains to derive.
+
+- [s3] greg (fresh, s3): '6 regs to allocate: 77 75 78 73 72 74' includes pseudo 75 (load-temp t) -> disposition 75 in reg3(v1); pseudo 76 (mask) ABSENT from the global list -> 76 in reg2(v0), i.e. allocated by local_alloc. Re-confirms the s1/s2 pure v0<->v1 swap on fresh dumps.
+
+- [s3] lreg (fresh, s3): 'Register 75 used 6 times across 9 insns in block 5; dies in 3 places'; 'Register 76 used 2 times across 5 insns in block 5' (dies once). Both live only in block 5 (post-call).
+
+- [s3] ROOT CAUSE at GCC source: local-alloc.c:472 gates local alloc on `reg_basic_block>=0 && reg_n_deaths==1`. Load-temp reg_n_deaths==3 -> global (unconditional); mask reg_n_deaths==1 -> local.
+
+- [s3] REGISTER CHOICE at GCC source: config/mips has NO REG_ALLOC_ORDER (grep = 0 matches) -> find_free_reg iterates ascending hard-reg numbers; the lone local mask qty gets the lowest free caller-saved reg = v0(2). No copy-suggestion exists (constant has no copy source). Deterministic, not a tiebreak.
+
+- [s3] KILLED frontier #2: 3-word struct block copy scores 22 (build_insns 34 vs 46) -- lw/sw pairs still die 3x and the mask interleave is dropped; no block-copy spelling makes the load-temp one contiguous live range.
+
+- [s3] Floor unchanged this session (best 7 = s2 middle-load block-local split; pure-swap base 9). Structural axis measured-dead; permuter (frontier #1) remains open, so still grindable / NOT owner-gated.

@@ -84,8 +84,41 @@ constant; its placement is inert, KILLED s1).
 - result: All floor 9 - no movement.
 - verdict: KILLED
 
+## [s3] Chaining the 3 loads into ONE live range (frontier #2) makes the load-temp a single-death LOCAL quantity that wins v0.
+- mechanism: local-alloc.c:472 gates local alloc on reg_n_deaths==1; a struct/block copy might fuse the 3 loads into one contiguous quantity.
+- probe: `*(struct{s32 a,b,c;}*)&D_800F1140 = *(struct{...}*)arg0;` + separate mask store; sandbox --disable all.
+- result: score 22 (build_insns 34 vs 46). GCC lowers the block copy to lw/sw pairs that STILL die 3x AND drops the mask interleave / folds addressing — wholly different shape. 3 distinct values = 3 deaths regardless of C spelling.
+- verdict: KILLED. rejected/struct-block-copy.c.
+
+## [s3] The v0<->v1 swap is a local-vs-global allocation-CLASS wall, GCC-source-confirmed — not a flippable priority tie.
+- mechanism: local-alloc.c:472 `reg_n_deaths==1` gate forces the 3-death load-temp to global and keeps the 1-death mask local; MIPS has NO REG_ALLOC_ORDER so find_free_reg gives the lone local mask qty the lowest free reg = v0(2), leaving v1 for the global load-temp. Escapes (a) load-temp die-once [impossible], (b) mask die-twice [no byte-neutral C], (c) v0-blocking local split [= measured 7-11, scheduler hoist / v0 steal] all fail.
+- probe: fresh greg/lreg dumps (s3/dumps/) + read of local-alloc.c:460-478,1533-1556 + grep REG_ALLOC_ORDER (0 matches) + struct-copy measurement.
+- result: structural modality exhausted with proof; residual is class-wall, not tie.
+- verdict: CONFIRMED (wall is real; NOT owner-gated — permuter modality still open).
+
+## s3 frontier (for next session) — unchanged intent, structural axis now measured-dead
+1. Directed PERMUTER over the tail RA (frontier #1, PERMUTER modality) from the floor-9
+   pure-swap base (correct schedule, only RA differs). Specific unmet need: force the
+   3-death GLOBAL load-temp to win v0 while mask stays local — which requires steering
+   local-alloc's find_free_reg off v0 for mask (e.g. a copy-suggestion or a hard-v0
+   conflict) that manual analysis can't construct byte-neutrally. If the permuter also
+   plateaus, escalate per endgame-lock-disposition-policy (register-class wall,
+   few insns short) — NOT owner-gated while any modality is unrun.
+
 ## [s2] Splitting loads other than the middle one reaches the match.
 - mechanism: Multiple simultaneously-live single-use load temps have no anti-deps, so the scheduler hoists all loads and the temps scatter across v0/v1/a0/a1, breaking the target interleave.
 - probe: Sandbox: split load1 = 11; split loads 1&3 = 11; 3 scoped block-locals = 11; 3 named temps t0/t1/t2 = 11; split load3 = 8; only split load2 = 7.
 - result: All non-middle splits WORSE (8-11); only the middle-load split improves.
 - verdict: KILLED
+
+## [s3] Chaining the three tail loads into ONE live range (frontier #2) makes the load-temp a single-death LOCAL quantity that wins v0 over mask.
+- mechanism: local-alloc.c:472 gates local alloc on reg_n_deaths==1; a struct/block copy of the 3 contiguous words (D_800F1140/1144/1148 <- arg0[0..2]) might fuse the 3 disjoint load ranges into one contiguous quantity so it becomes local and born-first.
+- probe: Set src tail to `*(struct{s32 a,b,c;}*)&D_800F1140 = *(struct{...}*)arg0; mask=0x10FFFF; D_800A3464=mask;` and ran sandbox func_80061658 --disable all.
+- result: score 22, build_insns 34 vs 46. GCC lowers the block copy to lw/sw pairs that STILL die 3x AND drops the mask-store interleave / folds addressing -> wholly different shape. Three distinct loaded values = three deaths regardless of C spelling.
+- verdict: KILLED
+
+## [s3] The honest v0<->v1 residual is a local-vs-global allocation-CLASS wall fixed by GCC's source, not a priority tie that grouping-preserving structural transforms can flip.
+- mechanism: tools/gcc-2.7.2/local-alloc.c:472 defers any pseudo with reg_n_deaths!=1 to global_alloc: the load-temp loads 3 distinct values (dies 3x) -> always global; mask is one constant (dies once) -> always local. MIPS defines NO REG_ALLOC_ORDER (grep config/mips = 0), so find_free_reg assigns hard regs ascending; the lone local mask qty in block 5 deterministically takes v0(2), leaving the global load-temp v1(3). Target wants the reverse. The three escapes all fail: (a) load-temp die-once is impossible (3 distinct values); (b) mask die-twice has no byte-neutral pure-C form (its store is on the single post-call path; a 2nd use = an extra insn); (c) a v0-blocking single-death local across mask is a load SPLIT, and every split measured 7-11 (scheduler hoists the anti-dep-free split temp and/or steals v0 from the shared global load-temp -> scatter to a0).
+- probe: Regenerated greg/lreg dumps from the floor-9 pure form (s1/s2 dumps were gitignored+gone); confirmed pseudo 75 (t) in global list -> v1, pseudo 76 (mask) absent from global list -> v0 via local alloc. Read local-alloc.c:460-478 and :1533-1556; grepped REG_ALLOC_ORDER; measured the struct-copy escape.
+- result: Structural modality exhausted with a source-level proof. Best floor stays 7 (s2 middle-split; correct-schedule pure-swap base stays 9). Residual is class-wall, not tie.
+- verdict: CONFIRMED

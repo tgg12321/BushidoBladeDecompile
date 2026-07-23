@@ -558,3 +558,4 @@
 - 2026-07-22 21:27 func_8006156C COMPLETED-C after 1 sessions.
 - 2026-07-22 21:40 func_80061658 s1 [recon] floor=9: Honest gap is a pure v0<->v1 RA swap (t->v1, mask->v0), scheduling byte-identical; mask-before-call KILLED (const remats after call).
 - 2026-07-22 22:08 func_80061658 s2 [structural] floor=7: Lever-A block-local split of the MIDDLE load lowered the honest floor 9->7; RTL pins the root cause to local-vs-global allocation asymmetry (RMW-chained mask is LOCAL and grabs v0 before the disjoint-range global load-temp).
+- 2026-07-22 22:25 func_80061658 s3 [structural] floor=7: Structural modality exhausted with GCC-source proof: the v0<->v1 residual is a local-vs-global allocation-CLASS wall (local-alloc.c:472 reg_n_deaths==1 gate + no MIPS REG_ALLOC_ORDER), not a flippable priority tie; frontier #2 (chain-loads-into-one-quantity) KILLED at 22.
