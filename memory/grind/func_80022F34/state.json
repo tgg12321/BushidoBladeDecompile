@@ -1,7 +1,7 @@
 {
  "func": "func_80022F34",
  "file": "code6cac",
- "session_count": 4,
+ "session_count": 5,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -33,13 +33,19 @@
    "floor": 11,
    "modality": "permuter",
    "headline": "Permuter (H-A top lead) KILLED on two codegen-faithful chassis: ~35k iters, best find 224 > base's 174, nothing approaches a match; reg100 strand not C-reachable by random mutation."
+  },
+  {
+   "session": 5,
+   "floor": 11,
+   "modality": "permuter",
+   "headline": "Permuter KILLED on vPRESW chassis (the only both-properties form): 13k iters plateau at 590 >> base 174 >> target 0; all three permuter chassis now dead."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "H-D: a C-visible cse2 cost condition forces our fork to re-materialize %hi/%lo(D_801027BC) per load WITHOUT the long val1 lifetime that strands reg100 (decoupling per-access from the phantom).",
-   "mechanism": "target's per-access comes from cc1psx NOT sharing the &D_801027BC symbol_ref; our fork's cse2 shares it (la). s2 showed per-access arises ONLY via register-pressure separation of the two `la` loads, and that separation IS what strands reg100 - so H-D must find a cse2-cost lever in tools/gcc-2.7.2/cse.c (symbol_ref / CSE-of-constants cost) that decouples the two.",
-   "next_probe": "Read tools/gcc-2.7.2/cse.c CSE-of-constants / symbol_ref cost model; inject C-visible register pressure between the two loads on a frame-correct base and measure per-access count (.frame probe + sandbox). If no C-visible lever exists (share-vs-rematerialize is driven only by inputs our C cannot vary), that is the evidence for OWNER-ESCALATION - a cc1psx-vs-fork cse2 divergence with no pure-C bridge (mirrors the sibling walls)."
+   "hypothesis": "H-D: a C-visible cse2 cost condition forces our fork to re-materialize %hi/%lo(D_801027BC) per load WITHOUT the long val1 lifetime that strands reg100 (or the val1-hoist that wrecks the schedule).",
+   "mechanism": "target's per-access comes from cc1psx NOT sharing the &D_801027BC symbol_ref; our fork's cse2 shares it (la). Per-access arises ONLY via register-pressure separation of the two la loads, which is EXACTLY what strands reg100 (base) or, when decoupled by hoisting, wrecks the schedule (vPRESW/28). H-D must find a cse2-cost lever that re-materializes without either side effect.",
+   "next_probe": "Read tools/gcc-2.7.2/cse.c symbol_ref / CSE-of-constants cost model; inject C-visible register pressure between the two loads on a frame-correct base and measure per-access count (.frame probe + sandbox). If no C-visible lever exists (share-vs-rematerialize driven only by inputs our C cannot vary), that is OWNER-ESCALATION evidence \u2014 a cc1psx-vs-fork cse2 divergence with no pure-C bridge (mirrors siblings func_80049A2C/func_80037540)."
   },
   {
    "hypothesis": "H-B (sub-issue, ~1-2 diffs): a0 self-reload lands in $v0 (CSE forms) vs target $a0.",

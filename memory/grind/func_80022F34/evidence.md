@@ -242,3 +242,27 @@ callee-saved over-promotion is a register-allocation plateau.
 - [s4] Mechanically corroborates s1-s3: the per-access<->phantom coupling is a fork-level cse2+combine interaction, not reachable by any C the permuter can spell. Both campaigns harvested+stopped (0 orphans); src unchanged (sandbox --disable all still 11, git status clean).
 
 - [s4] structural (s2 placement across ~24 forms + s3 control-boundary) AND permuter (s4 two chassis) axes are all now measured dead; only H-D (cse.c symbol_ref cost forensics, non-permuter) remains un-measured.
+
+## s5 (permuter, 2026-07-23) — vPRESW chassis (the ONLY both-properties form) KILLED; all THREE permuter chassis now dead
+
+- [s5] Fresh-seed discipline required a structurally-DIFFERENT chassis than s4 (which used base=weighted174 and vH=weighted1250, NEITHER having both target properties). Seeded a NEW chassis from **vPRESW** — the only structural form (s2) with BOTH per-access %hi/%lo AND vars=0 (no phantom); its sole defect is scheduling (val1 hoisted before the switch => a0 pushed off $a0 => reorder => sandbox 28). Hypothesis: the reorder is pure schedule/reg = the permuter's domain, so it might recover the schedule while keeping per-access+vars=0.
+
+- [s5] Built codegen-faithful workspace tmp/perm_22F34_presw (reused s4's compile.sh/target.o; base.c = vPRESW body, self-contained). Campaign vPRESW-schedule-recover, -j8, --stack-diffs, base_score 760 (between base's 174 and vH's 1250 — reflects vPRESW's reordering penalty at weight 60/reorder).
+
+- [s5] **KILLED. 13367 iterations, best find = 590.** The basin descends 760 -> 590 within ~30s then OSCILLATES 590-760 (finds at 590/658/690/695/710/760) indefinitely; NEVER approaches base's byte-perfect chassis (174), let alone target (0). The 590 find is cosmetic only (permuter new_var + do-while(0) textual mutations; diff in tmp/grind/func_80022F34/s5/best-590/). The permuter cannot undo vPRESW's val1-hoist reorder without moving val1's def back past the switch merge — which re-strands reg100 (vars=8, base) or shares the la base (not per-access, vH). This IS s2's coupling; there is no permuter-reachable middle.
+
+- [s5] **CONCLUSION: all THREE candidate permuter chassis are now measured dead** — s4 base(174) + vH(1250), s5 vPRESW(760, the one already holding 2 of 3 target properties). The per-access <-> phantom <-> schedule coupling is a fork-level cse2+combine interaction with no C spelling reachable by any permuter mutation from any chassis. The permuter axis (H-A) is fully and finally exhausted.
+
+- [s5] The ONLY remaining un-measured sanctioned axis is H-D (cse.c symbol_ref/CSE-of-constants cost forensics, NON-permuter): find the C-visible condition that makes our fork's cse2 re-materialize %hi/%lo per load WITHOUT the long val1 lifetime that strands reg100. If cse.c shows no such C-visible lever, that is the OWNER-ESCALATION evidence (cc1psx-vs-fork cse2 divergence with no pure-C bridge, mirroring siblings func_80049A2C/func_80037540). s5 does NOT escalate: H-D remains grindable.
+
+- [s5] campaign harvested + stopped (stopped:true, elapsed 534s, 0 orphans); src/code6cac.c unchanged (git clean, floor 11). Artifacts: tmp/grind/func_80022F34/s5/{build_ws_presw.sh, presw_campaign.log, best-590/}. Rejected: rejected/permuter-vPRESW-chassis-plateaus-590.c.
+
+- [s5] vPRESW is the only structural form (s2) with BOTH target properties (per-access %hi/%lo + vars=0); its lone defect is a val1-hoist reorder scoring sandbox 28.
+
+- [s5] s5 permuter campaign on the vPRESW chassis (base_score 760, -j8, --stack-diffs): 13367 iterations, best find 590, cosmetic mutations only; basin plateaus at 590, oscillating 590-760, never approaching base 174 or target 0.
+
+- [s5] All THREE candidate permuter chassis are now measured dead: s4 base(174) + vH(1250), s5 vPRESW(760, the one already holding 2 of 3 target properties). The permuter axis (H-A) is fully exhausted.
+
+- [s5] Mechanism (extends s2): un-hoisting val1 to fix the schedule re-strands reg100 (vars=8) or CSE-shares the la base (not per-access); no permuter mutation reaches the target's per-access + vars=0 + correct-schedule form from any chassis.
+
+- [s5] Campaign harvested + stopped (stopped:true, elapsed 534s, 0 orphans); src/code6cac.c unchanged (git clean, floor 11).

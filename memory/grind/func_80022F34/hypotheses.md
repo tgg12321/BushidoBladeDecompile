@@ -146,3 +146,27 @@ then be a cc1psx-vs-our-fork cse2 divergence with no pure-C bridge, mirroring th
 - probe: Two codegen-faithful decomp-permuter chassis (base = byte-perfect body, weighted base score 174; vH = frame-correct CSE'd body, weighted 1250), ~35k iters total, --stack-diffs default, telemetry via tools/permuter_campaign.py; harvested + stopped both.
 - result: base: 30640 iters, ZERO output dirs (nothing beat 174) - random mutation over the byte-perfect base cannot remove the reg100 strand. vH: best find score 224 (>base 174), only re-finds the known base/vSPLIT/vH classes, never target's (per-access %hi/%lo AND vars=0). Absolute best across both chassis = 224, worse than base's own 174, nowhere near 0.
 - verdict: KILLED
+
+## [s5] The permuter recovers vPRESW's schedule while keeping per-access %lo + vars=0, yielding a form below floor 11.
+- mechanism: vPRESW (val1 hoisted before the switch) is the ONLY structural form with BOTH per-access %hi/%lo AND vars=0 (no phantom); its only defect is scheduling (val1 lives across the switch => a0 off $a0 => reorder => sandbox 28). Reorder = pure schedule/reg = the permuter's domain; s4's chassis (base, vH) never had both properties, so vPRESW is a structurally-distinct fresh seed whose residual is exactly what the permuter mutates.
+- probe: codegen-faithful workspace tmp/perm_22F34_presw seeded from vPRESW, base_score 760; permuter_campaign -j8 --stack-diffs, 13367 iterations; harvest --stop.
+- result: best find = 590 (cosmetic new_var/do-while(0) mutations). Basin descends 760->590 in ~30s then oscillates 590-760 indefinitely; never approaches base's 174, let alone 0. The permuter cannot un-hoist val1 without re-strands reg100 (base, vars=8) or CSE-share (vH, not per-access) — s2's coupling has no permuter-reachable middle.
+- verdict: KILLED. Extends s4's permuter kill to the third and only remaining candidate chassis (the one already holding 2/3 target properties). All three permuter chassis (base 174 / vH 1250 / vPRESW 760) are now dead; the permuter axis (H-A) is fully exhausted.
+
+## Revised frontier (grind s5) — floor 11; structural (s2/s3) AND permuter (s4 base/vH + s5 vPRESW, all three chassis) exhausted
+
+Only ONE sanctioned axis remains un-measured: **H-D (cse.c forensics, non-permuter)**. Read
+tools/gcc-2.7.2/cse.c symbol_ref / CSE-of-constants cost model to find the C-visible condition
+(register pressure, intervening clobber, cost threshold) that makes our fork's cse2 RE-MATERIALIZE
+%hi/%lo(D_801027BC) per load instead of sharing the `la` reg — WITHOUT the long val1 lifetime that
+strands reg100. s2/s5 tension: per-access arises ONLY via register-pressure separation of the two
+`la` loads, and that separation is EXACTLY what strands reg100 (base) or, when hoisted to decouple,
+wrecks the schedule (vPRESW/28). H-D must find a cse2-cost lever that re-materializes WITHOUT either
+side effect. If cse.c shows no such C-visible lever exists, that is the OWNER-ESCALATION evidence — a
+cc1psx-vs-fork cse2 divergence with no pure-C bridge (mirrors siblings func_80049A2C/func_80037540).
+
+## [s5] A directed permuter seeded from vPRESW (the ONLY structural form with BOTH per-access %hi/%lo AND vars=0, whose sole defect is scheduling) recovers the schedule while keeping both target properties, yielding a form below floor 11.
+- mechanism: vPRESW hoists val1's def before the switch => val1 lives across the switch merge => per-access + vars=0 but a0 pushed off $a0 => reorder => sandbox 28. Reorder is pure schedule/reg = the permuter's domain. s4 used base(174)/vH(1250), NEITHER holding both properties; vPRESW(760) is a structurally-distinct fresh seed whose residual is exactly what the permuter mutates.
+- probe: Built codegen-faithful workspace tmp/perm_22F34_presw seeded from vPRESW (base_score 760); permuter_campaign vPRESW-schedule-recover -j8 --stack-diffs, 13367 iterations; wait windows in-turn; harvest --stop.
+- result: Best find = 590 (cosmetic new_var/do-while(0) mutations only). Basin descends 760->590 in ~30s then oscillates 590-760 indefinitely (finds at 590/658/690/695/710/760); never approaches base's byte-perfect chassis 174, let alone target 0. The permuter cannot un-hoist val1 without re-stranding reg100 (base, vars=8) or CSE-sharing the la base (vH, not per-access) — s2's coupling has no permuter-reachable middle.
+- verdict: KILLED
