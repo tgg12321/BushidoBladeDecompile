@@ -1,8 +1,8 @@
 {
  "func": "func_80022F34",
  "file": "code6cac",
- "session_count": 5,
- "current_modality": "permuter",
+ "session_count": 6,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 0,
@@ -39,18 +39,24 @@
    "floor": 11,
    "modality": "permuter",
    "headline": "Permuter KILLED on vPRESW chassis (the only both-properties form): 13k iters plateau at 590 >> base 174 >> target 0; all three permuter chassis now dead."
+  },
+  {
+   "session": 6,
+   "floor": 11,
+   "modality": "forensics",
+   "headline": "s6 forensics pins the +8 phantom to combine.c:10836-10846 (distribute_notes REG_DEAD->CODE_LABEL) + combine.c:52-59 stale reg_n_refs; fold==strand is one inseparable combine event; all sanctioned axes"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "H-D: a C-visible cse2 cost condition forces our fork to re-materialize %hi/%lo(D_801027BC) per load WITHOUT the long val1 lifetime that strands reg100 (or the val1-hoist that wrecks the schedule).",
-   "mechanism": "target's per-access comes from cc1psx NOT sharing the &D_801027BC symbol_ref; our fork's cse2 shares it (la). Per-access arises ONLY via register-pressure separation of the two la loads, which is EXACTLY what strands reg100 (base) or, when decoupled by hoisting, wrecks the schedule (vPRESW/28). H-D must find a cse2-cost lever that re-materializes without either side effect.",
-   "next_probe": "Read tools/gcc-2.7.2/cse.c symbol_ref / CSE-of-constants cost model; inject C-visible register pressure between the two loads on a frame-correct base and measure per-access count (.frame probe + sandbox). If no C-visible lever exists (share-vs-rematerialize driven only by inputs our C cannot vary), that is OWNER-ESCALATION evidence \u2014 a cc1psx-vs-fork cse2 divergence with no pure-C bridge (mirrors siblings func_80049A2C/func_80037540)."
+   "hypothesis": "Owner ruling under the endgame-lock policy: (a) authorize canonical-asm, or (b) OWNER-ACCEPTED INCOMPLETE retaining the 11 regfix substs.",
+   "mechanism": "Byte-match held ONLY by the 11 regfix frame-offset substs; honest floor 1 insn from clean; residual is a combine/reload phantom-slot RA artifact; canonical-asm refused (LOW 1/8, a byte-perfect pure-C body exists).",
+   "next_probe": "OWNER decision on docs/grind/decisions.md 2026-07-23 func_80022F34 entry. Grind-side: do NOT re-spin structural/permuter/forensic \u2014 all three measured dead."
   },
   {
-   "hypothesis": "H-B (sub-issue, ~1-2 diffs): a0 self-reload lands in $v0 (CSE forms) vs target $a0.",
-   "mechanism": "vH's *(u8**)a0 becomes a fresh temp in $v0 then lh a0,74($v0); target reuses $a0. Coupled to a0 liveness / arg eval order.",
-   "next_probe": "Only relevant once per-access/frame is resolved (H-D). Vary arg2/arg3 eval order so a0 is dead at the reload; measure objdump distance in the reload region."
+   "hypothesis": "A novel whole-function reshape changes reg100's fold/live-range relationship to the switch-merge label (only re-attempt lever if the owner rules option (b)).",
+   "mechanism": "The strand requires reg100 to (i) be folded per-access and (ii) live across the switch-merge code_label 85. A reshape that removes the switch-merge label entirely or keeps val1's def lexically before it WITHOUT reordering the a0-reload chain (vPRESW reorders -> 28) has not been found and is outside the measured axes.",
+   "next_probe": "Only if owner rules (b): search whole-function reshapes that eliminate the switch-merge label or restructure the val1/a0-reload data dependency; measure with the s6 .frame + combine-strand probe."
   }
  ],
  "judge_constraints": [],

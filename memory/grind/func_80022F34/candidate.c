@@ -46,6 +46,19 @@
  * phantom. Corroborates s1-s3: the coupling is a fork-level cse2+combine
  * interaction, not C-reachable. base remains the best form (this file).
  *
+ * s6 (forensics, 2026-07-23): mechanism PINNED and OWNER-ESCALATION filed.
+ * The +8 phantom is GCC 2.7.2 combine.c:10836-10846 (distribute_notes:
+ * REG_DEAD note homeless + hit CODE_LABEL -> emit `(use reg100)` after the
+ * switch-merge code_label 85) + combine.c:52-59 (reg_n_refs left stale). reg100
+ * = val1's folded address; greg gives it EMPTY conflicts + NO hard reg ->
+ * reload homes it to a stack slot -> vars=8. The per-access FOLD and the strand
+ * are the SAME combine event (inseparable for this dataflow). Two new forensic
+ * forms KILLED (rejected/bytepointer-address-arith-strand-persists.c,
+ * named-address-pointer-strand-moves-to-reg83-vars8.c). scan_hand_coded LOW 1/8.
+ * ALL sanctioned axes (structural s2/s3, permuter s4/s5, forensics s6) dead;
+ * owner-gated (docs/grind/decisions.md 2026-07-23, names func_80022F34).
+ * base remains the best form (this file).
+ *
  * Measured: sandbox --disable all = 11, build_insns 69, target 70.
  */
 void func_80022F34(void) {

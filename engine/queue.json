@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80022F34",
-      "file": "code6cac",
-      "distance": 11,
-      "verdict": "C",
-      "rules": 11,
-      "status": "active"
-    },
-    {
       "func": "func_80048530",
       "file": "text1b",
       "distance": 11,
@@ -2488,6 +2480,15 @@
       "park_reason": "owner escalation pending: docs/grind/decisions.md line 1474 \u2014 '## 2026-07-23 \u2014 func_8001F938 \u2014 **OWNER-ESCALATION**' (endgame-lock disposition: both AND-gates FAIL \u2014 canonical-asm scan tier LOW/no-C-form-disproven; coercion SOTN signedness-split NOT ESTABLISHED)."
     },
     {
+      "func": "func_80022F34",
+      "file": "code6cac",
+      "distance": 11,
+      "verdict": "C",
+      "rules": 11,
+      "status": "parked",
+      "park_reason": "owner escalation pending: docs/grind/decisions.md 2026-07-23 \u2014 func_80022F34 (src/code6cac.c) \u2014 OWNER-ESCALATION (endgame-lock disposition, forensics s6)"
+    },
+    {
       "func": "special_camera_set_win_cam",
       "file": "code6cac_b2_post",
       "distance": 510,
@@ -2724,13 +2725,13 @@
   ],
   "counts": {
     "total": 332,
-    "active": 287,
+    "active": 286,
     "by_status": {
-      "active": 287,
-      "parked": 45
+      "active": 286,
+      "parked": 46
     },
     "by_verdict": {
-      "C": 133,
+      "C": 132,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }

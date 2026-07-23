@@ -266,3 +266,37 @@ callee-saved over-promotion is a register-allocation plateau.
 - [s5] Mechanism (extends s2): un-hoisting val1 to fix the schedule re-strands reg100 (vars=8) or CSE-shares the la base (not per-access); no permuter mutation reaches the target's per-access + vars=0 + correct-schedule form from any chassis.
 
 - [s5] Campaign harvested + stopped (stopped:true, elapsed 534s, 0 orphans); src/code6cac.c unchanged (git clean, floor 11).
+
+## s6 (forensics, 2026-07-23) — mechanism pinned to combine.c distribute_notes REG_DEAD->CODE_LABEL; endgame-lock escalation filed
+
+- [s6] Baseline reconfirmed: sandbox --disable all = 11 (build_insns 69, target 70, rules_dropped 11, verdict C). Fresh s6 dumps reproduce base: .frame vars=8, regs=4/0, subu $sp,$sp,40.
+
+- [s6] **EXACT PASS/DECISION NAMED (fresh instrumented cc1, tmp/grind/func_80022F34/s6/dumps/):** the +8 phantom is GCC 2.7.2 `combine` distribute_notes, combine.c:10836-10846 (the "REG_DEAD note is still homeless AND we hit a CODE_LABEL -> emit a (use regN) after the label, to protect caller-save state tracking" branch). combine folds val1=*reg100 (reg100 = idx1*20 + symbol_ref(D_801027BC)) into the a1 arg load (insn 128, per-access mem(reg99+sym)), DELETES reg100's def (insn 102), and its orphaned REG_DEAD note walks back from insn 128 to the switch-merge code_label 85 and emits `(insn 163 (use (reg:SI 100)))` there (verbatim in fresh s6 base.i.combine).
+
+- [s6] **ROOT LIMITATION cited at source:** combine.c:52-59 documents "reg_n_refs is not adjusted in the rare case when a register is no longer required ... a REG_DEAD note is lost." So reg100 keeps stale reg_n_refs; lreg = "Register 100 used 2 times across 1 insns; ST_REGS or none; pointer" (use, no reaching def). greg: reg100 in allocate list ("6 regs to allocate: 100 80 75 72 74 73"), EMPTY conflict set, ABSENT from Register dispositions => reload/alter_reg homes it to a stack slot => one 4-byte slot, 8-aligned => vars=8. val2's address pseudo (reg108) folds late/adjacent to i3 and gets a hard reg ("108 in 2") — only val1 strands.
+
+- [s6] **Fold<->strand are the SAME combine event (inseparable):** GCC 2.7.2 MIPS has no explicit %hi/%lo relocs, so the full symbol_ref lives in the folded mem and reg100 is never referenced by i3 (insn 128) — the note can't anchor on i3 (combine.c:10735). The 4-way switch on D_800A38DC forces code_label 85; val1's dep (index from ORIGINAL a0, consumed in the call AFTER the a0=*a0 reload) forces reg100 to live across the reload so its death lands past the label. Per-access requires the fold (=strand); no-fold gives the CSE'd la base (vars=0 but not per-access). Target holds BOTH — an unreachable fixpoint for this fork's combine.
+
+- [s6] **Two NEW forensic C forms KILLED** (rejected/): byte-pointer address arith `*(s32*)((u8*)&D_801027BC + idx1*20)` (vNH) strands identically (vars=8, reg100, phantom-strand=1); named live address pointer `s32 *q=&(&D)[idx1*5]; val1=*q` (vSECOND) relocates the phantom to pseudo reg83 (empty conflicts, no disposition, vars=8) — the phantom is spelling-invariant.
+
+- [s6] scan_hand_coded.py --single func_80022F34 = tier=LOW score 1/8 (only S4 front-loads) -> ordinary compiled C, canonical-asm NOT supportable (endgame-lock gate 1 fails). No C construct removes a phantom stack slot -> no spelling family to sanction (gate 2 fails). Both AND-gates fail.
+
+- [s6] OWNER-ESCALATION filed in docs/grind/decisions.md (2026-07-23, names func_80022F34) under the 2026-07-20 endgame-lock-disposition policy. Byte held by 11 regfix substs; honest floor 1 insn from clean; RA/combine artifact; LOW hand-coded; no SOTN-precedent closing construct (none exists — residual is a compiler-ADDED slot, inverse of func_80037540/func_80049A2C). Options: (a) canonical-asm NOT supportable; (b) OWNER-ACCEPTED INCOMPLETE (retain substs, park, re-attempt on a novel whole-function reshape). Outcome: owner-gated. Artifacts: tmp/grind/func_80022F34/s6/{base.c,vNH.c,vSECOND.c,dump.sh,probe.sh,escalation_entry.md,dumps/base.i.{combine,greg,lreg,flow,...}}.
+
+- [s6] sandbox --disable all = 11 (build_insns 69, target 70, 11 rules_dropped, verdict C); floor flat at 11 since s1.
+
+- [s6] base body is BYTE-PERFECT vs target (2x per-access lw %lo(D_801027BC), in-place a0 reload in $a0); entire 11 = +8 phantom stack slot (10 diffs) + 1 maspsx .L-label load-delay nop (retirable on DONE path).
+
+- [s6] Exact pass/decision (fresh s6 dumps): combine.c:10836-10846 distribute_notes emits (insn 163 (use (reg:SI 100))) at switch-merge code_label 85 for reg100 (val1's folded address); combine.c:52-59 documents the reg_n_refs staleness this triggers.
+
+- [s6] greg: reg100 in allocate list ('6 regs to allocate: 100 80 75 72 74 73'), EMPTY conflicts, ABSENT from Register dispositions -> reload/alter_reg reserves a stack slot -> vars=8. val2's pseudo (reg108) folds late/adjacent and gets a hard reg ('108 in 2') — only val1 strands.
+
+- [s6] Fold==strand are one inseparable combine event: GCC 2.7.2 MIPS keeps the full symbol_ref in the folded mem (no explicit %hi/%lo relocs), so reg100 is never referenced by i3 and the note can't anchor on i3; the 4-way switch forces code_label 85; val1's dependency forces reg100 to live across the a0 reload. Not folding gives the CSE'd la base (vars=0 but not per-access) — the s2 coupling.
+
+- [s6] This is the INVERSE of siblings func_80037540/func_80049A2C (they ADD a slot cc1psx reserves; this func must REMOVE a slot our fork reserves that target lacks). No C construct removes a phantom stack slot.
+
+- [s6] scan_hand_coded.py --single func_80022F34 = tier=LOW 1/8 (only S4) -> ordinary compiled C; canonical-asm NOT supportable (endgame-lock gate 1 fails). No SOTN-precedent spelling family removes a phantom slot (gate 2 fails).
+
+- [s6] Two new forensic forms KILLED and banked in rejected/ (bytepointer-address-arith-strand-persists.c, named-address-pointer-strand-moves-to-reg83-vars8.c).
+
+- [s6] OWNER-ESCALATION filed in docs/grind/decisions.md (2026-07-23), names func_80022F34, under the 2026-07-20 endgame-lock-disposition policy; byte held by 11 regfix substs; both AND-gates fail; options (a) canonical-asm NOT supportable, (b) OWNER-ACCEPTED INCOMPLETE.
