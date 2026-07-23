@@ -279,3 +279,38 @@ for the rest.
 - [s3] Structural modality now comprehensively exhausted: F2+F3 measured dead join s2's 25-form subu-at-end sweep + off-early(4)/paren-reassoc(2) rejections. Every legitimate structural form leaves i outranking sum on at least one priority axis (freq or live_length); only no-semantic-purpose allocno-steering cheats (off-early=4, split-add=3, paren-reassoc=2) flip RA.
 
 - [s3] Not owner-gated: the F1 permuter modality (a sanctioned axis) is still UNTRIED; the floor remains grindable via a different modality.
+
+## s4 (2026-07-23, permuter) — MATCH FOUND: do-while(0) loop-body wrap → sandbox distance 0
+- **Modality: permuter (mandated).** Built an isolated-leaf decomp-permuter
+  workspace (tmp/grind/func_8004954C/s4/ws): base.c = clean floor-6 for-loop
+  candidate; target.o from asm/funcs/func_8004954C.s at offset 0 (per
+  difficult-is-not-impossible §3); compile.sh = cc1 -O2 -G0 ... | prologue_fix
+  | maspsx | multu_pad | as. Validated base(14)/target(14), diff = the 6-token
+  sum/i RA swap exactly.
+- **Campaign leaf-forloop-v1 (base_score 40, -j8, --stop-on-zero): FOUND
+  score-0 at iteration 278, 23.1s since launch.** Shallow basin — the random
+  pass surfaced the closing form fast (as expected for a dense 1-axis RA gap).
+  The ONLY mutation (permuter diff.txt): wrap the two loop-body statements in
+  `do { sum += arg0; arg0 -= 1; } while (0);`.
+- **Applied to src/text1b.c with mandatory inline FAKE annotation → sandbox
+  --disable all = score 0, build_insns 14, target_insns 14, rules_dropped 0,
+  0 cheat-asm in function.** Genuine full-TU byte-match (not just the permuter's
+  isolated metric).
+- **Mechanism:** the do-while(0) emits a loop-note around the body that shifts
+  GCC's allocno ref weighting so accumulator sum outranks counter i — flipping
+  sum→$v1, i→$a3 (target). This is precisely the RA-weighting effect the
+  2026-07-06 owner ruling sanctions and the named marionation_Exec precedent
+  uses. It is a SINGLE-LEVEL wrap (prereq 3 nested-justification N/A) of a
+  semantically-true construct ("this body executes once" is true).
+- **Sanction basis:** do-while-zero-exception.md (owner ruling 2026-07-06,
+  FINAL) — do-while(0) with any body is a sanctioned pure-C match device for
+  ANY codegen effect INCLUDING register allocation; former reorg.c-mechanism
+  scoping abolished. Structural axis was already comprehensively exhausted
+  (s2 25-form sweep + s3 F2/F3), so the "prefer natural geometry" preference
+  is satisfied even under the old exhaustion gate.
+- Candidate saved to memory/grind/func_8004954C/candidate.c.
+
+- [s4] permuter workspace tmp/grind/func_8004954C/s4/ws: base 14 insns, target 14, base_score 40; the pre-match gap is the 6-token sum/i RA swap (move v1,zero / blez ordering + addu/addiu/slt/final-addu register tokens).
+- [s4] campaign leaf-forloop-v1 found score-0 at iter 278 (23.1s); only mutation = do-while(0) wrap of the loop body. harvest --stop recorded (finds_new=2: output-30-1@17.6s, output-0-1@23.1s).
+- [s4] do-while(0) form applied to src with FAKE annotation → sandbox --disable all score 0, build 14, target 14, 0 rules, 0 cheat-asm. Genuine full-TU byte-match.
+- [s4] Sanctioned per do-while-zero-exception.md owner ruling 2026-07-06 (do-while(0) allowed for ANY codegen effect incl. RA; single-level; FAKE-annotated; structural axis already exhausted s2/s3). marionation_Exec is the named RA-weighting precedent.

@@ -112,3 +112,17 @@ assignment differs. See evidence.md s1 for the measured wall mechanism.
 - probe: Measured split-add `sum += arg0/2; sum += arg0 - arg0/2;` (==sum+=arg0), a real-temp extra read `s32 t=sum+arg0; sum=t;`, and the split+F2 combo; sandbox each; ran cheat-reviewer on the split-add.
 - result: Split-add drops score 6->3 (build_insns unchanged at 14) — the mechanism WORKS (lifts reg_n_refs(sum), flips RA toward sum) — but it is a no-semantic-purpose redundant-arithmetic split; independent cheat-reviewer verdict FAIL (fails semantic-purpose, human-programmer, GCC-internals-justification, family tests). The faithful real-temp form stays at 6 (DCE deletes the extra read before n_refs counting). No faithful ref-raise exists, so F3 as a legitimate lever is dead; it also never reaches 0 (residual 3).
 - verdict: KILLED
+
+## [s4] F1 permuter — CONFIRMED: do-while(0) loop-body wrap closes the sum/i RA gap to score 0.
+- mechanism: a single-level `do { sum += arg0; arg0 -= 1; } while (0);` around the
+  loop body emits a GCC loop-note that shifts allocno ref weighting so accumulator
+  sum outranks counter i, seating sum->$v1 and i->$a3 (target). This is the
+  RA-weighting do-while(0) effect sanctioned by owner ruling 2026-07-06
+  (do-while-zero-exception.md), same class as the named marionation_Exec precedent.
+- probe: isolated-leaf decomp-permuter workspace (tmp/grind/func_8004954C/s4/ws),
+  target.o at offset 0, base_score 40, -j8 --stop-on-zero. Found score-0 at iter 278
+  (23.1s). Applied to src with FAKE annotation; sandbox --disable all = 0, build 14,
+  0 rules, 0 cheat-asm.
+- result: MATCH. Single-level, semantically-true, FAKE-annotated; structural axis
+  already exhausted (s2/s3) so "prefer natural geometry" satisfied. Candidate saved.
+- verdict: CONFIRMED (byte-match; pending layer-1/2 cheat-reviewer acceptance).
