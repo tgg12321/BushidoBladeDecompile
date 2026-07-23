@@ -1,8 +1,8 @@
 {
  "func": "ang_hosei_80056FE8",
  "file": "text1b",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 0,
@@ -15,23 +15,24 @@
    "floor": 10,
    "modality": "recon",
    "headline": "Recon: floor 10 (build 42 vs 43) reconfirmed; 1-insn gap is a coupled RA load-delay NOP; no sibling analog; frontier = .greg dump + clean-target permuter."
+  },
+  {
+   "session": 2,
+   "floor": 10,
+   "modality": "structural",
+   "headline": "Structural-reassociation axis KILLED with RTL proof: sched1 hoists the intrinsically-longer *arg0 reload chain above the partial-add, so no dataflow-preserving C form reaches {base->$a1, var_v0->$v0, "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "base->$a3 (instead of $a1) is a resolvable allocno-priority tiebreaker, not a hard liveness conflict.",
-   "mechanism": "GCC 2.7.2 local-alloc allocno priority ordering assigns var_v0's test load $a1 first; the .greg conflict list reveals whether base actually conflicts with $a1 or merely lost the priority tie.",
-   "next_probe": "cc1 -da on the candidate base.i; read ';; Register dispositions:' for the base and var_v0 pseudos and their conflict sets (the mandated pre-claim diagnostic, never run for this fn)."
+   "hypothesis": "A directed/randomized permuter on a clean single-function target closes the coupled sched1/RA fixpoint that structural reassociation provably cannot.",
+   "mechanism": "The target occupies a scheduler+allocator fixpoint {a2=$a2,base=$a1,var_v0=$v0,partial-first} that local dataflow-preserving transforms cannot reach (sched1 deterministically hoists the longer reload chain). A permuter search over structural mutations may find a non-obvious form that perturbs sched1's priority tie or register pressure into the target fixpoint.",
+   "next_probe": "Build target.o from asm/funcs/ang_hosei_80056FE8.s + prelude at offset 0 (drop .set gp=64); run tools/permuter_campaign.py with --stop-on-zero + PERM_* directives seeded from the clean candidate; fresh-seed ~20-30 min windows, wait in-turn, harvest --stop before ending."
   },
   {
-   "hypothesis": "A directed/randomized permuter on a clean single-function target closes the a1/a3 swap.",
-   "mechanism": "target.o at offset 0 (asm/funcs + prelude, drop .set gp=64) makes the base score the real weighted RA diff instead of ~340k address noise, so the search has usable gradient.",
-   "next_probe": "Build clean target.o; run permuter_campaign.py with --stop-on-zero + PERM_* directives; fresh-seed discipline (~20-30 min windows), wait in-turn, harvest --stop before ending."
-  },
-  {
-   "hypothesis": "Shrinking var_v0's competing live range lets the allocator keep base in $a1.",
-   "mechanism": "If var_v0's test-load live range no longer overlaps $a1's assignment window, base (arg-reg-resident, live to the join) wins $a1 and var_v0 falls to $v0.",
-   "next_probe": "Derive the specific C form (e.g. delayed materialization / narrowed type of var_v0) from the .greg conflict evidence in frontier item 1, then sandbox + full-build SHA1 check."
+   "hypothesis": "Preventing sched1 from hoisting the reload requires making the partial-add an illegal filler for the lh delay slot without changing dataflow.",
+   "mechanism": "The 43rd nop survives only if no instruction independent of the lh result is available to fill its delay slot; the partial-add is that independent filler in every structural form. A form where the only remaining tail insn depends on the lookup would leave the slot empty.",
+   "next_probe": "Investigate whether a sanctioned do-while(0)/LABEL_OUTSIDE_LOOP_P interaction or a reorg-level effect (NOT sched1) can suppress the delay-slot steal here; check .dbr dump behavior. Non-structural \u2014 needs the scheduling-technique catalog, likely a separate modality."
   }
  ],
  "judge_constraints": [],
