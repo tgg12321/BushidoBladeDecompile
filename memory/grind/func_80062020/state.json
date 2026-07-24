@@ -1,0 +1,40 @@
+{
+ "func": "func_80062020",
+ "file": "text1b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 0,
+   "floor": "loop body solved in pure C (pins retired); 3-store epilogue UNSOLVED legitimately",
+   "modality": "wip-import",
+   "headline": "floor imported from memory/wip checkpoint"
+  },
+  {
+   "session": 1,
+   "floor": 10,
+   "modality": "recon",
+   "headline": "Honest pure-C floor 10 (was pin-aided 12): indexed-source lever matches loop 100%; all 10 residual diffs isolated to the 3-store terminator epilogue's partial-CSE split addressing."
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "A source structure that legitimately double-uses the raw index (col a via D_800F1198 symbol+index; cols b,c via a row/base pointer) may match if it is semantically justified (col a = flag view, cols b,c = data view) rather than a same-lvalue respelling.",
+   "mechanism": "Target keeps 12*count live in v1 to compute col a's %hi/%lo+index address independently of the cols-b,c base pointer. This needs col a's access expression to differ from cols b,c without being a codegen-only steer.",
+   "next_probe": "Investigate whether the loop/terminator object model supports col a as a distinct flag array vs a data struct for b,c; if only the rejected dual-spelling reproduces it, escalate as an addressing-mode plateau (owner-gated)."
+  },
+  {
+   "hypothesis": "Steer the epilogue register allocation to place the index in v1 (target) instead of v0, independent of the split, to shave the ~5 rename diffs.",
+   "mechanism": "Target reuses the loop's ofs register v1 for the index; GCC currently allocates the index to v0. A pure-C lever connecting the index's live range to ofs, or reordering the index vs base computation, may bias RA.",
+   "next_probe": "cc1 -da .greg dump on the epilogue to see why the sll result lands in v0; try index-computation orderings / reusing ofs; measure."
+  },
+  {
+   "hypothesis": "GCC combine could fold D_800F119C/D_800F11A0 as +4/+8 off a %hi(D_800F1198) base while keeping D_800F1198 as its own %hi/%lo, reproducing target's mix from a distinct-symbol spelling.",
+   "mechanism": "119C=1198+4, 11A0=1198+8 share the high half; combine.c symbol+offset folding might unify them onto a 1198-based pointer under the right expression shape.",
+   "next_probe": "Read tools/gcc-2.7.2/combine.c symbol-offset paths; probe distinct-symbol epilogue variants (base pointer formed from 1198, cols b,c as +4/+8 symbol refs) and check for the fold."
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-24T03:28:39.877485+00:00"
+}
