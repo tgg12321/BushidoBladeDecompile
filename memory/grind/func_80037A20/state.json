@@ -1,0 +1,40 @@
+{
+ "func": "func_80037A20",
+ "file": "code6cac_c",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 0,
+   "floor": 13,
+   "modality": "wip-import",
+   "headline": "floor imported from memory/wip checkpoint"
+  },
+  {
+   "session": 1,
+   "floor": 13,
+   "modality": "recon",
+   "headline": "Recon: floor 13 confirmed; greg proves s0<->s1 swap is a global.c priority wall (counter pseudo-75 out-prioritizes pointer pseudo-74 for s0, pointer live-range forced long by hoisted la); pointer-init"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Raise the POINTER pseudo's ref-weight above the counter without touching its (uncontrollable) live range, to flip the s0/s1 allocation.",
+   "mechanism": "priority ~ n_refs*freq/live_length; pointer's long hoisted live range divides down its 2 loop refs. Add a loop-body pointer ref the counter can't mirror, or reduce the counter's loop weight.",
+   "next_probe": "Try loop restructurings (extra live pointer use / counter-weight reduction); edit -> re-dump greg, watch for allocation order flipping to '74 75'."
+  },
+  {
+   "hypothesis": "Diff #13 (entry-increment fold) is separately closable: find a faithful-count C form where cse2 does NOT const-propagate 0 into var_s1++ (target emits addiu, ours li 1).",
+   "mechanism": "cse2 extended-basic-block const propagation folds 0+1 across the beqz single-pred chain in our build; target's did not.",
+   "next_probe": "Inspect pre.i.cse2 to locate the propagation; derive a structural lever that keeps var_s1=0 reaching the entry ++ across a cse boundary (no pin/barrier)."
+  },
+  {
+   "hypothesis": "decomp-permuter from candidate.c can find a simultaneous tied-rename + fold-disrupting structural mutation.",
+   "mechanism": "Documented modality (difficult-is-not-impossible \u00a73) for tied register-rename + fold walls; not yet run for code6cac_c.",
+   "next_probe": "Build a clean single-function target.o (offset 0), bank the base score, run fresh-seed permuter windows with --stop-on-zero."
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-24T22:39:10.695286+00:00"
+}
