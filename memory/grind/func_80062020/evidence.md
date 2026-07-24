@@ -122,3 +122,25 @@ Cheat reference (diff only): `git show dfb9e9ac` on branch work/orch3a.
 - [s2] scan_hand_coded --single func_80062020 = tier LOW, score 0/8 -> col-a partial-CSE is an ordinary GCC addressing/RA artifact; canonical-asm refused per endgame-lock-disposition criterion 1.
 
 - [s2] All three original frontier hypotheses resolved: #2 (register placement) CONFIRMED/solved -> floor 4; #1 (semantic object model) and #3 (combine fold) both KILLED with measurements.
+
+## s3 findings (structural modality) — CSE-defeat KILLED; structural axis exhausted; floor flat at 4
+
+- [s3] Baseline re-confirmed: candidate.c (floor-4 form) sandbox --disable all = score 4, build_insns 35 vs target 38, 0 rules, verdict C.
+- [s3] **CSE-DEFEAT LEVER KILLED.** The base-pointer CSE that folds col a onto v0 is store-order-INVARIANT: measured c,a,b (p[2],p[0],p[1]) = 5; with s2's c,b,a=4 and a,b,c=5, every store order folds p[0] (col a) onto 0(v0). No permutation produces target's partial CSE (b,c via 4/8(v0) + col a via separate %hi/%lo(1198)+v1). Store order only shifts the reorder count (4 vs 5), never the addressing mode.
+- [s3] The other two CSE-defeat sub-avenues are structurally unavailable (not just unmeasured): (a) type/width distinction — target `sw` all 3 cols; narrowing col a changes bytes; a differently-typed pointer view of the same address folds via address-rtx CSE and spelled as two views is the banked dual-spelling; (b) intervening real dependency — a 3-word constant-zero terminator has no natural intervening op, and manufacturing one is a steer/dead construct.
+- [s3] STRUCTURAL AXIS EXHAUSTED (s1 indexed-source loop lever; s2 ofs-reuse register lever + object-split/combine-fold KILLs; s3 CSE-defeat KILL). Legitimate clean floor = 4; distance-0 exists ONLY via the banked same-lvalue dual-spelling coercion. Both endgame-lock AND-gates fail (scan_hand_coded LOW 0/8 -> refuse asm; no SOTN precedent for same-lvalue respelling).
+- [s3] Remaining sanctioned axis NOT yet run: permuter (fresh-seed campaign). Sibling-cluster escalations in this same file (func_80048530, func_80022F34) ran permuter BEFORE filing the endgame-lock OWNER-ESCALATION; disposition deferred to a permuter-modality session per that protocol. Artifacts: tmp/grind/func_80062020/s3/structural_cse_defeat_sweep.md; rejected/epilogue-storeorder-cse-defeat-dead.c.
+
+- [s3] Baseline re-confirmed: candidate floor-4 form sandbox --disable all = score 4, build_insns 35 vs target 38, 0 rules, verdict C, cheat_asm_stripped 346 (clean pure C, 0 pins/rules).
+
+- [s3] The base-pointer CSE is store-order-INVARIANT: c,b,a=4, c,a,b=5, a,b,c=5 — GCC folds col a (p[0]) onto 0(v0) regardless of store order; store order only changes the reorder count.
+
+- [s3] Target's partial CSE (b,c via base pointer 4/8(v0) + col a via separate lui at,%hi(1198); addu at,at,v1; sw %lo(1198)(at)) has NO consistent/legitimate pure-C spelling; the sole distance-0 form is the banked same-lvalue dual-spelling coercion (s2).
+
+- [s3] Structural landscape (index-v1, all pure C): base-ptr c,b,a=4 (floor); base-ptr c,a,b / a,b,c=5; uniform 1198+disp=6; three-distinct-symbol=6; two-object 119C-anchor=2 (col a matches, b,c anchor wrong, REJECTED); same-lvalue dual-spelling=0 (CHEAT).
+
+- [s3] Both endgame-lock-disposition AND-gates fail: (1) scan_hand_coded LOW 0/8 (s2) -> canonical-asm refused (ordinary GCC addressing/RA artifact, not hand-coded); (2) no SOTN-master precedent for same-lvalue respelling.
+
+- [s3] Structural axis EXHAUSTED across s1 (indexed-source loop lever, floor 20->10), s2 (ofs-reuse register lever floor 10->4 + object-split/combine-fold KILLs), s3 (CSE-defeat KILL). Floor flat at 4 this session.
+
+- [s3] Remaining sanctioned axis NOT yet run: permuter. Sibling-cluster endgame-lock escalations in this same file (func_80048530 permuter s2/s4, func_80022F34 permuter s4/s5) ran permuter BEFORE filing OWNER-ESCALATION; disposition deferred to a permuter-modality session per that protocol rather than escalating prematurely from a structural session.

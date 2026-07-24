@@ -16,6 +16,15 @@
  * recomputes `lui at,%hi(1198); addu at,at,v1; sw zero,%lo(1198)(at)` (keeps the
  * raw index v1 live). See hypotheses.md — the residual is the col-a partial-CSE
  * addressing-mode split.
+ *
+ * s3 (structural): the CSE-defeat lever is KILLED. Store-order permutations
+ * (c,b,a=4, c,a,b=5, a,b,c=5) all fold col a onto the base pointer v0 — the
+ * base-pointer CSE is store-order-invariant. Type/width distinction is
+ * unavailable (all 3 are `sw` of 0; a differently-typed view of the same lvalue
+ * is the banked dual-spelling). No intervening dependency exists in a 3-word
+ * constant-zero terminator. Structural axis exhausted (s1/s2/s3); floor flat at
+ * 4. Frontier -> permuter (confirm no non-cheat byte-0 form), then
+ * endgame-lock-disposition OWNER-ESCALATION.
  */
 void func_80062020(s32 *arg0) {
     s32 i;

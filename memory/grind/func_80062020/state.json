@@ -1,7 +1,7 @@
 {
  "func": "func_80062020",
  "file": "text1b",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -21,18 +21,24 @@
    "floor": 4,
    "modality": "structural",
    "headline": "Structural: reusing the loop's `ofs` biv for the terminator index fixed the epilogue register flip, dropping the honest pure-C floor 10 -> 4; residual is col a's partial-CSE addressing, reachable only"
+  },
+  {
+   "session": 3,
+   "floor": 4,
+   "modality": "structural",
+   "headline": "Structural CSE-defeat lever KILLED \u2014 base-pointer CSE folds col a store-order-invariantly (c,b,a=4, c,a,b=5, a,b,c=5); structural axis exhausted, floor flat at 4; frontier -> permuter then endgame-loc"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A CSE-defeat lever separates col a's store from the b,c base pointer WITHOUT a same-lvalue respelling or a wrong-anchor object split.",
-   "mechanism": "Target keeps col a's %hi/%lo(1198)+index address un-merged with base pointer v0=&1198+index. GCC CSE folds them whenever both are the identical expression; only a genuine dependency/type/width distinction on col a's store could defeat the fold legitimately.",
-   "next_probe": "Try a width/type distinction on col a's store or an intervening real dependency; in a 3-store terminator with no natural intervening op this is likely unrealizable without a steer. If dead, this becomes the escalation trigger."
+   "hypothesis": "A permuter fresh-seed campaign from the floor-4 base finds only cheat byte-0 forms (same-lvalue dual-spelling / alias-rename / width-cast respellings), confirming no legitimate non-cheat distance-0 form exists.",
+   "mechanism": "Target's partial CSE is proven (s1/s2/s3) to require spelling the identical lvalue &1198+ofs two ways; the permuter mutates C source and can only reach byte-0 via that coercion, as it did for sibling func_80048530 (13 zero-finds, all the single forbidden construct).",
+   "next_probe": "Run permuter modality: build a clean single-function target.o for func_80062020 (asm/funcs + prelude, offset 0), campaign from the floor-4 candidate, ~2 fresh-seed windows. Vet every zero-find against the cheat catalog. If all are cheat forms, proceed to escalation."
   },
   {
-   "hypothesis": "func_80062020 is endgame-lock-disposition species: byte-match reachable only via a coercion, a few insns short in clean pure C, no hand-coded evidence.",
-   "mechanism": "Clean floor 4; distance-0 only via the rejected same-lvalue dual-spelling; scan_hand_coded LOW 0/8 (criterion 1 fails: refuse asm); no SOTN-master precedent for same-lvalue respelling (criterion 2 fails).",
-   "next_probe": "If the CSE-defeat avenue above is measured dead, file OWNER-ESCALATION in docs/grind/decisions.md per endgame-lock-disposition (both criteria fail -> owner-accepted INCOMPLETE) and return owner-gated. NOT this session: the floor still dropped (10->4), so the function is still grindable."
+   "hypothesis": "func_80062020 is an endgame-lock-disposition species member: byte-0 reachable only via a coercion, a few insns short in clean pure C (floor 4), no hand-coded evidence.",
+   "mechanism": "Clean floor 4; distance-0 only via the banked same-lvalue dual-spelling; scan_hand_coded LOW 0/8 (AND-gate 1 fails: refuse asm); no SOTN-master precedent for same-lvalue respelling (AND-gate 2 fails).",
+   "next_probe": "After the permuter axis is measured dead (only cheat forms found), file the endgame-lock OWNER-ESCALATION in docs/grind/decisions.md naming func_80062020 (both options honestly: (a) canonical-asm NOT supportable, LOW 0/8; (b) REFUSE -> OWNER-ACCEPTED INCOMPLETE at clean floor 4) and return owner-gated citing it."
   }
  ],
  "judge_constraints": [],

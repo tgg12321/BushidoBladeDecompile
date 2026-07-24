@@ -63,16 +63,39 @@ score. Naive pure-C (walking a0[K] source, no pins) = 20. The s1 lever below = 1
   *(&1198+ofs) apart from p) — a codegen steer (rejected bank, now measured at 0
   with the s2 register fix). scan_hand_coded = LOW 0/8 -> canonical-asm refused.
 
+## s3 findings (structural) — CSE-defeat lever KILLED; structural axis exhausted
+
+- **H-cse-defeat [KILLED].** The frontier CSE-defeat lever (separate col a's
+  store from the b,c base pointer WITHOUT a same-lvalue respelling) is dead.
+  Measured this session (all clean pure C):
+    * store order c,a,b (p[2],p[0],p[1]) = 5 — col a STILL folds to 0(v0)
+    * (with s2's c,b,a=4 and a,b,c=5) the base-pointer CSE is store-order-
+      INVARIANT: GCC forms v0=&1198+index once and folds p[0] onto 0(v0)
+      regardless of order. No permutation reaches target's partial CSE.
+  The other two sub-avenues are structurally unavailable, not merely unmeasured:
+    * type/width distinction — all 3 cols are `sw` of 0 in target; narrowing
+      col a changes bytes; a differently-typed pointer VIEW of the same lvalue
+      is numerically identical and GCC CSEs the address rtx regardless of
+      pointee type -> folds to 0(v0), and spelled as two views IS the banked
+      same-lvalue dual-spelling (cheat).
+    * intervening real dependency — col a stores constant 0 with no dependency
+      on b/c; a 3-word constant-zero terminator has no natural intervening op;
+      manufacturing one is a codegen steer / dead construct (forbidden).
+  Artifact: tmp/grind/func_80062020/s3/structural_cse_defeat_sweep.md;
+  rejected/epilogue-storeorder-cse-defeat-dead.c.
+
 ## Open frontier (for next session)
-Clean legitimate floor = 4 (single-object pointer form). Distance 0 exists but
-ONLY via the rejected dual-spelling cheat. All three original frontier hypotheses
-resolved this session (#2 solved -> 4; #1 and #3 killed). This is now
-endgame-lock-disposition territory: byte-match reachable only via a coercion,
-scan_hand_coded LOW (no asm), no SOTN precedent for same-lvalue respelling. The
-next un-tried legitimate avenue: a CSE-DEFEAT lever that separates col a's store
-from the b,c base pointer WITHOUT a same-lvalue respelling (e.g. an intervening
-dependency, or a type/width distinction on col a). If that is also dead, escalate
-owner-gated per endgame-lock-disposition (both criteria fail).
+Structural axis EXHAUSTED across s1/s2/s3; floor flat at 4. The legitimate
+clean floor is 4; distance 0 exists ONLY via the banked same-lvalue dual-spelling
+coercion. This is endgame-lock-disposition territory (both AND-gates fail:
+scan_hand_coded LOW 0/8 -> refuse asm; no SOTN precedent for same-lvalue
+respelling). Remaining sanctioned axis NOT yet run: **permuter** (fresh-seed
+campaign from the floor-4 base, per the sibling-cluster protocol —
+func_80048530/func_80022F34 ran permuter BEFORE escalating). Expectation: the
+permuter finds only the dual-spelling / alias-rename / width-cast respellings
+(all cheats), as it did for sibling func_80048530 (13 zero-finds, all the single
+forbidden construct). Next probe: permuter modality; if it yields only cheat
+forms, file the endgame-lock OWNER-ESCALATION and return owner-gated.
 
 ## [s1] Reading source via fixed-base indexed form *(s32*)((u8*)arg0+ofs+K) instead of walking a0[K] makes GCC emit a single walking source induction pointer (0/4/8(a0),a0+=12) matching target, dropping the floor from 20 to 10.
 - mechanism: GCC 2.7.2 loop strength-reduction: arg0+ofs+K reduces to one giv walking by 12 with K as the load displacement, while ofs stays the dest-index biv (v1). The walking a0[K] form instead spawns two induction pointers (move a1,a0 + addiu a0,a0,8).
@@ -114,4 +137,16 @@ owner-gated per endgame-lock-disposition (both criteria fail).
 - mechanism: The only source shape producing base-pointer-for-b,c + separate-recompute-for-a is spelling the identical lvalue &D_800F1198+ofs two ways: once as pointer p's base, once as a direct symbol store for col a.
 - probe: Measured the same-lvalue dual-spelling (p[2],p[1] via p=&1198+ofs; col a via *(&1198+ofs)) with the s2 register fix in place; also ran scan_hand_coded.
 - result: Distance 0 (build 38 == target 38) — but ONLY via the same-lvalue dual-spelling, a codegen steer (rejected bank; was score 12 at s1 before the register fix). scan_hand_coded=LOW 0/8 (no S1/S2/S6) -> canonical-asm refused. No legitimate consistent spelling closes it.
+- verdict: KILLED
+
+## [s3] A store-order permutation of the 3 base-pointer epilogue zero-stores defeats GCC's CSE of col a's address (&1198+index) onto the base pointer v0, reproducing target's partial CSE (b,c via 4/8(v0) + col a via separate %hi/%lo(1198)+v1 recompute).
+- mechanism: GCC forms v0 = &D_800F1198 + index once and, for any store to that same lvalue (col a = p[0]), reuses 0(v0). If store order changed which store first references the base, GCC might materialize col a's address separately.
+- probe: Applied candidate floor-4 form (c,b,a) then edited epilogue to c,a,b (p[2],p[0],p[1]); sandbox --disable all each. Combined with s2's c,b,a=4 and a,b,c=5.
+- result: c,a,b = score 5 (build 35); c,b,a = 4; a,b,c = 5. Every order folds col a (p[0]) onto 0(v0); store order only shifts the reorder count, never the addressing mode. No permutation reaches target's partial CSE.
+- verdict: KILLED
+
+## [s3] A type/width distinction on col a's store, or an intervening real dependency between the b,c stores and col a, defeats the CSE legitimately (no same-lvalue respelling).
+- mechanism: A differently-typed pointer view of col a, or a genuine data dependency, could force GCC to recompute col a's address instead of folding onto v0.
+- probe: Structural analysis of the target epilogue (3x sw of constant 0) and the addressing constraints; no compilable non-cheat form exists to measure.
+- result: Structurally unavailable: all 3 cols are `sw` of 0 (narrowing col a changes bytes; a differently-typed pointer VIEW of the same address folds via address-rtx CSE and, spelled as two views, IS the banked same-lvalue dual-spelling). A 3-word constant-zero terminator has no natural intervening op; manufacturing one is a codegen steer/dead construct (forbidden).
 - verdict: KILLED
