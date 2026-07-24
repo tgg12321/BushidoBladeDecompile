@@ -1,8 +1,8 @@
 {
  "func": "special_camera_get_rot_dir",
  "file": "code6cac_b2_post",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 0,
@@ -15,23 +15,29 @@
    "floor": 9,
    "modality": "recon",
    "headline": "Floor 12->9 (pure C); honest floor is a 4-reg rotation reduced to a single-register sub-problem: copy_end must land in callee-saved s5."
+  },
+  {
+   "session": 2,
+   "floor": 9,
+   "modality": "structural",
+   "headline": "Floor holds 9. Instrumented cc1 PROVES copy_end->s5 is unreachable via allocno priority (livelen capped ~38 << const's locked 76; find_reg has no cost/preference lever); def/use-placement axis exhaust"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "From the score-9 block-local base, extend copy_end's live range to cross one call so it becomes callee-saved s5 (not t0) without adding real refs, keeping index/cam_base/const in s2/s3/s4.",
-   "mechanism": "callee-saved requires the pseudo live across a call; place the copy_end use/def so its interval spans the 2nd func_800372F4/cdrom calls while its priority stays lowest of the four.",
-   "next_probe": "sweep copy_end def/use placement relative to the tail calls; sandbox each; watch t0 -> s5 flip toward score 0."
+   "hypothesis": "G1: a C form whose pre-alloc (post-sched1) RTL gives copy_end a longer, or const a shorter, live length while sched2/reorg restores the identical emitted bytes.",
+   "mechanism": "reg_live_length is measured after cse/loop/flow/combine/sched1 but before reload; two sources emitting the same final bytes can present different pre-alloc livelens.",
+   "next_probe": "Diff cc1 -da .sched1/.combine dumps of candidate vs an m2c-reconstructed target C to see whether the do-loop's copy_end-use can sit later in pre-alloc RTL without moving the emitted loop."
   },
   {
-   "hypothesis": "From top-def (score 12, copy_end callee-saved but s2), nudge copy_end to LOWEST priority via live_length + the global.c:624 allocno-number tiebreak so it lands s5.",
-   "mechanism": "copy_end vs constant_80 is a razor-thin priority tie; declaring copy_end LAST among locals / first-referencing it later raises its allocno number so it loses the tie and takes s5.",
-   "next_probe": "declare copy_end last, delay its first reference; sandbox each variant."
+   "hypothesis": "G2: induce a legitimate hard_reg_copy_preference that pulls copy_end to s5 (bypassing priority), without a register pin.",
+   "mechanism": "find_reg (global.c:1046+) overrides best_reg to a preferred reg when a copy insn links the allocno to that reg; copy_end currently has none.",
+   "next_probe": "Explore expressing the loop end-pointer as a copy from another pointer variable (byte-neutral) that would create a copy-preference; verify via ALLOCDBG + sandbox."
   },
   {
-   "hypothesis": "Compute the exact target live_length copy_end needs (turn F1/F2 from guess-and-check into a calculation).",
-   "mechanism": "allocno_live_length/n_refs feed the priority formula; instrumenting global.c:allocno_compare (fprintf) or reading RTL live ranges gives the numbers for all 4 pseudos in the score-9 and score-12 builds.",
-   "next_probe": "add a diagnostic fprintf to a scratch cc1 copy (NOT the build cc1) or parse RTL live ranges; derive required L_ce."
+   "hypothesis": "G3: re-derive the s5 identity \u2014 confirm the original loop bound is a src-relative end pointer and not a down-counter / dest-relative form that changes which value is long-lived.",
+   "mechanism": "m2c reconstruction + coalescing/aliasing check may reveal a different allocno set where the long-lived value naturally takes s4 and the short one s5.",
+   "next_probe": "Run m2c on the target and inspect the loop shape and any reg_may_share coalescing against the candidate."
   }
  ],
  "judge_constraints": [],

@@ -8,33 +8,58 @@
   global.c:604 formula (copy_end n_refs=2 with short live_length beats the
   n_refs=3 trio). Block-local copy_end drops it out of s2 -> floor 12->9.
 
-## OPEN FRONTIER (for s2+)
-The remaining sub-problem is SINGLE-REGISTER and crisp: make **copy_end land in
-callee-saved s5** (not caller-saved t0, not s2). Two requirements in tension:
-  (a) callee-saved  => live range must cross a call (define before a func call,
-      use after) — top-def satisfies this.
-  (b) LOWEST priority of the 4 => pri = log2(n)*n/live_length must be smallest.
-      copy_end n_refs=2; needs live_length LARGE enough that 2/L_ce < 3/L_trio.
+## KILLED (s2) — with exact instrumented-cc1 measurements
+- F1 (extend copy_end live range across one call -> s5 while keeping trio in
+  s2/s3/s4): KILLED. copy_end's livelen is capped ~38 (sole use = mid-function
+  do-loop; nothing after the loop uses the end pointer — verified: Triple-copy
+  reuse extends range by only 1 insn and breaks tail bytes). 38 << const(76),
+  so copy_end pri (>=789) can never drop below const's 394. Assignment is pure
+  priority order (find_reg takes lowest available reg; no cost bias to higher
+  regs; copy_end has no copy-preference lever, being a leaf addiu). => copy_end
+  cannot reach s5 by any def/use placement.
+- F2 (nudge copy_end to lowest priority via livelen + allocno tiebreak): KILLED.
+  A tiebreak win needs pri(copy_end)==pri(const). Requires livelen equality;
+  copy_end max ~38, const locked at 76 (needed at both calls; literal-const
+  probe left livelen=76). Neither can move to meet. => no tie possible.
+- F3 (compute the numbers): DONE. Built scratch instrumented cc1; exact
+  nrefs/livelen/pri banked for all 5 forms. The computation PROVES F1/F2 dead.
 
-- F1 (primary): from the score-9 block-local base, make copy_end cross ONE call
-  while keeping index/cam_base/const in s2/s3/s4. Idea: extend copy_end's live
-  range to just past the copy loop so it is live across the 2nd func_800372F4
-  / cdrom calls — but WITHOUT adding real refs (bytes). Probe placements of the
-  copy block / copy_end use relative to the tail calls; watch t0 -> s5 flip.
+## OPEN FRONTIER (for s3+)  — NOT def/use placement (that axis is EXHAUSTED)
+The sub-problem stays crisp: make **copy_end land in callee-saved s5** (currently
+t0). s2 PROVED this is unreachable through allocno PRIORITY (copy_end livelen
+capped ~38 << const's locked 76; find_reg has no cost bias to higher regs;
+copy_end is a leaf addiu with no copy-preference). So the remaining levers are
+NOT about copy_end's def/use position or its live length. Genuinely-untested:
 
-- F2: from top-def (score 12, copy_end callee-saved but s2), NUDGE copy_end's
-  live_length LONGER (lower its priority below constant_80's) via the
-  allocno-number tiebreak (global.c:624) and live-range shape. copy_end and
-  constant_80 are a razor-thin pri tie; the LUID/allocno-creation order of
-  copy_end vs the trio is the lever. Try declaring copy_end LAST among the
-  locals and/or first-referencing it later, so its allocno number is highest
-  (loses the tie -> gets s5). Measure with sandbox each step.
+- G1 (pre-alloc RTL shape via sched1): livelen is measured on the RTL AFTER
+  cse/loop/flow/combine/sched1 but BEFORE reload. Two C sources that emit the
+  same final bytes (sched2/reorg restores them) can present DIFFERENT pre-alloc
+  livelens. Find a C form whose sched1 output makes copy_end's OR const's
+  pre-alloc range differ (e.g. a form that keeps the do-loop's copy_end-use
+  scheduled later in the pre-alloc stream than in the final stream). Probe:
+  inspect the .sched1/.combine dumps (cc1 -da) for both candidate and target-
+  reconstructed C to see whether the do-loop's position in pre-alloc RTL can be
+  moved without moving the emitted loop. HIGH uncertainty; may be a dead end too.
 
-- F3 (diagnostic): get the actual allocno_live_length / n_refs / priority
-  numbers for the 4 pseudos in BOTH the score-9 and score-12 builds (instrument
-  cc1 global.c allocno_compare with an fprintf, or read the RTL live ranges).
-  This turns F1/F2 from guess-and-check into a computed target live_length for
-  copy_end. HIGH value — do this first in s2.
+- G2 (induce a copy-preference legitimately): copy_end -> s5 could come from a
+  hard_reg_copy_preference (find_reg global.c:1046+), NOT priority. That needs a
+  real copy insn linking copy_end to a value that lands in s5 — WITHOUT a
+  register pin (pins are cheats). Explore whether the ORIGINAL loop expressed the
+  end pointer via a copy from another pointer (e.g. end = src_base derived by a
+  move) that GCC would copy-preference. Must stay byte-neutral. Uncertain a
+  legitimate C form exists.
+
+- G3 (re-derive the s5 identity): re-check the assumption that s5 == copy_end is
+  the only decomposition. m2c the target and read the loop shape; confirm the
+  original didn't express the bound as a down-counter or a dest-relative end
+  that changes which value is long/short-lived. (Target DOES compare src->s5, so
+  s5 is a src-relative end pointer — but verify no coalescing/aliasing changes
+  the allocno set.)
+
+NB for s3: this is the global.c:624 allocno-priority wall class
+(marionation_Exec / cpu_side_move_dir_4). If G1/G2/G3 also measure dead, the
+next session's mandated modality (per the ladder) is likely permuter or
+escalation — do NOT re-run the def/use placement sweep (banked dead above).
 
 ## Ruled out (rejected/)
 - copy_end def 2nd -> 14.  - copy_end assigned inside retry -> 22.
@@ -56,4 +81,22 @@ callee-saved s5** (not caller-saved t0, not s2). Two requirements in tension:
 - mechanism: Shortening/localizing copy_end's live range removes the call-crossing, so GCC picks a caller-saved temp (t0) for it, freeing s2 for index; the trio then falls into target slots.
 - probe: Moved 'copy_end = &sp_buf[0x40]' into the copy block just before the do-loop; sandbox=9, build_insns=70.
 - result: floor 12->9; residual is only copy_end being in t0 (caller-saved) vs target's s5 (callee-saved, +2 save/restore)
+- verdict: CONFIRMED
+
+## [s2] F1: extend copy_end's live range across one call so it becomes callee-saved s5 while keeping index/cam/const in s2/s3/s4.
+- mechanism: Allocno priority pri=floor_log2(nrefs)*nrefs/livelen*10000; find_reg (global.c:1011-1044) assigns lowest available reg in ascending order (no MIPS REG_ALLOC_ORDER, no cost bias to higher regs). For copy_end->s5 it must be LOWEST priority => livelen>76 (const's).
+- probe: Instrumented scratch cc1 (BB2_ALLOC_DEBUG, relinked into tmp/ from in-tree global.o). Swept copy_end def placement: block-local L5->t0(score9); top-def L32->s2(12); def-first L38->s3(14). Confirmed copy_end's sole use is the mid-function do-loop; reusing it in the post-loop Triple copy extended range by only 1 insn and broke tail bytes (score12).
+- result: copy_end livelen maxes at ~38 (def moved to function entry) << cam(64)/const(74-76); it can never drop below cam/const in priority, so never s5. Assignment is pure priority order; copy_end (leaf addiu, no copy insn) has no preference lever.
+- verdict: KILLED
+
+## [s2] F2: tie copy_end's priority with const so the allocno-number tiebreak (global.c:624, higher pseudo last) hands copy_end s5.
+- mechanism: A tie needs pri(copy_end)==pri(const) => equal livelen (both nrefs 3). Lower const's livelen toward copy_end's ~38, or raise copy_end's toward 76.
+- probe: Passed literal 0x80 (not constant_80) as the final func_800372F4 arg to shorten const's live range. Measured with instrumented cc1.
+- result: const_80 nrefs dropped 3->2 but livelen STAYED 76 (CSE still holds 0x80 in a callee-saved reg entry->final-call); pri 263, score 10 (worse). const's livelen is structurally locked at 76; no tie is reachable.
+- verdict: KILLED
+
+## [s2] F3: obtain exact allocno nrefs/livelen/priority for all four competitors to turn F1/F2 from guess-and-check into a calculation.
+- mechanism: The in-tree tools/gcc-2.7.2/global.o already carries the BB2_ALLOC_DEBUG fprintf; the shipped build/cc1 was linked before it. Relink cc1 from in-tree .o's into tmp/ (touching nothing in tools/).
+- probe: Built tmp/grind/.../s2/cc1_dbg; ran on 5 forms; extracted special_camera's allocno batch each time.
+- result: Exact table banked (top-def: dest s0 pri2105, buf2 s1 967, copy_end s2 937, index s3 882, cam s4 454, const s5 394). Computation proves F1/F2 dead and identifies the pure-priority-order assignment rule.
 - verdict: CONFIRMED
