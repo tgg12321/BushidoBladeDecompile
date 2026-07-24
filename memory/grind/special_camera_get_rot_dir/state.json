@@ -1,8 +1,8 @@
 {
  "func": "special_camera_get_rot_dir",
  "file": "code6cac_b2_post",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 0,
@@ -27,18 +27,19 @@
    "floor": 9,
    "modality": "structural",
    "headline": "Structural axis exhausted: found loop-invariant def-placement lever (drove top-def score 12->10, fixing index+const slots) but copy_end is hard-capped ~L38 by its earliest-last-use, so it can never be"
+  },
+  {
+   "session": 4,
+   "floor": 9,
+   "modality": "permuter",
+   "headline": "Permuter modality measured DEAD (~46k iters, 2 chassis, 0 score-0 finds); allocno-priority wall corroborated; filed OWNER-ESCALATION and returned owner-gated."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Directed permuter over statement/invariant-def order, seeded from the score-10 V_cefirst_constlast form (index+const already correct), might stumble on a livelen arrangement the manual sweep missed.",
-   "mechanism": "PERM_* macros randomize statement order / declaration order; random mode has never been run on this function.",
-   "next_probe": "Build a clean single-function target.o (asm/funcs + prelude, drop .set gp=64) and run decomp-permuter --stop-on-zero seeded from copyend-first-const-last-score10.c; low expectation (the copy_end<->cam 2-cycle is priority-locked) but unmeasured."
-  },
-  {
-   "hypothesis": "This is the marionation_Exec / cpu_side_move_dir_4 allocno-priority-tie wall class; if permuter is also dead the ladder's next step is escalation (owner ruling under the endgame-lock disposition policy).",
-   "mechanism": "copy_end's sole use being the earliest of four callee-saved invariants makes lowest-priority structurally unreachable in pure C; the honest floor is 9 (block-local copy_end->t0, 70 insns, +2 vs target's s5 save/restore).",
-   "next_probe": "If s4 permuter measures dead, file the OWNER-ESCALATION entry citing the endgame-lock-disposition policy and the s1-s3 measured exhaustion, and return owner-gated."
+   "hypothesis": "A genuine non-pin pure-C lever makes copy_end simultaneously call-crossing (callee-saved) AND longest-lived (lowest allocno priority), outside the measured structural + permuter axes.",
+   "mechanism": "copy_end->s5 needs a live range that both spans a call (hoisted) and out-lives constant_80 (L76); its sole use is structurally the earliest of the four invariants, and no byte-neutral later reference exists (Triple tail reads via src's reg a2). No known C form yields this.",
+   "next_probe": "Owner ruling on the filed OWNER-ESCALATION (endgame-lock-disposition AND-gates). If refused -> OWNER-ACCEPTED INCOMPLETE, park; re-attempt only if a novel non-pin lever emerges."
   }
  ],
  "judge_constraints": [],

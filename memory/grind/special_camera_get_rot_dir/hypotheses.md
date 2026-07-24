@@ -148,3 +148,48 @@ byte-neutrality forbids a later reference. Remaining, genuinely-untested modalit
 - probe: Swept loop-invariant def-placement with instrumented cc1 + BB2_FLOW_DEBUG per-insn liveness. Forms: top-def(12), const-last(11, const L76->62), copyend-first+const-last(10, index->s2 & const->s4 correct), const-reassign-in-loop(17, breaks bytes).
 - result: Def-placement IS a real lever (score 12->11->10) but flow counts loop-carry (copy_end live in bottom block4 = const's 19 insns); copy_end's deficit is block-0 only. copy_end livelen hard-caps ~L38 by its earliest last-use (inner-loop bne); it cannot exceed cam(L66)/const(L62), and no byte-neutral later reference exists (tail copy must read via src, not copy_end). So copy_end can never be lowest-priority -> never s5.
 - verdict: KILLED
+
+## KILLED (s4) — permuter modality measured dead; escalated owner-gated
+- P1 (directed/random permuter finds a livelen arrangement the manual sweep missed):
+  KILLED. Clean single-function workspace (target.o at offset 0). Random mode (never run
+  before) from TWO structurally-distinct seeds — score-10 hoisted-copy_end and score-9
+  block-local — ran ~46k combined iterations. Chassis 1: 27.5k iters, best 318 = pure
+  reorder-penalty reduction, register rotation unchanged (copy_end<->cam 2-cycle intact).
+  Chassis 2: 18.5k iters, best 113, every find a DIFFERENT wrong permutation of the 5
+  callee-saved values, never target {index=s2,cam=s3,const=s4,copy_end=s5,buf2=s1}. No
+  score-0 in either. The permuter's statement/decl-reorder + var-permutation search covers
+  exactly the def/use-placement + allocno-tiebreak axes s2/s3 proved dead; it empirically
+  confirms the proof. copy_end->s5 requires it to be lowest-priority (longest-lived), but its
+  sole use is the earliest of the four callee-saved invariants — structurally unreachable.
+- P2 (canonical-asm authorization for a hand-coded construct): KILLED. scan_hand_coded LOW
+  2/8, no STRONG signal; the residual is an ordinary allocno-priority RA tiebreak. A byte-0
+  form provably requires a register pin (asm("s5") on copy_end), which is a forbidden cheat
+  with no SOTN precedent — authorizing canonical-asm would launder the pin (inline-asm-injection trap).
+
+## DISPOSITION (s4): owner-gated
+Every grind-advanceable axis is measured dead: structural (s1-s3, instrumented-cc1 proof),
+permuter (s4, ~46k iters/2 chassis). Both endgame-lock AND-gates fail (canonical-asm LOW 2/8;
+no SOTN precedent for a register-rotation pin). This is the marionation_Exec /
+cpu_side_move_dir_4 allocno-priority-tie wall class. Filed OWNER-ESCALATION in
+docs/grind/decisions.md (2026-07-23, special_camera_get_rot_dir) presenting the two AND-gates;
+returned owner-gated. NB: no cheat is present (0 rules) — unlike cpu_side_move_dir_4 there is
+nothing to "retain"; the clean floor-9 candidate is the best committable pure-C form and is
++2 insns short of the target (missing the s5 save/restore pair), so it is NOT a COMPLETED-C match.
+
+## [s4] Random-mode permuter over a clean single-function workspace, seeded from the score-10 hoisted-copy_end form, finds a livelen/statement arrangement the manual sweep missed and reaches a byte match.
+- mechanism: decomp-permuter randomizes statement order, declaration order, and variable permutation — exactly the def/use-placement + allocno-tiebreak axes. target.o built at offset 0 (asm/funcs + prelude, .set gp=64 dropped) so the score is the real per-function diff.
+- probe: 27,499 iters, --stop-on-zero. Best novel find output-318-1 (perm-score 318 vs base 328); compiled + objdump-diffed vs target.
+- result: Only find is pure reorder-penalty reduction (li s4,128 moved); the copy_end(s3)<->cam(s5) 2-cycle is UNCHANGED. No score-0.
+- verdict: KILLED
+
+## [s4] Random-mode permuter seeded from the structurally-distinct score-9 block-local form (copy_end in caller-saved t0) reaches the target register permutation from a different basin.
+- mechanism: Different starting allocation (copy_end non-hoisted, 70 insns) gives the permuter a different neighborhood to bridge to target's hoisted-s5 form.
+- probe: 18,554 iters, --stop-on-zero. Best find output-113-1 (perm-score 113, 72 insns) compiled + diffed vs target.
+- result: Every find is a DIFFERENT wrong permutation of the 5 callee-saved values (best 113: index->s3, cam->s4, const->s5, copy_end->s1, buf2->s2), never target {index=s2,cam=s3,const=s4,copy_end=s5,buf2=s1}. No score-0 in ~46k combined iters.
+- verdict: KILLED
+
+## [s4] The copy_end->s5 residual qualifies for canonical-asm authorization (hand-written-asm construct).
+- mechanism: endgame-lock-disposition AND-GATE 1: canonical-asm only if scan_hand_coded shows STRONG (S1/S2/S6) signals.
+- probe: tools/scan_hand_coded.py --single special_camera_get_rot_dir.
+- result: tier LOW, score 2/8 (only S4 front-loads + spurious S5 self-cluster to func_80037348 = same 0x80037348 address). No STRONG signal. The residual is ordinary GCC allocno-priority RA output; the only byte-0 form is a forbidden register pin (inline-asm-injection trap).
+- verdict: KILLED

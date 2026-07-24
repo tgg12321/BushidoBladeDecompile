@@ -226,3 +226,71 @@
 - [s3] Residual UNREACHABLE: copy_end (L38 max, def-first) must exceed cam(66) and const(62) to be lowest-priority, but its only use is the earliest (inner-loop bne) and it cannot be referenced later byte-neutrally (target reads the Triple tail via src's reg a2, not s5; copy_end-in-tail breaks bytes = s2 score 12).
 
 - [s3] copy_end must be BOTH callee-saved (cross a call -> hoisted) AND longest-lived (lowest priority); hoisting gives callee-saved but livelen ~38 -> high priority -> s2/s3; non-hoisted block-local -> caller-saved t0 (floor-9). No pure-C form yields a value that is both call-crossing and longest-lived when its sole use is the earliest. global.c:624 allocno-priority wall (marionation_Exec / cpu_side_move_dir_4 class).
+
+## s4 (permuter) — floor stays 9. Permuter modality measured DEAD across 2 chassis (~46k iters). Escalated owner-gated.
+
+- **Built a clean single-function permuter workspace** (tmp/grind/.../s4/ws): base.c =
+  preprocessed full TU (score-10 seed body, pin-free); target.o from asm/funcs + prelude
+  (`.set gp=64` dropped for r3000) so base sits at offset 0 and the score is the real diff.
+  Validated: base==target==72 insns, residual = the copy_end<->cam 2-cycle (base_score 328
+  in the permuter's reorder-weighted metric; sandbox objdump-metric 10). compile.sh extracts
+  the func region and assembles with `.set noat/noreorder` prelude.
+
+- **Chassis 1 (score-10 seed, copy_end hoisted):** 27,499 iters, ONE novel find
+  (output-318-1, perm-score 318). Compiled + diffed vs target: SAME copy_end(s3)<->cam(s5)
+  2-cycle as base; the 328->318 delta is pure statement-reorder penalty (li s4,128 moved),
+  register allocation UNCHANGED. No score-0 match. Wall intact.
+
+- **Chassis 2 (score-9 candidate, copy_end block-local -> caller-saved t0):** structurally
+  distinct basin (70 insns, missing the s5 save/restore pair). ~18.5k iters, best perm-score
+  113 (72 insns). EVERY find is a DIFFERENT wrong permutation of the 5 callee-saved values,
+  never target {index=s2, cam=s3, const=s4, copy_end=s5, buf2=s1}:
+    output-178: copy_end hoisted to s3 + extra `move t0,s3` (73 insns) — wrong.
+    output-113: index->s3, cam->s4, const->s5, copy_end->s1, buf2->s2 — wrong permutation.
+  The permuter can only shuffle WHICH callee-saved value takes WHICH slot; it cannot hit the
+  target ordering because (s2 instrumented-cc1 proof) no C arrangement yields the allocno
+  priority order that assigns it. No score-0 match in ~46k combined iterations.
+
+- **AND-GATE 1 (canonical-asm authorization): FAIL.** `tools/scan_hand_coded.py --single
+  special_camera_get_rot_dir` = tier LOW, score 2/8 (only S4 front-loads + the SPURIOUS S5
+  self-cluster to func_80037348, which is the same 0x80037348 address). No S1 multu / S2
+  empty-branch / S6 BIOS-jumptable STRONG signal. A 4-register allocno-priority rotation is
+  ordinary GCC RA output, not a hand-coded signature. Canonical-asm NOT supportable.
+
+- **AND-GATE 2 (coercion/SOTN precedent): FAIL.** The ONLY construct that lands copy_end in
+  s5 is a `register Quad *copy_end asm("s5")` pin (or an equivalent hardcoded-$N __asm__) —
+  a forbidden register-rotation cheat, score-inert under the masked sandbox, with ZERO
+  SOTN-master precedent (register-rotation pins are explicitly non-sanctioned per
+  no-new-park-categories.md). No pure-C closer exists in the measured structural+permuter space.
+
+- **CONCLUSION (s4):** the permuter modality is measured dead. Combined with the s1-s3
+  instrumented-cc1 structural proof (copy_end livelen hard-capped ~L38 << const's locked 76;
+  find_reg pure priority order; copy_end has no copy-preference lever), every grind-advanceable
+  axis is exhausted. This is the marionation_Exec / cpu_side_move_dir_4 allocno-priority-tie
+  wall class (cpu_side_move_dir_4 REFUSED / OWNER-ACCEPTED INCOMPLETE 2026-07-18 under the
+  endgame-lock-disposition policy). Filed OWNER-ESCALATION in docs/grind/decisions.md; returned
+  owner-gated. NB: this function carries NO cheat (0 regfix/asmfix rules) — the clean floor-9
+  candidate (block-local copy_end, pure C) is the best committable form; it is +2 insns short
+  (missing the s5 save/restore), NOT a byte-match.
+
+## s4 permuter artifacts (tmp/grind/special_camera_get_rot_dir/s4/)
+- ws/ (chassis-1 workspace: base.c, compile.sh, target.o, base_ins.txt, tgt_ins.txt, output-318-1/)
+- ws2/ (chassis-2 workspace: base.c + 231 output-*/ dirs, best output-113-1/)
+- setup_ws.sh, setup_ws2.sh, compile/validate/check scripts, launch/wait/harvest scripts
+- metrics/events.jsonl permuter-launch/harvest telemetry (labels s4-random-seed10, s4-random-seed9-blocklocal)
+
+- [s4] Built a clean single-function permuter workspace: base.c = preprocessed full TU (pin-free seed body), target.o from asm/funcs + prelude with .set gp=64 dropped so both sit at offset 0. Validated base==target==72 insns, residual = copy_end<->cam 2-cycle (perm base_score 328, sandbox objdump-metric 10).
+
+- [s4] Chassis 1 (score-10 hoisted seed): 27,499 iters, 1 novel find (318) = pure reorder noise, register rotation unchanged. No score-0.
+
+- [s4] Chassis 2 (score-9 block-local seed): 18,554 iters, best 113 = a DIFFERENT wrong permutation of the 5 callee-saved values. Every find shuffles WHICH value takes WHICH slot; none is the target ordering. No score-0.
+
+- [s4] ~46k combined iterations across two structurally-distinct fresh seeds produced ZERO byte matches — empirically confirms the s2 instrumented-cc1 proof that no C statement arrangement yields the allocno priority order placing copy_end (earliest last-use, livelen ~L38) in s5 (requires longest-lived / lowest priority).
+
+- [s4] AND-GATE 1 (canonical-asm): scan_hand_coded LOW 2/8, no STRONG signal — ordinary RA output, not hand-coded; canonical-asm would launder the forbidden register pin.
+
+- [s4] AND-GATE 2 (coercion/SOTN precedent): the only closer is a register-rotation pin (asm("s5") on copy_end), score-inert under the masked sandbox, zero SOTN precedent, explicitly non-sanctioned.
+
+- [s4] This function carries NO cheat (0 regfix/asmfix rules) and does NOT byte-match; the clean floor-9 candidate (block-local copy_end, pure C) is the best committable form and is +2 insns short (missing the s5 save/restore pair). This is the marionation_Exec / cpu_side_move_dir_4 allocno-priority-tie wall class.
+
+- [s4] Both my permuter campaigns harvested with --stop and confirmed registered_active=false; candidate.c matches src (clean pin-free floor-9 form), sandbox --disable all = 9.
