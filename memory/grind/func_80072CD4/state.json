@@ -1,8 +1,8 @@
 {
  "func": "func_80072CD4",
  "file": "text1b",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 0,
@@ -15,23 +15,24 @@
    "floor": 12,
    "modality": "recon",
    "headline": "Recon: mapped $v0/$v1 rotation + confirmed distinct-literal re-mat mechanism (clean floor 18; imported 12 depends on a reviewer-FAIL do-while barrier)."
+  },
+  {
+   "session": 2,
+   "floor": 4,
+   "modality": "structural",
+   "headline": "STRUCTURAL: clean floor 18 -> 4 (build_insns 79 == target); a sandbox-0 form exists but is a cross-jump-dead @4/@0xC duplication cheat (layer-1 reviewer FAIL). Natural-0 blocker = sched1 hoist of var_"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Close the last insn (78->79) then flip the $v0/$v1 rotation to reach 0.",
-   "mechanism": "Target carries var_v0 in $v0 and 0xFC in $v1; our build is inverted. The 18-point residual after near-closing the insn count is dominated by this rotation.",
-   "next_probe": "objdump-diff the 78-insn build vs target to name the missing insn; then cc1 -da greg dump on the 78-insn form to read the allocno tiebreak pinning var_v0 off $v0 (register-alloc-pure-c Step-0)."
+   "hypothesis": "A clean C exists that keeps var_v0's li in the arm delay slot (defeating the sched1 hoist) WITHOUT an arm-local sb, giving target's cross-block structure and a natural 0.",
+   "mechanism": "Target's @0xE sb is a normal merge instruction reading a cross-block var_v0 whose li is NOT hoisted; our sched1 hoists it. The per-arm @0xE pin works but glues the sb to the merge head, deferring @4/@0xC (the residual 4).",
+   "next_probe": "Instrumented sched1 priority dump (BB2_SCHED_DEBUG) to learn why the priority-0 (no in-block successor) var_v0 li is picked first; then find an in-arm consumer of var_v0 that pins the li WITHOUT emitting a cross-jump-mergeable sb (e.g. a value dependency), or a byte-store reorder that changes the ready-list tiebreak."
   },
   {
-   "hypothesis": "Setting var_v0 as the LAST assignment in each arm (matching target's delay-slot births: 0x32 in THEN j-delay, 0x46 at ELSE tail) steers var_v0 into $v0.",
-   "mechanism": "Target materializes var_v0 in the arm delay slots, giving it $v0; our early var_v0=0x46 before the inner-if may bias the allocno the other way.",
-   "next_probe": "From candidate.c (18), move var_v0 assignment to arm tails only, re-measure; sweep narrow/wide type on fc_const vs var_v0."
-  },
-  {
-   "hypothesis": "If no clean lever drops below ~16, evaluate the do-while-zero sanctioned exception or endgame-lock disposition.",
-   "mechanism": "The 12-floor form is a do-while barrier (reviewer-FAIL). do-while-zero sanction requires the reorg.c LABEL_OUTSIDE_LOOP_P NE-invert mechanism; this function branches on beqz (EQ) \u2014 verify the prerequisite actually applies before proposing.",
-   "next_probe": "After H1/H2 exhaustion: check whether the barrier's effect here is the sanctioned reorg.c peephole or a generic scheduling fence; if the former, draft FAKE-annotated form for cheat-reviewer; else owner-gated."
+   "hypothesis": "If the sched1 hoist proves un-defeatable by clean C, whether the byte-neutral @4/@0xC duplicated-statement-into-arms (store-order variant) is a sanctioned closing form is an owner/ruling question.",
+   "mechanism": "duplicated-statement-into-arms sanctions the family for RA-priority effects with FAKE annotation + exhaustion + layer-2; this use is store-scheduling order. Reviewer flagged it FAIL; self-sanctioning is disallowed.",
+   "next_probe": "After exhausting the hoist-defeat search, if duplication remains the only 0-path, escalate the store-order-duplication classification (ruling-request) rather than self-approve."
   }
  ],
  "judge_constraints": [],
