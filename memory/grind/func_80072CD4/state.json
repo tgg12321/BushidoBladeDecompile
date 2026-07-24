@@ -1,0 +1,40 @@
+{
+ "func": "func_80072CD4",
+ "file": "text1b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 0,
+   "floor": 12,
+   "modality": "wip-import",
+   "headline": "floor imported from memory/wip checkpoint"
+  },
+  {
+   "session": 1,
+   "floor": 12,
+   "modality": "recon",
+   "headline": "Recon: mapped $v0/$v1 rotation + confirmed distinct-literal re-mat mechanism (clean floor 18; imported 12 depends on a reviewer-FAIL do-while barrier)."
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Close the last insn (78->79) then flip the $v0/$v1 rotation to reach 0.",
+   "mechanism": "Target carries var_v0 in $v0 and 0xFC in $v1; our build is inverted. The 18-point residual after near-closing the insn count is dominated by this rotation.",
+   "next_probe": "objdump-diff the 78-insn build vs target to name the missing insn; then cc1 -da greg dump on the 78-insn form to read the allocno tiebreak pinning var_v0 off $v0 (register-alloc-pure-c Step-0)."
+  },
+  {
+   "hypothesis": "Setting var_v0 as the LAST assignment in each arm (matching target's delay-slot births: 0x32 in THEN j-delay, 0x46 at ELSE tail) steers var_v0 into $v0.",
+   "mechanism": "Target materializes var_v0 in the arm delay slots, giving it $v0; our early var_v0=0x46 before the inner-if may bias the allocno the other way.",
+   "next_probe": "From candidate.c (18), move var_v0 assignment to arm tails only, re-measure; sweep narrow/wide type on fc_const vs var_v0."
+  },
+  {
+   "hypothesis": "If no clean lever drops below ~16, evaluate the do-while-zero sanctioned exception or endgame-lock disposition.",
+   "mechanism": "The 12-floor form is a do-while barrier (reviewer-FAIL). do-while-zero sanction requires the reorg.c LABEL_OUTSIDE_LOOP_P NE-invert mechanism; this function branches on beqz (EQ) \u2014 verify the prerequisite actually applies before proposing.",
+   "next_probe": "After H1/H2 exhaustion: check whether the barrier's effect here is the sanctioned reorg.c peephole or a generic scheduling fence; if the former, draft FAKE-annotated form for cheat-reviewer; else owner-gated."
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-24T19:56:18.957360+00:00"
+}
