@@ -100,3 +100,51 @@ escalation — do NOT re-run the def/use placement sweep (banked dead above).
 - probe: Built tmp/grind/.../s2/cc1_dbg; ran on 5 forms; extracted special_camera's allocno batch each time.
 - result: Exact table banked (top-def: dest s0 pri2105, buf2 s1 967, copy_end s2 937, index s3 882, cam s4 454, const s5 394). Computation proves F1/F2 dead and identifies the pure-priority-order assignment rule.
 - verdict: CONFIRMED
+
+## KILLED (s3) — structural axis exhausted with measurements
+- G1 (pre-alloc RTL / sched1 gives copy_end a longer or const a shorter pre-alloc
+  livelen while bytes stay identical): KILLED for the def-placement + statement-
+  reassociation sub-axes. Measured that flow.c reg_live_length counts loop-carry (copy_end
+  IS live in the bottom block 4, 19 insns = const's), so the deficit is block-0 (def
+  position) only. Loop-invariant def-placement IS a real lever (const 76->62, copy_end
+  ->38; drove score 12->11->10, fixing index+const slots) but copy_end's livelen is
+  hard-capped ~38 by its earliest-last-use (inner-loop bne); it can't exceed cam(66)/
+  const(62), and no byte-neutral later reference exists (tail copy must read via src, not
+  copy_end). So copy_end can never be lowest-priority -> never s5 via priority.
+- G2 (induce a hard_reg_copy_preference to pull copy_end to s5): KILLED by the target asm
+  itself — target has NO copy/move insn to $s5; copy_end reaches s5 purely by lowest allocno
+  priority. Copy-preference is not the target's mechanism, so it's not a valid route.
+- G3 (re-derive s5 identity via m2c): DONE/CONFIRMED — same single-loop decomposition,
+  s5 = loop-invariant src-relative end pointer hoisted to preheader. No alternate allocno set.
+
+## OPEN FRONTIER (for s4+) — structural axis is EXHAUSTED
+The sub-problem is unchanged: copy_end must land in callee-saved s5. s3 proved (with the
+new def-placement lever + flow-trace + m2c) that NO pure-C statement arrangement makes
+copy_end simultaneously call-crossing (callee-saved) AND longest-lived (lowest priority),
+because its only use is structurally the earliest of the four callee-saved invariants and
+byte-neutrality forbids a later reference. Remaining, genuinely-untested modalities:
+- Permuter (directed): PERM_* over statement order / invariant-def placement seeded from the
+  score-10 V_cefirst_constlast form (index+const already correct). Random mode never run on
+  this fn. Low expectation (the 2-cycle is priority-locked) but not measured.
+- Escalation: this is the marionation_Exec / cpu_side_move_dir_4 allocno-priority-tie wall
+  class. If permuter also dead, escalation modality (owner ruling on the endgame-lock
+  disposition policy) is the ladder's next step. NOT owner-gated this session (structural
+  modality; permuter still ungrinded = still grindable).
+
+## [s3] G3: an alternate loop/allocno decomposition (down-counter or dest-relative bound) makes the long-lived value take s4 and the short one s5 naturally.
+- mechanism: m2c reconstruction + coalescing/aliasing check for a different reg_may_share set.
+- probe: Ran m2c on the target; inspected loop shape.
+- result: Target body is a single loop (one header, two back-edges) identical to my `retry` form; s5 = loop-invariant src-relative end pointer (sp+0x50) hoisted to the outer preheader. Same decomposition as candidate; no alternate allocno set.
+- verdict: KILLED
+
+## [s3] G2: induce a hard_reg_copy_preference (find_reg global.c:1046+) that pulls copy_end to s5 without a register pin.
+- mechanism: A copy insn linking copy_end to a value already in s5 overrides best_reg to s5, bypassing priority.
+- probe: Inspected the target asm for any move/copy insn to $s5.
+- result: Target has NO copy/move insn to $s5 whatsoever; copy_end reaches s5 purely via lowest allocno priority. Copy-preference is not the target's mechanism, so it is not a valid route.
+- verdict: KILLED
+
+## [s3] G1: a pure-C statement arrangement gives copy_end a longer (or const a shorter) pre-alloc livelen, flipping copy_end to lowest priority (s5) while keeping bytes identical.
+- mechanism: flow.c reg_live_length (per-insn live count) sets allocno priority = floor_log2(nrefs)*nrefs*10000/livelen; the 4 callee-saved values (index, cam, const, copy_end) are all loop-invariant-hoisted, so their livelen is set by last-use position.
+- probe: Swept loop-invariant def-placement with instrumented cc1 + BB2_FLOW_DEBUG per-insn liveness. Forms: top-def(12), const-last(11, const L76->62), copyend-first+const-last(10, index->s2 & const->s4 correct), const-reassign-in-loop(17, breaks bytes).
+- result: Def-placement IS a real lever (score 12->11->10) but flow counts loop-carry (copy_end live in bottom block4 = const's 19 insns); copy_end's deficit is block-0 only. copy_end livelen hard-caps ~L38 by its earliest last-use (inner-loop bne); it cannot exceed cam(L66)/const(L62), and no byte-neutral later reference exists (tail copy must read via src, not copy_end). So copy_end can never be lowest-priority -> never s5.
+- verdict: KILLED

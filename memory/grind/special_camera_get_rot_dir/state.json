@@ -1,7 +1,7 @@
 {
  "func": "special_camera_get_rot_dir",
  "file": "code6cac_b2_post",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -21,23 +21,24 @@
    "floor": 9,
    "modality": "structural",
    "headline": "Floor holds 9. Instrumented cc1 PROVES copy_end->s5 is unreachable via allocno priority (livelen capped ~38 << const's locked 76; find_reg has no cost/preference lever); def/use-placement axis exhaust"
+  },
+  {
+   "session": 3,
+   "floor": 9,
+   "modality": "structural",
+   "headline": "Structural axis exhausted: found loop-invariant def-placement lever (drove top-def score 12->10, fixing index+const slots) but copy_end is hard-capped ~L38 by its earliest-last-use, so it can never be"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "G1: a C form whose pre-alloc (post-sched1) RTL gives copy_end a longer, or const a shorter, live length while sched2/reorg restores the identical emitted bytes.",
-   "mechanism": "reg_live_length is measured after cse/loop/flow/combine/sched1 but before reload; two sources emitting the same final bytes can present different pre-alloc livelens.",
-   "next_probe": "Diff cc1 -da .sched1/.combine dumps of candidate vs an m2c-reconstructed target C to see whether the do-loop's copy_end-use can sit later in pre-alloc RTL without moving the emitted loop."
+   "hypothesis": "Directed permuter over statement/invariant-def order, seeded from the score-10 V_cefirst_constlast form (index+const already correct), might stumble on a livelen arrangement the manual sweep missed.",
+   "mechanism": "PERM_* macros randomize statement order / declaration order; random mode has never been run on this function.",
+   "next_probe": "Build a clean single-function target.o (asm/funcs + prelude, drop .set gp=64) and run decomp-permuter --stop-on-zero seeded from copyend-first-const-last-score10.c; low expectation (the copy_end<->cam 2-cycle is priority-locked) but unmeasured."
   },
   {
-   "hypothesis": "G2: induce a legitimate hard_reg_copy_preference that pulls copy_end to s5 (bypassing priority), without a register pin.",
-   "mechanism": "find_reg (global.c:1046+) overrides best_reg to a preferred reg when a copy insn links the allocno to that reg; copy_end currently has none.",
-   "next_probe": "Explore expressing the loop end-pointer as a copy from another pointer variable (byte-neutral) that would create a copy-preference; verify via ALLOCDBG + sandbox."
-  },
-  {
-   "hypothesis": "G3: re-derive the s5 identity \u2014 confirm the original loop bound is a src-relative end pointer and not a down-counter / dest-relative form that changes which value is long-lived.",
-   "mechanism": "m2c reconstruction + coalescing/aliasing check may reveal a different allocno set where the long-lived value naturally takes s4 and the short one s5.",
-   "next_probe": "Run m2c on the target and inspect the loop shape and any reg_may_share coalescing against the candidate."
+   "hypothesis": "This is the marionation_Exec / cpu_side_move_dir_4 allocno-priority-tie wall class; if permuter is also dead the ladder's next step is escalation (owner ruling under the endgame-lock disposition policy).",
+   "mechanism": "copy_end's sole use being the earliest of four callee-saved invariants makes lowest-priority structurally unreachable in pure C; the honest floor is 9 (block-local copy_end->t0, 70 insns, +2 vs target's s5 save/restore).",
+   "next_probe": "If s4 permuter measures dead, file the OWNER-ESCALATION entry citing the endgame-lock-disposition policy and the s1-s3 measured exhaustion, and return owner-gated."
   }
  ],
  "judge_constraints": [],

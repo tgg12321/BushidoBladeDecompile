@@ -610,3 +610,4 @@
 - 2026-07-23 20:19 func_8001924C COMPLETED-C after 2 sessions.
 - 2026-07-23 20:37 special_camera_get_rot_dir s1 [recon] floor=9: Floor 12->9 (pure C); honest floor is a 4-reg rotation reduced to a single-register sub-problem: copy_end must land in callee-saved s5.
 - 2026-07-23 21:06 special_camera_get_rot_dir s2 [structural] floor=9: Floor holds 9. Instrumented cc1 PROVES copy_end->s5 is unreachable via allocno priority (livelen capped ~38 << const's locked 76; find_reg has no cost/preference lever); def/use-placement axis exhausted, F1/F2/F3 killed.
+- 2026-07-23 21:36 special_camera_get_rot_dir s3 [structural] floor=9: Structural axis exhausted: found loop-invariant def-placement lever (drove top-def score 12->10, fixing index+const slots) but copy_end is hard-capped ~L38 by its earliest-last-use, so it can never be lowest-priority->s5; G1-placement + G2 KILLED, floor holds 9.

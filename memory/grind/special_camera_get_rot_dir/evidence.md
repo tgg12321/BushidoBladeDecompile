@@ -156,3 +156,73 @@
 - [s2] copy_end is a leaf local address (addiu sp+0x50) used once in a bne: it generates no copy insn, so hard_reg_preferences is empty and find_reg cannot pull it to s5. A pin to force it would be a cheat.
 
 - [s2] This is the global.c:624 allocno-priority wall class flagged in s1 (marionation_Exec / cpu_side_move_dir_4 family). The match still provably exists; the dead axis is copy_end def/use placement / live-length, not the function.
+
+## s3 (structural) — floor stays 9. NEW lever found (loop-invariant def-placement); copy_end↔cam residual isolated; G1-placement + G2 KILLED.
+
+- **m2c reconstruction (G3 DONE):** target body is ONE loop (header = both back-edges,
+  same as my `retry` single-label form); s5 (sp+0x50) is a loop-invariant src-relative
+  end pointer HOISTED to the outer preheader. Decomposition is identical to candidate —
+  no alternate allocno set. `addiu $s5,$sp,0x50` sits in the preheader (loop-invariant,
+  held across the loop); `addiu $a2,$sp,0x20` (src) is reinit per-iteration.
+
+- **My top-def emitted asm is byte-structurally IDENTICAL to target except the 4-reg
+  rotation.** copy_end's `addu $18,$sp,80` is in the outer preheader exactly like target's
+  `addiu $s5,$sp,0x50`, loop-carried in both. The gap is purely register assignment.
+
+- **flow.c reg_live_length is per-insn-live-count, NOT linear span.** Traced via
+  BB2_FLOW_DEBUG (built into flow.c). top-def: copy_end(77) and const(76) are BOTH live in
+  ALL blocks 0-4 incl. the bottom final-call block 4 (19 insns EACH — loop-carry IS
+  counted there). copy_end's livelen deficit (32 vs 76) is almost entirely in **block 0**
+  (const 14 insns vs copy_end 4) because const is defined earliest and held; block 2 (+2).
+
+- **The 4 callee-saved competitors are ALL loop-invariant-hoisted** (const, cam, copy_end
+  are constant/address invariants; index=jal-result is the only non-invariant). Their
+  livelens are set by last-use position: copy_end (inner-loop bne, EARLIEST) < index/cam
+  (cdrom call) < const (final call, latest). => copy_end is structurally the SHORTEST-lived
+  => HIGHEST priority => grabs the lowest reg (s2/s3). Target needs it LOWEST priority (s5).
+
+- **NEW WORKING LEVER — loop-invariant def-placement changes hoisted-invariant livelen:**
+    top-def (const 1st):                     const L76 -> s5, copy_end s2   score 12
+    const-last-before-retry (V_constlast):   const L62 -> s4, cam s5        score 11  [rejected/]
+    copy_end-first + const-last (V_cefirst_constlast): index->s2 ✓, const->s4 ✓,
+                                             copy_end L38->s3, cam L66->s5   score 10  [rejected/]
+  Moving const's assignment later shortened its live range (76->62) and fixed const's slot;
+  moving copy_end's assignment first raised it (L38, its MAX) and fixed index's slot.
+  Residual at score 10: a copy_end<->cam 2-cycle (copy_end needs s5, cam needs s3).
+  const-reassigned-INSIDE the retry loop breaks bytes (score 17, 69 insns) [rejected/].
+
+- **The residual is UNREACHABLE structurally:** copy_end (L38 max) must exceed cam(66) AND
+  const(62) to become lowest-priority. Its sole use is the inner-loop bne (structurally the
+  earliest last-use of the four). It CANNOT be referenced later byte-neutrally — the only
+  post-loop value is src(==copy_end addr) used by the Triple tail copy, and target reads
+  that tail through src's reg (a2), not s5; expressing it via copy_end breaks the tail
+  lw/sw bytes (reconfirmed; s2 copy_end-in-triple-copy = score 12). So copy_end's livelen
+  is hard-capped at ~38 by its earliest-last-use, < const/cam. It can never be lowest-pri.
+
+- **G2 (copy-preference) KILLED by the target itself:** target asm has NO `move`/copy insn
+  to/from $s5 — copy_end reaches s5 purely via allocno PRIORITY (lowest), not a
+  hard_reg_copy_preference. So inducing a copy-preference is NOT the target's mechanism;
+  the only route is priority (G1), which the placement/reassociation axis exhausts.
+
+- **CONCLUSION (s3):** confirms + extends s2. copy_end→s5 requires it to be BOTH callee-saved
+  (must cross a call → needs a live range spanning a call → hoisted) AND lowest-priority
+  (longest livelen). Hoisting gives it callee-saved status but livelen ~38 (earliest
+  last-use) → high priority → s2/s3. Non-hoisted (block-local) → caller-saved t0 (floor-9).
+  No pure-C structure makes a value that is simultaneously call-crossing and
+  longest-lived when its only use is the earliest. This is the global.c:624 allocno-priority
+  wall (marionation_Exec / cpu_side_move_dir_4 class). Structural axis EXHAUSTED. Next
+  modality per ladder: permuter (directed PERM_* on statement order) or escalation.
+
+- [s3] m2c: target = single loop (header=both back-edges) identical to candidate's retry form; s5 = loop-invariant src-relative end pointer (sp+0x50) hoisted to preheader; decomposition identical, no alternate allocno set.
+
+- [s3] My top-def emitted asm is byte-structurally IDENTICAL to target except the 4-register rotation; copy_end's addu $18,$sp,80 is in the outer preheader exactly like target's addiu $s5,$sp,0x50, loop-carried in both. Gap is purely register assignment.
+
+- [s3] flow.c reg_live_length is a per-insn live COUNT (BB2_FLOW_DEBUG-traced), not a linear span; it DOES count loop-carry (top-def: copy_end(77) and const(76) both live at all 19 insns of bottom block 4). copy_end's 32-vs-76 deficit is almost all in block 0 (copy_end 4 insns vs const 14) because const is defined earliest and held.
+
+- [s3] The 4 callee-saved competitors are all loop-invariant-hoisted; livelen is set by last-use position: copy_end (inner-loop bne, earliest) < index/cam (cdrom call) < const (final call). copy_end is structurally shortest-lived -> highest priority -> lowest reg (s2/s3); target needs it lowest-priority -> s5.
+
+- [s3] NEW LEVER: loop-invariant def-placement moves hoisted-invariant livelen. const assigned last-before-retry: L76->62, score 12->11 (72 insns). copy_end-first + const-last: index->s2 and const->s4 both CORRECT, residual is a copy_end<->cam 2-cycle, score 10 (72 insns).
+
+- [s3] Residual UNREACHABLE: copy_end (L38 max, def-first) must exceed cam(66) and const(62) to be lowest-priority, but its only use is the earliest (inner-loop bne) and it cannot be referenced later byte-neutrally (target reads the Triple tail via src's reg a2, not s5; copy_end-in-tail breaks bytes = s2 score 12).
+
+- [s3] copy_end must be BOTH callee-saved (cross a call -> hoisted) AND longest-lived (lowest priority); hoisting gives callee-saved but livelen ~38 -> high priority -> s2/s3; non-hoisted block-local -> caller-saved t0 (floor-9). No pure-C form yields a value that is both call-crossing and longest-lived when its sole use is the earliest. global.c:624 allocno-priority wall (marionation_Exec / cpu_side_move_dir_4 class).
