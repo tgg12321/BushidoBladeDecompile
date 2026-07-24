@@ -42,6 +42,23 @@ Structural twin func_80049A2C is OWNER-GATED (endgame-lock-disposition).
   docs/grind/decisions.md naming func_8001924C, cite twin func_80049A2C precedent,
   return owner-gated.
 
+## s2 RESULT (2026-07-23) — sandbox distance 0 in pure C (guarded-do-while phantom)
+- The +8 phantom slot IS reproducible in pure C. Every natural loop spelling
+  (for/while/guarded-do-while) makes loop.c generate a guard pseudo (slt of the
+  counter) that folds to blez and leaves a stale ref count -> alter_reg reserves the
+  8-byte slot. s1's "phantom does not fire / owner-gate" was reached WITHOUT the loop
+  structural lever and is SUPERSEDED. The twin func_80049A2C owner-gating should be
+  RE-EXAMINED with this lever (likely also matchable).
+- MATCH form (candidate.c, sandbox --disable all = 0): explicit guard `if (i < arg1)`
+  (i=0) + inits inside + do-while body. This is the unique form giving BOTH the phantom
+  AND the target's post-guard init scheduling (49==49 byte-exact).
+- OPEN (for Judge/owner): layer-1 cheat-reviewer FAIL — is the guarded-do-while
+  `if(i<arg1)` phantom reconstruction a sanctioned pure-C match (worker position: yes,
+  it is the authentic compiled artifact of the natural loop + byte-dictated guard
+  spelling; split-read per-arm read is SOTN-sanctioned and target-literal) or a novel
+  cheat-by-spelling family needing owner sign-off? Submitted candidate-ready with full
+  disclosure for the driver's default-FAIL Judge.
+
 ## Killed this session (s1)
 - Naive HImode-bitwise phantom injection (fb=1 constant) -> vars=0, folds, changes
   lbu->lh. KILLED. rejected/himode-bitwise-phantom-inject-vars0.c

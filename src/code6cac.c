@@ -606,27 +606,25 @@ void single_game_setModeRequest(s32 arg0, s32 *arg1) {
 /* kengo:HIGH  |  nm_single_game/single_game_setModeRequest  |  663i  |  +1 near-exact */
 extern s32 g_file_data_buf;
 void func_8001924C(s16 *arg0, s32 arg1) {
-    s32 i;
+    s32 i = 0;
     s16 *s0;
-    s32 pad[2];
     s32 new_var;
 
-    i = 0;
-    if (arg1 <= 0) return;
-
-    new_var = (s32)&g_file_data_buf;
-    s0 = arg0;
-    do {
-        if (*(u8 *)((u8 *)s0 + 2) & 1) {
-            s16 val = s0[0];
-            func_80019310(s0, (s32 *)(val * 52 + new_var));
-        } else {
-            s16 val = s0[0];
-            single_game_setModeRequest(s0, (s32 *)(val * 52 + new_var));
-        }
-        i++;
-        s0 = (s16 *)((u8 *)s0 + 16);
-    } while (i < arg1);
+    if (i < arg1) {
+        new_var = (s32)&g_file_data_buf;
+        s0 = arg0;
+        do {
+            if (*(u8 *)((u8 *)s0 + 2) & 1) {
+                s16 val = s0[0];
+                func_80019310(s0, (s32 *)(val * 52 + new_var));
+            } else {
+                s16 val = s0[0];
+                single_game_setModeRequest(s0, (s32 *)(val * 52 + new_var));
+            }
+            i++;
+            s0 = (s16 *)((u8 *)s0 + 16);
+        } while (i < arg1);
+    }
 }
 void func_80019310(volatile s32 *arg0, s32 *arg1) {
     s32 sp_buf[6];
