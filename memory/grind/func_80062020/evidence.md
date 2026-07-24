@@ -78,3 +78,47 @@ Cheat reference (diff only): `git show dfb9e9ac` on branch work/orch3a.
 - [s1] Register placement (index->v1) and the col-a split are coupled: both stem from target double-using the raw index; the 4 pins in the abandoned src forced the v1 placement.
 
 - [s1] Store order matters by 1 diff: reverse (p[2],p[1],p[0]) = 10; forward (p[0..2]) = 11 (target stores c,b,a).
+
+## s2 findings (structural modality) — floor 10 -> 4
+
+- [s2] **REGISTER-FLIP SOLVED (floor 10 -> 4).** REUSING the loop's `ofs` variable
+  to hold the terminator index (`ofs = i*12` via split-init, instead of a fresh
+  `i12`) biases RA to keep the index in v1 (target) instead of v0. `ofs` was the
+  loop's byte-offset biv (v1); 12*count is also a byte offset -> semantically the
+  same value, legitimate reuse. Result: the ENTIRE epilogue register allocation
+  now matches target (index v1, base &1198 in v0, addu v0,v1,v0, cols b,c via
+  4/8(v0)). Only col a's addressing remains. candidate.c updated to this form.
+- [s2] With RA fixed, the residual score-4 is EXACTLY col a: mine `sw zero,0(v0)`
+  (folds col a onto base pointer v0); target `lui at,%hi(1198); addu at,at,v1;
+  sw zero,%lo(1198)(at)` (recomputes, keeps raw index v1 live) -> +2 insns +1 sw.
+- [s2] Measured structural landscape at index-v1 (all pure C, 0 pins/rules):
+    * single-object pointer p=&1198+ofs, store c,b,a (p[2],p[1],p[0]) = **4** (full CSE) <- clean floor
+    * single-object pointer, store a,b,c (p[0..2])                 = 5
+    * uniform 1198+displacement (ofs+8/+4/+0, no pointer var)      = 6 (full recompute, 3 lui)
+    * three distinct symbols (11A0/119C/1198 + ofs)               = 6 (full recompute, 3 lui)
+    * two-object: b,c via p=&119C+ofs (0/4), col a via 1198 symbol = **2** (col a MATCHES; only b,c anchor differs)
+    * dual-spelling: b,c via p=&1198+ofs (p[2],p[1]), col a via *(&1198+ofs) = **0** (CHEAT, only closer)
+- [s2] scan_hand_coded --single func_80062020 = tier LOW, score 0/8 (no S1/S2/S6
+  strong signals). Per endgame-lock-disposition: canonical-asm REFUSED — the
+  col-a partial-CSE is an ordinary GCC addressing/RA artifact, not hand-coded.
+- [s2] **Distance-0 EXISTS but only via the same-lvalue dual-spelling cheat.** With
+  the register flip fixed, the dual-spelling (rejected bank) now closes at 0
+  (was 12 at s1). Every consistent/legitimate spelling gives full-CSE (4) or
+  full-recompute (6); target's partial CSE (base pointer for b,c + separate
+  %hi/%lo recompute for a) has NO non-steer pure-C form.
+- [s2] The two-object flag(1198)/data(119C) split proves target's b,c "data view"
+  is anchored at the FLAG's address (1198, disp 4/8), NOT at 119C -> b,c are the
+  SAME interleaved struct-row {flag@1198,b@119C,c@11A0} as col a, so no genuine
+  object separation reproduces the partial CSE. Frontier hyp #1 KILLED.
+
+- [s2] Honest pure-C floor dropped 10 -> 4 this session via the `ofs`-reuse register lever (clean pure C: 0 pins, 0 rules, 0 dead vars). candidate.c updated.
+
+- [s2] With RA fixed, the entire epilogue matches target through cols b,c; the sole residual (score 4) is col a: mine `sw zero,0(v0)` (folds onto base pointer) vs target `lui at,%hi(1198); addu at,at,v1; sw zero,%lo(1198)(at)` (separate recompute keeping raw index v1 live).
+
+- [s2] Structural landscape at index-v1 (all pure C): single-object pointer c,b,a = 4 (full CSE, floor); pointer a,b,c = 5; uniform 1198+disp = 6 (full recompute); three-distinct-symbol = 6 (full recompute); two-object 119C-anchor = 2 (col a matches, wrong b,c anchor); dual-spelling = 0 (CHEAT, only closer).
+
+- [s2] Distance-0 byte-match is PROVEN to exist but its only known spelling is the same-lvalue dual-spelling cheat (rejected bank). Every consistent legitimate spelling gives full-CSE (4) or full-recompute (6); target's PARTIAL CSE has no non-steer pure-C form.
+
+- [s2] scan_hand_coded --single func_80062020 = tier LOW, score 0/8 -> col-a partial-CSE is an ordinary GCC addressing/RA artifact; canonical-asm refused per endgame-lock-disposition criterion 1.
+
+- [s2] All three original frontier hypotheses resolved: #2 (register placement) CONFIRMED/solved -> floor 4; #1 (semantic object model) and #3 (combine fold) both KILLED with measurements.
