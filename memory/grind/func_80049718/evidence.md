@@ -108,3 +108,14 @@ wrapper is the perturber here).
 - [s2] No prior owner ruling/escalation for func_80049718 in docs/grind/decisions.md.
 - artifacts: tmp/grind/func_80049718/s2/text1b.i.greg (+ .sched/.jump2/etc),
   tmp/grind/func_80049718/s2/greg.sh, diff.py.
+
+## s2b (structural) — candidate-ready, floor 0
+
+- [s2b] Applied the s1 Judge-sanctioned POINTER spelling as ordinary COMPLETED-C
+  (git 3bd87bf9): `{ s16 *tbl = D_800EF980; p_anim = tbl + arg0; }` in src/text1b.c,
+  plus removal of the do{}while(0)+if(0){} perturbers and the block-1 order intact,
+  and the block-2 `if(var_s3!=1)` store reorder (obj+4=6 after obj+8/obj+0xA).
+- [s2b] sandbox func_80049718 --disable all = 0 (197/197, rules_dropped=2, scorable).
+  NO /* FAKE */, NO pointer-alias gating — ordinary path per the ruling. Candidate
+  saved; result=candidate-ready. Driver to re-verify SHA1==oracle + layer-2 review.
+- artifact: tmp/grind/func_80049718/s2/sandbox_score0.json

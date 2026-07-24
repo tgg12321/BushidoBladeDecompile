@@ -1,23 +1,23 @@
-/* func_80049718 (text1b.c) — CLEAN candidate, floor 4 (HEAD 11). ZERO cheat-asm,
- * ZERO regfix (the 2 stripped rules are now inert). Layer-1 cheat-reviewer PASSED
- * both changes below.
+/* func_80049718 (text1b.c) — CANDIDATE-READY, sandbox distance 0 (HEAD floor 11).
+ * ZERO cheat-asm, ZERO regfix (the 2 stripped rules are inert). This is the
+ * ordinary COMPLETED-C form; NO /* FAKE */ annotation, NO pointer-alias-fake-
+ * exception gating — per the s1 Judge ruling (git 3bd87bf9), the pointer
+ * spelling below is clean COMPLETED-C and goes through the ordinary acceptance
+ * path (full-build SHA1 == oracle + standing layer-2 cheat-reviewer over the
+ * whole Cluster A + B diff).
  *
- * Two pure-C levers (cumulative from HEAD 11 -> 4):
- *  1) (prior session) removed no-op do{...}while(0) + if(0){} perturbers (11->6).
- *  2) (s1) block-2 store reorder: `obj+4=6` moved to follow obj+8/obj+0xA zero
- *     stores — matches target's late `sh v0,4(s2)` schedule (6->4). Independent
- *     stores to distinct offsets; behavior-identical.
- *
- * REMAINING residual (floor 4) = CLUSTER A, prologue `p_anim = &D_800EF980[arg0]`.
- *   Mechanism (RTL .greg, tmp/grind/func_80049718/s1/text1b.i.greg:7783-7800):
- *   our fork emits insn18 `(reg v0)=ashift s6,1` (INDEX) BEFORE insn20
- *   `(reg v1)=symbol_ref D_800EF980` (BASE), so local-alloc gives index->$v0,
- *   base->$v1, and `addu s0,v0,v1`. Target wants base->$v0, index->$v1,
- *   `addu s0,v1,v0`. Cause: `fold` canonicalizes the address PLUS so the
- *   symbol_ref (address constant) is operand-2 -> index materializes first.
- *   A gated 4->0 close exists (named base-pointer alias) — see
- *   candidate_gated_alias.c; it is pointer-alias-family and requires documented
- *   lever-exhaustion + /* FAKE */ per the cheat-reviewer, NOT yet satisfied. */
+ * Three cumulative pure-C levers (HEAD 11 -> 0):
+ *  1) removed no-op do{...}while(0) + if(0){} scheduling perturbers (11->6).
+ *  2) block-2 (`if(var_s3!=1)`) store reorder: `obj+4=6` moved to follow the
+ *     obj+8/obj+0xA zero stores — matches target's late `sh v0,4(s2)` (6->4).
+ *  3) CLUSTER A close (4->0): stage the base symbol into a named pointer
+ *     `s16 *tbl = D_800EF980; p_anim = tbl + arg0;`. A live base pseudo keeps
+ *     the symbol_ref as PLUS operand-1 (fold does NOT demote it to operand-2),
+ *     so the base insn is emitted BEFORE the index ashift -> local-alloc gives
+ *     base->$v0, index->$v1, `addu s0,v1,v0` (target order). This is the
+ *     SOTN named-intermediate / ordinary-pointer-arithmetic lever
+ *     (register-alloc-pure-c "Confirmed CLOSURES", tslPolyF4Init). The pointer
+ *     spelling is preferred over the integer-cast spelling per the ruling. */
 void func_80049718(s32 arg0, s32 arg1, s32 *arg2, s16 *arg3) {
     int new_var2;
     s16 sp10[3];
@@ -30,7 +30,10 @@ void func_80049718(s32 arg0, s32 arg1, s32 *arg2, s16 *arg3) {
     u8 *part;
     u8 *new_var3;
     u8 *ot;
-    p_anim = &D_800EF980[arg0];
+    {
+        s16 *tbl = D_800EF980;
+        p_anim = tbl + arg0;
+    }
     var_s3 = arg1;
     if ((*p_anim) < 0) {
         InitFadePanel();

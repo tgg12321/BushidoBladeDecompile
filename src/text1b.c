@@ -955,17 +955,17 @@ void func_80049718(s32 arg0, s32 arg1, s32 *arg2, s16 *arg3) {
     u8 *part;
     u8 *new_var3;
     u8 *ot;
-    p_anim = &D_800EF980[arg0];
-    do {
-        var_s3 = arg1;
-        if ((*p_anim) < 0) {
-            InitFadePanel();
-        }
-    } while (0);
+    {
+        s16 *tbl = D_800EF980;
+        p_anim = tbl + arg0;
+    }
+    var_s3 = arg1;
+    if ((*p_anim) < 0) {
+        InitFadePanel();
+    }
     obj = D_800A38B4;
     var_s5 = 0;
     obj[0] = 0;
-    if (0) { }
     obj[1] = 0;
     new_var = (*p_anim) * 2;
     *((s16 *) (obj + 4)) = 6;
@@ -1017,9 +1017,9 @@ void func_80049718(s32 arg0, s32 arg1, s32 *arg2, s16 *arg3) {
             ot = new_var3;
             *((s32 *) (obj + 0xC)) = (s32) (obj - 0x68);
             *((s16 *) (obj + 6)) = 1;
-            *((s16 *) (obj + 4)) = 6;
             *((s16 *) (obj + 8)) = 0;
             *((s16 *) (obj + 0xA)) = 0;
+            *((s16 *) (obj + 4)) = 6;
             *((s16 *) (obj + 2)) = (s16) ((anim_v * 2) + 1);
             D_800A3820 = ot + 4;
             *((u8 **) ot) = obj;

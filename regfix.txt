@@ -3248,9 +3248,7 @@ saTan4FireDisp_80048864: subst "bne\s+\$3,\$0,\.L\d+" "bne	$3,$0,.LBNE_TGT" @ 40
 saTan4FireDisp_80048864: insert_label ".LJMP_TGT:" @ 101
 saTan4FireDisp_80048864: subst "j\s+\.L\d+" "j	.LJMP_TGT" @ 57
 # Reorder prologue saves
-func_80049718: reorder 13,18,3,4,8,7,9,10,11,12,14,5,15,16,17,6 @ 3-18
 # Mode==1 store order: sh v0,4 last in target
-func_80049718: reorder 168,169,167 @ 167-169
 
 # func_80069AE4: hoist a0=p, a1=1 setup into each of the 3 branch tail blocks
 # (target schedules these inside branches; GCC defers them to merge point)
