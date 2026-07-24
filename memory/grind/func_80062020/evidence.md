@@ -144,3 +144,28 @@ Cheat reference (diff only): `git show dfb9e9ac` on branch work/orch3a.
 - [s3] Structural axis EXHAUSTED across s1 (indexed-source loop lever, floor 20->10), s2 (ofs-reuse register lever floor 10->4 + object-split/combine-fold KILLs), s3 (CSE-defeat KILL). Floor flat at 4 this session.
 
 - [s3] Remaining sanctioned axis NOT yet run: permuter. Sibling-cluster endgame-lock escalations in this same file (func_80048530 permuter s2/s4, func_80022F34 permuter s4/s5) ran permuter BEFORE filing OWNER-ESCALATION; disposition deferred to a permuter-modality session per that protocol rather than escalating prematurely from a structural session.
+
+## s4 findings (permuter modality) — permuter axis KILLED; owner-gated
+
+- [s4] Baseline re-confirmed: candidate floor-4 form applied to src/text1b.c, sandbox --disable all = score 4, build_insns 35 vs target 38, 0 rules, cheat_asm_stripped 346 (clean pure C).
+- [s4] Built a CLEAN single-function permuter workspace (target.o from asm/funcs/func_80062020.s + prelude at offset 0 → real weighted diff, no whole-file offset noise). Two fresh-seed campaigns via tools/permuter_campaign.py.
+- [s4] Chassis A (floor-4 base, base_score 400): hit byte-0 at ~65s / 1272 iters. SOLE zero-find (output-0-1) is the same-lvalue dual-spelling: `p[0]` re-spelled as `((s32*)((u8*)&D_800F1198+ofs))[0]`, chained `X[0]=(p[1]=(p[2]=0))`. diff.txt confirms the ENTIRE close is that one respelling. Banked: rejected/epilogue-permuter-s4-dualspelling-chain.c. CHEAT (fails vetting tests 1-4).
+- [s4] Chassis B (two-object 119C-anchor basin, base_score 20, col a already matching target): plateaued at score 15 over 45,307 iterations / ~20 min, NO byte-0 find. b,c cannot re-anchor to 1198 while keeping col a's separate recompute without collapsing to the dual-spelling.
+- [s4] PERMUTER AXIS MEASURED DEAD: the only byte-0 form reachable from any basin is the forbidden same-lvalue dual-spelling — exactly as the frontier predicted (mirrors sibling func_80048530). Both endgame-lock AND-gates fail: scan_hand_coded LOW 0/8 (fresh); no SOTN precedent for same-lvalue respelling.
+- [s4] Every sanctioned axis exhausted (structural s1/s2/s3 + permuter s4). Filed OWNER-ESCALATION in docs/grind/decisions.md (2026-07-24) naming func_80062020; returned owner-gated. Sibling func_80048530 (same file, same shape) already ruled option (b) REFUSED/OWNER-ACCEPTED INCOMPLETE (decisions.md line 1594). Artifacts: tmp/grind/func_80062020/s4/perm_ws/, perm_ws_b/.
+
+- [s4] Baseline re-confirmed: floor-4 candidate applied to src/text1b.c, sandbox --disable all = score 4, build_insns 35 vs target 38, 0 rules, cheat_asm_stripped 346 (clean pure C).
+
+- [s4] Chassis A (floor-4 base, base_score 400): byte-0 at ~65s/1272 iters; sole zero-find is the same-lvalue dual-spelling (p[0] re-cast as the full base-expression). Banked rejected/epilogue-permuter-s4-dualspelling-chain.c; diff.txt shows the whole close is that one respelling.
+
+- [s4] Chassis B (two-object 119C-anchor basin, base_score 20, col a already matching target): plateau 15 over 45,307 iters, no byte-0 find.
+
+- [s4] scan_hand_coded --single func_80062020 = tier LOW 0/8 (fresh this session): no S1-S8 strong signals; col-a partial CSE is an ordinary GCC addressing/RA artifact, not hand-coded.
+
+- [s4] Both endgame-lock AND-gates fail: (1) canonical-asm refused (LOW 0/8, no hand-coded evidence); (2) no SOTN/VS/ESA/oot/MGS precedent for a same-lvalue respelling (identical value/memory/store; only GCC's address-rtx CSE decision changes).
+
+- [s4] Every sanctioned axis measured dead: structural s1 (indexed-source loop lever, floor 20->10), s2 (ofs-reuse register lever floor 10->4 + object-split/combine-fold KILLs), s3 (CSE-defeat store-order-invariance KILL), s4 (permuter, 2 basins, ~46k iters).
+
+- [s4] OWNER-ESCALATION filed in docs/grind/decisions.md (2026-07-24) naming func_80062020 with both options honestly. Direct sibling func_80048530 (same file, same shape, same dual-spelling-only byte-0) already ruled option (b) REFUSED/OWNER-ACCEPTED INCOMPLETE (decisions.md line 1594).
+
+- [s4] func_80062020 carries NO cheat on main and does not byte-match: the clean floor-4 pure-C candidate (0 rules/pins/dead-vars) is what would be retained under option (b).

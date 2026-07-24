@@ -25,6 +25,14 @@
  * constant-zero terminator. Structural axis exhausted (s1/s2/s3); floor flat at
  * 4. Frontier -> permuter (confirm no non-cheat byte-0 form), then
  * endgame-lock-disposition OWNER-ESCALATION.
+ *
+ * s4 (permuter): axis KILLED. Two fresh-seed campaigns (clean offset-0
+ * target.o). Chassis A (floor-4 base) hit byte-0 only via the same-lvalue
+ * dual-spelling (rejected/epilogue-permuter-s4-dualspelling-chain.c). Chassis B
+ * (two-object 119C-anchor, base_score 20, col a matching) plateaued at 15 over
+ * 45,307 iters, no byte-0. Every sanctioned axis dead; OWNER-ESCALATION filed
+ * (docs/grind/decisions.md 2026-07-24); returned owner-gated. This IS the best
+ * form (clean floor-4 pure C, 0 rules) and stays on main.
  */
 void func_80062020(s32 *arg0) {
     s32 i;

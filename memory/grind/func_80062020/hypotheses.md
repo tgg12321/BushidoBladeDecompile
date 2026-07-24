@@ -150,3 +150,41 @@ forms, file the endgame-lock OWNER-ESCALATION and return owner-gated.
 - probe: Structural analysis of the target epilogue (3x sw of constant 0) and the addressing constraints; no compilable non-cheat form exists to measure.
 - result: Structurally unavailable: all 3 cols are `sw` of 0 (narrowing col a changes bytes; a differently-typed pointer VIEW of the same address folds via address-rtx CSE and, spelled as two views, IS the banked same-lvalue dual-spelling). A 3-word constant-zero terminator has no natural intervening op; manufacturing one is a codegen steer/dead construct (forbidden).
 - verdict: KILLED
+
+## s4 findings (permuter) — permuter axis KILLED
+
+- **H-permuter [KILLED].** Fresh-seed permuter campaign from the floor-4 base
+  finds a legitimate (non-dual-spelling) distance-0 form.
+  - mechanism: The permuter mutates C source; if any consistent pure-C spelling
+    reproduced target's partial CSE, randomization from a floor-4 or score-2 base
+    would find it.
+  - probe: Two fresh-seed campaigns (tools/permuter_campaign.py, clean offset-0
+    target.o). Chassis A (floor-4, base 400): byte-0 at 1272 iters. Chassis B
+    (two-object 119C-anchor, base 20, col a matching): 45,307 iters.
+  - result: Chassis A's sole zero-find IS the same-lvalue dual-spelling (respell
+    p[0] as the full base-expression); Chassis B never reached byte-0 (plateau 15).
+    No legitimate distance-0 form exists.
+  - verdict: KILLED
+
+## Disposition (s4): OWNER-GATED
+All sanctioned axes measured dead: structural (s1 indexed-source loop lever; s2
+ofs-reuse register lever + object-split/combine-fold KILLs; s3 CSE-defeat KILL)
+and permuter (s4, two basins, ~46k iters — only byte-0 form is the dual-spelling
+cheat). Both endgame-lock AND-gates fail (scan_hand_coded LOW 0/8; no SOTN
+precedent for same-lvalue respelling). OWNER-ESCALATION filed in
+docs/grind/decisions.md (2026-07-24). Clean floor-4 pure-C candidate on main,
+0 rules — NOT a cheat, does not byte-match. Awaiting owner ruling (option a
+canonical-asm NOT supportable / option b REFUSE → INCOMPLETE-owner-accepted;
+sibling func_80048530 already ruled option b).
+
+## [s4] A fresh-seed permuter campaign from the clean floor-4 base finds a legitimate (non-dual-spelling) distance-0 form for func_80062020's col-a partial-CSE epilogue.
+- mechanism: The permuter randomizes C source; if any consistent pure-C spelling reproduced target's partial CSE (base pointer for cols b,c + separate %hi/%lo(D_800F1198)+index recompute for col a), randomization from a floor-4 base would surface it.
+- probe: Chassis A campaign: clean single-function target.o (asm/funcs/func_80062020.s + prelude, offset 0 -> real weighted diff, base_score 400) via tools/permuter_campaign.py --stop-on-zero; harvested at byte-0.
+- result: Hit byte-0 at ~65s / 1272 iters. The SOLE zero-find (output-0-1) re-spells p[0] as ((s32*)((u8*)&D_800F1198+ofs))[0] chained X[0]=(p[1]=(p[2]=0)); diff.txt confirms the ENTIRE close is that one respelling = the same-lvalue dual-spelling (rejected bank). CHEAT (fails vetting tests 1-4).
+- verdict: KILLED
+
+## [s4] Seeding the permuter from a structurally different, closer basin (the score-2 two-object 119C-anchor form, where col a already matches target) lets it re-anchor b,c to 1198 while keeping col a's separate recompute, reaching byte-0 legitimately.
+- mechanism: From base_score 20 with col a already emitting target's separate %hi/%lo(1198)+v1 recompute, only the b,c anchor (119C disp 0/4 vs target 1198 disp 4/8) differs; if a legitimate spelling re-anchored b,c to 1198 without re-touching col a's lvalue, the partial CSE would reproduce.
+- probe: Chassis B campaign from the two-object base (base_score 20), ~20 min / 45,307 iterations, --stop-on-zero.
+- result: Plateaued at score 15, NO byte-0 find. Re-anchoring b,c to &1198+ofs as a pointer makes col a's *(&1198+ofs) the same lvalue as that pointer's [0] -> collapses into the dual-spelling. No legitimate byte-0 form exists from this basin either.
+- verdict: KILLED

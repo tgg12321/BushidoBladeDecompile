@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80062020",
-      "file": "text1b",
-      "distance": 12,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_80072CD4",
       "file": "text1b",
       "distance": 12,
@@ -2475,6 +2467,15 @@
       "park_reason": "owner escalation pending: docs/grind/decisions.md 2026-07-23 special_camera_get_rot_dir OWNER-ESCALATION"
     },
     {
+      "func": "func_80062020",
+      "file": "text1b",
+      "distance": 12,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "owner escalation pending: docs/grind/decisions.md \u2014 2026-07-24 \u2014 func_80062020 (src/text1b.c) \u2014 OWNER-ESCALATION (filed by grind s4)"
+    },
+    {
       "func": "special_camera_set_win_cam",
       "file": "code6cac_b2_post",
       "distance": 510,
@@ -2711,13 +2712,13 @@
   ],
   "counts": {
     "total": 330,
-    "active": 282,
+    "active": 281,
     "by_status": {
-      "active": 282,
-      "parked": 48
+      "active": 281,
+      "parked": 49
     },
     "by_verdict": {
-      "C": 128,
+      "C": 127,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }

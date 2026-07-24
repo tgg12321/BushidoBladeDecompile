@@ -1,8 +1,8 @@
 {
  "func": "func_80062020",
  "file": "text1b",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 0,
@@ -27,18 +27,19 @@
    "floor": 4,
    "modality": "structural",
    "headline": "Structural CSE-defeat lever KILLED \u2014 base-pointer CSE folds col a store-order-invariantly (c,b,a=4, c,a,b=5, a,b,c=5); structural axis exhausted, floor flat at 4; frontier -> permuter then endgame-loc"
+  },
+  {
+   "session": 4,
+   "floor": 4,
+   "modality": "permuter",
+   "headline": "Permuter axis KILLED (2 fresh-seed basins, ~46k iters): only byte-0 form is the same-lvalue dual-spelling cheat; every sanctioned axis dead; OWNER-ESCALATION filed."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A permuter fresh-seed campaign from the floor-4 base finds only cheat byte-0 forms (same-lvalue dual-spelling / alias-rename / width-cast respellings), confirming no legitimate non-cheat distance-0 form exists.",
-   "mechanism": "Target's partial CSE is proven (s1/s2/s3) to require spelling the identical lvalue &1198+ofs two ways; the permuter mutates C source and can only reach byte-0 via that coercion, as it did for sibling func_80048530 (13 zero-finds, all the single forbidden construct).",
-   "next_probe": "Run permuter modality: build a clean single-function target.o for func_80062020 (asm/funcs + prelude, offset 0), campaign from the floor-4 candidate, ~2 fresh-seed windows. Vet every zero-find against the cheat catalog. If all are cheat forms, proceed to escalation."
-  },
-  {
-   "hypothesis": "func_80062020 is an endgame-lock-disposition species member: byte-0 reachable only via a coercion, a few insns short in clean pure C (floor 4), no hand-coded evidence.",
-   "mechanism": "Clean floor 4; distance-0 only via the banked same-lvalue dual-spelling; scan_hand_coded LOW 0/8 (AND-gate 1 fails: refuse asm); no SOTN-master precedent for same-lvalue respelling (AND-gate 2 fails).",
-   "next_probe": "After the permuter axis is measured dead (only cheat forms found), file the endgame-lock OWNER-ESCALATION in docs/grind/decisions.md naming func_80062020 (both options honestly: (a) canonical-asm NOT supportable, LOW 0/8; (b) REFUSE -> OWNER-ACCEPTED INCOMPLETE at clean floor 4) and return owner-gated citing it."
+   "hypothesis": "Owner ruling on the filed endgame-lock OWNER-ESCALATION resolves the disposition.",
+   "mechanism": "All grind-advanceable axes are dead; the remaining decision (option a canonical-asm NOT supportable at LOW 0/8, vs option b REFUSE -> INCOMPLETE-owner-accepted keeping the clean floor-4 pure-C form on main) is an owner policy call, not a grind lever.",
+   "next_probe": "Await owner ruling; sibling func_80048530 precedent points to option (b). If option (b): classify INCOMPLETE-owner-accepted, keep clean floor-4 candidate, park out of active grind, re-attempt only if a genuine non-dual-spelling pure-C lever emerges."
   }
  ],
  "judge_constraints": [],
