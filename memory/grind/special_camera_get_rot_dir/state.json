@@ -1,0 +1,40 @@
+{
+ "func": "special_camera_get_rot_dir",
+ "file": "code6cac_b2_post",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 0,
+   "floor": 12,
+   "modality": "wip-import",
+   "headline": "floor imported from memory/wip checkpoint"
+  },
+  {
+   "session": 1,
+   "floor": 9,
+   "modality": "recon",
+   "headline": "Floor 12->9 (pure C); honest floor is a 4-reg rotation reduced to a single-register sub-problem: copy_end must land in callee-saved s5."
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "From the score-9 block-local base, extend copy_end's live range to cross one call so it becomes callee-saved s5 (not t0) without adding real refs, keeping index/cam_base/const in s2/s3/s4.",
+   "mechanism": "callee-saved requires the pseudo live across a call; place the copy_end use/def so its interval spans the 2nd func_800372F4/cdrom calls while its priority stays lowest of the four.",
+   "next_probe": "sweep copy_end def/use placement relative to the tail calls; sandbox each; watch t0 -> s5 flip toward score 0."
+  },
+  {
+   "hypothesis": "From top-def (score 12, copy_end callee-saved but s2), nudge copy_end to LOWEST priority via live_length + the global.c:624 allocno-number tiebreak so it lands s5.",
+   "mechanism": "copy_end vs constant_80 is a razor-thin priority tie; declaring copy_end LAST among locals / first-referencing it later raises its allocno number so it loses the tie and takes s5.",
+   "next_probe": "declare copy_end last, delay its first reference; sandbox each variant."
+  },
+  {
+   "hypothesis": "Compute the exact target live_length copy_end needs (turn F1/F2 from guess-and-check into a calculation).",
+   "mechanism": "allocno_live_length/n_refs feed the priority formula; instrumenting global.c:allocno_compare (fprintf) or reading RTL live ranges gives the numbers for all 4 pseudos in the score-9 and score-12 builds.",
+   "next_probe": "add a diagnostic fprintf to a scratch cc1 copy (NOT the build cc1) or parse RTL live ranges; derive required L_ce."
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-24T01:19:32.255878+00:00"
+}
