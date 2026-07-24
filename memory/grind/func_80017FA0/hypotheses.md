@@ -20,6 +20,23 @@
   lacks (F3). CONFIRMED the producer is the forbidden dead-vars-local-array;
   WRITTEN-array carve-out inapplicable (zero frame stores in target).
 
+## KILLED (s2, structural)
+
+- H-F1 [empty-8-byte-frame legitimate shape] Some legitimate small-local shape
+  (struct-by-value, union, two address-taken scalars) reserves target's 8-byte
+  zero-store frame without being a dead-var cheat.
+  mechanism: function.c assign_stack_local reserves vars=8 for an aggregate/
+  address-taken local; if all accesses DCE'd only addiu sp,-8/+8 remain.
+  probe: frameprobe2.{c,s} — g1 dead struct=vars8 zero-store, g2 dead union=vars8
+  zero-store, g3 two &-taken scalars (&x==&y folds)=vars8 zero-store, g4 struct
+  read-once=vars8 but WITH sw stores target lacks.
+  result: KILLED. Every zero-store vars=8 shape (array/struct/union/addr-taken) is
+  a DEAD local = forbidden dead-vars-local-array; WRITTEN carve-out inapplicable
+  (target has ZERO frame stores). Every genuinely-used aggregate emits stores
+  target lacks. No legitimate structural shape exists. verdict: KILLED.
+  => endgame-lock condition met; next step is escalation-modality OWNER-ESCALATION
+  (mirror sibling InitHiraRmd_80047FBC / AddTbpOfst_80047EE8), NOT more structural.
+
 ## FRONTIER (for the next session — structural/endgame modality)
 
 - F1 [empty-8-byte-frame] The sole residual (distance 2). Mechanism: `.frame
@@ -55,3 +72,9 @@
 - probe: frameprobe.c compiled with cc1: F0 no-local=vars0, F1 dead-scalar=vars0, F2 dead s32 buf[2]=vars8 with ZERO sw/lw to $sp (matches target), F3 written buf=vars8 + extra sw.
 - result: Only F2 (dead unused 8-byte array) reproduces target's zero-store 8-byte frame. WRITTEN-array carve-out inapplicable (target has zero frame stores). canonical-asm NEGATIVE (scan_hand_coded LOW 1/8).
 - verdict: CONFIRMED
+
+## [s2] Some legitimate small-local shape (struct-by-value, union, two address-taken scalars) reproduces target's 8-byte zero-store frame without being a dead-var cheat.
+- mechanism: function.c assign_stack_local reserves vars=8 for an aggregate/address-taken local decl; if all accesses DCE'd, only addiu sp,-8/+8 remain (zero frame stores).
+- probe: frameprobe2.{c,s} via cc1 -O2 -G0 -funsigned-char -mcpu=3000: g0 no-local=vars0 control; g1 dead struct=vars8 zero-store; g2 dead union=vars8 zero-store; g3 two &-taken scalars (&x==&y folds)=vars8 zero-store; g4 struct read-once=vars8 WITH sw $2,0($sp)/sw $3,4($sp)+reloads.
+- result: Every zero-store vars=8 shape (array/struct/union/addr-taken) is a DEAD local = forbidden dead-vars-local-array; WRITTEN carve-out inapplicable since target has ZERO frame stores. Every genuinely-used aggregate (g4) emits frame stores the target lacks. No legitimate structural shape produces target's zero-store 8-byte frame.
+- verdict: KILLED

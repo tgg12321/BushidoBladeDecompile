@@ -1,5 +1,20 @@
 # Evidence bank — func_80017FA0
 
+## s2 (structural, 2026-07-24) — FLOOR HELD 2. Last structural axis (frame shape) measured DEAD.
+
+- [s2] Floor=2 REPRODUCED this session: applied candidate.c (scr[] fold form) to src/code6cac.c, `sandbox --disable all` = {"score":2,"target_insns":61,"build_insns":60,"rules_dropped":6,"cheat_asm_stripped":182}. src reverted clean. Sole residual remains the empty 8-byte frame. (tmp/grind/func_80017FA0/s2/sandbox_candidate.log)
+
+- [s2] frameprobe2 extension (tmp/grind/func_80017FA0/s2/frameprobe2.{c,s,sh}, cc1 -O2 -G0 -funsigned-char -mcpu=3000) — the mandated remaining small-local shapes, question: does any LEGITIMATE shape reserve vars=8 with ZERO frame stores (target's residual)?
+  - g0 baseline no-local -> vars=0 (control).
+  - g1 DEAD `struct{s32 a,b}` unused -> vars=8, `subu sp,-8`/`addu sp,8`, ZERO stores. Reproduces target EXACTLY but is a dead unused aggregate = FORBIDDEN dead-vars-local-array (aggregate variant).
+  - g2 DEAD `union{s32 w[2];s32 v}` unused -> vars=8, ZERO stores. Same forbidden dead aggregate.
+  - g3 two address-taken scalars `s32 x,y; (&x==&y)?...` -> vars=8, ZERO stores. x,y semantically dead, addr-compare folds at compile time; contrived dead-var frame coercion = forbidden.
+  - g4 `struct pair pp = *(struct pair*)ptr;` genuinely READ once -> vars=8 but WITH `sw $2,0($sp); sw $3,4($sp)` + reloads = emits frame stores the target LACKS. Wrong (same failure mode as s1's F3 written array).
+
+- [s2] DICHOTOMY COMPLETE: every zero-store 8-byte shape (dead scalar rounds to vars=0 per s1 F1; dead array F2 / dead struct g1 / dead union g2 / addr-taken g3 all vars=8 zero-store) is a DEAD local whose only effect is reserving frame bytes = forbidden dead-vars-local-array. The WRITTEN carve-out (.claude/rules/dead-vars-local-array.md 2026-07-01) is INAPPLICABLE — it requires target to contain the corresponding dead stores, and target has ZERO frame stores (s1 confirmed). Every genuinely-USED aggregate (g4) emits stores target lacks. No legitimate structural shape reproduces target's zero-store 8-byte frame. The structural axis for the frame residual is measured DEAD.
+
+- [s2] DISPOSITION (structural modality): H-F1 KILLED. This is the endgame-lock condition the s1 frontier named — func_80017FA0 is now RA/frame-locked at honest floor 2, byte-matchable only via forbidden dead-vars, hand-coded signal NEGATIVE (s1 scan_hand_coded LOW 1/8). Identical zero-store phantom-frame species to siblings InitHiraRmd_80047FBC (OWNER-ESCALATION filed 2026-07-20, awaiting ruling) and AddTbpOfst_80047EE8. The mandated next step is the ESCALATION modality: file OWNER-ESCALATION in docs/grind/decisions.md and return owner-gated. Not filed this session (modality=structural, not escalation).
+
 ## s1 (recon, 2026-07-24) — FLOOR 13 -> 2. WIP "no pure-C fold" claim FALSIFIED.
 
 - [s1] Baseline honest floor = 13 (sandbox --disable all on HEAD cheat-form; build 59 vs target 61 insns). Old WIP candidate.c (indexed `((volatile s32*)0x1F800000)[idx]` form) = 16, WORSE. NB the queue/WIP floor of 13 was HEAD's cheat-form honest distance, not a pure-C candidate.
@@ -69,3 +84,17 @@ outside worker scope). Blocked on the board with this reason. 24 prior commits
 - [s1] canonical-asm signal NEGATIVE (scan_hand_coded tier=LOW 1/8) — ordinary compiled C, so a C source produced the frame; not a hand-asm authorization case.
 
 - [s1] Same zero-store phantom-frame residual class as sibling AddTbpOfst_80047EE8 (OWNER-ESCALATION filed 2026-07-20, awaiting ruling) and InitHiraRmd_80047FBC.
+
+- [s2] Floor=2 reproduced this session: candidate.c (scr[] fold form) applied to src -> sandbox --disable all = {score:2, target_insns:61, build_insns:60, rules_dropped:6, cheat_asm_stripped:182}; src reverted clean.
+
+- [s2] frameprobe2 (cc1 -O2 -G0 -funsigned-char -mcpu=3000): dead struct g1 / dead union g2 / two address-taken scalars g3 all give vars=8 with ZERO frame stores = reproduce target's residual exactly, but each is a dead local (forbidden dead-vars-local-array, aggregate/addr-taken variant).
+
+- [s2] A genuinely-USED 8-byte aggregate (g4, struct read once) gives vars=8 but emits sw $2,0($sp)/sw $3,4($sp) + reloads = frame stores the target LACKS (target has zero frame stores).
+
+- [s2] Dichotomy complete: zero-store vars=8 <=> local is DEAD <=> forbidden; genuine use of a >=5-byte local => emits stores target lacks. No legitimate C frame shape exists. Structural axis for the frame residual is dead.
+
+- [s2] dead-vars-local-array WRITTEN carve-out (2026-07-01) is inapplicable: it requires target to contain the corresponding dead stores; s1 confirmed target has ZERO frame stores in the locals region.
+
+- [s2] hand-coded signal NEGATIVE (s1 scan_hand_coded LOW 1/8) — ordinary compiled C, so a C source produced the frame; not a hand-asm authorization case.
+
+- [s2] Same zero-store phantom-frame species as siblings InitHiraRmd_80047FBC (OWNER-ESCALATION filed 2026-07-20, awaiting ruling) and AddTbpOfst_80047EE8.
