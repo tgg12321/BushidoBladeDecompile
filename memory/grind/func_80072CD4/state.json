@@ -41,7 +41,9 @@
    "next_probe": "After the search modality confirms no clean lever, emit ruling-request citing rejected/dup4_0xc_into_arms.c with the s3 mechanism (store-order, not reg_n_refs) \u2014 do not self-sanction."
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "Do NOT respell the @4/@0xC common-tail stores (or any unconditional common-tail statement) as a duplicated-into-arms store-schedule lever; that mechanism is outside the reg_n_refs-RA-priority scope of the duplicated-statement-into-arms sanction and needs its own SOTN-master evidence to be reconsidered."
+ ],
  "origin": "queue",
  "created": "2026-07-24T19:56:18.957360+00:00"
 }

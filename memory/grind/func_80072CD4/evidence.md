@@ -173,3 +173,30 @@ forms that reached 11 carry empty `do { } while(0)` scheduler barriers
 - [s3] Measured cross-block structural kills: var_v0 int=13, @0xE-first-in-merge=13, arm-reorder=17. No byte-neutral in-arm value-reuse consumer exists (all arm constants distinct from var_v0).
 
 - [s3] The only sandbox-0 paths remain the s2-banked cheats: the empty do-while barrier (12, reviewer FAIL) and the @4/@0xC duplicated-statement-into-arms store-order variant (0, reviewer FAIL); both are non-structural.
+
+- [s4] PERMUTER modality. Clean floor holds at 4 (candidate.c, unchanged). Ran TWO fresh-seed
+  campaigns (telemetry via tools/permuter_campaign.py); BOTH plateaued early and surfaced ONLY
+  cheat-family forms, NEITHER reached a clean 0. Confirms the s3 frontier: no clean C reorder
+  defeats the residual-4 store-order / sched1 hoist.
+- [s4] Campaign A (floor-4 per-arm chassis, ws=tmp/grind/func_80072CD4/s4/ws, base perm-score 270
+  == honest 4): 6293 iters, 42 finds, BEST perm-score 25 (plateaued from iter ~1739). Best find
+  (output-25-1) wrapped the whole arg0<4 arm block + `@4=fc_const` store in an empty
+  `do{}while(0)` scheduling barrier — a cheat (barrier family, outside the do-while-zero LABEL_
+  OUTSIDE_LOOP_P sanction; same class as rejected/plus4_first_dowhile.c) AND not even a match
+  (perm-25, ~5 reg diffs; the barrier traded the 2-store reorder for register diffs — honestly
+  worse). Banked rejected/perm_dowhile_arm_barrier.c. NB: from this base random mutation never
+  reached the @4/@0xC dup form (dup requires duplicating 2 exact stores into both arms).
+- [s4] Campaign B (cross-block chassis = target's own structure: u8 var_v0 cross-block temp,
+  @0xE a native merge store; ws=tmp/grind/.../s4/ws_xblock, base perm-score 1605 — the RA rotation
+  fc->$a0/var_v0->$v1 cascades the weighted diff): 4983 iters, 481 finds, BEST perm-score 308
+  (plateaued from iter ~791). Best find (output-308-1) coerced the temp to `volatile char var_v0`
+  — a volatile-coercion cheat (inline-asm-policy expanded catalog) AND not a match (perm-308, the
+  RA rotation largely persists). Banked rejected/perm_volatile_varv0.c. Objdump-confirmed base diff
+  = ours sb a0,4/a0,12/v1,14 vs target sb v1,4/v1,12/v0,14 (the sched1-hoist rotation, s3 diagnosis).
+- [s4] CONCLUSION: the search modality (permuter, both chassis) is EXHAUSTED and confirms the
+  structural conclusion — every closing form the permuter surfaces near the residual is a cheat
+  (empty do-while barrier / volatile coercion), and none is even a byte match. The only known 0-path
+  remains the s2 @4/@0xC duplicated-statement-into-arms form (rejected/dup4_0xc_into_arms.c, reviewer
+  FAIL) whose classification is an owner ruling (does the duplicated-statement-into-arms sanction,
+  scoped to reg_n_refs RA-priority lifts, cover a store-SCHEDULING-order effect?). Emitting
+  ruling-request per the s3 frontier; not self-sanctioning.

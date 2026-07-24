@@ -98,3 +98,9 @@ verify the do-while sanction's NE-invert-peephole prerequisite actually applies 
 - probe: objdump of the score-4 build vs target/asm-funcs; per-arm vs cross-block sched-dump diff confirming insn 59 (in-arm sb) is what pins var_v0's li correctly.
 - result: Residual 4 is structurally locked to the cross-jump merge point; @4/@0xC before @0xE requires putting them in the arms (the rejected dup4 duplication).
 - verdict: KILLED
+
+## [s4] A fresh-seed permuter campaign (both floor-4 and cross-block chassis) finds NO clean C reorder that defeats the sched1 hoist / residual-4 store order; every near-residual closing form it surfaces is a cheat.
+- mechanism: The residual is a store-SCHEDULING-order artifact locked by the cross-jump merge point (per-arm chassis) or the sched1 bottom-up hoist of the lone cross-block li (cross-block chassis). Random C mutation cannot re-derive target's schedule without a fence/coercion, so the only sub-residual forms the permuter reaches are scheduling barriers (empty do-while around the arm block) and volatile coercions — both forbidden, and neither even a byte match.
+- probe: Two telemetry campaigns. A: floor-4 per-arm base (perm-270==honest-4), 6293 iters/42 finds, best perm-25 = empty do-while barrier (cheat, not a match). B: cross-block base (perm-1605), 4983 iters/481 finds, best perm-308 = volatile char coercion (cheat, not a match). Neither produced a perm-0.
+- result: No clean 0 in ~11k combined iters across two structurally-distinct chassis; both best forms are cheats. Search modality exhausted.
+- verdict: KILLED (no clean C lever exists in the searched space; the 0-path is the reviewer-FAIL dup form = an owner ruling question).
