@@ -181,9 +181,14 @@ def _exhaustion_ready(state):
     if len(hist) < ESCALATION_FLAT_SESSIONS:
         return False
     window = hist[-ESCALATION_FLAT_SESSIONS:]
+    # Floors are normally ints, but WIP-imported ledgers can carry a prose string
+    # there — treat any non-int floor as "unknown" and never escalate on it (avoids
+    # a str-vs-int comparison crash and a bogus escalation on malformed history).
     floors = [e.get("floor") for e in window]
+    if any(not isinstance(f, int) for f in floors):
+        return False
     top = floors[0]
-    if top is None or top <= 0:            # already matched / unknown → never escalate
+    if top <= 0:                           # already matched → never escalate
         return False
     if any(f != top for f in floors):      # floor still moving → keep grinding
         return False

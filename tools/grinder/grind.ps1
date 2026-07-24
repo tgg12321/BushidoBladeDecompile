@@ -463,8 +463,15 @@ while ($true) {
     $stObj = Get-Content $state -Raw | ConvertFrom-Json
     $sessionN = ($stObj.session_count + 1)
     # Floor entering this session — the escalation backstop uses it to tell a real
-    # floor-drop (progress) from a flat-floor dodge in `escalation` modality.
-    $priorFloor = if ($stObj.floor_history -and $stObj.floor_history.Count) { [int]$stObj.floor_history[-1].floor } else { $null }
+    # floor-drop (progress) from a flat-floor dodge in `escalation` modality. Floor
+    # is normally an int, but WIP-imported ledgers can carry a prose string there
+    # (func_80062020: "loop body solved …"); parse defensively — a non-numeric floor
+    # leaves $priorFloor $null, which just disables the dodge check for that session.
+    $priorFloor = $null
+    if ($stObj.floor_history -and $stObj.floor_history.Count) {
+        $pf = $stObj.floor_history[-1].floor
+        if ($null -ne $pf -and "$pf" -match '^-?\d+$') { $priorFloor = [int]$pf }
+    }
     Log "${func}: session $sessionN starting, modality=$modality"
 
     # 4) spawn
