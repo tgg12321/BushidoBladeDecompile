@@ -1,0 +1,40 @@
+{
+ "func": "func_8001924C",
+ "file": "code6cac",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 0,
+   "floor": 12,
+   "modality": "wip-import",
+   "headline": "floor imported from memory/wip checkpoint"
+  },
+  {
+   "session": 1,
+   "floor": 12,
+   "modality": "recon",
+   "headline": "Recon: floor 12 = single 8-byte zero-store phantom frame slot; structural twin func_80049A2C is owner-gated; naive phantom-injection KILLED, own cc1 -da mechanism check still un-run."
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "func_8001924C's OWN cc1 -da greg dump (pad-in vs pad-out) will show whether any pseudo is denied a hard reg (the phantom entry condition), rather than transferring the twin's zero-delta proof by analogy.",
+   "mechanism": "phantom-frame-slots-gcc272: alter_reg reserves a stack slot only when a live pseudo gets no hard reg and flow's reg_n_refs is stale. Twin measured ZERO such pseudos. This function has not been greg-dumped.",
+   "next_probe": "cc1 -O2 -G0 ... -da on minrepro (pad-in and pad-out); slice func_8001924C from .greg; diff Register-dispositions. Any reg_renumber<0 with reg_n_refs>0 => phantom fires on live code, replicable without pad."
+  },
+  {
+   "hypothesis": "No witness-form phantom (HImode bitwise gating a REAL emitted store) exists for func_8001924C because its target body contains no store to gate.",
+   "mechanism": "tslLineG5Init reaches vars=8 by gating surviving stores with (v1 & ~mask)&1; func_8001924C's 49-insn target flag test is QImode (lbu; andi 0x1) and both arms only make calls.",
+   "next_probe": "Enumerate whether any target instruction pair can be reframed as a gated HImode store without changing the 49 bytes; measure vars= and insn count. Strong prior: dead (storeless body)."
+  },
+  {
+   "hypothesis": "If H1 (greg dump) and H2 (witness form) are both KILLED, func_8001924C is the same endgame-lock species as the owner-gated twin func_80049A2C and should be filed OWNER-ESCALATION.",
+   "mechanism": "Aggregate-only +8 slot, no phantom firing, scan_hand_coded LOW 0/8 (confirmed s1), no SOTN precedent for a fully-dead 8-byte pad; endgame-lock-disposition governs.",
+   "next_probe": "Only after H1+H2 measured dead: file OWNER-ESCALATION in docs/grind/decisions.md naming func_8001924C, cite twin precedent, return owner-gated. Do NOT owner-gate before running H1 here."
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-24T00:34:51.362016+00:00"
+}
