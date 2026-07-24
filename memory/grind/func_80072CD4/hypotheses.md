@@ -66,3 +66,35 @@ verify the do-while sanction's NE-invert-peephole prerequisite actually applies 
 - probe: decl-order swap; var_v0 s32; var_v0-early; @0xE-last; fc-before-outer-if; each sandboxed.
 - result: decl-order=18, s32=18 (no change); var_v0-early=19; @0xE-last=19; fc-before-outer-if=19.
 - verdict: KILLED
+
+## [s3] The cross-block var_v0 form's sched1 hoist is NOT defeatable by any pure structural lever.
+- mechanism: Bottom-up list scheduler gives each byte-store li a 7f000001 launch boost via its own
+  in-arm sb, pinning it in source order. var_v0's lone constant li has no in-arm consumer (its @0xE
+  use is cross-block), so it never earns the boost, loses the potential_hazard tiebreak to the stores,
+  and is placed first (hoisted to arm top) -> live across the $v0 byte constants -> RA forces it to $v1.
+- probe: cc1 -da sched1 + greg dumps (tmp/grind/func_80072CD4/s3); measured variants: int type (13),
+  @0xE-first-in-merge (13), arm-reorder+var-first (17). Enumerated arm values -> no byte-neutral
+  in-arm value-reuse consumer exists (all distinct constants != var_v0).
+- result: all cross-block structural variants >= 13; per-arm stays 4. Structural axis exhausted.
+- verdict: KILLED
+
+## [s3] The per-arm floor-4 form cannot reach target store order (@4,@0xC before @0xE) in clean C.
+- mechanism: cross-jump (jump2) merges the identical per-arm `sb v0,0xE` to the merge HEAD (shared
+  tail inserted at the join label), so @0xE always precedes the native merge stores @4/@0xC. Putting
+  @4/@0xC before it requires them in the arms (duplication) — the rejected dup4 cheat.
+- probe: objdump of the score-4 build vs target (tmp/grind/func_80072CD4/s3); sched2 defers @4/@0xC
+  because their $v1 data is available early (no launch pairing).
+- result: residual 4 is structurally locked to the cross-jump merge point.
+- verdict: KILLED (structural); 0-path is the owner-ruling duplication question only.
+
+## [s3] The clean cross-block var_v0 form (target's own structure: @0xE a native merge store, correct @4,@0xC-before-@0xE order) fails only on RA because sched1 hoists var_v0's li; this hoist is defeatable by a structural lever.
+- mechanism: sched1 is a bottom-up list scheduler. Each byte-store li earns a 7f000001 launch priority from its own in-arm sb and is pinned in source order (sched.c launch mechanism). var_v0's lone constant li has no in-arm successor (its @0xE use is cross-block), never earns the boost, loses the potential_hazard tiebreak to the stores (sched.c:2683-2699, sb memory-unit > li), and is picked last bottom-up = placed first (hoisted to arm top). Hoisted => var_v0 live across the 3 $v0 byte constants => $v0 conflict => RA forces var_v0->$v1, fc->$a0 (greg reg75 in 3, reg74 in 4). build 78, score 13.
+- probe: cc1 -da sched1 + greg dumps on the cross-block form; measured 4 structural variants: var_v0 int/SI (13), @0xE first in merge (13), arm byte-store reorder + var-first (17), plus enumeration of arm values for a byte-neutral in-arm consumer.
+- result: All cross-block structural variants >= 13 (per-arm stays 4). @0xE merge-position is irrelevant (conflict is in the arm). No byte-neutral in-arm consumer exists: every arm value (0xC3/0x1E/0xC8/0x50/0xDC) is a distinct constant != var_v0 (0x32/0x46), and any arithmetic derivation from the loaded flag emits andi/mul/subu (structurally != target's per-branch li).
+- verdict: KILLED
+
+## [s3] The per-arm floor-4 form can be reordered to reach target's merge store order (@4,@0xC before @0xE) in clean C.
+- mechanism: cross-jump (jump2) merges the identical per-arm `sb v0,0xE` into a shared tail inserted at the join label, so the merged @0xE always sits at the merge HEAD, before the native merge stores @4/@0xC; sched2 further defers @4/@0xC because their $v1 data is available early (no launch pairing).
+- probe: objdump of the score-4 build vs target/asm-funcs; per-arm vs cross-block sched-dump diff confirming insn 59 (in-arm sb) is what pins var_v0's li correctly.
+- result: Residual 4 is structurally locked to the cross-jump merge point; @4/@0xC before @0xE requires putting them in the arms (the rejected dup4 duplication).
+- verdict: KILLED

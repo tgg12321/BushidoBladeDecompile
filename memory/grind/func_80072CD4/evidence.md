@@ -132,3 +132,44 @@ forms that reached 11 carry empty `do { } while(0)` scheduler barriers
 - [s2] sandbox-0 is achievable ONLY via a cross-jump-dead @4/@0xC duplication (cheat-by-spelling); layer-1 cheat-reviewer FAILed it; banked at memory/grind/func_80072CD4/rejected/dup4_0xc_into_arms.c.
 
 - [s2] Non-duplicated alternative measured (=4) and cross-block var_v0 measured (=13) per the reviewer's next_action; exhaustion documented in evidence.md.
+
+- [s3] STRUCTURAL modality. Floor held at clean 4 (per-arm form in candidate.c). Deepened s2's blocker
+  into a proven scheduler mechanism and measured 4 new cross-block structural variants dead.
+- [s3] MECHANISM (cc1 -da sched1 dump, tmp/grind/func_80072CD4/s3/xblock_func.sched): sched1 is a
+  BOTTOM-UP list scheduler. Each byte-store li/sb pair: when the sb is scheduled, its li gets a
+  7f000001 "launch" priority and is placed immediately above it (source order kept). var_v0's li is a
+  LONE constant load whose only use (@0xE) is in the NEXT block, so it never earns the launch boost;
+  it stays priority 1, is ready at every step, but loses the potential_hazard tiebreak to the stores
+  (sched.c:2683-2699 — sb memory-unit outranks a li), so it is picked LAST bottom-up == placed FIRST
+  (hoisted to arm top). Hoist => var_v0 live across the 3 $v0 byte constants => $v0 conflict =>
+  RA forces var_v0->$v1, fc->$a0 (greg: reg75 in 3, reg74 in 4). build_insns 78, score 13.
+- [s3] CONTRAST proven by diffing per-arm vs xblock sched dumps: the per-arm form adds insn 59
+  (sb reg75,0xE) IN the arm, which gives insn 57 (li var_v0) the 7f000001 launch boost -> pinned at
+  arm bottom (new bb head=42, source order) -> correct RA (var_v0->$v0). Its ONLY defect is that
+  cross-jump (jump2) merges that identical `sb v0,0xE` to the merge HEAD, so final order is
+  @0xE,@0x14..,@4,@0xC (target wants @4,@0xC,@0xE) = the residual 4. Objdump-confirmed
+  (tmp/grind/func_80072CD4/s3, ours 125d8: @0xE at merge head, @4/@0xC deferred to 12690/12694).
+- [s3] KILLED cross-block structural variants (all on the xblock base, sandbox --disable all):
+  var_v0 typed int/SI = 13 (no change vs u8); @0xE written first in merge = 13 (conflict is in the
+  ARM, @0xE merge position is irrelevant); arm byte-stores reordered + var_v0-first = 17 (worse).
+- [s3] KILLED the "byte-neutral in-arm consumer" idea by enumeration: every arm value
+  (0xC3/0x1E/0xC8/0x50/0xDC) is a distinct compile-time constant != var_v0 (0x32/0x46), so no
+  value-reuse store can pin var_v0's li without changing bytes; and any arithmetic derivation of
+  var_v0 from the loaded flag (e.g. 0x46 - flag*5) emits andi/mul/subu, structurally != target's
+  per-branch `li v0,0x32`/`li v0,0x46`. The only byte-neutral in-arm consumer is the per-arm
+  `sb var_v0,0xE`, which is exactly the floor-4 attractor (wrong merge order via cross-jump).
+- [s3] CONCLUSION: the two clean structural attractors are per-arm (4) and cross-block (13); the
+  sched1 hoist is not defeatable by any pure structural lever (type/order/reuse all measured dead).
+  A natural 0 requires either defeating the hoist (no clean lever exists) or the @4/@0xC
+  duplicated-statement-into-arms store-order variant (rejected/dup4_0xc_into_arms.c, reviewer FAIL) —
+  an owner-ruling question, NOT a structural lever. Rejected form banked: rejected/xblock_sched1_hoist.c.
+
+- [s3] Clean floor holds at 4 (per-arm form, candidate.c): sandbox --disable all = 4, build_insns 79 == target. Reviewer-passable, one int local, no barriers/dup/pins.
+
+- [s3] sched1 bottom-up mechanism proven: a lone cross-block constant-li never earns the per-store 7f000001 launch boost and loses the potential_hazard tiebreak (sched.c:2683-2699), so it is deterministically hoisted to the arm top; greg then forces var_v0->$v1 (conflict with $v0 byte constants).
+
+- [s3] per-arm vs cross-block sched-dump diff: the per-arm arm gains insn 59 (sb reg75,0xE) which gives insn 57 (li var_v0) the launch boost -> pinned at arm bottom (new bb head=42) -> correct RA; but jump2 merges that sb to the merge head -> @0xE before @4/@0xC (the residual 4).
+
+- [s3] Measured cross-block structural kills: var_v0 int=13, @0xE-first-in-merge=13, arm-reorder=17. No byte-neutral in-arm value-reuse consumer exists (all arm constants distinct from var_v0).
+
+- [s3] The only sandbox-0 paths remain the s2-banked cheats: the empty do-while barrier (12, reviewer FAIL) and the @4/@0xC duplicated-statement-into-arms store-order variant (0, reviewer FAIL); both are non-structural.

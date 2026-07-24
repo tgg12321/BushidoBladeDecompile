@@ -1,7 +1,7 @@
 {
  "func": "func_80072CD4",
  "file": "text1b",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -21,18 +21,24 @@
    "floor": 4,
    "modality": "structural",
    "headline": "STRUCTURAL: clean floor 18 -> 4 (build_insns 79 == target); a sandbox-0 form exists but is a cross-jump-dead @4/@0xC duplication cheat (layer-1 reviewer FAIL). Natural-0 blocker = sched1 hoist of var_"
+  },
+  {
+   "session": 3,
+   "floor": 4,
+   "modality": "structural",
+   "headline": "STRUCTURAL: clean floor holds at 4; proved the sched1 hoist of the cross-block var_v0 li is undefeatable by any pure structural lever (4 variants measured dead) \u2014 a natural 0 needs the owner-ruling @4"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A clean C exists that keeps var_v0's li in the arm delay slot (defeating the sched1 hoist) WITHOUT an arm-local sb, giving target's cross-block structure and a natural 0.",
-   "mechanism": "Target's @0xE sb is a normal merge instruction reading a cross-block var_v0 whose li is NOT hoisted; our sched1 hoists it. The per-arm @0xE pin works but glues the sb to the merge head, deferring @4/@0xC (the residual 4).",
-   "next_probe": "Instrumented sched1 priority dump (BB2_SCHED_DEBUG) to learn why the priority-0 (no in-block successor) var_v0 li is picked first; then find an in-arm consumer of var_v0 that pins the li WITHOUT emitting a cross-jump-mergeable sb (e.g. a value dependency), or a byte-store reorder that changes the ready-list tiebreak."
+   "hypothesis": "The sched1 hoist of a lone cross-block constant-li is undefeatable by clean structural C for this function; the natural-0 requires a scheduling effect no structural lever provides.",
+   "mechanism": "Structural axis (type/decl-order/statement-order/reuse) exhausted and measured dead this session; the launch-priority pin requires an in-arm consumer, and the only byte-neutral one is the per-arm sb that cross-jumps to the wrong merge slot.",
+   "next_probe": "Non-structural modality: run a fresh-seed permuter campaign on the cross-block base to confirm no clean C reorders around the hoist (expect it to surface only the dup cheat, which is rejected); OR forensics on whether cc1psx schedules the same lone li differently (self-disproof only)."
   },
   {
-   "hypothesis": "If the sched1 hoist proves un-defeatable by clean C, whether the byte-neutral @4/@0xC duplicated-statement-into-arms (store-order variant) is a sanctioned closing form is an owner/ruling question.",
-   "mechanism": "duplicated-statement-into-arms sanctions the family for RA-priority effects with FAKE annotation + exhaustion + layer-2; this use is store-scheduling order. Reviewer flagged it FAIL; self-sanctioning is disallowed.",
-   "next_probe": "After exhausting the hoist-defeat search, if duplication remains the only 0-path, escalate the store-order-duplication classification (ruling-request) rather than self-approve."
+   "hypothesis": "If both structural and search modalities exhaust the hoist-defeat, the byte-neutral @4/@0xC duplicated-statement-into-arms (store-order variant) is the only remaining 0-path and needs an owner ruling on whether the duplicated-statement-into-arms sanction covers a store-SCHEDULING-order effect (vs its stated reg_n_refs RA-priority scope).",
+   "mechanism": "duplication is byte-neutral (jump2 re-merges the second copy) but s2's layer-1 reviewer FAILed it as outside the sanction's RA-priority scope; self-approval disallowed.",
+   "next_probe": "After the search modality confirms no clean lever, emit ruling-request citing rejected/dup4_0xc_into_arms.c with the s3 mechanism (store-order, not reg_n_refs) \u2014 do not self-sanction."
   }
  ],
  "judge_constraints": [],
