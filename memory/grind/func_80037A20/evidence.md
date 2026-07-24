@@ -102,3 +102,46 @@ function is INCOMPLETE. candidate.c is the faithful pin/barrier-free body
 - [s1] m2c reference (m2c_target.c) confirms the faithful count++/count-- do-while structure (candidate.c); m2c renders the entry as 'var_s1_2=1' but the real target instruction is addiu.
 
 - [s1] Near-dup lead obj_InitTaskCamera (0.606) is SPURIOUS: only an extern decl in this TU, a camera-task init, no firstfile/nextfile loop. Dead lead.
+
+- [s2] TARGET asm read (asm/funcs/func_80037A20.s): the pointer is loaded with
+  `lui/addiu $s0, D_80102810` at the function TOP, BEFORE the func_80079A30 jal
+  (i.e. target's pointer is ALSO live across that call — IDENTICAL live range to
+  ours), yet target assigns pointer->s0, counter->s1. Counter init is
+  `addu $s1,$zero,$zero` AFTER the call; entry increment `addiu $s1,$s1,0x1`
+  (reads the prior 0, NOT folded). So given IDENTICAL C live-ranges/refs, target
+  and our GCC allocate the OPPOSITE way and fold differently. => Both remaining
+  diffs are cc1-internal divergences (allocno-order tiebreak in global.c + cse2
+  const-prop), NOT reorderable by pure-C statement placement.
+
+- [s2] KILLED (structural) counter-init-before-call: `var_s1=0;` moved above the
+  func_80079A30 call. sandbox 15 (WORSE). greg: NOW both pseudo 74(ptr) AND
+  75(counter) conflict 6,7 (equal live ranges) but order STILL "75 74",
+  dispositions STILL 74->s1(17)/75->s0(16). Equalizing live length does NOT flip
+  the tiebreak (counter wins on ref-count ~6 vs ptr ~4). Fold ALSO persists
+  (`li $16,1`) across the call boundary + a redundant a0 recompute (+2 sched).
+  rejected/counter-init-before-call.c
+
+- [s2] KILLED (structural) do-while0-entry-increment: `do{var_s1++;}while(0)` to
+  force a BB/loop-note boundary cse2 won't const-prop 0 across. sandbox 13
+  UNCHANGED; the do-while(0) COLLAPSED (out.s entry still `li $16,1`, swap still
+  74->s1/75->s0). rejected/do-while0-entry-increment.c
+
+- [s2] STRUCTURAL AXIS EXHAUSTED for both diffs. To byte-match we are FORCED into
+  target's exact do-while + entry-`++` + post-`--` structure (any other faithful
+  count shape drops/adds instructions vs the 33-insn target). That fixed structure
+  deterministically yields, in our GCC port: (a) counter->s0 swap (ref-count
+  tiebreak on equal-or-longer-ptr-live-range) and (b) `li 1` fold. Neither is
+  movable by statement reorder / init placement / BB-boundary tricks (all
+  measured dead across s1+s2). Remaining sanctioned axis NOT yet run:
+  decomp-permuter (simultaneous tied-rename + fold-disrupt mutation) — a
+  different modality.
+
+- [s2] Baseline candidate.c sandbox --disable all = 13 (33=33 insns, 0 rules); HEAD 'matches' only via 2 register-asm pins + 1 __asm__ opt-barrier (cheats).
+
+- [s2] TARGET (asm/funcs/func_80037A20.s): pointer loaded lui/addiu $s0 BEFORE the func_80079A30 jal (live across the call, same as ours) yet assigned s0; counter addu $s1,$0,$0 after the call; entry increment addiu $s1,$s1,0x1 reads prior 0 (NOT folded).
+
+- [s2] s2 greg (counter-init-before-call variant): both pseudo 74(ptr) and 75(counter) conflict 6,7 (a2/a3) => equal live ranges, but allocation order still '75 74' and dispositions still 74->s1(17)/75->s0(16). Ref-count tiebreak (counter ~6 refs vs ptr ~4) is the swap driver, not live length.
+
+- [s2] Both remaining diffs (~12 swap + 1 fold) persist under every faithful structural rearrangement measured across s1+s2 (pointer-init-after-call, decl reorder, nextfile-in-if, firstfile->temp, no-entry-increment, counter-init-before-call, do-while0-entry-increment). Structural axis EXHAUSTED.
+
+- [s2] The only remaining sanctioned axis not yet measured dead is decomp-permuter (simultaneous tied register-rename + fold-disrupting mutation), a different modality; a cc1-vs-cc1psx calibration check on the tiebreak+fold is the escalation candidate if permuter returns negative.
