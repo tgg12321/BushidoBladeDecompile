@@ -1,0 +1,35 @@
+{
+ "func": "func_80017FA0",
+ "file": "code6cac",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 0,
+   "floor": 16,
+   "modality": "wip-import",
+   "headline": "floor imported from memory/wip checkpoint"
+  },
+  {
+   "session": 1,
+   "floor": 2,
+   "modality": "recon",
+   "headline": "Floor 13->2: routing the two fixed scratchpad stores through a pointer-lvalue (scr[idx]) folds them to target's 2-insn form and fixes the v0/v1 cascade; sole residual is the empty 8-byte frame (only a"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The empty 8-byte frame is closable by some legitimate small-local shape not yet tried (struct-by-value, union, address-taken scalars whose address-use folds).",
+   "mechanism": "function.c assign_stack_local reserves vars=8 from a source-level aggregate/address-taken local decl with all accesses DCE'd.",
+   "next_probe": "cc1 frameprobe extension: struct{ s32 a,b; } local, union, two &-taken scalars; confirm each is vars=0 (no frame) or emits stores/cheats. If all legitimate shapes are dead, the residual is endgame-locked."
+  },
+  {
+   "hypothesis": "If every legitimate frame shape is dead, func_80017FA0 is endgame-lock-disposition (frame-locked, 2 insns short, byte-matchable only via forbidden dead-vars) and must mirror the sibling owner-escalation.",
+   "mechanism": "Target's 8-byte zero-store frame requires a dead local array (forbidden dead-vars-local-array); no pure-C or canonical-asm path remains.",
+   "next_probe": "In the escalation modality: file an OWNER-ESCALATION in docs/grind/decisions.md naming func_80017FA0, citing the AddTbpOfst_80047EE8/InitHiraRmd_80047FBC precedent + the s1 F1/F2 measurements, then return owner-gated."
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-24T22:01:20.133719+00:00"
+}
