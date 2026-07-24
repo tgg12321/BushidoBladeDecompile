@@ -607,3 +607,4 @@
 - 2026-07-23 19:06 func_80049718 s1 [recon] floor=4: Recon: clean floor 11->4 (perturber removal + block-2 store reorder, both cheat-reviewer PASS); Cluster A prologue addr-comp mechanism nailed via RTL; a 4->0 named-base-pointer close exists but cheat-reviewer FAILed it as pointer-alias-family (needs lever-exhaustion + FAKE).
 - 2026-07-23 19:34 func_80049718 COMPLETED-C after 2 sessions.
 - 2026-07-23 19:46 func_8001924C s1 [recon] floor=12: Recon: floor 12 = single 8-byte zero-store phantom frame slot; structural twin func_80049A2C is owner-gated; naive phantom-injection KILLED, own cc1 -da mechanism check still un-run.
+- 2026-07-23 20:19 func_8001924C COMPLETED-C after 2 sessions.
