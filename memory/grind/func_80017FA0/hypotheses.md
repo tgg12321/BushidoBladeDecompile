@@ -20,6 +20,23 @@
   lacks (F3). CONFIRMED the producer is the forbidden dead-vars-local-array;
   WRITTEN-array carve-out inapplicable (zero frame stores in target).
 
+## KILLED (s3, structural — the axis s2 skipped)
+
+- H-F2 [OVERSIZED-LOCALS carve-out sanctions the fully-dead 8-byte pad] The
+  2026-07-13 OVERSIZED-LOCALS carve-out (which s2 never evaluated — s2 checked
+  only the 2026-07-01 WRITTEN carve-out) might sanction a fully-dead `s32 pad[2]`
+  to reserve target's 8-byte zero-store frame via its frame-math proof.
+  mechanism: frame(8)−saves(0)−args(0) > written(0) ⇒ target frame "proves"
+  dead locals; fully-dead-pad fallback shape.
+  probe: decoded frame from asm/funcs/func_80017FA0.s (leaf, 0 saves/args/writes,
+  frame=8); ran the carve-out's 5 prerequisites (tmp/grind/func_80017FA0/s3/framemath.md).
+  result: KILLED. Prerequisite 1 satisfied only TRIVIALLY (0<N holds for every
+  zero-store phantom leaf frame ⇒ non-distinguishing from plain frame coercion);
+  no written prefix / no live object ⇒ fully-dead-pad fallback; NO SOTN precedent
+  for an unwritten local array as a phantom-frame carrier; sanctioning requires
+  engine-detector allowlist wiring (forbidden grind surface) + owner ruling.
+  verdict: KILLED. ⇒ all sanctioned axes dead; OWNER-ESCALATION filed, owner-gated.
+
 ## KILLED (s2, structural)
 
 - H-F1 [empty-8-byte-frame legitimate shape] Some legitimate small-local shape
@@ -77,4 +94,10 @@
 - mechanism: function.c assign_stack_local reserves vars=8 for an aggregate/address-taken local decl; if all accesses DCE'd, only addiu sp,-8/+8 remain (zero frame stores).
 - probe: frameprobe2.{c,s} via cc1 -O2 -G0 -funsigned-char -mcpu=3000: g0 no-local=vars0 control; g1 dead struct=vars8 zero-store; g2 dead union=vars8 zero-store; g3 two &-taken scalars (&x==&y folds)=vars8 zero-store; g4 struct read-once=vars8 WITH sw $2,0($sp)/sw $3,4($sp)+reloads.
 - result: Every zero-store vars=8 shape (array/struct/union/addr-taken) is a DEAD local = forbidden dead-vars-local-array; WRITTEN carve-out inapplicable since target has ZERO frame stores. Every genuinely-used aggregate (g4) emits frame stores the target lacks. No legitimate structural shape produces target's zero-store 8-byte frame.
+- verdict: KILLED
+
+## [s3] The 2026-07-13 OVERSIZED-LOCALS carve-out (unchecked by s2, which only evaluated the 2026-07-01 WRITTEN carve-out) sanctions a fully-dead s32 pad[2] to reserve target's 8-byte zero-store leaf frame via its frame-math proof.
+- mechanism: cc1 assign_stack_local reserves vars=8 for a source-level local decl with all accesses DCE'd, leaving bare addiu sp,-8/+8 with zero frame stores; carve-out prerequisite 1 = frame(8)-saves(0)-args(0)=8 > written(0), a fully-written form yields 0 locals => 0 frame < 8, so target frame 'proves' 8 dead bytes.
+- probe: Reproduced floor 2 (candidate.c applied, sandbox --disable all = 2, 60/61). Decoded frame directly from asm/funcs/func_80017FA0.s (leaf: 0 sw$ra/sw$s?, 0 jal => saves=0 args=0; zero sw/lw ($sp) => 0 written). Ran the carve-out's 5 prerequisites (tmp/grind/func_80017FA0/s3/framemath.md).
+- result: Prerequisite 1 satisfied only TRIVIALLY (0<N holds for ANY zero-store phantom leaf frame => does not distinguish a genuine oversized-locals object like the granted func_80037540 [24B written prefix + live callee buffer, ALIGN8(24)+16+24=0x40!=0x48] from plain frame coercion). No written prefix / no live locals object => fully-dead-pad fallback; no SOTN precedent for an unwritten local array as a phantom-frame carrier; sanctioning requires wiring a prerequisite-aware engine allowlist (forbidden grind surface) + owner ruling.
 - verdict: KILLED

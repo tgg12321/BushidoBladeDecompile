@@ -1,5 +1,15 @@
 # Evidence bank — func_80017FA0
 
+## s3 (structural, 2026-07-24) — FLOOR HELD 2. NEW axis (OVERSIZED-LOCALS carve-out) measured DEAD → OWNER-ESCALATION filed.
+
+- [s3] Floor=2 REPRODUCED: candidate.c (scr[] fold form) applied to src, `sandbox --disable all` = {"score":2,"target_insns":61,"build_insns":60,"rules_dropped":6,"cheat_asm_stripped":182}. src reverted clean to HEAD cheat-form. (tmp/grind/func_80017FA0/s3/sandbox_candidate.log)
+
+- [s3] Frame decoded DIRECTLY from asm/funcs/func_80017FA0.s (not inherited): `addiu $sp,-0x8` (beqz delay slot) / `addiu $sp,0x8` then `jr $ra`. LEAF — zero `sw $ra`/`sw $s?` (all regs caller-saved temps), zero `jal` ⇒ callee-saves=0, outgoing-args=0. Locals region 100% dead: every `sw` targets ($at)/($t3) scratchpad, every `lw` sources ($a0)/($t1)/($v1)/($t4)/($v0); ZERO `sw/lw ...($sp)`. `.frame`=8 bytes, fully unwritten/unread. Confirms s1/s2's zero-frame-store claim from primary source.
+
+- [s3] **NEW AXIS s2 never checked**: the 2026-07-13 OVERSIZED-LOCALS carve-out (.claude/rules/dead-vars-local-array.md). s2 evaluated only the 2026-07-01 WRITTEN-never-read carve-out. Frame-math prerequisite 1 for OVERSIZED-LOCALS: frame(8)−saves(0)−args(0)=8 > written(0), a fully-written form ⇒ 0 locals ⇒ 0 frame < 8, so target "proves" 8 dead bytes ⇒ **prerequisite 1 SATISFIED but only TRIVIALLY** — for ANY zero-store phantom leaf frame 0<N holds by construction, so it does NOT distinguish a genuine oversized-locals object (granted case func_80037540: 24B written prefix + live callee buffer, ALIGN8(24)+16+24=0x40≠0x48 non-trivially forced) from plain frame coercion. No written prefix, no live object here ⇒ fully-dead-pad FALLBACK (`s32 pad[2]`/`pad[1]`, ALIGN8 makes 1-8B a range). Carve-out's own NOTE: fully-dead pad still flagged by find_unused_local_arrays + refused by mark_done; sanctioning requires wiring a prerequisite-aware engine allowlist = engine/ work (forbidden grind surface) + owner ruling. func_80017FA0 is a fully-dead-pad family member alongside func_8003DBE4 (`s32 buf[2]`), file_LoadSectors/func_800165F8 (`s32 _pad[2]`). Banked rejected/fully-dead-pad-oversized-locals.c. (tmp/grind/func_80017FA0/s3/framemath.md)
+
+- [s3] DISPOSITION: every sanctioned pure-C axis (structural shapes, BOTH dead-vars carve-outs) AND canonical-asm (scan_hand_coded LOW 1/8) measured dead. Filed OWNER-ESCALATION in docs/grind/decisions.md (2026-07-24) naming func_80017FA0, presenting options (a) sanction fully-dead-pad family [no distinguishing SOTN precedent; engine wiring req'd] vs (b) refuse + INCOMPLETE-owner-accepted per endgame-lock-disposition. Mirrors AddTbpOfst_80047EE8 / InitHiraRmd_80047FBC (both REFUSED / OWNER-ACCEPTED INCOMPLETE 2026-07-22). Returned owner-gated.
+
 ## s2 (structural, 2026-07-24) — FLOOR HELD 2. Last structural axis (frame shape) measured DEAD.
 
 - [s2] Floor=2 REPRODUCED this session: applied candidate.c (scr[] fold form) to src/code6cac.c, `sandbox --disable all` = {"score":2,"target_insns":61,"build_insns":60,"rules_dropped":6,"cheat_asm_stripped":182}. src reverted clean. Sole residual remains the empty 8-byte frame. (tmp/grind/func_80017FA0/s2/sandbox_candidate.log)
@@ -98,3 +108,15 @@ outside worker scope). Blocked on the board with this reason. 24 prior commits
 - [s2] hand-coded signal NEGATIVE (s1 scan_hand_coded LOW 1/8) — ordinary compiled C, so a C source produced the frame; not a hand-asm authorization case.
 
 - [s2] Same zero-store phantom-frame species as siblings InitHiraRmd_80047FBC (OWNER-ESCALATION filed 2026-07-20, awaiting ruling) and AddTbpOfst_80047EE8.
+
+- [s3] s3 reproduced honest floor 2: candidate.c (scr[] pointer-lvalue fold form) applied to src, sandbox --disable all = {score:2, target_insns:61, build_insns:60, rules_dropped:6, cheat_asm_stripped:182}; src reverted clean to HEAD cheat-form.
+
+- [s3] Target frame decoded directly from asm/funcs/func_80017FA0.s: addiu sp,-0x8 (beqz delay slot) / addiu sp,0x8 / jr ra. LEAF — zero sw$ra/sw$s?, zero jal => callee-saves=0, outgoing-args=0. Every sw targets ($at)/($t3) scratchpad, every lw sources ($a0)/($t1)/($v1)/($t4)/($v0); ZERO sw/lw ($sp) => .frame=8 bytes, 100% dead (unwritten, unread).
+
+- [s3] NEW s3 finding: s2 evaluated only the 2026-07-01 WRITTEN-never-read carve-out. The 2026-07-13 OVERSIZED-LOCALS carve-out (contemplating a fully-dead pad) was never checked. Its frame-math prerequisite is satisfied only trivially here (0<N for any zero-store phantom frame), landing func_80017FA0 in the fully-dead-pad family (siblings func_8003DBE4 s32 buf[2], file_LoadSectors/func_800165F8 s32 _pad[2]) with no distinguishing SOTN precedent and engine-allowlist wiring required.
+
+- [s3] canonical-asm NEGATIVE (s1 scan_hand_coded LOW 1/8, only S3 fires) — ordinary GCC-scheduled leaf, so a C-source local produced the frame; not a hand-asm authorization case. Fails endgame-lock AND-gate 1.
+
+- [s3] Every sanctioned pure-C axis (s1 fold+cascade lever closed 11/13 diffs; s2 structural frame-shape dichotomy g1-g4; s3 OVERSIZED-LOCALS) and canonical-asm are measured dead. Identical zero-store phantom-frame species to AddTbpOfst_80047EE8 / InitHiraRmd_80047FBC (both REFUSED / OWNER-ACCEPTED INCOMPLETE 2026-07-22).
+
+- [s3] OWNER-ESCALATION filed this session in docs/grind/decisions.md (2026-07-24) naming func_80017FA0, presenting option (a) sanction fully-dead-pad family [no distinguishing SOTN precedent; requires forbidden engine surface] vs (b) refuse + INCOMPLETE-owner-accepted per endgame-lock-disposition (2026-07-20 standing policy).
