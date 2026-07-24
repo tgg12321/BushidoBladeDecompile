@@ -185,3 +185,17 @@ function is INCOMPLETE. candidate.c is the faithful pin/barrier-free body
 - [s3] s3 u32-counter type-narrowing KILLED: sandbox 13/33 insns unchanged; width-invariant RA + type-independent cse2 fold.
 
 - [s3] STRUCTURAL AXIS DEFINITIVELY EXHAUSTED (s1+s2+s3): both named structural sub-levers (ref-count re-weighting; type narrowing) now dead WITH mechanism, atop the s1/s2 live-range/init-placement/BB-boundary kills. Target proves identical C live-ranges/refs yet opposite s0/s1 allocation + no fold => both remaining diffs are cc1-internal (global.c allocno-order/live_length tiebreak + cse2 const-prop), not pure-C-structural.
+
+- [s4] s4 built a FAITHFUL offset-0 permuter workspace for func_80037A20 (tools/decomp-permuter/nonmatchings/func_80037A20_s4): single-function base.c, target.o at offset 0 (gp=64 dropped), objdump-verified 33=33 insns with the diff EXACTLY = s0<->s1 swap (ptr la->s1/counter->s0 vs target ptr->s0/counter->s1) + entry increment li s0,1 (folded) vs target addiu s1,s1,1. Base_score 298 is the real weighted diff (the callee-save swap cascades into reorderings), NOT offset noise.
+
+- [s4] TOOLING BUG FOUND (why the prior s?-era workspace was worthless): the old multi-function base.c + piped compile.sh emitted a cc1 .file directive with the ABSOLUTE repo path, which contains spaces ('Bushido Blade 2 Decompile'); maspsx splits .file on whitespace expecting 3 tokens -> 'too many values to unpack (expected 3)' -> every candidate failed to compile, so base_score 298 there was garbage and the campaign searched nothing. Fix: single-function base.c + file-based compile.sh + sed neutralizing the .file path to "base.c" before maspsx.
+
+- [s4] Chassis A (goto, 33 insns): 7887 iterations, lowest weighted score 98. Window went quiet (>120s no novel find) after ~6000 iters; all novel finds after the first ~30s were re-finds of the 98/193/203/278/298 attractor classes.
+
+- [s4] Chassis B (while-loop, 34 insns, base 793): 3852 iterations, lowest 363 -- a strictly worse basin that never approached chassis A, let alone 0.
+
+- [s4] The permuter's best form (score 98) moves var_s1++ inside the loop before nextfile -- a double-increment that is semantically WRONG (wrong file count) and still 98 != 0. It is permuter noise, not a closing form; no cheat-vetting required (not a match).
+
+- [s4] The permuter never once flipped the s0/s1 allocation or disrupted the 0+1 fold, empirically confirming the s1-s3 greg diagnosis: both diffs are cc1-internal (global.c live_length allocno tiebreak + cse2 const-prop) and unreachable by pure-C statement mutation.
+
+- [s4] candidate.c unchanged (pin-free faithful body, floor 13). src/code6cac_c.c reverted to HEAD. Structural axis (s1-s3) + permuter axis (s4) are now BOTH measured dead.

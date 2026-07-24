@@ -92,3 +92,9 @@ separate cse2 const-prop (pre-allocation).
 - probe: Changed `s32 var_s1` -> `u32 var_s1`; sandbox --disable all.
 - result: sandbox 13, 33 insns UNCHANGED. Register width identical (one word reg) so allocation unchanged; the 0+1 fold is a type-independent cse2 const-prop. Inert for both diffs.
 - verdict: KILLED
+
+## [s4] A decomp-permuter campaign from the pin-free candidate can find a simultaneous tied register-rename (fix the s0<->s1 swap) + fold-disrupting mutation (fix the li s0,1 vs addiu s1,s1,1 diff) that no single hand structural edit achieves.
+- mechanism: difficult-is-not-impossible §3 documented modality: the mutation space (random + refer-to-var + reorder passes) is larger than hand structural edits, so a basin the hand search can't reach could yield the tied-rename + fold-disrupt combo.
+- probe: Built a faithful offset-0 single-function workspace (33=33 insns, base_score 298) + a structurally-different while-loop chassis (34 insns, base_score 793). Ran two --stop-on-zero campaigns: chassis A 7887 iters, chassis B 3852 iters (~11,700 combined). Harvested + stopped both in-turn.
+- result: Chassis A lowest weighted score 98; chassis B lowest 363. Zero (byte match) NEVER approached. Every find was a junk mutation (new_var pointer alias; loop-internal increment reorder) that shaves the weighted diff but is semantically broken / cheat-form. The 13-diff itself (s0<->s1 swap + cse2 0+1 fold) was NEVER perturbed by any mutation.
+- verdict: KILLED
