@@ -34,7 +34,9 @@
    "next_probe": "After probes 1-2 come back measured-negative, apply candidate_gated_alias.c with /* FAKE */ + full exhaustion ledger and resubmit for fresh layer-2 review."
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "Commit the POINTER spelling (`s16 *tbl = D_800EF980; p_anim = tbl + arg0;`) as clean COMPLETED-C with NO /* FAKE */ annotation and NO pointer-alias-fake-exception gating; prefer it over the integer-cast spelling, which reads as contrived coercion. This still goes through the ORDINARY COMPLETED-C acceptance path -- full-build SHA1 == oracle via retire/queue done, plus the standing layer-2 cheat-reviewer over the whole diff (Cluster A + Cluster B) as required for any Match: commit -- NOT the FAKE-exception path. The candidate_gated_alias.c /* FAKE */ draft is not to be used."
+ ],
  "origin": "queue",
  "created": "2026-07-23T23:45:52.006732+00:00"
 }

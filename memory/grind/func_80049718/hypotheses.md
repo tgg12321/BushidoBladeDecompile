@@ -53,3 +53,21 @@ mechanism above + the exhaustion ledger, per pointer-alias-fake-exception.
 - probe: Apply alias; sandbox=0; relocation-normalized byte diff (clean); layer-1 cheat-reviewer
 - result: sandbox 0 (genuine, not masked) BUT cheat-reviewer FAIL: pointer-alias-fake-exception family; requires documented lever-exhaustion + /* FAKE */ annotation (neither present). Reverted from src.
 - verdict: KILLED
+
+## s2 (structural) — clean pure-C exhaustion of Cluster A
+
+- **KILLED: a clean pure-C form (no base-holding pseudo) flips the addu operand
+  order / closes Cluster A.** Mechanism: fold canonicalizes `&D_800EF980[arg0]`
+  = PLUS(mult(arg0,2), symbol_ref) with symbol_ref (constant) as operand-2 ->
+  index born first -> base coalesced into $s0 in place. Probes: cast respell ->4,
+  index precompute ->4, 2-stmt reuse-of-p_anim ->9 (cse re-folds), [s1] bare
+  pointer-add ->11. Result: every clean respelling stays >= 4. Only forms giving
+  the base its OWN named pseudo reach 0, and those ARE the pointer-alias
+  construct. verdict: KILLED (no clean non-alias form exists).
+- **CONFIRMED: base-pointer local closes Cluster A to 0 (both pointer + integer
+  spelling), re-verified s2.** This is the tslPolyF4Init sanctioned lever /
+  pointer-alias-fake-exception construct. Disposition is a classification
+  question (ordinary-pointer-arith vs FAKE-gated) -> ruling-request.
+
+CLUSTER B (store schedule) remains fixed in candidate.c (6->4). Clean floor = 4;
+gated floor = 0.

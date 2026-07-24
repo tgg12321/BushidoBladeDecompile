@@ -78,3 +78,33 @@ wrapper is the perturber here).
 - [s1] REJECTED clean-C alternatives: bare `D_800EF980 + arg0` = floor 11 (fold differs, worse); `(s16*)((s32)&D_800EF980[0]+arg0*2)` = no change at 6 (prior); prologue statement swap (var_s3<->p_anim) = no change at 4.
 
 - [s1] src left at clean floor 4 (changes 1+2 only).
+
+## s2 (structural) — clean pure-C exhaustion of Cluster A; base-pointer local closes to 0
+
+- [s2] Fresh greg (floor-4 src) reconfirms Cluster A: insn18 index ashift -> $v0
+  (born first), insn20 base symbol_ref -> $v1, `addu s0,v0,v1`. FINAL asm
+  coalesces base directly into $s0 (lui $s0; addiu $s0; addu $s0,$v0,$s0) and
+  hoists the addr comp early; target keeps base in own temp $v0, placed late
+  (lui $v0; addiu $v0; sll $v1,$s6,1; addu $s0,$v1,$v0). The v0/v1 swap +
+  in-place-$s0 coalesce + early hoist together = the 4-point residual.
+- [s2] CLEAN structural respellings (no base-holding pseudo) — ALL measured dead:
+    (s16*)((s32)D_800EF980 + arg0*2)               -> 4 (fold-identical)
+    { s32 idx=arg0*2; (s16*)((s32)D_800EF980+idx) } -> 4 (index precompute)
+    p_anim = D_800EF980; p_anim += arg0;            -> 9 (WORSE; cse2 re-folds the reused var)
+    [s1] p_anim = D_800EF980 + arg0                 -> 11
+    [s1] (s16*)((s32)&D_800EF980[0]+arg0*2)         -> no change
+- [s2] BOTH base-holding-pseudo forms reach floor 0 (re-confirmed this session):
+    { s16 *tbl = D_800EF980; p_anim = tbl + arg0; }              -> 0
+    { s32 base=(s32)D_800EF980; p_anim=(s16*)(base+arg0*2); }    -> 0
+  Same construct = the base-pointer local (pointer-alias family). No clean
+  non-alias form exists: flipping the addu operand order REQUIRES the base in
+  its own live pseudo, which is precisely the alias construct.
+- [s2] PRECEDENT CONFLICT surfaced: register-alloc-pure-c "Confirmed CLOSURES"
+  documents the IDENTICAL lever `s32 *base = arr; elem = base + idx;` for
+  tslPolyF4Init as "Ordinary pointer arithmetic" -> COMPLETED-C (NO FAKE). But
+  s1's layer-1 cheat-reviewer FAILed the identical `tbl` here as pointer-alias-
+  fake-exception (needs /* FAKE */ + exhaustion). Exhaustion is now complete;
+  emitted ruling-request for owner classification.
+- [s2] No prior owner ruling/escalation for func_80049718 in docs/grind/decisions.md.
+- artifacts: tmp/grind/func_80049718/s2/text1b.i.greg (+ .sched/.jump2/etc),
+  tmp/grind/func_80049718/s2/greg.sh, diff.py.
