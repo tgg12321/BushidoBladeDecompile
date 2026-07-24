@@ -28,6 +28,18 @@ separate cse2 const-prop (pre-allocation).
   tiebreak + cse2 const-prop) under the MANDATORY target structure, not
   pure-C-structural. Structural axis EXHAUSTED (s1+s2).
 
+## [s3] KILLED (measured, structural)
+- return-value-split (drop counter n_refs below ptr via separate `result` local
+  for store+return): sandbox 13, greg identical (75 74, ptr->s1/counter->s0),
+  `result` copy-propagated away. ROOT: allocno_compare uses floor_log2(n_refs);
+  floor_log2(4)==floor_log2(6)==2, so ref-count NEVER discriminates these two —
+  the ledger's "counter ~6 vs ptr ~4 ref-count tiebreak" note is mechanically
+  inert; the real discriminator is live_length (s1/s2 proved unmovable). KILLED.
+- u32-counter type narrowing: sandbox 13/33 insns unchanged; width-invariant RA +
+  type-independent cse2 fold. KILLED.
+- => structural axis now closed in PRINCIPLE (floor_log2 coarsening + width
+  invariance), not merely by trial. Both remaining diffs are cc1-internal.
+
 ## Live frontier (untried, mechanism-grounded)
 1. [s2 KILLED — structural levers exhausted] Frontier items 1 (raise ptr
    ref-weight / equalize live range) and 2 (structural fold-disruption via BB
@@ -68,3 +80,15 @@ separate cse2 const-prop (pre-allocation).
 - probe: Read target asm (asm/funcs/func_80037A20.s) and compare its pointer live-range/init positions and fold behavior to ours under multiple structural rearrangements.
 - result: DISPROVEN. Target loads the pointer `la $s0` at the TOP, BEFORE the func_80079A30 jal - IDENTICAL live range to ours - yet target allocates pointer->s0 and emits `addu $s1,$0,$0`+`addiu $s1,$s1,1` (no fold). Given identical C live-ranges/refs our GCC port allocates the opposite way and folds 0+1. Byte-match forces target's exact do-while+entry-++ +post-- structure, so no faithful reshape can change it. Both diffs are cc1-internal (global.c allocno-order tiebreak + cse2 const-prop).
 - verdict: CONFIRMED
+
+## [s3] Splitting the counter's store+return refs onto a separate `result` local drops its n_refs (~6 -> ~4) below the pointer's (~4), so the pointer sorts first in global.c allocno order and grabs s0, fixing the s0<->s1 swap.
+- mechanism: global.c allocno_compare priority is a function of n_refs; lowering the counter's ref count below the pointer's should reverse the allocation-order tiebreak.
+- probe: Added `result = var_s1; D_800A38C8 = result; return result;`; sandbox --disable all; greg dump (tmp/grind/func_80037A20/s3/dump_probeA/pre.i.greg).
+- result: sandbox 13 UNCHANGED. greg IDENTICAL: order still '75 74', 74/ptr -> s1(17), 75/counter -> s0(16); `result` copy-propagated away (no new pseudo). ROOT: allocno_compare uses floor_log2(n_refs), and floor_log2(4)==floor_log2(6)==2, so the counter-vs-ptr ref-count gap CANNOT discriminate the two allocnos at all — n_refs is mechanically inert here; live_length is the sole discriminator (proved unmovable in s1/s2).
+- verdict: KILLED
+
+## [s3] Narrowing the counter's type (u32) alters allocation or disrupts the cse2 0+1 entry-increment fold.
+- mechanism: type narrowing is a listed structural lever; a different width could change RA or the const-prop fold.
+- probe: Changed `s32 var_s1` -> `u32 var_s1`; sandbox --disable all.
+- result: sandbox 13, 33 insns UNCHANGED. Register width identical (one word reg) so allocation unchanged; the 0+1 fold is a type-independent cse2 const-prop. Inert for both diffs.
+- verdict: KILLED

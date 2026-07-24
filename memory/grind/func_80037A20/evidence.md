@@ -145,3 +145,43 @@ function is INCOMPLETE. candidate.c is the faithful pin/barrier-free body
 - [s2] Both remaining diffs (~12 swap + 1 fold) persist under every faithful structural rearrangement measured across s1+s2 (pointer-init-after-call, decl reorder, nextfile-in-if, firstfile->temp, no-entry-increment, counter-init-before-call, do-while0-entry-increment). Structural axis EXHAUSTED.
 
 - [s2] The only remaining sanctioned axis not yet measured dead is decomp-permuter (simultaneous tied register-rename + fold-disrupting mutation), a different modality; a cc1-vs-cc1psx calibration check on the tiebreak+fold is the escalation candidate if permuter returns negative.
+
+- [s3] KILLED (structural) return-value-split: separate `result = var_s1;
+  D_800A38C8 = result; return result;` to move store+return refs off the counter
+  pseudo and drop its n_refs (~6 -> ~4) below the pointer's (~4), hoping the
+  pointer sorts first in allocno order. sandbox 13 UNCHANGED. greg IDENTICAL
+  (order still "75 74", 74/ptr -> s1(17), 75/counter -> s0(16)); `result`
+  copy-propagated away, no new pseudo in dispositions.
+  rejected/return-value-split.c artifact tmp/grind/func_80037A20/s3/dump_probeA/.
+
+- [s3] ROOT-MECHANISM finding (why the ref-count tiebreak the ledger named is
+  mechanically INERT): GCC 2.7.2 global.c allocno_compare priority uses
+  floor_log2(n_refs), NOT raw n_refs. floor_log2(4) == floor_log2(6) == 2, so the
+  counter-vs-pointer ref-count gap (~6 vs ~4) CANNOT discriminate the two allocnos
+  at all. The real, sole discriminator is live_length (counter shorter -> higher
+  priority -> grabs s0), which s1 (pointer-init-after-call) and s2
+  (counter-init-before-call) already proved unmovable by statement placement.
+  => the n_refs structural sub-axis is closed in principle, not just by trial.
+
+- [s3] KILLED (structural / type-narrowing) u32-counter: change counter type to
+  u32. sandbox 13, 33 insns UNCHANGED. Register width is identical (one word reg)
+  so allocation unchanged; the 0+1 fold is a type-independent cse2 const-prop.
+  Type narrowing is inert for BOTH diffs. rejected/u32-counter-type-narrow.c.
+
+- [s3] STRUCTURAL AXIS DEFINITIVELY EXHAUSTED across s1+s2+s3. The two named
+  structural sub-levers (ref-count re-weighting; type narrowing) are now measured
+  dead WITH mechanism (floor_log2 coarsening + width-invariant RA), on top of the
+  s1/s2 live-range/init-placement/BB-boundary kills. Every faithful structural
+  rearrangement leaves the s0<->s1 swap (live_length tiebreak) and the li/addiu
+  fold (cse2 const-prop) intact. Remaining sanctioned axis NOT yet measured dead:
+  decomp-permuter (different modality) then cc1psx calibration -> escalation.
+
+- [s3] Baseline candidate.c (pin/barrier-free faithful body) sandbox --disable all = 13 (33=33 insns, 0 rules); HEAD 'matches' only via 2 register-asm pins + 1 __asm__ opt-barrier (cheats).
+
+- [s3] s3 return-value-split KILLED: sandbox 13, greg identical (75 74; ptr->s1/counter->s0); `result` copy-propagated away.
+
+- [s3] ROOT MECHANISM (new this session): GCC 2.7.2 global.c allocno_compare priority uses floor_log2(n_refs), not raw n_refs. floor_log2(4)==floor_log2(6)==2, so the counter(~6)-vs-pointer(~4) ref-count difference the ledger flagged as the swap driver is mechanically INERT — it can never flip the allocno order. The sole real discriminator is live_length (counter shorter -> higher priority -> grabs s0), already proved unmovable by s1 (pointer-init-after-call, sandbox 16) and s2 (counter-init-before-call, sandbox 15).
+
+- [s3] s3 u32-counter type-narrowing KILLED: sandbox 13/33 insns unchanged; width-invariant RA + type-independent cse2 fold.
+
+- [s3] STRUCTURAL AXIS DEFINITIVELY EXHAUSTED (s1+s2+s3): both named structural sub-levers (ref-count re-weighting; type narrowing) now dead WITH mechanism, atop the s1/s2 live-range/init-placement/BB-boundary kills. Target proves identical C live-ranges/refs yet opposite s0/s1 allocation + no fold => both remaining diffs are cc1-internal (global.c allocno-order/live_length tiebreak + cse2 const-prop), not pure-C-structural.
