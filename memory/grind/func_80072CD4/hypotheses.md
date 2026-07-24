@@ -104,3 +104,21 @@ verify the do-while sanction's NE-invert-peephole prerequisite actually applies 
 - probe: Two telemetry campaigns. A: floor-4 per-arm base (perm-270==honest-4), 6293 iters/42 finds, best perm-25 = empty do-while barrier (cheat, not a match). B: cross-block base (perm-1605), 4983 iters/481 finds, best perm-308 = volatile char coercion (cheat, not a match). Neither produced a perm-0.
 - result: No clean 0 in ~11k combined iters across two structurally-distinct chassis; both best forms are cheats. Search modality exhausted.
 - verdict: KILLED (no clean C lever exists in the searched space; the 0-path is the reviewer-FAIL dup form = an owner ruling question).
+
+## [s4b] Directed permuter (PERM_LINESWAP over the merge store block) finds no source ordering that defeats the residual-4 store-order.
+- mechanism: residual-4 is a merge store-ORDER artifact: cross-jump (jump2) glues the per-arm `sb v0,0xE` to the merge HEAD and sched2 defers @4/@0xC (their $v1 data is available early), regardless of the source order of the 8 arg0<4 merge stores. Exhaustively permuting that block cannot change the emitted order without a scheduling fence (a cheat).
+- probe: DIRECTED permuter, PERM_LINESWAP over the 8-statement merge store block (the exact un-run permuter surface; prior-s4 ran only random full-function mutation). ws_directed, base perm-270 (==honest 4), 15,825 iters.
+- result: 1 find (output-270-1) at score 270 == base (score-neutral reorder, not a match, not a cheat); ZERO finds below base. All pure-C search axes (structural s3 + random x2 chassis prior-s4 + directed s4b) exhausted.
+- verdict: KILLED (no clean C lever in the directed permutation space either; the only 0-path is the judge-FAILed dup store-schedule cheat = owner ruling).
+
+## [s4] Directed permuter (PERM_LINESWAP over the arg0<4 merge store block) finds no source ordering that defeats the residual-4 store-order.
+- mechanism: Residual-4 is a merge store-ORDER artifact: jump2 cross-jump glues the per-arm `sb v0,0xE` to the merge HEAD and sched2 defers @4/@0xC (their $v1 data is ready early), regardless of the source order of the 8 arg0<4 merge stores. Exhaustively permuting that block cannot change emitted order without a scheduling fence (a cheat).
+- probe: Built ws_directed (reused floor-4 target.o/harness) with the 8-statement merge store block wrapped in PERM_LINESWAP; launched via tools/permuter_campaign.py (telemetry), base perm-score 270 (== honest 4); waited two in-turn windows (15s + 540s), harvest --stop.
+- result: 15,825 iters, ONE find (output-270-1) at score 270 == base (score-neutral reorder, not a match, not a cheat); ZERO finds below base. Directed permuter axis measured dead.
+- verdict: KILLED
+
+## [s4] All pure-C search/structural axes are now exhausted; the only sandbox-0 path is the judge-FAILed dup store-schedule cheat, so func_80072CD4 is a confirmed clean-floor-4 endgame-lock.
+- mechanism: Structural (s3) dead + random permuter x2 chassis (prior-s4, ~11k iters, only cheat forms) dead + directed permuter (s4b) dead + dup4_0xc_into_arms store-schedule duplication ruled FAIL by the committed 2026-07-24 16:38 judge (outside the duplicated-statement-into-arms reg_n_refs RA-priority scope, no SOTN precedent). Compiled C (not hand-written asm), so canonical-asm is not available.
+- probe: Cross-checked the committed judge ruling + full s1-s4 ledger against the endgame-lock-disposition policy; filed the OWNER-ESCALATION entry naming func_80072CD4 in docs/grind/decisions.md.
+- result: Every grind-advanceable axis measured/ruled dead; escalation filed; clean floor-4 candidate applied to src (sandbox --disable all = 4, build_insns 79 == target).
+- verdict: CONFIRMED

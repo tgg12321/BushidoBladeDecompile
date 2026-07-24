@@ -1,8 +1,8 @@
 {
  "func": "func_80072CD4",
  "file": "text1b",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 0,
@@ -27,18 +27,19 @@
    "floor": 4,
    "modality": "structural",
    "headline": "STRUCTURAL: clean floor holds at 4; proved the sched1 hoist of the cross-block var_v0 li is undefeatable by any pure structural lever (4 variants measured dead) \u2014 a natural 0 needs the owner-ruling @4"
+  },
+  {
+   "session": 4,
+   "floor": 4,
+   "modality": "permuter",
+   "headline": "Directed permuter (PERM_LINESWAP over merge stores, 15.8k iters, 0 finds below base-4) closes the last un-run pure-C axis; all axes dead, endgame-lock owner-gated."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The sched1 hoist of a lone cross-block constant-li is undefeatable by clean structural C for this function; the natural-0 requires a scheduling effect no structural lever provides.",
-   "mechanism": "Structural axis (type/decl-order/statement-order/reuse) exhausted and measured dead this session; the launch-priority pin requires an in-arm consumer, and the only byte-neutral one is the per-arm sb that cross-jumps to the wrong merge slot.",
-   "next_probe": "Non-structural modality: run a fresh-seed permuter campaign on the cross-block base to confirm no clean C reorders around the hoist (expect it to surface only the dup cheat, which is rejected); OR forensics on whether cc1psx schedules the same lone li differently (self-disproof only)."
-  },
-  {
-   "hypothesis": "If both structural and search modalities exhaust the hoist-defeat, the byte-neutral @4/@0xC duplicated-statement-into-arms (store-order variant) is the only remaining 0-path and needs an owner ruling on whether the duplicated-statement-into-arms sanction covers a store-SCHEDULING-order effect (vs its stated reg_n_refs RA-priority scope).",
-   "mechanism": "duplication is byte-neutral (jump2 re-merges the second copy) but s2's layer-1 reviewer FAILed it as outside the sanction's RA-priority scope; self-approval disallowed.",
-   "next_probe": "After the search modality confirms no clean lever, emit ruling-request citing rejected/dup4_0xc_into_arms.c with the s3 mechanism (store-order, not reg_n_refs) \u2014 do not self-sanction."
+   "hypothesis": "func_80072CD4 is an endgame-lock (RA/scheduler store-order residual, floor 4) whose only 0-path is a judge-FAILed cheat; disposition is an owner decision, not a grind lever.",
+   "mechanism": "The store-order residual is locked by jump2 cross-jump + sched2 deferral; no clean C (structural, random permuter, or directed permuter) reorders around it, and canonical-asm is unavailable (compiled C, not hand-written).",
+   "next_probe": "Owner ruling on the filed endgame-lock escalation: accept candidate.c (floor 4) as INCOMPLETE-owner-accepted, OR provide SOTN-master precedent that would sanction the store-schedule duplication. No further grind axis remains."
   }
  ],
  "judge_constraints": [

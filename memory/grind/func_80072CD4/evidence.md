@@ -200,3 +200,32 @@ forms that reached 11 carry empty `do { } while(0)` scheduler barriers
   FAIL) whose classification is an owner ruling (does the duplicated-statement-into-arms sanction,
   scoped to reg_n_refs RA-priority lifts, cover a store-SCHEDULING-order effect?). Emitting
   ruling-request per the s3 frontier; not self-sanctioning.
+
+- [s4b] PERMUTER modality (respawn; prior s4 ran random-only, judge FAILed the dup 0-path
+  2026-07-24 16:38). Ran the ONE un-run permuter surface: DIRECTED permuter (PERM_LINESWAP over
+  the arg0<4 merge store block — the exact residual-4 store-order region), ws_directed. Base
+  perm-score 270 (== honest 4). 15,825 iters, ONE find (output-270-1) at score 270 == base:
+  a score-NEUTRAL reorder of the merge stores (not a match, not a cheat, permuter noise). ZERO
+  finds below base across the full window. Confirms exhaustively (full permutation space of the
+  8 merge stores, not the few structural samples of s2/s3) that NO source ordering of the merge
+  stores defeats the residual-4 store-order — the cross-jump glues @0xE to the merge head and
+  sched2 defers @4/@0xC regardless of source order. Directed axis now measured dead; combined
+  with s3 structural + prior-s4 random (2 chassis), all pure-C search axes are exhausted.
+  Artifacts: tmp/grind/func_80072CD4/s4/ws_directed/{base.c,campaign.log,campaign_meta.json,output-270-1}.
+- [s4b] DISPOSITION: clean floor holds at 4 (candidate.c applied to src, sandbox --disable all = 4,
+  build_insns 79 == target). The only sandbox-0 path remains the dup4_0xc_into_arms store-schedule
+  duplication, which the committed 2026-07-24 16:38 judge ruling FAILED as outside the
+  duplicated-statement-into-arms sanction (store-SCHEDULING-order, not reg_n_refs RA-priority).
+  Every sanctioned axis (structural s3, random-permuter prior-s4 x2 chassis, directed-permuter s4b,
+  dup cheat judge-FAIL) is measured/ruled dead. Filed OWNER-ESCALATION (endgame-lock, floor-4,
+  RA/scheduler-locked) in docs/grind/decisions.md; returning owner-gated.
+
+- [s4] Clean floor holds at 4: candidate.c applied to src/text1b.c, `sandbox func_80072CD4 --disable all` = score 4, build_insns 79 == target (9 rules dropped, 354 cheat-asm bytes stripped).
+
+- [s4] src/text1b.c func_80072CD4 previously carried the reviewer-FAIL empty-do-while barrier form (floor ~12); replaced this session with the clean per-arm candidate.c (one int fc_const, no barriers/pins/volatile/dup).
+
+- [s4] Directed permuter (ws_directed, PERM_LINESWAP over the 8 arg0<4 merge stores): base perm-270 == honest 4; 15,825 iters; only find output-270-1 is a score-neutral reorder (score 270); zero finds below base. Closes the one un-run permuter surface (prior-s4 ran random-only).
+
+- [s4] The sole sandbox-0 form (rejected/dup4_0xc_into_arms.c) is a store-SCHEDULING-order duplication of two UNCONDITIONAL common-tail stores into both arms; committed judge ruling 2026-07-24 16:38 FAILed it as outside the duplicated-statement-into-arms sanction (reg_n_refs RA-priority scope) with no SOTN precedent.
+
+- [s4] OWNER-ESCALATION filed in docs/grind/decisions.md (2026-07-24) naming func_80072CD4: endgame-lock, clean floor 4, all pure-C axes (structural s3 + random-permuter prior-s4 x2 + directed-permuter s4b + dup-cheat judge-FAIL) measured/ruled dead.
