@@ -346,3 +346,19 @@ function is INCOMPLETE. candidate.c is the faithful pin/barrier-free body
 - [s7] Quantified flip target: under the fixed 33-insn bytes both pseudos' refs/livelens are fixed and global.c is deterministic; pointer would need ~13+ refs (has 5) or the counter demoted to nrefs<=4 at len14 (pri 5714<5882) or livelen>40 -- all unreachable without changing emitted bytes. s3's return-value-split targeted the ref reduction but 'result' copy-propagated away.
 
 - [s7] cc1psx==fork already measured (s6, byte-identical); compiler-divergence foreclosed. Floor unchanged 13 (sandbox --disable all = 13, 33=33 insns, 0 rules); src/code6cac_c.c HEAD-clean (no edits).
+
+- [s8] s8 fresh floor: sandbox --disable all = 13 (33/33 insns, 0 regfix/asmfix rules, 34 cheat-asm instances stripped). HEAD byte-matches ONLY via 2 register-asm pins (s0/s1) + 1 __asm__ opt-barrier; zero rules.
+
+- [s8] scan_hand_coded --single func_80037A20 = tier LOW, score 0/8 (no strong hand-coded indicators; too short for S3/S4, no multu pacing/empty-branch/cluster/BIOS pattern) -> canonical-asm route CLOSED.
+
+- [s8] AND-gate #1 (canonical-asm) satisfied: LOW 0/8 -> not COMPLETED-INLINE-ASM-CANONICAL-eligible; the matching pure-C provably exists (s6: cc1psx byte-identical to our fork on candidate.c, compiler-divergence foreclosed).
+
+- [s8] AND-gate #2 (coercion) satisfied: only forms reaching the byte-match are register-asm pins + opt-barrier, both with zero SOTN precedent (2026-07-01 census did NOT relax pins/barriers); the one theoretical pure-C escape is self-contradicting; duplicated-statement-into-arms structurally unavailable.
+
+- [s8] SWAP mechanism (s7 ALLOCDBG, first-hand): counter(pseudo75) nrefs=8 livelen=14 pri=17142 -> s0; pointer(pseudo74) nrefs=5 livelen=17 pri=5882 -> s1; decisive ~2.9x, byte-forced under the 33-insn stream. PASS = global.c allocno_compare order.
+
+- [s8] FOLD mechanism (s6/s7 -da): entry ++ (insn44) folds via cse.c FIRST pass REG_WAS_0 const-prop of the dominating var_s1=0 (insn29) sharing its cse basic block; loop-body ++ (past code_label 45) does NOT fold. Fold-defeat entrenches the swap.
+
+- [s8] Axes measured dead across s1-s7: structural (s1-s3), permuter (s4-s5, 3 chassis / ~21k iters), compiler-divergence (s6, cc1psx==fork), ALLOCDBG dataflow lever (s7). No un-tried sanctioned axis remains.
+
+- [s8] OWNER-ESCALATION entry filed at docs/grind/decisions.md (## 2026-07-24 — func_80037A20 (src/code6cac_c.c) — OWNER-ESCALATION), naming func_80037A20 directly, with both mutually-exclusive owner options (a) sanction coercion / (b) refuse+accept INCOMPLETE.

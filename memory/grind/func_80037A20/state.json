@@ -1,8 +1,8 @@
 {
  "func": "func_80037A20",
  "file": "code6cac_c",
- "session_count": 7,
- "current_modality": "forensics",
+ "session_count": 8,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 0,
@@ -51,18 +51,24 @@
    "floor": 13,
    "modality": "forensics",
    "headline": "Forensics: first-hand ALLOCDBG corrects s3/s6 numbers; counter(75) pri=17142 (nrefs=8,len=14) decisively beats pointer(74) pri=5882 (nrefs=5,len=17); fold-defeat entrenches (not flips) the swap."
+  },
+  {
+   "session": 8,
+   "floor": 13,
+   "modality": "escalation",
+   "headline": "Escalation modality: no un-tried lever drops the floor; endgame-lock AND-gates both satisfied (scan LOW 0/8; only reaching forms are pins+barrier with zero SOTN precedent). OWNER-ESCALATION filed."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The swap+fold are a byte-forced global.c+cse endgame-lock: with the emitted 33-insn stream fixing counter=(8 refs,len14) and pointer=(5 refs,len17), global.c deterministically gives the counter s0, and no single pure-C lever (incl. fold-defeat, which entrenches it) can flip it.",
-   "mechanism": "allocno_compare pri=floor_log2(nrefs)*nrefs/livelen; counter 17142 vs pointer 5882 under fixed bytes. Fold-robust (barrier probe 22000 vs 5555).",
-   "next_probe": "ESCALATION-modality session: this forensics session names/quantifies the passes; an escalation session files the OWNER-ESCALATION entry in docs/grind/decisions.md citing endgame-lock-disposition-policy + the s1-s7 measured-dead axes and this corrected first-hand ALLOCDBG attribution, then returns owner-gated."
+   "hypothesis": "Owner ruling on the filed escalation (option (a) sanction a coercion form, or (b) refuse and accept INCOMPLETE-owner-accepted, retaining the cheat form on main to hold the oracle byte match).",
+   "mechanism": "Endgame-lock disposition: honest floor 13 RA+cse-fold internal lock under a byte-forced 33-insn structure; hand-coded certification NEGATIVE (LOW 0/8); byte-matchable only via forbidden cheat-asm; no SOTN precedent for the reaching coercion.",
+   "next_probe": "Await owner ruling per .claude/rules/endgame-lock-disposition.md; the driver parks func_80037A20 and advances the queue. Precedent species (motion_SetMotion, func_80017FA0, etc.) all ruled option (b) since 2026-07-20."
   },
   {
-   "hypothesis": "A faithful count/pointer DECOMPOSITION that presents <=4 counter global.c allocno refs at the fixed 33-insn bytes (dropping counter pri below the pointer's 5882) AND places the entry ++ at a cse-block boundary would flip s0 to the pointer and match -- but the two requirements pull against each other (unfolding the entry ++ adds a counter ref).",
-   "mechanism": "Only a source that redistributes allocno refs/live-lengths between the two pseudos WITHOUT changing the emitted instruction stream can differ from ours at global.c time -- the divergence is upstream of allocation, in the pre-alloc RTL shape.",
-   "next_probe": "Only if the owner rejects escalation: structural search for a count that reads the counter through a distinct non-copy-propagated pseudo for the store/return (unlike s3's copy-propagated 'result'), reducing its allocno refs to <=4 while holding 33 insns."
+   "hypothesis": "Only if the owner rejects escalation: a faithful count that reads the counter through a distinct non-copy-propagated pseudo for the store/return (unlike s3's copy-propagated `result`), reducing its allocno refs to <=4 while holding 33 insns.",
+   "mechanism": "Redistribute allocno refs between the two callee-saved pseudos WITHOUT changing the emitted instruction stream (the divergence must be upstream of allocation, in pre-alloc RTL shape).",
+   "next_probe": "Structural search for a pseudo that survives copy-prop yet holds the store+return refs off the counter; must simultaneously hold 33 insns and the entry ++ at a cse boundary (the two pull against each other)."
   }
  ],
  "judge_constraints": [],

@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80037A20",
-      "file": "code6cac_c",
-      "distance": 13,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_8007CA00",
       "file": "display",
       "distance": 13,
@@ -2478,6 +2470,15 @@
       "park_reason": "owner escalation pending: docs/grind/decisions.md 2026-07-24 \u2014 func_80017FA0 (src/code6cac.c) \u2014 OWNER-ESCALATION (filed by grind s3 structural per the standing 2026-07-20 endgame-lock-disposition rule)"
     },
     {
+      "func": "func_80037A20",
+      "file": "code6cac_c",
+      "distance": 13,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "owner escalation pending: docs/grind/decisions.md :: ## 2026-07-24 \u2014 func_80037A20 (src/code6cac_c.c) \u2014 OWNER-ESCALATION"
+    },
+    {
       "func": "special_camera_set_win_cam",
       "file": "code6cac_b2_post",
       "distance": 510,
@@ -2714,13 +2715,13 @@
   ],
   "counts": {
     "total": 330,
-    "active": 279,
+    "active": 278,
     "by_status": {
-      "active": 279,
-      "parked": 51
+      "active": 278,
+      "parked": 52
     },
     "by_verdict": {
-      "C": 125,
+      "C": 124,
       "ASM-PARTIAL": 47,
       "ASM-SUSPECT": 107
     }

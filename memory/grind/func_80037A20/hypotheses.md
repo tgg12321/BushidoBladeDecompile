@@ -196,3 +196,15 @@ escalation-modality session. This forensics session names/quantifies; does not s
 - probe: Forensic-only opt-barrier __asm__("":"=r"(s1):"0"(s1)) before the entry ++ (a CHEAT, never a candidate) to block the fold; re-ran BB2_ALLOC_DEBUG.
 - result: Swap did NOT flip. Counter pri ROSE to 22000 (nrefs 8->11, livelen 14->15); pointer 5555; still 75->s0/74->s1. Unfolding the entry ++ ADDS a read-ref to the counter -> fold and swap are coupled in the OPPOSITE direction: defeating the fold ENTRENCHES the counter's s0 win. Explains why every single-lever attempt s1-s6 failed.
 - verdict: KILLED
+
+## [s8] The sanctioned duplicated-statement-into-arms byte-free ref-lift can raise the pointer allocno's global.c refs above the counter's (pri 17142) to flip s0 and drop the floor.
+- mechanism: duplicated-statement-into-arms lifts a pseudo's reg_n_refs via byte-neutral duplication into 2+ control-flow arms (cross-jump re-merges to identical bytes), raising its allocno_compare priority.
+- probe: Structural evaluation of the function's control-flow surface vs the s7-quantified flip target (pointer needs ~13+ refs; has 5).
+- result: Structurally unavailable: the function has only one if-block and one loop, so there is no byte-neutral way to duplicate a pointer statement into the ~8 arms needed to reach 13+ refs. Pointer refs are byte-forced at 5.
+- verdict: KILLED
+
+## [s8] A faithful count/pointer decomposition can present <=4 counter allocno refs at the fixed 33 bytes AND the entry ++ at a cse-block boundary, flipping s0 to the pointer.
+- mechanism: Lowering the counter's global.c refs below the pointer's 5882 pri, or defeating the REG_WAS_0 fold at a cse boundary, would redistribute allocation without changing emitted bytes.
+- probe: Cross-check of the s7 coupling result against the s3 return-value-split kill.
+- result: Self-contradicting: unfolding the entry ++ ADDS a counter read-ref (s7 barrier probe raised counter pri 17142->22000, entrenching the swap); s3's return-value-split already tried the ref reduction and `result` copy-propagated away. The two requirements pull against each other.
+- verdict: KILLED
