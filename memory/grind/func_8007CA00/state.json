@@ -1,0 +1,29 @@
+{
+ "func": "func_8007CA00",
+ "file": "display",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 11,
+   "modality": "recon",
+   "headline": "Recon: mapped all 13 diffs; sequencing-temp lever dropped floor 13->11 (case1 loads now match); goto shared-tail KILLED (17)."
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Case2/BE77==0 signed /2 division should compute in $v0 (return reg), not $v1 (~6 diffs, biggest cluster).",
+   "mechanism": "Build parks the loaded value in $v1; target keeps it in $v0. Likely the BE77!=0 division (which legitimately wants $v1 to feed the tail) biases the shared idiom's RA.",
+   "next_probe": "Re-spell the case2/BE77==0 return so the load result feeds the return chain directly; take a `cc1 -da` greg dump on this branch to see the pseudo->hardreg conflict; try decoupling the two /2 idioms."
+  },
+  {
+   "hypothesis": "Full 2-subu tail merge + target block placement (~5 diffs, removes the +1 duplicate insn).",
+   "mechanism": "Target places CA40 after case1 (fallthrough) with case2 jumping up; build places it after case2, case1 jumping down and duplicating the first subu. Basic-block layout, not directly C-controllable; explicit goto (H-A) made it worse.",
+   "next_probe": "Directed permuter on variant B to search block reorderings; and align case2/BE77!=0's value register/shape with case1 so jump2 extends the merge upward without a forced goto."
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-25T00:34:59.834699+00:00"
+}
