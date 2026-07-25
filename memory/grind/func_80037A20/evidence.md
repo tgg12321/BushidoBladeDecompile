@@ -199,3 +199,42 @@ function is INCOMPLETE. candidate.c is the faithful pin/barrier-free body
 - [s4] The permuter never once flipped the s0/s1 allocation or disrupted the 0+1 fold, empirically confirming the s1-s3 greg diagnosis: both diffs are cc1-internal (global.c live_length allocno tiebreak + cse2 const-prop) and unreachable by pure-C statement mutation.
 
 - [s4] candidate.c unchanged (pin-free faithful body, floor 13). src/code6cac_c.c reverted to HEAD. Structural axis (s1-s3) + permuter axis (s4) are now BOTH measured dead.
+
+- [s5] Built a THIRD structurally-distinct faithful chassis C (for(;;) with in-loop
+  `if(!v0){var_s1--; break;}`, distinct AST from goto[A]/while[B]) in
+  tools/decomp-permuter/nonmatchings/func_80037A20_s5C. Compiles 33=33 insns,
+  offset-0, base_score 298 (IDENTICAL basin depth to chassis A), and the
+  insn-level diff is the SAME 13-diff signature (ptr->s1/counter->s0 swap +
+  entry `li s0,1` fold vs target `addiu s1,s1,1`). artifact
+  tmp/grind/func_80037A20/s5/base_insns.txt vs tgt_insns.txt.
+
+- [s5] KILLED (permuter, fresh seed) chassis C campaign: ~9546 iters, novel finds
+  193/298/293/288/298/203, lowest weighted 193 (WORSE than chassis A's 98), zero
+  NEVER approached. Novel-find gaps widened 15s->15s->120s->60s->60s (basin went
+  quiet). All finds are attractor-class re-finds of the SAME 98/193/203/278/288/
+  293/298 classes s4 characterized. Best find output-193-1 is a DEAD-STORE junk
+  mutation (`var_s1=1; var_s1=0;`) that shaves scheduling weight but is not a
+  match and never touches the s0<->s1 swap or the cse2 0+1 fold. No cheat-vetting
+  (not a match). rejected/permuter-chassis-c-for-break.c ; artifact
+  tmp/grind/func_80037A20/s5/permuter_summary.txt + campaign telemetry in
+  metrics/events.jsonl (permuter-launch/harvest, label s5C_for_break).
+
+- [s5] PERMUTER AXIS DEFINITIVELY EXHAUSTED across s4+s5 (3 structurally-distinct
+  chassis: goto, while, for/break; ~21,000 combined iters). A third distinct AST
+  lands in the exact same attractor basin and NEVER perturbs the 13-diff,
+  empirically confirming the s1-s3 greg diagnosis: both diffs are cc1-internal
+  (global.c live_length allocno tiebreak + cse2 const-prop), unreachable by
+  pure-C statement mutation. Structural (s1-s3) + permuter (s4-s5) axes are ALL
+  now measured dead. Only remaining move is the cc1psx calibration self-disproof
+  (forensics/escalation modality, NOT permuter) before any compiler-divergence
+  escalation. candidate.c unchanged (floor 13); src reverted to HEAD.
+
+- [s5] s5 built a THIRD structurally-distinct faithful chassis C (for(;;) with in-loop if(!v0){var_s1--;break;}) at tools/decomp-permuter/nonmatchings/func_80037A20_s5C: 33=33 insns, offset-0, base_score 298 (identical basin depth to chassis A), same 13-diff signature (ptr->s1/counter->s0 swap + li s0,1 fold vs addiu s1,s1,1).
+
+- [s5] s5 permuter campaign (label s5C_for_break): ~9546 iters, novel finds 193/298/293/288/298/203, lowest weighted 193, zero NEVER approached, the s0<->s1 swap and cse2 0+1 fold NEVER perturbed. Best find output-193-1 is a dead-store junk mutation (var_s1=1; var_s1=0;), not a match.
+
+- [s5] PERMUTER AXIS DEFINITIVELY EXHAUSTED across s4+s5: 3 structurally-distinct chassis (goto, while, for/break), ~21,000 combined iters, all landing in the same attractor basin, none touching the 13-diff. Confirms the s1-s3 greg diagnosis that both diffs are cc1-internal (global.c live_length allocno tiebreak + cse2 const-prop), unreachable by pure-C statement mutation.
+
+- [s5] Structural (s1-s3) + permuter (s4-s5) axes are ALL now measured dead with mechanism. candidate.c unchanged (pin-free faithful body, floor 13); src/code6cac_c.c untouched (HEAD-clean).
+
+- [s5] Campaign was harvested and --stopped in-turn (no orphan process); telemetry recorded to metrics/events.jsonl (permuter-launch/harvest, label s5C_for_break).

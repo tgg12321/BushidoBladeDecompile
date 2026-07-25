@@ -98,3 +98,27 @@ separate cse2 const-prop (pre-allocation).
 - probe: Built a faithful offset-0 single-function workspace (33=33 insns, base_score 298) + a structurally-different while-loop chassis (34 insns, base_score 793). Ran two --stop-on-zero campaigns: chassis A 7887 iters, chassis B 3852 iters (~11,700 combined). Harvested + stopped both in-turn.
 - result: Chassis A lowest weighted score 98; chassis B lowest 363. Zero (byte match) NEVER approached. Every find was a junk mutation (new_var pointer alias; loop-internal increment reorder) that shaves the weighted diff but is semantically broken / cheat-form. The 13-diff itself (s0<->s1 swap + cse2 0+1 fold) was NEVER perturbed by any mutation.
 - verdict: KILLED
+
+## [s5] A THIRD structurally-distinct permuter chassis (for(;;)/break AST, distinct from goto[A]/while[B]) reaches a different attractor basin that flips the s0<->s1 swap or disrupts the cse2 0+1 fold where chassis A/B could not.
+- mechanism: fresh-seed discipline — a distinct CFG/AST chassis can seed a different mutation trajectory; if the permuter axis were merely under-sampled rather than mechanically closed, a new chassis might reach the tied-rename + fold-disrupt combo.
+- probe: Built faithful offset-0 chassis C (33=33 insns, base_score 298, same 13-diff signature). Launched fresh-seed --stop-on-zero campaign (label s5C_for_break), waited in-turn ~9546 iters, harvest --stop.
+- result: KILLED. Lowest weighted 193 (WORSE than chassis A's 98); zero never approached; novel-find gaps widened (basin quiet). All finds re-find the SAME 98/193/203/278/288/293/298 attractor classes; best (output-193-1) is a dead-store junk mutation (`var_s1=1; var_s1=0;`) that never touches the swap or fold. A 3rd distinct chassis lands in the identical basin => the permuter cannot reach the byte-match; both diffs are cc1-internal as the s1-s3 greg diagnosis predicted.
+- verdict: KILLED
+
+## Axis status after s5
+Structural (s1-s3) AND permuter (s4-s5, 3 chassis / ~21k iters) axes are ALL
+measured dead with mechanism. The only remaining move is the frontier's cc1psx
+calibration self-disproof (compile base_single.c via tools/cc1psx_wrapper.sh;
+diff s0/s1 allocation + entry-increment fold vs our fork vs target). Per
+no-compiler-divergence.md + difficult-is-not-impossible §3 (cc1psx 0/282 wins),
+this is EXPECTED to DISPROVE divergence (cc1psx also swaps/folds) and re-confirm
+the C is the variable. That is a forensics/escalation modality, NOT permuter.
+Only if cc1psx unexpectedly matches target where our fork does not is this an
+owner escalation (compiler divergence). No escalation claim is warranted until
+that self-disproof runs.
+
+## [s5] A third structurally-distinct permuter chassis (for(;;)/break AST, distinct from goto[A]/while[B]) reaches a different attractor basin that flips the s0<->s1 swap or disrupts the cse2 0+1 fold where chassis A/B could not.
+- mechanism: Fresh-seed discipline: a distinct CFG/AST chassis seeds a different mutation trajectory; if the permuter axis were merely under-sampled rather than mechanically closed, a new chassis might reach the tied-rename + fold-disrupt combo the s4 goto/while chassis missed.
+- probe: Built faithful offset-0 chassis C (33=33 insns, base_score 298, same 13-diff signature: ptr->s1/counter->s0 swap + entry li s0,1 fold vs target addiu s1,s1,1). Launched fresh-seed --stop-on-zero campaign (label s5C_for_break), waited in-turn ~9546 iters across 6 windows, harvest --stop.
+- result: Lowest weighted score 193 (WORSE than chassis A's 98); zero never approached; novel-find gaps widened 15s->15s->120s->60s->60s (basin quiet). All 6 novel finds (193/298/293/288/298/203) re-find the SAME 98/193/203/278/288/293/298 attractor classes s4 characterized; best (output-193-1) is a dead-store junk mutation (var_s1=1; var_s1=0;) that shaves scheduling weight but never touches the swap or the fold. A 3rd distinct chassis lands in the identical basin.
+- verdict: KILLED
