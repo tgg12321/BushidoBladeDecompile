@@ -1,26 +1,32 @@
 {
  "func": "func_8007CA00",
  "file": "display",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 11,
    "modality": "recon",
    "headline": "Recon: mapped all 13 diffs; sequencing-temp lever dropped floor 13->11 (case1 loads now match); goto shared-tail KILLED (17)."
+  },
+  {
+   "session": 2,
+   "floor": 11,
+   "modality": "structural",
+   "headline": "Structural axis exhausted at floor 11; both diff clusters' root causes proven (greg: H1 is a return-reg local-alloc tie invariant to spelling; jump2: H2 +1 is a reorg delay-slot-fill dup that only a R"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Case2/BE77==0 signed /2 division should compute in $v0 (return reg), not $v1 (~6 diffs, biggest cluster).",
-   "mechanism": "Build parks the loaded value in $v1; target keeps it in $v0. Likely the BE77!=0 division (which legitimately wants $v1 to feed the tail) biases the shared idiom's RA.",
-   "next_probe": "Re-spell the case2/BE77==0 return so the load result feeds the return chain directly; take a `cc1 -da` greg dump on this branch to see the pseudo->hardreg conflict; try decoupling the two /2 idioms."
+   "hypothesis": "H1 (==0 load->v1, 6 diffs) is closable only by shifting the function-wide local-alloc qty ordering/pressure so the ==0 load wins v0 (no C spelling of the ==0 branch itself reaches it).",
+   "mechanism": "Local-alloc tie: load pseudo has no preference and does not conflict with v0 in its own live range, yet is placed in v1; the winning register is decided by qty processing order + surrounding register pressure, not the ==0 expression.",
+   "next_probe": "Directed permuter on the floor-11 candidate (structural manual levers are dead). Also probe whether altering case1/case2/!=0 register pressure (not the ==0 branch) flips the ==0 load's local-alloc tie; read local-alloc qty_order + MIPS REG_ALLOC_ORDER to predict which pressure change frees v0 for the ==0 load."
   },
   {
-   "hypothesis": "Full 2-subu tail merge + target block placement (~5 diffs, removes the +1 duplicate insn).",
-   "mechanism": "Target places CA40 after case1 (fallthrough) with case2 jumping up; build places it after case2, case1 jumping down and duplicating the first subu. Basic-block layout, not directly C-controllable; explicit goto (H-A) made it worse.",
-   "next_probe": "Directed permuter on variant B to search block reorderings; and align case2/BE77!=0's value register/shape with case1 so jump2 extends the merge upward without a forced goto."
+   "hypothesis": "H2 (+1 duplicate subu / tail placement, 5 diffs) needs case1 fall-through to the shared tail WITHOUT over-sharing the loads, which no manual C structure achieves.",
+   "mechanism": "GCC 2.7.2 cross-jump always redirects earlier->later, placing the kept tail in case2; case1 reaches via jump -> reorg delay-slot-fill dup. Explicit goto to force fall-through over-shares the arg0[0] load and li 0x400, cascading RA (reverse=14, forward=17).",
+   "next_probe": "Directed permuter to search block orderings/exit-form mixes that make jump2 keep case1's copy; investigate whether a partial exit-form mix (one branch inline return, other goto) keeps the 2-subu merge but flips which block is kept, per cross-jump-store-tail-merge."
   }
  ],
  "judge_constraints": [],

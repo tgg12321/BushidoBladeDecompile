@@ -48,3 +48,59 @@
 - [s1] regfix rules decode to: (a) case1 load-offset/register swap, (b) full 2-subu tail-merge reconstruction, (c) v0<->v1 swap in case2/BE77==0 division.
 
 - [s1] Variant B remaining 11 diffs = ~6 (case2/BE77==0 division v0<->v1 swap, pure RA) + ~5 (tail-merge incompleteness/block placement, +1 duplicated subu, build 45 vs target 44 insns).
+
+## s2 (structural modality, 2026-07-24) — floor stays 11; both clusters' root causes proven; structural axis exhausted
+
+### H1 (case2/BE77==0 division v0<->v1 swap, 6 diffs) — ROOT CAUSE PROVEN via cc1 -da greg dump
+- The ==0 arg0[0] load pseudo (107 in dump) gets hard reg **v1**; it has NO register
+  preference. The !=0 sibling load (pseudo 93) gets **v0**. Asymmetry is because the two
+  branches have OPPOSITE output constraints: !=0's div result must be v1 (feeds `subu v0,v0,v1`
+  in the shared tail); ==0's result must be v0 (direct return). The return-reg (v0) constraint
+  propagates backward through the FIXED /2 idiom RTL and squeezes the load out of v0 -> v1.
+  Target instead keeps n+sign in v1 and does a cross-register final shift `sra v0,v1,1`,
+  leaving the load in v0.
+- **The division SPELLING does not move H1** — every form canonicalizes to the same post-CSE
+  RTL, and local-alloc deterministically picks v1. Measured (all floor 11 unless noted):
+  `/2` direct=11; `s32 n=(s16)x; return n/2`=11; explicit `((sh>>16)+(u32)sh>>31)>>1`=11
+  (disasm confirmed STILL swapped); reused-var `r=(s16)x; r=r/2; return r`=11;
+  m2c manual-halving UNSHARED `(s16)t + ((u32)(t<<16)>>31)`=13 (extra insn, sll not shared);
+  reuse function-scope `new_var` for the div=14 (WORSE, conflicts with !=0's new_var).
+- m2c reconstructs the ORIGINAL ==0 body as the manual round-toward-zero halving
+  `(s32)((s16)temp + ((u32)(temp<<16)>>31)) >> 1` — but our fork compiles it to the SAME
+  swapped RA. So the original spelling is not the H1 lever.
+- H1 is INDEPENDENT of H2 (the ==0 swap persisted unchanged in the reverse-goto variant).
+- Frontier's s1 hypothesis "the BE77!=0 division biases the ==0 idiom's RA" is DISPROVED:
+  greg shows the ==0 swap comes from the return-reg backward constraint, not from !=0
+  (separate basic blocks / separate qtys).
+
+### H2 (tail placement / +1 duplicate subu, 5 diffs) — ROOT CAUSE PROVEN via jump2 dump
+- The +1 dup is a REORG delay-slot-fill artifact, NOT cross-jump incompleteness. jump2 already
+  merges the FULL 2-subu suffix: cross-jump inserts `code_label 150` right before the first
+  `subu` inside CASE2's block and redirects case1's jump to it (earlier->later, GCC 2.7.2's
+  fixed cross-jump direction). Because case1 REACHES the tail via a jump, reorg fills that
+  jump's delay slot by copying the first subu (target addr advances past it) = the duplicate.
+- Target has case1 FALL THROUGH to the shared tail (tail physically between case1 and case2,
+  case2 jumps UP), so no delay slot -> no dup. Achieving fall-through requires the tail to sit
+  between the cases, which only an explicit goto produces — and goto degrades RA:
+  reverse-goto (case2->up into case1) = build_insns 44 (dup GONE) but RA worse -> **14**;
+  forward-goto (H-A, s1) = 17. Both KILLED. Natural cross-jump can't put the kept copy in case1.
+- Inverting case2 branch sense (`if(BE77==0) return div;` first) = 17 (flips beqz->bnez, breaks
+  the dispatch match). KILLED.
+
+### Artifacts (tmp/grind/func_8007CA00/s2/)
+- display.i.greg / .lreg / .jump2 (RTL dumps for the two root-cause proofs), display.i.* full pass set
+- build_disasm via dis.sh; m2c.sh output (original structure reconstruction)
+
+- [s2] Floor confirmed 11 with candidate.c applied to src (build_insns 45 vs target 44).
+
+- [s2] H1 root cause (greg dump): ==0 load pseudo -> hard reg v1 with NO register preference; return-reg v0 backward-constraint through the fixed /2 RTL squeezes it out of v0. Sibling !=0 load -> v0 (its result must be v1 for the shared subu).
+
+- [s2] H1 invariant to spelling: /2, named intermediate, explicit (x<<16)>>16 shifts, reused-var staging all = floor 11 with the swap intact (disasm verified); m2c-manual-halving unshared=13, reuse-new_var=14.
+
+- [s2] m2c reconstructs the ORIGINAL ==0 body as manual round-toward-zero halving (s32)((s16)t + ((u32)(t<<16)>>31))>>1, and the original case/default ordering has default BETWEEN case1 and case2 - but our fork compiles both to worse or identical RA.
+
+- [s2] H2 root cause (jump2 dump): cross-jump merges the full 2-subu suffix into case2's block (code_label 150 before the first subu) and redirects case1's jump to it; reorg then copies the first subu into case1's jump delay slot = the +1 duplicate. Target has case1 fall-through (no delay slot -> no dup).
+
+- [s2] H1 and H2 are independent (H1 swap persists in the reverse-goto variant).
+
+- [s2] Structural modality (spelling, var-splits, decl order, type narrowing, case/default reorder, branch-sense invert, goto both directions) is exhausted for both clusters.
