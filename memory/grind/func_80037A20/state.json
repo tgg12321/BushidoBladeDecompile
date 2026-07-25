@@ -1,7 +1,7 @@
 {
  "func": "func_80037A20",
  "file": "code6cac_c",
- "session_count": 6,
+ "session_count": 7,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -45,18 +45,24 @@
    "floor": 13,
    "modality": "forensics",
    "headline": "Forensics: cc1psx byte-identical to our fork on candidate.c (compiler-divergence escalation FORECLOSED); fold pinned to FIRST cse.c REG_WAS_0 const-prop, swap to global.c allocno-order; greg live-rang"
+  },
+  {
+   "session": 7,
+   "floor": 13,
+   "modality": "forensics",
+   "headline": "Forensics: first-hand ALLOCDBG corrects s3/s6 numbers; counter(75) pri=17142 (nrefs=8,len=14) decisively beats pointer(74) pri=5882 (nrefs=5,len=17); fold-defeat entrenches (not flips) the swap."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The function is an RA+cse-fold internal lock a couple insns short of target under a byte-forced 33-insn structure, matching the owner's endgame-lock-disposition standing policy (2026-07-20) \u2014 the correct disposition is owner escalation, not a further worker close.",
-   "mechanism": "SWAP = global.c allocno-order priority (counter allocno sorts first, takes s0) and FOLD = cse.c FIRST-pass REG_WAS_0 const-prop of the dominating s1=0; both are identical between cc1psx and our fork and cc1-internal under the mandatory target structure. Structural, permuter, and compiler-divergence axes are all measured dead; the remaining dataflow lever is refuted by the greg live-range reading.",
-   "next_probe": "Escalation-modality session: FILE the OWNER-ESCALATION entry in docs/grind/decisions.md naming func_80037A20 (cite endgame-lock-disposition-policy + the s1-s6 measured-dead axes and exact-pass attribution) and return owner-gated with escalation_ref. This forensics session names the passes; it does not self-file the escalation."
+   "hypothesis": "The swap+fold are a byte-forced global.c+cse endgame-lock: with the emitted 33-insn stream fixing counter=(8 refs,len14) and pointer=(5 refs,len17), global.c deterministically gives the counter s0, and no single pure-C lever (incl. fold-defeat, which entrenches it) can flip it.",
+   "mechanism": "allocno_compare pri=floor_log2(nrefs)*nrefs/livelen; counter 17142 vs pointer 5882 under fixed bytes. Fold-robust (barrier probe 22000 vs 5555).",
+   "next_probe": "ESCALATION-modality session: this forensics session names/quantifies the passes; an escalation session files the OWNER-ESCALATION entry in docs/grind/decisions.md citing endgame-lock-disposition-policy + the s1-s7 measured-dead axes and this corrected first-hand ALLOCDBG attribution, then returns owner-gated."
   },
   {
-   "hypothesis": "A pure-C form that makes the POINTER allocno out-rank the counter (so it grabs s0) and simultaneously breaks cse's reg==0 equivalence at the entry increment must exist (target proves it), but it is a non-obvious semantic decomposition of the file count, not a re-spelling of candidate.c's count.",
-   "mechanism": "cc1psx==fork proves the matching C exists; every faithful re-spelling of candidate.c's s1=0/entry-++/loop-++/-- count keeps s1=0 dominating (cse folds) and the counter out-ranking the pointer (n_refs*freq, byte-forced). A DIFFERENT count semantics that yields 33 insns is the only escape, and none has been found across s1-s5.",
-   "next_probe": "Only worth pursuing if the owner rejects escalation: search for an alternative count decomposition (e.g. counting via the pointer offset delta, or a non-zero-dominated counter init) that still lands at exactly 33 insns; the s4/s5 permuter basins suggest this is off the reachable mutation manifold."
+   "hypothesis": "A faithful count/pointer DECOMPOSITION that presents <=4 counter global.c allocno refs at the fixed 33-insn bytes (dropping counter pri below the pointer's 5882) AND places the entry ++ at a cse-block boundary would flip s0 to the pointer and match -- but the two requirements pull against each other (unfolding the entry ++ adds a counter ref).",
+   "mechanism": "Only a source that redistributes allocno refs/live-lengths between the two pseudos WITHOUT changing the emitted instruction stream can differ from ours at global.c time -- the divergence is upstream of allocation, in the pre-alloc RTL shape.",
+   "next_probe": "Only if the owner rejects escalation: structural search for a count that reads the counter through a distinct non-copy-propagated pseudo for the store/return (unlike s3's copy-propagated 'result'), reducing its allocno refs to <=4 while holding 33 insns."
   }
  ],
  "judge_constraints": [],

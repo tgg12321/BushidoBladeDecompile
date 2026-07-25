@@ -289,3 +289,60 @@ function is INCOMPLETE. candidate.c is the faithful pin/barrier-free body
 - [s6] NEW greg refinement: the counter allocno is live insn 29..75 while the pointer is live 13..51 — the counter is ALREADY the LONGER-lived allocno and STILL out-prioritizes the pointer. The frontier's 'lengthen counter live range to demote it' lever is aimed the wrong way; the win is the n_refs*freq product, not a short-range effect.
 
 - [s6] Axis status after s6: compiler-divergence axis now MEASURED DEAD (not merely expected); structural (s1-s3) + permuter (s4-s5, 3 chassis / ~21k iters) already dead; live-frontier dataflow lever refuted at mechanism level. candidate.c unchanged (floor 13); src/code6cac_c.c HEAD-clean (no edits this session).
+
+- [s7] FIRST-HAND ALLOCDBG (instrumented tmp/gccdbg/cc1, BB2_ALLOC_DEBUG=1) on the
+  pin-free faithful body — exact global.c allocno_compare priorities:
+  counter(pseudo75) nrefs=8 livelen=14 pri=17142 -> s0(16);
+  pointer(pseudo74) nrefs=5 livelen=17 pri=5882  -> s1(17).
+  The counter wins s0 by a DECISIVE ~2.9x margin, driven by BOTH more refs
+  (8 vs 5, crossing the floor_log2 step: 3 vs 2 => numerator 24 vs 10) AND a
+  SHORTER live range (14 vs 17). pri = floor_log2(nrefs)*nrefs/livelen*10000*size.
+
+- [s7] CORRECTS s3: the "n_refs INERT (floor_log2(4)==floor_log2(6)==2)" claim used
+  ref counts that do not exist in the RTL. Actual refs are 8 (counter) and 5
+  (pointer); floor_log2(8)=3 != floor_log2(5)=2, so n_refs IS a live discriminator.
+
+- [s7] CORRECTS s6: the "counter is ALREADY the LONGER-lived allocno (29..75 vs ptr
+  13..51)" claim is contradicted by instrumented livelen — counter=14 < pointer=17.
+  The counter is SHORTER-lived. s6's hand-counted cuid live-range reading was wrong;
+  its conclusion "lengthen-to-demote is the wrong direction" does not follow.
+
+- [s7] cse FOLD mechanism pinned to the basic-block level (independent -da regen):
+  entry ++ (insn 44) folds because it shares a cse basic block with the zero-init
+  (insn 29) — the beqz (insn 40) fall-through arm has no CODE_LABEL/barrier before
+  it and the firstfile call (insn 36) clobbers no pseudo, so the value table still
+  carries reg75==0. CONTROL: the loop-body ++ (insn 58) is past code_label 45
+  ("loop", a back-edge target NUSES>1) which starts a fresh cse block -> NOT folded
+  (stays addsi3). A matching source must place the entry ++ at a cse-block boundary.
+
+- [s7] COUPLING PROBE (forensic-only opt-barrier `__asm__("":"=r"(s1):"0"(s1))`,
+  a CHEAT never proposed as candidate): blocking the fold does NOT flip the swap —
+  counter pri RISES to 22000 (nrefs 8->11, livelen 14->15), pointer 5555, still
+  74->s1/75->s0. Unfolding the entry ++ ADDS a read-ref to the counter, so fold and
+  swap are coupled in the OPPOSITE direction from the original frontier lever:
+  defeating the fold ENTRENCHES the counter's s0 win. This mechanism-level result
+  explains why every single-lever attempt s1-s6 failed and STRENGTHENS the
+  endgame-lock disposition. artifact tmp/grind/func_80037A20/s7/dump/barrier_ad.txt.
+
+- [s7] Quantified flip target: under the byte-forced 33-insn stream the two callee-
+  saved pseudos' refs/livelens are FIXED, so global.c is deterministic (counter wins
+  s0). Pointer would need pri>17142 (~13+ refs; it has 5) or the counter demoted
+  below 5882 (nrefs<=4 at len14, or livelen>40) — both unreachable without changing
+  the emitted bytes. s3's return-value-split targeted the ref reduction but `result`
+  copy-propagated away. Escape = a faithful count/pointer decomposition presenting
+  <=4 counter allocno refs at fixed bytes AND entry ++ at a cse boundary (the two
+  pull against each other: unfolding adds a ref). Floor unchanged 13; src HEAD-clean.
+
+- [s7] First-hand ALLOCDBG: counter(75) pri=17142 (nrefs=8, livelen=14) -> s0(16); pointer(74) pri=5882 (nrefs=5, livelen=17) -> s1(17). Decisive ~2.9x swap, not a floor_log2 tie.
+
+- [s7] CORRECTS s3: n_refs are 8 (counter) and 5 (pointer), NOT 4 and 6; floor_log2(8)=3 != floor_log2(5)=2, so n_refs is a live discriminator, not inert.
+
+- [s7] CORRECTS s6: instrumented livelen is 14 (counter) < 17 (pointer); the counter is SHORTER-lived, contradicting s6's hand-counted 29..75 vs 13..51 'counter longer-lived' reading.
+
+- [s7] cse FOLD pinned to basic-block level: entry ++ (insn 44) folds because it shares a cse basic block with the zero-init (insn 29) across the beqz fall-through (insn 40) and the pseudo-preserving firstfile call (insn 36); CONTROL: loop-body ++ (insn 58) past code_label 45 (NUSES>1) is NOT folded. A match needs the entry ++ at a cse-block boundary.
+
+- [s7] Coupling probe: blocking the fold (opt-barrier) raises counter pri to 22000 and does NOT flip the swap; unfolding adds a counter ref. Fold-defeat entrenches, not demotes.
+
+- [s7] Quantified flip target: under the fixed 33-insn bytes both pseudos' refs/livelens are fixed and global.c is deterministic; pointer would need ~13+ refs (has 5) or the counter demoted to nrefs<=4 at len14 (pri 5714<5882) or livelen>40 -- all unreachable without changing emitted bytes. s3's return-value-split targeted the ref reduction but 'result' copy-propagated away.
+
+- [s7] cc1psx==fork already measured (s6, byte-identical); compiler-divergence foreclosed. Floor unchanged 13 (sandbox --disable all = 13, 33=33 insns, 0 rules); src/code6cac_c.c HEAD-clean (no edits).

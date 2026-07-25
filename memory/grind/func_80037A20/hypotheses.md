@@ -159,3 +159,40 @@ to be filed by an escalation-modality session, NOT this forensics session.
 - probe: Fresh cc1 -da dumps on the s4 cpp.i; traced the entry increment across jump/cse/cse2/combine and read the greg allocno conflicts + RTL live ranges of pseudo 74(ptr)/75(counter).
 - result: BOTH premises refuted. (a) The fold is already present in base.i.cse (FIRST cse pass) as (set reg (const_int 1)) with a REG_WAS_0 29 note — it is the FIRST cse, not cse2. (b) From the RTL the counter allocno is live insn 29..75 while the pointer is live 13..51: the counter is ALREADY the LONGER-lived allocno yet STILL out-ranks the pointer (greg header 'allocate: 75 74'). Lengthening the counter's range is the WRONG direction and cannot demote it; its priority win is the n_refs*freq product, fixed by the byte-forced loop structure. n_refs already inert (s3 floor_log2). No mechanism-plausible pure-C lever remains.
 - verdict: KILLED
+
+## [s7] FORENSICS — first-hand ALLOCDBG corrects the swap mechanism; fold<->swap coupling
+- claim: instrumented cc1 (BB2_ALLOC_DEBUG) gives the exact global.c allocno
+  priorities and settles whether n_refs / live_length is the swap driver and whether
+  defeating the cse fold demotes the counter.
+- probe: ran tmp/gccdbg/cc1 -O2 with BB2_ALLOC_DEBUG on the pin-free body; then a
+  forensic-only opt-barrier variant (fold blocked) to test fold<->swap coupling.
+- result: counter(75) pri=17142 (nrefs=8, livelen=14) beats pointer(74) pri=5882
+  (nrefs=5, livelen=17) by ~2.9x. CORRECTS s3 (real refs 8 vs 5, NOT 4 vs 6 -> n_refs
+  IS a discriminator) and s6 (counter livelen 14 < pointer 17 -> counter is SHORTER-
+  lived, not longer). Barrier probe: blocking the fold RAISES counter pri to 22000,
+  swap does NOT flip -> unfolding adds a counter ref, entrenching s0. The two diffs
+  are coupled in the OPPOSITE direction from the original frontier lever.
+- verdict: CONFIRMED (swap is a decisive, fold-robust priority win; endgame-lock
+  strengthened). The quantified escape (counter allocno refs <=4 at fixed bytes) is
+  the sole remaining structural target and is what a future escalation session weighs.
+
+## Axis status after s7
+Mechanism now correctly quantified from instrumented data (not hand-counted RTL).
+Compiler-divergence (s6), structural (s1-s3), permuter (s4-s5) axes dead; s7 shows
+the swap is robust even to fold-defeat, and quantifies the only theoretical escape
+(reduce counter global.c allocno refs 8->4 at fixed 33-insn bytes — s3's return-
+value-split already copy-propagated away). Disposition unchanged: RA+cse-fold
+endgame-lock, owner escalation is the correct next disposition — to be FILED by an
+escalation-modality session. This forensics session names/quantifies; does not self-file.
+
+## [s7] Instrumented cc1 (BB2_ALLOC_DEBUG) will give the exact global.c allocno priorities and settle whether n_refs or live_length drives the s0<->s1 swap, testing the s3 'n_refs inert' and s6 'counter longer-lived' claims.
+- mechanism: global.c allocno_compare pri = floor_log2(nrefs)*nrefs/live_length*10000*size; the higher-pri allocno sorts first and claims the first free callee-saved reg (s0).
+- probe: Ran tmp/gccdbg/cc1 -O2 -G0 with BB2_ALLOC_DEBUG=1 on the pin-free faithful cpp.i; read the ALLOCDBG per-allocno print.
+- result: counter(pseudo75) nrefs=8 livelen=14 pri=17142 -> s0; pointer(pseudo74) nrefs=5 livelen=17 pri=5882 -> s1. Counter wins by ~2.9x via BOTH more refs (8 vs 5, crossing floor_log2 3 vs 2 -> numerator 24 vs 10) AND shorter live range (14 vs 17). REFUTES s3 (actual refs 8/5, not 4/6, so n_refs IS a discriminator) and s6 (counter is SHORTER-lived, 14<17, not longer).
+- verdict: CONFIRMED
+
+## [s7] Defeating the cse REG_WAS_0 fold of the entry increment will lengthen the counter's live range and demote it below the pointer, flipping s0 to the pointer and resolving both diffs at once (the original frontier lever).
+- mechanism: If folding shortens the counter's live range (fold makes insn44 write-only), then unfolding should extend it and lower pri = floor_log2(nrefs)*nrefs/live_length.
+- probe: Forensic-only opt-barrier __asm__("":"=r"(s1):"0"(s1)) before the entry ++ (a CHEAT, never a candidate) to block the fold; re-ran BB2_ALLOC_DEBUG.
+- result: Swap did NOT flip. Counter pri ROSE to 22000 (nrefs 8->11, livelen 14->15); pointer 5555; still 75->s0/74->s1. Unfolding the entry ++ ADDS a read-ref to the counter -> fold and swap are coupled in the OPPOSITE direction: defeating the fold ENTRENCHES the counter's s0 win. Explains why every single-lever attempt s1-s6 failed.
+- verdict: KILLED
