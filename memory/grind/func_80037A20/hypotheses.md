@@ -122,3 +122,40 @@ that self-disproof runs.
 - probe: Built faithful offset-0 chassis C (33=33 insns, base_score 298, same 13-diff signature: ptr->s1/counter->s0 swap + entry li s0,1 fold vs target addiu s1,s1,1). Launched fresh-seed --stop-on-zero campaign (label s5C_for_break), waited in-turn ~9546 iters across 6 windows, harvest --stop.
 - result: Lowest weighted score 193 (WORSE than chassis A's 98); zero never approached; novel-find gaps widened 15s->15s->120s->60s->60s (basin quiet). All 6 novel finds (193/298/293/288/298/203) re-find the SAME 98/193/203/278/288/293/298 attractor classes s4 characterized; best (output-193-1) is a dead-store junk mutation (var_s1=1; var_s1=0;) that shaves scheduling weight but never touches the swap or the fold. A 3rd distinct chassis lands in the identical basin.
 - verdict: KILLED
+
+## [s6] cc1psx (original PsyQ compiler) diverges from our decompals fork on candidate.c: if cc1psx allocates ptr->s0 + emits addiu (no fold) it is compiler divergence (owner escalation), else the C is the variable.
+- mechanism: no-compiler-divergence.md + difficult-is-not-impossible §3 record cc1psx at 0/282 wins over our fork; the documented self-disproof before any compiler-divergence escalation.
+- probe: forensics — ran tools/cc1psx_wrapper.sh on the s4 cpp.i; diffed cc1psx func region vs our fork cc1 output vs target on the s0/s1 allocation + entry increment.
+- result: DISPROVEN. cc1psx output is BYTE-IDENTICAL to our fork (only $L vs .L label cosmetic differs): cc1psx ALSO swaps (ptr->s1/counter->s0) AND folds (li $16,1). cc1psx does NOT match target. Compiler is deterministic+identical; the matching pure-C provably exists as a DIFFERENT source. Compiler-divergence escalation FORECLOSED.
+- verdict: KILLED
+
+## [s6] The fold is a cse2 (post-loop) transform; a live-range dataflow lever can lengthen the counter past the pointer to demote it and flip the swap without scheduling damage (live-frontier #2).
+- mechanism: prior ledger attributed the fold to cse2 and posited the counter loses s0 because it is SHORT-lived; a dataflow lever lengthening its range should raise the pointer's relative priority.
+- probe: fresh cc1 -da dumps on the s4 cpp.i; traced the entry increment across jump/cse/cse2/combine, and read the greg allocno conflicts + RTL live ranges for pseudo 74(ptr)/75(counter).
+- result: BOTH premises refuted. (a) The fold appears already in base.i.cse (FIRST cse pass) with a REG_WAS_0 29 note — it is the FIRST cse, not cse2. (b) The counter allocno is live insn 29..75 while the pointer is live 13..51: the counter is ALREADY the LONGER-lived allocno yet STILL out-ranks the pointer (allocated first: header "75 74"). So lengthening the counter's live range is the WRONG direction and cannot demote it; its priority win is the n_refs*freq product, which the byte-forced loop structure fixes. n_refs already inert (s3 floor_log2). No mechanism-plausible pure-C lever remains.
+- verdict: KILLED
+
+## Axis status after s6
+Compiler-divergence axis now MEASURED DEAD (cc1psx == fork, byte-identical),
+alongside structural (s1-s3) and permuter (s4-s5). The live-frontier dataflow
+lever (#2) is refuted at the mechanism level by the greg live-range reading (the
+counter is already longer-lived and still wins). Exact-pass attribution: SWAP =
+global.c allocno-order priority (counter allocno sorts first, takes s0); FOLD =
+cse.c FIRST pass REG_WAS_0 const-prop of the dominating s1=0. Both are
+cc1-internal under the mandatory 33-insn target structure and identical between
+cc1psx and our fork. No sanctioned pure-C axis with a plausible mechanism
+remains open. Next disposition is owner escalation (endgame-lock-disposition:
+RA+cse-fold internal lock a couple insns short under a byte-forced structure) —
+to be filed by an escalation-modality session, NOT this forensics session.
+
+## [s6] cc1psx (original PsyQ GCC 2.7.2.SN.1) diverges from our decompals fork on candidate.c — allocating ptr->s0 and emitting addiu (no fold) like target — making the two diffs a fork-vs-cc1psx compiler divergence (owner escalation).
+- mechanism: no-compiler-divergence.md + difficult-is-not-impossible §3 record cc1psx at 0/282 wins; documented self-disproof before any compiler-divergence escalation.
+- probe: Ran tools/cc1psx_wrapper.sh on the exact s4 cpp.i; diffed cc1psx func region vs our fork cc1 -da output vs target on the s0/s1 allocation + entry increment.
+- result: DISPROVEN. cc1psx output BYTE-IDENTICAL to our fork (only $L vs .L label prefix cosmetic): cc1psx ALSO allocates ptr->s1/counter->s0 (swap) AND folds the entry ++ to li $16,1 (fold). cc1psx does NOT match target. Compiler is deterministic+identical; the matching pure-C provably exists as a DIFFERENT source. Compiler-divergence owner-escalation FORECLOSED.
+- verdict: KILLED
+
+## [s6] The fold is a cse2 (post-loop) transform and the counter loses s0 because it is SHORT-lived, so a dataflow lever lengthening the counter's live range past the pointer's would demote it and flip the swap without scheduling damage (live-frontier #2).
+- mechanism: Prior ledger attributed the fold to cse2 and the swap to a live_length tiebreak where the counter's shorter range wins; a range-lengthening dataflow shape should raise the pointer's relative priority.
+- probe: Fresh cc1 -da dumps on the s4 cpp.i; traced the entry increment across jump/cse/cse2/combine and read the greg allocno conflicts + RTL live ranges of pseudo 74(ptr)/75(counter).
+- result: BOTH premises refuted. (a) The fold is already present in base.i.cse (FIRST cse pass) as (set reg (const_int 1)) with a REG_WAS_0 29 note — it is the FIRST cse, not cse2. (b) From the RTL the counter allocno is live insn 29..75 while the pointer is live 13..51: the counter is ALREADY the LONGER-lived allocno yet STILL out-ranks the pointer (greg header 'allocate: 75 74'). Lengthening the counter's range is the WRONG direction and cannot demote it; its priority win is the n_refs*freq product, fixed by the byte-forced loop structure. n_refs already inert (s3 floor_log2). No mechanism-plausible pure-C lever remains.
+- verdict: KILLED

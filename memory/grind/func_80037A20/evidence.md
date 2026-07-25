@@ -238,3 +238,54 @@ function is INCOMPLETE. candidate.c is the faithful pin/barrier-free body
 - [s5] Structural (s1-s3) + permuter (s4-s5) axes are ALL now measured dead with mechanism. candidate.c unchanged (pin-free faithful body, floor 13); src/code6cac_c.c untouched (HEAD-clean).
 
 - [s5] Campaign was harvested and --stopped in-turn (no orphan process); telemetry recorded to metrics/events.jsonl (permuter-launch/harvest, label s5C_for_break).
+
+- [s6] SELF-DISPROOF MEASURED (forensics): ran original PsyQ cc1psx.exe
+  (GCC 2.7.2.SN.1) on the exact s4 cpp.i (pin-free faithful body) and diffed
+  its func region vs our decompals fork's cc1 output. BYTE-IDENTICAL except the
+  assembler label prefix ($L vs .L — a cosmetic, not codegen). cc1psx ALSO
+  allocates ptr->s1/counter->s0 (the swap) AND folds the entry ++ to `li $16,1`
+  (the fold). => cc1psx does NOT match target on candidate.c; the
+  fork-vs-cc1psx divergence hypothesis (live-frontier #1) is DISPROVEN. Compiler
+  is deterministic+identical; the C is the variable (the matching C provably
+  exists — target itself was cc1psx-built). Compiler-divergence owner-escalation
+  FORECLOSED. artifacts s6/cc1psx.s, s6/cc1psx.err, s6/dump/base.s.
+
+- [s6] FOLD PASS PINNED (forensics, -da dumps): the entry increment is a live
+  `(plus reg 1)` addsi3 in base.i.jump (PRE-cse) and is already `(set reg
+  (const_int 1))` with an `(insn_list:REG_WAS_0 29 ...)` note in base.i.cse
+  (FIRST cse pass) — stays folded thereafter. PASS = cse.c FIRST CSE pass (NOT
+  cse2 as the prior ledger stated); DECISION = REG_WAS_0 const-prop of the
+  dominating `s1=0` (insn 29) into `s1+1` -> const 1. Any faithful re-spelling
+  of this count keeps `s1=0` dominating -> cse always folds.
+
+- [s6] SWAP DECISION from fresh greg: header `2 regs to allocate: 75 74` =>
+  counter(pseudo 75) allocated FIRST, grabs s0(hard 16); pointer(pseudo 74)
+  second, gets s1(hard 17). 74 conflicts 6,7(a2/a3) (hoisted symbol_ref load
+  insn 13 live across the call); 75 does not. PASS = global.c allocno-order
+  priority. NEW refinement that KILLS live-frontier #2's premise: from the RTL
+  the COUNTER allocno is live insn 29..75 while the POINTER is live 13..51 — the
+  counter is ALREADY the LONGER-lived allocno and STILL out-ranks the pointer.
+  So the frontier idea "lengthen the counter's live range to demote it" is
+  aimed the WRONG way; the counter's priority win is the n_refs*freq product
+  (loop-structure-fixed, byte-count-forced), not a short-live-range effect.
+  n_refs already inert (s3 floor_log2). No mechanism-plausible pure-C lever
+  remains open.
+
+- [s6] AXIS SUMMARY after s6: compiler-divergence axis now MEASURED DEAD (not
+  merely expected); structural (s1-s3) + permuter (s4-s5) already dead; the
+  live-frontier dataflow lever (#2) refuted at mechanism level by the greg
+  live-range reading. candidate.c unchanged (floor 13); src/code6cac_c.c
+  HEAD-clean (no edits this session). Function is an RA+cse-fold internal lock a
+  couple insns short under the byte-forced structure => endgame-lock-disposition
+  / owner-escalation territory for a future escalation-modality session, not a
+  worker close.
+
+- [s6] cc1psx.exe (original PsyQ compiler) on the pin-free candidate cpp.i is BYTE-IDENTICAL to our decompals fork's cc1 output except the $L/.L assembler label prefix — both swap (ptr->s1/counter->s0) and both fold the entry increment to li $16,1. The compiler is not the variable; the matching pure-C source is a DIFFERENT (still-unknown) faithful form.
+
+- [s6] FOLD pass PINNED: base.i.jump (pre-cse) has the entry increment as a live (plus reg 1) addsi3; base.i.cse (FIRST cse pass) already has it as (set reg (const_int 1)) with an (insn_list:REG_WAS_0 29) note. Pass = cse.c FIRST CSE (ledger's 'cse2' was imprecise); decision = REG_WAS_0 const-prop of the dominating s1=0 (insn 29) into s1+1.
+
+- [s6] SWAP decision from fresh greg: header '2 regs to allocate: 75 74' => counter(pseudo 75) sorts first in global.c allocno_order and claims s0(hard 16); pointer(pseudo 74) gets s1(hard 17). 74 conflicts a2/a3 (6,7) because its symbol_ref load (insn 13) is hoisted above the func_80079A30 call; 75 does not.
+
+- [s6] NEW greg refinement: the counter allocno is live insn 29..75 while the pointer is live 13..51 — the counter is ALREADY the LONGER-lived allocno and STILL out-prioritizes the pointer. The frontier's 'lengthen counter live range to demote it' lever is aimed the wrong way; the win is the n_refs*freq product, not a short-range effect.
+
+- [s6] Axis status after s6: compiler-divergence axis now MEASURED DEAD (not merely expected); structural (s1-s3) + permuter (s4-s5, 3 chassis / ~21k iters) already dead; live-frontier dataflow lever refuted at mechanism level. candidate.c unchanged (floor 13); src/code6cac_c.c HEAD-clean (no edits this session).

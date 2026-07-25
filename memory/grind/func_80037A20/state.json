@@ -1,8 +1,8 @@
 {
  "func": "func_80037A20",
  "file": "code6cac_c",
- "session_count": 5,
- "current_modality": "permuter",
+ "session_count": 6,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 0,
@@ -39,18 +39,24 @@
    "floor": 13,
    "modality": "permuter",
    "headline": "Permuter axis re-confirmed dead on a 3rd distinct chassis (for/break, ~9546 iters, lowest 193, zero never approached, 13-diff never perturbed); structural+permuter axes all exhausted, next move is cc1"
+  },
+  {
+   "session": 6,
+   "floor": 13,
+   "modality": "forensics",
+   "headline": "Forensics: cc1psx byte-identical to our fork on candidate.c (compiler-divergence escalation FORECLOSED); fold pinned to FIRST cse.c REG_WAS_0 const-prop, swap to global.c allocno-order; greg live-rang"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "cc1psx (original PsyQ compiler) diverges from our decompals GCC 2.7.2 fork on this exact C: if cc1psx allocates ptr->s0 and emits addiu (no 0+1 fold) -- matching target where our fork does not -- the two diffs are a fork-vs-cc1psx divergence and this is an owner escalation (compiler divergence), not a worker close.",
-   "mechanism": "Structural + permuter axes are now both dead; the documented self-disproof step before any escalation. no-compiler-divergence.md + difficult-is-not-impossible \u00a73 record cc1psx at 0/282 wins over our fork, so this is EXPECTED to DISPROVE divergence (cc1psx will also swap/fold) and re-confirm the C is the variable.",
-   "next_probe": "Forensics/escalation modality (NOT permuter): run tools/cc1psx_wrapper.sh on tmp/grind/func_80037A20/s4/base_single.c (reuse s4 cpp.i); diff cc1psx .s vs our fork .s vs asm/funcs/func_80037A20.s on the s0/s1 allocation + entry increment. If cc1psx also swaps/folds (expected), file the compiler-internal-limit escalation; if it matches target, escalate compiler divergence."
+   "hypothesis": "The function is an RA+cse-fold internal lock a couple insns short of target under a byte-forced 33-insn structure, matching the owner's endgame-lock-disposition standing policy (2026-07-20) \u2014 the correct disposition is owner escalation, not a further worker close.",
+   "mechanism": "SWAP = global.c allocno-order priority (counter allocno sorts first, takes s0) and FOLD = cse.c FIRST-pass REG_WAS_0 const-prop of the dominating s1=0; both are identical between cc1psx and our fork and cc1-internal under the mandatory target structure. Structural, permuter, and compiler-divergence axes are all measured dead; the remaining dataflow lever is refuted by the greg live-range reading.",
+   "next_probe": "Escalation-modality session: FILE the OWNER-ESCALATION entry in docs/grind/decisions.md naming func_80037A20 (cite endgame-lock-disposition-policy + the s1-s6 measured-dead axes and exact-pass attribution) and return owner-gated with escalation_ref. This forensics session names the passes; it does not self-file the escalation."
   },
   {
-   "hypothesis": "A cc1 RTL (-da greg/combine) study of WHY live_length wins the s0 tiebreak for the counter under the mandatory do-while+entry-++ structure may reveal a not-yet-tried dataflow C lever that lengthens the counter's live range past the pointer's WITHOUT the +2 scheduling damage that s1/s2's init-placement moves incurred.",
-   "mechanism": "s1/s2 proved init-placement moves the live ranges but adds scheduling damage; a lever that changes live_length via dataflow (not statement position) is untried and is the only remaining pure-C angle before escalation.",
-   "next_probe": "Structural/forensics modality: cc1 -da on the s4 cpp.i, read the .greg allocno live_length values for pseudo 74/75, search for a dataflow shape (not reorder) that extends the counter's live_length below the pointer's."
+   "hypothesis": "A pure-C form that makes the POINTER allocno out-rank the counter (so it grabs s0) and simultaneously breaks cse's reg==0 equivalence at the entry increment must exist (target proves it), but it is a non-obvious semantic decomposition of the file count, not a re-spelling of candidate.c's count.",
+   "mechanism": "cc1psx==fork proves the matching C exists; every faithful re-spelling of candidate.c's s1=0/entry-++/loop-++/-- count keeps s1=0 dominating (cse folds) and the counter out-ranking the pointer (n_refs*freq, byte-forced). A DIFFERENT count semantics that yields 33 insns is the only escape, and none has been found across s1-s5.",
+   "next_probe": "Only worth pursuing if the owner rejects escalation: search for an alternative count decomposition (e.g. counting via the pointer offset delta, or a non-zero-dominated counter init) that still lands at exactly 33 insns; the s4/s5 permuter basins suggest this is off the reachable mutation manifold."
   }
  ],
  "judge_constraints": [],
