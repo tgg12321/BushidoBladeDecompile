@@ -93,3 +93,63 @@
 - probe: 3 wrapper placements under BB2_ALLOC_DEBUG
 - result: flip reverts AND peel stops cross-jump-merging (body emitted twice)
 - verdict: KILLED
+
+## s3 (structural, 2026-07-27)
+## [s3] The sched1 li-placement stub has an identifiable source-reachable knob (frontier-1)
+- mechanism: sched.c adjust_priority -> birthing_insn_p: single-set (reg_n_sets==1) live-dest SETs get LAUNCH_PRIORITY when launched by the block-end jump -> placed at block tail; n_deaths path dead (REG_DEAD notes stripped); the ONLY escape is reg_n_sets[dest] != 1
+- probe: sched.c read (adjust_priority ~2552, birthing_insn_p ~2496, LAUNCH_PRIORITY assignment ~3985) + p5_SVA_m0.i.sched (insn 49 = li shows 0x7f000001)
+- result: mechanism fully characterized; explains all 136 s2-invariant variants by design
+- verdict: CONFIRMED
+
+## [s3] A byte-neutral second set can bump reg_n_sets on a FRESH holder
+- mechanism: hoped flow counts sets before dead-deleting them
+- probe: flow.c read (final-pass dead insns NOTE'd + `goto flushed` BEFORE mark_set_regs) + pV (trailing dead `m2 = 0;`) + pX (m2 as unused 2nd param, dead entry copy) — both byte-identical to pU
+- result: dead sets are deleted-before-counted; live second sets emit bytes; combine-deletable ones are the Judge-banned re-set chain
+- verdict: KILLED
+
+## [s3] Borrowing an existing dead local as the holder defeats the boost (staged-value-reused-variable mechanism)
+- mechanism: 2nd set on the borrowed host -> birthing_insn_p false -> li placed by LUID first -> cross-jump full suffix match collapses the peel
+- probe: pY (`hdr = -1;`, loop tests hdr) — sandbox
+- result: 3 @ 26/26; structure+schedule+li placement exactly target; residual = hdr pseudo (load ∪ holder) forced off $a0/$v0 by counter/loop-temp conflicts -> $a1 drags lw dest + 2 andi srcs
+- verdict: CONFIRMED
+
+## [s3] Borrowing the test-result local instead reduces the residual to 2
+- mechanism: test value touches only andi dest + beqz src in target (2 insns < hdr's 3)
+- probe: p3 (explicit `tst = hdr & 0x8000` borrowed as holder) — probe asm + sandbox
+- result: 4 (worse); borrow drops tst's pri below hdr's -> hdr allocates first and drifts into $v0 (no short test temp left to conflict it out) -> 4 diffs
+- verdict: KILLED
+
+## Live frontier (end of s3) — floor 3, candidate.c = pY (26/26)
+1. Permuter campaign from pY (score-3 seed): both KNOWN holder families are proven 3-locked
+   (fresh -> boost stub; borrowed -> register drag, host enumeration complete), so the
+   campaign's value is discovering an UNKNOWN family/topology, not permuting within these.
+2. If the campaign runs dry: this now has the endgame-lock shape — small residual, mechanism
+   proven from compiler source, every sanctioned axis measured dead (s1 ref-lift/live-length,
+   s2 decorations/dw0/consumer folds, s3 boost-defeat + borrow enumeration + pK-track).
+   Disposition per endgame-lock-disposition-policy / 2026-07-27 standing auto-ruling.
+3. (weak) Any base-form (do-while) pointer-ref lift that is neither a same-path decoration
+   (cse-folds, s2) nor a peel (this family) — no known candidate class remains.
+
+## [s3] The sched1 li-placement stub has an identifiable source-reachable knob
+- mechanism: sched.c adjust_priority -> birthing_insn_p: single-set (reg_n_sets==1) live-dest SETs get LAUNCH_PRIORITY when launched by the block-end jump and sink to the block tail; REG_DEAD notes are stripped so the n_deaths path never fires; only escape is reg_n_sets[dest] != 1
+- probe: sched.c source read (adjust_priority ~2552, birthing_insn_p ~2496, LAUNCH_PRIORITY ~3985) + s2 dump p5_SVA_m0.i.sched (insn 49 li shows 0x7f000001)
+- result: mechanism fully characterized; explains all 136 s2-invariant variants by design
+- verdict: CONFIRMED
+
+## [s3] A byte-neutral second set can bump reg_n_sets on a fresh holder
+- mechanism: would require flow to count sets before dead-deleting them
+- probe: flow.c read (final pass NOTEs dead insns and goto flushed BEFORE mark_set_regs) + pV trailing dead m2=0 + pX m2-as-unused-2nd-param; both compiled and diffed vs pU baseline
+- result: both byte-identical to baseline: dead sets deleted-before-counted; live second sets emit bytes; combine-deletable ones are the Judge-banned re-set chain
+- verdict: KILLED
+
+## [s3] Borrowing the existing dead hdr local as the holder defeats the boost (staged-value-reused-variable mechanism)
+- mechanism: 2nd set on the borrowed host makes birthing_insn_p false; li placed first by LUID; cross-jump full suffix match collapses the peel
+- probe: pY applied to src, instrumented cc1 probe + sandbox --disable all
+- result: 3 @ 26/26 (was 29/26); structure, schedule and li placement exactly target; residual = merged hdr pseudo forced to $a1 by counter($a0)/loop-temp($v0) conflicts, dragging lw dest + 2 andi srcs
+- verdict: CONFIRMED
+
+## [s3] Borrowing the test-result local instead reduces the residual to 2
+- mechanism: test value touches only andi dest + beqz src in target (2 insns vs hdr's 3)
+- probe: p3 (explicit tst = hdr & 0x8000 borrowed as holder), probe asm + sandbox
+- result: 4 (worse): borrowing drops tst's allocno pri (~3571) below hdr's (5714); hdr allocates first and drifts into $v0 because no short-lived test temp remains to conflict it out
+- verdict: KILLED

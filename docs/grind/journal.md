@@ -638,3 +638,4 @@
 - 2026-07-27 15:45 func_80044098 s1 [recon] floor=13: recon s1: allocno mechanism fully quantified (counter pri 26250 vs pointer 21176); counter-split axis measured dead via combine guard-fold; frontier = pointer-side byte-neutral ref lift
 - 2026-07-27 16:14 func_80044098: judge FAILED a bytes-proven candidate — Bytes are settled; the ruling is on the C. The load-bearing construct is the loop increment spelled 'v1 += 2; v1 -= 1;' 
 - 2026-07-27 16:59 func_80044098 s2 [structural] floor=3: structural s2: floor 13 -> 3 — peel+hdr-split flips v1/a0, in-arm const-holder fixes v0/a1/a2; residual = 3-insn sched1 li-placement stub
+- 2026-07-27 17:34 func_80044098 s3 [structural] floor=3: structural s3: stub root-caused (sched.c birthing_insn_p LAUNCH boost, knob = reg_n_sets!=1); pY hdr-borrow kills the stub entirely (3 @ 26/26, exact target structure); both holder families proven 3-locked by measurement + borrow-host enumeration
