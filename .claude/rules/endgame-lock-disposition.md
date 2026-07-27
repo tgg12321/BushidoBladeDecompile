@@ -3,7 +3,7 @@ name: endgame-lock-disposition
 paths: [".claude/rules/endgame-lock-disposition.md"]
 # on-demand: surfaced via codegen-technique-index; read when an escalation
 # proposes canonical-asm OR a new coercion family for an RA/scheduler-locked fn.
-description: "OWNER STANDING POLICY 2026-07-20 — disposition of RA/scheduler-locked endgame functions that byte-match only via a cheat and are a few insns short in pure C: canonical-asm ONLY with hand-coded-asm evidence (scan_hand_coded S1/S2/S6-class signals); coercion families ONLY with SOTN-master precedent; absent both, the function is an owner-accepted INCOMPLETE exception — cheat retained to hold the match, never sanctioned, never closed."
+description: "OWNER POLICY 2026-07-20 + AUTO-RULING 2026-07-27 for RA/scheduler-locked endgame functions: canonical-asm ONLY with STRONG scan_hand_coded evidence; coercion families ONLY with in-hand SOTN precedent; absent both, REFUSED / OWNER-ACCEPTED INCOMPLETE applies AUTOMATICALLY (no owner wait) — cheat retained to hold the match, never sanctioned. Only gate-PASSING cases escalate to the owner."
 metadata:
   type: rules
 ---
@@ -40,7 +40,34 @@ tiebreak.
    spelling unique to this repo, or a novel extension of an existing sanctioned
    family to a shape that family's evidence does not cover, is **refused.**
 
-## Disposition when both criteria fail (the common case)
+## STANDING AUTO-RULING (owner, 2026-07-27) — both-gates-fail is pre-decided
+
+After 20 consecutive option-(b) refusals (3 on 2026-07-20, 7 on 2026-07-22,
+13 on 2026-07-27) the owner declared the criteria permanent — *"My standards
+will never change. No cheats, SOTN standard, 100% C or hard evidence for
+inline asm"* — and directed that both-gates-fail cases **no longer wait on an
+owner ruling**. The disposition below is applied IMMEDIATELY by the pipeline
+(grind session or driver backstop): the decisions.md entry is titled
+`OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED /
+OWNER-ACCEPTED INCOMPLETE` and records both failed gates with evidence; the
+queue park reason is the terminal `OWNER-ACCEPTED INCOMPLETE (standing ruling
+2026-07-27): …` form. There is no pending state and nothing for the owner to
+answer.
+
+**What still escalates to the owner (the ONLY two cases):**
+1. **Gate 1 passes** — `scan_hand_coded` shows STRONG S1/S2/S6-class signals:
+   file a canonical-asm authorization request (user sign-off is still required
+   for `inline_asm_canonical.txt` per [[hand-coded-asm-recognition]]).
+2. **Gate 2 passes** — a genuinely in-hand SOTN-master (or VS/ESA) precedent
+   is EXHIBITED (file + line / commit citation, not "believed viable" or
+   "same spirit"): file a family-sanction request presenting that evidence.
+
+Owner directive verbatim (2026-07-27): *"I only ever want to be presented
+with new techniques that DO have SOTN precedence and are not an explicit
+cheat."* Filing a both-gates-fail escalation as "awaiting owner ruling" is
+now itself a process error — apply the standing ruling instead.
+
+## Disposition when both criteria fail (the common case, auto-applied)
 No clean COMPLETED state is reachable. Then:
 - **Keep the existing cheat on main** so the full-build oracle stays green
   (the byte-identical build is the project's foundation; removing the cheat to
@@ -58,10 +85,13 @@ No clean COMPLETED state is reachable. Then:
 ## For grind sessions
 If you reach this state, do NOT propose asm without STRONG scan_hand_coded
 signals, and do NOT propose a coercion family without exhibiting the SOTN
-precedent in-hand. File the OWNER-ESCALATION honestly (both options, the
-evidence, and "no precedent found" stated plainly if so) and stop — the owner
-applies the criteria above. Members of this species so far: motion_SetMotion,
-func_80045294, cpu_side_move_dir_4, func_80057CC8.
+precedent in-hand. When both gates fail, APPLY THE STANDING RULING yourself
+(see the 2026-07-27 section above): file the RESOLVED-BY-STANDING-RULING
+entry with both gates' evidence stated plainly, and return owner-gated so the
+driver parks terminally. Only a gate-passing case files a true pending
+escalation for the owner. Members of this species so far: motion_SetMotion,
+func_80045294, cpu_side_move_dir_4, func_80057CC8, plus the 2026-07-22 batch
+(7) and 2026-07-27 batch (13) — see docs/grind/decisions.md.
 
 ## Related
 - [[no-new-park-categories]] — no new cheat-tolerant categories; register-

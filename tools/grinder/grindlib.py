@@ -234,17 +234,34 @@ def add_judge_constraint(root, func, text):
 
 
 def autoescalate(root, func, file_stem, scan_tier, rule_count, date):
-    """Deterministic backstop: append a valid OWNER-ESCALATION entry for `func` to
+    """Deterministic backstop: append a disposition entry for `func` to
     docs/grind/decisions.md from the ledger's exhaustion record, and return the
     escalation_ref line. The driver calls this when an `escalation`-modality session
     fails to self-file (dodges with a flat-floor progress), so the function can never
-    loop unresolved. The owner still rules on the filed escalation."""
+    loop unresolved. Per the owner's 2026-07-27 standing auto-ruling, a non-STRONG
+    scan tier means both AND-gates fail and the entry is RESOLVED (terminal
+    OWNER-ACCEPTED INCOMPLETE) — only a STRONG tier files a true pending
+    escalation for owner sign-off."""
     st = load_state(root, func) or {}
     hist = st.get("floor_history", [])
     floor = hist[-1].get("floor") if hist else "?"
     sessions = st.get("session_count", len(hist))
     mods = sorted({e.get("modality") for e in hist if e.get("modality")})
-    ref = f"{date} — {func} — OWNER-ESCALATION (auto-filed by driver, exhaustion backstop)"
+    strong = "STRONG" in str(scan_tier).upper()
+    if strong:
+        ref = f"{date} — {func} — OWNER-ESCALATION (auto-filed by driver, exhaustion backstop; STRONG scan tier — awaiting owner ruling)"
+        tail = f"""Gate 1 may PASS: `scan_hand_coded --single {func}` = **{scan_tier}** — canonical-asm
+authorization requires owner sign-off. Awaiting owner ruling; the driver parks {func} until
+the owner rules."""
+    else:
+        ref = f"{date} — {func} — OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE (auto-filed by driver, exhaustion backstop)"
+        tail = f"""Both AND-gates fail on the ledger evidence: canonical-asm — `scan_hand_coded --single
+{func}` = **{scan_tier}** (ordinary GCC RA/scheduler artifact, no hand-coded signature);
+coercion family — no SOTN-master precedent recorded for the residual axes. Per the owner's
+STANDING AUTO-RULING (2026-07-27, .claude/rules/endgame-lock-disposition.md): option (b)
+applies immediately — REFUSED / OWNER-ACCEPTED INCOMPLETE, any retained cheat holds the
+byte-match only and is not sanctioned, parked terminally out of active grind, eligible for
+re-attempt if a genuine pure-C lever emerges. No owner action is pending."""
     entry = f"""
 ## {ref}
 
@@ -254,12 +271,7 @@ session self-filing — the escalation-modality backstop (grind.ps1). This is th
 species per the standing 2026-07-20 endgame-lock-disposition policy: byte-matches on main only
 via a cheat ({rule_count} regfix/asmfix rule(s) or cheat-asm), honest pure-C floor {floor},
 sanctioned levers exhausted across the full modality ladder (see memory/grind/{func}/
-evidence.md + hypotheses.md for the per-session kill record). Both AND-gates fail on the
-ledger evidence: canonical-asm — `scan_hand_coded --single {func}` = **{scan_tier}** (ordinary
-GCC RA/scheduler artifact, no hand-coded signature); coercion family — no SOTN-master precedent
-recorded for the residual axes. Awaiting owner ruling (option (a) authorize a non-pure-C/
-new-family mechanism, or (b) REFUSED / OWNER-ACCEPTED INCOMPLETE with the cheat retained only
-to hold the byte-match). The driver does not self-resolve; it parks {func} until the owner rules.
+evidence.md + hypotheses.md for the per-session kill record). {tail}
 """
     dec = os.path.join(root, "docs", "grind", "decisions.md")
     with open(dec, "a", encoding="utf-8", newline="\n") as f:
@@ -303,19 +315,27 @@ MODALITY_PLAYBOOK = {
     "escalation": ("DISPOSITION SESSION — the honest floor has been FLAT across many "
                    "sessions and >=4 distinct modalities, so the driver has determined the "
                    "pure-C levers are exhausted. Your job THIS session is to REACH A "
-                   "DISPOSITION, not to grind another variant. Two valid outcomes: (1) if you "
+                   "DISPOSITION, not to grind another variant. Valid outcomes: (1) if you "
                    "find a genuinely un-tried lever that DROPS the floor, use it — return "
                    "candidate-ready (if it hits 0) or progress WITH THE LOWER FLOOR (this "
-                   "resets the exhaustion counter). (2) Otherwise FILE the OWNER-ESCALATION "
-                   "yourself THIS session: (a) run `python3 tools/scan_hand_coded.py --single "
-                   "<func>` and note the tier; (b) confirm what holds the byte-match (regfix/"
-                   "asmfix rule count, or cheat-asm); (c) APPEND an `## <date> — <func> — "
-                   "**OWNER-ESCALATION**` entry to docs/grind/decisions.md stating both "
-                   "endgame-lock AND-gates (canonical-asm: scan tier; coercion: SOTN "
-                   "precedent) and the exhaustion (sessions/modalities/permuter iters from the "
-                   "ledger); then return result=owner-gated with escalation_ref citing that "
-                   "entry. A flat-floor `progress` is NOT an acceptable outcome this session — "
-                   "the driver will auto-file the escalation if you dodge."),
+                   "resets the exhaustion counter). (2) Otherwise evaluate the two "
+                   "endgame-lock AND-gates: (a) run `python3 tools/scan_hand_coded.py "
+                   "--single <func>` and note the tier; (b) confirm what holds the "
+                   "byte-match (regfix/asmfix rule count, or cheat-asm); (c) state whether "
+                   "an in-hand SOTN-master precedent EXISTS for the closing construct "
+                   "(file+line citation — 'same spirit' does not count). If BOTH gates FAIL "
+                   "(scan LOW + no precedent — the common case), APPLY THE OWNER'S STANDING "
+                   "RULING (2026-07-27, .claude/rules/endgame-lock-disposition.md): APPEND "
+                   "an `## <date> — <func> — **OWNER-ESCALATION — RESOLVED BY STANDING "
+                   "RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**` entry to "
+                   "docs/grind/decisions.md stating both gates' evidence and the exhaustion "
+                   "(sessions/modalities/permuter iters from the ledger), then return "
+                   "result=owner-gated with escalation_ref citing that entry — the driver "
+                   "parks terminally, no owner wait. ONLY if a gate PASSES (STRONG scan "
+                   "tier, or an actually-exhibited SOTN precedent) file a true pending "
+                   "`**OWNER-ESCALATION**` entry presenting that evidence for owner "
+                   "sign-off. A flat-floor `progress` is NOT an acceptable outcome this "
+                   "session — the driver will auto-file the standing ruling if you dodge."),
 }
 
 

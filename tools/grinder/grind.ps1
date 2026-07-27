@@ -556,10 +556,21 @@ while ($true) {
             # disposition, per no-park-permanently).
             python tools/grinder/grindlib.py apply . $func $outPath $modality | Out-Null
             Revert-SessionEdits
-            $reason = "owner escalation pending: $([string]$o.escalation_ref)"
-            Invoke-Eng @('queue', 'park', $func, '--reason', $reason) | Out-Null
-            Log "${func}: OWNER-GATED — parked pending owner ruling ($([string]$o.escalation_ref))."
-            Journal "$func s$sessionN [$modality] OWNER-GATED — parked pending owner ruling: $($o.headline)"
+            # Standing auto-ruling (owner, 2026-07-27): a RESOLVED BY STANDING RULING
+            # entry is terminal (OWNER-ACCEPTED INCOMPLETE, nothing pending); only a
+            # true pending escalation (gate-passing case) waits on the owner.
+            $escRef = [string]$o.escalation_ref
+            if ($escRef -match 'RESOLVED BY STANDING RULING') {
+                $reason = "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): $escRef"
+                Invoke-Eng @('queue', 'park', $func, '--reason', $reason) | Out-Null
+                Log "${func}: STANDING RULING APPLIED — REFUSED / OWNER-ACCEPTED INCOMPLETE, parked terminally ($escRef)."
+                Journal "$func s$sessionN [$modality] STANDING RULING (2026-07-27) applied — OWNER-ACCEPTED INCOMPLETE: $($o.headline)"
+            } else {
+                $reason = "owner escalation pending: $escRef"
+                Invoke-Eng @('queue', 'park', $func, '--reason', $reason) | Out-Null
+                Log "${func}: OWNER-GATED — parked pending owner ruling ($escRef)."
+                Journal "$func s$sessionN [$modality] OWNER-GATED — parked pending owner ruling: $($o.headline)"
+            }
             # engine/queue.json is where `queue park` wrote the parked status — it
             # MUST be staged, or the park stays as working-tree dirt and the next
             # session's scope check (engine/ is not in AllowedDirtyPattern) reverts
@@ -587,9 +598,14 @@ while ($true) {
                 $rc = 0
                 try { $rc = @(Select-String -Path (Join-Path $Root 'regfix.txt'),(Join-Path $Root 'asmfix.txt') -Pattern "^$([regex]::Escape($func)):" -ErrorAction SilentlyContinue).Count } catch { }
                 $ref = (python tools/grinder/grindlib.py autoescalate . $func $stem $tier $rc (Get-Date -Format 'yyyy-MM-dd')).Trim()
-                Invoke-Eng @('queue', 'park', $func, '--reason', "owner escalation pending (auto-filed backstop): $ref") | Out-Null
+                if ($ref -match 'RESOLVED BY STANDING RULING') {
+                    $bsReason = "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27, auto-filed backstop): $ref"
+                } else {
+                    $bsReason = "owner escalation pending (auto-filed backstop): $ref"
+                }
+                Invoke-Eng @('queue', 'park', $func, '--reason', $bsReason) | Out-Null
                 Log "${func}: ESCALATION BACKSTOP — session dodged in escalation modality (floor $($o.floor) >= prior $priorFloor); driver auto-filed + parked."
-                Journal "$func s$sessionN [escalation] AUTO-ESCALATED by driver backstop (session did not self-file): $ref"
+                Journal "$func s$sessionN [escalation] AUTO-FILED by driver backstop (session did not self-file): $ref"
                 git -C $Root add -- memory/grind docs/grind metrics/events.jsonl engine/queue.json 2>$null
                 git -C $Root commit -m "grind: $func auto-escalated owner-gated (backstop) [skip-park-src-guard]" 2>$null | Out-Null
             } else {
