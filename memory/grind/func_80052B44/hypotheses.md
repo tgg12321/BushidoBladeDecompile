@@ -1,0 +1,6 @@
+# Hypothesis ledger — func_80052B44
+
+## s1 (2026-07-27, recon)
+- H1 CONFIRMED — "The jr-ra delay-slot `ctc2 $zero,$7` cannot be produced by any pure-C source." Mechanism: cop2 only enters compilation as implicitly-volatile asm; reorg.c:730-735 stop_search_p halts delay-slot search at asm insns; reorg.c:366-367 + 749-752 mark asm always-volatile/always-conflicting. Probe: read reorg.c + clean-form build emits `jr ra; nop` (s0 measurement, floor re-confirmed 13 s1). Consequence: pure-C floor is bounded > 0 forever; grinding C spellings is provably futile.
+- H2 CONFIRMED — "Register rotation $t0-$t4 is anti-preference with no pure-C lever." Mechanism: GCC ascending allocator preference picks $v0/$v1/$a1/$a2/$a0 for the 5 matrix loads (measured s0; floor 13 re-confirmed s1). Hand-asm hallmark, same as authorized sibling.
+- H3 CONFIRMED (classification; authorization pending ruling) — "func_80052B44 is in the zero-ambiguity GTE-leaf canonical class." Evidence: body = 5 lw (mechanical packaging feeding hardcoded GTE regs) + 8 ctc2 + jr, zero general-purpose computation; prologue instruction-identical to authorized verbatim-PsyQ func_8007ED6C; LIBGTE SetRotMatrix + zero-translation identity. Ruling-request filed s1 for canonical-body authorization (worker must not self-authorize per gte-wrapper-misroute-park boundary note).
