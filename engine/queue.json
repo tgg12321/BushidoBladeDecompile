@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80044098",
-      "file": "text1a_c",
-      "distance": 13,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_80052B44",
       "file": "text1b",
       "distance": 13,
@@ -2470,6 +2462,15 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-27): s0<->s1 allocno-priority swap + cse REG_WAS_0 fold (cc1psx-identical); 2 pins + opt-barrier retained only to hold byte-match, not sanctioned; both endgame-lock gates fail (scan LOW 0/8, no SOTN precedent)"
     },
     {
+      "func": "func_80044098",
+      "file": "text1a_c",
+      "distance": 13,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "owner escalation pending: docs/grind/decisions.md \u2014 '2026-07-27 \u2014 func_80044098 (src/text1a_c.c) \u2014 OWNER-ESCALATION' (line 1789): endgame-lock disposition per the 2026-07-27 standing both-gates-fail auto-ruling (OWNER-ACCEPTED INCOMPLETE, terminal park, re-attempt eligible), following the 17:57 Judge ruling that both gates fail"
+    },
+    {
       "func": "special_camera_set_win_cam",
       "file": "code6cac_b2_post",
       "distance": 510,
@@ -2706,14 +2707,14 @@
   ],
   "counts": {
     "total": 329,
-    "active": 277,
+    "active": 276,
     "by_status": {
-      "active": 277,
-      "parked": 52
+      "active": 276,
+      "parked": 53
     },
     "by_verdict": {
-      "C": 123,
       "ASM-PARTIAL": 47,
+      "C": 122,
       "ASM-SUSPECT": 107
     }
   }

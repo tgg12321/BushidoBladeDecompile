@@ -1,8 +1,8 @@
 {
  "func": "func_80044098",
  "file": "text1a_c",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 0,
@@ -27,23 +27,24 @@
    "floor": 3,
    "modality": "structural",
    "headline": "structural s3: stub root-caused (sched.c birthing_insn_p LAUNCH boost, knob = reg_n_sets!=1); pY hdr-borrow kills the stub entirely (3 @ 26/26, exact target structure); both holder families proven 3-l"
+  },
+  {
+   "session": 4,
+   "floor": 3,
+   "modality": "permuter",
+   "headline": "permuter s4: permuter axis measured DEAD (~105k iters, 4 basins; only banned-pair, 3-locked-family, or semantics-broken finds); pY (3 @ 26/26, zero pins/rules) restored to src per Judge constraint; OW"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Directed permuter from pY (score-3, 26/26 seed) finds an unknown family/topology outside {fresh holder, borrowed holder}",
-   "mechanism": "both known families are proven 3-locked, so PERM sweeps matter only insofar as they mutate the flip/holder topology itself, not spellings within it",
-   "next_probe": "tools/permuter_campaign.py from candidate.c, fresh-seed stopping rule, wait in-turn + harvest --stop"
+   "hypothesis": "No grindable axis remains: every sanctioned lever is measured dead (s1 counter-split/ref-lift, s2 decorations/dw0/live-length, s3 boost-defeat/borrow-enumeration/pK-track, s4 permuter x 4 basins)",
+   "mechanism": "endgame lock per endgame-lock-disposition-policy + the 2026-07-27 both-gates-fail standing auto-ruling; the 17:57 Judge ruling already found both gates fail",
+   "next_probe": "driver/owner confirms the auto-ruling disposition against the filed OWNER-ESCALATION (docs/grind/decisions.md, 2026-07-27 func_80044098 entry); terminal park, queue advances"
   },
   {
-   "hypothesis": "If the campaign runs dry, func_80044098 is an endgame lock (small residual, mechanism proven from compiler source, all sanctioned axes measured dead s1-s3)",
-   "mechanism": "endgame-lock-disposition-policy + 2026-07-27 standing auto-ruling for both-gates-fail endgame locks",
-   "next_probe": "driver/owner disposition per the standing ruling after the permuter modality completes"
-  },
-  {
-   "hypothesis": "A base-form (do-while) pointer-ref lift that is neither a same-path decoration nor a peel exists",
-   "mechanism": "would flip pointer/counter without the while-form holder problem entirely; no known candidate class remains (decorations cse-fold s2, live-length dead s2, counter splits guard-fold s1)",
-   "next_probe": "only via permuter discovery or new compiler-source insight; no manual probe defined"
+   "hypothesis": "The only reopening path is a gate-(ii) exhibit: an actually-exhibited SOTN-master (or VS/ESA) file+function citation of the adjacent-cancellation re-set-chain shape",
+   "mechanism": "per the binding Judge constraint and the 17:57 ruling; the pair form (sandbox 0, 26/26) is fully documented in rejected/judge-fail-0727-1613.c with mechanism evidence should such an exhibit ever surface",
+   "next_probe": "owner-side SOTN census only; no session-side probe exists"
   }
  ],
  "judge_constraints": [

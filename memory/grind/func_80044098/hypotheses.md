@@ -153,3 +153,44 @@
 - probe: p3 (explicit tst = hdr & 0x8000 borrowed as holder), probe asm + sandbox
 - result: 4 (worse): borrowing drops tst's allocno pri (~3571) below hdr's (5714); hdr allocates first and drifts into $v0 because no short-lived test temp remains to conflict it out
 - verdict: KILLED
+
+## s4 (permuter, 2026-07-27)
+## [s4] A directed permuter campaign from pY finds an unknown holder family/topology outside {fresh holder, borrowed holder}
+- mechanism: both known families proven 3-locked (s3 theorem); only an unknown flip/holder topology could beat 3
+- probe: pY-reseed-full-window campaign (24,290 iters, 26 min, -j 8) on top of the prior 32k-iter run — ~56k cumulative pY-basin iterations
+- result: zero improving finds; the single output was a score-neutral uninitialized-read mutation
+- verdict: KILLED
+
+## [s4] The fresh-holder (pU) chassis has an undiscovered sub-3 mutation
+- mechanism: permuter mutating holder placement/type/staging might discover a topology outside the s3 enumeration
+- probe: pU-fresh-holder-random campaign, 24,074 iters / 26 min, 38 finds harvested
+- result: basin converges onto the KNOWN borrow attractor (m2=hdr staging = pY family respell at 15; tst-borrow = p3 family at 25); nothing below 15; all finds inside the s3 3-lock theorem
+- verdict: KILLED
+
+## [s4] A base-form (do-while) pointer-ref lift that is neither a decoration nor a peel exists (frontier-3)
+- mechanism: would flip pointer/counter without the while-form holder problem
+- probe: base-random-classify campaign without stop-on-zero (25,262 iters / 26 min, every 0-find classified) + hand decomposition of the one novel topology (score-10 mask-fold false flip): pB1/pB3/pB4 probes
+- result: only 0-attractor is the Judge-banned cancellation pair (2 independent re-finds); the score-10 mask-fold topology is semantics-divergent (unmasked counter) and its only semantics-correct spelling is the s1 guard-fold kill (17 @ 25 insns); split-init a6 and dw0 measured inert alone and combined
+- verdict: KILLED
+
+## Live frontier (end of s4) — floor 3, candidate.c = pY (26/26), permuter axis dead
+1. NONE grindable. Every sanctioned axis measured dead: s1 ref-lift/counter-split, s2 decorations/dw0/live-length/consumer-folds, s3 boost-defeat/borrow-enumeration/pK-track, s4 permuter (4 basins, ~105k iterations). Disposition: OWNER-ESCALATION filed 2026-07-27 (docs/grind/decisions.md) per the standing both-gates-fail auto-ruling; terminal park as OWNER-ACCEPTED INCOMPLETE, re-attempt eligible.
+2. ONLY reopening path (per the Judge constraint): an actually-exhibited SOTN-master (or VS/ESA) file+function citation of the adjacent-cancellation shape — gate-(ii) owner escalation.
+
+## [s4] A directed permuter campaign from pY finds an unknown holder family/topology outside {fresh holder, borrowed holder}
+- mechanism: both known families proven 3-locked by the s3 theorem; only an unknown flip/holder topology could beat 3
+- probe: pY-reseed-full-window campaign, 24,290 iters / 26 min / -j 8, on top of the prior 32k-iter run (~56k cumulative on the basin), harvested + stopped in-session
+- result: zero improving finds; single output was a score-neutral uninitialized-read mutation
+- verdict: KILLED
+
+## [s4] The fresh-holder pU chassis (29/26) has an undiscovered sub-3 mutation
+- mechanism: random mutation of holder placement/type/staging could discover a topology outside the s3 borrow-host enumeration
+- probe: pU-fresh-holder-random campaign, 24,074 iters / 26 min, 38 finds harvested and classified
+- result: basin converges onto the known borrow attractor (m2=hdr staging = pY-family respell at 15; tst-borrow = p3 family at 25); nothing below 15; all finds inside the s3 3-lock theorem
+- verdict: KILLED
+
+## [s4] A base-form (do-while) pointer-ref lift that is neither a same-path decoration nor a peel exists (ledger frontier-3)
+- mechanism: would flip pointer/counter without the while-form holder problem
+- probe: base-random-classify campaign WITHOUT stop-on-zero (25,262 iters / 26 min, every 0-find classified) + hand decomposition of the one novel topology (score-10 mask-fold) via pB1/pB3/pB4 workspace probes
+- result: only 0-attractor is the Judge-banned cancellation-pair class (2 independent re-finds, output-0-1/output-0-2); the score-10 mask-fold topology is semantics-divergent (counter runs unmasked, 0x8000 extra iterations; mask temp in $v0) and its only semantics-correct spelling is the s1 guard-fold kill (17 @ 25 insns); a6 split-init and dw0 measured inert alone and combined (26 stripped-diff lines = base)
+- verdict: KILLED

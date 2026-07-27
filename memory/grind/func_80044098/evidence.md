@@ -131,3 +131,29 @@ priority => loses v1). Same tied-priority-rename class as func_80037A20.
 - [s3] pK-track killed analytically on both prerequisites: jump1 normalizes all goto/label respellings pre-cse (no LABEL_NUSES bump exists), and loop.c would insert the materialized const at the peel-block tail where the boost re-sinks it
 
 - [s3] sandbox this session: pU 3 (29/26) re-proven, pY 3 (26/26) final in src, p3 4
+
+## s4 (permuter, 2026-07-27) — permuter axis measured DEAD; pY re-proven 3 in src; endgame lock confirmed
+- [s4] Session start per the binding Judge constraint: src reverted from the pinned HEAD form to pY; sandbox --disable all re-proven 3 @ 26/26, zero rules, zero pins. candidate.c restored to pY (the banned pair form it briefly held is archived as rejected/judge-fail-0727-1613.c).
+- [s4] Three concurrent full-window campaigns (tools/permuter_campaign.py, -j 8 each, 32-core host), all harvested + stopped in-session:
+  - base-random-classify (canonical do-while chassis, no stop-on-zero): 25,262 iters / 26 min. ONLY 0-attractor is the Judge-banned cancellation-pair class — output-0-1 (prior run, 47 s) and output-0-2 (this run, 504 s, `v1++; v1--; v1++;`) are independent re-finds of the same banned re-set chain. Best non-banned find: score-10 false flip (below).
+  - pU-fresh-holder-random (29/26 chassis): 24,074 iters / 26 min, 38 finds, best 15 — the basin CONVERGES onto the known borrow attractor: output-15-1 = `m2 = hdr;` pre-guard staging (pY-family respell: 2nd set on m2 defeats the birthing_insn_p boost, same floor 3), output-25-1 = `m2 = hdr & 0x8000; if (m2)` (p3 tst-borrow family). Both inside the s3 3-lock theorem. Nothing below 15.
+  - pY-reseed-full-window (score-3 seed): 24,290 iters / 26 min, 1 "find" = score-15 with an UNINITIALIZED-read mutation (junk). Combined with prior s4a run: ~56k iterations on the pY basin, zero improving finds.
+- [s4] Score-10 find DECODED (the only novel topology all session): mask folded into the store (`*(v1-1) = a4 & 0x7FFF` with a4 left unmasked) + dw0 + a6 split-init. It is a SEMANTICS-DIVERGENT false flip — the counter runs unmasked (0x8000 extra iterations), the mask temp lands $v0, and the residual 2 diffs (andi/sw dest $v0 vs target $a0) can only close by masking the counter itself, which restores counter refs and reverts the flip. Full decomposition banked in rejected/perm-false-flip-mask-fold-v0-temp.c.
+- [s4] Component probes (workspace compile at offset 0, stripped-dump diff lines, base=26=13 diffs): a6 split-init alone = 26 (INERT); a6 split + dw0 (mask intact) = 26 (INERT); semantics-correct re-mask `a4 = (a4 & 0x7FFF) - 1` = 17 @ 25 insns = the s1 guard-fold kill exactly as predicted. No semantics-correct spelling of the mask-fold topology exists.
+- [s4] CONCLUSION: with ~105k cumulative permuter iterations across 4 basins (base ×2, pU, pY ×2), the search finds only (a) the banned pair class, (b) the two 3-locked holder families, (c) semantics-broken junk. Frontier-3 (a base-form pointer-ref lift that is neither decoration nor peel) produced exactly one candidate topology and it is semantics-divergent with a proven-dead correct spelling. Every sanctioned axis is now measured dead → endgame lock per the 2026-07-27 standing auto-ruling; OWNER-ESCALATION filed in docs/grind/decisions.md this session.
+
+- [s4] Session start per the binding Judge constraint: src/text1a_c.c reverted from the pinned s0-HEAD form to pY; sandbox --disable all = 3 @ 26/26, 0 rules, 0 pins, re-proven this session; candidate.c restored to pY (banned pair form remains archived as rejected/judge-fail-0727-1613.c)
+
+- [s4] Three concurrent full fresh-seed-window campaigns via tools/permuter_campaign.py (-j 8 each), all harvested + stopped in-session; telemetry in metrics/events.jsonl (permuter-launch/wait/harvest events)
+
+- [s4] base basin: 25,262 iters, 8 new finds; only 0s are the banned cancellation-pair class (output-0-2 = v1++;v1--;v1++ re-set chain, an independent re-find of the ruled-UNSANCTIONED class)
+
+- [s4] score-10 base find decoded as a FALSE FLIP: mask folded into the store with a4 left unmasked drops 2 counter refs, flipping allocation, residual = andi/sw dest $v0 vs $a0; closing it requires mask-into-counter which restores counter refs and reverts the flip — topology cannot reach 0; banked as rejected/perm-false-flip-mask-fold-v0-temp.c
+
+- [s4] pU basin: 24,074 iters, 38 finds, best 15 = m2=hdr pre-guard staging (a respell of the pY borrow family: 2nd set defeats the birthing_insn_p boost, same 3-lock); score-25 = tst-borrow (p3 family); nothing outside the s3 theorem
+
+- [s4] pY basin: 24,290 iters this reseed + 32k prior = ~56k cumulative, zero improving finds
+
+- [s4] Cumulative ~105k permuter iterations across 4 basins find only: (a) the banned pair class, (b) the two proven-3-locked holder families, (c) semantics-broken junk — the permuter modality (last live grindable axis per the s3 frontier) is measured dead
+
+- [s4] OWNER-ESCALATION entry filed at docs/grind/decisions.md:1789 naming func_80044098, citing the 2026-07-27 17:57 Judge ruling ('Both gates fail -> the standing auto-ruling applies') and requesting the standing-auto-ruling disposition: OWNER-ACCEPTED INCOMPLETE, terminal park, re-attempt eligible
