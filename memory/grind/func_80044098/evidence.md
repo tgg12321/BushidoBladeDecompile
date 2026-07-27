@@ -80,3 +80,30 @@ priority => loses v1). Same tied-priority-rename class as func_80037A20.
 - [s1] tools/gcc-2.7.2/build/cc1 lacks the ALLOCDBG instrumentation; tmp/gccdbg/cc1 has it - recorded in ledger so future sessions do not rediscover.
 
 - [s1] m2c reconstruction of the target matches the candidate shape exactly - no structural lead there.
+
+## s2 (structural, 2026-07-27) — FLOOR 13 -> 3; peel+hdr+holder form banked
+- [s2] frontier-2 CONFIRMED from source: combine.c:52-57 states reg_live_length is never updated and reg_n_refs is "not adjusted ... when a register is no longer required"; the only adjustments (combine.c:2306-2337) zero a DELETED insn's own dest when its last set dies. Flow-time counts on surviving pseudos are frozen through global alloc. Empirical proof: banned mini_pb's cancellation pair counted 16 refs after combine folded it away.
+- [s2] frontier-1 (same-path byte-neutral ref lift) KILLED: cse+cse2 run BEFORE flow and the whole function is one fall-through EBB (else-arms are empty exits), so every same-path decoration folds pre-count. 8/8 spellings (cast-addressing, split-addr temp, reload-after-store, mem-RMW, decl swap, loop ptr temp, while-form, lvalue) left pointer at 12 refs / 21176; 6 were byte-identical-and-inert, 2 byte-diverging (rejected/same-path-decorations-cse-collapsed.c).
+- [s2] Live-length axis KILLED analytically: counter is born after and dies with the pointer (no asymmetric lengthening site); uniform lengthening keeps pri ratio 1.166*(17+k)/(16+k) > 1 for all k.
+- [s2] hdr split (load/test in own var) is byte-IDENTICAL to base (v5's "worse 20" does not reproduce in this spelling) but is an ANTI-lever alone: counter 11 refs at livelen 12 -> pri 27500 (s1's ~24400 assumed livelen stayed 16 — corrected).
+- [s2] PEEL mechanism found: hand-peeled first iteration = real-statement duplication; flow counts the peel (+4 pointer refs outside loop), cross-jump re-merges it into the loop. Peel alone: counter wins (17@22=30909 vs 16@23=27826). Peel + hdr split: FLIP — pointer 27826 -> $v1, counter 23333 -> $a0, hdr shares $a0; sandbox = 6 (25/26; guard/loop -1 consts unified because cse follows the while entry jump, LABEL_NUSES==1; a6 gains a 4th ref and steals $a1).
+- [s2] m2 = -1 const-holder set INSIDE the arm fixes the small-reg constellation: m2 4 refs @ livelen 16 -> pri 5000 > a6 3809 -> m2 $a1, a6 $a2, guard keeps its own li -> $v0. ALL five regs match target. sandbox = 3 (29/26). Holder set BEFORE the guard fails two ways: cse steals it for the guard compare (one li), and livelen 28 -> pri 3571 < a6 (pO measured).
+- [s2] Residual 3 diffs = peel stub [addiu a0,-1; lw v0,0(v1); j mid-loop] + li a1 in the j's delay slot. Mechanism: backward list scheduler (sched1) places the no-in-block-consumer li between the peel body and the entry jump; cross-jump's backward suffix match (subu/sw/inc merged, .L8 at subu) stops at the li; sched2 reorders the leftover [lw,addu] stub to [addu,lw]. INVARIANT under: 12 peel-statement orders, 120 declaration orders, register storage class, block-scope decl-with-init, all 4 m2 positions.
+- [s2] In-block m2 consumer (peel a4+=m2) combine-folds (li kept, dependence severed pre-sched1) -> stub persists with different prefix; cross-block m2 consumer (loop a4+=m2) does NOT fold (combine is intra-BB) -> addu $4,$4,$5 wrong bytes. do-while(0) around the peel double-weights the COUNTER's peel refs too (35555 > 34782, flip reverts) and kills the merge. All in rejected/.
+- [s2] Sched dump artifacts: tmp/grind/func_80044098/s2/p5_SVA_m0.i.sched (peel block = insns 49-62; the "launching X before Y" stall-avoidance swap picks the block's first insn).
+
+- [s2] combine.c:52-57 + 2306-2337: reg_n_refs/live_length frozen post-flow except zeroing fully-dead deleted dests — frontier-2 settled from source
+
+- [s2] Same-path decoration space is empty by pass order (cse pre-flow + single fall-through EBB): frontier-1 as spelled is dead, measured 8/8
+
+- [s2] Live-length axis dead analytically: counter born after / dies with pointer, no asymmetric site; uniform lengthening preserves pri ratio > 1
+
+- [s2] hdr split is byte-identical to base (v5 'worse 20' does not reproduce) but ALONE is an anti-lever: counter 11 refs @ livelen 12 -> pri 27500 (corrects s1's ~24400 estimate)
+
+- [s2] Peel+hdr-split flip measured: pointer 16@23=27826 -> $v1, counter 14@18=23333 -> $a0, hdr shares $a0; sandbox 6
+
+- [s2] pU (peel+hdr+in-arm m2 holder): sandbox 3, 29/26 insns, ALL target registers correct (v1/a0/v0/a1/a2)
+
+- [s2] Residual mechanism: sched1 places li m2,-1 between peel body and entry jump; cross-jump merges [subu,sw,inc] and stops at the li; sched2 reorders leftover to [addu,lw]; invariant under 136 structural variants
+
+- [s2] sandbox scores this session: base 13 (re-proven), pK 6, pU 3 — all pin-free, zero rules

@@ -636,3 +636,5 @@
 - 2026-07-27 14:34 func_8007CA00 s3 [structural] floor=4: Floor 11 -> 4 (build 44 == target 44): H1 ==0-division swap SOLVED via ret-funnel BB split; H2 reduced to one li-placement cluster with all four blocking GCC mechanisms proven (sched backward-float, birthing single-set promotion, global.c sets-before-deaths $v0 conflict + copy exemption, reorg own-thread-first fill).
 - 2026-07-27 15:15 func_8007CA00 COMPLETED-C after 4 sessions.
 - 2026-07-27 15:45 func_80044098 s1 [recon] floor=13: recon s1: allocno mechanism fully quantified (counter pri 26250 vs pointer 21176); counter-split axis measured dead via combine guard-fold; frontier = pointer-side byte-neutral ref lift
+- 2026-07-27 16:14 func_80044098: judge FAILED a bytes-proven candidate — Bytes are settled; the ruling is on the C. The load-bearing construct is the loop increment spelled 'v1 += 2; v1 -= 1;' 
+- 2026-07-27 16:59 func_80044098 s2 [structural] floor=3: structural s2: floor 13 -> 3 — peel+hdr-split flips v1/a0, in-arm const-holder fixes v0/a1/a2; residual = 3-insn sched1 li-placement stub

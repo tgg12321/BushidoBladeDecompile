@@ -26,3 +26,70 @@
 - probe: edited src to the split form, sandbox func_80044098 --disable all
 - result: score 17 (floor 13), build 25 insns: combine folded the loop guard to beq a4,$0 with the decrement in the delay slot and a $sp frame adjust appeared; pre-decrement value live in a separate pseudo enables the fold. Generalizes to all counter-chain splits at/after the mask; retro-explains the s0 v5 rejection's beqz. Counter must stay ONE pseudo from mask through loop (min 11 refs, pri ~24400), so counter-side reduction alone can never undercut the pointer's 21176.
 - verdict: KILLED
+
+## s2 (structural, 2026-07-27)
+- H-s2-1 "a same-path pre-combine spelling can lift pointer flow refs byte-neutrally" — KILLED.
+  Probe: 8 spelling variants under BB2_ALLOC_DEBUG. Result: pointer 12 refs/21176 in all;
+  cse+cse2 run pre-flow and the function is one fall-through EBB — nothing survives to flow.
+- H-s2-2 "reg_n_refs/live_length are frozen at flow time in this fork" — CONFIRMED.
+  Probe: combine.c:52-57 + 2306-2337 read; mini_pb empirical (16 refs counted post-fold).
+- H-s2-3 "hand-peeled first iteration + hdr load/test split flips pointer/counter" — CONFIRMED.
+  Probe: pK in src, sandbox. Result: 13 -> 6; pointer $v1, counter $a0; residual = const
+  unification + a6/$a1 swap.
+- H-s2-4 "in-arm m2=-1 const-holder restores the v0/a1/a2 constellation" — CONFIRMED.
+  Probe: pU in src, sandbox. Result: 6 -> 3; all five registers target-correct; residual =
+  3-insn peel stub (sched1 li placement blocks full cross-jump merge).
+- H-s2-5 "the stub yields to statement order / decl order / register kw / block scope" — KILLED.
+  Probe: 12 + 120 + 4 variants. Result: stub invariant in all 136.
+- H-s2-6 "do-while(0) around the peel gives a counter-free ref-lift" — KILLED.
+  Probe: 3 wrapper placements. Result: counter double-weighted too (flip reverts) + merge lost.
+
+## Live frontier (end of s2) — floor 3, candidate.c = pU form
+1. Kill the 3-insn stub: make sched1 emit the peel's li m2,-1 FIRST in the peel block (full
+   suffix match -> stub collapses to exactly target's li a1). Mechanism fully characterized;
+   levers not yet found: read sched.c launch-before/ready-sort tie-breaks for the exact knob;
+   find an in-block li consumer that survives combine; or a real branch that isolates the li
+   in its own BB (none available in this CFG so far).
+2. Directed permuter campaign from candidate.c (score-3 seed, 29/26): PERM sweeps over peel
+   spelling, holder placement/type, loop test forms — mechanical exploration of exactly the
+   stub-space. Permuter modality is the natural next rung.
+3. pK-track alternative: break the guard/loop const unification in the while-form without a
+   holder (cse follows the entry jump only because the test label has LABEL_NUSES==1 —
+   find a spelling that bumps the label's uses pre-cse without emitted bytes). If broken,
+   pK+two-lis might reach 0 with one variable fewer.
+
+## [s2] A same-path pre-combine spelling can lift pointer flow refs byte-neutrally (frontier-1)
+- mechanism: cse+cse2 run before flow; whole function is one fall-through EBB
+- probe: 8 spelling variants (cast-addr, split-addr, reload, RMW, decl swap, loop temp, while, lvalue) under BB2_ALLOC_DEBUG
+- result: pointer stuck at 12 refs / pri 21176 in all 8; 6 byte-identical-and-inert, 2 byte-diverging
+- verdict: KILLED
+
+## [s2] reg_n_refs/live_length are frozen at flow time in this fork (frontier-2)
+- mechanism: combine.c:52-57 documents non-adjustment; only a deleted insn's own dead dest is zeroed (2306-2337)
+- probe: source read + mini_pb empirical (16 refs counted after combine folded the pair)
+- result: confirmed frozen through global alloc
+- verdict: CONFIRMED
+
+## [s2] Hand-peeled first iteration + hdr load/test split flips pointer/counter allocation
+- mechanism: peel = real-statement duplication counted by flow (+4 pointer refs), cross-jump re-merges; hdr split strips 3 counter refs (peel alone: counter 30909 still wins)
+- probe: pK applied to src, sandbox --disable all
+- result: 13 -> 6; pointer $v1, counter $a0; residual = const unification + a6 steals $a1
+- verdict: CONFIRMED
+
+## [s2] In-arm m2=-1 const-holder restores the v0/a1/a2 constellation
+- mechanism: m2 4 refs @ livelen 16 = pri 5000 > a6 3809; guard keeps its own local li -> $v0; holder set before guard fails (cse steal + livelen 28 pri 3571)
+- probe: pU applied to src, sandbox --disable all
+- result: 6 -> 3; all five registers target-correct; 29/26 insns
+- verdict: CONFIRMED
+
+## [s2] The 3-insn peel stub yields to statement order / decl order / register kw / block scope
+- mechanism: sched1 backward list scheduling places the no-in-block-consumer li in the peel tail; cross-jump suffix match stops there
+- probe: 12 statement orders x 4 m2 positions, 120 decl permutations, register storage class, block-scope decl
+- result: stub invariant in all 136 variants; in-block li consumers combine-fold (dependence severed), cross-block ones don't fold (wrong bytes)
+- verdict: KILLED
+
+## [s2] do-while(0) around the peel gives a counter-free ref-lift
+- mechanism: loop notes double peel refs for BOTH pseudos; counter 35555 back above pointer 34782
+- probe: 3 wrapper placements under BB2_ALLOC_DEBUG
+- result: flip reverts AND peel stops cross-jump-merging (body emitted twice)
+- verdict: KILLED
