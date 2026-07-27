@@ -47,7 +47,8 @@
   }
  ],
  "judge_constraints": [
-  "The fabricated-constant cancellation/re-set-chain spelling (v1 += 2; v1 -= 1; and any same-register re-set chain whose constants are an invented decomposition of the semantic op) is UNSANCTIONED -- do not respell it; land the match either via a genuinely sanctioned family with ALL prerequisites (e.g. duplicated-statement-into-arms: duplicate a REAL statement for the ref-lift, byte-neutrality verified, /* FAKE */ annotated) or surface this exact construct to the owner as a proposed new sanction with the ledger's mechanism evidence attached."
+  "The fabricated-constant cancellation/re-set-chain spelling (v1 += 2; v1 -= 1; and any same-register re-set chain whose constants are an invented decomposition of the semantic op) is UNSANCTIONED -- do not respell it; land the match either via a genuinely sanctioned family with ALL prerequisites (e.g. duplicated-statement-into-arms: duplicate a REAL statement for the ref-lift, byte-neutrality verified, /* FAKE */ annotated) or surface this exact construct to the owner as a proposed new sanction with the ledger's mechanism evidence attached.",
+  "The cancellation-pair/re-set-chain class stays banned by any spelling; revert src to the best sanctioned form pY (floor 3, 26/26, zero rules/pins), archive the pair form under rejected/ with its mechanism evidence, and dispose per the 2026-07-27 standing auto-ruling (both-gates-fail -> OWNER-ACCEPTED INCOMPLETE, terminal park, re-attempt eligible); the ONLY reopening path is an actually-exhibited SOTN-master (or VS/ESA) file+function citation of this exact adjacent-cancellation shape, which would be a gate-(ii) owner escalation."
  ],
  "origin": "queue",
  "created": "2026-07-27T20:21:45.734646+00:00"
