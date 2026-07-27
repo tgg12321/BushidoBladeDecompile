@@ -1,0 +1,40 @@
+{
+ "func": "func_80044098",
+ "file": "text1a_c",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 0,
+   "floor": 13,
+   "modality": "wip-import",
+   "headline": "floor imported from memory/wip checkpoint"
+  },
+  {
+   "session": 1,
+   "floor": 13,
+   "modality": "recon",
+   "headline": "recon s1: allocno mechanism fully quantified (counter pri 26250 vs pointer 21176); counter-split axis measured dead via combine guard-fold; frontier = pointer-side byte-neutral ref lift"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Byte-neutral pointer-ref lift: a pre-combine RTL spelling of the v1-addressed accesses (integer-cast addressing, memory-RMW, reload-after-store that CSE collapses) adds +2/+3 flow-time refs to the pointer pseudo while combine folds the code back to the exact target insns",
+   "mechanism": "reg_n_refs is counted at flow time on pre-combine RTL; combine-folded decorations can raise pointer pri past 26470 (or 24705 combined with a load/test-only hdr split) without changing emitted bytes",
+   "next_probe": "sweep ~6 spellings, checking each with BB2_ALLOC_DEBUG pri values + sandbox score; keep any that moves pointer pri without byte change"
+  },
+  {
+   "hypothesis": "reg_n_refs/live_length are frozen at flow time (not decremented by combine) in this fork, which widens frontier-1 to any combine-folded decoration",
+   "mechanism": "GCC 2.7.2 pass order: flow counts refs before combine; whether combine.c adjusts reg_n_refs when deleting insns determines the size of the byte-neutral spelling space",
+   "next_probe": "read tools/gcc-2.7.2/combine.c and flow.c reg_n_refs handling; confirm empirically with one decorated spelling under BB2_ALLOC_DEBUG (refs should exceed the final-asm hand count)"
+  },
+  {
+   "hypothesis": "Directed permuter campaign from candidate.c finds the rename-flipping spelling",
+   "mechanism": "single tied-rename class is the documented better-than-average permuter case (s0 notes); PERM sweeps over addressing spellings and statement order explore the same space as frontier-1 mechanically",
+   "next_probe": "tools/permuter_campaign.py from candidate.c with PERM macros on the header access spellings; fresh-seed stopping rule; wait in-turn and harvest --stop before session end"
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-27T20:21:45.734646+00:00"
+}
