@@ -634,3 +634,4 @@
 - 2026-07-24 19:46 func_8007CA00 s1 [recon] floor=11: Recon: mapped all 13 diffs; sequencing-temp lever dropped floor 13->11 (case1 loads now match); goto shared-tail KILLED (17).
 - 2026-07-24 20:13 func_8007CA00 s2 [structural] floor=11: Structural axis exhausted at floor 11; both diff clusters' root causes proven (greg: H1 is a return-reg local-alloc tie invariant to spelling; jump2: H2 +1 is a reorg delay-slot-fill dup that only a RA-degrading goto removes). Hand off to permuter modality.
 - 2026-07-27 14:34 func_8007CA00 s3 [structural] floor=4: Floor 11 -> 4 (build 44 == target 44): H1 ==0-division swap SOLVED via ret-funnel BB split; H2 reduced to one li-placement cluster with all four blocking GCC mechanisms proven (sched backward-float, birthing single-set promotion, global.c sets-before-deaths $v0 conflict + copy exemption, reorg own-thread-first fill).
+- 2026-07-27 15:15 func_8007CA00 COMPLETED-C after 4 sessions.
