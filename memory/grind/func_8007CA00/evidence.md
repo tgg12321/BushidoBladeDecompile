@@ -146,3 +146,49 @@ tmp/grind/func_8007CA00/s3/: build_disasm_baseline.txt, build_disasm_p5_subonly_
 - [s3] p6 shows single-expression (0x400 - v1) - a reassociates to (0x400 - a) - v1: the two-statement split is load-bearing inside the tail as well.
 
 - [s3] s2's 'goto both directions KILLED' verdict was overly broad: it covered only tails absorbing loads/li; finer-grained sharing (subus only) improves the floor.
+
+## s4 (permuter modality, 2026-07-27) — floor 4 -> **0**; H2-final CLOSED via sanctioned do-while(0) fence; candidate-ready
+
+### Campaign A (directed-case2-orderings, tmp/perm_ca00_s4, weighted base 320)
+- Workspace: minimal-TU base.c (globals are lui/%hi, not gp-rel, so no context needed),
+  full pipeline compile.sh (cc1|prologue_fix|maspsx|multu_pad, NO regfix — cheat-free by
+  construction), target.o at offset 0. Validated: plain seed = 44/44 insns, the known 4-diff cluster.
+- 8 finds in ~3 min (scores 170-300), ALL ONE ATTRACTOR CLASS = semantics-breaking: hoist the
+  0x400 init into case1's block only, leaving it UNINITIALIZED on case2's goto-sub path
+  (variants: double-subtract v1 in tail, `goto ret` deleted so case1 falls into case2,
+  `a = arg0[0]` moved after the return). The scorer is semantics-blind; every scoring
+  improvement in this basin required breaking case2's init or control flow. ZERO legal
+  sub-base finds in 8.7k iterations. Harvested + stopped (telemetry in metrics/events.jsonl).
+- Evidence value: the basin's attractors all converge on "case1 owns the li" = independent
+  confirmation of the p9-shape diagnosis; the permuter could only reach it illegally.
+
+### Chassis B (full-dup split-c) — measured dead without a campaign
+- 46 insns (target 44), 40 diff lines: `move a1,a0` lands in the dispatch delay slot, whole
+  register file cascades (loads from a1, div idiom in a0/v1). Both li DO land in delay-slot
+  positions — placement right, RA cost fatal. -> rejected/full-dup-split-c.c
+
+### Directed 6-variant matrix (p9+funnel hybrid × {plain li, do-while(0) li, c2-holder li} × {direct tail, block-local-c-copy tail})
+- v_plain_*: 24/22 diff lines (the known M3/M1 walls; p9 re-confirmed).
+- v_c2hold_*: 24/22 — **s3 frontier-1 (single-set constant-holder) KILLED by measurement**:
+  `{ s32 c2 = 0x400; t = c2; }` changes NOTHING vs plain (copy does not become an anchored li).
+  -> rejected/c2-single-set-constant-holder.c
+- v_dowhile_*: **0 diff lines, BOTH tail forms** (44 == 44).
+
+### The closing form (in src/display.c; sandbox --disable all = 0, rules_dropped 13)
+- p9 shape + ret-funnel + single-level FAKE-annotated `do { t = 0x400; } while (0);` in case2.
+- Mechanism: the do-while loop notes keep the isolated constant-set BELOW the div chain
+  (defeats M3's backward-float, which requires sched to hoist it to block top); the li is then
+  the last insn before the j, so reorg own-thread fill (M4) drops it into the delay slot =
+  target. case1's li (multi-set t, no birthing promotion) floats to case1's block top per M3 —
+  exactly where target wants it; eager fill steals it past the two lh loads into the beqz slot.
+  With the p9 shape achieved, the direct tail `t = t - v1; return t - a;` also matches (the M1
+  $v0 exclusion no longer bites; block-local-c-copy tail equally 0 — direct chosen as simpler).
+- Sanction: do-while-zero-exception (owner ruling 2026-07-06 FINAL) — any codegen effect,
+  single-level needs only the inline FAKE annotation; verified on-disk, not from memory.
+- Layer-1 cheat-reviewer: **PASS** (independently re-ran sandbox = 0, re-read the rule file,
+  ran volatile_cheats detector = no hits, verified semantics path-by-path vs target asm).
+
+- [s4] sandbox --disable all floor: 4 at s4 start (candidate re-applied to src) -> **0** at s4 end (do-while form in src/display.c; build 44 == target 44).
+- [s4] Permuter basin (floor-4 chassis): saturated by semantics-breaking attractors only; no legal pure spelling exists in that neighborhood (8 finds, 1 class, 8.7k iters).
+- [s4] c2 single-set constant-holder: measured identical to plain multi-set (22/24 diff lines) — birthing/coalescing bet disproven.
+- [s4] do-while(0) fence on case2's li closes ALL 4 remaining diffs; both tail forms 0; layer-1 PASS.

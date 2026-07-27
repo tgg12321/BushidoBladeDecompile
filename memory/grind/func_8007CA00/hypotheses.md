@@ -1,6 +1,11 @@
 # Hypothesis ledger — func_8007CA00
 
 ## Floor history
+- s4 permuter (2026-07-27): 4 -> **0** (CANDIDATE-READY). H2-final closed by a single-level
+  FAKE-annotated do-while(0) fence on case2's `t = 0x400` (sanctioned per
+  do-while-zero-exception, owner ruling 2026-07-06). Layer-1 cheat-reviewer PASS.
+  s3 frontier-1 (c2 constant-holder) KILLED by measurement; full-dup chassis KILLED;
+  campaign A proved the floor-4 basin holds only semantics-breaking attractors.
 - s1 recon (2026-07-24): 13 -> **11** (variant B, sequencing-temp lever). candidate.c saved.
 - s2 structural (2026-07-24): floor stays **11**. Both clusters' root causes proven (greg + jump2
   dumps); the structural axis (spelling, var-splits, decl order, type narrowing, case/branch
@@ -54,7 +59,29 @@
 - **Single-expression tail `(0x400 - v1) - a`** (p6 = 12): reassociates to (0x400-a)-v1;
   two-statement split mandatory.
 
-## LIVE FRONTIER (s3, from floor 4)
+## CONFIRMED (s4)
+- **H-F: p9 shape + ret-funnel + do-while(0) fence on case2's li = byte-exact (sandbox 0).**
+  Mechanism: loop notes keep the isolated constant-set below the div chain (M3 defeated);
+  li becomes last-before-j so M4 own-thread fill places it in the delay slot; case1's li
+  floats to block top (M3 working FOR us) and eager fill steals it into the beqz slot;
+  with p9 achieved the direct tail no longer triggers M1's $v0 exclusion. Both tail
+  spellings (direct / block-local-c copy) measured 0. Sanctioned single-level wrap,
+  FAKE-annotated. Layer-1 cheat-reviewer PASS. -> candidate.c + src/display.c
+
+## KILLED (s4)
+- **c2 single-set constant-holder** `{ s32 c2 = 0x400; t = c2; }` (s3 frontier-1): measured
+  22/24 diff lines = IDENTICAL to plain multi-set t; the coalescing/birthing bet is dead.
+  -> rejected/c2-single-set-constant-holder.c
+- **Full-duplication chassis** (per-branch complete tails, split-c): 46 insns / 40 diff
+  lines; register-file cascade (move a1,a0 in dispatch slot). -> rejected/full-dup-split-c.c
+- **Pure legal spelling in the floor-4 basin**: campaign A (8.7k iters, 8 finds) produced
+  ONLY semantics-breaking attractors (uninit-on-case2-path li hoists, control-flow deletion).
+  No legal sub-base form exists in that neighborhood.
+
+## LIVE FRONTIER (s4)
+- (none — candidate-ready; driver re-verifies bytes and runs the layer-2 Judge)
+
+## LIVE FRONTIER (s3, from floor 4 — superseded by s4 closure, kept for history)
 - **H2-final (4 diffs): both branches need their OWN li v0,0x400 with the `sub` label after
   case1's li** — the p9 shape, blocked purely by M3 (multi-set t never birthing-promoted).
   Next probes: (a) single-set constant-holder local per branch feeding t via a

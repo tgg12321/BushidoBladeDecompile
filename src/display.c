@@ -685,23 +685,34 @@ s32 func_8007C97C(u8 *arg0) {
 extern u8 D_8009BE74;
 extern u8 D_8009BE77;
 s32 func_8007CA00(s16 *arg0) {
-    int new_var;
+    s32 v1, a, t;
     switch (D_8009BE74) {
     case 1:
         if (D_8009BE77 != 0) {
-            s32 v1 = arg0[2];
-            return (0x400 - v1) - arg0[0];
+            t = 0x400;
+            v1 = arg0[2];
+            a = arg0[0];
+        sub:
+            t = t - v1;
+            return t - a;
         }
-        return arg0[0];
+        t = arg0[0];
+        goto ret;
     case 2:
         if (0 != D_8009BE77) {
-            s32 v1 = ((s16)(*((u16 *)(arg0 + 2)))) / 2;
-            new_var = 0x400;
-            return (new_var - v1) - arg0[0];
+            v1 = ((s16)(*((u16 *)(arg0 + 2)))) / 2;
+            a = arg0[0];
+            /* FAKE: wrap keeps the 0x400 load below the div chain so it
+               fills the jump delay slot instead of hoisting to block top */
+            do { t = 0x400; } while (0);
+            goto sub;
         }
-        return ((s32)((s16)(*((u16 *)arg0)))) / 2;
+        t = ((s32)((s16)(*((u16 *)arg0)))) / 2;
+        goto ret;
     default:
-        return arg0[0];
+        t = arg0[0];
+    ret:
+        return t;
     }
 }
 u32 func_8007CAB0(void) {
