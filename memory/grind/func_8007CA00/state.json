@@ -1,7 +1,7 @@
 {
  "func": "func_8007CA00",
  "file": "display",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,18 +15,29 @@
    "floor": 11,
    "modality": "structural",
    "headline": "Structural axis exhausted at floor 11; both diff clusters' root causes proven (greg: H1 is a return-reg local-alloc tie invariant to spelling; jump2: H2 +1 is a reorg delay-slot-fill dup that only a R"
+  },
+  {
+   "session": 3,
+   "floor": 4,
+   "modality": "structural",
+   "headline": "Floor 11 -> 4 (build 44 == target 44): H1 ==0-division swap SOLVED via ret-funnel BB split; H2 reduced to one li-placement cluster with all four blocking GCC mechanisms proven (sched backward-float, b"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "H1 (==0 load->v1, 6 diffs) is closable only by shifting the function-wide local-alloc qty ordering/pressure so the ==0 load wins v0 (no C spelling of the ==0 branch itself reaches it).",
-   "mechanism": "Local-alloc tie: load pseudo has no preference and does not conflict with v0 in its own live range, yet is placed in v1; the winning register is decided by qty processing order + surrounding register pressure, not the ==0 expression.",
-   "next_probe": "Directed permuter on the floor-11 candidate (structural manual levers are dead). Also probe whether altering case1/case2/!=0 register pressure (not the ==0 branch) flips the ==0 load's local-alloc tie; read local-alloc qty_order + MIPS REG_ALLOC_ORDER to predict which pressure change frees v0 for the ==0 load."
+   "hypothesis": "H2-final: per-branch li with label after case1's li (p9 shape) via a single-set constant-holder (`s32 c2 = 0x400; t = c2;` in case2) whose copy greg-coalesces away; c2's reg_n_sets==1 triggers the sched birthing promotion so the li stays late.",
+   "mechanism": "birthing_insn_p promotion anchors single-set constant loads at block bottom; the coalesced copy leaves only li v0,0x400 before the j, which own-thread fill drops into the delay slot = target. Constant-holder local => [[named-local-fake-exception]] prerequisites (FAKE annotation, documented lever-exhaustion, layer-2 review) apply.",
+   "next_probe": "First honestly finish the pure-lever search (frontier item 2/3); if dead, measure the c2 form, verify the copy coalesces (greg), and if it closes to 0 present it under the named-local-fake-exception protocol -- do not self-approve."
   },
   {
-   "hypothesis": "H2 (+1 duplicate subu / tail placement, 5 diffs) needs case1 fall-through to the shared tail WITHOUT over-sharing the loads, which no manual C structure achieves.",
-   "mechanism": "GCC 2.7.2 cross-jump always redirects earlier->later, placing the kept tail in case2; case1 reaches via jump -> reorg delay-slot-fill dup. Explicit goto to force fall-through over-shares the arg0[0] load and li 0x400, cascading RA (reverse=14, forward=17).",
-   "next_probe": "Directed permuter to search block orderings/exit-form mixes that make jump2 keep case1's copy; investigate whether a partial exit-form mix (one branch inline return, other goto) keeps the 2-subu merge but flips which block is kept, per cross-jump-store-tail-merge."
+   "hypothesis": "A pure spelling exists that leaves case2's j slot without an eligible own-thread candidate, letting reorg steal the tail li and advance the label (M4 path to the p9 shape).",
+   "mechanism": "fill_simple_delay_slots only consults the target thread when the own thread yields nothing; case2's block currently always ends with an eligible sra1/lh.",
+   "next_probe": "Directed permuter from the floor-4 candidate (seed is 7 better than s2's) sweeping case2 statement orderings/exit forms; also probe div spellings whose final insn is ineligible for delay slots (e.g. multi-insn/SEQUENCE tails)."
+  },
+  {
+   "hypothesis": "Alternative: reorg eager fill could take the tail li into case1's beqz slot if the `sub` label did not end the owned thread one insn early.",
+   "mechanism": "Eager fill steals trap-free insns past loads but stops at labels (non-owned thread); the li sits at the label head.",
+   "next_probe": "Search label/block arrangements where case2 enters after the li without skipping its own init (none found manually; permuter sweep from floor 4)."
   }
  ],
  "judge_constraints": [],

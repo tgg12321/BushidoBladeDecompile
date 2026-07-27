@@ -104,3 +104,45 @@
 - [s2] H1 and H2 are independent (H1 swap persists in the reverse-goto variant).
 
 - [s2] Structural modality (spelling, var-splits, decl order, type narrowing, case/default reorder, branch-sense invert, goto both directions) is exhausted for both clusters.
+
+## s3 (structural modality, 2026-07-27) — floor 11 -> **4**; H1 SOLVED; H2 reduced to one li-placement cluster; four GCC mechanisms proven
+
+### Probe ladder (all sandbox --disable all; disasms in tmp/grind/func_8007CA00/s3/)
+- p5 share-only-subus reverse goto (c,v1,a all cross-block): **11** (build 43) — structure right but c->$a1.
+- p6 li-in-tail single-expression `(0x400 - v1) - a`: **12** (44) — GCC REASSOCIATES to (0x400-a)-v1; the s1 two-statement split is required inside the tail too.
+- p7 li-in-tail split (`c=0x400; c=c-v1; return c-a;` c BLOCK-LOCAL): **10** (44) — first floor drop; c takes $v0 (local.c tick exemption).
+- p8/p9/p10 per-branch t=0x400 + mid-block label (target's structural shape): **12** (43) — t->$a1, two proven walls (see mechanisms). -> rejected/per-branch-li-shared-t.c
+- p11 full return-funnel (`ret: return t;` all paths): **9** (43) — DISCOVERED the H1 cure (==0 division flips to target exactly) but t->$a1 costs every t site. -> rejected/full-funnel-single-t.c
+- p12 = p7 tail + funnel for ==0/case1==0/default only: **4** (44 == target). -> candidate.c
+- p13 sub0 li-stub for case2: **6** (47) — t=$v0 and case1+==0 byte-exact, but reorg own-thread fill (sra1) blocks the target-thread li steal; stub survives. -> rejected/sub0-li-stub.c
+
+### Remaining 4 diffs (p12/candidate, vs target)
+1. case1 beqz delay slot: nop vs `li v0,0x400` (li is beyond the `sub` label -> not in the owned thread -> not eager-stealable).
+2-4. tail cluster: build [label][li][subu v1][j][subu a0-delay] vs target [li in case1's slot][label][subu v1][j][subu a0-delay]; case2's j delay = sra v1,v1,1 (own-thread fill) vs target `li v0,0x400`.
+All four are ONE configuration: both branches need their OWN li with the label after case1's li (p9 shape) — blocked by the mechanisms below.
+
+### Proven GCC 2.7.2 mechanisms (dump- or source-verified)
+- **M1 (greg dumps, s3):** global.c records conflicts SETS-BEFORE-DEATHS: a GLOBAL pseudo dying in an insn whose dest is hard $v0 (e.g. combine-folded `(set v0 (minus t a))` return) conflicts with $v0 ("75 conflicts: ... 2"). Plain copies `(set v0 t)` ARE exempt (p12: t=$v0 with the ret-copy). local.c (block-local qtys) is tick-granular — dying srcs never conflict with the dest -> block-local temps CAN take $v0. Consequence: the shared tail's 0x400 must be block-local; cross-block carriers may only be values whose target reg is not $v0 (v1->$v1, a->$a0 fine).
+- **M2 (H1 root cause + cure):** the ==0 division swap was the return-reg backward squeeze THROUGH the combine-folded (set v0 (sra P 1)). Putting the return copy in its own BB (`ret:` funnel) leaves the block's last insn a pseudo-dest -> combine can't reach across the BB -> natural qty allocation = target (lhu v0, sll v0, sra v1, srl v0, addu v1, sra v0,v1,1). Verified byte-exact in p11/p12/p13.
+- **M3 (sched.c, source-read + p11 greg RTL order insn 80 < 63):** GCC 2.7.2 list-schedules BACKWARD; an isolated constant-set with no in-block consumer floats to the BLOCK TOP unless adjust_priority promotes it — birthing_insn_p (sched.c:2496) requires reg_n_sets[dest]==1. A branch-shared t (2+ sets) is never promoted -> case2's `t=0x400` always hoists above the div chain -> t crosses the div's local-$v0 range -> M1 conflict. A PURE spelling cannot make t single-set (both branches must init it).
+- **M4 (reorg, p13):** fill_simple_delay_slots fills an unconditional j from its OWN thread first; sra1/lh are always eligible -> the target-thread steal (copy tail-li + advance label past it, which would produce target's exact slot layout) never runs while any own-thread candidate exists.
+- Eager (conditional-branch) fill can steal a trap-free insn PAST loads (pass-over needs only resource-disjointness) but never across a label (non-owned thread); loads are never stolen cross-path (may trap). Explains every beqz-slot li/nop in the probe ladder.
+
+### Artifacts
+tmp/grind/func_8007CA00/s3/: build_disasm_baseline.txt, build_disasm_p5_subonly_goto.txt, build_disasm_p6_li_in_tail.txt, build_disasm_p7_split_tail_floor10.txt, build_disasm_p9_lifirst.txt, build_disasm_p10_accum.txt, build_disasm_p11_funnel_floor9.txt, build_disasm_p12_fusion_floor4.txt, build_disasm_p13_sub0.txt, display.i.greg + full -da dump set (p11 form), dis.sh, greg.sh.
+
+- [s3] sandbox --disable all floor at s3 start = 11 (candidate.c applied); at s3 end = 4 with build_insns 44 == target 44 (p12 form in src/display.c and candidate.c).
+
+- [s3] Remaining 4 diffs are ONE configuration: case1 beqz slot nop-vs-li, tail li at the label instead of pre-label, case2 j delay sra-vs-li; all resolve iff both branches own their li with the label after case1's (p9 shape).
+
+- [s3] M1: GCC 2.7.2 global.c marks sets-before-deaths -> global pseudo dying at a hard-$v0-dest insn conflicts with $v0; plain (set v0 t) copies are exempt; local.c is tick-granular so block-local temps can take $v0.
+
+- [s3] M2: ret-funnel BB split prevents combine folding the ==0 division into (set v0 ...), eliminating the backward return-reg squeeze (H1 root cause from s2) -- ==0 block now byte-exact.
+
+- [s3] M3: sched.c backward list scheduler floats isolated constant-sets to block top; adjust_priority's birthing_insn_p promotion requires reg_n_sets==1 (sched.c:2496-2517,2534-2575); branch-shared t (>=2 sets) is never anchored.
+
+- [s3] M4: reorg fill_simple_delay_slots fills unconditional jumps from the own thread first (sra1/lh always eligible), so the target-thread li steal + label advance never fires (p13, build 47).
+
+- [s3] p6 shows single-expression (0x400 - v1) - a reassociates to (0x400 - a) - v1: the two-statement split is load-bearing inside the tail as well.
+
+- [s3] s2's 'goto both directions KILLED' verdict was overly broad: it covered only tails absorbing loads/li; finer-grained sharing (subus only) improves the floor.
