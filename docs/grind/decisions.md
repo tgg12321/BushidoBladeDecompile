@@ -1695,3 +1695,81 @@ RULING REQUEST for func_80072CD4: does the duplicated-statement-into-arms sancti
 **Precedent (same RA/scheduler-locked, hand-coded-LOW species, all ruled option (b) since 2026-07-20):** motion_SetMotion (FAMILY REFUSED), func_80049A2C, gnd_init_80041688, func_80033550, cpu_check_tubazeri_2, damage_DebugDisp, func_80017FA0. Per the parallel-filing precedent this need NOT wait for a sibling ruling to land. The agent does not self-resolve.
 
 **Filed under authority of:** task-brief contract (grind session s8, escalation modality — the mandated disposition outcome; every sanctioned axis measured dead across s1–s7 and the frontier prescribes filing this escalation); no-park-permanently (2026-06-24); two-layer adversarial acceptance (2026-06-10); no-compiler-divergence (global.c/cse.c behavior cited as informational about the required C shape, NOT a request to patch the toolchain). This escalation entry names func_80037A20 directly; the driver parks the function until the owner rules.
+
+## 2026-07-27 — func_800611A4 (src/text1b.c) — OWNER RULING (escalation option b) — **REFUSED / OWNER-ACCEPTED INCOMPLETE**
+
+Owner ruling (2026-07-27, Trenton, recorded by operator) on the 2026-07-22 escalation: **option (b)**, decided in a single batch review of thirteen endgame-lock escalations (func_800611A4, func_80061658, func_80061710, func_80045878, ang_hosei_80056FE8, func_8001F938, func_80022F34, func_80048530, special_camera_get_rot_dir, func_80062020, func_80072CD4, func_80017FA0, func_80037A20 — all REFUSED / OWNER-ACCEPTED INCOMPLETE). Governing owner criterion (restated in the batch directive): only techniques with in-hand SOTN precedent that are not explicit cheats may be presented for sanction; everything else is auto-rejected. Both AND-gates fail. AND-gate #1 (canonical-asm): `scan_hand_coded` = LOW 0/8, ordinary GCC RA output. AND-gate #2: no SOTN-master (or VS/ESA) precedent for any closing construct — register-asm pins explicitly not relaxed by the 2026-07-01 census. Residual mechanism: pure v0↔v1 RA swap (reused 3-load web vs 0xFFFFEF mask), local-alloc.c:472 death-count routing gate + find_free_reg lowest-free-reg scan; cc1psx emits the same wall.
+
+**Disposition:** Keeps the two `register s32 ... asm("$2")`/`asm("$3")` pins on main (byte-match preserved, 0 regfix rules), **INCOMPLETE-owner-accepted**, parked out of active grind, classified NOT COMPLETED-C and NOT canonical-asm; the retained cheat survives only to hold the byte-match and is not sanctioned as a technique; eligible for re-attempt if a genuine pure-C lever or new tooling emerges.
+
+## 2026-07-27 — func_80061658 (src/text1b.c) — OWNER RULING (escalation option b) — **REFUSED / OWNER-ACCEPTED INCOMPLETE**
+
+Owner ruling (2026-07-27, Trenton, recorded by operator) on the 2026-07-23 escalation: **option (b)**, in the 13-function batch (see func_800611A4 entry). The bytes-proven pure-C sandbox-0 form (`val = 0x10FFFF; mask = val;`) is the constant-staging-through-a-reused-live-local coercion — a first-reach family with NO census-established SOTN precedent (staged-value-reused-variable is scheduler/order-scoped; defeat-licm-hoist-var-reuse says verbatim "do not cite for straight-line code"). The staging hop has no semantic purpose; per the owner's standing bar it is an explicit compiler-steering coercion and is NOT presented for sanction. The family census option remains open to the owner in the future but is not being run now; option (a) is refused without it.
+
+**Disposition:** Keeps the two `register s32 t asm("$2")`/`mask asm("$3")` pins on main (byte-match preserved, 0 regfix rules), **INCOMPLETE-owner-accepted**, parked out of active grind, NOT COMPLETED-C; the pins survive only to hold the byte-match and are not sanctioned; the constant-staging family is NOT sanctioned; eligible for re-attempt if a genuinely different pure-C lever emerges or a future SOTN census establishes the family.
+
+## 2026-07-27 — func_80061710 (src/text1b.c) — OWNER RULING (escalation option b) — **REFUSED / OWNER-ACCEPTED INCOMPLETE**
+
+Owner ruling (2026-07-27, Trenton, recorded by operator) on the 2026-07-23 escalation: **option (b)**, in the 13-function batch (see func_800611A4 entry). Identical disposition to sibling func_80061658, whose escalation subsumes this one: the sole sandbox-0 form (`val = 0x10FF10; mask = val;`) is the same unsanctioned constant-staging coercion; the census is not being run; the family is refused.
+
+**Disposition:** Keeps the two `register s32 t asm("$2")`/`mask asm("$3")` pins on main (byte-match preserved, 0 regfix rules), **INCOMPLETE-owner-accepted**, parked out of active grind, NOT COMPLETED-C; the pins survive only to hold the byte-match and are not sanctioned; eligible for re-attempt under the same conditions as func_80061658.
+
+## 2026-07-27 — func_80045878 (src/text1a_c.c) — OWNER RULING (escalation option b) — **REFUSED / OWNER-ACCEPTED INCOMPLETE**
+
+Owner ruling (2026-07-27, Trenton, recorded by operator) on the 2026-07-23 escalation: **option (b)**, in the 13-function batch (see func_800611A4 entry). Both AND-gates fail. AND-gate #1: `scan_hand_coded` = LOW 0/8, ordinary GCC output. AND-gate #2: no SOTN precedent for any closing construct. Residual mechanism: Gap A = cse.c available-expression fold + sched1 launch-priority (1 insn); Gap B = local_alloc live-range split of the 2-pred join .L800459DC (~9 insns); reachability wall, no pure-C-0 form exists.
+
+**Disposition:** Keeps the 10 regfix rules (1 lost-codegen insert + 9-rule tail-store subst cluster) on main (byte-match preserved), **INCOMPLETE-owner-accepted**, parked out of active grind, NOT COMPLETED-C and NOT canonical-asm; the retained rules survive only to hold the byte-match and are not sanctioned; eligible for re-attempt on a novel whole-function structural insight.
+
+## 2026-07-27 — ang_hosei_80056FE8 (src/text1b.c) — OWNER RULING (escalation option b) — **REFUSED / OWNER-ACCEPTED INCOMPLETE**
+
+Owner ruling (2026-07-27, Trenton, recorded by operator) on the 2026-07-23 escalation: **option (b)**, in the 13-function batch (see func_800611A4 entry). Both AND-gates fail. AND-gate #1: `scan_hand_coded` = LOW 0/8, ordinary GCC RA output. AND-gate #2: no SOTN precedent — the only weighted-0 closure found is a forbidden dead-op pair (`base++; base--;`), and register pins are not relaxed. Residual mechanism: single $a1↔$a2 swap decided in global.c find_reg by allocno_compare priority; the copy-preference frontier is mechanically unreachable (no $a1 ABI anchor in a 1-argument leaf).
+
+**Disposition:** Keeps the `register s32 partial asm("$5")` pin + `asm volatile("")` scheduling barrier on main (byte-match preserved, 0 regfix rules), **INCOMPLETE-owner-accepted**, parked out of active grind, NOT COMPLETED-C and NOT canonical-asm; the retained cheat-asm survives only to hold the byte-match and is not sanctioned; eligible for re-attempt on a novel structural insight that changes the base/a2local live-range relationship.
+
+## 2026-07-27 — func_8001F938 (src/code6cac.c) — OWNER RULING (escalation options a+b refused; disposition = OWNER-ACCEPTED INCOMPLETE) — **REFUSED / OWNER-ACCEPTED INCOMPLETE**
+
+Owner ruling (2026-07-27, Trenton, recorded by operator) on the 2026-07-23 escalation: refuse **both** options (a) and (b), in the 13-function batch (see func_800611A4 entry). Option (a) — sanction the signedness-split / dual-typed-read CSE-defeat family — refused: the F2 SOTN-master census (2026-07-01) returned NOT ESTABLISHED, and no new evidence is in hand; the construct is semantically inert compiler-steering, an explicit cheat by the cheats-by-any-spelling standard. Option (b) — canonical-asm for .L8001FA60 — refused: scan LOW 0/8 and a pure-C distance-0 form provably exists, so asm would launder the banned construct (inline-asm-injection trap). Disposition follows the escalation's option (c) hardened to the batch's terminal form: OWNER-ACCEPTED INCOMPLETE.
+
+**Disposition:** Keeps the 13 regfix rules (regfix.txt 638-656) on main (byte-match preserved; clean floor-8 chassis remains the honest best), **INCOMPLETE-owner-accepted**, parked out of active grind, NOT COMPLETED-C and NOT canonical-asm; the retained rules survive only to hold the byte-match and are not sanctioned; the signedness-split family stays unsanctioned pending any future established SOTN evidence; eligible for re-attempt if such evidence or a genuine pure-C lever emerges.
+
+## 2026-07-27 — func_80022F34 (src/code6cac.c) — OWNER RULING (escalation option b) — **REFUSED / OWNER-ACCEPTED INCOMPLETE**
+
+Owner ruling (2026-07-27, Trenton, recorded by operator) on the 2026-07-23 escalation: **option (b)**, in the 13-function batch (see func_800611A4 entry). Both AND-gates fail. AND-gate #1: `scan_hand_coded` = LOW 1/8; the byte-perfect base body proves compilable C exists. AND-gate #2: no closing C construct exists at all (a phantom stack slot cannot be subtracted in C), so there is no family to sanction. Residual mechanism: +8 phantom stack slot from GCC 2.7.2 combine's documented REG_DEAD-note strand (reg100 use insn stranded past code_label 85) + 1 maspsx .L-label nop.
+
+**Disposition:** Keeps the 11 regfix frame-offset substs on main (byte-match preserved), **INCOMPLETE-owner-accepted**, parked out of active grind, NOT COMPLETED-C and NOT canonical-asm; the retained rules survive only to hold the byte-match and are not sanctioned; eligible for re-attempt on a novel whole-function reshape of reg100's fold/live-range relationship.
+
+## 2026-07-27 — func_80048530 (src/text1b.c) — OWNER RULING (escalation option b) — **REFUSED / OWNER-ACCEPTED INCOMPLETE**
+
+Owner ruling (2026-07-27, Trenton, recorded by operator) on the 2026-07-23 escalation: **option (b)**, in the 13-function batch (see func_800611A4 entry). Both AND-gates fail. AND-gate #1: `scan_hand_coded` = LOW 1/8; ordinary commutative-add operand-order tie. AND-gate #2: the only closer is the or-tree-shape-shift commutative operand swap — already an explicitly FORBIDDEN family, not merely unprecedented. Residual mechanism: one instruction — `addu $v1,$v1,$v0` (build, base-first) vs `addu $v1,$v0,$v1` (target, off-first); cc1psx also emits base-first from natural source.
+
+**Disposition:** Keeps the 5 regfix rules on main (byte-match preserved), **INCOMPLETE-owner-accepted**, parked out of active grind, NOT COMPLETED-C and NOT canonical-asm; the retained rules survive only to hold the byte-match and are not sanctioned; eligible for re-attempt only if a genuine non-swap pure-C lever emerges that emits off-first while keeping the walker in $v1.
+
+## 2026-07-27 — special_camera_get_rot_dir (src/code6cac_b2_post.c) — OWNER RULING (escalation option b) — **REFUSED / OWNER-ACCEPTED INCOMPLETE**
+
+Owner ruling (2026-07-27, Trenton, recorded by operator) on the 2026-07-23 escalation: **option (b)**, in the 13-function batch (see func_800611A4 entry). Both AND-gates fail. AND-gate #1: `scan_hand_coded` = LOW 2/8 (S5 hit is a spurious self-cluster); ordinary allocno-priority rotation. AND-gate #2: the only closer is a `register ... asm("s5")` rotation pin — an explicit cheat with zero community precedent. Residual mechanism: 5-register callee-saved permutation; copy_end must be lowest-priority to land s5 but its live length is hard-capped by its earliest last-use; no copy-preference anchor exists.
+
+**Disposition:** NO cheat is present — the clean floor-9 pure-C candidate stays on main (0 rules, does not byte-match), **INCOMPLETE-owner-accepted**, parked out of active grind, NOT COMPLETED-C and NOT canonical-asm; eligible for re-attempt if a genuine non-pin pure-C lever emerges that makes copy_end simultaneously call-crossing and longest-lived.
+
+## 2026-07-27 — func_80062020 (src/text1b.c) — OWNER RULING (escalation option b) — **REFUSED / OWNER-ACCEPTED INCOMPLETE**
+
+Owner ruling (2026-07-27, Trenton, recorded by operator) on the 2026-07-24 escalation: **option (b)**, in the 13-function batch (see func_800611A4 entry). Both AND-gates fail. AND-gate #1: `scan_hand_coded` = LOW 0/8; ordinary addressing-mode/RA artifact. AND-gate #2: the only distance-0 construct is the same-lvalue dual-spelling coercion (spelling one identical lvalue two ways to defeat address-rtx CSE) — no community precedent, fails the vetting tests, an explicit steering construct. Residual mechanism: col a's separate %hi/%lo recompute vs base-pointer fold (partial CSE the compiler never reproduces from consistent C).
+
+**Disposition:** NO cheat is present — the clean floor-4 pure-C candidate stays on main (0 rules, does not byte-match), **INCOMPLETE-owner-accepted**, parked out of active grind, NOT COMPLETED-C and NOT canonical-asm; the dual-spelling family is NOT sanctioned; eligible for re-attempt if a genuine non-dual-spelling pure-C lever emerges.
+
+## 2026-07-27 — func_80072CD4 (src/text1b.c) — OWNER RULING (escalation disposition) — **REFUSED / OWNER-ACCEPTED INCOMPLETE**
+
+Owner ruling (2026-07-27, Trenton, recorded by operator) on the 2026-07-24 escalation: **INCOMPLETE-owner-accepted granted as requested**, in the 13-function batch (see func_800611A4 entry). The sole sandbox-0 path (duplicating the two unconditional common-tail stores into both arms for a store-scheduling effect) was Judge-FAILed 2026-07-24 16:38 as outside the duplicated-statement-into-arms sanction's evidenced reg_n_refs RA-priority scope, with no SOTN precedent for the store-schedule effect-class; the owner concurs and does not extend the carve-out. Canonical-asm not applicable (compiled C, no hand-coded evidence).
+
+**Disposition:** NO cheat is present — the clean floor-4 pure-C candidate stays on main (0 rules, does not byte-match), **INCOMPLETE-owner-accepted**, parked out of active grind, NOT COMPLETED-C and NOT canonical-asm; eligible for re-attempt if a genuine in-scope pure-C lever emerges.
+
+## 2026-07-27 — func_80017FA0 (src/code6cac.c) — OWNER RULING (escalation option b) — **REFUSED / OWNER-ACCEPTED INCOMPLETE**
+
+Owner ruling (2026-07-27, Trenton, recorded by operator) on the 2026-07-24 escalation: **option (b)**, in the 13-function batch (see func_800611A4 entry). Both AND-gates fail. AND-gate #1: `scan_hand_coded` = LOW 1/8; ordinary GCC-scheduled leaf. AND-gate #2: no SOTN precedent distinguishes an UNWRITTEN phantom-frame carrier from ordinary frame coercion — the fully-dead-pad fallback of the OVERSIZED-LOCALS carve-out is NOT sanctioned and the prerequisite-aware engine allowlist is NOT being wired. Residual mechanism: 8-byte zero-store phantom leaf frame (vars=8, zero $sp accesses); every reproducing C shape is a forbidden dead local.
+
+**Disposition:** Keeps the current cheat form on main (6 regfix rules + `_frame`/`val` asm barriers; byte-match preserved), **INCOMPLETE-owner-accepted**, parked out of active grind, NOT COMPLETED-C and NOT canonical-asm; the retained cheats survive only to hold the byte-match and are not sanctioned; eligible for re-attempt if a genuine pure-C lever or sanctioned carve-out wiring emerges.
+
+## 2026-07-27 — func_80037A20 (src/code6cac_c.c) — OWNER RULING (escalation option b) — **REFUSED / OWNER-ACCEPTED INCOMPLETE**
+
+Owner ruling (2026-07-27, Trenton, recorded by operator) on the 2026-07-24 escalation: **option (b)**, in the 13-function batch (see func_800611A4 entry). Both AND-gates fail. AND-gate #1: `scan_hand_coded` = LOW 0/8; compiler-divergence foreclosed (cc1psx byte-identical on candidate.c). AND-gate #2: the only reaching forms are register-asm pins + an opt-barrier, both with zero community precedent (2026-07-01 census explicitly did not relax them). Residual mechanism: s0↔s1 allocno-priority swap (counter pri 17142 vs pointer 5882, global.c allocno_compare) + cse.c first-pass REG_WAS_0 fold of the entry increment; the two locks are coupled against any single lever.
+
+**Disposition:** Keeps the 2 register pins + 1 opt-barrier on main (byte-match preserved, 0 regfix rules), **INCOMPLETE-owner-accepted**, parked out of active grind, NOT COMPLETED-C and NOT canonical-asm; the retained cheat-asm survives only to hold the byte-match and is not sanctioned; eligible for re-attempt if a genuine pure-C lever emerges.

@@ -2368,7 +2368,7 @@
       "verdict": "C",
       "rules": 0,
       "status": "parked",
-      "park_reason": "owner escalation pending: docs/grind/decisions.md \u2014 '2026-07-22 \u2014 func_800611A4 (src/text1b.c) \u2014 OWNER-ESCALATION (filed by grind s7 forensics ...)'"
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-27): v0<->v1 RA swap (local-alloc.c:472 + find_free_reg); reg-2/reg-3 asm pins retained only to hold byte-match, not sanctioned; both endgame-lock gates fail (scan LOW 0/8, no SOTN precedent)"
     },
     {
       "func": "func_80061658",
@@ -2377,7 +2377,7 @@
       "verdict": "C",
       "rules": 0,
       "status": "parked",
-      "park_reason": "owner escalation pending: docs/grind/decisions.md 2026-07-23 \u2014 func_80061658 (src/text1b.c) \u2014 OWNER-ESCALATION (filed by grind s4 permuter per the 2026-07-22 22:50 Judge FAIL + standing 2026-07-20 endgame-lock-disposition rule)"
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-27): constant-staging-through-reused-live-local family REFUSED (no census-established SOTN precedent); reg-2/reg-3 asm pins retained only to hold byte-match, not sanctioned"
     },
     {
       "func": "func_80061710",
@@ -2386,7 +2386,7 @@
       "verdict": "C",
       "rules": 0,
       "status": "parked",
-      "park_reason": "owner escalation pending: docs/grind/decisions.md 2026-07-23 func_80061710 OWNER-ESCALATION (subsumed by the 2026-07-23 func_80061658 OWNER-ESCALATION option (a), which names func_80061710 as a cluster member the SOTN-master census resolves)"
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-27): same disposition as sibling func_80061658 (constant-staging family REFUSED); reg-2/reg-3 asm pins retained only to hold byte-match, not sanctioned"
     },
     {
       "func": "func_80045878",
@@ -2395,7 +2395,7 @@
       "verdict": "C",
       "rules": 10,
       "status": "parked",
-      "park_reason": "owner escalation pending: docs/grind/decisions.md \u2014 2026-07-23 \u2014 func_80045878 (src/text1a_c.c) \u2014 OWNER-ESCALATION (endgame-lock reachability wall; structural s2/s3 + permuter s4/s5 all dead; scan_hand_coded LOW 0/8; options (a) canonical-asm unsupportable, (b) REFUSE -> OWNER-ACCEPTED INCOMPLETE as sibling func_800611A4)"
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-27): Gap A cse fold + Gap B local_alloc join split; 10 regfix rules retained only to hold byte-match, not sanctioned; both endgame-lock gates fail (scan LOW 0/8, no SOTN precedent)"
     },
     {
       "func": "ang_hosei_80056FE8",
@@ -2404,7 +2404,7 @@
       "verdict": "C",
       "rules": 0,
       "status": "parked",
-      "park_reason": "owner escalation pending: docs/grind/decisions.md \u2014 '2026-07-23 \u2014 ang_hosei_80056FE8 (src/text1b.c) \u2014 OWNER-ESCALATION' (filed by grind s6 forensics; endgame-lock, honest floor 9 = single <-> RA swap named at global.c find_reg, byte-match held by register-asm- pin, scan_hand_coded LOW 0/8, all sanctioned axes measured dead)."
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-27): a1<->a2 find_reg swap, no copy-preference anchor; asm reg-5 pin + sched barrier retained only to hold byte-match, not sanctioned; both endgame-lock gates fail (scan LOW 0/8, no SOTN precedent)"
     },
     {
       "func": "func_8001F938",
@@ -2413,7 +2413,7 @@
       "verdict": "C",
       "rules": 13,
       "status": "parked",
-      "park_reason": "owner escalation pending: docs/grind/decisions.md line 1474 \u2014 '## 2026-07-23 \u2014 func_8001F938 \u2014 **OWNER-ESCALATION**' (endgame-lock disposition: both AND-gates FAIL \u2014 canonical-asm scan tier LOW/no-C-form-disproven; coercion SOTN signedness-split NOT ESTABLISHED)."
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling 2026-07-27, options a+b refused): signedness-split dual-read family REFUSED (F2 census NOT ESTABLISHED); canonical-asm refused (pure-C form exists); 13 regfix rules retained only to hold byte-match, not sanctioned"
     },
     {
       "func": "func_80022F34",
@@ -2422,7 +2422,7 @@
       "verdict": "C",
       "rules": 11,
       "status": "parked",
-      "park_reason": "owner escalation pending: docs/grind/decisions.md 2026-07-23 \u2014 func_80022F34 (src/code6cac.c) \u2014 OWNER-ESCALATION (endgame-lock disposition, forensics s6)"
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-27): +8 phantom slot (combine REG_DEAD strand) \u2014 no C construct can remove a slot; 11 regfix substs retained only to hold byte-match, not sanctioned; both endgame-lock gates fail (scan LOW 1/8)"
     },
     {
       "func": "func_80048530",
@@ -2431,7 +2431,7 @@
       "verdict": "C",
       "rules": 5,
       "status": "parked",
-      "park_reason": "owner escalation pending: docs/grind/decisions.md \u2014 '2026-07-23 \u2014 func_80048530 (src/text1b.c) \u2014 OWNER-ESCALATION' (permuter modality, grind s4; both endgame-lock AND-gates fail; options a canonical-asm REFUSED, b OWNER-ACCEPTED INCOMPLETE)"
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-27): 1-insn addu operand order \u2014 only closer is FORBIDDEN or-tree-shape-shift swap; 5 regfix rules retained only to hold byte-match, not sanctioned; both endgame-lock gates fail (scan LOW 1/8)"
     },
     {
       "func": "special_camera_get_rot_dir",
@@ -2440,7 +2440,7 @@
       "verdict": "C",
       "rules": 0,
       "status": "parked",
-      "park_reason": "owner escalation pending: docs/grind/decisions.md 2026-07-23 special_camera_get_rot_dir OWNER-ESCALATION"
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-27): copy_end->s5 rotation reachable only via register pin (refused); NO cheat on main, clean floor-9 candidate retained; both endgame-lock gates fail (scan LOW 2/8, no SOTN precedent)"
     },
     {
       "func": "func_80062020",
@@ -2449,7 +2449,7 @@
       "verdict": "C",
       "rules": 0,
       "status": "parked",
-      "park_reason": "owner escalation pending: docs/grind/decisions.md \u2014 2026-07-24 \u2014 func_80062020 (src/text1b.c) \u2014 OWNER-ESCALATION (filed by grind s4)"
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-27): col-a partial-CSE closable only via same-lvalue dual-spelling (refused, no precedent); NO cheat on main, clean floor-4 candidate retained; both endgame-lock gates fail (scan LOW 0/8)"
     },
     {
       "func": "func_80072CD4",
@@ -2458,7 +2458,7 @@
       "verdict": "C",
       "rules": 9,
       "status": "parked",
-      "park_reason": "owner escalation pending: docs/grind/decisions.md \u2014 '2026-07-24 \u2014 func_80072CD4 \u2014 OWNER-ESCALATION: endgame-lock, clean floor 4 (all pure-C axes measured dead)'"
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling 2026-07-27): store-scheduling duplication outside duplicated-statement-into-arms scope (Judge FAIL 2026-07-24 upheld); NO cheat on main, clean floor-4 candidate retained"
     },
     {
       "func": "func_80017FA0",
@@ -2467,7 +2467,7 @@
       "verdict": "C",
       "rules": 6,
       "status": "parked",
-      "park_reason": "owner escalation pending: docs/grind/decisions.md 2026-07-24 \u2014 func_80017FA0 (src/code6cac.c) \u2014 OWNER-ESCALATION (filed by grind s3 structural per the standing 2026-07-20 endgame-lock-disposition rule)"
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-27): 8-byte zero-store phantom leaf frame; fully-dead-pad carrier NOT sanctioned; 6 regfix + _frame/val barriers retained only to hold byte-match, not sanctioned; both endgame-lock gates fail (scan LOW 1/8)"
     },
     {
       "func": "func_80037A20",
@@ -2476,7 +2476,7 @@
       "verdict": "C",
       "rules": 0,
       "status": "parked",
-      "park_reason": "owner escalation pending: docs/grind/decisions.md :: ## 2026-07-24 \u2014 func_80037A20 (src/code6cac_c.c) \u2014 OWNER-ESCALATION"
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-27): s0<->s1 allocno-priority swap + cse REG_WAS_0 fold (cc1psx-identical); 2 pins + opt-barrier retained only to hold byte-match, not sanctioned; both endgame-lock gates fail (scan LOW 0/8, no SOTN precedent)"
     },
     {
       "func": "special_camera_set_win_cam",
