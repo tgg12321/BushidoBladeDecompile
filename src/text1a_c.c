@@ -1013,9 +1013,9 @@ s32 calc_fc_frame(s32 src_base, s32 *dest_arr, s16 *frame_offsets) {
     s16 *fp;
     s16 *scan;
     s32 *orig_dest;
-    s32 *dest;
     s32 val;
     s32 data_ptr;
+    s32 src_orig;
     s32 sentinel;
     s32 count;
     s32 *src_ptr;
@@ -1023,10 +1023,10 @@ s32 calc_fc_frame(s32 src_base, s32 *dest_arr, s16 *frame_offsets) {
     s32 size;
 
     fp = frame_offsets;
-    orig_dest = dest_arr;
     count = 0;
     scan = fp + 1;
-    dest = dest_arr;
+    src_orig = src_base;
+    orig_dest = dest_arr;
 
     val = *fp;
     if (val != -2) {
@@ -1039,25 +1039,26 @@ s32 calc_fc_frame(s32 src_base, s32 *dest_arr, s16 *frame_offsets) {
         } while (val != -2);
     }
 
-    *dest = count;
-    dest++;
+    *dest_arr = count;
+    dest_arr++;
     src_base += 4;
     data_ptr = (s32)orig_dest + (count + 2) * 4;
 
     val = *fp;
+    fp++;
     if (val != -2) {
-        fp++;
         sentinel = -2;
         src_ptr = (s32 *)src_base;
         do {
             if (val >= 0) {
                 size = src_ptr[1];
                 start = *src_ptr;
-                *dest = data_ptr - (s32)orig_dest;
-                dest++;
+                *dest_arr = data_ptr - (s32)orig_dest;
+                dest_arr++;
                 size = size - start;
-                func_800520B8(src_base + start, data_ptr, size);
-                size = ((u32)size >> 2) << 2;
+                func_800520B8(src_orig + start, data_ptr, size);
+                size = (u32)size >> 2;
+                size = size << 2;
                 data_ptr += size;
             }
             src_ptr++;
@@ -1066,7 +1067,7 @@ s32 calc_fc_frame(s32 src_base, s32 *dest_arr, s16 *frame_offsets) {
         } while (val != sentinel);
     }
 
-    *dest = data_ptr - (s32)orig_dest;
+    *dest_arr = data_ptr - (s32)orig_dest;
     return data_ptr;
 }
 extern s16 D_8010367E;

@@ -258,17 +258,6 @@ mk_g2l: reorder 4,3 @ 3-4
 
 # calc_fc_frame: register + prologue + scheduling fixes
 # Indices are CORRECT — nop debug lines at [20] and [23] are counted as instructions
-calc_fc_frame: $20 <-> $21 @ 8-8
-calc_fc_frame: $20 <-> $21 @ 18-18
-calc_fc_frame: $4 <-> $5 @ 6-6
-calc_fc_frame: $4 <-> $5 @ 22-22
-calc_fc_frame: $4 <-> $5 @ 25-25
-calc_fc_frame: subst "\$22" "$4" @ 37
-calc_fc_frame: subst "\$2,\$16" "$16,$16" @ 49
-calc_fc_frame: subst "\$16,\$2" "$16,$16" @ 50
-calc_fc_frame: delete @ 34
-calc_fc_frame: insert "addiu $4,$4,4" @ 28
-calc_fc_frame: reorder 9,8,1,2,5,6,3,4,7 @ 1-9
 # hirahira_w_frie: move addiu s5,s4,4 from after saves to between sw s5 and sw s6
 # hirahira_w_frie: swap li s7,-2 and move s1,s5
 # hirahira_w_frie: fix srl/sll register (v0 -> s0)

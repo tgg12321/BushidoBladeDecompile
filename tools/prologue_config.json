@@ -211,27 +211,6 @@
     "sll\t$s0, $v0, 1",
     "addu\t$s0, $s0, $v0"
   ],
-  "calc_fc_frame": [
-    "addiu\t$sp, $sp, -0x38",
-    "sw\t$s4, 0x20($sp)",
-    "addu\t$s4, $a1, $zero",
-    "sw\t$s3, 0x1C($sp)",
-    "addu\t$s3, $a2, $zero",
-    "addu\t$a2, $zero, $zero",
-    "addiu\t$a1, $s3, 0x2",
-    "sw\t$s6, 0x28($sp)",
-    "addu\t$s6, $a0, $zero",
-    "sw\t$s5, 0x24($sp)",
-    "sw\t$ra, 0x30($sp)",
-    "sw\t$s7, 0x2C($sp)",
-    "sw\t$s2, 0x18($sp)",
-    "sw\t$s1, 0x14($sp)",
-    "sw\t$s0, 0x10($sp)",
-    "lh\t$v1, 0x0($s3)",
-    "addiu\t$v0, $zero, -0x2",
-    "beq\t$v1, $v0, .L800443E0",
-    "addu\t$s5, $s4, $zero"
-  ],
   "func_80044CCC": [
     "addiu\t$sp, $sp, -0x50",
     "sw\t$s0, 0x38($sp)",
