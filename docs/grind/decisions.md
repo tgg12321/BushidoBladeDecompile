@@ -2083,3 +2083,31 @@ The candidate stacks three no-semantic-purpose coercion devices on a plain strnc
 6. Cheats-by-any-spelling. Reading the candidate's diff without knowing GCC 2.7.2, a human maintainer would not write nested do-while(0) around a strncmp-style loop, would not declare two constant-holders (new_var, new_var2) whose stated purpose is codegen steering, and would not return an uninitialized local. Every one of these constructs' justification points at GCC internals rather than program logic -- the exact signal no-new-park-categories.md and inline-asm-policy label as cheat-by-spelling, regardless of whether a specific mechanical detector fires.
 
 Bytes matching + sandbox 0 + oracle SHA1 are the mechanical gates, and per policy they are not sufficient evidence of legitimacy. The candidate must not land; the ledger's own next step (a working permuter workspace + fresh-seed run) remains open and is what the standing ruling requires before any endgame escalation.
+
+## 2026-07-28 — func_80037B00 — **OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**
+
+Session 5 (permuter modality) executed the ledger's mandated next step: a working decomp-permuter workspace was built from scratch (bypassing s4's broken import.py path) via the mar_perm_workspace.sh full-TU + region-extract pattern, and a fresh-seed random-mode campaign ran for ~20 minutes over ~29,000 iterations across 4 workers with `--stack-diffs --stop-on-zero` from the pin-free candidate.c (base score 290). Result: 66 novel finds; zero score-0 closing forms; the entire low-score tail is banned by policy. Both endgame-lock gates therefore fail with no lever remaining — terminal per standing 2026-07-27.
+
+**Gate 1 (canonical-asm) — FAILS.** `scan_hand_coded` yields no S1/S2/S6 signals for func_80037B00: it is a plain strncmp-style dispatch loop (matches arg0 against each 0x15-byte D_80102810 entry, 0x28 stride) with no GTE/BIOS/hardware ops, no bit-manip constants, no unusual control flow. The construct has an obvious pure-C form and every published PS1 decomp writes this shape in C. No canonical-asm authorization is available.
+
+**Gate 2 (SOTN precedent for a sanctioned coercion covering the 5-way coupled register rotation + 8-byte phantom frame) — FAILS.** The 5-way coupled rotation (t0/v1/a1/t1/a2 → t1/a1/a2/t0/v1) is not a swap, not a shared-exit CSE join, has no jals; it does not match any of the SOTN-cited carve-out shapes (dead-store-fake-exception, named-local-fake-exception, pointer-alias-fake-exception, duplicated-statement-into-arms, exit-path-return-set-cse-join, call-return-if-result-reuse-v0, compare-operand-order-register). No SOTN in-hand file+line precedent binds for this shape.
+
+**Permuter-lever exhaustion (this session).** Fresh-seed campaign: pid 414, base_score 290, jobs 4, --stack-diffs --stop-on-zero, elapsed ~20 min wall, 29k iterations. Score distribution of the 66 novel finds (all still above sandbox-metric zero; permuter score ≠ sandbox score, but score 0 is required for a byte match):
+
+| Score | Count | Verdict |
+|---|---|---|
+| 70 | 1 | CHEAT — `short new_var; ...; return new_var;` (named-holder-local + type-narrowing) |
+| 75 | 1 | CHEAT — `short new_var; ...; new_var=0; ...; return new_var;` |
+| 90 | 1 | CHEAT — `int new_var; new_var = var_v0 <= new_var; if (new_var) goto block_end;` (named-holder guard) |
+| 95 (×2) | 2 | CHEAT — `var_t3 = 0; if (var_v0 <= var_t3)` (dead reuse of existing local as zero-holder + `var_t0 = var_a3; var_t0 = var_t0 + 0x15;` split-init) |
+| 175 | 1 | CHEAT — `var_t2 = 0` reused as zero-holder + `if (var_v1) { if (1) { goto block_74; } }` wrapper (named-local + no-semantic wrapper) |
+| 195–205 | 6 | best legitimate non-cheat forms; still ≥ 6× above the target and no byte-match candidate |
+| 210–290 | 55 | above base; noise |
+
+Every low-score form the permuter surfaced is in a family the Judge already RULED OUT for func_80037B00 (evidence.md line 70, 100, 116): "no dead-store / pointer-alias / named-local / duplicated-statement carve-out applies to the register-rotation shape here." Judge FAIL commit today at 15:50 (this file, ~2050) explicitly rejected the same named-holder + do-while(0) family. The permuter's random-mode search space, given a pin-free honest base, converges on that same forbidden family and nothing else. Banked as memory/grind/func_80037B00/rejected/permuter-named-var-guard.c / permuter-named-var-return.c / permuter-var-t3-zero-holder.c / permuter-if1-wrap-plus-named-var.c.
+
+**No remaining grindable lever.** The structural axis was exhaustively exhausted s2/s3 (7 measured killed variants + 2 measured inert across every register-alloc-pure-c Lever A/B/C/D, shared-end-label, do-while restructure, eager-both-byte-loads, statement re-association, var_v0-split, decl-reorder — all in the evidence bank). The permuter axis was the ledger's live frontier and is now measured with a fresh-seed window elapsed; its sole score-lowering direction is the banned named-holder family. This is the both-gates-fail-with-nothing-left endgame the 2026-07-27 standing ruling names.
+
+**Disposition (terminal, driver-parks; no owner action pending).** REFUSED / OWNER-ACCEPTED INCOMPLETE. HEAD's SHA1-matching form (9 register-asm pins + s32 sp_dummy[2]) is not a completion state and is not being canonicalized; it stays as-is because the oracle currently binds on it and no legitimate pure-C form has been found. The function is parked out of active grind. Eligible for re-attempt only if (a) a new SOTN precedent binds a coercion family to the 5-way coupled-rotation + phantom-frame shape, or (b) scan_hand_coded signals for this specific function ever shift into the STRONG tier.
+
+Artifacts (this session): tmp/grind/func_80037B00/s5/perm_ws/ (base.c, compile.sh, target.o + 66 output-N-K/ candidates + campaign.log). Banked cheat samples: memory/grind/func_80037B00/rejected/permuter-{named-var-return,named-var-guard,var-t3-zero-holder,if1-wrap-plus-named-var}.c. Session notes: tmp/grind/func_80037B00/s5/build_ws.sh + step.sh + diff.sh.

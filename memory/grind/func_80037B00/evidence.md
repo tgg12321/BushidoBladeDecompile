@@ -116,3 +116,23 @@ candidate.c: 23 honest insn diff, 15 weighted-masked. NOT lowered this session.
 - [s4] Standing 2026-07-27 both-gates status UNCHANGED from s3: Gate 1 (STRONG scan_hand_coded S1/S2/S6 for canonical-asm) FAILS — plain strncmp-style dispatch loop, no hand-coded signals; Gate 2 (SOTN in-hand precedent for a sanctioned coercion covering 5-way coupled register rotation) FAILS — no dead-store / pointer-alias / named-local / duplicated-statement carve-out applies. Directed permuter remains the last untried grindable lever; its exhaustion is still required before the endgame ruling can be applied.
 
 - [s4] This session did NOT run any permuter iterations — the outcome is a workspace-setup blocker, not a permuter-plateau finding. Permuter modality remains open for s5.
+
+- [s5] [s5] Baseline reaffirmed on pin-free candidate.c in src/code6cac_c.c: sandbox --disable all -> score=15, target_insns=36, build_insns=34, scorable=true, cheat_asm_stripped=8, rules_dropped=0. Identical to s2/s3/s4 floor.
+
+- [s5] [s5] Built permuter workspace at tmp/grind/func_80037B00/s5/perm_ws/ via the mar_perm_workspace.sh pattern (full-TU cpp preprocess of src/code6cac_c.c into base.c + region-extract compile.sh + r3k-prelude target.o). Bypasses s4's blocked import.py / bash pipeline issues entirely. Base.o and target.o both elf32-tradlittlemips at offset 0; diff confirms exactly the 5-way register rotation + missing 8-byte frame the ledger predicted.
+
+- [s5] [s5] Permuter campaign pid 414, label s5_pinfree_v1, 4 workers, --stack-diffs --stop-on-zero, base_score=290 (permuter-weighted metric; not comparable to sandbox 15). Launched 21:10:00 UTC, harvested/stopped ~21:30 UTC after ~20 min wall, ~29,000 iterations. 66 novel-scoring finds; ZERO score-0 closing forms.
+
+- [s5] [s5] Low-score tail is EXCLUSIVELY the named-holder-local cheat family: output-70-1 (`short new_var; ... new_var=0; return new_var`), output-75-1 (variant), output-90-1 (`int new_var; new_var=0; new_var = var_v0 <= new_var; if (new_var) goto block_end`), output-95-1 and output-95-2 (dead-reassign existing locals as zero-holders — `var_t3 = 0; if (var_v0 <= var_t3)` etc.), output-175-1 (named-local + `if (1) { }` wrapper). Every one violates no-new-park-categories 'cheats by any spelling' + the explicit Judge constraint in the session brief ('may NOT be closed via nested do-while(0) + named-holder locals'). Banked to memory/grind/func_80037B00/rejected/permuter-*.c.
+
+- [s5] [s5] Best legitimate non-cheat score achieved: 195 (six variants) — still ~20 permuter-weighted diffs above target. Base was 290; the 33% relative reduction is not a byte-match and comes from associative statement reordering that doesn't touch the register-rotation axis.
+
+- [s5] [s5] Gate 1 status (canonical-asm STRONG scan_hand_coded): FAILS. func_80037B00 is a plain strncmp-style dispatch loop over D_80102810 entries; no S1/S2/S6 signals; every PS1 decomp community example writes this shape in C.
+
+- [s5] [s5] Gate 2 status (SOTN in-hand precedent for a sanctioned coercion family covering 5-way coupled register rotation + 8-byte phantom frame): FAILS. Confirmed by evidence.md lines 70, 100, 116 across s1/s3/s4 — no dead-store / pointer-alias / named-local / duplicated-statement carve-out binds the shape. The permuter's finds prove the shape's only score-lowering direction from a pin-free honest base is the banned family.
+
+- [s5] [s5] Structural axis + permuter axis both now measured exhausted. No grindable lever remains. This is the 2026-07-27 standing-ruling terminal endgame.
+
+- [s5] [s5] docs/grind/decisions.md updated with the OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE entry naming func_80037B00 in its title. Driver parks the function; queue advances; no owner action pending.
+
+- [s5] [s5] src/code6cac_c.c reverted to HEAD (pinned form with sp_dummy) at session end. memory/grind/func_80037B00/candidate.c unchanged (pin-free form, floor 15). Four banked permuter-cheat samples added to rejected/.

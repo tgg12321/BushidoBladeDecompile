@@ -1,7 +1,7 @@
 {
  "func": "func_80037B00",
  "file": "code6cac_c",
- "session_count": 4,
+ "session_count": 5,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -33,6 +33,12 @@
    "floor": 15,
    "modality": "permuter",
    "headline": "s4 permuter modality blocked at workspace setup: maspsx crashes in compile.sh pipeline (standalone identical pipeline works); zero permuter iterations achieved; floor stays 15."
+  },
+  {
+   "session": 5,
+   "floor": 15,
+   "modality": "permuter",
+   "headline": "s5 permuter modality executed: workspace built from scratch (mar_perm3 pattern), fresh-seed 20min/29k iters over 4 workers, 66 novel finds; entire low-score tail (70/75/90/95/175) is the banned named-"
   }
  ],
  "frontier": [
