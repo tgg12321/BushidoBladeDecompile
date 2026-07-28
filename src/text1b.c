@@ -16118,12 +16118,12 @@ extern void func_8007BC08(s32);
 extern void gpu_SetDispMask(s32);
 extern void gpu_DrawSync(s32);
 s32 func_8006E10C(void) {
-    register s32 ff0 asm("$17");
-    register s32 temp_s3 asm("$19") = D_800A3500;
+    s32 ff0;
+    s32 temp_s3 = D_800A3500;
     u8 rect[8];
     s32 v0;
-    register s32 a0v asm("$4");
-    register s32 a1v asm("$5");
+    s32 a0v;
+    s32 a1v;
     s32 base;
     s32 base2;
 
@@ -16135,7 +16135,7 @@ s32 func_8006E10C(void) {
         a0v = 2;
         a1v = 7;
     }
-    ff0 = 0xF0;
+    do { ff0 = 0xF0; } while (0); /* FAKE: loop notes fence sched1's constant-sink so the li stays at the jal */
     v0 = func_80036EA8(a0v, a1v);
     replay_camera_Init(v0, D_800A3500);
     game_FrameLoop();
