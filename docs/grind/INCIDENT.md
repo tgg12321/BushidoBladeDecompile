@@ -1,51 +1,45 @@
-# GRINDER CIRCUIT-BREAK — 2026-07-21 16:14 — RESOLVED 2026-07-21
+# GRINDER CIRCUIT-BREAK — 2026-07-27 18:58
 
-**Reason:** judge unreachable/invalid after 5 attempts for cpu_get_dist
+**Reason:** 3 consecutive invalid sessions on func_80052B44
 
-**Root cause:** plan usage limit — every judge spawn died instantly with
-`429 "You've hit your session limit · resets 4pm (America/Chicago)"`
-(tmp/grind/judge_cpu_get_dist.json.agent.log). Environmental, not a pipeline
-defect; the driver's backoff (60s→960s) correctly outlasted only ~32 min, all
-inside the limit window. The s2 candidate was bytes-proven mid-flight (src +
-regfix retire state left dirty by the break, per design: candidate waits).
-
-**Recovery (operator, 2026-07-21):** fable probe OK post-4pm-reset; s2 closing
-form banked in memory/grind/cpu_get_dist/candidate.c (committed); src/regfix
-reverted to HEAD + verify-oracle green; relaunched. s3 inherits candidate.c and
-re-runs the candidate path with the judge reachable.
-
-git HEAD: 17377cb3
+git HEAD: 2d4ad890
 git status:
 ```
- M memory/grind/cpu_get_dist/candidate.c
- M metrics/events.jsonl
- M regfix.txt
- M src/code6cac_b.c
-?? memory/grind/cpu_get_dist/rejected/staged-splitinit-all-variants-27-33.c
-?? memory/grind/cpu_get_dist/rejected/store-stage-dead-var-reuse-26.c
-?? memory/grind/cpu_get_dist/rejected/wrap-alone-without-dead-store-27.c
+M  metrics/events.jsonl
 
 ```
 Last 20 log lines:
 ```
-[grind 2026-07-21 13:40:38] func_8007B844: session 5 starting, modality=permuter
-[grind 2026-07-21 13:40:38] func_8007B844: SCOPE VIOLATION —  M regfix.txt — session discarded.
-[grind 2026-07-21 13:40:38] grinder stopped.
-[grind 2026-07-21 13:40:39] grinder starting (pid 12556, model fable, judge fable)
-[grind 2026-07-21 13:40:40] pre-flight: oracle green.
-[grind 2026-07-21 13:40:40] func_8007B844: session 5 starting, modality=permuter
-[grind 2026-07-21 14:13:27] func_8007B844: progress applied — floor=6, 's5 permuter: floor 6 holds; 3 fresh-seed campaigns on never-randomized chassis (172k iters, all stopped) confirm the permuter axis dead across 5 lifetime chassis geometries — no sub-135 find has ever occurred; frontier is exclusively F2 sched-forensics + F3 cross-project research'
-[grind 2026-07-21 14:13:51] func_8007B844: session 6 starting, modality=forensics
-[grind 2026-07-21 14:40:07] func_8007B844: judge ruling PASS recorded.
-[grind 2026-07-21 14:40:30] func_8007B844: session 6 starting, modality=forensics
-[grind 2026-07-21 14:54:07] func_8007B844: MERGED — COMPLETED-C.
-[grind 2026-07-21 14:54:08] cpu_get_dist: seeded ledger from memory/wip checkpoint.
-[grind 2026-07-21 14:54:08] cpu_get_dist: session 1 starting, modality=recon
-[grind 2026-07-21 15:04:56] cpu_get_dist: progress applied — floor=15, 'Recon: floor 15 re-confirmed on main; duplicate lead killed (func_8003032C is a same-address stale twin); m2c = natural rx-first shape; fresh 15-form RTL dumps banked; rz-addend-lead swap measured KILLED at 25.'
-[grind 2026-07-21 15:05:20] cpu_get_dist: session 2 starting, modality=structural
-[grind 2026-07-21 15:42:58] judge attempt 1 returned no valid verdict; backing off 60s.
-[grind 2026-07-21 15:44:01] judge attempt 2 returned no valid verdict; backing off 120s.
-[grind 2026-07-21 15:46:04] judge attempt 3 returned no valid verdict; backing off 240s.
-[grind 2026-07-21 15:50:08] judge attempt 4 returned no valid verdict; backing off 480s.
-[grind 2026-07-21 15:58:12] judge attempt 5 returned no valid verdict; backing off 960s.
+[grind 2026-07-27 15:45:31] func_80044098: progress applied — floor=13, 'recon s1: allocno mechanism fully quantified (counter pri 26250 vs pointer 21176); counter-split axis measured dead via combine guard-fold; frontier = pointer-side byte-neutral ref lift'
+[grind 2026-07-27 15:45:55] func_80044098: session 2 starting, modality=structural
+[grind 2026-07-27 16:14:45] func_80044098: judge FAILED the candidate — constraint banked, grind continues.
+[grind 2026-07-27 16:14:46] func_80044098: session 2 starting, modality=structural
+[grind 2026-07-27 16:59:55] func_80044098: progress applied — floor=3, 'structural s2: floor 13 -> 3 — peel+hdr-split flips v1/a0, in-arm const-holder fixes v0/a1/a2; residual = 3-insn sched1 li-placement stub'
+[grind 2026-07-27 17:00:19] func_80044098: session 3 starting, modality=structural
+[grind 2026-07-27 17:34:19] func_80044098: progress applied — floor=3, 'structural s3: stub root-caused (sched.c birthing_insn_p LAUNCH boost, knob = reg_n_sets!=1); pY hdr-borrow kills the stub entirely (3 @ 26/26, exact target structure); both holder families proven 3-locked by measurement + borrow-host enumeration'
+[grind 2026-07-27 17:34:43] func_80044098: session 4 starting, modality=permuter
+[grind 2026-07-27 17:57:10] func_80044098: judge ruling FAIL recorded.
+[grind 2026-07-27 17:57:33] func_80044098: session 4 starting, modality=permuter
+[grind 2026-07-27 18:32:43] func_80044098: OWNER-GATED — parked pending owner ruling (docs/grind/decisions.md — '2026-07-27 — func_80044098 (src/text1a_c.c) — OWNER-ESCALATION' (line 1789): endgame-lock disposition per the 2026-07-27 standing both-gates-fail auto-ruling (OWNER-ACCEPTED INCOMPLETE, terminal park, re-attempt eligible), following the 17:57 Judge ruling that both gates fail).
+[grind 2026-07-27 18:32:45] func_80052B44: seeded ledger from memory/wip checkpoint.
+[grind 2026-07-27 18:32:45] func_80052B44: session 1 starting, modality=recon
+[grind 2026-07-27 18:41:51] func_80052B44: judge ruling PASS recorded.
+[grind 2026-07-27 18:42:16] func_80052B44: session 1 starting, modality=recon
+[grind 2026-07-27 18:47:40] func_80052B44: SCOPE VIOLATION —  M inline_asm_canonical.txt — session discarded.
+[grind 2026-07-27 18:48:04] func_80052B44: session 1 starting, modality=recon
+[grind 2026-07-27 18:53:08] func_80052B44: SCOPE VIOLATION —  M inline_asm_canonical.txt — session discarded.
+[grind 2026-07-27 18:53:29] func_80052B44: session 1 starting, modality=recon
+[grind 2026-07-27 18:58:55] func_80052B44: SCOPE VIOLATION —  M inline_asm_canonical.txt — session discarded.
 ```
+
+## RESOLVED — 2026-07-27 (operator)
+
+Root cause: func_80052B44 is a GTE leaf (LIBGTE-style SetRotMatrix; canonical
+gate ASM-PARTIAL, 8/14 ctc2). The Judge GRANTED canonical-body authorization
+(decisions.md 18:41 PASS) but sessions cannot edit inline_asm_canonical.txt
+(outside their allowed surface) — each attempt tripped the scope check, three
+discards, circuit-break. Operator applied the judge-authorized completion per
+the gte-wrapper auto-authorize policy (2026-05-26): glabel canonical body (with
+.set reorder/at restore tail — see canonical-asm-authorization-recipe gotcha),
+inline_asm_canonical.txt entry, fill_delay rule retired, SHA1 == oracle,
+queue done → COMPLETED-INLINE-ASM-CANONICAL. Grinder relaunched.

@@ -177,3 +177,26 @@ git commit -F tmp/msg.txt  # subject: auth: <func> (<file>.c) — COMPLETED-INLI
   vs cheat-asm
 - `[[review-discipline-before-commit]]` — cheat-reviewer required for
   `auth:` commits
+
+## Gotcha: restore assembler modes when compiled C follows the block (2026-07-27)
+
+A `glabel` whole-body block that opens with `.set noat` / `.set noreorder`
+MUST end with the matching restores after `endlabel` (both TAB and SPACE
+forms, per [[maspsx-noreorder-stripping]]):
+
+```
+    "endlabel func_XXXXXXXX\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+```
+
+Without the restore, the noreorder/noat mode LEAKS into every compiled
+function after the block in the same TU and silently changes how gas
+assembles their delay slots. Symptom (func_80052B44, 2026-07-27): the
+function itself scores sandbox-0 but the FULL build SHA1 mismatches by a few
+bytes in the NEXT function (its jr delay-slot fill flips). The display.c
+blocks that omit the restore get away with it only because another asm block
+follows immediately; never rely on that.

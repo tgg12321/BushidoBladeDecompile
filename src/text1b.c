@@ -10992,26 +10992,38 @@ void func_80052B00(s32 *matrix) {
     __asm__ volatile ("ctc2 %0, $6" :: "r"(t6));
     __asm__ volatile ("ctc2 %0, $7" :: "r"(t7));
 }
-void func_80052B44(s32 *matrix) {
-    register s32 t0 asm("$8");
-    register s32 t1 asm("$9");
-    register s32 t2 asm("$10");
-    register s32 t3 asm("$11");
-    register s32 t4 asm("$12");
-    t0 = matrix[0];
-    t1 = matrix[1];
-    t2 = matrix[2];
-    t3 = matrix[3];
-    t4 = matrix[4];
-    __asm__ volatile ("ctc2 %0, $0" :: "r"(t0));
-    __asm__ volatile ("ctc2 %0, $1" :: "r"(t1));
-    __asm__ volatile ("ctc2 %0, $2" :: "r"(t2));
-    __asm__ volatile ("ctc2 %0, $3" :: "r"(t3));
-    __asm__ volatile ("ctc2 %0, $4" :: "r"(t4));
-    __asm__ volatile ("ctc2 $0, $5");
-    __asm__ volatile ("ctc2 $0, $6");
-    __asm__ volatile ("ctc2 $0, $7");
-}
+/* func_80052B44 = LIBGTE-style SetRotMatrix + zero-translation. Loads a packed
+ * 3x3 rotation matrix (5 s32 words) from *a0 into cop2 controls CR0-CR4, then
+ * zeroes the translation vector CR5-CR7 (TRX/TRY/TRZ), the last ctc2 in the
+ * jr-ra delay slot. All cop2 + mechanical load packaging; hand-written GTE asm
+ * (prologue instruction-identical to canonical-body func_8007ED6C, display.c).
+ * Canonical-body authorized 2026-07-27 (judge PASS, docs/grind/decisions.md). */
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_80052B44\n"
+    "    lw     $t0, 0($a0)\n"
+    "    lw     $t1, 4($a0)\n"
+    "    lw     $t2, 8($a0)\n"
+    "    lw     $t3, 12($a0)\n"
+    "    lw     $t4, 16($a0)\n"
+    "    ctc2   $t0, $0\n"
+    "    ctc2   $t1, $1\n"
+    "    ctc2   $t2, $2\n"
+    "    ctc2   $t3, $3\n"
+    "    ctc2   $t4, $4\n"
+    "    ctc2   $zero, $5\n"
+    "    ctc2   $zero, $6\n"
+    "    jr     $ra\n"
+    "    ctc2   $zero, $7\n"
+    "endlabel func_80052B44\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
 void func_80052B7C(s32 *matrix5, s16 *tr3, s32 *vec, s32 *out) {
     register s32 t0 asm("$8");
     register s32 t1 asm("$9");
