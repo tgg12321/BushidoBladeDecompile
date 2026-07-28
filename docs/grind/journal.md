@@ -653,3 +653,4 @@
 - 2026-07-28 03:18 func_800200DC COMPLETED-C after 4 sessions.
 - 2026-07-28 03:25 myRobGeneiMove COMPLETED-C after 1 sessions.
 - 2026-07-28 04:03 func_8002BC68 COMPLETED-C after 1 sessions.
+- 2026-07-28 04:34 func_80037AA4 s1 [recon] floor=4: Floor 14 -> 4 pure-C (pointer-decl-first flips the a0<->v1 rename); phantom 8-byte frame proven natural (unguarded-loop stack temp), both WIP 'blockers' dissolved
