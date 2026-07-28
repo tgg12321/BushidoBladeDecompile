@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80037AA4",
-      "file": "code6cac_c",
-      "distance": 14,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_8003D330",
       "file": "code6cac_c2",
       "distance": 14,
@@ -2642,14 +2634,14 @@
     }
   ],
   "counts": {
-    "total": 321,
-    "active": 268,
+    "total": 320,
+    "active": 267,
     "by_status": {
-      "active": 268,
+      "active": 267,
       "parked": 53
     },
     "by_verdict": {
-      "C": 116,
+      "C": 115,
       "ASM-PARTIAL": 45,
       "ASM-SUSPECT": 107
     }

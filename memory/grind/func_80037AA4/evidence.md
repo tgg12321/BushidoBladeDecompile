@@ -236,3 +236,19 @@ user policy call on reconstructing an unused frame. PLUS the a0<->v1 rename.
 - [s3] instrumented cc1 with BB2_FLOW_DEBUG env hook lives at tools/gcc-2.7.2/cc1 (build/cc1 is the clean pipeline binary)
 
 - [s3] floor-4 g0 form re-verified in src at session end (sandbox 4, build 20 vs target 23)
+
+## s4 (permuter, 2026-07-28) — floor 4 -> 0; Judge PASS applied to src, candidate-ready
+
+- [s4] Prior s4 permuter campaign (g1 seed, 56 iters) found the closing form:
+  `if (var_a1 < var_a2)` orphan-slt guard (frame) + `s32 sh = 0xD` /* FAKE */
+  shift-amount constant-holder (register flip via 11 refs/17 len = pri 19411,
+  li deleted by reload constant-equivalence — corridor A reached via
+  update_equiv_regs, a family s3 never enumerated). Session emitted
+  ruling-request; Judge ruling 2026-07-28 06:28 (docs/grind/decisions.md):
+  **PASS, both constructs sanctioned** (guard = ordinary live spelling choice;
+  holder = named-local-fake-exception, SOTN cd.c new_var2 precedent).
+- [s4] This session: candidate.c applied to src/code6cac_c.c (replacing the old
+  3-pin + sp_dummy[2] form), sandbox --disable all = **0** at 23/23 insns,
+  rules_dropped 0. Artifact: tmp/grind/func_80037AA4/s4/sandbox_zero.json.
+  Outcome: candidate-ready — driver to run retire/verify-oracle/queue done per
+  the ruling's closing sentence.

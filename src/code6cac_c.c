@@ -289,17 +289,22 @@ s32 func_80037A20(s32 arg0, s32 arg1)
   return var_s1;
 }
 s32 func_80037AA4(void) {
-    s32 var_a1;
-    register s32 var_a2 asm("a2");
-    register s32 var_a0 asm("a0");
     s8 *var_v1;
-    register s32 var_v0 asm("v0");
-    s32 sp_dummy[2];
+    s32 var_a1;
+    s32 var_a2;
+    s32 var_a0;
+    s32 var_v0;
+    s32 sh; /* FAKE: shift-amount constant-holder (SOTN cd.c new_var2 shape) — survives
+               cse past the guard join, lifts var_a0 to 11 refs/17 len (pri 19411 < 20000)
+               so global-alloc assigns a0/v1 in target order; reload's constant-equivalence
+               (update_equiv_regs) then substitutes 13 and deletes the li: zero extra bytes.
+               Sanctioned per Judge ruling 2026-07-28 06:28 (docs/grind/decisions.md). */
 
+    sh = 0xD;
     var_a1 = 0;
     var_a0 = 0;
     var_a2 = D_800A38C8;
-    if (var_a2 > 0) {
+    if (var_a1 < var_a2) {
         var_v1 = (s8 *)&D_80102810;
         do {
             var_v0 = *(s32 *)(var_v1 + 0x18);
@@ -312,7 +317,7 @@ s32 func_80037AA4(void) {
     if (var_a0 < 0) {
         var_v0 = var_a0 + 0x1FFF;
     }
-    var_a0 = var_v0 >> 0xD;
+    var_a0 = var_v0 >> sh;
     return 0xF - var_a0;
 }
 s32 func_80037B00(u8 *arg0) {

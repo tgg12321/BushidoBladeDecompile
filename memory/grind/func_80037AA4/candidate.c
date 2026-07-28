@@ -1,6 +1,7 @@
-/* s4 (2026-07-28): SANDBOX 0 (23/23 insns, 0 rules, 0 cheat-asm) — pending owner
-   ruling (session emitted ruling-request; layer-1 cheat-reviewer FAIL on the guard
-   spelling, borderline-ok on the holder). Two load-bearing constructs:
+/* s4 (2026-07-28): SANDBOX 0 (23/23 insns, 0 rules, 0 cheat-asm) — Judge ruling
+   2026-07-28 06:28 (docs/grind/decisions.md): PASS, both constructs sanctioned.
+   Re-applied to src and re-verified sandbox 0 in the follow-up session
+   (tmp/grind/func_80037AA4/s4/sandbox_zero.json). Two load-bearing constructs:
 
    1. Guard `if (var_a1 < var_a2)` (a1 just zeroed; trip-0-equivalent to a2>0).
       Orphan-slt mechanism (s2, gdb-proven): expand emits a reg-reg slt pseudo;
