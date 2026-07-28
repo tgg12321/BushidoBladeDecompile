@@ -22,6 +22,14 @@
    reach bad_spill_regs (C cannot mention hard regs) — the residual is
    decided at canonical-asm-authorization time, not by more C search.
 
+## Post-ruling recon session (2026-07-28)
+
+6. **Ruling granted ⇒ applying the clobber form reproduces distance 0 on
+   main** — CONFIRMED. Judge ruling (commit 104fc679) sanctions the
+   $13-$15 clobbers for exactly this island with the mandated bytes-forced
+   comment. Applied to src/code6cac_b.c; sandbox --disable all = 0
+   (130/130, 6 rules dropped). candidate-ready.
+
 ## Frontier (for next session / owner)
 - OWNER RULING (filed via s1 outcome): may the canonical GTE-LZCS island's
   clobber list include $13-$15 (bytes-forced: the original TU mentioned

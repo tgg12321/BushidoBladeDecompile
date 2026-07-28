@@ -1,7 +1,11 @@
-/* func_8002BC68 — floor 2 (s1, uncontested form; 130/130 insns).
- * Residual: build `mfhi $13`+`sra $3,$13,5` vs target `mfhi $24`+`sra $3,$24,5`.
- * The mfhi is a RELOAD-emitted move (hi->GP); see evidence.md s1.
- * A 0-form exists (clobber-form-ruling-pending.c) awaiting owner ruling. */
+/* func_8002BC68 — SANDBOX DISTANCE 0 (130/130), post-ruling recon session
+ * 2026-07-28. This is the judge-sanctioned form (ruling commit 104fc679):
+ * GTE LZCS island clobber list extended to $12-$15, with the mandated
+ * comment stating $13-$15 are bytes-forced reconstruction (reload1.c
+ * bad_spill_regs proof). End state per ruling prerequisite (a):
+ * COMPLETED-INLINE-ASM-CANONICAL via the standard authorization recipe
+ * (inline_asm_canonical.txt entry citing the 2026-07-28 ruling) — NEVER
+ * COMPLETED-C. Applied verbatim in src/code6cac_b.c. */
 s32 func_8002BC68(s32 arg0) {
     s32 temp_a3;
     s32 temp_t1;
@@ -20,6 +24,13 @@ s32 func_8002BC68(s32 arg0) {
         var_t0 = ((u32) (*((&D_8008D118) + temp_a0))) >> 3;
     } else {
         s32 sp_tmp;
+        /* Canonical GTE LZCS island (mtc2/swc2 — no C form). The $13-$15
+         * clobbers are a bytes-forced reconstruction of the original
+         * island's register footprint (reload1.c bad_spill_regs proof,
+         * judge ruling 2026-07-28) — NOT a register pin: target's
+         * reload-emitted mfhi uses $24, which reload1.c can only pick if
+         * $13-$15 are mentioned in the RTL, and they have zero pseudo
+         * uses in target, so RTL mention is the only route. */
         __asm__ volatile(
             "addu   $t4, %1, $zero\n"
             "mtc2   $t4, $30\n"
@@ -29,7 +40,7 @@ s32 func_8002BC68(s32 arg0) {
             "swc2   $31, 0($t4)\n"
             : "=m"(sp_tmp)
             : "r"(temp_a0)
-            : "$12");
+            : "$12", "$13", "$14", "$15");
         {
             u32 v0_m = (u32)-2;
             u32 v1_m;

@@ -597,12 +597,6 @@ Pad_Prs: subst "srl\s+\$4,\$4,\$3" "srl $4,$4,$2" @ 87
 
 # func_8002BC68: same srl move (after GTE leading-zero count); reorder magic-mult
 # constant load before its subu; mfhi target $24 (t8) not $13; .L148 path uses $3 (v1) not $2 (v0)
-func_8002BC68: insert "srl $3,$3,1" @ 34
-func_8002BC68: delete @ 37
-func_8002BC68: reorder 45,46,44 @ 44-46
-func_8002BC68: subst "mfhi\s+\$13" "mfhi	$24" @ 52
-func_8002BC68: subst "sra\s+\$3,\$13,5" "sra	$3,$24,5" @ 53
-func_8002BC68: $2 <-> $3 @ 56-60
 # func_8002BEA0: srl scheduling, delay-slot reorder, mfhi $24, li/nop scheduling for /1000 divisor
 func_8002BEA0: subst "mfhi\s+\$13" "mfhi	$24" @ 52
 func_8002BEA0: subst "sra\s+\$3,\$13,5" "sra	$3,$24,5" @ 53

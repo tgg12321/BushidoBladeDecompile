@@ -75,6 +75,29 @@ Build `mfhi $13; sra $3,$13,5` vs target `mfhi $24; sra $3,$24,5`.
   ran on the hand-expanded form).
 - The clobber ruling, if granted, closes BEA0's mfhi subst pair too.
 
+## Post-ruling recon session (2026-07-28) — floor 0, candidate-ready
+
+- The owner/judge ruling REQUESTED by s1 was GRANTED (commit 104fc679,
+  "grind: func_8002BC68 judge ruling"). Binding constraints: scope is
+  exactly the two LZCS islands (BC68 + BEA0); end state MUST be
+  COMPLETED-INLINE-ASM-CANONICAL via the standard authorization recipe
+  (inline_asm_canonical.txt entry citing the ruling), never COMPLETED-C;
+  the asm block's comment must state $13-$15 are bytes-forced
+  reconstruction of the original island's register footprint (reload1.c
+  bad_spill_regs proof, judge ruling 2026-07-28); no precedent for other
+  clobber-list extensions.
+- Applied candidate.c body + `"$12","$13","$14","$15"` clobbers + the
+  mandated comment to src/code6cac_b.c (replacing the HEAD raw-.word +
+  t4-pin + do-while-0 form).
+- canonical: ASM-PARTIAL 2/130 (mtc2/swc2), unchanged.
+- sandbox --disable all: **score 0, 130/130**, rules_dropped 6,
+  cheat_asm_stripped 366. Artifact:
+  tmp/grind/func_8002BC68/s1/sandbox_zero_post_ruling.json.
+- Remaining (driver/authorization side, not grind): retire the 6
+  regfix/asmfix rules + inline_asm_canonical.txt entry citing the ruling
+  → COMPLETED-INLINE-ASM-CANONICAL. Same ruling closes BEA0's mfhi subst
+  pair (separate function, out of this session's scope).
+
 ## Artifacts (s1)
 - tmp/grind/func_8002BC68/s1/bc68.i.greg (+ .lreg/.sched2 etc.) — RTL dumps
 - tmp/grind/func_8002BC68/s1/build.txt / target.txt / diff.sh — insn diffs
