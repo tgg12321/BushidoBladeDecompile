@@ -85,3 +85,33 @@
 - probe: s3: h2c -- replaced then-arm `D_800A34F8 = a0 & 0xFFFF1FFF;` with `u32 t1 = ...; D_800A34F8 = t1;`. sandbox.
 - result: score 6 unchanged (temp DCE'd as expected)
 - verdict: KILLED
+
+## [s4] H4a: subu algebraic mask (`var_v1 = a0 - (a0 & 0xE000)`) in else arms produces same value while reusing pre-compared $v1, flipping reorg fill priority to close residual.
+- mechanism: a - (a & M) == a & ~M when subtracted bits are all within M (no borrow). Reusing $v1 saves a lui birth; if fill_from_thread then falls back to else-arm's other candidates, delay-slot fill may shift to target's shape.
+- probe: s4: replaced both else arm mask compute with `a0 - (a0 & 0xE000)`; sandbox --disable all.
+- result: score 6 -> 17 REGRESSED. Reuse of $v1 killed the fresh lui birth AND destroyed the h2a store-source $v1 alignment (sw-source-reg divergence lost).
+- verdict: KILLED
+
+## [s4] H4b: XOR algebraic mask (`var_v1 = a0 ^ (a0 & 0xE000)`) is algebraically identical to H4a and may emit differently through combine.c.
+- mechanism: combine.c may or may not fold XOR-with-and back to and-with-not; if it emits xor primitive, RTL shape differs from subu and may steer reorg differently.
+- probe: s4: replaced both else arm mask compute with `a0 ^ (a0 & 0xE000)`; sandbox --disable all.
+- result: score 6 -> 17 REGRESSED. combine folds identically to subu form; same failure mode.
+- verdict: KILLED
+
+## [s4] H4c: duplicated-statement-into-arms per rule: inline `func_8005C650(0,0x7F,0x7F); break;` directly in each case removing the shared `do_call:` label to change register-allocation cascade upstream.
+- mechanism: Duplicated jals may re-merge via cross-jump but the intermediate RA pass sees two independent successor blocks and may re-color var_v0/var_v1 pseudos differently, potentially preserving the h2a store-source $v1 alignment while adding surface for reorg to flip fill choice.
+- probe: s4: replaced `goto do_call; ... do_call: func_8005C650(0,...); break;` with per-case inline `func_8005C650(0,...); break;`. Sandbox --disable all.
+- result: score 6 -> 14 REGRESSED. Jump2 does re-merge the jal sites but the RA cascade shifts adversely; h2a store-source $v1 alignment lost.
+- verdict: KILLED
+
+## [s4] H4d/H4e: shift-form then-arm mask (`(a0 & 0xFFFF0000) | ((a0 << 19) >> 19)`) emits `andi/sll/srl/or` instead of `lui/ori/and`, removing the then-arm's lui candidate and forcing reorg dead-branch fill from else-arm's `lui $v1`.
+- mechanism: If then-arm's first insn is not a lui, fall-through fill can't pick a lui; the only lui candidate is else-arm's `lui $v1` (dead-branch fill), which matches target.
+- probe: s4: applied to case-1 then only (H4d) and both cases (H4e). Sandbox --disable all.
+- result: H4d 6 -> 7; H4e 6 -> 8. combine.c either folds the shift form back to lui/ori/and OR emits enough extra insns that fill priority doesn't flip AND per-arm mask insn count grows.
+- verdict: KILLED
+
+## [s4] H4perm: directed PERM_GENERAL permuter campaign with fresh seeds finds a non-cheat closing form.
+- mechanism: The permuter's random-mode search over PERM_GENERAL-decorated mask/shift compute in both else arms may reach a spelling that closes the residual without the split-load-anchor idiom.
+- probe: s4: launched s4-PERMGEN-fresh (6 jobs, --stack-diffs, base_score 235, PERM_GENERAL macros around per-arm mask and shift compute). Ran ~6 min / 14067 iters across 4 wait windows.
+- result: 5 novel finds (output-115-3, 205-1, 175-2, 155-5, 220-3) — every one a variant of the forbidden split-load-anchor pattern (`var_v1 = 0xFFFF1FFF; var_v1 = a0 & var_v1;`, `var_v1 = a0 & (v = 0xFFFF1FFF);`, `new_var3 = 13; var_v0 = new_var3; var_v0 = ((a0 >> var_v0) & 7) - 1;`). Rejected per Judge s3-BINDING (no-new-park-categories §Auto-search tools output is PROPOSALS). Pre-s4 campaign at 29388 iters converged to identical family. Cheat basin is the closing-form center of mass.
+- verdict: KILLED

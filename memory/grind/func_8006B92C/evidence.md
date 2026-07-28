@@ -96,3 +96,35 @@ Same shape mirrored in case 2 (`.L8006B9D8` vs build). The 4-insn shortfall is e
 - [s3] [s3] h2b (branch-sense flip) reproduces s2 h1c's failure mode -- KILLED family. Not attempted again with different scaffolding since h2a base already flipped from raw h1c's shape (h1c also removed shared do_call; h2b kept it and still regressed hard due to jump-threading).
 
 - [s3] [s3] artifacts: tmp/grind/func_8006B92C/s3/build_baseline.txt (score 10), build_h2a.txt + build_h2a_final.txt (score 6)
+
+- [s4] [s4] baseline: applied s3 candidate to src, sandbox --disable all -> score 6 target_insns 143 build_insns 141 (unchanged from s3)
+
+- [s4] [s4] H4a (subu algebraic: `var_v1 = a0 - (a0 & 0xE000)` in else arms). Algebraically equivalent to `a0 & 0xFFFF1FFF` (subtracts exactly the bits within 0xE000). Result: score 6 -> 17 REGRESSED. Mechanism: reuses the pre-compared `$v1 = a0 & 0xE000` -- no fresh lui $v1 birth -> no dead-branch-fillable lui candidate. Also destroys the sw-source-reg divergence that H1d/h2a preserved. KILLED.
+
+- [s4] [s4] H4b (XOR algebraic: `var_v1 = a0 ^ (a0 & 0xE000)` in else arms). Algebraically identical to H4a (XOR affects only bits within the mask, both zero out). Result: score 6 -> 17 REGRESSED. Same mechanism as H4a: reuse of $v1 kills the fresh lui birth. KILLED.
+
+- [s4] [s4] H4c (duplicated-statement-into-arms per rule: put `func_8005C650(0,0x7F,0x7F); break;` directly in each case instead of the shared `do_call:` label). Result: score 6 -> 14 REGRESSED. Mechanism: jump2 re-merges the duplicated jal sites since args are byte-identical, but the register-allocation cascade upstream shifts (var_v0/var_v1 pseudos re-prioritize) and undoes the h2a store-source $v1 alignment. Byte-neutrality NOT preserved for this func's cross-jump interaction. KILLED.
+
+- [s4] [s4] H4d/H4e (shift-form then-arm mask: `(a0 & 0xFFFF0000) | ((a0 << 19) >> 19)` replacing `a0 & 0xFFFF1FFF` in case-1 then arm only / both then arms). Intent: emit `andi/sll/srl/or` (no lui) in then arms so reorg loses the fall-through `lui $v0` fill candidate and falls back to else's `lui $v1`. Result: score 6 -> 7 (H4d) / 6 -> 8 (H4e) REGRESSED. combine.c either folds the shift form back to `lui+ori+and` or emits enough extra insns that fill priority doesn't flip AND the mask-insn count grows. KILLED.
+
+- [s4] [s4] Permuter campaign s4-PERMGEN-fresh (14067 iters, ~6 min, 6 jobs, PERM_GENERAL macros around per-arm mask + shift compute in both else arms). All 5 novel finds this campaign (output-115-3, 205-1, 175-2, 155-5, 220-3) are variants of the forbidden split-load-anchor cheat: (a) `var_v1 = 0xFFFF1FFF; var_v1 = a0 & var_v1;`, (b) `var_v1 = a0 & (v = 0xFFFF1FFF);` from an earlier campaign run, (c) `new_var3 = 13; var_v0 = new_var3; var_v0 = ((a0 >> var_v0) & 7) - 1;` (same reg_n_sets-bump pattern on the shift count). All rejected per Judge s3-BINDING constraint (no-new-park-categories §"Auto-search tools ... output is PROPOSALS"). No non-cheat closing form was surfaced. Prior campaign (pre-s4) at 29388 iters converged on identical family.
+
+- [s4] [s4] scan_hand_coded.py --single func_8006B92C: HAND_CODED tier=LOW score=0/8 (no S1/S2/S6 STRONG signals). Standing-ruling Gate 1 FAILS.
+
+- [s4] [s4] Standing-ruling Gate 2 (SOTN precedent for the specific dual-lui + fill-priority + reg_n_sets closing family with pure-C annotation) NOT identified. cross-jump-store-tail-merge rule's own text names saEft00Add as a "documented coupled fixpoint" precedent internal to BB2 (not SOTN). No citable SOTN master-branch precedent that legitimately reproduces the reg_n_sets-driven fresh-lui + dual-store shape without the split-load-anchor idiom.
+
+- [s4] [s4] artifacts: tmp/grind/func_8006B92C/s4/baseline_s3_body.c; permuter/func_8006B92C/output-* (20 pre-s4 + 5 s4-new, all cheat-basin); memory/grind/func_8006B92C/rejected/{h4a_subu_algebraic.c, h4b_xor_algebraic.c, h4c_dup_do_call.c, h4d_shift_mask_thenarm.c, s4_perm_split_init_115.c, s4_perm_new_var3_shift_const.c}.
+
+- [s4] s4 baseline: applied s3 candidate to src, sandbox --disable all -> score 6, target_insns 143, build_insns 141 (unchanged from s3).
+
+- [s4] scan_hand_coded --single func_8006B92C: tier=LOW score=0/8 (no S1/S2/S6 STRONG signals). Standing-ruling Gate 1 FAILS.
+
+- [s4] No citable SOTN master-branch precedent for the specific dual-lui + reorg-fill-priority + reg_n_sets closing shape without the split-load-anchor idiom. cross-jump-store-tail-merge.md names saEft00Add as internal 'documented coupled fixpoint' precedent for OPEN, not closed. Standing-ruling Gate 2 FAILS.
+
+- [s4] H4a subu / H4b XOR / H4c dup-do-call / H4d,H4e shift-mask: 4 legitimate axes measured, all regressed vs floor=6. KILLED with sandbox measurements banked in rejected/.
+
+- [s4] Fresh-seed permuter (14067 iters this session; 29388 pre-s4): only surfaced Judge-bound split-load-anchor variants. Prior s4 attempts (Judge FAILs 18:00 and 18:26) explicitly ruled this family cheat-by-any-spelling.
+
+- [s4] Src state restored to s3 h2a baseline (src/text1b.c:15695-15761): score 6, no pins, no cheat-asm, no rules.
+
+- [s4] docs/grind/decisions.md updated with OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27) entry naming func_8006B92C.

@@ -1,8 +1,8 @@
 {
  "func": "func_8006B92C",
  "file": "text1b",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -21,6 +21,12 @@
    "floor": 6,
    "modality": "structural",
    "headline": "Structural split-init `var_v1 |=` at complete_store dropped floor 10 -> 6; forces GCC to reuse var_v1's register for final OR while preserving per-arm mask compute."
+  },
+  {
+   "session": 4,
+   "floor": 6,
+   "modality": "permuter",
+   "headline": "s4 permuter: 4 legit axes measured dead + fresh-seed campaign converged on Judge-bound split-load-anchor family; both endgame gates fail per 2026-07-27 standing ruling."
   }
  ],
  "frontier": [

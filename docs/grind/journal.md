@@ -677,3 +677,5 @@
 - 2026-07-28 17:04 func_8006B92C s1 [recon] floor=15: Baseline 15; residue localized to cross-jump-store-tail-merge on switch(ret) arms + missing dead-branch-sched lui $v1
 - 2026-07-28 17:22 func_8006B92C s2 [structural] floor=10: Structural mix: shared do_call + shared complete_store dropped 3 stores to sw-source-reg divergence; floor 15->10, 3-insn shortfall remains on per-arm mask hoist.
 - 2026-07-28 17:32 func_8006B92C s3 [structural] floor=6: Structural split-init `var_v1 |=` at complete_store dropped floor 10 -> 6; forces GCC to reuse var_v1's register for final OR while preserving per-arm mask compute.
+- 2026-07-28 18:26 func_8006B92C: judge FAILED a bytes-proven candidate — The candidate closes the residual by decomposing `var_v1 = a0 & 0xFFFF1FFF;` into two statements — `var_v1 = 0xFFFF1FFF;
+- 2026-07-28 18:59 func_8006B92C s4 [permuter] STANDING RULING (2026-07-27) applied — OWNER-ACCEPTED INCOMPLETE: s4 permuter: 4 legit axes measured dead + fresh-seed campaign converged on Judge-bound split-load-anchor family; both endgame gates fail per 2026-07-27 standing ruling.
