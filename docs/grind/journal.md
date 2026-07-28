@@ -676,3 +676,4 @@
 - 2026-07-28 16:57 func_800871D4 s2 [structural] STANDING RULING (2026-07-27) applied — OWNER-ACCEPTED INCOMPLETE: Both endgame-lock gates fail (scan_hand_coded tier=LOW 0/8; negative BB2 sibling census, no cited SOTN precedent); structural axis exhausted at floor=10; standing 2026-07-27 ruling: REFUSED / OWNER-ACCEPTED INCOMPLETE, terminal, driver-parks.
 - 2026-07-28 17:04 func_8006B92C s1 [recon] floor=15: Baseline 15; residue localized to cross-jump-store-tail-merge on switch(ret) arms + missing dead-branch-sched lui $v1
 - 2026-07-28 17:22 func_8006B92C s2 [structural] floor=10: Structural mix: shared do_call + shared complete_store dropped 3 stores to sw-source-reg divergence; floor 15->10, 3-insn shortfall remains on per-arm mask hoist.
+- 2026-07-28 17:32 func_8006B92C s3 [structural] floor=6: Structural split-init `var_v1 |=` at complete_store dropped floor 10 -> 6; forces GCC to reuse var_v1's register for final OR while preserving per-arm mask compute.

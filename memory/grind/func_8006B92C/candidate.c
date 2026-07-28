@@ -1,5 +1,8 @@
-/* s2 candidate — floor 10 (was 15). Structural: shared do_call + shared complete_store.
- * H1d shape. Pin removed. */
+/* s3 candidate — floor 6 (was 10). Structural: split-init `|=` at complete_store
+ * forces GCC to reuse var_v1's register for the final OR while keeping per-arm
+ * mask compute. Breaks the H1e coupling by reassigning through the SAME lvalue
+ * rather than a fresh temp; GCC keeps the OR result in $v1 (matching target).
+ */
 extern u32 D_800A34F8;
 extern s32 D_800A350C;
 s32 func_8006B92C(s32 *unused, u32 *arg1) {
@@ -7,6 +10,7 @@ s32 func_8006B92C(s32 *unused, u32 *arg1) {
     s32 ret;
     s32 idx;
     s32 var_v0;
+    u32 var_v1;
     s32 var_s0 = 0;
     u32 v;
     u32 a0;
@@ -20,6 +24,7 @@ s32 func_8006B92C(s32 *unused, u32 *arg1) {
         if ((a0 & 0xE000) == 0x4000) {
             D_800A34F8 = a0 & 0xFFFF1FFF;
         } else {
+            var_v1 = a0 & 0xFFFF1FFF;
             var_v0 = ((a0 >> 13) & 7) + 1;
             goto complete_store;
         }
@@ -29,9 +34,11 @@ s32 func_8006B92C(s32 *unused, u32 *arg1) {
         if ((a0 & 0xE000) == 0) {
             D_800A34F8 = (a0 & 0xFFFF1FFF) | 0x4000;
         } else {
+            var_v1 = a0 & 0xFFFF1FFF;
             var_v0 = ((a0 >> 13) & 7) - 1;
         complete_store:
-            D_800A34F8 = (a0 & 0xFFFF1FFF) | ((var_v0 & 7) << 13);
+            var_v1 |= ((var_v0 & 7) << 13);
+            D_800A34F8 = var_v1;
         }
     do_call:
         func_8005C650(0, 0x7F, 0x7F);

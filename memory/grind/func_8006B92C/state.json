@@ -1,7 +1,7 @@
 {
  "func": "func_8006B92C",
  "file": "text1b",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,23 +15,29 @@
    "floor": 10,
    "modality": "structural",
    "headline": "Structural mix: shared do_call + shared complete_store dropped 3 stores to sw-source-reg divergence; floor 15->10, 3-insn shortfall remains on per-arm mask hoist."
+  },
+  {
+   "session": 3,
+   "floor": 6,
+   "modality": "structural",
+   "headline": "Structural split-init `var_v1 |=` at complete_store dropped floor 10 -> 6; forces GCC to reuse var_v1's register for final OR while preserving per-arm mask compute."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Split-init / staged-value the shared complete_store so the final OR result register naturally lands in $v1 (matching target) EVEN with per-arm var_v1 mask compute \u2014 breaking the H1e coupling",
-   "mechanism": "target's shared block ends `or v1,v1,v0; sw v1`. If C is written so var_v1 holds the mask and the final OR is `var_v1 = var_v1 | ((var_v0 & 7) << 13); D_800A34F8 = var_v1;`, GCC may keep result in $v1 (reusing var_v1's register), preserving the sw-source-reg divergence H1d relies on while ALSO forcing per-arm mask compute.",
-   "next_probe": "s3 try: declare `u32 var_v1;` and write shared block as two statements `var_v1 = var_v1 | ((var_v0 & 7) << 13); D_800A34F8 = var_v1;` with per-arm `var_v1 = a0 & 0xFFFF1FFF;`. Measure sandbox; if score drops below 10, iterate the mask-source register choice"
+   "hypothesis": "Force reorg.c to prefer dead-branch fill (else-arm's lui $v1) over fall-through fill (then-arm's lui $v0) in each case's if -- adds the 2 missing insns AND fixes the register substitution cascade in one lever, closing floor 6 -> ~0/1.",
+   "mechanism": "reorg.c fill_slots_from_thread evaluates both fill candidates; picks based on cost + reg-liveness. Making then-arm's first insn ineligible for fill (e.g., non-hoistable, sched-anchored) forces else-arm insn to win. Candidates: (a) precompute the then-arm mask address as a stack-anchored expression; (b) make then-arm's first insn depend on something reorg won't hoist across a call boundary.",
+   "next_probe": "s4: try (a) writing then-arm as `D_800A34F8 = a0 - (a0 & 0xE000);` (algebraic equivalent -- a0 & 0xFFFF1FFF is a0 with top 3 of low 16 cleared, and 0xE000 has already been ANDed and compared, so subtraction is equivalent when the compare succeeded). Different RTL shape -> different fill priority. If regresses, try (b) explicit `t = a0 << 16 >> 16 | (a0 & 0xFFFF0000)`-style spelling that emits `sll+srl+or` instead of `lui+ori+and` -- forces then-arm to not need the lui at all, freeing the delay slot for dead-branch fill of else."
   },
   {
-   "hypothesis": "Break jump2's find_cross_jump on the two else-arm tails at .L8006BA1C by making case-1-else and case-2-else compute delta into different intermediate variables before joining, so target's shared 5-insn suffix survives while the pre-suffix per-arm compute differs enough",
-   "mechanism": "target's case-1-else ends `j .L8006BA1C; addiu v0,v0,1` and case-2-else falls-through with `addiu v0,v0,-1`. The shared block is only `andi/sll/or/sw + j do_call/addu`. If GCC compiles two paths with same var_v0 with the +1 vs -1 as the delta right before the join, the merge naturally lands at target's boundary.",
-   "next_probe": "s3: try writing case-1-else and case-2-else with the completion inline (no goto to shared) but structured so jump2's cross-jump merges only the final 5 insns not more; may require making the two else-arms' pre-suffix code non-identical (e.g. explicit intermediate names)."
+   "hypothesis": "Directed-PERM permuter from h2a base can find the exact spelling that produces target's dual-lui + $v1-substitution pattern within the C-source degrees of freedom, per the cross-jump-store-tail-deep-dive precedent (V2b + inline_ret_mode dropped saEft00Add 15->8 via a shape not enumerated by manual variants).",
+   "mechanism": "Same trilemma family as saEft00Add (documented in cross-jump-store-tail-deep-dive): unmerged tails / JF-LOOP-safe eager fills / v0 reuse are coupled. h2a already achieves 2 of 3; the third (dual-lui with correct reg subst) may be reachable via a spelling reorderingthat permuter can find but hand-enumeration missed.",
+   "next_probe": "s4: seed permuter/func_8006B92C/ with h2a base + PERM_GENERAL and PERM_RANDOMIZE_TYPE macros around the switch arms; run ~20-30k iters with fresh seeds per permuter-fresh-seed-discipline; target sandbox 0-2. If plateau at 4-6 with no closer, escalate as documented coupled fixpoint (do NOT owner-gate -- floor still dropping counts as grindable)."
   },
   {
-   "hypothesis": "The remaining 3-insn deficit is a coupled reorg.c \u2a2f jump2 cross_jump trilemma (as documented for saEft00Add in [[cross-jump-store-tail-deep-dive]]) \u2014 the sw-source-reg-divergence lever + per-arm-mask-compute lever are mutually exclusive at H1d's shape.",
-   "mechanism": "same trilemma family as saEft00Add: unmerged tails \u2a2f JF-LOOP-safe eager fills \u2a2f v0 reuse \u2014 any two exclude the third",
-   "next_probe": "s3 read memory/project/cross-jump-store-tail-deep-dive.md and check whether that saEft00Add investigation's V2b / inline_ret_mode variant analogues apply here; if so, may be reachable to ~5 but the exact-0 form likely requires permuter directed-PERM_* macro search"
+   "hypothesis": "Statement-reassociation of the else-arm mask `a0 & 0xFFFF1FFF` (e.g. `~(a0 & 0xE000) & a0` or the algebraic `a0 - (a0 & 0xE000)`) may emit different RTL that steers reorg to different fill decisions.",
+   "mechanism": "Same underlying value but different combine.c intermediate forms -- combine may or may not fold to the same lui+ori+and depending on the input tree shape. If it emits e.g. andi+not+and or sub-based, the lui is gone and delay-slot fill changes fundamentally.",
+   "next_probe": "s4: try (i) `var_v1 = a0 - (a0 & 0xE000);` in else arms (algebraic equiv when the else-branch was taken from `(a0 & 0xE000) == 0x4000` false OR `(a0 & 0xE000) == 0` false -- wait, algebraic equivalence needs proof); (ii) `var_v1 = a0 ^ (a0 & 0xE000);` (same via xor); (iii) narrow-integer-type on var_v1 (u16 halfword form). Measure each."
   }
  ],
  "judge_constraints": [],

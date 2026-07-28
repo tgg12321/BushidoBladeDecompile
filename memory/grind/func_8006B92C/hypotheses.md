@@ -67,3 +67,21 @@
 - probe: sandbox
 - result: score 15
 - verdict: KILLED
+
+## [s3] Split-init form `var_v1 = a0 & 0xFFFF1FFF; ... var_v1 |= ((var_v0 & 7) << 13); D_800A34F8 = var_v1;` breaks the H1e coupling: reassigning through the SAME lvalue keeps the OR result in $v1 (not $v0), preserving sw-source-reg divergence AND per-arm mask compute simultaneously.
+- mechanism: H1e wrote `D_800A34F8 = var_v1 | ...` in one statement -- GCC treats the OR result as a fresh pseudo which allocno gets $v0 (both operands live). Rewriting as `var_v1 |= ...` reuses var_v1's home register ($v1) for the result. Store then uses $v1 -- matches target's shared complete_store sw source.
+- probe: s3: h2a edit -- add `u32 var_v1;` decl + per-arm `var_v1 = a0 & 0xFFFF1FFF;` in else arms + rewrite complete_store as `var_v1 |= ((var_v0 & 7) << 13); D_800A34F8 = var_v1;`. sandbox --disable all.
+- result: score 10 -> 6, build_insns 140 -> 141, per-arm mask compute preserved, shared complete_store's sw source is $v1 (matches target)
+- verdict: CONFIRMED
+
+## [s3] Flipping branch sense (`==` -> `!=`) to invert taken/fall-through so reorg dead-branch-fills the delay slot with else-arm's `lui $v1` regresses hard from h2a base (same family as s2 h1c).
+- mechanism: Intended: `!= 0x4000` makes then-arm the taken path, else the fall-through; reorg should then fill delay slot with else's lui $v1 (matching target). Actual: GCC jump-threading collapses the != form to a different bne+j shape that breaks shared do_call and duplicates jal sites.
+- probe: s3: h2b_branch_sense_flip_from_h2a -- from h2a base, flipped both `==` compares to `!=` with then/else swap. sandbox.
+- result: score 26 (regressed from 6, +20 insns cascade). Consistent with s2 h1c KILLED.
+- verdict: KILLED
+
+## [s3] Introducing a fresh temp `u32 t1 = a0 & 0xFFFF1FFF; D_800A34F8 = t1;` in the then arm does not disrupt delay-slot merging.
+- mechanism: Hoped: extra local would force GCC to allocate a distinct pseudo for then-arm's mask, preventing lui-share via delay-slot fill. Actual: temp DCE'd -- semantically identical to direct store, same RTL.
+- probe: s3: h2c -- replaced then-arm `D_800A34F8 = a0 & 0xFFFF1FFF;` with `u32 t1 = ...; D_800A34F8 = t1;`. sandbox.
+- result: score 6 unchanged (temp DCE'd as expected)
+- verdict: KILLED

@@ -82,3 +82,17 @@ Same shape mirrored in case 2 (`.L8006B9D8` vs build). The 4-insn shortfall is e
 - [s2] Second `switch(idx)` post-jal region is unchanged and matches; residual is entirely in the pre-jal switch(ret) region.
 
 - [s2] Artifacts: tmp/grind/func_8006B92C/s2/build_h1a.txt (H1a=17 disasm), build_h1b.txt (H1b=19), build_h1d_final.txt (H1d=10, best), build_h1e_v2.txt (H1e=15 regressed)
+
+- [s3] [s3] baseline (applied s2 candidate.c to src): score=10, target_insns=143, build_insns=140
+
+- [s3] [s3] h2a split-init |=: score=6, build_insns=141 (added var_v1 decl + per-arm `var_v1 = a0 & 0xFFFF1FFF;` + `var_v1 |= ...; D_800A34F8 = var_v1;` at complete_store)
+
+- [s3] [s3] Comparing h2a build (tmp/grind/func_8006B92C/s3/build_h2a_final.txt) vs target (asm/funcs/func_8006B92C.s): shared complete_store now matches target byte-for-byte (`andi v0; sll v0; or v1,v1,v0; sw v1,gp` -- source $v1). Per-arm mask compute matches structurally in else arms.
+
+- [s3] [s3] Residual 6 = 2 insns length + ~4 register substitutions. Target has TWO `lui 0xFFFF` per case (one for else-arm mask in delay slot via dead-branch-scheduling, one redundant for then-arm mask); build shares ONE lui $v0 in delay slot (fall-through fill for then arm) that both then and else reuse. Register subst: target's else uses $v1 for mask ori (from delay-slot lui $v1); build's else uses $v0 (from shared lui).
+
+- [s3] [s3] Fill-priority root: reorg.c fill_from_thread picks then-arm's `lui $v0` (fall-through fill) over else-arm's `lui $v1` (dead-branch fill) because fall-through comes first in the priority order when both regs are dead on the opposite thread. No pure-C structural lever tested this session flips the choice (h2b `!=` broke shared do_call; h2c temp was DCE'd).
+
+- [s3] [s3] h2b (branch-sense flip) reproduces s2 h1c's failure mode -- KILLED family. Not attempted again with different scaffolding since h2a base already flipped from raw h1c's shape (h1c also removed shared do_call; h2b kept it and still regressed hard due to jump-threading).
+
+- [s3] [s3] artifacts: tmp/grind/func_8006B92C/s3/build_baseline.txt (score 10), build_h2a.txt + build_h2a_final.txt (score 6)
