@@ -1,33 +1,49 @@
-/* floor=4 (s1, re-verified s2 2026-07-28). Pure C, no pins, no dummy. Residual =
-   the phantom 8-byte frame only (addiu sp,-8/+8 + final jr-delay nop; build 20
-   vs target 23 insns). Loop, tail, and ALL register assignments match target.
-   s1 lever: POINTER DECLARED FIRST flips the a0<->v1 rename (works here because
-   sum 10/15 and p 7/7 allocno priorities TIE at 20000 and the tie-break picks
-   the lower pseudo number = the pointer).
-   s2: the frame IS naturally inducible — guard spelled `if (var_a1 < var_a2)`
-   orphans an slt pseudo that reload gives a dead 4-byte slot (vars=8, all 23
-   insns, sandbox 11) — but the orphan's cse-canonicalized operand charges sum
-   +1 ref (11/15 = 22000 > 20000), un-tying the priorities and swapping
-   sum<->p ($3/$4) throughout. See rejected/orphan-guard-sum-p-swap.c and
-   evidence.md s2 for the full arithmetic + the len>=17 flip condition.
-   s3: the flip WAS achieved at cc1 level (rejected/else-dup-join-split-4.c:
-   vars=8 + all target registers, sandbox 4 with a 2-insn insertion residual);
-   combine proven to DECREMENT live_length (s2 deleted-insn premise dead);
-   every structural corridor to sum-pri<=20000-with-zero-extra-bytes measured
-   walled (tree-fold/cse chain folds, $2-steal on fresh bb0 pseudos, cse
-   skip-path const-fold vs cross-jump, canonical-steering uid wall/queue-jump).
-   Remaining: permuter blind search, then endgame-lock escalation. */
+/* s4 (2026-07-28): SANDBOX 0 (23/23 insns, 0 rules, 0 cheat-asm) — pending owner
+   ruling (session emitted ruling-request; layer-1 cheat-reviewer FAIL on the guard
+   spelling, borderline-ok on the holder). Two load-bearing constructs:
+
+   1. Guard `if (var_a1 < var_a2)` (a1 just zeroed; trip-0-equivalent to a2>0).
+      Orphan-slt mechanism (s2, gdb-proven): expand emits a reg-reg slt pseudo;
+      cse folds the operand; combine folds slt+branch -> blez, orphaning the
+      pseudo; reload1.c alter_reg gives it a dead 4-byte slot -> the target's
+      8-byte no-store frame (addiu sp,-8/+8 + final nop) arises naturally.
+      Reviewer position: unenumerated frame-fabrication family, needs ruling.
+      Worker position: ordinary two-variable compare, plausibly the original
+      spelling (the original source DID produce vars=8 somehow), same class as
+      sanctioned spelling-choice techniques.
+
+   2. `s32 sh = 0xD` shift-amount constant-holder, /* FAKE */-annotated —
+      named-local-fake-exception family (owner ruling 2026-07-01; SOTN
+      src/dra/cd.c ships `new_var2 = 6` used once as a shift amount).
+      Mechanism (s4, dump-proven in tmp/grind/func_80037AA4/s4/dump_mE/):
+      the holder's li survives cse (guard JOIN blocks const-prop — same-bb
+      forms were cse-folded in s3), so global-alloc sees sum at 11 refs/17
+      live-length = pri 19411 < pointer 20000 -> target allocation (sum=$4,
+      p=$3); then local-alloc update_equiv_regs marks the single-def pseudo
+      == const 13 and reload substitutes it into the ashrsi3 and deletes the
+      li — zero extra bytes (.combine shows reg-form sra, .greg shows
+      const_int 13). This is s3's corridor A (post-greg-deleted sum-live
+      insns) reached via reload constant-equivalence, a family s3 never
+      enumerated.
+
+   Found by permuter campaign (g1 seed, 56 iters), minimized from 3 mutations
+   to 1 (pointer-temp + dup-return measured inert). */
 s32 func_80037AA4(void) {
     s8 *var_v1;
     s32 var_a1;
     s32 var_a2;
     s32 var_a0;
     s32 var_v0;
+    s32 sh; /* FAKE: shift-amount constant-holder (SOTN cd.c new_var2 shape) — survives
+               cse past the guard join, lifts var_a0 to 11 refs/17 len (pri 19411 < 20000)
+               so global-alloc assigns a0/v1 in target order; reload's constant-equivalence
+               (update_equiv_regs) then substitutes 13 and deletes the li: zero extra bytes */
 
+    sh = 0xD;
     var_a1 = 0;
     var_a0 = 0;
     var_a2 = D_800A38C8;
-    if (var_a2 > 0) {
+    if (var_a1 < var_a2) {
         var_v1 = (s8 *)&D_80102810;
         do {
             var_v0 = *(s32 *)(var_v1 + 0x18);
@@ -40,6 +56,6 @@ s32 func_80037AA4(void) {
     if (var_a0 < 0) {
         var_v0 = var_a0 + 0x1FFF;
     }
-    var_a0 = var_v0 >> 0xD;
+    var_a0 = var_v0 >> sh;
     return 0xF - var_a0;
 }
