@@ -1,8 +1,8 @@
 {
  "func": "func_80037B00",
  "file": "code6cac_c",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 0,
@@ -27,18 +27,29 @@
    "floor": 15,
    "modality": "structural",
    "headline": "s3 structural: statement re-association KILLED; structural axis now exhaustively exhausted (7 measured killed + 2 inert); floor 15; next modality is directed permuter from candidate.c per s2 frontier."
+  },
+  {
+   "session": 4,
+   "floor": 15,
+   "modality": "permuter",
+   "headline": "s4 permuter modality blocked at workspace setup: maspsx crashes in compile.sh pipeline (standalone identical pipeline works); zero permuter iterations achieved; floor stays 15."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Directed decomp-permuter from candidate.c (pin-free, floor 15) can close the 5-way register rotation via randomized coalesced-pseudo tiebreaker shifts and PERM_* directive sweeps.",
-   "mechanism": "All structural levers measured dead over s2+s3; remaining C-source search space is combinatorial mutation of the pin-free form. Same shape family as marionation_Exec coupled-rotation permuter work \u2014 proven productive there.",
-   "next_probe": "Apply memory/grind/func_80037B00/candidate.c to src/code6cac_c.c (pin-free, floor 15 confirmed). Build target.o from asm/funcs/func_80037B00.s (isolated, offset 0) per permuter-fresh-seed-discipline. Launch tools/permuter_campaign.py with --stop-on-zero and a \u226530 min fresh-seed window. Poll to completion IN-TURN, harvest --stop, then bank any improvement to candidate.c or file endgame per standing 2026-07-27."
+   "hypothesis": "Debug the compile.sh maspsx crash by minimizing base.c until the crash disappears, localizing which of the 11 pruned functions (or which construct within one) trips maspsx's unpack failure when consumed via bash pipeline.",
+   "mechanism": "maspsx crashes with `too many values to unpack (expected 3)` inside process_lines() but only when invoked as `bash compile.sh` (nested pipe). Standalone `maspsx < file > file` works on the SAME input. The trigger is either an input-content interaction with pipe/stdin buffering, or a state carried across a specific instruction pattern. Bisecting base.c (delete half the pruned functions, retry compile.sh) will isolate.",
+   "next_probe": "Strip base.c down to just `func_80037B00` + its two globals (D_800A38C8 s32, D_80102810 u8) + typedef header. If compile.sh still crashes, the input isn't the trigger \u2014 instrument maspsx.py:224 to re-raise (`raise` instead of `sys.exit(1)`) to get a stack trace. If compile.sh succeeds on the minimal form, incrementally re-add sibling functions until the crash returns; that pinpoints the trigger."
   },
   {
-   "hypothesis": "If the fresh-seed permuter window closes without improvement, both endgame-lock gates fail with no lever remaining, and the standing 2026-07-27 ruling terminally REFUSES / OWNER-ACCEPTS INCOMPLETE.",
-   "mechanism": "Gate 1 already documented FAIL (no S1/S2/S6 signals for canonical-asm on a strncmp-style dispatch loop). Gate 2 already documented FAIL (no SOTN precedent covers 5-way coupled register rotation). Structural axis now measurably exhausted. Only remaining grindable lever is directed permuter \u2014 its exhaustion is the terminal exhaustion.",
-   "next_probe": "In the next session (after the permuter run harvests), file docs/grind/decisions.md entry titled `## <date> \u2014 func_80037B00 \u2014 **OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**`; state both gates' evidence + the permuter fresh-seed negative result; return owner-gated with escalation_ref."
+   "hypothesis": "Bypass import.py entirely and hand-build a minimal permuter workspace using the mar_perm_workspace.sh pattern (compile full src/code6cac_c.c, extract just func_80037B00's region, assemble alone).",
+   "mechanism": "mar_perm_workspace.sh is proven to build workable permuter workspaces for BB2. It uses a full-TU compile so codegen context is preserved, then extracts one function's region via awk between `.ent`/`.end` markers. This sidesteps import.py's prune + macro-preservation artifacts entirely.",
+   "next_probe": "Copy tools/mar_perm_workspace.sh, adapt for func_80037B00 (change function name, output dir), point base.c at src/code6cac_c.c pin-free form or a stripped copy of it. Verify base compiles and diff against target.o. If diff shows ~5-15 weighted insns, launch permuter."
+  },
+  {
+   "hypothesis": "If s5 gets the workspace running and a fresh-seed permuter window closes at \u226530 min with no NOVEL find, both endgame-lock gates fail with no lever remaining. The standing 2026-07-27 ruling then applies terminally: REFUSED / OWNER-ACCEPTED INCOMPLETE.",
+   "mechanism": "s2/s3 exhaustively measured the structural axis; directed permuter is the last grindable lever. Its exhaustion IS the terminal exhaustion. Gate 1/2 status unchanged (both FAIL) \u2014 no canonical-asm-authorization or coercion-family sanction applies.",
+   "next_probe": "In s5, after the permuter run harvests with no novel find, file docs/grind/decisions.md entry titled `## <date> \u2014 func_80037B00 \u2014 **OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**`; state both gates' evidence + permuter fresh-seed negative result; return owner-gated with escalation_ref."
   }
  ],
  "judge_constraints": [],

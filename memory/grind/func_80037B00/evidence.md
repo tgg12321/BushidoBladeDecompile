@@ -100,3 +100,19 @@ candidate.c: 23 honest insn diff, 15 weighted-masked. NOT lowered this session.
 - [s3] Owner standing 2026-07-27 both-gates status re-confirmed: Gate 1 (STRONG scan_hand_coded S1/S2/S6 for canonical-asm) FAILS — this is a plain strncmp-style dispatch loop, no S1/S2/S6 signals; Gate 2 (SOTN in-hand precedent for a sanctioned coercion family covering 5-way coupled register rotation) FAILS — no dead-store / pointer-alias / named-local / duplicated-statement / MMIO carve-out applies to the register-rotation shape here.
 
 - [s3] One sanctioned lever remains untried: directed decomp-permuter from candidate.c (pin-free, floor 15) — this is the ledger's live frontier and per s1 is the mandated next step BEFORE any owner-gated escalation. Standing 2026-07-27 ruling requires exhaustion of grindable levers; permuter is grindable, so owner-gated is NOT valid this session.
+
+- [s4] s4 baseline reaffirmed: pin-free candidate.c form applied to src/code6cac_c.c func_80037B00 → sandbox --disable all: score=15, target_insns=36, build_insns=34, scorable=true, cheat_asm_stripped=8, rules_dropped=0. Identical to s2/s3 baselines.
+
+- [s4] src/code6cac_c.c reverted to HEAD (pinned form with sp_dummy) at session end; candidate.c in memory/grind/ unchanged (already correct pin-free form).
+
+- [s4] decomp-permuter import.py produces base.c with two structural bugs (duplicate extern decls at lines 627/645) and one preserved-macro artifact (`_permuter_ignore_line __asm__(...)` at line 751 inside func_80037A20, which the maspsx pipeline treats as an undefined identifier). None of these are catalog concerns; all are import-tool artifacts that need manual patching before compile.sh can run.
+
+- [s4] target.o built by import.py uses `mips-linux-gnu-as -march=vr4300 -mabi=32` (elf32-tradbigmips, WRONG). Correct assembly is `mipsel-linux-gnu-as -march=r3000 -mtune=r3000 -no-pad-sections -O1 -G0` with the mar_perm_workspace r3k prelude (drops `.set gp=64` from tools/decomp-permuter/prelude.inc). Rebuilt target.o now elf32-tradlittlemips with 43 objdump lines.
+
+- [s4] maspsx crashes reproducibly with `too many values to unpack (expected 3)` (tools/maspsx/maspsx.py:224-226 catches any Exception from `maspsx_processor.process_lines()`). No traceback surfaces because it's caught and only the message is printed. Root cause is somewhere inside maspsx/__init__.py:process_lines() but not localized this session — the SAME pipeline stages succeed as a standalone script.
+
+- [s4] Artifacts preserved: tmp/grind/func_80037B00/s4/pre.s (776 lines, post-prologue_fix input to maspsx), tmp/grind/func_80037B00/s4/post.s (733 lines, verified maspsx output including `.end func_80037C34`), tmp/grind/func_80037B00/s4/trace.sh (the working standalone pipeline), tmp/grind/func_80037B00/s4/session_notes.md (this session's writeup).
+
+- [s4] Standing 2026-07-27 both-gates status UNCHANGED from s3: Gate 1 (STRONG scan_hand_coded S1/S2/S6 for canonical-asm) FAILS — plain strncmp-style dispatch loop, no hand-coded signals; Gate 2 (SOTN in-hand precedent for a sanctioned coercion covering 5-way coupled register rotation) FAILS — no dead-store / pointer-alias / named-local / duplicated-statement carve-out applies. Directed permuter remains the last untried grindable lever; its exhaustion is still required before the endgame ruling can be applied.
+
+- [s4] This session did NOT run any permuter iterations — the outcome is a workspace-setup blocker, not a permuter-plateau finding. Permuter modality remains open for s5.

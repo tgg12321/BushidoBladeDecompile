@@ -53,3 +53,15 @@
 - probe: Rewrote src/code6cac_c.c func_80037B00 to `var_v0 = D_800A38C8; if (<=0) return 0; var_t1 = 0; var_t3 = var_v0; ...` (also removed trailing block_end label). Ran `sandbox func_80037B00 --disable all`.
 - result: sandbox=15 weighted, target_insns=36, build_insns=34, cheat_asm_stripped=8 (pin-free measure confirmed). Identical to baseline candidate.c form — GCC hoisted the init back into the blez delay slot; the inlined `return 0` folded to the same j/addu tail. Saved memory/grind/func_80037B00/rejected/stmt-reassoc-direct-return.c.
 - verdict: KILLED
+
+## [s4] decomp-permuter import.py produces a workable base.c/compile.sh/target.o triplet out-of-the-box for func_80037B00.
+- mechanism: Standard import path per permuter-directives; used for prior BB2 workspaces (mar, csmd4, etc.).
+- probe: Ran `python3 tools/decomp-permuter/import.py src/code6cac_c.c asm/funcs/func_80037B00.s` from repo root via WSL venv.
+- result: Import completed, but the generated target.o was elf32-tradbigmips (wrong endian: emitted compile.sh's assembler line was `mips-linux-gnu-as -march=vr4300 -mabi=32`); base.c had two duplicate-declaration lines (EnterCriticalSection, D_80102810) and one undefined `_permuter_ignore_line` marker at line 751 inside func_80037A20's __asm__ block. All three fixed manually. target.o rebuilt using r3k prelude (elf32-tradlittlemips confirmed, 43-line objdump).
+- verdict: KILLED
+
+## [s4] The engine-standard compile.sh pipeline (cpp | cc1 | prologue_fix | maspsx | sed | multu_pad | as) invoked via `bash compile.sh base.c -o base.o` produces a valid base.o.
+- mechanism: Full pipeline mirrors the engine's build stages; drops regfix/asmfix since func_80037B00 has zero rules in HEAD (pin-free).
+- probe: Ran `bash nonmatchings/func_80037B00/compile.sh base.c -o base.o` under WSL. Rewrote compile.sh three times: (1) piped form matching import.py output, (2) simplified without regfix/asmfix, (3) temp-file staging with `cat file | tool > next` per stage. Tried `--force-stdin` on maspsx.
+- result: All three forms FAIL at the maspsx stage with `MASPSX: An exception occurred: too many values to unpack (expected 3)`. s3.s writes 0 bytes; downstream `as` errors out. When the identical pipeline stages are invoked STANDALONE (tmp/grind/func_80037B00/s4/trace.sh: cpp | cc1 -w > s1.s; prologue_fix < s1.s > pre.s; maspsx < pre.s > post.s), maspsx SUCCEEDS — post.s is 733 lines and ends cleanly with `.end func_80037C34`. Difference between the two invocations not localized in-session.
+- verdict: KILLED
