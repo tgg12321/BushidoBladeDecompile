@@ -107,3 +107,35 @@
 - probe: 10 sandbox probes: named t (14), named q (14), inline arg2<<5 (14), inline dy*2 (39), inline dy (15), sq+a2 (14), dy2*arg3 (7), split-init disc (16), unconditional a0=300 preset (29), arm swap dy!=0 (67)
 - result: every same-boundary respelling neutral; every statement-structure change diverges; named dy2 is load-bearing (CSE fails to keep one call-crossing sll); m2c's pre-if a0 preset is post-reorg appearance only
 - verdict: KILLED
+
+## [s3] Rotation A roots in dy's set_preference minuend pref; killing it in C flips the whole rotation
+- mechanism: set_preference gives dy the minuend local's hard reg ($v1); find_reg's
+  preference-override steals dy from its natural $v0; staging the minuend through a
+  cross-block pseudo (unrenumbered at scan time) records no pref
+- probe: FINDREG/ALLOCDBG instrumented dumps at score-6 base + staged variants,
+  sandbox-measured: disc-carrier dy-only (7), disc-carrier both-minuends (5),
+  y1-relay both-minuends (0), neg-carrier (26)
+- result: CONFIRMED — dy=$v0, arg2^2=$v1 and the reload-$t1 all cascade from the
+  pref-kill; the y1 form reaches sandbox 0
+- verdict: CONFIRMED
+
+## [s3] Same-statement-set respellings can never flip Rotation A (search-space kill)
+- mechanism: regs_someone_prefers[dy] is structurally empty (all dy-conflicting
+  allocnos are call-crossing -> prune empties their prefs; arg2^2 is LO-preferred-
+  class -> prune wipes merged GP prefs), so dy's $v1 override always wins in any
+  spelling that keeps the raw `arg1[1] - arg0[1]` minuend shape
+- probe: global.c source analysis (allocno_compare/find_reg/set_preference/
+  expand_preferences/prune_preferences) + FINDREG dumps of the actual sets
+- result: explains every s1/s2 neutral probe; the only C-reachable vector is the
+  minuend's pseudo-vs-local status (or an owner-sanctioned relay)
+- verdict: CONFIRMED
+
+## [s3] The residual-5 ($a0 arm-2 quotient) is disc's call-arg {4} pref flowing down
+   the dy->dy2->divres->quotient expand-merge chain
+- mechanism: combine folds `disc << 10` into the call-arg set giving disc pref {4};
+  disc dies at the staged dy-subu -> merge into dy -> chain to the quotient, whose
+  override takes free $a0 (target: pref-less scan -> $v1)
+- probe: FINDREG 120/104 dumps; y1-relay (pref-less carrier) removes it -> 0
+- result: CONFIRMED; no existing $v1-colorable carrier without the {4} exists
+  (disc is the only one; neg mis-colors to $a1)
+- verdict: CONFIRMED
