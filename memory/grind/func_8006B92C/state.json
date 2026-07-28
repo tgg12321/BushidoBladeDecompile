@@ -41,7 +41,8 @@
   }
  ],
  "judge_constraints": [
-  "Expand both /* FAKE */ annotations at src/text1b.c:15714 and :15725 to the full template required by staged-value-reused-variable.md \u00a7prong-4: name the mechanism (sched.c adjust_priority / birthing_insn_p; reg_n_sets[v]!=1 disables the load-late launch priority) and cite lever-exhaustion at memory/grind/func_8006B92C/{hypotheses,evidence}.md sessions s1-s3. No other change; the C substance is accepted."
+  "Expand both /* FAKE */ annotations at src/text1b.c:15714 and :15725 to the full template required by staged-value-reused-variable.md \u00a7prong-4: name the mechanism (sched.c adjust_priority / birthing_insn_p; reg_n_sets[v]!=1 disables the load-late launch priority) and cite lever-exhaustion at memory/grind/func_8006B92C/{hypotheses,evidence}.md sessions s1-s3. No other change; the C substance is accepted.",
+  "The split-load-anchor pattern `var_v1 = MASK; var_v1 = a0 & var_v1;` (and any structurally-equivalent decomposition of `x = a & C;` into two statements whose sole purpose is to add a reg_n_sets increment or lui/ori birth cluster) is a cheat by any spelling and MUST NOT be re-surfaced. Permuter finds of this shape are to be recorded and rejected per no-new-park-categories.md \u00a7'Auto-search tools ... output is PROPOSALS, not winners'. Continue grinding from the s3 h2a floor (masked score 6) with pure-C levers only."
  ],
  "origin": "queue",
  "created": "2026-07-28T21:57:58.046477+00:00"
