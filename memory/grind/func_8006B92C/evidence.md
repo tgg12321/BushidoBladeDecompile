@@ -1,0 +1,68 @@
+# Evidence bank - func_8006B92C
+
+## Baseline (s1, 2026-07-28)
+- canonical: verdict=C, distance=15, target_insns=143 (pure-C target, well under 50 threshold)
+- sandbox `--disable all`: score=15, target=143 insns, build=139 insns (4-insn shortfall)
+- Current C body carries `register u32 var_v1 asm("v1");` pin (CHEAT, score-inert). Pin is stripped by cheat-invisible sandbox so 15 is the honest floor. Body starts s1 as candidate baseline (unchanged).
+- No sibling duplicates found (`find_duplicates.py` empty for this func). Caller `func_8006C168` (text1b.c:15897) is the only cross-file relationship.
+
+## Structural diff, build vs target (case-1 / case-2 arms, artifact `tmp/grind/func_8006B92C/s1/build_disasm.txt` vs `target_disasm.s`)
+
+**Root mechanism: `jump2` find_cross_jump merged the two `D_800A34F8 = ...` stores into a shared tail. Target does NOT share.**
+
+Target (case 1):
+```
+lw a0,gp; addiu v0,zero,0x4000; andi v1,a0,0xE000
+bne v1,v0,.else
+ lui v1,0xFFFF          <-- delay: dead-branch-scheduled first insn of else arm
+# then arm (inline, own store)
+lui v0,0xFFFF; ori v0,v0,0x1FFF; and v0,a0,v0
+sw v0,gp                 <-- inline sw, not shared
+j .after; addu a0,0,0
+.else:
+ori v1,v1,0x1FFF         <-- consumes the delay-slot lui
+and v1,a0,v1; srl v0,a0,13; andi v0,v0,7
+j .join; addiu v0,v0,1
+```
+
+Build (case 1):
+```
+lw a0,gp; li v0,0x4000; andi v1,a0,0xE000
+bne v1,v0,.else
+ nop                     <-- BUILD: no dead-branch sched, empty delay
+# then arm (jumps to shared sw)
+lui v0,0xFFFF; ori v0,v0,0x1FFF
+j .shared_sw
+ and v0,a0,v0            <-- delay
+.else:
+lui v0,0xFFFF; ori v0,v0,0x1FFF; and v1,a0,v0; srl v0,a0,13; andi v0,v0,7
+j .join; addiu v0,v0,1
+.shared_sw:
+sw v0,gp                 <-- SHARED, jump2-merged
+```
+
+Same shape mirrored in case 2 (`.L8006B9D8` vs build). The 4-insn shortfall is explained by:
+- 2 lui-into-delay dead-branch schedules that don't happen in build
+- 2 inlined `sw D_800A34F8` stores that were merged to a single shared store
+
+## Search space (mechanism-grounded)
+
+1. **Cross-jump-store-tail-merge** (rule: cross-jump-store-tail-merge). The `D_800A34F8 = ...` writes are identical bytes across the two arms of each case; jump2's find_cross_jump merges them into a shared tail (build's `j .shared_sw`). Target keeps them inline per arm. Levers: mix exit forms (`goto endK` in one arm, inline `return`/`break` in another), or the sanctioned `duplicated-statement-into-arms` pattern.
+2. **Dead-branch scheduling of `lui $v1`.** Target hoists the first insn of the else-arm (`lui $v1, 0xFFFF`) into the branch-taken delay slot -- classic reorg.c dead-branch-scheduling that only fires when the branch-taken path proves $v1 dead. Once the cross-jump merge is broken (item 1) and the arms become distinct, the natural scheduling may reappear without a pin.
+3. **32-bit constant split.** The mask `0xFFFF1FFF` is emitted as `lui+ori` -- fine. Its low-half `ori` is what target uses in the else-arm as the first live insn; whether GCC can be steered to hoist just the `lui` is what enables the delay-slot fill.
+
+## Constraints
+- The `register u32 var_v1 asm("v1")` pin currently in src is CHEAT (inline-asm-policy expanded catalog, register-asm pins). It is score-inert -- must be removed as part of any COMPLETED-C form.
+- Second `switch(idx)` (post-jal region) matches; the residual is concentrated in the pre-jal `switch(ret)` region.
+
+- [s1] canonical verdict C, distance 15, target_insns 143
+
+- [s1] sandbox --disable all score 15, build_insns 139, 4-insn shortfall vs target
+
+- [s1] source line src/text1b.c:15695-15761 carries `register u32 var_v1 asm("v1")` pin (cheat, score-inert)
+
+- [s1] find_duplicates.py returns no siblings for func_8006B92C
+
+- [s1] objdump diff (tmp/grind/func_8006B92C/s1/build_disasm.txt vs target_disasm.s): case-1 and case-2 D_800A34F8 stores are jump2-merged in build; target inlines them per arm with `lui $v1` dead-branch-scheduled into the branch delay slot
+
+- [s1] caller func_8006C168 (text1b.c:15897) uses forward decl `extern s32 func_8006B92C()` -- signature-affecting edits must keep that callable

@@ -1,0 +1,34 @@
+{
+ "func": "func_8006B92C",
+ "file": "text1b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 15,
+   "modality": "recon",
+   "headline": "Baseline 15; residue localized to cross-jump-store-tail-merge on switch(ret) arms + missing dead-branch-sched lui $v1"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Defeat jump2 cross-jump-store-tail-merge on the case-1/case-2 `D_800A34F8 = ...` stores by mixing exit forms per arm (goto endK vs inline fallthrough) per rule cross-jump-store-tail-merge",
+   "mechanism": "identical `sw D_800A34F8` tail in both arms is what find_cross_jump collapses; distinct predecessor sequences force jump2 to keep the sw inline",
+   "next_probe": "s2 draft: rewrite case 1 (and case 2) so then-arm exits via `goto after_switch1` and else-arm falls through to the shared jal, and remove the register pin; measure sandbox --disable all"
+  },
+  {
+   "hypothesis": "Once H1 breaks the merge, reorg.c fill_from_thread will naturally hoist `lui $v1, 0xFFFF` from else-arm into the branch delay slot without any pin",
+   "mechanism": "target `lui $v1` in delay slot is standard reorg.c dead-branch-sched of the fallthrough's first insn; only fires when the fallthrough arm is distinct (not a merged shared tail)",
+   "next_probe": "measure residue AFTER H1 landing; if dead-branch fill still misses, dump greg + rtl for the arm and compare arm-length parity"
+  },
+  {
+   "hypothesis": "`register u32 var_v1 asm(\"v1\")` pin is score-inert (stripped by --disable all) and forbidden by inline-asm-policy",
+   "mechanism": "cheat-invisible sandbox drops the pin before scoring",
+   "next_probe": "s2 first move: delete the pin, re-sandbox; expect unchanged 15"
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-28T21:57:58.046477+00:00"
+}
