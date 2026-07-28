@@ -648,3 +648,4 @@
 - 2026-07-27 23:35 func_80068ECC COMPLETED-C after 1 sessions.
 - 2026-07-27 23:56 func_8006E10C COMPLETED-C after 1 sessions.
 - 2026-07-28 00:06 func_800200DC s1 [recon] floor=14: Recon: floor 14 re-verified; residual mapped as two separable rotations (A: dy v0/v1 6-insn, B: sq/quotient v1<->a1 8-insn) with a $t1-burn asymmetry pointing at dy liveness as the root
+- 2026-07-28 00:34 func_800200DC s2 [structural] floor=6: Floor 14 -> 6: reusing disc for the sqrt result (disc = func_8007E11C(disc << 10)) closed all 8 Rotation-B insns; residual 6 is Rotation A only (dy/mult-temp $v0<->$v1 swap), with the RA mechanism pinned by a -da dump

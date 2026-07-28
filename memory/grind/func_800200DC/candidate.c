@@ -1,4 +1,7 @@
-/* func_800200DC — floor-14 candidate (matches src/code6cac.c HEAD form, s1 re-verified) */
+/* func_800200DC — floor-6 candidate (s2: disc-reuse for the sqrt result closed
+ * Rotation B entirely; residual 6 = Rotation A dy/temp $v0<->$v1 swap only).
+ * Key discovery: original reused `disc` for func_8007E11C(disc << 10) — target
+ * has disc AND sq both in $v1 (same variable). Semantically real reuse, no FAKE. */
 void func_800200DC(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3, s32 *arg4) {
     s32 dx = arg1[0] - arg0[0];
     s32 dz = arg1[2] - arg0[2];
@@ -24,12 +27,13 @@ void func_800200DC(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3, s32 *arg4) {
             s32 a0;
 
             if (disc >= 0) {
-                s32 sq = func_8007E11C(disc << 10);
-                s32 a2 = arg2 << 5;
-                a0 = ((a2 + sq) * dist) / dy2 / 32;
+                s32 a2;
+                disc = func_8007E11C(disc << 10);
+                a2 = arg2 << 5;
+                a0 = ((a2 + disc) * dist) / dy2 / 32;
 
                 if (a0 < 0) {
-                    a0 = ((a2 - sq) * dist) / dy2 / 32;
+                    a0 = ((a2 - disc) * dist) / dy2 / 32;
                 }
             } else {
                 a0 = 300;

@@ -40,8 +40,70 @@
 - result: m2c shape matches our C exactly: a0=300 preset lands in the bltz delay slot from our else-arm assignment; arg4[2] tail store is cross-jump-shared; both sides 168 insns. Gap is 100% RA.
 - verdict: CONFIRMED
 
+## [s2] Rotation B roots in a reused variable: disc = sqrt(disc<<10)
+- mechanism: reusing `disc` for the call result merges the disc and sq pseudos
+  into one high-ref allocno (≈6 refs) that wins $v1 in global-alloc, exactly
+  matching target where disc AND sq AND the a2-sq subu all use $v1
+- probe: replace `s32 sq = func_8007E11C(disc << 10);` with
+  `disc = func_8007E11C(disc << 10);` (a2 decl moved up, assignments after)
+- result: sandbox 14 → 6; the entire 8-insn Rotation B ($v1<->$a1 sq/quotient
+  swap) is gone; residual is purely Rotation A
+- verdict: CONFIRMED
+
+## [s2] dy's dest-reg flip is reachable by respelling the subtraction
+- mechanism: named-temp splits / split-init / load-order around dy
+- probe: y1,y0 named temps (14); y0-first (17); split-init dy (14)
+- result: named splits along expression boundaries are RTL-neutral; load-order
+  flip perturbs the schedule. dy's $v1 preference comes from set_preference
+  taking the MINUEND's reg (global.c XEXP(src,0)) — unreachable by spelling
+  the subtraction differently while keeping arg1[1] first
+- verdict: KILLED
+
+## [s2] Named-temp/CSE respellings of dy2, a2, product, quotient move the allocation
+- mechanism: pseudo renumbering via named locals or CSE-owned temps
+- probe: named t=(a2+sq)*dist (14); named q=.../dy2 (14); inline arg2<<5 both
+  arms (14); inline dy*2 all sites (39 — CSE fails across the call); inline dy
+  (15); sum-order sq+a2 (14 — canonicalized); dy2*arg3 (7 — mult operand order
+  NOT canonicalized, 1 worse); split-init disc (16); unconditional a0 preset
+  (29); arm swap dy!=0 (67)
+- result: every same-boundary respelling is neutral; every statement-structure
+  change diverges. Rotation A does not yield to source-level renumbering of
+  the existing statement set
+- verdict: KILLED
+
+## [s2] (OPEN — next frontier) Rotation A flips when the arg2^2/arg3*dy2 mult
+   temps are allocated BEFORE dy and land $v1/$t1
+- mechanism: ours allocates dy (allocno 87, prefers $v1) before temp 106; target
+  must allocate the temps first (or give dy a $v1 conflict), evicting dy to $v0.
+  The greg dump shows 87's priority sits between 107 and 106; a small ref/length
+  change on either temp's pseudo flips the order. $t0 is the reload spill reg
+  ("Spilling reg 8"), so $t1 is the natural temp landing spot once low regs fill
+- probe: permuter campaign on the score-6 base (directed PERM_* around the disc
+  statement family), or BB2_ALLOC_DEBUG instrumented cc1 to read the exact
+  allocno_compare inputs for 87/106/107 and derive which C change raises the
+  temps' priority without adding insns
+- verdict: (open)
+
 ## [s1] A sibling/duplicate function could donate a matched allocation shape
 - mechanism: byte/structure similarity scan
 - probe: tools/find_duplicates.py full scan (206 pairs) + tmp/duplicates_leads.txt grep
 - result: Zero entries involving func_800200DC in either output.
+- verdict: KILLED
+
+## [s2] Rotation B roots in a reused variable: the original wrote disc = func_8007E11C(disc << 10) instead of a fresh sq local
+- mechanism: merging disc+sq into one pseudo (105) gives it ~6 refs; it wins $v1 in global-alloc, matching target where disc, the call-result copy, and the a2-sq subu all sit in $v1; the arm-1 quotient then falls to $a1 as in target
+- probe: single sandbox run with the reuse spelling
+- result: sandbox 14 -> 6; Rotation B (8 insns) fully closed; residual diff is purely Rotation A
+- verdict: CONFIRMED
+
+## [s2] dy's dest-register tiebreak (Rotation A root) flips via respelling the subtraction (named temps, split-init, load order)
+- mechanism: GCC 2.7.2 global.c set_preference takes XEXP(src,0) for non-copy sets, so dy always prefers the MINUEND's reg ($v1); dump confirms 87 prefers 3 and does not conflict with $v0
+- probe: y1/y0 named temps; y0-loaded-first; sanctioned split-init dy=arg1[1]; dy-=arg0[1]
+- result: 14 / 17 / 14 — named splits RTL-neutral, load-order flip perturbs the schedule (+3); preference unreachable from the subtraction spelling
+- verdict: KILLED
+
+## [s2] Named-temp or CSE-owned respellings of dy2/a2/product/quotient renumber allocnos enough to flip either rotation
+- mechanism: pseudo birth-order and ref-count changes via naming, inlining, split-init, operand order, arm order
+- probe: 10 sandbox probes: named t (14), named q (14), inline arg2<<5 (14), inline dy*2 (39), inline dy (15), sq+a2 (14), dy2*arg3 (7), split-init disc (16), unconditional a0=300 preset (29), arm swap dy!=0 (67)
+- result: every same-boundary respelling neutral; every statement-structure change diverges; named dy2 is load-bearing (CSE fails to keep one call-crossing sll); m2c's pre-if a0 preset is post-reorg appearance only
 - verdict: KILLED

@@ -1,8 +1,8 @@
 {
  "func": "func_800200DC",
  "file": "code6cac",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 0,
@@ -15,23 +15,29 @@
    "floor": 14,
    "modality": "recon",
    "headline": "Recon: floor 14 re-verified; residual mapped as two separable rotations (A: dy v0/v1 6-insn, B: sq/quotient v1<->a1 8-insn) with a $t1-burn asymmetry pointing at dy liveness as the root"
+  },
+  {
+   "session": 2,
+   "floor": 6,
+   "modality": "structural",
+   "headline": "Floor 14 -> 6: reusing disc for the sqrt result (disc = func_8007E11C(disc << 10)) closed all 8 Rotation-B insns; residual 6 is Rotation A only (dy/mult-temp $v0<->$v1 swap), with the RA mechanism pin"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "dy's dest-register tiebreak (Rotation A root): target's dy reuses the dying subtrahend reg ($v0 = arg0[1]) while ours reuses the minuend reg ($v1 = arg1[1]); flipping only this should cascade through the disc chain (6 insns) and possibly perturb Rotation B",
-   "mechanism": "GCC 2.7.2 local-alloc qty-sharing / allocno priority picks which dying input hard-reg the new pseudo inherits; named-temp splits and pseudo-creation-order changes renumber allocnos without moving statements across the call (the rejected hoist)",
-   "next_probe": "sandbox a small family: (1) s32 y1=arg1[1], y0=arg0[1]; dy=y1-y0; (2) y0 declared/loaded first; (3) sanctioned split-init dy=arg1[1]; dy-=arg0[1]; each is a cheap single sandbox run"
+   "hypothesis": "Rotation A closes when the two mult temps (arg2^2, arg3*dy2) are allocated before dy, landing $v1/$t1 and evicting dy to $v0",
+   "mechanism": "allocno_compare order: 87's priority sits between 107 and 106; a small ref/live-length change on the temps flips the order; $t0 is spill-reserved so $t1 is the natural overflow temp reg",
+   "next_probe": "BB2_ALLOC_DEBUG / instrumented allocno_compare on pseudos 87/106/107 to read the exact priority numbers, then derive a C form that shortens/densifies the temps' ranges without adding insns"
   },
   {
-   "hypothesis": "Instrumented cc1 dump resolves WHY target burns $t1 for the arg3*dy2 mflo (dy liveness or allocno order) \u2014 the ledger's live ALLOCDBG hypothesis, now with a concrete question to answer",
-   "mechanism": "-da .greg dump / BB2_ALLOC_DEBUG shows register dispositions, conflicts, and allocation order; if dy's pseudo must be live at the second mflo in target, the original C referenced dy later than our form does",
-   "next_probe": "cc1 -da on the sandbox .i, read ;; Register dispositions for the dy / arg2^2 / arg3*dy2 / sq / quotient pseudos; then test C spellings that extend dy's live range without changing bytes"
+   "hypothesis": "A permuter campaign from the score-6 base finds the Rotation-A closing form directly",
+   "mechanism": "the search space is now tiny (one statement family, 6-insn residual); s1's plateau evidence was from the 14-floor base and is stale",
+   "next_probe": "permuter_campaign.py on func_800200DC with directed PERM_* around the dy/dy2/disc statements, fresh-seed discipline, harvested in-turn"
   },
   {
-   "hypothesis": "Rotation B ($v1<->$a1 sq/quotient swap) can be flipped independently via pseudo renumbering around the second call",
-   "mechanism": "sq and the quotient are the only two caller-save pseudos allocated after the second call; their relative allocno order decides who gets $v1 vs $a1",
-   "next_probe": "sandbox variants: named intermediate t=(a2+sq)*dist; a0=t/dy2/32; and q=num/dy2; a0=q/32; also swapping sq/a2 evaluation order inside the sum (a2+sq vs sq+a2 \u2014 not the rejected across-call hoist)"
+   "hypothesis": "The dy==0-arm shares no pseudos with the disc chain, so Rotation A may also root in a cross-arm allocation interaction not yet examined (negu/denom pseudos 90/93/94 conflict with 87)",
+   "mechanism": "87 conflicts list includes 74 75 76 77 80 83 (params/dx/dz/dist) but the zero-arm temps share the same hard regs; their local-alloc outcomes constrain global-alloc's view of $v0",
+   "next_probe": "read the zero-arm pseudos' dispositions in the existing s2 greg dump and check whether respelling the zero arm (neg/denom naming) shifts dy's conflict set"
   }
  ],
  "judge_constraints": [],
