@@ -2013,3 +2013,55 @@ banked form is v9 `result[2]` at score 1), **INCOMPLETE-owner-accepted**, parked
 active grind, NOT COMPLETED-C and NOT canonical-asm; the retained cheat holds the byte-match only and
 is not sanctioned. Eligible for re-attempt if a genuine pure-C lever emerges, or if a future
 SOTN census establishes either family on its own evidence.
+
+## 2026-07-28 — func_800481E8 (src/text1b.c) — **OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**
+
+Grind s3 (structural modality) filing under the owner's 2026-07-27 standing auto-ruling. s1 (recon)
+dissolved the inline-move cheat and dropped floor 14 → 10 pure C (candidate.c). s2 (structural)
+comprehensively closed the sole remaining axis — the 32-byte frame delta. The two AND-gates:
+
+- **Canonical-asm gate — FAILS.** Target is verdict C, 56/56 instructions byte-matched EXCEPT 10
+  frame-offset instructions (2× addiu sp, 4× sw, 4× lw at reg-save slots). Loop body, prologue
+  staging, epilogue order, register allocation all identical. `scan_hand_coded` does not classify
+  this function; none of the S1/S2/S6 STRONG signals apply (no redundant-mask-before-discarding-
+  shift, no hand-scheduled cop2 pipeline, no `swc2 $N, K(...)` with hardcoded reg). This is
+  compiled C whose frame equation differs by vars=0 vs vars=32.
+- **Coercion/spelling family gate — FAILS.** The five-way frame taxonomy is CLOSED for this
+  function (s2 evidence.md): (i) written aggregate adds stores the byte-matched target lacks;
+  (ii) volatile = cheat, score-inert; (iii) address-escape = cheat + extra insns; (iv) stale-ref
+  phantom (the only sanctioned live-slot mechanism per [[phantom-frame-slots-gcc272]]) MEASURED
+  DEAD — the orphan requires a combine-deleted 2-insn sll16/sra16 chain, and every deletion route
+  visibly changes the target bytes (chain unemitted / lhu→lh conversion / extra consumer insns);
+  target keeps all 4 lhu + all 4 sll/sra live with NO low-bit-only halfword consumer that could
+  host the deletion; (v) unwritten tail forbidden — target has zero stores below offset 56, so the
+  2026-07-01 written-never-read carve-out (dead-vars-local-array) does NOT apply. Instruments
+  supporting the KILL: 14-case entry-condition bisect (T0-T5/B1-B8; B3 = minimal known trigger =
+  `if(v<640)`+`if(v&1)`, which is NOT this function's semantic shape); 11-variant hand grid on the
+  real chassis (all vars=0; holder forms additionally break lhu→lh); **52,043-iteration
+  instrumented permuter campaign** with per-candidate cc1 vars= logging and vars>0 source capture,
+  classified: 8,644 vars>0 sources = 7,127 volatile-coercion + 1,457 address-escape + 60 "clean"
+  ALL at vars=8 ONLY with ≥33 non-sp body diffs and semantically broken permuter mutations; every
+  one of the 6 vars=32 hits is a volatile cheat (4-5 volatile decls each); only honest-score find
+  is the `volatile int new_var;` dead-pad cheat (banked). **Zero clean forms reach vars∈[25,32],
+  zero clean forms near byte-identity.** No SOTN-master precedent exists for the unwritten-tail
+  phantom-frame family — this is the SAME question already resolved terminally on file_LoadSectors
+  above (option a REFUSED for exactly this: an unwritten phantom-frame carrier has no SOTN precedent
+  distinguishing it from frame coercion; partition arguments are ruled insufficient).
+
+Both gates fail on their own evidence. Standing ruling applies terminally: the owner has PRE-DECIDED
+this class. There is nothing pending on the owner.
+
+**Disposition:** keep HEAD's byte-correct form (12 regfix rules + `register asm("$16")` pin +
+`__asm__ volatile("move %0,%1")` INLINE_MOVE_ALIASING; honest sandbox floor 14). Best clean banked
+form is `memory/grind/func_800481E8/candidate.c` at honest floor 10 (pure C, zero pins, zero rules,
+56/56 insns, residual = frame delta only). Byte-identical alternative spellings for the stream reads
+banked s2 (V6 `s32 a1w = *(u16*)p;` + `(s32)(s16)a1w`; V7 `u32 a1u = *(u16*)p;` + `(s32)(s16)(u16)a1u`).
+**INCOMPLETE-owner-accepted**, parked terminally out of active grind, NOT COMPLETED-C and NOT
+canonical-asm; the retained cheat holds the byte-match only and is not sanctioned. Eligible for
+re-attempt if a genuine pure-C lever emerges, or if a future SOTN census establishes an unwritten-
+tail phantom-frame family on its own evidence.
+
+Project-wide byproduct (s2, applies to other functions): B3 is now characterized as the smallest
+known phantom trigger — a target containing a signed halfword compare PLUS a low-bit test of the
+same halfword value can host phantom frame slots in pure C. Relevant to the 28-function untouched-
+frame-slack census (func_80037540 s5). Not this function's work.

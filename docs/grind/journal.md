@@ -665,3 +665,4 @@
 - 2026-07-28 08:50 calc_fc_frame COMPLETED-C after 1 sessions.
 - 2026-07-28 10:12 func_800481E8 s1 [recon] floor=10: Recon: inline-move cheat dissolved pure-C (floor 14->10); all 10 residual diffs are the 32-byte phantom-frame delta (vars 0 vs 32), with a working cc1 .frame gradient harness banked
 - 2026-07-28 11:12 func_800481E8 s2 [structural] floor=10: s2 structural: phantom-frame axis MEASURED DEAD — entry condition bisected (14 cases), 11-variant hand grid all vars=0, 52k-iter instrumented campaign 0 clean forms in [25,32]; floor holds at 10 (frame-only residual); next: escalation modality
+- 2026-07-28 12:30 func_800481E8 s3 [structural] STANDING RULING (2026-07-27) applied — OWNER-ACCEPTED INCOMPLETE: Both AND-gates fail on s1+s2 evidence; standing-ruling entry filed as terminal REFUSED / OWNER-ACCEPTED INCOMPLETE (frame-delta family, same as file_LoadSectors).

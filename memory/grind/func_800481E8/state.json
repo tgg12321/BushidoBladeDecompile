@@ -1,7 +1,7 @@
 {
  "func": "func_800481E8",
  "file": "text1b",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,6 +15,12 @@
    "floor": 10,
    "modality": "structural",
    "headline": "s2 structural: phantom-frame axis MEASURED DEAD \u2014 entry condition bisected (14 cases), 11-variant hand grid all vars=0, 52k-iter instrumented campaign 0 clean forms in [25,32]; floor holds at 10 (fram"
+  },
+  {
+   "session": 3,
+   "floor": 10,
+   "modality": "structural",
+   "headline": "Both AND-gates fail on s1+s2 evidence; standing-ruling entry filed as terminal REFUSED / OWNER-ACCEPTED INCOMPLETE (frame-delta family, same as file_LoadSectors)."
   }
  ],
  "frontier": [

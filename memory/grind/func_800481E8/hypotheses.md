@@ -120,3 +120,9 @@
 - probe: minrepro.py T0-T5 + bisect2.py B1-B8 with lreg orphan readout; B5 shows a live sll/sra of the same value coexists with the phantom
 - result: Triggers: T0 faithful, T3 (u16-MEM cast loads — our shape), B2, B3 (minimal: 'if (v<640)' + 'if (v&1)'), B5, B7 (HImode ADD — bitwise not required), B8. Non-triggers: T1 single-consumer, T2/B6 u16-everywhere, T4 const-only, T5 two-compare, B1 extended-2nd-use, B4
 - verdict: CONFIRMED
+
+## [s3] Both endgame-lock AND-gates pass for func_800481E8 (either strong scan_hand_coded signal or a cited SOTN-master precedent for the unwritten-tail phantom-frame family)
+- mechanism: Gate 1 requires S1/S2/S6 STRONG signals from tools/scan_hand_coded.py; gate 2 requires an in-hand SOTN file+line/commit cite for the specific construct family closing the diff
+- probe: Re-read s1+s2 evidence and hypothesis banks (memory/grind/func_800481E8/evidence.md + hypotheses.md); apply the two-gate lens from the standing 2026-07-27 auto-ruling; cross-check against the parallel file_LoadSectors 2026-07-28 disposition already terminal in docs/grind/decisions.md
+- result: Gate 1 FAILS: target is verdict C, 56/56 insns byte-matched except 10 frame-offset instructions — compiled C with a frame-equation delta (vars=0 vs vars=32), no STRONG hand-coded signals apply. Gate 2 FAILS: s2's 5-way frame taxonomy is CLOSED (written aggregate adds stores target lacks; volatile/address-escape are cheats; phantom-slot mechanism measured dead in 52,043-iter instrumented campaign + 14-case bisect + 11-variant hand grid — no combine-deletable extension can exist in this function's semantics; unwritten-tail forbidden — target has zero stores below offset 56, so 2026-07-01 carve-out does not apply). No SOTN precedent for the unwritten-tail phantom-frame family (same negative census that terminated file_LoadSectors option a).
+- verdict: KILLED

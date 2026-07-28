@@ -164,3 +164,13 @@ buffer). Blocked. This is a user/orchestrator decision, not worker pure-C work.
 - [s2] Instrument caveat: /tmp unreliable in fresh WSL sessions (systemd user session failure); compile hooks must use repo-local temps
 
 - [s2] Same owner-question family as file_LoadSectors (parked owner-gated 2026-07-27) and the endgame-lock-disposition standing policy (2026-07-20)
+
+- [s3] s3 orient: candidate.c at floor 10 (pure C, 0 pins, 0 rules, 56/56 insns, residual = frame delta only); HEAD carries the byte-correct cheat form (12 rules + $16 pin + INLINE_MOVE_ALIASING) at honest floor 14.
+
+- [s3] s3 gate-1 (canonical-asm): FAILS. Target is verdict C. 56/56 insns match except 10 frame-offset instructions (2x addiu sp + 4x sw + 4x lw). No S1/S2/S6 STRONG scan_hand_coded signals — no redundant-mask-before-discarding-shift, no hand-scheduled cop2 pipeline, no swc2 with hardcoded reg.
+
+- [s3] s3 gate-2 (coercion/spelling family): FAILS. 5-way frame taxonomy CLOSED by s2. No SOTN-master precedent for unwritten-tail phantom-frame family. Same family question terminated on file_LoadSectors option a (2026-07-28, docs/grind/decisions.md line ~1992): 'An unwritten phantom-frame carrier has no SOTN precedent distinguishing it from frame coercion.' Partition arguments explicitly ruled insufficient.
+
+- [s3] s3 filed entry: docs/grind/decisions.md '2026-07-28 — func_800481E8 (src/text1b.c) — OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE' (both-gates-fail terminal disposition; keeps HEAD's byte-correct cheat form; banks candidate.c as best clean form at floor 10).
+
+- [s3] Reusable project-wide byproduct (from s2, not this function's work): B3 minimal phantom trigger characterized — signed halfword compare + low-bit test of the same halfword value; applicable to the 28-function untouched-frame-slack census.

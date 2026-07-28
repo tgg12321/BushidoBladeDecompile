@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_800481E8",
-      "file": "text1b",
-      "distance": 14,
-      "verdict": "C",
-      "rules": 12,
-      "status": "active"
-    },
-    {
       "func": "func_80037B00",
       "file": "code6cac_c",
       "distance": 15,
@@ -2384,6 +2376,15 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27, applied 2026-07-28, option c): SOTN census NEGATIVE on the deleted-call/args-area mechanism; OVERSIZED-LOCALS carve-out satisfied only trivially (partition argument, same defect as func_80017FA0). Both closing families refused; _pad[2] retained to hold byte-match, not sanctioned"
     },
     {
+      "func": "func_800481E8",
+      "file": "text1b",
+      "distance": 14,
+      "verdict": "C",
+      "rules": 12,
+      "status": "parked",
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md \u2014 '2026-07-28 \u2014 func_800481E8 (src/text1b.c) \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE'"
+    },
+    {
       "func": "special_camera_set_win_cam",
       "file": "code6cac_b2_post",
       "distance": 510,
@@ -2620,13 +2621,13 @@
   ],
   "counts": {
     "total": 318,
-    "active": 263,
+    "active": 262,
     "by_status": {
-      "active": 263,
-      "parked": 55
+      "active": 262,
+      "parked": 56
     },
     "by_verdict": {
-      "C": 111,
+      "C": 110,
       "ASM-PARTIAL": 45,
       "ASM-SUSPECT": 107
     }
