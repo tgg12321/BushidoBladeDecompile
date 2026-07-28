@@ -1,0 +1,40 @@
+{
+ "func": "func_800871D4",
+ "file": "main",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 0,
+   "floor": 10,
+   "modality": "wip-import",
+   "headline": "floor imported from memory/wip checkpoint"
+  },
+  {
+   "session": 1,
+   "floor": 10,
+   "modality": "recon",
+   "headline": "recon: floor=10 confirmed; 5 BB2 siblings share same lhu+nop+andi 0xFFFF shape, ALL INCOMPLETE; frontier=3"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "H1: Bitfield struct access forces GCC's extract_bit_field RTL to emit `lhu+andi` even when the source is u16-clean, because bitfield extraction carries an explicit mask in its RTL that combine cannot fold to identity.",
+   "mechanism": "cc1 emits `lhu $tmp, offset; andi $dst, $tmp, mask` for a `u32 f : 16` bitfield read even when the field aligns to a u16 boundary, because expand_bit_field explicitly emits the AND for the extract.",
+   "next_probe": "Rewrite the read as `struct { u32 f : 16; u32 pad : 16; } *p = (struct...*)&D_80102808; u32 v = p->f;` and sandbox. Verify (a) it still emits lhu (not lw), and (b) andi appears. If lw, try a `u16` bitfield: `struct { u16 f : 16; } *`."
+  },
+  {
+   "hypothesis": "H2: Since the m2c-shape restore raised score from 10 to 12, the WIP's in-place -= 0x10 form is CLOSER to the original C than the semantically-correct restore. The original C may have actually modified var_v1 in-place AND then used it in the multiply \u2014 meaning the oracle's second andi is CSE re-materialization of the FIRST andi's value AFTER a modify-in-place, not a source-level restore.",
+   "mechanism": "If cc1 sees `v -= 0x10; ... use v ...` and there's an EARLIER `v = something & 0xFFFF`, its CSE machinery may re-materialize the earlier `& 0xFFFF` at the use if the intermediate `v -= 0x10` invalidated the register but the antecedent source expression is still available.",
+   "next_probe": "Keep the in-place -= 0x10 shape (current candidate.c) BUT change the initial load to a form that emits the first andi (per H1 or via a computed source). Then let CSE handle the second andi automatically. Directly cross with H1."
+  },
+  {
+   "hypothesis": "H3: The 6-function `lhu+nop+andi 0xFFFF` cluster is a candidate for owner-escalation as a shared unsolved family. Evaluate whether the standing 2026-07-27 auto-ruling applies: Gate 1 (canonical-asm STRONG signals) \u2014 need to run scan_hand_coded on each; Gate 2 (SOTN precedent for the coercion shape) \u2014 need to census SOTN for the same lhu-then-andi-0xFFFF-from-u16-global pattern.",
+   "mechanism": "If both gates fail (likely \u2014 this function has trivial flag-setter body with no hand-coded signals, and the SOTN codebase would need a matching pattern), the standing ruling pre-decides REFUSED / OWNER-ACCEPTED INCOMPLETE. That is the terminal disposition, not a request for owner input.",
+   "next_probe": "In a future session: (a) run `python3 tools/scan_hand_coded.py --single func_800871D4` to check Gate 1; (b) grep SOTN master for `andi.*0xFFFF` after `lhu` of a global (via decomp-permuter's sotn checkout if available, else via WebFetch). If both fail, file the resolved-by-standing-ruling entry."
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-28T21:34:02.006043+00:00"
+}
