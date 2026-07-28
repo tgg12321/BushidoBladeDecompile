@@ -1,0 +1,13 @@
+{
+ "func": "func_80068ECC",
+ "file": "text1b",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "The match must land without semantically-redundant distinct-width value casts used as CSE differentiators: at most one honest unsigned spelling ((u32)arg0>>1) is available for the three shift terms. Find a lever that yields three separate srl instructions from listed/sanctioned techniques (e.g. named-intermediate locals per the F3 carve-out with FAKE annotation, split-read/duplication families, or structural respelling), or file a RULING REQUEST to the owner proposing F2 as a new family with fresh SOTN-master evidence \u2014 do not respell the width-cast trick (e.g. via typed temporaries whose only role is width differentiation)."
+ ],
+ "origin": "queue",
+ "created": "2026-07-28T04:09:24.275921+00:00"
+}
