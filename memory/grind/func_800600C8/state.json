@@ -1,0 +1,34 @@
+{
+ "func": "func_800600C8",
+ "file": "text1b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 6,
+   "modality": "recon",
+   "headline": "Recon s1: floor 13 -> 6 fully cheat-free (121/121 insns); both source cheats removed; all 6 regfix clusters explained; residual = one sched1 tie transposition"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The B6FC symbol-load chain can win the sched1 tie over the pair copy chain via a priority (not LUID) edge",
+   "mechanism": "rank_for_schedule first term: INSN_PRIORITY difference; symbol movsi vs copy latency/cost may be steerable by spelling (e.g. splitting the symbol load's use, or lengthening its dependent chain)",
+   "next_probe": "Run floor-6 build with BB2_RANK_DEBUG=1, capture the exact priorities/classes of [copy, sh4A, sh48, t=sym, sw18] at the decision point after mult a3,t0; then pick the spelling that moves the tied term"
+  },
+  {
+   "hypothesis": "Making the pair copy data-dependent (latency>1) on the last-scheduled insn drops it to class 1 while the B6FC head stays class 3, winning the tie regardless of LUID",
+   "mechanism": "rank_for_schedule second term (sched.c:2414-2449): class 3 beats class 1/2",
+   "next_probe": "Find a semantically-real spelling where the pair carrier consumes a value produced late in the divmod chain (no dead code, no coercion constructs); verify with RANK_DEBUG then sandbox"
+  },
+  {
+   "hypothesis": "s.d0=hi; s.p0=...; s.d1=hi; ordering survives flow but emits sh48-first (predicted non-target) \u2014 cheap kill to close the last untested source order",
+   "mechanism": "flow last_mem_set eviction works for this order too; sched LUID-stable sort should keep sh order as source order",
+   "next_probe": "One edit + sandbox; expect 121 insns with swapped sh pair (score ~8); bank as KILLED unless sched surprises"
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-28T02:47:58.057366+00:00"
+}

@@ -641,3 +641,4 @@
 - 2026-07-27 17:34 func_80044098 s3 [structural] floor=3: structural s3: stub root-caused (sched.c birthing_insn_p LAUNCH boost, knob = reg_n_sets!=1); pY hdr-borrow kills the stub entirely (3 @ 26/26, exact target structure); both holder families proven 3-locked by measurement + borrow-host enumeration
 - 2026-07-27 18:32 func_80044098 s4 [permuter] OWNER-GATED — parked pending owner ruling: permuter s4: permuter axis measured DEAD (~105k iters, 4 basins; only banned-pair, 3-locked-family, or semantics-broken finds); pY (3 @ 26/26, zero pins/rules) restored to src per Judge constraint; OWNER-ESCALATION filed per the 2026-07-27 standing both-gates-fail auto-ruling
 - 2026-07-27 18:58 CIRCUIT-BREAK: 3 consecutive invalid sessions on func_80052B44
+- 2026-07-27 22:14 func_800600C8 s1 [recon] floor=6: Recon s1: floor 13 -> 6 fully cheat-free (121/121 insns); both source cheats removed; all 6 regfix clusters explained; residual = one sched1 tie transposition
