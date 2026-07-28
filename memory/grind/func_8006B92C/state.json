@@ -40,7 +40,9 @@
    "next_probe": "s4: try (i) `var_v1 = a0 - (a0 & 0xE000);` in else arms (algebraic equiv when the else-branch was taken from `(a0 & 0xE000) == 0x4000` false OR `(a0 & 0xE000) == 0` false -- wait, algebraic equivalence needs proof); (ii) `var_v1 = a0 ^ (a0 & 0xE000);` (same via xor); (iii) narrow-integer-type on var_v1 (u16 halfword form). Measure each."
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "Expand both /* FAKE */ annotations at src/text1b.c:15714 and :15725 to the full template required by staged-value-reused-variable.md \u00a7prong-4: name the mechanism (sched.c adjust_priority / birthing_insn_p; reg_n_sets[v]!=1 disables the load-late launch priority) and cite lever-exhaustion at memory/grind/func_8006B92C/{hypotheses,evidence}.md sessions s1-s3. No other change; the C substance is accepted."
+ ],
  "origin": "queue",
  "created": "2026-07-28T21:57:58.046477+00:00"
 }
