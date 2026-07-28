@@ -1,4 +1,14 @@
 /* Candidate: func_80038170 (code6cac_c_mid.c) — post-Judge-ruling session (2026-07-28)
+ * s2 (structural, 2026-07-28): src at HEAD had REVERTED to the old cheat form
+ * (pins + dummy-asm + two-symbol spelling); this candidate was re-applied
+ * verbatim to src and re-measured: sandbox --disable all = 1 (141/141), word
+ * diff vs the oracle stream = jal reloc placeholder only, normalized diff vs
+ * build/ reference = the 2 linker-identical reloc-spelling words + 4 j-words
+ * that are pure section-offset artifacts of the stale reference (sandbox
+ * strips 29 cheat-asm instances file-wide, shifting all offsets 4 bytes).
+ * Artifacts: tmp/grind/func_80038170/s2/. Form UNCHANGED from the Judge-
+ * sanctioned spelling below; layer-1 reviewer PASS carried over.
+ *
  * IN PLACE in src/code6cac_c_mid.c. Engine sandbox floor: 1 (stale-reference
  * reloc artifact ONLY — see below). TRUE byte distance to oracle: 0 (proven at
  * word level: 141/141 insns match the oracle stream; the sole .o-text diff is

@@ -1,8 +1,8 @@
 {
  "func": "func_80038170",
  "file": "code6cac_c_mid",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 0,
@@ -15,13 +15,19 @@
    "floor": 1,
    "modality": "recon",
    "headline": "Judge form applied + new i=0-hoist lever reaches word-level byte parity (141/141 vs oracle stream); floor 1 is solely the stale-reference D_8008F19C+1 reloc artifact; function is integration-ready \u2014 c"
+  },
+  {
+   "session": 2,
+   "floor": 1,
+   "modality": "structural",
+   "headline": "Judge form re-applied to src (HEAD had reverted to cheat form) and re-proven: sandbox 1, 141/141 words vs oracle stream, floor-1 residual is solely the linker-identical reloc spelling; function remain"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Function is integration-ready: retiring regfix.txt:1250 + the prologue_config func_80038170 entry and regenerating build/ yields sandbox 0 and full-build SHA1 == oracle",
-   "mechanism": "all 141 insn words already match the oracle stream; the only .o-text diff is the reloc spelling, which is byte-identical after link and disappears when the reference .o regenerates from this src",
-   "next_probe": "driver/integration: retire both carriers, full build, verify SHA1 == oracle, re-run sandbox (expect 0), submit FINAL CALL"
+   "hypothesis": "Function is integration-ready: with the Judge form now IN src, retiring regfix.txt:1250 (reorder @9-13) + the tools/prologue_config.json func_80038170 entry and rebuilding yields sandbox 0 and full-build SHA1 == oracle",
+   "mechanism": "all 141 insn words match the oracle stream; the floor-1 residual is the reloc spelling which is byte-identical after link and disappears from the sandbox metric once build/ regenerates from this src; both carriers measured HARMFUL (rules-applied sandbox 4 vs clean 1) so they must be retired BEFORE any rebuild",
+   "next_probe": "driver/integration: verify src still carries the s2-applied form, retire both carriers, full build, SHA1 == oracle, re-run sandbox (expect 0), submit FINAL CALL"
   }
  ],
  "judge_constraints": [

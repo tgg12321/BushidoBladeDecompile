@@ -103,3 +103,15 @@ as indefinitely parked INCOMPLETE). Do NOT attempt any dead-array or declaration
 - [s1] Carriers measured harmful: rules-applied sandbox 4 vs clean 1; regfix.txt:1250 + tools/prologue_config.json func_80038170 entry must be retired at integration BEFORE any rebuild (both driver-only surfaces)
 
 - [s1] canonical: verdict C, distance 1, asm_insns 0
+
+- [s2] src/code6cac_c_mid.c at s2 session start did NOT carry the Judge form — HEAD still had the old cheat body (pins + dummy-asm + two-symbol spelling); grind-session src edits are reverted between sessions, so integration MUST re-verify src carries the candidate (it now does, applied this session)
+
+- [s2] sandbox func_80038170 --disable all with the Judge form in src: score 1, target_insns 141, build_insns 141, rules_dropped 1, cheat_asm_stripped 29 (file-wide count, not this function)
+
+- [s2] word_diff vs asm/funcs oracle words: 141/141, sole diff the jal reloc placeholder resolved at link — parity with the oracle stream re-proven this session (tmp/grind/func_80038170/s2/diffcheck_out.txt)
+
+- [s2] normalized 141-insn diff vs build/src/code6cac_c_mid.o reference: exactly 6 differing insns — [93]/[95] the linker-identical reloc spelling (D_8008F19C+1 imm 90220001 vs D_8008F19D 90220000), [29]/[33]/[35]/[37] intra-function j words off by one word (080000c2 vs 080000c3) purely from the file-wide cheat-asm-strip offset shift in the sandbox .o (tmp/grind/func_80038170/s2/norm_diff_out.txt)
+
+- [s2] D_8008F19D no longer referenced anywhere in src/code6cac_c_mid.c after the edit — no dangling extern
+
+- [s2] Form unchanged from the banked layer-1-reviewer-PASS candidate; Judge-binding spelling followed verbatim (decl s32 s1, s2, s3; separate s3=0; s2=0; s1=0;)

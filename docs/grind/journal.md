@@ -659,3 +659,4 @@
 - 2026-07-28 06:35 func_80037AA4 COMPLETED-C after 4 sessions.
 - 2026-07-28 06:45 func_8003D330 COMPLETED-C after 1 sessions.
 - 2026-07-28 07:37 func_80038170 s1 [recon] floor=1: Judge form applied + new i=0-hoist lever reaches word-level byte parity (141/141 vs oracle stream); floor 1 is solely the stale-reference D_8008F19C+1 reloc artifact; function is integration-ready — carriers (regfix.txt:1250 + prologue_config entry) measured HARMFUL (rules-applied score 4) and must be retired driver-side before rebuild/FINAL CALL.
+- 2026-07-28 07:43 func_80038170 s2 [structural] floor=1: Judge form re-applied to src (HEAD had reverted to cheat form) and re-proven: sandbox 1, 141/141 words vs oracle stream, floor-1 residual is solely the linker-identical reloc spelling; function remains integration-ready
