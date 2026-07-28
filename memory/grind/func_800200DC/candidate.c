@@ -1,28 +1,23 @@
-/* func_800200DC — floor-5 candidate (s3). disc-reuse (s2) + BOTH subtraction
- * minuends staged through the currently-dead disc (sanctioned
- * staged-value-reused-variable shape: existing var, live staged reads, FAKE-
- * annotated). Mechanism (proven with instrumented cc1 FINDREG/ALLOCDBG, s3):
- * a raw `dy = arg1[1] - arg0[1]` gives dy a $v1 preference via global.c
- * set_preference (minuend's local-alloc hard reg); find_reg's pref-override
- * then steals dy from $v0 to $v1 and rotates 3 regs (the old 6-insn residual).
- * Staging the minuend through a cross-block pseudo (unallocated at
- * set_preference time) kills the preference; dy stays $v0, arg2^2 takes $v1,
- * reload lands the disc-addu mflo in $t1 — all matching target. The dx-side
- * stage is load-bearing: disc's first segment overlaps arg1-ptr, blocking an
- * expand_preferences merge that otherwise leaks arg1-ptr's $a1 entry pref
- * into the arm-1 quotient (measured $t0 without it).
- * Residual 5 = arm-2 quotient lands $a0 instead of $v1: disc's own $a0 pref
- * (combine folds `sll $a0,disc,10` into the call-arg set) flows down the
- * dy->dy2->divres->quotient expand_preferences merge chain when disc dies at
- * the staged dy-subu; the quotient's override then takes free $a0.
- * A fresh two-write relay (y1) with empty prefs scores sandbox 0 (bytes
- * proven, artifact s3/final_y1) but was layer-1 FAILED as outside the
- * staged-value sanction (fresh variable) — OWNER RULING REQUESTED.
- * Session 3 (structural, 2026-07-28): floor 5 re-verified; existing-variable
- * carrier axis measurably exhausted (a2=8, neg=26, neg+a0split=18 + structural
- * exclusions — see evidence.md s3b). Remaining sanctioned closers: {3}-inject
- * into the arm-2 chain (fr120={4}; adding {3} flips the override to $v1) or
- * permuter from this base. */
+/* func_800200DC — SANDBOX-0 candidate (s4, permuter). Base: the s3 floor-5
+ * disc-carrier form (both subtraction minuends staged through the
+ * currently-dead disc, sanctioned staged-value-reused-variable shape; disc
+ * also reused for the sqrt result per s2). NEW in s4: the arm-2 (a2-disc)
+ * temp is written into the dead dy (existing variable, single write, value
+ * consumed immediately). Mechanism (global.c set_preference /
+ * expand_preferences / find_reg, building on the s3 instrumented-cc1
+ * evidence): disc dies at that subu, so its prefs (incl. {3}=$v1) merge into
+ * dy and flow down the mult/divmodsi4 single_set pref edges to the /32
+ * quotient, whose find_reg low-first override then takes $v1 (target)
+ * instead of $a0; dy's own $v0 home gives the subu/mult dest the target
+ * register. Exhaustion table (sandbox --disable all): natural spelling 5,
+ * fresh named temp 5 (naming RTL-neutral), disc-reuse 2 (temp lands disc's
+ * $v1 home; target wants $v0), dy-reuse 0. Zero-arm decl-order flip measured
+ * NOT load-bearing. sandbox 0 verified 3x this session (168/168, 14 rules
+ * stripped); independent rule-free single-function pipeline diff vs
+ * asm/funcs/func_800200DC.s EMPTY (tmp/perm_200DC_s4). Found by directed
+ * permuter campaign (label arm2-statement-family, 2803 iters, harvested);
+ * campaign's own score-0 spelled it as ((dy = a2 - disc) * dist) embedded
+ * assignment — refined to the two-statement form. */
 void func_800200DC(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3, s32 *arg4) {
     s32 disc;
     s32 dx;
@@ -64,7 +59,17 @@ void func_800200DC(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3, s32 *arg4) {
                 a0 = ((a2 + disc) * dist) / dy2 / 32;
 
                 if (a0 < 0) {
-                    a0 = ((a2 - disc) * dist) / dy2 / 32;
+                    /* FAKE: dead dy reused as the arm-2 (a2-disc) temp,
+                     * mechanism: global.c set_preference/expand_preferences —
+                     * disc dies at this subu so its {$v1} pref merges into dy
+                     * and flows down the mult/divmodsi4 pref edges to the /32
+                     * quotient, whose find_reg low-first override then takes
+                     * $v1 (target); dy's own $v0 home matches the subu/mult.
+                     * lever-exhaustion: memory/grind/func_800200DC/evidence.md
+                     * §s4 (natural spelling 5, fresh named temp 5, disc-reuse
+                     * 2, dy-reuse 0). */
+                    dy = a2 - disc;
+                    a0 = (dy * dist) / dy2 / 32;
                 }
             } else {
                 a0 = 300;

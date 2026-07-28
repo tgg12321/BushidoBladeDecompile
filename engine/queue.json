@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_800200DC",
-      "file": "code6cac",
-      "distance": 14,
-      "verdict": "C",
-      "rules": 14,
-      "status": "active"
-    },
-    {
       "func": "myRobGeneiMove",
       "file": "code6cac",
       "distance": 14,
@@ -2666,14 +2658,14 @@
     }
   ],
   "counts": {
-    "total": 324,
-    "active": 271,
+    "total": 323,
+    "active": 270,
     "by_status": {
-      "active": 271,
+      "active": 270,
       "parked": 53
     },
     "by_verdict": {
-      "C": 118,
+      "C": 117,
       "ASM-PARTIAL": 46,
       "ASM-SUSPECT": 107
     }

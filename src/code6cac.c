@@ -2139,9 +2139,15 @@ s32 func_8002006C(void) {
     D_800A38A8 = 0;
 }
 void func_800200DC(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3, s32 *arg4) {
-    s32 dx = arg1[0] - arg0[0];
-    s32 dz = arg1[2] - arg0[2];
-    s32 dist = func_8007E11C(dx * dx + dz * dz);
+    s32 disc;
+    s32 dx;
+    s32 dz;
+    s32 dist;
+
+    disc = arg1[0]; /* FAKE: stage the minuend through the currently-dead disc */
+    dx = disc - arg0[0];
+    dz = arg1[2] - arg0[2];
+    dist = func_8007E11C(dx * dx + dz * dz);
 
     if (dist == 0) {
         arg4[2] = 0;
@@ -2150,7 +2156,10 @@ void func_800200DC(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3, s32 *arg4) {
     }
 
     {
-        s32 dy = arg1[1] - arg0[1];
+        s32 dy;
+
+        disc = arg1[1]; /* FAKE: stage the minuend through the currently-dead disc */
+        dy = disc - arg0[1];
 
         if (dy == 0) {
             s32 neg = -arg3;
@@ -2159,16 +2168,28 @@ void func_800200DC(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3, s32 *arg4) {
             arg4[2] = (neg * dz) / denom;
         } else {
             s32 dy2 = dy * 2;
-            s32 disc = arg2 * arg2 + arg3 * dy2;
             s32 a0;
 
+            disc = arg2 * arg2 + arg3 * dy2;
+
             if (disc >= 0) {
-                s32 sq = func_8007E11C(disc << 10);
-                s32 a2 = arg2 << 5;
-                a0 = ((a2 + sq) * dist) / dy2 / 32;
+                s32 a2;
+                disc = func_8007E11C(disc << 10);
+                a2 = arg2 << 5;
+                a0 = ((a2 + disc) * dist) / dy2 / 32;
 
                 if (a0 < 0) {
-                    a0 = ((a2 - sq) * dist) / dy2 / 32;
+                    /* FAKE: dead dy reused as the arm-2 (a2-disc) temp,
+                     * mechanism: global.c set_preference/expand_preferences —
+                     * disc dies at this subu so its {$v1} pref merges into dy
+                     * and flows down the mult/divmodsi4 pref edges to the /32
+                     * quotient, whose find_reg low-first override then takes
+                     * $v1 (target); dy's own $v0 home matches the subu/mult.
+                     * lever-exhaustion: memory/grind/func_800200DC/evidence.md
+                     * §s4 (natural spelling 5, fresh named temp 5, disc-reuse
+                     * 2, dy-reuse 0). */
+                    dy = a2 - disc;
+                    a0 = (dy * dist) / dy2 / 32;
                 }
             } else {
                 a0 = 300;

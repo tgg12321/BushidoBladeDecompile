@@ -226,3 +226,29 @@
 - probe: greg pref tables + FINDREG across staged2/a2c/y1f (intact: disc {3,4,7}) vs negc/nega0 (broken: disc {4,7})
 - result: confirmed as an invariant; consequently only a variable that is global, dead outside the two stage segments, and absent from every local pool can host the stages — no existing variable qualifies (disc=5 {4}-leak, a2=8 conflict, neg=26/18 pool-membership, dx/dz/dist/dy/dy2/a0 wrong stage-lw home bytes, denom pool-membership)
 - verdict: CONFIRMED
+
+## [s4] {3}-injection into the arm-2 chain closes the last 5 (s3b OPEN hypothesis)
+- mechanism: an existing-variable dest on the arm-2 (a2-disc) subu receives
+  disc's prefs (incl. {3}) via expand_preferences at disc's death and passes
+  them down the mult/divmodsi4 pref edges to the /32 quotient; find_reg's
+  low-first override then picks $v1 (target) over $a0
+- probe: directed permuter campaign from the floor-5 base (tmp/perm_200DC_s4);
+  hand refinement measured natural=5, fresh named temp=5, disc-reuse=2,
+  dy-reuse=0 (sandbox --disable all, 168/168, 14 rules stripped)
+- result: dy-reuse form reaches sandbox 0; independent rule-free pipeline diff
+  vs target empty; candidate in src/
+- verdict: CONFIRMED
+
+## [s4] disc-reuse as the arm-2 temp closes the function
+- mechanism: same pref-merge route, but the temp coalesces into disc's pseudo
+  (105) whose home is $v1
+- probe: permuter score-10 find applied to src; sandbox = 2 (subu/mult dest
+  $v1 vs target $v0; quotient/rounding cluster all match)
+- result: quotient fixed but temp reg wrong; superseded by dy-reuse
+- verdict: KILLED
+
+## [s4] The zero-arm denom/neg decl-order flip is load-bearing for the closure
+- mechanism: suspected local-pool rotation change (s3b frontier A/B)
+- probe: dy-reuse form with original neg-first order vs flipped
+- result: 0 both ways — flip not load-bearing; original order kept
+- verdict: KILLED

@@ -236,3 +236,54 @@ session (but heavier — 14 coupled renames vs their handful).
 - [s3] greg -da dump prints post-prune ';; N preferences:' and allocno conflict lists (dump_conflicts) — cheap pref-survey surface for future sessions
 
 - [s3] prefweb.py simulator + measured tables agree everywhere except disc's {3}/{7} provenance, which remains the one untraced channel
+
+## s4 permuter (2026-07-28) — FLOOR 5 -> 0 (sandbox 0 verified 3x, rule-free pipeline diff vs target EMPTY)
+
+- [s4] Campaign: tmp/perm_200DC_s4, label arm2-statement-family, launched from the
+  floor-5 base with directed PERM_GENERAL sites on the arm-1/arm-2 statement
+  families (identity + fresh-single-write-temp spellings) + zero-arm neg/denom
+  order + PERM_RANDOMIZE; 2803 iterations, harvested + stopped in-session.
+  Minimal-TU workspace (base_plain.c) validated: instruction stream identical to
+  the sandbox object modulo branch-offset/jal-symbol display only.
+- [s4] Find timeline: permuter base score 225; score-10 find at ~15s
+  (disc = a2 - disc arm-2 reuse + zero-arm denom/neg decl flip); the campaign's
+  own score-0 at 151s spelled the same mechanism as an embedded assignment
+  ((dy = a2 - disc) inside the expression).
+- [s4] Sandbox measurement table for the arm-2 (a2-disc) temp spelling:
+  natural inline expression = 5 (the floor base); fresh named temp
+  `s32 t = a2 - disc;` = 5 (naming is RTL-neutral, consistent with s2);
+  disc-reuse `disc = a2 - disc;` = 2; dy-reuse `dy = a2 - disc;` = **0**.
+  Zero-arm denom/neg order flip is NOT load-bearing (0 with the original
+  neg-first order); dropped from the candidate.
+- [s4] Mechanism (confirms s3b's open {3}-injection hypothesis): making the
+  arm-2 subu DEST an existing global pseudo lets expand_preferences merge
+  disc's prefs (incl. {3}) at disc's death into that pseudo and pass them down
+  the mult/divmodsi4 single_set pref edges to the /32 quotient (120), whose
+  find_reg low-first override then takes $v1 = target (previously $a0 from the
+  {4}-only route). disc-reuse gets the quotient right but the temp itself sits
+  in disc's $v1 home (target temp reg is $v0) -> residual 2 (subu/mult dest);
+  dy-reuse fixes both: dy's home is $v0 (subu/mult match) and the pref merge
+  still delivers {3} to the quotient.
+- [s4] Residual-2 diff at the disc-reuse form: `subu v1,a2,v1 / mult v1,s1`
+  vs target `subu v0,a2,v1 / mult v0,s1` (only those 2 insns).
+- [s4] Independent rule-free single-function pipeline (tmp/perm_200DC_s4
+  compile.sh + validate.sh): final form diff vs asm/funcs/func_800200DC.s is
+  EMPTY (offset-only branch display differences aside).
+- [s4] Layer-1 cheat-reviewer: first pass FAIL on procedural grounds
+  (annotation missing mechanism:/lever-exhaustion: tags; no s4 ledger receipts
+  yet) — remediated: full FAKE annotation written at the construct, this
+  ledger section is the exhaustion record. dy is an EXISTING variable (not a
+  fresh relay; the judge's fresh-multi-write-relay ban does not apply), single
+  additional write, value consumed immediately by live code.
+- [s4] Tooling gotcha: mktemp/temp files under /tmp behaved unreliably in this
+  WSL session (systemd user-session failure); compile.sh keeps its temps under
+  the workspace dir instead. wsl.sh double-quote embedding mangles $-expansions
+  in inline commands — put anything with $ into a script file first.
+- [s4] Layer-1 cheat-reviewer re-review after remediation: **PASS** — all
+  staged-value-reused-variable bounds verified against the tree (existing
+  non-fresh var, live immediate use, provably-safe borrow, full-format FAKE
+  annotation, exhaustion table with the fresh-named-temp negative control, no
+  cheat riders). Reviewer's audit-trail note (not a FAIL basis): the family
+  rule's origin narrative is sched.c launch-priority while this construct and
+  the already-accepted disc-carrier base both use the global.c preference
+  chain — flagged for an eventual owner scope note if the family generalizes.
