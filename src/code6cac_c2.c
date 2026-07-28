@@ -950,27 +950,13 @@ void change_shadow_tex_reg(void) {
     }
 }
 void func_8003D330(void) {
-    register u32 code asm("a1") = 0xE100001F;
-    register u32 mask_lo asm("a2") = 0x00FF0000;
-    u8 *base;
-    register u8 *p asm("v1");
-    register u32 mask_hi asm("a3");
-    u32 *ot;
-    u32 tag;
-
-    base = (u8 *)&D_800A3D30;
-    __asm__ volatile("ori %0, %0, 0xFFFF" : "=r"(mask_lo) : "0"(mask_lo), "r"(base));
-    p = base + (D_800A3218 << 3);
-    mask_hi = (u32)0xFF000000;
-
-    p[3] = 1;
-    *(u32 *)(p + 4) = code;
-
-    ot = (u32 *)D_800A374C;
-    tag = *(u32 *)p;
-    tag = (tag & mask_hi) | (*ot & mask_lo);
-    *(u32 *)p = tag;
-    *ot = (*ot & mask_hi) | ((u32)p & mask_lo);
+    OTag *p = (OTag *)((u8 *)&D_800A3D30 + (D_800A3218 << 3));
+    OTag *ot;
+    ((u8 *)p)[3] = 1;
+    *((u32 *)p + 1) = 0xE100001F;
+    ot = (OTag *)D_800A374C;
+    p->addr = ot->addr;
+    ot->addr = (u32)p;
 }
 extern u32 D_800A3930;
 void func_8003D39C(s32 x, s32 y, s32 ch, s32 color) {
