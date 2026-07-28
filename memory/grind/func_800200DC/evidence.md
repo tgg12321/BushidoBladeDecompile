@@ -166,3 +166,73 @@ session (but heavier — 14 coupled renames vs their handful).
   the LO reload cannot share the output and falls to the spill/free pool;
   measured $t1 (target-matching) in the y1/disc forms, i.e. the pool ordering
   is right once the allocnos are.
+
+## s3b structural (2026-07-28, session 3 of the s3-numbered ledger) — carrier exhaustion; floor stays 5
+
+- [s3b] Baseline floor 5 re-verified twice (start + close) with candidate.c in
+  src (168/168, 14 rules stripped).
+- [s3b] a2-carrier (both minuends staged through existing a2): **8**. Downstream
+  PERFECT (dy=$v0, /32 temps $a1/$v1, disc $v1) but carrier lands $a2 + arg2
+  evicted to $s3 in prologue. FINDREG(77): someone_prefers={3,4,7} = disc's
+  full prefs (a2 CONFLICTS with disc — its real segment spans arg2<<5 through
+  the arm-2 (a2-disc) use). Structurally dead: carrier can never share $v1
+  with disc. Artifact: s3/a2_carrier_8.diff.txt, a2c.*.
+- [s3b] neg's $a1 landing EXPLAINED with FINDREG (judge precondition met):
+  someone_prefers EMPTY; hard conflict {2,3,4}. The $v1 conflict is the
+  zero-arm quotient-1 local (negc local table: 94 in 3) — once neg leaves the
+  local pool (carrier=global), local-alloc's scan gives quot1 $v1 (in intact
+  forms local-neg@$v1 blocks it to $a0 = target). neg-carrier is
+  SELF-DEFEATING. Artifacts: negc.*, negc_fr77.txt.
+- [s3b] neg-carrier + zero-arm a0-split (a0=neg*dx; a0=a0/denom; store): **18**.
+  Zero arm fully matches (a0 global -> $a0 home = target bytes) but the
+  (a2+/-disc)*dist products become LOCALS@$v1 (nega0: 94,98 in 3) -> both /32
+  temps get LITERAL {3} set_preferences (greg ";; 112/118 preferences: 3") ->
+  steal $v1; disc drops to {4,7}/$a3. Artifacts: nega0.*, neg_a0split_18.diff.txt.
+- [s3b] **divmodsi4 insns ARE preference/merge edges**: GCC 2.7.2 single_set()
+  ignores sets whose dest is REG_UNUSED (rtlanal.c:601), and the dead mod-half
+  always is — so set_preference fires with XEXP(div,0)=the DIVIDEND (local
+  renumbering visible!) and expand_preferences merges quotient<->dividend/
+  divisor. Corrects s2/s3's "dy->dy2->divres" chain model.
+- [s3b] Corrected floor-5 {4}-route to the arm-2 quotient (fr120={4}):
+  disc{4} (call-arg ashift fold) --[insn-148 (a2-disc) subu, disc dies,
+  merge]--> 115 --[mult]--> 116 --[divmod]--> 120. dy/dy2 never carry {4}
+  (expand is ONE forward pass; the dy-relay merge at insn 67 happens BEFORE
+  disc gains {4} at insn 121). If 120 ALSO had {3}, find_reg's low-first
+  pref-override would pick $v1 (target) over $a0 — a {3} injection into the
+  arm-2 chain is a theoretical closer for the last 5.
+- [s3b] Working-equilibrium invariant (measured across staged2/a2c/y1f vs
+  negc/nega0 greg pref tables): disc MUST hold pref {3} (";; 105 preferences:
+  3 4 7"); it both wins disc $v1 and — via regs_someone_prefers (prune:
+  merges prefs of lower-priority CONFLICTING allocnos) — shields $v1 at the
+  arm-1 /32 temp's ord-0 turn (it conflicts with disc because disc stays live
+  through arm-1 into arm-2). In every neg-carrier form disc loses {3}.
+  PROVENANCE of disc's {3} (and {7}) is NOT yet traced: not from its set
+  insns (plus operands are unrenumbered globals; call-copy gives {2};
+  call-arg gives {4}), not from any modeled expand merge (prefweb.py), and no
+  other allocno holds pref 3 in y1f (so it is not a symmetric-merge residue).
+  regs_someone_prefers construction read from source (global.c:846-900);
+  FINDREG conflicts field = hard_reg_conflicts incl. post-allocation updates.
+- [s3b] Existing-variable carrier axis EXHAUSTED (judge axis-1): disc=5(base),
+  a2=8, neg=26, neg+a0split=18 measured; dx/dz/dist=callee-save homes, dy=$v0,
+  dy2=$s0, a0=$a0 — the stage lw DEST byte IS the carrier's reg, so any
+  wrong-home carrier mismatches bytes structurally; denom shares the zero-arm
+  local-pool problem. Only a variable that is global, dead outside the two
+  stage segments, and absent from every local pool can color $v1 — i.e. the
+  banned fresh 2-write relay.
+- [s3b] Tooling: s3/prefweb.py (pref-web simulator, single_set-aware),
+  s3/mkdiff.sh (named-reg normalized diff), s3/dump_carrier.sh + frdump.sh
+  (parameterized FINDREG/ALLOCDBG). greg dump ITSELF prints post-prune
+  ";; N preferences:" + allocno conflict lists (dump_conflicts) — cheaper
+  than FINDREG for pref surveys.
+
+- [s3] floor 5 re-verified twice this session with candidate.c applied in src (168/168, 14 rules stripped)
+
+- [s3] judge precondition met: neg's $a1 landing explained with FINDREG (hard {3} conflict from the local-pool rotation, not politeness)
+
+- [s3] existing-variable carrier axis (judge axis-1) measured dead: disc 5 / a2 8 / neg 26 / neg+a0split 18 + structural exclusions for the remaining 6 variables
+
+- [s3] fr120={4} only: if the arm-2 /32 temp ALSO carried {3}, find_reg's low-first override would pick $v1 (target) over $a0 — concrete closer candidate for the last 5
+
+- [s3] greg -da dump prints post-prune ';; N preferences:' and allocno conflict lists (dump_conflicts) — cheap pref-survey surface for future sessions
+
+- [s3] prefweb.py simulator + measured tables agree everywhere except disc's {3}/{7} provenance, which remains the one untraced channel

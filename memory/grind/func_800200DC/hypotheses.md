@@ -139,3 +139,90 @@
 - result: CONFIRMED; no existing $v1-colorable carrier without the {4} exists
   (disc is the only one; neg mis-colors to $a1)
 - verdict: CONFIRMED
+
+## [s3b] a2 (existing var) can carry the staged minuends into $v1
+- mechanism: empty pref set (arg2 unrenumbered at set_preference), first
+  segment overlaps arg1-ptr blocking the {5} leak
+- probe: sandbox + FINDREG/ALLOCDBG (a2c.*)
+- result: 8; downstream allocation all-target but carrier lands $a2 — pass-0
+  avoids $v1 (someone_prefers = disc's {3,4,7}; a2 conflicts with disc via the
+  arm-2 (a2-disc) use) and the disc conflict makes $v1 unreachable in ANY order
+- verdict: KILLED
+
+## [s3b] neg's $a1 landing is pass-0 politeness (fixable by allocation order)
+- mechanism: assumed someone_prefers blocked $v1
+- probe: FINDREG negc_fr77 (judge-mandated explanation)
+- result: someone_prefers EMPTY; hard conflict {3} — globalizing neg removes
+  the local-pool $v1 blocker, the zero-arm quotient-1 local takes $v1 inside
+  neg's range. Self-defeating, not order-fixable
+- verdict: KILLED
+
+## [s3b] Restoring the zero-arm equilibrium (quot1 split through a0) rescues
+   the neg carrier
+- mechanism: a0-var (global, $a0 home) removes quot1 from the local pool;
+  target zero-arm bytes identical under the split spelling
+- probe: sandbox 18 + nega0 dumps
+- result: zero arm matches, but the else-arm products become locals@$v1 ->
+  literal {3} set_preferences on both /32 temps via divmod single_set edges ->
+  $v1 stolen, disc loses {3}, cascade
+- verdict: KILLED
+
+## [s3b] divmodsi4 is invisible to set_preference/expand_preferences
+- mechanism: parallel with 2 sets assumed to fail single_set
+- probe: rtlanal.c single_set source
+- result: single_set IGNORES REG_UNUSED-dest sets (line 601) — the dead mod
+  half always qualifies, so divmods ARE full pref/merge edges (dividend's
+  local renumbering leaks into the quotient's prefs)
+- verdict: KILLED (corrects the s2/s3 chain model)
+
+## [s3b] (OPEN — the load-bearing unknown) disc's {3} pref provenance in
+   intact-zero-arm forms
+- mechanism: unexplained by set_preference on disc's own sets or by any
+  modeled expand merge; correlates perfectly with zero-arm local-neg@$v1
+  across 6 dumped forms; disc{3} is what shields $v1 (someone_prefers) and
+  wins disc $v1
+- probe next: A/B minimal experiments on the floor-5 base (flip zero-arm
+  neg/denom statement order so local-neg colors off $v1; predict disc loses
+  {3} and score breaks) to localize the channel; if inconclusive, surface an
+  owner request to extend the instrumented cc1 with a set_preference/expand
+  event log (tools/ change = owner-only)
+- verdict: (open)
+
+## [s3b] (OPEN) {3}-injection into the arm-2 chain closes the last 5
+- mechanism: fr120={4} only; find_reg override scans low-first, so {3,4} on
+  120 picks $v1 (target) before $a0. The chain 115->116->120 is fed only by
+  unrenumbered globals today; a spelling that makes one operand a
+  $v1-renumbered block-local would inject {3} via divmod/mult set_preference
+- probe next: re-block the (a2-disc) temp / arm-2 dividend into a local scoped
+  so local-alloc colors it $v1 (zero-arm and arm-1 untouched); measure
+- verdict: (open)
+
+## [s3] Existing var a2 can carry the two staged minuends into $v1
+- mechanism: empty pref set (arg2 unrenumbered at set_preference time); first stage segment overlaps arg1-ptr, blocking the {5} entry-copy leak
+- probe: sandbox + FINDREG/ALLOCDBG dumps (s3/a2c.*)
+- result: 8. Downstream allocation ALL-target (dy=$v0, /32 temps $a1/$v1, disc $v1) but the carrier lands $a2: find_reg pass-0 avoids $v1 (regs_someone_prefers = disc's {3,4,7}; a2 CONFLICTS with disc because its real segment spans arg2<<5 through the arm-2 (a2-disc) use) and that same conflict makes $v1 unreachable under any allocation order
+- verdict: KILLED
+
+## [s3] neg's prior $a1 landing (26) was pass-0 politeness, fixable by lowering neg's allocation priority below disc's
+- mechanism: assumed someone_prefers blocked $v1 at neg's find_reg turn
+- probe: FINDREG dump of the reconstructed neg-carrier form (judge-mandated explanation; s3/negc_fr77.txt)
+- result: someone_prefers is EMPTY; the blocker is a HARD conflict {3}: globalizing neg removes it from the zero-arm local pool, and local-alloc then gives the zero-arm quotient-1 local $v1 inside neg's live range (intact forms: local-neg@$v1 blocks quot1 to $a0 = target). neg-carrier is structurally self-defeating, not order-fixable
+- verdict: KILLED
+
+## [s3] Restoring the zero-arm equilibrium by splitting quotient-1 through a0 (a0=neg*dx; a0=a0/denom) rescues the neg carrier
+- mechanism: a0 is global with an $a0 home, so the quotient leaves the local pool while emitting target-identical zero-arm bytes (mflo $a0/div/mflo $a0/sw)
+- probe: sandbox + nega0 dumps (s3/neg_a0split_18.diff.txt)
+- result: 18. Zero arm now matches, but the (a2+/-disc)*dist products become block-locals colored $v1 (nega0 locals 94,98 in 3) and both /32 rounding temps acquire LITERAL {3} set_preferences through the divmod edges (greg ';; 112/118 preferences: 3'), stealing $v1; disc drops to {4,7} and lands $a3, the carrier lands $a1
+- verdict: KILLED
+
+## [s3] divmodsi4 parallels are invisible to set_preference/expand_preferences (2-set parallel fails single_set)
+- mechanism: assumed structural single_set failure
+- probe: rtlanal.c single_set source read
+- result: single_set IGNORES sets whose dest carries REG_UNUSED (rtlanal.c:601) and the dead mod-half always does — divmods ARE full preference/merge edges, leaking the dividend's local-alloc renumbering into the quotient's prefs. Corrects the prior 'dy->dy2->divres->quotient' chain model: the floor-5 {4} actually flows disc{4} ->(a2-disc) subu death-merge-> 115 ->mult-> 116 ->divmod-> 120, and dy/dy2 never carry {4} (the dy-relay merge precedes disc's {4} acquisition in expand's single forward pass)
+- verdict: KILLED
+
+## [s3] The target coloring is a whole-function equilibrium anchored on disc holding pref {3} and the zero-arm neg staying a $v1 block-local
+- mechanism: disc{3} wins disc $v1 AND shields $v1 at the arm-1 /32 temp's ord-0 turn via regs_someone_prefers (that temp conflicts with disc since disc lives through arm-1 into arm-2); local-neg@$v1 blocks the zero-arm quotient off $v1 and correlates with disc{3} across all 6 dumped forms
+- probe: greg pref tables + FINDREG across staged2/a2c/y1f (intact: disc {3,4,7}) vs negc/nega0 (broken: disc {4,7})
+- result: confirmed as an invariant; consequently only a variable that is global, dead outside the two stage segments, and absent from every local pool can host the stages — no existing variable qualifies (disc=5 {4}-leak, a2=8 conflict, neg=26/18 pool-membership, dx/dz/dist/dy/dy2/a0 wrong stage-lw home bytes, denom pool-membership)
+- verdict: CONFIRMED

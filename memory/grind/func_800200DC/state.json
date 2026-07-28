@@ -1,7 +1,7 @@
 {
  "func": "func_800200DC",
  "file": "code6cac",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -21,23 +21,29 @@
    "floor": 6,
    "modality": "structural",
    "headline": "Floor 14 -> 6: reusing disc for the sqrt result (disc = func_8007E11C(disc << 10)) closed all 8 Rotation-B insns; residual 6 is Rotation A only (dy/mult-temp $v0<->$v1 swap), with the RA mechanism pin"
+  },
+  {
+   "session": 3,
+   "floor": 5,
+   "modality": "structural",
+   "headline": "Floor holds at 5; existing-variable carrier axis measurably EXHAUSTED (a2=8, neg+a0split=18, neg $a1 explained per judge precondition) with the full RA mechanism mapped: divmods are pref edges, disc n"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Rotation A closes when the two mult temps (arg2^2, arg3*dy2) are allocated before dy, landing $v1/$t1 and evicting dy to $v0",
-   "mechanism": "allocno_compare order: 87's priority sits between 107 and 106; a small ref/live-length change on the temps flips the order; $t0 is spill-reserved so $t1 is the natural overflow temp reg",
-   "next_probe": "BB2_ALLOC_DEBUG / instrumented allocno_compare on pseudos 87/106/107 to read the exact priority numbers, then derive a C form that shortens/densifies the temps' ranges without adding insns"
+   "hypothesis": "disc's {3} (and {7}) pref provenance in intact-zero-arm forms is the load-bearing unknown; localizing it tells us exactly which C structure the equilibrium depends on",
+   "mechanism": "not from disc's own set insns (plus operands unrenumbered, call-copy {2}, call-arg {4}) nor any modeled expand merge; no other y1f allocno holds pref 3, ruling out symmetric-merge residue",
+   "next_probe": "A/B minimal experiments on the floor-5 base: flip zero-arm neg/denom statement order so local-neg colors off $v1 and check (greg pref table, 1 compile) whether disc loses {3} and the score breaks; if inconclusive, surface an owner request to extend the instrumented cc1 with a set_preference/expand event log (tools/ is owner-only)"
   },
   {
-   "hypothesis": "A permuter campaign from the score-6 base finds the Rotation-A closing form directly",
-   "mechanism": "the search space is now tiny (one statement family, 6-insn residual); s1's plateau evidence was from the 14-floor base and is stale",
-   "next_probe": "permuter_campaign.py on func_800200DC with directed PERM_* around the dy/dy2/disc statements, fresh-seed discipline, harvested in-turn"
+   "hypothesis": "Injecting {3} into the arm-2 chain (115/116/120) from the floor-5 base flips the last-5 override from $a0 to $v1",
+   "mechanism": "find_reg pref-override scans REG_ALLOC_ORDER low-first, so {3,4} on the arm-2 /32 temp picks $v1 first; the chain is currently fed only by unrenumbered globals, so a spelling that makes one operand (e.g. the (a2-disc) temp or arm-2 dividend) a $v1-renumbered block-local injects {3} via the divmod/mult set_preference edges without touching the zero arm or arm-1",
+   "next_probe": "scoped-block respellings of the arm-2 statement family measured with sandbox + the greg pref table"
   },
   {
-   "hypothesis": "The dy==0-arm shares no pseudos with the disc chain, so Rotation A may also root in a cross-arm allocation interaction not yet examined (negu/denom pseudos 90/93/94 conflict with 87)",
-   "mechanism": "87 conflicts list includes 74 75 76 77 80 83 (params/dx/dz/dist) but the zero-arm temps share the same hard regs; their local-alloc outcomes constrain global-alloc's view of $v0",
-   "next_probe": "read the zero-arm pseudos' dispositions in the existing s2 greg dump and check whether respelling the zero arm (neg/denom naming) shifts dy's conflict set"
+   "hypothesis": "A permuter campaign from the score-5 base finds the closing form of the arm-2 statement family directly",
+   "mechanism": "the residual is one statement family (arm-2 quotient register); s1 plateau evidence is from the stale 14-floor base",
+   "next_probe": "permuter_campaign.py on func_800200DC from the floor-5 form, directed PERM_* around the arm-2/zero-arm statements, fresh-seed discipline, harvested in-turn (next permuter-modality session)"
   }
  ],
  "judge_constraints": [

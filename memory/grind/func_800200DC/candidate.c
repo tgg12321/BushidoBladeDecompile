@@ -17,7 +17,12 @@
  * the staged dy-subu; the quotient's override then takes free $a0.
  * A fresh two-write relay (y1) with empty prefs scores sandbox 0 (bytes
  * proven, artifact s3/final_y1) but was layer-1 FAILED as outside the
- * staged-value sanction (fresh variable) — OWNER RULING REQUESTED. */
+ * staged-value sanction (fresh variable) — OWNER RULING REQUESTED.
+ * Session 3 (structural, 2026-07-28): floor 5 re-verified; existing-variable
+ * carrier axis measurably exhausted (a2=8, neg=26, neg+a0split=18 + structural
+ * exclusions — see evidence.md s3b). Remaining sanctioned closers: {3}-inject
+ * into the arm-2 chain (fr120={4}; adding {3} flips the override to $v1) or
+ * permuter from this base. */
 void func_800200DC(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3, s32 *arg4) {
     s32 disc;
     s32 dx;
