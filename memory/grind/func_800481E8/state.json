@@ -1,0 +1,34 @@
+{
+ "func": "func_800481E8",
+ "file": "text1b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 10,
+   "modality": "recon",
+   "headline": "Recon: inline-move cheat dissolved pure-C (floor 14->10); all 10 residual diffs are the 32-byte phantom-frame delta (vars 0 vs 32), with a working cc1 .frame gradient harness banked"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "A live phantom-slot spelling of the existing loop computations (4 s16 stream reads, +1 increment, <0x280 compare, 5th-arg sext) can reach vars=32 with zero dead code",
+   "mechanism": "GCC 2.7.2 assign_stack_temp during RTL expansion reserves frame bytes later register-allocated away (get_frame_size counts them); tslLineG5Init proves 8 bytes per HImode-bitwise trigger expression",
+   "next_probe": "Map every assign_stack_temp call site reachable from scalar expansion in tools/gcc-2.7.2/{expr,optabs,stmt}.c; derive which expression shapes trigger; sweep honest spellings of THIS function's computations through frame_probe.sh reading vars="
+  },
+  {
+   "hypothesis": "vars=32 decomposes as 4 triggers x 8 bytes matching the 4 s16 stream loads",
+   "mechanism": "Each triggering expression allocated its own 8-byte-aligned temp region in the original source's spelling",
+   "next_probe": "Find ONE spelling of a single stream-load conversion that yields vars=8, then replicate across all four loads and re-measure"
+  },
+  {
+   "hypothesis": "If the expansion-site map proves no honest spelling reaches vars=32, that constitutes measured exhaustion of the frame axis",
+   "mechanism": "Escalation evidence requirement \u2014 the unwritten pad array stays forbidden (target has no dead stores in the 32 bytes) so there is no carve-out shortcut",
+   "next_probe": "Only after frontier items 1-2 are measured dead: compile the site map + probe grid as escalation evidence in docs/grind/decisions.md (escalation modality, not before)"
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-28T13:50:57.673876+00:00"
+}

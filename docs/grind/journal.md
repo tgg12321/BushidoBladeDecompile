@@ -663,3 +663,4 @@
 - 2026-07-28 07:51 func_80038170 s3 [structural] OWNER-GATED — parked pending owner ruling: Bytes proven (141/141 words, floor-1 = linker-identical reloc spelling); driver candidate gate is circular for this function (sandbox 0 requires retiring the two driver-only carriers first) — OWNER-ESCALATION filed with the 4-step integration recipe
 - 2026-07-28 08:25 file_LoadSectors s1 [recon] OWNER-GATED — parked pending owner ruling: SOTN census negative on deleted-call/args-area mechanism; human-plausible if(0)/dbg-flag spellings proven byte-identical to sandbox-0 form; both closing families owner-only; OWNER-ESCALATION filed with three-option packet
 - 2026-07-28 08:50 calc_fc_frame COMPLETED-C after 1 sessions.
+- 2026-07-28 10:12 func_800481E8 s1 [recon] floor=10: Recon: inline-move cheat dissolved pure-C (floor 14->10); all 10 residual diffs are the 32-byte phantom-frame delta (vars 0 vs 32), with a working cc1 .frame gradient harness banked
