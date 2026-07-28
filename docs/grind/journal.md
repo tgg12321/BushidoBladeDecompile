@@ -644,3 +644,5 @@
 - 2026-07-27 22:14 func_800600C8 s1 [recon] floor=6: Recon s1: floor 13 -> 6 fully cheat-free (121/121 insns); both source cheats removed; all 6 regfix clusters explained; residual = one sched1 tie transposition
 - 2026-07-27 22:50 func_800600C8 COMPLETED-C after 2 sessions.
 - 2026-07-27 23:09 func_800651F0 COMPLETED-C after 1 sessions.
+- 2026-07-27 23:22 func_80068ECC: judge FAILED a bytes-proven candidate — The candidate closes the 3-way CSE gap with descending-width unsigned casts on the same s32 parameter: (u32)arg0>>1 & 0x
+- 2026-07-27 23:35 func_80068ECC COMPLETED-C after 1 sessions.
