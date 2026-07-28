@@ -688,21 +688,6 @@ tslPrintScreen: subst "lhu.*" "lhu\t$4,0($17)" @ 106
 tslPrintScreen: subst "bne.*" "bne\t$3,$2,{lbl#2}" @ 107
 
 # myRobGeneiMove: val $4->$16, far $5->$4, neg_angle $5->$16
-myRobGeneiMove: subst "\$4" "$16" @ 16
-myRobGeneiMove: subst "\$4" "$16" @ 17
-myRobGeneiMove: subst "\$5" "$4" @ 18
-myRobGeneiMove: subst "\$4" "$16" @ 22
-myRobGeneiMove: subst "\$4" "$16" @ 28
-myRobGeneiMove: subst "\$5" "$4" @ 29
-myRobGeneiMove: subst "\$4" "$16" @ 45
-myRobGeneiMove: subst "\$4" "$16" @ 45
-myRobGeneiMove: subst "\$4" "$16" @ 48
-myRobGeneiMove: subst "\$4" "$16" @ 58
-myRobGeneiMove: subst "\$4" "$16" @ 83
-myRobGeneiMove: subst "\$4" "$16" @ 86
-myRobGeneiMove: subst "\$5" "$16" @ 96
-myRobGeneiMove: subst "\$5" "$16" @ 101
-myRobGeneiMove: subst "\$5" "$16" @ 119
 
 # func_8001E404: GCC forward-props D_800A36FA=2 store to li, target reloads from memory
 

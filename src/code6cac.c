@@ -1095,19 +1095,19 @@ void myRobGeneiMove(s32 arg0) {
         if (*(u16 *)(obj + 0x6A) == 0x2A) {
             val = 0x200;
         } else {
-            s32 angle = (-(*(s16 *)(obj + 0x1D8)) - *(s16 *)(s2 + 0x12)) & 0xFFF;
+            val = (-(*(s16 *)(obj + 0x1D8)) - *(s16 *)(s2 + 0x12)) & 0xFFF;
 
-            if (angle >= 0x800) {
-                angle = 0x1000 - angle;
+            if (val >= 0x800) {
+                val = 0x1000 - val;
             }
-            if (angle >= 0x400) {
-                angle = 0x400;
+            if (val >= 0x400) {
+                val = 0x400;
             }
 
             {
                 s32 base_val = *(s32 *)(*(s32 *)obj + 0xF8);
                 s32 result = single_game_getEnemyCharId(base_val - a2, D_800A387C);
-                val = (result * (0x400 - angle)) >> 10;
+                val = (result * (0x400 - val)) >> 10;
             }
         }
     }
@@ -1123,12 +1123,13 @@ void myRobGeneiMove(s32 arg0) {
     *(s16 *)(s2 + 0x14) = 0;
 
     {
-        s32 neg_angle = -(*(s16 *)(obj + 0x1CA));
-        s16 counter = D_800A36FC;
+        s16 counter;
+        val = -(*(s16 *)(obj + 0x1CA));
+        counter = D_800A36FC;
 
         if (counter != 0) {
             s16 old12 = *(s16 *)(s2 + 0x12);
-            s32 diff = neg_angle - old12;
+            s32 diff = val - old12;
             if (diff < 0) {
                 diff += 3;
             }
@@ -1146,7 +1147,7 @@ void myRobGeneiMove(s32 arg0) {
                 *(s16 *)(s2 + 0x1C) = decay >> 2;
             }
         } else {
-            *(s16 *)(s2 + 0x12) = neg_angle;
+            *(s16 *)(s2 + 0x12) = val;
             *(s16 *)(s2 + 0x1C) = 0;
         }
     }
