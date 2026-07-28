@@ -104,3 +104,66 @@ user policy call on reconstructing an unused frame. PLUS the a0<->v1 rename.
 - [s1] Score map: guarded+pfirst=4, indexed+inplace=6, indexed+T0=11, old pinned honest=14, clean unflipped=16
 
 - [s1] No duplicate/sibling lead (tmp/duplicates.txt has no 80037AA4 pair; both neighbors are pin-carrying INCOMPLETE)
+
+## s2 (structural, 2026-07-28) — floor stays 4; vars=8 trigger FOUND naturally, flip arithmetic fully characterized
+
+- [s2] **Natural guarded vars=8 trigger exists**: `if (var_a1 < var_a2)` (a1 just
+  zeroed) instead of `if (var_a2 > 0)`. Expand emits a reg-reg slt pseudo; cse
+  folds the operand (a1=0 known); combine folds slt+branch -> blez a2, orphaning
+  the slt pseudo. gdb-proven mechanism: reload1.c alter_reg(orphan, -1) from
+  reload() allocates a 4-byte spill slot for the combine-orphaned pseudo
+  (stale refs, renumber<0, class ST_REGS) -> vars=8, ZERO stack stores, and the
+  slot never appears in ANY -da dump (allocated at reload, RTX discarded).
+  Refines the s1 trip-count law: the real trigger is an ORPHANED COMPARE PSEUDO,
+  which unguarded entry-test duplication produces as a special case.
+- [s2] g1 form (orphan guard) sandbox = 11 with build 23/23 == target insn
+  count: sp,-8/+8 and final nop all correct; ONLY diff = sum<->p swapped
+  ($3/$4) in every sum/p insn. rejected/orphan-guard-sum-p-swap.c.
+- [s2] **The swap is exact allocno arithmetic** (global.c allocno_compare:
+  pri = floor_log2(refs)*refs/live_length*10000; tie -> lower pseudo number).
+  Flow refs are loop-depth-weighted (x2 inside the loop). Byte-locked counts:
+  sum = 1(init)+4(loop addu, weighted)+5(T0 tail)+1(guard slt charge) = 11 refs
+  / len 15 -> 22000; pointer = 1(la)+2(lw)+4(latch addu) = 7 refs / len 7 ->
+  20000. Sum first -> sum=$3 (WRONG). g0 (zero-compare guard, no slt charge):
+  sum 10/15 = 20000 ties p 20000, tie-break lower allocno = POINTER (declared
+  first) -> p=$3/sum=$4 (target). This is WHY pointer-decl-first works on g0
+  and why decl order is INERT on every orphan form (no tie to break).
+- [s2] **cse.c make_regs_eqv canonicalizes the zero-equivalence class to its
+  LONGEST-LIVED member** — sum, always (its last use is the final subu). Every
+  guard spelling (a1/a0/v0/reversed/comma) charges the +1 ref to sum. Un-steerable
+  unless the tail's last sum use moves earlier, which the T0 tail forbids
+  (quotient must write sum's pseudo for sra $4/subu bytes).
+- [s2] Measured-dead flip levers on the g1 base: 120/120 decl orders; init
+  orders; guard operand identity; loop stmt order; fused accumulate (22 insns);
+  address-temp split tp=p+0x18 (cse folds into MEM before flow, tp never exists
+  at flow); split-addiu chains 0x1000+0xFFF / x3 (cse folds, len unchanged);
+  nested same-expr double guard (cse dedups fully); a1+1<=a2 / a2>=1 second
+  guards (both slts fold -> TWO blez in bytes; jump2 does NOT dedup identical
+  branches, n=22); && spellings (same); a2>=1 && a1<a2 reversed (second slt
+  lands in bb1 where combine has no LOG_LINKS to the zero def -> slt/beq survive
+  in bytes, n=20, vars=0 — but its sum len 17 -> 19411 CONFIRMS the flip
+  threshold arithmetic empirically: that variant allocates sum=$4/p=$3).
+- [s2] Flip win condition (proven, quantitative): sum pri must be <= 20000,
+  i.e. with byte-locked refs 11: sum live_length >= 17 (+2 flow-time insns
+  inside sum's range, outside p's loop range, deleted between flow and final).
+  Only combine deletes insns in that window, and only within a basic block via
+  LOG_LINKS; the only known construct is the orphan-slt chain itself (+0 len
+  net in bb0). All plain-arithmetic extra-insn spellings are cse-folded or
+  flow-dead-store-deleted BEFORE the count.
+- [s2] Route B (unguarded indexed struct form, T0 tail) has IDENTICAL numbers:
+  sum 11/15 = 22000 vs giv-pointer 7/7 = 20000 (giv pseudo number high, no tie
+  anyway). Routes A and B are the same locked arithmetic; s1's "indexed+T0=11"
+  and s2's "orphan-guard=11" are the same 11-insn register swap.
+- [s2] Floor-4 g0 form re-verified in src at session start and end (sandbox 4).
+
+- [s2] phantom-frame mechanism refined: reload1.c alter_reg allocates spill slots for combine-orphaned compare pseudos (stale refs, renumber<0); the s1 trip-count law is the unguarded special case of this
+
+- [s2] flow REG_N_REFS are loop-depth-weighted (x2 per loop level); byte-locked counts for this function: sum 11 refs/len 15, pointer 7/7
+
+- [s2] g0 floor-4 works precisely because sum 10/15 == p 7/7 == 20000 tie, broken by pointer's lower pseudo number (decl-first)
+
+- [s2] flip win condition quantified: sum live_length >= 17 (or -1 sum ref, impossible: refs byte-locked + cse longest-lived canonicalization) via flow-surviving combine-deleted bb0 insns; only branch-fed chains survive cse and combine only folds within a bb
+
+- [s2] route B (unguarded indexed, T0 tail) has IDENTICAL arithmetic (sum 11/15 vs giv 7/7): s1's indexed+T0=11 and s2's orphan-guard=11 are the same register swap; both routes converge on the same lock
+
+- [s2] floor-4 g0 form re-verified in src at session start and end (sandbox 4, build 20 vs target 23)

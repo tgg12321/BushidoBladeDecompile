@@ -1,8 +1,8 @@
 {
  "func": "func_80037AA4",
  "file": "code6cac_c",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 0,
@@ -15,23 +15,29 @@
    "floor": 4,
    "modality": "recon",
    "headline": "Floor 14 -> 4 pure-C (pointer-decl-first flips the a0<->v1 rename); phantom 8-byte frame proven natural (unguarded-loop stack temp), both WIP 'blockers' dissolved"
+  },
+  {
+   "session": 2,
+   "floor": 4,
+   "modality": "structural",
+   "headline": "vars=8 frame trigger FOUND naturally (orphan-slt guard, sandbox 11 at 23/23 insns); the residual sum<->p swap reduced to exact allocno arithmetic (sum 11/15=22000 vs p 7/7=20000, flip needs sum len>=1"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "sum<->giv allocation flips on the unguarded indexed base while keeping the T0 tail",
-   "mechanism": "global.c allocno_compare priority (sum's tail refs vs giv's short live range)",
-   "next_probe": "read gcc-2.7.2/global.c allocno_compare for the exact formula; targeted respellings (lengthen sum live range, split sum loop-local/result, tail temp reusing var_a1); then decomp-permuter campaign seeded from the score-6/11 indexed forms"
+   "hypothesis": "a bb0 construct exists that survives flow, is combine-deleted, and adds +2 sum live_length (or +1 weighted p ref) with zero byte drift",
+   "mechanism": "only branch-fed value chains survive cse; only combine deletes insns between flow and final, and only via same-bb LOG_LINKS",
+   "next_probe": "enumerate GCC 2.7.2 combine.c 3-insn simplifications that collapse two flow insns to zero final insns in the guard bb (double-slt chains feeding one branch, seq/sne expansions, HImode compare widenings)"
   },
   {
-   "hypothesis": "vars=8 can be induced on the guarded do-while floor-4 form by a guarded-compatible natural construct",
-   "mechanism": "locate the exact assign_stack_temp caller for the unguarded case, then search for an equivalent trigger that survives the guard",
-   "next_probe": "diff tmp/grind/func_80037AA4/s1/dump_v12 vs dump_v13 per-pass dumps by pseudo-reg numbers to identify the slot-creating pass"
+   "hypothesis": "decomp-permuter finds a spelling that shifts the ref/len arithmetic",
+   "mechanism": "the g1 orphan-guard seed (sandbox 11, 23/23 insns) is one register-allocation event from 0; permuter mutations may hit an unenumerated cse-surviving form",
+   "next_probe": "permuter campaign seeded from g1 orphan-guard + indexed-T0 + floor-4 g0 forms (permuter modality)"
   },
   {
-   "hypothesis": "if frontier-1 closes, the unguarded indexed form is the candidate",
-   "mechanism": "trip-0 semantics identical to the guard; typedef must satisfy file conventions",
-   "next_probe": "sandbox + verify-oracle path via driver after flip found; vet struct/typedef placement and the D_80102810 extern typing"
+   "hypothesis": "if a flip form is found, the combined form is the candidate",
+   "mechanism": "guard `a1<a2` with a1==0 is semantically identical to `a2>0`; trip-0 equivalence holds",
+   "next_probe": "re-verify vars=8 + sandbox 0 in-session, then driver byte verification"
   }
  ],
  "judge_constraints": [],
