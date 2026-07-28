@@ -1,17 +1,29 @@
 {
  "func": "func_80038170",
  "file": "code6cac_c_mid",
- "session_count": 0,
- "current_modality": null,
+ "session_count": 1,
+ "current_modality": "recon",
  "floor_history": [
   {
    "session": 0,
    "floor": 12,
    "modality": "wip-import",
    "headline": "floor imported from memory/wip checkpoint"
+  },
+  {
+   "session": 1,
+   "floor": 1,
+   "modality": "recon",
+   "headline": "Judge form applied + new i=0-hoist lever reaches word-level byte parity (141/141 vs oracle stream); floor 1 is solely the stale-reference D_8008F19C+1 reloc artifact; function is integration-ready \u2014 c"
   }
  ],
- "frontier": [],
+ "frontier": [
+  {
+   "hypothesis": "Function is integration-ready: retiring regfix.txt:1250 + the prologue_config func_80038170 entry and regenerating build/ yields sandbox 0 and full-build SHA1 == oracle",
+   "mechanism": "all 141 insn words already match the oracle stream; the only .o-text diff is the reloc spelling, which is byte-identical after link and disappears when the reference .o regenerates from this src",
+   "next_probe": "driver/integration: retire both carriers, full build, verify SHA1 == oracle, re-run sandbox (expect 0), submit FINAL CALL"
+  }
+ ],
  "judge_constraints": [
   "Use ONLY the separate-statement spelling: keep `s32 s1, s2, s3;` declaration order and write `s3 = 0; s2 = 0; s1 = 0;` (no chained assignment, no decl-order reversal, no new constructs, no annotation \u2014 it is live code). Then retire BOTH remaining cheat carriers (regfix.txt:1250 reorder @9-13 and the tools/prologue_config.json func_80038170 entry), prove sandbox 0 after build/ regenerates from this src (the D_8008F19C+1 vs D_8008F19D floor-1 must vanish at the .o level, not be waived), full-build SHA1 == oracle, then submit for FINAL CALL."
  ],

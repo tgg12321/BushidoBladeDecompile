@@ -658,3 +658,4 @@
 - 2026-07-28 06:00 func_80037AA4 s3 [structural] floor=4: s3 structural: register flip ACHIEVED at cc1 level (else-dup form: vars=8 + every target register, sandbox 4 with 2-insn insertion residual); combine proven to DECREMENT live_length, killing s2's deleted-insn frontier; all structural corridors to the flip-with-zero-extra-bytes measured walled — permuter is the remaining lever
 - 2026-07-28 06:35 func_80037AA4 COMPLETED-C after 4 sessions.
 - 2026-07-28 06:45 func_8003D330 COMPLETED-C after 1 sessions.
+- 2026-07-28 07:37 func_80038170 s1 [recon] floor=1: Judge form applied + new i=0-hoist lever reaches word-level byte parity (141/141 vs oracle stream); floor 1 is solely the stale-reference D_8008F19C+1 reloc artifact; function is integration-ready — carriers (regfix.txt:1250 + prologue_config entry) measured HARMFUL (rules-applied score 4) and must be retired driver-side before rebuild/FINAL CALL.

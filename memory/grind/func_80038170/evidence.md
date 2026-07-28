@@ -77,3 +77,29 @@ as indefinitely parked INCOMPLETE). Do NOT attempt any dead-array or declaration
 - [s1] Oversized-locals carve-out (2026-07-13 owner ruling, dead-vars-local-array.md) would have covered this function's frame gap (frame-math: 56 - 24 saves - 16 args = 16-byte locals region, 0 bytes written) — NOT NEEDED: the natural live-form closes it. Recorded for family reference only.
 
 - [s1] canonical: verdict C, distance 1..5 range, asm_insns 0 — pure-C target confirmed.
+
+- == session s2 (2026-07-28, recon — post-Judge-ruling) ==
+
+- [s2] Judge-sanctioned spelling applied verbatim (decl `s32 s1, s2, s3;` + separate `s3 = 0; s2 = 0; s1 = 0;`): save/init pair order now correct NATURALLY (s0,s3,s2,s1,ra offsets 0x20/0x2C/0x28/0x24/0x30, frame -0x38). Engine sandbox floor 1.
+
+- [s2] NEW MEASUREMENT — the Judge spelling ALONE does NOT byte-match: with `for (i = 0; ...)`, sched1 emits `move a3,zero` (i-init) AFTER the li a0,1 / lui+lw D_80106A50 cluster and `sw ra` lands at slot 12 instead of 14 — 5 words displaced vs target (target order: move a3 @9, li @10, lui @11, lw @12, li a2 @13, sw ra @14). THE ENGINE MASKED METRIC HIDES THIS (still prints 1) — raw .o word diff is the only honest gauge for this window. Prior floor-1 word-proof was for the (rejected) chained form only; nobody had word-diffed the separate-statement form.
+
+- [s2] FIX (layer-1 reviewer PASS): standalone `i = 0;` BEFORE `mask = D_80106A50;`, empty for-init (`for (; i < 0x1B; i++)`). Restores target schedule exactly: 141/141 insn words match the oracle stream (diff vs build/ reference .o = oracle bytes). Ordinary live-statement order; reviewer classed it with store-before-jal / hoist-call-arg-local accepted scheduling-lever families.
+
+- [s2] Sole remaining .o-text diff re-proven linker-identical: candidate `lui %hi(D_8008F19C)` + `lbu %lo(D_8008F19C)+1` = 0x8009 / 0xF19D == target `lui %hi(D_8008F19D)` + `lbu %lo(D_8008F19D)` (asm words 3C018009 / 9022F19D). Vanishes at the .o level once build/ regenerates from this src — sandbox 0 unreachable BY CONSTRUCTION until then (carriers block a rebuild, below).
+
+- [s2] Carriers measured HARMFUL now: sandbox with rules applied scores 4 (vs clean floor 1) — the regfix.txt:1250 reorder @9-13 scrambles the now-correct natural prologue. A full `build` with the carriers active would break the oracle; integration must retire regfix.txt:1250 + tools/prologue_config.json func_80038170 entry FIRST, then rebuild → sandbox 0 → SHA1==oracle → FINAL CALL. Both surfaces are driver-only (forbidden to grind sessions).
+
+- [s2] canonical re-confirmed: verdict C, distance 1, asm_insns 0.
+
+- [s1] Judge-sanctioned spelling applied verbatim in src/code6cac_c_mid.c: decl `s32 s1, s2, s3;`, separate `s3 = 0; s2 = 0; s1 = 0;` — save order + frame -0x38 + all offsets natural-correct
+
+- [s1] NEW: prior floor-1 word-level proof covered only the rejected chained form; the Judge form alone leaves 5 displaced words (move a3,zero late, sw ra at 12 not 14) that the engine masked metric hides — raw .o word diff is the honest gauge for this window
+
+- [s1] Fix: `i = 0;` standalone before the mask load, `for (; i < 0x1B; i++)` — 141/141 word match vs build/ reference (= oracle bytes); layer-1 cheat-reviewer PASS on the full body
+
+- [s1] Reloc artifact re-proven linker-identical: %hi/%lo(D_8008F19C)+1 == %hi/%lo(D_8008F19D) == 0x8009/0xF19D (target words 3C018009 / 9022F19D); vanishes once build/ regenerates from this src — sandbox 0 unreachable by construction until then
+
+- [s1] Carriers measured harmful: rules-applied sandbox 4 vs clean 1; regfix.txt:1250 + tools/prologue_config.json func_80038170 entry must be retired at integration BEFORE any rebuild (both driver-only surfaces)
+
+- [s1] canonical: verdict C, distance 1, asm_insns 0
