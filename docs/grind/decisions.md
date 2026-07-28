@@ -1931,3 +1931,85 @@ The question is whether a provably-dead guarded call — `if (fd == -1) { debug_
 ## 2026-07-28 08:50 — calc_fc_frame — final call — **PASS**
 
 calc_fc_frame (src/text1a_c.c:1012-1072) is legitimate pure C. Verified against the working tree, not the agent's claims: (1) all 11 regfix rules deleted (git diff regfix.txt shows -11 rule lines, only comment lines remain at regfix.txt:259-263); no calc_fc_frame entries in asmfix.txt or inline_asm_canonical.txt (the two 'calc_fc_frame_8007EC5C' hits are a different, already-authorized display.c GTE function); the prologue_config.json entry was removed, which is the sanctioned prologue-fix-redundant-reorder cleanup, not a new mechanism. (2) The body contains zero __asm__, zero register-asm pins, zero volatile coercion, zero dead code — every statement is live and semantically necessary. Construct-by-construct: (a) walking the dest_arr parameter directly instead of a local copy is ordinary C (simpler than HEAD's form; param-reuse is an accepted spelling); (b) 'src_orig = src_base' before 'src_base += 4' is a live, meaningful copy — the func_800520B8 call genuinely needs the pre-increment base (ledger H1), so the local has real semantic purpose and a descriptive name; (c) hoisting 'val = *fp; fp++;' unconditionally above the second if is a natural read-and-advance idiom with identical semantics (fp is dead after the loop); (d) the two-statement round-down 'size = (u32)size >> 2; size = size << 2;' stages a live value through the same live variable — both writes are consumed, no dead store, and it mirrors the byte-matched COMPLETED-C sibling hirahira_w_frie (ledger H2), within the sanctioned split-computation/named-intermediate family (no-new-park-categories § SOTN-accepted); (e) declaration order of real, used locals (H4) is a free choice among natural spellings, milder than the sanctioned named-intermediate declaration-order technique. No /* FAKE */ constructs are present, so the exhaustion-before-FAKE gate is not triggered. judge_constraints in the ledger is empty (queue-origin, not regression-origin), so no diagnosed-construct check applies. A 1998 programmer could have written this body from spec; nothing announces coercion intent. Hypotheses ledger records a clean single-session solve (floor 14 -> 0) with one killed hypothesis (H5), consistent with honest derivation.
+
+## 2026-07-28 — func_80038170 (src/code6cac_c_mid.c) — LAYER-2 FAIL + STANDING RULING APPLIED — **REFUSED / OWNER-ACCEPTED INCOMPLETE**
+
+Operator disposition (2026-07-28, recorded by operator under the owner's 2026-07-27 standing
+auto-ruling). This supersedes the "integration-gate deadlock (pending owner action)" escalation
+filed earlier today: the deadlock was real and the operator DID clear it (candidate.c applied,
+regfix.txt:1250 reorder + tools/prologue_config.json entry retired, full-build **SHA1 == oracle**,
+`sandbox --disable all` = **0** at 141/141, rules_dropped 0) — so the pipeline claim "bytes are
+proven, only integration is blocked" was CORRECT and is now independently confirmed.
+
+**But the C did not survive layer-2 review, and layer-2 governs acceptance.** A fresh adversarial
+`cheat-reviewer` (default-FAIL, prior verdicts not credited per [[two-layer-adversarial-acceptance]]
+and review-discipline-before-commit § "The second layer is MANDATORY for acceptance") returned
+**FAIL** on the two load-bearing constructs, and the orchestrator does not override the reviewer:
+
+1. **Reverse-order zero-inits** (`s3 = 0; s2 = 0; s1 = 0;` against declaration order `s1, s2, s3`).
+   The relative order has zero effect on program behavior; the ledger's own justification is that it
+   reproduces the target's prologue save-pair order. Two sibling spellings pursuing the identical
+   effect (decl-order reversal; chained `s1=s2=s3=0`) were FAILed in the same session — this is the
+   same intent in different dress ("cheats by any spelling").
+2. **One-symbol table pair** `(&D_8008F19C)[s3*2+0]/[s3*2+1]` replacing the behaviorally-identical
+   two-symbol `(&D_8008F19C)[s3*2]` / `(&D_8008F19D)[s3*2]`. Selected — per the ledger's own
+   documented "phantom-slot trigger matrix" — solely because it makes GCC 2.7.2 allocate an 8-byte
+   compiler stack temp matching the target frame. That is the dead-vars-local-array frame-coercion
+   family's intent achieved through an addressing-expression choice, evading the array-declaration
+   detector but not the policy.
+
+**NOTE — pipeline conflict, recorded deliberately:** the in-pipeline Judge PASSed construct (1) at
+2026-07-28 07:24 (arguing that condemning the matching order "proves too much" since every source
+must commit to some order). Layer-2 disagreed and layer-2 is the acceptance gate. The Judge's
+argument is not frivolous and is preserved here for the record, but it does not carry: per the
+owner's standing bar, a construct whose only effect is codegen selection and whose two sibling
+spellings were already refused does not become legitimate by being the third spelling. Construct (2)
+is independently disqualifying regardless of how (1) is read.
+
+**Endgame-lock AND-gates (both fail → standing auto-ruling):** Gate 1 canonical-asm — the canonical
+gate routes this C (verdict C, asm_insns 0) and a compilable-C form provably exists, so there is no
+hand-written-asm evidence; refused. Gate 2 coercion/SOTN — the closing constructs are the
+statement-order-steering and phantom-frame-carrier families, neither on the frozen SOTN-accepted
+list; the phantom-frame family has been refused five times already (func_80017FA0, func_80049A2C,
+InitHiraRmd_80047FBC, AddTbpOfst_80047EE8, func_80022F34). No precedent in hand; refused.
+
+**Disposition:** src reverted to the byte-correct HEAD form; regfix.txt:1250 + the
+tools/prologue_config.json entry RESTORED; full-build SHA1 re-verified == oracle after revert.
+**INCOMPLETE-owner-accepted**, parked terminally out of active grind, NOT COMPLETED-C and NOT
+canonical-asm; the retained cheat (2 register pins + dummy-asm frame barrier + 1 regfix reorder +
+prologue entry) survives only to hold the byte-match and is not sanctioned as a technique. Eligible
+for re-attempt if a genuine pure-C lever emerges — note the honest floor here is genuinely 0-reachable
+in bytes, so a spelling that closes it WITHOUT order-steering and WITHOUT the addressing-expression
+frame trick would be a real COMPLETED-C and is worth a future attempt.
+
+## 2026-07-28 — file_LoadSectors (src/ings.c) — STANDING RULING APPLIED — **REFUSED / OWNER-ACCEPTED INCOMPLETE (option c)**
+
+Operator disposition (2026-07-28) under the owner's 2026-07-27 standing auto-ruling, on the
+three-option packet filed by grind s1b. The session did exactly the right work — it ran the
+Judge-mandated SOTN-master census and reported the result honestly — and that result is what
+decides this: **the census came back NEGATIVE on the mechanism.** Option-by-option:
+
+- **(a) Sanction interpretation A (dead 1–8-byte local under the OVERSIZED-LOCALS carve-out)** —
+  REFUSED. The carve-out's prerequisite 1 is satisfied here only by a PARTITION argument ("the frame
+  equation forces unwritten-locals OR deleted-call, and the alternative is also unsanctioned"), which
+  is the same trivial satisfaction already ruled insufficient for func_80017FA0 (2026-07-27): for ANY
+  zero-store phantom frame the inequality holds by construction, so it does not distinguish a genuine
+  oversized-locals object from plain frame coercion. Unlike func_80037540 (whose `addiu $a1,$sp,0x10`
+  byte-pinned args=16), nothing in these bytes pins the args area — the filing concedes the two
+  interpretations are observationally identical. An unwritten phantom-frame carrier has no SOTN
+  precedent distinguishing it from frame coercion.
+- **(b) Sanction interpretation B (deleted >=5-arg call inflating outgoing_args_size)** — REFUSED.
+  The session's own census is decisive: **no instance in SOTN master of a deleted call whose purpose
+  is args-area inflation, and no >=5-arg dead calls at all.** Genre-adjacent `if (0)` dead code does
+  exist in SOTN, but genre adjacency is not precedent for the mechanism — the owner's bar requires
+  in-hand precedent for the CONSTRUCT, and "the only remaining mechanism" expressly does not lower it.
+  Credit where due: the session found human-plausible spellings (`if (0) { debug_printf(...); }` and
+  the dbg-flag-local variant) that are byte-clean and genuinely nicer than the Judge-FAILed duplicate
+  guard — but a better spelling of an unsanctioned family is still the unsanctioned family.
+- **(c) Endgame-lock INCOMPLETE-owner-accepted** — **GRANTED**, per the standing ruling.
+
+**Disposition:** keeps the byte-correct unwritten `s32 _pad[2]` on main (honest floor 14; best clean
+banked form is v9 `result[2]` at score 1), **INCOMPLETE-owner-accepted**, parked terminally out of
+active grind, NOT COMPLETED-C and NOT canonical-asm; the retained cheat holds the byte-match only and
+is not sanctioned. Eligible for re-attempt if a genuine pure-C lever emerges, or if a future
+SOTN census establishes either family on its own evidence.

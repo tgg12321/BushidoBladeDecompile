@@ -2372,7 +2372,7 @@
       "rules": 1,
       "status": "parked",
       "prologue_fix": 1,
-      "park_reason": "owner escalation pending: docs/grind/decisions.md \u2014 '## 2026-07-28 \u2014 func_80038170 \u2014 OWNER-ESCALATION \u2014 integration-gate deadlock: bytes proven, candidate gate structurally unpassable (pending owner action)'"
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27, applied 2026-07-28): layer-2 cheat-reviewer FAILED both closing constructs (reverse-order zero-inits = order-steering; one-symbol table pair = phantom-frame carrier via addressing expression). Bytes ARE 0-reachable (integration verified, SHA1==oracle) but only via refused families; both endgame-lock gates fail. Cheat retained to hold byte-match, not sanctioned; re-attempt eligible on a non-order-steering, non-frame-trick lever"
     },
     {
       "func": "file_LoadSectors",
@@ -2381,7 +2381,7 @@
       "verdict": "C",
       "rules": 0,
       "status": "parked",
-      "park_reason": "owner escalation pending: docs/grind/decisions.md \u2014 '2026-07-28 \u2014 file_LoadSectors (src/ings.c) \u2014 OWNER-ESCALATION' (filed this session; three-option packet: carve-out reading / narrow family sanction / endgame-lock)"
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27, applied 2026-07-28, option c): SOTN census NEGATIVE on the deleted-call/args-area mechanism; OVERSIZED-LOCALS carve-out satisfied only trivially (partition argument, same defect as func_80017FA0). Both closing families refused; _pad[2] retained to hold byte-match, not sanctioned"
     },
     {
       "func": "special_camera_set_win_cam",
