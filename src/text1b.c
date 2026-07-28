@@ -15079,17 +15079,13 @@ u8 func_80068D88(s32 arg0, s32 arg1) {
 }
 void func_80068ECC(s32 arg0) {
     s32 *p = &D_8009BC04;
-    register s32 v asm("$2");
-    v = *p;
+    s32 v = *p;
     v &= ~0x1; v |= arg0 & 0x1;
     v &= ~0x2; v |= arg0 & 0x2;
     v &= ~0x4; v |= arg0 & 0x4;
-    asm volatile("" : "=r"(arg0) : "0"(arg0));
-    v &= ~0x8; v |= ((u32)arg0 >> 1) & 0x8;
-    asm volatile("" : "=r"(arg0) : "0"(arg0));
-    v &= ~0x10; v |= ((u32)arg0 >> 1) & 0x10;
-    asm volatile("" : "=r"(arg0) : "0"(arg0));
-    v &= ~0x20; v |= ((u32)arg0 >> 1) & 0x20;
+    v &= ~0x8; v |= (((u32)arg0 >> 4) & 1) << 3;
+    v &= ~0x10; v |= (((u32)arg0 >> 5) & 1) << 4;
+    v &= ~0x20; v |= (((u32)arg0 >> 6) & 1) << 5;
     v &= ~0x40; v |= (arg0 << 3) & 0x40;
     v &= ~0x80; v |= arg0 & 0x80;
     *p = v;
