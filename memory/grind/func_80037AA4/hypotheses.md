@@ -119,3 +119,81 @@
 - probe: sweep_s2f.py: nested/&& second guards (a1+1<=a2, a2>=1, a2!=a1, reversed &&)
 - result: same-expr dedups (cse); different-expr seconds either emit a second blez (jump2 never dedups identical branches, n=22) or land in a separate bb where combine lacks LOG_LINKS to the zero def (slt/beq survive, n=20, vars=0) -- but that variant's sum 11/17 DOES allocate sum=$4/p=$3, empirically confirming the flip threshold
 - verdict: KILLED
+
+## s3 (structural, 2026-07-28)
+
+## [s3] H10: slti constant-compare guard (a2>=1 family) gives a sum-charge-free orphan
+- mechanism: slti reads only a2+const; combine would fold slti+branch to blez, orphaning the pseudo without touching the zero class
+- probe: sweep_s3.py: a2>=1, 1<=a2, !(a2<1), (..)!=0, ==1 spellings
+- result: ALL tree-fold to the direct zero-compare — byte-identical to g0, vars=0; the s2f slti survived only inside &&
+- verdict: KILLED
+
+## [s3] H11: store-flag chains add +2 combine-deleted flow live_length
+- mechanism: slt+andi/xori/sll chains surviving cse, deleted by combine
+- probe: sweep_s3b/s3c/s3d.py (&1/^1 spellings, const-through-var, <<31/neg/mul2); stagetrace.sh; FLOWDBG traces
+- result: double wall — cse fold_rtx folds every arithmetic-identity chain once the const is visible (y-family lreg == g1); AND combine DECREMENTS live_length on deletion (g1 flow 11/18 -> lreg 11/15; z1 chain at flow, deleted, len unchanged), so combine-deleted insns can NEVER add length. Kills s2's frontier premise wholesale.
+- verdict: KILLED
+
+## [s3] H13: post-greg-deleted insns (jump2 noop_moves/cross_jump, after reload) supply the +2 len
+- mechanism: toplev.c:3142 jump_optimize(insns,1,1,0) after reload deletes noop moves + cross-jumps dup tails; such insns exist at greg time and count
+- probe: sweep_s3e.py (split-bound copies w1/w2, tail-staged w3, else-dup w4)
+- result: mechanism CONFIRMED as the only legal extra-length source, but every noop-copy spelling dead (fresh bb0 pseudo steals $2; same-bb copies combine-merge; both-live copies emit real moves); cross-jump identity unreachable (skip-path copies const-fold, cse follows the taken branch)
+- verdict: KILLED (as a C-reachable lever; mechanism itself confirmed)
+
+## [s3] H14: else-arm dup of v0=sum flips the allocation
+- mechanism: dup + join jump = 2 sum-live sum-free greg-time insns -> sum 11/17 = 19411 < p 20000
+- probe: sweep_s3e.py w4 + sandbox on src
+- result: CONFIRMED flip — vars=8, sum=$4, p=$3, blez $6, all 21 cc1 insns target-correct; but the 2 extras survive every post-greg pass -> sandbox 4 (floor tie, insertion residual). rejected/else-dup-join-split-4.c
+- verdict: CONFIRMED (flip) / KILLED (as a close: the 2 insns are undeletable)
+
+## [s3] H15: dead-store canonical steering moves the guard charge off sum
+- mechanism: make_regs_eqv (cse.c:826) canonicalizes the zero class to argmax regno_last_uid; reg_scan runs pre-flow so a trailing dead a1-touch outranks sum if placed after sum's last read
+- probe: sweep_s3f.py (staged return + trailing var_a1+=1 / var_a1=0, controls)
+- result: mechanically CONFIRMED (charge moved, sra dst changed) but match-dead: a1 queue-jumps to $3 (10/13=23076); staging the return through v0 breaks the T0 tail shape (in-place sra duplication); fresh-z beneficiary hits the unreachable-code uid wall (jump1 deletes before reg_scan)
+- verdict: KILLED
+
+## Frontier for s4
+1. Permuter campaign (modality: permuter) seeded from g0 (floor 4), g1
+   (orphan-guard 11), AND rejected/else-dup-join-split-4.c (flip-complete,
+   2 insns over). Blind search is the only remaining lever; the win condition
+   is fully quantified — a hit must satisfy sum pri <= 20000 with zero
+   surviving extra bytes (post-greg-deleted length, charge-free orphan, or a
+   T0-preserving spelling that lowers sum's last_uid — all enumerated families
+   are walled, so only an unenumerated construct can win).
+2. If the campaign dries: this is a candidate endgame-lock (byte-locked
+   allocno arithmetic: the 23-byte form forces sum 11/15 vs p 7/7 while the
+   20-byte form forces the tie) -> owner escalation per
+   endgame-lock-disposition policy, with this ledger as lever-exhaustion
+   documentation.
+3. Falsification check for any future hit: re-verify vars=8 + sandbox 0
+   in-session (trip-0 equivalence of the guard family already proven).
+
+## [s3] H10: slti constant-compare guards (a2>=1 family) produce a sum-charge-free orphan
+- mechanism: slti reads only a2+const; combine folds slti+branch to blez, orphaning the pseudo without a zero-class read
+- probe: sweep_s3.py: a2>=1, 1<=a2, !(a2<1), (..)!=0, ==1 spellings
+- result: all tree-fold to the direct zero-compare, byte-identical to g0, vars=0 (the s2f slti survived only inside &&)
+- verdict: KILLED
+
+## [s3] H11: store-flag arithmetic chains add +2 combine-deleted flow live_length to sum
+- mechanism: slt+andi/xori/sll chains surviving cse in bb0, deleted by combine before final
+- probe: sweep_s3b/s3c/s3d.py + stagetrace.sh + FLOWDBG per-insn traces (instrumented cc1)
+- result: double wall: cse fold_rtx folds every chain once the const is visible (y-family lreg identical to g1), AND combine DECREMENTS reg_live_length on deletion (g1 flow 11/18 -> lreg 11/15; z1 ashift survives flow, deleted by combine, len unchanged 15) — combine-deleted insns can never add length, killing s2's frontier premise
+- verdict: KILLED
+
+## [s3] H13: post-greg-deleted insns (jump2 noop_moves/cross_jump after reload) can supply the +2 length
+- mechanism: toplev.c:3142 jump_optimize(insns,1,1,0) runs after reload: noop moves and cross-jumped dup tails vanish post-allocation but count at greg time
+- probe: sweep_s3e.py: split-bound noop copies (w1/w2), tail staging (w3), else-dup (w4)
+- result: mechanism confirmed as the only legal extra-length source, but every noop-copy spelling dead: fresh bb0 pseudos steal $2 (blez $2 measured — v0 not live in bb0, pri ~7500 allocates before a2); same-bb conflict-free copies combine-merge; both-live copies emit real moves; cross-jump identity unreachable (cse follows the taken branch, sum==0 known, skip-path copies const-fold)
+- verdict: KILLED
+
+## [s3] H14: else-arm dup of v0=sum gives sum 11 refs/17 len and flips the allocation
+- mechanism: dup + join jump = 2 sum-live sum-free greg-time insns -> sum pri 19411 < p 20000
+- probe: sweep_s3e.py w4 + sandbox with the form applied to src
+- result: FLIP CONFIRMED: vars=8, sum=$4, p=$3, blez $6, sra $4,$2 — all 21 cc1 insns byte-correct + exactly 2 surviving extras (j + folded move $2,$0); sandbox 4 (floor tie, insertion residual); the 2 insns survive every post-greg pass
+- verdict: CONFIRMED
+
+## [s3] H15: dead-store canonical steering moves the guard's zero-class charge off sum
+- mechanism: cse.c:826 make_regs_eqv canonicalizes to argmax regno_last_uid; reg_scan runs pre-flow so a trailing dead a1-touch after sum's last read outranks it
+- probe: sweep_s3f.py: v0-staged return + trailing var_a1+=1 / var_a1=0 + placement controls
+- result: mechanically confirmed (charge moved off sum, sra dst changed) but match-dead: charged a1 queue-jumps to $3 (10/13=23076); staging the return breaks the T0 tail (in-place sra duplication, n=22); fresh-z beneficiary needs last_uid beyond the return-stmt read where only unreachable code sits (jump1 deletes it before reg_scan)
+- verdict: KILLED

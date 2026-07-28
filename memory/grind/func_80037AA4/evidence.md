@@ -167,3 +167,72 @@ user policy call on reconstructing an unused frame. PLUS the a0<->v1 rename.
 - [s2] route B (unguarded indexed, T0 tail) has IDENTICAL arithmetic (sum 11/15 vs giv 7/7): s1's indexed+T0=11 and s2's orphan-guard=11 are the same register swap; both routes converge on the same lock
 
 - [s2] floor-4 g0 form re-verified in src at session start and end (sandbox 4, build 20 vs target 23)
+
+## s3 (structural, 2026-07-28) — floor stays 4; the flip achieved at cc1 level (w4), lock re-derived on correct pass mechanics
+
+- [s3] **s2's frontier premise is DEAD: combine DECREMENTS reg_live_length for
+  insns it deletes** (refs are NOT decremented — asymmetric). Proof: g1 .flow
+  dump header says sum 11 refs/18 len; .lreg says 11/15 (slt + 2 tail merges
+  deleted). z1 (`(a1<a2)<<31 < 0`): ashift survives cse AND flow, deleted by
+  combine, lreg len UNCHANGED 15. FLOWDBG per-insn trace (instrumented cc1 at
+  tools/gcc-2.7.2/cc1, NOT build/cc1; BB2_FLOW_DEBUG=<regno>) shows identical
+  15 bumps for g1 and z1. "Insns deleted between flow and final" can never add
+  length; only insns surviving PAST global-alloc count.
+- [s3] **Tree-fold + cse double wall on guard chains**: a2>=1 / 1<=a2 /
+  !(a2<1) / (..)!=0 / ==1 / &1 / ^1 / |0 / <<31<0 / <<1!=0 / -()<0 / *2!=0 all
+  canonicalize to the plain compare at tree/expand; routing the constant
+  through `var_v0 = 1` defeats tree-fold but cse fold_rtx const-props and
+  simplifies every and/xor/eq/ge-of-compare (y-family lreg identical to g1).
+  s2f's surviving slti existed only because && put it in a second bb.
+- [s3] **Post-greg deleters enumerated**: jump2 runs AFTER reload with
+  cross_jump=1, noop_moves=1 (toplev.c:3142). Noop moves and cross-jumped dup
+  tails DO vanish post-allocation — this is the only legal source of extra
+  greg-time live_length.
+- [s3] **Noop-copy constructs all dead**: fresh bb0 pseudo steals $2 (w1/w2:
+  blez $2, n=22 — v0 not live in bb0 so nothing conflicts; short-lived pseudo
+  pri ~7500 allocates before a2 ~3333 and takes first-free = $2). Same-bb
+  conflict-free copies get combine-merged (dest dies in copy). Both-live
+  copies allocate apart -> real move. No C-reachable noop-move exists here.
+- [s3] **w4 else-dup ACHIEVES THE FLIP**: `if (a1<a2) {loop; v0=sum;} else
+  {v0=sum;}` -> sum 11 refs/17 len = 19411 < p 20000 -> vars=8, sum=$4, p=$3,
+  blez $6, sra $4,$2 — all 21 cc1 insns byte-correct + exactly 2 extras
+  (`j .L35` + else-arm folded to `move $2,$0`; cse follows the taken branch,
+  sum==0 known on the skip path, so ANY skip-path copy folds -> cross-jump
+  identity unreachable). sandbox = 4 (build 26): ties the floor with an
+  insertion residual instead of the missing frame. rejected/else-dup-join-split-4.c.
+- [s3] **Dead-store canonical steering works mechanically**: make_regs_eqv
+  canonicalizes to argmax regno_last_uid (cse.c:826; reg_scan runs pre-flow,
+  dead stores count). Trailing dead `var_a1 += 1` after a v0-staged return
+  moves the guard charge off sum (f1/f2: sra dst changed = proof). Match-dead:
+  (a) a1 with the charge = 10/13 -> 23076, queue-jumps to $3 (sum=$5 p=$4
+  measured); (b) staging the return breaks the T0 tail (sra duplicated into
+  both arms, bgez reads $2 — the in-place family, n=22); (c) fresh-z
+  beneficiary needs z.last_uid > the return-stmt read — only unreachable code
+  sits there and jump1 deletes it BEFORE reg_scan. sum's last_uid is
+  byte-locked maximal (T0 forces quotient-into-sum; return reads result last).
+- [s3] **The lock, fully quantified**: flip needs sum pri <= 20000 with zero
+  surviving extra bytes. Three corridors exist and all are walled: (A) +2
+  greg-time sum-live sum-free insns deleted post-greg — only noop-moves /
+  cross-jump qualify, both proven unreachable from C here; (B) refs-10 tie via
+  canonical steering — uid wall + queue-jump; (C) charge-free orphan — every
+  swallowed compare chain needs a known-zero operand, and cse rewrites any
+  zero-class operand to the longest-lived member (sum). Routes A and B share
+  the arithmetic; g0's tie (10/15 vs 7/7 + pointer-decl-first) remains the
+  only clean allocation, and it has no frame trigger.
+- [s3] floor-4 g0 re-verified in src at session end (sandbox 4, build 20/23).
+
+- [s3] combine DECREMENTS reg_live_length for deleted insns (refs untouched): g1 .flow header sum 11/18 vs .lreg 11/15; any 'deleted between flow and final' length is unobtainable by construction
+
+- [s3] jump2 runs after reload with cross_jump=1 noop_moves=1 (toplev.c:3142) — post-greg deletion of noop moves / cross-jumped tails is real and is the only legal source of greg-time-only length
+
+- [s3] w4 else-dup form: sum 11/17 = 19411 < p 20000 -> full target allocation (vars=8, sum=$4, p=$3, blez $6) with exactly 2 undeletable extra insns; sandbox 4, banked as rejected/else-dup-join-split-4.c (best permuter seed: one 2-insn deletion from 0)
+
+- [s3] fresh bb0-resident pseudos always steal $2 in this function (v0 not live in bb0; short-lived pseudo pri ~7500 allocates before a2 ~3333) — kills every split-bound/copy construct
+
+- [s3] cse follows the taken-branch path: skip-path copies of sum const-fold to $0 reads, making cross-jump arm-identity unreachable
+
+- [s3] make_regs_eqv canonical = argmax regno_last_uid over class members, computed from pre-flow reg_scan (dead stores count); sum's last_uid is byte-locked maximal because T0 forces quotient-into-sum and the return statement reads the result last
+
+- [s3] instrumented cc1 with BB2_FLOW_DEBUG env hook lives at tools/gcc-2.7.2/cc1 (build/cc1 is the clean pipeline binary)
+
+- [s3] floor-4 g0 form re-verified in src at session end (sandbox 4, build 20 vs target 23)

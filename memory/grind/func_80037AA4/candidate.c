@@ -9,7 +9,14 @@
    insns, sandbox 11) — but the orphan's cse-canonicalized operand charges sum
    +1 ref (11/15 = 22000 > 20000), un-tying the priorities and swapping
    sum<->p ($3/$4) throughout. See rejected/orphan-guard-sum-p-swap.c and
-   evidence.md s2 for the full arithmetic + the len>=17 flip condition. */
+   evidence.md s2 for the full arithmetic + the len>=17 flip condition.
+   s3: the flip WAS achieved at cc1 level (rejected/else-dup-join-split-4.c:
+   vars=8 + all target registers, sandbox 4 with a 2-insn insertion residual);
+   combine proven to DECREMENT live_length (s2 deleted-insn premise dead);
+   every structural corridor to sum-pri<=20000-with-zero-extra-bytes measured
+   walled (tree-fold/cse chain folds, $2-steal on fresh bb0 pseudos, cse
+   skip-path const-fold vs cross-jump, canonical-steering uid wall/queue-jump).
+   Remaining: permuter blind search, then endgame-lock escalation. */
 s32 func_80037AA4(void) {
     s8 *var_v1;
     s32 var_a1;
