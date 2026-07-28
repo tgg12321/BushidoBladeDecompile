@@ -1,17 +1,29 @@
 {
  "func": "file_LoadSectors",
  "file": "ings",
- "session_count": 0,
- "current_modality": null,
+ "session_count": 1,
+ "current_modality": "recon",
  "floor_history": [
   {
    "session": 0,
    "floor": 1,
    "modality": "wip-import",
    "headline": "floor imported from memory/wip checkpoint"
+  },
+  {
+   "session": 1,
+   "floor": 1,
+   "modality": "recon",
+   "headline": "SOTN census negative on deleted-call/args-area mechanism; human-plausible if(0)/dbg-flag spellings proven byte-identical to sandbox-0 form; both closing families owner-only; OWNER-ESCALATION filed wit"
   }
  ],
- "frontier": [],
+ "frontier": [
+  {
+   "hypothesis": "Owner ruling on the 2026-07-28 escalation decides the function; no grind-advanceable axis remains (vars axis dead s1, dead-local forbidden absent carve-out ruling, deleted-call family owner-only per Judge 2026-07-28 08:12)",
+   "mechanism": "governance: both byte-proven closing forms sit in owner-only families",
+   "next_probe": "on ruling (a): apply annotated dead-local form + carve-out prerequisites; on (b): apply candidate.c if(0) spelling with FAKE annotation; on (c): park per endgame-lock policy"
+  }
+ ],
  "judge_constraints": [
   "Do NOT commit the dead-guarded-call construct or any respelling whose sole function is bumping outgoing_args_size via a deleted call; before re-raising this family, complete the SOTN-master census (frontier item 3) and route any positive precedent to the OWNER as a new-family sanction request \u2014 meanwhile pursue a human-plausible-from-spec spelling (frontier item 2)."
  ],

@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "file_LoadSectors",
-      "file": "ings",
-      "distance": 14,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "calc_fc_frame",
       "file": "text1a_c",
       "distance": 14,
@@ -2392,6 +2384,15 @@
       "park_reason": "owner escalation pending: docs/grind/decisions.md \u2014 '## 2026-07-28 \u2014 func_80038170 \u2014 OWNER-ESCALATION \u2014 integration-gate deadlock: bytes proven, candidate gate structurally unpassable (pending owner action)'"
     },
     {
+      "func": "file_LoadSectors",
+      "file": "ings",
+      "distance": 14,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "owner escalation pending: docs/grind/decisions.md \u2014 '2026-07-28 \u2014 file_LoadSectors (src/ings.c) \u2014 OWNER-ESCALATION' (filed this session; three-option packet: carve-out reading / narrow family sanction / endgame-lock)"
+    },
+    {
       "func": "special_camera_set_win_cam",
       "file": "code6cac_b2_post",
       "distance": 510,
@@ -2628,13 +2629,13 @@
   ],
   "counts": {
     "total": 319,
-    "active": 265,
+    "active": 264,
     "by_status": {
-      "active": 265,
-      "parked": 54
+      "active": 264,
+      "parked": 55
     },
     "by_verdict": {
-      "C": 113,
+      "C": 112,
       "ASM-PARTIAL": 45,
       "ASM-SUSPECT": 107
     }

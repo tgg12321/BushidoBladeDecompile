@@ -105,3 +105,46 @@ empirical evidence?
   {dead 8-byte local aggregate (FORBIDDEN + reviewer-FAILed s0), deleted >=5-arg call
   (this form, unclassified)}. Both axes now measured, so the ruling decides the function.
 
+
+== s1b (recon, 2026-07-28, post-Judge-FAIL) ==
+
+- [s1b] BASELINE re-confirmed: sandbox --disable all = 14 (51/51 insns, cheat_asm_stripped
+  strips the on-main _pad[2]; pure save-offset diffs from frame 40 vs 48).
+
+- [s1b] SOTN-MASTER CENSUS (Judge-mandated frontier item 3) — NEGATIVE on the deleted-call/
+  args-area mechanism: zero >=5-arg dead calls anywhere in SOTN master. Genre-adjacent
+  if(0) dead code in MATCHED code exists: e_hellfire_beast.c:827 `if (0) { while (posY); }`
+  FAKE-annotated US PSX; e_collect.h:290 if(0) arm with real <=2-arg calls (beta);
+  game_handlers.c:1465 empty if(0) arm; sel_psp/94D8.c:67 `if (0) { s32 var_s4 = 0; // fake }`.
+  Genre precedent yes, args-area precedent no.
+
+- [s1b] SPELLING GRID (project cc1, tmp/grind/file_LoadSectors/s1/probe2.sh):
+  * `if (0) { debug5(fd,sector,count,0,0); }` -> cc1 output IDENTICAL to v_deadcall5.s
+    (sandbox-0-proven form) except .file line. GCC 2.7.2 DOES expand if(0) bodies to RTL
+    (args bump) before jump-opt deletes. p2_if0_call5.s.
+  * `s32 dbg = 0; if (dbg) {...}` -> ALSO identical. Most human-plausible spelling
+    (debug-flag local, RTL cse folds, zero residue). p2_dbgflag_call5.s.
+  * unreachable call after `return -2;` -> label-numbering diffs only (byte-equivalent).
+  * STRING LITERAL KILL: `if (0) { printf5("...", fd, sector, count); }` leaks the literal
+    to .rodata even though the call is deleted (p2_if0_strlit.s). => the original's deleted
+    call (if interpretation B) had SCALAR-ONLY args; printf-with-format-string originals
+    are oracle-excluded. (NB that probe was a 4-arg call: frame stayed 40, confirming
+    args bump needs >=5 args and the rodata leak is independent of the bump.)
+
+- [s1b] OWNER-ESCALATION FILED: docs/grind/decisions.md "2026-07-28 — file_LoadSectors —
+  OWNER-ESCALATION". Options: (a) dead 1-8B local under oversized-locals carve-out with
+  partition-based prerequisite-1 reading; (b) narrow new-family sanction for the deleted-call
+  spelling (census-negative, first-reach, honestly stated); (c) endgame-lock
+  INCOMPLETE-owner-accepted keeping byte-correct _pad[2] on main. Function parked owner-gated.
+
+- [s1] Baseline re-confirmed: sandbox file_LoadSectors --disable all = 14 (51/51 insns; strips the on-main _pad[2]; residual is purely save-offset diffs frame 40 vs 48)
+
+- [s1] Frame dichotomy is complete and owner-decidable: target frame 48 admits exactly two source mechanisms — (A) args=16 + declared-unwritten 1-8B local, (B) args=24 via deleted >=5-arg scalar-only call; nothing in the bytes pins args (unlike func_80037540 whose addiu $a1,$sp,0x10 pinned args=16), so the 2026-07-13 oversized-locals carve-out prerequisite-1 is ambiguous here
+
+- [s1] if(0) and dbg-flag-local spellings of the deleted call are byte-identical to the proven sandbox-0 form (only .file differs); unreachable-after-return differs only in label numbering
+
+- [s1] String-literal args in deleted calls leak .rodata (measured), oracle-excluding printf-with-format-string originals; scalar-only args forced
+
+- [s1] SOTN census negative on the args-area mechanism, positive on the if(0)-dead-code genre (4 instances with file:line in evidence.md s1b)
+
+- [s1] OWNER-ESCALATION filed in docs/grind/decisions.md presenting options (a) dead-local under carve-out with partition-based prerequisite-1 reading, (b) narrow deleted-call family sanction (honestly census-negative), (c) endgame-lock INCOMPLETE-owner-accepted keeping byte-correct _pad[2] on main
