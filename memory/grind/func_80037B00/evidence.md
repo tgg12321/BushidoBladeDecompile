@@ -84,3 +84,19 @@ candidate.c: 23 honest insn diff, 15 weighted-masked. NOT lowered this session.
 - [s2] s2: 3 KILLED + 2 INERT structural variants, all measured; structural modality now exhausted for the register-rotation axis
 
 - [s2] s2: no rejected form was banked-cheat family; all failed on their measured score, not on policy
+
+- [s3] s3: baseline reaffirmed on pin+dummy HEAD form → sandbox --disable all score=15, target_insns=36, build_insns=34, cheat_asm_stripped=27 (HEAD's 9 pins + sp_dummy dropped)
+
+- [s3] s3: statement re-association variant (var_v0 = D_800A38C8; if (<=0) return 0; var_t1 = 0; ... ; drop block_end label) MEASURED → sandbox=15, build_insns=34, cheat_asm_stripped=8 (pin-free form). Identical floor — GCC hoists the t1-init into blez's delay slot regardless of source position; the inlined return 0 folds to the same j/addu tail. Saved rejected/stmt-reassoc-direct-return.c.
+
+- [s3] s3: structural axis is NOW EXHAUSTIVELY EXHAUSTED across all Lever-A/B/C/D shapes plus statement re-association — 6 measured killed variants + 2 measured inert variants (var_v0 split, decl reorder from s2). The 5-way register rotation + 8-byte phantom frame does not respond to any structural mutation of the pure-C body that stays within cheat policy.
+
+- [s3] s3 baseline reaffirmed on pin+dummy HEAD form: sandbox --disable all score=15, target_insns=36, build_insns=34, cheat_asm_stripped=27 (HEAD's 9 pins + sp_dummy dropped).
+
+- [s3] s3 statement-reassoc variant identical floor: sandbox=15, build_insns=34, cheat_asm_stripped=8 (pin-free, no dummy). Rejected form banked.
+
+- [s3] Structural axis is now exhaustively exhausted: 7 measured killed variants across all catalog levers (register-alloc-pure-c A/B/C/D, shared-end-label, do-while restructure, eager-both-byte-loads, statement re-association) + 2 measured inert variants (var_v0 split, decl reorder). No structural mutation of the pure-C body within cheat policy moves the 5-way register-rotation + 8-byte phantom-frame floor.
+
+- [s3] Owner standing 2026-07-27 both-gates status re-confirmed: Gate 1 (STRONG scan_hand_coded S1/S2/S6 for canonical-asm) FAILS — this is a plain strncmp-style dispatch loop, no S1/S2/S6 signals; Gate 2 (SOTN in-hand precedent for a sanctioned coercion family covering 5-way coupled register rotation) FAILS — no dead-store / pointer-alias / named-local / duplicated-statement / MMIO carve-out applies to the register-rotation shape here.
+
+- [s3] One sanctioned lever remains untried: directed decomp-permuter from candidate.c (pin-free, floor 15) — this is the ledger's live frontier and per s1 is the mandated next step BEFORE any owner-gated escalation. Standing 2026-07-27 ruling requires exhaustion of grindable levers; permuter is grindable, so owner-gated is NOT valid this session.

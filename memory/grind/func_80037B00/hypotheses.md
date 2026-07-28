@@ -41,3 +41,15 @@
 - probe: Placed both u8 loads at top of loop_inner before both if-tests; measured sandbox.
 - result: Score ROSE from 15 to 17; build_insns FELL from 34 to 32 (target has 36). GCC folded/scheduled the paired loads and DROPPED two instructions target keeps. Moves further from target shape.
 - verdict: KILLED
+
+## [s3] Statement re-association: defer var_t1 = 0 past the guard + inline the guard's early-exit as return 0 shifts the t1-init LUID position and lets it schedule differently into the blez delay slot.
+- mechanism: register-alloc-pure-c interaction with sched1 — moving the zero-init AFTER the blez check places it in the taken arm's LUID sequence, which could bias GCC's scheduler on where the `addu tX,zero,zero` lands (delay-slot vs pre-branch) and thus which register the counter pseudo gets.
+- probe: Edited src to `var_v0 = D_800A38C8; if (var_v0 <= 0) return 0; var_t1 = 0; var_t3 = var_v0; ...` and dropped the block_end label. Ran sandbox --disable all.
+- result: Score UNCHANGED at 15 weighted, build_insns=34 (cheat_asm_stripped=8 vs 27 confirms pin-free measure). GCC hoisted the t1-init back into the blez delay slot identically to the baseline form; no LUID differential survives the scheduler. Saved rejected/stmt-reassoc-direct-return.c.
+- verdict: KILLED
+
+## [s3] Statement re-association (defer var_t1=0 past the guard + inline the guard as return 0 + drop block_end label) shifts the t1-init LUID and lets the scheduler place `addu tX,zero,zero` into blez's delay slot from a different register, biasing RA on the counter.
+- mechanism: register-alloc-pure-c interaction with sched1 — source position of a zero-init influences LUID ordering, which can steer where the init lands (delay-slot vs pre-branch) and which pseudo the counter maps to.
+- probe: Rewrote src/code6cac_c.c func_80037B00 to `var_v0 = D_800A38C8; if (<=0) return 0; var_t1 = 0; var_t3 = var_v0; ...` (also removed trailing block_end label). Ran `sandbox func_80037B00 --disable all`.
+- result: sandbox=15 weighted, target_insns=36, build_insns=34, cheat_asm_stripped=8 (pin-free measure confirmed). Identical to baseline candidate.c form — GCC hoisted the init back into the blez delay slot; the inlined `return 0` folded to the same j/addu tail. Saved memory/grind/func_80037B00/rejected/stmt-reassoc-direct-return.c.
+- verdict: KILLED
