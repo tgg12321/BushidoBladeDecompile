@@ -1,0 +1,40 @@
+{
+ "func": "func_80037B00",
+ "file": "code6cac_c",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 0,
+   "floor": 23,
+   "modality": "wip-import",
+   "headline": "floor imported from memory/wip checkpoint"
+  },
+  {
+   "session": 1,
+   "floor": 23,
+   "modality": "recon",
+   "headline": "s1 recon: baseline reaffirmed (23 honest / 15 weighted); +8 phantom frame is downstream of the 5-way register-rotation axis; 3-hypothesis frontier built with permuter as untried lever."
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Directed decomp-permuter from candidate.c (pin-free goto form, honest 23) closes the 5-way register rotation.",
+   "mechanism": "Same shape as prior marionation_Exec coupled-rotation work. Random mutation from a coalesced-pseudo starting point can shift the scavenger tiebreaker cascade; PERM_* macros can sweep the 5-var declaration order and inner-loop temp naming.",
+   "next_probe": "Set src/code6cac_c.c to the pin-free candidate.c body, run tools/permuter_campaign.py with --stop-on-zero, \u226530 min fresh-seed window, target.o built from asm/funcs/func_80037B00.s so base score is the real weighted diff not offset noise."
+  },
+  {
+   "hypothesis": "Narrow-int retyping of the mismatch flag (var_t2 \u2192 u8) and match counter (var_t1 \u2192 s16), combined with block-local var split moving inner-loop temps into an inner {} block, shifts the RA scavenger enough to lock at least one of the rotated regs (a1 or a2).",
+   "mechanism": "register-alloc-pure-c Levers B (narrow types) + A (block-local split). GCC 2.7.2 global.c breaks conflict-graph ties by n_refs and mode; narrower modes and shorter live ranges can flip the tiebreaker.",
+   "next_probe": "Write two variants (u8-flag and inner-{}-block) into src, sandbox each vs candidate.c baseline of 23; save either an improved score OR a KILLED measurement to rejected/."
+  },
+  {
+   "hypothesis": "Split-init accumulation of the outer counter (var_t1=0; var_t1+=1;-then-compare vs current var_t1++;-then-compare-in-if) or shared-end-label restructure of the two return paths biases RA and could also naturally introduce a live-but-memory-dead scalar the frame axis needs.",
+   "mechanism": "split-init-accumulation-sanctioned (feedback 2026-06-13) as a legitimate pure-C RA lever; shared-end-label combines the (return 1)/(return 0) exits into one, potentially rebinding v0 assignment order to match target's `addu $v0,$zero,$zero` late-zero pattern at .L80037B80.",
+   "next_probe": "Write shared-end-label variant with `s32 ret; goto end; end: return ret;`, measure sandbox; if score drops or reg-rotation changes, next session narrows further."
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-28T17:30:29.848607+00:00"
+}
