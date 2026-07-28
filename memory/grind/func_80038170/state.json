@@ -1,0 +1,20 @@
+{
+ "func": "func_80038170",
+ "file": "code6cac_c_mid",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [
+  {
+   "session": 0,
+   "floor": 12,
+   "modality": "wip-import",
+   "headline": "floor imported from memory/wip checkpoint"
+  }
+ ],
+ "frontier": [],
+ "judge_constraints": [
+  "Use ONLY the separate-statement spelling: keep `s32 s1, s2, s3;` declaration order and write `s3 = 0; s2 = 0; s1 = 0;` (no chained assignment, no decl-order reversal, no new constructs, no annotation \u2014 it is live code). Then retire BOTH remaining cheat carriers (regfix.txt:1250 reorder @9-13 and the tools/prologue_config.json func_80038170 entry), prove sandbox 0 after build/ regenerates from this src (the D_8008F19C+1 vs D_8008F19D floor-1 must vanish at the .o level, not be waived), full-build SHA1 == oracle, then submit for FINAL CALL."
+ ],
+ "origin": "queue",
+ "created": "2026-07-28T11:45:41.842636+00:00"
+}
