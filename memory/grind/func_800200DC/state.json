@@ -1,0 +1,40 @@
+{
+ "func": "func_800200DC",
+ "file": "code6cac",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 0,
+   "floor": 14,
+   "modality": "wip-import",
+   "headline": "floor imported from memory/wip checkpoint"
+  },
+  {
+   "session": 1,
+   "floor": 14,
+   "modality": "recon",
+   "headline": "Recon: floor 14 re-verified; residual mapped as two separable rotations (A: dy v0/v1 6-insn, B: sq/quotient v1<->a1 8-insn) with a $t1-burn asymmetry pointing at dy liveness as the root"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "dy's dest-register tiebreak (Rotation A root): target's dy reuses the dying subtrahend reg ($v0 = arg0[1]) while ours reuses the minuend reg ($v1 = arg1[1]); flipping only this should cascade through the disc chain (6 insns) and possibly perturb Rotation B",
+   "mechanism": "GCC 2.7.2 local-alloc qty-sharing / allocno priority picks which dying input hard-reg the new pseudo inherits; named-temp splits and pseudo-creation-order changes renumber allocnos without moving statements across the call (the rejected hoist)",
+   "next_probe": "sandbox a small family: (1) s32 y1=arg1[1], y0=arg0[1]; dy=y1-y0; (2) y0 declared/loaded first; (3) sanctioned split-init dy=arg1[1]; dy-=arg0[1]; each is a cheap single sandbox run"
+  },
+  {
+   "hypothesis": "Instrumented cc1 dump resolves WHY target burns $t1 for the arg3*dy2 mflo (dy liveness or allocno order) \u2014 the ledger's live ALLOCDBG hypothesis, now with a concrete question to answer",
+   "mechanism": "-da .greg dump / BB2_ALLOC_DEBUG shows register dispositions, conflicts, and allocation order; if dy's pseudo must be live at the second mflo in target, the original C referenced dy later than our form does",
+   "next_probe": "cc1 -da on the sandbox .i, read ;; Register dispositions for the dy / arg2^2 / arg3*dy2 / sq / quotient pseudos; then test C spellings that extend dy's live range without changing bytes"
+  },
+  {
+   "hypothesis": "Rotation B ($v1<->$a1 sq/quotient swap) can be flipped independently via pseudo renumbering around the second call",
+   "mechanism": "sq and the quotient are the only two caller-save pseudos allocated after the second call; their relative allocno order decides who gets $v1 vs $a1",
+   "next_probe": "sandbox variants: named intermediate t=(a2+sq)*dist; a0=t/dy2/32; and q=num/dy2; a0=q/32; also swapping sq/a2 evaluation order inside the sum (a2+sq vs sq+a2 \u2014 not the rejected across-call hoist)"
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-28T04:56:59.871866+00:00"
+}

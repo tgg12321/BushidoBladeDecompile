@@ -647,3 +647,4 @@
 - 2026-07-27 23:22 func_80068ECC: judge FAILED a bytes-proven candidate — The candidate closes the 3-way CSE gap with descending-width unsigned casts on the same s32 parameter: (u32)arg0>>1 & 0x
 - 2026-07-27 23:35 func_80068ECC COMPLETED-C after 1 sessions.
 - 2026-07-27 23:56 func_8006E10C COMPLETED-C after 1 sessions.
+- 2026-07-28 00:06 func_800200DC s1 [recon] floor=14: Recon: floor 14 re-verified; residual mapped as two separable rotations (A: dy v0/v1 6-insn, B: sq/quotient v1<->a1 8-insn) with a $t1-burn asymmetry pointing at dy liveness as the root
