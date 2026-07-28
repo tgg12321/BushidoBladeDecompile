@@ -657,3 +657,4 @@
 - 2026-07-28 05:12 func_80037AA4 s2 [structural] floor=4: vars=8 frame trigger FOUND naturally (orphan-slt guard, sandbox 11 at 23/23 insns); the residual sum<->p swap reduced to exact allocno arithmetic (sum 11/15=22000 vs p 7/7=20000, flip needs sum len>=17) with five lever families measured dead
 - 2026-07-28 06:00 func_80037AA4 s3 [structural] floor=4: s3 structural: register flip ACHIEVED at cc1 level (else-dup form: vars=8 + every target register, sandbox 4 with 2-insn insertion residual); combine proven to DECREMENT live_length, killing s2's deleted-insn frontier; all structural corridors to the flip-with-zero-extra-bytes measured walled — permuter is the remaining lever
 - 2026-07-28 06:35 func_80037AA4 COMPLETED-C after 4 sessions.
+- 2026-07-28 06:45 func_8003D330 COMPLETED-C after 1 sessions.
