@@ -1,0 +1,20 @@
+{
+ "func": "file_LoadSectors",
+ "file": "ings",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [
+  {
+   "session": 0,
+   "floor": 1,
+   "modality": "wip-import",
+   "headline": "floor imported from memory/wip checkpoint"
+  }
+ ],
+ "frontier": [],
+ "judge_constraints": [
+  "Do NOT commit the dead-guarded-call construct or any respelling whose sole function is bumping outgoing_args_size via a deleted call; before re-raising this family, complete the SOTN-master census (frontier item 3) and route any positive precedent to the OWNER as a new-family sanction request \u2014 meanwhile pursue a human-plausible-from-spec spelling (frontier item 2)."
+ ],
+ "origin": "queue",
+ "created": "2026-07-28T12:52:00.701315+00:00"
+}
