@@ -1,8 +1,8 @@
 {
  "func": "func_800871D4",
  "file": "main",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 0,
@@ -15,6 +15,12 @@
    "floor": 10,
    "modality": "recon",
    "headline": "recon: floor=10 confirmed; 5 BB2 siblings share same lhu+nop+andi 0xFFFF shape, ALL INCOMPLETE; frontier=3"
+  },
+  {
+   "session": 2,
+   "floor": 10,
+   "modality": "structural",
+   "headline": "Both endgame-lock gates fail (scan_hand_coded tier=LOW 0/8; negative BB2 sibling census, no cited SOTN precedent); structural axis exhausted at floor=10; standing 2026-07-27 ruling: REFUSED / OWNER-AC"
   }
  ],
  "frontier": [

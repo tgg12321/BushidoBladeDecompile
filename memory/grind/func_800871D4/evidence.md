@@ -60,3 +60,19 @@ Park with confirmed cc1psx divergence. The oracle requires cc1psx-specific behav
 - [s1] Sibling func_80086BFC (main.c:1143, COMPLETED-C, PsyQ verbatim-linked note2pitch2) uses the same <16 / -=16 split-shift on a *s16* var_a3 with a local shift subexpression — no re-mask needed because s16 semantics differ.
 
 - [s1] Function is a bitmask-flag setter with trivial control flow (single if/else + linear stores). Zero call sites in the function body. NO hand-coded-asm signals (S1/S2/S6 tier per scan_hand_coded); the construct is pure C in intent.
+
+- [s2] [s2] sandbox --disable all with candidate.c (u32 var_v1, in-place -=0x10, zero cheat-asm) = score=10 target_insns=52 build_insns=50 (missing 2 andi insns) — re-confirmed s1's honest floor after applying candidate.c to src/main.c.
+
+- [s2] [s2] sandbox --disable all with u16 var_v1 narrow-type variant = score=11 build_insns=52 (WORSE); banked rejected/u16-var-v1-narrow-type.c.
+
+- [s2] [s2] scan_hand_coded --single func_800871D4 = tier=LOW score=0/8, no S1/S2/S6 strong signals; canonical-asm authorization decisively unavailable (Gate 1 FAIL).
+
+- [s2] [s2] Cross-tree BB2 census (from s1): 5 sibling functions share the exact `lhu $r,GLOBAL; nop; andi $r2,$r,0xFFFF` shape, all INCOMPLETE; zero COMPLETED-C precedent in-tree (Gate 2 FAIL under standing 2026-07-27 ruling).
+
+- [s2] [s2] cc1 combine.c folds `& 0xFFFF` on a u16-typed lhu result because nonzero_bits proves the source is 16-bit-clean; 2026-06-16 WIP calibration recorded cc1psx does NOT fold, but per no-compiler-divergence.md this is informational only (the compiler is frozen).
+
+- [s2] [s2] Every non-cheat structural spelling of the initial read has been measured: direct u32 assign (floor=10, folds both andis), one-expr `temp_a0 & 0xFFFF` (folds), two-stmt split `var_v1=temp_a0; var_v1&=0xFFFF` (extra move, worse), m2c-shape explicit-andi twice (score=12), decl-order swap (no effect), u16 narrow-type (score=11).
+
+- [s2] [s2] The remaining hypothesized levers from s1 frontier (H1 bitfield struct pun of &D_80102808; H2 alternative first-andi source crossed with in-place -=0x10) both reduce to a no-new-park-categories cheat-by-spelling: no semantic purpose in a bit-flag setter, GCC-internals-only justification, would not be written by a human programmer from the function's spec — not surfaced.
+
+- [s2] [s2] Filed docs/grind/decisions.md entry `2026-07-28 — func_800871D4 — OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE` documenting both-gate failure and terminal disposition.
