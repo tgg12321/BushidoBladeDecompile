@@ -1,8 +1,8 @@
 {
  "func": "func_80037B00",
  "file": "code6cac_c",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 0,
@@ -15,23 +15,24 @@
    "floor": 23,
    "modality": "recon",
    "headline": "s1 recon: baseline reaffirmed (23 honest / 15 weighted); +8 phantom frame is downstream of the 5-way register-rotation axis; 3-hypothesis frontier built with permuter as untried lever."
+  },
+  {
+   "session": 2,
+   "floor": 15,
+   "modality": "structural",
+   "headline": "s2 structural sweep \u2014 5 variants measured; 3 KILLED (narrow-int retyping, shared-end-label, eager-both-byte-loads), 2 INERT (var_v0 split, decl reorder); floor unchanged at 15 weighted / 23 honest; re"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Directed decomp-permuter from candidate.c (pin-free goto form, honest 23) closes the 5-way register rotation.",
-   "mechanism": "Same shape as prior marionation_Exec coupled-rotation work. Random mutation from a coalesced-pseudo starting point can shift the scavenger tiebreaker cascade; PERM_* macros can sweep the 5-var declaration order and inner-loop temp naming.",
-   "next_probe": "Set src/code6cac_c.c to the pin-free candidate.c body, run tools/permuter_campaign.py with --stop-on-zero, \u226530 min fresh-seed window, target.o built from asm/funcs/func_80037B00.s so base score is the real weighted diff not offset noise."
+   "hypothesis": "Directed decomp-permuter from candidate.c (pin-free, floor 15) can close the 5-way register rotation via randomized coalesced-pseudo tiebreaker shifts and PERM_* directive sweeps.",
+   "mechanism": "Structural levers A/B/decl-order/shape all measured dead; the remaining C-source search space is combinatorial mutation of the pin-free form. Same shape as marionation_Exec coupled-rotation work.",
+   "next_probe": "Set src/code6cac_c.c to candidate.c (already in place, floor 15 confirmed), build target.o from asm/funcs/func_80037B00.s so base score is real weighted diff, run tools/permuter_campaign.py with --stop-on-zero and \u226530 min fresh-seed window per permuter-fresh-seed-discipline. Save any measurable improvements to hypotheses.md; log full run to tmp/grind/func_80037B00/s3/."
   },
   {
-   "hypothesis": "Narrow-int retyping of the mismatch flag (var_t2 \u2192 u8) and match counter (var_t1 \u2192 s16), combined with block-local var split moving inner-loop temps into an inner {} block, shifts the RA scavenger enough to lock at least one of the rotated regs (a1 or a2).",
-   "mechanism": "register-alloc-pure-c Levers B (narrow types) + A (block-local split). GCC 2.7.2 global.c breaks conflict-graph ties by n_refs and mode; narrower modes and shorter live ranges can flip the tiebreaker.",
-   "next_probe": "Write two variants (u8-flag and inner-{}-block) into src, sandbox each vs candidate.c baseline of 23; save either an improved score OR a KILLED measurement to rejected/."
-  },
-  {
-   "hypothesis": "Split-init accumulation of the outer counter (var_t1=0; var_t1+=1;-then-compare vs current var_t1++;-then-compare-in-if) or shared-end-label restructure of the two return paths biases RA and could also naturally introduce a live-but-memory-dead scalar the frame axis needs.",
-   "mechanism": "split-init-accumulation-sanctioned (feedback 2026-06-13) as a legitimate pure-C RA lever; shared-end-label combines the (return 1)/(return 0) exits into one, potentially rebinding v0 assignment order to match target's `addu $v0,$zero,$zero` late-zero pattern at .L80037B80.",
-   "next_probe": "Write shared-end-label variant with `s32 ret; goto end; end: return ret;`, measure sandbox; if score drops or reg-rotation changes, next session narrows further."
+   "hypothesis": "The +8 phantom frame axis is downstream of the register rotation (s1 CONFIRMED); if permuter finds any rotation lever, the frame follows implicitly. If permuter finds nothing after a full fresh-seed window, the function's remaining path is an integration handoff (canonical-asm authorization or standing-ruling escalation).",
+   "mechanism": "s1 evidence: target frame has zero body accesses to sp+0..7 and zero jals; only mechanism to produce it in pin-free C is pin-induced reload pressure on a coalesced-away scalar \u2014 no independent lever.",
+   "next_probe": "After a full permuter fresh-seed window: if floor still 15, file OWNER-ESCALATION per 2026-07-27 standing ruling \u2014 Gate 1 (STRONG scan_hand_coded S1/S2/S6) already FAIL (plain strncmp dispatch loop), Gate 2 (SOTN precedent) already FAIL (no dead-store/pointer-alias/etc precedent applies to 5-way coupled rotation). Both gates FAIL means the ruling is REFUSED/OWNER-ACCEPTED INCOMPLETE."
   }
  ],
  "judge_constraints": [],

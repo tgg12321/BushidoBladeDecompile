@@ -72,3 +72,15 @@ candidate.c: 23 honest insn diff, 15 weighted-masked. NOT lowered this session.
 - [s1] Register axis: 5-way coupled rotation (t0,v1,a1,t1,a2) → (t1,a1,a2,t0,v1); not a single swap, no shared-exit CSE, no jals — call-return-* / exit-path-* / compare-operand-order patterns don't apply directly
 
 - [s1] Rejected forms bank contains: dead-vars-local-array.c (do-not-repropose)
+
+- [s2] s2: baseline pin-free candidate.c score=15 weighted, target_insns=36, build_insns=34, cheat_asm_stripped=8 (HEAD's pins+dummy dropped)
+
+- [s2] s2: register-alloc-pure-c Levers A (block-local split) and B (narrow types) both exhausted for this function — no structural rewrite of the local decl set moved the score
+
+- [s2] s2: shared-end-label makes score WORSE (not better) for this function — added live scalar amplifies the 5-way rotation tiebreak rather than resolving it
+
+- [s2] s2: load-order restructuring is contraindicated — GCC folds paired byte-loads and drops instructions target retains
+
+- [s2] s2: 3 KILLED + 2 INERT structural variants, all measured; structural modality now exhausted for the register-rotation axis
+
+- [s2] s2: no rejected form was banked-cheat family; all failed on their measured score, not on policy
