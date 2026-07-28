@@ -1,6 +1,11 @@
 /* SANDBOX 0 (29/29, --disable all, cheat_asm stripped, rules_dropped 3)
- * measured s1 2026-07-27. ZERO mechanical cheats (no pins, no volatile,
- * no asm, no dead code). PENDING OWNER RULING — see outcome s1 + ledger:
+ * measured s1 2026-07-27; RE-MEASURED 0 with the form applied in
+ * src/text1b.c s2 2026-07-27 (canonical verdict C, distance 0). ZERO
+ * mechanical cheats (no pins, no volatile, no asm, no dead code).
+ * RULING RESOLVED — docs/grind/decisions.md 2026-07-27 23:04 PASS:
+ * the sibling-parallel form is ADMISSIBLE (SOTN variable-reuse sanction
+ * + cross-sibling register-tracking byte evidence); must remain VERBATIM
+ * (any drift voids the ruling). Historical context of the conflict:
  *
  * This is a VERBATIM symbol-transcription of committed COMPLETED-C sibling
  * func_8006517C (src/text1b.c:14554, commit 56800c35 2026-06-14, similarity
