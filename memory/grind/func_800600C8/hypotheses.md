@@ -1,5 +1,30 @@
 # Hypothesis ledger — func_800600C8
 
+## s2 (structural) — floor 6 -> 0 MATCH
+
+### CONFIRMED
+- **H-s2-1 reverse-scheduler emit==chain for tied leaves**: among the five
+  pri-1 leaf insns (78 copy, 81 sh4A, 84 sh48, 87 sym, 89 sw18), emit
+  order == RTL chain order (reverse scheduler picks highest-LUID first;
+  launched producers follow their consumer immediately). Verified with
+  BB2_SCHED_DEBUG full pick trace + three sandbox measurements matching
+  predictions (6 / 2 / 5).
+- **H-s2-2 p0-first + d0-then-d1 ("Form P")**: predicted 2 (only sh pair
+  swapped), measured 2.
+- **H-s2-3 overwrite-order swap unlocks the pair order**: putting
+  s.d1=hi%10 BEFORE s.d0=arg0%10 in source makes flow's backward DSE
+  scan reach the init pair with tracker=fp+74, so init order [d1, d0]
+  survives; chain order then equals target emit order end-to-end.
+  Predicted 0, measured 0. THE MATCH.
+
+### KILLED
+- **Frontier-3 (d0; p0; d1)**: measured 5, worse than Form P's 2; trace
+  shows group splits [move, sh48] ... [sh4A]. rejected/
+  d0-p0-d1-init-order-score5.c.
+- s1 frontier hypotheses 1 (priority split via RANK_DEBUG steering) and
+  2 (class-2/3 lever) were built on a FORWARD-scheduler model; the
+  scheduler is reverse. Superseded by H-s2-1..3, no probe needed.
+
 ## s1 (recon) — floor 13 -> 6, cheat-free, 121/121 insns
 
 ### CONFIRMED

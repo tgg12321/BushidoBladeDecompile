@@ -1,5 +1,48 @@
 # Evidence bank — func_800600C8
 
+## s2 (structural, 2026-07-27) — floor 6 -> 0, CHEAT-FREE MATCH, 121/121
+
+- MATCH: sandbox --disable all = 0 with pure statement ordering (form in
+  candidate.c, applied in src/text1b.c). No constructs, no FAKE, no asm.
+- The winning order: `hi=arg0; s.p0=&B6FC; s.d1=hi; s.d0=hi;
+  hi=((s16)arg0)/10; s.d1=hi%10; s.d0=((s16)arg0)%10;` — three coupled
+  levers: p0-store FIRST, init pair d1-then-d0, overwrite pair
+  d1-ow-then-d0-ow (source swap of the two overwrite statements).
+- MECHANISM CORRECTION to s1 model: GCC 2.7.2 sched.c is a REVERSE
+  (bottom-up) list scheduler (sched.c:38-58; pick site ~3939: picks
+  ready[0], builds chain backward). Pick order = reverse emit order.
+  Priority = producer-chain height (priority() sched.c:1425: max over
+  producers of pri(x)+cost-1); all five contested leaf insns are pri 1
+  class 3, so ties fall to INSN_LUID with HIGHER LUID picked first ->
+  emit order among tied leaves == RTL chain order (stable). The s1
+  "forward, after mult issues" framing was wrong but its conclusions
+  (LUID-stable, priority/class tie chain) were directionally right.
+- schedule_select (sched.c:2643) rotates the largest-potential-hazard
+  insn to front WITHIN the top same-priority group: stores beat li/move
+  (explains insn 89 leapfrogging 144/i=0 in list order — NOT a LUID
+  violation).
+- flow.c last_mem_set DSE scan is BACKWARD (life analysis direction):
+  d0-init dies iff, scanning backward from the block end, the tracker
+  still holds fp+72 when d0-init is reached. Swapping the OVERWRITE
+  statement order (d1-ow later in chain than d0-ow) makes the backward
+  scan visit 109(72-ow) then 141(74-ow) -> tracker=fp+74 at the init
+  pair -> both inits survive with init order [d1, d0]. This decoupled
+  the flow constraint from the emit-order constraint — the deadlock s1
+  saw ("flow forces pair-before-p0") dissolves.
+- Measured ladder (all cheat-free, 121/121 unless noted):
+  - candidate-s1 (d1,d0,p0): 6 (re-confirmed baseline)
+  - p0,d0,d1 ("Form P"): 2 (only the two init sh transposed)
+  - d0,p0,d1 (frontier-3): 5 — KILLED (banked in rejected/)
+  - p0,d1,d0 + swapped overwrites: 0 — MATCH
+- Instrumentation notes: instrumented cc1 = tools/gcc-2.7.2/cc1 (in-tree,
+  has BB2_RANK_DEBUG + BB2_SCHED_DEBUG + BB2_PRIO_DEBUG); the production
+  build/cc1 binary predates the instrumentation and has none. Whole-file
+  traces are ambiguous (INSN_UIDs repeat per function) — use a standalone
+  TU (verified byte-identical emission vs in-context, labels aside).
+- Artifacts: tmp/grind/func_800600C8/s2/ (standalone.c + full -da dump
+  set, scheddbg.txt block-3 full pick trace, rankdbg.txt, formP_objdump,
+  cmp.sh/sa.sh/uids.py tooling).
+
 ## s1 (recon, 2026-07-27) — floor 13 -> 6, CHEAT-FREE, insn count 121/121
 
 - Baseline re-measured: canonical verdict C, sandbox --disable all = 13 (with

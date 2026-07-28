@@ -12967,38 +12967,36 @@ s32 func_800600C8(s32 arg0, s32 arg1, s32 arg2)
     s32 end_off = arg1 + 0xC0;
     s32 cur_tex = arg1;
     s32 i;
-    s32 width;
     s16 hi;
 
     s.p0 = &D_8009B6F0;
     s.byte28 = 0;
     s.zero10 = 0;
-    s.zero1C = 0 & 0xFFFFu;
+    s.zero1C = 0;
     s.arg2 = arg2;
     if (arg0 < 0xA) {
-        width = 0x93;
-        if ((!hi) && (!hi)) {}
+        s.width = 0x93;
     } else {
-        width = 0xA3;
+        s.width = 0xA3;
     }
-    s.width = width;
     s.p1 = &D_8009B758;
     s.in_tex = cur_tex;
     cur_tex = func_8007352C((s32)&s);
+    hi = arg0;
     s.p0 = &D_8009B6FC;
-    s.d1 = (s.d0 = arg0);
-    s.d0 = ((s16)arg0) % 10;
+    s.d1 = hi;
+    s.d0 = hi;
     hi = ((s16)arg0) / 10;
     s.d1 = hi % 10;
+    s.d0 = ((s16)arg0) % 10;
     i = 0;
 loop_60C8:
     s.p1 = (s32 *)((s32)&D_8009B708 + ((&s.d0)[i] * 8));
     if (arg0 < 0xA) {
-        width = 0x64;
+        s.width = 0x64;
     } else {
-        width = (((1 - i) << 2) << 3) + 0x54;
+        s.width = (((1 - i) << 2) << 3) + 0x54;
     }
-    s.width = width;
     s.in_tex = cur_tex;
     cur_tex = func_8007352C((s32)&s);
     if (s.d1 != 0) {
