@@ -1,4 +1,13 @@
 /* Candidate: func_80038170 (code6cac_c_mid.c) — post-Judge-ruling session (2026-07-28)
+ * s3 (structural, 2026-07-28): src at HEAD had again reverted to the cheat form;
+ * this candidate was re-applied verbatim and re-measured: sandbox --disable all
+ * = 1 (141/141, rules_dropped 1) — identical to s2. New exhaustion probe: the
+ * one-symbol pair rebased on D_8008F19D ([s3*2-1]/[s3*2]) also scores 1 (addend
+ * artifact moves to the other word; banked rejected/d8008f19d-rebased-pair.c) —
+ * NO source spelling reaches sandbox 0 pre-integration. OWNER-ESCALATION filed
+ * (docs/grind/decisions.md 2026-07-28 func_80038170 entry): the driver candidate
+ * gate (sandbox 0 BEFORE retire) is circular for this function; owner must
+ * retire regfix.txt:1250 + the prologue_config.json entry, rebuild, queue done.
  * s2 (structural, 2026-07-28): src at HEAD had REVERTED to the old cheat form
  * (pins + dummy-asm + two-symbol spelling); this candidate was re-applied
  * verbatim to src and re-measured: sandbox --disable all = 1 (141/141), word

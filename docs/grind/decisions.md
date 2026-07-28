@@ -1863,3 +1863,44 @@ func_8003D330 is a textbook PsyQ ordering-table insertion (addPrim of an E1 texp
 ## 2026-07-28 07:24 — func_80038170 — ruling: func_80038170 is now byte-matched by natural compilation EXCEPT the emission ord — **PASS**
 
 RULING: writing the three live zero-initializations in s3,s2,s1 order as three SEPARATE STATEMENTS (declaration order unchanged: `s32 s1, s2, s3;` then `s3 = 0; s2 = 0; s1 = 0;`) is a SANCTIONED statement-order reconstruction, not a forbidden coercion. Reasoning, for the audit trail: (1) The three statements are live, semantically required code — every pure-C source for this function MUST zero these three counters, and must commit to SOME order. The orders are semantically identical and equally idiomatic; the original programmer necessarily picked one, and the target bytes attest which (prologue pairs s0,s3,s2,s1,ra — evidence.md s1 bullet 'Residual floor-5 = prologue init/save pair order ONLY', which I verified is the ledger's measured claim: 'Order tracks the source order of the three live zero-inits'). Choosing among semantically identical live-statement orders because the target attests the original's order is the established, documented technique class in this project — .claude/rules/defer-store-past-later-compute-into-jal-delay.md says in terms: 'This is ordinary source restructuring ... NOT a coercion device', with the boundary being 'don't manufacture a useless later compute'. Nothing is manufactured here: zero dead constructs, zero aliases, zero pins, zero annotations needed — the emitted order IS the visible source order. (2) The 6-test checklist passes affirmatively: every statement has semantic purpose; a human writing from spec could naturally write s3-first (there is no canonical order for independent zeroings); the construct is describable without reference to GCC internals ('zero the case counters, third first'); no permuter-found necessity; the family is the sanctioned live-statement-order class (defer-store, hoist-call-arg-local, packed-multiply low-first), NOT the forbidden param-local-alias-prologue-pair-flip family — that family's defining defect is introducing DEAD alias locals / decl-order-of-variables as a knob (per the rule file: '_r'/'_out' literal renames 'with no semantic purpose'); here no construct is introduced at all; no intent-announcing names. (3) The layer-1 FAIL's logic — 'the only purpose of this order is to match' — proves too much: it would equally condemn the s1,s2,s3 order had the target been s1-first. A criterion that forbids exactly the ordering that matches, for ANY ordering, makes COMPLETED-C definitionally unreachable for a function the canonical gate routed C (verdict C, asm_insns 0) — that contradicts the completion standard and the no-park-permanently directive, and 'no-C-form' demonstrably does not hold (C trivially reaches these bytes). Matching decompilation is precisely the selection, among semantically equivalent sources, of the one the bytes attest. SCOPE OF THIS RULING: the separate-statement spelling ONLY. The two banked rejected spellings STAY rejected and must not be re-proposed: `s32 s3=0,s2=0,s1=0` (decl-order reversal — declaration order as a knob is what the forbidden pair-flip family condemns) and `s1=s2=s3=0;` (chained — its order effect rides on RTL right-to-left expansion, a GCC-internals mapping invisible in source; unnecessary now that the transparent spelling is available). This is a ruling on the construct, not a FINAL CALL: bytes must still be proven on main.
+
+## 2026-07-28 — func_80038170 — OWNER-ESCALATION — integration-gate deadlock: bytes proven, candidate gate structurally unpassable (pending owner action)
+
+**The function is finished in C; no grind session can close it.** The Judge-sanctioned
+form (ruling 2026-07-28 07:24 above, PASS — separate-statement `s3 = 0; s2 = 0; s1 = 0;`
++ standalone `i = 0;` hoist + one-table `(&D_8008F19C)[s3*2+0/1]` pair) is banked in
+`memory/grind/func_80038170/candidate.c` and was re-applied + re-measured in s2 and s3:
+sandbox `--disable all` = 1 at 141/141 insns, with word-level proof (s1, s2 artifacts)
+that all 141 instruction words match the oracle stream. The floor-1 residual is solely
+the pre-link reloc spelling `%lo(D_8008F19C)+1` vs the stale build/ reference's
+`%lo(D_8008F19D)+0` — linker-identical (both resolve to 3C018009 / 9022F19D).
+
+**Why the pipeline cannot finish it:**
+1. The driver's candidate path (`tools/grinder/grind.ps1` Invoke-CandidatePath) requires
+   the sandbox to print 0 BEFORE it will run `retire`.
+2. Sandbox 0 is unreachable by construction until `build/` regenerates from the Judge
+   form (the reloc-spelling word only vanishes then) — re-proven s1, s2, and s3.
+3. `build/` cannot regenerate until the two remaining carriers are retired, because both
+   now actively MANGLE the correct natural output (rules-applied sandbox = 4 vs clean 1,
+   measured s2): a full build with them active breaks the oracle.
+4. Both carriers are on surfaces forbidden to grind sessions: `regfix.txt:1250`
+   (reorder @9-13) and the `tools/prologue_config.json` func_80038170 entry.
+   So the gate's precondition (sandbox 0) can only become true AFTER the action
+   (retire) that the gate itself guards. Deadlock; sessions s2/s3 can only re-prove it.
+
+**s3 exhaustion close-out:** the sole conceivable source-spelling escape — rebasing the
+one-symbol pair on D_8008F19D (`[s3*2-1]/[s3*2]`) — was measured this session: sandbox
+still 1 (the addend artifact just moves to the other word; any one-symbol pair covering
+0x8008F19C..D carries a nonzero addend on one access). Banked as
+`rejected/d8008f19d-rebased-pair.c`. Two-symbol spellings kill the phantom-frame temp
+(s1 trigger matrix). No source spelling reaches sandbox 0 pre-integration.
+
+**Requested owner action (minutes, from a clean tree):**
+1. Apply `memory/grind/func_80038170/candidate.c` to `src/code6cac_c_mid.c` (verbatim body).
+2. Delete `regfix.txt:1250` (the func_80038170 reorder @9-13) and the
+   `tools/prologue_config.json` func_80038170 entry (or run `retire func_80038170`
+   after step 1 with the prologue entry dropped).
+3. Full build → expect SHA1 == oracle; sandbox func_80038170 --disable all → expect 0.
+4. `queue done func_80038170` → COMPLETED-C (Judge FINAL CALL per driver flow, or
+   owner acceptance given the 07:24 construct ruling already PASSed the form).
+

@@ -115,3 +115,11 @@ as indefinitely parked INCOMPLETE). Do NOT attempt any dead-array or declaration
 - [s2] D_8008F19D no longer referenced anywhere in src/code6cac_c_mid.c after the edit — no dangling extern
 
 - [s2] Form unchanged from the banked layer-1-reviewer-PASS candidate; Judge-binding spelling followed verbatim (decl s32 s1, s2, s3; separate s3=0; s2=0; s1=0;)
+
+- [s3] [s3] src at session start had again reverted to the cheat form (pins + dummy-asm + two-symbol spelling); Judge form re-applied verbatim, sandbox --disable all = 1 (141/141, rules_dropped 1) — third independent reproduction of the floor
+
+- [s3] [s3] Exhaustion completed: the D_8008F19D-rebased one-symbol pair (only untested spelling class) also scores 1 — the reloc addend artifact is inherent to EVERY frame-preserving spelling; sandbox 0 is unreachable from source by construction until build/ regenerates from the Judge form
+
+- [s3] [s3] Deadlock made explicit: grind.ps1 Invoke-CandidatePath requires sandbox==0 BEFORE it runs retire, but sandbox 0 requires build/ regenerated from the Judge form, which requires the two harmful carriers (regfix.txt:1250, tools/prologue_config.json entry — rules-applied sandbox 4 vs clean 1, s2) retired FIRST; both surfaces are forbidden to grind sessions, so no session can ever pass the gate
+
+- [s3] [s3] OWNER-ESCALATION filed in docs/grind/decisions.md (line '## 2026-07-28 — func_80038170 — OWNER-ESCALATION — integration-gate deadlock...') with the 4-step owner integration recipe: apply candidate.c, drop both carriers, full build (SHA1==oracle expected), queue done

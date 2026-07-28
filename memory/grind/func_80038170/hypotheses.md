@@ -35,3 +35,15 @@
 - probe: Edit src to the banked candidate body; sandbox func_80038170 --disable all; word-level diff vs asm/funcs oracle words (tmp/grind/func_80038170/s1/word_diff.py); address-normalized 141-insn diff vs build/src reference .o (tmp/grind/func_80038170/s2/norm_diff.py)
 - result: sandbox score 1 (141/141 insns, rules_dropped 1, cheat_asm_stripped 29 file-wide); word diff vs oracle stream: ONLY the pre-link jal func_80079194 reloc placeholder (0C000000 vs resolved 0C01E465); normalized diff vs stale build/ reference: 6 insns = 2 reloc-spelling words (lui/lbu D_8008F19C+1 vs D_8008F19D, proven linker-identical, both resolve to 3C018009/9022F19D) + 4 R_MIPS_26 j-words that differ only because the sandbox .o strips 29 cheat-asm instances file-wide shifting every function's section offset by 4 bytes (stale-reference artifact, vanishes on rebuild)
 - verdict: CONFIRMED
+
+## [s3] src at HEAD reverted to the old cheat form again; re-applying the Judge-sanctioned candidate verbatim reproduces the s2 floor exactly
+- mechanism: grind-session src edits are reverted by the driver between sessions; the banked candidate.c is the only durable carrier of the form
+- probe: Edit src/code6cac_c_mid.c to the banked candidate body; sandbox func_80038170 --disable all
+- result: score 1, target_insns 141, build_insns 141, rules_dropped 1, cheat_asm_stripped 29 — byte-identical to the s2 measurement (artifact s3/sandbox_judge_form.txt, re-confirmed after probe revert in s3/sandbox_judge_form_final.txt)
+- verdict: CONFIRMED
+
+## [s3] Rebasing the one-symbol pair on D_8008F19D ((&D_8008F19D)[s3*2-1] / [s3*2]) — the only untested one-symbol spelling class — can zero the pre-link reloc diff and reach sandbox 0 pre-integration
+- mechanism: the phantom-frame temp needs a shared-index pair off ONE symbol (s1 trigger matrix); the only two one-symbol bases covering bytes 0x8008F19C..D are D_8008F19C (+0/+1 addends) and D_8008F19D (-1/+0 addends); if the -1 addend happened to be masked differently the diff could vanish
+- probe: temporary src edit to the D_8008F19D-rebased pair; sandbox func_80038170 --disable all
+- result: score 1 at 141/141 — identical floor; the nonzero-addend artifact just moves from out[0x43] (+1) to out[0x42] (-1). Any one-symbol pair carries a nonzero addend on one access while the stale build/ reference has addend 0 on both; two-symbol spellings kill the frame temp (s1). Therefore NO source spelling reaches sandbox 0 before build/ regenerates. Banked rejected/d8008f19d-rebased-pair.c
+- verdict: KILLED

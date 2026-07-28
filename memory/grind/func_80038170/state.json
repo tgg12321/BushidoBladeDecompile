@@ -1,7 +1,7 @@
 {
  "func": "func_80038170",
  "file": "code6cac_c_mid",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -21,13 +21,19 @@
    "floor": 1,
    "modality": "structural",
    "headline": "Judge form re-applied to src (HEAD had reverted to cheat form) and re-proven: sandbox 1, 141/141 words vs oracle stream, floor-1 residual is solely the linker-identical reloc spelling; function remain"
+  },
+  {
+   "session": 3,
+   "floor": 1,
+   "modality": "structural",
+   "headline": "Bytes proven (141/141 words, floor-1 = linker-identical reloc spelling); driver candidate gate is circular for this function (sandbox 0 requires retiring the two driver-only carriers first) \u2014 OWNER-ES"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Function is integration-ready: with the Judge form now IN src, retiring regfix.txt:1250 (reorder @9-13) + the tools/prologue_config.json func_80038170 entry and rebuilding yields sandbox 0 and full-build SHA1 == oracle",
-   "mechanism": "all 141 insn words match the oracle stream; the floor-1 residual is the reloc spelling which is byte-identical after link and disappears from the sandbox metric once build/ regenerates from this src; both carriers measured HARMFUL (rules-applied sandbox 4 vs clean 1) so they must be retired BEFORE any rebuild",
-   "next_probe": "driver/integration: verify src still carries the s2-applied form, retire both carriers, full build, SHA1 == oracle, re-run sandbox (expect 0), submit FINAL CALL"
+   "hypothesis": "Owner integration closes the function to COMPLETED-C in one pass",
+   "mechanism": "with candidate.c applied and both carriers retired, build/ regenerates from the Judge form: the reloc-spelling word becomes identical, sandbox reads 0, full-build SHA1 == oracle (141/141 words already proven against the oracle stream in s1/s2)",
+   "next_probe": "owner executes the 4-step recipe in the OWNER-ESCALATION entry (docs/grind/decisions.md, 2026-07-28 func_80038170)"
   }
  ],
  "judge_constraints": [

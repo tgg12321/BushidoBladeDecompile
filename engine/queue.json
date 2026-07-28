@@ -4,15 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80038170",
-      "file": "code6cac_c_mid",
-      "distance": 14,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "prologue_fix": 1
-    },
-    {
       "func": "file_LoadSectors",
       "file": "ings",
       "distance": 14,
@@ -2391,6 +2382,16 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): endgame-lock per docs/grind/decisions.md line 1789 \u2014 both gates fail (scan LOW, no SOTN precedent for the fabricated cancellation-pair increment split); terminal park, re-attempt eligible"
     },
     {
+      "func": "func_80038170",
+      "file": "code6cac_c_mid",
+      "distance": 14,
+      "verdict": "C",
+      "rules": 1,
+      "status": "parked",
+      "prologue_fix": 1,
+      "park_reason": "owner escalation pending: docs/grind/decisions.md \u2014 '## 2026-07-28 \u2014 func_80038170 \u2014 OWNER-ESCALATION \u2014 integration-gate deadlock: bytes proven, candidate gate structurally unpassable (pending owner action)'"
+    },
+    {
       "func": "special_camera_set_win_cam",
       "file": "code6cac_b2_post",
       "distance": 510,
@@ -2627,13 +2628,13 @@
   ],
   "counts": {
     "total": 319,
-    "active": 266,
+    "active": 265,
     "by_status": {
-      "active": 266,
-      "parked": 53
+      "active": 265,
+      "parked": 54
     },
     "by_verdict": {
-      "C": 114,
+      "C": 113,
       "ASM-PARTIAL": 45,
       "ASM-SUSPECT": 107
     }
