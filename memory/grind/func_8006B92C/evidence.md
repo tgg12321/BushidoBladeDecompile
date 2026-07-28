@@ -66,3 +66,19 @@ Same shape mirrored in case 2 (`.L8006B9D8` vs build). The 4-insn shortfall is e
 - [s1] objdump diff (tmp/grind/func_8006B92C/s1/build_disasm.txt vs target_disasm.s): case-1 and case-2 D_800A34F8 stores are jump2-merged in build; target inlines them per arm with `lui $v1` dead-branch-scheduled into the branch delay slot
 
 - [s1] caller func_8006C168 (text1b.c:15897) uses forward decl `extern s32 func_8006B92C()` -- signature-affecting edits must keep that callable
+
+- [s2] s2 baseline (pin removed, otherwise s1 body): score=15, target_insns=143, build_insns=139 — pin is inert as expected
+
+- [s2] H1d best form: shared `do_call` label after both cases + shared `complete_store` label reachable from case-1-else via goto and case-2-else via fall-through; case-1-then and case-2-then use inline `D_800A34F8 = a0 & 0xFFFF1FFF` (or `|0x4000`) stores. score=10, build_insns=140
+
+- [s2] Structural target-match achieved on store SHAPE: 3 sw sites (10de0 case-1-then, 10e1c case-2-then, 10e48 shared) matching target's 3 sites (5C1B4, 5C1FC, 5C228)
+
+- [s2] Remaining 3-insn deficit is target's mask (`lui/ori/and`) computed PER-ARM inside each else block, while H1d hoists it to the shared complete_store. Target case-1-else: `ori/and v1; srl; andi; j; addiu +1` (6 insns after delay-slot lui); H1d case-1-else: `andi; j; addiu +1` (3 insns after delay-slot srl).
+
+- [s2] Coupling: per-arm mask compute (via explicit var_v1) makes jump2 re-merge all 4 stores because the final OR result register aligns to $v0 in all paths (removes the sw-source-reg divergence H1d exploits). Confirmed by H1e disasm.
+
+- [s2] delay-slot fill: target hoists `lui $v1,0xFFFF` (else-arm's mask lui) into the bne/bnez branch-taken delay slot as classic reorg.c dead-branch-scheduling; H1d hoists `srl $v0,$a0,0xd` (else-arm's shift) instead. Both fill the slot but with different insns.
+
+- [s2] Second `switch(idx)` post-jal region is unchanged and matches; residual is entirely in the pre-jal switch(ret) region.
+
+- [s2] Artifacts: tmp/grind/func_8006B92C/s2/build_h1a.txt (H1a=17 disasm), build_h1b.txt (H1b=19), build_h1d_final.txt (H1d=10, best), build_h1e_v2.txt (H1e=15 regressed)

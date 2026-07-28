@@ -37,3 +37,33 @@
 - probe: wsl objdump -d --disassemble=func_8006B92C; artifacts banked in tmp/grind/func_8006B92C/s1/
 - result: cross-jump merge confirmed as the mechanism; explains all 4 missing insns (2 sw inlined per case + 2 dead-branch-sched lui per case)
 - verdict: CONFIRMED
+
+## [s2] H3: `register u32 var_v1 asm("v1")` pin is score-inert and forbidden by inline-asm-policy
+- mechanism: cheat-invisible sandbox strips register-asm pins before scoring
+- probe: remove pin, re-sandbox --disable all
+- result: score unchanged at 15 (pin was inert)
+- verdict: CONFIRMED
+
+## [s2] H1d: routing case-1-then, case-2-then to inline stores and case-1-else, case-2-else to a shared `complete_store` label (both cases funnel through a shared `do_call` label) creates 3 target-shaped sw sites
+- mechanism: then-arms compute `a0 & 0xFFFF1FFF` with result in $v0 (sw $v0,gp); shared complete_store computes final via OR to $v1 (sw $v1,gp). Store-source register differs (v0 vs v1) so jump2 find_cross_jump cannot rtx_equal-merge the then-arm stores with the shared-else store. Structural shape now matches target (3 stores: two then-inline + one shared-else).
+- probe: H1d edit in src/text1b.c, sandbox --disable all
+- result: score 15 -> 10, target_insns 143, build_insns 140 (3-insn deficit)
+- verdict: CONFIRMED
+
+## [s2] H1e: adding explicit `var_v1 = a0 & 0xFFFF1FFF;` in each else arm to force per-arm mask compute REGRESSES to 15
+- mechanism: With var_v1 explicit, the shared complete_store's `var_v1 | ((var_v0 & 7) << 13)` allocates final OR result to $v0 (var_v1 in $v1 | shift in $v0 -> $v0). All 4 store sites now `sw $v0,gp` -> rtx_equal -> jump2 remerges to a single shared sw. The store-tail merge trilemma is coupled: forcing per-arm mask compute breaks the sw-source-register divergence that H1d exploits.
+- probe: H1e edit adding var_v1 declaration + per-arm assignment + shared-block var_v1 use; sandbox
+- result: score jumped from 10 to 15; disasm showed 4 stores all collapsed to one shared `sw $v0` at address of shared complete_store
+- verdict: CONFIRMED
+
+## [s2] H1c: flipping branch sense with per-case func_8005C650 calls (no shared do_call) regresses badly
+- mechanism: duplicated jal sites cross-jump-merge with adverse delay-slot fill effects
+- probe: H1c variant, sandbox
+- result: score 26 (worse than baseline 15)
+- verdict: KILLED
+
+## [s2] H1f: fully inlining both else stores (no shared complete_store) also regresses to 15
+- mechanism: identical per-arm final compute reintroduces the 2-arm store-tail merge within each case
+- probe: sandbox
+- result: score 15
+- verdict: KILLED
