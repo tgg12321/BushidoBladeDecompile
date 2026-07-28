@@ -1,6 +1,12 @@
-/* func_800481E8 candidate — s1 (recon). Floor 10 (was 14). APPLIED to src/text1b.c.
- * Pure C, zero asm/pins. Residual 10 = frame delta only (frame 40 vs 72, vars 0 vs 32):
- * 2 sp adjusts + 8 reg save/restore offsets. Loop + prologue staging byte-match. */
+/* func_800481E8 candidate — s1 (recon), re-verified s2 (structural). Floor 10.
+ * APPLIED to src/text1b.c. Pure C, zero asm/pins. Residual 10 = frame delta only
+ * (frame 40 vs 72, vars 0 vs 32): 2 sp adjusts + 8 reg save/restore offsets.
+ * Loop + prologue staging byte-match. s2 MEASURED the phantom-slot axis DEAD for
+ * this function (no combine-deletable extension can exist in its semantics; 52k
+ * instrumented campaign: 0 clean vars>8 forms) — see evidence.md s2. Frame axis
+ * has no sanctioned route left; next step is escalation modality.
+ * Byte-identical alt spellings exist for the stream reads (s2 V6/V7):
+ * `s32 a1w = *(u16*)p;` + arg `(s32)(s16)a1w`, and the u32/(u16) recast form. */
 void func_800481E8(s32 arg0, s32 arg1)
 {
     /* Pure C (s1 recon): the sibling InitHiraRmd_80047FBC prologue technique

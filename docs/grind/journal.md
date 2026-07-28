@@ -664,3 +664,4 @@
 - 2026-07-28 08:25 file_LoadSectors s1 [recon] OWNER-GATED — parked pending owner ruling: SOTN census negative on deleted-call/args-area mechanism; human-plausible if(0)/dbg-flag spellings proven byte-identical to sandbox-0 form; both closing families owner-only; OWNER-ESCALATION filed with three-option packet
 - 2026-07-28 08:50 calc_fc_frame COMPLETED-C after 1 sessions.
 - 2026-07-28 10:12 func_800481E8 s1 [recon] floor=10: Recon: inline-move cheat dissolved pure-C (floor 14->10); all 10 residual diffs are the 32-byte phantom-frame delta (vars 0 vs 32), with a working cc1 .frame gradient harness banked
+- 2026-07-28 11:12 func_800481E8 s2 [structural] floor=10: s2 structural: phantom-frame axis MEASURED DEAD — entry condition bisected (14 cases), 11-variant hand grid all vars=0, 52k-iter instrumented campaign 0 clean forms in [25,32]; floor holds at 10 (frame-only residual); next: escalation modality

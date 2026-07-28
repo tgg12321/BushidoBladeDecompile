@@ -54,3 +54,69 @@
 - probe: cc1 .frame vars= on both spellings (tmp/grind/func_800481E8/s1/probe_A.c, probe_B.c)
 - result: vars=0 both — plain HImode add/compare/convert/arg-pass paths do not allocate stack temps; the known trigger is specifically HImode BITWISE expressions (banked rejected/himode-arg-spellings-no-frame.c)
 - verdict: KILLED
+
+## [s2] H-s2-1: The phantom slot comes from assign_stack_temp during RTL expansion; mapping the call sites in expr.c/optabs.c/stmt.c yields the triggering expression shapes (frontier item 1)
+- mechanism: (as written by s1, from the pre-07-13 account of the mechanism)
+- probe: Reproduced the tslLineG5Init trigger standalone with -da dumps (minrepro.py): the slot appears in NO expansion dump; the lreg dump names the orphan pseudo with degenerate class ("Register 77 ... dies in 0 places; ST_REGS or none")
+- result: The slot is reload alter_reg's stale-ref orphan (func_80037540 H14, gdb-confirmed there); expansion-site mapping is the wrong question — the right question is combine's deletion condition, which was then bisected (H-s2-2)
+- verdict: KILLED (superseded; do not map assign_stack_temp sites for this)
+
+## [s2] H-s2-2: A live phantom-slot spelling of the existing loop computations (4 s16 stream reads, +1, <0x280 compare, 5th-arg sext) can reach vars=32 with zero dead code (frontier item 1/2, the primary)
+- mechanism: Orphan a pseudo per stream value by making combine delete a redundant sign-extension chain while the emitted bytes stay the target's 56
+- probe: 14-case entry-condition bisect (minrepro.py/bisect2.py) + 11-variant hand grid on the real chassis (probe.py) + 52,043-iteration instrumented permuter campaign logging cc1 vars= per candidate (perm/, classify_hits.py)
+- result: Bisect: the orphan REQUIRES a combine-deleted 2-insn sll16/sra16 chain, and every deletion route visibly changes the bytes (chain not emitted / lhu→lh / extra consumer insns). This function's target keeps all 4 lhu + all 4 sll/sra pairs live and has NO low-bit-only halfword consumer → no hostable deletion. Hand grid: all honest re-spellings vars=0 (holder forms also lh-convert = byte-break). Campaign: 0 clean forms above vars=8, 0 clean forms near byte-identity, all 6 vars=32 hits volatile cheats; only honest-score find is the volatile dead-pad cheat (banked rejected/)
+- verdict: KILLED
+
+## [s2] H-s2-3: vars=32 decomposes as 4 triggers x 8 bytes matching the 4 stream loads (frontier item 2)
+- mechanism: One 8-byte orphan slot per halfword load, replicated x4
+- probe: Same instruments as H-s2-2 (single-trigger hunt first, per the frontier)
+- result: A fortiori dead: not even ONE byte-neutral trigger exists in this function's semantics (H-s2-2); clean vars>8 was never observed in 52k candidates
+- verdict: KILLED
+
+## [s2] CONFIRMED (project-wide instrument): the minimal phantom trigger is B3 — ONE s16 local (u16-MEM loadable) with a sign-extension-needing consumer (e.g. `v < 640`) plus a raw low-bit consumer (`v & 1`); u16/zero-extension paths can NEVER orphan (promotion is 1-insn andi or free — no intermediate pseudo exists)
+- mechanism: The HImode promotion chain (sll16/sra16 via intermediate pseudo) is deleted by combine when high bits die or the load absorbs the extension; flow's ref counts go stale; regclass defaults the intermediate to ST_REGS; alter_reg gives it a frame slot
+- probe: minrepro.py T0-T5 + bisect2.py B1-B8, orphans read from lreg dumps
+- result: Triggers: T0, T3, B2, B3, B5, B7, B8. Non-triggers: T1, T2, T4, T5, B1, B4, B6. B5 proves a live sll/sra of the same value can coexist with the phantom
+- verdict: CONFIRMED
+
+## Frontier (for s3+)
+1. **Escalation modality (the mandated next step).** Every sanctioned frame
+   route is measured dead: (i) written aggregate adds stores the byte-matched
+   target lacks; (ii)/(iii) volatile & address-escape are cheats; (iv) phantom
+   measured dead this session; (v) unwritten tail forbidden (no dead stores in
+   target → 2026-07-01 carve-out inapplicable). File the OWNER-ESCALATION entry
+   in docs/grind/decisions.md citing s1+s2 evidence; note the identical pending
+   family question on file_LoadSectors (owner-gated 2026-07-27) and the
+   endgame-lock-disposition standing policy (2026-07-20). Residual is EXACTLY
+   10 frame-offset instructions; every other byte matches.
+2. If the owner sanctions an unwritten-tail-class disposition for this family,
+   candidate.c + `s32 pad[8]`-class construct closes at distance 0 — FORBIDDEN
+   until such a ruling exists; do not pre-build it.
+3. Cross-function lead (not this function's work): B3-shaped targets (signed
+   halfword compare + low-bit test of the same value) among the 28 untouched-
+   frame-slack census functions may dissolve via the now-characterized minimal
+   trigger.
+
+## [s2] Phantom slots come from assign_stack_temp during RTL expansion; mapping expr.c/optabs.c/stmt.c call sites yields triggering shapes (s1 frontier item 1)
+- mechanism: Pre-2026-07-13 account of the phantom mechanism, inherited by the s1 frontier
+- probe: Reproduced tslLineG5Init trigger standalone with -da dumps (minrepro.py): slot in NO expansion dump; lreg names the orphan ('Register 77 ... dies in 0 places; ST_REGS or none')
+- result: Slot is reload alter_reg's stale-ref orphan (= func_80037540 H14); expansion-site map is the wrong question — combine's deletion condition is the right one, and was bisected
+- verdict: KILLED
+
+## [s2] A live phantom-slot spelling of the existing loop computations can reach vars=32 with zero dead code (s1 frontier primary)
+- mechanism: Orphan pseudos by making combine delete redundant sign-extension chains while emitting the target's exact 56 insns
+- probe: 14-case entry-condition bisect (minrepro.py/bisect2.py) + 11-variant hand grid (probe.py) + 52,043-iteration permuter campaign with per-candidate cc1 vars= logging and vars>0 source capture (perm/, classify_hits.py)
+- result: Orphan REQUIRES a combine-deleted 2-insn sll16/sra16 chain; every deletion route visibly changes bytes (chain unemitted / lhu->lh / extra consumer insns). Target keeps all 4 lhu + all 4 sll/sra live and has NO low-bit-only halfword consumer. Hand grid: all vars=0 (holder forms lh-convert = byte-break). Campaign: 8,644 vars>0 sources = 7,127 volatile + 1,457 addr-escape + 60 'clean' ALL at vars=8 with >=33 body diffs and broken semantics; all 6 vars=32 hits volatile cheats; only honest find = volatile dead-pad (score 202), banked rejected/
+- verdict: KILLED
+
+## [s2] vars=32 decomposes as 4 triggers x 8 bytes matching the 4 s16 stream loads (s1 frontier item 2)
+- mechanism: One 8-byte orphan slot per halfword load, replicated x4
+- probe: Single-trigger hunt via the same instruments
+- result: A fortiori dead: not even ONE byte-neutral trigger exists in this function's semantics; clean vars>8 never observed in 52k candidates
+- verdict: KILLED
+
+## [s2] The minimal phantom trigger is ONE s16 local (u16-MEM loadable, lh NOT required) with a sign-extension-needing consumer plus a raw low-bit consumer; zero-extension paths can never orphan
+- mechanism: HImode promotion chain (sll16/sra16 intermediate pseudo) deleted by combine post-flow when high bits die or the load absorbs the extension; stale refs -> ST_REGS default class -> alter_reg frame slot. u16 promotion is 1-insn andi or free — no intermediate pseudo exists
+- probe: minrepro.py T0-T5 + bisect2.py B1-B8 with lreg orphan readout; B5 shows a live sll/sra of the same value coexists with the phantom
+- result: Triggers: T0 faithful, T3 (u16-MEM cast loads — our shape), B2, B3 (minimal: 'if (v<640)' + 'if (v&1)'), B5, B7 (HImode ADD — bitwise not required), B8. Non-triggers: T1 single-consumer, T2/B6 u16-everywhere, T4 const-only, T5 two-compare, B1 extended-2nd-use, B4
+- verdict: CONFIRMED
