@@ -52,7 +52,9 @@
    "next_probe": "In s5, after the permuter run harvests with no novel find, file docs/grind/decisions.md entry titled `## <date> \u2014 func_80037B00 \u2014 **OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**`; state both gates' evidence + permuter fresh-seed negative result; return owner-gated with escalation_ref."
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "func_80037B00 may NOT be closed via nested do-while(0) + named-holder locals; before any further completion attempt, execute the ledger's frontier #1 or #2 (fix decomp-permuter workspace, run a fresh-seed directed permuter campaign from the pin-free candidate). If permuter exhausts with no novel find, the disposition is the standing 2026-07-27 owner-gated route (both-gates-fail endgame), not another fake-wrap resubmission."
+ ],
  "origin": "queue",
  "created": "2026-07-28T17:30:29.848607+00:00"
 }
