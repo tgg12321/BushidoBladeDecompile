@@ -387,8 +387,14 @@ function Invoke-GrindAgent([string]$BriefPath, [string]$OutcomePath,
             # no-ops unless GRIND_FUNC is set, so interactive/operator sessions
             # and this session's own subagents (Stop-only wiring) are unaffected.
             $env:GRIND_FUNC = $Func
+            # --strict-mcp-config with no --mcp-config = ZERO MCP servers for grind
+            # spawns. The operator's user-scope servers (github/playwright/unity) are
+            # useless to a decomp session but their tool surface rides in the baseline
+            # of every turn, and a turn's context is re-read on all later turns. Also
+            # removes the chance a session wanders into a browser/editor tool.
             $claudeArgs = @('-p', $Task, '--append-system-prompt-file', $RoleFile,
                             '--permission-mode', 'bypassPermissions', '--model', $Model,
+                            '--strict-mcp-config',
                             '--session-id', $Sid, '--output-format', 'json')
             # Keep the CLI's result line — it is the only diagnostic when a spawn
             # dies instantly (usage limit, auth, API error). Overwritten per spawn.
