@@ -679,3 +679,4 @@
 - 2026-07-28 17:32 func_8006B92C s3 [structural] floor=6: Structural split-init `var_v1 |=` at complete_store dropped floor 10 -> 6; forces GCC to reuse var_v1's register for final OR while preserving per-arm mask compute.
 - 2026-07-28 18:26 func_8006B92C: judge FAILED a bytes-proven candidate — The candidate closes the residual by decomposing `var_v1 = a0 & 0xFFFF1FFF;` into two statements — `var_v1 = 0xFFFF1FFF;
 - 2026-07-28 18:59 func_8006B92C s4 [permuter] STANDING RULING (2026-07-27) applied — OWNER-ACCEPTED INCOMPLETE: s4 permuter: 4 legit axes measured dead + fresh-seed campaign converged on Judge-bound split-load-anchor family; both endgame gates fail per 2026-07-27 standing ruling.
+- 2026-07-28 19:07 func_80034200 s1 [recon] floor=21: recon s1: honest pure-C floor 21 (inherited 16 was register-asm-pin cheat scaffold, forbidden by policy); gap decomposes into phantom -8 frame + outer-loop D_800A389B CSE reload + register-rename residue

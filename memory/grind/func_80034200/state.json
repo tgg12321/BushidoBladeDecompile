@@ -1,0 +1,34 @@
+{
+ "func": "func_80034200",
+ "file": "code6cac_b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 21,
+   "modality": "recon",
+   "headline": "recon s1: honest pure-C floor 21 (inherited 16 was register-asm-pin cheat scaffold, forbidden by policy); gap decomposes into phantom -8 frame + outer-loop D_800A389B CSE reload + register-rename resi"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "phantom -8 frame is triggered by a specific live-local shape (per phantom-frame-slots-gcc272)",
+   "mechanism": "GCC 2.7.2 reserves locals-frame bytes for live scalars whose values never spill; target has that reservation with zero writes, our clean form has no frame at all",
+   "next_probe": "cc1 -da .stack/.greg dump on the clean form + vary local count/scope (block-locals for the inner v0, promote pointer walks, merge or split the shift/i pair) and measure frame_size across variants"
+  },
+  {
+   "hypothesis": "outer-loop D_800A389B reload is a split-read-defeats-hoist / store-const-reload-cse surface",
+   "mechanism": "target reloads D_800A389B in the loop tail; clean-C hoists via CSE. Adding an intervening store or a duplicated read in a control-flow arm can defeat the hoist",
+   "next_probe": "3-variant sweep: (a) drop the intermediate `count` binding and use D_800A389B inline in both checks; (b) reorder `g_disp_enable = DISP_LOADING;` to sit between the D_800A389B reads; (c) duplicate the read into the branch arm reaching the tail. Sandbox each"
+  },
+  {
+   "hypothesis": "register-rename residue is a global.c priority-tiebreaker; levers A-D from register-alloc-pure-c should bias allocations",
+   "mechanism": "no formal params free $a0-$a3 from entry; target's global.c picked $a0 accumulator / $a3 outer i / $a2 shift; clean-C picked $t0 / $a2 / $a0 (mirror image). Narrow types, block-local scope, and dead-store steering are documented levers",
+   "next_probe": "instrumented cc1 -da .greg dump to identify each pseudo's reg_n_refs + conflict list, then apply Levers A-D (narrow type on the u8-byte-load path, block-local scope for the inner v0, etc.) once H1/H2 landings are known"
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-28T23:59:46.213920+00:00"
+}
