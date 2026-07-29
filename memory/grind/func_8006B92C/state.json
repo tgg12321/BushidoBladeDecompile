@@ -1,8 +1,8 @@
 {
  "func": "func_8006B92C",
  "file": "text1b",
- "session_count": 5,
- "current_modality": "permuter",
+ "session_count": 6,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -33,23 +33,29 @@
    "floor": 6,
    "modality": "permuter",
    "headline": "Permuter s5: cheat-suppressed random (41k iters) + two exhaustive directed sweeps (288 + 16 combos) all return ZERO improvement over base 235 \u2014 the s3 h2a form is a strict local minimum under the legi"
+  },
+  {
+   "session": 6,
+   "floor": 6,
+   "modality": "forensics",
+   "headline": "Forensics: the 2-insn gap is reorg.c redundant_insn deleting the then-arm lui, enabled by local-alloc giving the else-arm mask constant $v0 instead of target's $v1 \u2014 fill-priority hypothesis falsified"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The permuter modality is now measured exhausted for this function at the h2a base \u2014 the remaining lever is a DIFFERENT BASE, not a different search. Re-seed a cheat-suppressed campaign from the s2 h1d chassis (floor 10, shared complete_store WITHOUT the per-arm var_v1 staging) so the search starts in a different basin than the h2a local minimum s5 just proved strict.",
-   "mechanism": "s5 proved h2a is a strict local minimum under legitimate mutation, and the permuter score is a faithful gradient here (235 == 2 insns + 7 regs). A local minimum is basin-relative: h1d differs from h2a by the staging construct itself, so its legitimate-mutation neighborhood is disjoint from the one s5 exhausted. Re-running chassis A's weights from h1d costs one campaign and either finds a different descent path or converts 'h2a is a local min' into 'the whole region is'.",
-   "next_probe": "s6: copy tmp/grind/func_8006B92C/s5/nocheat_weights.toml into a fresh workspace with base.c = the s2 h1d body (no var_v1 decl, no per-arm mask, complete_store computes `D_800A34F8 = (a0 & 0xFFFF1FFF) | ((var_v0 & 7) << 13);`), launch 6 jobs, wait two 9-minute windows, harvest --stop. Any find at < 235 is a novel basin; zero finds means the whole neighbourhood of the h1d/h2a family is flat and the modality ladder should advance."
+   "hypothesis": "The lever is sched.c: if the else block's mask chain is NOT hoisted above the shift chain, a block-local shift temp is live in $v0 across the constant and local-alloc gives the constant $v1 (target's register). The scheduler's choice is driven by insn priority (longest path to block end) plus the load-late/birthing heuristics, so a C form that lengthens the shift chain's dependence path \u2014 or shortens the mask chain's \u2014 should flip it.",
+   "mechanism": "sched.c schedules each basic block by priority order; the P6b .lreg proves the mask chain (3 insns, ends at the block-live var_v1) is scheduled ahead of the shift chain (3 insns, ends at the block-live var_v0) even though expand emitted the shift first. Flipping that order is sufficient (not merely necessary) to reach target's register assignment: with the shift born first and live across the mask, find_free_reg's regs_live_at scan marks $v0 busy over the constant's range and REG_ALLOC_ORDER's next entry is $v1 \u2014 which is also var_v1's global assignment, so `lui $v1 / ori $v1 / and $v1,$a0,$v1` falls out exactly as target has it.",
+   "next_probe": "s7 (forensics or structural): instrument the priority computation by reading sched.c's rank_for_schedule / priority() and the extracted dumps_h2a/func_8006B92C.sched dump for the else block's ready-list order; then look for a C spelling that lengthens the counter's dependence chain inside the arm (e.g. deriving the counter from a value that must be computed before the mask, without changing the emitted opcodes) or that shortens the mask's (e.g. a form where the constant is materialised in one insn). Measure each with sandbox --disable all and re-dump .lreg to check pseudo 92's disposition \u2014 the disposition line is a faster oracle than the score."
   },
   {
-   "hypothesis": "The 2-instruction shortfall is a delay-slot FILL-PRIORITY decision inside reorg.c fill_slots_from_thread that no expression-level or whole-case-body respelling reaches; the deciding input is the liveness of $v0 across the branch, which is set by what the SECOND switch(idx) and the func_8005C650 call do with $v0 \u2014 i.e. the lever may be OUTSIDE the switch(ret) region entirely.",
-   "mechanism": "s5 exhaustively swept every legitimate spelling and whole-case structure INSIDE the switch(ret) region and the score never moved off 235. reorg.c picks the fall-through fill over the dead-branch fill based on cost plus register liveness on the opposite thread. The liveness of $v0 at the branch is determined by the code AFTER do_call (the jal to func_8005C650 and the idx = (D_800A34F8 >> 13) & 7 reload), which every s1-s5 probe left untouched. A forensics session reading the .greg / reorg dumps would identify which register's liveness flips the choice.",
-   "next_probe": "s6+ (forensics modality): cc1 -da on the h2a .i, read the reorg/dbr dump for the two bne/bnez insns in the switch(ret) region, and record WHY the else-thread lui is rejected as a fill candidate (thread cost, resource conflict, or reg-liveness). Then look for the C lever in the post-do_call region \u2014 e.g. whether reloading D_800A34F8 for idx before vs after the call changes $v0 liveness at the branch."
+   "hypothesis": "P6a's 143-insn form (shared global temp `t` in $a1) is a second, unexplored basin: it is the only form ever measured with target's instruction COUNT, and its residual is purely register-substitution (12), so a variant that keeps the count while pulling the counter chain back into $v0 could close the function.",
+   "mechanism": "In P6a the else block opens with the srl instead of a duplicate constant, which is what preserves both then-arm luis. The cost is that the shared temp is a global pseudo allocated $a1 and the counter's final addiu reads it (`addiu v0,a1,1`) where target has `addiu v0,v0,1`. If the shared value could be made to live in $v0 \u2014 or if the delay-slot fill could be steered to the else-arm constant while the count stays at 143 \u2014 the remaining diffs are few and local.",
+   "next_probe": "s7: from the P6a body (rejected/s6_shared_global_temp_t.c), sweep variants that change WHICH value is shared across the two else arms (the raw `a0 >> 13` vs the masked `(a0 >> 13) & 7` vs the final counter) and their types, measuring both sandbox score and the .greg disposition of the shared pseudo. A cheat-suppressed permuter campaign re-seeded from this base is also justified now: it is a genuinely different basin from the h2a local minimum s5 proved strict, and unlike the s5 frontier's h1d suggestion it already matches target's instruction count."
   },
   {
-   "hypothesis": "Cross-function evidence: the residual family (dual-lui + fill priority + unmerged store tails) is the SAME documented coupled fixpoint as saEft00Add, and a rederive/synthesis session should attack them together rather than either alone.",
-   "mechanism": "cross-jump-store-tail-merge.md names saEft00Add as BB2's documented coupled fixpoint of exactly this trilemma (unmerged tails / JF-LOOP-safe eager fills / v0 reuse). h2a already achieves two of the three legs. If a legitimate closing form exists for either function it very likely generalizes, and saEft00Add carries far more accumulated session evidence to mine.",
-   "next_probe": "s6+ (rederive/synthesis modality): diff the saEft00Add ledger's measured levers against this function's s1-s5 kills and identify any lever tried there but NOT here (and vice versa); measure the un-crossed ones on func_8006B92C."
+   "hypothesis": "Cross-function evidence: the residual family (dual-lui + redundant_insn deletion + unmerged store tails) is the same documented coupled fixpoint as saEft00Add, and the s6 mechanism account should be checked against that function's ledger before more search here.",
+   "mechanism": "cross-jump-store-tail-merge.md names saEft00Add as BB2's documented coupled fixpoint of this trilemma. The s6 finding reframes the trilemma's third leg from 'reorg fill priority' to 'local-alloc register identity for a block-local constant', which may be directly testable on saEft00Add's larger accumulated evidence \u2014 and any lever found there very likely generalises here.",
+   "next_probe": "s7+ (rederive/synthesis modality): diff saEft00Add's measured levers against this function's s1-s6 kills under the corrected mechanism, and measure any lever tried there but not here on func_8006B92C."
   }
  ],
  "judge_constraints": [

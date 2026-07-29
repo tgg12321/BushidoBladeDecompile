@@ -151,3 +151,63 @@
 - probe: Chassis C: permuter/f8006B92C_s5c/ with PERM_GENERAL over the ENTIRE case-1 and case-2 bodies, 4 whole-body variants each (shared a0 read = h2a; per-arm duplicated global read; hoisted shared var_v1 mask; mixed shared-a0-for-compare + fresh global read for the else mask). 16 combinations, label s5c-STRUCT-ALTS.
 - result: 16/16 enumerated, minimum 235 == base. Duplicated-read variants tie at 235 (GCC CSEs the repeated non-volatile loads — each arm's store to D_800A34F8 comes after both reads, so nothing invalidates them). Hoisted-mask variants score 285, worse (the pre-branch birth removes the per-arm mask compute h2a's floor-6 depends on; the delay slot is then filled by the compare's andi). Both banked in rejected/.
 - verdict: KILLED
+
+## [s6] The 2-insn shortfall is reorg.c's delay-slot FILL PRIORITY choosing the fall-through thread over the dead-branch thread (the s3/s5 frontier hypothesis).
+- mechanism: reorg.c fill_slots_from_thread weighs thread cost + register liveness; s3 concluded the fall-through `lui $v0` wins over the else-arm `lui $v1`.
+- probe: s6 forensics — cc1 -da on the real build's text1b.i (h2a body in src), extract func_8006B92C from the .dbr dump, read the SEQUENCE wrapping the case-1 `bne`.
+- result: FALSIFIED. The slot is filled with insn 314 = the ELSE arm's lui (dead-branch / taken-thread fill), exactly as target does. The shortfall comes from the NEXT step: reorg.c's redundant_insn deletes the then-arm's identical `lui $v0` (insn 312 is absent from the dbr dump) because the delay-slot insn already sets the same hard register to the same constant. Target is immune only because its else-arm constant is in $v1.
+- verdict: KILLED (hypothesis disproven; replaced by the local-alloc account below)
+
+## [s6] The deciding input is local-alloc.c's hard-register choice for the else-arm mask constant: it takes $v0 (same as the then arm) where target takes $v1.
+- mechanism: the constant is a basic-block-local pseudo (92 in case 1) allocated by local-alloc.c, which runs BEFORE global.c. Its AND destination is var_v1 = global pseudo 78 ($v1); local-alloc's combine_regs can only tie qtys of block-local regs, so the constant cannot inherit var_v1's register, and find_free_reg takes the first REG_ALLOC_ORDER entry whose regs_live_at scan is clear over the constant's 3-insn range — $v0.
+- probe: read `;; Register dispositions` + conflict lists in the extracted .greg and the pseudo-level RTL of the else arm in the extracted .lreg.
+- result: CONFIRMED. 92 in 2 ($v0), 78 in 3 ($v1), counter temps 93/94 also in $v0 (disjoint ranges, no conflict). Same picture in case 2.
+- verdict: CONFIRMED
+
+## [s6] Making the shift value live ACROSS the mask compute inside the else arm blocks $v0 and forces the constant to $v1.
+- mechanism: find_free_reg ORs regs_live_at[ins] over the qty's whole range; a block-local pseudo born before the constant and dying after it marks $v0 busy, pushing the constant to the next REG_ALLOC_ORDER entry ($v1 = var_v1's register = target's shape).
+- probe: s6 P6b — separate per-arm temps t1/t2 holding `(a0 >> 13) & 7`, written before the mask statement in both else arms; sandbox + cc1 -da dumps (dumps_p6b).
+- result: KILLED. score 6 / 141 insns, unchanged. .lreg shows sched1 hoists the whole mask chain (uids 316/317/76) ABOVE the shift chain (uids 71/72/79) — the shift was emitted first and moved down — so t1's range [72..79] never overlaps the constant's [316..76]. Source statement order inside the arm is structurally inert (independently explains s5 chassis B's PERM_LINESWAP tie).
+- verdict: KILLED
+
+## [s6] Hoisting the counter above the `if` gives the GLOBAL var_v0 a live range across the branch that blocks $v0 in the else arm.
+- mechanism: a longer live range for var_v0 (which carries a $v0 preference in the .greg) would cross the constant's range.
+- probe: s6 P6c — `var_v0 = ((a0 >> 13) & 7) +/- 1;` computed unconditionally before each case's `if`, else arms reduced to mask + goto; sandbox.
+- result: KILLED. score 19, build_insns 139. global.c runs AFTER local-alloc so a global pseudo can never reserve a register against a local one; the pre-branch `li v0,0x4000` also pushes var_v0 to $a1. With the counter gone from the arms the shared `lui $v0` returns to the delay slot and both then-arm luis die.
+- verdict: KILLED
+
+## [s6] Breaking the delay-slot insn's identity with the then-arm constant closes the INSTRUCTION COUNT (evidence that the count gap is redundant_insn, not fill priority).
+- mechanism: if the else block's leading insn is not "same constant, same hard register" as the then arm's, redundant_insn cannot delete the then-arm lui.
+- probe: s6 P6a — one function-scope temp `t` shared by both else arms (global pseudo -> $a1) holding the shift value, written before the mask.
+- result: CONFIRMED on count, rejected on registers: build_insns 141 -> 143 == target for the first time, but score 6 -> 12 (delay slot carries `srl $v0` where target carries `lui $v1`; counter chain splits across $a1 where target keeps it in $v0).
+- verdict: CONFIRMED (count mechanism); form banked in rejected/s6_shared_global_temp_t.c
+
+## [s6] The 2-insn shortfall is reorg.c's delay-slot FILL PRIORITY choosing the fall-through thread over the dead-branch thread (the s3/s5 frontier hypothesis).
+- mechanism: reorg.c fill_slots_from_thread weighs thread cost plus register liveness; s3 inferred from disassembly that the fall-through `lui $v0` beats the else-arm `lui $v1` as fill candidate.
+- probe: cc1 -da over the real build's preprocessed src/text1b.c with the h2a body in src; extracted func_8006B92C from the .dbr dump (tmp/grind/func_8006B92C/s6/dumps_h2a/func_8006B92C.dbr) and read the SEQUENCE wrapping the case-1 bne.
+- result: FALSIFIED. The delay slot holds insn 314 = the ELSE arm's `lui $v0,0xFFFF` — reorg already fills from the branch-taken (dead-branch) thread exactly like target. The then-arm's own lui (insn 312) is absent from the dbr dump: reorg.c's redundant_insn deleted it because the delay-slot insn sets the SAME hard register to the SAME constant the fall-through path needed. Target keeps both luis only because its else-arm constant lives in $v1.
+- verdict: KILLED
+
+## [s6] The deciding input is local-alloc.c's hard-register choice for the else-arm mask constant: it takes $v0 (identical to the then arm) where target takes $v1.
+- mechanism: The constant is a basic-block-local pseudo (92 in case 1) allocated by local-alloc.c, which runs BEFORE global.c. The AND's destination is var_v1 = global pseudo 78 ($v1); local-alloc's combine_regs only merges qtys of block-local regs, so the constant can never inherit var_v1's register, and find_free_reg walks REG_ALLOC_ORDER taking the first entry whose regs_live_at scan is clear over the constant's 3-insn range — $v0.
+- probe: Read `;; Register dispositions` + conflict lists in the extracted .greg and the pseudo-level else-arm RTL in the extracted .lreg (dumps_h2a).
+- result: CONFIRMED: `92 in 2` ($v0), `78 in 3` ($v1), counter temps 93/94 also in $v0 with disjoint ranges (no conflict). Same picture in case 2. This is the single fact that separates our build from target.
+- verdict: CONFIRMED
+
+## [s6] Making the shift value live ACROSS the mask compute inside each else arm blocks $v0 and forces the constant to $v1 (target's register).
+- mechanism: find_free_reg ORs regs_live_at[ins] over the qty's whole range; a block-local pseudo born before the constant and dying after it marks $v0 busy over that range, pushing the constant to the next REG_ALLOC_ORDER entry.
+- probe: P6b — separate per-arm block-local temps t1/t2 holding `(a0 >> 13) & 7`, written before the mask statement in both else arms. sandbox --disable all + a second cc1 -da run (dumps_p6b).
+- result: KILLED. score 6 / 141 insns, identical to base. The .lreg dump shows sched1 hoists the whole mask chain (uids 316/317/76) ABOVE the shift chain (uids 71/72/79) — expand emitted the shift first and the scheduler moved the mask up — so t1's range [72..79] never overlaps the constant's [316..76]. Source statement order inside the arm is structurally inert, which independently explains why s5 chassis B's PERM_LINESWAP tied at base.
+- verdict: KILLED
+
+## [s6] Hoisting the counter above the `if` gives the GLOBAL var_v0 a live range across the branch that blocks $v0 in the else arm.
+- mechanism: var_v0 carries a $v0 preference in the .greg; a live range spanning the branch would cross the constant's range and deny it $v0.
+- probe: P6c — `var_v0 = ((a0 >> 13) & 7) +/- 1;` computed unconditionally before each case's if, else arms reduced to mask + goto. sandbox --disable all.
+- result: KILLED. score 6 -> 19, build_insns 139. global.c runs AFTER local-alloc, so a global pseudo can never reserve a register against a local one; the pre-branch `li v0,0x4000` pushes var_v0 to $a1 anyway. With the counter gone from the arms the shared `lui $v0` returns to the delay slot and BOTH then-arm luis die (4 short).
+- verdict: KILLED
+
+## [s6] Breaking the delay-slot insn's identity with the then-arm constant closes the INSTRUCTION COUNT (direct test that the count gap is redundant_insn, not fill priority).
+- mechanism: If the else block's leading insn is not 'same constant, same hard register' as the then arm's, redundant_insn has nothing to delete and the then-arm lui survives.
+- probe: P6a — ONE function-scope temp `t` shared by both else arms (therefore a GLOBAL pseudo) holding the shift value, written before the mask. sandbox --disable all + objdump of the sandbox object.
+- result: CONFIRMED on count, rejected on registers. build_insns 141 -> 143 == target_insns for the first time in this function's history (t lands in $a1, the else block now opens with the `srl`, reorg fills the slot with `srl $v0,$a0,0xd`, both then-arm luis survive). Honest distance regressed 6 -> 12 because the counter chain splits across $a1 where target keeps it entirely in $v0 and the delay slot carries the srl where target carries `lui $v1`.
+- verdict: CONFIRMED

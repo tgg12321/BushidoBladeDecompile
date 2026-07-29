@@ -14,6 +14,19 @@
  * Permuter base score 235 == 2 missing insns (100 each) + 7 register diffs
  * (5 each), exactly the sandbox-6 residual. Nothing in the legitimate mutation
  * neighborhood of this form beats it.
+ *
+ * s6 (forensics, cc1 -da) named the residual exactly and left this body
+ * unchanged at floor 6. The 2 missing insns are the two then-arm `lui $v0`s,
+ * deleted by reorg.c's redundant_insn: reorg already fills each bne/bnez delay
+ * slot from the ELSE (dead-branch) thread — same as target — but our else-arm
+ * mask constant is a block-local pseudo that local-alloc.c assigns $v0, the
+ * same register the then arm uses, so the delay-slot insn covers the then-arm
+ * lui and it is dropped. Target's else-arm constant lives in $v1. local-alloc
+ * cannot tie that constant to var_v1 (a global pseudo), and sched1 hoists the
+ * mask chain to the head of the else block, so no block-local value can be
+ * live in $v0 across it — which is why every statement-order / algebraic /
+ * whole-case respelling measured in s4-s6 is inert. Details + dumps:
+ * evidence.md [s6], tmp/grind/func_8006B92C/s6/dumps_h2a/.
  */
 extern u32 D_800A34F8;
 extern s32 D_800A350C;
