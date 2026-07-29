@@ -1,49 +1,14 @@
-/* s5 candidate — floor 6 (unchanged from s3). C substance identical to the s3
- * h2a form; s5 added the Judge-mandated full FAKE annotation template at
- * both staged-value sites (the s3-BINDING Judge constraint: name the sched.c
- * mechanism + cite lever-exhaustion). No other change.
- *
- * s5 measured three permuter chassis against this base, all zero-improvement:
- *   A  cheat-suppressed random mode (perm_temp_for_expr / perm_split_assignment /
- *      perm_chain_assignment / perm_add_self_assignment / perm_pad_var_decl /
- *      perm_add_mask / perm_xor_zero / perm_mult_zero / perm_ins_block etc.
- *      weighted to 0.0) — 41424 iters, 0 finds.
- *   B  exhaustive directed sweep, 288 combinations over 5 legit-spelling sites.
- *   C  exhaustive directed sweep, 16 combinations over whole-case structural
- *      alternatives (per-arm duplicated global read, hoisted shared mask).
- * Permuter base score 235 == 2 missing insns (100 each) + 7 register diffs
- * (5 each), exactly the sandbox-6 residual. Nothing in the legitimate mutation
- * neighborhood of this form beats it.
- *
- * s6 (forensics, cc1 -da) named the residual exactly and left this body
- * unchanged at floor 6. The 2 missing insns are the two then-arm `lui $v0`s,
- * deleted by reorg.c's redundant_insn: reorg already fills each bne/bnez delay
- * slot from the ELSE (dead-branch) thread — same as target — but our else-arm
- * mask constant is a block-local pseudo that local-alloc.c assigns $v0, the
- * same register the then arm uses, so the delay-slot insn covers the then-arm
- * lui and it is dropped. Target's else-arm constant lives in $v1. local-alloc
- * cannot tie that constant to var_v1 (a global pseudo), and sched1 hoists the
- * mask chain to the head of the else block, so no block-local value can be
- * live in $v0 across it — which is why every statement-order / algebraic /
- * whole-case respelling measured in s4-s6 is inert. Details + dumps:
- * evidence.md [s6], tmp/grind/func_8006B92C/s6/dumps_h2a/.
- *
- * s7 (forensics, instrumented cc1 BB2_QTY_DEBUG) measured local-alloc's actual
- * quantity table and left this body unchanged at floor 6. Case-1 else arm
- * (blk=5): the mask constant is qty reg1=92 birth=4 death=8 refs=2 got=$v0 and
- * the counter chain is qty reg1=94 birth=10 death=14 refs=4 got=$v0 -- disjoint
- * ranges, so find_free_reg's linear hard-register scan (mips.h defines no
- * REG_ALLOC_ORDER) hands both $v0. The case-1 THEN arm (blk=4) has NO separate
- * constant quantity: combine_regs ties the constant to the and-destination
- * because both are block-local, which is how it emits lui/ori/and all in $v0.
- * Target's else arm is that same tied shape one register over ($v1). Our else
- * arm cannot tie, because its and-destination is var_v1, a GLOBAL pseudo, and
- * combine_regs merges only block-local quantities.
- * s7 killed the s6 frontier lever with two measurements: lengthening the
- * counter's dependence chain (P7a, inert at 6/141) and lengthening it AND
- * emitting it first (P7b, 12/140) both leave the two chains contiguous, so the
- * quantity ranges stay disjoint and the constant keeps $v0 in either order.
- * Details + logs: evidence.md [s7], tmp/grind/func_8006B92C/s7/.
+/* s7 P7a -- REJECTED (score 6, build_insns 141 -- exactly the h2a base, i.e.
+ * completely inert). Mask statement kept first; only the redundant `& 7` was
+ * moved out of the shared complete_store into each else arm, lengthening the
+ * counter's dependence chain to 4 insns. Purpose: test whether raising the
+ * counter qty's local-alloc priority (priority = floor_log2(refs)*refs /
+ * (death-birth)) makes it cover the mask constant's range.
+ * MEASURED INERT. tmp/grind/func_8006B92C/s7/qty_p7a/: blk=5 counter qty
+ * reg1=95 birth=10 death=16 refs=6 got=2, mask constant reg1=92 birth=4
+ * death=8 refs=2 got=2 -- the counter is still BORN AFTER the constant dies,
+ * so its higher priority only means it is allocated first over a disjoint
+ * range; $v0 is free over [4,8) either way.
  */
 extern u32 D_800A34F8;
 extern s32 D_800A350C;
@@ -83,7 +48,7 @@ s32 func_8006B92C(s32 *unused, u32 *arg1) {
              * — every non-staged spelling measured there scores worse.
              */
             var_v1 = a0 & 0xFFFF1FFF;
-            var_v0 = ((a0 >> 13) & 7) + 1;
+            var_v0 = (((a0 >> 13) & 7) + 1) & 7;
             goto complete_store;
         }
         goto do_call;
@@ -108,9 +73,9 @@ s32 func_8006B92C(s32 *unused, u32 *arg1) {
              * — every non-staged spelling measured there scores worse.
              */
             var_v1 = a0 & 0xFFFF1FFF;
-            var_v0 = ((a0 >> 13) & 7) - 1;
+            var_v0 = (((a0 >> 13) & 7) - 1) & 7;
         complete_store:
-            var_v1 |= ((var_v0 & 7) << 13);
+            var_v1 |= (var_v0 << 13);
             D_800A34F8 = var_v1;
         }
     do_call:

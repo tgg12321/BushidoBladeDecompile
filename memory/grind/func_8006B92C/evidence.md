@@ -198,3 +198,80 @@ Same shape mirrored in case 2 (`.L8006B9D8` vs build). The 4-insn shortfall is e
 - [s6] src/text1b.c restored to the s5/h2a candidate before finishing; re-measured sandbox --disable all = score 6, target_insns 143, build_insns 141. candidate.c header updated with the s6 mechanism summary; no C substance changed.
 
 - [s6] Closing constraint derived from the dumps: the only shape that yields target's bytes is 'else-arm mask constant allocated to $v1'. local-alloc can reach that only via (a) a BLOCK-LOCAL value live in $v0 across the constant's range — which sched1 structurally prevents by hoisting the mask chain to the head of the block — or (b) the constant and var_v1 being the SAME pseudo, i.e. the split-load-anchor form the Judge banned by any spelling. So the next legitimate lever must act on sched1's hoist decision, not on statement order, arithmetic spelling, or reorg.c.
+
+## [s7] forensics -- measured local-alloc quantity table for func_8006B92C (h2a base, floor 6)
+Tooling note for future sessions: tmp/gccdbg/cc1 is the instrumented compiler.
+The production tools/gcc-2.7.2/build/cc1 is a May-18 binary that PREDATES the
+BB2_* env probes in the sources (local-alloc.c BB2_QTY_DEBUG, sched.c
+BB2_RANK_DEBUG, global.c BB2_FINDREG_DEBUG, all added early July) and prints
+nothing -- s7 lost a turn to that. Running tmp/gccdbg/cc1 WITHOUT -quiet makes
+it echo each function name to stderr, which is what lets the QTYDBG stream be
+sliced to one function (harness: tmp/grind/func_8006B92C/s7/qty2.sh).
+
+Every block-local quantity in the two switch cases, with the hard register
+local-alloc gave it (got=), from tmp/grind/func_8006B92C/s7/qty_h2a/qty_func.log:
+
+  blk=3 (case-1 compare)   qty1 reg1=89 birth=8  death=10 refs=2 got=2   ($v0 = the 0x4000 constant)
+  blk=3                    qty0 reg1=88 birth=6  death=10 refs=2 got=3   ($v1 = a0 & 0xE000)
+  blk=4 (case-1 THEN arm)  qty0 reg1=90 birth=2  death=8  refs=4 got=2   (constant TIED to and-dest -> one $v0 qty)
+  blk=5 (case-1 ELSE arm)  qty1 reg1=94 birth=10 death=14 refs=4 got=2   (srl+andi counter chain)
+  blk=5                    qty0 reg1=92 birth=4  death=8  refs=2 got=2   (lui/ori mask constant)
+
+blk=3 already matches target exactly ($v1 for the andi temp, $v0 for the compare
+constant) and does so purely by the priority formula in local-alloc.c
+qty_compare_1: priority = floor_log2(refs)*refs*size / (death-birth). The 0x4000
+constant (2 refs over 2 slots, pri 1.0) is allocated before the andi temp (2 refs
+over 4 slots, pri 0.5) and takes $v0, pushing the andi temp to $v1. That is the
+same mechanism that hands the else-arm mask constant $v0.
+
+Decisive structural fact: local-alloc.c find_free_reg computes
+used = OR over ins in [birth,death) of regs_live_at[ins], then walks hard
+registers 0,1,2,... (mips.h defines no REG_ALLOC_ORDER) and returns the first
+free one. regs_live_at holds HARD registers only. var_v0, var_v1 and a0 are all
+GLOBAL pseudos, assigned in global.c which runs AFTER local-alloc, so they can
+never reserve a register against a block-local quantity. The else arms contain
+no call and no hard-register reference. Therefore the ONLY way to deny the mask
+constant $v0 is another BLOCK-LOCAL quantity whose live range covers it.
+
+s7 measured that this is unreachable. P7a (counter chain lengthened to 4 insns,
+mask still first) and P7b (counter chain lengthened AND moved first) both leave
+the two chains emitted contiguously, so the quantity ranges are disjoint in both
+orders ([4,8) vs [10,16) in P7a; [4,10) vs [12,16) in P7b) and the constant gets
+$v0 either way. P7a is score-identical to the base (6 / 141); P7b regresses to
+12 / 140. This kills the s6 live-frontier lever ("lengthen the counter's
+dependence path / shorten the mask's") with a direct measurement instead of an
+inference, and it re-explains s6's P6b result without appealing to scheduler
+hoisting: even when the counter IS emitted first, the ranges never overlap,
+because nothing makes the scheduler interleave two independent 1-cycle ALU
+chains on r3000.
+
+The contrast that shows the shape target needs: in the THEN arm (blk=4) there is
+no separate constant quantity at all -- combine_regs merged the constant pseudo
+into the and-destination pseudo because BOTH are block-local, so the arm emits
+lui $v0 / ori $v0 / and $v0,$a0,$v0 out of ONE quantity. Target's else arm is
+exactly that shape one register over: lui $v1 / ori $v1 / and $v1,$a0,$v1. In our
+build the else arm's and-destination is var_v1, a global pseudo, and combine_regs
+cannot tie a block-local quantity to a global one -- so the constant must be its
+own quantity and, by the rule above, must be $v0. The two-instruction gap follows
+directly: reorg.c already fills each bne/bnez delay slot from the else
+(dead-branch) thread exactly like target (s6 finding), but because the
+delay-slot lui writes the SAME hard register with the SAME constant as the then
+arm's lui, redundant_insn deletes the then-arm one.
+
+Artifacts: tmp/grind/func_8006B92C/s7/{qty2.sh, qty_h2a/, qty_p7a/, qty_p7b/}.
+
+- [s7] tmp/gccdbg/cc1 is the instrumented compiler; tools/gcc-2.7.2/build/cc1 is a May-18 binary that predates the BB2_QTY_DEBUG / BB2_RANK_DEBUG / BB2_FINDREG_DEBUG probes in the sources and prints nothing. Run the instrumented cc1 WITHOUT -quiet so it echoes function names to stderr -- that is what lets a QTYDBG stream be sliced to one function (harness: tmp/grind/func_8006B92C/s7/qty2.sh).
+
+- [s7] Measured local-alloc quantity table (h2a base): blk=3 qty1 reg1=89 birth=8 death=10 refs=2 got=2 / qty0 reg1=88 birth=6 death=10 refs=2 got=3; blk=4 qty0 reg1=90 birth=2 death=8 refs=4 got=2; blk=5 qty1 reg1=94 birth=10 death=14 refs=4 got=2 / qty0 reg1=92 birth=4 death=8 refs=2 got=2.
+
+- [s7] local-alloc.c qty_compare_1 priority = floor_log2(refs)*refs*size / (death-birth); higher priority is allocated first. This alone explains blk=3 matching target: the 0x4000 constant (pri 1.0) is allocated before the andi temp (pri 0.5), takes $v0, and pushes the temp to $v1.
+
+- [s7] mips.h defines no REG_ALLOC_ORDER, so find_free_reg scans hard registers in numeric order; $v0 (2) is the first allocatable GPR, which is why every uncontested block-local quantity in this function lands in $v0.
+
+- [s7] regs_live_at in local-alloc holds HARD registers only. global.c runs after local-alloc, so a global pseudo (var_v0, var_v1, a0) can never reserve a register against a block-local quantity -- this independently re-kills s6's P6c 'hoist the counter to give var_v0 a spanning range' family and explains why P6b was inert.
+
+- [s7] P7a (counter chain lengthened, mask still first) is exactly score-inert: 6 / 141, identical to base. P7b (counter chain lengthened and emitted first) regresses to 12 / 140. Neither changes the constant's register.
+
+- [s7] The scheduler emits the arm's two independent 1-cycle ALU dependence chains contiguously in both source orders; there is no interleaving, so the two block-local quantity ranges are always disjoint.
+
+- [s7] Session start floor and end floor are both 6 (target_insns 143, build_insns 141); candidate.c body is unchanged and re-verified in src at the end of the session.

@@ -1,7 +1,7 @@
 {
  "func": "func_8006B92C",
  "file": "text1b",
- "session_count": 6,
+ "session_count": 7,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -39,23 +39,29 @@
    "floor": 6,
    "modality": "forensics",
    "headline": "Forensics: the 2-insn gap is reorg.c redundant_insn deleting the then-arm lui, enabled by local-alloc giving the else-arm mask constant $v0 instead of target's $v1 \u2014 fill-priority hypothesis falsified"
+  },
+  {
+   "session": 7,
+   "floor": 6,
+   "modality": "forensics",
+   "headline": "Forensics: instrumented cc1 (BB2_QTY_DEBUG) measured local-alloc's quantity table -- the else-arm mask constant is a block-local qty whose range is always disjoint from the counter chain's, so find_fr"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The lever is sched.c: if the else block's mask chain is NOT hoisted above the shift chain, a block-local shift temp is live in $v0 across the constant and local-alloc gives the constant $v1 (target's register). The scheduler's choice is driven by insn priority (longest path to block end) plus the load-late/birthing heuristics, so a C form that lengthens the shift chain's dependence path \u2014 or shortens the mask chain's \u2014 should flip it.",
-   "mechanism": "sched.c schedules each basic block by priority order; the P6b .lreg proves the mask chain (3 insns, ends at the block-live var_v1) is scheduled ahead of the shift chain (3 insns, ends at the block-live var_v0) even though expand emitted the shift first. Flipping that order is sufficient (not merely necessary) to reach target's register assignment: with the shift born first and live across the mask, find_free_reg's regs_live_at scan marks $v0 busy over the constant's range and REG_ALLOC_ORDER's next entry is $v1 \u2014 which is also var_v1's global assignment, so `lui $v1 / ori $v1 / and $v1,$a0,$v1` falls out exactly as target has it.",
-   "next_probe": "s7 (forensics or structural): instrument the priority computation by reading sched.c's rank_for_schedule / priority() and the extracted dumps_h2a/func_8006B92C.sched dump for the else block's ready-list order; then look for a C spelling that lengthens the counter's dependence chain inside the arm (e.g. deriving the counter from a value that must be computed before the mask, without changing the emitted opcodes) or that shortens the mask's (e.g. a form where the constant is materialised in one insn). Measure each with sandbox --disable all and re-dump .lreg to check pseudo 92's disposition \u2014 the disposition line is a faster oracle than the score."
+   "hypothesis": "Make the else arm's AND-destination block-local so combine_regs ties the mask constant to it (the measured blk=4 shape), while still producing three distinct store sites, then steer that single tied quantity to $v1.",
+   "mechanism": "blk=4 proves combine_regs merges the constant into the and-destination whenever BOTH are block-local, producing target's exact lui/ori/and one-register shape. The blocker today is that the shared complete_store forces the and-destination to be the global var_v1. A form where each else arm computes its mask into an arm-local variable and the OR/store is duplicated per arm (or the shared tail consumes something else) would restore the tie; the remaining question is which register the tied quantity gets -- under the measured rule it would take $v0 unless the counter quantity is allocated first with a covering range, so this must be combined with a reason for the two chains to interleave.",
+   "next_probe": "s8 (structural): per-arm block-local mask variable + per-arm OR/store (accept the instruction-count change), measure sandbox --disable all AND the blk=5 QTYDBG line via tmp/grind/func_8006B92C/s7/qty2.sh. The QTYDBG 'got=' value is a faster and sharper oracle than the score: got=3 on the mask quantity is the win condition, and any form that reaches got=3 is worth building out even if its first spelling scores worse."
   },
   {
-   "hypothesis": "P6a's 143-insn form (shared global temp `t` in $a1) is a second, unexplored basin: it is the only form ever measured with target's instruction COUNT, and its residual is purely register-substitution (12), so a variant that keeps the count while pulling the counter chain back into $v0 could close the function.",
-   "mechanism": "In P6a the else block opens with the srl instead of a duplicate constant, which is what preserves both then-arm luis. The cost is that the shared temp is a global pseudo allocated $a1 and the counter's final addiu reads it (`addiu v0,a1,1`) where target has `addiu v0,v0,1`. If the shared value could be made to live in $v0 \u2014 or if the delay-slot fill could be steered to the else-arm constant while the count stays at 143 \u2014 the remaining diffs are few and local.",
-   "next_probe": "s7: from the P6a body (rejected/s6_shared_global_temp_t.c), sweep variants that change WHICH value is shared across the two else arms (the raw `a0 >> 13` vs the masked `(a0 >> 13) & 7` vs the final counter) and their types, measuring both sandbox score and the .greg disposition of the shared pseudo. A cheat-suppressed permuter campaign re-seeded from this base is also justified now: it is a genuinely different basin from the h2a local minimum s5 proved strict, and unlike the s5 frontier's h1d suggestion it already matches target's instruction count."
+   "hypothesis": "Give the else arm a genuine LOAD (2-cycle r3000 latency) in the counter chain so schedule_block has a reason to interleave the two chains, which is the only shape that makes a block-local quantity live across the mask constant.",
+   "mechanism": "s7 measured that two 1-cycle ALU chains are always emitted contiguously, so the quantity ranges never overlap. A load in one chain creates a delay the scheduler fills from the other chain, interleaving them; the loaded value's quantity would then be born before the constant and die after it, marking $v0 busy over [birth,death) and forcing the constant to $v1. s5 chassis C already showed a duplicated read of D_800A34F8 is CSE'd away, so the load has to be one CSE cannot fold -- the natural candidate is re-reading the global AFTER a store to it, or reading it through the arm's own already-stored value.",
+   "next_probe": "s8: restructure the else arm so the counter is derived from a re-read of D_800A34F8 that CSE cannot fold (e.g. sequence the arm as store-then-read, or derive the counter from the value the shared tail stores), and check the blk=5 QTYDBG ranges for overlap before caring about the score."
   },
   {
-   "hypothesis": "Cross-function evidence: the residual family (dual-lui + redundant_insn deletion + unmerged store tails) is the same documented coupled fixpoint as saEft00Add, and the s6 mechanism account should be checked against that function's ledger before more search here.",
-   "mechanism": "cross-jump-store-tail-merge.md names saEft00Add as BB2's documented coupled fixpoint of this trilemma. The s6 finding reframes the trilemma's third leg from 'reorg fill priority' to 'local-alloc register identity for a block-local constant', which may be directly testable on saEft00Add's larger accumulated evidence \u2014 and any lever found there very likely generalises here.",
-   "next_probe": "s7+ (rederive/synthesis modality): diff saEft00Add's measured levers against this function's s1-s6 kills under the corrected mechanism, and measure any lever tried there but not here on func_8006B92C."
+   "hypothesis": "Cross-function check against saEft00Add, the documented coupled fixpoint of the same dual-lui / redundant_insn / unmerged-store-tail trilemma (carried over unchanged from the s6 frontier).",
+   "mechanism": "cross-jump-store-tail-merge.md names saEft00Add as BB2's documented instance of this exact residual family. s6 reframed the third leg from 'reorg fill priority' to 'local-alloc register identity for a block-local constant', and s7 has now reduced it further to 'combine_regs cannot tie a block-local constant to a global and-destination'. That sharper statement is directly testable against saEft00Add's much larger accumulated evidence, and any lever found there very likely generalises here.",
+   "next_probe": "s8+ (rederive/synthesis): diff saEft00Add's measured levers against this function's s1-s7 kills under the corrected mechanism, and measure on func_8006B92C any lever tried there but not here."
   }
  ],
  "judge_constraints": [
