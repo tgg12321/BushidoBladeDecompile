@@ -1,3 +1,14 @@
+/* *** SUPERSEDED BY s3 -- READ THIS FIRST ***
+ * The corollary at the bottom of this header ("outer-LICM and the tail reload
+ * are MUTUALLY EXCLUSIVE") is FALSE and cost a session.  It holds only for an
+ * `s32`-typed loop-bound variable, where the widening conversion puts the load
+ * in a compiler temp that clears loop.c's movable condition (2).  With a `u8`
+ * bound variable that is ALSO referenced before the loop, the load lands in the
+ * user variable and all three movable conditions fail, so a REAL do-while outer
+ * loop keeps the tail reload.  That is how func_80034200 matched in s3 -- see
+ * ../candidate.c lever L4.  The specific forms below remain correctly rejected;
+ * only the generalisation was wrong.
+ */
 /* REJECTED (s2) -- any REAL outer loop (while / for / do-while) loses the
  * target's tail re-read of D_800A389B.
  *

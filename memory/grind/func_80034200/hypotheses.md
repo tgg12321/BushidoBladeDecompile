@@ -177,3 +177,52 @@ residual RA-plateau this function's grind will live and die on.
 - probe: Two both-goto variants, cc1 .s inspected.
 - result: It DOES flip base above shift, but with 3 unhoisted both arms end in an identical 'sll $2,$2,$sh' and jump.c's find_cross_jump merges them: build_insns 31 vs target 40. Only viable if 3 is already in a register before the inner loop.
 - verdict: KILLED
+
+## [s3] CONFIRMED (and s2's corollary KILLED) -- a `u8`-typed loop-bound variable keeps the tail reload inside a REAL loop
+- mechanism: loop.c:scan_loop's movable gate needs one of (1) !maybe_never &&
+  !loop_reg_used_before_p, (2) !REG_USERVAR_P && !REG_LOOP_TEST_P, (3)
+  reg_in_basic_block_p. An `s32` bound forces a widening temp, which passes (2);
+  a `u8` bound puts the load directly in the user variable, and with an earlier
+  pre-loop reference of that variable (3) fails, while maybe_never (set past any
+  label or jump, loop.c:921-930) kills (1).
+- probe: variants b01/b02/b03/b05 (`s32 n`, four placements of the tail re-read)
+  vs b04 (`u8 n`), standalone-TU harness, counting `lbu D_800A389B` occurrences.
+- result: `s32` forms rel=n (hoisted) in all four; `u8` form rel=Y. Adopted, and
+  the restored outer LICM then placed the preheader `li 3` for free: floor 11 -> 10.
+- verdict: CONFIRMED. s2's banked "outer-LICM and the tail reload are mutually
+  exclusive" is hereby KILLED -- it was true only for the s32 spelling it swept.
+
+## [s3] CONFIRMED -- expressing `base` as a strength-reduced induction variable fixes both s2 residuals at once
+- mechanism: loop_optimize calls move_movables before strength_reduce, so a giv's
+  preheader initialisation is emitted after the hoisted invariants (giving
+  target's [lbu, li 3, la] preheader, unreachable from any source-statement
+  ordering); and the giv is a fresh high-priority allocno that takes $a1, pushing
+  shift to $a2 and completing the target triple.
+- probe: `base = &D_800F65F8 + i * 2;` inside the loop, replacing the pre-loop
+  init plus the tail `base += 2;`; 4 giv spellings measured, then a 12-form
+  ordering sweep.
+- result: floor 10 -> 2, then -> 0 with `p = base;` written before
+  `end_p = base + 2;`. sandbox --disable all = 0; verify-oracle ok, build SHA1 ==
+  oracle.
+- verdict: CONFIRMED -- this is the match.
+
+## [s3] KILLED -- the s2 frontier's "change a reference COUNT to flip base>shift" programme
+- mechanism: it was sound arithmetic (base needed >=8 refs, or shift <=6, at the
+  measured live lengths) but it was solving the wrong problem: the swap is not a
+  ref-count wall, it is an artifact of `base` being an ordinary pseudo instead of
+  a giv.
+- probe: read allocno_n_refs / allocno_live_length straight out of the `.lreg`
+  dump (no instrumented cc1 needed) for the score-11 form, computed the required
+  deltas, then reached the target triple by the giv route without touching any
+  ref count.
+- result: target triple reached with ref counts untouched.
+- verdict: KILLED as a necessary axis. This also kills the frontier item that
+  called for building an instrumented cc1 under tmp/gccdbg -- `-da` already emits
+  the numbers.
+
+## [s3] KILLED -- the decomp-permuter frontier item
+- mechanism: it proposed seeding the permuter from the score-11 base to search
+  the ref-count space.
+- probe: not needed -- the function matched by hand-derived structural levers
+  first. No permuter campaign was launched this session.
+- verdict: KILLED (moot).

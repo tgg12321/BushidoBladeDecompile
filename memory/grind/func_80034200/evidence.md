@@ -125,3 +125,85 @@ Three levers landed, each measured with `sandbox --disable all` AND with a cc1
 - [s2] [s2] loop.c/jump.c mechanism reading is banked in the rejected-form headers: scan_loop's three-way movable gate, invariant_p's MEM case, rtx_addr_can_trap_p(SYMBOL_REF)==0, move_movables' threshold test, and duplicate_loop_exit_test's REG_LOOP_TEST_P marking.
 
 - [s2] [s2] Structural constraint proven: outer-LICM and the tail reload are mutually exclusive under this compiler, so the preheader `li 3` cannot come from loop.c in any form that also has the reload.
+
+## Session s3 (structural) -- floor 11 -> 10 -> 2 -> 0.  MATCHED, pure C.
+
+`sandbox func_80034200 --disable all` = **0**, build_insns 40 == target_insns 40,
+rules_dropped 0; `verify-oracle` = ok, build_sha1 ==
+62efab4f73f992798c43e8c730aa43baa10bb4fa == the locked original. The form is
+100% pure C: zero regfix/asmfix rules, zero `__asm__`, zero register-asm pins,
+zero volatile, zero dead stores, zero unused locals, zero FAKE-family constructs.
+
+### [s3] CORRECTION to the s2 corollary -- outer-LICM and the tail reload are NOT mutually exclusive
+s2 banked "outer-LICM (which would place the preheader `li 3`) and the tail
+reload are mutually exclusive under this compiler -- they cannot both come from
+loop.c". That is FALSE. The discriminator is the DECLARED WIDTH of the loop-bound
+variable, which s2's sweep never varied:
+
+- `s32 n; ... n = D_800A389B;` -- the u8 global needs a widening conversion, so
+  RTL expansion puts the load in a FRESH COMPILER TEMP and copies the temp into
+  `n` as a separate insn. loop.c:scan_loop's movable gate (frozen source, lines
+  688-701) accepts the temp via condition (2) `!REG_USERVAR_P && !REG_LOOP_TEST_P`,
+  hoists it, and cse2 folds it against the entry-guard load. Reload gone. This is
+  exactly the shape s2 measured, in every real-loop spelling it tried.
+- `u8 n; ... n = D_800A389B;` -- no conversion, so the load's SET_DEST *is* the
+  user variable. All three movable conditions now fail:
+    (1) `!maybe_never` fails: loop.c:921-930 sets maybe_never past ANY CODE_LABEL
+        or JUMP_INSN, and the inner loop supplies both well before the tail.
+    (2) fails: REG_USERVAR_P(n) is true.
+    (3) `reg_in_basic_block_p` fails: regno_first_uid[n] is the PRE-LOOP
+        `n = D_800A389B;` insn, not the tail load, so it returns 0 at once.
+  => the tail `lbu D_800A389B` is not a movable and survives inside a REAL
+  do-while outer loop. Measured: variant b04 (`u8 n`) rel=Y; variants b01/b02/
+  b03/b05 (`s32 n`, four statement placements) all rel=n.
+
+### [s3] Restoring the real outer loop is what places the preheader `li 3`
+With a real outer loop, the inner loop's LICM hoist of the constant 3 becomes an
+invariant of the OUTER loop too and is hoisted a second time, landing in the
+outer preheader at target's slot. No constant-holder local, no FAKE construct --
+which retroactively confirms s2's decision not to seek a ruling on that form.
+Floor 11 -> 10 with the guard written `n = D_800A389B; if (i < n)`. The `i < n`
+spelling is load-bearing: it keeps the signed `blez`, whereas `if (n > 0)` on a
+`u8` folds to `beq`.
+
+### [s3] `base` as a strength-reduced induction variable fixes BOTH remaining residuals
+Writing `base = &D_800F65F8 + i * 2;` inside the loop (dropping the pre-loop
+initialisation and the tail `base += 2;`) makes base a giv:
+- **Preheader ordering.** loop_optimize runs move_movables BEFORE strength_reduce,
+  so the giv's preheader init is emitted AFTER the hoisted movables. Preheader
+  becomes [lbu D_800A3874, li 3, la D_800F65F8] == target. A plain
+  `base = &D_800F65F8;` source statement can never reach that position: source
+  insns precede the movables, so the `la` always came out first.
+- **The base<->shift register swap.** The giv is a fresh, high-priority allocno
+  that takes $a1 directly; shift falls to $a2. Target triple (acc=$a0, base=$a1,
+  shift=$a2) reached with NO ref-count mutation at all -- so the s2 frontier's
+  "change a reference COUNT" programme was not needed and the instrumented-cc1
+  probe it called for was never built.
+The `&GLOBAL + i * 2` idiom is corroborated as original: the immediately preceding
+already-matched function in the same file writes
+`*(&D_800F65F8 + (D_800A3874 * 2)) = D_800A3898;` (src/code6cac_b.c:3846).
+Floor 10 -> 2.
+
+### [s3] The last 2 points were loop-head emission order
+`p = base;` must be written BEFORE `end_p = base + 2;` (target: `addu $v1,$a1,$zero`
+then `addiu $t0,$a1,2`). A 12-form sweep over every legal ordering of
+{base-giv, useReal, p, end_p} plus the `end_p = p + 2` alternatives showed the two
+effects are separable but coupled: 5 of 12 orderings keep the target register
+triple, and of those the `...,P,E` orderings also give target's emission order.
+Floor 2 -> 0.
+
+### [s3] Method note -- allocno inputs are readable from `-da` with NO instrumented cc1
+The s2 frontier's next-probe called for building an instrumented cc1 under
+tmp/gccdbg to print allocno_n_refs / allocno_live_length. That is unnecessary:
+cc1's `.lreg` dump already prints `Register N used R times across L insns` for
+every pseudo, which are exactly global.c's `allocno_n_refs` and
+`allocno_live_length`, and the `.greg` dump prints the resulting
+`;; N regs to allocate:` priority order plus `;; Register dispositions:`.
+`allocno_compare`'s priority is
+`floor_log2(n_refs) * n_refs / live_length * 10000 * size` (read from the frozen
+global.c). Reference counts are weighted by loop depth: a ref outside any loop
+counts 1, inside one loop 2, inside two loops 3. Measured on the s2 score-11 form:
+shift refs=9 live=29 pri=9310 (got $a1); base refs=5 live=21 pri=4761 (got $a2) --
+i.e. base would have needed >=8 refs, or shift <=6, to flip by ref count alone.
+`tmp/grind/func_80034200/s3/probe.py` prints all of this per variant in ~1s and is
+reusable for any function on this project.
