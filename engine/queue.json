@@ -2384,8 +2384,7 @@
       "distance": 15,
       "verdict": "C",
       "rules": 0,
-      "status": "parked",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md \u2014 '## 2026-07-28 \u2014 func_8006B92C \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE'"
+      "status": "active"
     },
     {
       "func": "special_camera_set_win_cam",

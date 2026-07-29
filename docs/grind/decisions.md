@@ -2177,3 +2177,47 @@ The frontier's "directed-permuter closer than manual sweep found via V2b + inlin
 **Disposition (terminal, driver-parks; no owner action pending).** REFUSED / OWNER-ACCEPTED INCOMPLETE. HEAD's SHA1-matching form carries a `register u32 var_v1 asm("v1")` pin (documented cheat, score-inert under the cheat-invisible sandbox); it stays as-is because the oracle currently binds on it and no legitimate pure-C form has been found. The function is parked out of active grind at honest floor=6. Best banked clean form: memory/grind/func_8006B92C/candidate.c (s3 h2a — no pins, no cheat-asm, no rules, sandbox=6). Eligible for re-attempt only if (a) a new SOTN precedent binds a coercion family to the dual-lui + reorg-fill-priority + reg_n_sets closing shape without the split-load-anchor idiom, or (b) scan_hand_coded signals for this specific function ever shift into the STRONG tier, or (c) a novel structural axis outside the s1-s4 frontier is derived.
 
 Artifacts (this session): tmp/grind/func_8006B92C/s4/baseline_s3_body.c; permuter/func_8006B92C/output-* (20 pre-s4 + 5 s4-new, all cheat-basin); memory/grind/func_8006B92C/rejected/{h4a_subu_algebraic.c, h4b_xor_algebraic.c, h4c_dup_do_call.c, h4d_shift_mask_thenarm.c, s4_perm_split_init_115.c, s4_perm_new_var3_shift_const.c}. Src state: s3 h2a baseline restored to src/text1b.c:15695-15761 (score 6, no pins, no rules).
+
+## 2026-07-28 — func_8006B92C — DISPOSITION VACATED (premature; ladder not exhausted) — **RETURNED TO ACTIVE**
+
+Operator correction (2026-07-28). The standing-ruling disposition recorded above for
+func_8006B92C is **VACATED** and the function is returned to the active queue. The
+evidence in that entry is sound as far as it goes — both AND-gates were genuinely
+evaluated, the algebraic/duplication axes were measured dead, and two permuter campaigns
+(14,067 + 29,388 iters) converged only on the Judge-forbidden split-load-anchor family.
+What was wrong is that it was filed **at all** at that point.
+
+**Why it was premature:** the driver's exhaustion trigger is a FLAT floor across >=8
+sessions and >=4 DISTINCT modalities. func_8006B92C had **4 sessions across 3 modalities**
+(recon, structural, permuter) with the floor still MOVING (15 -> 10 -> 6, only one flat
+session). Three ladder modalities — **forensics, rederive, synthesis** — were never run;
+forensics in particular is the modality that would name the reorg.c fill-priority decision
+at RTL level, which is precisely the residual here. The session was in `permuter` modality,
+not `escalation`: the driver had not declared exhaustion, so no disposition was available
+to it. Standing owner directives [[no-deferral-work-to-completion]] (work the top item to
+completion however many sessions it takes) and [[difficult-is-not-impossible]] (a stuck
+diff is unfinished work, never proven-impossible) both govern here.
+
+**Root cause — an operator error, not a session error.** The 2026-07-27 standing
+auto-ruling was written into the grinder brief's UNIVERSAL contract section (commit
+2f8857f8) so that every modality would stop filing "pending owner action" packets. That
+half worked. But it carried no exhaustion precondition, so it also read as authority to
+self-dispose from any modality. The session applied it exactly as written.
+
+**Fixes landed with this entry:**
+1. `tools/grinder/grindlib.py` brief — the standing ruling now splits the two questions
+   explicitly: (A) *is the function exhausted?* is the DRIVER's call, signalled by
+   `escalation` modality, and a dead axis in any other modality is a `progress` outcome
+   with the kills banked; (B) the gate evaluation + terminal wording applies only once (A)
+   holds. Also states that Judge FAILs do not make a function exhausted, and that a FAIL on
+   annotation FORMAT is a one-comment fix.
+2. `validate_outcome` mechanical guard — an `owner-gated` outcome whose escalation_ref says
+   "RESOLVED BY STANDING RULING" is now REJECTED when the modality is not `escalation`.
+   Integration handoffs and gate-PASSING escalations remain legal from any modality.
+
+**Note on the two Judge FAILs in that session:** the 18:01 FAIL was on annotation FORMAT
+only (the ruling says so in terms: "cosmetic in effect... a one-comment expansion, not a
+re-grind"). The 18:26 FAIL then ruled the underlying split-init construct a cheat by any
+spelling, which correctly closed that route — but the Judge's own next-step text prescribed
+"a fresh grind session ... continues from the s3 h2a floor of 6 with untried levers", not a
+disposition. Resume from floor 6 with the forensics modality.
