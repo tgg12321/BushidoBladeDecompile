@@ -128,3 +128,37 @@ Same shape mirrored in case 2 (`.L8006B9D8` vs build). The 4-insn shortfall is e
 - [s4] Src state restored to s3 h2a baseline (src/text1b.c:15695-15761): score 6, no pins, no cheat-asm, no rules.
 
 - [s4] docs/grind/decisions.md updated with OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27) entry naming func_8006B92C.
+
+- [s5] IMPORTANT INHERITANCE GOTCHA: src/text1b.c did NOT carry the s3/s4 candidate at session start — the tree was git-clean at the s1 body (with the `register u32 var_v1 asm("v1")` pin and the merged `D_800A34F8 = var_v1 | (...)` stores). s4's "src state restored to s3 h2a baseline" claim describes an intent, not the committed tree. ALWAYS apply memory/grind/func_8006B92C/candidate.c to src before measuring. After applying it, s5 re-measured the floor: sandbox --disable all score=6, target_insns=143, build_insns=141 (matches s3/s4).
+
+- [s5] Permuter metric calibration for this function: base score 235 decomposes EXACTLY as the sandbox residual — 2 missing instructions x 100 (ins/del weight) + 7 register diffs x 5 = 235. So the permuter score is a faithful gradient here, and "no permuter improvement" is real evidence about the closing form, not metric noise.
+
+- [s5] decomp-permuter's per-pass weights are settable from settings.toml `[weight_overrides]` keyed by the pass function's `__name__` (main.py:337 merges them over `get_default_randomization_weights(compiler_type)`; Randomizer.__init__ requires every RANDOMIZATION_PASSES entry to have a weight). This makes it possible to run a CHEAT-SUPPRESSED campaign: weight 0.0 on the passes whose OUTPUT SHAPE is itself a catalog cheat (perm_temp_for_expr, perm_split_assignment, perm_chain_assignment, perm_long_chain_assignment, perm_duplicate_assignment, perm_add_self_assignment, perm_pad_var_decl, perm_dummy_comma_expr, perm_add_mask, perm_xor_zero, perm_mult_zero, perm_refer_to_var, perm_empty_stmt, perm_ins_block). This is a reusable technique for any function whose permuter basin is a cheat family — the weights file is banked at tmp/grind/func_8006B92C/s5/nocheat_weights.toml.
+
+- [s5] Chassis A (cheat-suppressed random mode, label s5-NOCHEATPASS, 6 jobs): 41424 iterations / 1293 s, ZERO finds — not one legitimate-family mutation ever scored below base 235. The s3 h2a form is a STRICT local minimum under the legitimate mutation set. This is the direct measurement s4's frontier item #2 ("directed-PERM permuter from h2a base can find the exact spelling") asked for: it cannot, and the reason s4's search "worked" is that its finds were all produced by cheat-shape passes.
+
+- [s5] Chassis B (directed exhaustive spelling sweep, label s5b-DIRECTED-ALTS): 288/288 combinations, 0 compile errors, min score 235 == base. Sites swept: case-1 then-arm store {`a0 & 0xFFFF1FFF` | `D_800A34F8 &= 0xFFFF1FFF` | `a0 - 0x4000`}, case-2 then-arm store {`(a0 & 0xFFFF1FFF) | 0x4000` | `a0 | 0x4000` | `D_800A34F8 |= 0x4000`}, both counters {`((a0>>13)&7)±1` | `(a0>>13)±1`}, the complete_store OR {`((var_v0 & 7) << 13)` | `(var_v0 << 13) & 0xE000`}, and PERM_LINESWAP over each else arm's statement order. The two algebraic simplifications are exact on their own arms (case-1 else is entered only when `a0 & 0xE000 == 0x4000`; case-2 then only when `a0 & 0xE000 == 0`), so this sweep also independently re-confirms that arm-conditioned algebra does not help — consistent with s4's H4a/H4b kills, reached by a different route.
+
+- [s5] Chassis C (directed exhaustive structural sweep, label s5c-STRUCT-ALTS): 16/16 whole-case-body combinations, min 235 == base. Per-arm duplicated `D_800A34F8` read ([[split-read-defeats-hoist]]) ties at 235 — GCC CSEs the repeated non-volatile global loads because each arm's own store to D_800A34F8 comes after both reads, so nothing invalidates them and the two `lui 0xFFFF` births re-merge exactly as before. Hoisted shared mask ([[hoist-shared-arm-computation-defeats-copy-pref]]) scores 285 (worse): the pre-branch birth removes the per-arm mask compute h2a's floor-6 depends on. Both banked in rejected/.
+
+- [s5] All three campaigns harvested with --stop; `procs_killed` 7/0/0, no campaign left running. Artifacts: tmp/grind/func_8006B92C/s5/{chassisA_head.txt, chassisB_base.c, chassisB_scores.txt, chassisC_base.c, chassisC_scores.txt, nocheat_weights.toml}.
+
+- [s5] Judge s3-BINDING constraint #1 DISCHARGED: both staged-value sites in src/text1b.c now carry the full staged-value-reused-variable prong-4 template — named mechanism (sched.c adjust_priority / birthing_insn_p; reg_n_sets[var_v1] != 1 disables the load-late launch priority; the `|=` keeps the final OR in var_v1's home register so the shared store's source $v1 diverges from the then-arm stores' $v0 and jump2 find_cross_jump cannot rtx_equal-merge the three sw sites) plus the lever-exhaustion citation to hypotheses.md/evidence.md sessions s1-s3. Re-sandboxed after the annotation: score still 6 (comments are codegen-neutral, as expected). candidate.c updated to match src exactly.
+
+- [s5] INHERITANCE GOTCHA: src/text1b.c was git-clean at the s1 body (register u32 var_v1 asm("v1") pin + merged stores) at session start — s4's 'src restored to s3 h2a baseline' described intent, not the tree. Always apply memory/grind/func_8006B92C/candidate.c to src before measuring.
+
+- [s5] Floor re-measured after applying the s3 candidate: sandbox --disable all score=6, target_insns=143, build_insns=141 (unchanged from s3/s4).
+
+- [s5] Permuter metric is faithfully calibrated for this function: base score 235 == 2 missing insns x 100 (ins/del weight) + 7 register diffs x 5. So 'no permuter improvement' is real evidence about the closing form, not metric noise.
+
+- [s5] decomp-permuter per-pass weights are settable from settings.toml [weight_overrides] keyed by the pass function's __name__ (main.py:337; Randomizer.__init__ demands a weight for every RANDOMIZATION_PASSES entry). This enables a reusable CHEAT-SUPPRESSED campaign for ANY function whose permuter basin is a cheat family; the weights file is banked at tmp/grind/func_8006B92C/s5/nocheat_weights.toml.
+
+- [s5] Chassis A (cheat-suppressed random, 41424 iters / 1293 s, 6 jobs): ZERO finds. Directly answers s4's frontier item #2 ('directed permuter from h2a base can find the exact spelling'): it cannot — s4's search only 'worked' because its finds were produced by cheat-shape passes.
+
+- [s5] Chassis B (288 exhaustive spelling combinations): min 235 == base. Chassis C (16 exhaustive whole-case structural combinations): min 235 == base, hoisted-mask family 285.
+
+- [s5] All three campaigns harvested with --stop (procs_killed 7/0/0); permuter_campaign status shows alive=false for all three. No campaign outlives the session.
+
+- [s5] Judge s3-BINDING constraint #1 DISCHARGED: both staged-value sites in src/text1b.c now carry the full staged-value-reused-variable prong-4 template — named mechanism (sched.c adjust_priority / birthing_insn_p; reg_n_sets[var_v1] != 1 disables the load-late launch priority; the |= keeps the final OR in var_v1's home register so the shared store's source $v1 diverges from the then-arm stores' $v0 and jump2 find_cross_jump cannot rtx_equal-merge the three sw sites) plus the lever-exhaustion citation to hypotheses.md/evidence.md s1-s3. Re-sandboxed after: score still 6. candidate.c matches src exactly.
+
+- [s5] Judge s3-BINDING constraint #2 respected: no split-load-anchor form was proposed, re-surfaced, or measured this session; the cheat-shape mutation passes were structurally disabled so the search could not even emit one.
