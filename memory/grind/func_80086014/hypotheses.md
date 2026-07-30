@@ -41,7 +41,26 @@ Rejected as a *net* win only because the SImode collapse forces a pack/unpack
 round-trip costing 4-5 insns when we need to add exactly 2. Full gradient table:
 `rejected/union-word-view-pack-unpack-tax.c`.
 
-## Live frontier
+## RESOLVED — session 2 (structural): the function byte-matches
+
+### CONFIRMED — H4: the pair belongs to ONE base symbol, and spelling it that way
+### with the delta inside the index expression closes the whole residual
+`D_80102A78[idx * 8 + 1] = y; D_80102A78[idx * 8] = x;` (instead of routing y
+through the interior splat symbol `D_80102A7A`) gives 27/27 instructions and a
+full-build SHA1 == oracle. Mechanism, settled by a gdb backtrace on
+`assign_stack_local`: combine folds the second access's address pseudo into the
+store's `%lo` displacement and leaves a bare `(use (reg))`; that use-only pseudo
+is unallocatable (`ST_REGS or none`), so `reload1.c:alter_reg` spills it and
+`get_frame_size()` reports 8 with zero traffic — target's phantom frame. The same
+extra pseudo re-orders sched1's choices into target's `sh` / `lbu` /
+`move v0,zero` sequence, so H3 fell out for free. Details + the 86-variant
+gradient table: `evidence.md`.
+
+**H1 is moot** (an aggregate was never needed — the witness carries the frame with
+plain `s32` scalars) and **H2 is closed** (both census witnesses resolved via
+`build/bb2.map`; `snd_GetFadeCurve` is the recipe). **H3 closed with H4.**
+
+## Superseded frontier (kept for the record)
 
 ### H1 — a >=4-byte aggregate that is already SImode-shaped (no pack/unpack)
 **Mechanism.** H0c proved the frame is reachable and priced the failure
@@ -127,4 +146,10 @@ aggregate changes the dependence graph. Do **not** reach for a memory clobber or
 - mechanism: GCC 2.7.2 calls assign_stack_local for a local aggregate at expand time, so get_frame_size() counts it (vars=4, rounded to 8 by MIPS_STACK_ALIGN). If every access to that aggregate is subsequently register-forwarded, the slot is never loaded or stored - yielding addiu $sp,-8 / addiu $sp,8 with zero $sp traffic, exactly target's shape, with no dead declarations and no cheats.
 - probe: Two further harness rounds (18 more variants) over struct / union / array locals with both aggregate-assignment and field-wise stores, reporting vars=, $sp-traffic count and insn count per variant.
 - result: CONFIRMED and priced. `union { s16 h[2]; s32 w; }` with field-wise stores gives vars= 8, regs= 0/0, args= 0 with sp_traffic=0 - target's exact frame signature - AND keeps the two separate `sh` stores at the right addresses, with cc1 emitting the frame `subu` into the bnez delay slot where prologue_fix hoists it to the top just as target has it. Two sub-findings: the aggregate must be >=4 bytes (a 2-byte union gives vars= 0), and zero traffic requires collapse to ONE pseudo (the s32 view forwards; a field-wise 2-field struct keeps two HImode subregs and spills, sp_traffic=3). Rejected only as a NET win: the same SImode collapse forces a mode-punning pack/unpack round-trip (andi/sll/or ... sra) costing 4-5 instructions when we need to add exactly 2.
+- verdict: CONFIRMED
+
+## [s2] The phantom frame is not an aggregate artifact: it is reload spilling a pseudo that combine reduced to a bare (use), and the C shape that creates one is two accesses to the same base symbol with a constant delta inside the variable index expression.
+- mechanism: gdb break on assign_stack_local inside cc1 gives the backtrace assign_stack_local <- alter_reg (reload1.c:2352) <- reload <- global_alloc. The pseudo has no entry in .greg's Register dispositions and .lreg classifies it 'ST_REGS or none; pointer' because its only surviving reference is a (use (reg:SI N)) insn that combine created when it folded the pseudo's address arithmetic into the following memory reference's %lo displacement. Unallocatable -> spill slot -> get_frame_size 4 -> 8 via MIPS_STACK_ALIGN -> no load/store emitted. No RTL stage contains a virtual-stack-vars reference, so the frame is invisible outside cc1's .frame comment.
+- probe: 86 variants over nine cc1 grids in tmp/grind/func_80086014/s2 (p1..p9 + w1only/d6only + gdb.sh + dumps.sh), reading .frame / $sp-traffic / insn count per variant; the in-tree witness snd_GetFadeCurve (= func_80047E5C, matched, frame 8) transplanted and bisected down to the minimal trigger `s32 a = arr[v1]; s32 b = arr[v1+1]; return a + b;`.
+- result: On our function the trigger spells as D_80102A78[idx*8+1] = y (one base symbol, +1 element delta) in place of D_80102A7A[idx*8] = y: insns 18 (= 16 body + 2 frame) with vars=8 and sp_traffic=0, body otherwise unchanged. Applied to src/main.c the sandbox drops 10 -> 1 with build_insns 27 == target_insns 27, and a full clean-driver build produces SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle (MATCH); the linked disassembly reproduces all 27 target words. The residual sandbox 1 is an unlinked-object artifact (%lo(D_80102A78+2) immediate 0x0002 + relocation vs the target dump's resolved 0x2A7A; ld emits a4262a7a either way). KILLED en route, all vars=0: brace nesting / guard inversion / local count (8 variants), pointer and offset staging locals (8), the struct-typed table object model (8), return-value and control-flow restructurings (9).
 - verdict: CONFIRMED

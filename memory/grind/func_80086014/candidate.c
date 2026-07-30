@@ -1,62 +1,60 @@
-/* func_80086014 -- best form as of grind session 1 (recon).
- * Honest floor: sandbox --disable all == 10  (was 16 at session start).
- * IN PLACE in src/main.c:990 as of the end of session 1.
+/* func_80086014 -- MATCHING pure-C form, found in grind session 2 (structural).
  *
- * This is 100% pure C: zero regfix/asmfix rules, zero register pins, zero
- * inline asm, zero volatile, zero dead code. It REPLACED an inherited
- * pin-and-barrier-laden body (5 `register asm("$N")` pins + a
- * `__asm__ volatile("" ::: "memory")` barrier + a `volatile` local), all of
- * which the cheat-invisible sandbox strips, and which scored WORSE (16) than
- * this clean form (10) once stripped -- the pins were buying nothing even on
- * their own terms, because the stripped `volatile` local forced 6 spill
- * insns through the stack.
+ * STATUS: byte-identical to target.  Full clean-driver build with this body in
+ * src/main.c:990 produced SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == the
+ * oracle, and the linked disassembly at 0x80086014 matches all 27 words of
+ * asm/funcs/func_80086014.s (capture: tmp/grind/func_80086014/s2/linked.txt).
+ * Zero regfix/asmfix rules, zero register pins, zero inline asm, zero volatile,
+ * zero dead code, zero FAKE constructs.
  *
- * Semantic model (recovered this session): a 24-entry table (0x18 = the bound)
- * with a 16-byte stride. Two s16 fields per slot live at the addresses splat
- * named D_80102A78 and D_80102A7A (hence the `[idx * 8]` s16-element
- * spelling of a 16-byte stride), plus a per-entry flag byte in the parallel
- * array D_800F65E0 where bits 0-1 are set to mark the slot dirty. The twin
- * setter func_80086130 (src/main.c:1033, also queued, also pin-laden) writes
- * the SAME two fields with both values pre-scaled by 129 ((v<<7)+v); the
- * matched getter func_80086080 (src/main.c:1014) reads them back and divides
- * by 129. So x/y here are raw, unscaled coordinates.
+ * The cheat-invisible sandbox still prints score 1 for this body.  That single
+ * point is a scoring artifact, not a real diff: the sandbox compares an UNLINKED
+ * object, where the y-store assembles as `sh $a2, %lo(D_80102A78+2)($at)` and so
+ * carries immediate 0x0002 plus a relocation, while target's dump carries the
+ * already-resolved immediate 0x2A7A (`%lo(D_80102A7A)`).  The linker resolves
+ * D_80102A78+2 to 0x80102A7A, so the emitted word is a4262a7a either way -- see
+ * the linked capture above.
  *
- * WHAT THIS FORM ALREADY GETS EXACTLY RIGHT -- do not perturb it blindly:
- * register allocation is instruction-for-instruction identical to target,
- * including the non-obvious `move a3,a1` param-save in the bnez delay slot
- * (GCC needs it because the byte offset `idx*16` is computed into $a1,
- * clobbering the param) and the $v1 index / $a1 offset / $a0 flags choices.
- * That fell out of the naive spelling for free. The remaining 10 is NOT an
- * allocation problem.
+ * THE ONE STRUCTURAL CHANGE vs session 1's floor-10 body: the y half of the pair
+ * is written as element +1 of the SAME base symbol (`D_80102A78[idx * 8 + 1]`)
+ * instead of through the interior splat symbol `D_80102A7A[idx * 8]`.  That is
+ * the object model: one 24-entry table with a 16-byte stride whose first two s16
+ * members are the pair; `D_80102A7A` is just splat's name for base+2, and the
+ * original source would only have had one handle for the table.  Writing it that
+ * way is what closes BOTH halves of session 1's residual at once:
  *
- * THE ENTIRE RESIDUAL (25 built insns vs 27 target insns):
- *   1. THE FRAME (2 of the 2 missing insns). Target opens with
- *      `addiu $sp,$sp,-8` and closes with `addiu $sp,$sp,8`, and NEVER issues
- *      a single $sp-relative load or store -- a PHANTOM frame
- *      ([[phantom-frame-slots-gcc272]]). We emit no frame at all (cc1 reports
- *      `vars= 0`). The twin func_80086130 has the identical 8-byte phantom
- *      frame, so whatever source shape causes it is a property of this
- *      function family, and solving it here solves both.
- *   2. TWO SCHEDULING PLACEMENTS. We hoist `move v0,zero` (the `return 0`
- *      value) to the top of the taken block; target emits it mid-block, right
- *      after the flag `lbu`. And we hoist the flag `lbu` above the first `sh`;
- *      target issues it after that store. Both are cc1 sched1 decisions --
- *      GCC can freely reorder because the store to D_80102A7A provably cannot
- *      alias the load from D_800F65E0 (distinct symbols).
+ *   1. THE 8-BYTE PHANTOM FRAME (the 2 missing instructions).  With one base and
+ *      a constant delta INSIDE the variable index expression, cc1 expands a
+ *      separate address pseudo for the second access and combine then folds that
+ *      arithmetic into the store's %lo displacement, replacing the insn with a
+ *      bare `(use (reg:SI N))`.  A use-only pseudo is classified "ST_REGS or
+ *      none" in .lreg, so global_alloc cannot allocate it and reload1.c's
+ *      alter_reg hands it a spill slot -- get_frame_size() counts 4 bytes,
+ *      MIPS_STACK_ALIGN rounds to 8, and no load or store is ever emitted.
+ *      That is target's `addiu $sp,-8` / `addiu $sp,8` with zero $sp traffic.
+ *      Mechanism established by breaking on assign_stack_local under gdb
+ *      (tmp/grind/func_80086014/s2/gdb.sh) against the in-tree witness
+ *      snd_GetFadeCurve (src/sound.c:993 = func_80047E5C), which carries the
+ *      same phantom frame from the same shape (`arr[v1]` + `arr[v1 + 1]`).
+ *   2. THE TWO SCHEDULING PLACEMENTS.  The extra address pseudo also changes the
+ *      dependence graph sched1 sees, so the flag `lbu` now issues AFTER the first
+ *      `sh` and `move $v0,$zero` lands right after the `lbu`, exactly as target
+ *      has them.  No barrier, no volatile, no pin -- session 1 had proven those
+ *      cost 6 points rather than buying anything.
  *
- * Session 1 measured the frame axis hard; see hypotheses.md for the full
- * gradient table and the two banked kills. Short version: local SCALAR
- * spelling is completely inert here (10 spellings, all `vars= 0`, all
- * byte-identical), while a >=4-byte local AGGREGATE does reach the exact
- * target frame signature (`vars= 8, regs= 0/0, args= 0`) with zero stack
- * traffic -- but every aggregate spelling found so far pays >=4 extra
- * instructions for a mode-punning pack/unpack round-trip, so none of them is
- * a net win yet. That is the live frontier, not a wall.
+ * Everything session 1 got right is preserved: register allocation is still
+ * instruction-for-instruction identical, including the `move a3,a1` param-save
+ * in the bnez delay slot.
+ *
+ * NOTE FOR THE TWIN: func_80086130 (src/main.c:1033, still queued, still
+ * pin-laden) writes the same two fields pre-scaled by 129 and has the IDENTICAL
+ * 8-byte phantom frame.  The same single-base `+ 1` spelling is the first thing
+ * to try there.
  */
 s32 func_80086014(s16 idx, s16 x, s16 y)
 {
     if ((u16)idx < 0x18) {
-        D_80102A7A[idx * 8] = y;
+        D_80102A78[idx * 8 + 1] = y;
         D_80102A78[idx * 8] = x;
         D_800F65E0[idx] |= 3;
         return 0;
