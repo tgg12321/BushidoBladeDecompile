@@ -1,0 +1,40 @@
+{
+ "func": "replay_camera_Init",
+ "file": "code6cac_b2_post",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 0,
+   "floor": 17,
+   "modality": "wip-import",
+   "headline": "floor imported from memory/wip checkpoint"
+  },
+  {
+   "session": 1,
+   "floor": 17,
+   "modality": "recon",
+   "headline": "Recon: 3-insn gap fully characterised \u2014 2 insns are the D_80101E70 reload gated on the pre-existing extern volatile the sandbox strips (17 vs 14 with --keep-cheat-asm); 1 insn is the a1->a3 parm copy "
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The existing `extern volatile s32 D_80101E70;` either qualifies for the legitimate-volatile-interrupt-touched carve-out \u2014 in which case the honest floor legitimately drops 17 -> 14 and the remaining gap is a 1-instruction RA problem \u2014 or it does not, in which case the reload has no available source at all and the function's disposition changes materially.",
+   "mechanism": "The two-prong test in .claude/rules/legitimate-volatile-interrupt-touched.md: (1) the global must be asynchronously mutated by an identifiable IRQ/callback writer, (2) the use site must demonstrably require CSE-defeat. Prong (2) is already proven by this session's 14-vs-17 measurement; only prong (1) is open. s0's evidence bank asserts no IRQ-writer citation exists but records no census.",
+   "next_probe": "Run the census: grep every writer of D_80101E70 across src/ and correlate with the PsyQ callback surface (cdrom_SetCallbackB / sys_VSync / root-counter handlers) reachable from this file \u2014 the replay-camera path in this very file registers a cdrom callback via marionation_camera_Init_80036064. Record the result either way; a NEGATIVE census is a closed gate, not an open question."
+  },
+  {
+   "hypothesis": "A C shape that keeps the incoming $a1 hard register live past the birth of the pseudo holding its value will force allocno 73 off $a1 and (with $a2 likewise conflicted) onto $a3, materialising target's `addu $a3,$a1,$zero` in the bnez delay slot.",
+   "mechanism": "global.c find_reg masks conflicts+preferences (global.c:1093) then takes the lowest free hard reg under the default 0..31 order (no REG_ALLOC_ORDER for MIPS in this tree). The copy insn survives as a real instruction precisely when the pseudo does not get its preferred hard reg. Killed this session: dead extra parameters (flow deletes the copy pre-conflict-graph). Untried: shapes with a second, later use of the parameter value, and shapes that give the address pseudo a live range overlapping the parm-copy region.",
+   "next_probe": "Sweep C forms that create a second reference to the a1 value or extend the address pseudo's live range backwards across the parm copies; after each, slice .greg with tmp/grind/replay_camera_Init/s1/slice.py and read the `Register dispositions` + conflict lists directly rather than inferring from the score."
+  },
+  {
+   "hypothesis": "Directed decomp-permuter search from candidate.c can find the RA/scheduling shape for the remaining 14 (volatile-present) or 17 (stripped) points that manual derivation has not.",
+   "mechanism": "Random + PERM_* directed mutation over statement order, temporary introduction, and expression spelling explores a structural space that four manual sessions' worth of hand-derived levers have not covered.",
+   "next_probe": "Build a clean single-function target.o from asm/funcs/replay_camera_Init.s + tools/decomp-permuter/prelude.inc (drop the `.set gp=64` line for r3000) so the function sits at offset 0 like base.o \u2014 per difficult-is-not-impossible.md \u00a73, a whole-file target.o adds ~340k of constant score noise and makes the search useless. Launch via tools/permuter_campaign.py, wait IN-TURN with `permuter_campaign.py wait --dir <ws>`, then `harvest --stop` before writing the outcome."
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-30T20:10:45.497537+00:00"
+}
