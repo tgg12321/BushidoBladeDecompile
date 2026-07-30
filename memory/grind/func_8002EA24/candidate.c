@@ -1,72 +1,84 @@
-/* func_8002EA24 -- grind session 2 candidate (structural modality).
+/* func_8002EA24 -- grind session 3 candidate (structural modality).
  *
- * Honest sandbox floor of THIS form: 9  (was 18 at HEAD, 20 for the session-1
- * "PsyQ-macro" honest respelling).  Build 102 insns vs target 104.
+ * Honest sandbox floor of THIS form: 9  (HEAD = 18; session-1 honest
+ * PsyQ-macro respelling = 20; session-2 authorized-sibling respelling = 9).
+ * Build 102 insns vs target 104.  Disassembly md5 (dis.sh) = 1fc26fe12849.
  *
- * WHAT CHANGED vs session 1.  Session 1 assumed target's extra
- * `addu $t4, <src>, $zero` before every cop2 op had to come from a second C
- * variable that GCC failed to coalesce.  Session 2 measured that family dead
- * (7 spellings, all BYTE-IDENTICAL to the plain form) and then found the real
- * answer by forensics: `addu $t4, X, $zero` occurs in 46 target functions,
- * and the ONLY three matched-with-no-rules functions that contain it are
- * func_8001A67C, func_800274BC and func_8004DDB4 -- and the first two are
- * listed in inline_asm_canonical.txt as USER-AUTHORIZED (2026-06-10)
- * hand-written GTE blocks whose authorized C spells the $t4 routing INSIDE a
- * single canonical __asm__ block.  func_8002EA24's LZCS/LZCR block is
- * instruction-for-instruction the same construct as func_800274BC's
- * (addu t4,<val> -> mtc2 t4,$30 -> 2 unfilled GTE delay nops -> addu t4,$sp
- * -> swc2 $31,0(t4)), and asm/funcs/func_8002EA24.s carries splat
- * "handwritten instruction" tags on mtc2 $t4,$30 and on swc2 $26/$27.
+ * WHAT CHANGED vs the session-2 candidate.  The Judge's binding constraint on
+ * this session was: keep the LZC block ONLY in the exact func_800274BC-
+ * authorized shape, and re-spell the vector/mvmva block MINIMALLY -- operand
+ * address computed in C and bound via %N, template limited to the $t4 copy +
+ * lwc2/swc2 + the mvmva .word, no hardcoded `addiu $v0, %0, 0xF8` inside the
+ * template and no `$2` clobber.  That is exactly what this form does, and it
+ * is measured BYTE-IDENTICAL to the session-2 form (same score 9, same
+ * disassembly md5).  The constraint therefore costs nothing: both address
+ * computations now come from ordinary C (`addiu $v0,$t0,0xF8` /
+ * `addiu $v0,$t0,0x100`, both in $v0, both in target's position) and only the
+ * $t4 routing + the cop2 ops remain inside the templates.
  *
- * This form therefore spells BOTH GTE regions the way the two authorized
- * siblings are spelled: one canonical __asm__ block per region, the single
- * C-level operand bound through %N, the $t4 routing inside the template,
- * $2/$12 clobbered.  That closes the entire GTE region exactly (all 8
- * canonical insns + the 3 $t4 copies + both address computations).
+ * IMPORTANT: the block must be split into TWO __asm__ statements (load+mvmva,
+ * then store).  A single block taking both pointers as %0/%1 forces GCC to
+ * materialise both addresses BEFORE the block, which emits
+ * `addiu $v1,$t0,0xF8` + `addiu $v0,$t0,0x100` back-to-back ahead of the
+ * lwc2 -- score 13, banked as rejected/gte-single-block-two-operands-score13.c.
  *
- * DISPOSITION IS NOT SELF-APPROVED.  By the letter of [[inline-asm-injection]]
- * a hardcoded-$N template is the forbidden injection pattern; the two sibling
- * precedents are the reason this is a genuine classification question rather
- * than a cheat, and the session returned `ruling-request` for exactly that.
- * Do NOT treat this file as accepted until the owner rules and the function is
- * added to inline_asm_canonical.txt (a surface a grind session may not touch).
+ * SANDBOX ARTIFACT (do not mistake for a codegen gap): the cheat-invisible
+ * sandbox strips the bare `nop` lines out of a kept canonical block, so the
+ * sandbox disassembly is missing all four GTE pipeline nops (2 before the
+ * mvmva, 2 after the mtc2).  They ARE in the templates and appear in a real
+ * build.  Modulo those four stripped nops, the entire GTE region -- both
+ * address computations, all three `addu $t4,<reg>,$zero` copies, all 8 cop2
+ * instructions -- matches target instruction-for-instruction.
  *
- * Residual vs target (score 9 = 6 register mismatches + 2 missing + 1 extra):
- *   a) the compare chain puts x in $a0 and neg_threshold in $a1; target wants
- *      $a1 and $t1 (6 insns: the lw, the negu, three slt, the mult).
- *      Declaration-order / xdefer / a0first / twovars / zdecl / negfirst all
- *      measured (5 byte-identical, zdecl worse at 12).
- *   b) the tail `if (y + a0_var < min_y) return 0; return 1;` still folds to
- *      `slt; xori $v0,$v0,1`; target keeps the unfolded diamond.  Six pure-C
- *      tail shapes measured: endlabel / revcmp / ifelse byte-identical,
- *      gotoreject 30, swap 17, ternary 10.  The documented closure for this
- *      exact shape is [[dead-store-fake-exception]] (dead `ret = 1;` inside
- *      the else arm) -- last-resort, FAKE-annotated, layer-2 reviewed.
+ * DISPOSITION IS NOT SELF-APPROVED.  A hardcoded-$N template is the forbidden
+ * injection pattern by the letter of [[inline-asm-injection]]; the two in-tree
+ * sibling authorizations (func_8001A67C / func_800274BC, user-authorized
+ * 2026-06-10) for the identical construct are why this is a genuine
+ * classification question.  Session 2 returned `ruling-request`; the Judge's
+ * answer constrained the SHAPE (above) but explicitly did NOT authorize adding
+ * func_8002EA24 to inline_asm_canonical.txt or retiring its 10 regfix rules.
+ *
+ * RESIDUAL vs target (score 9), now fully diagnosed:
+ *   H5 (6 of the 9 points) -- `x` lands in $a0 and `neg_threshold` in $a1;
+ *       target wants $a1 and $t1.  Root cause read straight off the cc1
+ *       `.greg` conflict lists: the ONE missing conflict is
+ *       a0_var <-> {x, neg_threshold}.  See evidence.md session 3 for the
+ *       full derivation and the measured confirmation.
+ *   H6 (3 of the 9 points) -- the tail `if (y + a0_var < min_y) return 0;
+ *       return 1;` still folds to `slt; xori $v0,$v0,1`; target keeps the
+ *       unfolded `bnez / addu $v0,$zero,$zero / addiu $v0,$zero,1` diamond.
+ *       Six pure-C tail shapes were measured dead in session 2; the documented
+ *       closure is [[dead-store-fake-exception]], which needs a /* FAKE */
+ *       annotation + layer-2 review and was out of scope for a structural
+ *       session.
  *
  * NOTE on the LZC block's "=m"(sp_var): the template hardcodes 0($sp), which
- * is where GCC currently places sp_var in this 8-byte frame (verified: the
- * build emits `lw $v1, 0($sp)` exactly as target does).  It is correct for
- * this frame layout only -- the same fragility the two authorized siblings
- * carry.
+ * is where GCC places sp_var in this 8-byte frame (the build emits
+ * `lw $v1, 0($sp)` exactly as target does).  Correct for this frame layout
+ * only -- the same fragility the two authorized siblings carry.
  */
 s32 func_8002EA24(u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
+    s32 *vin;
+    s32 *vout;
     *(s16 *)(obj + 0xF8) = pos[0] - (*(s32 **)(obj + 0x60))[0];
     *(s16 *)(obj + 0xFA) = pos[1] - (*(s32 **)(obj + 0x60))[1];
     *(s16 *)(obj + 0xFC) = pos[2] - (*(s32 **)(obj + 0x60))[2];
+    vin = (s32 *)(obj + 0xF8);
     __asm__ volatile(
-        "addiu $v0, %0, 0xF8\n"
-        "addu $t4, $v0, $zero\n"
+        "addu $t4, %0, $zero\n"
         "lwc2 $0, 0($t4)\n"
         "lwc2 $1, 4($t4)\n"
         "nop\n"
         "nop\n"
-        ".word 0x4A486012\n"
-        "addiu $v0, %0, 0x100\n"
-        "addu $t4, $v0, $zero\n"
+        ".word 0x4A486012"
+        : : "r"(vin) : "$12", "memory");
+    vout = (s32 *)(obj + 0x100);
+    __asm__ volatile(
+        "addu $t4, %0, $zero\n"
         "swc2 $25, 0($t4)\n"
         "swc2 $26, 4($t4)\n"
         "swc2 $27, 8($t4)"
-        : : "r"(obj) : "$2", "$12", "memory");
+        : : "r"(vout) : "$12", "memory");
 
     {
         s32 x = *(s32 *)(obj + 0x100);

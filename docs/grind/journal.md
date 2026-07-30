@@ -713,3 +713,4 @@
 - 2026-07-30 08:58 replay_camera_rob_back_loose3 COMPLETED-C after 4 sessions.
 - 2026-07-30 09:18 cpu_set_move_command_and_dir_for_no_action COMPLETED-C after 1 sessions.
 - 2026-07-30 09:43 func_8002EA24 s1 [recon] floor=18: Recon: all 11 net-missing insns at HEAD are GTE-spelling artifacts, not C dataflow; an honest PsyQ-macro respelling builds 99/104 insns (5 gaps, score 20) and reduces the whole function to one dominant lever (target's addu $t4,<reg>,$zero copy on every GTE operand) plus the tail xori fold.
+- 2026-07-30 10:36 func_8002EA24 s2 [structural] floor=9: Judge-constrained minimal GTE vector-block spelling measured BYTE-IDENTICAL to the session-2 form (floor 9, free); H5's six register mismatches reduced by .greg derivation to ONE missing live-range conflict (a0_var <-> {x, neg_threshold}), mechanism CONFIRMED by measurement but every pure-C shape producing it is worse.

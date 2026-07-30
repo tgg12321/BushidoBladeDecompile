@@ -1,31 +1,37 @@
 {
  "func": "func_8002EA24",
  "file": "code6cac_b",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 18,
    "modality": "recon",
    "headline": "Recon: all 11 net-missing insns at HEAD are GTE-spelling artifacts, not C dataflow; an honest PsyQ-macro respelling builds 99/104 insns (5 gaps, score 20) and reduces the whole function to one dominan"
+  },
+  {
+   "session": 2,
+   "floor": 9,
+   "modality": "structural",
+   "headline": "Judge-constrained minimal GTE vector-block spelling measured BYTE-IDENTICAL to the session-2 form (floor 9, free); H5's six register mismatches reduced by .greg derivation to ONE missing live-range co"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "H1 \u2014 reproducing target's `addu $t4,<src>,$zero` copy on each GTE operand closes 3 of the 5 missing insns AND fixes ~6 register mismatches on the canonical GTE instructions (worth ~9 of the 20 points on the honest form).",
-   "mechanism": "The original C held a second variable copying the operand; GCC's local-alloc coalesced it away in every spelling tried so far. A single shared scratch is KILLED; the untried shapes are per-site local pairs (base + p) where both pseudos are referenced, and making the copy source live ACROSS the asm (the one property the mtc2 site demonstrably has).",
-   "next_probe": "Start from memory/grind/func_8002EA24/candidate.c. (1) Per-site pair: `s32 *base = (s32 *)(obj + 0xF8); s32 *p = base;` and feed the asm from p. (2) Derive the store address from the load address so vp stays live: `rp = vp + 2;` (0x100-0xF8 = 8 bytes = 2 s32s \u2014 exactly target's relationship). (3) Read the .greg dump (cc1 <build-flags> -da base.i) to see which pseudo earns $t4. (4) decomp-permuter with PERM_* variants over the operand spelling if 1-3 stall."
+   "hypothesis": "H5 -- the compare-chain register assignment (6 of the 9 residual points). x must land in $a1 and neg_threshold in $t1; both follow automatically from the single conflict a0_var <-> {x, neg_threshold}. The remaining problem is producing that conflict WITHOUT hoisting the mult/mflo pairs and WITHOUT shortening x's live range past z's load.",
+   "mechanism": "global.c first-fit allocation in REG_ALLOC_ORDER over the .greg conflict graph; allocno_compare priority floor_log2(n_refs)*n_refs/live_length; prune_preferences only lets an allocno skip a register preferred by a lower-priority conflicting allocno. Fully derived and hand-verified against the dump this session.",
+   "next_probe": "(1) Identify what occupies $a0 in TARGET across the compare chain -- run m2c on asm/funcs/func_8002EA24.s and look specifically for a value the reconstruction keeps live between the prologue and `addu $a0,$v0,$v1`. (2) Read the .lreg dump (`cc1 <build-flags> -dl base.i`) for x/a0_var quantity numbers and test whether local-alloc quantity merging can supply the conflict without a real overlap. (3) Test expand_preferences: look for a C form with a genuine copy into a0_var that would propagate a $a0 preference to a pseudo conflicting with x. (4) Only after 1-3, decomp-permuter with PERM_* over the compare-chain statement order and the sum-of-squares association (a permuter modality, not structural)."
   },
   {
-   "hypothesis": "H2 \u2014 the tail xori fold (2 missing insns + 1 wrong insn) is reachable by pure-C restructuring of the final 0/1 exit.",
-   "mechanism": "GCC jump.c's store-flag if-conversion needs a single-set arm; it fires only on the last `return 0` because that is the one paired with a trailing `return 1`.",
-   "next_probe": "Try the pure-C shapes FIRST: shared end label (`ret = 0; goto end; ... end: return ret;` per [[shared-end-label]]), mixed exit forms, and a differently-shaped final comparison. Only after those are measured dead, consider [[dead-store-fake-exception]], which documents this exact closure (dead `ret = 1;` INSIDE the else arm breaks the single-set precondition; detached placement does not work) \u2014 that path needs documented lever-exhaustion, a /* FAKE */ annotation and layer-2 review."
+   "hypothesis": "H4 -- the GTE canonical-asm disposition remains the blocking question (owner/operator action, not a grind-session action).",
+   "mechanism": "A hardcoded-$N template is the forbidden injection pattern by the letter of [[inline-asm-injection]]; the two in-tree sibling authorizations (func_8001A67C / func_800274BC, user-authorized 2026-06-10) for the identical construct are why this is a genuine classification question. The Judge constrained the SHAPE this session and that shape is now measured free, but did not authorize adding func_8002EA24 to inline_asm_canonical.txt or retiring its 10 regfix rules, and deferred the FINAL CALL until the function is byte-identical on main with zero rules.",
+   "next_probe": "No probe -- this is gated on H5 and H6 closing the remaining 9 points on the constrained body, after which the operator adds the function to inline_asm_canonical.txt and retires the rules (surfaces a grind session may not touch)."
   },
   {
-   "hypothesis": "H3 \u2014 the x/$a0 vs $a1 and neg_threshold/$a1 vs $t1 assignment in the compare chain is coupled to H1 and will move on its own once the GTE region matches.",
-   "mechanism": "Closing the GTE region changes which pseudos are live entering the compare chain; $t1 is an unusual first-choice allocation, consistent with neg_threshold having a longer live range than our current spelling gives it (target computes negu $t1,$a2 before the first slt and reuses it for the z test).",
-   "next_probe": "Do NOT probe this before H1 lands \u2014 re-diff after H1 and only then, if it persists, apply the [[register-alloc-pure-c]] levers (block-local split, declaration order, hoisting -threshold above the x load) and read the .greg dispositions."
+   "hypothesis": "H6 -- the tail 0/1 diamond (3 of the 9 residual points). Target keeps `bnez / addu $v0,$zero,$zero / addiu $v0,$zero,1`; our build folds to `slt; xori $v0,$v0,1`.",
+   "mechanism": "jump.c store-flag if-conversion on a single-set arm. Session 2 measured six pure-C tail shapes -- shared end label, reversed final comparison and if/else-both-arms are byte-identical; ternary 10, test-order swap 17, double-goto-reject 30.",
+   "next_probe": "The documented closure is [[dead-store-fake-exception]]: a dead `ret = 1;` INSIDE the else arm breaks jump.c's store-flag single-set precondition (detached placement does NOT work, per func_80078EC0). Requires documented lever-exhaustion (now supplied), a /* FAKE */ annotation and layer-2 cheat-reviewer sign-off -- do not self-approve."
   }
  ],
  "judge_constraints": [

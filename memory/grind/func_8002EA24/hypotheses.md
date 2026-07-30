@@ -203,3 +203,111 @@ cheat-reviewer sign-off. Do not self-approve it.
 - probe: Re-diffed the score-9 build against target, then measured four declaration-order variants (x declared uninitialised and loaded as the first statement; a0_var declared ahead of x; -threshold materialised before the x load; z given an up-front initialiser).
 - result: The assignment did NOT move - `x` is still in `$a0` and `neg_threshold` in `$a1` against target's `$a1`/`$t1`, and it is now 6 of the 9 residual points. Three of the four declaration-order variants are byte-identical; the fourth (z up-front) is worse at 12.
 - verdict: KILLED (both the prediction and the declaration-order lever)
+
+## Session 3 (structural) - frontier rewritten
+
+### KILLED this session
+- **The `a0_var`-live-early family as a CLOSING form.** Five shapes measured
+  (accearly 19, accmid 18, accpre 15, accsplit 14, xzptr 11) - all worse than
+  the score-9 base. Every shape that makes `a0_var` live across the range-test
+  chain also SETS it early, hoisting the two `mult`/`mflo` pairs ahead of the
+  `slt` chain (target emits them after); and once `a0_var` is born before `x`'s
+  last use, `x` stops conflicting with `z` and falls into `$v1` (earlier in
+  `REG_ALLOC_ORDER`) instead of target's `$a1`.
+- **The single-`__asm__`-block vector spelling.** One block taking both GTE
+  pointers as `%0`/`%1` forces GCC to materialise both addresses ahead of the
+  `lwc2` (`addiu $v1,$t0,0xF8` + `addiu $v0,$t0,0x100` back-to-back) = score 13.
+  The two-statement split is required.
+
+### CONFIRMED this session
+- **The Judge-constrained minimal vector-block spelling is free.** Address
+  computed in C, bound via `%N`, template limited to the `$t4` copy + cop2 ops
+  + the mvmva `.word`, no hardcoded `addiu $v0`, no `$2` clobber: score 9,
+  byte-identical to the session-2 form. This is the banked candidate.
+- **H5's mechanism.** The six register mismatches are ONE missing live-range
+  conflict, `a0_var` <-> {`x`, `neg_threshold`} (full `.greg` derivation in
+  evidence.md). `accearly` proves it: creating that conflict puts
+  `neg_threshold` in `$t1`, target's register.
+
+### Live frontier (after session 3)
+
+#### H4 - GTE canonical-asm disposition (BLOCKING, owner ruling outstanding)
+Unchanged from session 2, except that the Judge has now constrained the SHAPE
+(LZC block = the exact `func_800274BC`-authorized form; vector block minimal,
+address in C via `%N`, no hardcoded `addiu $v0`, no `$2` clobber) and that
+shape is measured free. The disposition itself - adding func_8002EA24 to
+`inline_asm_canonical.txt` and retiring the 10 regfix rules - is still an
+operator/owner action a grind session may not take, and the Judge deferred the
+FINAL CALL until the function is byte-identical on main with zero rules.
+
+#### H5 - the compare-chain register assignment (6 of the 9 residual points)
+**Statement.** `x` must land in `$a1` and `neg_threshold` in `$t1`; both follow
+automatically from ONE extra live-range conflict, `a0_var` <-> {`x`,
+`neg_threshold`}. The remaining problem is producing that conflict WITHOUT
+hoisting the `mult`/`mflo` pairs and WITHOUT shortening `x`'s live range past
+`z`'s load.
+**Mechanism.** `global.c` first-fit allocation in `REG_ALLOC_ORDER` over the
+`.greg` conflict graph; `allocno_compare` priority
+`floor_log2(n_refs)*n_refs/live_length`; `prune_preferences` only lets an
+allocno skip a register preferred by a lower-priority allocno it conflicts with.
+Fully derived and hand-verified against the dump - see evidence.md.
+**Next probe, in order.**
+1. Identify what occupies `$a0` in TARGET across the compare chain. Nothing
+   visibly writes `$a0` between `addu $t0,$a0,$zero` (which kills the `obj`
+   parameter) and `addu $a0,$v0,$v1`. Run m2c on `asm/funcs/func_8002EA24.s`
+   and look specifically for a value the reconstruction keeps live there.
+2. Test whether the conflict can come from local-alloc quantity merging rather
+   than a real overlap: read the `.lreg` dump (`cc1 <flags> -dl base.i`) for
+   `x`/`a0_var` quantity numbers, and check whether any C shape merges them
+   into one quantity while keeping two distinct allocnos.
+3. Test whether `expand_preferences` can supply the effect instead: a copy
+   insn linking `a0_var` to a pseudo that conflicts with `x` would propagate a
+   `$a0` preference; look for a C form with a genuine copy into `a0_var`.
+4. Only after 1-3: decomp-permuter with `PERM_*` over the compare-chain
+   statement order and the sum-of-squares association (this is a permuter
+   modality, not a structural one).
+
+#### H6 - the tail 0/1 diamond (3 of the 9 residual points)
+Unchanged from session 2 and NOT attempted this session (structural modality;
+the pure-C axis was already exhausted there - six shapes measured, three
+byte-identical). The documented closure is [[dead-store-fake-exception]]: a
+dead `ret = 1;` INSIDE the else arm breaks jump.c's store-flag single-set
+precondition (detached placement does NOT work, per func_80078EC0). That path
+needs a `/* FAKE */` annotation and layer-2 cheat-reviewer sign-off; do not
+self-approve it.
+
+## [s3] The Judge-constrained minimal vector-block spelling (address computed in C, bound via %N, template limited to the $t4 copy + cop2 ops + the mvmva .word, no hardcoded `addiu $v0`, no `$2` clobber) costs score relative to the session-2 form.
+- mechanism: moving the two address computations out of the asm template hands them to GCC's scheduler and allocator, which could place them earlier or in different registers than target's `addiu $v0,$t0,0xF8` / `addiu $v0,$t0,0x100`.
+- probe: Built the constrained form as TWO __asm__ statements (load+mvmva, then store) with `vin`/`vout` as ordinary C pointers bound `"r"()`, and also as ONE statement taking both pointers as %0/%1; scored both with `sandbox --disable all` and md5-ed the emitted disassembly.
+- result: The two-statement form is BYTE-IDENTICAL to the session-2 form (score 9, 102 insns, md5 1fc26fe12849) - GCC places both addiu in target's positions and target's register for free. The one-statement form is score 13 (md5 d74f8524ff76) because both addresses must be materialised before the block.
+- verdict: KILLED (the constraint costs nothing; the two-statement split is required)
+
+## [s3] H5's six register mismatches are reducible to a single missing live-range conflict in the allocator's conflict graph.
+- mechanism: global.c allocates allocnos in `allocno_compare` priority order and `find_reg` takes the first non-conflicting hard register in REG_ALLOC_ORDER; `prune_preferences` only lets an allocno skip a register preferred by a lower-priority allocno it conflicts with. So a register assignment is fully determined by the conflict graph plus the priority order.
+- probe: Dumped cc1's `.greg` for the score-9 form (`-dg`), identified the allocnos (72=obj, 74=threshold, 75=r_sq, 96=x, 97=z, 98=a0_var, 104=neg_threshold), hand-walked the first-fit allocation against the printed conflict lists and priority order, then re-walked it with one extra conflict added.
+- result: The hand-walk reproduces our build exactly (x->$a0, neg->$a1). Adding the single conflict `a0_var` <-> {`x`, `neg_threshold`} makes the walk produce target's assignment exactly: x is additionally blocked from $a0 so it takes $a1, and neg_threshold is then blocked from $v0/$v1/$a0/$a1/$a2/$a3/$t0 so the first free register in REG_ALLOC_ORDER is $t1.
+- verdict: CONFIRMED
+
+## [s3] That conflict is producible in pure C by giving `a0_var` a live range that starts before the range-test chain.
+- mechanism: a0_var's live range starts at its first set; moving the sum-of-squares computation earlier makes it live across the slt chain and therefore conflict with x and neg_threshold.
+- probe: Five shapes measured with `sandbox --disable all` plus a register read-off of the emitted disassembly: `accearly` (a0_var computed before all four range tests), `accmid` (between the x test and the z test), `accpre` (a0_var = x*x before x's test, += z*z after z's test), `accsplit` (a0_var = x*x after x's test), `xzptr` (x/z/y read off a live `s32 *v` pointer).
+- result: The mechanism is CONFIRMED - `accearly` emits `negu t1,a2`, putting neg_threshold in target's $t1 purely because a0_var is live across the chain. But every such shape is WORSE overall (accearly 19, accmid 18, accpre 15, accsplit 14, xzptr 11 vs base 9): setting a0_var early hoists the two mult/mflo pairs ahead of the slt chain, and once a0_var is born before x's last use, x stops conflicting with z and falls into $v1 rather than target's $a1.
+- verdict: KILLED as a closing form (CONFIRMED as the mechanism)
+
+## [s2] The Judge-constrained minimal vector-block spelling (GTE operand address computed in C and bound via %N, template limited to the $t4 copy + lwc2/swc2 + the mvmva .word, no hardcoded `addiu $v0, %0, 0xF8` inside the template, no `$2` clobber) costs score relative to the session-2 form that hardcoded both address computations inside the template.
+- mechanism: Moving the two address computations out of the asm template hands them to GCC's scheduler and register allocator, which could place them earlier than target's positions or in different registers than target's $v0.
+- probe: Built the constrained form two ways and scored each with `sandbox func_8002EA24 --disable all`, additionally md5-ing the emitted func_8002EA24 disassembly so that 'same score' could be distinguished from 'same bytes': (a) TWO __asm__ statements (load+mvmva, then store) with `vin`/`vout` as ordinary C pointers bound "r"(); (b) ONE __asm__ statement taking both pointers as %0/%1.
+- result: (a) is BYTE-IDENTICAL to the session-2 form: score 9, 102 insns, disassembly md5 1fc26fe12849. GCC emits `addiu $v0,$t0,0xF8` and `addiu $v0,$t0,0x100` in target's exact positions and target's exact register for free. (b) is score 13 (md5 d74f8524ff76) because a single block forces both addresses to be materialised before the lwc2 (`addiu $v1,$t0,0xF8` + `addiu $v0,$t0,0x100` back-to-back). The two-statement split is load-bearing.
+- verdict: KILLED
+
+## [s2] H5's six compare-chain register mismatches (x in $a0 vs target $a1; neg_threshold in $a1 vs target $t1) are reducible to a single missing live-range conflict in cc1's allocator conflict graph.
+- mechanism: GCC 2.7.2 global.c allocates allocnos in `allocno_compare` priority order (floor_log2(n_refs)*n_refs / live_length) and `find_reg` takes the FIRST non-conflicting hard register in REG_ALLOC_ORDER; `prune_preferences` only lets an allocno skip a register preferred by a LOWER-priority allocno it conflicts with. A register assignment is therefore fully determined by the conflict graph plus the priority order.
+- probe: Dumped cc1's register dispositions and conflict lists for the score-9 form (`cc1 -O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -dg base.i`), sliced the func_8002EA24 section, identified the allocnos (72=obj, 74=threshold, 75=r_sq, 96=x, 97=z, 98=a0_var, 104=neg_threshold), hand-walked the first-fit allocation against the printed conflict lists and priority order, then re-walked it with one extra conflict added.
+- result: The hand-walk reproduces our build exactly: 97(z) takes $v1, 98(a0_var) takes $a0, 96(x) takes $a0 because it does NOT conflict with a0_var (x dies at the `mult`, a0_var is born at the following `addu`), and 104(neg_threshold) is blocked from $v0/$v1/$a0 so it takes $a1. Adding the single conflict a0_var <-> {x, neg_threshold} makes the same walk produce target's assignment exactly: x is additionally blocked from $a0 so it takes $a1, and neg_threshold is then blocked from $v0,$v1,$a0,$a1,$a2,$a3,$t0 so the first free register in REG_ALLOC_ORDER is $t1. All six mismatches are that one conflict.
+- verdict: CONFIRMED
+
+## [s2] That missing conflict is producible in pure C by giving a0_var a live range that starts before the range-test chain.
+- mechanism: An allocno's live range starts at its first set, so moving the sum-of-squares computation earlier makes a0_var live across the slt chain and therefore conflict with both x and neg_threshold.
+- probe: Five structural shapes built and scored with `sandbox --disable all`, with the compare-chain registers read off each emitted disassembly: `accearly` (a0_var = x*x + z*z before all four range tests), `accmid` (between the x test and the z test), `accpre` (a0_var = x*x before x's test, += z*z after z's test), `accsplit` (a0_var = x*x after x's test, += z*z after z's test), `xzptr` (x/z/y read as v[0]/v[1]/v[2] off a live `s32 *v`).
+- result: Mechanism CONFIRMED: `accearly` emits `negu t1,a2` -- neg_threshold lands in $t1, target's register -- purely because a0_var is then live across the chain. But every such shape is WORSE overall: accearly 19, accmid 18, accpre 15, accsplit 14, xzptr 11, against the score-9 base. Setting a0_var early hoists both mult/mflo pairs ahead of the slt chain (target emits them after), and once a0_var is born before x's last use, x stops conflicting with z and falls into $v1 (earlier in REG_ALLOC_ORDER) instead of target's $a1.
+- verdict: KILLED
