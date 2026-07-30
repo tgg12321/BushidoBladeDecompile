@@ -1,4 +1,40 @@
-/* func_8003553C — best form as of grind session 4 (permuter); body UNCHANGED
+/* func_8003553C — best form as of grind session 5 (permuter); body UNCHANGED
+ * since session 3. Honest floor still sandbox --disable all = 2 (43/43 insns).
+ *
+ * SESSION 5 replaced decomp-permuter (whose objective s4 measured to be
+ * ANTI-CORRELATED here) with a CORRECTED-OBJECTIVE search of my own:
+ * tmp/grind/func_8003553C/s5/{search_lib,hill,search}.py compile a generated
+ * standalone form through the real pipeline and score it as the objdump
+ * line-diff against target.o (~1.5 s/form, 8-way parallel), additionally
+ * recording the constant-materialisation signature
+ * "<idx of li 640>/<idx of li 240>/<idx of li 128>@<640's register>"
+ * (target and this body both = 7/8/11@v1).
+ *
+ * 840 forms were measured across statement order x declaration order x
+ * 3 coordinate-store spellings x 2 RGB spellings x 2 OT-base spellings, by
+ * exhaustive 1-token-move hill climbing from three chassis (this body, its
+ * x3-leading mirror, and TARGET's own statement order) plus 200 uniform-random
+ * permutations. Results:
+ *   * The honest minimum over all 840 forms is 2 — this body.
+ *   * Hill climbing from TARGET's own statement order (difflines 10) converges
+ *     in two iterations onto THIS EXACT form, so the basin has a single
+ *     attractor and this body is its global optimum.
+ *   * DECISIVE: 428 forms reach the target constant signature (li 640 at block
+ *     index 7 holding $v1) and EVERY ONE of them contains a pre-OT-load 640
+ *     store; NO form in the entire space materialises 640 at the block head
+ *     with both of its stores in the post-load group. The early li is CAUSED BY
+ *     the early store — they are not separable by ordering, declaration order,
+ *     or store spelling. That closes session 4's frontier items 1 and 3, which
+ *     both asked for exactly that combination.
+ *   * Also killed in s5: the static-helper-parameter axis. A `static void`
+ *     helper is NOT inlined by GCC 2.7.2 at -O2 (real call, 19 insns);
+ *     `static inline` does inline (43 insns) but the parameter constant is
+ *     propagated and then sunk exactly as a local holder is — 640 lands in $v0
+ *     at index 13/27 in all four helper partitionings (difflines 12/46/28/18).
+ *
+ * Original session-4 header follows.
+ *
+ * func_8003553C — best form as of grind session 4 (permuter); body UNCHANGED
  * since session 3.
  *
  * SESSION 4 (permuter modality) added no floor drop and closed the permuter

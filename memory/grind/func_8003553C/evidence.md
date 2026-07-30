@@ -436,3 +436,129 @@ two 240 stores) = difflines 12, worse than the chassis-B control.
 - [s4] Both campaigns were harvested with --stop before the session ended; python3 tools/permuter_campaign.py status reports '0 live campaign(s), 0 stale registry entr(ies)'. No background process was left running.
 
 - [s4] No cheat construct was used or proposed this session: no regfix/asmfix edits, no register pins, no inline asm, no volatile, no dead stores, no holder locals in any banked form. The two permuter forms banked under rejected/ are recorded as rejected precisely because they are (a) a redundant dead store and (b) an artefact of the mis-specified objective.
+
+## Session 5 (permuter, 2026-07-30) — floor stays 2; the ORDER/SPELLING/DECL space is exhaustively saturated, and the "early li + late stores" combination is proven unreachable in it
+
+NOTE (fourth session running): `src/code6cac_b2_pre.c` again held the ORIGINAL
+cheat-asm carrier at session start (the driver reverts src between sessions).
+The banked candidate was re-applied and re-measured at **2** (`sandbox
+--disable all`, 43 build insns / 43 target insns) before any probe, and src
+holds it at session end.
+
+### Why no decomp-permuter campaign was run (and what replaced it)
+Session 4 did not merely fail to find an improvement with decomp-permuter — it
+MEASURED the reason: the permuter's weighted objective is anti-correlated with
+the honest distance on this function (incumbent = 1 displaced insn = permuter
+225; forms 5x worse = 50-65). Re-running a campaign under that objective would
+re-run banked evidence. Instead this session built the same instrument with the
+objective FIXED:
+
+* `tmp/grind/func_8003553C/s5/search_lib.py` — form generator + scorer. Emits a
+  standalone TU (s4 proved the surrounding TU is not load-bearing), compiles it
+  through `s4/wsA/compile.sh` (the real cc1 / prologue_fix / maspsx-2.34 /
+  multu_pad pipeline), and returns the objdump instruction-sequence diff against
+  `s4/wsA/target.o` plus a **constant-materialisation signature**
+  `<idx li 640>/<idx li 240>/<idx li 128>@<register of 640>`.
+  Control: the banked candidate scores difflines 2, sig `7/8/11@v1`; TARGET's own
+  disassembly has the identical sig `7/8/11@v1`. (Note the sig equality — the
+  banked body ALREADY reproduces target's constant order and register; the
+  residual is only the store's slot. This corrects the s3/s4 framing that the
+  primary objective is "get li 640 ahead of li 240".)
+* `tmp/grind/func_8003553C/s5/hill.py` — exhaustive 1-token-move hill climb
+  (160 neighbours/iteration, 8-way parallel, ~1 min/iteration) over the cross
+  product of statement order x declaration order (6 perms of `u8 *p; u8 *q;
+  u32 *ot;`) x coordinate-store spelling (`*(s16*)(p+N)` / `sp[N/2]` /
+  `*(s16*)((s32)p+N)`) x RGB spelling (`p[N]` / `*(u8*)((s32)p+N)`) x OT-base
+  spelling (`(u32*)(D_800A374C+0x401C)` / `&((u32*)D_800A374C)[0x1007]`).
+* `tmp/grind/func_8003553C/s5/search.py` — 200 uniform-random full permutations
+  as a control on the hill climb's basin (best 18; random ordering is hopeless,
+  which is itself why s2's 45 hand orderings were the right instrument).
+
+### The measurements (840 forms, all scored on the honest metric)
+1. **Minimum over all 840 forms is 2 — the incumbent.** 50 forms tie at 2.
+2. **Hill climbing from TARGET's own statement order converges onto the
+   incumbent.** Start difflines 10, sig `13/7/10@v0`; after two iterations
+   (320 neighbours) it lands on the exact banked order
+   `10,1A,22,R0,R1,R2,R3,OT,08,0A,12,18,20` at difflines 2. The mirror chassis
+   (x3 leading) starts and stays at 2. The basin has ONE attractor and the
+   banked body is its global optimum — no local-search path out.
+3. **DECISIVE NEGATIVE — the early `li` and the early store are inseparable.**
+   428 of the 840 forms reach 640-at-block-index-7-in-$v1 (target's constant
+   shape). EVERY one of them contains a 640-valued store BEFORE the OT load.
+   Not one form in the space materialises 640 at the block head while both of
+   its stores sit in the post-load group; every form whose 640 stores are all
+   post-load puts 640 in **$v0** at index 11/13/15/17/23 (117+33+3+1+6 forms) and
+   bottoms out at difflines 8. Session 4's frontier items 1 and 3 asked for
+   precisely the missing combination; it does not exist under any ordering,
+   declaration order, or store spelling. Best sigs by min difflines:
+   `7/8/11@v1` -> 2 (n=358), `8/7/11@v1` -> 4, `11/7/10@v1` -> 4,
+   `7/10/13@v0` -> 6, `13/7/10@v0` -> 10, `7/8/9@a1` -> 12.
+4. **KILLED — the static-helper-parameter axis (new this session).** Motivation:
+   a function parameter is defined at the CALL SITE, so a helper taking the
+   640 as an argument would give the constant an early def with late uses —
+   exactly the shape needed, and a shape a human would plausibly write
+   (`setXY4`-style). Four partitionings measured (whole body / whole body with
+   the q-p tail split / coordinates+link only / post-load group only):
+   * `static void` is **NOT inlined** by GCC 2.7.2 at -O2 (no -finline-functions,
+     `inline` keyword required): a real `jal` is emitted and the extracted region
+     is 19-37 insns (difflines 32/30/17/16). Useful toolchain fact.
+   * `static inline void` DOES inline (43 insns each) — and the parameter
+     constant is propagated into its uses and then sunk exactly like a local
+     holder: 640 ends in **$v0** at index 13/27/27/27, difflines 12/46/28/18.
+   So parameter dataflow is no more resistant to sched1's sink than a holder
+   local is. Banked as
+   `rejected/inline-static-helper-param-const-still-sunk.c` and
+   `rejected/noninline-static-helper-real-call-19-insns.c`.
+
+### What this leaves for the next session
+The residual is ONE instruction and the pure-ordering/spelling/declaration/
+parameter space is now exhaustively measured dead (s2: 45 forms; s5: 840 forms +
+8 helper chassis; s4: 85 permuter forms). Every remaining idea has to change the
+*dependence graph or register pressure* of the post-call block itself, not the
+order or the syntax of its statements. Concretely un-probed:
+(a) the `initPolyG4` interface — if the original prototype RETURNED the
+    primitive pointer (`u8 *initPolyG4(u8 *)`, PsyQ-style chaining), the
+    post-call block's live-in set and the $v0 lifetime both change, which is the
+    only lever measured to matter (the 640 gets $v0 today *because $v0 is free*);
+    a returned value occupies $v0 at block entry with no extra instruction if the
+    result is what feeds the stores. This needs the real prototype checked
+    against every other caller of initPolyG4 in the tree before it is credible.
+(b) whether any OTHER matched function in the tree emits a block-head
+    `addiu $vN,$zero,K` whose ONLY uses are after an intervening may-alias-pinned
+    load — i.e. re-run s4's census.py with the extra requirement that a
+    non-store insn separates the constant from its first use. The 164 s4 hits
+    were not filtered that way, and the single hit read (func_80072BC4) has an
+    uninterrupted store run. If ZERO matched functions have the interrupted
+    shape, that is evidence the original source did NOT have the OT load between
+    the constant and its uses — i.e. lever L1's position is right but something
+    else supplies the argument (e.g. the OT slot address held in a variable
+    computed BEFORE initPolyG4, whose lw would then be pre-call and out of the
+    way entirely). That is a structural hypothesis the s2 sweep never covered
+    because it only moved the load WITHIN the block.
+
+- [s5] The banked body already reproduces TARGET's constant-materialisation signature exactly (li 640 at block index 7 in $v1, li 240 at 8, li 128 at 11 — verified by disassembling target.o itself). The s3/s4 framing of the primary objective ("get li 640 emitted ahead of li 240") is therefore ALREADY SATISFIED; the sole residual is the slot of `sh v1,16(s0)`.
+- [s5] 840 forms measured on the honest objdump metric across statement order x declaration order x 3 coordinate spellings x 2 RGB spellings x 2 OT spellings. Minimum 2 (50 ties). Hill climbing from TARGET's own statement order (difflines 10) converges in two iterations onto the exact banked order — single attractor, banked body is the global optimum of the space.
+- [s5] DECISIVE: 428 forms reach target's constant shape (640 at index 7 in $v1) and ALL of them contain a pre-OT-load 640 store; every form with both 640 stores in the post-load group puts 640 in $v0 (index 11-23) and scores 8+. The early `li` is CAUSED BY the early store — the "early li + late stores" combination is unreachable by ordering/spelling/declaration order. Session 4's frontier items 1 and 3 are closed NEGATIVE.
+- [s5] KILLED — static-helper parameter dataflow. `static void` is NOT inlined by GCC 2.7.2 at -O2 (real jal; 19-37 insn regions, difflines 32/30/17/16); `static inline` inlines (43 insns) but the parameter constant is propagated then sunk like a holder local: 640 in $v0 at index 13/27, difflines 12/46/28/18 over four partitionings.
+- [s5] Toolchain fact worth reusing: this build does not inline plain `static` functions at -O2 — the `inline` keyword is required. So a helper-function hypothesis must be spelled `static inline` to be testable at all.
+- [s5] Instruments for the next session: tmp/grind/func_8003553C/s5/search_lib.py (generator + honest scorer + constant-signature extractor), hill.py (exhaustive 1-token-move hill climb from a named chassis, 160 neighbours/iter, ~1 min/iter, 8-way parallel), scoreforms.py (score arbitrary hand-written standalone forms). All score via s4/wsA/compile.sh, so they must be launched through wsl.exe with the venv activated — the Bash tool's Git-Bash PATH has no mipsel toolchain.
+- [s5] No permuter campaign was launched this session: s4 had already MEASURED decomp-permuter's objective to be anti-correlated here, so a campaign would have re-run banked evidence. tools/permuter_campaign.py status at session end shows every registry entry alive:false — nothing orphaned.
+- [s5] No cheat construct was used or proposed: zero regfix/asmfix edits, zero pins, zero inline asm, zero volatile, zero dead stores, zero holder locals in any banked form. The two new rejected/ forms are ordinary pure-C helper-function spellings that simply do not reproduce target.
+
+- [s5] Floor unchanged at 2 (sandbox --disable all, 43 build insns / 43 target insns). src/code6cac_b2_pre.c AGAIN held the original cheat-asm carrier at session start (fourth session running); the banked candidate was re-applied, re-measured at 2 before any probe, and is in place in src at session end.
+
+- [s5] The banked body already reproduces TARGET's constant-materialisation signature exactly: li 640 at block index 7 in $v1, li 240 at 8, li 128 at 11 (verified by disassembling target.o itself with the same extractor). The s3/s4 framing of the primary objective as 'get li 640 ahead of li 240' is therefore already satisfied; the sole residual is the slot of sh v1,16(s0).
+
+- [s5] 840 forms measured on the honest objdump metric this session across statement order x declaration order x 3 coordinate-store spellings x 2 RGB spellings x 2 OT-base spellings. Minimum difflines 2 (50 ties). Hill climbing from TARGET's own statement order (difflines 10) converges in two iterations onto the exact banked order - the basin has a single attractor and the banked body is its global optimum.
+
+- [s5] DECISIVE NEGATIVE: 428 of the 840 forms reach target's constant shape (640 at index 7 in $v1) and ALL of them contain a 640-valued store before the OT load; every form whose two 640 stores both sit in the post-load group puts 640 in $v0 (index 11/13/15/17/23) and scores 8 or worse. The early li is caused BY the early store, so the 'early li + late stores' combination session 4's frontier asked for does not exist under any ordering, declaration order or store spelling. Frontier items 1 and 3 from s4 are closed NEGATIVE.
+
+- [s5] KILLED - the static-helper-parameter axis. 'static void' is not inlined by GCC 2.7.2 at -O2 (real jal; 19/19/32/37-insn regions, difflines 32/30/17/16); 'static inline void' inlines (43 insns) but the parameter constant is propagated then sunk exactly like a holder local (640 in $v0 at index 13/27, difflines 12/46/28/18 over four partitionings).
+
+- [s5] Toolchain fact worth reusing project-wide: this build does NOT inline plain 'static' functions at -O2 - the inline keyword is required. Any helper-function hypothesis must be spelled 'static inline' to be testable at all.
+
+- [s5] No decomp-permuter campaign was launched: session 4 had already MEASURED the permuter's objective to be anti-correlated with the honest distance on this function, so a campaign would have re-run banked evidence. This session's substitute is the same search with the objective fixed. tools/permuter_campaign.py status at session end reports every registry entry alive:false - nothing was left running or orphaned.
+
+- [s5] Reusable instruments for the next session: s5/search_lib.py (form generator + honest objdump scorer + constant-signature extractor, ~1.5 s/form), s5/hill.py (exhaustive 1-token-move hill climb from a named chassis, 160 neighbours/iteration, 8-way parallel), s5/scoreforms.py (score arbitrary hand-written standalone forms). They must be launched through wsl.exe with .venv activated - the Bash tool's Git-Bash PATH has no mipsel toolchain and no venv.
+
+- [s5] No cheat construct was used or proposed: zero regfix/asmfix edits, zero register pins, zero inline asm, zero volatile, zero dead stores, zero holder locals in any banked form. The two new rejected/ forms are ordinary pure-C helper-function factorings that simply do not reproduce target.
