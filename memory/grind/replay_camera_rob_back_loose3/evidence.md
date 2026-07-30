@@ -375,3 +375,79 @@ register) worked — it changes a liveness fact sched1 cannot undo.
 - [s3] 23 structural forms measured this session, 18 of them at build_insns 114. Empirical regularity worth inheriting: on the s2 baseline every 114-insn form scored EXACTLY 13 and every form that moved the allocation also changed the insn count (and always for the worse) -- until the delayed-a0[2] form broke that invariant at 114/12. So 'score is pinned at N for all N-insn forms' is NOT evidence of exhaustion here; it was evidence that the axis being varied did not touch liveness.
 
 - [s3] src/text1a_c.c was restored to HEAD at end of session (git checkout). The working tree carries only memory/grind ledger files plus the untouched metrics/events.jsonl churn.
+
+## Session 4 (permuter, 2026-07-30) - FLOOR 12 -> 0.  MATCH, CHEAT-FREE.
+
+### The closing change (banked in candidate.c; `sandbox --disable all` = 0, 114 == 114, rules_dropped 8)
+ONE line on top of s3's score-12 form: the cosB index ADD is hoisted into a named
+`s32 idxB` computed immediately after `sinB` (i.e. BEFORE the `sinA * sinB`
+multiply), while the `& 0xFFF` mask stays at the use site:
+    idxB = (s16)angB + 0x400;      ...      cosB = Judge[idxB & 0xFFF];
+
+Mechanism. The whole s3 residual was `sinAxsinB_12` (target $v0, ours the leftover
+$a0) because our mflo/sra were scheduled ahead of the cosC index chain and so
+overlapped it on $v0. Materialising the cosB index early puts an independent,
+ready quantity into that scheduling window; sched1 places it ahead of the
+multiply's result, mflo/sra slide into target's positions (mflo @22, sra @26),
+the cos-index temp dies before sinAxsinB_12 is defined, and local-alloc hands
+sinAxsinB_12 $v0. Instruction count is unchanged (the addiu exists in target too,
+it just moves).
+
+### Why this is not a previously-rejected idxB form
+rejected/s32-masked-idxB-temp-keeps-sext-loses-registers.c put the WHOLE index
+(`((s16)angB + 0x400) & 0xFFF`) into the local AND placed it LATE, after the sinC
+read -> 13. The closer differs in both respects: ADD only (mask stays at the use)
+and EARLY (before the multiply). Narrow (u16/s16) carriers remain dead - they fold
+the sign-extend away and lose four instructions.
+
+### Isolation of the two halves the permuter emitted together
+The permuter's find also interleaved the angA/angB reads with their sin lookups.
+Measured separately on the real build:
+  - idxB hoist + interleave   -> 0 / 114
+  - idxB hoist, NO interleave -> 0 / 114   (the banked candidate - minimal diff vs s3)
+  - interleave, NO idxB hoist -> 12 / 114  (inert)
+So the idxB hoist alone is the closer; the interleave is noise.
+
+### Campaign record
+Chassis: minimal-TU workspace (typedefs + `extern s16 Judge[]` + the function),
+full BB2 stage pipeline in compile.sh (cc1 -> prologue_fix -> maspsx -> multu_pad),
+function extracted at offset 0 and assembled against a prelude-prefixed target.o
+built from asm/funcs/replay_camera_rob_back_loose3.s. Validated before launch: the
+workspace base reproduced exactly the known 12-diff residual.
+base.c carried `PERM_LINESWAP(...)` over the 9-statement middle region.
+**The permuter did NOT see the macro** - it logged "No perm macros found.
+Defaulting to randomization" and ran its ordinary randomizer instead. The win came
+from the randomizer's `new_var` hoist transform, not from the directed lineswap.
+Campaign `lineswap-mid9`: base_score 1520 (permuter metric; harvest later reported
+100), 3438 iterations / 140 s, 398 output dirs, several at permuter score 0; the
+first score-0 landed inside the first minute. Harvested and STOPPED in-session
+(9 worker processes killed).
+
+### Tooling caveats for future sessions
+- `permuter_campaign.py harvest` reported `finds_new: 0` and NEGATIVE
+  `seconds_since_launch` for every find in a workspace created fresh THIS session.
+  The launch-vs-mtime comparison is skewed (Windows-side file mtimes vs the WSL
+  launch timestamp), so the new/old classification is unreliable here - read the
+  output-*/ directories directly, not the `finds_new` count.
+- `--stop-on-zero` did not stop the campaign on the score-0 finds; stop it yourself.
+- A minimal-TU permuter chassis is faithful for this function: the workspace's
+  base diff matched the full-file sandbox residual exactly, and the workspace's
+  score-0 find reproduced as `sandbox --disable all` = 0 on the real build.
+
+- [s4] MATCH. `sandbox --disable all` = 0 on replay_camera_rob_back_loose3 with the s4 candidate applied to src/text1a_c.c; build_insns 114 == target_insns 114; rules_dropped 8. The form is pure C: zero regfix/asmfix rules, zero register pins, zero volatile, zero inline asm, zero dead code. The 8 regfix rules at regfix.txt:1000-1010 are now provably unnecessary and their retirement is the operator's step.
+
+- [s4] The closing change vs s3's score-12 candidate is ONE hoisted line: `idxB = (s16)angB + 0x400;` placed immediately after the sinB lookup (before the sinA*sinB multiply), with `cosB = Judge[idxB & 0xFFF];` at the original site. Only the ADD moves into the local; the mask stays at the use.
+
+- [s4] Mechanism: the s3 residual was entirely sinAxsinB_12 ($v0 vs our leftover $a0), caused by mflo/sra being scheduled ahead of the cosC index chain. An early, independent, ready quantity in that window lets sched1 delay mflo/sra past the chain into target's slots (mflo @22, sra @26); the chain's temp then dies before sinAxsinB_12 is defined and local-alloc gives it $v0. Insn count unchanged at 114.
+
+- [s4] Distinguished from the banked rejects: the earlier idxB attempts folded the `& 0xFFF` mask into the local AND placed it late (after the sinC read) -> 13; narrow u16/s16 carriers fold the sign-extend away and lose instructions. Position AND which half of the expression is named are both load-bearing.
+
+- [s4] The permuter emitted the closer together with an angA/angB read-interleave; measured separately, idxB-hoist-only = 0 and interleave-only = 12, so the banked candidate keeps s3's read order and adds only the hoist.
+
+- [s4] Campaign telemetry: label lineswap-mid9, minimal-TU chassis, 3438 iterations in 140 s, 398 output dirs, first permuter-score-0 inside the first minute; harvested and stopped in-session. NOTE the base.c PERM_LINESWAP macro was NOT recognised ("No perm macros found. Defaulting to randomization") - the find came from the plain randomizer's named-intermediate hoist. Directed-macro syntax in a hand-built workspace needs verifying against the launch log before trusting a campaign to be directed.
+
+- [s4] Tooling: `harvest` misclassified every find as pre-existing (finds_new 0, negative seconds_since_launch) in a workspace created this session - Windows mtime vs WSL launch-timestamp skew. Read output-*/ directly. `--stop-on-zero` did not stop the run.
+
+- [s4] The closing idiom (a named local for a table index, hoisted ahead of the multiply) is a property of the shared 3x3 rotation-matrix source idiom and should be tried on the two rule-carrying siblings in the same file: _SelectSection (10 rules) and hirahira_w_ctrl_2 (63 rules).
+
+- [s4] src/text1a_c.c is left carrying the matching form (NOT reverted, unlike s1-s3) so the driver can verify bytes.

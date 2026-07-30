@@ -272,3 +272,22 @@ at all. Next probe: apply the candidate spelling to each and score with
 - probe: 'sinAxsinB = sinA * sinB;' before the a0[2] read, then 'sinAxsinB_12 = sinAxsinB >> 12;' after the sinC read (and three further placements of the shift: after prod_sinC, after the cos index locals, after the cosC load), each scored and each read insn-by-insn with s3/sbs.py.
 - result: The split DOES reproduce target's schedule exactly -- mflo t0 @22 and sra @26, matching target insn-for-insn through that window -- but it flips angC back to $v0 and the cos-index temp to $v1, scoring 13, i.e. it trades the win back. Other placements: 13, 16/116, 13. So the register fix and the schedule fix are individually reachable and, in every spelling measured, mutually exclusive.
 - verdict: KILLED
+
+## Session 4 (permuter) - RESOLVED
+
+- H (s3 frontier 1): "the delayed-a0[2] register win and target's mflo/sra
+  placement are separately reachable and can be held together." **CONFIRMED, and
+  the join is in hand.** The lever is not a respelling of the multiply at all -
+  it is adding an independent ready quantity (the hoisted cosB index add) to the
+  scheduling window, which lets sched1 delay mflo/sra without disturbing the
+  a0-last-use liveness fact that fixes angC/$v1. Score 12 -> 0.
+- H (s3 frontier 2): "sinAxsinB_12 is refused $v0 for an identifiable reason at
+  find_free_reg time." **CONFIRMED without needing the instrumented-cc1 forensics
+  probe** - the reason was live-range overlap with the cos-index temp, and it was
+  removable by scheduling rather than by allocation-order surgery. The
+  BB2_ALLOC_DEBUG / BB2_PRIO_DEBUG rebuild is no longer needed for this function.
+- H (s3 frontier 3): "the closing idiom is a property of the shared 3x3
+  rotation-matrix source idiom and will move the two siblings." **OPEN and now
+  much more testable** - the full closing recipe (u16 staging read + interleaved
+  blocking store + delayed a0[2] + hoisted index add) is known; apply it to
+  _SelectSection and hirahira_w_ctrl_2.
