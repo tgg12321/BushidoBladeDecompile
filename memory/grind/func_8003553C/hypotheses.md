@@ -393,3 +393,85 @@ F3 (permuter from the score-4 base) — still untried; the base is now 2.
 - probe: Standalone form tmp/grind/func_8003553C/s6/W_reuse2sets.c compiled via s6/rtlc.sh into rtl_W; read greg dispositions and the emitted asm.
 - result: The second set DOES survive - greg drops from three constant pseudos to two (75 in 2, 76 in 2, 78 in 4, where 75 is the shared 240/640 variable) - so birthing_insn_p really is defeated. But one C variable is ONE pseudo and therefore ONE hard register, while target holds 240 in $v0 and 640 in $v1; and the anti-dependence against the earlier 240 uses re-pins the second set anyway. The emitted asm is bit-identical to the plain target-order form. Variable reuse is the right GATE but the wrong SHAPE. Banked as rejected/shared-variable-240-640-one-hardreg.c.
 - verdict: KILLED
+
+## Session 7 (forensics)
+
+### H7.1 — CONFIRMED (and it is the match)
+**Statement.** The original source is the plain PsyQ idiom in PsyQ order — all
+eight coordinate stores first (`setXY4`/`setXYWH` order: x0,y0, x1,y1, x2,y2,
+x3,y3), then the twelve `setRGB0..3` byte stores, then the OT-base load LAST —
+written through a `POLY_G4 *` so the coordinate stores are struct-member stores.
+Target's emitted store interleave is GCC's scheduling of that source, not the
+source order itself.
+**Mechanism.** Struct-member stores set `MEM_IN_STRUCT_P`; `sched.c:817-866`
+(`true_dependence`/`anti_dependence`) exempt an in-struct MEM with a varying
+address from conflicting with the non-in-struct, non-varying MEM of the scalar
+global `D_800A374C`, and the exemption excludes QImode — so the HImode
+coordinate stores can cross the `lw` while the RGB byte stores cannot. With the
+coordinates ahead of the RGB block the 640 pseudo's live range spans the whole
+block and overlaps the 240/128 ranges, so local-alloc cannot recycle `$v0` and
+puts it in `$v1` — target's register — with no holder, no second set, and no
+`birthing_insn_p` interaction.
+**Probe.** `tmp/grind/func_8003553C/s7/F2_struct_xywh_pre.c` scored with
+`s5/scoreforms.py`: difflines 0, 43 insns, sig 7/8/11@v1. Applied to
+`src/code6cac_b2_pre.c`; `sandbox --disable all` = 0; `verify-oracle` =
+`62efab4f73f992798c43e8c730aa43baa10bb4fa` == oracle.
+**Verdict: CONFIRMED.**
+
+### H7.2 — KILLED
+**Statement.** (s6 frontier 1) A pure-C construct exists that gives the
+640-valued pseudo two surviving sets so `birthing_insn_p` returns 0.
+**Mechanism.** `sched.c:2516` gates the LAUNCH_PRIORITY sink on
+`reg_n_sets[REGNO] == 1`.
+**Probe.** Killed as MOOT rather than as false: H7.1 reproduces target with
+`reg_n_sets == 1` and no sink problem, so the requirement was an artefact of the
+wrong source shape. Two of its sub-doors are also closed in the compiler source:
+`REG_DEAD` notes are unlinked before scheduling (`sched.c:3599-3611`), making
+`adjust_priority`'s `n_deaths != 0` arms unreachable; and `combine` maintains
+`reg_n_sets` (`combine.c:2309`, `combine.c:2332` decrement on absorption,
+`combine.c:1815` increments), so a second set that combine folds is NOT still
+counted at sched1.
+**Verdict: KILLED.**
+
+### H7.3 — KILLED
+**Statement.** (s6 frontier 2) Some pseudo can be arranged to occupy `$v0`
+across the post-load group at zero instruction cost, pushing the 640 allocno onto
+`$v1` from the allocation side.
+**Mechanism.** local-alloc gives each allocno the first non-conflicting hard
+register; `$v0` is first, so a conflict over the 640 range is needed.
+**Probe.** Pseudo census from the s6 `greg`/`lreg` dumps: the target-order form
+has exactly six pseudos and every one is externally pinned — `72 in 16` ($s0,
+`p`, callee-saved across `ot_Link`), `73 in 5` ($a1, the `q` argument),
+`79 in 4` ($a0, the `ot` argument), `75 in 2` (240), `77 in 2` (128),
+`80 in 2` (640). Collapsing 240 and 128 onto one pseudo
+(`s7/C_share240_128.c`) reduces the census to five and still leaves 640 in `$v0`
+(difflines 10, sig 13/7/10@v0). No pseudo can span the post-load group without an
+extra insn, and target's own asm shows `$v0` provably dead there (last use
+`sb $v0,0xE`). The allocation side is closed — and moot, since H7.1 wins from the
+scheduling side by live-range overlap instead.
+**Verdict: KILLED.**
+
+### H7.4 — KILLED
+**Statement.** (s5/s6 frontier 3) `initPolyG4`'s real prototype returns the
+primitive pointer, and consuming it changes the post-call live-in set.
+**Mechanism.** A call return value lives in `$v0` by ABI.
+**Probe.** `initPolyG4` is already decompiled and matched in `src/gpu.c:407` as
+`void initPolyG4(u8 *p)`. The `extern s32 initPolyG4(...)` declarations in
+`src/text1b.c:12930/16638` and `src/text1b_b.c:489/797` are stale local decls
+whose call sites (`text1b.c:16645`, `16688`) discard the result. No caller
+consumes `$v0` after the `jal`.
+**Verdict: KILLED.**
+
+### H7.5 — KILLED
+**Statement.** Inside the old (L1-split) shape, some spelling of the 640
+constant — mode, holder, pseudo sharing, or chained assignment — moves the
+emitted result.
+**Mechanism.** Any of these could in principle change the pseudo's mode, its
+`reg_n_sets`, or the allocno census local-alloc sees.
+**Probe.** Five forms scored: `A_s32holder` (SImode holder), `B_u16holder`,
+`C_share240_128` (one pseudo, two sets, 240 then 128), `D_int_holders` (all three
+constants via `s32` holders), `E_chain` (`*(p+0x20) = *(p+0x10) = 640`). All
+five: difflines 10, 43 insns, sig 13/7/10@v0 — bit-identical to plain
+target-order `T`. The old shape is completely insensitive to constant spelling,
+corroborating s5's 840-form saturation result.
+**Verdict: KILLED.**

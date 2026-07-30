@@ -145,42 +145,38 @@ void func_80035480(void) {
     D_800A3834 = 9;
     gpu_DisableDisplay();
 }
-void func_8003553C(void) {
-    u8 *temp_s0;
-    register s32 v280 asm("v1");
-    register s32 vtmp asm("v0");
+typedef struct {
+    u32 tag;
+    u8 r0, g0, b0, code;
+    s16 x0, y0;
+    u8 r1, g1, b1, pad1;
+    s16 x1, y1;
+    u8 r2, g2, b2, pad2;
+    s16 x2, y2;
+    u8 r3, g3, b3, pad3;
+    s16 x3, y3;
+} POLY_G4;
 
-    temp_s0 = (u8 *)D_800A38B4;
-    initPolyG4(temp_s0);
-    __asm__ ("addiu $3,$zero,640\naddiu $2,$zero,240" : "=r"(v280), "=r"(vtmp));
-    *(s16 *)(temp_s0 + 0x1A) = vtmp;
-    *(s16 *)(temp_s0 + 0x22) = vtmp;
-    vtmp = 0x80;
-    *(u8 *)(temp_s0 + 4) = 0;
-    *(u8 *)(temp_s0 + 5) = 0;
-    *(u8 *)(temp_s0 + 6) = vtmp;
-    *(u8 *)(temp_s0 + 0xC) = 0;
-    *(u8 *)(temp_s0 + 0xD) = 0;
-    *(u8 *)(temp_s0 + 0xE) = vtmp;
-    *(u8 *)(temp_s0 + 0x14) = 0;
-    *(u8 *)(temp_s0 + 0x15) = 0;
-    *(u8 *)(temp_s0 + 0x16) = 0;
-    *(u8 *)(temp_s0 + 0x1C) = 0;
-    *(u8 *)(temp_s0 + 0x1D) = 0;
-    *(u8 *)(temp_s0 + 0x1E) = 0;
-    {
-        register u32 *a0_arg asm("a0") = (u32 *)(D_800A374C + 0x401C);
-        register u32 *a1_arg asm("a1") = (u32 *)temp_s0;
-        *(s16 *)(temp_s0 + 8) = 0;
-        *(s16 *)(temp_s0 + 0xA) = 0;
-        *(s16 *)(temp_s0 + 0x10) = v280;
-        *(s16 *)(temp_s0 + 0x12) = 0;
-        *(s16 *)(temp_s0 + 0x18) = 0;
-        *(s16 *)(temp_s0 + 0x20) = v280;
-        temp_s0 += 0x24;
-        ot_Link(a0_arg, a1_arg);
-    }
-    D_800A38B4 = temp_s0;
+void func_8003553C(void) {
+    POLY_G4 *g;
+    POLY_G4 *q;
+    u32 *ot;
+
+    g = (POLY_G4 *)D_800A38B4;
+    initPolyG4((u8 *)g);
+    g->x0 = 0; g->y0 = 0;
+    g->x1 = 640; g->y1 = 0;
+    g->x2 = 0; g->y2 = 240;
+    g->x3 = 640; g->y3 = 240;
+    g->r0 = 0; g->g0 = 0; g->b0 = 0x80;
+    g->r1 = 0; g->g1 = 0; g->b1 = 0x80;
+    g->r2 = 0; g->g2 = 0; g->b2 = 0;
+    g->r3 = 0; g->g3 = 0; g->b3 = 0;
+    ot = (u32 *)(D_800A374C + 0x401C);
+    q = g;
+    g += 1;
+    ot_Link(ot, (u32 *)q);
+    D_800A38B4 = g;
 }
 void func_800355E8(void) {
     func_80035FA8();

@@ -707,3 +707,139 @@ which already proved the rest — every store lands in target's slot.
 - [s6] Harness added: tmp/grind/func_8003553C/s6/rtlc.sh <form.c> <tag> dumps every RTL pass for a standalone form into s6/rtl_<tag>/ and prints the emitted asm (~2 s per form); s6/rtl6.sh <tag> does the same for the current src TU. Both must be launched via wsl.exe from the PowerShell tool (the Bash tool's Git-Bash PATH has no mipsel toolchain).
 
 - [s6] No cheat construct was used or proposed this session: zero regfix/asmfix edits, zero register pins, zero inline asm, zero volatile, zero dead stores, zero holder locals in any banked form. Nothing was left running in the background.
+
+## Session 7 — forensics — MATCHED (floor 2 -> 0)
+
+**Outcome: `sandbox func_8003553C --disable all` = 0 (43/43 insns) and
+`engine verify-oracle` = `build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa`
+== oracle, with a pure-C body in `src/code6cac_b2_pre.c`: zero regfix/asmfix
+rules, zero inline asm, zero register pins, zero volatile, zero dead stores,
+zero fake locals.** The winning form is in `memory/grind/func_8003553C/candidate.c`
+and is reproduced as `tmp/grind/func_8003553C/s7/F2_struct_xywh_pre.c`.
+
+### The premise that was wrong (and that s1-s6 all inherited)
+
+Session 1's lever **L1** established that the `lw` of the scalar global
+`D_800A374C` acts as a may-alias barrier that splits the stores through `p` into
+a pre-load group and a post-load group, and that the barrier's position is fixed
+by its SOURCE position. That is true for plain-pointer (`*(s16 *)(p + N) = ...`)
+stores, and it measured 14 -> 10. The unexamined consequence was the assumption
+that **target's emitted store order reflects target's source order** — i.e. that
+the original C wrote the two 240 stores before the OT-base computation and the
+other six coordinate stores after it. Sessions 2-6 searched exclusively inside
+that shape: s5's 840-form corrected-objective search permuted statement order,
+declaration order and store spelling but always kept the OT load somewhere in
+the middle of the coordinate stores, and s6's forensics derived a
+`reg_n_sets >= 2` requirement that is only a requirement inside that shape.
+
+It is not target's shape. The original is the plain PsyQ idiom in PsyQ order:
+
+    setXY4 / setXYWH   /* ALL EIGHT coordinate stores, ascending:
+                          x0,y0, x1,y1, x2,y2, x3,y3
+                          = +8,+A, +0x10,+0x12, +0x18,+0x1A, +0x20,+0x22 */
+    setRGB0..3         /* the twelve byte stores, ascending */
+    ot = (u32 *)(D_800A374C + 0x401C);   /* the OT-base load LAST */
+    q = g; g += 1; ot_Link(ot, (u32 *)q); D_800A38B4 = g;
+
+The coordinates come FIRST and the OT-base load comes LAST. Target's emitted
+interleave — `y2`/`y3` hoisted above the RGB block, the other six coordinate
+stores sunk below the OT load — is entirely GCC's scheduling, not source order.
+
+### Why GCC is allowed to do that (mechanism, and why s3 missed it)
+
+The coordinate stores are **struct-member** stores through a `POLY_G4 *`, so
+their MEMs carry `MEM_IN_STRUCT_P` (`mem/s` in the RTL dumps).
+`tools/gcc-2.7.2/sched.c:817-866` (`true_dependence` / `anti_dependence`) exempt
+an in-struct MEM with a *varying* address from conflicting with a MEM that is
+neither in-struct nor address-varying — which is exactly the `lw` of the scalar
+global `D_800A374C`. The exemption explicitly excludes QImode, which is why the
+twelve RGB **byte** stores remain pinned relative to that load while the HImode
+coordinate stores flow freely around it.
+
+Session 3 found and measured that exemption (see
+`rejected/memstruct-hi-index-stores-barrier-free-but-inert.c`) and correctly
+concluded "dissolving the dependence changes nothing, because GCC 2.7.2's list
+scheduler is movement-MINIMIZING: freeing an insn to move does not give it a
+reason to move." The error was that s3 only ever combined the exemption with
+bodies that KEPT L1's source split. With the PsyQ source order the scheduler has
+both the freedom (the exemption) and the reason (the OT-base `lw` feeds the
+`jal`'s first argument, so it is pulled up above the six HImode stores that no
+longer block it).
+
+### Why the register puzzle dissolves
+
+With all eight coordinate stores ahead of the RGB block, the 640-valued pseudo's
+live range spans the whole block and **overlaps** the 240 and 128 ranges, so
+local-alloc cannot recycle `$v0` for it and it is placed in `$v1` — target's
+register — with no holder variable, no second set, and no interaction with
+sched1's `birthing_insn_p` sink at all. The constant-materialisation signature is
+target's exactly: `sig = 7/8/11@v1` (li 640 at block index 7 in `$v1`, li 240 at
+8, li 128 at 11).
+
+s6's derived requirement ("the 640 pseudo must have `reg_n_sets >= 2` so
+`birthing_insn_p` returns 0") was therefore a **consequence of the wrong source
+shape**, not a property of the target. Everything s6 measured about the gate is
+still correct as compiler forensics; it was simply answering a question the real
+source never asks.
+
+### Measurements taken this session
+
+Scored with `tmp/grind/func_8003553C/s5/scoreforms.py` (objdump line-diff vs
+`target.o` plus the constant signature
+`<idx li640>/<idx li240>/<idx li128>@<640's reg>`; target and the matched form
+are both `7/8/11@v1`):
+
+| form | difflines | insns | sig |
+|---|---|---|---|
+| `F2_struct_xywh_pre.c` — struct stores, coords first, RGB, OT load last | **0** | 43 | 7/8/11@v1 |
+| `F_struct_xywh_post.c` — same, but OT load back between RGB and coords | 12 | 43 | 8/11/7@v1 |
+| `F3_struct_targetsplit.c` — struct stores in target's EMITTED split | 10 | 43 | 13/7/10@v0 |
+| `A_s32holder.c` — target-order + `s32` 640 holder | 10 | 43 | 13/7/10@v0 |
+| `B_u16holder.c` — target-order + `u16` 640 holder | 10 | 43 | 13/7/10@v0 |
+| `C_share240_128.c` — target-order, one pseudo reused for 240 then 128 | 10 | 43 | 13/7/10@v0 |
+| `D_int_holders.c` — target-order, all three constants via `s32` holders | 10 | 43 | 13/7/10@v0 |
+| `E_chain.c` — target-order, chained `*(p+0x20) = *(p+0x10) = 640` | 10 | 43 | 13/7/10@v0 |
+
+`F3` is the load-bearing negative: writing exactly what target EMITS does not
+reproduce target (10), while writing the PsyQ source order reproduces it exactly
+(0). The five `A`-`E` forms are all bit-identical to plain target-order `T`,
+showing the old shape was insensitive to constant mode (HI/SI/u16), holder vs
+literal, pseudo sharing, and chained assignment — a saturation result that
+corroborates s5's 840-form finding and explains why six sessions could not move
+the floor from inside that shape.
+
+`F_struct_xywh_post` (12) shows the OT load's source position is still
+load-bearing in the new shape, but with the OPPOSITE sign to L1: because the
+HImode stores are now barrier-exempt, an OT load placed before them lets ALL of
+them sink below it, so the load must come last.
+
+### Forensic side-findings on the s6 gate (banked so no session re-opens them)
+
+Two of the three doors into `birthing_insn_p` that s6 left implicitly open are
+closed in the compiler source, independently of this function:
+
+* `adjust_priority` (`sched.c:2534-2575`) only consults `birthing_insn_p` in the
+  `n_deaths == 0` arm. `n_deaths` counts `REG_DEAD` notes on the insn, and
+  `sched.c:3599-3611` unlinks every `REG_DEAD` note into `dead_notes` before the
+  block is scheduled — so the in-tree comment "??? This code has no effect,
+  because REG_DEAD notes are removed before we ever get here" is accurate in this
+  build and the `n_deaths != 0` arms are unreachable. There is no way to defer a
+  birthing insn by giving it a dying operand.
+* The "flow counts a set that combine later folds away, so a foldable second set
+  is free" idea (s6 frontier probe iii) is dead by construction: `combine`
+  MAINTAINS `reg_n_sets`. `combine.c:2309` and `combine.c:2332` decrement
+  `reg_n_sets[REGNO]` whenever `try_combine` absorbs `i2`/`i1`, and
+  `combine.c:1815` increments it when a set is re-added. `flow.c:2061/2079/2333/
+  2726` are the only producers, and sched1 reads the combine-maintained value.
+  No experiment was needed.
+
+### Housekeeping note for the operator
+
+`src/code6cac_b2_pre.c` as inherited at the start of this session still contained
+the ORIGINAL cheat-asm carrier body for this function (`register s32 v280
+asm("v1")` / `register s32 vtmp asm("v0")` plus a hardcoded-`$N`
+`__asm__` emitting `addiu $3,$zero,640` / `addiu $2,$zero,240`), not any of the
+pure-C bodies from sessions 1-6 — the ledger's `candidate.c` had never been
+written back to `src/`. That carrier is now gone, replaced by the matched pure-C
+body. The `cheat_asm_stripped: 4` counter still reported by `sandbox` belongs to
+OTHER functions in the same file, not to func_8003553C (`rules_dropped: 0`).
