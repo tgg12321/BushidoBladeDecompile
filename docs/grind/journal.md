@@ -712,3 +712,4 @@
 - 2026-07-30 08:01 replay_camera_rob_back_loose3 s3 [structural] floor=12: Floor 13 -> 12 cheat-free: delaying the LAST use of the parameter pointer (angC = a0[2] moved after the sinA*sinB statement) flips angC to target's $v1 and its cos-index temp to $v0, closing the angC half of mechanism B that s2 had declared structurally unreachable; the residual 12 diffs are one value, sinAxsinB_12 ($a0 vs target $v0), and it is scheduling-coupled.
 - 2026-07-30 08:58 replay_camera_rob_back_loose3 COMPLETED-C after 4 sessions.
 - 2026-07-30 09:18 cpu_set_move_command_and_dir_for_no_action COMPLETED-C after 1 sessions.
+- 2026-07-30 09:43 func_8002EA24 s1 [recon] floor=18: Recon: all 11 net-missing insns at HEAD are GTE-spelling artifacts, not C dataflow; an honest PsyQ-macro respelling builds 99/104 insns (5 gaps, score 20) and reduces the whole function to one dominant lever (target's addu $t4,<reg>,$zero copy on every GTE operand) plus the tail xori fold.
