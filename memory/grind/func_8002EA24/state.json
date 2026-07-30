@@ -1,8 +1,8 @@
 {
  "func": "func_8002EA24",
  "file": "code6cac_b",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -21,23 +21,29 @@
    "floor": 9,
    "modality": "structural",
    "headline": "Floor holds at 9; the session-3 allocator model is CORRECTED from the GCC source plus a live find_reg dump, four H5 sub-families are killed with measurements, and the first form ever to put x in targe"
+  },
+  {
+   "session": 4,
+   "floor": 2,
+   "modality": "permuter",
+   "headline": "Permuter took the honest floor 9 -> 2 (build now 104 insns = target, all opcodes match): H6's tail diamond and BOTH halves of H5's register assignment are closed; the whole residual is one slt/bnez re"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "H5 route (b) -- x can be steered into target's $a1 by acquiring its OWN preference for $a1, with no change to a0_var's live range at all. This is the un-attacked branch and it is the cheaper of the two.",
-   "mechanism": "expand_preferences (global.c:798-841) propagates preferences across any single_set insn that carries a REG_DEAD note for a non-conflicting allocno; the pos parameter is the only $a1-preferring pseudo in the function and it does NOT conflict with x; find_reg (global.c:1057-1080) then overrides its first-fit $a0 answer with the free preferred $a1.",
-   "next_probe": "Find a C form in which the insn that DEFINES x is also the insn where pos dies, WITHOUT merging x into the whole delta chain (that is tshare, which drags x's live range over the delta region and drops it to $v1 for a 7-point loss). Candidates: derive the 0x100 read address from pos rather than from obj; or load x through a pointer left dead by the third delta computation. Verify with tmp/grind/func_8002EA24/s3/findreg.sh 96 -- own_full_prefs / someone_prefers say directly whether the lever reached the allocator, which the score alone does not."
+   "hypothesis": "H5' -- the last two points are the first range test's boolean landing in $a0 (ours) instead of $v0 (target), because we buy a0_var's liveness across the range-test chain WITH that boolean.",
+   "mechanism": "global.c first-fit over the conflict graph plus session 4's corrected two-pass find_reg: making a0_var (the only $a0-preferring allocno) live across the chain is what denies $a0 to neg_threshold. Target achieves the same denial with some other value in $a0 and keeps its boolean in an ordinary $v0 temp.",
+   "next_probe": "Find a set of a0_var BEFORE the chain whose value is real, live-out past the chain, and NOT the comparison result -- cheaper than the accearly family's squared distance, which hoisted the mult/mflo pairs (e.g. r_sq staged through a0_var, or the -threshold negation itself). Equivalently: split the two roles the single staged statement now plays, letting a0_var carry the live value while the boolean goes to a fresh temp. Verify with tmp/grind/func_8002EA24/s3/findreg.sh 104 (own_full_prefs / someone_prefers), not by score alone."
   },
   {
-   "hypothesis": "H5 route (a) -- a0_var conflicts with x and neg_threshold AND is lower priority than both (the corrected form of session 3's 'one missing conflict').",
-   "mechanism": "Only a0_var prefers $a0 (.greg '98 preferences: 4'), so only a0_var can put $a0 into someone_prefers[x] / someone_prefers[neg]; that requires a real live-range overlap plus an allocno_compare priority below both, which a longer live range supplies automatically.",
-   "next_probe": "Lower-probability branch: two sessions have failed to find a C shape where a0_var is live across the chain from a set that is neither the multiply (mult hoist, accearly family) nor dead (accshare, killed this session). Treat as secondary to route (b), and if attempted, measure with findreg.sh 104 rather than by score."
+   "hypothesis": "Directed permutation (PERM_* macros) over the range-test chain can reach the last register pair, even though random permutation cannot.",
+   "mechanism": "decomp-permuter manual-mutation macros explore a structured neighbourhood (statement order of the two range tests, the association of the sum of squares, the exit forms) that random single-edit mutation from this chassis does not cover -- 29,050 random iterations from the score-2 base found nothing.",
+   "next_probe": "tools/permuter_annotate.py --func func_8002EA24 (or hand-written PERM_GENERAL / PERM_LINESWAP annotations) on the score-2 body, rebuilt into a workspace with tmp/grind/func_8002EA24/s4/mkws.sh, then a campaign via tools/permuter_campaign.py launch/wait/harvest --stop."
   },
   {
-   "hypothesis": "H6 -- the tail 0/1 diamond, 3 of the 9 residual points (unchanged; not attempted in a structural modality).",
-   "mechanism": "jump.c store-flag if-conversion on a single-set arm; six pure-C tail shapes were measured in session 2 with three byte-identical.",
-   "next_probe": "The documented closure is [[dead-store-fake-exception]] -- a dead ret = 1; INSIDE the else arm (detached placement does NOT work, per func_80078EC0). Requires documented lever-exhaustion (supplied), a /* FAKE */ annotation and layer-2 cheat-reviewer sign-off; do not self-approve."
+   "hypothesis": "H4 -- the GTE canonical-asm disposition, unchanged from sessions 2-4.",
+   "mechanism": "Both GTE regions are hand-written asm in the original (46-function $t4 census; the LZC block is instruction-for-instruction identical to the user-authorized func_800274BC). The Judge has constrained the SHAPE and that shape is measured free; it is carried verbatim in this session's candidate.",
+   "next_probe": "No grind action available -- adding func_8002EA24 to inline_asm_canonical.txt and retiring its 10 regfix rules are operator surfaces, and the Judge deferred the FINAL CALL until the function is byte-identical on main with zero rules. Drive H5' to 0 first."
   }
  ],
  "judge_constraints": [

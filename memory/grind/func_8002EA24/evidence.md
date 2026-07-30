@@ -537,3 +537,103 @@ register read-off), `findreg.sh` (BB2_FINDREG_DEBUG dump), `bank.py`,
 - [s3] xtop (x declared at function scope, loaded after the block's declaration list) is BYTE-IDENTICAL to the base (score 9, md5 1fc26fe12849) -- a third confirmation that declaration position alone is inert here. C89 trap that cost two builds: a statement may not precede declarations in a block, so the load must follow the declaration list (an assignment spliced among the declarations mis-builds to a 31-insn stub scoring 85-94).
 
 - [s3] src/code6cac_b.c was restored to HEAD at end of session (git checkout --), so main's recorded floor stays 18; the banked score-9 candidate in memory/grind/func_8002EA24/candidate.c is unchanged and re-verified this session (score 9, 102 insns, md5 1fc26fe12849).
+
+## Session 5 (permuter) -- floor 9 -> 2
+
+### Workspace / tooling (reusable)
+`tmp/grind/func_8002EA24/s4/mkws.sh <ws-dir> <body.c>` builds a decomp-permuter
+workspace for this function, modelled on `tools/mar_perm_workspace.sh`: a FULL-TU
+compile (so the codegen context is the real one) through the exact per-file
+pipeline for `code6cac_b` (cc1 -O2 -G0 -funsigned-char -mcpu=3000 -mips1 |
+prologue_fix | maspsx --expand-lb ... | fix_lwl | `.align 3`->`.align 2` |
+multu_pad), after which the single function's region is extracted from the
+assembly and assembled alone -- so func_8002EA24 sits at offset 0 in BOTH base.o
+and target.o and the permuter score is the honest per-function diff with no
+branch-address noise.  regfix / asmfix are deliberately NOT in the pipeline, so
+the permuter measures the same honest form the cheat-invisible sandbox does.
+
+Three gotchas cost time and are recorded so the next session does not repeat them:
+1. `asm/funcs/func_8002EA24.s` uses the `mvmva` pseudo-op, so `target.s` needs
+   `.include "gte_macros.inc"` after the permuter prelude.
+2. maspsx emits `.ent` / `.end` / `.size` at COLUMN 0 (no leading tab), unlike the
+   mar chassis's assumption; the extraction awk must anchor on
+   `^\.globl[ \t]+func_8002EA24$` .. `^\.size.*func_8002EA24`.
+3. `mktemp /tmp/...` files are not reliably visible to the next command in this
+   WSL install (the systemd user session fails to start); derive the pipeline's
+   temp path from the compile's own `$OUT` instead.
+
+**`tmp/grind/func_8002EA24/s2/swap.py` HAS A BUG** -- it ends the replaced region
+at the `/* kengo:LOW  |  su_menu_single` banner, which sits AFTER the FOLLOWING
+function, so every session-2/3 splice silently deleted `DispSchoolBG` from the TU
+as well.  `s4/swap.py` is the fixed version (region ends at `void DispSchoolBG(`).
+The session-3 floor of 9 was re-measured this session with the fixed splice and is
+unchanged, so no prior measurement is invalidated -- but do not reuse the s2 script.
+
+### Campaign telemetry (fresh-seed discipline)
+| workspace | base body | permuter base | first find | outcome |
+|---|---|---|---|---|
+| tmp/perm_ea24  | session-3 candidate (sandbox 9) | 440 | 45 s -> 40 | `z = 0; return z;` (H6) |
+| tmp/perm_ea24b | + L1 (sandbox 6) | 40 | 30 s -> 15 | `(max_y = x)` single local (H5/x) |
+| tmp/perm_ea24c | + L2 (sandbox 3) | 15 | 150 s -> 10 | `a0_var = max_y < neg_threshold` (H5/neg) |
+| tmp/perm_ea24d | + L3 (sandbox 2) | 10 | none in 29,050 iters | STOPPED, basin exhausted |
+
+Every campaign was harvested with `--stop` in-session; the harvest JSONs are
+`tmp/grind/func_8002EA24/s4/harvest_r{1,2,3,4}.json`.  The three productive
+campaigns each returned their find in under three minutes, which is the strongest
+available evidence that the 29k-iteration silence on the last one is a real basin
+boundary rather than an under-run.
+
+Permuter finds are PROPOSALS: of the ~15 outputs produced across the four
+campaigns, only three survived vetting.  The rest were the usual coercion shapes
+(`volatile unsigned short new_var2`, `(long long)` width casts, `inline_fn`
+extraction, `if (1)` wrappers, unused `new_var` declarations) and were discarded
+without measurement.
+
+### The residual, exactly
+```
+ours     slt a0,a1,t1 ; bnez a0,<reject>
+target   slt v0,a1,t1 ; bnez v0,<reject>
+```
+Everything else matches: 104 instructions in both, same opcodes throughout, the
+whole GTE region byte-identical, `x` in $a1, `neg_threshold` in $t1, and `a0_var`
+in $a0 in BOTH builds.  Target therefore ALSO has a value occupying $a0 across the
+range-test chain -- but that value is not the boolean, and its boolean is a plain
+$v0 temp.  Identifying what target keeps in $a0 there is the entire remaining
+problem; it is stated as H5' in hypotheses.md.
+
+### Load-bearing check on the two annotated exceptions
+Both were measured by removing them from the final body:
+- score-2 body with L1 reverted to `return 0;` -> **5**
+- score-3 body with L1 reverted to `return 0;` -> **6**
+- score-2 body with L3 (the staged boolean) removed -> **3**
+Each is worth exactly what the candidate header claims; neither is decoration.
+
+### Which staging variable, measured
+Same statement, six different locals, on the score-3 base:
+`a0_var` **2**, `y_low` 3, `z` 4, `y` 4, `sp_var` 6, `min_y` 10.  This is the
+cleanest direct confirmation to date of session 4's corrected `find_reg` model:
+liveness across the chain is not what matters -- being the $a0-PREFERRING allocno
+is.  (Session 4 had already shown the negative half of this with `vinlive` and
+`minmaxearly`, which add live pseudos and change no compare-chain register.)
+
+- [s4] Honest floor went 9 -> 6 -> 3 -> 2 this session, all four values measured with `sandbox func_8002EA24 --disable all` and the edits in place in src/code6cac_b.c.
+
+- [s4] The build now emits 104 instructions against target's 104, with every opcode matching. The entire residual is one register pair: ours `slt a0,a1,t1 ; bnez a0,<reject>` vs target `slt v0,a1,t1 ; bnez v0,<reject>`.
+
+- [s4] Both `x` (now $a1) and `neg_threshold` (now $t1) sit in target's registers, and `a0_var` is in $a0 in BOTH builds -- so target also has something occupying $a0 across the range-test chain; it just is not the comparison boolean. Identifying that value is the whole remaining problem (H5' in hypotheses.md).
+
+- [s4] Each of the two annotated exceptions was measured load-bearing by removal: the score-2 body without the tail staging scores 5; the score-3 body without it scores 6; the score-2 body without the staged boolean scores 3.
+
+- [s4] Staging-variable sweep on the score-3 base (identical statement, six locals): a0_var 2, y_low 3, z 4, y 4, sp_var 6, min_y 10 -- the cleanest confirmation yet of session 4's corrected find_reg model (only the $a0-PREFERRING allocno can deny $a0; mere liveness across the chain does nothing).
+
+- [s4] Campaign telemetry, all four harvested with --stop in-session: perm_ea24 (base 440, find at 45 s), perm_ea24b (base 40, find at 30 s), perm_ea24c (base 15, find at 150 s), perm_ea24d (base 10, 29,050 iterations, no find). No campaign is left running; `permuter_campaign.py status` shows every pid dead.
+
+- [s4] Permuter output is proposals, not answers: of ~15 outputs across the four campaigns only three survived vetting; the rest were coercion shapes (`volatile unsigned short` holders, `(long long)` width casts, `inline_fn` extraction, `if (1)` wrappers, unused `new_var` declarations) and were discarded without measurement.
+
+- [s4] TOOLING BUG FOUND AND FIXED: tmp/grind/func_8002EA24/s2/swap.py ended the replaced region at the `/* kengo:LOW | su_menu_single` banner, which sits AFTER the FOLLOWING function -- so every session-2/3 splice silently deleted DispSchoolBG from the TU. s4/swap.py ends at `void DispSchoolBG(`. The session-3 floor of 9 was re-measured with the fixed splice and is unchanged, so no prior measurement is invalidated.
+
+- [s4] Reusable chassis: tmp/grind/func_8002EA24/s4/mkws.sh builds a permuter workspace for this function (full-TU compile through code6cac_b's exact pipeline, then single-function extraction so the function is at offset 0 in base.o and target.o, regfix/asmfix deliberately excluded so the permuter score tracks the honest sandbox score). Three gotchas recorded in evidence.md: target.s needs `.include "gte_macros.inc"` for the `mvmva` pseudo-op; maspsx emits .ent/.end/.size at column 0; /tmp mktemp files are not reliably visible between commands in this WSL install.
+
+- [s4] ACCEPTANCE IS NOT SELF-APPROVED: the score-2 body carries TWO /* FAKE */-annotated constructs, both cited to [[staged-value-reused-variable]] (SANCTIONED 2026-07-03) -- a real value, read by the very next expression, staged through an existing local that is provably dead at the staging point, with zero dead stores. Lever-exhaustion receipts are the six pure-C tail shapes from session 2 and the ~20 structural shapes from sessions 2-4. If either is refused, memory/grind/func_8002EA24/candidate_alt_score3_no_fake.c is the score-3 fallback and the floor without both is 6.
+
+- [s4] No AgentTool / layer-1 cheat-reviewer was invoked this session: the session brief carries a standing instruction not to call the Agent tool unless the user requests it. The two constructs are therefore submitted to the driver's default-FAIL Judge and a fresh layer-2 cheat-reviewer with the full vetting argument written into the candidate header.

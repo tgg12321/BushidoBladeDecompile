@@ -447,3 +447,140 @@ sign-off; do not self-approve.
 - probe: Checked obj's (allocno 72) preference and conflict state in the .greg dump and in the find_reg debug output for x.
 - result: obj's $a0 preference is stripped by prune_preferences line 877, which first removes from an allocno's preferences every register it CONFLICTS with: obj's hard conflicts are 2 3 4 5 6 7 12 29, including $a0 itself, because obj is born at the prologue copy while the incoming argument hard registers are still live. $a0 is absent from someone_prefers[x] in the measured dump. No pseudo live from function entry can keep an argument-register preference.
 - verdict: KILLED
+
+## Session 5 (permuter) - frontier rewritten.  FLOOR 9 -> 2.
+
+### CLOSED this session
+- **H6 (the tail 0/1 diamond) is CLOSED.**  `{ z = 0; return z; }` in the last
+  reject arm - the return value staged through the dead `z` local - defeats
+  jump.c's store-flag if-conversion and emits target's unfolded diamond.  Floor
+  9 -> 6 and the build's instruction count went 102 -> 104 = target's.  This is
+  the LIVE-value cousin of [[dead-store-fake-exception]]'s documented closure
+  (which uses a genuinely dead `ret = 1;`), so it is banked under
+  [[staged-value-reused-variable]] with a /* FAKE */ annotation.  Measured
+  load-bearing: removing it from the score-2 body costs 3 points.
+- **H5's `x` half is CLOSED, and it needs NO exception at all.**  Delete the
+  separate `x` local and let the SAME local that later carries the upper-Y bound
+  carry the rotated-X test value first: floor 6 -> 3 and `x` moves from $a0 into
+  target's $a1 (`lw a1,256(t0)`, `mult a1,a1`).  The permuter's spelling
+  (`(max_y = x) < neg_threshold`) and the clean one-local spelling are measured
+  IDENTICAL (both 3), so the clean one is banked.  Note this is the opposite of
+  every session-3/4 attempt: it works by REMOVING a variable, not by adding a
+  live range to one.
+- **H5's `neg_threshold` half is CLOSED.**  Staging the first range test's
+  boolean through `a0_var` (`a0_var = max_y < neg_threshold; if (a0_var || ...)`)
+  puts neg_threshold in target's $t1: floor 3 -> 2.  This is session 3/4's H5
+  route (a) reached from the other end - a0_var is the function's only
+  $a0-preferring allocno, and a LIVE staged value makes it live across the chain
+  WITHOUT the mult/mflo hoist that killed the whole accearly family.
+
+### KILLED this session
+- **Staging that boolean through any local other than `a0_var`.**  Six variants
+  measured on the score-3 base with an otherwise identical statement: a0_var 2,
+  y_low 3, z 4, y 4, sp_var 6, min_y 10.  Direct confirmation of the corrected
+  allocator model - only the $a0-PREFERRING allocno can deny $a0.  Banked at
+  rejected/staged-compare-into-non-a0-locals-score3to10.c.
+- **A local alias for the `obj` parameter.**  Part of a permuter find; measured
+  INERT (3 on the score-3 base, and 2 when combined with the staged boolean =
+  exactly the staged boolean alone).  Banked at
+  rejected/obj-param-local-alias-inert.c.
+- **The score-2 basin under RANDOM permutation.**  29,050 iterations from the
+  score-2 body (permuter base 10) produced ZERO novel finds; harvested and
+  stopped per the fresh-seed rule.  The three earlier bases each yielded a find
+  within 45 s / 30 s / 150 s, so this is a real basin-exhaustion signal for
+  random permutation from this chassis - not for the function.
+
+### Live frontier (after session 5)
+
+#### H5' - the last two points: the first range test's boolean register
+**Statement.** Ours emits `slt a0,a1,t1 ; bnez a0,<reject>`; target emits
+`slt v0,a1,t1 ; bnez v0,<reject>`.  Everything else in the function now matches:
+104 instructions in both, same opcodes throughout, `x` in $a1, `neg_threshold` in
+$t1, `a0_var` in $a0 in BOTH builds.  The gap is that OUR $a0-occupying value
+across the chain IS the boolean, while target's is something else and target's
+boolean is an ordinary $v0 temp.
+**Mechanism.** global.c first-fit plus the corrected two-pass find_reg model
+(session 4, evidence.md): making `a0_var` - the only $a0-preferring allocno -
+live across the range-test chain is what denies $a0 to neg_threshold.  We buy
+that liveness with the boolean, which costs us the boolean's register.
+**Next probe, in order.**
+1. Find a set of `a0_var` before the chain whose VALUE is real, live-out past the
+   chain, and NOT the comparison result.  The accearly family did this with the
+   squared distance and paid a mult/mflo hoist; look for a cheaper live value
+   (e.g. `r_sq` staged through a0_var, or the `-threshold` negation itself) that
+   keeps the multiplies after the chain.
+2. Separate the two roles the single staged statement now plays: let a0_var carry
+   some other live value across the chain while the boolean goes to a fresh temp.
+3. Verify any variant with `tmp/grind/func_8002EA24/s3/findreg.sh 104` rather
+   than by score alone - `own_full_prefs` / `someone_prefers` say directly
+   whether the lever reached the allocator.
+4. Directed permuter (PERM_* macros) over the range-test chain.  This session ran
+   RANDOM permutation only and that basin is exhausted; directed mutation over
+   the statement order of the two range tests and the association of the sum of
+   squares is the untried permuter surface.
+
+#### H4 - GTE canonical-asm disposition (unchanged, operator/owner action)
+Unchanged from sessions 2-4.  The Judge-constrained shape is measured free and is
+carried verbatim in the session-5 candidate; adding func_8002EA24 to
+`inline_asm_canonical.txt` and retiring its 10 regfix rules remain surfaces a
+grind session may not touch, and the Judge deferred the FINAL CALL until the
+function is byte-identical on main with zero rules.
+
+#### H6 - CLOSED.  The only open question is ACCEPTANCE: the `{ z = 0; return z; }`
+form is a sanctioned-family construct that needs layer-2 sign-off, not a further
+search.  The fallback if it is refused is banked (see candidate_alt_score3_no_fake.c
+and the floors measured without it: 5 from the score-2 body, 6 from the score-3 body).
+
+## [s5] The tail 0/1 diamond (H6) is closable without a dead store, by staging the return value through an existing dead local.
+- mechanism: jump.c's store-flag if-conversion requires a SINGLE-SET arm.  Session 2 proved no pure-C RESHAPING of the tail defeats it (six shapes, three byte-identical).  A second statement in the arm defeats it directly, and staging the returned constant through a local that is already dead there (`z`, last read at `z * z`) makes that second statement a LIVE one - the value is read by the `return`.
+- probe: decomp-permuter random campaign from the score-9 base (workspace tmp/perm_ea24; full-TU compile + single-function extraction; permuter base score 440).  The find `z = 0; return z;` appeared at permuter score 40 within ~4 minutes; re-measured by hand with `sandbox func_8002EA24 --disable all`.
+- result: Floor 9 -> 6 and build insns 102 -> 104 = target's count.  Load-bearing: the same body with `return 0;` restored scores 5 instead of 2, and the score-3 body without it scores 6.
+- verdict: CONFIRMED
+
+## [s5] The compare-chain value `x` reaches target's $a1 by DELETING the `x` local, not by adding live range to it.
+- mechanism: `x` and the upper-Y bound never overlap, so one local can carry both.  A local with sets on both sides of the chain has a different allocno shape (more refs, longer live range) than the single-set `x` pseudo that four sessions tried to steer.
+- probe: permuter find `(max_y = x) < neg_threshold` on the score-6 base; re-spelled by hand as the clean one-local form (no `x` declaration at all: `max_y = *(s32*)(obj+0x100);`, then the two tests, then `max_y * max_y`), and both scored.
+- result: Both forms score 3 (from 6), and `x` moves from $a0 to target's $a1: `lw a1,256(t0)` / `slt v0,a1,t1` / `mult a1,a1`.  The clean form is banked because it adds no statement - it removes a variable.
+- verdict: CONFIRMED
+
+## [s5] `neg_threshold` reaches target's $t1 by staging the first range test's boolean through `a0_var` specifically.
+- mechanism: the corrected find_reg model (session 4) says $a0 must be denied to neg_threshold by an $a0-PREFERRING allocno that conflicts with it, and a0_var is the function's only such allocno.  A LIVE staged value gives a0_var a live range across the chain without setting it from the multiply, which is what made every accearly-family shape hoist the mult/mflo pairs.
+- probe: permuter find `a0_var = max_y < neg_threshold; if (a0_var || threshold < max_y)` on the score-3 base; then the same statement re-run with five OTHER staging locals to test whether the effect is about liveness in general or about a0_var specifically.
+- result: a0_var 2 (from 3; emits `negu t1,a2` and `slt v0,v1,t1` = target); y_low 3; z 4; y 4; sp_var 6; min_y 10.  The effect is specific to a0_var, exactly as the corrected allocator model predicts.  Residual after it: `slt a0,a1,t1` vs target `slt v0,a1,t1` - our $a0 now holds the boolean, target's holds something else.
+- verdict: CONFIRMED
+
+## [s5] Random permutation still has gradient in the score-2 basin.
+- mechanism: the three previous bases each yielded a scoring find quickly (45 s from base 440, 30 s from base 40, 150 s from base 15), so the same search should keep paying.
+- probe: permuter campaign tmp/perm_ea24d from the score-2 body (permuter base score 10), 6 jobs, two full ~9-minute blocking wait windows.
+- result: 29,050 iterations, ZERO novel finds.  Harvested and stopped per the fresh-seed rule.  The remaining lever is not reachable by random mutation from this chassis; the untried permuter surface is directed PERM_* macros over the range-test chain.
+- verdict: KILLED (for random permutation from this chassis only)
+
+## [s4] The tail 0/1 diamond (H6) is closable WITHOUT a dead store, by staging the return value through an existing already-dead local.
+- mechanism: jump.c's store-flag if-conversion requires a SINGLE-SET arm. Session 2 proved no pure-C RESHAPING of the tail defeats it (six shapes measured, three byte-identical). A second statement in the arm defeats it directly, and staging the returned constant through `z` -- whose own value last mattered at `z * z` and is dead here -- makes that second statement a LIVE one, since the value is read by the `return`.
+- probe: decomp-permuter random campaign from the session-3 score-9 base (workspace tmp/perm_ea24, full-TU compile + single-function extraction, permuter base score 440); the find `z = 0; return z;` appeared at permuter score 40 within ~4 minutes and was re-measured by hand with `sandbox func_8002EA24 --disable all`, then re-measured again with the construct removed.
+- result: Floor 9 -> 6 and build insns 102 -> 104 = target's count. Load-bearing: the final score-2 body with `return 0;` restored scores 5, and the score-3 body without it scores 6.
+- verdict: CONFIRMED
+
+## [s4] The compare-chain value `x` reaches target's $a1 by DELETING the `x` local, not by adding live range to it (the inverse of every session-3/4 attempt).
+- mechanism: `x` and the upper-Y bound never overlap, so one local can carry both. A local with sets on both sides of the range-test chain has a different allocno shape (more refs, longer live range) than the single-set `x` pseudo four sessions tried to steer.
+- probe: permuter find `(max_y = x) < neg_threshold` on the score-6 base, re-spelled by hand as the clean one-local form (no `x` declaration at all: `max_y = *(s32*)(obj+0x100);`, then the two range tests, then `max_y * max_y`); both spellings scored with `sandbox --disable all`.
+- result: Both forms score 3 (from 6) and `x` moves from $a0 to target's $a1 (`lw a1,256(t0)` / `slt v0,a1,t1` / `mult a1,a1`). The clean form is banked because it ADDS no statement -- it removes a variable, so it needs no exception at all.
+- verdict: CONFIRMED
+
+## [s4] `neg_threshold` reaches target's $t1 by staging the first range test's boolean through `a0_var` SPECIFICALLY (H5 route (a), reached from the other end).
+- mechanism: Session 4's corrected two-pass find_reg model: $a0 must be denied to neg_threshold by an $a0-PREFERRING allocno that conflicts with it, and a0_var is this function's only $a0-preferring allocno. A LIVE staged value gives a0_var a live range across the chain without setting it from the multiply -- which is precisely the mult/mflo hoist that killed the whole accearly/accmid/accpre/accsplit family in session 3.
+- probe: permuter find `a0_var = max_y < neg_threshold; if (a0_var || threshold < max_y)` on the score-3 base; then the identical statement re-run with five OTHER staging locals, to separate 'liveness across the chain' from 'being the $a0-preferring allocno'.
+- result: a0_var 2 (from 3; emits `negu t1,a2` and `slt v0,v1,t1` = target). The five alternatives are all worse: y_low 3, z 4, y 4, sp_var 6, min_y 10. The effect is specific to a0_var exactly as the corrected model predicts.
+- verdict: CONFIRMED
+
+## [s4] A local alias for the `obj` parameter (part of a permuter find that combined it with the staged boolean) contributes to the match.
+- mechanism: target opens with `addu $t0,$a0,$zero`, which looks like a C-level alias of the incoming pointer, so an explicit alias might fix downstream addressing registers.
+- probe: Measured alone on the score-3 base and combined with the staged boolean on the score-2 body.
+- result: 3 alone (unchanged) and 2 combined (identical to the staged boolean alone). Completely inert -- our build already emits target's entry copy without it. Banked at rejected/obj-param-local-alias-inert.c so the permuter's combined form is not re-tried as if the alias mattered.
+- verdict: KILLED
+
+## [s4] Random permutation still has gradient in the score-2 basin.
+- mechanism: The three previous bases each yielded a scoring find quickly (45 s from permuter base 440, 30 s from 40, 150 s from 15), so the same random search should keep paying from base 10.
+- probe: Campaign tmp/perm_ea24d from the score-2 body, 6 jobs, two full ~9-minute blocking `wait` windows, then `harvest --stop`.
+- result: 29,050 iterations, ZERO novel finds. Given that every productive campaign returned inside three minutes, this is a real basin boundary for RANDOM mutation from this chassis. The untried permuter surface is directed PERM_* macros over the range-test chain.
+- verdict: KILLED
