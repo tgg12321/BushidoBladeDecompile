@@ -1,6 +1,6 @@
 # Hypothesis ledger — mk_g2l
 
-Floor history: s1 recon 17 -> **7**.
+Floor history: s1 recon 17 -> **7**; s2 structural 7 -> **0 (MATCH)**.
 
 ## CONFIRMED (session 1)
 
@@ -94,3 +94,62 @@ testing `stack_v1` directly at its point of use (K2 dropped BOTH aliases at once
 - probe: Deleted both alias locals, tested stack_v1 directly and passed stack_a2 directly; sandbox --disable all.
 - result: KILLED — floor 17 -> 18, strictly worse. The alias locals are load-bearing. Banked as rejected/param-alias-drop-worse.c. NB both were dropped together; the single-alias variants remain unmeasured.
 - verdict: KILLED
+
+## Session 2 (structural) - CLOSED
+
+**H1 - CONFIRMED.** The compare-value holder does not have to be the `a0`
+PARAMETER. An ordinary named `s32 id;` local serving both the `0x86` compare
+and the call's first argument measures the same floor 7. Parameter identity is
+not load-bearing; session 1's variable-reuse policy question is retired.
+(Superseded anyway - the final form has no arg variable at all.)
+
+**H2 - CONFIRMED, and it is what closed the function.** The call-path obj
+pseudo takes `$a0` only because `expand_preferences()` merges the arg pseudo's
+{a0,a1} preference into it. Neither of session 1's two proposed break-methods
+(force a CONFLICT, or remove the REG_DEAD note) was needed: the merge has a
+third precondition, `reg_allocno[REGNO (SET_DEST (set))] >= 0`, i.e. the
+single_set must write a PSEUDO. Deleting the shared argument variable - write
+the call at each site with the field-4 read inline, no `id`, no shared
+`do_call:` label - makes the load write the argument HARD reg instead, the
+merge is skipped, and the obj falls to the alloc-order first-free register
+`$v0`. Floor 7 -> 2, instruction count unchanged (jump2 cross-jumps the
+duplicated tails back together after allocation).
+
+**H3 - CONFIRMED, with session 1's K2 overturned for the new structure.** The
+2-diff stack-param load order is caused by the `arg_a2` param-alias local.
+Sweep on the duplicated-call form: keep both = 2, swap declaration order = 2,
+drop `arg_v1` only = 2, drop `arg_a2` only = **0**, drop both = **0**. K2's
+"the alias locals are load-bearing" was true only of the shared-arg structure.
+Committed form drops both.
+
+## KILLED (session 2) - do NOT re-propose
+
+**K3 - a shared C variable for the call's first argument.** Any form that
+funnels all five paths through one arg local (whether that local is the dead
+`a0` parameter, a fresh `id`, or a split `chk_obj`/`v0_obj` pair alongside it)
+is capped at floor 7: the arg pseudo's {a0,a1} hard-reg preference is merged
+into the call-path obj by `expand_preferences`, and the obj can then never
+reach `$v0`. Rejected form: `rejected/shared-arg-pseudo-inherits-a0-pref.c`
+(the best shared-arg spelling, floor 7, every allocno but one matching target).
+
+**K4 - alias-local declaration order as a scheduling lever.** Swapping
+`u8 *arg_a2` / `s32 arg_v1` declaration order is score-inert (2 either way);
+only removing the `arg_a2` copy moves the entry-block load order.
+
+## [s2] The compare-value holder need not be the a0 parameter - any single variable serving both the 0x86 compare and the call's first argument gives the same allocation.
+- mechanism: The cascade needs one pseudo carrying both roles so it takes $a0 via the call-arg copy preference; nothing in expand_preferences/allocno_compare cares that the pseudo began as an incoming parameter.
+- probe: Declared `s32 id;`, used it for the 0x86 compare and every `*(s16 *)(obj + 4)` assignment, passed it as arg 1; sandbox --disable all.
+- result: Floor 7 - identical to session 1's dead-a0-parameter spelling. Parameter identity is not load-bearing; the SOTN variable-reuse / FAKE-annotation policy question is retired without a carve-out.
+- verdict: CONFIRMED
+
+## [s2] Blocking the expand_preferences merge that hands $a0/$a1 to the call-path obj pseudo makes it fall back to the alloc-order first-free register $v0 (target), closing 5 of the 7 residual diffs.
+- mechanism: global.c:797-840 merges the hard-reg preference sets of a single_set's DEST allocno and any REG_DEAD allocno of the same insn. Session 1 identified two break conditions (CONFLICTP, or no REG_DEAD note); the operative third one is the guard `reg_allocno[REGNO (SET_DEST (set))] >= 0` - the merge only fires when the destination is a PSEUDO. A shared arg variable across a shared call label forces that pseudo to exist; duplicating the call into each arm with the field-4 read written inline lets the load combine straight into the argument HARD register, so the merge is skipped entirely.
+- probe: First measured the split form's greg dump to prove only allocno 78 was wrong (78 preferences: 4 5; disposition 78 in 4; no conflict with hard reg 2). Then removed the `id` variable and the shared `do_call:` label, writing `func_80032854(*(s16 *)(*ptr + 0x4), K, ...); return;` in each of the five arms; sandbox --disable all.
+- result: Floor 7 -> 2, build_insns unchanged at 51 (jump2 cross-jumps the duplicated `lh $a0,0x4($vN)` / `jal` suffixes back together after allocation, reproducing target's shared .L80027970 / .L80027974 tails). Only the stack-param load-order pair survived.
+- verdict: CONFIRMED
+
+## [s2] The 2-diff stack-param load order is caused by the arg_a2 param-alias local, not by scheduling priority that C cannot reach.
+- mechanism: Both loads sit in the entry block; the `u8 *arg_a2 = stack_a2;` copy inserts an extra pseudo whose LUID ordering makes the scheduler emit `lw 0x2C($sp)` (stack_v1) before `lw 0x28($sp)` (stack_a2). Target is a2-first.
+- probe: Five-variant sweep on the duplicated-call form, each sandboxed: both aliases kept, declaration order swapped, drop arg_v1 only, drop arg_a2 only, drop both.
+- result: 2 / 2 / 2 / 0 / 0. The arg_a2 copy alone is the cause; declaration order is inert. Session 1's K2 ("the alias locals are load-bearing, dropping both costs a point") was true only of the shared-arg structure and does not survive the restructure. Committed form drops both aliases. FUNCTION MATCHES: sandbox score 0.
+- verdict: CONFIRMED

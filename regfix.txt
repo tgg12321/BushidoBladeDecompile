@@ -240,21 +240,11 @@ func_80034F88: reorder 10,9 @ 9-10
 func_80034F88: reorder 18,17 @ 17-18
 func_80034F88: reorder 26,25 @ 25-26
 # mk_g2l (camera_SetMatrix): ptr v1->t0, 6th param t0->v1
-mk_g2l: $3 <-> $8
 # obj/f86 register rotation in field-check section
-mk_g2l: $3 <-> $4 @ 13-29
 # fix overswapped lh dest at indices 20 and 29
-mk_g2l: subst "\$3," "$4," @ 20
-mk_g2l: subst "\$3," "$4," @ 29
 # *ptr load dest a0->v0 at branch-entry loads
-mk_g2l: subst "\$4," "$2," @ 10
-mk_g2l: subst "\$4," "$2," @ 34
-mk_g2l: subst "\$4," "$2," @ 39
-mk_g2l: subst "\$4," "$2," @ 42
 # call_with_field4 base reg a0->v0
-mk_g2l: subst "4\(\$4\)" "4($2)" @ 44
 # reorder stack param loads (5th before 6th)
-mk_g2l: reorder 4,3 @ 3-4
 
 # calc_fc_frame: register + prologue + scheduling fixes
 # Indices are CORRECT — nop debug lines at [20] and [23] are counted as instructions
