@@ -690,3 +690,4 @@
 - 2026-07-29 21:30 func_80086014 s1 [recon] floor=10: Floor 16 -> 10 by deleting the inherited pins/barrier/volatile for clean pure C (RA now exact); residual is target's 8-byte phantom frame (2 insns) + 2 scheduling placements, and a >=4-byte local aggregate is CONFIRMED to reproduce that frame signature exactly at a 4-5 insn pack/unpack tax.
 - 2026-07-29 22:00 func_80086014 COMPLETED-C after 2 sessions.
 - 2026-07-29 22:36 func_80033D38 COMPLETED-C after 1 sessions.
+- 2026-07-29 22:58 mk_g2l s1 [recon] floor=7: mk_g2l floor 17 -> 7: holding the 0x86 compare value in the dead a0 param fixes four register families at once; residual is one pseudo that inherits $a0's hard-reg preference via global.c expand_preferences, plus a 2-insn stack-param load-order swap.
