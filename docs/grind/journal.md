@@ -687,3 +687,4 @@
 - 2026-07-29 14:39 func_8006B92C s7 [forensics] floor=6: Forensics: instrumented cc1 (BB2_QTY_DEBUG) measured local-alloc's quantity table -- the else-arm mask constant is a block-local qty whose range is always disjoint from the counter chain's, so find_free_reg always returns $v0; the s6 frontier lever (lengthen/reorder the counter chain) is KILLED by two direct measurements.
 - 2026-07-29 14:54 CIRCUIT-BREAK: 3 consecutive invalid sessions on func_8006B92C
 - 2026-07-29 21:06 func_8006B92C COMPLETED-C after 8 sessions.
+- 2026-07-29 21:30 func_80086014 s1 [recon] floor=10: Floor 16 -> 10 by deleting the inherited pins/barrier/volatile for clean pure C (RA now exact); residual is target's 8-byte phantom frame (2 insns) + 2 scheduling placements, and a >=4-byte local aggregate is CONFIRMED to reproduce that frame signature exactly at a 4-5 insn pack/unpack tax.
