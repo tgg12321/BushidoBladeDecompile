@@ -1217,3 +1217,143 @@ gate does not accept them as one; noted only so a later session does not
 - [s9] decomp.me corpus census #2 (NEGATIVE): 39 of 1751 matched scratches keep an unfolded 0/1 diamond, 12 without any loop, and every one inspected keeps it because the arm contains real work. No matched pure-C precedent exists for func_8002EA24's bare-arm shape.
 
 - [s9] Recorded for honesty, NOT as authorization: the corpus does contain matched scratches carrying self-declared coercions (VZWgF has a literal `// hack` over a no-op `check238++; check238--;` pair). decomp.me scratches are not a SOTN-master precedent and this project's endgame gate does not accept them as one.
+
+## Session 10 (synthesis) — the `regs_someone_prefers` channel is REACHABLE, and it is manufacturable
+
+Floor: **2** (re-measured at the start and the end of the session with the banked
+body applied to `src/code6cac_b.c`; build 104 insns = target's).  Body unchanged.
+
+### What the merge of sessions 2-9 actually said, and the hole in it
+
+Session 7 established two things that had never been put together:
+
+1. Target's own compile CANNOT have excluded `$a0` from allocno 103
+   (`neg_threshold`) by an assigned conflict — target writes `$a0` nowhere
+   between the prologue copy `addu $t0,$a0,$zero` and `addu $a0,$v0,$v1` after
+   the multiplies — so the original's exclusion came from
+   `regs_someone_prefers`, i.e. from an allocno that PREFERS `$a0`, CONFLICTS
+   with 103 and ranks BELOW it in `allocno_compare` order.
+2. In every one of the 11 bodies dumped up to that point, the only two
+   `$a0`-preferring allocnos were 97 (`a0_var`) and 102 (`y`), and BOTH outrank
+   103 — so the channel was declared closed and sessions 8-9 spent themselves on
+   the assigned-conflict route (the H5-prime-5 carrier enumeration) instead.
+
+The hole: **the set of `$a0`-preferring allocnos is not an input, it is an
+output.**  `expand_preferences` (`tools/gcc-2.7.2/global.c:797-841`) walks every
+insn, and for any `single_set` whose REG_NOTES carry a `REG_DEAD` for an allocno
+that does NOT conflict with the set allocno, it IORs the two allocnos'
+`hard_reg_preferences` / `hard_reg_full_preferences` **in both directions**.
+Hard reg 4 exists as a preference in this function at all only because `obj`
+arrives in `$a0`; 102 (`y`) has `preferences: 4` because `obj` (72) dies at the
+`lw $v1,0x108($t0)` that loads `y`.  So the preference is propagable — the
+question is only which allocno it can be propagated ONTO.
+
+### The requirement, restated exactly (from global.c:851-899)
+
+For `$a0` to be excluded from 103 through the preference channel, some allocno R
+must satisfy ALL of:
+  (a) `hard_reg_full_preferences[R]` contains 4 after pruning (so R must not
+      itself conflict with hard reg 4);
+  (b) `CONFLICTP(103, R)`;
+  (c) R ranks BELOW 103 in `allocno_order` (the loop at :888 only merges
+      `j > i`);
+  (d) 103 must NOT itself prefer hard reg 4 — line 893 removes from the merged
+      set every register the higher-priority allocno also prefers (when the
+      sizes are equal, which they are here).
+
+Only three allocnos rank below 103 in this function: 74 (`threshold`), 99 and
+75 (`r_sq`).  74 and 75 conflict with 103; 99 does not.
+
+### (1) The mechanism FIRES, and it reaches target's register pair without L3
+
+`v1_thr_tail_noL3` — the no-L3 base with the last range test written as
+`threshold = y + a0_var; if (threshold < min_y) { z = 0; return z; }`, so that
+the insn which KILLS 102 (`y`) SETS 74 (`threshold`), and 102/74 do not conflict.
+
+Measured `.greg` (`tmp/grind/func_8002EA24/s9/s10_v1/fn.greg`):
+```
+;; 13 regs to allocate: 101 96 97 100 109 108 72 102 117 103 74 99 75
+;; 74 preferences: 4 6          <- was `6`; hard reg 4 propagated from 102
+;; 102 preferences: 4 6         <- the reverse leg of the same IOR
+;; 103 conflicts: 72 74 75 96 100 103 2 29      (no 97 — L3 is absent)
+103 in 9   (= $t1 = TARGET)     104 in 2  (the first test's boolean, = $v0 = TARGET)
+```
+This is the first time in ten sessions that `neg_threshold` reaches `$t1` and
+the first range test's boolean stays in `$v0` **simultaneously and without the
+L3 staged boolean** — i.e. the exact configuration session 7 proved the original
+compile had, produced from pure C.
+
+### (2) Why it does not repay yet: the IOR is symmetric
+
+`102` (`y`) inherits 74's own `$a2` preference in the same statement, and
+`find_reg`'s own-preference override then assigns `y` to `$a2` instead of
+target's `$v1`.  Tail diff against target:
+```
+target   lw v1,0x108(t0) ... addu v0,v1,a0 ; slt v0,v0,a2
+ours     lw a2,0x108(t0) ... addu a2,a2,a0 ; slt v0,a2,v1
+```
+Score 6 against the no-L3 control's 3.  Same story for the `r_sq` spelling
+(`r_sq = y + a0_var`, propagates 4 onto 75, `y` then takes `$a3`): 6.  With L3
+kept, both are 8 (L3's assigned conflict and the preference channel are
+redundant, and the `y` displacement is paid twice).  A variant that writes the
+parameter at a test where `y` does NOT die (`threshold = y - a0_var` at the
+first tail test) is 8 with no propagation at all — the `REG_DEAD` note is the
+load-bearing part, not the parameter write.
+
+### (3) A fresh local as recipient is inert — and gives condition (d) teeth
+
+`v6_freshlocal_bool_and_tail` — a new local `t` carries the first range test's
+boolean (to be live across the chain and conflict with 103) and is re-used at the
+tail for `y + a0_var` (to be set by the insn that kills `y`).  Score 3 = the
+control.  The dump says why, and it is a general constraint:
+```
+;; 14 regs to allocate: 103 101 96 97 100 110 109 72 102 118 104 74 99 75
+;; 103 preferences: 2 4      <- 103 ITSELF now prefers hard reg 4
+103 in 2   104 in 4
+```
+The same symmetric IOR that feeds `t` also feeds hard reg 4 (and the boolean's
+`$v0`) back into 103, and `prune_preferences` line 893 then removes 4 from
+`regs_someone_prefers[103]` — the route cancels itself.  103 is additionally
+promoted to FIRST in the allocation order by the extra references.  So the
+recipient must be preference-connected to `y` (or another pref-4 allocno) and
+NOT to 103.
+
+### Measured this session (all `sandbox func_8002EA24 --disable all`)
+
+| variant | base | score | what it changes |
+|---|---|---|---|
+| banked candidate | — | **2** | control, start and end of session |
+| v0_control_noL3 | no-L3 | 3 | regenerated control |
+| v1_thr_tail_noL3 | no-L3 | 6 | `threshold = y + a0_var` tail carrier (mechanism fires) |
+| v2_rsq_tail_noL3 | no-L3 | 6 | same with `r_sq` |
+| v3_thr_tail_L3 | L3 | 8 | v1 with L3 kept |
+| v4_rsq_tail_L3 | L3 | 8 | v2 with L3 kept |
+| v6_freshlocal_bool_and_tail | no-L3 | 3 | fresh local recipient (poisons 103's own prefs) |
+| v7_freshlocal_tail_only | no-L3 | 3 | fresh local, no early segment (no conflict with 103) |
+| v8_L3_plus_freshlocal_tail | L3 | 2 | inert on the banked body |
+| v9_thr_first_tail_test | no-L3 | 8 | parameter written where `y` does NOT die |
+
+### Artifacts
+
+- `tmp/grind/func_8002EA24/s10/gen.py`, `gen2.py` — variant generators (round 1 / round 2)
+- `tmp/grind/func_8002EA24/s10/v*.c` — the nine measured bodies
+- `tmp/grind/func_8002EA24/s10/bank.py`, `fix_header.py`, `ledger.py` — banking
+- `tmp/grind/func_8002EA24/s9/s10base/fn.greg`, `s10_v1/fn.greg`, `s10_v6/fn.greg` — allocator dumps
+- `memory/grind/func_8002EA24/rejected/pref-propagation-into-threshold-param-score6.c`
+- `memory/grind/func_8002EA24/rejected/fresh-local-pref-recipient-poisons-103-score3.c`
+
+- [s10] Floor re-measured at 2 (104 build insns = target) with the banked candidate applied to src/code6cac_b.c, at the start and the end of the session; the banked body is unchanged.
+
+- [s10] GCC 2.7.2's expand_preferences (tools/gcc-2.7.2/global.c:797-841) IORs hard_reg_preferences / hard_reg_full_preferences BOTH ways across any single_set insn whose REG_NOTES carry a REG_DEAD for an allocno that does not conflict with the set allocno — so which allocnos prefer $a0 is an output of the C shape, not a fixed input. Hard reg 4 exists as a preference in this function only because `obj` arrives in $a0; 102 (`y`) has `preferences: 4` because `obj` (72) dies at the y load.
+
+- [s10] The full requirement for the preference route, read out of global.c:851-899: the recipient R must have 4 in its PRUNED full preferences (so R must not conflict with hard reg 4), must CONFLICTP with 103, must rank BELOW 103 in allocno_order (the :888 loop only merges j > i), and 103 must NOT itself prefer 4 (line 893 cancels the merge for equal allocno_size).
+
+- [s10] Only three allocnos rank below 103 in this function (74 = threshold, 99, 75 = r_sq); 74 and 75 conflict with 103, 99 does not. 102 (`y`) conflicts with neither 74 nor 75, which is exactly what makes it a legal preference donor to both.
+
+- [s10] v1_thr_tail_noL3 (`threshold = y + a0_var;` as the last range test, no L3) puts `74 preferences: 4 6` in the dump and assigns 103 to hard reg 9 = $t1 (target) with the first test's boolean in $v0 — the first form in ten sessions to reach target's register pair without the L3 staged boolean. Score 6 against the no-L3 control's 3, entirely because the reverse IOR leg moves `y` from $v1 to $a2.
+
+- [s10] The r_sq spelling behaves identically with $a3 (6); both spellings with L3 kept are 8; writing the parameter at a test where `y` does not die (v9) is 8 with no propagation at all.
+
+- [s10] A fresh-local recipient is inert (3) and poisons the route by giving 103 itself `preferences: 2 4`, which prune_preferences line 893 then cancels; the fresh local also promotes 103 to first in the allocation order.
+
+- [s10] Nine bodies measured this session, all at 104 instructions: control 3 (no-L3) / 2 (banked); v1 6, v2 6, v3 8, v4 8, v6 3, v7 3, v8 2, v9 8. Nothing below the banked 2, so candidate.c is unchanged apart from the session-10 header block.

@@ -189,6 +189,42 @@
  * disassembly of a kept canonical block is missing the four GTE pipeline nops
  * (the cheat-invisible sandbox strips bare `nop` lines); they are in the
  * templates and in a real build.
+         * Lever-exhaustion: session 2's six pure-C tail shapes. *
+ * SESSION-10 SYNTHESIS (body UNCHANGED; floor re-measured at 2 this session).
+ * The merged reading of sessions 2-9 plus a fresh read of global.c:793-899
+ * opened ONE genuinely new axis and measured it.  Session 7 had proved that
+ * the original compile cannot have excluded $a0 from allocno 103
+ * (neg_threshold) by an assigned conflict -- target writes $a0 nowhere in the
+ * range-test window -- so its exclusion must have come from
+ * `regs_someone_prefers`, i.e. from an allocno that PREFERS $a0, CONFLICTS
+ * with 103 and ranks BELOW it.  Sessions 7-9 treated the set of $a0-preferring
+ * allocnos as fixed (97 = a0_var and 102 = y, both outranking 103) and
+ * therefore treated that channel as unreachable.  It is not fixed:
+ * `expand_preferences` (global.c:797-841) IORs preference sets BOTH ways
+ * across any single_set insn that kills a NON-CONFLICTING allocno, and hard
+ * reg 4 is in this function at all only because `obj` arrives in $a0 and the
+ * preference has been propagated outward from it.
+ *   (1) MECHANISM CONFIRMED, and it produces target's register pair without
+ *       L3.  Writing the last range test's value into the dead `threshold`
+ *       parameter (`threshold = y + a0_var; if (threshold < min_y) ...`) makes
+ *       the insn that kills `y` (102, preferences {4}) set `threshold` (74,
+ *       which conflicts with 103 and ranks below it).  Dump: `74 preferences:
+ *       4 6`, and 103 lands in hard reg 9 = $t1 = TARGET with the first range
+ *       test's boolean back in $v0 -- on the NO-L3 base.  Ten sessions of
+ *       search had never reached that configuration.
+ *   (2) It does not yet repay: the IOR is symmetric, so `y` inherits 74's $a2
+ *       preference and leaves target's $v1 (score 6 vs the no-L3 control's 3;
+ *       the `r_sq` spelling is also 6; both with L3 kept are 8).
+ *   (3) The obvious fix -- a FRESH local as recipient, with no argument
+ *       preference to leak back -- is inert (3) and the dump gives a second,
+ *       sharper constraint: the recipient must not be preference-connected to
+ *       103 itself, because prune_preferences line 893 removes from
+ *       regs_someone_prefers[103] every register 103 itself prefers.  The
+ *       fresh local hands 103 `preferences: 2 4` and the route cancels.
+ * The banked body is unchanged because nothing measured below 2, but the
+ * frontier is no longer "the residual is unreachable by any source shape": it
+ * is a NAMED, MEASURED, reachable allocator channel with two stated
+ * side-conditions -- see hypotheses.md H8'.
  */
 s32 func_8002EA24(u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
     s32 *vin;
@@ -286,7 +322,7 @@ s32 func_8002EA24(u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
          * `slt` + `xori $v0,$v0,1`.  Family: [[staged-value-reused-variable]]
          * (a live-value cousin of [[dead-store-fake-exception]], which documents
          * this exact symptom with a DEAD store; this form has none).
-         * Lever-exhaustion: session 2's six pure-C tail shapes. */
+ */
         if (y + a0_var < min_y) { z = 0; return z; }
         return 1;
     }

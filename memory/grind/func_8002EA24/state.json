@@ -1,8 +1,8 @@
 {
  "func": "func_8002EA24",
  "file": "code6cac_b",
- "session_count": 9,
- "current_modality": "rederive",
+ "session_count": 10,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -57,23 +57,29 @@
    "floor": 2,
    "modality": "rederive",
    "headline": "Floor holds at 2; the H5''''' carrier enumeration is now COMPLETE in BOTH directions (six new measured bodies, all worse or inert) and both decomp.me corpus censuses come back negative, so the residua"
+  },
+  {
+   "session": 10,
+   "floor": 2,
+   "modality": "synthesis",
+   "headline": "Synthesis reopens a channel sessions 7-9 had closed: expand_preferences makes the $a0 preference PROPAGABLE, and a parameter recipient produces target's $t1/$v0 pair without L3 for the first time in t"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "H6 / L1+L3 acceptance -- the ENTIRE remaining residual is a review question, not a search question.",
-   "mechanism": "Both constructs are [[staged-value-reused-variable]]: a REAL value, READ by the very next expression, staged through an EXISTING local whose previous value is provably dead at the staging point; neither is a dead store (z is returned, a0_var is the if condition). L1 defeats jump.c's store-flag single-set precondition; L3 supplies the assigned conflict that hands neg_threshold target's $t1. With the carrier enumeration complete in both directions and both corpus censuses negative, L3 is the unique instruction-free generator (cheapest alternative 5) and L1 the unique defeater of the fold.",
-   "next_probe": "Judge / fresh layer-2 cheat-reviewer ruling on memory/grind/func_8002EA24/candidate.c. Fallbacks already banked: candidate_alt_score3_no_fake.c (score 3, L3 removed); without L1 as well the floor returns to 6. Whoever rules should note census #2: the unfolded-diamond spellings that ARE pure C all put genuine work in the arm, which this function's target has none of."
+   "hypothesis": "H8' \u2014 a pref-4 recipient that satisfies the preference route WITHOUT the reverse leg displacing `y` from $v1 and WITHOUT preference-connecting allocno 103.",
+   "mechanism": "expand_preferences (global.c:797-841) is a symmetric IOR gated on !CONFLICTP in both directions; prune_preferences (:851-899) prunes a recipient's preferences against its own conflicts (line 877) and cancels the merge for registers the higher-priority allocno also prefers (line 893); find_reg's own-preference override (:1057-1080) is what moves `y` once it inherits an argument-register preference. Session 10 satisfied (a)-(c) with the parameter recipients and hit (d)'s failure mode with a fresh local, so the two side-conditions are now measured rather than hypothetical.",
+   "next_probe": "1) A recipient whose own preference is harmless to `y` \u2014 e.g. a local already copy-connected to a $v1 holder, so the reverse leg is a no-op; verify in the dump BEFORE scoring that the recipient's preferences contain 4, `102 preferences` stays {4}, and `103 preferences` stays EMPTY. 2) Demote 102 below the recipient (a real extra USE of `y`, not a duplicated load \u2014 session 7 measured that CSE eats duplicate references before global_alloc counts them) so `y` falls to plain first-fit = $v1. 3) A two-hop donor chain (y -> intermediate local -> threshold) that confines the reverse leg's payload to the intermediate. Do NOT re-run the parameter recipients, the fresh-local recipient, or the sessions 3-9 assigned-conflict carrier enumeration."
   },
   {
-   "hypothesis": "H7 -- a permuter campaign from a chassis OTHER than the banked body.",
-   "mechanism": "Session 5's basin-exhaustion result (29,050 iterations, zero novel finds) was measured from ONE chassis. Seven structurally distinct score-2 bodies are now known (session 8's six plus s9/v5). decomp-permuter mutates the SOURCE, so two sources that compile to identical bytes still have different mutation neighbourhoods -- basin exhaustion is a property of (body, seed stream), not of the function.",
-   "next_probe": "tools/permuter_campaign.py from two or three alternative score-2 bodies (s8/v10_nested_range_tests_only.c, s8/v12_single_four_way_if.c, s9/v5_vout_dies_in_chain.c) with fresh seeds and the fresh-seed stopping rule. Permuter modality, not rederive. Honest prior is low -- sessions 6-9 show the residual is one allocator bit no source shape reaches -- but it is the last untried mechanical axis and cheap to run to exhaustion."
+   "hypothesis": "H6 / L1(+L3) acceptance \u2014 the disposition path for the banked score-2 body.",
+   "mechanism": "Both constructs are [[staged-value-reused-variable]]: a REAL value, READ by the very next expression, staged through an EXISTING local whose previous value is provably dead at the staging point. L1 defeats jump.c's store-flag single-set precondition; L3 supplies the assigned conflict that hands neg_threshold target's $t1. Session 10 adds context for whoever rules: L3 is NOT the only route to target's $t1 \u2014 the preference channel reaches it too \u2014 so an L3 refusal does not automatically kill the axis, though no preference-channel form yet beats 2.",
+   "next_probe": "Judge / fresh layer-2 cheat-reviewer ruling on memory/grind/func_8002EA24/candidate.c. Fallbacks banked: candidate_alt_score3_no_fake.c (score 3, L3 removed); without L1 as well the floor returns to 6."
   },
   {
-   "hypothesis": "H4 -- the GTE canonical-asm disposition remains an operator surface, unchanged since session 2.",
-   "mechanism": "Both GTE regions are in the Judge-constrained minimal spelling (address computed in C and bound via %N, template limited to the $t4 copy plus the cop2 ops and the mvmva .word) and that spelling is measured free.",
-   "next_probe": "None available to a grind session. Adding func_8002EA24 to inline_asm_canonical.txt and retiring its 10 regfix rules are surfaces a grind session may not touch; the Judge deferred the FINAL CALL until the function is byte-identical on main with zero rules."
+   "hypothesis": "H7 \u2014 a permuter campaign from a chassis OTHER than the banked body.",
+   "mechanism": "decomp-permuter mutates the SOURCE, so two bodies that compile to identical bytes still have different mutation neighbourhoods; session 5's 29,050-iteration basin exhaustion was measured from one chassis only. Eight structurally distinct score-2 bodies are now known (session 8's six, s9/v5_vout_dies_in_chain.c, and this session's v8_L3_plus_freshlocal_tail).",
+   "next_probe": "tools/permuter_campaign.py from two or three alternative score-2 bodies (s8/v10_nested_range_tests_only.c, s8/v12_single_four_way_if.c, s9/v5_vout_dies_in_chain.c) with fresh seeds and the fresh-seed stopping rule; wait in-turn and harvest --stop before writing the outcome. Permuter modality; honest prior low."
   }
  ],
  "judge_constraints": [
