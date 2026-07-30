@@ -1,0 +1,34 @@
+{
+ "func": "func_8003553C",
+ "file": "code6cac_b2_pre",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 4,
+   "modality": "recon",
+   "headline": "func_8003553C honest pure-C floor 17 -> 4: cheat-asm carrier replaced with pure C; two confirmed levers (may-alias-pinned OT-base load hoisted into a local mid-body; 640-valued store leading the body "
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The original coordinate block is the PsyQ setXYWH(p, x, y, w, h) expansion, whose x1 = x + w and y2 = y + h subexpressions create the 640 and 240 values (640 first) at points independent of the store order, with CSE giving each value two uses \u2014 which would materialize li $v1,640 at the block head while leaving the +0x10 store in the trailing group.",
+   "mechanism": "CSE creates one pseudo per repeated subexpression at its first occurrence in the RTL stream; the constant-folded sum insn is what sched1 floats to the head of the block, decoupling constant materialization order from store order (which is what the current score-4 form cannot do, since it uses the store itself to materialize the constant).",
+   "next_probe": "Rewrite the coordinate block as the setXYWH expansion (all eight fields ascending, values written as x + w and y + h sums) while keeping the `ot` local from H1 in place; sweep the position of the sums relative to the RGB block; compare the emitted li order and the sh $v1,0x10 position against the side-by-side diff in tmp/grind/func_8003553C/s1/forms_and_scores.md."
+  },
+  {
+   "hypothesis": "addiu $s0,$s0,0x24 can be pulled ahead of the jal by a source shape that makes the advanced pointer's definition necessarily precede the call while keeping the sw to D_800A38B4 after it.",
+   "mechanism": "sched1 will place a register-only add in a pre-jal slot when the value is defined before the call in the RTL stream; the store must stay after the call because a call clobbers memory and cannot be crossed by the global store.",
+   "next_probe": "Read .claude/rules/store-before-jal.md and .claude/rules/defer-store-past-later-compute-into-jal-delay.md for the established shapes, then measure those spellings; do not re-measure the two forms already killed (assignment moved before the call; value staged in a plain extra local)."
+  },
+  {
+   "hypothesis": "The remaining two positions are reachable by pure statement-order search from the score-4 base.",
+   "mechanism": "The search space left is entirely statement ordering within one basic block, which is what the permuter randomizes best, and the base is now 4 rather than 17.",
+   "next_probe": "Build a clean single-function target.o from asm/funcs/func_8003553C.s + tools/decomp-permuter/prelude.inc (function at offset 0, drop the .set gp=64 line) per .claude/rules/difficult-is-not-impossible.md \u00a73, seed from memory/grind/func_8003553C/candidate.c, and run a fresh-seed campaign with tools/permuter_campaign.py \u2014 waiting for it in-turn and harvesting before writing the outcome."
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-30T05:05:49.279738+00:00"
+}
