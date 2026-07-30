@@ -1177,3 +1177,170 @@ target's "blocked but unallocated $a1/$a2" signature.
 - probe: vf3 (third parameter declared, never used) and vf4 (third + fourth unused), cc1 -da (rtl_vf3/, rtl_vf4/).
 - result: KILLED — both reproduce v_f's allocation EXACTLY (73 in 6, pointer in 7, hard regs used 2 3 4 5 6 7). flow deletes the dead parm copies before global.c builds its conflict graph, so a declared-but-unconsumed parameter can never contribute a conflict. This closes the 'widen the signature harmlessly' idea in the second basin as well as the first.
 - verdict: KILLED
+
+## s8 (rederive, 2026-07-30)
+
+### H28 — A fresh, independent re-derivation (m2c / decomp.me corpus / Kengo / sibling transplant) yields a structurally different C shape that beats the 13 floor. **KILLED**
+**Statement.** Seven sessions all iterated the same chassis. The rederive modality
+asks whether the chassis itself is the wrong starting point.
+
+**Probe.** Four independent sources, every resulting body sandboxed
+(`--disable all`, harness `tmp/grind/replay_camera_Init/s8/sweep.py`, numbers in
+`s8/sweep_results.json`):
+  - `tools/m2c/m2c.py --target mipsel-gcc-c` over `asm/funcs/replay_camera_Init.s`
+    (fresh, not inherited). m2c proposes: `s16 arg0`; an INVERTED guard
+    (`if (D_80101E62 == 0) { ...; return 1; } return 0;`); no named load
+    temporaries; and the re-read folded into the final expression.
+  - `tools/kengo_ref.py replay_camera_Init`.
+  - The sibling `func_80036FD4` in this same TU (`src/code6cac_b2_post.c:317-330`).
+  - The `goto` / shared-end-label shape suggested by target's `j .L80036E2C`.
+
+**Result (KILLED).**
+
+| form | sandbox / insns |
+|---|---|
+| `b0` = candidate.c (baseline re-measured this session) | **13 / 38** |
+| `r1` inverted guard + candidate's internal order | 17 / 37 |
+| `r2` m2c verbatim (inverted guard, no temps, folded re-read) | 16 / 37 |
+| `r4` sibling `entry[0]/entry[1]` table pointer | 24 / 38 |
+| `r5` goto / shared-end-label with a `ret` pseudo | 25 / **39** |
+| `r6` candidate order with NO named load temps | 13 / 38 |
+| `r7` loads adjacent, E7C store early | 19 / 39 |
+| `r8` loads adjacent, E7C store after the re-read | 19 / 39 |
+| `r9` loads separated, E7C store after the re-read | 13 / 38 |
+
+Nothing beats 13. `r6` and `r9` TIE it, so the floor basin is slightly wider than
+s5 recorded (named load temps are inert; the E7C store may sit either between the
+loads or after the re-read). `r7`/`r8` re-confirm s4 H14 (adjacent loads buy the
+39th instruction and cost 6 points) from a different starting point.
+
+**Kengo is unavailable for this function and the lead should never cost another
+session.** `kengo_ref` resolves `replay_camera_Init` to Kengo 0x00131958
+(`src/numata/nm_replay_cam.c`, 39 insns) — a same-name, same-instruction-count
+but structurally unrelated body: it reaches every field through ONE gp-loaded
+struct pointer (`lw a1,-28336(gp)` ... `sb v1,0(a1)`), uses float fields
+(`swc1`/`lwc1` on `$f20`) and calls `replay_camera_check_mode`. BB2's version is a
+leaf that touches eight independent `%hi/%lo` globals. The `kengo:HIGH | 39i` tag
+in `src/code6cac_b2_post.c` is a SIZE coincidence. (This joins s7's finding that
+the SessionStart near-duplicate lead is a self-match: BOTH external-reference
+leads for this function are now measured dead.)
+
+### H29 — The `/* FAKE */ s16 *pe62` pointer local can be replaced by an HONEST declaration-type correction. **CONFIRMED**
+**Statement.** candidate.c carries TWO `/* FAKE */` pointer-alias locals and has
+gone five sessions without a reviewer verdict. `pe62` exists only to materialise
+D_80101E62's address once into a register so the pre-branch `lh` and the
+post-branch `sh` share it (target's `$t0`) — worth exactly -1. If an ordinary
+C declaration produces the same shape, that FAKE disappears.
+
+**Mechanism + cited precedent.** Mined the local decomp.me corpus
+(`tmp/decomp_me_corpus/`, 3754 scratches, 1751 with `score == 0` i.e. MATCHED)
+for matched GCC 2.7.2 scratches whose target asm materialises a global's address
+(`lui %hi(S)` + `addiu ...%lo(S)` into the same register) AND both loads and
+stores through `0($reg)`: **37 hits**. Reading their C, the idiom is an
+INCOMPLETE-ARRAY-typed extern indexed at 0 — the cleanest is
+`gcc2.7.2-psx__8yZxU` (https://decomp.me/scratch/8yZxU, `func_80093AC8`, score 0,
+`-O2 -G0`), whose whole body is
+`extern s32 D_800AF9D8[]; ... D_800AF9D8[0] &= 0x3FFF;` and whose target asm has
+precisely this shape. This is `header-type-correction-from-use-sites`, not a
+coercion alias: there is still exactly ONE C identifier for the memory and only
+its declared type changes.
+
+**Probe.** `tmp/grind/replay_camera_Init/s8/arraytest.py` patches
+`include/code6cac.h:280` to `extern s16 D_80101E62[];`, rewrites all six other
+uses in the TU to `D_80101E62[0]` (and the two `&D_80101E62` to plain
+`D_80101E62`), splices a body that uses `D_80101E62[0]` with NO `pe62` pointer,
+sandboxes, and restores both files with `git checkout` in a `finally` block.
+
+**Result (CONFIRMED).** `a1` scores **13 / 38** — identical to candidate.c — with
+one fewer `/* FAKE */`. Banked as
+`memory/grind/replay_camera_Init/candidate_arraydecl.c`. It is NOT self-contained
+(the header + six sibling use sites must change together), which is why
+`candidate.c` stays the spliceable file; and the header change's effect on the
+other six D_80101E62 users in the TU is UNMEASURED — that is the one thing an
+integrating operator must check.
+
+### H30 — The same array-declaration trick also de-FAKEs `pe70` (the reload). **KILLED**
+**Probe.** `arraytest2.py` with `E70=1`: `src/code6cac_b2_post.c:45` changed from
+`extern volatile s32 D_80101E70;` to `extern s32 D_80101E70[];`, and BOTH the
+store and the re-read written as `D_80101E70[0]`, with no pointer local.
+
+**Result (KILLED).** **17 / 36** — the reload is gone entirely, i.e. the same
+score as the pointer-free s0-s2 baseline. An index-0 array access constant-folds
+to the same `(mem (symbol_ref "D_80101E70"))` rtx the scalar produces, so
+`exp_equiv_p` matches it against the recorded store entry and cse.c's
+store-to-load forwarding eats the load. Only a genuine `(mem (reg))` read — the
+pointer local — defeats it. Banked:
+`rejected/e70-array-decl-does-not-defeat-store-to-load-forwarding.c`.
+
+### H31 — There is a community precedent for a same-mode store-then-reload of one global without `volatile`. **KILLED — NEGATIVE CENSUS**
+**Probe.** Scanned all 1751 MATCHED gcc2.7.2/psyq3.5 corpus scratches for a
+target asm that stores a global and reloads the SAME global with no `jal`, no
+branch and no label in between (i.e. cse forwarding defeated inside one basic
+block) and whose C never says `volatile`
+(`tmp/grind/replay_camera_Init/s8/corpus_scan2.py`).
+
+**Result (KILLED).** Exactly **8** hits, and every one is a MODE MISMATCH, not a
+same-mode reload:
+  - `psyq3.5__HsQsw` `SsSetReservedVoice`: `extern u8 spuVmMaxVoice;
+    spuVmMaxVoice = arg0; return spuVmMaxVoice;` — an `s32` value narrowed into a
+    `u8` global, read back as `u8`.
+  - `gcc2.7.2-cdk__0YgmZ` `func_80051854`: `extern s32 D_801026B8; D_801026B8 = 0;
+    ... temp = ((u16) D_801026B8) + 0x20;` — a `u16` read of an `s32` store.
+  - `gcc2.7.2-cdk__1AkEI`: `extern u8 D_800C6D90; D_800C6D90 += 13;` then indexed
+    by it. `gcc2.7.2-cdk__8DUlu`: `extern u16 D_8005F118` compared/decremented.
+  - the remainder are the same pattern.
+
+replay_camera_Init's reload is a **word store followed by a word read of the same
+symbol** — no mode mismatch is available (target's `sw $a0,%lo(D_80101E70)` /
+`lw $v1,%lo(D_80101E70)`, and the value is consumed as a full 32-bit
+`(x + 0x7FF) >> 11`). So the corpus supplies NO precedent for producing this
+reload honestly, which is a materially stronger lever-exhaustion record for the
+`pe70` FAKE than any prior session had — and simultaneously the reason `pe70`
+cannot be retired the way `pe62` just was.
+
+## Live frontier (for s9)
+
+1. **Get the reviewer verdict — now with a much better construct to review.**
+   The form to put in front of a fresh layer-2 cheat-reviewer is
+   `candidate_arraydecl.c` (ONE `/* FAKE */`, not two), with the cited matched
+   precedent `decomp.me/scratch/8yZxU` for the array-typed declaration and the
+   s8 negative corpus census as the exhaustion record for `pe70`.
+2. **Measure the TU-wide cost of the D_80101E62 array declaration.** s8 measured
+   only replay_camera_Init under the two-file patch. Sandbox the other six users
+   in `src/code6cac_b2_post.c` (func_80036D88 at :240, func_80036FD4 at :317, and
+   the four in the replay/special-camera paths) with the patch applied; if any of
+   them regresses, the honest de-FAKE has a hidden price that must be recorded.
+3. **The prune_preferences route (inherited from s7) is still the only untested
+   register-exclusion mechanism**, but s8 adds a constraint that narrows it
+   sharply: preferences on hard regs 5/6 can only be created by copies to/from
+   those hard registers, and in a two-parameter LEAF with no call the only such
+   copy is the a1 home itself — whose own preference `prune_preferences`
+   subtracts (global.c:893-895, s2 H7). So the route needs a SECOND pseudo
+   derived from a1 that outranks the home copy in `allocno_order`; s6 H23 showed
+   a plain `s32 t = a1;` is copy-propagated away before allocation. Find a
+   consumer shape that keeps two distinct a1-derived pseudos alive, or record the
+   route as closed by construction.
+
+## [s8] A fresh, independent re-derivation of replay_camera_Init (m2c decompile, the local decomp.me gcc2.7.2 corpus, a Kengo transplant, and a sibling transplant from the same TU) yields a structurally different C shape that beats the 13/38 floor seven sessions of chassis-iteration produced.
+- mechanism: Each source biases a different structural axis: m2c reconstructs control flow directly from the target's branch structure (it proposes the INVERTED guard `if (D_80101E62 == 0) { ...; return 1; } return 0;`, no named load temporaries, and the re-read folded into the final expression); Kengo preserves Marionation's original object model; func_80036FD4 in the same TU already exploits that SpecialCam and D_8008EC38 are adjacent words of one 8-byte table entry (`s32 *entry = ...; entry[0]; entry[1];`); and target's `j .L80036E2C` into a shared `jr $ra` suggests a goto/shared-end-label spelling. Any of these could land in a different local-alloc basin than the inherited chassis.
+- probe: Nine bodies spliced into src/code6cac_b2_post.c and scored with `sandbox replay_camera_Init --disable all` (harness tmp/grind/replay_camera_Init/s8/sweep.py, raw numbers in s8/sweep_results.json): b0 = candidate.c baseline; r1 = inverted guard + candidate's internal order; r2 = m2c verbatim; r4 = sibling entry[] table pointer; r5 = goto / shared-end-label with a `ret` pseudo; r6 = candidate order with no named load temps; r7/r8 = the two loads made adjacent; r9 = E7C store moved after the re-read. Kengo checked with `tools/kengo_ref.py replay_camera_Init`.
+- result: KILLED. b0 13/38; r1 17/37; r2 16/37; r4 24/38; r5 25/39; r6 13/38; r7 19/39; r8 19/39; r9 13/38. Nothing beats 13. Two NEW ties for the floor (r6, r9) widen the known floor basin: named load temporaries are inert and the D_80101E7C store may sit either between the loads or after the re-read. r7/r8 re-confirm s4 H14 from a different starting point (adjacent loads buy the 39th instruction and cost 6 points). Kengo is dead for this function: kengo_ref resolves to Kengo 0x00131958 (src/numata/nm_replay_cam.c, 39 insns), a same-name same-size but structurally unrelated body that reaches every field through one gp-loaded struct pointer (`lw a1,-28336(gp)`), uses float fields (swc1/lwc1 on $f20) and calls replay_camera_check_mode, where BB2's is a leaf over eight independent %hi/%lo globals — the `kengo:HIGH | 39i` src annotation is a size coincidence. The sibling entry[] shape is structurally wrong here: target re-materialises `lui $at; addu $at,$at,$v0` for EACH of the two loads and does not share a base register.
+- verdict: KILLED
+
+## [s8] candidate.c's `/* FAKE */ s16 *pe62 = &D_80101E62;` pointer local can be replaced by an HONEST declaration-type correction that produces target's $t0 address-in-register shape at no score cost.
+- mechanism: Mined the local decomp.me corpus (tmp/decomp_me_corpus/, 3754 scratches, 1751 with score == 0 i.e. MATCHED) for matched GCC 2.7.2 scratches whose target asm materialises a global's address (lui %hi(S) + addiu ...%lo(S) into the same register) with both a load and a store through 0($reg): 37 hits, and the C idiom behind them is an INCOMPLETE-ARRAY-typed extern indexed at 0. Cited precedent in hand: decomp.me scratch gcc2.7.2-psx__8yZxU (https://decomp.me/scratch/8yZxU, func_80093AC8, score 0 = MATCHED, GCC 2.7.2 -O2 -G0), whose entire body is `extern s32 D_800AF9D8[]; ... D_800AF9D8[0] &= 0x3FFF;` and whose target assembly has exactly this shape. This is header-type-correction-from-use-sites, not a coercion alias: exactly ONE C identifier still names the memory and only its declared type changes.
+- probe: tmp/grind/replay_camera_Init/s8/arraytest.py patches include/code6cac.h:280 to `extern s16 D_80101E62[];`, rewrites all six other uses of D_80101E62 in src/code6cac_b2_post.c to `D_80101E62[0]` and the two `&D_80101E62` to plain `D_80101E62`, splices a body (variant a1) that uses `D_80101E62[0]` with NO pe62 pointer local, runs `sandbox replay_camera_Init --disable all`, and restores both files with `git checkout` in a finally block.
+- result: CONFIRMED. a1 scores 13 / 38 — identical to candidate.c — with one fewer /* FAKE */, and reproduces target's $t0 shape (lui %hi + addiu %lo, `lh $v0,0($t0)` before the branch and `sh $a0,0($t0)` after it). Banked as memory/grind/replay_camera_Init/candidate_arraydecl.c. Two caveats recorded in that file's header: it is NOT self-contained (header + six sibling use sites must change together, which is why candidate.c stays the spliceable file), and the header change's effect on the other six D_80101E62 users in the TU is UNMEASURED.
+- verdict: CONFIRMED
+
+## [s8] The same array-declaration trick also retires the second /* FAKE */, `s32 *pe70 = &D_80101E70;`, i.e. an array-typed D_80101E70 read at index 0 still defeats cse's store-to-load forwarding and keeps the 2-instruction reload.
+- mechanism: If an index-0 array access produced a distinct rtx from the scalar `(mem (symbol_ref))` — as it evidently does for the ADDRESS-materialisation effect on D_80101E62 — then the recorded store equivalence (cse.c:7308-7361, keyed by the stored value) would fail exp_equiv_p against the read and the lui/lw pair would survive to codegen, exactly as the pointer local makes it survive.
+- probe: tmp/grind/replay_camera_Init/s8/arraytest2.py with E70=1: src/code6cac_b2_post.c:45 changed from `extern volatile s32 D_80101E70;` to `extern s32 D_80101E70[];`, with BOTH the store and the re-read written as `D_80101E70[0]` and no pointer local (variant a2). Sandboxed --disable all; both files restored by git checkout in a finally block.
+- result: KILLED. 17 / 36 — the reload is gone entirely, the same score and instruction count as the pointer-free s0-s2 baseline. An index-0 array access constant-folds to the same (mem (symbol_ref "D_80101E70")) rtx the scalar produces, so exp_equiv_p matches it against the recorded store entry and store-to-load forwarding eats the load. Only a genuine (mem (reg)) read defeats it. Banked: rejected/e70-array-decl-does-not-defeat-store-to-load-forwarding.c.
+- verdict: KILLED
+
+## [s8] The matched-decomp community has a precedent for a same-mode store-then-reload of a single global inside one basic block without `volatile` — i.e. an honest route to target's D_80101E70 reload that does not need the pe70 pointer.
+- mechanism: If GCC 2.7.2's cse store-to-load forwarding can be defeated by some ordinary C idiom, a corpus of 1751 byte-matched GCC 2.7.2 / PsyQ 3.5 scratches should contain at least one instance, and its C would name the idiom.
+- probe: tmp/grind/replay_camera_Init/s8/corpus_scan2.py over every matched scratch in tmp/decomp_me_corpus/: find a target asm that stores a global with s[whb] %lo(S) and reloads the SAME symbol within 600 characters with no jal/jalr, no branch, and no label in between, and whose C (source + context) never contains the word `volatile`.
+- result: KILLED — NEGATIVE CENSUS. Exactly 8 hits, and every one is a MODE MISMATCH rather than a same-mode reload: psyq3.5__HsQsw SsSetReservedVoice (`extern u8 spuVmMaxVoice; spuVmMaxVoice = arg0; return spuVmMaxVoice;` — an s32 narrowed into a u8 global and read back as u8); gcc2.7.2-cdk__0YgmZ func_80051854 (`extern s32 D_801026B8; D_801026B8 = 0; ... ((u16) D_801026B8) + 0x20` — a u16 read of an s32 store); gcc2.7.2-cdk__1AkEI (`extern u8 D_800C6D90; D_800C6D90 += 13;`); gcc2.7.2-cdk__8DUlu (`extern u16 D_8005F118`); and four of the same shape. ZERO are same-mode word-store/word-read. replay_camera_Init's reload IS same-mode (target `sw $a0,%lo(D_80101E70)` then `lw $v1,%lo(D_80101E70)`, consumed as a full 32-bit `(x + 0x7FF) >> 11`), so no mode mismatch is available and the corpus supplies no honest route. This is the strongest lever-exhaustion record this grind has produced for the pe70 /* FAKE */ — and the reason pe70 cannot be retired the way pe62 just was.
+- verdict: KILLED

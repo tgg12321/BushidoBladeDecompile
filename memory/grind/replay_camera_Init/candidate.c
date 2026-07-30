@@ -157,6 +157,50 @@
  *     occupying.  The only GCC 2.7.2 route that excludes without occupancy is
  *     global.c prune_preferences / regs_someone_prefers (pass 0) â€” untested.
  * ---------------------------------------------------------------------------
+ *
+ * ---- s8 (rederive, 2026-07-30): this form is UNCHANGED and still the floor ---
+ * s8 ran the rederive ladder (fresh m2c, the local decomp.me gcc2.7.2 corpus,
+ * Kengo, sibling transplant).  Floor re-measured at 13 / 38 with this body in src.
+ * Do not re-derive:
+ *   - KENGO IS UNAVAILABLE FOR THIS FUNCTION.  `tools/kengo_ref.py replay_camera_Init`
+ *     resolves to Kengo 0x00131958 (src/numata/nm_replay_cam.c, 39 insns), but that
+ *     body is structurally unrelated: it reaches everything through ONE gp-loaded
+ *     struct pointer (`lw a1,-28336(gp)` ... `sb v1,0(a1)`), uses float fields
+ *     (swc1/lwc1) and calls replay_camera_check_mode.  BB2's version touches eight
+ *     independent %hi/%lo globals and is a leaf.  The `kengo:HIGH ... 39i` tag in
+ *     src is a SIZE coincidence, not a body match.  There is nothing to transplant.
+ *   - m2c's fresh decompile proposes the INVERTED guard (`if (D_80101E62 == 0)
+ *     { ...; return 1; } return 0;`).  With both pointers it scores 16 / 37
+ *     (verbatim) and 17 / 37 (with this form's internal order).  Both LOSE an
+ *     instruction; the inverted guard is dead in the pointer regime too.
+ *   - The sibling shape from func_80036FD4 in this same TU (`s32 *entry = ...;
+ *     entry[0]; entry[1];` over the 8-byte SpecialCam table) scores 24 / 38.
+ *     Target re-materialises `lui $at; addu $at,$at,$v0` per load — it does NOT
+ *     share a base — so a shared entry pointer is structurally wrong here.
+ *   - The goto / shared-end-label shape reaches 39 instructions but scores 25.
+ *   - THE USEFUL FINDING: the `pe62` pointer can be replaced by an HONEST
+ *     declaration-type correction.  Declaring `extern s16 D_80101E62[];` and
+ *     writing `D_80101E62[0]` scores 13 / 38 — IDENTICAL to this form — with no
+ *     pointer local.  Cited matched precedent from the local decomp.me corpus:
+ *     gcc2.7.2-psx__8yZxU (func_80093AC8, score 0) declares `extern s32
+ *     D_800AF9D8[];`, writes `D_800AF9D8[0] &= 0x3FFF;`, and its target asm has
+ *     exactly this lui/addiu + 0($reg) load-and-store shape.  The body is banked
+ *     at memory/grind/replay_camera_Init/candidate_arraydecl.c; it needs a
+ *     TWO-FILE patch (include/code6cac.h:280 plus the six other D_80101E62 uses
+ *     in this TU), which is why THIS self-contained file stays the one to splice.
+ *   - The same trick does NOT work for D_80101E70: `extern s32 D_80101E70[];` with
+ *     `D_80101E70[0]` on both the store and the re-read scores 17 / 36 — the
+ *     reload is gone, because an index-0 array access folds to the same
+ *     `(mem (symbol_ref))` rtx the scalar produces.  `pe70` stays FAKE and stays
+ *     load-bearing (-4).
+ *   - CORPUS CENSUS (1751 MATCHED gcc2.7.2 scratches): EIGHT contain a same-basic-
+ *     block store-then-reload of one global with no `volatile` and no intervening
+ *     call/branch — and every one of them is a MODE MISMATCH (u8/u16 read of a
+ *     wider store, or a narrowing store), e.g. psyq3.5__HsQsw `extern u8
+ *     spuVmMaxVoice; spuVmMaxVoice = arg0; return spuVmMaxVoice;`.  ZERO are
+ *     same-mode word-store/word-read like ours.  There is no community precedent
+ *     for producing this reload without volatile or a pointer.
+ * ---------------------------------------------------------------------------
  */
 s32 replay_camera_Init(s32 a0, s32 a1) {
     s32 sval;

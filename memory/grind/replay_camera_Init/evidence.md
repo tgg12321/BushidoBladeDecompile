@@ -349,3 +349,105 @@
 - [s7] The SessionStart near-duplicate lead 'replay_camera_Init ~= func_80036D98 (similarity 1.000)' is a SELF-match — 0x80036D98 is replay_camera_Init's own address. There is no matched sibling to copy from; the lead is stale and should not cost another session.
 
 - [s7] src/code6cac_b2_post.c is left holding the exact candidate.c body (re-measured at 13/38 after every probe restored the file). No permuter campaign was launched; nothing was left running.
+
+- [s8] Floor re-measured at 13 / 38 with candidate.c's body spliced into
+  src/code6cac_b2_post.c. NOTE for the next session: HEAD's src does NOT contain
+  candidate.c — it still carries the committed cheat form (register-asm pins
+  `asm("$7")` / `asm("$8")` and an `__asm__ volatile("" ::: "memory")` barrier at
+  src/code6cac_b2_post.c:241-268). s7's ledger claim that src was left holding the
+  candidate body is wrong. Always splice candidate.c before measuring.
+
+- [s8] Two forms TIE the 13 / 38 floor and were not previously known: `r6`
+  (candidate's order with NO named load temporaries — the stores take the load
+  expressions directly) and `r9` (named temps, but the `D_80101E7C = a1;` store
+  moved after the re-read instead of between the loads). The floor basin is a
+  little wider than s5's "strict local optimum" reading suggested.
+
+- [s8] Fresh m2c decompile of asm/funcs/replay_camera_Init.s (tools/m2c/m2c.py
+  --target mipsel-gcc-c) proposes `s16 arg0`, an INVERTED guard, no named load
+  temps and the re-read folded into the last expression. Measured in the pointer
+  regime: verbatim 16 / 37, with candidate's internal order 17 / 37. Both LOSE an
+  instruction. m2c's `s16 arg0` was already banked dead in s5.
+
+- [s8] KENGO IS DEAD FOR THIS FUNCTION. tools/kengo_ref.py resolves
+  replay_camera_Init to Kengo 0x00131958 (src/numata/nm_replay_cam.c, 39 insns),
+  but that body reaches every field through one gp-loaded struct pointer
+  (`lw a1,-28336(gp)`), uses float fields (swc1/lwc1 on $f20) and calls
+  replay_camera_check_mode. BB2's is a leaf over eight independent %hi/%lo
+  globals. The `kengo:HIGH | 39i` src annotation is a size coincidence. Together
+  with s7's finding that the near-duplicate lead is a self-match, BOTH
+  external-reference leads for this function are now measured dead.
+
+- [s8] The sibling transplant from func_80036FD4 in the same TU (`s32 *entry =
+  (s32 *)(&SpecialCam + idx); entry[0]; entry[1];`, exploiting that SpecialCam and
+  D_8008EC38 are adjacent words of one 8-byte table entry) scores 24 / 38. Target
+  re-materialises `lui $at; addu $at,$at,$v0` for EACH of the two loads — it does
+  not share a base register — so a shared entry pointer is structurally wrong here.
+
+- [s8] The goto / shared-end-label shape (`ret = 0; goto end; ... ret = 1; end:
+  return ret;`) reaches 39 instructions but scores 25; the `ret` pseudo is what
+  the extra instruction pays for. candidate.c's two-return spelling already
+  produces target's `j .L80036E2C` / `addu $v0,$zero,$zero` epilogue.
+
+- [s8] THE SESSION'S WIN: the `/* FAKE */ s16 *pe62` pointer local can be
+  replaced by an HONEST declaration-type correction with NO score cost.
+  `extern s16 D_80101E62[];` (include/code6cac.h:280) + `D_80101E62[0]` at every
+  use site scores 13 / 38 — identical to candidate.c — and reproduces target's
+  $t0 shape (lui %hi + addiu %lo, `lh $v0,0($t0)` before the branch and
+  `sh $a0,0($t0)` after it). Banked as candidate_arraydecl.c.
+
+- [s8] CITED MATCHED PRECEDENT for that declaration form, in hand:
+  decomp.me scratch gcc2.7.2-psx__8yZxU (https://decomp.me/scratch/8yZxU,
+  func_80093AC8, score 0 = MATCHED, GCC 2.7.2 -O2 -G0) is
+  `extern s32 D_800AF9D8[]; ... D_800AF9D8[0] &= 0x3FFF;` and its target assembly
+  materialises the symbol address into a register with both the load and the store
+  through 0($reg). Local copy: tmp/decomp_me_corpus/gcc2.7.2-psx__8yZxU.json.
+  37 matched corpus scratches share the shape.
+
+- [s8] The same trick does NOT de-FAKE pe70: `extern s32 D_80101E70[];` with
+  `D_80101E70[0]` on both the store and the re-read scores 17 / 36 — the reload is
+  gone. An index-0 array access folds to the same (mem (symbol_ref)) rtx as the
+  scalar, so cse.c's store-to-load forwarding matches and eats the load. Only a
+  (mem (reg)) read defeats it.
+
+- [s8] NEGATIVE CORPUS CENSUS on the reload. Across all 1751 MATCHED gcc2.7.2 /
+  psyq3.5 scratches in tmp/decomp_me_corpus/, exactly 8 contain a same-basic-block
+  store-then-reload of one global with no volatile and no intervening call/branch,
+  and EVERY ONE is a mode mismatch (u8/u16 read of a wider store, or a narrowing
+  store) — e.g. psyq3.5__HsQsw `extern u8 spuVmMaxVoice; spuVmMaxVoice = arg0;
+  return spuVmMaxVoice;` and gcc2.7.2-cdk__0YgmZ `D_801026B8 = 0; ... (u16)
+  D_801026B8`. ZERO are same-mode word-store/word-read. replay_camera_Init's is
+  same-mode (sw/lw, consumed as a full 32-bit (x + 0x7FF) >> 11), so the corpus
+  supplies no honest route to the reload — the strongest lever-exhaustion record
+  this grind has for the pe70 FAKE.
+
+- [s8] No permuter campaign was launched; nothing was left running. Every probe
+  restored src (sweep.py in a finally block; arraytest.py/arraytest2.py
+  `git checkout -- include/code6cac.h src/code6cac_b2_post.c` in a finally block).
+  Artifacts: tmp/grind/replay_camera_Init/s8/.
+
+- [s8] Floor re-measured at 13 / 38 this session with candidate.c's body spliced into src/code6cac_b2_post.c.
+
+- [s8] CORRECTION to the s7 ledger: HEAD's src/code6cac_b2_post.c does NOT contain candidate.c — it still carries the committed cheat form (register-asm pins asm("$7") / asm("$8") plus an __asm__ volatile("" ::: "memory") barrier, lines 241-268). Every session must splice candidate.c before measuring.
+
+- [s8] Two previously unknown forms TIE the floor at 13 / 38: r6 (no named load temporaries — the stores take the load expressions directly) and r9 (the D_80101E7C = a1 store moved after the re-read instead of between the loads). The floor basin is wider than s5's 'strict local optimum' reading.
+
+- [s8] Fresh m2c decompile (tools/m2c/m2c.py --target mipsel-gcc-c) proposes s16 arg0, an inverted guard, no named load temps, and the re-read folded into the last expression: 16 / 37 verbatim, 17 / 37 with candidate's internal order. Both LOSE an instruction relative to 38.
+
+- [s8] KENGO IS DEAD FOR THIS FUNCTION: tools/kengo_ref.py resolves replay_camera_Init to Kengo 0x00131958 (src/numata/nm_replay_cam.c, 39 insns), a structurally unrelated body — one gp-loaded struct pointer, float fields (swc1/lwc1 on $f20), and a call to replay_camera_check_mode — versus BB2's leaf over eight independent %hi/%lo globals. The kengo:HIGH | 39i annotation in src is a size coincidence. With s7's finding that the SessionStart near-duplicate lead is a self-match, BOTH external-reference leads are now measured dead.
+
+- [s8] The sibling transplant from func_80036FD4 in the same TU (s32 *entry = (s32 *)(&SpecialCam + idx); entry[0]; entry[1];) scores 24 / 38: target re-materialises lui $at; addu $at,$at,$v0 for EACH of the two loads and does not share a base register.
+
+- [s8] The goto / shared-end-label shape reaches 39 instructions but scores 25 — the ret pseudo is what the extra instruction pays for. candidate.c's two-return spelling already produces target's j .L80036E2C / addu $v0,$zero,$zero epilogue.
+
+- [s8] THE SESSION'S WIN: declaring extern s16 D_80101E62[]; (include/code6cac.h:280) and writing D_80101E62[0] at every use site scores 13 / 38 — identical to candidate.c — and reproduces target's $t0 shape with NO pointer local, retiring one of the two /* FAKE */ annotations. Banked as memory/grind/replay_camera_Init/candidate_arraydecl.c.
+
+- [s8] CITED MATCHED PRECEDENT for that declaration form: decomp.me scratch gcc2.7.2-psx__8yZxU (https://decomp.me/scratch/8yZxU, func_80093AC8, score 0, GCC 2.7.2 -O2 -G0) is extern s32 D_800AF9D8[]; ... D_800AF9D8[0] &= 0x3FFF; and its target assembly materialises the symbol address into a register with both the load and the store through 0($reg). Local copy: tmp/decomp_me_corpus/gcc2.7.2-psx__8yZxU.json. 37 matched corpus scratches share the shape.
+
+- [s8] UNMEASURED RISK an integrating operator must check: the D_80101E62 array declaration is TU-wide, and only replay_camera_Init's distance was measured under the patch. The other six users in src/code6cac_b2_post.c (func_80036D88 at :240, func_80036FD4 at :317, and four in the replay/special-camera paths) were not sandboxed.
+
+- [s8] The array-declaration trick does NOT work for D_80101E70: extern s32 D_80101E70[]; with D_80101E70[0] on both the store and the re-read scores 17 / 36 — the reload is gone, because an index-0 array access folds to the same (mem (symbol_ref)) rtx as the scalar and cse's store-to-load forwarding eats the load.
+
+- [s8] NEGATIVE CORPUS CENSUS on the reload: across all 1751 MATCHED gcc2.7.2 / psyq3.5 scratches, exactly 8 have a same-basic-block store-then-reload of one global with no volatile and no intervening call/branch, and every one is a mode mismatch (u8/u16). ZERO are same-mode word-store/word-read like replay_camera_Init's.
+
+- [s8] No permuter campaign was launched and nothing was left running. Every probe restored src (sweep.py in a finally block; arraytest.py/arraytest2.py git checkout -- include/code6cac.h src/code6cac_b2_post.c in a finally block); git status shows src/ and include/ clean at session end.
