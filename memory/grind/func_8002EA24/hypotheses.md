@@ -729,3 +729,155 @@ constructs in the candidate is a layer-2 / Judge question, not a search question
 - probe: sharedend -- all five rejects rewritten as { ret = 0; goto end; } with `ret = 1; end: return ret;` at the tail, scored with sandbox --disable all.
 - result: Score 5 (105 dis lines vs the base's 107). Rewriting the LAST reject destroys session 5's L1 construct -- the two-statement arm that breaks jump.c's store-flag single-set precondition -- so the tail diamond folds back to slt + xori. Our build already emits the shared-branch topology for the other four rejects without any goto.
 - verdict: KILLED
+
+## Session 7 (forensics; driver session 6) - frontier rewritten
+
+### KILLED this session
+- **H5'' in all three of its stated sub-mechanisms.**  The session-6 frontier
+  claimed target denies `$a0` to `neg_threshold` through a preference or
+  conflict-graph effect that costs no instruction.  Forensics says no such
+  effect is reachable:
+  (i) *conflict-graph over-approximation from a reject arm* - `rejstage` scores
+      3 with `negu $a0,$a2` unchanged, and it is structurally impossible: every
+      reject arm RETURNS, so a value set there is live at no join, and along the
+      arm's own path `neg_threshold` is already dead.  GCC 2.7.2's
+      `global_conflicts` walks flow's path-accurate `basic_block_live_at_start`;
+      there is nothing to exploit in a diamond whose arms exit.
+  (ii) *`prune_preferences` propagation* - closed by the PRIORITY ORDER, not by
+      the conflict graph.  `regs_someone_prefers[103]` is built only from
+      allocnos that are LOWER priority than 103 and conflict with it; in the
+      printed order (`101 96 97 100 109 108 72 102 117 103 74 99 75`) the only
+      such allocnos are 74 (threshold) and 75 (r_sq), whose preferences are their
+      own argument registers $a2/$a3.  Both $a0-preferring allocnos (97 = a0_var,
+      102 = y) OUTRANK 103, so their preferences can never reach it.
+  (iii) *an `$a0` preference on some other conflicting pseudo* - no such pseudo
+      exists; 72 (obj)'s `$a0` copy-preference was already shown (s4) to be
+      stripped because obj conflicts with `$a0` itself.
+- **`yearly`** (hoisting the `y` load ahead of the chain) = 11.  This was the one
+  structurally new candidate: 102 (`y`) is the function's OTHER `$a0`-preferring
+  allocno.  It does not take `$a0` (97 is allocated first and wins it) and the
+  hoist costs the tail's `lw $v1,0x108($t0)` position.
+- **The local-alloc quantity-merging route (session-6 frontier probe 2)** - not
+  a lever, answered by the dumps: in `plain1` the first test's boolean is ALREADY
+  a local-alloc quantity in `$v0` (pseudo 104, `104 in 2` in the dispositions but
+  absent from the `regs to allocate` list), exactly as in target.  Local-alloc is
+  not where our build and the original diverge.
+
+### CONFIRMED this session
+- **The divergence is ONE BIT, named exactly.**  Pass `global_alloc`
+  (`tools/gcc-2.7.2/global.c`), decision = the pass-0 hard-register exclusion set
+  in `find_reg` (:1012-1044) for allocno 103 (`neg_threshold`).  Measured
+  directly with the `BB2_FINDREG_DEBUG` hook: the banked score-2 body and the
+  `plain1` control produce IDENTICAL `someone_prefers` ({6,7}), IDENTICAL empty
+  own-preferences, and conflict sets that differ in exactly one member -
+  hard register 4 (`$a0`).  With the bit, first-free is 9 = `$t1` = target;
+  without it, first-free is 4 = `$a0`.
+- **Only one of the four possible generators of that bit is instruction-free,
+  and it is the banked construct.**  `find_reg` can exclude a register only via
+  (1) a hard-reg conflict, (2) a conflict with an allocno already holding it,
+  (3) `regs_someone_prefers`, or (4) an own-preference override.  (1) needs
+  `neg_threshold` live at function entry (s5: four spellings, all 108 insns
+  against 107, the negu loses the load-delay slot); (3) is closed by the priority
+  order; (4) needs a reg-reg copy seeding a `$t1` preference, which nothing on
+  MIPS can supply; (2) is free ONLY when the value `a0_var` carries across the
+  chain is a computation the chain already performs - i.e. the first range test's
+  boolean, which is precisely the banked score-2 body, and which necessarily
+  costs the boolean its own register.
+
+### Live frontier (after session 7)
+
+#### H5''' - the last two points are an allocator-input residue, not a source-shape residue
+**Statement.**  On the C surface, the score-2 body is the unique instruction-free
+way to set the one bit that separates our allocation from target's; every other
+generator of that bit is closed either by the instruction budget (routes 1 and 2
+with any other carrier) or by GCC's own priority order (route 3) or by the
+absence of a seeding copy (route 4).  What remains is therefore a question about
+the allocator's INPUT - the pseudo/priority structure the original TU handed to
+`global_alloc` - rather than about the statement shape of this function.
+**Mechanism.**  `allocno_compare` priority is
+`floor_log2(n_refs)*n_refs / live_length`, computed over the whole function; the
+priority ORDER is what closes route (3).  Anything that reorders 102 (`y`) or 97
+(`a0_var`) BELOW 103 would open route (3) at zero conflict cost, because both
+already prefer `$a0`.  The two knobs that move that order without adding
+instructions are (a) `reg_n_refs` - the number of RTL references to `y` /
+`a0_var`, and (b) `live_length` - how long they live.
+**Next probe, in order.**
+1. Try to demote 102 (`y`) below 103 in the priority order while keeping the
+   emitted instructions identical: `y` currently has few refs and a short live
+   range (high priority).  A spelling that gives `y` MORE refs without more
+   instructions (e.g. reading `*(s32 *)(obj + 0x108)` twice and letting CSE
+   collapse it, or splitting `y - a0_var` / `y + a0_var` across an extra
+   reference) lowers `floor_log2(n_refs)*n_refs/live_length` only if live_length
+   grows faster - compute the ratio from the dump BEFORE building, using
+   `tmp/grind/func_8002EA24/s6/dump.sh` and the `;; N regs to allocate` order as
+   the read-out.  If the order moves 102 past 103, route (3) opens for free
+   because `y` already prefers `$a0` - but note 102 must ALSO conflict with 103,
+   which brings back the liveness cost; verify both conditions in the dump before
+   scoring.
+2. Read `local-alloc.c`'s `qty_phys_reg` decision for the boolean in the score-2
+   body: if the boolean could be forced to a local-alloc quantity while `a0_var`
+   still carries a live value across the chain, the two roles would separate.
+   The dump slice to read is `tmp/grind/func_8002EA24/s6/base/fn.lreg`.
+3. If 1-2 are dead, the honest reading is that H4 (the canonical-asm
+   disposition) is the operative question for this function: the body is
+   instruction-for-instruction identical to target with two register fields
+   differing, and every C-surface generator of the missing allocator bit has
+   been enumerated and measured.
+
+#### H4 - GTE canonical-asm disposition (unchanged, operator/owner action)
+Unchanged from sessions 2-6.  The Judge-constrained shape is measured free and is
+carried verbatim in the candidate; adding func_8002EA24 to
+`inline_asm_canonical.txt` and retiring its 10 regfix rules remain surfaces a
+grind session may not touch, and the Judge deferred the FINAL CALL until the
+function is byte-identical on main with zero rules.
+
+#### H6 - CLOSED (session 5).  Acceptance of the two `/* FAKE */`-annotated
+constructs in the candidate is a layer-2 / Judge question, not a search question.
+
+## [s6] Target denies $a0 to neg_threshold via a preference or conflict-graph effect that costs no instruction (session 6's H5'').
+- mechanism: find_reg pass 0 excludes regs_someone_prefers[neg_threshold], which prune_preferences builds from LOWER-priority allocnos that CONFLICT with it and prefer $a0; since a live occupant of $a0 costs an instruction, the original's conflict was hypothesised to come from conflict-graph construction (e.g. a basic block's live-on-entry set) rather than a real dynamic overlap.
+- probe: Dumped cc1's -dg/-dl/-df/-dc for the banked score-2 body AND for the plain1 control (tmp/grind/func_8002EA24/s6/dump.sh), identified all 13 allocnos and the printed priority order, then dumped find_reg's actual pass-0 exclusion sets for allocno 103 (neg_threshold) in BOTH builds with the read-only BB2_FINDREG_DEBUG hook (s3/findreg.sh 103). Then measured the frontier's own probe #1, `rejstage` (a0_var's first set inside the first reject arm), and `yearly` (the y load hoisted ahead of the chain -- allocno 102 is the function's other $a0-preferring allocno).
+- result: The two builds' exclusion sets differ in exactly ONE bit, hard register 4. someone_prefers[103] = {6,7} in BOTH builds and 103's own copy/full preferences are EMPTY in both, so no preference route is even in play: {6,7} comes from allocnos 74 (threshold) and 75 (r_sq), the only two that are both lower-priority than 103 and conflicting with it. Both $a0-preferring allocnos (97 = a0_var, 102 = y) OUTRANK 103 in the printed order, so prune_preferences can never carry their preference into 103's exclusion set. rejstage = 3 with `negu $a0,$a2` unchanged (reject arms return, so a value set there is live at no join and neg_threshold is already dead on that path -- global_conflicts uses flow's path-accurate live-at-start, so there is no over-approximation to exploit). yearly = 11 (102 does not win $a0; 97 is allocated first).
+- verdict: KILLED
+
+## [s6] The last two points are reachable by making local-alloc, rather than global-alloc, hand out the registers (session 6's frontier probe 2 -- quantity merging).
+- mechanism: local_alloc runs before global_alloc and assigns hard registers to block-local quantities; if it merged or split the relevant pseudos differently, the global allocation would follow.
+- probe: Read the `;; Register dispositions` and `;; N regs to allocate` lists of the plain1 -dg dump and cross-checked which pseudos never reach global_alloc.
+- result: In plain1 the first range test's boolean is pseudo 104 and it is ALREADY a local-alloc quantity in $v0 (`104 in 2` in the dispositions, absent from the 13-entry allocate list) -- exactly target's shape. Local-alloc is not where our build and the original diverge; the divergence is entirely inside global_alloc's find_reg for allocno 103. No lever here.
+- verdict: KILLED
+
+## [s6] Hoisting the `y` load ahead of the range-test chain supplies the $a0 exclusion, because allocno 102 (y) is the function's OTHER $a0-preferring allocno.
+- mechanism: 102's printed hard-reg preference is 4; if y were live across the chain it would conflict with neg_threshold and, taking $a0, deny it.
+- probe: `yearly` -- `y = *(s32 *)(obj + 0x108);` moved to just before `max_y = *(s32 *)(obj + 0x100);` on the plain1 base; scored with sandbox --disable all and the chain registers read off the disassembly.
+- result: Score 11, 106 insns, `negu $a0,$a2` unchanged. 102 does not take $a0 -- 97 (a0_var) is allocated earlier in the priority order and wins it -- and the hoist costs the tail's `lw $v1,0x108($t0)` position.
+- verdict: KILLED
+
+## [s6] Target denies $a0 to neg_threshold via a PREFERENCE or conflict-graph effect that costs no instruction (session 6's H5'').
+- mechanism: find_reg pass 0 excludes regs_someone_prefers[neg_threshold], which prune_preferences (global.c:851-899) builds from the FULL preferences of LOWER-priority allocnos that CONFLICT with it. Since a live occupant of $a0 costs an instruction, the original's conflict was hypothesised to come from conflict-graph construction (a basic block's live-on-entry set) rather than from a real dynamic overlap.
+- probe: Dumped cc1 -dl -dg -df -dc for the banked score-2 body AND for the plain1 control (tmp/grind/func_8002EA24/s6/dump.sh), identified all 13 allocnos plus the printed priority order, then dumped find_reg's ACTUAL pass-0 exclusion sets for allocno 103 (neg_threshold) in BOTH builds with the read-only BB2_FINDREG_DEBUG hook (s3/findreg.sh 103). Then measured the frontier's own probe #1 -- rejstage, a0_var's first set inside the first reject arm -- and yearly, the y load hoisted ahead of the chain (allocno 102 is the function's other $a0-preferring allocno).
+- result: The two builds' exclusion sets differ in exactly ONE bit: hard register 4 ($a0). someone_prefers[103] = {6,7} in BOTH builds and 103's own_copy_prefs / own_full_prefs are EMPTY in both, so no preference route is even in play -- {6,7} comes from allocnos 74 (threshold) and 75 (r_sq), the only two that are both lower-priority than 103 and conflicting with it. Both $a0-preferring allocnos (97 = a0_var, 102 = y) OUTRANK 103 in the printed order `101 96 97 100 109 108 72 102 117 103 74 99 75`, so prune_preferences can never carry their preference into 103's exclusion set. rejstage = 3 with `negu $a0,$a2` unchanged; yearly = 11, also unchanged.
+- verdict: KILLED
+
+## [s6] The conflict can come from conflict-graph over-approximation: a0_var's FIRST set placed inside a reject arm the chain branches to, where the arm already stores the return value, would conflict with values live in the other arm for free (session 6's next-probe #1).
+- mechanism: GCC's global_conflicts records conflicts among allocnos live at basic-block boundaries, so a pseudo set in one arm of a diamond and used after the join can conflict with values live in the OTHER arm even though the two never coexist dynamically.
+- probe: rejstage -- `if (max_y < neg_threshold || threshold < max_y) { a0_var = 0; return a0_var; }` on the plain1 (score-3, no staging) base, scored with sandbox --disable all and the chain registers read off the disassembly.
+- result: Score 3, 107 insns, and the chain still reads `negu $a0,$a2` -- a0_var still takes $a0 and neg_threshold does not move. The failure is structural, not incidental: every reject arm RETURNS, so a value set there is live at no join, and along the arm's own path neg_threshold is already dead. GCC 2.7.2's global_conflicts walks flow's path-accurate basic_block_live_at_start, so a diamond whose arms both exit offers no over-approximation to exploit. Banked at rejected/a0var-first-set-in-reject-arm-inert-score3.c.
+- verdict: KILLED
+
+## [s6] Hoisting the `y` load ahead of the range-test chain supplies the $a0 exclusion, because allocno 102 (y) is the function's OTHER $a0-preferring allocno.
+- mechanism: 102's printed hard-reg preference is 4; if y were live across the chain it would conflict with neg_threshold and, taking $a0, deny it -- without touching a0_var's live range at all.
+- probe: yearly -- `y = *(s32 *)(obj + 0x108);` moved to just before `max_y = *(s32 *)(obj + 0x100);` on the plain1 base; scored with sandbox --disable all and the chain registers read off.
+- result: Score 11, 106 insns, `negu $a0,$a2` unchanged. 102 does not win $a0 -- 97 (a0_var) is allocated earlier in the priority order and takes it -- and the hoist costs the tail's `lw $v1,0x108($t0)` position. Banked at rejected/y-load-hoisted-across-chain-score11.c.
+- verdict: KILLED
+
+## [s6] The last two points are reachable through local-alloc rather than global-alloc (session 6's next-probe #2: local-alloc quantity merging as a lever).
+- mechanism: local_alloc runs before global_alloc and assigns hard registers to block-local quantities, creating hard-reg conflicts for the global allocnos; different quantity merging would change the global allocation.
+- probe: Read the `;; Register dispositions` and `;; 13 regs to allocate` lists of the plain1 -dg dump and cross-checked which pseudos never reach global_alloc.
+- result: In plain1 the first range test's boolean is pseudo 104 and is ALREADY a local-alloc quantity in $v0 (`104 in 2` in the dispositions, absent from the 13-entry allocate list) -- exactly target's shape. Local-alloc is not where our build and the original diverge; the divergence is entirely inside global_alloc's find_reg for allocno 103. The probe is answered by the dump and needs no experiment.
+- verdict: KILLED
+
+## [s6] The whole remaining sandbox distance of 2 is one bit of one hard-register set in one GCC pass, and only one of the four generators of that bit is instruction-free.
+- mechanism: find_reg (global.c:1012-1044) excludes a hard register for allocno A iff (1) it is in hard_reg_conflicts[A]; (2) it is already assigned to an allocno conflicting with A; (3) it is in regs_someone_prefers[A]; or (4) A's own copy/full preference override (:1057-1080) moves it elsewhere.
+- probe: BB2_FINDREG_DEBUG dumps of allocno 103 for the banked score-2 body and for plain1, plus the -dg allocno/priority tables for both, cross-referenced against the four exclusion mechanisms read out of global.c and against every measurement banked in sessions 2-6.
+- result: score-2 body: conflicts {2,3,4,5,8,29}, someone_prefers {6,7}, own prefs {} -> pass0_used {0,1,2,3,4,5,6,7,8,16..23,26..31} -> first free 9 = $t1 = TARGET. plain1: conflicts {2,3,5,8,29}, same someone_prefers, same empty own prefs -> first free 4 = $a0 = WRONG. Route (1) needs neg_threshold live at function entry: s5 measured four spellings, all 108 insns vs 107, because the negu then loses the `lw $a1,0x100($t0)` load-delay slot that target fills with it. Route (3) is closed by GCC's own priority order. Route (4) needs a reg-reg copy seeding a $t1 preference, and $t1 has no fixed role on MIPS. Route (2) is instruction-free ONLY when the value a0_var carries across the chain is a computation the chain already performs -- the first range test's boolean -- which is exactly the banked score-2 construct and which necessarily costs the boolean its own register.
+- verdict: CONFIRMED

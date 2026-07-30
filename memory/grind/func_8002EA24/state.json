@@ -1,8 +1,8 @@
 {
  "func": "func_8002EA24",
  "file": "code6cac_b",
- "session_count": 5,
- "current_modality": "permuter",
+ "session_count": 6,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -33,22 +33,28 @@
    "floor": 2,
    "modality": "permuter",
    "headline": "Floor holds at 2; directed permutation over the range-test chain is measured dead (34.3k iters, 3 chassis, nothing below the banked form -- one chassis reconstructed it independently), and the last tw"
+  },
+  {
+   "session": 6,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "Forensics localises the whole residual to ONE bit -- hard reg $a0 in find_reg's pass-0 exclusion set for the neg_threshold allocno -- and enumerates all four GCC generators of that bit; three are clos"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "H5'' -- target denies $a0 to neg_threshold via a PREFERENCE/conflict-graph effect that costs no instruction, not via an occupant of $a0.",
-   "mechanism": "find_reg pass 0 excludes regs_someone_prefers[neg_threshold], which prune_preferences builds from LOWER-priority allocnos that CONFLICT with it and prefer $a0. Since a live occupant costs an instruction (measured: every occupant/hoist variant emits 108 vs 107), the original's conflict must come from conflict-graph construction rather than a real dynamic overlap -- e.g. global.c recording conflicts from a basic block's live-on-entry set, so an a0_var whose first set sits inside one reject arm conflicts with values live in the OTHER arm for free.",
-   "next_probe": "Put a0_var's FIRST set inside one of the reject arms the chain branches to (the arms already exist and already store the return value, so a set there may cost nothing on the fall-through path); score with tmp/grind/func_8002EA24/s5/run.sh and read the chain registers off the dump. Then dump .lreg (cc1 ... -dl base.i) for the score-2 body and for plain1 and diff the quantity numbers of a0_var / x / neg_threshold to see whether local-alloc quantity merging is available as a lever. Verify any promising variant with tmp/grind/func_8002EA24/s3/findreg.sh 104 (someone_prefers / own_full_prefs) rather than by score alone."
+   "hypothesis": "H5''' -- the last two points are an allocator-INPUT residue (pseudo/priority structure) rather than a statement-shape residue, and the only untried lever is the allocno PRIORITY ORDER.",
+   "mechanism": "allocno_compare priority is floor_log2(n_refs)*n_refs / live_length. Route (3) -- regs_someone_prefers -- is the one exclusion mechanism that costs no instruction at all, and it is closed today only because both $a0-preferring allocnos (97 = a0_var, 102 = y) rank ABOVE 103. Anything that demotes 102 or 97 below 103 without changing the emitted instructions would open it, since both already carry the $a0 preference. The two knobs are reg_n_refs and live_length, both computable from the dump before building.",
+   "next_probe": "Build variants that change y's or a0_var's REFERENCE COUNT without changing the emitted instructions (e.g. reading *(s32 *)(obj + 0x108) twice and letting CSE collapse it, or splitting `y - a0_var` / `y + a0_var` across an extra reference), and read the `;; N regs to allocate` order out of tmp/grind/func_8002EA24/s6/dump.sh BEFORE scoring: the variant only matters if 102 or 97 moves past 103 in that list. Note the demoted allocno must ALSO conflict with 103, which reintroduces the liveness cost -- verify both conditions in the dump, then score."
   },
   {
-   "hypothesis": "H4 -- the GTE canonical-asm disposition, unchanged from sessions 2-6.",
+   "hypothesis": "H4 -- the GTE canonical-asm disposition, unchanged from sessions 2-7.",
    "mechanism": "Both GTE regions are hand-written asm in the original (46-function $t4 census; the LZC block is instruction-for-instruction identical to the user-authorized func_800274BC). The Judge has constrained the SHAPE and that shape is measured free; it is carried verbatim in the banked candidate.",
    "next_probe": "No grind action available -- adding func_8002EA24 to inline_asm_canonical.txt and retiring its 10 regfix rules are operator surfaces, and the Judge deferred the FINAL CALL until the function is byte-identical on main with zero rules."
   },
   {
-   "hypothesis": "H6 is CLOSED; what remains is ACCEPTANCE of the candidate's two /* FAKE */-annotated staged-value constructs, not a further search.",
-   "mechanism": "Both are instances of [[staged-value-reused-variable]] (a real value, read by the very next expression, staged through an existing local that is provably dead at the staging point, with zero dead stores); the fallback without them is banked (score 3 / score 6).",
+   "hypothesis": "H6 is CLOSED; what remains is ACCEPTANCE of the candidate's two /* FAKE */-annotated staged-value constructs, not a further search. Session 7 strengthens the case for L3 specifically.",
+   "mechanism": "Both are instances of [[staged-value-reused-variable]] (a real value, read by the very next expression, staged through an existing local that is provably dead at the staging point, with zero dead stores). This session's forensics shows L3 is not one option among many: it is the UNIQUE instruction-free generator of the single allocator bit that separates the build from target, with the other three generators enumerated and measured dead. The fallback without the constructs is banked (score 3 / score 6).",
    "next_probe": "Layer-2 cheat-reviewer / Judge ruling on the two constructs in memory/grind/func_8002EA24/candidate.c; if refused, candidate_alt_score3_no_fake.c is the fallback body."
   }
  ],

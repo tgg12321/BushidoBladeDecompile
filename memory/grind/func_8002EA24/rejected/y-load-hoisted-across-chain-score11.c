@@ -47,25 +47,6 @@
  * across the chain from a set whose VALUE is not the boolean -- see
  * hypotheses.md H5' for the exact statement.
  *
- * SESSION-7 FORENSICS (body UNCHANGED; floor still 2).  The residual is now
- * named exactly, in the compiler rather than in the source: pass `global_alloc`
- * (tools/gcc-2.7.2/global.c), decision = the pass-0 hard-register exclusion set
- * computed in `find_reg` (:1012-1044) for the `neg_threshold` allocno (pseudo
- * 103).  Measured with the BB2_FINDREG_DEBUG hook on THIS body and on the
- * `plain1` control (score 3, no staging): both have someone_prefers {6,7} and
- * EMPTY own preferences, and their conflict sets differ in exactly one member,
- * hard register 4 ($a0).  With the bit, find_reg's first free register is 9
- * ($t1) = target; without it, 4 ($a0).  find_reg can set that bit only four
- * ways, and all four are now measured: a hard-reg conflict with $a0 needs
- * neg_threshold live at function entry (s5: 108 insns, the negu loses the
- * load-delay slot); `regs_someone_prefers` is closed by GCC's own priority
- * order (both $a0-preferring allocnos, 97 = a0_var and 102 = y, OUTRANK 103);
- * an own-preference override needs a reg-reg copy seeding $t1, which nothing
- * supplies; and a conflict with the $a0 holder is instruction-free ONLY when
- * a0_var carries a value the chain already computes -- i.e. L3 below.  L3 is
- * therefore not one option among many: it is the unique instruction-free
- * generator of the one bit that separates this build from target.
- *
  * CHEAT VETTING (this body carries TWO annotated exceptions; layer-2 must rule).
  *   L1 and L3 are both instances of [[staged-value-reused-variable]]
  *   (SANCTIONED 2026-07-03): a REAL value, READ by the very next expression,
@@ -129,6 +110,7 @@ s32 func_8002EA24(u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
 
         /* max_y carries the rotated X here and the upper Y bound below -- one
          * local, two jobs, no extra statement (see L2 in the header). */
+        y = *(s32 *)(obj + 0x108);
         max_y = *(s32 *)(obj + 0x100);
         /* FAKE: stages the first range test's boolean -- a real value, read by
          * the very next `if` -- through a0_var, whose own value (the squared
@@ -141,8 +123,7 @@ s32 func_8002EA24(u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
          * sessions 2-4 (accearly/accmid/accpre/accsplit/xzptr, accshare,
          * vinlive, minmaxearly, tshare/tshare1/zshare/negshare, xtop, and the
          * five alternative staging variables measured this session). */
-        a0_var = max_y < neg_threshold;
-        if (a0_var || threshold < max_y) return 0;
+        if (max_y < neg_threshold || threshold < max_y) return 0;
         z = *(s32 *)(obj + 0x104);
         if (z < neg_threshold || threshold < z) return 0;
 
@@ -180,7 +161,6 @@ s32 func_8002EA24(u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
         } else {
             max_y = y_low;
         }
-        y = *(s32 *)(obj + 0x108);
         if (max_y < y - a0_var) return 0;
         /* FAKE: stages the return value 0 through z -- a real value, read by
          * the very next statement -- whose own value (the rotated Z) last
