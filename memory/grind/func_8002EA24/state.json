@@ -1,7 +1,7 @@
 {
  "func": "func_8002EA24",
  "file": "code6cac_b",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,23 +15,29 @@
    "floor": 9,
    "modality": "structural",
    "headline": "Judge-constrained minimal GTE vector-block spelling measured BYTE-IDENTICAL to the session-2 form (floor 9, free); H5's six register mismatches reduced by .greg derivation to ONE missing live-range co"
+  },
+  {
+   "session": 3,
+   "floor": 9,
+   "modality": "structural",
+   "headline": "Floor holds at 9; the session-3 allocator model is CORRECTED from the GCC source plus a live find_reg dump, four H5 sub-families are killed with measurements, and the first form ever to put x in targe"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "H5 -- the compare-chain register assignment (6 of the 9 residual points). x must land in $a1 and neg_threshold in $t1; both follow automatically from the single conflict a0_var <-> {x, neg_threshold}. The remaining problem is producing that conflict WITHOUT hoisting the mult/mflo pairs and WITHOUT shortening x's live range past z's load.",
-   "mechanism": "global.c first-fit allocation in REG_ALLOC_ORDER over the .greg conflict graph; allocno_compare priority floor_log2(n_refs)*n_refs/live_length; prune_preferences only lets an allocno skip a register preferred by a lower-priority conflicting allocno. Fully derived and hand-verified against the dump this session.",
-   "next_probe": "(1) Identify what occupies $a0 in TARGET across the compare chain -- run m2c on asm/funcs/func_8002EA24.s and look specifically for a value the reconstruction keeps live between the prologue and `addu $a0,$v0,$v1`. (2) Read the .lreg dump (`cc1 <build-flags> -dl base.i`) for x/a0_var quantity numbers and test whether local-alloc quantity merging can supply the conflict without a real overlap. (3) Test expand_preferences: look for a C form with a genuine copy into a0_var that would propagate a $a0 preference to a pseudo conflicting with x. (4) Only after 1-3, decomp-permuter with PERM_* over the compare-chain statement order and the sum-of-squares association (a permuter modality, not structural)."
+   "hypothesis": "H5 route (b) -- x can be steered into target's $a1 by acquiring its OWN preference for $a1, with no change to a0_var's live range at all. This is the un-attacked branch and it is the cheaper of the two.",
+   "mechanism": "expand_preferences (global.c:798-841) propagates preferences across any single_set insn that carries a REG_DEAD note for a non-conflicting allocno; the pos parameter is the only $a1-preferring pseudo in the function and it does NOT conflict with x; find_reg (global.c:1057-1080) then overrides its first-fit $a0 answer with the free preferred $a1.",
+   "next_probe": "Find a C form in which the insn that DEFINES x is also the insn where pos dies, WITHOUT merging x into the whole delta chain (that is tshare, which drags x's live range over the delta region and drops it to $v1 for a 7-point loss). Candidates: derive the 0x100 read address from pos rather than from obj; or load x through a pointer left dead by the third delta computation. Verify with tmp/grind/func_8002EA24/s3/findreg.sh 96 -- own_full_prefs / someone_prefers say directly whether the lever reached the allocator, which the score alone does not."
   },
   {
-   "hypothesis": "H4 -- the GTE canonical-asm disposition remains the blocking question (owner/operator action, not a grind-session action).",
-   "mechanism": "A hardcoded-$N template is the forbidden injection pattern by the letter of [[inline-asm-injection]]; the two in-tree sibling authorizations (func_8001A67C / func_800274BC, user-authorized 2026-06-10) for the identical construct are why this is a genuine classification question. The Judge constrained the SHAPE this session and that shape is now measured free, but did not authorize adding func_8002EA24 to inline_asm_canonical.txt or retiring its 10 regfix rules, and deferred the FINAL CALL until the function is byte-identical on main with zero rules.",
-   "next_probe": "No probe -- this is gated on H5 and H6 closing the remaining 9 points on the constrained body, after which the operator adds the function to inline_asm_canonical.txt and retires the rules (surfaces a grind session may not touch)."
+   "hypothesis": "H5 route (a) -- a0_var conflicts with x and neg_threshold AND is lower priority than both (the corrected form of session 3's 'one missing conflict').",
+   "mechanism": "Only a0_var prefers $a0 (.greg '98 preferences: 4'), so only a0_var can put $a0 into someone_prefers[x] / someone_prefers[neg]; that requires a real live-range overlap plus an allocno_compare priority below both, which a longer live range supplies automatically.",
+   "next_probe": "Lower-probability branch: two sessions have failed to find a C shape where a0_var is live across the chain from a set that is neither the multiply (mult hoist, accearly family) nor dead (accshare, killed this session). Treat as secondary to route (b), and if attempted, measure with findreg.sh 104 rather than by score."
   },
   {
-   "hypothesis": "H6 -- the tail 0/1 diamond (3 of the 9 residual points). Target keeps `bnez / addu $v0,$zero,$zero / addiu $v0,$zero,1`; our build folds to `slt; xori $v0,$v0,1`.",
-   "mechanism": "jump.c store-flag if-conversion on a single-set arm. Session 2 measured six pure-C tail shapes -- shared end label, reversed final comparison and if/else-both-arms are byte-identical; ternary 10, test-order swap 17, double-goto-reject 30.",
-   "next_probe": "The documented closure is [[dead-store-fake-exception]]: a dead `ret = 1;` INSIDE the else arm breaks jump.c's store-flag single-set precondition (detached placement does NOT work, per func_80078EC0). Requires documented lever-exhaustion (now supplied), a /* FAKE */ annotation and layer-2 cheat-reviewer sign-off -- do not self-approve."
+   "hypothesis": "H6 -- the tail 0/1 diamond, 3 of the 9 residual points (unchanged; not attempted in a structural modality).",
+   "mechanism": "jump.c store-flag if-conversion on a single-set arm; six pure-C tail shapes were measured in session 2 with three byte-identical.",
+   "next_probe": "The documented closure is [[dead-store-fake-exception]] -- a dead ret = 1; INSIDE the else arm (detached placement does NOT work, per func_80078EC0). Requires documented lever-exhaustion (supplied), a /* FAKE */ annotation and layer-2 cheat-reviewer sign-off; do not self-approve."
   }
  ],
  "judge_constraints": [

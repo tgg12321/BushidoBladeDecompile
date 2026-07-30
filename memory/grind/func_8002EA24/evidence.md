@@ -380,3 +380,160 @@ whole of H5.
 - [s2] src/code6cac_b.c was restored to HEAD at end of session (the score-9 form is banked in memory/grind/func_8002EA24/candidate.c only), so main's recorded floor and the tree are unchanged apart from the memory/grind ledger and tmp/ scratch.
 
 - [s2] H6 (the tail 0/1 diamond, 3 of the 9 residual points) was NOT attempted this session: the modality was structural and session 2 already measured the pure-C tail axis exhausted (six shapes, three byte-identical). Its documented closure is [[dead-store-fake-exception]], which requires a /* FAKE */ annotation and layer-2 review.
+
+## Session 4 (structural, 2026-07-30)
+
+### Floor: 9 (unchanged). What this session bought: the ALLOCATOR MODEL WAS WRONG, and the corrected model narrows H5 to a precisely stated requirement.
+
+Session 3 modelled `find_reg` as "first non-conflicting hard register in
+REG_ALLOC_ORDER". That model is incomplete, and the missing part is exactly
+where the target's assignment must come from. Read out of
+`tools/gcc-2.7.2/global.c` (READ-ONLY -- the compiler is frozen,
+[[no-compiler-divergence]]):
+
+1. **MIPS defines no `REG_ALLOC_ORDER`** (no match in `config/mips/mips.h`), so
+   the scan really is ascending hard-reg number. That part of the model holds.
+2. `find_reg` runs **TWO passes** (global.c:1012-1044). Pass 0's exclusion set is
+   `used1 | ~regs_used_so_far | regs_someone_prefers[allocno]`; only if pass 0
+   finds nothing does pass 1 fall back to plain conflicts.
+3. `regs_used_so_far` is **vacuous on MIPS**: global.c:353-355 pre-marks every
+   `call_used_regs` entry, which here is $v0-$v1, $a0-$a3, $t0-$t9. So the only
+   extra exclusion in pass 0 is `regs_someone_prefers`.
+4. `prune_preferences` (global.c:851-899) sets
+   `regs_someone_prefers[A] = union of hard_reg_full_preferences[B]` over
+   allocnos B that **conflict with A and have LOWER priority** (are allocated
+   later), minus (when B is no larger than A) the registers A itself prefers.
+5. After the pass loop, find_reg **overrides** `best_reg` with a register from
+   `hard_reg_copy_preferences[allocno]` (then `hard_reg_full_preferences`) of the
+   same class if one is still free (global.c:1057-1080). So an allocno's OWN
+   preference can flip its assignment away from the first-fit answer.
+6. Preferences are seeded by `set_preference` on each store (global.c:1404) and
+   then **spread by `expand_preferences`** (global.c:798-841) across ANY
+   `single_set` insn carrying a `REG_DEAD` note for a non-conflicting allocno --
+   not just reg-reg copies. Ordering matters: `expand_preferences` runs at
+   global.c:523 and `prune_preferences` at :548, so a preference can propagate to
+   a pseudo that does NOT conflict with the hard register and survive the pruning
+   that kills it on the original owner.
+
+### Measured allocator state at x's allocation (the decisive datum)
+`tmp/gccdbg/cc1` carries a read-only `BB2_FINDREG_DEBUG=<pseudo>` diagnostic hook
+(the shipped `tools/gcc-2.7.2/build/cc1` does NOT -- `strings` finds no
+`FINDREGDBG`). Running it over the score-9 form
+(`tmp/grind/func_8002EA24/s3/findreg.sh 96`, output `findreg_96.txt`; six blocks
+across the file, ours is the one whose conflict set matches the `.greg` state at
+x's turn):
+
+```
+FINDREGDBG pseudo=96 alt=0 acc=0 retry=0
+  conflicts:       2 3 29                 <- $v0, z's $v1, $sp
+  someone_prefers: 6 7                    <- $a2, $a3
+  pass0_used:      0 1 2 3 6 7 16..23 26..31
+  own_copy_prefs:  (empty)
+  own_full_prefs:  (empty)
+```
+
+`$a0` (4) is simply the first register not excluded, and x has no preference of
+its own to override it. The `6 7` come from `threshold` (74) and `r_sq` (75):
+lower-priority allocnos that conflict with x and prefer their incoming argument
+registers.
+
+### Why the incoming-parameter route to an `$a0` preference is CLOSED
+`obj` (allocno 72) is the first parameter, so it starts with a copy preference
+for `$a0` from the prologue `addu $t0,$a0,$zero`, and it IS lower priority than
+x (7th vs 5th) -- so it ought to put `$a0` into `someone_prefers[x]`. It does
+not, because `prune_preferences` line 877 first removes from an allocno's
+preferences every register it CONFLICTS with, and obj's `.greg` hard conflicts
+are `2 3 4 5 6 7 12 29` -- including `$a0` itself (obj is born at the prologue
+copy, where the incoming argument hard regs are still live). A pseudo live from
+function entry can never keep a preference for an argument register.
+
+### The corrected statement of H5
+Target needs `$a0` excluded from BOTH `x` and `neg_threshold`. Under the
+corrected model there are exactly two ways:
+  (a) an allocno that **prefers `$a0`**, **conflicts with** x and neg_threshold,
+      and is **LOWER priority than both**. The only allocno in this function that
+      prefers `$a0` is `a0_var` (98; `.greg` prints `98 preferences: 4`, inherited
+      through `expand_preferences`, and it does not conflict with hard `$a0`, so
+      the preference survives pruning). Session 3 said "one missing conflict"; the
+      correct requirement is **conflict AND priority-below** -- strictly harder.
+      Note `accearly` satisfies both (lengthening a0_var's live range also lowers
+      its priority), which is why it alone reached `negu $t1,$a2`.
+  (b) `x` acquires its OWN copy/full preference for `$a1` (the find_reg override
+      at global.c:1057). `pos` (parameter 2) is the only `$a1`-preferring pseudo
+      and it does NOT conflict with x, so `expand_preferences` may legally
+      propagate to x -- but only across an insn that both sets x's pseudo and
+      carries the `REG_DEAD` note for `pos`.
+
+### Measured this session (all `sandbox --disable all`; base = 9, md5 1fc26fe12849)
+| variant | score | compare-chain registers |
+|---|---|---|
+| `xtop` -- x declared at FUNCTION scope, loaded after the block decls | **9, byte-identical** | unchanged |
+| `tshare` -- x IS the delta temp (all three deltas) | 28 | x -> $v1 |
+| `tshare1` -- x IS the last delta temp only | 19 | x -> $v1 |
+| `zshare` -- z IS the last delta temp | 16 | unchanged (x $a0, z $v1, neg $a1) |
+| `negshare` -- neg_threshold IS the last delta temp | 16 | **x -> $a1 (target!)**, neg -> $v1, z -> $a0 |
+| `accshare` -- a0_var IS the last delta temp (dead early set) | 16 | unchanged |
+| `negearly` -- `-threshold` computed at function scope | 11 | unchanged |
+| `vinlive` -- y read as `vin[4]`, so vin lives across the chain | 14 | unchanged |
+| `minmaxearly` -- min_y/max_y zeroed at function scope | 18 | unchanged |
+
+Four things are settled by that table:
+- **A dead early set does NOT lengthen a live range** (`accshare`): liveness kills
+  the value at the re-set, so no conflict with x/neg is created. The obvious
+  reading of session 3's frontier -- "give a0_var a cheap early set that is not
+  the multiply" -- is DEAD; the early value must be genuinely live-out into the
+  chain.
+- **Extra pseudos live across the chain do not take `$a0`** (`vinlive`,
+  `minmaxearly`): adding conflicts is not enough; the occupier must be the
+  `$a0`-preferring allocno.
+- **The delta-temp-sharing family is dead on cost**, even though it is the only
+  lever that has ever put x in `$a1`: sharing a compare-chain variable with the
+  delta temp costs ~7 points in the delta/GTE region even when it changes no
+  register at all (zshare 16, accshare 16), which no register win repays.
+- `xtop` re-confirms for the third time that declaration position alone is inert.
+
+### Artifacts
+`tmp/grind/func_8002EA24/s3/` -- `run.sh` (splice+score+md5), `gen.py` (variant
+generator, one literal-substitution recipe per variant), `sweep.sh` (gen+score+
+register read-off), `findreg.sh` (BB2_FINDREG_DEBUG dump), `bank.py`,
+`findreg_96.txt`, `greg_8002EA24.txt`, `base.i`, per-variant `*.c` and `dis_*.txt`.
+
+- [s4] find_reg is NOT plain first-fit. GCC 2.7.2 global.c:1012-1044 runs two passes; pass 0 additionally excludes regs_someone_prefers[allocno], and regs_used_so_far is vacuous on MIPS because global.c:353-355 pre-marks every call_used_reg ($v0-$v1,$a0-$a3,$t0-$t9). MIPS defines no REG_ALLOC_ORDER, so the scan is ascending hard-reg number. After the pass loop find_reg OVERRIDES best_reg with a free register from the allocno's own hard_reg_copy_preferences / hard_reg_full_preferences of the same class (global.c:1057-1080).
+
+- [s4] prune_preferences (global.c:851-899) builds regs_someone_prefers[A] from the full preferences of allocnos that CONFLICT with A and are LOWER priority, and it first strips from every allocno's preference set the registers that allocno itself conflicts with (line 877). expand_preferences (global.c:798-841) runs BEFORE pruning (523 vs 548) and spreads preferences across any single_set insn carrying a REG_DEAD note for a non-conflicting allocno -- not only reg-reg copies -- so an inherited preference can survive on a pseudo where the original owner's conflict would have killed it.
+
+- [s4] MEASURED with the read-only BB2_FINDREG_DEBUG hook in tmp/gccdbg/cc1 (the shipped tools/gcc-2.7.2/build/cc1 does NOT carry it): at x's allocation in the score-9 form, conflicts={2,3,29}, someone_prefers={6,7} (from the lower-priority threshold/r_sq param allocnos preferring $a2/$a3), own_copy_prefs and own_full_prefs both EMPTY, pass0_used={0,1,2,3,6,7,16-23,26-31}. $a0 is simply the first non-excluded register and x has no preference to override it.
+
+- [s4] The incoming-parameter route to an $a0 preference is CLOSED: obj (allocno 72) is lower priority than x and does start with an $a0 copy preference from the prologue `addu $t0,$a0,$zero`, but prune_preferences strips it because obj's hard conflicts include $a0 itself (.greg: `72 conflicts: ... 2 3 4 5 6 7 12 29`). Any pseudo live from function entry conflicts with the argument registers and therefore cannot keep a preference for one.
+
+- [s4] H5 restated correctly: $a0 must be excluded from BOTH x and neg_threshold, which needs either (a) an allocno that prefers $a0, conflicts with x and neg, AND is LOWER priority than both -- a0_var is the only $a0-preferring allocno (`98 preferences: 4`), so this is session 3's conflict requirement PLUS a priority-below requirement (accearly satisfies both, which is why it alone produced `negu $t1,$a2`); or (b) x acquiring its OWN preference for $a1 via find_reg's post-pass override, which expand_preferences could only supply across an insn that sets x's pseudo and carries the REG_DEAD note for `pos`.
+
+- [s4] KILLED: a dead early set does not lengthen a live range. `accshare` (a0_var holds the third delta, whose value is stored and never read again) scores 16 with the compare-chain registers COMPLETELY unchanged. The early value must be genuinely live-out into the chain for a conflict to exist.
+
+- [s4] KILLED: merely adding pseudos live across the compare chain does not put anything in $a0. `vinlive` (y read as vin[4], so the GTE input pointer lives across the chain) = 14 and `minmaxearly` (min_y/max_y zeroed at function scope, real values used after the chain) = 18, both with unchanged compare-chain registers.
+
+- [s4] The delta-temp-sharing family is the ONLY lever measured so far that puts x in target's $a1 (`negshare`: neg_threshold IS the third delta temp -> `lw $a1,0x100($t0)`), but it is dead on cost: sharing costs ~7 points in the delta/GTE region even when it changes no register at all (zshare 16, accshare 16), and negshare's own total is 16 vs the 9 base, with neg in $v1 and z in $a0. tshare 28, tshare1 19 (x falls to $v1, not $a1).
+
+- [s4] `xtop` (x declared at function scope and loaded after the block's declaration list) is BYTE-IDENTICAL to the base (score 9, md5 1fc26fe12849) -- a third independent confirmation that declaration position alone is inert here. NOTE the C89 trap that cost two builds: a statement may not precede declarations in a block, so a function-scope x must be loaded AFTER the block's declaration list (an assignment spliced in among the declarations mis-builds to a 31-insn stub scoring 85-94).
+
+- [s4] src/code6cac_b.c was restored to HEAD at end of session (`git checkout --`), so main's recorded floor stays 18 and the tree is clean apart from the memory/grind ledger, the six new rejected/ forms and tmp/ scratch.
+
+- [s3] find_reg is NOT plain first-fit: two passes (global.c:1012-1044), pass 0 excluding regs_someone_prefers[allocno]; regs_used_so_far is vacuous on MIPS (global.c:353-355 pre-marks every call_used_reg); MIPS defines no REG_ALLOC_ORDER so the scan is ascending hard-reg number; and after the pass loop find_reg overrides best_reg with a free register from the allocno's own hard_reg_copy_preferences / hard_reg_full_preferences (global.c:1057-1080).
+
+- [s3] prune_preferences (global.c:851-899) builds regs_someone_prefers[A] from the full preferences of allocnos that conflict with A and are LOWER priority, after first stripping from every allocno's preference set the registers that allocno itself conflicts with (line 877). expand_preferences (global.c:798-841) runs BEFORE pruning (523 vs 548) and spreads preferences across any single_set insn carrying a REG_DEAD note for a non-conflicting allocno -- not only reg-reg copies.
+
+- [s3] MEASURED with the read-only BB2_FINDREG_DEBUG hook in tmp/gccdbg/cc1 (the shipped tools/gcc-2.7.2/build/cc1 has no FINDREGDBG strings): at x's allocation in the score-9 form, conflicts={2,3,29}, someone_prefers={6,7}, own_copy_prefs and own_full_prefs both EMPTY, pass0_used={0,1,2,3,6,7,16-23,26-31}. $a0 is the first non-excluded register and x has no preference to override it.
+
+- [s3] The incoming-parameter route to an $a0 preference is CLOSED: obj (72) is lower priority than x and starts with an $a0 copy preference from the prologue addu $t0,$a0,$zero, but prune_preferences strips it because obj's hard conflicts include $a0 (.greg: 72 conflicts ... 2 3 4 5 6 7 12 29).
+
+- [s3] H5 restated correctly: $a0 must be excluded from BOTH x and neg_threshold, which needs either (a) an allocno that prefers $a0, conflicts with x and neg, AND is lower priority than both -- a0_var (98, '.greg preferences: 4') is the only $a0-preferring allocno, so this is session 3's conflict requirement PLUS a priority-below requirement, and accearly satisfies both, which is why it alone produced negu $t1,$a2 -- or (b) x acquiring its OWN preference for $a1 via find_reg's post-pass override, which expand_preferences can only supply across an insn that sets x's pseudo and carries the REG_DEAD note for the pos parameter.
+
+- [s3] KILLED: a dead early set does not lengthen a live range (accshare = 16, compare-chain registers unchanged). The early value must be genuinely live-out into the chain, which is exactly what forces the mult hoist that killed the accearly family in session 3.
+
+- [s3] KILLED: merely adding pseudos live across the chain does not put anything in $a0 (vinlive = 14, minmaxearly = 18, both with unchanged compare-chain registers).
+
+- [s3] The delta-temp-sharing family is the only lever ever measured to put x in target's $a1 (negshare -> lw $a1,0x100($t0)), but it is dead on cost: sharing costs ~7 points in the delta/GTE region even when it changes no register at all (zshare 16, accshare 16); negshare totals 16 with neg in $v1 and z in $a0; tshare 28; tshare1 19.
+
+- [s3] xtop (x declared at function scope, loaded after the block's declaration list) is BYTE-IDENTICAL to the base (score 9, md5 1fc26fe12849) -- a third confirmation that declaration position alone is inert here. C89 trap that cost two builds: a statement may not precede declarations in a block, so the load must follow the declaration list (an assignment spliced among the declarations mis-builds to a 31-insn stub scoring 85-94).
+
+- [s3] src/code6cac_b.c was restored to HEAD at end of session (git checkout --), so main's recorded floor stays 18; the banked score-9 candidate in memory/grind/func_8002EA24/candidate.c is unchanged and re-verified this session (score 9, 102 insns, md5 1fc26fe12849).

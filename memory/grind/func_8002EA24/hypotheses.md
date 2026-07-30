@@ -311,3 +311,139 @@ self-approve it.
 - probe: Five structural shapes built and scored with `sandbox --disable all`, with the compare-chain registers read off each emitted disassembly: `accearly` (a0_var = x*x + z*z before all four range tests), `accmid` (between the x test and the z test), `accpre` (a0_var = x*x before x's test, += z*z after z's test), `accsplit` (a0_var = x*x after x's test, += z*z after z's test), `xzptr` (x/z/y read as v[0]/v[1]/v[2] off a live `s32 *v`).
 - result: Mechanism CONFIRMED: `accearly` emits `negu t1,a2` -- neg_threshold lands in $t1, target's register -- purely because a0_var is then live across the chain. But every such shape is WORSE overall: accearly 19, accmid 18, accpre 15, accsplit 14, xzptr 11, against the score-9 base. Setting a0_var early hoists both mult/mflo pairs ahead of the slt chain (target emits them after), and once a0_var is born before x's last use, x stops conflicting with z and falls into $v1 (earlier in REG_ALLOC_ORDER) instead of target's $a1.
 - verdict: KILLED
+
+## Session 4 (structural) - frontier rewritten
+
+### KILLED this session
+- **"Give a0_var a cheap early set that is not the multiply."** A DEAD early set
+  does not lengthen a live range: `accshare` (a0_var holds the third delta, the
+  value is stored and never read again) scores 16 with the compare-chain
+  registers completely unchanged. Any early set must be genuinely live-out into
+  the chain, which is what forces the mult hoist that killed the accearly family
+  in session 3.
+- **"Put anything else live across the chain."** `vinlive` (14) and
+  `minmaxearly` (18) add real live pseudos across the compare chain and change no
+  compare-chain register. Adding conflicts is not sufficient -- the register
+  must be denied by the `$a0`-PREFERRING allocno specifically.
+- **The delta-temp-sharing family.** Sharing a compare-chain variable's C
+  identity with the three delta temps costs ~7 points in the delta/GTE region
+  even when it changes no register at all (zshare 16, accshare 16). It is the
+  only lever that has ever put x in target's `$a1` (`negshare`, which also puts
+  neg in `$v1` and z in `$a0`), but at 16 vs the 9 base it cannot repay.
+  tshare 28, tshare1 19.
+- **Declaration position (third confirmation).** `xtop` is byte-identical to base.
+- **The incoming-parameter route to an `$a0` preference.** obj's `$a0` copy
+  preference is stripped by `prune_preferences` because obj conflicts with `$a0`
+  itself; no pseudo live from function entry can keep an argument-register
+  preference.
+
+### CORRECTED this session
+- **The allocator model.** `find_reg` is a TWO-pass algorithm with a
+  `regs_someone_prefers` exclusion in pass 0 and a post-pass OWN-preference
+  override, not plain first-fit (full derivation with global.c line numbers in
+  evidence.md). Session 3's hand-walk got the right answer for the wrong reason.
+
+### Live frontier (after session 4)
+
+#### H4 - GTE canonical-asm disposition (BLOCKING, owner/operator action)
+Unchanged from session 3. The Judge-constrained shape is measured free (score 9,
+md5 1fc26fe12849); adding func_8002EA24 to `inline_asm_canonical.txt` and
+retiring its 10 regfix rules remain surfaces a grind session may not touch, and
+the Judge deferred the FINAL CALL until the function is byte-identical on main
+with zero rules.
+
+#### H5 - the compare-chain register assignment (6 of the 9 residual points)
+**Statement (corrected).** `$a0` must be excluded from BOTH `x` and
+`neg_threshold`. Under the real find_reg that needs either
+(a) an allocno that PREFERS `$a0`, CONFLICTS with x and neg, and is LOWER
+PRIORITY than both -- `a0_var` is the function's only `$a0`-preferring allocno,
+so this is session 3's conflict requirement PLUS a priority-below requirement;
+or (b) `x` acquiring its own copy/full preference for `$a1`, which
+`expand_preferences` can only supply across an insn that SETS x's pseudo and
+carries the `REG_DEAD` note for the `pos` parameter (the only `$a1`-preferring
+pseudo, and one that does not conflict with x).
+**Mechanism.** global.c: two-pass `find_reg` (:1012-1044) with
+`regs_someone_prefers` (built in `prune_preferences`, :851-899, from
+lower-priority CONFLICTING allocnos) excluded in pass 0, and an own-preference
+override at :1057-1080; preferences seeded by `set_preference` (:1404) and spread
+by `expand_preferences` (:798-841) over any `single_set` with a `REG_DEAD` note
+for a non-conflicting allocno.
+**Next probe, in order.**
+1. Route (b) is the un-attacked one and it does not require touching a0_var's
+   live range at all: find a C form in which the insn that defines `x` is also
+   the insn where `pos` dies. The delta-temp share (`tshare`) is the crude
+   version and fails because it also drags x's live range over the delta region;
+   look for a form where `pos`'s LAST use and x's definition coincide in ONE
+   insn without merging the whole delta chain -- e.g. deriving the GTE / 0x100
+   address from `pos` rather than from `obj`, or loading x through a pointer that
+   the third delta computation leaves dead.
+2. Re-run `findreg.sh 96` / `104` on any promising variant BEFORE trusting the
+   score: `own_full_prefs` and `someone_prefers` say directly whether the lever
+   reached the allocator, which the score alone does not.
+3. Route (a) needs a0_var live across the chain from a set that is not the
+   multiply AND live-out (accshare proved a dead set is inert). No such C shape
+   has been found in two sessions; treat it as the lower-probability branch.
+4. Only after 1-3: decomp-permuter with `PERM_*` over the compare-chain
+   statement order and the sum-of-squares association (permuter modality).
+
+#### H6 - the tail 0/1 diamond (3 of the 9 residual points)
+Unchanged and not attempted (structural modality; the pure-C axis was exhausted
+in session 2 -- six shapes, three byte-identical). The documented closure is
+[[dead-store-fake-exception]]: a dead `ret = 1;` INSIDE the else arm breaks
+jump.c's store-flag single-set precondition (detached placement does NOT work,
+per func_80078EC0). Needs a `/* FAKE */` annotation and layer-2 cheat-reviewer
+sign-off; do not self-approve.
+
+## [s4] The compare-chain register assignment is decided by plain first-fit over the conflict graph, so one added live-range conflict is both necessary and sufficient (session 3's model).
+- mechanism: global.c allocates allocnos in allocno_compare priority order and find_reg takes the first non-conflicting hard register in ascending order.
+- probe: Read find_reg / prune_preferences / expand_preferences / global_alloc in tools/gcc-2.7.2/global.c (read-only), then dumped the actual pass-0 exclusion sets for pseudo 96 with the BB2_FINDREG_DEBUG hook in tmp/gccdbg/cc1.
+- result: The model is incomplete. find_reg runs two passes; pass 0 also excludes regs_someone_prefers[allocno] (the full preferences of LOWER-priority CONFLICTING allocnos), regs_used_so_far is vacuous on MIPS (all call-used regs pre-marked), and after the pass loop find_reg overrides its choice with the allocno's OWN free copy/full preference. Measured for x: conflicts {2,3,29}, someone_prefers {6,7} from threshold/r_sq, own prefs EMPTY -> $a0 is simply first-free. The correct requirement is therefore "an $a0-preferring allocno that conflicts with x and neg AND is lower priority than both" (only a0_var prefers $a0), or an own $a1 preference on x.
+- verdict: CONFIRMED (as a correction; session 3's conclusion was right by accident)
+
+## [s4] a0_var's live range can be extended across the compare chain by a cheap EARLY SET that is not the multiply, avoiding session 3's mult hoist.
+- mechanism: an allocno's live range starts at its first set, so any early set should create the conflict with x and neg_threshold.
+- probe: `accshare` -- a0_var is the same C variable as the third delta temp (`a0_var = pos[2] - base[2]; *(s16*)(obj+0xFC) = a0_var;`), so it is set well before the chain but the value is dead afterwards. Scored with sandbox --disable all and the compare-chain registers read off the disassembly.
+- result: Score 16 with the compare-chain registers COMPLETELY unchanged (x still $a0, neg still $a1). Liveness kills the value at the re-set, so no conflict is created; the ~7-point loss is entirely in the delta/GTE region.
+- verdict: KILLED
+
+## [s4] Making any additional pseudo live across the compare chain will occupy $a0 and push x/neg to target's registers.
+- mechanism: more live values across the chain means more conflicts and fewer free registers at x's and neg_threshold's allocation.
+- probe: `vinlive` (y read as vin[4] so the GTE input pointer is live across the chain) and `minmaxearly` (min_y/max_y zeroed at function scope, values genuinely used after the chain), both scored with the registers read off.
+- result: 14 and 18 respectively, compare-chain registers unchanged in both. The added pseudos take other registers; only the $a0-PREFERRING allocno can deny $a0.
+- verdict: KILLED
+
+## [s4] Giving a compare-chain variable the same C identity as the delta temps supplies the missing register effect (via expand_preferences propagation from the dying `pos` parameter).
+- mechanism: `pos` dies at the third delta load, so a pseudo set by that insn can inherit pos's $a1 preference through expand_preferences, and find_reg's post-pass override would then place it in $a1.
+- probe: Four sharing variants scored with registers read off: `tshare` (x shares all three deltas), `tshare1` (x shares the last delta only), `zshare` (z shares), `negshare` (neg_threshold shares), plus `xtop` as the declaration-position control.
+- result: The propagation is real but lands on the wrong pseudo: `negshare` puts x in target's $a1 (the first time any form has) while neg goes to $v1 and z to $a0; `tshare`/`tshare1` drop x to $v1. All four cost ~7 points in the delta/GTE region regardless of register effect (zshare 16 and accshare 16 change no register at all), so the family cannot repay: 16/16/19/28 against the 9 base. `xtop` is byte-identical to base.
+- verdict: KILLED as a closing form (CONFIRMED as a preference-propagation mechanism worth re-aiming: see H5 next-probe 1)
+
+## [s3] The compare-chain register assignment is decided by plain first-fit over the conflict graph, so the ONE missing live-range conflict a0_var <-> {x, neg_threshold} is both necessary and sufficient (session 3's model).
+- mechanism: global.c allocates allocnos in allocno_compare priority order and find_reg was assumed to take the first non-conflicting hard register in ascending order (MIPS defines no REG_ALLOC_ORDER).
+- probe: Read find_reg, prune_preferences, expand_preferences and global_alloc in tools/gcc-2.7.2/global.c (read-only; the compiler is frozen), then dumped the ACTUAL pass-0 exclusion sets for pseudo 96 (x) with the read-only BB2_FINDREG_DEBUG hook compiled into tmp/gccdbg/cc1 (the shipped tools/gcc-2.7.2/build/cc1 does not carry it).
+- result: The model is incomplete in the exact place that matters. find_reg runs TWO passes (global.c:1012-1044); pass 0 additionally excludes regs_someone_prefers[allocno], built in prune_preferences (:851-899) from the full preferences of LOWER-priority CONFLICTING allocnos; regs_used_so_far is vacuous on MIPS because global.c:353-355 pre-marks every call_used_reg; and after the pass loop find_reg OVERRIDES its choice with a free register from the allocno's own copy/full preferences (:1057-1080). Measured for x: conflicts {2,3,29}, someone_prefers {6,7} (threshold and r_sq preferring their argument registers), own_copy_prefs and own_full_prefs EMPTY, pass0_used {0,1,2,3,6,7,16-23,26-31} -- so $a0 is simply the first non-excluded register. The corrected requirement is 'an $a0-PREFERRING allocno that conflicts with x and neg AND is LOWER priority than both' (a0_var, allocno 98, is the function's only $a0-preferring allocno), or an own $a1 preference on x.
+- verdict: CONFIRMED
+
+## [s3] a0_var's live range can be extended across the compare chain by a cheap EARLY SET that is not the multiply, avoiding session 3's mult hoist.
+- mechanism: An allocno's live range starts at its first set, so any early set should create the conflict with x and neg_threshold.
+- probe: accshare -- a0_var made the same C variable as the third delta temp (a0_var = pos[2] - base[2]; *(s16*)(obj+0xFC) = a0_var;), so it is set well before the chain while the value is dead afterwards. Scored with sandbox --disable all, compare-chain registers read off the emitted disassembly.
+- result: Score 16 with the compare-chain registers COMPLETELY unchanged (x still $a0, neg_threshold still $a1). Liveness kills the value at the re-set so no conflict is created; the whole 7-point loss is in the delta/GTE region. A dead early set does not lengthen a live range.
+- verdict: KILLED
+
+## [s3] Making any additional pseudo live across the compare chain will occupy $a0 and push x / neg_threshold to target's registers.
+- mechanism: More values live across the chain means more conflicts and fewer free registers at x's and neg_threshold's allocation.
+- probe: vinlive (y read as vin[4] so the GTE input pointer obj+0xF8 stays live across the chain) and minmaxearly (min_y/max_y zeroed at function scope, holding real values used after the chain), both scored with the registers read off.
+- result: 14 and 18 respectively, compare-chain registers unchanged in both. The extra live pseudos take other registers -- only the $a0-PREFERRING allocno can deny $a0, which is exactly what the corrected find_reg model predicts.
+- verdict: KILLED
+
+## [s3] Giving a compare-chain variable the same C identity as the delta temps supplies the missing register effect, because the pos parameter dies at the third delta load and expand_preferences can propagate its $a1 preference onto the shared pseudo.
+- mechanism: expand_preferences (global.c:798-841) spreads preferences across any single_set insn carrying a REG_DEAD note for a non-conflicting allocno; find_reg then overrides its first-fit answer with a free own-preference register (:1057-1080).
+- probe: Four sharing variants scored with the registers read off -- tshare (x shares all three deltas), tshare1 (x shares the last delta only), zshare (z shares), negshare (neg_threshold shares) -- plus xtop as a declaration-position control.
+- result: The propagation is REAL but lands on the wrong pseudo: negshare puts x in target's $a1 (the first form in four sessions to do so) while neg_threshold goes to $v1 and z to $a0; tshare/tshare1 drop x to $v1. All of them cost ~7 points in the delta/GTE region regardless of any register effect (zshare 16 and accshare 16 change no register at all), so the family cannot repay: 16 / 16 / 19 / 28 against the score-9 base. xtop is byte-identical to base (score 9, md5 1fc26fe12849).
+- verdict: KILLED
+
+## [s3] The incoming first parameter (obj) can supply the $a0 exclusion for x and neg_threshold, since it is copy-preferred to $a0 and is lower priority than x.
+- mechanism: prune_preferences puts a lower-priority conflicting allocno's preferences into regs_someone_prefers of the higher-priority allocno, which pass 0 of find_reg excludes.
+- probe: Checked obj's (allocno 72) preference and conflict state in the .greg dump and in the find_reg debug output for x.
+- result: obj's $a0 preference is stripped by prune_preferences line 877, which first removes from an allocno's preferences every register it CONFLICTS with: obj's hard conflicts are 2 3 4 5 6 7 12 29, including $a0 itself, because obj is born at the prologue copy while the incoming argument hard registers are still live. $a0 is absent from someone_prefers[x] in the measured dump. No pseudo live from function entry can keep an argument-register preference.
+- verdict: KILLED
