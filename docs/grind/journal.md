@@ -686,3 +686,4 @@
 - 2026-07-29 14:17 func_8006B92C s6 [forensics] floor=6: Forensics: the 2-insn gap is reorg.c redundant_insn deleting the then-arm lui, enabled by local-alloc giving the else-arm mask constant $v0 instead of target's $v1 — fill-priority hypothesis falsified, three RA levers killed with dumps.
 - 2026-07-29 14:39 func_8006B92C s7 [forensics] floor=6: Forensics: instrumented cc1 (BB2_QTY_DEBUG) measured local-alloc's quantity table -- the else-arm mask constant is a block-local qty whose range is always disjoint from the counter chain's, so find_free_reg always returns $v0; the s6 frontier lever (lengthen/reorder the counter chain) is KILLED by two direct measurements.
 - 2026-07-29 14:54 CIRCUIT-BREAK: 3 consecutive invalid sessions on func_8006B92C
+- 2026-07-29 21:06 func_8006B92C COMPLETED-C after 8 sessions.
