@@ -82,6 +82,30 @@
  *     at 21 while this form, which it rates 650, sandboxes at 13.  Treat the
  *     permuter as a structure generator only.  (s4 H12)
  * ---------------------------------------------------------------------------
+ *
+ * ---- s5 (permuter, 2026-07-30): this form is UNCHANGED and still the floor --
+ * s5 closed the last statement-level axes.  Do not re-derive:
+ *   - The EC38-load-first swap that is worth -2 in the 39-insn family is worth
+ *     +5/+6 here: E70 store between the loads -> 19/39, E7C store between ->
+ *     19/38, both stores between -> 18/38.  ORDERING IS NOW DEAD IN BOTH
+ *     FAMILIES.  (s5 H17)
+ *   - Expression SPELLING is inert: 12 one-change semantics-preserving
+ *     re-spellings (sval as ((a0<<16)>>16)*8 / (s32)(s16)a0<<3, index operand
+ *     order, implicit guard, pe70[0] array syntax, declaration order, cast
+ *     placement, an extra u8* address local, u32 reloaded, >>11 as /0x800) ALL
+ *     score 13/38.  cc1 canonicalises them to the same RTL.  (s5 H18)
+ *   - The two exceptions confirm this form: splitting the pe62 pointer so only
+ *     the guard OR only the store goes through it scores 14/38 both ways.  The
+ *     alias is worth exactly -1 and only as ONE materialised address reused
+ *     across the branch - target's $t0, and nothing more.  (s5 H18 q08/q09)
+ *   - `short a1` (the permuter's one novel s5 construct; a1 is the parameter
+ *     whose home copy we are missing) scores 18/40 - GCC widens it back for the
+ *     32-bit `sw` into D_80101E7C, overshooting target's 39.  Both parameter
+ *     narrowings are now dead.  (s5 H20)
+ *   - A third campaign (fresh seed, EC38-first basin, 40,900 iterations,
+ *     harvested and stopped) found no other construct.  Permuter total for this
+ *     function: ~142k iterations, four campaigns, one useful construct ever.
+ * ---------------------------------------------------------------------------
  */
 s32 replay_camera_Init(s32 a0, s32 a1) {
     s32 sval;

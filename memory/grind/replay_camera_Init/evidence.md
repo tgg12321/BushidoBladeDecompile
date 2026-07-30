@@ -119,3 +119,61 @@
 - [s4] No layer-2 cheat-reviewer verdict was obtained on candidate.c's two /* FAKE */ pointer aliases (this session was constrained from spawning agents; the driver's Judge or the operator must supply it). It remains the highest-leverage open question: a FAIL reverts the floor from 13 to 17 and changes the entire frontier.
 
 - [s4] Reusable and validated this session: tmp/grind/replay_camera_Init/s4/setup_ws4.sh + setup_ws5.sh (workspace build), s4/sweep.py (apply-form -> sandbox -> restore, appends to sweep_results.json), s4/diffform.sh (re-preprocess the sandbox copy, compile, objdump side-by-side diff against target), s4/watch_ws5.sh (loop `permuter_campaign.py wait` for ~12 min in one call, because `wait` returns on EVERY novel output and this function produces them constantly).
+
+## s5 (permuter, 2026-07-30) — measured facts
+
+- **Ordering is now dead in the 38-instruction family too.** `candidate.c` = 13 / 38.
+  Issuing the `D_8008EC38` load first with the `D_80101E70` store between the loads
+  = 19 / 39; with `D_80101E7C = a1` between = 19 / 38; with BOTH stores between
+  = 18 / 38. The load-order swap that is worth −2 inside the 39-instruction family
+  is worth +5/+6 inside the 38-instruction one. (s5 H17; sweep in
+  `tmp/grind/replay_camera_Init/s5/sweep_results.json`.)
+- **s4 H14's 38-vs-39 predicate is too coarse.** p1 keeps a store between the two
+  loads and STILL emits 39 instructions. Textual adjacency of the loads is a proxy
+  for the real condition (the two loaded values being simultaneously live), not the
+  condition itself. H15's semantic kill of the 39-instruction family is independent
+  of this and still stands.
+- **The expression-SPELLING axis is inert.** Twelve one-change, semantics-preserving
+  re-spellings of `candidate.c` (sval as `((a0<<16)>>16)*8` / `(s32)(s16)a0 << 3`;
+  `sval + base` index operand order; implicit guard; `pe70[0]` array syntax;
+  declaration order swapped; cast placement in the E78 expression; an extra `u8 *`
+  address local; `u32 reloaded`; `>> 11` written `/ 0x800`) ALL score 13 / 38 —
+  identical to the floor. cc1 2.7.2 canonicalises them to the same RTL. (s5 H18.)
+- **The `pe62` address cache is worth exactly −1 and only when the guard read AND
+  the `*pe62 = 2` store both go through the pointer.** Splitting them (guard on the
+  symbol, store on the pointer, or vice versa) scores 14 / 38 both ways. This is a
+  direct confirmation of the "one materialised address reused across the branch"
+  justification in candidate.c's reviewer notice — target's `$t0`.
+- **The permuter mutates ONLY the named function.** `randomizer.py:2469`
+  `def randomize(self, ast, fn_name)` → `ast_util.extract_fn(ast, fn_name)[0]`,
+  with `fn_name` threaded from `settings.toml`'s `func_name` (`src/main.py:344-379`).
+  The 1071-line preprocessed TU used as `base.c` in s3/s4/s5 is context only, so the
+  ~33k (s3) + ~68k (s4) + s5 iterations were all genuine mutations of
+  `replay_camera_Init`. The "diluted search" alternative explanation for the dead
+  permuter axis is eliminated; s4 H12 (anti-correlated scorer) stands as the cause.
+- **Third permuter basin, fresh seed, nothing new.** ws6 seeded from p3
+  (EC38-load-first chassis, sandbox 18 / 38, permuter `base_score` 1080). Best finds
+  triaged by construct rather than score; the only construct they contain is the
+  already-known semantically-broken `sval` staging (`sval` reused to hold `cam_val`
+  and then used as the `D_8008EC38` index), identical in kind to s4's ws5
+  `output-295-1`. No novel construct in three campaigns across two sessions.
+
+- [s5] Floor unchanged at 13 / 38 instructions (target 39). candidate.c remains the strict optimum of every axis measured in five sessions.
+
+- [s5] 38-instruction ordering axis closed: candidate.c 13/38; EC38 load first with the E70 store between the loads 19/39; with D_80101E7C=a1 between 19/38; with both stores between 18/38.
+
+- [s5] s4 H14's predicate is too coarse and must not be relied on: p1 keeps a store between the two loads and still emits 39 instructions. Simultaneous liveness of the two loaded values, not textual adjacency, is the real condition.
+
+- [s5] Expression spelling is inert: 12 one-change semantics-preserving re-spellings of candidate.c all score 13/38 except the two that split the pe62 pointer, which score 14/38.
+
+- [s5] The pe62 pointer alias is worth exactly -1 and only when the guard read AND the *pe62 = 2 store both go through it — i.e. it reproduces target's one materialised $t0 address reused across the branch and nothing else. (Supporting fact for the pending layer-2 cheat-reviewer.)
+
+- [s5] decomp-permuter mutates ONLY the function named in settings.toml: randomizer.py:2469 randomize(ast, fn_name) -> ast_util.extract_fn(ast, fn_name)[0], fn_name threaded from src/main.py:344-379. The 1071-line preprocessed TU is context only, so all prior iteration counts are genuine.
+
+- [s5] `short a1` scores 18 / 40 — GCC widens the narrowed parameter back to SImode for the 32-bit `sw` into D_80101E7C, costing two instructions and overshooting target's 39.
+
+- [s5] Target's own encoding disproves both parameter narrowings: `sh $a0, %lo(D_80101E60)($at)` and `sw $a3, %lo(D_80101E7C)($at)`, both straight from un-narrowed 32-bit registers, with the home copy `addu $a3,$a1,$zero` a plain move in the bnez delay slot.
+
+- [s5] ws6 campaign (fresh seed, EC38-first basin, base_score 1080): 40,900 iterations, 266 finds, best score 505, harvested and STOPPED in-turn before the outcome was written.
+
+- [s5] candidate.c's two /* FAKE */ pointer aliases STILL carry no layer-2 cheat-reviewer verdict — s3 could not obtain one, s4 and s5 were both constrained from spawning agents. A FAIL reverts the floor 13 -> 17 and invalidates the frontier.

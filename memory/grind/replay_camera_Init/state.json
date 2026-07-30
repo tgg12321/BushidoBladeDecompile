@@ -1,7 +1,7 @@
 {
  "func": "replay_camera_Init",
  "file": "code6cac_b2_post",
- "session_count": 4,
+ "session_count": 5,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -33,23 +33,29 @@
    "floor": 13,
    "modality": "permuter",
    "headline": "Permuter axis measured dead on this function: two campaigns (23k + 45k iterations, both stopped in-turn) beat nothing, because the permuter's weighted score is ANTI-correlated with the sandbox here; t"
+  },
+  {
+   "session": 5,
+   "floor": 13,
+   "modality": "permuter",
+   "headline": "Permuter axis closed by construction (mutation IS function-scoped, scorer IS anti-correlated) and every remaining statement-level axis killed: 38-insn ordering, expression spelling (12 forms, inert), "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The remaining 13 points are a uniform DOWNWARD hard-register shift whose cause is the provenance of the original compilation unit, not the statement order of this function's body: target's compile carried genuine hard_reg_conflicts on $a1 AND $a2 at both allocation points, and nothing in this function's honest value set supplies them.",
-   "mechanism": "Target uses $v1/$a0/$a3/$t0 and leaves $a1 and $a2 unused in the whole body; our 38-insn floor form uses $v1/$a2 and our 39-insn forms $v1/$a1/$a2/$a3 \u2014 one or two hard registers below target in every case. s2 line-cited global.c: find_reg takes the lowest free hard reg (no REG_ALLOC_ORDER for MIPS in this tree) and prune_preferences can never deny a register the allocno itself prefers, so only real conflicts can produce target's numbering.",
-   "next_probe": "Switch modality to forensics / rederive: is replay_camera_Init the tail of a larger original function, does it inline a callee whose values occupy $a1/$a2, or does the original TU order place it where another construct keeps those hard regs live at entry? m2c the target and diff its allocno structure against ours (s2's frontier item 2, still unrun). Do NOT spend another session on statement order or on the permuter \u2014 both axes are now measured dead."
+   "hypothesis": "Everything statement-level is now measured dead and the only live question is PROVENANCE: target's compile carried genuine hard_reg_conflicts on $a1 AND $a2 at both allocation points, and nothing in this function's honest value set supplies them.",
+   "mechanism": "Ordering is dead in the 39-insn family (s4 H14/H15) and in the 38-insn family (s5 H17); expression spelling is inert (s5 H18); both parameter narrowings are dead (s4 H16, s5 H20); the volatile carve-out census is NEGATIVE (s2 H5); dead temporaries are a cheat and land in $v1 not $a3 anyway (s2 H7). s2 line-cited global.c: find_reg takes the lowest free hard reg (no REG_ALLOC_ORDER for MIPS in this tree) and prune_preferences can never deny a register the allocno itself prefers, so ONLY real conflicts can produce target's $a3/$t0 numbering.",
+   "next_probe": "Switch modality to forensics / rederive. Is replay_camera_Init the tail of a larger original function, does it inline a callee whose values occupy $a1/$a2, or does the original TU's ordering leave those hard regs live at entry? Concrete first step: m2c the target and diff its allocno structure against the .greg dumps already banked in s1/rtl/ and s2/rtl/. Do NOT spend another session on statement order, expression spelling, or the permuter."
+  },
+  {
+   "hypothesis": "The permuter axis is now closed BY CONSTRUCTION, not merely by outcome, and a fifth campaign cannot help.",
+   "mechanism": "s4 H12 proved the scorer is anti-correlated (registers priced at 5 while the entire residue IS register naming; the score-13 floor rates 650 while a sandbox-21 find rates 235). s5 H19 removes the last alternative explanation by reading randomizer.py: mutation is function-scoped, so the ~142k iterations were real. s5's third basin at 40.9k iterations produced no surviving construct. The scorer cannot be reweighted from a grind session (tools/ is outside the allowed surface).",
+   "next_probe": "None on this axis. If a future session is nonetheless assigned permuter modality, it should record this closure and spend the session on the provenance question instead of a fifth campaign."
   },
   {
    "hypothesis": "candidate.c's two /* FAKE */ pointer aliases survive a fresh layer-2 cheat-reviewer.",
-   "mechanism": "pointer-alias-fake-exception is a sanctioned last-resort family (owner ruling 2026-07-01) requiring documented lever exhaustion + a named GCC-pass mechanism + a /* FAKE */ annotation; candidate.c supplies all three and the exhaustion record is stronger again after s4's four kills. One new fact for the reviewer: the alias's non-aliasing property is load-bearing in both directions \u2014 it is what makes the re-read survive, and in neighbouring forms it also lets the scheduler sink the store past the load (s4 H15). candidate.c itself is unaffected and emits the store first.",
-   "next_probe": "Run a fresh cheat-reviewer on memory/grind/replay_camera_Init/candidate.c at the START of the next session (or have the operator/Judge rule). A FAIL reverts the floor from 13 to 17 and changes the whole frontier, so it must not be deferred behind another search session."
-  },
-  {
-   "hypothesis": "Within the 38-instruction family, the one naming defect s4 proved is movable \u2014 issuing the D_8008EC38 load BEFORE the SpecialCam load, which puts cam_val in $v1 to match target \u2014 can be carried over from the 39-insn family without buying the extra instruction.",
-   "mechanism": "In the 39-insn family that swap is worth -2 (h7 18 vs v_f 19; h8 17 vs h5 18) and corrects an actual register assignment rather than trading one mismatch for another. In the 38-insn family the loads are separated by a store, so the swap changes which value is live across that store and may move the guard-address allocation off $a2.",
-   "next_probe": "Apply the load-order swap directly to candidate.c (keeping the E6C or E7C store between the two loads so the body stays at 38 instructions) and sandbox each of the two placements. This is a two-measurement probe; if it does not beat 13 the 38-insn ordering axis is closed too and everything remaining is the provenance question above."
+   "mechanism": "pointer-alias-fake-exception is a sanctioned last-resort family (owner ruling 2026-07-01) requiring documented lever exhaustion + a named GCC-pass mechanism + a /* FAKE */ annotation; candidate.c supplies all three and the exhaustion record is stronger again after s5's four kills. New supporting fact from s5: q08/q09 show the pe62 alias is worth exactly -1 and only in the both-sides-through-the-pointer shape, i.e. it reproduces target's single materialised $t0 address and buys nothing else.",
+   "next_probe": "Have the operator or the Judge run a fresh cheat-reviewer on memory/grind/replay_camera_Init/candidate.c. Three consecutive sessions have been unable to spawn one. A FAIL reverts the floor from 13 to 17 and changes the whole frontier, so it must not keep being deferred behind another search session."
   }
  ],
  "judge_constraints": [],
