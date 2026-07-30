@@ -1,7 +1,7 @@
 {
  "func": "func_800477E8",
  "file": "sound",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,23 +15,29 @@
    "floor": 17,
    "modality": "structural",
    "headline": "cc1 -da allocation dump turned this into a solvable simulation: loop1's ENTIRE register seating now equals target, s1's 'v1 must stay shared' constraint is overturned, and the whole residual is confin"
+  },
+  {
+   "session": 3,
+   "floor": 5,
+   "modality": "structural",
+   "headline": "Floor 17 -> 5: m2c's goto-shaped loop2 denied its pseudos loop_depth reference weighting; rewriting loop2 as real loops (row pointer compiler-made, row counter shared with loop1's a3) makes loop1+loop"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The last half of tie B: inside loop2 the stored value must out-prioritise the walking pointer, so that the order becomes p, val, a0, ptr, w, r and each takes the lowest free register 2,3,4,5,6,7.",
-   "mechanism": "'val' has only 2 references ('val = w;' and '*p = val;') against 'ptr's 4-8, and both are tight-ranged, so floor_log2(2)*2/len loses badly to floor_log2(4)*4/len and ptr is allocated 4th in the whole function while val is second-to-last. This is the same inversion loop1 had, but loop1's fix (delete the conflict by splitting) is unavailable because val and ptr are genuinely both live across the inner loop.",
-   "next_probe": "Attack ptr's live_length rather than val's ref count - ptr is defined immediately before loop2 so its range is only ~8 insns; try forms that legitimately lengthen it (e.g. deriving loop2's row base from a cursor the D_800EF0xx init block above already needs, if the semantics support it), and forms that give val a genuine third reference from surrounding code. Screen every form on the .greg dump with VSET=variantsN python3 sweep.py BEFORE scoring - the score alone hid the loop1 solution for an entire session."
+   "hypothesis": "Tie A closes with a spelling of 'the 0x2C00 store is emitted twice but reads t2's pseudo once' that costs no instruction. This is the ONLY remaining defect: floor 5, and all five diffs are tie A.",
+   "mechanism": "priority = floor_log2(n_refs)*n_refs/live_length. t2 at 5 refs / 150 insns = 0.0667 beats t1val at 3 / 76 = 0.0395 and takes the lower $t1; t2 at 3 / 150 = 0.020 loses to it, and an EXACT tie also wins because allocno numbering favours t1val (76 < 83). t2's length is double t1val's purely because t2 is live on both arm paths while t1val is dead along the a3>=5 path.",
+   "next_probe": "Already dead and not to be re-run: two-ifs factoring (171), condition cached in a local (171), literal in both arms (170 but CSE rebuilds one pseudo, seating unchanged), literal in one arm only (171, score 3 -- closest miss), v0 copy (171), 's0[1] = t2;' hoisted with 's0 += 2' (167). Untried: express the two arms so their duplicated stores come from ONE source sequence that cc1 cross-jumps or tail-duplicates; and attack t1val's live_length downward instead -- with 3 refs it needs length <= 45 against its current 76, so anything that confines t1val to fewer basic blocks wins. Beware the alias-rename cheat family: a second C handle for the same value under a different name is NOT an allowed lever. Screen every form on the .lreg/.greg numbers with s3/sweep2.py before scoring."
   },
   {
-   "hypothesis": "Tie A needs a reference-count change that no structural lever can supply, so it belongs to a rederive/forensics session that re-expresses the two if/else arms.",
-   "mechanism": "t1val 2 refs vs t2 3 refs at identical live ranges. If the counts were equal the tie breaks on allocno number and t1val (76) beats t2 (83), which is exactly target's seating. The arms' payloads are {s3val, t2, s1val, -0xC1, -0x100, -0x3FC1, -0x4000} and {s2val, t2, t1val, -0x40C1, -0x4100, -0x7FC1, -0x8000}: the SECOND element is t2 in both and the negative constants differ by exactly 0x4000 between arms.",
-   "next_probe": "Re-express the arms from the primitive layout (tpage, clut, uv pairs; the 0x4000 arm delta looks like a semi-transparency/tpage bit) rather than as two duplicated literal store runs, and re-read the .greg dump for the t1val/t2 dispositions."
+   "hypothesis": "F5's original suggestion -- re-express loop1's two arms from the primitive layout rather than as two duplicated literal store runs -- is now the most promising untried direction, and it is a rederive-modality job.",
+   "mechanism": "The arms store {s3val, t2, s1val, -0xC1, -0x100, -0x3FC1, -0x4000} and {s2val, t2, t1val, -0x40C1, -0x4100, -0x7FC1, -0x8000}: the SECOND element is t2 in both and the negative constants differ by exactly 0x4000 between arms (which looks like a semi-transparency/tpage bit). A layout-driven expression changes t2's and t1val's reference counts wholesale, which is precisely the quantity tie A turns on -- and unlike the factoring probes it need not add a branch.",
+   "next_probe": "In a rederive session, rewrite the arms from the 11-halfword primitive layout (tpage, clut, uv pairs) with the arm difference expressed as data rather than as two store runs, then read the .greg dispositions for t1val/t2 and check build_insns is still 170. Hold fixed everything s3 established: loop2 real loops, row pointer and inner pointer compiler-made, a0 and a3 shared with loop1, loop1's inner loop left goto-shaped, pre-loop order a3/t2/a0."
   },
   {
-   "hypothesis": "The candidate's dependence on the exact order 't2 = 0x2C00; a3 = 0; a0 = 0;' should be made non-arbitrary before it is ever put in front of the Judge.",
-   "mechanism": "Pure allocno_live_length: a3 (6 refs) out-ranks t0 (5 refs) only while a3's live range is short, and each statement placed between 'a3 = 0;' and the loop head lengthens it. Not a coercion, but unmotivated as written.",
-   "next_probe": "Find a natural loop shape giving the row counter the same live range - but a full nested for() rewrite of loop1 was measured to create two extra induction pseudos (t2 -> $t4, t1val -> $t3), so re-read the dump after any loop-shape change rather than assuming shape neutrality."
+   "hypothesis": "The s3 loop-note finding generalises to the rest of the queue and is worth a project-level rule rather than more sessions on this function.",
+   "mechanism": "m2c goto-shaped loop bodies get no loop_depth reference weighting, so their register-allocation priorities are systematically wrong; two full sessions were spent on this function searching inside a shape that could not produce target's ordering. Any queue item that is a verbatim m2c transcription with goto-driven loops has the same defect.",
+   "next_probe": "Raise with the owner as a candidate .claude/rules entry or memory (alongside register-alloc-pure-c), with this function as the worked example: floor 17 flat across two sessions, then 17 -> 5 in one session once the loops were made real."
   }
  ],
  "judge_constraints": [],

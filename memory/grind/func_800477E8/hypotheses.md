@@ -270,3 +270,172 @@ register seating is judged. Also decide the fate of the inherited un-annotated
 - probe: Checked the t1val/t2 disposition in every one of ~30 structural variants across 7 rounds; separately read asm/funcs/func_800477E8.s to settle whether the two CalcClut results are one value.
 - result: No structural variant moved tie A. Target does 'jal gpu_CalcClut / addu $s1,$v0,$zero' with the addu in the DELAY slot, so $s1 captures the THIRD call's result and $t1 the FOURTH - two genuinely distinct call results, so the arms cannot legitimately share one. Both arms genuinely store 0x2C00, so t2's third reference cannot be removed honestly either. Tie A is worth 5 of the 17.
 - verdict: KILLED
+
+---
+
+## KILLED / RESOLVED in s3 (structural) — floor 17 -> 5
+
+### K9 — CONFIRMED, and it is the session's whole result: "loop2's allocation is unreachable because the m2c goto-loop shape denies its pseudos reference weight; writing loop2 as real loop constructs unlocks it."
+**Mechanism.** flow.c weights each register reference by `loop_depth`, which comes
+from `NOTE_INSN_LOOP_BEG` notes that the front end emits ONLY for real loop
+constructs. m2c's `goto outer2:` / `goto inner2:` loops emit none, so the loop2
+pseudos were scored unweighted: stored value 2 refs / 7 insns = 0.29 against the
+walking pointer's 8 / 21 = 1.14. No split, declaration order or statement order
+can beat a factor of 4 — which is exactly why s1 and s2 both stalled at 17.
+**Probe.** Rewrote loop2 as `do { ... for (a0 = 0x10; a0 >= 0; a0--) ... } while
+(...)`, screened on the .greg/.lreg dumps with the closed-form priority formula,
+then scored for real. Then followed the arithmetic to its conclusion over rounds
+8-15 (~40 variants).
+**Result.** The same references become 5-7 weighted and the order reverses.
+Floor 17 -> 14 -> 11 -> 6 -> 5, with build_insns held at 170 the whole way.
+**Verdict.** CONFIRMED. The accepted form is in candidate.c and its loop1, loop2
+and loop3 dispositions ALL equal target; the residual 5 is exactly tie A.
+
+### K10 — s2's K6/K7 partition CORRECTED: "loop2's row counter must be its own local."
+**Result.** The opposite, once loop2 is a real loop: it must be loop1's `a3`.
+Sharing gives 18 refs / 86 insns = 0.84, which is low enough that it is allocated
+LAST of the loop2 group and therefore takes $a3, as target has it. A fresh local
+scores 1.17, is allocated third, takes $a0's register and rotates the entire group
+(score 14 vs 5). s2's split of the STORED VALUE stands; s2's split of the COUNTER
+is withdrawn. Final partition: share `a0` and `a3` with loop1, keep `w` and `val`
+separate, and let the row pointer and the inner walking pointer be compiler-made.
+**Verdict.** KILLED (the fresh-counter form), see
+rejected/loop2-fresh-row-counter-rotates-seating-14-not-5.c.
+
+### K11 — "any real-loop spelling of loop2 will do."
+**Mechanism/result.** Two extra constraints, both measured:
+(a) the counter must be READ in the body, else cc1's `check_dbra_loop` reverses
+the loop into a countdown and target's `slti $v0,$a3,0x9` vanishes (build_insns
+169, score 11 with otherwise perfect dispositions);
+(b) the row pointer must NOT be a source variable. loop.c inserts iv inits into
+the preheader, i.e. after all source statements, so a source-level pointer is
+always initialised BEFORE a compiler-made accumulator — while target's preheader
+is `a3 = 0; w = 0; lui/addiu $a1`, pointer LAST. Indexing the row
+(`p = &D_800EF59C[a3 * 0x11]; p[a0] = val;`) satisfies both at once: the `a3 * 0x11`
+is the in-body read, and it makes loop.c strength-reduce the row address into $a1
+and the inner index into the $v0 walking pointer.
+**Verdict.** KILLED for the naive spellings; the surviving form is the candidate.
+See rejected/loop2-counter-unused-in-body-cc1-reverses-loop-169-insns.c.
+
+### K12 — s2's "fragile arbitrary statement order" caveat RETIRED.
+**Result.** With `a3` shared into loop2 the best pre-loop order is
+`a3 = 0; t2 = 0x2C00; a0 = 0;` — which is TARGET's own preheader order and also
+HEAD's. Worth exactly one instruction (score 6 -> 5). s2's `t2; a3; a0;` ordering
+was an artifact of s2's fresh row-counter local, so there is no unmotivated
+ordering left in the candidate for the Judge to object to.
+**Verdict.** RESOLVED.
+
+### K13 — s2's K8 ("tie A is unreachable by any structural lever") OVERTURNED ON MECHANISM, still open on cost.
+**Mechanism.** t1val 3 weighted refs / 76 insns = 0.0395; t2 5 / 150 = 0.0667, so
+t2 is allocated first and takes the lower $t1. t2's live_length is DOUBLE t1val's
+because t2 is used in both arms and stays live on both paths while t1val is dead
+along the `a3 >= 5` path.
+**Probe.** Lifted the shared `*s0 = t2;` store out of the two arms so t2 has ONE
+in-loop reference (3 refs / 150 = 0.020).
+**Result.** t1val -> $t1(9) and t2 -> $t2(10) — EXACTLY target — with every other
+disposition still correct. But factoring needs a second test of `a3 >= 5` and cc1
+emits 171 instructions against target's 170 (score 10-13); caching the condition
+in a local does not avoid it.
+**Verdict.** Mechanism CONFIRMED, form REJECTED on cost. See
+rejected/tieA-factor-t2-store-solves-seating-but-costs-one-insn.c for the full
+arithmetic and the six spellings already measured dead.
+
+### K14 — "raise loop1's reference weighting by making its inner goto a real loop; the model says that flips tie A."
+**Mechanism.** Depth-3 weighting would give t1val 2*4/76 = 0.105 against t2's
+2*7/150 = 0.093 — t1val wins. The model's prediction is correct as far as it goes.
+**Result.** Dead anyway: cc1 manufactures TWO extra induction pseudos for the
+recognised inner loop and they take $t1 and $t2, pushing t1val to $t3(11) and t2
+to $t4(12). Score 10 (do-while) / 13 (for), insns 170 — strictly worse than the
+goto shape's 5. Same failure mode s2 recorded for a full nested-for rewrite of
+loop1, now with two more data points: it is the inner loop's mere recognition that
+creates the extra ivs, not the amount of rewriting.
+**Verdict.** KILLED. The loop shapes are ASYMMETRIC and must stay that way: loop2
+real, loop1's inner goto. See
+rejected/loop1-inner-real-loop-adds-two-pseudos-10-not-5.c.
+
+---
+
+## Live frontier (for s4+)
+
+### F7 — Tie A closes with a spelling of "t2 is read once per iteration" that costs no instruction.
+**State.** This is the ONLY remaining defect: floor 5, and all five diffs are tie
+A. The mechanism is proven (K13) — one in-loop reference to t2 seats both
+registers exactly as target — so the search is now narrow and fully specified: any
+form in which the 0x2C00 store happens twice in the emitted code but reads t2's
+pseudo once, at 170 instructions.
+**Mechanism.** priority = floor_log2(n_refs)*n_refs/live_length; t2 at 5/150 beats
+t1val at 3/76, t2 at 3/150 loses to it, and an exact tie would also work because
+allocno numbering favours t1val (76 < 83). Screen on the .lreg numbers with
+tmp/grind/func_800477E8/s3/sweep2.py before scoring.
+**Next probe.** Already dead: two-ifs factoring (171), condition cached in a local
+(171), literal in both arms (CSE rebuilds one pseudo, 170 but unchanged seating),
+literal in one arm only (171, score 3 — the best score seen, and the closest miss),
+v0 copy (171), `s0[1] = t2;` hoisted with `s0 += 2` (167). Untried directions: a
+form where the two arms differ in which VARIABLE holds 0x2C00 while both variables
+come from one def (watch for the alias-rename cheat family — a second C handle for
+the same value under a different name is NOT allowed); expressing the arms so the
+duplicated stores come from cross-jumping a single source sequence; and attacking
+t1val's live_length downward instead (3 refs needs length <= 45 against its
+current 76, so anything that confines t1val to fewer basic blocks wins).
+
+### F8 — Judge surface to clear before this ever reaches distance 0.
+**State.** The body still carries HEAD's un-annotated `do { v0 = v1 | a1; } while
+(0);`. It falls under .claude/rules/do-while-zero-exception but carries no
+`/* FAKE */` annotation. Whoever reaches 0 must annotate or eliminate it. Also
+worth a fresh look now that loop1's arms are the only goto-shaped part left: the
+do-while(0) exists to keep the `a3 & 1` arms' two ORs in target's order, and a
+different arm spelling might make it unnecessary.
+
+### F9 — Generalise the s3 finding beyond this function.
+**Mechanism.** The lesson that unlocked this function is not function-specific:
+m2c goto-shaped loop bodies get NO loop_depth reference weighting, so their
+allocation priorities are systematically wrong and no amount of variable splitting
+inside them can fix it. Every remaining queue item transcribed verbatim from m2c
+with `goto`-driven loops is a candidate for the same treatment.
+**Next probe.** Worth raising with the owner as a project-level rule/memory rather
+than spending this function's sessions on it.
+
+## Superseded frontier (s2's F4/F5/F6)
+
+F4 (loop2's stored value vs the walking pointer) — SOLVED, see K9/K10/K11.
+F5 (tie A needs a reference-count change) — the diagnosis was exactly right and is
+now proven; it survives as F7, narrowed to a cost problem rather than a mechanism
+problem. Note F5's suggestion to re-express the arms from the primitive layout is
+still the most promising untried direction.
+F6 (make the statement ordering non-arbitrary) — RESOLVED, see K12.
+
+## [s3] loop2's allocation is unreachable not because of the variable partition but because m2c's goto-shaped loops emit no NOTE_INSN_LOOP_BEG, so flow.c never weights loop2's references by loop_depth; writing loop2 as real loop constructs raises the same pseudos' priorities and puts the group in play.
+- mechanism: GCC 2.7.2 global.c allocno_compare ranks by floor_log2(n_refs)*n_refs*size/live_length, and flow.c increments REG_N_REFS by loop_depth per reference. loop_depth comes from NOTE_INSN_LOOP_BEG, which the front end emits only for real loop constructs. With the goto shape loop2's stored value has 2 refs / 7 insns = 0.29 against the walking pointer's 8 / 21 = 1.14 -- a factor of 4 that no split, declaration order or statement order can close, which is exactly why s1 and s2 both stalled at 17. Computing that formula over the cc1 -da .lreg dump's 'Register NN used R times across L insns' numbers reproduces the .greg printed allocation order EXACTLY for every variant, so the seating became a closed-form calculation rather than a search.
+- probe: Built tmp/grind/func_800477E8/s3/sweep2.py (prints allocation order + dispositions + per-pseudo priority + cc1 insn count for a whole variant list, never touching src/) and screened ~50 loop2 forms across rounds 8-19, scoring the survivors with s2's score.py (apply -> sandbox --disable all -> restore).
+- result: Real loop constructs lift the loop2 pseudos from 0.29-1.14 to 1.0-1.8 and reverse the allocation order. Floor moved 17 -> 14 -> 11 -> 6 -> 5 with build_insns held at 170 throughout. The accepted form's loop1, loop2 AND loop3 dispositions all equal target on the .greg dump.
+- verdict: CONFIRMED
+
+## [s3] loop2's row counter must be its own local (s2's K6/K7 partition).
+- mechanism: s2 reasoned that a shorter live range always lifts priority, so every loop2 quantity should be split out of loop1's locals.
+- probe: Re-measured the counter as a fresh local vs shared with loop1's a3, on top of the real-loop loop2, on the .greg dump and then for score.
+- result: The opposite holds once loop2 is a real loop. Shared with a3 the allocno scores 18 refs / 86 insns = 0.84, low enough to be allocated LAST of the loop2 group and therefore take $a3 as target has it. A fresh local scores 7/12 = 1.17, is allocated third, takes $a0's register and rotates the whole group: score 14 instead of 5. s2's split of the STORED VALUE stands; s2's split of the COUNTER is withdrawn.
+- verdict: KILLED
+
+## [s3] any real-loop spelling of loop2 will do once the weighting is unlocked.
+- mechanism: If reference weighting is the only obstacle, the loop shape details should not matter.
+- probe: Measured explicit-walking-pointer, ptr-advanced-early, indexed-row, flat-indexed and LICM-manufactured-value spellings, reading both the dispositions and build_insns.
+- result: Two further constraints, both measured. (a) The counter must be READ inside the body: otherwise cc1's check_dbra_loop reverses the loop into a countdown and target's 'slti $v0,$a3,0x9' vanishes -- build_insns 169 against 170, score 11 even with otherwise perfect dispositions. (b) The row pointer must NOT be a source variable: loop.c inserts iv initialisations into the preheader, i.e. after all source statements, so a source-level pointer is always initialised BEFORE a compiler-made accumulator, whereas target's preheader is 'addu $a3,$zero,$zero; addu $a2,$zero,$zero; lui/addiu $a1' with the pointer LAST. Indexing the row (p = &D_800EF59C[a3 * 0x11]; p[a0] = val) satisfies both at once and is the only spelling that reaches 5.
+- verdict: KILLED
+
+## [s3] s2's caveat stands that the candidate depends on an arbitrary pre-loop statement order that a Judge would object to.
+- mechanism: s2 measured 't2 = 0x2C00; a3 = 0; a0 = 0;' as worth 9 points over HEAD's order and flagged it as unmotivated.
+- probe: Re-measured all three orderings on the new body, where a3 is shared into loop2.
+- result: The best order is now 'a3 = 0; t2 = 0x2C00; a0 = 0;' -- which is TARGET's own preheader order and also HEAD's -- worth exactly one instruction (score 6 -> 5). s2's ordering was an artifact of s2's fresh row-counter local. There is no unmotivated statement ordering left in the candidate.
+- verdict: KILLED
+
+## [s3] tie A (t1val/t2 for $t1/$t2) is unreachable by any structural lever (s2's K8).
+- mechanism: t1val has 3 weighted refs over a 76-insn live range (1*3/76 = 0.0395); t2 has 5 over 150 (2*5/150 = 0.0667), so t2 is allocated first and takes the lower $t1. t2's range is double t1val's because t2 is used in BOTH arms and stays live on both paths while t1val is dead along the a3>=5 path.
+- probe: Lifted the shared '*s0 = t2;' store out of loop1's two arms so t2 has ONE in-loop reference (3 refs / 150 = 0.020), with and without caching the condition in a local; also measured literal-in-both-arms, literal-in-one-arm, v0-copy, hoisted-'s0[1] = t2', inverted branch sense and swapped CLUT results.
+- result: Factoring produces t1val->$t1(9) and t2->$t2(10) -- EXACTLY target -- with every other disposition still correct, so the mechanism is proven and s2's K8 is overturned on mechanism. It is rejected only on COST: the second test of 'a3 >= 5' makes cc1 emit 171 instructions against target's 170 (score 10-13). Literal in one arm only scores 3, the best score seen anywhere, but also at 171. Literal in both arms leaves the seating unchanged at 170 (CSE rebuilds one pseudo with the same 2-use profile), confirming s1's K3 in the new body.
+- verdict: CONFIRMED
+
+## [s3] converting loop1's inner goto-loop into a real loop raises its reference weighting to depth 3 and flips tie A.
+- mechanism: At depth 3 the model gives t1val 2*4/76 = 0.105 against t2's 2*7/150 = 0.093, so t1val would win $t1. The arithmetic is correct as far as it goes.
+- probe: Converted the inner 'goto inner' to a do-while and separately to a for(), keeping every statement identical, and read the dispositions plus the score.
+- result: Dead anyway: cc1 manufactures TWO extra induction pseudos for the recognised inner loop and they take $t1 and $t2, pushing t1val out to $t3(11) and t2 to $t4(12). Score 10 (do-while) / 13 (for) at 170 insns, strictly worse than the goto shape's 5. Same failure mode s2 recorded for a full nested-for rewrite of loop1. The loop shapes are ASYMMETRIC and must stay so: loop2 real, loop1's inner goto -- loop2's counters are consumed as an index so cc1 builds the ivs target has, loop1's are consumed as packed UV values so cc1 builds ivs target does not have.
+- verdict: KILLED

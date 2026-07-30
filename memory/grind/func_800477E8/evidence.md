@@ -234,3 +234,158 @@ share one value" is answered NO; do not merge them.
 - [s2] Scores measured this session (all build_insns 170): HEAD 17; split-a2-only 23; split-a2+decl-a1-first 23; split-v1-only 29 (s1's K2 form); split-v1+split-a2 25; loop2-fully-split 25; loop2-fully-split+declorder 25; loop2-split-keep-a3 25; fullsplit+a3-init-last 26; fullsplit+a3-init-mid 17 (the candidate); mid+loop3-own-ptr 17; mid+val-declared-first 17; mid+loop2-head-shape 24; mid+loop2-own-counter 40; mid+loop3-own-ptr+own-counter 36.
 
 - [s2] src/sound.c was left byte-identical to HEAD at end of session (git status --porcelain -- src/ empty). Every measurement went through score.py's apply/restore cycle or the tmp-only dump path.
+
+## s3 (structural, 2026-07-30) — floor 17 -> 5; loop1 AND loop2 now exactly target
+
+**The model closed.** GCC 2.7.2 global.c `allocno_compare` ranks allocnos by
+`floor_log2(n_refs) * n_refs * size / live_length`, and `n_refs` / `live_length`
+are printed verbatim by the cc1 `-da` **`.lreg`** dump as
+`Register NN used R times across L insns`. Computing that expression over the
+`.lreg` numbers reproduces the `.greg` `;; N regs to allocate:` priority order
+**exactly, every time**, for every variant measured this session. Combined with
+`find_reg`'s "lowest-numbered hard reg not held by a conflicting allocno" (MIPS
+gcc-2.7.2 defines no `REG_ALLOC_ORDER`) and the printed conflict sets, the whole
+seating is now a closed-form calculation rather than a search. `size` is 1 for
+every allocno here, so it drops out. An EXACT tie falls back to allocno number
+(lower wins), which is reachable and is the intended endgame for tie A.
+
+**The lever s1 and s2 both missed: reference weighting is loop-note driven.**
+flow.c weights each reference by `loop_depth`, and `loop_depth` is driven by
+`NOTE_INSN_LOOP_BEG`, which the front end emits only for real loop constructs.
+m2c's `goto inner2:` / `goto outer2:` loops emit NONE, so every loop2 pseudo was
+being scored with unweighted references — which is why loop2's stored value sat
+at priority 0.29 and could never out-rank the walking pointer's 1.14, and why two
+sessions of statement-order and split probes could not move it. Writing loop2 as
+a real `do { ... for (...) ... } while (...)` nest raises the same pseudos to
+1.4-1.8 and puts the whole group in play. This is a general lesson for this
+codebase, not a fact about this function: **an m2c goto-loop body has
+systematically wrong allocation priorities, and no amount of variable splitting
+inside it can fix them.**
+
+**Loop2's two extra registers are compiler-made, and that is load-bearing.**
+Target's loop2 preheader is `addu $a3,$zero,$zero; addu $a2,$zero,$zero;
+lui/addiu $a1` — the row POINTER's def comes LAST, after both counters. loop.c
+inserts induction-variable initialisations into the preheader, i.e. after all
+source statements, so a compiler-made iv can only ever be initialised after a
+source-level pointer. Therefore in the original the row pointer is the
+compiler-made iv and the accumulator is the source variable, not the other way
+round. Indexing the row (`p = &D_800EF59C[a3 * 0x11]; p[a0] = val;`) makes loop.c
+strength-reduce the row address into `$a1` and the inner index into the `$v0`
+walking pointer, and only then does `addiu $a1,$a1,0x44` land in the branch delay
+slot as target has it. Source-level row pointer forms put the accumulator and the
+pointer in each other's registers, every time (score 14).
+
+- [s3] FLOOR 17 -> 5. memory/grind/func_800477E8/candidate.c scores 5 with
+  build_insns == target_insns == 170. Loop1, loop2 and loop3 register seating all
+  equal target on the .greg dispositions; the residual 5 is EXACTLY tie A
+  (t1val/t2) and nothing else, confirmed instruction-by-instruction with
+  tmp/grind/func_800477E8/s1/diff.py against build/src/sound.o (pass that as
+  argv[1] — the script's default reference build/asm/6CAC.o no longer contains
+  this function and raises KeyError).
+
+- [s3] The allocation priority formula floor_log2(n_refs)*n_refs/live_length over
+  the .lreg "used R times across L insns" numbers reproduces cc1's printed
+  allocation order exactly. Use tmp/grind/func_800477E8/s3/sweep2.py, which prints
+  order + dispositions + per-pseudo priority for a whole variant list in one run
+  and never touches src/. This makes every future probe on this function a
+  prediction, not a guess.
+
+- [s3] References are weighted by loop_depth, and goto-shaped loops emit no
+  NOTE_INSN_LOOP_BEG, so they get NO weighting. This is why s1/s2 could not move
+  loop2: with the goto shape the stored value has 2 refs (priority 0.29) against
+  the walking pointer's 8 (1.14), and 2 refs can never win. Real loop constructs
+  raise the same references to 5-7 and reverse the order.
+
+- [s3] loop2's row counter must be the SAME C variable as loop1's a3. Sharing
+  drags its priority to 0.84 (18 refs / 86 insns) so it is allocated LAST of the
+  loop2 group and takes $a3, as target has it. A fresh local scores 1.17, is
+  allocated third, and rotates the whole group (score 14 instead of 5). This
+  REVERSES s2's split for loop2's counter while keeping s2's split for the stored
+  value — the partition is: share a0 and a3 with loop1, keep w and val separate,
+  and let the row pointer and inner pointer be compiler-made.
+
+- [s3] loop2's counter must also be READ inside the body. With it used only by its
+  own increment and test, cc1's check_dbra_loop reverses the loop into a countdown
+  and drops target's `slti $v0,$a3,0x9` — build_insns 169, one short of 170, score
+  11 even with otherwise perfect dispositions. The `a3 * 0x11` row index supplies
+  that reference and simultaneously makes the row pointer compiler-made, so one
+  change buys both requirements.
+
+- [s3] The pre-loop initialisation order is TARGET's own order,
+  `a3 = 0; t2 = 0x2C00; a0 = 0;` (target preheader: addu $a3,$zero,$zero /
+  addiu $t2,$zero,0x2C00 / addu $a0,$zero,$zero), worth exactly one instruction
+  (score 6 -> 5). s2's caveat that the candidate depended on an arbitrary
+  `t2; a3; a0;` ordering is RETIRED: that ordering was an artifact of s2's fresh
+  row-counter local, and with a3 shared the order target itself emits is the best.
+
+- [s3] TIE A's mechanism is PROVEN and s2's K8 is overturned on mechanism (though
+  not yet on cost). Giving t2 a SINGLE in-loop reference — lifting the shared
+  `*s0 = t2;` out of loop1's two arms — produces t1val->$t1(9) and t2->$t2(10),
+  i.e. target, with every other disposition still correct. t2's priority is
+  2*5/150 = 0.0667 against t1val's 1*3/76 = 0.0395; t2's live_length is double
+  because t2 is used in BOTH arms and stays live on both paths while t1val is dead
+  along the a3>=5 path. Factoring drops t2 to 3 refs / 150 = 0.020 and it loses.
+  The obstacle is purely COST: factoring needs a second test of `a3 >= 5` and cc1
+  emits 171 instructions instead of 170 (score 10-13), and caching the condition
+  in a local does not avoid it.
+
+- [s3] Tie A alternatives measured this session: literal 0x2C00 in both arms —
+  CSE rebuilds one pseudo with the same 2-use profile, score 6, seating unchanged
+  (re-measurement of s1's K3 in the new body, same verdict); literal in the a3>=5
+  arm with t2 in the else arm — score 3 but build_insns 171, the best score seen
+  anywhere and still not a path to 0 because the second `li` is a real extra
+  instruction; both arms storing a v0 copy of t2 — score 39; `s0[1] = t2;` hoisted
+  ahead of the branch with `s0 += 2` in the arms — 167 insns, score 10; inverting
+  the arms' branch sense — score 18; swapping which CLUT result each arm stores —
+  score 7.
+
+- [s3] Converting loop1's INNER goto-loop into a real do-while or for is dead, and
+  for an instructive reason. The model predicts it flips tie A (depth-3 weighting
+  gives t1val 2*4/76 = 0.105 against t2's 2*7/150 = 0.093), but cc1 manufactures
+  TWO extra induction pseudos for the inner loop which take $t1 and $t2 and push
+  t1val to $t3(11) and t2 to $t4(12): score 10 (do-while) / 13 (for), insns 170.
+  Same failure mode s2 saw with a full nested-for rewrite of loop1. So the loop
+  shapes are ASYMMETRIC — loop2 MUST be real loops, loop1's inner MUST stay a
+  goto — because loop2's counters are consumed as an index (cc1 builds the ivs we
+  need) while loop1's are consumed as packed UV values (cc1 builds ivs we do not
+  want).
+
+- [s3] Also dead this session: splitting loop3's index off a0 (score 32); giving
+  loop2 its own inner counter (the compiler-made walking pointer then loses $v0);
+  fully flat indexing `D_800EF59C[a3*0x11 + a0]` with no row-base local at all
+  (156 cc1 insns, build 173, score 27); letting LICM manufacture the stored value
+  from `a3 * 0x7D0` with no source-level accumulator (score 14 — the accumulator
+  then becomes compiler-made and swaps $a1/$a2); making loop2's outer a for()
+  instead of a do-while (the row pointer lengthens by one insn and loses).
+
+- [s3] Harness added: tmp/grind/func_800477E8/s3/sweep2.py (dump screener with
+  priority arithmetic and a cc1 insn count; VSET=variantsN selects the variant
+  list, reused from s2's directory) and tmp/grind/func_800477E8/s3/apply.py
+  (splices a candidate body into src/sound.c in place). s2's score.py is unchanged
+  and still the real-measurement path. Variant lists variants8.py .. variants19.py
+  live alongside s2's in tmp/grind/func_800477E8/s2/.
+
+- [s3] src/sound.c was restored to HEAD at end of session; every measurement went
+  through score.py's apply/restore cycle or the tmp-only dump path.
+
+- [s3] FLOOR 17 -> 5. memory/grind/func_800477E8/candidate.c scores 5 with build_insns == target_insns == 170. Loop1, loop2 and loop3 register seating all equal target on the cc1 -da .greg dispositions; the residual 5 is EXACTLY tie A and nothing else, confirmed instruction-by-instruction against build/src/sound.o.
+
+- [s3] The honest diff at floor 5 (branch-offset noise removed) is: idx 26 'move t2,v0' vs 'move t1,v0'; idx 39 and 55 'sh t1,0(s0)' vs 'sh t2,0(s0)'; idx 57 'sh t2,0(s0)' vs 'sh t1,0(s0)'; plus the li of 0x2C00 landing in $t1 rather than $t2. All five are tie A.
+
+- [s3] The allocation model is now closed-form: priority = floor_log2(n_refs)*n_refs*size/live_length over the .lreg dump's 'Register NN used R times across L insns' numbers reproduces cc1's printed ';; N regs to allocate:' order EXACTLY, for every variant measured this session; size is 1 for all allocnos here. find_reg then gives each allocno the lowest-numbered hard reg not held by a conflicting allocno (MIPS gcc-2.7.2 defines no REG_ALLOC_ORDER), and an EXACT priority tie falls back to allocno number, lower first.
+
+- [s3] GENERAL LESSON, not function-specific: flow.c weights every register reference by loop_depth, and loop_depth comes from NOTE_INSN_LOOP_BEG notes that the front end emits only for real loop constructs. An m2c goto-shaped loop body therefore gets NO reference weighting at all, its allocation priorities are systematically wrong, and no amount of variable splitting inside it can fix them. Every queue item transcribed verbatim from m2c with goto-driven loops is a candidate for the same treatment.
+
+- [s3] Target's loop2 preheader order ('addu $a3,$zero,$zero; addu $a2,$zero,$zero; lui/addiu $a1', pointer LAST) is diagnostic: loop.c inserts iv initialisations after all source statements, so the row pointer being initialised last proves it is the compiler-made induction variable and the accumulator is the source variable. This is what forced the indexed-row form and it is why source-level row-pointer forms always swap $a1/$a2.
+
+- [s3] cc1's check_dbra_loop reverses a real loop whose counter is used only by its own increment and test, dropping the compare instruction. That cost one instruction (build_insns 169) with otherwise perfect dispositions, and the fix -- an honest in-body read of the counter -- is the same 'a3 * 0x11' row index that makes the row pointer compiler-made.
+
+- [s3] The candidate's pre-loop initialisation order is TARGET's own order, 'a3 = 0; t2 = 0x2C00; a0 = 0;', worth exactly one instruction. s2's flagged 'arbitrary statement order' Judge surface is therefore retired.
+
+- [s3] Tie A is a reference-count problem and is REACHABLE: giving t2 a single in-loop reference seats t1val->$t1 and t2->$t2 exactly as target, with every other disposition still correct. The only obstacle is that every spelling of that found so far costs one instruction (171 vs 170).
+
+- [s3] Also measured dead this session: splitting loop3's index off a0 (score 32); a fresh inner counter for loop2 (the compiler-made walking pointer then loses $v0); fully flat indexing D_800EF59C[a3*0x11 + a0] with no row-base local (build 173, score 27); letting LICM manufacture the stored value from a3 * 0x7D0 with no source-level accumulator (score 14); loop2's outer as a for() rather than a do-while (row pointer lengthens by one insn and loses); inverting the arms' branch sense (18); routing both arms' t2 store through v0 (39); 's0[1] = t2;' hoisted ahead of the branch with 's0 += 2' in the arms (167 insns, score 10).
+
+- [s3] src/sound.c was restored to HEAD at end of session (git status --porcelain -- src/ empty). Every measurement went through score.py's apply/restore cycle or the tmp-only dump path.
+
+- [s3] Harness for successors: tmp/grind/func_800477E8/s3/sweep2.py (dump screener with the priority arithmetic and a cc1 insn count, VSET=variantsN, never touches src/) and tmp/grind/func_800477E8/s3/apply.py (splices a candidate body into src/sound.c). s2's score.py is the real-measurement path and is unchanged. Variant lists variants8.py .. variants19.py sit next to s2's in tmp/grind/func_800477E8/s2/. NOTE: s1/diff.py needs build/src/sound.o passed as argv[1] -- its default reference build/asm/6CAC.o no longer contains this function.
