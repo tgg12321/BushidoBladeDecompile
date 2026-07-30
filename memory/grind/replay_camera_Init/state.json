@@ -1,7 +1,7 @@
 {
  "func": "replay_camera_Init",
  "file": "code6cac_b2_post",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -21,23 +21,29 @@
    "floor": 17,
    "modality": "structural",
    "headline": "Structural axis measured dead: volatile carve-out census came back NEGATIVE (closed gate), 8-form ordering sweep found candidate.c is a strict local optimum in both regimes, and the missing a1->$a3 co"
+  },
+  {
+   "session": 3,
+   "floor": 13,
+   "modality": "structural",
+   "headline": "First permuter campaign ever run on this function broke the 3-session plateau: a pointer-mediated re-read of D_80101E70 produces the reload honestly, floor 17 -> 13 (36 -> 38 insns), and target's own "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A decomp-permuter campaign seeded from candidate.c can find the RA/scheduling shape that four sessions of manual derivation have not. The permuter has still NEVER been run on this function.",
-   "mechanism": "Random plus directed PERM_* mutation over statement order, temporary introduction, and expression spelling explores a structural space that the s2 hand-built 8-form sweep only sampled. s0 deprioritized the infra, s1 was recon modality, s2 was structural modality \u2014 the axis is entirely unexplored.",
-   "next_probe": "Build a clean single-function target.o from asm/funcs/replay_camera_Init.s + tools/decomp-permuter/prelude.inc (drop the `.set gp=64` line for r3000) so the function sits at offset 0 like base.o \u2014 per difficult-is-not-impossible.md \u00a73 a whole-file target.o adds ~340k of constant score noise and makes the search useless. Seed from memory/grind/replay_camera_Init/candidate.c, launch via tools/permuter_campaign.py, wait IN-TURN with `permuter_campaign.py wait --dir <ws>`, and `harvest --stop` before writing the outcome."
+   "hypothesis": "The remaining 13 points are pure register naming on top of an already instruction-exact body: a hybrid between v_d (13 / 38) and v_f (19 / 39) reaches 0.",
+   "mechanism": "v_f proves target's statement order yields all 39 instructions with the parameter-home copy in the delay slot; v_d proves the pointer pair yields the lowest score at 38. The two forms differ by only three statement positions (where `D_80101E7C = a1;` sits, whether the two loads are adjacent, and where `D_80101E68 = 0;` sits). Each intermediate changes the live ranges global.c sees and therefore which hard regs the a1-home pseudo and the pe62 address pseudo receive.",
+   "next_probe": "Move ONE statement at a time from v_d's order toward v_f's, sandboxing each of the ~6 intermediate forms, and disassemble any form that keeps 39 instructions. Reproduce the objdump diff with tmp/grind/replay_camera_Init/s3/setup_ws3.sh (apply form to src/, run sandbox, re-preprocess the sandbox copy, compile, objdump-diff against ws3/target.txt)."
   },
   {
-   "hypothesis": "The `addu $a3,$a1,$zero` is not the ordinary parameter home of a two-parameter leaf; the original compile's allocno set differs from ours in a way that has not yet been identified.",
-   "mechanism": "s2 established a hard contradiction: in a two-parameter leaf whose only reference to $a1 is its own home copy, global.c's find_reg gives that pseudo hard reg 5 deterministically (preferences {5}, no constructible conflict on 5, lowest-free order, no REG_ALLOC_ORDER). Yet target puts it in $a3 (7), puts the D_80101E62 address in $t0 (8), and leaves hard regs 5 and 6 completely unused. Both the callee side (s1 H4: flow deletes dead parameter copies) and the caller side (s2: the caller never sets $a2/$a3 for the call) rule out a wider signature.",
-   "next_probe": "m2c the target function and diff the reconstructed structure \u2014 in particular the number and lifetimes of distinct values \u2014 against our two-allocno shape, instead of assuming ours is the original's shape. Then re-run the cc1 -da dump on any shape m2c suggests and compare `;; N conflicts` / `;; N preferences` lines against target's implied 4/7/8 allocation directly."
+   "hypothesis": "A permuter campaign seeded from the 39-instruction v_f - rather than from a 38-instruction form - closes the register-allocation residue.",
+   "mechanism": "All three s3 campaigns were seeded from bodies that were one instruction short, so every mutation started from a structurally incomplete body and the search spent itself re-finding the missing insn. Seeding from v_f makes the search purely over register allocation and store order, which is exactly what remains.",
+   "next_probe": "Apply v_f to src/, run `sandbox --disable all` to refresh the stripped copy, rebuild a ws4 with setup_ws3.sh's recipe, launch via tools/permuter_campaign.py with --stop-on-zero, wait IN-TURN with `wait --dir`, and sandbox-measure every de-permuted find (the permuter score is not a reliable proxy here)."
   },
   {
-   "hypothesis": "The `s16 *s0 = &D_80101E62;` address cache \u2014 worth a measured -1 (14 -> 13) in the reload regime per s1 \u2014 is now proposable as a properly-annotated pointer-alias-fake-exception rather than the unannotated form s0's reviewer FAILed.",
-   "mechanism": "pointer-alias-fake-exception is a SANCTIONED last-resort family (owner ruling 2026-07-01, SOTN precedent `tilemap = &g_Tilemap; // n.b.! unused, required for PSP`). Its prerequisites are documented lever-exhaustion, a named GCC-pass mechanism, and a `/* FAKE */` annotation \u2014 s0 supplied none of the three and was FAILed on that ground alone, with everything else passing. It reproduces target's exact address-materialisation shape (one lui;addiu reused for both the pre-branch lh and the post-branch sh, matching target's $t0).",
-   "next_probe": "Only after the permuter axis has run (so the exhaustion record is genuinely complete): re-propose the alias with the full annotation \u2014 lever-exhaustion pointing at s1 H2/H3 and s2 H5/H6/H7, the named mechanism (single materialized address reused across the branch, defeating the second lui), and a `/* FAKE */` comment \u2014 then send it to a fresh cheat-reviewer. Note it is only worth -1 and only in a regime the honest sandbox does not score, so it cannot close the function by itself."
+   "hypothesis": "The two /* FAKE */ pointer aliases in candidate.c survive a fresh layer-2 cheat-reviewer.",
+   "mechanism": "pointer-alias-fake-exception is a sanctioned last-resort family (owner ruling 2026-07-01, SOTN precedent `tilemap = &g_Tilemap;`) whose prerequisites are documented lever-exhaustion, a named GCC-pass mechanism, and a /* FAKE */ annotation. s0's proposal was FAILed for supplying none of the three; candidate.c now supplies all three, and the exhaustion record is materially stronger after s1 H1-H4 and s2 H5-H7.",
+   "next_probe": "Run a fresh cheat-reviewer on memory/grind/replay_camera_Init/candidate.c EARLY in s4, before spending the session on the register-naming residue - a FAIL reverts the floor to 17 and changes the whole frontier."
   }
  ],
  "judge_constraints": [],

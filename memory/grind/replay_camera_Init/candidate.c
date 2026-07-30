@@ -1,55 +1,82 @@
 /* Best-known form for replay_camera_Init — src/code6cac_b2_post.c
  * Apply this body in place of the current replay_camera_Init definition.
  *
- * Measured floor (unchanged s0 -> s1 -> s2, 2026-07-30):
- *   sandbox --disable all                  -> score 17, target 39 insns, build 36
- *   sandbox --disable all --keep-cheat-asm -> score 14, build 38
- * 0 register-asm pins, 0 __asm__ blocks, 0 pointer aliases, 1 residual regfix
- * rule (replay_camera_Init: fill_delay @ 26 <- 15 — cannot retire until score 0).
+ * Measured floor (s3, 2026-07-30):  17 -> 13.
+ *   sandbox --disable all  ->  score 13, target 39 insns, build 38
+ * (s0/s1/s2 floor was 17 / 36 insns.  The 14-with-cheats number the s2 header
+ * quoted is now IRRELEVANT: the D_80101E70 reload that only the stripped
+ * `extern volatile` used to produce is now produced HONESTLY, so the
+ * cheat-invisible sandbox sees it.)
  *
- * s0's cheat-reviewer (2026-07-05) FAILed an earlier version that carried
- * `s16 *s0 = &D_80101E62;` as an unannotated pointer alias
- * (pointer-alias-fake-exception requires lever-exhaustion + named mechanism +
- * a /* FAKE *\/ annotation, none of which were present). The alias is therefore
- * kept OUT of this form.
+ * 0 register-asm pins, 0 __asm__ blocks, 1 residual regfix rule
+ * (replay_camera_Init: fill_delay @ 26 <- 15 — cannot retire until score 0).
  *
- * s1 correction to the s0 note: the alias is score-inert only in the
- * volatile-STRIPPED regime that `--disable all` measures. With the reload
- * present it is worth -1 (14 -> 13). It is still not committable as-is, but do
- * not repeat s0's conclusion that it does nothing.
+ * ============================ REVIEWER NOTICE ============================
+ * This form carries TWO pointer-to-global locals (`pe62`, `pe70`).  They are
+ * the pointer-alias-fake-exception family and MUST be reviewed by a fresh
+ * layer-2 cheat-reviewer before this function can be accepted as COMPLETED-C.
+ * The three prerequisites that s0's FAILed proposal lacked are supplied here:
  *
- * s2 (structural modality) confirmed this exact form is a LOCAL OPTIMUM on the
- * ordering axis. Eight statement-order / declaration-order / type-narrowing
- * variants were measured in both regimes (sweep harness + results banked in
- * tmp/grind/replay_camera_Init/s2/); every neighbour is worse, including the
- * "write the statements in target's execution order" form, which scores
- * 18/37 stripped and 23/40 with the reload. The placement of
- * `D_80101E7C = a1;` BETWEEN the SpecialCam load and the D_8008EC38 load is
- * load-bearing — do not "clean it up" into the natural order.
+ *  (1) LEVER EXHAUSTION.  s1 H1/H2/H3/H4, s2 H5/H6/H7 — the volatile
+ *      carve-out census (NEGATIVE), the whole "constant-foldable pointer
+ *      invalidates CSE's memory table" family, the dead-extra-parameter RA
+ *      shift, and an 8-form statement-order / declaration-order /
+ *      type-narrowing sweep are all measured dead and banked in
+ *      hypotheses.md + rejected/.
  *
- * The 3-instruction shortfall is fully characterised in hypotheses.md:
- *   - 2 insns = the `lui/lw` reload of D_80101E70, produced ONLY by the
- *     pre-existing `extern volatile s32 D_80101E70;` at line 45 of the source
- *     file, which the cheat-invisible sandbox strips (cse.c:7329 — a volatile
- *     MEM has src_elt == 0 so its store is never recorded as a forwardable
- *     equivalence). s2's census KILLED the carve-out route: D_80101E70 has no
- *     asynchronous IRQ/callback writer, so the volatile is NOT eligible for
- *     legitimate-volatile-interrupt-touched.
- *   - 1 insn = `addu $a3,$a1,$zero`, the incoming-a1 parameter copy that target
- *     puts in the bnez delay slot. s2 CONFIRMED it materialises exactly when
- *     another live value occupies hard reg $a1 across the copy's range, and
- *     that this function's honest value set (sval / cam_val / ec_val) cannot
- *     supply that occupancy.
+ *  (2) NAMED GCC-PASS MECHANISM.  GCC 2.7.2 `cse.c:7308-7361` records a
+ *      store's destination MEM in the equivalence table keyed by the stored
+ *      value, so a LATER READ OF THE SAME MEM RTX folds to the stored
+ *      register (store-to-load forwarding) and the reload disappears.  The
+ *      read `*pe70` is a DIFFERENT rtx — `(mem (reg))`, not
+ *      `(mem (symbol_ref))` — so `exp_equiv_p` does not match it against the
+ *      recorded `(mem (symbol_ref "D_80101E70"))` entry and the load survives
+ *      to codegen, exactly as it does in target.  This is the mechanism the
+ *      `volatile` used to supply via the `sets[i].src_elt == 0` guard at
+ *      cse.c:7329; the pointer supplies it without any type qualifier.
+ *      `pe62` supplies target's SECOND observable shape: one materialised
+ *      address (`lui;addiu`) held in a register and reused for both the
+ *      pre-branch `lh` and the post-branch `sh` — target's `$t0`.
  *
- * Everything else in the 17 is register naming — and s2 established that our
- * naming for sval / cam_val / ec_val ($v0 / $v1 / $a0) ALREADY matches target
- * exactly. The two register-level residuals are the $t0 address cache for
- * D_80101E62 (the alias) and the $a3 copy.
+ *  (3) /* FAKE *\/ ANNOTATION.  Both declarations carry it inline below.
+ *
+ * NOTE the important difference from s1's KILLED H2: H2 predicted the alias
+ * would invalidate ALL memory equivalences (via note_mem_written) and was
+ * correctly killed — the address does constant-fold, so nothing is
+ * invalidated.  What actually works is narrower and was never tested before
+ * s3: the alias does not invalidate anything, it simply makes the READ a
+ * non-matching rtx.  Do not confuse the two.
+ * =========================================================================
+ *
+ * s3 measurements around this form (all `sandbox --disable all`):
+ *   candidate.c (this)                                 13 / 38
+ *   without pe62 (direct D_80101E62)                   14 / 38
+ *   without pe70 (direct read of D_80101E70)           19 / 35   <- reload gone
+ *   s0-s2 candidate (neither pointer)                  17 / 36
+ *   target statement order + both pointers             19 / 39   <- 39 insns!
+ *
+ * The last line is the live frontier: writing the body in target's own
+ * execution order (both loads, both stores, the re-read, and only THEN
+ * `D_80101E7C = a1;`) produces exactly 39 instructions INCLUDING the
+ * `move a3,a1` parameter home in the bnez delay slot that four sessions could
+ * not materialise — but lands it in $a2 and shuffles the store order, so the
+ * score rises to 19.  It is a register-naming problem now, not a
+ * missing-instruction problem.  See tmp/grind/replay_camera_Init/s3/.
  */
 s32 replay_camera_Init(s32 a0, s32 a1) {
     s32 sval;
+    /* FAKE — pointer-alias-fake-exception: materialises D_80101E62's address
+     * once into a register so the guard's `lh` and the later `sh` share it,
+     * reproducing target's $t0.  See the REVIEWER NOTICE above. */
+    s16 *pe62 = &D_80101E62;
+    /* FAKE — pointer-alias-fake-exception: makes the re-read of D_80101E70 a
+     * `(mem (reg))` rtx that cse.c's store-to-load forwarding cannot fold
+     * against the recorded `(mem (symbol_ref))`, so the reload survives.  See
+     * the REVIEWER NOTICE above. */
+    s32 *pe70 = &D_80101E70;
+    s32 reloaded;
 
-    if (D_80101E62 != 0) {
+    if (*pe62 != 0) {
         return 0;
     }
 
@@ -66,8 +93,9 @@ s32 replay_camera_Init(s32 a0, s32 a1) {
         D_80101E70 = ec_val;
     }
     D_80101E68 = 0;
-    D_80101E62 = 2;
+    *pe62 = 2;
+    reloaded = *pe70;
     D_80101E9E = 0;
-    D_80101E78 = (u32)(D_80101E70 + 0x7FF) >> 11;
+    D_80101E78 = (u32)(reloaded + 0x7FF) >> 11;
     return 1;
 }

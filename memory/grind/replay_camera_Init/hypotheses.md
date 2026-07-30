@@ -314,3 +314,157 @@ set (sval / cam_val / ec_val) supplies three. Banked:
 - probe: Regenerated the cc1 -da dumps for the current candidate (tmp/grind/replay_camera_Init/s2/rtl/) and read the allocno sets directly; then built a DIAGNOSTIC form with three extra simultaneously-live block-local temporaries spanning the `D_80101E7C = a1;` store (semantics deliberately changed, never committable), sandboxed it and disassembled the object.
 - result: CONFIRMED as a mechanism, KILLED as a route. The diagnostic produced the copy exactly as predicted — `3b0: move v1,a1` at the top of the function, the same insn target places in the bnez delay slot, while a local temp took $a1 (`3e4: lw a1,8(at)`); score 26 / 49 insns. Dead for two independent reasons: (1) the extra temporaries have no semantic purpose, making any such form a dead-value cheat by any spelling; (2) even so, the copy lands in $v1 (hard reg 3), NOT target's $a3 (hard reg 7) — reaching 7 needs hard regs 2,3,4,5,6 all unavailable at that allocno's allocation point, i.e. FIVE values live across the a1-store region, where this function's honest value set (sval / cam_val / ec_val) supplies three.
 - verdict: CONFIRMED
+
+## s3 (structural / permuter, 2026-07-30)
+
+### H8 — A decomp-permuter campaign over the honest (cheat-invisible) regime finds a structural lever four sessions of manual derivation did not. **CONFIRMED — FLOOR 17 -> 13**
+**Statement.** The permuter had never been run on this function. s2 declared the
+ordering axis a strict local optimum from an 8-form hand sweep; a randomised
+plus directed PERM_* search over statement order, temporary introduction and
+expression spelling samples a much wider structural space.
+
+**Probe.** Built a CLEAN single-function workspace per
+difficult-is-not-impossible.md section 3 (`tmp/grind/replay_camera_Init/s3/ws*/`):
+`target.o` assembled from `asm/funcs/replay_camera_Init.s` + the permuter
+prelude with `.set gp=64` removed (r3000) so the function sits at offset 0 like
+`base.o`; `compile.sh` reproduces the Makefile pipeline for code6cac_b2_post
+(CC_FLAGS / prologue_fix / MASPSX_FLAGS / multu_pad, NO regfix/asmfix) and then
+extracts only replay_camera_Init's region, so the score is the real per-function
+diff (validated at base 36 insns vs target 39, base_score 1295). `base.c` is
+preprocessed from the SANDBOX copy of the TU, i.e. the volatile-stripped
+cheat-invisible source, so the search runs in exactly the regime the grind
+scores. Three campaigns, ~33k iterations total, each re-seeded from the best
+sandbox-measured form.
+
+**Result (CONFIRMED).** The first campaign's best find (`ws/output-725-1`)
+introduced `s32 *new_var = &D_80101E70; ... new_var2 = *new_var;` — a
+pointer-mediated RE-READ of the global. De-permuted and sandboxed, that form
+scores **15 / 38 insns**; reduced to its minimal delta from the s2 candidate
+(candidate.c + the pointer read only) it scores **14 / 38**; adding the
+analogous `s16 *pe62 = &D_80101E62;` gives **13 / 38**. The honest floor moved
+17 -> 13 and build_insns 36 -> 38 for the first time in the grind.
+
+**Cross-check that isolates the lever.** `v_b` — the permuter's statement
+reordering WITHOUT the pointer, reading `D_80101E70` directly — scores 19 / 35:
+the reload is gone and the score is worse than the s2 baseline. The pointer, not
+the reordering, is what produces the two missing instructions.
+
+### H9 — The D_80101E70 reload is reachable in pure C without `volatile`. **CONFIRMED (s1 H2's family kill was too broad)**
+**Statement.** s2 concluded "there is currently no known GCC 2.7.2 mechanism by
+which a non-volatile store-then-read of the same global survives cse_insn's
+store-to-load forwarding." That is now false.
+
+**Mechanism (named, GCC 2.7.2 source).** `cse.c:7308-7361` inserts the store's
+destination MEM into the equivalence table keyed by the stored value, and the
+later read folds to that register only if `exp_equiv_p` matches the two rtxes.
+Reading through a pointer local makes the read `(mem (reg))` while the recorded
+entry is `(mem (symbol_ref "D_80101E70"))` — they do not match, so no forwarding
+happens and the `lui`/`lw` pair survives to codegen at exactly target's
+position. s1's H2 tested a DIFFERENT and much stronger claim (that the alias
+would invalidate ALL memory equivalences through `note_mem_written`), correctly
+killed it because the address constant-folds, and then generalised the kill to
+"any C pointer whose initializer GCC can constant-fold fails identically". That
+generalisation was wrong: the working mechanism needs no invalidation at all,
+only a non-matching read rtx — and it is the READ that must go through the
+pointer, whereas H2 aliased the STORE, and to a different global (D_80101E62).
+
+**Probe / measurement.** `sandbox --disable all`; forms banked in
+`tmp/grind/replay_camera_Init/s3/variants/`, numbers in
+`tmp/grind/replay_camera_Init/s3/sweep_results.json`:
+
+| form | score | build insns |
+|---|---|---|
+| s0-s2 candidate (no pointers) | 17 | 36 |
+| + `s32 *pe70` re-read (v_a) | 14 | 38 |
+| + `s16 *pe62` guard/store alias (v_d) | **13** | **38** |
+| v_d with `D_80101E7C = a1` moved late (v_g) | 13 | 38 |
+| permuter ws3/output-465 de-permuted (v_h) | 13 | 38 |
+| permuter ws/output-725 de-permuted (p725) | 15 | 38 |
+| permuter ws2/output-625 de-permuted (v_c) | 15 | 38 |
+| pointer-free reordering, direct read (v_b) | 19 | 35 |
+| both pointers + target's own order (v_f) | 19 | **39** |
+
+**Consequence.** The construct is a `pointer-alias-fake-exception` and needs a
+fresh layer-2 cheat-reviewer before acceptance; candidate.c now carries the full
+three-part justification (lever exhaustion / named mechanism / `/* FAKE */`)
+that s0's proposal was FAILed for lacking. It is NOT the construct s0 proposed:
+s0 aliased only D_80101E62 and never touched the reload.
+
+### H10 — Target's statement order becomes correct once the reload exists. **CONFIRMED as an instruction-count match, KILLED as a score improvement**
+**Statement.** s2's v01 ("target execution order") scored 18/37 and was rejected
+— but s2 measured it in a regime with no reload at all. With the pointers
+present, target's order (both loads, both stores, the re-read, and only THEN
+`D_80101E7C = a1;`) keeps the incoming `a1` live to the very end.
+
+**Probe.** `v_f_target_order.c`, sandboxed and disassembled against the clean
+single-function target.
+
+**Result.** **39 instructions — exactly target's count** — and the object
+contains `move a2,a1` in the `bnez` delay slot: the parameter-home copy that s1
+H4 and s2 H7 both failed to materialise, at target's exact position, with the
+branch displacements (`bnez ...,90` / `j ...,94`) matching target too. It sits
+in `$a2` where target has `$a3`, the guard address sits in `$a3` where target
+has `$t0`, and the four post-load stores are emitted in a different order, so
+the score is 19 rather than 13. **The a3 copy is no longer a
+missing-instruction problem; it is a register-naming problem.** Banked:
+`rejected/target-order-gets-39-insns-but-wrong-regs.c`.
+
+## Live frontier (for s4)
+
+1. **Close the last register-naming gap from v_f (score 19 / 39 insns).** This
+   is the closest form ever produced: right instruction count, right branch
+   displacements, the `move` in the delay slot. What remains is (a) the home
+   copy in `$a2` instead of `$a3`, (b) the guard address in `$a3` instead of
+   `$t0`, (c) the order of the four post-load stores. The diff is reproducible
+   via `tmp/grind/replay_camera_Init/s3/setup_ws3.sh` (apply a form to src/, run
+   `sandbox`, re-preprocess the sandbox copy, compile, objdump-diff). v_d and
+   v_f differ by only three statement positions — hybridise one statement at a
+   time and sandbox each step.
+2. **Re-run the permuter seeded from v_f, not from v_d.** All three s3 campaigns
+   were seeded from a 38-instruction form, so every mutation started from a body
+   missing an instruction. A campaign seeded from the 39-instruction v_f
+   searches purely over register allocation and store order, which is exactly
+   what is left. NOTE: the permuter's weighted score does NOT track the sandbox
+   score here (ws2 base 860 == sandbox 14; a permuter-625 find == sandbox 15) —
+   treat permuter output only as a source of structural leads and sandbox each.
+3. **Get the reviewer verdict early.** candidate.c's two pointers are the only
+   thing between the current 13 and a committable form. If a fresh
+   cheat-reviewer FAILs the annotated construct, the whole s3 gain reverts to 17
+   and the frontier changes completely — so obtain that verdict before spending
+   a session on the register-naming residue.
+
+## [s3] A decomp-permuter campaign over the honest cheat-invisible regime — never run on this function through three sessions — finds a structural lever that manual derivation did not.
+- mechanism: Random plus directed PERM_* mutation over statement order, temporary introduction and expression spelling explores a structural space that s2's hand-built 8-form ordering sweep only sampled. Run against a CLEAN single-function target.o (asm/funcs/replay_camera_Init.s + the permuter prelude with `.set gp=64` dropped for r3000) so the function sits at offset 0 like base.o and the score is the real per-function diff rather than ~340k of address noise (difficult-is-not-impossible.md section 3).
+- probe: Built tmp/grind/replay_camera_Init/s3/ws, ws2, ws3: compile.sh reproduces the Makefile pipeline for code6cac_b2_post (CC_FLAGS, prologue_fix, MASPSX_FLAGS, multu_pad; NO regfix/asmfix) and extracts only replay_camera_Init's region; base.c is preprocessed from the SANDBOX copy of the TU so the search runs in the volatile-stripped regime the grind actually scores. Validated at base 36 insns vs target 39 (base_score 1295). Three campaigns, ~33k iterations, each re-seeded from the best sandbox-measured form; every find de-permuted by hand and re-measured with `sandbox --disable all`.
+- result: CONFIRMED — the honest floor moved 17 -> 13 and build_insns 36 -> 38, the first movement in the grind. The lever came from ws/output-725-1, which introduced a pointer-mediated re-read of D_80101E70; reduced to its minimal delta from the s2 candidate it is worth -3, and the analogous pointer for D_80101E62 a further -1.
+- verdict: CONFIRMED
+
+## [s3] The 2-instruction D_80101E70 reload is reachable in pure C without the `volatile` qualifier — s1's H2 kill was generalised too broadly and s2's 'no known GCC 2.7.2 mechanism' conclusion is false.
+- mechanism: cse.c:7308-7361 records a store's destination MEM in the equivalence table keyed by the stored value, and a later read folds to that register only if exp_equiv_p MATCHES the two rtxes. Reading through a pointer local makes the read (mem (reg)) while the recorded entry is (mem (symbol_ref "D_80101E70")); they do not match, so no store-to-load forwarding happens and the lui/lw pair survives to codegen at exactly target's position. s1's H2 tested the much stronger claim that a pointer would invalidate ALL memory equivalences via note_mem_written, correctly killed it (the address constant-folds so nothing is invalidated), and then generalised to 'any C pointer whose initializer GCC can constant-fold fails identically'. The working mechanism needs no invalidation at all, only a non-matching READ rtx — and H2 aliased the STORE, and to a different global (D_80101E62), never the read of D_80101E70.
+- probe: sandbox --disable all over nine forms (tmp/grind/replay_camera_Init/s3/variants/, results in sweep_results.json): s0-s2 candidate 17/36; + pointer re-read of D_80101E70 (v_a) 14/38; + pointer for D_80101E62 (v_d) 13/38; v_g late-a1-store 13/38; v_h 13/38; permuter p725 15/38; permuter p625 15/38; v_f target-order 19/39. Control: the permuter's reordering WITHOUT the pointer, reading the global directly (v_b), scores 19/35 — the reload is absent and the form is worse than the s2 baseline, so the pointer and not the reordering is the lever.
+- result: CONFIRMED — floor 17 -> 13. The construct is a pointer-alias-fake-exception and must clear a fresh layer-2 cheat-reviewer; candidate.c now carries the three prerequisites s0's FAILed proposal lacked (documented lever exhaustion, the named cse.c mechanism above, and inline /* FAKE */ annotations).
+- verdict: CONFIRMED
+
+## [s3] Target's own statement order — both loads, both stores, the re-read, and only THEN `D_80101E7C = a1;` — materialises the missing `addu $a3,$a1,$zero` parameter-home copy once the reload exists.
+- mechanism: Deferring the only use of the incoming a1 to the end of the function keeps its home pseudo live across the whole body, so the copy cannot become a self-move and be deleted (GCC 2.7.2 has no coalescing pass; the copy survives unless the allocno gets hard reg 5). s2 measured target's order in a regime with NO reload at all, where the body was three instructions shorter and the liveness picture different — which is why s2 recorded target-order as strictly worse.
+- probe: v_f_target_order.c = the two pointers + target's execution order; sandboxed and disassembled against the clean single-function target.o.
+- result: CONFIRMED as an instruction-count match, KILLED as a score improvement. The object has exactly 39 instructions — target's count — and contains `move a2,a1` in the bnez delay slot, the very insn s1 H4 and s2 H7 failed to produce, at target's exact position, with branch displacements (bnez ...,90 / j ...,94) matching target. But the copy lands in $a2 where target has $a3, the guard address lands in $a3 where target has $t0, and the four post-load stores are emitted in a different order, so the score is 19 vs v_d's 13. The a3 copy is no longer a missing-instruction problem; it is a register-naming problem. Banked: rejected/target-order-gets-39-insns-but-wrong-regs.c.
+- verdict: CONFIRMED
+
+## [s3] A decomp-permuter campaign over the honest cheat-invisible regime - never run on this function through three sessions - finds a structural lever that manual derivation did not.
+- mechanism: Random plus directed PERM_* mutation over statement order, temporary introduction and expression spelling explores a structural space that s2's hand-built 8-form ordering sweep only sampled. Run against a CLEAN single-function target.o (asm/funcs/replay_camera_Init.s + the permuter prelude with `.set gp=64` dropped for r3000) so the function sits at offset 0 like base.o and the score is the real per-function diff rather than ~340k of address noise (difficult-is-not-impossible.md section 3).
+- probe: Built tmp/grind/replay_camera_Init/s3/ws, ws2, ws3: compile.sh reproduces the Makefile pipeline for code6cac_b2_post (CC_FLAGS, prologue_fix, MASPSX_FLAGS, multu_pad; NO regfix/asmfix) and extracts only replay_camera_Init's region; base.c is preprocessed from the SANDBOX copy of the TU so the search runs in the volatile-stripped regime the grind actually scores. Validated at base 36 insns vs target 39 (base_score 1295). Three campaigns, ~33k iterations, each re-seeded from the best sandbox-measured form; every find de-permuted by hand and re-measured with `sandbox --disable all`. All three campaigns harvested and stopped before the session ended (pid_alive false, `permuter_campaign.py status` shows 0 alive).
+- result: The honest floor moved 17 -> 13 and build_insns 36 -> 38, the first movement in the grind. The lever came from ws/output-725-1, which introduced a pointer-mediated re-read of D_80101E70; reduced to its minimal delta from the s2 candidate it is worth -3, and the analogous pointer for D_80101E62 a further -1.
+- verdict: CONFIRMED
+
+## [s3] The 2-instruction D_80101E70 reload is reachable in pure C without the `volatile` qualifier - s1's H2 kill was generalised too broadly and s2's 'no known GCC 2.7.2 mechanism' conclusion is false.
+- mechanism: cse.c:7308-7361 records a store's destination MEM in the equivalence table keyed by the stored value, and a later read folds to that register only if exp_equiv_p MATCHES the two rtxes. Reading through a pointer local makes the read (mem (reg)) while the recorded entry is (mem (symbol_ref "D_80101E70")); they do not match, so no store-to-load forwarding happens and the lui/lw pair survives to codegen at exactly target's position. s1's H2 tested the much stronger claim that a pointer would invalidate ALL memory equivalences via note_mem_written, correctly killed it (the address constant-folds so nothing is invalidated), and then generalised to 'any C pointer whose initializer GCC can constant-fold fails identically'. The working mechanism needs no invalidation at all, only a non-matching READ rtx - and H2 aliased the STORE, and to a different global (D_80101E62), never the read of D_80101E70.
+- probe: sandbox --disable all over nine forms (tmp/grind/replay_camera_Init/s3/variants/, numbers in sweep_results.json): s0-s2 candidate 17/36; + pointer re-read of D_80101E70 (v_a) 14/38; + pointer for D_80101E62 (v_d) 13/38; v_g late-a1-store 13/38; v_h 13/38; permuter p725 15/38; permuter p625 15/38; v_f target-order 19/39. Control: the permuter's reordering WITHOUT the pointer, reading the global directly (v_b), scores 19/35.
+- result: Floor 17 -> 13. The control proves the pointer and not the reordering is the lever. The construct is a pointer-alias-fake-exception and must clear a fresh layer-2 cheat-reviewer; candidate.c now carries the three prerequisites s0's FAILed proposal lacked (documented lever exhaustion, the named cse.c mechanism, and inline /* FAKE */ annotations).
+- verdict: CONFIRMED
+
+## [s3] Target's own statement order - both loads, both stores, the re-read, and only THEN `D_80101E7C = a1;` - materialises the missing `addu $a3,$a1,$zero` parameter-home copy once the reload exists.
+- mechanism: Deferring the only use of the incoming a1 to the end of the function keeps its home pseudo live across the whole body, so the copy cannot become a self-move and be deleted (GCC 2.7.2 has no coalescing pass; the copy survives unless the allocno gets hard reg 5). s2 measured target's order in a regime with NO reload at all, where the body was three instructions shorter and the liveness picture different - which is why s2 recorded target-order as strictly worse (18/37).
+- probe: v_f_target_order.c = the two pointers + target's execution order; sandboxed and disassembled against the clean single-function target.o (tmp/grind/replay_camera_Init/s3/chk/).
+- result: CONFIRMED as an instruction-count match, KILLED as a score improvement. The object has exactly 39 instructions - target's count - and contains `move a2,a1` in the bnez delay slot, the very insn s1 H4 and s2 H7 failed to produce, at target's exact position, with branch displacements (bnez ...,90 / j ...,94) matching target. But the copy lands in $a2 where target has $a3, the guard address lands in $a3 where target has $t0, and the four post-load stores are emitted in a different order, so the score is 19 vs v_d's 13. The a3 copy is no longer a missing-instruction problem; it is a register-naming problem.
+- verdict: CONFIRMED

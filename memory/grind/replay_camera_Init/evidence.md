@@ -277,3 +277,58 @@ See `meta.json.rejected_forms` for the full list with reasoning. Highlights:
 - [s2] OPEN CONTRADICTION for the next session: target allocates the a1 value to $a3 (7) and the D_80101E62 address to $t0 (8) while leaving hard regs $a1 (5) and $a2 (6) COMPLETELY UNUSED in the emitted body. Under this tree's find_reg (lowest free hard reg, no REG_ALLOC_ORDER) that is unreachable from a two-allocno shape like ours. The original compile's allocno set must differ from ours in a way neither s1 nor s2 has identified.
 
 - [s2] src/code6cac_b2_post.c was returned to the exact candidate.c body at end of session and re-verified: score 17, build_insns 36, target_insns 39, rules_dropped 1, cheat_asm_stripped 13. No other tracked file was modified (git status shows only the memory/grind ledger files, metrics/events.jsonl, and src/code6cac_b2_post.c).
+
+## s3 (structural / permuter, 2026-07-30) — FLOOR 17 -> 13
+
+- The honest floor moved for the first time in the grind: `sandbox
+  replay_camera_Init --disable all` = **13**, target 39 insns, build **38**
+  (was 17 / 36 through s0-s2).
+- The lever is a pointer-mediated RE-READ of `D_80101E70`
+  (`s32 *pe70 = &D_80101E70; ... reloaded = *pe70;`), found by the first
+  decomp-permuter campaign ever run on this function. It produces the two
+  missing `lui`/`lw` reload instructions HONESTLY — the sandbox no longer has
+  to strip a `volatile` to see them. Mechanism: cse.c:7308-7361 records the
+  store as `(mem (symbol_ref "D_80101E70"))`; the pointer read is
+  `(mem (reg))`, `exp_equiv_p` does not match them, no store-to-load
+  forwarding, the load survives.
+- A second pointer for `D_80101E62` (`s16 *pe62`) reproduces target's
+  single-materialised-address-in-$t0 shape and is worth a further -1 (14 -> 13).
+- CONTROL: the same statement reordering WITHOUT the pointer, reading the
+  global directly, scores 19 / 35 — the pointer is the lever, not the order.
+- BOTH pointers are `pointer-alias-fake-exception` constructs. candidate.c now
+  carries the three prerequisites s0's FAILed proposal lacked (lever
+  exhaustion, named GCC-pass mechanism, `/* FAKE */`), but the form is NOT
+  accepted until a fresh layer-2 cheat-reviewer passes it.
+- The `addu $a3,$a1,$zero` parameter-home copy — unreachable through s1 H4 and
+  s2 H7 — DOES materialise once the body is written in target's own statement
+  order with the reload present: `v_f_target_order.c` builds **39 instructions**
+  (target's exact count) with `move a2,a1` in the bnez delay slot and matching
+  branch displacements. It scores 19 only because of register naming ($a2 vs
+  $a3, $a3 vs $t0) and post-load store order. The remaining gap is now purely
+  register allocation.
+- Permuter caveat measured this session: the permuter's weighted score does NOT
+  track the sandbox score for this function (ws2 base score 860 == sandbox 14;
+  a permuter-625 find == sandbox 15). Use permuter output as a source of
+  structural leads only; sandbox every candidate.
+- Permuter workspace recipe that works here (reusable):
+  `tmp/grind/replay_camera_Init/s3/setup_ws3.sh` +
+  `tmp/grind/replay_camera_Init/s3/ws3/compile.sh`.
+
+
+- [s3] Honest floor moved for the first time in the grind: `sandbox replay_camera_Init --disable all` = 13 (target 39 insns, build 38), down from 17 / 36 across s0-s2. The score-13 form (v_d) is applied in src/code6cac_b2_post.c at session end.
+
+- [s3] The lever is `s32 *pe70 = &D_80101E70; ... reloaded = *pe70;` - a pointer-mediated re-read that produces the two missing reload instructions HONESTLY, so the cheat-invisible sandbox no longer needs the stripped `extern volatile` to see them. Adding `s16 *pe62 = &D_80101E62;` (target's single materialised address reused for the guard lh and the later sh, i.e. target's $t0) is a further -1.
+
+- [s3] CONTROL measurement that isolates the lever: the same permuter statement reordering WITHOUT the pointer, reading D_80101E70 directly (v_b), scores 19 / 35 insns - the reload is absent and the form is WORSE than the s2 baseline. The pointer, not the ordering, produces the instructions.
+
+- [s3] s1's H2 and s2's 'no known mechanism' conclusion are both narrowed by this result. H2's kill of `note_mem_written` invalidation stands (the address does constant-fold), but the generalisation to 'any constant-foldable C pointer fails identically' is wrong: the working mechanism needs no memory invalidation at all, only a read rtx that exp_equiv_p cannot match against the recorded store.
+
+- [s3] Both pointers are pointer-alias-fake-exception constructs. They are NOT yet accepted: candidate.c carries the three prerequisites (documented lever exhaustion across s1 H1-H4 / s2 H5-H7, the named cse.c:7308-7361 mechanism, inline /* FAKE */ annotations) but a fresh layer-2 cheat-reviewer has NOT been run on it this session.
+
+- [s3] v_f_target_order.c builds exactly 39 instructions - target's count - with `move a2,a1` in the bnez delay slot and matching branch displacements. The `addu $a3,$a1,$zero` that s1 H4 and s2 H7 both concluded was unreachable is therefore reachable in pure C; only its register assignment ($a2 vs $a3) and the post-load store order are wrong.
+
+- [s3] Permuter-score caveat measured here: the permuter's weighted score does NOT track the sandbox score for this function (ws2 base score 860 == sandbox 14; a permuter-625 find == sandbox 15; a permuter-465 find == sandbox 13, same as its 860-scoring seed). Treat permuter output as a source of structural leads only and sandbox every candidate.
+
+- [s3] Reusable workspace recipe for this function (validated): tmp/grind/replay_camera_Init/s3/setup_ws3.sh + ws3/compile.sh - clean single-function target.o at offset 0, Makefile-faithful compile, region extraction, base.c preprocessed from the sandbox copy.
+
+- [s3] All three permuter campaigns were harvested and stopped in-turn (`harvest --stop`); `permuter_campaign.py status` reports 0 alive at session end. No background work was orphaned.
