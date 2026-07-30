@@ -177,3 +177,95 @@
 - [s5] ws6 campaign (fresh seed, EC38-first basin, base_score 1080): 40,900 iterations, 266 finds, best score 505, harvested and STOPPED in-turn before the outcome was written.
 
 - [s5] candidate.c's two /* FAKE */ pointer aliases STILL carry no layer-2 cheat-reviewer verdict — s3 could not obtain one, s4 and s5 were both constrained from spawning agents. A FAIL reverts the floor 13 -> 17 and invalidates the frontier.
+
+## s6 (forensics, 2026-07-30) — the register residue is NOT an allocation-order artifact
+
+- [s6] Floor unchanged at **13 / build_insns 38 / target_insns 39**. `candidate.c`
+  was re-applied to `src/code6cac_b2_post.c` at session start (HEAD still carries
+  the pinned `register asm("$7")/asm("$8")` + memory-clobber form, which the
+  sandbox strips) and re-measured at 13 with `sandbox --disable all`. src is left
+  holding the exact `candidate.c` body.
+
+- [s6] **THE FULL 13-POINT RESIDUE, instruction by instruction**
+  (`tmp/grind/replay_camera_Init/s6/residue_diff.txt`, side-by-side objdump of the
+  cheat-invisible object against `asm/funcs/replay_camera_Init.s`). Only THREE
+  things differ, and all three are consequences of one decision:
+    1. target has `move a3,a1` in the `bnez` delay slot; we have nothing (38 vs 39);
+    2. target's `D_8008EC38` load lands in **`$a0`** (`lw a0,0(at)`) because both
+       loads are issued before the first store, so `cam_val` ($v1) is still live;
+       ours lands in `$v1` because our `D_80101E6C` store frees it first;
+    3. target defers the `D_80101E7C` store to AFTER the `D_80101E70` re-read and
+       emits it from `$a3`; ours emits it early, straight from the live `$a1`.
+  Everything else (the `lui/addiu $t0` address, the guard, `sll/sra`, `sh a0`,
+  `sh zero` pair, the `addiu 0x7FF`/`srl 11` tail, the 0/1 diamond) is
+  instruction-for-instruction identical modulo the `$t0`-vs-`$a2` naming of the
+  E62 address register.
+
+- [s6] **UNUSED extra parameters are completely inert; USED ones move the
+  allocation exactly the way target needs.** Measured on the .greg allocno dumps
+  (`tmp/grind/replay_camera_Init/s6/arity.py`, dumps in `rtl_p*/base.i.greg`):
+    - `p3` (3rd param, unused) and `p4` (3rd+4th, unused): allocno sets, conflict
+      sets, and dispositions are IDENTICAL to the 2-param `p2` baseline
+      (72 in 4, 73 in 5, pointer in 6; hard regs used 2 3 4 5 6). Flow deletes the
+      dead parm copies before global-alloc ever sees them.
+    - `p3u` (3rd param stored to D_80101E68): 4 allocnos; 72 gains hard conflict 6,
+      73 gains 6, and the **pe62 pointer allocno moves 6 -> 7 ($a3)**.
+    - `p4u` (3rd+4th params both consumed): 5 allocnos; 73 gains conflicts 4,6,7 and
+      the **pe62 pointer allocno moves to 8 — target's exact `$t0`**.
+  So target's `$t0` for the E62 address is a pure CONFLICT-COUNT effect: it needs
+  SIX simultaneously live values at that allocation point. Our honest body has
+  three. This is the first mechanism ever measured on this function that
+  reproduces one of target's register names.
+
+- [s6] **PROVED: no C shape can deny the a1 value its own `$a1`.** Across all
+  eight variants measured this session (p2, p3, p4, p3u, p4u, tw1, tw2, tw3) the
+  a1-parameter allocno (73) is allocated hard reg 5 EVERY TIME, and its
+  `hard_reg_conflicts` set NEVER contains 5 — it gains 3, 4, 6 and 7 under
+  pressure but never its own argument register. The mechanism is in the compiler
+  source, and it is the same in both allocators:
+    - `global.c:global_conflicts` processes `REG_DEAD` notes via `mark_reg_death`
+      BEFORE `note_stores (PATTERN (insn), mark_reg_store)` (tools/gcc-2.7.2/global.c
+      ~line 735-745), so the incoming `$a1` dying at the parm-copy insn is already
+      out of `hard_regs_live` when the destination allocno is born: no conflict can
+      be recorded.
+    - `local-alloc.c:block_alloc` does the same (`wipe_dead_reg` on REG_DEAD notes
+      at ~line 1370-1375, `note_stores (PATTERN (insn), reg_is_set)` at ~1381), and
+      additionally TIES copy source and destination into one quantity via
+      `combine_regs`, which sets `qty_phys_sugg` to the source hard reg.
+    - `find_reg` seeds `regs_used_so_far` with every `call_used_regs` entry
+      (global.c:352-355) so the pass-0 "never allocate a register for the first
+      time" rule cannot protect `$a1`; and `prune_preferences` never puts a register
+      into `regs_someone_prefers[A]` that A itself prefers.
+  Therefore target's `addu $a3,$a1,$zero` is NOT the result of the a1 pseudo losing
+  a colouring contest. It can only exist if hard reg `$a1` was still LIVE past the
+  copy in target's compile — i.e. the original body consumed the second parameter
+  at a second point that our reconstruction does not have.
+
+- [s6] **A C-level copy variable cannot even create a second pseudo.** `tw1`
+  (`{s32 t = a1; D_80101E7C = t;}` plus a second consumer of `a1`) and `tw2`
+  (second consumer at the D_80101E9E store) both produce exactly THREE allocnos,
+  the same three as the baseline: cse/jump copy-propagate the local away before
+  allocation. Adding a C temporary to "hold" the parameter is inert on this
+  function, in every placement tried.
+
+- [s6] The two `$a1`/`$a2` "genuine hard_reg_conflicts" that s2/s4 inferred target
+  must have carried are now half-explained and half-refuted: the `$a2`-class
+  conflict IS reachable (it is what extra live values supply, p3u/p4u), but the
+  `$a1` conflict on the parameter allocno is UNREACHABLE BY CONSTRUCTION in GCC
+  2.7.2 for a value whose only definition is its own incoming argument register.
+
+- [s6] Floor unchanged at 13 / build_insns 38 / target_insns 39. candidate.c was applied to src/code6cac_b2_post.c at session start (HEAD still carries the pinned register asm("$7")/asm("$8") + memory-clobber form, which the sandbox strips) and re-measured at 13 twice — once at session start and once after all probes restored src. src is left holding the exact candidate.c body.
+
+- [s6] THE FULL 13-POINT RESIDUE IS THREE COUPLED DEFECTS, NOT THIRTEEN (tmp/grind/replay_camera_Init/s6/residue_diff.txt, side-by-side objdump of the cheat-invisible object against asm/funcs/replay_camera_Init.s): (1) target has `move a3,a1` in the bnez delay slot and we have nothing (39 vs 38 insns); (2) target's D_8008EC38 load lands in $a0 because both loads are issued before the first store so cam_val's $v1 is still live, while ours lands in $v1 because the D_80101E6C store frees it first; (3) target defers the D_80101E7C store past the D_80101E70 re-read and sources it from $a3, while we emit it early straight from the still-live $a1. Everything else — the lui/addiu address, the guard, sll/sra, sh a0, the sh zero pair, the addiu 0x7FF / srl 11 tail, the 0/1 diamond — is instruction-for-instruction identical modulo the $t0-vs-$a2 naming.
+
+- [s6] UNUSED extra parameters are inert; CONSUMED ones move the allocation the way target needs. p3 (3rd param unused) and p4 (3rd+4th unused) reproduce the p2 baseline allocno sets, conflict sets and dispositions EXACTLY. p3u (3rd param stored) moves the pe62 pointer allocno to 7 ($a3). p4u (3rd+4th both consumed) moves it to 8 — target's exact $t0 — and gives the a1 allocno conflicts 4, 6 and 7.
+
+- [s6] PROVED: no C shape can deny the a1 value its own $a1. Across p2/p3/p4/p3u/p4u/tw1/tw2/tw3 the a1 allocno is allocated hard reg 5 every time and never carries a hard conflict on 5. Source: global.c global_conflicts runs mark_reg_death before note_stores(mark_reg_store); local-alloc.c block_alloc runs wipe_dead_reg before reg_is_set and ties copies via combine_regs (qty_phys_sugg = the source hard reg); find_reg seeds regs_used_so_far with all call_used_regs (global.c:352-355); prune_preferences cannot deny an own-preference.
+
+- [s6] cse/jump copy-propagate a C temporary holding the parameter away entirely — tw1 and tw2 have the same three allocnos as the baseline, so the 39th instruction cannot be bought with a named local in any placement.
+
+- [s6] D_80101E7C is WRITE-ONLY across the whole tree: src/code6cac_b2_post.c:266 is its only mention besides the extern at include/code6cac.h:287. The three asm call sites pass two arguments explicitly (func_80020DDC loads $a1 from D_800A3830; the 0x800210F4 site from the D_800A3860 table), but special_camera_check_pos_outside_ground_80036E34 jals with $a2/$a3 still holding its OWN arg2/arg3 — the only caller consistent with a >2-parameter original.
+
+- [s6] The s2/s4 conclusion that target's compile 'carried genuine hard_reg_conflicts on $a1 AND $a2 at both allocation points' is now half-confirmed and half-refuted: the $a2-class conflict is exactly what extra consumed values supply (p3u/p4u), but the $a1 conflict on the parameter allocno is unreachable by construction for a value whose only definition is its own incoming argument register.
+
+- [s6] No permuter campaign was launched this session and no background work was left running; every probe restored src/code6cac_b2_post.c before exiting (the two probe drivers restore in a finally block, and the final sandbox re-measure at 13 confirms the restore).

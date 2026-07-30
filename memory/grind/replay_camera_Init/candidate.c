@@ -106,6 +106,32 @@
  *     harvested and stopped) found no other construct.  Permuter total for this
  *     function: ~142k iterations, four campaigns, one useful construct ever.
  * ---------------------------------------------------------------------------
+ *
+ * ---- s6 (forensics, 2026-07-30): this form is UNCHANGED and still the floor --
+ * s6 read the allocator source and the cc1 -da allocno dumps instead of searching
+ * forms.  Do not re-derive:
+ *   - THE RESIDUE IS THREE COUPLED DEFECTS, not thirteen: the missing
+ *     `move a3,a1` delay-slot copy; `ec_val` landing in $v1 instead of target's
+ *     $a0; and the D_80101E7C store being emitted early from the live $a1 instead
+ *     of late from $a3.  Everything else is instruction-identical.
+ *     (tmp/grind/replay_camera_Init/s6/residue_diff.txt)
+ *   - THE `move a3,a1` IS UNREACHABLE BY REGISTER ALLOCATION.  In GCC 2.7.2 both
+ *     allocators process a copy's source death BEFORE the destination's birth
+ *     (global.c global_conflicts: mark_reg_death then note_stores/mark_reg_store;
+ *     local-alloc.c block_alloc: wipe_dead_reg then reg_is_set, plus combine_regs
+ *     tying the copy into one quantity), and prune_preferences cannot deny an
+ *     allocno its own preference.  Measured across eight variants: the a1 allocno
+ *     is allocated $a1 EVERY time and never once carries a hard conflict on it.
+ *     Target's copy therefore requires $a1 to be LIVE PAST the copy — a consumer
+ *     of the second parameter that this reconstruction does not have.  (s6 H22)
+ *   - Target's $t0 for the E62 address IS reproducible, but only by conflict
+ *     count: four CONSUMED parameters put the pointer allocno on exactly 8.
+ *     UNUSED extra parameters are completely inert (flow deletes their copies).
+ *     (s6 H21)
+ *   - A C temporary holding the parameter (`s32 t = a1;`) does not even create a
+ *     second pseudo — cse/jump copy-propagate it away; the allocno count is
+ *     unchanged.  (s6 H23)
+ * ---------------------------------------------------------------------------
  */
 s32 replay_camera_Init(s32 a0, s32 a1) {
     s32 sval;

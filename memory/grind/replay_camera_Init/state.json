@@ -1,8 +1,8 @@
 {
  "func": "replay_camera_Init",
  "file": "code6cac_b2_post",
- "session_count": 5,
- "current_modality": "permuter",
+ "session_count": 6,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 0,
@@ -39,23 +39,29 @@
    "floor": 13,
    "modality": "permuter",
    "headline": "Permuter axis closed by construction (mutation IS function-scoped, scorer IS anti-correlated) and every remaining statement-level axis killed: 38-insn ordering, expression spelling (12 forms, inert), "
+  },
+  {
+   "session": 6,
+   "floor": 13,
+   "modality": "forensics",
+   "headline": "Forensics: target's missing `move a3,a1` is UNREACHABLE by register allocation in GCC 2.7.2 (both allocators kill a copy's source before the dest is born), while target's $t0 IS reproducible as a pure"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Everything statement-level is now measured dead and the only live question is PROVENANCE: target's compile carried genuine hard_reg_conflicts on $a1 AND $a2 at both allocation points, and nothing in this function's honest value set supplies them.",
-   "mechanism": "Ordering is dead in the 39-insn family (s4 H14/H15) and in the 38-insn family (s5 H17); expression spelling is inert (s5 H18); both parameter narrowings are dead (s4 H16, s5 H20); the volatile carve-out census is NEGATIVE (s2 H5); dead temporaries are a cheat and land in $v1 not $a3 anyway (s2 H7). s2 line-cited global.c: find_reg takes the lowest free hard reg (no REG_ALLOC_ORDER for MIPS in this tree) and prune_preferences can never deny a register the allocno itself prefers, so ONLY real conflicts can produce target's $a3/$t0 numbering.",
-   "next_probe": "Switch modality to forensics / rederive. Is replay_camera_Init the tail of a larger original function, does it inline a callee whose values occupy $a1/$a2, or does the original TU's ordering leave those hard regs live at entry? Concrete first step: m2c the target and diff its allocno structure against the .greg dumps already banked in s1/rtl/ and s2/rtl/. Do NOT spend another session on statement order, expression spelling, or the permuter."
+   "hypothesis": "The original body consumed the second parameter at a point our reconstruction does not, leaving hard reg $a1 live past the copy \u2014 the ONLY surviving explanation for `addu $a3,$a1,$zero`.",
+   "mechanism": "s6 H22 proves both GCC 2.7.2 allocators process a copy's source death before the destination's birth, so (set pseudo (reg $a1)) can never be denied $a1 unless $a1 is live afterwards. Nothing in target's 39 instructions reads or writes $a1, so the second consumer is one we have mis-attributed, that folded away, or that belongs to a further consumed parameter whose own parm copy is an elided self-move (invisible in the output but occupying $a1 as an allocno \u2014 exactly what p3u/p4u demonstrate for $a2/$a3).",
+   "next_probe": "Work out what the second parameter semantically IS: read the three call sites (func_80020DDC at 0x80020DF8, the 0x800210F4 site, and special_camera_check_pos_outside_ground_80036E34, which jals with $a2/$a3 still live from its own arg2/arg3) and the D_800A3830 / D_800A3860 tables the $a1 value comes from. Then search for a consumed-3rd/4th-parameter shape that keeps the extra value live WITHOUT emitting an instruction \u2014 p3u/p4u each paid a store, and target has no spare store."
   },
   {
-   "hypothesis": "The permuter axis is now closed BY CONSTRUCTION, not merely by outcome, and a fifth campaign cannot help.",
-   "mechanism": "s4 H12 proved the scorer is anti-correlated (registers priced at 5 while the entire residue IS register naming; the score-13 floor rates 650 while a sandbox-21 find rates 235). s5 H19 removes the last alternative explanation by reading randomizer.py: mutation is function-scoped, so the ~142k iterations were real. s5's third basin at 40.9k iterations produced no surviving construct. The scorer cannot be reweighted from a grind session (tools/ is outside the allowed surface).",
-   "next_probe": "None on this axis. If a future session is nonetheless assigned permuter modality, it should record this closure and spend the session on the provenance question instead of a fifth campaign."
+   "hypothesis": "Target's $t0 for the E62 address is reachable only by raising the simultaneous-live-value count at that allocation point to six.",
+   "mechanism": "s6 H21 \u2014 find_reg takes the lowest unconflicted hard reg, so climbing from our $a2 (6) to target's $t0 (8) requires 2,3,4,5,6,7 all unavailable; with four consumed parameters the pointer allocno lands on exactly 8.",
+   "next_probe": "Enumerate which six values target's compile could have had live simultaneously inside only 39 emitted instructions (candidates: the E62 address, a0, the a1 value, sval, cam_val, ec_val, reloaded \u2014 our body never has more than three live at once because each store kills one). Look for an ordering that keeps five of them live without the early D_80101E70 re-read that s4 H15 proved semantically divergent."
   },
   {
-   "hypothesis": "candidate.c's two /* FAKE */ pointer aliases survive a fresh layer-2 cheat-reviewer.",
-   "mechanism": "pointer-alias-fake-exception is a sanctioned last-resort family (owner ruling 2026-07-01) requiring documented lever exhaustion + a named GCC-pass mechanism + a /* FAKE */ annotation; candidate.c supplies all three and the exhaustion record is stronger again after s5's four kills. New supporting fact from s5: q08/q09 show the pe62 alias is worth exactly -1 and only in the both-sides-through-the-pointer shape, i.e. it reproduces target's single materialised $t0 address and buys nothing else.",
-   "next_probe": "Have the operator or the Judge run a fresh cheat-reviewer on memory/grind/replay_camera_Init/candidate.c. Three consecutive sessions have been unable to spawn one. A FAIL reverts the floor from 13 to 17 and changes the whole frontier, so it must not keep being deferred behind another search session."
+   "hypothesis": "candidate.c's two /* FAKE */ pointer aliases still carry NO layer-2 cheat-reviewer verdict after four sessions (s3, s4, s5, s6 were all constrained from spawning agents).",
+   "mechanism": "pointer-alias-fake-exception is a sanctioned last-resort family requiring documented lever-exhaustion + a named GCC-pass mechanism + a /* FAKE */ annotation; candidate.c supplies all three and the exhaustion record is stronger again after s6's three kills (s5 q08/q09 additionally show the pe62 alias is worth exactly -1 and only in the both-sides-through-the-pointer shape).",
+   "next_probe": "The operator or the driver's Judge must run a fresh cheat-reviewer on memory/grind/replay_camera_Init/candidate.c. A FAIL reverts the floor 13 -> 17 and invalidates both frontier entries above, so it should not be deferred behind another search session."
   }
  ],
  "judge_constraints": [],

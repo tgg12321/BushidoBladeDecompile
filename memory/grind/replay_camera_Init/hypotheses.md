@@ -892,3 +892,141 @@ nothing since.**
 - probe: tmp/grind/replay_camera_Init/s5/ws6 built by setup_ws6.sh with the validated s3 recipe (clean single-function target.o at offset 0, Makefile-faithful compile.sh, base.c preprocessed from the CHEAT-INVISIBLE sandbox copy), validated at base 38 insns vs target 39, permuter base_score 1080. Launched via tools/permuter_campaign.py launch --label s5-p3-ec38first-basin -j 6 --stop-on-zero, waited IN-TURN, 40,900 iterations / 266 output dirs over 922 s, then harvest --stop. Every distinct construct in the lowest-scoring finds diffed against base with s5/triage_ws6.sh.
 - result: KILLED — best permuter score 505 against a base of 1080, nowhere near a match, and the finds contain exactly two ideas: the already-known semantically-broken `sval` staging (reusing sval to hold cam_val and then indexing D_8008EC38 by it, identical in kind to s4 ws5 output-295-1) and the `short a1` narrowing measured and killed above. Running total across the grind: ~142,000 permuter iterations, four campaigns, three basins, ONE useful construct ever (s3's pointer-mediated re-read, worth -4) and nothing since.
 - verdict: KILLED
+
+## s6 (forensics, 2026-07-30)
+
+### H21 — Target's `$t0` for the D_80101E62 address (and the `$a3`/`$a2` gap generally) is a CONFLICT-COUNT effect that extra live values can reproduce. **CONFIRMED**
+- mechanism: `find_reg` (global.c:1010-1045) takes the lowest hard reg not in `used`,
+  where `used` = fixed regs + `hard_reg_conflicts[allocno]` + (pass 0)
+  `regs_someone_prefers`. `regs_used_so_far` is seeded with all `call_used_regs`
+  (global.c:352-355) so pass 0 never protects $a1..$t0. Hence the ONLY way an
+  allocno climbs to a high hard reg is that every lower one is conflicted — i.e.
+  more simultaneously live values.
+- probe: `tmp/grind/replay_camera_Init/s6/arity.py` — spliced four signatures into
+  src (3 and 4 parameters, each in an unused and a consumed variant), dumped cc1
+  `-da`, and read the `.greg` allocno conflict sets + dispositions directly
+  (`rtl_p3/`, `rtl_p4/`, `rtl_p3u/`, `rtl_p4u/`).
+- result: CONFIRMED with a sharp caveat. UNUSED extra parameters are completely
+  inert — p3 and p4 reproduce the p2 baseline allocation exactly (72 in 4, 73 in 5,
+  pointer in 6), because flow deletes their dead parm copies before global-alloc.
+  CONSUMED extra values are not: p3u moves the pe62 pointer allocno to 7 ($a3) and
+  p4u moves it to **8 — target's exact $t0** — while adding conflicts 6 and 7 to the
+  parameter allocnos. Target's $t0 therefore requires SIX simultaneously live values
+  at that allocation point; our honest body supplies three. Not committable as
+  measured (the extra parameters change semantics and the asm call sites pass two
+  arguments), but it is the first measured mechanism that reproduces a target
+  register name on this function, and it tells the next session exactly what the
+  missing ingredient is: live values, not ordering.
+- verdict: CONFIRMED
+
+### H22 — Target's `addu $a3,$a1,$zero` can be reached by denying the a1-parameter allocno its own `$a1`. **KILLED — impossible by construction in GCC 2.7.2**
+- mechanism under test: s2/s4 concluded target's compile "must have carried genuine
+  hard_reg_conflicts on $a1 AND $a2 at both allocation points". This session tested
+  whether a hard conflict on $a1 for that allocno is producible at all.
+- probe: (a) read both allocators' conflict loops in the frozen compiler source;
+  (b) `tmp/grind/replay_camera_Init/s6/liveness.py` — three diagnostic forms that
+  copy `a1` into a distinct local and/or add a second consumer of `a1`, each dumped
+  through cc1 `-da` and read at the `.greg` allocno level (`rtl_tw1..3/`); (c) the
+  five arity variants of H21.
+- result: KILLED. In all EIGHT variants the a1 allocno (73) is allocated hard reg 5
+  and its `hard_reg_conflicts` set never contains 5 (it gains 3, 4, 6, 7 under
+  pressure — never its own argument register). The source says why, in both
+  allocators: `global.c:global_conflicts` calls `mark_reg_death` for the insn's
+  REG_DEAD notes BEFORE `note_stores (PATTERN (insn), mark_reg_store)`, so the
+  incoming `$a1` is already out of `hard_regs_live` when the copy's destination is
+  born; `local-alloc.c:block_alloc` has the identical ordering (`wipe_dead_reg`
+  before `reg_is_set`) and additionally TIES a copy's source and destination into
+  one quantity via `combine_regs`, setting `qty_phys_sugg` to the source hard reg.
+  `prune_preferences` cannot remove an allocno's own preference, and pass 0's
+  "never allocate a register for the first time" rule is disabled for call-used
+  regs. Consequence, and this is the load-bearing finding of the session: target's
+  `move a3,a1` CANNOT be an allocation artifact of copying the incoming a1. It can
+  only exist if hard reg `$a1` was still LIVE PAST the copy in target's compile.
+  Since nothing else in target's 39 instructions reads or writes `$a1`, the original
+  body must have contained a consumer of the second parameter that our
+  reconstruction does not have (or a value occupying `$a1` whose only definition was
+  an elided parm self-copy — i.e. a further parameter).
+- verdict: KILLED (the "deny it $a1" route); the provenance question is sharpened,
+  not closed.
+
+### H23 — A C-level temporary can hold the a1 value as a SECOND pseudo, so the copy survives allocation. **KILLED**
+- mechanism: if `s32 t = a1;` produced its own pseudo, that pseudo's live range could
+  overlap the parameter's and force a real copy insn.
+- probe: `liveness.py` tw1 / tw2 (local copy plus a second consumer of `a1` at the
+  D_80101E68 and D_80101E9E stores respectively), read at the `.greg` allocno level.
+- result: KILLED. Both forms produce exactly THREE allocnos — the same three as the
+  baseline. cse/jump copy-propagate the temporary away long before allocation. This
+  closes the "hold the parameter in a named local" family for this function
+  (consistent with s5's H18 finding that spelling is inert), and it means the
+  missing 39th instruction cannot be bought with a C temporary in any placement.
+- verdict: KILLED
+
+### Residue decomposition (measured, `s6/residue_diff.txt`)
+The 13-point gap is exactly three coupled defects, not thirteen independent ones:
+(1) the missing `move a3,a1` in the `bnez` delay slot (target 39 insns, ours 38);
+(2) `ec_val` lands in `$v1` for us and `$a0` in target, because target issues BOTH
+loads before the first store while we free `$v1` with the `D_80101E6C` store first;
+(3) target defers the `D_80101E7C` store past the `D_80101E70` re-read and sources it
+from `$a3`, while we emit it early straight from the still-live `$a1`. Defect (1)
+is provably unreachable by allocation (H22); (2) and (3) are the 39-instruction
+family that s4 H15 proved semantically divergent in every ordering tried.
+
+## Live frontier (for s7)
+
+## [s6] The original body consumed the second parameter at a point our reconstruction does not, leaving hard reg $a1 live past the copy — the ONLY surviving explanation for `addu $a3,$a1,$zero`.
+- mechanism: H22 proves both GCC 2.7.2 allocators process a copy's source death before
+  the destination's birth, so `(set pseudo (reg $a1))` can never be denied $a1 unless
+  $a1 is live afterwards. Nothing in target's 39 instructions reads or writes $a1, so
+  the second consumer must be one whose code we have mis-attributed, folded away, or
+  never reconstructed. Two concrete sub-shapes: (i) a further consumed parameter whose
+  own parm copy is an elided self-move (invisible in the output, but occupying $a1 as
+  an allocno — exactly what p3u/p4u demonstrate for $a2/$a3); (ii) a use of the second
+  parameter inside the early-return path or in an expression whose result target's
+  compile folded into an instruction we already emit.
+- next probe: work out what the second parameter semantically IS. Note (measured this
+  session) `D_80101E7C` is WRITE-ONLY across the entire tree — `src/code6cac_b2_post.c:266`
+  is its only mention besides the extern in `include/code6cac.h:287`. Read the two asm
+  call sites (`func_80020DDC` at 0x80020DF8 loads `$a1` from `D_800A3830`; the
+  0x800210F4 site loads it from the `D_800A3860` table) and the third caller
+  `special_camera_check_pos_outside_ground_80036E34`, which jals with $a2/$a3 still
+  holding ITS OWN arg2/arg3 — the only caller consistent with a >2-parameter original.
+  Then test consumed-3rd/4th-parameter forms for a shape that keeps the extra value
+  live WITHOUT adding an instruction (p3u/p4u each added stores; target has none).
+
+## [s6] Target's $t0 for the E62 address is reachable only by raising the simultaneous-live-value count at that allocation point to six.
+- mechanism: H21 — `find_reg` takes the lowest unconflicted hard reg, so climbing from
+  our $a2 (6) to target's $t0 (8) requires 2,3,4,5,6,7 all unavailable. Measured: with
+  four consumed parameters (p4u) the pointer allocno lands on exactly 8.
+- next probe: enumerate which six values target's compile could have had live there
+  given only 39 emitted instructions (E62 address, a0, a1, sval, cam_val, ec_val,
+  reloaded is seven candidates but our body never has more than three live at once
+  because each store kills one). Look for an ordering that keeps sval, cam_val, ec_val,
+  the a1 value and the E62 address live simultaneously WITHOUT the semantically
+  divergent early re-read that s4 H15 killed.
+
+## [s6] candidate.c's two /* FAKE */ pointer aliases have now gone FOUR sessions without a layer-2 cheat-reviewer verdict (s3, s4, s5, s6 all constrained from spawning agents).
+- mechanism: pointer-alias-fake-exception is a sanctioned last-resort family requiring
+  documented lever-exhaustion + a named GCC-pass mechanism + a /* FAKE */ annotation;
+  candidate.c supplies all three and the exhaustion record is stronger again after s6's
+  three kills. A FAIL reverts the floor 13 -> 17 and invalidates every frontier entry
+  above, so it cannot keep being deferred behind another search session.
+- next probe: the operator or the driver's Judge runs a fresh `cheat-reviewer` on
+  `memory/grind/replay_camera_Init/candidate.c`.
+
+## [s6] Target's $t0 for the D_80101E62 address (and the $a2/$a3 numbering gap generally) is a conflict-count effect that a larger set of simultaneously live values can reproduce.
+- mechanism: global.c find_reg (lines ~1010-1045) takes the lowest hard reg not in `used`, where used = fixed regs + hard_reg_conflicts[allocno] + (pass 0) regs_someone_prefers; regs_used_so_far is seeded with every call_used_regs entry (global.c:352-355) so pass 0's 'never allocate a register for the first time' rule cannot protect $a1..$t0. An allocno therefore climbs to a high hard reg only when every lower one is genuinely conflicted.
+- probe: tmp/grind/replay_camera_Init/s6/arity.py — spliced four signatures into src/code6cac_b2_post.c (3 and 4 parameters, each in an unused and a consumed variant), dumped cc1 -da, and read the .greg allocno conflict sets and dispositions directly (rtl_p3/, rtl_p4/, rtl_p3u/, rtl_p4u/).
+- result: UNUSED extra parameters are completely inert: p3 and p4 reproduce the 2-parameter baseline exactly (72 in 4, 73 in 5, pe62 pointer in 6, hard regs used 2 3 4 5 6), because flow deletes their dead parm copies before global-alloc. CONSUMED extra values are not inert: p3u moves the pe62 pointer allocno from 6 to 7 ($a3), and p4u moves it to 8 — target's exact $t0 — while adding hard conflicts 6 and 7 to the parameter allocnos. Target's $t0 needs SIX simultaneously live values at that point; our honest body has three. Not committable as measured (extra parameters change semantics and the asm call sites pass two arguments), but it is the first mechanism ever measured on this function that reproduces one of target's register names.
+- verdict: CONFIRMED
+
+## [s6] Target's `addu $a3,$a1,$zero` can be reached by denying the a1-parameter allocno its own hard reg $a1 (the route s2/s4 inferred target's compile must have taken).
+- mechanism: Tested against the frozen compiler source and the allocno dumps: global.c global_conflicts processes the insn's REG_DEAD notes via mark_reg_death BEFORE note_stores(PATTERN(insn), mark_reg_store), so the incoming $a1 dying at the parm-copy insn is already out of hard_regs_live when the copy's destination allocno is born — no conflict can be recorded. local-alloc.c block_alloc has the identical ordering (wipe_dead_reg on REG_DEAD notes, then note_stores(reg_is_set)) and additionally TIES a copy's source and destination into one quantity via combine_regs, setting qty_phys_sugg to the source hard reg. prune_preferences cannot remove a register an allocno itself prefers.
+- probe: Read both allocator loops in tools/gcc-2.7.2/{global.c,local-alloc.c}; then measured the a1 allocno's hard_reg_conflicts set and disposition across EIGHT variants (p2 baseline, p3, p4, p3u, p4u from arity.py; tw1, tw2, tw3 from liveness.py), reading .greg directly rather than the score.
+- result: KILLED. In all eight variants the a1 allocno (73) is allocated hard reg 5 and its hard_reg_conflicts set NEVER contains 5 — it gains 3, 4, 6 and 7 under pressure but never its own argument register. Consequence: target's `move a3,a1` is NOT an allocation artifact of copying the incoming a1; it can only exist if hard reg $a1 was still LIVE PAST the copy in target's compile. Nothing in target's 39 instructions reads or writes $a1, so the original body contained a consumer of the second parameter (or a further consumed parameter occupying $a1 through an elided parm self-move) that this reconstruction does not have. This refutes half of the s2/s4 'genuine hard_reg_conflicts on $a1 AND $a2' inference: the $a2 half is reachable, the $a1 half is impossible by construction.
+- verdict: KILLED
+
+## [s6] A C-level temporary (`s32 t = a1;`) can hold the second parameter as a distinct second pseudo, so a real copy insn survives to codegen.
+- mechanism: If the temporary produced its own pseudo, its live range could overlap the parameter pseudo's and force a copy — the only C-level route to the 39th instruction that does not require extra emitted work.
+- probe: tmp/grind/replay_camera_Init/s6/liveness.py — tw1 (local copy feeding the D_80101E7C store plus a second consumer of a1 at the D_80101E68 store) and tw2 (second consumer at the D_80101E9E store), each dumped through cc1 -da and read at the .greg allocno level (rtl_tw1/, rtl_tw2/).
+- result: KILLED. Both forms produce exactly THREE allocnos — the same three as the baseline — because cse/jump copy-propagate the temporary away long before allocation. Adding a C temporary to hold the parameter is inert on this function in every placement tried, which is the allocator-level proof of s5 H18's score-level finding that spelling is inert. Banked as memory/grind/replay_camera_Init/rejected/a1-temp-copy-is-propagated-away-no-second-pseudo.c.
+- verdict: KILLED
