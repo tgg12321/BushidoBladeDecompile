@@ -707,3 +707,4 @@
 - 2026-07-30 05:44 func_800477E8 COMPLETED-C after 4 sessions.
 - 2026-07-30 06:05 func_80040CB8 s1 [recon] floor=13: Floor 17 -> 13, pure C with zero pins: instruction sequence now byte-for-byte identical to target (36/36 insns); all 13 residual diffs are register names, mechanism pinned to global.c allocno_compare priority order.
 - 2026-07-30 06:44 func_80040CB8 COMPLETED-C after 2 sessions.
+- 2026-07-30 07:11 replay_camera_rob_back_loose3 s1 [recon] floor=17: Recon: engine floor 17 is CHEAT-INFLATED — the HEAD form's volatile-coerced cosA read is not stripped by the sandbox; the honest cheat-free floor is 26, and it decomposes into exactly two independent mechanisms (cosA lhu+sext fold-escape; angC->$v1 local-alloc). Two hypotheses killed with measurements.

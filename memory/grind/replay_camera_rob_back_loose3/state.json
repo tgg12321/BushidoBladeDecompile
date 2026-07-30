@@ -1,0 +1,34 @@
+{
+ "func": "replay_camera_rob_back_loose3",
+ "file": "text1a_c",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 17,
+   "modality": "recon",
+   "headline": "Recon: engine floor 17 is CHEAT-INFLATED \u2014 the HEAD form's volatile-coerced cosA read is not stripped by the sandbox; the honest cheat-free floor is 26, and it decomposes into exactly two independent "
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The raw cosA halfword has a second, flow-LIVE use of the zero-extended value in the original source, which is what stops combine folding lhu+sll+sra into lh.",
+   "mechanism": "combine's simplify_shift_const only rewrites ashiftrt(ashift(zero_extend(mem))) -> sign_extend(mem) when the zero_extend dest is single-use and dead after the chain (dead_or_set_p). A purely dead second use cannot help: GCC 2.7.2 runs flow's dead-code deletion BEFORE combine. Matched precedent func_80065344 keeps its lhu because the u16 is stored back.",
+   "next_probe": "m2c the target block and diff the same region in the two family siblings (_SelectSection, hirahira_w_ctrl_2 \u2014 the latter has the signature twice) to find what live consumer the original had; specifically test whether the sign-extended value reaches the four multiplies through a DIFFERENT C variable than the load's destination (two variables rather than one), which gives the load's dest a natural second reader."
+  },
+  {
+   "hypothesis": "angC can be steered into $v1 (freeing $v0 for the index temp and then, after the temp dies, for sinAxsinB_12) by changing the local-alloc quantity priority of angC vs its index temp \u2014 closing 13 of the 26 diffs.",
+   "mechanism": "local-alloc assigns by quantity priority (reg_n_refs and live-range length), and the assignment happens at lreg (greg insn 44 already shows the hard reg). Declaration order is measured inert, so the lever must change relative ref-count / live length.",
+   "next_probe": "Split the cos-index chain '((s16)angC + 0x400) & 0xFFF' into its own named local so angC's live range ends earlier; and separately compute the sin index through a named local so the temp becomes the longer-lived quantity. Read .lreg 'used N times across M insns' for both quantities before/after; escalate to BB2_ALLOC_DEBUG / BB2_PRIO_DEBUG-instrumented cc1 if the counts do not explain the tie-break."
+  },
+  {
+   "hypothesis": "The closing form is a family-level source idiom shared by all three 3x3 rotation-matrix functions in src/text1a_c.c, not a per-function local detail.",
+   "mechanism": "All three carry regfix rules describing the same two mechanisms (sinAxsinB_12 in $a0-vs-$v0, and the volatile/la addressing block for the cosA read); a mechanism present in all three is a property of the original source spelling of the shared idiom.",
+   "next_probe": "Diff the three targets' Judge-read prologues instruction-by-instruction and diff the three C bodies; identify which one has the SMALLEST cheat-free distance and prototype the idiom there first (cheaper gradient), then port the winning spelling to this function."
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-30T11:44:06.447994+00:00"
+}
