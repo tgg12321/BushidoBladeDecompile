@@ -131,3 +131,114 @@ alias view of the same object = the alias-rename cheat family. Do not.
 - [s1] Tooling caveat for future sessions: 'diagnose --detail' reads a STALE object — it reported the same d17 diff for a src/ state whose sandbox score was 26. Use 'sandbox' for scores and objdump/diffasm.py on the fresh sandbox .o for shapes.
 
 - [s1] src/text1a_c.c was restored to HEAD at end of session (git checkout); no source changes were left in the tree.
+
+## Session 2 (structural, 2026-07-30) — FLOOR 26 -> 13, mechanism A CLOSED in pure C
+
+### The closing form (banked as candidate.c, sandbox --disable all = 13, build_insns 114 == target 114)
+Two changes on top of the s1 cheat-free baseline:
+1. `u16 rawA = Judge[((s16)angA + 0x400) & 0xFFF];` staging local + `cosA = (s16)rawA;`
+   (the sanctioned narrow-view spelling s1 had already measured at a flat 26 ON ITS OWN).
+2. `a1[5] = -sinA;` MOVED from the tail of the function to sit BETWEEN the `rawA`
+   load and the `(s16)rawA` cast.
+Change 2 is the load-bearing one. Mechanism: GCC 2.7.2 combine's `can_combine_p`
+refuses to combine a MEM load into a later user across an insn that may WRITE
+memory, so the intervening store prevents `simplify_shift_const` from ever seeing
+the `ashiftrt(ashift(zero_extend(mem)))` chain — target's three-instruction shape
+(`lhu`; `sll 16`; `sra 16`) survives verbatim, including the `$at`-based
+`lui/addu/lhu %lo` addressing. It costs ZERO extra instructions because sched1
+runs AFTER combine and hoists the store back out; target's own schedule fills that
+load-delay slot with `mflo t9`, and our build now does the same.
+
+### The fold is NOT broken by giving the u16 a second use (three instruments, all KILLED)
+s1's frontier hypothesis A ("the raw halfword needs a second, flow-LIVE use") is
+WRONG, measured three ways on top of the u16 staging spelling:
+- `a1[9] = rawA;`        (low-half-only store)  -> still `lh`, score 35 / 114 insns.
+- `a1[9] = rawA + 1;`    (SI add, truncated)    -> still `lh`, score 38 / 115 insns.
+- `a1[9] = rawA >> 8;`   (needs the zero-extended HIGH bits) -> still `lh`, score 42 /
+  116 insns; GCC kept the `lh` and re-derived the unsigned value with `andi`/`srl`.
+So combine rewrites the LOAD itself and patches the other users from the
+sign-extended register; no width-of-use argument can stop it. Only an insn that
+blocks combination outright (a memory write between load and cast, or `volatile`'s
+un-combinable MEM) preserves the split shape — and the store is pure C.
+
+### Position, not presence, of the store is the mechanism
+- store between the load and the cast (`e5`)            -> 13 / 114.
+- store AFTER the cast (`e6`)                           -> 26 / 113 (inert).
+- a DIFFERENT store in the same slot, `a1[0] = ...` (`f4`) -> 13 / 114. Any store works.
+- the same interleaving applied to the s16 baseline (no `u16` staging local, `e1`/`e2`/`e3`)
+  -> 26 / 113, because that load is already a `sign_extend` MEM: there is no
+  `zero_extend` for combine to fold, so there is nothing for the store to protect.
+  Both halves of the form are required.
+
+### Mechanism B is untouched and is now the WHOLE remaining gap
+The 13 residual diffs are register naming ONLY — there is no instruction-shape
+difference left anywhere in the function (`diffasm` on the score-13 object shows the
+`tgt[62:67]` cosA region matching exactly). They are the same mirror-image swap s1
+recorded: angC `$v1`/ours `$v0`, angC's index temp `$v0`/ours `$v1`, sinAxsinB_12
+`$v0`/ours `$a0`.
+
+### Structural levers measured DEAD for mechanism B (15 forms, before AND after the A fix)
+On the s1 baseline, all of these scored EXACTLY 26 / 113 — bit-identical, i.e. the
+RTL is unchanged, GCC canonicalises the spelling away: named local for angC's cos
+index; named local for its sin index; both; both computed immediately after the
+angC load; `angC = a0[2]` hoisted next to angA/angB; the whole angC/sinC pair moved
+ahead of sinA/sinB; named locals for ALL SIX Judge indices; angC reused as its own
+index holder; a two-variable `sinAxsinB` spelling; multiply-operand-order swaps on
+`prod_*` and on all four `cosA_*` products; a walking `s16 *J = Judge` pointer;
+`cosA` narrowed to `s16`. Two forms were WORSE: hoisting the cos index to
+immediately after the angC load (43 / 112) and `sinAxsinB_12 = sinA*sinB;
+sinAxsinB_12 >>= 12;` (36 / 113). Re-run on the score-13 baseline, the survivors
+(named cos index, angC reuse, two-variable sinAxsinB, angC hoisted, a different
+intervening store) are ALL still exactly 13 / 114; only the cosA operand-order swap
+moved, and it moved the wrong way (17).
+
+### RTL / local-alloc numbers for B (artifact: s2/rtl/base/f.i.{lreg,greg})
+From the `.lreg` flow dump of the cheat-free baseline, the qty_compare_1 priority
+inputs (`floor_log2(n_refs) * n_refs * size / live_length`):
+- angC  = pseudo 97, "used 3 times across 12 insns" -> priority 0.25 (allocated LATE,
+  it takes whatever register is left over).
+- its `& 0xFFF` index temp = pseudo 111, "used 2 times across 2 insns" -> 1.00, and
+  pseudo 114 (the `<< 1`), "used 2 times across 4 insns" -> 0.50.
+- sinAxsinB_12 = pseudo 81, "used 3 times across 17 insns" -> 0.176 (also late).
+`greg`'s "20 regs to allocate" list contains none of 97/111/114/81, confirming all
+four are assigned by LOCAL-alloc. Since every structural spelling above leaves these
+ref-counts and live-lengths untouched, none of them can move the allocation — which
+is exactly what the 13 identical scores show. Closing B needs either a change to
+these two numbers for pseudo 97/111 or an understanding of local-alloc's tie-break
+among the many priority-1.00 quantities (a forensics/instrumented-cc1 job, not a
+structural one).
+
+### Tooling (session 2, reusable)
+- `tmp/grind/.../s2/gen.py` — declarative variant generator (edit-list per variant,
+  stacked on the baseline or on the e5 form); `variants/*.c` are the emitted forms.
+- `…/s2/probe.ps1 <variant …>` — apply (via s1/apply.py) + sandbox, one row each.
+  NOTE the same s1 quirk: the FIRST row is stale, always pass a throwaway first.
+  ALSO: `diffasm.py` reads the sandbox object of the LAST probe run — re-apply the
+  variant you want to diff before diffing it.
+- `…/s2/rtl.sh <tag>` — cc1 `-da` dump set for whatever is currently in src/.
+- `…/s2/qty.py <tag>` — pulls "used N times across M insns" + greg dispositions.
+- `…/s2/head.py <obj> <n>` — first n instructions of the function out of a .o.
+- src/text1a_c.c was restored to HEAD at end of session; the score-13 form lives in
+  memory/grind/replay_camera_rob_back_loose3/candidate.c.
+
+- [s2] [s2] NEW CHEAT-FREE FLOOR = 13 (was 26). The form is banked verbatim in memory/grind/replay_camera_rob_back_loose3/candidate.c: a u16 staging local for the cosA read plus the a1[5] = -sinA store MOVED between that load and the (s16) cast. Zero rules, zero pins, zero volatile, zero inline asm.
+
+- [s2] [s2] build_insns is now 114 == target_insns 114. There is no instruction-shape difference anywhere in the function; all 13 residual diffs are register names.
+
+- [s2] [s2] The store's POSITION is the mechanism, not its presence: between load and cast -> 13; after the cast -> 26; a different store (a1[0]) in the same slot -> 13.
+
+- [s2] [s2] BOTH halves of the form are required: the same store interleaving applied to the plain s16 baseline (no u16 staging local) is inert at 26/113, because that load is already a sign_extend MEM with no zero_extend for combine to fold.
+
+- [s2] [s2] The move is semantics-preserving: a1 (the output matrix) never aliases the static sin/cos table Judge, and the relative order of the a1[] stores among themselves is unchanged.
+
+- [s2] [s2] s1's frontier-A hypothesis is dead: a real flow-live second use of the u16 does NOT block the fold, including one that needs the zero-extended high bits (a1[9] = rawA >> 8 kept the lh and re-derived the unsigned value with andi/srl).
+
+- [s2] [s2] s1's frontier-C prediction is strengthened: the closing idiom is a source-spelling property (a store interleaved into the middle of the rotation-matrix computation), exactly the kind of thing that should port to the two siblings _SelectSection and hirahira_w_ctrl_2.
+
+- [s2] [s2] Residual mechanism-B diffs (13): angC target $v1 / build $v0; angC's & 0xFFF + << 1 index temp target $v0 / build $v1; sinAxsinB_12 target $v0 / build $a0.
+
+- [s2] [s2] local-alloc priority inputs from the .lreg flow dump: angC = pseudo 97 'used 3 times across 12 insns' (floor_log2(3)*3/12 = 0.25); index temp = pseudo 111 'used 2 times across 2 insns' (1.00) and pseudo 114 '2 times across 4 insns' (0.50); sinAxsinB_12 = pseudo 81 '3 times across 17 insns' (0.176). greg's '20 regs to allocate' list contains none of them.
+
+- [s2] [s2] Tooling caveat: diffasm.py reads the sandbox object left by the LAST probe run — re-apply the variant you want to diff before diffing it (a stale read cost one turn this session).
+
+- [s2] [s2] src/text1a_c.c was restored to HEAD at end of session; the tree carries only memory/grind ledger files.

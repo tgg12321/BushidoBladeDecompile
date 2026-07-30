@@ -1,31 +1,37 @@
 {
  "func": "replay_camera_rob_back_loose3",
  "file": "text1a_c",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 17,
    "modality": "recon",
    "headline": "Recon: engine floor 17 is CHEAT-INFLATED \u2014 the HEAD form's volatile-coerced cosA read is not stripped by the sandbox; the honest cheat-free floor is 26, and it decomposes into exactly two independent "
+  },
+  {
+   "session": 2,
+   "floor": 13,
+   "modality": "structural",
+   "headline": "Floor 26 -> 13 cheat-free: mechanism A (the cosA lhu+sll16/sra16 shape) CLOSED in pure C by putting an a1[] store between the u16 staging load and its (s16) cast, which blocks combine's fold; build_in"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The raw cosA halfword has a second, flow-LIVE use of the zero-extended value in the original source, which is what stops combine folding lhu+sll+sra into lh.",
-   "mechanism": "combine's simplify_shift_const only rewrites ashiftrt(ashift(zero_extend(mem))) -> sign_extend(mem) when the zero_extend dest is single-use and dead after the chain (dead_or_set_p). A purely dead second use cannot help: GCC 2.7.2 runs flow's dead-code deletion BEFORE combine. Matched precedent func_80065344 keeps its lhu because the u16 is stored back.",
-   "next_probe": "m2c the target block and diff the same region in the two family siblings (_SelectSection, hirahira_w_ctrl_2 \u2014 the latter has the signature twice) to find what live consumer the original had; specifically test whether the sign-extended value reaches the four multiplies through a DIFFERENT C variable than the load's destination (two variables rather than one), which gives the load's dest a natural second reader."
+   "hypothesis": "The remaining 13 diffs are one local-alloc tie-break: angC (pseudo 97, priority 0.25) is allocated late and takes the leftover register, so the register it gets is decided by which quantity claimed $v0 earlier \u2014 not by anything angC itself does.",
+   "mechanism": "qty_compare_1 sorts quantities by floor_log2(n_refs)*n_refs*size/live_length and breaks exact ties by qty number (creation order), then find_free_reg assigns in REG_ALLOC_ORDER. There is a large cluster of priority-1.00 quantities (many 'used 2 times across 2 insns' pseudos) whose relative order decides whether $v0 is still free when pseudo 97 is reached. No source spelling measured this session changes any of these numbers.",
+   "next_probe": "FORENSICS, not structural: rebuild cc1 with the BB2_ALLOC_DEBUG / BB2_PRIO_DEBUG instrumentation named in the s1 ledger (or add a printf in block_alloc) and dump the sorted qty_order plus each find_free_reg decision for the score-13 form. Identify which quantity takes $v0 ahead of pseudo 97 and what would have to change (n_refs, live_length, or a copy suggestion) for pseudo 111 to take $v1 instead. Only then look for a C spelling that moves that specific number."
   },
   {
-   "hypothesis": "angC can be steered into $v1 (freeing $v0 for the index temp and then, after the temp dies, for sinAxsinB_12) by changing the local-alloc quantity priority of angC vs its index temp \u2014 closing 13 of the 26 diffs.",
-   "mechanism": "local-alloc assigns by quantity priority (reg_n_refs and live-range length), and the assignment happens at lreg (greg insn 44 already shows the hard reg). Declaration order is measured inert, so the lever must change relative ref-count / live length.",
-   "next_probe": "Split the cos-index chain '((s16)angC + 0x400) & 0xFFF' into its own named local so angC's live range ends earlier; and separately compute the sin index through a named local so the temp becomes the longer-lived quantity. Read .lreg 'used N times across M insns' for both quantities before/after; escalate to BB2_ALLOC_DEBUG / BB2_PRIO_DEBUG-instrumented cc1 if the counts do not explain the tie-break."
+   "hypothesis": "The score-13 idiom (u16 staging read + an interleaved output store that blocks combine) is the shared family spelling and closes _SelectSection and hirahira_w_ctrl_2 too \u2014 and one of those two may have a smaller residual register gap, making it the cheaper place to solve mechanism B.",
+   "mechanism": "All three 3x3 rotation-matrix functions carry regfix rules describing the SAME two mechanisms (the la/volatile addressing block for the cosA read, and sinAxsinB_12 in $a0-vs-$v0). A mechanism present in all three is a property of the original source idiom, and the A half of it is now solved in pure C.",
+   "next_probe": "Apply the candidate.c spelling to _SelectSection (10 rules) and hirahira_w_ctrl_2 (63 rules, signature twice) and score each with sandbox --disable all. If either lands with a smaller register-only residue than 13, prototype the B fix there and port back."
   },
   {
-   "hypothesis": "The closing form is a family-level source idiom shared by all three 3x3 rotation-matrix functions in src/text1a_c.c, not a per-function local detail.",
-   "mechanism": "All three carry regfix rules describing the same two mechanisms (sinAxsinB_12 in $a0-vs-$v0, and the volatile/la addressing block for the cosA read); a mechanism present in all three is a property of the original source spelling of the shared idiom.",
-   "next_probe": "Diff the three targets' Judge-read prologues instruction-by-instruction and diff the three C bodies; identify which one has the SMALLEST cheat-free distance and prototype the idiom there first (cheaper gradient), then port the winning spelling to this function."
+   "hypothesis": "Mechanism B may be sensitive to WHICH store is interleaved and where else stores are interleaved, because moving a store changes the pre-combine insn stream that sched1 and then local-alloc see.",
+   "mechanism": "Only two store placements were tried in the blocking slot (a1[5] and a1[0]), and both gave 13 \u2014 but no probe interleaved additional a1[] stores elsewhere in the body (e.g. emitting each matrix element as soon as it is computed, which is a plausible original spelling and would rewrite live ranges throughout).",
+   "next_probe": "Generate forms that emit a1[] stores eagerly at the point each product is finished (several orderings), stacked on the score-13 form, and score each. Watch build_insns stays 114 and read the angC/index-temp registers with s2/head.py."
   }
  ],
  "judge_constraints": [],

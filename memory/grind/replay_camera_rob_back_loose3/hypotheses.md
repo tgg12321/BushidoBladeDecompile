@@ -23,6 +23,47 @@ Floor: engine metric **17** on the HEAD (cheat-carrying) form; **26** cheat-free
    Banked as `rejected/u16-retype-and-cast-at-uses-folds-to-lh.c` and
    `rejected/u16-ptr-view-cosA-folds-to-lh.c`.
 
+## SESSION 2 (structural) — floor 26 -> 13
+
+### CONFIRMED — mechanism A is closed in pure C by an intervening STORE
+**Statement:** the `lhu; sll 16; sra 16` shape survives if a memory WRITE sits
+between the `u16` staging load and its `(s16)` cast.
+**Mechanism:** combine's `can_combine_p` refuses to combine a MEM load into a later
+user across an insn that may write memory, so `simplify_shift_const` never sees the
+`ashiftrt(ashift(zero_extend(mem)))` chain. It is free: sched1 runs after combine
+and hoists the store back out (target fills that load-delay slot with `mflo t9`).
+**Probe/result:** `u16 rawA = Judge[jA]; a1[5] = -sinA; cosA = (s16)rawA;` ->
+**13 / build_insns 114** (target 114). Store after the cast -> 26 (inert). Any store
+works (`a1[0]` in the slot -> 13). The same interleave without the `u16` staging
+local -> 26, because that load is already a `sign_extend` MEM. Banked in candidate.c.
+
+### KILLED — "the raw halfword needs a second, flow-LIVE use" (s1's frontier A)
+**Probe:** three second uses of `rawA` on top of the staging spelling — `a1[9] = rawA`
+(low half), `a1[9] = rawA + 1` (SI add), `a1[9] = rawA >> 8` (needs the zero-extended
+high bits). **Result:** all three still emit a single `lh` (35/114, 38/115, 42/116);
+for the last, GCC kept the `lh` and re-derived the unsigned value with `andi`/`srl`.
+Combine rewrites the LOAD and patches every other user from the sign-extended
+register, so no width-of-use argument can block it. Banked as
+`rejected/u16-second-use-does-not-block-lh-fold.c`.
+
+### KILLED — mechanism B is not reachable by ANY structural lever
+**Probe:** 15 forms (named local for the angC cos index / sin index / both / both
+hoisted; angC read hoisted next to angA/angB; angC+sinC moved ahead of sinA/sinB;
+named locals for all six Judge indices; angC reused as its own index holder;
+two-variable and split-init `sinAxsinB`; multiply-operand-order swaps on `prod_*` and
+on all four `cosA_*`; walking `s16 *J = Judge` pointer; `cosA` narrowed to `s16`),
+each measured with `sandbox --disable all`. **Result:** every one scored EXACTLY
+26 / 113 on the s1 baseline — bit-identical, i.e. GCC canonicalises the spelling away
+before allocation. Two were worse (cos index hoisted 43/112; `sinAxsinB_12 >>= 12`
+36/113). Re-measured on the new score-13 baseline the survivors are all still exactly
+13 / 114 (only the cosA operand swap moved, to 17). **Root cause measured:** the
+`.lreg` flow numbers that feed `qty_compare_1` are untouched by every one of these
+spellings — angC is pseudo 97 "used 3 times across 12 insns" (priority 0.25, so it is
+allocated LATE and takes the leftover register) and its index temp is pseudo 111
+"used 2 times across 2 insns" (priority 1.00); `greg` confirms neither is in its
+"20 regs to allocate" list, so both are LOCAL-alloc decisions. Banked as
+`rejected/named-index-locals-all-inert.c`.
+
 ## FRONTIER
 
 **A. The raw `cosA` halfword needs a SECOND use of the zero-extended value, so combine
@@ -77,3 +118,21 @@ original *source idiom*, not of this function's local details.
 - probe: Compared the diff of the with-volatile build (which HAS target's correct lhu+sll/sra shape, score 17) against the no-volatile build (score 26).
 - result: Both builds show the identical 13 B-diffs (angC $v0 vs $v1, index temp $v1 vs $v0, sinAxsinB_12 $a0 vs $v0). A and B are independent axes and must be closed separately.
 - verdict: CONFIRMED
+
+## [s2] A memory WRITE placed between the u16 staging load of cosA and its (s16) cast preserves target's lhu + sll 16 + sra 16 shape, at zero instruction cost.
+- mechanism: GCC 2.7.2 combine's can_combine_p refuses to combine a MEM load into a later user across an insn that may write memory, so simplify_shift_const never sees the ashiftrt(ashift(zero_extend(mem))) chain it would otherwise rewrite to sign_extend(mem) = lh. It costs nothing because sched1 runs AFTER combine and hoists the store back out; target's own schedule fills that load-delay slot with mflo t9.
+- probe: u16 rawA = Judge[((s16)angA + 0x400) & 0xFFF]; a1[5] = -sinA; cosA = (s16)rawA;  (the a1[5] store MOVED from the tail of the function into that slot), measured with sandbox --disable all; plus controls: store after the cast, a different store (a1[0]) in the slot, and the same interleave without the u16 staging local.
+- result: 13 / build_insns 114 (target_insns 114) vs the 26 / 113 baseline. Store after the cast -> 26 (inert). a1[0] in the slot -> 13 (any store works). Same interleave on the plain s16 baseline -> 26 (that load is already a sign_extend MEM, so there is no zero_extend to protect). diffasm on the score-13 object shows the tgt[62:67] cosA region matching exactly and no instruction-shape difference left anywhere in the function.
+- verdict: CONFIRMED
+
+## [s2] (s1's frontier A) The raw cosA halfword needs a second, flow-LIVE use of the zero-extended value to stop combine folding lhu+sll+sra into lh.
+- mechanism: simplify_shift_const was believed to rewrite the chain only when the zero_extend dest is single-use and dead after the shifts (dead_or_set_p), as in the matched precedent func_80065344 whose u16 is stored back.
+- probe: Three real second uses stacked on the u16 staging spelling: a1[9] = rawA (low-half-only store); a1[9] = rawA + 1 (SI add, then truncated by the store); a1[9] = rawA >> 8 (genuinely needs the zero-extended HIGH bits). Each applied to src/text1a_c.c and scored with sandbox --disable all, then objdumped to read the emitted load.
+- result: All three still emit a single lh (35 / 114, 38 / 115, 42 / 116 insns). For the >> 8 case GCC kept the lh and re-derived the unsigned value with andi/srl rather than changing the load. Combine rewrites the LOAD itself and patches every other user from the sign-extended register, so no width-of-use argument can block it.
+- verdict: KILLED
+
+## [s2] (s1's frontier B) angC can be steered from $v0 into target's $v1 by a structural change to the relative local-alloc quantity priority of angC vs its index temp (var splits, declaration/statement order, type narrowing, re-association).
+- mechanism: local-alloc assigns by qty_compare_1 priority = floor_log2(n_refs) * n_refs * size / live_length, so a spelling that changes either term should flip the tie-break.
+- probe: 15 structural forms measured with sandbox --disable all: named local for angC's cos index / sin index / both / both hoisted to just after the angC load; angC read hoisted next to angA/angB; the angC+sinC pair moved ahead of sinA/sinB; named locals for all six Judge indices; angC reused as its own index holder; two-variable sinAxsinB; split-init sinAxsinB_12 >>= 12; multiply-operand-order swaps on prod_sinC/prod_cosC and on all four cosA_* products; a walking s16 *J = Judge pointer; cosA narrowed to s16. The survivors were re-measured on top of the new score-13 form. cc1 -da .lreg/.greg dumps read for the priority inputs.
+- result: Every form scored EXACTLY 26 / build_insns 113 on the s1 baseline (bit-identical: GCC canonicalises the spelling away before allocation); two were worse (cos index hoisted 43/112, split-init 36/113). On the score-13 baseline the survivors are all still exactly 13 / 114 (the cosA operand swap moved the wrong way, to 17). The .lreg numbers explain it: angC is pseudo 97 'used 3 times across 12 insns' (priority 0.25 -> allocated late, takes the leftover register) and its index temp is pseudo 111 'used 2 times across 2 insns' (priority 1.00); no structural spelling changes either term. greg's '20 regs to allocate' list contains neither, confirming both are LOCAL-alloc decisions.
+- verdict: KILLED
