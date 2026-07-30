@@ -177,3 +177,103 @@ See `meta.json.rejected_forms` for the full list with reasoning. Highlights:
 - [s1] The engine's canonical gate re-confirms verdict C (pure-C target, 39 total insns, distance 17); diagnose classifies it LARGE (d22) with 18 differing insns.
 
 - [s1] src/code6cac_b2_post.c was returned to the exact candidate.c body at end of session and re-verified at score 17 / build_insns 36. No other tracked file was modified.
+
+## == s2 (structural, 2026-07-30) ==
+
+- [s2] VOLATILE CENSUS — NEGATIVE, GATE CLOSED. `D_80101E70` has exactly two
+  writers in the whole tree, both synchronous: `replay_camera_Init` itself
+  (src/code6cac_b2_post.c:263) and `func_80036FD4`
+  (src/code6cac_b2_post.c:329), the latter called synchronously from
+  src/code6cac_b2_post.c:362 and src/code6cac_c2.c:327. All other mentions are
+  the seven `extern` declarations across the code6cac* TUs. No IRQ / callback /
+  VSync handler writes it: every callback registration in the tree installs a
+  different address (`&D_80080014` / `&D_8008003C` at src/display.c:3743-3744,
+  `&D_80082050` at src/system.c:1146, `&g_snd_irq_data` at src/main.c:1617), and
+  `marionation_camera_Init_80036064` (src/code6cac_b2_post.c:205) — the
+  replay-camera path s1's frontier suspected — calls `cdrom_SetCallbackB(0)`,
+  i.e. it DEREGISTERS. Prong (1) of legitimate-volatile-interrupt-touched FAILS;
+  the `extern volatile s32 D_80101E70;` at line 45 is not carve-out-eligible and
+  the honest floor of 17 stands.
+
+- [s2] Our build's register NAMING already matches target for the three value
+  pseudos: `sval` = $v0, `cam_val` = $v1, `ec_val` = $a0, identical to target's
+  `sll/sra $v0`, `lw $v1,%lo(SpecialCam)`, `lw $a0,%lo(D_8008EC38)`. Only two
+  register-level residuals remain: the `$t0` cached address of `D_80101E62`
+  (target materialises `lui;addiu` once and uses `lh 0($t0)` / `sh $a0,0($t0)`;
+  we emit two separate `lui`s) and the `$a3` copy of the `a1` parameter. The
+  "17" is therefore NOT a broad rename cluster, contrary to how s1 summarised it.
+
+- [s2] ORDERING AXIS MEASURED DEAD (8 forms, both regimes). candidate.c is a
+  strict local optimum at 17/36 stripped and 14/38 with the reload; every
+  neighbour is worse. Full table in hypotheses.md H6. The counter-intuitive
+  result worth remembering: writing the statements in TARGET'S OWN EXECUTION
+  ORDER scores 18/37 and 23/40 — worse in both regimes than candidate.c's odd
+  placement of `D_80101E7C = a1;` between the two loads. Do not "clean up" that
+  placement.
+
+- [s2] CONFIRMED by measurement, not inference: the `a1` parameter-home copy
+  materialises as a real instruction as soon as another live value occupies hard
+  reg $a1 across its live range. Diagnostic form with three extra live temps
+  produced `3b0: move v1,a1` at exactly target's copy position while a temp took
+  $a1 (`3e4: lw a1,8(at)`). It lands in $v1, not target's $a3, and the extra
+  temps are dead-value cheats — so the route is closed, but the mechanism is now
+  proven.
+
+- [s2] RA facts for the CURRENT candidate (2 global allocnos, not s1's 3 — s1
+  measured with the pointer alias in place): `;; 72 conflicts: 72 73 2 5 29`,
+  `;; 72 preferences: 4`; `;; 73 conflicts: 72 73 2 3 29`,
+  `;; 73 preferences: 5`; `Register dispositions: 72 in 4  73 in 5`. Note that
+  the a0-home pseudo (72) DOES conflict with hard reg 5 — $a1 is still live when
+  it is born — while the a1-home pseudo (73) does not, because $a1 is the source
+  of its own copy. Dump banked at tmp/grind/replay_camera_Init/s2/rtl/base.i.greg.
+
+- [s2] global.c mechanism, line-cited: `prune_preferences` (global.c:893-895)
+  refuses to place into `regs_someone_prefers[A]` any register A itself prefers
+  (the same-size `AND_COMPL_HARD_REG_SET (temp, hard_reg_full_preferences[allocno])`
+  clause), so $a1 can never be denied to allocno 73 by the preference machinery;
+  and `find_reg` seeds `regs_used_so_far` with ALL `call_used_regs`
+  (global.c:352-355), so the pass-0 "never allocate a register for the first
+  time" rule never protects $a1..$a3 / $t0... The only route to denying 73 hard
+  reg 5 is a genuine `hard_reg_conflicts` entry, i.e. $a1 occupied by an
+  overlapping live value.
+
+- [s2] CALLER EVIDENCE (asm/funcs/special_camera_check_pos_outside_ground_80036E34.s):
+  the only in-tree caller sets up NOTHING beyond the incoming $a0/$a1 before
+  `jal replay_camera_Init` — it moves its own $a2/$a3 into $s1/$s2 first
+  (`addu $s1,$a2,$zero` / `addu $s2,$a3,$zero`) and fills the jal delay slot with
+  `sw $s0,0x10($sp)`. So a wider declared signature for replay_camera_Init is
+  not supported from the call side, independently of s1's H4 (which killed the
+  dead-extra-parameter form on the callee side).
+
+- [s2] OPEN CONTRADICTION worth stating plainly for the next session: target
+  allocates the a1 value to $a3 (7) and the D_80101E62 address to $t0 (8) while
+  leaving hard regs $a1 (5) and $a2 (6) COMPLETELY UNUSED in the emitted body.
+  Under this tree's `find_reg` (lowest free hard reg, no REG_ALLOC_ORDER for
+  MIPS) that is not reachable from a two-allocno shape like ours. The original
+  compile's allocno set must differ from ours in a way that has not yet been
+  identified — that, not statement order, is where the remaining structural
+  search should go.
+
+- [s2] Artifacts: sweep harness + variants + both result JSONs, the diagnostic
+  form, and a fresh full `cc1 -da` dump set under
+  tmp/grind/replay_camera_Init/s2/. src/code6cac_b2_post.c was returned to the
+  exact candidate.c body at end of session and re-verified at score 17 /
+  build_insns 36. No other tracked file was modified.
+
+- [s2] VOLATILE CENSUS NEGATIVE — GATE CLOSED. D_80101E70 has exactly two writers in the whole tree, both synchronous: replay_camera_Init itself (src/code6cac_b2_post.c:263) and func_80036FD4 (src/code6cac_b2_post.c:329), which is called synchronously from src/code6cac_b2_post.c:362 and src/code6cac_c2.c:327. No IRQ/callback/VSync handler writes it — every callback registration installs a different address (&D_80080014 / &D_8008003C at src/display.c:3743-3744, &D_80082050 at src/system.c:1146, &g_snd_irq_data at src/main.c:1617), and marionation_camera_Init_80036064 (src/code6cac_b2_post.c:205) calls cdrom_SetCallbackB(0) — it deregisters. Prong (1) of legitimate-volatile-interrupt-touched FAILS.
+
+- [s2] Our build's register NAMING already matches target for all three value pseudos: sval = $v0, cam_val = $v1, ec_val = $a0, identical to target's sll/sra $v0, lw $v1,%lo(SpecialCam), lw $a0,%lo(D_8008EC38). The honest 17 is therefore NOT a broad rename cluster (contrary to how s1 summarised it) — only two register-level residuals remain: the $t0 cached address of D_80101E62, and the $a3 copy of the a1 parameter.
+
+- [s2] ORDERING AXIS MEASURED DEAD across 8 forms in both regimes; candidate.c is a strict local optimum at 17/36 stripped and 14/38 with the reload. Writing the statements in target's own execution order scores 18/37 and 23/40 — worse in both regimes. The placement of `D_80101E7C = a1;` between the SpecialCam load and the D_8008EC38 load is load-bearing.
+
+- [s2] PROVEN BY MEASUREMENT (not inference): the a1 parameter-home copy materialises as a real instruction the moment another live value occupies hard reg $a1 across its range. The diagnostic form emitted `move v1,a1` at exactly target's copy position while a temp took $a1. It lands in $v1 rather than target's $a3, and the temps are dead-value cheats, so the route is closed — but the mechanism is now established fact.
+
+- [s2] RA facts for the CURRENT candidate (2 global allocnos, not s1's 3 — s1 measured with the pointer alias in place): `;; 72 conflicts: 72 73 2 5 29` / `;; 72 preferences: 4`; `;; 73 conflicts: 72 73 2 3 29` / `;; 73 preferences: 5`; `Register dispositions: 72 in 4  73 in 5`. The a0-home pseudo DOES conflict with hard reg 5 ($a1 is still live when it is born); the a1-home pseudo does not, because $a1 is the source of its own copy.
+
+- [s2] global.c mechanism, line-cited: prune_preferences (global.c:893-895) refuses to place into regs_someone_prefers[A] any register A itself prefers, so $a1 can never be denied to allocno 73 by the preference machinery; find_reg seeds regs_used_so_far with ALL call_used_regs (global.c:352-355), so pass 0's 'never allocate a register for the first time' rule never protects $a1..$a3 / $t0..; no REG_ALLOC_ORDER is defined for MIPS in this tree.
+
+- [s2] CALLER EVIDENCE (asm/funcs/special_camera_check_pos_outside_ground_80036E34.s): the only in-tree caller sets up nothing beyond the incoming $a0/$a1 before `jal replay_camera_Init` — it moves its own $a2/$a3 into $s1/$s2 first (addu $s1,$a2,$zero / addu $s2,$a3,$zero) and fills the jal delay slot with sw $s0,0x10($sp). A wider declared signature is unsupported from the call side, independently of s1's H4 which killed the dead-extra-parameter form on the callee side.
+
+- [s2] OPEN CONTRADICTION for the next session: target allocates the a1 value to $a3 (7) and the D_80101E62 address to $t0 (8) while leaving hard regs $a1 (5) and $a2 (6) COMPLETELY UNUSED in the emitted body. Under this tree's find_reg (lowest free hard reg, no REG_ALLOC_ORDER) that is unreachable from a two-allocno shape like ours. The original compile's allocno set must differ from ours in a way neither s1 nor s2 has identified.
+
+- [s2] src/code6cac_b2_post.c was returned to the exact candidate.c body at end of session and re-verified: score 17, build_insns 36, target_insns 39, rules_dropped 1, cheat_asm_stripped 13. No other tracked file was modified (git status shows only the memory/grind ledger files, metrics/events.jsonl, and src/code6cac_b2_post.c).

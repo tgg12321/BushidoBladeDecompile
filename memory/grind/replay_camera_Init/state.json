@@ -1,8 +1,8 @@
 {
  "func": "replay_camera_Init",
  "file": "code6cac_b2_post",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 0,
@@ -15,23 +15,29 @@
    "floor": 17,
    "modality": "recon",
    "headline": "Recon: 3-insn gap fully characterised \u2014 2 insns are the D_80101E70 reload gated on the pre-existing extern volatile the sandbox strips (17 vs 14 with --keep-cheat-asm); 1 insn is the a1->a3 parm copy "
+  },
+  {
+   "session": 2,
+   "floor": 17,
+   "modality": "structural",
+   "headline": "Structural axis measured dead: volatile carve-out census came back NEGATIVE (closed gate), 8-form ordering sweep found candidate.c is a strict local optimum in both regimes, and the missing a1->$a3 co"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The existing `extern volatile s32 D_80101E70;` either qualifies for the legitimate-volatile-interrupt-touched carve-out \u2014 in which case the honest floor legitimately drops 17 -> 14 and the remaining gap is a 1-instruction RA problem \u2014 or it does not, in which case the reload has no available source at all and the function's disposition changes materially.",
-   "mechanism": "The two-prong test in .claude/rules/legitimate-volatile-interrupt-touched.md: (1) the global must be asynchronously mutated by an identifiable IRQ/callback writer, (2) the use site must demonstrably require CSE-defeat. Prong (2) is already proven by this session's 14-vs-17 measurement; only prong (1) is open. s0's evidence bank asserts no IRQ-writer citation exists but records no census.",
-   "next_probe": "Run the census: grep every writer of D_80101E70 across src/ and correlate with the PsyQ callback surface (cdrom_SetCallbackB / sys_VSync / root-counter handlers) reachable from this file \u2014 the replay-camera path in this very file registers a cdrom callback via marionation_camera_Init_80036064. Record the result either way; a NEGATIVE census is a closed gate, not an open question."
+   "hypothesis": "A decomp-permuter campaign seeded from candidate.c can find the RA/scheduling shape that four sessions of manual derivation have not. The permuter has still NEVER been run on this function.",
+   "mechanism": "Random plus directed PERM_* mutation over statement order, temporary introduction, and expression spelling explores a structural space that the s2 hand-built 8-form sweep only sampled. s0 deprioritized the infra, s1 was recon modality, s2 was structural modality \u2014 the axis is entirely unexplored.",
+   "next_probe": "Build a clean single-function target.o from asm/funcs/replay_camera_Init.s + tools/decomp-permuter/prelude.inc (drop the `.set gp=64` line for r3000) so the function sits at offset 0 like base.o \u2014 per difficult-is-not-impossible.md \u00a73 a whole-file target.o adds ~340k of constant score noise and makes the search useless. Seed from memory/grind/replay_camera_Init/candidate.c, launch via tools/permuter_campaign.py, wait IN-TURN with `permuter_campaign.py wait --dir <ws>`, and `harvest --stop` before writing the outcome."
   },
   {
-   "hypothesis": "A C shape that keeps the incoming $a1 hard register live past the birth of the pseudo holding its value will force allocno 73 off $a1 and (with $a2 likewise conflicted) onto $a3, materialising target's `addu $a3,$a1,$zero` in the bnez delay slot.",
-   "mechanism": "global.c find_reg masks conflicts+preferences (global.c:1093) then takes the lowest free hard reg under the default 0..31 order (no REG_ALLOC_ORDER for MIPS in this tree). The copy insn survives as a real instruction precisely when the pseudo does not get its preferred hard reg. Killed this session: dead extra parameters (flow deletes the copy pre-conflict-graph). Untried: shapes with a second, later use of the parameter value, and shapes that give the address pseudo a live range overlapping the parm-copy region.",
-   "next_probe": "Sweep C forms that create a second reference to the a1 value or extend the address pseudo's live range backwards across the parm copies; after each, slice .greg with tmp/grind/replay_camera_Init/s1/slice.py and read the `Register dispositions` + conflict lists directly rather than inferring from the score."
+   "hypothesis": "The `addu $a3,$a1,$zero` is not the ordinary parameter home of a two-parameter leaf; the original compile's allocno set differs from ours in a way that has not yet been identified.",
+   "mechanism": "s2 established a hard contradiction: in a two-parameter leaf whose only reference to $a1 is its own home copy, global.c's find_reg gives that pseudo hard reg 5 deterministically (preferences {5}, no constructible conflict on 5, lowest-free order, no REG_ALLOC_ORDER). Yet target puts it in $a3 (7), puts the D_80101E62 address in $t0 (8), and leaves hard regs 5 and 6 completely unused. Both the callee side (s1 H4: flow deletes dead parameter copies) and the caller side (s2: the caller never sets $a2/$a3 for the call) rule out a wider signature.",
+   "next_probe": "m2c the target function and diff the reconstructed structure \u2014 in particular the number and lifetimes of distinct values \u2014 against our two-allocno shape, instead of assuming ours is the original's shape. Then re-run the cc1 -da dump on any shape m2c suggests and compare `;; N conflicts` / `;; N preferences` lines against target's implied 4/7/8 allocation directly."
   },
   {
-   "hypothesis": "Directed decomp-permuter search from candidate.c can find the RA/scheduling shape for the remaining 14 (volatile-present) or 17 (stripped) points that manual derivation has not.",
-   "mechanism": "Random + PERM_* directed mutation over statement order, temporary introduction, and expression spelling explores a structural space that four manual sessions' worth of hand-derived levers have not covered.",
-   "next_probe": "Build a clean single-function target.o from asm/funcs/replay_camera_Init.s + tools/decomp-permuter/prelude.inc (drop the `.set gp=64` line for r3000) so the function sits at offset 0 like base.o \u2014 per difficult-is-not-impossible.md \u00a73, a whole-file target.o adds ~340k of constant score noise and makes the search useless. Launch via tools/permuter_campaign.py, wait IN-TURN with `permuter_campaign.py wait --dir <ws>`, then `harvest --stop` before writing the outcome."
+   "hypothesis": "The `s16 *s0 = &D_80101E62;` address cache \u2014 worth a measured -1 (14 -> 13) in the reload regime per s1 \u2014 is now proposable as a properly-annotated pointer-alias-fake-exception rather than the unannotated form s0's reviewer FAILed.",
+   "mechanism": "pointer-alias-fake-exception is a SANCTIONED last-resort family (owner ruling 2026-07-01, SOTN precedent `tilemap = &g_Tilemap; // n.b.! unused, required for PSP`). Its prerequisites are documented lever-exhaustion, a named GCC-pass mechanism, and a `/* FAKE */` annotation \u2014 s0 supplied none of the three and was FAILed on that ground alone, with everything else passing. It reproduces target's exact address-materialisation shape (one lui;addiu reused for both the pre-branch lh and the post-branch sh, matching target's $t0).",
+   "next_probe": "Only after the permuter axis has run (so the exhaustion record is genuinely complete): re-propose the alias with the full annotation \u2014 lever-exhaustion pointing at s1 H2/H3 and s2 H5/H6/H7, the named mechanism (single materialized address reused across the branch, defeating the second lui), and a `/* FAKE */` comment \u2014 then send it to a fresh cheat-reviewer. Note it is only worth -1 and only in a regime the honest sandbox does not score, so it cannot close the function by itself."
   }
  ],
  "judge_constraints": [],
