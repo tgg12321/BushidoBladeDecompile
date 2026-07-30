@@ -1,4 +1,74 @@
-/* func_8003553C — best form as of grind session 5 (permuter); body UNCHANGED
+/* func_8003553C - best form as of grind session 6 (FORENSICS); body UNCHANGED
+ * since session 3. Honest floor still `sandbox --disable all` = 2 (43/43 insns),
+ * re-measured this session with this body in src/code6cac_b2_pre.c.
+ *
+ * SESSION 6 changed NOTHING in the body and did not move the floor. What it
+ * produced is the exact GCC decision that creates the residual, read out of the
+ * compiler's own scheduler trace (cc1 -da writes a `;; ready list at T-n` log
+ * into base.i.sched). It supersedes the s2 and s3 explanations, both of which
+ * were partly wrong, and it converts session 5's empirical law ("the early li
+ * and the early store are inseparable") from an 840-form measurement into a
+ * theorem about two lines of sched.c.
+ *
+ * THE MECHANISM, END TO END (dumps: tmp/grind/func_8003553C/s6/rtl_{INC,T,HT,W,D}/)
+ *  1. sched1 does NOT reorder this block. Verified on the incumbent and on the
+ *     target-statement-order form: base.i.sched is insn-for-insn identical to
+ *     base.i.combine. Every emitted reordering is sched2's (post-RA).
+ *  2. sched1 DOES relocate ONE kind of insn: a single-set pseudo's definition.
+ *     In the holder form (`s16 w = 640;`) the const set survives cse/loop/flow/
+ *     combine at the very top of the RTL (with REG_EQUAL), and sched1 moves it
+ *     down to sit immediately before its first use. The trace shows exactly why:
+ *         ;; ready list at T-11: 78 (2) 75 (2) 9 (7f000001), now 9 78 75
+ *     0x7f000001 is LAUNCH_PRIORITY (sched.c:187). schedule_block (sched.c:3985)
+ *     stamps the just-scheduled insn with it, and schedule_insn -> adjust_priority
+ *     (sched.c:2534-2575) propagates that value to any newly-ready predecessor for
+ *     which birthing_insn_p() is true, deliberately "to shorten register lives".
+ *     Because schedule_block builds the block BACKWARD (sched.c:3813 "The first
+ *     insn scheduled becomes the new tail"), a LAUNCH_PRIORITY insn is emitted
+ *     immediately BEFORE the use that just made it ready. That is the "sink".
+ *  3. birthing_insn_p (sched.c:2496-2528) returns true for a SET of a REG that is
+ *     live at that point IF AND ONLY IF `reg_n_sets[REGNO] == 1`. Our 640 pseudo
+ *     always has exactly one set, so the sink is unconditional and no placement,
+ *     spelling, declaration order or helper factoring can avoid it.
+ *  4. RA then works on that sunk layout. local-alloc allocates by density
+ *     (short, busy ranges first), so the 240 and 128 allocnos take $v0; the 640
+ *     allocno gets $v1 ONLY when its live range overlaps one of them. With both
+ *     640 stores in the post-load group its sunk range lies entirely after them,
+ *     so it also gets $v0 (greg: `80 in 2`). With our leading 0x10 store its range
+ *     spans the whole block, so it gets $v1 (greg: `75 in 3`) - target's register.
+ *  5. sched2 (where birthing_insn_p is disabled: `if (reload_completed == 1)
+ *     return 0;`) then computes INSN_PRIORITY as the longest dependence path from
+ *     the block HEAD. A `li` with no predecessors has priority 1, the minimum, so
+ *     backward scheduling picks it LAST and it lands at the block head - which is
+ *     exactly where target has `addiu $v1,$zero,0x280` (block insn 0). But when
+ *     the 640 shares $v0 with the other two constants, the shared hard register
+ *     chains all three `li`s and their stores into one totally ordered path, and
+ *     the 640 `li` inherits that chain's depth - which is why every
+ *     target-statement-order form emits it right after `sb $v0,0xE`.
+ *
+ * WHAT THIS MEANS FOR THE NEXT SESSION
+ *   The whole residual now reduces to ONE boolean in sched.c:2516:
+ *   `reg_n_sets[<the 640 pseudo>] == 1`. If the 640-valued pseudo had TWO OR MORE
+ *   sets, birthing_insn_p returns 0, adjust_priority leaves its priority at 1, and
+ *   sched1 leaves the definition at the block head with both uses in the post-load
+ *   group - the live range then overlaps the 240/128 ranges, local-alloc is forced
+ *   onto $v1, and (per the s3 diagnostic pin, which proved the rest) every store
+ *   lands in target's slot. Two spellings of "two sets" were measured this session
+ *   and BOTH fail, for different reasons (see rejected/):
+ *     * a redundant duplicate `w = 640;` before the second store is deleted by
+ *       cse2 - reg_n_sets is back to 1 and the output is bit-identical to the
+ *       plain target-order form;
+ *     * reusing ONE variable for 240 and then 640 really does give reg_n_sets 2,
+ *       but one C variable is one pseudo and therefore ONE hard register, while
+ *       target holds 240 in $v0 and 640 in $v1 - output again bit-identical.
+ *   So the open question is narrow and precise: is there a pure-C construct that
+ *   gives the 640-valued pseudo two surviving sets while keeping it a pseudo
+ *   distinct from the 240 and 128 pseudos, at zero instruction cost?
+ *
+ * Sessions 1-5 headers (levers L1/L2/L3, the killed axes, the 840-form search)
+ * are preserved verbatim below.
+ *
+ func_8003553C — best form as of grind session 5 (permuter); body UNCHANGED
  * since session 3. Honest floor still sandbox --disable all = 2 (43/43 insns).
  *
  * SESSION 5 replaced decomp-permuter (whose objective s4 measured to be

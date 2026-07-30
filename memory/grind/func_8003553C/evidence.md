@@ -562,3 +562,148 @@ order or the syntax of its statements. Concretely un-probed:
 - [s5] Reusable instruments for the next session: s5/search_lib.py (form generator + honest objdump scorer + constant-signature extractor, ~1.5 s/form), s5/hill.py (exhaustive 1-token-move hill climb from a named chassis, 160 neighbours/iteration, 8-way parallel), s5/scoreforms.py (score arbitrary hand-written standalone forms). They must be launched through wsl.exe with .venv activated - the Bash tool's Git-Bash PATH has no mipsel toolchain and no venv.
 
 - [s5] No cheat construct was used or proposed: zero regfix/asmfix edits, zero register pins, zero inline asm, zero volatile, zero dead stores, zero holder locals in any banked form. The two new rejected/ forms are ordinary pure-C helper-function factorings that simply do not reproduce target.
+
+## Session 6 (forensics, 2026-07-30) — floor stays 2; the residual's EXACT GCC decision is now named
+
+NOTE (fifth session running): `src/code6cac_b2_pre.c` again held the ORIGINAL
+cheat-asm carrier at session start (the driver reverts src between sessions).
+The banked candidate was re-applied and re-measured at **2** (`sandbox
+--disable all`, 43 build insns / 43 target insns; the reported
+`cheat_asm_stripped: 4` comes from sibling functions in the same file, not from
+this body) before any probe, and src holds it at session end. This is now a
+standing fact, not a surprise — budget one turn for it at the top of every session.
+
+### The instrument: cc1 -da already contains the scheduler's own decision log
+`tools/gcc-2.7.2/build/cc1 ... -da` writes the list scheduler's full trace into
+`base.i.sched`: `;; insn[N]: priority = P, ref_count = R` for every insn, then
+one `;; ready list at T-n: <uid (prio)> ..., now <sorted>` line per scheduling
+step, then the register-lifetime deltas. **No cc1 rebuild is needed** — session 3's
+operator note about `BB2_PRIO_DEBUG`/`BB2_RANK_DEBUG` being absent from the built
+binary is true but irrelevant: the stock `-da` trace answers the same questions.
+Harness added this session: `tmp/grind/func_8003553C/s6/rtlc.sh <form.c> <tag>`
+dumps every RTL pass for a STANDALONE form into `s6/rtl_<tag>/` and prints the
+emitted asm (~2 s); `s6/rtl6.sh <tag>` does the same for the current src TU.
+
+### CORRECTION 1 — sched1 does not reorder this block at all
+`base.i.sched` is insn-for-insn identical to `base.i.combine` for BOTH the
+incumbent (`rtl_INC/`) and the target-statement-order form (`rtl_T/`). Every
+reordering visible in the emitted code — including the RGB block breaking out of
+field order in the target-order forms — is **sched2's** (post-RA). Session 3's
+framing of sched1 as the reordering agent is wrong for everything except one
+specific insn class (below).
+
+### CORRECTION 2 — cse does NOT delete a constant-holder's set; sched1 MOVES it
+`rtl_HT/` (target statement order + `s16 w = 640;`) shows `(set (reg:HI 75)
+(const_int 640))` alive at the TOP of the function RTL in `base.i.rtl`,
+`base.i.jump`, `base.i.cse`, `base.i.loop`, `base.i.flow` and `base.i.combine`
+(carrying REG_EQUAL) — and then sitting immediately before its first use in
+`base.i.sched`. So session 2's "cse propagates and deletes the standalone set"
+is wrong (session 3 already said so) AND session 3's "sched1 sinks it" is right
+but was never explained. It is explained now.
+
+### THE DECISION, in the compiler's own trace
+
+    ;; ready list at T-11: 78 (2) 75 (2) 9 (7f000001), now 9 78 75
+
+Insn 9 is the `li 640`. Every other insn in the block carries priority 2; insn 9
+enters the ready list carrying **0x7f000001 = LAUNCH_PRIORITY** (`sched.c:187`)
+and is therefore sorted to the front and scheduled immediately.
+The chain that produces it:
+
+* `schedule_block` builds the block **backward** — "The first insn scheduled
+  becomes the new tail" (`sched.c:3813`), `head = insn` at the end. An insn
+  becomes ready when all of its DEPENDENTS are already scheduled.
+* Right before calling `schedule_insn`, `schedule_block` sets
+  `INSN_PRIORITY (insn) = LAUNCH_PRIORITY` (`sched.c:3985`) with the comment
+  "Give INSN high enough priority that at least one (maybe more) reg-killing
+  insns can be launched ahead of all others."
+* `schedule_insn` (`sched.c:2604-2631`) calls `adjust_priority (prev)` for each
+  predecessor whose last dependent it just satisfied.
+* `adjust_priority` (`sched.c:2534-2575`), n_deaths == 0 branch: if
+  `birthing_insn_p (PATTERN (prev))` then `INSN_PRIORITY (prev) = max_priority`,
+  which at that moment IS LAUNCH_PRIORITY. Comment: "Defer scheduling insns which
+  kill registers ... Prefer scheduling insns which make registers live".
+* `birthing_insn_p` (`sched.c:2496-2528`): `if (reload_completed == 1) return 0;`
+  then for a `SET` of a `REG` that is live at this point,
+  **`return (reg_n_sets[i] == 1);`**
+
+So: **the instant the last remaining use of a single-set pseudo is scheduled,
+sched1 promotes that pseudo's definition to LAUNCH_PRIORITY and emits it directly
+before its first use.** This is unconditional for our 640 constant, whose pseudo
+always has exactly one set. It is why holders, `static inline` helper parameters,
+declaration order, store spelling and all 840 session-5 forms are inert: none of
+them changes `reg_n_sets`.
+
+### Why that one relocation decides the whole function
+
+* **RA sees the sunk layout.** local-alloc allocates by density (short busy
+  ranges first), so the 240 and 128 allocnos are placed before the 640 allocno and
+  take `$v0` (the first free hard reg). The 640 allocno gets `$v1` **only if its
+  live range overlaps one of them**. Measured greg dispositions:
+  incumbent (leading 0x10 store) `72 in 16  73 in 5  75 in 3  76 in 2  78 in 2
+  80 in 4` — 640 in `$v1`, target's register; target-order form `... 75 in 2
+  77 in 2  80 in 2` — all three constants in `$v0`.
+* **sched2 then places the `li`.** `birthing_insn_p` is disabled after reload, so
+  the only thing left is `INSN_PRIORITY` = longest dependence path from the block
+  head (`priority()` walks LOG_LINKS = predecessors, `sched.c:1425`). A `li` with
+  no predecessors has priority 1 (the minimum) and is therefore chosen LAST in the
+  backward build, i.e. emitted at the block HEAD — exactly where target has
+  `addiu $v1,$zero,0x280` as block insn 0. When the 640 instead shares `$v0` with
+  the other two constants, the shared hard register chains all three `li`s and
+  their stores into one totally ordered dependence path and the `li 640` inherits
+  that chain's depth, which is why every target-order form emits it immediately
+  after `sb $v0,0xE`.
+
+### The residual reduced to one boolean
+`reg_n_sets[<640 pseudo>] == 1` (`sched.c:2516`). If that pseudo had two or more
+surviving sets, birthing_insn_p returns 0, the definition stays at the block head
+with both uses in the post-load group, its live range overlaps the 240/128 ranges,
+local-alloc is forced onto `$v1`, and — per session 3's diagnostic-only `$3` pin,
+which already proved the rest — every store lands in target's slot.
+
+### Two "two sets" spellings measured, both KILLED
+1. **Redundant duplicate set** (`w = 640;` written again before the second store):
+   cse2 deletes it. `base.i.flow` carries a single 640 set; greg shows the usual
+   three constant pseudos; the emitted code is bit-identical to the plain
+   target-order form. Banked `rejected/redundant-second-set-640-folded-by-cse2.c`.
+   (It is also a semantically-purposeless duplicate, so it would not have been
+   proposable even if it had worked.)
+2. **Variable reuse — one `s16 w` holding 240 and then 640.** This genuinely
+   gives `reg_n_sets == 2` (greg drops to two constant pseudos: `75 in 2  76 in 2
+   78 in 4`) and does defeat birthing_insn_p, but one C variable is one pseudo and
+   therefore ONE hard register, while target holds 240 in `$v0` and 640 in `$v1`.
+   Emitted code again bit-identical to the target-order form. Banked
+   `rejected/shared-variable-240-640-one-hardreg.c`.
+
+- [s6] The residual of func_8003553C is produced by ONE decision in tools/gcc-2.7.2/sched.c: adjust_priority (2534-2575) promotes a newly-ready insn to LAUNCH_PRIORITY 0x7f000001 (sched.c:187) when birthing_insn_p (2496-2528) is true, and schedule_block builds the block BACKWARD (3813), so the promoted def is emitted immediately before its first use. birthing_insn_p is true for a live SET of a REG iff reg_n_sets[REGNO] == 1. Our 640 pseudo always has exactly one set, so its definition is unconditionally pulled down to its first use.
+- [s6] The stock `cc1 -da` dump ALREADY contains the list scheduler's full decision trace in base.i.sched (per-insn priority/ref_count, one ready-list line per scheduling step, plus register-lifetime deltas). No cc1 rebuild is needed and session 3's BB2_PRIO_DEBUG/BB2_RANK_DEBUG operator note is moot. The decisive line for this function is `;; ready list at T-11: 78 (2) 75 (2) 9 (7f000001), now 9 78 75`.
+- [s6] CORRECTION to s3: sched1 does NOT reorder this block. base.i.sched is insn-for-insn identical to base.i.combine for both the incumbent and the target-statement-order form. All emitted reordering (including the RGB block leaving field order) is sched2's, post-RA. The ONE thing sched1 relocates is a single-set pseudo's definition, via the LAUNCH_PRIORITY/birthing-insn rule.
+- [s6] CORRECTION to s2 (and confirmation of s3's counter-claim, now with the reason): cse does not delete a constant-holder's set. In rtl_HT the set lives at the top of the RTL through rtl/jump/cse/loop/flow/combine with a REG_EQUAL note and is moved down only by sched1.
+- [s6] Register dispositions measured directly (greg): incumbent `75 in 3` (640 in $v1, target's register) vs target-statement-order form `80 in 2` (640 in $v0). local-alloc allocates by density, so the short-lived 240 and 128 allocnos take $v0 first and the 640 allocno gets $v1 only when its live range OVERLAPS theirs — which, after the unconditional sched1 sink, requires a 640-valued use in the pre-load group. That is the mechanism behind session 5's 428-form empirical law.
+- [s6] sched2 places the `li` purely by INSN_PRIORITY = longest dependence path from the block head; a `li` with no predecessors has priority 1 and is emitted at the block HEAD (target's `addiu $v1,$zero,0x280` is block insn 0). When 640 shares $v0 with the 240 and 128 constants, the shared hard register chains all three `li`s and their stores into one ordered path and the 640 li inherits its depth — which is exactly why every target-order form emits it right after `sb $v0,0xE`.
+- [s6] KILLED — redundant duplicate set (`w = 640;` written twice): cse2 deletes the second, reg_n_sets returns to 1, output bit-identical to the plain target-order form. rejected/redundant-second-set-640-folded-by-cse2.c
+- [s6] KILLED — one variable reused for 240 then 640: this DOES give reg_n_sets == 2 (two constant pseudos instead of three in greg) and does defeat birthing_insn_p, but one C variable is one pseudo hence ONE hard register, and target needs 240 in $v0 and 640 in $v1. Output bit-identical to the target-order form. rejected/shared-variable-240-640-one-hardreg.c
+- [s6] Harness: tmp/grind/func_8003553C/s6/rtlc.sh <form.c> <tag> dumps every RTL pass for a standalone form into s6/rtl_<tag>/ and prints the emitted asm (~2 s); s6/rtl6.sh <tag> does the same for the current src TU. Both must be launched via wsl.exe from the PowerShell tool.
+- [s6] No cheat construct was used or proposed: zero regfix/asmfix edits, zero register pins, zero inline asm, zero volatile, zero dead stores. The two new rejected/ forms are ordinary pure-C spellings measured and disproven.
+
+- [s6] Floor unchanged at 2 (sandbox --disable all, 43 build insns / 43 target insns). src/code6cac_b2_pre.c AGAIN held the original cheat-asm carrier at session start (fifth session running); the banked candidate was re-applied, re-measured at 2 before any probe, and is in place in src at session end. The sandbox's reported cheat_asm_stripped: 4 comes from sibling functions in the same file, not from this body.
+
+- [s6] The stock cc1 -da dump ALREADY contains the list scheduler's full decision trace in base.i.sched: per-insn ';; insn[N]: priority = P, ref_count = R', one ';; ready list at T-n: <uid (prio)> ..., now <sorted>' line per scheduling step, and the register-lifetime deltas. No cc1 rebuild is needed, so session 3's operator note about BB2_PRIO_DEBUG/BB2_RANK_DEBUG being absent from the built binary is moot for this class of question.
+
+- [s6] CORRECTION to session 3: sched1 does NOT reorder this block. base.i.sched is insn-for-insn identical to base.i.combine for both the incumbent and the target-statement-order form. Every emitted reordering - including the RGB block leaving strict field order in the target-order forms - is sched2's, post-RA. The ONE thing sched1 relocates is a single-set pseudo's definition, via the LAUNCH_PRIORITY / birthing-insn rule.
+
+- [s6] CORRECTION to session 2 (confirming session 3's counter-claim, now with the reason): cse does not delete a constant-holder's set. In rtl_HT the (set (reg:HI 75) (const_int 640)) lives at the top of the function RTL through base.i.rtl / jump / cse / loop / flow / combine with a REG_EQUAL note, and only sched1 moves it down to its first use.
+
+- [s6] The decisive trace line is ';; ready list at T-11: 78 (2) 75 (2) 9 (7f000001), now 9 78 75'. 0x7f000001 is LAUNCH_PRIORITY (sched.c:187); every other insn in the block carries priority 2. schedule_block sets INSN_PRIORITY = LAUNCH_PRIORITY on the insn it just scheduled (sched.c:3985) and schedule_insn -> adjust_priority (sched.c:2534-2575) propagates that value to any newly-ready predecessor for which birthing_insn_p is true.
+
+- [s6] birthing_insn_p (sched.c:2496-2528) is 'if (reload_completed == 1) return 0;' then, for a live SET of a REG, 'return (reg_n_sets[i] == 1);'. So the sink is unconditional for any single-set pseudo, and it does not exist in sched2. That is why holders, static-inline helper parameters, declaration order, store spelling and all 840 session-5 forms are inert: none of them changes reg_n_sets.
+
+- [s6] Register dispositions read directly out of base.i.greg: incumbent '72 in 16  73 in 5  75 in 3  76 in 2  78 in 2  80 in 4' (640 in $v1, target's register) versus target-statement-order form '72 in 16  73 in 5  75 in 2  77 in 2  79 in 4  80 in 2' (all three constants in $v0). local-alloc allocates by density, so the short-lived 240 and 128 allocnos take $v0 first and the 640 allocno gets $v1 only when its live range OVERLAPS theirs - which, after the unconditional sched1 sink, requires a 640-valued use in the pre-load group. That is the mechanism behind session 5's 428-form empirical law.
+
+- [s6] sched2 places the li purely by INSN_PRIORITY = longest dependence path from the block head (priority() walks LOG_LINKS = predecessors, sched.c:1425). A li with no predecessors has priority 1, the minimum, and backward list scheduling therefore picks it LAST, emitting it at the block HEAD - exactly where target has addiu $v1,$zero,0x280 as block insn 0. When 640 shares $v0 with the 240 and 128 constants, the shared hard register chains all three lis and their stores into one totally ordered dependence path and the li 640 inherits that chain's depth, which is why every target-order form emits it immediately after sb $v0,0xE.
+
+- [s6] The whole remaining residual is therefore ONE boolean: reg_n_sets[<the 640 pseudo>] == 1 at sched.c:2516. Two spellings of 'give it a second set' were measured and both fail - a redundant duplicate assignment is deleted by cse2 (reg_n_sets back to 1), and reusing one variable for 240 then 640 does give two sets but merges the two constants into one pseudo and therefore one hard register, while target needs $v0 and $v1.
+
+- [s6] Harness added: tmp/grind/func_8003553C/s6/rtlc.sh <form.c> <tag> dumps every RTL pass for a standalone form into s6/rtl_<tag>/ and prints the emitted asm (~2 s per form); s6/rtl6.sh <tag> does the same for the current src TU. Both must be launched via wsl.exe from the PowerShell tool (the Bash tool's Git-Bash PATH has no mipsel toolchain).
+
+- [s6] No cheat construct was used or proposed this session: zero regfix/asmfix edits, zero register pins, zero inline asm, zero volatile, zero dead stores, zero holder locals in any banked form. Nothing was left running in the background.
