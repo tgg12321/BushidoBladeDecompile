@@ -125,3 +125,116 @@ and is the intended starting point for session 2.
 - [s1] ENGINE BUG (recorded, not fixed — engine/ and tools/ are outside a grind session's surface): tools/classify_inline_asm.split_template() splits templates on the literal \n but leaves a following literal \t attached, so in "nop\n\tnop\n\tswc2 $31, 0(%0)" the third instruction's first token is \tswc2, which is not in CANONICAL_ASM_OPS and does not start with '.', so it classifies as cheat; with no canonical instruction in the block, engine.inlineasm._block_category returns "cheat" and the sandbox silently deletes the entire GTE block. Multi-instruction templates whose first instruction is not itself canonical MUST use bare \n separators. .word blocks are immune because CANONICAL_DOTWORD_RE is a whole-text search.
 
 - [s1] src/code6cac_b.c was restored to HEAD at end of session (re-verified sandbox = 18), so main's recorded floor is unchanged and the tree is clean apart from the memory/grind ledger.
+
+## Session 2 (structural, 2026-07-30)
+
+### Floor: 18 -> **9**  (build 102 insns vs target 104)
+
+### The decisive finding - the `$t4` copies are HAND-WRITTEN ASM, not lost codegen
+Session 1's H1 assumed target's `addu $t4, <src>, $zero` before each cop2 op
+came from a second C variable GCC failed to coalesce. **That whole family is
+dead.** Nine distinct pure-C spellings of the GTE operand were measured and
+seven of them emit **byte-identical** code to the plain form (md5 of the
+disassembly identical, score 20, 99 insns):
+
+| spelling | score | codegen |
+|---|---|---|
+| plain block-local `s32 *vp = (s32*)(obj+0xF8)` (s1 candidate) | 20 | baseline |
+| per-site `base`+`vp` alias PAIR (both pseudos referenced) | 20 | byte-identical |
+| store address derived from load address (`rp = vp + 2`) | 20 | byte-identical |
+| derived + pair | 20 | byte-identical |
+| one enclosing scope, operand written `vp + 2` inline | 20 | byte-identical |
+| one `__asm__` statement PER cop2 insn (N RTL uses of the pseudo) | 20 | byte-identical |
+| address cast written inline in the operand, no named local | 20 | byte-identical |
+| second local holding the LZCS operand (`s32 lz = a0_var;`) | 20 | byte-identical |
+| pointers declared at function top (live across the delta stores) | 23 | worse |
+
+GCC 2.7.2 coalesces every reg-reg copy feeding an asm operand regardless of
+aliasing, reference count, derivation or scope. There is no pure-C spelling of
+a GTE operand that produces the copy.
+
+### Forensic census that resolved it
+`addu $t4, X, $zero` appears in **46** target functions (`asm/funcs/*.s`) -
+including plainly non-GTE ones (Pad_Prs, cpu_check_run_attack), so it is a
+general original-toolchain artefact, not a GTE-macro tic. Cross-referencing
+against `engine/queue.json` + `regfix.txt`/`asmfix.txt` leaves exactly **three**
+matched, rule-free functions that contain it: `func_8001A67C`,
+`func_800274BC`, `func_8004DDB4`. The first two are in
+`inline_asm_canonical.txt` - **user-authorized 2026-06-10** as hand-written GTE
+LZCS/LZCR blocks, and their authorized C spells the `$t4` routing *inside* a
+single canonical `__asm__` block (`"addu $t4, %1, $zero"` / `"mtc2 $t4, $30"` /
+two `nop`s / ... / `"swc2 $31, 0($t4)"`, with an `"=m"(sp_tmp)` output and a
+`"$12"` clobber). `func_800274BC`'s authorized block is
+instruction-for-instruction identical to func_8002EA24's LZC block, down to
+`addu $t4, $sp, $zero`.
+
+func_8002EA24 carries all three hand-asm signals the two authorizations cite:
+splat `/* handwritten instruction */` tags (on `mtc2 $t4,$30` at 8002EB38 and
+on `swc2 $26/$27` at 8002EA98/8002EA9C), `$t4` reused back-to-back for two
+unrelated values, and unfilled GTE delay `nop`s.
+
+### The measurement
+Spelling BOTH GTE regions in the authorized-sibling shape:
+- vector region only: score **13** (104 insns)
+- LZC region only: score **16** (103 insns)
+- both: score **9** (102 insns) - the entire GTE region then matches target
+  exactly, including the two address computations, the three `$t4` copies, all
+  8 canonical cop2 insns and the four unfilled delay nops.
+
+This is a canonical-asm DISPOSITION question, not a self-approvable pure-C
+result - see the ruling request in the session outcome. By the letter of
+[[inline-asm-injection]] the hardcoded-`$N` template is the forbidden injection
+pattern; the two in-tree sibling authorizations for the identical construct are
+why it is a genuine classification question rather than a cheat.
+
+### H2 (tail `xori` fold) - the pure-C axis is EXHAUSTED
+Target keeps `bnez .L8002EBD0` / `addu $v0,$zero,$zero` (delay) /
+`addiu $v0,$zero,1`; our build folds to `slt $v0,$v0,$a2` / `xori $v0,$v0,1`.
+Measured on top of the score-20 form and re-confirmed on top of the score-9
+form:
+
+| tail shape | score | codegen |
+|---|---|---|
+| shared end label (`ret = 0; goto end; ... end: return ret;`) | 20 / 9 | byte-identical |
+| reversed final comparison (`if (min_y <= y + a0) return 1; return 0;`) | 20 | byte-identical |
+| if/else, both arms set `ret` | 20 | byte-identical |
+| ternary `return (...) ? 0 : 1;` | 10 | worse (extra insn) |
+| swap the order of the two y-range tests | 17 | worse |
+| `goto reject;` for both rejects + inline `return 1` | 30 | much worse |
+
+jump.c's store-flag if-conversion fires because every one of these source
+shapes collapses to the same RTL. The documented closure for this exact shape
+is [[dead-store-fake-exception]] (dead `ret = 1;` INSIDE the else arm) -
+last-resort, FAKE-annotated, layer-2 reviewed; NOT attempted this session
+because the modality was structural and the GTE ruling gates the function.
+
+### H3 (x in `$a0` vs target `$a1`, neg_threshold in `$a1` vs target `$t1`)
+Did NOT move when the GTE region closed (session 1 predicted it might). It is
+now the larger half of the residual: 6 of the 9 points (`lw`, `negu`, three
+`slt`, the `mult`). Declaration-order levers measured on top of the score-9
+form: `xdefer` (x declared uninitialised, loaded as the first statement),
+`a0first` (a0_var declared ahead of x), `negfirst` (-threshold materialised
+before the x load) - all three **byte-identical**; `zdecl` (z given an up-front
+initialiser) = 12, worse. `twovars` (separate `d2` pseudo) is invalid C89
+declaration placement and mis-builds - do not re-try in that spelling.
+
+### Artifacts
+`tmp/grind/func_8002EA24/s2/` - `mk.py` (slot-based body generator: GTE / MTC2
+/ TAIL / CMP variants), `swap.py` (splice a body into src/code6cac_b.c),
+`run.sh` (score a spec list), `cmp.sh` (score + md5 of the emitted
+disassembly, which is what proved the byte-identical kills), `body_*.c`,
+`dis_*.txt`, `ledger.py`.
+
+- [s2] The GTE-operand "second C variable" family is DEAD: 8 pure-C spellings (alias pair, derived address, derived+pair, one-scope, per-instruction asm statements, inline cast operand, second LZCS local, plus the s1 baseline) all emit BYTE-IDENTICAL code (score 20, 99 insns, identical disassembly md5). Only declaring the pointers at function top changed anything, and it was worse (23). GCC 2.7.2 coalesces every reg-reg copy feeding an asm operand regardless of aliasing, reference count, derivation or scope.
+
+- [s2] FORENSIC CENSUS: `addu $t4, X, $zero` appears in 46 target functions, including non-GTE ones, so it is a general original-toolchain artefact. Of those 46, exactly 3 are matched with zero regfix/asmfix rules and not queued: func_8001A67C, func_800274BC, func_8004DDB4. func_8001A67C and func_800274BC are both in inline_asm_canonical.txt, user-authorized 2026-06-10, as hand-written GTE LZCS/LZCR blocks whose authorized C puts the $t4 routing inside a single canonical __asm__ block.
+
+- [s2] func_8002EA24's LZC block is instruction-for-instruction identical to func_800274BC's authorized block (addu t4,<val>; mtc2 t4,$30; nop; nop; addu t4,$sp; swc2 $31,0(t4)) and carries the same three hand-asm signals: splat "handwritten instruction" tags (mtc2 $t4,$30 at 8002EB38; swc2 $26/$27 at 8002EA98/8002EA9C), $t4 reused back-to-back for two unrelated values, unfilled GTE delay nops.
+
+- [s2] Spelling both GTE regions in the authorized-sibling shape drops the honest floor 18 -> 9 (build 102 insns vs target 104): vector region alone = 13, LZC region alone = 16, both = 9. The whole GTE region then matches target byte-for-byte including both address computations, the three $t4 copies and the four unfilled delay nops.
+
+- [s2] H2's pure-C axis is exhausted: shared-end-label, reversed final comparison and if/else-both-arms are all BYTE-IDENTICAL to the plain form; ternary = 10, test-order swap = 17, double-goto-reject = 30. The remaining documented closure for this exact shape is [[dead-store-fake-exception]], not a pure-C restructure.
+
+- [s2] H3 did NOT move when the GTE region closed (session 1 predicted it would). It is now 6 of the 9 residual points. xdefer / a0first / negfirst declaration-order levers are byte-identical; zdecl (z initialised up-front) = 12, worse.
+
+- [s2] The sandbox's inline-asm classifier keeps a multi-instruction block if ANY instruction in it is canonical, so a block whose first instruction is `addiu $v0, %0, 0xF8` survives as long as the block also contains lwc2/swc2/mtc2 (and uses bare newline separators per the s1 tool artifact). That is what makes the authorized-sibling spelling measurable in the cheat-invisible sandbox at all.

@@ -114,3 +114,92 @@ hoisting `-threshold` above the `x` load) and read `.greg`.
 - probe: Inspected the plain-C sandbox disassembly of the first three statements.
 - result: All three reloads appear for free — the interleaved `sh` stores through the u8* base alias-kill the CSE. No lever needed.
 - verdict: KILLED
+
+## Session 2 (structural) - frontier rewritten
+
+### KILLED this session
+- **H1 as a pure-C hypothesis.** The `$t4` GTE-operand copy is NOT a
+  failed-coalesce of a second C variable. Eight spellings measured
+  byte-identical (see evidence.md table); the ninth (top-of-function
+  declaration) was worse. The copy is part of a HAND-WRITTEN asm block in the
+  original - established by a 46-function census of `addu $t4, X, $zero` plus
+  the two in-tree user-authorized siblings (func_8001A67C / func_800274BC in
+  inline_asm_canonical.txt) whose authorized C carries the identical
+  construct. Spelling both GTE regions that way took the floor 18 -> 9.
+  Do NOT spend another session looking for a pure-C spelling of these copies.
+- **H2's pure-C axis.** Shared end label, reversed final comparison and
+  if/else-both-arms are byte-identical to the plain form; ternary, test-order
+  swap and double-goto-reject are all worse. jump.c's store-flag
+  if-conversion cannot be defeated by restructuring this tail in pure C.
+- **H3's declaration-order axis.** xdefer / a0first / negfirst are
+  byte-identical on top of the score-9 form; zdecl is worse.
+
+### Live frontier (after session 2)
+
+#### H4 - GTE canonical-asm disposition (BLOCKING, owner ruling requested)
+**Statement.** func_8002EA24's two GTE regions are hand-written asm in the
+original, and the function's correct disposition is the same
+COMPLETED-INLINE-ASM-CANONICAL treatment already user-authorized for its two
+siblings func_8001A67C and func_800274BC, not a pure-C match.
+**Mechanism / evidence.** Three hand-asm signals (splat "handwritten
+instruction" tags, `$t4` reused back-to-back for two unrelated values,
+unfilled GTE delay nops); the LZC block is instruction-for-instruction
+identical to func_800274BC's authorized block; the 46-function `$t4` census
+leaves no matched rule-free pure-C counter-example. Measured effect: floor
+18 -> 9.
+**Next step.** OWNER RULING (session 2 returned `ruling-request`). If granted,
+the operator adds func_8002EA24 to `inline_asm_canonical.txt` (a surface a
+grind session may not touch) and retires the 10 regfix rules. If refused, H1
+must be re-opened from a different angle entirely - but note that every
+ordinary pure-C spelling is already measured byte-identical.
+
+#### H5 - the compare-chain register assignment (6 of the 9 residual points)
+**Statement.** `x` lands in `$a0` and `neg_threshold` in `$a1`; target wants
+`$a1` and `$t1`. One root cause: target's allocator gives `$a0` to `a0_var`
+(the squared-distance / remainder pseudo) and pushes `x` to `$a1`, which in
+turn pushes `neg_threshold` to `$t1`.
+**Mechanism.** Ordinary allocno-priority ordering in local/global alloc; the
+two pseudos do not conflict (x is dead by the time `addu $a0,$v0,$v1` runs),
+so this is a priority/ordering effect, not a conflict-graph effect.
+**Next probe.** Read the `.greg` register-disposition dump
+(`cc1 <build-flags> -da base.i`) for both our build and, if reachable, a
+variant where the assignment flips - find which allocno wins `$a0` and why.
+Then apply the [[register-alloc-pure-c]] levers that were NOT tried:
+loop-local precompute, narrow integer type on `x`/`z`, and the
+[[duplicated-statement-into-arms]] reg_n_refs priority lift. Declaration
+order is already measured dead.
+
+#### H6 - the tail 0/1 diamond (3 of the 9 residual points)
+**Statement.** Only [[dead-store-fake-exception]] closes this shape: a dead
+`ret = 1;` INSIDE the else arm breaks jump.c's store-flag single-set
+precondition (detached placement does NOT work - that is documented in the
+rule from func_80078EC0).
+**Mechanism.** jump.c store-flag if-conversion on a single-set arm.
+**Next probe.** Only after H4 is ruled on. It is a sanctioned last-resort
+carve-out requiring documented lever-exhaustion (now supplied: six pure-C tail
+shapes measured, three byte-identical), a `/* FAKE */` annotation and layer-2
+cheat-reviewer sign-off. Do not self-approve it.
+
+## [s2] Target's extra `addu $t4, <src>, $zero` before each cop2 op is producible from pure C by giving the operand a second, non-coalescable C-level identity (alias pair, derived address, or multiple RTL uses).
+- mechanism: GCC 2.7.2 local-alloc coalesces a plain single-use copy, but a pseudo that is referenced more than once, or whose source stays live across the asm, should survive as a distinct allocno and force a real copy.
+- probe: Built eight GTE-operand spellings (alias pair per site; store address derived as `rp = vp + 2`; derived+pair; single enclosing scope with `vp + 2` written inline; one `__asm__` statement per cop2 instruction; address cast inline in the operand with no named local; a second local holding the LZCS operand; and the s1 baseline) and one declaration-order variant, and scored each with `sandbox --disable all`, additionally md5-ing the emitted disassembly to distinguish "same score" from "same bytes".
+- result: All eight emit BYTE-IDENTICAL code (score 20, 99 insns, disassembly md5 2080af7d3892). The ninth (pointers declared at function top) changed codegen but was worse (23). No spelling produced the copy.
+- verdict: KILLED
+
+## [s2] The `$t4` copies come from HAND-WRITTEN asm in the original, and func_8002EA24 belongs to the same authorized family as func_8001A67C / func_800274BC.
+- mechanism: `addu $t4, X, $zero` is an original-toolchain artefact present in 46 target functions; the only three matched rule-free functions containing it are func_8001A67C, func_800274BC and func_8004DDB4, and the first two are user-authorized (2026-06-10) hand-written GTE blocks in inline_asm_canonical.txt whose authorized C puts the $t4 routing inside a single canonical __asm__ block. func_8002EA24 shows all three hand-asm signals those authorizations cite, and its LZC block is instruction-for-instruction identical to func_800274BC's.
+- probe: Census over asm/funcs/*.s cross-referenced against engine/queue.json + regfix.txt + asmfix.txt; then re-spelled both GTE regions in the authorized-sibling shape (one canonical __asm__ block per region, single C operand via %N, $t4 routing inside the template, $2/$12 clobbered) and scored each region separately and together.
+- result: vector region alone = 13, LZC region alone = 16, both = 9 (build 102 insns vs target 104). The whole GTE region matches target byte-for-byte. Honest floor 18 -> 9.
+- verdict: CONFIRMED (disposition question referred to the owner - a hardcoded-$N template is the forbidden injection pattern by the letter of [[inline-asm-injection]]; the two sibling authorizations are why this is a classification question and not a self-approvable result)
+
+## [s2] The tail `xori` fold is reachable by pure-C restructuring of the final 0/1 exit (session 1's H2).
+- mechanism: jump.c's store-flag if-conversion needs a single-set arm; a different source shape for the final comparison or a shared end label should break it.
+- probe: Six tail shapes measured (shared end label with a `ret` variable; reversed final comparison; if/else with both arms setting `ret`; ternary; swapping the order of the two y-range tests; `goto reject` for both rejects with an inline `return 1`), on both the score-20 and score-9 bases, with disassembly md5s.
+- result: shared end label, reversed comparison and if/else are all BYTE-IDENTICAL to the plain form; ternary = 10, swap = 17, goto-reject = 30. Every source shape collapses to the same RTL before jump.c runs.
+- verdict: KILLED (pure-C axis; the documented closure is [[dead-store-fake-exception]], untried and gated on the H4 ruling)
+
+## [s2] H3's register assignment moves on its own once the GTE region matches (session 1's prediction).
+- mechanism: closing the GTE region changes which pseudos are live entering the compare chain.
+- probe: Re-diffed the score-9 build against target, then measured four declaration-order variants (x declared uninitialised and loaded as the first statement; a0_var declared ahead of x; -threshold materialised before the x load; z given an up-front initialiser).
+- result: The assignment did NOT move - `x` is still in `$a0` and `neg_threshold` in `$a1` against target's `$a1`/`$t1`, and it is now 6 of the 9 residual points. Three of the four declaration-order variants are byte-identical; the fourth (z up-front) is worse at 12.
+- verdict: KILLED (both the prediction and the declaration-order lever)

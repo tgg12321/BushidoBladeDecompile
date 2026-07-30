@@ -1,40 +1,72 @@
-/* func_8002EA24 -- grind session 1 candidate (recon modality).
+/* func_8002EA24 -- grind session 2 candidate (structural modality).
  *
- * Honest sandbox floor of THIS form: 20 (build 99 insns vs target 104).
- * The committed-at-HEAD form scores 18 but only because it fakes six
- * canonical GTE instructions with hardcoded-register templates
- * ("lwc2 $0, 0($12)" etc.), which the sandbox does NOT strip (canonical
- * opcode) and which therefore match target bytes for free. Structurally
- * THIS form is far closer: 5 missing instructions vs 11 at HEAD, and every
- * remaining gap is understood (see memory/grind/func_8002EA24/evidence.md).
+ * Honest sandbox floor of THIS form: 9  (was 18 at HEAD, 20 for the session-1
+ * "PsyQ-macro" honest respelling).  Build 102 insns vs target 104.
  *
- * Remaining residual vs target (5 insns + register choice):
- *   1-3. target copies each GTE operand into $t4 via an extra
- *        "addu $t4, <reg>, $zero" before the lwc2/swc2/mtc2 (3 sites);
- *        this build feeds the operand register directly, so it is both
- *        3 insns short AND uses $v0/$a0 where target uses $t4 (~6
- *        register mismatches on the canonical GTE insns).
- *   4-5. the final "if (...) return 0; return 1;" folds to
- *        "xori $v0,$v0,1" (jump.c store-flag) where target keeps the
- *        unfolded diamond "bnez ...; addu $v0,$zero,$zero; addiu $v0,$zero,1".
- *   plus: x lands in $a0 / neg_threshold in $a1, target wants $a1 / $t1.
+ * WHAT CHANGED vs session 1.  Session 1 assumed target's extra
+ * `addu $t4, <src>, $zero` before every cop2 op had to come from a second C
+ * variable that GCC failed to coalesce.  Session 2 measured that family dead
+ * (7 spellings, all BYTE-IDENTICAL to the plain form) and then found the real
+ * answer by forensics: `addu $t4, X, $zero` occurs in 46 target functions,
+ * and the ONLY three matched-with-no-rules functions that contain it are
+ * func_8001A67C, func_800274BC and func_8004DDB4 -- and the first two are
+ * listed in inline_asm_canonical.txt as USER-AUTHORIZED (2026-06-10)
+ * hand-written GTE blocks whose authorized C spells the $t4 routing INSIDE a
+ * single canonical __asm__ block.  func_8002EA24's LZCS/LZCR block is
+ * instruction-for-instruction the same construct as func_800274BC's
+ * (addu t4,<val> -> mtc2 t4,$30 -> 2 unfilled GTE delay nops -> addu t4,$sp
+ * -> swc2 $31,0(t4)), and asm/funcs/func_8002EA24.s carries splat
+ * "handwritten instruction" tags on mtc2 $t4,$30 and on swc2 $26/$27.
  *
- * NOT applied to src/ at end of session 1 (HEAD form left in place so
- * main's recorded floor stays 18).
+ * This form therefore spells BOTH GTE regions the way the two authorized
+ * siblings are spelled: one canonical __asm__ block per region, the single
+ * C-level operand bound through %N, the $t4 routing inside the template,
+ * $2/$12 clobbered.  That closes the entire GTE region exactly (all 8
+ * canonical insns + the 3 $t4 copies + both address computations).
+ *
+ * DISPOSITION IS NOT SELF-APPROVED.  By the letter of [[inline-asm-injection]]
+ * a hardcoded-$N template is the forbidden injection pattern; the two sibling
+ * precedents are the reason this is a genuine classification question rather
+ * than a cheat, and the session returned `ruling-request` for exactly that.
+ * Do NOT treat this file as accepted until the owner rules and the function is
+ * added to inline_asm_canonical.txt (a surface a grind session may not touch).
+ *
+ * Residual vs target (score 9 = 6 register mismatches + 2 missing + 1 extra):
+ *   a) the compare chain puts x in $a0 and neg_threshold in $a1; target wants
+ *      $a1 and $t1 (6 insns: the lw, the negu, three slt, the mult).
+ *      Declaration-order / xdefer / a0first / twovars / zdecl / negfirst all
+ *      measured (5 byte-identical, zdecl worse at 12).
+ *   b) the tail `if (y + a0_var < min_y) return 0; return 1;` still folds to
+ *      `slt; xori $v0,$v0,1`; target keeps the unfolded diamond.  Six pure-C
+ *      tail shapes measured: endlabel / revcmp / ifelse byte-identical,
+ *      gotoreject 30, swap 17, ternary 10.  The documented closure for this
+ *      exact shape is [[dead-store-fake-exception]] (dead `ret = 1;` inside
+ *      the else arm) -- last-resort, FAKE-annotated, layer-2 reviewed.
+ *
+ * NOTE on the LZC block's "=m"(sp_var): the template hardcodes 0($sp), which
+ * is where GCC currently places sp_var in this 8-byte frame (verified: the
+ * build emits `lw $v1, 0($sp)` exactly as target does).  It is correct for
+ * this frame layout only -- the same fragility the two authorized siblings
+ * carry.
  */
 s32 func_8002EA24(u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
     *(s16 *)(obj + 0xF8) = pos[0] - (*(s32 **)(obj + 0x60))[0];
     *(s16 *)(obj + 0xFA) = pos[1] - (*(s32 **)(obj + 0x60))[1];
     *(s16 *)(obj + 0xFC) = pos[2] - (*(s32 **)(obj + 0x60))[2];
-    {
-        s32 *vp = (s32 *)(obj + 0xF8);
-        __asm__ volatile("lwc2 $0, 0(%0)\nlwc2 $1, 4(%0)" : : "r"(vp));
-        __asm__ volatile("nop\nnop\n.word 0x4A486012");
-    }
-    {
-        s32 *rp = (s32 *)(obj + 0x100);
-        __asm__ volatile("swc2 $25, 0(%0)\nswc2 $26, 4(%0)\nswc2 $27, 8(%0)" : : "r"(rp));
-    }
+    __asm__ volatile(
+        "addiu $v0, %0, 0xF8\n"
+        "addu $t4, $v0, $zero\n"
+        "lwc2 $0, 0($t4)\n"
+        "lwc2 $1, 4($t4)\n"
+        "nop\n"
+        "nop\n"
+        ".word 0x4A486012\n"
+        "addiu $v0, %0, 0x100\n"
+        "addu $t4, $v0, $zero\n"
+        "swc2 $25, 0($t4)\n"
+        "swc2 $26, 4($t4)\n"
+        "swc2 $27, 8($t4)"
+        : : "r"(obj) : "$2", "$12", "memory");
 
     {
         s32 x = *(s32 *)(obj + 0x100);
@@ -60,9 +92,14 @@ s32 func_8002EA24(u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
         } else {
             s32 lzcr = 0;
             if (a0_var >= 0) {
-                s32 *lp = &sp_var;
-                __asm__ volatile("mtc2 %0, $30" : : "r"(a0_var));
-                __asm__ volatile("nop\nnop\nswc2 $31, 0(%0)" : : "r"(lp));
+                __asm__ volatile(
+                    "addu $t4, %1, $zero\n"
+                    "mtc2 $t4, $30\n"
+                    "nop\n"
+                    "nop\n"
+                    "addu $t4, $sp, $zero\n"
+                    "swc2 $31, 0($t4)"
+                    : "=m"(sp_var) : "r"(a0_var) : "$12");
                 lzcr = sp_var;
             }
             {

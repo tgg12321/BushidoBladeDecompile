@@ -28,7 +28,9 @@
    "next_probe": "Do NOT probe this before H1 lands \u2014 re-diff after H1 and only then, if it persists, apply the [[register-alloc-pure-c]] levers (block-local split, declaration order, hoisting -threshold above the x load) and read the .greg dispositions."
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "Do not add func_8002EA24 to inline_asm_canonical.txt or retire any regfix rules this session. Keep the LZC block ONLY in the exact func_800274BC-authorized shape; re-spell the vector/mvmva block minimally (operand address computed in C and bound via %N, template limited to the $t4 copy, lwc2/swc2 and the mvmva .word, no hardcoded $v0 addiu and no $2 clobber) and record its measured score; then drive H5/H6 to sandbox 0 on that body. The canonical-asm disposition is re-submitted for a FINAL CALL only once the function is byte-identical on main with zero rules."
+ ],
  "origin": "queue",
  "created": "2026-07-30T14:18:37.150771+00:00"
 }
