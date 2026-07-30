@@ -1,0 +1,34 @@
+{
+ "func": "func_800477E8",
+ "file": "sound",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 17,
+   "modality": "recon",
+   "headline": "Recon: floor 17 is PURE register-rename \u2014 build emits all 170 insns in target's exact order; gap is exactly two allocation ties ($t1/$t2 and $v1/$a1); three ordering/spelling levers killed with measur"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Tie A ($t1/$t2) closes by making 't1val' out-prioritise 't2' on the reference-count / live-length ratio, since ordering (killed) and constant spelling (killed) are both inert.",
+   "mechanism": "global.c allocno_compare ranks by roughly log2(n_refs)*n_refs*size/live_length. t2 has 3 refs and t1val 2, with essentially identical live ranges, so t2 is allocated first and takes $t1 as the earlier entry in REG_ALLOC_ORDER.",
+   "next_probe": "Sink 't2 = 0x2C00;' to the top of the do-loop body (beside t0/a2) so its live length collapses to one iteration while its ref count stays 3, and measure whether the ratio flips. Then the mirror probe: give t1val a genuine third reference \u2014 note s1val and t1val are the results of two BYTE-IDENTICAL gpu_CalcClut(0x10,0x1E0) calls, so check asm/funcs/func_800477E8.s for whether target's two calls really take identical arguments; if so the arms may legitimately share one value. Take a `cc1 -da` .greg dump into tmp/grind/func_800477E8/s2/ and read ';; Register dispositions:' plus the conflict list directly per .claude/rules/register-alloc-pure-c.md instead of inferring priorities."
+  },
+  {
+   "hypothesis": "Tie B ($v1/$a1) closes by LOWERING the priority of 'a1' (loop1) and 'ptr' (loop2), because 'v1' must keep its long shared range and so cannot be lifted.",
+   "mechanism": "v1 is required to stay one allocno spanning both loops (measured: splitting costs 17->31), so its n_refs/live_length cannot be raised much. The seating flips only if both of its disjoint competitors \u2014 currently tight-ranged loop-carried induction pseudos with high ratios \u2014 fall below it.",
+   "next_probe": "For loop2, attack 'ptr' as a separate induction variable: target idx 139/148 ('addiu v0,ptr,64' then 'ptr += 0x11') is the walking-pointer shape, so try driving the inner loop off 'p' alone with the row base recomputed from an index, and conversely try post-increment walking per .claude/rules/walking-pointer-serializes-parallel-loads.md. For loop1, 'a1' advances by 0x100 while 'v1' advances by 1 and they are only ever consumed as 'v1 | a1' \u2014 probe changing a1's reference profile (e.g. deriving it from the existing a0 inner counter) while noting target DOES emit 'addiu a1,a1,256', so a1 must remain loop-carried."
+  },
+  {
+   "hypothesis": "The decisive axis is a rederive: the instruction stream is already exactly right, so only the artificial m2c variable partitioning is wrong, and rewriting the body from its semantics will re-partition the allocnos correctly.",
+   "mechanism": "Not a codegen mechanism but the strongest search-space argument available here \u2014 build_insns == target_insns == 170 in identical order means the C is structurally correct and only the variable-to-allocno mapping diverges. That mapping is precisely what a verbatim m2c transcription assigns arbitrarily (one local per observed hard register, goto control flow, register-derived names).",
+   "next_probe": "In a rederive-modality session, rewrite src/sound.c:674-816 from the semantics up: real for-loops over row/column, named u/v/tpage/clut locals, and the D_800EF59C / D_800EF558 fills as ordinary indexed loops. Hold two s1 constraints fixed: (a) the loop1 'v1'-equivalent must be the SAME C variable as the loop2 one, and (b) verify build_insns stays 170 before judging any rewrite's register seating. Also resolve the inherited un-annotated do-while(0) at src/sound.c:746."
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-30T08:55:57.548520+00:00"
+}
