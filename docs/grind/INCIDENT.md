@@ -1,45 +1,34 @@
-# GRINDER CIRCUIT-BREAK — 2026-07-27 18:58
+# GRINDER CIRCUIT-BREAK — 2026-07-29 14:54
 
-**Reason:** 3 consecutive invalid sessions on func_80052B44
+**Reason:** 3 consecutive invalid sessions on func_8006B92C
 
-git HEAD: 2d4ad890
+git HEAD: e76c546d
 git status:
 ```
-M  metrics/events.jsonl
+ M memory/grind/func_8006B92C/candidate.c
+ M metrics/events.jsonl
 
 ```
 Last 20 log lines:
 ```
-[grind 2026-07-27 15:45:31] func_80044098: progress applied — floor=13, 'recon s1: allocno mechanism fully quantified (counter pri 26250 vs pointer 21176); counter-split axis measured dead via combine guard-fold; frontier = pointer-side byte-neutral ref lift'
-[grind 2026-07-27 15:45:55] func_80044098: session 2 starting, modality=structural
-[grind 2026-07-27 16:14:45] func_80044098: judge FAILED the candidate — constraint banked, grind continues.
-[grind 2026-07-27 16:14:46] func_80044098: session 2 starting, modality=structural
-[grind 2026-07-27 16:59:55] func_80044098: progress applied — floor=3, 'structural s2: floor 13 -> 3 — peel+hdr-split flips v1/a0, in-arm const-holder fixes v0/a1/a2; residual = 3-insn sched1 li-placement stub'
-[grind 2026-07-27 17:00:19] func_80044098: session 3 starting, modality=structural
-[grind 2026-07-27 17:34:19] func_80044098: progress applied — floor=3, 'structural s3: stub root-caused (sched.c birthing_insn_p LAUNCH boost, knob = reg_n_sets!=1); pY hdr-borrow kills the stub entirely (3 @ 26/26, exact target structure); both holder families proven 3-locked by measurement + borrow-host enumeration'
-[grind 2026-07-27 17:34:43] func_80044098: session 4 starting, modality=permuter
-[grind 2026-07-27 17:57:10] func_80044098: judge ruling FAIL recorded.
-[grind 2026-07-27 17:57:33] func_80044098: session 4 starting, modality=permuter
-[grind 2026-07-27 18:32:43] func_80044098: OWNER-GATED — parked pending owner ruling (docs/grind/decisions.md — '2026-07-27 — func_80044098 (src/text1a_c.c) — OWNER-ESCALATION' (line 1789): endgame-lock disposition per the 2026-07-27 standing both-gates-fail auto-ruling (OWNER-ACCEPTED INCOMPLETE, terminal park, re-attempt eligible), following the 17:57 Judge ruling that both gates fail).
-[grind 2026-07-27 18:32:45] func_80052B44: seeded ledger from memory/wip checkpoint.
-[grind 2026-07-27 18:32:45] func_80052B44: session 1 starting, modality=recon
-[grind 2026-07-27 18:41:51] func_80052B44: judge ruling PASS recorded.
-[grind 2026-07-27 18:42:16] func_80052B44: session 1 starting, modality=recon
-[grind 2026-07-27 18:47:40] func_80052B44: SCOPE VIOLATION —  M inline_asm_canonical.txt — session discarded.
-[grind 2026-07-27 18:48:04] func_80052B44: session 1 starting, modality=recon
-[grind 2026-07-27 18:53:08] func_80052B44: SCOPE VIOLATION —  M inline_asm_canonical.txt — session discarded.
-[grind 2026-07-27 18:53:29] func_80052B44: session 1 starting, modality=recon
-[grind 2026-07-27 18:58:55] func_80052B44: SCOPE VIOLATION —  M inline_asm_canonical.txt — session discarded.
+[grind 2026-07-29 13:18:13] grinder stopped.
+[grind 2026-07-29 13:18:13] grinder starting (pid 18892, model claude-opus-5[1m], judge claude-opus-5[1m])
+[grind 2026-07-29 13:18:14] pre-flight: oracle green.
+[grind 2026-07-29 13:18:15] func_8006B92C: session 5 starting, modality=permuter
+[grind 2026-07-29 13:18:15] func_8006B92C: SCOPE VIOLATION —  M regfix.txt — session discarded.
+[grind 2026-07-29 13:18:16] grinder stopped.
+[grind 2026-07-29 13:18:21] grinder starting (pid 37712, model claude-opus-5[1m], judge claude-opus-5[1m])
+[grind 2026-07-29 13:18:21] pre-flight: oracle green.
+[grind 2026-07-29 13:18:22] func_8006B92C: session 5 starting, modality=permuter
+[grind 2026-07-29 13:56:56] func_8006B92C: progress applied — floor=6, 'Permuter s5: cheat-suppressed random (41k iters) + two exhaustive directed sweeps (288 + 16 combos) all return ZERO improvement over base 235 — the s3 h2a form is a strict local minimum under the legitimate mutation set, and s4's cheat basin is proven to be an artifact of the mutation passes, not of the search space.'
+[grind 2026-07-29 13:57:22] func_8006B92C: session 6 starting, modality=forensics
+[grind 2026-07-29 14:17:45] func_8006B92C: progress applied — floor=6, 'Forensics: the 2-insn gap is reorg.c redundant_insn deleting the then-arm lui, enabled by local-alloc giving the else-arm mask constant $v0 instead of target's $v1 — fill-priority hypothesis falsified, three RA levers killed with dumps.'
+[grind 2026-07-29 14:18:10] func_8006B92C: session 7 starting, modality=forensics
+[grind 2026-07-29 14:39:19] func_8006B92C: progress applied — floor=6, 'Forensics: instrumented cc1 (BB2_QTY_DEBUG) measured local-alloc's quantity table -- the else-arm mask constant is a block-local qty whose range is always disjoint from the counter chain's, so find_free_reg always returns $v0; the s6 frontier lever (lengthen/reorder the counter chain) is KILLED by two direct measurements.'
+[grind 2026-07-29 14:39:43] func_8006B92C: session 8 starting, modality=rederive
+[grind 2026-07-29 14:47:52] func_8006B92C: INVALID session output (no outcome file / unparseable JSON) — discarded, src reverted, respawning.
+[grind 2026-07-29 14:48:14] func_8006B92C: session 8 starting, modality=rederive
+[grind 2026-07-29 14:51:44] func_8006B92C: INVALID session output (no outcome file / unparseable JSON) — discarded, src reverted, respawning.
+[grind 2026-07-29 14:52:06] func_8006B92C: session 8 starting, modality=rederive
+[grind 2026-07-29 14:54:57] func_8006B92C: INVALID session output (no outcome file / unparseable JSON) — discarded, src reverted, respawning.
 ```
-
-## RESOLVED — 2026-07-27 (operator)
-
-Root cause: func_80052B44 is a GTE leaf (LIBGTE-style SetRotMatrix; canonical
-gate ASM-PARTIAL, 8/14 ctc2). The Judge GRANTED canonical-body authorization
-(decisions.md 18:41 PASS) but sessions cannot edit inline_asm_canonical.txt
-(outside their allowed surface) — each attempt tripped the scope check, three
-discards, circuit-break. Operator applied the judge-authorized completion per
-the gte-wrapper auto-authorize policy (2026-05-26): glabel canonical body (with
-.set reorder/at restore tail — see canonical-asm-authorization-recipe gotcha),
-inline_asm_canonical.txt entry, fill_delay rule retired, SHA1 == oracle,
-queue done → COMPLETED-INLINE-ASM-CANONICAL. Grinder relaunched.

@@ -1,49 +1,51 @@
-/* s5 candidate — floor 6 (unchanged from s3). C substance identical to the s3
- * h2a form; s5 added the Judge-mandated full FAKE annotation template at
- * both staged-value sites (the s3-BINDING Judge constraint: name the sched.c
- * mechanism + cite lever-exhaustion). No other change.
+/* s8 candidate — MATCH. sandbox --disable all == 0, build_insns 143 ==
+ * target_insns 143, rules_dropped 0, zero inline asm, zero FAKE annotations.
  *
- * s5 measured three permuter chassis against this base, all zero-improvement:
- *   A  cheat-suppressed random mode (perm_temp_for_expr / perm_split_assignment /
- *      perm_chain_assignment / perm_add_self_assignment / perm_pad_var_decl /
- *      perm_add_mask / perm_xor_zero / perm_mult_zero / perm_ins_block etc.
- *      weighted to 0.0) — 41424 iters, 0 finds.
- *   B  exhaustive directed sweep, 288 combinations over 5 legit-spelling sites.
- *   C  exhaustive directed sweep, 16 combinations over whole-case structural
- *      alternatives (per-arm duplicated global read, hoisted shared mask).
- * Permuter base score 235 == 2 missing insns (100 each) + 7 register diffs
- * (5 each), exactly the sandbox-6 residual. Nothing in the legitimate mutation
- * neighborhood of this form beats it.
+ * This is a STRUCTURAL RE-DERIVATION (s8 modality: rederive), not a tweak of
+ * the s3/s5 "h2a" form. It deletes the shared `complete_store:` label and the
+ * two function-scope staging variables (var_v1 / var_v0) that every session
+ * s3-s7 was built on, and replaces them with per-arm BLOCK-LOCAL variables
+ * plus a per-arm OR/store. The two /* FAKE */ staged-value-reused-variable
+ * annotations the Judge was gating on are gone with the construct.
  *
- * s6 (forensics, cc1 -da) named the residual exactly and left this body
- * unchanged at floor 6. The 2 missing insns are the two then-arm `lui $v0`s,
- * deleted by reorg.c's redundant_insn: reorg already fills each bne/bnez delay
- * slot from the ELSE (dead-branch) thread — same as target — but our else-arm
- * mask constant is a block-local pseudo that local-alloc.c assigns $v0, the
- * same register the then arm uses, so the delay-slot insn covers the then-arm
- * lui and it is dropped. Target's else-arm constant lives in $v1. local-alloc
- * cannot tie that constant to var_v1 (a global pseudo), and sched1 hoists the
- * mask chain to the head of the else block, so no block-local value can be
- * live in $v0 across it — which is why every statement-order / algebraic /
- * whole-case respelling measured in s4-s6 is inert. Details + dumps:
- * evidence.md [s6], tmp/grind/func_8006B92C/s6/dumps_h2a/.
+ * Why it closes (the s7 QTYDBG account, applied):
+ *   s7 measured that our residual was entirely local-alloc.c's hard-register
+ *   choice for the else-arm mask constant. In the THEN arm (blk=4) local-alloc's
+ *   combine_regs TIES the lui/ori constant pseudo to the AND's destination
+ *   pseudo, because BOTH are block-local — which is why the then arm emits
+ *   lui/ori/and out of a single register. In the h2a else arm that tie was
+ *   impossible: the AND's destination was `var_v1`, a function-scope (global)
+ *   pseudo, and combine_regs merges only block-local quantities. The constant
+ *   therefore became its own 2-ref quantity, and find_free_reg (no
+ *   REG_ALLOC_ORDER in mips.h, so a linear scan from $v0) handed it $v0 — the
+ *   same register the then arm used — so reorg.c's redundant_insn deleted the
+ *   then-arm `lui $v0` after the delay slot was filled from the dead-branch
+ *   thread. Target's else-arm constant lives in $v1, so target keeps both luis.
  *
- * s7 (forensics, instrumented cc1 BB2_QTY_DEBUG) measured local-alloc's actual
- * quantity table and left this body unchanged at floor 6. Case-1 else arm
- * (blk=5): the mask constant is qty reg1=92 birth=4 death=8 refs=2 got=$v0 and
- * the counter chain is qty reg1=94 birth=10 death=14 refs=4 got=$v0 -- disjoint
- * ranges, so find_free_reg's linear hard-register scan (mips.h defines no
- * REG_ALLOC_ORDER) hands both $v0. The case-1 THEN arm (blk=4) has NO separate
- * constant quantity: combine_regs ties the constant to the and-destination
- * because both are block-local, which is how it emits lui/ori/and all in $v0.
- * Target's else arm is that same tied shape one register over ($v1). Our else
- * arm cannot tie, because its and-destination is var_v1, a GLOBAL pseudo, and
- * combine_regs merges only block-local quantities.
- * s7 killed the s6 frontier lever with two measurements: lengthening the
- * counter's dependence chain (P7a, inert at 6/141) and lengthening it AND
- * emitting it first (P7b, 12/140) both leave the two chains contiguous, so the
- * quantity ranges stay disjoint and the constant keeps $v0 in either order.
- * Details + logs: evidence.md [s7], tmp/grind/func_8006B92C/s7/.
+ *   Declaring the mask holder `m` and the counter `c` INSIDE the else block
+ *   makes both block-local, which does two things at once:
+ *     1. combine_regs can now tie the mask constant to `m` exactly as it does
+ *        in the then arm, so the else arm emits the target's one-register
+ *        lui/ori/and shape instead of a separate constant quantity.
+ *     2. `m`'s live range now SPANS the counter chain (it is born at the AND
+ *        and dies at the `sw`, with the whole `c` chain in between), whereas
+ *        h2a's two chains were always contiguous and disjoint (s7 P7a/P7b
+ *        measured that no statement ordering could make them overlap). The
+ *        counter quantity is shorter and denser, so local-alloc's
+ *        qty_compare_1 priority allocates it FIRST and it takes $v0; `m`'s
+ *        covering range then finds $v0 busy in regs_live_at and takes $v1 —
+ *        target's register. The s6/s7 frontier goal (a block-local quantity
+ *        live across the constant) is reached not by lengthening a chain but
+ *        by making the OR/store consumer itself block-local.
+ *
+ *   The store-tail question that h2a's shared `complete_store` existed to
+ *   solve resolves itself: the two else arms now store from $v1 while the two
+ *   then arms store from $v0, so jump2's find_cross_jump can rtx_equal-merge
+ *   only the two else tails with each other, leaving exactly target's three
+ *   `sw` sites (two inline then-arm stores + one shared else store).
+ *
+ * The shared `do_call:` label is retained — s4 H4c measured that duplicating
+ * the `func_8005C650(0, 0x7F, 0x7F)` call into each case regresses (6 -> 14).
  */
 extern u32 D_800A34F8;
 extern s32 D_800A350C;
@@ -51,8 +53,6 @@ s32 func_8006B92C(s32 *unused, u32 *arg1) {
     s32 sp10;
     s32 ret;
     s32 idx;
-    s32 var_v0;
-    u32 var_v1;
     s32 var_s0 = 0;
     u32 v;
     u32 a0;
@@ -66,25 +66,10 @@ s32 func_8006B92C(s32 *unused, u32 *arg1) {
         if ((a0 & 0xE000) == 0x4000) {
             D_800A34F8 = a0 & 0xFFFF1FFF;
         } else {
-            /* FAKE: staged-value-reused-variable, prong 4.
-             * Mechanism: sched.c adjust_priority() / birthing_insn_p() grant the
-             * "load-late" LAUNCH priority only to a FRESH single-set destination
-             * (reg_n_sets[v] == 1). Staging the mask through var_v1 — which is
-             * set in BOTH else arms and re-set at complete_store, so
-             * reg_n_sets[var_v1] != 1 — disables that launch priority and keeps
-             * the per-arm mask compute (lui/ori/and) inside the arm instead of
-             * being hoisted into a single shared pre-branch birth, while the
-             * `|=` at complete_store keeps the final OR in var_v1's home
-             * register so the shared store's source register ($v1) diverges from
-             * the then-arm stores' ($v0) and jump2 find_cross_jump cannot
-             * rtx_equal-merge the three sw sites.
-             * Lever exhaustion: memory/grind/func_8006B92C/hypotheses.md and
-             * evidence.md, sessions s1-s3 (H1a/H1b/H1c/H1d/H1e/H1f, h2a/h2b/h2c)
-             * — every non-staged spelling measured there scores worse.
-             */
-            var_v1 = a0 & 0xFFFF1FFF;
-            var_v0 = ((a0 >> 13) & 7) + 1;
-            goto complete_store;
+            u32 m = a0 & 0xFFFF1FFF;
+            s32 c = ((a0 >> 13) & 7) + 1;
+            m |= (c & 7) << 13;
+            D_800A34F8 = m;
         }
         goto do_call;
     case 2:
@@ -92,26 +77,10 @@ s32 func_8006B92C(s32 *unused, u32 *arg1) {
         if ((a0 & 0xE000) == 0) {
             D_800A34F8 = (a0 & 0xFFFF1FFF) | 0x4000;
         } else {
-            /* FAKE: staged-value-reused-variable, prong 4 (same construct as the
-             * case-1 else arm above).
-             * Mechanism: sched.c adjust_priority() / birthing_insn_p() grant the
-             * "load-late" LAUNCH priority only to a FRESH single-set destination
-             * (reg_n_sets[v] == 1). var_v1 is set in both else arms and re-set
-             * at complete_store, so reg_n_sets[var_v1] != 1 and that launch
-             * priority is disabled — the per-arm mask compute (lui/ori/and)
-             * stays inside this arm rather than being hoisted into one shared
-             * pre-branch birth, and the `|=` below keeps the final OR in
-             * var_v1's home register ($v1) so the shared store's source register
-             * diverges from the then-arm stores' ($v0).
-             * Lever exhaustion: memory/grind/func_8006B92C/hypotheses.md and
-             * evidence.md, sessions s1-s3 (H1a/H1b/H1c/H1d/H1e/H1f, h2a/h2b/h2c)
-             * — every non-staged spelling measured there scores worse.
-             */
-            var_v1 = a0 & 0xFFFF1FFF;
-            var_v0 = ((a0 >> 13) & 7) - 1;
-        complete_store:
-            var_v1 |= ((var_v0 & 7) << 13);
-            D_800A34F8 = var_v1;
+            u32 m = a0 & 0xFFFF1FFF;
+            s32 c = ((a0 >> 13) & 7) - 1;
+            m |= (c & 7) << 13;
+            D_800A34F8 = m;
         }
     do_call:
         func_8005C650(0, 0x7F, 0x7F);
