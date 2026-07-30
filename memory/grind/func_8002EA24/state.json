@@ -1,7 +1,7 @@
 {
  "func": "func_8002EA24",
  "file": "code6cac_b",
- "session_count": 6,
+ "session_count": 7,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -39,23 +39,29 @@
    "floor": 2,
    "modality": "forensics",
    "headline": "Forensics localises the whole residual to ONE bit -- hard reg $a0 in find_reg's pass-0 exclusion set for the neg_threshold allocno -- and enumerates all four GCC generators of that bit; three are clos"
+  },
+  {
+   "session": 7,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "Forensics corrects the allocator account: the $a0 exclusion for neg_threshold is an assigned-conflict, not a preference effect, so the whole priority axis (session 6's frontier) is dead; four new carr"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "H5''' -- the last two points are an allocator-INPUT residue (pseudo/priority structure) rather than a statement-shape residue, and the only untried lever is the allocno PRIORITY ORDER.",
-   "mechanism": "allocno_compare priority is floor_log2(n_refs)*n_refs / live_length. Route (3) -- regs_someone_prefers -- is the one exclusion mechanism that costs no instruction at all, and it is closed today only because both $a0-preferring allocnos (97 = a0_var, 102 = y) rank ABOVE 103. Anything that demotes 102 or 97 below 103 without changing the emitted instructions would open it, since both already carry the $a0 preference. The two knobs are reg_n_refs and live_length, both computable from the dump before building.",
-   "next_probe": "Build variants that change y's or a0_var's REFERENCE COUNT without changing the emitted instructions (e.g. reading *(s32 *)(obj + 0x108) twice and letting CSE collapse it, or splitting `y - a0_var` / `y + a0_var` across an extra reference), and read the `;; N regs to allocate` order out of tmp/grind/func_8002EA24/s6/dump.sh BEFORE scoring: the variant only matters if 102 or 97 moves past 103 in that list. Note the demoted allocno must ALSO conflict with 103, which reintroduces the liveness cost -- verify both conditions in the dump, then score."
+   "hypothesis": "H5'''' -- the last two points close iff an allocno that PREFERS hard reg 4, CONFLICTS with 103, and ranks BELOW 103 in allocno_compare order exists at zero instruction cost. That is the configuration target's own compile had (target's window has nothing in $a0, so an assigned-conflict exclusion is ruled out for it).",
+   "mechanism": "prune_preferences (global.c:851-899) unions lower-priority CONFLICTING allocnos' full preferences into regs_someone_prefers[103], excluded by pass 0 of find_reg (:1012-1044). Priority = floor_log2(n_refs)*n_refs / live_length, so adding a reference pushes an allocno UP hard while lengthening a live range pushes it DOWN gently -- the carrier must gain liveness without gaining a reference.",
+   "next_probe": "Allocno 102 (y) is the shape-compatible carrier: it already prefers $a0, lands in $v1 exactly where target keeps y, and sits only two positions above 103. Look for a form where y's LOAD stays in target's position but the conflicting allocno's range starts earlier -- e.g. y read through a pointer or an address pseudo computed before the chain, so the ADDRESS allocno carries the $a0 preference and the conflict. Verify BOTH conditions in the dump before scoring (`;; 103 conflicts:` contains the carrier AND the carrier appears AFTER 103 in the `regs to allocate` line); tmp/grind/func_8002EA24/s7/probe.sh prints exactly those lines per variant."
   },
   {
-   "hypothesis": "H4 -- the GTE canonical-asm disposition, unchanged from sessions 2-7.",
-   "mechanism": "Both GTE regions are hand-written asm in the original (46-function $t4 census; the LZC block is instruction-for-instruction identical to the user-authorized func_800274BC). The Judge has constrained the SHAPE and that shape is measured free; it is carried verbatim in the banked candidate.",
-   "next_probe": "No grind action available -- adding func_8002EA24 to inline_asm_canonical.txt and retiring its 10 regfix rules are operator surfaces, and the Judge deferred the FINAL CALL until the function is byte-identical on main with zero rules."
+   "hypothesis": "A SEVENTH zero-cost live value in the range-test window that lands in $a0 closes the function regardless of which allocno supplies it.",
+   "mechanism": "103's conflicting values currently cover hard regs {2,3,5,6,7,8}; hard reg 4 is the only free one, so first-fit hands it over. Any additional live value assigned $a0 and overlapping [negu .. third slt] removes it.",
+   "next_probe": "Enumerate the values the C could legitimately keep live across that window at zero instruction cost (address pseudos, a pointer walked through obj's fields, the GTE output pointer re-used for the 0x100/0x104/0x108 reads) and dump each; the six existing carriers and the a0_var early-set families are already measured dead."
   },
   {
-   "hypothesis": "H6 is CLOSED; what remains is ACCEPTANCE of the candidate's two /* FAKE */-annotated staged-value constructs, not a further search. Session 7 strengthens the case for L3 specifically.",
-   "mechanism": "Both are instances of [[staged-value-reused-variable]] (a real value, read by the very next expression, staged through an existing local that is provably dead at the staging point, with zero dead stores). This session's forensics shows L3 is not one option among many: it is the UNIQUE instruction-free generator of the single allocator bit that separates the build from target, with the other three generators enumerated and measured dead. The fallback without the constructs is banked (score 3 / score 6).",
-   "next_probe": "Layer-2 cheat-reviewer / Judge ruling on the two constructs in memory/grind/func_8002EA24/candidate.c; if refused, candidate_alt_score3_no_fake.c is the fallback body."
+   "hypothesis": "H4 / H6 -- unchanged: H4 (GTE canonical-asm disposition) is an operator surface; H6 is closed and awaits layer-2 acceptance of the two /* FAKE */ staged-value constructs.",
+   "mechanism": "Both constructs are [[staged-value-reused-variable]] instances (real value, read by the very next expression, staged through a provably-dead existing local, zero dead stores); the fallback without them is banked at candidate_alt_score3_no_fake.c (score 3; without L1 as well, 6).",
+   "next_probe": "Judge / fresh layer-2 cheat-reviewer ruling on memory/grind/func_8002EA24/candidate.c; no grind action available on this axis."
   }
  ],
  "judge_constraints": [

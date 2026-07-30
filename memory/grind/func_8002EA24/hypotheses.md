@@ -881,3 +881,90 @@ constructs in the candidate is a layer-2 / Judge question, not a search question
 - probe: BB2_FINDREG_DEBUG dumps of allocno 103 for the banked score-2 body and for plain1, plus the -dg allocno/priority tables for both, cross-referenced against the four exclusion mechanisms read out of global.c and against every measurement banked in sessions 2-6.
 - result: score-2 body: conflicts {2,3,4,5,8,29}, someone_prefers {6,7}, own prefs {} -> pass0_used {0,1,2,3,4,5,6,7,8,16..23,26..31} -> first free 9 = $t1 = TARGET. plain1: conflicts {2,3,5,8,29}, same someone_prefers, same empty own prefs -> first free 4 = $a0 = WRONG. Route (1) needs neg_threshold live at function entry: s5 measured four spellings, all 108 insns vs 107, because the negu then loses the `lw $a1,0x100($t0)` load-delay slot that target fills with it. Route (3) is closed by GCC's own priority order. Route (4) needs a reg-reg copy seeding a $t1 preference, and $t1 has no fixed role on MIPS. Route (2) is instruction-free ONLY when the value a0_var carries across the chain is a computation the chain already performs -- the first range test's boolean -- which is exactly the banked score-2 construct and which necessarily costs the boolean its own register.
 - verdict: CONFIRMED
+
+
+## Session 7 (forensics) - frontier rewritten
+
+### KILLED this session
+- **The allocno-PRIORITY axis in full** (session 6's frontier H5'''). Reference-count levers (`yrefs`,
+  `a0refs`) leave the printed allocation order bit-identical -- CSE removes the duplicate reference before
+  `global_alloc` counts it -- and the axis is a no-op by construction anyway: 97 (a0_var) is allocated
+  BEFORE 103, so it excludes $a0 as an assigned conflict, and demoting it would only re-route the same
+  exclusion through `regs_someone_prefers` while it still holds $a0 and still holds the staged boolean.
+- **The reject-arm return-value carrier** (`ret1`, `ret12` -- session 6's `rejstage` re-derived and
+  extended to two arms): score 3, no conflict, `negu $a0,$a2` unchanged.
+- **`neg_threshold` as a tail-value carrier** (`negtail1` 22, `negtail2` 5, `negtail3` 24): the extra
+  reference lifts 103's priority from order position 10 to position 4 and it takes $a1 instead of $t1.
+- **Second-test boolean staging** (`b2` 5, `b2or` 5): reaches target's $t1 but costs 3 points. Any
+  a0_var-staged boolean costs its own slt/bnez the $v0 that target uses.
+
+### CONFIRMED this session
+- **The whole decision is a single conflict bit, and nothing else in the allocator correlates with it.**
+  Across 11 bodies dumped with `-dg`, 103 lands in $t1 iff `103 conflicts:` contains 97, and in $a0 iff it
+  does not. 103's own copy/full preferences are empty in every build; someone_prefers[103] is {6,7} in
+  every build; the allocation order is identical in every build except the negtail family.
+- **Target's window carries the same six conflicting values we do** and still allocates $t1 -- so the
+  ORIGINAL compile's exclusion came from `regs_someone_prefers`, not from an assigned conflict. That is a
+  different configuration from ours, and it is reachable only from a different statement-level shape.
+
+### Live frontier (after session 7)
+
+#### H5'''' - an $a0-preferring allocno conflicting with 103 from BELOW it in the order
+**Statement.** The remaining two points close iff some allocno that (a) prefers hard reg 4, (b) conflicts
+with allocno 103 (neg_threshold) and (c) ranks BELOW 103 in `allocno_compare` order exists at zero
+instruction cost. That is the configuration target's own compile must have had, since target's emitted code
+has no value in $a0 anywhere across the window and an assigned-conflict exclusion is therefore ruled out
+for it.
+**Mechanism.** `prune_preferences` (global.c:851-899) unions the full preferences of lower-priority
+CONFLICTING allocnos into `regs_someone_prefers[103]`, which pass 0 of `find_reg` (:1012-1044) excludes;
+priority is floor_log2(n_refs)*n_refs / live_length, so adding a reference is a large upward push while
+lengthening a live range is a small downward one.
+**Next probe, in order.**
+1. Allocno 102 (`y`) is the shape-compatible carrier: it already prefers $a0, it lands in $v1 exactly where
+   target keeps y, and it ranks only two positions above 103. Look for a form in which y's LOAD stays in
+   target's position but the conflicting allocno's live range starts earlier -- e.g. y read through a
+   pointer or an address pseudo computed before the chain, so that the ADDRESS allocno (not the loaded
+   value) is what conflicts and what carries the $a0 preference. Verify BOTH conditions in the dump before
+   scoring: `;; 103 conflicts:` must contain the carrier, and the carrier must appear AFTER 103 in the
+   `regs to allocate` line. tmp/grind/func_8002EA24/s7/probe.sh prints exactly those lines per variant.
+2. Failing that, hunt a SEVENTH conflicting value in the window generally: the six that exist cover
+   {2,3,5,6,7,8} and hard reg 4 is the only free one, so ANY zero-cost seventh live value that lands in
+   $a0 closes it.
+3. Do NOT re-run: reference-count lifts, reject-arm staging, tail-carrier staging through neg_threshold,
+   second-test boolean staging, y-load hoisting (`yearly` = 11), and the session-3/4 a0_var early-set
+   families.
+
+#### H4 / H6 - unchanged from session 6
+H4 (the GTE canonical-asm disposition) is an operator surface, not a grind axis. H6 is CLOSED; what remains
+is layer-2 ACCEPTANCE of the two /* FAKE */-annotated staged-value constructs in the banked candidate, with
+candidate_alt_score3_no_fake.c as the fallback body.
+
+## [s7] The exclusion of hard reg 4 ($a0) from the neg_threshold allocno (pseudo 103) in the banked score-2 build comes from regs_someone_prefers / prune_preferences, so an allocno_compare PRIORITY lever (demoting 102 or 97 below 103) can open it (session 6's frontier premise).
+- mechanism: prune_preferences (global.c:851-899) unions the full preferences of LOWER-priority conflicting allocnos into regs_someone_prefers[103], which pass 0 of find_reg (:1012-1044) excludes; priority is floor_log2(n_refs)*n_refs / live_length, so reg_n_refs and live_length are the knobs.
+- probe: Dumped -dg for 11 distinct bodies (tmp/grind/func_8002EA24/s7/probe.sh: cand, plain, ret1, ret12, b2, b2or, yrefs, a0refs, negtail1, negtail2, negtail3), reading the `regs to allocate` order line, the 97/102/103 conflict lists, the preference lines and the register dispositions out of each.
+- result: The premise is wrong. Allocno 97 (a0_var, the only $a0 holder) is allocated BEFORE 103 in every build (order 101 96 97 100 109 108 72 102 117 103 74 99 75), so it excludes $a0 as an ordinary ASSIGNED conflict; someone_prefers[103] is {6,7} and 103's own preferences are EMPTY in every build, score-2 and score-3 alike. 103 lands in hard reg 9 ($t1 = target) in exactly the builds whose `103 conflicts:` contains 97 and in hard reg 4 ($a0) in exactly those where it does not -- nothing else correlates. Demoting 97 below 103 would only re-route the same exclusion through preferences while 97 still holds $a0 and still holds the staged boolean.
+- verdict: KILLED
+
+## [s7] A source-level REFERENCE-COUNT change (reading a value twice and letting CSE collapse it) moves allocno_compare priority without changing the emitted instructions.
+- mechanism: allocno_compare priority = floor_log2(reg_n_refs)*reg_n_refs / live_length; reg_n_refs is counted from the RTL global_alloc sees.
+- probe: `yrefs` (the *(s32 *)(obj + 0x108) load written twice, aimed at allocno 102 = y) and `a0refs` (an extra collapsed reference to a0_var), both on the no-L3 control base; scored with sandbox --disable all and dumped with -dg.
+- result: Both score 3 = the control, and the printed allocation order plus every conflict list is BIT-IDENTICAL to the control. cc1's CSE removes the duplicate reference before global_alloc counts refs, so the source-level reference count is not the quantity allocno_compare sees. Banked at rejected/refcount-priority-lever-inert-score3.c.
+- verdict: KILLED
+
+## [s7] The conflict can be created without staging a boolean, by making neg_threshold itself carry a tail value so its live range reaches a0_var's.
+- mechanism: An allocno's live range ends at its last reference; carrying `y - a0_var` (or `y + a0_var`) through neg_threshold extends 103 past a0_var's birth, creating the 97<->103 conflict with no extra instruction.
+- probe: `negtail1` (neg_threshold = y - a0_var), `negtail2` (neg_threshold = y + a0_var), `negtail3` (both), each scored and -dg dumped.
+- result: negtail1 DOES create both the 97<->103 and 102<->103 conflicts, but the extra reference lifts 103's priority from order position 10 to position 4 (numerator floor_log2(n)*n goes 3 -> 8, swamping the longer live range), so 103 is allocated while $a1 is still free, takes hard reg 5 and displaces x to $t0: score 22. negtail3 = 24. negtail2 never reaches a0_var's range (no 97 conflict, 103 back in $a0) = 5. Banked at rejected/neg-threshold-carries-tail-subtraction-score22.c and rejected/neg-threshold-carries-tail-addition-score5.c.
+- verdict: KILLED
+
+## [s7] L3 (staging the FIRST range test's boolean through a0_var) is the unique instruction-free generator of the conflict bit (session 6's claim).
+- mechanism: Any value born inside neg_threshold's live window and assigned $a0 creates the conflict; session 6 enumerated four generators and measured three dead.
+- probe: `b2` (the SECOND range test's boolean staged through a0_var as three statements) and `b2or` (the same staged inside the || so the branch structure is preserved); plus `ret1` / `ret12` (the return-value 0 of one and of two reject arms staged through a0_var).
+- result: Uniqueness is too strong but the ranking holds: b2 and b2or BOTH create the 97<->103 conflict and BOTH put neg_threshold in target's $t1 (103 in 9) -- and both score 5 against the banked 2, because the staged boolean then occupies $a0 on its own slt while the first test's boolean also moves. ret1/ret12 create no conflict at all (score 3, negu $a0,$a2 unchanged): reject arms return, so a value set there is live at no join and neg_threshold is already dead on that path. L3 remains the cheapest generator by 3 points; the residual is invariant under placement because an a0_var-staged boolean always costs its own slt/bnez the $v0 target uses. Banked at rejected/staged-boolean-at-second-test-into-a0var-score5.c.
+- verdict: CONFIRMED
+
+## [s7] Target's own compile reached $t1 for neg_threshold by the same assigned-conflict mechanism our score-2 build uses.
+- mechanism: find_reg first-fit over the conflict-derived exclusion set; a value living in $a0 across the window would exclude 4 for 103.
+- probe: Read asm/funcs/func_8002EA24.s across the range-test window (8002EAA0 `lw $a1,0x100($t0)` through 8002EAD4 `slt $v0,$a2,$v1`) and enumerated every register live there, then compared against our build's `103 conflicts:` register set.
+- result: Refuted. Target's window carries exactly six live values -- obj ($t0), x ($a1), threshold ($a2), r_sq ($a3), z ($v1), boolean temps ($v0) -- covering registers {2,3,5,6,7,8}; hard reg 4 is written NOWHERE between the prologue copy `addu $t0,$a0,$zero` (first instruction of the function) and `addu $a0,$v0,$v1` after the multiplies. Our conflict set covers the same six registers, leaving 4 free for first-fit, yet target's negu writes $t1. Target's exclusion of $a0 must therefore have come from regs_someone_prefers -- an $a0-preferring allocno that conflicted with 103 AND ranked BELOW it in allocno_compare order. That configuration has never been produced here and is the session-8 frontier.
+- verdict: KILLED

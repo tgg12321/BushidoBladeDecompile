@@ -47,7 +47,7 @@
  * across the chain from a set whose VALUE is not the boolean -- see
  * hypotheses.md H5' for the exact statement.
  *
- * SESSION-7 FORENSICS (body UNCHANGED; floor still 2).  The residual is now
+ * SESSION-6 FORENSICS (body UNCHANGED; floor still 2).  The residual is now
  * named exactly, in the compiler rather than in the source: pass `global_alloc`
  * (tools/gcc-2.7.2/global.c), decision = the pass-0 hard-register exclusion set
  * computed in `find_reg` (:1012-1044) for the `neg_threshold` allocno (pseudo
@@ -65,6 +65,26 @@
  * a0_var carries a value the chain already computes -- i.e. L3 below.  L3 is
  * therefore not one option among many: it is the unique instruction-free
  * generator of the one bit that separates this build from target.
+ *
+ * SESSION-7 FORENSICS (body UNCHANGED; floor still 2, re-measured this session).
+ * Session 6's account of WHICH allocator mechanism supplies the bit is corrected
+ * here from the dumps: the exclusion of $a0 from allocno 103 (neg_threshold) is
+ * an ordinary ASSIGNED-CONFLICT, not a `regs_someone_prefers` effect.  Allocno 97
+ * (a0_var) is allocated BEFORE 103 in every one of the 11 bodies dumped this
+ * session (order `101 96 97 100 109 108 72 102 117 103 74 99 75`, identical in
+ * all but the negtail family), so by the time find_reg runs for 103, 97 already
+ * HOLDS hard reg 4 and conflicts with it.  103 lands in $t1 in exactly the builds
+ * whose `103 conflicts:` list contains 97 and in $a0 in exactly those where it
+ * does not; 103's own preferences are empty and someone_prefers[103] is {6,7} in
+ * every build.  Consequence: no allocno-PRIORITY lever can substitute for the
+ * conflict (measured: reference-count lifts are inert, CSE eats them before
+ * global_alloc counts refs), and L3 remains the cheapest generator -- the second
+ * range test's boolean carries the same conflict but costs 3 points (b2/b2or = 5),
+ * and letting neg_threshold itself carry a tail value costs 20 (negtail1 = 22).
+ * The one shape still unexplored is target's own: target's window carries the SAME
+ * six conflicting values we do and still allocates $t1, so the original compile
+ * excluded $a0 through an $a0-preferring allocno that conflicted with 103 from
+ * BELOW it in the order -- see hypotheses.md H5''''.
  *
  * CHEAT VETTING (this body carries TWO annotated exceptions; layer-2 must rule).
  *   L1 and L3 are both instances of [[staged-value-reused-variable]]
