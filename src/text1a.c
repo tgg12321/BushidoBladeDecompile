@@ -487,50 +487,70 @@ done:
 /* kengo:MED  |  my_rob/rob_calc_2d_position  |  93i */
 extern s16 D_80094B9E[];
 void func_80040CB8(void *arg0) {
-    register s8 *a2 asm("a2");
-    register s32 t1 asm("t1");
-    register s16 t4 asm("t4");
-    register s16 t3 asm("t3");
-    register s16 t2 asm("t2");
-    register s32 t0 asm("t0");
-    register s16 *a3 asm("a3");
-    register s32 a1 asm("a1");
+    s16 id;
+    s8 *slot = (s8 *)arg0 + 0x8B4;
+    s32 i = 0;
+    // FAKE (none/kind/one): the three loop-invariant constants must be held in
+    // registers across the loop, as target holds them in $t4/$t3/$t2. The
+    // goto-loop body carries no LICM (its loop region is rejected as phony), so
+    // writing -1/3/1 as literals cannot reproduce them: measured 35 insns /
+    // score 23 in grind s1 (rejected/literal-constants-no-licm-in-goto-form.c).
+    s32 none;
+    s32 kind;
+    s32 one;
+    s32 link;
+    s16 *tbl;
+    s32 ent;
 
-    a2 = (s8 *)arg0 + 0x8B4;
-    t1 = 0;
-    t4 = -1;
-    t3 = 3;
-    t2 = 1;
-    t0 = (s32)arg0 + 0x94;
-    a3 = D_80094B9E;
-    a1 = (s32)arg0 + 0x90C;
-
-loop:
-    {
-        s16 v0 = *a3;
-        if (v0 != t4) {
-            s16 v1 = v0;
-            *(s16 *)(a1 - 0x56) = v1;
-            *a2 = t3;
-            *(s8 *)(a1 - 0x57) = 0;
-            *(s16 *)(a1 - 0x50) = 0;
-            *(s32 *)(a1 - 0x4C) = t0;
-            *(s16 *)(a1 - 0x52) = t2;
-            *(s16 *)(a1 - 0x4E) = 0;
+    // FAKE: wrap emits NOTE_INSN_LOOP_BEG/END around the three constant loads.
+    // Both notes act as cc1 first-pass-scheduler barriers, which keeps the
+    // three single-set constant loads ahead of the link/tbl cursor
+    // initialisers instead of being sunk below them (target's prologue order).
+    // Natural geometry was tried first: with plain declaration order the
+    // scheduler sinks all three (measured score 6, s2/p4.txt).
+    do {
+        none = -1;
+        kind = 3;
+        one = 1;
+    } while (0);
+    link = (s32)arg0 + 0x94;
+    tbl = D_80094B9E;
+    // FAKE: wrap emits loop notes around the body, so flow.c weights every
+    // reference inside it by loop_depth 2. That weighting is what seats the
+    // id copy in $v1 and the 0x90C cursor in $a1 (and the rest on target);
+    // without it the id copy loses its allocno-priority race and the whole
+    // register assignment rotates (measured score 13, s1/build4.txt).
+    // `ent` is initialised INSIDE the region on purpose: that makes the region
+    // start on a non-label insn, so loop.c rejects it as phony and its
+    // strength reduction cannot invent a third induction pointer for the
+    // -0x57..-0x4C displacement cluster (measured 38 insns / score 25 with a
+    // real for-loop, s2/p2.txt).
+    do {
+        ent = (s32)arg0 + 0x90C;
+    loop:
+        id = *tbl;
+        if (id != none) {
+            *(s16 *)(ent - 0x56) = id;
+            *slot = kind;
+            *(s8 *)(ent - 0x57) = 0;
+            *(s16 *)(ent - 0x50) = 0;
+            *(s32 *)(ent - 0x4C) = link;
+            *(s16 *)(ent - 0x52) = one;
+            *(s16 *)(ent - 0x4E) = 0;
             {
-                u16 lhu_result = *(u16 *)((s32)arg0 + 0x16);
-                a2 += 0x68;
-                *(s32 *)a1 = 0;
-                *(s16 *)(a1 - 0x54) = lhu_result;
-                a1 += 0x68;
+                u16 w = *(u16 *)((s32)arg0 + 0x16);
+                slot += 0x68;
+                *(s32 *)ent = 0;
+                *(s16 *)(ent - 0x54) = w;
+                ent += 0x68;
             }
         }
-        t0 += 0x68;
-        t1++;
-        a3 = (s16 *)((s32)a3 + 0xA);
-        if (t1 < 0x12) goto loop;
-    }
-    *(s16 *)((s32)a2 + 2) = -1;
+        link += 0x68;
+        i++;
+        tbl = (s16 *)((s32)tbl + 0xA);
+        if (i < 0x12) goto loop;
+    } while (0);
+    *(s16 *)((s32)slot + 2) = -1;
 }
 typedef void (*FuncPtr_40D48)(s16 *, s16 *);
 typedef struct { s32 a, b, c, d, e, f, g, h; } Copy8_40D48;

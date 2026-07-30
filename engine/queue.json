@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80040CB8",
-      "file": "text1a",
-      "distance": 17,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "replay_camera_rob_back_loose3",
       "file": "text1a_c",
       "distance": 17,
@@ -2567,14 +2559,14 @@
     }
   ],
   "counts": {
-    "total": 311,
-    "active": 252,
+    "total": 310,
+    "active": 251,
     "by_status": {
-      "active": 252,
+      "active": 251,
       "parked": 59
     },
     "by_verdict": {
-      "C": 100,
+      "C": 99,
       "ASM-PARTIAL": 45,
       "ASM-SUSPECT": 107
     }

@@ -75,7 +75,18 @@ resolved, in s1.
 
 ---
 
-## Live frontier (for the next session)
+## Live frontier — SUPERSEDED by session s2 (all three items closed or killed)
+
+**s2 outcome: honest pure-C floor 0.** F1 KILLED as stated (cse folds the
+cursor-relative init; no sixth ref — see the s2 entries above). F2 CLOSED, but
+not by promoting the copy pseudo: loop-note ref weighting (loop_depth 2)
+promotes it for free. F3's mechanism KILLED (struct typing produces identical
+RTL); strength reduction is instead defeated by making the note region phony.
+The only remaining question is a POLICY one, not a search one: whether the two
+sequential `do { } while (0)` wraps that carry the loop notes are accepted (they
+are the sanctioned family per `.claude/rules/do-while-zero-exception.md`, both
+single-level, both FAKE-annotated at the construct site). The s1 text below is
+kept for historical context only — do not re-run these probes.
 
 ### F1 — Break the slot coupling by raising `slot`'s n_refs from 5 to 6.
 **Mechanism.** `slot` needs priority above `tbl`'s 0.348 while keeping its
@@ -145,6 +156,36 @@ i++)` loop, and check the `.loop` dump for whether any new giv is created.
 - mechanism: Two registers hold the id (the lh destination used by the compare, and a copy consumed by sh ...,-0x56($a1)), which reads like two C variables.
 - probe: Deleted the s16 intermediate and stored id directly; sandbox --disable all.
 - result: Byte-identical output both ways (36 insns, score 21). GCC generates the copy itself from the HImode store of the compared value.
+- verdict: KILLED
+
+## [s2] Target's register assignment is only reachable with NOTE_INSN_LOOP_BEG/END around the body, because flow.c weights REG_N_REFS by loop_depth.
+- mechanism: flow.c increments reg_n_refs by loop_depth (flow.c:2081/2329/2515/2725) and loop_depth comes only from loop notes. With the goto form (no notes) every ref counts 1, so the GCC-generated id copy scores floor_log2(3)*3/3 = 1.00 against the 0x90C cursor's floor_log2(11)*11/22 = 1.50 and loses $v1 to it under global.c's ascending first-fit. With notes, in-loop refs count 2: the copy becomes 6 refs -> 12/3 = 4.00 and the cursor 22 refs -> 88/22 = 3.82, so the copy takes $v1 and the cursor $a1 - and the remaining seven variables fall into target's registers behind them. The 4.00 vs 3.82 margin is the entire residual s1 characterised as a coupled, unbreakable pair.
+- probe: Rewrote the body as for (i = 0; i < 0x12; i++) with the 0x8B4 cursor declared first; sandbox --disable all; disassembled (s2/p2.txt).
+- result: copy = $v1 and slot = $a2 immediately, with slot's addiu FIRST in the prologue - both s1 defects closed at once. Score 25 / 38 insns only because of the separate strength-reduction problem (H7). Verified the formula against tools/gcc-2.7.2/global.c:allocno_compare and the loop_depth increments in flow.c.
+- verdict: CONFIRMED
+
+## [s2] Loop notes can be obtained WITHOUT loop.c strength reduction by making the note region start on a non-label insn, which scan_loop rejects as phony.
+- mechanism: loop.c:568-575 bails with "Loop from N to M is phony." when scan_start is not a CODE_LABEL, returning before biv/giv analysis. The notes themselves survive into flow.c, so the loop_depth ref weighting of H6 is kept while combine_givs/strength_reduce never run - so no third induction pointer is invented for the -0x57..-0x4C displacement cluster. Initialising the 0x90C cursor between NOTE_INSN_LOOP_BEG and the goto-loop's label is exactly such a non-label insn (and is also where target emits it, last in the prologue).
+- probe: do { ent = (s32)arg0 + 0x90C; loop: <s1 body> } while (0); with id declared first and the 0x8B4 cursor declared first among the initialisers. sandbox --disable all; read the .loop dump for the phony line.
+- result: .loop prints "Loop from 31 to 112 is phony."; 36 insns, score 6, with ALL NINE registers on target. Only defect left: the three constant loads emitted below the link/tbl initialisers. Control probe p3 (do-while(0) whose region starts AT the label) still strength-reduced: 38 insns / score 25, banked as rejected/do-while0-body-only-still-strength-reduces.c.
+- verdict: CONFIRMED
+
+## [s2] The prologue-order residual is cc1 first-pass scheduling, and a loop note is a hard scheduling barrier that fixes it.
+- mechanism: sched.c:2068-2094 gives the first insn after a LOOP_BEG or LOOP_END note a dependence on every preceding set and use, explicitly so that "the reg_n_refs info (which depends on loop_depth)" cannot be corrupted - i.e. nothing schedules across a loop note. Without such a barrier sched1 sinks the three single-set constant loads (li -1 / li 3 / li 1) below the multi-set cursor initialisers link and tbl; the four pseudos that are also written inside the loop are immune. Wrapping the three constant assignments in their own do { } while (0) pins none (after its BEG note) and link (after its END note), reproducing target's prologue order.
+- probe: order.py diff of the block-0 insn chain in .combine (declaration order) vs .lreg (sunk order) to localise the pass; then added a second, SEQUENTIAL do-while(0) around none/kind/one only, ahead of the link/tbl initialisers. sandbox --disable all.
+- result: .combine order 11,14,17,20,23,26,29 vs .lreg order 11,14,26,29,17,20,23 - sched1 confirmed as the mover. With the constant wrap: 36 insns, score 0, byte-identical to asm/funcs/func_80040CB8.s. Honest cheat-invisible floor 0 with zero rules, zero pins, zero inline asm.
+- verdict: CONFIRMED
+
+## [s2] A semantic sixth reference to the 0x8B4 cursor can be had by expressing the 0x90C cursor as cursor + 0x58 (inherited frontier F1).
+- mechanism (why it looked plausible): the two cursors genuinely differ by the +0x58 field offset, so ent = slot + 0x58 is the natural spelling, and F1 needed n_refs 6 to give the 0x8B4 cursor priority 2*6/31 = 0.387 and clear tbl (0.348) while its initialiser stayed first in the prologue.
+- probe: s32 ent = (s32)slot + 0x58; with the 0x8B4 cursor declared first; sandbox --disable all; re-read the .lreg per-register ref/length table.
+- result: score 21 and 36 insns, IDENTICAL to the plain slot-first form, and .lreg still reports "Register 73 used 5 times across 31 insns" - no reference gained. cse folds (arg0+0x8B4)+0x58 to arg0+0x90C before flow.c counts refs and the emitted insn is addiu $v1,$a0,2316. Every prologue-level cursor-relative respelling folds the same way; only an in-loop reference could survive and every in-loop use changes a displacement. Banked as rejected/ent-derived-from-slot-cse-folds-no-sixth-ref.c.
+- verdict: KILLED (and the whole F1 line is moot - H6 supplies the priority via loop_depth weighting instead)
+
+## [s2] A struct-typed cursor spelling makes a real for-loop safe against strength reduction (inherited frontier F3).
+- mechanism (why it looked plausible): F3 argued that if all displacements were real struct member offsets the address expressions would already be single-register-plus-constant, leaving strength reduction no derived induction variable to create.
+- probe: Read loop.c's DEST_ADDR giv creation (loop.c:4190-4212), combine_givs / combine_givs_p / express_from (loop.c:5460-5520) and the reduce decision (loop.c:3823) against the p2/p3 .loop dumps.
+- result: The premise is false at the RTL level. p->field and *(T *)(p + K) both expand to (plus (reg) (const_int)), so the givs are created identically; record_giv only skips an address whose add_val is 0. loop.c's own dump shows all eight cluster addresses combined onto one giv and reduced, which is what creates the third pointer. Typing cannot change this; making the region phony (H7) is what defeats it.
 - verdict: KILLED
 
 ## [s1] The three loop-invariant constants (-1, 3, 1) can be written as literals instead of constant-holder locals.

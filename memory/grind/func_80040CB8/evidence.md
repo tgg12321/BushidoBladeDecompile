@@ -174,3 +174,103 @@ crossover, or by shortening `slot`'s live range without moving its initialiser.
 - [s1] The three constant-holder locals are load-bearing (H5) and therefore fall under .claude/rules/named-local-fake-exception.md; a future candidate-ready session must either eliminate them or carry the required FAKE annotation plus documented lever exhaustion. s1 flags this and does not claim it resolved.
 
 - [s1] Matched sibling func_80040400 (src/text1a.c ~line 122) writes the same 0x68-byte element field set via a walking s16* and is a typing/naming reference for a struct-based rederive.
+
+## Session s2 (2026-07-30, modality: structural) — floor 13 -> 0
+
+### The governing mechanism (this is the whole function)
+`flow.c` computes reference counts as `reg_n_refs[regno] += loop_depth`
+(flow.c:2081, 2329, 2515, 2725), and `loop_depth` is derived ONLY from
+`NOTE_INSN_LOOP_BEG` / `NOTE_INSN_LOOP_END` notes (flow.c:1401/1447, seeded per
+basic block at flow.c:456/471). `global.c:allocno_compare` was verified against
+the source: `priority = floor_log2(n_refs) * n_refs / live_length * 10000 *
+allocno_size`, descending, ties broken on the LOWER allocno index
+(`return *v1 - *v2;`). All ten long-lived pseudos mutually conflict and MIPS
+defines no `REG_ALLOC_ORDER`, so every hard register is a pure function of that
+rank (s1 finding, re-confirmed).
+
+s1's `goto` loop form has NO loop notes, so every reference counts 1. That is
+why the id copy (3 refs / live 3 = 1.00) loses its race against the 0x90C
+cursor (11 refs / live 22 = 1.50) and the whole assignment rotates. With the
+body inside loop notes the same code weights to: id copy 6 refs -> 12/3 =
+**4.00**, cursor 22 refs -> 88/22 = **3.82**. The copy wins $v1, the cursor
+takes $a1, and every remaining variable falls into target's slot behind them.
+**Target's register assignment is unreachable without loop notes; the 4.00 vs
+3.82 margin is the entire residual.** Measured proof: a plain
+`for (i = 0; i < 0x12; i++)` immediately produced `copy=$v1` and `slot=$a2`
+with the 0x8B4 cursor's `addiu` first in the prologue (s2/p2.txt) — the two
+defects s1 characterised as coupled and unbreakable both closed at once.
+
+### Why a recognised loop cannot be used, and the resolution
+Confirmed s1's H2 from the loop dump: with a real loop (or a
+`do { goto-body } while (0)` whose region starts at the `loop:` label), loop.c
+recognises `ent` as a biv, creates DEST_ADDR givs for the `-0x57..-0x4C`
+displacement cluster, `combine_givs` merges all eight onto one giv, and
+`strength_reduce` reduces it to a third induction pointer based at
+`arg0+0x8B8`; the 0x90C cursor survives only to serve `sw $zero,0(...)`. Three
+`addiu rX,rX,0x68` per iteration against target's two -> 38 insns, score 25
+(s2/p2.txt for-loop, s2/p3.txt do-while(0)-around-body).
+
+The resolution is to keep the NOTES but make loop.c decline the region.
+`scan_loop` bails with "Loop from 31 to 112 is phony." when `scan_start` is not
+a `CODE_LABEL` (loop.c:568-575). Initialising `ent` between the
+`NOTE_INSN_LOOP_BEG` and the `loop:` label puts an ordinary insn there, so
+loop.c returns before any biv/giv analysis while flow.c still sees the notes
+and still weights the body at loop_depth 2. Measured: 36 insns, score 6, with
+ALL NINE registers on target (s2/p4.txt). This is the load-bearing trick of the
+whole match.
+
+### The residual 6 and its cause — the sched1 note barrier
+The only defect left at score 6 was prologue ORDER: the three single-set
+constant loads (`li -1 / li 3 / li 1`) were emitted BELOW the `link` and `tbl`
+cursor initialisers instead of above them. `.combine` still had them in
+declaration order and `.lreg` did not, so cc1's FIRST-PASS SCHEDULER moves
+them. The distinguishing property is single-set vs multi-set: the four pseudos
+that are also written inside the loop (slot, i, link, tbl) stayed put; the
+three that are set exactly once sank.
+
+`sched.c:2068-2094` is the lever: "If there is a LOOP_{BEG,END} note in the
+middle of a basic block, then we must be sure that no instructions are
+scheduled across it. Otherwise, the reg_n_refs info (which depends on
+loop_depth) would become incorrect." — the first insn after EITHER note gets a
+dependence on every preceding set and use, i.e. a hard scheduling barrier.
+Wrapping the three constant assignments in their own `do { } while (0)`
+therefore pins `none` (after the BEG note) and `link` (after the END note),
+which reproduces target's prologue order exactly. Measured: **score 0**.
+
+### Verified allocno arithmetic for the closing form (predicted, then measured)
+Weights: everything outside the two wrap regions counts 1, everything inside
+counts 2. id copy 6/3 = 4.00 -> $v1(3); ent 22/22 = 4.00, loses the tie because
+`id` is declared first and so owns the lower allocno index -> $a1(5); slot
+8 refs/31 = 0.774 -> $a2(6); tbl 7/23 = 0.609 -> $a3(7); link 7/24 = 0.583 ->
+$t0(8); i 7/28 = 0.5 -> $t1(9); arg0 7/29 = 0.483 -> $a0(4, preferred); one
+4/50 = 0.160 -> $t2(10); kind 4/52 = 0.154 -> $t3(11); none 4/54 = 0.148 ->
+$t4(12). Every one of those nine matches target. The declaration position of
+`id` is load-bearing purely as a tie-break.
+
+### Facts that kill parts of the inherited frontier
+- F1 is dead as stated: expressing the 0x90C cursor as `slot + 0x58` does NOT
+  give the 0x8B4 cursor a sixth reference — cse folds it back to
+  `arg0 + 0x90C` before flow.c counts, and `.lreg` still says "used 5 times
+  across 31 insns" (score 21, unchanged). Any prologue-level cursor-relative
+  respelling folds for the same reason. Banked as
+  `rejected/ent-derived-from-slot-cse-folds-no-sixth-ref.c`.
+- F3's stated mechanism is wrong: a struct-typed cursor cannot help, because
+  RTL only ever sees `(plus (reg) (const_int))` for `p->field` — identical to
+  the cast form. Strength reduction is defeated by making the region phony, not
+  by typing.
+- The three constant-holder locals remain load-bearing (s1 H5 stands: literals
+  give 35 insns / score 23) because the phony region also means no LICM. They
+  carry the `named-local-fake-exception` FAKE annotation in the candidate.
+
+### s2 artifacts
+- `tmp/grind/func_80040CB8/s2/splice.py` — splice a candidate body into
+  src/text1a.c between the kengo marker and the next typedef (LF-safe).
+- `tmp/grind/func_80040CB8/s2/order.py` — print block-0 insn order + signature
+  for func_80040CB8 out of any cc1 `-da` dump (this is what identified sched1
+  as the pass that sinks the constant loads).
+- `b_base.c` (13), `b_p1.c` (21), `b_p2.c` real for-loop (25), `b_p3.c`
+  do-while(0) around body (25), `b_p4.c` ent-init inside region (6),
+  `b_p5.c` two regions (0), `b_final.c` (0, annotated — this is what is in src).
+- `p1.txt p2.txt p3.txt p4.txt p5.txt` — disassemblies; `text1a.i.*` cc1 `-da`
+  dumps for the p4 form (`.loop` carries the "phony" line, `.lreg`/`.greg` the
+  allocno table and dispositions).
