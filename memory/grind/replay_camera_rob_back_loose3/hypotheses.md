@@ -136,3 +136,139 @@ original *source idiom*, not of this function's local details.
 - probe: 15 structural forms measured with sandbox --disable all: named local for angC's cos index / sin index / both / both hoisted to just after the angC load; angC read hoisted next to angA/angB; the angC+sinC pair moved ahead of sinA/sinB; named locals for all six Judge indices; angC reused as its own index holder; two-variable sinAxsinB; split-init sinAxsinB_12 >>= 12; multiply-operand-order swaps on prod_sinC/prod_cosC and on all four cosA_* products; a walking s16 *J = Judge pointer; cosA narrowed to s16. The survivors were re-measured on top of the new score-13 form. cc1 -da .lreg/.greg dumps read for the priority inputs.
 - result: Every form scored EXACTLY 26 / build_insns 113 on the s1 baseline (bit-identical: GCC canonicalises the spelling away before allocation); two were worse (cos index hoisted 43/112, split-init 36/113). On the score-13 baseline the survivors are all still exactly 13 / 114 (the cosA operand swap moved the wrong way, to 17). The .lreg numbers explain it: angC is pseudo 97 'used 3 times across 12 insns' (priority 0.25 -> allocated late, takes the leftover register) and its index temp is pseudo 111 'used 2 times across 2 insns' (priority 1.00); no structural spelling changes either term. greg's '20 regs to allocate' list contains neither, confirming both are LOCAL-alloc decisions.
 - verdict: KILLED
+
+## SESSION 3 (structural) — floor 13 -> 12
+
+### CONFIRMED — delaying the LAST USE of the parameter pointer a0 gives angC target's $v1
+**Statement:** moving `angC = a0[2]; sinC = Judge[angC & 0xFFF];` to AFTER the
+`sinAxsinB_12 = (sinA * sinB) >> 12;` statement flips angC from $v0 to target's
+$v1 and its `& 0xFFF`/`<< 1` cos-index temp from $v1 to target's $v0.
+**Mechanism:** `a0[2]` is the last use of the parameter pointer, so its position
+is a LIVENESS fact about a hard register, not a spelling that sched1 can
+normalise away (pass order confirmed in tools/gcc-2.7.2/toplev.c: combine ->
+sched1 -> local_alloc). Delaying it keeps $a0 live across the multiply and puts
+the angC load after the `mult` in the stream local-alloc sees.
+**Probe/result:** `sandbox --disable all` **12 / build_insns 114** (target 114),
+down from 13. The build reproduces target's `lhu v1,0x4(a0)` at insn 18 verbatim.
+Controls: delayed past `cosB` as well -> also 12; delayed past the whole cosA
+block -> 90; the same delay applied to `a0[1]` instead of `a0[2]` -> 13 (inert).
+Banked as candidate.c. **This is the direct refutation of s2's blanket KILL of
+mechanism B by structural means — s2 only ever moved that read EARLIER.**
+
+### KILLED — eager a1[] stores (s2's frontier probe 3)
+**Probe:** every a1[] element stored as soon as it is computable, plus the three
+sub-groups separately, plus four tail-store-order permutations, plus `a1[0]` in
+the combine-blocking slot. **Result:** fully eager 73/109 (combine/CSE eats five
+instructions); sums eager 79/110; sinAxcosB pair eager 53/112; cosA_* singles
+eager 13 (inert); tail order index/sums-first 13 (inert), reversed 65/107,
+a1[8]-first 42/112; a1[0] in the blocking slot 12 (equivalent). Only the ONE
+combine-blocking store belongs out of the tail; moving any other store changes
+the insn count and always for the worse. Banked as
+`rejected/eager-a1-stores-collapse-insn-count.c`.
+
+### KILLED — declaration order of the WHOLE local block
+**Probe:** the entire decl block reversed, collapsed into one group, and reordered
+to first-use order (s2 had only permuted angC's own line). **Result:** all three
+13/114, bit-identical. The `.lreg` dumps confirm the pseudo NUMBERS do change
+(188 vs 192 for the same quantity) and the final assignment does not, so
+"qty creation order breaks the priority-1.00 tie" is not a source-reachable
+lever. Banked as `rejected/decl-order-whole-block-inert.c`.
+
+### KILLED — type narrowing / sign-extend splitting of the angle locals
+**Probe:** angC declared u16; declared s16; all three ang* as u16; `(s16)angC`
+split into its own s32 local (for A alone, C alone, and all three).
+**Result:** every one 13/114 — CSE canonicalises the width away before
+allocation. Only hoisting that sign-extend local ahead of the sinC read moved it,
+to 30/113. Banked as `rejected/type-narrow-angC-inert.c`.
+
+### KILLED — reducing the local/pseudo population
+**Probe:** fold every single-use intermediate into its consumer; fold just the
+four cosA_* products. **Result:** 87/116 and 71/111. Fewer pseudos makes the
+schedule worse, not the allocation better. Banked as
+`rejected/fold-locals-into-stores-worse.c`.
+
+### KILLED — shortening sinAxsinB_12's live range to raise its qty priority
+**Probe:** prod_sinC and prod_cosC made adjacent (live length 17 -> ~4, priority
+0.176 -> ~0.75, so it would be allocated early enough to claim $v0 rather than
+take the leftover $a0), with and without the shift written inline at both uses.
+**Result:** 25/115 both ways — it costs an instruction. Writing the shift inline
+at both uses WITHOUT making the consumers adjacent is 13/114. Banked as
+`rejected/sasb-consumers-adjacent-adds-insn.c`.
+
+### The remaining gap, stated precisely (12 diffs = ONE value)
+`sinAxsinB_12`: target $v0, ours $a0. Scheduling-coupled: target delays
+`mflo`/`sra` past the cosC index chain (mult @17, mflo t0 @22, sra v0,t0,12 @26),
+so $v0 — held by the index temp at 20-24 — is free from 26; ours emits `mflo v0`
+@19 / `sra a0,v0` @20 before the chain, the ranges overlap, and local-alloc takes
+the leftover $a0. Splitting the multiply from the shift reproduces target's
+schedule exactly but flips angC back to $v0 (13). Registers XOR schedule; nothing
+measured has both.
+
+## FRONTIER (rewritten for session 4)
+
+**A. Get target's mflo/sra placement WITHOUT losing the delayed-a0[2] register
+win.** Mechanism: the candidate has target's registers and an early
+`mflo`/`sra`; the split-multiply form has target's exact schedule and the wrong
+registers. Both effects are decided in the same window (insns 17-26), so a form
+that delays the shift by something OTHER than a source-level split — or that
+delays a0[2] by something other than statement position — should be able to hold
+both. Next probe: enumerate the window systematically. Vary independently (i) how
+the sinA*sinB value is spelled (one statement / two / inline at each use / via a
+third variable), (ii) where a0[2] is read relative to each of those, and (iii)
+whether `idxB`/`idxC` locals are present, and read the resulting insn 17-26
+window with `s3/sbs.py 15 32` for every form rather than only its score — the
+score alone hid the fact that the two effects are separable.
+
+**B. Instrumented-cc1 forensics on the sinAxsinB_12 quantity, now that it is the
+ONLY residual.** Mechanism: the quantity is `used 3 times across 17 insns`
+(priority 0.176) and takes whatever is left; the question is exactly which
+register local-alloc considers and rejects for it at `find_free_reg` time and
+whether $v0 is rejected for conflict or never reached. Next probe: build cc1 with
+the BB2_ALLOC_DEBUG / BB2_PRIO_DEBUG instrumentation named in the s1 ledger (or a
+printf in `block_alloc`) and dump the qty order plus each `find_free_reg`
+decision for BOTH the candidate (score 12) and the split form (score 13) — the
+pair is a controlled A/B, which is far more informative than either alone.
+
+**C. Port the score-12 form to the two family siblings.** Mechanism: `_SelectSection`
+(10 rules) and `hirahira_w_ctrl_2` (63 rules, the signature twice) are the same
+3x3 rotation-matrix idiom in the same file and their regfix comments name the same
+two mechanisms; the delayed-last-parameter-use trick is a property of the original
+source idiom, not of this function. One of them may have no sinAxsinB_12 residual
+at all. Next probe: apply the candidate spelling to each and score with
+`sandbox --disable all` (a measurement on a sibling, not a change of target).
+
+## [s3] Delaying the read of a0[2] -- the LAST use of the parameter pointer a0 -- until after the 'sinAxsinB_12 = (sinA * sinB) >> 12;' statement flips angC from $v0 to target's $v1 and its '& 0xFFF'/'<< 1' cos-index temp from $v1 to target's $v0.
+- mechanism: Statement position of a0[2] is not a spelling sched1 can normalise away: it is a LIVENESS fact about a hard register (where $a0 dies) plus it places the angC load after the mult in the stream local-alloc actually sees. Pass order confirmed from tools/gcc-2.7.2/toplev.c: combine (l.3004) -> sched1 (l.3028, enabled by -O2) -> local_alloc (l.3052) -> global_alloc -> sched2. Every s2/s3 spelling that only permuted arithmetic statement order was bit-identical because sched1 normalised it; this one is not normalisable.
+- probe: On top of s2's score-13 candidate, moved 'angC = a0[2]; sinC = Judge[angC & 0xFFF];' from before to after the sinAxsinB_12 statement; sandbox --disable all; plus controls delaying it further (past cosB; past the whole cosA block), the same delay applied to a0[1] instead, and a side-by-side target-vs-build insn listing (s3/sbs.py).
+- result: 12 / build_insns 114 (target 114), down from 13. The build now emits target's 'lhu v1,0x4(a0)' at insn 18 verbatim and the andi/sll cos-index chain on $v0, i.e. the mirror-image angC/temp swap is gone. Controls: delayed past cosB too -> also 12; delayed past the whole cosA block -> 90; same delay on a0[1] -> 13 (inert). Banked as candidate.c.
+- verdict: CONFIRMED
+
+## [s3] Emitting the a1[] output stores EAGERLY (each element stored as soon as it is computable), or permuting the tail store order, rewrites the live ranges local-alloc sees and can move mechanism B. (s2's frontier probe 3.)
+- mechanism: Only two store placements had ever been tried in the combine-blocking slot; moving stores changes the pre-combine insn stream that sched1 and then local-alloc see.
+- probe: Fully eager stores; the three sub-groups eager separately (cosA_* singles / the two sinAxsinB sums / the sinAxcosB pair); a1[0] instead of a1[5] in the blocking slot; four tail store-order permutations (reversed, index order, sums first, a1[8] first). Each scored with sandbox --disable all.
+- result: Fully eager 73 / 109 insns (combine+CSE eat five instructions); sums eager 79/110; sinAxcosB pair eager 53/112; cosA_* singles eager 13 (inert); tail order index/sums-first 13 (inert), reversed 65/107, a1[8]-first 42/112; a1[0] in the blocking slot 12 (equivalent to a1[5]). Only the ONE combine-blocking store belongs out of the tail; every other store move either is inert or changes the insn count for the worse.
+- verdict: KILLED
+
+## [s3] Declaration order of the WHOLE local block steers local-alloc, because pseudo numbering is qty creation order and that is the tie-break among the large priority-1.00 quantity cluster.
+- mechanism: qty_compare_1 breaks exact priority ties by qty number, and pseudos are created in expand_decl order, so renumbering the locals should flip the tie. (s2 had only permuted angC's own declaration line.)
+- probe: Whole decl block reversed; all locals collapsed into one declaration group; declaration order set to first-use order. Scored with sandbox --disable all, and the .lreg dumps read to confirm the pseudo numbers actually changed.
+- result: All three 13 / 114, bit-identical. The .lreg dumps DO show different pseudo numbers for the same quantity (188 vs 192) with an identical final assignment, so the tie-break is not reachable from declaration order.
+- verdict: KILLED
+
+## [s3] Type narrowing of the angle locals, or splitting the (s16) sign-extension into its own local, changes the quantity shape enough to move the allocation.
+- mechanism: A narrower mode changes qty_size and the number of pseudos in the index chain, both inputs to qty_compare_1.
+- probe: angC declared u16; angC declared s16; all three ang* declared u16; '(s16)angX' split into its own s32 local for A alone, for C alone, and for all three; plus that sign-extend local hoisted ahead of the sinC read. sandbox --disable all on each.
+- result: All 13 / 114 -- CSE canonicalises the width away before allocation. Only the hoisted variant moved, and the wrong way: 30 / 113.
+- verdict: KILLED
+
+## [s3] Reducing the pseudo population (folding single-use intermediates into their consumers) or shortening sinAxsinB_12's live range (making its two consumers adjacent, raising its qty priority from 0.176) gets it out of the leftover register $a0 and into target's $v0.
+- mechanism: priority = floor_log2(n_refs)*n_refs*size/live_length; sinAxsinB_12 is 'used 3 times across 17 insns' = 0.176, so it is allocated last and takes whatever is left. Shortening its range to ~4 insns would raise it to ~0.75 and let it claim a register instead of inheriting one.
+- probe: Fold every single-use intermediate into its consumer; fold just the four cosA_* products; make prod_sinC and prod_cosC adjacent (with and without the shift written inline at both uses); write the shift inline at both uses without making them adjacent. sandbox --disable all on each.
+- result: Folding all single-use locals 87 / 116; folding the cosA_* four 71 / 111; consumers adjacent 25 / 115 both ways (it costs an instruction); shift inline at both uses without adjacency 13 / 114. Every way of raising that priority pays an instruction, so the axis is dead at 114 insns.
+- verdict: KILLED
+
+## [s3] Splitting the multiply from the >>12 shift (and placing the shift after the sinC read) fixes sinAxsinB_12's register by delaying mflo/sra past the point where the cos-index temp dies.
+- mechanism: Target's stream is mult @17, mflo t0 @22, sra v0,t0,12 @26 -- the shift lands AFTER the cosC index temp (which holds $v0 at 20-24) has died, so $v0 is free for sinAxsinB_12. Our build emits mflo v0 @19 / sra a0,v0 @20, before the chain, so the ranges overlap and local-alloc gives sinAxsinB_12 the leftover $a0.
+- probe: 'sinAxsinB = sinA * sinB;' before the a0[2] read, then 'sinAxsinB_12 = sinAxsinB >> 12;' after the sinC read (and three further placements of the shift: after prod_sinC, after the cos index locals, after the cosC load), each scored and each read insn-by-insn with s3/sbs.py.
+- result: The split DOES reproduce target's schedule exactly -- mflo t0 @22 and sra @26, matching target insn-for-insn through that window -- but it flips angC back to $v0 and the cos-index temp to $v1, scoring 13, i.e. it trades the win back. Other placements: 13, 16/116, 13. So the register fix and the schedule fix are individually reachable and, in every spelling measured, mutually exclusive.
+- verdict: KILLED

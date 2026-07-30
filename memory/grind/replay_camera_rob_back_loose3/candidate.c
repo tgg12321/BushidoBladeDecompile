@@ -1,42 +1,62 @@
-/* candidate.c - replay_camera_rob_back_loose3, session 2 (structural).
+/* candidate.c - replay_camera_rob_back_loose3, session 3 (structural).
  *
- * CHEAT-FREE.  engine sandbox --disable all = 13  (was 26 cheat-free at s1;
- * HEAD's cheat-carrying form scored 17 but only via a register pin + a
- * volatile coercion, both removed here).  build_insns 114 == target_insns 114.
+ * CHEAT-FREE.  engine `sandbox --disable all` = 12  (s2 banked 13; s1's honest
+ * cheat-free baseline was 26; HEAD's cheat-carrying form scored 17 only via a
+ * register pin + a volatile coercion, both absent here).
+ * build_insns 114 == target_insns 114.  Zero rules, zero pins, zero volatile,
+ * zero inline asm.
  *
- * WHAT CHANGED vs the s1 cheat-free baseline (rejected/nocheat-baseline-floor26.c):
+ * ------------------------------------------------------------------ HISTORY
+ * s2's form (score 13) = the two changes that closed MECHANISM A:
  *   1. cosA is read through a `u16 rawA` staging local and sign-extended with
- *      an explicit (s16) cast -- the sanctioned narrow-view spelling.
- *   2. `a1[5] = -sinA;` is MOVED from the tail of the function to sit BETWEEN
- *      the rawA load and the (s16)rawA cast.
+ *      an explicit (s16) cast (the sanctioned narrow-view spelling), and
+ *   2. `a1[5] = -sinA;` is MOVED to sit BETWEEN the rawA load and that cast.
+ *      Combine's can_combine_p refuses to combine a MEM load into a later user
+ *      across an insn that may WRITE memory, so simplify_shift_const never
+ *      sees the ashiftrt(ashift(zero_extend(mem),16),16) chain it would fold
+ *      into sign_extend(mem) = `lh`.  Target's three-insn shape
+ *      (lui at,%hi(Judge); addu at,at,a3; lhu v0,%lo(Judge)(at); sll 16; sra 16)
+ *      therefore survives, at zero instruction cost, because sched1 runs after
+ *      combine and hoists the store back out.
+ *      Both halves are load-bearing: the store after the cast is inert, and the
+ *      same interleave without the u16 staging local is inert (that load is
+ *      already a sign_extend MEM, so there is no zero_extend to protect).
  *
- * WHY (2) IS LOAD-BEARING, and why (1) alone is not:
- * GCC 2.7.2 combine (simplify_shift_const) rewrites
- *   ashiftrt(ashift(zero_extend(mem),16),16)  ->  sign_extend(mem)   [= `lh`]
- * which is why s1 measured spelling (1) on its own -- and three other narrow-view
- * spellings -- at a flat 26 with a single `lh`.  s2 further measured that giving
- * rawA a real, flow-live SECOND use does NOT stop the fold (a low-half-only use
- * such as `a1[9] = rawA` folds anyway; even `a1[9] = rawA >> 8`, which needs the
- * zero-extended high bits, kept the `lh` and re-derived the unsigned value with
- * andi/srl).  What DOES stop it is combine's own memory-safety rule: can_combine_p
- * refuses to combine a MEM load into a later user when an intervening insn may
- * WRITE memory.  Putting any store between the load and the cast therefore leaves
- * target's three-instruction shape intact:
- *     lui at,%hi(Judge) ; addu at,at,a3 ; lhu v0,%lo(Judge)(at)
- *     sll v0,v0,16 ; sra v0,v0,16 ; mult v0,...
- * and it costs nothing, because sched1 runs AFTER combine and hoists the store
- * back out (target's own schedule fills that load-delay slot with `mflo t9`).
- * The store placed AFTER the cast (e6) is inert, confirming the position -- not
- * the mere presence -- of the store is the mechanism.
+ * ------------------------------------------------------- WHAT s3 ADDED (13 -> 12)
+ * THE ONE CHANGE vs s2's candidate:  `angC = a0[2]; sinC = Judge[angC & 0xFFF];`
+ * is moved from BEFORE the `sinAxsinB_12 = (sinA * sinB) >> 12;` statement to
+ * AFTER it.
  *
- * The move is semantics-preserving: a1 (the output matrix) never aliases the
- * static sin/cos table Judge, and the relative order of the a1[] stores among
- * themselves is unchanged.
+ * Mechanism.  `a0[2]` is the LAST use of the parameter pointer `a0`, so its
+ * position decides where the hard register $a0 dies.  Reading it after the
+ * sinA*sinB statement keeps $a0 live across the multiply and, more importantly,
+ * puts the angC load AFTER the mult in the pre-allocation insn stream.  Local
+ * alloc then hands angC target's $v1 and its `& 0xFFF`/`<< 1` cos-index temp
+ * target's $v0 -- the mirror-image swap that s1 and s2 both recorded as
+ * unreachable is CLOSED, and the build now reproduces target's
+ * `lhu v1,0x4(a0)` at insn 18 verbatim.
  *
- * REMAINING GAP -- 13 diffs, all mechanism B, register naming only, fully
- * mirror-image:  angC target $v1 / build $v0;  angC's index temp target $v0 /
- * build $v1;  sinAxsinB_12 target $v0 / build $a0.  No instruction differences
- * remain anywhere in the function.
+ * s2 had only ever moved this read EARLIER (hoisting it next to angA/angB, which
+ * measured 26 flat / 43 when the index chain went with it).  Moving it LATER was
+ * the untried direction.  Reading it later still (after the whole cosA block,
+ * variant m3) is much worse (90), and the equivalent delay applied to a0[1]
+ * instead is inert (13) -- it is specifically a0[2]-as-last-use that matters.
+ *
+ * ------------------------------------------------------------ REMAINING GAP (12)
+ * The residual is `sinAxsinB_12`: target keeps it in $v0, our build puts it in
+ * $a0 (the parameter register, free once a0 dies).  It is a SCHEDULING-coupled
+ * allocation, and s3 measured the coupling precisely:
+ *   - target's stream is  `mult t2,t3` @17 ... `mflo t0` @22 ... `sra v0,t0,12` @26,
+ *     i.e. mflo/sra are delayed past the cosC index chain, which occupies $v0 at
+ *     insns 20-24 and DIES at 24; $v0 is then free for sinAxsinB_12 from 26 on.
+ *   - this form schedules `mflo v0` @19 / `sra a0,v0,12` @20, i.e. BEFORE the
+ *     index chain, so sinAxsinB_12's live range overlaps the temp's and $v0 is
+ *     unavailable; local-alloc gives it the leftover $a0.
+ *   - splitting the multiply from the shift (`sinAxsinB = sinA * sinB;` ... then
+ *     `sinAxsinB_12 = sinAxsinB >> 12;` after the sinC read) reproduces target's
+ *     SCHEDULE exactly (mflo t0 @22, sra @26) but flips angC back to $v0 and
+ *     idxC to $v1, scoring 13.  The two halves have not been obtained together
+ *     by any of the 30 spellings measured across s2+s3.
  */
 extern s16 Judge[];
 void replay_camera_rob_back_loose3(u16 *a0, s16 *a1) {
@@ -62,10 +82,10 @@ void replay_camera_rob_back_loose3(u16 *a0, s16 *a1) {
     sinA = Judge[angA & 0xFFF];
     sinB = Judge[angB & 0xFFF];
 
+    sinAxsinB_12 = (sinA * sinB) >> 12;
+
     angC = a0[2];
     sinC = Judge[angC & 0xFFF];
-
-    sinAxsinB_12 = (sinA * sinB) >> 12;
 
     prod_sinC = sinAxsinB_12 * sinC;
 

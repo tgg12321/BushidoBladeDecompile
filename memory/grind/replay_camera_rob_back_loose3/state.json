@@ -1,7 +1,7 @@
 {
  "func": "replay_camera_rob_back_loose3",
  "file": "text1a_c",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,23 +15,29 @@
    "floor": 13,
    "modality": "structural",
    "headline": "Floor 26 -> 13 cheat-free: mechanism A (the cosA lhu+sll16/sra16 shape) CLOSED in pure C by putting an a1[] store between the u16 staging load and its (s16) cast, which blocks combine's fold; build_in"
+  },
+  {
+   "session": 3,
+   "floor": 12,
+   "modality": "structural",
+   "headline": "Floor 13 -> 12 cheat-free: delaying the LAST use of the parameter pointer (angC = a0[2] moved after the sinA*sinB statement) flips angC to target's $v1 and its cos-index temp to $v0, closing the angC "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The remaining 13 diffs are one local-alloc tie-break: angC (pseudo 97, priority 0.25) is allocated late and takes the leftover register, so the register it gets is decided by which quantity claimed $v0 earlier \u2014 not by anything angC itself does.",
-   "mechanism": "qty_compare_1 sorts quantities by floor_log2(n_refs)*n_refs*size/live_length and breaks exact ties by qty number (creation order), then find_free_reg assigns in REG_ALLOC_ORDER. There is a large cluster of priority-1.00 quantities (many 'used 2 times across 2 insns' pseudos) whose relative order decides whether $v0 is still free when pseudo 97 is reached. No source spelling measured this session changes any of these numbers.",
-   "next_probe": "FORENSICS, not structural: rebuild cc1 with the BB2_ALLOC_DEBUG / BB2_PRIO_DEBUG instrumentation named in the s1 ledger (or add a printf in block_alloc) and dump the sorted qty_order plus each find_free_reg decision for the score-13 form. Identify which quantity takes $v0 ahead of pseudo 97 and what would have to change (n_refs, live_length, or a copy suggestion) for pseudo 111 to take $v1 instead. Only then look for a C spelling that moves that specific number."
+   "hypothesis": "Target's mflo/sra placement and the delayed-a0[2] register win are separately reachable and can be held TOGETHER; the candidate (12) has the registers, the split-multiply form (13) has the schedule.",
+   "mechanism": "Both effects are decided in the same 10-insn window (insns 17-26): whether the angC load precedes or follows the mult in the pre-allocation stream fixes angC/$v1, and whether the shift precedes or follows the death of the cos-index temp fixes sinAxsinB_12/$v0. Nothing couples them in principle -- every spelling tried so far just happened to move both.",
+   "next_probe": "Enumerate that window systematically, varying independently (i) the spelling of sinA*sinB (one statement / two / inline at each use / through a third variable), (ii) the position of the a0[2] read relative to each of those, and (iii) presence of idxB/idxC locals -- and read insns 15-32 with tmp/grind/.../s3/sbs.py for EVERY form, not just its score. Scores alone hid the separability this session."
   },
   {
-   "hypothesis": "The score-13 idiom (u16 staging read + an interleaved output store that blocks combine) is the shared family spelling and closes _SelectSection and hirahira_w_ctrl_2 too \u2014 and one of those two may have a smaller residual register gap, making it the cheaper place to solve mechanism B.",
-   "mechanism": "All three 3x3 rotation-matrix functions carry regfix rules describing the SAME two mechanisms (the la/volatile addressing block for the cosA read, and sinAxsinB_12 in $a0-vs-$v0). A mechanism present in all three is a property of the original source idiom, and the A half of it is now solved in pure C.",
-   "next_probe": "Apply the candidate.c spelling to _SelectSection (10 rules) and hirahira_w_ctrl_2 (63 rules, signature twice) and score each with sandbox --disable all. If either lands with a smaller register-only residue than 13, prototype the B fix there and port back."
+   "hypothesis": "The only residual quantity (sinAxsinB_12, 'used 3 times across 17 insns', priority 0.176) is refused $v0 for a specific, identifiable reason at find_free_reg time -- conflict with the cos-index temp's range, or never being reached in REG_ALLOC_ORDER.",
+   "mechanism": "local-alloc assigns in qty priority order and this quantity is nearly last, so it inherits whatever is free; the candidate (12) and the split form (13) differ in exactly this decision, which makes them a controlled A/B pair.",
+   "next_probe": "FORENSICS: rebuild cc1 with the BB2_ALLOC_DEBUG / BB2_PRIO_DEBUG instrumentation named in the s1 ledger (or a printf in block_alloc) and dump the sorted qty_order plus every find_free_reg decision for BOTH forms. Diff the two dumps -- the first divergent decision is the answer. Do not dump only one form."
   },
   {
-   "hypothesis": "Mechanism B may be sensitive to WHICH store is interleaved and where else stores are interleaved, because moving a store changes the pre-combine insn stream that sched1 and then local-alloc see.",
-   "mechanism": "Only two store placements were tried in the blocking slot (a1[5] and a1[0]), and both gave 13 \u2014 but no probe interleaved additional a1[] stores elsewhere in the body (e.g. emitting each matrix element as soon as it is computed, which is a plausible original spelling and would rewrite live ranges throughout).",
-   "next_probe": "Generate forms that emit a1[] stores eagerly at the point each product is finished (several orderings), stacked on the score-13 form, and score each. Watch build_insns stays 114 and read the angC/index-temp registers with s2/head.py."
+   "hypothesis": "The delayed-last-parameter-use spelling is a property of the original 3x3 rotation-matrix source idiom, so it also moves the two rule-carrying siblings, one of which may have a smaller residual than sinAxsinB_12.",
+   "mechanism": "_SelectSection (10 rules) and hirahira_w_ctrl_2 (63 rules, the signature twice) are the same idiom in the same file and their regfix comments name the SAME two mechanisms (the la/volatile cosA addressing block and sinAxsinB_12 in $a0-vs-$v0). A mechanism present in all three is a property of the shared source idiom.",
+   "next_probe": "Apply the candidate.c spelling (u16 staging read + interleaved blocking store + a0[2] read delayed past the sinA*sinB statement) to each sibling and score with sandbox --disable all. If either lands with no sinAxsinB_12 residual, prototype that half there and port back. This is a measurement on a sibling, not a change of target function."
   }
  ],
  "judge_constraints": [],

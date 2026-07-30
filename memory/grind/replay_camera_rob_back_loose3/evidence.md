@@ -242,3 +242,136 @@ structural one).
 - [s2] [s2] Tooling caveat: diffasm.py reads the sandbox object left by the LAST probe run — re-apply the variant you want to diff before diffing it (a stale read cost one turn this session).
 
 - [s2] [s2] src/text1a_c.c was restored to HEAD at end of session; the tree carries only memory/grind ledger files.
+
+## Session 3 (structural, 2026-07-30) — FLOOR 13 -> 12, mechanism B HALF-CLOSED
+
+### The one change that moved the floor (banked in candidate.c, sandbox --disable all = 12)
+On top of s2's score-13 form, `angC = a0[2]; sinC = Judge[angC & 0xFFF];` is moved
+from BEFORE the `sinAxsinB_12 = (sinA * sinB) >> 12;` statement to AFTER it.
+build_insns stays 114 == target 114.
+
+Mechanism: `a0[2]` is the LAST use of the parameter pointer `a0`, so where that
+read sits decides where the hard register $a0 dies AND puts the angC load after
+the `mult` in the pre-allocation stream. Local-alloc then gives angC target's
+**$v1** and its `& 0xFFF`/`<< 1` cos-index temp target's **$v0** — the
+mirror-image swap s1 recorded and s2 declared unreachable. The build now
+reproduces target's `lhu v1,0x4(a0)` at insn 18 verbatim, and the angC/temp half
+of mechanism B is closed (score 13 -> 12; the drop is only 1 because the fix also
+perturbs the schedule around the cosB/cosC index chains — see below).
+
+s2 had only ever moved this read EARLIER (hoisted next to angA/angB: 26 flat;
+hoisted with its index chain: 43/112). **Moving it LATER was the untried
+direction.** Controls: after `cosB` too (m2) -> also 12; after the whole cosA
+block (m3) -> 90; the same delay applied to `a0[1]` instead of `a0[2]` (m4) ->
+13 (inert). So it is specifically a0[2]-as-last-use that matters.
+
+### The residual 12 diffs are ONE value, and its cause is measured
+`sinAxsinB_12`: target $v0, our build $a0. It is a scheduling-COUPLED allocation:
+- target: `mult t2,t3` @17 ... `mflo t0` @22 ... `sra v0,t0,12` @26. mflo/sra are
+  delayed past the cosC index chain, which holds $v0 at insns 20-24 and DIES at
+  24, so $v0 is free for sinAxsinB_12 from 26 onward.
+- ours: `mflo v0` @19, `sra a0,v0,12` @20 — BEFORE the index chain, so
+  sinAxsinB_12's live range overlaps the temp's; $v0 is unavailable and
+  local-alloc hands it the leftover $a0 (free because the pointer a0 is dead).
+- Splitting the multiply from the shift (`sinAxsinB = sinA * sinB;` ... then
+  `sinAxsinB_12 = sinAxsinB >> 12;` after the sinC read) reproduces target's
+  schedule EXACTLY (`mflo t0` @22, `sra` @26, insn-for-insn in that window) —
+  but flips angC back to $v0 and idxC to $v1, scoring 13. **The candidate has
+  target's REGISTERS with the wrong schedule; the split form has target's
+  SCHEDULE with the wrong registers. No spelling measured in s2+s3 has both.**
+  Banked as rejected/split-sasb-target-schedule-loses-angC-reg.c.
+- A second, smaller residual: target computes BOTH cos index chains before
+  EITHER cos load; our build loads cosB in between. Named `idxB`/`idxC` locals
+  fix that ordering but the score stays 12.
+
+### Structural axes measured DEAD this session (23 forms, on the 13/12 baselines)
+- **Eager a1[] stores** (s2's frontier-3 probe): every element stored as soon as
+  it is computable -> 73/109 (combine/CSE eats 5 insns). Eager sub-groups: the
+  four cosA_* singles -> 13 (inert); the two sinAxsinB sums -> 79/110; the
+  sinAxcosB pair -> 53/112. Only the ONE combine-blocking store belongs out of
+  the tail. `a1[0]` instead of `a1[5]` in the blocking slot -> 12 (still fine).
+- **Tail store ORDER**: index order and sums-first -> 13 (inert); reversed ->
+  65/107; a1[8] first -> 42/112.
+- **Whole declaration-block permutations** (reversed / one group / first-use
+  order) -> 13, bit-identical. Declaration order renumbers every pseudo (the
+  .lreg dumps show pseudo 188 vs 192 for the same quantity) and STILL produces
+  the identical assignment, which kills "qty creation order breaks the
+  priority-1.00 tie" as a source-reachable lever.
+- **Type narrowing / sign-extend splitting**: angC as u16, as s16, all three
+  ang* as u16, `(s16)angC` split into its own s32 local (for A, for C, for all
+  three) -> all 13/114, CSE canonicalises the width away. Only hoisting that
+  sign-extend local ahead of the sinC read moved it, to 30/113.
+- **Fewer locals**: folding single-use intermediates into their consumers ->
+  87/116; folding just the four cosA_* products -> 71/111.
+- **Shortening sinAxsinB_12's live range** (making prod_sinC and prod_cosC
+  adjacent, to raise its qty priority from 0.176) -> 25/115: it costs an insn.
+  Writing the shift inline at both uses without making them adjacent -> 13.
+- **No angC local at all** (two `a0[2]` reads) -> 13, CSE merges them.
+
+### Toolchain fact confirmed from source (tools/gcc-2.7.2/toplev.c)
+Pass order is combine (l.3004) -> sched1 (l.3028, `-O2` enables
+`flag_schedule_insns`) -> **local_alloc (l.3052)** -> global_alloc (l.3077) ->
+sched2 (l.3105). So local-alloc sees a POST-scheduled stream: source statement
+order only reaches allocation through whatever sched1 does not normalise away.
+That is the mechanism behind the ~30 bit-identical "inert" forms of s2+s3, and
+it is also why the one lever that DID work (moving the last use of a parameter
+register) worked — it changes a liveness fact sched1 cannot undo.
+
+### Tooling (session 3, reusable)
+- `tmp/grind/.../s3/gen.py` — statement-key model of the function (each statement
+  is a key; a variant is an ordered key list), emits `variants/*.c`.
+  `gen2..gen7.py` are the per-batch generators built on it.
+- `.../s3/probe.ps1 <variant ...>` — apply (via s1/apply.py) + sandbox, one row
+  each. Same quirk as s1/s2: the FIRST row is stale, always pass a throwaway
+  first. Run it from the repo root (`Set-Location` first — the PowerShell tool's
+  cwd is not guaranteed).
+- `.../s3/sbs.py <lo> <hi> [obj]` — SIDE-BY-SIDE target-vs-build listing by insn
+  index, no normalisation and no diffing. This is the tool that made the residual
+  legible; prefer it over diffasm.py, whose nop/immediate noise hides the real
+  register story.
+- `.../s3/rtl.sh <tag>` — cc1 `-da` dump set into `s3/rtl/<tag>` (run through
+  `bash tools/wsl.sh '...'`; the Bash tool here is Git Bash, not WSL).
+- `.../s3/cmp.py` / `norm.py` — dump-vs-dump comparison, raw and with insn/pseudo
+  numbers erased. Verdict on these two: NOT worth much — the dep-list numbering
+  noise makes "DIFFERENT" the answer for every pass even when the final assembly
+  is byte-identical. Read scores + sbs.py instead.
+
+- [s3] NEW CHEAT-FREE FLOOR = 12 (was 13). The single change vs s2's candidate: 'angC = a0[2]; sinC = Judge[angC & 0xFFF];' moved from before to AFTER the 'sinAxsinB_12 = (sinA * sinB) >> 12;' statement. build_insns stays 114 == target 114. Zero rules, zero pins, zero volatile, zero inline asm.
+
+- [s3] Mechanism: a0[2] is the LAST use of the parameter pointer a0, so its position decides where hard reg $a0 dies and puts the angC load after the mult in the pre-alloc stream. Local-alloc then gives angC target's $v1 and its cos-index temp target's $v0 — the mirror-image swap s1 found and s2 declared unreachable. The build reproduces target's 'lhu v1,0x4(a0)' at insn 18 verbatim.
+
+- [s3] Direction matters: s2 only ever moved that read EARLIER (26 flat, or 43/112 with its index chain). Later is the winning direction. Controls: delayed past cosB too -> also 12; delayed past the whole cosA block -> 90; the same delay applied to a0[1] instead of a0[2] -> 13 (inert).
+
+- [s3] The residual 12 diffs are ONE value: sinAxsinB_12, target $v0 vs our $a0. Target delays mflo/sra past the cosC index chain (mult @17, mflo t0 @22, sra v0,t0,12 @26) so $v0 is free after the temp dies at 24; ours emits mflo v0 @19 / sra a0,v0 @20 before the chain, so the ranges overlap and local-alloc takes the leftover $a0.
+
+- [s3] NEAR-MISS worth inheriting: splitting the multiply from the shift (sinAxsinB = sinA*sinB; ... sinAxsinB_12 = sinAxsinB >> 12 after the sinC read) reproduces target's SCHEDULE exactly (mflo t0 @22, sra @26) but flips angC back to $v0 / idxC to $v1, scoring 13. The candidate has target's REGISTERS with the wrong schedule; the split form has the schedule with the wrong registers. No spelling in s2+s3 has both.
+
+- [s3] Secondary shape residual: target computes BOTH cos index chains before EITHER cos load; our build loads cosB in between. Named idxB/idxC locals fix that ordering but the score stays 12.
+
+- [s3] Dead structural axes (23 forms): eager a1[] stores (73/109; cosA-singles subgroup inert at 13; sums 79/110; scb pair 53/112); tail store order (index/sums-first inert 13, reversed 65/107, a1[8]-first 42/112); whole decl-block permutations (reversed/one-group/first-use-order all bit-identical 13, despite renumbering every pseudo — .lreg shows 188 vs 192 for the same quantity); type narrowing of angC (u16/s16/all-ang-u16/sign-extend-split — all 13; sign-extend local hoisted ahead of sinC 30/113); folding single-use locals into consumers (87/116, or 71/111 for the cosA_* four); making sinAxsinB_12's two consumers adjacent to shorten its live range (25/115 — costs an insn); no angC local at all, two a0[2] reads (13, CSE merges).
+
+- [s3] Toolchain fact from tools/gcc-2.7.2/toplev.c: pass order is combine (3004) -> sched1 (3028, enabled by -O2) -> local_alloc (3052) -> global_alloc (3077) -> sched2 (3105). local-alloc sees a POST-scheduled stream, which is why ~30 statement-order spellings across s2+s3 are bit-identical, and why the one lever that worked (moving the last use of a parameter register) worked: it changes a liveness fact sched1 cannot normalise away.
+
+- [s3] src/text1a_c.c was restored to HEAD at end of session; the tree carries only memory/grind ledger files.
+
+- [s3] NEW CHEAT-FREE FLOOR = 12 (s2 banked 13, s1's honest baseline was 26). Zero regfix/asmfix rules, zero register pins, zero volatile coercion, zero inline asm. build_insns 114 == target_insns 114. Verified by applying memory/grind/replay_camera_rob_back_loose3/candidate.c itself to src/text1a_c.c and running sandbox --disable all.
+
+- [s3] The single change vs s2's candidate is moving 'angC = a0[2]; sinC = Judge[angC & 0xFFF];' from before to AFTER the 'sinAxsinB_12 = (sinA * sinB) >> 12;' statement. a0[2] is the LAST use of the parameter pointer a0, so its position decides where hard reg $a0 dies and puts the angC load after the mult in the pre-allocation stream.
+
+- [s3] That change gives angC target's $v1 and its '& 0xFFF'/'<< 1' cos-index temp target's $v0 -- the mirror-image swap s1 documented and s2 declared unreachable by structural means. The build now reproduces target's 'lhu v1,0x4(a0)' at insn 18 verbatim.
+
+- [s3] DIRECTION was the whole trick: s2 had only ever moved that read EARLIER (hoisted next to angA/angB -> 26 flat; hoisted together with its index chain -> 43/112). Later is the winning direction. Controls: delayed past cosB as well -> also 12; delayed past the whole cosA block -> 90; the identical delay applied to a0[1] instead of a0[2] -> 13 (inert). So it is specifically a0[2]-as-last-use.
+
+- [s3] The residual 12 diffs are ONE value: sinAxsinB_12, target $v0 vs our $a0. Target: mult t2,t3 @17, mflo t0 @22, sra v0,t0,12 @26 -- mflo/sra delayed past the cosC index chain, which holds $v0 at insns 20-24 and dies at 24, leaving $v0 free from 26. Ours: mflo v0 @19, sra a0,v0,12 @20 -- before the chain, so the live ranges overlap, $v0 is unavailable, and local-alloc hands sinAxsinB_12 the leftover $a0 (free because the pointer a0 is dead by then).
+
+- [s3] NEAR-MISS for the next session: splitting the multiply from the shift reproduces target's SCHEDULE exactly (mflo t0 @22, sra @26, insn-for-insn in that window) but flips angC back to $v0 / the temp to $v1, scoring 13. The candidate has target's REGISTERS with the wrong schedule; the split form has target's SCHEDULE with the wrong registers. No spelling measured across s2+s3 has both -- and that separability was invisible from scores alone, it took the side-by-side listing to see.
+
+- [s3] Secondary shape residual: target computes BOTH cos index chains before EITHER cos load, our build loads cosB in between. Named idxB/idxC locals fix that ordering; the score stays 12 either way.
+
+- [s3] TOOLCHAIN FACT read from tools/gcc-2.7.2/toplev.c: pass order is combine (l.3004) -> sched1 (l.3028, enabled by -O2 via flag_schedule_insns) -> local_alloc (l.3052) -> global_alloc (l.3077) -> sched2 (l.3105). local-alloc therefore sees a POST-scheduled stream. This is the mechanism behind the ~30 bit-identical 'inert' statement-order forms of s2+s3, and behind why the one lever that worked worked: moving a parameter's last use changes a liveness fact sched1 cannot normalise away. Corollary for future sessions: on this function, prefer levers that change LIVENESS of hard-register-tied values (parameter last uses, call-clobber boundaries) over levers that merely permute arithmetic order.
+
+- [s3] Declaration order is dead at the whole-block level, not just for angC: reversed / one-group / first-use-order all score 13 bit-identically, and the .lreg dumps show the pseudo NUMBERS did change (188 vs 192 for the same quantity) with the assignment unchanged. That kills 'qty creation order breaks the priority-1.00 tie' as a source-reachable lever.
+
+- [s3] 23 structural forms measured this session, 18 of them at build_insns 114. Empirical regularity worth inheriting: on the s2 baseline every 114-insn form scored EXACTLY 13 and every form that moved the allocation also changed the insn count (and always for the worse) -- until the delayed-a0[2] form broke that invariant at 114/12. So 'score is pinned at N for all N-insn forms' is NOT evidence of exhaustion here; it was evidence that the axis being varied did not touch liveness.
+
+- [s3] src/text1a_c.c was restored to HEAD at end of session (git checkout). The working tree carries only memory/grind ledger files plus the untouched metrics/events.jsonl churn.
