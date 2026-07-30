@@ -1,7 +1,7 @@
 {
  "func": "func_8003553C",
  "file": "code6cac_b2_pre",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,23 +15,29 @@
    "floor": 2,
    "modality": "structural",
    "headline": "Floor 4 -> 2: the pre-jal `addiu $s0,$s0,0x24` residual is CLOSED (keep the old primitive pointer and the advanced pointer both live across ot_Link); the whole function is now one misplaced instructio"
+  },
+  {
+   "session": 3,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "Floor stays 2, but the one misplaced insn is now MECHANISM-EXPLAINED: sched1 sinks the 640 constant set to its late uses, local-alloc then reuses $v0, and the resulting REG_DEP_OUTPUT pins li 640 mid-"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The last instruction is reachable by a shape the hand sweep cannot express \u2014 the permuter is the right instrument now that the base is 2 (one instruction) rather than 4 or 17.",
-   "mechanism": "The remaining search space is a single instruction's position inside one basic block; decomp-permuter randomizes exactly this (statement order, temp introduction, expression re-association) and a base score of 2 gives it a clean gradient instead of noise.",
-   "next_probe": "Build a clean single-function target.o from asm/funcs/func_8003553C.s + tools/decomp-permuter/prelude.inc (function at offset 0, drop the .set gp=64 line) per .claude/rules/difficult-is-not-impossible.md section 3; seed base.c from memory/grind/func_8003553C/candidate.c; run a fresh-seed campaign with tools/permuter_campaign.py, waiting for it IN-TURN via `permuter_campaign.py wait --dir <ws>` and harvesting + `--stop`ing before writing the outcome. NB: run import.py from a subdirectory, not the repo root, or it drops a root-level nonmatchings/ that breaks the driver's scope check."
+   "hypothesis": "The whole remaining residual reduces to getting the 640 constant allocated a register that no earlier constant used, in pure C \u2014 i.e. defeating sched1's sink of its set so its live range survives into local-alloc.",
+   "mechanism": "The pin diagnostic proves the register is what frees BOTH the sh 0x10 store's slot and the RGB block's field order; a 2-insn live range is what makes local-alloc reuse $v0. Anything that keeps the 640 pseudo live from the block head to its late uses forces a second register, and sched1's sink is what prevents that. Note the pinned build still has one residual (li 640 after li 128 rather than ahead of li 240), so the register may be necessary-but-not-sufficient \u2014 expect a second, smaller lever behind it.",
+   "next_probe": "Look for a pure-C shape whose 640 value has a use the scheduler cannot sink past: e.g. the value flowing through a variable that is ALSO used by an insn target emits early, a value obtained by a non-constant-foldable expression that still assembles to a single addiu-from-zero, or the two 640 stores written as a chained assignment (sp[16] = sp[8] = 640) so the single pseudo has two dependent stores. Score each with sandbox --disable all and, for anything at 2 or below, confirm the register with tmp/grind/func_8003553C/s3/rtl.sh + grep of base.i.greg. Do NOT re-try constant holders in their plain spelling, the OT-load spellings, MEM_IN_STRUCT_P, or other-constant live-range extenders \u2014 all measured dead."
   },
   {
-   "hypothesis": "The pre-load / post-load store barrier created by the may-aliasing lw of D_800A374C is what pins the 0x10 store, and it can be dissolved by changing the ARGUMENT EXPRESSION rather than the store spelling (struct typing was killed, but the load itself has not been varied).",
-   "mechanism": "sched.c's memory-dependence test (lines 834-881) only conflicts when it cannot prove the addresses distinct. The barrier exists because the lw's address is a fixed symbol and the stores' addresses vary off an opaque pointer. Varying how the OT base is obtained \u2014 reading it into an s32 local first, indexing an OT array (`ot = &D_800A374C_as_array[0x401C/4]`), or computing the slot address from a pointer-typed declaration of the global \u2014 changes the rtx shape of that MEM and may change which side of the disambiguation it lands on, without touching the stores.",
-   "next_probe": "Sweep 4-6 spellings of the `ot = (u32 *)(D_800A374C + 0x401C);` line ONLY (s32 local staging; u32* / u32** typed extern for D_800A374C; array-indexed slot; slot address computed after the RGB block from a base read before it) against the score-2 candidate, and objdump each \u2014 the diagnostic to watch is whether the six post-load coordinate stores can then be scheduled before the lw, which would let the 0x10 store sit in the post-load source group while li $v1,640 stays at the head."
+   "hypothesis": "decomp-permuter from the score-2 base can find the register-lifetime shape that hand enumeration cannot express.",
+   "mechanism": "The search target is no longer statement order (saturated at 2 over ~45 orderings) but a register-lifetime shape \u2014 exactly what the permuter's temp introduction / expression re-association / variable-reuse mutations explore, and a base score of 2 gives a clean gradient.",
+   "next_probe": "Build a clean single-function target.o from asm/funcs/func_8003553C.s + tools/decomp-permuter/prelude.inc (function at offset 0, drop the .set gp=64 line) per .claude/rules/difficult-is-not-impossible.md section 3; seed base.c from memory/grind/func_8003553C/candidate.c; run a fresh-seed campaign with tools/permuter_campaign.py, waiting for it IN-TURN via `permuter_campaign.py wait --dir <ws>` and harvesting + `--stop`ing before writing the outcome. Run import.py from a subdirectory, not the repo root (a root-level nonmatchings/ breaks the driver's scope check). Vet any closing form against the cheat catalog before banking it."
   },
   {
-   "hypothesis": "Target's `li $v1,640` at the block head with both 640 uses in the post-load group implies the 640 pseudo has a HIGH-PRIORITY consumer near the head that our form lacks \u2014 most likely because in the original the two 640 stores are NOT independent leaves but part of a chain the scheduler must start early.",
-   "mechanism": "In GCC 2.7.2's list scheduler INSN_PRIORITY is the critical-path length to the end of the block, and stores that must precede the may-aliasing lw inherit the path through lw -> move a1 -> jal. An li whose only consumers are post-load leaves has minimal priority and sinks (measured: it lands mid-RGB-block, score 8). For it to head the block its consumer chain must be longer than a single store.",
-   "next_probe": "Read tools/gcc-2.7.2/sched.c's priority computation (`priority()` / `rank_for_schedule`) and confirm the exact tiebreak, then look for a C shape that gives the 640 value a longer dependence chain WITHOUT adding an instruction \u2014 e.g. the x1/x3 values feeding an address or a further computed value that target also emits. Cross-check against a matched sibling that builds a primitive the same way (src/text1b.c:15445 uses the same ot_Link idiom) to see how its constants are materialized."
+   "hypothesis": "A matched sibling in the tree already contains the C spelling that materializes a constant into a SECOND register at a block head with only late uses (target's li $v1,K shape).",
+   "mechanism": "If any COMPLETED function's asm shows `addiu $vN,$zero,K` at a block head with its first use several insns later, its C source is direct evidence of a spelling that survives sched1's sink \u2014 the exact thing this function needs, obtained by reading rather than guessing.",
+   "next_probe": "Grep asm/funcs/*.s (or the objdump of build/) for a block-head `addiu $v1,$zero,<imm>` whose first consumer is >=4 insns later inside functions NOT in engine/queue.json (i.e. already matched), then read the corresponding C body (Grep to locate, Read with offset/limit \u2014 never whole src files). Compare its constant's live-range shape with ours and transplant the spelling."
   }
  ],
  "judge_constraints": [],

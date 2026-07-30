@@ -1,7 +1,22 @@
-/* func_8003553C — best form as of grind session 2 (structural).
- * Honest pure-C floor: sandbox --disable all = 2 (was 4 entering this session,
- * 17 two sessions ago). Applied in src/code6cac_b2_pre.c. Zero regfix/asmfix
- * rules, zero inline asm, zero pins, zero dead stores, zero volatile.
+/* func_8003553C — best form as of grind session 3 (structural).
+ * Honest pure-C floor: sandbox --disable all = 2, unchanged by session 3 (was 4
+ * entering s2, 17 entering s1). Applied in src/code6cac_b2_pre.c. Zero
+ * regfix/asmfix rules, zero inline asm, zero pins, zero dead stores, zero
+ * volatile.
+ *
+ * SESSION 3 added no floor drop but identified the residual's mechanism, which
+ * changes what the next attempt should aim at (full detail in evidence.md):
+ * the misplaced `sh $v1,0x10` is a REGISTER-ALLOCATION consequence, not an
+ * ordering one. Target holds 640 in $v1 for the whole block; when the 640 stores
+ * are late (target's source order) sched1 sinks the constant's set down next to
+ * them, local-alloc then reuses $v0 (dead since the 128 constant's last use),
+ * and the resulting REG_DEP_OUTPUT against `li $v0,128` pins the `li 640`
+ * mid-RGB-block. A DIAGNOSTIC-ONLY pin of 640 to $3 (never committable) makes
+ * every store land in target's slot, including this one. Three axes were killed
+ * with measurements: the OT-base-load spelling (2/2), MEM_IN_STRUCT_P on the
+ * HImode stores (2/8/9/8 — the barrier really does dissolve and nothing moves,
+ * because the scheduler is movement-minimizing), and extending another
+ * constant's live range to force a second register (6/11/11).
  *
  * The primitive is a POLY_G4 (0x24 bytes) allocated by bump-pointer D_800A38B4:
  *   +0x04..06 rgb0, +0x08/0A x0,y0, +0x0C..0E rgb1, +0x10/12 x1,y1,

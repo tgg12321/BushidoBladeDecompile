@@ -72,6 +72,59 @@ F3 (permuter from the score-4 base) — still untried; the base is now 2.
   orderings measured; minimum 2, reached only by the two forms with exactly one
   640-valued store at the head of the body.
 
+## Session 3 (structural, 2026-07-30) — floor stays 2; residual mechanism identified
+
+### Resolved
+- **H9 KILLED — the OT-base-load spelling axis** (s2 frontier F2). Array-indexed
+  slot and s32-staged base read both score 2 = the base. Inert.
+- **H10 KILLED — MEM_IN_STRUCT_P (`p[i]`/`sp[i]` indexing) frees the coordinate
+  stores from the may-alias barrier and lets the 0x10 store sink.** The exemption
+  really does apply to HImode indexed stores (QImode is excluded, so the RGB byte
+  stores never escape) — and it changes nothing, because the list scheduler is
+  movement-minimizing. 2 / 8 / 9 / 8.
+- **H11 KILLED — extend another constant's live range to force 640 onto a second
+  hard register.** 128-extender 6 (640 still in $v0), 240-extender 11.
+- **H12 CONFIRMED (mechanism) — the residual is hard-register reuse of the 640
+  constant, created by sched1 sinking its set.** RTL trace + a diagnostic-only
+  pin that puts every store in target's slot. See below.
+
+### Live frontier after session 3
+1. **Defeat sched1's sink of the 640 constant set, or otherwise get it allocated
+   a register no earlier constant used, in pure C.** The pin diagnostic shows
+   this is worth 12 of the 13 misplaced insns; the last one (the `li`'s slot
+   among the three constants) is a separate, smaller question.
+2. **Permuter from the score-2 base** — still untried, and now better motivated:
+   the search target is a register-lifetime shape, which random statement/temp
+   mutation explores far better than hand enumeration.
+3. **Sibling census** — find a matched function in the tree that materializes a
+   constant into a SECOND register with only late uses (i.e. target-style
+   `li $v1,K` at a block head), and read its C. That is direct evidence of the
+   spelling that survives sched1's sink.
+
+## [s3] The remaining single misplaced instruction is caused by hard-register reuse of the 640 constant, which sched1 creates by sinking the constant's set down to its first use.
+- mechanism: `priority()` (tools/gcc-2.7.2/sched.c:1425) makes INSN_PRIORITY the longest dependence path from the block HEAD and `schedule_block` builds the block backward from the tail; `rank_for_schedule` (:2399) breaks the (near-universal) priority ties by class-relative-to-last-scheduled and then by INSN_LUID, explicitly to minimize movement. A constant set whose only uses are late therefore ends up adjacent to those uses after sched1; local-alloc then sees a 2-insn live range and reuses $v0 (dead since the 128 constant's last use); that produces a REG_DEP_OUTPUT against `li $v0,128` in sched2, which pins the `li 640` after `sb $v0,0xE` — block idx 7, mid-RGB-block. Target instead holds 640 in $v1 for the whole block, so its `li` is free to sit at the block head and its two stores are free to sit in the post-load group.
+- probe: (a) full `cc1 -da` pass dump of the holder form (tmp/grind/func_8003553C/s3/rtl_B/) — traced insn uid 17 through combine / sched / lreg / greg / sched2; (b) a DIAGNOSTIC-ONLY `register s16 w asm("$3")` variant of the same form, compiled outside the sandbox via tmp/grind/func_8003553C/s3/rtl.sh (the sandbox strips cheat-asm, so it cannot be scored) and read out of rtl_I/out.s.
+- result: (a) cse KEEPS the constant set at the top of the RTL (REG_EQUAL note attached); sched1 sinks it; lreg/greg assign $v0; sched2 shows REG_DEP_OUTPUT 36 + anti-deps 38/49. Session 2's "cse deletes the standalone set" explanation is disproved. (b) With 640 pinned to $3, EVERY store lands in target's slot — the RGB block is in strict field order and `sh $3,16` sits in the post-load group between `sh 0,10` and `sh 0,18`, i.e. exactly the instruction our clean score-2 form misplaces. The only residual left is `li 640` emitted after `li 128` instead of ahead of `li 240`.
+- verdict: CONFIRMED
+
+## [s3] The OT-base load's spelling (array-indexed slot, or the base read staged into an s32 local with the +0x401C applied later) changes which side of sched.c's memory disambiguation the load lands on, letting the coordinate stores reorder around it.
+- mechanism: sched.c's dependence test compares the two MEMs' in-struct flags and whether their addresses vary; changing how the OT base is obtained changes the rtx shape of that MEM.
+- probe: two spellings measured against the score-2 base — `ot = &((u32 *)D_800A374C)[0x1007];` and `otb = D_800A374C;` staged before the trailing coordinate stores with `ot = (u32 *)(otb + 0x401C);` after them.
+- result: 2 and 2 — bit-identical scores to the base. The load is a `(mem:SI (symbol_ref))` in every spelling, so nothing about the disambiguation changes. This closes session 2's frontier item 2.
+- verdict: KILLED
+
+## [s3] Giving the HImode coordinate stores MEM_IN_STRUCT_P (writing them as `sp[i]` through `s16 *sp = (s16 *)p;`) dissolves the may-alias barrier for them, letting the 0x10 store sink into the post-load group while the leading 640 store keeps `li $v1,640` at the block head.
+- mechanism: tools/gcc-2.7.2/sched.c:817-866 exempts an in-struct MEM with a varying address from conflicting with a MEM that is neither in-struct nor address-varying (the fixed-address `lw` of D_800A374C) — but the exemption excludes QImode, which is why the twelve RGB byte stores (already `mem/s:QI`, since `p[4]` indexing sets the flag) stay barrier-bound while HImode indexed stores would be freed.
+- probe: four forms — all eight coordinate stores as `sp[i]` in the s2 statement order; the same in target's statement order; only the x1 store as `sp[8]` with the rest plain deref; and `sp[i]` plus a 640 holder in target's order.
+- result: 2 / 8 / 9 / 8. The freed form scores EXACTLY what the base scores; nothing moved. GCC 2.7.2's list scheduler minimizes movement, so removing a dependence without changing priorities or lifetimes gives the insn no reason to move. Aliasing is not the binding constraint on this function.
+- verdict: KILLED
+
+## [s3] The 640 constant can be pushed onto a second hard register by keeping another constant's pseudo live across the point where its set lands ($v0 busy ⇒ 640 gets $v1).
+- mechanism: local-alloc reuses $v0 for the 640 set only because both the 240 and the 128 pseudos are dead by then. Moving one of their stores into the post-load group extends that pseudo's range past the 640 set.
+- probe: `p[0xE] = 0x80` (rgb1 blue, one of the two 128 users) moved into the post-load group; `sh 0x22 = 240` (one of the two 240 users) moved into the post-load group; the latter also with a 640 holder.
+- result: 6 / 11 / 11. The 128-extender's disassembly shows 640 STILL in $v0: sched1 sinks the 640 set next to its use, and the extender's store is scheduled just before that point, so $v0's range still ends immediately before the set. Net effect is one extra displaced insn, not a register change.
+- verdict: KILLED
+
 ## [s2] The addiu $s0,$s0,0x24 lands in the pre-jal slot when the OLD primitive pointer and the ADVANCED pointer are both live across the ot_Link call.
 - mechanism: With `q = p; p += 0x24;` before the call, the argument value (old p) and the allocator value (p+0x24) are two simultaneously-live values, so GCC cannot coalesce them: it emits the argument copy `move $a1,$s0` early, performs the advance in place on $s0 before the call, and keeps the `sw` to D_800A38B4 after the call because the call clobbers memory. s1's two killed spellings each left only ONE of the two values live, so either the sw moved forward with the advance or the extra local was coalesced back into $s0.
 - probe: Measured four tail spellings on the score-4 base: (Q) the s1 candidate, (V2) q/p split as above, (V4) `next = p + 0x24;` before the call with `D_800A38B4 = next;` after, (V5) the q/p split hoisted above initPolyG4.
@@ -142,4 +195,34 @@ F3 (permuter from the score-4 base) — still untried; the base is now 2.
 - mechanism: The residual is one instruction position and the only remaining degrees of freedom in the block are the relative order of the 8 coordinate stores, the 12 RGB byte stores and the ot load.
 - probe: Built a spec-driven generator (tmp/grind/func_8003553C/s2/ordersweep.ps1) and scored ~45 distinct orderings under both the s1 and s2 tails, sweeping each 640 store's position, the 240 pair, the ot load's position, and the RGB block including splitting it into its four 3-store subgroups.
 - result: Minimum is 2, reached by exactly two forms — the ones with exactly ONE 640-valued store at the head of the body (x1 leading with trailing group 8,A,12,18,20; or the mirror, x3 leading with trailing group 8,A,10,12,18). Every form with no leading 640 store bottoms out at 8; every form with two of them at 5. Full table in tmp/grind/func_8003553C/s2/forms_and_scores.md section C.
+- verdict: KILLED
+
+## [s3] The remaining single misplaced instruction (our sh $v1,0x10 at block idx 6 vs target's post-load-group slot) is caused by hard-register reuse of the 640 constant, which sched1 creates by sinking that constant's set down adjacent to its first use.
+- mechanism: priority() (tools/gcc-2.7.2/sched.c:1425) walks LOG_LINKS = predecessors, so INSN_PRIORITY is the longest dependence path from the block HEAD, and schedule_block builds the block backward from the tail. rank_for_schedule (:2399) breaks the near-universal priority ties by class-relative-to-last-scheduled (a dependence of insn_cost 1 counts as independent) and then by INSN_LUID, explicitly 'to minimize instruction movement'. A constant whose only uses are late therefore ends up adjacent to them after sched1; local-alloc sees a 2-insn live range and reuses $v0 (dead since the 128 constant's last use); sched2 then sees REG_DEP_OUTPUT against li $v0,128 plus anti-deps on its two uses, so the li 640 can never rise above sb $v0,0xE. Target instead holds 640 in $v1 across the whole block, which frees both its li (block head) and its two stores (post-load group).
+- probe: (a) Full cc1 -da pass dump of the constant-holder form (tmp/grind/func_8003553C/s3/rtl_B/) and traced the 640 set (insn uid 17) through base.i.combine, base.i.sched, base.i.lreg, base.i.greg, base.i.sched2. (b) DIAGNOSTIC-ONLY variant with register s16 w asm("$3") on the same form, compiled outside the sandbox via tmp/grind/func_8003553C/s3/rtl.sh (the sandbox strips cheat-asm so a pinned form cannot be scored) and read out of rtl_I/out.s.
+- result: (a) cse KEEPS the constant set at the top of the RTL with a REG_EQUAL note — session 2's 'cse propagates and deletes the standalone set' explanation is disproved; sched1 sinks it; lreg/greg assign $v0; sched2 shows REG_DEP_OUTPUT 36 and anti-deps 38/49; final position block idx 7. (b) With 640 in $3 every store lands in target's slot: the RGB block returns to strict field order AND sh $3,16 sits in the post-load group between sh 0,10 and sh 0,18 — precisely the instruction our clean score-2 form misplaces. The sole residual in the pinned build is li 640 emitted after li 128 instead of ahead of li 240.
+- verdict: CONFIRMED
+
+## [s3] Varying how the OT base is obtained (array-indexed slot, or staging the base read into an s32 local with the +0x401C applied after the trailing stores) changes the rtx shape of that MEM and lets the coordinate stores reorder around the load. (Session 2's frontier item 2.)
+- mechanism: sched.c's dependence test compares in-struct flags and address-varying-ness of the two MEMs; a differently-shaped OT-base MEM could land on the non-conflicting side of the disambiguation.
+- probe: Two spellings measured with sandbox --disable all against the score-2 base: ot = &((u32 *)D_800A374C)[0x1007]; and otb = D_800A374C; staged before the trailing coordinate stores with ot = (u32 *)(otb + 0x401C); after them.
+- result: 2 and 2 — identical to the base. The load is a (mem:SI (symbol_ref)) in every spelling, so nothing about the disambiguation changes. Session 2's frontier item 2 is closed.
+- verdict: KILLED
+
+## [s3] Giving the HImode coordinate stores MEM_IN_STRUCT_P (writing them as sp[i] through s16 *sp = (s16 *)p) dissolves the may-alias barrier against the lw of D_800A374C for them, letting the 0x10 store sink into the post-load group while the leading 640 store keeps li $v1,640 at the block head.
+- mechanism: tools/gcc-2.7.2/sched.c:817-866 exempts an in-struct MEM with a varying address from conflicting with a MEM that is neither in-struct nor address-varying (the fixed-address lw of the scalar global) — but the exemption excludes QImode, which is why the twelve RGB byte stores (already mem/s:QI, since p[4] indexing sets the flag) stay barrier-bound while HImode indexed stores are genuinely freed.
+- probe: Four forms scored: all eight coordinate stores as sp[i] in the s2 statement order; the same in target's statement order; only the x1 store as sp[8]; and sp[i] plus a 640 holder in target's order.
+- result: 2 / 8 / 9 / 8. The freed form scores EXACTLY the base. Removing a dependence without changing priorities or lifetimes gives the insn no reason to move — GCC 2.7.2's list scheduler minimizes movement. Aliasing is not the binding constraint on this function.
+- verdict: KILLED
+
+## [s3] The 640 constant can be pushed onto a second hard register by keeping another constant's pseudo live across the point where its set lands ($v0 busy => 640 gets $v1).
+- mechanism: local-alloc reuses $v0 only because both the 240 and the 128 pseudos are dead by the time the 640 set is scheduled; moving one of their stores into the post-load group extends that pseudo's live range past it.
+- probe: p[0xE] = 0x80 (one of the two 128 users) moved into the post-load group; sh 0x22 = 240 (one of the two 240 users) moved into the post-load group; the latter also with a 640 holder. All scored with sandbox --disable all, the first also objdump-diffed.
+- result: 6 / 11 / 11. The 128-extender's disassembly shows 640 STILL in $v0: sched1 re-collapses the 640 set next to its use and the extender's store is scheduled just before that point, so $v0's range still ends immediately before the set. Net effect is one extra displaced insn, not a register change.
+- verdict: KILLED
+
+## [s3] A constant-holder local (s16/s32 w = 640) materializes the 640 pseudo early enough to reach target's leading li, when combined with session 2's new tail.
+- mechanism: If the holder's set survives at the declaration point it is the first constant insn in the block, so 640 heads the block and takes the long live range while both its stores stay in the post-load group.
+- probe: Three holder spellings (s16 w; s32 w; s16 w + s16 h) re-measured on the score-2 s2 tail with target's statement order, plus the no-holder control.
+- result: 8 / 8 / 8, identical to the no-holder control (8). Score-inert — but the RTL trace shows the set DOES survive cse and is sunk by sched1, which is the corrected mechanism recorded above and the reason this axis is dead in its current spelling.
 - verdict: KILLED
