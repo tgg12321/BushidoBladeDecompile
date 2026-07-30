@@ -1464,3 +1464,140 @@ a grind axis; unchanged since session 2.)
 - probe: Replaced `{ z = 0; return z; }` with `{ y_low = 0; return y_low; }` (y_low holds *(s32 *)(obj + 0xB0), is consumed by the min_y/max_y if-else immediately above and is dead thereafter) on BOTH the banked L3 body and the no-L3 body, and scored both with `sandbox --disable all`.
 - result: 2 and 3 respectively, at target's 104 instructions -- identical to the `z` spelling on both bases. The defeat is a property of the TWO-STATEMENT ARM (jump.c's store-flag transform requires a single-set arm), not of the reused local. Banked at memory/grind/func_8002EA24/candidate_alt_L1_via_ylow.c.
 - verdict: KILLED
+
+## Session 12 (escalation) — DISPOSITION REACHED.  Floor re-measured at 2; H7 and H9 both KILLED.
+
+The driver assigned `escalation` after the honest floor stayed flat at 2 across
+sessions 5–11 and six distinct modalities.  This session (a) re-measured the floor
+with the banked candidate applied to src/ — `sandbox --disable all` → **score 2,
+104 insns vs target 104, 10 rules dropped, 298 chars of cheat-asm stripped**;
+(b) ran the last un-tried MECHANICAL axis (H7) and killed it with measurements;
+(c) closed H9 by case analysis over the banked `.greg` dumps; (d) evaluated the two
+endgame-lock AND-gates, found BOTH failing, and applied the owner's standing
+auto-ruling of 2026-07-27 — entry filed in `docs/grind/decisions.md` under
+**OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED /
+OWNER-ACCEPTED INCOMPLETE**.
+
+### [s12] H7 — the score-2 plateau is a property of ONE permuter mutation neighbourhood, so a campaign launched from a structurally different score-2 chassis can escape it.
+- mechanism: decomp-permuter mutates the SOURCE, not the RTL, so two bodies that
+  compile to identical bytes still have different mutation neighbourhoods.  Session 5's
+  29,050-iteration basin exhaustion (plus 34,300 directed iterations) was measured from
+  the banked chassis ONLY, and nine structurally distinct score-2 bodies are now known.
+- probe: Three fresh-seed campaigns launched CONCURRENTLY with
+  `tools/permuter_campaign.py launch -j 4` from workspaces built by
+  `tmp/grind/func_8002EA24/s12/mkws.py` (session-5 workspace `tmp/perm_ea24g` cloned;
+  only the `func_8002EA24` body inside the preprocessed `base.c` swapped) —
+  A = `s8/v10_nested_range_tests_only.c` (m2c's nested shape),
+  B = `s8/v12_single_four_way_if.c` (one fused short-circuit `if`, z assigned inside
+  the condition), C = `s9/v5_vout_dies_in_chain.c` (X and Z read off the GTE output
+  pointer).  All three reported `base_score: 10` = the two register diffs × the
+  permuter's reg weight, i.e. the sandbox floor of 2 in the permuter metric.  Waited
+  in-turn with three blocking `wait` windows (~28 minutes of wall clock, all three
+  running throughout), then `harvest --stop` on each.
+- result: **Zero novel finds on every chassis.**  Iteration counters at the wait
+  windows: A 9,800 @ 9 min, B 18,148 @ 18 min, C 27,384 @ 27 min (~1,000 iters/min
+  per campaign → ~28,000 each, ~84,000 total).  Every harvest returned
+  `finds_new: 0`, `best_new_score: null`, `finds: []`.  Nothing anywhere in the three
+  neighbourhoods scored below 10.  The permuter axis now stands at ~148,000 measured
+  iterations across FOUR structurally distinct score-2 chassis with nothing below the
+  plateau.  Artifact: `tmp/grind/func_8002EA24/s12/permuter_h7_summary.md`.
+- verdict: KILLED
+
+### [s12] H9 — the missing `$a0` exclusion for allocno 103 (neg_threshold) can come from a THIRD case sessions 3–11 never enumerated: an allocno assigned hard reg 4 for a reason other than preferring it, which also conflicts with 103.
+- mechanism: 103's pass-0 exclusion set is already {2,3,5,6,7,8,29}; the single missing
+  bit is 4.  Sessions 3–9 enumerated the assigned-conflict route through allocno 97
+  (a0_var, the function's only `$a0`-preferring allocno) and sessions 10–11 enumerated
+  the `regs_someone_prefers` preference route.  The untouched case is an allocno whose
+  OWN first-fit lands on `$a0` because `$v0`/`$v1`/`$a1` are excluded for it.
+- probe: Case analysis over the banked `.greg` dumps rather than a new build — the case
+  set is finite and every case already carries a measurement.  From this body's `.greg`,
+  the allocnos that CONFLICT with 103 are exactly {72 obj, 74 threshold, 75 r_sq, 96 z,
+  100 max_y}, and the allocation order is `101 96 97 100 109 108 72 102 117 103 74 99 75`,
+  so the ones allocated BEFORE 103 — the only ones that can supply an assigned conflict —
+  are {72, 96, 100}.
+- result: The case set is empty by construction.  In TARGET those three allocnos hold
+  `$t0` (`addu $t0,$a0,$zero`), `$v1` (`slt v0,v1,t1`) and `$a1` (`lw a1,256(t0)` /
+  `mult a1,a1`) respectively, so any edit that pushes one of them onto `$a0` necessarily
+  vacates a register target itself requires — and each case is separately measured:
+  `z` forced onto `$a0` = score 16 (s11, banked as
+  `rejected/z-pref-recipient-harmless-but-outranks-103-score16.c`), the `max_y` recipient
+  = 5 with a BIT-IDENTICAL `.greg` (s11), `obj`'s `$a0` preference self-pruned by
+  prune_preferences line 877 because obj hard-conflicts with `$a0` (s3).  A *newly
+  introduced* allocno cannot substitute either: `allocno_compare` divides by live_length,
+  so any zero-instruction-cost carrier ranks LAST — measured in session 8, where the
+  added carrier (allocno 77) was allocated AFTER 103 and stole target's `$t1` outright.
+  With H9 closed, all three routes to the one missing allocator bit (assigned conflict
+  from 97, preference propagation, assigned conflict from anything else) are enumerated
+  and exhausted.
+- verdict: KILLED
+
+### [s12] Gate 1 — func_8002EA24 shows hand-written-asm signals strong enough to authorize a canonical-asm disposition.
+- mechanism: `.claude/rules/endgame-lock-disposition.md` criterion 1 — canonical-asm is
+  allowed ONLY with STRONG-tier `scan_hand_coded` signals (S1 multu pacing / S2 empty
+  branch / S6 BIOS jumptable).
+- probe: `python3 tools/scan_hand_coded.py --single func_8002EA24`.
+- result: `tier=TIGHT_C score=3/8` — "tight pure-C function or cluster (no
+  GCC-impossible signals)".  S1, S2 and S6 all absent; the three that fire (S3 no
+  spills, S4 front loads, S5 cluster with func_8002D320 at jaccard 0.60) are weak-tier
+  and are not credited by the policy.  A non-STRONG score is dispositive: refuse asm.
+- verdict: KILLED (gate FAILS)
+
+### [s12] Gate 2 — an in-hand SOTN-master precedent exists for the construct that would close the residual.
+- mechanism: `.claude/rules/endgame-lock-disposition.md` criterion 2 — a coercion /
+  spelling family is sanctioned ONLY with an EXHIBITED community precedent (file+line or
+  commit), never "same spirit" or "only lever left".
+- probe: Identify the closing construct and look for its precedent.
+- result: There is no closing construct to cite a precedent FOR.  The two coercion
+  constructs already in the body (L1, L3) belong to the already-sanctioned
+  [[staged-value-reused-variable]] family and are what took the floor 9 → 2; they do not
+  close the last 2 points, and after twelve sessions no construct of any kind is known
+  that does.  The two corpus censuses that were run came back NEGATIVE (session 9,
+  decomp.me: "negu into `$t`/`$s` consumed by an slt" = 0 of 1,751 matching GCC-2.7.2
+  scratches; 0 of the 39 matched unfolded-0/1-diamond scratches has this function's bare
+  `return 0;` / `return 1;` shape), which per the policy is a failed gate, not an open
+  question.
+- verdict: KILLED (gate FAILS)
+
+### Disposition
+BOTH gates fail → the owner's 2026-07-27 standing auto-ruling applies with no owner
+wait.  Entry filed at `docs/grind/decisions.md` (2026-07-30, func_8002EA24):
+REFUSED / OWNER-ACCEPTED INCOMPLETE — keep the 10 rules + cheat-asm on main so the
+oracle stays green, classify INCOMPLETE-owner-accepted (neither COMPLETED state), park
+out of active grind but eligible for re-attempt if a genuine pure-C lever or new tooling
+emerges.  src/code6cac_b.c was restored to HEAD at the end of the session so main keeps
+its byte match; the honest score-2 body remains banked at
+`memory/grind/func_8002EA24/candidate.c`.
+
+### Frontier at park time (for any future re-attempt)
+Nothing mechanical is left on the current toolchain.  The two things that would reopen
+this function are (1) a new *tool* — e.g. an exhaustive RTL-level search over the
+allocno conflict graph that can answer "which C dataflow produces conflict set X" in the
+forward direction, rather than the guess-and-measure loop twelve sessions have run; or
+(2) a genuinely new sanctioned pure-C construct family with its own community precedent,
+which would have to arrive from outside this function's grind.  The residual is one bit
+in `find_reg`'s pass-0 exclusion set for pseudo 103, and every C-visible generator of
+that bit is enumerated and measured.
+
+## [s12] H7 - the score-2 plateau is a property of ONE permuter mutation neighbourhood, so a campaign launched from a structurally different score-2 chassis can escape it.
+- mechanism: decomp-permuter mutates the SOURCE, not the RTL, so two bodies compiling to identical bytes still have different mutation neighbourhoods. Session 5's 29,050-iteration basin exhaustion (plus 34,300 directed) was measured from the banked chassis only, and nine structurally distinct score-2 bodies are now known.
+- probe: Three fresh-seed campaigns launched concurrently via tools/permuter_campaign.py (-j 4) from workspaces built by tmp/grind/func_8002EA24/s12/mkws.py (session-5 workspace tmp/perm_ea24g cloned, only the func_8002EA24 body inside the preprocessed base.c swapped): A = s8/v10_nested_range_tests_only.c (m2c's nested shape), B = s8/v12_single_four_way_if.c (one fused short-circuit if with z assigned inside the condition), C = s9/v5_vout_dies_in_chain.c (X and Z read off the GTE output pointer). All three reported base_score 10 = the two register diffs x the permuter reg weight = the sandbox floor of 2. Waited in-turn across three blocking wait windows (~28 min wall clock, all three running throughout), then harvest --stop on each.
+- result: Zero novel finds on every chassis. Iteration counters at the wait windows: A 9,800 @ 9 min, B 18,148 @ 18 min, C 27,384 @ 27 min (~1,000 iters/min/campaign, so ~28,000 each and ~84,000 total). Every harvest returned finds_new 0, best_new_score null, finds []. Nothing in any of the three neighbourhoods scored below 10. The permuter axis now stands at ~148,000 measured iterations across FOUR structurally distinct score-2 chassis with nothing below the plateau.
+- verdict: KILLED
+
+## [s12] H9 - the missing $a0 exclusion for allocno 103 (neg_threshold) can come from a third case sessions 3-11 never enumerated: an allocno assigned hard reg 4 for a reason other than preferring it, which also conflicts with 103.
+- mechanism: 103's pass-0 exclusion set is already {2,3,5,6,7,8,29}; the single missing bit is 4. Sessions 3-9 enumerated the assigned-conflict route through allocno 97 (a0_var, the only $a0-preferring allocno) and sessions 10-11 enumerated the regs_someone_prefers preference route. The untouched case is an allocno whose own first-fit lands on $a0 because $v0/$v1/$a1 are excluded for it.
+- probe: Case analysis over the banked .greg dumps (the case set is finite and every case already carries a measurement). The allocnos that CONFLICT with 103 are exactly {72 obj, 74 threshold, 75 r_sq, 96 z, 100 max_y}; the allocation order is 101 96 97 100 109 108 72 102 117 103 74 99 75, so the only ones that can supply an assigned conflict (allocated BEFORE 103) are {72, 96, 100}.
+- result: The case set is empty by construction. In TARGET those three allocnos hold $t0 (addu $t0,$a0,$zero), $v1 (slt v0,v1,t1) and $a1 (lw a1,256(t0) / mult a1,a1), so pushing any of them onto $a0 necessarily vacates a register target itself requires - and each case is separately measured: z forced onto $a0 = 16 (s11, banked as rejected/z-pref-recipient-harmless-but-outranks-103-score16.c), the max_y recipient = 5 with a BIT-IDENTICAL .greg (s11), obj's $a0 preference self-pruned by prune_preferences:877 because obj hard-conflicts with $a0 (s3). A newly introduced allocno cannot substitute: allocno_compare divides by live_length, so any zero-instruction-cost carrier ranks LAST - measured in session 8, where the added carrier (allocno 77) was allocated after 103 and stole target's $t1 outright. All three routes to the one missing allocator bit are now enumerated and exhausted.
+- verdict: KILLED
+
+## [s12] GATE 1 - func_8002EA24 shows hand-written-asm signals strong enough to authorize a canonical-asm disposition for its GTE regions.
+- mechanism: endgame-lock-disposition criterion 1: canonical-asm is allowed ONLY with STRONG-tier scan_hand_coded signals (S1 multu pacing / S2 empty branch / S6 BIOS jumptable).
+- probe: python3 tools/scan_hand_coded.py --single func_8002EA24
+- result: tier=TIGHT_C score=3/8, 'tight pure-C function or cluster (no GCC-impossible signals)'. S1, S2 and S6 all absent; the three firing signals (S3 no spills, S4 front loads, S5 cluster with func_8002D320 at jaccard 0.60) are weak-tier and are not credited. A non-STRONG score is dispositive: refuse asm. Consistent with the Judge's 2026-07-30 FAIL on session 2's canonical-asm ruling-request.
+- verdict: KILLED
+
+## [s12] GATE 2 - an in-hand SOTN-master precedent exists for the construct that would close the residual.
+- mechanism: endgame-lock-disposition criterion 2: a coercion/spelling family is sanctioned ONLY with an EXHIBITED community precedent (file+line or commit citation).
+- probe: Identify the closing construct for the residual 2 points and look for its precedent; re-read the session-9 corpus censuses.
+- result: There is no closing construct to cite a precedent FOR. The two coercion constructs already in the body (L1, the returned 0 staged through the dead z, defeating jump.c's store-flag single-set precondition; L3, the first range test's boolean staged through a0_var) belong to the already-sanctioned staged-value-reused-variable family (2026-07-03; SOTN citations src/st/{cen,lib,no3,st0,top,mar}/cutscene.c, src/dra/menu.c x3, src/st/no0/clock_room.c) and are what took the floor 9 -> 2; they do not close the last 2 points, and after twelve sessions no construct of any kind is known that does. The two censuses that were run came back NEGATIVE (session 9, decomp.me: 'negu into $t/$s consumed by an slt' = 0 of 1,751 matching GCC-2.7.2 scratches; 0 of 39 matched unfolded-0/1-diamond scratches has this function's bare return 0 / return 1 shape), which per policy is a failed gate, not an open question.
+- verdict: KILLED

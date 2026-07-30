@@ -2453,3 +2453,139 @@ One cosmetic note, not a defect and not a condition of this PASS: asmfix.txt lin
 ## 2026-07-30 10:13 — func_8002EA24 — ruling: func_8002EA24's two GTE regions look like hand-written asm in the original, and  — **FAIL**
 
 RULING REQUEST, not a final call: func_8002EA24 is NOT byte-identical on main (honest floor 9, 102 insns vs target's 104, 10 regfix rules still live), so no COMPLETED-INLINE-ASM-CANONICAL disposition can be granted today and nothing may be added to inline_asm_canonical.txt yet. I verified the session's factual claims myself rather than crediting them. TRUE: asm/funcs/func_8002EA24.s carries splat '/* handwritten instruction */' tags on swc2 $26/$27 (8002EA98/8002EA9C) and on mtc2 $t4,$30 (8002EB38); $t4 is written back-to-back with two unrelated values (obj+0xF8 then obj+0x100 at 8002EA74/8002EA90); the GTE delay nops are unfilled; and the LZC block at 8002EB34-8002EB48 is instruction-for-instruction the construct the owner authorized on 2026-06-10 for func_800274BC (src/code6cac_b.c:279 — addu $t4,%1,$zero / mtc2 $t4,$30 / nop / nop / addu $t4,$sp,$zero / swc2 $31,0($t4), same '=m'(sp_tmp) output, same '$12' clobber), in the same source file and running the same LZCS/LZCR sqrt algorithm over the same D_8008D118 table. The ledger's hypothesis records also show a genuinely spent modality ladder on the pure-C side (hypotheses.md 'Killed' + the [s2] entries: eight GTE-operand spellings measured BYTE-IDENTICAL by disassembly md5, six tail shapes measured, four declaration-order variants measured), so the session is not reaching for asm because it is stuck early. WHY IT STILL FAILS AS POSED, on two independent grounds. (1) The disposition is premature and mis-scoped. A canonical-asm disposition is a statement about a FINISHED function: zero rules, byte-match, the asm being the only unreachable part. Here 9 of the residual points have nothing to do with the GTE regions — 6 are ordinary register allocation in the compare chain (x/$a0 vs $a1, neg_threshold/$a1 vs $t1, H5) and 3 are the tail 0/1 diamond (H6), which the ledger itself plans to close with the [[dead-store-fake-exception]] carve-out. Granting a canonical-asm listing now would retire 10 regfix rules on a function that does not match, which the completion gate would refuse anyway, and would put the authorization on the record BEFORE anyone knows what the finished body looks like. (2) The vector/mvmva block as written in candidate.c is BROADER than the construct the owner authorized. The authorized sibling blocks contain only the cop2 op, the irreducible $t4 routing and (in func_8001A67C) a stack-address computation that has no C spelling because it addresses the '=m' output slot. func_8002EA24's first block instead swallows 'addiu $v0, %0, 0xF8' and 'addiu $v0, %0, 0x100' — plain pointer arithmetic on a C-visible parameter that C expresses trivially — as hardcoded-$N template text, and clobbers $2 to hold it. That is exactly the [[inline-asm-injection]] signature (bytes from template text rather than from compilation) applied to material that is NOT no-C-form, and the ledger's own eight-spelling census only killed spellings that keep the copy OUTSIDE the asm; the narrower hybrid — bind the already-computed address as the operand ('r'(obj + 0xF8) / '(u8 *)obj + 0x100) and let the template contain only 'addu $t4, %0, $zero' plus the cop2 ops — is untried and is the form that would let GCC, not the template, emit the addiu. Per the owner's standing policy a first-reach spelling of an exception is a cheat, and cluster precedent does not enlarge an authorization beyond the construct actually authorized. In plain terms: the leading-zero-count block here is the same hand-written assembly the owner already signed off on twice in this exact shape, and that part of the session's reasoning holds up. The vector block is not — it also hides ordinary address arithmetic inside the assembly, which the C can and should do itself. And in any case the function is nine instructions away from matching, so the question of how to file it as 'done' cannot be answered yet.
+
+## 2026-07-30 — func_8002EA24 (src/code6cac_b.c) — **OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**
+
+Filed by grind session 12 (escalation modality, driver-declared exhaustion).
+Nothing is pending on the owner: both endgame-lock AND-gates in
+`.claude/rules/endgame-lock-disposition.md` FAIL, so the owner's standing
+auto-ruling of 2026-07-27 applies and the driver parks the function terminally.
+
+### What holds the byte-match today
+func_8002EA24 byte-matches on main **only via a cheat**: 10 regfix/asmfix rules
+plus a cheat-asm body (`register s32 t4 asm("t4")` / `asm("v0")` / `asm("a1")` /
+`asm("t1")` / `asm("a0")` / `asm("a2")` pins, hardcoded-`$N` `__asm__` templates
+such as `lwc2 $0, 0($12)` and `.word 0xE99A0004` carrying a pinned operand, and a
+bare `__asm__ volatile("" ::: "memory")` scheduling barrier).  The cheat-invisible
+sandbox drops all 10 rules and strips 298 characters of cheat-asm; measured this
+session with the banked candidate in place in src/:
+`sandbox func_8002EA24 --disable all` → **score 2, build 104 insns vs target 104**.
+
+The residual is ONE instruction pair — every other instruction's opcode, operand
+and register already match:
+
+```
+ours    slt $a0, $a1, $t1 ; bnez $a0, <reject>
+target  slt $v0, $a1, $t1 ; bnez $v0, <reject>
+```
+
+Localised in the compiler across sessions 6–11 (BB2_FINDREG_DEBUG dumps +
+`.greg`): it is a single bit in the pass-0 hard-register exclusion set computed by
+`find_reg` (tools/gcc-2.7.2/global.c:1012-1044) for the `neg_threshold` allocno
+(pseudo 103) — hard register 4 (`$a0`).  With the bit, first-fit hands 103 target's
+`$t1`; without it, `$a0`.  This is a register-allocation tiebreak, i.e. exactly the
+species this policy covers.
+
+### GATE 1 — canonical-asm (hand-written-asm evidence): **FAILS**
+```
+$ python3 tools/scan_hand_coded.py --single func_8002EA24
+HAND_CODED: tier=TIGHT_C  score=3/8  (func_8002EA24, 110 insns)
+  Reason: tight pure-C function or cluster (no GCC-impossible signals)
+  [ ] S1 multu pacing     [ ] S2 empty branch     [ ] S6 BIOS jumptable
+  [X] S3 no spills   [X] S4 front loads   [X] S5 cluster (func_8002D320, jaccard 0.60)
+  [ ] S7 unsaved $sN      [ ] S8 redundant mask
+```
+None of the STRONG-tier signals (S1 / S2 / S6) fires; the three that do fire are the
+weak-tier ones the policy explicitly does not credit.  Per the policy a LOW /
+non-STRONG score is dispositive: **refuse asm.**
+
+This is consistent with the Judge's own 2026-07-30 10:13 FAIL on session 2's
+canonical-asm ruling-request, which refused the disposition on two independent
+grounds: (a) it was premature — the function does not byte-match honestly, so
+there is no finished body to authorize; and (b) the vector/mvmva block as then
+written swallowed ordinary C-expressible pointer arithmetic (`addiu $v0,%0,0xF8`
+/ `0x100`) into hardcoded template text, which is the [[inline-asm-injection]]
+signature.  Session 3 rewrote that block to the Judge-constrained minimal shape
+(address computed in C and bound via `%N`; template limited to the `$t4` copy,
+the cop2 ops and the mvmva `.word`) and measured it **byte-identical / free**,
+so the constraint has been honoured — but the gate-1 evidence bar for putting
+func_8002EA24 into `inline_asm_canonical.txt` is still not met, and in any case
+the function is 2 points from a match, so no COMPLETED-INLINE-ASM-CANONICAL
+disposition is reachable.
+
+### GATE 2 — SOTN-master precedent for the closing construct: **FAILS**
+There is **no closing construct to exhibit a precedent for.**  The two coercion
+constructs the banked body already carries (L1: the returned 0 staged through the
+dead `z`, defeating jump.c's store-flag single-set precondition; L3: the first
+range test's boolean staged through `a0_var`, the function's only `$a0`-preferring
+allocno) are both instances of the already-sanctioned
+[[staged-value-reused-variable]] family (2026-07-03; SOTN citations in that rule:
+`src/st/{cen,lib,no3,st0,top,mar}/cutscene.c` "// fake reuse of i?", `src/dra/menu.c`
+×3, `src/st/no0/clock_room.c`).  They are already applied, already FAKE-annotated,
+and they are what took the floor 9 → 2.  They do not close the last 2 points, and
+after eleven sessions **no construct of any kind — sanctioned, novel or otherwise —
+is known to close them.**  A gate that has nothing to cite is a failed gate, not an
+open question.
+
+Two corpus censuses run in earlier sessions came back NEGATIVE and are recorded as
+failed gates, not pending ones (session 9, decomp.me, 3,754 GCC-2.7.2 scratches /
+1,751 MATCHING): "negu into `$t`/`$s` consumed by an slt" = **0 of 1,751**; and of
+39 matched scratches keeping an unfolded 0/1 diamond, **none** has this function's
+shape (bare `return 0;` arm, bare `return 1;` fall-through).
+
+### Exhaustion record (12 sessions, 6 distinct modalities)
+Floor history: 18 (s1 recon) → 9 (s2–s4 structural, the authorized-sibling GTE
+respelling) → 2 (s5 permuter) → flat at 2 for sessions 5, 6, 7, 8, 9, 10, 11 and 12.
+Modalities spent: recon, structural (s2, s3, s4, s11), permuter (s5), forensics
+(s6, s7), rederive (s8, s9), synthesis (s10), escalation (s12).
+
+- **~148,000 permuter iterations with zero finds below the plateau**, across FOUR
+  structurally distinct score-2 chassis: session 5's 29,050 random + 34,300 directed
+  from the banked chassis, and this session's H7 test — three concurrent fresh-seed
+  campaigns (~28,000 iters each, ~84,000 total) from `v10_nested_range_tests_only`,
+  `v12_single_four_way_if` and `v5_vout_dies_in_chain`, all harvested with
+  `finds_new: 0`.  H7 was the last un-tried MECHANICAL axis on the frontier and it
+  is now measured dead: the plateau is not a property of one mutation neighbourhood.
+- **The plateau is source-shape-invariant**: nine structurally distinct bodies (m2c's
+  own nested shape, a single four-way `if`, `neg_threshold` written inline with no
+  local, the sum-of-squares split into its own local, X/Z read off the GTE output
+  pointer, L1 staged through `y_low` instead of `z`, …) all score exactly 2 at 104
+  instructions.
+- **All four generators of the missing allocator bit are enumerated and measured
+  dead** (sessions 6–11): a hard-reg conflict with `$a0` needs `neg_threshold` live
+  at function entry (costs the negu's load-delay slot, 108 insns); the
+  `regs_someone_prefers` preference route was opened by session 10 (`expand_preferences`
+  makes the `$a0` preference propagable — the first configuration in ten sessions to
+  produce target's `$t1` without L3) and CLOSED by session 11's exhaustive recipient
+  enumeration (of the five allocnos that conflict with 103, `obj` is self-pruned,
+  `max_y` conflicts with the donor so nothing propagates, `threshold`/`r_sq` work but
+  the symmetric IOR hands `y` their argument register, a fresh local poisons 103's own
+  preferences, and `z` satisfies every side-condition but is allocated SECOND so it
+  takes `$a0` itself — score 16); an own-preference override needs a reg-reg copy
+  seeding `$t1`, which nothing supplies; and the assigned-conflict route through
+  `a0_var` is L3, already in the body.
+- **Session 12 additionally closes H9** (the third assigned-conflict case: an allocno
+  assigned `$a0` for a reason other than preferring it).  Read off the banked `.greg`,
+  the allocnos that conflict with 103 AND are allocated before it are exactly
+  {72 `obj`, 96 `z`, 100 `max_y`} — and in TARGET those three hold `$t0`, `$v1` and
+  `$a1` respectively, so pushing any of them onto `$a0` necessarily breaks a register
+  target itself requires.  Each case already carries its own measurement: `z` on `$a0`
+  = 16 (s11), `max_y` = 5 (s11), `obj`'s preference self-pruned (s3).  A *newly
+  introduced* carrier cannot substitute: `allocno_compare` puts live_length in the
+  denominator, so any zero-instruction-cost added carrier ranks LAST — measured in
+  session 8, where the added carrier landed after 103 and stole target's `$t1` outright.
+- ~60 distinct C bodies measured across the twelve sessions, 44 of them banked in
+  `memory/grind/func_8002EA24/rejected/`.
+
+### Disposition (auto-applied, per the standing ruling)
+- **Keep the existing cheat on main** — the 10 rules and the pinned body stay, so the
+  full-build oracle SHA1 stays green.
+- **Classify INCOMPLETE — owner-accepted.**  NOT COMPLETED-C, NOT
+  COMPLETED-INLINE-ASM-CANONICAL.  The retained cheat is *not* sanctioned as a
+  technique; it survives only to hold the byte match, and the function is openly
+  flagged unresolved.
+- **Park out of active grind, eligible for re-attempt** if a genuine pure-C lever or
+  new tooling emerges.  The whole ledger (`memory/grind/func_8002EA24/`) is preserved;
+  the banked honest form is `candidate.c` (score 2), with `candidate_alt_score3_no_fake.c`
+  (score 3, L3 removed) and `candidate_alt_L1_via_ylow.c` (score 2, L1 staged through a
+  different local) as fallbacks should either FAKE construct ever be refused.

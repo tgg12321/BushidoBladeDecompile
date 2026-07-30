@@ -1,8 +1,8 @@
 {
  "func": "func_8002EA24",
  "file": "code6cac_b",
- "session_count": 11,
- "current_modality": "structural",
+ "session_count": 12,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 1,
@@ -69,23 +69,24 @@
    "floor": 2,
    "modality": "structural",
    "headline": "H8' (the regs_someone_prefers preference route) is CLOSED by exhaustive recipient enumeration: z satisfies every side-condition for the first time and still loses on allocation rank, and both escapes "
+  },
+  {
+   "session": 12,
+   "floor": 2,
+   "modality": "escalation",
+   "headline": "Disposition reached: both endgame-lock gates FAIL (scan_hand_coded TIGHT_C 3/8, no closing construct to cite a precedent for), the last un-tried mechanical axis H7 is killed by ~84k fresh-seed permute"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "H6 / L1(+L3) acceptance -- the disposition path for the banked score-2 body, now the primary route.",
-   "mechanism": "Both levers are [[staged-value-reused-variable]]: a REAL value, READ by the very next expression, staged through an EXISTING local whose previous value is provably dead at the staging point. L1 defeats jump.c's store-flag single-set precondition; L3 supplies the assigned conflict that hands neg_threshold target's $t1. Session 10 had opened the preference channel as an L3-free route to that register; session 11 CLOSED it by enumeration, so L3 is again the unique instruction-free generator of the one missing allocator bit.",
-   "next_probe": "Judge / fresh layer-2 cheat-reviewer ruling on memory/grind/func_8002EA24/candidate.c. Two new facts for whoever rules: (1) L1's staging local is interchangeable -- candidate_alt_L1_via_ylow.c is byte-equivalent at score 2 -- so the construct is an arm-shape effect, not a variable-specific trick; (2) the preference channel is dead, so an L3 refusal now does kill the axis rather than merely deferring it. Fallbacks banked: candidate_alt_score3_no_fake.c (score 3, L3 removed); without L1 as well the floor returns to 6."
+   "hypothesis": "Re-attempt is gated on NEW TOOLING, not on another modality: an exhaustive RTL-level search that answers 'which C dataflow produces allocno conflict set X' in the FORWARD direction, instead of the guess-and-measure loop twelve sessions have run.",
+   "mechanism": "The residual is one bit in find_reg's pass-0 exclusion set for pseudo 103, and every C-visible generator of that bit (assigned conflict from 97, preference propagation via expand_preferences, assigned conflict from any other allocno) is enumerated and measured dead. What is missing is not another guess but an inversion of the mapping from C dataflow to conflict graph.",
+   "next_probe": "Only if such a tool is built. Do NOT re-run structural / forensics / rederive / synthesis / permuter modalities on this function - all six are spent and their negatives are banked in memory/grind/func_8002EA24/."
   },
   {
-   "hypothesis": "H7 -- a permuter campaign from a chassis OTHER than the banked body.",
-   "mechanism": "decomp-permuter mutates the SOURCE, so two bodies that compile to identical bytes still have different mutation neighbourhoods; session 5's 29,050-iteration basin exhaustion was measured from one chassis only. Nine structurally distinct score-2 bodies are now known.",
-   "next_probe": "tools/permuter_campaign.py from two or three alternative score-2 bodies (s8/v10_nested_range_tests_only.c, s8/v12_single_four_way_if.c, s9/v5_vout_dies_in_chain.c, memory/grind/func_8002EA24/candidate_alt_L1_via_ylow.c) with fresh seeds and the fresh-seed stopping rule; wait in-turn with `permuter_campaign.py wait` and `harvest --stop` before writing the outcome. Permuter modality; honest prior low."
-  },
-  {
-   "hypothesis": "H9 -- the residual bit reached from the OTHER side of find_reg: make hard reg 4 unavailable to 103 by an assigned conflict from an allocno OTHER than 97 (a0_var).",
-   "mechanism": "103's exclusion set is already {2,3,5,6,7,8,29}; the single missing bit is 4. Sessions 3-9 enumerated the assigned-conflict route through 97 only (the function's only $a0-preferring allocno) and session 10-11 enumerated the preference route. The untouched third case is an allocno that is ASSIGNED hard reg 4 for a reason other than preferring it -- i.e. one whose own first-fit lands on $a0 because $v0/$v1 are excluded for it -- and that conflicts with 103. Session 11's v1 accidentally produced exactly such an allocno (96 = z, assigned $a0) but z's own displacement cost 16 points; the question is whether a DIFFERENT allocno can be pushed onto $a0 without vacating $v1 or $a1.",
-   "next_probe": "From the control .greg, list every allocno allocated BEFORE 103 whose conflict set already excludes $v0 and $v1 (101, 96, 100, 109, 108, 72, 102, 117), and for each ask what single conflict would additionally exclude $a1 so that first-fit lands it on $a0 while leaving 96/100/102 on target's $v1/$a1/$v1. Structural or forensics modality; verify in the dump BEFORE scoring that the candidate's disposition is 4 and that `103 conflicts:` gains it."
+   "hypothesis": "A genuinely new sanctioned pure-C construct family, arriving from outside this function's grind and carrying its own community precedent, could close the last 2 points.",
+   "mechanism": "Gate 2 fails today only because nothing is known to close the residual. A future SOTN/VS/ESA-evidenced family that produces an allocator conflict at zero instruction cost would reopen the function immediately - the park is explicitly re-attempt-eligible.",
+   "next_probe": "Re-open func_8002EA24 when such a family is sanctioned project-wide; apply it on top of memory/grind/func_8002EA24/candidate.c (score 2, 104 insns) rather than starting from HEAD."
   }
  ],
  "judge_constraints": [

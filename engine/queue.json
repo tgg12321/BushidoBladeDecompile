@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8002EA24",
-      "file": "code6cac_b",
-      "distance": 18,
-      "verdict": "ASM-PARTIAL",
-      "rules": 10,
-      "status": "active"
-    },
-    {
       "func": "replay_camera_Init",
       "file": "code6cac_b2_post",
       "distance": 18,
@@ -2308,6 +2300,15 @@
       "park_reason": "owner escalation pending: docs/grind/decisions.md \u2014 '## 2026-07-29 \u2014 func_80036FD4 \u2014 OWNER-ESCALATION \u2014 INTEGRATION HANDOFF (not an endgame lock)'"
     },
     {
+      "func": "func_8002EA24",
+      "file": "code6cac_b",
+      "distance": 18,
+      "verdict": "ASM-PARTIAL",
+      "rules": 10,
+      "status": "parked",
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md \u2014 '2026-07-30 \u2014 func_8002EA24 (src/code6cac_b.c) \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE'"
+    },
+    {
       "func": "special_camera_set_win_cam",
       "file": "code6cac_b2_post",
       "distance": 510,
@@ -2544,14 +2545,14 @@
   ],
   "counts": {
     "total": 308,
-    "active": 249,
+    "active": 248,
     "by_status": {
-      "active": 249,
-      "parked": 59
+      "active": 248,
+      "parked": 60
     },
     "by_verdict": {
-      "ASM-PARTIAL": 45,
       "C": 97,
+      "ASM-PARTIAL": 44,
       "ASM-SUSPECT": 107
     }
   }
