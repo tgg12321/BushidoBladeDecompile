@@ -1,0 +1,34 @@
+{
+ "func": "func_80036FD4",
+ "file": "code6cac_b2_post",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 9,
+   "modality": "recon",
+   "headline": "Honest floor 17 -> 9: the 3 missing insns were cse forwarding the D_80101E60 reload; an aggregate (BLKmode) store of the D_80101E6C/D_80101E70 record flushes cse's memory table in pure C and restores "
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The 8-byte record at 0x80101E6C is a real struct-typed global, and declaring it as one in include/code6cac.h reproduces the score-9 bytes without the pointer-alias cast (and lets the extern volatile s32 D_80101E70 cheat at code6cac_b2_post.c:45 be dropped).",
+   "mechanism": "Same BLKmode-destination flush of cse's memory table; the cast is only a probe spelling of the same aggregate assignment. Independent evidence for the record: code6cac_b2_post.c:277 passes &D_80101E6C to cdrom_BcdToFrames/cdrom_FramesToBcd as a buffer.",
+   "next_probe": "Declare the record type + the global (and, if it holds up at the use sites, SpecialCam as an array of that type), drop both casts, re-run sandbox --disable all and require the score to stay at 9 with identical bytes."
+  },
+  {
+   "hypothesis": "The entire remaining residual is the schedule position of the pre-jal reload: cc1's sched1 hoists the lh above the two record loads, which removes the load-delay nop AND pushes the copied words out of $a0/$a1.",
+   "mechanism": "sched1 ready-list priority - the lh feeds a 3-insn chain (nop/sll/jal-arg) versus the record loads' 1-insn chain, so it wins the hoist. In target the lh is pinned by the anti-dependence on sw a0,%lo(D_80101E6C).",
+   "next_probe": "cc1 -da on the sandbox .i, keep the .sched/.greg dumps in tmp/grind/func_80036FD4/s2/, read the ready-list priorities; then try C shapes that shorten the reload's chain to the call or lengthen the record copy's - e.g. hoisting the call argument into its own statement after the copy, or deriving it from the already-live entry pointer."
+  },
+  {
+   "hypothesis": "If the aggregate copy took GCC's emit_block_move/movstrsi path instead of move_by_pieces it would survive as an opaque memory insn through sched1 and hard-block the lh hoist, which is exactly target's shape.",
+   "mechanism": "move_by_pieces expands the 8-byte aligned copy into two transparent SImode moves at expand time, so sched1 can reorder around them; a block-move insn cannot be reordered across.",
+   "next_probe": "Measure whether a differently-shaped record (member layout / declared alignment) takes the movstrsi path and whether it changes the schedule WITHOUT changing the emitted load/store shape. Reject any record shape whose only justification is that it schedules well - the layout must be justified from how the bytes at 0x80101E6C are used."
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-30T04:18:10.613976+00:00"
+}
