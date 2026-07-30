@@ -25,6 +25,11 @@
   local is also a wash: GCC coalesces the local into `$s0` and still emits the
   `addiu` after the delay slot.
 
+### Session-1 frontier — disposition after session 2
+F1 (setXYWH sums create 640 before 240) — KILLED, see H5 below.
+F2 (`addiu $s0,$s0,0x24` before the `jal`) — **CONFIRMED and CLOSED**, see H7.
+F3 (permuter from the score-4 base) — still untried; the base is now 2.
+
 ### Live frontier (in priority order)
 1. **F1 — materialize 640 early without an early store to +0x10.** The residual
    `sh $v1,0x10` position is the larger of the two remaining diffs. The untried
@@ -50,6 +55,47 @@
    as `difficult-is-not-impossible` §3 requires, then run a fresh-seed campaign
    via `tools/permuter_campaign.py`.
 
+## Session 2 (structural, 2026-07-30) — floor 4 -> 2
+
+### Resolved
+- **H5 KILLED — a constant-holder local (or a setXYWH-style sum) creates the 640
+  pseudo early while its stores stay late.** cse propagates the constant into both
+  uses and deletes the standalone set; four spellings (s16 w/h, s16 w only, s32
+  w/h, `x + w`/`y + h` sums) all score exactly what the no-lever form scores.
+- **H6 KILLED — struct-typed member stores dissolve the may-alias barrier via
+  MEM_IN_STRUCT_P** (`tools/gcc-2.7.2/sched.c:834-881`). Measured 12/10/10 against
+  a base of 2; strictly worse in every spelling.
+- **H7 CONFIRMED — R2 closes by keeping BOTH pointer values live across the call.**
+  `q = p; p += 0x24; ot_Link(ot,(u32*)q); D_800A38B4 = p;` gives target's exact
+  `move $a1,$s0` / `addiu $s0,$s0,0x24` / `jal` / `sw` tail. 4 -> 2.
+- **H8 KILLED — pure statement reordering inside the block can reach 0.** ~45
+  orderings measured; minimum 2, reached only by the two forms with exactly one
+  640-valued store at the head of the body.
+
+## [s2] The addiu $s0,$s0,0x24 lands in the pre-jal slot when the OLD primitive pointer and the ADVANCED pointer are both live across the ot_Link call.
+- mechanism: With `q = p; p += 0x24;` before the call, the argument value (old p) and the allocator value (p+0x24) are two simultaneously-live values, so GCC cannot coalesce them: it emits the argument copy `move $a1,$s0` early, performs the advance in place on $s0 before the call, and keeps the `sw` to D_800A38B4 after the call because the call clobbers memory. s1's two killed spellings each left only ONE of the two values live, so either the sw moved forward with the advance or the extra local was coalesced back into $s0.
+- probe: Measured four tail spellings on the score-4 base: (Q) the s1 candidate, (V2) q/p split as above, (V4) `next = p + 0x24;` before the call with `D_800A38B4 = next;` after, (V5) the q/p split hoisted above initPolyG4.
+- result: Q 4, V2 **2**, V4 4, V5 15 (46 insns). V2's disassembly reproduces the entire tail of target; the whole-function residual is now a single instruction.
+- verdict: CONFIRMED
+
+## [s2] A named constant-holder local (s16 w = 640) — or the PsyQ setXYWH `x + w` / `y + h` sum spelling — creates the 640 pseudo at the top of the RTL stream while its stores stay late, giving target's leading li $v1,640.
+- mechanism: If the set survived at the declaration point it would be the first constant insn in the block, so 640 would head the block and take the long live range in $v1 while the x1/x3 stores stayed in the post-load group.
+- probe: Four spellings measured on the score-4 base: `s16 w, h`; `s16 w` only with literal 240 stores; `s32 w, h`; and `s32 x,y,w,h` with `x + w` / `y + h` as the stored values (the setXYWH expansion).
+- result: All four score 10 — bit-identical in score to the form with no leading 640 store at all. GCC 2.7.2's cse propagates the constant into both use sites and deletes the standalone set, so the declaration leaves no insn behind and the li is re-created at the first USE. Banked as rejected/constant-holder-local-640-folds-away.c. This closes s1's F1.
+- verdict: KILLED
+
+## [s2] Writing the primitive through a real POLY_G4 struct pointer frees the coordinate stores from the may-alias barrier against the lw of D_800A374C, letting the 0x10 store sink into the post-load group.
+- mechanism: tools/gcc-2.7.2/sched.c:834-881 implements the classic MEM_IN_STRUCT_P disambiguation — an in-struct MEM with a varying (register-based) address is treated as NOT conflicting with a MEM that is neither in-struct nor address-varying, which is exactly the fixed-address load of the scalar global D_800A374C. If member stores set MEM_IN_STRUCT_P, the pre-load/post-load barrier that pins our sh $v1,0x10 would dissolve.
+- probe: Declared a POLY_G4 typedef (tag / rgb+code / x,y per vertex) and measured three struct-typed bodies against the score-2 base: leading `poly->x1 = 640`, ascending coordinates after the ot load, and setXY4 order.
+- result: 12 / 10 / 10 — every struct spelling is strictly worse than its scalar byte-offset counterpart (the ascending scalar equivalent is 8). The barrier is not attackable this way and the struct spelling costs extra diffs elsewhere. Banked as rejected/struct-typed-polyg4-member-stores.c.
+- verdict: KILLED
+
+## [s2] Pure statement reordering within the block can reach 0 from the score-2 base.
+- mechanism: The residual is a single instruction position, and the only remaining degrees of freedom in the block are the relative order of the 8 coordinate stores, the 12 RGB byte stores and the ot load.
+- probe: Built a generator (tmp/grind/func_8003553C/s2/ordersweep.ps1) taking pipe-separated order specs and scored ~45 distinct orderings, sweeping each 640 store's position, the 240 pair, the ot load's position, and the RGB block including its four 3-store subgroups, under both the s1 and the s2 tail.
+- result: Minimum 2, reached only by the two forms with exactly one 640-valued store at the head of the body (x1-leading and its x3-leading mirror). No leading 640 store bottoms out at 8; two leading 640 stores at 5. Full table in tmp/grind/func_8003553C/s2/forms_and_scores.md §C.
+- verdict: KILLED
+
 ## [s1] The lw of D_800A374C (ot_Link's first argument) cannot be scheduled across stores through p, so its emitted position tracks its source position; target emits it between the RGB byte block and the last six coordinate stores, therefore the original source computed that argument there.
 - mechanism: GCC 2.7.2 sched1 alias analysis: p derives from the opaque global pointer D_800A38B4, so stores through p may-alias the global load. Moving the load later creates a true dependence, moving it earlier violates the anti-dependence; either way it is pinned relative to the stores.
 - probe: Hoisted the argument into a local `u32 *ot = (u32 *)(D_800A374C + 0x401C);` placed between the RGB block and the trailing coordinate stores; objdump-diffed the sandbox object against asm/funcs/func_8003553C.s.
@@ -72,4 +118,28 @@
 - mechanism: Moving the pointer advance earlier in source should let sched1 place the addiu in the pre-jal slot.
 - probe: Two forms measured: (a) the whole assignment moved before the call; (b) `next = p + 0x24;` before the call with `D_800A38B4 = next;` after it.
 - result: Both neutral. In (a) the sw to the global moves before the jal too, but target's sw is after it — one diff traded for another. In (b) GCC coalesces `next` into $s0 and still emits the addiu after the delay slot.
+- verdict: KILLED
+
+## [s2] The `addiu $s0,$s0,0x24` lands in the pre-jal slot (with the `sw` to D_800A38B4 still after the call) when the OLD primitive pointer and the ADVANCED pointer are both live across the ot_Link call: `q = p; p += 0x24; ot_Link(ot,(u32*)q); D_800A38B4 = p;`.
+- mechanism: With both values live at the call GCC cannot coalesce them into one pseudo, so it materializes the argument copy `move $a1,$s0` early, performs the advance in place on $s0 before the call, and keeps the global store after the call because a call clobbers memory and the sw cannot be hoisted across it. Session 1's two killed spellings each left only ONE of the two values live, which is exactly why they were a wash: advancing the global directly drags the sw forward with the addiu, and `next = p + 0x24;` staged in a plain extra local is coalesced straight back into $s0.
+- probe: Measured four tail spellings on the score-4 base with `sandbox --disable all` and objdump-diffed each: (Q) the s1 candidate `D_800A38B4 = p + 0x24;` after the call; (V2) the q/p split above; (V4) `next = p + 0x24;` before the call with `D_800A38B4 = next;` after (a re-measurement of s1's H4-(b)); (V5) the q/p split hoisted above initPolyG4.
+- result: Q 4, V2 = 2, V4 4 (still a wash), V5 15 at 46 insns. V2's disassembly reproduces target's entire tail — move a1,s0 / addiu s0,s0,0x24 / jal ot_Link / addiu a0,a0,0x401C in the delay slot / sw s0 — leaving exactly one misplaced instruction in the whole function.
+- verdict: CONFIRMED
+
+## [s2] A named constant-holder local (`s16 w = 640;`), or the PsyQ setXYWH `x + w` / `y + h` sum spelling, creates the 640 pseudo at the top of the RTL stream while its stores stay late — giving target's leading `li $v1,640` without an early store to +0x10. (This was session 1's top frontier item F1.)
+- mechanism: If the set survived at the declaration point it would be the first constant insn in the block, so 640 would head the block and take the long live range in $v1 while the x1/x3 stores stayed in the post-load group.
+- probe: Four spellings measured on the score-4 base: `s16 w, h`; `s16 w` only with literal 240 stores; `s32 w, h`; and `s32 x,y,w,h` with `x + w` / `y + h` as the stored values (the full setXYWH expansion).
+- result: All four score 10 — identical to the form that has no leading 640 store at all. GCC 2.7.2's cse propagates the constant into both use sites and deletes the standalone set, so the declaration leaves no insn behind and the li is re-created at the first USE. There is therefore no source spelling that materializes 640 early without an early USE of 640. Banked as memory/grind/func_8003553C/rejected/constant-holder-local-640-folds-away.c.
+- verdict: KILLED
+
+## [s2] Writing the primitive through a real POLY_G4 struct pointer frees the coordinate stores from the may-alias barrier against the lw of D_800A374C, letting the +0x10 store sink into the post-load group where target has it.
+- mechanism: tools/gcc-2.7.2/sched.c:834-881 implements the classic MEM_IN_STRUCT_P disambiguation: an in-struct MEM with a varying (register-based) address is treated as NOT conflicting with a MEM that is neither in-struct nor address-varying — which is exactly the fixed-address load of the scalar global D_800A374C. If member stores set MEM_IN_STRUCT_P, the pre-load/post-load store barrier would dissolve and the scheduler could sink the 0x10 store freely.
+- probe: Declared a POLY_G4 typedef (tag / rgb+code / x,y per vertex, 0x24 bytes) and measured three struct-typed bodies against the score-2 base: leading `poly->x1 = 640`, ascending coordinates after the ot load, and setXY4 order (RGB block first).
+- result: 12 / 10 / 10. Every struct spelling is strictly worse than its scalar byte-offset counterpart (the ascending scalar equivalent scores 8). The barrier is not attackable this way. Banked as memory/grind/func_8003553C/rejected/struct-typed-polyg4-member-stores.c.
+- verdict: KILLED
+
+## [s2] Pure statement reordering inside the single scheduling block can reach 0 from the score-2 base.
+- mechanism: The residual is one instruction position and the only remaining degrees of freedom in the block are the relative order of the 8 coordinate stores, the 12 RGB byte stores and the ot load.
+- probe: Built a spec-driven generator (tmp/grind/func_8003553C/s2/ordersweep.ps1) and scored ~45 distinct orderings under both the s1 and s2 tails, sweeping each 640 store's position, the 240 pair, the ot load's position, and the RGB block including splitting it into its four 3-store subgroups.
+- result: Minimum is 2, reached by exactly two forms — the ones with exactly ONE 640-valued store at the head of the body (x1 leading with trailing group 8,A,12,18,20; or the mirror, x3 leading with trailing group 8,A,10,12,18). Every form with no leading 640 store bottoms out at 8; every form with two of them at 5. Full table in tmp/grind/func_8003553C/s2/forms_and_scores.md section C.
 - verdict: KILLED
