@@ -1,31 +1,37 @@
 {
  "func": "func_800477E8",
  "file": "sound",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 17,
    "modality": "recon",
    "headline": "Recon: floor 17 is PURE register-rename \u2014 build emits all 170 insns in target's exact order; gap is exactly two allocation ties ($t1/$t2 and $v1/$a1); three ordering/spelling levers killed with measur"
+  },
+  {
+   "session": 2,
+   "floor": 17,
+   "modality": "structural",
+   "headline": "cc1 -da allocation dump turned this into a solvable simulation: loop1's ENTIRE register seating now equals target, s1's 'v1 must stay shared' constraint is overturned, and the whole residual is confin"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Tie A ($t1/$t2) closes by making 't1val' out-prioritise 't2' on the reference-count / live-length ratio, since ordering (killed) and constant spelling (killed) are both inert.",
-   "mechanism": "global.c allocno_compare ranks by roughly log2(n_refs)*n_refs*size/live_length. t2 has 3 refs and t1val 2, with essentially identical live ranges, so t2 is allocated first and takes $t1 as the earlier entry in REG_ALLOC_ORDER.",
-   "next_probe": "Sink 't2 = 0x2C00;' to the top of the do-loop body (beside t0/a2) so its live length collapses to one iteration while its ref count stays 3, and measure whether the ratio flips. Then the mirror probe: give t1val a genuine third reference \u2014 note s1val and t1val are the results of two BYTE-IDENTICAL gpu_CalcClut(0x10,0x1E0) calls, so check asm/funcs/func_800477E8.s for whether target's two calls really take identical arguments; if so the arms may legitimately share one value. Take a `cc1 -da` .greg dump into tmp/grind/func_800477E8/s2/ and read ';; Register dispositions:' plus the conflict list directly per .claude/rules/register-alloc-pure-c.md instead of inferring priorities."
+   "hypothesis": "The last half of tie B: inside loop2 the stored value must out-prioritise the walking pointer, so that the order becomes p, val, a0, ptr, w, r and each takes the lowest free register 2,3,4,5,6,7.",
+   "mechanism": "'val' has only 2 references ('val = w;' and '*p = val;') against 'ptr's 4-8, and both are tight-ranged, so floor_log2(2)*2/len loses badly to floor_log2(4)*4/len and ptr is allocated 4th in the whole function while val is second-to-last. This is the same inversion loop1 had, but loop1's fix (delete the conflict by splitting) is unavailable because val and ptr are genuinely both live across the inner loop.",
+   "next_probe": "Attack ptr's live_length rather than val's ref count - ptr is defined immediately before loop2 so its range is only ~8 insns; try forms that legitimately lengthen it (e.g. deriving loop2's row base from a cursor the D_800EF0xx init block above already needs, if the semantics support it), and forms that give val a genuine third reference from surrounding code. Screen every form on the .greg dump with VSET=variantsN python3 sweep.py BEFORE scoring - the score alone hid the loop1 solution for an entire session."
   },
   {
-   "hypothesis": "Tie B ($v1/$a1) closes by LOWERING the priority of 'a1' (loop1) and 'ptr' (loop2), because 'v1' must keep its long shared range and so cannot be lifted.",
-   "mechanism": "v1 is required to stay one allocno spanning both loops (measured: splitting costs 17->31), so its n_refs/live_length cannot be raised much. The seating flips only if both of its disjoint competitors \u2014 currently tight-ranged loop-carried induction pseudos with high ratios \u2014 fall below it.",
-   "next_probe": "For loop2, attack 'ptr' as a separate induction variable: target idx 139/148 ('addiu v0,ptr,64' then 'ptr += 0x11') is the walking-pointer shape, so try driving the inner loop off 'p' alone with the row base recomputed from an index, and conversely try post-increment walking per .claude/rules/walking-pointer-serializes-parallel-loads.md. For loop1, 'a1' advances by 0x100 while 'v1' advances by 1 and they are only ever consumed as 'v1 | a1' \u2014 probe changing a1's reference profile (e.g. deriving it from the existing a0 inner counter) while noting target DOES emit 'addiu a1,a1,256', so a1 must remain loop-carried."
+   "hypothesis": "Tie A needs a reference-count change that no structural lever can supply, so it belongs to a rederive/forensics session that re-expresses the two if/else arms.",
+   "mechanism": "t1val 2 refs vs t2 3 refs at identical live ranges. If the counts were equal the tie breaks on allocno number and t1val (76) beats t2 (83), which is exactly target's seating. The arms' payloads are {s3val, t2, s1val, -0xC1, -0x100, -0x3FC1, -0x4000} and {s2val, t2, t1val, -0x40C1, -0x4100, -0x7FC1, -0x8000}: the SECOND element is t2 in both and the negative constants differ by exactly 0x4000 between arms.",
+   "next_probe": "Re-express the arms from the primitive layout (tpage, clut, uv pairs; the 0x4000 arm delta looks like a semi-transparency/tpage bit) rather than as two duplicated literal store runs, and re-read the .greg dump for the t1val/t2 dispositions."
   },
   {
-   "hypothesis": "The decisive axis is a rederive: the instruction stream is already exactly right, so only the artificial m2c variable partitioning is wrong, and rewriting the body from its semantics will re-partition the allocnos correctly.",
-   "mechanism": "Not a codegen mechanism but the strongest search-space argument available here \u2014 build_insns == target_insns == 170 in identical order means the C is structurally correct and only the variable-to-allocno mapping diverges. That mapping is precisely what a verbatim m2c transcription assigns arbitrarily (one local per observed hard register, goto control flow, register-derived names).",
-   "next_probe": "In a rederive-modality session, rewrite src/sound.c:674-816 from the semantics up: real for-loops over row/column, named u/v/tpage/clut locals, and the D_800EF59C / D_800EF558 fills as ordinary indexed loops. Hold two s1 constraints fixed: (a) the loop1 'v1'-equivalent must be the SAME C variable as the loop2 one, and (b) verify build_insns stays 170 before judging any rewrite's register seating. Also resolve the inherited un-annotated do-while(0) at src/sound.c:746."
+   "hypothesis": "The candidate's dependence on the exact order 't2 = 0x2C00; a3 = 0; a0 = 0;' should be made non-arbitrary before it is ever put in front of the Judge.",
+   "mechanism": "Pure allocno_live_length: a3 (6 refs) out-ranks t0 (5 refs) only while a3's live range is short, and each statement placed between 'a3 = 0;' and the loop head lengthens it. Not a coercion, but unmotivated as written.",
+   "next_probe": "Find a natural loop shape giving the row counter the same live range - but a full nested for() rewrite of loop1 was measured to create two extra induction pseudos (t2 -> $t4, t1val -> $t3), so re-read the dump after any loop-shape change rather than assuming shape neutrality."
   }
  ],
  "judge_constraints": [],

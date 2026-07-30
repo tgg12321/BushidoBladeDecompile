@@ -1,27 +1,59 @@
-/* func_800477E8 — best known form as of grind session s1 (2026-07-30).
+/* func_800477E8 — best known form as of grind session s2 (2026-07-30, structural).
  *
- * This is UNCHANGED from HEAD (src/sound.c:674-816). Session s1 was recon:
- * every probe it ran was neutral or worse and was reverted, so the floor is
- * still the inherited one.
+ *   honest floor (sandbox --disable all): 17   (UNCHANGED from s1)
+ *   build_insns == target_insns == 170
  *
- *   honest floor (sandbox --disable all): 17
- *   build_insns == target_insns == 170   <- no structural gap whatsoever
+ * The FLOOR is the same as HEAD's, but this form is strictly more advanced and
+ * is the base the next session should start from, because the composition of
+ * the residual has changed completely:
  *
- * All 17 residual diffs are register names arising from exactly two
- * allocation ties (see evidence.md for the full instruction-level table):
- *   Tie A  $t1/$t2 : build seats t2->$t1, t1val->$t2; target wants the reverse.
- *   Tie B  $v1/$a1 : build seats v1->$a1 with a1 (loop1) and ptr (loop2) both
- *                    on $v1; target wants v1->$v1 and a1/ptr on $a1.
+ *   HEAD   : loop1 seating WRONG (v1/a1 swapped), loop2 seating WRONG,
+ *            tie A (t1val/t2) WRONG                            -> 6 + 6 + 5 = 17
+ *   THIS   : loop1 seating EXACTLY TARGET for every local,
+ *            loop2 seating WRONG, tie A WRONG                  -> 0 + 12 + 5 = 17
  *
- * Known constraints a successor must respect:
- *   - `v1` MUST remain ONE variable shared across loop1 and loop2. Splitting it
- *     into two short-lived locals measured 17 -> 31 (rejected/v1-split-*.c).
- *   - Statement order between the tied pair is inert (17 -> 17), and hoisting
- *     `t2 = 0x2C00` above the gpu_CalcClut call costs +2 insns (17 -> 26).
- *   - Inlining the 0x2C00 literal does not remove the competing allocno; GCC
- *     re-CSEs it and the seating is unchanged (17 -> 18).
+ * Measured with the cc1 -da `.greg` allocation dump (tmp/grind/func_800477E8/s2/):
+ *   loop1  a0->$a0(4)  a1->$a1(5)  a2->$a2(6)  a3->$a3(7)  t0->$t0(8)
+ *          v1->$v1(3)  v0->$v0(2)  s0->$s0  s1val/s2val/s3val->$s1/$s2/$s3
+ *   ALL of those equal target. Remaining diffs are ONLY:
+ *     tie A : t1val->$t2(10) / t2->$t1(9)   -- target wants t1val=9, t2=10
+ *     loop2 : val->$a3(7) ptr->$v1(3) w->$a1(5) r->$a2(6)
+ *             -- target wants val=$v1(3) ptr=$a1(5) w=$a2(6) r=$a3(7)
  *
- * Outstanding Judge surface: the `do { v0 = v1 | a1; } while (0);` below is
+ * WHAT CHANGED vs HEAD, and why each change is load-bearing:
+ *
+ * 1. loop2's row counter / accumulator / stored value are now their OWN locals
+ *    (`r`, `w`, `val`) instead of reusing loop1's `a3`, `a2`, `v1`. They are
+ *    semantically unrelated quantities that m2c merged because they shared a
+ *    hard register. This is what frees loop1's `v1` to win $v1: while `v1` is
+ *    shared with loop2 it CONFLICTS with the loop2 walking pointer `ptr`, and
+ *    `ptr` (a tight-range induction pseudo, priority ~1.6) always out-ranks a
+ *    loop-spanning value pseudo (~0.26) in GCC 2.7.2 global.c allocno_compare,
+ *    so `ptr` takes $v1 first, every time. Splitting removes the conflict.
+ *    NOTE this OVERTURNS s1's K2 conclusion ("v1 must stay shared"): K2 read
+ *    the SCORE (17->31) instead of the SEATING, and the seating shows the split
+ *    is a prerequisite, not a regression.
+ *
+ * 2. `a3 = 0;` sits BETWEEN `t2 = 0x2C00;` and `a0 = 0;`. This is pure statement
+ *    order among three initialisations and is worth 9 points: with `a3 = 0;`
+ *    first (HEAD's order) a3 and t0 swap ($a3 gets $t0), and with `a3 = 0;` last
+ *    the whole loop1 seating collapses (score 26). The mechanism is
+ *    allocno_live_length: a3 has 6 refs to t0's 5, so a3 only wins the earlier
+ *    register when its live range is short enough that
+ *    floor_log2(6)*6/len(a3) > floor_log2(5)*5/len(t0). It is arbitrary-looking
+ *    and a successor should try to reach the same seating from a natural loop
+ *    shape instead (a real for() over the row counter) before proposing this to
+ *    the Judge.
+ *
+ * KNOWN-DEAD, do not re-derive (s1 + s2, all measured):
+ *   - splitting `ptr` between loop2 and loop3, or turning loop3 into an indexed
+ *     loop: completely inert (identical .greg dump).
+ *   - declaration order alone (v1 first, t1val last, a1 before a2): inert.
+ *   - giving loop2 its own inner counter: catastrophic (17 -> 40).
+ *   - hoisting `t2 = 0x2C00` above gpu_CalcClut: +2 insns (callee-save pair).
+ *   - inlining the 0x2C00 literal: GCC re-CSEs it, seating unchanged (17 -> 18).
+ *
+ * OUTSTANDING JUDGE SURFACE: the `do { v0 = v1 | a1; } while (0);` below is
  * inherited from HEAD and is NOT `/* FAKE *\/`-annotated. Any session that
  * reaches distance 0 must annotate it per .claude/rules/do-while-zero-exception
  * or eliminate it before proposing the candidate.
@@ -43,14 +75,17 @@ s32 func_800477E8(void) {
     s32 v0;
     s32 *ptr;
     s32 *p;
+    s32 w;
+    s32 r;
+    s32 val;
 
     s0 = D_800A33D0;
     s3val = gpu_CalcTPage(0, 0, 0x2C0, 0x1C0);
     s2val = gpu_CalcTPage(0, 0, 0x2C0, 0x180);
     s1val = gpu_CalcClut(0x10, 0x1E0);
     t1val = gpu_CalcClut(0x10, 0x1E0);
-    a3 = 0;
     t2 = 0x2C00;
+    a3 = 0;
     a0 = 0;
     do {
         t0 = 0x1200;
@@ -143,22 +178,22 @@ inner:
         func_800417D0(a0p);
     }
 
-    a3 = 0;
-    a2 = 0;
+    r = 0;
+    w = 0;
     ptr = &D_800EF59C[0];
 outer2:
-    v1 = a2;
+    val = w;
     a0 = 0x10;
     p = ptr + 0x10;
 inner2:
-    *p = v1;
+    *p = val;
     a0--;
     p--;
     if (a0 >= 0) goto inner2;
-    a2 += 0x7D0;
-    a3 += 1;
+    w += 0x7D0;
+    r += 1;
     ptr += 0x11;
-    if (a3 < 9) goto outer2;
+    if (r < 9) goto outer2;
 
     a0 = 0;
     ptr = &D_800EF558[0];

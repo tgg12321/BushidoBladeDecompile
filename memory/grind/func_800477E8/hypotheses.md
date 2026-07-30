@@ -50,7 +50,115 @@ reconstructs the same allocno regardless of how the constant is written.
 
 ---
 
-## Live frontier (for s2+)
+## KILLED / RESOLVED in s2 (structural)
+
+### K4 — "Declaration order breaks the allocation tie (allocnos are numbered in declaration order and global.c breaks equal priorities by allocno number)."
+**Probe.** `decl-v1-first`, `decl-t1val-last`, `a1 declared before a2`, and
+`val declared first` among the new loop2 locals — screened on the cc1 `-da`
+`.greg` allocation dump.
+**Result.** Byte-identical priority order AND dispositions in every case.
+**Verdict.** KILLED, strong form. global.c only reaches the allocno-number
+tiebreak when two priorities are EXACTLY equal, which no contested pair here is.
+
+### K5 — "loop3's pointer being the same C variable as loop2's row pointer is an m2c artifact; splitting it (or making loop3 an indexed loop) changes the seating."
+**Probe.** `ptr-split-loop3`, `loop3-indexed`, `a0-split-loop3`,
+`loop2-base-index` (`&ptr[0x10]` / `&ptr[0x11]` instead of pointer arithmetic).
+**Result.** Inert or worse; the pointer-split and the indexed rewrite produce an
+identical dump to base. `a0` split off loop3 rotates the seating away from
+target.
+**Verdict.** KILLED. Do not touch loop3.
+
+### K6 — s1's K2 REVERSED: "`v1` must remain ONE variable shared across loop1 and loop2."
+**Probe.** Re-measured the split through the allocation dump instead of the
+score, then combined it with splitting loop2's accumulator and row counter.
+**Result.** Splitting `v1` is what puts it in `$v1` — while it is shared it
+CONFLICTS with loop2's walking pointer `ptr`, and `ptr`'s allocno priority
+(tight-range induction pseudo, ~1.0-1.6) is unbeatable by a loop-spanning value
+pseudo (~0.26), so `ptr` takes `$v1` first every time. With `w`/`r`/`val` split
+out and `t2 = 0x2C00; a3 = 0; a0 = 0;` ordering, loop1's seating equals target
+EXACTLY.
+**Verdict.** s1's K2 constraint is WITHDRAWN. The floor is still 17, but the
+residual moved wholesale from loop1 to loop2.
+
+### K7 — "Finish the job: split the remaining shared locals (`a0`, `ptr`) too."
+**Probe.** `mid+loop2-own-counter`, `mid+loop3-own-ptr+own-counter`,
+`split-loop2-all`, `split-everything`.
+**Result.** 17 -> 40 and 17 -> 36. `a0` must stay ONE allocno across all three
+loops — that shared reference count is exactly what earns it `$a0`, which is
+where target has it in all three loops.
+**Verdict.** KILLED. The correct partition is ASYMMETRIC: split loop2's
+value/accumulator/row-counter, keep `a0` and `ptr` shared.
+
+### K8 — "Tie A ($t1/$t2) is reachable by a structural lever."
+**Probe.** Every structural variant this session (7 rounds, ~30 forms) was
+checked for the t1val/t2 disposition as well; none moved it. Also confirmed from
+`asm/funcs/func_800477E8.s` that target's two `gpu_CalcClut(0x10,0x1E0)` results
+really are two distinct call results (`addu $s1,$v0,$zero` sits in the 4th call's
+DELAY slot, so it captures the 3rd call's value), so the arms cannot legitimately
+share one value.
+**Verdict.** KILLED for the structural modality. t1val has 2 refs, t2 has 3, with
+identical live ranges; nothing short of changing those counts flips it, and both
+arms genuinely store 0x2C00. Worth 5 of the 17.
+
+---
+
+## Live frontier (for s3+)
+
+### F4 — Tie B's REMAINING half: inside loop2, the stored value must out-prioritise the walking pointer.
+**State.** With the s2 candidate applied, loop1 is exact and the only register
+errors are: `val`->$a3(7) but target wants $v1(3); `ptr`->$v1(3) but target
+wants $a1(5); `w`->$a1(5) wants $a2(6); `r`->$a2(6) wants $a3(7). `a0`->$a0(4)
+and `p`->$v0(2) are already correct.
+**Mechanism.** Required allocation order inside loop2 is `p, val, a0, ptr, w, r`
+(each then takes the lowest free register: 2, 3, 4, 5, 6, 7). Actual order puts
+`ptr` fourth OVERALL in the whole function and `val` second-to-last: `val` has
+only 2 references (`val = w;` and `*p = val;`) against `ptr`'s 4-8, and both are
+tight-ranged, so `floor_log2(2)*2/len` loses badly to `floor_log2(4)*4/len`.
+This is the SAME inversion loop1 had, and loop1's fix (remove the conflict by
+splitting) is not available here because `val` and `ptr` are genuinely both live
+across the inner loop.
+**Next probe.** Attack `ptr`'s live_length rather than `val`'s ref count: `ptr`
+is currently defined immediately before loop2, so its range is ~8 insns. Try
+forms that legitimately lengthen it (e.g. deriving loop2's row base from a
+pointer that is also the natural cursor for the `D_800EF0xx` init block above,
+if the semantics support it), and forms that give `val` a genuine third
+reference from the surrounding code. Screen everything on the .greg dump first
+(`VSET=variantsN python3 sweep.py`) — the score alone hid the loop1 solution for
+a whole session.
+
+### F5 — Tie A needs a reference-count change that structure cannot supply; it is the natural target of a `forensics` or `rederive` session.
+**Mechanism.** t1val 2 refs vs t2 3 refs, identical live ranges ⇒ t2 wins $t1.
+If the counts were EQUAL the tie would break on allocno number and t1val (76)
+beats t2 (83), which is the seating target wants — so the question is what
+original C gives the 0x2C00 constant only two references, or the second CLUT
+value three. Note the arms' payloads: the `a3>=5` arm stores
+{s3val, t2, s1val, -0xC1, -0x100, -0x3FC1, -0x4000} and the `else` arm stores
+{s2val, t2, t1val, -0x40C1, -0x4100, -0x7FC1, -0x8000} — the SECOND element is
+`t2` in both, and the negative constants differ by exactly 0x4000 between arms.
+A rederive that expresses the arms as a table/base-plus-offset rather than two
+literal store sequences would change these reference counts wholesale.
+**Next probe.** In a rederive session, re-express the two arms from the
+primitive layout (tpage, clut, uv pairs) rather than as duplicated store runs,
+and re-read the .greg dump for the t1val/t2 dispositions.
+
+### F6 — Make the candidate's statement ordering non-arbitrary before it ever reaches the Judge.
+**Mechanism.** The s2 candidate depends on `t2 = 0x2C00; a3 = 0; a0 = 0;` in
+that exact order (other orders cost 8-9 points) purely through
+allocno_live_length. That is ordinary statement order, not a coercion, but it is
+unmotivated as written.
+**Next probe.** Find a natural loop shape that yields the same live range for the
+row counter — but note a full nested `for()` rewrite of loop1 was measured to
+create two EXTRA induction pseudos (t2 -> $t4, t1val -> $t3), so re-read the dump
+after any loop-shape change.
+
+## Superseded frontier (s1's F1/F2/F3)
+
+F1 (tie A by reference count) — measured this session, see K8; the "check whether
+target's two gpu_CalcClut calls share a value" sub-question is answered NO.
+F2 (lower a1's and ptr's priority) — half-solved: a1 is now correct; the ptr half
+survives as F4.
+F3 (rederive) — still live, and now much better targeted: only loop2 and tie A
+remain, and evidence.md records the exact seating each must reach.
 
 ### F1 — Tie A closes by making `t1val` out-prioritise `t2` on reference count, not on ordering.
 **Mechanism.** global.c `allocno_compare` ranks by roughly
@@ -125,4 +233,40 @@ register seating is judged. Also decide the fate of the inherited un-annotated
 - mechanism: With one fewer allocno in the conflict set, the survivor takes the first available register in REG_ALLOC_ORDER.
 - probe: Deleted the 's32 t2;' declaration and the 't2 = 0x2C00;' statement, wrote the literal 0x2C00 at both '*s0 = t2;' sites. Measured sandbox --disable all and re-ran the instruction diff.
 - result: 17 -> 18 (build_insns still 170). GCC re-CSE'd the two literals into a single pseudo — both build and target still emit exactly one 'li ...,11264' — so the contestant did not disappear and tie A's seating was byte-for-byte unchanged; the only effect was the constant scheduling one slot later than target ('move a0,zero' and 'li t1,11264' traded places), adding one diff.
+- verdict: KILLED
+
+## [s2] The allocation can be read and predicted directly instead of inferred: a cc1 -da dump of the real src/sound.c exposes the allocno priority order, the full conflict graph and the pseudo->hardreg map for func_800477E8.
+- mechanism: GCC 2.7.2 global.c dumps ';; N regs to allocate:' (allocnos in allocation-priority order), ';; NN conflicts:' and ';; Register dispositions:' into the .greg dump. MIPS gcc-2.7.2 defines no REG_ALLOC_ORDER, so find_reg gives each allocno, in that order, the lowest-numbered hard reg not held by a conflicting allocno - which makes the whole seating a deterministic simulation over the printed data.
+- probe: tmp/grind/func_800477E8/s2/greg.sh runs the exact Makefile cpp+cc1 flags with -da over src/sound.c. (src/sound.c has a pre-existing arity error in the UNRELATED func_800470B0, so cc1 exits non-zero; the dumps are still written in full.) Baseline: ';; 15 regs to allocate: 84 72 86 85 78 82 79 77 80 81 83 76 75 74 73' with dispositions 76->10 77->7 78->4 79->6 80->3 81->8 82->5 83->9 84->2 85->3 86->2.
+- result: Baseline priority order = v0, s0, p, ptr, a0, v1, a2, a3, a1, t0, t2, t1val. Simulating find_reg against the printed conflict sets until the assignment equals target's gives the REQUIRED order: v0, s0, p, v1, a0, a1, a2, a3, t0, t1val, t2 (ptr anywhere after a0). Three inversions to fix: v1 above ptr and above a0; a1 above a2/a3; t1val above t2.
+- verdict: CONFIRMED
+
+## [s2] s1's K2 is wrong: loop1's 'v1' must be SPLIT from loop2's stored value, not shared, because while shared it conflicts with loop2's walking pointer and can never win $v1.
+- mechanism: allocno_compare ranks by floor_log2(n_refs)*n_refs*size/live_length. 'ptr' is a tight-range induction pseudo (~1.0-1.6); a value pseudo spanning both loops is ~0.26. ptr is therefore allocated 4th in the whole function and takes $v1 before v1 is ever considered. The conflict is what blocks v1; removing the conflict (splitting) is the only lever, since v1's priority cannot be raised by a factor of ~6.
+- probe: Re-measured K2's split through the .greg dump instead of the score, then combined it with splitting loop2's accumulator and row counter into their own locals ('w','r','val') and ordering the pre-loop inits as 't2 = 0x2C00; a3 = 0; a0 = 0;'. Screened with sweep.py (dump-only, no src/ edits), scored with score.py (apply -> sandbox --disable all -> restore).
+- result: Split alone: v1->$v1(3) CORRECT but a1/a2/a3 rotate (score 29). Split + loop2 accumulator split: v1->$v1 AND a1->$a1 both correct (score 25). Split + full loop2 split + init ordering: loop1 seating equals target EXACTLY for a0/a1/a2/a3/t0/v1/v0/s0/s1val/s2val/s3val, score 17 with build_insns 170. s1's 'must preserve sharing' constraint is WITHDRAWN.
+- verdict: CONFIRMED
+
+## [s2] Declaration order breaks the allocation tie (allocnos are numbered in declaration order and global.c breaks equal priorities by allocno number).
+- mechanism: global.c allocno_compare returns 'v1 - v2' (allocno number, lower first) only when the two computed priorities are exactly equal.
+- probe: decl-v1-first, decl-t1val-last, a1-declared-before-a2, and val-declared-first among the new loop2 locals - all screened on the .greg dump, before and after the splits.
+- result: Byte-identical priority order AND byte-identical dispositions in every case. No contested pair in this function has exactly equal priority, so renumbering never reaches the tiebreak.
+- verdict: KILLED
+
+## [s2] loop3's pointer being the same C variable as loop2's row pointer is an m2c artifact, and splitting it (or rewriting loop3 as an indexed loop) will move the seating.
+- mechanism: Halving 'ptr's reference count should drop its allocno priority below the value pseudo's.
+- probe: ptr-split-loop3 (loop3 walks its own 's32 *q'), loop3-indexed (for (a0=0;a0<0x11;a0++) D_800EF558[a0] = (a0<<7)&0xFFF;), loop2-base-index (&ptr[0x10] / &ptr[0x11] instead of pointer arithmetic), a0-init-inside-outer.
+- result: All produce a dump identical to base (same priority order, same dispositions) and floor stays 17. Peeling loop3's pointer off does not lower ptr below val even after the loop2 splits.
+- verdict: KILLED
+
+## [s2] Once loop2's value/accumulator/row-counter are split, splitting the remaining shared locals ('a0' and 'ptr') finishes the job.
+- mechanism: Symmetry with the v1 split: shorter live ranges should keep lifting priorities toward target.
+- probe: mid+loop2-own-counter (loop2 gets its own 's32 n'), mid+loop3-own-ptr+own-counter, split-loop2-all, split-everything - dump-screened and scored.
+- result: 17 -> 40 and 17 -> 36. 'a0' must stay ONE allocno shared by loop1's column counter, loop2's inner counter and loop3's index: that shared reference count is exactly what earns it $a0, which is where target puts it in all three loops. A fresh tight-range counter pseudo instead grabs $v1(3) and displaces the whole loop2 seating.
+- verdict: KILLED
+
+## [s2] Tie A ($t1/$t2) is reachable by some structural lever, possibly because target's two gpu_CalcClut(0x10,0x1E0) calls share one value.
+- mechanism: t1val (2 refs: def + one store in the else arm) loses $t1 to t2 (3 refs: def + one store in EACH arm) because 1*3/L > 1*2/L at identical live ranges. Equal counts would tie and break on allocno number, where t1val (76) beats t2 (83) - which is target's seating.
+- probe: Checked the t1val/t2 disposition in every one of ~30 structural variants across 7 rounds; separately read asm/funcs/func_800477E8.s to settle whether the two CalcClut results are one value.
+- result: No structural variant moved tie A. Target does 'jal gpu_CalcClut / addu $s1,$v0,$zero' with the addu in the DELAY slot, so $s1 captures the THIRD call's result and $t1 the FOURTH - two genuinely distinct call results, so the arms cannot legitimately share one. Both arms genuinely store 0x2C00, so t2's third reference cannot be removed honestly either. Tie A is worth 5 of the 17.
 - verdict: KILLED
