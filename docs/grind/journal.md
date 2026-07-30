@@ -691,3 +691,4 @@
 - 2026-07-29 22:00 func_80086014 COMPLETED-C after 2 sessions.
 - 2026-07-29 22:36 func_80033D38 COMPLETED-C after 1 sessions.
 - 2026-07-29 22:58 mk_g2l s1 [recon] floor=7: mk_g2l floor 17 -> 7: holding the 0x86 compare value in the dead a0 param fixes four register families at once; residual is one pseudo that inherits $a0's hard-reg preference via global.c expand_preferences, plus a 2-insn stack-param load-order swap.
+- 2026-07-29 23:18 mk_g2l COMPLETED-C after 2 sessions.
