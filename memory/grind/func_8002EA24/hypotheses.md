@@ -584,3 +584,148 @@ and the floors measured without it: 5 from the score-2 body, 6 from the score-3 
 - probe: Campaign tmp/perm_ea24d from the score-2 body, 6 jobs, two full ~9-minute blocking `wait` windows, then `harvest --stop`.
 - result: 29,050 iterations, ZERO novel finds. Given that every productive campaign returned inside three minutes, this is a real basin boundary for RANDOM mutation from this chassis. The untried permuter surface is directed PERM_* macros over the range-test chain.
 - verdict: KILLED
+
+## Session 6 (permuter; driver session 5) - frontier rewritten
+
+### KILLED this session
+- **Staging the range-test boolean through `a0_var` at any test but the FIRST.**
+  stage2 = 5, stage3 = 7, stage4 = 5 against the score-2 base.  The lever is
+  first-test-specific; moving it later loses the register win and pays the cost.
+- **Hoisting `-threshold` to function scope (three placements) on the score-2
+  base.**  negtop 5, negmid 5, neggte 4, negtop_stage 5 -- all emitting 108
+  instructions where the base emits 107.  The `negu` must occupy the
+  `lw $a1,0x100($t0)` load-delay slot, which it only does when the negation is
+  written where the base writes it.  This kills the "give neg_threshold a live
+  range that reaches function entry" route: the mechanism is real (an accidental
+  uninitialised-pseudo build produced target's exact `slt $v0` / `$t1`
+  assignment) but every legal spelling of it costs the delay slot.
+- **`a0_var` carrying `r_sq` across the chain** (`rsqcarry`, the previous
+  session's own next-probe #1: a real, live-out, non-boolean value that does not
+  hoist the multiplies) = 22.  It forces `move a0,a3` before the chain and
+  inverts the operands of `slt $v0,$a3,$a0` and `subu $a0,$a3,$a0` in the tail.
+- **The shared-end-label reject shape on the score-2 body** (`ret = 0; goto end;`
+  for all five rejects, which is target's own branch topology) = 5: it destroys
+  the L1 two-statement arm and jump.c re-folds the tail diamond.
+- **Directed permutation over the range-test chain** (the previous session's
+  next-probe #4).  Two annotated chassis, 19.7k iterations, no find below the
+  score-2 body: PERM_GENERAL 5-way over the first range test + PERM_RANDOMIZE
+  over the rest of the chain (15,016 iters, ZERO finds), and a PERM_LINESWAP
+  chassis whose own base was degraded by the y-load hoist (base 335, reseeded).
+
+### CONFIRMED this session
+- **Convergence.**  A third chassis (`plain1`, score 3, no staging construct at
+  all; directed axis = the spelling of `-threshold`) independently reconstructed
+  the banked score-2 body inside 135 s and then found nothing better in 14.5k
+  iterations.  Three independent searches now land on the same form.
+- **The instruction-budget lock (new framing of H5').**  See evidence.md: target
+  writes `$a0` nowhere in the chain and the function has no spare instruction, so
+  the only zero-cost occupant of `$a0` is a value the chain computes anyway --
+  i.e. the boolean -- and staging it is precisely what costs the boolean its
+  register.  The remaining two points are therefore not reachable by ADDING
+  anything to the chain; they need either a different `a0_var` preference source
+  or a different reading of what the original's allocator saw.
+
+### Live frontier (after session 6)
+
+#### H5'' - the `$a0` preference source, not the `$a0` occupant
+**Statement.**  Target denies `$a0` to `neg_threshold` without any value living
+in `$a0` across the range-test chain and without any spare instruction.  Under
+GCC 2.7.2's `find_reg` that requires `$a0` to be in `regs_someone_prefers
+[neg_threshold]` -- i.e. an allocno that PREFERS `$a0`, CONFLICTS with
+neg_threshold and is LOWER priority than it -- so the original's `a0_var` (or
+another `$a0`-preferring pseudo) must have had a conflict with neg_threshold that
+costs no instruction.  Since a live value costs an instruction, the conflict must
+come from the conflict-graph construction itself rather than from a real overlap.
+**Mechanism.**  Candidates, in the order they should be tested: (i) `global.c`
+records conflicts from the LIVE-ON-ENTRY sets of basic blocks, so a pseudo set in
+one arm of a diamond and used after the join can conflict with values live in the
+OTHER arm even though the two never coexist dynamically -- an `a0_var` whose
+first set lives inside one of the reject arms would conflict with neg_threshold
+for free; (ii) `local-alloc` quantity merging (`.lreg`), which can fuse two
+pseudos into one quantity and thereby transplant a conflict; (iii) an
+`$a0` preference on some OTHER pseudo (`expand_preferences` propagation) that
+already conflicts with neg_threshold.
+**Next probe, in order.**
+1. Put `a0_var`'s FIRST set inside a reject arm that the chain branches to -- the
+   arms are already there and already contain a store (`v0 = 0`), so a set there
+   may cost nothing on the fall-through path.  Measure with
+   `tmp/grind/func_8002EA24/s5/run.sh` and read the registers off the dump.
+2. Dump `.lreg` (`cc1 ... -dl base.i`) for the score-2 body and for `plain1`, and
+   diff the quantity numbers of `a0_var` / `x` / `neg_threshold`: that says
+   directly whether local-alloc merging is available as a lever.
+3. Re-run `tmp/grind/func_8002EA24/s3/findreg.sh 104` on any variant BEFORE
+   trusting its score -- `someone_prefers` says whether the lever reached the
+   allocator at all.
+4. If 1-3 are dead, the honest reading is that the last two points are an
+   allocator-model residue rather than a source-shape residue, and the function's
+   disposition question (H4) becomes the operative one.
+
+#### H4 - GTE canonical-asm disposition (unchanged, operator/owner action)
+Unchanged from sessions 2-5.  The Judge-constrained shape is measured free and is
+carried verbatim in the candidate; adding func_8002EA24 to
+`inline_asm_canonical.txt` and retiring its 10 regfix rules remain surfaces a
+grind session may not touch, and the Judge deferred the FINAL CALL until the
+function is byte-identical on main with zero rules.
+
+#### H6 - CLOSED (session 5).  Acceptance of the two `/* FAKE */`-annotated
+constructs in the candidate is a layer-2 / Judge question, not a search question.
+
+## [s5] The H5' frontier's next-probe #1 -- a set of a0_var before the chain whose value is real, live-out past the chain and NOT the comparison result -- closes the last two points.
+- mechanism: a0_var is the function's only $a0-preferring allocno; making it live across the range-test chain is what denies $a0 to neg_threshold. If the carried value were something other than the boolean, the boolean would fall back to an ordinary $v0 temp and match target.
+- probe: `rsqcarry` -- `a0_var = r_sq;` before the chain, the sum of squares computed into `sp_var`, and the tail rewritten as `if (a0_var < sp_var) return 0; a0_var = a0_var - sp_var;` so a0_var is genuinely live-out and the multiplies stay after the chain. Scored with `sandbox func_8002EA24 --disable all`.
+- result: Score 22 against the base's 2. Carrying r_sq costs a `move a0,a3` before the chain (target has no such instruction) and inverts the operand order of both `slt $v0,$a3,$a0` and `subu $a0,$a3,$a0` in the tail, which the base matches exactly. Generalised by the instruction-budget argument: target's chain has no spare slot, so ANY occupant of $a0 that is not a computation the chain already performs costs at least one instruction.
+- verdict: KILLED
+
+## [s5] Giving `neg_threshold` a live range that reaches function entry (so that it conflicts with the incoming `$a0` argument register) yields target's assignment.
+- mechanism: hard-register conflicts are recorded for pseudos live where an argument register is still live; $a0 is live from function entry to the prologue copy `addu $t0,$a0,$zero`, so a pseudo live at entry can never be given $a0.
+- probe: four variants on the score-2 base -- `negtop` (function-scope declaration, assigned as the first statement of the body), `negmid` (assigned before the GTE input block), `neggte` (assigned before the GTE output block), `negtop_stage` (hoist plus the existing staged boolean) -- each scored and its instruction count read off. Plus an accidental control: a first `negtop` recipe that left the inner-block declaration shadowing the hoisted one, so the chain read an uninitialised pseudo with no set at all.
+- result: The MECHANISM is confirmed by the accident -- the uninitialised pseudo landed in $t1 with the boolean in $v0, exactly target's assignment (score 1, but an invalid build). Every LEGAL spelling is worse: negtop 5, negmid 5, neggte 4, negtop_stage 5, and all four emit 108 instructions against the base's 107, because the `negu` leaves the `lw $a1,0x100($t0)` load-delay slot (maspsx fills it with a nop) and costs a slot of its own elsewhere. Target fills that delay slot with the negu.
+- verdict: KILLED (as a closing form; the entry-liveness mechanism is CONFIRMED and is the best available explanation of what the original's allocator saw)
+
+## [s5] The staged-boolean lever generalises to the other three range tests.
+- mechanism: any of the four tests' booleans is a free value the chain computes anyway, so staging any of them through a0_var should create the same conflict.
+- probe: stage2 / stage3 / stage4 -- the identical staging statement applied to the second, third and fourth range tests, on the score-2 base with the first-test staging removed.
+- result: 5 / 7 / 5 against the base's 2. Only the FIRST test's boolean produces the register effect; staging a later one pays the cost without the win (neg_threshold's allocation is decided by the conflict state at the first test).
+- verdict: KILLED
+
+## [s5] Rewriting the rejects in target's own shared-branch topology (`ret = 0; goto end;` to one epilogue block) is free or better on the score-2 body.
+- mechanism: target's four `bnez` instructions all jump to .L8002EBD0 with `addu $v0,$zero,$zero` in the delay slot, which is the classic shared-end-label shape; matching the topology might also match the register assignment.
+- probe: `sharedend` -- all five rejects rewritten as `{ ret = 0; goto end; }` with `ret = 1; end: return ret;` at the tail, scored with `sandbox --disable all`.
+- result: Score 5 (105 dis lines vs the base's 107). Rewriting the LAST reject destroys session 5's L1 construct -- the two-statement arm that breaks jump.c's store-flag single-set precondition -- so the tail diamond folds back to `slt` + `xori`. Our build already emits the shared-branch topology for the other four rejects without any goto.
+- verdict: KILLED
+
+## [s5] Directed permutation (PERM_* macros) over the range-test chain reaches the last register pair, even though random permutation cannot (the previous session's frontier claim).
+- mechanism: decomp-permuter's manual-mutation macros explore a structured neighbourhood (statement order of the range tests, the association of the sum of squares, the exit forms, the spelling of the negation) that random single-edit mutation from the score-2 chassis does not cover.
+- probe: three annotated campaigns via tools/permuter_campaign.py, all harvested with --stop in-session. tmp/perm_ea24e: score-2 body, PERM_GENERAL 5-way over the first range test (staged / plain / split ifs / staged+split / staged through sp_var) plus PERM_RANDOMIZE over the rest of the chain, permuter base 10. tmp/perm_ea24f: PERM_LINESWAP over the (z load, y load) order plus PERM_GENERAL over the sum-of-squares association, base 335. tmp/perm_ea24g: the plain1 (score-3, no staging) chassis, PERM_GENERAL over the spelling of `-threshold` plus PERM_RANDOMIZE, base ~15. A new script, tmp/grind/func_8002EA24/s5/mkws_annot.sh, was needed because s4/mkws.sh runs the body through cc1, which cannot parse PERM macros.
+- result: 34.3k iterations across the three campaigns and NOTHING below the banked score-2 form. perm_ea24e: 15,016 iterations, zero finds. perm_ea24f: chassis degraded by the y-load hoist (base 335, best find 235), stopped and reseeded. perm_ea24g: best find `output-10-1` at 135 s, which is the banked score-2 body reconstructed EXACTLY from a chassis that did not contain it (`a0_var = max_y < neg_threshold; if (a0_var || threshold < max_y) return 0;` with `neg_threshold = 0 - threshold`), then nothing better in 14.5k further iterations.
+- verdict: KILLED (and the convergence is positive evidence that the score-2 form is the local optimum of this whole neighbourhood)
+
+## [s5] Directed permutation (PERM_* macros) over the range-test chain reaches the last register pair, even though random permutation cannot (the previous session's frontier claim).
+- mechanism: decomp-permuter's manual-mutation macros explore a structured neighbourhood (statement order of the two range tests, the association of the sum of squares, the exit forms, the spelling of the negation) that random single-edit mutation from the score-2 chassis does not cover.
+- probe: Three annotated campaigns via tools/permuter_campaign.py, each launched, waited on IN-turn and harvested with --stop. tmp/perm_ea24e: the score-2 body with PERM_GENERAL 5-way over the first range test (staged boolean / plain / split ifs / staged+split / staged through sp_var) plus PERM_RANDOMIZE over the rest of the chain, permuter base 10. tmp/perm_ea24f: PERM_LINESWAP over the (z load, y load) order plus PERM_GENERAL over the sum-of-squares association, base 335. tmp/perm_ea24g: the plain1 chassis (sandbox 3, NO staging construct) with PERM_GENERAL over the spelling of -threshold plus PERM_RANDOMIZE, base ~15. A new script tmp/grind/func_8002EA24/s5/mkws_annot.sh was required because s4/mkws.sh runs the body through cc1, which cannot parse PERM macros.
+- result: 34,260 iterations across the three campaigns and NOTHING below the banked score-2 form. perm_ea24e: 15,016 iterations, ZERO finds. perm_ea24f: chassis degraded by the y-load hoist (base 335, one useless find at 235), stopped and reseeded. perm_ea24g: best find output-10-1 at 135 s, which is the banked score-2 body reconstructed EXACTLY from a chassis that did not contain it (a0_var = max_y < neg_threshold; if (a0_var || threshold < max_y) return 0; with neg_threshold = 0 - threshold), then nothing better in 14.5k further iterations. Every campaign is dead; permuter_campaign.py status shows no live pid.
+- verdict: KILLED
+
+## [s5] The H5' frontier's next-probe #1 -- a set of a0_var before the chain whose value is real, live-out past the chain and NOT the comparison result -- closes the last two points.
+- mechanism: a0_var is the function's only $a0-preferring allocno, so making it live across the range-test chain is what denies $a0 to neg_threshold. If the carried value were something other than the boolean, the boolean would fall back to an ordinary $v0 temp and match target.
+- probe: rsqcarry: a0_var = r_sq before the chain, the sum of squares computed into sp_var, and the tail rewritten as `if (a0_var < sp_var) return 0; a0_var = a0_var - sp_var;` so a0_var is genuinely live-out and the multiplies stay after the chain. Scored with sandbox func_8002EA24 --disable all.
+- result: Score 22 against the base's 2. Carrying r_sq costs a `move a0,a3` before the chain (target has no such instruction) and inverts the operand order of both `slt $v0,$a3,$a0` and `subu $a0,$a3,$a0` in the tail, which the base matches exactly. Generalised: target's chain has no spare instruction slot, so ANY $a0 occupant that is not a computation the chain already performs costs at least one instruction.
+- verdict: KILLED
+
+## [s5] Giving neg_threshold a live range that reaches function entry -- so it conflicts with the incoming $a0 argument register -- yields target's assignment (slt $v0 with neg_threshold in $t1).
+- mechanism: Hard-register conflicts are recorded for pseudos live where an argument register is still live; $a0 is live from function entry to the prologue copy `addu $t0,$a0,$zero`, so a pseudo live at entry can never be given $a0.
+- probe: Four variants on the score-2 base: negtop (function-scope declaration, assigned as the first statement of the body), negmid (assigned before the GTE input block), neggte (assigned before the GTE output block), negtop_stage (hoist plus the existing staged boolean); each scored and its instruction count read off. Plus an accidental control: a first negtop recipe that left the inner-block declaration shadowing the hoisted one, so the chain read an uninitialised pseudo with no set at all.
+- result: The MECHANISM is confirmed by the accident -- the uninitialised pseudo landed in $t1 with the boolean in $v0, exactly target's assignment (score 1, but an invalid build). Every LEGAL spelling is worse: negtop 5, negmid 5, neggte 4, negtop_stage 5, and all four emit 108 instructions against the base's 107, because the negu leaves the `lw $a1,0x100($t0)` load-delay slot (maspsx fills it with a nop) and costs a slot of its own elsewhere. Target fills that delay slot WITH the negu, so the negation must stay where the base puts it.
+- verdict: KILLED
+
+## [s5] The staged-boolean lever generalises to the other three range tests (so the first test's boolean could be freed to $v0 by staging a later one instead).
+- mechanism: Any of the four tests' booleans is a free value the chain computes anyway, so staging any of them through a0_var should create the same live-range conflict with neg_threshold.
+- probe: stage2 / stage3 / stage4 -- the identical staging statement applied to the second, third and fourth range tests on the score-2 base with the first-test staging removed; scored with sandbox --disable all.
+- result: 5 / 7 / 5 against the base's 2. Only the FIRST test's boolean produces the register effect; staging a later one pays the cost without the win, because neg_threshold's allocation is decided by the conflict state at the first test.
+- verdict: KILLED
+
+## [s5] Rewriting the rejects in target's own shared-branch topology (ret = 0; goto end; to one epilogue block) is free or better on the score-2 body.
+- mechanism: Target's four bnez instructions all jump to .L8002EBD0 with `addu $v0,$zero,$zero` in the delay slot, the classic shared-end-label shape; matching the topology might also match the register assignment.
+- probe: sharedend -- all five rejects rewritten as { ret = 0; goto end; } with `ret = 1; end: return ret;` at the tail, scored with sandbox --disable all.
+- result: Score 5 (105 dis lines vs the base's 107). Rewriting the LAST reject destroys session 5's L1 construct -- the two-statement arm that breaks jump.c's store-flag single-set precondition -- so the tail diamond folds back to slt + xori. Our build already emits the shared-branch topology for the other four rejects without any goto.
+- verdict: KILLED

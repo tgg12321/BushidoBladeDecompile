@@ -637,3 +637,152 @@ is.  (Session 4 had already shown the negative half of this with `vinlive` and
 - [s4] ACCEPTANCE IS NOT SELF-APPROVED: the score-2 body carries TWO /* FAKE */-annotated constructs, both cited to [[staged-value-reused-variable]] (SANCTIONED 2026-07-03) -- a real value, read by the very next expression, staged through an existing local that is provably dead at the staging point, with zero dead stores. Lever-exhaustion receipts are the six pure-C tail shapes from session 2 and the ~20 structural shapes from sessions 2-4. If either is refused, memory/grind/func_8002EA24/candidate_alt_score3_no_fake.c is the score-3 fallback and the floor without both is 6.
 
 - [s4] No AgentTool / layer-1 cheat-reviewer was invoked this session: the session brief carries a standing instruction not to call the Agent tool unless the user requests it. The two constructs are therefore submitted to the driver's default-FAIL Judge and a fresh layer-2 cheat-reviewer with the full vetting argument written into the candidate header.
+
+## Session 6 (permuter; driver session 5, scratch tmp/grind/func_8002EA24/s5)
+
+### Floor: 2 (unchanged).  What this session bought: the residual register is shown to be INSTRUCTION-BUDGET-LOCKED, and three independent searches now converge on the banked score-2 form.
+
+The session-5 candidate was re-verified first: `sandbox func_8002EA24 --disable all`
+= **2** with the banked `memory/grind/func_8002EA24/candidate.c` spliced into
+`src/code6cac_b.c` (107 dis lines; the permuter workspace's own objdump comparison
+prints `base insns: 107  target: 107`, so the counts still match).
+
+### The decisive argument (new, and it re-frames H5')
+Our build and target are instruction-for-instruction identical except for ONE
+register field:
+
+```
+ours     lw a1,0x100(t0) ; negu t1,a2 ; slt a0,a1,t1 ; bnez a0,<reject>
+target   lw a1,0x100(t0) ; negu t1,a2 ; slt v0,a1,t1 ; bnez v0,<reject>
+```
+
+Target's range-test chain contains NO instruction that writes `$a0`, and there is
+no spare instruction anywhere in the function (104 = 104).  Under the corrected
+session-4 allocator model the ONLY way `$a0` is denied to `neg_threshold` is an
+`$a0`-preferring allocno (`a0_var` is the function's only one) that CONFLICTS with
+it, i.e. a value genuinely live across the chain.  Materialising any such value
+costs at least one instruction -- UNLESS the value is a computation the chain
+performs anyway, and the only such computation is the first test's boolean, which
+is exactly what the banked form stages.  Staging it costs the boolean its register.
+So within GCC 2.7.2's allocator model there is no zero-instruction pure-C occupant
+of `$a0` across this chain, and the last two points are a budget lock rather than a
+search problem.  Every occupant / hoist variant measured this session emits 108
+instructions where the base emits 107, which is the direct confirmation.
+
+### Measured this session (all `sandbox func_8002EA24 --disable all`; base = 2)
+| variant | score | what it does |
+|---|---|---|
+| `plain1` (control) | 3 | no boolean staging at all (re-confirms session 5's L3 is worth 1) |
+| `stage2` | 5 | stage the SECOND test's boolean (`threshold < max_y`) through a0_var |
+| `stage3` | 7 | stage the THIRD test's boolean (`z < neg_threshold`) through a0_var |
+| `stage4` | 5 | stage the FOURTH test's boolean through a0_var |
+| `rsqcarry` | 22 | a0_var carries `r_sq` across the chain, tail rewritten to `a0_var -= sum` |
+| `negtop` | 5 | `neg_threshold` at function scope, assigned as the first statement |
+| `negmid` | 5 | ... assigned just before the GTE input block |
+| `neggte` | 4 | ... assigned just before the GTE output block |
+| `negtop_stage` | 5 | function-scope neg_threshold PLUS the score-2 boolean staging |
+| `sharedend` | 5 | all five rejects become `ret = 0; goto end;` (target's own branch shape) |
+
+Four things are settled by that table:
+- **Staging the boolean is a FIRST-TEST-only lever.**  Moving the staged statement
+  to any later test is strictly worse (5 / 7 / 5 vs 2): the register win is lost
+  and the staging cost is paid anyway.
+- **Hoisting `-threshold` is dead on instruction count, not on registers.**  All
+  three placements emit 108 instructions vs the base's 107: with the `negu` hoisted
+  out of the `lw $a1,0x100($t0)` load-delay slot, maspsx fills that slot with a
+  `nop` and the `negu` costs its own slot elsewhere.  Target fills the delay slot
+  WITH the negu, so the computation must stay exactly where the base puts it.
+  (A first `negtop` attempt scored 1 but was INVALID: the recipe left the
+  inner-block `s32 neg_threshold;` declaration in place, shadowing the hoisted one,
+  so the chain read an uninitialised pseudo with no set at all.  The accident is
+  informative -- a pseudo whose live range reaches function entry conflicts with
+  the incoming `$a0` argument register and lands in `$t1` with the boolean in
+  `$v0`, i.e. target's exact assignment -- but every LEGAL way to give
+  `neg_threshold` that live range costs the negu's delay-slot position.)
+- **`a0_var` carrying a real non-boolean live value is very expensive.**
+  `rsqcarry` is the H5' frontier's own next-probe (r_sq staged through a0_var: a
+  real, live-out, non-boolean value that does not hoist the multiplies) and it
+  scores 22 -- it needs a `move a0,a3` before the chain AND it inverts the operands
+  of both `slt $v0,$a3,$a0` and `subu $a0,$a3,$a0` in the tail, which currently
+  match target exactly.
+- **The shared-end-label reject shape is not free on this body.**  It scores 5
+  because rewriting the LAST reject as `ret = 0; goto end;` destroys session 5's L1
+  construct (the two-statement arm that defeats jump.c's store-flag if-conversion),
+  so the tail diamond folds again.
+
+### Campaign telemetry (fresh-seed discipline; all harvested with --stop in-session)
+| workspace | chassis | permuter base | iterations | finds |
+|---|---|---|---|---|
+| tmp/perm_ea24e | score-2 body + PERM_GENERAL 5-way over the first range test + PERM_RANDOMIZE over the rest of the chain | 10 | 15,016 | none |
+| tmp/perm_ea24f | score-2 body + PERM_LINESWAP hoisting the `y` load into the chain + PERM_GENERAL over the sum-of-squares association | 335 | 4,688 | one at 235; chassis base degraded by the hoist, stopped and reseeded |
+| tmp/perm_ea24g | `plain1` (score 3, NO staging) + PERM_GENERAL over the `-threshold` spelling + PERM_RANDOMIZE over the chain | ~15 | 14,556 | output-10-1 at 135 s, then 15 / 15 |
+
+`tmp/perm_ea24g/output-10-1` is the decisive one: starting from a chassis that does
+NOT contain the staging construct, and whose directed axis was the SPELLING of
+`-threshold`, the search reconstructed **exactly** the banked score-2 body --
+`a0_var = max_y < neg_threshold; if (a0_var || threshold < max_y) return 0;` with
+`neg_threshold = 0 - threshold` (an equivalent spelling of the same negation).
+Permuter score 10 = the score-2 chassis's own base score, and nothing below it
+appeared in 14.5k further iterations.  Together with session 5's 29k-iteration
+silence from the score-2 chassis and this session's 15k directed iterations from
+it, three independent searches now converge on the banked form and none beats it.
+
+### Tooling (reusable)
+- `tmp/grind/func_8002EA24/s5/run.sh` -- splice + `sandbox --disable all` + insn
+  count + disassembly md5, using the FIXED `s4/swap.py`.
+- `tmp/grind/func_8002EA24/s5/gen.py` -- literal-substitution variant generator on
+  top of the score-2 body (one recipe per variant).
+- `tmp/grind/func_8002EA24/s5/annot.py` / `annot2.py` -- write the PERM_*-annotated
+  chassis bodies.
+- `tmp/grind/func_8002EA24/s5/mkws_annot.sh` -- **the missing piece for directed
+  permutation on this function**: `s4/mkws.sh` cannot build a workspace from an
+  annotated body because its pipeline runs the body through cc1, which cannot parse
+  `PERM_*`.  This script builds the workspace from the CLEAN body, then re-runs only
+  the cpp step on the ANNOTATED body and overwrites `base.c` (PERM macros survive
+  cpp because they are undefined function-like macros).
+- ENVIRONMENT: `tools/wsl.sh` fails from the Bash tool in this install
+  (`wsl: command not found`); `wsl -e bash -lc "..."` / `wsl -e bash <script>` from
+  PowerShell works.  The `Failed to start the systemd user session` line printed by
+  every WSL call is cosmetic.
+
+- [s5] Re-verified the banked session-5 candidate at the start of this session: sandbox --disable all = 2 with it spliced into src/code6cac_b.c.
+
+- [s5] THE INSTRUCTION-BUDGET ARGUMENT for H5': our build equals target instruction-for-instruction except the register field of the `slt`/`bnez` pair on the first range test, and target's chain writes $a0 nowhere while the function has no spare instruction (104 = 104). Under the corrected session-4 allocator model $a0 can only be denied to neg_threshold by an $a0-preferring allocno (a0_var is the only one) that CONFLICTS with it, i.e. by a value genuinely live across the chain; materialising any such value costs at least one instruction unless it is a computation the chain performs anyway -- and the only one is the first test's boolean, which is exactly the banked construct. There is therefore no zero-instruction pure-C occupant of $a0 across this chain.
+
+- [s5] KILLED: staging the range-test boolean through a0_var at any test OTHER than the first. stage2 (second test) 5, stage3 (third) 7, stage4 (fourth) 5, against the base 2. The lever is first-test-specific.
+
+- [s5] KILLED: hoisting `-threshold` to function scope on the score-2 base. negtop (first statement) 5, negmid (before the GTE input block) 5, neggte (before the GTE output block) 4, negtop_stage (hoist + keep the staged boolean) 5 -- and every one emits 108 instructions where the base emits 107, because the negu leaves the `lw $a1,0x100($t0)` load-delay slot (maspsx then fills it with a nop) and costs its own slot elsewhere. Target fills that delay slot with the negu, so the computation must stay where the base puts it.
+
+- [s5] A first `negtop` attempt scored 1 but was INVALID -- the recipe left the inner-block `s32 neg_threshold;` declaration shadowing the hoisted one, so the chain read an uninitialised pseudo with no set anywhere. Informative accident: a pseudo whose live range reaches function entry conflicts with the incoming `$a0` argument register and lands in $t1 with the boolean in $v0 = target's exact assignment. Every LEGAL way to give neg_threshold that live range costs the negu's delay-slot position.
+
+- [s5] KILLED: `rsqcarry` -- a0_var carries r_sq across the chain (the H5' frontier's own next-probe: a real, live-out, non-boolean value that does not hoist the multiplies). Score 22: it needs a `move a0,a3` before the chain and it inverts the operands of both `slt $v0,$a3,$a0` and `subu $a0,$a3,$a0` in the tail, which currently match target exactly.
+
+- [s5] KILLED: rewriting all five rejects as `ret = 0; goto end;` (target's own shared-branch shape) on the score-2 base = 5, because it destroys session 5's L1 two-statement arm and jump.c's store-flag if-conversion folds the tail diamond again.
+
+- [s5] Three directed permuter campaigns, all harvested with --stop in-session: tmp/perm_ea24e (score-2 body, PERM_GENERAL 5-way over the first range test + PERM_RANDOMIZE over the rest of the chain, permuter base 10) 15,016 iterations and ZERO finds; tmp/perm_ea24f (PERM_LINESWAP hoisting the y load, base 335 -- chassis degraded by the hoist) 4,688 iterations, one useless find at 235, stopped and reseeded; tmp/perm_ea24g (the plain1 score-3 chassis, PERM_GENERAL over the `-threshold` spelling + PERM_RANDOMIZE, base ~15) 14,556 iterations, best find 10.
+
+- [s5] CONVERGENCE EVIDENCE: tmp/perm_ea24g/output-10-1 -- from a chassis that does NOT contain the staging construct, and whose directed axis was the spelling of `-threshold`, the permuter independently reconstructed the banked score-2 body exactly (`a0_var = max_y < neg_threshold; if (a0_var || threshold < max_y) return 0;`, with `neg_threshold = 0 - threshold`). Permuter score 10 = the score-2 chassis's own base score; nothing below it in 14.5k further iterations. Three independent searches (session 5's 29k random from the score-2 chassis, this session's 15k directed from it, and 14.5k from the score-3 chassis) now converge on the same form.
+
+- [s5] TOOLING: s4/mkws.sh cannot build a permuter workspace from a PERM_*-annotated body (its pipeline runs the body through cc1, which cannot parse the macros). tmp/grind/func_8002EA24/s5/mkws_annot.sh is the fix: build the workspace from the CLEAN body, then re-run only the cpp step on the ANNOTATED body and overwrite base.c -- PERM macros survive cpp because they are undefined function-like macros.
+
+- [s5] ENVIRONMENT: tools/wsl.sh fails from the Bash tool in this install (`wsl: command not found`); use `wsl -e bash -lc "..."` or `wsl -e bash <script>` from PowerShell. The `Failed to start the systemd user session` line printed by every WSL call is cosmetic.
+
+- [s5] src/code6cac_b.c was restored to HEAD at the end of the session, so main's recorded floor stays 18 and the tree is clean apart from the memory/grind ledger, the four new rejected/ forms and tmp/ scratch.
+
+- [s5] Re-verified the banked session-5 candidate at the start of this session: sandbox func_8002EA24 --disable all = 2 with it spliced into src/code6cac_b.c (107 dis lines; the permuter workspace's own objdump comparison prints 'base insns: 107  target: 107').
+
+- [s5] THE INSTRUCTION-BUDGET ARGUMENT (new framing of H5'): our build equals target instruction-for-instruction except the register field of the slt/bnez pair on the first range test, and target's chain writes $a0 NOWHERE while the function has no spare instruction. Under the corrected session-4 allocator model $a0 can only be denied to neg_threshold by an $a0-preferring allocno (a0_var is the only one) that CONFLICTS with it, i.e. by a value genuinely live across the chain; materialising any such value costs at least one instruction unless it is a computation the chain performs anyway -- and the only such computation is the first test's boolean, which is exactly the banked construct. There is therefore no zero-instruction pure-C occupant of $a0 across this chain.
+
+- [s5] Measured this session on the score-2 base: plain1 (control, no staging) 3; stage2 5; stage3 7; stage4 5; rsqcarry 22; negtop 5; negmid 5; neggte 4; negtop_stage 5; sharedend 5. Every hoist/occupant variant emits 108 instructions where the base emits 107.
+
+- [s5] An invalid-but-informative build (an inner-block `s32 neg_threshold;` left shadowing the hoisted declaration, so the chain read an uninitialised pseudo) scored 1 and emitted target's exact assignment -- slt $v0,$a1,$t1 with neg_threshold in $t1 and no negu at all. A pseudo whose live range reaches function entry conflicts with the incoming $a0 argument register; that is the best available explanation of what the original's allocator saw, and every legal spelling of it costs the negu's delay-slot position.
+
+- [s5] CONVERGENCE: tmp/perm_ea24g/output-10-1 -- from a chassis that does NOT contain the staging construct (plain1, sandbox 3) and whose directed axis was the SPELLING of -threshold, the permuter independently reconstructed the banked score-2 body exactly, at permuter score 10 = the score-2 chassis's own base score, and found nothing below it in 14.5k further iterations. With session 5's 29k random iterations from the score-2 chassis and this session's 15k directed ones, three independent searches now converge on the same form.
+
+- [s5] Campaign telemetry, all harvested with --stop in-session and all pids confirmed dead: perm_ea24e 15,016 iterations / 0 finds; perm_ea24f 4,688 iterations / 1 useless find at 235 (chassis base degraded to 335 by the y-load lineswap, reseeded); perm_ea24g 14,556 iterations / best find 10.
+
+- [s5] TOOLING: s4/mkws.sh cannot build a permuter workspace from a PERM_*-annotated body because its pipeline runs the body through cc1, which cannot parse the macros. tmp/grind/func_8002EA24/s5/mkws_annot.sh is the fix -- build the workspace from the CLEAN body, then re-run only the cpp step on the ANNOTATED body and overwrite base.c (PERM macros survive cpp because they are undefined function-like macros).
+
+- [s5] ENVIRONMENT: tools/wsl.sh fails from the Bash tool in this install ('wsl: command not found'); use `wsl -e bash -lc "..."` or `wsl -e bash <script>` from PowerShell. The 'Failed to start the systemd user session' line printed by every WSL call is cosmetic.
+
+- [s5] src/code6cac_b.c was restored to HEAD at the end of the session (git checkout --), so main's recorded floor stays 18 and the tree is clean apart from the memory/grind ledger updates and the four new rejected/ forms.

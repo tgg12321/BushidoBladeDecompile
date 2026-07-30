@@ -1,7 +1,7 @@
 {
  "func": "func_8002EA24",
  "file": "code6cac_b",
- "session_count": 4,
+ "session_count": 5,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -27,23 +27,29 @@
    "floor": 2,
    "modality": "permuter",
    "headline": "Permuter took the honest floor 9 -> 2 (build now 104 insns = target, all opcodes match): H6's tail diamond and BOTH halves of H5's register assignment are closed; the whole residual is one slt/bnez re"
+  },
+  {
+   "session": 5,
+   "floor": 2,
+   "modality": "permuter",
+   "headline": "Floor holds at 2; directed permutation over the range-test chain is measured dead (34.3k iters, 3 chassis, nothing below the banked form -- one chassis reconstructed it independently), and the last tw"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "H5' -- the last two points are the first range test's boolean landing in $a0 (ours) instead of $v0 (target), because we buy a0_var's liveness across the range-test chain WITH that boolean.",
-   "mechanism": "global.c first-fit over the conflict graph plus session 4's corrected two-pass find_reg: making a0_var (the only $a0-preferring allocno) live across the chain is what denies $a0 to neg_threshold. Target achieves the same denial with some other value in $a0 and keeps its boolean in an ordinary $v0 temp.",
-   "next_probe": "Find a set of a0_var BEFORE the chain whose value is real, live-out past the chain, and NOT the comparison result -- cheaper than the accearly family's squared distance, which hoisted the mult/mflo pairs (e.g. r_sq staged through a0_var, or the -threshold negation itself). Equivalently: split the two roles the single staged statement now plays, letting a0_var carry the live value while the boolean goes to a fresh temp. Verify with tmp/grind/func_8002EA24/s3/findreg.sh 104 (own_full_prefs / someone_prefers), not by score alone."
+   "hypothesis": "H5'' -- target denies $a0 to neg_threshold via a PREFERENCE/conflict-graph effect that costs no instruction, not via an occupant of $a0.",
+   "mechanism": "find_reg pass 0 excludes regs_someone_prefers[neg_threshold], which prune_preferences builds from LOWER-priority allocnos that CONFLICT with it and prefer $a0. Since a live occupant costs an instruction (measured: every occupant/hoist variant emits 108 vs 107), the original's conflict must come from conflict-graph construction rather than a real dynamic overlap -- e.g. global.c recording conflicts from a basic block's live-on-entry set, so an a0_var whose first set sits inside one reject arm conflicts with values live in the OTHER arm for free.",
+   "next_probe": "Put a0_var's FIRST set inside one of the reject arms the chain branches to (the arms already exist and already store the return value, so a set there may cost nothing on the fall-through path); score with tmp/grind/func_8002EA24/s5/run.sh and read the chain registers off the dump. Then dump .lreg (cc1 ... -dl base.i) for the score-2 body and for plain1 and diff the quantity numbers of a0_var / x / neg_threshold to see whether local-alloc quantity merging is available as a lever. Verify any promising variant with tmp/grind/func_8002EA24/s3/findreg.sh 104 (someone_prefers / own_full_prefs) rather than by score alone."
   },
   {
-   "hypothesis": "Directed permutation (PERM_* macros) over the range-test chain can reach the last register pair, even though random permutation cannot.",
-   "mechanism": "decomp-permuter manual-mutation macros explore a structured neighbourhood (statement order of the two range tests, the association of the sum of squares, the exit forms) that random single-edit mutation from this chassis does not cover -- 29,050 random iterations from the score-2 base found nothing.",
-   "next_probe": "tools/permuter_annotate.py --func func_8002EA24 (or hand-written PERM_GENERAL / PERM_LINESWAP annotations) on the score-2 body, rebuilt into a workspace with tmp/grind/func_8002EA24/s4/mkws.sh, then a campaign via tools/permuter_campaign.py launch/wait/harvest --stop."
+   "hypothesis": "H4 -- the GTE canonical-asm disposition, unchanged from sessions 2-6.",
+   "mechanism": "Both GTE regions are hand-written asm in the original (46-function $t4 census; the LZC block is instruction-for-instruction identical to the user-authorized func_800274BC). The Judge has constrained the SHAPE and that shape is measured free; it is carried verbatim in the banked candidate.",
+   "next_probe": "No grind action available -- adding func_8002EA24 to inline_asm_canonical.txt and retiring its 10 regfix rules are operator surfaces, and the Judge deferred the FINAL CALL until the function is byte-identical on main with zero rules."
   },
   {
-   "hypothesis": "H4 -- the GTE canonical-asm disposition, unchanged from sessions 2-4.",
-   "mechanism": "Both GTE regions are hand-written asm in the original (46-function $t4 census; the LZC block is instruction-for-instruction identical to the user-authorized func_800274BC). The Judge has constrained the SHAPE and that shape is measured free; it is carried verbatim in this session's candidate.",
-   "next_probe": "No grind action available -- adding func_8002EA24 to inline_asm_canonical.txt and retiring its 10 regfix rules are operator surfaces, and the Judge deferred the FINAL CALL until the function is byte-identical on main with zero rules. Drive H5' to 0 first."
+   "hypothesis": "H6 is CLOSED; what remains is ACCEPTANCE of the candidate's two /* FAKE */-annotated staged-value constructs, not a further search.",
+   "mechanism": "Both are instances of [[staged-value-reused-variable]] (a real value, read by the very next expression, staged through an existing local that is provably dead at the staging point, with zero dead stores); the fallback without them is banked (score 3 / score 6).",
+   "next_probe": "Layer-2 cheat-reviewer / Judge ruling on the two constructs in memory/grind/func_8002EA24/candidate.c; if refused, candidate_alt_score3_no_fake.c is the fallback body."
   }
  ],
  "judge_constraints": [
