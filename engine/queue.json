@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "cpu_set_move_command_and_dir_for_no_action",
-      "file": "code6cac_b",
-      "distance": 18,
-      "verdict": "C",
-      "rules": 9,
-      "status": "active"
-    },
-    {
       "func": "func_8002EA24",
       "file": "code6cac_b",
       "distance": 18,
@@ -2551,15 +2543,15 @@
     }
   ],
   "counts": {
-    "total": 309,
-    "active": 250,
+    "total": 308,
+    "active": 249,
     "by_status": {
-      "active": 250,
+      "active": 249,
       "parked": 59
     },
     "by_verdict": {
-      "C": 98,
       "ASM-PARTIAL": 45,
+      "C": 97,
       "ASM-SUSPECT": 107
     }
   }

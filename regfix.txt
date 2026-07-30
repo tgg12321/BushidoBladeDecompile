@@ -2015,10 +2015,6 @@ func_80040D48: subst "\$4" "$6" @ 233
 func_80040D48: subst "\$4" "$6" @ 234
 func_80040D48: subst "\$5" "$4" @ 236
 
-cpu_set_move_command_and_dir_for_no_action: reorder 8,9,1,2,3,4,5,10,11,6,7 @ 1-11
-cpu_set_move_command_and_dir_for_no_action: subst "\$4" "$2" @ 147
-cpu_set_move_command_and_dir_for_no_action: subst "\$4" "$2" @ 154
-cpu_set_move_command_and_dir_for_no_action: subst "\$4" "$2" @ 155
 
 # ===== func_8008BB24: compound regfix (79-insn fixed-point attenuation) =====
 # C structure: v7 (2-multiply loop, 3 volatile for 16-byte frame)

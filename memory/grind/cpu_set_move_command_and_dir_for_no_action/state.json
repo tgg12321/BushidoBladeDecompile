@@ -1,0 +1,11 @@
+{
+ "func": "cpu_set_move_command_and_dir_for_no_action",
+ "file": "code6cac_b",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-30T13:58:12.419494+00:00"
+}

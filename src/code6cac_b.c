@@ -3501,13 +3501,13 @@ void cpu_set_move_command_and_dir_for_no_action(void) {
     u8 *ptr;
     s32 one;
 
-    count = 0;
-    i = 0;
-    one = 1;
-    __asm__ volatile("" : "=r"(one) : "0"(one));
     {
         s32 mask = ~(1 << (&D_8008D538)[(s8)D_8010277C]) & 0x3EF3DF;
-        s32 bits = D_80106A50 & mask;
+        s32 bits;
+        count = 0;
+        i = 0;
+        bits = D_80106A50 & mask;
+        one = 1;
         ptr = &D_801077B0;
         do {
             if (bits & (one << i)) {
@@ -3587,19 +3587,22 @@ block_12:
         u8 lookup = (&D_8008D9EC)[(&D_8008D538)[(s8)D_8010277C]];
         s32 val;
         if (lookup != 0) {
-            val = 0x1A;
             if (D_80106A50 & 0x04000000) {
+                val = 0x1A;
                 goto append_last;
             }
         } else {
-            val = 0x18;
             if (D_80106A50 & 0x01000000) {
-append_last:
-                (&D_801077B0)[count] = val;
-                count++;
+                val = 0x18;
+                goto append_last;
             }
         }
+        goto set_count;
+append_last:
+        (&D_801077B0)[count] = val;
+        count++;
     }
+set_count:
     D_800A391F = count;
     D_800A3783 = 0;
     D_800A37BC = 0;

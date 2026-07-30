@@ -41,11 +41,6 @@ saTan5TakeAnim2: replace_first "^j\t\\.L[0-9]+(?=\naddu\t\\$2,\\$0,\\$zero\n\n\\
 # cpu_set_move_command_and_dir_for_no_action: retarget the final append branch
 # pair after local label renumbering so the 0x04000000 case falls through to the
 # end label and the shared store path remains at .L673.
-cpu_set_move_command_and_dir_for_no_action: insert_before "^lui\t\\$3,\\(16777216 >> 16\\) & 0xFFFF$" ".Lcpu_set_move_cmd_low:"
-cpu_set_move_command_and_dir_for_no_action: insert_before "^sb\t\\$2,D_801077B0\\(\\$18\\)$" ".Lcpu_set_move_cmd_store:"
-cpu_set_move_command_and_dir_for_no_action: insert_before "^sb\t\\$18,D_800A391F$" ".Lcpu_set_move_cmd_end:"
-cpu_set_move_command_and_dir_for_no_action: replace_first "^bne\t\\$2,\\$0,\\.L[0-9]+$\naddiu\t\\$2,\\$zero,26" "beq\t$2,$0,.Lcpu_set_move_cmd_end\naddiu\t$2,$zero,26"
-cpu_set_move_command_and_dir_for_no_action: replace_first "^j\t\\.L[0-9]+(?=\nnop  # DEBUG: branch/jump\n\\.L[0-9]+:\nlw\t\\$2,D_80106A50$\n#nop # DEBUG: 'li\t\\$3,0x01000000[^\n]*\n\\.Lcpu_set_move_cmd_low:)" "j\t.Lcpu_set_move_cmd_store"
 
 # func_8001EFA0: keep the ==6 case and shared default target stable after
 # upstream helper-swaps renumber nearby local labels.
