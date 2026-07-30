@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80036FD4",
-      "file": "code6cac_b2_post",
-      "distance": 17,
-      "verdict": "C",
-      "rules": 8,
-      "status": "active"
-    },
-    {
       "func": "func_8003553C",
       "file": "code6cac_b2_pre",
       "distance": 17,
@@ -2347,6 +2339,15 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md :: 2026-07-28 \u2014 func_800871D4 \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE"
     },
     {
+      "func": "func_80036FD4",
+      "file": "code6cac_b2_post",
+      "distance": 17,
+      "verdict": "C",
+      "rules": 8,
+      "status": "parked",
+      "park_reason": "owner escalation pending: docs/grind/decisions.md \u2014 '## 2026-07-29 \u2014 func_80036FD4 \u2014 OWNER-ESCALATION \u2014 INTEGRATION HANDOFF (not an endgame lock)'"
+    },
+    {
       "func": "special_camera_set_win_cam",
       "file": "code6cac_b2_post",
       "distance": 510,
@@ -2583,13 +2584,13 @@
   ],
   "counts": {
     "total": 313,
-    "active": 255,
+    "active": 254,
     "by_status": {
-      "active": 255,
-      "parked": 58
+      "active": 254,
+      "parked": 59
     },
     "by_verdict": {
-      "C": 103,
+      "C": 102,
       "ASM-PARTIAL": 45,
       "ASM-SUSPECT": 107
     }

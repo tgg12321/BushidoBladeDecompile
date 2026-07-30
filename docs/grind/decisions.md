@@ -2281,3 +2281,90 @@ One point I checked rather than assumed, since it is the only thing in the diff 
 judge_constraints in state.json is empty -- this is a queue-origin item, not regression-origin, so there is no flagged construct family to verify the match landed without. The ledger's kill records (K1 two-local obj split, K2/K3 shared-arg forms, K4 declaration order) and the three banked rejected/*.c files are consistent with the frontier hypotheses and with the measured sweep table in evidence.md; nothing in them was waved through on assertion where a measurement was claimed.
 
 Default-FAIL is the standing posture and I applied it: I looked for a reason to fail this and did not find one. mk_g2l is COMPLETED-C -- zero rules, zero cheat-asm, pure C, byte-identical.
+
+## 2026-07-29 — func_80036FD4 — **OWNER-ESCALATION — INTEGRATION HANDOFF (not an endgame lock)**
+
+Session 2 (structural) took the honest pure-C floor from 9 to 2 and reached
+`build_insns == target_insns == 79`. Every one of the 79 instructions now matches
+`asm/funcs/func_80036FD4.s` in opcode AND in register operand. The function is not
+plateaued and it is not exhausted; it is finished as a C problem and blocked on a
+surface a grind session may not touch.
+
+**What the residual 2 actually is.** It is not two instructions. It is two relocation
+addends:
+
+    ours    lui at,%hi(D_80101E60+12)  /  sw a0,%lo(D_80101E60+12)(at)
+    target  lui at,%hi(D_80101E6C)     /  sw a0,%lo(D_80101E6C)(at)
+    ours    lui at,%hi(D_80101E60+16)  /  sw a1,%lo(D_80101E60+16)(at)
+    target  lui at,%hi(D_80101E70)     /  sw a1,%lo(D_80101E70)(at)
+
+0x80101E60+12 == 0x80101E6C and 0x80101E60+16 == 0x80101E70. `objdump -dr` on the
+sandbox object shows the emitted instruction words are identical and only the
+R_MIPS_HI16/R_MIPS_LO16 symbol+addend pairs differ; GNU ld resolves an o32
+R_MIPS_HI16 using the addend of the following R_MIPS_LO16, so both spellings link to
+the same two words. The residual exists because splat invented a separate symbol for
+every word at 0x80101E60.. when it generated the target .s, and the sandbox compares
+UNLINKED object words. memory/project/splat-symbol-names-are-not-evidence.md is
+directly on point: those per-word D_8010xxxx names carry zero evidence about the
+original object model. A comparable case is already on the record in this file — the
+2026-07-29 func_80033D38-era entry noting a "residual sandbox score of 1 attributed
+to an unlinked-object relocation artifact" that measured 0 once the object model was
+corrected.
+
+**Why the shared-base record is forced, i.e. why the addend spelling is not
+negotiable.** Target requires the pre-jal reload of the halfword at 0x80101E60 to sit
+AFTER both `sw`s of the 8-byte record and to pay a load-delay `nop` (that nop is the
+79th instruction). cc1's post-reload scheduler sinks the block-move insn into that
+load-delay slot whenever it is the only ready insn — the sched2 dump says so
+verbatim: `;; ready list at T-14: 53 (1), now 53` then `;; launching 62 before 53
+with no stalls at T-15`. That single decision costs BOTH the nop and the register
+residual (the reload's pseudo stays live across the block move, so reload hands the
+movstrsi scratches $a1/$a2 instead of target's $a0/$a1). The only thing that keeps
+the block move out of that slot is a genuine memory dependence block-move -> reload,
+and sched.c:817 `true_dependence` -> `memrefs_conflict_p` bottoms out, for two
+constant addresses with `SIZE_FOR_MODE(BLKmode) == 0`, at
+`rtx_equal_for_memref_p (x, y) && (xsize == 0 || ...)`. Two DISTINCT symbol_refs can
+never conflict — at any record shape, member layout, or declared alignment. So the
+store and the reload must share a base symbol, and sharing a base symbol is exactly
+what produces the +12/+16 addends. Choosing 0x80101E6C as the base instead costs 3
+mismatched words rather than 2 (it moves the addend onto the `sh` and both `lh`s), so
+2 is the measured minimum for the only mechanism that exists.
+
+The record is independently justified, not reverse-engineered from what schedules
+well: this function already hands `(u8 *)&D_80101E62 - 0xA` (== 0x80101E58) to
+`tslPolyF4Init` as a struct pointer, code6cac_b2_post.c:277 passes `&D_80101E6C` to
+`cdrom_BcdToFrames`/`cdrom_FramesToBcd` as one 8-byte buffer, and target's own call
+passes `&SpecialCam + i*8`, making SpecialCam an array of that same 8-byte record.
+
+**Why this is a handoff and not something I can finish.** With the 8 regfix rules
+ENABLED the score is 4, i.e. those rules (regfix.txt:79-95, all reorder/subst
+register renames written against the OLD codegen) now actively corrupt output that is
+already correct. So a full build today does not match, and the fix is to delete them
+— regfix.txt and the engine's retire verb are both outside a grind session's surface,
+and I did not touch either. That is the whole blocker. I did NOT build-verify the
+SHA1 and I am not claiming a proven match: the link-identity argument above is
+arithmetic plus the documented HI16/LO16 addend-pairing rule, and it wants one
+command to confirm.
+
+**Exact operator steps.**
+1. Apply memory/grind/func_80036FD4/candidate.c to src/code6cac_b2_post.c (it is
+   already in the working tree as of this session).
+2. Run the engine's `retire func_80036FD4` — it deletes the 8 rules at
+   regfix.txt:79-95 and full-build SHA1-verifies with auto-rollback. This is the
+   decisive test. If SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa, the
+   link-identity reasoning holds and the function is byte-matched at sandbox 2.
+   If it auto-rolls-back, my reasoning is wrong, the residual is real, and the
+   function belongs back on the queue with that measurement banked.
+3. Fresh layer-2 `cheat-reviewer` on the C before acceptance. The one construct that
+   needs a ruling is `(ReplayCamRec *)&D_80101E60` — a typed re-view of a global,
+   i.e. the pointer-alias family. It is a PROBE SPELLING and I flagged it as such.
+   The clean form is to declare the record ONCE in include/code6cac.h and replace the
+   per-word externs (D_80101E60/E62/E64/E68/E6A/E6C/E70/E74) with member accesses.
+   I deliberately did NOT do that refactor: those symbols are referenced from other
+   files and unifying them into one object changes their mutual aliasing, so it needs
+   a full-build SHA1 check and is owner-scope. It does not change this function's
+   score either way — the addend spelling is identical.
+4. Note for step 3's reviewer: nothing else in the body needs an exception. No
+   register pins, no `__asm__`, no volatile, no alias rename, no dead store, no
+   `do {} while (0)`. Session 1's `asm volatile("" ::: "memory")` barrier is gone and
+   was not replaced.

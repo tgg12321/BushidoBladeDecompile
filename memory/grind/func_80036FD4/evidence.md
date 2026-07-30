@@ -121,3 +121,155 @@ single-source-of-truth form and matches the sibling at code6cac_b2_post.c:365
 - [s1] The committed-form cleanup is still owed: the working spelling *(CamPair *)&D_80101E6C = *(CamPair *)entry; is a typed re-view of globals (pointer-alias family) and must be replaced by a struct-typed declaration in include/code6cac.h before any completion claim.
 
 - [s1] Sibling replay_camera_Init (code6cac_b2_post.c:242) has the identical store/reload/pair-store shape and still carries register asm("$7")/asm("$8") pins plus the same barrier - a likely beneficiary of the same lever, but out of scope here.
+
+## Session 2 (structural, 2026-07-29) — floor 9 -> 2, build_insns 78 -> 79 == target
+
+### Headline
+All 79 instructions now match target in opcode AND register. The residual 2 is two
+RELOCATION ADDENDS, not two instructions, and links to identical bytes. See
+docs/grind/decisions.md (2026-07-29, func_80036FD4) for the integration handoff.
+
+### The causal chain, fully resolved (this replaces s1's H4/H5 guesses)
+s1 correctly identified "the reload's schedule position is the whole remaining gap"
+but attributed it to sched1 + move_by_pieces. Both details were wrong; the mechanism
+is:
+
+1. The aggregate copy was ALREADY a single block-move insn all along — cc1 -da
+   combine dump insn 53:
+   `(set (mem:BLK (symbol_ref "D_80101E6C")) (mem:BLK (reg 78)))`, pattern
+   `177 {movstrsi_internal}`. So s1's H5 ("force emit_block_move instead of
+   move_by_pieces and it will hard-block the hoist") is KILLED AT ITS PREMISE: the
+   copy is opaque already, and the scheduler sinks it past the reload anyway.
+2. The actor is sched2 (the POST-RELOAD scheduler), not sched1. Both passes make the
+   same move, but the emitted order comes from sched2 — confirmed by mapping the
+   sched2 trace onto the objdump one-for-one.
+3. sched2 schedules the block backwards. The reload (`lh`, insn 62) cannot be placed
+   at T-14 because its consumer (`sll`, insn 65) is at T-13 and the load latency is
+   2. At T-14 the block move (insn 53) is the ONLY ready insn, so it fills the slot:
+   `;; ready list at T-14: 53 (1), now 53` / `;; launching 62 before 53 with no
+   stalls at T-15`.
+4. That ONE decision produces BOTH s1-observed symptoms. It consumes the load-delay
+   slot (so no `nop` — 78 insns instead of 79) AND it leaves the reload's pseudo live
+   across the block move, so reload assigns the movstrsi scratches $a1/$a2 instead of
+   target's $a0/$a1. s1 was right that they are one coupled problem; the direction is
+   scheduling -> allocation, not the reverse.
+
+### The lever (CONFIRMED): the store and the reload must share a base symbol
+The only way to keep the block move out of that load-delay slot is a real memory
+dependence block-move -> reload. sched.c:817 `true_dependence` calls
+`memrefs_conflict_p (SIZE_FOR_MODE (mem), ..., SIZE_FOR_MODE (x), ..., 0)`, and
+`SIZE_FOR_MODE(BLKmode) == 0`. For two CONSTANT addresses the recursion bottoms out at
+`if (CONSTANT_P (y)) return rtx_equal_for_memref_p (x, y) && (xsize == 0 || ysize == 0
+|| ...)` — the size-0 clause makes a BLKmode store conflict with anything at the same
+base, and `rtx_equal_for_memref_p` makes two DISTINCT symbol_refs never conflict.
+
+Therefore: no record shape, member layout, declared alignment, or padding can create
+the dependence while the store and the load name different symbols. The base is the
+variable; the shape never was.
+
+Declaring the block at 0x80101E60 as one record (store at base+0xC BLKmode, halfword
+at base+0) creates the conflict. Measured: floor 9 -> 4, build_insns 78 -> 79, and the
+registers fall into target's $a0/$a1 with no register-directed work whatsoever.
+
+### Second lever (CONFIRMED): INSN_LUID tie-break decides the last 2 instructions
+At floor 4 the only diff was an adjacent-pair reorder in the index computation.
+Target: `sll v0,a0,16` / `lui+addiu v1,SpecialCam` / `sra v0,v0,13` — the table base is
+materialised BETWEEN the sign-extend's sll and its sra. `sched.c rank_for_schedule()`
+breaks priority ties on `INSN_LUID (tmp) - INSN_LUID (tmp2)`, i.e. on original RTL
+order, so C statement order decides this directly. Measured sweep:
+
+| C form for the entry address                              | emitted order | score |
+|---|---|---|
+| `entry = (s32*)(&SpecialCam + rec->unk00 * 8);`           | sll, sra, sym | 4 |
+| `u8 *cam = &SpecialCam;` as first initialiser, then index | sym, sll, sra | 4 |
+| `idx = rec->unk00; cam = &SpecialCam; entry = cam+idx*8;` | sll, sym, sra | **2** |
+
+Mechanism for the winning form: `idx = rec->unk00` expands the sign-extend as
+sll16+sra16; `cam = &SpecialCam` is the next insn; `idx * 8` expands as sll3, and
+combine fuses sra16+sll3 into `sra 13` AT THE sll3's position — i.e. after the symbol.
+So the sll stays first, the symbol lands second, the sra third.
+
+### The residual 2 (measured, and why it is the floor for this mechanism)
+`objdump -dr tmp/sandbox/func_80036FD4/code6cac_b2_post.o`:
+
+    628: lui at,0x0    R_MIPS_HI16 D_80101E60
+    62c: sw  a0,12(at) R_MIPS_LO16 D_80101E60      target: %lo(D_80101E6C), addend 0
+    630: lui at,0x0    R_MIPS_HI16 D_80101E60
+    634: sw  a1,16(at) R_MIPS_LO16 D_80101E60      target: %lo(D_80101E70), addend 0
+
+The instruction words are identical; only the symbol+addend pairs differ.
+0x80101E60+12 == 0x80101E6C, +16 == 0x80101E70, and GNU ld resolves an o32
+R_MIPS_HI16 using the addend of the following R_MIPS_LO16 — so both spellings LINK to
+the same words. Splat's per-word symbol naming in the target .s is the artifact
+(cf. memory/project/splat-symbol-names-are-not-evidence.md); the sandbox compares
+unlinked object words, so it scores 2.
+
+Base-choice arithmetic (why 2 is minimal): base 0x80101E60 puts addends on the two
+`sw`s only = 2 words. Base 0x80101E6C would give `sw`#1 addend 0 but moves addends
+onto `sw`#2 (+4), the `sh` (-12) and the pre-jal `lh` (-12) = 3 words. Varying-address
+(pointer) spellings of the store change the addressing to `lui/addiu/sw/sw` and cost
+more. So 2 is the minimum under the only dependence mechanism that exists.
+
+### The 8 regfix rules are now ACTIVELY HARMFUL
+`sandbox func_80036FD4` with rules ENABLED scores 4 (vs 2 with `--disable all`). The 8
+reorder/subst rules at regfix.txt:79-95 were written against the old codegen and now
+corrupt output that is already correct. They must be deleted (`retire`) before any
+full build can match — that is the integration blocker and it is outside a grind
+session's surface. NOT build-verified this session; the link-identity claim rests on
+the relocation arithmetic plus the HI16/LO16 pairing rule, and wants one `retire` to
+confirm.
+
+### Record justification (independent of codegen — required for the commit)
+- This function already hands the block's interior to another function:
+  `base = (u8 *)&D_80101E62 - 0xA` == 0x80101E58, passed to `tslPolyF4Init`.
+- code6cac_b2_post.c:277 passes `&D_80101E6C` to `cdrom_BcdToFrames` /
+  `cdrom_FramesToBcd` as one 8-byte buffer — the `pair` member is one object.
+- Target's own call passes `&SpecialCam + i*8`, so SpecialCam is an array of that
+  same 8-byte record.
+- Layout recovered from the use sites: +0x00 s16 (E60), +0x02 s16 (E62), +0x04 s16
+  (E64), +0x06 unknown s16, +0x08 s16 (E68), +0x0A s16 (E6A), +0x0C 8-byte pair
+  (E6C/E70), +0x14 s32 (E74).
+
+### Cleanup still owed (unchanged in kind from s1's H3, now better justified)
+`(ReplayCamRec *)&D_80101E60` is a probe spelling (pointer-alias family). The
+committable form declares the record once in include/code6cac.h and drops the per-word
+externs. Deliberately NOT done here: those symbols are referenced from other files and
+unifying them changes their mutual aliasing, so it needs a full-build SHA1 check and is
+owner-scope. It does not change this function's score.
+
+### Artifacts (session 2)
+- `tmp/grind/func_80036FD4/s2/dis.sh` — side-by-side target-vs-sandbox disassembly
+- `tmp/grind/func_80036FD4/s2/cmp.py` — normalised diff (opcode+register only, so
+  relocation/label spelling noise is filtered out); reports 12 lines of which 10 are
+  normaliser artifacts and 2 are the addend words
+- `tmp/grind/func_80036FD4/s2/dump.sh` — regenerates cc1 `-da` dumps for the file and
+  slices out this function
+- `tmp/grind/func_80036FD4/s2/rtlsum.py` — flattens an RTL dump to one line per insn
+- `tmp/grind/func_80036FD4/s2/dump-cur/` — the distinct-symbol (score 9) dumps; the
+  `f-base.i.sched2.txt` trace lines quoted above are here
+- `tmp/grind/func_80036FD4/s2/dump-cam/` — the symbol-first variant's dumps
+- `tmp/grind/func_80036FD4/s2/decision_entry.md` — the decisions.md entry as filed
+
+- [s2] [s2] Floor 9 -> 2 with sandbox --disable all; build_insns 78 -> 79 == target_insns 79. All 79 instructions match asm/funcs/func_80036FD4.s in opcode AND in register operand.
+
+- [s2] [s2] The residual 2 is two relocation addends, not two instructions: objdump -dr shows `sw a0,12(at)` / `sw a1,16(at)` with R_MIPS_LO16 against D_80101E60, versus target's addend-0 relocs against D_80101E6C / D_80101E70. 0x80101E60+12 == 0x80101E6C and +16 == 0x80101E70, and GNU ld resolves an o32 R_MIPS_HI16 using the following R_MIPS_LO16's addend, so both spellings link to identical words.
+
+- [s2] [s2] The actor is sched2 (the POST-RELOAD scheduler), not sched1 as s1 assumed. Mapping the sched2 trace onto the objdump matches one-for-one; the pre-fix decision is in the dump verbatim: ';; ready list at T-14: 53 (1), now 53' then ';; launching 62 before 53 with no stalls at T-15'.
+
+- [s2] [s2] The missing nop and the $a1/$a2-vs-$a0/$a1 register residual are ONE symptom of that single scheduling decision, and the direction is scheduling -> allocation: with the block move sunk past the reload, the reload's pseudo is live across the block move, so reload avoids $a0 for the movstrsi scratches. Fixing the schedule fixed the allocation with no register-directed work.
+
+- [s2] [s2] sched.c:817 true_dependence -> memrefs_conflict_p: SIZE_FOR_MODE(BLKmode) == 0, and for two constant addresses the recursion bottoms out at `rtx_equal_for_memref_p (x, y) && (xsize == 0 || ysize == 0 || ...)`. A BLKmode store therefore conflicts with anything at the SAME base symbol and with NOTHING at a different symbol — at any record size, member layout, or declared alignment.
+
+- [s2] [s2] The aggregate copy was already a single movstrsi block-move insn before this session (cc1 -da combine dump insn 53, pattern 177 {movstrsi_internal}), so s1's H5 premise was false; an opaque block-move insn is not a scheduling barrier.
+
+- [s2] [s2] sched.c rank_for_schedule() breaks equal-priority ties on INSN_LUID (original RTL order), so C statement order directly decides adjacent-pair emission order. Every insn in this region has priority 1-4, so ties dominate.
+
+- [s2] [s2] Measured order sweep for the entry-address computation: `&SpecialCam + rec->unk00 * 8` -> sll,sra,sym -> score 4; `u8 *cam = &SpecialCam;` first -> sym,sll,sra -> score 4; split (`idx = rec->unk00; cam = &SpecialCam; entry = cam + idx*8`) -> sll,sym,sra == target -> score 2.
+
+- [s2] [s2] The 8 regfix rules at regfix.txt:79-95 are now ACTIVELY HARMFUL: `sandbox func_80036FD4` with rules enabled scores 4 versus 2 with --disable all. They were written against the old codegen and corrupt output that is already correct, so no full build can match until they are deleted.
+
+- [s2] [s2] NOT build-verified this session. The link-identity claim rests on the relocation arithmetic plus the documented HI16/LO16 addend-pairing rule. `retire func_80036FD4` (which deletes those 8 rules and full-build SHA1-verifies with auto-rollback) is the single decisive test, and it is outside a grind session's surface.
+
+- [s2] [s2] Record layout recovered from use sites, independent of codegen: +0x00 s16 (D_80101E60), +0x02 s16 (E62), +0x04 s16 (E64), +0x06 unknown s16, +0x08 s16 (E68), +0x0A s16 (E6A), +0x0C 8-byte pair (E6C/E70), +0x14 s32 (E74). Justification: this function passes `(u8 *)&D_80101E62 - 0xA` (== 0x80101E58) to tslPolyF4Init as a struct pointer; code6cac_b2_post.c:277 passes &D_80101E6C to cdrom_BcdToFrames/cdrom_FramesToBcd as one 8-byte buffer; target's own call passes &SpecialCam + i*8, making SpecialCam an array of that same 8-byte record.
+
+- [s2] [s2] The body carries zero cheats: no register pins, no __asm__, no volatile, no alias rename, no dead store, no do-while(0). s1's `asm volatile("" ::: "memory")` barrier is gone and was not replaced. The one construct needing a layer-2 ruling is the `(ReplayCamRec *)&D_80101E60` typed re-view (pointer-alias family), which is a probe spelling the header-declaration cleanup removes.
