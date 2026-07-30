@@ -1,8 +1,8 @@
 {
  "func": "replay_camera_Init",
  "file": "code6cac_b2_post",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 0,
@@ -27,23 +27,29 @@
    "floor": 13,
    "modality": "structural",
    "headline": "First permuter campaign ever run on this function broke the 3-session plateau: a pointer-mediated re-read of D_80101E70 produces the reload honestly, floor 17 -> 13 (36 -> 38 insns), and target's own "
+  },
+  {
+   "session": 4,
+   "floor": 13,
+   "modality": "permuter",
+   "headline": "Permuter axis measured dead on this function: two campaigns (23k + 45k iterations, both stopped in-turn) beat nothing, because the permuter's weighted score is ANTI-correlated with the sandbox here; t"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The remaining 13 points are pure register naming on top of an already instruction-exact body: a hybrid between v_d (13 / 38) and v_f (19 / 39) reaches 0.",
-   "mechanism": "v_f proves target's statement order yields all 39 instructions with the parameter-home copy in the delay slot; v_d proves the pointer pair yields the lowest score at 38. The two forms differ by only three statement positions (where `D_80101E7C = a1;` sits, whether the two loads are adjacent, and where `D_80101E68 = 0;` sits). Each intermediate changes the live ranges global.c sees and therefore which hard regs the a1-home pseudo and the pe62 address pseudo receive.",
-   "next_probe": "Move ONE statement at a time from v_d's order toward v_f's, sandboxing each of the ~6 intermediate forms, and disassemble any form that keeps 39 instructions. Reproduce the objdump diff with tmp/grind/replay_camera_Init/s3/setup_ws3.sh (apply form to src/, run sandbox, re-preprocess the sandbox copy, compile, objdump-diff against ws3/target.txt)."
+   "hypothesis": "The remaining 13 points are a uniform DOWNWARD hard-register shift whose cause is the provenance of the original compilation unit, not the statement order of this function's body: target's compile carried genuine hard_reg_conflicts on $a1 AND $a2 at both allocation points, and nothing in this function's honest value set supplies them.",
+   "mechanism": "Target uses $v1/$a0/$a3/$t0 and leaves $a1 and $a2 unused in the whole body; our 38-insn floor form uses $v1/$a2 and our 39-insn forms $v1/$a1/$a2/$a3 \u2014 one or two hard registers below target in every case. s2 line-cited global.c: find_reg takes the lowest free hard reg (no REG_ALLOC_ORDER for MIPS in this tree) and prune_preferences can never deny a register the allocno itself prefers, so only real conflicts can produce target's numbering.",
+   "next_probe": "Switch modality to forensics / rederive: is replay_camera_Init the tail of a larger original function, does it inline a callee whose values occupy $a1/$a2, or does the original TU order place it where another construct keeps those hard regs live at entry? m2c the target and diff its allocno structure against ours (s2's frontier item 2, still unrun). Do NOT spend another session on statement order or on the permuter \u2014 both axes are now measured dead."
   },
   {
-   "hypothesis": "A permuter campaign seeded from the 39-instruction v_f - rather than from a 38-instruction form - closes the register-allocation residue.",
-   "mechanism": "All three s3 campaigns were seeded from bodies that were one instruction short, so every mutation started from a structurally incomplete body and the search spent itself re-finding the missing insn. Seeding from v_f makes the search purely over register allocation and store order, which is exactly what remains.",
-   "next_probe": "Apply v_f to src/, run `sandbox --disable all` to refresh the stripped copy, rebuild a ws4 with setup_ws3.sh's recipe, launch via tools/permuter_campaign.py with --stop-on-zero, wait IN-TURN with `wait --dir`, and sandbox-measure every de-permuted find (the permuter score is not a reliable proxy here)."
+   "hypothesis": "candidate.c's two /* FAKE */ pointer aliases survive a fresh layer-2 cheat-reviewer.",
+   "mechanism": "pointer-alias-fake-exception is a sanctioned last-resort family (owner ruling 2026-07-01) requiring documented lever exhaustion + a named GCC-pass mechanism + a /* FAKE */ annotation; candidate.c supplies all three and the exhaustion record is stronger again after s4's four kills. One new fact for the reviewer: the alias's non-aliasing property is load-bearing in both directions \u2014 it is what makes the re-read survive, and in neighbouring forms it also lets the scheduler sink the store past the load (s4 H15). candidate.c itself is unaffected and emits the store first.",
+   "next_probe": "Run a fresh cheat-reviewer on memory/grind/replay_camera_Init/candidate.c at the START of the next session (or have the operator/Judge rule). A FAIL reverts the floor from 13 to 17 and changes the whole frontier, so it must not be deferred behind another search session."
   },
   {
-   "hypothesis": "The two /* FAKE */ pointer aliases in candidate.c survive a fresh layer-2 cheat-reviewer.",
-   "mechanism": "pointer-alias-fake-exception is a sanctioned last-resort family (owner ruling 2026-07-01, SOTN precedent `tilemap = &g_Tilemap;`) whose prerequisites are documented lever-exhaustion, a named GCC-pass mechanism, and a /* FAKE */ annotation. s0's proposal was FAILed for supplying none of the three; candidate.c now supplies all three, and the exhaustion record is materially stronger after s1 H1-H4 and s2 H5-H7.",
-   "next_probe": "Run a fresh cheat-reviewer on memory/grind/replay_camera_Init/candidate.c EARLY in s4, before spending the session on the register-naming residue - a FAIL reverts the floor to 17 and changes the whole frontier."
+   "hypothesis": "Within the 38-instruction family, the one naming defect s4 proved is movable \u2014 issuing the D_8008EC38 load BEFORE the SpecialCam load, which puts cam_val in $v1 to match target \u2014 can be carried over from the 39-insn family without buying the extra instruction.",
+   "mechanism": "In the 39-insn family that swap is worth -2 (h7 18 vs v_f 19; h8 17 vs h5 18) and corrects an actual register assignment rather than trading one mismatch for another. In the 38-insn family the loads are separated by a store, so the swap changes which value is live across that store and may move the guard-address allocation off $a2.",
+   "next_probe": "Apply the load-order swap directly to candidate.c (keeping the E6C or E7C store between the two loads so the body stays at 38 instructions) and sandbox each of the two placements. This is a two-measurement probe; if it does not beat 13 the 38-insn ordering axis is closed too and everything remaining is the provenance question above."
   }
  ],
  "judge_constraints": [],

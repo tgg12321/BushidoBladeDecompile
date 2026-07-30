@@ -1,334 +1,121 @@
-# Evidence bank — replay_camera_Init
 
-- WIP rejected_form: *(volatile s32 *)&D_80101E70 inline cast at the final read site -- forces the reload but is the forbidden case-2 CSE-defeat cast pattern (inline-asm-injection / legitimate-volatile-interrupt-touched); engine detector flags it as cheat_asm_stripped delta, reviewer would FAIL the family check.
+## s4 (permuter, 2026-07-30) — floor unchanged at 13; two families closed
 
-- WIP rejected_form: volatile s32 *ecp = &D_80101E70; *ecp = ec_val; ... *ecp + 0x7FF ... -- pointer-indirection variant of the same forbidden CSE-defeat spirit (defeats CSE via volatile aliasing with no IRQ-writer citation); DOES force a genuine reload instruction (confirmed empirically) but is the same forbidden family by spirit even though the mechanical detector's exact regex may not match the pointer-variable spelling. Do NOT resurrect without a genuine two-pronged IRQ-touched justification (none exists for D_80101E70 here) -- see .claude/rules/legitimate-volatile-interrupt-touched.md.
+- [s4] The floor did NOT move this session. `candidate.c` re-measured with
+  `sandbox replay_camera_Init --disable all` at **13 / build_insns 38 /
+  target_insns 39**, unchanged from s3, and nothing found this session beats it.
+  `src/code6cac_b2_post.c` is returned to the exact `candidate.c` body at
+  session end.
 
-- WIP rejected_form: register s32 saved_a1 asm("$7") = a1; (diagnostic-only, confirmed via instrumented sandbox --keep-cheat-asm run to be the ONLY thing that reproduces target's exact instruction ORDER: with just this pin, disable=none/keep-cheat-asm scored 11 with build_insns=39 matching target count and the volatile reload appeared naturally at the correct position). This CONFIRMS the pin is diagnostically correct but per register-asm-pins.md it is diagnostic-only / never committable. No pure-C structure found yet that makes GCC choose this allocation without the pin.
+- [s4] PERMUTER OBJECTIVE IS ANTI-CORRELATED WITH THE SANDBOX HERE — the single
+  most important operational fact this session produced. The permuter's default
+  scorer weights registers × 5, reorderings × 60, insertions/deletions × 100
+  (memory/reference/scoring-systems.md), while the engine sandbox counts every
+  differing instruction at full weight. This function's entire remaining residue
+  IS register naming, so the permuter prices our only defect at 5 points each
+  and pays 100-point structural damage to shave it. Measured: the ws4 campaign's
+  BEST find `output-235-1` sandboxes at **21** (the worst number in this grind),
+  `output-315-1` at 15, `output-360-1` at 14, `output-385-1` at 15 — while
+  `candidate.c`, the score-13 floor, is rated **650** by the permuter (read
+  directly as the ws5 campaign's `base_score`). Chasing a low permuter score on
+  this function walks AWAY from the floor. The permuter remains useful here only
+  as a STRUCTURE generator (s3's winning pointer re-read came from a novel
+  construct, not from a low score): triage finds by construct novelty, ignore
+  the ranking, sandbox every one. The scorer cannot be reweighted from a grind
+  session (`tools/` is outside the allowed surface).
 
-- WIP rejected_form: a1 = *(s32*)(SpecialCam+sval); D_80101E6C = a1; (param-reuse lever, param-reuse-base-copy-cse-canon.md style) -- did NOT force GCC to allocate a1 hardware register to cam_val; GCC still chose v1 and treated the a1 reassignment as an ordinary reg-to-reg copy candidate, not a hard binding.
+- [s4] ws4 campaign (seeded from the 39-instruction `v_f`, label
+  `s4-vf-39insn`, -j 6, --stop-on-zero): ~23,100 iterations, 160 output dirs,
+  best permuter score 235, harvested and STOPPED in-turn. Directly kills s3's
+  frontier item 2 ("seed from the 39-insn form and the search becomes purely
+  register allocation"): the search does become purely register allocation, and
+  the permuter cannot see register allocation.
 
-- WIP rejected_form: s32 saved_a1 = a1; as a plain (non-register) local referenced once at D_80101E7C -- always coalesced/folded back to a1 by GCC (dead-copy elimination), regardless of declaration order (tried before AND after `s16 *s0` decl).
+- [s4] The `addu $a3,$a1,$zero` parameter-home copy is produced by making the
+  TWO LOADS ADJACENT, not by target's statement order (s3's attribution was
+  wrong). Ten-form hybridisation sweep between `v_d` (= candidate.c) and `v_f`,
+  one statement moved at a time: every form whose loads are separated by a store
+  builds 38 instructions (h1, h2 — both score 13), every form whose loads are
+  adjacent builds 39 (h3-h10), regardless of where `D_80101E7C = a1;` sits. The
+  mechanism is s2's H7 exactly — two simultaneously-live values force one into
+  hard reg `$a1`, so the home copy cannot become a self-move — but supplied here
+  by the function's OWN honest values, with no dead temporaries. s2 recorded
+  that route as closed; it is not.
 
-- WIP rejected_form: func_80036FD4 sibling's entry[0]/entry[1] shared-pointer trick (SpecialCam and D_8008EC38 are adjacent globals, SpecialCam=0x8008EC34, D_8008EC38=0x8008EC38, exactly +4) -- does NOT apply here: target's actual asm/funcs/replay_camera_Init.s emits TWO SEPARATE symbol relocations (R_MIPS_HI16 SpecialCam and R_MIPS_HI16 D_8008EC38, confirmed via objdump -dr), unlike func_80036FD4 which computes both loads through ONE base+offset. Ruled out by direct relocation evidence, not guesswork.
+- [s4] Best member of the 39-instruction family is `h8` at **17 / 39**
+  (`*pe62 = 2` before `D_80101E7C = a1`, and the `D_8008EC38` load issued BEFORE
+  the `SpecialCam` load). Issuing the EC38 load first is worth -2 and fixes one
+  naming defect outright: it puts `cam_val` in `$v1`, matching target's
+  `lw v1,%lo(SpecialCam)`. Still 4 points above the 38-instruction floor.
 
-- == imported from memory/wip notes.md ==
-# replay_camera_Init — WIP TL;DR
+- [s4] THE 39-INSTRUCTION FAMILY IS SEMANTICALLY WRONG — do not re-open it.
+  Disassembly of h8 (tmp/grind/replay_camera_Init/s4/diffform.sh) shows the
+  `D_80101E70` re-read emitted BEFORE the store it is meant to observe:
+  `lw v1`/`lw a1`, `sw v1`(E6C), `lui a0; lw a0,0(a0)` (the re-read), `li v1,2`,
+  `sh v1,0(a3)`, … and only at the very end `lui at; sw a1,0(at)` (the E70
+  store). `D_80101E78` is therefore computed from the STALE value of
+  `D_80101E70`. GCC 2.7.2 is free to sink the store past the load because the
+  read `(mem (reg))` and the store `(mem (symbol_ref))` do not alias to its
+  disambiguator — the same property that makes the re-read survive at all.
+  `candidate.c` does NOT have this defect (its object emits the E70 store first,
+  then `lui v1; lw v1,0(v1)`), so the floor form is semantically faithful. Any
+  future session that moves the re-read earlier must re-check the EMITTED order,
+  not just the score.
 
-**Status:** honest pure-C distance 17 (down from HEAD's 18), 0 cheat constructs, 1 residual regfix rule (`fill_delay @ 26 <- 15`). NOT closable to 0 yet.
+- [s4] REGISTER RESIDUE, restated precisely from this session's disassemblies.
+  Target uses `$v1` (cam_val), `$a0` (ec_val), `$a3` (the a1 home copy) and
+  `$t0` (the D_80101E62 address) and leaves `$a1` and `$a2` COMPLETELY UNUSED.
+  `candidate.c` (38 insns) uses `$v1`, `$v1` again, and `$a2` for the address.
+  `h8` (39 insns) uses `$v1`, `$a1`, `$a2`, `$a3`. Every one of our allocations
+  sits one or two hard registers BELOW target's. s2 proved `find_reg` takes the
+  lowest free hard reg (no `REG_ALLOC_ORDER` for MIPS in this tree), so target's
+  compile must have carried genuine `hard_reg_conflicts` on `$a1` AND `$a2` at
+  both allocation points, which nothing in the honest value set supplies. This
+  is the one unexplained fact left and it is a PROVENANCE question, not an
+  ordering question — the ordering axis is now measured dead in BOTH the 38- and
+  39-instruction families.
 
-## What HEAD had (and why this is on the queue)
-HEAD's committed body byte-matches the oracle but ONLY via 2 register-asm pins
-(`saved_a1 asm("$7")`, `s0 asm("$8")`) + a bare `__asm__ volatile("":::"memory")`
-scheduling barrier — all diagnostic-only/forbidden (register-asm-pins.md,
-inline-asm-policy.md). That's why it's INCOMPLETE despite SHA1==oracle at HEAD.
+- [s4] No layer-2 cheat-reviewer verdict was obtained on `candidate.c`'s two
+  `/* FAKE */` pointer aliases this session (the session was constrained from
+  spawning agents). It remains the highest-leverage open question in the ledger:
+  a FAIL reverts the floor from 13 to 17 and changes the whole frontier.
 
-## What I found
-1. Removing the pins/barrier alone keeps distance at 18 (same as before) — the
-   pins/barrier were score-inert for the honest metric anyway (as expected).
-2. Restoring `s16 *s0 = &D_80101E62;` (a plain, non-register pointer cache,
-   matching sibling `func_80036FD4`'s idiom) makes GCC cache the address once
-   and reuse it for both the initial `*s0 != 0` check and the final `*s0 = 2`
-   store — matching target's use of ONE register ($t0 in target) throughout.
-3. **The core remaining gap is a register-rotation/scheduling wall.** Target's
-   compiled form:
-   - preserves the incoming `a1` into a fresh register (`$a3`) in the branch's
-     delay slot, unconditionally, right at function entry
-   - this frees `$a1`'s hardware register for the `SpecialCam` load (`cam_val`)
-   - which in turn means the store to the (legitimately volatile, pre-existing)
-     `D_80101E70` global is followed by a GENUINE re-load instruction (not
-     folded), because by the time of the read, the register holding the
-     just-stored value has already been reused for `D_8008EC38` doesn't apply — see the raw asm; the reload is real and uses a DIFFERENT register than the store).
-4. I confirmed (2) is the load-bearing mechanism by DIAGNOSTIC-ONLY use of
-   `register s32 saved_a1 asm("$7") = a1;` (never committed) via
-   `sandbox --disable none --keep-cheat-asm`: with JUST that pin, build_insns
-   became 39 (== target) and the reload appeared naturally, score dropped to 11.
-   This PROVES the pin's target register assignment is what target's original
-   compile produced — but per register-asm-pins.md this is diagnostic-only.
-5. I could NOT find a pure-C structure that makes GCC choose this allocation
-   without the pin. Tried: param-reuse (`a1 = ...; D_80101E6C = a1;`), plain
-   `saved_a1` locals (before/after other decls), the sibling's shared-pointer
-   trick (ruled out — target uses two SEPARATE symbol relocations for
-   SpecialCam/D_8008EC38, confirmed via `objdump -dr`, so the shared-pointer
-   shape doesn't apply here even though the two globals ARE adjacent in memory).
-6. One reordering DID help: moving `D_80101E7C = a1;` to sit texually between
-   the two loads let GCC's scheduler place it (using `a1` directly, no pin
-   needed) at almost the right spot, dropping distance 18 -> 17. This is
-   captured in `candidate.c`.
+- [s4] Both campaigns were harvested and STOPPED in-turn; no background work was
+  orphaned. Artifacts under tmp/grind/replay_camera_Init/s4/.
 
-## Cheat-reviewer history
-- Pass 1 (2026-07-05) FAILed an earlier version of this candidate that kept
-  `s16 *s0 = &D_80101E62;` as a plain pointer-caching idiom (matching sibling
-  `func_80036FD4`'s shape). Reviewer classified it as an unannotated
-  pointer-alias-fake-exception shape (no lever-exhaustion doc, no named
-  mechanism, no `/* FAKE */` annotation) and FAILed on that ground alone —
-  everything else passed.
-- Fix: removed the alias entirely, replaced with two direct `D_80101E62`
-  accesses. Re-measured: distance UNCHANGED at 17 — the alias was not
-  load-bearing for the score, so there was no reason to justify/annotate it.
-  `candidate.c` now reflects this simpler, alias-free form.
-- Pass 2 re-review requested on the corrected candidate; see meta.json for
-  the recorded verdict.
+- [s4] ws5 campaign (seeded from the score-13 candidate.c chassis, label
+  s4-candidate13-reseed): permuter base_score 650, ~44,900 iterations, best
+  permuter score 295; de-permuted finds sandbox at 16 / 37 (output-295-1) and
+  14 / 39 (output-380-1's `short a0`). Harvested and STOPPED in-turn.
 
-## Rejected forms (do not re-derive)
-See `meta.json.rejected_forms` for the full list with reasoning. Highlights:
-- `*(volatile s32 *)&D_80101E70` cast at the read site — FORBIDDEN (case-2
-  CSE-defeat cast, matches inline-asm-injection / legitimate-volatile-interrupt-touched
-  ban; D_80101E70 has no IRQ-writer citation so doesn't qualify for the narrow carve-out).
-- `volatile s32 *ecp = &D_80101E70;` pointer-indirection variant — empirically
-  DOES force the reload, but is the same forbidden-by-spirit CSE-defeat family
-  (no IRQ justification). Do not resurrect without a genuine two-pronged citation.
+- [s4] `short a0` (the one structurally novel idea either campaign produced)
+  reaches 39 instructions at score 14 with the re-read still correctly AFTER
+  the E70 store — but the 39th instruction is `move v1,a0`, a truncation home
+  copy of the FIRST parameter, not target's `move a3,a1`. Target's own asm
+  disproves the narrowing: it stores the parameter with `sh a0,0(at)` straight
+  from the incoming register, with no truncating copy, which is what an
+  un-narrowed s32 parameter produces.
 
-## Next steps for whoever resumes this
-- The remaining ~17-point gap is almost entirely the a1/a3 register-rotation
-  wall + the consequent lack of a real D_80101E70 reload. This matches the
-  "register rotation" wall class documented in register-alloc-pure-c.md
-  (Confirmed limits section) — consider a proper decomp-permuter run (not
-  attempted this session — infra setup was deprioritized in favor of manual
-  structural analysis) before declaring this un-closable in pure C.
-- Do NOT re-try the rejected forms above.
-- Apply `candidate.c`, confirm floor with `sandbox --disable all` (expect 17),
-  then continue from there.
+- [s4] The floor did NOT move: candidate.c re-measures at score 13 / build_insns 38 / target_insns 39 with `sandbox replay_camera_Init --disable all`, unchanged from s3, and nothing found this session beats it. src/code6cac_b2_post.c is left holding the exact candidate.c body and re-verified at 13.
 
+- [s4] PERMUTER OBJECTIVE IS ANTI-CORRELATED WITH THE SANDBOX ON THIS FUNCTION — the key operational fact of the session. Permuter scorer = registers x 5, reorderings x 60, ins/del x 100; the sandbox counts every differing instruction at full weight; this function's whole residue is register naming. Measured: ws4's best find (permuter 235) sandboxes at 21 (worst in the grind); output-315-1 at 15; output-360-1 at 14; output-385-1 at 15; ws5's best (permuter 295) at 16; while candidate.c, the score-13 floor, is rated 650 by the permuter (read as ws5's base_score). Chasing a low permuter score here walks AWAY from the floor.
 
-## == s1 (recon, 2026-07-30) ==
+- [s4] ws4 campaign (seeded from the 39-instruction v_f, label s4-vf-39insn, -j 6, --stop-on-zero): ~23,100 iterations, 160 output dirs, best permuter score 235; harvested and STOPPED in-turn. This directly kills s3's frontier item 2 — the search does become purely register allocation, and the permuter cannot see register allocation.
 
-- EXACT structural gap measured: target 39 insns, honest build 36. The three
-  missing instructions are (a) `addu $a3,$a1,$zero` — the incoming-a1 parameter
-  copy, which target puts in the `bnez` delay slot; (b)+(c) `lui $v1,%hi(D_80101E70)`
-  + `lw $v1,%lo(D_80101E70)($v1)` — a genuine RE-LOAD of D_80101E70 immediately
-  after the store of the same global. Everything else is register naming.
+- [s4] ws5 campaign (seeded from the score-13 candidate.c chassis, label s4-candidate13-reseed): base_score 650, ~44,900 iterations, best permuter score 295; harvested and STOPPED in-turn. `permuter_campaign.py status` reports 0 alive at session end; no background work orphaned.
 
-- The reload is produced solely by the PRE-EXISTING `extern volatile s32
-  D_80101E70;` at src/code6cac_b2_post.c:45, which the cheat-invisible sandbox
-  STRIPS. Proof: the sandbox's own source copy
-  (tmp/sandbox/replay_camera_Init/src/code6cac_b2_post.c:45) reads
-  `extern s32 D_80101E70;` and `grep -c volatile` on it returns 0 vs 2 on the real
-  file. Mechanism: cse.c:7329 skips inserting a store's destination MEM into the
-  equivalence table when `sets[i].src_elt == 0`, which is exactly the volatile
-  case; without volatile the insert at cse.c:7358 forwards the stored register to
-  the later read. Confirmed in the RTL: with volatile present, `.rtl` already has
-  `(mem/v:SI (symbol_ref "D_80101E70"))` on both the store and the read and both
-  survive every pass through `.greg`.
+- [s4] The `addu $a3,$a1,$zero` parameter-home copy is produced by making the TWO LOADS ADJACENT, not by target's statement order (s3's attribution corrected). Ten-form hybrid sweep between v_d and v_f, one statement at a time: loads separated by a store -> 38 insns (h1, h2, both score 13); loads adjacent -> 39 insns (h3-h10, scores 17-19). Mechanism is s2's H7, but supplied by the function's own honest values with no dead temporaries — s2 recorded that route as closed and it is not.
 
-- MEASURED FLOOR SPLIT (this is the key number for planning):
-    `sandbox --disable all`                  -> 17, build_insns 36  (reload absent)
-    `sandbox --disable all --keep-cheat-asm`  -> 14, build_insns 38  (reload present)
-  So 3 of the 17 honest points / 2 of the 3 missing instructions are gated on the
-  volatile POLICY question, not on a C-structure search. The residual after the
-  reload is 14, dominated by the missing a1->a3 parameter copy plus renames.
+- [s4] Best member of the 39-instruction family is h8 at 17/39 (`*pe62 = 2` before `D_80101E7C = a1`, and the D_8008EC38 load issued BEFORE the SpecialCam load). Issuing the EC38 load first is worth -2 and fixes one naming defect outright: it puts cam_val in $v1, matching target's `lw v1,%lo(SpecialCam)`.
 
-- OVERTURNS the s0 ledger claim that the `s16 *s0 = &D_80101E62;` alias is not
-  load-bearing. It is inert at the stripped floor (17 with and without) but worth
-  -1 once the reload exists (14 without alias vs 13 with alias, both at 38 insns).
-  s0 measured only the stripped regime and generalised. The alias still is not
-  committable as-is (unannotated pointer-alias-fake-exception, reviewer-FAILed in
-  s0) but it must be re-measured, not assumed dead, by whoever resolves the
-  volatile question.
+- [s4] THE 39-INSTRUCTION FAMILY IS SEMANTICALLY WRONG — do not re-open it. h8's disassembly emits the D_80101E70 re-read BEFORE the store it is meant to observe, so D_80101E78 is computed from a stale value. GCC may sink the store past the load because (mem (reg)) and (mem (symbol_ref)) do not alias to its disambiguator — the same property that makes the re-read survive. candidate.c does not have this defect.
 
-- rejected_form (KILLED s1): `s16 *s0 = &D_80101E62;` as a CSE-invalidation lever
-  for the D_80101E70 reload. Reproduces target's single-materialized-address shape
-  (`lui;addiu;lh 0(reg)` ... `sh 0(reg)`, matching target's $t0 usage) but produces
-  NO reload: score 17 / 36 insns, identical to the alias-free form. Reason:
-  cse.c:7539 `note_mem_written` only sets `writes_ptr->all = 1` (which would kill
-  every memory equivalence) when the store's address satisfies
-  `cse_rtx_addr_varies_p`; cse_insn folds the destination address first, and the
-  address pseudo carries `REG_EQUIV (symbol_ref "D_80101E62")` (visible in .greg
-  insn 13), so it folds to a constant and does not vary. ANY C pointer whose
-  initializer GCC can constant-fold fails identically — this closes the whole
-  "use a pointer store to invalidate CSE" family, not just this spelling.
+- [s4] `short a0` narrowing (ws5's only novel idea) reaches 39 instructions at score 14 with the re-read still correctly AFTER the E70 store — but the 39th instruction is `move v1,a0`, a truncation home copy of the FIRST parameter, not target's `move a3,a1`. Target's own asm disproves the narrowing: it stores the parameter with `sh a0,0(at)` straight from the incoming register, with no truncating copy.
 
-- rejected_form (KILLED s1): extra declared parameter
-  `replay_camera_Init(s32 a0, s32 a1, s32 a2)` with a2 unused, as a way to make
-  the incoming-argument hard registers live at entry and shift RA toward target's
-  $a3/$t0. Score 17 / 36 insns, completely unchanged — `flow` deletes the dead
-  parameter-copy insn before global.c builds the conflict graph.
+- [s4] REGISTER RESIDUE restated from this session's disassemblies: target uses $v1 (cam_val), $a0 (ec_val), $a3 (the a1 home copy) and $t0 (the D_80101E62 address) and leaves $a1 and $a2 COMPLETELY UNUSED; candidate.c (38 insns) uses $v1 and $a2; h8 (39 insns) uses $v1, $a1, $a2, $a3. Every one of our allocations sits one or two hard registers BELOW target's. s2 proved find_reg takes the lowest free hard reg (no REG_ALLOC_ORDER for MIPS in this tree), so target's compile carried genuine hard_reg_conflicts on $a1 AND $a2 at both allocation points, which nothing in the honest value set supplies. This is now the one unexplained fact and it is a PROVENANCE question, not an ordering question.
 
-- RA FACTS from this session's `.greg` dump (banked at
-  tmp/grind/replay_camera_Init/s1/rtl/base.i.greg): exactly 3 global allocnos.
-  `72 preferences: 4` -> $a0; `73 preferences: 5` -> $a1 (this is the a1 parameter
-  pseudo — target needs it in $a3=7); `75` no preference -> $a2 (the address
-  pseudo — target has it in $t0=8). Conflict sets: `73 conflicts: 72 73 75 2 3 29`,
-  `75 conflicts: 72 73 75 2 3 4 29`. Target's allocation is a uniform +2 shift,
-  which means hard regs $a1 AND $a2 were excluded for allocno 73 in the original
-  compile. This tree defines NO `REG_ALLOC_ORDER` for MIPS (grep over
-  tools/gcc-2.7.2/ hits only ChangeLogs), so global.c `find_reg` masks
-  conflicts+preferences (global.c:1093) and then takes the lowest-numbered free
-  hard reg — hence our 4/5/6. Producing target's 4/7/8 requires real conflicts on
-  $a1 and $a2, i.e. a C shape keeping those hard regs live past the pseudo's birth.
+- [s4] The ordering axis is now measured dead in BOTH families — s2 killed it at 36/38 instructions, s4 killed it at 39 — and the permuter axis is measured dead for the reason in H12. The untried modalities are forensics / rederive / synthesis.
 
-- Permuter has still NEVER been run on this function (s0 deprioritized the infra;
-  s1 was recon-modality). That search space is entirely unexplored.
+- [s4] No layer-2 cheat-reviewer verdict was obtained on candidate.c's two /* FAKE */ pointer aliases (this session was constrained from spawning agents; the driver's Judge or the operator must supply it). It remains the highest-leverage open question: a FAIL reverts the floor from 13 to 17 and changes the entire frontier.
 
-- [s1] Exact structural gap: target 39 insns, honest build 36. The three missing instructions are (a) `addu $a3,$a1,$zero` — the incoming-a1 parameter copy, which target places in the bnez delay slot; (b)+(c) `lui $v1,%hi(D_80101E70)` + `lw $v1,%lo(D_80101E70)($v1)` — a genuine re-load of D_80101E70 immediately after the store of the same global. Everything else in the 17 is register naming.
-
-- [s1] MEASURED FLOOR SPLIT (the key planning number): `sandbox --disable all` = 17 with build_insns 36 (reload absent); `sandbox --disable all --keep-cheat-asm` = 14 with build_insns 38 (reload present). So 3 of the 17 honest points are gated on the volatile policy question and the residual C-structure problem is 14, dominated by the single missing parameter copy plus renames.
-
-- [s1] `extern volatile s32 D_80101E70;` at src/code6cac_b2_post.c:45 pre-dates this grind and is also used by a second function in the same file (line 325). The sandbox strips it: its own source copy at tmp/sandbox/replay_camera_Init/src/code6cac_b2_post.c:45 reads `extern s32 D_80101E70;`, grep -c volatile = 0 on the sandbox copy vs 2 on the real file.
-
-- [s1] cse.c mechanism, named and line-cited: cse.c:7329 skips inserting a store's destination MEM into the equivalence table when sets[i].src_elt == 0 (the volatile case); cse.c:7358 performs the insertion otherwise, which is what folds our read. cse.c:7539-7578 note_mem_written is the only route to invalidating memory equivalences without volatile, and it requires cse_rtx_addr_varies_p to hold on the store address.
-
-- [s1] RA facts from this session's .greg dump: exactly 3 global allocnos. `72 preferences: 4` -> $a0; `73 preferences: 5` -> $a1 (the a1 parameter pseudo — target needs it in $a3 = reg 7); `75` with no preference -> $a2 (the address pseudo — target has it in $t0 = reg 8). Conflict sets: `73 conflicts: 72 73 75 2 3 29` and `75 conflicts: 72 73 75 2 3 4 29`. Producing target's allocation requires real conflicts on BOTH $a1 and $a2 for allocno 73.
-
-- [s1] The alias reproduces target's address-materialization shape exactly (one `lui;addiu` address in a register, reused for both the pre-branch `lh` and the post-branch `sh`), which is a structural match to target's $t0 usage — so that half of the shape is solved and only its register number differs.
-
-- [s1] Permuter has still NEVER been run on this function: s0 explicitly deprioritized the infra setup and s1 was recon modality. That search space is entirely unexplored.
-
-- [s1] The engine's canonical gate re-confirms verdict C (pure-C target, 39 total insns, distance 17); diagnose classifies it LARGE (d22) with 18 differing insns.
-
-- [s1] src/code6cac_b2_post.c was returned to the exact candidate.c body at end of session and re-verified at score 17 / build_insns 36. No other tracked file was modified.
-
-## == s2 (structural, 2026-07-30) ==
-
-- [s2] VOLATILE CENSUS — NEGATIVE, GATE CLOSED. `D_80101E70` has exactly two
-  writers in the whole tree, both synchronous: `replay_camera_Init` itself
-  (src/code6cac_b2_post.c:263) and `func_80036FD4`
-  (src/code6cac_b2_post.c:329), the latter called synchronously from
-  src/code6cac_b2_post.c:362 and src/code6cac_c2.c:327. All other mentions are
-  the seven `extern` declarations across the code6cac* TUs. No IRQ / callback /
-  VSync handler writes it: every callback registration in the tree installs a
-  different address (`&D_80080014` / `&D_8008003C` at src/display.c:3743-3744,
-  `&D_80082050` at src/system.c:1146, `&g_snd_irq_data` at src/main.c:1617), and
-  `marionation_camera_Init_80036064` (src/code6cac_b2_post.c:205) — the
-  replay-camera path s1's frontier suspected — calls `cdrom_SetCallbackB(0)`,
-  i.e. it DEREGISTERS. Prong (1) of legitimate-volatile-interrupt-touched FAILS;
-  the `extern volatile s32 D_80101E70;` at line 45 is not carve-out-eligible and
-  the honest floor of 17 stands.
-
-- [s2] Our build's register NAMING already matches target for the three value
-  pseudos: `sval` = $v0, `cam_val` = $v1, `ec_val` = $a0, identical to target's
-  `sll/sra $v0`, `lw $v1,%lo(SpecialCam)`, `lw $a0,%lo(D_8008EC38)`. Only two
-  register-level residuals remain: the `$t0` cached address of `D_80101E62`
-  (target materialises `lui;addiu` once and uses `lh 0($t0)` / `sh $a0,0($t0)`;
-  we emit two separate `lui`s) and the `$a3` copy of the `a1` parameter. The
-  "17" is therefore NOT a broad rename cluster, contrary to how s1 summarised it.
-
-- [s2] ORDERING AXIS MEASURED DEAD (8 forms, both regimes). candidate.c is a
-  strict local optimum at 17/36 stripped and 14/38 with the reload; every
-  neighbour is worse. Full table in hypotheses.md H6. The counter-intuitive
-  result worth remembering: writing the statements in TARGET'S OWN EXECUTION
-  ORDER scores 18/37 and 23/40 — worse in both regimes than candidate.c's odd
-  placement of `D_80101E7C = a1;` between the two loads. Do not "clean up" that
-  placement.
-
-- [s2] CONFIRMED by measurement, not inference: the `a1` parameter-home copy
-  materialises as a real instruction as soon as another live value occupies hard
-  reg $a1 across its live range. Diagnostic form with three extra live temps
-  produced `3b0: move v1,a1` at exactly target's copy position while a temp took
-  $a1 (`3e4: lw a1,8(at)`). It lands in $v1, not target's $a3, and the extra
-  temps are dead-value cheats — so the route is closed, but the mechanism is now
-  proven.
-
-- [s2] RA facts for the CURRENT candidate (2 global allocnos, not s1's 3 — s1
-  measured with the pointer alias in place): `;; 72 conflicts: 72 73 2 5 29`,
-  `;; 72 preferences: 4`; `;; 73 conflicts: 72 73 2 3 29`,
-  `;; 73 preferences: 5`; `Register dispositions: 72 in 4  73 in 5`. Note that
-  the a0-home pseudo (72) DOES conflict with hard reg 5 — $a1 is still live when
-  it is born — while the a1-home pseudo (73) does not, because $a1 is the source
-  of its own copy. Dump banked at tmp/grind/replay_camera_Init/s2/rtl/base.i.greg.
-
-- [s2] global.c mechanism, line-cited: `prune_preferences` (global.c:893-895)
-  refuses to place into `regs_someone_prefers[A]` any register A itself prefers
-  (the same-size `AND_COMPL_HARD_REG_SET (temp, hard_reg_full_preferences[allocno])`
-  clause), so $a1 can never be denied to allocno 73 by the preference machinery;
-  and `find_reg` seeds `regs_used_so_far` with ALL `call_used_regs`
-  (global.c:352-355), so the pass-0 "never allocate a register for the first
-  time" rule never protects $a1..$a3 / $t0... The only route to denying 73 hard
-  reg 5 is a genuine `hard_reg_conflicts` entry, i.e. $a1 occupied by an
-  overlapping live value.
-
-- [s2] CALLER EVIDENCE (asm/funcs/special_camera_check_pos_outside_ground_80036E34.s):
-  the only in-tree caller sets up NOTHING beyond the incoming $a0/$a1 before
-  `jal replay_camera_Init` — it moves its own $a2/$a3 into $s1/$s2 first
-  (`addu $s1,$a2,$zero` / `addu $s2,$a3,$zero`) and fills the jal delay slot with
-  `sw $s0,0x10($sp)`. So a wider declared signature for replay_camera_Init is
-  not supported from the call side, independently of s1's H4 (which killed the
-  dead-extra-parameter form on the callee side).
-
-- [s2] OPEN CONTRADICTION worth stating plainly for the next session: target
-  allocates the a1 value to $a3 (7) and the D_80101E62 address to $t0 (8) while
-  leaving hard regs $a1 (5) and $a2 (6) COMPLETELY UNUSED in the emitted body.
-  Under this tree's `find_reg` (lowest free hard reg, no REG_ALLOC_ORDER for
-  MIPS) that is not reachable from a two-allocno shape like ours. The original
-  compile's allocno set must differ from ours in a way that has not yet been
-  identified — that, not statement order, is where the remaining structural
-  search should go.
-
-- [s2] Artifacts: sweep harness + variants + both result JSONs, the diagnostic
-  form, and a fresh full `cc1 -da` dump set under
-  tmp/grind/replay_camera_Init/s2/. src/code6cac_b2_post.c was returned to the
-  exact candidate.c body at end of session and re-verified at score 17 /
-  build_insns 36. No other tracked file was modified.
-
-- [s2] VOLATILE CENSUS NEGATIVE — GATE CLOSED. D_80101E70 has exactly two writers in the whole tree, both synchronous: replay_camera_Init itself (src/code6cac_b2_post.c:263) and func_80036FD4 (src/code6cac_b2_post.c:329), which is called synchronously from src/code6cac_b2_post.c:362 and src/code6cac_c2.c:327. No IRQ/callback/VSync handler writes it — every callback registration installs a different address (&D_80080014 / &D_8008003C at src/display.c:3743-3744, &D_80082050 at src/system.c:1146, &g_snd_irq_data at src/main.c:1617), and marionation_camera_Init_80036064 (src/code6cac_b2_post.c:205) calls cdrom_SetCallbackB(0) — it deregisters. Prong (1) of legitimate-volatile-interrupt-touched FAILS.
-
-- [s2] Our build's register NAMING already matches target for all three value pseudos: sval = $v0, cam_val = $v1, ec_val = $a0, identical to target's sll/sra $v0, lw $v1,%lo(SpecialCam), lw $a0,%lo(D_8008EC38). The honest 17 is therefore NOT a broad rename cluster (contrary to how s1 summarised it) — only two register-level residuals remain: the $t0 cached address of D_80101E62, and the $a3 copy of the a1 parameter.
-
-- [s2] ORDERING AXIS MEASURED DEAD across 8 forms in both regimes; candidate.c is a strict local optimum at 17/36 stripped and 14/38 with the reload. Writing the statements in target's own execution order scores 18/37 and 23/40 — worse in both regimes. The placement of `D_80101E7C = a1;` between the SpecialCam load and the D_8008EC38 load is load-bearing.
-
-- [s2] PROVEN BY MEASUREMENT (not inference): the a1 parameter-home copy materialises as a real instruction the moment another live value occupies hard reg $a1 across its range. The diagnostic form emitted `move v1,a1` at exactly target's copy position while a temp took $a1. It lands in $v1 rather than target's $a3, and the temps are dead-value cheats, so the route is closed — but the mechanism is now established fact.
-
-- [s2] RA facts for the CURRENT candidate (2 global allocnos, not s1's 3 — s1 measured with the pointer alias in place): `;; 72 conflicts: 72 73 2 5 29` / `;; 72 preferences: 4`; `;; 73 conflicts: 72 73 2 3 29` / `;; 73 preferences: 5`; `Register dispositions: 72 in 4  73 in 5`. The a0-home pseudo DOES conflict with hard reg 5 ($a1 is still live when it is born); the a1-home pseudo does not, because $a1 is the source of its own copy.
-
-- [s2] global.c mechanism, line-cited: prune_preferences (global.c:893-895) refuses to place into regs_someone_prefers[A] any register A itself prefers, so $a1 can never be denied to allocno 73 by the preference machinery; find_reg seeds regs_used_so_far with ALL call_used_regs (global.c:352-355), so pass 0's 'never allocate a register for the first time' rule never protects $a1..$a3 / $t0..; no REG_ALLOC_ORDER is defined for MIPS in this tree.
-
-- [s2] CALLER EVIDENCE (asm/funcs/special_camera_check_pos_outside_ground_80036E34.s): the only in-tree caller sets up nothing beyond the incoming $a0/$a1 before `jal replay_camera_Init` — it moves its own $a2/$a3 into $s1/$s2 first (addu $s1,$a2,$zero / addu $s2,$a3,$zero) and fills the jal delay slot with sw $s0,0x10($sp). A wider declared signature is unsupported from the call side, independently of s1's H4 which killed the dead-extra-parameter form on the callee side.
-
-- [s2] OPEN CONTRADICTION for the next session: target allocates the a1 value to $a3 (7) and the D_80101E62 address to $t0 (8) while leaving hard regs $a1 (5) and $a2 (6) COMPLETELY UNUSED in the emitted body. Under this tree's find_reg (lowest free hard reg, no REG_ALLOC_ORDER) that is unreachable from a two-allocno shape like ours. The original compile's allocno set must differ from ours in a way neither s1 nor s2 has identified.
-
-- [s2] src/code6cac_b2_post.c was returned to the exact candidate.c body at end of session and re-verified: score 17, build_insns 36, target_insns 39, rules_dropped 1, cheat_asm_stripped 13. No other tracked file was modified (git status shows only the memory/grind ledger files, metrics/events.jsonl, and src/code6cac_b2_post.c).
-
-## s3 (structural / permuter, 2026-07-30) — FLOOR 17 -> 13
-
-- The honest floor moved for the first time in the grind: `sandbox
-  replay_camera_Init --disable all` = **13**, target 39 insns, build **38**
-  (was 17 / 36 through s0-s2).
-- The lever is a pointer-mediated RE-READ of `D_80101E70`
-  (`s32 *pe70 = &D_80101E70; ... reloaded = *pe70;`), found by the first
-  decomp-permuter campaign ever run on this function. It produces the two
-  missing `lui`/`lw` reload instructions HONESTLY — the sandbox no longer has
-  to strip a `volatile` to see them. Mechanism: cse.c:7308-7361 records the
-  store as `(mem (symbol_ref "D_80101E70"))`; the pointer read is
-  `(mem (reg))`, `exp_equiv_p` does not match them, no store-to-load
-  forwarding, the load survives.
-- A second pointer for `D_80101E62` (`s16 *pe62`) reproduces target's
-  single-materialised-address-in-$t0 shape and is worth a further -1 (14 -> 13).
-- CONTROL: the same statement reordering WITHOUT the pointer, reading the
-  global directly, scores 19 / 35 — the pointer is the lever, not the order.
-- BOTH pointers are `pointer-alias-fake-exception` constructs. candidate.c now
-  carries the three prerequisites s0's FAILed proposal lacked (lever
-  exhaustion, named GCC-pass mechanism, `/* FAKE */`), but the form is NOT
-  accepted until a fresh layer-2 cheat-reviewer passes it.
-- The `addu $a3,$a1,$zero` parameter-home copy — unreachable through s1 H4 and
-  s2 H7 — DOES materialise once the body is written in target's own statement
-  order with the reload present: `v_f_target_order.c` builds **39 instructions**
-  (target's exact count) with `move a2,a1` in the bnez delay slot and matching
-  branch displacements. It scores 19 only because of register naming ($a2 vs
-  $a3, $a3 vs $t0) and post-load store order. The remaining gap is now purely
-  register allocation.
-- Permuter caveat measured this session: the permuter's weighted score does NOT
-  track the sandbox score for this function (ws2 base score 860 == sandbox 14;
-  a permuter-625 find == sandbox 15). Use permuter output as a source of
-  structural leads only; sandbox every candidate.
-- Permuter workspace recipe that works here (reusable):
-  `tmp/grind/replay_camera_Init/s3/setup_ws3.sh` +
-  `tmp/grind/replay_camera_Init/s3/ws3/compile.sh`.
-
-
-- [s3] Honest floor moved for the first time in the grind: `sandbox replay_camera_Init --disable all` = 13 (target 39 insns, build 38), down from 17 / 36 across s0-s2. The score-13 form (v_d) is applied in src/code6cac_b2_post.c at session end.
-
-- [s3] The lever is `s32 *pe70 = &D_80101E70; ... reloaded = *pe70;` - a pointer-mediated re-read that produces the two missing reload instructions HONESTLY, so the cheat-invisible sandbox no longer needs the stripped `extern volatile` to see them. Adding `s16 *pe62 = &D_80101E62;` (target's single materialised address reused for the guard lh and the later sh, i.e. target's $t0) is a further -1.
-
-- [s3] CONTROL measurement that isolates the lever: the same permuter statement reordering WITHOUT the pointer, reading D_80101E70 directly (v_b), scores 19 / 35 insns - the reload is absent and the form is WORSE than the s2 baseline. The pointer, not the ordering, produces the instructions.
-
-- [s3] s1's H2 and s2's 'no known mechanism' conclusion are both narrowed by this result. H2's kill of `note_mem_written` invalidation stands (the address does constant-fold), but the generalisation to 'any constant-foldable C pointer fails identically' is wrong: the working mechanism needs no memory invalidation at all, only a read rtx that exp_equiv_p cannot match against the recorded store.
-
-- [s3] Both pointers are pointer-alias-fake-exception constructs. They are NOT yet accepted: candidate.c carries the three prerequisites (documented lever exhaustion across s1 H1-H4 / s2 H5-H7, the named cse.c:7308-7361 mechanism, inline /* FAKE */ annotations) but a fresh layer-2 cheat-reviewer has NOT been run on it this session.
-
-- [s3] v_f_target_order.c builds exactly 39 instructions - target's count - with `move a2,a1` in the bnez delay slot and matching branch displacements. The `addu $a3,$a1,$zero` that s1 H4 and s2 H7 both concluded was unreachable is therefore reachable in pure C; only its register assignment ($a2 vs $a3) and the post-load store order are wrong.
-
-- [s3] Permuter-score caveat measured here: the permuter's weighted score does NOT track the sandbox score for this function (ws2 base score 860 == sandbox 14; a permuter-625 find == sandbox 15; a permuter-465 find == sandbox 13, same as its 860-scoring seed). Treat permuter output as a source of structural leads only and sandbox every candidate.
-
-- [s3] Reusable workspace recipe for this function (validated): tmp/grind/replay_camera_Init/s3/setup_ws3.sh + ws3/compile.sh - clean single-function target.o at offset 0, Makefile-faithful compile, region extraction, base.c preprocessed from the sandbox copy.
-
-- [s3] All three permuter campaigns were harvested and stopped in-turn (`harvest --stop`); `permuter_campaign.py status` reports 0 alive at session end. No background work was orphaned.
+- [s4] Reusable and validated this session: tmp/grind/replay_camera_Init/s4/setup_ws4.sh + setup_ws5.sh (workspace build), s4/sweep.py (apply-form -> sandbox -> restore, appends to sweep_results.json), s4/diffform.sh (re-preprocess the sandbox copy, compile, objdump side-by-side diff against target), s4/watch_ws5.sh (loop `permuter_campaign.py wait` for ~12 min in one call, because `wait` returns on EVERY novel output and this function produces them constantly).

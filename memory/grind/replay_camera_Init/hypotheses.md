@@ -468,3 +468,236 @@ missing-instruction problem; it is a register-naming problem.** Banked:
 - probe: v_f_target_order.c = the two pointers + target's execution order; sandboxed and disassembled against the clean single-function target.o (tmp/grind/replay_camera_Init/s3/chk/).
 - result: CONFIRMED as an instruction-count match, KILLED as a score improvement. The object has exactly 39 instructions - target's count - and contains `move a2,a1` in the bnez delay slot, the very insn s1 H4 and s2 H7 failed to produce, at target's exact position, with branch displacements (bnez ...,90 / j ...,94) matching target. But the copy lands in $a2 where target has $a3, the guard address lands in $a3 where target has $t0, and the four post-load stores are emitted in a different order, so the score is 19 vs v_d's 13. The a3 copy is no longer a missing-instruction problem; it is a register-naming problem.
 - verdict: CONFIRMED
+
+## s4 (permuter, 2026-07-30)
+
+### H11 — Seeding a permuter campaign from the 39-instruction v_f closes the register-allocation residue. **KILLED**
+**Statement.** s3's frontier item 2: all three s3 campaigns were seeded from
+38-instruction bodies, so every mutation started from a structurally incomplete
+body and the search spent itself re-finding the missing instruction. A campaign
+seeded from the 39-instruction `v_f` (target's exact instruction count, the
+`move` already in the `bnez` delay slot) would search purely over register
+allocation and store order — exactly what is left.
+
+**Probe.** Built `tmp/grind/replay_camera_Init/s4/ws4` with the validated s3
+recipe (`setup_ws4.sh`: clean single-function `target.o` at offset 0,
+Makefile-faithful `compile.sh`, `base.c` preprocessed from the CHEAT-INVISIBLE
+sandbox copy) after applying `v_f_target_order.c` to `src/`; validated at
+`base insns: 39  target: 39`. Launched via
+`tools/permuter_campaign.py launch --label s4-vf-39insn -j 6 --stop-on-zero`,
+waited IN-TURN, ran ~23,100 iterations producing 160 output dirs, then
+`harvest --stop`. Every structurally distinct find was de-permuted by hand and
+re-measured with `sandbox --disable all`.
+
+**Result (KILLED).** No find improves the floor; the campaign's finds are
+uniformly WORSE than the 13 floor, and the better the permuter score the worse
+the sandbox score:
+
+| find | permuter score | sandbox score / insns |
+|---|---|---|
+| `output-235-1` (campaign best) | 235 | **21** / 38 |
+| `output-315-1` | 315 | 15 / 37 |
+| `output-360-1` (staged `sval` reuse) | 360 | 14 / 38 |
+| `output-385-1` (`*pe62 = 2` before the re-read) | 385 | 15 / 38 |
+| seed `v_f` itself | — | 19 / 39 |
+| `candidate.c` (the floor) | 650 (measured as the ws5 base) | **13** / 38 |
+
+Note that the two lowest-scoring finds (235, 315) both work by SINKING the
+`s32 *pe70 = &D_80101E70;` initialiser below the read, i.e. they read an
+UNINITIALISED pointer. That is not legal C and is not committable; both were
+measured only as diagnostics.
+
+### H12 — The decomp-permuter's weighted objective is ANTI-CORRELATED with the sandbox score on this function. **CONFIRMED**
+**Statement.** s3 recorded the weaker observation that "the permuter score does
+not track the sandbox score here". The s4 data is stronger and has a named
+cause: the two scores move in OPPOSITE directions.
+
+**Mechanism (named).** The permuter's default scorer (see
+`memory/reference/scoring-systems.md`) is a weighted penalty —
+**registers × 5**, reorderings × 60, insertions/deletions × 100 — whereas the
+engine sandbox counts every differing instruction at full weight. This
+function's ENTIRE remaining residue is register naming (s2/s3: the values are
+instruction-exact; only `$t0` vs `$a2`/`$a3`, `$a3` vs `$a2`, `$a0` vs `$a1`
+differ). The permuter therefore prices the only defect we still have at 5
+points each while happily paying 100-point structural changes to shave them —
+so it climbs toward bodies with more wrong instructions and slightly fewer
+wrong registers. `output-235-1` is the extreme case: best permuter score in the
+campaign (235, versus the 650 the score-13 `candidate.c` chassis measures at)
+and the WORST sandbox score measured anywhere in this grind (21).
+
+**Probe.** Launched a second campaign (`ws5`) seeded from `candidate.c` — the
+actual score-13 floor — and read its reported `base_score`: **650**. The
+permuter rates the true floor form as nearly three times worse than a find that
+sandbox-measures at 21.
+
+**Consequence (bank this — it is the modality-level lesson).** The permuter is
+a STRUCTURE generator for this function, not an optimiser: s3's win came from a
+find that introduced a NOVEL CONSTRUCT (the pointer-mediated re-read), not from
+a low permuter score. Any future permuter session here must (a) ignore the
+permuter's ranking entirely, (b) triage finds by novel-construct content, and
+(c) sandbox each one. Chasing the lowest permuter score actively walks away
+from the floor. The scorer cannot be reweighted from a grind session
+(`tools/` is outside the allowed surface), so this limitation is permanent for
+this pipeline.
+
+### H13 — Reseeding the campaign from the score-13 `candidate.c` chassis yields a novel construct the v_f basin could not. **KILLED**
+**Probe.** `ws5` (`setup_ws5.sh`, label `s4-candidate13-reseed`, -j 6,
+--stop-on-zero), base validated at 38 insns vs target 39, permuter
+`base_score` **650**. ~44,900 iterations, harvested and STOPPED in-turn.
+
+**Result (KILLED).** Best permuter score 295 (late) / 380 (mid-run); nothing
+approaches the floor. De-permuted and sandbox-measured:
+
+| find | permuter score | sandbox / insns | construct |
+|---|---|---|---|
+| `output-295-1` | 295 | 16 / 37 | both loads hoisted out of the block, `cam_val` staged through `sval` (also semantically broken: it indexes `D_8008EC38` by `cam_val`) |
+| `output-380-1` | 380 | (see H16) | `short a0` parameter narrowing |
+| `output-425-1` | 425 | — | `sval = 13` constant staging + the uninitialised-`pe70` trick again |
+
+### H16 — Narrowing the first parameter to `short a0` supplies the missing 39th instruction. **KILLED — it is the WRONG instruction**
+**Statement.** The one structurally novel idea in either campaign was
+`replay_camera_Init(short a0, s32 a1)` (ws5 `output-380-1`). `D_80101E60` is
+written with a halfword `sh` in target, so a 16-bit first parameter is a
+plausible real signature, and it would change the a0-home pseudo's live range.
+
+**Probe.** `variants/q1_short_a0.c` = `candidate.c` with the single change
+`s32 a0` -> `short a0`; `sandbox --disable all` then `diffform.sh`.
+
+**Result (KILLED).** Score **14 / 39 insns** — it does reach target's
+instruction count, and unlike the v_f family it keeps the re-read AFTER the
+E70 store (semantically faithful), and it costs only +1 over the floor rather
+than +4. But the 39th instruction is **`move v1,a0`** — a home copy of the
+*first* parameter created by the truncation — not target's `move a3,a1`. And
+target's own asm disproves the narrowing outright: target stores the parameter
+with `sh a0,0(at)`, i.e. straight from the incoming register with NO truncating
+copy, which is exactly what a non-narrowed `s32` parameter produces. The
+narrowing is therefore both wrong-instruction and contradicted by target.
+Banked: `rejected/short-a0-narrowing-wrong-home-copy.c`.
+
+### H14 — The `addu $a3,$a1,$zero` parameter-home copy appears exactly when the two loads are made ADJACENT — not because of target's statement order. **CONFIRMED**
+**Statement.** s3 attributed v_f's 39th instruction to "target's own statement
+order … keeps the incoming a1 live to the very end". That attribution is wrong.
+A ten-form hybridisation sweep between `v_d` (= `candidate.c`, 13 / 38) and
+`v_f` (19 / 39), moving ONE statement at a time, isolates the real cause: the
+copy appears in every form whose two loads are textually adjacent and in NO
+form where a store separates them, independently of where `D_80101E7C = a1;`
+sits.
+
+**Mechanism.** Adjacent loads make `cam_val` and `ec_val` simultaneously live,
+so one of them takes hard reg `$a1`; per s2's H7 (proven there only with
+semantically dead temporaries) the `(set (reg 73) (reg 5))` home copy then
+cannot become a self-move and survives to codegen. s4 supplies that `$a1`
+occupancy from the function's OWN honest values — no dead temporaries — which
+is exactly the route s2 recorded as closed.
+
+**Probe.** `tmp/grind/replay_camera_Init/s4/variants/h1..h10`, swept with
+`tmp/grind/replay_camera_Init/s4/sweep.py`:
+
+| form | sandbox / insns |
+|---|---|
+| h1 v_f order, E6C store BETWEEN the loads | 13 / **38** |
+| h2 v_f order, `D_80101E7C = a1` BETWEEN the loads | 13 / **38** |
+| h3 v_d tail order, loads ADJACENT | 19 / **39** |
+| h4 v_f, `D_80101E68 = 0` before the re-read | 19 / 39 |
+| h5 v_f, `*pe62 = 2` before `D_80101E7C = a1` | 18 / 39 |
+| h6 v_f, `D_80101E7C = a1` last | 19 / 39 |
+| h7 v_f, EC38 load issued first | 18 / 39 |
+| **h8 = h5 + EC38 load issued first** | **17** / 39 |
+| h9 h5, `ec_val` declared before `cam_val` | 18 / 39 |
+| h10 v_f, E70 stored before E6C | 19 / 39 |
+
+**Consequence.** The 39-instruction family is a real, honest family (h8 is its
+best member at 17), but it is still 4 points ABOVE the 38-instruction floor:
+buying the missing instruction costs more in register naming than it saves.
+h8's disassembly does fix one naming defect the s3 ledger did not know was
+movable — issuing the `D_8008EC38` load FIRST puts `cam_val` in `$v1`, matching
+target — but the guard address stays in `$a3` (target `$t0`), the home copy in
+`$a2` (target `$a3`), and `ec_val` in `$a1` (target `$a0`).
+
+### H15 — The 39-instruction (v_f / h8) family is SEMANTICALLY DIVERGENT from target and must not be pursued as a match. **CONFIRMED — this closes the whole family**
+**Statement.** Independent of its score, the v_f/h8 family emits the
+`D_80101E70` re-read BEFORE the store it is supposed to observe.
+
+**Probe.** `tmp/grind/replay_camera_Init/s4/diffform.sh` (re-preprocess the
+sandbox copy, compile with the ws4 pipeline, objdump-diff against target).
+h8's object emits, in order: `lw v1` / `lw a1` (the two loads), `sw v1` (E6C),
+`lui a0; lw a0,0(a0)` (**the re-read**), `li v1,2`, `sh v1,0(a3)`, … and only
+near the very end `lui at; sw a1,0(at)` — the store of `ec_val` into
+`D_80101E70`. Target's order is the opposite and is the only correct one:
+`sw v1` (E6C), `sw a0` (E70), `lui v1; lw v1,0(v1)` (re-read), `li a0,2`, …
+
+**Result.** In the v_f/h8 family `D_80101E78` is computed from the STALE value
+of `D_80101E70`, not from `ec_val`. The scheduler is free to sink the store
+past the load precisely because the pointer read `(mem (reg))` and the store
+`(mem (symbol_ref))` do not alias to GCC 2.7.2's disambiguator — the same
+property that makes the re-read survive at all. `candidate.c` does NOT have
+this defect: its object emits `sw v1` (the E70 store) and only then
+`lui v1; lw v1,0(v1)`, so it computes the value target computes. Any future
+session that moves the re-read earlier in the statement order must re-check the
+EMITTED order, not just the score.
+
+## Live frontier (for s5)
+
+1. **The register residue is a uniform DOWNWARD shift, and the unexplained
+   occupant of `$a1` / `$a2` is the last open fact.** Target uses `$v1`, `$a0`,
+   `$a3`, `$t0` and leaves `$a1` and `$a2` unused in the whole body; our best
+   38-insn form uses `$v1` and `$a2`, our best 39-insn form `$v1`, `$a1`, `$a2`,
+   `$a3`. Every allocation of ours sits one or two hard registers BELOW
+   target's. s2 proved `find_reg` takes the lowest free hard reg (no
+   `REG_ALLOC_ORDER` for MIPS in this tree), so target's compile carried genuine
+   `hard_reg_conflicts` on `$a1` AND `$a2` at both allocation points, which
+   nothing in the honest value set supplies. This is a PROVENANCE question, not
+   an ordering question — the ordering axis is now measured dead in BOTH the
+   38- and the 39-instruction families, and the permuter is structurally unable
+   to help (H12). Next modality should be forensics / rederive: is the original
+   `replay_camera_Init` the tail of a larger function, does it inline a callee,
+   or does some neighbouring construct keep `$a1`/`$a2` live at entry?
+2. **Do not re-open the 39-instruction family.** H15 shows its extra
+   instruction is bought with a semantic divergence (stale re-read) and H14
+   shows it costs +4; H16 shows the one semantically-clean route into 39 insns
+   emits the wrong copy and is contradicted by target's `sh a0,0(at)`. The
+   38-instruction family is the right family.
+3. **`candidate.c`'s two `/* FAKE */` pointer aliases still carry NO layer-2
+   cheat-reviewer verdict** (s3 could not obtain one; s4 was constrained from
+   spawning agents). Highest-leverage open question in the ledger: a FAIL
+   reverts the floor from 13 to 17 and changes the entire frontier. One further
+   fact for that review, discovered in s4: the alias's non-aliasing property is
+   load-bearing in BOTH directions — it is what makes the re-read survive, and
+   it is also what lets the scheduler sink the store past the load in
+   neighbouring forms (H15). `candidate.c` itself is unaffected.
+
+## [s4] Seeding a permuter campaign from the 39-instruction v_f form (rather than a 38-instruction one) closes the register-allocation residue, because every mutation then starts from a structurally complete body and the search is purely over register allocation and store order.
+- mechanism: s3's frontier item 2. All three s3 campaigns were seeded from 38-instruction bodies, so the search spent itself re-finding the missing instruction. v_f already has target's exact 39 instructions with the `move` in the bnez delay slot, so a campaign seeded there searches only what remains.
+- probe: Built tmp/grind/replay_camera_Init/s4/ws4 with the validated s3 recipe (setup_ws4.sh: clean single-function target.o at offset 0, Makefile-faithful compile.sh, base.c preprocessed from the CHEAT-INVISIBLE sandbox copy) after applying v_f_target_order.c to src/; validated at 'base insns: 39  target: 39'. Launched via tools/permuter_campaign.py launch --label s4-vf-39insn -j 6 --stop-on-zero, waited IN-TURN, ~23,100 iterations / 160 output dirs, then harvest --stop. De-permuted every structurally distinct find by hand and re-measured each with `sandbox --disable all`.
+- result: No find improves the floor and the finds are uniformly worse than 13: output-235-1 (campaign best, permuter 235) sandboxes at 21/38; output-315-1 at 15/37; output-360-1 at 14/38; output-385-1 at 15/38; the v_f seed itself is 19/39. The two lowest-permuter-score finds work by sinking the `s32 *pe70 = &D_80101E70;` initialiser below the read, i.e. they read an UNINITIALISED pointer — not legal C, measured as diagnostics only.
+- verdict: KILLED
+
+## [s4] The decomp-permuter's weighted objective is ANTI-correlated with the engine sandbox score on this function, so campaign ranking must be ignored entirely and finds triaged only for novel constructs.
+- mechanism: The permuter's default scorer (memory/reference/scoring-systems.md) is registers x 5, reorderings x 60, insertions/deletions x 100; the engine sandbox counts every differing instruction at full weight. This function's ENTIRE remaining residue is register naming (s2/s3: the values are instruction-exact; only $t0 vs $a2/$a3, $a3 vs $a2, $a0 vs $a1 differ). The permuter therefore prices our only defect at 5 points each and pays 100-point structural damage to shave it, climbing toward bodies with more wrong instructions and marginally fewer wrong registers.
+- probe: Launched a second campaign (ws5) seeded from candidate.c — the actual score-13 floor — and read its reported base_score: 650. Compared against the ws4 campaign's best find output-235-1 (permuter 235), which sandbox-measures at 21. Cross-checked with ws5's own best find output-295-1 (permuter 295) at sandbox 16/37.
+- result: The permuter rates the true floor form (sandbox 13) at 650, i.e. nearly three times worse than a find that sandbox-measures at 21 — the worst number in this grind. The relationship is not merely 'not a reliable proxy' (s3's wording) but inverted. The scorer cannot be reweighted from a grind session (tools/ is outside the allowed surface), so this is permanent for this pipeline: the permuter is a STRUCTURE generator here (s3's win came from a novel construct, not a low score), never an optimiser.
+- verdict: CONFIRMED
+
+## [s4] Reseeding a campaign from the score-13 candidate.c chassis yields a structurally novel construct that the v_f basin could not.
+- mechanism: Different basin, different neighbourhood: the 38-instruction chassis has the correct store/re-read ordering and a different live-range picture, so PERM_* mutation samples different structures.
+- probe: ws5 (setup_ws5.sh, label s4-candidate13-reseed, -j 6, --stop-on-zero), base validated at 38 insns vs target 39, permuter base_score 650; ~44,900 iterations; waited in-turn via a looped `permuter_campaign.py wait`; harvest --stop. De-permuted and sandboxed the best finds.
+- result: Best permuter scores 295 and 380; nothing approaches the floor. output-295-1 -> 16/37 (both loads hoisted out of the block plus cam_val staged through sval; also semantically broken, it indexes D_8008EC38 by cam_val). output-380-1's only novel idea was the `short a0` parameter narrowing (see the next hypothesis). output-425-1 was the uninitialised-pe70 trick again plus constant staging.
+- verdict: KILLED
+
+## [s4] Narrowing the first parameter to `short a0` supplies the missing 39th instruction cleanly.
+- mechanism: D_80101E60 is written with a halfword `sh` in target, so a 16-bit first parameter is a plausible real signature, and the truncation changes the a0-home pseudo's live range and therefore the conflict graph global.c sees.
+- probe: variants/q1_short_a0.c = candidate.c with the single token change `s32 a0` -> `short a0`; `sandbox --disable all`, then disassembled with tmp/grind/replay_camera_Init/s4/diffform.sh against the clean single-function target.
+- result: 14 / 39 insns — it does reach target's instruction count, and unlike the v_f family it keeps the re-read AFTER the E70 store (semantically faithful), at only +1 over the floor. Dead anyway: the 39th instruction is `move v1,a0`, a truncation home copy of the FIRST parameter, not target's `move a3,a1`; and target's own asm disproves the narrowing outright — it stores the parameter with `sh a0,0(at)` straight from the incoming register with no truncating copy, which is what an un-narrowed s32 parameter emits. Banked: rejected/short-a0-narrowing-wrong-home-copy.c.
+- verdict: KILLED
+
+## [s4] v_f's 39th instruction (the a1 parameter-home copy) is produced by target's statement order keeping the incoming a1 live to the end, as s3 recorded.
+- mechanism: s3's attribution. Tested by hybridising v_d (= candidate.c, 13/38) toward v_f (19/39) one statement position at a time — the exact probe s3's frontier item 1 specified.
+- probe: Ten forms (tmp/grind/replay_camera_Init/s4/variants/h1..h10) swept with s4/sweep.py: h1 v_f order with the E6C store BETWEEN the loads 13/38; h2 v_f order with D_80101E7C=a1 BETWEEN the loads 13/38; h3 v_d tail order with the loads ADJACENT 19/39; h4 19/39; h5 (*pe62=2 before D_80101E7C=a1) 18/39; h6 19/39; h7 (EC38 load first) 18/39; h8 (h5 + EC38 load first) 17/39; h9 18/39; h10 19/39.
+- result: s3's attribution is WRONG and is corrected in the ledger. The copy appears in every form whose two loads are textually ADJACENT and in no form where a store separates them, regardless of where D_80101E7C=a1 sits. Mechanism: adjacent loads make cam_val and ec_val simultaneously live so one takes hard reg $a1, and the (set (reg 73) (reg 5)) home copy can no longer become a self-move — s2's H7 mechanism, but supplied here by the function's OWN honest values with no dead temporaries, which is the route s2 recorded as closed. Best member of the family is h8 at 17/39, still 4 points above the 38-instruction floor; issuing the D_8008EC38 load FIRST is worth -2 and puts cam_val in $v1, matching target.
+- verdict: CONFIRMED
+
+## [s4] The 39-instruction (v_f / h8) family is a viable route to the match and should be pursued.
+- mechanism: It has target's exact instruction count, the move in the bnez delay slot, and matching branch displacements — s3's live frontier item 1.
+- probe: tmp/grind/replay_camera_Init/s4/diffform.sh on h8 (re-preprocess the cheat-invisible sandbox copy, compile with the ws4 pipeline, objdump-diff against target).
+- result: KILLED on semantics, independently of score. h8's object emits, in order: lw v1 / lw a1 (the two loads), sw v1 (E6C), `lui a0; lw a0,0(a0)` — THE RE-READ — li v1,2, sh v1,0(a3), ... and only near the very end `lui at; sw a1,0(at)`, the store of ec_val into D_80101E70. So D_80101E78 is computed from the STALE value of D_80101E70; target stores first and re-reads after. GCC 2.7.2 may sink the store past the load precisely because (mem (reg)) and (mem (symbol_ref)) do not alias to its disambiguator — the same property that makes the re-read survive at all. candidate.c does NOT have this defect (E70 store, then `lui v1; lw v1,0(v1)`), so the floor form is semantically faithful. Any future session moving the re-read earlier must re-check the EMITTED order, not just the score.
+- verdict: CONFIRMED

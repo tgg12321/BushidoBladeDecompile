@@ -62,6 +62,26 @@
  * not materialise — but lands it in $a2 and shuffles the store order, so the
  * score rises to 19.  It is a register-naming problem now, not a
  * missing-instruction problem.  See tmp/grind/replay_camera_Init/s3/.
+ *
+ * ---- s4 (permuter, 2026-07-30): this form is UNCHANGED and still the floor --
+ * s4 attacked the v_f frontier above and closed it.  Corrections to the notes
+ * above that the next session must not re-derive:
+ *   - v_f's 39th instruction comes from making the TWO LOADS ADJACENT (two
+ *     simultaneously-live honest values force one into $a1), NOT from target's
+ *     statement order.  Ten-form hybrid sweep: loads separated by a store ->
+ *     38 insns / 13; loads adjacent -> 39 insns / 17..19.  (s4 H14)
+ *   - The whole 39-instruction family is SEMANTICALLY DIVERGENT: its object
+ *     performs the D_80101E70 re-read BEFORE the store it should observe, so
+ *     D_80101E78 is computed from a stale value.  THIS form does not have that
+ *     defect - it emits the E70 store first and the `lui v1; lw v1` re-read
+ *     after, exactly as target does.  Do not re-open v_f.  (s4 H15)
+ *   - Two permuter campaigns (23k + 45k iterations, both harvested and
+ *     stopped) found nothing better.  The permuter's weighted score is
+ *     ANTI-correlated with the sandbox here - it prices registers at 5 and the
+ *     entire remaining residue IS register naming - so its best find sandboxes
+ *     at 21 while this form, which it rates 650, sandboxes at 13.  Treat the
+ *     permuter as a structure generator only.  (s4 H12)
+ * ---------------------------------------------------------------------------
  */
 s32 replay_camera_Init(s32 a0, s32 a1) {
     s32 sval;
