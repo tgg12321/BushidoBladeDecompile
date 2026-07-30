@@ -1,6 +1,18 @@
 /* s8 candidate — MATCH. sandbox --disable all == 0, build_insns 143 ==
  * target_insns 143, rules_dropped 0, zero inline asm, zero FAKE annotations.
  *
+ * PROVENANCE / VERIFICATION. This body was derived by the FIRST s8 attempt
+ * (2026-07-29 14:39-14:47), which the driver discarded as INVALID because it
+ * died on a transient API 500 before writing its outcome JSON; only this file
+ * survived, and the driver reverted src/. The re-run s8 session re-applied it
+ * to src/text1b.c and re-measured it from scratch:
+ *     sandbox func_8006B92C --disable all -> score 0, target_insns 143,
+ *         build_insns 143, rules_dropped 0, scorable true
+ *     canonical func_8006B92C            -> verdict C, distance 0, asm_insns 0
+ *     verify-oracle                      -> "ok": true (full build+link SHA1
+ *         == 62efab4f73f992798c43e8c730aa43baa10bb4fa)
+ * So the match is independently confirmed, not inherited on trust.
+ *
  * This is a STRUCTURAL RE-DERIVATION (s8 modality: rederive), not a tweak of
  * the s3/s5 "h2a" form. It deletes the shared `complete_store:` label and the
  * two function-scope staging variables (var_v1 / var_v0) that every session

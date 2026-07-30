@@ -275,3 +275,80 @@ Artifacts: tmp/grind/func_8006B92C/s7/{qty2.sh, qty_h2a/, qty_p7a/, qty_p7b/}.
 - [s7] The scheduler emits the arm's two independent 1-cycle ALU dependence chains contiguously in both source orders; there is no interleaving, so the two block-local quantity ranges are always disjoint.
 
 - [s7] Session start floor and end floor are both 6 (target_insns 143, build_insns 141); candidate.c body is unchanged and re-verified in src at the end of the session.
+
+## [s8] rederive — MATCH. floor 6 -> 0. func_8006B92C is COMPLETED-C.
+
+- [s8] PROVENANCE. The driver's log shows three s8 sessions started and all three
+  were discarded as INVALID ("no outcome file / unparseable JSON"), then the
+  grinder circuit-broke (commit ff0792b2, docs/grind/INCIDENT.md, "3x transient
+  API 500"). The FIRST of those three (14:39-14:47) had already derived and
+  written the closing form into memory/grind/func_8006B92C/candidate.c before it
+  died; that file was the only survivor (the driver reverted src/text1b.c to the
+  s1 body, pin included). THIS s8 session did not inherit the claim on trust: it
+  re-applied candidate.c to src/text1b.c and re-measured everything from scratch.
+
+- [s8] MEASURED THIS SESSION with the form in src/text1b.c:15693-15761:
+  `sandbox func_8006B92C --disable all` -> score 0, target_insns 143,
+  build_insns 143, scorable true, rules_dropped 0, cheat_asm_stripped 324
+  (file-wide, none in this function). `canonical func_8006B92C` -> verdict C,
+  distance 0, asm_insns 0. `verify-oracle` -> "ok": true, i.e. the full clean
+  build+link SHA1 still equals the oracle
+  62efab4f73f992798c43e8c730aa43baa10bb4fa WITH the new body in place. The
+  `register u32 var_v1 asm("v1")` pin that the tree carried since s1 is GONE,
+  and so are both /* FAKE */ staged-value annotations, because the construct
+  they annotated no longer exists. Zero regfix/asmfix rules, zero inline asm.
+
+- [s8] THE CLOSING FORM (full body banked in candidate.c). Delete the shared
+  `complete_store:` label and the two function-scope staging variables
+  (`var_v1` / `var_v0`) that every session s3-s7 was built on. In each else arm
+  declare TWO BLOCK-LOCAL variables and do the OR/store per arm:
+      } else {
+          u32 m = a0 & 0xFFFF1FFF;
+          s32 c = ((a0 >> 13) & 7) + 1;   /* - 1 in case 2 */
+          m |= (c & 7) << 13;
+          D_800A34F8 = m;
+      }
+  The shared `do_call:` label is RETAINED (s4 H4c measured that duplicating the
+  `func_8005C650(0, 0x7F, 0x7F)` call into each case regresses 6 -> 14).
+
+- [s8] WHY IT CLOSES — the s7 QTYDBG account, inverted. s7 measured that the
+  whole residual was local-alloc.c's hard-register choice for the else-arm mask
+  constant, and s7's own conclusion named the untested class exactly: "make the
+  else arm's and-DESTINATION block-local so combine_regs ties the constant to it
+  as in blk=4, while still producing three distinct store sites." That is what
+  `u32 m` does. In the THEN arm (blk=4) local-alloc's combine_regs TIES the
+  lui/ori constant pseudo to the AND's destination pseudo because BOTH are
+  block-local, which is why the then arm emits lui/ori/and out of ONE register.
+  In the h2a else arm the AND's destination was `var_v1`, a function-scope
+  (global) pseudo, and combine_regs merges only block-local quantities — so the
+  constant became its own 2-ref quantity and find_free_reg (no REG_ALLOC_ORDER
+  in mips.h, hence a linear scan from $v0) handed it $v0, the SAME register the
+  then arm used, so reorg.c's redundant_insn deleted the then-arm `lui $v0`
+  after the delay slot was filled from the dead-branch thread. With `m`
+  block-local the tie is restored AND `m`'s live range now genuinely SPANS the
+  counter chain (born at the AND, dead at the `sw`, with all of `c` in between)
+  — the covering range s6 P6b and s7 P7a/P7b failed to manufacture by
+  lengthening or reordering chains. The denser counter quantity is allocated
+  first and takes $v0; `m`'s covering range finds $v0 busy and takes $v1 =
+  target's register. Both luis then survive, closing the 2-insn gap.
+
+- [s8] The store-tail trilemma that the shared `complete_store` existed to solve
+  dissolves: the two else arms store from $v1 and the two then arms from $v0, so
+  jump2's find_cross_jump can rtx_equal-merge only the two else tails with each
+  other, leaving exactly target's three `sw` sites (two inline then-arm stores +
+  one shared else store). This is why the same form both fixes the register
+  identity AND keeps the store shape s2's H1d discovered.
+
+- [s8] METHODOLOGICAL LESSON for the pipeline. The lever that closed this
+  function was named, verbatim, in the s7 frontier — but it was only reachable
+  by DELETING the accumulated s3-s7 chassis (shared label + function-scope
+  staging vars) rather than perturbing it. s4-s7 measured ~350 perturbations of
+  that chassis (permuter 55k+ iters, 288+16 directed combos, 5 RA levers, 2
+  chain-length levers) and every one was inert or worse, precisely because the
+  chassis itself was the constraint. When a `rederive` modality is mandated,
+  throwing away the incumbent form is the point, not a risk.
+
+- [s8] Artifacts: tmp/grind/func_8006B92C/s8/{apply.py, orig_body.c,
+  sandbox_s8.json, canonical_s8.json}. apply.py is reusable: it swaps
+  func_8006B92C's body (plus its two preceding extern decls) in src/text1b.c for
+  any candidate .c file, stripping a leading block comment and preserving LF.
