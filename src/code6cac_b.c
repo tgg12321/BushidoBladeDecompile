@@ -3667,41 +3667,38 @@ void mottest_disp(void) {
     }
 }
 void func_80033D38(void) {
-    register u8 *t1 asm("t1") = (u8 *)&D_80106A50;
-    register s32 a3 asm("a3");
-    register s32 v1 asm("v1");
-    s32 a0;
+    struct HitRec {
+        u8 x;
+        u8 y;
+        s32 t;
+    };
+    struct HitRec *recs = (struct HitRec *)&D_80106A50;
+    s32 n = 3;
+    s32 j;
+    s32 k;
 
-    a3 = 3;
-    a0 = D_800A3858;
-    v1 = a3 - 1;
-
-loop1:
-    if (*(s32 *)(t1 + v1 * 8 + 0xC) < a0) goto end1;
-    a3 = v1;
-    if (a3 > 0) {
-        v1 = a3 - 1;
-        goto loop1;
+    while (1) {
+        struct HitRec *p;
+        j = n - 1;
+        p = recs + j + 1;
+        if (p->t < D_800A3858) {
+            break;
+        }
+        n = j;
+        if (n <= 0) {
+            break;
+        }
     }
-end1:
-    D_800A38E9 = (u8)a3;
-    if (a3 < 3) {
-        if (a3 < 2) {
-            register s32 t0r asm("t0") = 2;
-            register u8 *a2r asm("a2") = t1 + 0x10;
-            do {
-                *(s32 *)(a2r + 8) = *(s32 *)(a2r + 0);
-                *(s32 *)(a2r + 0xC) = *(s32 *)(a2r + 4);
-                t0r--;
-                a2r -= 8;
-            } while (a3 < t0r);
+    D_800A38E9 = (u8)n;
+    if (n < 3) {
+        struct HitRec *ins;
+        for (k = 2; k > n; k--) {
+            recs[k + 1] = recs[k];
         }
-        {
-            register u8 *v3r asm("v1") = t1 + a3 * 8;
-            v3r[0x8] = (u8)D_80101ED2;
-            v3r[0x9] = (u8)D_80101ED6;
-            *(s32 *)(v3r + 0xC) = D_800A3858;
-        }
+        ins = recs + n + 1;
+        ins->x = (u8)D_80101ED2;
+        ins->y = (u8)D_80101ED6;
+        ins->t = D_800A3858;
     }
 }
 s32 func_80033DF4(void) {
