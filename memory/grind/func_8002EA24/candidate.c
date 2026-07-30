@@ -86,6 +86,37 @@
  * excluded $a0 through an $a0-preferring allocno that conflicted with 103 from
  * BELOW it in the order -- see hypotheses.md H5''''.
  *
+ * SESSION-8 REDERIVE (body UNCHANGED; floor re-measured at 2 this session).
+ * A fresh m2c decompile of asm/funcs/func_8002EA24.s and eleven structurally
+ * distinct rewrites built from it were measured.  Two results matter.
+ *   (1) The score-2 plateau is SOURCE-SHAPE-INVARIANT.  Six genuinely different
+ *       bodies -- neg_threshold written inline with no local at all; the local
+ *       initialised after the x load instead of in the declaration list; the
+ *       four range tests nested (m2c's own shape) instead of two early-return
+ *       ifs; the four range tests fused into ONE short-circuit `if` with z
+ *       assigned inside the condition; the sum-of-squares split off into its
+ *       own local (m2c splits a0_var into temp_a0 / temp_a0_2 / var_a0); and
+ *       that split with the staged boolean moved into the sum local -- ALL
+ *       score exactly 2 at 104 instructions.  The residual does not move with
+ *       source shape; it is one allocator bit, as sessions 6-7 concluded.
+ *   (2) The "seventh live value" frontier axis is DEAD, with a mechanism.
+ *       Reading `y` off the already-computed `vout` pointer (obj+0x100) keeps a
+ *       seventh value live across the range-test window at zero instruction
+ *       cost.  The .greg dump shows why it cannot work: the added carrier
+ *       (allocno 77) is the LOWEST-priority allocno in the function -- long
+ *       live range, few references, so allocno_compare puts it LAST, after 103
+ *       -- and it has no register preferences at all.  It therefore cannot
+ *       supply an assigned-conflict for 103 (it is allocated after 103) and
+ *       cannot supply a prune_preferences exclusion either (no preferences to
+ *       union).  What it actually does is STEAL target's $t1: 77 lands in $t1
+ *       and 103 falls into $a0.  Any zero-cost added carrier has this shape by
+ *       construction, so the axis is closed generally, not just for `vout`.
+ * The consequence is that allocno 97 (a0_var) remains the ONLY allocno that can
+ * deny $a0 to 103, and an enumeration of the values the C could put in it
+ * before the chain finds none that is both real and read afterwards -- the sum
+ * of squares is the only candidate and hoisting it is the measured-dead
+ * accearly family.  L3 is therefore still the unique instruction-free generator.
+ *
  * CHEAT VETTING (this body carries TWO annotated exceptions; layer-2 must rule).
  *   L1 and L3 are both instances of [[staged-value-reused-variable]]
  *   (SANCTIONED 2026-07-03): a REAL value, READ by the very next expression,

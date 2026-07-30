@@ -968,3 +968,120 @@ candidate_alt_score3_no_fake.c as the fallback body.
 - probe: Read asm/funcs/func_8002EA24.s across the range-test window (8002EAA0 `lw $a1,0x100($t0)` through 8002EAD4 `slt $v0,$a2,$v1`) and enumerated every register live there, then compared against our build's `103 conflicts:` register set.
 - result: Refuted. Target's window carries exactly six live values -- obj ($t0), x ($a1), threshold ($a2), r_sq ($a3), z ($v1), boolean temps ($v0) -- covering registers {2,3,5,6,7,8}; hard reg 4 is written NOWHERE between the prologue copy `addu $t0,$a0,$zero` (first instruction of the function) and `addu $a0,$v0,$v1` after the multiplies. Our conflict set covers the same six registers, leaving 4 free for first-fit, yet target's negu writes $t1. Target's exclusion of $a0 must therefore have come from regs_someone_prefers -- an $a0-preferring allocno that conflicted with 103 AND ranked BELOW it in allocno_compare order. That configuration has never been produced here and is the session-8 frontier.
 - verdict: KILLED
+
+## Session 8 (rederive) - frontier narrowed
+
+### KILLED this session
+- **The "seventh zero-cost live value" axis (session 7 frontier bullet 2), as a
+  FAMILY and not just for the probe used.**  Reading `y` off the already
+  computed `vout` pointer keeps a seventh value live across the range-test
+  window for free.  Measured 6 (without the staged boolean) / 5 (with it), and
+  the `.greg` dump gives the mechanism: the added carrier is the LOWEST-priority
+  allocno in the function, so it is allocated AFTER 103 and cannot create an
+  assigned conflict, and it carries no register preferences, so it cannot feed
+  `regs_someone_prefers` either.  It lands in $t1 -- target's register for
+  neg_threshold -- and pushes 103 into $a0, i.e. it makes the exact bit it was
+  supposed to fix worse.  Every zero-cost added carrier has this priority shape
+  by construction (long live range x few refs = low
+  `floor_log2(n_refs)*n_refs/live_length`), so the axis is closed as a family.
+- **m2c's structural shape as a closing form.**  A literal transcription of the
+  fresh m2c decompile (single `ret` variable, four nested ifs, one `return ret;`)
+  is 11 at 105 insns; applying the nesting only to the four range tests while
+  keeping the banked tail is 2 (inert).  The extra instruction in the full-nest
+  form is the tail: the single-return shape re-enables the jump.c store-flag
+  fold that L1 exists to defeat.
+- **m2c's variable SPLIT of `a0_var` (temp_a0 / temp_a0_2 / var_a0) as a lever.**
+  Splitting sum-of-squares, remainder and sqrt result into three locals with the
+  LZC block rewritten around them is 19; splitting and staging the boolean into
+  the sqrt-result local is 12; splitting ONLY the sum off (keeping remainder and
+  sqrt in a0_var) is 2, inert.  GCC coalesces the chain, so the split neither
+  helps nor hurts when it does not disturb the LZC block.
+- **Kengo transplant.**  The in-tree Kengo corpus is symbol NAMES only
+  (`kengo_functions*.txt`, `kengo_globals*.txt` under an archived worktree);
+  there is no Kengo C source anywhere in the tree, so the
+  `kengo:HIGH sa_tan2/saTan2LinePrimInit` annotation on this function cannot be
+  turned into a transplant.  Do not spend another session looking for one.
+
+### CONFIRMED this session
+- **The score-2 plateau is source-shape-invariant.**  Six structurally distinct
+  bodies all measure exactly 2 at 104 instructions: `neg_threshold` written
+  inline with no C local at all; the local initialised after the x load rather
+  than in the declaration list; the range tests nested; the four range tests
+  fused into ONE short-circuit `if` with z assigned inside the condition (which
+  is what target's four branches to a single label look like in source); the sum
+  split into its own local; and that split with the staged boolean moved into
+  the sum local.  Combined with sessions 6-7, the residual is confirmed to be a
+  single allocator bit that no reshaping of the C statement structure reaches.
+
+### Live frontier (after session 8)
+
+#### H5''''' - the $a0 denier must be allocno 97, and 97 has no real early value
+**Statement.**  Only an allocno that is assigned $a0, conflicts with 103 and is
+allocated BEFORE 103 can deny $a0 to neg_threshold.  Session 7 established that
+97 (a0_var) is the only allocno that satisfies the ordering; session 8 shows that
+newly-introduced carriers can never satisfy it (they sort last).  So the whole
+axis reduces to: what REAL value, computed before the range chain and read after
+it, can 97 hold?
+**Mechanism.**  `allocno_compare` priority `floor_log2(n_refs)*n_refs /
+live_length`; a carrier that spans the chain has a long live range and, being
+instruction-free, few references, so it sorts below 103 and is allocated after
+it.  `prune_preferences` (global.c:851-899) is then the only remaining channel
+and it requires the carrier to carry a hard-register preference, which a plain
+address or load pseudo does not have.
+**Next probe.**  Complete the enumeration of the function's pre-chain values:
+the three deltas (stored to memory, dead afterwards), the GTE input/output
+addresses (`vin`/`vout`, dead after the asm blocks), `-threshold` (that IS
+allocno 103), and the sum of squares (needs the mult/mflo pairs hoisted = the
+measured-dead accearly family).  Sessions 3, 4 and 8 have each attacked a
+different part of that list.  If the enumeration is complete, no real value
+exists, the staged boolean (L3) is the only instruction-free generator, and the
+function's disposition becomes a REVIEW question (Judge / layer-2 on L1+L3)
+rather than a search question.
+
+#### H4 / H6 - unchanged
+H4 (GTE canonical-asm disposition) is an operator surface.  H6 is closed and
+awaits layer-2 acceptance of the two /* FAKE */ staged-value constructs; the
+fallback without L3 is banked at candidate_alt_score3_no_fake.c (score 3), and
+without L1 as well the floor returns to 6.
+
+## [s8] A seventh zero-cost live value in the range-test window will occupy $a0 and hand neg_threshold target's $t1, regardless of which allocno supplies it (session 7 frontier bullet 2).
+- mechanism: 103's conflicting values already cover hard regs {2,3,5,6,7,8}; $a0 is the only free one, so any additional value assigned $a0 and overlapping [negu .. third slt] removes it from 103's free set and first-fit then reaches $t1.
+- probe: `y` read as `vout[2]` off the GTE output pointer that the swc2 block already computes (so the carrier costs ZERO instructions), built both without the staged boolean (v4) and with it (v5); scored with `sandbox --disable all` and dumped with the session-7 allocator probe (cc1 -dg: allocation order + conflict lists + register dispositions).
+- result: 6 and 5 respectively, both at 104 insns. The dump shows the carrier is allocno 77 and that it is LAST in `;; 14 regs to allocate: 101 96 97 100 109 108 72 102 117 103 74 99 75 77` -- allocated AFTER 103 -- with no `77 preferences:` line at all. In v4 it takes hard reg 9 ($t1), target's register for neg_threshold, and 103 falls into hard reg 4 ($a0): the probe makes the exact bit it targets worse. It also strips allocno 102's `preferences: 4` line, removing the only other $a0-preferring allocno. Because priority is `floor_log2(n_refs)*n_refs/live_length`, ANY carrier long enough to span the chain and cheap enough to be free sorts to the bottom, so neither the assigned-conflict route (needs to be allocated before 103) nor the prune_preferences route (needs a preference) is available to it.
+- verdict: KILLED (as a family, not just for this carrier)
+
+## [s8] A fresh m2c decompile of the target exposes a structurally different original shape - a single result variable with nested ifs, and a0_var split into three separate locals - that reaches below the score-2 plateau.
+- mechanism: m2c reconstructs the shape the ORIGINAL compiler produced; a different statement structure or a different set of C-level pseudos could change allocno formation and priority.
+- probe: Ran `python3 tools/m2c/m2c.py --target mipsel-gcc-c -f func_8002EA24 asm/funcs/func_8002EA24.s`, then built and scored five variants from its output: the literal nested single-return transcription; m2c's three-way split of a0_var (sum / remainder / sqrt) with the LZC block rewritten around it; that split with the boolean staged into the sqrt local instead of the accumulator; the nesting applied only to the four range tests; and the sum-only split.
+- result: 11 (105 insns), 19 (105), 12 (105), 2 (104), 2 (104). Nothing below 2. The full nested single-return form loses because the single `return ret;` re-enables exactly the jump.c store-flag fold that L1 exists to defeat, which is a re-confirmation of session 2's tail finding from a completely different direction.
+- verdict: KILLED
+
+## [s8] The score-2 residual is a property of the source SHAPE and can be moved by restructuring the range-test chain.
+- mechanism: statement structure controls pseudo formation, reference counts and live ranges, which are the inputs to allocno priority.
+- probe: Six structurally distinct bodies scored with `sandbox --disable all`: `neg_threshold` written inline in both tests with no C local; the local declared uninitialised and assigned after the x load; m2c's nesting over the four range tests; all four range tests fused into ONE short-circuit `if` with `z` assigned inside the condition (the source shape that matches target's four branches to a single label); the sum-of-squares split into its own local; and that split with the staged boolean moved into the sum local.
+- result: ALL SIX score exactly 2 at 104 instructions. The residual `slt $a0,$a1,$t1 / bnez $a0` is invariant across every one of them.
+- verdict: KILLED (the residual is not shape-reachable; it is the single allocator bit sessions 6-7 named)
+
+## [s8] A seventh zero-cost live value in the range-test window will occupy $a0 and hand neg_threshold target's $t1, regardless of which allocno supplies it (session 7's frontier bullet 2).
+- mechanism: 103's conflicting values already cover hard regs {2,3,5,6,7,8}; $a0 is the only free one, so any additional value assigned $a0 and overlapping [negu .. third slt] should remove it from 103's free set and let first-fit reach $t1.
+- probe: Read `y` as `vout[2]` off the GTE output pointer that the swc2 block already computes, so the carrier costs ZERO instructions; built without the staged boolean (v4) and with it (v5); scored with `sandbox func_8002EA24 --disable all` and dumped the allocator state with the session-7 probe (cc1 -dg: allocation order, conflict lists, register dispositions).
+- result: 6 and 5 respectively, both at 104 insns (vs the banked 2). The dump shows the carrier is allocno 77 and that it is LAST in `;; 14 regs to allocate: 101 96 97 100 109 108 72 102 117 103 74 99 75 77` -- allocated AFTER 103, so it can never be an assigned conflict for it -- and that it has no `;; 77 preferences:` line at all, so it contributes nothing to regs_someone_prefers[103] via prune_preferences either. Dispositions: 77 in 9 ($t1, target's register for neg_threshold) and 103 in 4 ($a0): the probe inverts the exact bit it targets. It also destroys allocno 102's `preferences: 4` line, removing the function's other $a0-preferring allocno. Because allocno priority is floor_log2(n_refs)*n_refs/live_length, ANY carrier long enough to span the chain and cheap enough to be instruction-free necessarily sorts to the bottom of the order.
+- verdict: KILLED
+
+## [s8] A fresh m2c decompile exposes a structurally different original shape -- a single result variable with nested ifs, and a0_var split into three separate locals -- that reaches below the score-2 plateau.
+- mechanism: m2c reconstructs the shape the ORIGINAL compiler produced; a different statement structure or a different set of C-level pseudos changes allocno formation, reference counts and live ranges, which are the inputs to allocno priority.
+- probe: Ran `python3 tools/m2c/m2c.py --target mipsel-gcc-c -f func_8002EA24 asm/funcs/func_8002EA24.s` (clean apart from the six cop2 instructions, emitted as M2C_ERROR), then built and scored five variants from its output: the literal nested single-return transcription; m2c's three-way split of a0_var into sum / remainder / sqrt with the LZC block rewritten around it; that split with the boolean staged into the sqrt local instead of the accumulator; the nesting applied only to the four range tests; and the sum-only split.
+- result: 11 (105 insns), 19 (105), 12 (105), 2 (104), 2 (104). Nothing below 2. The full nested single-return form loses precisely because the single `return ret;` re-enables the jump.c store-flag if-conversion that L1 exists to defeat -- an independent re-confirmation of session 2's tail finding from a completely different direction.
+- verdict: KILLED
+
+## [s8] The score-2 residual (`slt $a0,$a1,$t1 / bnez $a0` vs target's `slt $v0,...`) is a property of the source SHAPE and can be moved by restructuring the range-test chain.
+- mechanism: Statement structure controls pseudo formation, reference counts and live ranges, which are the inputs to allocno priority and therefore to the whole register assignment.
+- probe: Six structurally distinct bodies scored with `sandbox --disable all`: neg_threshold written inline in both tests with NO C local; the local declared uninitialised and assigned after the x load; m2c's nesting over the four range tests; all four range tests fused into ONE short-circuit `if` with `z` assigned inside the condition (the source shape that literally matches target's four branches to a single label); the sum-of-squares split into its own local; and that split with the staged boolean moved into the sum local.
+- result: ALL SIX score exactly 2 at 104 instructions. The residual is invariant across every one of them.
+- verdict: KILLED
+
+## [s8] The Kengo (PS2 successor) corpus can supply a source transplant for this function, per the `/* kengo:HIGH | sa_tan2/saTan2LinePrimInit | 110i */` annotation above it.
+- mechanism: Kengo reused Lightweight's Marionation engine, so an equivalent function's original C would show the original statement structure directly.
+- probe: Searched the tree for Kengo material: `find . -iname '*kengo*'` plus the tools that consume it (tools/apply_kengo_names.py, kengo_match.py, kengo_ref.py, kengo_globals.py).
+- result: The in-tree Kengo corpus is symbol-NAME lists only (kengo_functions*.txt, kengo_globals*.txt under an archived worktree). There is no Kengo C source anywhere in the tree, so the annotation is a name mapping, not a source lead. No transplant is possible.
+- verdict: KILLED

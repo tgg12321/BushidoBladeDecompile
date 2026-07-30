@@ -930,3 +930,88 @@ it, three independent searches now converge on the banked form and none beats it
 - [s7] TARGET's range-test window has hard reg 4 unwritten and carries the same six conflicting values our build does, yet allocates neg_threshold to $t1 -- so the original compile's exclusion came from regs_someone_prefers with an $a0-preferring allocno conflicting with 103 from BELOW it in the order. Our 102 (y) already prefers $a0 and already lands in $v1 exactly where target keeps y; it is two positions above 103 and does not conflict with it.
 
 - [s7] The banked score-2 candidate was re-applied to src/code6cac_b.c and re-measured this session: sandbox --disable all = 2 (disassembly md5 b74fd7ba27c3). No body change was made; the session's product is the corrected allocator account plus four killed carrier families.
+
+## Session 8 (rederive) — measured facts
+
+- [s8] The banked score-2 candidate was re-applied to `src/code6cac_b.c` and
+  re-measured: `sandbox func_8002EA24 --disable all` = **2**, build 104 insns vs
+  target 104. Floor unchanged; the body was restored to exactly this form at the
+  end of the session.
+
+- [s8] A fresh m2c decompile is available and reproduces the function cleanly
+  apart from the six cop2 instructions (`lwc2`/`mvmva`/`swc2`/`mtc2`), which it
+  emits as `M2C_ERROR(/* unknown instruction ... */)`. Command:
+  `python3 tools/m2c/m2c.py --target mipsel-gcc-c -f func_8002EA24
+  asm/funcs/func_8002EA24.s`. Two structural facts it exposes that our banked
+  body does not have: (a) it renders the five early returns as ONE result
+  variable `var_v0` with four nested ifs and a single `return var_v0;`; (b) it
+  splits our single `a0_var` local into THREE — `temp_a0` (sum of squares),
+  `temp_a0_2` (u32 remainder `arg3 - temp_a0`) and `var_a0` (u32 sqrt result).
+  Both were built and measured (see hypotheses.md [s8]); neither reaches below 2.
+
+- [s8] **The score-2 plateau does not move with source shape.** Six structurally
+  distinct bodies all measure exactly 2 at 104 instructions:
+  `v6_neg_inline_no_local` (no `neg_threshold` local at all — `-threshold`
+  written inline in both range tests), `v7_neg_init_after_x_load` (local declared
+  uninitialised, assigned after the x load), `v10_nested_range_tests_only`
+  (m2c's nesting over the four range tests, banked tail kept),
+  `v12_single_four_way_if` (all four range tests fused into ONE short-circuit
+  `if`, with `z` assigned inside the condition so its load stays in the third
+  test's block — the source shape that literally matches target's four branches
+  to a single label), `v11_sum_own_local` (sum-of-squares split into its own
+  local, remainder+sqrt still in `a0_var`), `v14_split_stage_into_sum` (that
+  split with the staged boolean moved into the sum local). All six are banked;
+  four are in `rejected/` as inert forms so they are not re-proposed.
+
+- [s8] **The "seventh live value" carrier axis is dead by allocno PRIORITY, not
+  by cost.** Probe: read `y` as `vout[2]` off the GTE output pointer the swc2
+  block already computes, so the carrier is instruction-free. Scores: 6 without
+  the staged boolean, 5 with it (both 104 insns). The `-dg` dump
+  (`tmp/grind/func_8002EA24/s8/v4_vout_carries_y_no_L3/fn.greg`) shows:
+    * allocation order `;; 14 regs to allocate: 101 96 97 100 109 108 72 102 117
+      103 74 99 75 77` — the carrier (allocno 77) is LAST, i.e. allocated AFTER
+      103, so it can never be an assigned conflict for 103;
+    * there is no `;; 77 preferences:` line — the carrier has no hard-register
+      preference, so it contributes nothing to `regs_someone_prefers[103]`
+      through `prune_preferences` either;
+    * dispositions: `77 in 9` ($t1 — target's register for neg_threshold) and
+      `103 in 4` ($a0). The probe inverts the exact bit it targets.
+    * it additionally destroys allocno 102's `preferences: 4` line (present in
+      the banked body's dump), removing the function's other $a0-preferring
+      allocno.
+  Since allocno priority is `floor_log2(n_refs)*n_refs / live_length`, any
+  carrier long enough to span the range-test window and cheap enough to be
+  instruction-free necessarily sorts to the bottom of the order. The axis is
+  therefore closed as a family, not merely for `vout`.
+
+- [s8] For the record, the banked body's own dump (same probe, `candidate`) is
+  `;; 13 regs to allocate: 101 96 97 100 109 108 72 102 117 103 74 99 75`,
+  `97 preferences: 4`, `102 preferences: 4`,
+  `103 conflicts: 72 74 75 96 97 100 103 2 29` (97 present — the assigned
+  conflict L3 buys), dispositions `96 in 3, 97 in 4, 100 in 5, 102 in 3,
+  103 in 9`. This is the session-7 account re-measured and unchanged.
+
+- [s8] **Kengo transplant is not available for this function.** The in-tree
+  Kengo corpus consists of symbol-name lists only
+  (`.claude/worktrees/agent-a4d27f1fe98d52a20/Kengo/kengo_functions*.txt`,
+  `kengo_globals*.txt`) plus the name-application tools
+  (`tools/apply_kengo_names.py`, `kengo_match.py`, `kengo_ref.py`). There is no
+  Kengo C source in the tree, so the `/* kengo:HIGH | sa_tan2/
+  saTan2LinePrimInit | 110i */` annotation above func_8002EA24 is a NAME
+  mapping, not a source lead. Do not re-open this avenue.
+
+- [s8] The banked score-2 candidate was re-applied to src/code6cac_b.c and re-measured this session: sandbox --disable all = 2, build 104 insns vs target 104. src/ was restored to exactly that form at the end of the session and re-verified at 2.
+
+- [s8] m2c runs cleanly on this function: `python3 tools/m2c/m2c.py --target mipsel-gcc-c -f func_8002EA24 asm/funcs/func_8002EA24.s` reconstructs everything except the six cop2 instructions. Its two structural departures from our banked body are (a) one result variable with four nested ifs and a single return, and (b) a THREE-way split of our single a0_var local into temp_a0 (sum of squares), temp_a0_2 (u32 remainder), var_a0 (u32 sqrt result). Both measured; neither helps.
+
+- [s8] Six structurally distinct bodies all score exactly 2 at 104 insns: no-neg_threshold-local, init-after-x-load, nested range tests, single four-way short-circuit if with z assigned inside the condition, sum-in-its-own-local, and sum-split-with-the-boolean-staged-into-sum. The plateau is source-shape-invariant.
+
+- [s8] The vout-carries-y probe's .greg dump is the session's core artifact: allocation order `;; 14 regs to allocate: 101 96 97 100 109 108 72 102 117 103 74 99 75 77` (carrier 77 LAST, after 103), no `77 preferences:` line, dispositions `77 in 9` ($t1) and `103 in 4` ($a0). Adding a free live value across the window is not neutral -- it actively steals target's $t1.
+
+- [s8] The banked body's own dump is unchanged from session 7: `;; 13 regs to allocate: 101 96 97 100 109 108 72 102 117 103 74 99 75`, `97 preferences: 4`, `102 preferences: 4`, `103 conflicts: 72 74 75 96 97 100 103 2 29` (97 present -- the assigned conflict L3 buys), dispositions `96 in 3, 97 in 4, 100 in 5, 102 in 3, 103 in 9`.
+
+- [s8] Consequence for the frontier: allocno 97 (a0_var) is now the ONLY allocno that can deny $a0 to 103, because (i) session 7 showed it is the only $a0-preferring allocno above 103 in the order and (ii) session 8 showed newly-introduced carriers always sort BELOW 103. The axis therefore reduces to a single question -- what REAL value, computed before the range chain and read after it, can 97 hold? -- and the enumeration of the function's pre-chain values (three deltas stored to memory and dead; vin/vout dead after the asm blocks; -threshold, which IS allocno 103; the sum of squares, whose hoist is the measured-dead accearly family) currently returns nothing.
+
+- [s8] No new /* FAKE */ construct was introduced this session and no cheat-class construct was attempted. The body in src/ and in memory/grind/func_8002EA24/candidate.c is byte-for-byte the session-4/5 form whose two annotated staged-value exceptions (L1, L3) are still awaiting the Judge / a fresh layer-2 cheat-reviewer.
+
+- [s8] Kengo transplant is unavailable: the in-tree corpus is symbol names only, no C source.
