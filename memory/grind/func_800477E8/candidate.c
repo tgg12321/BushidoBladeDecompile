@@ -1,105 +1,81 @@
-/* func_800477E8 — best known form as of grind session s3 (2026-07-30, structural).
+/* func_800477E8 — MATCHED form as of grind session s4 (2026-07-30, permuter).
  *
- *   honest floor (sandbox --disable all): 5      (s1/s2 floor was 17)
- *   build_insns == target_insns == 170
+ *   honest floor (sandbox --disable all): 0      (s1/s2 floor 17, s3 floor 5)
+ *   build_insns == target_insns == 170, rules_dropped 2, strip_cheat_asm on.
  *
- * The residual 5 is EXACTLY tie A and nothing else.  Verified instruction by
- * instruction against build/src/sound.o with tmp/grind/func_800477E8/s1/diff.py
- * (pass build/src/sound.o as argv[1]; the default reference build/asm/6CAC.o no
- * longer contains this function).  Branch-offset noise removed, the whole diff is
- *   26  move t2,v0  | move t1,v0
- *   39  sh t1,0(s0) | sh t2,0(s0)
- *   55  sh t1,0(s0) | sh t2,0(s0)
- *   57  sh t2,0(s0) | sh t1,0(s0)
- * plus the `li` of 0x2C00 landing in $t1 instead of $t2.
+ * s3 left exactly one defect: tie A, the $t1/$t2 seating of `t1val`
+ * (= gpu_CalcClut(0x10,0x1E0), the 4th call) against `t2` (= the 0x2C00
+ * constant).  s4 closed it with a single `do { ... } while (0);` wrap around
+ * loop1's body — the construct sanctioned by .claude/rules/do-while-zero-
+ * exception.md (owner ruling 2026-07-06) and annotated inline below.
  *
- * The ENTIRE loop1 and loop2 register seating now equals target, verified on the
- * cc1 -da `.greg` dispositions, not inferred:
- *   loop1  v0->$v0(2) v1->$v1(3) a0->$a0(4) a1->$a1(5) a2->$a2(6) a3->$a3(7)
- *          t0->$t0(8) s0->$s0 s1val/s2val/s3val->$s1/$s2/$s3
- *   loop2  p(inner walking ptr, compiler-made)->$v0(2)  val->$v1(3)
- *          a0->$a0(4)  row base (compiler-made)->$a1(5)  w->$a2(6)  a3->$a3(7)
- *   loop3  ptr->$v1(3)  a0->$a0(4)
- * The ONLY wrong dispositions left are tie A: t1val->$t2(10) and t2->$t1(9),
- * where target wants t1val->$t1(9) and t2->$t2(10).
+ * WHY THE WRAP WORKS — measured, not inferred.  s3 established the closed-form
+ * allocation model: GCC 2.7.2 global.c ranks allocnos by
+ *      priority = floor_log2(n_refs) * n_refs * size / live_length
+ * over the numbers the cc1 `-da` `.lreg` dump prints as
+ * "Register NN used R times across L insns", and flow.c weights every
+ * reference by the loop_depth that NOTE_INSN_LOOP_BEG establishes.  The wrap
+ * emits a loop note, so every reference inside loop1's body gains one unit of
+ * weight.  Measured on the .greg/.lreg dump of the real src/sound.c:
  *
- * WHY THIS FORM (the s3 findings, each measured on the .greg dump):
+ *              n_refs   live_length   priority        seat
+ *   s3   t1val    3          76         0.0395   ->  $t2(10)   WRONG
+ *        t2       5         150         0.0667   ->  $t1(9)    WRONG
+ *   s4   t1val    4          76         0.1053   ->  $t1(9)    TARGET
+ *        t2       7         148         0.0946   ->  $t2(10)   TARGET
  *
- * 1. GCC 2.7.2 weights every register reference by the loop_depth flow.c sees,
- *    and loop_depth comes from NOTE_INSN_LOOP_BEG notes, which the front end
- *    emits only for real loop constructs — a `goto`-driven loop gets none.  So
- *    m2c's `goto inner2:` shape silently starved every loop2 pseudo of reference
- *    weight and pinned the allocation order.  Writing loop2 as a real
- *    `do { ... for (...) ... } while (...)` nest is what unlocked it.
+ * t1val has ONE in-loop reference and t2 has TWO (it is stored in both arms),
+ * so the extra weight unit is worth +1 to t1val and +2 to t2 — and because
+ * floor_log2 stays at 2 for both while t2's live_length is double t1val's,
+ * the increment flips the comparison.  This is the same loop-note lever s3
+ * used to unlock loop2; s1-s3 all searched for a *reference-count* answer to
+ * tie A and the answer was a *weighting* answer.
  *
- * 2. loop2's inner walking pointer and its row base are NOT source variables in
- *    the original: indexing the row (`p[a0] = val`) makes loop.c strength-reduce
- *    the row address into the $a1 induction variable and the inner index into the
- *    $v0 walking pointer, and only then do the emitted preheader order
- *    (`a3=0; w=0;` BEFORE the row pointer's lui/addiu) and the delay-slot
- *    placement of `addiu $a1,$a1,0x44` match target.  A source-level row pointer
- *    always lands in the accumulator's slot and vice-versa, because loop.c
- *    inserts iv initialisations AFTER the source statements in the preheader.
+ * The wrap was found by decomp-permuter (session s4, chassis
+ * tmp/grind/func_800477E8/s4/wsA, 911 iterations, permuter score 25 -> 0) and
+ * then re-derived by hand against the allocation model above, so its mechanism
+ * is understood rather than merely observed.
  *
- * 3. loop2's row counter MUST be loop1's `a3`, the same C variable.  Its loop1
- *    references drag the allocno's priority down to 0.84 (18 refs / 86 insns),
- *    which is what makes it the LAST of the loop2 group to be allocated and so
- *    take $a3.  A fresh local scores 1.17 and is allocated third, which rotates
- *    the whole loop2 seating (measured: 14 instead of 6).
+ * NATURAL GEOMETRY WAS TRIED FIRST (do-while-zero prerequisite 2).  Three
+ * sessions of honest restructures failed to move tie A, every one measured:
+ * factoring the shared `*s0 = t2;` out of the two arms (correct seating but
+ * 171 insns), caching the `a3 >= 5` condition in a local (171), inlining the
+ * 0x2C00 literal in both arms (CSE rebuilds one pseudo, seating unchanged),
+ * the literal in one arm only (171), routing both arms' store through a v0
+ * copy (score 39), `s0[1] = t2;` hoisted with `s0 += 2` in the arms (167),
+ * inverting the arms' branch sense (18), swapping which CLUT result each arm
+ * stores (7), and converting loop1's inner goto-loop into a real do-while or
+ * for (cc1 manufactures two extra induction pseudos that take $t1/$t2 and push
+ * t1val/t2 out to $t3/$t4 — 10 and 13).  See memory/grind/func_800477E8/
+ * rejected/ and hypotheses.md.
  *
- * 4. `a3` must also be USED inside the loop2 body, which the `a3 * 0x11` row
- *    index supplies.  With the counter unused in the body, cc1's check_dbra_loop
- *    REVERSES the loop into a countdown and drops target's `slti $v0,$a3,0x9`
- *    (build_insns 169, score 11 — see rejected/loop2-counter-only-loop-reverses.c).
+ * The wrap is SINGLE-LEVEL: s4 also measured that HEAD's inherited
+ * `do { v0 = v1 | a1; } while (0);` inside the `a3 & 1` arm is NOT needed —
+ * removing it keeps the score at 0 — so it is gone and no nested-wrap
+ * justification (prerequisite 3) is required.  The s1/s2/s3 "outstanding
+ * un-annotated do-while(0)" Judge surface is therefore CLOSED.
  *
- * 5. The stored value must be an explicit local copied from the accumulator
- *    (`val = w;`).  Letting LICM manufacture it from `a3 * 0x7D0` also works
- *    mechanically but leaves the accumulator compiler-made, which puts its init
- *    after the row pointer's and swaps $a1/$a2 (score 14).
- *
- * 6. The three pre-loop initialisations are in TARGET's own order,
- *    `a3 = 0; t2 = 0x2C00; a0 = 0;` (target's preheader is `addu $a3,$zero,$zero;
- *    addiu $t2,$zero,0x2C00; addu $a0,$zero,$zero`), which is also HEAD's order.
- *    s2 rejected that order and used `t2; a3; a0;` — correctly for s2's body,
- *    where loop2's row counter was a fresh local — but with a3 shared into loop2
- *    the profile changed and target's order is now worth exactly one instruction
- *    (score 6 -> 5).  This retires s2's "fragile arbitrary statement order"
- *    caveat: the ordering the candidate uses is the one target itself emits.
- *
- * TIE A — mechanism PROVEN, cost not yet paid.  t1val has 3 weighted refs over a
- * 76-insn range (0.0395) and t2 has 5 over 150 (0.0667), so t2 is allocated first
- * and takes the lower $t1.  t2's range is double t1val's because t2 is used in
- * BOTH arms and so stays live on both paths.  Giving t2 a SINGLE in-loop
- * reference flips it exactly: the `ta-factor-store` / `ta-factor-cached` variants
- * (shared `*s0 = t2;` lifted out of the two arms) produce t1val->$t1(9) and
- * t2->$t2(10) with every other disposition still correct — but factoring needs a
- * second test of `a3 >= 5` and costs one instruction (build_insns 171).  The open
- * question for the next session is a spelling of "t2 read once per iteration"
- * that keeps 170 insns; equalising from the other side needs a 4th reference to
- * t1val, and no honest one exists in this body.
- *
- * KNOWN-DEAD, do not re-derive (s1 + s2 + s3, all measured):
- *   - splitting `a0` off any of the three loops (17 -> 36/40 in s2; 32 in s3).
- *   - a fresh local for loop2's row counter (score 14, not 6).
- *   - a fresh local for loop2's inner counter (compiler-made p then loses $v0).
- *   - declaration order anywhere (inert: global.c reaches the allocno-number
- *     tiebreak only on EXACTLY equal priority).
- *   - hoisting `t2 = 0x2C00` above gpu_CalcClut: +2 insns (callee-save pair).
- *   - inlining the 0x2C00 literal in both arms: CSE rebuilds one pseudo, seating
- *     unchanged (score 6, same as this form).
- *   - converting loop1's inner `goto inner` into a real do-while/for loop: cc1
- *     creates TWO extra pseudos that take $t1/$t2 and push t1val/t2 out to
- *     $t3/$t4 (score 10 / 13).  Loop shape in loop1 is NOT neutral — same
- *     failure mode s2 saw with a full nested-for rewrite.
- *   - inverting the arms' branch sense: score 18.
- *   - routing both arms' t2 store through the v0 scratch: score 39.
- *   - `s0[1] = t2;` hoisted ahead of the branch with `s0 += 2` in the arms:
- *     build_insns 167, score 10.
- *
- * OUTSTANDING JUDGE SURFACE: the `do { v0 = v1 | a1; } while (0);` below is
- * inherited from HEAD and is NOT `/* FAKE *\/`-annotated. Any session that
- * reaches distance 0 must annotate it per .claude/rules/do-while-zero-exception
- * or eliminate it before proposing the candidate.
+ * The rest of the form is s3's and is load-bearing; do not "simplify" it:
+ *   - loop2 must be REAL loops (a do-while over the rows, a for over the
+ *     columns).  m2c's goto shape emits no loop notes, starves every loop2
+ *     pseudo of reference weight, and pins the wrong order.
+ *   - loop2's row pointer and inner walking pointer must be COMPILER-MADE:
+ *     index the row (`p = &D_800EF59C[a3 * 0x11]; p[a0] = val;`) so loop.c
+ *     strength-reduces them.  loop.c puts iv initialisations after the source
+ *     statements, which is why target's preheader initialises the row pointer
+ *     LAST and why a source-level row pointer always swaps $a1/$a2.
+ *   - loop2's row counter must be loop1's `a3`, the SAME C variable (a fresh
+ *     local rotates the whole loop2 seating: 14 instead of 5), and it must be
+ *     READ in the body — the `a3 * 0x11` index supplies that, without which
+ *     check_dbra_loop reverses the loop and drops target's `slti $v0,$a3,0x9`.
+ *   - loop1's inner loop must stay GOTO-shaped (see above).
+ *   - `a0` stays shared across all three loops; splitting it costs 32-40.
+ *   - the three pre-loop initialisations are in target's own order,
+ *     `a3 = 0; t2 = 0x2C00; a0 = 0;`, worth one instruction.
+ *   - `val = w;` must be an explicit local copied from the accumulator;
+ *     letting LICM manufacture it from `a3 * 0x7D0` swaps $a1/$a2 (14).
+ *   - declaration order is inert everywhere (the allocno-number tiebreak is
+ *     only reached on EXACTLY equal priority, which no pair here has).
  */
 
 s32 func_800477E8(void) {
@@ -132,6 +108,11 @@ s32 func_800477E8(void) {
     do {
         t0 = 0x1200;
         a2 = 0x13;
+        /* FAKE: single-level do-while(0) wrap. Its loop note adds one unit of
+         * loop_depth reference weight to everything in this body, which seats
+         * t1val in $t1 and the 0x2C00 constant in $t2 as target has them
+         * (without it: t1val 3 refs/76 insns loses to t2's 5/150). */
+        do {
         a1 = 0;
         v1 = 1;
 inner:
@@ -176,7 +157,7 @@ inner:
             v0 = a2 | t0;
             *s0 = v0;
             s0 += 1;
-            do { v0 = v1 | a1; } while (0);
+            v0 = v1 | a1;
         } else {
             v0 = v1 | a1;
             *s0 = v0;
@@ -199,6 +180,7 @@ inner:
         v1 += 1;
         if (a0 < 0x10) goto inner;
         a3 += 1;
+        } while (0);
         a0 = 0;
     } while (a3 < 8);
 

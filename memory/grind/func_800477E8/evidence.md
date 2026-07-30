@@ -389,3 +389,55 @@ pointer in each other's registers, every time (score 14).
 - [s3] src/sound.c was restored to HEAD at end of session (git status --porcelain -- src/ empty). Every measurement went through score.py's apply/restore cycle or the tmp-only dump path.
 
 - [s3] Harness for successors: tmp/grind/func_800477E8/s3/sweep2.py (dump screener with the priority arithmetic and a cc1 insn count, VSET=variantsN, never touches src/) and tmp/grind/func_800477E8/s3/apply.py (splices a candidate body into src/sound.c). s2's score.py is the real-measurement path and is unchanged. Variant lists variants8.py .. variants19.py sit next to s2's in tmp/grind/func_800477E8/s2/. NOTE: s1/diff.py needs build/src/sound.o passed as argv[1] -- its default reference build/asm/6CAC.o no longer contains this function.
+
+## s4 (permuter, 2026-07-30) — floor 5 -> 0; MATCHED
+
+- [s4] FLOOR 5 -> 0. `sandbox func_800477E8 --disable all` prints score 0 with
+  build_insns == target_insns == 170 and rules_dropped 2, with
+  memory/grind/func_800477E8/candidate.c applied to src/sound.c. The form is
+  s3's body plus ONE `do { ... } while (0);` wrap around loop1's body (from
+  `a1 = 0;` through `a3 += 1;`, with `a0 = 0;` left outside it), annotated
+  inline `/* FAKE: ... */` per .claude/rules/do-while-zero-exception.md.
+
+- [s4] The wrap closes tie A by RAISING REFERENCE WEIGHTING, not by changing
+  reference counts — which is what s1, s2 and s3 all searched for. flow.c
+  weights each register reference by loop_depth, and a do-while(0) emits
+  NOTE_INSN_LOOP_BEG so every reference inside loop1's body gains one weight
+  unit, while loop.c discards the construct as a non-loop so NO induction
+  variable is manufactured. That is precisely the difference from s3's killed
+  probe (making loop1's inner goto-loop a real loop), where cc1 created two
+  extra iv pseudos that took $t1/$t2 themselves.
+
+- [s4] Measured on a fresh cc1 -da dump of the real src/sound.c (dumper:
+  tmp/grind/func_800477E8/s4/dumpstat.py over tmp/grind/func_800477E8/s4/dump/v.i):
+  t1val (pseudo 76) refs 3 -> 4, live_length 76, priority 0.1053, seat $t1(9);
+  t2 (pseudo 83) refs 5 -> 7, live_length 148, priority 0.0946, seat $t2(10).
+  Both equal target. The increment is +1 for t1val (one in-loop reference) and
+  +2 for t2 (stored in BOTH arms); floor_log2 stays at 2 for both and t2's live
+  range is double t1val's, so the increment flips the comparison. s3's
+  closed-form model predicted these exact numbers — s3 had the arithmetic right
+  and only the construct wrong.
+
+- [s4] HEAD's inherited `do { v0 = v1 | a1; } while (0);` in the `a3 & 1` arm is
+  INERT: removing it leaves score 0 / 170 insns. It is deleted from the
+  candidate, so the function now carries exactly ONE do-while(0), the s4 wrap is
+  SINGLE-LEVEL, and prerequisite 3 (nested-wrap justification) does not apply.
+  The s1/s2/s3 "outstanding un-annotated do-while(0)" Judge surface is closed.
+
+- [s4] The permuter is a viable instrument on this function and the workspace is
+  reusable: tmp/grind/func_800477E8/s4/mkws.sh builds a decomp-permuter
+  workspace from the CURRENT src/sound.c — full-TU cpp with the Makefile flags,
+  strip_other_fns (NOTE: that script rewrites its input file IN PLACE and prints
+  nothing), a compile.sh that runs the real cc1 | prologue_fix | maspsx |
+  multu_pad pipeline and extracts only func_800477E8's region, and a target.o
+  assembled from asm/funcs/func_800477E8.s. It self-validates by diffing base vs
+  target. Campaign telemetry: base_score 25 (permuter weighting, 5 register
+  diffs x 5), 911 iterations, ONE find, score 0, at 30 s after launch — the
+  basin yielded almost immediately, consistent with the fresh-seed discipline.
+
+- [s4] INTEGRATION NOTE for the operator/driver: regfix.txt:125-127 still carries
+  the two rules for this function (`$9 <-> $10 @ 26-57`, `$3 <-> $5 @ 32-135`).
+  They now describe swaps that the C no longer needs, so a normal (rules-enabled)
+  build will be WRONG until `retire func_800477E8` removes them. The honest
+  cheat-free distance is 0; the retire + full-build SHA1 check is the remaining
+  step and it is on a surface a grind session may not touch.

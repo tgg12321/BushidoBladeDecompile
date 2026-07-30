@@ -687,6 +687,8 @@ s32 func_800477E8(void) {
     s32 v0;
     s32 *ptr;
     s32 *p;
+    s32 w;
+    s32 val;
 
     s0 = D_800A33D0;
     s3val = gpu_CalcTPage(0, 0, 0x2C0, 0x1C0);
@@ -699,6 +701,11 @@ s32 func_800477E8(void) {
     do {
         t0 = 0x1200;
         a2 = 0x13;
+        /* FAKE: single-level do-while(0) wrap. Its loop note adds one unit of
+         * loop_depth reference weight to everything in this body, which seats
+         * t1val in $t1 and the 0x2C00 constant in $t2 as target has them
+         * (without it: t1val 3 refs/76 insns loses to t2's 5/150). */
+        do {
         a1 = 0;
         v1 = 1;
 inner:
@@ -743,7 +750,7 @@ inner:
             v0 = a2 | t0;
             *s0 = v0;
             s0 += 1;
-            do { v0 = v1 | a1; } while (0);
+            v0 = v1 | a1;
         } else {
             v0 = v1 | a1;
             *s0 = v0;
@@ -766,6 +773,7 @@ inner:
         v1 += 1;
         if (a0 < 0x10) goto inner;
         a3 += 1;
+        } while (0);
         a0 = 0;
     } while (a3 < 8);
 
@@ -788,21 +796,16 @@ inner:
     }
 
     a3 = 0;
-    a2 = 0;
-    ptr = &D_800EF59C[0];
-outer2:
-    v1 = a2;
-    a0 = 0x10;
-    p = ptr + 0x10;
-inner2:
-    *p = v1;
-    a0--;
-    p--;
-    if (a0 >= 0) goto inner2;
-    a2 += 0x7D0;
-    a3 += 1;
-    ptr += 0x11;
-    if (a3 < 9) goto outer2;
+    w = 0;
+    do {
+        val = w;
+        p = &D_800EF59C[a3 * 0x11];
+        for (a0 = 0x10; a0 >= 0; a0--) {
+            p[a0] = val;
+        }
+        w += 0x7D0;
+        a3 += 1;
+    } while (a3 < 9);
 
     a0 = 0;
     ptr = &D_800EF558[0];
