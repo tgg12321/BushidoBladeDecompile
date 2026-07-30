@@ -706,3 +706,4 @@
 - 2026-07-30 05:23 func_800477E8 s3 [structural] floor=5: Floor 17 -> 5: m2c's goto-shaped loop2 denied its pseudos loop_depth reference weighting; rewriting loop2 as real loops (row pointer compiler-made, row counter shared with loop1's a3) makes loop1+loop2+loop3 seating EXACTLY target, and the residual 5 is exactly tie A, whose mechanism is now proven too.
 - 2026-07-30 05:44 func_800477E8 COMPLETED-C after 4 sessions.
 - 2026-07-30 06:05 func_80040CB8 s1 [recon] floor=13: Floor 17 -> 13, pure C with zero pins: instruction sequence now byte-for-byte identical to target (36/36 insns); all 13 residual diffs are register names, mechanism pinned to global.c allocno_compare priority order.
+- 2026-07-30 06:44 func_80040CB8 COMPLETED-C after 2 sessions.
