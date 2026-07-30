@@ -1,8 +1,8 @@
 {
  "func": "func_8003553C",
  "file": "code6cac_b2_pre",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -21,23 +21,29 @@
    "floor": 2,
    "modality": "structural",
    "headline": "Floor stays 2, but the one misplaced insn is now MECHANISM-EXPLAINED: sched1 sinks the 640 constant set to its late uses, local-alloc then reuses $v0, and the resulting REG_DEP_OUTPUT pins li 640 mid-"
+  },
+  {
+   "session": 4,
+   "floor": 2,
+   "modality": "permuter",
+   "headline": "Permuter axis KILLED with measurement: ~17.6k iterations over two fresh-seed chassis produced ~85 forms, none better than the incumbent's 2, because the permuter's objective is anti-correlated with th"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The whole remaining residual reduces to getting the 640 constant allocated a register that no earlier constant used, in pure C \u2014 i.e. defeating sched1's sink of its set so its live range survives into local-alloc.",
-   "mechanism": "The pin diagnostic proves the register is what frees BOTH the sh 0x10 store's slot and the RGB block's field order; a 2-insn live range is what makes local-alloc reuse $v0. Anything that keeps the 640 pseudo live from the block head to its late uses forces a second register, and sched1's sink is what prevents that. Note the pinned build still has one residual (li 640 after li 128 rather than ahead of li 240), so the register may be necessary-but-not-sufficient \u2014 expect a second, smaller lever behind it.",
-   "next_probe": "Look for a pure-C shape whose 640 value has a use the scheduler cannot sink past: e.g. the value flowing through a variable that is ALSO used by an insn target emits early, a value obtained by a non-constant-foldable expression that still assembles to a single addiu-from-zero, or the two 640 stores written as a chained assignment (sp[16] = sp[8] = 640) so the single pseudo has two dependent stores. Score each with sandbox --disable all and, for anything at 2 or below, confirm the register with tmp/grind/func_8003553C/s3/rtl.sh + grep of base.i.greg. Do NOT re-try constant holders in their plain spelling, the OT-load spellings, MEM_IN_STRUCT_P, or other-constant live-range extenders \u2014 all measured dead."
+   "hypothesis": "The 640 constant gets a block-head li and its own hard register when ALL of its uses lie inside one uninterrupted run of stores through the primitive pointer - i.e. the may-alias-pinned lw of D_800A374C (and the move $a1,$s0 that follows it) is what splits our store run and lets sched1 sink the 640 set.",
+   "mechanism": "Matched sibling func_80072BC4's else-arm has three block-head constants with late first uses and no interruption in its store run; ours is the same shape except that the OT-base load sits between the RGB block and the two 640 uses. If the uninterrupted run is the discriminator, moving the OT-base computation so it no longer splits the run (while still emitting the lui/lw at target's position, which s1 proved is source-position-pinned) should let the 640 set stay at the block head with both stores late - the exact combination the s3 register-pin diagnostic proved is sufficient.",
+   "next_probe": "Sweep chassis B with the ot local computed at each of: before the two 240 stores, immediately after them, between RGB subgroups, and after ALL coordinate stores (inline in the ot_Link call). For each, screen with tmp/grind/func_8003553C/s4/score.sh (~1.5 s/form) and record BOTH the difflines and whether the li 640 reaches the block head. This is cheap enough to also cross it with the two 640-store positions. Do NOT re-try the OT-base SPELLING variants (array-indexed slot, s32-staged base) - s3 measured those dead; this probe varies the load's POSITION relative to the store run, which is a different axis."
   },
   {
-   "hypothesis": "decomp-permuter from the score-2 base can find the register-lifetime shape that hand enumeration cannot express.",
-   "mechanism": "The search target is no longer statement order (saturated at 2 over ~45 orderings) but a register-lifetime shape \u2014 exactly what the permuter's temp introduction / expression re-association / variable-reuse mutations explore, and a base score of 2 gives a clean gradient.",
-   "next_probe": "Build a clean single-function target.o from asm/funcs/func_8003553C.s + tools/decomp-permuter/prelude.inc (function at offset 0, drop the .set gp=64 line) per .claude/rules/difficult-is-not-impossible.md section 3; seed base.c from memory/grind/func_8003553C/candidate.c; run a fresh-seed campaign with tools/permuter_campaign.py, waiting for it IN-TURN via `permuter_campaign.py wait --dir <ws>` and harvesting + `--stop`ing before writing the outcome. Run import.py from a subdirectory, not the repo root (a root-level nonmatchings/ breaks the driver's scope check). Vet any closing form against the cheat catalog before banking it."
+   "hypothesis": "Reading the C of several more census hits whose block-head constant has the LARGEST gap to first use will expose the dataflow property (not syntax) that keeps GCC 2.7.2 from sinking a constant set.",
+   "mechanism": "tmp/grind/func_8003553C/s4/census.py already produced 164 matched-function instances of exactly the codegen shape this function needs, ranked by gap. Each one's C source is direct evidence of a spelling whose constant survives sched1's sink; s4 only read the single closest hit. Reading the top ~6 and abstracting what their constants have in common turns guessing into reading.",
+   "next_probe": "Re-run census.py (it prints func / index / gap / set / first-use), then for the top hits with gap >= 12 - func_80049E4C (gap 18, two instances), DispSamnailWindow (gap 16), func_80046048 (gap 16), func_80046B44 (gap 13/12), tslLineG5Init (gap 13) - Grep src/*.c for the function name and Read ONLY the function body with offset/limit. Tabulate: number of uses, whether the uses are interrupted by a call/load, whether the constant is a literal or a named local, and whether the stores are through a pointer or a global. Then transplant the common property, not the syntax."
   },
   {
-   "hypothesis": "A matched sibling in the tree already contains the C spelling that materializes a constant into a SECOND register at a block head with only late uses (target's li $v1,K shape).",
-   "mechanism": "If any COMPLETED function's asm shows `addiu $vN,$zero,K` at a block head with its first use several insns later, its C source is direct evidence of a spelling that survives sched1's sink \u2014 the exact thing this function needs, obtained by reading rather than guessing.",
-   "next_probe": "Grep asm/funcs/*.s (or the objdump of build/) for a block-head `addiu $v1,$zero,<imm>` whose first consumer is >=4 insns later inside functions NOT in engine/queue.json (i.e. already matched), then read the corresponding C body (Grep to locate, Read with offset/limit \u2014 never whole src files). Compare its constant's live-range shape with ours and transplant the spelling."
+   "hypothesis": "The residual's remaining degree of freedom is the li's own slot among the three constants, and that sub-problem is separable from the store's slot.",
+   "mechanism": "The s3 register-pin diagnostic (never committable) showed that with 640 in $3 every STORE lands in target's slot and the ONLY residual left is li 640 emitted after li 128 instead of ahead of li 240. So even a lever that wins the register may leave one instruction; conversely a lever that fixes the li order may be what wins the register (target materialises 640 FIRST, ahead of 240, despite 640's uses being LAST - which no form we have produced does).",
+   "next_probe": "Treat 'get li 640 emitted ahead of li 240 while both 640 stores stay in the post-load group' as the primary objective rather than the store position, and screen forms on that criterion with score.sh plus a grep of the emitted asm, not on difflines alone. A form can be worth keeping even at difflines > 2 if it is the first one to put li 640 first with late stores, because the s3 diagnostic says the rest then follows."
   }
  ],
  "judge_constraints": [],

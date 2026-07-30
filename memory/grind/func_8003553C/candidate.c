@@ -1,4 +1,22 @@
-/* func_8003553C — best form as of grind session 3 (structural).
+/* func_8003553C — best form as of grind session 4 (permuter); body UNCHANGED
+ * since session 3.
+ *
+ * SESSION 4 (permuter modality) added no floor drop and closed the permuter
+ * axis with a measurement: two fresh-seed campaigns (chassis A = this body,
+ * permuter base 225; chassis B = target's own statement order, base 270) ran
+ * ~17.6k iterations between them and produced ~85 output forms, NONE of which
+ * beats this body's objdump difflines of 2 at 43 instructions. The reason is
+ * that the permuter's weighted objective is ANTI-CORRELATED with the honest
+ * distance here: this body (one instruction displaced by 17 slots, sandbox 2)
+ * is charged permuter score 225, while chassis-B forms that are objectively
+ * ~5x worse score 50-65 — a long-range displacement reads to the permuter's
+ * differ as a large pile of reorderings. See evidence.md section "Session 4".
+ * Also killed in s4: the matched sibling func_80072BC4's `*(u8 *)((s32)p + N)`
+ * store spelling (inert, difflines 10 = control 10).
+ *
+ * Original session-3 header follows.
+ *
+ * func_8003553C — best form as of grind session 3 (structural).
  * Honest pure-C floor: sandbox --disable all = 2, unchanged by session 3 (was 4
  * entering s2, 17 entering s1). Applied in src/code6cac_b2_pre.c. Zero
  * regfix/asmfix rules, zero inline asm, zero pins, zero dead stores, zero

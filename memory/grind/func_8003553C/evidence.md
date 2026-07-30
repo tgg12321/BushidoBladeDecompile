@@ -303,3 +303,136 @@ operator action (agents may not touch `tools/`).
 - [s3] src/code6cac_b2_pre.c again held the ORIGINAL cheat-asm carrier at session start (the driver reverts src between sessions); the banked candidate was re-applied, re-measured at 2, and is in place in src now.
 
 - [s3] Harness gotchas for the next session: from the PowerShell tool set BOTH Set-Location and [Environment]::CurrentDirectory to the repo root (sweep.ps1/splice.ps1 use relative .NET paths), and `bash tools/wsl.sh` does not work there (no wsl on that tool's Git-Bash PATH) — call wsl.exe directly.
+
+## Session 4 (permuter, 2026-07-30) — floor stays 2; the PERMUTER AXIS IS DEAD, with the reason measured
+
+NOTE (third time): `src/code6cac_b2_pre.c` again held the ORIGINAL cheat-asm
+carrier at session start. The banked candidate was re-applied and re-measured at
+2 (`sandbox --disable all`, 43/43 insns) before any probe, and src holds it now.
+
+### The clean single-function permuter workspace exists and is validated
+`tmp/grind/func_8003553C/s4/mkws.sh <ws-dir> <base.c>` builds a
+`difficult-is-not-impossible` section-3-compliant workspace in one command: it writes
+`settings.toml` (func_name/gcc), a `compile.sh` that runs the REAL pipeline
+(cc1 -O2 -G0 -funsigned-char -mcpu=3000 -mips1 | prologue_fix | maspsx 2.34 with
+every project gate list | multu_pad) and extracts only `func_8003553C`'s region
+before assembling, builds `target.o` from `prelude.inc` (minus `.set gp=64`) plus
+`asm/funcs/func_8003553C.s` so the function sits at offset 0, and finally
+validates by objdump-diffing base.o against target.o. Validation output for the
+banked candidate: `base insns: 43  target: 43`, diff = the single known
+`sh v1,16(s0)` displacement. Two gotchas cost real time and are recorded so the
+next session does not repeat them: (a) `mktemp /tmp/fooXXXXXX.s` FAILS on this
+WSL (suffix form unsupported — it prints a name on stderr and returns an empty
+string), so temp templates must end in the X's; (b) the first run after the
+heredoc rewrites `compile.sh` can fail spuriously — re-run it.
+A standalone base.c (typedefs plus the four externs plus the function) reproduces the
+full-TU codegen exactly; the TU context is NOT load-bearing for this function.
+
+### `tmp/grind/func_8003553C/s4/score.sh` — the offline scorer (much faster than sandbox)
+Compiles any standalone form through `wsA/compile.sh` and reports
+`difflines` = objdump line-diff against target.o, plus the emitted insn count.
+~1.5 s per form vs ~25 s for a sandbox splice+score. Correspondence with the
+engine metric on measured points: banked candidate difflines 2 <-> sandbox 2;
+chassis-B (target statement order) difflines 10 <-> sandbox 8. Monotone, so it is
+a safe screening metric; confirm anything promising with `sandbox --disable all`.
+
+### KILLED — decomp-permuter random search cannot navigate this residual
+Two fresh-seed campaigns, both harvested and stopped in-session:
+  * **chassis A** (`wsA`, label `chassisA-scalar-offsets`) — seeded from the
+    banked score-2 candidate. Permuter base score **225**. ~1.5k iterations,
+    stopped after an 8-minute no-improvement window at best **100**.
+  * **chassis B** (`wsB`, label `chassisB-target-stmt-order`) — seeded from
+    TARGET's own statement order (no leading 640 store; both 640 stores in the
+    post-load group, ascending). Permuter base score **270**, best **50**.
+
+**The decisive measurement:** every one of the ~85 output forms from both
+campaigns was re-scored offline with `score.sh`. The distribution of
+`difflines` (emitted insn count in parentheses) is
+`1(44) x1 | 2(43) x6 | 3 x3 | 4(43) x14 | 5 x1 | 6(43) x13 | 8(43) x17 | 9-18 x30`.
+**No form beats the incumbent's difflines 2 at 43 instructions.** The single
+difflines-1 form has **44** instructions: it is chassis A's body with the
+`*(s16 *)(p + 0x10) = 640;` store DUPLICATED into the post-load group, i.e. all
+43 target instructions in target's exact order plus one extra `sh`. That is a
++1-instruction redundant dead store, not a match, and it shows the two roles
+(materialize 640 early / store it late) genuinely need two different
+instructions unless the register changes.
+
+**Why the permuter cannot help here (the transferable finding):** its
+weighted objective does NOT track the honest distance for this function. The
+incumbent — one instruction displaced by 17 slots, sandbox 2 — scores **225**,
+while chassis-B forms that are objectively much worse (difflines 10-12) score
+**50-65**. The permuter's differ charges a long-range displacement as a large
+pile of reorderings while rewarding register-name agreement, so the search
+gradient points AWAY from the true optimum. Random mutation from the score-2
+base is therefore not merely unproductive here, it is anti-correlated, and no
+amount of extra sampling or reseeding changes that. Session 3's frontier item 2
+("permuter from the score-2 base can find the register-lifetime shape hand
+enumeration cannot express") is closed NEGATIVE.
+
+### Sibling census (frontier item 3) — RUN, and it produced a real analogue
+`tmp/grind/func_8003553C/s4/census.py` scans every `asm/funcs/*.s` belonging to a
+function NOT in `engine/queue.json` (i.e. already matched) for
+`addiu $vN, $zero, IMM` whose first consumer is >= 4 instructions later — the
+exact "constant materialised into a register with only late uses, set NOT sunk"
+shape this function needs. **164 hits.** The structurally closest is
+`func_80072BC4` (`src/text1b.c:16641`), whose `arg0 >= 4` else-arm is another
+POLY_G4 RGB block written through a register-held primitive pointer and opens
+with THREE block-head constants:
+
+```
+.L80072C60:  addiu $v1,$zero,0x40 ; addiu $a0,$zero,0x80 ; addiu $v0,$zero,0x50
+             sb $v0,0x14  sb $v0,0x15(0xA0)  sb $v1,0x16 ... sb $zero,4/5/6
+             sb $v1,0xC   sb $zero,0xD  sb $a0,0xE
+             sb $v0,0x1C  sb $v1,0x1D   sb $a0,0x1E
+```
+
+Its C (src/text1b.c:16669-16680) is plain ascending literal byte stores — no
+holder, no cast trick, no reordering. The pattern across that block: constants
+with **>= 2 uses spread across the block** (0x40 x3, 0x80 x2, 0x50 x2) get a
+block-head `li` and their own hard register; single-use constants (0xA0, 0x10)
+are materialised adjacent to their use. Our 640 has exactly 2 uses and still
+sinks, so the discriminator is NOT the use count alone — the difference is that
+in `func_80072BC4` all uses sit inside one uninterrupted store run, whereas our
+two 640 uses sit AFTER the may-alias-pinned `lw` of D_800A374C and the
+`move $a1,$s0`. That is a concrete, un-probed structural difference and it is
+the strongest remaining lead.
+
+### KILLED — the sibling's spelling transplant
+`func_80072BC4` writes its fields as `*(u8 *)((s32)arg1 + N) = v` (an s32-cast
+byte-offset store, which does NOT set MEM_IN_STRUCT_P) rather than our `p[N]`.
+Transplanting that exact spelling onto chassis B (`C2_sibling_s32cast_spelling.c`,
+all twenty stores respelled) gives difflines **10** — bit-identical to the
+chassis-B control (`C3_chassisB_control.c`, difflines 10). The spelling is inert;
+what makes the sibling's constants behave is its dataflow, not its syntax.
+Also measured: `C1_rgb6_between_240s.c` (the permuter's best chassis-B
+reordering with the pointer temps stripped — `p[6] = 0x80` hoisted between the
+two 240 stores) = difflines 12, worse than the chassis-B control.
+
+- [s4] The permuter axis for func_8003553C is DEAD and the reason is measured, not assumed: the permuter's weighted objective is anti-correlated with the honest distance on this function (incumbent = 1 displaced insn = permuter 225; chassis-B forms 5x worse objectively = permuter 50-65). ~85 output forms from two fresh-seed chassis, all re-scored offline; none beats difflines 2 at 43 insns.
+- [s4] The one difflines-1 permuter form is 44 insns: the leading `*(s16*)(p+0x10) = 640;` store DUPLICATED into the post-load group. It reproduces all 43 target insns in target order plus one extra sh — direct proof that "materialise 640 early" and "store 640 late" need two separate instructions unless the 640 pseudo changes register.
+- [s4] A clean single-function permuter workspace for this function is one command: `bash tmp/grind/func_8003553C/s4/mkws.sh <ws> <standalone-base.c>` (validated base 43 / target 43). A standalone base.c with just typedefs + 4 externs reproduces full-TU codegen exactly. WSL gotcha: `mktemp /tmp/xXXXXXX.s` (X's not last) silently returns empty.
+- [s4] `tmp/grind/func_8003553C/s4/score.sh` scores any standalone form in ~1.5 s via objdump difflines against target.o (candidate 2 <-> sandbox 2; chassis B 10 <-> sandbox 8). Use it to screen forms, sandbox only to confirm.
+- [s4] Sibling census (tmp/grind/func_8003553C/s4/census.py) found 164 matched functions with a block-head `addiu $vN,$zero,K` whose first use is >=4 insns later. Closest analogue: func_80072BC4's else-arm (src/text1b.c:16669-16680) — another POLY_G4 RGB block through a register pointer, three block-head constants, written as plain ascending literals. Its constants have 2-3 uses ALL INSIDE one uninterrupted store run; our 640's two uses sit after the may-alias-pinned OT lw and the `move $a1,$s0`. That interruption is the un-probed difference.
+- [s4] KILLED — the sibling's `*(u8 *)((s32)p + N)` store spelling (no MEM_IN_STRUCT_P) is inert: difflines 10, bit-identical to the `p[N]` chassis-B control (10).
+
+- [s4] Floor unchanged at 2 (sandbox --disable all, 43 build insns / 43 target insns). src/code6cac_b2_pre.c AGAIN held the original cheat-asm carrier at session start (third session running); the banked candidate was re-applied, re-measured at 2 before any probe, and is in place in src at session end.
+
+- [s4] A validated, difficult-is-not-impossible-section-3-compliant single-function permuter workspace now exists as a ONE-COMMAND recipe: bash tmp/grind/func_8003553C/s4/mkws.sh <ws-dir> <standalone-base.c>. It writes settings.toml + a compile.sh running the real pipeline (cc1 -O2 -G0 -funsigned-char -mcpu=3000 -mips1 | prologue_fix | maspsx --aspsx-version=2.34 with every project gate list | multu_pad) with per-function region extraction, builds target.o from prelude.inc (minus '.set gp=64') plus asm/funcs/func_8003553C.s at offset 0, and self-validates by objdump diff. Validation for the banked candidate: base insns 43 / target 43, diff = the single known sh v1,16(s0) displacement.
+
+- [s4] A standalone base.c (typedefs plus the four externs D_800A38B4 / D_800A374C / initPolyG4 / ot_Link plus the function) reproduces the full-TU codegen EXACTLY - the surrounding translation unit is not load-bearing for this function, so future probes can skip the ~25 s sandbox splice.
+
+- [s4] tmp/grind/func_8003553C/s4/score.sh scores any standalone form in ~1.5 s as objdump difflines against target.o. Correspondence with the engine metric on measured points: banked candidate difflines 2 <-> sandbox 2; chassis B difflines 10 <-> sandbox 8. Monotone, so it is a safe screening metric (confirm anything promising with sandbox --disable all).
+
+- [s4] WSL gotcha that cost real time: mktemp with a template whose X's are not last (e.g. /tmp/fooXXXXXX.s) FAILS on this machine - it emits a name on stderr and returns an EMPTY string. tools/mar_perm_compile.sh and tools/mar_perm_workspace.sh both carry this bug. Also, the first run of a script that has just heredoc-rewritten its own compile.sh can fail spuriously; re-run it.
+
+- [s4] The single difflines-1 permuter form emits 44 instructions: the leading *(s16 *)(p + 0x10) = 640; store duplicated into the post-load group. It contains all 43 target instructions in target's exact order plus one extra sh - direct proof that 'materialise 640 early' and 'store 640 late' need two separate instructions unless the 640 pseudo changes hard register. It is a redundant dead store and is NOT proposed (banked as rejected/permuter-duplicate-640-store-44-insns.c).
+
+- [s4] Session 3's frontier item 3 (sibling census) was EXECUTED this session. tmp/grind/func_8003553C/s4/census.py scans every asm/funcs/*.s whose function is NOT in engine/queue.json (i.e. already matched) for an addiu $vN,$zero,K whose first consumer is >= 4 instructions later: 164 hits.
+
+- [s4] The closest structural analogue is func_80072BC4 (src/text1b.c:16641), whose arg0>=4 else-arm is another POLY_G4 colour block through a register-held primitive pointer and opens with THREE block-head constants (addiu $v1,0x40 / addiu $a0,0x80 / addiu $v0,0x50) whose first uses are several instructions later. Its C is plain ascending literal byte stores - no holder, no cast trick, no reordering. Pattern in that block: constants with >= 2 uses spread across the block (0x40 x3, 0x80 x2, 0x50 x2) get a block-head li and their own hard register; single-use constants (0xA0, 0x10) are materialised adjacent to their use.
+
+- [s4] Our 640 also has exactly 2 uses and still sinks, so use-count alone is NOT the discriminator. The measured difference: in func_80072BC4 every use of a block-head constant lies inside ONE uninterrupted run of stores, whereas our two 640 uses sit AFTER the may-alias-pinned lw of D_800A374C and the move $a1,$s0. That interruption of the store run is the concrete, un-probed structural difference and the strongest remaining lead.
+
+- [s4] Both campaigns were harvested with --stop before the session ended; python3 tools/permuter_campaign.py status reports '0 live campaign(s), 0 stale registry entr(ies)'. No background process was left running.
+
+- [s4] No cheat construct was used or proposed this session: no regfix/asmfix edits, no register pins, no inline asm, no volatile, no dead stores, no holder locals in any banked form. The two permuter forms banked under rejected/ are recorded as rejected precisely because they are (a) a redundant dead store and (b) an artefact of the mis-specified objective.

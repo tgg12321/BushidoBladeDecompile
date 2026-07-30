@@ -226,3 +226,69 @@ F3 (permuter from the score-4 base) — still untried; the base is now 2.
 - probe: Three holder spellings (s16 w; s32 w; s16 w + s16 h) re-measured on the score-2 s2 tail with target's statement order, plus the no-holder control.
 - result: 8 / 8 / 8, identical to the no-holder control (8). Score-inert — but the RTL trace shows the set DOES survive cse and is sunk by sched1, which is the corrected mechanism recorded above and the reason this axis is dead in its current spelling.
 - verdict: KILLED
+
+## Session 4 (permuter, 2026-07-30) — floor stays 2; permuter axis KILLED
+
+### Resolved
+- **H13 KILLED — decomp-permuter random search from the score-2 base finds the
+  register-lifetime shape hand enumeration cannot express** (session 3 frontier
+  item 2). Two fresh-seed chassis, ~85 outputs, none better than difflines 2 at
+  43 insns. Root cause measured: the permuter's weighted objective is
+  ANTI-CORRELATED with the honest distance on this function.
+- **H14 CONFIRMED (negative result, mechanism) — the permuter's scorer
+  mis-ranks this function's basin.**
+- **H15 KILLED — the matched sibling's store spelling
+  (`*(u8 *)((s32)p + N)`, no MEM_IN_STRUCT_P) transplants the sibling's
+  block-head-constant behaviour.** Inert: difflines 10 = the control's 10.
+- **Sibling census EXECUTED** (session 3 frontier item 3): 164 matched
+  functions carry a block-head `addiu $vN,$zero,K` with a >= 4-insn gap to
+  first use; `func_80072BC4`'s else-arm is the structural twin (POLY_G4 RGB
+  block, three block-head constants, plain ascending literal stores).
+
+## [s4] decomp-permuter, seeded from the banked score-2 candidate and (separately) from target's own statement order, can find the register-lifetime shape that hand enumeration cannot express.
+- mechanism: the residual is no longer statement order (saturated at 2 over ~45 hand orderings in s2) but a register-lifetime shape — exactly what the permuter's temp introduction, expression re-association and variable-reuse mutations explore. A base at sandbox 2 should give a clean gradient.
+- probe: Built a validated single-function workspace per .claude/rules/difficult-is-not-impossible.md section 3 (tmp/grind/func_8003553C/s4/mkws.sh; target.o from prelude.inc minus `.set gp=64` plus asm/funcs/func_8003553C.s at offset 0; compile.sh runs the real cc1/prologue_fix/maspsx-2.34/multu_pad pipeline and extracts only this function's region). Ran two fresh-seed campaigns via tools/permuter_campaign.py: chassis A (wsA) seeded from the banked candidate, base score 225, ~1.5k iterations, stopped on an 8-minute no-novel-improvement window at best 100; chassis B (wsB) seeded from target's statement order, base 270, best 50. Both harvested with --stop before the session ended. All ~85 output forms from both workspaces were then re-scored offline against target.o with tmp/grind/func_8003553C/s4/score.sh.
+- result: NO form beats the incumbent (difflines 2 at 43 instructions). Distribution: 1(44) x1, 2(43) x6, 3 x3, 4(43) x14, 5 x1, 6(43) x13, 8(43) x17, 9-18 x30. The only difflines-1 form emits 44 instructions — chassis A with the leading `*(s16 *)(p + 0x10) = 640;` store DUPLICATED into the post-load group, i.e. all 43 target instructions in target's order plus one extra `sh`; a +1-insn redundant dead store, not a match.
+- verdict: KILLED
+
+## [s4] The permuter's weighted objective tracks the honest sandbox distance closely enough to be a usable search gradient for this function.
+- mechanism: the permuter scores register mismatches x5, reorderings x60 and insertions/deletions x100; if a single displaced instruction is charged as one reordering, the incumbent should sit near the bottom of the permuter's scale and improvements should be visible.
+- probe: compare permuter base/best scores against offline difflines for the same forms.
+- result: ANTI-CORRELATED. The incumbent (one instruction displaced by 17 slots, sandbox 2, difflines 2) is charged permuter score 225, while chassis-B forms that are objectively 5x worse (difflines 10-12, sandbox ~8) score 50-65. A long-range displacement is charged as a large pile of reorderings, while register-name agreement is rewarded, so the search gradient points AWAY from the true optimum. Extra sampling or more reseeding cannot fix a mis-specified objective; the permuter axis is closed for this function, not merely unproductive.
+- verdict: CONFIRMED
+
+## [s4] Transplanting the matched sibling func_80072BC4's store spelling — `*(u8 *)((s32)p + N) = v` instead of `p[N] = v`, which does NOT set MEM_IN_STRUCT_P — reproduces its block-head constant materialisation.
+- mechanism: func_80072BC4's else-arm is the structural twin of our body (a POLY_G4 colour block written through a register-held primitive pointer) and GCC gives it three block-head `addiu $vN,$zero,K` constants with late first uses — precisely the shape our 640 needs. If the sibling's syntax is what earns that, respelling our stores the same way should reproduce it.
+- probe: chassis B respelled with all twenty stores as `*(s16|u8 *)((s32)p + N)` (tmp/grind/func_8003553C/s4/C2_sibling_s32cast_spelling.c) versus the identical chassis-B control with `p[N]` / `*(s16 *)(p + N)` (C3_chassisB_control.c); both scored with score.sh.
+- result: difflines 10 and 10 — bit-identical. The spelling is inert. What makes the sibling's constants behave is its dataflow (all uses inside one uninterrupted store run), not its syntax. Banked as rejected/sibling-s32cast-store-spelling-inert.c.
+- verdict: KILLED
+
+## [s4] The permuter's best chassis-B reordering (hoisting p[6] = 0x80 between the two 240 stores) improves on the chassis-B control.
+- mechanism: moving an early use of the 128 constant between the two 240 stores changes which constant is materialised first and could lift 640 off $v0.
+- probe: C1_rgb6_between_240s.c (the permuter output-65 form with its inert pointer temps stripped) scored with score.sh against the chassis-B control.
+- result: difflines 12 vs the control's 10 — strictly worse. The permuter's apparent gain (permuter score 65 vs base 270) is entirely an artefact of the mis-specified objective.
+- verdict: KILLED
+
+## [s4] decomp-permuter random search, seeded from the banked score-2 candidate and separately from target's own statement order, can find the register-lifetime shape hand enumeration cannot express (session 3 frontier item 2).
+- mechanism: The residual is no longer statement order (saturated at 2 over ~45 hand orderings in s2) but a register-lifetime shape - exactly what the permuter's temp-introduction, expression re-association and variable-reuse mutations explore. A base at sandbox 2 should give a clean gradient.
+- probe: Built a validated single-function workspace per .claude/rules/difficult-is-not-impossible.md section 3 (tmp/grind/func_8003553C/s4/mkws.sh: target.o from prelude.inc minus '.set gp=64' plus asm/funcs/func_8003553C.s at offset 0; compile.sh runs the real cc1 / prologue_fix / maspsx-2.34 / multu_pad pipeline and extracts only this function's region). Ran two fresh-seed campaigns via tools/permuter_campaign.py: chassis A (wsA, label chassisA-scalar-offsets) seeded from the banked candidate, permuter base 225, stopped on an 8-minute no-improvement window at best 100; chassis B (wsB, label chassisB-target-stmt-order) seeded from target's statement order, base 270, best 50, 16117 iterations. Both harvested with --stop in-session (permuter_campaign.py status now reports 0 live campaigns). All ~85 output forms from both workspaces were then re-scored offline against target.o with tmp/grind/func_8003553C/s4/score.sh.
+- result: NO form beats the incumbent (objdump difflines 2 at 43 instructions). Distribution of difflines(insns): 1(44) x1, 2(43) x6, 3 x3, 4(43) x14, 5 x1, 6(43) x13, 8(43) x17, 9-18 x30. The only difflines-1 form emits 44 instructions: chassis A with the leading *(s16 *)(p + 0x10) = 640; store DUPLICATED into the post-load group, i.e. all 43 target instructions in target's exact order plus one extra sh - a +1-instruction redundant dead store, not a match.
+- verdict: KILLED
+
+## [s4] The permuter's weighted objective tracks the honest sandbox distance closely enough to be a usable search gradient for this function.
+- mechanism: The permuter scores register mismatches x5, reorderings x60 and insertions/deletions x100; if a single displaced instruction were charged as one reordering, the incumbent should sit near the bottom of the permuter scale and real improvements would be visible as score drops.
+- probe: Cross-compared permuter base/best scores with offline objdump difflines for the same forms across both chassis.
+- result: ANTI-CORRELATED. The incumbent (one instruction displaced by 17 slots, sandbox 2, difflines 2) is charged permuter score 225, while chassis-B forms that are objectively ~5x worse (difflines 10-12, sandbox ~8) score 50-65. A long-range displacement is charged as a large pile of reorderings while register-name agreement is rewarded, so the search gradient points AWAY from the true optimum. Extra sampling or further reseeding cannot repair a mis-specified objective - the permuter axis is closed for this function, not merely unproductive.
+- verdict: CONFIRMED
+
+## [s4] Transplanting matched sibling func_80072BC4's store spelling - *(u8 *)((s32)p + N) = v instead of p[N] = v, which does NOT set MEM_IN_STRUCT_P - reproduces its block-head constant materialisation.
+- mechanism: func_80072BC4's arg0>=4 else-arm (src/text1b.c:16669-16680) is the structural twin of our body (a POLY_G4 colour block written through a register-held primitive pointer) and GCC gives it three block-head addiu $vN,$zero,K constants with late first uses - precisely the shape our 640 needs. If the sibling's syntax earns that, respelling our stores identically should reproduce it.
+- probe: Chassis B respelled with all twenty stores as *(s16|u8 *)((s32)p + N) (tmp/grind/func_8003553C/s4/C2_sibling_s32cast_spelling.c) versus the identical chassis-B control using p[N] / *(s16 *)(p + N) (C3_chassisB_control.c); both scored with score.sh.
+- result: difflines 10 and 10 - bit-identical. The spelling is inert; what makes the sibling's constants behave is its dataflow (all uses inside one uninterrupted store run), not its syntax. Banked as rejected/sibling-s32cast-store-spelling-inert.c.
+- verdict: KILLED
+
+## [s4] The permuter's best chassis-B reordering (hoisting p[6] = 0x80 between the two 240 stores) improves on the chassis-B control.
+- mechanism: Moving an early use of the 128 constant between the two 240 stores changes which constant is materialised first and could lift 640 off $v0.
+- probe: C1_rgb6_between_240s.c (the permuter output-65 form with its inert pointer temps stripped) scored with score.sh against the chassis-B control.
+- result: difflines 12 versus the control's 10 - strictly worse. The permuter's apparent gain (score 65 from base 270) is entirely an artefact of the mis-specified objective.
+- verdict: KILLED
