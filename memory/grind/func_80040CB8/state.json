@@ -1,0 +1,34 @@
+{
+ "func": "func_80040CB8",
+ "file": "text1a",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 13,
+   "modality": "recon",
+   "headline": "Floor 17 -> 13, pure C with zero pins: instruction sequence now byte-for-byte identical to target (36/36 insns); all 13 residual diffs are register names, mechanism pinned to global.c allocno_compare "
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Raising the 0x8B4 cursor's n_refs from 5 to 6 lets it win its priority race while its initialiser stays FIRST in the prologue, closing both the prologue rotation and the slot ordering at once.",
+   "mechanism": "allocno_compare priority floor_log2(6)*6/31 = 0.387 clears tbl (0.348) and link (0.333) at the cursor's current live_length of 31, so the late-declaration workaround (which is what sinks its addiu to the bottom of the prologue) is no longer needed.",
+   "next_probe": "Find a SEMANTIC sixth reference that leaves the 36 emitted instructions unchanged and measure each: a slot-derived spelling of the post-loop terminator store; spelling the advance as slot = slot + 0x68 alongside a differently-spelled *slot store; or moving the +0x01 = 0 byte store from ent-0x57 onto slot+1 and verifying it still emits as sb $zero,-0x57($a1). Reject any construct whose only purpose is to add a reference."
+  },
+  {
+   "hypothesis": "The final two register diffs close by making the id-copy pseudo block-local so local_alloc seats it in $v1 before global_alloc runs, which blocks ent from reg 3 and pushes it to $a1 without any priority fight.",
+   "mechanism": "local_alloc runs before global_alloc and handles pseudos confined to one basic block; the .lreg dump marks those with 'in block N' (pseudos 82/83/85 are, the id-copy is not). A block-local copy takes reg 3 first, so ent's 1.50 priority then lands it on the next free register, $a1(5) - exactly target.",
+   "next_probe": "Read the .greg RTL for the copy pseudo's three references to see what crosses the block boundary, then restructure the id handling so the copy's whole live range sits inside the if-body block; confirm via the .lreg dump printing 'in block N' for it, then sandbox. Fallback angle: promote the copy above 1.50 by giving it a fourth ref inside its 3-insn window (2*4/3 = 2.67) without adding an instruction."
+  },
+  {
+   "hypothesis": "A struct-typed cursor spelling makes a REAL for-loop safe, which restores LICM and removes the need for the three constant-holder locals - closing the only cheat-adjacent construct left in the candidate.",
+   "mechanism": "H2 killed real loops because loop.c strength reduction re-bases the displacement cluster into a third induction pointer. If both cursors are genuine typed struct pointers with all displacements as real member offsets, the address expressions are already single-register-plus-constant and strength reduction has no derived induction variable to create - while the loop note still enables LICM to hoist the -1/3/1 literals as target does.",
+   "next_probe": "Reconstruct the 0x68-byte element as a real struct from the field map in evidence.md (cross-checking matched sibling func_80040400), declare both cursors as struct pointers, write for (i = 0; i < 0x12; i++), and inspect the .loop dump for any newly created giv before scoring with sandbox."
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-07-30T10:44:08.272932+00:00"
+}
