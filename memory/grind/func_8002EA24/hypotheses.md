@@ -1085,3 +1085,161 @@ without L1 as well the floor returns to 6.
 - probe: Searched the tree for Kengo material: `find . -iname '*kengo*'` plus the tools that consume it (tools/apply_kengo_names.py, kengo_match.py, kengo_ref.py, kengo_globals.py).
 - result: The in-tree Kengo corpus is symbol-NAME lists only (kengo_functions*.txt, kengo_globals*.txt under an archived worktree). There is no Kengo C source anywhere in the tree, so the annotation is a name mapping, not a source lead. No transplant is possible.
 - verdict: KILLED
+
+## Session 9 (rederive) - the H5''''' enumeration CLOSES; the residual is now a review question
+
+### KILLED this session
+- **H5''''' as a search axis: the pre-chain-value enumeration is COMPLETE and
+  empty.**  The four remaining unmeasured entries were measured (`r_sq` 19,
+  `r_sq` with the boolean displaced onto `y` 19, the rotated `x` itself 6,
+  `threshold` 24; control 2) and join the entries sessions 3/4/5/8 already
+  measured (sum of squares 19, delta temps 16-28, `vin`/`vout` 6/5, `y` hoisted
+  11, `-threshold` = allocno 103 itself).  No real value computed before the
+  range chain and read after it can occupy allocno 97 at a cost the function
+  repays.  The mechanism is now explicit and general, from `v2`'s `.greg`: the
+  only pre-chain values with enough references to outrank 103 in
+  `allocno_compare` are the compare operands themselves, and consuming one of
+  them as the carrier vacates the register the OTHER one needs -- `v2` gets
+  everything the model asks for (97 first in the order, `preferences: 4`,
+  assigned 4, `103 conflicts:` contains 97) and still lands 103 in $a1 rather
+  than target's $t1, because with `x` folded into `a0_var` nothing occupies $a1
+  across the chain.
+- **The DUAL generator class: a carrier whose live range ENDS inside the chain.**
+  Every carrier measured before this session started before the chain and was
+  read AFTER it; the dual (a value assigned $a0 that overlaps 103 but dies
+  mid-chain, so it never competes for $a1) had never been probed.  Its only
+  non-parameter candidate is the GTE output pointer, so `v5`/`v6` read the
+  rotated X and Z as `vout[0]`/`vout[1]` and `y` off `obj` -- vout's last use is
+  then INSIDE the chain.  Measured 2 (with L3) and 3 (without), i.e. exactly the
+  banked body and exactly the no-L3 control, and the `.greg` says why: the
+  allocno set and allocation order are IDENTICAL to the banked body's
+  (`;; 13 regs to allocate: 101 96 97 100 109 108 72 102 117 103 74 99 75`) --
+  GCC re-materialises `obj+0x100` and `obj+0x104` off $t0 and `vout` never
+  becomes an allocno at all, so it cannot conflict with anything.  With `v4`
+  (`threshold`, 24 -- it works as a carrier but displaces `threshold` out of
+  $a2) that closes the dual direction too: the generator matrix is now exhausted
+  in BOTH directions.
+- **The decomp.me leg of the rederive modality, for the register bit.**  1751
+  MATCHED GCC-2.7.2 scratches in `tmp/decomp_me_corpus`; 8 have a `negu` into
+  `$t/$s`; 7 of those are `$s0`/`$s1` (callee-saved, value live across a `jal` --
+  func_8002EA24 is a leaf); the single `$tN` case (`8Otmf`) is a whole-function
+  argument copy in a function with five division expansions and a 7-argument
+  call, and it additionally carries a `register ... asm("t6")` pin.  Narrowing
+  to "negu into $t/$s whose destination is then an `slt` right operand" gives
+  **0 of 1751**.  No transplantable corpus shape exists.
+- **The decomp.me leg for L1's symptom.**  39 of the 1751 matched scratches keep
+  an unfolded 0/1 diamond (15 show the `xori $v0,$v0,1` fold); 12 of the 39 have
+  no loop; every one inspected keeps the diamond because the arm contains real
+  work (loop body, store, or call).  None has func_8002EA24's shape -- a bare
+  `if (cond) return 0;` followed by a bare `return 1;`.  Independent
+  confirmation of session 2's measured pure-C exhaustion, from a different
+  direction.
+
+### CONFIRMED this session
+- **The banked score-2 body's full allocator state**, dumped and written down in
+  evidence.md for the first time (previous sessions grepped three or four lines
+  of it).  Allocno 97 (a0_var) is the ONLY allocno assigned $a0; it is allocated
+  third, `103` at position ten, and `103 conflicts:` contains 97 -- which is
+  exactly why 103 reaches $t1.  `102` also carries `preferences: 4` but does not
+  conflict with 103 and is assigned $v1, so it is inert.  Every register in the
+  function is target's except the destination of the FIRST range test's `slt`.
+
+### Live frontier (after session 9)
+
+#### H6 / L1+L3 acceptance -- the ENTIRE remaining residual is a review question
+**Statement.**  The function's honest floor is 2 and both remaining points are
+the destination register of one `slt`/`bnez` pair, which is a consequence of L3
+and not an independent defect.  With the pre-chain-value enumeration complete
+(nine distinct carriers measured across sessions 3-9, all worse), the staged
+boolean L3 is the unique instruction-free generator of the one allocator bit,
+and L1 is the unique defeater of the jump.c store-flag fold.  There is no
+remaining SEARCH action on this axis: what decides the function is whether the
+two `/* FAKE */` [[staged-value-reused-variable]] constructs in
+`memory/grind/func_8002EA24/candidate.c` are ACCEPTED.
+**Mechanism.**  Both are a REAL value, READ by the very next expression, staged
+through an EXISTING local whose previous value is provably dead at the staging
+point; neither is a dead store (`z` is returned, `a0_var` is the `if`
+condition).  L1 defeats jump.c's store-flag single-set precondition; L3 supplies
+the assigned conflict that hands `neg_threshold` target's $t1.
+**Next probe.**  Judge / fresh layer-2 cheat-reviewer on
+`memory/grind/func_8002EA24/candidate.c`.  Fallbacks banked:
+`candidate_alt_score3_no_fake.c` (score 3, L3 removed); without L1 as well the
+floor returns to 6.  Note for whoever rules: the corpus census above shows the
+unfolded-diamond spellings that ARE pure C all put genuine work in the arm,
+which func_8002EA24's target has none of.
+
+#### H7 -- permuter from a chassis OTHER than the banked one
+**Statement.**  Session 5's basin-exhaustion result (29,050 iterations, zero
+novel finds) was measured from ONE chassis: the banked score-2 body.  Session 8
+then discovered that at least six STRUCTURALLY DISTINCT bodies also score 2
+(neg_threshold inline with no local; the local initialised after the x load; the
+range tests nested; all four tests fused into one short-circuit `if`; the sum
+split into its own local; that split with the boolean in the sum local), and
+this session adds a seventh (`v5_vout_dies_in_chain`).  Random permutation from
+a different chassis explores a different neighbourhood even when the scores are
+equal, and no session has run one.
+**Mechanism.**  decomp-permuter mutates the SOURCE; two sources that compile to
+the same bytes still have different mutation neighbourhoods, so basin
+exhaustion is a property of (body, seed stream), not of the function.
+**Next probe.**  `tools/permuter_campaign.py` from two or three of the
+alternative score-2 bodies (`s8/v10_nested_range_tests_only.c`,
+`s8/v12_single_four_way_if.c`, `s9/v5_vout_dies_in_chain.c`), fresh seeds, with
+the fresh-seed stopping rule.  This is a permuter-modality session, not a
+rederive one.  Note the honest prior is low -- sessions 6-9 have shown the
+residual is one allocator bit that no source shape reaches -- but it is the last
+untried mechanical axis and it is cheap to run to exhaustion.
+
+#### H4 - GTE canonical-asm disposition (operator surface, unchanged since session 2)
+Unchanged.  The two GTE regions are in the Judge-constrained minimal spelling
+and that spelling is measured free.  Adding func_8002EA24 to
+`inline_asm_canonical.txt` and retiring its 10 regfix rules are surfaces a grind
+session may not touch; the Judge deferred the FINAL CALL until the function is
+byte-identical on main with zero rules.
+
+## [s9] A REAL value computed before the range-test chain and read after it can occupy allocno 97 (the function's only $a0-preferring allocno) at zero instruction cost, supplying the assigned conflict that denies $a0 to neg_threshold without L3's staged boolean.
+- mechanism: 103 (neg_threshold) reaches target's $t1 only because `103 conflicts:` contains 97, and 97 is allocated before 103 and assigned hard reg 4. Any real value living in 97 across the chain would supply the same conflict while costing no instruction, because the value is computed and consumed by work the function already does.
+- probe: Four whole-body variants generated from ONE template (tmp/grind/func_8002EA24/s9/gen.py) so the only textual difference is the range-test region, spliced with s8/apply.py and scored with `sandbox func_8002EA24 --disable all`; a control regenerated through the same template scored exactly 2 at 104 insns. v1: `a0_var = r_sq` before the chain with the sum of squares split into its own local (session 8 measured that split inert on its own). v2: `a0_var` carries the rotated X itself -- loaded before the chain, IS the first two test operands, read after by `x*x`, so real by construction. v3: v1 with the first test's boolean displaced onto the `y` local. v4: `a0_var = threshold` before the chain, used as the right operand of both upper tests. The `.greg` for v2 was dumped with s9/dump.sh.
+- result: 19, 6, 19, 24 against the control's 2 -- all four at 104 instructions, i.e. pure register/schedule losses. v2 is the informative one and gives the general mechanism: it obtains EVERYTHING the model asks for (97 rises to first in `;; 13 regs to allocate: 97 101 96 109 108 72 102 117 103 100 74 99 75`, keeps `preferences: 4`, is assigned hard reg 4, and `103 conflicts:` contains 97) and 103 STILL misses target's $t1 -- it lands in 5 ($a1), because with X folded into a0_var nothing occupies $a1 across the chain and first-fit reaches $a1 first. The only pre-chain values with enough references to outrank 103 are the compare operands themselves, so consuming one as the carrier vacates the register the other one needs. Combined with the sum of squares (19), the delta temps (16-28), vin/vout (6/5), y hoisted (11) and -threshold (which IS 103), the enumeration of pre-chain values is complete and empty.
+- verdict: KILLED (the enumeration is closed; L3 remains the unique instruction-free generator, cheapest alternative 5)
+
+## [s9] The dual generator class works where the forward one does not: a value assigned $a0 whose live range starts before `negu` and ENDS inside the range chain conflicts with 103 without competing with `x` for $a1.
+- mechanism: global.c builds conflicts from live-range OVERLAP, not containment, so a carrier dying between the first and second range tests conflicts with 103 just as well as one that survives the chain -- and because it is dead by the multiply it cannot take the $a1 that v2 stole from x. The only non-parameter candidate is the GTE output pointer `vout`, which the swc2 block already computes for free; v4 showed a parameter carrier (`threshold`) works mechanically but displaces the parameter out of its own argument register (24).
+- probe: `v5_vout_dies_in_chain` reads the rotated X and Z as `vout[0]` / `vout[1]` and leaves `y` loaded off `obj`, so vout's last use falls inside the chain; `v6_vout_dies_in_chain_no_L3` is the same body with the L3 staged boolean removed, to isolate the carrier from L3's effect. Both scored with `sandbox func_8002EA24 --disable all`; v6's allocator state dumped with s9/dump.sh.
+- result: 2 and 3 -- exactly the banked body and exactly the no-L3 control, at 104 insns. The dump shows the carrier never exists: v6's allocno set and allocation order are IDENTICAL to the banked body's (`;; 13 regs to allocate: 101 96 97 100 109 108 72 102 117 103 74 99 75`), with no additional allocno and `103 conflicts:` again missing 97. GCC re-materialises `obj+0x100` / `obj+0x104` as $t0-relative addresses rather than keeping the pointer live, so `vout` is not a pseudo by the time global_alloc runs and can conflict with nothing. Since `vout` is the only non-parameter value available before the chain, the dual direction is closed as well, and the generator matrix (carrier live PAST the chain / carrier dying INSIDE the chain, x carrier / parameter carrier / introduced carrier) is exhausted in both directions.
+- verdict: KILLED
+
+## [s9] The decomp.me GCC-2.7.2 corpus contains a matched scratch whose target puts a negated compare operand in a caller-save $tN register, whose C could be transplanted as the shape for func_8002EA24's neg_threshold.
+- mechanism: The rederive modality's third leg (session 8 killed the Kengo leg; the decomp.me leg was untried). A matched scratch showing the same codegen fact would give the source shape directly instead of deriving it from the allocator.
+- probe: tmp/grind/func_8002EA24/s9/dmsearch.py and dmsearch2.py over tmp/decomp_me_corpus (3754 scratches scraped by tools/decomp_me_scrape.py, 1751 of them MATCHING): first "negu into $t/$s whose destination is later an `slt` right operand", then the looser "negu into $t/$s at all", with manual inspection of every hit's C and asm.
+- result: The tight query returns 0 of 1751. The loose query returns 8. Seven are $s0/$s1 -- callee-saved, the value is live across a `jal`, a mechanism unavailable to func_8002EA24 (a leaf). The single $tN case, 8Otmf / func_80051BB4, is not a precedent: its $t2 is a whole-function copy of an argument in a function that performs five division expansions and a seven-argument call, so $a0-$a3 are consumed as computation temps, and the scratch additionally uses an explicit `register s32 var_t6 asm("t6")` pin. No transplantable shape exists in the corpus.
+- verdict: KILLED
+
+## [s9] The decomp.me corpus contains a matched pure-C spelling that keeps the unfolded 0/1 return diamond in a straight-line tail, which would replace L1.
+- mechanism: L1 is a /* FAKE */ staged value whose only job is to break jump.c's store-flag single-set precondition. A matched scratch with the same target shape and no coercion would supply the pure-C spelling session 2 could not find.
+- probe: tmp/grind/func_8002EA24/s9/dmsearch3.py -- among the 1751 matched scratches, those whose target contains both `addiu $v0,$zero,1` and a `$v0 = 0` arm plus an `slt` into $v0 and NO `xori $v0,$v0,1`; then filtered to sources with no `for`/`while`/`do`; then the smallest hits read by hand.
+- result: 15 matched scratches show the xori fold and 39 keep the unfolded diamond; 12 of the 39 have no loop. Every one inspected (hX3z3/Ntlgo func_8009C090, and the loop cases 67gdn, 4bMqu, kUZCB, 7KNEh) keeps the diamond because the arm contains REAL work -- a loop body, a store, or a call; func_8009C090's fall-through is `*arg2 |= arg3; func_800B0574(a0, arg3); return 1;`. None has func_8002EA24's shape, a bare `if (cond) return 0;` followed by a bare `return 1;` with nothing else on either path. The corpus reproduces session 2's measured conclusion from an independent direction: with nothing real to put in the arm, GCC 2.7.2 always folds.
+- verdict: KILLED
+
+## [s9] A REAL value computed before the range-test chain and read after it can occupy allocno 97 (the function's only $a0-preferring allocno) at zero instruction cost, supplying the assigned conflict that denies $a0 to neg_threshold without L3's staged boolean.
+- mechanism: 103 (neg_threshold) reaches target's $t1 only because `103 conflicts:` contains 97, and 97 is allocated before 103 and assigned hard reg 4. Any real value living in 97 across the chain supplies the same conflict at no instruction cost, because the value is computed and consumed by work the function already does.
+- probe: Four whole-body variants generated from ONE template (tmp/grind/func_8002EA24/s9/gen.py) so the only textual difference is the range-test region, spliced with s8/apply.py and scored with `sandbox func_8002EA24 --disable all`; a control regenerated through the same template scored exactly 2 at 104 insns. v1: `a0_var = r_sq` before the chain, sum of squares split into its own local (session 8 measured that split inert alone). v2: a0_var carries the rotated X itself (loaded before the chain, IS the first two test operands, read after by `x*x`). v3: v1 with the first test's boolean displaced onto the `y` local. v4: `a0_var = threshold`, the right operand of both upper tests. v2's .greg dumped with s9/dump.sh.
+- result: 19, 6, 19, 24 against the control's 2, all at 104 instructions (pure register/schedule losses, no missing or extra work). v2 is the informative failure: it obtains EVERYTHING the model asks for -- 97 rises to first in `;; 13 regs to allocate: 97 101 96 109 108 72 102 117 103 100 74 99 75`, keeps `preferences: 4`, is assigned hard reg 4, and `103 conflicts:` contains 97 -- and 103 STILL misses target's $t1, landing in 5 ($a1), because with X folded into a0_var nothing occupies $a1 across the chain and first-fit reaches $a1 first. The only pre-chain values with enough references to outrank 103 are the compare operands themselves, so consuming one as the carrier vacates the register the other needs. Combined with the sum of squares (19), the delta temps (16-28), vin/vout (6/5), y hoisted (11) and -threshold (which IS 103), the forward enumeration is complete and empty.
+- verdict: KILLED
+
+## [s9] The dual generator class works where the forward one does not: a value assigned $a0 whose live range starts before `negu` and ENDS inside the range chain conflicts with 103 without competing with x for $a1.
+- mechanism: global.c builds conflicts from live-range OVERLAP, not containment, so a carrier dying between the first and second range tests conflicts with 103 just as well -- and being dead by the multiply it cannot take the $a1 that v2 stole from x. The only non-parameter candidate is the GTE output pointer `vout`, which the swc2 block already computes for free (v4 showed a parameter carrier works mechanically but displaces the parameter out of its own argument register, 24).
+- probe: `v5_vout_dies_in_chain` reads the rotated X and Z as vout[0]/vout[1] and leaves `y` loaded off `obj`, so vout's last use falls inside the chain; `v6_vout_dies_in_chain_no_L3` is the same body with L3 removed to isolate the carrier. Both scored with `sandbox func_8002EA24 --disable all`; v6's allocator state dumped with s9/dump.sh.
+- result: 2 and 3 -- exactly the banked body and exactly the no-L3 control, both at 104 insns. The dump shows the carrier never exists: v6's allocno set and allocation order are IDENTICAL to the banked body's (`;; 13 regs to allocate: 101 96 97 100 109 108 72 102 117 103 74 99 75`), no additional allocno anywhere, and `103 conflicts:` again missing 97. GCC re-materialises obj+0x100 / obj+0x104 as $t0-relative addresses rather than keeping the pointer live, so `vout` is not a pseudo by the time global_alloc runs and can conflict with nothing. Since vout is the only non-parameter value available before the chain, the dual direction is closed too.
+- verdict: KILLED
+
+## [s9] The decomp.me GCC-2.7.2 corpus contains a matched scratch whose target puts a negated compare operand in a caller-save $tN register, whose C could be transplanted as the shape for func_8002EA24's neg_threshold.
+- mechanism: The rederive modality's third leg (session 8 killed the Kengo leg; the decomp.me leg was untried). A matched scratch showing the same codegen fact would give the source shape directly instead of deriving it from the allocator.
+- probe: tmp/grind/func_8002EA24/s9/dmsearch.py and dmsearch2.py over tmp/decomp_me_corpus (3754 scratches scraped by tools/decomp_me_scrape.py, 1751 of them MATCHING): first `negu` into $t/$s whose destination is later an `slt` right operand, then the looser `negu` into $t/$s at all, with manual inspection of every hit's C and asm.
+- result: The tight query returns 0 of 1751. The loose query returns 8. Seven are $s0/$s1 -- callee-saved, the value live across a `jal`, a mechanism unavailable to func_8002EA24 (a leaf). The single $tN case, 8Otmf / func_80051BB4, is not a precedent: its $t2 is a whole-function copy of an argument in a function that performs five division expansions and a seven-argument call (so $a0-$a3 are consumed as computation temps), and the scratch additionally uses an explicit `register s32 var_t6 asm("t6")` pin. No transplantable shape exists in the corpus.
+- verdict: KILLED
+
+## [s9] The decomp.me corpus contains a matched pure-C spelling that keeps the unfolded 0/1 return diamond in a straight-line tail, which would replace L1.
+- mechanism: L1 is a /* FAKE */ staged value whose only job is to break jump.c's store-flag single-set precondition. A matched scratch with the same target shape and no coercion would supply the pure-C spelling session 2 could not find.
+- probe: tmp/grind/func_8002EA24/s9/dmsearch3.py -- among the 1751 matched scratches, those whose target contains both `addiu $v0,$zero,1` and a `$v0 = 0` arm plus an `slt` into $v0 and NO `xori $v0,$v0,1`; then filtered to sources with no for/while/do; then the smallest hits read by hand.
+- result: 15 matched scratches show the xori fold, 39 keep the unfolded diamond, 12 of those have no loop. Every one inspected (hX3z3/Ntlgo func_8009C090, plus loop cases 67gdn, 4bMqu, kUZCB, 7KNEh) keeps the diamond because the arm holds REAL work -- a loop body, a store, or a call; func_8009C090's fall-through is `*arg2 |= arg3; func_800B0574(a0, arg3); return 1;`. None has func_8002EA24's shape: a bare `if (cond) return 0;` followed by a bare `return 1;` with nothing else on either path. The corpus reproduces session 2's measured conclusion from an independent direction -- with nothing real to put in the arm, GCC 2.7.2 always folds.
+- verdict: KILLED

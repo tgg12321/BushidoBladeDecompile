@@ -117,6 +117,51 @@
  * of squares is the only candidate and hoisting it is the measured-dead
  * accearly family.  L3 is therefore still the unique instruction-free generator.
  *
+ * SESSION-9 REDERIVE (body UNCHANGED; floor re-measured at 2 at the start and
+ * the end of the session).  The H5''''' enumeration that sessions 6-8 built is
+ * now COMPLETE, in both directions, and the decomp.me corpus leg of the
+ * rederive modality is measured dead.
+ *   (1) Forward direction -- a real value computed BEFORE the range chain and
+ *       read AFTER it, occupying allocno 97 (the function's only $a0-preferring
+ *       allocno) at zero instruction cost.  The four remaining unmeasured
+ *       carriers were measured against a control regenerated through the same
+ *       template (control = 2): r_sq 19, r_sq with the boolean displaced onto
+ *       `y` 19, the rotated X itself 6, threshold 24 -- all at 104 insns, i.e.
+ *       pure register losses.  `v2` (X as the carrier) is the informative one:
+ *       it obtains EVERYTHING the allocator model asks for -- 97 rises to first
+ *       in the allocation order, keeps `preferences: 4`, is assigned $a0, and
+ *       `103 conflicts:` contains 97 -- and 103 still misses $t1, landing in
+ *       $a1, because with X folded into a0_var nothing occupies $a1 across the
+ *       chain.  The only pre-chain values with enough references to outrank 103
+ *       are the compare operands themselves, so consuming one as the carrier
+ *       vacates the register the other one needs.  With the sum of squares (19),
+ *       the delta temps (16-28), vin/vout (6/5), y hoisted (11) and -threshold
+ *       (which IS allocno 103), the forward enumeration is complete and empty.
+ *   (2) Dual direction -- a carrier that overlaps 103 but DIES inside the chain,
+ *       so it never competes for $a1.  Its only non-parameter candidate is the
+ *       GTE output pointer: reading X and Z as vout[0]/vout[1] scores 2 with L3
+ *       and 3 without, i.e. exactly the banked body and exactly the no-L3
+ *       control, and the .greg shows the allocno set and allocation order are
+ *       IDENTICAL to this body's -- GCC re-materialises obj+0x100/0x104 off $t0
+ *       and `vout` never becomes an allocno at all.
+ *   (3) decomp.me corpus (3754 GCC-2.7.2 scratches, 1751 MATCHING).  "negu into
+ *       $t/$s consumed by an slt" = 0 of 1751; the loose "negu into $t/$s" = 8,
+ *       of which 7 are $s0/$s1 (callee-saved across a jal; this is a leaf) and
+ *       the one $tN case is a whole-function argument copy in a function with
+ *       five division expansions and a 7-argument call, plus an explicit
+ *       register-asm pin.  Separately, 39 matched scratches keep an unfolded 0/1
+ *       diamond (15 show the xori fold); 12 have no loop; every one inspected
+ *       keeps the diamond because the arm holds REAL work -- a loop body, a
+ *       store, or a call.  None has this function's shape (bare `return 0;`
+ *       arm, bare `return 1;` fall-through).  Independent confirmation of
+ *       session 2's pure-C tail exhaustion from a different direction.
+ * Consequence: L3 is the unique instruction-free generator of the one allocator
+ * bit (cheapest alternative 5) and L1 the unique defeater of the store-flag
+ * fold, so the function's disposition is now a REVIEW question, not a search
+ * question.  The one untried mechanical axis left is a permuter campaign from a
+ * chassis OTHER than this body (session 5's basin exhaustion was measured from
+ * this chassis only; seven structurally distinct score-2 bodies are now known).
+ *
  * CHEAT VETTING (this body carries TWO annotated exceptions; layer-2 must rule).
  *   L1 and L3 are both instances of [[staged-value-reused-variable]]
  *   (SANCTIONED 2026-07-03): a REAL value, READ by the very next expression,

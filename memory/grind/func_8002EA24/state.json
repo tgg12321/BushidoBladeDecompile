@@ -1,7 +1,7 @@
 {
  "func": "func_8002EA24",
  "file": "code6cac_b",
- "session_count": 8,
+ "session_count": 9,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -51,23 +51,29 @@
    "floor": 2,
    "modality": "rederive",
    "headline": "Rederive (fresh m2c + 11 structural rewrites): floor holds at 2, the plateau is proven source-shape-invariant across six distinct bodies, and the session-7 frontier's 'seventh zero-cost live value' ax"
+  },
+  {
+   "session": 9,
+   "floor": 2,
+   "modality": "rederive",
+   "headline": "Floor holds at 2; the H5''''' carrier enumeration is now COMPLETE in BOTH directions (six new measured bodies, all worse or inert) and both decomp.me corpus censuses come back negative, so the residua"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "H5''''' -- the $a0 denier must be allocno 97 (a0_var), and the remaining question is whether ANY real value can occupy it before the range chain and be read after it. If the pre-chain value enumeration is complete, no such value exists and the function's residual is a REVIEW question (Judge / layer-2 on L1+L3) rather than a search question.",
-   "mechanism": "Denying $a0 to allocno 103 requires an allocno that is assigned $a0, conflicts with 103, and is allocated BEFORE 103. Session 7 ruled out the priority axis (reference lifts are eaten by CSE before global_alloc counts refs) and showed 97 is the only $a0-preferring allocno above 103; session 8 showed any newly-introduced instruction-free carrier necessarily sorts BELOW 103 (priority = floor_log2(n_refs)*n_refs/live_length) and therefore cannot act through either channel.",
-   "next_probe": "Finish the enumeration rather than re-probing carriers: the function's pre-chain values are the three delta temps (stored to memory, dead), vin/vout (dead after their asm blocks), -threshold (= allocno 103 itself), and the sum of squares (hoisting it is accearly, measured 19). For each, write the ONE C form in which the value is genuinely read after the chain at zero instruction cost, and run tmp/grind/func_8002EA24/s8/probe.sh on it -- checking BEFORE scoring that the dump shows the value in allocno 97's slot (`97 preferences: 4` retained, `103 conflicts:` contains 97, and 97 sits above 103 in `regs to allocate`). If every entry fails, record the enumeration as complete and the axis as closed."
+   "hypothesis": "H6 / L1+L3 acceptance -- the ENTIRE remaining residual is a review question, not a search question.",
+   "mechanism": "Both constructs are [[staged-value-reused-variable]]: a REAL value, READ by the very next expression, staged through an EXISTING local whose previous value is provably dead at the staging point; neither is a dead store (z is returned, a0_var is the if condition). L1 defeats jump.c's store-flag single-set precondition; L3 supplies the assigned conflict that hands neg_threshold target's $t1. With the carrier enumeration complete in both directions and both corpus censuses negative, L3 is the unique instruction-free generator (cheapest alternative 5) and L1 the unique defeater of the fold.",
+   "next_probe": "Judge / fresh layer-2 cheat-reviewer ruling on memory/grind/func_8002EA24/candidate.c. Fallbacks already banked: candidate_alt_score3_no_fake.c (score 3, L3 removed); without L1 as well the floor returns to 6. Whoever rules should note census #2: the unfolded-diamond spellings that ARE pure C all put genuine work in the arm, which this function's target has none of."
   },
   {
-   "hypothesis": "H6 / L1+L3 acceptance -- the whole residual now rests on whether the two /* FAKE */ [[staged-value-reused-variable]] constructs in the banked body are accepted. No grind action is available on this axis.",
-   "mechanism": "Both are a REAL value, READ by the very next expression, staged through an EXISTING local whose previous value is provably dead at the staging point; neither is a dead store (z is returned, a0_var is the if condition). L1 defeats jump.c's store-flag single-set precondition; L3 supplies the assigned conflict that hands neg_threshold target's $t1.",
-   "next_probe": "Judge / fresh layer-2 cheat-reviewer ruling on memory/grind/func_8002EA24/candidate.c. Fallbacks are already banked: candidate_alt_score3_no_fake.c (score 3, L3 removed); without L1 as well the floor returns to 6."
+   "hypothesis": "H7 -- a permuter campaign from a chassis OTHER than the banked body.",
+   "mechanism": "Session 5's basin-exhaustion result (29,050 iterations, zero novel finds) was measured from ONE chassis. Seven structurally distinct score-2 bodies are now known (session 8's six plus s9/v5). decomp-permuter mutates the SOURCE, so two sources that compile to identical bytes still have different mutation neighbourhoods -- basin exhaustion is a property of (body, seed stream), not of the function.",
+   "next_probe": "tools/permuter_campaign.py from two or three alternative score-2 bodies (s8/v10_nested_range_tests_only.c, s8/v12_single_four_way_if.c, s9/v5_vout_dies_in_chain.c) with fresh seeds and the fresh-seed stopping rule. Permuter modality, not rederive. Honest prior is low -- sessions 6-9 show the residual is one allocator bit no source shape reaches -- but it is the last untried mechanical axis and cheap to run to exhaustion."
   },
   {
    "hypothesis": "H4 -- the GTE canonical-asm disposition remains an operator surface, unchanged since session 2.",
-   "mechanism": "The two GTE regions are spelled in the Judge-constrained minimal form (address computed in C and bound via %N, template limited to the $t4 copy plus the cop2 ops and the mvmva .word) and that spelling is measured free. Adding func_8002EA24 to inline_asm_canonical.txt and retiring its 10 regfix rules are surfaces a grind session may not touch.",
-   "next_probe": "None available to a grind session; the Judge deferred the FINAL CALL until the function is byte-identical on main with zero rules."
+   "mechanism": "Both GTE regions are in the Judge-constrained minimal spelling (address computed in C and bound via %N, template limited to the $t4 copy plus the cop2 ops and the mvmva .word) and that spelling is measured free.",
+   "next_probe": "None available to a grind session. Adding func_8002EA24 to inline_asm_canonical.txt and retiring its 10 regfix rules are surfaces a grind session may not touch; the Judge deferred the FINAL CALL until the function is byte-identical on main with zero rules."
   }
  ],
  "judge_constraints": [

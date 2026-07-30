@@ -1015,3 +1015,205 @@ it, three independent searches now converge on the banked form and none beats it
 - [s8] No new /* FAKE */ construct was introduced this session and no cheat-class construct was attempted. The body in src/ and in memory/grind/func_8002EA24/candidate.c is byte-for-byte the session-4/5 form whose two annotated staged-value exceptions (L1, L3) are still awaiting the Judge / a fresh layer-2 cheat-reviewer.
 
 - [s8] Kengo transplant is unavailable: the in-tree corpus is symbol names only, no C source.
+
+## Session 9 (rederive) — the H5''''' enumeration is COMPLETE, and two decomp.me corpus censuses come back negative
+
+Floor re-measured at the start and the end of the session: **2**, build 104
+insns (`sandbox func_8002EA24 --disable all`, banked `candidate.c` spliced into
+`src/code6cac_b.c`).  Nothing in this session moved it.  Two distinct lines of
+work were run: (A) the mandated completion of the H5''''' pre-chain-value
+enumeration, and (B) the decomp.me corpus route that the `rederive` modality
+names and that no previous session had used (session 8 killed the Kengo
+transplant leg of the same modality; the decomp.me leg was still open).
+
+### A full `.greg` dump of the banked score-2 body (the reference state)
+
+`tmp/grind/func_8002EA24/s9/banked/fn.greg`, produced by
+`tmp/grind/func_8002EA24/s9/dump.sh` (cc1 `-dg` on the real preprocessed TU).
+This is the first time the WHOLE allocator picture for the banked body has been
+written down rather than the three or four lines previous sessions grepped, so
+it is recorded here in full because every future probe is read against it:
+
+```
+;; 13 regs to allocate: 101 96 97 100 109 108 72 102 117 103 74 99 75
+;; 72  conflicts: 72 74 75 96 97 99 100 101 103 108 109 117 2 3 4 5 6 7 12 29 64 66
+;; 74  conflicts: 72 74 75 96 97 100 103 2 3 5 7 12 29        preferences: 6
+;; 75  conflicts: 72 74 75 96 97 100 103 108 109 2 3 5 12 29 64 66   preferences: 7
+;; 96  conflicts: 72 74 75 96 100 103 108 2 29 64 66
+;; 97  conflicts: 72 74 75 97 99 100 101 102 103 117 2 3 12 29  preferences: 4
+;; 99  conflicts: 72 97 99 100 101 102 2 29
+;; 100 conflicts: 72 74 75 96 97 99 100 101 102 103 2 29 64 66
+;; 101 conflicts: 72 97 99 100 101 29
+;; 102 conflicts: 97 99 100 102 2 29                            preferences: 4
+;; 103 conflicts: 72 74 75 96 97 100 103 2 29
+;; 108 conflicts: 72 75 96 108 109 29 64 66
+;; 109 conflicts: 72 75 108 109 29 64 66
+;; 117 conflicts: 72 97 117 2 29
+dispositions: 72 in 8   96 in 3   97 in 4   99 in 6   100 in 5   102 in 3   103 in 9
+```
+
+Read-off: `97` (a0_var) is the only allocno assigned hard reg 4 ($a0) and it is
+allocated third, well before `103` (neg_threshold, position 10), so `103`'s
+`conflicts:` list containing `97` is what removes 4 from its free set and lets
+first-fit reach 9 ($t1) = target.  `102` also carries `preferences: 4` but does
+NOT conflict with `103`, and it is assigned 3 ($v1), so it contributes nothing.
+`100` is `x` in 5 ($a1) = target.  Everything in the function is target's
+register except the destination of the FIRST range test's `slt`, which is 97
+($a0) where target uses an ordinary $v0 temp — the whole residual, two
+instructions, `slt $a0,$a1,$t1 / bnez $a0` vs `slt $v0,$a1,$t1 / bnez $v0`.
+
+### (A) The H5''''' enumeration, completed
+
+The frontier question inherited from session 8 was: what REAL value, computed
+before the range-test chain and read after it, can allocno 97 hold at zero
+instruction cost?  Sessions 3/4/8 had each measured part of the list.  This
+session measured the remaining entries.  Harness: `s9/gen.py` generates whole
+bodies from ONE template so that the only textual difference between variants
+is the range-test region, `s8/apply.py` splices them into `src/code6cac_b.c`,
+and the control regenerated through the same template scores exactly 2 at 104
+insns — so a template artefact cannot be mistaken for a variant effect.
+
+| variant | value staged into `a0_var` before the chain | score | insns |
+|---|---|---|---|
+| `v0_control_banked` | the first test's boolean (L3, the banked form) | **2** | 104 |
+| `v1_rsq_into_a0var` | `r_sq` (real: it is the radius-test operand and the minuend of the remainder, both read after the chain; sum-of-squares split into its own local, which session 8 measured inert on its own) | 19 | 104 |
+| `v2_x_into_a0var` | the rotated X itself (real by construction: loaded before the chain, IS the first two test operands, read after by `x*x`) | 6 | 104 |
+| `v3_rsq_into_a0var_L3_on_y` | `r_sq`, with the first test's boolean moved onto the `y` local | 19 | 104 |
+| `v4_threshold_into_a0var` | `threshold` (real: the right operand of both upper tests) | 24 | 104 |
+
+Every one of them holds the instruction COUNT at target's 104 — these are pure
+register/schedule differences, not missing or extra work — and every one is
+worse than the banked 2.
+
+`v2` is the informative failure and its `.greg` is banked at
+`tmp/grind/func_8002EA24/s9/v2_x_into_a0var/fn.greg`.  Making `a0_var` carry X
+does everything the model asks: 97 rises to FIRST in the allocation order
+(`;; 13 regs to allocate: 97 101 96 109 108 72 102 117 103 100 74 99 75`), it
+keeps `preferences: 4`, it is assigned 4 ($a0), and `103 conflicts:` contains
+97.  But 103 then lands in **5 ($a1)**, not 9 ($t1) — because X is no longer a
+separate allocno, nothing occupies $a1 across the chain, so first-fit reaches
+$a1 before $t1.  The lever that supplies the conflict is the same lever that
+vacates target's register for `x`.  That is the structural reason the whole
+"put a real value in 97" family cannot close: the only pre-chain values large
+enough in reference count to outrank 103 are the compare operands themselves,
+and consuming one of them as the carrier frees the register the OTHER one needs.
+
+With `r_sq` (19), `threshold` (24), `x` (6), the sum of squares (accearly 19,
+sessions 3/4), the three delta temps (16–28, session 4), `vin`/`vout` (6/5,
+session 8), `y` hoisted (11, session 5) and `-threshold` itself (it IS allocno
+103) all measured, **the enumeration of pre-chain values is complete**.  No real
+value can occupy allocno 97 across the chain at a cost the function can repay.
+The staged boolean (L3) remains the unique instruction-free generator of the
+one allocator bit, at 2 points, with the next-cheapest alternative at 5.
+
+### (A2) The dual generator class — carrier dying INSIDE the chain — also closed
+
+Every carrier measured before this session was live PAST the chain.  The dual
+had never been probed: a value assigned $a0 that overlaps `103` but dies
+mid-chain would supply the conflict WITHOUT competing for the $a1 that `v2`
+stole from `x`.  `v4` (`threshold`) is a parameter member of that class and
+works mechanically but displaces `threshold` out of $a2 (24).  The only
+non-parameter candidate is the GTE output pointer, which the `swc2` block
+already computes for free:
+
+| variant | | score | insns |
+|---|---|---|---|
+| `v5_vout_dies_in_chain` | X and Z read as `vout[0]`/`vout[1]`, `y` still off `obj`, L3 kept | 2 | 104 |
+| `v6_vout_dies_in_chain_no_L3` | same body, L3 removed | 3 | 104 |
+
+Those are exactly the banked body's score and exactly the no-L3 control's score,
+and `tmp/grind/func_8002EA24/s9/v6_vout_dies_in_chain_no_L3/fn.greg` says why:
+the allocno set and the allocation order are IDENTICAL to the banked body's
+(`;; 13 regs to allocate: 101 96 97 100 109 108 72 102 117 103 74 99 75`), with
+no additional allocno anywhere and `103 conflicts:` again missing `97`.  GCC
+re-materialises `obj+0x100` and `obj+0x104` as $t0-relative addresses instead of
+keeping the pointer live, so `vout` is not a pseudo by the time `global_alloc`
+runs and can conflict with nothing.  The dual direction is therefore closed too,
+and the generator matrix — {carrier live past the chain, carrier dying inside
+it} × {compare-operand carrier, parameter carrier, introduced carrier} — is now
+exhausted in both directions.
+
+### (B) decomp.me corpus census #1 — no precedent for the register bit
+
+`tools/decomp_me_scrape.py`'s local corpus (`tmp/decomp_me_corpus`, 3754
+GCC-2.7.2 scratches, of which **1751 are MATCHING**) was searched for the
+codegen fact we are trying to reproduce: a `negu` whose destination is a
+caller-save `$tN` and which is then consumed by an `slt` range test.
+
+* `negu` into `$t0-$t9` or `$s0-$s7` in a matched scratch: **8 of 1751**.
+* Of those 8, **7 are `$s0`/`$s1`** — callee-saved, i.e. the value is live
+  across a `jal`.  func_8002EA24 is a leaf; that mechanism is unavailable.
+* The single `$tN` case is `8Otmf` / `func_80051BB4`, and it is not a
+  precedent: its `$t2` is a whole-function copy of an argument (`var_t2 =
+  arg2;`) in a function that then performs five division expansions and a
+  seven-argument call, so $a0-$a3 are consumed as computation temps; the
+  scratch additionally uses an explicit `register s32 var_t6 asm("t6")` pin.
+* Refining the query to "negu into $t/$s AND that register used as an `slt`
+  right operand" returns **0 of 1751**.
+
+So the corpus contains no matched pure-C example of GCC 2.7.2 placing a negated
+compare operand in a caller-save `$tN` in a leaf function.  This is a NEGATIVE
+census — it does not prove impossibility, but it removes the "find a corpus
+example and transplant its shape" leg of the rederive modality, and it is the
+kind of result that a future endgame-lock evaluation must treat as a FAILED
+gate rather than an open question.
+
+### (C) decomp.me corpus census #2 — no pure-C precedent for L1's symptom either
+
+Same corpus, asking the L1 question from an independent direction: does any
+matched GCC-2.7.2 scratch keep the UNFOLDED 0/1 diamond (both `addiu $v0,$zero,1`
+and a `$v0 = 0` arm, an `slt` into $v0, and **no** `xori $v0,$v0,1`)?
+
+* matched scratches whose target shows the `xori $v0,$v0,1` store-flag fold: 15
+* matched scratches whose target keeps the unfolded diamond: **39**
+* of those, with no `for`/`while`/`do` anywhere in the source: **12**
+* every one inspected (`hX3z3`/`Ntlgo` func_8009C090, plus the loop cases
+  `67gdn`, `4bMqu`, `kUZCB`, `7KNEh`) keeps the diamond because the arm has
+  REAL other work in it — a loop body, a store, or a call.  `func_8009C090`'s
+  fall-through is `*arg2 |= arg3; func_800B0574(a0, arg3); return 1;`.
+
+None of the 39 is the shape func_8002EA24 has: a bare `if (cond) return 0;`
+followed by a bare `return 1;` with nothing else on either path.  The corpus
+therefore independently reproduces session 2's measured conclusion (six pure-C
+tail shapes, three byte-identical to the folded form) from a completely
+different direction: with nothing real to put in the arm, GCC 2.7.2 always
+folds, and the only spellings that do not fold put something in the arm.  L1
+puts a real, immediately-read value there (`{ z = 0; return z; }`) rather than a
+dead store, which is the mildest member of that family, but it is a member of it.
+
+Incidental observation, recorded for honesty rather than as authorization: the
+corpus does contain matched scratches with self-declared coercions (`VZWgF`
+carries a literal `// hack` above a no-op `check238++; check238--;` pair).
+decomp.me scratches are not a SOTN-master precedent and this project's endgame
+gate does not accept them as one; noted only so a later session does not
+"discover" it and mistake it for a citable authority.
+
+### Artifacts
+
+* `tmp/grind/func_8002EA24/s9/dump.sh` — full `.greg` dumper for the current src
+* `tmp/grind/func_8002EA24/s9/gen.py` — one-template variant generator
+* `tmp/grind/func_8002EA24/s9/banked/fn.greg` — reference allocator state (score 2)
+* `tmp/grind/func_8002EA24/s9/v2_x_into_a0var/fn.greg` — the informative failure
+* `tmp/grind/func_8002EA24/s9/v6_vout_dies_in_chain_no_L3/fn.greg` — proof the
+  dual-direction carrier never becomes an allocno
+* `tmp/grind/func_8002EA24/s9/v{0,1,2,3,4,5,6}_*.c` — the measured bodies
+* `tmp/grind/func_8002EA24/s9/dmsearch.py`, `dmsearch2.py`, `dmsearch3.py` — the
+  three corpus censuses (re-runnable; the corpus is in `tmp/decomp_me_corpus`)
+
+- [s9] Floor re-measured at 2 (build 104 insns = target) at both the start and the end of the session, with the banked candidate.c spliced into src/code6cac_b.c; src is left in that state.
+
+- [s9] The FULL .greg allocator state of the banked score-2 body is written down for the first time (evidence.md, tmp/grind/func_8002EA24/s9/banked/fn.greg): order `101 96 97 100 109 108 72 102 117 103 74 99 75`; allocno 97 (a0_var) is the ONLY allocno assigned hard reg 4 ($a0), carries `preferences: 4`, is allocated third, and appears in `103 conflicts:` -- which is exactly why neg_threshold reaches hard reg 9 ($t1) = target. Allocno 102 also carries `preferences: 4` but does NOT conflict with 103 and is assigned 3 ($v1), so it is inert. Allocno 100 (x) is in 5 ($a1) = target.
+
+- [s9] Every register in the function now matches target except the destination of the FIRST range test's slt: ours `slt $a0,$a1,$t1 / bnez $a0`, target `slt $v0,$a1,$t1 / bnez $v0`. That is the entire two-point residual and it is a consequence of L3, not an independent defect.
+
+- [s9] A control body regenerated through this session's variant template scores exactly 2 at 104 insns, so no measurement below can be a template artefact.
+
+- [s9] Forward carrier enumeration (value live PAST the chain), now complete: boolean/L3 2 (banked), x 6, vin/vout 6/5 (s8), y hoisted 11 (s5), delta temps 16-28 (s4), r_sq 19, sum of squares 19 (s3 accearly), threshold 24, -threshold = allocno 103 itself. Nothing beats 2.
+
+- [s9] Dual carrier enumeration (value dying INSIDE the chain), now complete: threshold 24 (works mechanically, displaces threshold out of $a2) and vout 2/3 (never becomes an allocno -- GCC re-materialises obj+0x100/0x104 off $t0). The generator matrix is exhausted in both directions.
+
+- [s9] decomp.me corpus census #1 (NEGATIVE): of 1751 MATCHED GCC-2.7.2 scratches, 0 have a `negu` into a $t/$s register that is then an `slt` right operand; the 8 loose hits are 7 callee-saved $s cases (live across a jal; this function is a leaf) plus one argument-copy case that also uses a register-asm pin.
+
+- [s9] decomp.me corpus census #2 (NEGATIVE): 39 of 1751 matched scratches keep an unfolded 0/1 diamond, 12 without any loop, and every one inspected keeps it because the arm contains real work. No matched pure-C precedent exists for func_8002EA24's bare-arm shape.
+
+- [s9] Recorded for honesty, NOT as authorization: the corpus does contain matched scratches carrying self-declared coercions (VZWgF has a literal `// hack` over a no-op `check238++; check238--;` pair). decomp.me scratches are not a SOTN-master precedent and this project's endgame gate does not accept them as one.
