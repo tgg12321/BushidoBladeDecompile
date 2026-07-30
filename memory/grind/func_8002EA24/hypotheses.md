@@ -1367,3 +1367,100 @@ grind axis; it is unchanged since session 2.)
 - probe: v6_freshlocal_bool_and_tail (both jobs), v7_freshlocal_tail_only (tail carrier only, no early segment) and v8_L3_plus_freshlocal_tail (banked body plus the tail carrier); scored with sandbox --disable all, v6 dumped with s9/dump.sh.
 - result: 3, 3, 2 — inert in all three, and v6's dump supplies a NEW side-condition: the same symmetric IOR feeds hard reg 4 and the boolean's $v0 preference back into allocno 103 ITSELF (`103 preferences: 2 4`), and prune_preferences line 893 removes from regs_someone_prefers[103] every register 103 also prefers, so the route cancels. 103 is additionally promoted to FIRST in the allocation order (`;; 14 regs to allocate: 103 101 96 97 100 110 109 72 102 118 104 74 99 75`) and lands in $v0 while the fresh local takes $a0. A recipient must be preference-connected to `y` and NOT to 103.
 - verdict: KILLED
+
+## Session 11 (structural) - H8' CLOSED; the frontier drops to two
+
+### KILLED this session
+- **H8' (the `regs_someone_prefers` preference route) as a CLOSING form, by
+  recipient ENUMERATION rather than by another failed spelling.**  A recipient
+  must conflict with allocno 103, and this body's .greg says exactly five
+  allocnos do (72 obj, 74 threshold, 75 r_sq, 96 z, 100 max_y), plus any fresh
+  local one manufactures.  All six cases are now measured dead:
+  72's preferences are pruned by its own hard-reg self-conflict (s3); 100
+  conflicts with the donor 102 so the symmetric `! CONFLICTP` gate blocks the
+  IOR entirely (its .greg is BIT-IDENTICAL to the control's, score 5); 74 and
+  75 work but hand `y` their argument register (s10, 6/6); a fresh local
+  poisons `103 preferences` no matter which value it carries (s10's first-test
+  boolean and this session's `threshold < max_y`, both 3); and 96 (z) satisfies
+  BOTH side-conditions for the first time -- `96 preferences: 4` with
+  `102 preferences: 4` unchanged and `103 preferences` empty -- but is allocated
+  SECOND, so it takes $a0 itself instead of denying it (16).
+- **Demoting 96 below 103.**  Reference cuts leave the allocation order
+  bit-identical (L1 staged through `y_low` = 16; L1 removed = 19 at 102 insns),
+  and z's live range cannot start earlier because the GTE store block writes
+  `*(s32 *)(obj + 0x104)` immediately above the load.
+- **Blocking the reverse leg.**  A conflict on the recipient kills the forward
+  leg too (the IOR gate is symmetric).  The only non-self-defeating route is an
+  allocno that conflicts with 102, outranks it and holds $a2; the sole candidate
+  (99 = min_y) can only be made to conflict by an earlier birth, and
+  allocno_compare divides by live_length, so the same edit demotes 99 to LAST,
+  where it steals target's $t1 outright (13 at 105 insns).  This is the same
+  priority-vs-liveness trap that killed the session-3 accearly family.
+
+### CONFIRMED this session
+- **L1's staging variable is free.**  `{ y_low = 0; return y_low; }` in the last
+  reject arm measures 2 on the banked body and 3 on the no-L3 body -- identical
+  to the `z` spelling at target's 104 instructions.  The store-flag defeat is a
+  property of the TWO-STATEMENT ARM (jump.c's single-set precondition), not of
+  the reused local.  Banked at `candidate_alt_L1_via_ylow.c`.
+
+### Live frontier (after session 11) - two items, neither structural
+
+#### H6 / L1(+L3) acceptance - the disposition path
+Unchanged in substance and now the primary path.  Both constructs are
+[[staged-value-reused-variable]]; the banked body is score 2 at target's
+instruction count, and the whole residual is one allocator bit that eleven
+sessions of source-shape search have failed to move.  Session 11 adds two
+pieces of context for whoever rules: (1) the preference channel, which session
+10 opened as an L3-free route to target's $t1, is now CLOSED, so L3 is again
+the unique instruction-free generator of the bit; (2) L1's staging local is
+interchangeable (`z` or `y_low`), so the construct cannot be defended or
+attacked on the grounds that one specific variable was needed.
+Fallbacks unchanged: `candidate_alt_score3_no_fake.c` (3, L3 removed); without
+L1 as well the floor returns to 6.
+
+#### H7 - permuter from a chassis OTHER than the banked one
+Unchanged and still untried.  Session 5's 29,050-iteration basin exhaustion was
+measured from ONE chassis; nine structurally distinct score-2 bodies are now
+known (session 8's six, `s9/v5_vout_dies_in_chain.c`,
+`s10/v8_L3_plus_freshlocal_tail.c`, and this session's
+`candidate_alt_L1_via_ylow.c`).  Permuter modality; honest prior low.
+
+(H4, the GTE canonical-asm disposition, remains an operator surface and is not
+a grind axis; unchanged since session 2.)
+
+## [s11] The `regs_someone_prefers` preference route (session 10's H8') has a recipient that satisfies every side-condition: conflicts with 103, ranks below it, receives hard reg 4 from the dying `y`, and owns no argument-register preference to leak back into `y`.
+- mechanism: expand_preferences (global.c:797-841) IORs preference sets both ways across a single_set carrying a REG_DEAD note for a non-conflicting allocno; prune_preferences (:851-899) unions a lower-priority conflicting allocno's preferences into regs_someone_prefers of the higher-priority one (line 888, j > i only) unless the higher-priority allocno prefers the same register (line 893); find_reg pass 0 (:1012-1044) excludes that set, and the own-preference override (:1057-1080) is what moves `y` when it inherits an argument-register preference.
+- probe: Read the control .greg to enumerate the allocnos conflicting with 103 ({72, 74, 75, 96, 100}) and the allocation order, then built and scored one body per remaining candidate with `sandbox func_8002EA24 --disable all`, dumping the .greg for each: `z` as the tail recipient (v1/v2), `max_y` as the tail recipient (v3/v4), and a fresh local carrying `threshold < max_y` plus the tail value (v5). Then attacked the two failure modes directly: reference cuts on z (x1 with L1 staged through `y_low`, x2 with L1 removed) and a promotion attempt for the only possible `y`-blocker (w1/w2/w3, `min_y = 0;` hoisted above the z load).
+- result: `z` satisfies all of them at once -- `96 preferences: 4`, `102 preferences: 4` UNCHANGED, `103 preferences` empty -- and still loses, at 16, because it is allocated SECOND and takes $a0 itself; 100 is gated out entirely by CONFLICTP with the donor (its .greg is bit-identical to the control's, score 5); the fresh local poisons `103 preferences: 2 4` exactly as in session 10 even though its carried value never mentions neg_threshold (3). Demotion of 96 is inert (x1 16, x2 19, allocation order bit-identical) and z cannot be born earlier because the GTE store block writes obj+0x104 above the load. The `y`-blocker promotion inverts: 99 falls from 12th to LAST, steals target's $t1 and costs an instruction (13 at 105 insns; hoist-only control 10 at 105).
+- verdict: KILLED
+
+## [s11] L1 (the two-statement last reject arm that defeats jump.c's store-flag if-conversion) depends on `z` specifically as the staging local.
+- mechanism: [[staged-value-reused-variable]] -- the returned 0 is staged through an existing local whose previous value is dead at the staging point; if the effect were a property of `z`'s live range rather than of the arm's statement count, no other local would work.
+- probe: Replaced `{ z = 0; return z; }` with `{ y_low = 0; return y_low; }` (y_low holds *(s32 *)(obj + 0xB0), consumed by the min_y/max_y if-else immediately above and dead thereafter) on both the banked L3 body and the no-L3 body, and scored both with `sandbox --disable all`.
+- result: 2 and 3 respectively, at target's 104 instructions -- identical to the `z` spelling on both bases. The defeat is a property of the TWO-STATEMENT ARM (jump.c's store-flag transform requires a single-set arm), not of the local reused. Banked at `candidate_alt_L1_via_ylow.c`.
+- verdict: KILLED (the dependence; CONFIRMED that the arm-shape is what matters)
+
+## [s11] The preference route has a recipient that satisfies every H8' side-condition at once: it conflicts with allocno 103 (neg_threshold), ranks below it, receives hard reg 4 from the dying `y` (102), and owns no argument-register preference to leak back into `y` through the symmetric IOR.
+- mechanism: expand_preferences (tools/gcc-2.7.2/global.c:797-841) IORs hard_reg_full_preferences BOTH ways across any single_set carrying a REG_DEAD note for a NON-CONFLICTING allocno; prune_preferences (:851-899) unions a lower-priority conflicting allocno's preferences into regs_someone_prefers of the higher-priority one (line 888 iterates j > i only) unless the higher-priority allocno prefers the same register (line 893 cancellation); find_reg pass 0 (:1012-1044) excludes regs_someone_prefers, and the own-preference override (:1057-1080) is what moves `y` off target's $v1 once it inherits an argument-register preference.
+- probe: Dumped the control .greg for the no-L3 base to enumerate the allocnos that CONFLICT with 103 -- exactly {72 obj, 74 threshold, 75 r_sq, 96 z, 100 max_y} -- plus the allocation order (101 96 97 100 109 108 72 102 117 103 74 99 75). Built and scored one body per unmeasured candidate with `sandbox func_8002EA24 --disable all`, dumping the .greg for each: `z` as the tail recipient (v1 no-L3 / v2 L3), `max_y` as the tail recipient (v3 / v4), and a fresh local carrying `threshold < max_y` (which never mentions neg_threshold) plus the tail value (v5).
+- result: `z` (allocno 96) is the first recipient in eleven sessions to satisfy all three dump-level conditions simultaneously: `96 preferences: 4` (forward leg fired), `102 preferences: 4` UNCHANGED (the reverse leg is harmless -- z owns no argument-register preference), and `103 preferences` still EMPTY (no line-893 cancellation). It still loses at 16 (104 insns, pure register loss) purely on RANK: 96 is allocated SECOND, so it TAKES $a0 itself instead of denying it to 103, and the assignment cascades -- 100 falls from target's $a1 to $v1, 102 from target's $v1 to $a1, 103 to $a1. `max_y` (100) is gated out entirely because it CONFLICTS with the donor 102, so nothing propagates: its .greg is BIT-IDENTICAL to the control's (same allocnos, order, conflicts, preferences, dispositions) and its 2-point loss is pure scheduling (5; 4 with L3). The fresh local reproduces session 10's poisoning exactly -- `103 preferences: 2 4` and 103 promoted to FIRST in the order, landing in $v0 -- even though its carried boolean never mentions neg_threshold, so the poisoning is a re-ranking effect rather than an operand-level one (3, inert).
+- verdict: KILLED
+
+## [s11] Allocno 96 (z) can be demoted below 103 in allocno_order, which is the single remaining unsatisfied condition for the z recipient.
+- mechanism: allocno_compare ranks by floor_log2(n_refs)*n_refs/live_length, so a recipient is demoted either by cutting its reference count or by lengthening its live range. 103 has only 3 references, so 96 needs roughly a 3-8x penalty depending on how far z's references can be cut.
+- probe: Two reference cuts on the z-recipient chassis, each scored and dumped: x1 stages L1's returned 0 through `y_low` instead of `z` (removing two of z's references), x2 removes L1 altogether (the reference floor for z as a carrier). The live-range direction was checked against the function's dataflow.
+- result: Both cuts leave the allocation order BIT-IDENTICAL -- `101 96 97 100 109 108 72 102 117 103 74 99 75`, 96 still second -- with scores 16 and 19 (x2 at 102 insns, i.e. it also loses L1's two instructions). The live-range direction is blocked by the function's own dataflow: z loads `*(s32 *)(obj + 0x104)`, which is WRITTEN by the GTE store block (`swc2 $26, 4($t4)`) immediately above the load, so z cannot be born any earlier.
+- verdict: KILLED
+
+## [s11] The reverse leg of the IOR can be blocked for the parameter recipients (session 10's v1/v2, which DO reach target's $t1), by keeping `y` off the recipient's argument register.
+- mechanism: find_reg only refuses `y` a register present in `used`, which is built from the assigned registers of CONFLICTING allocnos -- a non-conflicting holder of $a2 does not block it. So the block needs an allocno X with CONFLICTP(102,X), rank ABOVE 102, and assignment $a2. Placing the conflict on the recipient itself is self-defeating because expand_preferences' gate is `! CONFLICTP` in BOTH directions, so it kills the forward leg with the reverse one.
+- probe: The only X candidate is 99 (min_y): it conflicts with 102 and is currently assigned $a2, but ranks 12th, after 102. Promoted it by giving it an earlier birth -- `min_y = 0;` hoisted to just above the z load, so that it also overlaps 96 (z, $v1) and would not simply take $v1 out from under `y`. Measured as w1 (hoist alone), w2 (hoist + threshold recipient, no L3) and w3 (hoist + threshold recipient + L3), each scored and w2 dumped.
+- result: It inverts. allocno_compare has live_length in the DENOMINATOR, so the earlier birth is a DEMOTION: 99 moves from 12th to LAST (`101 97 96 100 109 108 72 102 117 74 103 75 99`), acquires a conflict with 103 and lands in hard reg 9 -- it STEALS target's $t1 -- while 103 keeps $a0 and 102 keeps $a2. The hoist additionally re-ranks 74 ABOVE 103, breaking H8' condition (c) for the recipient as well, and costs an instruction: w1 10, w2 13, w3 12, all at 105 insns against target's 104. This is the same priority-vs-liveness trap that killed the session-3 accearly family.
+- verdict: KILLED
+
+## [s11] L1 (the two-statement last reject arm that defeats jump.c's store-flag if-conversion and restores target's unfolded 0/1 diamond) depends on `z` specifically as the staging local.
+- mechanism: [[staged-value-reused-variable]] -- a real value staged through an existing local whose previous value is dead at the staging point. If the effect were a property of z's live range rather than of the arm's statement count, no other local would reproduce it.
+- probe: Replaced `{ z = 0; return z; }` with `{ y_low = 0; return y_low; }` (y_low holds *(s32 *)(obj + 0xB0), is consumed by the min_y/max_y if-else immediately above and is dead thereafter) on BOTH the banked L3 body and the no-L3 body, and scored both with `sandbox --disable all`.
+- result: 2 and 3 respectively, at target's 104 instructions -- identical to the `z` spelling on both bases. The defeat is a property of the TWO-STATEMENT ARM (jump.c's store-flag transform requires a single-set arm), not of the reused local. Banked at memory/grind/func_8002EA24/candidate_alt_L1_via_ylow.c.
+- verdict: KILLED

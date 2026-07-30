@@ -1357,3 +1357,59 @@ NOT to 103.
 - [s10] A fresh-local recipient is inert (3) and poisons the route by giving 103 itself `preferences: 2 4`, which prune_preferences line 893 then cancels; the fresh local also promotes 103 to first in the allocation order.
 
 - [s10] Nine bodies measured this session, all at 104 instructions: control 3 (no-L3) / 2 (banked); v1 6, v2 6, v3 8, v4 8, v6 3, v7 3, v8 2, v9 8. Nothing below the banked 2, so candidate.c is unchanged apart from the session-10 header block.
+
+## Session 11 (structural) — H8' closed by recipient enumeration
+
+### Artifacts
+
+- `tmp/grind/func_8002EA24/s11/apply.py`, `score.ps1`, `dump.sh` — harness (splice a variant into src, score it, dump the .greg)
+- `tmp/grind/func_8002EA24/s11/gen.py`, `gen2.py`, `gen3.py`, `gen4.py` — variant generators (rounds 1-4)
+- `tmp/grind/func_8002EA24/s11/{v1,v2,v3,v4,v5,w1,w2,w3,w4,x1,x2,y1,y2}*.c` — the thirteen measured bodies
+- `tmp/grind/func_8002EA24/s11/{ctl,v1,v3,v5,w2,x1_z_carrier_L1_via_ylow,x2_z_carrier_no_L1}/fn.greg` — allocator dumps
+- `memory/grind/func_8002EA24/rejected/z-pref-recipient-harmless-but-outranks-103-score16.c`
+- `memory/grind/func_8002EA24/rejected/maxy-pref-recipient-conflicts-with-donor-score5.c`
+- `memory/grind/func_8002EA24/rejected/fresh-local-secondbool-recipient-poisons-103-score3.c`
+- `memory/grind/func_8002EA24/rejected/miny-hoist-to-block-y-demotes-the-blocker-score13.c`
+- `memory/grind/func_8002EA24/candidate_alt_L1_via_ylow.c` — score-2 alternative spelling of L1
+
+- [s11] Floor re-measured at 2 (104 build insns = target's) with the banked candidate applied to src/code6cac_b.c at the start of the session; the banked body is unchanged at the end.
+
+- [s11] The control .greg for the no-L3 base (score 3) reads: allocation order `101 96 97 100 109 108 72 102 117 103 74 99 75`; `103 conflicts: 72 74 75 96 100 103 2 29`; dispositions 96→$v1, 97→$a0, 99→$a2, 100→$a1, 101→$v0, 102→$v1, 103→$a0. Target wants 103 in $t1. 103's exclusion set at find_reg time is {2,3,5,6,7,8,29} — every register up to $t0 EXCEPT hard reg 4, which is the single missing bit sessions 6-10 named.
+
+- [s11] The recipient set for the preference route is CLOSED at six candidates, because a recipient must CONFLICT with 103 and only {72, 74, 75, 96, 100} do (plus a manufactured fresh local). All six are now measured; see the four rejected forms above and session 10's two.
+
+- [s11] `max_y` (allocno 100) cannot be a recipient: it CONFLICTS with the donor 102 (`y`) and expand_preferences is gated on `! CONFLICTP` in both directions. The .greg for the max_y-recipient body is BIT-IDENTICAL to the control's (same allocnos, order, conflicts, preferences and dispositions); its 2-point loss (5 vs 3) is pure scheduling. With L3 kept it is 4.
+
+- [s11] `z` (allocno 96) is the ONLY recipient that satisfies both of session 10's side-conditions simultaneously: with `z = y + a0_var;` as the last range test the dump shows `96 preferences: 4` (forward leg fired) AND `102 preferences: 4` unchanged (harmless reverse leg — z owns no argument-register preference) AND `103 preferences` still empty (no line-893 cancellation). First time in eleven sessions that all three hold at once.
+
+- [s11] `z` nonetheless fails, on rank alone: 96 is allocated SECOND, so it takes $a0 itself rather than denying it to 103. The cascade moves 100 from target's $a1 to $v1, 102 from target's $v1 to $a1, and 103 to $a1. Score 16 at 104 instructions (pure register loss); with L3 kept, 17.
+
+- [s11] Demoting 96 below 103 is unreachable. allocno_compare ranks by floor_log2(n_refs)*n_refs/live_length and 103 has only 3 references, so 96 needs a 3-8x live-length penalty. Cutting z's reference count does nothing: staging L1's return through `y_low` instead of `z` (x1, 16) and removing L1 altogether (x2, 19 at 102 insns) both leave the allocation order BIT-IDENTICAL with 96 second. Lengthening z's live range is blocked by the function's dataflow — `*(s32 *)(obj + 0x104)` is WRITTEN by the GTE store block (`swc2 $26, 4($t4)`) immediately above the load, so z cannot be born earlier.
+
+- [s11] A manufactured fresh local below 103 poisons `103 preferences` regardless of what value it carries. Session 10's spelling carried the first range test's boolean (which reads neg_threshold); this session's carried the other half of the same short-circuit (`threshold < max_y`, which never mentions neg_threshold) and the dump is the same: `103 preferences: 2 4` and 103 promoted to FIRST in the order, landing in $v0 while the fresh local takes $a0. Both inert at 3. The poisoning is a re-ranking effect, not an operand-level one.
+
+- [s11] The reverse leg of the IOR cannot be blocked. find_reg only refuses `y` a register that is in `used`, and a non-conflicting holder of $a2 does not put it there, so keeping `y` off the parameter recipient's argument register needs an allocno X with CONFLICTP(102,X), rank above 102, and assignment $a2. Placing that conflict on the recipient itself is self-defeating (the IOR gate is symmetric, so it kills the forward leg too).
+
+- [s11] The only X candidate is 99 (min_y), and promoting it is impossible in the required direction: the sole lever is an earlier birth, and allocno_compare has live_length in the DENOMINATOR. Measured (`min_y = 0;` hoisted above the z load, with the threshold recipient): 99 moves from 12th to LAST (`101 97 96 100 109 108 72 102 117 74 103 75 99`), acquires a conflict with 103 and lands in hard reg 9 — it STEALS target's $t1 — while 103 keeps $a0 and 102 keeps $a2. Score 13 at 105 instructions; the hoist also re-ranks 74 above 103, breaking condition (c) for the recipient as well. The control for the hoist alone is 10 at 105 insns.
+
+- [s11] L1's staging variable is FREE. Staging the returned 0 through `y_low` (dead from the min_y/max_y if-else onwards) instead of through `z` measures 2 on the banked body and 3 on the no-L3 body — identical scores at target's 104 instructions. The store-flag defeat is therefore a property of the two-statement arm (jump.c's single-set precondition), not of the particular local reused. Banked as `candidate_alt_L1_via_ylow.c`.
+
+- [s11] Thirteen bodies measured, all against the same two controls (no-L3 = 3, banked = 2): v1 16, v2 17, v3 5, v4 4, v5 3, w1 10 (105 insns), w2 13 (105), w3 12 (105), w4 8, x1 16, x2 19 (102), y1 3, y2 2. Nothing below the banked 2, so candidate.c's body is unchanged.
+
+- [s11] Floor re-measured at 2 (build 104 insns = target's 104) with the banked candidate applied to src/code6cac_b.c at the start of the session; src restored to HEAD at the end, banked body unchanged.
+
+- [s11] Control .greg (no-L3 base, score 3): order `101 96 97 100 109 108 72 102 117 103 74 99 75`; `103 conflicts: 72 74 75 96 100 103 2 29`; dispositions 96 -> $v1, 97 -> $a0, 99 -> $a2, 100 -> $a1, 101 -> $v0, 102 -> $v1, 103 -> $a0. 103's find_reg exclusion set is {2,3,5,6,7,8,29} -- everything up to $t0 EXCEPT hard reg 4, the single missing bit sessions 6-10 named.
+
+- [s11] The recipient set for the preference route is CLOSED at six candidates: a recipient must conflict with 103, and only {72 obj, 74 threshold, 75 r_sq, 96 z, 100 max_y} do, plus any manufactured fresh local. All six are now measured -- 72 pruned by its own hard-reg self-conflict (s3); 100 gated out by CONFLICTP with the donor (s11, .greg bit-identical to control, score 5); 74/75 reach target's $t1 but move `y` (s10, 6/6); fresh local poisons `103 preferences` regardless of carried value (s10 + s11, both 3); 96 satisfies everything but rank (s11, 16).
+
+- [s11] The fresh-local poisoning is a RE-RANKING effect, not an operand-level one: session 11's spelling carried `threshold < max_y`, which never mentions neg_threshold, and the dump still shows `103 preferences: 2 4` with 103 promoted to first in the allocation order.
+
+- [s11] Cutting z's reference count does not move the allocation order at all (x1 16, x2 19 at 102 insns, order bit-identical), and z cannot be born earlier because the GTE store block writes *(s32 *)(obj + 0x104) immediately above the load.
+
+- [s11] Promoting min_y to block `y` inverts into a demotion (live_length is allocno_compare's denominator): 99 falls to LAST, steals target's $t1, and the body costs an extra instruction (105 vs 104). Scores w1 10, w2 13, w3 12.
+
+- [s11] A conflict placed on 102 to stop the reverse leg also stops the forward leg -- expand_preferences' `! CONFLICTP` gate is symmetric -- so the parameter-recipient family has no repair.
+
+- [s11] L1's staging variable is FREE: `y_low` reproduces the `z` spelling exactly (2 on the banked body, 3 on the no-L3 body, 104 insns both). Relevant to the L1 disposition review: the construct cannot be defended or attacked on the grounds that one specific local was required.
+
+- [s11] Thirteen bodies measured against the two standing controls (no-L3 = 3, banked = 2): v1 16, v2 17, v3 5, v4 4, v5 3, w1 10 (105), w2 13 (105), w3 12 (105), w4 8, x1 16, x2 19 (102), y1 3, y2 2. Nothing below 2, so candidate.c's body is unchanged (header block appended).

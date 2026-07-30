@@ -322,6 +322,50 @@ s32 func_8002EA24(u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
          * `slt` + `xori $v0,$v0,1`.  Family: [[staged-value-reused-variable]]
          * (a live-value cousin of [[dead-store-fake-exception]], which documents
          * this exact symptom with a DEAD store; this form has none).
+ *
+ * SESSION-11 STRUCTURAL (body UNCHANGED; floor re-measured at 2 this session).
+ * Session 10's H8' -- the `regs_someone_prefers` preference route -- is now
+ * CLOSED, by an exhaustive enumeration of the possible recipients rather than
+ * by another failed spelling.  Read off this body's own .greg, the allocnos
+ * that CONFLICT with 103 (neg_threshold) are exactly {72 obj, 74 threshold,
+ * 75 r_sq, 96 z, 100 max_y}, and the allocation order is
+ * `101 96 97 100 109 108 72 102 117 103 74 99 75`.  Every candidate recipient
+ * is therefore one of six cases, and all six are now measured:
+ *   72 (obj)      -- preferences pruned by its own hard-reg self-conflict (s3).
+ *   100 (max_y)   -- CONFLICTS with the donor 102 (`y`), and expand_preferences
+ *                    is gated on `! CONFLICTP` in both directions, so nothing
+ *                    propagates: the .greg for the max_y recipient is
+ *                    BIT-IDENTICAL to the control's (score 5).
+ *   74 / 75       -- the session-10 parameters.  They work (103 -> $t1) but the
+ *                    symmetric IOR hands `y` their argument register (6 / 6).
+ *   fresh local   -- poisons `103 preferences` and re-ranks 103 to first; the
+ *                    session-10 spelling carried the first range test's boolean
+ *                    and this session's carried the other half of the same
+ *                    short-circuit (which never mentions neg_threshold) -- both
+ *                    inert at 3, so the poisoning is not operand-level.
+ *   96 (z)        -- the only recipient that satisfies BOTH side-conditions:
+ *                    `96 preferences: 4` (forward leg fires) with
+ *                    `102 preferences: 4` UNCHANGED (harmless reverse leg) and
+ *                    `103 preferences` still empty.  It fails ONLY on rank: 96
+ *                    is allocated SECOND, so it takes $a0 itself instead of
+ *                    denying it, and the assignment cascades (score 16).
+ * The two ways out of the last case are both measured dead.  Demoting 96 below
+ * 103 needs floor_log2(n_refs)*n_refs/live_length to fall by 3-8x; cutting z's
+ * references (L1 staged through `y_low`, then L1 removed entirely) leaves the
+ * allocation order BIT-IDENTICAL, and z's live range cannot start earlier
+ * because `*(s32 *)(obj + 0x104)` is WRITTEN by the GTE store block directly
+ * above the load.  Blocking `y` from the parameter's argument register needs an
+ * allocno that conflicts with 102, outranks it and holds $a2; the only
+ * candidate (99 = min_y) can only be made to conflict by an earlier birth, and
+ * allocno_compare puts live_length in the DENOMINATOR, so the same edit demotes
+ * it to LAST, where it steals target's $t1 outright (score 13 at 105 insns).
+ * A conflict placed on 102 to stop the reverse leg also stops the forward leg,
+ * since the IOR is gated on `! CONFLICTP` symmetrically.
+ * One positive finding: L1's staging variable is FREE.  Staging the returned 0
+ * through `y_low` instead of `z` measures 2 on this body and 3 on the no-L3
+ * body -- identical, at target's 104 instructions -- so the store-flag defeat
+ * is a property of the two-statement arm, not of `z`.  Banked as
+ * candidate_alt_L1_via_ylow.c for whoever rules on the construct.
  */
         if (y + a0_var < min_y) { z = 0; return z; }
         return 1;

@@ -1,8 +1,8 @@
 {
  "func": "func_8002EA24",
  "file": "code6cac_b",
- "session_count": 10,
- "current_modality": "synthesis",
+ "session_count": 11,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -63,23 +63,29 @@
    "floor": 2,
    "modality": "synthesis",
    "headline": "Synthesis reopens a channel sessions 7-9 had closed: expand_preferences makes the $a0 preference PROPAGABLE, and a parameter recipient produces target's $t1/$v0 pair without L3 for the first time in t"
+  },
+  {
+   "session": 11,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "H8' (the regs_someone_prefers preference route) is CLOSED by exhaustive recipient enumeration: z satisfies every side-condition for the first time and still loses on allocation rank, and both escapes "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "H8' \u2014 a pref-4 recipient that satisfies the preference route WITHOUT the reverse leg displacing `y` from $v1 and WITHOUT preference-connecting allocno 103.",
-   "mechanism": "expand_preferences (global.c:797-841) is a symmetric IOR gated on !CONFLICTP in both directions; prune_preferences (:851-899) prunes a recipient's preferences against its own conflicts (line 877) and cancels the merge for registers the higher-priority allocno also prefers (line 893); find_reg's own-preference override (:1057-1080) is what moves `y` once it inherits an argument-register preference. Session 10 satisfied (a)-(c) with the parameter recipients and hit (d)'s failure mode with a fresh local, so the two side-conditions are now measured rather than hypothetical.",
-   "next_probe": "1) A recipient whose own preference is harmless to `y` \u2014 e.g. a local already copy-connected to a $v1 holder, so the reverse leg is a no-op; verify in the dump BEFORE scoring that the recipient's preferences contain 4, `102 preferences` stays {4}, and `103 preferences` stays EMPTY. 2) Demote 102 below the recipient (a real extra USE of `y`, not a duplicated load \u2014 session 7 measured that CSE eats duplicate references before global_alloc counts them) so `y` falls to plain first-fit = $v1. 3) A two-hop donor chain (y -> intermediate local -> threshold) that confines the reverse leg's payload to the intermediate. Do NOT re-run the parameter recipients, the fresh-local recipient, or the sessions 3-9 assigned-conflict carrier enumeration."
+   "hypothesis": "H6 / L1(+L3) acceptance -- the disposition path for the banked score-2 body, now the primary route.",
+   "mechanism": "Both levers are [[staged-value-reused-variable]]: a REAL value, READ by the very next expression, staged through an EXISTING local whose previous value is provably dead at the staging point. L1 defeats jump.c's store-flag single-set precondition; L3 supplies the assigned conflict that hands neg_threshold target's $t1. Session 10 had opened the preference channel as an L3-free route to that register; session 11 CLOSED it by enumeration, so L3 is again the unique instruction-free generator of the one missing allocator bit.",
+   "next_probe": "Judge / fresh layer-2 cheat-reviewer ruling on memory/grind/func_8002EA24/candidate.c. Two new facts for whoever rules: (1) L1's staging local is interchangeable -- candidate_alt_L1_via_ylow.c is byte-equivalent at score 2 -- so the construct is an arm-shape effect, not a variable-specific trick; (2) the preference channel is dead, so an L3 refusal now does kill the axis rather than merely deferring it. Fallbacks banked: candidate_alt_score3_no_fake.c (score 3, L3 removed); without L1 as well the floor returns to 6."
   },
   {
-   "hypothesis": "H6 / L1(+L3) acceptance \u2014 the disposition path for the banked score-2 body.",
-   "mechanism": "Both constructs are [[staged-value-reused-variable]]: a REAL value, READ by the very next expression, staged through an EXISTING local whose previous value is provably dead at the staging point. L1 defeats jump.c's store-flag single-set precondition; L3 supplies the assigned conflict that hands neg_threshold target's $t1. Session 10 adds context for whoever rules: L3 is NOT the only route to target's $t1 \u2014 the preference channel reaches it too \u2014 so an L3 refusal does not automatically kill the axis, though no preference-channel form yet beats 2.",
-   "next_probe": "Judge / fresh layer-2 cheat-reviewer ruling on memory/grind/func_8002EA24/candidate.c. Fallbacks banked: candidate_alt_score3_no_fake.c (score 3, L3 removed); without L1 as well the floor returns to 6."
+   "hypothesis": "H7 -- a permuter campaign from a chassis OTHER than the banked body.",
+   "mechanism": "decomp-permuter mutates the SOURCE, so two bodies that compile to identical bytes still have different mutation neighbourhoods; session 5's 29,050-iteration basin exhaustion was measured from one chassis only. Nine structurally distinct score-2 bodies are now known.",
+   "next_probe": "tools/permuter_campaign.py from two or three alternative score-2 bodies (s8/v10_nested_range_tests_only.c, s8/v12_single_four_way_if.c, s9/v5_vout_dies_in_chain.c, memory/grind/func_8002EA24/candidate_alt_L1_via_ylow.c) with fresh seeds and the fresh-seed stopping rule; wait in-turn with `permuter_campaign.py wait` and `harvest --stop` before writing the outcome. Permuter modality; honest prior low."
   },
   {
-   "hypothesis": "H7 \u2014 a permuter campaign from a chassis OTHER than the banked body.",
-   "mechanism": "decomp-permuter mutates the SOURCE, so two bodies that compile to identical bytes still have different mutation neighbourhoods; session 5's 29,050-iteration basin exhaustion was measured from one chassis only. Eight structurally distinct score-2 bodies are now known (session 8's six, s9/v5_vout_dies_in_chain.c, and this session's v8_L3_plus_freshlocal_tail).",
-   "next_probe": "tools/permuter_campaign.py from two or three alternative score-2 bodies (s8/v10_nested_range_tests_only.c, s8/v12_single_four_way_if.c, s9/v5_vout_dies_in_chain.c) with fresh seeds and the fresh-seed stopping rule; wait in-turn and harvest --stop before writing the outcome. Permuter modality; honest prior low."
+   "hypothesis": "H9 -- the residual bit reached from the OTHER side of find_reg: make hard reg 4 unavailable to 103 by an assigned conflict from an allocno OTHER than 97 (a0_var).",
+   "mechanism": "103's exclusion set is already {2,3,5,6,7,8,29}; the single missing bit is 4. Sessions 3-9 enumerated the assigned-conflict route through 97 only (the function's only $a0-preferring allocno) and session 10-11 enumerated the preference route. The untouched third case is an allocno that is ASSIGNED hard reg 4 for a reason other than preferring it -- i.e. one whose own first-fit lands on $a0 because $v0/$v1 are excluded for it -- and that conflicts with 103. Session 11's v1 accidentally produced exactly such an allocno (96 = z, assigned $a0) but z's own displacement cost 16 points; the question is whether a DIFFERENT allocno can be pushed onto $a0 without vacating $v1 or $a1.",
+   "next_probe": "From the control .greg, list every allocno allocated BEFORE 103 whose conflict set already excludes $v0 and $v1 (101, 96, 100, 109, 108, 72, 102, 117), and for each ask what single conflict would additionally exclude $a1 so that first-fit lands it on $a0 while leaving 96/100/102 on target's $v1/$a1/$v1. Structural or forensics modality; verify in the dump BEFORE scoring that the candidate's disposition is 4 and that `103 conflicts:` gains it."
   }
  ],
  "judge_constraints": [
