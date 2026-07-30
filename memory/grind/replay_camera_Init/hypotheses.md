@@ -1030,3 +1030,150 @@ family that s4 H15 proved semantically divergent in every ordering tried.
 - probe: tmp/grind/replay_camera_Init/s6/liveness.py — tw1 (local copy feeding the D_80101E7C store plus a second consumer of a1 at the D_80101E68 store) and tw2 (second consumer at the D_80101E9E store), each dumped through cc1 -da and read at the .greg allocno level (rtl_tw1/, rtl_tw2/).
 - result: KILLED. Both forms produce exactly THREE allocnos — the same three as the baseline — because cse/jump copy-propagate the temporary away long before allocation. Adding a C temporary to hold the parameter is inert on this function in every placement tried, which is the allocator-level proof of s5 H18's score-level finding that spelling is inert. Banked as memory/grind/replay_camera_Init/rejected/a1-temp-copy-is-propagated-away-no-second-pseudo.c.
 - verdict: KILLED
+
+## s7 (forensics, 2026-07-30)
+
+### H24 — s6 H22 is wrong: the a1-parameter allocno CAN be denied hard reg $a1. **CONFIRMED (s6 H22 KILLED)**
+- statement: s6 concluded from eight variants and from reading global.c/local-alloc.c
+  that `(set pseudo (reg $a1))` can never carry a hard conflict on 5, so target's
+  `addu $a3,$a1,$zero` could only exist if $a1 were live past the copy.
+- probe: dumped cc1 `-da` for TWO basins rather than one —
+  `tmp/grind/replay_camera_Init/s7/rtl_cand/` (candidate.c, the D_80101E7C store
+  EARLY, 38 insns) and `rtl_vf/` (the v_f target-statement-order form, the store
+  LAST, 39 insns) — and read the `.greg` allocno sets directly
+  (`tmp/grind/replay_camera_Init/s7/probe.py`).
+- result: in rtl_cand, allocno 73 has `preferences: 5`, no hard conflict on 5, and
+  is allocated 5 (copy elided). In rtl_vf the SAME allocno has
+  `;; 73 conflicts: 72 73 75 2 3 5 29` — hard reg 5 present — NO preferences line,
+  and is allocated 6, emitting `move $6,$5`. The parm-copy RTL is identical in both
+  (`(insn 6 (set (reg/v:SI 73) (reg:SI 5 a1)))` + `REG_DEAD (reg:SI 5 a1)`), so the
+  difference is downstream: in the v_f basin local-alloc pre-assigns a block-local
+  pseudo to $a1 (`.greg` dispositions: `82 in 5`), and global.c's global_conflicts
+  then sees $a1 as a live hard register across allocno 73's range. s6's eight
+  variants all kept the E7C store early, i.e. all sampled the one basin where the
+  a1 value dies before anything can occupy $a1; the "impossible by construction"
+  generalisation was an artifact of that sampling.
+- verdict: CONFIRMED (and s6 H22 KILLED)
+
+### H25 — Target's `$a3` and `$t0` are simultaneously reproducible by raising the conflict count in the v_f basin. **CONFIRMED**
+- mechanism: s6 H21 — find_reg takes the lowest hard reg not in `used`. In the v_f
+  basin the a1 allocno already carries {2,3,5} and lands on 6, and the pe62-address
+  allocno carries {2,3,4,5} and lands on 7 (one below target in BOTH cases). One
+  further blocked register below each therefore lands them on 7 and 8. Occupying
+  $a2 with a CONSUMED third parameter supplies exactly that: the parameter's own
+  home copy is an elided self-move (its allocno prefers 6 and gets 6), so the
+  occupancy itself costs no instruction.
+- probe: `vf3u` = v_f + `s32 a2` consumed by `D_80101E68 = a2;` (caller arity
+  patched); cc1 `-da` + `sandbox --disable all`
+  (`tmp/grind/replay_camera_Init/s7/rtl_vf3u/`).
+- result: CONFIRMED — `.greg` dispositions `72 in 4  73 in 7  74 in 6  76 in 8`,
+  hard regs used 2 3 4 5 6 7 8. The object emits `move a3,a1` in the bnez delay
+  slot AND holds the D_80101E62 address in `$t0` — target's two residual register
+  names, together, for the first time in seven sessions.
+- verdict: CONFIRMED
+
+### H26 — The register-correct basin beats the floor. **KILLED**
+- probe: seven-form ordering sweep inside the vf3u basin
+  (`tmp/grind/replay_camera_Init/s7/gen.py` + `sweep.py`, results in
+  `sweep_results.json`), each measured with `sandbox --disable all`.
+- result: KILLED. vf3u 15/39; w1 (a2 consumed at the E9E store) 16/39; w3 (each
+  load followed by its store) 14/38; w4 (re-read after the E7C store) 15/39; w5
+  (`*pe62 = 2` hoisted above the E7C store) 14/39; w6 (EC38 load first) 14/39; w7
+  (E60 store below the loads) 17/39. candidate.c remains 13/38. The basin's best is
+  14, one WORSE than the floor, and the shape is not committable anyway (target
+  stores a literal zero at D_80101E68; the third parameter exists only to occupy
+  $a2, and the asm call sites pass two arguments). The `rdiff.py` residue for w5
+  shows the price: occupying $a1 is what buys the `$a3` copy, but cam_val then
+  lands in $a1 and its D_80101E6C store schedules to the END of the function, and
+  the two loads take $a1/$v1 instead of target's $v1/$a0. Banked:
+  `rejected/third-param-a2-occupancy-gets-a3-and-t0-but-costs-more.c`.
+- verdict: KILLED
+
+### H27 — Unused extra parameters shift the allocation in the v_f basin. **KILLED**
+- probe: `vf3` (3rd parameter declared, never used) and `vf4` (3rd + 4th unused),
+  cc1 `-da` (`rtl_vf3/`, `rtl_vf4/`).
+- result: KILLED — both reproduce v_f's allocation EXACTLY (73 in 6, pointer in 7,
+  hard regs used 2 3 4 5 6 7). flow deletes the dead parm copies before
+  global-alloc builds its conflict graph, so a declared-but-unconsumed parameter
+  can never contribute a conflict. This re-confirms s6 H21's caveat in the second
+  basin and closes the "widen the signature harmlessly" idea for good.
+- verdict: KILLED
+
+### Residue re-decomposition after s7
+Target's 39 instructions use exactly six value registers — $at, $v0, $v1, $a0,
+$a3, $t0 — and never mention $a1 (other than as the copy's source) or $a2. So in
+target's compile hard regs 5 and 6 were EXCLUDED from find_reg's choice while
+nothing was allocated to them. Every mechanism measured in this grind excludes 5
+or 6 by OCCUPYING it (local-alloc putting a block-local in $a1, H24; a consumed
+parameter in $a2, H25) — and the occupancy is visible in the output and costs
+points (H26). The single place in GCC 2.7.2 where find_reg excludes a hard reg
+that nothing is live in is `global.c prune_preferences`: `regs_someone_prefers[A]`
+is the union of `hard_reg_full_preferences` over every LOWER-PRIORITY allocno that
+CONFLICTS with A (minus A's own preferences when the allocno sizes are equal), and
+find_reg ORs that set into `used` on pass 0. That is the untested route to
+target's "blocked but unallocated $a1/$a2" signature.
+
+## Live frontier (for s8)
+
+## [s7] Target's blocked-but-unallocated $a1 and $a2 come from global.c's pass-0 `regs_someone_prefers` exclusion, not from anything being live in those registers.
+- mechanism: global.c prune_preferences (read this session; quoted in evidence.md)
+  builds regs_someone_prefers[A] as the union of hard_reg_full_preferences of every
+  lower-priority allocno CONFLICTING with A, minus A's own full preferences when the
+  sizes are equal; find_reg ORs it into `used` on pass 0 only. A hard register that
+  some other conflicting allocno merely PREFERS is therefore unavailable to A even
+  though no value occupies it — the only known GCC 2.7.2 route that produces
+  target's signature (39 instructions that never mention $a1 or $a2, yet allocnos
+  that climbed past both).
+- next probe: attack it directly rather than by score. Dump, per allocno,
+  `hard_reg_full_preferences` / `regs_someone_prefers` / the allocno_order priority
+  for the candidate and v_f basins (the `.greg` dump prints raw preferences and
+  conflicts but not the pruned sets, so the probe must reconstruct them from the
+  dumps). Then look for a C shape in which some LOWER-PRIORITY allocno carries a
+  full preference on 5 and 6 — i.e. a copy to or from those hard registers that
+  survives flow — without that allocno being live in them where the a1/pointer
+  allocnos are allocated. Priority is `allocno_order`, sorted by live-length and
+  reference count, and statement order changes exactly that.
+
+## [s7] The v_f basin is not a dead end even though every form measured in it scores 14-19: it is the only basin where the missing 39th instruction exists at all, and it is now one blocked register away from target's exact allocation.
+- mechanism: H24/H25 — in v_f the a1 allocno is at 6 (target 7) and the pointer at
+  7 (target 8); one more excluded register below each lands both. The blocker is
+  that every exclusion mechanism measured so far also OCCUPIES the register and
+  thereby disorders the schedule (H26: cam_val lands in $a1 and its E6C store slides
+  to the end of the function).
+- next probe: re-sweep the v_f basin optimising the STORE SCHEDULE only, keeping the
+  third parameter as a diagnostic scaffold. If a statement order exists in which the
+  D_80101E6C store stays adjacent to its load WHILE the a1 value stays live to the
+  end, the basin's floor drops below 13 and the remaining work is replacing the
+  scaffold with a preference-only mechanism (frontier item 1).
+
+## [s7] candidate.c's two /* FAKE */ pointer aliases have now gone FIVE sessions without a layer-2 cheat-reviewer verdict (s3-s7 were all constrained from spawning agents).
+- mechanism: unchanged from s6 — pointer-alias-fake-exception is a sanctioned
+  last-resort family requiring documented lever-exhaustion + a named GCC-pass
+  mechanism + a /* FAKE */ annotation, and candidate.c supplies all three. A FAIL
+  reverts the floor 13 -> 17 and invalidates both frontier entries above.
+- next probe: the operator or the driver's Judge runs a fresh `cheat-reviewer` on
+  memory/grind/replay_camera_Init/candidate.c.
+
+## [s7] s6 H22 is wrong: the a1-parameter allocno CAN be denied hard reg $a1 in GCC 2.7.2, so target's `addu $a3,$a1,$zero` does NOT require a second consumer of the second parameter.
+- mechanism: s6 read global.c global_conflicts (mark_reg_death before note_stores) and local-alloc.c block_alloc (wipe_dead_reg before reg_is_set, combine_regs tying the copy) and concluded the copy's dest can never conflict with its own source register. That reasoning only covers conflicts created AT the copy insn. In a basin where the a1 value stays live to the end of the function, local-alloc pre-assigns a short-lived block-local pseudo to $a1 (reg_renumber), and global.c then sees $a1 as a LIVE HARD REGISTER across the parameter allocno's range, recording a genuine hard_reg_conflicts entry on 5.
+- probe: cc1 -da dumps for two basins instead of one (tmp/grind/replay_camera_Init/s7/probe.py): rtl_cand/ = candidate.c (D_80101E7C store early, 38 insns) and rtl_vf/ = the v_f target-statement-order form (store last, 39 insns). Read the .greg allocno conflict sets, preferences and dispositions directly.
+- result: rtl_cand: `;; 73 conflicts: 72 73 75 2 3 29`, `;; 73 preferences: 5`, disposition 73 in 5 (copy elided). rtl_vf: `;; 73 conflicts: 72 73 75 2 3 5 29` — hard reg 5 PRESENT — no preferences line at all, disposition 73 in 6, and the object emits `move $6,$5`. The parm-copy RTL is byte-identical in both dumps ((insn 6 (set (reg/v:SI 73) (reg:SI 5 a1))) with REG_DEAD (reg:SI 5 a1)), and rtl_vf's dispositions show a block-local pseudo at `82 in 5`. s6's eight variants all kept the E7C store early, i.e. all sampled the one basin where the a1 value dies before anything can occupy $a1.
+- verdict: CONFIRMED
+
+## [s7] Target's two residual register names — the $a3 parameter copy and the $t0 D_80101E62 address — are reproducible SIMULTANEOUSLY by raising the blocked-register count by exactly one in the v_f basin.
+- mechanism: global.c find_reg takes the lowest hard reg not in `used`. In the v_f basin the a1 allocno carries conflicts {2,3,5} and lands on 6 (target 7); the pe62-address allocno carries {2,3,4,5} plus the two parameter allocnos and lands on 7 (target 8). Both are exactly one short. A CONSUMED third parameter occupies $a2: its own home copy is an elided self-move (its allocno prefers 6 and gets 6), so the occupancy itself costs no instruction, and it adds hard conflict 6 to the two allocnos above.
+- probe: vf3u = v_f + `s32 a2` consumed by `D_80101E68 = a2;` (caller arity patched by the harness); cc1 -da (tmp/grind/replay_camera_Init/s7/rtl_vf3u/) plus `sandbox --disable all`.
+- result: `.greg` dispositions `72 in 4  73 in 7  74 in 6  76 in 8`; hard regs used 2 3 4 5 6 7 8. The object emits `move a3,a1` in the bnez delay slot AND holds the D_80101E62 address in $t0 — target's two residual register names together, for the first time in seven sessions. Sandbox 15 / 39 insns.
+- verdict: CONFIRMED
+
+## [s7] The register-correct basin (v_f + a consumed third parameter) beats the 13 floor once its statement order is swept.
+- mechanism: With both target register names in place, only the store schedule and the two load registers should remain, so an ordering sweep inside the basin should close most of the residue.
+- probe: Seven-form ordering sweep (tmp/grind/replay_camera_Init/s7/gen.py + sweep.py, numbers in sweep_results.json), each measured with `sandbox --disable all`; residue diff of the best form via s7/rdiff.py.
+- result: KILLED. vf3u 15/39; w1 (third parameter consumed at the E9E store instead) 16/39; w3 (each load followed by its store) 14/38; w4 (re-read after the E7C store) 15/39; w5 (*pe62 = 2 hoisted above the E7C store) 14/39; w6 (EC38 load first) 14/39; w7 (E60 store below the loads) 17/39 — against candidate.c's 13/38. The basin's best is 14, one WORSE than the floor. The w5 residue diff shows the price: occupying $a1 is exactly what buys the $a3 copy, but cam_val then lands in $a1 and its D_80101E6C store schedules to the very END of the function, and the two loads take $a1/$v1 instead of target's $v1/$a0. Independently non-committable: target stores a literal zero at D_80101E68, the third parameter exists only to occupy $a2, and the asm call sites pass two arguments. Banked as rejected/third-param-a2-occupancy-gets-a3-and-t0-but-costs-more.c.
+- verdict: KILLED
+
+## [s7] Declared-but-unused extra parameters shift the allocation in the v_f basin (they were only measured in the candidate basin by s6 H21).
+- mechanism: If a dead parm copy survived to global-alloc, its incoming argument register would be live at entry and would conflict with the allocnos born there — a free way to block $a2 without any semantic change.
+- probe: vf3 (third parameter declared, never used) and vf4 (third + fourth unused), cc1 -da (rtl_vf3/, rtl_vf4/).
+- result: KILLED — both reproduce v_f's allocation EXACTLY (73 in 6, pointer in 7, hard regs used 2 3 4 5 6 7). flow deletes the dead parm copies before global.c builds its conflict graph, so a declared-but-unconsumed parameter can never contribute a conflict. This closes the 'widen the signature harmlessly' idea in the second basin as well as the first.
+- verdict: KILLED

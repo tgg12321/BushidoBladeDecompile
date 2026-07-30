@@ -132,6 +132,31 @@
  *     second pseudo — cse/jump copy-propagate it away; the allocno count is
  *     unchanged.  (s6 H23)
  * ---------------------------------------------------------------------------
+ *
+ * ---- s7 (forensics, 2026-07-30): this form is UNCHANGED and still the floor --
+ * s7 dumped cc1 -da in TWO basins instead of one and corrected s6.  Do not
+ * re-derive:
+ *   - s6 H22 IS WRONG.  The a1-parameter allocno CAN be denied its own $a1: in
+ *     the v_f basin (E7C store last, 39 insns) allocno 73 carries hard conflict
+ *     5, has NO preference line, and is allocated 6 — because local-alloc
+ *     pre-assigns a block-local pseudo to $a1 there.  s6's eight variants all
+ *     sampled the early-store basin.  (s7 H24, rtl_cand/ vs rtl_vf/)
+ *   - BOTH of target's residual register names are reproducible AT ONCE: v_f +
+ *     one CONSUMED third parameter allocates the a1 allocno to 7 ($a3, emitting
+ *     `move a3,a1` in the bnez delay slot) and the pe62 address to 8 ($t0).
+ *     (s7 H25, rtl_vf3u/)
+ *   - It still loses: that basin's best over a seven-form ordering sweep is
+ *     14/39 (w5, w6) vs this form's 13/38, because occupying $a1 pushes cam_val
+ *     into it and slides the D_80101E6C store to the end.  Banked as
+ *     rejected/third-param-a2-occupancy-gets-a3-and-t0-but-costs-more.c.
+ *     (s7 H26)
+ *   - Unused extra parameters are inert in the v_f basin too (s7 H27).
+ *   - THE SHARPENED QUESTION: target's 39 instructions never mention $a1 (except
+ *     as the copy's source) or $a2, so its compile EXCLUDED both without
+ *     allocating anything to them.  Everything we can produce excludes by
+ *     occupying.  The only GCC 2.7.2 route that excludes without occupancy is
+ *     global.c prune_preferences / regs_someone_prefers (pass 0) — untested.
+ * ---------------------------------------------------------------------------
  */
 s32 replay_camera_Init(s32 a0, s32 a1) {
     s32 sval;

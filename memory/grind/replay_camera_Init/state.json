@@ -1,7 +1,7 @@
 {
  "func": "replay_camera_Init",
  "file": "code6cac_b2_post",
- "session_count": 6,
+ "session_count": 7,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -45,23 +45,29 @@
    "floor": 13,
    "modality": "forensics",
    "headline": "Forensics: target's missing `move a3,a1` is UNREACHABLE by register allocation in GCC 2.7.2 (both allocators kill a copy's source before the dest is born), while target's $t0 IS reproducible as a pure"
+  },
+  {
+   "session": 7,
+   "floor": 13,
+   "modality": "forensics",
+   "headline": "Forensics: s6's 'move a3,a1 is impossible by construction' is REFUTED \u2014 in the E7C-store-last basin the a1 allocno really is denied $a1, and one consumed third parameter reproduces BOTH target registe"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The original body consumed the second parameter at a point our reconstruction does not, leaving hard reg $a1 live past the copy \u2014 the ONLY surviving explanation for `addu $a3,$a1,$zero`.",
-   "mechanism": "s6 H22 proves both GCC 2.7.2 allocators process a copy's source death before the destination's birth, so (set pseudo (reg $a1)) can never be denied $a1 unless $a1 is live afterwards. Nothing in target's 39 instructions reads or writes $a1, so the second consumer is one we have mis-attributed, that folded away, or that belongs to a further consumed parameter whose own parm copy is an elided self-move (invisible in the output but occupying $a1 as an allocno \u2014 exactly what p3u/p4u demonstrate for $a2/$a3).",
-   "next_probe": "Work out what the second parameter semantically IS: read the three call sites (func_80020DDC at 0x80020DF8, the 0x800210F4 site, and special_camera_check_pos_outside_ground_80036E34, which jals with $a2/$a3 still live from its own arg2/arg3) and the D_800A3830 / D_800A3860 tables the $a1 value comes from. Then search for a consumed-3rd/4th-parameter shape that keeps the extra value live WITHOUT emitting an instruction \u2014 p3u/p4u each paid a store, and target has no spare store."
+   "hypothesis": "Target's blocked-but-unallocated $a1 and $a2 come from global.c's pass-0 regs_someone_prefers exclusion, not from anything being live in those registers.",
+   "mechanism": "prune_preferences builds regs_someone_prefers[A] from the full preferences of every lower-priority CONFLICTING allocno (minus A's own when sizes are equal) and find_reg ORs it into `used` on pass 0. A register that another allocno merely PREFERS is therefore unavailable even though no value occupies it \u2014 the only known mechanism that reproduces target's signature of 39 instructions that never mention $a1 or $a2 while its allocnos climbed past both.",
+   "next_probe": "Reconstruct, per allocno, hard_reg_full_preferences / regs_someone_prefers / the allocno_order priority for the candidate and v_f basins (the .greg dump prints raw preferences and conflicts but not the pruned sets). Then search for a C shape where a LOWER-PRIORITY allocno carries a full preference on 5 and 6 \u2014 a copy to or from those hard registers that survives flow \u2014 without being live in them where the a1/pointer allocnos are allocated. Priority is allocno_order (live-length + reference count), which statement order changes directly."
   },
   {
-   "hypothesis": "Target's $t0 for the E62 address is reachable only by raising the simultaneous-live-value count at that allocation point to six.",
-   "mechanism": "s6 H21 \u2014 find_reg takes the lowest unconflicted hard reg, so climbing from our $a2 (6) to target's $t0 (8) requires 2,3,4,5,6,7 all unavailable; with four consumed parameters the pointer allocno lands on exactly 8.",
-   "next_probe": "Enumerate which six values target's compile could have had live simultaneously inside only 39 emitted instructions (candidates: the E62 address, a0, the a1 value, sval, cam_val, ec_val, reloaded \u2014 our body never has more than three live at once because each store kills one). Look for an ordering that keeps five of them live without the early D_80101E70 re-read that s4 H15 proved semantically divergent."
+   "hypothesis": "The v_f basin is not a dead end despite scoring 14-19: it is the only basin where the missing 39th instruction exists at all, and it is now exactly one blocked register away from target's allocation.",
+   "mechanism": "In v_f the a1 allocno sits at 6 (target 7) and the pe62 allocno at 7 (target 8). Every exclusion mechanism measured so far also OCCUPIES the register, and the occupancy disorders the schedule (cam_val lands in $a1, its D_80101E6C store slides to the end of the function).",
+   "next_probe": "Re-sweep the v_f basin optimising the STORE SCHEDULE alone, keeping the third parameter as a diagnostic scaffold: if an order exists in which the D_80101E6C store stays adjacent to its load WHILE the a1 value stays live to the end, the basin drops below 13 and the remaining work is swapping the scaffold for a preference-only mechanism (frontier item 1)."
   },
   {
-   "hypothesis": "candidate.c's two /* FAKE */ pointer aliases still carry NO layer-2 cheat-reviewer verdict after four sessions (s3, s4, s5, s6 were all constrained from spawning agents).",
-   "mechanism": "pointer-alias-fake-exception is a sanctioned last-resort family requiring documented lever-exhaustion + a named GCC-pass mechanism + a /* FAKE */ annotation; candidate.c supplies all three and the exhaustion record is stronger again after s6's three kills (s5 q08/q09 additionally show the pe62 alias is worth exactly -1 and only in the both-sides-through-the-pointer shape).",
-   "next_probe": "The operator or the driver's Judge must run a fresh cheat-reviewer on memory/grind/replay_camera_Init/candidate.c. A FAIL reverts the floor 13 -> 17 and invalidates both frontier entries above, so it should not be deferred behind another search session."
+   "hypothesis": "candidate.c's two /* FAKE */ pointer aliases have now gone FIVE sessions (s3-s7) without a layer-2 cheat-reviewer verdict.",
+   "mechanism": "pointer-alias-fake-exception is a sanctioned last-resort family requiring documented lever-exhaustion + a named GCC-pass mechanism + a /* FAKE */ annotation; candidate.c supplies all three and the exhaustion record grew again this session. A FAIL reverts the floor 13 -> 17 and invalidates both frontier entries above.",
+   "next_probe": "The operator or the driver's Judge runs a fresh cheat-reviewer on memory/grind/replay_camera_Init/candidate.c before another search session is spent on the residue."
   }
  ],
  "judge_constraints": [],
