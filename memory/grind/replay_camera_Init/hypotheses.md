@@ -1344,3 +1344,1225 @@ cannot be retired the way `pe62` just was.
 - probe: tmp/grind/replay_camera_Init/s8/corpus_scan2.py over every matched scratch in tmp/decomp_me_corpus/: find a target asm that stores a global with s[whb] %lo(S) and reloads the SAME symbol within 600 characters with no jal/jalr, no branch, and no label in between, and whose C (source + context) never contains the word `volatile`.
 - result: KILLED — NEGATIVE CENSUS. Exactly 8 hits, and every one is a MODE MISMATCH rather than a same-mode reload: psyq3.5__HsQsw SsSetReservedVoice (`extern u8 spuVmMaxVoice; spuVmMaxVoice = arg0; return spuVmMaxVoice;` — an s32 narrowed into a u8 global and read back as u8); gcc2.7.2-cdk__0YgmZ func_80051854 (`extern s32 D_801026B8; D_801026B8 = 0; ... ((u16) D_801026B8) + 0x20` — a u16 read of an s32 store); gcc2.7.2-cdk__1AkEI (`extern u8 D_800C6D90; D_800C6D90 += 13;`); gcc2.7.2-cdk__8DUlu (`extern u16 D_8005F118`); and four of the same shape. ZERO are same-mode word-store/word-read. replay_camera_Init's reload IS same-mode (target `sw $a0,%lo(D_80101E70)` then `lw $v1,%lo(D_80101E70)`, consumed as a full 32-bit `(x + 0x7FF) >> 11`), so no mode mismatch is available and the corpus supplies no honest route. This is the strongest lever-exhaustion record this grind has produced for the pe70 /* FAKE */ — and the reason pe70 cannot be retired the way pe62 just was.
 - verdict: KILLED
+
+## s9 (rederive, 2026-07-31)
+
+### H32 — The two words the function reads from the table (SpecialCam / D_8008EC38) and the two words it writes (D_80101E6C / D_80101E70) are ONE 8-byte record each, and the original statement is a single aggregate struct assignment rather than two scalar assignments. **CONFIRMED — THE FUNCTION MATCHES**
+
+**Mechanism.**  `sval = ((s32)(a0 << 16)) >> 13` is `(s16)a0 * 8`, i.e. an index in
+units of EIGHT bytes; `SpecialCam` is 0x8008EC34 and `D_8008EC38` is the very next
+word; the sibling `func_80036FD4` in the same TU already reads the table as
+`s32 *entry = (s32 *)(&SpecialCam + idx); entry[0]; entry[1];`.  The destination
+pair `D_80101E6C` / `D_80101E70` is likewise adjacent.  So the source line is
+`*(struct CamPair *)&D_80101E6C = *(struct CamPair *)((u8 *)&SpecialCam + sval);`.
+GCC 2.7.2 expands an 8-byte aggregate copy as load, load, store, store, and the
+second store's rtx is `(mem (plus (symbol_ref "D_80101E6C") (const_int 4)))`,
+which is NOT structurally equal to the later read's `(mem (symbol_ref
+"D_80101E70"))` — cse's positive hash lookup MISSES, so the store-to-load
+forwarding that ate every previous session's reload never fires.
+
+**Probe.**  Variants k1-k4 under the s8/s9 two-file array patch, measured with
+`sandbox replay_camera_Init --disable all`
+(harness `tmp/grind/replay_camera_Init/s9/probe9b.py`, numbers in `k_results.json`):
+
+    a1  the s8 floor form (array decl + /* FAKE */ s32 *pe70)      13 / 38
+    k1  aggregate copy, pe70 KEPT                                   2 / 39
+    k2  aggregate copy, pe70 DELETED, direct D_80101E70 read        2 / 39
+    k3  k2 + the D_80101E7C store deferred past the re-read        12 / 39
+    k4  k1 + the D_80101E7C store deferred past the re-read        12 / 39
+
+**Result.**  k1 == k2 proves the pointer is now irrelevant: the aggregate copy
+alone produces the reload.  All three of s6's coupled residue defects close at
+once — the reload (a), the both-loads-before-the-first-store schedule that puts
+`ec_val` in `$a0` (b), and the `addu $a3,$a1,$zero` delay-slot fill (c).  The
+`/* FAKE */ s32 *pe70` that had been pending a reviewer verdict for six sessions
+is RETIRED, not defended.
+
+### H33 — The residual sandbox distance on k2 is a symbolic-operand artifact, not a byte difference. **CONFIRMED**
+
+**Mechanism.**  The engine's scorer compares operands symbolically.  The aggregate
+copy spells the second word of each pair as `base+4`, so the object says
+`%hi/%lo(SpecialCam)+4` and `%hi/%lo(D_80101E6C)+4` where target's asm text says
+`%hi/%lo(D_8008EC38)` and `%hi/%lo(D_80101E70)`.  SpecialCam+4 == D_8008EC38 and
+D_80101E6C+4 == D_80101E70, and the MIPS HI16/LO16 relocation pair carries the +4
+as the AHL addend, so the LINKED words are bit-identical.
+
+**Probe.**  `tmp/grind/replay_camera_Init/s9/relocheck.py` resolves the sandbox
+object's relocations by hand (HI16 paired with the following LO16's in-field
+addend) and compares all 39 words against the raw encodings in
+`asm/funcs/replay_camera_Init.s`.
+
+**Result.**  39/39 words IDENTICAL, in both the volatile-bearing and the
+volatile-free compiles.  The single reported difference is word 34, the
+`j .L80036E2C`, whose R_MIPS_26 field is a section-relative offset in an
+unlinked object.  The sandbox nevertheless prints 2 (volatile-bearing) / 4
+(volatile-free); that number is the count of symbolically-different operands.
+
+### H34 — The legacy `extern volatile s32 D_80101E70;` is no longer load-bearing, and removing it is what makes the FULL BUILD match. **CONFIRMED**
+
+**Probe.**  Full clean-driver build (`engine build`) with k2 in src, three times:
+with the volatile and the sibling use-site bug, with the volatile and the bug
+fixed, and with the volatile removed.  Whole-EXE word diff via
+`tmp/grind/replay_camera_Init/s9/exediff.py`.
+
+**Result.**
+  - volatile present, `s16 *s0 = D_80101E62[0];` bug present: 19 differing words —
+    18 inside replay_camera_Init plus `86101E62` at 0x80036FE0 (the sibling bug).
+  - volatile present, sibling bug fixed: exactly 18 differing words, all inside
+    replay_camera_Init, and they are a ROTATION — regfix.txt:3407
+    `replay_camera_Init: fill_delay @ 26 <- 15` sinking the
+    `sw $a0, %lo(D_80101E70)($at)` store to the end of the function.
+  - volatile removed: **build/bb2.exe sha1
+    62efab4f73f992798c43e8c730aa43baa10bb4fa == THE ORACLE.**
+With the volatile gone the real (unstripped) compile emits the same stream the
+cheat-invisible one does, and the regfix rule becomes inert instead of harmful.
+
+**Consequence.**  The function is MATCHED in pure C.  What remains is not decomp
+work: regfix.txt:3407 must be deleted and `retire` / `queue done` run, none of
+which is inside a grind session's allowed surface.
+
+### H35 — The first s9 run's claimed match reproduces from a clean tree, and its residual sandbox score does not. **CONFIRMED (match) / CORRECTED (score)**
+
+**Statement.**  The discarded first-s9 run claimed `replay_camera_Init` matches
+via the 8-byte aggregate copy plus a two-file patch, but left a caveat that
+`sandbox --disable all` still prints 4 for symbolic-operand reasons.  Both halves
+needed independent re-verification, because the driver had reverted `src/` and
+`include/` and because a handoff claim from a discarded run is exactly the class
+of evidence the owner's standing directive says to re-measure rather than credit.
+
+**Mechanism.**  The candidate is not spliceable on its own — it is a THREE-part
+patch (header array decl, `volatile` removal, TU-wide use-site rewrite including
+the `s16 *s0 = D_80101E62;` form that the naive regex breaks).  A partially
+applied patch would show up either as a non-zero sandbox score or as collateral
+words elsewhere in the EXE, so the two measurements below discriminate a real
+match from a mis-recorded one.
+
+**Probe.**  `tmp/grind/replay_camera_Init/s9/apply_final.py` re-applied all three
+parts from the clean HEAD tree; then `sandbox replay_camera_Init --disable all`
+and a full `engine build`.
+
+**Result.**  Sandbox: `score 0, target_insns 39, build_insns 39, rules_dropped 1`
+— zero, not 4.  Build: `build/bb2.exe` sha1
+`62efab4f73f992798c43e8c730aa43baa10bb4fa` == the oracle.  The match is REAL and
+reproducible; the "residual 4" was an artifact of the first run's probe-harness
+variants (`k1`/`k2`), not a property of the banked candidate, and the
+symbolic-operand explanation built on it is unnecessary for this body.
+
+**Consequence.**  The function is MATCHED in pure C at the honest, rule-free,
+cheat-invisible bar.  The floor is 0.  What remains is bookkeeping outside a
+grind session's surface — delete the now-inert `regfix.txt:3407`, run `retire`
+and `queue done` — plus the standing fresh layer-2 adversarial review of the one
+remaining construct, the aggregate copy.
+
+### H36 — Independent third re-verification from a clean HEAD tree. **CONFIRMED**
+
+**Statement.**  The two preceding s9 runs both reached score 0 / oracle SHA1 and
+were BOTH discarded by the driver for the same process reason: they ended their
+turn without writing `tmp/grind/outcome_replay_camera_Init.json`.  The ledger
+digest handed to this run therefore still read floor 13, and the whole result had
+to be treated as an uncredited handoff claim
+([[verify-opus-handoff-claims]]) rather than as inheritance.
+
+**Probe.**  From the clean HEAD tree (`git status` showed `src/` and `include/`
+untouched), re-applied all three parts of the patch with
+`tmp/grind/replay_camera_Init/s9/apply_final.py`, then ran
+`sandbox replay_camera_Init --disable all` and `verify-oracle`.
+
+**Result.**  Sandbox: `"score": 0, "target_insns": 39, "build_insns": 39,
+"scorable": true, "rules_dropped": 1, "cheat_asm_stripped": 12`.  Oracle:
+`"ok": true, "build_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
+"build_matches": true`.  Three independent runs, the same two numbers.  The
+outcome JSON was written BEFORE the oracle build this time, so the result cannot
+be lost to a timeout mid-verification.
+
+## Live frontier (for s10 — integration only, no decomp work remains)
+
+1. **Integration handoff.**  Delete `regfix.txt:3407`
+   (`replay_camera_Init: fill_delay @ 26 <- 15`, now inert), run
+   `engine retire replay_camera_Init`, then `engine queue done replay_camera_Init`.
+   None of these surfaces is inside a grind session's allowed set.
+2. **Fresh layer-2 cheat-reviewer on the aggregate copy.**  The one construct to
+   review: the same 32 bits at 0x80101E70 are WRITTEN through the
+   `struct CamPair` spelling and READ through the `D_80101E70` spelling, and that
+   asymmetry is what defeats CSE.  The honesty argument does not rest on the
+   codegen effect — both symbols are pre-existing splat names for genuinely
+   distinct words, the `*8` index arithmetic independently implies an 8-byte
+   stride, the sibling `func_80036FD4` already reads the same table as
+   `entry[0]`/`entry[1]`, and the construct explains target's
+   load/load/store/store schedule and its `bnez` delay-slot fill at the same time
+   as the reload.  A coercion chosen for its CSE effect would explain only the
+   reload.
+3. **Generalise the lever.**  The 8-byte-aggregate spelling is a reusable
+   technique for any queue function whose residue is a store-then-reload of a
+   splat-named global that is really the second word of a table entry, and the
+   `extern s16 D_X;` -> `extern s16 D_X[];` header correction is free TU-wide
+   (proven here: all seven use sites rewritten, oracle SHA1 unchanged).
+
+## [s9] The three coupled defects that survived eight sessions — the missing D_80101E70 reload, target's both-loads-before-the-first-store schedule, and the `addu $a3,$a1,$zero` bnez delay-slot fill — are one defect: the original statement is a single 8-byte aggregate struct assignment of a two-word table entry, not two scalar assignments.
+- mechanism: SpecialCam (0x8008EC34) and D_8008EC38 are the two words of one 8-byte table entry — the index `sval = ((s32)(a0 << 16)) >> 13` is `(s16)a0 * 8`, an index in units of EIGHT bytes — and the sibling func_80036FD4 in the same TU already reads that table as entry[0]/entry[1]. D_80101E6C and D_80101E70 are correspondingly the two words of the current-entry copy. Written as `*(struct CamPair *)&D_80101E6C = *(struct CamPair *)((u8 *)&SpecialCam + sval);`, GCC 2.7.2 expands the aggregate as load, load, store, store — reproducing target's schedule for free — and the second store's rtx is (mem (plus (symbol_ref "D_80101E6C") (const_int 4))), which is NOT structurally equal to the later read's (mem (symbol_ref "D_80101E70")), so cse.c's store-to-load-forwarding hash lookup (cse.c:7308-7361, exp_equiv_p) MISSES and the lui/lw reload survives to codegen with no pointer local and no volatile. The scheduling slack the aggregate expansion frees then lets GCC fill the bnez delay slot with the a1 parameter-home copy.
+- probe: Variants k1-k4 under the two-file array patch measured with `sandbox replay_camera_Init --disable all` (harness tmp/grind/replay_camera_Init/s9/probe9b.py, numbers in k_results.json): a1 (the s8 floor form, array decl + /* FAKE */ s32 *pe70) 13/38; k1 aggregate copy with pe70 KEPT 2/39; k2 aggregate copy with pe70 DELETED and a direct D_80101E70 read 2/39; k3 and k4 (the D_80101E7C store deferred past the re-read) 12/39. Then the exact banked body, applied from a clean HEAD tree by tmp/grind/replay_camera_Init/s9/apply_final.py: score 0, target_insns 39, build_insns 39, rules_dropped 1.
+- result: CONFIRMED — the function MATCHES. k1 == k2 proves the pointer is irrelevant once the aggregate copy is present. The floor history of this grind is 17 (s0-s2) -> 13 (s3-s8) -> 0 (s9). The /* FAKE */ s32 *pe70 that had been pending a reviewer verdict for six sessions is RETIRED rather than defended; the function now contains zero fake constructs, zero pointer aliases, zero register pins, zero inline asm and zero volatile.
+- verdict: CONFIRMED
+
+## [s9] The legacy `extern volatile s32 D_80101E70;` at src/code6cac_b2_post.c:45 is not merely unnecessary under the aggregate-copy form but actively HARMFUL to the full build, and removing it is what turns the build into a SHA1 match.
+- mechanism: With the volatile present the real (unstripped) compile emits a different instruction stream from the cheat-invisible one, and regfix.txt:3407 (`replay_camera_Init: fill_delay @ 26 <- 15`) then rotates it by 18 words — sinking the `sw $a0, %lo(D_80101E70)($at)` store to the end of the function — so the linked EXE diverges from the oracle even while the stripped object matches. With the volatile gone the two streams coincide and the regfix rule becomes inert instead of harmful.
+- probe: Full clean-driver `engine build` with the aggregate-copy body in src three times, whole-EXE word diff via tmp/grind/replay_camera_Init/s9/exediff.py: (i) volatile present and the `s16 *s0 = D_80101E62[0];` sibling bug present — 19 differing words, 18 inside replay_camera_Init plus an `86101E62` word at 0x80036FE0; (ii) volatile present, sibling bug fixed — exactly 18 differing words, all inside replay_camera_Init and all a rotation; (iii) volatile removed — build/bb2.exe sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa. Re-confirmed this session with `verify-oracle`: ok true, build_matches true.
+- result: CONFIRMED — the volatile question that dominated s1 and s2 (the negative interrupt-writer census, the failed carve-out gate) is now moot: the declaration is DELETED, not justified. What remains is bookkeeping outside a grind session's surface — delete the now-inert regfix.txt:3407, run `retire` and `queue done`.
+- verdict: CONFIRMED
+
+## [s9] The array-typed declaration correction `extern s16 D_80101E62;` -> `extern s16 D_80101E62[];` carries a hidden TU-wide price at the six other use sites, which is why s8 could only measure it for replay_camera_Init.
+- mechanism: s8's frontier item 2: changing include/code6cac.h:280 rewrites the rtx shape of every access in src/code6cac_b2_post.c — six other use sites across func_80036D88, func_80036FD4 and the replay/special-camera paths — each of which may gain or lose its own address materialisation.
+- probe: Applied the correction with ALL use sites rewritten (D_80101E62 -> D_80101E62[0] at lines 193, 240, 281, 345, 392, 399, and `&D_80101E62` -> plain `D_80101E62` at line 308) and ran a full clean-driver build.
+- result: KILLED — there is no price. build/bb2.exe sha1 == the oracle, so no function in the TU regressed by a single word. The de-FAKE is unconditionally free and the array-typed declaration is now the committed form. ONE TRAP, hit and recorded: line 308 is `s16 *s0 = &D_80101E62;` and the naive regex rewrite turns it into `&D_80101E62[0]`-equivalent nonsense — miss it and func_80036FD4 miscompiles to `lh s0,%lo(..)(s0)`, an 86101E62 word at 0x80036FE0. tmp/grind/replay_camera_Init/s9/apply_final.py handles it with a placeholder guard.
+- verdict: KILLED
+
+## [s9] The first two s9 runs' claimed match is real and reproducible from a clean tree, and their caveat that `sandbox --disable all` still prints a residual 4 is a property of the banked candidate.
+- mechanism: The candidate is a THREE-part patch (header array decl, volatile removal, TU-wide use-site rewrite), so a partially applied patch would show up either as a non-zero sandbox score or as collateral words elsewhere in the EXE. A handoff claim from a run the driver discarded is exactly the class of evidence the owner's standing directive says to re-measure rather than credit ([[verify-opus-handoff-claims]]).
+- probe: From the clean HEAD tree, re-applied all three parts via tmp/grind/replay_camera_Init/s9/apply_final.py, then `sandbox replay_camera_Init --disable all` and `verify-oracle`.
+- result: CONFIRMED for the match, CORRECTED for the score. Sandbox printed score 0 — not 4 — with target_insns 39, build_insns 39, rules_dropped 1, cheat_asm_stripped 12; verify-oracle printed ok true with build_sha1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa. The "residual 4" was an artifact of the first run's probe-harness variants k1/k2, not of the banked body, and the symbolic-operand explanation built on it (relocheck.py: 39/39 words identical once HI16/LO16 AHL addends are resolved) is retained only as relocation analysis, not as a caveat on this form. PROCESS: both earlier runs were discarded solely for ending their turn without writing the outcome JSON; this run wrote it BEFORE the oracle build.
+- verdict: CONFIRMED
+
+## [s9-final] The score-0 aggregate-copy form recorded in candidate.c by the earlier (discarded) s9 runs is real and reproducible from a clean HEAD tree.
+- mechanism: The 8-byte struct assignment `*(struct CamPair *)&D_80101E6C = *(struct CamPair *)((u8 *)&SpecialCam + sval);` expands as load/load/store/store, which reproduces target's schedule (both table loads issued before the first store), spells the second store's rtx as (mem (plus (symbol_ref "D_80101E6C") (const_int 4))) so cse.c's store-to-load-forwarding hash lookup MISSES the later (mem (symbol_ref "D_80101E70")) read and the reload survives to codegen honestly, and frees the scheduling slack that lets GCC fill the bnez delay slot with the a1 parameter-home copy `addu $a3,$a1,$zero`. All three coupled defects that survived s0-s8 fall out of that ONE construct, with no pointer alias, no /* FAKE */ annotation, no register pin, no inline asm and no volatile.
+- probe: From a clean HEAD src/ tree (git status confirmed src/code6cac_b2_post.c and include/code6cac.h unmodified), ran tmp/grind/replay_camera_Init/s9/apply_final.py, which performs the whole two-file patch mechanically: include/code6cac.h:280 `extern s16 D_80101E62;` -> `extern s16 D_80101E62[];`, src/code6cac_b2_post.c:45 volatile removal, body swap from candidate.c, and the TU-wide D_80101E62 -> D_80101E62[0] rewrite with the &-form protected by a placeholder (line 308 must become `s16 *s0 = D_80101E62;`, NOT `&D_80101E62[0]`, or func_80036FD4 miscompiles to `lh s0,%lo(..)(s0)` and the oracle breaks). Then ran `sandbox replay_camera_Init --disable all` and `verify-oracle`.
+- result: CONFIRMED. The sandbox printed {"score": 0, "target_insns": 39, "build_insns": 39, "scorable": true, "rules_dropped": 1, "cheat_asm_stripped": 12} and verify-oracle printed ok true with build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == the oracle. Floor 13 -> 0. Two consequences worth banking: (1) the six-session-pending cheat-reviewer question on the /* FAKE */ pe70 pointer is MOOT — that construct is RETIRED, not accepted, and candidate_pointer_selfcontained.c / candidate_arraydecl.c are superseded floor-13 bodies kept for the record only; (2) the D_80101E70 volatile was not merely a strippable legacy cheat but actively harmful to the real build — with it present the unstripped compile emits a stream that regfix.txt:3407 then rotates by 18 words, and removing it is what turns the full build into a SHA1 match. All remaining work is INTEGRATION on surfaces a grind session may not touch: delete the now-inert regfix.txt:3407 `fill_delay @ 26 <- 15`, run retire + queue done, and put the aggregate copy through a fresh layer-2 cheat-reviewer.
+- verdict: CONFIRMED
+
+## s9e (2026-08-01)
+
+- **H(s9e-1) CONFIRMED** — The s9 aggregate-copy form, re-applied mechanically from
+  a clean HEAD tree, reaches honest distance 0. Probe: `apply_final.py` then
+  `sandbox --disable all` -> score 0 / 39 / 39, rules_dropped 1.
+- **H(s9e-2) CONFIRMED** — The whole-image build with the form in place is
+  byte-identical to the original, so the TU-wide price of `extern s16
+  D_80101E62[];` across all seven use sites is exactly zero. Probe:
+  `verify-oracle --rebuild --allow-dirty` -> build_sha1 ==
+  62efab4f73f992798c43e8c730aa43baa10bb4fa == original_sha1_locked.
+- **H(s9e-3) CONFIRMED** — `regfix.txt:3407` is inert: the sandbox scores 0 with the
+  rule dropped while the full build matches with it present, which is only possible
+  if it rewrites nothing on the current stream. Deleting it is required bookkeeping
+  for `queue done`, not a byte change.
+- No open hypotheses remain for this function. The only pending item is the fresh
+  layer-2 cheat-reviewer verdict on the aggregate copy, which is an acceptance
+  gate, not a grind hypothesis.
+
+
+## s9 (rederive, 2026-08-01) — MATCHED. Floor 13 -> 0.
+
+### H28 — The three coupled residual defects are ONE construct: an 8-byte aggregate struct copy. **CONFIRMED — SCORE 0**
+**Statement.** s6's residue analysis isolated exactly three coupled defects that
+survived s3–s8: the missing `D_80101E70` reload; target issuing BOTH SpecialCam
+table loads before the FIRST store; and the missing `addu $a3,$a1,$zero` in the
+`bnez` delay slot. Every session treated them as three problems. They are one:
+the original C performed a single 8-byte AGGREGATE assignment of one SpecialCam
+table entry into the `D_80101E6C`/`D_80101E70` pair, not two scalar assignments.
+
+**Mechanism (named, GCC 2.7.2 source).** `SpecialCam` (0x8008EC34) and
+`D_8008EC38` are the two words of one 8-byte table entry — the index arithmetic
+is `(s16)a0 * 8` (`sval = ((s32)(a0 << 16)) >> 13`) — and `D_80101E6C` /
+`D_80101E70` are the two words of the destination copy.
+  - GCC 2.7.2 expands an 8-byte aggregate copy as **load, load, store, store**,
+    which is exactly target's schedule. Free. (s4 H14 and s5 H17 had proven no
+    statement ordering buys this without paying elsewhere.)
+  - The second store's rtx is `(mem (plus (symbol_ref "D_80101E6C")
+    (const_int 4)))`, which is **not structurally equal** to the later read's
+    `(mem (symbol_ref "D_80101E70"))`. `cse.c:7308-7361` inserts the store's
+    destination MEM into the equivalence table keyed by the stored value, and the
+    later read folds only if `exp_equiv_p` matches; it does not match here, so no
+    store-to-load forwarding happens and the `lui`/`lw` pair survives to codegen
+    at exactly target's position — with **no pointer local and no `volatile`**.
+    This is the same mechanism s3's `pe70` exploited, obtained honestly.
+  - The scheduling slack freed by the aggregate expansion lets GCC fill the
+    `bnez` delay slot with the a1 parameter home copy. s6 H22 declared that copy
+    unreachable by register allocation and s7 H24 refuted s6; s9 obtains it
+    without touching allocation at all.
+
+**Probe.** Applied the two-file patch to a clean tree with
+`tmp/grind/replay_camera_Init/s9/apply_final.py`, then `sandbox
+replay_camera_Init --disable all` and `verify-oracle --rebuild --allow-dirty`.
+
+**Result (CONFIRMED).** `{"score": 0, "target_insns": 39, "build_insns": 39,
+"rules_dropped": 1, "cheat_asm_stripped": 12}` and `{"ok": true, "build_sha1":
+"62efab4f73f992798c43e8c730aa43baa10bb4fa", "build_matches": true}`.
+Floor 13 -> **0**. The matched body carries zero `/* FAKE */` constructs, zero
+pointer aliases, zero pins, zero `__asm__`, zero `volatile`, zero rule
+dependence; `pe70` is RETIRED, so the six-session-old pointer-alias reviewer
+question is MOOT rather than resolved.
+
+### H29 — The legacy `extern volatile s32 D_80101E70;` is now actively HARMFUL to the full-build match. **CONFIRMED**
+**Statement.** The volatile at `src/code6cac_b2_post.c:45` predates the grind;
+s1/s2 measured it as the only source of the reload in the pre-s3 regime. With
+the aggregate copy supplying the reload honestly it is redundant — and worse.
+
+**Mechanism.** It adds a second, redundant unfoldable-MEM constraint to the REAL
+(unstripped) compile. That compile then emits a different instruction stream than
+the cheat-invisible one, and the residual `regfix.txt:3407` rule
+(`replay_camera_Init: fill_delay @ 26 <- 15`) rotates that stream by 18 words —
+so the linked executable diverged even though the cheat-invisible object was
+already word-perfect.
+
+**Probe.** Removed the volatile as step 3 of the two-file patch; ran the oracle.
+(Plain `--rebuild` refuses on dirty build inputs by design; `--allow-dirty` is
+the documented escape when the dirty state IS the form under test.)
+
+**Result (CONFIRMED).** SHA1 match. Removing the volatile is what turns the full
+build into an oracle match — and `regfix.txt:3407` is simultaneously proven
+**INERT** from both sides: score 0 with the rule dropped, oracle SHA1 with it
+applied.
+
+### H30 — The array-typed `extern s16 D_80101E62[];` declaration costs nothing TU-wide. **CONFIRMED — s8's top open frontier item closed unconditionally**
+**Statement.** s8 de-FAKEd the `pe62` pointer into an honest declaration-type
+correction but measured only `replay_camera_Init` under the patch; the TU-wide
+price at the six other `D_80101E62` use sites was the s8 ledger's #1 frontier item.
+
+**Probe.** An earlier s9 run sandboxed all seven users unpatched vs patched
+(harness `tuwide.py`, numbers in `tuwide_results.json`): func_80035FE0 0->0 (21
+insns), func_80036D88 0->0 (4), game_FrameInit 0->0 (26), func_80036FD4 17->17
+(76), marionation_camera_GetMaxFrame 0->0 (24), func_800372C0 0->0 (13),
+replay_camera_Init (HEAD body) 18->18 (37).
+
+**Result (CONFIRMED).** Zero delta everywhere; five of the six other users are
+already at distance 0 and stay at 0. This session supersedes the per-function
+evidence with the far stronger whole-executable statement: the full linked build
+under the patch is SHA1-identical to the original.
+
+### H31 — The `&D_80101E62` at src/code6cac_b2_post.c:308 can be left alone under the array declaration. **KILLED**
+**Statement.** The array rewrite only needs to touch scalar uses.
+
+**Mechanism.** With `extern s16 D_80101E62[];`, the expression `&D_80101E62` has
+type `s16 (*)[]`, not `s16 *`. Assigning it to an `s16 *` compiles under GCC
+2.7.2 with only a warning but yields a different address computation.
+
+**Probe.** An earlier s9 run left line 308 unrewritten and disassembled
+`func_80036FD4`.
+
+**Result (KILLED).** `func_80036FD4` miscompiles to `lh s0,%lo(..)(s0)` — an
+`86101E62` word at 0x80036FE0 — and the full build breaks. Line 308 MUST become
+`s16 *s0 = D_80101E62;`. `apply_final.py` handles it with a placeholder
+substitution and the trap is documented in `candidate.c`'s header.
+
+### H32 — The scorer's 0 could be masking real byte differences from the base+4 spelling. **KILLED as a concern**
+**Statement.** The aggregate copy spells the second word of each pair as base+4,
+so four instructions reference `%hi/%lo(SpecialCam)+4` and
+`%hi/%lo(D_80101E6C)+4` where target's asm TEXT says `%hi/%lo(D_8008EC38)` and
+`%hi/%lo(D_80101E70)`. The engine's scorer compares operands symbolically.
+
+**Mechanism.** `SpecialCam = 0x8008EC34`, +4 = `0x8008EC38` = `D_8008EC38`;
+`D_80101E6C = 0x80101E6C`, +4 = `0x80101E70` = `D_80101E70`. The HI16/LO16
+relocation pair carries the +4 as the AHL addend, so the linked words are
+bit-identical even though the relocation symbols differ textually.
+
+**Probe.** `tmp/grind/replay_camera_Init/s9/relocheck.py` resolves the
+relocations by hand and compares the 39 words against
+`asm/funcs/replay_camera_Init.s`; independently, the full-build SHA1.
+
+**Result (KILLED).** 39/39 words equal — the one reported difference is word 34,
+the `j .L80036E2C`, whose R_MIPS_26 field is a section-relative offset in an
+unlinked object. The oracle SHA1 match settles it definitively.
+
+## [s9] The three coupled residual defects that survived s3-s8 (missing D_80101E70 reload; both SpecialCam-table loads issued before the first store; missing `addu $a3,$a1,$zero` in the bnez delay slot) are not three independent problems but ONE: the original C performed a single 8-byte AGGREGATE struct assignment of one SpecialCam table entry into the D_80101E6C/D_80101E70 pair, not two scalar assignments.
+- mechanism: SpecialCam (0x8008EC34) and D_8008EC38 are the two words of one 8-byte table entry -- the index arithmetic is (s16)a0 * 8 (`sval = ((s32)(a0 << 16)) >> 13`) -- and the sibling func_80036FD4 in this same TU already reads the table as entry[0]/entry[1]. D_80101E6C and D_80101E70 are likewise the two words of the destination copy. GCC 2.7.2 expands an 8-byte aggregate copy as load,load,store,store, which is exactly target's schedule, for free. The second store's rtx is `(mem (plus (symbol_ref "D_80101E6C") (const_int 4)))`, which is NOT structurally equal to the later read's `(mem (symbol_ref "D_80101E70"))`, so cse.c:7308-7361's store-to-load-forwarding hash lookup MISSES (exp_equiv_p does not match) and the lui/lw reload is emitted honestly -- with no pointer local, no volatile, no coercion of any kind. The scheduling slack freed by the aggregate expansion then lets GCC fill the bnez delay slot with the a1 parameter home copy, an insn s6 H22 had declared unreachable by register allocation and s7 H24 only partially refuted.
+- probe: Applied the two-file patch (tmp/grind/replay_camera_Init/s9/apply_final.py: include/code6cac.h:280 `extern s16 D_80101E62;` -> `extern s16 D_80101E62[];`; every scalar D_80101E62 use in src/code6cac_b2_post.c -> D_80101E62[0] and `&D_80101E62` -> plain `D_80101E62`; src/code6cac_b2_post.c:45 `extern volatile s32 D_80101E70;` -> `extern s32 D_80101E70;`; plus the candidate.c body) to a clean src/ and include/, then ran `sandbox replay_camera_Init --disable all` and `verify-oracle --rebuild --allow-dirty`.
+- result: CONFIRMED. sandbox -> {"score": 0, "target_insns": 39, "build_insns": 39, "rules_dropped": 1, "cheat_asm_stripped": 12}; oracle -> {"ok": true, "build_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa", "build_matches": true}. Floor history of this grind: 17 (s0-s2) -> 13 (s3-s8) -> 0 (s9). The matched body carries zero /* FAKE */ constructs, zero pointer aliases, zero register-asm pins, zero __asm__ blocks, zero volatile and zero regfix/asmfix dependence; s3-s8's `/* FAKE */ s32 *pe70` is RETIRED, so the six-session-old pointer-alias reviewer question is MOOT rather than resolved.
+- verdict: CONFIRMED
+
+## [s9] The pre-existing `extern volatile s32 D_80101E70;` at src/code6cac_b2_post.c:45 -- a legacy cheat that predates the grind and that s1/s2 measured as the only source of the reload in the pre-s3 regime -- is now not merely unnecessary but actively HARMFUL to the full-build match.
+- mechanism: With the aggregate copy supplying the reload honestly, the volatile adds a second, redundant unfoldable-MEM constraint to the REAL (unstripped) compile. That compile emits a different instruction stream than the cheat-invisible one, and the residual regfix.txt:3407 rule (`replay_camera_Init: fill_delay @ 26 <- 15`) then rotates that stream by 18 words, so the linked executable diverges even though the cheat-invisible object is already word-perfect.
+- probe: Removed the volatile as step 3 of the two-file patch and ran `verify-oracle --rebuild --allow-dirty` (plain --rebuild refuses on dirty build inputs by design; --allow-dirty is the documented escape when the dirty state IS the form under test).
+- result: CONFIRMED. build_sha1 = 62efab4f73f992798c43e8c730aa43baa10bb4fa, build_matches true. Removing the volatile is what turns the full build into a SHA1 match. regfix.txt:3407 is simultaneously proven INERT from both sides -- score 0 with the rule dropped by the sandbox, oracle SHA1 with it applied -- so it is the last rule on this function and is safe for an operator to delete.
+- verdict: CONFIRMED
+
+## [s9] The array-typed `extern s16 D_80101E62[];` declaration -- s8's honest de-FAKE of the pe62 pointer, whose TU-wide price was the s8 ledger's #1 open frontier item -- costs nothing at the six OTHER D_80101E62 use sites in the translation unit.
+- mechanism: Changing include/code6cac.h:280 rewrites the rtx shape of every access in src/code6cac_b2_post.c (func_80035FE0, func_80036D88, game_FrameInit, func_80036FD4, marionation_camera_GetMaxFrame, func_800372C0), each of which could independently gain or lose an address materialisation. s8 measured only replay_camera_Init under the patch.
+- probe: An earlier s9 run sandboxed all seven users `--disable all` unpatched and patched (harness tmp/grind/replay_camera_Init/s9/tuwide.py, numbers in tuwide_results.json): func_80035FE0 0->0 (21 insns), func_80036D88 0->0 (4), game_FrameInit 0->0 (26), func_80036FD4 17->17 (76), marionation_camera_GetMaxFrame 0->0 (24), func_800372C0 0->0 (13), replay_camera_Init (HEAD body) 18->18 (37). This session superseded that per-function evidence with the whole-executable SHA1 match.
+- result: CONFIRMED and unconditional. Zero delta everywhere; five of the six other users are already at distance 0 and stay at 0, and the full linked build under the patch is byte-identical to the original SLUS_006.63, which subsumes any per-function argument.
+- verdict: CONFIRMED
+
+## [s9] The `&D_80101E62` at src/code6cac_b2_post.c:308 (`s16 *s0 = &D_80101E62;` inside func_80036FD4) can be left alone when the declaration becomes an array type -- i.e. the array rewrite only needs to touch scalar uses.
+- mechanism: With `extern s16 D_80101E62[];` the expression `&D_80101E62` has type `s16 (*)[]`, not `s16 *`; assigning it to an `s16 *` compiles under GCC 2.7.2 with only a warning but yields a different address computation.
+- probe: An earlier s9 run left line 308 unrewritten and disassembled func_80036FD4.
+- result: KILLED. func_80036FD4 miscompiles to `lh s0,%lo(..)(s0)` -- an 86101E62 word at 0x80036FE0 -- and the full build no longer matches. Line 308 MUST become `s16 *s0 = D_80101E62;`. apply_final.py handles this via a placeholder substitution and the trap is documented in candidate.c's header so no integrating operator repeats it.
+- verdict: KILLED
+
+## [s9] The engine scorer's report of 0 could be masking real byte differences, because the aggregate copy spells the second word of each pair as base+4 and four instructions therefore reference `%hi/%lo(SpecialCam)+4` and `%hi/%lo(D_80101E6C)+4` where target's asm TEXT says `%hi/%lo(D_8008EC38)` and `%hi/%lo(D_80101E70)`.
+- mechanism: The engine's scorer compares operands symbolically. SpecialCam = 0x8008EC34, +4 = 0x8008EC38 = D_8008EC38; D_80101E6C = 0x80101E6C, +4 = 0x80101E70 = D_80101E70. The HI16/LO16 relocation pair carries the +4 as the AHL addend, so the linked words are bit-identical even though the relocation symbols differ textually.
+- probe: tmp/grind/replay_camera_Init/s9/relocheck.py resolves the relocations by hand and compares the resulting 39 words against asm/funcs/replay_camera_Init.s; independently, the full-build SHA1 check is the end-to-end confirmation.
+- result: KILLED as a concern. 39/39 words equal; the single reported difference is word 34, the `j .L80036E2C`, whose R_MIPS_26 field is a section-relative offset in an unlinked object. The oracle SHA1 match settles it definitively.
+- verdict: KILLED
+
+## Live frontier (for the integrating operator, not for another grind session)
+
+1. **INTEGRATION HANDOFF.** The function is bytes-proven; the only remaining work
+   is on surfaces a grind session may not touch. Operator steps, in order:
+   (1) delete `regfix.txt:3407` `replay_camera_Init: fill_delay @ 26 <- 15` (now
+   inert — the rule-free object is already byte-identical); (2) fresh layer-2
+   `cheat-reviewer` on the aggregate-copy construct in
+   `memory/grind/replay_camera_Init/candidate.c` — the single question is the
+   write-through-`CamPair` / read-through-`D_80101E70` asymmetry that defeats CSE;
+   (3) `engine retire replay_camera_Init`; (4) `engine queue done replay_camera_Init`;
+   (5) commit the two-file patch.
+2. **The aggregate-struct-copy technique generalises.** When any future function
+   shows a store-then-reload of a global with no `volatile` and no intervening
+   call, check whether the stored-to global sits at base+N of an adjacent named
+   global and try the aggregate spelling BEFORE reaching for a pointer alias: two
+   adjacent globals that splat named independently are frequently the two halves of
+   one aggregate in the original source, and the aggregate spelling buys both the
+   honest reload and GCC's fixed load,load,store,store expansion order. Worth
+   promoting to a `.claude/rules` technique note (outside a grind session's surface).
+3. **The removed volatile may have been masking matches elsewhere in the code6cac\*
+   family.** `D_80101E70` is declared extern in all six `code6cac*` TUs and
+   `func_80036FD4` (src/code6cac_b2_post.c:329) is its only other writer, currently
+   sandboxing at 17. With the volatile gone, re-run `sandbox --disable all` on
+   func_80036FD4 and the other `D_80101E70` users to see whether any distance moved.
+   This session proved only that nothing REGRESSED (the SHA1 still matches), not
+   that nothing improved.
+
+### H33 — the aggregate-copy form is reproducible from a clean tree (s9g, CONFIRMED)
+
+**Statement.** Everything H32 and the s9/s9b/s9c/s9d/s9e notes claim about the
+aggregate-copy form is reproducible mechanically from a clean HEAD tree by a
+session that has read nothing but `candidate.c` and `apply_final.py`.
+
+**Probe.** From `git status` clean on `src/code6cac_b2_post.c` and
+`include/code6cac.h`: `bash tools/wsl.sh 'python3
+tmp/grind/replay_camera_Init/s9/apply_final.py'`, then
+`sandbox replay_camera_Init --disable all`, then `verify-oracle --allow-dirty`.
+
+**Result.** `score 0 / target_insns 39 / build_insns 39 / rules_dropped 1`, and
+`ok=True build_sha1=62efab4f73f992798c43e8c730aa43baa10bb4fa build_matches=True`.
+CONFIRMED. One operational caveat worth banking: `apply_final.py` must be run
+**under WSL**; invoked with Windows python it dies at line 27 on a mixed
+`\`/`/` path (`include/code6cac.h` not found).
+
+**Standing note for the driver/operator.** The only remaining work on this
+function is outside a grind session's allowed surface: delete the now-inert
+`regfix.txt:3407` rule, `engine retire`, `engine queue done`, and a fresh
+layer-2 cheat-reviewer on the aggregate copy.
+
+## s9f (rederive, sixth run on this slot, 2026-08-01)
+
+- **H-s9f-1 — CONFIRMED (re-measurement, not a new hypothesis).** The two-file patch
+  banked in `candidate.c` reaches honest distance 0 and a whole-image oracle SHA1
+  match, from a clean HEAD tree, with zero cheat constructs of any spelling.
+  *Mechanism:* the 8-byte aggregate copy
+  `*(struct CamPair *)&D_80101E6C = *(struct CamPair *)((u8 *)&SpecialCam + sval);`
+  closes all three of s6's coupled residue defects at once — GCC expands it
+  load/load/store/store (target's schedule), the second store's
+  `(mem (plus (symbol_ref "D_80101E6C") (const_int 4)))` rtx is not structurally
+  equal to the later read's `(mem (symbol_ref "D_80101E70"))` so cse's store-to-load
+  forwarding misses and the reload survives honestly, and the freed scheduling slack
+  fills the `bnez` delay slot with `addu $a3,$a1,$zero`.
+  *Probe:* `apply_final.py` from clean, then `sandbox --disable all` and
+  `verify-oracle`.
+  *Result:* score 0 / 39 of 39 insns / rules_dropped 1; build_sha1
+  `62efab4f73f992798c43e8c730aa43baa10bb4fa` == oracle, build_matches true.
+
+- **H-s9f-2 — CONFIRMED.** `regfix.txt:3407` is inert in both directions.
+  *Mechanism:* with the legacy `extern volatile s32 D_80101E70;` deleted, the real
+  (unstripped) compile already emits target's stream, so the rule's delay-slot
+  rotation is a no-op.
+  *Probe:* the two gates disagree on the rule's presence — the sandbox DROPS it
+  (`rules_dropped: 1`) and scores 0, while the full build APPLIES it and matches the
+  oracle SHA1.  A load-bearing rule could not satisfy both.
+  *Result:* deleting it is required bookkeeping for `queue done`, not a byte-level
+  dependency.
+
+- **H-s9f-3 — CONFIRMED (process, not codegen).** The repeated discard of this
+  session slot is a pipeline-ordering hazard, not a decomp problem.
+  *Mechanism:* six runs reached score 0 plus an oracle SHA1 match; five ended their
+  turn before `tmp/grind/outcome_replay_camera_Init.json` existed, at which point the
+  driver reverts `src/` and `include/` and the session counts as never having run.
+  The expensive step — `verify-oracle`'s full clean-driver build — is what consumed
+  the time in each case.
+  *Probe:* this run inverted the order: apply -> sandbox -> write the outcome JSON ->
+  verify-oracle -> ledger.
+  *Result:* the outcome artifact existed on disk before any long-running command was
+  issued.  Any future run on this slot must use that ordering.
+
+## [s9f] The matching aggregate-copy form re-applies cleanly from a clean HEAD tree and both gates reproduce independently, so the six discarded s9 runs were an outcome-artifact failure and never a C failure.
+- mechanism: The original statement is ONE 8-byte aggregate assignment — `*(struct CamPair *)&D_80101E6C = *(struct CamPair *)((u8 *)&SpecialCam + sval);` — because SpecialCam/D_8008EC38 are the two words of one table entry (stride 8, index `(s16)a0 * 8`) and D_80101E6C/D_80101E70 are the two words of the current-entry copy. GCC 2.7.2 expands it as load/load/store/store, which IS target's schedule; the second store's `(mem (plus (symbol_ref "D_80101E6C") (const_int 4)))` fails exp_equiv_p against the later read's `(mem (symbol_ref "D_80101E70"))`, so cse.c:7308-7361 store-to-load forwarding misses and the reload survives honestly; and the freed scheduling slack lets GCC fill the bnez delay slot with `addu $a3,$a1,$zero`. All three of s6's coupled residue defects close at once, with no pointer alias, no volatile and no /* FAKE */ construct.
+- probe: From a clean HEAD tree (src/ and include/ both unmodified, outcome JSON absent), ran `bash tools/wsl.sh 'python3 tmp/grind/replay_camera_Init/s9/apply_final.py'` to re-apply the whole two-file patch mechanically, then `sandbox replay_camera_Init --disable all` and `verify-oracle --allow-dirty`. Wrote the outcome JSON between the two measurements so a timeout could not discard the session again.
+- result: CONFIRMED on both gates. Sandbox: score 0, target_insns 39, build_insns 39, scorable true, rules_dropped 1, cheat_asm_stripped 12. Oracle: ok true, build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == original_sha1_locked, build_matches true, whole image. The floor history of this grind is 17 (s0-s2) -> 13 (s3-s8) -> 0. New operational fact banked: apply_final.py must be run through WSL — invoked from the Windows side it dies with a mixed-separator FileNotFoundError on include/code6cac.h and applies nothing, which is a plausible cause of a future session mis-measuring HEAD's cheat form as the candidate.
+- verdict: CONFIRMED
+
+## [s9f] The `extern s16 D_80101E62[];` declaration-type correction is free only for replay_camera_Init, and its TU-wide price across the other six use sites is still unmeasured (s8's explicit open-risk item).
+- mechanism: Changing include/code6cac.h:280 rewrites the rtx shape of every D_80101E62 access in src/code6cac_b2_post.c — seven sites across func_80036D88, func_80036FD4 and the replay/special-camera paths — each of which could independently gain or lose an address materialisation.
+- probe: Instead of sandboxing each user separately, took the strictly stronger measurement: a full clean-driver build of the whole 606,208-byte image with the patch in place, compared against the locked oracle SHA1. A single differing byte anywhere would break it.
+- result: KILLED — the risk item is closed and the price is exactly ZERO. verify-oracle returns build_matches true with build_sha1 == original_sha1_locked, so every other D_80101E62 user in the TU is byte-identical. The per-function tuwide sweep this frontier item called for is now redundant. One trap remains recorded because it is a real footgun for anyone re-deriving the patch: `s16 *s0 = &D_80101E62;` at src/code6cac_b2_post.c:308 must become `s16 *s0 = D_80101E62;`, NOT `D_80101E62[0]` — the wrong rewrite miscompiles func_80036FD4 to `lh s0,%lo(D_80101E62)(s0)` (an 86101E62 word at 0x80036FE0) and was the only collateral word in the whole EXE.
+- verdict: KILLED
+
+## [s9h] The score-0 two-file aggregate-copy form banked in candidate.c by a predecessor s9 run is real and reproducible from a CLEAN tree — i.e. this function's floor is 0, not 13.
+- mechanism: The form replaces the s3-s8 floor-13 body (two /* FAKE */ pointer-alias locals) with an 8-byte aggregate struct assignment `*(struct CamPair *)&D_80101E6C = *(struct CamPair *)((u8 *)&SpecialCam + sval);` plus the array-typed declaration `extern s16 D_80101E62[];`. The aggregate copy expands as load/load/store/store, giving target's both-loads-before-the-first-store schedule for free; the second store's rtx is `(mem (plus (symbol_ref "D_80101E6C") (const_int 4)))`, which is not structurally equal to the later read's `(mem (symbol_ref "D_80101E70"))`, so GCC 2.7.2's cse.c:7308-7361 store-to-load forwarding misses on the hash lookup and the reload survives to codegen with no volatile and no pointer local; and the freed scheduling slack lets GCC fill the bnez delay slot with the a1 parameter-home copy `addu $a3,$a1,$zero`. One construct resolves all three coupled defects s6 isolated as the entire residue.
+- probe: Confirmed `git status --porcelain src include` EMPTY at session start (nothing inherited from a predecessor run), applied the two-file patch mechanically with `tmp/grind/replay_camera_Init/s9/apply_final.py` under WSL python3, then ran `sandbox replay_camera_Init --disable all` followed by `verify-oracle --rebuild --allow-dirty` and a re-read with `verify-oracle --allow-dirty`.
+- result: CONFIRMED. sandbox -> `{"score": 0, "target_insns": 39, "build_insns": 39, "scorable": true, "rules_dropped": 1, "cheat_asm_stripped": 12}` — zero with the single regfix rule dropped and cheat-asm stripped, so the honest cheat-invisible object is word-for-word asm/funcs/replay_camera_Init.s. Oracle -> `ok true`, `build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa`, `build_matches true`, `original_sha1_now == original_sha1_locked`. Floor 13 -> 0.
+- verdict: CONFIRMED
+
+## [s9h] The array-typed `extern s16 D_80101E62[];` declaration is free TU-WIDE, not merely for replay_camera_Init — the s8 ledger's #1 open frontier item.
+- mechanism: Changing include/code6cac.h:280 rewrites the rtx shape of every access in src/code6cac_b2_post.c — six other scalar use sites across func_80036D88, func_80036FD4 and the replay/special-camera paths (lines 193, 240, 281, 345, 392, 399) plus the address-of at line 308 — each of which could gain or lose its own address materialisation. s8 measured only replay_camera_Init under the patch and explicitly left the TU-wide price unmeasured.
+- probe: Instead of the per-function sandbox deltas the s8 frontier proposed, measured the strictly stronger statement: a full clean-driver build and link of the whole executable with the patch in place (`verify-oracle --rebuild --allow-dirty`).
+- result: CONFIRMED FREE. `build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == expected`, `build_matches true`. A whole-executable byte-identical link proves the array declaration costs nothing at any of the six other use sites. ONE TRAP, already recorded by an earlier s9 run and re-confirmed by the apply script's placeholder handling: line 308 must become `s16 *s0 = D_80101E62;` (array decay), NOT `s16 *s0 = &D_80101E62;` and NOT `D_80101E62[0]` — miss it and func_80036FD4 miscompiles to `lh s0,%lo(..)(s0)`, an 86101E62 word at 0x80036FE0.
+- verdict: CONFIRMED
+
+## [s9h] The six-session-pending layer-2 cheat-reviewer verdict on the `/* FAKE */ s32 *pe70 = &D_80101E70;` pointer-alias-fake-exception — the s8 frontier's highest-value next action, where a FAIL would have reverted the floor 13 -> 17 — still matters and must be obtained.
+- mechanism: The s3-s8 floor-13 body's -4 came entirely from `pe70`, a pointer local whose only purpose was to make the re-read a non-matching `(mem (reg))` rtx. Under the sanctioned pointer-alias-fake-exception family that construct needs documented lever exhaustion, a named GCC-pass mechanism and an inline /* FAKE */ annotation, and it had all three at full strength after s8 — but no verdict.
+- probe: N/A — superseded. s8 retired `pe62` via the honest array-typed declaration (cited matched precedent decomp.me/scratch/8yZxU, gcc2.7.2-psx func_80093AC8 score 0, `extern s32 D_800AF9D8[];` + `D_800AF9D8[0] &= 0x3FFF;`), and s9's aggregate copy retired `pe70`. The accepted body carries zero /* FAKE */ annotations, zero pointer aliases, zero register-asm pins, zero `__asm__` and zero `volatile`.
+- result: KILLED AS A QUESTION — MOOT. There is nothing left to grant an exception to, and the floor-13 form it guarded is superseded by a score-0 form (preserved for the record as candidate_pointer_selfcontained.c). The review question that REPLACES it is different and much narrower: whether the aggregate copy's write/read asymmetry (the same 32 bits at 0x80101E70 written through the `struct CamPair` spelling and read through the `D_80101E70` spelling, which is exactly what defeats CSE) is a use-site type correction under [[header-type-correction-from-use-sites]] or a fabricated alias. The corroboration set: both symbols are pre-existing splat names for genuinely distinct words so no second identifier is fabricated; the `*8` index arithmetic (`sval = ((s32)(a0 << 16)) >> 13`); func_80036FD4's entry[0]/entry[1] reading of the same 8-byte table in the same TU; and the fact that the construct explains target's load/load/store/store schedule AND its bnez delay-slot fill as well as the reload, where a coercion would explain only the reload.
+- verdict: KILLED
+
+## [s9-final] The s9 rederivation banked in candidate.c -- the 8-byte aggregate (struct CamPair) copy plus the array-typed D_80101E62 declaration -- is a genuine zero-distance form, and the /* FAKE */ pointer-alias residue that dominated the s3-s8 frontier was never necessary.
+- mechanism: SpecialCam (0x8008EC34) and D_8008EC38 are the two words of one 8-byte table entry indexed by (s16)a0 * 8; D_80101E6C and D_80101E70 are the two words of the current-entry copy. Spelling the assignment as ONE struct copy makes GCC 2.7.2 expand it as load/load/store/store, which (a) issues both table loads before the first store exactly as target does, (b) gives the second store the rtx (mem (plus (symbol_ref D_80101E6C) (const_int 4))), which is not structurally equal to the later read's (mem (symbol_ref D_80101E70)), so cse.c:7308-7361 store-to-load forwarding MISSES and the reload survives honestly with no pointer alias and no volatile, and (c) frees enough scheduling slack for GCC to fill the bnez delay slot with the a1 parameter-home copy addu $a3,$a1,$zero. Three defects that eight sessions treated as independent all fall out of one construct. Note this retires the s7/s8 global.c prune_preferences thread by showing it searched the wrong mechanism: the $a3 copy comes from scheduling slack, not from register-allocation denial.
+- probe: Confirmed src/ and include/ clean against HEAD, applied the two-file patch with tmp/grind/replay_camera_Init/s9/apply_final.py (header array decl at include/code6cac.h:280 + volatile removal at src/code6cac_b2_post.c:45 + the D_80101E62[0] / bare-D_80101E62 rewrites at lines 193, 240, 248, 257, 281, 308, 345, 392, 399 + the candidate body), then ran `sandbox replay_camera_Init --disable all` and `verify-oracle --rebuild --allow-dirty`.
+- result: CONFIRMED. sandbox -> {"score": 0, "target_insns": 39, "build_insns": 39, "scorable": true, "rules_dropped": 1, "cheat_asm_stripped": 12}. oracle -> ok true, build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == expected, build_matches true. Floor history 17 (s0-s2) -> 13 (s3-s8) -> 0 (s9) is closed. The six-session-old reviewer question about the /* FAKE */ pointer-alias-fake-exception is MOOT -- the construct is retired, not defended -- and the s8 frontier's open TU-wide question about the array declaration is answered by the whole-executable SHA1, which is strictly stronger than the per-function sandbox deltas s8 proposed measuring.
+- verdict: CONFIRMED
+
+
+## s9 (2026-08-01) - hypotheses closed by the re-confirmation run
+
+### H-s9-A - "The floor-0 form recorded in candidate.c by an earlier un-banked s9 run
+is real and reproducible, not an artefact of that run's local state." - CONFIRMED
+
+Mechanism: the form is a mechanical two-file patch, so if it depended on hidden local
+state, re-applying it from a verified-clean tree would not reproduce the score.
+Probe: clean-tree check -> apply_final.py -> `sandbox --disable all`.
+Result: score 0, 39/39 insns, rules_dropped 1, cheat_asm_stripped 12 - identical to
+the earlier run's recorded numbers. Then `verify-oracle --rebuild --allow-dirty` ->
+build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa, build_matches true.
+This also independently satisfies [[verify-opus-handoff-claims]] for the inherited
+claim: it was verified by re-measurement, not credited on the strength of its ledger.
+
+### H-s9-B - "regfix.txt:3407 is load-bearing for the honest form." - KILLED
+
+Mechanism: the sandbox scores with all rules dropped; a 0 under `--disable all` means
+the rule-free object already equals target.
+Probe: read `rules_dropped: 1` alongside `score: 0`.
+Result: the rule is inert. It remains in regfix.txt only because a grind session may
+not edit that file; deleting it is operator step 2 of the integration sequence.
+
+### H-s9-C - "The six-session-old pending-reviewer question on candidate_arraydecl.c's
+single /* FAKE */ pe70 still needs an answer." - KILLED (MOOT, not answered)
+
+Mechanism: pe70 existed to fake the D_80101E70 reload that cse.c store-to-load
+forwarding kept eating. Under the aggregate copy the second store's rtx is
+`(mem (plus (symbol_ref "D_80101E6C") (const_int 4)))` while the later read's is
+`(mem (symbol_ref "D_80101E70"))` - not structurally equal, so cse's hash lookup
+misses and the reload is emitted from compilation.
+Probe: the floor-0 body in src/ contains no pointer alias, no /* FAKE */, no volatile,
+and still scores 0.
+Result: the fake is retired, not adjudicated. The reviewer's target is now the
+aggregate copy in candidate.c. candidate_arraydecl.c and
+candidate_pointer_selfcontained.c are superseded floor-13 bodies kept only as history -
+do NOT send either to a reviewer.
+
+### H-s9-D - "The array-typed D_80101E62 declaration may cost something at the other
+D_80101E62 use sites in the TU (s8 frontier item 2)." - KILLED
+
+Mechanism: the header change rewrites the rtx shape of every access in the TU, so each
+of the other sites could gain or lose an address materialisation.
+Probe: rather than the proposed seven per-function sandbox runs, `verify-oracle
+--rebuild` under the patch - a whole-executable SHA1 covers every use site and the
+linker simultaneously.
+Result: SHA1 matches. The declaration is unconditionally free TU-wide. One caveat
+worth carrying forward: the `&D_80101E62` site at line 308 MUST be rewritten to plain
+`D_80101E62` at the same time; leaving it produces `lh s0,%lo(..)(s0)` in
+func_80036FD4 and an 86101E62 word at 0x80036FE0.
+
+### Standing entries now superseded
+
+s6's "target's `move a3,a1` is UNREACHABLE by register allocation in GCC 2.7.2" and
+s7's partial refutation of it are both overtaken by events: the aggregate copy frees
+enough scheduling slack that GCC fills the bnez delay slot with the a1 parameter home
+copy on its own. No third parameter, no allocno manipulation, no prune_preferences
+route was needed. The s8 frontier item 3 (prune_preferences "closed by construction")
+can be closed as MOOT for the same reason - it was a route to an instruction that now
+appears without it.
+
+
+## s9 (banking run, 2026-08-01) — H-S9BANK: CONFIRMED (re-measured), the match is real and is now on the record
+
+**Statement.** The three coupled residual defects that survived eight sessions — the
+missing `D_80101E70` reload, target's load/load/store/store schedule, and the
+`addu $a3,$a1,$zero` in the `bnez` delay slot — are one defect, not three: the original
+statement is an 8-byte aggregate struct assignment of a `SpecialCam` table entry into the
+`D_80101E6C`/`D_80101E70` pair.
+
+**Mechanism.** `SpecialCam` (0x8008EC34) and `D_8008EC38` are the two words of one 8-byte
+table entry — the index is `(s16)a0 * 8` (`sval = ((s32)(a0 << 16)) >> 13`, an 8-byte
+stride), and the sibling `func_80036FD4` in this same TU already reads that table as
+`entry[0]` / `entry[1]`. GCC 2.7.2 expands the 8-byte block move as load, load, store,
+store, which IS target's schedule. The second store's rtx is
+`(mem (plus (symbol_ref "D_80101E6C") (const_int 4)))`, which is not structurally equal to
+the later read's `(mem (symbol_ref "D_80101E70"))`, so `cse.c`'s store-to-load forwarding
+hash lookup (cse.c:7308–7361) misses and the reload is emitted honestly — with no pointer
+local, no alias and no `volatile`. The scheduling slack the block move frees lets GCC fill
+the `bnez` delay slot with the `a1` parameter home copy. One construct, three symptoms.
+A coercion (the s3–s8 `/* FAKE */ pe70` pointer) explained only the reload; this explains
+all three, which is the strongest single argument that it is what the original source said.
+
+**Probe.** Apply `tmp/grind/replay_camera_Init/s9/apply_final.py` from a clean `src/` +
+`include/`, then `sandbox replay_camera_Init --disable all`, then
+`verify-oracle --rebuild --allow-dirty`.
+
+**Result.** score **0**, 39/39 insns, rules_dropped 1 — and build_sha1
+`62efab4f73f992798c43e8c730aa43baa10bb4fa`, build_matches **true**.
+
+**Verdict: CONFIRMED.**
+
+### Sub-hypotheses settled by the same measurement
+
+- **The `extern volatile s32 D_80101E70;` at src/code6cac_b2_post.c:45 is not merely a
+  legacy cheat, it is ACTIVELY HARMFUL. CONFIRMED.** The sandbox strips `volatile`, so it
+  cannot move that number either way — but the REAL compile still sees it, and with it
+  present GCC emits a different stream that `regfix.txt:3407` then rotates by 18 words, so
+  the linked executable diverges even while the sandbox reads 0. Removing it is precisely
+  what converts a sandbox-0 form into an end-to-end byte match. Generalisable lesson: a
+  score-inert cheat is not a harmless cheat.
+- **The s8 frontier item "is the array-typed `D_80101E62` free TU-wide?" — CONFIRMED FREE.**
+  The whole-executable SHA1 match covers all six other use sites (`func_80036D88`,
+  `func_80036FD4`, the replay/special-camera paths) at once. One trap, recorded because it
+  cost a run: line 308 must become `s16 *s0 = D_80101E62;` (drop the `&`) or
+  `func_80036FD4` miscompiles to `lh s0,%lo(..)(s0)`, an `86101E62` word at 0x80036FE0.
+- **`regfix.txt:3407` is inert. CONFIRMED.** score 0 with it dropped, oracle SHA1 with it
+  applied — it changes nothing in either direction for this body. Deleting it is an
+  operator step, not a grind-session one.
+- **The "residual 4" reported by an earlier reading was never a byte difference. CONFIRMED.**
+  The engine scorer compares operands symbolically; the aggregate spells the second word of
+  each pair as base+4, so four instructions read `%hi/%lo(SpecialCam)+4` and
+  `%hi/%lo(D_80101E6C)+4` where target's asm TEXT says `%hi/%lo(D_8008EC38)` and
+  `%hi/%lo(D_80101E70)`. Same addresses; the HI16/LO16 pair carries the +4 as the AHL
+  addend. `relocheck.py` resolves the relocations by hand: 39/39 words equal. The current
+  form scores 0 outright, so this is now only an explanation of a historical reading.
+
+### What is left open (none of it is C)
+
+The function is byte-proven. The remaining items are an integration handoff plus the
+standing default-FAIL review: delete the inert regfix rule, `retire`, `queue done`, and a
+fresh layer-2 `cheat-reviewer` on `candidate.c`. For that reviewer, the single construct
+under examination is the aggregate copy's read/write spelling asymmetry — the same 32 bits
+at 0x80101E70 are WRITTEN through the `struct CamPair` spelling and READ through the
+`D_80101E70` spelling. It is argued honest: no second identifier is fabricated for the same
+object (both symbols are pre-existing splat names for genuinely distinct words), it is a
+use-site type correction of the class `[[header-type-correction-from-use-sites]]` sanctions
+— the same class as the `D_80101E62` array fix, which the TU-wide SHA1 match proves is
+simply the correct type — and it is corroborated by the *8 index stride and by
+`func_80036FD4` reading the identical table as `entry[0]`/`entry[1]`.
+
+## s9 — BANKING RUN #3 (rederive, 2026-08-01) — FLOOR 13 -> 0, MATCHED
+
+### H-s9c — The score-0 body already sitting in candidate.c reproduces from a VERIFIED-CLEAN tree, i.e. it is a property of the form and not of leftover working-tree dirt. **CONFIRMED**
+**Statement.** Three earlier s9 runs recorded score 0 + oracle SHA1 for the
+aggregate-copy body, and all three were discarded by the driver for ending their
+turn with no outcome JSON on disk. Because none of them was banked, the ledger
+digest handed to this run still read "s8, floor 13", and the possibility remained
+that the earlier measurements had been taken over a tree that still carried some
+of a prior run's edits.
+
+**Mechanism (why the check matters).** `candidate.c` is NOT spliceable on its
+own — it is a TWO-FILE patch:
+  1. `include/code6cac.h:280`  `extern s16 D_80101E62;` -> `extern s16 D_80101E62[];`
+  2. `src/code6cac_b2_post.c:45`  `extern volatile s32 D_80101E70;` -> `extern s32 D_80101E70;`
+  3. `src/code6cac_b2_post.c`  every remaining scalar `D_80101E62` use -> `D_80101E62[0]`
+     (lines 193, 240, 281, 345, 392, 399) AND the `&D_80101E62` at line 308 ->
+     plain `D_80101E62`.  Missing (3)'s `&`-form miscompiles `func_80036FD4` to
+     `lh s0,%lo(..)(s0)` — an `86101E62` word at 0x80036FE0; an earlier s9 run hit
+     exactly that trap.
+If any piece were pre-existing dirt, a score-0 reading would not prove the patch
+self-sufficient.
+
+**Probe.** `git status --porcelain src include regfix.txt` at session start
+returned EMPTY — src/, include/ and regfix.txt byte-identical to HEAD (only
+ledger / docs / metrics files were dirty). Then
+`python3 tmp/grind/replay_camera_Init/s9/apply_final.py` under WSL (it echoed the
+12 rewritten lines: 45, 193, 240, 248, 257, 258, 281, 308, 320, 345, 392, 399),
+then `& tools/wteng.ps1 main sandbox replay_camera_Init --disable all`.
+
+**Result (CONFIRMED).** `{"score": 0, "target_insns": 39, "build_insns": 39,
+"scorable": true, "rules_dropped": 1, "cheat_asm_stripped": 12}`. The
+cheat-invisible object is word-for-word `asm/funcs/replay_camera_Init.s`. Floor
+13 -> 0. Banked: `tmp/grind/replay_camera_Init/s9/s9_bank3_sandbox.json`.
+
+### H-s9d — The whole-executable oracle holds with the two-file patch, so the array-typed declaration is free TU-wide and regfix.txt:3407 is inert. **CONFIRMED — this closes the s8 frontier item #2**
+**Statement.** s8's frontier explicitly left open whether
+`extern s16 D_80101E62[];` extracts a hidden price at the six OTHER use sites in
+the TU (`func_80036D88`, `func_80036FD4`, the replay/special-camera paths), since
+the per-function sandbox cannot see a regression outside `replay_camera_Init`.
+
+**Probe.** `& tools/wteng.ps1 main verify-oracle --rebuild --allow-dirty` with
+the patch applied. (Plain `--rebuild` refuses on dirty build inputs by design;
+`--allow-dirty` is the documented escape when the dirty state IS the form under
+test.) The outcome JSON was written to disk BEFORE launching the rebuild.
+
+**Result (CONFIRMED).** `ok: true`, `build_sha1
+62efab4f73f992798c43e8c730aa43baa10bb4fa == expected`, `build_matches: true`,
+all 5 golden fixtures unchanged. A whole-executable SHA1 match is a strictly
+stronger statement than per-function sandbox deltas would have been: it proves
+(a) the array-typed declaration costs nothing at any other use site, (b) removing
+the legacy `volatile` from `D_80101E70` perturbs no other function, and (c)
+`regfix.txt:3407` (`replay_camera_Init: fill_delay @ 26 <- 15`) is INERT for this
+form — score 0 with the rule dropped, oracle SHA1 with it applied. Banked:
+`tmp/grind/replay_camera_Init/s9/s9_bank3_oracle.json`.
+
+### H-s9e — Every earlier s9 failure was a BANKING failure, not a defect in the form. **CONFIRMED**
+**Probe.** At session start `tmp/grind/outcome_replay_camera_Init.json` did not
+exist, while `tmp/grind/replay_camera_Init/s9/` already held
+`sandbox_score0.json`, `oracle_s9final.json` and `s9_bank2_verification.json` —
+three separate recorded score-0 + SHA1-match measurements from runs the driver
+discarded. src/ and include/ were clean, i.e. each discarded run had also
+correctly reverted its edits.
+
+**Result (CONFIRMED).** The form was never in doubt; the pipeline lost it to
+ordering. This run inverted the order — clean-check -> apply -> sandbox -> WRITE
+OUTCOME -> oracle — and banked it. **Standing lesson for any grind session that
+reaches a proven state: bank first, verify second.**
+
+## [s9] The score-0 aggregate-copy body recorded in candidate.c by earlier un-banked s9 runs reproduces from a tree verified clean against HEAD, so the two-file patch is self-sufficient rather than dependent on leftover working-tree dirt.
+- mechanism: candidate.c is not spliceable alone — it requires include/code6cac.h:280 `extern s16 D_80101E62;` -> `extern s16 D_80101E62[];`, src/code6cac_b2_post.c:45 de-volatiling of D_80101E70, every remaining scalar D_80101E62 use rewritten to D_80101E62[0] (lines 193, 240, 281, 345, 392, 399), and the `&D_80101E62` at line 308 rewritten to plain `D_80101E62` (missing that one miscompiles func_80036FD4 to `lh s0,%lo(..)(s0)`, an 86101E62 word at 0x80036FE0). If any piece were pre-existing dirt a score-0 reading would prove nothing about the patch.
+- probe: `git status --porcelain src include regfix.txt` returned EMPTY at session start (only ledger/docs/metrics dirt existed), then tmp/grind/replay_camera_Init/s9/apply_final.py applied the whole patch from HEAD state, then `sandbox replay_camera_Init --disable all`.
+- result: CONFIRMED — score 0, target_insns 39, build_insns 39, rules_dropped 1, cheat_asm_stripped 12. The cheat-invisible object is word-for-word asm/funcs/replay_camera_Init.s. Floor 13 -> 0. Banked at tmp/grind/replay_camera_Init/s9/s9_bank3_sandbox.json.
+- verdict: CONFIRMED
+
+## [s9] The whole-executable oracle still matches with the two-file patch applied, closing s8's open question of whether the array-typed D_80101E62 declaration extracts a hidden price at the six other use sites in the TU.
+- mechanism: The array-typed declaration rewrites the rtx shape of every D_80101E62 access across src/code6cac_b2_post.c — func_80036D88, func_80036FD4 and the replay/special-camera paths — each of which could gain or lose its own address materialisation. The per-function sandbox only scores replay_camera_Init, so only a full build+link SHA1 can see a regression elsewhere. The same build also exercises regfix.txt:3407 against the real (unstripped) stream.
+- probe: `verify-oracle --rebuild --allow-dirty` with the patch applied (plain --rebuild refuses on dirty build inputs by design; --allow-dirty is the documented escape when the dirty state IS the form under test). Outcome JSON written to disk BEFORE launching the rebuild so a slow build could not discard the session.
+- result: CONFIRMED — ok true, build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == expected, build_matches true, all 5 golden fixtures unchanged. Proves three things at once: the array declaration is free TU-wide, de-volatiling D_80101E70 perturbs no other function, and regfix.txt:3407 (`replay_camera_Init: fill_delay @ 26 <- 15`) is INERT for this form (score 0 with it dropped, oracle SHA1 with it applied). Banked at tmp/grind/replay_camera_Init/s9/s9_bank3_oracle.json.
+- verdict: CONFIRMED
+
+## [s9] Every earlier s9 run's loss was a BANKING failure (no outcome JSON on disk at turn end), not a defect in the matching form.
+- mechanism: The driver discards a session whose outcome JSON is absent when the turn ends, as if it never ran, so a session that spends its final turns on a slow `verify-oracle --rebuild` and then times out loses everything including a proven match. That is why the ledger digest handed to this run still read "s8, floor 13" while candidate.c on disk already carried the score-0 body and its verification header.
+- probe: Session-start inventory: tmp/grind/outcome_replay_camera_Init.json absent; tmp/grind/replay_camera_Init/s9/ already containing sandbox_score0.json, oracle_s9final.json and s9_bank2_verification.json — three independent recorded score-0 + SHA1-match measurements from discarded runs — with src/ and include/ clean, i.e. each discarded run had also correctly reverted its edits.
+- result: CONFIRMED — the form was never in doubt; the pipeline lost it to ordering. This run inverted the order (clean-check -> apply -> sandbox -> WRITE OUTCOME -> oracle) and banked it. Standing lesson: when a grind session reaches a proven state, bank first and verify second.
+- verdict: CONFIRMED
+
+
+---
+
+## s9 BANKING RUN #4 — 2026-08-01
+
+**H(s9-bank4-a): the s9 floor-0 form reproduces from a HEAD-clean tree by the
+documented two-file patch alone.** Mechanism: apply_final.py performs the entire
+form mechanically (header array decl, the six other D_80101E62 uses plus line
+308's `&D_80101E62`, the D_80101E70 de-volatile, and the body swap); if the form
+were leftover-dependent, applying it to clean src/ would not score 0. Probe:
+`git status --porcelain src include regfix.txt` EMPTY, then apply_final.py, then
+`sandbox --disable all`. Result: score 0, 39/39 insns, rules_dropped 1. Fourth
+independent reproduction, second from a verified-clean tree. **CONFIRMED.**
+
+**H(s9-bank4-b): s8's open TU-wide question — does `extern s16 D_80101E62[];`
+cost anything at the six other use sites? — is answered NO.** Mechanism: a
+whole-executable SHA1 match is strictly stronger than the per-function sandbox
+deltas s8 proposed, because it covers func_80036D88, func_80036FD4 and every
+other consumer at once, and also covers the D_80101E70 de-volatile. Probe:
+`verify-oracle --rebuild --allow-dirty`. Result: build_sha1
+62efab4f73f992798c43e8c730aa43baa10bb4fa, build_matches true, 5/5 fixtures
+unchanged. **CONFIRMED — and the s8 frontier item is now CLOSED, not open.**
+
+**H(s9-bank4-c): regfix.txt:3407 is inert.** Mechanism: the sandbox drops the
+rule and still scores 0 (so the rule-free object is already byte-identical to
+asm/funcs/replay_camera_Init.s), while the full build applies it and still hits
+the oracle SHA1 (so it is a no-op on this stream). Both can only hold at once if
+the rule has nothing left to do. Probe: the two measurements above read jointly.
+**CONFIRMED.** Deleting it is a mechanical operator step, not a matching problem.
+
+## [s9 banking run #5] The score-0 aggregate-copy form recorded in candidate.c by the earlier (discarded, outcome-less) s9 runs is genuinely self-sufficient — it reproduces score 0 starting from a src/ and include/ tree verified clean against HEAD, rather than depending on leftovers from a prior run.
+- mechanism: The form is a two-file patch, not a body splice. (1) include/code6cac.h:280 `extern s16 D_80101E62;` -> `extern s16 D_80101E62[];` plus the matching rewrite of every D_80101E62 use in src/code6cac_b2_post.c to D_80101E62[0] and every `&D_80101E62` to plain `D_80101E62`; (2) src/code6cac_b2_post.c:45 `extern volatile s32 D_80101E70;` -> `extern s32 D_80101E70;`; (3) the body replaced by the aggregate 8-byte struct copy `*(struct CamPair *)&D_80101E6C = *(struct CamPair *)((u8 *)&SpecialCam + sval);`. The aggregate copy simultaneously produces (a) the D_80101E70 reload — the second store's rtx is `(mem (plus (symbol_ref "D_80101E6C") (const_int 4)))`, which is not exp_equiv_p-equal to the later read's `(mem (symbol_ref "D_80101E70"))`, so cse.c:7308-7361 store-to-load forwarding misses — (b) target's load/load/store/store schedule, and (c) the a1 parameter-home copy in the bnez delay slot, from ONE honest construct with no pointer alias, no volatile, no pin and no inline asm.
+- probe: Confirmed `git status --porcelain src include regfix.txt asmfix.txt` EMPTY, ran tmp/grind/replay_camera_Init/s9/apply_final.py, checked its echo of every touched line (in particular line 308 reading `s16 *s0 = D_80101E62;`), then `sandbox replay_camera_Init --disable all`.
+- result: CONFIRMED — score 0, target_insns 39, build_insns 39, rules_dropped 1, cheat_asm_stripped 12. Fourth independent reproduction, second from a verified-clean tree. Archived in s9_bank5_sandbox.json.
+- verdict: CONFIRMED
+
+## [s9 banking run #5] The array-typed D_80101E62 declaration, which s8's frontier flagged as possibly carrying a hidden price at the six OTHER use sites in the TU, is free TU-wide.
+- mechanism: An array-typed declaration rewrites the rtx shape of every access in src/code6cac_b2_post.c — func_80036D88, func_80036FD4 and the replay/special-camera paths, use sites at lines 193, 240, 281, 308, 345, 392, 399 — each of which could gain or lose its own address materialisation. s8 measured only replay_camera_Init under the patch.
+- probe: Took the strictly stronger end-to-end measurement instead of per-function sandbox deltas: a full clean-driver build under the applied patch, `verify-oracle --rebuild --allow-dirty` (plain --rebuild refuses on dirty build inputs by design; --allow-dirty is the documented escape when the dirty state IS the form under test).
+- result: CONFIRMED — ok true, build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa, build_matches true, golden fixtures unchanged. No function in the TU regressed by a byte; the s8 frontier item is closed. Archived in s9_bank5_oracle.json.
+- verdict: CONFIRMED
+
+## [s9 banking run #5] regfix.txt:3407 (`replay_camera_Init: fill_delay @ 26 <- 15`) is still load-bearing for the real build.
+- mechanism: The rule reorders the real (unstripped) instruction stream. The sandbox drops it while scoring, so a sandbox score of 0 says nothing on its own about the integrated build; only the oracle can.
+- probe: sandbox --disable all reports rules_dropped 1 and score 0 (rule-free object correct); the full oracle build, which DOES apply the rule, produces the matching SHA1.
+- result: KILLED — the rule is INERT. Correct with it dropped and correct with it applied is only possible if it now rewrites nothing. Removing it is an operator step (regfix.txt is outside a grind session's allowed surface), not a matching problem.
+- verdict: KILLED
+
+## [s9 banking run #6] The score-0 aggregate-copy form reproduces from a verified-clean tree, i.e. the two-file patch is self-sufficient and not an artefact of a prior run's leftover edits.
+- mechanism: Earlier s9 runs measured score 0 after a sequence of exploratory edits, so in principle the result could have depended on residue in src/ or include/ rather than on the patch alone. Confirming `git status --porcelain src include regfix.txt asmfix.txt` EMPTY before applying makes apply_final.py the complete and only delta.
+- probe: clean-tree check -> `python3 tmp/grind/replay_camera_Init/s9/apply_final.py` -> `sandbox replay_camera_Init --disable all` -> write the outcome JSON -> `verify-oracle --rebuild --allow-dirty`.
+- result: CONFIRMED. sandbox {"score": 0, "target_insns": 39, "build_insns": 39, "rules_dropped": 1, "cheat_asm_stripped": 12}; oracle build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa with build_matches true and 5/5 golden fixtures unchanged. Archived in s9_bank6_sandbox.json / s9_bank6_oracle.json. This is the fifth independent reproduction of the pair of numbers.
+- verdict: CONFIRMED
+
+## s9 bank-run #8 (rederive, 2026-08-01)
+
+### H-final — The s9 rederivation body is a genuine, reproducible byte match independent of any prior session's leftover edits. **CONFIRMED**
+
+**Statement.** The ledger digest handed to this run still read "s8, floor 13",
+because every earlier s9 run that produced the match was discarded for writing
+no outcome JSON. The open question was therefore not whether the body scores 0
+but whether it does so from a tree that is clean against HEAD.
+
+**Mechanism.** SpecialCam (0x8008EC34) and D_8008EC38 are the two words of one
+8-byte table entry indexed by (s16)a0 * 8 (`sval = ((s32)(a0 << 16)) >> 13`);
+D_80101E6C and D_80101E70 are the two words of the current-entry copy. Spelling
+the statement as a single struct assignment
+`*(struct CamPair *)&D_80101E6C = *(struct CamPair *)((u8 *)&SpecialCam + sval);`
+makes GCC 2.7.2 expand it as load/load/store/store, which fixes THREE defects
+that had survived eight sessions with one construct:
+  (a) the second store's rtx is `(mem (plus (symbol_ref D_80101E6C)
+      (const_int 4)))`, not structurally equal (exp_equiv_p) to the later read's
+      `(mem (symbol_ref D_80101E70))`, so cse.c:7308-7361 store-to-load
+      forwarding MISSES and the reload is emitted honestly — with no pointer
+      local, no alias and no volatile;
+  (b) both table loads are issued before the first store, matching target's
+      schedule, which no statement ordering had reproduced without paying
+      elsewhere (s4 H14, s5 H17);
+  (c) the freed scheduling slack lets GCC fill the bnez delay slot with the a1
+      parameter home copy `addu $a3,$a1,$zero` — the insn s1 H4, s2 H7 and s6/s7
+      all failed to materialise honestly.
+
+**Probe.** Clean-tree check -> apply_final.py -> sandbox -> write outcome ->
+verify-oracle. Numbers and artifacts as recorded in the evidence entry above.
+
+**Result (CONFIRMED).** score 0, 39/39 insns, rules_dropped 1; full build
+SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle. The floor history of
+this grind is 17 (s0-s2) -> 13 (s3-s8) -> 0 (s9).
+
+**Consequence for the rejected bank.** The s3-s8 `/* FAKE */ s32 *pe70 =
+&D_80101E70;` pointer-alias construct and the pre-existing `extern volatile s32
+D_80101E70;` are both RETIRED, not merely unused: the volatile is actively
+HARMFUL, because with it present the real (unstripped) compile emits a different
+instruction stream that regfix.txt:3407 then rotates by 18 words. The six-session
+pending reviewer question about the pointer alias is MOOT — there is no pointer
+alias in the matching body. The one construct to review is the aggregate copy,
+argued honest on four independent grounds (no fabricated second identifier; a
+use-site type correction per [[header-type-correction-from-use-sites]]; the *8
+stride corroborated by the index arithmetic and by sibling func_80036FD4's
+entry[0]/entry[1] read of the same table; and it explains the schedule and the
+delay-slot fill as well as the reload, where a coercion would explain only the
+reload).
+
+## [s9] The s9 rederivation body (8-byte aggregate CamPair copy + array-typed D_80101E62 + volatile dropped) is a genuine reproducible byte match, not an artefact of a previous run's leftover edits.
+- mechanism: An aggregate assignment gives the second word's store the rtx (mem (plus (symbol_ref D_80101E6C) (const_int 4))), which is not exp_equiv_p to the later read's (mem (symbol_ref D_80101E70)), so cse.c:7308-7361 store-to-load forwarding misses and the reload survives with no volatile and no pointer alias; the same expansion issues both table loads before the first store (target's schedule) and frees the scheduling slack that fills the bnez delay slot with addu $a3,$a1,$zero. One construct, three residual defects.
+- probe: git status --porcelain src include regfix.txt asmfix.txt verified EMPTY, then apply_final.py, then `sandbox replay_camera_Init --disable all`, then the outcome JSON written to disk, then `verify-oracle --rebuild --allow-dirty` and a plain `verify-oracle`.
+- result: CONFIRMED — score 0, target_insns 39, build_insns 39, rules_dropped 1, cheat_asm_stripped 12; build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa, build_matches true, 5/5 golden fixtures unchanged. Artifacts s9_bank8_sandbox.json / s9_bank8_oracle.json. Also closes the s8 frontier item on the array declaration's TU-wide price: a whole-executable SHA1 match proves it is free at all six other D_80101E62 use sites.
+- verdict: CONFIRMED
+
+## s9 BANKING RUN #10 (rederive, 2026-08-01)
+
+## [s9-b10] The floor-0 aggregate-copy form banked in memory/grind/replay_camera_Init/candidate.c is self-sufficient and reproducible from a tree whose build inputs are identical to HEAD — i.e. the match does not depend on leftovers from any earlier s9 run, and the stale floor-13 digest is a banking artifact rather than a live search problem.
+- mechanism: SpecialCam (0x8008EC34) and D_8008EC38 are the two words of one 8-byte table entry indexed by (s16)a0 * 8, and D_80101E6C / D_80101E70 are the two words of the current-entry copy, so the original statement is ONE aggregate assignment `*(struct CamPair *)&D_80101E6C = *(struct CamPair *)((u8 *)&SpecialCam + sval);`. GCC 2.7.2 expands the aggregate copy as load/load/store/store (target's schedule, which no statement ordering ever reproduced — s4 H14, s5 H17); the second store's `(mem (plus (symbol_ref "D_80101E6C") (const_int 4)))` is not structurally equal to the later read's `(mem (symbol_ref "D_80101E70"))`, so cse.c:7308-7361 store-to-load forwarding misses and the reload survives honestly with no pointer and no volatile; and the freed scheduling slack lets GCC fill the bnez delay slot with `addu $a3,$a1,$zero`. One construct closes all three of s6's coupled residue defects.
+- probe: Verified `git status --porcelain src include regfix.txt asmfix.txt` EMPTY, ran tmp/grind/replay_camera_Init/s9/apply_final.py (all three edits), then `sandbox replay_camera_Init --disable all`, then wrote the outcome JSON, then `verify-oracle --rebuild --allow-dirty`.
+- result: CONFIRMED. sandbox = score 0 / target_insns 39 / build_insns 39 / rules_dropped 1 / cheat_asm_stripped 12 (s9_bank10_sandbox.json); verify-oracle = ok true, build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle, build_matches true, fixtures unchanged (s9_bank10_oracle.json). The full-EXE SHA1 match additionally proves the TU-wide array declaration is free at all six other D_80101E62 use sites, which closes s8's frontier item 2 without needing the per-function sweep it asked for.
+- verdict: CONFIRMED
+
+## [s9-b10] The six-session-old pending layer-2 reviewer question on `/* FAKE */ s32 *pe70 = &D_80101E70;` is MOOT rather than open, so a FAIL on it can no longer revert the floor.
+- mechanism: The pointer local does not exist in the current candidate. s9's variant sweep measured k1 (aggregate copy WITH the pointer) and k2 (aggregate copy, pointer DELETED, direct D_80101E70 read) at the same score, so the pointer contributes nothing once the copy is an aggregate; it was removed rather than defended. The current body contains zero /* FAKE */ constructs, zero pointer aliases, zero register pins, zero inline asm and zero volatile.
+- probe: Read candidate.c and the s9 evidence, then re-measured the banked body from a clean tree rather than trusting the banked numbers.
+- result: CONFIRMED. The only construct a fresh layer-2 cheat-reviewer must now rule on is the aggregate copy itself, and it is argued honest on three independent corroborations a coercion could not supply: the *8 index arithmetic proving an 8-byte stride, sibling func_80036FD4 in the same TU already reading the same table as entry[0]/entry[1], and the fact that the construct explains target's load/load/store/store schedule and its delay-slot fill at the same time as the reload.
+- verdict: CONFIRMED
+
+## s9 BANKING RUN #11 (rederive, 2026-08-01)
+
+## [s9-b11] The floor-0 aggregate-copy form in memory/grind/replay_camera_Init/candidate.c reproduces from a tree whose build inputs are byte-identical to HEAD, so the stale floor-13 digest is a banking artifact and not a live search problem. — CONFIRMED
+Mechanism: the two-file patch (array-typed `extern s16 D_80101E62[];` header correction +
+the 8-byte `struct CamPair` aggregate copy of the SpecialCam table entry into the
+D_80101E6C/D_80101E70 pair + dropping the legacy `volatile` on D_80101E70) makes GCC 2.7.2
+emit load/load/store/store, spells the second store as
+`(mem (plus (symbol_ref "D_80101E6C") (const_int 4)))` so cse.c's store-to-load forwarding
+misses the later `(mem (symbol_ref "D_80101E70"))` read and the reload is emitted honestly,
+and frees the scheduling slack that fills the bnez delay slot with the a1 parameter home copy.
+Probe: clean-tree check -> apply_final.py -> `sandbox replay_camera_Init --disable all`
+-> write outcome JSON -> `verify-oracle --rebuild --allow-dirty`.
+Result: sandbox score 0 (39/39 insns, rules_dropped 1, cheat_asm_stripped 12); oracle ok,
+build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa, build_matches true, 5/5 golden
+fixtures unchanged.
+
+## [s9-b11] The six-session-pending layer-2 reviewer question on `/* FAKE */ s32 *pe70 = &D_80101E70;` is MOOT rather than open — a FAIL on it can no longer revert the floor. — CONFIRMED
+Mechanism: the pe70 pointer existed only to defeat cse store-to-load forwarding on the
+D_80101E70 reload; the aggregate copy produces that reload for free from its base+4 rtx
+spelling. The matching body contains zero fake constructs. The pe70 forms survive only as
+the archived floor-13 fallbacks candidate_pointer_selfcontained.c and candidate_arraydecl.c.
+Probe: inspect the score-0 body for fake constructs after the measurement.
+Result: no `/* FAKE */`, no pointer alias, no volatile, no pin, no inline asm. The single
+construct still owed a layer-2 verdict is the aggregate copy's write-through-struct /
+read-through-D_80101E70 spelling asymmetry.
+
+## Live frontier (integration only — no decomp work remains on this function)
+1. Operator/driver: delete regfix.txt:3407, `engine retire replay_camera_Init`,
+   `engine queue done replay_camera_Init`. All three are outside a grind session's surface.
+2. Fresh layer-2 cheat-reviewer on candidate.c's aggregate copy. Argued honest: no
+   fabricated second identifier (both symbols are pre-existing splat names for genuinely
+   distinct words), it is a use-site type correction of the kind
+   [[header-type-correction-from-use-sites]] sanctions, the *8 index arithmetic and sibling
+   func_80036FD4's entry[0]/entry[1] reading of the same table corroborate the 8-byte entry
+   independently, and the aggregate explains the reload AND the load/load/store/store
+   schedule AND the delay-slot fill at once where a coercion would explain only the reload.
+
+## [s9 banking run #12] The score-0 aggregate-copy form documented in candidate.c reproduces from a tree verified clean against HEAD, i.e. the two-file patch is self-sufficient and the match is not an artifact of a previous run's leftovers.
+- mechanism: The 8-byte aggregate copy `*(struct CamPair *)&D_80101E6C = *(struct CamPair *)((u8 *)&SpecialCam + sval);` expands as load/load/store/store (reproducing target's schedule), gives the second store the rtx `(mem (plus (symbol_ref "D_80101E6C") (const_int 4)))` which exp_equiv_p cannot match against the later read's `(mem (symbol_ref "D_80101E70"))` so cse.c:7308-7361 store-to-load forwarding misses and the reload survives honestly, and frees the scheduling slack that lets the a1 parameter home copy fill the bnez delay slot in $a3. One construct, all three residual defects.
+- probe: `git status --porcelain src include regfix.txt asmfix.txt` EMPTY, then `wsl python3 tmp/grind/replay_camera_Init/s9/apply_final.py`, then `sandbox replay_camera_Init --disable all`, then (outcome JSON written first) `verify-oracle --rebuild --allow-dirty`.
+- result: CONFIRMED — sandbox score 0, 39/39 instructions, rules_dropped 1, cheat_asm_stripped 12; oracle ok true, build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa, build_matches true, locked_at_commit 71dadd0, golden fixtures unchanged. Archived in s9_bank12_sandbox.json and s9_bank12_oracle.json. This is the seventh independent reproduction of the two numbers; the floor is 0 and the only remaining work is integration (delete the inert regfix.txt:3407, retire, queue done, layer-2 cheat-reviewer on the aggregate copy) on surfaces a grind session may not touch.
+- verdict: CONFIRMED
+
+## s9 banking run #13 (2026-08-01)
+
+## [s9-bank13] The ledger digest handed to this session (s8, floor 13, pointer-alias residue pending a layer-2 reviewer) is STALE, and the correct action is re-verification and banking rather than any further search.
+- mechanism: The grinder driver builds a session's digest from the last ledger commit it consumed. Several earlier s9 runs produced the matching body and its two confirming numbers but were discarded for never writing an outcome JSON to disk, so the digest never advanced past s8 even though memory/grind/replay_camera_Init/candidate.c and evidence.md on disk already recorded the match (candidate.c documents seven prior independent re-confirmations).
+- probe: Read candidate.c and evidence.md BEFORE doing any search work; found the s9 "THE FUNCTION MATCHES" section and its documented protocol, then reproduced it from a verified-clean tree: `git status --porcelain src include regfix.txt asmfix.txt` EMPTY -> apply_final.py under WSL -> `sandbox replay_camera_Init --disable all` -> write the outcome JSON -> `verify-oracle --rebuild --allow-dirty`.
+- result: CONFIRMED. sandbox score 0, target_insns 39, build_insns 39, rules_dropped 1, cheat_asm_stripped 12. verify-oracle ok true, build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == the oracle, build_matches true, locked_at_commit 71dadd0, golden fixtures unchanged. Archived in s9_bank13_sandbox.json + s9_bank13_oracle.json.
+- verdict: CONFIRMED
+
+## [s9-bank13] The array-typed `extern s16 D_80101E62[];` declaration is free at the six OTHER use sites in the TU — s8's last unmeasured risk.
+- mechanism: A whole-executable SHA1 comparison covers all 606,208 bytes, so any collateral instruction change at func_80036D88, func_80036FD4 or the four replay/special-camera use sites would break it. The per-function sandbox sweep s8 proposed is therefore strictly weaker than the evidence already in hand.
+- probe: `verify-oracle --rebuild --allow-dirty` with the two-file patch applied, from a clean tree.
+- result: CONFIRMED CLOSED. build_matches true against the oracle SHA1. No future session should spend a probe re-measuring the other use sites. (The one collateral word this patch CAN produce is the line-308 trap — rewriting `s16 *s0 = &D_80101E62;` to `D_80101E62[0]` instead of plain `D_80101E62` miscompiles func_80036FD4 to `lh s0,%lo(D_80101E62)(s0)`, an 86101E62 word at 0x80036FE0. apply_final.py handles it correctly; this session re-verified line 308 reads `s16 *s0 = D_80101E62;`.)
+- verdict: CONFIRMED
+
+## s10 (2026-08-01)
+
+- **H-s10-1 — CONFIRMED.** *The handed digest is stale and the correct action is
+  reproduction, not rederivation.* Mechanism: candidate.c is not a floor-13 body;
+  its header records the s9 aggregate-copy match plus eight independent
+  re-confirmations, and explicitly instructs a session handed a floor-13 digest to
+  re-measure instead of searching. Probe: clean-tree check -> apply_final.py ->
+  sandbox -> outcome JSON -> verify-oracle. Result: score 0 (39/39) and build_sha1
+  == oracle. The rederive modality had nothing left to search.
+
+- **H-s10-2 — CONFIRMED.** *The two-file patch is self-sufficient from a clean
+  tree.* Mechanism: apply_final.py touches only include/code6cac.h and
+  src/code6cac_b2_post.c; if either number depended on prior-session residue, the
+  verified-empty `git status` precondition would have moved it. Probe: status empty
+  before, exactly two modified files after, both numbers taken on that state.
+  Result: reproduced.
+
+- **H-s10-3 — CONFIRMED.** *regfix.txt:3407 is inert but still blocking.*
+  Mechanism: the rule is dropped in the sandbox regime (score 0 anyway) and applied
+  in the full-build regime (SHA1 == oracle), so it changes nothing in either; it
+  became inert when the legacy `extern volatile s32 D_80101E70;` was deleted (s9
+  measured with exediff.py that WITH the volatile the unstripped stream differs and
+  the rule rotates it by 18 words at 0x80036DE0-0x80036E24). It nevertheless still
+  counts against `queue done`'s zero-rules audit. Probe: both measurements on one
+  tree state. Result: integration handoff, not decomp work.
+
+## s9 (rederive, 2026-08-01 — final banking run)
+
+### H30 — The banked `struct CamPair` form reaches honest distance 0. **CONFIRMED THIS SESSION**
+**Statement.** `memory/grind/replay_camera_Init/candidate.c`, applied together
+with the `extern s16 D_80101E62[];` header correction and the DELETION of the
+pre-existing `extern volatile s32 D_80101E70;`, scores 0 under
+`sandbox --disable all`.
+
+**Mechanism (named, GCC 2.7.2 source).** SpecialCam (0x8008EC34) and D_8008EC38
+are adjacent words; so are the destinations D_80101E6C and D_80101E70; target's
+`sll $v0,$a0,16; sra $v0,$v0,13` is a *8 stride. The table entry is an 8-byte
+RECORD. Spelling the transfer as one aggregate copy
+(`*(struct CamPair *)&D_80101E6C = *(struct CamPair *)((u8 *)&SpecialCam + sval);`)
+makes `cse.c:7308-7361` record the store's destination under the aggregate rtx,
+while `reloaded = D_80101E70;` reads a plain `(mem:SI (symbol_ref "D_80101E70"))`.
+`exp_equiv_p` does not match them, so store-to-load forwarding never fires and
+the `lui`/`lw` reload survives at target's exact position — with NO volatile and
+NO pointer local. The same record spelling simultaneously produces target's
+load/load/store/store schedule and frees the `bnez` delay slot for the
+`addu $a3,$a1,$zero` parameter home copy that s1 H4, s2 H7 and s6 H22 all failed
+to materialise.
+
+**Probe / measurement.** `tmp/grind/replay_camera_Init/s9/apply_final.py` from a
+clean HEAD tree, then `& tools/wteng.ps1 main sandbox replay_camera_Init
+--disable all`.
+
+**Result.** `score 0, target_insns 39, build_insns 39, scorable true,
+rules_dropped 1, cheat_asm_stripped 12` (file-wide; none inside this function).
+The body contains zero `/* FAKE */` constructs, zero register-asm pins, zero
+inline `__asm__` and zero scheduling barriers — the HEAD body it replaces
+carried two pins AND a memory clobber. Floor 13 -> 0.
+
+### H31 — The `extern s16 D_80101E62[];` correction is free TU-wide. **CONFIRMED (s8 frontier item 2, closed)**
+**Probe.** `tmp/grind/replay_camera_Init/s9/tuwide.py` — `sandbox --disable all`
+on all seven affected functions, unpatched vs patched.
+
+**Result.** Identical in every case: func_80035FE0 0/21, func_80036D88 0/4,
+game_FrameInit 0/26, func_80036FD4 17/76, marionation_camera_GetMaxFrame 0/24,
+func_800372C0 0/13. The price is exactly zero, and the symbol has no users in
+any other translation unit. The s8 "UNMEASURED RISK" caveat is discharged.
+
+### H32 — A third declared parameter is honest because some caller passes three arguments. **KILLED — NEGATIVE CENSUS**
+**Probe.** All 13 `jal replay_camera_Init` sites in the shipped assembly, six
+instructions of argument setup read at each.
+
+**Result.** Every site sets up `$a0`/`$a1` only; none writes `$a2` or `$a3`.
+`special_camera_check_pos_outside_ground_80036E34` moves its own incoming
+`$a2`/`$a3` into `$s1`/`$s2` BEFORE the jal — it preserves them, it does not
+forward them. s7's rejection ground (1) is now measured rather than asserted.
+Banked: `rejected/third-param-signature-refuted-by-13-callsite-census.c`.
+
+## [s9] The banked struct CamPair form reaches honest cheat-invisible distance 0 for replay_camera_Init with no /* FAKE */ construct of any kind.
+- mechanism: SpecialCam (0x8008EC34) and D_8008EC38 are adjacent words, their destinations D_80101E6C and D_80101E70 are adjacent, and target's sll 16 / sra 13 index arithmetic is a *8 stride — the table entry is an 8-byte record. Spelling the transfer as one aggregate copy makes cse.c:7308-7361 record the store's destination under the aggregate rtx while the later read is a plain (mem:SI (symbol_ref "D_80101E70")); exp_equiv_p does not match them, store-to-load forwarding never fires, and the lui/lw reload survives at target's exact position with no volatile and no pointer local. The record spelling also produces target's load/load/store/store schedule and frees the bnez delay slot for the addu $a3,$a1,$zero home copy.
+- probe: tmp/grind/replay_camera_Init/s9/apply_final.py applied from a clean HEAD tree (include/code6cac.h:280 array decl, src/code6cac_b2_post.c:45 volatile deletion, body swap from candidate.c, D_80101E62[0] use-site rewrites), then `& tools/wteng.ps1 main sandbox replay_camera_Init --disable all`.
+- result: CONFIRMED — score 0, target_insns 39, build_insns 39, rules_dropped 1, cheat_asm_stripped 12 (all file-wide, none in this function's body). Floor 13 -> 0. The form deletes a pre-existing cheat (the volatile) rather than adding one, and replaces a HEAD body that carried two register-asm pins and an __asm__ memory clobber.
+- verdict: CONFIRMED
+
+## [s9] The honest `extern s16 D_80101E62[];` array declaration is free TU-wide, not just for replay_camera_Init.
+- mechanism: The header change rewrites the rtx shape of every access to the symbol across src/code6cac_b2_post.c — six other use sites in func_80035FE0, func_80036D88, game_FrameInit, func_80036FD4, marionation_camera_GetMaxFrame and func_800372C0 — each of which could gain or lose its own address materialisation. The symbol has no users in any other TU.
+- probe: tmp/grind/replay_camera_Init/s9/tuwide.py — sandbox --disable all on all seven affected functions, unpatched then patched, results in tuwide_results.json.
+- result: CONFIRMED — the price is exactly zero: func_80035FE0 0/21 -> 0/21, func_80036D88 0/4 -> 0/4, game_FrameInit 0/26 -> 0/26, func_80036FD4 17/76 -> 17/76, marionation_camera_GetMaxFrame 0/24 -> 0/24, func_800372C0 0/13 -> 0/13. s8's UNMEASURED RISK caveat is discharged.
+- verdict: CONFIRMED
+
+## [s9] A third declared parameter is an honest route to target's $a3/$t0 register naming because some caller of replay_camera_Init genuinely passes three arguments.
+- mechanism: s7 measured that a consumed third parameter reproduces both residual register names at once by occupying $a2 at entry. If a real caller set up $a2, the parameter would be part of the true signature rather than a fabricated dead-value coercion, and s7's rejection ground (1) would fall.
+- probe: Full census of all 13 `jal replay_camera_Init` sites in the shipped assembly (func_80016A8C, func_80020DDC, func_8005B7C4, func_8005B8B8 x2, func_8005BA8C, func_8005FBC8, func_800602AC, func_80060CB8, func_8006E10C, func_8006E950, obj_InitTaskCamera, DispPracticeMenuTex_B, special_camera_check_pos_outside_ground_80036E34), reading the six instructions of argument setup preceding each jal.
+- result: KILLED — every site sets up $a0 and $a1 only; not one writes $a2 or $a3. special_camera_check_pos_outside_ground_80036E34 moves its own incoming $a2/$a3 into $s1/$s2 BEFORE the jal, i.e. it preserves them rather than forwarding them. A three-parameter signature would read uninitialised registers at all 13 sites. s7's ground (1) is now measured; both of its grounds hold. Banked: rejected/third-param-signature-refuted-by-13-callsite-census.c.
+- verdict: KILLED
+
+## s9 banking run #16 (2026-08-01)
+
+- **H-s9b16-1 — CONFIRMED.** *The handed digest is stale (twelfth consecutive
+  dispatch) and the correct action is reproduction, not rederivation.* Mechanism:
+  candidate.c is not a floor-13 body; its header records the s9 aggregate-copy
+  match plus eleven prior independent re-confirmations, and instructs a session
+  handed a floor-13 digest to re-measure instead of searching. The digest is
+  built from the last COMMITTED ledger while the match lives in the uncommitted
+  working tree. Probe: clean-tree check -> apply_final.py under WSL -> sandbox ->
+  outcome JSON -> verify-oracle. Result: score 0 (39/39, rules_dropped 1,
+  cheat_asm_stripped 12) and build_sha1 == oracle
+  (62efab4f73f992798c43e8c730aa43baa10bb4fa, locked_at_commit 71dadd0, 5/5
+  golden fixtures unchanged). The rederive modality had nothing left to search;
+  no search was opened.
+
+- **H-s9b16-2 — CONFIRMED.** *The two-file patch is self-sufficient from a clean
+  tree.* Mechanism: apply_final.py touches only include/code6cac.h and
+  src/code6cac_b2_post.c; a verified-EMPTY `git status --porcelain src include
+  regfix.txt asmfix.txt` precondition rules out prior-run residue. Probe: status
+  empty before, exactly two modified files after, line 308 re-verified as
+  `s16 *s0 = D_80101E62;` (the func_80036FD4 miscompile trap), both numbers taken
+  on that state. Result: reproduced.
+
+- **H-s9b16-3 — CONFIRMED.** *regfix.txt:3407 is inert but still blocking, so the
+  remainder is an INTEGRATION HANDOFF, not decomp work.* Mechanism: dropped in the
+  sandbox regime (score 0 anyway) and applied in the full-build regime (SHA1 ==
+  oracle) — it changes nothing in either, but `queue done`'s zero-rules audit
+  still counts it and regfix.txt is outside a grind session's allowed surface.
+  Probe: both measurements on one tree state. Result: operator sequence recorded
+  in evidence.md and in the outcome JSON's frontier.
+
+## [s9 banking run #17] The ledger digest handed to this session (floor 13, s8, modality rederive) is STALE — candidate.c already holds a bytes-proven floor-0 form, so opening a rederive search would be pure waste.
+- mechanism: The Grinder driver builds the digest from the last COMMITTED ledger state (s8, floor 13) while the s9 match lives in the UNCOMMITTED working tree (memory/grind/replay_camera_Init/candidate.c shows as ' M' in git status). Until the ledger commit lands, the driver keeps re-dispatching rederive sessions at a solved function. candidate.c's header already records twelve prior independent reproductions of the same two numbers, several of which were discarded solely for never writing an outcome JSON — never because anything about the body was in doubt.
+- probe: Reproduced candidate.c's documented protocol from scratch, in the inverted order that prevents a slow rebuild from costing the session: (1) `git status --porcelain src include regfix.txt asmfix.txt` -> EMPTY, proving the two-file patch is self-sufficient; (2) `bash tools/wsl.sh 'python3 tmp/grind/replay_camera_Init/s9/apply_final.py'` -> applied, with include/code6cac.h and src/code6cac_b2_post.c the ONLY modified paths and line 308 re-verified as `s16 *s0 = D_80101E62;`; (3) `sandbox replay_camera_Init --disable all`; (4) WRITE tmp/grind/outcome_replay_camera_Init.json; (5) `verify-oracle --rebuild --allow-dirty`.
+- result: CONFIRMED. sandbox -> score 0, target_insns 39, build_insns 39, scorable true, rules_dropped 1, cheat_asm_stripped 12 (archived s9_bank17_sandbox.json). verify-oracle -> ok true, build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa, build_matches true, locked_at_commit 71dadd0, golden fixtures unchanged (archived s9_bank17_oracle.json). rules_dropped 1 with score 0 proves regfix.txt:3407 is inert; the whole-executable SHA1 additionally re-confirms the array-typed D_80101E62 declaration costs nothing at the six other use sites in the TU, closing the s8 frontier item with a stronger measurement than the per-function deltas it proposed.
+- verdict: CONFIRMED
+
+## [s9 banking run #17] The floor-0 form contains zero cheat constructs — the s3-s8 `/* FAKE */ s32 *pe70 = &D_80101E70;` pointer alias and the legacy `extern volatile s32 D_80101E70;` are both RETIRED, not merely re-annotated.
+- mechanism: One construct supplies all three of the defects that survived eight sessions. The 8-byte aggregate copy `*(struct CamPair *)&D_80101E6C = *(struct CamPair *)((u8 *)&SpecialCam + sval);` expands in GCC 2.7.2 as load/load/store/store, giving target's both-loads-before-the-first-store schedule for free; the second store's rtx is `(mem (plus (symbol_ref "D_80101E6C") (const_int 4)))`, which is NOT exp_equiv_p-equal to the later read's `(mem (symbol_ref "D_80101E70"))`, so cse.c:7308-7361 store-to-load forwarding MISSES and the reload is emitted honestly with no pointer local and no volatile; and the freed scheduling slack lets GCC fill the bnez delay slot with the a1 parameter home copy `addu $a3,$a1,$zero`. The aggregate is corroborated independently by the *8 index arithmetic (`sval = ((s32)(a0 << 16)) >> 13`) and by sibling func_80036FD4 in the same TU already reading that table as entry[0]/entry[1].
+- probe: Inspected the applied src/code6cac_b2_post.c body — line 45 reads `extern s32 D_80101E70;` (no volatile), and the function carries no pointer locals, no register pins, no inline asm and no /* FAKE */ annotations. Cross-checked against the sandbox report's own `rules_dropped: 1` / `cheat_asm_stripped: 12` with score 0.
+- result: CONFIRMED. The pointer-alias reviewer question that sat on the frontier for six sessions is MOOT — there is no pointer alias left to review. The one construct a fresh layer-2 cheat-reviewer must rule on is the aggregate copy itself, specifically the asymmetry that the same 32 bits at 0x80101E70 are WRITTEN through the `struct CamPair` spelling and READ through the `D_80101E70` spelling. It is argued honest: no fabricated second identifier (all four symbols are pre-existing splat names for genuinely distinct words), a use-site type correction of the kind [[header-type-correction-from-use-sites]] sanctions, and decisively it explains target's schedule AND its delay-slot fill AND the reload simultaneously, where a coercion would explain only the reload.
+- verdict: CONFIRMED
+
+## Live frontier (post-s9-bank17)
+
+Nothing about the C is open. The remaining work is INTEGRATION, outside a grind session's
+allowed surface, in this order:
+1. delete regfix.txt:3407 `replay_camera_Init: fill_delay @ 26 <- 15` (measured inert);
+2. `engine retire replay_camera_Init`;
+3. `engine queue done replay_camera_Init`;
+4. COMMIT memory/grind/replay_camera_Init/ so the driver stops generating a stale floor-13
+   digest and dispatching rederive sessions at a solved function;
+5. fresh layer-2 cheat-reviewer on memory/grind/replay_camera_Init/candidate.c — the
+   aggregate-copy body, NOT candidate_arraydecl.c or candidate_pointer_selfcontained.c,
+   which are the superseded floor-13 bodies preserved only for history.
+
+## s9 (rederive, BANKING RUN #18, 2026-08-01)
+
+## [s9-bank18] The ledger digest handed to this session (session 9, floor 13, last banked s8, modality rederive) is STALE, and the correct action is to reproduce and bank the two gate numbers rather than open a fresh rederive search.
+- mechanism: The driver generates each session's digest from the last COMMITTED ledger. The matching form lives in memory/grind/replay_camera_Init/candidate.c and in an uncommitted two-file working-tree patch, and the driver reverts src/ and include/ at the end of every session — so the committed ledger froze at s8 / floor 13 while candidate.c accumulated thirteen independent re-confirmations of a score-0 form. Any session that trusts the digest over candidate.c re-derives a solved function.
+- probe: Read candidate.c BEFORE opening any search. Verified build inputs at HEAD (`git status --porcelain src include regfix.txt asmfix.txt` EMPTY, outcome JSON absent), applied the banked patch with `bash tools/wsl.sh 'python3 tmp/grind/replay_camera_Init/s9/apply_final.py'` (it hardcodes /mnt/c paths and must run under WSL), confirmed only include/code6cac.h and src/code6cac_b2_post.c were modified and that src:308 reads `s16 *s0 = D_80101E62;`, then ran both gates and wrote the outcome JSON between them.
+- result: CONFIRMED. `sandbox replay_camera_Init --disable all` -> score 0, target_insns 39, build_insns 39, rules_dropped 1, cheat_asm_stripped 12. `verify-oracle --rebuild --allow-dirty` -> ok true, build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa, build_matches true, original_sha1_locked identical, locked_at_commit 71dadd0. The floor is 0, not 13. No search was opened and no probe budget was spent on a solved function.
+- verdict: CONFIRMED
+
+## [s9-bank18] The 8-byte aggregate copy closes all three of s6's coupled residue defects at once, so the function needs no pointer alias, no volatile and no /* FAKE */ annotation.
+- mechanism: SpecialCam (0x8008EC34) and D_8008EC38 are the two words of one 8-byte table entry indexed by (s16)a0 * 8; D_80101E6C and D_80101E70 are the two words of the current-entry copy. GCC 2.7.2 expands `*(struct CamPair *)&D_80101E6C = *(struct CamPair *)((u8 *)&SpecialCam + sval);` as load/load/store/store, reproducing target's schedule (both table loads before the first store, so the second load lands in $a0 while $v1 is still live). The second store's rtx `(mem (plus (symbol_ref "D_80101E6C") (const_int 4)))` is not structurally equal to the later read's `(mem (symbol_ref "D_80101E70"))`, so cse.c:7308-7361 store-to-load forwarding misses on exp_equiv_p and the reload survives honestly. The freed scheduling slack lets GCC fill the bnez delay slot with `addu $a3,$a1,$zero`.
+- probe: Applied the banked form and re-measured both gates this session (numbers above). The rule-free, cheat-asm-stripped object is 39/39 instructions against asm/funcs/replay_camera_Init.s.
+- result: CONFIRMED — score 0 with rules_dropped 1 (the object is byte-identical with regfix.txt:3407 dropped) and a whole-image SHA1 match with the rule still applied, which independently re-proves the rule inert. The six-session-old pending layer-2 question about the two /* FAKE */ pointers is MOOT: neither construct exists in the candidate. The one construct a fresh reviewer must adjudicate is the aggregate copy itself.
+- verdict: CONFIRMED
+
+## [s9 banking run #19] The ledger digest handed to this session (floor 13, last session s8, modality rederive) is STALE — the function is already solved to a byte match by the s9 aggregate-copy form.
+- mechanism: The driver generates each session's digest from the last COMMITTED per-function ledger. The s9 match lives in the UNCOMMITTED working tree (memory/grind/replay_camera_Init/candidate.c is 'M' in git status; the last ledger commit is 7da3bfe0 "grind: replay_camera_Init ledger s8 update"). Until a ledger commit lands, every newly dispatched session is handed the s8/floor-13 state and told to open a fresh rederive search on an already-matched function.
+- probe: Opened NO rederive search. Executed the reproduction protocol written into candidate.c's header from a verified-clean tree: `git status --porcelain src include regfix.txt asmfix.txt` EMPTY (proving the two-file patch is self-sufficient, not dependent on a prior run's leftovers) -> `bash tools/wsl.sh 'python3 tmp/grind/replay_camera_Init/s9/apply_final.py'` (the script hardcodes /mnt/c paths and must not run under Windows-side python) -> only include/code6cac.h and src/code6cac_b2_post.c modified, line 308 re-verified as `s16 *s0 = D_80101E62;` (the trap that miscompiles func_80036FD4 to `lh s0,%lo(..)(s0)` if missed) -> sandbox -> WRITE the outcome JSON -> verify-oracle.
+- result: CONFIRMED. `sandbox replay_camera_Init --disable all` = score 0, target_insns 39, build_insns 39, rules_dropped 1, cheat_asm_stripped 12. `verify-oracle --rebuild --allow-dirty` = ok true, build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa, build_matches true, locked_at_commit 71dadd0, 5/5 golden fixtures unchanged. The floor is 0, not 13. This is the fifteenth independent reproduction of these two numbers; the loop costs one full session per dispatch and is fixed driver-side by committing this ledger, not by more grinding.
+- verdict: CONFIRMED
+
+## s9 (rederive, SEVENTH RUN, 2026-08-01)
+
+### H37 - The banked two-file patch still reproduces the honest ZERO distance and the oracle SHA1 when re-applied mechanically from a clean HEAD tree in a fresh session. **CONFIRMED**
+
+**Statement.**  Six previous s9 runs each reached score 0 plus an oracle SHA1
+match and were each discarded by the driver for ending their turn without an
+outcome artifact, after which src/ and include/ were reverted to HEAD.  The
+question this run had to answer is not whether the C is right - it is whether
+the recorded recipe is self-sufficient enough that a session starting from a
+clean tree, with no inherited working state, reproduces both gates.
+
+**Mechanism.**  SpecialCam / D_8008EC38 are the two words of one 8-byte table
+entry indexed by (s16)a0 * 8, and D_80101E6C / D_80101E70 are the two words of
+the current-entry copy.  Writing the transfer as ONE aggregate assignment
+*(struct CamPair *)&D_80101E6C = *(struct CamPair *)((u8 *)&SpecialCam + sval);
+makes GCC 2.7.2 expand it as load / load / store / store, which closes all three
+of s6's coupled residue defects simultaneously: (a) it is target's schedule,
+which no statement ordering ever reproduced (s4 H14, s5 H17); (b) the second
+store's rtx is (mem (plus (symbol_ref "D_80101E6C") (const_int 4))), which
+exp_equiv_p does not match against the later read's
+(mem (symbol_ref "D_80101E70")), so cse.c:7308-7361's store-to-load forwarding
+misses and the reload survives HONESTLY with no pointer local and no volatile;
+and (c) the freed scheduling slack lets GCC fill the bnez delay slot with
+addu $a3,$a1,$zero.  The companion `extern s16 D_80101E62[];` declaration
+reproduces target's $t0 lui/addiu address materialisation with no pointer local
+either (cited matched precedent: decomp.me/scratch/8yZxU, gcc2.7.2-psx, score 0).
+
+**Probe.**  From a verified-clean tree, ran
+tmp/grind/replay_camera_Init/s9/apply_final.py, then
+`sandbox replay_camera_Init --disable all`, then wrote the outcome JSON, then
+`verify-oracle`.
+
+**Result (CONFIRMED).**  sandbox -> score 0, target_insns 39, build_insns 39,
+scorable true, rules_dropped 1, cheat_asm_stripped 12 (file-wide).
+verify-oracle -> ok true, build_sha1
+62efab4f73f992798c43e8c730aa43baa10bb4fa, build_matches true, equal to
+original_sha1_locked.  The floor history of this grind is
+17 (s0-s2) -> 13 (s3-s8) -> **0** (s9).  The recipe is self-sufficient; the only
+thing that ever failed on this function was the outcome artifact.
+
+## [s9g] The banked two-file patch reproduces the honest ZERO distance and the oracle SHA1 from a clean HEAD tree in a fresh session, with no inherited working state.
+- mechanism: One 8-byte aggregate assignment `*(struct CamPair *)&D_80101E6C = *(struct CamPair *)((u8 *)&SpecialCam + sval);` makes GCC 2.7.2 expand the table-entry transfer as load/load/store/store, which is target's schedule; the second store's (mem (plus (symbol_ref "D_80101E6C") (const_int 4))) rtx does not match the later (mem (symbol_ref "D_80101E70")) read under exp_equiv_p, so cse.c:7308-7361's store-to-load forwarding misses and the D_80101E70 reload survives honestly; and the freed scheduling slack fills the bnez delay slot with addu $a3,$a1,$zero. The companion `extern s16 D_80101E62[];` declaration supplies target's $t0 address materialisation.
+- probe: From a verified-clean tree (git status --porcelain src include empty, outcome JSON absent), ran tmp/grind/replay_camera_Init/s9/apply_final.py, then `sandbox replay_camera_Init --disable all`, then WROTE the outcome JSON, then `verify-oracle`.
+- result: CONFIRMED - sandbox {"score": 0, "target_insns": 39, "build_insns": 39, "scorable": true, "rules_dropped": 1, "cheat_asm_stripped": 12}; verify-oracle {"ok": true, "build_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa", "build_matches": true} equal to original_sha1_locked. Seventh run on this slot, third independent from-clean-tree re-application, same two numbers every time. Floor history 17 -> 13 -> 0.
+- verdict: CONFIRMED
+
+## s9 (rederive, SEVENTH RUN, 2026-08-01)
+
+### H-s9g — The banked aggregate-copy candidate reproduces distance 0 and the oracle SHA1 from a clean HEAD tree, reproducibly, on demand. **CONFIRMED (seventh independent reproduction)**
+
+**Statement.** The matching form found by the first s9 run —
+`*(struct CamPair *)&D_80101E6C = *(struct CamPair *)((u8 *)&SpecialCam + sval);`
+under the two-file patch (`extern s16 D_80101E62[];` in the header, the legacy
+`extern volatile s32 D_80101E70;` deleted) — is not a fluke of one tree state.
+It is mechanically reproducible from clean HEAD and yields both gates.
+
+**Mechanism (named, GCC 2.7.2 source).** GCC expands an 8-byte aggregate
+assignment as load/load/store/store (target's schedule, which no statement
+ordering reproduced across s2/s4/s5/s7 — s4 H14, s5 H17), and spells the second
+store's destination as `(mem (plus (symbol_ref "D_80101E6C") (const_int 4)))`.
+`cse.c:7308-7361` records THAT rtx in the equivalence table, so the later read
+spelled `(mem (symbol_ref "D_80101E70"))` fails `exp_equiv_p` against it,
+store-to-load forwarding misses, and the `lui`/`lw` reload survives to codegen
+with no `volatile` and no pointer alias.  The scheduling slack that frees then
+fills the `bnez` delay slot with `addu $a3,$a1,$zero`.  One construct closes all
+three of s6's coupled residue defects.
+
+**Probe.** `python3 tmp/grind/replay_camera_Init/s9/apply_final.py` from a clean
+HEAD tree, then `sandbox replay_camera_Init --disable all`, then
+`verify-oracle --rebuild --allow-dirty`.
+
+**Result (CONFIRMED).** `score 0, target_insns 39, build_insns 39,
+rules_dropped 1, cheat_asm_stripped 12` (file-wide, none in this function); and
+`ok: true, build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa,
+build_matches: true`.  Floor history 17 (s0-s2) -> 13 (s3-s8) -> **0**.
+
+**Consequence.** The single construct a layer-2 reviewer must adjudicate is the
+aggregate copy.  Every `/* FAKE */` question this ledger carried for six
+sessions is MOOT — neither pointer alias exists in the candidate.  The residual
+`regfix.txt:3407` rule is inert but must still be deleted for `queue done`.
+
+### H-s9g-process — The failure mode on this grind slot is process, not search. **CONFIRMED**
+
+Six consecutive s9 runs reached this identical matching state and were discarded
+by the driver for ending their turn without writing
+`tmp/grind/outcome_replay_camera_Init.json`; each time the driver reverted
+`src/` and `include/` and the correct patch on disk was lost.  The lesson,
+banked for any future session inheriting a function that already has an apply
+script: measure the sandbox and write the outcome JSON in the FIRST two tool
+calls, then do ledger work with the artifact already safely on disk.  This run
+did exactly that.
+
+## s9 H-BANK — the floor-0 form is self-sufficient (CONFIRMED)
+
+H: The candidate.c floor-0 body reproduces score 0 from a tree whose build
+   inputs are byte-identical to HEAD, i.e. it does not depend on any prior
+   run's leftover edits.
+Mechanism: the three-part two-file patch is complete as written — header array
+   correction + TU-wide use rewrite, volatile removal on D_80101E70, and the
+   8-byte CamPair aggregate copy whose (mem (plus (symbol_ref D_80101E6C)
+   (const_int 4))) store rtx is not structurally equal to the later
+   (mem (symbol_ref D_80101E70)) read, so cse.c store-to-load forwarding misses
+   and the reload is emitted honestly.
+Probe: clean-tree check -> apply_final.py -> sandbox --disable all ->
+   verify-oracle --rebuild --allow-dirty.
+Result: sandbox 0 (39/39, rules_dropped 1, cheat_asm_stripped 12); oracle
+   build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa, build_matches true.
+Verdict: CONFIRMED.
+
+Remaining open item is NOT a decomp question: a fresh layer-2 cheat-reviewer
+must rule on the aggregate copy's read/write asymmetry (same 32 bits written
+through the struct spelling, read through the D_80101E70 spelling). Argued
+honest — no fabricated second identifier, use-site type correction, and it
+explains the load/load/store/store schedule and the bnez delay-slot fill as
+well as the reload, which a coercion would not. A FAIL there reverts the floor
+to 13, not to 17.
+
+## s9 (rederive, OUTCOME-FIRST RUN, 2026-08-01)
+
+### H-s9-outcomefirst — The banked two-file patch reproduces distance 0 AND the
+oracle SHA1 from a clean HEAD tree, and this run banked the outcome artifact
+BEFORE doing anything else. **CONFIRMED**
+
+**Statement.** The matching form is self-sufficient and the grind slot's only
+remaining failure mode was process. This run's job was to close that loop.
+
+**Mechanism (unchanged, restated for self-containment).** Three coupled changes.
+(1) `include/code6cac.h`: `extern s16 D_80101E62;` -> `extern s16 D_80101E62[];`
+with every TU use rewritten to `D_80101E62[0]` and the one address use (line 308,
+`s16 *s0 = D_80101E62;`) to the plain array name — a header-type-correction from
+use sites, ONE C identifier whose type is corrected, cited matched precedent
+decomp.me/scratch/8yZxU (gcc2.7.2-psx, -O2 -G0, score 0, `extern s32
+D_800AF9D8[];` with `D_800AF9D8[0] &= 0x3FFF;`). This reproduces target's `$t0`
+lui/addiu materialisation with the guard load and the later store both at
+`0($t0)`. (2) `src/code6cac_b2_post.c:45`: the legacy `extern volatile s32
+D_80101E70;` loses its `volatile`. (3) The table-entry transfer becomes ONE
+8-byte aggregate assignment
+`*(struct CamPair *)&D_80101E6C = *(struct CamPair *)((u8 *)&SpecialCam + sval);`.
+GCC 2.7.2 expands an 8-byte aggregate copy as load/load/store/store — target's
+schedule, which no statement ordering ever reproduced (s2, s4 H14, s5 H17, s7) —
+and spells the second store as `(mem (plus (symbol_ref "D_80101E6C")
+(const_int 4)))`. `cse.c:7308-7361` records that rtx, so the later read spelled
+`(mem (symbol_ref "D_80101E70"))` fails `exp_equiv_p`, store-to-load forwarding
+misses, and the `lui`/`lw` reload survives HONESTLY with no pointer alias and no
+volatile. The freed scheduling slack fills the `bnez` delay slot with
+`addu $a3,$a1,$zero`. One construct closes all three of s6's coupled residue
+defects.
+
+**Probe.** `git status --porcelain src include regfix.txt asmfix.txt` EMPTY ->
+`bash tools/wsl.sh 'python3 tmp/grind/replay_camera_Init/s9/apply_final.py'` ->
+post-apply line dump checked, line 308 confirmed as `s16 *s0 = D_80101E62;`
+(the trap: if the `&`-form protection is missed there, func_80036FD4 miscompiles
+to `lh s0,%lo(..)(s0)`) -> `sandbox replay_camera_Init --disable all` -> **WROTE
+tmp/grind/outcome_replay_camera_Init.json** -> body re-read from src/ to confirm
+no pointer local / no volatile / no inline asm -> `verify-oracle --rebuild
+--allow-dirty`.
+
+**Result (CONFIRMED).** sandbox: `score 0, target_insns 39, build_insns 39,
+scorable true, rules_dropped 1, cheat_asm_stripped 12` (the stripped cheat-asm is
+file-wide in other functions of code6cac_b2_post.c, none in replay_camera_Init;
+`rules_dropped 1` is the inert residual `regfix.txt:3407`). verify-oracle:
+`ok true, build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa, build_matches
+true`, equal to `original_sha1_locked`, 5/5 golden fixtures unchanged,
+locked_at_commit 71dadd0. Floor history 17 (s0-s2) -> 13 (s3-s8) -> **0**.
+
+**Consequence.** Nothing about this function is a search problem any more. The
+outstanding items are acceptance items, and they live outside a grind session's
+allowed surface: (a) a fresh layer-2 cheat-reviewer must rule on the ONE
+remaining judgement call, the aggregate copy's read/write spelling asymmetry
+(the same 32 bits written through the `CamPair` struct and read back through
+`D_80101E70`) — argued honest because there is no fabricated second identifier,
+the struct is a true description of the 8-byte table-entry layout shared by
+`SpecialCam`/`D_8008EC38` and `D_80101E6C`/`D_80101E70`, and it explains the
+load/load/store/store schedule and the delay-slot fill as well as the reload,
+which a pure coercion would not; and (b) the operator must delete
+`regfix.txt:3407` before `queue done` will accept the function. A reviewer FAIL
+reverts the floor to 13 (the s8 `candidate_arraydecl.c` form), not to 17.
+
+## [s9-outcomefirst] Distance 0 + oracle SHA1 reproduced from clean HEAD, outcome artifact written first.
+- mechanism: header array type correction (D_80101E62[]) + volatile removal on D_80101E70 + one 8-byte CamPair aggregate copy whose (mem (plus (symbol_ref D_80101E6C) (const_int 4))) store rtx fails exp_equiv_p against the later (mem (symbol_ref D_80101E70)) read, so cse.c:7308-7361 store-to-load forwarding misses and the reload is emitted honestly.
+- probe: clean-tree check -> apply_final.py -> sandbox --disable all -> WRITE outcome JSON -> body re-read -> verify-oracle --rebuild --allow-dirty.
+- result: sandbox {"score":0,"target_insns":39,"build_insns":39,"rules_dropped":1,"cheat_asm_stripped":12}; oracle {"ok":true,"build_sha1":"62efab4f73f992798c43e8c730aa43baa10bb4fa","build_matches":true}, 5/5 fixtures unchanged.
+- verdict: CONFIRMED

@@ -2589,3 +2589,177 @@ Modalities spent: recon, structural (s2, s3, s4, s11), permuter (s5), forensics
   the banked honest form is `candidate.c` (score 2), with `candidate_alt_score3_no_fake.c`
   (score 3, L3 removed) and `candidate_alt_L1_via_ylow.c` (score 2, L1 staged through a
   different local) as fallbacks should either FAKE construct ever be refused.
+
+## 2026-07-31 — replay_camera_Init (src/code6cac_b2_post.c) — **INTEGRATION HANDOFF — BYTES PROVEN ON MAIN, BLOCKED ONLY BY regfix.txt**
+
+This is NOT an endgame lock and NOT an exhaustion claim.  The function is
+MATCHED in pure C.  Grind session s9 (rederive modality) closed the last
+13-point residue with a single construct and verified it end to end:
+
+* `engine build` with the session's body in the working tree produced
+  `build/bb2.exe` sha1 `62efab4f73f992798c43e8c730aa43baa10bb4fa` — **equal to
+  the oracle**.  A whole-EXE word diff (`tmp/grind/replay_camera_Init/s9/exediff.py`)
+  against `disc/SLUS_006.63` reports zero differing words.
+* The cheat-invisible object (`sandbox replay_camera_Init --disable all`, rules
+  dropped, cheat-asm and volatile stripped) is word-for-word identical to
+  `asm/funcs/replay_camera_Init.s` after relocation — 39/39
+  (`tmp/grind/replay_camera_Init/s9/relocheck.py`).
+
+**Why `sandbox` still prints 4.**  The engine compares operands symbolically.
+The matching C copies an 8-byte table entry as one aggregate assignment, so the
+second word of each pair is spelled `base+4`: `%hi/%lo(SpecialCam)+4` where
+target's asm text says `%hi/%lo(D_8008EC38)`, and `%hi/%lo(D_80101E6C)+4` where
+it says `%hi/%lo(D_80101E70)`.  `SpecialCam` is 0x8008EC34 and `D_80101E6C` is
+0x80101E6C, so both spellings name the same address and the MIPS HI16/LO16
+relocation pair carries the +4 as the AHL addend.  The four flagged operands are
+bit-identical after linking; the SHA1 match is the proof.
+
+**The C (full body, rationale and the two-file patch recipe in
+`memory/grind/replay_camera_Init/candidate.c`):**
+
+```c
+s32 replay_camera_Init(s32 a0, s32 a1) {
+    struct CamPair { s32 w0; s32 w1; };
+    extern u8 SpecialCam;
+    s32 sval;
+    s32 reloaded;
+
+    if (D_80101E62[0] != 0) {
+        return 0;
+    }
+
+    sval = ((s32)(a0 << 16)) >> 13;
+    D_80101E60 = a0;
+    *(struct CamPair *)&D_80101E6C = *(struct CamPair *)((u8 *)&SpecialCam + sval);
+    D_80101E7C = a1;
+    D_80101E68 = 0;
+    D_80101E62[0] = 2;
+    reloaded = D_80101E70;
+    D_80101E9E = 0;
+    D_80101E78 = (u32)(reloaded + 0x7FF) >> 11;
+    return 1;
+}
+```
+
+Zero regfix/asmfix reliance, zero cheat-asm, zero register pins, zero `volatile`,
+zero `/* FAKE */` annotations.  The two pointer aliases that carried a pending
+reviewer question through sessions s3-s8 are GONE, not defended.
+
+**Exact operator steps to close it (all outside a grind session's surface):**
+
+1. `git diff` the working tree — it should contain only
+   `include/code6cac.h` (line 280, `extern s16 D_80101E62;` ->
+   `extern s16 D_80101E62[];`) and `src/code6cac_b2_post.c` (the body above, the
+   `D_80101E62[0]` / `s16 *s0 = D_80101E62;` use-site rewrites, and line 45
+   `extern volatile s32 D_80101E70;` -> `extern s32 D_80101E70;`).
+2. Run a fresh layer-2 adversarial `cheat-reviewer` on the body.  The single
+   construct to adjudicate is the aggregate copy: the 32 bits at 0x80101E70 are
+   WRITTEN through the `struct CamPair` spelling and READ through the
+   `D_80101E70` spelling, and that asymmetry is what defeats
+   `cse.c` store-to-load forwarding.  The session's argument for it being honest
+   rather than a coercion: there is no fabricated second identifier (both symbols
+   are pre-existing splat names for genuinely distinct words), it is a use-site
+   type correction of the `header-type-correction-from-use-sites` kind, the *8
+   index arithmetic and `func_80036FD4`'s own `entry[0]`/`entry[1]` reading of
+   the same table corroborate the record shape independently, and the construct
+   explains target's load/load/store/store schedule and its `bnez` delay-slot
+   fill at the same time as the reload — a coercion would explain only the
+   reload.  Session s8's `extern s16 D_80101E62[];` half already carries a cited
+   matched precedent (decomp.me `gcc2.7.2-psx__8yZxU`, score 0) and a measured
+   TU-wide price of zero.
+3. Delete `regfix.txt:3407`  `replay_camera_Init: fill_delay @ 26 <- 15`.  It is
+   now INERT — the rule-free object is already byte-identical — but it is the
+   function's last rule and `queue done` refuses while it exists.  (With the old
+   `volatile` decl still in place this rule was actively HARMFUL: it rotated 18
+   words at 0x80036DE0-0x80036E24.  That is measured, not inferred.)
+4. `engine retire replay_camera_Init`, then `engine queue done replay_camera_Init`.
+   Expected disposition: **COMPLETED-C**.
+
+Nothing here is pending an owner RULING; the outcome is `owner-gated` only
+because deleting a regfix rule and running `retire` / `queue done` are outside a
+grind session's allowed surface.
+
+### Addendum — 2026-07-31, second s9 run: re-verified from a clean tree; outcome is `candidate-ready`, not `owner-gated`
+
+The s9 run that wrote the entry above never produced an outcome JSON, so the
+driver discarded it and reverted `src/code6cac_b2_post.c` and
+`include/code6cac.h` to HEAD.  A fresh s9 session re-applied the full two-file
+patch mechanically (`tmp/grind/replay_camera_Init/s9/apply_final.py`) and
+re-measured:
+
+- `sandbox replay_camera_Init --disable all` -> **score 0**, target_insns 39,
+  build_insns 39, `rules_dropped: 1`.  (The entry above predicted 4 and explained
+  it as a symbolic-operand artifact; that caveat applies to that run's `k1`/`k2`
+  probe variants, not to the banked `candidate.c` body, which scores 0.)
+- `engine build` -> `build/bb2.exe` sha1
+  `62efab4f73f992798c43e8c730aa43baa10bb4fa` == **the oracle**.
+
+The claim in the entry above therefore stands, independently reproduced.
+
+**Disposition corrected.**  This is NOT `owner-gated` and nothing is pending an
+owner ruling.  The honest cheat-invisible distance is 0 with the edits in place
+in `src/`, which is precisely the `candidate-ready` condition, so the session
+returns `candidate-ready` and lets the driver re-verify the bytes and run the
+Judge.  The operator steps listed above (delete the now-inert `regfix.txt:3407`,
+`engine retire`, `engine queue done`) remain accurate as the closing bookkeeping;
+note that the full build already matches WITH that rule still present, so it
+blocks nothing but `queue done`'s zero-rules precondition.
+
+### Addendum 2 — 2026-07-31, third s9 run: independently reproduced, outcome JSON written
+
+The second s9 run also ended without writing an outcome JSON, so the driver
+discarded it too and reverted both files a second time.  A third s9 session
+re-applied `tmp/grind/replay_camera_Init/s9/apply_final.py` from a clean HEAD
+tree and re-measured both gates from scratch:
+
+- `sandbox replay_camera_Init --disable all` -> **score 0**, target_insns 39,
+  build_insns 39, `rules_dropped: 1`, `cheat_asm_stripped: 12` (file-wide, none
+  inside this function's body).
+- `verify-oracle` -> `ok: true`, `build_sha1`
+  `62efab4f73f992798c43e8c730aa43baa10bb4fa` == the oracle, with
+  regfix.txt:3407 still in place.
+
+Three independent sessions have now produced the same two numbers from the same
+banked `candidate.c`.  The disposition recorded in Addendum 1 stands unchanged:
+**`candidate-ready`, floor 0, nothing pending on the owner.**  The remaining
+work is bookkeeping the grind session may not perform itself — delete the inert
+`regfix.txt:3407`, `engine retire replay_camera_Init`, `engine queue done
+replay_camera_Init` — plus the fresh layer-2 cheat-reviewer on the one construct
+at issue, the 8-byte aggregate `CamPair` copy.
+
+### Addendum 3 — 2026-08-01, fourth s9 run: outcome JSON written FIRST, edits left in place
+
+The third s9 run was discarded as well and the tree reverted to HEAD a third
+time.  This run inverted the order of operations to break the loop: apply the
+patch, measure once, **write `tmp/grind/outcome_replay_camera_Init.json`
+immediately**, and only then bank the ledger — with `src/code6cac_b2_post.c` and
+`include/code6cac.h` deliberately left dirty, which is the `candidate-ready`
+precondition.
+
+Measured this run: `sandbox replay_camera_Init --disable all` -> **score 0**,
+target_insns 39, build_insns 39, `rules_dropped: 1`, `cheat_asm_stripped: 12`.
+The oracle was NOT re-run this time — it is the longest and most
+interruption-prone step, the driver re-verifies bytes itself, and Addendum 2's
+`verify-oracle` result (`build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa`)
+already stands from a byte-identical tree state.
+
+Two ledger gaps left open by earlier sessions were also closed this run, so they
+do not have to be re-derived if the function is ever re-opened:
+
+1. **s8 frontier item 2 (the TU-wide price of `extern s16 D_80101E62[];`) is
+   ZERO.**  All six other users of the symbol in `src/code6cac_b2_post.c` score
+   identically before and after the header change (func_80035FE0 0/21,
+   func_80036D88 0/4, game_FrameInit 0/26, func_80036FD4 17/76,
+   marionation_camera_GetMaxFrame 0/24, func_800372C0 0/13), and the symbol has
+   no users in any other translation unit.
+2. **s7's third-parameter route is refuted by a 13-call-site census.**  Every
+   `jal replay_camera_Init` in the shipped assembly sets up `$a0`/`$a1` only;
+   `special_camera_check_pos_outside_ground_80036E34` moves its own incoming
+   `$a2`/`$a3` into `$s1`/`$s2` before the call, i.e. preserves rather than
+   forwards them.  s7's rejection ground (1) was asserted; it is now measured.
+
+The disposition recorded in Addendum 1 is unchanged: **`candidate-ready`, floor
+0, nothing pending on the owner.**  Remaining bookkeeping, still outside a grind
+session's surface: the fresh layer-2 `cheat-reviewer` on the `struct CamPair`
+aggregate copy, then delete the now-inert `regfix.txt:3407`, `engine retire
+replay_camera_Init`, `engine queue done replay_camera_Init`.
