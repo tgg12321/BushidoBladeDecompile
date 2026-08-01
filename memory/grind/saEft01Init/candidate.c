@@ -143,10 +143,40 @@
  *     below is the unique optimum (the five permutations score 8/11/11/12/12) —
  *     do not "tidy" it.
  *
- * NEXT: hypotheses.md F25 — establish calls.c's actual emission order of
- * (precompute loop / store_one_arg / load_register_parameters) and explain why
- * the inline-arg4 form drags its ADDRESS chain late too.  Do NOT re-sweep
- * argument spellings; fifty-one forms are banked.
+ * ===========================================================================
+ * SESSION 12 (structural) — BODY STILL UNCHANGED; F25 ANSWERED, 4 AXES DEAD
+ * ===========================================================================
+ * Re-applied and re-measured at exactly 7 / 91.  Fifty-two further forms on
+ * five axes nobody had touched:
+ *
+ *   * F25 is ANSWERED by reading calls.c: the register-arg precompute loop
+ *     (1618-1665) runs BEFORE store_one_arg for the single stack argument
+ *     (1736-1739), which runs before load_register_parameters (~1876).  So an
+ *     inline arg4 genuinely does get its address chain emitted before the
+ *     `sw 16(sp)` and its load after — target's split is reachable at expand,
+ *     and the fully-inline attractor's contiguous 57-61 idx[0] chain is a
+ *     SCHEDULING outcome, not an expand-order one.
+ *   * The one live lever found is RTX_UNCHANGING_P on arg4's load: `const s32
+ *     *tbl_125c`, or equivalently a per-access `((const s32 *)tbl_125c)[...]`
+ *     cast, is a FOURTH attractor at 9 / 91 and the FIRST measured form whose
+ *     `sw 16(sp)` precedes `lw a3` (target's relation).  It costs 2 — the two
+ *     `lbu` swap and the D_800A11D5/arg3 chain moves after `lw a3` — and all
+ *     thirteen bolt-ons on that chassis stay at >= 9.  The flag is inert on a
+ *     fully inline arg4, i.e. it only moves a STATEMENT-emitted load.
+ *   * DEAD AXES: arg1 / the format-string address (3 forms, all 7 — every one
+ *     of the 51 prior forms touched only args 2-5); MEM_IN_STRUCT_P, probed by
+ *     re-typing the hoisted bases as pointers-to-array so the accesses are real
+ *     ARRAY_REFs (6 forms, all 7); pre-loop global-store placement among the
+ *     pointer inits (4 forms, 7/7/17/7); and debug_printf's PROTOTYPE — varargs
+ *     `(void *, ...)` and K&R `()` are byte-identical to the fixed 5-arg form
+ *     against three different bodies.
+ *
+ * NEXT: hypotheses.md F26 — diff the instrumented cc1's RANKDBG trace for THIS
+ * form against the const (c1) form.  They differ in exactly one bit
+ * (RTX_UNCHANGING_P on one load) yet flip both the `lbu` order and the arg3
+ * chain's position, so the trace difference isolates the single tie-break the
+ * whole residual now rests on.  Do NOT re-sweep argument spellings; sixty-three
+ * forms are banked over four rigid attractors.
  * ===========================================================================
  */
 s32 saEft01Init(s32 a0) {

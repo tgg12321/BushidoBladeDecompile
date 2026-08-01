@@ -1782,3 +1782,90 @@ do{}while(0) wrapper plus the named-arg4 argument spelling and re-score both.
 - probe: Read tools/gcc-2.7.2/stmt.c:2435-2451 and tools/gcc-2.7.2/toplev.c:3387; confirmed SMALL_REGISTER_CLASSES is undefined for mips.
 - result: preserve_subexpressions_p returns 1 IMMEDIATELY when flag_expensive_optimizations is set, and toplev.c sets that for every optimize >= 2 build — so at this project's -O2 the loop-nesting half of the predicate is dead code and the wrapper cannot affect argument expansion at all. Early-vs-late is decided purely by whether args[i].value is already a REG when the FORWARD precompute loop reaches it: a named-local argument is a REG (its load already happened at the statement, hence early), an inline array element is a MEM (its address is emitted there and its load deferred to load_register_parameters, after the stack stores, hence late). This is the mechanical statement of the three-attractor structure, and it clears the wrapper of any role in the argument block.
 - verdict: KILLED
+
+## Session 12 (structural) — measured
+
+## [s12] F25's premise: something in expand_call emits store_one_arg for the single stack argument BEFORE the register-arg precompute loop, which is why the fully-inline arg4 form drags its address chain late.
+mechanism: calls.c's ordering of (a) the register-arg precompute loop, (b) store_one_arg, (c) load_register_parameters.
+probe: read tools/gcc-2.7.2/calls.c 1600-1760 and 1826-1880 directly.
+result: The order is unambiguous and is the one session 11 assumed: precompute at 1618-1665, store_one_arg for `args[i].reg == 0` at 1736-1739, load_register_parameters at ~1876. Nothing emits the stack store early.
+verdict: KILLED — and with it the idea that the i1 attractor's late idx[0] chain is an expand-order effect. i1's RTL order IS target's; its 13 is produced downstream, in sched.c.
+
+## [s12] The residual is an alias-class problem: our table loads are INDIRECT_REFs through a hoisted `T *` (MEM_IN_STRUCT_P = 0) while target's came from real array accesses, so alias.c lets our arg4 load float above the outgoing-arg store.
+mechanism: expand sets MEM_IN_STRUCT_P for ARRAY_REF/COMPONENT_REF but not for a subscript on a pointer; sched.c's memory-dependence test consults it.
+probe: six forms (m1-m6) re-typing the hoisted bases as pointers-to-array (`s32 (*tbl)[]`, `u8 (*idx)[2]`) so the accesses are genuine ARRAY_REFs with the base still a hoisted pseudo; plus p1-p3 as the negative control.
+result: all six byte-identical to the candidate at 7/91.
+verdict: KILLED.
+
+## [s12] The load's RTX_UNCHANGING_P flag (a `const`-qualified access) changes the scheduler's placement of the argument loads relative to the `sw 16(sp)`.
+mechanism: RTX_UNCHANGING_P suppresses the memory dependence between the outgoing-arg store and a subsequent load, changing what sched.c may reorder.
+probe: c1-c4 (const on each hoisted pointer and all three), e1-e6 (per-ACCESS const casts on arg4 / arg5 / arg3 separately), e7-e8 (the cast on a fully inline arg4), then thirteen bolt-ons on the winning chassis (d1-d13, g5, g6).
+result: CONFIRMED as a real lever and it produces a FOURTH attractor at 9/91 whose `sw` precedes `lw a3` — target's relation, never previously reached. But it costs 2 (the two `lbu` swap and the arg3 chain moves after `lw a3`), the chassis is rigid under all thirteen bolt-ons, and the flag is inert on a load that was deferred to load_register_parameters.
+verdict: CONFIRMED (mechanism) / the chassis is a 9-floor dead end for closing.
+
+## [s12] arg1 — the format-string address — is an untouched degree of freedom that could shift the argument block's LUIDs.
+mechanism: naming it moves its address computation out of the precompute loop and into the statement stream.
+probe: a1-a3 (named inside the wrapper, named at wrapper entry, and the same for the tslTm2LoadImage_2 argument).
+result: all 7/91, byte-identical.
+verdict: KILLED.
+
+## [s12] The pre-loop global stores' placement among the three pointer initialisations is a live LUID lever (session 11 only permuted the pointers among themselves).
+probe: g1/g2/g4 interleave `D_800F19BC = 0;` and `D_800F19C0 = &D_800162C0;` through the pointer inits; g3 puts all three pointer inits above the sys_VSync call.
+result: g1/g2/g4 = 7 (byte-inert); g3 = 17 (the already-banked pointer-inits-before-VSync family).
+verdict: KILLED.
+
+## [s12] debug_printf's declared signature is wrong — the original is a printf-style varargs function, and the fixed 5-arg prototype changes expand_call's argument handling.
+mechanism: with `...` the args take default promotions and a different path through expand_call / must_preallocate.
+probe: score2.py re-declares the prototype as `(void *, ...)`, `(void *, void *, ...)` and `()` (K&R) and re-scores three bodies (candidate, arg4-inline, arg5-named+arg4-inline).
+result: every combination is byte-identical to the fixed prototype (7 / 13 / 13).
+verdict: KILLED — the prototype is byte-inert here, so it is also NOT evidence about the original signature either way.
+
+## Live frontier (for session 13)
+
+## [s12] F26 — the residual is entirely inside sched.c's ready-list ordering, and the two known partial wins (candidate: both `lbu` at the block head; c1: `sw` before `lw a3`) are separated by ONE tie-break decision that no C-level spelling has moved in 63 forms.
+mechanism: with the expand order settled (calls.c, above) and the alias class ruled out, the only remaining inputs to the block's order are INSN_PRIORITY (dependence structure, which is fixed by the arithmetic the function performs) and rank_for_schedule's tie-breaks (the load/store class against last_scheduled_insn, then INSN_LUID). The candidate and c1 differ ONLY in RTX_UNCHANGING_P on one load, and that single bit flips both the `lbu` order and the arg3 chain's position — which is the signature of a tie-break cascade, not of a dependence change.
+next probe: run the instrumented cc1 (tools/gcc-2.7.2/cc1, BB2_PRIO_DEBUG / BB2_SCHED_DEBUG — see [[instrumented-cc1-location]]) on the candidate and on c1 with tmp/grind/saEft01Init/s10/idump.sh + schedscan.py, and diff the two RANKDBG traces over build idx 46-61. That is a two-form diff of the SAME chassis differing in one bit, so the trace difference isolates the exact comparison that flips — far cheaper to read than session 10's single-form dump. If the flipping comparison is an INSN_LUID tie, the C lever is a source-order change to the two index reads on the const chassis; if it is the load/store class test, the lever is which insn precedes the pair.
+
+## [s12] F23 — the do{}while(0) wrapper is the candidate's single match device and has still never been through a fresh adversarial cheat-reviewer.
+mechanism: explicitly sanctioned (.claude/rules/do-while-zero-exception.md, owner ruling 2026-07-06: any body, ANY codegen effect, register allocation named explicitly, mandatory inline FAKE annotation, single level needs no nesting justification); the candidate carries the annotation. Its only effect is flow.c's loop_depth ref-weighting for the three table pointers (session 11 corrected session 9's mechanism statement; calls.c's precompute is not loop-gated at -O2, confirmed again this session at 1653-1664 + stmt.c:2435 + toplev.c:3387).
+next probe: invoke cheat-reviewer on the candidate before any completion claim, presenting the lever-exhaustion record: 63 measured argument-block forms over four rigid attractors, s11's wrapper-extent sweep (w1/w2 = 8, w7 = 16/92i, w3-w6 = 7), and s12's four newly-dead axes (arg1, MEM_IN_STRUCT_P, pre-loop store placement, prototype).
+
+## [s12] F24 — the two sibling alarm functions in the same TU inherit this result for free.
+mechanism: set_alarm/get_alarm are inlined into cpu_side_move_dir_4 (= CD_sync, name string D_80016240, ~src/system.c:366) and the function at ~src/system.c:480 (= CD_ready, string D_80016248), both already carrying the same hand-derived goto shape. Note src/system.c:384 currently spells one sibling's second index pointer as `(u8 *)((u8 *)tbl_125c + ((s32)&D_800A1494 - (s32)D_800A125C) + 1)`, which is a symbol-difference coercion that should be re-examined when that function is worked.
+next probe: once saEft01Init closes, apply the same single do{}while(0) wrapper plus the named-arg4 argument spelling to both siblings and re-score them with the engine sandbox.
+
+## [s12] F25's premise: something in expand_call emits store_one_arg for the single stack argument BEFORE the register-arg precompute loop, which is why the fully-inline arg4 form drags its address chain late too.
+- mechanism: calls.c's ordering of (a) the register-arg precompute loop, (b) store_one_arg for args with reg == 0, (c) load_register_parameters.
+- probe: Read tools/gcc-2.7.2/calls.c 1600-1760 and the load_register_parameters call site (~1876) directly.
+- result: The order is unambiguous and is the one session 11 assumed: precompute 1618-1665, store_one_arg 1736-1739, load_register_parameters ~1876. Nothing emits the stack store early. Therefore the i1 (arg4 fully inline) attractor's RTL order already IS target's split (address chain before the sw, load after) and its 13/91 is produced downstream in sched.c, not at expand.
+- verdict: KILLED
+
+## [s12] The residual is an alias-class problem: our table loads are INDIRECT_REFs through hoisted `T *` pointers (MEM_IN_STRUCT_P = 0) while target's came from real array accesses, so alias.c lets our arg4 load float above the outgoing-arg store.
+- mechanism: expand sets MEM_IN_STRUCT_P for ARRAY_REF/COMPONENT_REF but not for a subscript on a pointer; sched.c's memory-dependence test consults it.
+- probe: Six forms (m1-m6) re-typing the hoisted bases as pointers-to-array (`s32 (*tbl)[]`, `u8 (*idx)[2]`) so the accesses are genuine ARRAY_REFs with the base still a hoisted pseudo, plus p1-p3 (pointer-arithmetic derefs) as the negative control.
+- result: All six ARRAY_REF forms and all three pointer-arithmetic forms are byte-identical to the candidate at 7/91.
+- verdict: KILLED
+
+## [s12] RTX_UNCHANGING_P on the arg4 load (a const-qualified access) changes the scheduler's placement of the argument loads relative to the outgoing-arg `sw 16(sp)`.
+- mechanism: RTX_UNCHANGING_P suppresses the store->load memory dependence, changing what sched.c may reorder around the stack store.
+- probe: c1-c4 (const on each hoisted pointer and on all three), e1-e6 (per-ACCESS const casts on arg4 / arg5 / arg3 separately), e7-e8 (the same cast on a fully inline arg4), then thirteen bolt-ons on the winning chassis (d1-d13, g5, g6).
+- result: CONFIRMED as a real lever: c1 = 9/91 and its diff is the FIRST measured form whose `sw 16(sp)` precedes `lw a3` (target's relation). It costs 2 because the two `lbu` come out swapped and the D_800A11D5/arg3 chain is pushed after `lw a3` instead of interleaved before the `sw`. The per-access cast on arg4 alone (e1) reproduces the 9 exactly; the same cast on arg5 (e2) is inert and on arg3 (e3) costs an instruction; on a fully inline arg4 (e7/e8) it is byte-inert at 13 — so the flag only moves a STATEMENT-emitted load. The chassis is rigid: all thirteen bolt-ons score >= 9.
+- verdict: CONFIRMED
+
+## [s12] arg1 — the debug_printf format-string address — is an untouched degree of freedom that could shift the argument block's LUIDs.
+- mechanism: Naming it moves its address computation out of the precompute loop and into the statement stream.
+- probe: a1-a3: named inside the wrapper, named at wrapper entry, and the same treatment for the tslTm2LoadImage_2 argument.
+- result: All three byte-identical at 7/91. Every one of the 51 prior banked forms touched only args 2-5; arg1 is now measured and dead.
+- verdict: KILLED
+
+## [s12] The pre-loop global stores' placement among the three pointer initialisations is a live LUID lever (session 11 only permuted the pointers among themselves).
+- mechanism: Statement order feeds pseudo numbering -> INSN_LUID -> the argument block's tie-breaks, and s11 proved the pointer-init order itself is load-bearing.
+- probe: g1/g2/g4 interleave `D_800F19BC = 0;` and `D_800F19C0 = &D_800162C0;` through the pointer inits; g3 lifts all three pointer inits above the sys_VSync call.
+- result: g1/g2/g4 = 7 (byte-inert); g3 = 17, which is the already-banked pointer-inits-before-VSync family.
+- verdict: KILLED
+
+## [s12] debug_printf's declared signature is wrong — the original is a printf-style varargs function, and the fixed 5-arg prototype changes expand_call's argument handling.
+- mechanism: With `...` the arguments take default promotions and a different path through expand_call / must_preallocate.
+- probe: score2.py re-declares the prototype `(void *, ...)`, `(void *, void *, ...)` and `()` (K&R) and re-scores three bodies (candidate, arg4-inline, arg5-named+arg4-inline).
+- result: Every combination is byte-identical to the fixed prototype (7 / 13 / 13). The prototype is byte-inert here, so it is also not evidence about the original signature either way, and fake-varargs-explicit-homing does not apply (no bulk pre-subu arg homes in this call).
+- verdict: KILLED

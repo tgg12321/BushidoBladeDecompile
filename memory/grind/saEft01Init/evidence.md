@@ -1305,3 +1305,147 @@ three attractors), `variants/*.c`.
 - [s11] The three table pointers' DECLARATION order is byte-inert (three permutations, all 7). Their INITIALISATION order is LIVE and the candidate's order (tbl_11dc, idx_1494, tbl_125c) is the unique optimum — the other five permutations score 8, 11, 11, 12, 12. Future sessions must not reorder those three assignments.
 
 - [s11] Fifty-one distinct C forms for this argument block are now banked across sessions 4-11 and 7/91 remains the floor of the entire family.
+
+## [s12] structural — four new axes closed; `const` is a FOURTH attractor
+
+Floor unchanged at **7 / 91** (candidate re-applied via
+`tmp/grind/saEft01Init/s12/score.py z0`: sandbox 7, build_insns 91).
+Fifty-two further C forms measured across five axes that no prior session had
+touched.  Four are dead; the fifth found the first genuinely new positional
+signature since session 4, and it costs 2.
+
+### F25 is ANSWERED at the calls.c level (the emission order is settled)
+
+`tools/gcc-2.7.2/calls.c` read directly:
+
+* **1618-1665** — "Precompute all register parameters": a FORWARD loop over the
+  register args.  For an arg whose value is not already a REG it calls
+  `expand_expr` (emitting the address computation) and then, at 1653-1664,
+  `copy_to_mode_reg`s the value only when `rtx_cost (value, SET) > 2` and
+  `preserve_subexpressions_p ()`.
+* **1736-1739** — `store_one_arg` for every arg with `args[i].reg == 0`
+  (i.e. our single stack argument, arg5) runs AFTER that loop.
+* **~1876** — `load_register_parameters` runs after both.
+
+So the RTL emission order for this call really is
+`[register-arg address chains] [arg5's whole chain + sw 16(sp)] [the register
+loads]`, exactly as session 11's reading predicted, and target's split
+(arg4's address chain before the `sw`, its load after) is reachable at expand.
+**The i1 attractor's failure is therefore NOT an expand-order problem** — with
+arg4 fully inline the RTL order is already target's and the block still comes
+out with the whole idx[0] chain contiguous at 57-61.  What differs is the
+SCHEDULE, i.e. sched.c's priorities and its memory-dependence view, not the
+order the insns were handed to it.  F25's stated puzzle ("something is emitting
+store_one_arg before the register-arg precompute loop") is refuted: nothing is.
+
+### The one live lever found: RTX_UNCHANGING_P on arg4's load (a FOURTH attractor)
+
+`const`-qualifying the hoisted `tbl_125c` pointer (c1) scores **9 / 91** and its
+diff (`tmp/grind/saEft01Init/s12/diff_c1.txt`) shows a block shape no prior form
+produced:
+
+```
+target   ... sll a0,2 | lw v1,0(v0) | lui/lbu D_800A11D5 | addu a0,s0 |
+             sll v0,2 | addu v0,s3  | sw v1,16(sp)       | lw a2,0(v0) | lw a3,0(a0)
+c1       ... sll v1,2 | lw v0,0(v0) | addu v1,s0         | sw v0,16(sp)|
+             lw a3,0(v1) | lui/lbu D_800A11D5 | sll v0,2 | addu v0,s3  | lw a2,0(v0)
+candidate ...(lw a3 issues at 54, SIX insns before the sw at 60)
+```
+
+i.e. c1 is the first measured form whose `sw 16(sp)` precedes `lw a3` — target's
+relation, and the thing sessions 10 and 11 identified as the residual's core.
+It costs 2 for two new reasons: the two `lbu` come out swapped (idx1 before
+idx0) and the whole D_800A11D5/arg3 chain is pushed AFTER `lw a3` instead of
+being interleaved before the `sw`.
+
+Two further measurements pin the mechanism precisely:
+
+* a per-ACCESS cast — `((const s32 *)tbl_125c)[idx_1494[0]]` with the pointer
+  itself left non-const (e1) — reproduces the 9 exactly, and the same cast on
+  arg5 (e2) or arg3 (e3, 90 insns) does not: the lever is specifically
+  **RTX_UNCHANGING_P on the ARG4 load**, nothing about the pointer's type.
+* the same cast on a FULLY INLINE arg4 (e7/e8) is byte-inert at 13.  So
+  `const` only perturbs the schedule for a load emitted at a STATEMENT; a load
+  deferred to `load_register_parameters` already sits after the stack store and
+  the unchanging flag changes nothing.
+
+The const chassis is as RIGID as the other three: thirteen bolt-ons measured on
+it (arg4 inline 13, arg4 address named 9, arg5 named 9, arg5 index named 9,
+arg3 value named 14/90i, arg3 address named 13, arg4 index named 9, idx also
+const 9, and all five pointer-init permutations 10/13/14/13/14) and nothing goes
+below 9.  There are now FOUR attractors — 7 (arg4 named value), 9 (arg4 named
+address), 9 (arg4 named value + unchanging), 13 (arg4 inline) — and 63 measured
+forms distribute over exactly those four.
+
+### Dead axes measured this session
+
+1. **arg1 / the format-string address** (3 forms, a1-a3).  Every prior form
+   touched only args 2-5.  Naming `&D_800161C8` (inside or before the wrapper)
+   or `&D_800161B8` for the `tslTm2LoadImage_2` call is byte-inert at 7.
+2. **MEM_IN_STRUCT_P / the alias class of the table MEMs** (6 forms, m1-m6).
+   With `s32 *p`, `p[i]` is an INDIRECT_REF and MEM_IN_STRUCT_P is 0 — which is
+   why the pointer-arithmetic spellings (p1-p3) were byte-inert.  Re-typing the
+   bases as pointers-to-array (`s32 (*)[]`, `u8 (*)[2]`) makes the accesses real
+   ARRAY_REFs and sets MEM_IN_STRUCT_P while keeping the hoisted-pseudo base;
+   all six forms are byte-identical at 7.  Alias CLASS is not the lever;
+   RTX_UNCHANGING is.
+3. **Pre-loop global-store placement** (4 forms, g1-g4).  Moving
+   `D_800F19BC = 0;` / `D_800F19C0 = &D_800162C0;` among the three pointer
+   initialisations is byte-inert (7); only lifting the pointer inits above the
+   `sys_VSync` call regresses (g3 = 17), which is the already-banked family.
+   Session 11 had only permuted the three pointers among themselves.
+4. **The `debug_printf` PROTOTYPE** (9 runs).  HEAD declares a fixed 5-arg
+   prototype.  Re-declaring it `(void *, ...)` — a real printf-style varargs
+   signature, almost certainly the original Sony one — and `()` (K&R, no
+   prototype) are both byte-identical to the fixed form against three different
+   bodies (candidate 7, arg4-inline 13, arg5-named 13).  expand_call's
+   stdarg/promotion path contributes nothing here.  (Note for the technique
+   index: [[fake-varargs-explicit-homing]] does not apply — its symptom is bulk
+   pre-`subu` argument homes, and this call has none.)
+5. Also inert: pointer-arithmetic deref spellings of arg4/arg5 on the candidate
+   chassis (p1-p3), and an arg4 index byte in its own local, `s32` or `u8`
+   (k1/k2) — all 7.
+
+### Artifacts
+
+`tmp/grind/saEft01Init/s12/{gen,gen2,gen3,gen4,ledger}.py`, `score.py`
+(s11's harness re-pointed at s12), `score2.py` (the same harness with a
+swappable `debug_printf` prototype), `sbs.py` (a reusable target-vs-built
+side-by-side lister built on `engine.score.normalized_insns`),
+`diff_c1.txt`, `variants/*.c` (52 forms).
+
+- [s12] Floor re-measured at 7 / 91 with the session-9 candidate body applied to src/system.c. Fifty-two further forms measured; the floor of the whole family is still 7 and the candidate body is unchanged since session 9.
+
+- [s12] calls.c settles F25's expand question: the register-arg precompute loop (1618-1665) runs BEFORE store_one_arg for the stack argument (1736-1739), which runs before load_register_parameters (~1876). So an inline arg4 really does get its address chain emitted before the `sw 16(sp)` and its load after it — target's split is reachable at expand, and the i1 attractor's contiguous 57-61 idx[0] chain is a SCHEDULING outcome, not an expand-order one. F25's premise ("something emits store_one_arg before the precompute loop") is refuted.
+
+- [s12] `const`-qualifying the arg4 load (either `const s32 *tbl_125c` or a per-access `((const s32 *)tbl_125c)[...]` cast) is a FOURTH attractor at 9/91 and the first measured form whose outgoing-arg `sw 16(sp)` precedes `lw a3`, which is target's relation. It costs 2 because the two `lbu` come out swapped and the D_800A11D5/arg3 chain is pushed after `lw a3` instead of interleaved before the `sw`. Thirteen bolt-ons on that chassis all score >= 9.
+
+- [s12] The const lever is RTX_UNCHANGING_P on a STATEMENT-emitted load, nothing else: the same cast on arg5 (e2) or on a fully-inline arg4 (e7/e8) is byte-inert, and the cast on arg3 costs an instruction (e3, 9 at 90 insns). A load deferred to load_register_parameters already sits after the stack store, so the unchanging flag has nothing to move.
+
+- [s12] MEM_IN_STRUCT_P is NOT the lever: re-typing the hoisted bases as pointers-to-array (`s32 (*)[]`, `u8 (*)[2]`) turns the accesses into real ARRAY_REFs (expand sets MEM_IN_STRUCT_P, unlike the INDIRECT_REF a `T *p` subscript produces) and all six such forms are byte-identical at 7.
+
+- [s12] The arg1 (format-string address) spelling axis is dead — 3 forms, all byte-inert at 7. Every one of the 51 prior banked forms touched only args 2-5.
+
+- [s12] Pre-loop global-store placement is dead — moving `D_800F19BC = 0;` and `D_800F19C0 = &D_800162C0;` among the three pointer initialisations is byte-inert (g1/g2/g4 = 7); only hoisting the pointer inits above the sys_VSync call regresses (g3 = 17).
+
+- [s12] The `debug_printf` prototype axis is dead — `(void *, ...)` varargs and `()` K&R declarations are byte-identical to HEAD's fixed 5-arg prototype against three different bodies (7 / 13 / 13). expand_call's stdarg and default-promotion paths contribute nothing to this argument block.
+
+- [s12] Floor re-measured this session at 7/91 with the session-9 candidate body in src/system.c (sandbox saEft01Init --disable all: score 7, target_insns 91, build_insns 91); the body is unchanged since session 9 and remains the family floor.
+
+- [s12] calls.c settles the expand-order question: the register-arg precompute loop (1618-1665) runs BEFORE store_one_arg for the stack argument (1736-1739), which runs before load_register_parameters (~1876). An inline arg4 therefore gets its address chain emitted before the `sw 16(sp)` and its load after it — target's split is reachable at expand, and the fully-inline attractor's contiguous idx[0] chain at build idx 57-61 is a scheduling outcome, not an expand-order one.
+
+- [s12] `const`-qualifying the arg4 load — either `const s32 *tbl_125c` or a per-access `((const s32 *)tbl_125c)[...]` cast with the pointer left non-const — is a FOURTH attractor at 9/91 and the first measured form whose outgoing-arg `sw 16(sp)` precedes `lw a3`, which is target's relation and the thing sessions 10 and 11 identified as the residual's core.
+
+- [s12] The const lever is specifically RTX_UNCHANGING_P on a STATEMENT-emitted load: the same cast on arg5 is byte-inert, on arg3 it costs an instruction (9 at 90 insns), and on a fully inline arg4 it is byte-inert at 13 (a load deferred to load_register_parameters already sits after the stack store, so the flag has nothing to move).
+
+- [s12] The const chassis is as rigid as the other three attractors — thirteen bolt-ons measured on it (arg4 inline 13, arg4 address named 9, arg5 named 9, arg5 index named 9, arg3 value named 14 at 90 insns, arg3 address named 13, arg4 index named 9, idx also const 9, five pointer-init permutations 10/13/14/13/14) and nothing goes below 9.
+
+- [s12] MEM_IN_STRUCT_P is not the lever: re-typing the hoisted bases as pointers-to-array (`s32 (*)[]`, `u8 (*)[2]`) makes the accesses real ARRAY_REFs (which expand flags, unlike the INDIRECT_REF a `T *p` subscript produces) and all six such forms are byte-identical at 7.
+
+- [s12] The arg1 (format-string address) spelling axis is dead — 3 forms, all byte-inert at 7 — and it was the last untouched argument position; all 51 prior banked forms only ever touched args 2-5.
+
+- [s12] Pre-loop global-store placement is dead: moving `D_800F19BC = 0;` and `D_800F19C0 = &D_800162C0;` among the three pointer initialisations is byte-inert (7), and only hoisting the pointer inits above the sys_VSync call regresses (17).
+
+- [s12] The debug_printf prototype axis is dead: `(void *, ...)` varargs and `()` K&R declarations are byte-identical to HEAD's fixed 5-arg prototype against three different bodies (7 / 13 / 13).
+
+- [s12] Sixty-three distinct C forms for this argument block are now banked across sessions 4-12, and they distribute over exactly four rigid attractors: 7 (arg4 as a named value), 9 (arg4 as a named address), 9 (arg4 as a named value with an unchanging load), 13 (arg4 fully inline).
