@@ -1,0 +1,23 @@
+# Grinder per-function extra build-input scope.
+#
+# By default a candidate may touch exactly ONE build input: src/<stem>.c.
+# Anything else is rejected, because the Match commit stages only that file —
+# an out-of-scope load-bearing edit would be byte-verified and then DROPPED,
+# producing a committed Match that fails a fresh rebuild.
+#
+# This file widens that surface per function. Every path listed here is BOTH
+# allowed by the candidate scope check AND staged into the Match commit, so
+# the committed tree is exactly the tree that was byte-verified.
+#
+# Format:  <func> <repo-relative-path> [more paths...]
+# Lines starting with # and blank lines are ignored.
+#
+# Add an entry ONLY when the fix genuinely lives outside the target .c file
+# (typically a shared header declaration). The Judge still rules on the C,
+# and the full-build SHA1 gate still applies — this widens scope, not standards.
+
+# replay_camera_Init: the honest D_80101E62 array declaration retires a /* FAKE */
+# pointer-alias construct. The declaration lives at its canonical extern in the
+# shared header, and per the s8 ledger the correction is beneficial TU-wide.
+# Owner-approved 2026-08-01 after the function livelocked 161 sessions proposing it.
+replay_camera_Init include/code6cac.h

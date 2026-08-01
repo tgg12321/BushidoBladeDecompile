@@ -238,6 +238,21 @@ Write your verdict JSON to the exact path given below.
     Log "${func}: judge ruling $($v.verdict) recorded."
 }
 
+function Get-ExtraScope([string]$func) {
+    # Per-function extra build inputs a candidate may touch (tools/grinder/scope_allow.txt).
+    # Returned paths are allowed by the scope check AND staged into the Match commit —
+    # the two MUST stay in lockstep or a Match commits a tree that doesn't rebuild.
+    $f = Join-Path $Root 'tools\grinder\scope_allow.txt'
+    if (-not (Test-Path $f)) { return @() }
+    foreach ($line in (Get-Content $f)) {
+        $t = $line.Trim()
+        if (-not $t -or $t.StartsWith('#')) { continue }
+        $parts = @($t -split '\s+' | Where-Object { $_ })
+        if ($parts.Count -ge 2 -and $parts[0] -eq $func) { return @($parts[1..($parts.Count - 1)]) }
+    }
+    return @()
+}
+
 function Invoke-CandidatePath([string]$func, [string]$stem, [string]$modality, $o) {
     # 1) bytes first — driver-verified, never trusted from the session
     $sb = Invoke-Eng @('sandbox', $func, '--disable', 'all')
@@ -258,12 +273,50 @@ function Invoke-CandidatePath([string]$func, [string]$stem, [string]$modality, $
     $buildMods = @(git -C $Root status --porcelain |
         Where-Object { $_ -match '^..\s+("?)(src/|include/)' } |
         ForEach-Object { $_.Substring(3).Trim().Trim('"') })
-    $offStem = @($buildMods | Where-Object { $_ -ne "src/$stem.c" })
+    $extra = @(Get-ExtraScope $func)
+    $offStem = @($buildMods | Where-Object { $_ -ne "src/$stem.c" -and $extra -notcontains $_ })
     if ($offStem.Count) {
-        Log "${func}: candidate touches build inputs beyond src/$stem.c ($($offStem -join ', ')) — rejected as invalid session."
+        # LIVELOCK BACKSTOP (2026-08-01). This rejection can NOT feed
+        # $consecutiveInvalid: a structurally-valid outcome resets that counter at the
+        # top of the routing switch, BEFORE this path runs — so it was pinned at 1 and
+        # the circuit breaker was unreachable. replay_camera_Init re-proposed the same
+        # include/ edit 161 times in 11 hours with no backstop.
+        # Escalate on a per-function+paths key that nothing resets, and prefer
+        # SELF-CORRECTION over halting: tell the session why (constraint), then park
+        # and let the queue advance. A full stop is reserved for the systemic case
+        # (livelock across several functions), so the owner returns to a working
+        # pipeline and ONE ledger entry — not a wall of incidents.
+        $key = "$func|" + ((@($offStem) | Sort-Object) -join ',')
+        $script:scopeRejects[$key] = 1 + [int]$script:scopeRejects[$key]
+        $n = [int]$script:scopeRejects[$key]
+        Log "${func}: candidate touches build inputs beyond src/$stem.c ($($offStem -join ', ')) — rejected as invalid session (repeat $n)."
         Revert-SessionEdits
-        $script:consecutiveInvalid++
-        if ($script:consecutiveInvalid -ge 3) { Circuit-Break "3 consecutive invalid sessions on $func" }
+        if ($n -eq 2) {
+            $c = "OUT OF SCOPE: candidates for $func may only edit src/$stem.c. Edits to " +
+                 "$($offStem -join ', ') are rejected by the driver and can never be accepted, " +
+                 "however good the bytes. Either find a form confined to src/$stem.c, or file an " +
+                 "OWNER-ESCALATION requesting these paths be added to tools/grinder/scope_allow.txt " +
+                 "and return owner-gated. Do NOT re-propose the same out-of-scope edit."
+            python tools/grinder/grindlib.py constrain . $func $c | Out-Null
+            git -C $Root add -- memory/grind docs/grind metrics/events.jsonl 2>$null
+            git -C $Root commit -m "grind: $func out-of-scope constraint banked [skip-park-src-guard]" 2>$null | Out-Null
+            Log "${func}: banked out-of-scope constraint after $n identical rejections."
+        }
+        if ($n -ge 5) {
+            $reason = "scope livelock: $n candidates re-proposed edits to $($offStem -join ', '), " +
+                      "which the driver cannot accept. Needs an owner decision: extend " +
+                      "tools/grinder/scope_allow.txt for this function, or reprioritise it."
+            Invoke-Eng @('queue', 'park', $func, '--reason', $reason) | Out-Null
+            Add-Decision $func 'scope livelock' 'OWNER-ESCALATION' $reason
+            Journal "$func SCOPE-LIVELOCK — parked after $n identical out-of-scope candidates ($($offStem -join ', '))."
+            Log "${func}: SCOPE LIVELOCK — parked so the queue advances; owner decision needed."
+            git -C $Root add -- memory/grind docs/grind metrics/events.jsonl engine/queue.json 2>$null
+            git -C $Root commit -m "grind: $func parked on scope livelock [skip-park-src-guard]" 2>$null | Out-Null
+            $script:livelockParks++
+            if ($script:livelockParks -ge 3) {
+                Circuit-Break "scope livelock on $script:livelockParks distinct functions — the scope gate looks systemically wrong, not function-specific"
+            }
+        }
         return
     }
     $null = Invoke-Eng @('retire', $func)          # drops rules if any; SHA1-gated internally
@@ -331,7 +384,11 @@ $led/rejected/. Write your verdict JSON to the exact path given below.
         # existed (2026-07-22 backlog audit); a fabricated-evidence cheat then passed
         # the same-tier fable judge unverifiable. Committing the ledger makes every
         # COMPLETED-C function's evidence auditable after the fact.
-        git -C $Root add -- "src/$stem.c" engine/queue.json regfix.txt regfix_stage2.txt asmfix.txt tools/prologue_config.json tools/frame_fix_funcs.txt tools/delay_slot_ra_funcs.txt "memory/grind/$func" 2>$null
+        # $extraScope MUST match what the scope check allowed above — the committed
+        # tree has to be exactly the tree that passed the full-build SHA1 gate, or a
+        # Match lands missing a load-bearing edit and the next rebuild breaks.
+        $extraScope = @(Get-ExtraScope $func)
+        git -C $Root add -- "src/$stem.c" $extraScope engine/queue.json regfix.txt regfix_stage2.txt asmfix.txt tools/prologue_config.json tools/frame_fix_funcs.txt tools/delay_slot_ra_funcs.txt "memory/grind/$func" 2>$null
         git -C $Root commit -m "Match: $func — COMPLETED-C (grinder, $sessionsTaken sessions)" | Out-Null
         Add-Decision $func 'final call' 'PASS' $v.justification
         Journal "$func COMPLETED-C after $sessionsTaken sessions."
@@ -436,6 +493,10 @@ function Revert-SessionEdits {
 
 $script:consecutiveInvalid = 0
 $script:spawnFails = 0
+# Scope-livelock tracking. Keyed per function+offending-paths and deliberately
+# NEVER reset — a repeat is a repeat even if healthy sessions happen in between.
+$script:scopeRejects = @{}
+$script:livelockParks = 0
 $script:LastAgentSeconds = 9999   # only the real-spawn path sets this; mock/drill paths must never look like spawn failures
 while ($true) {
     # Loop-TOP placement is deliberate: it fires after EVERY session disposition
