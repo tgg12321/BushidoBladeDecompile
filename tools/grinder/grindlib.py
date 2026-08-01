@@ -13,6 +13,7 @@ Spec: docs/superpowers/specs/2026-07-06-grinder-pipeline-design.md
 import datetime
 import json
 import os
+import re
 
 MODALITIES = ["recon", "structural", "permuter", "forensics", "rederive", "synthesis"]
 # Sessions 2..10 cycle through this ladder, then repeat (spec: "ladder repeats from 2").
@@ -352,6 +353,103 @@ MODALITY_PLAYBOOK = {
 }
 
 
+def psyq_identity(root, func):
+    """Sony-library provenance for `func`, as a brief section (or '' if none).
+
+    The 2026-07-09 closer census proved 11.3% of the EXE is bit-verbatim Sony
+    PsyQ library .text, and named 92 queue items. Phase 3 was retired
+    2026-07-13 on the premise that "the Grinder inherits every remaining item
+    by construction" — true of the WORK ITEMS (they are in the queue) but false
+    of the KNOWLEDGE: nothing carried the identity across, so sessions
+    re-derived library routines blind (marionation_Exec = CD_ready ground 57
+    sessions; saEft01Init = CD_datasync ground 6). This function is that
+    missing link. Never raises — a missing/!malformed closer artifact must
+    degrade to a normal brief, never break the pipeline.
+    """
+    proven, probable, refs = None, None, []
+    try:
+        p = os.path.join(root, "memory", "closer", "psyq-queue-hits.json")
+        if os.path.isfile(p):
+            with open(p, encoding="utf-8") as fh:
+                for h in json.load(fh).get("queue_hits", []):
+                    if h.get("func") == func:
+                        proven = h
+                        break
+    except Exception:
+        pass
+    try:
+        p = os.path.join(root, "memory", "closer", "libsnd-hunt-report.md")
+        if os.path.isfile(p):
+            with open(p, encoding="utf-8", errors="replace") as fh:
+                m = re.search(r"\*\*\s*" + re.escape(func) + r"\s*=\s*([A-Za-z_]\w*)",
+                              fh.read())
+            if m:
+                probable = m.group(1)
+    except Exception:
+        pass
+    if not proven and not probable:
+        return ""
+    try:
+        cdir = os.path.join(root, "memory", "closer", "candidates")
+        for fn in sorted(os.listdir(cdir)) if os.path.isdir(cdir) else []:
+            hit = func.lower() in fn.lower()
+            if not hit:
+                try:
+                    with open(os.path.join(cdir, fn), encoding="utf-8",
+                              errors="replace") as fh:
+                        hit = func in fh.read()
+                except Exception:
+                    hit = False
+            if hit:
+                refs.append("memory/closer/candidates/" + fn)
+    except Exception:
+        pass
+
+    out = ["## SONY LIBRARY PROVENANCE — READ THIS FIRST",
+           "",
+           "This function's queue name is an auto-generated MISNOMER. It is not game code."]
+    if proven:
+        out += ["",
+                f"**{func} = `{proven.get('sony')}` — verbatim-linked Sony PsyQ 4.0 "
+                f"library code** ({proven.get('lib')}/{proven.get('mod')} module, "
+                f"@{proven.get('addr')}).",
+                "",
+                "Bit-exact provenance: the 2026-07-09 census verified 100% of "
+                "non-reloc-masked bits across the whole module .text. Matching C for this "
+                "function EXISTS publicly — do not reverse-engineer it from the bytes.",
+                "",
+                "Reference sources, in order:",
+                "  1. sotn-decomp psxsdk tree (matched C, same library family + GCC 2.7.2 era)",
+                "  2. sozud/psy-q-decomp",
+                "  3. the ground-truth object itself — you have the original bytes AND the "
+                "Sony symbol names, which is far easier than blind decomp",
+                "",
+                "Adapt symbol names to this repo's externs; keep Sony's own struct and "
+                "volatile declarations (original semantics, NOT coercions — a volatile that "
+                "the reference source has is legitimate, not a cheat).",
+                "",
+                "Provenance comment required on the adopted body:",
+                f"  /* PsyQ 4.0 {proven.get('lib')} {proven.get('mod')}: {proven.get('sony')} "
+                "— verbatim-linked Sony object (census 2026-07-09); C ref: <source> */"]
+    if probable:
+        out += ["",
+                f"**{func} is PROBABLE Sony LIBSND/LIBSPU code: `{probable}`** — partial "
+                "verbatim match only. BB2 links an interim 4.0-lineage build (compiled "
+                "between 1997-06-06 and ship) that is in no public SDK dump, so there is NO "
+                "exact reference C. Do NOT adopt on faith. Use the identity to guide "
+                "informed decomp: you know what the routine DOES and what Sony called it. "
+                "See memory/closer/libsnd-hunt-report.md."]
+    if refs:
+        out += ["", "Banked reference material from the retired closer campaign "
+                    "(read before probing — this work is already done):"]
+        out += [f"  - {r}" for r in refs]
+    out += ["",
+            "Do NOT rename the symbol (queue keys, regfix anchors and this ledger all "
+            "reference the current name). The completion bar is unchanged: pure C, zero "
+            "rules, byte-identical.", ""]
+    return "\n".join(out)
+
+
 def build_brief(root, func, modality, outcome_path):
     st = load_state(root, func)
     d = ledger_dir(root, func)
@@ -363,11 +461,16 @@ def build_brief(root, func, modality, outcome_path):
                          f"    next probe: {f['next_probe']}"
                          for f in st["frontier"]) or "  (empty — build one)"
     constraints = "\n".join(f"  - {c}" for c in st["judge_constraints"]) or "  (none)"
+    # Sony-library provenance goes ABOVE the modality playbook: if the target is
+    # library code with published reference C, that changes what the session
+    # should DO, so it must be read before the playbook frames the work.
+    psyq = psyq_identity(root, func)
     return f"""# GRIND SESSION — {func} (src/{st['file']}.c)
 
 You are session {st['session_count'] + 1} of a cumulative grind. Your mandated
 modality for THIS session is: **{modality}**
 
+{psyq}
 {MODALITY_PLAYBOOK[modality]}
 
 ## Ledger state (your inheritance — do not re-derive any of it)
