@@ -1,31 +1,37 @@
 {
  "func": "saEft01Init",
  "file": "system",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 18,
    "modality": "recon",
    "headline": "Recon baseline 18 (91 vs 91 insns, pure RA+sched). Cluster-A callee-save rotation mechanism CONFIRMED via cc1 -da: the goto-loop emits no NOTE_INSN_LOOP_BEG, so allocno_compare ranks the param above t"
+  },
+  {
+   "session": 2,
+   "floor": 18,
+   "modality": "structural",
+   "headline": "Cluster A SOLVED \u2014 a real loop plus ONE reused scratch local holding both loop-invariant compare constants defeats loop.c's hoisting and lands target's exact $s0-$s3 map with only four callee-saves; f"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A loop spelling exists that emits NOTE_INSN_LOOP_BEG (flipping the allocno priorities to target's 77/76/72) while denying loop.c the hoist of the two loop-invariant compare constants 0x3C0000 and 0x1000000, landing cluster A at no instruction cost.",
-   "mechanism": "tools/gcc-2.7.2/loop.c scan_loop / move_movables: a set(reg)(const_int) becomes a movable and is hoisted to the preheader when it survives the maybe_never test and clears threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs). This loop contains calls, so the savings bar is low and both constants get hoisted.",
-   "next_probe": "Read scan_loop/move_movables for the exact suppression conditions, then probe C placements and compare spellings that make each constant a non-movable \u2014 placing the 0x3C0000 compare where maybe_never is already set, an unsigned-compare spelling that folds the threshold into the existing slt chain, and a bit-test spelling for 0x1000000 that combine keeps inline. Score each with sandbox --disable all AND re-run tmp/grind/saEft01Init/s1/greg.sh to confirm dispositions stay 77/76/72 in 16/17/18. Keep the shared-ret do-while exit shape from rejected/real-loop-confirms-ra-but-hoists-constants.c."
+   "hypothesis": "The +2 tail residual is a block-ORDER decision, not an exit-spelling one: GCC lays the 'ret = 1; while (a0 == 0)' tail block after the exit jump, so the mask branch comes out inverted with an extra 'j end', where target falls straight through from 'beqz $v0,.L80081CFC' into 'beqz $s2,.L80081C10'.",
+   "mechanism": "jump.c / final block ordering after the loop is expanded. The register allocation is already correct and unaffected, so this is the only remaining structural axis for the larger half of the residual. Return-vs-break spelling has been measured dead (both 19/93).",
+   "next_probe": "Invert the mask test's source sense so the loop-continue side is the fall-through (if (*D_800A14C0 & k) { ret = 1; } else { ret = 0; break; }); fold the mask test and the a0 back-edge condition into one loop condition; and try 'continue' for the loop-continue path. Screen each with tmp/grind/saEft01Init/s2/score.py \u2014 the sweep.py .lreg predictor does not see block layout, so these need real sandbox runs."
   },
   {
-   "hypothesis": "Part of cluster B (the $2<->$3 / $2<->$4 renames and the 14-entry reorder over the debug_printf argument block) is downstream of the cluster-A callee-save rotation and will shrink or vanish once the allocation is correct.",
-   "mechanism": "The argument-block address chains add into the D_800A125C base register; target indexes off $s0 while our build indexes off $s1, and the scratch-register choices in the block ($a0 as the arg4 index scratch in target vs $v0/$v1 in our build) are allocated after the callee-saves are fixed.",
-   "next_probe": "Once any form lands the 77/76/72 dispositions, re-run tmp/grind/saEft01Init/s1/grind_diff.py and re-score both known-equal arg-staging orders (arg4-first, the current candidate, and arg5-first, the inherited baseline) against the new allocation before doing any further arg-block work."
+   "hypothesis": "The -1 / mis-scheduled 0x3C0000 materialisation is fixable by moving the reused holder k out of $a0 into $v0 without folding it into the v0 flag local (which regresses to 22/93).",
+   "mechanism": "k has nrefs=8, live_length=6 and lands in $a0, which is free early enough for the scheduler to hoist 'lui a0,0x3c' into the bnez delay slot at build idx 31. Target's holder is $v0, freed only by the immediately preceding slt, so the lui cannot move up past it.",
+   "next_probe": "Read .lreg for k under variants that lengthen its live range slightly or split the reuse across two locals that each still get two sets; move 'k = 0x3C0000;' to sit between the 'D_800F19BC = cnt + 1;' store and the compare; verify with sweep.py that the $s0-$s3 map is unchanged and with grind_diff.py that the nop at build idx 31 is restored."
   },
   {
-   "hypothesis": "The per-allocno n_refs and live_length values behind the priority inversion can be read directly rather than inferred, which would let F1's candidate spellings be predicted instead of sampled.",
-   "mechanism": "allocno_compare's inputs (allocno_n_refs, allocno_live_length) are not printed by -da; only the resulting order is. An instrumented cc1 built into tmp/ that prints both fields per allocno would make the priority arithmetic directly observable for both the goto-loop and real-loop forms.",
-   "next_probe": "Build cc1 into tmp/gccdbg/ with an fprintf of allocno_n_refs/allocno_live_length at the qsort call site in global_alloc, dump both forms, and confirm which term (the floor_log2 step or the live_length divisor) actually moves the param. Dumps-for-understanding only \u2014 the shipped toolchain stays frozen."
+   "hypothesis": "Cluster B (the debug_printf argument block, regfix.txt:105-113) can now be re-diffed for the first time on a CORRECT cluster-A allocation, and part of the $2<->$3 / $2<->$4 rename cluster will have vanished on its own.",
+   "mechanism": "Session 1 could not separate cluster B from cluster A because the arg-block address chains indexed off $s1 in our build and $s0 in target. As of the session-2 candidate both index off $s0, so any residual in that block is now genuinely independent.",
+   "next_probe": "Re-run tmp/grind/saEft01Init/s1/grind_diff.py on the candidate and re-score both arg-staging orders (arg4-first and arg5-first) with score.py against the corrected allocation \u2014 session 1 measured them tied at 18 under the WRONG allocation, so that tie must be re-measured before any further arg-block work."
   }
  ],
  "judge_constraints": [],
