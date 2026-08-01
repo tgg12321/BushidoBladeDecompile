@@ -42,7 +42,7 @@ extern void player_Destroy(s32);
 extern void file_ResetDmaFlag(void);
 extern void obj_InitAll(void);
 extern void func_80077820(s32);
-extern volatile s32 D_80101E70;
+extern s32 D_80101E70;
 extern s32 D_800A3894;
 extern u8 D_80102781;
 
@@ -190,7 +190,7 @@ void func_80035FE0(void) {
     func_8007FF7C();
     cdrom_SetDebugLevel(0);
     func_80035F30(0, 0, 0, 0);
-    D_80101E62 = 0;
+    D_80101E62[0] = 0;
     if (D_800A31E4 == 0) {
         D_800A31E4 = 1;
     }
@@ -237,34 +237,25 @@ void special_camera_set_win_cam(void) {}
 void special_camera_Exec(void) {}
 /* kengo:HIGH  |  nm_special_cam/special_camera_Exec  |  274i */
 s32 func_80036D88(void) {
-    return D_80101E62 == 0;
+    return D_80101E62[0] == 0;
 }
 s32 replay_camera_Init(s32 a0, s32 a1) {
-    register s32 saved_a1 asm("$7") = a1;
-    register s16 *s0 asm("$8") = &D_80101E62;
+    struct CamPair { s32 w0; s32 w1; };
+    extern u8 SpecialCam;
     s32 sval;
-    s32 cam_val;
-    s32 ec_val;
     s32 reloaded;
 
-    if (*s0 != 0) {
+    if (D_80101E62[0] != 0) {
         return 0;
     }
 
     sval = ((s32)(a0 << 16)) >> 13;
     D_80101E60 = a0;
-    {
-        extern u8 SpecialCam;
-        cam_val = *(s32 *)((u8 *)&SpecialCam + sval);
-        ec_val = *(s32 *)((u8 *)&D_8008EC38 + sval);
-    }
-    D_80101E6C = cam_val;
-    __asm__ volatile("" ::: "memory");
-    D_80101E70 = ec_val;
-    reloaded = D_80101E70;
-    D_80101E7C = saved_a1;
+    *(struct CamPair *)&D_80101E6C = *(struct CamPair *)((u8 *)&SpecialCam + sval);
+    D_80101E7C = a1;
     D_80101E68 = 0;
-    *s0 = 2;
+    D_80101E62[0] = 2;
+    reloaded = D_80101E70;
     D_80101E9E = 0;
     D_80101E78 = (u32)(reloaded + 0x7FF) >> 11;
     return 1;
@@ -287,7 +278,7 @@ void game_FrameInit(void) {
     func_80080148();
     func_80080390(9, 0);
     D_80101E68 = 1;
-    D_80101E62 = 0xB;
+    D_80101E62[0] = 0xB;
     D_80101E5C = 0;
 }
 u32 func_80036F28(s32 arg0) {
@@ -314,7 +305,7 @@ void game_FrameLoop(void) {
 }
 extern void tslPolyF4Init(s32, u8 *, s32);
 s32 func_80036FD4(s32 arg0, s32 arg1) {
-    s16 *s0 = &D_80101E62;
+    s16 *s0 = D_80101E62;
 
     if (*s0 != 0) {
         return 0;
@@ -351,7 +342,7 @@ s32 func_80036FD4(s32 arg0, s32 arg1) {
     D_80101E64 = 0;
     D_80101E68 = 0;
     D_80101E6A = 0;
-    D_80101E62 = 0x10;
+    D_80101E62[0] = 0x10;
 
     return 1;
 }
@@ -398,14 +389,14 @@ void func_80037250(void) {
     D_80101E64 = 0;
 }
 void marionation_camera_GetMaxFrame(void) {
-    while (D_80101E62 != 0x16) {
+    while (D_80101E62[0] != 0x16) {
         func_8003AA48();
         special_camera_Exec();
         sys_VSync(2);
     }
 }
 void func_800372C0(void) {
-    if (D_80101E62 != 0) {
+    if (D_80101E62[0] != 0) {
         game_FrameInit();
     }
     game_FrameLoop();

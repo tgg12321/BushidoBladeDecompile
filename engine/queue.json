@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "replay_camera_Init",
-      "file": "code6cac_b2_post",
-      "distance": 18,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active"
-    },
-    {
       "func": "saEft01Init",
       "file": "system",
       "distance": 18,
@@ -2544,14 +2536,14 @@
     }
   ],
   "counts": {
-    "total": 308,
-    "active": 248,
+    "total": 307,
+    "active": 247,
     "by_status": {
-      "active": 248,
+      "active": 247,
       "parked": 60
     },
     "by_verdict": {
-      "C": 97,
+      "C": 96,
       "ASM-PARTIAL": 44,
       "ASM-SUSPECT": 107
     }

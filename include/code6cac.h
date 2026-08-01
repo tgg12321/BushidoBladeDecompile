@@ -277,7 +277,7 @@ extern s16 D_80101E00;
 extern u8 D_80101E59;
 extern s32 D_80101E5C;
 extern s16 D_80101E60;
-extern s16 D_80101E62;
+extern s16 D_80101E62[];
 extern s16 D_80101E64;
 extern s16 D_80101E66;
 extern s16 D_80101E68;
