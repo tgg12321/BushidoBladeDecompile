@@ -933,3 +933,143 @@ form is already right, or is scheduling.
 - [s7] An earlier session-7 process ran 2026-08-01 15:03-15:18 and died before writing its outcome; the driver discarded it but its scratch survived. Its write-up is salvaged verbatim into evidence.md/hypotheses.md under an [inherited] heading with its facts tagged [s7-a]. Only its tooling claim was re-verified here; its sched1 priority table, RANKDBG cls=3 reading and p4-basin numbers (p4 = 10/91, the first form to decouple chain X's head from its load) are strong leads, not banked facts.
 
 - [s7] src/system.c holds the inherited 8/91 candidate at session end (md5 727793a9be0db10bee83fa2d5fae1e89 == tmp/grind/saEft01Init/s7/system.c.candbase; sandbox re-run afterwards printed score 8, build_insns 91). No build-pipeline file, rule file, engine file or queue file was touched, and no background process was started.
+
+## Session 8 (rederive) — measured
+
+- [s8] READ OF THE TARGET BYTES (asm/funcs/saEft01Init.s, done first this
+  session and it reframes F13): the two loop-invariant compare constants are
+  materialised INSIDE the loop in the shipped object — `lui $v0,(0x3C0000>>16)`
+  at 0x80081C48 (immediately before its `slt`) and `lui $v1,(0x1000000>>16)` at
+  0x80081CE4 (immediately before its `and`) — while ALL THREE loop-invariant
+  SYMBOL ADDRESSES are hoisted into the pre-loop block as callee-saves
+  (`lui/addiu $s3,D_800A11DC` at 0x80081BD4, `$s1,D_800A1494` at 0x80081BDC,
+  `$s0,D_800A125C` at 0x80081BE4).  So the original compile ran LICM and it
+  moved the address movables but NOT the two const_int movables.  This kills
+  the alternative reading of F13 ("maybe target hoists them too and our problem
+  is elsewhere") and pins the question to exactly one asymmetry inside
+  loop.c/scan_loop: address movables move, single-use const_int movables do not.
+
+- [s8] TARGET'S CALLEE-SAVE MAP, read off the bytes: the parameter -> $s2
+  (`addu $s2,$a0,$zero` in the prologue, `beqz $s2` as the loop-back test),
+  D_800A125C -> $s0, D_800A1494 -> $s1, D_800A11DC -> $s3.  Four callee-saves,
+  91 instructions.
+
+- [s8] THE HONEST ZERO-LEVER FLOOR OF THIS FUNCTION IS 18 / 91, NOT 32 / 96 —
+  a correction to how session 7's H30 has been read.  Session 7's `clean`
+  (32/96) is the zero-lever score of the REAL-LOOP chassis.  The chassis that
+  is actually committed at HEAD is the GOTO-LOOP (`loop:` label + `goto loop`),
+  it carries no `k`, no `cnt = k` staging and no FAKE-family construct of any
+  kind, and it measures 18 / 91 — target's exact instruction count, with both
+  compare constants correctly materialised in-loop.  Re-measured this session
+  as variant `g0` (HEAD's body verbatim, `git show HEAD:src/system.c`).  The
+  reason is mechanical: a goto-loop emits no NOTE_INSN_LOOP_BEG, loop.c never
+  sees a loop, so LICM never runs and the two const hoists that cost the
+  real-loop chassis +2 callee-saves / +5 insns simply do not happen.
+
+- [s8] The price of full reference-faithfulness on the goto-loop chassis is 5
+  points and zero instructions: `g1` = g0 with the printf's four table lookups
+  written inline (no named arg4/arg5 intermediates, exactly as the Sony source
+  has them) measures 23 / 91.  Banked at
+  rejected/goto-loop-reference-inline-args-23.c.  Compare the same delta on the
+  real-loop chassis: clean 32 vs cleana 27.
+
+- [s8] FIVE further independent decomps of this same Sony object were fetched
+  and read (session 7 had only sotn-decomp).  Two carry real C bodies:
+  ladysilverberg/xenogears-decomp src/slus_006.64/psyq/libcd/bios.c and
+  hansbonini/psx_tomba src/scus_942.36/psyq/libcd/bios.c (tomba's CD_datasync
+  has its INCLUDE_ASM commented out, i.e. that project considers the C body
+  the accepted form).  celophi/lom-decomp, ser-pounce/rood-reverse and
+  Xeeynamo/psyz are still INCLUDE_ASM stubs for CD_datasync and carry no
+  information.  All copies are cached under tmp/grind/saEft01Init/s8/ref/.
+  The three real sources agree on the statements and DISAGREE on the exit
+  spelling, which is what made them worth transcribing:
+    * sotn   — `while (true)` + a `ret` local + three `break`s.
+    * xeno   — `while (true)` + direct `return -1/1/0`, with the mask test
+               NESTED (`if (chcr & mask) { if (mode) return 1; } else return 0;`)
+               and a dead `return 0;` after the loop.
+    * tomba  — `while (true)`, early `return -1`, and a `sync` local set by the
+               two other exits which `break` out to a trailing `return sync;`.
+
+- [s8] Every `while (true)` transcription pays the LICM tax regardless of exit
+  spelling: xeno's shape measures 27 / 96 with candbase's named argument
+  intermediates and 31 / 96 with reference-inline arguments; tomba's shape
+  measures exactly the same pair, 27 / 96 and 31 / 96.  The +5 instructions are
+  the same two hoisted constants and the same two extra callee-saves session 7
+  priced on `clean`.  Banked at rejected/xeno-while1-direct-returns-licm-hoists-27.c
+  and rejected/tomba-while1-sync-var-breaks-27.c.
+
+- [s8] The xeno NESTING itself (mask test nested with an `else return 0`,
+  instead of candbase's `if (a0 == 0) goto loop; return 1;` fall-through) is
+  BYTE-INERT on the goto-loop chassis: variant `x3` measures 18 / 91, identical
+  to g0.  jump.c normalises the two spellings to the same CFG.  So the exit
+  branch-sense axis is closed on this chassis.
+  Banked at rejected/xeno-nesting-on-goto-loop-byte-inert-18.c.
+
+- [s8] THE ENTIRE 18-POINT RESIDUAL OF THE GOTO-LOOP CHASSIS IS ONE THREE-CYCLE
+  ROTATION OF $s0/$s1/$s2, and the instrumented cc1 prices it exactly.
+  `tmp/grind/saEft01Init/s8/idump.sh g0` -> system.i.greg "Register
+  dispositions" for saEft01Init: 72 in 16, 77 in 17, 76 in 18, 75 in 19, i.e.
+  param -> $s0, D_800A125C -> $s1, D_800A1494 -> $s2, D_800A11DC -> $s3, against
+  target's D_800A125C -> $s0, D_800A1494 -> $s1, param -> $s2, D_800A11DC -> $s3.
+  Only the PARAMETER is misplaced; the other three keep their relative order.
+  The ALLOCDBG block (cc1.log lines 4486-4490 of tmp/grind/saEft01Init/s8/g0):
+
+      ord=1 pseudo=72 (param)     nrefs=2 livelen=52  pri=384  -> $s0
+      ord=2 pseudo=77 (D_800A125C) nrefs=3 livelen=96  pri=312  -> $s1
+      ord=3 pseudo=76 (D_800A1494) nrefs=3 livelen=98  pri=306  -> $s2
+      ord=4 pseudo=75 (D_800A11DC) nrefs=2 livelen=100 pri=200  -> $s3
+
+  global.c's allocno priority is exactly `nrefs * 10000 / livelen` on these
+  four (2*10000/52 = 384, 3*10000/96 = 312, 3*10000/98 = 306, 2*10000/100 = 200
+  — all four reproduce to the integer), and `find_reg` then hands out $s0, $s1,
+  $s2, $s3 in that sorted order.  Target's map is the SAME sort with the param
+  moved from first to third, so the whole 18 is bought by putting the param's
+  priority anywhere strictly inside the open interval (306, 200) — i.e. below
+  D_800A1494's 306 and above D_800A11DC's 200.  Two arithmetic ways to get
+  there: raise both pointers' nrefs from 3 to 4 (-> 416 and 408, both above the
+  param's 384, relative order preserved), or lengthen the param's live range
+  from 52 to anywhere in 66..99 (-> pri 303 down to 202).
+
+- [s8] The dead-store route to that ref-lift is DEAD, measured: `g6` (g0 plus
+  `idx_1494 = idx_1494; tbl_125c = tbl_125c;`, run as an INSTRUMENT and never
+  as a candidate — dead self-assigns are a forbidden family) scores 18 / 91 and
+  its greg dispositions are byte-identical to g0's (72 in 16, 77 in 17, 76 in
+  18, 75 in 19).  flow.c deletes the self-assigns before reg_n_refs is counted,
+  so they never reach the allocno priority — which is exactly the caveat the
+  standing [[duplicated-statement-into-arms]] rule records ("dead stores
+  measured INERT for this — flow deletes before counting").  Any ref-lift here
+  has to come from a LIVE fourth reference.
+  Banked at rejected/dead-self-assign-ref-lift-deleted-by-flow-18.c.
+
+- [s8] Statement and declaration ORDER inside the pre-loop block is byte-inert
+  on this chassis, which closes the cheap end of the live-range axis: moving all
+  three table-pointer assignments to the END of the pre-loop block (`g2`),
+  reversing the DECLARATION order to target's callee-save order (`g4`), and
+  reversing the ASSIGNMENT order to target's callee-save order (`g5`) all
+  measure 18 / 91 unchanged.  Only moving them BEFORE the `sys_VSync(-1)` call
+  moves the needle, and it regresses: `g3` = 23 / 91.
+  Banked at rejected/pointer-inits-before-vsync-regresses-23.c.
+
+- [s8] Housekeeping: src/system.c is left EXACTLY at HEAD (`git checkout --
+  src/system.c`; `git status` clean for src).  Note for the next session that
+  s7's tmp/grind/saEft01Init/s7/system.c.candbase — which score.py restores to
+  — is the 8/91 CANDIDATE body, NOT HEAD's body; s8/score.py inherits that
+  base, so "restored" leaves the candidate spliced in, not HEAD.  No
+  build-pipeline file, rule file, engine file or queue file was touched, and no
+  background process was started.
+
+- [s8] Target-bytes read (done first this session, and it reframes the inherited F13): the shipped object materialises BOTH loop-invariant compare constants INSIDE the loop — `lui $v0,(0x3C0000>>16)` at 0x80081C48 immediately before its slt, `lui $v1,(0x1000000>>16)` at 0x80081CE4 immediately before its and — while ALL THREE loop-invariant symbol addresses ARE hoisted into the pre-loop block as callee-saves (lui/addiu $s3,D_800A11DC at 0x80081BD4; $s1,D_800A1494 at 0x80081BDC; $s0,D_800A125C at 0x80081BE4). So the original compile ran LICM and moved the address movables but not the const_int movables.
+
+- [s8] Target's callee-save map read off the bytes: parameter -> $s2 (addu $s2,$a0,$zero in the prologue, beqz $s2 as the loop-back test), D_800A125C -> $s0, D_800A1494 -> $s1, D_800A11DC -> $s3; four callee-saves, 91 instructions.
+
+- [s8] CORRECTION to how session 7's H30 has been read: the honest zero-lever floor of this function is 18/91, not 32/96. The 32/96 is the zero-lever score of the REAL-LOOP chassis; the body committed at HEAD is the GOTO-loop, carries no k / no cnt=k staging / no FAKE-family construct at all, and measures 18/91 at target's exact instruction count with both constants correctly in-loop.
+
+- [s8] Full reference-faithfulness costs 5 points and zero instructions on the goto-loop chassis: g1 (HEAD's body with all four table lookups written inline in the printf, exactly as the Sony source has them) = 23/91, versus g0's 18/91. Same delta shape as clean 32 vs cleana 27 on the real-loop chassis.
+
+- [s8] Five further independent decomps of this same Sony object were fetched and cached under tmp/grind/saEft01Init/s8/ref/ (session 7 had only sotn-decomp). Only two carry real C bodies — xenogears-decomp and psx_tomba, the latter with its INCLUDE_ASM commented out. lom-decomp, rood-reverse and psyz are still INCLUDE_ASM stubs for CD_datasync and carry no information. The three real sources agree on every statement and disagree only on the exit spelling.
+
+- [s8] ALLOCDBG priority table for the zero-lever chassis (tmp/grind/saEft01Init/s8/g0/cc1.log lines 4486-4490): ord=1 pseudo=72 param nrefs=2 livelen=52 pri=384 -> $s0; ord=2 pseudo=77 D_800A125C nrefs=3 livelen=96 pri=312 -> $s1; ord=3 pseudo=76 D_800A1494 nrefs=3 livelen=98 pri=306 -> $s2; ord=4 pseudo=75 D_800A11DC nrefs=2 livelen=100 pri=200 -> $s3. global.c's priority is exactly nrefs*10000/livelen on all four. Two arithmetic routes into target's map: raise both pointers' nrefs 3->4 (416 and 408, relative order preserved), or lengthen the param's livelen from 52 into 66..99.
+
+- [s8] The instrumented cc1 printed CODEGEN-IDENTICAL against the frozen build/cc1 on every run this session (both dump sets), so all of the above is diagnostic instrumentation, not a compiler divergence.
+
+- [s8] Housekeeping: src/system.c is left EXACTLY at HEAD (git checkout -- src/system.c). Note for the next session that s7/system.c.candbase — which both s7's and s8's score.py restore to — is the 8/91 CANDIDATE body, not HEAD's body, so a 'restored' tree from score.py leaves the candidate spliced in. No build-pipeline file, rule file, engine file or queue file was touched; no background process was started.

@@ -1038,3 +1038,202 @@ after F13, since F13 changes the block layout it depends on.
 - probe: Instrumented cc1 at tools/gcc-2.7.2/cc1 with BB2_ALLOC_DEBUG=1, via tmp/grind/saEft01Init/s7/idump.sh on `clean` and on `cleank`. idump.sh re-verifies on every run that the instrumented binary is CODEGEN-IDENTICAL to the frozen build/cc1 on the same TU (it printed that both times), so this is a diagnostic instrument and not a compiler divergence.
 - result: clean: ord=2 pseudo=78 hardreg=16 (tbl_125c -> $s0), ord=3 pseudo=77 hardreg=17 (idx_1494 -> $s1), ord=4 pseudo=72 hardreg=18 (the param -> $s2) are ALREADY target's with no lever of any kind; the defect is ord=5 pseudo=108 (0x1000000, pri 326) and ord=6 pseudo=85 (0x3C0000, pri 319) taking $s3/$s4 and pushing tbl_11dc (pri 300) to $s5 — a fifth and sixth callee-save, +5 insns (96 vs 91). cleank, with only the double-set defeat added: 79->$s0, 78->$s1, param->$s2, tbl_11dc->$s3, k->$a0, four callee-saves, 90 insns. The payoff of suppressing exactly those two hoists is therefore exact and complete.
 - verdict: CONFIRMED
+
+## Session 8 (rederive) — measured
+
+Modality: rederive.  Floor unchanged at **8 / 91** (the inherited candidate);
+the zero-lever goto-loop chassis re-measured at **18 / 91**.  Eleven variants
+measured (x1, x1c, x2, x2c, x3, g0-g6), one target-bytes read, two
+instrumented-cc1 dump sets, five external reference sources fetched.
+
+### H32 — KILLED
+**Statement:** session 7 fetched only one decomp of this Sony object; the five
+other projects it listed will contain a structurally DIFFERENT reconstruction
+of CD_datasync, and one of those shapes will be the one that compiles to
+target.
+**Mechanism:** these are independent matching-decomp projects working the same
+verbatim-linked library object against the same GCC 2.7.2 era, so a shape that
+byte-matches in one of them is strong evidence about the original spelling.
+**Probe:** `gh api repos/<r>/contents/<p>` for xenogears-decomp, psx_tomba,
+lom-decomp, rood-reverse and psyz; the two with real bodies (xeno, tomba) were
+transcribed onto BB2's symbols in both the candbase and the reference-faithful
+statement flavours (x1/x1c and x2/x2c) and scored with s8/score.py.
+**Result:** three genuinely different exit spellings exist across sotn / xeno /
+tomba, and all three cost the same.  xeno's nested-if/direct-return form:
+27 / 96 (named args) and 31 / 96 (inline args).  tomba's early-return-plus-
+`sync`-local form: 27 / 96 and 31 / 96, identical.  sotn's form was session
+7's r0 at 35 / 91.  Every one of them is a `while (true)` loop and therefore
+pays the same two LICM const hoists (+2 callee-saves, +5 insns) that session 7
+priced on `clean`.
+**Verdict: KILLED.**  The exit-spelling axis of the reference corpus is now
+exhausted across three independent reconstructions.  What the corpus DOES
+still buy is corroboration: all three agree on the statements, so the
+statements are settled, and the disagreement is confined to a spelling that
+provably does not matter here.
+Banked: rejected/xeno-while1-direct-returns-licm-hoists-27.c,
+rejected/tomba-while1-sync-var-breaks-27.c.
+
+### H33 — KILLED
+**Statement:** the exit branch-sense/nesting difference between candbase
+(`if (a0 == 0) goto loop; return 1;`) and the reference corpus
+(`if (chcr & mask) { if (mode) return 1; } else return 0;`) is a real codegen
+lever on the goto-loop chassis.
+**Mechanism:** the two spellings put the loop-back edge on opposite arms, and
+session 3 measured every bare-goto exit form as 19/93, so branch sense had
+looked live.
+**Probe:** `x3` = g0's chassis with xeno's nesting substituted verbatim.
+**Result:** 18 / 91, byte-identical to g0.  jump.c normalises them.
+**Verdict: KILLED.**  Byte-inert; do not re-spell the exits on this chassis.
+Banked: rejected/xeno-nesting-on-goto-loop-byte-inert-18.c.
+
+### H34 — CONFIRMED (the session's main result)
+**Statement:** the goto-loop chassis at HEAD is the honest zero-lever floor of
+this function at 18 / 91, its instruction count is already exact, and its
+ENTIRE residual is a three-cycle rotation of $s0/$s1/$s2 caused by the
+parameter's allocno outranking the two table pointers.
+**Mechanism:** no NOTE_INSN_LOOP_BEG => loop.c never runs on this body => the
+two const_int movables that cost the real-loop chassis +5 insns are never
+created, and target's own bytes confirm the constants belong in-loop.  What is
+left is `global.c:allocno_compare`, which sorts on `nrefs * 10000 / livelen`.
+**Probe:** target disassembly read for the constant placement and the
+callee-save map; `s8/idump.sh g0` for the greg dispositions and the ALLOCDBG
+priority table; `s8/score.py g0` for the score.
+**Result:** g0 = 18 / 91.  greg: param->$s0, D_800A125C->$s1, D_800A1494->$s2,
+D_800A11DC->$s3 against target's D_800A125C->$s0, D_800A1494->$s1, param->$s2,
+D_800A11DC->$s3.  ALLOCDBG: param pri 384 (nrefs 2, livelen 52), D_800A125C
+312 (3, 96), D_800A1494 306 (3, 98), D_800A11DC 200 (2, 100); all four
+priorities reproduce exactly from the formula.  Target's map is that same sort
+with the param demoted from 1st to 3rd, so the target window for the param's
+priority is the open interval (200, 306).
+**Verdict: CONFIRMED.**  This replaces "the residual is register choice and
+scheduling" with a single arithmetic target, and it is on the chassis that
+needs no FAKE-family lever at all.
+
+### H35 — KILLED
+**Statement:** the required +1 REG_N_REFS on the two table pointers can be
+obtained by a dead self-assignment (`p = p;`), which is the cheapest spelling
+of the ref-lift H34 prices.
+**Mechanism:** REG_N_REFS counts insns that reference the pseudo, and a
+self-assign is one more such insn.
+**Probe:** `g6`, run explicitly as an instrument and never as a candidate (dead
+self-assigns are a forbidden family); scored and dumped with s8/idump.sh.
+**Result:** 18 / 91 and greg dispositions byte-identical to g0 (72 in 16, 77 in
+17, 76 in 18, 75 in 19).  flow.c deletes the self-assign before reg_n_refs is
+computed, so it never reaches the allocno.
+**Verdict: KILLED**, and it generalises: no DEAD construct can move this
+allocation.  The ref-lift, if it is reachable at all, has to be a LIVE fourth
+reference to each pointer.  (This is the same measurement the standing
+[[duplicated-statement-into-arms]] rule already records for BB2 generally, now
+confirmed for this function.)
+Banked: rejected/dead-self-assign-ref-lift-deleted-by-flow-18.c.
+
+### H36 — KILLED
+**Statement:** the param's live range (livelen 52) can be lengthened, or the
+pointers' shortened, by re-ordering the pre-loop statements, which is a fully
+legitimate pure-C change and is the other arithmetic route into H34's window.
+**Mechanism:** the pointers' live ranges start where they are assigned, so
+moving the assignments later in the pre-loop block shortens livelen and raises
+their priority above the param's 384.
+**Probe:** `g2` (assignments moved to the end of the pre-loop block), `g4`
+(declaration order changed to target's callee-save order), `g5` (assignment
+order changed to target's callee-save order), `g3` (assignments moved before
+the `sys_VSync(-1)` call).
+**Result:** g2 / g4 / g5 all 18 / 91, unchanged.  g3 regresses to 23 / 91.
+Statement and declaration order inside the pre-loop block is byte-inert here,
+consistent with session 6's finding that source placement inside a block is
+inert because rank_for_schedule never reaches the INSN_LUID tie-break.
+**Verdict: KILLED for the pre-loop block.**  The live-range route survives only
+if the change is made where liveness is actually decided (see F16) — it cannot
+be bought with statement order.
+Banked: rejected/pointer-inits-before-vsync-regresses-23.c.
+
+## Live frontier (for session 9)
+
+### F16 — close the param's allocno priority into (200, 306) on the goto-loop chassis
+**Mechanism:** H34 prices the whole 18-point residual as one demotion: the
+parameter pseudo must sort below D_800A1494 (pri 306) and above D_800A11DC
+(pri 200) in `global.c:allocno_compare`, at which point find_reg hands out
+target's exact $s0/$s1/$s2/$s3 map on a chassis carrying no lever of any kind.
+`pri = nrefs * 10000 / livelen`, verified to the integer on all four allocnos.
+Two arithmetic routes: (a) param livelen 52 -> 66..99 with nrefs 2, or
+(b) both pointers nrefs 3 -> 4 (416 / 408, relative order preserved).  H35
+killed the dead-store spelling of (b) and H36 killed the statement-order
+spelling of (a).
+**Next probe:** first find out WHY the param's livelen is only 52 when the
+three pointers are 96-100 on the same body — it is set in the prologue and
+consumed by the loop-back test at the very bottom, so 100 is what one would
+expect.  Read the `;; Function saEft01Init` section of
+tmp/grind/saEft01Init/s8/g0/system.i.lreg (and the flow.c live-range walk that
+produces reg_live_length) to find which region the param is NOT live in.
+Whatever that region is IS the lever surface: a C spelling that keeps the
+parameter live across it moves livelen into the window directly, with no
+FAKE-family construct.  Screen with tmp/grind/saEft01Init/s8/score.py and
+confirm with the greg "Register dispositions" line from s8/idump.sh.
+
+### F17 — a LIVE fourth reference to D_800A125C and D_800A1494
+**Mechanism:** route (b) of F16.  Both pointers sit at nrefs 3 (one set, two
+uses); a fourth LIVE reference each puts them at 416 / 408, above the param's
+384, preserving their relative order and landing target's map.  H35 proved the
+reference must survive flow.c, so it must be a real use whose value is
+consumed.
+**Next probe:** the constraint is tight — the function only reads
+`D_800A125C[Intr.sync]` and `D_800A125C[Intr.ready]`, so a fourth reference has
+to come from a restructuring that genuinely consumes the pointer again.  The
+one shape worth pricing first is the [[duplicated-statement-into-arms]] family
+on the `check:` if-chain, which is BB2's sanctioned byte-neutral ref-lift and
+is the only construct measured to move reg_n_refs where dead stores do not;
+it needs byte-neutrality verification, the lever-exhaustion record (sessions
+1-8 now supply it) and a `/* FAKE */` annotation, so price it as a measurement
+first and only then decide whether it is proposable.
+
+### F18 — the loop.c address-vs-const movable asymmetry (F13, now correctly scoped)
+**Mechanism:** unchanged in substance from F13, but session 8's read of the
+target bytes narrows it: the original compile DID run LICM (all three symbol
+addresses are hoisted into the pre-loop block as $s0/$s1/$s3) and did NOT move
+the two const_int movables.  So the question is no longer "how do we suppress
+LICM" but "what distinguishes an address movable from a single-use const_int
+movable in scan_loop/move_movables".  Note the candidate shape for the answer:
+the addresses are each referenced twice or hoisted for a base register, while
+each const_int is used EXACTLY ONCE, which is the precondition of the
+"large loop lossage" substitution path in loop.c (the block starting at the
+`/* A potential lossage ... */` comment around loop.c:725, reached only when
+the loop contains calls — this loop does).
+**Next probe:** read loop.c:725-840 and determine what happens to a single-use
+const_int movable in a loop-with-calls when `validate_replace_rtx` of the
+constant into its `slt`/`and` use FAILS (0x3C0000 and 0x1000000 are outside
+MIPS's 16-bit immediate range, and the `slt` pattern wants a register in that
+operand anyway).  If the answer is that the movable is dropped rather than
+moved, then the real-loop chassis can be made to behave like target by a
+legitimate change and the 21/90 `cleank` map becomes reachable without `k`.
+Do this only if F16/F17 do not close, since the goto-loop chassis reaches the
+same map with no LICM question at all.
+
+## [s8] Session 7 fetched only one decomp of this Sony library object; the five other projects it listed will contain a structurally DIFFERENT reconstruction of CD_datasync, and one of those shapes is the one that compiles to target.
+- mechanism: These are independent matching-decomp projects working the same verbatim-linked PsyQ LIBCD object against the same GCC 2.7.2 era, so a shape that byte-matches in one of them is strong evidence about the original spelling.
+- probe: gh api repos/<r>/contents/<p> for ladysilverberg/xenogears-decomp, hansbonini/psx_tomba, celophi/lom-decomp, ser-pounce/rood-reverse and Xeeynamo/psyz (all cached under tmp/grind/saEft01Init/s8/ref/). Three carry only INCLUDE_ASM stubs; xeno and tomba carry real bodies with genuinely different exit spellings. Both were transcribed onto BB2's symbols in two statement flavours each (x1/x1c = candbase named args, x2/x2c = reference inline args) and scored with tmp/grind/saEft01Init/s8/score.py.
+- result: xeno's nested-if/direct-return shape: 27/96 and 31/96. tomba's early-return-plus-`sync`-local shape: 27/96 and 31/96, identical. sotn's shape was session 7's r0 at 35/91. All three are `while (true)` loops and therefore all three pay the same two LICM const_int hoists (+2 callee-saves, +5 instructions) that session 7 priced on `clean`. The corpus does corroborate the statements — all three sources agree on those — but no exit spelling in it is cheaper.
+- verdict: KILLED
+
+## [s8] The exit branch-sense/nesting difference between candbase (`if (a0 == 0) goto loop; return 1;`) and the reference corpus (`if (chcr & mask) { if (mode) return 1; } else return 0;`) is a real codegen lever on the goto-loop chassis.
+- mechanism: The two spellings put the loop-back edge on opposite arms, and session 3 measured every bare-goto exit form at 19/93, so branch sense had looked live.
+- probe: x3 = HEAD's chassis with xeno's nesting substituted verbatim; s8/score.py.
+- result: 18/91, byte-identical to HEAD's body. jump.c normalises the two spellings to the same CFG. The exit branch-sense axis is closed on this chassis.
+- verdict: KILLED
+
+## [s8] The goto-loop chassis committed at HEAD is the honest zero-lever floor of this function at 18/91 — not the 32/96 session 7 reported — its instruction count is already exact, and its ENTIRE residual is a three-cycle rotation of $s0/$s1/$s2 caused by the parameter's allocno outranking the two table pointers.
+- mechanism: A goto-loop emits no NOTE_INSN_LOOP_BEG, so loop.c never sees a loop and the two const_int movables that cost the real-loop chassis +5 instructions are never created. Target's own bytes confirm the constants belong in-loop. What is left is global.c:allocno_compare, which sorts on nrefs * 10000 / livelen, and find_reg then hands out $s0..$s3 in that sorted order.
+- probe: Read asm/funcs/saEft01Init.s for the constant placement and callee-save map; `bash tmp/grind/saEft01Init/s8/idump.sh g0` for the greg 'Register dispositions' and the ALLOCDBG priority table; s8/score.py g0 for the score.
+- result: g0 (HEAD's body verbatim) = 18/91. greg: param->$s0, D_800A125C->$s1, D_800A1494->$s2, D_800A11DC->$s3, against target's D_800A125C->$s0, D_800A1494->$s1, param->$s2, D_800A11DC->$s3 — only the parameter is misplaced. ALLOCDBG: param pri 384 (nrefs 2, livelen 52), D_800A125C 312 (3, 96), D_800A1494 306 (3, 98), D_800A11DC 200 (2, 100); all four reproduce exactly from nrefs*10000/livelen. Target's map is the same sort with the param demoted from 1st to 3rd, so the entire 18 is bought by landing the param's priority in the open interval (200, 306).
+- verdict: CONFIRMED
+
+## [s8] The +1 REG_N_REFS that H34's arithmetic asks for on the two table pointers can be obtained by a dead self-assignment (`p = p;`).
+- mechanism: REG_N_REFS counts insns referencing the pseudo, and a self-assign is one more such insn.
+- probe: g6 = HEAD's body plus `idx_1494 = idx_1494; tbl_125c = tbl_125c;`, run explicitly as an INSTRUMENT and never as a candidate (dead self-assigns are a forbidden family); scored and dumped with s8/idump.sh g6.
+- result: 18/91 and greg dispositions byte-identical to g0 (72 in 16, 77 in 17, 76 in 18, 75 in 19). flow.c deletes the self-assigns before reg_n_refs is computed, so they never reach the allocno. This generalises: no DEAD construct can move this allocation, so any ref-lift must be a LIVE fourth reference. Confirms for this function what the standing duplicated-statement-into-arms rule records for BB2 generally.
+- verdict: KILLED
+
+## [s8] The other arithmetic route into H34's window — changing the live ranges — is reachable by re-ordering the pre-loop statements, which is a fully legitimate pure-C change.
+- mechanism: The pointers' live ranges start where they are assigned, so moving the assignments later in the pre-loop block shortens livelen and raises their priority above the param's 384.
+- probe: g2 (assignments moved to the end of the pre-loop block), g4 (declaration order changed to target's callee-save order), g5 (assignment order changed to target's callee-save order), g3 (assignments moved before the sys_VSync(-1) call).
+- result: g2 / g4 / g5 all 18/91, unchanged; g3 regresses to 23/91. Statement and declaration order inside the pre-loop block is byte-inert here, consistent with session 6's finding that source placement inside a block is inert because rank_for_schedule never reaches the INSN_LUID tie-break. The live-range route survives only where liveness is actually decided, not at the statement-order surface.
+- verdict: KILLED

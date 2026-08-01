@@ -1,8 +1,8 @@
 {
  "func": "saEft01Init",
  "file": "system",
- "session_count": 7,
- "current_modality": "forensics",
+ "session_count": 8,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -45,23 +45,29 @@
    "floor": 8,
    "modality": "forensics",
    "headline": "saEft01Init IS Sony PsyQ LIBCD CD_datasync and the matched C is now on disk; the reference proves the inherited 8/91 is a wrong-basin optimum whose honest cheat-free floor is 32/96, and instrumented-c"
+  },
+  {
+   "session": 8,
+   "floor": 8,
+   "modality": "rederive",
+   "headline": "Rederive: the 5-project reference corpus is exhausted (all three real CD_datasync spellings cost the same 27-35), and the real result is that the ZERO-LEVER goto-loop chassis at HEAD is 18/91 whose en"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A legitimate (non-FAKE-family) C spelling can deny loop.c the two constant hoists, at which point the clean reference-faithful form \u2014 not the 8 \u2014 becomes the match candidate.",
-   "mechanism": "Priced exactly by this session's ALLOCDBG: suppress those two movables and the clean form gets target's $s0/$s1/$s2/$s3 map with four callee-saves at 90 insns, with no other change. The gate is loop.c:695 \u2014 a movable is skipped only when all three of (A) `! maybe_never && ! loop_reg_used_before_p`, (B) `! REG_USERVAR_P && ! REG_LOOP_TEST_P`, (C) `reg_in_basic_block_p` are false. (B) is unconditionally true for a compiler temp holding a literal, which is why every clean spelling hoists; session 3 showed a NAMED local plus maybe_never works for 0x1000000 but not for 0x3C0000.",
-   "next_probe": "The untried half of (A) is `loop_reg_used_before_p`, not `maybe_never`: a named local READ earlier in the loop body than the point where it is set makes (A) false regardless of maybe_never, which is exactly the position 0x3C0000 sits in. Re-read tools/gcc-2.7.2/loop.c:690-712 and :920-940 to confirm the predicate FIRST, then enumerate loop-carried spellings of the timeout limit that read such a local before setting it. Screen with tmp/grind/saEft01Init/s7/score.py and confirm the hoist is gone via ALLOCDBG from s7/idump.sh <tag> (a suppressed hoist shows as 7 rather than 8 allocnos, with tbl_11dc at hardreg=19)."
+   "hypothesis": "F16 \u2014 close the parameter's allocno priority into the open interval (200, 306) on the zero-lever goto-loop chassis and it lands target's exact $s0/$s1/$s2/$s3 map with no lever of any kind.",
+   "mechanism": "The whole 18-point residual is one demotion: the parameter pseudo must sort below D_800A1494 (pri 306) and above D_800A11DC (pri 200) in global.c:allocno_compare, after which find_reg hands out target's map. pri = nrefs*10000/livelen, verified to the integer on all four allocnos. Route (a) is param livelen 52 -> 66..99 at nrefs 2; route (b) is both pointers nrefs 3 -> 4. This session killed the dead-store spelling of (b) and the statement-order spelling of (a).",
+   "next_probe": "First find out WHY the parameter's livelen is only 52 when the three pointers are 96-100 on the same body \u2014 it is set in the prologue and consumed by the loop-back test at the very bottom, so ~100 is what one would expect. Read the ';; Function saEft01Init' section of tmp/grind/saEft01Init/s8/g0/system.i.lreg together with flow.c's live-range walk that produces reg_live_length, and identify the region the param is NOT live in. That region is the lever surface: a C spelling that keeps the parameter live across it moves livelen into the window directly, with no FAKE-family construct. Screen with tmp/grind/saEft01Init/s8/score.py, confirm with the greg 'Register dispositions' line from s8/idump.sh."
   },
   {
-   "hypothesis": "Declaring D_800A1494 as Sony's `CD_intr` STRUCT (rather than `extern u8` indexed through a u8* local) is what produces target's hoisted base register for Intr \u2014 `lbu a0,0(s1)` / `lbu v0,1(s1)` at offsets 0 and 1.",
-   "mechanism": "Neither the reference spelling (r0: GCC folds the constant address into each lbu as %hi/%lo) nor an explicit u8 * pointer local (r1, and session 6's whole n-family) reproduces target's base register. Sony's source has ONE object with two member offsets. Note H28 killed the `volatile` QUALIFIER specifically; the STRUCT shape is a separate and untested question.",
-   "next_probe": "Out of scope for a single-function grind session: it needs the shared extern declaration changed and both sibling bodies adjusted. Assign a structural/rederive session scoped to all three CD_* siblings at once (saEft01Init, cpu_side_move_dir_4 = CD_sync at ~line 366, CD_ready at ~line 480), declaring `typedef struct { u8 sync, ready, c; } CD_intr; extern CD_intr D_800A1494;` and indexing `D_800A125C[D_800A1494.sync]`."
+   "hypothesis": "F17 \u2014 a LIVE fourth reference to D_800A125C and D_800A1494 puts them at pri 416 and 408, above the parameter's 384, preserving their relative order and landing target's map.",
+   "mechanism": "Route (b) of F16. Both pointers sit at nrefs 3 (one set, two uses). H35 proved the extra reference must survive flow.c, so it has to be a real use whose value is consumed \u2014 no dead store, no self-assign, no declaration-only construct.",
+   "next_probe": "The constraint is tight: the function only reads D_800A125C[Intr.sync] and D_800A125C[Intr.ready], so a fourth reference has to come from a restructuring that genuinely consumes the pointer again. Price the duplicated-statement-into-arms family on the `check:` if-chain first \u2014 it is BB2's sanctioned byte-neutral ref-lift and the only construct measured to move reg_n_refs where dead stores do not. Measure it before deciding whether it is proposable; it would need byte-neutrality verification, the lever-exhaustion record (sessions 1-8 now supply it) and a /* FAKE */ annotation."
   },
   {
-   "hypothesis": "The session-3 F7 tail (+1: target fills the `beqz $v0` delay slot with `move v0,zero`, we emit a nop) is now readable, because the DBRDBG trace set that session 3 could not get exists in the instrumented cc1.",
-   "mechanism": "reorg's fill_slots_from_thread consumes the analogous block for the FLAG exit in this same function but refuses it for the mask exit. Session 3 shelved this because BB2_DBR_DEBUG produced no output \u2014 from the wrong binary (build/cc1). tools/gcc-2.7.2/cc1 carries the full DBRDBG trace set (thr / thr LOSE / thr WINNER / simp / mtlr), plus BB2_NO_FT_STEAL and BB2_ALLLIVE_LABEL to bisect the behaviour.",
-   "next_probe": "`BB2_DBR_DEBUG=1 bash tmp/grind/saEft01Init/s7/idump.sh <tag>` on the candidate and on session 3's w1_goto_exits, then find the `thr LOSE` line for the mask exit and read which resource test rejected the steal. Do this AFTER the F13 probe, since F13 changes the block layout this depends on."
+   "hypothesis": "F18 \u2014 the loop.c asymmetry, now correctly scoped: address movables move in the original compile, single-use const_int movables do not.",
+   "mechanism": "Session 8's read of the target bytes narrows the inherited F13. The original compile DID run LICM (all three symbol addresses are hoisted into the pre-loop block as $s0/$s1/$s3) and did NOT move the two const_int movables, so the question is no longer 'how do we suppress LICM' but 'what distinguishes an address movable from a single-use const_int movable in scan_loop/move_movables'. Candidate answer: each const_int is used EXACTLY ONCE, which is the precondition of the 'large loop lossage' substitution path in loop.c (the block after the '/* A potential lossage ... */' comment around loop.c:725, reached only in a loop containing calls \u2014 this loop contains four).",
+   "next_probe": "Read tools/gcc-2.7.2/loop.c:725-840 and determine what happens to a single-use const_int movable in a loop-with-calls when validate_replace_rtx of the constant into its slt/and use FAILS (0x3C0000 and 0x1000000 are outside MIPS's 16-bit immediate range, and the slt pattern wants a register in that operand anyway). If the movable is dropped rather than moved, the real-loop chassis can be made to behave like target legitimately and cleank's 21/90 map becomes reachable without k. Do this only if F16/F17 do not close, since the goto-loop chassis reaches the same map with no LICM question at all."
   }
  ],
  "judge_constraints": [],

@@ -121,6 +121,34 @@
  * (rejected/cleank-licm-defeat-alone-lands-exact-callee-save-map-21.c).
  * Find a LEGITIMATE spelling for that suppression and the clean form, not this
  * one, becomes the match candidate.
+ *
+ * ===========================================================================
+ * SESSION-8 CORRECTION — THE CLEAN CHASSIS IS THE *GOTO* LOOP, AND IT IS 18
+ * ===========================================================================
+ * Session 7's "honest cheat-free floor 32/96" is the zero-lever score of the
+ * REAL-LOOP chassis only.  The body actually committed at HEAD is the
+ * GOTO-loop (`loop:` / `goto loop`), it carries no lever of any kind, and it
+ * measures 18 / 91 — target's exact instruction count, with both compare
+ * constants materialised in-loop exactly as the shipped object has them
+ * (`lui $v0,0x3c` at 0x80081C48, `lui $v1,0x100` at 0x80081CE4).  A goto-loop
+ * emits no NOTE_INSN_LOOP_BEG, so loop.c never runs and the two const hoists
+ * that cost the real-loop chassis +5 insns never happen.
+ *
+ * Session 8 then priced the whole 18: it is ONE three-cycle rotation of
+ * $s0/$s1/$s2.  greg for the HEAD body gives param->$s0, D_800A125C->$s1,
+ * D_800A1494->$s2, D_800A11DC->$s3; target wants D_800A125C->$s0,
+ * D_800A1494->$s1, param->$s2, D_800A11DC->$s3 — the same sort order with the
+ * parameter demoted from first to third.  ALLOCDBG gives the exact numbers:
+ * param pri 384 (nrefs 2 / livelen 52), D_800A125C 312 (3/96), D_800A1494 306
+ * (3/98), D_800A11DC 200 (2/100), and `pri = nrefs * 10000 / livelen`
+ * reproduces all four to the integer.  Land the param's priority anywhere in
+ * (200, 306) and the clean chassis has target's exact map with no FAKE-family
+ * construct anywhere.  See hypotheses.md H34 / F16 / F17.
+ *
+ * THIS FILE IS STILL THE LOWEST MEASURED DISTANCE (8), so it stays as
+ * candidate.c, but the goto-loop chassis at HEAD — not this one — is where the
+ * next session should work, because its 18 has a fully legitimate arithmetic
+ * target and this 8 does not.
  * ===========================================================================
  */
 s32 saEft01Init(s32 a0) {
