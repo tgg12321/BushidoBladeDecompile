@@ -684,3 +684,357 @@ saturated. Harvested with --stop; no campaign outlived the session.
 - probe: strings tools/gcc-2.7.2/build/cc1 | grep -E "RANKDBG|DBRDBG|ALLOCDBG".
 - result: Empty — the shipped cc1 binary predates all three instrumentation blocks, exactly as session 2 found for BB2_ALLOC_DEBUG and session 3 for BB2_DBR_DEBUG. Enabling them would require rebuilding tools/gcc-2.7.2/build/cc1, which is outside a grind session's allowed surface and would change the compiler the whole tree builds with. All cc1 forensics on this function must read the -da dumps; s6/dump.sh + x.py + order.py are the harness for that.
 - verdict: KILLED
+
+
+---
+
+# Session 7 additions
+
+## [inherited] salvaged hypotheses of the discarded 15:03-15:18 session-7 attempt
+
+## Session 7 (forensics) — measured
+
+#### H22 — CONFIRMED (tooling unlock, project-wide)
+**Statement:** the instrumented-cc1 modality is unavailable without rebuilding
+the compiler, because the shipped binary predates the `BB2_*_DEBUG` hooks
+(sessions 2, 3 and 6 all recorded this).
+**Mechanism:** `global.c`, `sched.c` and `reorg.c` in `tools/gcc-2.7.2/` carry
+env-gated `fprintf` hooks (ALLOCDBG / PRIODBG / RANKDBG / DBRDBG) added
+2026-07-03/04; `strings tools/gcc-2.7.2/build/cc1 | grep -E "RANKDBG|DBRDBG|
+ALLOCDBG"` is empty, which the three sessions read as "the binary predates
+them".
+**Probe:** listed the compiler tree instead of just `build/`, found a SECOND
+cc1 at `tools/gcc-2.7.2/cc1` dated 2026-07-18 (i.e. AFTER the source edits),
+ran `strings` on it, then wrote `tmp/grind/saEft01Init/s7/idump.sh`, which
+compiles the same `system.i` with the frozen `build/cc1` and with the
+instrumented `cc1` and diffs the two `.s` files (ignoring the `# options`
+comment) on every invocation.
+**Result:** `tools/gcc-2.7.2/cc1` contains every hook — BB2_PRIO_DEBUG,
+BB2_RANK_DEBUG, BB2_ALLOC_DEBUG, BB2_DBR_DEBUG, BB2_FLOW_DEBUG, BB2_QTY_DEBUG,
+BB2_FINDREG_DEBUG, BB2_SLL_DEBUG, BB2_XJUMP_DEBUG, BB2_SCHED_DEBUG,
+BB2_NO_FT_STEAL, BB2_ALLLIVE_LABEL — and the identity check prints
+`CODEGEN-IDENTICAL: instrumented cc1 == shipped build/cc1 on this TU` on both
+compiles run this session. Reading it is a pure diagnostic; the build pipeline
+still uses `build/cc1`, so [[no-compiler-divergence]] is not engaged.
+**Verdict: the prior statement is KILLED. The modality is AVAILABLE, for every
+function in the project, with no compiler build required.**
+
+#### H23 — CONFIRMED (the scheduler model, now numeric)
+**Statement:** the argument block's order is set by `INSN_PRIORITY`, and the
+two `lbu` chains tie on it (session 6 inferred this from byte-identical
+variants; nothing had been read off).
+**Mechanism:** `sched.c:priority()` computes, over an insn's LOG_LINKS
+(predecessors), `max(priority(pred) + insn_cost(pred) - 1)`, i.e. the weighted
+longest path from the BLOCK START; `schedule_block` is a bottom-up (reverse)
+list scheduler, so the highest-priority insn is placed LATEST in the block.
+`insn_cost` is `result_ready_cost`, which for this target comes from
+`config/mips/mips.md`'s `define_function_unit "memory"`: load 2 under the
+`r3000` alternative (`-mcpu=3000`), store 1, everything else 1.
+**Probe:** `BB2_PRIO_DEBUG=1 BB2_RANK_DEBUG=1` through `s7/idump.sh cand`, then
+read the sched1 `PRIODBG SET` window for the block's insn UIDs
+(`tmp/grind/saEft01Init/s7/icand/cc1.log`).
+**Result:** all four chain heads plus the `&D_800161C8` address materialisation
+tie at priority 1; the `sll`/`addu`/intermediate loads are 2; the 16($sp)
+store, the `$a2` load and the `$a3` copy are 3; the call is 4. Exactly the
+hand-derived model. **Verdict: CONFIRMED, and the tie is now a measurement.**
+
+#### H24 — KILLED (session 6's tie-break attribution)
+**Statement:** with the two chains tied on priority, the dependence-class test
+at `sched.c:2412-2449` breaks the tie against `idx_1494[0]`, so only a DAG
+change can separate them (the session-6 frontier's central claim).
+**Probe:** read every `RANKDBG last=... y=... cls=... x=... cls2=... val=...`
+line emitted for this block by the instrumented cc1.
+**Result:** all 13 comparisons print `cls=3 cls2=3 val=0`. Class 3 is
+"independent of `last_scheduled_insn`, or latency 1", and every competitor in
+this block qualifies, so the class term is identically zero and control always
+reaches the `INSN_LUID` tie-break at `sched.c:2452-2455`.
+**Verdict: KILLED.** The class rule is inert here; it decides nothing, and no
+probe should be designed around manipulating it. The live constraints are
+priority, then readiness in the reverse pass, then LUID.
+
+#### H25 — CONFIRMED (why LUID nevertheless cannot be used directly)
+**Statement:** because the tie-break is LUID, giving chain X's `lbu` the
+smallest LUID should schedule it first.
+**Probe:** `s7/idump.sh in2` on variant `n2` (`i0 = idx_1494[0];` named as a
+statement, both lookups inline), then read the `.sched` order.
+**Result:** X's `lbu` has LUID 94 — the smallest in the block — and is still
+placed 9th of 16. In a bottom-up schedule an insn becomes READY only once all
+its dependents are placed, so a chain is dragged toward the block END as a unit
+once its terminal insn is placed there. Consequence, verified across every form
+measured to date: the order of the three chains' HEADS always equals the order
+of their LOADS (candidate X,Z,Y / X,Z,Y at 8; n4 Y,Z,X / Y,Z,X at 13; n0 and
+a5n Z,Y,X / Z,Y,X at 14). Target is the ONLY arrangement that decouples them
+(heads X,Z,Y but loads Z,Y,X — chain X's `lbu` first, its `lw $a3` last).
+**Verdict: CONFIRMED, and it reframes the problem:** the goal is to STRETCH
+chain X across the block, not to make it outrank chain Y.
+
+#### H26 — CONFIRMED as a mechanism / KILLED as a floor improvement
+**Statement:** naming the fourth argument's ADDRESS (not its value) while
+leaving the dereference inline gives the chain low-LUID head insns AND keeps
+the load as `expand_call`'s last argument insn, decoupling head from load.
+**Mechanism:** the `lbu`/`sll`/`addu` are expanded at the statement's position;
+the load is still emitted by `expand_call` directly into the hard register as
+`(set (reg:SI 7 a3) (mem ...))`, session 6's target expand shape. The two ends
+of the chain therefore sit at opposite ends of the LUID order.
+**Probe:** `p4` (`s32 *p4; p4 = &tbl_125c[idx_1494[0]]; debug_printf(..., *p4,
+tbl_125c[idx_1494[1]]);`) plus eight neighbours — `p4d` (declaration with
+initialiser), `p45`/`p45r` (both addresses named, either order), `q1`/`q2`
+(p4 combined with the fifth argument's VALUE named, either order), `q3`
+(`tbl_125c + idx_1494[0]` spelling), `q4`/`q5` (p4 plus the third argument's
+address named, either order) — each measured with `sandbox --disable all` and
+its argument block dumped positionally by `s7/blk.py`.
+**Result:** `p4` puts chain X's head at block position 2 and its load at 13 —
+the first measured decoupling (candidate 1/9, the whole inline family 9-12/16,
+target 1/16). Score 10/91; `p4d` is byte-identical; the neighbours are 10-14.
+**Verdict: the mechanism is CONFIRMED; the spelling is KILLED as a floor
+improvement** (10 vs the 8 floor). Banked with the full table at
+`rejected/named-address-pointer-stretches-arg4-chain-but-10.c`. It is
+nevertheless the only measured basin with target's block TOPOLOGY and is the
+best available permuter seed — better than the n4 (13) chassis the session-6
+frontier nominated.
+
+## Live frontier (for session 8)
+
+#### F10 — simulate the reverse list scheduler and SOLVE for the LUID order
+**Mechanism:** the block's order is now a fully specified, deterministic
+function of three measured things — the dependency DAG, the priorities (H23),
+and the reverse-pass readiness + LUID tie-break (H24/H25). Nothing else enters
+it. That means the schedule can be SIMULATED in Python from the `.rtl` dump,
+and the simulator can be inverted: enumerate LUID permutations of the argument
+sequence (there are only ~17 insns and the permutations reachable from C are
+far fewer) and find which ones reproduce target's exact block order
+(X.lbu, Z.lbu, a1, Z.sll, Z.addu, X.sll, Z.load, Y.lbu, X.addu, Y.sll, Y.addu,
+sw, Y.load, X.load).
+**Next probe:** write the simulator against `s7/icand/system.i.rtl` (validate
+it by reproducing the KNOWN sched1 orders of `cand`, `n2` and `p4` — all three
+dumps are already on disk), then solve for the required LUID order and only
+then look for the C that produces it. This replaces blind spelling sweeps with
+a search over the one degree of freedom that actually exists. Do NOT re-run
+statement reordering inside the block without the simulator: nine spellings are
+already banked and the coupling in H25 explains why they cluster.
+
+#### F11 — apply the instrumented cc1 to the session-3 F7 tail (+1)
+**Mechanism:** the second half of the residual is still reorg's refusal to fill
+the `beqz $v0` delay slot with `move v0,zero`. Session 3 shelved this because
+`BB2_DBR_DEBUG` produced no output from `build/cc1`. H22 removes that blocker:
+`tools/gcc-2.7.2/cc1` carries the full DBRDBG trace set
+(`thr insn=%d thread=%d opp=%d own=%d likely=%d tif=%d oppregs=%08x_%08x
+oppmem=%d`, `thr LOSE`, `thr WINNER`, `simp ... refset/setset/setneed`,
+`mtlr target=%d FORCED-ALLLIVE`).
+**Next probe:** `BB2_DBR_DEBUG=1 bash tmp/grind/saEft01Init/s7/idump.sh <tag>`
+on the candidate and on session 3's `w1_goto_exits`, then find the `thr LOSE`
+line for the mask exit and read which resource test rejected the steal. That is
+the exact question session 3's F7 could not answer. Note `BB2_NO_FT_STEAL` and
+`BB2_ALLLIVE_LABEL` also exist and can be used to bisect the behaviour.
+
+#### F12 — re-run the callee-save allocation questions with ALLOCDBG
+**Mechanism:** `ALLOCDBG ord=%d pseudo=%d hardreg=%d nrefs=%d livelen=%d
+pri=%d` prints exactly the quantity session 2 had to reconstruct by hand from
+`.lreg` plus `allocno_compare`'s formula. `BB2_QTY_DEBUG` and
+`BB2_FINDREG_DEBUG` cover `local-alloc`'s quantity merging and `find_reg`'s
+hard-register choice, which is what decides that our chain temp gets `$v0`
+where target's gets `$a0`.
+**Next probe:** if F10 lands a form whose block order is right but whose
+REGISTERS are wrong, use `BB2_FINDREG_DEBUG=1` to read `find_reg`'s preference
+order for that temp rather than guessing at live-range lengthening.
+
+
+
+## Session 7 (forensics) — measured
+
+Modality: forensics. Floor unchanged at **8 / 91**. Twenty variants measured
+(r0-r2, candv/r1v, h2/h4/h5/h6/h7/h8, c1-c4, clean/cleank/cleana), plus two
+instrumented-cc1 dump sets.
+
+### H26 — CONFIRMED
+**Statement:** saEft01Init is Sony PsyQ LIBCD `CD_datasync`, and publicly
+matched C for it exists and can be obtained.
+**Mechanism:** the brief's 2026-07-09 bit-exact census flagged the whole module
+as verbatim-linked Sony object code; if so the reference source is public in
+any of the several PSY-Q decomp projects.
+**Probe:** `gh api search/code -f q='CD_datasync in:file language:c'`, then
+`gh api repos/Xeeynamo/sotn-decomp/contents/src/main/psxsdk/libcd/bios.c`.
+Cross-checked the fetched body against the target disassembly instruction by
+instruction.
+**Result:** exact structural match, including the two inlined helpers
+`set_alarm`/`get_alarm`. Independent corroboration that does not depend on the
+census: `*D_800A14C0 & 0x1000000` is the DMA3 CHCR channel-busy bit, `0x3C0` is
+960 vblanks, and `D_800A1494[0]`/`[1]` are the adjacent `sync`/`ready` bytes of
+Sony's `CD_intr` struct — which is exactly why the two `lbu` share a base.
+Full mapping banked at `ref/sotn_libcd_bios_CD_datasync.c`.
+**Verdict: CONFIRMED.** Six independent decomps of the same object are listed
+in that file if a second opinion is ever wanted.
+
+### H27 — KILLED
+**Statement:** transcribing the reference verbatim into BB2's symbols will
+land at or below the inherited floor, because it is the original source.
+**Mechanism:** if the object is verbatim-linked Sony code, the original C is
+the original C.
+**Probe:** `r0` (hand-inlined verbatim, no helper locals), `r1` (+ the three
+table-base locals), `r2` (`set_alarm`/`get_alarm` as real `static __inline__`
+helpers). `s7/score.py`.
+**Result:** 35 / 91, 37 / 93, 31 / 94 respectively, against the candidate's
+8 / 91. `r0` does hit target's exact instruction count.
+**Verdict: KILLED as a direct win.** The reference's value is as ground truth
+about WHICH constructs are original, not as a drop-in. The gap is in this
+repo's declarations and in two LICM decisions, not in the statements.
+Banked: `rejected/sony-reference-verbatim-hand-inlined-35.c`.
+
+### H28 — KILLED
+**Statement:** Sony declares `volatile Alarm_t Alarm;` and
+`static volatile CD_intr Intr = {0};`, so correcting BB2's extern declarations
+to match is (a) legitimate rather than a coercion and (b) exactly the
+dependency-DAG change the session-6 frontier demanded, since volatile MEMs
+cannot be reordered against each other and would separate the two isomorphic
+argument chains.
+**Mechanism:** `sched_analyze` gives volatile MEMs dependencies on all pending
+memory, which changes `INSN_PRIORITY` and the readiness order in sched1.
+**Probe:** `s7/vscore.py` rewrites every extern declaration block in the TU
+(`D_800F19B8`, `D_800F19BC`, `D_800F19C0`, `D_800A1494/5/6`) to volatile and
+then splices a variant; measured on both chassis.
+**Result:** candidate 8 → **16 / 91**; reference chassis `r0` 35 → **35 / 91**
+(no change at all).
+**Verdict: KILLED.** BB2 links PsyQ 4.0 where the reference is 3.5-era; the
+shipped object was evidently not built with these volatile-qualified. Do not
+re-propose volatile on this function.
+Banked: `rejected/volatile-alarm-intr-decls-regress-16.c`.
+
+### H29 — KILLED
+**Statement:** the reference's `||` short-circuit timeout test and its
+`while (1) { ... break; }` exits are the original's control flow, so adopting
+them should be at worst neutral (they compile to the same CFG as the
+candidate's two-if-plus-goto spelling).
+**Mechanism:** `A || B` expands to `if (A) goto then; if (!B) goto else;`,
+which is literally the candidate's goto pair.
+**Probe:** `c1` = candidate with ONLY the `||`; `c2` = candidate with ONLY the
+exits changed; `c4` = both; plus `h5`/`h6`/`h7`/`h8` on the reference chassis.
+**Result:** c1 27 / 92, c2 61 / 129, c4 74 / 131. The `||` costs 19 points and
+one instruction in isolation; the `while(1)`+`break` respelling with the inner
+gotos retained causes pathological block duplication.
+**Verdict: KILLED.** The candidate's `do { ... } while (a0 == 0)` + `check:`
+scaffolding stands.
+Banked: `rejected/or-shortcircuit-timeout-test-regresses-27.c`.
+
+### H30 — CONFIRMED (and it is the session's main result)
+**Statement:** the inherited 8/91 is not a cheat-free 8; the honest cheat-free
+floor of this basin is much higher, and the levers can be priced individually.
+**Mechanism:** strip every codegen-control construct off the proven chassis and
+write the statements exactly as the reference has them, then add each lever
+back alone.
+**Probe:** `clean` / `cleana` / `cleank` vs `candidate`, `s7/score.py`.
+**Result:** clean (no levers) **32 / 96**; +named arg4 only 27 / 96;
++`k` double-set LICM defeat only 21 / 90; candidate (both plus `cnt = k`
+staging) 8 / 91.
+**Verdict: CONFIRMED.** Any completion claim on the 8 must be presented to
+cheat-review alongside the 32.
+Banked: `rejected/clean-no-levers-licm-hoists-both-constants-32.c`.
+
+### H31 — CONFIRMED
+**Statement:** the whole allocation defect of the clean, reference-faithful
+form is `loop.c`'s LICM hoisting the two loop-invariant compare constants —
+everything else about its register allocation is already target's.
+**Mechanism:** `scan_loop`/`move_movables` build movables for the invariant
+`(set (reg) (const_int))` insns and hoist them to the preheader; the resulting
+pseudos become allocnos and compete in `global.c:allocno_compare`.
+**Probe:** instrumented cc1 (`tools/gcc-2.7.2/cc1`, verified CODEGEN-IDENTICAL
+to the frozen `build/cc1` on the same TU), `BB2_ALLOC_DEBUG=1`, via
+`s7/idump.sh clean` and `s7/idump.sh cleank`.
+**Result:** in `clean`, `ord=2 pseudo=78 hardreg=16` (tbl_125c → $s0),
+`ord=3 pseudo=77 hardreg=17` (idx_1494 → $s1), `ord=4 pseudo=72 hardreg=18`
+(the param → $s2) are already target's, and the defect is `ord=5 pseudo=108`
+(0x1000000, pri 326) and `ord=6 pseudo=85` (0x3C0000, pri 319) taking $s3/$s4
+and pushing `tbl_11dc` (pri 300) to $s5 — a fifth and sixth callee-save, +5
+insns. In `cleank`, with only the double-set defeat added, the map is target's
+exactly: 79→$s0, 78→$s1, param→$s2, tbl_11dc→$s3, `k`→$a0, four callee-saves,
+90 insns.
+**Verdict: CONFIRMED.** The clean-C matching problem for this function reduces
+to one question — a legitimate spelling that denies `loop.c` those two hoists.
+Banked: `rejected/cleank-licm-defeat-alone-lands-exact-callee-save-map-21.c`.
+
+## Live frontier (for session 8)
+
+### F13 — a legitimate suppression of the two constant hoists (THE question)
+**Mechanism:** H31 prices this precisely: suppress exactly those two
+`loop.c` movables and the clean, reference-faithful form gets target's exact
+`$s0/$s1/$s2/$s3` map with four callee-saves at 90 insns, with no other change.
+The gate is `loop.c:695`: a movable is skipped only when all three of
+(A) `! maybe_never && ! loop_reg_used_before_p`, (B) `! REG_USERVAR_P &&
+! REG_LOOP_TEST_P`, (C) `reg_in_basic_block_p` are false. (B) is
+unconditionally true for a compiler temp holding a literal, which is why every
+clean spelling hoists. Session 3 already showed a NAMED local (making (B)
+false) plus `maybe_never` works for 0x1000000 but not for 0x3C0000.
+**Next probe:** the untried half of (A) is `loop_reg_used_before_p`, not
+`maybe_never` — a named local that is READ earlier in the loop body than the
+point where it is set makes (A) false regardless of `maybe_never`, which is
+exactly the position 0x3C0000 sits in. Enumerate loop-carried spellings of the
+timeout counter/limit that read such a local before setting it, and re-read
+`tools/gcc-2.7.2/loop.c:690-712` and `:920-940` first to confirm the predicate
+before sweeping. Screen with `s7/score.py` and confirm the hoist is gone by
+reading ALLOCDBG from `s7/idump.sh <tag>` (a suppressed hoist shows as 7 rather
+than 8 allocnos and `tbl_11dc` at `hardreg=19`).
+
+### F14 — correct the `Intr` and `Alarm` declarations to Sony's structs
+**Mechanism:** target reaches `Intr` through a hoisted base register
+(`lbu a0,0(s1)` / `lbu v0,1(s1)`, offset 0 and 1). Neither the reference
+spelling (`r0`: GCC folds the constant address into each `lbu` as %hi/%lo) nor
+an explicit `u8 *idx_1494` pointer local (`r1`, and session 6's whole n-family)
+reproduces that. Sony's source has ONE object, `static volatile CD_intr Intr`,
+with two member offsets — a shape this repo cannot currently express because
+`D_800A1494` is declared `extern u8` and the two sibling functions index it
+through `u8 *` locals. Note H28 killed the `volatile` qualifier specifically;
+the STRUCT shape is a separate, untested question.
+**Next probe:** this needs the shared declaration changed and both siblings'
+bodies adjusted, which is outside a single-function grind session's scope — so
+it wants a `structural` or `rederive` session scoped to all three CD_* siblings
+at once (`saEft01Init`, `cpu_side_move_dir_4` = CD_sync at ~line 366, and
+CD_ready at ~line 480). Declare `typedef struct { u8 sync, ready, c; } CD_intr;
+extern CD_intr D_800A1494;` and index `D_800A125C[D_800A1494.sync]`.
+
+### F15 — the session-3 F7 tail (+1), now with a working DBRDBG
+**Mechanism:** unchanged from session 3's F7 — reorg's `fill_slots_from_thread`
+fills the `beqz $v0` delay slot with `move v0,zero` in target and refuses it for
+us. Session 3 shelved this because `BB2_DBR_DEBUG` produced no output; that was
+the wrong binary (`build/cc1`). `tools/gcc-2.7.2/cc1` carries the full DBRDBG
+trace set, and `BB2_NO_FT_STEAL` / `BB2_ALLLIVE_LABEL` exist to bisect the
+behaviour.
+**Next probe:** `BB2_DBR_DEBUG=1 bash tmp/grind/saEft01Init/s7/idump.sh <tag>`
+on the candidate and on session 3's `w1_goto_exits`, find the `thr LOSE` line
+for the mask exit, and read which resource test rejected the steal. Untouched
+by sessions 4-7; it is the smaller half of the residual and should be done only
+after F13, since F13 changes the block layout it depends on.
+
+## [s7] saEft01Init is Sony PsyQ LIBCD `CD_datasync`, and publicly matched C for it exists and can be obtained and mapped onto BB2's symbols.
+- mechanism: The brief's 2026-07-09 bit-exact census flagged the whole module as verbatim-linked Sony object code; if so, the reference source is public in one of the several PSY-Q decomp projects.
+- probe: `gh api search/code -f q='CD_datasync in:file language:c'` then `gh api repos/Xeeynamo/sotn-decomp/contents/src/main/psxsdk/libcd/bios.c`; cross-checked the fetched body against the target disassembly instruction by instruction.
+- result: Exact structural match including the two inlined helpers set_alarm/get_alarm. Independent corroboration that does not rely on the census: *D_800A14C0 & 0x1000000 is the DMA3 CHCR channel-busy bit, 0x3C0 is 960 vblanks, and D_800A1494[0]/[1] are the adjacent sync/ready bytes of Sony's CD_intr struct (which is why the two lbu share a base). Full BB2->Sony mapping of all 14 symbols banked at memory/grind/saEft01Init/ref/sotn_libcd_bios_CD_datasync.c, with five further independent decomps of the same object listed.
+- verdict: CONFIRMED
+
+## [s7] Transcribing the reference verbatim into BB2's symbols will land at or below the inherited floor, because it is the original source.
+- mechanism: If the object is verbatim-linked Sony code, the original C is the original C.
+- probe: r0 (hand-inlined verbatim, no helper locals), r1 (+ the three table-base locals), r2 (set_alarm/get_alarm as real `static __inline__` helpers), all through tmp/grind/saEft01Init/s7/score.py.
+- result: 35/91, 37/93 and 31/94 respectively, against the candidate's 8/91. r0 does hit target's exact 91 instructions but allocates five callee-saves (both compare constants hoisted into the prologue as `lui s3,0x3c` / `lui s2,0x100`) and fails to hoist a base register for Intr, folding the constant address into each lbu as %hi/%lo.
+- verdict: KILLED
+
+## [s7] Sony declares `volatile Alarm_t Alarm;` and `static volatile CD_intr Intr = {0};`, so correcting BB2's extern declarations to match is both legitimate (a header-type correction, not a coercion) and exactly the dependency-DAG change the session-6 frontier demanded to separate the two isomorphic argument chains.
+- mechanism: sched_analyze gives volatile MEMs dependencies against all pending memory, which changes INSN_PRIORITY and the readiness order in sched1 — the only thing session 6 and the discarded session-7 attempt agreed could break the tie between the two chains.
+- probe: tmp/grind/saEft01Init/s7/vscore.py rewrites every extern declaration block in the TU (D_800F19B8, D_800F19BC, D_800F19C0, D_800A1494/5/6) to volatile before splicing; measured on both the candidate chassis and the reference chassis.
+- result: Candidate 8 -> 16/91. Reference chassis r0 35 -> 35/91, i.e. no change at all. BB2 links PsyQ 4.0 where the sotn reference is 3.5-era, so the shipped object was evidently not built with these volatile-qualified.
+- verdict: KILLED
+
+## [s7] The reference's `||` short-circuit timeout test and its `while (1) { ... break; }` exits are the original's control flow, so adopting them should be at worst neutral, since `A || B` expands to exactly the candidate's two-if-plus-goto CFG.
+- mechanism: expand turns `A || B` into `if (A) goto then; if (!B) goto else;`, which is literally the candidate's goto pair, so the respelling should be byte-inert.
+- probe: c1 = candidate with ONLY the `||`; c2 = candidate with ONLY the exits changed; c4 = both; plus h5/h6/h7/h8 on the reference chassis.
+- result: c1 27/92 (the `||` alone costs 19 points and one instruction), c2 61/129 and c4 74/131 (pathological block duplication, not near-misses). Conversely the reference CONFIRMED the candidate's tail scaffolding: target's `j / li v0,-1 / move v0,zero / bnez v0 / li v0,-1` at idx 68-72 is the inlined-get_alarm() return-value shape, so the v0 temp and the `check:` label ARE the original's structure.
+- verdict: KILLED
+
+## [s7] The inherited 8/91 is not a cheat-free 8; the honest cheat-free floor of this basin is much higher and each lever can be priced individually against the reference's own statements.
+- mechanism: The reference shows the original has no named arg4 intermediate (all four table lookups inline in the printf call) and no `k` (both compare constants are plain literals), so both levers the 8 rests on are absent from the original. Strip them and add them back one at a time.
+- probe: clean / cleana / cleank / candidate through tmp/grind/saEft01Init/s7/score.py, all on the proven sessions-2/3 chassis.
+- result: clean (no levers, reference statements) 32/96; +named arg4 only 27/96; +the k double-set LICM defeat only 21/90; candidate (k + `cnt = k` staging + arg4) 8/91. Any completion claim on the 8 must be put to cheat-review alongside the 32.
+- verdict: CONFIRMED
+
+## [s7] The entire allocation defect of the clean, reference-faithful form is loop.c's LICM hoisting the two loop-invariant compare constants; every other register-allocation decision in it is already target's.
+- mechanism: scan_loop/move_movables build movables for the invariant `(set (reg) (const_int))` insns and hoist them to the loop preheader; the resulting pseudos become allocnos and compete in global.c:allocno_compare against the three table pointers and the param.
+- probe: Instrumented cc1 at tools/gcc-2.7.2/cc1 with BB2_ALLOC_DEBUG=1, via tmp/grind/saEft01Init/s7/idump.sh on `clean` and on `cleank`. idump.sh re-verifies on every run that the instrumented binary is CODEGEN-IDENTICAL to the frozen build/cc1 on the same TU (it printed that both times), so this is a diagnostic instrument and not a compiler divergence.
+- result: clean: ord=2 pseudo=78 hardreg=16 (tbl_125c -> $s0), ord=3 pseudo=77 hardreg=17 (idx_1494 -> $s1), ord=4 pseudo=72 hardreg=18 (the param -> $s2) are ALREADY target's with no lever of any kind; the defect is ord=5 pseudo=108 (0x1000000, pri 326) and ord=6 pseudo=85 (0x3C0000, pri 319) taking $s3/$s4 and pushing tbl_11dc (pri 300) to $s5 — a fifth and sixth callee-save, +5 insns (96 vs 91). cleank, with only the double-set defeat added: 79->$s0, 78->$s1, param->$s2, tbl_11dc->$s3, k->$a0, four callee-saves, 90 insns. The payoff of suppressing exactly those two hoists is therefore exact and complete.
+- verdict: CONFIRMED

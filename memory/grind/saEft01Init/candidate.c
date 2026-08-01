@@ -84,6 +84,44 @@
  *     never reaching the `INSN_LUID` tie-break at `sched.c:2452-2455`.
  *   * The `$a0` in target is not an allocator choice: it falls out of that
  *     chain being live across the WHOLE block, which is a sched1 consequence.
+ *
+ * ===========================================================================
+ * SESSION-7 PROVENANCE WARNING — THIS FORM IS *NOT* THE ORIGINAL SOURCE
+ * ===========================================================================
+ * saEft01Init is Sony PsyQ LIBCD `CD_datasync`, and session 7 obtained the
+ * matched C: memory/grind/saEft01Init/ref/sotn_libcd_bios_CD_datasync.c
+ * (from Xeeynamo/sotn-decomp src/main/psxsdk/libcd/bios.c), with every symbol
+ * mapped and independently confirmed against the target disassembly (the
+ * clincher is `*D_800A14C0 & 0x1000000` = DMA3 CHCR channel-busy bit).
+ *
+ * The reference says plainly what the original body contains, and this file
+ * disagrees with it in two places:
+ *   * the original has NO named `arg4` intermediate — all four table lookups
+ *     are written inline in the printf call (which session 6 had already
+ *     deduced from the expand-time RTL shape, independently);
+ *   * the original has NO `k` and no `cnt = k` staging — both compare
+ *     constants are plain literals.
+ *
+ * So this 8/91 is a wrong-basin local optimum bought with two FAKE-family
+ * levers.  Session 7 measured the honest cheat-free floor of this same chassis
+ * with the reference's statements and zero levers: 32 / 96
+ * (rejected/clean-no-levers-licm-hoists-both-constants-32.c).  It is retained
+ * as `candidate.c` ONLY because it is still the lowest measured distance and
+ * the driver asks for the best form; it must NOT be advanced toward completion
+ * without cheat-review, and a reviewer should be shown the 32 as well.
+ *
+ * WHERE THE REAL WORK IS NOW (session-7 instrumented-cc1 forensics):
+ * in the clean form the ALLOCDBG dispositions are ALREADY target's for the
+ * first three pseudos — tbl_125c->$s0, idx_1494->$s1, the param->$s2 — with no
+ * lever at all.  The single allocation defect is that loop.c's LICM hoists the
+ * two loop-invariant compare constants into fresh pseudos (85 and 108) which
+ * rank 5th/6th in global_alloc and push tbl_11dc from target's $s3 to $s5,
+ * costing two extra callee-saves (+5 insns).  Suppressing exactly those two
+ * hoists — and nothing else — reproduces target's map exactly
+ * (rejected/cleank-licm-defeat-alone-lands-exact-callee-save-map-21.c).
+ * Find a LEGITIMATE spelling for that suppression and the clean form, not this
+ * one, becomes the match candidate.
+ * ===========================================================================
  */
 s32 saEft01Init(s32 a0) {
     s32 v0;

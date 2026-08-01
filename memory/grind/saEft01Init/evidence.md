@@ -579,3 +579,357 @@ tie against us.
 - [s6] tools/gcc-2.7.2/sched.c:2435 already contains a BB2_RANK_DEBUG env-gated fprintf in rank_for_schedule, but the shipped cc1 binary contains none of RANKDBG/DBRDBG/ALLOCDBG, so the instrumented-cc1 route is closed without rebuilding the compiler.
 
 - [s6] src/system.c holds the inherited 8/91 candidate at session end (re-verified: sandbox score 8, build_insns 91); no build-pipeline file was touched and no campaign or background process was started this session.
+
+
+---
+
+# Session 7 additions
+
+## [inherited] salvaged write-up of the discarded 15:03-15:18 session-7 attempt
+
+## Session 7 (forensics) — the instrumented cc1 EXISTS, and it rewrites the argument-block model
+
+Floor unchanged at **8 / 91** (re-measured on the inherited candidate with the
+edits in place in `src/system.c`). Nine new variants measured. The session's
+value is a tooling unlock plus a corrected, now-numerically-verified model of
+how sched1 orders the `debug_printf` argument block.
+
+#### THE TOOLING UNLOCK — `tools/gcc-2.7.2/cc1` is the instrumented binary
+
+Sessions 2, 3 and 6 each concluded that the instrumented-cc1 modality was
+unavailable because `strings tools/gcc-2.7.2/build/cc1` contains none of
+ALLOCDBG / DBRDBG / RANKDBG. **They checked the wrong file.**
+`tools/gcc-2.7.2/build/` holds only the shipped driver binaries; the compiler
+tree itself is configured in place and carries a SECOND, NEWER cc1 at
+`tools/gcc-2.7.2/cc1` (built 2026-07-18, after the 2026-07-03/04 source edits
+that added the hooks). That binary contains ALL of them:
+
+```
+BB2_ALLOC_DEBUG   BB2_PRIO_DEBUG     BB2_RANK_DEBUG    BB2_SCHED_DEBUG
+BB2_DBR_DEBUG     BB2_FINDREG_DEBUG  BB2_FLOW_DEBUG    BB2_QTY_DEBUG
+BB2_SLL_DEBUG     BB2_XJUMP_DEBUG    BB2_NO_FT_STEAL   BB2_ALLLIVE_LABEL
+ALLOCDBG ord=%d pseudo=%d hardreg=%d nrefs=%d livelen=%d pri=%d
+PRIODBG insn=%d pred=%d kind=%d pred_pri=%d cost=%d contrib=%d (max=%d)
+PRIODBG SET insn=%d final_pri=%d
+RANKDBG last=%d y=%d cls=%d x=%d cls2=%d val=%d
+DBRDBG thr / simp / mtlr ...
+```
+
+**It is codegen-identical to the frozen `build/cc1`**: `s7/idump.sh` compiles
+the same `system.i` with BOTH binaries and diffs the `.s` (ignoring the
+`# options` comment line) on every run, printing
+`CODEGEN-IDENTICAL: instrumented cc1 == shipped build/cc1 on this TU`. It is
+therefore a pure diagnostic instrument, not a compiler divergence — the actual
+build pipeline still uses `build/cc1` and is untouched. Use
+`bash tmp/grind/saEft01Init/s7/idump.sh <tag>` (writes the full `-da` dump set
+PLUS `cc1.log` with the traces into `tmp/grind/saEft01Init/s7/<tag>/`); it
+re-runs the identity check every time, so a future compiler change cannot
+silently invalidate the readings. **This unlocks the instrumented modality for
+every function in the project, not just this one.**
+
+#### sched1 is a REVERSE list scheduler and its priorities are now MEASURED
+
+`INSN_PRIORITY` in this compiler is the weighted longest path from the BLOCK
+START (not to the block end), and `schedule_block` runs bottom-up, so the
+highest-priority insn is placed LATEST in the block. Costs come from
+`config/mips/mips.md`'s `define_function_unit "memory"`: load = 2 (the
+`r3000` alternative, selected by `-mcpu=3000`), store = 1, everything else 1.
+
+Measured priorities for the whole argument block of the candidate
+(`s7/icand/cc1.log`, the sched1 `PRIODBG SET` window; UIDs are the `.rtl`
+UIDs, and the second identical-UID window later in the log is sched2):
+
+| insn | what | pri |
+|---|---|---|
+| 94  | `lbu` idx_1494[0]  (chain X head) | 1 |
+| 117 | `lbu` idx_1494[1]  (chain Z head) | 1 |
+| 109 | `lbu` D_800A11D5   (chain Y head) | 1 |
+| 106 | `lw`  D_800F19C0   ($a1)          | 1 |
+| 128 | `la`  &D_800161C8  ($a0)          | 1 |
+| 97 / 99 / 101 | X `sll` / `addu` / load   | 2 |
+| 112 / 114     | Y `sll` / `addu`          | 2 |
+| 120 / 122 / 124 | Z `sll` / `addu` / load | 2 |
+| 130 | `$a1 =`                            | 2 |
+| 126 | `sw` 16($sp) (the stacked arg)     | 3 |
+| 132 | `$a2 =` (the load)                 | 3 |
+| 134 | `$a3 =` (copy from the named arg4) | 3 |
+| 136 | the call                           | 4 |
+
+**All four chain heads tie at priority 1** — confirmed numerically, not
+inferred. This closes session 6's open question about whether the two `lbu`
+chains tie.
+
+#### CORRECTION to session 6: the dependence-class rule is INERT here
+
+Session 6 concluded "INSN_PRIORITY first, then the dependence-class test at
+`sched.c:2412-2449` ... the class rule breaks the tie toward D_800A11D5. Only a
+DAG change can separate them." **The RANKDBG trace falsifies the second half.**
+Every single rank comparison inside this block prints `cls=3 ... cls2=3 val=0`:
+
+```
+RANKDBG last=136 y=134 cls=3 x=130 cls2=3 val=0
+RANKDBG last=126 y=109 cls=3 x=101 cls2=3 val=0
+RANKDBG last=128 y=124 cls=3 x=109 cls2=3 val=0
+RANKDBG last=124 y=122 cls=3 x=101 cls2=3 val=0
+RANKDBG last=101 y=99  cls=3 x=122 cls2=3 val=0
+RANKDBG last=99  y=117 cls=3 x=97  cls2=3 val=0     (13 comparisons, all val=0)
+```
+
+Class 3 means "independent of `last_scheduled_insn`, or latency 1", and every
+competitor in this block qualifies, so `tmp_class - tmp2_class` is always 0 and
+control always falls through to the `INSN_LUID` tie-break at
+`sched.c:2452-2455`. The ordering is therefore decided by **priority, then
+READINESS in the reverse pass, then source (LUID) order** — never by the class
+rule.
+
+#### Why LUID nevertheless looked inert in session 6: READINESS COUPLING
+
+`n2` names the index (`i0 = idx_1494[0];`) so chain X's `lbu` has the SMALLEST
+LUID in the block (94), yet sched1 still places it 9th of 16. The reason is not
+the tie-break: in a bottom-up schedule an insn only becomes READY once all of
+its dependents are placed, so a chain is dragged toward the block END as a unit
+as soon as its terminal insn is placed there. That coupling is visible in every
+form measured to date — **the order of the three chains' HEADS is always the
+same as the order of their LOADS**:
+
+| form | head order | load order | score |
+|---|---|---|---|
+| candidate (arg4 named) | X, Z, Y | X, Z, Y | 8 |
+| n4 (arg2 named)        | Y, Z, X | Y, Z, X | 13 |
+| a5n / n0 (arg4 inline) | Z, Y, X | Z, Y, X | 14 |
+| **target**             | **X, Z, Y** | **Z, Y, X** | — |
+
+(X = `tbl_125c[idx_1494[0]]`, the fourth argument; Y = `tbl_11dc[D_800A11D5]`,
+the third; Z = `tbl_125c[idx_1494[1]]`, the stacked fifth.)
+
+Target is the only arrangement that DECOUPLES them: chain X's `lbu` is the
+first insn of the block and its `lw $a3` the last. So the real question is not
+"which chain outranks which" (they tie, and the class rule cannot separate
+them) but "what source spelling stretches chain X across the whole block".
+
+#### The p4 basin — the first form that actually stretches chain X
+
+Predicted from the model above and confirmed by measurement: write the fourth
+argument's ADDRESS as a named pointer local and leave the DEREFERENCE inline —
+
+```c
+s32 *p4;
+p4 = &tbl_125c[idx_1494[0]];
+debug_printf(&D_800161C8, D_800F19C0, tbl_11dc[D_800A11D5], *p4, tbl_125c[idx_1494[1]]);
+```
+
+The `lbu` / `sll` / `addu` are then expanded at the STATEMENT (low LUIDs, so
+they schedule early) while `expand_call` still emits the load itself as
+`(set (reg:SI 7 a3) (mem ...))`, the last insn of the argument sequence —
+target's expand shape (session 6's finding). Measured: chain X's head lands at
+block position 2 and its load at 13, against 1 and 9 for the candidate and
+9-12 / 16 for the whole inline family. **Score 10 / 91.** Eight neighbours in
+the same basin measured 10-14. Banked with the full comparison table at
+`rejected/named-address-pointer-stretches-arg4-chain-but-10.c`.
+
+It does not beat the 8, but it is the only measured basin whose argument block
+has target's TOPOLOGY, and it is a better permuter seed than the n4 chassis the
+session-6 frontier nominated (which is 13 and has the head in the wrong place).
+
+- [s7-a] tools/gcc-2.7.2/cc1 (NOT tools/gcc-2.7.2/build/cc1, which sessions 2/3/6 checked) is a fully instrumented compiler built 2026-07-18 carrying BB2_PRIO_DEBUG, BB2_RANK_DEBUG, BB2_ALLOC_DEBUG, BB2_DBR_DEBUG, BB2_FLOW_DEBUG, BB2_QTY_DEBUG, BB2_FINDREG_DEBUG, BB2_SLL_DEBUG, BB2_XJUMP_DEBUG, BB2_SCHED_DEBUG and the DBRDBG/PRIODBG/RANKDBG/ALLOCDBG format strings. The instrumented-cc1 modality is AVAILABLE for every function in the project; the three prior "unavailable" verdicts are wrong.
+
+- [s7-a] The instrumented cc1 is codegen-identical to the frozen build/cc1: tmp/grind/saEft01Init/s7/idump.sh compiles the same system.i with both and diffs the .s (ignoring the '# options' comment) on every invocation, printing CODEGEN-IDENTICAL. It is a diagnostic instrument only — the build pipeline still uses build/cc1 — so reading it is not a compiler divergence under [[no-compiler-divergence]].
+
+- [s7-a] Measured (not inferred) sched1 INSN_PRIORITY for the whole debug_printf argument block of the candidate: all four chain heads (idx_1494[0] lbu, idx_1494[1] lbu, D_800A11D5 lbu, D_800F19C0 lw) and the &D_800161C8 la tie at 1; every sll/addu/intermediate load is 2; the 16(sp) store, the $a2 load and the $a3 copy are 3; the call is 4. Costs are load=2 (the mips.md r3000 memory unit, selected by -mcpu=3000), store=1, everything else 1, and INSN_PRIORITY is the weighted longest path from the BLOCK START because schedule_block is a bottom-up (reverse) list scheduler — the highest-priority insn is placed LATEST.
+
+- [s7-a] CORRECTION to session 6: the dependence-class test at sched.c:2412-2449 never separates anything in this block. All 13 RANKDBG comparisons emitted for it print cls=3 cls2=3 val=0, because every competitor is independent of last_scheduled_insn or has latency 1. Ordering therefore falls through to INSN_LUID at sched.c:2452-2455 in every case, and the operative constraint above LUID is READINESS in the reverse pass, not the class rule.
+
+- [s7-a] Readiness coupling explains why session 6 saw LUID as inert: in a bottom-up schedule a chain is dragged toward the block end as a unit once its terminal insn is placed, so in EVERY form measured so far the order of the three chains' HEADS equals the order of their LOADS (candidate X,Z,Y / X,Z,Y at 8; n4 Y,Z,X / Y,Z,X at 13; n0-a5n Z,Y,X / Z,Y,X at 14). Target is the only arrangement that decouples them — chain X's lbu first, its lw $a3 last — so the matching problem is 'stretch chain X across the block', not 'make chain X outrank chain Y'.
+
+- [s7-a] Naming the fourth argument's ADDRESS while leaving the dereference inline (`p4 = &tbl_125c[idx_1494[0]]; debug_printf(..., *p4, ...)`) is the first measured form that decouples head from load: chain X's head lands at block position 2 and its load at 13 (candidate: 1 and 9; the whole inline family: 9-12 and 16; target: 1 and 16). It scores 10/91. Eight neighbours measured 10-14 (p4d 10 byte-identical to p4, p45 11, p45r 11, q1 10, q2 10, q3 10, q4 11, q5 14). Banked at rejected/named-address-pointer-stretches-arg4-chain-but-10.c.
+
+- [s7-a] src/system.c was left holding the inherited 8/91 candidate (verified byte-identical to tmp/grind/saEft01Init/s7/system.c.candbase, sandbox score 8 at 91 build insns); no build-pipeline file was touched, no rule file was edited, and no background process was started.
+
+
+
+## Session 7 (forensics) — the function is Sony's `CD_datasync` and the matched C is IN HAND
+
+Floor unchanged at **8 / 91**. This session's value is provenance plus a
+now-numerically-pinned answer to "which GCC pass produces the divergence".
+
+### A note on this session's two halves
+
+An earlier session-7 process ran on 2026-08-01 15:03-15:18 and died before
+writing its outcome, so the driver discarded it; its scratch survived in
+`tmp/grind/saEft01Init/s7/`. Its write-up is folded in above under
+**[inherited]** and its facts are tagged `[s7-a]`. Of its claims this session
+independently RE-VERIFIED only the tooling one — `grep -a` on
+`tools/gcc-2.7.2/cc1` returns all 13 of ALLOCDBG / PRIODBG / RANKDBG / DBRDBG /
+BB2_*_DEBUG, and `idump.sh` printed CODEGEN-IDENTICAL on every run this session
+(that also matches the standing project memory `instrumented-cc1-location`).
+Its sched1 priority table, its RANKDBG `cls=3` reading and its p4 basin numbers
+were NOT re-measured here; treat them as strong leads, not banked facts.
+
+### saEft01Init IS PsyQ LIBCD `CD_datasync`, and the matched C is now on disk
+
+The queue name is an auto-generated misnomer. The matched reference C, the
+full BB2→Sony symbol mapping, the sibling-function note and the session-7
+measurement table are all in
+**`memory/grind/saEft01Init/ref/sotn_libcd_bios_CD_datasync.c`** (source:
+Xeeynamo/sotn-decomp `src/main/psxsdk/libcd/bios.c`, fetched with `gh api`;
+full file cached at `tmp/grind/saEft01Init/s7/ref/sotn_bios.c`; five further
+independent decomps of the same object are listed there if a second opinion is
+ever wanted).
+
+The identification does not rest on the census alone. `*D_800A14C0 &
+0x1000000` is the DMA3 CHCR channel-busy bit; `0x3C0` is 960 vblanks;
+`D_800A1494[0]`/`[1]` are the adjacent `sync`/`ready` bytes of Sony's
+`CD_intr` struct; `tslTm2LoadImage_2` is `puts` and `cdrom_ClearIrq` is
+`CD_flush`. Every element of the disassembly is accounted for by the reference,
+statement for statement.
+
+**Sibling payoff:** `set_alarm`/`get_alarm` are inlined into three functions in
+this TU. `src/system.c` already carries two more of them in the same
+hand-derived goto shape — `cpu_side_move_dir_4` (= `CD_sync`, name string
+D_80016240, ~line 366) and the function at ~line 480 (= `CD_ready`, name string
+D_80016248). Whatever spelling matches here matches those.
+
+### What the reference settles: the inherited 8/91 is a wrong-basin optimum
+
+The original body has **no named `arg4` intermediate** (all four table lookups
+are written inline in the `printf` call — which session 6 had already deduced
+independently from the expand-time RTL) and **no `k`** (both compare constants
+are plain literals). Both of the levers the 8 is built on are absent from the
+original. The 8 is therefore not a cheat-free 8, and a cheat-reviewer must be
+shown the clean number alongside it.
+
+### The honest cheat-free floor of this basin is 32 / 96
+
+Measured this session by stripping every lever off the proven sessions-2/3
+chassis and writing the statements exactly as the reference has them, then
+adding the levers back one at a time:
+
+| form | levers | score / insns |
+|---|---|---|
+| `clean` | none (reference statements) | **32 / 96** |
+| `cleana` | + named `arg4` only | 27 / 96 |
+| `cleank` | + the `k` double-set LICM defeat only | 21 / 90 |
+| `candidate` | `k` + `cnt = k` staging + named `arg4` | 8 / 91 |
+
+### The exact pass and decision, from the instrumented cc1
+
+`ALLOCDBG` for `clean` (`tmp/grind/saEft01Init/s7/clean/cc1.log`, 8 allocnos):
+
+```
+ord=2 pseudo=78  hardreg=16 nrefs=5 livelen=96  pri=1041   tbl_125c  -> $s0
+ord=3 pseudo=77  hardreg=17 nrefs=5 livelen=98  pri=1020   idx_1494  -> $s1
+ord=4 pseudo=72  hardreg=18 nrefs=3 livelen=52  pri= 576   the param -> $s2
+ord=5 pseudo=108 hardreg=19 nrefs=3 livelen=92  pri= 326   0x1000000 -> $s3
+ord=6 pseudo=85  hardreg=20 nrefs=3 livelen=94  pri= 319   0x3C0000  -> $s4
+ord=7 pseudo=76  hardreg=21 nrefs=3 livelen=100 pri= 300   tbl_11dc  -> $s5
+```
+
+**The first three dispositions are already target's, with no lever of any
+kind.** The entire allocation defect is `loop.c`'s LICM (`scan_loop` /
+`move_movables`) creating pseudos 85 and 108 for the two loop-invariant compare
+constants: they rank 5th and 6th in `global_alloc` (priority 326 and 319
+against `tbl_11dc`'s 300) and displace `tbl_11dc` from target's `$s3` to `$s5`,
+adding a fifth and sixth callee-save (+5 insns, 96 vs 91). Nothing else in the
+clean form's allocation is wrong.
+
+`ALLOCDBG` for `cleank` (the same form plus only the double-set defeat)
+confirms the payoff is exact and complete:
+
+```
+ord=1 pseudo=76 hardreg=4  nrefs=8 livelen=6   pri=40000  k         -> $a0
+ord=3 pseudo=79 hardreg=16 nrefs=5 livelen=96  pri=1041   tbl_125c  -> $s0
+ord=4 pseudo=78 hardreg=17 nrefs=5 livelen=98  pri=1020   idx_1494  -> $s1
+ord=5 pseudo=72 hardreg=18 nrefs=3 livelen=52  pri= 576   the param -> $s2
+ord=6 pseudo=77 hardreg=19 nrefs=3 livelen=100 pri= 300   tbl_11dc  -> $s3
+```
+
+Target's exact map, four callee-saves, both constants materialised inline, the
+holder caller-saved — at 90 insns, one FEWER than target's 91.
+
+**This reframes the whole function.** The clean-C matching problem is no longer
+"the debug_printf argument block"; it is one question: a legitimate spelling
+that denies `loop.c` those two specific hoists. Everything else in the clean
+form is already right, or is scheduling.
+
+### Reference-derived forms measured DEAD this session
+
+* `r0` — the reference hand-inlined verbatim: **35 / 91** (hits target's exact
+  instruction count, but five callee-saves and no hoisted base for `Intr`).
+  `r1` (+ the three table-base locals) 37 / 93; `r2` (`set_alarm`/`get_alarm`
+  as real `static __inline__` helpers) 31 / 94.
+* **Sony's `volatile` on `Alarm` and `Intr`** — the one DAG-changing lever the
+  session-6 frontier wanted, and legitimate as a header-type correction rather
+  than a coercion. **Dead:** 8 → 16 on the candidate chassis, and literally no
+  change on the reference chassis (35 → 35). BB2 links PsyQ 4.0 against sotn's
+  3.5-era reference, so the shipped object was evidently not built with these
+  volatile-qualified. Harness: `s7/vscore.py` (`--novol` to disable).
+* **The `||` short-circuit timeout test** — isolated against an otherwise
+  byte-for-byte identical candidate: 8 → **27 / 92**. `c2` (only the exits
+  changed to `while (1) { ... break; }`, inner gotos kept) 61 / 129; `c4`
+  (both) 74 / 131 — pathological block duplication, not near-misses.
+* Conversely the reference CONFIRMED the candidate's tail scaffolding: target's
+  `j / li v0,-1 / move v0,zero / bnez v0 / li v0,-1` at idx 68-72 is the
+  inlined-`get_alarm()` return-value shape, i.e. the `v0` temp and the `check:`
+  label ARE the original's structure, and `if (mode != 0) { ret = 1; break; }`
+  is exactly target's `beqz $s2 / addiu $v0,$zero,1` back-edge.
+* Two inherited "structural requirements" are now known to be artifacts of the
+  goto chassis rather than facts about the function: with a real loop the table
+  bases hoist WITHOUT explicit source-level locals (r0 is 91 insns, where
+  session 1's H1 goto-chassis test was 85), and `Intr`'s base does NOT get a
+  hoisted register even WITH an explicit pointer local.
+
+- [s7] saEft01Init @0x80081BB0 is Sony PsyQ LIBCD `CD_datasync`, and the matched C is now on disk at memory/grind/saEft01Init/ref/sotn_libcd_bios_CD_datasync.c (from Xeeynamo/sotn-decomp src/main/psxsdk/libcd/bios.c, fetched via `gh api`; full file cached at tmp/grind/saEft01Init/s7/ref/sotn_bios.c). The identity is independently corroborated by the disassembly, not just the census: *D_800A14C0 & 0x1000000 is the DMA3 CHCR channel-busy bit, 0x3C0 is 960 vblanks, and D_800A1494[0]/[1] are the adjacent sync/ready bytes of Sony's CD_intr struct.
+
+- [s7] Full BB2->Sony symbol mapping (all confirmed against the target disassembly): a0=mode; D_800F19B8/BC/C0 = Alarm.unk0/unk4/unk8 (deadline / spin counter / caller name pointer); D_800162C0 = "CD_datasync"; D_800161B8 = "CD timeout: "; D_800161C8 = the printf format; D_800A11DC[] = the CdlCom name table; D_800A11D5 = CD_com; D_800A125C[] = the interrupt-state name table; D_800A1494 = the CD_intr struct (sync at +0, ready at +1); *D_800A14C0 = DMA3 CHCR; sys_VSync=VSync; tslTm2LoadImage_2=puts; cdrom_ClearIrq=CD_flush; debug_printf=printf. tslTm2LoadImage_2 and cdrom_ClearIrq are splat misnomers like saEft01Init itself.
+
+- [s7] set_alarm/get_alarm are inlined into three functions in this TU, and src/system.c already carries two more of them in the same hand-derived goto shape: cpu_side_move_dir_4 (= CD_sync, name string D_80016240, ~line 366) and the function at ~line 480 (= CD_ready, name string D_80016248). Any spelling that matches saEft01Init transfers to both.
+
+- [s7] The reference proves the inherited 8/91 candidate is a wrong-basin local optimum: the original body has NO named arg4 intermediate (all four table lookups inline in the printf call, corroborating session 6's independent expand-RTL deduction) and NO k (both compare constants are plain literals). Both levers the 8 rests on are absent from the original.
+
+- [s7] The honest cheat-free floor of the known-good basin is 32/96, measured by stripping every lever off the sessions-2/3 chassis and writing the reference's statements: clean (no levers) 32/96, cleana (+named arg4 only) 27/96, cleank (+k double-set LICM defeat only) 21/90, candidate (k + cnt=k staging + arg4) 8/91. The 8 is therefore not a cheat-free 8.
+
+- [s7] Instrumented-cc1 ALLOCDBG on the clean form names the divergence exactly: pseudo 78 (tbl_125c) -> $s0, 77 (idx_1494) -> $s1, 72 (the param) -> $s2 are ALREADY target's dispositions with no lever of any kind. The whole allocation defect is loop.c's LICM (scan_loop/move_movables) creating pseudos 85 and 108 for the two loop-invariant compare constants; they rank 5th and 6th in global_alloc (pri 326 and 319 against tbl_11dc's 300) and displace tbl_11dc from target's $s3 to $s5, adding a fifth and sixth callee-save (+5 insns, 96 vs 91).
+
+- [s7] ALLOCDBG on cleank proves the payoff of suppressing exactly those two hoists is complete: 79->$s0, 78->$s1, param->$s2, 77 (tbl_11dc)->$s3 with the k holder in $a0 — target's exact callee-save map, four callee-saves, both constants materialised inline, at 90 insns (one fewer than target's 91). The clean-C matching problem for this function is therefore ONE question: a legitimate spelling that denies loop.c those two specific hoists.
+
+- [s7] The Sony reference transcribed verbatim scores 35/91 (r0) — it does hit target's exact instruction count but allocates five callee-saves (both constants hoisted to $s3/$s2 in the prologue) and fails to hoist a base register for Intr, folding the constant address into each lbu as %hi/%lo where target uses lbu a0,0(s1) / lbu v0,1(s1). r1 (+the three table-base locals) 37/93; r2 (set_alarm/get_alarm as real static __inline__ helpers) 31/94.
+
+- [s7] KILLED — Sony's `volatile` on Alarm and Intr, applied as a header-type correction to BB2's extern declarations (the DAG-changing lever the session-6 frontier wanted): 8 -> 16 on the candidate chassis and no change whatever on the reference chassis (35 -> 35). BB2 links PsyQ 4.0 where sotn's reference is 3.5-era; the shipped object was evidently not built with these volatile-qualified. Harness tmp/grind/saEft01Init/s7/vscore.py applies the rewrite to every extern block in the TU (--novol disables).
+
+- [s7] KILLED — the reference's `||` short-circuit timeout test, isolated against an otherwise byte-for-byte identical candidate: 8 -> 27/92. Also c2 (only the exits changed to the reference's while(1){...break;}, inner gotos kept) 61/129 and c4 (c1+c2) 74/131, both pathological block duplication rather than near-misses. The candidate's do{...}while(a0==0) + check: scaffolding stands.
+
+- [s7] CONFIRMED by the reference — target's idx 68-72 (`j / li v0,-1 / move v0,zero / bnez v0 / li v0,-1`) is the inlined-get_alarm() return-value shape, so the candidate's v0 temp and `check:` label ARE the original's structure, and `if (mode != 0) { ret = 1; break; }` is exactly target's `beqz $s2 / addiu $v0,$zero,1` back-edge.
+
+- [s7] Two inherited "structural requirements" are artifacts of the goto chassis, not facts about the function: with a real loop the three table bases hoist WITHOUT explicit source-level locals (r0 is 91 insns, where session 1's H1 goto-chassis test was 85), and Intr's base does NOT get a hoisted register even WITH an explicit pointer local.
+
+- [s7] src/system.c was restored to the inherited 8/91 candidate at session end (md5 727793a9be0db10bee83fa2d5fae1e89 == tmp/grind/saEft01Init/s7/system.c.candbase; `sandbox saEft01Init --disable all` re-run afterwards printed score 8, build_insns 91). No build-pipeline file, rule file, engine file or queue file was touched, and no background process was started.
+
+- [s7] saEft01Init @0x80081BB0 is Sony PsyQ LIBCD CD_datasync; the matched C is banked at memory/grind/saEft01Init/ref/sotn_libcd_bios_CD_datasync.c (Xeeynamo/sotn-decomp src/main/psxsdk/libcd/bios.c, fetched via gh api; full file cached at tmp/grind/saEft01Init/s7/ref/sotn_bios.c).
+
+- [s7] Symbol mapping, all confirmed against the target disassembly: a0=mode; D_800F19B8/BC/C0 = Alarm.unk0/unk4/unk8 (VSync deadline / spin counter / caller name pointer); D_800162C0="CD_datasync"; D_800161B8="CD timeout: "; D_800161C8 = the printf format; D_800A11DC[] = the CdlCom name table; D_800A11D5 = CD_com; D_800A125C[] = the interrupt-state name table; D_800A1494 = the CD_intr struct (sync at +0, ready at +1); *D_800A14C0 = DMA3 CHCR; sys_VSync=VSync; tslTm2LoadImage_2=puts; cdrom_ClearIrq=CD_flush; debug_printf=printf. tslTm2LoadImage_2 and cdrom_ClearIrq are splat misnomers exactly like saEft01Init itself.
+
+- [s7] set_alarm/get_alarm are inlined into three functions in this TU: src/system.c already carries cpu_side_move_dir_4 (= CD_sync, name string D_80016240, ~line 366) and the function at ~line 480 (= CD_ready, name string D_80016248) in the same hand-derived goto shape. Any spelling that matches saEft01Init transfers to both.
+
+- [s7] The original body has NO named arg4 intermediate and NO `k` — both levers the inherited 8/91 rests on are absent from the reference, corroborating session 6's independent expand-RTL deduction that the named arg4 is structurally wrong.
+
+- [s7] The honest cheat-free floor of the known-good basin is 32/96: clean (no levers, reference statements) 32/96, cleana (+named arg4 only) 27/96, cleank (+k double-set LICM defeat only) 21/90, candidate (k + cnt=k staging + arg4) 8/91.
+
+- [s7] Instrumented-cc1 ALLOCDBG on the clean form: tbl_125c->$s0, idx_1494->$s1, the param->$s2 are already target's dispositions with no lever at all; the whole allocation defect is loop.c LICM creating pseudos 85 and 108 for the two loop-invariant compare constants, which rank 5th/6th in global_alloc (pri 326 and 319 vs tbl_11dc's 300) and displace tbl_11dc from target's $s3 to $s5, costing two extra callee-saves (+5 insns).
+
+- [s7] ALLOCDBG on cleank: suppressing exactly those two hoists gives target's exact callee-save map (79->$s0, 78->$s1, param->$s2, tbl_11dc->$s3), four callee-saves, both constants materialised inline, the holder in $a0, at 90 insns — one FEWER than target's 91.
+
+- [s7] KILLED: Sony's volatile on Alarm and Intr as a declaration correction — 8->16 on the candidate chassis, 35->35 (no change) on the reference chassis. BB2 links PsyQ 4.0 against sotn's 3.5-era reference.
+
+- [s7] KILLED: the reference's || short-circuit timeout test in isolation — 8->27/92; c2 (exits only) 61/129 and c4 (both) 74/131 are pathological block duplication.
+
+- [s7] KILLED: the reference transcribed verbatim — r0 35/91, r1 37/93, r2 (real static __inline__ helpers) 31/94.
+
+- [s7] CONFIRMED by the reference: target's idx 68-72 (j / li v0,-1 / move v0,zero / bnez v0 / li v0,-1) is the inlined-get_alarm() return-value shape, so the candidate's v0 temp and check: label are the original's structure, and `if (mode != 0) { ret = 1; break; }` is target's `beqz $s2 / addiu $v0,$zero,1` back-edge.
+
+- [s7] Two inherited 'structural requirements' are artifacts of the goto chassis, not facts about the function: with a real loop the three table bases hoist WITHOUT explicit source-level locals (r0 is 91 insns where session 1's goto-chassis H1 test was 85), and Intr's base does NOT get a hoisted register even WITH an explicit pointer local.
+
+- [s7] Tooling, re-verified this session (and matching the standing project memory instrumented-cc1-location): tools/gcc-2.7.2/cc1 — NOT tools/gcc-2.7.2/build/cc1, which sessions 2/3/6 checked — carries all 13 of ALLOCDBG / PRIODBG / RANKDBG / DBRDBG / BB2_*_DEBUG, and tmp/grind/saEft01Init/s7/idump.sh printed CODEGEN-IDENTICAL against the frozen build/cc1 on every run.
+
+- [s7] An earlier session-7 process ran 2026-08-01 15:03-15:18 and died before writing its outcome; the driver discarded it but its scratch survived. Its write-up is salvaged verbatim into evidence.md/hypotheses.md under an [inherited] heading with its facts tagged [s7-a]. Only its tooling claim was re-verified here; its sched1 priority table, RANKDBG cls=3 reading and p4-basin numbers (p4 = 10/91, the first form to decouple chain X's head from its load) are strong leads, not banked facts.
+
+- [s7] src/system.c holds the inherited 8/91 candidate at session end (md5 727793a9be0db10bee83fa2d5fae1e89 == tmp/grind/saEft01Init/s7/system.c.candbase; sandbox re-run afterwards printed score 8, build_insns 91). No build-pipeline file, rule file, engine file or queue file was touched, and no background process was started.

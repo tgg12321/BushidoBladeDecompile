@@ -1,7 +1,7 @@
 {
  "func": "saEft01Init",
  "file": "system",
- "session_count": 6,
+ "session_count": 7,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -39,23 +39,29 @@
    "floor": 8,
    "modality": "forensics",
    "headline": "Forensics: the arg block's SHAPE is decided at expand (inline argument => load emitted straight into $a3 last; named local => load at the statement) and its ORDER by sched1's INSN_PRIORITY + dependenc"
+  },
+  {
+   "session": 7,
+   "floor": 8,
+   "modality": "forensics",
+   "headline": "saEft01Init IS Sony PsyQ LIBCD CD_datasync and the matched C is now on disk; the reference proves the inherited 8/91 is a wrong-basin optimum whose honest cheat-free floor is 32/96, and instrumented-c"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The whole argument-block residual is now ONE quantity: the idx_1494[0] address chain must outrank the D_800A11D5 chain in sched1's INSN_PRIORITY so its lbu is issued first and its load last, giving it the block-long live range that lands it in $a0.",
-   "mechanism": "rank_for_schedule (sched.c:2399) sorts the ready list by INSN_PRIORITY = longest path to the block end, then by the dependence class relative to last_scheduled_insn (sched.c:2412-2449), then by INSN_LUID (2452-2455, proven inert here). The two chains are isomorphic \u2014 lbu -> sll -> addu -> lw <hard arg reg> -> call \u2014 so they tie on priority and the class rule breaks the tie toward D_800A11D5. Only a DAG change can separate them.",
-   "next_probe": "Enumerate the semantically faithful DAG changes that lengthen the idx_1494[0] chain's path to the call or shorten the D_800A11D5 chain's, and measure each: (a) reading D_800A11D5 through the tbl_11dc pointer or another already-live pointer instead of as a bare symbol_ref (removes/adds a link); (b) declaring idx_1494 or the tables with a different element width so the address chain gains or loses the sll; (c) hoisting the D_800A11D5 byte read out of the block entirely (it is loop-invariant) so its chain no longer competes. Screen with tmp/grind/saEft01Init/s6/score.py and confirm the DAG effect in the .sched order with s6/order.py <tag> sched \u2014 do NOT re-try statement reordering, which is proven inert."
+   "hypothesis": "A legitimate (non-FAKE-family) C spelling can deny loop.c the two constant hoists, at which point the clean reference-faithful form \u2014 not the 8 \u2014 becomes the match candidate.",
+   "mechanism": "Priced exactly by this session's ALLOCDBG: suppress those two movables and the clean form gets target's $s0/$s1/$s2/$s3 map with four callee-saves at 90 insns, with no other change. The gate is loop.c:695 \u2014 a movable is skipped only when all three of (A) `! maybe_never && ! loop_reg_used_before_p`, (B) `! REG_USERVAR_P && ! REG_LOOP_TEST_P`, (C) `reg_in_basic_block_p` are false. (B) is unconditionally true for a compiler temp holding a literal, which is why every clean spelling hoists; session 3 showed a NAMED local plus maybe_never works for 0x1000000 but not for 0x3C0000.",
+   "next_probe": "The untried half of (A) is `loop_reg_used_before_p`, not `maybe_never`: a named local READ earlier in the loop body than the point where it is set makes (A) false regardless of maybe_never, which is exactly the position 0x3C0000 sits in. Re-read tools/gcc-2.7.2/loop.c:690-712 and :920-940 to confirm the predicate FIRST, then enumerate loop-carried spellings of the timeout limit that read such a local before setting it. Screen with tmp/grind/saEft01Init/s7/score.py and confirm the hoist is gone via ALLOCDBG from s7/idump.sh <tag> (a suppressed hoist shows as 7 rather than 8 allocnos, with tbl_11dc at hardreg=19)."
   },
   {
-   "hypothesis": "The 14/91 inline-arg4 family, not the 8/91 named-arg4 candidate, is the correct chassis for the argument block, so a permuter campaign or hand sweep seeded there can reach a lower true floor even though its starting score is higher.",
-   "mechanism": "Session 6 proved the 8/91 form's fourth argument has the wrong expand-time RTL (a standalone load coalesced onto $a3 early) while the inline form has target's (`set (reg a3) (mem ...)` emitted last). Score is therefore a misleading ranking between the two basins, exactly as sessions 4 and 5 found the permuter's weighted score to be for this function. The inline family's best member is n4 at 13/91.",
-   "next_probe": "Build a permuter workspace from the n4 chassis (tmp/grind/saEft01Init/s6/variants/n4.c) using tmp/grind/saEft01Init/s5/mkws.sh + mkws2b.sh, run one fresh-seed campaign with tools/permuter_campaign.py, and screen EVERY find through the engine sandbox with s5/pick.py + run_screen.sh (never rank by weighted score). Wait for it in-turn with `permuter_campaign.py wait` and harvest with --stop before finishing."
+   "hypothesis": "Declaring D_800A1494 as Sony's `CD_intr` STRUCT (rather than `extern u8` indexed through a u8* local) is what produces target's hoisted base register for Intr \u2014 `lbu a0,0(s1)` / `lbu v0,1(s1)` at offsets 0 and 1.",
+   "mechanism": "Neither the reference spelling (r0: GCC folds the constant address into each lbu as %hi/%lo) nor an explicit u8 * pointer local (r1, and session 6's whole n-family) reproduces target's base register. Sony's source has ONE object with two member offsets. Note H28 killed the `volatile` QUALIFIER specifically; the STRUCT shape is a separate and untested question.",
+   "next_probe": "Out of scope for a single-function grind session: it needs the shared extern declaration changed and both sibling bodies adjusted. Assign a structural/rederive session scoped to all three CD_* siblings at once (saEft01Init, cpu_side_move_dir_4 = CD_sync at ~line 366, CD_ready at ~line 480), declaring `typedef struct { u8 sync, ready, c; } CD_intr; extern CD_intr D_800A1494;` and indexing `D_800A125C[D_800A1494.sync]`."
   },
   {
-   "hypothesis": "The session-3 F7 tail (+1: target fills the `beqz $v0` delay slot with `move v0,zero`, we emit a nop) is the smaller half of the residual and is still open, untouched by session 6.",
-   "mechanism": "Unchanged from session 3's F7: reorg's fill_slots_from_thread consumes the analogous block for the FLAG exit in the same function but refuses it for the mask exit, because the mask exit's fall-through thread is the loop-condition JUMP_INSN already turned into a SEQUENCE by fill_simple_delay_slots.",
-   "next_probe": "Unchanged and still un-run: find C that puts an ORDINARY INSN between the mask branch and the loop-condition branch without that insn being eaten by fill_simple_delay_slots first (session 3's w2 failed exactly there). Do not re-run the eight exit spellings and label orders session 3 killed. Regenerate RTL with tmp/grind/saEft01Init/s3/dbr.sh and read the tail with dbrscan.py; note BB2_DBR_DEBUG is inert in the shipped cc1 (re-confirmed in session 6)."
+   "hypothesis": "The session-3 F7 tail (+1: target fills the `beqz $v0` delay slot with `move v0,zero`, we emit a nop) is now readable, because the DBRDBG trace set that session 3 could not get exists in the instrumented cc1.",
+   "mechanism": "reorg's fill_slots_from_thread consumes the analogous block for the FLAG exit in this same function but refuses it for the mask exit. Session 3 shelved this because BB2_DBR_DEBUG produced no output \u2014 from the wrong binary (build/cc1). tools/gcc-2.7.2/cc1 carries the full DBRDBG trace set (thr / thr LOSE / thr WINNER / simp / mtlr), plus BB2_NO_FT_STEAL and BB2_ALLLIVE_LABEL to bisect the behaviour.",
+   "next_probe": "`BB2_DBR_DEBUG=1 bash tmp/grind/saEft01Init/s7/idump.sh <tag>` on the candidate and on session 3's w1_goto_exits, then find the `thr LOSE` line for the mask exit and read which resource test rejected the steal. Do this AFTER the F13 probe, since F13 changes the block layout this depends on."
   }
  ],
  "judge_constraints": [],
