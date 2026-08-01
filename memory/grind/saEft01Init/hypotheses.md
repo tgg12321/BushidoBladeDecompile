@@ -1237,3 +1237,195 @@ same map with no LICM question at all.
 - probe: g2 (assignments moved to the end of the pre-loop block), g4 (declaration order changed to target's callee-save order), g5 (assignment order changed to target's callee-save order), g3 (assignments moved before the sys_VSync(-1) call).
 - result: g2 / g4 / g5 all 18/91, unchanged; g3 regresses to 23/91. Statement and declaration order inside the pre-loop block is byte-inert here, consistent with session 6's finding that source placement inside a block is inert because rank_for_schedule never reaches the INSN_LUID tie-break. The live-range route survives only where liveness is actually decided, not at the statement-order surface.
 - verdict: KILLED
+
+
+## Session 9 (rederive) — measured
+
+Modality: rederive.  **Floor 8 -> 7 / 91**, and the chassis under the floor
+changed completely: the new 7 carries NO `k`, NO mask staging and NO
+FAKE-family LICM defeat — its only match device is one `do { } while (0)`.
+Twenty-one variants measured (q1-q5, r1-r3, t1-t6, u1-u6, cand9), four
+instrumented-cc1 dump sets, three GCC source reads (loop.c, local-alloc.c,
+mips.h).
+
+### H37 — KILLED (the whole real-loop branch, with the mechanism priced)
+**Statement:** on the real-loop (`clean`) chassis — the one whose allocation
+order is already target's — the two loop-invariant compare constants can be
+kept in-loop by putting them in named C locals, because `loop.c:691-701`'s
+movable-creation gate is skipped when all three of its disjuncts are false and
+disjunct (2) (`! REG_USERVAR_P && ! REG_LOOP_TEST_P`) is false for a user
+variable.
+**Mechanism:** the gate; `REG_LOOP_TEST_P` is set only at `jump.c:2253` and
+never applies here, so a named local is the only way to falsify (2).
+Disjunct (1) needs `maybe_never` (set at the first CODE_LABEL/JUMP_INSN inside
+the loop, loop.c:921-930) or a use-before-set; disjunct (3) needs the live
+range to leave the setting basic block.
+**Probe:** q1 (mask only, named, set at loop-body top), q2 (both named at the
+top), q3 (q2 with `do{}while(0)` around each set), q4 (q2 with `do{}while(0)`
+around the timeout test), q5 (both named, set AFTER the loop's first branch);
+`s9/score.py` for all five, `s9/idump.sh` + the `-da` `.loop` dump for q2 and
+q5.
+**Result:** q1/q2/q3 = 32/96, byte-identical to `clean`; the `.loop` dump shows
+both constants still built as movables and moved (`maybe_never` is 0 at the
+loop-body top — the loop's own top label does not set it). q4 = 38/96, q5 =
+36/95: in q5 the mask escapes the hoist for the first time (only one movable
+listed as moved), confirming the gate reading exactly — but the escaped local
+then measures 4 refs / 98 insns crossing 5 calls and takes a callee-save,
+where target has a block-local `lui $v1,0x100` immediately before its `and`.
+**Verdict: KILLED, and it closes the real-loop branch entirely.** Block-local
+AND not-hoisted are mutually exclusive inside a real loop: block-local makes
+disjunct (3) true, the movable is built, and `move_movables`' test
+(`threshold * savings * lifetime >= insn_count`, loop.c:1631) is
+unconditionally true here — threshold = 1*(1+n_non_fixed_regs) = 61 (MIPS
+FIRST_PSEUDO_REGISTER 68, 8 fixed), savings = lifetime = 1, insn_count = 50.
+This is why every `while (true)` spelling in the reference corpus sits at
+27-35.  Banked: rejected/real-loop-user-var-consts-still-hoisted-32.c,
+rejected/maybe-never-lifts-mask-only-still-36.c.
+
+### H38 — CONFIRMED (the session's main result: 18 -> 8 with no lever)
+**Statement:** the reason target's map needs a real loop is only flow.c's
+`REG_N_REFS += loop_depth` weighting, and `do { } while (0)` emits the same
+NOTE_INSN_LOOP_BEG / NOTE_INSN_LOOP_END notes that drive that counter — so
+wrapping just the block that contains the table-pointer uses buys the
+weighting WITHOUT handing loop.c a loop to hoist the compare constants out of.
+**Mechanism:** the notes are emitted by the front end (`expand_start_loop`),
+and flow.c counts them; loop.c only optimises a loop it can find a back edge
+for.  The function's back edge stays a bare `goto`, so loop.c never scans it.
+Predicted effect: D_800A125C and D_800A1494 go 3 refs -> 5 (their two uses are
+both inside the wrapper), D_800A11DC 2 -> 3, the parameter unchanged at 2 refs
+/ livelen 52 because its set (prologue) and its use (loop-back test) are both
+outside the wrapper.  With `pri = floor_log2(nrefs)*nrefs/livelen*10000` that
+is 1041 / 1020 / 384 / 300 — exactly target's $s0/$s1/$s2/$s3 order.
+**Probe:** r1 (`do{}while(0)` around the whole timeout/printf block of the
+zero-lever goto chassis g0), r2 (around the argument+printf block only), r3
+(two nested wrappers); `s9/score.py`, then `s9/idump.sh r1` for `.lreg`, then
+`tmp/grind/saEft01Init/s1/grind_diff.py` for the positional diff.
+**Result:** r1 = **8 / 91** from g0's 18 / 91, r2 = 11 / 91, r3 = 18 / 91.  The
+r1 `.lreg` numbers are the predicted ones to the integer: D_800A125C 5/96,
+D_800A1494 5/98, param 2/52, D_800A11DC 3/100.  The positional diff shows the
+prologue, both compare constants, and the ENTIRE tail byte-exact — including
+session 3's F7 (`beqz $v0` with `addu $v0,$zero,$zero` in the delay slot),
+which closed for free.  Every diff is inside build idx 46-61.
+**Verdict: CONFIRMED.**  This replaces the two-lever 8/91 with a one-device
+form that is strictly better and strictly cleaner, and it dissolves the
+paradox between H37 and H40: the weighting and the LICM suppression were never
+the same question.  The wrapper is a sanctioned `/* FAKE */` match device
+under the owner's 2026-07-06 do-while(0) ruling (any codegen effect, mandatory
+inline annotation, single level so no nesting justification needed).
+Banked: rejected/nested-do-while0-depth3-byte-inert-18.c.
+
+### H39 — CONFIRMED (floor 7) / KILLED (session 6's expand-shape reading)
+**Statement:** with the chassis corrected, the argument block's residual is
+reachable by re-spelling the four `debug_printf` arguments, and session 6's
+forensics predict the winner: an INLINE argument's load is emitted by
+`expand_call` straight into the hard register as the last insn of the argument
+sequence, which is target's `lw a3,0(a0)`.
+**Probe:** twelve spellings against r1 — t1 both inline, t2 arg5 named only,
+t3 arg4 named first + arg5 inline, t4 both named arg4 first, t5 both named
+arg5 first, t6 index byte named; u1 named pointer + inline deref, u2 pointer +
+named value, u3 both as named pointers, u4 third argument also named, u5 index
+bytes staged, u6 declaration order swapped.
+**Result:** 13 / 13 / **7** / **7** / 8 / 13 ; 9 / 9 / 10 / 14-at-90-insns /
+**7** / 9.  The all-inline form — session 6's predicted target shape — is 13,
+six WORSE than naming arg4.  Naming the third argument as well drops the build
+to 90 instructions, one fewer than target.
+**Verdict: 7 is the floor of the spelling family; session 6's expand-shape
+prediction is KILLED on the corrected allocation.**  Banked:
+rejected/both-args-inline-on-dowhile0-chassis-13.c,
+rejected/arg2-named-costs-an-instruction-90-14.c,
+rejected/named-pointer-inline-deref-9.c.
+
+### H40 — KILLED (F16 route (a), permanently — it is arithmetic, not spelling)
+**Statement:** the parameter's allocno priority can be landed in the (200, 306)
+window by lengthening its live range, since sessions 2 and 8 only ever killed
+particular SPELLINGS of that change (statement order, declaration order, dead
+stores).
+**Mechanism:** `pri = floor_log2(nrefs)*nrefs/livelen*10000`, so at nrefs 2 the
+window (200, 306) needs livelen 66..99.
+**Probe:** counted the function's real insns in the `-da` dumps (59) and read
+`local-alloc.c:update_equiv_regs` for the source of the pointers' 96-100.
+**Result:** `reg_live_length` is bounded by the function's insn count, and the
+param's 52 is already within 7 of the 59-insn ceiling.  The pointers' 96-100
+are NOT raw — line ~1058 DOUBLES `reg_live_length` for any pseudo carrying a
+REG_EQUIV note, and lines 1019-1052 attach REG_EQUIV only to a single-set
+pseudo whose source is CONSTANT_P or an unchanging MEM.  The param's set is
+`(set (reg/v 72) (reg:SI 4 a0))`, a hard-register source, so it can never
+qualify.  Therefore param pri >= 2*10000/59 = 338 > 306 for EVERY spelling.
+**Verdict: KILLED permanently.**  Also corrects session 8's formula: the
+`floor_log2` factor is real (it is 1 for nrefs 2 and 3, which is why s8's fit
+looked exact), so F17's route (b) numbers are 833 / 816, not 416 / 408.
+
+## Live frontier (for session 10)
+
+### F19 — defer `lw a3` to the end of the argument block (the whole 7)
+**Mechanism:** target keeps the idx[0] address chain alive in `$a0` across the
+third argument's entire computation and issues `lw a3,0(a0)` as the LAST
+memory reference of the block, after `sw v1,16(sp)` and `lw a2,0(v0)`; we
+compute the same chain in `$v0` and issue `lw a3,0(v0)` at build idx 54, six
+insns early, which drags the arg5 chain later and produces all 7 diffs.  H39
+shows this is NOT reachable from the argument SPELLING (twelve measured, 7 is
+the floor) and session 6 showed source statement placement inside this block
+is byte-inert because `rank_for_schedule` decides on INSN_PRIORITY and the
+dependence-class test (sched.c:2412-2449) and never reaches the INSN_LUID
+tie-break (sched.c:2452-2455).
+**Next probe:** so read the priorities, don't guess the spelling.  Dump the
+`.sched` RTL for the r1/t3 body (`bash tmp/grind/saEft01Init/s9/idump.sh t3`,
+then the `;; Function saEft01Init` section of `system.i.sched`) and compare
+each argument-block insn's INSN_PRIORITY and dependence list against the order
+target emits.  The specific question is what makes target's `lw a3` the lowest
+priority insn in the block when it is the last link of the SHORTEST of the
+three chains.  A likely answer is that in target the a3 load depends on a
+chain that is scheduled to finish late because `$a0` is also the format
+string's register — i.e. the anti-dependence on `$a0` from `lui a0,%hi(
+D_800161C8)` is what pins it — in which case the lever is which pseudo gets
+`$a0`, and that is a local-alloc copy-preference question, not a spelling one.
+
+### F20 — cheat-review status of the do{}while(0) wrapper
+**Mechanism:** the wrapper is the single match device in the new candidate and
+it is explicitly sanctioned (owner ruling 2026-07-06, `.claude/rules/
+do-while-zero-exception.md`: any body, ANY codegen effect, register allocation
+named explicitly, mandatory inline FAKE annotation, single level).  The
+candidate carries the annotation.
+**Next probe:** it has NOT been through a fresh adversarial cheat-reviewer.
+Do that before any completion claim, and show the reviewer the mechanism
+(flow.c loop_depth weighting, not a semantic change: the block executes
+exactly once either way) together with H37/H40 as the lever-exhaustion record.
+Also worth measuring for the reviewer: whether ANY construct-free spelling
+reaches the same weighting — the only other way to raise a pointer's
+REG_N_REFS is a genuine fourth reference (F17), which target's own register
+usage shows does not exist ($s0 is set once and read twice in the shipped
+object, $s1 likewise).
+
+### F21 — the sibling functions inherit this for free
+**Mechanism:** the ledger's session-7 note records that `set_alarm`/`get_alarm`
+are inlined into two more functions in this same TU which already carry the
+same hand-derived goto shape — `cpu_side_move_dir_4` (= CD_sync, name string
+D_80016240) at ~src/system.c:366 and the one at ~line 480 (= CD_ready, string
+D_80016248).
+**Next probe:** once saEft01Init closes, apply the same wrapper + named-arg4
+shape to both and re-score; they are the cheapest queue items in the file and
+the mechanism is identical.
+
+## [s9] On the real-loop (clean) chassis, whose allocation order is already target's, the two loop-invariant compare constants can be kept in-loop by putting them in named C locals, because loop.c:691-701's movable-creation gate is skipped when all three of its disjuncts are false and disjunct (2) (! REG_USERVAR_P && ! REG_LOOP_TEST_P) is false for a user variable.
+- mechanism: loop.c:691-701 builds a movable unless all of (1) !maybe_never && !loop_reg_used_before_p, (2) !REG_USERVAR_P && !REG_LOOP_TEST_P, (3) reg_in_basic_block_p are false. REG_LOOP_TEST_P is set only at jump.c:2253 and never applies here, so a named C local is the only way to falsify (2); maybe_never is set at the first CODE_LABEL/JUMP_INSN inside the loop (loop.c:921-930).
+- probe: q1 (mask only, named, set at loop-body top), q2 (both named at the top), q3 (q2 with do{}while(0) around each set), q4 (q2 with do{}while(0) around the timeout test), q5 (both named, set AFTER the loop's first conditional branch), scored with tmp/grind/saEft01Init/s9/score.py and dumped with s9/idump.sh; the decisive evidence is the -da .loop dump's per-movable trace.
+- result: q1/q2/q3 = 32/96, byte-identical to clean; the .loop dump still lists both constants as movables that were moved, because maybe_never is 0 at the loop-body top (the loop's own top label does not set it). q4 = 38/96. q5 = 36/95: with both sets moved after the loop's first branch the MASK escapes the hoist for the first time (only one movable moved), which confirms the gate reading exactly - but the escaped local then measures 4 refs / 98 insns crossing 5 calls and takes a callee-save, where target has a block-local lui $v1,0x100 immediately before its and. Block-local and not-hoisted are mutually exclusive in a real loop: block-local makes disjunct (3) true, the movable is built, and move_movables' test (threshold*savings*lifetime >= insn_count, loop.c:1631) is unconditionally true here - threshold = 1*(1+n_non_fixed_regs) = 61 (MIPS FIRST_PSEUDO_REGISTER 68 with 8 fixed), savings = lifetime = 1, insn_count = 50.
+- verdict: KILLED
+
+## [s9] The only thing a real C loop contributes to target's callee-save map is flow.c's REG_N_REFS += loop_depth weighting, and do { } while (0) emits the same NOTE_INSN_LOOP_BEG / NOTE_INSN_LOOP_END notes that drive that counter - so wrapping only the block containing the table-pointer uses buys the weighting WITHOUT handing loop.c a loop to hoist the two compare constants out of.
+- mechanism: The loop notes are emitted by the front end (expand_start_loop) for do{}while(0) exactly as for a real loop, and flow.c counts them when accumulating REG_N_REFS; loop.c only optimises a loop whose back edge it can find, and the function's back edge stays a bare goto. Predicted: D_800A125C and D_800A1494 go 3 refs -> 5, D_800A11DC 2 -> 3, the parameter unchanged at 2 refs / livelen 52 (its set and its use are both outside the wrapper), giving pri = floor_log2(nrefs)*nrefs/livelen*10000 = 1041 / 1020 / 384 / 300, i.e. target's exact order.
+- probe: r1 (one do{}while(0) around the whole timeout/printf block of the zero-lever goto chassis g0), r2 (around the argument+printf block only), r3 (two nested wrappers); s9/score.py, then s9/idump.sh r1 for the .lreg reference counts, then tmp/grind/saEft01Init/s1/grind_diff.py for the positional diff against asm/funcs/saEft01Init.s.
+- result: r1 = 8 / 91 from g0's 18 / 91; r2 = 11 / 91; r3 = 18 / 91. The r1 .lreg numbers are the predicted ones to the integer (D_800A125C 5/96, D_800A1494 5/98, param 2/52, D_800A11DC 3/100). The positional diff shows the prologue, both in-loop compare constants and the ENTIRE tail byte-exact - including session 3's F7 (beqz $v0 with addu $v0,$zero,$zero in its delay slot), which closed for free. Every remaining diff is inside build idx 46-61, the debug_printf argument block. This form carries no k, no staging and no FAKE-family LICM defeat; its single match device is the wrapper, which is sanctioned by the owner's 2026-07-06 do-while(0) ruling and carries the mandatory inline FAKE annotation.
+- verdict: CONFIRMED
+
+## [s9] With the chassis corrected the argument block's residual is reachable by re-spelling the four debug_printf arguments, and session 6's expand forensics predict the winner: an INLINE argument's load is emitted by expand_call straight into the hard register as the last insn of the argument sequence, which is target's lw a3,0(a0).
+- mechanism: expand_call emits an inline argument's load directly into the hard reg last, while a named local's load is emitted at its statement and local_alloc gives the pseudo the argument register by copy preference.
+- probe: Twelve spellings against r1: t1 both inline, t2 arg5 named only, t3 arg4 named and assigned first with arg5 inline, t4 both named with arg4 first, t5 both named with arg5 first, t6 index byte named; u1 named pointer with inline deref, u2 pointer + named value, u3 both slots as named pointers, u4 third argument also named, u5 index bytes staged, u6 declaration order swapped. All via s9/score.py.
+- result: 13 / 13 / 7 / 7 / 8 / 13 and 9 / 9 / 10 / 14-at-90-insns / 7 / 9. The all-inline form - session 6's predicted target shape - is 13, six WORSE than naming arg4; naming the third argument as well drops the build to 90 instructions, one fewer than target's 91. 7 is the floor of the entire spelling family, so the residual is a scheduling/allocation question, not a spelling one.
+- verdict: KILLED
+
+## [s9] The parameter's allocno priority can be landed in the (200, 306) window by lengthening its live range - sessions 2 and 8 only ever killed particular SPELLINGS of that change (statement order, declaration order, dead stores), so the route itself is still open.
+- mechanism: global.c:allocno_compare sorts on pri = floor_log2(nrefs)*nrefs/livelen*10000, so at nrefs 2 the window needs livelen 66..99 against the current 52.
+- probe: Counted the function's real insns in the -da dumps (59) and read local-alloc.c:update_equiv_regs to find the source of the three pointers' 96-100 live lengths.
+- result: flow.c bounds reg_live_length by the function's insn count, and the param's 52 is already within 7 of the 59-insn ceiling. The pointers' 96-100 are NOT raw: local-alloc.c line ~1058 DOUBLES reg_live_length for any pseudo carrying a REG_EQUIV note, and lines 1019-1052 attach REG_EQUIV only to a single-set pseudo whose source is CONSTANT_P (via a promoted REG_EQUAL note) or an unchanging MEM. The param's set is (set (reg/v 72) (reg:SI 4 a0)), a hard-register source, so it can never qualify. Therefore param pri >= 2*10000/59 = 338 > D_800A1494's 306 for EVERY possible spelling - F16 route (a) is arithmetically dead, permanently. This also corrects session 8's formula: the floor_log2 factor is real (it equals 1 for nrefs 2 and 3, which is why s8's fit looked exact), so F17 route (b)'s numbers are 833 / 816, not 416 / 408.
+- verdict: KILLED

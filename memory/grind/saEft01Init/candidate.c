@@ -1,161 +1,86 @@
-/* saEft01Init — best SEMANTICALLY FAITHFUL form as of grind session 5.
- *
- * Honest pure-C distance (sandbox --disable all): 8   ·  91 build insns vs
- * 91 target — the instruction COUNT is exact, so the whole residual is
- * register choice and scheduling.
- *
- * *** READ THIS BEFORE "RESTORING" THE SESSION-4 FLOOR OF 7 ***
- * Session 4 banked a distance-7 form whose third lever re-based the table
- * pointer (`tbl_125c = &tbl_125c[idx_1494[0]];`) and then indexed the
- * RE-BASED pointer with the second index.  Session 5 read the target block
- * and found that is not a respelling, it is a different program:
- *
- *   target:  lbu a0,0(s1) / lbu v0,1(s1) / sll v0,v0,2 / addu v0,v0,s0 /
- *            sll a0,a0,2 / lw v1,0(v0) / addu a0,a0,s0 / sw v1,16(sp) /
- *            lw a3,0(a0)
- *
- * BOTH index chains are computed off the UNMODIFIED base `s0`, i.e.
- * arg4 = tbl[i0] and arg5 = tbl[i1].  The re-base emits `addu s0,s0,v1`
- * (an instruction target does not contain) and computes arg5 = tbl[i0+i1],
- * changing the value passed to debug_printf.  It is banked at
- * rejected/pointer-rebase-changes-arg5-semantics-7.c and must not come back.
- * The honest floor for a faithful form is 8, and this file is it.
- *
- * THE TWO SURVIVING LEVERS (sessions 2-4, both still load-bearing here):
- *
- *  (1) `k` holds BOTH loop-invariant compare constants (two non-consecutive
- *      sets), which denies loop.c:702 the hoist that would otherwise push
- *      them into $s4/$s5 and destroy target's $s0-$s3 callee-save map; and
- *      `cnt = k;` then stages the 0x1000000 mask out of `k` into the
- *      ALREADY-LIVE loop counter so the mask gets its own pseudo — target
- *      materialises the two constants in two DIFFERENT registers
- *      (`lui $v0,0x3c`, `lui $v1,0x100`).
- *      *** The staging holder MUST be an existing live local: the same stage
- *      through a FRESH local is byte-inert (session 4, H17).  That asymmetry
- *      is the [[defeat-licm-hoist-var-reuse]] / [[staged-value-reused-
- *      variable]] family signature, so this construct is NOT clean pure C by
- *      default — it needs a `/* FAKE *\/` annotation, the sessions 1-5
- *      lever-exhaustion record, and cheat-reviewer sign-off before any
- *      completion claim. ***
- *
- *  (2) `ret = *D_800A14C0 & cnt; if (ret == 0) break;` — naming the mask
- *      test's result instead of testing it inline (session 4, H18; the
- *      permuter's version of this carried a dead `ret = 0;` which measured
- *      byte-neutral and is correctly absent).
- *
- * ARGUMENT BLOCK (session 5, H20/H21 — cluster B / F6 is now closed at the
- * source-ordering level): ONE named intermediate, `arg4`, assigned BEFORE
- * the call, with the fifth argument written inline.  Measured cross-product:
- * arg4's assignment first = 8, arg5's first = 9; declaration order of two
- * named intermediates is byte-inert; naming arg5 instead of arg4 costs 6.
- *
- * INHERITED AND STILL TRUE (sessions 1-3): the real `do { } while (a0 == 0)`
- * loop is structurally required (only it emits NOTE_INSN_LOOP_BEG and gets
- * target's $s0-$s3 map); the three explicit table-pointer locals are
- * structurally required; the shared-`ret` exit beats inline returns; every
- * bare-goto exit form is 19/93.
- *
- * WHAT IS LEFT (8 at the exact instruction count), both register/schedule:
- *   (a) the fourth argument's address chain — ours runs through $v1 and
- *       issues `lw a3,0(v1)` early; target runs it through $a0 and defers
- *       `lw a3,0(a0)` past the `sw v1,16(sp)` / `lw a2` pair, and the
- *       `D_800F19C0` load moves with it;
- *   (b) session-3 F7 — target fills the `beqz $v0` delay slot with
- *       `move v0,zero`; we emit a `nop`.
- *
- * SESSION-6 FORENSICS — READ BEFORE SPENDING ANY MORE TURNS ON (a):
- *   * The `arg4` local ABOVE IS STRUCTURALLY WRONG, even though it scores 8.
- *     From the `.rtl` (raw expand) dump: a NAMED argument's load is emitted at
- *     its statement position — `(set (reg/v 88) (mem (reg 93)))` — plus a copy
- *     `(set (reg a3) (reg/v 88))`, and `local_alloc` gives pseudo 88 `$a3` by
- *     copy preference, so the LOAD lands on `$a3` EARLY.  An INLINE argument's
- *     load is emitted by `expand_call` DIRECTLY into the hard reg as the LAST
- *     insn of the argument sequence — `(set (reg:SI 7 a3) (mem (reg 99)))` —
- *     which is target's shape (`lw a3,0(a0)` is target's last memory ref).
- *     combine plays no part (its `REG_USERVAR_P` guards are
- *     `SMALL_REGISTER_CLASSES`-gated; mips.h does not define it).
- *     The all-inline form is banked at
- *     `rejected/arg4-inline-is-target-expand-shape-but-14.c` at 14/91.
- *   * Source STATEMENT placement inside this basic block is byte-inert: four
- *     spellings with genuinely different expand LUID orders (including one
- *     that makes the `idx_1494[0]` `lbu` the block's first insn) all emit
- *     byte-identical code, because `rank_for_schedule` decides on
- *     `INSN_PRIORITY` and the dependence-class test (`sched.c:2412-2449`),
- *     never reaching the `INSN_LUID` tie-break at `sched.c:2452-2455`.
- *   * The `$a0` in target is not an allocator choice: it falls out of that
- *     chain being live across the WHOLE block, which is a sched1 consequence.
+/* saEft01Init — best measured form as of grind session 9.   floor: 7 / 91
+ * (`sandbox saEft01Init --disable all`; target is 91 instructions, so the
+ * instruction COUNT is exact and the whole residual is inside the
+ * debug_printf argument block, build idx 46-61).
  *
  * ===========================================================================
- * SESSION-7 PROVENANCE WARNING — THIS FORM IS *NOT* THE ORIGINAL SOURCE
+ * WHAT CHANGED IN SESSION 9 — THE CHASSIS IS NOW THE ZERO-CONSTANT-LEVER ONE
  * ===========================================================================
- * saEft01Init is Sony PsyQ LIBCD `CD_datasync`, and session 7 obtained the
- * matched C: memory/grind/saEft01Init/ref/sotn_libcd_bios_CD_datasync.c
- * (from Xeeynamo/sotn-decomp src/main/psxsdk/libcd/bios.c), with every symbol
- * mapped and independently confirmed against the target disassembly (the
- * clincher is `*D_800A14C0 & 0x1000000` = DMA3 CHCR channel-busy bit).
+ * Sessions 2-5 reached 8 / 91 on a chassis that needed TWO FAKE-family levers
+ * (the reused `k` holding both compare constants to defeat loop.c's LICM, plus
+ * `cnt = k;` to stage the mask out of an already-live pseudo).  Session 7
+ * proved that chassis is a wrong basin: this function is Sony PsyQ LIBCD
+ * `CD_datasync`, whose reference source has NO `k` and NO staging.
  *
- * The reference says plainly what the original body contains, and this file
- * disagrees with it in two places:
- *   * the original has NO named `arg4` intermediate — all four table lookups
- *     are written inline in the printf call (which session 6 had already
- *     deduced from the expand-time RTL shape, independently);
- *   * the original has NO `k` and no `cnt = k` staging — both compare
- *     constants are plain literals.
+ * This file has NEITHER lever.  Both compare constants are plain literals
+ * exactly as the Sony reference writes them, there is no staging of any kind,
+ * and the ONLY match device is a single `do { } while (0)` wrapper around the
+ * timeout/printf block.  It scores 7 where the old two-lever form scored 8.
  *
- * So this 8/91 is a wrong-basin local optimum bought with two FAKE-family
- * levers.  Session 7 measured the honest cheat-free floor of this same chassis
- * with the reference's statements and zero levers: 32 / 96
- * (rejected/clean-no-levers-licm-hoists-both-constants-32.c).  It is retained
- * as `candidate.c` ONLY because it is still the lowest measured distance and
- * the driver asks for the best form; it must NOT be advanced toward completion
- * without cheat-review, and a reviewer should be shown the 32 as well.
+ * WHY THE WRAPPER IS THE WHOLE LEVER (session 9, H37/H38 — read this before
+ * touching it, because the reason is a proved arithmetic dead end on both
+ * sides of it):
  *
- * WHERE THE REAL WORK IS NOW (session-7 instrumented-cc1 forensics):
- * in the clean form the ALLOCDBG dispositions are ALREADY target's for the
- * first three pseudos — tbl_125c->$s0, idx_1494->$s1, the param->$s2 — with no
- * lever at all.  The single allocation defect is that loop.c's LICM hoists the
- * two loop-invariant compare constants into fresh pseudos (85 and 108) which
- * rank 5th/6th in global_alloc and push tbl_11dc from target's $s3 to $s5,
- * costing two extra callee-saves (+5 insns).  Suppressing exactly those two
- * hoists — and nothing else — reproduces target's map exactly
- * (rejected/cleank-licm-defeat-alone-lands-exact-callee-save-map-21.c).
- * Find a LEGITIMATE spelling for that suppression and the clean form, not this
- * one, becomes the match candidate.
+ *   * global.c:allocno_compare sorts on
+ *         pri = floor_log2(nrefs) * nrefs / livelen * 10000
+ *     (verified to the integer on 14 allocnos across three chassis), and
+ *     find_reg then hands out $s0,$s1,$s2,$s3 in that sorted order.
+ *   * Target's map is D_800A125C->$s0, D_800A1494->$s1, param->$s2,
+ *     D_800A11DC->$s3.  A plain goto-loop body gives the param 2 refs over a
+ *     52-insn live range => pri 384, which outranks D_800A1494's 306, so the
+ *     param takes $s0 and the whole thing rotates (the inherited 18 / 91).
+ *   * The param can NEVER be demoted by lengthening its live range: its live
+ *     length is bounded by the function's 59 insns and it can never receive
+ *     the REG_EQUIV note that DOUBLES the three pointers' live lengths
+ *     (local-alloc.c:1019-1052 attaches REG_EQUIV only to a single-set pseudo
+ *     whose source is CONSTANT_P or an unchanging MEM; the param's set is
+ *     `(set (reg 72) (reg:SI 4 a0))`).  2*10000/59 = 338 > 306 for every
+ *     spelling that exists.  So the pointers must be lifted, not the param.
+ *   * A REAL loop lifts them — flow.c adds `loop_depth`, not 1, per reference,
+ *     so the two doubly-used pointers go 3 refs -> 5 and outrank the param.
+ *     But a real loop also hands loop.c the two compare constants as
+ *     movables, and they are hoisted unconditionally here
+ *     (loop.c:1631 moves when `threshold * savings * lifetime >= insn_count`;
+ *     threshold = 1 + n_non_fixed_regs = 61, savings = lifetime = 1, and the
+ *     loop is 50 real insns), costing two extra callee-saves and +5 insns.
+ *     Every reference-corpus spelling pays this: sotn 35/91, xeno 27/96,
+ *     tomba 27/96, `clean` 32/96.
+ *   * `do { ... } while (0)` emits NOTE_INSN_LOOP_BEG / NOTE_INSN_LOOP_END
+ *     exactly like a real loop, so flow.c's loop_depth rises inside it — but
+ *     the function's real back edge is still a bare `goto`, so loop.c never
+ *     sees a loop and never builds a movable for either constant.  It buys
+ *     the ref weighting WITHOUT the hoist.  Measured: 18 -> 8 with nothing
+ *     else changed, and the resulting .lreg numbers are exactly the predicted
+ *     ones (D_800A125C 5/96 = 1041, D_800A1494 5/98 = 1020, param 2/52 = 384,
+ *     D_800A11DC 3/100 = 300).
  *
- * ===========================================================================
- * SESSION-8 CORRECTION — THE CLEAN CHASSIS IS THE *GOTO* LOOP, AND IT IS 18
- * ===========================================================================
- * Session 7's "honest cheat-free floor 32/96" is the zero-lever score of the
- * REAL-LOOP chassis only.  The body actually committed at HEAD is the
- * GOTO-loop (`loop:` / `goto loop`), it carries no lever of any kind, and it
- * measures 18 / 91 — target's exact instruction count, with both compare
- * constants materialised in-loop exactly as the shipped object has them
- * (`lui $v0,0x3c` at 0x80081C48, `lui $v1,0x100` at 0x80081CE4).  A goto-loop
- * emits no NOTE_INSN_LOOP_BEG, so loop.c never runs and the two const hoists
- * that cost the real-loop chassis +5 insns never happen.
+ * The wrapper is therefore a `/ * FAKE * /`-annotated match device under the
+ * owner's 2026-07-06 do-while(0) ruling (sanctioned for ANY codegen effect,
+ * mandatory inline annotation, single level so no nesting justification is
+ * needed).  It is NOT a semantic lie: the block executes exactly once either
+ * way and the wrapper changes no program fact.
  *
- * Session 8 then priced the whole 18: it is ONE three-cycle rotation of
- * $s0/$s1/$s2.  greg for the HEAD body gives param->$s0, D_800A125C->$s1,
- * D_800A1494->$s2, D_800A11DC->$s3; target wants D_800A125C->$s0,
- * D_800A1494->$s1, param->$s2, D_800A11DC->$s3 — the same sort order with the
- * parameter demoted from first to third.  ALLOCDBG gives the exact numbers:
- * param pri 384 (nrefs 2 / livelen 52), D_800A125C 312 (3/96), D_800A1494 306
- * (3/98), D_800A11DC 200 (2/100), and `pri = nrefs * 10000 / livelen`
- * reproduces all four to the integer.  Land the param's priority anywhere in
- * (200, 306) and the clean chassis has target's exact map with no FAKE-family
- * construct anywhere.  See hypotheses.md H34 / F16 / F17.
+ * WHAT IS LEFT (7 diffs, all in build idx 46-61, the argument block):
+ *   target: lbu a0,0(s1) / lbu v0,1(s1) / lui+lw a1 / sll v0,2 / addu v0,s0 /
+ *           sll a0,2 / lw v1,0(v0) / lui+lbu D_800A11D5 / addu a0,s0 /
+ *           sll v0,2 / addu v0,s3 / sw v1,16(sp) / lw a2,0(v0) / lw a3,0(a0)
+ *   ours:   the same two lbu IN TARGET'S ORDER, but the idx[0] address chain
+ *           runs through $v0 and issues `lw a3,0(v0)` EARLY (build idx 54),
+ *           where target keeps that chain alive in $a0 and issues
+ *           `lw a3,0(a0)` as the very LAST memory reference of the block.
+ * Session 9 swept twelve argument spellings against this chassis (t1-t6,
+ * u1-u6): both-inline 13, arg5-named-only 13, index-bytes-named 13,
+ * named-pointer-with-inline-deref 9-10, arg2-also-named 14 (and 90 insns),
+ * arg4-named-first 7, both-named-arg4-first 7, index-staged 7.  7 is the
+ * floor of that whole family.
  *
- * THIS FILE IS STILL THE LOWEST MEASURED DISTANCE (8), so it stays as
- * candidate.c, but the goto-loop chassis at HEAD — not this one — is where the
- * next session should work, because its 18 has a fully legitimate arithmetic
- * target and this 8 does not.
+ * NEXT: the residual is a sched1 priority question, not a spelling question —
+ * see hypotheses.md F19.
  * ===========================================================================
  */
 s32 saEft01Init(s32 a0) {
     s32 v0;
     s32 cnt;
-    s32 ret;
-    s32 k;
     s32 *tbl_11dc;
     u8 *idx_1494;
     s32 *tbl_125c;
@@ -167,44 +92,43 @@ s32 saEft01Init(s32 a0) {
     D_800F19BC = 0;
     D_800F19C0 = &D_800162C0;
 
+loop:
+    v0 = sys_VSync(-1);
+    if (D_800F19B8 < v0) {
+        goto do_timeout;
+    }
+    cnt = D_800F19BC;
+    D_800F19BC = cnt + 1;
+    if (!(0x3C0000 < cnt)) {
+        goto success;
+    }
+
+do_timeout:
+    /* FAKE: do{}while(0) — loop_depth weighting for the three table pointers
+     * without giving loop.c a loop to hoist the compare constants out of. */
     do {
-        v0 = sys_VSync(-1);
-        if (D_800F19B8 < v0) {
-            goto do_timeout;
-        }
-        cnt = D_800F19BC;
-        D_800F19BC = cnt + 1;
-        k = 0x3C0000;
-        if (!(k < cnt)) {
-            goto success;
-        }
-
-    do_timeout:
+        s32 arg4;
         tslTm2LoadImage_2(&D_800161B8);
-        {
-            s32 arg4;
-            arg4 = tbl_125c[idx_1494[0]];
-            debug_printf(&D_800161C8, D_800F19C0, tbl_11dc[D_800A11D5], arg4, tbl_125c[idx_1494[1]]);
-        }
+        arg4 = tbl_125c[idx_1494[0]];
+        debug_printf(&D_800161C8, D_800F19C0, tbl_11dc[D_800A11D5], arg4,
+                     tbl_125c[idx_1494[1]]);
         cdrom_ClearIrq();
-        v0 = -1;
-        goto check;
+    } while (0);
+    v0 = -1;
+    goto check;
 
-    success:
-        v0 = 0;
+success:
+    v0 = 0;
 
-    check:
-        if (v0 != 0) {
-            ret = -1;
-            break;
+check:
+    if (v0 != 0) {
+        return -1;
+    }
+    if (*D_800A14C0 & 0x1000000) {
+        if (a0 == 0) {
+            goto loop;
         }
-        k = 0x1000000;
-        cnt = k;
-        ret = *D_800A14C0 & cnt;
-        if (ret == 0) {
-            break;
-        }
-        ret = 1;
-    } while (a0 == 0);
-    return ret;
+        return 1;
+    }
+    return 0;
 }
