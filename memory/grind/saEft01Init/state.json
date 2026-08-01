@@ -1,8 +1,8 @@
 {
  "func": "saEft01Init",
  "file": "system",
- "session_count": 9,
- "current_modality": "rederive",
+ "session_count": 10,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -57,21 +57,27 @@
    "floor": 7,
    "modality": "rederive",
    "headline": "Floor 8 -> 7/91 AND the chassis under it is now lever-free: one do{}while(0) around the printf block supplies flow.c's loop_depth ref-weighting without giving loop.c a loop to hoist the compare consta"
+  },
+  {
+   "session": 10,
+   "floor": 7,
+   "modality": "synthesis",
+   "headline": "Floor holds at 7/91; the instrumented cc1's real INSN_PRIORITY tables show GCC 2.7.2 schedules BACKWARD, kill F19's $a0 copy-preference mechanism, and decompose the residual into two independent sub-g"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F19 - the whole remaining 7 is one scheduling decision: target issues lw a3,0(a0) as the LAST memory reference of the argument block, we issue it at build idx 54.",
-   "mechanism": "Target keeps the idx[0] address chain alive in $a0 across the third argument's entire computation; ours runs that chain through $v0 and loads a3 early, which drags the arg5 chain later and produces all 7 diffs. H39 measured twelve argument spellings and 7 is the floor of that family; session 6 separately showed source statement placement inside this block is byte-inert because rank_for_schedule decides on INSN_PRIORITY and the dependence-class test (sched.c:2412-2449) and never reaches the INSN_LUID tie-break (sched.c:2452-2455). So the lever is not in the C's statement order or argument spelling.",
-   "next_probe": "Read the priorities instead of guessing spellings. Run `bash tmp/grind/saEft01Init/s9/idump.sh t3` and compare each argument-block insn's INSN_PRIORITY and dependence list in the `;; Function saEft01Init` section of system.i.sched against the order target emits. The specific question is what makes target's lw a3 the LOWEST-priority insn in the block when it is the last link of the shortest of the three chains; a likely answer is an anti-dependence on $a0 from the following `lui a0,%hi(D_800161C8)`, in which case the lever is which pseudo local_alloc gives $a0 (a copy-preference question) rather than anything in the C."
+   "hypothesis": "F22 - the whole remaining 7 is one question: spread the idx[0] address chain so its lbu is emitted at build idx 46 AND its lw a3 at idx 61, as target does.",
+   "mechanism": "In the backward scheduler the chain's lw must be PICKED FIRST (so it lands last) while its lbu must be PICKED LAST (so it lands first), i.e. the chain has to span the whole priority lattice - depth 3+ at the lw and depth 1 at the lbu. Ours is pinned at depths 1,2,2,2 by insn_cost (one load-use edge at lbu->sll, then two zero-cost edges), which puts lw a3 a whole level BELOW sw 16(sp) and lw a2, so those two are emitted after it. Argument spelling is exhausted (nineteen measured, 7 is the family floor) and register allocation is downstream, so the only remaining variable is the dependence DEPTH of that chain.",
+   "next_probe": "Two cheap routes. (1) Note that our lw a2 chain (108 lbu -> 111 sll -> 113 addu -> 131 lw, the tbl_11dc[D_800A11D5] argument) reaches level 3 with the SAME single load-use edge, because it starts one level deeper: D_800A11D5 is reached through a lui+lbu pair rather than through a base pointer already live in $s1. So ask whether target's idx[0] chain likewise starts from something that is itself loaded - i.e. whether the Sony CD_datasync reference reaches the D_800A1494 index base through memory rather than through a hoisted pointer local. If it does, the fix is a declaration/expression change, not a statement-order change. (2) Since level-2 ties are broken by INSN_LUID and LUID at sched2 is sched1's OUTPUT order, dump sched1's emitted order for i1 and for the candidate (s10/idump.sh <tag> then s10/schedscan.py) and check whether ANY source-level statement order changes sched1's output at all; if it is invariant, the tie-break route is closed and route (1) is the only lever."
   },
   {
-   "hypothesis": "F20 - the do{}while(0) wrapper is the candidate's single match device and has never been through a fresh adversarial cheat-reviewer.",
+   "hypothesis": "F23 - the do{}while(0) wrapper is the candidate's single match device and has still never been through a fresh adversarial cheat-reviewer.",
    "mechanism": "It is explicitly sanctioned (.claude/rules/do-while-zero-exception.md, owner ruling 2026-07-06: any body, ANY codegen effect, register allocation named explicitly, mandatory inline FAKE annotation, single level needs no nesting justification) and the candidate carries the annotation. It is not a semantic lie - the block executes exactly once either way - and its mechanism is flow.c's loop_depth ref weighting.",
-   "next_probe": "Invoke cheat-reviewer on the candidate before any completion claim, showing H37 and H40 as the lever-exhaustion record (both alternative routes are proved arithmetically dead, not merely unspelled). Also worth measuring for the reviewer: the only construct-free way to raise a pointer's REG_N_REFS is a genuine fourth reference (F17), and target's own register usage shows none exists - $s0 is set once and read exactly twice in the shipped object, $s1 likewise."
+   "next_probe": "Invoke cheat-reviewer on the candidate before any completion claim, showing H37 and H40 as the lever-exhaustion record (both alternative routes proved arithmetically dead, not merely unspelled), plus s10's H45/i8 result that nothing in the argument block may be lifted out of the wrapper's call-free stretch."
   },
   {
-   "hypothesis": "F21 - the two sibling alarm functions in the same TU inherit this result for free.",
+   "hypothesis": "F24 - the two sibling alarm functions in the same TU inherit this result for free.",
    "mechanism": "set_alarm/get_alarm are inlined into cpu_side_move_dir_4 (= CD_sync, name string D_80016240, ~src/system.c:366) and the function at ~src/system.c:480 (= CD_ready, string D_80016248), both already carrying the same hand-derived goto shape. The allocation problem and the wrapper's mechanism are identical.",
    "next_probe": "Once saEft01Init closes, apply the same single do{}while(0) wrapper plus the named-arg4 argument spelling to both siblings and re-score them with the engine sandbox; they are the cheapest remaining items in this file."
   }

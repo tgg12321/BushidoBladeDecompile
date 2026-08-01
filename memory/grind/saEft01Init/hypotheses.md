@@ -1429,3 +1429,230 @@ the mechanism is identical.
 - probe: Counted the function's real insns in the -da dumps (59) and read local-alloc.c:update_equiv_regs to find the source of the three pointers' 96-100 live lengths.
 - result: flow.c bounds reg_live_length by the function's insn count, and the param's 52 is already within 7 of the 59-insn ceiling. The pointers' 96-100 are NOT raw: local-alloc.c line ~1058 DOUBLES reg_live_length for any pseudo carrying a REG_EQUIV note, and lines 1019-1052 attach REG_EQUIV only to a single-set pseudo whose source is CONSTANT_P (via a promoted REG_EQUAL note) or an unchanging MEM. The param's set is (set (reg/v 72) (reg:SI 4 a0)), a hard-register source, so it can never qualify. Therefore param pri >= 2*10000/59 = 338 > D_800A1494's 306 for EVERY possible spelling - F16 route (a) is arithmetically dead, permanently. This also corrects session 8's formula: the floor_log2 factor is real (it equals 1 for nrefs 2 and 3, which is why s8's fit looked exact), so F17 route (b)'s numbers are 833 / 816, not 416 / 408.
 - verdict: KILLED
+
+## Session 10 (synthesis) — measured
+
+Modality: synthesis.  Floor UNCHANGED at **7 / 91** (the session-9 candidate,
+re-applied to `src/system.c` and re-measured this session: `"score": 7,
+"target_insns": 91, "build_insns": 91`).  The session's product is not a lower
+floor but a correct MODEL of the residual: the real INSN_PRIORITY tables for
+the argument block were read out of the instrumented cc1 for the first time,
+they falsify the frontier's stated mechanism (F19), and they decompose the 7
+into two independent sub-goals that two DIFFERENT measured spellings each
+already achieve in isolation.  Seven new spellings measured (i1-i9), bringing
+the argument-block family to nineteen.
+
+### H41 — KILLED (F19's mechanism: "the lever is which pseudo local_alloc gives `$a0`")
+**Statement:** the residual 7 is a register-allocation question — target keeps
+the idx[0] address chain in `$a0` and we keep it in `$v0`, and an anti-dependence
+on `$a0` from the following `lui a0,%hi(D_800161C8)` is what pins target's
+`lw a3,0(a0)` to the end of the argument block, so the lever is a local-alloc
+copy-preference, not anything in the C.
+**Mechanism / probe:** dumped the post-sched1 RTL for the candidate
+(`tmp/grind/saEft01Init/s10/idump.sh cand10`, then `s10/schedscan.py`) and
+compared the two index chains' live ranges against the positional diff of the
+emitted code.
+**Result:** the register assignment is DOWNSTREAM of the schedule, not upstream
+of it.  Our idx[0] address pseudo (reg 92) is live from build idx 51 to 54 and
+therefore does NOT overlap the register holding arg5's loaded value (`$v1`,
+live 57-60), so the two get different colours than target's, where the idx[0]
+chain is live 46-61 and DOES overlap arg5's value.  Same conflict-graph
+question, opposite answer, and the conflict graph is a function of the emitted
+order.  Also, an anti-dependence cannot pin an insn LATE: it makes the later
+insn depend on the earlier one, which raises the LATER insn's depth, never the
+earlier one's.
+**Verdict: KILLED.**  Do not spend another session on `$a0`-vs-`$v0`.
+
+### H42 — CONFIRMED (the scheduler model, measured to the integer)
+**Statement:** the argument block's emitted order is decided by
+`INSN_PRIORITY`, and reading the real priorities will say what has to change.
+**Mechanism:** GCC 2.7.2's `sched.c` computes `priority()` over an insn's
+LOG_LINKS (its PREDECESSORS) and `schedule_block` walks the block BACKWARD,
+emitting the chosen insn at the current tail.  So the printed priority is the
+dependence DEPTH from the top of the basic block, and **a HIGHER priority means
+the insn is emitted LATER**, not earlier.  `insn_cost` charges 1 for a
+load->use edge and 0 otherwise, so depth counts load-use delays.
+**Probe:** `BB2_PRIO_DEBUG=1` instrumented cc1 (`tools/gcc-2.7.2/cc1`, verified
+CODEGEN-IDENTICAL against the frozen `build/cc1` on this TU), then
+`tmp/grind/saEft01Init/s10/findprio.py` — insn UIDs restart per function in
+cc1.log, so the tool locates the scheduling region whose SET-insn UID multiset
+best matches the UID list read out of the `-da` `.sched` dump (21/21 overlap).
+**Result:** two regions, sched1 at cc1.log line 4382 and sched2 at line 4601.
+The sched2 table (the one that fixes the emitted order, since it runs after
+reload) is:
+
+| pri | insns |
+|---|---|
+| 1 | 93 `lbu` idx[0] · 116 `lbu` idx[1] · 105 `lw` D_800F19C0 · 127 `lui` fmt |
+| 2 | 96/98/100 (idx[0] `sll`/`addu`/**`lw a3`**) · 119/121/123 (idx[1] chain) · 108 `lbu` D_800A11D5 |
+| 3 | 125 `sw 16(sp)` · 111 `sll` · 113 `addu` · 131 `lw a2` |
+| 4 | 135 `jal debug_printf` · 138 `jal cdrom_ClearIrq` |
+
+**Verdict: CONFIRMED.**  Two consequences.  (a) The whole block collapses into a
+three-level lattice with SEVEN insns tied at priority 2, so the emitted order is
+settled by `rank_for_schedule`'s tie-breaks (the load/store dependence-class
+test against `last_scheduled_insn`, then `INSN_LUID`), not by priority — and
+`INSN_LUID` at sched2 is the order sched1 left the chain in, NOT source order,
+which is why session 6 found source statement placement inside the block
+"byte-inert".  (b) For our `lw a3` (insn 100) to be emitted last it must be
+scheduled FIRST in the backward pass, i.e. it must outrank `sw 16(sp)` (125)
+and `lw a2` (131), which sit a whole priority level above it.  Depth 2 is
+forced: `lbu`(1) -> `sll`(+1 load-use) -> `addu`(+0) -> `lw`(+0).
+
+### H43 — CONFIRMED (the residual DECOMPOSES; each half is already solved, by different spellings)
+**Statement:** the 7 is one indivisible defect.
+**Probe:** positional diffs (`tmp/grind/saEft01Init/s1/grind_diff.py`) of three
+spellings of the same program on the same do{}while(0) chassis — the candidate
+(arg4 named, 7), `i1` (both lookups inline, 13) and `i2` (arg4 as a named
+pointer with an inline deref, 9).
+**Result:** the block has TWO independent defects and each spelling fixes
+exactly one of them:
+  * **(A) `lw a3` last.**  Target emits it at build idx 61, after `sw v1,16(sp)`
+    and `lw a2,0(v0)`.  `i1` (both inline) emits `lw a3,0(v0)` **at build idx 61
+    — target's exact position**; its whole idx[0] chain sits at the tail
+    (57/59/60/61).  The candidate emits it at 54.  So the inline spelling DOES
+    do what session 6 predicted; H39's reading of the all-inline 13 as a
+    refutation was wrong, the 13 is paid entirely by defect (B).
+  * **(B) both `lbu` at the block head (idx 46/47).**  The candidate has them
+    there in target's order (`0(s1)` then `1(s1)`); `i2` has them there in the
+    REVERSED order; `i1` has only ONE there — its idx[0] `lbu` is dragged all
+    the way to idx 57 with the rest of its chain.
+  No measured spelling has both.  Target's idx[0] chain is SPREAD across the
+  whole block (`lbu` 46, `sll` 52, `addu` 56, `lw a3` 61) whereas every spelling
+  we can write emits that chain as one contiguous run — early (candidate, i2) or
+  late (i1).
+**Verdict: CONFIRMED.**  This is the reframed question for session 11 and it is
+much sharper than "the argument block is 7 off".
+
+### H44 — KILLED (naming the index BYTE is inert once the value is inline)
+**Statement:** the (A)/(B) split can be bridged by naming only the index byte —
+`k0 = idx_1494[0];` puts that `lbu` first in source order while the value load
+stays an inline call argument and therefore still schedules last.
+**Probe:** `i3` (idx[0] byte named), `i4` (both bytes named), `i5` (both named,
+reverse source order), all with both lookups inline, via `s10/score.py`.
+**Result:** 13 / 13 / 13 — all three are byte-identical to `i1` (pure inline).
+CSE/combine folds the named index pseudo straight back into the address chain,
+so the extra C statement leaves no RTL trace at all.  This also re-explains
+session 9's `t6` (13) and `u5` (7) as the same effect measured on two different
+value spellings.
+**Verdict: KILLED.**  Index-byte naming is not a lever in any combination.
+
+### H45 — KILLED (address-pointer spellings; the whole family is now swept)
+**Statement:** some spelling that names one or both ADDRESSES (rather than the
+values) lands both sub-goals at once.
+**Probe:** `i2` (arg4 address named, inline deref), `i6` (arg5 address named,
+arg4 fully inline), `i8` (arg4 address named and assigned BEFORE the
+`tslTm2LoadImage_2` call), `i9` (both addresses named).
+**Result:** 9 / 14 / **31 at 92 insns** / 10.  `i8` is the informative failure:
+hoisting the pointer above the call makes it live ACROSS a call, so it takes a
+callee-save and the whole `$s0-$s3` map that the do{}while(0) wrapper bought is
+destroyed — nothing in the argument block may be lifted out of the wrapper's
+call-free stretch.
+**Verdict: KILLED.**  Nineteen argument spellings are now measured and 7 remains
+the floor of the entire family.
+
+## Live frontier (for session 11)
+
+### F22 — spread the idx[0] chain: `lbu` at 46 AND `lw a3` at 61 (the whole 7)
+**Mechanism:** H43.  Target's idx[0] chain is `lbu a0,0(s1)`(46) …
+`sll a0,a0,2`(52) … `addu a0,a0,s0`(56) … `lw a3,0(a0)`(61); every spelling we
+can write emits it as one contiguous run.  H42 says why: in the backward
+scheduler the chain's `lw` must be picked FIRST (so it lands last) while its
+`lbu` must be picked LAST (so it lands first), i.e. the chain has to span the
+whole priority lattice — depth 3+ at the `lw` and depth 1 at the `lbu` — but our
+chain is pinned at depths 1,2,2,2 by `insn_cost` (one load-use edge, then two
+zero-cost edges).  So the question is: **what gives target's idx[0] chain an
+extra unit of dependence depth at its `lw`, or equivalently what makes
+`sw 16(sp)` and `lw a2` rank BELOW it?**
+**Next probe:** two concrete routes, both cheap.
+  (1) Read the target's own dependence structure the other way round: our
+  `lw a2,0(v0)` (insn 131, the `tbl_11dc[D_800A11D5]` argument) is at priority 3
+  because `108 lbu` -> `111 sll` -> `113 addu` -> `131 lw` carries the SAME one
+  load-use edge but starts one level deeper (`108` is itself at depth 2, because
+  `D_800A11D5` is reached through a `lui`+`lbu` pair rather than through a base
+  pointer already live in `$s1`).  So the depth question is really: does target's
+  idx[0] chain start from something that is itself loaded?  Check what expression
+  the Sony reference uses for the `D_800A1494` index base and whether it reaches
+  it through memory rather than through a hoisted pointer local.
+  (2) Since ties at priority 2 are broken by `INSN_LUID` and LUID at sched2 is
+  SCHED1's output order, dump sched1's emitted order for `i1` and for the
+  candidate (`s10/idump.sh <tag>` then `s10/schedscan.py`) and check whether any
+  source-level statement order changes sched1's output at all.  If sched1's
+  output order is invariant across spellings, the tie-break route is closed and
+  the only remaining lever is the depth question in (1).
+
+### F23 — cheat-review status of the do{}while(0) wrapper (unchanged, inherited)
+Still the candidate's single match device and still never seen by a fresh
+adversarial `cheat-reviewer`.  It is explicitly sanctioned (owner ruling
+2026-07-06, `.claude/rules/do-while-zero-exception.md`: any body, ANY codegen
+effect, register allocation named explicitly, mandatory inline FAKE annotation,
+single level) and the candidate carries the annotation.  Do the review before
+any completion claim, showing H37/H40 (both alternative routes proved
+arithmetically dead) as the lever-exhaustion record.
+
+### F24 — the two sibling alarm functions inherit this (unchanged, inherited)
+`cpu_side_move_dir_4` (= CD_sync, name string D_80016240, ~src/system.c:366) and
+the function at ~src/system.c:480 (= CD_ready, string D_80016248) carry the same
+hand-derived goto shape and the same allocation problem.  Once saEft01Init
+closes, apply the same single do{}while(0) wrapper plus the named-arg4
+argument spelling and re-score both.
+
+## [s10] F19's stated mechanism - that the residual 7 is a local-alloc copy-preference question about which pseudo gets $a0, with an anti-dependence from the following lui a0,%hi(D_800161C8) pinning target's lw a3 to the end of the argument block.
+- mechanism: local-alloc.c copy preference plus a REG_DEP_ANTI edge on the hard register $a0 at sched2, after reload has replaced the pseudos with hard registers.
+- probe: Dumped post-sched1 RTL for the candidate with the instrumented cc1 (tmp/grind/saEft01Init/s10/idump.sh cand10) and read it with s10/schedscan.py, then compared the two index chains' live ranges against the positional diff of the emitted code.
+- result: The register assignment is downstream of the schedule, not upstream. Our idx[0] address pseudo (reg 92) is live only from build idx 51 to 54 and so does not overlap the register holding arg5's loaded value ($v1, live 57-60); target's equivalent chain is live 46-61 and does overlap, so the two conflict graphs are different and the colours follow. Separately, an anti-dependence can never pin an insn LATE - it makes the later insn depend on the earlier one, raising the later insn's dependence depth, never the earlier one's.
+- verdict: KILLED
+
+## [s10] The argument block's emitted order is decided by INSN_PRIORITY, and reading the real priorities out of the instrumented cc1 will say what has to change.
+- mechanism: GCC 2.7.2's sched.c computes priority() over an insn's LOG_LINKS (its PREDECESSORS) and schedule_block walks the block BACKWARD, emitting each chosen insn at the current tail, so the printed priority is dependence DEPTH from the top of the basic block and a HIGHER priority means the insn is emitted LATER. insn_cost charges 1 for a load->use edge and 0 otherwise.
+- probe: BB2_PRIO_DEBUG=1 instrumented cc1 (verified CODEGEN-IDENTICAL against the frozen build/cc1 on this TU), then tmp/grind/saEft01Init/s10/findprio.py, which locates the scheduling region in cc1.log whose SET-insn UID multiset best matches the UID list read out of the -da .sched dump - necessary because cc1 insn UIDs restart per function and cc1.log has no function separators. Overlap 21/21 at log line 4382 (sched1) and a second region at 4601 (sched2).
+- result: The sched2 table, which is what fixes the emitted order: priority 1 = insn 93 lbu idx[0], 116 lbu idx[1], 105 lw D_800F19C0, 127 lui fmt; priority 2 = 96/98/100 (the idx[0] sll/addu/lw-a3 chain), 119/121/123 (the idx[1] chain), 108 lbu D_800A11D5; priority 3 = 125 sw 16(sp), 111 sll, 113 addu, 131 lw a2; priority 4 = 135 jal debug_printf, 138 jal cdrom_ClearIrq. Seven insns are tied at level 2, so rank_for_schedule's tie-breaks (dependence class against last_scheduled_insn, then INSN_LUID) settle the order - and INSN_LUID at sched2 is sched1's output order, not source order, which is exactly why session 6 measured source statement placement inside this block as byte-inert. For lw a3 (insn 100) to be emitted last it must be scheduled first in the backward pass, i.e. outrank sw 16(sp) and lw a2, which sit a whole level above it; its depth 2 is forced by lbu(1) -> sll(+1 load-use) -> addu(+0) -> lw(+0).
+- verdict: CONFIRMED
+
+## [s10] The remaining 7 is one indivisible defect in the debug_printf argument block.
+- mechanism: Positional comparison of the same program written three ways on the same do{}while(0) chassis, against asm/funcs/saEft01Init.s.
+- probe: tmp/grind/saEft01Init/s1/grind_diff.py on the candidate (arg4 named, 7), on i1 (both lookups written inline, 13) and on i2 (arg4 as a named pointer with an inline deref, 9).
+- result: The block carries TWO independent defects and each spelling fixes exactly one. (A) lw a3 last: target emits it at build idx 61 after sw v1,16(sp) and lw a2,0(v0); i1 emits lw a3,0(v0) at build idx 61, target's exact position, with its whole idx[0] chain at the tail (57/59/60/61), while the candidate emits it at 54. (B) both lbu at the block head, idx 46/47: the candidate has them there in target's order, i2 has them there reversed, i1 has only one there - its idx[0] lbu is dragged to 57. No measured spelling has both. Target's idx[0] chain is SPREAD (lbu 46, sll 52, addu 56, lw a3 61); every spelling we can write emits it as one contiguous run, early or late. Session 9's H39 read the all-inline 13 as refuting session 6's expand-shape prediction; that reading was wrong - the inline spelling does exactly what was predicted for sub-goal (A) and pays all 13 on sub-goal (B).
+- verdict: CONFIRMED
+
+## [s10] The two sub-goals can be bridged by naming only the index BYTE - k0 = idx_1494[0] puts that lbu first in source order while the value load stays an inline call argument and therefore still schedules last.
+- mechanism: An extra named C local for the index gives the byte load its own pseudo with an earlier LUID, without adding a copy to the value chain (which is what makes the named-value spelling schedule its lw early).
+- probe: i3 (idx[0] byte named), i4 (both bytes named), i5 (both named, reverse source order), all with both table lookups written inline in the call; tmp/grind/saEft01Init/s10/score.py.
+- result: 13 / 13 / 13, all byte-identical to i1 (pure inline). CSE/combine folds the named index pseudo straight back into the address chain, so the extra C statement leaves no RTL trace whatsoever. This also re-explains session 9's t6 (13) and u5 (7) as the same inert effect measured on two different value spellings.
+- verdict: KILLED
+
+## [s10] Some spelling that names one or both ADDRESSES rather than the values lands both sub-goals at once.
+- mechanism: A named pointer keeps the address chain in its own pseudo (scheduled early, like a named value) while leaving the load itself an inline call argument (scheduled late).
+- probe: i2 (arg4 address named, inline deref), i6 (arg5 address named, arg4 fully inline), i8 (arg4 address named and assigned BEFORE the tslTm2LoadImage_2 call), i9 (both addresses named); s10/score.py.
+- result: 9 / 14 / 31 at 92 insns / 10. i8 is the informative failure: hoisting the pointer above the call makes it live across a call, so it takes a callee-save and destroys the entire $s0-$s3 map that the do{}while(0) wrapper buys - nothing in the argument block may be lifted out of the wrapper's call-free stretch. Nineteen argument spellings are now measured and 7 remains the floor of the whole family.
+- verdict: KILLED
+
+## [s10] F19's mechanism: the residual 7 is a register-allocation question - target keeps the idx[0] address chain in $a0 and we keep it in $v0, and an anti-dependence on $a0 from the following lui a0,%hi(D_800161C8) is what pins target's lw a3,0(a0) to the end of the argument block, so the lever is a local-alloc copy preference rather than anything in the C.
+- mechanism: local-alloc.c copy preference plus a REG_DEP_ANTI edge on the hard register $a0 at sched2, after reload has replaced pseudos with hard registers.
+- probe: Dumped post-sched1 RTL for the candidate with the instrumented cc1 (tmp/grind/saEft01Init/s10/idump.sh cand10, CODEGEN-IDENTICAL against the frozen build/cc1) and read it with s10/schedscan.py, then compared the two index chains' live ranges against the positional diff of the emitted code.
+- result: The register assignment is DOWNSTREAM of the schedule, not upstream of it. Our idx[0] address pseudo (reg 92) is live only from build idx 51 to 54 and therefore does not overlap the register holding arg5's loaded value ($v1, live 57-60); target's equivalent chain is live 46-61 and does overlap. Different conflict graph, different colouring, and the conflict graph is a function of the emitted order. Separately, an anti-dependence can never pin an insn LATE: it makes the later insn depend on the earlier one, raising the LATER insn's dependence depth, never the earlier one's.
+- verdict: KILLED
+
+## [s10] The argument block's emitted order is decided by INSN_PRIORITY, and reading the real priorities out of the instrumented cc1 will say what has to change.
+- mechanism: GCC 2.7.2's sched.c computes priority() over an insn's LOG_LINKS (its PREDECESSORS) and schedule_block walks the block BACKWARD, emitting each chosen insn at the current tail. So the printed priority is dependence DEPTH from the top of the basic block and a HIGHER priority means the insn is emitted LATER. insn_cost charges 1 for a load->use edge and 0 otherwise, so depth counts load-use delays.
+- probe: BB2_PRIO_DEBUG=1 instrumented cc1 plus tmp/grind/saEft01Init/s10/findprio.py, which locates the scheduling region in cc1.log whose SET-insn UID multiset best matches the UID list read out of the -da .sched dump (necessary because cc1 insn UIDs restart per function and cc1.log has no function separators). Overlap 21/21 at log line 4382 (sched1) and a second region at 4601 (sched2).
+- result: sched2 table (the one that fixes the emitted order): level 1 = insn 93 lbu idx[0], 116 lbu idx[1], 105 lw D_800F19C0, 127 lui fmt; level 2 = 96/98/100 (the idx[0] sll/addu/lw-a3 chain), 119/121/123 (the idx[1] chain), 108 lbu D_800A11D5; level 3 = 125 sw 16(sp), 111 sll, 113 addu, 131 lw a2; level 4 = the two calls. SEVEN insns are tied at level 2, so rank_for_schedule's tie-breaks settle the order (load/store dependence class against last_scheduled_insn, then INSN_LUID) - and INSN_LUID at sched2 is SCHED1's output order, not source order, which is the mechanical reason session 6 measured source statement placement inside this block as byte-inert. For lw a3 (insn 100) to be emitted last it must be scheduled FIRST in the backward pass, i.e. outrank sw 16(sp) and lw a2, which sit a whole level above it; its depth 2 is forced by lbu(1) -> sll(+1 load-use) -> addu(+0) -> lw(+0).
+- verdict: CONFIRMED
+
+## [s10] The remaining 7 is one indivisible defect in the debug_printf argument block.
+- mechanism: Positional comparison of the same program written three ways on the same do{}while(0) chassis, against asm/funcs/saEft01Init.s.
+- probe: tmp/grind/saEft01Init/s1/grind_diff.py on the candidate (arg4 named, 7), on i1 (both lookups written inline, 13) and on i2 (arg4 as a named pointer with an inline deref, 9).
+- result: The block carries TWO independent defects and each spelling fixes exactly one. (A) lw a3 last: target emits it at build idx 61 after sw v1,16(sp) and lw a2,0(v0); i1 emits lw a3,0(v0) at build idx 61 - target's exact position - with its whole idx[0] chain at the tail (57/59/60/61), while the candidate emits it at 54. (B) both lbu at the block head, idx 46/47: the candidate has them there in target's order, i2 has them there reversed, i1 has only one there (its idx[0] lbu is dragged to 57). No measured spelling has both. Target's idx[0] chain is SPREAD (lbu 46, sll 52, addu 56, lw a3 61); every spelling reachable from C emits it as one contiguous run, early or late. This also rehabilitates session 6's expand forensics: session 9's H39 read the all-inline 13 as a refutation, but the inline form does exactly what session 6 predicted for sub-goal (A) and pays all 13 on sub-goal (B).
+- verdict: CONFIRMED
+
+## [s10] The two sub-goals can be bridged by naming only the index BYTE - k0 = idx_1494[0] puts that lbu first in source order while the value load stays an inline call argument and therefore still schedules last.
+- mechanism: An extra named C local for the index gives the byte load its own pseudo with an earlier LUID, without adding a copy to the value chain (which is what makes the named-value spelling schedule its lw early).
+- probe: i3 (idx[0] byte named), i4 (both bytes named), i5 (both named, reverse source order), all with both table lookups written inline in the call; tmp/grind/saEft01Init/s10/score.py.
+- result: 13 / 13 / 13, all byte-identical to i1 (pure inline). CSE/combine folds the named index pseudo straight back into the address chain, so the extra C statement leaves no RTL trace whatsoever. This also re-explains session 9's t6 (13) and u5 (7) as the same inert effect measured on two different value spellings.
+- verdict: KILLED
+
+## [s10] Some spelling that names one or both ADDRESSES rather than the values lands both sub-goals at once.
+- mechanism: A named pointer keeps the address chain in its own pseudo (scheduled early, like a named value) while leaving the load itself an inline call argument (scheduled late).
+- probe: i2 (arg4 address named, inline deref), i6 (arg5 address named, arg4 fully inline), i8 (arg4 address named and assigned BEFORE the tslTm2LoadImage_2 call), i9 (both addresses named); s10/score.py.
+- result: 9 / 14 / 31 at 92 insns / 10. i8 is the informative failure: hoisting the pointer above the call makes it live across a call, so it takes a callee-save and destroys the entire $s0-$s3 map that the do{}while(0) wrapper buys. Nineteen argument spellings are now measured and 7 remains the floor of the whole family.
+- verdict: KILLED

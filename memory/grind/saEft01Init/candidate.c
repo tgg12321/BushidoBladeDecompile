@@ -74,8 +74,39 @@
  * arg4-named-first 7, both-named-arg4-first 7, index-staged 7.  7 is the
  * floor of that whole family.
  *
- * NEXT: the residual is a sched1 priority question, not a spelling question —
- * see hypotheses.md F19.
+ * ===========================================================================
+ * SESSION 10 (synthesis) — THE BODY IS UNCHANGED; THE MODEL OF THE 7 IS NOT
+ * ===========================================================================
+ * Re-applied and re-measured this session at exactly 7 / 91.  Nine more
+ * argument spellings measured (nineteen in total) and 7 is still the floor,
+ * but the instrumented cc1's real INSN_PRIORITY tables now say what the 7 IS:
+ *
+ *   * GCC 2.7.2's scheduler runs BACKWARD — `priority()` is computed over an
+ *     insn's LOG_LINKS (predecessors) and `schedule_block` emits each chosen
+ *     insn at the block's current TAIL.  So the printed priority is dependence
+ *     DEPTH from the top of the block and HIGHER priority = emitted LATER.
+ *   * The whole argument block is a three-level lattice with SEVEN insns tied
+ *     at level 2, so `rank_for_schedule`'s tie-breaks decide the order (load /
+ *     store dependence class against last_scheduled_insn, then INSN_LUID) —
+ *     and INSN_LUID at sched2 is SCHED1's output order, not source order,
+ *     which is why session 6 measured statement placement here as byte-inert.
+ *   * The 7 DECOMPOSES into two independent sub-goals, each already solved by
+ *     a DIFFERENT measured spelling:
+ *       (A) `lw a3` as the last memory reference (target build idx 61) — the
+ *           both-lookups-inline form lands it at exactly 61, but drags its
+ *           whole idx[0] chain to the tail with it (13 / 91);
+ *       (B) both `lbu` at the block head in target's order (idx 46/47) — THIS
+ *           form has it, and issues `lw a3` six insns early at 54 (7 / 91).
+ *     Target's idx[0] chain is SPREAD (lbu 46, sll 52, addu 56, lw a3 61);
+ *     every spelling reachable from C emits it as one contiguous run.
+ *   * F19's mechanism (a local-alloc copy preference for `$a0`) is KILLED: the
+ *     register difference is downstream of the schedule — our chain is live
+ *     51-54 and does not overlap arg5's value in `$v1`, target's is live 46-61
+ *     and does, so the conflict graphs differ because the ORDER differs.
+ *
+ * NEXT: hypotheses.md F22 — find what gives target's idx[0] chain an extra
+ * unit of dependence depth at its `lw` (or what drops `sw 16(sp)` / `lw a2`
+ * below it).  Do NOT re-sweep argument spellings; nineteen are banked.
  * ===========================================================================
  */
 s32 saEft01Init(s32 a0) {
