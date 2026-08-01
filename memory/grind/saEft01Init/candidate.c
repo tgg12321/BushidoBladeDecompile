@@ -1,61 +1,66 @@
-/* saEft01Init â€” best form as of grind session 2 (structural).
+/* saEft01Init — best form as of grind session 3 (structural).
  *
- * Honest pure-C distance (sandbox --disable all): 18   [floor UNCHANGED from
- * sessions 1-2 baseline, which was also 18]
- * Instruction count: 92 build vs 91 target.
+ * Honest pure-C distance (sandbox --disable all): 18   [floor UNCHANGED
+ * across sessions 1-3]  ·  92 build insns vs 91 target.
+ * Body is byte-for-byte the session-2 candidate; s3 re-measured 13 further
+ * structural variants and none beat it.  What changed is the DIAGNOSIS.
  *
- * WHY THIS IS THE CANDIDATE DESPITE AN UNCHANGED SCORE:
- *   CLUSTER A IS SOLVED.  This form produces target's exact callee-save map
- *       $s0 = D_800A125C (tbl_125c)   $s1 = &D_800A1494 (idx_1494)
- *       $s2 = the a0 param            $s3 = D_800A11DC  (tbl_11dc)
- *   using ONLY $s0-$s3 (no $s4/$s5), which is what the whole 3-way rename
- *   cluster in regfix.txt:97-103 + 115-119 papers over.  The previous
- *   candidate had $s0 = param and rotated the three table pointers up by one.
- *   The score is coincidentally still 18 because the residual moved wholesale
- *   into the tail block layout (see "WHAT IS LEFT" below) â€” but the diff is a
- *   completely different and much smaller-in-kind problem now.
+ * CLUSTER A IS SOLVED (session 2).  This form produces target's exact
+ * callee-save map using only $s0-$s3:
+ *     $s0 = D_800A125C (tbl_125c)   $s1 = &D_800A1494 (idx_1494)
+ *     $s2 = the a0 param            $s3 = D_800A11DC  (tbl_11dc)
+ * via (1) a REAL do/while loop, which emits NOTE_INSN_LOOP_BEG so flow.c
+ * loop-depth-weights the in-loop refs and global.c:allocno_compare ranks
+ * the two table pointers above the 1-use param, and (2) ONE reused scratch
+ * local `k` holding both loop-invariant compare constants, which denies
+ * loop.c the hoist that the plain real-loop form suffers (29/98).
  *
- * THE TWO LEVERS THAT GOT US HERE (both measured, see hypotheses.md H5/H6):
- *   1. A REAL loop (`do { ... } while (a0 == 0);`) instead of the `goto loop`
- *      back-edge.  The loop notes make flow.c weight in-loop references by
- *      loop_depth, which lifts the two 2-use table pointers over the 1-use
- *      param in global.c:allocno_compare.  (Session 1's H3 established this.)
- *   2. `k` â€” ONE reused scratch local holding BOTH loop-invariant compare
- *      constants (0x3C0000 then 0x1000000).  This is what makes lever 1
- *      usable: with two separate constants, loop.c:scan_loop makes each a
- *      movable and move_movables hoists both into fresh callee-saves ($s4,
- *      $s5), costing +7 insns (that is s1's rejected real-loop form, score
- *      29/98).  With ONE variable set twice, `n_times_set[k] == 2` and the
- *      sets are not consecutive, so `consec_sets_invariant_p` fails and
- *      scan_loop never builds a movable for either.  Both constants stay
- *      materialised inline inside the loop, exactly as target does.
- *      This is the [[defeat-licm-hoist-var-reuse]] family (SOTN-sanctioned
- *      "variable reuse for codegen control").  IT HAS NOT YET BEEN THROUGH
- *      cheat-reviewer â€” do that before any completion claim, and prefer a
- *      more natural two-set spelling if one can be found.
+ * *** SESSION-3 CAVEAT ON `k` — READ BEFORE ANY COMPLETION CLAIM ***
+ * The single reused `k` CANNOT be the original spelling.  Target
+ * materialises the two constants in TWO DIFFERENT hard registers —
+ * `lui $v0,(0x3C0000>>16)` at target idx 41 and `lui $v1,(0x1000000>>16)`
+ * at idx 83 — and one C variable is one pseudo, hence one hard register.
+ * Our build puts both in $a0.  So `k` is a synthetic LICM defeat standing
+ * in for whatever the original did, and it has still not been through
+ * cheat-reviewer.  Session 3 found the actual loop.c gate (see below) and
+ * a natural spelling that works for ONE of the two constants.
  *
- * WHAT IS LEFT (the whole 92-vs-91 residual, from grind_diff.py):
- *   (a) +2 in the tail: our mask exit lays out as
- *           bnez v0,<cont> / nop / j <end> / move v0,zero
- *       where target has the un-inverted, fall-through form
- *           beqz $v0,.L80081CFC / addu $v0,$zero,$zero   (delay slot)
- *       i.e. GCC put the `j end` BEFORE the `ret = 1; while (a0 == 0)` tail
- *       block instead of after it.  This is block layout, not allocation.
- *       Measured alternatives that do NOT fix it: inline `return 0;`/
- *       `return 1;` instead of break+ret (v11, 19/93), a `for (;;)` with
- *       three inline returns (v13, 19/93).
- *   (b) -1 at the 0x3C0000 compare: `k` is allocated $a0, so the scheduler
- *       drops `lui a0,0x3c` into the `bnez v1` delay slot at build idx 31
- *       where target keeps a `nop` and materialises `lui $v0,(0x3C0000>>16)`
- *       later, after the D_800F19BC store.  Target's holder is $v0 (dead
- *       after the preceding `slt`), ours is $a0.  Spelling the reuse through
- *       the existing `v0` local instead of a new `k` DOES put it in the right
- *       register class but regresses the rest (v12, 22/93).
+ * THE LICM GATE (tools/gcc-2.7.2/loop.c:695, measured s3):
+ *   a movable is NOT built only when all three fail:
+ *     (A) ! maybe_never && ! loop_reg_used_before_p (...)
+ *     (B) ! REG_USERVAR_P (dest) && ! REG_LOOP_TEST_P (dest)
+ *     (C) reg_in_basic_block_p (p, dest)
+ *   A user local whose live range crosses a branch, set where maybe_never
+ *   is already 1, therefore stays inline in its OWN pseudo — no double-set
+ *   needed.  This works for the 0x1000000 mask constant (set at `check:`,
+ *   spanning the `if (v0 != 0)` branch — 97 insns) but NOT for 0x3C0000,
+ *   whose set is too early in the loop body for maybe_never to be 1 yet
+ *   (98 insns, i.e. hoisted).  loop.c:702 (n_times_set != 1 and
+ *   ! consec_sets_invariant_p) is the ONLY route found so far that keeps
+ *   BOTH inline — and it costs the two-register shape.
  *
- * Do NOT re-try (banked in rejected/): inlining the three table globals at
- * their use sites (85 insns, 40); collapsing the argument staging into one
- * call expression (23); the plain real-loop form without the reused scratch
- * (29/98, both constants hoisted); v0-as-the-reused-holder (22/93).
+ * THE REMAINING RESIDUAL (all of it is the tail; RA is already correct):
+ *   +2 : our mask exit is `bnez v0,<cont> / nop / j <end> / move v0,zero`
+ *        where target has `beqz $v0,.L80081CFC / addu $v0,$zero,$zero`.
+ *        s3 CONFIRMED the mechanism: jump.c:1764 inverts a conditional
+ *        jump over an unconditional one only when the unconditional jump
+ *        IMMEDIATELY follows (prev_active_insn (reallabelprev) == insn);
+ *        the `ret = 0;` set in the if-body blocks it.  Writing the exit as
+ *        a bare `goto` DOES produce target's branch sense, but then the
+ *        `return 0;` block is stranded out of line and reorg refuses to
+ *        steal it into the delay slot (19/93).  See rejected/
+ *        goto-exits-invert-branch-but-strand-ret0-block.c and F7.
+ *   -1 : `k` in $a0 lets the scheduler hoist `lui a0,0x3c` into the bnez
+ *        delay slot at build idx 31 where target keeps a nop.
+ *
+ * Do NOT re-try (all banked in rejected/): inlining the three table globals
+ * at their use sites (40); one-expression printf call (23); plain real loop
+ * without the reuse (29/98); v0 as the holder for both constants (22/93);
+ * inline `return -1/0/1` instead of break+ret (19/93); `for(;;)` with three
+ * inline returns (19/93); if/else and `continue` spellings of the mask test
+ * (both collapse to this exact output, 18/92); goto exits in every label
+ * order (19/93); two branch-spanning const locals (27/97); v0-timeout plus
+ * spanning-mask local (22/94).
  */
 s32 saEft01Init(s32 a0) {
     s32 v0;

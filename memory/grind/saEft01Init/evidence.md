@@ -307,3 +307,85 @@ holder was tried and regresses to 22/93 â€” banked in `rejected/`).
 - [s2] [s2] The entire remaining 92-vs-91 residual is two items: +2 from tail block layout (our mask exit is 'bnez v0,<cont> / nop / j <end> / move v0,zero' where target has the un-inverted fall-through 'beqz $v0,.L80081CFC / addu $v0,$zero,$zero'), and -1 from the 0x3C0000 holder landing in $a0 so the scheduler fills the bnez delay slot with 'lui a0,0x3c' at build idx 31 where target keeps a nop and emits 'lui $v0,(0x3C0000>>16)' after the D_800F19BC store.
 
 - [s2] [s2] The k reuse belongs to the [[defeat-licm-hoist-var-reuse]] / SOTN 'variable reuse for codegen control' family and has NOT been through cheat-reviewer. Any completion claim on a form containing it must clear layer-1 and layer-2 review first; a more natural two-set spelling is preferred if one can be found (using v0 as the holder was tried and regresses to 22/93).
+
+## Session 3 (structural) — banked facts
+
+* **Floor unchanged at 18** (92 build insns vs 91 target). 13 further
+  structural variants measured this session; none beat the session-2
+  candidate, which is re-adopted unchanged.
+* **The entire residual is the tail.** `grind_diff.py` on the candidate
+  shows the prologue, the loop head, the timeout block, the debug_printf
+  argument block and the flag exit all line up; the only differences are
+  (a) the mask exit's branch sense / block layout (+2) and (b) `lui a0,0x3c`
+  filling a delay slot at build idx 31 where target keeps a `nop` (-1).
+* **jump.c:1764 is the gate on the mask exit's branch sense.** The
+  "conditional jump jumping over an unconditional jump" inversion requires
+  `prev_active_insn (reallabelprev) == insn`; a compound if-body puts the
+  `ret = 0;` set in between and blocks it. A BARE `goto` body makes the
+  build emit target's exact `beqz $v0,<exit>`.
+* **Exit spelling and out-of-loop label order are exhausted.** Eight goto /
+  if-else / continue variants: every goto form emits a byte-identical tail
+  at 19/93 regardless of label order (GCC normalises the block order); the
+  if-else and `continue` spellings collapse back to the candidate's exact
+  18/92 output. The remaining +2 is one reorg `fill_slots_from_thread`
+  decision, not a C-level control-flow choice.
+* **reorg is asymmetric between the two exits of this function.** In the
+  goto form it fully consumes the `return -1;` block (constant into the
+  `bnez` delay slot, label -> NOTE_INSN_DELETED_LABEL, branch redirected to
+  the shared return label 218) but refuses the identical steal for the
+  `return 0;` block (`insn 208 (set (reg/i:SI 2 v0) (const_int 0))`,
+  followed directly by `code_label 218`). RTL captured in
+  `tmp/grind/saEft01Init/s3/dbr_w1_goto_exits/system.i.dbr`.
+* **Target materialises the two loop constants in TWO DIFFERENT hard
+  registers** — `lui $v0,(0x3C0000>>16)` at asm idx 41 and
+  `lui $v1,(0x1000000>>16)` at idx 83. One C variable is one pseudo and one
+  hard register (ours puts both in `$a0`), so the candidate's single reused
+  `k` is provably NOT the original spelling. It stays the best-scoring form
+  but is a synthetic LICM defeat pending cheat-review.
+* **The real LICM gate is loop.c:695, not only loop.c:702.** A movable is
+  skipped when all of (A) `! maybe_never && ! loop_reg_used_before_p`,
+  (B) `! REG_USERVAR_P && ! REG_LOOP_TEST_P`, (C) `reg_in_basic_block_p`
+  are false. So a USER local whose live range crosses a branch, set where
+  `maybe_never` is already 1, stays inline in its own pseudo with no
+  double-set. Measured: this works for the 0x1000000 mask constant
+  (27/97 vs the 30/98 both-hoisted baseline) but not for 0x3C0000 —
+  `maybe_never` is still 0 that early in the loop body (loop.c:930 sets it
+  at the first in-loop CODE_LABEL/JUMP_INSN), and moving the set later
+  makes it basic-block-local.
+* **Any single-set constant local in this loop is hoisted** (x2/x3/y2 all
+  30/98), including one written as a plain literal.
+* **The exit flag `v0` cannot hold a constant in any combination**: v0 for
+  both (s2 H8) 22/93; v0 for the timeout plus a spanning mask local 22/94;
+  v0 for the timeout plus a literal mask 29/95.
+* **Tooling:** `BB2_DBR_DEBUG=1` produces NOTHING — the shipped
+  `tools/gcc-2.7.2/build/cc1` predates reorg.c's DBRDBG instrumentation,
+  exactly as session 2 found for `BB2_ALLOC_DEBUG`. Read the `-da` `.dbr`
+  RTL dump instead; `tmp/grind/saEft01Init/s3/dbrscan.py` extracts the
+  saEft01Init tail with insn UIDs and correlates it with any DBRDBG lines.
+  Harness: `s3/score.py <variant>...` (splice + sandbox, auto-restores
+  src), `s3/dd.sh <variant>` (splice + positional diff), `s3/dbr.sh
+  <variant>` (splice + cc1 -da + dbrscan).
+
+- [s3] Floor unchanged at 18 (92 build insns vs 91 target); 13 structural variants measured, none beat the session-2 candidate, which is re-adopted unchanged.
+
+- [s3] grind_diff.py on the candidate shows prologue, loop head, timeout block, debug_printf argument block and the flag exit all aligned; the only residual is the mask exit's branch sense/block layout (+2) and `lui a0,0x3c` filling a delay slot at build idx 31 where target keeps a nop (-1).
+
+- [s3] jump.c:1764 requires prev_active_insn(unconditional jump) == the conditional jump for the inversion; a bare `goto` if-body unblocks it and reproduces target's `beqz $v0,<exit>` exactly.
+
+- [s3] All eight goto/if-else/continue exit variants converge on two outputs only: 19/93 (any goto form, byte-identical tails, label order irrelevant) or 18/92 (the candidate's output, which if-else and `continue` spellings collapse back into).
+
+- [s3] reorg is asymmetric between this function's two exits: it fully consumes the `return -1;` block (constant into the bnez delay slot, label becomes NOTE_INSN_DELETED_LABEL, branch redirected to the shared return label 218) but refuses the identical steal for `insn 208 (set (reg/i:SI 2 v0) (const_int 0))`, which is followed directly by code_label 218. RTL captured in tmp/grind/saEft01Init/s3/dbr_w1_goto_exits/system.i.dbr.
+
+- [s3] Target holds the two loop constants in two different hard registers (lui $v0,0x3c at asm idx 41; lui $v1,0x100 at idx 83) while our build puts both in $a0 â€” so the candidate's single reused `k` local is provably not the original spelling.
+
+- [s3] The real LICM gate is loop.c:695 (three OR-ed branches A/B/C), not only loop.c:702: a user local whose live range crosses a branch and whose set sits where maybe_never is already 1 stays inline in its own pseudo with no double-set. Measured working for the 0x1000000 mask constant (27/97 vs the 30/98 both-hoisted baseline).
+
+- [s3] It does NOT work for 0x3C0000: maybe_never is still 0 that early in the loop body (loop.c:930 sets it at the first in-loop CODE_LABEL/JUMP_INSN), and moving the set later makes it basic-block-local so reg_in_basic_block_p holds.
+
+- [s3] Any single-set constant local in this loop is hoisted â€” x2, x3 and y2 are all 30/98, including a plain literal spelling.
+
+- [s3] The exit flag `v0` cannot hold a constant in any combination: both constants 22/93 (s2), timeout-only plus spanning mask local 22/94, timeout-only plus literal mask 29/95.
+
+- [s3] BB2_DBR_DEBUG=1 produces no output â€” the shipped cc1 predates reorg.c's DBRDBG instrumentation, same as BB2_ALLOC_DEBUG in session 2; use the -da .dbr dump.
+
+- [s3] src/system.c was left byte-identical to its session-start state (score.py restores it after every splice); no build-pipeline file was touched.

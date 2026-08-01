@@ -1,7 +1,7 @@
 {
  "func": "saEft01Init",
  "file": "system",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,23 +15,29 @@
    "floor": 18,
    "modality": "structural",
    "headline": "Cluster A SOLVED \u2014 a real loop plus ONE reused scratch local holding both loop-invariant compare constants defeats loop.c's hoisting and lands target's exact $s0-$s3 map with only four callee-saves; f"
+  },
+  {
+   "session": 3,
+   "floor": 18,
+   "modality": "structural",
+   "headline": "Floor still 18/92; the whole residual is the tail. Found jump.c:1764 (bare-goto exit reproduces target's beqz sense), KILLED every exit-spelling/label-order variant (8 forms, byte-identical 19/93), pr"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The +2 tail residual is a block-ORDER decision, not an exit-spelling one: GCC lays the 'ret = 1; while (a0 == 0)' tail block after the exit jump, so the mask branch comes out inverted with an extra 'j end', where target falls straight through from 'beqz $v0,.L80081CFC' into 'beqz $s2,.L80081C10'.",
-   "mechanism": "jump.c / final block ordering after the loop is expanded. The register allocation is already correct and unaffected, so this is the only remaining structural axis for the larger half of the residual. Return-vs-break spelling has been measured dead (both 19/93).",
-   "next_probe": "Invert the mask test's source sense so the loop-continue side is the fall-through (if (*D_800A14C0 & k) { ret = 1; } else { ret = 0; break; }); fold the mask test and the a0 back-edge condition into one loop condition; and try 'continue' for the loop-continue path. Screen each with tmp/grind/saEft01Init/s2/score.py \u2014 the sweep.py .lreg predictor does not see block layout, so these need real sandbox runs."
+   "hypothesis": "The whole remaining +2 is one reorg own-thread steal: in the bare-goto form the `return 0;` block is stranded, while the structurally identical `return -1;` block in the same function IS consumed into its branch's delay slot.",
+   "mechanism": "RTL tail is `jump_insn 173: beq v0,0 -> label 205` / `insn 252 = SEQUENCE[jump_insn 184: beq s2,0 -> loop ; insn 194: v0=1]` / `jump_insn 196: j 218` / `code_label 205` / `insn 208: (set (reg/i:SI 2 v0) (const_int 0))` / `code_label 218`. Two differences from the consumed case: the consumed thread ends in a jump_insn to 218 whereas 208 is followed directly by code_label 218; and 173's fall-through (next_active_insn) is the loop-condition JUMP_INSN 184, already a SEQUENCE from fill_simple_delay_slots, whereas the flag branch's fall-through is an ordinary INSN.",
+   "next_probe": "Read fill_slots_from_thread's trial-loop guards in tools/gcc-2.7.2/reorg.c, especially `! insn_sets_resource_p (trial, &opposite_needed, 1)` and the mark_target_live_regs fallback at reorg.c:2500-2510 that force-marks ALL registers live when it cannot find the block start (the BB2_ALLLIVE_LABEL hook suggests this project has hit it before). Then find C that either puts an ordinary INSN between the mask branch and the loop-condition branch, or leaves the `return 0;` thread ending in a real jump. Regenerate RTL with `bash tmp/grind/saEft01Init/s3/dbr.sh <variant>`. Note w2 (which keeps `ret = 1;` before the loop condition) does NOT achieve this \u2014 fill_simple_delay_slots consumes that insn into 184's slot before fill_eager reaches 173."
   },
   {
-   "hypothesis": "The -1 / mis-scheduled 0x3C0000 materialisation is fixable by moving the reused holder k out of $a0 into $v0 without folding it into the v0 flag local (which regresses to 22/93).",
-   "mechanism": "k has nrefs=8, live_length=6 and lands in $a0, which is free early enough for the scheduler to hoist 'lui a0,0x3c' into the bnez delay slot at build idx 31. Target's holder is $v0, freed only by the immediately preceding slt, so the lui cannot move up past it.",
-   "next_probe": "Read .lreg for k under variants that lengthen its live range slightly or split the reuse across two locals that each still get two sets; move 'k = 0x3C0000;' to sit between the 'D_800F19BC = cnt + 1;' store and the compare; verify with sweep.py that the $s0-$s3 map is unchanged and with grind_diff.py that the nop at build idx 31 is restored."
+   "hypothesis": "The 0x3C0000 constant can be made to escape LICM in its OWN pseudo (giving target's two-register shape and retiring the synthetic `k` reuse) by satisfying loop.c:695's gate for it as well.",
+   "mechanism": "loop.c:695 needs all three branches false: maybe_never already 1 at the set (or the register REFERENCED earlier in the loop than its set, which is the loop_reg_used_before_p half of branch A and does not need maybe_never), the dest a user variable, and the live range crossing a basic-block boundary. Today the only in-loop branch before the timeout compare is `if (D_800F19B8 < v0)` and the compare follows in the same block, so either A or C always holds.",
+   "next_probe": "Spellings that put an extra branch or label between the constant's set and its use; a variable referenced earlier in the loop than its set; or restructuring so the D_800F19BC read/increment sits in its own block. Success looks like 91-92 insns with $s4/$s5 absent from the .greg dispositions and `lui $v0,0x3c` / `lui $v1,0x100` in two different caller-saved registers. Screen with tmp/grind/saEft01Init/s3/score.py."
   },
   {
-   "hypothesis": "Cluster B (the debug_printf argument block, regfix.txt:105-113) can now be re-diffed for the first time on a CORRECT cluster-A allocation, and part of the $2<->$3 / $2<->$4 rename cluster will have vanished on its own.",
-   "mechanism": "Session 1 could not separate cluster B from cluster A because the arg-block address chains indexed off $s1 in our build and $s0 in target. As of the session-2 candidate both index off $s0, so any residual in that block is now genuinely independent.",
-   "next_probe": "Re-run tmp/grind/saEft01Init/s1/grind_diff.py on the candidate and re-score both arg-staging orders (arg4-first and arg5-first) with score.py against the corrected allocation \u2014 session 1 measured them tied at 18 under the WRONG allocation, so that tie must be re-measured before any further arg-block work."
+   "hypothesis": "If a completion is reached with the reused `k` still present, it needs cheat-review on a corrected factual basis \u2014 the claim that it reproduces the original spelling is now falsified.",
+   "mechanism": "The reuse is in the [[defeat-licm-hoist-var-reuse]] family, SOTN-sanctioned only as a documented last resort with lever-exhaustion; the two-register evidence (target's $v0 and $v1) shows the original did not use one variable.",
+   "next_probe": "Do F8 first \u2014 if it lands, `k` disappears on its own and the question is moot. Otherwise invoke cheat-reviewer with the two-register evidence and the full lever-exhaustion record from sessions 1-3 disclosed up front."
   }
  ],
  "judge_constraints": [],
