@@ -507,3 +507,120 @@ both the goto-loop and real-loop forms.
 - probe: b3/b5 (`tbl_125c = &tbl_125c[idx_1494[0]]; arg5 = tbl_125c[idx_1494[1]]; arg4 = *tbl_125c;` on top of the two mask levers) vs a4_maskcnt_argk and a5_maskcnt_argcnt (the two value-staging spellings the permuter also proposed).
 - result: The pointer re-base composes cleanly: 9 -> 7 at 91 insns (b5_ptr_rebase_nodead). Both value-staging spellings REGRESS when composed with the mask lever — a4 (arg4 through the constant holder `k`) = 13 / 92, a5 (arg4 through `cnt`) = 16 / 93 — because they contend for the same pseudo. SEMANTICS CHECKED: every path reaching the re-base sets `v0 = -1` and the following `if (v0 != 0)` join unconditionally `break`s, so the mutated pointer can never be observed on a later iteration.
 - verdict: CONFIRMED
+
+## Session 5 (permuter) — measured
+
+### H19 — KILLED, and it INVALIDATES the session-4 floor of 7
+**Statement:** the session-4 candidate's third lever
+(`tbl_125c = &tbl_125c[idx_1494[0]]; arg5 = tbl_125c[idx_1494[1]];
+arg4 = *tbl_125c;`, the [[walking-pointer-serializes-parallel-loads]]-family
+pointer re-base that took the honest distance 9 -> 7) is a legitimate
+respelling of the argument block.
+**Mechanism / probe:** read the base-vs-target positional disassembly of the
+distance-7 chassis (`tmp/grind/saEft01Init/s5/od.sh`, workspace ws2 built from
+the session-4 candidate) and compared the two index address chains against
+target's.
+**Result:** target's block is
+`lbu a0,0(s1) / lbu v0,1(s1) / sll v0,v0,2 / addu v0,v0,s0 / sll a0,a0,2 /
+lw v1,0(v0) / addu a0,a0,s0 / sw v1,16(sp) / lw a3,0(a0)` — **both index
+chains are computed independently off the UNMODIFIED `s0`**, i.e.
+`arg4 = tbl[i0]` and `arg5 = tbl[i1]`. The re-base instead emits
+`addu s0,s0,v1` (it MUTATES the base pointer) and then indexes the mutated
+pointer, so it computes `arg5 = tbl[i0 + i1]`. That is a **real semantic
+change in the value passed to `debug_printf`**, not a respelling: session 4
+only checked that the mutated pointer is not observable on a LATER iteration
+and never checked the value of `arg5` on THIS one.
+**Verdict: KILLED.** The distance-7 form is not a candidate for the match at
+all — it is a different program, and its `addu s0,s0,v1` is an instruction
+target does not contain. The honest floor for a semantically faithful form is
+**8**, not 7. Banked: `rejected/pointer-rebase-changes-arg5-semantics-7.c`.
+
+### H20 — CONFIRMED (statement order is the lever; declaration order is inert)
+**Statement:** with the re-base dropped, the two named argument intermediates'
+STATEMENT order and DECLARATION order are independent levers, and session 1's
+measured tie between them (18 vs 18, taken under the WRONG callee-save
+allocation — session-2 F6, never re-measured) does not survive on the correct
+allocation.
+**Probe:** the 2x2 cross-product on top of the two surviving mask levers —
+`c1` (decl `arg5,arg4` / stmt arg5-then-arg4), `c2` (decl `arg4,arg5` / stmt
+arg4-then-arg5), `c3` (decl `arg5,arg4` / stmt arg4-then-arg5), `c4` (decl
+`arg4,arg5` / stmt arg5-then-arg4), all via
+`tmp/grind/saEft01Init/s5/score.py`.
+**Result:** 9 / 8 / 8 / 9, all at target's exact 91 instructions. The score
+depends ONLY on the statement order (arg4's assignment first = 8, arg5's
+first = 9); declaration order is completely inert (c2 == c3, c1 == c4).
+**Verdict: CONFIRMED — F6 is now closed.** Assign `arg4` (the idx[0] lookup)
+first. The session-1 tie was an artefact of the wrong allocation.
+
+### H21 — KILLED
+**Statement:** target names only the FIFTH argument and writes the fourth
+inline in the call. Evidence: target homes `arg5` through a register into the
+stack slot (`lw v1,0(v0) ... sw v1,16(sp)`) but loads the fourth argument
+straight into its argument register as the LAST memory reference of the block
+(`lw a3,0(a0)`), which is what an inline call-argument expression looks like;
+a named local would be materialised earlier. Session 1's H2 killed the
+BOTH-inline spelling but the asymmetric one had never been measured.
+**Probe:** `d1` (`s32 arg5; arg5 = tbl_125c[idx_1494[1]];` + `tbl_125c[idx_1494[0]]`
+inline in the call), `d2` (same, initialised at the declaration), `d4` (same
+but `arg5` declared at function scope), and the mirror-image control `d3`
+(`arg4` named, `tbl_125c[idx_1494[1]]` inline).
+**Result:** d1 = d2 = d4 = **14 / 91** — a 6-point regression, and identical
+to each other, so neither the declaration position nor the initialiser form
+matters. The control d3 = **8 / 91**, tying the best two-named-local form
+(c2/c3) with ONE fewer local.
+**Verdict: KILLED for the arg5-named spelling; d3 adopted as the chassis.**
+The fifth argument must NOT be the only named one. Whatever defers target's
+`lw a3` to the end of the block, it is not an inline fourth argument.
+Banked: `rejected/arg5-named-arg4-inline-regresses-14.c`.
+
+### H22 — KILLED (the distance-7 chassis is a saturated basin)
+**Statement:** the session-4 frontier's top item — that the distance-7 form,
+never used as a permuter base, would seed a better basin than the 18/92 and
+11/93 chassis of session 4 did.
+**Probe:** rebuilt the workspace from the distance-7 candidate
+(`tmp/grind/saEft01Init/s5/mkws.sh` + `mkws2b.sh`, trimmed base verified
+byte-identical to the full-TU compile) and ran a `d7-chassis` campaign
+(`tools/permuter_campaign.py`, -j 8, ~480 s, 2647 output dirs / 2352
+textually-unique bodies). Deduplicated with
+`tmp/grind/saEft01Init/s5/pick.py` and screened 55 through the ENGINE sandbox
+(the 40 lowest weighted scores plus a 15-point stratified sample of the rest).
+**Result:** **not one find beat the base.** Best screened results were 7
+(four finds, all ties with the base), then 8 (eleven finds); the campaign's
+own best weighted score (565) screened to 8. The sample across the whole
+weighted range (up to 3940) screened 17-53, re-confirming session 4's finding
+that the two metrics rank differently. NOTE the campaign reported a bogus base
+score of 9000 for this chassis, so it wrote out EVERY mutant as a "better
+score" — that is why 2647 dirs exist and why the dedupe+stratify step was
+needed; the faithful chassis (H23) scores a normal 635.
+**Verdict: KILLED.** The distance-7 chassis's random-mutation basin is
+saturated. Harvested with --stop; no campaign outlived the session.
+
+## [s5] The session-4 candidate's third lever (tbl_125c = &tbl_125c[idx_1494[0]]; arg5 = tbl_125c[idx_1494[1]]; arg4 = *tbl_125c;) is a legitimate walking-pointer respelling of the debug_printf argument block, and its distance of 7 is a real floor.
+- mechanism: The [[walking-pointer-serializes-parallel-loads]] family serialises two independent index chains through one pointer. Session 4 verified only that the mutated pointer cannot be observed on a LATER loop iteration (every path reaching it sets v0 = -1 and the following join breaks), and concluded the mutation was unobservable.
+- probe: Read the base-vs-target positional disassembly of the distance-7 chassis (tmp/grind/saEft01Init/s5/od.sh over a workspace built from the session-4 candidate) and compared the two index address chains instruction by instruction against target's.
+- result: Target's block is `lbu a0,0(s1) / lbu v0,1(s1) / sll v0,v0,2 / addu v0,v0,s0 / sll a0,a0,2 / lw v1,0(v0) / addu a0,a0,s0 / sw v1,16(sp) / lw a3,0(a0)` — BOTH index chains are computed off the UNMODIFIED base register s0, i.e. arg4 = tbl[i0] and arg5 = tbl[i1]. The re-base emits `addu s0,s0,v1`, an instruction target does not contain, and then indexes the mutated pointer, so it computes arg5 = tbl[i0 + i1]. That is a real change to the value passed to debug_printf on the CURRENT iteration, which session 4 never checked. The 7 is therefore a score on a program that is not this function.
+- verdict: KILLED
+
+## [s5] With the re-base dropped, the two named argument intermediates' STATEMENT order and DECLARATION order are independent levers, and session 1's measured 18-vs-18 tie between the two staging orders (taken under the WRONG callee-save allocation — session-2 F6, never re-measured) does not survive on the correct allocation.
+- mechanism: The statement order drives the order in which the two index chains are expanded and hence scheduled; the declaration order drives LUID assignment and could bias register allocation independently.
+- probe: The full 2x2 cross-product on top of the two surviving mask levers, via tmp/grind/saEft01Init/s5/score.py: c1 (decl arg5,arg4 / stmt arg5-then-arg4), c2 (decl arg4,arg5 / stmt arg4-then-arg5), c3 (decl arg5,arg4 / stmt arg4-then-arg5), c4 (decl arg4,arg5 / stmt arg5-then-arg4).
+- result: 9 / 8 / 8 / 9, all at target's exact 91 instructions. The score depends ONLY on the statement order (the idx[0] lookup assigned first = 8, the idx[1] lookup first = 9); declaration order is completely byte-inert (c2 == c3 and c1 == c4). Session 1's tie was an artefact of the wrong allocation. F6 is closed.
+- verdict: CONFIRMED
+
+## [s5] Target names only the FIFTH argument and writes the fourth inline in the call expression — that is why target homes arg5 through a register into the stack slot (lw v1,0(v0) ... sw v1,16(sp)) but issues `lw a3,0(a0)` as the LAST memory reference of the block, where a named local would be materialised earlier.
+- mechanism: expand_call materialises a named intermediate at its assignment statement, but an inline argument expression is expanded during the call's own argument expansion, at the end of the block.
+- probe: d1 (s32 arg5; arg5 = tbl_125c[idx_1494[1]]; with tbl_125c[idx_1494[0]] inline in the call), d2 (same, initialised at the declaration), d4 (same, arg5 declared at function scope), and the mirror-image control d3 (arg4 named, tbl_125c[idx_1494[1]] inline).
+- result: d1 = d2 = d4 = 14 / 91, a 6-point regression, and byte-identical to each other so neither the declaration position nor the initialiser form matters. The control d3 = 8 / 91, tying the best two-named-local form with one fewer local. Whatever defers target's lw a3 to the end of the block, it is not an inline fourth argument.
+- verdict: KILLED
+
+## [s5] The session-4 frontier's top item: the distance-7 form, which no campaign had ever used as a permuter base, would seed a better basin than session 4's 18/92 and 11/93 chassis did (each of which immediately produced a better basin on reseed).
+- mechanism: The permuter's random pass explores register-visible restructurings that hand search does not enumerate, and session 4 measured that each reseed from a closer chassis found a closer basin.
+- probe: Rebuilt the workspace from the distance-7 candidate (tmp/grind/saEft01Init/s5/mkws.sh + mkws2b.sh; the trimmed pycparser-parseable base verified byte-identical to the full-TU compile), ran the d7-chassis campaign via tools/permuter_campaign.py (-j 8, ~480 s, 14045 iterations, 2647 output dirs / 2352 textually-unique bodies), deduplicated with tmp/grind/saEft01Init/s5/pick.py and screened 55 through the ENGINE sandbox (the 40 lowest weighted plus a 15-point stratified sample of the rest).
+- result: Not one find beat the base. Best screened results were 7 (four finds, all exact ties with the base) then 8 (eleven finds); the campaign's own best weighted score, 565, screened to 8. The stratified sample across the whole weighted range (up to 3940) screened 17-53, re-confirming session 4's weak-correlation finding. Harvested with --stop.
+- verdict: KILLED
+
+## [s5] A campaign reseeded from the semantically faithful 8/91 chassis (structurally different from the d7 chassis: no pointer re-base, one named intermediate instead of two) finds a basin below 8.
+- mechanism: Fresh-seed discipline — a basin yields early or not at all, so a structurally different chassis is the correct response to a saturated one. This chassis also scores normally under the permuter (base_score 635) where the d7 chassis reported a bogus 9000, so its find stream is real 'better than base' finds rather than every mutant.
+- probe: Built ws5 from the d3 (8/91) form and ran the d8-faithful-chassis campaign (-j 8, ~15 min, 29684 iterations), soaked in-turn via tmp/grind/saEft01Init/s5/soak.sh, screened every find through the sandbox.
+- result: Five finds total. Best weighted (545) screened to sandbox 10 at 92 instructions; the four weighted-635 finds screened to 8, i.e. exact ties with the base. No find below 8. Harvested with --stop; both campaigns are dead and no permuter process outlived the session.
+- verdict: KILLED

@@ -405,3 +405,51 @@ holder was tried and regresses to 22/93 — banked in `rejected/`).
 - [s4] Workspace-construction facts worth reusing: decomp-permuter's pycparser front end cannot parse this project's preprocessed TUs (K&R definitions like `inline int ENCODE_BCD(n)`, plus file-scope multi-line __asm__ blocks whose string literals cpp splits across lines). tmp/grind/saEft01Init/s4/trim.py drops every top-level chunk that is not a declaration and not the function under study, and mkws2.sh VERIFIES the trimmed base compiles byte-identically to the full-TU compile before the campaign is allowed to use it.
 
 - [s4] Also worth reusing: the maspsx output for this project sets `.set at` at file scope and `.set noreorder` per function, so a single-function permuter workspace must prepend `.set noreorder` + `.set at` (NOT the decomp-permuter prelude's `.set noat`, which makes every `la` pseudo-op fail to assemble), and must extract from `.ent <func>` through `.end <func>` so `.frame`/`.mask` sit inside an `.ent` scope.
+
+- [s5] **The session-4 floor of 7 does not stand as a matching form.** Its
+  third lever re-bases `tbl_125c` onto `idx_1494[0]` and then indexes the
+  re-based pointer with `idx_1494[1]`, so `arg5` becomes `tbl[i0+i1]` where
+  target passes `tbl[i1]`; the emitted `addu s0,s0,v1` is an instruction
+  target does not contain. Target computes BOTH index chains off the
+  unmodified base register `s0`. The honest floor for a semantically faithful
+  form is 8 / 91, and that is what `candidate.c` now holds.
+
+- [s5] The debug_printf argument block (session-1 cluster B / session-2 F6) is
+  now CLOSED as far as source-level ordering goes: the assignment STATEMENT
+  order is the only lever (idx[0]'s assignment first = 8, idx[1]'s first = 9)
+  and the DECLARATION order of the two intermediates is byte-inert on the
+  correct callee-save allocation. Session 1's 18-vs-18 tie was an artefact of
+  the wrong allocation and is superseded.
+
+- [s5] Only ONE named intermediate is needed for the 8 / 91 form: `arg4`
+  named, `tbl_125c[idx_1494[1]]` written inline as the fifth call argument
+  (variant d3). The mirror image (`arg5` named, fourth argument inline) costs
+  6 points (14 / 91) in all three spellings measured.
+
+- [s5] The whole remaining residual of the 8 / 91 form is TWO clusters and
+  nothing else: (1) the argument block's fourth-argument chain — our build
+  runs it through `v1` and issues `lw a3,0(v1)` early, target runs it through
+  `a0` and defers `lw a3,0(a0)` to after the `sw v1,16(sp)` / `lw a2` pair,
+  and the `D_800F19C0` load moves with it; (2) the known session-3 F7 tail,
+  where target fills the `beqz $v0` delay slot with `move v0,zero` and our
+  build emits a `nop`.
+
+- [s5] Permuter campaign hygiene for this function: a chassis whose base the
+  permuter scores oddly high (the distance-7 form reported base_score 9000
+  against a real weighted diff nearer 650) writes EVERY mutant to disk as a
+  "better score" find — thousands of dirs, mostly textual duplicates.
+  `tmp/grind/saEft01Init/s5/pick.py` dedupes by the whitespace-normalised
+  function body and emits a lowest-N + stratified-sample screening list;
+  `run_screen.sh` drives it end to end. Use it before any --all screen.
+
+- [s5] The session-4 floor of 7 does not stand as a matching form: its pointer re-base mutates the table base (addu s0,s0,v1 — not in target) and changes arg5 from tbl[i1] to tbl[i0+i1]. Target computes both index chains off the unmodified s0. The honest floor for a semantically faithful form is 8/91, and memory/grind/saEft01Init/candidate.c now holds that form; the 7 is banked at rejected/pointer-rebase-changes-arg5-semantics-7.c with the target disassembly that disproves it.
+
+- [s5] The debug_printf argument block (session-1 cluster B / session-2 F6) is closed at the source-ordering level: assignment STATEMENT order is the only lever (idx[0]'s lookup assigned first = 8, idx[1]'s first = 9) and the DECLARATION order of the intermediates is byte-inert on the correct callee-save allocation.
+
+- [s5] Only ONE named intermediate is needed for 8/91: arg4 named, tbl_125c[idx_1494[1]] written inline as the fifth call argument. The mirror image (arg5 named, fourth argument inline) costs 6 points in all three spellings measured (block-scope, decl-with-initialiser, function-scope) and all three are byte-identical.
+
+- [s5] The whole residual of the 8/91 form is exactly two clusters: (1) the fourth argument's address chain — ours runs through $v1 and issues `lw a3,0(v1)` early, target runs it through $a0 and defers `lw a3,0(a0)` past the `sw v1,16(sp)` / `lw a2,0(v0)` pair, with the D_800F19C0 load moving with it; (2) the known session-3 F7 tail, where target fills the `beqz $v0` delay slot with `move v0,zero` and our build emits a nop.
+
+- [s5] Permuter campaign hygiene for this function: a chassis the permuter scores oddly high at base (the d7 form reported base_score 9000 against a real weighted diff nearer 650) writes EVERY mutant to disk as a 'better score' find — 2647 dirs, mostly textual duplicates. tmp/grind/saEft01Init/s5/pick.py dedupes by whitespace-normalised function body and emits a lowest-N + stratified-sample screening list; run_screen.sh drives it end to end. Use it before any --all screen.
+
+- [s5] Both session-5 campaigns (d7-chassis 14045 iterations, d8-faithful-chassis 29684 iterations) were harvested with --stop inside the session; `permuter_campaign.py status` shows both dead and inactive.

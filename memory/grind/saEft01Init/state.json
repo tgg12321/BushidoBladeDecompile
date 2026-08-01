@@ -1,7 +1,7 @@
 {
  "func": "saEft01Init",
  "file": "system",
- "session_count": 4,
+ "session_count": 5,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -27,23 +27,29 @@
    "floor": 7,
    "modality": "permuter",
    "headline": "Permuter broke the three-session plateau: honest distance 18 -> 7 at target's exact 91 instructions, via three independently measured levers (mask constant staged through the live loop counter, mask t"
+  },
+  {
+   "session": 5,
+   "floor": 8,
+   "modality": "permuter",
+   "headline": "Session-4's distance-7 form is a DIFFERENT PROGRAM (its pointer re-base makes arg5 = tbl[i0+i1], target passes tbl[i1]); the honest faithful floor is 8/91, the arg block is now closed at the source-or"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The remaining 7 at the exact instruction count is pure register choice / schedule and is reachable by continuing the permuter from the 7/91 chassis, which no campaign has yet seeded from.",
-   "mechanism": "Both session-4 campaigns seeded from 18/92 and 11/93 chassis respectively, and each reseed immediately produced a better basin (18->11 from the first, 11->9 from the second). The distance-7 form has never been used as a permuter base, and the permuter's random pass explores register-visible restructurings that hand search does not enumerate.",
-   "next_probe": "Rebuild the workspace with tmp/grind/saEft01Init/s4/mkws.sh + mkws2.sh (they take the CURRENT src/system.c, so apply candidate.c first), launch via tools/permuter_campaign.py with a `d7-chassis` label, soak with tmp/grind/saEft01Init/s4/soak.sh (loops `wait` inside ONE turn), then screen EVERY find with tmp/grind/saEft01Init/s4/screen.py --all (EFT_WS=<wsdir>). Do not rank by permuter score."
+   "hypothesis": "The remaining argument-block distance is the FOURTH argument's address chain landing in $v1 and being consumed early, where target keeps it in $a0 and consumes it last \u2014 and the lever is something that keeps a0 free and defers the load, not the ordering of the two lookups (which is now exhausted).",
+   "mechanism": "Target's schedule is `lbu a0,0(s1)` FIRST but `lw a3,0(a0)` LAST, with the arg5 chain (v0 -> v1 -> sw 16(sp)) and the arg2 chain (D_800A11D5 -> s3 -> lw a2) both completing in between. Our build issues the whole idx[0] chain contiguously through $v1 and finishes it before the arg5 store. Since declaration order is inert and the inline-fourth-argument spelling regresses 6, the remaining degrees of freedom are: which statement the idx[0] BYTE load belongs to (it could be a separately named byte local, splitting `lbu` from the `sll/addu/lw` chain), and where the D_800F19C0 load sits relative to it.",
+   "next_probe": "Sweep spellings that split the fourth argument's chain across two statements \u2014 `s32 i0 = idx_1494[0]; ... arg4 = tbl_125c[i0];` with the intervening statements varied (the D_800F19C0 read, the tbl_11dc[D_800A11D5] lookup named, the arg5 lookup named) \u2014 and spellings that name the fifth argument's chain head instead. Screen with tmp/grind/saEft01Init/s5/score.py; read the block with tmp/grind/saEft01Init/s5/odv.sh <variant>, which builds a throwaway workspace from src and prints the positional diff."
   },
   {
-   "hypothesis": "The `cnt = k;` mask staging can be replaced by a spelling that is not in the variable-reuse family, now that its exact mechanism is known (the stage must land in a pseudo that already has a live range).",
-   "mechanism": "Session 3's F8 established the loop.c:695 user-variable gate; session 4 establishes that a fresh local for the stage is inert. Any replacement must therefore give the mask value a second pseudo whose live range predates the mask test WITHOUT introducing a variable whose only purpose is that reuse \u2014 e.g. a value genuinely computed earlier in the loop that happens to be dead by the mask test, or a restructure that makes the mask test consume something the timeout path already produced.",
-   "next_probe": "Enumerate the locals live at the `check:` join (v0, cnt, ret, k, the three table pointers) and measure the mask stage through each; then try spellings where the mask test reads a value the loop already computes rather than a staged constant. Screen with tmp/grind/saEft01Init/s4/score.py. If none is clean, the completion claim must carry a /* FAKE */ annotation plus the sessions 1-4 exhaustion record into cheat-reviewer."
+   "hypothesis": "The `cnt = k;` mask staging (session-4 lever 1) can be replaced by a spelling outside the variable-reuse family, now that its exact mechanism is known: the stage must land in a pseudo that already has a live range (a fresh local is byte-inert).",
+   "mechanism": "Session 3's F8 established loop.c:695's user-variable gate; session 4 established that a fresh local for the stage is inert, so the lever is specifically the reuse of a pseudo with an existing live range. Any replacement must give the mask value a second pseudo whose live range predates the mask test WITHOUT introducing a variable whose only purpose is that reuse.",
+   "next_probe": "Enumerate the locals live at the `check:` join (v0, cnt, ret, k, the three table pointers \u2014 note v0 and ret are already measured dead as holders, H8/H13/H16) and measure the mask stage through each remaining one; then try spellings where the mask test consumes a value the loop already computes rather than a staged constant. If none is clean, the completion claim must carry a /* FAKE */ annotation plus the sessions 1-5 exhaustion record into cheat-reviewer."
   },
   {
-   "hypothesis": "The argument block still holds distance beyond the 2 the pointer re-base closed, and its two `lbu` are the anchor.",
-   "mechanism": "Target loads `idx_1494[0]` into $a0 and `idx_1494[1]` into $v0; our build (session-1 H2b) got the ORDER right but the registers wrong, and the two address chains interleave differently. The re-base changed the shape of one chain only.",
-   "next_probe": "Re-run the base-vs-target disassembly diff (tmp/grind/saEft01Init/s4/od.sh, pointed at a workspace built from the 7/91 form) and enumerate re-base spellings for the SECOND index too, plus the `arg4`/`arg5` declaration-order swap that session 1 measured neutral under the WRONG callee-save allocation and has never been re-measured under the correct one (session 2's F6, still open)."
+   "hypothesis": "The session-3 F7 tail (+1: target fills the `beqz $v0` delay slot with `move v0,zero`, we emit a nop) is reachable, and it is now the SMALLER half of the residual rather than the larger one.",
+   "mechanism": "Unchanged from session 3's F7: reorg's fill_slots_from_thread consumes the analogous block for the FLAG exit in the same function but refuses it for the mask exit, and the structural difference visible in the .dbr dump is that the mask exit's fall-through thread is the loop-condition JUMP_INSN already turned into a SEQUENCE by fill_simple_delay_slots.",
+   "next_probe": "Session 3 killed every exit SPELLING and label order (8 forms, byte-identical 19/93), so do not re-run those. The un-run half of F7 is the C that puts an ORDINARY INSN between the mask branch and the loop-condition branch without that insn being eaten by fill_simple_delay_slots first (session 3's w2 failed exactly there). Regenerate RTL with tmp/grind/saEft01Init/s3/dbr.sh and read the tail with dbrscan.py."
   }
  ],
  "judge_constraints": [],
