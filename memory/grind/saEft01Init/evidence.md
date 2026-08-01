@@ -453,3 +453,129 @@ holder was tried and regresses to 22/93 — banked in `rejected/`).
 - [s5] Permuter campaign hygiene for this function: a chassis the permuter scores oddly high at base (the d7 form reported base_score 9000 against a real weighted diff nearer 650) writes EVERY mutant to disk as a 'better score' find — 2647 dirs, mostly textual duplicates. tmp/grind/saEft01Init/s5/pick.py dedupes by whitespace-normalised function body and emits a lowest-N + stratified-sample screening list; run_screen.sh drives it end to end. Use it before any --all screen.
 
 - [s5] Both session-5 campaigns (d7-chassis 14045 iterations, d8-faithful-chassis 29684 iterations) were harvested with --stop inside the session; `permuter_campaign.py status` shows both dead and inactive.
+
+## Session 6 (forensics) — the argument block's shape is decided at EXPAND, its order at SCHED1
+
+Floor unchanged at **8 / 91** (`sandbox saEft01Init --disable all` on the
+inherited candidate, re-measured this session). Ten variants measured; the
+whole session's value is mechanism, not score.
+
+### Tooling note (closes a standing question)
+
+`tools/gcc-2.7.2/sched.c:2435` **already carries a `BB2_RANK_DEBUG`
+instrumentation block** (prints `RANKDBG last=<uid> y=<uid> cls=… x=<uid>
+cls2=… val=…` from `rank_for_schedule`), and there is an analogous
+`BB2_DBR_DEBUG` in `reorg.c`. **Neither is in the shipped binary** —
+`strings tools/gcc-2.7.2/build/cc1 | grep -E "RANKDBG|DBRDBG|ALLOCDBG"` is
+empty. The instrumented-cc1 modality therefore cannot be run without
+rebuilding `tools/gcc-2.7.2/build/cc1`, which is outside a grind session's
+allowed surface. **All cc1 forensics on this function must be done by reading
+the `-da` dumps.** Harness this session:
+`tmp/grind/saEft01Init/s6/dump.sh <tag>` (full `-da` dump set for the CURRENT
+`src/system.c` into `s6/<tag>/`), `s6/x.py <tag> <stage> [--from RE]
+[--grep RE]` (extract the saEft01Init section of one dump), `s6/order.py
+<tag> <stage>` (compact one-line-per-insn order of the `debug_printf` block).
+
+### The fourth argument: named local vs inline is an EXPAND-time difference
+
+Read from the `.rtl` (raw expand output, before every optimisation pass):
+
+* **arg4 written INLINE** in the call (variant `n0`): expand emits
+  `(insn 129 (set (reg:SI 7 a3) (mem/s:SI (reg:SI 99))))` — the load goes
+  **directly into the hard argument register**, as the last insn of the
+  argument sequence, after the stacked-argument store. There is no separate
+  load insn at all. This is `expand_call`'s argument-loading phase passing the
+  hard reg as the target of `expand_expr`; **combine is not involved**
+  (checked: the `REG_USERVAR_P` guards in `combine.c:1279/1134` are
+  `SMALL_REGISTER_CLASSES`-gated and `config/mips/mips.h` does not define it,
+  so they are dead on this target).
+* **arg4 written as a NAMED local** (the inherited candidate): expand emits
+  `(insn 101 (set (reg/v:SI 88) (mem/s:SI (reg:SI 93))))` at the *statement's*
+  position plus `(insn 134 (set (reg:SI 7 a3) (reg/v:SI 88)))`. `local_alloc`
+  then gives pseudo 88 the hard reg `$a3` by copy preference and the move
+  disappears — so the LOAD itself ends up written to `$a3` at the EARLY
+  position. That is exactly the observed `lw a3,0(v0)` at build idx 55.
+
+**Target's block ends with `lw a3,0(a0)` as its last memory reference**, i.e.
+target has the EXPAND shape of the INLINE fourth argument, not of a named
+local. So the inherited 8/91 candidate reaches its score with a structurally
+WRONG fourth argument, and the structurally right one (`n0`) scores 14/91.
+The two are separate basins, not neighbours.
+
+### The block's ORDER is fixed by sched1's priority + dependence-class rules, not by source order
+
+`n0` (arg4+arg5 both inline), `n2` (`i0 = idx_1494[0];` as a statement, both
+lookups inline), `n3` (both indices named as statements) and `n5` (arg5 named
++ i0 named) produce **byte-identical assembly** (md5 of the `.s` body equal).
+Their `.rtl`/`.combine` LUID orders are genuinely different — in `n2` the
+`idx_1494[0]` `lbu` is insn **94, the first insn of the block**, in `n0` it is
+insn **104, the third chain** — and `.sched` (the pre-reload scheduler's
+output) is **the same order in both**, with that `lbu` at position 9 of 16.
+
+That inverts the LUID relation between the `idx_1494[0]` `lbu` and the
+`D_800A11D5` `lbu` (n0: 104 vs 96; n2: 94 vs 102) without changing the
+schedule, which **proves the LUID tie-break at `sched.c:2452-2455` is not what
+orders these chains**. The deciding rule is upstream of it in
+`rank_for_schedule`: `INSN_PRIORITY` (longest path to the block end) first,
+then the dependence-class test at `sched.c:2412-2449` (class 3 = independent
+of `last_scheduled_insn` beats class 1 = data-dependent). Both are functions of
+the dependency DAG alone, and the DAG is fixed by the call's semantics.
+
+**Consequence:** the session-5 frontier's first next-probe — "sweep spellings
+that split the fourth argument's chain across two statements, varying the
+intervening statements" — is CLOSED. Statement placement inside this basic
+block cannot move the argument block, whatever the spelling.
+
+### Why target's chain lands in $a0 and ours in $v0/$v1
+
+The chain register is downstream of sched1, not an allocator preference:
+sched1's output order fixes the live ranges, `local_alloc` then fills them in
+`reg_alloc_order`. In target the `idx_1494[0]` address temp is live from the
+FIRST insn of the block to the LAST (`lbu a0,0(s1)` … `lw a3,0(a0)`), so
+`$v0` and `$v1` are both busy across it and it lands in `$a0` — and that in
+turn forces `lui a0,%hi(D_800161C8)` after it (anti-dependence), which is
+exactly target's tail. In our builds the same temp is short-lived (candidate:
+positions 1-7 of the block; n0: positions 9-15), so it gets `$v0`.
+Matching therefore requires sched1 to schedule the `idx_1494[0]` `lbu` FIRST
+and its load LAST, which requires that chain to outrank the `D_800A11D5` chain
+in `INSN_PRIORITY` — the two chains are currently isomorphic
+(`lbu → sll → addu → lw <hardreg>`), so they tie and the class rule breaks the
+tie against us.
+
+- [s6] Floor re-measured and unchanged at 8/91 on the inherited candidate; ten variants measured this session (n0-n9), none below 8.
+
+- [s6] tools/gcc-2.7.2/sched.c:2435 already contains a BB2_RANK_DEBUG env-gated fprintf inside rank_for_schedule, but the shipped tools/gcc-2.7.2/build/cc1 does not contain the string (strings | grep -E "RANKDBG|DBRDBG|ALLOCDBG" is empty), so the instrumented-cc1 modality is unavailable without rebuilding cc1 — outside a grind session's allowed surface. Use the -da dumps.
+
+- [s6] EXPAND-time fact from the .rtl dump: an INLINE call argument's final load is emitted directly into the hard argument register at the END of the argument sequence ((set (reg:SI 7 a3) (mem/s:SI (reg 99)))), while a NAMED local's load is emitted at its own statement position and followed by a register copy to a3, which local_alloc then coalesces by giving the pseudo $a3 — so the load itself moves early. combine plays no part: the REG_USERVAR_P guards at combine.c:1279/1134 are SMALL_REGISTER_CLASSES-gated and config/mips/mips.h does not define it.
+
+- [s6] Target's arg block ends with `lw a3,0(a0)` as its last memory reference, which is the EXPAND shape of an INLINE fourth argument. The inherited 8/91 candidate (arg4 named) therefore has a structurally wrong fourth argument, and the structurally right form (arg4 inline) is a different basin scoring 14/91.
+
+- [s6] n0 (both lookups inline), n2 (index 0 named as a statement, both lookups inline), n3 (both indices named) and n5 (arg5 named + index 0 named) are BYTE-IDENTICAL (md5 of the .s function body), and their .sched (pre-reload) orders are identical, despite .rtl LUID orders that invert the relative position of the idx_1494[0] lbu and the D_800A11D5 lbu (n0: 104 vs 96, n2: 94 vs 102).
+
+- [s6] That LUID inversion with no schedule change proves the tie-break at sched.c:2452-2455 (INSN_LUID, original order) is NOT what orders the argument block's chains; the deciding rules are INSN_PRIORITY and then the dependence-class test at sched.c:2412-2449, both functions of the dependency DAG alone. Source-level statement placement inside this basic block is therefore byte-inert, closing the session-5 frontier probe that proposed sweeping split-chain spellings.
+
+- [s6] The chain's hard register is downstream of sched1: target's idx_1494[0] address temp is live from the block's first insn to its last, so $v0 and $v1 are busy across it and local_alloc lands it in $a0 (which then forces `lui a0,%hi(D_800161C8)` after it by anti-dependence — target's exact tail). Our temp is short-lived in both basins (candidate positions 1-7, n0 positions 9-15) and gets $v0.
+
+- [s6] Matching the arg block needs the idx_1494[0] chain to OUTRANK the D_800A11D5 chain in INSN_PRIORITY; the two are currently isomorphic (lbu -> sll -> addu -> lw <hardreg>) and tie, and the tie breaks against us on the dependence-class rule.
+
+- [s6] Measured variants, all at 91 build insns unless noted: n0 both-inline 14, n1 (i0 named + arg4 named) 8, n2 (i0 named, lookups inline) 14, n3 (both indices named, lookups inline) 14, n4 (arg2 named, lookups inline) 13, n5 (arg5 named + i0 named) 14, n6 (arg2 named then arg4 named) 15 at 90 insns, n7 (arg4 named then arg2 named) 14 at 90 insns, n8 (D_800F19C0 staged in a local + arg4 named) 8, n9 (arg4 and arg5 both named) 8. Naming arg2 changes the instruction COUNT (90), so it is not a pure scheduling lever.
+
+- [s6] Floor re-measured and unchanged at 8/91 with the inherited candidate applied to src/system.c; ten variants measured this session (n0-n9), none below 8.
+
+- [s6] EXPAND-time fact (.rtl dump): an INLINE call argument's final load is emitted directly into the hard argument register as the LAST insn of the argument sequence — (set (reg:SI 7 a3) (mem/s:SI (reg:SI 99))) — while a NAMED local's load is emitted at its statement position and followed by a copy to a3 that local_alloc coalesces by giving the pseudo $a3, moving the LOAD early. combine plays no part; its REG_USERVAR_P guards at combine.c:1279/1134 are SMALL_REGISTER_CLASSES-gated and config/mips/mips.h does not define that macro.
+
+- [s6] Target's argument block ends with `lw a3,0(a0)` as its last memory reference, which is the expand shape of an INLINE fourth argument — so the 8/91 candidate's named arg4 is structurally wrong, and the structurally right form is a separate basin at 14/91 (banked at rejected/arg4-inline-is-target-expand-shape-but-14.c).
+
+- [s6] n0 (both lookups inline), n2 (index 0 named as a statement), n3 (both indices named) and n5 (arg5 named + index 0 named) emit BYTE-IDENTICAL assembly (md5 5e95422b of the .s function body) and identical .sched orders, despite .rtl LUID orders that invert the relative position of the idx_1494[0] lbu and the D_800A11D5 lbu (n0: 104 vs 96; n2: 94 vs 102).
+
+- [s6] That LUID inversion with no schedule change proves the INSN_LUID tie-break at sched.c:2452-2455 is NOT what orders this block; INSN_PRIORITY and the dependence-class test at sched.c:2412-2449 are, and both are functions of the dependency DAG alone. Source statement placement inside this basic block is therefore byte-inert.
+
+- [s6] The argument block's hard registers are downstream of sched1: target's idx_1494[0] address temp is live across the whole block so $v0/$v1 are busy and local_alloc lands it in $a0, which forces `lui a0,%hi(D_800161C8)` after it by anti-dependence; ours is short-lived in both basins (candidate positions 1-7, n0 positions 9-15) and gets $v0.
+
+- [s6] Matching the argument block reduces to ONE scheduler fact: the idx_1494[0] chain must outrank the D_800A11D5 chain in INSN_PRIORITY at sched1. The two chains are currently isomorphic (lbu -> sll -> addu -> lw <hardreg>), they tie, and the tie breaks against us on the dependence-class rule.
+
+- [s6] Variant scores, all 91 build insns unless noted: n0 both-inline 14, n1 (i0 named + arg4 named) 8, n2 14, n3 14, n4 (arg2 named, lookups inline) 13, n5 14, n6 (arg2 then arg4 named) 15 at 90 insns, n7 (arg4 then arg2 named) 14 at 90 insns, n8 (D_800F19C0 staged in a local + arg4 named) 8, n9 (arg4 and arg5 both named) 8.
+
+- [s6] tools/gcc-2.7.2/sched.c:2435 already contains a BB2_RANK_DEBUG env-gated fprintf in rank_for_schedule, but the shipped cc1 binary contains none of RANKDBG/DBRDBG/ALLOCDBG, so the instrumented-cc1 route is closed without rebuilding the compiler.
+
+- [s6] src/system.c holds the inherited 8/91 candidate at session end (re-verified: sandbox score 8, build_insns 91); no build-pipeline file was touched and no campaign or background process was started this session.

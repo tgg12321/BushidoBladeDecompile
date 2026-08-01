@@ -1,8 +1,8 @@
 {
  "func": "saEft01Init",
  "file": "system",
- "session_count": 5,
- "current_modality": "permuter",
+ "session_count": 6,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -33,23 +33,29 @@
    "floor": 8,
    "modality": "permuter",
    "headline": "Session-4's distance-7 form is a DIFFERENT PROGRAM (its pointer re-base makes arg5 = tbl[i0+i1], target passes tbl[i1]); the honest faithful floor is 8/91, the arg block is now closed at the source-or"
+  },
+  {
+   "session": 6,
+   "floor": 8,
+   "modality": "forensics",
+   "headline": "Forensics: the arg block's SHAPE is decided at expand (inline argument => load emitted straight into $a3 last; named local => load at the statement) and its ORDER by sched1's INSN_PRIORITY + dependenc"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The remaining argument-block distance is the FOURTH argument's address chain landing in $v1 and being consumed early, where target keeps it in $a0 and consumes it last \u2014 and the lever is something that keeps a0 free and defers the load, not the ordering of the two lookups (which is now exhausted).",
-   "mechanism": "Target's schedule is `lbu a0,0(s1)` FIRST but `lw a3,0(a0)` LAST, with the arg5 chain (v0 -> v1 -> sw 16(sp)) and the arg2 chain (D_800A11D5 -> s3 -> lw a2) both completing in between. Our build issues the whole idx[0] chain contiguously through $v1 and finishes it before the arg5 store. Since declaration order is inert and the inline-fourth-argument spelling regresses 6, the remaining degrees of freedom are: which statement the idx[0] BYTE load belongs to (it could be a separately named byte local, splitting `lbu` from the `sll/addu/lw` chain), and where the D_800F19C0 load sits relative to it.",
-   "next_probe": "Sweep spellings that split the fourth argument's chain across two statements \u2014 `s32 i0 = idx_1494[0]; ... arg4 = tbl_125c[i0];` with the intervening statements varied (the D_800F19C0 read, the tbl_11dc[D_800A11D5] lookup named, the arg5 lookup named) \u2014 and spellings that name the fifth argument's chain head instead. Screen with tmp/grind/saEft01Init/s5/score.py; read the block with tmp/grind/saEft01Init/s5/odv.sh <variant>, which builds a throwaway workspace from src and prints the positional diff."
+   "hypothesis": "The whole argument-block residual is now ONE quantity: the idx_1494[0] address chain must outrank the D_800A11D5 chain in sched1's INSN_PRIORITY so its lbu is issued first and its load last, giving it the block-long live range that lands it in $a0.",
+   "mechanism": "rank_for_schedule (sched.c:2399) sorts the ready list by INSN_PRIORITY = longest path to the block end, then by the dependence class relative to last_scheduled_insn (sched.c:2412-2449), then by INSN_LUID (2452-2455, proven inert here). The two chains are isomorphic \u2014 lbu -> sll -> addu -> lw <hard arg reg> -> call \u2014 so they tie on priority and the class rule breaks the tie toward D_800A11D5. Only a DAG change can separate them.",
+   "next_probe": "Enumerate the semantically faithful DAG changes that lengthen the idx_1494[0] chain's path to the call or shorten the D_800A11D5 chain's, and measure each: (a) reading D_800A11D5 through the tbl_11dc pointer or another already-live pointer instead of as a bare symbol_ref (removes/adds a link); (b) declaring idx_1494 or the tables with a different element width so the address chain gains or loses the sll; (c) hoisting the D_800A11D5 byte read out of the block entirely (it is loop-invariant) so its chain no longer competes. Screen with tmp/grind/saEft01Init/s6/score.py and confirm the DAG effect in the .sched order with s6/order.py <tag> sched \u2014 do NOT re-try statement reordering, which is proven inert."
   },
   {
-   "hypothesis": "The `cnt = k;` mask staging (session-4 lever 1) can be replaced by a spelling outside the variable-reuse family, now that its exact mechanism is known: the stage must land in a pseudo that already has a live range (a fresh local is byte-inert).",
-   "mechanism": "Session 3's F8 established loop.c:695's user-variable gate; session 4 established that a fresh local for the stage is inert, so the lever is specifically the reuse of a pseudo with an existing live range. Any replacement must give the mask value a second pseudo whose live range predates the mask test WITHOUT introducing a variable whose only purpose is that reuse.",
-   "next_probe": "Enumerate the locals live at the `check:` join (v0, cnt, ret, k, the three table pointers \u2014 note v0 and ret are already measured dead as holders, H8/H13/H16) and measure the mask stage through each remaining one; then try spellings where the mask test consumes a value the loop already computes rather than a staged constant. If none is clean, the completion claim must carry a /* FAKE */ annotation plus the sessions 1-5 exhaustion record into cheat-reviewer."
+   "hypothesis": "The 14/91 inline-arg4 family, not the 8/91 named-arg4 candidate, is the correct chassis for the argument block, so a permuter campaign or hand sweep seeded there can reach a lower true floor even though its starting score is higher.",
+   "mechanism": "Session 6 proved the 8/91 form's fourth argument has the wrong expand-time RTL (a standalone load coalesced onto $a3 early) while the inline form has target's (`set (reg a3) (mem ...)` emitted last). Score is therefore a misleading ranking between the two basins, exactly as sessions 4 and 5 found the permuter's weighted score to be for this function. The inline family's best member is n4 at 13/91.",
+   "next_probe": "Build a permuter workspace from the n4 chassis (tmp/grind/saEft01Init/s6/variants/n4.c) using tmp/grind/saEft01Init/s5/mkws.sh + mkws2b.sh, run one fresh-seed campaign with tools/permuter_campaign.py, and screen EVERY find through the engine sandbox with s5/pick.py + run_screen.sh (never rank by weighted score). Wait for it in-turn with `permuter_campaign.py wait` and harvest with --stop before finishing."
   },
   {
-   "hypothesis": "The session-3 F7 tail (+1: target fills the `beqz $v0` delay slot with `move v0,zero`, we emit a nop) is reachable, and it is now the SMALLER half of the residual rather than the larger one.",
-   "mechanism": "Unchanged from session 3's F7: reorg's fill_slots_from_thread consumes the analogous block for the FLAG exit in the same function but refuses it for the mask exit, and the structural difference visible in the .dbr dump is that the mask exit's fall-through thread is the loop-condition JUMP_INSN already turned into a SEQUENCE by fill_simple_delay_slots.",
-   "next_probe": "Session 3 killed every exit SPELLING and label order (8 forms, byte-identical 19/93), so do not re-run those. The un-run half of F7 is the C that puts an ORDINARY INSN between the mask branch and the loop-condition branch without that insn being eaten by fill_simple_delay_slots first (session 3's w2 failed exactly there). Regenerate RTL with tmp/grind/saEft01Init/s3/dbr.sh and read the tail with dbrscan.py."
+   "hypothesis": "The session-3 F7 tail (+1: target fills the `beqz $v0` delay slot with `move v0,zero`, we emit a nop) is the smaller half of the residual and is still open, untouched by session 6.",
+   "mechanism": "Unchanged from session 3's F7: reorg's fill_slots_from_thread consumes the analogous block for the FLAG exit in the same function but refuses it for the mask exit, because the mask exit's fall-through thread is the loop-condition JUMP_INSN already turned into a SEQUENCE by fill_simple_delay_slots.",
+   "next_probe": "Unchanged and still un-run: find C that puts an ORDINARY INSN between the mask branch and the loop-condition branch without that insn being eaten by fill_simple_delay_slots first (session 3's w2 failed exactly there). Do not re-run the eight exit spellings and label orders session 3 killed. Regenerate RTL with tmp/grind/saEft01Init/s3/dbr.sh and read the tail with dbrscan.py; note BB2_DBR_DEBUG is inert in the shipped cc1 (re-confirmed in session 6)."
   }
  ],
  "judge_constraints": [],

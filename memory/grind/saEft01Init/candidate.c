@@ -62,6 +62,28 @@
  *       `D_800F19C0` load moves with it;
  *   (b) session-3 F7 — target fills the `beqz $v0` delay slot with
  *       `move v0,zero`; we emit a `nop`.
+ *
+ * SESSION-6 FORENSICS — READ BEFORE SPENDING ANY MORE TURNS ON (a):
+ *   * The `arg4` local ABOVE IS STRUCTURALLY WRONG, even though it scores 8.
+ *     From the `.rtl` (raw expand) dump: a NAMED argument's load is emitted at
+ *     its statement position — `(set (reg/v 88) (mem (reg 93)))` — plus a copy
+ *     `(set (reg a3) (reg/v 88))`, and `local_alloc` gives pseudo 88 `$a3` by
+ *     copy preference, so the LOAD lands on `$a3` EARLY.  An INLINE argument's
+ *     load is emitted by `expand_call` DIRECTLY into the hard reg as the LAST
+ *     insn of the argument sequence — `(set (reg:SI 7 a3) (mem (reg 99)))` —
+ *     which is target's shape (`lw a3,0(a0)` is target's last memory ref).
+ *     combine plays no part (its `REG_USERVAR_P` guards are
+ *     `SMALL_REGISTER_CLASSES`-gated; mips.h does not define it).
+ *     The all-inline form is banked at
+ *     `rejected/arg4-inline-is-target-expand-shape-but-14.c` at 14/91.
+ *   * Source STATEMENT placement inside this basic block is byte-inert: four
+ *     spellings with genuinely different expand LUID orders (including one
+ *     that makes the `idx_1494[0]` `lbu` the block's first insn) all emit
+ *     byte-identical code, because `rank_for_schedule` decides on
+ *     `INSN_PRIORITY` and the dependence-class test (`sched.c:2412-2449`),
+ *     never reaching the `INSN_LUID` tie-break at `sched.c:2452-2455`.
+ *   * The `$a0` in target is not an allocator choice: it falls out of that
+ *     chain being live across the WHOLE block, which is a sched1 consequence.
  */
 s32 saEft01Init(s32 a0) {
     s32 v0;
