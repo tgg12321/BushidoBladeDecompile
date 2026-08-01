@@ -1656,3 +1656,129 @@ argument spelling and re-score both.
 - probe: i2 (arg4 address named, inline deref), i6 (arg5 address named, arg4 fully inline), i8 (arg4 address named and assigned BEFORE the tslTm2LoadImage_2 call), i9 (both addresses named); s10/score.py.
 - result: 9 / 14 / 31 at 92 insns / 10. i8 is the informative failure: hoisting the pointer above the call makes it live across a call, so it takes a callee-save and destroys the entire $s0-$s3 map that the do{}while(0) wrapper buys. Nineteen argument spellings are now measured and 7 remains the floor of the whole family.
 - verdict: KILLED
+
+
+## [s11] F22 route (1) - target's idx[0] address chain starts from something that is itself loaded, giving its `lw` an extra unit of dependence depth.
+- mechanism: session 10 observed that our `lw a2` chain reaches level 3 with a single load-use edge only because it starts one level deeper (D_800A11D5 is reached through a lui+lbu pair rather than through a base pointer already live in a register). Route (1) asked whether the Sony CD_datasync reference reaches the D_800A1494 index base through memory the same way.
+- probe: direct inspection of asm/funcs/saEft01Init.s lines 50-51.
+- result: It does not. Target emits `lbu $a0, 0x0($s1)` and `lbu $v0, 0x1($s1)` - the index base is a hoisted pointer already live in a callee-save register, exactly as our candidate has it, so target's idx[0] chain has the SAME depth structure as ours (1,2,2,-) and the extra level at its `lw` cannot come from the head of the chain. No C change is available on this route; it is answered by inspection, not by measurement.
+- verdict: KILLED
+
+## [s11] The residual is a dependence-DEPTH problem in the idx[0] address chain (F22's framing).
+- mechanism: F22 assumed target's `lw a3` is a level-2 insn that wins a tie-break against `sw 16(sp)` and `lw a2` at level 3.
+- probe: Recomputed the whole block's priority lattice from target's own emitted order (asm/funcs/saEft01Init.s, block idx 46-61) using session 10's confirmed backward-scheduler rule, and checked monotonicity.
+- result: Target's emitted order is EXACTLY ascending in priority - 1,1,1,2,2,2,2,2,2,3,3,3,4,4 - which is what a backward list scheduler produces when it always pops the highest-priority ready insn. So `lw a2` and `lw a3` are level FOUR, a whole level ABOVE `sw 16(sp)`, not level 2 tie-breaking below it. The only edge that puts a load a level above the outgoing-arg store is a store->load memory dependence on the 16(sp) outgoing-argument slot, i.e. in target's RTL stream the `sw` is emitted BEFORE both register-arg loads while both `lbu`s and the arg5 value chain are emitted before the `sw`. F22's tie-break framing is wrong; the real question is emission ORDER across the stack store, not chain depth.
+- verdict: KILLED (as stated) / superseded by F25
+
+## [s11] The do{}while(0) wrapper's EXTENT is a free structural variable that can be tuned.
+- mechanism: The wrapper's stated mechanism is flow.c's loop_depth ref-weighting for the three table pointers, which only requires the refs to sit between NOTE_INSN_LOOP_BEG and NOTE_INSN_LOOP_END; which OTHER statements share the wrapper should therefore be free.
+- probe: Seven extents measured on the candidate chassis (tmp/grind/saEft01Init/s11/gen.py, variants w1-w7): printf-only; opens after tslTm2LoadImage_2; plus `v0 = -1`; minus cdrom_ClearIrq; arg4 declared at function scope; whole do_timeout section incl. the `goto check`; arg4's store hoisted above the wrapper.
+- result: 8, 8, 7, 7, 7, 7, 16-at-92. The extent is byte-inert in both directions provided the wrapper contains BOTH the `tslTm2LoadImage_2` call and the arg4 store. Dropping the call out costs exactly one; lifting the arg4 store out costs nine plus an instruction (the value goes live across a call, takes a callee-save, and the $s0-$s3 map the wrapper buys collapses - session 10's i8 result reproduced from the other direction). The wrapper is not a tunable knob; it has one working configuration and the candidate is already in it.
+- verdict: KILLED
+
+## [s11] The residual is an ORDER problem between the three argument chains, and arg3's spelling - never touched in 27 prior forms - is the untried degree of freedom.
+- mechanism: Target's chain order is arg3, arg4, arg5+store, then the three register loads; the candidate gets arg3-before-arg5 right and arg4 wrong, i2 gets arg4 right and arg3 wrong. Naming arg3's address or value should let the order be set from C.
+- probe: Eight spellings (tmp/grind/saEft01Init/s11/gen2.py, n1-n8): arg3 address named alone / with arg4 address / with the candidate's arg4 value local / after arg4's address / with all three addresses named in target's order / arg3 value named alone / arg3+arg4 values named / arg3+arg5 addresses named with arg4 inline.
+- result: 13, 13, 15, 10, 14, 12, 14-at-90, 14. Every arg3 spelling regresses; fully-inline arg3 (the candidate's) is the family optimum. The arg3 axis is closed.
+- verdict: KILLED
+
+## [s11] Declaration order and initialisation order of the three hoisted table pointers are live levers on the argument block's LUID tie-breaks.
+- mechanism: Both feed pseudo numbering, which feeds INSN_LUID, which is what rank_for_schedule uses to break the seven-way priority-2 tie session 10 measured.
+- probe: Ten forms (tmp/grind/saEft01Init/s11/gen3.py, o1-o10) sweeping the two axes independently and together, with the argument block held at the candidate's spelling.
+- result: DECLARATION order is byte-inert (o6/o7/o8 all 7). INITIALISATION order is live and the candidate's order (tbl_11dc, idx_1494, tbl_125c) is the unique optimum: the other five permutations score 8, 11, 11, 12, 12. So the axis is real but already at its best value, and the candidate's assignment order - which no prior session had justified - is now measured as load-bearing rather than arbitrary.
+- verdict: CONFIRMED (axis real) / KILLED (no improvement available)
+
+## [s11] The argument block's three attractors can be bridged by bolting arg5 spellings onto the i2 (arg4-address-named) shape.
+- mechanism: i2 is the only measured spelling with target's late `lw a3`; its two remaining defects are the reversed `lbu` pair at the block head and the D_800A11D5 chain landing after the `sw`. Both look like LUID tie-breaks that an extra arg5 statement could shift.
+- probe: Six forms (tmp/grind/saEft01Init/s11/gen4.py, q1-q6): i2 plus arg5's index byte named; arg4's index byte named then the pointer built from it; i2 plus arg5's value named; i2 written as `tbl_125c + idx_1494[0]` pointer arithmetic; arg4 value named plus arg5 address named; candidate plus arg5's index byte named.
+- result: 9, 9, 9, 9, 7, 7. The attractors are RIGID - every i2-family form is byte-identical to i2 and every candidate-family form is byte-identical to the candidate. Nothing bolted onto either shape moves the block by a single instruction.
+- verdict: KILLED
+
+## [s11] calls.c's argument precompute is gated on loop nesting, so the do{}while(0) wrapper might be what forces our argument loads early.
+- mechanism: calls.c:1653-1664 copies a non-REG register-arg value into a pseudo (emitting the load EARLY) when `rtx_cost(value,SET) > 2 && preserve_subexpressions_p()`, and stmt.c:2435's `preserve_subexpressions_p` tests `loop_stack != 0` plus a short-loop UID window - so a do{}while(0) around the call could be what pulls our loads forward.
+- probe: Read stmt.c:2435-2451 and toplev.c:3387.
+- result: `preserve_subexpressions_p` returns 1 IMMEDIATELY when `flag_expensive_optimizations` is set, and toplev.c sets that for every `optimize >= 2` build - so at this project's -O2 the loop-nesting half of the predicate is dead code and the wrapper cannot affect argument expansion at all. Early-vs-late is decided purely by whether `args[i].value` is already a REG when the forward precompute loop reaches it: a named-local argument is a REG (its load already happened at the statement, hence EARLY), an inline array element is a MEM (its address is emitted here and its load is deferred to load_register_parameters, after the stack stores, hence LATE). This is the mechanical statement of the three-attractor structure and it also clears the wrapper of any suspicion in the argument block.
+- verdict: KILLED (as stated) - and it supplies F25's mechanism
+
+## Live frontier (for session 12)
+
+### F25 - target needs arg4's LOAD after the `sw 16(sp)` and arg4's ADDRESS chain before it; C has no spelling that splits them
+**Mechanism.**  calls.c:1615-1665 precomputes register args FORWARD; for an
+inline array-element argument `expand_expr` emits the address chain there and
+leaves the value a MEM, so the load is deferred to `load_register_parameters`
+which runs AFTER the stack-arg stores - that is target's split (address early,
+load late).  For a named-local argument the load already happened at the
+statement, so both go early.  Our problem is that when arg4 is inline, its
+address chain does NOT stay early either (the 13-attractor drags the whole chain
+to 57-61), and when it is named, the load comes early with the address (the
+7-attractor).  The missing question is WHY the inline form's address chain moves
+late in our build when calls.c's precompute loop should have emitted it before
+`store_one_arg`.
+**Next probe.**  Read `calls.c` around the stack-store loop (search for
+`store_one_arg` call sites and the `must_preallocate` / `args_size` block near
+lines 1277-1420 and 1667+) and establish the ACTUAL emission order of
+(a) the register-arg precompute loop, (b) `store_one_arg` for the single stack
+arg, (c) `load_register_parameters`.  If store_one_arg runs BEFORE the
+precompute loop, then target's shape requires arg4's address chain to be emitted
+outside the call altogether while its load stays inline - which is exactly the
+i2 spelling (9), and the remaining 9 is then two LUID tie-breaks rather than a
+structural gap; dump sched1's output order for i2 with s10/idump.sh + schedscan.py
+and check what LUID order the two `lbu`s and the D_800A11D5 chain actually get.
+
+### F23 - cheat-review status of the do{}while(0) wrapper (unchanged, inherited)
+Still the candidate's single match device and still never seen by a fresh
+adversarial `cheat-reviewer`.  NOTE the s11 correction: the wrapper's mechanism
+is NOT anything to do with argument expansion (calls.c's precompute is not
+loop-gated at -O2); it is purely flow.c's `loop_depth` ref-weighting for the
+three table pointers, and s11's w1/w2/w7 measurements pin its one working
+configuration.  Review it against `.claude/rules/do-while-zero-exception.md`
+with H37/H40 (both alternative routes arithmetically dead) plus s11's
+wrapper-extent sweep as the lever-exhaustion record.
+
+### F24 - the two sibling alarm functions inherit this (unchanged, inherited)
+`cpu_side_move_dir_4` (= CD_sync, ~src/system.c:366) and the function at
+~src/system.c:480 (= CD_ready) carry the same hand-derived goto shape and the
+same allocation problem.  Once saEft01Init closes, apply the same single
+do{}while(0) wrapper plus the named-arg4 argument spelling and re-score both.
+
+## [s11] F22 route (1): target's idx[0] address chain starts from something that is itself loaded, giving its lw an extra unit of dependence depth.
+- mechanism: Session 10 observed our lw a2 chain reaches level 3 with a single load-use edge only because it starts one level deeper (D_800A11D5 is reached through a lui+lbu pair rather than a base pointer already live in a register). Route (1) asked whether the Sony CD_datasync reference reaches the D_800A1494 index base through memory the same way.
+- probe: Direct inspection of asm/funcs/saEft01Init.s lines 50-51.
+- result: It does not. Target emits `lbu $a0, 0x0($s1)` and `lbu $v0, 0x1($s1)` — the index base is a hoisted pointer already live in a callee-save register, exactly as our candidate has it. Target's idx[0] chain has the SAME depth structure as ours, so the extra level at its lw cannot come from the head of the chain. Answered by inspection; no C change exists on this route.
+- verdict: KILLED
+
+## [s11] F22's framing: the residual 7 is a dependence-DEPTH problem in the idx[0] chain, where target's lw a3 sits at level 2 and wins a tie-break against sw 16(sp) and lw a2 at level 3.
+- mechanism: Session 10's INSN_PRIORITY tables plus rank_for_schedule's tie-breaks (dependence class vs last_scheduled_insn, then INSN_LUID).
+- probe: Recomputed the whole block's priority lattice from target's own emitted order (asm/funcs/saEft01Init.s, build idx 46-61) using session 10's confirmed backward-scheduler rule, and checked the sequence for monotonicity.
+- result: Target's emitted order is exactly ascending in priority — 1,1,1,2,2,2,2,2,2,3,3,3,4,4 — which is what a backward list scheduler produces when it always pops the highest-priority ready insn. So lw a2 and lw a3 are level FOUR, a whole level ABOVE sw 16(sp), not level-2 tie-break winners below it. The only edge that puts a load a level above the outgoing-arg store is a store->load memory dependence on the 16(sp) outgoing-argument slot: in target's RTL stream the sw is emitted BEFORE both register-arg loads while both lbu's and the arg5 value chain are emitted before the sw. The real question is emission ORDER across the stack store, not chain depth.
+- verdict: KILLED
+
+## [s11] The do{}while(0) wrapper's EXTENT is a free structural variable that can be tuned to buy the argument block's order.
+- mechanism: The wrapper's stated mechanism is flow.c's loop_depth ref-weighting for the three table pointers, which only needs the refs to sit between NOTE_INSN_LOOP_BEG and NOTE_INSN_LOOP_END; which OTHER statements share the wrapper should be free.
+- probe: Seven extents on the candidate chassis (tmp/grind/saEft01Init/s11/gen.py, w1-w7): printf-only; opening after tslTm2LoadImage_2; plus `v0 = -1;`; minus cdrom_ClearIrq; arg4 declared at function scope; the whole do_timeout section incl. the goto; arg4's store hoisted above the wrapper.
+- result: 8, 8, 7, 7, 7, 7, 16-at-92-insns. The extent is byte-inert in both directions provided the wrapper contains BOTH the tslTm2LoadImage_2 call and the arg4 store. Dropping the call out costs exactly one; lifting the arg4 store out costs nine plus an instruction — the value goes live across a call, takes a callee-save and the $s0-$s3 map collapses, reproducing session 10's i8 result from the other direction. The wrapper has one working configuration and the candidate is already in it.
+- verdict: KILLED
+
+## [s11] The residual is an ORDER problem between the three argument chains, and arg3's spelling (tbl_11dc[D_800A11D5]) — untouched in all 27 prior forms — is the missing degree of freedom.
+- mechanism: Target's chain order is arg3, arg4, arg5+store, then the three register loads. The candidate gets arg3-before-arg5 right and arg4 wrong; i2 gets arg4 right and arg3 wrong. Naming arg3's address or value should let the order be set from C.
+- probe: Eight spellings (tmp/grind/saEft01Init/s11/gen2.py, n1-n8): arg3 address named alone / with arg4's address / with the candidate's arg4 value local / after arg4's address / all three addresses named in target's chain order / arg3 value named alone / arg3+arg4 values named / arg3+arg5 addresses named with arg4 inline.
+- result: 13, 13, 15, 10, 14, 12, 14-at-90-insns, 14. Every arg3 spelling regresses; the candidate's fully-inline arg3 is the family optimum. The arg3 axis is closed.
+- verdict: KILLED
+
+## [s11] Declaration order and initialisation order of the three hoisted table pointers are live levers on the argument block's LUID tie-breaks.
+- mechanism: Both feed pseudo numbering, which feeds INSN_LUID, which is what rank_for_schedule uses to break the seven-way priority-2 tie session 10 measured.
+- probe: Ten forms (tmp/grind/saEft01Init/s11/gen3.py, o1-o10) sweeping the two axes independently and together, with the argument block held at the candidate's spelling.
+- result: DECLARATION order is byte-inert (o6/o7/o8 all 7). INITIALISATION order is live and the candidate's order (tbl_11dc, idx_1494, tbl_125c) is the unique optimum: the other five permutations score 8, 11, 11, 12, 12. The axis is real but already at its best value — and the candidate's assignment order, which no prior session had justified, is now measured as load-bearing rather than arbitrary.
+- verdict: CONFIRMED
+
+## [s11] The argument block's attractors can be bridged by bolting extra arg5 spellings onto the i2 (arg4-address-named, 9/91) shape, which is the only measured form with target's late lw a3.
+- mechanism: i2's two remaining defects — the reversed lbu pair at the block head and the D_800A11D5 chain landing after the sw — both look like LUID tie-breaks an extra arg5 statement could shift.
+- probe: Six forms (tmp/grind/saEft01Init/s11/gen4.py, q1-q6): i2 plus arg5's index byte named; arg4's index byte named then the pointer built from it; i2 plus arg5's value named; i2 written with pointer arithmetic instead of &tbl[i]; arg4 value named plus arg5 address named; candidate plus arg5's index byte named.
+- result: 9, 9, 9, 9, 7, 7. The attractors are RIGID — every i2-family form is byte-identical to i2 and every candidate-family form is byte-identical to the candidate. Nothing bolted onto either shape moves the block by a single instruction. The block has exactly three reachable states: 7 (arg4 named value), 9 (arg4 named address), 13 (arg4 inline).
+- verdict: KILLED
+
+## [s11] calls.c's argument precompute is gated on loop nesting, so the do{}while(0) wrapper may be what forces our argument loads early.
+- mechanism: calls.c:1653-1664 copies a non-REG register-arg value into a pseudo (emitting the load EARLY) when rtx_cost(value,SET) > 2 && preserve_subexpressions_p(), and stmt.c:2435's preserve_subexpressions_p tests loop_stack != 0 plus a short-loop UID window — so a do{}while(0) around the call could pull our loads forward.
+- probe: Read tools/gcc-2.7.2/stmt.c:2435-2451 and tools/gcc-2.7.2/toplev.c:3387; confirmed SMALL_REGISTER_CLASSES is undefined for mips.
+- result: preserve_subexpressions_p returns 1 IMMEDIATELY when flag_expensive_optimizations is set, and toplev.c sets that for every optimize >= 2 build — so at this project's -O2 the loop-nesting half of the predicate is dead code and the wrapper cannot affect argument expansion at all. Early-vs-late is decided purely by whether args[i].value is already a REG when the FORWARD precompute loop reaches it: a named-local argument is a REG (its load already happened at the statement, hence early), an inline array element is a MEM (its address is emitted there and its load deferred to load_register_parameters, after the stack stores, hence late). This is the mechanical statement of the three-attractor structure, and it clears the wrapper of any role in the argument block.
+- verdict: KILLED

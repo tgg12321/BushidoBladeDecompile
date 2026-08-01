@@ -104,9 +104,49 @@
  *     51-54 and does not overlap arg5's value in `$v1`, target's is live 46-61
  *     and does, so the conflict graphs differ because the ORDER differs.
  *
- * NEXT: hypotheses.md F22 — find what gives target's idx[0] chain an extra
- * unit of dependence depth at its `lw` (or what drops `sw 16(sp)` / `lw a2`
- * below it).  Do NOT re-sweep argument spellings; nineteen are banked.
+ * ===========================================================================
+ * SESSION 11 (structural) — BODY STILL UNCHANGED; THREE MORE AXES CLOSED
+ * ===========================================================================
+ * Re-applied and re-measured at exactly 7 / 91.  Thirty-one further forms on
+ * three axes nobody had touched; all three are dead and the model of the 7 is
+ * now positional rather than tie-break-theoretical:
+ *
+ *   * Target's emitted order in the argument block is EXACTLY ascending in
+ *     scheduler priority (1,1,1,2,2,2,2,2,2,3,3,3,4,4 over build idx 46-61),
+ *     which is what a backward list scheduler produces when it always pops the
+ *     highest-priority ready insn.  So target's `lw a3` is a level-FOUR insn,
+ *     a whole level ABOVE `sw 16(sp)` — not a level-2 insn winning a tie, as
+ *     session 10's F22 assumed.  The only edge that does that is a store->load
+ *     memory dependence on the 16(sp) outgoing-arg slot: in target's RTL stream
+ *     the `sw` precedes both register-arg loads while both `lbu`s and the arg5
+ *     value chain precede the `sw`.
+ *   * `calls.c:1615-1665` is the mechanism.  The register-arg precompute loop
+ *     runs FORWARD; for an INLINE array-element argument `expand_expr` emits
+ *     the address chain there and returns a MEM, so the load is deferred to
+ *     `load_register_parameters` (after the stack stores) — target's split.
+ *     For a NAMED-local argument the value is already a REG and the load
+ *     happened at the statement — ours.  And the loop-nesting half of
+ *     `preserve_subexpressions_p` (stmt.c:2435) is dead code here, because
+ *     `toplev.c:3387` sets `flag_expensive_optimizations` for every -O2 build:
+ *     the do{}while(0) wrapper has NO influence on argument expansion.
+ *   * The block has exactly THREE reachable states and they are RIGID:
+ *     arg4-as-named-VALUE = 7 (this file), arg4-as-named-ADDRESS = 9 (i2),
+ *     arg4-fully-inline = 13 (i1).  Six more bolt-ons (q1-q6) were byte-
+ *     identical to whichever attractor they started from.
+ *   * DEAD AXES measured this session: do{}while(0) wrapper EXTENT (7 forms —
+ *     byte-inert in both directions provided the wrapper contains BOTH the
+ *     tslTm2LoadImage_2 call and the arg4 store; dropping the call out costs 1,
+ *     lifting the store out costs 9 and an instruction); the arg3
+ *     `tbl_11dc[D_800A11D5]` spelling (8 forms, 10-15, all regressions —
+ *     fully-inline arg3 is the family optimum); the pointers' DECLARATION order
+ *     (byte-inert).  Their INITIALISATION order is live and the order written
+ *     below is the unique optimum (the five permutations score 8/11/11/12/12) —
+ *     do not "tidy" it.
+ *
+ * NEXT: hypotheses.md F25 — establish calls.c's actual emission order of
+ * (precompute loop / store_one_arg / load_register_parameters) and explain why
+ * the inline-arg4 form drags its ADDRESS chain late too.  Do NOT re-sweep
+ * argument spellings; fifty-one forms are banked.
  * ===========================================================================
  */
 s32 saEft01Init(s32 a0) {

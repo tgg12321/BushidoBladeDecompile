@@ -1158,3 +1158,150 @@ form is already right, or is scheduling.
 - [s10] Tooling of record for priority questions: tmp/grind/saEft01Init/s10/findprio.py (resolves cc1.log's per-function UID restarts by matching SET-insn UID multisets against the -da .sched dump, 21/21 overlap here) and s10/schedscan.py (compact one-line-per-insn view of the scheduled RTL). RANKDBG lines are NOT emitted in this function's regions, so the tie-break itself still has to be inferred rather than read.
 
 - [s10] Housekeeping: src/system.c restored to HEAD with git checkout and verified clean; no build-pipeline, rule, engine, tools or queue file touched; no background process started; the instrumented cc1 printed CODEGEN-IDENTICAL against the frozen build/cc1. NOTE: tmp/grind/saEft01Init/s10/system.c.candbase IS the 7/91 candidate body (unlike s9's, which was the 8/91 one), so score.py's '[src restored]' restores to the CANDIDATE, not to HEAD.
+
+
+## [s11] structural — the positional model of the residual 7, read off target itself
+
+Floor unchanged at **7 / 91** (candidate re-applied and re-measured this session
+via `tmp/grind/saEft01Init/s11/setup.py`; `sandbox saEft01Init --disable all` =
+7, build_insns 91).  Thirty-one further C forms measured across three axes that
+had never been touched; all three axes are now dead, and the model of what the
+7 IS became much sharper.
+
+### The scheduler's emitted order in target is EXACTLY ascending priority
+
+Read straight off `asm/funcs/saEft01Init.s` lines 50-65 (block idx 46-61) using
+session 10's confirmed rule (GCC 2.7.2 schedules backward; printed priority is
+dependence DEPTH from the block top; higher priority = emitted LATER):
+
+```
+46 lbu a0,0(s1)        level 1     (idx[0] byte, base already live in $s1)
+47 lbu v0,1(s1)        level 1     (idx[1] byte)
+48 lui a1 / 49 lw a1   level 1     (D_800F19C0, symbol-addressed)
+50 sll v0,2            level 2     idx[1] chain
+51 addu v0,v0,s0       level 2
+52 sll a0,a0,2         level 2     idx[0] chain
+53 lw v1,0(v0)         level 2     arg5 VALUE
+54 lui v0 / 55 lbu v0  level 2     D_800A11D5 (one level deeper: lui-based)
+56 addu a0,a0,s0       level 2     idx[0] chain
+57 sll v0,2            level 3     arg3 chain
+58 addu v0,v0,s3       level 3
+59 sw v1,0x10(sp)      level 3     arg5 stack home
+60 lw a2,0(v0)         level 4     arg3 load
+61 lw a3,0(a0)         level 4     arg4 load
+```
+
+The sequence 1,1,1,2,2,2,2,2,2,3,3,3,4,4 is monotone — which is exactly what a
+backward list scheduler emits when it always pops the highest-priority ready
+insn.  So target's `lw a3` is NOT a level-2 insn that got lucky on a tie-break
+(session 10's reading): it is a **level-4** insn, one whole level ABOVE
+`sw 16(sp)`.  The only edge that can put a load a level above the outgoing-arg
+store is a **store->load memory dependence on the outgoing-argument stack
+slot** — i.e. in target's RTL stream the `sw 16(sp)` is emitted BEFORE the
+`lw a2` and `lw a3`, while both `lbu`s and the whole arg5 value chain are
+emitted before the `sw`.
+
+This reframes F22 completely.  The question is NOT "how do I give the idx[0]
+address chain one more unit of dependence depth" (F22's route 1 — see the kill
+below); it is "how do I get arg4's LOAD emitted after the arg5 stack store while
+its ADDRESS chain is still emitted before it".
+
+### calls.c is the mechanism, and it is not loop-gated
+
+`tools/gcc-2.7.2/calls.c:1615-1665` — "Precompute all register parameters" runs
+FORWARD (i = 0 .. num_actuals-1) over the register args, calls `expand_expr` on
+each (which emits the ADDRESS computation and, for an array element, returns a
+MEM), and then at 1653-1664 optionally forces the value into a pseudo:
+
+```c
+if (! (REG || SUBREG(REG))  &&  mode != BLKmode  &&  rtx_cost (value, SET) > 2
+    && preserve_subexpressions_p ())            /* SMALL_REGISTER_CLASSES undef on mips */
+  args[i].value = copy_to_mode_reg (args[i].mode, args[i].value);
+```
+
+and `stmt.c:2435 preserve_subexpressions_p()` returns 1 immediately when
+`flag_expensive_optimizations` is set — which `toplev.c:3387` does for every
+`optimize >= 2` build, i.e. always for this project's `-O2`.  So the loop-nesting
+half of that predicate (`loop_stack`, the short-loop UID window) is dead code in
+our builds: **the do{}while(0) wrapper cannot be influencing argument expansion
+at all.**  What decides early-vs-late is purely whether `args[i].value` is
+already a REG when the precompute loop sees it, i.e. whether the C wrote the
+argument as a named local (REG -> nothing emitted here, the load already happened
+at the statement) or inline (MEM -> address emitted here, load deferred to
+`load_register_parameters` after the stack stores).
+
+### The argument block has exactly THREE reachable states, and none is target
+
+Twenty-seven spellings were already banked; this session added another twenty-
+four (wrapper-extent 7, arg3-axis 8, decl/init-order 10 -- listed below -- plus
+6 i2-repairs).  Every single one lands on one of three attractors:
+
+| attractor | C shape | score | positional signature |
+|---|---|---|---|
+| 7 / 91 | arg4 written as a named VALUE local | 7 | both `lbu` at 46/47 in target's order; `lw a3` six insns EARLY at 54 |
+| 9 / 91 | arg4 written as a named ADDRESS pointer with inline deref | 9 | `lw a3` late (58); the two `lbu` REVERSED at 46/47; D_800A11D5 chain pushed past the `sw` |
+| 13 / 91 | arg4 fully inline | 13 | `lw a3` at exactly 61 (target's slot) but the whole idx[0] chain dragged to 57-61 |
+
+q1/q3/q4 (i2 plus arg5's index named / arg5's value named / pointer arithmetic
+instead of `&tbl[i]`) are all 9, byte-identical to i2; q5/q6 (candidate plus an
+arg5 index/value local) are all 7, byte-identical to the candidate.  The
+attractors are rigid: nothing bolted onto them moves the block.
+
+### Axis 1 — do{}while(0) wrapper EXTENT (7 forms).  DEAD, with a boundary.
+
+w1 (wrapper around the printf statement only, `tslTm2LoadImage_2` outside) = 8;
+w2 (wrapper opens after `tslTm2LoadImage_2`, keeps `cdrom_ClearIrq` inside) = 8;
+w3 (candidate extent plus `v0 = -1;` inside) = 7; w4 (candidate extent minus
+`cdrom_ClearIrq`) = 7; w5 (arg4 declared at function scope) = 7; w6 (the whole
+do_timeout section incl. `goto check` inside) = 7; w7 (arg4's store hoisted OUT
+of the wrapper, above it) = **16 at 92 insns**.
+
+So the wrapper's extent is byte-INERT in both directions as long as it contains
+(a) the `tslTm2LoadImage_2` call and (b) the arg4 store.  Dropping the call out
+of it costs exactly one; lifting the arg4 store out of it costs nine and an
+instruction, reproducing session 10's i8 result (the value goes live across a
+call, takes a callee-save, and the $s0-$s3 map collapses).
+
+### Axis 2 — the arg3 (`tbl_11dc[D_800A11D5]`) spelling (8 forms).  DEAD.
+
+Never touched in 27 prior spellings.  n1 (arg3 address named, then arg4 address
+named) 13; n2 (arg3 address named alone) 13; n3 (arg3 address named + the
+candidate's arg4 value local) 15; n4 (arg4 address then arg3 address) 10;
+n5 (all three addresses named in target's chain order) 14; n6 (arg3 VALUE named)
+12; n7 (arg3 then arg4 values named) 14 at 90 insns; n8 (arg3 + arg5 addresses
+named, arg4 inline) 14.  Every arg3 spelling regresses; the candidate's fully
+inline arg3 is the family optimum.
+
+### Axis 3 — declaration order vs initialisation order of the three pointers (10 forms).
+
+DECLARATION order is byte-inert: o6/o7/o8 permute `s32 *tbl_11dc; u8 *idx_1494;
+s32 *tbl_125c;` and all score 7.  INITIALISATION order is live and the
+candidate's (`tbl_11dc`, `idx_1494`, `tbl_125c`) is the unique optimum: o5
+(11dc, 125c, 1494) 8; o2/o4/o10 11; o1/o3/o9 12.  So the assignment order is
+load-bearing (it feeds pseudo numbering -> INSN_LUID -> the level-2 tie-breaks)
+and it is already at its best value.
+
+### Artifacts
+
+`tmp/grind/saEft01Init/s11/{gen,gen2,gen3,gen4,bank,ledger}.py`,
+`score.py` (s10's harness, re-pointed at WSL so the sandbox actually runs),
+`diff_cand.txt`, `diff_i1.txt`, `diff_i2.txt` (side-by-side vs target for the
+three attractors), `variants/*.c`.
+
+- [s11] Floor re-measured this session at 7 / 91 with the session-9/10 candidate body applied to src/system.c (sandbox saEft01Init --disable all: score 7, target_insns 91, build_insns 91). The instruction COUNT is exact; the whole residual is inside the debug_printf argument block, build idx 46-61.
+
+- [s11] Target's emitted argument block (asm/funcs/saEft01Init.s lines 50-65) is monotone-ascending in scheduler priority: lbu idx0 / lbu idx1 / lw a1 at level 1; sll+addu of both index chains, lw v1 (arg5 value) and the D_800A11D5 lbu at level 2; the arg3 sll+addu and sw v1,16(sp) at level 3; lw a2 and lw a3 at level 4. A backward list scheduler that always pops the highest-priority ready insn emits exactly this shape, so the ordering is fully explained without any tie-break.
+
+- [s11] Because target's two register-arg loads sit a whole level ABOVE the outgoing-arg store, target's RTL stream must emit `sw 16(sp)` BEFORE `lw a2` and `lw a3` (store->load memory dependence on the 16(sp) slot) while both lbu's and the arg5 value chain are emitted before it. Session 10's F22 (a dependence-depth deficit in the idx[0] address chain) is refuted: target's chain starts from `lbu 0($s1)`, a base already live in a callee-save, exactly like ours.
+
+- [s11] calls.c:1615-1665 precomputes register arguments in FORWARD order and only forces a value into a pseudo when it is not already a REG; stmt.c:2435 + toplev.c:3387 show the gating predicate preserve_subexpressions_p() is unconditionally 1 at -O2 (flag_expensive_optimizations). So an INLINE array-element argument has its address chain emitted in the precompute loop and its load deferred to load_register_parameters (after the stack stores) — target's split — while a NAMED-local argument has both emitted at the statement. This is the mechanism behind the three attractors.
+
+- [s11] The argument block has exactly THREE reachable states and they are rigid: arg4 as a named VALUE = 7/91 (both lbu at the block head in target's order, lw a3 six insns early at 54); arg4 as a named ADDRESS with inline deref = 9/91 (lw a3 late, the two lbu reversed, the D_800A11D5 chain pushed past the sw); arg4 fully inline = 13/91 (lw a3 at exactly target's idx 61 but the whole idx[0] chain dragged to 57-61). Six bolt-on variants (q1-q6) were byte-identical to whichever attractor they started from.
+
+- [s11] do{}while(0) wrapper EXTENT is a dead axis with a sharp boundary (7 forms): byte-inert in both directions as long as the wrapper contains BOTH the tslTm2LoadImage_2 call and the arg4 store. Excluding the call costs exactly one (8); hoisting the arg4 store above the wrapper costs nine and an instruction (16 at 92 insns) because the value goes live across a call and takes a callee-save, destroying the $s0-$s3 map.
+
+- [s11] The arg3 (tbl_11dc[D_800A11D5]) spelling axis is dead (8 forms, scores 10-15): named address alone 13, named address + arg4 address 13, named address + candidate arg4 15, arg4-address-then-arg3-address 10, all three addresses named in target's chain order 14, named value 12, arg3+arg4 values named 14 at 90 insns, arg3+arg5 addresses named with arg4 inline 14. Fully-inline arg3 is the family optimum.
+
+- [s11] The three table pointers' DECLARATION order is byte-inert (three permutations, all 7). Their INITIALISATION order is LIVE and the candidate's order (tbl_11dc, idx_1494, tbl_125c) is the unique optimum — the other five permutations score 8, 11, 11, 12, 12. Future sessions must not reorder those three assignments.
+
+- [s11] Fifty-one distinct C forms for this argument block are now banked across sessions 4-11 and 7/91 remains the floor of the entire family.

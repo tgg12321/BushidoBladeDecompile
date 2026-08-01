@@ -1,8 +1,8 @@
 {
  "func": "saEft01Init",
  "file": "system",
- "session_count": 10,
- "current_modality": "synthesis",
+ "session_count": 11,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -63,21 +63,27 @@
    "floor": 7,
    "modality": "synthesis",
    "headline": "Floor holds at 7/91; the instrumented cc1's real INSN_PRIORITY tables show GCC 2.7.2 schedules BACKWARD, kill F19's $a0 copy-preference mechanism, and decompose the residual into two independent sub-g"
+  },
+  {
+   "session": 11,
+   "floor": 7,
+   "modality": "structural",
+   "headline": "Floor holds at 7/91; target's argument block is EXACTLY ascending in scheduler priority, so its lw a3 is level FOUR (above the sw 16(sp)) not a level-2 tie-break winner \u2014 F22 is refuted and replaced, "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F22 - the whole remaining 7 is one question: spread the idx[0] address chain so its lbu is emitted at build idx 46 AND its lw a3 at idx 61, as target does.",
-   "mechanism": "In the backward scheduler the chain's lw must be PICKED FIRST (so it lands last) while its lbu must be PICKED LAST (so it lands first), i.e. the chain has to span the whole priority lattice - depth 3+ at the lw and depth 1 at the lbu. Ours is pinned at depths 1,2,2,2 by insn_cost (one load-use edge at lbu->sll, then two zero-cost edges), which puts lw a3 a whole level BELOW sw 16(sp) and lw a2, so those two are emitted after it. Argument spelling is exhausted (nineteen measured, 7 is the family floor) and register allocation is downstream, so the only remaining variable is the dependence DEPTH of that chain.",
-   "next_probe": "Two cheap routes. (1) Note that our lw a2 chain (108 lbu -> 111 sll -> 113 addu -> 131 lw, the tbl_11dc[D_800A11D5] argument) reaches level 3 with the SAME single load-use edge, because it starts one level deeper: D_800A11D5 is reached through a lui+lbu pair rather than through a base pointer already live in $s1. So ask whether target's idx[0] chain likewise starts from something that is itself loaded - i.e. whether the Sony CD_datasync reference reaches the D_800A1494 index base through memory rather than through a hoisted pointer local. If it does, the fix is a declaration/expression change, not a statement-order change. (2) Since level-2 ties are broken by INSN_LUID and LUID at sched2 is sched1's OUTPUT order, dump sched1's emitted order for i1 and for the candidate (s10/idump.sh <tag> then s10/schedscan.py) and check whether ANY source-level statement order changes sched1's output at all; if it is invariant, the tie-break route is closed and route (1) is the only lever."
+   "hypothesis": "F25 \u2014 target needs arg4's LOAD emitted after the `sw 16(sp)` and arg4's ADDRESS chain emitted before it; no measured C spelling splits them, and the reason the inline form fails is that its address chain moves late too.",
+   "mechanism": "calls.c:1615-1665 precomputes register args FORWARD; an inline array-element arg has its address chain emitted there and its load deferred to load_register_parameters, which runs after the stack-arg stores \u2014 that IS target's split. But our 13-attractor (arg4 fully inline) drags the whole idx[0] chain to build idx 57-61, i.e. its address chain is emitted AFTER the sw as well, which the precompute-loop reading does not predict. Something is emitting store_one_arg for the single stack argument before, not after, the register-arg precompute loop.",
+   "next_probe": "Read tools/gcc-2.7.2/calls.c around the store_one_arg call sites and the must_preallocate / args_size block (roughly lines 1277-1420 and 1667+) and establish the ACTUAL emission order of (a) the register-arg precompute loop, (b) store_one_arg for the one stack arg, (c) load_register_parameters. If store_one_arg genuinely runs first, then target's shape requires arg4's address chain to be computed OUTSIDE the call while its load stays inline \u2014 which is precisely the i2 spelling (9/91) \u2014 and the residual 9 is then two LUID tie-breaks (the reversed lbu pair, and the D_800A11D5 chain landing after the sw) rather than a structural gap. Dump sched1's output order for i2 with tmp/grind/saEft01Init/s10/idump.sh + schedscan.py and read the LUIDs the two lbu's and the D_800A11D5 chain actually get."
   },
   {
-   "hypothesis": "F23 - the do{}while(0) wrapper is the candidate's single match device and has still never been through a fresh adversarial cheat-reviewer.",
-   "mechanism": "It is explicitly sanctioned (.claude/rules/do-while-zero-exception.md, owner ruling 2026-07-06: any body, ANY codegen effect, register allocation named explicitly, mandatory inline FAKE annotation, single level needs no nesting justification) and the candidate carries the annotation. It is not a semantic lie - the block executes exactly once either way - and its mechanism is flow.c's loop_depth ref weighting.",
-   "next_probe": "Invoke cheat-reviewer on the candidate before any completion claim, showing H37 and H40 as the lever-exhaustion record (both alternative routes proved arithmetically dead, not merely unspelled), plus s10's H45/i8 result that nothing in the argument block may be lifted out of the wrapper's call-free stretch."
+   "hypothesis": "F23 \u2014 the do{}while(0) wrapper is the candidate's single match device and has still never been through a fresh adversarial cheat-reviewer.",
+   "mechanism": "It is explicitly sanctioned (.claude/rules/do-while-zero-exception.md, owner ruling 2026-07-06: any body, ANY codegen effect, register allocation named explicitly, mandatory inline FAKE annotation, single level needs no nesting justification) and the candidate carries the annotation. Session 11 CORRECTS the mechanism statement: the wrapper has nothing to do with argument expansion (calls.c's precompute is not loop-gated at -O2); its only effect is flow.c's loop_depth ref-weighting for the three table pointers, and s11's w1/w2/w7 sweep pins its one working configuration.",
+   "next_probe": "Invoke cheat-reviewer on the candidate before any completion claim, presenting H37/H40 (both alternative routes proved arithmetically dead) plus session 11's wrapper-extent sweep (w1/w2 = 8 when the call is outside; w7 = 16 at 92 insns when the arg4 store is outside; w3-w6 = 7) as the lever-exhaustion record."
   },
   {
-   "hypothesis": "F24 - the two sibling alarm functions in the same TU inherit this result for free.",
+   "hypothesis": "F24 \u2014 the two sibling alarm functions in the same TU inherit this result for free.",
    "mechanism": "set_alarm/get_alarm are inlined into cpu_side_move_dir_4 (= CD_sync, name string D_80016240, ~src/system.c:366) and the function at ~src/system.c:480 (= CD_ready, string D_80016248), both already carrying the same hand-derived goto shape. The allocation problem and the wrapper's mechanism are identical.",
    "next_probe": "Once saEft01Init closes, apply the same single do{}while(0) wrapper plus the named-arg4 argument spelling to both siblings and re-score them with the engine sandbox; they are the cheapest remaining items in this file."
   }
