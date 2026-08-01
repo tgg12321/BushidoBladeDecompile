@@ -389,3 +389,19 @@ holder was tried and regresses to 22/93 — banked in `rejected/`).
 - [s3] BB2_DBR_DEBUG=1 produces no output — the shipped cc1 predates reorg.c's DBRDBG instrumentation, same as BB2_ALLOC_DEBUG in session 2; use the -da .dbr dump.
 
 - [s3] src/system.c was left byte-identical to its session-start state (score.py restores it after every splice); no build-pipeline file was touched.
+
+- [s4] Honest floor moved 18 -> 7 (`sandbox saEft01Init --disable all`), flat across sessions 1-3 before this. Build instruction count is now 91, EXACTLY target's 91, so the entire remaining residual is register choice and scheduling — no missing or extra instructions.
+
+- [s4] Ladder of measured forms, all on the session-3 chassis: 18/92 (session-3 candidate) -> 11/93 (`cnt = k;` mask staging) -> 9/91 (+ `ret = *D_800A14C0 & cnt;`) -> 7/91 (+ `tbl_125c = &tbl_125c[idx_1494[0]]`).
+
+- [s4] The mask-staging lever ONLY works through an already-live local: staging through a fresh `s32 m` is byte-identical to not doing it at all (18/92), through `ret` it is 15/94, through the loop counter `cnt` it is 11/93. That asymmetry places the construct squarely in the [[defeat-licm-hoist-var-reuse]] / [[staged-value-reused-variable]] family — it is NOT clean pure C by default and needs a /* FAKE */ annotation, the sessions 1-4 lever-exhaustion record, and cheat-reviewer sign-off before any completion claim.
+
+- [s4] The argument block (cluster B, open since session 1 and untouched by sessions 2-3) was a real part of the residual, not downstream of the callee-save rotation: the base-vs-target disassembly diff shows six differing instructions in it (`lbu v1,1(s1)/lbu v0,0(s1)` vs target's `lbu a0,0(s1)/lbu v0,1(s1)`, plus a different address-chain order). The pointer re-base closes 2 of the remaining distance there.
+
+- [s4] Permuter weighted score does NOT track the engine's honest distance for this function: campaign-1 finds at weighted 1235 screened anywhere from 13 to 72 on the sandbox, and the weighted-955 find screened to 17 while the weighted-1235-5 find screened to 13. Any future permuter session on saEft01Init must screen every find through the sandbox; ranking by permuter score would have discarded the best leads.
+
+- [s4] Two campaigns ran and BOTH were harvested with --stop before session end (ws2: 850s, 24055 iterations, 19 new finds harvested at stop; ws3: reseeded from the sandbox-11 a1 chassis, best weighted find 660 which screened to sandbox 9). No permuter process survives the session (pgrep clean).
+
+- [s4] Workspace-construction facts worth reusing: decomp-permuter's pycparser front end cannot parse this project's preprocessed TUs (K&R definitions like `inline int ENCODE_BCD(n)`, plus file-scope multi-line __asm__ blocks whose string literals cpp splits across lines). tmp/grind/saEft01Init/s4/trim.py drops every top-level chunk that is not a declaration and not the function under study, and mkws2.sh VERIFIES the trimmed base compiles byte-identically to the full-TU compile before the campaign is allowed to use it.
+
+- [s4] Also worth reusing: the maspsx output for this project sets `.set at` at file scope and `.set noreorder` per function, so a single-function permuter workspace must prepend `.set noreorder` + `.set at` (NOT the decomp-permuter prelude's `.set noat`, which makes every `la` pseudo-op fail to assemble), and must extract from `.ent <func>` through `.end <func>` so `.frame`/`.mask` sit inside an `.ent` scope.

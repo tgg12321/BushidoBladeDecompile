@@ -1,66 +1,59 @@
-/* saEft01Init — best form as of grind session 3 (structural).
+/* saEft01Init â€” best form as of grind session 4 (permuter).
  *
- * Honest pure-C distance (sandbox --disable all): 18   [floor UNCHANGED
- * across sessions 1-3]  ·  92 build insns vs 91 target.
- * Body is byte-for-byte the session-2 candidate; s3 re-measured 13 further
- * structural variants and none beat it.  What changed is the DIAGNOSIS.
+ * Honest pure-C distance (sandbox --disable all): 7   [floor was 18 across
+ * sessions 1-3]  Â·  91 build insns vs 91 target â€” the instruction COUNT is
+ * now exact, so the whole residual is register choice / scheduling.
  *
- * CLUSTER A IS SOLVED (session 2).  This form produces target's exact
- * callee-save map using only $s0-$s3:
- *     $s0 = D_800A125C (tbl_125c)   $s1 = &D_800A1494 (idx_1494)
- *     $s2 = the a0 param            $s3 = D_800A11DC  (tbl_11dc)
- * via (1) a REAL do/while loop, which emits NOTE_INSN_LOOP_BEG so flow.c
- * loop-depth-weights the in-loop refs and global.c:allocno_compare ranks
- * the two table pointers above the 1-use param, and (2) ONE reused scratch
- * local `k` holding both loop-invariant compare constants, which denies
- * loop.c the hoist that the plain real-loop form suffers (29/98).
+ * Session 4 ran two directed decomp-permuter campaigns (telemetry via
+ * tools/permuter_campaign.py) on top of the session-3 chassis and screened
+ * every find back through the ENGINE sandbox â€” the permuter's weighted score
+ * and the engine's honest distance are only loosely correlated here (the
+ * permuter's own best find, score 660, screened to sandbox 9, while a
+ * score-1235 find screened to 13), so EVERY find must be re-measured.
  *
- * *** SESSION-3 CAVEAT ON `k` — READ BEFORE ANY COMPLETION CLAIM ***
- * The single reused `k` CANNOT be the original spelling.  Target
- * materialises the two constants in TWO DIFFERENT hard registers —
- * `lui $v0,(0x3C0000>>16)` at target idx 41 and `lui $v1,(0x1000000>>16)`
- * at idx 83 — and one C variable is one pseudo, hence one hard register.
- * Our build puts both in $a0.  So `k` is a synthetic LICM defeat standing
- * in for whatever the original did, and it has still not been through
- * cheat-reviewer.  Session 3 found the actual loop.c gate (see below) and
- * a natural spelling that works for ONE of the two constants.
+ * THREE LEVERS, each measured independently (see hypotheses.md H15-H18):
  *
- * THE LICM GATE (tools/gcc-2.7.2/loop.c:695, measured s3):
- *   a movable is NOT built only when all three fail:
- *     (A) ! maybe_never && ! loop_reg_used_before_p (...)
- *     (B) ! REG_USERVAR_P (dest) && ! REG_LOOP_TEST_P (dest)
- *     (C) reg_in_basic_block_p (p, dest)
- *   A user local whose live range crosses a branch, set where maybe_never
- *   is already 1, therefore stays inline in its OWN pseudo — no double-set
- *   needed.  This works for the 0x1000000 mask constant (set at `check:`,
- *   spanning the `if (v0 != 0)` branch — 97 insns) but NOT for 0x3C0000,
- *   whose set is too early in the loop body for maybe_never to be 1 yet
- *   (98 insns, i.e. hoisted).  loop.c:702 (n_times_set != 1 and
- *   ! consec_sets_invariant_p) is the ONLY route found so far that keeps
- *   BOTH inline — and it costs the two-register shape.
+ *  (1) `cnt = k;` â€” the 0x1000000 mask constant is staged out of the
+ *      double-set holder `k` into the ALREADY-LIVE loop-counter local `cnt`.
+ *      This is what finally gives target's TWO-REGISTER constant shape that
+ *      session 3 (H11/F8) proved was required: `k` keeps its two sets so
+ *      loop.c:702 still refuses to hoist either constant, and the extra copy
+ *      gives the mask its own pseudo.  18 -> 11.
+ *      *** The holder MUST be an existing live local: the same stage through
+ *      a FRESH local (`s32 m; ... m = k;`) measures 18/92, i.e. no effect.
+ *      That asymmetry is exactly the [[defeat-licm-hoist-var-reuse]] /
+ *      [[staged-value-reused-variable]] family signature, so this construct
+ *      is NOT clean pure C by default â€” it needs a `/* FAKE */` annotation,
+ *      the lever-exhaustion record from sessions 1-4, and cheat-reviewer
+ *      sign-off before any completion claim. ***
  *
- * THE REMAINING RESIDUAL (all of it is the tail; RA is already correct):
- *   +2 : our mask exit is `bnez v0,<cont> / nop / j <end> / move v0,zero`
- *        where target has `beqz $v0,.L80081CFC / addu $v0,$zero,$zero`.
- *        s3 CONFIRMED the mechanism: jump.c:1764 inverts a conditional
- *        jump over an unconditional one only when the unconditional jump
- *        IMMEDIATELY follows (prev_active_insn (reallabelprev) == insn);
- *        the `ret = 0;` set in the if-body blocks it.  Writing the exit as
- *        a bare `goto` DOES produce target's branch sense, but then the
- *        `return 0;` block is stranded out of line and reorg refuses to
- *        steal it into the delay slot (19/93).  See rejected/
- *        goto-exits-invert-branch-but-strand-ret0-block.c and F7.
- *   -1 : `k` in $a0 lets the scheduler hoist `lui a0,0x3c` into the bnez
- *        delay slot at build idx 31 where target keeps a nop.
+ *  (2) `ret = *D_800A14C0 & cnt; if (ret == 0) break;` â€” the mask test's
+ *      result is named instead of being tested inline.  11 -> 9, and it
+ *      brings the build to target's exact 91 instructions.  The permuter's
+ *      form of this carried a redundant `ret = 0;` inside the if-body (a
+ *      dead store); dropping it is byte-neutral (both 9/91), so the dead
+ *      store is NOT load-bearing and is correctly absent here.
  *
- * Do NOT re-try (all banked in rejected/): inlining the three table globals
- * at their use sites (40); one-expression printf call (23); plain real loop
- * without the reuse (29/98); v0 as the holder for both constants (22/93);
- * inline `return -1/0/1` instead of break+ret (19/93); `for(;;)` with three
- * inline returns (19/93); if/else and `continue` spellings of the mask test
- * (both collapse to this exact output, 18/92); goto exits in every label
- * order (19/93); two branch-spanning const locals (27/97); v0-timeout plus
- * spanning-mask local (22/94).
+ *  (3) `tbl_125c = &tbl_125c[idx_1494[0]];` â€” the argument block re-bases the
+ *      table pointer instead of indexing it twice ([[walking-pointer-
+ *      serializes-parallel-loads]] family).  9 -> 7.
+ *      SEMANTICS CHECKED: this mutation is unobservable on any later
+ *      iteration â€” every path that reaches it sets `v0 = -1`, and the
+ *      `if (v0 != 0)` join immediately `break`s out of the loop.  So the
+ *      re-based pointer can never be re-used with the wrong base.
+ *
+ * A SEMANTICALLY-FAITHFUL, REUSE-FREE-ARG-BLOCK FALLBACK at distance 9/91 is
+ * banked alongside this file as `alt_faithful_9.c` (levers 1+2 only).  It is
+ * the form to fall back to if cheat-reviewer rejects lever (3).
+ *
+ * INHERITED AND STILL TRUE (sessions 1-3): the real `do { } while (a0 == 0)`
+ * loop is structurally required (it is the only way to emit
+ * NOTE_INSN_LOOP_BEG and get target's $s0-$s3 callee-save map); the three
+ * explicit table-pointer locals are structurally required; the shared-`ret`
+ * exit beats inline returns; the bare-goto exit forms are all 19/93.
+ *
+ * WHAT IS LEFT (7 at the exact instruction count): register choice and
+ * schedule only.  See the session-4 frontier in hypotheses.md.
  */
 s32 saEft01Init(s32 a0) {
     s32 v0;
@@ -94,8 +87,9 @@ s32 saEft01Init(s32 a0) {
         tslTm2LoadImage_2(&D_800161B8);
         {
             s32 arg5, arg4;
+            tbl_125c = &tbl_125c[idx_1494[0]];
             arg5 = tbl_125c[idx_1494[1]];
-            arg4 = tbl_125c[idx_1494[0]];
+            arg4 = *tbl_125c;
             debug_printf(&D_800161C8, D_800F19C0, tbl_11dc[D_800A11D5], arg4, arg5);
         }
         cdrom_ClearIrq();
@@ -111,8 +105,9 @@ s32 saEft01Init(s32 a0) {
             break;
         }
         k = 0x1000000;
-        if (!(*D_800A14C0 & k)) {
-            ret = 0;
+        cnt = k;
+        ret = *D_800A14C0 & cnt;
+        if (ret == 0) {
             break;
         }
         ret = 1;

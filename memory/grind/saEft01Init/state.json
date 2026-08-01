@@ -1,8 +1,8 @@
 {
  "func": "saEft01Init",
  "file": "system",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -21,23 +21,29 @@
    "floor": 18,
    "modality": "structural",
    "headline": "Floor still 18/92; the whole residual is the tail. Found jump.c:1764 (bare-goto exit reproduces target's beqz sense), KILLED every exit-spelling/label-order variant (8 forms, byte-identical 19/93), pr"
+  },
+  {
+   "session": 4,
+   "floor": 7,
+   "modality": "permuter",
+   "headline": "Permuter broke the three-session plateau: honest distance 18 -> 7 at target's exact 91 instructions, via three independently measured levers (mask constant staged through the live loop counter, mask t"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The whole remaining +2 is one reorg own-thread steal: in the bare-goto form the `return 0;` block is stranded, while the structurally identical `return -1;` block in the same function IS consumed into its branch's delay slot.",
-   "mechanism": "RTL tail is `jump_insn 173: beq v0,0 -> label 205` / `insn 252 = SEQUENCE[jump_insn 184: beq s2,0 -> loop ; insn 194: v0=1]` / `jump_insn 196: j 218` / `code_label 205` / `insn 208: (set (reg/i:SI 2 v0) (const_int 0))` / `code_label 218`. Two differences from the consumed case: the consumed thread ends in a jump_insn to 218 whereas 208 is followed directly by code_label 218; and 173's fall-through (next_active_insn) is the loop-condition JUMP_INSN 184, already a SEQUENCE from fill_simple_delay_slots, whereas the flag branch's fall-through is an ordinary INSN.",
-   "next_probe": "Read fill_slots_from_thread's trial-loop guards in tools/gcc-2.7.2/reorg.c, especially `! insn_sets_resource_p (trial, &opposite_needed, 1)` and the mark_target_live_regs fallback at reorg.c:2500-2510 that force-marks ALL registers live when it cannot find the block start (the BB2_ALLLIVE_LABEL hook suggests this project has hit it before). Then find C that either puts an ordinary INSN between the mask branch and the loop-condition branch, or leaves the `return 0;` thread ending in a real jump. Regenerate RTL with `bash tmp/grind/saEft01Init/s3/dbr.sh <variant>`. Note w2 (which keeps `ret = 1;` before the loop condition) does NOT achieve this \u2014 fill_simple_delay_slots consumes that insn into 184's slot before fill_eager reaches 173."
+   "hypothesis": "The remaining 7 at the exact instruction count is pure register choice / schedule and is reachable by continuing the permuter from the 7/91 chassis, which no campaign has yet seeded from.",
+   "mechanism": "Both session-4 campaigns seeded from 18/92 and 11/93 chassis respectively, and each reseed immediately produced a better basin (18->11 from the first, 11->9 from the second). The distance-7 form has never been used as a permuter base, and the permuter's random pass explores register-visible restructurings that hand search does not enumerate.",
+   "next_probe": "Rebuild the workspace with tmp/grind/saEft01Init/s4/mkws.sh + mkws2.sh (they take the CURRENT src/system.c, so apply candidate.c first), launch via tools/permuter_campaign.py with a `d7-chassis` label, soak with tmp/grind/saEft01Init/s4/soak.sh (loops `wait` inside ONE turn), then screen EVERY find with tmp/grind/saEft01Init/s4/screen.py --all (EFT_WS=<wsdir>). Do not rank by permuter score."
   },
   {
-   "hypothesis": "The 0x3C0000 constant can be made to escape LICM in its OWN pseudo (giving target's two-register shape and retiring the synthetic `k` reuse) by satisfying loop.c:695's gate for it as well.",
-   "mechanism": "loop.c:695 needs all three branches false: maybe_never already 1 at the set (or the register REFERENCED earlier in the loop than its set, which is the loop_reg_used_before_p half of branch A and does not need maybe_never), the dest a user variable, and the live range crossing a basic-block boundary. Today the only in-loop branch before the timeout compare is `if (D_800F19B8 < v0)` and the compare follows in the same block, so either A or C always holds.",
-   "next_probe": "Spellings that put an extra branch or label between the constant's set and its use; a variable referenced earlier in the loop than its set; or restructuring so the D_800F19BC read/increment sits in its own block. Success looks like 91-92 insns with $s4/$s5 absent from the .greg dispositions and `lui $v0,0x3c` / `lui $v1,0x100` in two different caller-saved registers. Screen with tmp/grind/saEft01Init/s3/score.py."
+   "hypothesis": "The `cnt = k;` mask staging can be replaced by a spelling that is not in the variable-reuse family, now that its exact mechanism is known (the stage must land in a pseudo that already has a live range).",
+   "mechanism": "Session 3's F8 established the loop.c:695 user-variable gate; session 4 establishes that a fresh local for the stage is inert. Any replacement must therefore give the mask value a second pseudo whose live range predates the mask test WITHOUT introducing a variable whose only purpose is that reuse \u2014 e.g. a value genuinely computed earlier in the loop that happens to be dead by the mask test, or a restructure that makes the mask test consume something the timeout path already produced.",
+   "next_probe": "Enumerate the locals live at the `check:` join (v0, cnt, ret, k, the three table pointers) and measure the mask stage through each; then try spellings where the mask test reads a value the loop already computes rather than a staged constant. Screen with tmp/grind/saEft01Init/s4/score.py. If none is clean, the completion claim must carry a /* FAKE */ annotation plus the sessions 1-4 exhaustion record into cheat-reviewer."
   },
   {
-   "hypothesis": "If a completion is reached with the reused `k` still present, it needs cheat-review on a corrected factual basis \u2014 the claim that it reproduces the original spelling is now falsified.",
-   "mechanism": "The reuse is in the [[defeat-licm-hoist-var-reuse]] family, SOTN-sanctioned only as a documented last resort with lever-exhaustion; the two-register evidence (target's $v0 and $v1) shows the original did not use one variable.",
-   "next_probe": "Do F8 first \u2014 if it lands, `k` disappears on its own and the question is moot. Otherwise invoke cheat-reviewer with the two-register evidence and the full lever-exhaustion record from sessions 1-3 disclosed up front."
+   "hypothesis": "The argument block still holds distance beyond the 2 the pointer re-base closed, and its two `lbu` are the anchor.",
+   "mechanism": "Target loads `idx_1494[0]` into $a0 and `idx_1494[1]` into $v0; our build (session-1 H2b) got the ORDER right but the registers wrong, and the two address chains interleave differently. The re-base changed the shape of one chain only.",
+   "next_probe": "Re-run the base-vs-target disassembly diff (tmp/grind/saEft01Init/s4/od.sh, pointed at a workspace built from the 7/91 form) and enumerate re-base spellings for the SECOND index too, plus the `arg4`/`arg5` declaration-order swap that session 1 measured neutral under the WRONG callee-save allocation and has never been re-measured under the correct one (session 2's F6, still open)."
   }
  ],
  "judge_constraints": [],
