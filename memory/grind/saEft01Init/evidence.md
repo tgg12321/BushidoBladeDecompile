@@ -1449,3 +1449,94 @@ side-by-side lister built on `engine.score.normalized_insns`),
 - [s12] The debug_printf prototype axis is dead: `(void *, ...)` varargs and `()` K&R declarations are byte-identical to HEAD's fixed 5-arg prototype against three different bodies (7 / 13 / 13).
 
 - [s12] Sixty-three distinct C forms for this argument block are now banked across sessions 4-12, and they distribute over exactly four rigid attractors: 7 (arg4 as a named value), 9 (arg4 as a named address), 9 (arg4 as a named value with an unchanging load), 13 (arg4 fully inline).
+
+## [s13] permuter — decomp-permuter's objective is ANTI-CORRELATED with the honest metric on this basin
+
+Two fresh-seed campaigns were run on structurally different chassis, both built
+with the same full-TU-context workspace recipe sessions 4/5 used (full `cpp` of
+src/system.c, trimmed to declarations + saEft01Init for pycparser, verified
+byte-identical to the full-TU compile, target.o assembled from
+asm/funcs/saEft01Init.s at offset 0, no regfix/asmfix in the pipeline):
+
+  * `ws2` = the session-9 zero-lever do{}while(0) candidate (sandbox 7 / 91),
+    permuter base score 435.  16,487 iterations over 883 s on 5 jobs, 6 finds.
+  * `ws3` = the session-12 `const s32 *tbl_125c` fourth attractor (sandbox
+    9 / 91), permuter base score 455.  13,249 iterations over 758 s, 3 finds.
+
+EVERY find was re-scored by splicing its saEft01Init body back into
+src/system.c and running `sandbox saEft01Init --disable all`
+(tmp/grind/saEft01Init/s13/rescore.py + rescore.ps1).  The full table:
+
+    permuter 435 (ws2 base)  -> sandbox  7 / 91     <- the candidate
+    permuter 435 (x4 finds)  -> sandbox  7 / 91     (byte-identical respellings)
+    permuter 428             -> sandbox 18 / 92
+    permuter 423             -> sandbox 17 / 92
+    permuter 455 (ws3 base)  -> sandbox  9 / 91
+    permuter 455 (find)      -> sandbox 10 / 91
+    permuter 450             -> sandbox 10 / 91
+
+Both campaigns' ONLY score improvements are large sandbox REGRESSIONS, and on
+ws3 a single permuter score (455) covers two different sandbox distances.  The
+permuter's gradient here points away from the candidate basin, and its score is
+not even a function of the honest distance.
+
+### The mechanism (exact, from tools/decomp-permuter/src/scorer.py:14-18)
+
+decomp-permuter's weighted score charges PENALTY_REGALLOC = 5 per differing
+register, PENALTY_REORDERING = 60 per reordered instruction, PENALTY_INSERTION
+= PENALTY_DELETION = 100, and it re-ALIGNS the two instruction streams before
+counting.  The engine sandbox's distance is POSITION-LOCKED and weights every
+differing instruction at 1.  So:
+
+  * the candidate's residual is 7 reorderings + 3 register differences =
+    7*60 + 3*5 = 435 exactly — i.e. the whole 435 is the SAME seven
+    instructions the sandbox charges 7 for;
+  * a form that rotates the entire callee-save map pays 16 renames = 80 to the
+    permuter but 16 to the sandbox.
+
+Ratio: the permuter is ~12x more sensitive to ordering than to renaming, the
+sandbox is 1x.  Our entire remaining residual is ordering.  Therefore, from a
+7 / 91 base whose diffs are all reorderings, ANY mutation that trades ordering
+for renaming looks like progress to the permuter and is a regression to us —
+which is precisely what both campaigns found and nothing else.  This also
+explains why permuter WORKED in sessions 4/5 (base distance 18 with a mixed
+regalloc + ordering residual, where large genuine wins existed in both
+currencies) and cannot work now.
+
+The scorer's penalties are class attributes with no CLI or settings.toml knob,
+and tools/ is outside a grind session's writable surface, so retuning them is
+an operator decision, not a session one.
+
+### The one substantive form the campaigns produced
+
+`D_800A125C[idx_1494[1]]` for arg5 — the first of 65 measured argument
+spellings to read a table through its own global symbol rather than the hoisted
+base.  permuter 423, sandbox 17 / 92: the second symbol reference costs a fresh
+`lui at` / `addu at,v1` / `lw v1,0(at)` chain (+1 insn) and, by dropping
+tbl_125c to one use in the block, collapses its allocno priority so the whole
+callee-save map rotates.  Banked as
+rejected/permuter-global-arg5-rotates-callee-save-map-17-92.c.
+
+### Operational note for any future permuter session on this function
+
+Campaigns are still runnable, but their output must be treated as a candidate
+GENERATOR, never as a gradient: re-score every find with the sandbox before
+believing it.  tmp/grind/saEft01Init/s13/{rescore.py,rescore.ps1,odf.sh} do
+exactly that (splice -> sandbox; and a positional build-vs-target disassembly
+diff for any find worth reading).
+
+- [s13] The candidate chassis re-applied to src/system.c measures exactly 7 / 91 this session (91 target insns, 91 build insns), unchanged since session 9.
+
+- [s13] decomp-permuter's weighted score is NOT a monotone function of the honest sandbox distance for this function: on ws3 the same permuter score (455) covers sandbox 9/91 and sandbox 10/91, and on both chassis the only score improvements are sandbox regressions.
+
+- [s13] The candidate's permuter base score 435 decomposes exactly as 7 reorderings * 60 + 3 register differences * 5 — arithmetic proof that the permuter is charging ~12x more per unit of the residual we still have (ordering) than per unit of the currency it can cheaply buy (renaming).
+
+- [s13] tools/decomp-permuter/src/scorer.py:14-18 fixes those penalties as class attributes with no CLI or settings.toml override, so re-weighting the objective is outside a grind session's writable surface (tools/ is off-limits) and is an operator decision.
+
+- [s13] Campaign telemetry: ws2 (candidate chassis) 16,487 iterations / 882.9 s / 6 finds, best 423; ws3 (const chassis) 13,249 iterations / 758.1 s / 3 finds, best 450. Both harvested with --stop; 12 permuter processes killed; no campaign outlives this session.
+
+- [s13] Both permuter workspaces were verified sound before use: the pycparser-trimmed base.c compiles BYTE-IDENTICAL to the full-TU compile, and base/target are both 91 instructions at offset 0 — so the negative result is about the objective, not a broken harness.
+
+- [s13] The 65-form argument-spelling record now includes the global-symbol axis, which is dead: the hoisted base is strictly cheaper, which is exactly why sessions 2-9 hoisted.
+
+- [s13] A reusable re-scoring harness now exists for any future permuter work on this function: tmp/grind/saEft01Init/s13/rescore.py (splice a find into src/system.c) + rescore.ps1 (drive the engine sandbox over a list of finds) + odf.sh (positional build-vs-target disassembly diff for one find).

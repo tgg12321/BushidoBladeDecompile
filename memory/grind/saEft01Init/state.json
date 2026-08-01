@@ -1,8 +1,8 @@
 {
  "func": "saEft01Init",
  "file": "system",
- "session_count": 12,
- "current_modality": "structural",
+ "session_count": 13,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -75,18 +75,24 @@
    "floor": 7,
    "modality": "structural",
    "headline": "Floor holds at 7/91; F25 answered from calls.c (expand order IS target's, so the inline-arg4 attractor's late address chain is a scheduling outcome), and const/RTX_UNCHANGING_P on arg4's load is a FOU"
+  },
+  {
+   "session": 13,
+   "floor": 7,
+   "modality": "permuter",
+   "headline": "Floor holds at 7/91; the permuter modality is KILLED structurally for this basin \u2014 decomp-permuter charges 60 per reordering vs 5 per register rename over a re-aligned stream while the sandbox is posi"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F26 \u2014 the residual is entirely inside sched.c's ready-list ordering, and the two known partial wins (the candidate's `lbu` pair at the block head; c1's `sw` before `lw a3`) are separated by ONE tie-break decision that no C-level spelling has moved in 63 forms.",
-   "mechanism": "With the expand order settled from calls.c and the alias class ruled out, the only remaining inputs to the block's order are INSN_PRIORITY (fixed by the arithmetic the function performs) and rank_for_schedule's tie-breaks (load/store class against last_scheduled_insn, then INSN_LUID). The candidate and c1 differ in exactly one bit \u2014 RTX_UNCHANGING_P on one load \u2014 and that bit flips both the `lbu` order and the arg3 chain's position, which is the signature of a tie-break cascade rather than a dependence change.",
-   "next_probe": "Run the instrumented cc1 (tools/gcc-2.7.2/cc1, BB2_PRIO_DEBUG / BB2_SCHED_DEBUG \u2014 see the instrumented-cc1-location memory) on the candidate AND on c1 using tmp/grind/saEft01Init/s10/idump.sh + schedscan.py, and diff the two RANKDBG traces over build idx 46-61. It is a two-form diff of the same chassis differing in one bit, so the trace difference isolates the exact comparison that flips \u2014 much cheaper to read than session 10's single-form dump. If the flipping comparison is an INSN_LUID tie, the C lever is a source-order change to the two index reads on the const chassis; if it is the load/store class test, the lever is which insn precedes the pair."
+   "hypothesis": "F26 \u2014 the residual is entirely inside sched.c's ready-list ordering, and the candidate's win (both `lbu` at the block head) and the const chassis's win (`sw 16(sp)` before `lw a3`) are separated by ONE tie-break decision that no C-level spelling has moved in 65 forms.",
+   "mechanism": "With expand order settled from calls.c and the alias class ruled out, the block's order depends only on INSN_PRIORITY (fixed by the arithmetic) and rank_for_schedule's tie-breaks (load/store class against last_scheduled_insn, then INSN_LUID). The candidate and the const chassis differ in exactly one bit \u2014 RTX_UNCHANGING_P on one load \u2014 and that bit flips both the `lbu` order and the arg3 chain's position, the signature of a tie-break cascade rather than a dependence change.",
+   "next_probe": "Run the instrumented cc1 (tools/gcc-2.7.2/cc1, BB2_PRIO_DEBUG / BB2_SCHED_DEBUG \u2014 see the instrumented-cc1-location memory) on the candidate AND on the const chassis using tmp/grind/saEft01Init/s10/idump.sh + schedscan.py, and diff the two RANKDBG traces over build idx 46-61. A two-form diff of one chassis differing in one bit isolates the exact comparison that flips: if it is an INSN_LUID tie the lever is a source-order change to the two index reads on the const chassis; if it is the load/store class test the lever is which insn precedes the pair."
   },
   {
    "hypothesis": "F23 \u2014 the do{}while(0) wrapper is the candidate's single match device and has still never been through a fresh adversarial cheat-reviewer.",
    "mechanism": "It is explicitly sanctioned (.claude/rules/do-while-zero-exception.md, owner ruling 2026-07-06: any body, ANY codegen effect, register allocation named explicitly, mandatory inline FAKE annotation, a single level needs no nesting justification) and the candidate carries the annotation. Its only effect is flow.c's loop_depth ref-weighting for the three table pointers; session 12 re-confirmed from calls.c 1653-1664 + stmt.c:2435 + toplev.c:3387 that argument expansion is not loop-gated at -O2, so the wrapper has no role in the argument block at all.",
-   "next_probe": "Invoke cheat-reviewer on the candidate before any completion claim, presenting the lever-exhaustion record: 63 measured argument-block forms over four rigid attractors, s11's wrapper-extent sweep (w1/w2 = 8, w7 = 16 at 92 insns, w3-w6 = 7), and s12's four newly-dead axes (arg1, MEM_IN_STRUCT_P, pre-loop store placement, prototype)."
+   "next_probe": "Invoke cheat-reviewer on the candidate before any completion claim, presenting the lever-exhaustion record: 65 measured argument-block forms over four rigid attractors, s11's wrapper-extent sweep (w1/w2 = 8, w7 = 16 at 92 insns, w3-w6 = 7), s12's four newly-dead axes (arg1, MEM_IN_STRUCT_P, pre-loop store placement, prototype), and s13's two exhausted permuter campaigns."
   },
   {
    "hypothesis": "F24 \u2014 the two sibling alarm functions in the same TU inherit this result for free.",

@@ -171,6 +171,36 @@
  *     `(void *, ...)` and K&R `()` are byte-identical to the fixed 5-arg form
  *     against three different bodies.
  *
+ * ===========================================================================
+ * SESSION 13 (permuter) — BODY STILL UNCHANGED; THE PERMUTER MODALITY IS DEAD
+ * ===========================================================================
+ * Re-applied and re-measured at exactly 7 / 91.  Two fresh-seed campaigns
+ * (candidate chassis, base 435, 16.5k iters; const chassis, base 455, 13.2k
+ * iters) produced 9 finds; every one was re-scored in the sandbox and the only
+ * permuter-score improvements are sandbox REGRESSIONS (428 -> 18/92,
+ * 423 -> 17/92, 450 -> 10/91), while one 455-scored find is sandbox 10 where
+ * the 455-scored base is 9.
+ *
+ * The reason is structural, not a budget question.  decomp-permuter charges
+ * PENALTY_REORDERING = 60 and PENALTY_REGALLOC = 5 over a RE-ALIGNED
+ * instruction stream (scorer.py:14-18); the engine sandbox is position-locked
+ * and charges 1 for either.  This file's 435 decomposes EXACTLY as seven
+ * reorderings (420) plus three register differences (15) — i.e. the permuter
+ * is charging 60x for the very seven instructions the sandbox charges 7 for.
+ * Our whole residual is ordering, so any mutation that trades ordering for
+ * renaming reads as progress to the permuter and is a regression to us.  That
+ * is all both campaigns found.  Random permutation cannot descend on this
+ * basin; do not spend another session's modality on it without first fixing
+ * the objective (the penalties are class attributes with no knob, and tools/
+ * is outside a grind session's writable surface — an operator decision).
+ *
+ * One substantive new axis was measured and closed: arg5 spelled through the
+ * GLOBAL, `D_800A125C[idx_1494[1]]`, instead of the hoisted base — the first
+ * of 65 argument forms to do so.  17 / 92: the second symbol reference costs a
+ * fresh lui/addu/lw chain and collapses tbl_125c's allocno priority, rotating
+ * the whole callee-save map.  Banked as
+ * rejected/permuter-global-arg5-rotates-callee-save-map-17-92.c.
+ *
  * NEXT: hypotheses.md F26 — diff the instrumented cc1's RANKDBG trace for THIS
  * form against the const (c1) form.  They differ in exactly one bit
  * (RTX_UNCHANGING_P on one load) yet flip both the `lbu` order and the arg3

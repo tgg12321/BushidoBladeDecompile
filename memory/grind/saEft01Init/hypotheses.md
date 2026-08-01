@@ -1869,3 +1869,35 @@ next probe: once saEft01Init closes, apply the same single do{}while(0) wrapper 
 - probe: score2.py re-declares the prototype `(void *, ...)`, `(void *, void *, ...)` and `()` (K&R) and re-scores three bodies (candidate, arg4-inline, arg5-named+arg4-inline).
 - result: Every combination is byte-identical to the fixed prototype (7 / 13 / 13). The prototype is byte-inert here, so it is also not evidence about the original signature either way, and fake-varargs-explicit-homing does not apply (no bulk pre-subu arg homes in this call).
 - verdict: KILLED
+
+## [s13] F27 — a random decomp-permuter campaign can lower saEft01Init's honest floor from the 7/91 candidate.
+- mechanism: sessions 4/5 broke an 18/91 plateau with random permutation, so the same tool on the newer, structurally different session-9 chassis (and on the session-12 const chassis) might find the ordering the 65 hand-written argument spellings missed.
+- probe: two fresh-seed campaigns via tools/permuter_campaign.py (ws2 = candidate chassis, base 435; ws3 = const chassis, base 455), 5 jobs each, ~16.5k and ~13.2k iterations, every find re-scored in the engine sandbox.
+- result: 9 finds; the only permuter-score improvements (428, 423 on ws2; 450 on ws3) are sandbox regressions (18/92, 17/92, 10/91), and one 455-scored ws3 find is sandbox 10 where the 455-scored base is 9. The permuter's objective charges 60 per reordering and 5 per register rename over a RE-ALIGNED instruction stream, while the sandbox is position-locked at 1 each (scorer.py:14-18; the candidate's 435 decomposes exactly as 7*60 + 3*5). Our residual is 100% reordering, so every permuter-visible improvement from this base necessarily trades ordering for renaming — a regression in the only metric that counts.
+- verdict: KILLED — and the kill is structural, not a budget question. Random permutation cannot descend on this basin because it is optimising a different objective; more iterations cannot fix a sign error in the gradient.
+
+## [s13] F28 — reading a table through its own global symbol instead of the hoisted base is an untried argument axis.
+- mechanism: all 63 prior argument forms indexed the hoisted locals (tbl_125c / tbl_11dc / idx_1494); the permuter proposed `D_800A125C[idx_1494[1]]` for arg5, which is semantically identical but gives the block a second reference to the symbol rather than to the pseudo.
+- probe: spliced into src/system.c on the candidate chassis and sandboxed; positional build-vs-target disassembly diff read via tmp/grind/saEft01Init/s13/odf.sh.
+- result: sandbox 17 / 92. The second symbol reference costs `lui at` + `addu at,v1` + `lw v1,0(at)` (91 -> 92 insns) and drops tbl_125c to a single in-block use, collapsing its allocno priority: the callee-save map rotates to $s0=D_800A1494, $s1=param, $s2=D_800A125C against target's $s0=D_800A125C, $s1=D_800A1494, $s2=param, and the argument block itself moves further from target (`lw a3` at build idx 56).
+- verdict: KILLED — the global-symbol respelling axis is dead in both directions (it cannot be cheaper than the hoisted base, which is exactly why sessions 2-9 hoisted).
+
+## [s13] F26 — the residual is entirely inside sched.c's ready-list ordering, and the two known partial wins are separated by ONE tie-break decision (UNCHANGED, inherited — not probed this session; the mandated modality was permuter).
+- mechanism: unchanged from session 12.
+- next probe: unchanged — run the instrumented cc1 (tools/gcc-2.7.2/cc1, BB2_PRIO_DEBUG / BB2_SCHED_DEBUG) on the candidate AND on the const (c1) chassis using tmp/grind/saEft01Init/s10/idump.sh + schedscan.py and diff the two RANKDBG traces over build idx 46-61.
+
+## [s13] F23 — the do{}while(0) wrapper has still never been through a fresh adversarial cheat-reviewer (UNCHANGED, inherited).
+- mechanism: unchanged from session 12.
+- next probe: unchanged — invoke cheat-reviewer on the candidate before any completion claim, presenting the lever-exhaustion record (now 65 measured argument forms over four rigid attractors, plus session 13's two campaigns).
+
+## [s13] A random decomp-permuter campaign can lower saEft01Init's honest floor below the 7/91 candidate (F27).
+- mechanism: Sessions 4/5 broke an 18/91 plateau with random permutation, so the same tool on the newer session-9 zero-lever do{}while(0) chassis, and on the session-12 const-tbl_125c fourth attractor, might find the instruction ordering that 63 hand-written argument spellings missed.
+- probe: Two fresh-seed campaigns via tools/permuter_campaign.py on full-TU-context workspaces (cpp of src/system.c, trimmed for pycparser and verified byte-identical to the full-TU compile, target.o from asm/funcs/saEft01Init.s at offset 0, no regfix/asmfix): ws2 = candidate chassis (base 435, 16,487 iters / 883 s, 6 finds), ws3 = const chassis (base 455, 13,249 iters / 758 s, 3 finds), 5 jobs each. Every find spliced back into src/system.c and re-scored with `sandbox saEft01Init --disable all`.
+- result: permuter 435 (base and 4 finds) -> sandbox 7/91; permuter 428 -> 18/92; permuter 423 -> 17/92; permuter 455 (base) -> 9/91; permuter 455 (find) -> 10/91; permuter 450 -> 10/91. Every score improvement is a sandbox regression, and one permuter score covers two different sandbox distances. Cause read from tools/decomp-permuter/src/scorer.py:14-18: PENALTY_REORDERING=60, PENALTY_REGALLOC=5, streams RE-ALIGNED before counting, vs the sandbox's position-locked weight of 1 for either. The candidate's 435 decomposes exactly as 7*60 + 3*5 — the permuter charges 60x for the same seven instructions the sandbox charges 7 for — so any mutation trading ordering for renaming reads as progress to it and is a regression to us.
+- verdict: KILLED
+
+## [s13] Reading a table through its own global symbol instead of the hoisted local base is an untried argument-block axis that could move the block's order (F28).
+- mechanism: All 63 prior argument forms indexed the hoisted pseudos (tbl_125c / tbl_11dc / idx_1494). The permuter proposed arg5 as `D_800A125C[idx_1494[1]]` — semantically identical (tbl_125c is initialised to D_800A125C and never re-assigned) but giving the block a second reference to the SYMBOL rather than to the pseudo.
+- probe: Spliced onto the candidate chassis, sandboxed, and read as a positional build-vs-target disassembly diff (tmp/grind/saEft01Init/s13/odf.sh).
+- result: sandbox 17/92. The second symbol reference costs a fresh `lui at` + `addu at,v1` + `lw v1,0(at)` address chain (91 -> 92 insns) and drops tbl_125c to a single in-block use, collapsing its allocno priority: the callee-save map rotates to $s0=D_800A1494 / $s1=param / $s2=D_800A125C against target's $s0=D_800A125C / $s1=D_800A1494 / $s2=param, and the argument block itself moves further away (`lbu v0,0(s0)` / `lbu v1,1(s0)` vs target's `lbu a0,0(s1)` / `lbu v0,1(s1)`, `lw a3` at build idx 56).
+- verdict: KILLED
