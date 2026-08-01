@@ -1,0 +1,34 @@
+{
+ "func": "saEft01Init",
+ "file": "system",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 18,
+   "modality": "recon",
+   "headline": "Recon baseline 18 (91 vs 91 insns, pure RA+sched). Cluster-A callee-save rotation mechanism CONFIRMED via cc1 -da: the goto-loop emits no NOTE_INSN_LOOP_BEG, so allocno_compare ranks the param above t"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "A loop spelling exists that emits NOTE_INSN_LOOP_BEG (flipping the allocno priorities to target's 77/76/72) while denying loop.c the hoist of the two loop-invariant compare constants 0x3C0000 and 0x1000000, landing cluster A at no instruction cost.",
+   "mechanism": "tools/gcc-2.7.2/loop.c scan_loop / move_movables: a set(reg)(const_int) becomes a movable and is hoisted to the preheader when it survives the maybe_never test and clears threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs). This loop contains calls, so the savings bar is low and both constants get hoisted.",
+   "next_probe": "Read scan_loop/move_movables for the exact suppression conditions, then probe C placements and compare spellings that make each constant a non-movable \u2014 placing the 0x3C0000 compare where maybe_never is already set, an unsigned-compare spelling that folds the threshold into the existing slt chain, and a bit-test spelling for 0x1000000 that combine keeps inline. Score each with sandbox --disable all AND re-run tmp/grind/saEft01Init/s1/greg.sh to confirm dispositions stay 77/76/72 in 16/17/18. Keep the shared-ret do-while exit shape from rejected/real-loop-confirms-ra-but-hoists-constants.c."
+  },
+  {
+   "hypothesis": "Part of cluster B (the $2<->$3 / $2<->$4 renames and the 14-entry reorder over the debug_printf argument block) is downstream of the cluster-A callee-save rotation and will shrink or vanish once the allocation is correct.",
+   "mechanism": "The argument-block address chains add into the D_800A125C base register; target indexes off $s0 while our build indexes off $s1, and the scratch-register choices in the block ($a0 as the arg4 index scratch in target vs $v0/$v1 in our build) are allocated after the callee-saves are fixed.",
+   "next_probe": "Once any form lands the 77/76/72 dispositions, re-run tmp/grind/saEft01Init/s1/grind_diff.py and re-score both known-equal arg-staging orders (arg4-first, the current candidate, and arg5-first, the inherited baseline) against the new allocation before doing any further arg-block work."
+  },
+  {
+   "hypothesis": "The per-allocno n_refs and live_length values behind the priority inversion can be read directly rather than inferred, which would let F1's candidate spellings be predicted instead of sampled.",
+   "mechanism": "allocno_compare's inputs (allocno_n_refs, allocno_live_length) are not printed by -da; only the resulting order is. An instrumented cc1 built into tmp/ that prints both fields per allocno would make the priority arithmetic directly observable for both the goto-loop and real-loop forms.",
+   "next_probe": "Build cc1 into tmp/gccdbg/ with an fprintf of allocno_n_refs/allocno_live_length at the qsort call site in global_alloc, dump both forms, and confirm which term (the floor_log2 step or the live_length divisor) actually moves the param. Dumps-for-understanding only \u2014 the shipped toolchain stays frozen."
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-08-01T16:43:14.708981+00:00"
+}
