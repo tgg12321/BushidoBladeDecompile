@@ -415,10 +415,19 @@ def psyq_identity(root, func):
                 f"@{proven.get('addr')}).",
                 "",
                 "Bit-exact provenance: the 2026-07-09 census verified 100% of "
-                "non-reloc-masked bits across the whole module .text. Matching C for this "
-                "function EXISTS publicly — do not reverse-engineer it from the bytes.",
+                "non-reloc-masked bits across the whole module .text.",
                 "",
-                "Reference sources, in order:",
+                "PUBLISHED REFERENCE C IS A LEAD, NOT THE ANSWER. Measure it, never assume "
+                "it. BB2 links a DIFFERENT BUILD of this library family than the projects "
+                "that published matched C, so the same routine can compile to different "
+                "bytes here. Measured 2026-08-01: for saEft01Init (CD_datasync) the verbatim "
+                "SOTN reference scored 35 against a ground-up floor of 7, and the Tomba and "
+                "Xeno spellings also lost. Adoption is still the fast path when it works "
+                "(65 functions closed that way) — it is just not guaranteed. Score the "
+                "reference, bank it to rejected/ WITH ITS NUMBER if it loses, and keep the "
+                "lower floor. A losing reference means 'different build', NOT 'wrong source'.",
+                "",
+                "Reference sources to try, in order:",
                 "  1. sotn-decomp psxsdk tree (matched C, same library family + GCC 2.7.2 era)",
                 "  2. sozud/psy-q-decomp",
                 "  3. the ground-truth object itself — you have the original bytes AND the "
