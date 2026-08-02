@@ -1,0 +1,34 @@
+{
+ "func": "func_80052B00",
+ "file": "text1b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 18,
+   "modality": "recon",
+   "headline": "Recon baseline: floor 18 on a pure cop2-control-loader leaf (8 lw -> ctc2 CR0-CR7, last ctc2 in the jr delay slot); proved via reorg.c stop_search_p that GCC 2.7.2 can never place an __asm__ insn in a"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "func_80052B00's disposition is canonical-asm authorization (COMPLETED-INLINE-ASM-CANONICAL) under the existing GTE-leaf carve-out, not a pure-C match.",
+   "mechanism": "gte-wrapper-misroute-park is a no-C-form-by-construction carve-out (same class as jtbl-infra in no-new-park-categories), orthogonal to the scan_hand_coded S1-S8 tiers. The endgame-lock precedent gate passes with a real file+line citation rather than a 'genre-adjacent' argument: func_80052B44 at src/text1b.c:10995 / inline_asm_canonical.txt:340, the identical construct one function later in the same file, authorized 2026-07-27.",
+   "next_probe": "A session holding authority over inline_asm_canonical.txt applies memory/grind/func_80052B00/candidate.c over src/text1b.c:10969-10994, adds the canonical entry, then runs retire func_80052B00 (drops regfix.txt:3411) and verify-oracle. Note the disposition call belongs to the driver/owner \u2014 a grind session in a non-escalation modality must not self-authorize it."
+  },
+  {
+   "hypothesis": "The delay-slot impossibility (H1) can be demonstrated empirically rather than by compiler-source reading, converting the argument into a measurement for the owner's audit trail.",
+   "mechanism": "Direct falsification attempt on H1: if any C spelling could get an __asm__ ctc2 into the jr delay slot, a small sweep would find it; reorg.c's dbr pass dump shows the bail-out directly.",
+   "next_probe": "Compile a minimal TU containing only this body with cc1 -da and inspect the .dbr (delay-branch-scheduling) dump for fill_simple_delay_slots halting at the asm insn; sweep 3-4 orderings (ctc2 $7 written first / written last / emitted via a trailing return / split into a separate statement) and show the slot stays nop in every form. Cheap, and it either confirms H1 with measurement or overturns it."
+  },
+  {
+   "hypothesis": "func_80052B00 is the last unauthorized member of an otherwise fully settled cop2-control-loader cluster, which is a clean completeness argument for frontier item 1.",
+   "mechanism": "If every other lw/ctc2/jr-only body in the tree is already in inline_asm_canonical.txt, the category is settled and this function is a straggler rather than a novel case.",
+   "next_probe": "Grep asm/funcs/*.s for bodies consisting solely of lw / ctc2 / jr instructions and cross-check each name against inline_asm_canonical.txt and engine/queue.json; report the census."
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-08-02T01:18:26.955001+00:00"
+}

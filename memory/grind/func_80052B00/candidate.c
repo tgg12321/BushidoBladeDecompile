@@ -1,0 +1,70 @@
+/* func_80052B00 — grind candidate, session 1 (recon, 2026-08-01).
+ *
+ * STATUS: NOT APPLIED to src/text1b.c. This form is a whole-body canonical-asm
+ * (COMPLETED-INLINE-ASM-CANONICAL) packaging and is only legal once a matching
+ * entry exists in inline_asm_canonical.txt — a file this grind session is not
+ * permitted to touch. It is banked here so the session (or operator) that owns
+ * that surface can apply it directly.
+ *
+ * WHY this form rather than pure C. func_80052B00 is LIBGTE SetRotMatrix +
+ * SetTransMatrix fused: 8 word loads from *a0 feeding cop2 control registers
+ * CR0-CR7 (packed 3x3 rotation matrix RT11RT12/RT13RT21/RT22RT23/RT31RT32/RT33
+ * in CR0-CR4, translation vector TRX/TRY/TRZ in CR5-CR7). There is zero
+ * general-purpose computation; the loads are mechanical I/O packaging that
+ * exists solely to feed the hardcoded cop2 register encodings.
+ *
+ * The target's `jr $ra` delay slot holds `ctc2 $t7, $7`. `ctc2` has no C
+ * analog, so it can only come from an __asm__ block — and
+ * tools/gcc-2.7.2/reorg.c:730-735 (stop_search_p) halts fill_simple_delay_slots
+ * unconditionally at any ASM_INPUT / asm_noperands insn. GCC 2.7.2 therefore
+ * can never place this instruction in the delay slot from ANY C source. That is
+ * an impossibility proof, not a plateau: the honest sandbox floor of 18 is not
+ * a number that further pure-C search can move to 0.
+ *
+ * Precedent: func_80052B44 (src/text1b.c:10995, the very next function in this
+ * file) is the same construct with a 5-word matrix and was Judge-authorized
+ * canonical-asm on 2026-07-27 citing the same reorg.c mechanism
+ * (inline_asm_canonical.txt:340). Same family, already authorized:
+ * gte_SetRotMatrix (:326), gte_SetColorMatrix (:325), gte_SetTransVector (:324),
+ * func_8007ED6C (:308). Category: the [[gte-wrapper-misroute-park]] GTE-leaf
+ * carve-out (no-C-form by construction), not the scan_hand_coded S1-S8 route.
+ *
+ * PACKAGING NOTES (mirrored verbatim from the authorized func_80052B44 block):
+ *  - .set directives are duplicated in TAB form and SPACE form; maspsx's
+ *    noreorder stripping requires both ([[maspsx-noreorder-stripping]]).
+ *  - Memory offsets are DECIMAL — maspsx parses `0x0($a0)` as base-10 and
+ *    chokes; hex is only safe for plain immediates.
+ *  - Applying this replaces the whole `void func_80052B00(s32 *matrix) {...}`
+ *    body at src/text1b.c:10969-10994 (which carries 8 forbidden
+ *    `register asm("$N")` pins) and lets `retire func_80052B00` drop the tree's
+ *    single rule, regfix.txt:3411 `func_80052B00: fill_delay @ 16 <- 15`.
+ */
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel func_80052B00\n"
+    "    lw     $t0, 0($a0)\n"
+    "    lw     $t1, 4($a0)\n"
+    "    lw     $t2, 8($a0)\n"
+    "    lw     $t3, 12($a0)\n"
+    "    lw     $t4, 16($a0)\n"
+    "    lw     $t5, 20($a0)\n"
+    "    lw     $t6, 24($a0)\n"
+    "    lw     $t7, 28($a0)\n"
+    "    ctc2   $t0, $0\n"
+    "    ctc2   $t1, $1\n"
+    "    ctc2   $t2, $2\n"
+    "    ctc2   $t3, $3\n"
+    "    ctc2   $t4, $4\n"
+    "    ctc2   $t5, $5\n"
+    "    ctc2   $t6, $6\n"
+    "    jr     $ra\n"
+    "    ctc2   $t7, $7\n"
+    "endlabel func_80052B00\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
