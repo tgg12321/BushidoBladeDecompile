@@ -2171,3 +2171,99 @@ function's Penalty List decomposition before trusting it.
 - probe: Built `s32 *arg4; arg4 = &tbl_125c[idx_1494[0]]; debug_printf(..., *arg4, tbl_125c[idx_1494[1]]);` on the session-9 chassis; sandbox --disable all, then idump.sh s15ptr + blocksum.py.
 - result: 9 / 91 at 91 build insns. The RTL block loses one insn (the separate `move a3` copy disappears) but it lands in the same 9-attractor as the const chassis rather than opening a fifth basin. Same form family as the previously banked rejected/named-pointer-inline-deref-9.c, now re-measured against the current chassis with a dump attached; the attractor count stands at four.
 - verdict: KILLED
+
+## Session 16 (forensics) — hypothesis dispositions
+
+### F28 — "the residual is reachable only by splitting the idx[0] chain across calls.c's store_one_arg boundary" — **KILLED (premise satisfied, effect absent)**
+
+Probe: instrumented-cc1 `-da` dumps of all three attractors, block extracted
+from `system.i.combine` with the new `tmp/grind/saEft01Init/s16/blockdump.py`.
+
+Result: the named-ADDRESS-pointer form (`p4 = &tbl_125c[idx_1494[0]];` at the
+statement, `*p4` as the argument) ALREADY produces exactly the split F28 asks
+for — address chain at insns 93/96/98 (the earliest LUIDs of the block), load
+deferred to `load_register_parameters` at insn 131, `sw 16(sp)` at 123 between
+them.  That is target's expand shape, insn-for-insn, and it scores 9 / 91 not
+0.  Inline arg3 has had the same split in EVERY form we have ever shipped.  So
+"cross the store_one_arg boundary" is not the missing ingredient; it is already
+crossed, and F28's next-probe list (force the address into a pseudo, name the
+index, second use of the pointer) is chasing a property we already have.
+
+### H67 — "at sched1 the block is ordered by dependence-depth INSN_PRIORITY" (the implicit model of sessions 10/11/15) — **KILLED**
+
+Probe: `BB2_SCHED_DEBUG=1` SCHEDDBG PICK trace of the ptr chassis (artifacts
+`ptr_sched1_picks.txt`, `ptr_sched2_picks.txt`).
+
+Result: at sched1 sixteen of the block's nineteen picks show
+`pri=2130706433` = `LAUNCH_PRIORITY` (sched.c:3985 + `birthing_insn_p`
+sched.c:2495).  Priorities are FLAT; the order is decided by latency-queue
+release times and INSN_LUID.  The dependence-depth vectors s11/s15 measured are
+sched2 artefacts, and sched2 only re-states sched1's order (its own picks are
+all `pri=1`, all RANKDBG `val=0`).  Any future reasoning about this block must
+be about sched1's LUID order, not about priority levels.
+
+### H68 — "the block residual is specific to saEft01Init's chassis" — **KILLED**
+
+Probe: `sandbox cpu_side_move_dir_4 --disable all` + per-index diff
+(`tmp/grind/saEft01Init/s16/odiff.py`, artifact
+`sibling_cpu_side_move_dir_4_diff.txt`), plus the target asm of all three
+siblings.
+
+Result: `cpu_side_move_dir_4` (7 / 160) and `marionation_Exec` carry the SAME
+block with the SAME target order (`sw 0x10($sp)` before both argument loads,
+`lw $a3` last) and OUR builds emit `lw a3` early in all three — in
+cpu_side_move_dir_4's case from a body that names BOTH arg4 and arg5.  The
+residual is a shared block-scheduling problem across three queue items, not a
+property of the do{}while(0) chassis.  A closing form here retires part of two
+other queue functions.
+
+### F29 (NEW, replaces F28) — invert sched1 instead of sweeping C
+
+Statement: because sched1's in-block priorities are flat (H67) and the
+class tie-break is inert on all three measured chassis, sched1's output is a
+pure function of the pre-sched RTL order + dependence edges + latency queue.
+Therefore the set of pre-sched orders that yield TARGET's 14-insn sequence is
+computable, and the search collapses from "which C spelling" to "which LUID
+order, and can C emit it".
+
+Mechanism: `schedule_block` picks `ready[0]` (sched.c:3966) and PREPENDS
+(3970-3975); `rank_for_schedule` (2398-2456) resolves flat priorities by
+`INSN_LUID`; insns enter the ready list through `schedule_insn`'s
+`queue_insn`/latency path.  A faithful replay needs only the LOG_LINKS printed
+in `system.i.sched` plus MIPS load latency (2) — both already on disk for four
+chassis.
+
+Next probe: write `tmp/grind/saEft01Init/sN/schedsim.py` that (1) parses
+`system.i.combine`'s block + its dependence edges, (2) replays the backward
+pass with flat LAUNCH priorities and LUID tie-breaks, (3) VALIDATES itself by
+reproducing the observed `.sched` order for all four banked chassis
+(cand/const/ptr/inline — dumps are in `tmp/grind/saEft01Init/s16/`), then (4)
+enumerates the permutations of pre-sched order reachable from C (statement vs
+inline per argument x statement order) and reports which, if any, replay to
+target's sequence.  If NONE does, that is a proof-grade negative for the whole
+argument-block axis and the escalation writes itself; if one does, it names the
+exact C to write.
+
+### F23 (unchanged, still live) — the do{}while(0) wrapper has never been through a fresh adversarial cheat-reviewer
+
+Unchanged this session.  Note for whoever runs it: session 16 adds that the
+wrapper is not implicated in the block at all — the identical residual occurs
+in `cpu_side_move_dir_4`, which has no wrapper.
+
+## [s16] F28 — the residual is reachable only by splitting the idx[0] chain across calls.c's store_one_arg boundary (address insns from the register-arg precompute loop, final load from load_register_parameters).
+- mechanism: calls.c:1618-1665 precomputes register args before store_one_arg (1736-1739) and load_register_parameters (~1876); an inline array-element arg leaves a MEM so its load defers, a named-VALUE arg loads at the statement.
+- probe: Instrumented cc1 -da dumps (tools/gcc-2.7.2/cc1 via s10/idump.sh) of all three attractors; block extracted from system.i.combine with the new blockdump.py.
+- result: The named-ADDRESS-pointer form (p4 = &tbl_125c[idx_1494[0]]; ... *p4) already produces the split EXACTLY: address chain at insns 93/96/98 (earliest LUIDs in the block), sw 16(sp) at 123, load deferred to insn 131 in load_register_parameters. That is target's expand shape insn-for-insn and it scores 9/91. Inline arg3 has had the same split in every form ever shipped. The premise is satisfied and the effect is absent.
+- verdict: KILLED
+
+## [s16] H67 — at sched1 the argument block is ordered by dependence-depth INSN_PRIORITY (the implicit model behind sessions 10, 11 and 15).
+- mechanism: priority() (sched.c:1424-1514) computes depth from the top over LOG_LINKS; schedule_block picks ready[0] and prepends (3966-3975), so final order is ascending priority with LUID tie-breaks.
+- probe: First-ever BB2_SCHED_DEBUG=1 run on this function: the SCHEDDBG PICK hook prints the whole ready list with priority and LUID at every pick (artifacts ptr_sched1_picks.txt / ptr_sched2_picks.txt).
+- result: At sched1, sixteen of nineteen in-block picks carry pri=2130706433 = 0x7F000001 = LAUNCH_PRIORITY — sched.c:3985 plus birthing_insn_p (2495) re-raise every register-birthing insn while reload_completed == 0. Priorities are FLAT; order comes from latency-queue release (clock ticks skip 19 -> 21) and INSN_LUID alone. sched2 then re-picks the same block at flat pri=1 and merely re-states sched1's order. The depth 'levels' of s11/s15 are a sched2 artefact.
+- verdict: KILLED
+
+## [s16] H68 — the early-lw-a3 residual is a property of saEft01Init's chassis (goto-loop + do{}while(0) wrapper + hoisted bases).
+- mechanism: If chassis-specific, the block's failure would not reproduce in other functions containing the same call.
+- probe: Compared the 14 target insns before `jal debug_printf` in asm/funcs/{saEft01Init,cpu_side_move_dir_4,marionation_Exec}.s; ran `sandbox cpu_side_move_dir_4 --disable all` and a per-index disassembly diff (new tools s16/odiff.py).
+- result: All three ORIGINAL objects put `sw $v1,0x10($sp)` before both register-arg loads with `lw $a3` last. cpu_side_move_dir_4 scores 7/160 and its diff shows `lw a3,0(v1)` at index 55 where target has it at 65 — the identical residual, from a body that names BOTH arg4 and arg5 and has no do{}while(0) wrapper. One shared block-scheduling problem across three queue items.
+- verdict: CONFIRMED

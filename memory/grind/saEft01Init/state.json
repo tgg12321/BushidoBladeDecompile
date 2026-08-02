@@ -1,7 +1,7 @@
 {
  "func": "saEft01Init",
  "file": "system",
- "session_count": 15,
+ "session_count": 16,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -93,23 +93,29 @@
    "floor": 7,
    "modality": "forensics",
    "headline": "Floor holds at 7/91; forensics KILLS F26's tie-break model outright (0 of 103 in-block RANKDBG decisions are class-resolved on either chassis) and replaces it with a proved single-edge model: the enti"
+  },
+  {
+   "session": 16,
+   "floor": 7,
+   "modality": "forensics",
+   "headline": "Floor holds at 7/91; forensics KILLS F28 (the calls.c store_one_arg split is ALREADY achieved by the banked 9-form, so the residual is purely scheduling) and kills the sessions-10/15 priority model \u2014 "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F28 - the residual is reachable only by splitting the idx[0] chain across calls.c's store_one_arg boundary: the ADDRESS insns (lbu/sll/addu) emitted by the register-arg precompute loop, the final LOAD emitted by load_register_parameters.",
-   "mechanism": "Sessions 15's H64 + H66 pin the shape exactly. Target's idx[0] chain is lbu 46 / sll 52 / addu 56 / lw a3 61, spread across the sw 16(sp) at build idx 58. Our four attractors each put the whole chain on ONE side: named-VALUE arg4 puts all four insns before the sw (7 / 91, held there by the REG_DEP_ANTI), fully-inline arg4 puts all four after it (13 / 91), and both the const cast and the named-ADDRESS-with-inline-deref buy the crossing at the cost of the lbu head order (9 / 91). Since the class tie-break is inert and priorities are chassis-invariant, the ONLY thing a C change can move is the pre-sched1 chain order, and calls.c is what sets it.",
-   "next_probe": "Read tools/gcc-2.7.2/calls.c 1618-1665 for exactly which expand_expr results are left as MEMs vs forced into pseudos (the TREE_CODE (args[i].tree_value) / args[i].value handling), and expr.c:expand_expr's ARRAY_REF / INDIRECT_REF cases for when the address subexpression is pre-forced into a pseudo. Then look for C that forces the ADDRESS into a pseudo at the statement while leaving the dereference inline in the call - e.g. the index named as a local with the base+deref inline (s32 i0 = idx_1494[0]; ... tbl_125c[i0] ...), or a named pointer with a second use in the block so the precompute loop cannot fold it back. Screen new forms against the rejected bank FIRST (named-index-bytes-inert-vs-pure-inline-13.c and arg3-value-named-12.c are already dead). Screen with sandbox --disable all; confirm any real move with idump.sh + blocksum.py - the presence or absence of the 100->125 REG_DEP_ANTI edge in insn 125's LOG_LINKS is the single readout that says whether the boundary was crossed."
+   "hypothesis": "F29 \u2014 because sched1's in-block priorities are flat and its class tie-break is inert on all three measured chassis, sched1's output is a deterministic function of (pre-sched RTL order, dependence edges, latency queue); therefore the set of pre-sched orders that replay to TARGET's 14-insn sequence is COMPUTABLE, and the search collapses from 'which C spelling' to 'which LUID order, and can C emit it'.",
+   "mechanism": "schedule_block picks ready[0] (sched.c:3966) and prepends (3970-3975); rank_for_schedule (2398-2456) resolves flat priorities by INSN_LUID; insns enter the ready list via schedule_insn's queue_insn latency path. A replay needs only the LOG_LINKS already printed in system.i.sched plus MIPS load latency 2 \u2014 on disk for four chassis in tmp/grind/saEft01Init/s16/.",
+   "next_probe": "Write schedsim.py: (1) parse the block and its dependence edges out of system.i.combine/.sched; (2) replay the backward pass with flat LAUNCH priorities + LUID tie-breaks; (3) VALIDATE by reproducing the observed .sched order for all four banked chassis (s16cand / s16inl / s16ptr and s15's const dump) \u2014 do not trust the simulator until it does; (4) enumerate the pre-sched orders C can actually emit (statement vs inline per argument, statement order among the named ones, arg3/arg5 spellings) and report which replay to target's sequence. A universal negative is proof-grade for the whole argument-block axis; a hit names the exact C to write."
   },
   {
-   "hypothesis": "F23 - the do{}while(0) wrapper is the candidate's single match device and has still never been through a fresh adversarial cheat-reviewer.",
-   "mechanism": "It is explicitly sanctioned by the owner's 2026-07-06 do-while(0) ruling (any body, ANY codegen effect, register allocation named explicitly, mandatory inline FAKE annotation, a single level needs no nesting justification) and the candidate carries the annotation. Its only effect is flow.c's loop_depth ref-weighting for the three table pointers; session 12 re-confirmed from calls.c 1653-1664 + stmt.c:2435 + toplev.c:3387 that argument expansion is not loop-gated at -O2, so it has no role in the argument block at all.",
-   "next_probe": "Invoke cheat-reviewer on the candidate before any completion claim, presenting the lever-exhaustion record: 67 measured argument-block forms over four rigid attractors, s11's wrapper-extent sweep (w1/w2 = 8, w7 = 16 at 92 insns, w3-w6 = 7), s12's four newly-dead axes, s13+s14's four exhausted permuter campaigns under two objectives, and s15's forensic proof that the residual is a single sched.c dependence edge rather than anything the wrapper touches."
+   "hypothesis": "F30 \u2014 the block should be attacked on cpu_side_move_dir_4 as well as saEft01Init, because the two functions differ in surrounding register pressure and in arg3's spelling (inline global vs hoisted base) while sharing the target block order, so a form that fails here for pressure reasons may separate the variables there.",
+   "mechanism": "Same 14-insn target sequence, same early-lw-a3 failure, different chassis: cpu_side_move_dir_4 names BOTH arg4 and arg5 and has no do{}while(0) wrapper, and its arg3 is the inline global D_800A11DC[D_800A11D5] (lui/addu/lw %lo) rather than a hoisted-base load. Any mechanism that is really about the block must behave identically on both; anything that behaves differently is chassis pressure, and that difference is itself a measurement.",
+   "next_probe": "Run the same idump/blockdump forensics on cpu_side_move_dir_4 (it lives in the same TU, so s10/idump.sh already dumps it \u2014 just point blockdump.py at its function section) and compare its sched1 pick trace with saEft01Init's. Specifically check whether its decisive pick pair is the same 121/93-shaped LUID race. NB the grind contract scopes edits to saEft01Init: use the sibling as EVIDENCE only, do not edit its body."
   },
   {
-   "hypothesis": "F27 (PROJECT-WIDE, not saEft01Init) - the sandbox-aligned permuter shim is worth keeping for OTHER queue functions, because the stock 100-vs-5 weighting hides register/field-difference signal on any function whose gap is not a clean reordering.",
-   "mechanism": "Session 14 measured that the stock objective spends 92% of saEft01Init's base score on two unalignable slots and only 8% on the seven differences the sandbox actually charges for. Any function whose residual is a handful of register/field differences has the same shape, and there the aligned weights are a strictly better gradient - the cross-chassis monotonicity measured there (23<->7, 29<->9) is the property that matters when a campaign is seeded on several chassis. This is an OPERATOR-surface question: making it standard means a knob in tools/permuter_campaign.py, which a grind session may not write.",
-   "next_probe": "Reuse tmp/grind/saEft01Init/s14/sbshim/ verbatim (export PYTHONPATH to it before permuter_campaign.py launch) on the next queue function whose modality ladder reaches permuter, and first run one launch with BB2_SHIM_DEBUG=1 to READ that function's Penalty List decomposition before deciding whether its gap is ordering (shim will not help) or field differences (shim should help). If it pays twice, surface it to the owner as a proposed --penalties flag on tools/permuter_campaign.py."
+   "hypothesis": "F23 (carried, unchanged) \u2014 the do{}while(0) wrapper is the candidate's single match device and has still never been through a fresh adversarial cheat-reviewer.",
+   "mechanism": "Sanctioned by the owner's 2026-07-06 do-while(0) ruling (any body, any codegen effect, mandatory inline FAKE annotation, single level); its only effect is flow.c's loop_depth ref-weighting for the three table pointers. Session 16 adds that the wrapper is not implicated in the argument block at all \u2014 the identical block residual occurs in cpu_side_move_dir_4, which has no wrapper.",
+   "next_probe": "Invoke cheat-reviewer on the candidate before any completion claim, presenting the lever-exhaustion record: 67 measured argument-block forms over four rigid attractors, s11's wrapper-extent sweep, s12's four dead axes, s13+s14's four exhausted permuter campaigns under two objectives, s15's single-dependence-edge proof and s16's sched1 flat-priority proof."
   }
  ],
  "judge_constraints": [],

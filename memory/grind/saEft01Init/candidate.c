@@ -284,7 +284,34 @@
  *     (named ADDRESS local + inline deref as the argument) was re-measured
  *     this session: 9 / 91, one fewer RTL insn, same attractor.
  *
- * NEXT: hypotheses.md F28.  The question is no longer "which tie-break" —
+ * ===========================================================================
+ * SESSION 16 (forensics) — BODY STILL UNCHANGED (7 / 91); F28 IS KILLED AND
+ * THE MODEL OF THE SCHEDULER WAS WRONG SINCE SESSION 10
+ * ===========================================================================
+ *   * F28 asked for C that splits the idx[0] chain across calls.c's
+ *     store_one_arg boundary.  The RTL dumps say we ALREADY have it: the
+ *     named-ADDRESS-pointer form (rejected/named-pointer-inline-deref-9.c)
+ *     emits the address chain at the block's three earliest LUIDs and defers
+ *     the load to load_register_parameters, i.e. target's expand shape exactly
+ *     — and scores 9.  Inline arg3 has always had the same split.  The
+ *     residual is 100% a SCHEDULING outcome.  Do not re-probe the boundary.
+ *   * At SCHED1 the block's INSN_PRIORITYs are FLAT: sixteen of nineteen picks
+ *     carry LAUNCH_PRIORITY (0x7F000001) because sched.c:3985 +
+ *     birthing_insn_p re-raise every register-birthing insn while
+ *     reload_completed == 0.  The dependence-depth "levels" sessions 10/11/15
+ *     reasoned about are a sched2 artefact, and sched2 only re-states sched1's
+ *     order.  Order at sched1 = latency-queue release + INSN_LUID, nothing
+ *     else (every in-block RANKDBG on this third chassis is val=0 too).
+ *   * The identical block, with the identical target order, is in TWO other
+ *     queue functions — cpu_side_move_dir_4 (7/160) and marionation_Exec —
+ *     and our builds emit `lw a3` early in all three, including a body that
+ *     names BOTH arg4 and arg5.  This is one shared problem, not a chassis
+ *     quirk, and the wrapper is not implicated in it.
+ *   * Next: F29 — replay sched1's backward pass (it is now a deterministic,
+ *     simulable function) and INVERT it to get the required LUID order,
+ *     instead of sweeping more C spellings.
+ *
+ * NEXT: hypotheses.md F29.  The question is no longer "which tie-break" —
  * there is no live tie-break.  It is: what pure-C shape splits the idx[0]
  * chain across calls.c's store_one_arg boundary, giving the address chain a
  * statement-expanded position and the load a load_register_parameters

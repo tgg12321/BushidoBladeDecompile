@@ -1678,3 +1678,134 @@ diff for any find worth reading).
 - [s15] New tooling of record: tmp/grind/saEft01Init/s15/blocksum.py <tagdir> auto-derives the argument block from system.i.sched and prints the sched1/sched2 orders, the priority vector and the RANKDBG class-vs-LUID census in ~6 lines. tmp/grind/saEft01Init/s15/rankscan.py <tagdir> <uids> gives the full PRIODBG edge + RANKDBG dump for a UID set but is VERY verbose - prefer blocksum.py.
 
 - [s15] The do{}while(0) wrapper is still the candidate's single match device and has still never been through a fresh adversarial cheat-reviewer (F23, unchanged since session 12).
+
+## Session 16 (forensics) — sched1 runs FLAT-PRIORITY, and the block problem is SHARED with two sibling queue functions
+
+Floor re-measured at **7 / 91** with the session-9 candidate body in place
+(unchanged; re-applied from `memory/grind/saEft01Init/candidate.c`, sandbox
+`--disable all` = 7, 91 vs 91 insns).  No new C spelling was proposed this
+session — the whole session went into instrumented-cc1 forensics on the three
+already-banked attractors, and it produced two findings that change the model
+of the residual.
+
+### E16.1 — the SAME argument block appears in THREE queue functions, with the SAME target order, and ALL THREE of our builds fail it the same way
+
+`src/system.c` contains the identical `debug_printf` timeout block in three
+functions: `cpu_side_move_dir_4` (src/system.c:~400), `marionation_Exec`
+(src/system.c:~519) and `saEft01Init` (src/system.c:~781).  Target bytes
+(`asm/funcs/*.s`, the 14 insns before `jal debug_printf`):
+
+    cpu_side_move_dir_4  ... addu $a0,$a0,$s3 / sll $v0,2 / sw $v1,0x10($sp) /
+                             lui $at,%hi(D_800A11DC) / addu $at,$at,$v0 /
+                             lw $a2,%lo(D_800A11DC)($at) / lw $a3,0($a0)
+    marionation_Exec     ... identical modulo $s5 for the table base
+    saEft01Init          ... addu $a0,$a0,$s0 / sll $v0,2 / addu $v0,$v0,$s3 /
+                             sw $v1,0x10($sp) / lw $a2,0($v0) / lw $a3,0($a0)
+
+i.e. in all three ORIGINAL objects the `sw $v1,0x10($sp)` precedes BOTH
+register-argument loads and `lw $a3,0($a0)` is the last memory reference of
+the block.  The only structural difference is that saEft01Init's arg3 goes
+through a hoisted `$s3 = D_800A11DC` base while the two siblings re-materialise
+the symbol with `lui $at / addu / lw %lo`.
+
+Our builds fail identically: `sandbox cpu_side_move_dir_4 --disable all` = 7 /
+160, and its per-index diff (artifact
+`sibling_cpu_side_move_dir_4_diff.txt`) shows `lw $a3,0($v1)` emitted at index
+55 where target has it at 65 — the SAME early-`lw a3` residual, on a body that
+names BOTH arg4 and arg5 (`arg4 = tbl_125c[idx_1494[0]]; arg5 =
+tbl_125c[idx_1494[1]];`).  So the residual is not an artefact of saEft01Init's
+chassis or of its do{}while(0) wrapper: it is one shared block-scheduling
+problem, and whatever C closes it here closes two more queue items.
+
+### E16.2 — calls.c's split IS observable in the RTL, and all three attractors' expand shapes are now on disk
+
+`blockdump.py` (new, this session) prints the block from any `-da` dump.  For
+the three attractors, the pre-sched (`system.i.combine`) order is:
+
+  * candidate / named-VALUE arg4 (7): 93 lbu idx0, 96 sll, 98 addu, **100 lw**
+    (the statement), 105 lw a1, 108/111/113 arg3 ADDRESS chain (no load),
+    116/119/121/123 arg5 chain, 125 sw 16(sp), 127 a0, 129 a1, **131 lw a2**,
+    133 move a3, call.
+  * fully-inline arg4 (13): 93 a1, 96/99/101 arg3 address, 104/107/109 arg4
+    ADDRESS chain, 112..119 arg5 chain, 121 sw, 123 a0, 125 a1, **127 lw a2,
+    129 lw a3**, call.
+  * named-ADDRESS pointer + inline deref (9): 93 lbu idx0, 96 sll, **98 addu →
+    the pointer pseudo** (statement), 103 a1, 106/109/111 arg3 address,
+    114..121 arg5 chain, 123 sw, 125 a0, 127 a1, **129 lw a2, 131 lw a3**.
+
+This CONFIRMS the s12/s15 reading of calls.c 1618-1665 directly from RTL: an
+inline array-element argument leaves its load to `load_register_parameters`
+(after `store_one_arg`'s `sw`), a named-VALUE argument performs the load at the
+statement, and arg3 — inline in every form we ship — has ALWAYS had the split
+shape.  The pointer form is therefore EXACTLY target's expand shape (address
+chain at the earliest LUIDs, load last) and it still scores 9: the residual is
+100% a scheduling outcome, not an expand-order one.  F28's premise ("split the
+chain across the store_one_arg boundary") is thus ANSWERED — we already have a
+form that does it — and F28 as written is closed.
+
+### E16.3 — the decisive pass is SCHED1, and at sched1 the whole block carries LAUNCH_PRIORITY (flat priorities)
+
+`BB2_SCHED_DEBUG=1` (the SCHEDDBG PICK hook at sched.c:3956, which prints the
+whole ready list with priorities and LUIDs at every pick) was run for the first
+time on this function.  Artifacts `ptr_sched1_picks.txt` /
+`ptr_sched2_picks.txt`.
+
+  * `schedule_block` is confirmed BACKWARD by source: sched.c:3970-3975 does
+    `NEXT_INSN (insn) = last; last = insn;` — each picked insn is PREPENDED, so
+    the final order is the exact REVERSE of the pick order, and readiness
+    propagates to an insn's PREDECESSORS.  The trace reverses to the emitted
+    `.sched` order exactly, on both passes.
+  * At SCHED1 nearly every in-block insn is picked with
+    `pri=2130706433 = 0x7F000001 = LAUNCH_PRIORITY`.  sched.c:3985 sets
+    `INSN_PRIORITY (insn) = LAUNCH_PRIORITY` around `schedule_insn`, and
+    `birthing_insn_p` (sched.c:2495) re-raises any insn that makes a register
+    live, so at sched1 (`reload_completed == 0`) the register-pressure
+    heuristic FLATTENS the dependence-depth priorities that sessions 10/11/15
+    modelled.  **Dependence-depth priority does not order this block at
+    sched1.**  What orders it is (a) when each insn leaves the latency queue
+    (clock ticks skip: 19 → 21), and (b) INSN_LUID = the pre-sched RTL order.
+  * s15's class-inertness finding replicates on a THIRD chassis: every RANKDBG
+    line in the ptr chassis' sched1 block window returns `val=0`, including the
+    two decisive ones (`last=125 y=121 cls=3 x=93 cls2=3 val=0` and
+    `last=121 y=119 cls=3 x=93 cls2=3 val=0`).  The load/store dependence-class
+    tie-break is inert on candidate, const AND pointer chassis.
+  * The pointer chassis' whole 9-point residual comes down to two adjacent
+    picks at sched1 clock 16/17: with the ready set `[121(l=16), 93(l=3)]` it
+    takes 121, then with `[93(l=3), 119(l=15)]` it takes 93 — so 93 (the idx[0]
+    `lbu`, the LOWEST LUID in the block) is placed AFTER the whole idx[1] chain
+    and target's head order (`lbu a0,0(s1)` first) is lost by one pick.  At
+    sched2 the same block is re-picked with flat `pri=1` and pure-LUID
+    tie-breaks, so sched2 merely re-states sched1's order.
+
+### E16.4 — what this means for the search
+
+Sessions 10-15 searched C spellings against a model in which dependence-depth
+priorities decide the block.  At sched1 they do not.  The sched1 output is a
+deterministic function of (pre-sched RTL order, dependence edges, latency
+queue) with flat priorities — which makes it SIMULABLE.  Instead of sweeping
+more C spellings blind (67 banked forms over four attractors), the next
+session can invert the scheduler: replay sched1's backward pass over the block
+DAG for every permutation of the pre-sched RTL order that C can actually
+produce, and keep only those whose reverse-pick order equals target's 14-insn
+sequence.  That yields the REQUIRED LUID order, and only then do we look for C
+that emits it.  The C surface that moves LUID order is small and already
+mapped: statement vs inline per argument (4 attractors), statement ORDER among
+the named ones, and the arg3/arg5 spellings.
+
+- [s16] Floor re-measured this session at 7/91 (91 vs 91 insns) with the session-9 candidate body re-applied to src/system.c; body unchanged, no new C spelling proposed.
+
+- [s16] src/system.c contains the same debug_printf timeout block three times: cpu_side_move_dir_4 (~line 400), marionation_Exec (~line 519), saEft01Init (~line 781). Their targets agree on the block's order; only arg3's base differs (siblings re-materialise D_800A11DC with lui/addu/lw %lo, saEft01Init uses the hoisted $s3).
+
+- [s16] cpu_side_move_dir_4 honest distance is 7/160 and its residual includes the same early `lw a3` — measured with tmp/grind/saEft01Init/s16/odiff.py (artifact sibling_cpu_side_move_dir_4_diff.txt). Closing the block here would also move two other queue functions.
+
+- [s16] Pre-sched (system.i.combine) block orders are now on disk for three attractors: named-VALUE arg4 (7) loads at the statement (insn 100, before the sw at 125); fully-inline arg4 (13) emits its address chain at 104/107/109 (AFTER arg3's) and its load at 129 (after the sw at 121); named-ADDRESS pointer (9) emits the address chain at 93/96/98 (earliest LUIDs) and the load at 131 (after the sw at 123) — target's exact expand shape.
+
+- [s16] sched.c:3970-3975 proves schedule_block is BACKWARD: each picked insn is prepended (NEXT_INSN(insn) = last; last = insn), so the emitted order is the exact reverse of the pick order; the traces reverse to the .sched/.sched2 orders exactly on both passes.
+
+- [s16] SCHED1 flat-priority fact: sixteen of nineteen in-block picks print pri=2130706433 (LAUNCH_PRIORITY, sched.c:3985 + birthing_insn_p sched.c:2495). Dependence-depth priority does NOT order this block at sched1.
+
+- [s16] The ptr chassis' 9 points come down to two adjacent sched1 picks: with ready [121(l=16), 93(l=3)] it takes 121, then with ready [93(l=3), 119(l=15)] it takes 93 — so insn 93, the idx[0] lbu and the LOWEST-LUID insn in the block, lands after the whole idx[1] chain and target's head order (lbu a0,0(s1) first) is lost by one pick.
+
+- [s16] s15's class-tie-break inertness replicates on a THIRD chassis: every RANKDBG line in the ptr chassis' sched1 block window returns val=0, including both decisive comparisons (last=125 y=121 cls=3 x=93 cls2=3; last=121 y=119 cls=3 x=93 cls2=3).
+
+- [s16] New reusable tooling written this session: s16/blockdump.py (print the block from any -da dump), s16/probe.py (patch the do_timeout region of saEft01Init only, dump, print — anchored on the function so it cannot hit cpu_side_move_dir_4's identically-named label), s16/odiff.py (per-index sandbox-vs-target disassembly diff for any function), s16/collect.sh.
