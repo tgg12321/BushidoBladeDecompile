@@ -252,3 +252,171 @@ frontier item 1, not a disposition by itself.
 - probe: tmp/grind/func_80052B00/s2/census.py — scans every asm/funcs/*.s whose opcode set is a subset of {lw, ctc2, jr, nop} and contains a ctc2, then cross-checks each name against inline_asm_canonical.txt and engine/queue.json; names resolved through named_syms.txt.
 - result: Exactly six bodies qualify: func_80052B00 (17 insns, ACTIVE in queue), func_80052B44 (14, canonical-authorized 2026-07-27), func_8007EEEC / func_8007EF1C / func_8007EF4C (= gte_SetRotMatrix / gte_SetColorMatrix / gte_SetTransVector per named_syms.txt:640-642, all canonical-authorized 2026-06-07), and tslDmaDrawListDelAll (4 insns, DONE in pure C at src/display.c:2491 — a single ctc2 of the incoming param, no loads to allocate). The script's raw 'unauthorized=5' is a name-resolution artifact; the true unauthorized count is ONE. The family partitions on exactly the H1 criterion: the only two members whose TARGET holds a cop2 write in the jr $ra delay slot are func_80052B44 (authorized on precisely that ground) and func_80052B00.
 - verdict: CONFIRMED
+
+## Session 3 (structural, 2026-08-01) — FLOOR 18 -> 17
+
+### H5 — CONFIRMED (asm-statement granularity is a live structural lever)
+**Statement.** Fusing all eight cop2 writes into a SINGLE `__asm__` statement
+with eight `"r"` inputs lowers the honest floor below 18.
+
+**Mechanism.** With eight separate one-operand asm statements each loaded value
+is live only across its own asm insn, so GCC can recycle registers and defer the
+`matrix[0]` load into the dying `$a0`. One asm statement with eight inputs makes
+all eight values simultaneously live at one program point — the only C-level
+construct that can REQUIRE eight distinct hard registers without a
+`register asm("$N")` pin. That kills both the load-order inversion and the
+load-delay `nop`.
+
+**Probe.** `tmp/grind/func_80052B00/s3/sweep3.py` — 11 forms varying asm
+granularity (1 / 2 / 4 / 7+1 / 1+7 / 8 writes per statement), operand order,
+direct-rvalue operands, unsigned temporaries, walking pointer and reversed load
+order. Each rewrites the body in `src/text1b.c`, runs
+`sandbox func_80052B00 --disable all`, objdumps the sandbox object, and restores
+the original in a `finally` block.
+
+**Result.** Every fused form scores **17** (build 18 insns vs target 17), down
+from the two-session floor of 18. Full emitted bodies in `s3/form_disasm.txt`:
+the fused form is instruction-for-instruction isomorphic to the target — loads
+in strict ascending offset order 0..0x1C, cop2 writes in CR order, no load-delay
+nop. Re-verified from the banked artifact (`s3/verify_banked.txt`).
+
+**Verdict: CONFIRMED.** The structural axis was NOT dead — session 2's KILL was
+correct for the statement level it swept, but the asm-granularity dimension was
+untested and was worth one point plus a complete structural cleanup of the body.
+
+### H6 — CONFIRMED (the residual is now purely register naming + the delay slot)
+**Statement.** After the fused form, the entire 17-point residual is 16
+instructions naming the wrong GPRs plus the one unfilled `jr $ra` delay slot.
+
+**Probe / result.** `s3/dump_forms.py` dumps target and build side by side.
+Build: `lw v0,0(a0) .. lw t2,28(a0)` / `ctc2 v0,$0 .. ctc2 t2,$7` / `jr ra` /
+`nop`. Target: `lw $t0..$t7` / `ctc2 $t0..$t6,$0..$6` / `jr $ra` /
+`ctc2 $t7,$7`. Opcodes, order, offsets and operand roles all match; only the
+GPR names differ, on all 16 instructions, plus the delay slot.
+
+**Verdict: CONFIRMED.** If the register set could be steered, the honest floor
+would be 1 — and that last point is H1, which is a proven impossibility. So the
+pure-C floor for this function is exactly 1 in the limit, and 17 in practice.
+
+### H7 — KILLED (no legal C spelling moves the allocator's starting register)
+**Statement.** Some parameter type, declaration order, constraint letter,
+operand-list shape or copy structure moves GCC off `$v0` as the first allocated
+hard register, letting the eight temporaries land on `$t0..$t7`.
+
+**Mechanism (compiler source, new this session).**
+`tools/gcc-2.7.2/config/mips/mips.h` defines **no `REG_ALLOC_ORDER`**. Without
+it, local-alloc's `find_free_reg` walks hard registers in plain ascending number
+order and takes the first non-conflicting one: `$2, $3, (skip $4 — the live base
+pointer), $5, $6, $7, $8, $9, $10`, i.e. exactly the observed
+`v0,v1,a1,a2,a3,t0,t1,t2`. The only documented ways to move that start point are
+a conflict across a call and a copy suggestion to a named hard register; a
+call-free leaf with no computation has neither.
+
+**Probe.** `tmp/grind/func_80052B00/s3/sweep4.py` — `const s32 *` parameter,
+`s32 matrix[8]` parameter, `void *` parameter with an in-body cast, reversed
+declaration order, `"d"` instead of `"r"` constraints, a ninth `"r"(matrix)`
+operand keeping the base pointer live through the asm, and a copy chain through
+a second set of eight locals.
+
+**Result.** 7/7 score 17 with the ctc2 register sequence
+`v0,v1,a1,a2,a3,t0,t1,t2` — identical to the round-3 forms. Across all 18
+session-3 spellings the register SET never changed. The only constructs that
+would change it (a clobber list naming `$2/$3/$5-$7`, or `register T x asm("$N")`
+pins) are register pins by another spelling, forbidden and score-inert under the
+cheat-invisible sandbox.
+
+**Verdict: KILLED.** 16 of the remaining 17 points are unreachable in pure C.
+
+### PROBE ONLY — volatile pointer (not a proposed form)
+`volatile s32 *vp = matrix;` feeding the fused asm scores 15. Volatile coercion
+of a non-hardware access is a cheat under [[inline-asm-policy]] /
+[[legitimate-volatile-interrupt-touched]]. Recorded solely to measure what the
+load scheduling is worth (2 points). It must not be proposed as a form, and it
+does not fill the delay slot either.
+
+## Live frontier after session 3 (highest value first)
+
+1. **Canonical-asm authorization remains the disposition**, and session 3
+   strengthens rather than weakens it: the honest pure-C body is now
+   instruction-for-instruction isomorphic to the target, which shows the C form
+   is *right* and the residual is entirely register naming (mechanically
+   unreachable, H7) plus the delay slot (provably unreachable, H1). Precedent
+   unchanged and citable: `func_80052B44`, `src/text1b.c:10995`,
+   `inline_asm_canonical.txt:340`, authorized 2026-07-27 on the identical
+   construct one function later in the same file. Next probe: a session or
+   operator with authority over `inline_asm_canonical.txt` applies
+   `memory/grind/func_80052B00/candidate.c` over `src/text1b.c:10969-10994`,
+   adds the entry, runs `retire func_80052B00` (drops `regfix.txt:3411`) and
+   `verify-oracle`. The disposition call belongs to the driver/owner.
+
+2. **If the canonical disposition is refused, `best_pure_c_fused8_floor17.c` is
+   the body to ship**, not the HEAD body. It is pin-free, scores 17 honestly,
+   and would need only `regfix.txt:3411` (the delay-slot move) plus register
+   paperwork rather than eight `register asm("$N")` pins plus that rule — i.e.
+   it strictly reduces the cheat surface even in the fallback outcome. Next
+   probe: measure what rule set an operator would actually need to make the
+   fused body byte-match with rules ENABLED (a `sandbox` run without
+   `--disable all`, and a full `verify-oracle` after splicing) — a surface a
+   grind session may not touch, so this is an operator step.
+
+3. **The remaining sanctioned modalities still have no new axis.** Session 3
+   found the one untested structural dimension; forensics / rederive / synthesis
+   operate on constructs this body does not contain (no arithmetic, no control
+   flow, no calls, no data layout). Permuter remains not worth a session (s2):
+   its mutation space is statement reordering / temp introduction / type
+   changes, all now enumerated by hand across 32 forms, and the residual is a
+   hard register-set requirement plus a provably unreachable delay slot.
+
+## [s3] Fusing all eight cop2 writes into a SINGLE __asm__ statement with eight "r" inputs lowers the honest floor below 18.
+- mechanism: With eight separate one-operand asm statements each loaded value is live only across its own asm insn, so GCC recycles registers and defers the matrix[0] load into the dying $a0. One asm statement with eight inputs makes all eight values simultaneously live at a single program point — the only C-level construct that can REQUIRE eight distinct hard registers without a register asm("$N") pin — which kills both the load-order inversion and the extra load-delay nop.
+- probe: tmp/grind/func_80052B00/s3/sweep3.py — 11 forms varying asm granularity (1/2/4/7+1/1+7/8 cop2 writes per statement), operand order, direct-rvalue operands, unsigned temporaries, walking pointer, reversed load order. Each rewrites the body in src/text1b.c, runs sandbox --disable all, objdumps the object, restores the original in a finally block. Re-verified from the banked artifact by s3/verify_banked.py.
+- result: every fused form scores 17 (build 18 insns vs target 17), down from the flat 18 of sessions 1 and 2. The emitted body becomes instruction-for-instruction isomorphic to the target: loads in strict ascending offset order 0..0x1C, cop2 writes in CR order, no load-delay nop. Session 2's structural KILL was correct for the statement level it swept but did not cover the asm-granularity dimension.
+- verdict: CONFIRMED
+
+## [s3] After the fused form the entire 17-point residual is 16 instructions naming the wrong GPRs plus the one unfilled jr $ra delay slot.
+- mechanism: if the only surviving differences are operand names and the delay slot, then the C form itself is correct and every remaining point sits on the register-allocation axis (H2/H7) or the delay-slot axis (H1).
+- probe: tmp/grind/func_80052B00/s3/dump_forms.py dumps the target body and the emitted body side by side for four forms (s3/form_disasm.txt).
+- result: build emits lw v0,0(a0) .. lw t2,28(a0) / ctc2 v0,$0 .. ctc2 t2,$7 / jr ra / nop; target has lw $t0..$t7, 0..0x1C($a0) / ctc2 $t0..$t6,$0..$6 / jr $ra / ctc2 $t7,$7. Opcodes, ordering, memory offsets and operand roles all match; 16 instructions differ only in GPR name, plus the delay slot. The pure-C floor is therefore exactly 1 in the limit and 17 in practice.
+- verdict: CONFIRMED
+
+## [s3] Some parameter type, declaration order, constraint letter, operand-list shape or copy structure moves GCC off $v0 as the first allocated hard register, letting the eight temporaries land on $t0..$t7.
+- mechanism: tools/gcc-2.7.2/config/mips/mips.h defines NO REG_ALLOC_ORDER, so local-alloc's find_free_reg walks hard registers in plain ascending number order and takes the first non-conflicting one — $2,$3,(skip $4, the live base pointer),$5,$6,$7,$8,$9,$10, exactly the observed v0,v1,a1,a2,a3,t0,t1,t2. The only documented ways to move that start point are a conflict across a call and a copy suggestion to a named hard register, and a call-free leaf with no computation has neither.
+- probe: tmp/grind/func_80052B00/s3/sweep4.py — const s32 * parameter, s32 matrix[8] parameter, void * parameter with an in-body cast, reversed declaration order, "d" instead of "r" constraints, a ninth "r"(matrix) operand keeping the base pointer live through the asm, and a copy chain through a second set of eight locals.
+- result: 7/7 score 17 with ctc2 register sequence v0,v1,a1,a2,a3,t0,t1,t2, identical to the round-3 forms. Across all 18 session-3 spellings the register SET never changed. The only constructs that would change it (a clobber list naming $2/$3/$5-$7, or register asm("$N") pins) are register pins by another spelling — forbidden, and score-inert under the cheat-invisible sandbox.
+- verdict: KILLED
+
+## [s3] PROBE ONLY (not a proposed form): a volatile-qualified pointer feeding the fused asm reaches 15.
+- mechanism: volatile forces strict in-order, non-deferred loads, isolating how much of the residual the load scheduling is worth.
+- probe: the volatile-param-PROBE variant in sweep3.py.
+- result: score 15 (build 18 insns), delay slot still nop, register set reversed but unchanged as a set. Volatile coercion of a non-hardware access is a cheat under inline-asm-policy / legitimate-volatile-interrupt-touched, so this is banked purely as a 2-point measurement of the scheduling component and must never be proposed as a form.
+- verdict: KILLED (as a form; retained as a measurement)
+
+## [s3] Fusing all eight cop2 writes into a SINGLE __asm__ statement with eight "r" inputs lowers the honest floor below 18.
+- mechanism: With eight separate one-operand asm statements each loaded value is live only across its own asm insn, so GCC recycles registers and defers the matrix[0] load into the dying $a0. One asm statement with eight inputs makes all eight values simultaneously live at a single program point - the only C-level construct that can REQUIRE eight distinct hard registers without a register asm("$N") pin - which kills both the load-order inversion and the extra load-delay nop. Sessions 1-2 swept the STATEMENT level only and never varied asm-statement granularity.
+- probe: tmp/grind/func_80052B00/s3/sweep3.py: 11 forms varying asm granularity (1/2/4/7+1/1+7/8 cop2 writes per statement), operand order, direct-rvalue operands, unsigned temporaries, walking pointer, reversed load order. Each rewrites the body in src/text1b.c, runs `sandbox func_80052B00 --disable all`, objdumps the sandbox object, restores the original in a finally block. Re-verified end-to-end from the banked artifact by s3/verify_banked.py.
+- result: Every fused form scores 17 (build 18 insns vs target 17), down from the flat 18 of sessions 1 and 2. The emitted body becomes instruction-for-instruction isomorphic to the target: loads in strict ascending offset order 0..0x1C, cop2 writes in CR order, no load-delay nop. Session 2's structural KILL was correct for the statement level it swept but did not cover this dimension.
+- verdict: CONFIRMED
+
+## [s3] After the fused form, the entire 17-point residual is 16 instructions naming the wrong GPRs plus the one unfilled jr $ra delay slot.
+- mechanism: If the only surviving differences are operand names and the delay slot, the C form itself is correct and every remaining point sits on the register-allocation axis (H2/H7) or the delay-slot axis (H1).
+- probe: tmp/grind/func_80052B00/s3/dump_forms.py dumps the target body and the emitted body side by side for four forms (s3/form_disasm.txt).
+- result: Build emits lw v0,0(a0) .. lw t2,28(a0) / ctc2 v0,$0 .. ctc2 t2,$7 / jr ra / nop; target has lw $t0..$t7, 0..0x1C($a0) / ctc2 $t0..$t6,$0..$6 / jr $ra / ctc2 $t7,$7. Opcodes, ordering, memory offsets and operand roles all match; 16 instructions differ only in GPR name, plus the delay slot. The pure-C floor is therefore exactly 1 in the limit and 17 in practice.
+- verdict: CONFIRMED
+
+## [s3] Some parameter type, declaration order, constraint letter, operand-list shape or copy structure moves GCC off $v0 as the first allocated hard register, letting the eight temporaries land on $t0..$t7.
+- mechanism: tools/gcc-2.7.2/config/mips/mips.h defines NO REG_ALLOC_ORDER, so local-alloc's find_free_reg walks hard registers in plain ascending number order and takes the first non-conflicting one - $2,$3,(skip $4, the live base pointer),$5,$6,$7,$8,$9,$10, exactly the observed v0,v1,a1,a2,a3,t0,t1,t2. The only documented ways to move that start point are a conflict across a call and a copy suggestion to a named hard register; a call-free leaf with no computation has neither.
+- probe: tmp/grind/func_80052B00/s3/sweep4.py: const s32 * parameter, s32 matrix[8] parameter, void * parameter with an in-body cast, reversed declaration order, "d" instead of "r" constraints, a ninth "r"(matrix) operand keeping the base pointer live through the asm, and a copy chain through a second set of eight locals.
+- result: 7/7 score 17 with the ctc2 register sequence v0,v1,a1,a2,a3,t0,t1,t2, identical to the round-3 forms. Across all 18 session-3 spellings the register SET never changed. The only constructs that would change it (a clobber list naming $2/$3/$5-$7, or register asm("$N") pins) are register pins by another spelling - forbidden, and score-inert under the cheat-invisible sandbox.
+- verdict: KILLED
+
+## [s3] PROBE ONLY, not a proposed form: a volatile-qualified pointer feeding the fused asm reaches 15.
+- mechanism: volatile forces strict in-order, non-deferred loads, isolating how much of the residual the load scheduling is worth.
+- probe: the volatile-param-PROBE variant in tmp/grind/func_80052B00/s3/sweep3.py.
+- result: Score 15 (build 18 insns); delay slot still nop; register set reversed in order but unchanged as a set. Volatile coercion of a non-hardware access is a cheat under inline-asm-policy / legitimate-volatile-interrupt-touched, so this is banked purely as a 2-point measurement of the scheduling component and must never be proposed as a form.
+- verdict: KILLED
+
+## [s3] H1 (re-test, third session): if any C spelling could get an __asm__ ctc2 into the jr $ra delay slot, a sweep of asm granularities and operand shapes would find it.
+- mechanism: reorg.c:730-735 stop_search_p returns 1 for ASM_INPUT / asm_noperands >= 0, halting fill_simple_delay_slots at any asm insn; ctc2 has no C analog so the target's delay-slot instruction can only come from an __asm__ block.
+- probe: All 18 session-3 forms had their emitted tails objdumped (sweep3_results.txt, sweep4_results.txt, form_disasm.txt).
+- result: 18/18 end 'jr $ra | nop'. Running total across sessions 1-3: 32/32 measured C spellings leave the delay slot unfilled.
+- verdict: CONFIRMED

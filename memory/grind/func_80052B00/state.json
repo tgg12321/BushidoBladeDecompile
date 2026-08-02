@@ -1,7 +1,7 @@
 {
  "func": "func_80052B00",
  "file": "text1b",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,23 +15,29 @@
    "floor": 18,
    "modality": "structural",
    "headline": "Structural axis measured dead: 14 pure-C spellings scored, 8 tie the floor at 18, none below; all 14 emit jr $ra; nop, making the s1 delay-slot impossibility (H1) empirical; family census shows func_8"
+  },
+  {
+   "session": 3,
+   "floor": 17,
+   "modality": "structural",
+   "headline": "Floor moved 18 -> 17 (first movement in 3 sessions): fusing all eight cop2 writes into ONE __asm__ with eight \"r\" inputs makes the honest body instruction-for-instruction isomorphic to the target; the"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Canonical-asm authorization under the GTE-leaf carve-out remains the disposition for func_80052B00 \u2014 now backed by measurement rather than argument.",
-   "mechanism": "gte-wrapper-misroute-park is a no-C-form-by-construction carve-out (same class as jtbl-infra in no-new-park-categories), orthogonal to the scan_hand_coded S1-S8 tiers. After session 2 the supporting evidence is: floor 18 flat across two sessions and 14 measured spellings; H1 confirmed empirically 14/14; and a complete family census showing this is the last unauthorized member of a settled cluster whose only other delay-slot-filled member was authorized on this exact ground (func_80052B44, src/text1b.c:10995, inline_asm_canonical.txt:340, 2026-07-27).",
+   "hypothesis": "Canonical-asm authorization under the GTE-leaf carve-out remains the disposition, and session 3 strengthens rather than weakens it: the honest pure-C body is now instruction-for-instruction isomorphic to the target, which shows the C form is RIGHT and the residual is entirely register naming (mechanically unreachable, H7) plus the delay slot (provably unreachable, H1).",
+   "mechanism": "gte-wrapper-misroute-park is a no-C-form-by-construction carve-out (same class as jtbl-infra in no-new-park-categories), orthogonal to the scan_hand_coded S1-S8 tiers. Supporting evidence after session 3: the floor is a measured 17 with a 16+1 decomposition where both components have compiler-source mechanisms (no REG_ALLOC_ORDER in mips.h; reorg.c stop_search_p); 32/32 spellings leave the delay slot nop; and the family census shows this is the last unauthorized member of a settled cluster whose only other delay-slot-filled member was authorized on this exact ground (func_80052B44, src/text1b.c:10995, inline_asm_canonical.txt:340, 2026-07-27).",
    "next_probe": "A session or operator holding authority over inline_asm_canonical.txt applies memory/grind/func_80052B00/candidate.c over src/text1b.c:10969-10994, adds the canonical entry, then runs `retire func_80052B00` (drops regfix.txt:3411) and `verify-oracle`. The disposition call belongs to the driver/owner; a grind session in a non-escalation modality must not self-authorize it."
   },
   {
-   "hypothesis": "The register-allocation axis (8 of the 18 points) has no C-level steering lever, so even a hypothetical fix cannot reach 0.",
-   "mechanism": "Session 1's H2 established this by mechanism: in a call-free leaf GCC draws temps from the caller-save pool in fixed order and defers the self-clobbering matrix[0] load; there is no arithmetic, control flow, or call in the body to bias allocno priority or liveness. Session 2's 8 floor-tying spellings are consistent with that (the allocation never changed).",
-   "next_probe": "If a later modality wants a measurement rather than a mechanism, dump the RTL allocation with the instrumented cc1 (tools/gcc-2.7.2/cc1 -da, per instrumented-cc1-location) and read `;; Register dispositions` for the 8 load pseudos \u2014 expect no conflicts and plain pool-order assignment, i.e. nothing to steer. Low value: H1's delay slot survives any allocation fix, so the floor cannot reach 0 this way."
+   "hypothesis": "If the canonical disposition is ever REFUSED, memory/grind/func_80052B00/best_pure_c_fused8_floor17.c - not the pinned HEAD body - is what should ship, because it strictly reduces the cheat surface.",
+   "mechanism": "The HEAD body needs eight `register asm(\"$N\")` pins PLUS regfix.txt:3411 to byte-match. The fused body is pin-free and already correct in opcodes, order and offsets; only the GPR names and the delay-slot move remain as build-time paperwork. Fewer cheats for the same bytes is a strict improvement in the fallback outcome.",
+   "next_probe": "Operator step (a grind session may not touch these surfaces): splice the fused body into src/text1b.c, measure `sandbox func_80052B00` WITHOUT --disable all to see what the enabled rule set actually achieves, determine the minimal rule set that reaches byte-match, and run a full `verify-oracle`."
   },
   {
-   "hypothesis": "The remaining sanctioned modalities (forensics / rederive / synthesis) have no new axis to open on this function.",
-   "mechanism": "The body is 8 array reads feeding 8 cop2 writes: no arithmetic to restructure, no control flow to reshape, no call to reorder, no type to correct, no data layout to re-attribute. Sessions 1 and 2 have measured or mechanically settled every component of the 18-point residual.",
-   "next_probe": "Rather than opening a new axis, the cheapest remaining measurement is a diff of func_80052B00's target against the authorized func_80052B44 block instruction-for-instruction to confirm the two are the same construct at different widths (8-word vs 5-word matrix) \u2014 a 1-turn probe that strengthens the precedent citation for frontier item 1 without re-running any dead lever."
+   "hypothesis": "The remaining sanctioned modalities (forensics / rederive / synthesis) still have no new axis on this function.",
+   "mechanism": "Session 3 found and exhausted the one untested structural dimension (asm-statement granularity). The body is 8 array reads feeding 8 cop2 writes: no arithmetic to restructure, no control flow to reshape, no call to reorder, no type to correct, no data layout to re-attribute. Both residual components now have compiler-source mechanisms, not just measurements.",
+   "next_probe": "Permuter remains NOT worth a session (recorded s2, reaffirmed s3): its mutation space is statement reordering, temp introduction and type changes, all now enumerated by hand across 32 forms, and the residual is a hard register-set requirement plus a provably unreachable delay slot. If a later modality wants one more measurement rather than a mechanism, dump the RTL allocation with the instrumented cc1 (tools/gcc-2.7.2/cc1 -da, per instrumented-cc1-location) and read the local-alloc quantity assignments for the eight load pseudos - expect plain ascending-hard-reg-number assignment with no conflicts, i.e. nothing to steer."
   }
  ],
  "judge_constraints": [],

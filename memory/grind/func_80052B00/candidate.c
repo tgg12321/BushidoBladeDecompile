@@ -51,6 +51,35 @@
  * criterion. Full data: memory/grind/func_80052B00/evidence.md §Session 2 and
  * memory/grind/func_80052B00/rejected/structural-sweep-14-forms-floor-18.c
  * (which also records the honest pure-C, pin-free floor-18 body).
+ *
+ * SESSION 3 (structural, 2026-08-01) — THE HONEST FLOOR MOVED 18 -> 17, and the
+ * movement STRENGTHENS this disposition rather than undermining it. Sessions
+ * 1-2 always emitted eight separate one-operand `__asm__ ("ctc2 %0,$N")`
+ * statements; session 3 fused all eight cop2 writes into ONE `__asm__` with
+ * eight "r" inputs, which forces all eight loaded values to be simultaneously
+ * live and thereby removes the deferred `matrix[0]` load AND the extra
+ * load-delay nop. The resulting honest body is instruction-for-instruction
+ * ISOMORPHIC to the target — same opcodes, same order, same offsets — and the
+ * whole 17-point residual is now exactly (a) 16 instructions naming the wrong
+ * GPRs ({v0,v1,a1,a2,a3,t0,t1,t2} vs the target's {t0..t7}) and (b) the one
+ * unfilled `jr $ra` delay slot.
+ *
+ * Both are mechanically closed. (a): `tools/gcc-2.7.2/config/mips/mips.h`
+ * defines no `REG_ALLOC_ORDER`, so local-alloc walks hard registers in ascending
+ * number order and takes the first non-conflicting one; only a call conflict or
+ * a copy suggestion to a named hard register can move that, and a call-free
+ * leaf has neither — measured invariant across 18 fused-form spellings
+ * (parameter types, declaration order, "d" vs "r" constraints, a ninth base
+ * operand, a copy chain, 1/2/4/7/8-write granularities). (b): H1, now
+ * corroborated by 32/32 measured spellings across three sessions.
+ *
+ * The pin-free floor-17 body is banked at
+ * memory/grind/func_80052B00/best_pure_c_fused8_floor17.c. If the canonical-asm
+ * disposition below is ever REFUSED, that body — not the pinned HEAD body — is
+ * what an operator should ship: it strictly reduces the cheat surface (eight
+ * register pins disappear; only the delay-slot paperwork and register fixes
+ * remain). Full data: evidence.md §Session 3, hypotheses.md H5/H6/H7,
+ * tmp/grind/func_80052B00/s3/.
  */
 __asm__(
     ".set\tnoat\n"
