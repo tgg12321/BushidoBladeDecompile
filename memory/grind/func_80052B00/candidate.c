@@ -387,6 +387,48 @@
  * should be stated as "the delay slot is impossible and the registers are
  * priced", not as "both are impossible". Full data: evidence.md Session 10,
  * hypotheses.md H25/H26/H27, tmp/grind/func_80052B00/s10/.
+ *
+ * SESSION 11 (escalation / DISPOSITION, 2026-08-02) — form UNCHANGED, honest
+ * floor UNCHANGED at 17 for the eighth consecutive session. This session
+ * answered s10's one open frontier question and then filed the disposition.
+ *
+ *  - H28/H29, THE ANSWER TO "IS THERE A ZERO-COST OCCUPANCY CONSTRUCT?": yes,
+ *    and it is a cheat. Adding a clobber list `: "$2","$3","$5","$6","$7"` to
+ *    the REAL fused ctc2 asm makes cc1 emit `lw $8,0($4) ... lw $15,28($4)` /
+ *    `ctc2 $8,$0 ... ctc2 $15,$7` / `j $31` — the target's registers, order and
+ *    offsets EXACTLY, in the SAME 17 instructions, at zero cost (s11/occ.sh).
+ *    It is illegal because the template writes cop2 control registers and no
+ *    GPR, so the clobber list is a false statement about the asm whose only
+ *    effect is to steer reload1.c:3606 onto the shipped bytes' registers — the
+ *    register-pin family (.claude/rules/inline-asm-policy.md), identical in
+ *    intent to the HEAD body's eight `register asm("$N")` pins. Banked at
+ *    rejected/false-clobber-list-occupancy-cheat-honest-sandbox-scores-2.c.
+ *    ENGINE DETECTOR GAP, reported to the owner and NOT fixed here (engine/ is
+ *    off-surface): the sandbox strips empty-template occupancy asms but not a
+ *    false clobber list on a real template, so this cheat scored 2 against the
+ *    banked floor form's 17 (s11/score.py). A floor drop of that shape is a
+ *    cheat signature, not progress.
+ *
+ *  - H30, WHY THIS STRENGTHENS THIS FORM: with the target's own register
+ *    allocation handed to the compiler for free, the ENTIRE residual is the
+ *    delay slot — target `ctc2 $t6,$6 / jr $ra / ctc2 $t7,$7` vs the form's
+ *    `ctc2 $14,$6 / ctc2 $15,$7 / j $31 / nop`, every other byte agreeing.
+ *    Sessions 1-10 could only argue the delay-slot impossibility with the
+ *    register residual muddying the measurement; s11 measured it in isolation.
+ *
+ *  - DISPOSITION FILED. Gate 1 (canonical-asm STRONG hand-coded signals) FAILS:
+ *    `scan_hand_coded --single func_80052B00` = tier=LOW score=0/8. Gate 2 (an
+ *    in-hand SOTN-master precedent) FAILS: only the in-PROJECT sibling
+ *    precedent func_80052B44 (inline_asm_canonical.txt:340) exists, which the
+ *    standing ruling classes as "same family". Both gates failing is the case
+ *    the owner's 2026-07-27 standing ruling pre-decides, so the entry filed at
+ *    docs/grind/decisions.md (2026-08-02, func_80052B00) is
+ *    REFUSED / OWNER-ACCEPTED INCOMPLETE and the function is parked terminally
+ *    — nothing pending on the owner. This file stays banked and ready to apply
+ *    if that ruling is ever revisited; the entry carries the operator sequence
+ *    and asks that any revisit cover the whole 0x80052A80-0x80052BDC block.
+ *    Full data: evidence.md Session 11, hypotheses.md H28/H29/H30,
+ *    tmp/grind/func_80052B00/s11/.
  */
 __asm__(
     ".set\tnoat\n"

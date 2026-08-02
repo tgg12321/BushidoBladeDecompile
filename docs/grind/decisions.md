@@ -2990,3 +2990,127 @@ category — this entry creates no category, it disposes of one function);
 `no-compiler-divergence` (all `cc1` internals cited above are informational
 about the required C shape, NOT a request to touch the frozen toolchain). This
 entry names saEft01Init directly.
+## 2026-08-02 — func_80052B00 (src/text1b.c) — **OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**
+
+Filed by grind session s11 (escalation modality). **Nothing is pending on the
+owner**: both endgame-lock AND-gates FAIL, which is the case the owner's
+2026-07-27 standing ruling
+(`.claude/rules/endgame-lock-disposition.md`) pre-decides. The driver parks
+func_80052B00 terminally and the queue advances. Read on only for the evidence
+and for one engine finding that IS worth the owner's attention.
+
+**The function.** `func_80052B00` (0x80052B00, 17 instructions,
+`asm/text1b.s:11916-11934`) is a LIBGTE-style SetRotMatrix+SetTransMatrix leaf:
+eight `lw` from `*$a0` feeding cop2 control registers CR0-CR7, with
+`ctc2 $t7,$7` sitting IN the `jr $ra` delay slot. It carries exactly one rule,
+`regfix.txt:3411  func_80052B00: fill_delay @ 16 <- 15`, plus eight
+`register asm("$N")` pins in the HEAD body. Honest pure-C floor: **17**, flat
+across eight consecutive sessions.
+
+**Exhaustion (from `memory/grind/func_80052B00/`).** Eleven sessions, six
+distinct modalities (recon, structural x2, permuter x2, forensics x2, rederive
+x2, synthesis, escalation): 32+ hand-measured C spellings, ~164,000 permuter
+iterations across two undirected chassis plus a 161,280-point DIRECTED
+cross-product (all 8! load orderings x 4 asm-operand shapes), an instrumented
+`cc1 -da` pass-by-pass forensic teardown, a whole-binary census of 1,369
+`jr $ra` tails, a decomp.me corpus sweep (top similarity 0.048), a fresh m2c
+run, and a differential against the ORIGINAL PsyQ `cc1psx` (GCC 2.7.2.SN.1) via
+dosemu2. The floor moved once (18 -> 17, s3) and never again.
+
+**GATE 1 — canonical-asm STRONG hand-coded signals: FAIL.**
+`python3 tools/scan_hand_coded.py --single func_80052B00` (run this session)
+returns `tier=LOW score=0/8`, "no strong hand-coded indicators": S1 0 multu
+pairs, S2 no empty-body branches, S3/S4 too short (17 < 40 insns), S5 no
+high-similarity siblings, S6 no BIOS jumptable, S7 no unsaved $sN, S8 no
+redundant mask. The S1-S8 heuristics are length- and control-flow-based and this
+is a 17-instruction straight-line leaf, so LOW is unsurprising — but the gate is
+the gate.
+
+**GATE 2 — an in-hand SOTN-master precedent for the closing construct: FAIL.**
+No SOTN-master file+line citation exists for a whole-body canonical-asm
+cop2-control loader, and no session produced one. What IS in hand is an
+in-PROJECT sibling precedent, recorded here because the owner may want it:
+`func_80052B44` — the very next function in this same file
+(`src/text1b.c:10995`), the same construct with a 5-word matrix — was
+Judge-authorized canonical-asm on 2026-07-27 and is listed at
+`inline_asm_canonical.txt:340`, alongside `gte_SetRotMatrix` (:326),
+`gte_SetColorMatrix` (:325), `gte_SetTransVector` (:324) and `func_8007ED6C`
+(:308). Under the standing ruling that is "same family", not a passing gate, so
+it does not change this disposition.
+
+**The technical case, in one line each.** The `ctc2 $t7,$7` in the `jr $ra`
+delay slot has no non-human author: cc1's reorg halts at any asm insn
+(`reorg.c:730-735 stop_search_p`, corroborated by 32/32 hand spellings and
+~164k permuter iterations, all emitting `jr $ra; nop`); the SHIPPED cc1psx
+behaves identically and DOES fill that same slot when the trailing insn is a
+plain C store (s9/H24); and ASPSX 2.34 never filled a delay slot at all
+(whole-binary census, s8/H20 — 1,104 of 1,369 `jr $ra` tails leave the slot
+`nop`, 881 of them with a trivially-swappable `addiu $sp` stack restore).
+
+**NEW THIS SESSION — and the reason this entry is worth reading past the
+ruling.** Session 11 answered s10's one open question (a zero-cost register
+occupancy construct) and the answer is a cheat the sandbox does not catch:
+
+1. Adding a clobber list `: "$2","$3","$5","$6","$7"` to the REAL fused `ctc2`
+   asm makes cc1 emit `lw $8,0($4) ... lw $15,28($4)` / `ctc2 $8,$0 ... ctc2
+   $15,$7` / `j $31` — **the target's registers, order and offsets exactly, in
+   the same 17 instructions, at zero cost** (`tmp/grind/func_80052B00/s11/occ.sh`).
+2. It is a cheat: the template writes cop2 control registers and no GPR, so the
+   clobber list is a false statement about the asm whose only effect is to steer
+   `reload1.c:3606 order_regs_for_reload()` onto the shipped bytes' registers —
+   the register-pin family barred by `.claude/rules/inline-asm-policy.md`,
+   identical in intent to the HEAD body's eight `register asm("$N")` pins.
+   Banked at
+   `memory/grind/func_80052B00/rejected/false-clobber-list-occupancy-cheat-honest-sandbox-scores-2.c`
+   and NOT applied to `src/`.
+3. **ENGINE DETECTOR GAP (owner action optional, grind sessions cannot fix it —
+   `engine/` is off-surface).** The cheat-invisible sandbox strips
+   empty-template occupancy asms (s10 poolK scored 19, worse than the floor,
+   exactly as intended) but does NOT strip or discount a false clobber list on a
+   real template. Measured with `tmp/grind/func_80052B00/s11/score.py` (splice
+   over `src/text1b.c:10969-10994`, `sandbox --disable all`, restore asserted):
+   HEAD **18**, banked pin-free fused-8 **17**, false-clobber form **2**. A
+   forbidden construct moved the honest floor by 15 points. Until
+   `engine/cheats.py` learns this spelling, a floor drop of this shape anywhere
+   in the tree is a cheat signature, not progress.
+4. It strengthens rather than weakens the disposition: with the target's own
+   register allocation handed to the compiler for free, the ENTIRE residual is
+   the delay slot (target `ctc2 $t6,$6 / jr $ra / ctc2 $t7,$7`; the form
+   `ctc2 $14,$6 / ctc2 $15,$7 / j $31 / nop`). Every other byte agrees. The
+   thing standing between this project and a byte match is one instruction that
+   no compiler and no assembler in this toolchain can place.
+
+**Disposition.** REFUSED / OWNER-ACCEPTED INCOMPLETE per the standing ruling.
+func_80052B00 stays as it is on main (one `fill_delay` rule + eight register
+pins, byte-matching); it is parked terminally, not "permanently blocked", and
+nothing is pending on the owner.
+
+**If the owner ever revisits it**, the whole-body canonical-asm packaging is
+banked ready to apply at `memory/grind/func_80052B00/candidate.c` (operator
+sequence: splice over `src/text1b.c:10969-10994`, add the
+`inline_asm_canonical.txt` entry, `retire func_80052B00` to drop
+`regfix.txt:3411`, `verify-oracle`, plus a fresh layer-2 `cheat-reviewer` on the
+C), and the honest pin-free floor-17 body is at
+`memory/grind/func_80052B00/best_pure_c_fused8_floor17.c` — it strictly reduces
+the cheat surface versus HEAD (the eight pins disappear).
+
+**BLOCK NOTE — this ruling should be read as covering the run
+0x80052A80-0x80052BDC.** `game_2d_CheckLifeGaugeNoDisp`, `func_80052A88` and
+`func_80052B7C` are the same construct in the same contiguous authoring unit,
+each carrying exactly one `fill_delay` regfix rule (four of only six such rules
+tree-wide), and `func_80052B44` — already authorized — sits in the middle of the
+run. Sessions 8-11's results are facts about GCC 2.7.2 (both forks), about ASPSX
+2.34, and about reload's occupancy arithmetic, not about this function's C, so
+they apply verbatim to all four. When a sibling reaches the queue top, do NOT
+re-derive sessions 1-11: cite `memory/grind/func_80052B00/evidence.md`
+(Sessions 8-11), re-run only the cheap per-function confirmations (target tail
+shape, its single `fill_delay` rule, `sandbox --disable all`), and take the
+disposition straight to the driver.
+
+**Filed under authority of:** the task-brief contract (grind session s11,
+escalation modality — assigned after the floor held flat across eight sessions
+and six distinct modalities); the owner's standing 2026-07-27 both-gates-fail
+auto-ruling and `.claude/rules/endgame-lock-disposition.md`;
+`no-park-permanently` (2026-06-24); `no-new-park-categories` (this entry creates
+no category). This entry names func_80052B00 directly.
+

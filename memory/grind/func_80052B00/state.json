@@ -1,8 +1,8 @@
 {
  "func": "func_80052B00",
  "file": "text1b",
- "session_count": 10,
- "current_modality": "synthesis",
+ "session_count": 11,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 1,
@@ -63,23 +63,29 @@
    "floor": 17,
    "modality": "synthesis",
    "headline": "Synthesis merged the register and delay-slot residuals into ONE resource-contention result (H25) and, chasing it, CORRECTED six sessions of ledger doctrine: the allocation pool is not fixed, and a for"
+  },
+  {
+   "session": 11,
+   "floor": 17,
+   "modality": "escalation",
+   "headline": "Both endgame-lock gates FAIL (scan_hand_coded tier=LOW 0/8; no SOTN-master precedent, only the in-project sibling func_80052B44) -> standing-ruling REFUSED entry filed in docs/grind/decisions.md; en r"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "THE ONE PRECISE QUESTION LEFT ON THE REGISTER AXIS, and the strongest live axis on this function: is there a LEGAL C construct that makes a value live ACROSS the fused asm without emitting an instruction? That is exactly what occupancy requires, and occupancy is now measured to be the entire distance between the banked floor-17 body and the target's register set.",
-   "mechanism": "H26: the pool is (call-used GPRs) minus (occupied), and poolK proves that occupying $2,$3,$5,$6,$7 yields the target's exact ctc2 $8..$15 mapping. H25: an occupancy construct is free only if its instruction has somewhere free to live. Measured negatives to date - unused parameters do not occupy at all (s6 ctlF/ctlG); an s32 return occupies $2 only and pays the delay slot (s7/H17, s10/retB); a long long return costs +1..+4 (s7/retC, s10/poolJ/K); volatile pointers (s3) and empty-template asms (s6/ctlC, s10/occH) are cheats and are stripped by the sandbox besides. Per difficult-is-not-impossible this is recorded as UN-ENUMERATED, not impossible.",
-   "next_probe": "Enumerate the legal ways a value can be live across an asm at zero emitted cost, and measure each with s10/couple.sh's harness (it takes a new control in ~20 lines): a value whose defining insn is one of the target's own eight lw but which is consumed after the asm; a second live pointer derived from matrix without an emitted addu; a value whose defining insn jump2 deletes as a no-op move (the retD channel, which fires but so far coalesces onto the register the value already had); and the incoming-parameter case WITHOUT an empty asm - find whether any legal use of a parameter keeps it live across the asm while emitting nothing. If any of these lands, re-score with s10/score.py; a hit would drop the floor from 17 toward the 1-3 range but cannot reach 0 (see frontier item 2)."
+   "hypothesis": "The disposition is a BLOCK question: game_2d_CheckLifeGaugeNoDisp, func_80052A88 and func_80052B7C are the same construct in the same contiguous authoring unit (0x80052A80-0x80052BDC) with the same single fill_delay rule, and func_80052B44 - already authorized - sits in the middle of the run.",
+   "mechanism": "s8 F3/H21: these five are the complete set of tree functions whose jr $ra delay slot holds a cop2 op; they occupy consecutive addresses; four of them carry exactly one fill_delay regfix rule pulling the immediately preceding instruction (four of only six such rules tree-wide). Sessions 8-11's results are facts about GCC 2.7.2 (both forks), about ASPSX 2.34 and about reload's occupancy arithmetic - not about this function's C - so they apply verbatim.",
+   "next_probe": "When a sibling reaches the queue top, do NOT re-derive sessions 1-11. Cite memory/grind/func_80052B00/evidence.md Sessions 8-11 plus s8/cop2_partition.txt, s8/slotcensus.txt, s9/fused8.psx.s, s10/dumps/ and s11/occ.sh; re-run only the cheap per-function confirmations (target tail shape, its single fill_delay rule, sandbox --disable all); take the disposition straight to the driver in one session."
   },
   {
-   "hypothesis": "Even a complete win on the register axis leaves a non-zero floor, so the canonical-asm disposition survives H26's correction intact: the delay-slot instruction has no possible non-human author.",
-   "mechanism": "H1: reorg.c:730-735 stop_search_p returns 1 for ASM_INPUT / asm_noperands >= 0, so fill_simple_delay_slots halts at any asm insn - corroborated by 32/32 hand spellings and ~164k permuter iterations, all emitting 'jr $ra; nop'. H20: whole-binary census of 1,369 jr $ra tails (1,104 leave the slot nop, 881 of those with a trivially-swappable addiu $sp stack restore) proves ASPSX 2.34 never filled delay slots. H24: the SHIPPED cc1psx (GCC 2.7.2.SN.1) is instruction-identical to our fork here, and fills the same slot when the trailing insn is a plain C store rather than an asm. H25 adds that the one free occupancy channel IS that slot, so buying a register and filling the slot with ctc2 are mutually exclusive.",
-   "next_probe": "No probe - this is the standing disposition argument and it is complete. It should be cited, not re-derived. The operator sequence is unchanged: apply memory/grind/func_80052B00/candidate.c over src/text1b.c:10969-10994, add the inline_asm_canonical.txt entry, run 'retire func_80052B00' (drops regfix.txt:3411) and 'verify-oracle', with a fresh layer-2 cheat-reviewer on the C. Precedent in hand: func_80052B44, src/text1b.c:10995, inline_asm_canonical.txt:340, authorized 2026-07-27 for the identical construct one function later in the same file, with docs/grind/decisions.md:1805 expressly providing for per-function sibling rulings."
+   "hypothesis": "engine/cheats.py does not strip a false clobber list on an asm whose template is real, so that spelling of the register-pin cheat is score-VISIBLE tree-wide and can masquerade as a floor drop.",
+   "mechanism": "The stripper keys on empty-template asms and on register-asm pins; a clobber list attached to a legitimate non-empty template survives stripping while still steering reload1.c:3606 order_regs_for_reload(). Measured here as 2 vs 17 on the same body.",
+   "next_probe": "Owner-side (grind sessions may not edit engine/): teach the cheat stripper to drop clobber-list entries naming hard GPRs that the template does not write, then re-run 'engine test' and re-score this function (expect 17) and any function whose ledger shows a large unexplained floor drop. Reproducer: tmp/grind/func_80052B00/s11/occ.sh + score.py."
   },
   {
-   "hypothesis": "The disposition is a BLOCK question, not a per-function one: game_2d_CheckLifeGaugeNoDisp, func_80052A88 and func_80052B7C are the same construct as func_80052B00, in the same contiguous authoring unit, with the same single-rule signature - so whatever ruling this function gets should be written to cover the run 0x80052A80-0x80052BDC.",
-   "mechanism": "F3/H21: these four plus the already-authorized func_80052B44 are the complete set of tree functions whose jr $ra delay slot holds a cop2 op; they occupy consecutive addresses; and each of the four unauthorized ones carries exactly one regfix rule, a fill_delay pulling the immediately preceding instruction (four of only six such rules tree-wide). Sessions 8-10's results are facts about GCC 2.7.2 (both forks), about ASPSX, and about reload's occupancy arithmetic - not about this function's C - so they apply verbatim to all four.",
-   "next_probe": "When any sibling reaches the queue top, do NOT re-derive sessions 1-10 on it: cite evidence.md Session 8 F1-F3, Session 9 H23/H24 and Session 10 H25/H26, plus s8/cop2_partition.txt, s8/slotcensus.txt, s9/fused8.psx.s and s10/dumps/, re-run only the cheap per-function confirmations (target tail shape, its single fill_delay rule, sandbox --disable all), and take the disposition straight to the driver. A single owner ruling covering the block would retire four queue items at once."
+   "hypothesis": "If the REFUSED ruling is ever revisited, the whole-body canonical-asm packaging is ready to apply and strictly retires the tree's cheat surface for this function.",
+   "mechanism": "The delay-slot ctc2 has no non-human author (H1 / H20 / H24), and s11 measured that with the register half removed for free the entire residual IS that one instruction. The banked block mirrors the authorized func_80052B44 packaging verbatim (duplicated TAB+SPACE .set directives for maspsx noreorder stripping; decimal memory offsets).",
+   "next_probe": "Operator sequence, unchanged: splice memory/grind/func_80052B00/candidate.c over src/text1b.c:10969-10994, add the inline_asm_canonical.txt entry, run 'retire func_80052B00' (drops regfix.txt:3411) and 'verify-oracle', with a fresh layer-2 cheat-reviewer on the C. If instead the ruling stands but the pin surface is to be reduced, ship memory/grind/func_80052B00/best_pure_c_fused8_floor17.c, which removes the eight register pins and leaves only the single fill_delay rule."
   }
  ],
  "judge_constraints": [],

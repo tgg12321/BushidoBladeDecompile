@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80052B00",
-      "file": "text1b",
-      "distance": 18,
-      "verdict": "ASM-PARTIAL",
-      "rules": 1,
-      "status": "active"
-    },
-    {
       "func": "func_80060544",
       "file": "text1b",
       "distance": 18,
@@ -2586,18 +2578,27 @@
       "rules": 15,
       "status": "parked",
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:2789 \u2014 '2026-08-01 \u2014 saEft01Init (src/system.c) \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE'"
+    },
+    {
+      "func": "func_80052B00",
+      "file": "text1b",
+      "distance": 18,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "parked",
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md - '## 2026-08-02 - func_80052B00 (src/text1b.c) - **OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**'"
     }
   ],
   "counts": {
     "total": 307,
-    "active": 272,
+    "active": 271,
     "by_status": {
-      "active": 272,
-      "parked": 35
+      "active": 271,
+      "parked": 36
     },
     "by_verdict": {
-      "ASM-PARTIAL": 44,
       "C": 95,
+      "ASM-PARTIAL": 43,
       "ASM-SUSPECT": 107,
       "ASM-STRUCTURAL": 26
     }
