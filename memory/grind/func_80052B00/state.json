@@ -1,31 +1,37 @@
 {
  "func": "func_80052B00",
  "file": "text1b",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 18,
    "modality": "recon",
    "headline": "Recon baseline: floor 18 on a pure cop2-control-loader leaf (8 lw -> ctc2 CR0-CR7, last ctc2 in the jr delay slot); proved via reorg.c stop_search_p that GCC 2.7.2 can never place an __asm__ insn in a"
+  },
+  {
+   "session": 2,
+   "floor": 18,
+   "modality": "structural",
+   "headline": "Structural axis measured dead: 14 pure-C spellings scored, 8 tie the floor at 18, none below; all 14 emit jr $ra; nop, making the s1 delay-slot impossibility (H1) empirical; family census shows func_8"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "func_80052B00's disposition is canonical-asm authorization (COMPLETED-INLINE-ASM-CANONICAL) under the existing GTE-leaf carve-out, not a pure-C match.",
-   "mechanism": "gte-wrapper-misroute-park is a no-C-form-by-construction carve-out (same class as jtbl-infra in no-new-park-categories), orthogonal to the scan_hand_coded S1-S8 tiers. The endgame-lock precedent gate passes with a real file+line citation rather than a 'genre-adjacent' argument: func_80052B44 at src/text1b.c:10995 / inline_asm_canonical.txt:340, the identical construct one function later in the same file, authorized 2026-07-27.",
-   "next_probe": "A session holding authority over inline_asm_canonical.txt applies memory/grind/func_80052B00/candidate.c over src/text1b.c:10969-10994, adds the canonical entry, then runs retire func_80052B00 (drops regfix.txt:3411) and verify-oracle. Note the disposition call belongs to the driver/owner \u2014 a grind session in a non-escalation modality must not self-authorize it."
+   "hypothesis": "Canonical-asm authorization under the GTE-leaf carve-out remains the disposition for func_80052B00 \u2014 now backed by measurement rather than argument.",
+   "mechanism": "gte-wrapper-misroute-park is a no-C-form-by-construction carve-out (same class as jtbl-infra in no-new-park-categories), orthogonal to the scan_hand_coded S1-S8 tiers. After session 2 the supporting evidence is: floor 18 flat across two sessions and 14 measured spellings; H1 confirmed empirically 14/14; and a complete family census showing this is the last unauthorized member of a settled cluster whose only other delay-slot-filled member was authorized on this exact ground (func_80052B44, src/text1b.c:10995, inline_asm_canonical.txt:340, 2026-07-27).",
+   "next_probe": "A session or operator holding authority over inline_asm_canonical.txt applies memory/grind/func_80052B00/candidate.c over src/text1b.c:10969-10994, adds the canonical entry, then runs `retire func_80052B00` (drops regfix.txt:3411) and `verify-oracle`. The disposition call belongs to the driver/owner; a grind session in a non-escalation modality must not self-authorize it."
   },
   {
-   "hypothesis": "The delay-slot impossibility (H1) can be demonstrated empirically rather than by compiler-source reading, converting the argument into a measurement for the owner's audit trail.",
-   "mechanism": "Direct falsification attempt on H1: if any C spelling could get an __asm__ ctc2 into the jr delay slot, a small sweep would find it; reorg.c's dbr pass dump shows the bail-out directly.",
-   "next_probe": "Compile a minimal TU containing only this body with cc1 -da and inspect the .dbr (delay-branch-scheduling) dump for fill_simple_delay_slots halting at the asm insn; sweep 3-4 orderings (ctc2 $7 written first / written last / emitted via a trailing return / split into a separate statement) and show the slot stays nop in every form. Cheap, and it either confirms H1 with measurement or overturns it."
+   "hypothesis": "The register-allocation axis (8 of the 18 points) has no C-level steering lever, so even a hypothetical fix cannot reach 0.",
+   "mechanism": "Session 1's H2 established this by mechanism: in a call-free leaf GCC draws temps from the caller-save pool in fixed order and defers the self-clobbering matrix[0] load; there is no arithmetic, control flow, or call in the body to bias allocno priority or liveness. Session 2's 8 floor-tying spellings are consistent with that (the allocation never changed).",
+   "next_probe": "If a later modality wants a measurement rather than a mechanism, dump the RTL allocation with the instrumented cc1 (tools/gcc-2.7.2/cc1 -da, per instrumented-cc1-location) and read `;; Register dispositions` for the 8 load pseudos \u2014 expect no conflicts and plain pool-order assignment, i.e. nothing to steer. Low value: H1's delay slot survives any allocation fix, so the floor cannot reach 0 this way."
   },
   {
-   "hypothesis": "func_80052B00 is the last unauthorized member of an otherwise fully settled cop2-control-loader cluster, which is a clean completeness argument for frontier item 1.",
-   "mechanism": "If every other lw/ctc2/jr-only body in the tree is already in inline_asm_canonical.txt, the category is settled and this function is a straggler rather than a novel case.",
-   "next_probe": "Grep asm/funcs/*.s for bodies consisting solely of lw / ctc2 / jr instructions and cross-check each name against inline_asm_canonical.txt and engine/queue.json; report the census."
+   "hypothesis": "The remaining sanctioned modalities (forensics / rederive / synthesis) have no new axis to open on this function.",
+   "mechanism": "The body is 8 array reads feeding 8 cop2 writes: no arithmetic to restructure, no control flow to reshape, no call to reorder, no type to correct, no data layout to re-attribute. Sessions 1 and 2 have measured or mechanically settled every component of the 18-point residual.",
+   "next_probe": "Rather than opening a new axis, the cheapest remaining measurement is a diff of func_80052B00's target against the authorized func_80052B44 block instruction-for-instruction to confirm the two are the same construct at different widths (8-word vs 5-word matrix) \u2014 a 1-turn probe that strengthens the precedent citation for frontier item 1 without re-running any dead lever."
   }
  ],
  "judge_constraints": [],

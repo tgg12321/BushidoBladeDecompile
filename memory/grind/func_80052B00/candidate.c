@@ -38,6 +38,19 @@
  *    body at src/text1b.c:10969-10994 (which carries 8 forbidden
  *    `register asm("$N")` pins) and lets `retire func_80052B00` drop the tree's
  *    single rule, regfix.txt:3411 `func_80052B00: fill_delay @ 16 <- 15`.
+ *
+ * SESSION 2 (structural, 2026-08-01) — form UNCHANGED, now measured rather
+ * than argued. 14 distinct pure-C spellings were compiled and scored with
+ * `sandbox --disable all`: 8 tie the floor at exactly 18, 5 are strictly worse,
+ * none improve it, and ALL 14 emit `jr $ra; nop` — the eighth `ctc2` is always
+ * hoisted above the jump, including under a `do { } while (0)` probe
+ * (NOTE_INSN_LOOP_BEG, the one documented reorg.c-perturbing lever). H1 is
+ * therefore empirical, not just a reading of reorg.c. A complete census of the
+ * tree's cop2-control-loader leaves (6 bodies) shows func_80052B00 is the last
+ * unauthorized member, and that the family partitions on exactly the H1
+ * criterion. Full data: memory/grind/func_80052B00/evidence.md §Session 2 and
+ * memory/grind/func_80052B00/rejected/structural-sweep-14-forms-floor-18.c
+ * (which also records the honest pure-C, pin-free floor-18 body).
  */
 __asm__(
     ".set\tnoat\n"

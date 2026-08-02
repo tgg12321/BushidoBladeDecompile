@@ -162,3 +162,124 @@ listed above, all of which are canonical-asm, none COMPLETED-C.
 - [s1] No src/ edits were made this session; the working tree is unchanged apart from ledger/scratch files.
 
 - [s1] memory/grind/func_80052B00/candidate.c holds a whole-body glabel canonical-asm form, a byte-exact transcription of the target using func_80052B44's authorized packaging (duplicated TAB+SPACE .set directives per maspsx-noreorder-stripping; decimal memory offsets because maspsx parses 0x0($a0) as base-10). It is deliberately NOT applied to src/ — applying it requires an inline_asm_canonical.txt entry, a surface this session may not touch.
+
+## Session 2 (structural, 2026-08-01) — floor UNCHANGED at 18
+
+### The structural axis is measured dead (14 forms, none below 18)
+Session 1 left a standing constraint ("the pure-C lever catalog operates on
+constructs this function does not contain"). Session 2 did not take that on
+faith — it MEASURED the axis. `tmp/grind/func_80052B00/s2/sweep.py` and
+`sweep2.py` each rewrite the body of `func_80052B00` in `src/text1b.c`, run
+`sandbox func_80052B00 --disable all`, and restore the original body; round 2
+additionally objdumps the sandbox object and records the emitted tail
+instructions. No variant contains a `register asm("$N")` pin (score-inert and
+forbidden); the only inline asm in any variant is the canonical `ctc2` with
+`%N` placeholders and an `"r"` constraint.
+
+Baseline (HEAD body, its 8 pins stripped by the sandbox) = 18.
+
+| form | score | note |
+|---|---|---|
+| plain-locals | **18** | 8 named locals loaded in ascending order, then 8 ctc2 |
+| walking-pointer | **18** | `s32 *p = matrix; s32 tN = *p++;` |
+| reverse-load-order | **18** | load `matrix[7]` first, `matrix[0]` last |
+| base-copy-handle | **18** | second pointer handle `p[N]` to keep `$a0` live |
+| ctc2-reverse-write | **18** | cop2 writes emitted `$7` down to `$0` |
+| last-write-own-block | **18** | final `ctc2` in its own trailing `{ }` block |
+| do-while-zero-probe | **18** | whole body in `do { } while (0)` (PROBE ONLY) |
+| trailing-return | **18** | explicit `return;` after the last `ctc2` |
+| interleaved-pairs-c89 | 21 | load 2 / write 2, decls hoisted (C89-legal) |
+| direct-operand | 25 | `matrix[N]` inline in the asm operand |
+| interleaved-single | 25 | load 1 / write 1 |
+| struct-block-copy | 43 | 8-word struct block copy, then field writes |
+| local-array | 46 | `s32 m[8]; m[N] = matrix[N];` |
+| interleaved-pairs (r1) | void | C89-illegal (decls after statements); redone in r2 |
+
+Eight distinct spellings TIE the floor at exactly 18 and five are strictly
+worse; **not one is better**. There is no gradient in the structural axis:
+declaration order, load order, walking pointers, extra pointer handles, block
+scoping, statement interleaving, aggregate/type reshaping, cop2 write order and
+a trailing return are all measured inert here.
+
+### H1 (the delay-slot impossibility) is now EMPIRICAL, not source-read
+Round 2 records the last three emitted instructions per form. Every one of the
+14 forms ends `... | jr $ra | nop` — the eighth `ctc2` is always hoisted ABOVE
+the jump and the delay slot is always `nop`, exactly as `reorg.c:730-735`
+(`stop_search_p` returning 1 for `ASM_INPUT` / `asm_noperands >= 0`) predicts.
+The strongest single data point is the `do-while-zero-probe`: `do { } while (0)`
+emits `NOTE_INSN_LOOP_BEG`, which is the ONE documented lever that perturbs
+reorg.c's delay-slot / relax_delay_slots behaviour ([[do-while-zero-exception]]),
+and it leaves the slot `nop` too. Session 1's compiler-source argument is now
+corroborated by 14 independent measurements. (The do-while(0) form was run as a
+falsification probe only; it produced no benefit, is not a proposed form, and
+its sanctioned-use prerequisites were never in play.)
+
+### Family census (frontier item 3) — COMPLETE, and it partitions cleanly
+`tmp/grind/func_80052B00/s2/census.py` scans every `asm/funcs/*.s` whose opcode
+set is a subset of {lw, ctc2, jr, nop} and contains at least one `ctc2`, then
+cross-checks each against `inline_asm_canonical.txt` and `engine/queue.json`.
+Exactly SIX bodies in the whole tree qualify (raw output:
+`tmp/grind/func_80052B00/s2/census.txt`):
+
+| body | insns | jr delay slot in TARGET | disposition |
+|---|---|---|---|
+| `func_80052B00` | 17 | **`ctc2 $t7, $7`** | ACTIVE in queue — this function |
+| `func_80052B44` | 14 | **`ctc2 $zero, $7`** | canonical-authorized 2026-07-27 (`inline_asm_canonical.txt:340`) |
+| `func_8007EEEC` | 12 | `nop` | = `gte_SetRotMatrix` (`named_syms.txt:640`), canonical-authorized 2026-06-07 |
+| `func_8007EF1C` | 12 | `nop` | = `gte_SetColorMatrix` (`named_syms.txt:641`), canonical-authorized 2026-06-07 |
+| `func_8007EF4C` | 8 | `nop` | = `gte_SetTransVector` (`named_syms.txt:642`), canonical-authorized 2026-06-07 |
+| `tslDmaDrawListDelAll` | 4 | `nop` | DONE in pure C (`src/display.c:2491`) — a single `ctc2` of the incoming param, no loads at all |
+
+Two corrections to the raw census output, both name-resolution artifacts:
+`func_8007EEEC/EF1C/EF4C` DO appear in `inline_asm_canonical.txt`, under their
+`named_syms.txt` names (`gte_*`), so the script's "unauthorized" count of 5 is
+wrong — the true count of unauthorized members is **one: func_80052B00**.
+This also finally settles session 1's STALE near-duplicate lead: `func_8007EEEC`
+IS a real sibling (it is `gte_SetRotMatrix`), but it is canonical-asm, not a
+COMPLETED-C template — confirming session 1's KILL of that lead by a second,
+independent route.
+
+The census partitions the family by exactly the H1 criterion: the two members
+whose TARGET puts a cop2 write in the `jr $ra` delay slot are `func_80052B44`
+and `func_80052B00`; `func_80052B44` was authorized canonical on precisely that
+ground. Every member with a `jr; nop` tail is either canonical for other reasons
+or (in the one case with no loads to allocate) closed in pure C. The family is
+settled; func_80052B00 is its last unauthorized member.
+
+### Artifacts
+- `tmp/grind/func_80052B00/s2/sweep.py` + `sweep_results.txt` (round 1, 8 forms)
+- `tmp/grind/func_80052B00/s2/sweep2.py` + `sweep2_results.txt` (round 2, 6 forms + tails)
+- `tmp/grind/func_80052B00/s2/census.py` + `census.txt` (family census)
+- `memory/grind/func_80052B00/rejected/structural-sweep-14-forms-floor-18.c`
+- `src/text1b.c` is byte-identical to HEAD; both sweep scripts restore the
+  original body in a `finally` block and `git status` was verified clean.
+
+- [s2] STRUCTURAL AXIS MEASURED DEAD: 14 distinct pure-C spellings of the body scored with `sandbox --disable all`; 8 tie the floor at exactly 18 (plain-locals, walking-pointer, reverse-load-order, base-copy-handle, ctc2-reverse-write, last-write-own-block, do-while(0) probe, trailing-return) and 5 are strictly worse (interleaved-pairs-c89 21, direct-operand 25, interleaved-single 25, struct-block-copy 43, local-array 46). NONE improved on 18. Declaration order, load order, walking pointers, extra pointer handles, block scoping, statement interleaving, aggregate/type reshaping, cop2 write order and a trailing return are all inert here.
+
+- [s2] H1 CONFIRMED EMPIRICALLY (was source-read only in s1): all 14 forms emit `... | jr $ra | nop` — the eighth ctc2 is hoisted above the jump and the delay slot is never filled, matching reorg.c:730-735 stop_search_p. The do-while(0) probe (NOTE_INSN_LOOP_BEG, the one documented reorg-perturbing lever) also leaves the slot nop. Probe only; not a proposed form.
+
+- [s2] FAMILY CENSUS COMPLETE: exactly 6 bodies in the tree have an opcode set within {lw,ctc2,jr,nop} incl. a ctc2 — func_80052B00 (17 insns, ACTIVE), func_80052B44 (14, canonical 2026-07-27), func_8007EEEC/EF1C/EF4C (= gte_SetRotMatrix/SetColorMatrix/SetTransVector per named_syms.txt:640-642, all canonical 2026-06-07) and tslDmaDrawListDelAll (4 insns, DONE in pure C at src/display.c:2491 — a single ctc2 of the incoming param, no loads to allocate). func_80052B00 is the ONLY unauthorized member. The family partitions on exactly the H1 criterion: the two members whose target holds a cop2 write in the jr delay slot are func_80052B44 (authorized on precisely that ground) and func_80052B00.
+
+- [s2] The s1 STALE near-duplicate lead is settled by a second route: func_8007EEEC does exist and IS a genuine sibling, but it is gte_SetRotMatrix — canonical-asm, not a COMPLETED-C template. s1's KILL of that lead stands.
+
+- [s2] No src/ edits persist: both sweep scripts restore the original body in a finally block; `git status --porcelain` shows only metrics/events.jsonl modified.
+
+- [s2] Baseline re-measured this session: sandbox func_80052B00 --disable all = score 18, target_insns 17, build_insns 19, 1 regfix rule dropped, 324 cheat-asm instances stripped. Floor unchanged from session 1.
+
+- [s2] STRUCTURAL AXIS DEAD BY MEASUREMENT (not by argument): 14 pure-C spellings scored. Ties at 18 — plain-locals, walking-pointer (s32 *p = matrix; s32 tN = *p++), reverse-load-order (matrix[7] first), base-copy-handle (second pointer handle p[N]), ctc2-reverse-write (cop2 writes $7 down to $0), last-write-own-block (final ctc2 in its own trailing block), do-while(0) probe, trailing-return. Strictly worse — interleaved-pairs-c89 21, direct-operand (matrix[N] inline in the asm operand) 25, interleaved-single 25, struct-block-copy 43, local-array (s32 m[8]) 46.
+
+- [s2] GCC 2.7.2 rejects declarations after statements (C89), which silently voided the round-1 'interleaved-pairs' variant (bogus build_insns=7); round 2 re-ran it correctly with hoisted declarations at score 21. Any future sweep script for this toolchain must hoist all declarations to the top of the block.
+
+- [s2] DELAY SLOT: all 14 variants emit '... | jr $ra | nop'; the eighth ctc2 is always hoisted above the jump. This includes the do { } while (0) probe, whose NOTE_INSN_LOOP_BEG is the single documented lever that perturbs reorg.c's delay-slot / relax_delay_slots behaviour. H1 is now empirical.
+
+- [s2] FAMILY CENSUS COMPLETE: 6 cop2-control-loader leaves exist in the whole tree (func_80052B00, func_80052B44, func_8007EEEC, func_8007EF1C, func_8007EF4C, tslDmaDrawListDelAll). Five are already disposed of — four canonical-authorized, one (tslDmaDrawListDelAll) closed in pure C because it has no loads to allocate and a jr;nop tail. func_80052B00 is the only one left.
+
+- [s2] Session 1's STALE near-duplicate lead is settled by a second independent route: func_8007EEEC does exist and IS a genuine sibling, but it is gte_SetRotMatrix (named_syms.txt:640) — canonical-asm, not a COMPLETED-C template. The s1 KILL stands.
+
+- [s2] The residual 18 decomposes unchanged: 8 register renames (target wants $t0..$t7; GCC's leaf caller-save pool gives $v0,$v1,$a1..$t1), the deferred matrix[0] load (GCC reuses the dying $a0 as its destination), one extra load-delay nop, and the unfilled jr delay slot. Only a forbidden register asm("$N") pin reaches the target register set, and pins are score-inert under the sandbox.
+
+- [s2] PERMUTER IS NOT WORTH A SESSION HERE: the body is 17 instructions with no control flow and no arithmetic; the permuter's mutation space (statement reordering, temp introduction, type changes) is exactly what sweep.py/sweep2.py enumerated by hand, and the residual is dominated by a hard register-set requirement plus a provably unreachable delay slot. Recorded so a later session does not spend a fresh-seed campaign on it.
+
+- [s2] No src/ edits persist: both sweep scripts restore the original body in a finally block, and `git status --porcelain` after the sweeps showed only metrics/events.jsonl plus the session's own ledger files as modified.
+
+- [s2] This session did not touch regfix.txt, asmfix.txt, inline_asm_canonical.txt, engine/, tools/, .claude/rules/, the Makefile or any *.ld; no queue done, no retire, no commit.
