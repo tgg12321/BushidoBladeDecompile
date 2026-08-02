@@ -273,6 +273,64 @@
  * Floor re-verified independently with a fresh harness: 17 (build_insns 18,
  * target 17), flat for the fifth consecutive session. Full data: evidence.md
  * Session 8, hypotheses.md H19-H22, tmp/grind/func_80052B00/s8/.
+ *
+ * SESSION 9 (rederive, 2026-08-01) - form UNCHANGED, and the single largest
+ * unexamined assumption underneath eight sessions of reasoning is now closed by
+ * measurement. Sessions 1-8 built two impossibility proofs (H1 from
+ * reorg.c:730-735 stop_search_p; H16 from reload1.c:3606 order_regs_for_reload)
+ * and every line of source they read, and every one of the 32 hand spellings and
+ * ~164k permuter iterations that corroborated them, came from
+ * `tools/gcc-2.7.2` - the decompals/mips-gcc-2.7.2 open-source port, a
+ * KMC-tailored fork. SLUS-00663 was not built with that compiler. It was built
+ * with SN Systems cc1psx, GCC 2.7.2.SN.1. If the shipped compiler's reload
+ * ordered hard registers differently, or its reorg admitted asm insns as
+ * delay-slot candidates, then the target's bytes would be ordinary compiler
+ * output from ordinary C and eight sessions would have been reasoning about the
+ * wrong compiler. No session 1-8 ran cc1psx on this function; session 8 closed
+ * the ASSEMBLER as a non-human origin (H20) but left the COMPILER identity
+ * untouched.
+ *
+ *  - H23 KILLED. tools/cc1psx_wrapper.sh (the original PsyQ cc1psx.exe via
+ *    dosemu2, available as a self-disproof tool per the 2026-05-29 user
+ *    directive) was run against our fork under the identical canonical flag set
+ *    on two structurally distinct chassis: the banked floor-17 fused-8 body and
+ *    the session-1/2 eight-separate-__asm__ body. Both compilers emit
+ *    INSTRUCTION-IDENTICAL streams; the only diffs are the banner, `.file
+ *    "T.C"`, cc1psx's extra `__gnu_compiled_c:` label, and missing
+ *    `.version`/`.type`/`.size`/`.ident`. cc1psx's own output is
+ *    `lw $2,0($4) ... lw $10,28($4)` / `ctc2 $2,$0 ... ctc2 $10,$7` / bare
+ *    `j $31` - the exact {$2,$3,$5,$6,$7,$8,$9,$10} allocation H16 predicts,
+ *    and no delay-slot fill. On the eight-separate chassis the agreement extends
+ *    even to the idiosyncratic deferred self-clobbering `lw $4,0($4)` scheduled
+ *    last. The shipped compiler cannot produce the shipped function's registers
+ *    from this C any more than our reference port can.
+ *
+ *  - H24 KILLED, with a differential rather than a null. Control ctlB is the
+ *    fused-8 body plus one trailing plain C store (`matrix[0] = t7;`), so the
+ *    last insn needing a delay slot is not an asm. BOTH compilers then emit
+ *    `.set noreorder / .set nomacro / j $31 / sw $2,0($4) / .set macro /
+ *    .set reorder` - the store IS pulled into the slot, with the identical
+ *    protective wrapper. Same body, same flags, one non-asm trailing insn is the
+ *    entire difference. reorg in the SHIPPED compiler is equally willing and
+ *    equally blocked. H1 is a property of GCC 2.7.2 as a family, verified
+ *    against the actual build compiler, not an artifact of the decompals port.
+ *
+ * NET EFFECT ON THIS DISPOSITION. The origin space for `ctc2 $t7,$7` in the
+ * `jr $ra` delay slot is now exhaustively enumerated AND exhaustively empty of
+ * non-human authors: (a) the reference compiler's reorg - halts at any asm insn
+ * (H1); (b) the SHIPPED compiler's reorg - measured identical this session, and
+ * measured to fill the same slot when the candidate is not an asm (H24); (c) the
+ * assembler - ASPSX 2.34 measured never to fill delay slots at all, by
+ * whole-binary census of 1,369 `jr $ra` tails (s8 H20); (d) a human. Only (d)
+ * survives. The same enumeration now covers the register axis: H16 from
+ * reload1.c source, confirmed identical under cc1psx. The argument for this form
+ * no longer rests anywhere on "our toolchain is a faithful stand-in" - that
+ * premise has been measured on this exact function.
+ *
+ * Floor re-verified with the banked pin-free fused-8 body spliced into
+ * src/text1b.c: sandbox --disable all = 17 (target 17, build 18, rules_dropped
+ * 1), then src restored; flat for the SIXTH consecutive session. Full data:
+ * evidence.md Session 9, hypotheses.md H23/H24, tmp/grind/func_80052B00/s9/.
  */
 __asm__(
     ".set\tnoat\n"
