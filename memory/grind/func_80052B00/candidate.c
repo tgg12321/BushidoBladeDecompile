@@ -80,6 +80,24 @@
  * register pins disappear; only the delay-slot paperwork and register fixes
  * remain). Full data: evidence.md §Session 3, hypotheses.md H5/H6/H7,
  * tmp/grind/func_80052B00/s3/.
+ *
+ * SESSION 4 (permuter, 2026-08-01) - form UNCHANGED; the last remaining
+ * automated search modality is now measured dead. Two telemetry-tracked
+ * decomp-permuter campaigns (tools/permuter_campaign.py, labels
+ * `fused8-r-constraints` and `struct-fields-direct-rvalue-fused8`) ran 117,314
+ * iterations across two structurally distinct chassis against a real
+ * cc1 -> prologue_fix -> maspsx -> multu_pad workspace. Campaign 1 (the s3
+ * fused body) produced ZERO outputs - not even a score tie. Campaign 2 (struct
+ * field references fed directly as the fused asm's eight operands, no named
+ * temporaries) produced exactly one output, a TIE at the base score of 140,
+ * consisting of a dead `if (new_var)` on an uninitialized local - noise, and a
+ * dead-local cheat shape besides (banked at
+ * rejected/permuter-tie-dead-if-noise.c). Nothing below the honest floor of 17.
+ * Two incidental confirmations: the no-temporaries chassis emits the same
+ * {v0,v1,a1,a2,a3,t0,t1,t2} register set (H7 now holds across 19 spellings),
+ * and a minimal standalone TU reproduces this function's in-tree codegen
+ * exactly (H9), so TU context is not a variable here. Full data: evidence.md
+ * Session 4, hypotheses.md H8/H9, tmp/grind/func_80052B00/s4/.
  */
 __asm__(
     ".set\tnoat\n"

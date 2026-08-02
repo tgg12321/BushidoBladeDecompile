@@ -415,3 +415,126 @@ originate in an `__asm__` block, and `reorg.c:730-735` (`stop_search_p`) halts
 - [s3] src/text1b.c is byte-identical to HEAD (git status shows only metrics/events.jsonl plus this session's ledger/scratch files). The floor-17 form is deliberately NOT applied: the HEAD body's eight register pins plus regfix.txt:3411 are what make the real build byte-match today, and swapping in the pin-free form would break the oracle.
 
 - [s3] No touch of regfix.txt, asmfix.txt, inline_asm_canonical.txt, engine/, tools/, .claude/rules/, the Makefile or any *.ld; no queue done, no retire, no commit.
+
+## Session 4 (permuter, 2026-08-01) — floor 17, unmoved; the permuter axis is now MEASURED dead
+
+Sessions 2 and 3 both *argued* that a permuter campaign was not worth spending on
+this function ("its mutation space is statement reordering, temp introduction and
+type changes, all already enumerated by hand"). The driver mandated the permuter
+modality anyway, which is the right call: an argument that a search modality is
+futile is worth much less to the owner's audit trail than a measurement of it.
+This session converts that argument into a measurement. It is now a KILL with
+numbers behind it and no future session should re-run it.
+
+### Workspace construction (reusable)
+
+`tmp/grind/func_80052B00/s4/mkws.sh` builds a self-contained decomp-permuter
+workspace for this function:
+
+- `compile.sh` runs the REAL stage chain — `tools/gcc-2.7.2/build/cc1 -O2 -G0
+  -funsigned-char -mcpu=3000 -mips1 -mno-abicalls -fno-builtin` →
+  `tools/prologue_fix.py` → `tools/maspsx/maspsx.py --aspsx-version=2.34` (with
+  every gate list the Makefile passes) → `tools/multu_pad.py` — then extracts
+  only the `.ent func_80052B00 … .end func_80052B00` region and assembles it with
+  `mipsel-linux-gnu-as -march=r3000 -no-pad-sections -O1 -G0`. NOTE for whoever
+  reuses this: maspsx emits its lines with NO leading tab, so the extraction awk
+  must match `^[ \t]*\.ent[ \t]+<func>$`, not `^\t\.ent\t<func>$` (the
+  `tools/mar_perm_workspace.sh` template has the tabbed form and silently
+  produces an unassemblable fragment), and `compile.sh` must `source .venv/bin/
+  activate` itself or maspsx/prologue_fix fail with an empty-stdin error.
+- `target.o` = `tools/decomp-permuter/prelude.inc` (with `.set gp=64` stripped) +
+  `asm/funcs/func_80052B00.s`, assembled the same way.
+
+**Context-independence check (new fact, useful beyond the permuter).** The
+minimal standalone TU (a `typedef signed int s32;` plus the function) emits
+EXACTLY the body the in-tree `sandbox func_80052B00 --disable all` emits for the
+same source: `lw v0,0(a0) … lw t2,28(a0) / ctc2 v0,$0 … ctc2 t2,$7 / jr ra /
+nop`. So this function's codegen carries no dependence on `src/text1b.c`'s ~125k
+tokens of preceding declarations — a standalone TU is a faithful, and far
+cheaper, experiment vehicle for it.
+
+### Campaign 1 — chassis `fused8-r-constraints` (the s3 best pure-C body)
+
+Base: `memory/grind/func_80052B00/best_pure_c_fused8_floor17.c` verbatim (eight
+`s32` locals loaded from `matrix[0..7]`, one fused `__asm__` with eight `"r"`
+inputs). Permuter base score **140**.
+
+Run with `tools/permuter_campaign.py launch … -j 8` (telemetry per the owner's
+2026-07-07 directive), waited in-turn with `permuter_campaign.py wait`.
+
+**Result: 31,871 iterations over 1,139 s (~19 min) on 8 workers — ZERO finds.**
+Not "no improvement": zero outputs at all, i.e. the permuter never even found a
+score-TIE mutation of this chassis. Harvested with `--stop`.
+
+### Campaign 2 — chassis `struct-fields-direct-rvalue-fused8` (structurally different)
+
+Per the fresh-seed rule, reseeded with a materially different chassis rather than
+a new seed of the same one: the eight loads are `GteCtl` struct FIELD references
+(`m->r0 … m->r7`) fed DIRECTLY as the fused asm's operands, with no named
+temporaries at all. This is a different pycparser surface (field refs and a
+struct type declaration to mutate; temp INTRODUCTION rather than temp
+rearrangement is the permuter's move here) and it was never in sessions 1-3's
+hand sweeps.
+
+Sub-result worth banking on its own: this chassis compiles to the **identical**
+17-instruction body as the s3 fused form — `lw v0..t2` / `ctc2 v0..t2,$0..$7` /
+`jr ra` / `nop`. So the register set `{v0,v1,a1,a2,a3,t0,t1,t2}` survives the
+removal of the temporaries entirely, extending H7's invariant from 18 spellings
+to 19 and to a struct-typed chassis.
+
+Base score **140** again (same emitted bytes ⇒ same score).
+
+**Result: 85,443 iterations over 1,141 s (~19 min) — exactly ONE find, at score
+140, i.e. a TIE with base, at 12 s in.** The find
+(`s4/ws2/output-140-1/source.c`) is pure noise: the permuter appended a dead
+`int new_var; if (new_var) { new_var = 1; }` after the asm. It changes no emitted
+instruction, it is an uninitialized-read dead-local — the [[dead-vars-local-array]]
+/ dead-local-holder cheat shape — and it is banked as
+`memory/grind/func_80052B00/rejected/permuter-tie-dead-if-noise.c`, not proposed.
+Harvested with `--stop`.
+
+### What the numbers mean
+
+117,314 permuter iterations across two structurally distinct chassis produced not
+one candidate below the honest floor of 17 (permuter score 140). That is the
+expected outcome for the reason s3 already established mechanically, and the
+campaign confirms the mechanism rather than merely failing:
+
+- The residual is 16 instructions naming the wrong GPRs plus the unfilled `jr $ra`
+  delay slot (H6). The permuter mutates C — statements, temps, types, operand
+  order, control flow. It has **no mutation that names a hard register**, so it
+  cannot address the 16-point component at all; and it cannot address the
+  delay-slot point either, because that is `reorg.c`'s unconditional ASM stop
+  (H1, now 32/32 hand-measured spellings plus every one of these 117k
+  permutations).
+- Campaign 1's ZERO-tie result is itself informative: a 17-instruction body with
+  no arithmetic, no control flow and no calls is a search space with essentially
+  no interior. Almost every mutation the permuter can make either changes nothing
+  (and is not saved) or adds an instruction (and scores worse). There is no basin
+  to descend.
+
+### Standing note for future sessions
+
+Do not run another permuter campaign on func_80052B00. Two chassis, ~117k
+iterations, telemetry in `metrics/events.jsonl` (`permuter-launch` /
+`permuter-harvest` events, labels `fused8-r-constraints` and
+`struct-fields-direct-rvalue-fused8`), logs at
+`tmp/grind/func_80052B00/s4/ws/campaign.log` and
+`tmp/grind/func_80052B00/s4/ws2/campaign.log`. The axis is closed by measurement,
+not by argument.
+
+- [s4] Honest floor unmoved at 17 this session (sandbox func_80052B00 --disable all; build 18 insns vs target 17). No edits were made to src/text1b.c at any point - all session-4 measurement ran in a standalone permuter workspace under tmp/.
+
+- [s4] Campaign 1 `fused8-r-constraints` (base = memory/grind/func_80052B00/best_pure_c_fused8_floor17.c, permuter base score 140): 31,871 iterations / 1,139 s / 8 workers / ZERO outputs. Harvested with --stop; telemetry in metrics/events.jsonl.
+
+- [s4] Campaign 2 `struct-fields-direct-rvalue-fused8` (base score 140): 85,443 iterations / 1,141 s / one output at score 140 (tie) at t=12 s. The output is a dead `int new_var; if (new_var) { new_var = 1; }` appended after the asm - no emitted-code change and an uninitialized dead-local cheat shape. Harvested with --stop. Both campaigns confirmed dead via `permuter_campaign.py status` (alive: false, registered_active: false) before this outcome was written; no process outlives the session.
+
+- [s4] New reusable fact for anyone building a permuter workspace in this repo: maspsx emits its output lines with NO leading tab, so a function-region extraction awk must match `^[ \t]*\.ent[ \t]+<func>$`, not the `^\t\.ent\t<func>$` form in tools/mar_perm_workspace.sh (which silently yields an unassemblable fragment: '.frame outside of .ent'); and compile.sh must `source .venv/bin/activate` itself or prologue_fix/maspsx fail with an empty-stdin error.
+
+- [s4] The minimal standalone TU reproduces the in-tree codegen for this function exactly, so TU context is not a variable here (H9).
+
+- [s4] The struct-field / no-temporaries chassis emits the identical 18-instruction body and the identical {v0,v1,a1,a2,a3,t0,t1,t2} register set as the s3 eight-locals fused form - a 19th spelling with the register set unchanged (H7).
+
+- [s4] Modality ladder status after this session: recon (s1), structural (s2 and s3, the second of which moved the floor 18 -> 17 by fusing the eight cop2 writes into one __asm__), and permuter (s4) are all measured dead or exhausted. The residual 17 points remain exactly (a) 16 instructions naming the wrong GPRs and (b) the one unfilled jr $ra delay slot, both with compiler-source mechanisms (no REG_ALLOC_ORDER in mips.h; reorg.c stop_search_p).
+
+- [s4] This session did NOT touch regfix.txt, asmfix.txt, inline_asm_canonical.txt, engine/, tools/, the Makefile, any linker script, or src/. Working-tree delta is the three func_80052B00 ledger files, one new rejected/ form, and metrics/events.jsonl (engine-written).

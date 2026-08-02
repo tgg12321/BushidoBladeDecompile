@@ -420,3 +420,158 @@ does not fill the delay slot either.
 - probe: All 18 session-3 forms had their emitted tails objdumped (sweep3_results.txt, sweep4_results.txt, form_disasm.txt).
 - result: 18/18 end 'jr $ra | nop'. Running total across sessions 1-3: 32/32 measured C spellings leave the delay slot unfilled.
 - verdict: CONFIRMED
+
+## Session 4 (permuter, 2026-08-01) — floor 17, unmoved
+
+### H8 — KILLED (the permuter axis is dead, now by measurement rather than by argument)
+**Statement.** A decomp-permuter campaign on func_80052B00 finds a C form scoring
+below the honest floor of 17 (permuter base score 140).
+
+**Mechanism (why it was worth measuring anyway).** Sessions 2 and 3 both asserted
+the permuter was not worth a session because its mutation space (statement
+reordering, temp introduction, type changes) had been hand-enumerated across 32
+forms. That is an argument, not a measurement, and the driver correctly mandated
+the modality. The falsifiable prediction: the permuter has no mutation that names
+a hard register and none that can defeat `reorg.c`'s unconditional ASM stop, so
+it cannot touch EITHER component of the residual (16 wrong-GPR instructions +
+1 unfilled delay slot), and should therefore return nothing below 140.
+
+**Probe.** Two telemetry-tracked campaigns via `tools/permuter_campaign.py`
+(owner directive 2026-07-07), each waited on in-turn and harvested with `--stop`:
+1. `fused8-r-constraints` — base = `best_pure_c_fused8_floor17.c` verbatim.
+2. `struct-fields-direct-rvalue-fused8` — reseeded per the fresh-seed rule with a
+   structurally different chassis: `GteCtl` struct field references fed directly
+   as the fused asm's eight operands, zero named temporaries.
+Workspace built by `tmp/grind/func_80052B00/s4/mkws.sh` running the real
+cc1 → prologue_fix → maspsx → multu_pad chain, function-region extraction, and
+`as -march=r3000 -no-pad-sections -O1 -G0`; validated against
+`asm/funcs/func_80052B00.s`.
+
+**Result.** Campaign 1: 31,871 iterations / 1,139 s / 8 workers — **zero finds**,
+not even a score tie. Campaign 2: 85,443 iterations / 1,141 s — **one find, at
+score 140 (a tie), at 12 s**, consisting of an appended dead
+`int new_var; if (new_var) { new_var = 1; }` that changes no emitted instruction
+and is an uninitialized dead-local cheat shape; banked as
+`rejected/permuter-tie-dead-if-noise.c`, not proposed. 117,314 iterations across
+two chassis, nothing below 140.
+
+**Verdict: KILLED.** The permuter modality is closed for this function. The
+zero-tie result on chassis 1 additionally shows the search space has no interior:
+a 17-instruction body with no arithmetic, no control flow and no calls admits
+almost no neutral mutation, so there is no basin for sampling to descend.
+
+### H9 — CONFIRMED (this function's codegen is TU-context-independent)
+**Statement.** func_80052B00 compiled in a minimal standalone TU emits exactly the
+body it emits inside `src/text1b.c`.
+
+**Mechanism.** Leaf, no calls, no globals, no statics, no data references — none
+of the context-sensitive cc1 state (GP-relative decisions, prior-declaration
+ordering, the scheduler-state effects noted in [[cc1-first-pass-scheduler-bug]])
+has any input here.
+
+**Probe.** `mkws.sh` compiles a TU containing only `typedef signed int s32;` plus
+the s3 fused body and objdumps it; compared against the s3 in-tree sandbox dumps
+(`s3/form_disasm.txt`).
+
+**Result.** Identical: `lw v0,0(a0) … lw t2,28(a0) / ctc2 v0,$0 … ctc2 t2,$7 /
+jr ra / nop`. Standalone-TU experiments on this function are faithful and cost a
+fraction of an in-tree sandbox cycle — useful for any future session that wants a
+cheap experiment vehicle here.
+
+**Verdict: CONFIRMED.**
+
+### H7 — re-CONFIRMED on a 19th spelling
+The struct-field / no-temporaries chassis (never swept in s1-s3) emits the same
+`{v0,v1,a1,a2,a3,t0,t1,t2}` register set. Removing the named temporaries entirely
+does not move the allocator's starting hard register, consistent with the
+"no `REG_ALLOC_ORDER` in `mips.h`, ascending-scan `find_free_reg`" mechanism.
+
+### H1 — re-CONFIRMED across ~117k machine-generated spellings
+Neither campaign produced any output with a filled delay slot (campaign 1
+produced no outputs; campaign 2's single output is byte-identical in emitted
+code to base, which ends `jr ra ; nop`). Running total: 32 hand-measured
+spellings plus 117,314 permuter iterations, zero delay-slot fills.
+
+## Live frontier after session 4 (highest value first)
+
+1. **Canonical-asm authorization remains the disposition — unchanged by this
+   session, and the evidence base is now one modality wider.** The honest pure-C
+   body is instruction-for-instruction isomorphic to the target; the residual is
+   register naming (H7, mechanically unreachable) plus the delay slot (H1,
+   provably unreachable); the structural axis is dead by measurement (s2/s3) and
+   now the permuter axis is too (s4). Precedent unchanged and citable:
+   `func_80052B44`, `src/text1b.c:10995`, `inline_asm_canonical.txt:340`,
+   authorized 2026-07-27 for the identical construct one function later in the
+   same file. Next probe: a session or operator with authority over
+   `inline_asm_canonical.txt` applies `memory/grind/func_80052B00/candidate.c`
+   over `src/text1b.c:10969-10994`, adds the entry, runs
+   `retire func_80052B00` (drops `regfix.txt:3411`) and `verify-oracle`. The
+   disposition call belongs to the driver/owner, not to a grind session in a
+   non-escalation modality.
+
+2. **If the canonical disposition is refused,
+   `memory/grind/func_80052B00/best_pure_c_fused8_floor17.c` is still the body to
+   ship** — pin-free, honest 17, strictly less cheat surface than the pinned HEAD
+   body (which needs eight `register asm("$N")` pins PLUS `regfix.txt:3411`).
+   Next probe (operator only): splice it in, run `sandbox func_80052B00` WITHOUT
+   `--disable all` to see what the enabled rule set achieves, find the minimal
+   rule set that byte-matches, and `verify-oracle`.
+
+3. **Modality ladder status.** recon (s1), structural (s2, s3) and permuter (s4)
+   are all measured dead or exhausted. Forensics / rederive / synthesis remain
+   formally untried but operate on constructs this body does not contain (no
+   arithmetic, no control flow, no calls, no data layout, no library-provenance
+   surface beyond the already-identified `SetRotMatrix`+`SetTransMatrix` fusion).
+   The one remaining CHEAP measurement anybody could still want is an
+   instrumented-cc1 `-da` `.greg`/`.lreg` dump (per [[instrumented-cc1-location]]:
+   `tools/gcc-2.7.2/cc1`, NOT `build/cc1`) showing plain ascending hard-register
+   assignment for the eight load pseudos — a corroboration of H7's mechanism, not
+   a new axis, and it cannot reach 0 because H1 still stands.
+
+## [s4] A decomp-permuter campaign on func_80052B00 finds a C form scoring below the honest floor of 17 (permuter base score 140).
+- mechanism: Sessions 2 and 3 argued the permuter was futile here because its mutation space (statement reordering, temp introduction, type changes) had been hand-enumerated across 32 forms; that is an argument, not a measurement. The falsifiable prediction is that the permuter has no mutation that names a hard register and none that can defeat reorg.c's unconditional ASM stop in stop_search_p, so it cannot touch either component of the residual (16 wrong-GPR instructions + 1 unfilled jr $ra delay slot) and must return nothing below 140.
+- probe: Two telemetry-tracked campaigns via tools/permuter_campaign.py (owner directive 2026-07-07), each waited on in-turn with `wait` and harvested with `--stop`. Chassis 1 `fused8-r-constraints` = memory/grind/func_80052B00/best_pure_c_fused8_floor17.c verbatim. Chassis 2 `struct-fields-direct-rvalue-fused8` = a structurally different reseed per the fresh-seed rule: GteCtl struct field references fed directly as the fused asm's eight operands with zero named temporaries. Workspace built by tmp/grind/func_80052B00/s4/mkws.sh running the real cc1 -> prologue_fix -> maspsx -> multu_pad chain with function-region extraction, validated against asm/funcs/func_80052B00.s.
+- result: Campaign 1: 31,871 iterations / 1,139 s / 8 workers - ZERO finds, not even a score tie. Campaign 2: 85,443 iterations / 1,141 s - exactly one find, at score 140 (a tie with base), at 12 s in, consisting of an appended dead `int new_var; if (new_var) { new_var = 1; }` that changes no emitted instruction and is an uninitialized dead-local cheat shape (banked as rejected/permuter-tie-dead-if-noise.c, not proposed). 117,314 iterations across two chassis, nothing below 140. Campaign 1's zero-tie result additionally shows the space has no interior: a 17-instruction body with no arithmetic, control flow or calls admits almost no neutral mutation, so there is no basin to descend.
+- verdict: KILLED
+
+## [s4] func_80052B00's codegen is independent of its TU context, so a minimal standalone TU is a faithful experiment vehicle.
+- mechanism: The function is a leaf with no calls, no globals, no statics and no data references, so none of the context-sensitive cc1 state (GP-relative decisions, prior-declaration ordering, the scheduler-state effects noted in cc1-first-pass-scheduler-bug) has any input here.
+- probe: tmp/grind/func_80052B00/s4/mkws.sh compiles a TU containing only `typedef signed int s32;` plus the session-3 fused body through the real stage chain and objdumps it; compared against the in-tree sandbox dumps in tmp/grind/func_80052B00/s3/form_disasm.txt.
+- result: Identical body - lw v0,0(a0) .. lw t2,28(a0) / ctc2 v0,$0 .. ctc2 t2,$7 / jr ra / nop. Standalone-TU experiments on this function are faithful and cost a fraction of an in-tree sandbox cycle.
+- verdict: CONFIRMED
+
+## [s4] H7 re-tested on a 19th spelling: removing the named temporaries entirely (struct field references fed directly as asm operands) moves the allocator off $v0.
+- mechanism: If the allocator's starting hard register were sensitive to the presence or shape of the C-level temporaries, a chassis with no temporaries at all would differ from the eight-locals chassis.
+- probe: Compiled the struct-fields-direct-rvalue-fused8 chassis (tmp/grind/func_80052B00/s4/ws2/base.c) through the real stage chain and objdumped it.
+- result: Identical register set {v0,v1,a1,a2,a3,t0,t1,t2} and identical 18-instruction body. Consistent with the mechanism from session 3 (no REG_ALLOC_ORDER in tools/gcc-2.7.2/config/mips/mips.h, so find_free_reg scans hard registers in ascending order). H7 stands at 19 spellings.
+- verdict: KILLED
+
+## [s4] H1 re-tested across machine-generated spellings: if any C spelling could get an __asm__ ctc2 into the jr $ra delay slot, ~117k permuter samples would find it.
+- mechanism: reorg.c:730-735 stop_search_p returns 1 for ASM_INPUT / asm_noperands >= 0, halting fill_simple_delay_slots at any asm insn.
+- probe: Both s4 campaigns (117,314 iterations total) with the emitted objects scored against target.o.
+- result: No output with a filled delay slot. Campaign 1 produced no outputs at all; campaign 2's single output is code-identical to base, which ends `jr ra ; nop`. Running total: 32 hand-measured spellings plus 117,314 permuter iterations, zero delay-slot fills.
+- verdict: CONFIRMED
+
+## [s4] A decomp-permuter campaign on func_80052B00 finds a C form scoring below the honest floor of 17 (permuter base score 140).
+- mechanism: Sessions 2 and 3 argued the permuter was futile here because its mutation space (statement reordering, temp introduction, type changes) had been hand-enumerated across 32 forms - but that is an argument, not a measurement, and the driver correctly mandated the modality. The falsifiable prediction: the permuter has no mutation that names a hard register, and none that can defeat reorg.c:730-735 stop_search_p's unconditional ASM stop, so it cannot touch EITHER component of the residual (16 wrong-GPR instructions + 1 unfilled jr $ra delay slot) and must return nothing below 140.
+- probe: Two telemetry-tracked campaigns via tools/permuter_campaign.py (owner directive 2026-07-07), each launched with -j 8, waited on IN-TURN with `wait`, and harvested with `--stop`. Workspace built by tmp/grind/func_80052B00/s4/mkws.sh running the real stage chain (tools/gcc-2.7.2/build/cc1 -O2 -G0 -funsigned-char -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -> tools/prologue_fix.py -> tools/maspsx/maspsx.py --aspsx-version=2.34 with every Makefile gate list -> tools/multu_pad.py), extracting the .ent/.end func_80052B00 region and assembling with mipsel-linux-gnu-as -march=r3000 -no-pad-sections -O1 -G0; target.o = decomp-permuter prelude (gp=64 stripped) + asm/funcs/func_80052B00.s. Chassis 1 `fused8-r-constraints` = memory/grind/func_80052B00/best_pure_c_fused8_floor17.c verbatim. Chassis 2 `struct-fields-direct-rvalue-fused8` = a fresh-seed reseed with a materially different chassis (GteCtl struct field references fed DIRECTLY as the fused asm's eight operands, zero named temporaries - a pycparser surface never swept in s1-s3).
+- result: Campaign 1: 31,871 iterations / 1,139 s / 8 workers - ZERO finds, not even a score tie. Campaign 2: 85,443 iterations / 1,141 s - exactly ONE find, at score 140 (a TIE with base), 12 s after launch, consisting of an appended dead `int new_var; if (new_var) { new_var = 1; }` that changes no emitted instruction and is an uninitialized dead-local cheat shape; banked as memory/grind/func_80052B00/rejected/permuter-tie-dead-if-noise.c, not proposed. 117,314 iterations across two chassis, nothing below 140. Campaign 1's zero-TIE result is itself informative: a 17-instruction body with no arithmetic, no control flow and no calls admits almost no neutral mutation, so the search space has no interior and there is no basin for sampling to descend.
+- verdict: KILLED
+
+## [s4] func_80052B00's codegen is independent of its TU context, so a minimal standalone TU is a faithful (and far cheaper) experiment vehicle than an in-tree sandbox cycle.
+- mechanism: The function is a leaf with no calls, no globals, no statics and no data references, so none of the context-sensitive cc1 state (GP-relative decisions, prior-declaration ordering, the scheduler-state effects noted in cc1-first-pass-scheduler-bug) has any input here.
+- probe: mkws.sh compiles a TU containing only `typedef signed int s32;` plus the session-3 fused body through the real stage chain and objdumps the result; compared against the in-tree sandbox dumps in tmp/grind/func_80052B00/s3/form_disasm.txt.
+- result: Identical body: lw v0,0(a0) .. lw t2,28(a0) / ctc2 v0,$0 .. ctc2 t2,$7 / jr ra / nop. src/text1b.c's ~125k tokens of preceding declarations contribute nothing to this function's codegen.
+- verdict: CONFIRMED
+
+## [s4] H7 re-test on a 19th spelling: removing the named temporaries entirely (struct field references fed directly as the asm operands) moves the allocator off $v0 as its first hard register.
+- mechanism: If the allocator's starting hard register were sensitive to the presence or shape of C-level temporaries, a chassis with no temporaries at all would differ from the eight-locals chassis. Session 3's mechanism predicts it will not: tools/gcc-2.7.2/config/mips/mips.h defines no REG_ALLOC_ORDER, so local-alloc's find_free_reg scans hard registers in plain ascending number order and takes the first non-conflicting one.
+- probe: Compiled tmp/grind/func_80052B00/s4/ws2/base.c (the struct-fields-direct-rvalue-fused8 chassis) through the real stage chain and objdumped it.
+- result: Identical register set {v0,v1,a1,a2,a3,t0,t1,t2} and an identical 18-instruction body. H7 now holds across 19 distinct spellings.
+- verdict: KILLED
+
+## [s4] H1 re-test across machine-generated spellings: if any C spelling could get an __asm__ ctc2 into the jr $ra delay slot, ~117k permuter samples would find it.
+- mechanism: reorg.c:730-735 stop_search_p returns 1 for ASM_INPUT / asm_noperands >= 0, halting fill_simple_delay_slots at the first asm insn scanning back from the jump; ctc2 has no C analog so the target's delay-slot instruction can only come from an __asm__ block.
+- probe: Both session-4 campaigns (117,314 iterations total), with every emitted object scored against target.o built from asm/funcs/func_80052B00.s.
+- result: No output with a filled delay slot. Campaign 1 produced no outputs at all; campaign 2's single output is code-identical to its base, which ends `jr ra ; nop`. Running total across sessions 1-4: 32 hand-measured spellings plus 117,314 permuter iterations, zero delay-slot fills.
+- verdict: CONFIRMED
