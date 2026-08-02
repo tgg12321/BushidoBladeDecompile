@@ -959,3 +959,205 @@ counter with a matched control, all agreeing.
 - probe: Read the ';; Reorg pass' counters in the .dbr dumps of the honest body and three controls - ctlA (same body plus matrix[0] = 0 after the asm), ctlB (no inline asm anywhere), ctlC (asm present, combine defeated) - plus the RTL shape of the return insn and cc1's own assembly output.
 - result: Honest body: '3 insns needing delay slots / 3 got 0 delays'; the return survives as a bare (jump_insn 68 41 69 (parallel[(return) (use (reg:SI 31 ra))]) 305 {return_internal}), never wrapped in a (sequence); cc1 emits 'j $31' with no .set noreorder block, handing the slot downstream unfilled. ctlA: '2 got 0 delays, 1 got 1 delays', a real delay-slot (sequence), and '.set noreorder / j $31 / sw $0,0($4)'. ctlB fills likewise. ctlC is back to '3 got 0 delays'. Running total across sessions 1-6: 32 hand spellings, 163,967 permuter iterations, and now a compiler-internal counter with a matched control, all agreeing.
 - verdict: CONFIRMED
+
+## Session 7 (forensics, 2026-08-01) — floor 17, unmoved; the register axis is
+## now PRICED rather than "unreachable", and the target is shown not to be a
+## fixed point of this compiler configuration.
+
+### H16 — CONFIRMED (the target's register set is self-inconsistent under GCC 2.7.2 reload)
+**Statement.** No C source — legal-semantics or otherwise — can make this
+toolchain emit func_80052B00's exact 17 instructions, because the register
+allocation those 17 instructions use is unreachable *from those same 17
+instructions*. The target is not a fixed point of GCC 2.7.2 + PsyQ flags.
+
+**Mechanism (compiler source, verified verbatim this session).**
+`tools/gcc-2.7.2/reload1.c:486` does
+`bcopy (regs_ever_live, regs_explicitly_used, sizeof regs_ever_live)`, and
+`order_regs_for_reload()` at `reload1.c:3606` (dump saved to
+`tmp/grind/func_80052B00/s7/reload1_order_regs_for_reload.txt`) contains exactly
+two ways for a hard register to enter `bad_spill_regs`:
+
+```
+      if (fixed_regs[i])
+        { hard_reg_n_uses[i].uses += 2 * large + 2;
+          SET_HARD_REG_BIT (bad_spill_regs, i); }
+      else if (regs_explicitly_used[i])
+        { hard_reg_n_uses[i].uses += large + 1;
+          SET_HARD_REG_BIT (bad_spill_regs, i); }
+```
+
+plus `hard_reg_n_uses[]` accumulated from pseudos that local-alloc/global already
+assigned to a hard register. On MIPS with these flags $2,$3,$5,$6,$7 are not
+`fixed_regs`, and per the s6 CORRECTION `combine` folds all eight loads into the
+single fused asm so there are no allocated pseudos to contribute uses (the .lreg
+dump holds one insn). Therefore the ONLY route to `bad_spill_regs` for
+$2,$3,$5,$6,$7 is `regs_ever_live[]` — i.e. those registers must appear
+explicitly somewhere in this function's own RTL.
+
+**The contradiction.** The target's 17 instructions mention exactly three things:
+$a0 (= $4, the base pointer of all eight `lw`), $t0..$t7 (= $8..$15, the eight
+loaded values, each used once by an `lw` and once by a `ctc2`), and $ra (= $31,
+by the `jr`). It mentions $2, $3, $5, $6 and $7 **nowhere**. So a hypothetical C
+source whose emitted code equals the target would have `regs_ever_live` =
+{4, 8..15, 31}, `bad_spill_regs` would not contain $2,$3,$5,$6,$7, and
+`order_regs_for_reload` would hand the eight reloads $2,$3,$5,$6,$7,$8,$9,$10 —
+not $8..$15. The target's register naming requires occupancy that the target's
+own instruction stream does not supply.
+
+**Probe.** `tmp/grind/func_80052B00/s7/ctl_occupancy.sh` (six differential
+controls compiled with the instrumented `tools/gcc-2.7.2/cc1 -da`, per
+[[instrumented-cc1-location]], in the standalone TU vehicle validated as faithful
+by H9) plus `tmp/grind/func_80052B00/s7/sweep_price.py` (the same six shapes
+spliced into `src/text1b.c` and scored with
+`sandbox func_80052B00 --disable all`). Raw output:
+`s7/ctl_occupancy_out.txt`, `s7/sweep_price_results.txt`, `s7/dumps/`.
+
+**Result.** Every construct that moves the register window emits at least one
+instruction that the target does not contain, and the two constructs that reach
+$t0..$t7 exactly do so by making five registers explicitly used:
+
+| form | score | build insns | ctc2 register sequence |
+|---|---|---|---|
+| base-fused8 (the honest floor) | 17 | 18 | v0,v1,a1,a2,a3,t0,t1,t2 |
+| ret-s32-zero | 17 | 18 | v1,a1,a2,a3,t0,t1,t2,t3 |
+| ret-dimode-zero | 19 | 20 | a1,a2,a3,t0,t1,t2,t3,t4 |
+| occ3-param-store | 20 | 21 | v0,v1,t0,t1,t2,t3,t4,t5 |
+| occ5-param-store-dimode | **7** | 23 | **t0,t1,t2,t3,t4,t5,t6,t7** |
+| occ5-locals-ctlE (the s6 shape, now scored) | 11 | 27 | t0,t1,t2,t3,t4,t5,t6,t7 |
+
+**Verdict: CONFIRMED.** This is a second, independent impossibility proof
+alongside H1. H1 says the delay-slot `ctc2` cannot come from C because reorg.c
+stops at asm insns; H16 says the register NAMES cannot come from C either,
+because reload's own occupancy requirement is not satisfiable by a 17-instruction
+body that never mentions $2,$3,$5,$6,$7. Together they say the shipped bytes are
+not compiler output from this configuration at all — which is affirmative
+provenance evidence for hand-written asm, and is exactly why the HEAD body needs
+eight `register asm("$N")` pins plus `regfix.txt:3411` to reproduce them.
+
+**Acknowledged bound on the proof.** `regs_ever_live` is latched before reload
+runs, so in principle an insn that exists at reload entry and is deleted
+afterwards (flow2 / jump2 dead-code removal) could set occupancy for free. No C
+construct that does this was found, and none is known; the loophole is recorded
+rather than claimed closed. Every construct actually measured (19 hand spellings
+in s1-s3, ~164k permuter iterations in s4-s5, six cc1 -da controls in s6, six
+more in s7) either emits the instruction or fails to set occupancy.
+
+### H17 — KILLED (the four constructs the s6 frontier flagged as untested)
+**Statement.** One of a $v0 return value, a DImode return, setjmp, or alloca
+occupies $2,$3,$5,$6,$7 at zero instruction cost, letting the eight reloads land
+on $t0..$t7 for free.
+
+**Probe.** `tmp/grind/func_80052B00/s7/ctl_occupancy.sh` — ctlH (s32 return),
+ctlI (`long long` return), ctlJ (varargs, added to the list because
+[[fake-varargs-explicit-homing]] is the one sanctioned family that touches
+$5,$6,$7), ctlK (DImode return + varargs), ctlL (setjmp), ctlM (alloca), plus
+ctlBASE. Each compiled with `tools/gcc-2.7.2/cc1 -O2 -G0 -funsigned-char -quiet
+-mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -da`; `.greg` spill list and
+emitted body recorded per control.
+
+**Result.**
+- **ctlH (s32 return 0) is the one zero-cost construct** — it occupies $2 and
+  nothing else, and its `move $2,$0` is absorbed by the previously empty `jr $ra`
+  delay slot, so total emitted length is unchanged at 18. It shifts the register
+  window by exactly one position ($3,$5,$6,$7,$8,$9,$10,$11) and the sandbox
+  score is unchanged at 17. One register is not five.
+- **ctlI (DImode return)** occupies $2 and $3 but costs +2: the two `move`s do
+  not both fit the slot (`move $2,$0 / move $3,$0 / j $31`). Score 19.
+- **ctlJ (varargs) is dead as an occupancy lever.** The register set came back
+  UNCHANGED at $2,$3,$5..$10 despite the emitted `sw $5,4($sp) / sw $6,8($sp) /
+  sw $7,12($sp)` homing stores — `setup_incoming_varargs` does not put those
+  registers into `regs_ever_live` in time for `order_regs_for_reload`. It costs
+  +4 and buys nothing. ctlK confirms varargs adds nothing on top of a DImode
+  return. This closes the sanctioned-family idea for this function.
+- **ctlL (setjmp): 38 instructions.** The call destroys the leaf; all eight
+  values are spilled to the stack across it and reloaded.
+- **ctlM (alloca): 45 instructions.** Forces a frame pointer and pushes the eight
+  values onto callee-saved $16..$23 with a full save/restore sequence.
+
+**Verdict: KILLED.** The last theoretical gap in the register argument is closed.
+Zero-cost occupancy exists for exactly ONE of the five registers required, and
+every construct that occupies the other four emits instructions. Banked:
+`rejected/ret-s32-zero-only-zero-cost-occupancy-buys-one-register.c`.
+
+### H18 — CONFIRMED, and it CORRECTS six sessions of ledger wording
+**Statement.** The register residual is not "unreachable"; it is a PRICED axis,
+and the price is score-POSITIVE — paying instructions to buy the target's
+register names lowers the honest distance well below the standing floor of 17.
+
+**Mechanism.** The engine's distance is a differing-instruction count. Sixteen of
+the eighteen emitted instructions currently differ only in GPR name. Buying the
+right names fixes sixteen points; the occupancy constructs cost one point per
+extra emitted instruction. Six extra instructions therefore net ten points.
+
+**Probe.** `sweep_price.py` — the six shapes above spliced into `src/text1b.c`
+and scored with `sandbox func_80052B00 --disable all` (the same splice/restore
+harness used by s3's sweep3.py, original body restored in a `finally` block).
+
+**Result.** `occ5-param-store-dimode` scores **7** (build 23 insns) and
+`occ5-locals-ctlE` — the s6 shape whose SCORE s6 never measured — scores **11**
+(build 27). Both reproduce `ctc2 t0..t7` exactly. Sessions 1-6 all recorded the
+register axis as mechanically unreachable; the accurate statement is that it is
+reachable only by constructs that change the function's contract.
+
+**Verdict: CONFIRMED as a measurement; both forms REJECTED as forms, and the
+honest floor stays 17.** `occ5-param-store-dimode` adds three parameters no
+caller passes and writes their garbage contents to `matrix[8..10]` (live memory
+corruption past the eight words the real function reads) and changes the return
+type from `void` to `long long`. `occ5-locals-ctlE` reads and writes
+`matrix[8..12]`, memory the real function never touches. Both exist solely to
+make five hard registers appear in the RTL so reload will not spill to them —
+a register pin expressed through the function signature, the same intent as
+`register T x asm("$N")` in one more spelling, and squarely inside the
+cheats-by-any-spelling policy. Neither can reach 0 regardless: the extra
+instructions have no home in the target's 17 and the delay slot is still `nop`
+(H1). Banked: `rejected/occ5-param-store-dimode-score7-breaks-abi.c`.
+
+## Live frontier after session 7 (highest value first)
+
+1. **Canonical-asm authorization remains the disposition, and s7 upgrades the
+   argument from "no C spelling found" to "the target is not a fixed point of
+   this compiler".** H16 shows the shipped register allocation is unreachable
+   from the shipped instruction stream under `reload1.c:3606`, independently of
+   H1's delay-slot proof. Two orthogonal impossibility results plus an
+   already-authorized identical-construct precedent one function later in the
+   same file (`func_80052B44`, `src/text1b.c:10995`,
+   `inline_asm_canonical.txt:340`, 2026-07-27). Next probe (operator / a session
+   with authority over `inline_asm_canonical.txt`): apply
+   `memory/grind/func_80052B00/candidate.c` over `src/text1b.c:10969-10994`, add
+   the canonical entry, run `retire func_80052B00` (drops `regfix.txt:3411`) and
+   `verify-oracle`.
+
+2. **If the canonical disposition is refused,
+   `memory/grind/func_80052B00/best_pure_c_fused8_floor17.c` is still the body to
+   ship** — pin-free, honest 17, strictly less cheat surface than the pinned HEAD
+   body. s7 changes nothing here except to confirm no cheaper honest form exists.
+   Next probe (operator only): splice it in, run `sandbox func_80052B00` WITHOUT
+   `--disable all`, find the minimal rule set that byte-matches, `verify-oracle`.
+
+3. **The one loophole left in H16, recorded so nobody re-derives it and nobody
+   overclaims the proof.** `regs_ever_live` is latched before reload, so an insn
+   present at reload entry but deleted by a post-reload pass (flow2 / jump2)
+   would set occupancy at zero emitted cost. No C construct doing this is known
+   and none was found across the 19 hand spellings, ~164k permuter iterations and
+   twelve cc1 -da controls measured in sessions 1-7. Next probe if anyone wants
+   it: grep the post-reload passes for their deletion conditions and try to
+   manufacture a C source hitting one — low expected value, and even a hit leaves
+   H1's delay slot, so the floor still could not reach 0.
+
+## [s7] H16 - No C source can make this toolchain emit func_80052B00's exact 17 target instructions, because the register allocation those instructions use is unreachable from those same instructions. The target is not a fixed point of GCC 2.7.2 + PsyQ flags.
+- mechanism: tools/gcc-2.7.2/reload1.c:486 does bcopy(regs_ever_live, regs_explicitly_used, ...), and order_regs_for_reload() at reload1.c:3606 admits a hard register to bad_spill_regs by exactly two routes: fixed_regs[i], or regs_explicitly_used[i] (which gets `large + 1` uses and SET_HARD_REG_BIT(bad_spill_regs, i)). The only other input is hard_reg_n_uses[] accumulated from pseudos that local-alloc/global already assigned to hard registers - and per the s6 correction there are none here, because combine folds all eight loads into the single fused asm so .lreg holds one insn. On MIPS with these flags $2,$3,$5,$6,$7 are not fixed_regs. Therefore the ONLY route to bad_spill_regs for those five is regs_ever_live, i.e. they must appear explicitly in this function's own RTL. But the target's 17 instructions mention exactly $4 (base of all eight lw), $8..$15 (the eight values), and $31 (the jr) - $2,$3,$5,$6,$7 appear nowhere. A C source emitting the target's stream would leave all five spillable and order_regs_for_reload would hand the eight reloads $2,$3,$5,$6,$7,$8,$9,$10, which is precisely the honest output measured in every session.
+- probe: Read and saved order_regs_for_reload() verbatim (tmp/grind/func_80052B00/s7/reload1_order_regs_for_reload.txt, reload1.c:3596-3670) and cross-checked against six cc1 -da differential controls (tmp/grind/func_80052B00/s7/ctl_occupancy.sh, dumps in s7/dumps/) plus the same six shapes scored in-tree with `sandbox func_80052B00 --disable all` (s7/sweep_price.py, s7/sweep_price_results.txt).
+- result: Confirmed on both the source and the measurements. ctlBASE reproduces the .greg line 'Spilling reg 2. 3. 5. 6. 7. 8. ...' and emits regs $2,$3,$5..$10. Every construct measured that moves the register window does so by making additional hard registers explicitly used, and every such construct emits at least one instruction the 17-instruction target has no room for. The two constructs that reach $t0..$t7 exactly (occ5-param-store-dimode, occ5-locals-ctlE) do so by occupying exactly $2,$3,$5,$6,$7, at +6 and +10 instructions respectively. Acknowledged bound on the proof, recorded rather than claimed closed: regs_ever_live is latched before reload, so an insn present at reload entry but deleted by a post-reload pass (flow2/jump2) could in principle set occupancy for free; no C construct doing this is known and none appeared across 19 hand spellings, ~164k permuter iterations and twelve cc1 -da controls in sessions 1-7.
+- verdict: CONFIRMED
+
+## [s7] H17 - One of the four constructs the s6 frontier named as untested (a $v0 return value, a DImode return, setjmp, alloca) occupies $2,$3,$5,$6,$7 at zero instruction cost, letting the eight reloads land on $t0..$t7 for free.
+- mechanism: If regs_ever_live can be set for a hard register by a construct that GCC then emits no instruction for, reload's bad_spill_regs would exclude it at no cost to the instruction count. s6 measured that extra UNUSED parameters do not set regs_ever_live (ctlF/ctlG); the four named constructs were the remaining candidates, and varargs was added to the list because fake-varargs-explicit-homing is the one sanctioned technique family that touches $5,$6,$7.
+- probe: tmp/grind/func_80052B00/s7/ctl_occupancy.sh - seven controls (ctlH s32 return, ctlI long long return, ctlJ varargs, ctlK DImode return + varargs, ctlL setjmp, ctlM alloca, ctlBASE) compiled with the instrumented tools/gcc-2.7.2/cc1 at -O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -da in the standalone TU vehicle validated as faithful by H9; .greg spill list and emitted body recorded per control. Raw log: s7/ctl_occupancy_out.txt.
+- result: ctlH (s32 return 0) is the ONE zero-cost construct: 18 cc1 insns, regs $3,$5,$6,$7,$8,$9,$10,$11; it occupies $2 only, and its `move $2,$0` is absorbed by the previously empty jr $ra delay slot so total emitted length is unchanged - but one register is not five, and the sandbox score stays 17. ctlI (long long) occupies $2 and $3 for +2 insns (move $2,$0 / move $3,$0 / j $31; reorg filled the slot with neither), score 19. ctlJ (varargs) is DEAD as an occupancy lever: the register set came back UNCHANGED at $2,$3,$5..$10 despite emitting sw $5,4($sp) / sw $6,8($sp) / sw $7,12($sp) - setup_incoming_varargs homing does not reach regs_ever_live in time for order_regs_for_reload - and it costs +4. ctlK confirms varargs adds nothing on top of a DImode return. ctlL (setjmp) 38 insns: the call destroys the leaf and all eight values round-trip through the stack. ctlM (alloca) 45 insns: frame pointer plus callee-saved $16..$23 with full save/restore.
+- verdict: KILLED
+
+## [s7] H18 - The register residual is not 'unreachable' as sessions 1-6 all worded it; it is a PRICED axis and the price is score-POSITIVE, i.e. paying instructions to buy the target's register names lowers the honest distance well below the standing floor of 17.
+- mechanism: The engine's distance is a differing-instruction count. Sixteen of the eighteen emitted instructions currently differ only in GPR name, so buying the right names is worth 16 points, while each extra emitted instruction costs 1. Six extra instructions therefore net ten points. Sessions 1-6 measured instruction cost but never scored the occupancy shapes (s6 recorded ctlE's +10 instructions and no score at all).
+- probe: tmp/grind/func_80052B00/s7/sweep_price.py - six shapes spliced into src/text1b.c and scored with `sandbox func_80052B00 --disable all` using the s3 splice/restore harness (original body restored in a finally block; git status confirms src/text1b.c clean at session end).
+- result: base-fused8 score=17 build=18 ctc2=v0,v1,a1,a2,a3,t0,t1,t2 | ret-s32-zero score=17 build=18 ctc2=v1,a1,a2,a3,t0,t1,t2,t3 | ret-dimode-zero score=19 build=20 | occ3-param-store score=20 build=21 | occ5-param-store-dimode score=7 build=23 ctc2=t0,t1,t2,t3,t4,t5,t6,t7 | occ5-locals-ctlE (the s6 shape, scored for the first time) score=11 build=27 ctc2=t0..t7. CONFIRMED as a measurement; both sub-17 forms REJECTED as forms, and the honest floor therefore stays 17. occ5-param-store-dimode adds three parameters no caller passes and writes their garbage contents to matrix[8..10] (live memory corruption past the eight words the real function reads) and changes the return type from void to long long; occ5-locals-ctlE reads and writes matrix[8..12]. Both exist solely to make five hard registers appear in the RTL so reload will not spill to them - a register pin expressed through the function signature, the same intent as register asm("$N") in one more spelling, squarely inside the cheats-by-any-spelling policy. Neither can reach 0 regardless: the extra instructions have no home in the target's 17 and the delay slot is still nop (H1).
+- verdict: CONFIRMED

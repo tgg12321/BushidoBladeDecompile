@@ -1,7 +1,7 @@
 {
  "func": "func_80052B00",
  "file": "text1b",
- "session_count": 6,
+ "session_count": 7,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -39,23 +39,29 @@
    "floor": 17,
    "modality": "forensics",
    "headline": "Forensics named both residual mechanisms and CORRECTED the ledger: combine folds all eight loads into the asm so RELOAD (reload1.c:3606 order_regs_for_reload, not local-alloc) picks the registers; the"
+  },
+  {
+   "session": 7,
+   "floor": 17,
+   "modality": "forensics",
+   "headline": "Forensics closed the register axis with a SECOND impossibility proof: reload1.c:3606 requires $2,$3,$5,$6,$7 to be regs_ever_live for the eight values to land on $t0..$t7, but the target's own 17 inst"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Canonical-asm authorization under the GTE-leaf carve-out remains the disposition, and session 6 adds an affirmative provenance argument rather than one more null result.",
-   "mechanism": "Forensics shows GCC CAN name $t0..$t7 for these eight values, but only from a register-pressure state costing >= 10 extra instructions (ctlE + ctlF), and CAN fill this jr's delay slot, but only when the candidate insn is not an asm (ctlA differential against reorg.c:730-735 stop_search_p). The target does both at once in exactly 17 instructions using an opcode (ctc2) with no C analog. Precedent is in hand and citable: func_80052B44, src/text1b.c:10995, inline_asm_canonical.txt:340, authorized 2026-07-27 for the identical construct one function later in the same file.",
-   "next_probe": "A session or operator holding authority over inline_asm_canonical.txt applies memory/grind/func_80052B00/candidate.c over src/text1b.c:10969-10994, adds the canonical entry, runs `retire func_80052B00` (drops regfix.txt:3411) and `verify-oracle`. The disposition call belongs to the driver/owner; a grind session in a non-escalation modality must not self-authorize it."
+   "hypothesis": "Canonical-asm authorization under the GTE-leaf carve-out remains the disposition, and session 7 upgrades the argument from 'no C spelling found' to 'the target is not a fixed point of this compiler'.",
+   "mechanism": "Two orthogonal impossibility proofs now stand. H1: reorg.c:730-735 stop_search_p halts fill_simple_delay_slots at any asm insn, so the target's delay-slot ctc2 - an opcode with no C analog - can never be placed there from C. H16: reload1.c:3606 order_regs_for_reload requires $2,$3,$5,$6,$7 to be in regs_ever_live for the eight values to land on $t0..$t7, and the target's own 17 instructions mention none of those five, so the shipped register allocation cannot arise from the shipped instruction stream. Precedent is in hand and citable: func_80052B44, src/text1b.c:10995, inline_asm_canonical.txt:340, authorized 2026-07-27 for the identical construct one function later in the same file.",
+   "next_probe": "Operator step, or a session holding authority over inline_asm_canonical.txt: apply memory/grind/func_80052B00/candidate.c over src/text1b.c:10969-10994, add the canonical entry, run `retire func_80052B00` (drops regfix.txt:3411) and `verify-oracle`. The disposition call belongs to the driver/owner; a grind session in a non-escalation modality must not self-authorize it."
   },
   {
-   "hypothesis": "If the canonical disposition is ever REFUSED, memory/grind/func_80052B00/best_pure_c_fused8_floor17.c - not the pinned HEAD body - is what should ship, because it strictly reduces the cheat surface.",
-   "mechanism": "The HEAD body needs eight register asm(\"$N\") pins PLUS regfix.txt:3411 to byte-match. The fused body is pin-free and already correct in opcodes, order and offsets; only the GPR names and the delay-slot move remain as build-time paperwork.",
+   "hypothesis": "If the canonical disposition is ever REFUSED, memory/grind/func_80052B00/best_pure_c_fused8_floor17.c - not the pinned HEAD body - is what should ship, because it strictly reduces the cheat surface. Session 7 confirms no cheaper honest form exists.",
+   "mechanism": "The HEAD body needs eight register asm(\"$N\") pins PLUS regfix.txt:3411 to byte-match. The fused body is pin-free and already correct in opcodes, order and offsets; only the GPR names and the delay-slot move remain as build-time paperwork. Every form that scores below 17 does so by changing the function's contract (fake parameters, fake return type, stores past the array) and is banked under rejected/.",
    "next_probe": "Operator step (a grind session may not touch these surfaces): splice the fused body into src/text1b.c, measure `sandbox func_80052B00` WITHOUT --disable all to see what the enabled rule set achieves, determine the minimal rule set that reaches byte-match, and run a full `verify-oracle`."
   },
   {
-   "hypothesis": "The register axis should not be re-opened on the spelling dimension; the only untested corner left anywhere is zero-cost occupancy of $2,$3,$5,$6,$7, and it is four specific constructs, not a sweep.",
-   "mechanism": "Six sessions measured the spelling dimension three independent ways (19 hand spellings, ~164k permuter iterations, and now the compiler's own reload/local-alloc dumps) and s6 identified the single lever that moves the register set together with the arithmetic excluding it. Unused parameters are killed; what remains untested is whether a $v0 return value, a DImode return occupying $v0+$v1, setjmp, or alloca can occupy those registers without emitting an instruction.",
-   "next_probe": "One ctl sweep of those four constructs against the fused body with cc1 -da, reading only the .greg spill list - roughly one turn of work, and it closes the last theoretical gap in the register argument. Do NOT sweep C spellings again and do NOT run a fourth permuter campaign."
+   "hypothesis": "The single acknowledged loophole in H16 - a construct whose insn exists at reload entry but is deleted by a post-reload pass, setting regs_ever_live at zero emitted cost.",
+   "mechanism": "regs_ever_live is latched before reload runs, so occupancy established by an insn that flow2 or jump2 later deletes would be free. Every construct measured in sessions 1-7 either emits the instruction (ctlE, ctlI, occ3/occ5) or fails to set occupancy at all (unused params in s6 ctlF/ctlG, varargs homing in s7 ctlJ).",
+   "next_probe": "Low expected value, recorded so nobody re-derives it and nobody overclaims the proof: grep the post-reload passes in tools/gcc-2.7.2 for their deletion conditions and try to manufacture a C source that hits one. Even a hit leaves H1's delay slot, so the floor still could not reach 0 - do NOT spend a session on this ahead of the disposition in frontier item 1."
   }
  ],
  "judge_constraints": [],

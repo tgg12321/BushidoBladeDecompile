@@ -163,6 +163,58 @@
  * register names OR its 17-instruction length, never both, and can never produce
  * the delay-slot `ctc2` from C at all. The target does all three at once. Full
  * data: evidence.md §s6, hypotheses.md H11-H15, tmp/grind/func_80052B00/s6/.
+ *
+ * SESSION 7 (forensics, 2026-08-01) — form UNCHANGED; the register axis now has
+ * a SECOND independent impossibility proof, and the s6 frontier's last open
+ * corner is measured shut.
+ *
+ *  - H16, THE STRONGEST RESULT ON THIS FUNCTION SO FAR: the target is not a
+ *    fixed point of this compiler configuration. `reload1.c:3606
+ *    order_regs_for_reload()` admits a hard register to `bad_spill_regs` by
+ *    exactly two routes — `fixed_regs[i]`, or `regs_explicitly_used[i]`, which
+ *    `reload1.c:486` copies wholesale from `regs_ever_live[]` — plus uses
+ *    contributed by pseudos already assigned to hard registers (of which there
+ *    are none here, since combine folds all eight loads into the asm). On MIPS
+ *    with these flags $2,$3,$5,$6,$7 are not fixed. And the target's 17
+ *    instructions mention only $4, $8..$15 and $31 — $2,$3,$5,$6,$7 appear
+ *    NOWHERE in them. So a C source emitting exactly the target's instruction
+ *    stream would leave all five spillable and reload would hand the eight
+ *    values $2,$3,$5,$6,$7,$8,$9,$10 — precisely the honest output we measure —
+ *    never $t0..$t7. The shipped register allocation is unreachable from the
+ *    shipped instruction stream. Verbatim source:
+ *    s7/reload1_order_regs_for_reload.txt.
+ *
+ *  - This is ORTHOGONAL to H1. H1 says the delay-slot `ctc2` can never come from
+ *    C (reorg.c:730-735 stop_search_p halts at any asm insn). H16 says the
+ *    register NAMES can never come from C either. Two independent proofs, and
+ *    together they say these bytes are not GCC 2.7.2 output from any C source in
+ *    this configuration — affirmative provenance evidence for hand-written asm
+ *    rather than one more null result, and exactly why the HEAD body needs eight
+ *    `register asm("$N")` pins PLUS regfix.txt:3411 to reproduce them.
+ *
+ *  - H17 KILLED the four constructs the s6 frontier named as the last untested
+ *    corner. Measured with cc1 -da (s7/ctl_occupancy.sh, dumps in s7/dumps/):
+ *    an s32 return value is the ONE zero-cost occupancy construct — its
+ *    `move $2,$0` is absorbed by the empty `jr $ra` delay slot — and it buys
+ *    exactly one of the five registers needed (score unchanged at 17). A DImode
+ *    return buys $2+$3 for +2 insns. Varargs buys NOTHING (register set
+ *    unchanged despite the emitted `sw $5/$6/$7` homing) and costs +4, killing
+ *    [[fake-varargs-explicit-homing]] here. setjmp costs +21, alloca +28.
+ *
+ *  - H18 CORRECTS six sessions of wording, honestly: the register residual was
+ *    never "unreachable", it is PRICED, and the price is score-positive.
+ *    `sandbox --disable all` over the full curve (s7/sweep_price_results.txt):
+ *    base 17 / ret-s32 17 / ret-dimode 19 / occ3-param-store 20 /
+ *    occ5-param-store-dimode **7** / occ5-locals-ctlE (the s6 shape, scored for
+ *    the first time) **11**. The two sub-17 forms reproduce `ctc2 t0..t7`
+ *    exactly — and both are cheats: they add parameters no caller passes, write
+ *    memory past the eight words the function reads, and change the return type,
+ *    all solely to make five hard registers appear in the RTL. That is a
+ *    register pin expressed through the function signature. Both are banked
+ *    under rejected/ and neither can reach 0 regardless (the extra instructions
+ *    have no home in the target's 17, and the delay slot is still `nop`). The
+ *    honest floor stays 17. Full data: evidence.md §Session 7, hypotheses.md
+ *    H16-H18, tmp/grind/func_80052B00/s7/.
  */
 __asm__(
     ".set\tnoat\n"
