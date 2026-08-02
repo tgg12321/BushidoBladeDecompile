@@ -238,12 +238,58 @@
  *     whose gap is register/field differences rather than ordering, where the
  *     stock 100-vs-5 weighting hides the signal.
  *
- * NEXT: hypotheses.md F26 — diff the instrumented cc1's RANKDBG trace for THIS
- * form against the const (c1) form.  They differ in exactly one bit
- * (RTX_UNCHANGING_P on one load) yet flip both the `lbu` order and the arg3
- * chain's position, so the trace difference isolates the single tie-break the
- * whole residual now rests on.  Do NOT re-sweep argument spellings; sixty-five
- * forms are banked over four rigid attractors.
+ * ===========================================================================
+ * SESSION 15 (forensics) — BODY STILL UNCHANGED; F26 IS ANSWERED AND HALF OF
+ * IT IS KILLED.  THE RESIDUAL IS ONE DEPENDENCE EDGE, NOT A TIE-BREAK.
+ * ===========================================================================
+ * Re-applied and re-measured at exactly 7 / 91.  The instrumented cc1
+ * (tools/gcc-2.7.2/cc1, BB2_PRIO_DEBUG / BB2_RANK_DEBUG / BB2_ALLOC_DEBUG, via
+ * tmp/grind/saEft01Init/s10/idump.sh; both dumps verified CODEGEN-IDENTICAL to
+ * the frozen build/cc1) was run on THIS form and on the const chassis:
+ *
+ *   * `rank_for_schedule`'s load/store dependence-CLASS tie-break is TOTALLY
+ *     INERT in this block.  Every single in-block RANKDBG decision returns
+ *     val=0 — 54 of 54 on this chassis, 49 of 49 on the const chassis, zero
+ *     class-resolved either way.  Both operands are always class 3.  So among
+ *     equal-priority insns the order is decided ONLY by INSN_LUID, i.e. by the
+ *     incoming chain order.  F26's "if it is the load/store class test" branch
+ *     is KILLED; no C spelling can act through that test here.
+ *   * The two chassis have BYTE-IDENTICAL final INSN_PRIORITY vectors over all
+ *     19 block insns.  RTX_UNCHANGING_P changes no priority at all — it
+ *     changes the sched1 DAG, and sched1's output order then becomes sched2's
+ *     LUID order.
+ *   * The single edge is visible in the .sched LOG_LINKS:
+ *       ours       insn 125 (`sw 16(sp)`) ... (insn_list 89
+ *                    (insn_list:REG_DEP_ANTI 100 (insn_list 123 (nil))))
+ *       const      insn 125 ... (insn_list 89 (insn_list 123 (nil)))
+ *     insn 100 is `arg4 = tbl_125c[idx_1494[0]]`, the `lw a3` value.  The
+ *     REG_DEP_ANTI (write-after-read on the outgoing-arg stack slot, emitted
+ *     by sched.c's sched_analyze_1 because the load's MEM is aliasable) FORCES
+ *     `lw a3` before `sw 16(sp)`.  Target has the opposite relation.  Marking
+ *     that ONE load unchanging deletes the edge and produces target's relation
+ *     — and costs 2, because sched1 then runs the idx[1] chain ahead of the
+ *     idx[0] `lbu` and the two `lbu` come out in the wrong order.
+ *   * A per-access `((const s32 *)tbl_125c)[idx_1494[0]]` on arg4 ALONE is
+ *     byte-identical to the whole-pointer const declaration (same sched1
+ *     order, same sched2 order, 9 / 91).  RTX_UNCHANGING_P on arg5's load is
+ *     inert.  The const axis is now measured to the edge — do not re-probe it.
+ *   * The dependence edge's DIRECTION is set by the pre-sched1 chain order,
+ *     which calls.c fixes: a NAMED arg4 emits the load at the statement, i.e.
+ *     BEFORE store_one_arg's `sw`, hence the anti-dep; a fully INLINE arg4
+ *     emits the load in load_register_parameters, i.e. AFTER the `sw`, hence a
+ *     true dependence in target's direction — which is why the fully-inline
+ *     attractor lands `lw a3` at target's idx 61 but drags its whole idx[0]
+ *     chain with it (13 / 91).  Target needs the idx[0] ADDRESS chain expanded
+ *     early and only the final LOAD expanded late.  The obvious C for that
+ *     (named ADDRESS local + inline deref as the argument) was re-measured
+ *     this session: 9 / 91, one fewer RTL insn, same attractor.
+ *
+ * NEXT: hypotheses.md F28.  The question is no longer "which tie-break" —
+ * there is no live tie-break.  It is: what pure-C shape splits the idx[0]
+ * chain across calls.c's store_one_arg boundary, giving the address chain a
+ * statement-expanded position and the load a load_register_parameters
+ * position?  Do NOT re-sweep argument spellings (sixty-seven forms banked over
+ * four rigid attractors) and do NOT re-probe const / RTX_UNCHANGING_P.
  * ===========================================================================
  */
 s32 saEft01Init(s32 a0) {

@@ -1593,3 +1593,88 @@ diff for any find worth reading).
 - [s14] The session-9 chassis was re-applied to src/system.c and re-measured at exactly 7/91 this session; src/system.c is left carrying it.
 
 - [s14] Both campaigns were harvested with --stop before the session ended (procs_killed 9 each) and `pgrep -af permuter.py` is clean — no campaign outlives this session.
+
+## Session 15 (forensics) — banked facts
+
+- Floor re-verified at **7 / 91** with the session-9 candidate body applied to
+  `src/system.c` (`sandbox saEft01Init --disable all`, build_insns 91,
+  target_insns 91). The tree as inherited at HEAD carried the OLD session-2-era
+  body (staged `arg5`/`arg4`, no `do{}while(0)` wrapper) scoring 18; applying
+  `memory/grind/saEft01Init/candidate.c` is a REQUIRED first step every session.
+- The instrumented cc1 at `tools/gcc-2.7.2/cc1` (NOT `tools/gcc-2.7.2/build/cc1`)
+  carries working `BB2_PRIO_DEBUG` / `BB2_RANK_DEBUG` / `BB2_ALLOC_DEBUG` hooks.
+  `tmp/grind/saEft01Init/s10/idump.sh <tag>` runs both compilers on the current
+  `src/system.c` and prints `CODEGEN-IDENTICAL` when the instrumented binary
+  agrees with the frozen one — it did on all three dumps taken this session.
+- `RANKDBG` only prints on an INSN_PRIORITY tie (`sched.c:2409` returns before
+  the classification), so every RANKDBG line is by construction a genuine
+  tie-break decision.
+- **The load/store dependence-class tie-break is inert in this function's
+  argument block.** Candidate chassis: 54 in-block RANKDBG decisions, 54 with
+  `val=0`, every operand `cls=3`. Const chassis: 49 in-block decisions, 49 with
+  `val=0`. Among equal-priority insns the order is therefore decided purely by
+  INSN_LUID, i.e. by the incoming chain order (at sched2, sched1's output).
+- **The candidate and the const chassis have byte-identical final
+  INSN_PRIORITY vectors** across all 19 block insns
+  (`89=2 93=2 96=1 98=1 100=2 105=1 108=1 111=1 113=1 116=1 119=2 121=1 123=1
+  125=1 127=1 129=2 131=1 133=2 135=1`). RTX_UNCHANGING_P moves no priority.
+- **The whole 7-vs-9 difference is one edge.** `.sched` LOG_LINKS for insn 125
+  (`sw 16(sp)`, the outgoing 5th argument):
+  candidate `(insn_list 89 (insn_list:REG_DEP_ANTI 100 (insn_list 123 (nil))))`
+  vs const `(insn_list 89 (insn_list 123 (nil)))`. Insn 100 is
+  `arg4 = tbl_125c[idx_1494[0]]` (the `lw a3` value); the anti-dependence is a
+  write-after-read on the outgoing-arg stack slot emitted by
+  `sched.c:sched_analyze_1` because the load's MEM is aliasable. It forces
+  `lw a3` ahead of `sw 16(sp)`; target has the opposite relation.
+- Removing that edge flips the sched1 order from
+  `89,93,96,116,98,119,121,100,108,123,127,125,111,105,113,129,131,133,135` to
+  `89,116,119,121,93,123,127,125,96,108,98,111,105,113,129,100,131,133,135`,
+  which becomes sched2's LUID order: the `sw` now precedes `lw a3` (target's
+  relation) but the two `lbu` come out in the wrong order (116 before 93).
+  That trade is exactly the +2.
+- A per-access `((const s32 *)tbl_125c)[idx_1494[0]]` on arg4 ALONE is not just
+  the same score as the whole-pointer `const s32 *tbl_125c` — it is the same
+  sched1 order, the same sched2 order and the same priority vector. Marking
+  arg5's load unchanging is completely inert. The const axis is closed.
+- The named-ADDRESS-local + inline-deref form
+  (`s32 *arg4 = &tbl_125c[idx_1494[0]]; debug_printf(..., *arg4, ...)`)
+  re-measured on the session-9 chassis is 9 / 91 (one fewer RTL insn — the
+  separate `move a3` copy disappears — but the same 9-attractor, not a fifth
+  basin).
+- Target's idx[0] chain is SPREAD across the `sw 16(sp)` boundary
+  (`lbu 46 / sll 52 / addu 56 / sw 58 / lw a3 61`). All four known attractors
+  put the whole chain on one side of it or pay 2 to cross it. That boundary is
+  `calls.c`'s `store_one_arg` (1736-1739), which runs after the register-arg
+  precompute loop (1618-1665) and before `load_register_parameters` (~1876).
+- Tooling of record for this class of question:
+  `tmp/grind/saEft01Init/s15/blocksum.py <tagdir>` (auto-derives the argument
+  block from `system.i.sched`, prints sched1/sched2 orders, the priority vector
+  and the RANKDBG class-vs-LUID census) and
+  `tmp/grind/saEft01Init/s15/rankscan.py <tagdir> <uids>` (full PRIODBG edge and
+  RANKDBG dump for a UID set — VERY verbose, prefer blocksum.py).
+
+- [s15] Floor re-verified at 7 / 91 this session (sandbox saEft01Init --disable all, build_insns 91, target_insns 91) with the session-9 candidate body applied to src/system.c and left in place.
+
+- [s15] IMPORTANT for the next session: the tree as inherited at HEAD carried the OLD session-2-era body (staged arg5/arg4, no do{}while(0) wrapper) scoring 18. Applying memory/grind/saEft01Init/candidate.c to src/system.c is a REQUIRED first step every session; the SessionStart hook's 'pure-C distance 18' is that stale state, not a regression.
+
+- [s15] The instrumented cc1 lives at tools/gcc-2.7.2/cc1 (NOT tools/gcc-2.7.2/build/cc1) and its BB2_PRIO_DEBUG / BB2_RANK_DEBUG / BB2_ALLOC_DEBUG hooks all work. tmp/grind/saEft01Init/s10/idump.sh <tag> compiles the current src/system.c with BOTH compilers and printed CODEGEN-IDENTICAL on all four dumps taken this session, so the instrumented traces describe the frozen toolchain's real behaviour.
+
+- [s15] RANKDBG only prints on an INSN_PRIORITY tie (sched.c:2409 returns before the classification), so every RANKDBG line is by construction a genuine tie-break decision - the census is a complete enumeration of the tie-breaks, not a sample.
+
+- [s15] The load/store dependence-class tie-break is INERT in this function's argument block: 54/54 val=0 on the candidate chassis and 49/49 val=0 on the const chassis, every operand cls=3, zero class-resolved decisions on either. Order among equal-priority insns is decided purely by INSN_LUID.
+
+- [s15] The candidate and the const chassis have byte-identical final INSN_PRIORITY vectors over all 19 block insns; RTX_UNCHANGING_P changes the sched1 DAG, never a priority.
+
+- [s15] The entire 7-vs-9 split is ONE edge: insn 125 (sw 16(sp), the outgoing 5th argument) carries REG_DEP_ANTI 100 on the candidate and does not on the const chassis, where the loads' MEMs are mem/s/u:SI instead of mem/s:SI. Insn 100 is arg4's statement-expanded load, i.e. target's lw a3 value.
+
+- [s15] Insn 131 (lw a2, the arg3 chain) carries a true dependence on 125 on BOTH chassis, so arg3's load is already after the sw in every form - target's relation there is not at risk and is not the residual.
+
+- [s15] A per-access const cast on arg4 alone reproduces the whole-pointer const chassis exactly (same sched1 order, same sched2 order, same priority vector, same 9/91). Marking arg5's load unchanging is inert. Do not re-probe any const / RTX_UNCHANGING_P spelling on this function.
+
+- [s15] The named-ADDRESS-local + inline-deref form is 9 / 91 with one fewer RTL insn (no separate move a3) - the same 9-attractor, not a fifth basin.
+
+- [s15] Target's idx[0] chain is SPREAD across the sw 16(sp) boundary (lbu 46 / sll 52 / addu 56 / sw 58 / lw a3 61). All four known attractors put the whole chain on one side of that boundary or pay 2 to cross it. The boundary is calls.c's store_one_arg (1736-1739), between the register-arg precompute loop (1618-1665) and load_register_parameters (~1876).
+
+- [s15] New tooling of record: tmp/grind/saEft01Init/s15/blocksum.py <tagdir> auto-derives the argument block from system.i.sched and prints the sched1/sched2 orders, the priority vector and the RANKDBG class-vs-LUID census in ~6 lines. tmp/grind/saEft01Init/s15/rankscan.py <tagdir> <uids> gives the full PRIODBG edge + RANKDBG dump for a UID set but is VERY verbose - prefer blocksum.py.
+
+- [s15] The do{}while(0) wrapper is still the candidate's single match device and has still never been through a fresh adversarial cheat-reviewer (F23, unchanged since session 12).

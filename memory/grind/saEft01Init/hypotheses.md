@@ -2016,3 +2016,158 @@ penalties first": that experiment is now run, banked and measured. Banked:
 - probe: Two fresh-seed campaigns launched through tools/permuter_campaign.py with the shim, -j 8, waited in-turn with permuter_campaign.py wait and harvested with --stop. ws1 (candidate chassis, base 23): 31,747 iterations. ws2 (const chassis, base 29): 28,380 iterations. Every find of both campaigns re-scored with tmp/grind/saEft01Init/s14/rescore.ps1 -> engine sandbox --disable all.
 - result: ws1: four finds, ALL ties at 23, nothing below base; last novel find at 328 s and the final 555 s window returned nothing novel (fresh-seed stopping rule); all four screen sandbox 7/7/7/7. ws2: five finds — one at 28, one at 26 (the first genuine permuter-score DESCENT this function has produced in three permuter sessions), three ties at 29; the 26 screens sandbox 10/91 against its base's 9, and the three 29-ties screen 9, 10 and 12, i.e. the objective cannot separate a 9 from a 12 inside one basin. Aligning the weights fixed the cross-chassis ranking and did NOT fix the within-basin ranking, because difflib re-aligns the candidate stream against target before any penalty is applied and saEft01Init's entire residual is positional — the same seven instructions in the wrong ORDER, which is exactly the information re-alignment destroys.
 - verdict: KILLED
+
+## Session 15 (forensics) — measured
+
+### H63 — KILLED (F26's tie-break half)
+**Statement:** the residual sits in `rank_for_schedule`'s tie-breaks, and the
+candidate's win (both `lbu` at the block head) and the const chassis's win
+(`sw 16(sp)` before `lw a3`) are separated by ONE tie-break decision — the
+load/store dependence class against `last_scheduled_insn` (sched.c:2414-2449).
+**Mechanism:** `rank_for_schedule` returns early on an INSN_PRIORITY
+difference, then classifies both candidates against `last_scheduled_insn`
+(1 = data dependent, 2 = anti/output dependent, 3 = independent or latency 1)
+and prefers the higher class, falling through to INSN_LUID only on a class tie.
+The instrumented cc1's `BB2_RANK_DEBUG` hook (sched.c:2436-2446) prints exactly
+those class decisions, so every printed RANKDBG line IS a genuine
+equal-priority tie-break.
+**Probe:** `bash tmp/grind/saEft01Init/s10/idump.sh s15cand` and `... s15const`
+(both verified CODEGEN-IDENTICAL to the frozen `tools/gcc-2.7.2/build/cc1` on
+the whole TU), then `tmp/grind/saEft01Init/s15/blocksum.py`, which auto-derives
+the argument block from `system.i.sched` (the insns from the
+`tslTm2LoadImage_2` call through the `debug_printf` call) and censuses every
+RANKDBG decision whose BOTH operands are in that block.
+**Result:** **ZERO class-resolved decisions on either chassis.** Candidate:
+54 in-block RANKDBG decisions, all `val=0`, every operand `cls=3`. Const
+chassis: 49 in-block decisions, all `val=0`, all `cls=3`. The class test never
+discriminates in this block on any form measured, so no C spelling can act
+through it. Among equal-priority insns the order is decided ONLY by INSN_LUID,
+i.e. by the incoming chain order — which at sched2 is sched1's output order.
+**Verdict: KILLED.** F26 as posed is dead; H64 replaces it.
+
+### H64 — CONFIRMED (the residual is ONE dependence edge)
+**Statement:** the difference between the 7-scoring candidate and the
+9-scoring const chassis is not a tie-break but a single memory dependence edge
+that `RTX_UNCHANGING_P` deletes.
+**Mechanism:** `sched.c:sched_analyze_1` makes a store depend on every pending
+read seen so far in the chain, unless the read's MEM is `RTX_UNCHANGING_P`.
+`arg4 = tbl_125c[idx_1494[0]]` is a statement-expanded load (insn 100) and the
+outgoing 5th argument is `sw 16(sp)` (insn 125); calls.c emits the statement
+load BEFORE `store_one_arg`, so the pair gets a REG_DEP_ANTI (write-after-read)
+which FORCES `lw a3` ahead of `sw 16(sp)`. Target has the opposite relation.
+**Probe:** read the `.sched` LOG_LINKS for insns 100/123/125/131 on both
+chassis (`tmp/grind/saEft01Init/s10/schedscan.py`), and compare the full block
+priority vectors and sched1/sched2 orders via `blocksum.py`.
+**Result:** the two chassis have **byte-identical final INSN_PRIORITY vectors**
+over all 19 block insns — RTX_UNCHANGING_P changes no priority whatsoever. The
+only structural difference is the LOG_LINKS of insn 125:
+`(insn_list 89 (insn_list:REG_DEP_ANTI 100 (insn_list 123 (nil))))` on the
+candidate vs `(insn_list 89 (insn_list 123 (nil)))` on the const chassis, with
+the loads' MEMs going `mem/s:SI` -> `mem/s/u:SI`. Deleting that one edge flips
+the whole sched1 order (`89,93,96,116,98,119,121,100,...` ->
+`89,116,119,121,93,123,127,125,96,...`), which becomes sched2's LUID order and
+produces target's `sw` before `lw a3` while losing the `lbu` head order.
+**Verdict: CONFIRMED.** The entire 7-vs-9 split is that single edge.
+
+### H65 — KILLED (the const axis is now closed to the edge)
+**Statement:** marking only arg4's access unchanging (a per-access
+`((const s32 *)tbl_125c)[idx_1494[0]]` cast, arg5 left plain) is a distinct
+form from the whole-pointer `const s32 *tbl_125c` declaration and may keep the
+candidate's `lbu` head while gaining target's store/load relation.
+**Probe:** built that exact form, `sandbox saEft01Init --disable all`, then
+`idump.sh s15c4` + `blocksum.py`.
+**Result:** 9 / 91 — and not merely the same score: the same sched1 order, the
+same sched2 order and the same priority vector as the whole-pointer const
+chassis. RTX_UNCHANGING_P on arg5's load is completely inert; the whole const
+effect is the arg4 edge and nothing else. **Verdict: KILLED.** Banked:
+`rejected/const-cast-on-arg4-access-only-is-the-whole-const-chassis-9.c`.
+Do not re-probe any const / RTX_UNCHANGING_P spelling on this function.
+
+### H66 — KILLED (the named-address + inline-deref split)
+**Statement:** target needs the idx[0] ADDRESS chain expanded at the statement
+(early, giving the `lbu`/`sll`/`addu` their early positions) and only the final
+LOAD expanded by `load_register_parameters` (late, after `store_one_arg`'s
+`sw`), so a named ADDRESS local dereferenced inline in the call
+(`arg4 = &tbl_125c[idx_1494[0]]; debug_printf(..., *arg4, ...)`) should reach
+target's split.
+**Mechanism:** calls.c 1618-1665 (register-arg precompute) runs before
+store_one_arg (1736-1739) which runs before load_register_parameters (~1876).
+An inline array-element argument returns a MEM from the precompute loop, so its
+load is deferred past the stack store — the direction that gives a true
+dependence (load after store) instead of the anti-dependence H64 measured.
+**Probe:** built the form, `sandbox --disable all`, `idump.sh s15ptr` +
+`blocksum.py`.
+**Result:** 9 / 91 at 91 build insns (the RTL block loses one insn — the
+separate `move a3` copy disappears — but the sandbox score does not improve).
+It lands in the same 9-attractor as the const chassis rather than in a fifth
+basin. **Verdict: KILLED.** This is the same form as the previously banked
+`rejected/named-pointer-inline-deref-9.c`, now re-measured against the session-9
+chassis and with a dump attached, so the attractor count stands at four.
+
+## Live frontier (for session 16)
+
+### F28 — split the idx[0] chain across calls.c's store_one_arg boundary
+**Mechanism:** H64 + H66 together define the target shape exactly. Target's
+idx[0] chain is `lbu 46 / sll 52 / addu 56 / lw a3 61` — SPREAD across the
+`sw 16(sp)` at build idx 58. Our four attractors each put the whole chain on
+ONE side of that boundary: named-value arg4 puts all four insns before the
+`sw` (7 / 91, anti-dep), fully-inline arg4 puts all four after it (13 / 91),
+and both the const cast and the named-address-with-inline-deref buy the
+boundary crossing at the cost of the `lbu` head order (9 / 91). The C question
+is what spelling gets the ADDRESS insns emitted by the register-arg precompute
+loop while the LOAD is emitted by load_register_parameters — the precompute
+loop returning a MEM whose address is already in a pseudo.
+**Next probe:** read `tools/gcc-2.7.2/calls.c` around 1618-1665 for exactly
+which `expand_expr` results are left as MEMs vs forced to REGs (the
+`TREE_CODE (args[i].tree_value)` / `args[i].value` handling and the
+`ARGS_SIZE_RTX` path), and `expr.c:expand_expr`'s ARRAY_REF/INDIRECT_REF cases
+for when the address subexpression is pre-forced into a pseudo. Then look for
+C that forces the address into a pseudo at the statement while leaving the
+dereference inline in the call — e.g. an index or offset named as a local while
+the base+deref stays inline (`s32 i0 = idx_1494[0]; ... tbl_125c[i0] ...`), or
+a named pointer that is USED elsewhere in the block so the precompute loop
+cannot fold it back. NB `named-index-bytes-inert-vs-pure-inline-13.c` and
+`arg3-value-named-12.c` are already banked, so screen new forms against the
+rejected bank first. Screen with `sandbox --disable all`; confirm any move with
+`idump.sh` + `blocksum.py` (the 100->125 REG_DEP_ANTI edge is the single
+readout that says whether the boundary was crossed).
+
+### F23 — cheat-review status of the do{}while(0) wrapper (unchanged, still open)
+**Mechanism:** unchanged from session 14 — it is explicitly sanctioned by the
+owner's 2026-07-06 do-while(0) ruling and carries the mandatory inline FAKE
+annotation, but no fresh adversarial `cheat-reviewer` has ever seen it.
+**Next probe:** invoke `cheat-reviewer` on the candidate before any completion
+claim, presenting the lever-exhaustion record: 67 measured argument-block forms
+over four rigid attractors, s11's wrapper-extent sweep, s12's four dead axes,
+s13+s14's four exhausted permuter campaigns, and s15's forensic proof that the
+residual is a single sched.c dependence edge.
+
+### F27 — the sandbox-aligned permuter shim (PROJECT-WIDE, unchanged)
+**Mechanism / next probe:** unchanged from session 14 — reuse
+`tmp/grind/saEft01Init/s14/sbshim/` on the next queue function whose ladder
+reaches `permuter`, with `BB2_SHIM_DEBUG=1` on the first launch to read that
+function's Penalty List decomposition before trusting it.
+
+## [s15] The residual sits in rank_for_schedule's tie-breaks, and the candidate's win (both lbu at the block head) and the const chassis's win (sw 16(sp) before lw a3) are separated by one tie-break decision - the load/store dependence class against last_scheduled_insn.
+- mechanism: sched.c:2409 returns early on an INSN_PRIORITY difference, then 2414-2449 classifies both ready-list candidates against last_scheduled_insn (1 = data dependent, 2 = anti/output dependent, 3 = independent or latency 1) and prefers the higher class, falling through to INSN_LUID only on a class tie. The instrumented cc1's BB2_RANK_DEBUG hook at sched.c:2436-2446 prints exactly those class decisions, and because the priority check returns first, every printed RANKDBG line is by construction a genuine equal-priority tie-break.
+- probe: Ran the instrumented cc1 (tools/gcc-2.7.2/cc1) via tmp/grind/saEft01Init/s10/idump.sh on the candidate chassis (tag s15cand) and on the const chassis (tag s15const); both dumps printed CODEGEN-IDENTICAL against the frozen tools/gcc-2.7.2/build/cc1 over the whole TU. Then censused every in-block RANKDBG decision with the new tmp/grind/saEft01Init/s15/blocksum.py, which auto-derives the argument block from system.i.sched (the insns from the tslTm2LoadImage_2 call through the debug_printf call inclusive) and counts class-resolved (val != 0) vs LUID-fallthrough (val == 0) decisions.
+- result: ZERO class-resolved decisions on either chassis. Candidate: 54 in-block RANKDBG decisions, all val=0, every operand cls=3. Const chassis: 49 in-block decisions, all val=0, all cls=3. The load/store class test never discriminates in this block on any form measured, so no C spelling can act through it; among equal-priority insns the order is decided purely by INSN_LUID, i.e. by the incoming chain order (at sched2, sched1's output order).
+- verdict: KILLED
+
+## [s15] The difference between the 7-scoring candidate and the 9-scoring const chassis is not a tie-break at all but a single memory dependence edge that RTX_UNCHANGING_P deletes.
+- mechanism: sched.c:sched_analyze_1 makes a store depend on every pending read seen so far in the insn chain unless that read's MEM is RTX_UNCHANGING_P. `arg4 = tbl_125c[idx_1494[0]]` is a statement-expanded load (insn 100, the lw a3 value) and the outgoing 5th argument is `sw 16(sp)` (insn 125). calls.c emits the statement load BEFORE store_one_arg, so the pair gets a REG_DEP_ANTI (write-after-read on the outgoing-arg stack slot) that FORCES lw a3 ahead of sw 16(sp). Target has the opposite relation.
+- probe: Read the .sched LOG_LINKS for insns 100/123/125/131 on both chassis with tmp/grind/saEft01Init/s10/schedscan.py, and compared the full block INSN_PRIORITY vectors plus the sched1 and sched2 emitted orders with blocksum.py.
+- result: The two chassis have BYTE-IDENTICAL final INSN_PRIORITY vectors across all 19 block insns (89=2 93=2 96=1 98=1 100=2 105=1 108=1 111=1 113=1 116=1 119=2 121=1 123=1 125=1 127=1 129=2 131=1 133=2 135=1) - RTX_UNCHANGING_P moves no priority whatsoever. The sole structural difference is insn 125's LOG_LINKS: candidate `(insn_list 89 (insn_list:REG_DEP_ANTI 100 (insn_list 123 (nil))))` vs const `(insn_list 89 (insn_list 123 (nil)))`, with the loads' MEMs going mem/s:SI -> mem/s/u:SI. Deleting that one edge flips the sched1 order from 89,93,96,116,98,119,121,100,108,123,127,125,111,105,113,129,131,133,135 to 89,116,119,121,93,123,127,125,96,108,98,111,105,113,129,100,131,133,135, which then becomes sched2's LUID order: the sw now precedes lw a3 (target's relation) but the two lbu come out in the wrong order. That trade IS the +2.
+- verdict: CONFIRMED
+
+## [s15] Marking only arg4's access unchanging - a per-access ((const s32 *)tbl_125c)[idx_1494[0]] cast with arg5 left plain - is a distinct form from the whole-pointer `const s32 *tbl_125c` declaration and may keep the candidate's lbu head order while gaining target's store/load relation.
+- mechanism: RTX_UNCHANGING_P is a property of each individual MEM rtx, so a per-access cast marks only arg4's load; if arg5's load being aliasable contributed any of the const chassis's regression, the two forms would diverge.
+- probe: Built that exact form in src/system.c, ran sandbox saEft01Init --disable all, then idump.sh s15c4 + blocksum.py to compare orders and priorities against the whole-pointer const dump.
+- result: 9 / 91 - and not merely the same score: the SAME sched1 order, the SAME sched2 order and the SAME priority vector as the whole-pointer const chassis. RTX_UNCHANGING_P on arg5's load is completely inert; the whole const effect is the single arg4 edge and nothing else. The const axis is now measured down to the edge and is closed. Banked as rejected/const-cast-on-arg4-access-only-is-the-whole-const-chassis-9.c.
+- verdict: KILLED
+
+## [s15] Target needs the idx[0] ADDRESS chain expanded at the statement (early) and only the final LOAD expanded by load_register_parameters (late, after store_one_arg's sw), so a named ADDRESS local dereferenced inline in the call reaches target's split.
+- mechanism: calls.c runs the register-arg precompute loop (1618-1665), then store_one_arg for the single stack argument (1736-1739), then load_register_parameters (~1876). An inline array-element argument returns a MEM from the precompute loop so its load is deferred past the stack store - the direction that yields a true dependence (load after store) instead of the anti-dependence measured above - while a named address local pins the lbu/sll/addu at the statement.
+- probe: Built `s32 *arg4; arg4 = &tbl_125c[idx_1494[0]]; debug_printf(..., *arg4, tbl_125c[idx_1494[1]]);` on the session-9 chassis; sandbox --disable all, then idump.sh s15ptr + blocksum.py.
+- result: 9 / 91 at 91 build insns. The RTL block loses one insn (the separate `move a3` copy disappears) but it lands in the same 9-attractor as the const chassis rather than opening a fifth basin. Same form family as the previously banked rejected/named-pointer-inline-deref-9.c, now re-measured against the current chassis with a dump attached; the attractor count stands at four.
+- verdict: KILLED
