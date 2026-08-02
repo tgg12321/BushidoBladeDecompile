@@ -215,6 +215,64 @@
  *    have no home in the target's 17, and the delay slot is still `nop`). The
  *    honest floor stays 17. Full data: evidence.md §Session 7, hypotheses.md
  *    H16-H18, tmp/grind/func_80052B00/s7/.
+ *
+ * SESSION 8 (rederive, 2026-08-01) - form UNCHANGED, and for the first time the
+ * argument for it rests on AFFIRMATIVE evidence rather than on an accumulation
+ * of null results. The rederive brief asks for a structurally different shape;
+ * what this session found was a different QUESTION. Sessions 1-7 all asked "can
+ * the C make cc1 fill the delay slot?" and none asked which pipeline stage
+ * actually emits the nop, or whether a LATER stage could have filled it.
+ *
+ *  - F1: cc1 does NOT emit the delay-slot nop. Its tail is a bare `j $31` with
+ *    no delay-slot instruction and no `.set noreorder` wrapper - it hands the
+ *    slot to the assembler. maspsx appends `nop  # DEBUG: branch/jump`
+ *    (tools/maspsx/maspsx/__init__.py:1192-1195) and forces `.set noreorder`
+ *    after every `.ent` (:945-948), which also denies GNU as its own
+ *    reorder-mode swap. Six sessions had attributed the nop solely to reorg.c.
+ *
+ *  - F2, THE LOAD-BEARING RESULT: that opened a real alternative - if the
+ *    ORIGINAL assembler filled `j $31` slots in reorder mode (which is exactly
+ *    what the `fill_delay` regfix action emulates, and four of the tree's six
+ *    fill_delay rules are "previous insn into the jr slot"), then the target's
+ *    delay-slot ctc2 would need no C explanation at all and this whole
+ *    disposition would collapse into a maspsx fidelity gap. It is FALSE, by
+ *    whole-binary census: of 1,369 functions ending in `jr $ra`, 1,104 leave
+ *    the slot `nop` with a benign trivially-swappable predecessor - 881 of them
+ *    a plain `addiu $sp,$sp,N` stack restore. No reorder-mode assembler leaves
+ *    1,104 stack restores outside the slot. ASPSX 2.34 did not fill delay slots.
+ *    So the origin space for `ctc2 $t7,$7` in that slot is now exhaustively
+ *    enumerated: cc1's reorg (H1 - halts at any asm insn, 32/32 spellings plus
+ *    ~164k permuter iterations), the assembler (measured never to fill), or a
+ *    human. Only the third survives, and sessions 1-7 had merely ASSUMED the
+ *    second away.
+ *
+ *  - F3: the cop2-tail population partitions by ORIGIN and the split is
+ *    contiguous in address space. 17 such functions leave the slot nop - 16 of
+ *    them inside the PsyQ libgte block 0x8007E1AC-0x8007F1A8, plus
+ *    tslDmaDrawListDelAll (closed in pure C) - and our toolchain reproduces that
+ *    shape exactly. FIVE hold the cop2 op IN the slot, and all five occupy one
+ *    contiguous run of BB2's own code, 0x80052A80-0x80052BDC:
+ *    game_2d_CheckLifeGaugeNoDisp, func_80052A88, func_80052B00, func_80052B44,
+ *    func_80052B7C. func_80052B44 sits in the middle of that run and is already
+ *    Judge-authorized canonical-asm; the other four each carry exactly one
+ *    regfix rule, a `fill_delay` pulling the immediately preceding instruction -
+ *    four of only six such rules tree-wide. A single authoring unit of
+ *    hand-written GTE asm, with this function inside it.
+ *
+ *  - F4: m2c, run fresh, returns no C body at all - eight
+ *    M2C_ERROR("unknown instruction: ctc2 ...") lines and all eight lw
+ *    dropped as dead. F5: the asm-BOUNDARY axis (loads moved INSIDE the asm -
+ *    the real PsyQ libgte macro shape, and the one thing no session 1-7 form
+ *    ever varied) is KILLED: the honest sandbox strips such a block as cheat-asm
+ *    (`lw` is its first template instruction), and standalone it emits
+ *    lw $9,0($4) ... lw $2,28($4) - neither $t0..$t7 nor ascending, further from
+ *    the target than this form's own predecessor. Banked at
+ *    rejected/asm-side-loads-psyq-macro-shape-stripped-as-cheat.c. The
+ *    decomp.me corpus lane was run: top similarity 0.048, pure noise.
+ *
+ * Floor re-verified independently with a fresh harness: 17 (build_insns 18,
+ * target 17), flat for the fifth consecutive session. Full data: evidence.md
+ * Session 8, hypotheses.md H19-H22, tmp/grind/func_80052B00/s8/.
  */
 __asm__(
     ".set\tnoat\n"

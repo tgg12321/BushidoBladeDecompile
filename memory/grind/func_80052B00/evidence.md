@@ -816,3 +816,225 @@ evidence for hand-written asm, and the reason the HEAD body needs eight
 - [s7] Sessions 1-6 recorded the register axis as mechanically unreachable; the accurate statement, now measured, is that it is reachable only by constructs that change the function's contract, and that the trade is score-positive by 10 points. The ledger wording has been corrected in place (hypotheses.md H18, evidence.md Session 7, candidate.c header).
 
 - [s7] src/text1b.c was left byte-identical to HEAD (the sweep harness restores the original body in a finally block; `git status --porcelain` shows only ledger files plus metrics/events.jsonl).
+
+## Session 8 (rederive, 2026-08-01) — floor 17, unmoved; the delay-slot residual
+## is RE-GROUNDED on a measurement sessions 1-7 never took, and the family gains
+## an AFFIRMATIVE provenance partition
+
+The rederive brief asks for a structurally different shape, not a tweak. The
+shape this session found is not a different C body — it is a different question:
+sessions 1-7 asked "can the C make cc1 fill the delay slot?" and never asked
+"which pipeline stage actually emits the nop, and could a LATER stage have
+filled it?". The answer changes what H1 is evidence of, and it turns six
+sessions of null results into a positive provenance signal.
+
+### F1 — cc1 does NOT emit the nop. maspsx does.
+
+Compiling the banked floor-17 fused body in a standalone TU and dumping each
+stage (`tmp/grind/func_80052B00/s8/stages.sh`, outputs `fused8.cc1.s` /
+`fused8.maspsx.s`):
+
+    cc1 tail:      ctc2 $9, $6 / ctc2 $10, $7 / #NO_APP / j  $31 / .end
+    maspsx tail:   ctc2 $9, $6 / ctc2 $10, $7 / j $31 / nop  # DEBUG: branch/jump
+
+cc1 emits a BARE `j $31` — no delay-slot instruction, no `nop`, and (unlike the
+s6 ctlA control, which emitted `.set noreorder / j $31 / sw`) no `.set noreorder`
+wrapper. It hands the slot to the assembler. `tools/maspsx/maspsx/__init__.py`
+:1192-1195 then appends `nop  # DEBUG: branch/jump` after any branch/jump while
+`self.is_reorder` is true, and :945-948 forces `.set\tnoreorder` immediately
+after every `.ent`, which also denies GNU `as` its own reorder-mode swap. So the
+`nop` in our build is a maspsx product. Sessions 1-7 attributed it entirely to
+`reorg.c`; that attribution was incomplete.
+
+### F2 — THE THIRD POSSIBILITY IS NOW MEASURED DEAD: ASPSX did not fill delay slots
+
+F1 opens a real alternative to H1: if the ORIGINAL assembler filled `j $31`
+delay slots in reorder mode (which is what a reordering assembler does, and what
+the `fill_delay` regfix action emulates), then the target's delay-slot `ctc2`
+would need no C explanation at all and the residual would be a maspsx fidelity
+gap rather than a property of the source. That would have overturned the
+disposition. It is false, and the falsification is a whole-binary census.
+
+`tmp/grind/func_80052B00/s8/slotcensus.py` over all `asm/funcs/*.s`
+(raw: `slotcensus.txt`) — 1,369 functions end in `jr $ra`:
+
+| tail shape | count |
+|---|---|
+| delay slot FILLED (non-nop) | 249 |
+| slot `nop`, preceding insn benign and trivially swappable | **1,104** |
+| slot `nop`, preceding insn hazardous / absent | 16 |
+
+881 of the 1,104 have `addiu $sp, $sp, N` immediately before the `jr` — a stack
+restore that any reorder-mode assembler swaps into the slot without a second
+thought. A binary in which 1,104 such slots were left empty was NOT assembled
+with delay-slot filling enabled. **ASPSX 2.34 did not fill branch delay slots;
+maspsx's `nop` is faithful, not a gap.**
+
+That closes the last agent that could have produced the target's delay-slot
+instruction. Exactly three things could put `ctc2 $t7, $7` there: cc1's reorg
+(H1 — `reorg.c:730-735 stop_search_p` halts at any asm insn; 32/32 measured
+spellings plus ~164k permuter iterations leave it `nop`), the assembler (F2 —
+measured never to fill, 1,104 counterexamples), or a human writing the
+instruction in that position. Sessions 1-7 argued the first and ASSUMED the
+second away. Both are now measured, and only the third remains.
+
+### F3 — the cop2-tail population partitions by ORIGIN, and the split is contiguous in address space
+
+`tmp/grind/func_80052B00/s8/cop2_partition.txt`. Of every function whose last
+instruction before `jr $ra` is a cop2 op:
+
+  * **17 leave the slot `nop`** — func_8007E1AC, func_8007E1FC, func_8007EEEC
+    (= gte_SetRotMatrix), func_8007EF1C (= gte_SetColorMatrix), func_8007EF4C
+    (= gte_SetTransVector), func_8007EF6C, func_8007EF8C, func_8007EF9C,
+    func_8007EFBC, func_8007EFDC, func_8007F00C, func_8007F034, func_8007F05C,
+    func_8007F098, func_8007F150, func_8007F1A8, and tslDmaDrawListDelAll. Every
+    one of the first sixteen lies in the single block 0x8007E1AC-0x8007F1A8 —
+    the linked PsyQ libgte region. This is precisely the shape our toolchain
+    reproduces, and `tslDmaDrawListDelAll` is in fact CLOSED in pure C
+    (src/display.c:2491).
+  * **5 hold the cop2 op IN the delay slot** — and all five lie in ONE
+    contiguous block of BB2's own code:
+        game_2d_CheckLifeGaugeNoDisp  jr @80052A80  slot swc2 $11, 0x8($a2)
+        func_80052A88                 jr @80052AF8  slot swc2 $11, 0x8($a2)
+        func_80052B00                 jr @80052B3C  slot ctc2 $t7, $7
+        func_80052B44                 jr @80052B74  slot ctc2 $zero, $7
+        func_80052B7C                 jr @80052BDC  slot swc2 $11, 0x8($a3)
+
+`func_80052B44` is already Judge-authorized COMPLETED-INLINE-ASM-CANONICAL
+(2026-07-27, inline_asm_canonical.txt:340). The other four are all still active
+in the queue and each carries exactly ONE regfix rule — a `fill_delay`. There
+are only six `fill_delay` rules in the entire tree, and these four are exactly
+the four whose source index is the immediately preceding instruction
+(`@16<-15`, `@24<-23`, `@24<-23`, `@28<-27`); the remaining two
+(func_8003B9D0 `@49<-52`, cpu_side_move_dir_3 `@66<-68`) pull from AFTER the
+jump, which is a jal-argument hoist and a different phenomenon entirely.
+
+This is the first AFFIRMATIVE provenance evidence on this function rather than
+another null result. Within one opcode family, the shipped binary separates into
+a library/compiled group whose delay slots our toolchain reproduces exactly, and
+a five-function contiguous block whose delay slots neither cc1 (H1) nor the
+assembler (F2) can produce — and that block is a run of consecutive addresses,
+i.e. one authoring unit. The 0x80052A80-0x80052BDC block is hand-written GTE asm.
+The four unauthorized members are the same construct as the one already
+authorized in their middle.
+
+### F4 — m2c, run fresh, produces no C body at all
+
+`python3 tools/m2c/m2c.py --target mipsel-gcc-c --valid-syntax -f func_80052B00`:
+
+    void func_80052B00(void *arg0) {
+        M2C_ERROR(/* unknown instruction: ctc2 $t0, $0 */);
+        ... x8 ...
+    }
+
+Every cop2 write is an M2C_ERROR and all eight `lw` are dropped as dead — in C
+terms the loads feed nothing. The rederive modality's own primary tool reports
+that this function has no C representation.
+
+### F5 — the asm-BOUNDARY axis, measured and KILLED
+
+Every form in sessions 1-7 (32 hand spellings, ~164k permuter iterations) kept
+the same division of labour: GCC emits the eight `lw`, the `__asm__` holds only
+`ctc2`. Nothing had ever moved an instruction across that boundary — and moving
+the loads INSIDE the asm is exactly how the real PsyQ libgte macros are written,
+so it is the natural library-transplant answer. Four such forms measured
+(`tmp/grind/func_80052B00/s8/sweep8.py` + `sweep8_results.txt`, engine JSON in
+`engout_*.txt`), all with `%N` placeholders and `"=&r"`/`"r"` constraints, no
+pins, no hardcoded GPRs, no fake clobbers:
+
+| form | sandbox | build_insns | what happened |
+|---|---|---|---|
+| asmloads8 | 16 | **2** | whole asm block stripped as cheat-asm |
+| asmloads8-ret-s32 | 16 | **2** | same |
+| asmloads8-mem-operand | 16 | **2** | same |
+| asmloads-split | 16 | **10** | load-asm stripped, ctc2-asm kept |
+
+The 16s are NOT improvements — they are the score of a body that has been
+deleted. Verified directly: `engine.inlineasm.strip_cheat_asm_file()` on the
+asmloads8 body returns `stripped_count=1` and an empty function. Mechanism:
+`classify_inline_asm` puts `lw` in CHEAT_ASM_OPS and `ctc2` in
+CANONICAL_ASM_OPS, and `_block_category` keeps a block if ANY split template
+instruction is canonical — but `split_template` splits on the literal `\n` only,
+so in a `"\n\t"`-joined template every instruction after the first retains a
+literal `\t` prefix, its first token reads `\tctc2`, and it falls through to the
+default `cheat`. In practice a multi-instruction block is classified by its
+FIRST instruction: `lw` first ⇒ cheat ⇒ stripped (the s3 fused8 form survives
+because `ctc2` is first). The policy verdict is substantively right regardless
+of that parsing quirk — an asm block doing its own general-purpose loads emits
+bytes from template text rather than from compilation, the
+.claude/rules/inline-asm-injection.md family. And the shape would not have
+matched anyway: compiled standalone it emits `lw $9,0($4) / lw $8,4($4) /
+lw $7,8($4) / lw $6,12($4) / lw $5,16($4) / lw $10,20($4) / lw $3,24($4) /
+lw $2,28($4)` — neither $t0..$t7 nor ascending, i.e. FURTHER from the target
+than the s3 body. Banked:
+rejected/asm-side-loads-psyq-macro-shape-stripped-as-cheat.c.
+
+### Floor re-verified independently this session
+
+`tmp/grind/func_80052B00/s8/verify_floor.py` splices the banked
+best_pure_c_fused8_floor17.c body into src/text1b.c and measures
+`sandbox func_80052B00 --disable all` = **score 17, target_insns 17,
+build_insns 18, rules_dropped 1**, then restores. `git status --porcelain
+src/text1b.c` clean afterwards. Floor unchanged at 17 for the fifth consecutive
+session.
+
+### Sub-lane NOT exercised, recorded honestly
+
+The decomp.me corpus sweep (tools/decomp_me_scrape.py) was not run. It is a
+network scrape for community scratches of the same function, and its value here
+is bounded by F4: m2c yields no C body, so there is no C-level query to match a
+scratch against, and the sibling lane it would feed (the cop2-control-loader
+family) was already enumerated exhaustively by the s2 census — all six members
+identified, five dispositioned. A future session that wants the lane for
+completeness should know it costs a network round trip and is expected to be
+empty for a GTE leaf.
+
+- [s8] F1 — cc1 does NOT emit the delay-slot nop; maspsx does. Standalone stage dump (s8/stages.sh, fused8.cc1.s vs fused8.maspsx.s): cc1's tail is `ctc2 $9,$6 / ctc2 $10,$7 / #NO_APP / j $31 / .end` — a BARE `j $31` with no delay-slot insn, no nop, and no `.set noreorder` wrapper (contrast the s6 ctlA control, which emitted `.set noreorder / j $31 / sw`). maspsx/__init__.py:1192-1195 appends `nop  # DEBUG: branch/jump` after any branch/jump while is_reorder is true, and :945-948 forces `.set noreorder` right after every `.ent`, which also denies GNU as its own reorder-mode swap. Sessions 1-7 attributed the nop entirely to reorg.c; that was incomplete.
+
+- [s8] F2 — THE ASSEMBLER-SIDE FILL HYPOTHESIS IS MEASURED DEAD, and this is the load-bearing new fact. If ASPSX 2.34 had filled `j $31` delay slots in reorder mode, the target's delay-slot ctc2 would need no C explanation and the residual would be a maspsx fidelity gap, overturning the disposition. Whole-binary census (s8/slotcensus.py, slotcensus.txt): of 1,369 functions ending in `jr $ra`, 249 have a FILLED slot, 16 have a nop with a hazardous/absent predecessor, and 1,104 have a nop with a benign trivially-swappable predecessor — 881 of those being `addiu $sp,$sp,N`. No reorder-mode assembler leaves 1,104 stack restores sitting outside the slot. ASPSX did not fill delay slots; maspsx's nop is FAITHFUL.
+
+- [s8] F2 corollary — the origin space for the target's delay-slot instruction is now exhaustively enumerated and only one entry survives. Three agents could put `ctc2 $t7,$7` in the slot: cc1's reorg (H1, reorg.c:730-735 stop_search_p halts at any asm insn — 32/32 hand spellings and ~164k permuter iterations all leave it nop), the assembler (F2, measured never to fill), or a human writing it there. Sessions 1-7 proved the first and tacitly ASSUMED the second; the second is now measured, so H1's conclusion stands on evidence rather than on an unexamined assumption.
+
+- [s8] F3 — AFFIRMATIVE PROVENANCE PARTITION (first positive signal on this function; every prior result was a null). Among functions whose last instruction before `jr $ra` is a cop2 op, the shipped binary splits 17 / 5. The 17 that leave the slot nop are func_8007E1AC/E1FC/EEEC/EF1C/EF4C/EF6C/EF8C/EF9C/EFBC/EFDC/F00C/F034/F05C/F098/F150/F1A8 — all inside the single 0x8007E1AC-0x8007F1A8 PsyQ libgte block — plus tslDmaDrawListDelAll (which is CLOSED in pure C at src/display.c:2491). Our toolchain reproduces that shape exactly. The 5 that hold the cop2 op IN the slot are game_2d_CheckLifeGaugeNoDisp (jr @80052A80), func_80052A88 (@80052AF8), func_80052B00 (@80052B3C), func_80052B44 (@80052B74) and func_80052B7C (@80052BDC) — ONE contiguous block of BB2's own code, 0x80052A80-0x80052BDC, i.e. a single authoring unit. func_80052B44 sits in the middle of it and is already Judge-authorized canonical-asm.
+
+- [s8] F3 corollary — the four unauthorized members of that block each carry exactly ONE regfix rule and it is a `fill_delay`. Only six fill_delay rules exist tree-wide; these four are precisely the ones whose source index is the immediately preceding instruction (func_80052B00 @16<-15, game_2d_CheckLifeGaugeNoDisp @24<-23, func_80052B7C @24<-23, func_80052A88 @28<-27). The other two (func_8003B9D0 @49<-52, cpu_side_move_dir_3 @66<-68) pull from AFTER the jump — a jal-argument hoist, an unrelated phenomenon. So the rule population corroborates the address-block partition exactly.
+
+- [s8] F4 — m2c run fresh produces NO C body: `void func_80052B00(void *arg0)` containing eight M2C_ERROR(/* unknown instruction: ctc2 ... */) lines, with all eight lw dropped as dead because in C terms they feed nothing. The rederive modality's own primary tool reports the function has no C representation.
+
+- [s8] F5 — THE ASM-BOUNDARY AXIS IS MEASURED DEAD. All 32 hand spellings and ~164k permuter iterations of sessions 1-7 kept GCC on the load side and the asm on the ctc2 side; nothing had ever moved an instruction across that boundary, and putting the loads inside the asm is exactly how the real PsyQ libgte macros are written (the natural library-transplant answer). Four such forms measured (s8/sweep8.py): asmloads8, asmloads8-ret-s32, asmloads8-mem-operand all report sandbox 16 with build_insns 2, and asmloads-split reports 16 with build_insns 10. The 16s are not improvements — they are the score of a DELETED body. engine.inlineasm.strip_cheat_asm_file() on the asmloads8 body returns stripped_count=1 and an empty function.
+
+- [s8] F5 mechanism (reusable tooling fact beyond this function): classify_inline_asm puts `lw` in CHEAT_ASM_OPS and `ctc2` in CANONICAL_ASM_OPS, and engine/inlineasm._block_category keeps a block if ANY split template instruction is canonical — but split_template splits on the literal `\n` only, so in a "\n\t"-joined template every instruction after the first keeps a literal `\t` prefix, reads as first-token `\tctc2`, matches neither table and defaults to cheat. In practice a multi-instruction asm block is classified by its FIRST instruction. `lw` first ⇒ whole block stripped; the s3 fused8 form survives only because `ctc2` is first. The policy verdict is substantively correct regardless: an asm block performing its own general-purpose loads emits bytes from template text rather than from compilation (.claude/rules/inline-asm-injection.md).
+
+- [s8] F5 addendum — the asm-side-loads form would not have matched even with stripping disabled. Compiled standalone (cc1 RC=0, s8/asmloads8.s) it emits lw $9,0($4) / lw $8,4($4) / lw $7,8($4) / lw $6,12($4) / lw $5,16($4) / lw $10,20($4) / lw $3,24($4) / lw $2,28($4) — neither $t0..$t7 nor ascending order, i.e. strictly further from the target than the s3 fused8 body. Banked: rejected/asm-side-loads-psyq-macro-shape-stripped-as-cheat.c.
+
+- [s8] Floor re-verified INDEPENDENTLY this session with a fresh harness: s8/verify_floor.py splices memory/grind/func_80052B00/best_pure_c_fused8_floor17.c into src/text1b.c and measures sandbox func_80052B00 --disable all = score 17, target_insns 17, build_insns 18, rules_dropped 1, then restores; git status --porcelain src/text1b.c clean afterwards. Floor flat at 17 for the fifth consecutive session.
+
+- [s8] Sub-lane NOT exercised, recorded so nobody assumes it was: the decomp.me corpus sweep (tools/decomp_me_scrape.py) was not run. Its value is bounded by F4 (m2c yields no C body, so there is no C-level query to match a scratch against) and by the s2 census (all six cop2-control-loader family members already enumerated, five dispositioned). Expected empty for a GTE leaf; costs a network round trip.
+
+- [s8] No src/ edits persist: sweep8.py and verify_floor.py both restore src/text1b.c in a finally block and the restore was verified with git status --porcelain after each. This session did not touch regfix.txt, asmfix.txt, inline_asm_canonical.txt, engine/, tools/, .claude/rules/, the Makefile or any *.ld; no queue done, no retire, no commit.
+
+- [s8] [s8] cc1 does NOT emit the delay-slot nop. Standalone stage dump (s8/stages.sh): cc1 tail is `ctc2 $9,$6 / ctc2 $10,$7 / #NO_APP / j $31 / .end` — bare `j $31`, no delay-slot insn, no nop, no `.set noreorder` wrapper. maspsx/__init__.py:1192-1195 appends `nop  # DEBUG: branch/jump` after any branch/jump while is_reorder is true, and :945-948 forces `.set noreorder` right after every `.ent`, which also denies GNU as its own reorder-mode swap. Sessions 1-7 attributed the nop entirely to reorg.c; that was incomplete.
+
+- [s8] [s8] LOAD-BEARING: the assembler-side-fill hypothesis is measured dead. Whole-binary census (s8/slotcensus.py, slotcensus.txt) of the 1,369 functions ending in `jr $ra`: 249 slots FILLED, 16 nop with a hazardous/absent predecessor, 1,104 nop with a benign trivially-swappable predecessor — 881 of them `addiu $sp,$sp,N`. No reorder-mode assembler leaves 1,104 stack restores outside the slot. ASPSX 2.34 did not fill branch delay slots; maspsx's nop is FAITHFUL, not a fidelity gap.
+
+- [s8] [s8] Consequence: the origin space for the target's delay-slot instruction is now exhaustively enumerated and only one entry survives. Three agents could place `ctc2 $t7,$7` there — cc1's reorg (H1: reorg.c:730-735 stop_search_p halts at any asm insn; 32/32 hand spellings and ~164k permuter iterations all leave it nop), the assembler (measured never to fill, 1,104 counterexamples), or a human writing it in that position. Sessions 1-7 proved the first and tacitly ASSUMED the second away.
+
+- [s8] [s8] AFFIRMATIVE PROVENANCE PARTITION (first positive signal on this function; all prior results were nulls). Of every function whose last instruction before `jr $ra` is a cop2 op: 17 leave the slot nop — func_8007E1AC/E1FC/EEEC/EF1C/EF4C/EF6C/EF8C/EF9C/EFBC/EFDC/F00C/F034/F05C/F098/F150/F1A8, all inside the single 0x8007E1AC-0x8007F1A8 PsyQ libgte block, plus tslDmaDrawListDelAll (closed in pure C at src/display.c:2491) — and our toolchain reproduces that shape exactly. 5 hold the cop2 op IN the slot and all five occupy ONE contiguous run of BB2's own code, 0x80052A80-0x80052BDC: game_2d_CheckLifeGaugeNoDisp (@80052A80), func_80052A88 (@80052AF8), func_80052B00 (@80052B3C), func_80052B44 (@80052B74), func_80052B7C (@80052BDC). Raw: s8/cop2_partition.txt.
+
+- [s8] [s8] The rule population corroborates the address-block partition exactly: the four unauthorized members of that run each carry exactly ONE regfix rule and it is a `fill_delay` whose source is the immediately preceding instruction (func_80052B00 @16<-15, game_2d_CheckLifeGaugeNoDisp @24<-23, func_80052B7C @24<-23, func_80052A88 @28<-27). Only six fill_delay rules exist tree-wide; the remaining two (func_8003B9D0 @49<-52, cpu_side_move_dir_3 @66<-68) pull from AFTER the jump — a jal-argument hoist, an unrelated phenomenon. func_80052B44, in the middle of the run, is already Judge-authorized COMPLETED-INLINE-ASM-CANONICAL (inline_asm_canonical.txt:340).
+
+- [s8] [s8] The 2026-07-27 func_80052B44 ruling (docs/grind/decisions.md:1805) states explicitly that 'siblings func_80052A88 / func_80052B00 / func_80052B7C each require their own per-function ruling when they reach the queue top'. No OWNER-ESCALATION entry for func_80052B00 exists in docs/grind/decisions.md as of this session, so this session returns progress rather than owner-gated.
+
+- [s8] [s8] m2c run fresh produces NO C body: `void func_80052B00(void *arg0)` containing eight M2C_ERROR 'unknown instruction: ctc2' lines, with all eight lw dropped as dead because in C terms they feed nothing. The rederive modality's own primary tool reports the function has no C representation.
+
+- [s8] [s8] The asm-BOUNDARY axis is measured dead. Four forms (s8/sweep8.py): asmloads8, asmloads8-ret-s32 and asmloads8-mem-operand report sandbox 16 with build_insns 2; asmloads-split reports 16 with build_insns 10 (load-asm stripped, ctc2-asm kept, isolating the mechanism). The 16s are the score of a deleted body, not an improvement — engine.inlineasm.strip_cheat_asm_file() on the asmloads8 body returns stripped_count=1 and an empty function. Banked: rejected/asm-side-loads-psyq-macro-shape-stripped-as-cheat.c.
+
+- [s8] [s8] Reusable tooling fact beyond this function: classify_inline_asm puts `lw` in CHEAT_ASM_OPS and `ctc2` in CANONICAL_ASM_OPS, and engine/inlineasm._block_category keeps a block if ANY split template instruction is canonical — but split_template splits on the literal \n only, so in a "\n\t"-joined template every instruction after the first keeps a literal \t prefix, reads as first-token \tctc2, matches neither table and defaults to cheat. In practice a multi-instruction asm block is classified by its FIRST instruction. WARNING for future sessions: reordering a template so that a canonical opcode comes first in order to carry general-purpose instructions past the classifier would be detection evasion, i.e. a cheat — do not do it; report the quirk instead.
+
+- [s8] [s8] The asm-side-loads form would not have matched even with stripping disabled: compiled standalone (cc1 RC=0, s8/asmloads8.s) it emits lw $9,0($4) / lw $8,4($4) / lw $7,8($4) / lw $6,12($4) / lw $5,16($4) / lw $10,20($4) / lw $3,24($4) / lw $2,28($4) — neither $t0..$t7 nor ascending order, strictly further from the target than the s3 fused8 body.
+
+- [s8] [s8] decomp.me corpus lane RUN (it needs curl_cffi, which is absent from the Windows-side python but present in the WSL .venv): `decomp_me_scrape.py search --asm-file asm/funcs/func_80052B00.s --top 8` returns a top similarity of 0.048 (FrogStartPolyPiecePop, psyq3.5) and nothing resembling a cop2-control loader. Clean null; the lane is closed, not skipped.
+
+- [s8] [s8] Floor re-verified INDEPENDENTLY with a fresh harness: s8/verify_floor.py splices memory/grind/func_80052B00/best_pure_c_fused8_floor17.c into src/text1b.c and measures sandbox func_80052B00 --disable all = score 17, target_insns 17, build_insns 18, rules_dropped 1, then restores. Floor flat at 17 for the fifth consecutive session, and the banked artifact reproduces its claimed number again.
+
+- [s8] [s8] No src/ edits persist: sweep8.py and verify_floor.py both restore src/text1b.c in a finally block and each restore was verified with `git status --porcelain src/text1b.c` (clean). This session did not touch regfix.txt, asmfix.txt, inline_asm_canonical.txt, engine/, tools/, .claude/rules/, the Makefile or any *.ld; no queue done, no retire, no commit; no background process was launched, so nothing outlives the session.

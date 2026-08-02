@@ -1161,3 +1161,94 @@ instructions have no home in the target's 17 and the delay slot is still `nop`
 - probe: tmp/grind/func_80052B00/s7/sweep_price.py - six shapes spliced into src/text1b.c and scored with `sandbox func_80052B00 --disable all` using the s3 splice/restore harness (original body restored in a finally block; git status confirms src/text1b.c clean at session end).
 - result: base-fused8 score=17 build=18 ctc2=v0,v1,a1,a2,a3,t0,t1,t2 | ret-s32-zero score=17 build=18 ctc2=v1,a1,a2,a3,t0,t1,t2,t3 | ret-dimode-zero score=19 build=20 | occ3-param-store score=20 build=21 | occ5-param-store-dimode score=7 build=23 ctc2=t0,t1,t2,t3,t4,t5,t6,t7 | occ5-locals-ctlE (the s6 shape, scored for the first time) score=11 build=27 ctc2=t0..t7. CONFIRMED as a measurement; both sub-17 forms REJECTED as forms, and the honest floor therefore stays 17. occ5-param-store-dimode adds three parameters no caller passes and writes their garbage contents to matrix[8..10] (live memory corruption past the eight words the real function reads) and changes the return type from void to long long; occ5-locals-ctlE reads and writes matrix[8..12]. Both exist solely to make five hard registers appear in the RTL so reload will not spill to them - a register pin expressed through the function signature, the same intent as register asm("$N") in one more spelling, squarely inside the cheats-by-any-spelling policy. Neither can reach 0 regardless: the extra instructions have no home in the target's 17 and the delay slot is still nop (H1).
 - verdict: CONFIRMED
+
+## Session 8 (rederive, 2026-08-01)
+
+### H19 — CONFIRMED. The delay-slot `nop` in our build is emitted by maspsx, not by cc1.
+Mechanism: cc1 emits a bare `j $31` with no delay-slot instruction and no
+`.set noreorder` wrapper, deferring the slot to the assembler;
+`tools/maspsx/maspsx/__init__.py`:1192-1195 appends `nop  # DEBUG: branch/jump`
+after any branch/jump while `is_reorder` is true, and :945-948 forces
+`.set noreorder` after every `.ent`, which also disables GNU `as`'s own
+reorder-mode swap.
+Probe: standalone stage dump, `tmp/grind/func_80052B00/s8/stages.sh` →
+`fused8.cc1.s` vs `fused8.maspsx.s`.
+Consequence: sessions 1-7's attribution of the nop solely to reorg.c was
+incomplete. This does not weaken H1 (see H20) but it means H1 was never the
+whole story of where the nop comes from.
+
+### H20 — KILLED (the hypothesis, not the disposition). "The original assembler filled the delay slot, so the residual is a maspsx fidelity gap rather than a property of the C."
+This was the live alternative H19 opened, and the only route by which the
+delay-slot point could have stopped being evidence about the source. A
+reordering assembler fills `j $31` slots; the `fill_delay` regfix action
+emulates exactly that; four of the tree's six `fill_delay` rules are
+"previous insn into the jr slot".
+Probe: whole-binary census of every function ending in `jr $ra`
+(`s8/slotcensus.py`, 1,369 functions). Result: 249 filled, 16 nop with a
+hazardous predecessor, and **1,104 nop with a benign trivially-swappable
+predecessor — 881 of them `addiu $sp,$sp,N`**.
+Verdict: KILLED. ASPSX 2.34 did not fill branch delay slots; maspsx's nop is
+faithful. H1's conclusion therefore stands on a complete enumeration of origins
+rather than on an unexamined assumption: cc1's reorg cannot fill past an asm
+insn, the assembler never filled at all, and a human is the only remaining
+author of `ctc2 $t7, $7` in that slot.
+
+### H21 — CONFIRMED. The cop2-tail population partitions by ORIGIN, and the hand-asm side is one contiguous address block.
+Mechanism: functions whose delay slot our toolchain CAN reproduce (`jr; nop`)
+versus those it cannot should separate by who wrote them, and they do.
+Probe: `s8/cop2_partition.txt`. 17 cop2-tail functions leave the slot nop — 16
+of them inside the single PsyQ libgte block 0x8007E1AC-0x8007F1A8, plus
+tslDmaDrawListDelAll (closed in pure C). 5 hold the cop2 op in the slot, and all
+five occupy one contiguous run of BB2's own code, 0x80052A80-0x80052BDC:
+game_2d_CheckLifeGaugeNoDisp, func_80052A88, func_80052B00, func_80052B44
+(already Judge-authorized canonical-asm), func_80052B7C. The four unauthorized
+members each carry exactly one regfix rule, a `fill_delay` pulling the
+immediately preceding instruction — four of only six such rules tree-wide.
+Verdict: CONFIRMED, and it is the first AFFIRMATIVE provenance evidence on this
+function; every prior session's result was a null ("no C spelling found"). The
+0x80052A80-0x80052BDC block is a single authoring unit of hand-written GTE asm,
+and func_80052B00 sits in its middle next to an already-authorized twin.
+
+### H22 — KILLED. "Moving the eight loads INSIDE the asm block (the real PsyQ libgte macro shape) is a legal pure-C-plus-canonical-GTE form."
+Mechanism: no form in sessions 1-7 had ever moved an instruction across the
+asm boundary; the library macros put their `lw`s inside the asm with the matrix
+pointer as %0, making this the natural library-transplant answer for the
+rederive modality.
+Probe: four forms, `s8/sweep8.py` — asmloads8, asmloads8-ret-s32,
+asmloads8-mem-operand (sandbox 16, build_insns **2**) and asmloads-split
+(16, build_insns **10**). The 16s are the score of a deleted body, not an
+improvement; `engine.inlineasm.strip_cheat_asm_file()` on the asmloads8 body
+returns `stripped_count=1` and an empty function. The block is classified
+cheat-asm because `lw` is its first template instruction (`lw` ∈ CHEAT_ASM_OPS;
+and `split_template` splitting on literal `\n` only means a `"\n\t"`-joined
+template's later instructions read as `\tctc2` and default to cheat, so a block
+is effectively classified by its first instruction).
+Verdict: KILLED twice over — score-inert by construction under the honest
+sandbox, and further from the target anyway (standalone it emits
+`lw $9,0($4) … lw $2,28($4)`, neither $t0..$t7 nor ascending). The classifier's
+verdict is substantively right: an asm block doing its own general-purpose loads
+emits bytes from template text rather than from compilation.
+
+## [s8] The delay-slot `nop` in our build is emitted by cc1's reorg pass.
+- mechanism: Sessions 1-7 read tools/gcc-2.7.2/reorg.c:730-735 (stop_search_p halts fill_simple_delay_slots at any ASM_INPUT / asm_noperands insn) and attributed the unfilled slot entirely to that pass, never inspecting which pipeline stage actually writes the nop into the assembly text.
+- probe: Standalone-TU stage dump of the banked floor-17 fused body (tmp/grind/func_80052B00/s8/stages.sh -> fused8.cc1.s vs fused8.maspsx.s), comparing cc1 output with post-maspsx output instruction by instruction.
+- result: FALSE as stated. cc1's tail is `ctc2 $9,$6 / ctc2 $10,$7 / #NO_APP / j $31 / .end` — a BARE `j $31` with no delay-slot instruction, no nop, and no `.set noreorder` wrapper (contrast the s6 ctlA control, which emitted `.set noreorder / j $31 / sw`). cc1 defers the slot to the assembler. maspsx appends `nop  # DEBUG: branch/jump` (tools/maspsx/maspsx/__init__.py:1192-1195, only while is_reorder) and forces `.set noreorder` immediately after every `.ent` (:945-948), which additionally denies GNU as its own reorder-mode swap. The nop is a maspsx product.
+- verdict: CONFIRMED
+
+## [s8] H20 — The ORIGINAL assembler (ASPSX 2.34) filled `j $31` delay slots in reorder mode, so the target's delay-slot ctc2 needs no C explanation and the residual is a maspsx fidelity gap rather than a property of the source.
+- mechanism: This is the live alternative H19 opens, and the only route by which the delay-slot point could stop being evidence about the C. A reordering assembler swaps the preceding instruction into an empty branch slot; the regfix `fill_delay` action emulates exactly that; four of the tree's six fill_delay rules are 'previous insn into the jr slot'. If true, the disposition for this function collapses from 'no C form exists' to 'our ASPSX stand-in is lossy'.
+- probe: Whole-binary delay-slot census over every asm/funcs/*.s (tmp/grind/func_80052B00/s8/slotcensus.py, raw slotcensus.txt): classify all 1,369 functions ending in `jr $ra` by whether the slot is filled and, when it is `nop`, whether the immediately preceding instruction was benign and trivially swappable.
+- result: KILLED. 249 filled, 16 nop with a hazardous/absent predecessor, and 1,104 nop with a benign trivially-swappable predecessor — 881 of those a plain `addiu $sp,$sp,N` stack restore. No reorder-mode assembler leaves 1,104 stack restores sitting outside the slot; the binary was assembled without delay-slot filling, so maspsx's nop is FAITHFUL, not a gap. Consequence: the origin space for `ctc2 $t7,$7` in that slot is now exhaustively enumerated — cc1's reorg (provably halts at asm insns; 32/32 hand spellings and ~164k permuter iterations leave it nop), the assembler (measured never to fill), or a human. Only the third survives. H1's conclusion now rests on a complete enumeration rather than on an unexamined assumption.
+- verdict: KILLED
+
+## [s8] H21 — The cop2-tail population partitions by ORIGIN: functions whose delay slot our toolchain can reproduce versus those it cannot should separate by who wrote them.
+- mechanism: If the filled-slot cases are hand-written asm and the nop cases are compiled/library code, the split should be visible as an address-space clustering and should be corroborated by the regfix rule population, independently of any argument about C spellings.
+- probe: tmp/grind/func_80052B00/s8/cop2_partition.txt — every function whose last instruction before `jr $ra` is a cop2 op, cross-checked against inline_asm_canonical.txt, engine/queue.json and the six fill_delay rules in regfix.txt.
+- result: CONFIRMED, and it is the first affirmative provenance evidence on this function (every prior session produced nulls). 17 leave the slot nop — 16 of them inside the single PsyQ libgte block 0x8007E1AC-0x8007F1A8, plus tslDmaDrawListDelAll (closed in pure C at src/display.c:2491); our toolchain reproduces that shape exactly. FIVE hold the cop2 op in the slot and all five occupy one contiguous run of BB2's own code, 0x80052A80-0x80052BDC: game_2d_CheckLifeGaugeNoDisp (jr @80052A80), func_80052A88 (@80052AF8), func_80052B00 (@80052B3C), func_80052B44 (@80052B74, already Judge-authorized canonical-asm), func_80052B7C (@80052BDC). The four unauthorized members each carry exactly ONE regfix rule and it is a fill_delay pulling the immediately preceding instruction — four of only six such rules tree-wide; the other two (func_8003B9D0 @49<-52, cpu_side_move_dir_3 @66<-68) pull from AFTER the jump, a jal-argument hoist and an unrelated phenomenon.
+- verdict: CONFIRMED
+
+## [s8] H22 — Moving the eight loads INSIDE the __asm__ block (the real PsyQ libgte macro shape) is a legal pure-C-plus-canonical-GTE form and a new register-allocation problem.
+- mechanism: All 32 hand spellings and ~164k permuter iterations of sessions 1-7 kept the same division of labour — GCC emits the eight lw, the asm holds only ctc2. Nothing had ever moved an instruction across the asm boundary, and the library macros put their lw inside the asm with the matrix pointer as %0, making this the natural library-transplant answer for the rederive modality. It also turns the eight values into asm OUTPUTS (early-clobber) rather than inputs, a different reload problem.
+- probe: Four forms measured with sandbox --disable all (tmp/grind/func_80052B00/s8/sweep8.py, engine JSON per form in engout_*.txt), all with %N placeholders and =&r/r constraints, no pins, no hardcoded GPRs, no fake clobbers; plus a direct call to engine.inlineasm.strip_cheat_asm_file() on the body and a standalone cc1 compile.
+- result: KILLED twice over. asmloads8 / asmloads8-ret-s32 / asmloads8-mem-operand report score 16 with build_insns 2, and asmloads-split reports 16 with build_insns 10 — the 16s are the score of a DELETED body, not an improvement: strip_cheat_asm_file() returns stripped_count=1 and an empty function. Mechanism: classify_inline_asm puts `lw` in CHEAT_ASM_OPS and `ctc2` in CANONICAL_ASM_OPS, and _block_category keeps a block if ANY split template instruction is canonical — but split_template splits on the literal \n only, so in a "\n\t"-joined template every later instruction keeps a literal \t prefix, reads as first-token \tctc2, matches neither table and defaults to cheat; in practice a block is classified by its FIRST instruction, and here that is `lw`. The verdict is substantively correct regardless of the parsing quirk (an asm block doing its own general-purpose loads emits bytes from template text rather than from compilation — the inline-asm-injection family). It would not have matched anyway: standalone, cc1 accepts it and emits lw $9,0($4) / lw $8,4($4) / lw $7,8($4) / lw $6,12($4) / lw $5,16($4) / lw $10,20($4) / lw $3,24($4) / lw $2,28($4) — neither $t0..$t7 nor ascending, strictly further from the target than the s3 fused8 body.
+- verdict: KILLED
