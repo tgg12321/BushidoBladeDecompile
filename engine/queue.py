@@ -100,7 +100,16 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
     prev = {}
     if preserve and Path(QUEUE_PATH).exists():
         for it in load().get("items", []):
-            if it.get("status") == "parked" or it.get("origin") == "regression":
+            # `owner_override` is carried across too: routing here is mechanical
+            # (distance > NEAR_CERTAIN -> ASM-STRUCTURAL -> authorize) and an owner
+            # ruling can overturn it for a specific function. Without this, regen
+            # would silently re-route the item and revert the ruling. First use:
+            # the 26 functions the 2026-06-09 canonical-asm audit REJECTED (they
+            # were auto-routed by the distance>500 heuristic, which that audit
+            # found is not evidence of hand-coded asm) and the owner returned to
+            # active on 2026-08-01.
+            if (it.get("status") == "parked" or it.get("origin") == "regression"
+                    or it.get("owner_override")):
                 prev[it["func"]] = it
     verdicts = {r["func"]: r["verdict"] for r in canonical.scan_all()}
     canon_funcs = cheats.canonical_asm_funcs()
