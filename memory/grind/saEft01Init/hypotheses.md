@@ -1901,3 +1901,118 @@ next probe: once saEft01Init closes, apply the same single do{}while(0) wrapper 
 - probe: Spliced onto the candidate chassis, sandboxed, and read as a positional build-vs-target disassembly diff (tmp/grind/saEft01Init/s13/odf.sh).
 - result: sandbox 17/92. The second symbol reference costs a fresh `lui at` + `addu at,v1` + `lw v1,0(at)` address chain (91 -> 92 insns) and drops tbl_125c to a single in-block use, collapsing its allocno priority: the callee-save map rotates to $s0=D_800A1494 / $s1=param / $s2=D_800A125C against target's $s0=D_800A125C / $s1=D_800A1494 / $s2=param, and the argument block itself moves further away (`lbu v0,0(s0)` / `lbu v1,1(s0)` vs target's `lbu a0,0(s1)` / `lbu v0,1(s1)`, `lw a3` at build idx 56).
 - verdict: KILLED
+
+## Session 14 (permuter) — measured
+
+### H63 — KILLED (session 13's stated mechanism is factually wrong)
+**Statement:** decomp-permuter cannot descend on this basin because it charges
+PENALTY_REORDERING = 60 against PENALTY_REGALLOC = 5, and the candidate
+chassis's base score of 435 decomposes as seven reorderings (420) plus three
+register differences (15) — i.e. the permuter charges 60x for the very seven
+instructions the sandbox charges 7 for (s13's conclusion, taken on faith by
+the s14 brief).
+**Mechanism (as claimed):** scorer.py:14-18 class penalties applied over a
+difflib-RE-ALIGNED instruction stream.
+**Probe:** forced `Scorer(debug_mode=True)` inside the REAL permuter process
+(a PYTHONPATH `sitecustomize.py` shim that wraps `Scorer.__init__`), launched
+via tools/permuter_campaign.py, and read the scorer's own printed Penalty List
+for ws1/base.o against ws1/target.o out of campaign.log.
+**Result:**
+```
+Stack Differences:      0  (1)
+Branch Differences:     0  (1)
+Register Differences:   7  (5)    ->  35
+Reorderings:            0  (60)   ->   0
+Insertions:             2  (100)  -> 200
+Deletions:              2  (100)  -> 200
+                                  =  435
+```
+There are ZERO reordering penalties. 7*60 + 3*5 = 435 and 2*100 + 2*100 + 7*5
+= 435 — the two decompositions collide numerically, which is how the wrong
+model survived a whole session. The real misalignment is **100-vs-5, not
+60-vs-5**: scorer.py only converts an insertion/deletion pair into one
+60-point "reordering" when the two rows are IDENTICAL strings (it counts
+`min(ins, dels)` over a Counter keyed on the full row text), and our two
+unalignable slots hold DIFFERENT mnemonics, so they are charged as an
+insertion AND a deletion at 100 each. 92% of the base score (400/435) is those
+two slots; the seven register/field differences the sandbox actually charges 7
+for are worth 35, i.e. the stock objective is nearly blind to them.
+**Verdict: KILLED.** Artifact: `tmp/grind/saEft01Init/s14/penalty_calibration.log`.
+
+### H64 — CONFIRMED (the objective CAN be aligned, from inside a grind session)
+**Statement:** the objective can be re-weighted to track the engine's
+position-locked sandbox without writing to `tools/` (which s13 called an
+operator decision and used to park the question), and a correctly aligned
+objective is monotone with the sandbox.
+**Mechanism:** the penalties are plain class attributes read as
+`self.PENALTY_*` at score time, so a `sitecustomize.py` on PYTHONPATH can
+monkeypatch them in the permuter process. `tools/permuter_campaign.py` spawns
+the permuter with `subprocess.Popen(..., cwd=ROOT)` and no `env=`, so the
+launcher's environment (including PYTHONPATH) is inherited — the owner's
+telemetry directive is untouched and nothing under `tools/` changes. This is a
+SEARCH-HEURISTIC change only: every find is still re-spliced into src/system.c
+and re-scored by the unmodified `sandbox --disable all`.
+**Probe:** `tmp/grind/saEft01Init/s14/sbshim/sitecustomize.py` sets REGALLOC 1,
+REORDERING 2, INSERTION 4, DELETION 4 (sandbox charges 1 per differing
+instruction; ins/del stays dearest because an instruction-count change shifts
+every later position and target is 91 = our 91). Two workspaces built by
+`tmp/grind/saEft01Init/s14/mkws.sh` (full-TU compile, saEft01Init extracted at
+offset 0, no regfix/asmfix, trim verified byte-identical to the full-TU
+object): ws1 = the candidate chassis, ws2 = the const / RTX_UNCHANGING_P
+chassis (`const s32 *tbl_125c`).
+**Result:** the shim is verified live — ws1 prints `base score = 23`, exactly
+the predicted 7*1 + 2*4 + 2*4, and ws2 prints 29. The sandbox scores of those
+two bases are 7 and 9. **The aligned objective is monotone with the sandbox
+ACROSS chassis (23<->7, 29<->9), which the stock objective was NOT** (s13
+measured a 455-scored base at sandbox 9 and a 455-scored find at sandbox 10).
+And at the tie point the correlation is exact: all four ws1 finds scored
+permuter 23 and ALL FOUR screen sandbox 7 / 91.
+**Verdict: CONFIRMED.** The shim is reusable for any OTHER function whose
+residual is register/field differences rather than ordering.
+
+### H65 — KILLED (the permuter modality is dead for this function, correctly this time)
+**Statement:** with the objective aligned (H64), random search descends below
+the 7 / 91 floor, or at least below the base of whichever chassis it is seeded
+on.
+**Probe:** two fresh-seed campaigns launched through
+`tools/permuter_campaign.py` with the shim, `-j 8`, waited in-turn with
+`permuter_campaign.py wait` and harvested with `--stop`:
+  * ws1, candidate chassis, base 23 — **31,747 iterations**, four finds, ALL
+    ties at 23, no find below base. Last novel find at 328 s; the final 555 s
+    window returned nothing novel (fresh-seed stopping rule).
+  * ws2, const chassis, base 29 — **28,380 iterations**, five finds: one at 28,
+    one at **26** (the first genuine permuter-score DESCENT this function has
+    ever produced in three permuter sessions), three ties at 29.
+Every find of both campaigns re-scored with
+`tmp/grind/saEft01Init/s14/rescore.ps1` -> `sandbox --disable all`.
+**Result:** ws1's four ties are sandbox 7 / 7 / 7 / 7 (perfect, but no
+progress). ws2's descent to 26 screens **sandbox 10 / 91 against its base's 9**
+— the descent is still an anti-correlated one — and the three 29-scored ties
+screen 9, 10 and 12, i.e. the objective cannot even separate a 9 from a 12
+within one basin. Aligning the weights fixed the CROSS-chassis ranking and did
+not fix the WITHIN-basin ranking, because difflib re-aligns the candidate
+stream against target before any penalty is applied, and our entire residual is
+positional: the seven diffs are the same seven instructions in the wrong ORDER,
+which is exactly the information the re-alignment destroys.
+**Verdict: KILLED — and this time on the right mechanism.** Do not spend a
+third session's modality on the permuter here, and do NOT retry "fix the
+penalties first": that experiment is now run, banked and measured. Banked:
+`rejected/sandbox-aligned-permuter-const-26-screens-10.c`.
+
+## [s14] decomp-permuter cannot descend on this basin because it charges PENALTY_REORDERING = 60 against PENALTY_REGALLOC = 5, and the candidate chassis's base score of 435 decomposes as seven reorderings (420) plus three register differences (15) — session 13's stated mechanism, carried into this session's brief as settled.
+- mechanism: scorer.py:14-18 class penalties applied over a difflib-RE-ALIGNED instruction stream; the claim was that the permuter charges 60x for the very seven instructions the engine sandbox charges 7 for.
+- probe: Forced Scorer(debug_mode=True) inside the REAL permuter process with a PYTHONPATH sitecustomize.py shim that wraps Scorer.__init__, launched through tools/permuter_campaign.py, and read the scorer's own printed Penalty List for ws1/base.o against ws1/target.o out of campaign.log.
+- result: Stack 0 (x1), Branch 0 (x1), Register Differences 7 (x5) = 35, Reorderings ZERO (x60) = 0, Insertions 2 (x100) = 200, Deletions 2 (x100) = 200, total 435. There are no reordering penalties at all. 7*60+3*5 and 2*100+2*100+7*5 both equal 435 — a numerical collision that let the wrong model survive a whole session. scorer.py only converts an insertion/deletion pair into one 60-point reordering when the two rows are IDENTICAL strings (Counter keyed on full row text, min(ins,dels)); our two unalignable slots hold different mnemonics, so each costs 100 both ways. 92% of the base score (400/435) is those two slots, and the stock objective is nearly blind to the seven field differences the sandbox charges 7 for. The real misalignment is 100-vs-5, not 60-vs-5.
+- verdict: KILLED
+
+## [s14] The permuter objective can be re-weighted to track the engine's position-locked sandbox WITHOUT writing to tools/ (session 13 parked this as an operator decision), and a correctly aligned objective is monotone with the sandbox.
+- mechanism: The penalties are plain class attributes read as self.PENALTY_* at score time, so a sitecustomize.py on PYTHONPATH can monkeypatch them in the permuter process. tools/permuter_campaign.py spawns the permuter with subprocess.Popen(..., cwd=ROOT) and no env=, so the launcher's environment is inherited — the owner's 2026-07-07 telemetry directive is untouched and nothing under tools/ changes. This is a SEARCH-HEURISTIC change only: every find is still re-spliced into src/system.c and re-scored by the unmodified sandbox --disable all, which gates everything.
+- probe: tmp/grind/saEft01Init/s14/sbshim/sitecustomize.py sets REGALLOC 1, REORDERING 2, INSERTION 4, DELETION 4 (the sandbox charges 1 per differing instruction; insertion/deletion stays dearest because an instruction-count change shifts every later position and target is 91 = our 91). Two workspaces built by tmp/grind/saEft01Init/s14/mkws.sh (full-TU compile, saEft01Init extracted at offset 0, no regfix/asmfix, trim verified byte-identical to the full-TU object): ws1 = the session-9 candidate chassis, ws2 = the const / RTX_UNCHANGING_P chassis (const s32 *tbl_125c).
+- result: The shim is verified live in the campaign log: ws1 prints 'base score = 23', exactly the predicted 7*1 + 2*4 + 2*4, and ws2 prints 29. The sandbox scores of those two bases are 7 and 9, so the aligned objective is MONOTONE with the sandbox across chassis (23<->7, 29<->9) where the stock objective was not (s13 measured a 455-scored base at sandbox 9 and a 455-scored find at sandbox 10). At the tie point the correlation is exact: all four ws1 finds scored permuter 23 and all four screen sandbox 7/91.
+- verdict: CONFIRMED
+
+## [s14] With the objective aligned, random search descends below the 7/91 floor, or at least below the base of whichever chassis it is seeded on.
+- mechanism: If the permuter's number tracked the sandbox, its hill-climb would be a usable gradient on this function's residual for the first time.
+- probe: Two fresh-seed campaigns launched through tools/permuter_campaign.py with the shim, -j 8, waited in-turn with permuter_campaign.py wait and harvested with --stop. ws1 (candidate chassis, base 23): 31,747 iterations. ws2 (const chassis, base 29): 28,380 iterations. Every find of both campaigns re-scored with tmp/grind/saEft01Init/s14/rescore.ps1 -> engine sandbox --disable all.
+- result: ws1: four finds, ALL ties at 23, nothing below base; last novel find at 328 s and the final 555 s window returned nothing novel (fresh-seed stopping rule); all four screen sandbox 7/7/7/7. ws2: five finds — one at 28, one at 26 (the first genuine permuter-score DESCENT this function has produced in three permuter sessions), three ties at 29; the 26 screens sandbox 10/91 against its base's 9, and the three 29-ties screen 9, 10 and 12, i.e. the objective cannot separate a 9 from a 12 inside one basin. Aligning the weights fixed the cross-chassis ranking and did NOT fix the within-basin ranking, because difflib re-aligns the candidate stream against target before any penalty is applied and saEft01Init's entire residual is positional — the same seven instructions in the wrong ORDER, which is exactly the information re-alignment destroys.
+- verdict: KILLED

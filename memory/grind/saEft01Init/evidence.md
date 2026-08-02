@@ -1540,3 +1540,56 @@ diff for any find worth reading).
 - [s13] The 65-form argument-spelling record now includes the global-symbol axis, which is dead: the hoisted base is strictly cheaper, which is exactly why sessions 2-9 hoisted.
 
 - [s13] A reusable re-scoring harness now exists for any future permuter work on this function: tmp/grind/saEft01Init/s13/rescore.py (splice a find into src/system.c) + rescore.ps1 (drive the engine sandbox over a list of finds) + odf.sh (positional build-vs-target disassembly diff for one find).
+
+## Session 14 (permuter) — facts
+
+* **The candidate chassis's permuter base score of 435 is NOT seven
+  reorderings.** Read out of the scorer's own Penalty List, forced on inside
+  the real permuter process: Register Differences 7 (x5) = 35, Reorderings 0,
+  Insertions 2 (x100) = 200, Deletions 2 (x100) = 200. Session 13's
+  "435 = 7*60 + 3*5" is a numerical coincidence with the true
+  "2*100 + 2*100 + 7*5". scorer.py only calls an insertion/deletion pair a
+  60-point reordering when the two rows are IDENTICAL strings; ours differ in
+  mnemonic, so they cost 200 each way. The stock objective's misalignment is
+  100-vs-5, and it is nearly blind to the seven field differences the sandbox
+  charges 7 for.
+* **decomp-permuter's objective is patchable from inside a grind session.** The
+  penalties are class attributes read as `self.PENALTY_*` at score time;
+  `tools/permuter_campaign.py` launches with `Popen(..., cwd=ROOT)` and no
+  `env=`, so a `sitecustomize.py` on PYTHONPATH monkeypatches them in the
+  permuter process with no write to `tools/` and no loss of campaign telemetry.
+  Reusable shim: `tmp/grind/saEft01Init/s14/sbshim/`. `BB2_SHIM_DEBUG=1` forces
+  `debug_mode` so the Penalty List and the permuter's own asm diff land in
+  campaign.log — that is the way to read what a base score is MADE of, for any
+  function.
+* **An aligned objective (REGALLOC 1 / REORDERING 2 / INSERTION-DELETION 4) is
+  monotone with the sandbox across chassis but not within one.** Bases:
+  candidate 23 <-> sandbox 7, const 29 <-> sandbox 9. All four candidate-chassis
+  finds tie at 23 and screen sandbox 7 exactly. But the const chassis's only
+  real descent (26 from base 29) screens sandbox 10 against the base's 9, and
+  its three 29-ties screen 9 / 10 / 12. Cause: difflib re-aligns the candidate
+  stream before penalties apply, and saEft01Init's whole residual is positional
+  (the same seven instructions in the wrong order), which re-alignment destroys.
+* **Campaign volume this session: 60,127 iterations across two fresh-seeded
+  chassis, 9 finds, best sandbox result 7 / 91 — i.e. the floor, never below.**
+  Combined with session 4/5/13's campaigns, the permuter has now had five
+  campaigns and two objectives on this function and has produced exactly one
+  lasting lever (s4's, later shown to be a wrong-basin optimum).
+* The 7 / 91 floor is re-confirmed with the session-9 chassis re-applied to
+  src/system.c this session.
+
+- [s14] The candidate chassis's permuter base score of 435 is 2 insertions (200) + 2 deletions (200) + 7 register differences (35) and ZERO reorderings — read from the scorer's own Penalty List, not inferred. Session 13's '435 = seven reorderings + three register diffs' is falsified; the two decompositions collide at 435 by coincidence.
+
+- [s14] scorer.py converts an insertion/deletion pair into a single 60-point 'reordering' only when the two objdump rows are IDENTICAL strings (Counter over full row text, common = min(ins, dels)). Rows that differ in mnemonic are charged 100 + 100 instead, which is why saEft01Init's misalignment is 100-vs-5 rather than 60-vs-5.
+
+- [s14] decomp-permuter's objective is patchable from inside a grind session without touching tools/: the penalties are class attributes read as self.PENALTY_* at score time, and tools/permuter_campaign.py launches with Popen(..., cwd=ROOT) and no env=, so a PYTHONPATH sitecustomize.py monkeypatch reaches the permuter process with campaign telemetry intact. Reusable shim: tmp/grind/saEft01Init/s14/sbshim/. BB2_SHIM_DEBUG=1 additionally forces Scorer(debug_mode=True) so the Penalty List and the permuter's own asm diff land in campaign.log — that is how to read what ANY function's base score is made of.
+
+- [s14] Under the aligned objective (REGALLOC 1 / REORDERING 2 / INSERTION-DELETION 4) the candidate chassis bases at 23 and the const chassis at 29, against sandbox 7 and 9 — monotone across chassis. All four candidate-chassis finds tie at permuter 23 and screen sandbox exactly 7.
+
+- [s14] Within a basin the aligned objective is still misleading: the const chassis's only genuine descent, permuter 26 from base 29, screens sandbox 10 against the base's 9, and its three permuter-29 ties screen sandbox 9, 10 and 12.
+
+- [s14] Campaign volume this session: 60,127 iterations across two fresh-seeded chassis, 9 finds, best sandbox result 7/91 — the floor, never below. Across sessions 4, 5, 13 and 14 the permuter has now had five campaigns and two different objectives on this function and produced exactly one lasting lever (session 4's, later shown by session 7 to be a wrong-basin optimum).
+
+- [s14] The session-9 chassis was re-applied to src/system.c and re-measured at exactly 7/91 this session; src/system.c is left carrying it.
+
+- [s14] Both campaigns were harvested with --stop before the session ended (procs_killed 9 each) and `pgrep -af permuter.py` is clean — no campaign outlives this session.

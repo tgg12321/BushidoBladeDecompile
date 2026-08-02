@@ -1,7 +1,7 @@
 {
  "func": "saEft01Init",
  "file": "system",
- "session_count": 13,
+ "session_count": 14,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -81,23 +81,29 @@
    "floor": 7,
    "modality": "permuter",
    "headline": "Floor holds at 7/91; the permuter modality is KILLED structurally for this basin \u2014 decomp-permuter charges 60 per reordering vs 5 per register rename over a re-aligned stream while the sandbox is posi"
+  },
+  {
+   "session": 14,
+   "floor": 7,
+   "modality": "permuter",
+   "headline": "Floor holds at 7/91; session 13's reason for killing the permuter modality is FALSIFIED (the base 435 is 2 insertions + 2 deletions at 100 each + 7 register diffs, ZERO reorderings), the objective was"
   }
  ],
  "frontier": [
   {
    "hypothesis": "F26 \u2014 the residual is entirely inside sched.c's ready-list ordering, and the candidate's win (both `lbu` at the block head) and the const chassis's win (`sw 16(sp)` before `lw a3`) are separated by ONE tie-break decision that no C-level spelling has moved in 65 forms.",
-   "mechanism": "With expand order settled from calls.c and the alias class ruled out, the block's order depends only on INSN_PRIORITY (fixed by the arithmetic) and rank_for_schedule's tie-breaks (load/store class against last_scheduled_insn, then INSN_LUID). The candidate and the const chassis differ in exactly one bit \u2014 RTX_UNCHANGING_P on one load \u2014 and that bit flips both the `lbu` order and the arg3 chain's position, the signature of a tie-break cascade rather than a dependence change.",
-   "next_probe": "Run the instrumented cc1 (tools/gcc-2.7.2/cc1, BB2_PRIO_DEBUG / BB2_SCHED_DEBUG \u2014 see the instrumented-cc1-location memory) on the candidate AND on the const chassis using tmp/grind/saEft01Init/s10/idump.sh + schedscan.py, and diff the two RANKDBG traces over build idx 46-61. A two-form diff of one chassis differing in one bit isolates the exact comparison that flips: if it is an INSN_LUID tie the lever is a source-order change to the two index reads on the const chassis; if it is the load/store class test the lever is which insn precedes the pair."
+   "mechanism": "With expand order settled from calls.c and the alias class ruled out, the block's order depends only on INSN_PRIORITY (fixed by the arithmetic) and rank_for_schedule's tie-breaks (load/store class against last_scheduled_insn, then INSN_LUID). The candidate and the const chassis differ in exactly one bit \u2014 RTX_UNCHANGING_P on one load \u2014 and that bit flips both the `lbu` order and the arg3 chain's position, the signature of a tie-break cascade rather than a dependence change. Session 14 adds independent support: the permuter's own difflib view of the candidate base is TWO unalignable slots plus seven field differences, i.e. two instructions genuinely in the wrong place dragging the rest.",
+   "next_probe": "Run the instrumented cc1 (tools/gcc-2.7.2/cc1, BB2_PRIO_DEBUG / BB2_SCHED_DEBUG \u2014 see the instrumented-cc1-location memory) on the candidate AND on the const chassis using tmp/grind/saEft01Init/s10/idump.sh + schedscan.py, and diff the two RANKDBG traces over build idx 46-61. Both chassis are already built as permuter workspaces this session (tmp/grind/saEft01Init/s14/ws1 and ws2, each with a verified byte-identical trimmed base.c), so the two .i files are on disk and ready to feed the instrumented compiler. If the flip is an INSN_LUID tie the lever is a source-order change to the two index reads on the const chassis; if it is the load/store class test the lever is which insn precedes the pair."
   },
   {
    "hypothesis": "F23 \u2014 the do{}while(0) wrapper is the candidate's single match device and has still never been through a fresh adversarial cheat-reviewer.",
    "mechanism": "It is explicitly sanctioned (.claude/rules/do-while-zero-exception.md, owner ruling 2026-07-06: any body, ANY codegen effect, register allocation named explicitly, mandatory inline FAKE annotation, a single level needs no nesting justification) and the candidate carries the annotation. Its only effect is flow.c's loop_depth ref-weighting for the three table pointers; session 12 re-confirmed from calls.c 1653-1664 + stmt.c:2435 + toplev.c:3387 that argument expansion is not loop-gated at -O2, so the wrapper has no role in the argument block at all.",
-   "next_probe": "Invoke cheat-reviewer on the candidate before any completion claim, presenting the lever-exhaustion record: 65 measured argument-block forms over four rigid attractors, s11's wrapper-extent sweep (w1/w2 = 8, w7 = 16 at 92 insns, w3-w6 = 7), s12's four newly-dead axes (arg1, MEM_IN_STRUCT_P, pre-loop store placement, prototype), and s13's two exhausted permuter campaigns."
+   "next_probe": "Invoke cheat-reviewer on the candidate before any completion claim, presenting the lever-exhaustion record: 65 measured argument-block forms over four rigid attractors, s11's wrapper-extent sweep (w1/w2 = 8, w7 = 16 at 92 insns, w3-w6 = 7), s12's four newly-dead axes (arg1, MEM_IN_STRUCT_P, pre-loop store placement, prototype), and now s13+s14's four exhausted permuter campaigns under two different objectives."
   },
   {
-   "hypothesis": "F24 \u2014 the two sibling alarm functions in the same TU inherit this result for free.",
-   "mechanism": "set_alarm/get_alarm are inlined into cpu_side_move_dir_4 (= CD_sync, name string D_80016240, ~src/system.c:366) and the function at ~src/system.c:480 (= CD_ready, string D_80016248), both already carrying the same hand-derived goto shape; the allocation problem and the wrapper's mechanism are identical.",
-   "next_probe": "Once saEft01Init closes, apply the same single do{}while(0) wrapper plus the named-arg4 argument spelling to both siblings and re-score them with the engine sandbox. Note that src/system.c:384 currently spells one sibling's second index pointer as `(u8 *)((u8 *)tbl_125c + ((s32)&D_800A1494 - (s32)D_800A125C) + 1)`, a symbol-difference coercion that should be re-examined when that function is worked."
+   "hypothesis": "F27 (new, PROJECT-WIDE not saEft01Init) \u2014 the sandbox-aligned permuter shim is worth keeping for OTHER queue functions, because the stock 100-vs-5 weighting hides register/field-difference signal on any function whose gap is not a clean reordering.",
+   "mechanism": "Session 14 measured that the stock objective spends 92% of saEft01Init's base score on two unalignable slots and only 8% on the seven differences the sandbox actually charges for. Any function whose residual is a handful of register/field differences will have the same shape, and there the aligned weights are a strictly better gradient \u2014 the cross-chassis monotonicity measured here (23<->7, 29<->9) is the property that matters when a campaign is seeded on several chassis. This is an OPERATOR-surface question: making it standard means a knob in tools/permuter_campaign.py, which a grind session may not write.",
+   "next_probe": "Reuse tmp/grind/saEft01Init/s14/sbshim/ verbatim (export PYTHONPATH to it before `permuter_campaign.py launch`) on the next queue function whose modality ladder reaches `permuter`, and first run one launch with BB2_SHIM_DEBUG=1 to READ that function's Penalty List decomposition before deciding whether its gap is ordering (shim will not help) or field differences (shim should help). If it pays twice, surface it to the owner as a proposed --penalties flag on tools/permuter_campaign.py."
   }
  ],
  "judge_constraints": [],

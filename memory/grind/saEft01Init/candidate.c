@@ -201,11 +201,48 @@
  * the whole callee-save map.  Banked as
  * rejected/permuter-global-arg5-rotates-callee-save-map-17-92.c.
  *
+ * ===========================================================================
+ * SESSION 14 (permuter) — BODY STILL UNCHANGED; s13's MECHANISM WAS WRONG,
+ * THE CONCLUSION SURVIVES ON BETTER EVIDENCE
+ * ===========================================================================
+ * Re-applied and re-measured at exactly 7 / 91.
+ *
+ *   * s13's stated reason for killing the permuter modality — "this file's 435
+ *     decomposes EXACTLY as seven reorderings (420) plus three register
+ *     differences (15)" — is FALSIFIED.  Forcing Scorer(debug_mode=True) inside
+ *     the real permuter process prints its own Penalty List for base.o vs
+ *     target.o: Register Differences 7 (x5) = 35, Reorderings ZERO, Insertions
+ *     2 (x100) = 200, Deletions 2 (x100) = 200.  Total 435.  7*60+3*5 and
+ *     2*100+2*100+7*5 both equal 435, which is how the wrong model survived.
+ *     The real misalignment is 100-vs-5, not 60-vs-5: scorer.py only converts
+ *     an insertion/deletion pair into a 60-point "reordering" when the two rows
+ *     are IDENTICAL strings, and ours are not.
+ *   * The objective was then actually re-aligned (REGALLOC 1, REORDERING 2,
+ *     INSERTION/DELETION 4) via a PYTHONPATH shim in tmp/ that monkeypatches
+ *     the Scorer class attributes in the permuter process — no write to tools/,
+ *     tools/permuter_campaign.py still the launcher.  It works: base prints 23
+ *     (= 7*1 + 2*4 + 2*4) for this chassis and 29 for the const chassis, i.e.
+ *     the aligned objective is MONOTONE with the sandbox ACROSS chassis
+ *     (23<->7, 29<->9) where the stock one was not.
+ *   * It still does not descend WITHIN a basin.  60k iterations over two
+ *     campaigns: on this chassis 31.7k iterations produced only ties at 23, and
+ *     all four screened to sandbox exactly 7 (perfect correlation at the tie
+ *     point).  On the const chassis the one genuine descent, permuter 26 from
+ *     base 29, screens sandbox 10 against that base's 9, and the 29-scored ties
+ *     screen 9 / 10 / 12.  Random search cannot see our residual because
+ *     difflib RE-ALIGNS the stream and our whole residual is positional.
+ *   * So the permuter modality stays dead for this function, now for the right
+ *     reason.  Do not spend a third session on it, and do NOT retry "fix the
+ *     penalties" — that is done, banked, and measured.  The shim itself
+ *     (tmp/grind/saEft01Init/s14/sbshim/) is reusable for any OTHER function
+ *     whose gap is register/field differences rather than ordering, where the
+ *     stock 100-vs-5 weighting hides the signal.
+ *
  * NEXT: hypotheses.md F26 — diff the instrumented cc1's RANKDBG trace for THIS
  * form against the const (c1) form.  They differ in exactly one bit
  * (RTX_UNCHANGING_P on one load) yet flip both the `lbu` order and the arg3
  * chain's position, so the trace difference isolates the single tie-break the
- * whole residual now rests on.  Do NOT re-sweep argument spellings; sixty-three
+ * whole residual now rests on.  Do NOT re-sweep argument spellings; sixty-five
  * forms are banked over four rigid attractors.
  * ===========================================================================
  */
