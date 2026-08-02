@@ -1,8 +1,8 @@
 {
  "func": "func_80052B00",
  "file": "text1b",
- "session_count": 5,
- "current_modality": "permuter",
+ "session_count": 6,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -33,23 +33,29 @@
    "floor": 17,
    "modality": "permuter",
    "headline": "Directed-permuter sub-modality KILLED by measurement: an exhaustively-defined 161,280-point cross-product (all 8! load orderings x 4 asm-operand shapes) yielded zero forms below the honest floor of 17"
+  },
+  {
+   "session": 6,
+   "floor": 17,
+   "modality": "forensics",
+   "headline": "Forensics named both residual mechanisms and CORRECTED the ledger: combine folds all eight loads into the asm so RELOAD (reload1.c:3606 order_regs_for_reload, not local-alloc) picks the registers; the"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Canonical-asm authorization under the GTE-leaf carve-out remains the disposition, and session 5 closes the last uncovered corner of the automated search space without changing the picture.",
-   "mechanism": "gte-wrapper-misroute-park is a no-C-form-by-construction carve-out (same class as jtbl-infra in no-new-park-categories), orthogonal to the scan_hand_coded S1-S8 tiers. The honest pure-C body is instruction-for-instruction isomorphic to the target; the whole residual is register naming (H7 - mechanically unreachable, no REG_ALLOC_ORDER in tools/gcc-2.7.2/config/mips/mips.h, now measured across 19 hand spellings plus ~46.6k directed machine spellings) plus the delay slot (H1 - provably unreachable, reorg.c:730-735, 32 hand spellings plus 163,967 permuter iterations). Precedent is in hand and citable: func_80052B44, src/text1b.c:10995, inline_asm_canonical.txt:340, authorized 2026-07-27 for the identical construct one function later in the same file.",
+   "hypothesis": "Canonical-asm authorization under the GTE-leaf carve-out remains the disposition, and session 6 adds an affirmative provenance argument rather than one more null result.",
+   "mechanism": "Forensics shows GCC CAN name $t0..$t7 for these eight values, but only from a register-pressure state costing >= 10 extra instructions (ctlE + ctlF), and CAN fill this jr's delay slot, but only when the candidate insn is not an asm (ctlA differential against reorg.c:730-735 stop_search_p). The target does both at once in exactly 17 instructions using an opcode (ctc2) with no C analog. Precedent is in hand and citable: func_80052B44, src/text1b.c:10995, inline_asm_canonical.txt:340, authorized 2026-07-27 for the identical construct one function later in the same file.",
    "next_probe": "A session or operator holding authority over inline_asm_canonical.txt applies memory/grind/func_80052B00/candidate.c over src/text1b.c:10969-10994, adds the canonical entry, runs `retire func_80052B00` (drops regfix.txt:3411) and `verify-oracle`. The disposition call belongs to the driver/owner; a grind session in a non-escalation modality must not self-authorize it."
   },
   {
    "hypothesis": "If the canonical disposition is ever REFUSED, memory/grind/func_80052B00/best_pure_c_fused8_floor17.c - not the pinned HEAD body - is what should ship, because it strictly reduces the cheat surface.",
-   "mechanism": "The HEAD body needs eight `register asm(\"$N\")` pins PLUS regfix.txt:3411 to byte-match. The fused body is pin-free and already correct in opcodes, order and offsets; only the GPR names and the delay-slot move remain as build-time paperwork. Fewer cheats for the same bytes is a strict improvement in the fallback outcome.",
-   "next_probe": "Operator step (a grind session may not touch these surfaces): splice the fused body into src/text1b.c, measure `sandbox func_80052B00` WITHOUT --disable all to see what the enabled rule set actually achieves, determine the minimal rule set that reaches byte-match, and run a full `verify-oracle`."
+   "mechanism": "The HEAD body needs eight register asm(\"$N\") pins PLUS regfix.txt:3411 to byte-match. The fused body is pin-free and already correct in opcodes, order and offsets; only the GPR names and the delay-slot move remain as build-time paperwork.",
+   "next_probe": "Operator step (a grind session may not touch these surfaces): splice the fused body into src/text1b.c, measure `sandbox func_80052B00` WITHOUT --disable all to see what the enabled rule set achieves, determine the minimal rule set that reaches byte-match, and run a full `verify-oracle`."
   },
   {
-   "hypothesis": "No automated or structural search axis remains untried; the only cheap step left anywhere is a corroboration, not a new axis.",
-   "mechanism": "Structural (s2/s3), permuter-undirected (s4) and permuter-directed (s5) are all measured dead. Forensics / rederive / synthesis operate on constructs this body does not contain: 8 array reads feeding 8 cop2 writes, with no arithmetic, no control flow, no calls, no data layout, and no library-provenance surface beyond the already-identified SetRotMatrix+SetTransMatrix fusion. Both residual components have compiler-source mechanisms rather than only measurements.",
-   "next_probe": "If a later modality wants one more measurement rather than a mechanism: dump the RTL allocation with the instrumented cc1 (tools/gcc-2.7.2/cc1 -da, NOT build/cc1, per instrumented-cc1-location) and read the .lreg/.greg local-alloc quantity assignments for the eight load pseudos - expect plain ascending-hard-reg-number assignment with no conflicts, i.e. nothing to steer. Do NOT run a third permuter campaign here: three chassis, both sub-modalities and 163,967 iterations are on the record."
+   "hypothesis": "The register axis should not be re-opened on the spelling dimension; the only untested corner left anywhere is zero-cost occupancy of $2,$3,$5,$6,$7, and it is four specific constructs, not a sweep.",
+   "mechanism": "Six sessions measured the spelling dimension three independent ways (19 hand spellings, ~164k permuter iterations, and now the compiler's own reload/local-alloc dumps) and s6 identified the single lever that moves the register set together with the arithmetic excluding it. Unused parameters are killed; what remains untested is whether a $v0 return value, a DImode return occupying $v0+$v1, setjmp, or alloca can occupy those registers without emitting an instruction.",
+   "next_probe": "One ctl sweep of those four constructs against the fused body with cc1 -da, reading only the .greg spill list - roughly one turn of work, and it closes the last theoretical gap in the register argument. Do NOT sweep C spellings again and do NOT run a fourth permuter campaign."
   }
  ],
  "judge_constraints": [],

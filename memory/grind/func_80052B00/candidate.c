@@ -120,6 +120,49 @@
  * 1-5: 32 hand-measured spellings plus 163,967 permuter iterations, zero
  * delay-slot fills and nothing below the honest floor. Full data: evidence.md
  * §Session 5, hypotheses.md H10, tmp/grind/func_80052B00/s5/.
+ *
+ * SESSION 6 (forensics, 2026-08-01) — form UNCHANGED; the two residual
+ * components now have named passes, named source lines, and a compiler-internal
+ * differential, and one long-standing ledger claim is CORRECTED.
+ *
+ * Vehicle: the honest floor-17 fused body compiled in a minimal standalone TU
+ * (faithful per H9) with the instrumented cc1 (tools/gcc-2.7.2/cc1, NOT
+ * build/cc1) and -da; full pass dump set plus four differential controls in
+ * tmp/grind/func_80052B00/s6/.
+ *
+ *  - CORRECTION. Sessions 3-5 attributed the register naming to local-alloc's
+ *    find_free_reg. It is not: `combine` folds all eight (mem) loads directly
+ *    into the fused asm's operands (9 (set (reg ...)) insns survive .flow, ZERO
+ *    survive .combine), so the .lreg dump holds a single insn and local-alloc
+ *    has nothing to allocate. The eight `lw` are RELOAD-generated, and the
+ *    register choice is reload1.c:3606 order_regs_for_reload(), #else branch
+ *    (no REG_ALLOC_ORDER in mips.h): zero-use call-used hard regs in ascending
+ *    regno, with $4 skipped because reload1.c:486/:3651 mark explicitly-used
+ *    regs as bad spill regs. The .greg dump prints it verbatim: ";; Need 8 regs
+ *    of class GR_REGS" / "Spilling reg 2. 3. 5. 6. 7. 8. 9. 10."
+ *
+ *  - THE REGISTER SET IS REACHABLE, AND PRICED. ctlE (the fused body plus five
+ *    extra locals occupying $2,$3,$5,$6,$7 across the asm) emits
+ *    `lw $8,0($4) … lw $15,28($4)` / `ctc2 $8,$0 … ctc2 $15,$7` — the target's
+ *    registers, order and offsets EXACTLY. It costs 10 extra instructions (27 vs
+ *    the target's 17), and no zero-cost occupancy exists: extra unused register
+ *    parameters do not set regs_ever_live (ctlF/ctlG, spill list unchanged). So
+ *    the register residual is now closed by arithmetic, not by absence of
+ *    evidence. Banked: rejected/regocc5-reproduces-t0t7-costs-10-extra-insns.c.
+ *
+ *  - H1 GOT A DIFFERENTIAL. The honest body's .dbr header reads "3 insns needing
+ *    delay slots / 3 got 0 delays" and the return stays a bare
+ *    (jump_insn … (parallel[(return)(use (reg:SI 31 ra))]) {return_internal}),
+ *    never a (sequence); cc1 emits `j $31` with no .set noreorder block. Control
+ *    ctlA — the identical body with one plain C store after the asm — flips to
+ *    "2 got 0 delays, 1 got 1 delays" and emits `.set noreorder / j $31 / sw`.
+ *    reorg is willing and able to fill this jr; the ASM insn is the only thing
+ *    stopping it, exactly as reorg.c:730-735 stop_search_p specifies.
+ *
+ * Net for this disposition: GCC in this toolchain can produce the target's
+ * register names OR its 17-instruction length, never both, and can never produce
+ * the delay-slot `ctc2` from C at all. The target does all three at once. Full
+ * data: evidence.md §s6, hypotheses.md H11-H15, tmp/grind/func_80052B00/s6/.
  */
 __asm__(
     ".set\tnoat\n"

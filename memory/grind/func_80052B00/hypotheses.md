@@ -711,3 +711,251 @@ iterations, zero delay-slot fills.
 - probe: The session-5 directed campaign (46,653 iterations); a filled delay slot would have scored below 140 and been saved as an output.
 - result: Zero outputs. Running total across sessions 1-5: 32 hand-measured spellings plus 163,967 permuter iterations, zero delay-slot fills.
 - verdict: CONFIRMED
+
+## Session 6 (forensics, 2026-08-01) — floor 17, unmoved; two mechanisms RENAMED and one residual re-closed by arithmetic
+
+Vehicle: the honest floor-17 fused body (`best_pure_c_fused8_floor17.c`) compiled
+in a minimal standalone TU — faithful per H9 (s4) — with the instrumented cc1
+(`tools/gcc-2.7.2/cc1`, NOT `build/cc1`, per [[instrumented-cc1-location]]) and
+`-da`, producing the full RTL pass dump set (.rtl .jump .cse .loop .cse2 .flow
+.combine .sched .lreg .greg .sched2 .dbr) in
+`tmp/grind/func_80052B00/s6/dumps/`. Four differential controls (ctlA-ctlG) were
+compiled the same way; all raw output is banked in the s6 scratch directory.
+
+### H12 — CONFIRMED, and it CORRECTS the H7 mechanism named in sessions 3-5
+**Statement.** The eight loads never reach the register allocator at all: GCC's
+`combine` pass substitutes each `(mem)` directly into the fused asm's input
+operands, so the register names in the emitted body are chosen by RELOAD, not by
+local-alloc's `find_free_reg`.
+
+**Probe.** Count surviving `(set (reg ...))` insns pass by pass in the dumps.
+
+**Result.** `.rtl`/`.jump`/`.cse`/`.loop`/`.flow` each have 9; `.combine` has 0.
+The `.lreg` (local-alloc) dump for this function contains exactly ONE insn — the
+`asm_operands` — whose eight operands are `(mem:SI (reg:SI 4 a0))`,
+`(mem/s:SI (plus (reg:SI 4 a0) (const_int 4)))`, … `(const_int 28)`. There are no
+pseudos left to allocate. The `.greg` dump then prints
+`;; Need 8 regs of class GR_REGS (for insn 34)` followed by
+`Spilling reg 2. / 3. / 5. / 6. / 7. / 8. / 9. / 10.` and
+`;; Hard regs used: 2 3 4 5 6 7 8 9 10`. The eight `lw` instructions in the final
+asm are reload-generated reloads of those MEMs into spill registers.
+
+**Verdict: CONFIRMED.** Sessions 3-5 attributed the register set to
+"local-alloc's `find_free_reg` walking hard registers in ascending order". The
+observable set is the same, but the pass is wrong: with combine having eaten the
+loads, local-alloc has no work here. Any future attempt to steer the registers
+must aim at reload, or at defeating combine first (see H14).
+
+### H13 — CONFIRMED (the exact reload decision, with source line)
+**Statement.** The observed spill order {2,3,5,6,7,8,9,10} is
+`order_regs_for_reload()` at `tools/gcc-2.7.2/reload1.c:3606`, `#else` branch.
+
+**Mechanism (compiler source).** With no `REG_ALLOC_ORDER` in
+`tools/gcc-2.7.2/config/mips/mips.h`, that function fills `potential_reload_regs`
+in two ascending-regno passes: first every hard reg with `uses == 0` that is
+`call_used_regs`, then every hard reg with `uses == 0` that is not. Regs that are
+already used are appended afterwards, sorted by use count. `reload1.c:486` copies
+`regs_ever_live` into `regs_explicitly_used`, and `:3651` gives any explicitly-used
+reg `large + 1` uses AND sets `bad_spill_regs` — which is precisely why `$4` (the
+live incoming base pointer) is skipped in the middle of the ascending run. So the
+first eight spill choices in a computation-free leaf are forced to be
+$v0,$v1,$a1,$a2,$a3,$t0,$t1,$t2.
+
+**Verdict: CONFIRMED.**
+
+### H11 — CONFIRMED: the target's $t0..$t7 IS reachable in pure C, at a cost the target cannot pay
+**Statement.** If $2,$3,$5,$6,$7 are occupied by other live pseudos across the
+asm, reload's first eight choices become $8..$15 — the target's exact register
+set.
+
+**Probe.** `tmp/grind/func_80052B00/s6/ctlE.sh` — the fused body plus five
+additional locals loaded from `matrix[8..12]` and stored back after the asm.
+Control `ctlD.sh` is the same idea with a second pointer parameter.
+
+**Result.** ctlE emits `lw $8,0($4) … lw $15,28($4)` / `ctc2 $8,$0 … ctc2 $15,$7`
+— identical to the target in opcode, order, offset AND register name; the spill
+list is `8,9,10,11,…,15`. ctlD, whose second parameter occupies $5, lands one
+slot further along at {9,10,11,12,13,14,15,24}, confirming the choice is purely
+positional in the ascending scan. Cost: ctlE emits 5 extra `lw` + 5 extra `sw`,
+i.e. 27 instructions where the target has 17.
+
+**Verdict: CONFIRMED as a mechanism, DEAD as a form.** Banked at
+`rejected/regocc5-reproduces-t0t7-costs-10-extra-insns.c`. This upgrades the
+register residual from "no spelling found in 19 hand forms + 163k permuter
+iterations" (an absence of evidence) to a closed arithmetic argument: the set is
+reachable only from a register-pressure state that adds >= 10 instructions to a
+body that must not grow by one.
+
+### H14 — KILLED (there is no zero-instruction way to occupy $2,$3,$5,$6,$7)
+**Statement.** Declaring extra unused register parameters marks $a1-$a3 as
+explicitly used, pushing them into `bad_spill_regs` at no instruction cost, and
+moves reload off them.
+
+**Mechanism.** `regs_explicitly_used` is a copy of `regs_ever_live`; if
+`assign_parms` marked incoming argument registers live even for unused
+parameters, the deprioritisation at `reload1.c:3651` would fire for free.
+
+**Probe.** `tmp/grind/func_80052B00/s6/ctlF.sh` — `ctlF(s32 *matrix, s32 p1,
+s32 p2, s32 p3)` and `ctlG(s32 *matrix, s32 p1)`, both with the body untouched.
+
+**Result.** Both emit the unchanged `lw $2,0($4) … lw $10,28($4)` /
+`ctc2 $2,$0 … ctc2 $10,$7` and both `.greg` dumps print the unchanged spill list
+`2,3,5,6,7,8,9,10`. Unused register parameters do not set `regs_ever_live`.
+
+**Verdict: KILLED.** With this, H11's cost is not merely the cost of one
+implementation — it is the cost of the only implementation.
+
+### H15 — CONFIRMED: combine can be defeated, and it does not help
+**Statement.** Forcing each loaded value to have two uses stops combine
+substituting the MEM into the asm, sending the eight loads through local-alloc
+instead of reload — a genuinely different allocation path.
+
+**Probe.** `ctlC` in `tmp/grind/func_80052B00/s6/controls.sh`: a second, EMPTY
+`__asm__` consuming the same eight values. PROBE ONLY, never a proposed form — an
+empty asm with register inputs is a scheduling barrier and a cheat under the
+standing policy.
+
+**Result.** `.combine` retains all 9 `(set (reg ...))`; the `.greg` dump shows no
+`Spilling` lines at all (nothing needed reloading) and `Hard regs used: 2 3 4 5 6
+7 8 9 10`. Local-alloc assigns the eight pseudos DESCENDING —
+`lw $10,0($4) / lw $9,4($4) / … / lw $2,28($4)`, `ctc2 $10,$0 … ctc2 $2,$7`. Same
+SET, reverse order, still no $11-$15. (This also explains session 3's
+volatile-pointer PROBE scoring 15: volatile MEMs are non-substitutable, so that
+probe was measuring the local-alloc path, not a volatile magic.)
+
+**Verdict: CONFIRMED.** Both allocation paths draw from the same candidate pool
+{2,3,5,6,7,8,9,10}; neither can reach $t3..$t7 without the H11 occupancy.
+
+### H1 — upgraded a third time: now a pass-level DIFFERENTIAL, not just a source read or an output observation
+**Statement (unchanged).** GCC 2.7.2 will not put the `__asm__` `ctc2` in the
+`jr $ra` delay slot.
+
+**New probe (s6).** Read the compiler's own reorg counters, and run a control
+that differs from the honest body ONLY in that the last insn before the return is
+a plain C store rather than an asm.
+
+**Result.** Honest body, `dumps/fused8.c.dbr` header:
+`;; Reorg pass #1: … 3 insns needing delay slots / 3 got 0 delays`, and the
+return survives as a bare
+`(jump_insn 68 41 69 (parallel[ (return) (use (reg:SI 31 ra)) ]) 305
+{return_internal})` — never wrapped in a `(sequence)`. cc1's assembly output is
+`j $31` with no `.set noreorder` block at all, i.e. the slot is handed downstream
+unfilled. Control ctlA (identical body + `matrix[0] = 0;` after the asm) flips the
+counter to `2 got 0 delays, 1 got 1 delays`, produces a delay-slot `(sequence)`,
+and emits `.set noreorder / j $31 / sw $0,0($4)`. Control ctlB (no inline asm
+anywhere) likewise fills. Control ctlC (asm present, combine defeated, loads as
+real pseudos) is back to `3 got 0 delays`.
+
+**Verdict: CONFIRMED.** The delay slot of THIS function shape is fillable by
+reorg — the sole blocker is that the only candidate insn is an ASM, exactly as
+`reorg.c:730-735` `stop_search_p` specifies. Running total across sessions 1-6:
+32 hand spellings, 163,967 permuter iterations, and now a compiler-internal
+counter with a matched control, all agreeing.
+
+## Live frontier after session 6 (highest value first)
+
+1. **Canonical-asm authorization remains the disposition, and forensics adds an
+   affirmative provenance argument rather than one more null result.** Session 6
+   shows GCC CAN name $t0..$t7 for these eight values, but only from a state that
+   costs >= 10 extra instructions (H11 + H14), and CAN fill this jr's delay slot,
+   but only when the candidate insn is not an asm (H1 differential). The target
+   does both at once, in 17 instructions, with an instruction (`ctc2`) that has no
+   C analog. No compiler state exists in this toolchain that produces the target
+   bytes from C. Precedent unchanged and citable: `func_80052B44`,
+   `src/text1b.c:10995`, `inline_asm_canonical.txt:340`, authorized 2026-07-27 for
+   the identical construct one function later in the same file. Next probe: a
+   session or operator with authority over `inline_asm_canonical.txt` applies
+   `memory/grind/func_80052B00/candidate.c` over `src/text1b.c:10969-10994`, adds
+   the entry, runs `retire func_80052B00` (drops `regfix.txt:3411`) and
+   `verify-oracle`. The disposition call belongs to the driver/owner.
+
+2. **If the canonical disposition is refused,
+   `memory/grind/func_80052B00/best_pure_c_fused8_floor17.c` is still the body to
+   ship** — pin-free, honest 17, strictly less cheat surface than the pinned HEAD
+   body (eight `register asm("$N")` pins PLUS `regfix.txt:3411`). Operator-only
+   next probe: splice it in, run `sandbox func_80052B00` WITHOUT `--disable all`,
+   find the minimal rule set that byte-matches, `verify-oracle`.
+
+3. **Do not re-open the register axis on the spelling dimension.** Six sessions
+   have now measured it three independent ways (19 hand spellings, ~164k permuter
+   iterations, and the compiler's own reload/local-alloc dumps) and the s6
+   forensics identifies the ONLY lever that moves it — five-register occupancy —
+   together with the arithmetic that excludes it. The one thing s6 did NOT
+   exhaustively enumerate is zero-cost occupancy sources: unused parameters are
+   killed (H14), and the remaining candidates (a value returned in $v0, a DImode
+   return occupying $v0+$v1, a `longjmp`/`setjmp` frame, an alloca) all either
+   emit instructions or are absent from a 17-instruction leaf. A future session
+   wanting one last measurement here should test those four in a single ctl sweep
+   rather than sweeping C spellings again.
+
+## [s6] The eight loads never reach the register allocator: combine substitutes each (mem) directly into the fused asm's input operands, so the emitted register names are chosen by RELOAD, not by local-alloc's find_free_reg as sessions 3-5 recorded.
+- mechanism: GCC 2.7.2's combine pass (try_combine) substitutes a single-use pseudo's defining set into its user. Each load is used exactly once, in the asm, so all eight are folded and deleted; local-alloc then has nothing to allocate and the eight lw instructions in the final output are reload-generated reloads of the folded MEMs into spill registers.
+- probe: Compiled the honest floor-17 fused body in a minimal standalone TU (faithful per H9) with the instrumented cc1 tools/gcc-2.7.2/cc1 -da, and counted surviving (set (reg ...)) insns pass by pass across .rtl/.jump/.cse/.loop/.flow/.combine, then read .lreg and .greg. Artifacts in tmp/grind/func_80052B00/s6/dumps/.
+- result: 9 sets survive through .flow; .combine has 0. The .lreg dump contains exactly one insn - the asm_operands - with eight (mem:SI (plus (reg:SI 4 a0) (const_int N))) operands. .greg prints ';; Need 8 regs of class GR_REGS (for insn 34)' then 'Spilling reg 2. 3. 5. 6. 7. 8. 9. 10.' and ';; Hard regs used: 2 3 4 5 6 7 8 9 10'. The pass named in the s3-s5 ledger (local-alloc find_free_reg) does no work on this function.
+- verdict: CONFIRMED
+
+- ## [s6] The observed spill order {2,3,5,6,7,8,9,10} is exactly order_regs_for_reload() at tools/gcc-2.7.2/reload1.c:3606, #else branch (no REG_ALLOC_ORDER in mips.h).
+- mechanism: order_regs_for_reload fills potential_reload_regs in two ascending-regno passes - first every hard reg with uses == 0 that is call_used_regs, then every hard reg with uses == 0 that is not - and appends already-used regs afterwards sorted by use count. reload1.c:486 copies regs_ever_live into regs_explicitly_used and :3651 gives any explicitly-used reg large+1 uses plus a bad_spill_regs bit, which is why $4 (the live incoming base pointer) is skipped in the middle of the ascending run.
+- probe: Read tools/gcc-2.7.2/reload1.c:3590-3712 and matched it against the .greg spill list for the honest body and for four controls.
+- result: Source and dumps agree exactly. In a computation-free leaf the first eight spill choices are forced to $v0,$v1,$a1,$a2,$a3,$t0,$t1,$t2.
+- verdict: CONFIRMED
+
+- ## [s6] The target's $t0..$t7 register set IS reachable from pure C - it requires occupying $2,$3,$5,$6,$7 with five other live pseudos across the asm.
+- mechanism: order_regs_for_reload skips hard regs that are live or explicitly used, so occupying exactly the five call-used regs below $8 makes reload's first eight choices $8..$15 = $t0..$t7.
+- probe: tmp/grind/func_80052B00/s6/ctlE.sh - the fused body plus five extra locals loaded from matrix[8..12] and stored back after the asm; control ctlD.sh is the same idea with a second pointer parameter.
+- result: ctlE emits lw $8,0($4) .. lw $15,28($4) / ctc2 $8,$0 .. ctc2 $15,$7 - identical to the target in opcode, order, offset AND register name - with spill list 8,9,10,11,12,13,14,15. ctlD, whose second parameter occupies $5, lands one slot further at {9,10,11,12,13,14,15,24}, showing the choice is purely positional in the ascending scan. Cost: 5 extra lw + 5 extra sw, 27 instructions against the target's 17. Banked as rejected/regocc5-reproduces-t0t7-costs-10-extra-insns.c. The register residual is now closed by arithmetic rather than by absence of evidence.
+- verdict: CONFIRMED
+
+- ## [s6] Extra unused register parameters mark $a1-$a3 explicitly used and move reload off them at zero instruction cost.
+- mechanism: regs_explicitly_used is a copy of regs_ever_live taken at reload1.c:486; if assign_parms marked incoming argument registers live even for unused parameters, the bad_spill_regs deprioritisation at reload1.c:3651 would fire for free and give the H11 occupancy without emitting anything.
+- probe: tmp/grind/func_80052B00/s6/ctlF.sh - ctlF(s32 *matrix, s32 p1, s32 p2, s32 p3) and ctlG(s32 *matrix, s32 p1), body untouched, both compiled with cc1 -da.
+- result: Both emit the unchanged lw $2,0($4) .. lw $10,28($4) / ctc2 $2,$0 .. ctc2 $10,$7, and both .greg dumps print the unchanged spill list 2,3,5,6,7,8,9,10. Unused register parameters do not set regs_ever_live. H11's 10-instruction cost is therefore the cost of the only implementation, not of one implementation.
+- verdict: KILLED
+
+- ## [s6] Defeating combine (giving each loaded value a second use) routes the eight loads through local-alloc instead of reload and changes the register naming.
+- mechanism: combine only substitutes a pseudo that dies at its single use; a second use blocks the substitution, so the loads survive as real insns and are allocated by local-alloc rather than materialised by reload. PROBE ONLY - the second use used here is an empty __asm__ with eight "r" inputs, which is a scheduling barrier and a cheat under the standing policy, and is never proposed as a form.
+- probe: ctlC in tmp/grind/func_80052B00/s6/controls.sh.
+- result: .combine retains all 9 (set (reg ...)); .greg has no Spilling lines at all; local-alloc assigns the eight pseudos DESCENDING - lw $10,0($4) / lw $9,4($4) / ... / lw $2,28($4), ctc2 $10,$0 .. ctc2 $2,$7. Same SET, reverse order, still nothing in $11-$15. This also explains session 3's volatile-pointer PROBE scoring 15: volatile MEMs are non-substitutable, so that probe was measuring the local-alloc path rather than any property of volatile. Both allocation paths draw from the same candidate pool and neither reaches $t3..$t7 without the H11 occupancy.
+- verdict: CONFIRMED
+
+- ## [s6] H1, third upgrade: the delay slot of this exact function shape is fillable by reorg, and the sole blocker is that the only candidate insn is an ASM.
+- mechanism: reorg.c:730-735 stop_search_p returns 1 unconditionally for ASM_INPUT / asm_noperands >= 0, halting fill_simple_delay_slots' backward scan; the falsifiable prediction is that swapping the last insn from an asm to a plain C store flips the compiler's own reorg counter from '0 delays' to '1 delays' with nothing else changed.
+- probe: Read the ;; Reorg pass counters in the .dbr dumps of the honest body and of three controls (ctlA = same body plus matrix[0] = 0 after the asm; ctlB = no inline asm anywhere; ctlC = asm present, combine defeated), plus the RTL shape of the return insn and cc1's own assembly output.
+- result: Honest body - '3 insns needing delay slots / 3 got 0 delays'; the return survives as a bare (jump_insn ... (parallel[(return) (use (reg:SI 31 ra))]) 305 {return_internal}), never a (sequence), and cc1 emits 'j $31' with no .set noreorder block, handing the slot downstream unfilled. ctlA - '2 got 0 delays, 1 got 1 delays', a real delay-slot (sequence), and '.set noreorder / j $31 / sw $0,0($4)'. ctlB fills likewise. ctlC is back to '3 got 0 delays'. Running total across sessions 1-6: 32 hand spellings, 163,967 permuter iterations, and now a compiler-internal counter with a matched control, all agreeing.
+- verdict: CONFIRMED
+
+## [s6] The eight loads never reach the register allocator: GCC's combine pass substitutes each (mem) directly into the fused asm's input operands, so the emitted register names are chosen by RELOAD, not by local-alloc's find_free_reg as sessions 3-5 recorded.
+- mechanism: combine (try_combine) substitutes a single-use pseudo's defining set into its user. Each load is used exactly once - in the asm - so all eight are folded and deleted; local-alloc then has no pseudos to allocate, and the eight lw in the final output are reload-generated reloads of the folded MEMs into spill registers.
+- probe: Compiled the honest floor-17 fused body in a minimal standalone TU (faithful per s4's H9) with the instrumented cc1 at tools/gcc-2.7.2/cc1 (NOT build/cc1) using -da, then counted surviving (set (reg ...)) insns pass by pass across .rtl/.jump/.cse/.loop/.flow/.combine and read .lreg and .greg. Scripts and dumps in tmp/grind/func_80052B00/s6/.
+- result: 9 sets survive through .flow; .combine has 0. The .lreg dump contains exactly one insn - the asm_operands - whose eight operands are (mem:SI (reg:SI 4 a0)) and (mem/s:SI (plus (reg:SI 4 a0) (const_int 4..28))). .greg then prints ';; Need 8 regs of class GR_REGS (for insn 34)' followed by 'Spilling reg 2. 3. 5. 6. 7. 8. 9. 10.' and ';; Hard regs used: 2 3 4 5 6 7 8 9 10'. The observable conclusion carried since s3 was right; the pass named for it was wrong.
+- verdict: CONFIRMED
+
+## [s6] The observed spill order {2,3,5,6,7,8,9,10} is exactly order_regs_for_reload() at tools/gcc-2.7.2/reload1.c:3606, #else branch (mips.h defines no REG_ALLOC_ORDER).
+- mechanism: order_regs_for_reload fills potential_reload_regs in two ascending-regno passes - zero-use call_used_regs first, then zero-use call-saved - and appends already-used regs afterwards sorted by use count. reload1.c:486 copies regs_ever_live into regs_explicitly_used, and :3651 gives any explicitly-used reg large+1 uses plus a bad_spill_regs bit, which is why $4 (the live incoming base pointer) is skipped in the middle of the ascending run.
+- probe: Read tools/gcc-2.7.2/reload1.c:3590-3712 and matched the source against the .greg spill lists of the honest body and of five controls (ctlA, ctlC, ctlD, ctlE, ctlF/ctlG).
+- result: Source and dumps agree exactly, including the positional shift under controls: with a second pointer parameter occupying $5 (ctlD) the eight choices become {9,10,11,12,13,14,15,24}. In a computation-free leaf the first eight spill choices are forced to $v0,$v1,$a1,$a2,$a3,$t0,$t1,$t2.
+- verdict: CONFIRMED
+
+## [s6] The target's $t0..$t7 register set is reachable from pure C - it requires occupying $2,$3,$5,$6,$7 with five other live pseudos across the asm.
+- mechanism: order_regs_for_reload skips hard regs that are live or explicitly used, so occupying exactly the five call-used regs below $8 makes reload's first eight choices $8..$15, which is $t0..$t7.
+- probe: tmp/grind/func_80052B00/s6/ctlE.sh - the fused body plus five extra locals loaded from matrix[8..12] and stored back after the asm, compiled with cc1 -da; control ctlD.sh is the same construction with a second pointer parameter.
+- result: ctlE emits lw $8,0($4) .. lw $15,28($4) / ctc2 $8,$0 .. ctc2 $15,$7 - identical to the target in opcode, order, memory offset AND register name - with spill list 8..15. Cost: 5 extra lw + 5 extra sw, i.e. 27 instructions against the target's 17. CONFIRMED as a mechanism, DEAD as a form; banked at memory/grind/func_80052B00/rejected/regocc5-reproduces-t0t7-costs-10-extra-insns.c. This upgrades the register residual from an absence of evidence (19 hand spellings + ~164k permuter iterations found nothing) to a closed arithmetic argument.
+- verdict: CONFIRMED
+
+## [s6] Extra unused register parameters mark $a1-$a3 explicitly used, pushing them into bad_spill_regs at zero instruction cost and giving the H11 occupancy for free.
+- mechanism: regs_explicitly_used is a copy of regs_ever_live taken at reload1.c:486; if assign_parms marked incoming argument registers live even for unused parameters, the deprioritisation at reload1.c:3651 would fire without emitting anything.
+- probe: tmp/grind/func_80052B00/s6/ctlF.sh - ctlF(s32 *matrix, s32 p1, s32 p2, s32 p3) and ctlG(s32 *matrix, s32 p1), bodies untouched, both compiled with cc1 -da.
+- result: Both emit the unchanged lw $2,0($4) .. lw $10,28($4) / ctc2 $2,$0 .. ctc2 $10,$7 and both .greg dumps print the unchanged spill list 2,3,5,6,7,8,9,10. Unused register parameters do not set regs_ever_live. The 10-instruction price of the register set is therefore the price of the only implementation, not of one implementation.
+- verdict: KILLED
+
+## [s6] Defeating combine (giving each loaded value a second use) routes the eight loads through local-alloc instead of reload and changes the register naming.
+- mechanism: combine only substitutes a pseudo that dies at its single use, so a second use blocks the substitution and the loads survive as real insns for local-alloc. PROBE ONLY - the second use here is an empty __asm__ with eight r inputs, a scheduling barrier and a cheat under the standing policy, never proposed as a form.
+- probe: ctlC in tmp/grind/func_80052B00/s6/controls.sh, compiled with cc1 -da.
+- result: All 9 (set (reg ...)) survive .combine; .greg has no Spilling lines at all; local-alloc assigns the eight pseudos DESCENDING - lw $10,0($4) / lw $9,4($4) / ... / lw $2,28($4), ctc2 $10,$0 .. ctc2 $2,$7. Same candidate pool, reverse order, still nothing in $11-$15. This also retroactively explains session 3's volatile-pointer probe scoring 15: volatile MEMs are non-substitutable, so that probe was measuring the local-alloc path rather than any property of volatile.
+- verdict: CONFIRMED
+
+## [s6] H1, third upgrade: the jr $ra delay slot of this exact function shape is fillable by reorg, and the sole blocker is that the only candidate insn is an ASM.
+- mechanism: reorg.c:730-735 stop_search_p returns 1 unconditionally for ASM_INPUT / asm_noperands >= 0, halting fill_simple_delay_slots' backward scan. Falsifiable prediction: swapping the last insn from an asm to a plain C store, changing nothing else, flips the compiler's own reorg counter from 0 delays to 1 delay.
+- probe: Read the ';; Reorg pass' counters in the .dbr dumps of the honest body and three controls - ctlA (same body plus matrix[0] = 0 after the asm), ctlB (no inline asm anywhere), ctlC (asm present, combine defeated) - plus the RTL shape of the return insn and cc1's own assembly output.
+- result: Honest body: '3 insns needing delay slots / 3 got 0 delays'; the return survives as a bare (jump_insn 68 41 69 (parallel[(return) (use (reg:SI 31 ra))]) 305 {return_internal}), never wrapped in a (sequence); cc1 emits 'j $31' with no .set noreorder block, handing the slot downstream unfilled. ctlA: '2 got 0 delays, 1 got 1 delays', a real delay-slot (sequence), and '.set noreorder / j $31 / sw $0,0($4)'. ctlB fills likewise. ctlC is back to '3 got 0 delays'. Running total across sessions 1-6: 32 hand spellings, 163,967 permuter iterations, and now a compiler-internal counter with a matched control, all agreeing.
+- verdict: CONFIRMED
