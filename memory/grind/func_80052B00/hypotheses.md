@@ -1276,3 +1276,140 @@ emits bytes from template text rather than from compilation.
 - probe: A differential rather than a re-run: the H23 dual-compile of s9/fused8.c (last insn needing a slot IS the asm) against control s9/ctlB.c, byte-for-byte the same body plus one trailing plain C store `matrix[0] = t7;` so the last insn needing a slot is NOT an asm. If both compilers fill in ctlB and neither fills in fused8, the asm insn is the sole blocker in both and stop_search_p's behaviour is shared.
 - result: KILLED. ctlB under BOTH compilers ends `.set noreorder / .set nomacro / j $31 / sw $2,0($4) / .set macro / .set reorder` — the store IS pulled into the delay slot, and both emit the identical protective wrapper. fused8 under BOTH ends with a bare j $31, no wrapper, no slot instruction. Same body, same flags, one non-asm trailing insn is the entire difference, and the two independent 2.7.2 forks behave identically on both sides of it. reorg in the SHIPPED compiler is equally willing and equally blocked. H1 is therefore a property of GCC 2.7.2 as a family, verified against the actual build compiler.
 - verdict: KILLED
+
+## Session 10 (synthesis, 2026-08-02)
+
+### H25 — CONFIRMED (the merged result: the two residuals compete for one resource)
+**Statement.** The register residual and the delay-slot residual are not
+independent. Occupancy of a call-used hard register is what moves the allocation
+window toward $t0..$t7, the compiler offers exactly ONE zero-instruction
+occupancy channel — an insn absorbed by the otherwise-empty `jr $ra` delay slot —
+that channel has capacity one, five units are required, and spending it forfeits
+the slot the target needs for `ctc2 $t7,$7`.
+
+**Probe.** `tmp/grind/func_80052B00/s10/couple.sh`: six controls compiled with
+the instrumented cc1 and `-da` in a standalone TU (faithful per H9), reporting
+reload's `;; Spilling reg` list, the emitted body, and post-reload RTL deletions.
+
+**Result.**
+- `baseA` (banked fused-8): spills 2 3 5 6 7 8 9 10; 18 insns.
+- `retB` (`s32` + `return 0;`): spills 3 5 6 7 8 9 10 11 — the window slid up
+  exactly one — at 18 insns, because `move $2,$0` is emitted after `j $31`, i.e.
+  it takes the delay slot.
+- `retC` (`long long` + `return 0;`): spills 5 6 7 8 9 10 11 12 — up two — at 19
+  insns, both `move`s ahead of the jump, the slot empty again.
+- s7's `ctlE` bought all five for +10 insns; s10's `poolK` for +4 with cheats.
+No construct in ten sessions buys two or more registers for free, and the only
+one that buys ANY for free pays with the delay slot.
+
+**Verdict: CONFIRMED.** This is the unifying statement of the residual: the
+17-point gap is one problem, not two, and its two halves are mutually exclusive
+at zero cost. Note carefully what it does NOT claim — it does not say the
+register axis is closed (see H26), it says the two axes cannot both be closed for
+free, and that the delay-slot half is additionally closed outright by H1/H20/H24
+against both compilers and the assembler.
+
+### H26 — CONFIRMED, and it CORRECTS s6/H15 (the allocation pool is not fixed)
+**Statement.** The candidate register pool is not the fixed set
+{2,3,5,6,7,8,9,10} that sessions 6-9 have been quoting. It is
+(call-used GPRs) MINUS (registers occupied across the asm), and it can be moved
+all the way to {$8..$15}.
+
+**Why the old claim looked solid.** s6/H15 defeated combine with an empty second
+`__asm__` consuming the SAME eight values, saw local-alloc emit
+`lw $10,0($4) … lw $2,28($4)`, and concluded both allocation paths "draw from the
+same candidate pool … neither can reach $t3..$t7". Its control occupied nothing,
+so the pool it observed was the unoccupied pool.
+
+**Probe.** `s10/minprice.sh` (`occG`/`occH`) and `s10/pool.sh`
+(`poolI`/`poolJ`/`poolK`) — the same combine-defeating empty asm, but consuming
+SPARE PARAMETERS (which arrive in $5,$6,$7) and a `long long` (which occupies
+$2,$3) instead of the eight loaded values.
+
+**Result.** `occH` → `;; Hard regs used: 2 3 4 5 6 7 8 9 10 11 12 13`, emitting
+`lw $13,0($4) … lw $2,28($4)`: the pool top moved from $10 to $13, exactly the
+three registers the parameters freed. `poolJ`/`poolK` → `… 13 14 15`. And
+**`poolK` emits `ctc2 $8,$0 / ctc2 $9,$1 / … / ctc2 $15,$7` — the target's
+register mapping exactly**, with the eight `lw` carrying the target's
+(register, offset) pairs in a different order. Two sub-facts fall out:
+local-alloc gives the HIGHEST free register to the first-processed value (hence
+poolK's reversed load order yielding the ascending target mapping), and $14/$15
+were never excluded from the pool — nothing had ever occupied five registers
+below them.
+
+**Verdict: CONFIRMED (correction).** Delete "unreachable" from the ledger's
+vocabulary for the register axis; s7/H18 had already begun that correction and
+this completes it. The register set is REACHABLE and the remaining question is
+purely one of price and legality.
+
+### H27 — KILLED as a form, OPEN as a question (the price of occupancy is a cheat)
+**Statement.** If the pool is movable, some construct that moves it might be
+legal and cheap enough to lower the honest floor.
+
+**Probe.** `s10/score.py` splices each form over `src/text1b.c:10969-10994`, runs
+`sandbox func_80052B00 --disable all`, restores the file and verifies the restore.
+
+**Result.** HEAD (8 register pins) 18 · banked pin-free fused-8 **17** · `poolK`
+**19** (build 20 insns). Every occupancy device in `poolK` is forbidden — the
+empty-template `__asm__ ("" :: "r"(x))` is a pure register-occupancy /
+scheduling-barrier construct under `.claude/rules/inline-asm-policy.md` and
+`gte-3x3.md`, and the three spare parameters plus the `long long` return on a
+void function are the ABI break already banked in s7 as
+`occ5-param-store-dimode-score7-breaks-abi.c`. The honest sandbox strips the
+empty asms, the occupancy evaporates, and only the four `acc` instructions
+survive — so the one form that reproduces the target's registers scores two
+points WORSE than the floor.
+
+**Verdict: KILLED for this form** (banked at
+`rejected/empty-asm-occupancy-reaches-t0t7-honest-19.c`), **OPEN as a question.**
+The question that survives is sharp and is the frontier for the next ladder pass:
+*is there a LEGAL C construct that makes a value live ACROSS the fused asm
+without emitting an instruction?* Measured negatives: unused parameters do not
+occupy (s6 ctlF/ctlG); an `s32` return occupies $2 only and pays the delay slot
+(s7/H17, s10/retB); a `long long` return costs +1..+4; volatile pointers and
+empty-template asms are cheats. Per [[difficult-is-not-impossible]] this is
+explicitly NOT recorded as impossible — it is un-enumerated, and enumerating it
+is a session's honest work.
+
+### The post-reload deletion loophole (s7-s9 frontier item 3) — now MEASURED, still empty
+**Statement.** Occupancy established by an insn that a post-reload pass deletes
+would be free, because `reload1.c:486` latches `regs_explicitly_used` from
+`regs_ever_live` before reload runs.
+
+**Probe.** Read the post-reload pass list (`toplev.c:3096-3175`: sched2, then
+`jump_optimize(insns, 1, 1, 0)` = cross-jump + no-op-move deletion, then
+`dbr_schedule`), then count RTL insns in `.greg` vs `.jump2` for each s10 control.
+
+**Result.** The channel is REAL and fires here: `retD` (`s32` + `return t0;`)
+coalesces its return copy into a no-op move which jump2 deletes — 11 RTL insns in
+`.greg`, 9 in `.jump2`, 17 instructions emitted with no `move` at all. `xjumpF`
+(duplicated arms) shows cross-jump deleting one insn for +18. But neither buys
+any occupancy: `retD`'s emitted registers are still $2,$3,$5..$10, because the
+coalesced copy lives on the register the value already had rather than adding a
+new one. So the loophole is no longer "open in principle and unmeasured" — it is
+measured, it fires, and it has so far produced zero free occupancy. It folds into
+H27's open question rather than standing as its own item.
+
+## [s10] The register residual and the delay-slot residual are not independent defects: both are consequences of register OCCUPANCY, the compiler offers exactly one zero-instruction occupancy channel (an insn absorbed by the otherwise-empty jr $ra delay slot), that channel has capacity one, five units are required to reach $t0..$t7, and spending it forfeits the slot the target needs for ctc2 $t7,$7.
+- mechanism: reload1.c:486 latches regs_explicitly_used from regs_ever_live before reload; order_regs_for_reload (reload1.c:3606) then hands out the lowest unoccupied call-used registers in ascending order, so each occupied register slides the eight-register window up by exactly one. An occupancy construct is free only if its instruction has somewhere free to live, and the only such place in this 17-instruction leaf is the empty delay slot.
+- probe: tmp/grind/func_80052B00/s10/couple.sh - six controls compiled with the instrumented cc1 (tools/gcc-2.7.2/cc1) and -da in a standalone TU (faithful per H9), recording reload's ';; Spilling reg' list, the emitted body, and post-reload RTL deletions (.greg count vs .jump2 count).
+- result: baseA (banked fused-8) spills 2 3 5 6 7 8 9 10, 18 insns. retB (s32 + return 0) spills 3 5 6 7 8 9 10 11 - window slid up exactly ONE - still 18 insns, because 'move $2,$0' is emitted after 'j $31', i.e. it takes the delay slot. retC (long long + return 0) spills 5 6 7 8 9 10 11 12 - up TWO - at 19 insns, both moves ahead of the jump and the slot empty again. s7's ctlE bought all five for +10; s10's poolK for +4 with cheats. No construct in ten sessions buys two or more registers for free, and the only one that buys any for free pays with the delay slot.
+- verdict: CONFIRMED
+
+## [s10] The local-alloc / reload candidate pool is NOT the fixed set {2,3,5,6,7,8,9,10} that sessions 6-9 quoted from s6/H15; it is (call-used GPRs) MINUS (registers occupied across the asm), and it can be moved all the way to {$8..$15}.
+- mechanism: s6/H15 defeated combine with an empty second __asm__ consuming the SAME eight values, so its control occupied nothing and observed the unoccupied pool. Occupying registers with values that are live across the asm removes them from the pool; local-alloc then hands the HIGHEST free register to the first-processed value, so a reversed load order maps the eight values ascending onto the remaining high registers.
+- probe: tmp/grind/func_80052B00/s10/minprice.sh (occG/occH) and s10/pool.sh (poolI/poolJ/poolK) - the same combine-defeating empty asm, but consuming three SPARE PARAMETERS (which arrive in $5,$6,$7) and a long long (which occupies $2,$3) instead of the eight loaded values; cc1 -da, ';; Hard regs used' lines plus emitted bodies in s10/dumps/.
+- result: occH -> ';; Hard regs used: 2 3 4 5 6 7 8 9 10 11 12 13', emitting lw $13,0($4) ... lw $2,28($4): the pool top moved from $10 to $13, exactly the three registers the parameters freed. poolJ/poolK -> '... 13 14 15'. poolK emits ctc2 $8,$0 / ctc2 $9,$1 / ... / ctc2 $15,$7 - the target's register mapping EXACTLY, the first time in ten sessions - with the eight lw carrying the target's (register, offset) pairs in a different order. $14/$15 were never excluded from the pool; nothing had ever occupied five registers below them.
+- verdict: CONFIRMED
+
+## [s10] Since the pool is movable, some construct that moves it might be legal and cheap enough to lower the honest floor below 17.
+- mechanism: Every occupancy device measured so far is either an emitted instruction with no home in the target's 17, or a forbidden coercion: empty-template __asm__ ("" :: "r"(x)) is a pure register-occupancy / scheduling-barrier construct under .claude/rules/inline-asm-policy.md and gte-3x3.md, and spare parameters plus a long long return on a void function are the ABI break s7 banked as occ5-param-store-dimode-score7-breaks-abi.c. The cheat-invisible sandbox strips the empty asms before scoring, so whatever they bought disappears and only their side effects remain.
+- probe: tmp/grind/func_80052B00/s10/score.py - splices each body over src/text1b.c:10969-10994, runs 'sandbox func_80052B00 --disable all', restores the file from the bytes it read and verifies the restore.
+- result: HEAD (the 8 register asm("$N") pins) 18 (build 19) - banked pin-free fused-8 17 (build 18) - poolK 19 (build 20). The form that reproduces the target's registers scores TWO POINTS WORSE than the honest floor. Banked at memory/grind/func_80052B00/rejected/empty-asm-occupancy-reaches-t0t7-honest-19.c. Floor re-verified at 17 for the seventh consecutive session.
+- verdict: KILLED
+
+## [s10] The post-reload deletion loophole left open in principle by sessions 7-9 - an insn that sets regs_ever_live before reload but is deleted afterwards would grant occupancy at zero emitted cost - actually fires in this function shape.
+- mechanism: toplev.c:3096-3175 fixes the post-reload pass list: sched2 (reorders only), jump_optimize(insns, 1, 1, 0) = cross-jumping plus no-op-move deletion, then dbr_schedule. jump2's no-op-move deletion is the channel: a register copy that local-alloc coalesces onto one register becomes (set (reg N) (reg N)) and is deleted after regs_ever_live has already been latched.
+- probe: RTL insn counts in the .greg dump versus the .jump2 dump for every s10 control, plus the emitted bodies.
+- result: The channel is real and fires: retD (s32 + return t0) coalesces its return copy into a no-op move that jump2 deletes - 11 RTL insns in .greg, 9 in .jump2 - emitting 17 instructions with no move at all. xjumpF (duplicated arms) shows cross-jump deleting exactly one insn for +18 instructions. But neither buys any occupancy: retD's emitted registers are still $2,$3,$5..$10, because the coalesced copy lives on the register the value already had rather than adding a new one. The loophole is measured rather than assumed, and has so far produced zero free occupancy; it folds into the open question in frontier item 1.
+- verdict: KILLED

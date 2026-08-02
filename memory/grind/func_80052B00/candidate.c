@@ -331,6 +331,62 @@
  * src/text1b.c: sandbox --disable all = 17 (target 17, build 18, rules_dropped
  * 1), then src restored; flat for the SIXTH consecutive session. Full data:
  * evidence.md Session 9, hypotheses.md H23/H24, tmp/grind/func_80052B00/s9/.
+ *
+ * SESSION 10 (synthesis, 2026-08-02) - form UNCHANGED, floor UNCHANGED at 17
+ * for the seventh consecutive session, but this session BOTH strengthened the
+ * argument for this disposition and CORRECTED a claim the ledger had been
+ * leaning on since session 6. Read both halves; the correction matters.
+ *
+ *  - H25, the merged result the synthesis pass was for: the register residual
+ *    and the delay-slot residual are NOT two independent defects. Both are
+ *    consequences of OCCUPANCY - which call-used hard registers are unavailable
+ *    when the allocator runs. Measured (s10/couple.sh, instrumented cc1 -da,
+ *    reload's `;; Spilling reg` lists): every register occupied slides the
+ *    eight-register allocation window up by exactly one; the target needs all
+ *    five of $2,$3,$5,$6,$7 occupied to reach $t0..$t7; and the ONLY
+ *    zero-instruction occupancy channel this compiler has is an insn absorbed by
+ *    the otherwise-empty `jr $ra` delay slot (retB: `s32` + `return 0;` slides
+ *    the window one for +0 insns, because its `move $2,$0` takes the slot). That
+ *    channel has capacity ONE, five units are needed, and spending it forfeits
+ *    the very slot the target needs for `ctc2 $t7,$7`. The 17-point residual is
+ *    one problem whose two halves are mutually exclusive at zero cost.
+ *
+ *  - H26 CORRECTS s6/H15, which sessions 7-9 quoted as settled. The allocation
+ *    pool is NOT the fixed set {2,3,5,6,7,8,9,10}; it is (call-used GPRs) MINUS
+ *    (occupied), and s6's control simply occupied nothing. With $5,$6,$7
+ *    occupied the pool tops out at $13; with $2,$3 occupied too it reaches $15.
+ *    s10/pool.sh's `poolK` emits `ctc2 $8,$0 / ctc2 $9,$1 / ... / ctc2 $15,$7` -
+ *    the target's register mapping EXACTLY, the first time in ten sessions - and
+ *    its eight `lw` carry the target's (register, offset) pairs. So "the
+ *    register set is unreachable" is retired from the ledger's vocabulary: it is
+ *    reachable, and the open question is price and legality.
+ *
+ *  - H27: the price, as measured, is a cheat AND is score-negative. poolK's
+ *    occupancy comes from empty-template `__asm__ ("" :: "r"(x))` blocks (the
+ *    register-occupancy / scheduling-barrier family forbidden by
+ *    .claude/rules/inline-asm-policy.md) plus three spare parameters and a
+ *    `long long` return on a void function (the ABI break s7 already rejected).
+ *    Honest sandbox, spliced into src/text1b.c and restored (s10/score.py):
+ *    HEAD 18 / banked pin-free fused-8 17 / poolK 19. The sandbox strips the
+ *    empty asms, the occupancy evaporates, and only the four `acc` instructions
+ *    remain. Banked at
+ *    rejected/empty-asm-occupancy-reaches-t0t7-honest-19.c.
+ *
+ * WHAT THIS MEANS FOR THIS FORM, stated honestly. The delay-slot half of the
+ * residual remains closed outright - H1 (reorg.c:730-735 stop_search_p), H20
+ * (ASPSX 2.34 never filled a delay slot, whole-binary census) and H24 (the
+ * SHIPPED cc1psx behaves identically, and fills the same slot when the candidate
+ * is not an asm) leave a human as the only possible author of `ctc2 $t7,$7` in
+ * that slot, so no C source can drive the floor to 0. But the register half is
+ * now an OPEN, precisely-stated question rather than a proof: is there a LEGAL C
+ * construct that makes a value live ACROSS the fused asm without emitting an
+ * instruction? Measured negatives: unused parameters do not occupy (s6
+ * ctlF/ctlG); an `s32` return occupies $2 only and pays the delay slot; a
+ * `long long` return costs +1..+4; volatile pointers and empty-template asms are
+ * cheats. Until that question is enumerated, this form's supporting argument
+ * should be stated as "the delay slot is impossible and the registers are
+ * priced", not as "both are impossible". Full data: evidence.md Session 10,
+ * hypotheses.md H25/H26/H27, tmp/grind/func_80052B00/s10/.
  */
 __asm__(
     ".set\tnoat\n"
