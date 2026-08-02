@@ -575,3 +575,139 @@ spellings plus 117,314 permuter iterations, zero delay-slot fills.
 - probe: Both session-4 campaigns (117,314 iterations total), with every emitted object scored against target.o built from asm/funcs/func_80052B00.s.
 - result: No output with a filled delay slot. Campaign 1 produced no outputs at all; campaign 2's single output is code-identical to its base, which ends `jr ra ; nop`. Running total across sessions 1-4: 32 hand-measured spellings plus 117,314 permuter iterations, zero delay-slot fills.
 - verdict: CONFIRMED
+
+## Session 5 (permuter — DIRECTED, 2026-08-01) — floor 17, unmoved
+
+### H10 — KILLED (the DIRECTED permuter sub-modality is dead, and load order only ever hurts)
+**Statement.** Some ordering of the eight load statements, crossed with some
+asm-operand shape of the fused cop2 write, produces a form below the honest
+floor of 17 (permuter base score 140).
+
+**Mechanism (why this was worth measuring even after s4).** Session 4 killed the
+UNDIRECTED permuter axis with 117,314 iterations of random mutation. Random
+mutation and PERM_*-directed enumeration are different searches: the former
+samples an unstructured neighbourhood of one base, the latter makes
+decomp-permuter walk a cross-product the author names. The s1-s3 hand sweeps
+covered exactly TWO of the 40,320 possible load orderings (ascending and
+descending), and the four fused asm shapes had each been measured at 17 only
+under ascending loads. So there was a genuinely uncovered region: shape × order.
+H7's mechanism predicts it is empty — with no `REG_ALLOC_ORDER` in
+`tools/gcc-2.7.2/config/mips/mips.h`, local-alloc's `find_free_reg` scans hard
+registers ascending from `$2`, so reordering the loads can only permute the
+ASSIGNMENT within a fixed register set, never change the set — but a prediction
+is not a measurement.
+
+**Probe.** `tmp/grind/func_80052B00/s5/ws3/base.c`, a hand-authored directed
+chassis per `.claude/rules/permuter-directives.md` (`tools/permuter_annotate.py`
+has no applicable hint — its four slugs all need a pin, multiple returns, a
+rotate or a loop, none of which this body contains). `PERM_LINESWAP` over the
+eight `tN = matrix[N];` statements (8! = 40,320 orderings) × `PERM_GENERAL` over
+four asm shapes (eight `"r"` inputs / eight `"d"` inputs / eight `"r"` plus a
+ninth `"r"(matrix)` / a 7+1 split with the CR7 write in its own trailing
+`__asm__`) = 161,280 combinations, which the permuter enumerates
+(`Will run for 161280 iterations`). Workspace = session 4's validated harness
+with only `base.c` replaced. Launched with `tools/permuter_campaign.py launch
+-j 8` (label `directed-lineswap8-x-asmshape4`), waited on IN-TURN with `wait`,
+harvested with `--stop`.
+
+**Result.** 46,653 iterations / 1,869 s / 8 workers — **zero outputs**. The
+score distribution over the 46,658 logged samples is strictly BIMODAL: 140
+(= base = the honest floor of 17) in 35,111 samples, 180 (= base + 40 = eight
+additional register-name mismatches at the permuter's 5-points-per-register
+weight) in 11,547, nothing in between and nothing below 140. Load order is
+therefore the ONE lever in this space that moves the score at all — and it moves
+it only upward, by permuting which pseudo lands on which ascending hard
+register, never moving the set off `{v0,v1,a1,a2,a3,t0,t1,t2}`.
+
+**Verdict: KILLED.** Both permuter sub-modalities are now closed by measurement:
+undirected (s4, 117,314 iterations, two chassis) and directed (s5, 46,653
+iterations over an exhaustively-defined 161,280-point cross-product). Do not run
+a third permuter campaign on func_80052B00.
+
+### H7 — re-CONFIRMED (as a KILL) with a much larger sample
+Session 3 measured the register-set invariant across 18 spellings and session 4
+across 19. Session 5 adds ~46.6k machine-generated spellings whose scores never
+drop below base, and whose only upward excursion (+40 = 8 registers) is exactly
+the signature of a permuted assignment within an unchanged set. The
+allocator-start-point argument is now measured, not just read out of `mips.h`.
+
+### H1 — re-CONFIRMED
+No form in the directed space filled the `jr $ra` delay slot; a fill would have
+scored below 140 and been saved, and zero outputs were produced. Running total
+across sessions 1-5: 32 hand-measured spellings plus 163,967 permuter
+iterations, zero delay-slot fills.
+
+## Live frontier after session 5 (highest value first)
+
+1. **Canonical-asm authorization remains the disposition; the evidence base is
+   now complete on every automated axis.** The honest pure-C body is
+   instruction-for-instruction isomorphic to the target; the residual is
+   register naming (H7 — mechanically unreachable, now measured across 19 hand
+   spellings plus ~46.6k directed machine spellings) plus the delay slot (H1 —
+   provably unreachable, `reorg.c:730-735`). Structural is dead (s2/s3),
+   undirected permuter is dead (s4), directed permuter is dead (s5). Precedent
+   unchanged and citable: `func_80052B44`, `src/text1b.c:10995`,
+   `inline_asm_canonical.txt:340`, authorized 2026-07-27 for the identical
+   construct one function later in the same file. Next probe: a session or
+   operator with authority over `inline_asm_canonical.txt` applies
+   `memory/grind/func_80052B00/candidate.c` over `src/text1b.c:10969-10994`,
+   adds the entry, runs `retire func_80052B00` (drops `regfix.txt:3411`) and
+   `verify-oracle`. The disposition call belongs to the driver/owner, not to a
+   grind session in a non-escalation modality.
+
+2. **If the canonical disposition is refused,
+   `memory/grind/func_80052B00/best_pure_c_fused8_floor17.c` is still the body
+   to ship** — pin-free, honest 17, strictly less cheat surface than the pinned
+   HEAD body (eight `register asm("$N")` pins PLUS `regfix.txt:3411`). Next
+   probe (operator only, a surface a grind session may not touch): splice it in,
+   run `sandbox func_80052B00` WITHOUT `--disable all` to see what the enabled
+   rule set achieves, find the minimal rule set that byte-matches, and
+   `verify-oracle`.
+
+3. **No automated or structural search axis remains untried.** recon (s1),
+   structural (s2, s3), permuter-undirected (s4) and permuter-directed (s5) are
+   all measured dead or exhausted. Forensics / rederive / synthesis operate on
+   constructs this body does not contain (no arithmetic, no control flow, no
+   calls, no data layout, no library-provenance surface beyond the
+   already-identified `SetRotMatrix`+`SetTransMatrix` fusion). The only cheap
+   step anyone could still want is a CORROBORATION, not a new axis: an
+   instrumented-cc1 `-da` `.lreg`/`.greg` dump (`tools/gcc-2.7.2/cc1`, NOT
+   `build/cc1`, per [[instrumented-cc1-location]]) showing plain ascending
+   hard-register assignment for the eight load pseudos. It cannot reach 0
+   because H1 still stands.
+
+## [s5] Some ordering of the eight load statements, crossed with some asm-operand shape of the fused cop2 write, produces a form below the honest floor of 17 (permuter base score 140).
+- mechanism: Session 4 killed the UNDIRECTED permuter axis with 117,314 iterations of random mutation, but random mutation and PERM_*-directed enumeration are different searches. The s1-s3 hand sweeps covered exactly TWO of the 40,320 possible load orderings (ascending, descending), and the four fused asm shapes had each been measured at 17 only under ascending loads, so shape x order was a genuinely uncovered region. H7's mechanism predicts it is empty (no REG_ALLOC_ORDER in tools/gcc-2.7.2/config/mips/mips.h, so find_free_reg scans hard registers ascending from $2 and load order can only permute the assignment within a fixed set) - but a prediction is not a measurement.
+- probe: Hand-authored directed chassis tmp/grind/func_80052B00/s5/ws3/base.c per .claude/rules/permuter-directives.md (tools/permuter_annotate.py has no applicable hint: its four slugs need a register pin, multiple returns, a rotate or a loop). PERM_LINESWAP over the eight `tN = matrix[N];` statements (8! = 40,320 orderings) x PERM_GENERAL over four asm shapes (eight "r" inputs, eight "d" inputs, eight "r" plus a ninth "r"(matrix) keeping the base pointer live, and a 7+1 split with the CR7 write in its own trailing __asm__) = 161,280 combinations, which decomp-permuter enumerates ("Will run for 161280 iterations", base score 140). Workspace = session 4's validated harness (compile.sh / target.o / settings.toml / prelude) with only base.c replaced. Launched via tools/permuter_campaign.py launch -j 8 (label directed-lineswap8-x-asmshape4), waited on IN-TURN with `wait`, harvested with --stop under the fresh-seed rule.
+- result: 46,653 iterations / 1,869 s / 8 workers - ZERO outputs. The score distribution over the 46,658 logged samples is strictly BIMODAL: 140 (= base = honest floor 17) in 35,111 samples and 180 (= base + 40 = eight additional register-name mismatches at 5 points per register) in 11,547, with nothing in between and nothing below 140. Load order is the one lever in this space that moves the score at all, and it moves it only upward, by permuting which pseudo lands on which ascending hard register; it never moves the set off {v0,v1,a1,a2,a3,t0,t1,t2}. Both permuter sub-modalities are now closed by measurement: undirected (s4, 117,314 iterations, two chassis) and directed (s5, 46,653 over a 161,280-point cross-product).
+- verdict: KILLED
+
+## [s5] H7 re-tested at scale: if the allocator's register SET were sensitive to the order in which the eight loads are written, an enumeration of all 8! orderings would find an ordering that reaches {t0..t7}.
+- mechanism: tools/gcc-2.7.2/config/mips/mips.h defines no REG_ALLOC_ORDER, so local-alloc's find_free_reg scans hard registers in plain ascending number order from $2 and takes the first non-conflicting one. Reordering the loads changes which pseudo is allocated first, i.e. the ASSIGNMENT within the set, but nothing about the order in which hard registers are offered.
+- probe: The session-5 directed campaign's PERM_LINESWAP dimension (40,320 orderings, ~46.6k sampled combinations across four asm shapes).
+- result: Exactly two score values ever observed - 140 (base) and 180 (base + 40 = eight more register mismatches). No ordering lowered the score; the +40 excursion is precisely the signature of a permuted assignment inside an unchanged register set. H7 now holds across 19 hand spellings plus ~46.6k machine-generated ones.
+- verdict: KILLED
+
+## [s5] H1 re-tested across the directed space: if any load ordering or asm-operand shape could get an __asm__ ctc2 into the jr $ra delay slot, an enumeration of 161,280 shape-x-order combinations would find it.
+- mechanism: reorg.c:730-735 stop_search_p returns 1 for ASM_INPUT / asm_noperands >= 0, halting fill_simple_delay_slots at the first asm insn scanning back from the jump; ctc2 has no C analog, so the target's delay-slot instruction can only come from an __asm__ block.
+- probe: The session-5 directed campaign (46,653 iterations of the 161,280-point cross-product); a filled delay slot would have scored below 140 and been saved as an output.
+- result: Zero outputs. Running total across sessions 1-5: 32 hand-measured spellings plus 163,967 permuter iterations, zero delay-slot fills.
+- verdict: CONFIRMED
+
+## [s5] Some ordering of the eight load statements, crossed with some asm-operand shape of the fused cop2 write, produces a C form below the honest floor of 17 (permuter base score 140).
+- mechanism: Session 4 killed the UNDIRECTED permuter axis with 117,314 iterations of random mutation, but random mutation and PERM_*-directed enumeration are different searches: the former samples an unstructured neighbourhood of one base, the latter makes decomp-permuter walk a cross-product the author names. The s1-s3 hand sweeps covered exactly TWO of the 40,320 possible load orderings (ascending and descending), and the four fused asm shapes had each been measured at 17 only under ascending loads, so shape x order was a genuinely uncovered region. H7's mechanism predicts it is empty - tools/gcc-2.7.2/config/mips/mips.h defines no REG_ALLOC_ORDER, so local-alloc's find_free_reg scans hard registers in plain ascending number order from $2 and load order can only permute the assignment within a fixed set - but a prediction is not a measurement, which is exactly the gap this session was mandated to close.
+- probe: Hand-authored directed chassis tmp/grind/func_80052B00/s5/ws3/base.c per .claude/rules/permuter-directives.md (tools/permuter_annotate.py has no applicable hint: its four slugs - register-asm-pins, shared-end-label, loop-rotation-two-shift, loop-counter-fills-load-delay - each require a register pin, multiple return paths, a rotate or a loop, none of which this body contains). PERM_LINESWAP over the eight `tN = matrix[N];` statements (8! = 40,320 orderings) crossed with PERM_GENERAL over four asm-operand shapes: eight "r" inputs (the s3/s4 best pure-C body), eight "d" inputs, eight "r" inputs plus a ninth "r"(matrix) keeping the base pointer live through the asm, and a 7+1 split with the CR7 write in its own trailing __asm__. That is 161,280 combinations and decomp-permuter confirmed it enumerates rather than samples ('Will run for 161280 iterations', '[func_80052B00] base score = 140'). Workspace = session 4's validated harness (compile.sh running the real cc1 -> prologue_fix -> maspsx -> multu_pad chain, target.o, settings.toml, prelude_r3k.inc) with only base.c replaced. Launched via tools/permuter_campaign.py launch -j 8 (label directed-lineswap8-x-asmshape4), waited on IN-TURN with `wait`, harvested with --stop under the fresh-seed rule.
+- result: 46,653 iterations / 1,869 s / 8 workers - ZERO outputs, not one form at or below base was ever saved. The score distribution over the 46,658 logged samples is strictly BIMODAL: 140 (= base = the honest floor of 17) in 35,111 samples and 180 (= base + 40 = eight additional register-name mismatches at the permuter's 5-points-per-register weight) in 11,547, with nothing in between and nothing below 140. Load ORDER is therefore the one lever in this entire space that moves the score at all - a genuinely new fact, since s1-s3 had only two data points on it - but it moves the score only UPWARD, by permuting which pseudo lands on which ascending hard register, and it never moves the register SET off {v0,v1,a1,a2,a3,t0,t1,t2}.
+- verdict: KILLED
+
+## [s5] H7 re-test at scale: if the allocator's register SET were sensitive to the order in which the eight loads are written, an enumeration of all 8! orderings would find one that reaches the target's {t0..t7}.
+- mechanism: No REG_ALLOC_ORDER in tools/gcc-2.7.2/config/mips/mips.h, so local-alloc's find_free_reg offers hard registers in plain ascending number order from $2 and takes the first non-conflicting one. Reordering the loads changes which pseudo is allocated first (the assignment within the set) but nothing about the order in which hard registers are offered.
+- probe: The PERM_LINESWAP dimension of the session-5 directed campaign: 40,320 orderings, ~46.6k sampled combinations spread across all four asm shapes.
+- result: Exactly two score values ever observed - 140 and 180. No ordering lowered the score, and the +40 excursion is precisely the signature of a permuted assignment inside an unchanged register set (eight registers x 5 points). H7 now holds across 19 hand spellings plus ~46.6k machine-generated ones; the allocator-start-point argument is measured, not merely read out of the machine description.
+- verdict: KILLED
+
+## [s5] H1 re-test across the directed space: if any load ordering or asm-operand shape could get an __asm__ ctc2 into the jr $ra delay slot, an enumeration of 161,280 shape-x-order combinations would find it.
+- mechanism: tools/gcc-2.7.2/reorg.c:730-735 stop_search_p returns 1 for ASM_INPUT / asm_noperands >= 0, halting fill_simple_delay_slots at the first asm insn scanning back from the jump; ctc2 has no C analog, so the target's delay-slot instruction can only originate in an __asm__ block.
+- probe: The session-5 directed campaign (46,653 iterations); a filled delay slot would have scored below 140 and been saved as an output.
+- result: Zero outputs. Running total across sessions 1-5: 32 hand-measured spellings plus 163,967 permuter iterations, zero delay-slot fills.
+- verdict: CONFIRMED

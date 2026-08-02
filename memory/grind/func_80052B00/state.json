@@ -1,7 +1,7 @@
 {
  "func": "func_80052B00",
  "file": "text1b",
- "session_count": 4,
+ "session_count": 5,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -27,12 +27,18 @@
    "floor": 17,
    "modality": "permuter",
    "headline": "Permuter axis KILLED by measurement: 117,314 iterations across two structurally distinct chassis produced zero forms below the honest floor of 17 (one score-tie of dead-local noise); floor unmoved at "
+  },
+  {
+   "session": 5,
+   "floor": 17,
+   "modality": "permuter",
+   "headline": "Directed-permuter sub-modality KILLED by measurement: an exhaustively-defined 161,280-point cross-product (all 8! load orderings x 4 asm-operand shapes) yielded zero forms below the honest floor of 17"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Canonical-asm authorization under the GTE-leaf carve-out remains the disposition, and session 4 widens the evidence base by one more modality without changing the picture.",
-   "mechanism": "gte-wrapper-misroute-park is a no-C-form-by-construction carve-out (same class as jtbl-infra in no-new-park-categories), orthogonal to the scan_hand_coded S1-S8 tiers. The honest pure-C body is instruction-for-instruction isomorphic to the target; the whole residual is register naming (H7, mechanically unreachable - no REG_ALLOC_ORDER in tools/gcc-2.7.2/config/mips/mips.h, 19 spellings measured) plus the delay slot (H1, provably unreachable - reorg.c:730-735, 32 hand spellings + 117,314 permuter iterations). Precedent is in hand and citable: func_80052B44, src/text1b.c:10995, inline_asm_canonical.txt:340, authorized 2026-07-27 for the identical construct one function later in the same file.",
+   "hypothesis": "Canonical-asm authorization under the GTE-leaf carve-out remains the disposition, and session 5 closes the last uncovered corner of the automated search space without changing the picture.",
+   "mechanism": "gte-wrapper-misroute-park is a no-C-form-by-construction carve-out (same class as jtbl-infra in no-new-park-categories), orthogonal to the scan_hand_coded S1-S8 tiers. The honest pure-C body is instruction-for-instruction isomorphic to the target; the whole residual is register naming (H7 - mechanically unreachable, no REG_ALLOC_ORDER in tools/gcc-2.7.2/config/mips/mips.h, now measured across 19 hand spellings plus ~46.6k directed machine spellings) plus the delay slot (H1 - provably unreachable, reorg.c:730-735, 32 hand spellings plus 163,967 permuter iterations). Precedent is in hand and citable: func_80052B44, src/text1b.c:10995, inline_asm_canonical.txt:340, authorized 2026-07-27 for the identical construct one function later in the same file.",
    "next_probe": "A session or operator holding authority over inline_asm_canonical.txt applies memory/grind/func_80052B00/candidate.c over src/text1b.c:10969-10994, adds the canonical entry, runs `retire func_80052B00` (drops regfix.txt:3411) and `verify-oracle`. The disposition call belongs to the driver/owner; a grind session in a non-escalation modality must not self-authorize it."
   },
   {
@@ -41,9 +47,9 @@
    "next_probe": "Operator step (a grind session may not touch these surfaces): splice the fused body into src/text1b.c, measure `sandbox func_80052B00` WITHOUT --disable all to see what the enabled rule set actually achieves, determine the minimal rule set that reaches byte-match, and run a full `verify-oracle`."
   },
   {
-   "hypothesis": "No automated or structural search axis remains; the only untaken cheap step is a corroboration, not a new axis.",
-   "mechanism": "Structural (s2/s3) and permuter (s4) are both measured dead. Forensics / rederive / synthesis operate on constructs this body does not contain: 8 array reads feeding 8 cop2 writes, with no arithmetic, no control flow, no calls, no data layout, and no library-provenance surface beyond the already-identified SetRotMatrix+SetTransMatrix fusion. Both residual components now have compiler-source mechanisms rather than only measurements.",
-   "next_probe": "If a later modality wants one more measurement rather than a mechanism: dump the RTL allocation with the instrumented cc1 (tools/gcc-2.7.2/cc1 -da, NOT build/cc1, per instrumented-cc1-location) and read the .lreg/.greg local-alloc quantity assignments for the eight load pseudos - expect plain ascending-hard-reg-number assignment with no conflicts, i.e. nothing to steer. Do NOT run another permuter campaign here: two chassis and 117,314 iterations are on the record."
+   "hypothesis": "No automated or structural search axis remains untried; the only cheap step left anywhere is a corroboration, not a new axis.",
+   "mechanism": "Structural (s2/s3), permuter-undirected (s4) and permuter-directed (s5) are all measured dead. Forensics / rederive / synthesis operate on constructs this body does not contain: 8 array reads feeding 8 cop2 writes, with no arithmetic, no control flow, no calls, no data layout, and no library-provenance surface beyond the already-identified SetRotMatrix+SetTransMatrix fusion. Both residual components have compiler-source mechanisms rather than only measurements.",
+   "next_probe": "If a later modality wants one more measurement rather than a mechanism: dump the RTL allocation with the instrumented cc1 (tools/gcc-2.7.2/cc1 -da, NOT build/cc1, per instrumented-cc1-location) and read the .lreg/.greg local-alloc quantity assignments for the eight load pseudos - expect plain ascending-hard-reg-number assignment with no conflicts, i.e. nothing to steer. Do NOT run a third permuter campaign here: three chassis, both sub-modalities and 163,967 iterations are on the record."
   }
  ],
  "judge_constraints": [],

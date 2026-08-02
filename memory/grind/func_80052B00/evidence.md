@@ -538,3 +538,112 @@ not by argument.
 - [s4] Modality ladder status after this session: recon (s1), structural (s2 and s3, the second of which moved the floor 18 -> 17 by fusing the eight cop2 writes into one __asm__), and permuter (s4) are all measured dead or exhausted. The residual 17 points remain exactly (a) 16 instructions naming the wrong GPRs and (b) the one unfilled jr $ra delay slot, both with compiler-source mechanisms (no REG_ALLOC_ORDER in mips.h; reorg.c stop_search_p).
 
 - [s4] This session did NOT touch regfix.txt, asmfix.txt, inline_asm_canonical.txt, engine/, tools/, the Makefile, any linker script, or src/. Working-tree delta is the three func_80052B00 ledger files, one new rejected/ form, and metrics/events.jsonl (engine-written).
+
+## Session 5 (permuter — DIRECTED, 2026-08-01) — floor 17, unmoved; the directed permuter sub-modality is now measured dead too
+
+Session 4 killed the UNDIRECTED permuter axis (117,314 iterations of random
+mutation across two chassis). The driver mandated the permuter modality again,
+and the session-5 brief specifies the *directed* variant ("Directed permuter on
+the diverging region: tools/permuter_annotate.py --func <f> --hint <rule-slug>").
+Those are genuinely different searches — random mutation samples an
+unstructured neighbourhood, whereas the PERM_* macros make decomp-permuter
+ENUMERATE a cross-product the author chooses — so session 5 is not a re-run of
+session 4, and the standing "do not run another permuter campaign" note from s4
+is now discharged for both sub-modalities rather than left as a one-sided claim.
+
+### tools/permuter_annotate.py has no applicable hint (recorded so nobody retries it)
+`--list-hints` offers exactly four slugs: `register-asm-pins`,
+`shared-end-label`, `loop-rotation-two-shift`, `loop-counter-fills-load-delay`.
+Every one of them requires a construct func_80052B00 does not contain (a
+register pin — forbidden here anyway; multiple return paths; a rotate; a loop).
+The tool is an explicit proof-of-concept with an intentionally small catalog, so
+the directed chassis was hand-authored per `.claude/rules/permuter-directives.md`
+instead. That is the sanctioned route, not a workaround; the annotate helper is
+a convenience layer over the same macros.
+
+### Chassis 3 — `directed-lineswap8-x-asmshape4` (the exhaustive cross-product)
+`tmp/grind/func_80052B00/s5/ws3/base.c`, built by copying session 4's validated
+workspace (`compile.sh`, `target.o`, `settings.toml`, `prelude_r3k.inc`) and
+replacing only `base.c`:
+
+- `PERM_LINESWAP(...)` over the eight load statements ⇒ all **8! = 40,320**
+  orderings of `tN = matrix[N];`.
+- `PERM_GENERAL(...)` over **four** asm-operand shapes of the fused cop2 write:
+  eight `"r"` inputs (the s3/s4 best pure-C body), eight `"d"` inputs, eight
+  `"r"` inputs plus a ninth `"r"(matrix)` keeping the base pointer live through
+  the asm, and a 7+1 split with the CR7 write in its own trailing `__asm__`.
+
+Cross-product = **161,280 combinations**, and decomp-permuter confirmed it is
+enumerating rather than sampling: the log's first lines read
+`Will run for 161280 iterations.` and `[func_80052B00] base score = 140`.
+Each of the four asm shapes had been measured individually at 17 in session 3;
+what was never tested — by the s1-s3 hand sweeps (which covered exactly TWO load
+orders, ascending and descending) or by s4's undirected campaigns — is whether
+any of them improves under some OTHER load ordering.
+
+### Result — zero outputs, and a strictly BIMODAL score distribution
+46,653 iterations / 1,869 s / 8 workers, harvested with `--stop` under the
+fresh-seed rule (~28 min past a fresh seed with no novel find). **Zero outputs**
+— not one form at or below the base score was ever saved.
+
+Histogram over the 46,658 scores logged
+(`tmp/grind/func_80052B00/s5/score_histogram.txt`):
+
+| score | samples | meaning |
+|---|---|---|
+| **140** | 35,111 | = base = the honest floor of 17 |
+| **180** | 11,547 | base + 40 = eight additional register-name mismatches at the permuter's 5-points-per-register weight |
+| anything else | **0** | — |
+
+Nothing between 140 and 180, and **nothing below 140**. This is a sharper
+version of session 4's "no interior" observation and it says something new and
+specific: load ORDER is *not* inert here — it is the only thing in this whole
+space that moves the score — but it moves it only UP, and only by permuting
+which pseudo lands on which ascending hard register. It never moves the register
+SET off `{v0,v1,a1,a2,a3,t0,t1,t2}`. That is precisely what H7's mechanism
+predicts: with no `REG_ALLOC_ORDER` in `tools/gcc-2.7.2/config/mips/mips.h`,
+local-alloc's `find_free_reg` scans hard registers in plain ascending number
+order starting at `$2` and takes the first non-conflicting one, and a call-free
+leaf offers neither a conflict nor a copy suggestion to move that start point.
+Reordering the loads reshuffles the *assignment* within a fixed set; it cannot
+change the set.
+
+### Artifacts
+- `tmp/grind/func_80052B00/s5/ws3/base.c` — the directed chassis
+- `tmp/grind/func_80052B00/s5/ws3/campaign.log` — full campaign log
+- `tmp/grind/func_80052B00/s5/score_histogram.txt` — the histogram above
+- `memory/grind/func_80052B00/rejected/directed-perm-lineswap8-x-asmshape4-nothing-below-140.c`
+
+- [s5] Honest floor unmoved at 17. No src/ edits at any point this session: all measurement ran in a standalone permuter workspace under tmp/, and `git status --porcelain` showed only metrics/events.jsonl both before and after.
+
+- [s5] DIRECTED PERMUTER AXIS KILLED BY MEASUREMENT. Chassis `directed-lineswap8-x-asmshape4`: PERM_LINESWAP over the eight load statements (8! = 40,320 orderings) crossed with PERM_GENERAL over four asm-operand shapes (eight "r" inputs / eight "d" inputs / eight "r" plus a ninth "r"(matrix) / a 7+1 split with the CR7 write in its own trailing __asm__) = 161,280 combinations, which decomp-permuter enumerates exhaustively ("Will run for 161280 iterations", base score 140). 46,653 iterations / 1,869 s / 8 workers / ZERO outputs; harvested with --stop under the fresh-seed rule.
+
+- [s5] The score distribution over the directed space is strictly BIMODAL: 140 (= base = honest floor 17) in 35,111 logged samples and 180 (= base + 40 = eight extra register-name mismatches at 5 points per register) in 11,547, with nothing in between and nothing below 140. New information beyond s4's "no interior": load ORDER is the one lever in this space that moves the score at all, and it moves it only UPWARD, by permuting which pseudo lands on which ascending hard register. It never moves the register SET off {v0,v1,a1,a2,a3,t0,t1,t2}, exactly as H7's no-REG_ALLOC_ORDER / ascending-find_free_reg mechanism predicts.
+
+- [s5] The s1-s3 hand sweeps covered exactly TWO of the 40,320 load orderings (ascending and descending). Session 5 covered ~46.6k of the 161,280 cross-product points (~29%), spread across all four asm shapes. Combined with s4's 117,314 undirected iterations, the permuter modality has now consumed 163,967 iterations on this function across THREE chassis and two sub-modalities, with a single score-TIE (s4's dead-local noise form) as the entire yield.
+
+- [s5] tools/permuter_annotate.py is NOT applicable to this function and a future session should not spend a turn on it: `--list-hints` offers only register-asm-pins, shared-end-label, loop-rotation-two-shift and loop-counter-fills-load-delay, each of which requires a construct this body does not contain (a register pin — forbidden here regardless; multiple return paths; a rotate; a loop). The catalog is an explicit proof-of-concept. Hand-authoring the PERM_* chassis per .claude/rules/permuter-directives.md is the sanctioned route.
+
+- [s5] Reusable mechanic for any future directed campaign in this repo: session 4's workspace is a drop-in harness — copy tmp/grind/func_80052B00/s4/ws (compile.sh, target.o, settings.toml, prelude_r3k.inc), delete base.c/base.o, write the PERM_*-annotated base.c, and launch with tools/permuter_campaign.py. permuter_campaign.py launch reports `base_score: null` for a PERM_*-annotated base (it cannot pre-score a file containing macros), which is NOT an error — the real base score appears in campaign.log as `[func_80052B00] base score = 140`.
+
+- [s5] Both prior campaigns (s4 ws and ws2) and this one confirmed dead via `permuter_campaign.py status` (alive: false, registered_active: false) before this outcome was written; harvest --stop reaped 9 processes. No campaign outlives the session.
+
+- [s5] This session did NOT touch regfix.txt, asmfix.txt, inline_asm_canonical.txt, engine/, tools/, .claude/rules/, the Makefile, any linker script, or src/. No queue done, no retire, no commit.
+
+- [s5] [s5] Honest floor unmoved at 17. No src/ edits at any point: all measurement ran in a standalone permuter workspace under tmp/, and `git status --porcelain` showed only metrics/events.jsonl both before and after.
+
+- [s5] [s5] DIRECTED PERMUTER AXIS KILLED BY MEASUREMENT. Chassis `directed-lineswap8-x-asmshape4`: PERM_LINESWAP over the eight load statements (8! = 40,320 orderings) crossed with PERM_GENERAL over four asm-operand shapes (eight "r" inputs / eight "d" inputs / eight "r" plus a ninth "r"(matrix) / a 7+1 split with the CR7 write in its own trailing __asm__) = 161,280 combinations, which decomp-permuter enumerates exhaustively ('Will run for 161280 iterations', base score 140). 46,653 iterations / 1,869 s / 8 workers / ZERO outputs; harvested with --stop under the fresh-seed rule after ~28 min with no novel find.
+
+- [s5] [s5] The score distribution over the directed space is strictly BIMODAL: 140 (= base = honest floor 17) in 35,111 logged samples and 180 (= base + 40 = eight extra register-name mismatches at 5 points per register) in 11,547, with nothing in between and nothing below 140. New information beyond s4's 'no interior' finding: load ORDER is the one lever in this space that moves the score at all, and it moves it only UPWARD, permuting which pseudo lands on which ascending hard register without ever moving the set off {v0,v1,a1,a2,a3,t0,t1,t2} - exactly as H7's no-REG_ALLOC_ORDER / ascending-find_free_reg mechanism predicts.
+
+- [s5] [s5] The s1-s3 hand sweeps covered exactly TWO of the 40,320 load orderings (ascending and descending). Session 5 covered ~46.6k of the 161,280 cross-product points (~29%) spread across all four asm shapes. Combined with s4's 117,314 undirected iterations, the permuter modality has now consumed 163,967 iterations on this function across THREE chassis and BOTH sub-modalities, with a single score-TIE (s4's dead-local noise form) as the entire yield.
+
+- [s5] [s5] tools/permuter_annotate.py is NOT applicable here and a future session should not spend a turn on it: `--list-hints` offers only register-asm-pins, shared-end-label, loop-rotation-two-shift and loop-counter-fills-load-delay, each requiring a construct this body does not contain (a register pin - forbidden here regardless; multiple return paths; a rotate; a loop). Its catalog is an explicit proof-of-concept, so hand-authoring the PERM_* chassis per .claude/rules/permuter-directives.md is the sanctioned route, not a workaround.
+
+- [s5] [s5] Reusable mechanic for any future directed campaign in this repo: session 4's workspace is a drop-in harness - copy tmp/grind/func_80052B00/s4/ws (compile.sh, target.o, settings.toml, prelude_r3k.inc), delete base.c/base.o, write the PERM_*-annotated base.c, launch with tools/permuter_campaign.py. Note that `launch` reports "base_score": null for a PERM_*-annotated base (it cannot pre-score a file containing macros); that is NOT an error - the real base score appears in campaign.log as '[func_80052B00] base score = 140'.
+
+- [s5] [s5] All three permuter campaigns on this function (s4 ws, s4 ws2, s5 ws3) confirmed dead via `permuter_campaign.py status` (alive: false, registered_active: false) before this outcome was written; harvest --stop reaped 9 processes. No campaign outlives the session.
+
+- [s5] [s5] Modality ladder status: recon (s1), structural (s2 and s3, the latter moving the floor 18 -> 17 by fusing the eight cop2 writes into one __asm__), permuter-undirected (s4) and permuter-directed (s5) are all measured dead or exhausted. The residual 17 points remain exactly (a) 16 instructions naming the wrong GPRs and (b) the one unfilled jr $ra delay slot, both with compiler-source mechanisms (no REG_ALLOC_ORDER in mips.h; reorg.c:730-735 stop_search_p).
+
+- [s5] [s5] This session did NOT touch regfix.txt, asmfix.txt, inline_asm_canonical.txt, engine/, tools/, .claude/rules/, the Makefile, any linker script, or src/. No queue done, no retire, no commit. No form from this session is proposed: the directed chassis is a measurement vehicle whose PERM_* macros are not compilable C, and its best expansion is byte-for-byte the already-banked best_pure_c_fused8_floor17.c.

@@ -98,6 +98,28 @@
  * and a minimal standalone TU reproduces this function's in-tree codegen
  * exactly (H9), so TU context is not a variable here. Full data: evidence.md
  * Session 4, hypotheses.md H8/H9, tmp/grind/func_80052B00/s4/.
+ *
+ * SESSION 5 (permuter — DIRECTED, 2026-08-01) — form UNCHANGED; the last
+ * uncovered corner of the automated search space is now measured empty.
+ * Session 4 killed the UNDIRECTED permuter axis; session 5 killed the DIRECTED
+ * one, which is a different search: PERM_* macros make decomp-permuter
+ * ENUMERATE a cross-product rather than randomly mutate one base. The chassis
+ * (tmp/grind/func_80052B00/s5/ws3/base.c, hand-authored per
+ * .claude/rules/permuter-directives.md because permuter_annotate.py's four
+ * hints all need a construct this body lacks) crossed PERM_LINESWAP over the
+ * eight load statements — all 8! = 40,320 orderings, where the s1-s3 hand
+ * sweeps had covered exactly TWO — with PERM_GENERAL over four asm-operand
+ * shapes, a 161,280-point space. 46,653 iterations / 1,869 s / 8 workers
+ * produced ZERO outputs, and the score distribution is strictly bimodal: 140
+ * (= base = the honest floor of 17) and 180 (= base + 40 = eight more
+ * register-name mismatches), nothing in between and nothing below. Load order
+ * is the one lever in that space that moves the score at all and it moves it
+ * only UPWARD, permuting which pseudo lands on which ascending hard register
+ * without ever moving the set off {v0,v1,a1,a2,a3,t0,t1,t2} — exactly what
+ * H7's no-REG_ALLOC_ORDER mechanism predicts. Running totals across sessions
+ * 1-5: 32 hand-measured spellings plus 163,967 permuter iterations, zero
+ * delay-slot fills and nothing below the honest floor. Full data: evidence.md
+ * §Session 5, hypotheses.md H10, tmp/grind/func_80052B00/s5/.
  */
 __asm__(
     ".set\tnoat\n"
