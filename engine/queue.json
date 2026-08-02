@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "saEft01Init",
-      "file": "system",
-      "distance": 18,
-      "verdict": "C",
-      "rules": 15,
-      "status": "active"
-    },
-    {
       "func": "func_80052B00",
       "file": "text1b",
       "distance": 18,
@@ -2301,6 +2293,15 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md \u2014 '2026-07-30 \u2014 func_8002EA24 (src/code6cac_b.c) \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE'"
     },
     {
+      "func": "saEft01Init",
+      "file": "system",
+      "distance": 18,
+      "verdict": "C",
+      "rules": 15,
+      "status": "parked",
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:2789 \u2014 '2026-08-01 \u2014 saEft01Init (src/system.c) \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE'"
+    },
+    {
       "func": "special_camera_set_win_cam",
       "file": "code6cac_b2_post",
       "distance": 510,
@@ -2537,14 +2538,14 @@
   ],
   "counts": {
     "total": 307,
-    "active": 247,
+    "active": 246,
     "by_status": {
-      "active": 247,
-      "parked": 60
+      "active": 246,
+      "parked": 61
     },
     "by_verdict": {
-      "C": 96,
       "ASM-PARTIAL": 44,
+      "C": 95,
       "ASM-SUSPECT": 107
     }
   }

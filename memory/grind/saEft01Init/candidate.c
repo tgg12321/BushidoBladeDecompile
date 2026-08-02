@@ -311,7 +311,42 @@
  *     simulable function) and INVERT it to get the required LUID order,
  *     instead of sweeping more C spellings.
  *
- * NEXT: hypotheses.md F29.  The question is no longer "which tie-break" —
+ * ===========================================================================
+ * SESSION 17 (escalation) — BODY UNCHANGED (7 / 91); FUNCTION DISPOSED
+ * ===========================================================================
+ * Re-applied this body to src/system.c and re-measured: exactly 7 / 91,
+ * rules_dropped 15.  One genuinely un-tried axis was found and closed, then
+ * the driver-mandated disposition was reached.
+ *
+ *   * NEW AXIS — the INDEX globals (every prior global-spelling probe, s1's H1
+ *     and s13's permuter find, respelled the TABLE reference D_800A125C; the
+ *     index reads had never been respelled through the two separate byte
+ *     globals src/system.c already declares).  arg5's index alone via
+ *     D_800A1495 = 14 / 92.  BOTH indices via globals, dropping the idx_1494
+ *     base = 24 / 89 — and that 89 is the useful number: two instructions
+ *     SHORT of target, i.e. target demonstrably DOES hoist an index base, so
+ *     the original held the two indices in ONE array, not two scalars.  The
+ *     three hoisted bases are structurally required by target's instruction
+ *     count, not merely score-preferred.  Banked as
+ *     rejected/arg5-index-via-separate-D_800A1495-global-14-92.c and
+ *     rejected/both-indices-via-globals-drops-idx-base-24-89.c.
+ *   * scan_hand_coded --single saEft01Init: tier=LOW, score 1/8, the lone hit
+ *     is S4 (front loads @ insn 46 — which IS this argument block, i.e. the
+ *     ordinary load_register_parameters shape).  No STRONG S1/S2/S6 signal.
+ *   * DISPOSITION: both endgame-lock AND-gates FAIL (LOW scan tier; and no
+ *     citable SOTN precedent is even possible because no construct CLOSES the
+ *     function — the floor is 7, not 0).  Per the owner's standing 2026-07-27
+ *     auto-ruling, filed
+ *     docs/grind/decisions.md:2789 "2026-08-01 — saEft01Init (src/system.c) —
+ *     OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED /
+ *     OWNER-ACCEPTED INCOMPLETE" and returned owner-gated.  The function is
+ *     parked terminally; NOTHING is pending on the owner.
+ *   * This is NOT a claim of unmatchability.  If the function is ever
+ *     un-parked, start at F29 (build and VALIDATE the sched1 replay simulator
+ *     against the four banked chassis dumps, then invert it) — not at another
+ *     argument-spelling sweep, and not at the permuter.
+ *
+ * NEXT (if un-parked): hypotheses.md F29.  The question is no longer "which tie-break" —
  * there is no live tie-break.  It is: what pure-C shape splits the idx[0]
  * chain across calls.c's store_one_arg boundary, giving the address chain a
  * statement-expanded position and the load a load_register_parameters

@@ -1809,3 +1809,131 @@ the named ones, and the arg3/arg5 spellings.
 - [s16] s15's class-tie-break inertness replicates on a THIRD chassis: every RANKDBG line in the ptr chassis' sched1 block window returns val=0, including both decisive comparisons (last=125 y=121 cls=3 x=93 cls2=3; last=121 y=119 cls=3 x=93 cls2=3).
 
 - [s16] New reusable tooling written this session: s16/blockdump.py (print the block from any -da dump), s16/probe.py (patch the do_timeout region of saEft01Init only, dump, print — anchored on the function so it cannot hit cpu_side_move_dir_4's identically-named label), s16/odiff.py (per-index sandbox-vs-target disassembly diff for any function), s16/collect.sh.
+
+## Session 17 (escalation) — measured, then DISPOSED
+
+Re-applied `memory/grind/saEft01Init/candidate.c` to `src/system.c` and
+re-measured: `sandbox saEft01Init --disable all` → **score 7, target_insns 91,
+build_insns 91, rules_dropped 15**. (HEAD's committed body — the pre-session-9
+two-named-args form without the wrapper — measures 18 / 91, so the candidate
+must be applied before any probe; do not measure against HEAD.)
+
+### H45 — KILLED (a genuinely un-tried axis, now closed on both halves)
+
+**Statement:** the second index read can be spelled through the SEPARATE byte
+global `D_800A1495` (which `src/system.c` already declares at line 778 and this
+function has never referenced) instead of through `idx_1494[1]`, and since two
+adjacent byte globals is a plausible ORIGINAL object model, this may reorder the
+argument block's address chains without paying the callee-save rotation that
+s13's table-global probe paid.
+
+**Mechanism:** every prior global-spelling probe in this ledger — s1's H1
+(`inline-globals-kills-hoisted-base-pointers`, 40 / 85) and s13's permuter find
+(`permuter-global-arg5-rotates-callee-save-map-17-92`) — respelled the TABLE
+reference `D_800A125C`. The INDEX reads had never been touched. Respelling only
+the index leaves both table bases hoisted, so the two allocnos that carry the
+callee-save map are untouched; only `idx_1494`'s own ref count moves.
+
+**Probe:** two variants, each a one-line edit on the candidate chassis, each
+scored with `sandbox saEft01Init --disable all`:
+ - p1 — arg5's index only: `debug_printf(..., arg4, tbl_125c[D_800A1495]);`
+ - p2 — both indices: `arg4 = tbl_125c[D_800A1494];` as well, so the hoisted
+   `u8 *idx_1494` disappears from the function entirely.
+
+**Result:** p1 = **14 / 92**. p2 = **24 / 89**. The candidate was restored and
+re-verified at 7 / 91 afterwards.
+
+**Verdict: KILLED.** p1 fails for the reason s13's table-global probe failed,
+one register earlier in the chain: the second reference to the array base is
+what gives `idx_1494` its two in-loop refs (five after the `do{}while(0)`
+`loop_depth` weighting), and dropping it to a single ref collapses that
+allocno's priority while the separate `%hi/%lo` chain for `D_800A1495` adds an
+instruction. Banked:
+`rejected/arg5-index-via-separate-D_800A1495-global-14-92.c` and
+`rejected/both-indices-via-globals-drops-idx-base-24-89.c`.
+
+### H46 — CONFIRMED (the useful half of H45's negative result)
+
+**Statement:** target's own instruction count tells us whether the original
+source held the two indices in ONE array/pointer or in TWO independent scalars.
+
+**Mechanism:** a hoisted base costs a prologue `lui`/`addiu` pair. If the
+original used two independent byte globals there would be no index base to
+hoist, and a faithful C spelling of that model would come out two instructions
+SHORTER than target.
+
+**Probe:** H45's p2 (both indices through globals, no `idx_1494` base).
+
+**Result:** **89 build insns against target's 91** — exactly two short, and the
+two missing instructions are the index base's `lui`/`addiu` pair. This is the
+same shape s1's H1 measured for the TABLE bases (85 vs 91) reproduced for the
+INDEX base.
+
+**Verdict: CONFIRMED.** All three hoisted bases (`tbl_11dc`, `idx_1494`,
+`tbl_125c`) are structurally REQUIRED by target's instruction count, not merely
+score-preferred. Any future session that is tempted to "simplify" the pointer
+block by inlining a global reference is contradicting a measured fact — the
+count moves against you before the score does.
+
+### Endgame-lock gate evaluation (the mandated work of an escalation session)
+
+**Gate 1 — hand-coded-asm signals: FAIL.** `python3 tools/scan_hand_coded.py
+--single saEft01Init` → `tier=LOW score=1/8`. The only signal set is S4 (four
+loads in an 8-insn window @ insn 46) and that window IS the `debug_printf`
+argument block, i.e. GCC 2.7.2's ordinary `load_register_parameters` shape, not
+a hand-written-asm artefact. None of the STRONG S1/S2/S6 signals fire. The
+engine's canonical gate routes the function **C**. The same gate was already
+ruled on directly for this function in the **2026-07-09 01:25** decision
+(`docs/grind/decisions.md:8`), which DENIED canonical-asm for the twin family
+`{cpu_side_move_dir_4, marionation_Exec, saEft01Init}` on three independently
+dispositive grounds; nothing measured since changes any input to it.
+
+**Gate 2 — in-hand SOTN-master precedent for the closing construct: FAIL.**
+There is no closing construct. The honest floor is 7 / 91, not 0, so no
+construct closes the function and no file+line citation exists to offer. (The
+candidate's one non-obvious construct, the `/* FAKE */`-annotated single
+`do { } while (0)` wrapper, is already covered by the owner's 2026-07-06 ruling
+and is a floor-LOWERING device, never claimed as a closing one. F23 — that it
+still owes a fresh adversarial `cheat-reviewer` — remains open but is moot for
+this disposition.)
+
+**What holds the byte-match on main:** 15 `regfix.txt` rules, lines 97–119; zero
+`asmfix.txt` rules; zero cheat-asm in this function's body. Two callee-save
+swaps + six prologue/epilogue stack-offset substs are downstream paperwork for
+the register rotation; the load-bearing residual is the 14-instruction argument
+-block `reorder` at line 113 plus the four `$2<->$3` / `$2<->$4` renames feeding
+it — exactly the 7 the sandbox charges.
+
+**Disposition:** both gates FAIL, which is the owner's pre-decided
+REFUSED / OWNER-ACCEPTED INCOMPLETE case under the standing 2026-07-27 ruling.
+Filed `docs/grind/decisions.md:2789` —
+`## 2026-08-01 — saEft01Init (src/system.c) — **OWNER-ESCALATION — RESOLVED BY
+STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**` — and
+returned `owner-gated`. The driver parks the function terminally; nothing is
+pending on the owner. This is expressly not a claim of unmatchability: per
+`no-compiler-divergence` and `difficult-is-not-impossible` the matching pure C
+exists; what is exhausted is this project's search of it across 17 sessions and
+six distinct modalities. If the function is ever un-parked, F29 (build and
+VALIDATE the sched1 replay simulator against the four banked chassis dumps, then
+invert it) is where the next session starts — not another argument-spelling
+sweep and not the permuter.
+
+- [s17] HEAD's committed body (the pre-session-9 two-named-args form, no wrapper) measures 18 / 91. memory/grind/saEft01Init/candidate.c must be applied to src/system.c before any probe; applied and re-measured this session at exactly score 7, target_insns 91, build_insns 91, rules_dropped 15.
+
+- [s17] tools/scan_hand_coded.py --single saEft01Init: tier=LOW, score=1/8. Only S4 set (4 loads in an 8-insn window @ insn 46). S1 multu pacing, S2 empty branch, S3 no-spills, S5 cluster, S6 BIOS jumptable, S7 unsaved $sN, S8 redundant mask all unset. 91 insns, 6 spills, 10 distinct regs.
+
+- [s17] What holds the byte-match on main: 15 regfix.txt rules, lines 97-119; zero asmfix.txt rules; zero cheat-asm in this function's body. Decomposition: 2 callee-save swaps ($16<->$18, $16<->$17) + 3 prologue stack-offset substs + 4 $2<->$3 / $2<->$4 renames over idx 35-42 + 1 subst '0($3)'->'0($2)' @44 + the 14-instruction reorder 36,35,37,38,39,40,44,43,41,45,46,47,48,42 @35-48 + 3 epilogue stack-offset substs + reorder 72,70,71 @70-72. The prologue/epilogue substs and callee-save swaps are downstream paperwork for the register rotation; the load-bearing residual is the argument-block reorder plus its four renames — exactly the 7 the sandbox charges.
+
+- [s17] NEW THIS SESSION (the index-global axis, never probed in 16 prior sessions): arg5's index via the separate global D_800A1495 = 14 / 92; both indices via globals (dropping the idx_1494 base) = 24 / 89. The 89 is the substantive finding — two instructions SHORT of target, so target demonstrably DOES hoist an index base and the original held the two indices in one array, not two scalars.
+
+- [s17] Exhaustion, from the ledger not asserted: 17 sessions; floor flat at 7 / 91 for nine consecutive sessions (s9-s17); six distinct modalities all measured dead on this residual (structural s2/s3/s11/s12, permuter s4/s5/s13/s14, forensics s6/s7/s15/s16, rederive s8/s9, synthesis s10, escalation s17); ~114,000 permuter iterations across four fresh-seed campaigns under two different objectives, including s14's re-aligned objective (REGALLOC 1 / REORDERING 2 / INSERTION-DELETION 4 via a PYTHONPATH shim, no write to tools/) which is monotone with the sandbox ACROSS chassis (23<->7, 29<->9) but still does not descend WITHIN the basin (31.7k iterations, only ties at 23, all four screening to sandbox exactly 7); 67 argument-block spellings over four rigid attractors (named-VALUE 7, named-ADDRESS 9, fully-inline 13, const/RTX_UNCHANGING_P 9); 60+ disproven forms banked in memory/grind/saEft01Init/rejected/.
+
+- [s17] Axes previously measured dead and banked, each with its own probe set: do{}while(0) wrapper EXTENT (7 forms, byte-inert both directions); arg3 tbl_11dc[D_800A11D5] spelling (8 forms, 10-15); arg1 / format-string address (3 forms, all 7); arg2 (costs an instruction, 90); pointer DECLARATION order (byte-inert — but INITIALISATION order is live and the banked order is the unique optimum, the five permutations scoring 8/11/11/12/12); MEM_IN_STRUCT_P via pointer-to-array retyping (6 forms, all 7); pre-loop global-store placement (4 forms); debug_printf's PROTOTYPE (varargs and K&R byte-identical to the fixed 5-arg form against three bodies); const / RTX_UNCHANGING_P measured to the dependence edge.
+
+- [s17] Forensic model of the residual (instrumented cc1, verified codegen-identical to the frozen build/cc1): rank_for_schedule's load/store dependence-CLASS tie-break is totally inert here (every in-block RANKDBG returns val=0 — 54/54, 49/49, and again on a third chassis); at sched1 the block's INSN_PRIORITYs are FLAT (16 of 19 picks carry LAUNCH_PRIORITY 0x7F000001 because sched.c:3985 + birthing_insn_p re-raise every register-birthing insn while reload_completed == 0), so order at sched1 = latency-queue release + INSN_LUID and nothing else; and the expand-time split target needs is ALREADY achieved by the named-ADDRESS-pointer form (address chain at the block's three earliest LUIDs, load deferred to load_register_parameters) which still scores 9. The residual is 100% a scheduling outcome with no remaining C-visible input.
+
+- [s17] The identical 14-instruction block with the identical target order and the same early-lw-a3 failure occurs in two other queue functions (cpu_side_move_dir_4, marionation_Exec), one of which names both arguments and has no do{}while(0) wrapper. Per the 2026-07-09 ruling cluster precedent is disqualified as authorization evidence; recorded only so that a lever found on any one of the three is re-tried on the other two.
+
+- [s17] DISPOSITION FILED: docs/grind/decisions.md line 2789 — '## 2026-08-01 — saEft01Init (src/system.c) — **OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**'. Both gates' evidence and the full exhaustion record are in the entry. Nothing is pending on the owner.
+
+- [s17] src/system.c was reverted to HEAD before finishing, so the working tree stays oracle-clean for the driver's park commit; the 7 / 91 body is preserved in memory/grind/saEft01Init/candidate.c with an s17 header section.

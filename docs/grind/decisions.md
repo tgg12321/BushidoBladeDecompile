@@ -2785,3 +2785,208 @@ THE SECOND CHANGE -- declaring D_80101E62 as an array -- I scrutinised hardest, 
 THE REMAINING CHANGES ARE ALL CHEAT REMOVALS, which is the direction policy wants. The `volatile` marker on D_80101E70 is deleted: session 2's tree-wide census found the variable has only two writers, both ordinary in-file code, and every interrupt-handler registration in the project installs a different address -- so it never qualified for the interrupt carve-out and was a coercion. The previously committed register pins and the compiler barrier are gone. The one build-rule entry for this function (regfix.txt:3407) is deleted; I confirmed no rule for this function remains in regfix.txt, asmfix.txt or inline_asm_canonical.txt, and the full image still matches with it gone.
 
 BOTTOM LINE: pure C a human could have written from a description of the behaviour, zero rules, zero assembly, zero pins, zero volatile, zero fake constructs, byte-identical whole-image build. It clears the project's completion bar. One note for the operator, not a blocker on this ruling: the sibling function func_80036FD4 in the same file still carries its own compiler barrier and is a separate outstanding queue item -- the twelve stripped constructs the sandbox reports are file-wide neighbours, none of them in this function's body.
+
+## 2026-08-01 — saEft01Init (src/system.c) — **OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**
+
+Filed by grind session 17 (escalation modality) under the owner's standing
+2026-07-27 both-gates-fail auto-ruling (`.claude/rules/endgame-lock-disposition.md`).
+**Nothing is pending on the owner.** Both endgame-lock AND-gates were evaluated
+this session and both FAIL, which is the pre-decided REFUSED / OWNER-ACCEPTED
+INCOMPLETE case. The driver parks saEft01Init terminally and the queue advances.
+
+### What the function is
+
+`saEft01Init` is an auto-generated splat misnomer. The 2026-07-09 provenance
+census (100% of non-reloc-masked bits across the whole module .text) identified
+it as **Sony PsyQ 4.0 LIBCD/BIOS `CD_datasync`** at 0x80081BB0 — verbatim-linked
+Sony library code, not game code. It polls `sys_VSync` against a deadline, and
+on timeout prints a diagnostic through `debug_printf` and clears the CD IRQ.
+
+### Gate 1 — canonical-asm hand-coded signals: **FAIL**
+
+`python3 tools/scan_hand_coded.py --single saEft01Init` (run this session):
+
+```
+HAND_CODED: tier=LOW  score=1/8  (saEft01Init, 91 insns)
+  Reason: no strong hand-coded indicators
+  [ ] S1 multu pacing      only 0 multu/mflo pair(s)
+  [ ] S2 empty branch      no empty-body branches
+  [ ] S3 no spills         91 insns, 6 spills, 10 distinct regs
+  [X] S4 front loads       4 loads in 8-insn window @ insn 46
+  [ ] S5 cluster           no high-similarity siblings (jaccard < 0.5)
+  [ ] S6 BIOS jumptable    no BIOS jumptable call pattern
+  [ ] S7 unsaved $sN use   all callee-save uses have $sp save
+  [ ] S8 redundant mask    no redundant mask-before-shift
+```
+
+Tier LOW, 1/8, and the single hit is S4 — which is not one of the STRONG
+S1/S2/S6 signals `hand-coded-asm-recognition` requires. S4 firing at insn 46 is
+in fact the `debug_printf` argument block itself, i.e. the ordinary GCC 2.7.2
+`load_register_parameters` shape, not a hand-written-asm artefact. The engine's
+canonical gate independently routes this function **C**, not ASM-region or
+ASM-STRUCTURAL.
+
+This gate was already ruled on for this exact function once before: the
+**2026-07-09 01:25 ruling (docs/grind/decisions.md:8)** DENIED canonical-asm
+authorization for the twin family `{cpu_side_move_dir_4, marionation_Exec,
+saEft01Init}` on three independently dispositive grounds. Nothing measured in
+the eight sessions since changes any input to that ruling. It stands.
+
+### Gate 2 — in-hand SOTN-master precedent for the closing construct: **FAIL**
+
+There is no closing construct to cite a precedent for. The function does **not
+byte-match in pure C at any distance this project has reached** — the honest
+cheat-free floor is 7 differing instructions out of 91, measured again this
+session with the session-9 candidate applied to `src/system.c`
+(`sandbox saEft01Init --disable all` → `"score": 7, "target_insns": 91,
+"build_insns": 91, "rules_dropped": 15`). A precedent gate asks "is the construct
+that CLOSES the function a sanctioned SOTN family?"; here nothing closes it, so
+the gate cannot be passed even in principle, and no file+line citation exists to
+offer.
+
+For completeness, the one non-obvious construct the candidate body does carry —
+a single `do { } while (0)` wrapper around the timeout/printf block, inline
+`/* FAKE */`-annotated — is already covered by the owner's 2026-07-06 do-while(0)
+ruling (sanctioned for ANY codegen effect, single level, mandatory annotation).
+Its measured effect is `flow.c`'s `loop_depth` ref-weighting for the three table
+base pointers (18 → 8 with nothing else changed, and the resulting `.lreg`
+numbers match the prediction to the integer). It is a floor-lowering device, not
+a closing device, and it has never been claimed as one. It has also never been
+through a fresh adversarial `cheat-reviewer` — that remains open and is recorded
+in the ledger frontier as F23, but it is moot for this disposition because the
+function is not being proposed for completion.
+
+### What holds the byte-match on main today
+
+15 `regfix.txt` rules, lines 97–119. Zero `asmfix.txt` rules. Zero cheat-asm in
+this function's body. The rules decompose as:
+
+| Lines | Count | What |
+|---|---|---|
+| 98–99 | 2 | callee-save 3-way rotation: `$16 <-> $18`, `$16 <-> $17` |
+| 101–103 | 3 | prologue stack-offset substs (24/32/28) |
+| 105–109 | 4 | `$2 <-> $3` and `$2 <-> $4` renames over the argument block, idx 35–42 |
+| 111 | 1 | `subst "0($3)" "0($2)"` @ 44 |
+| 113 | 1 | `reorder 36,35,37,38,39,40,44,43,41,45,46,47,48,42 @ 35-48` |
+| 115–117 | 3 | epilogue stack-offset substs |
+| 119 | 1 | `reorder 72,70,71 @ 70-72` |
+
+The prologue/epilogue stack-offset substs (101–103, 115–117) and the two
+callee-save swaps (98–99) are downstream paperwork for the register rotation;
+the load-bearing residual is the 14-instruction argument-block reorder at 113
+plus the four renames feeding it. That is exactly the 7 the sandbox charges.
+
+### Exhaustion record (from the ledger, not asserted)
+
+- **17 sessions** on this one function. The honest floor has been **flat at 7 /
+  91 for nine consecutive sessions** (s9 through s17). s4 first touched 7, s5
+  proved that particular form was a DIFFERENT PROGRAM (its pointer re-base made
+  arg5 `tbl[i0+i1]` where target passes `tbl[i1]`) and reset the faithful floor
+  to 8; s9 re-reached 7 on a lever-free chassis and it has not moved since.
+- **Six distinct modalities**, all measured dead on this residual: structural
+  (s2, s3, s11, s12), permuter (s4, s5, s13, s14), forensics (s6, s7, s15, s16),
+  rederive (s8, s9), synthesis (s10), escalation (s17, this one).
+- **~114,000 permuter iterations** across four fresh-seed campaigns under **two
+  different objectives**. The stock objective is structurally mis-aligned for
+  this residual (s14 forced `Scorer(debug_mode=True)` inside the real permuter
+  process: base 435 = 7 register differences ×5 + 2 insertions ×100 + 2
+  deletions ×100, **zero** reorderings — the misalignment is 100-vs-1, not the
+  60-vs-1 s13 asserted). s14 then actually RE-ALIGNED the objective via a
+  PYTHONPATH shim (REGALLOC 1 / REORDERING 2 / INSERTION-DELETION 4, no write to
+  `tools/`) and verified it is monotone with the sandbox ACROSS chassis (23↔7,
+  29↔9). It still does not descend WITHIN the basin: 31.7k iterations produced
+  only ties at 23, all four of which screened to sandbox exactly 7. `difflib`
+  re-aligns the instruction stream and our entire residual is positional, so
+  random search is blind to it.
+- **67 argument-block spellings** measured over **four rigid attractors**
+  (arg4-as-named-VALUE = 7, arg4-as-named-ADDRESS = 9, arg4-fully-inline = 13,
+  const/RTX_UNCHANGING_P = 9). Sixty-plus disproven forms are banked in
+  `memory/grind/saEft01Init/rejected/`.
+- **Axes measured dead and banked**, each with its own probe set: the
+  `do{}while(0)` wrapper's EXTENT (7 forms, byte-inert in both directions); the
+  arg3 `tbl_11dc[D_800A11D5]` spelling (8 forms, 10–15, all regressions); arg1 /
+  the format-string address (3 forms, all 7); arg2 (costs an instruction, 90);
+  the pointers' DECLARATION order (byte-inert; their INITIALISATION order is
+  live and the banked order is the unique optimum at 8/11/11/12/12 for the five
+  permutations); `MEM_IN_STRUCT_P` via pointer-to-array retyping (6 forms, all
+  7); pre-loop global-store placement (4 forms); `debug_printf`'s PROTOTYPE
+  (varargs and K&R byte-identical to the fixed 5-arg form against three bodies);
+  `const` / `RTX_UNCHANGING_P` measured to the dependence edge (whole-pointer and
+  per-access forms byte-identical at 9; inert on arg5 and on a fully-inline
+  arg4).
+- **This session's un-tried axis, now closed:** the INDEX globals. Every prior
+  global-spelling probe respelled the TABLE reference `D_800A125C`; nobody had
+  respelled the index reads through the two separate byte globals the file
+  already declares. `tbl_125c[D_800A1495]` for arg5 alone → **14 / 92**;
+  both indices through globals, dropping the `idx_1494` base entirely → **24 /
+  89**. The second result is positive structural evidence rather than a mere
+  regression: the build comes out TWO INSTRUCTIONS SHORT of target's 91 with
+  that base gone, so target demonstrably DOES hoist an index base and the
+  original held the two indices in one array, not two scalars. Banked as
+  `rejected/arg5-index-via-separate-D_800A1495-global-14-92.c` and
+  `rejected/both-indices-via-globals-drops-idx-base-24-89.c`.
+
+### What the residual actually IS (forensically established, not inferred)
+
+The instrumented `cc1` (`tools/gcc-2.7.2/cc1`, `BB2_PRIO_DEBUG` /
+`BB2_RANK_DEBUG` / `BB2_ALLOC_DEBUG`, verified codegen-identical to the frozen
+`build/cc1`) settled the mechanism across s15 and s16:
+
+1. `rank_for_schedule`'s load/store dependence-CLASS tie-break is **totally
+   inert** in this block — every in-block `RANKDBG` decision returns `val=0`
+   (54/54 on the candidate chassis, 49/49 on the const chassis, and again on a
+   third chassis in s16). Both operands are always class 3. No C spelling can
+   act through that test here.
+2. At **sched1** the block's `INSN_PRIORITY`s are **flat**: sixteen of nineteen
+   picks carry `LAUNCH_PRIORITY` (0x7F000001) because `sched.c:3985` +
+   `birthing_insn_p` re-raise every register-birthing insn while
+   `reload_completed == 0`. The dependence-depth "levels" sessions 10/11/15
+   reasoned about are a sched2 artefact, and sched2 only re-states sched1's
+   order. Order at sched1 = latency-queue release + `INSN_LUID`, nothing else.
+3. `calls.c` fixes the LUID order that feeds it, and s16 proved the required
+   expand-time split is **already achieved**: the named-ADDRESS-pointer form
+   emits the idx[0] address chain at the block's three earliest LUIDs and defers
+   the load to `load_register_parameters` — target's expand shape exactly — and
+   still scores 9. The residual is therefore 100% a scheduling outcome with no
+   remaining C-visible input.
+
+The same 14-instruction block, with the same target order and the same
+early-`lw a3` failure, occurs in **two other queue functions**
+(`cpu_side_move_dir_4`, `marionation_Exec`), including one that names both
+arguments and has no `do{}while(0)` wrapper. Per the 2026-07-09 ruling, cluster
+precedent is explicitly disqualified as evidence for authorization; it is
+recorded here only as a note that a future lever found on any one of the three
+should be re-tried on the other two.
+
+### Disposition
+
+Both gates FAIL — scan tier LOW with no STRONG signal, and no citable precedent
+because no construct closes the function. Per the owner's standing 2026-07-27
+ruling this is pre-decided: **REFUSED / OWNER-ACCEPTED INCOMPLETE.** saEft01Init
+stays INCOMPLETE at honest floor 7 / 91, keeps its 15 `regfix.txt` rules on
+main, and is parked terminally by the driver so the queue advances. No owner
+action is required or requested.
+
+This is expressly NOT a claim that the function is unmatchable. Per
+`no-compiler-divergence` and `difficult-is-not-impossible`, the matching pure C
+exists; what is exhausted is this project's search of it under every modality the
+grinder ladder provides. The live frontier is preserved in
+`memory/grind/saEft01Init/hypotheses.md` (F29 — replay sched1's backward pass as
+a simulator and INVERT it to compute the pre-sched LUID orders that produce
+target's 14-insn sequence, validated against the four banked chassis dumps
+before it is trusted; F30 — attack the shared block on `cpu_side_move_dir_4` as a
+second chassis; F23 — the `do{}while(0)` wrapper still owes a fresh adversarial
+`cheat-reviewer` before any future completion claim). Should the owner ever
+un-park this function, that frontier is where the next session starts.
+
+**Filed under authority of:** the task-brief contract (grind session s17,
+escalation modality — the driver assigned escalation after the floor held flat
+across nine sessions and six distinct modalities); the owner's standing
+2026-07-27 both-gates-fail auto-ruling and
+`.claude/rules/endgame-lock-disposition.md`; the prior 2026-07-09 canonical-asm
+DENIAL naming saEft01Init directly; `no-park-permanently` (2026-06-24);
+`no-new-park-categories` (register-rotation infrastructure is forbidden as a
+category — this entry creates no category, it disposes of one function);
+`no-compiler-divergence` (all `cc1` internals cited above are informational
+about the required C shape, NOT a request to touch the frozen toolchain). This
+entry names saEft01Init directly.
