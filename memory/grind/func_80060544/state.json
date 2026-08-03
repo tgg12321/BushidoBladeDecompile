@@ -1,8 +1,8 @@
 {
  "func": "func_80060544",
  "file": "text1b",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -21,23 +21,29 @@
    "floor": 2,
    "modality": "structural",
    "headline": "Floor held at 2/133; the last three C-level structural axes (dispatch shape, loop shape, dependence height) are KILLED with measurements, and a sibling counter-example proves our own toolchain emits t"
+  },
+  {
+   "session": 4,
+   "floor": 2,
+   "modality": "permuter",
+   "headline": "Permuter modality MEASURED DRY: a validated chassis (tmp/perm_60544, base score 60 == sandbox floor 2) plus 63,820 iterations across a directed no-staging campaign and a full-mutation-space campaign f"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The `move a1,zero` placement is decided by rank_for_schedule inside sched1, and the deciding quantity is the a1 set-up's own INSN_PRIORITY (or whether it is in the ready list at that step) - not the address chain's height, which s3 measured dead.",
-   "mechanism": "Backward list scheduling places `sw p_static` first (it ends up immediately before the jal); at the next step ours picks the a1 set-up and target's build picks the address chain. Priority is compared before both tiebreaks, and both tiebreaks favour a1.",
-   "next_probe": "Run cc1 with the build flags plus -da on the sandbox's preprocessed file and read the .sched dump for the Case3 block: record the actual INSN_PRIORITY of the a1 set-up and of the lui/addiu/sw chain. Cheaper still, set BB2_RANK_DEBUG=1 (tools/gcc-2.7.2/cc1 is the instrumented binary) and read the RANKDBG line for that comparison directly."
+   "hypothesis": "The `move a1,zero` placement is decided inside sched1 by the a1 set-up's own INSN_PRIORITY (or by whether it is in the ready list at that step), and the deciding quantity is visible in a cc1 dump. This is s3's frontier and it is STILL UN-RUN \u2014 the permuter session did not touch it.",
+   "mechanism": "rank_for_schedule (tools/gcc-2.7.2/sched.c:2399) compares INSN_PRIORITY first, then a 3-way class relative to last_scheduled_insn, then INSN_LUID. Both tiebreaks favour the a1 set-up in our build, so target's build must have won on INSN_PRIORITY outright; s3 measured that raising the ADDRESS CHAIN's height does not achieve that, which points at a1's own priority.",
+   "next_probe": "Run cc1 with the build flags plus `-da` on tmp/perm_60544/base.c (a small, fast, validated reduced TU \u2014 much cheaper than the full text1b.c TU that s3 would have had to dump) and read the .sched dump for the Case3 block; or set BB2_RANK_DEBUG=1 against tools/gcc-2.7.2/cc1 (the instrumented binary, NOT build/cc1) and read the RANKDBG line for that comparison directly. Record the actual INSN_PRIORITY of the a1 set-up and of the lui/addiu/sw chain."
   },
   {
-   "hypothesis": "The sibling func_8005D46C is the control experiment that answers it: same callee, same statement shape, same compiler, and our build gets the args-first order RIGHT there.",
-   "mechanism": "Two blocks that differ only in content, with opposite scheduling outcomes, isolate the deciding quantity without any guessing about C spelling.",
-   "next_probe": "Produce the same .sched / RANKDBG dump for func_8005D46C's first func_80073728 call block and diff the priority/class tables against func_80060544's Case3 block. Whatever differs IS the answer, and it converts directly into the C property to reproduce."
+   "hypothesis": "The sibling func_8005D46C, whose block our build DOES emit args-first, differs from the Case3 block in a scheduler quantity that is readable side by side now that a fast reduced-TU chassis exists.",
+   "mechanism": "Two blocks with the same callee, same statement shape and the same compiler but opposite scheduling outcomes isolate the deciding quantity without guessing about C spelling.",
+   "next_probe": "Build a second reduced-TU chassis for func_8005D46C on the tmp/grind/func_80060544/s4/mkws.sh template (it is now a two-file recipe: base_src.c plus prototype-less callee decls), dump .sched / RANKDBG for its first func_80073728 call block, and diff the priority/class tables against func_80060544's Case3 block. Whatever differs IS the answer and converts directly into the C property to reproduce."
   },
   {
-   "hypothesis": "If the dumps show the a1 set-up is emitted late by expand_call rather than chosen late by the scheduler, the question is which C statement shape makes the second argument materialise earlier.",
-   "mechanism": "expand_call emits argument register set-ups after the preceding statements' RTL, fixing their LUIDs; only a different source-level shape can move them, and s2 proved that respelling the argument itself is inert.",
-   "next_probe": "Compare the pre-sched (.jump / .combine) RTL of the Case3 block against the sibling's, then, if they already differ there, use the sibling's C as the template. A permuter campaign is also cheap and extremely well-seeded now (base 2 with a matching instruction count) - follow [[permuter-fresh-seed-discipline]]."
+   "hypothesis": "A permuter campaign seeded from a STRUCTURALLY DIFFERENT chassis (not the floor-2 candidate) could still reach 0 by a clean route, even though the floor-2 chassis is now measured dry.",
+   "mechanism": "The score is quantised, so the permuter cannot climb toward a match \u2014 it can only stumble onto one. Its hit probability therefore depends entirely on how close the STARTING form already is in mutation-distance to a matching form, i.e. on the chassis, not on the iteration count.",
+   "next_probe": "Only worth doing AFTER the forensics probe names the deciding scheduler quantity: use that to pick a chassis whose Case3 block already differs in the named quantity, then re-launch on the existing tmp/perm_60544 workspace by swapping base.c. Do NOT simply re-run more iterations on the current chassis \u2014 that is measured waste (63,820 samples, zero finds)."
   }
  ],
  "judge_constraints": [

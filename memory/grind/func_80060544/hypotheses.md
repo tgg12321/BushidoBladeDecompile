@@ -343,3 +343,61 @@ Next probes, in order:
 - probe: `sandbox func_8005D46C --disable all` (src/text1b.c:12718, two call sites of the same callee), then objdump the cheat-free sandbox object and read the call blocks.
 - result: Our build emits `addiu a0,sp,16 / move a1,zero` as the first two instructions of the call's basic block, ahead of the entire nine-store cluster - exactly the order func_80060544's target has and our func_80060544 build does not. Visible difference: the sibling's block is ~20 insns with several independent chains of height >= 4; the Case3 block is five insns with one chain of height 2 (but s3 separately measured that ADDING chain height to Case3 does not reproduce it, so 'make the block bigger' is not by itself the lever). Excerpts in tmp/grind/func_80060544/s3/results.txt.
 - verdict: CONFIRMED
+
+## Session s4b (2026-08-03, modality: permuter)
+
+### H-P1 — "A directed permuter campaign that cannot use staging carriers can still reach 0."
+**Statement.** The judge-FAILed score-0 form is a dead-store staging carrier
+(`end_off = stat; s.p_static = (s32 *)end_off;`). If the `move a1,zero` placement is
+reachable by any structurally different C shape, a campaign with the whole
+extra-assignment/staging mutation family disabled should find it.
+**Mechanism.** decomp-permuter's staging family (`perm_temp_for_expr`,
+`perm_duplicate_assignment`, `perm_chain_assignment`, `perm_long_chain_assignment`,
+`perm_add_self_assignment`) is exactly the set of passes that manufacture extra
+assignments through existing or new locals. Zeroing their weights leaves the reordering,
+expression-shape, type, condition and structural passes to search alone.
+**Probe.** `tools/permuter_campaign.py launch --label no-staging-A -j 6` on the validated
+`tmp/perm_60544` chassis (base score 60 == sandbox floor 2); three in-turn `wait` windows;
+`harvest --stop`.
+**Result.** 31,745 iterations / 20.5 min. No find below base. One sideways find at 60.
+**Verdict: KILLED.**
+
+### H-P2 — "The full mutation space contains score-0 forms other than the staging carrier."
+**Statement.** Re-enabling every pass and re-seeding should enumerate additional distinct
+score-0 forms, at least one of which might survive the Judge.
+**Mechanism.** The first s4 campaign found its score-0 quickly with default weights, so the
+basin was assumed cheap and possibly wide; a longer default-weight run should show whether
+it is one point or a family.
+**Probe.** `launch --label full-space-B -j 6` on the same chassis, defaults except
+`perm_inline = 0.0`; three in-turn `wait` windows; `harvest --stop`.
+**Result.** 32,075 iterations / 23 min. No score-0 at all this time — the first s4 find was
+luck, not a wide basin. One sideways find at 60, textually identical to campaign A's.
+**Verdict: KILLED.**
+
+### Why this axis is structurally hostile to the permuter (record this, do not re-derive)
+The permuter's score for this function is QUANTISED. The whole residual is a single
+reordering, worth 60 points; every register, every store, every delay slot already matches.
+So the reachable scores are 60 (unchanged) and 0 (matched) with nothing in between: there
+is no gradient to climb and the permuter degenerates into uniform random sampling of C
+respellings. 63,820 samples found exactly one point at 0 across the project's whole history
+of this function, and that point is a dead store the Judge rejected. Any future permuter
+work on func_80060544 must therefore change the CHASSIS (a structurally different starting
+form), not the iteration count — repeating this search is measured waste.
+
+## [s4] A directed permuter campaign that cannot use staging carriers can still reach score 0 for func_80060544.
+- mechanism: The judge-FAILed score-0 form is a dead store into an already-consumed local (`end_off = stat; s.p_static = (s32 *)end_off;`). decomp-permuter's staging family (perm_temp_for_expr, perm_duplicate_assignment, perm_chain_assignment, perm_long_chain_assignment, perm_add_self_assignment) is exactly the set of passes that manufacture such extra assignments; zeroing their weights leaves the reordering, expression-shape, type, condition and structural passes to search alone, so any find would be a structurally different route to the same bytes.
+- probe: Built and validated the workspace tmp/perm_60544 (mkws.sh: reduced TU, cheat-free pipeline with regfix/regfix_stage2/asmfix omitted, per-function region extraction; validation gate = instruction-identical to the cheat-free sandbox build, 133 insns, single `move a1,zero` displacement, base score 60). Launched via tools/permuter_campaign.py (label no-staging-A, -j 6) with the staging family zeroed in settings.toml; waited three in-turn windows; harvest --stop.
+- result: 31,745 iterations / 20.5 min. No find below base. Exactly one sideways find at score 60 (== base) at t+80s.
+- verdict: KILLED
+
+## [s4] The full permuter mutation space contains score-0 forms for func_80060544 other than the judge-FAILed staging carrier.
+- mechanism: The first s4 campaign found its score-0 quickly under default weights, which would suggest a wide, cheap basin; a longer default-weight run should enumerate whether that point is one isolated form or a family with a Judge-survivable member.
+- probe: Same validated chassis, relaunched with defaults except perm_inline = 0.0 (label full-space-B, -j 6); three in-turn wait windows; harvest --stop.
+- result: 32,075 iterations / 23 min. No score-0 at all, and nothing else below base. One sideways find at score 60 whose function body is textually IDENTICAL to campaign A's, so both chassis converged on the same equal-score alternative spelling. The first s4 score-0 was luck, not a wide basin.
+- verdict: KILLED
+
+## [s4] The permuter can hill-climb this function's residual at all.
+- mechanism: The permuter's weighted score is regs x5, reorderings x60, ins/del x100. Every register, store and delay slot in func_80060544 already matches target and build_insns == target_insns == 133; the entire residual is ONE reordering.
+- probe: Read the campaign base score (60) off both campaign_meta.json files and compared it with the sandbox floor (2), then observed the score distribution of 63,820 sampled forms.
+- result: The score is QUANTISED: the only reachable values are 60 (the one misplacement, unchanged) and 0 (matched). No intermediate score was observed in 63,820 samples because none exists. The permuter therefore degenerates to uniform random sampling of C respellings with no gradient to follow, which is the structural reason this axis is dry.
+- verdict: CONFIRMED

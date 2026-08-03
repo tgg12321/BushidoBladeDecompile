@@ -273,3 +273,90 @@ score masks these. Only non-branch hunks are real.
 - [s3] tools/gcc-2.7.2/sched.c carries env-gated instrumentation: BB2_RANK_DEBUG=1 makes rank_for_schedule print `RANKDBG last=<uid> y=<uid> cls=<n> x=<uid> cls2=<n> val=<n>` for every comparison (sched.c:2436-2446), and the string is present in the built tools/gcc-2.7.2/cc1 binary (per [[instrumented-cc1-location]], that is the instrumented one, NOT tools/gcc-2.7.2/build/cc1). No new tooling is needed for the next probe.
 
 - [s3] Rejected forms banked this session: memory/grind/func_80060544/rejected/case3-dispatch-and-loop-reshapes.c (dispatch + loop + declaration/type/cast axes, with every measurement) and rejected/sched-height-probes-diagnostic.c (the dependence-height diagnostics, explicitly marked never-candidates).
+
+## Measured facts (session s4b, 2026-08-03, modality: permuter)
+
+15. **PROCESS (third consecutive occurrence).** `src/text1b.c` was again at the floor-18
+    session-start form. `python3 tmp/grind/func_80060544/s3/apply_candidate.py` restored it
+    and `sandbox func_80060544 --disable all` re-measured **score 2 / build_insns 133 /
+    target_insns 133** before any probing. Run it FIRST, every session.
+
+16. **THE PERMUTER WORKSPACE NOW EXISTS, IS VALIDATED, AND IS REUSABLE: `tmp/perm_60544`.**
+    Built by `tmp/grind/func_80060544/s4/mkws.sh` from the reduced TU
+    `tmp/grind/func_80060544/s4/base_src.c` (the candidate function plus the struct
+    typedef and the `D_*` externs). Validation gate, re-run by mkws.sh on every build: the
+    reduced-TU build of `func_80060544` is instruction-identical to the cheat-free sandbox
+    build — 133 insns, and the ONLY diff against `target.o` is the single `move a1,zero`
+    displacement. So **permuter base score 60 == sandbox floor 2**, and the permuter's
+    gradient is the honest gradient. The compile.sh in the workspace deliberately OMITS the
+    regfix / regfix_stage2 / asmfix stages, which is exactly what `--disable all` does.
+    Two defects had to be fixed before the chassis was usable — both cost the FIRST s4
+    campaign its life, and both are recorded here so no future session pays again:
+    - (a) **The implicitly-declared callees need prototype-less `extern s32 f();`
+      declarations** (`func_8007352C`, `func_80073728`, `initTexPage`, `saMotionSet`,
+      `ot_Link`). They are codegen-INERT — an old-style `()` declaration is precisely what
+      an implicit declaration produces, and the post-fix build re-passed the
+      instruction-identical validation gate — but without them decomp-permuter's pycparser
+      typemap dies with `KeyError: 'func_8007352C'` the instant a mutation has to type a
+      call expression. That traceback is what killed the first s4 campaign after a handful
+      of iterations (see the tail of the old `campaign.log`).
+    - (b) **`mktemp /tmp/...` is FLAKY in this WSL instance** — it twice returned an empty
+      string, or a path that had already vanished by the next command in the same script,
+      producing the misleading `awk: fatal: cannot open file '/tmp/p60544XXXXXX.s'`.
+      `compile.sh` now uses a deterministic workspace-local scratch path
+      (`tmp/perm_60544/work/p$$.s`). Prefer that pattern in any new per-function chassis.
+
+17. **CAMPAIGN A — directed "no-staging" chassis: DRY.** 31,745 iterations / 20.5 min at
+    `-j 6`, launched via `tools/permuter_campaign.py` (label `no-staging-A`). The entire
+    extra-assignment / staging mutation family was zeroed in `settings.toml`
+    (`perm_temp_for_expr`, `perm_duplicate_assignment`, `perm_chain_assignment`,
+    `perm_long_chain_assignment`, `perm_add_self_assignment`, `perm_inline` = 0.0), on the
+    reasoning that the only known score-0 form is a staging carrier the Judge already
+    FAILed, so removing that family forces the search into structurally different space.
+    Result: **no find below base.** One sideways find at score 60 (== base) after 80 s;
+    nothing else in 31.7k iterations. Log: `tmp/grind/func_80060544/s4/campaignA_no_staging.log`.
+
+18. **CAMPAIGN B — full mutation space: ALSO DRY.** 32,075 iterations / 23 min at `-j 6`
+    (label `full-space-B`), defaults everywhere except `perm_inline = 0.0`; i.e. the
+    staging family fully re-enabled, the same space in which the first s4 campaign found
+    its score-0. Result: **no find below base.** One sideways find at score 60 after 268 s
+    — and its function body is textually IDENTICAL to campaign A's 60-find, so both
+    chassis converged on the same equal-score alternative spelling of the same single
+    misplacement. Log: `tmp/grind/func_80060544/s4/campaignB_full_space.log`.
+
+19. **COMBINED RESULT — the permuter modality is MEASURED DRY for this function.**
+    63,820 iterations from the floor-2 chassis produced no score-0 and nothing at all
+    between 0 and 60 (the metric is quantised here: 60 == the one reordering, so any
+    partial improvement was impossible by construction — either the `move a1,zero` lands
+    right, or it does not). The ONLY route to 0 that anyone has ever found remains the
+    first-s4 find `end_off = stat; s.p_static = (s32 *)end_off;` — a dead store into an
+    already-consumed local — which the Judge FAILed and which is banked in
+    `rejected/judge-fail-0803-1310.c`. Random search over the full GCC-oriented mutation
+    pass set does NOT reach the same byte-match by any other spelling from this chassis.
+    That is the session's headline measurement: it removes "just permute it" from the
+    remaining option set and leaves the RTL/scheduler forensics probe (s3's frontier) as
+    the live axis.
+
+- [s4b] The permuter chassis for this function is built, validated and reusable at `tmp/perm_60544` (rebuild with `bash tmp/grind/func_80060544/s4/mkws.sh`). Its base score 60 corresponds exactly to sandbox floor 2, and the score metric is QUANTISED: the whole residual is one reordering, so the only scores reachable are 60 (unchanged) and 0 (matched). There is no gradient for the permuter to climb here, which is the structural reason a 64k-iteration search is dry — this is a needle-in-a-haystack search, not a hill climb.
+
+- [s4b] decomp-permuter workspaces for BB2 functions MUST declare every implicitly-declared callee with a prototype-less `extern s32 f();`. It is codegen-inert but pycparser's typemap needs it; without it the campaign dies with `KeyError: '<callee>'` on the first mutation that types a call. This killed one whole campaign.
+
+- [s4b] `mktemp /tmp/...` is unreliable in this WSL instance (empty return / vanished path, twice in one session). Use deterministic workspace-local scratch paths in permuter compile.sh chassis.
+
+- [s4b] Both campaigns (staging-disabled and full-space) converged on the SAME single sideways form at score 60, banked at `tmp/grind/func_80060544/s4/A_output-60-1/` and `.../B_output-60-1_source.c`. It is an equal-score alternative spelling with the same misplaced `move a1,zero`; it is NOT a candidate and NOT progress.
+
+- [s4] Session start: src/text1b.c was AGAIN (third consecutive session) at the floor-18 session-start form; tmp/grind/func_80060544/s3/apply_candidate.py restored the candidate and `sandbox func_80060544 --disable all` re-measured score 2 / build_insns 133 / target_insns 133. Re-verified at session end: still 2 / 133 / 133 with the candidate form in place in src/.
+
+- [s4] A validated, reusable decomp-permuter chassis for this function now exists: tmp/perm_60544, rebuilt in one command by `bash tmp/grind/func_80060544/s4/mkws.sh`. It compiles the reduced TU tmp/grind/func_80060544/s4/base_src.c through the cheat-free pipeline (cc1 | prologue_fix | maspsx | fix_lwl | multu_pad, with regfix/regfix_stage2/asmfix deliberately OMITTED, mirroring `--disable all`), extracts the func_80060544 region and assembles it. mkws.sh re-runs its own validation gate on every build: 133 insns, and the only diff against target.o is the single `move a1,zero` displacement. Permuter base score 60 corresponds exactly to sandbox floor 2.
+
+- [s4] CHASSIS FIX 1 (generalisable, cost the FIRST s4 campaign its life): a BB2 permuter workspace must give every implicitly-declared callee a prototype-less declaration (`extern s32 func_8007352C();`, likewise func_80073728, initTexPage, saMotionSet, ot_Link). These are codegen-INERT — an old-style `()` declaration is exactly what an implicit declaration produces, and the post-fix build re-passed the instruction-identical validation gate — but without them decomp-permuter's pycparser typemap raises `KeyError: 'func_8007352C'` on the first mutation that has to type a call expression, and the campaign dies after a handful of iterations.
+
+- [s4] CHASSIS FIX 2 (generalisable): `mktemp /tmp/...` is FLAKY in this WSL instance — twice it returned an empty string or a path that had already vanished by the next command, surfacing as the misleading `awk: fatal: cannot open file '/tmp/p60544XXXXXX.s'`. Permuter compile.sh chassis should use a deterministic workspace-local scratch path (tmp/perm_60544/work/p$$.s) instead.
+
+- [s4] Campaign A (label no-staging-A, staging mutation family zeroed): 31,745 iterations, 1,228 s wall, -j 6, base 60, best find 60. Campaign B (label full-space-B, defaults except perm_inline=0): 32,075 iterations, ~1,380 s wall, -j 6, base 60, best find 60. Both harvested with --stop inside the session; `Get-Process` confirms zero permuter processes remain. Telemetry recorded via tools/permuter_campaign.py; logs and campaign_meta.json copied into tmp/grind/func_80060544/s4/.
+
+- [s4] The two campaigns' sideways finds are the SAME form: diffing the extracted function bodies of A_output-60-1/source.c and B_output-60-1_source.c yields no differences. It is an equal-score alternative spelling carrying the same misplaced `move a1,zero` — not a candidate, not progress, banked only as evidence of where random search lands.
+
+- [s4] The only score-0 form ever produced for func_80060544 remains the first-s4 permuter find `end_off = stat; s.p_static = (s32 *)end_off;` (a dead store into an already-consumed local), which the Judge FAILed and which is banked at memory/grind/func_80060544/rejected/judge-fail-0803-1310.c. It was NOT re-proposed this session and must not be re-proposed.
+
+- [s4] Practical consequence for the ladder: 'just run the permuter' is now a measured-dead option for this function AT THIS CHASSIS. Any future permuter work must change the starting form (a structurally different chassis), not the iteration count — repeating a uniform random sample over a quantised score is measured waste.

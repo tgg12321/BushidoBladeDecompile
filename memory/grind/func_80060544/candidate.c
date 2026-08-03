@@ -107,8 +107,26 @@
  *     `addiu a0,sp,16 / move a1,zero` at the FRONT of its func_80073728 call
  *     block — the order this function's target wants.  The toolchain can do
  *     it; this basic block just doesn't get it.
+ * ------------------------------------------------------------------ s4b
+ * s4b (2026-08-03, permuter) did NOT change this form either — it is unchanged
+ * from s2 and still measures 2 / 133.  What s4b added is the permuter verdict:
+ *   - A validated, reusable permuter chassis now exists at `tmp/perm_60544`
+ *     (rebuild: `bash tmp/grind/func_80060544/s4/mkws.sh`).  Its base score 60
+ *     corresponds exactly to this file's sandbox floor of 2.
+ *   - TWO campaigns, 63,820 iterations total, found NOTHING below base:
+ *     31,745 iterations with the staging/extra-assignment mutation family
+ *     disabled, and 32,075 with the full default pass set.  Both produced the
+ *     same single sideways form at score 60.
+ *   - The permuter score is QUANTISED here (one reordering = 60, matched = 0),
+ *     so there is no gradient to climb; the search degenerates to uniform
+ *     random sampling.  Do not spend more iterations on this chassis — change
+ *     the chassis or change the modality.
+ *   - The only score-0 form ever found for this function remains the dead-store
+ *     staging carrier in rejected/judge-fail-0803-1310.c, which the Judge
+ *     FAILed.  It must not be re-proposed.
+ *
  * Re-apply this file with `python3 tmp/grind/func_80060544/s3/apply_candidate.py`
- * (the driver resets src/ between sessions — it has now happened twice).
+ * (the driver resets src/ between sessions — it has now happened three times).
  */
 s32 func_80060544(s32 arg0, s32 arg1) {
     s32 geom;
