@@ -1,4 +1,25 @@
-/* func_80060E38 — best form as of grind session 3 (structural, 2026-08-03).
+/* func_80060E38 — best form as of grind session 4 (permuter, 2026-08-03).
+ *
+ * SESSION 4 UPDATE — body unchanged, floor re-measured at 18 (sandbox --disable all:
+ * score 18, target_insns 139 == build_insns 139, 18 rules dropped; no src/ edits).
+ * Session 4 put sessions 2-3's closed-form proof to a MACHINE search. A validated fast
+ * permuter chassis was built (tmp/grind/func_80060E38/s4/mkws.sh -> s4/ws): it runs the
+ * real build pipeline and its base.o differs from target.o in EXACTLY the 18 spill-offset
+ * instructions (139 vs 139), i.e. it reproduces the engine's honest floor bit for bit.
+ * Two campaigns through tools/permuter_campaign.py:
+ *   chassis 1 "probe-chassis"      54,551 iterations / ~20 min / 0 finds
+ *   chassis 2 "base-arith-chassis" 40,003 iterations / ~19 min / 0 finds
+ * ~94,554 randomized C mutations produced ZERO outputs below the 72 baseline (= 18
+ * differing instructions). Both harvested with --stop; neither outlives the session.
+ *
+ * TOOLING WARNING carried forward: the permuter's DEFAULT scorer normalizes sp-relative
+ * offsets away, so a raw `permuter.py` run on this function reports score 0 — a FALSE
+ * MATCH — because the whole remaining gap IS an sp-offset shift. Always go through
+ * tools/permuter_campaign.py, which passes --stack-diffs (both campaigns correctly
+ * launched at base_score 72). Do not run another campaign on this function.
+ *
+ * (session-3 header follows)
+ * func_80060E38 — best form as of grind session 3 (structural, 2026-08-03).
  *
  * SESSION 3 UPDATE — body unchanged, floor re-measured at 18 (sandbox --disable all:
  * score 18, target_insns 139 == build_insns 139, 18 rules dropped; no src/ edits).

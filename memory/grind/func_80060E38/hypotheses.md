@@ -322,3 +322,68 @@ route in function.c.
 - probe: Re-derived the branch line by line from tools/gcc-2.7.2/reload1.c:2369-2415 and function.c:665-728.
 - result: The widened call does return base+0 and adjust = GET_MODE_SIZE(mode) - total_size is 0, but reload1.c:2405 then fires because inherent_size (4) < total_size (8) and adds total_size - inherent_size = 4, rebuilding the SImode MEM at base+4. The branch restores the +4 by a different route; session 2's closed form holds for this sub-case too.
 - verdict: KILLED
+
+## [s4] A randomized machine search over C forms (decomp-permuter) can find a spelling of func_80060E38 whose reload spill slots land at 0 mod 8, beating the floor of 18.
+- mechanism: The permuter mutates the C (statement order, temporaries, types, expression re-association, inlining, variable reuse) at a scale no hand-designed variant set can reach. Sessions 2 and 3 killed the structural axis with 34 targeted variants plus a closed-form reading of reload1.c/function.c, but a proof read from compiler source is worth confirming against a large sample of forms nobody thought to write down. If ANY C form escaped the align == -1 spill path while keeping the 139-instruction stream, a randomized search over ~10^5 mutations is the instrument most likely to hit it.
+- probe: Built and VALIDATED a fast permuter chassis (tmp/grind/func_80060E38/s4/mkws.sh -> s4/ws): compile.sh runs the real pipeline (cpp | cc1 | prologue_fix | maspsx with the Makefile's exact sdata/expand-lb/multu/label-nop flags | fix_lwl | multu_pad), extracts the .ent/.end region and assembles it; target.o is asm/funcs/func_80060E38.s with the r3000 prelude. Validation showed base.o vs target.o at 139 vs 139 instructions with exactly the 18 spill-offset lines differing — i.e. the chassis reproduces the engine's honest floor of 18. Two campaigns were then run through tools/permuter_campaign.py (which passes --stack-diffs by default; both launched at base_score 72, so sp offsets were scored rather than normalized away): chassis 1 `probe-chassis` (-j 8, the s1 absolute-constant body) and chassis 2 `base-arith-chassis` (-j 6, the same semantics written as `spbase = 0x1F800000` plus 32 `spbase + 0xNN` addends, a different mutation neighbourhood). Fresh-seed discipline was applied per basin: ~20 min and ~19 min windows respectively, each waited in-turn via `permuter_campaign.py wait`.
+- result: 54,551 + 40,003 = 94,554 iterations, ZERO finds on either chassis — no output directory at any score below 72, not even an equal-score alternative. Both campaigns harvested with --stop and confirmed inactive in the registry. Chassis 2 additionally measured that GCC folds `spbase + 0xNN` back into absolute constants, giving the SAME 139 instructions and the SAME 4,12,...,68 offsets, so the arithmetic re-spelling is inert. The result is exactly what s2's closed form predicts (offset === -GET_MODE_SIZE(M) (mod 8), a function of the spilled pseudo's MODE and nothing the C controls) and it extends that proof with a machine-scale empirical sample.
+- verdict: KILLED
+
+## [s4] The permuter's default scorer is safe to use on func_80060E38.
+- mechanism: Routine assumption — a permuter workspace scoring 0 means a byte match.
+- probe: Read tools/permuter_campaign.py's documented rationale for passing --stack-diffs by default (owner directive 2026-07-13) and checked the base_score both campaigns reported on a workspace whose ONLY divergence from target is the sp-offset shift.
+- result: The default scorer NORMALIZES sp-relative offsets away, so on this function it would score the current source 0 — a false match — while the true honest distance is 18. With --stack-diffs (the campaign wrapper's default) the same workspace correctly reports base_score 72. Raw `permuter.py <dir>` must never be used on func_80060E38 or on any of the 29 stride-8 spill-block functions; only tools/permuter_campaign.py.
+- verdict: CONFIRMED
+
+## LIVE FRONTIER for session 5 (revised — the permuter axis is now closed too)
+
+Four axes are now measured dead: structural (s2, 11 variants), the alter_reg branch analysis
+(s2 closed form + s3's reuse-branch kill, 23 variants), and randomized machine search (s4,
+~94.5k mutations on two chassis). The mechanism is arithmetic in the spilled pseudo's mode and
+is not addressable from C. What remains is one narrow measurement and one class disposition.
+
+### I1 — forensics: does the reload1.c:2363 REUSE path EVER fire in Bushido Blade 2?
+Unchanged from s3's H2 and still the best remaining probe. Use the instrumented cc1 at
+tools/gcc-2.7.2/cc1 (NOT build/cc1 — [[instrumented-cc1-location]]) to log every alter_reg call
+with (pseudo, from_reg, mode, total_size, chosen path, final offset) while compiling real
+src/*.c translation units; count how often 2363 is taken and in what modes. Scope it to the
+TREE (s3 already answered it for this function's shape) and instrument SMALL TUs first — never
+recompile src/text1b.c whole. A tree-wide zero would close the congruence class by measurement
+as well as by proof.
+
+### I2 — rederive: assign_stack_temp-created slots
+The last untried slot-creation route in function.c. Compiler temporaries for aggregate/structure
+copies take neither the align == -1 spill path nor the plain declared-local path, so they may
+carry no big-endian correction while still being 8-byte-strided. Express the 32 constants as an
+aggregate initialisation or a memcpy-shaped construct and read the slot stride from the
+s1/run.sh cc1 -da output. Expect the instruction count to move off 139; measure with
+sandbox --disable all before believing anything.
+
+### I3 — the class disposition (unchanged; NOT yet escalatable)
+29 functions tree-wide have a stride-8 reload-spill block, all at 0 mod 8, all rule-carrying,
+none ever matched. Whichever session is assigned `escalation` modality files the CLASS in
+docs/grind/decisions.md citing s2/spillscan2.txt, the closed-form proof, the cc1psx
+counter-exhibit, the s3 reuse-branch kill and now the s4 94.5k-mutation negative — and must NOT
+cite Ruling-2, whose scope limit explicitly excludes non-crashing fork divergences. The driver
+has not declared exhaustion, so this must not be escalated yet.
+
+### I4 — do NOT re-open (added this session)
+* Permuter campaigns on this function — 94,554 mutations across two chassis, zero finds.
+* Raw `permuter.py` on this function — the default scorer false-matches at 0 (see the
+  CONFIRMED entry above). Only tools/permuter_campaign.py, which passes --stack-diffs.
+* Base-plus-offset arithmetic spellings of the 32 constants — GCC folds them back; identical
+  139 instructions, identical 4,12,...,68 offsets.
+* Everything in s3's H4 list (RA/scheduling, post-cc1 stages, order/scoping/spill count, the
+  func_8006BD28 "existence proof", mode mixing for the reuse branch, frame-coercion cheats).
+
+## [s4] A randomized machine search over C forms (decomp-permuter) can find a spelling of func_80060E38 whose reload spill slots land at 0 mod 8, beating the floor of 18.
+- mechanism: The permuter mutates the C (statement order, temporaries, types, expression re-association, variable reuse) at a scale no hand-designed variant set can reach. Sessions 2-3 killed the structural axis with 34 targeted variants plus a closed-form reading of reload1.c/function.c, but a proof read from compiler source is worth confirming against a large sample of forms nobody thought to write down. If ANY C form escaped the align == -1 spill path while keeping the 139-instruction stream, a randomized search over ~10^5 mutations is the instrument most likely to hit it.
+- probe: Built and VALIDATED a fast permuter chassis (tmp/grind/func_80060E38/s4/mkws.sh -> s4/ws): compile.sh runs the real build pipeline (cpp | cc1 | prologue_fix | maspsx with the Makefile's exact sdata/expand-lb/multu/label-nop flags | fix_lwl | multu_pad), extracts the .ent/.end region and assembles it; target.o is asm/funcs/func_80060E38.s assembled with the r3000 prelude. Validation: base.o vs target.o disassembled and diffed is 139 vs 139 instructions with EXACTLY the 18 spill-offset lines differing (sw/lw v0 at 4,12,...,68 vs 0,8,...,64) and nothing else, so the chassis reproduces the engine's honest floor of 18 bit for bit. Two campaigns were then run through tools/permuter_campaign.py (which passes --stack-diffs by default; both launched at base_score 72, so sp offsets were scored rather than normalized away): chassis 1 'probe-chassis' (-j 8, the s1 absolute-constant body) and chassis 2 'base-arith-chassis' (-j 6, the same semantics written as spbase = 0x1F800000 plus 32 spbase + 0xNN addends, a deliberately different mutation neighbourhood). Fresh-seed discipline applied per basin: ~20 min and ~19 min windows, each waited in-turn via permuter_campaign.py wait.
+- result: 54,551 + 40,003 = 94,554 iterations, ZERO finds on either chassis - no output directory at any score below the 72 baseline, not even an equal-score alternative. Both campaigns harvested with --stop (procs_killed 9 on chassis 1) and confirmed alive:false / registered_active:false in the registry. Chassis 2 additionally measured that GCC folds spbase + 0xNN straight back into absolute constants, giving the SAME 139 instructions and the SAME 4,12,...,68 offsets, so the arithmetic re-spelling is codegen-inert. The outcome is exactly what session 2's closed form predicts (offset === -GET_MODE_SIZE(M) (mod 8) - a function of the spilled pseudo's MODE and of nothing the C controls) and extends that proof with a machine-scale empirical sample.
+- verdict: KILLED
+
+## [s4] The permuter's default scorer is safe to use on func_80060E38.
+- mechanism: Routine assumption that a permuter workspace scoring 0 means a byte match.
+- probe: Read tools/permuter_campaign.py's documented rationale for passing --stack-diffs by default (owner directive 2026-07-13) and checked the base_score both campaigns reported on a workspace whose ONLY divergence from target is the sp-offset shift.
+- result: The permuter's default scorer NORMALIZES sp-relative offsets away, so on this function it would score the current source 0 - a FALSE MATCH - while the honest distance is 18. With --stack-diffs (the campaign wrapper's default) the same workspace correctly reports base_score 72. Raw `permuter.py <dir>` must never be used on func_80060E38 nor on any of the 29 stride-8 spill-block functions; only tools/permuter_campaign.py.
+- verdict: CONFIRMED

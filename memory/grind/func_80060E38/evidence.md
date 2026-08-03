@@ -457,3 +457,106 @@ session 2's proof and, with it, the structural axis in full.
 - [s3] Consequence: all three branches of alter_reg are now individually accounted for — two allocating branches by closed form (s2, re-derived and extended in s3) and the one non-allocating branch by 23 measured variants plus a counting argument (s3). The structural axis for func_80060E38 is exhausted end to end; what remains is the class-level question about the 29 tree-wide stride-8 spill blocks, not a search over C forms for this function.
 
 - [s3] Disproven form banked at memory/grind/func_80060E38/rejected/dimode-slot-reuse-cannot-yield-nine-word-slots.c with the full rationale; candidate.c header updated with the session-3 summary (body unchanged, still the best form); evidence.md and hypotheses.md carry the full session-3 blocks.
+
+## Session 4 (permuter, 2026-08-03) — floor 18 (unchanged; re-measured)
+
+Session 4's mandate was the permuter axis. Sessions 2 and 3 measured 34 HAND-DESIGNED C
+variants and proved the offset closed-form from the compiler source; this session put that
+proof to a MACHINE search — ~94,500 randomized C mutations across two structurally distinct
+chassis — so that the "no C form reaches 0 mod 8" claim rests on a large empirical sample as
+well as on the reading of `reload1.c` / `function.c`.
+
+### A validated fast permuter chassis now exists (reusable, and the main artifact)
+`tmp/grind/func_80060E38/s4/mkws.sh` builds `tmp/grind/func_80060E38/s4/ws`, a decomp-permuter
+workspace whose `compile.sh` runs the REAL build pipeline (`cpp | cc1 | prologue_fix | maspsx
+(with the Makefile's exact sdata/expand-lb/multu/label-nop flags) | fix_lwl | multu_pad`),
+extracts the `.ent func_80060E38 … .end func_80060E38` region and assembles it, and whose
+`target.o` is `asm/funcs/func_80060E38.s` assembled with the r3000 prelude. Its base is the
+s1 isolated probe rather than `src/text1b.c`, so an iteration costs ~0.02 s of wall clock at
+`-j 8` instead of a full-TU compile.
+
+**Validation (the load-bearing part):** `base.o` vs `target.o`, disassembled and diffed, is
+**139 vs 139 instructions with EXACTLY 18 differing lines — the nine `sw v0,N(sp)` and nine
+`lw v0,N(sp)` spill offsets (4,12,…,68 vs 0,8,…,64) and nothing else.** The chassis therefore
+reproduces the engine's honest floor of 18 bit-for-bit, so a permuter find on it would be a
+real find. Any later session can reuse it directly (`bash tmp/grind/func_80060E38/s4/mkws.sh`).
+
+### `--stack-diffs` is MANDATORY for this function (and the campaign wrapper supplies it)
+`tools/permuter_campaign.py`'s help documents that launches pass `--stack-diffs` by default
+(2026-07-13) precisely because the permuter's default scorer NORMALIZES sp-relative offsets
+away. func_80060E38 is the textbook case: its entire remaining gap IS an sp-offset shift, so
+under the default scorer this workspace would report **score 0 — a false match**. Both
+campaigns launched at `base_score = 72` (the weighted score of 18 differing instructions),
+confirming stack-diff scoring was live. **A future session must never run raw `permuter.py`
+on this function; it will report a match that does not exist.**
+
+### The campaigns (both harvested and stopped in-session)
+
+| chassis | label | shape | jobs | elapsed | iterations | finds |
+|---|---|---|---|---|---|---|
+| `s4/ws`  | `probe-chassis`      | the s1 probe: 32 absolute `0x1F8000xx` constants stored to the 32 globals | 8 | 1199 s (~20 min) | **54,551** | **0** |
+| `s4/ws2` | `base-arith-chassis` | same semantics via a `spbase = 0x1F800000` local plus 32 `spbase + 0xNN` addends — a different source shape and therefore a different mutation neighbourhood | 6 | ~19 min | **40,003** | **0** |
+
+**~94,554 randomized C mutations, ZERO outputs at any score below the 72 baseline.** Not one
+find at all — the permuter never even produced an equal-score alternative worth writing out.
+Both campaigns were harvested with `--stop` (`procs_killed: 9` on chassis 1) and the registry
+shows both `alive: false, registered_active: false`; nothing outlives this session.
+
+Chassis 2 is itself a small measured datapoint: GCC folds `spbase + 0xNN` back into absolute
+constants, so the arithmetic form compiles to the SAME 139 instructions with the SAME
+`4,12,…,68` spill offsets. Rewriting the constants as base-plus-offset arithmetic is inert.
+
+### What this adds to the ledger (and what it does not)
+It does NOT add a new mechanism — s2's closed form
+(`offset === -GET_MODE_SIZE(M) (mod 8)`) already predicted this outcome exactly, and s3 closed
+the reuse-branch escape. What it adds is the **scale of the negative**: the congruence is now
+known to be immovable not only under 34 targeted human variants and a source-level proof, but
+under ~94.5k machine-generated ones on two chassis. The permuter axis for func_80060E38 is
+measured dead, and — because the mechanism is arithmetic in the spilled pseudo's MODE, not in
+the C — the same result is predicted for the other 28 members of the stride-8 spill class.
+A future session should NOT spend another campaign here.
+
+### Artifacts (session 4)
+* `tmp/grind/func_80060E38/s4/mkws.sh` — builds + validates the chassis (139/139, 18-line diff)
+* `tmp/grind/func_80060E38/s4/mkws2.sh`, `base2.c` — the base-arithmetic second chassis
+* `tmp/grind/func_80060E38/s4/ws/{base.c,compile.sh,settings.toml,target.s,base.txt,tgt.txt,campaign.log,campaign_meta.json}`
+* `tmp/grind/func_80060E38/s4/ws2/{base.c,compile.sh,base.txt,campaign.log,campaign_meta.json}`
+* `tmp/grind/func_80060E38/s4/h1.sh`, `h2.sh` — the harvest/stop drivers
+
+- [s4] Floor re-measured at session start: sandbox func_80060E38 --disable all = score 18, target_insns 139 == build_insns 139, 18 rules dropped. No src/ edits were made this session (git status shows only engine-generated metrics/events.jsonl), so the floor is unchanged from sessions 1-3.
+
+- [s4] A validated fast permuter chassis now exists at tmp/grind/func_80060E38/s4/ws, built by s4/mkws.sh. Its compile.sh runs the real build pipeline (cpp | cc1 | prologue_fix | maspsx with the Makefile's exact flags | fix_lwl | multu_pad), extracts the .ent/.end region and assembles it; target.o is asm/funcs/func_80060E38.s with the r3000 prelude. Validation: base.o vs target.o is 139 vs 139 instructions differing in EXACTLY the 18 spill offsets (sw/lw v0 at 4,12,...,68 vs 0,8,...,64) and nothing else, so the chassis reproduces the engine's honest floor of 18 exactly. It costs ~0.02 s per iteration at -j 8 instead of a full src/text1b.c compile, and is reusable as-is.
+
+- [s4] CRITICAL TOOLING FACT for this function: the permuter's default scorer normalizes sp-relative offsets away, so a raw `permuter.py` run on func_80060E38 reports score 0 — a FALSE MATCH — because the entire remaining gap IS an sp-offset shift. tools/permuter_campaign.py passes --stack-diffs by default (owner directive 2026-07-13), and both s4 campaigns launched at base_score 72 (the weighted score of 18 differing instructions), confirming stack-diff scoring was live. Never run raw permuter.py on this function or on any of the 29 stride-8 spill-block functions.
+
+- [s4] Campaign 1 (label probe-chassis, dir tmp/grind/func_80060E38/s4/ws, -j 8, base_score 72): 54,551 iterations over 1199 s. finds_total 0, finds_new 0, best_new_score null. Harvested with --stop (procs_killed 9); registry shows alive false, registered_active false.
+
+- [s4] Campaign 2 (label base-arith-chassis, dir tmp/grind/func_80060E38/s4/ws2, -j 6, base_score 72): a structurally different chassis in which the 32 scratchpad constants are written as `spbase + 0xNN` off a `spbase = 0x1F800000` local, giving the permuter a different mutation neighbourhood. 40,003 iterations over ~19 min, 0 finds. Harvested with --stop; inactive in the registry.
+
+- [s4] TOTAL: ~94,554 randomized C mutations across two chassis produced ZERO permuter outputs at any score below the 72 baseline — not even an equal-score alternative. This is the empirical counterpart to s2's closed-form proof and s3's reuse-branch kill: the spill-slot congruence is immovable under machine search as well as under 34 hand-designed variants.
+
+- [s4] Chassis 2 is also a measured variant in its own right: GCC folds `spbase + 0xNN` back into absolute constants, so the base-plus-offset arithmetic form compiles to the SAME 139 instructions with the SAME 4,12,...,68 spill offsets. Expressing the constants as arithmetic off a base local is inert on the congruence, as the closed form predicts (the offset depends only on the spilled pseudo's mode, never on the C).
+
+- [s4] Consequence for the ladder: the permuter axis is now measured dead for func_80060E38, and since the mechanism is arithmetic in GET_MODE_SIZE of the spilled pseudo rather than anything the C controls, the same negative is predicted for the other 28 functions in the stride-8 spill class. A future session should not spend another campaign here; the untried modalities are forensics (tree-wide alter_reg instrumentation) and rederive (assign_stack_temp-created slots).
+
+- [s4] Both campaigns were stopped inside the session; no permuter process outlives it. Disproven form banked at memory/grind/func_80060E38/rejected/permuter-94k-mutations-cannot-move-spill-congruence.c; candidate.c header updated (body unchanged, still the best form).
+
+- [s4] Floor re-measured at session start: sandbox func_80060E38 --disable all = score 18, target_insns 139 == build_insns 139, 18 rules dropped. No src/ edits were made this session (git status shows only engine-generated metrics/events.jsonl), so the floor is unchanged from sessions 1-3.
+
+- [s4] A validated fast permuter chassis now exists at tmp/grind/func_80060E38/s4/ws, built by s4/mkws.sh. Its compile.sh runs the real build pipeline (cpp | cc1 | prologue_fix | maspsx with the Makefile's exact flags | fix_lwl | multu_pad), extracts the .ent/.end region and assembles it; target.o is asm/funcs/func_80060E38.s with the r3000 prelude. Validation: base.o vs target.o is 139 vs 139 instructions differing in EXACTLY the 18 spill offsets and nothing else, so it reproduces the engine's honest floor of 18 exactly. It costs ~0.02 s per iteration at -j 8 instead of a full src/text1b.c compile, and is reusable as-is by any later session.
+
+- [s4] CRITICAL TOOLING FACT: the permuter's default scorer normalizes sp-relative offsets away, so a raw permuter.py run on func_80060E38 reports score 0 - a false match - because the entire remaining gap IS an sp-offset shift. tools/permuter_campaign.py passes --stack-diffs by default (owner directive 2026-07-13); both s4 campaigns launched at base_score 72 (the weighted score of 18 differing instructions), confirming stack-diff scoring was live.
+
+- [s4] Campaign 1 (label probe-chassis, dir tmp/grind/func_80060E38/s4/ws, -j 8, base_score 72): 54,551 iterations over 1199 s, finds_total 0, finds_new 0, best_new_score null. Harvested with --stop (procs_killed 9); registry shows alive false, registered_active false.
+
+- [s4] Campaign 2 (label base-arith-chassis, dir tmp/grind/func_80060E38/s4/ws2, -j 6, base_score 72): the 32 scratchpad constants written as spbase + 0xNN off a spbase = 0x1F800000 local, a different mutation neighbourhood. 40,003 iterations over ~19 min, 0 finds. Harvested with --stop; inactive in the registry.
+
+- [s4] TOTAL: ~94,554 randomized C mutations across two chassis produced ZERO permuter outputs at any score below the 72 baseline - not even an equal-score alternative. This is the empirical counterpart to session 2's closed-form proof and session 3's reuse-branch kill.
+
+- [s4] Chassis 2 is also a measured variant in its own right: GCC folds spbase + 0xNN back into absolute constants, so the base-plus-offset arithmetic form compiles to the SAME 139 instructions with the SAME 4,12,...,68 spill offsets. Expressing the constants as arithmetic off a base local is inert on the congruence, as the closed form predicts.
+
+- [s4] Consequence for the ladder: the permuter axis is now measured dead for func_80060E38, and since the mechanism is arithmetic in GET_MODE_SIZE of the spilled pseudo rather than anything the C controls, the same negative is predicted for the other 28 functions in the stride-8 spill class. A future session should not spend another campaign here; the untried modalities are forensics (tree-wide alter_reg instrumentation) and rederive (assign_stack_temp-created slots).
+
+- [s4] Both campaigns were stopped inside the session; no permuter process outlives it (registry status confirms both dirs alive:false, registered_active:false).
+
+- [s4] Ledger banked: evidence.md and hypotheses.md carry the full session-4 blocks; candidate.c header updated (body unchanged, still the best form); disproven form saved to memory/grind/func_80060E38/rejected/permuter-94k-mutations-cannot-move-spill-congruence.c.

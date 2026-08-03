@@ -1,8 +1,8 @@
 {
  "func": "func_80060E38",
  "file": "text1b",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -21,23 +21,29 @@
    "floor": 18,
    "modality": "structural",
    "headline": "Structural axis closed end to end: alter_reg's slot-REUSE branch \u2014 the one opening s2's proof left \u2014 is measured dead across 23 new C variants AND arithmetically incapable of producing target's nine 0"
+  },
+  {
+   "session": 4,
+   "floor": 18,
+   "modality": "permuter",
+   "headline": "Permuter axis KILLED: ~94,554 randomized C mutations across two validated chassis produced zero finds below the 18-instruction floor, and the campaign chassis (139/139, 18-line spill-offset diff) is b"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The reuse path at reload1.c:2363 may never be taken anywhere in Bushido Blade 2, which would close the congruence class by measurement as well as by proof.",
-   "mechanism": "s3 measured 23 synthetic shapes for func_80060E38 and the path never fired, and showed why (SImode and 8-byte-mode pseudos never co-allocate to a commandeered hard register). The tree-wide question is still open and is the natural forensics target.",
-   "next_probe": "Forensics modality: use the instrumented cc1 at tools/gcc-2.7.2/cc1 (NOT build/cc1 \u2014 see [[instrumented-cc1-location]]) to log every alter_reg call with (pseudo, from_reg, mode, total_size, chosen path, final offset) while compiling the real src/*.c translation units, and count how often the 2363 REUSE path is taken and with what modes. Scope it to the TREE, not to func_80060E38 (s3 already answered that), and instrument small TUs first \u2014 never recompile src/text1b.c whole."
+   "hypothesis": "The reload1.c:2363 slot-REUSE path may never be taken anywhere in Bushido Blade 2, which would close the spill congruence class by measurement as well as by proof.",
+   "mechanism": "Session 3 measured 23 synthetic shapes for func_80060E38 and the path never fired, and showed why (SImode and 8-byte-mode pseudos never co-allocate to a commandeered hard register). Session 4 adds that ~94.5k randomized mutations never found it either, on two chassis. The TREE-WIDE question is still open and is now the sharpest remaining probe, because the reuse path is the only place in alter_reg with no big-endian correction.",
+   "next_probe": "Forensics modality: use the instrumented cc1 at tools/gcc-2.7.2/cc1 (NOT build/cc1 - see [[instrumented-cc1-location]]) to log every alter_reg call with (pseudo, from_reg, mode, total_size, chosen path, final offset) while compiling the real src/*.c translation units, and count how often the 2363 REUSE path is taken and with what modes. Scope it to the TREE, not to func_80060E38 (s3 and s4 both answered that), and instrument small TUs first - never recompile src/text1b.c whole."
   },
   {
    "hypothesis": "assign_stack_temp-created slots (compiler temporaries for aggregate/structure copies) take neither the align == -1 spill path nor the plain declared-local path, so they may carry no big-endian correction while still being 8-byte-strided.",
-   "mechanism": "The +4 is exclusive to assign_stack_local's align == -1 path (8-byte rounding => bigend_correction 4). v_locals.c (s2) measured that declared locals give stride 4, not target's stride 8, so ordinary locals are dead; assign_stack_temp is the last untried slot-creation route in function.c.",
-   "next_probe": "Rederive modality: express the 32 constants as an aggregate initialisation or a memcpy-shaped construct and read the emitted slot stride from tmp/grind/func_80060E38/s1/run.sh's cc1 -da output. Expect the instruction count to move away from 139 \u2014 measure with sandbox --disable all before believing anything."
+   "mechanism": "The +4 is exclusive to assign_stack_local's align == -1 path (8-byte rounding => bigend_correction 4). v_locals.c (s2) measured that declared locals give stride 4, not target's stride 8, so ordinary locals are dead; assign_stack_temp is the last untried slot-creation route in function.c. Note the permuter did not reach it either: its mutations stay within the expression/statement space and never introduce an aggregate copy.",
+   "next_probe": "Rederive modality: express the 32 constants as an aggregate initialisation or a memcpy-shaped construct and read the emitted slot stride from tmp/grind/func_80060E38/s1/run.sh's cc1 -da output (or from the s4 chassis, which reports offsets directly). Expect the instruction count to move away from 139 - measure with sandbox --disable all before believing anything."
   },
   {
    "hypothesis": "func_80060E38 is a member of a 29-function class defined by 'target contains a stride-8 reload-spill block', all blocked by the same measured fork property, and should be dispositioned as a class rather than ground one function at a time.",
-   "mechanism": "Census (s2/spillscan2.txt): 29 stride-8 spill blocks tree-wide, all at 0 mod 8, all rule-carrying, none ever matched; the offset is === -GET_MODE_SIZE(mode) (mod 8) under our BYTES_BIG_ENDIAN cc1, and cc1psx fed identical input produces target's congruence. Every surface that could change it (the cc1 binary/configuration, the Makefile, prologue_config.json, regfix/asmfix) is outside the grind edit surface, and [[no-compiler-divergence]] forbids the compiler-side fix. s3 closed the last mechanism-level opening (the reuse branch).",
-   "next_probe": "This remains an owner-surface question and the driver has NOT declared exhaustion, so it must not be escalated yet. Whichever session is assigned escalation modality should file the CLASS (not just func_80060E38) in docs/grind/decisions.md citing s2/spillscan2.txt, the closed-form proof, the cc1psx counter-exhibit and the s3 reuse-branch kill \u2014 and must NOT cite Ruling-2, whose scope limit explicitly excludes non-crashing fork divergences."
+   "mechanism": "Census (s2/spillscan2.txt): 29 stride-8 spill blocks tree-wide, all at 0 mod 8, all rule-carrying, none ever matched; the offset is === -GET_MODE_SIZE(mode) (mod 8) under our BYTES_BIG_ENDIAN cc1, and cc1psx fed identical input produces target's congruence. Every surface that could change it (the cc1 binary/configuration, the Makefile, prologue_config.json, regfix/asmfix) is outside the grind edit surface, and [[no-compiler-divergence]] forbids the compiler-side fix. s3 closed the last mechanism-level opening (the reuse branch); s4 closed the machine-search axis with ~94.5k mutations.",
+   "next_probe": "This remains an owner-surface question and the driver has NOT declared exhaustion, so it must not be escalated yet. Whichever session is assigned escalation modality should file the CLASS (not just func_80060E38) in docs/grind/decisions.md citing s2/spillscan2.txt, the closed-form proof, the cc1psx counter-exhibit, the s3 reuse-branch kill and the s4 94.5k-mutation negative - and must NOT cite Ruling-2, whose scope limit explicitly excludes non-crashing fork divergences."
   }
  ],
  "judge_constraints": [],
