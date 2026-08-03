@@ -1,4 +1,26 @@
-/* func_80060E38 — best form as of grind session 2 (structural, 2026-08-03).
+/* func_80060E38 — best form as of grind session 3 (structural, 2026-08-03).
+ *
+ * SESSION 3 UPDATE — body unchanged, floor re-measured at 18 (sandbox --disable all:
+ * score 18, target_insns 139 == build_insns 139, 18 rules dropped; no src/ edits).
+ * Session 3 attacked the ONE route session 2's closed-form proof left open — the
+ * slot-REUSE branch of alter_reg (reload1.c:2363-2367), where an SImode pseudo
+ * inherits a wider spill slot's base with no big-endian correction and would land at
+ * 0 mod 8. Two findings, both measured:
+ *   (1) 23 new compiled C variants (8 mode/pressure shapes + 15 leaf shapes designed
+ *       to co-allocate a DImode and an SImode pseudo in one hard register) produced
+ *       ZERO single-word spill slots at 0 mod 8. Every SImode spill was 4 mod 8, in
+ *       every shape, including ones where reload demonstrably DID commandeer the hard
+ *       register pair holding a long long ("Spilling reg 8/9", "24/25", "16/17").
+ *   (2) Even a firing reuse branch is arithmetically insufficient: it yields at most
+ *       ONE 0-mod-8 slot per commandeered hard register, and each requires a PRIOR
+ *       8-byte-mode spill from that same register. Target needs NINE such slots, i.e.
+ *       nine commandeered registers each with its own DImode/DFmode pseudo — while
+ *       target's 139-instruction stream contains no 8-byte-mode instruction at all.
+ * The reuse route is therefore dead as a closing lever, not merely unobserved.
+ * Details in evidence.md (session 3 block) and hypotheses.md.
+ *
+ * (session-2 header follows)
+ * func_80060E38 — best form as of grind session 2 (structural, 2026-08-03).
  *
  * SESSION 2 UPDATE — this body is unchanged and remains the best form; the floor is
  * still 18 (re-measured: sandbox --disable all score 18, 139 == 139). Session 2 proved

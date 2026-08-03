@@ -339,3 +339,121 @@ grind edit surface anyway ([[no-compiler-divergence]]).
 - [s2] The Makefile contains no CC1_PSX_FILES / cc1psx gate — the per-file cc1psx opt-in described in tools/cc1psx_wrapper.sh's header is not wired into the build, and the Makefile is off the grind edit surface regardless ([[no-compiler-divergence]]).
 
 - [s2] Ledger banked: memory/grind/func_80060E38/evidence.md and hypotheses.md carry the full session-2 blocks; candidate.c header updated (body unchanged, still the best form); two disproven forms saved to memory/grind/func_80060E38/rejected/.
+
+## Session 3 (structural, 2026-08-03) — floor 18 (unchanged; re-measured)
+
+Session 3's mandate was the structural axis, which session 2 had measured dead across 11
+variants. Rather than re-run that space, this session attacked the single opening session
+2's closed-form proof explicitly left: alter_reg's **slot-REUSE branch**. That is the only
+place in the compiler where a 4-byte reload spill can escape the `+4` big-endian
+correction, so it is the only structural lever that could ever move this function's floor.
+
+### The reuse branch, read at source (independent re-derivation, not inherited)
+`reload1.c:2331` guards the whole slot-assignment block with `reg_renumber[i] < 0`, and
+`alter_reg(i, from_reg)` has three paths:
+* **2349 `from_reg == -1`** — `x = assign_stack_local (mode, total_size, -1)`;
+  `adjust = inherent_size - total_size`, cancelled exactly by
+  `2405: if (BYTES_BIG_ENDIAN && inherent_size < total_size) adjust += total_size - inherent_size`.
+  Net adjust 0 ⇒ the MEM is `assign_stack_local`'s own return, i.e. `base + bigend_correction`.
+* **2363 reuse** — `x = spill_stack_slot[from_reg]` with `adjust` left at **0** and no call
+  to `assign_stack_local` at all. `2410` then re-MEMs it in the pseudo's own mode at
+  offset 0 because `GET_MODE (x) != GET_MODE (regno_reg_rtx[i])`. **This is the only path
+  with no bigend_correction.** If the pre-existing slot was allocated for an 8-byte mode
+  (`bigend_correction = 8 - GET_MODE_SIZE(DImode) = 0`, so its base is ≡ 0 mod 8), an
+  SImode pseudo reusing it lands at ≡ 0 mod 8 — target's congruence.
+* **2369 "allocate a bigger slot"** — re-derived and found NOT to help even when the mode
+  is widened to DImode: `assign_stack_local (DImode, 8, -1)` returns `base + 0`, but then
+  `adjust = GET_MODE_SIZE(mode) - total_size = 0` and `2405` adds
+  `total_size - inherent_size = 8 - 4 = 4`, putting the SImode MEM back at `base + 4`.
+`assign_stack_local` re-read at `function.c:665-728`: `align == -1` ⇒ `alignment = 8` and
+`size = CEIL_ROUND (size, 8)`; `702-703` `bigend_correction = size - GET_MODE_SIZE (mode)`;
+no `FRAME_GROWS_DOWNWARD` on this target. Session 2's closed form is confirmed verbatim.
+
+### Where `from_reg != -1` comes from (new, and it is REACHABLE)
+`alter_reg` is called with a real `from_reg` from exactly one site: `reload1.c:3499`, inside
+`spill_hard_reg (regno, …)`. Its callers are the eliminable-register sites (`715`, `1523`,
+`719`, `1534`) and, decisively, **`reload1.c:2253` — reload commandeering a hard register as
+a spill register**, announced in the `.greg` dump one line earlier at `2232`
+(`"Spilling reg %d.\n"`). So the `Spilling reg 2.` line session 1 saw in `probe`'s `.greg`
+IS `spill_hard_reg(2, …)`: the `from_reg != -1` machinery is live in this very function.
+That makes the reuse branch a genuine, testable structural target rather than a theoretical
+one — which is why this session spent itself on it.
+
+### 23 measured variants — the reuse branch never fires from C
+Two generators, all compiled with the real build flags through `s1/run.sh` (cpp + cc1 -da),
+with a classifier that distinguishes a **WORD slot** (an offset used by a single-word
+`sw`/`lw` whose `+4` neighbour is unused — the shape target's nine slots have) from an
+8-byte slot (offsets `O` and `O+4` both used):
+
+| generator | variants | result |
+|---|---|---|
+| `s3/gen3.py` | `v_di9` (9 long longs live across the block), `v_dihalf` (long longs consumed as 32-bit halves), `v_reload` (volatile pointer/address reload pressure, no 8-byte modes), `v_di_reload`, `v_union` (`union { long long; s32[2]; }` locals, address-taken), `v_dbl9` (9 doubles), `v_maxpress` (long longs + reload pressure + 36 stores) | every SImode spill ≡ 4 (mod 8) |
+| `s3/reuse_probe.py` | `v_scoped_2_12`, `v_scoped_3_16` — long longs die, then a nested scope opens SImode temps meant to inherit their hard registers | no word slot at 0 mod 8 |
+| `s3/reuse_probe2.py` | 15 **leaf** shapes `v_leafA_{1,2,3}_{0,4,8}` and `v_leafB_{1,2,4}_{4,10}` — call-free like the target, 8-byte-mode values either dying before or living across the 32-store block, with 0–10 competing SImode temps | no word slot at 0 mod 8 |
+
+`Spilling reg` lines confirm reload really did commandeer the 8-byte-mode values' registers:
+`8,9` (leafA/leafB), `24,25` (v_scoped), `16,17` + `64,65` (v_dihalf), `12,13`
+(v_di_reload, v_maxpress), `2` (the original probe). In `v_dihalf` the DImode slots are
+plainly visible at offsets `0` and `8` — **≡ 0 (mod 8), exactly the congruence we want** —
+but they are read and written as TWO words (`0`/`4`, `8`/`12`) and the nine SImode spills
+still sit at `20, 28, 36, …`. No SImode pseudo ever shared a commandeered hard register with
+an 8-byte-mode pseudo, because the two never end up co-allocated: global alloc places the
+8-byte value in a register pair and the leftover constant pseudos are precisely the ones it
+could NOT place (`reg_renumber < 0`, i.e. `from_reg == -1`).
+
+### The reuse branch is ALSO arithmetically insufficient — this is the stronger kill
+`spill_stack_slot` is indexed **by hard register**, so the branch can yield at most **one**
+0-mod-8 slot per commandeered hard register, and only if that register already carries a
+spilled 8-byte-mode pseudo. `func_80060E38`'s target needs **nine** distinct slots at
+`0,8,…,64`. That would require nine commandeered hard registers, each with its own prior
+`long long`/`double` pseudo — while target's 139-instruction stream is lui/ori plus
+gp-relative `sw` with **not one** 8-byte-mode instruction in it, and every measured probe
+shows reload commandeering at most one register pair (i.e. one 8-byte object). So even a
+firing reuse branch could not reproduce target, and any C that supplies the nine 8-byte
+pseudos leaves the 139/139 instruction alignment the current body already has. **The reuse
+route is dead as a closing lever, not merely unobserved** — which closes the last opening in
+session 2's proof and, with it, the structural axis in full.
+
+### Artifacts (session 3)
+* `tmp/grind/func_80060E38/s3/gen3.py`, `runall.sh`, `v_*.c`, `v_*.log` — the 8 mode /
+  pressure variants and their offset reports
+* `tmp/grind/func_80060E38/s3/reuse_probe.py` — call-containing reuse shapes + the
+  word-slot classifier and `.greg` `Spilling reg` extraction
+* `tmp/grind/func_80060E38/s3/reuse_probe2.py` — the 15 leaf-shaped reuse variants
+* RTL dump sets for every variant under `tmp/grind/func_80060E38/s1/dumps/<tag>/`
+
+- [s3] Floor re-measured: sandbox func_80060E38 --disable all = score 18, target_insns 139 == build_insns 139, 18 rules dropped. No src/ edits were made this session (git status shows only engine-generated metrics/events.jsonl), so the floor is unchanged from sessions 1 and 2.
+
+- [s3] Session 2's closed-form spill-offset proof was independently re-derived from tools/gcc-2.7.2/reload1.c:2331-2419 and function.c:665-728 and is CONFIRMED verbatim, including the previously unexamined detail that the "allocate a bigger slot" branch does not help even when the slot mode is widened to DImode: assign_stack_local(DImode,8,-1) returns base+0 and adjust = 0, but reload1.c:2405 then adds total_size - inherent_size = 4, restoring base+4 for the SImode MEM.
+
+- [s3] NEW MECHANISM FACT: alter_reg is called with from_reg != -1 from exactly one site, reload1.c:3499 inside spill_hard_reg, whose non-elimination caller is reload1.c:2253 — reload commandeering a hard register as a spill register, announced by the "Spilling reg N." line printed at reload1.c:2232. The "Spilling reg 2." that session 1 saw in the probe's .greg dump therefore proves the from_reg != -1 machinery is live in this function, making the slot-reuse branch a real testable target rather than a theoretical one.
+
+- [s3] 23 new compiled C variants (s3/gen3.py: v_di9 v_dihalf v_reload v_di_reload v_union v_dbl9 v_maxpress; s3/reuse_probe.py: v_scoped_2_12 v_scoped_3_16; s3/reuse_probe2.py: 15 leaf shapes v_leafA_{1,2,3}_{0,4,8} and v_leafB_{1,2,4}_{4,10}) produced ZERO single-word spill slots at 0 mod 8. Every SImode reload spill in every shape is at 4 mod 8, including shapes whose .greg dumps prove reload commandeered the 8-byte-mode value's register pair (Spilling reg 8/9, 24/25, 16/17, 12/13).
+
+- [s3] v_dihalf is the sharpest datapoint: its DImode spill slots ARE at 0 and 8 — exactly target's congruence — but each is accessed as two words (0/4 and 8/12), while the nine SImode spills alongside them still sit at 20,28,36,... Target's nine slots are single-word sw/lw. The 0-mod-8 congruence and the single-word access are, measurably, mutually exclusive for a reload spill in this fork.
+
+- [s3] Root cause of the non-firing: the reuse branch needs an SImode pseudo and an 8-byte-mode pseudo CO-ALLOCATED to one hard register that reload then commandeers. They never co-allocate, because global alloc places the 8-byte value in a register pair and the nine leftover constant pseudos are by construction the ones it could not place at all (reg_renumber < 0 => from_reg == -1). No amount of statement order, scoping, mode mixing or added pressure changed that in 23 shapes.
+
+- [s3] STRONGER KILL (arithmetic, independent of triggerability): spill_stack_slot is indexed by hard register, so the reuse branch yields at most ONE 0-mod-8 slot per commandeered hard register, each requiring its own prior 8-byte-mode spill from that register. func_80060E38 needs NINE slots at 0,8,...,64, i.e. nine commandeered registers each with a long long/double pseudo — while target's 139-instruction stream contains no 8-byte-mode instruction at all and every probe shows reload commandeering at most one register pair. The reuse route cannot reproduce target even if it could be triggered.
+
+- [s3] Consequence for the ledger: with the reuse branch closed both empirically and arithmetically, the structural axis for func_80060E38 is exhausted end to end — the closed form covers the two allocating branches, and the one non-allocating branch is now measured and disproved. Remaining ladder modalities (forensics, rederive, synthesis) inherit a class-level question, not a search over C forms for this function.
+
+- [s3] Disproven form banked at memory/grind/func_80060E38/rejected/dimode-slot-reuse-cannot-yield-nine-word-slots.c with the full rationale; candidate.c header updated with the session-3 summary (body unchanged, still the best form).
+
+- [s3] Floor re-measured this session: sandbox func_80060E38 --disable all = score 18, target_insns 139 == build_insns 139, 18 rules dropped. No src/ edits were made (git status shows only engine-generated metrics/events.jsonl), so the floor is unchanged from sessions 1 and 2.
+
+- [s3] Session 2's closed-form spill-offset proof was independently re-derived from tools/gcc-2.7.2/reload1.c:2331-2419 and function.c:665-728 and is CONFIRMED verbatim, including the previously unexamined mode-widening sub-case of the 'allocate a bigger slot' branch, which also lands back at base+4 via reload1.c:2405.
+
+- [s3] NEW MECHANISM FACT: alter_reg is called with from_reg != -1 from exactly one site, reload1.c:3499 inside spill_hard_reg, whose non-elimination caller is reload1.c:2253 — reload commandeering a hard register as a spill register, announced by the 'Spilling reg N.' line printed at reload1.c:2232. The 'Spilling reg 2.' session 1 saw in the probe's .greg dump therefore proves the from_reg != -1 machinery is live in this function, making the slot-reuse branch a real testable target rather than a theoretical one.
+
+- [s3] 23 new compiled C variants (s3/gen3.py: v_di9 v_dihalf v_reload v_di_reload v_union v_dbl9 v_maxpress; s3/reuse_probe.py: v_scoped_2_12 v_scoped_3_16; s3/reuse_probe2.py: 15 leaf shapes v_leafA_{1,2,3}_{0,4,8} and v_leafB_{1,2,4}_{4,10}) produced ZERO single-word spill slots at 0 mod 8. Every SImode reload spill in every shape is at 4 mod 8, including shapes whose .greg dumps prove reload commandeered the 8-byte-mode value's register pair (Spilling reg 8/9, 24/25, 16/17, 12/13).
+
+- [s3] v_dihalf is the sharpest datapoint: its DImode spill slots ARE at 0 and 8 — exactly target's congruence — but each is accessed as two words (0/4 and 8/12), while the nine SImode spills alongside them still sit at 20,28,36,.... Target's nine slots are single-word sw/lw. The 0-mod-8 congruence and single-word access are, measurably, mutually exclusive for a reload spill in this fork.
+
+- [s3] Root cause of the non-firing: the reuse branch needs an SImode pseudo and an 8-byte-mode pseudo co-allocated to one hard register that reload then commandeers. They never co-allocate, because global alloc places the 8-byte value in a register pair while the nine leftover constant pseudos are by construction the ones it could not place at all (reg_renumber < 0 => from_reg == -1). No amount of statement order, scoping, mode mixing or added pressure changed that across 23 shapes.
+
+- [s3] STRONGER KILL (arithmetic, independent of triggerability): spill_stack_slot is indexed by hard register, so the reuse branch yields at most ONE 0-mod-8 slot per commandeered hard register, each requiring its own prior 8-byte-mode spill from that register. func_80060E38 needs NINE slots at 0,8,...,64 — nine commandeered registers each with a long long/double pseudo — while target's 139-instruction stream contains no 8-byte-mode instruction at all and every probe shows reload commandeering at most one register pair.
+
+- [s3] Consequence: all three branches of alter_reg are now individually accounted for — two allocating branches by closed form (s2, re-derived and extended in s3) and the one non-allocating branch by 23 measured variants plus a counting argument (s3). The structural axis for func_80060E38 is exhausted end to end; what remains is the class-level question about the 29 tree-wide stride-8 spill blocks, not a search over C forms for this function.
+
+- [s3] Disproven form banked at memory/grind/func_80060E38/rejected/dimode-slot-reuse-cannot-yield-nine-word-slots.c with the full rationale; candidate.c header updated with the session-3 summary (body unchanged, still the best form); evidence.md and hypotheses.md carry the full session-3 blocks.
