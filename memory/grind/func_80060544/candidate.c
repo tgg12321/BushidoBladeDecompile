@@ -1,4 +1,12 @@
 /* func_80060544 — best form as of grind session s2 (2026-08-03, modality: structural).
+ * Re-confirmed UNCHANGED and still the best known form at the end of s6
+ * (2026-08-03, modality: forensics): score 2 / build_insns 133 / target_insns 133.
+ * s6 named the exact compiler decision behind the residual — sched1's
+ * adjust_priority()/birthing_insn_p() promotion of the Case3 `la` to
+ * LAUNCH_PRIORITY — and measured that it fires only for a carrier that is DEAD
+ * after the `s.p_static` store and carries exactly one other assignment, i.e.
+ * only via the dead-store family the Judge already FAILed.  Full derivation in
+ * hypotheses.md (s6 / H-F5) and evidence.md (facts 21-27).
  *
  * Honest cheat-free floor: `sandbox func_80060544 --disable all` == 2
  *   (18 at the start of s1, 4 at the end of s1, 2 now).

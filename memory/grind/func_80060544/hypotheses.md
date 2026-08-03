@@ -522,3 +522,198 @@ iteration count and finds.
 - probe: Built tmp/perm_60544_alt via tmp/grind/func_80060544/s5/mkalt.sh — pointer-typed `stat` carrier (s32 *stat, s.p_static = stat, no casts), `while (i < 4)` loop head instead of do/while, `stat` declared last. Validation gate passed: 133 insns, single `move a1,zero` displacement, permuter base score 60. Launched via tools/permuter_campaign.py (label alt-chassis-C, -j 6) with perm_inline plus the whole staging/extra-assignment family zeroed (perm_temp_for_expr, perm_duplicate_assignment, perm_chain_assignment, perm_long_chain_assignment, perm_add_self_assignment), so any find would be outside the judge-FAILed family. Two in-turn wait windows, then harvest --stop.
 - result: 32,859 iterations / 1,293 s. Exactly ONE find, at score 60 (== base), at t+104 s: a do-while(0) wrapper around the goto ladder plus (&s)->p_static instead of s.p_static — the same noise class as s4's two sideways finds. Nothing below base. Campaign stopped inside the session; ps aux confirms zero permuter processes remain. Cumulative across s4+s5: three chassis, 96,679 sampled forms, exactly one score-0 point in the function's whole history, and that point is the judge-FAILed dead store.
 - verdict: KILLED
+
+## Session s6 (2026-08-03, modality: forensics) — floor 2 -> 2 (the mechanism is now NAMED and PREDICTIVE)
+
+s6 answered the s5 frontier question outright. The instrument was already in the
+tree and unused: `tools/gcc-2.7.2/sched.c` carries a THIRD env-gated hook,
+`BB2_SCHED_DEBUG` (sched.c:3691 and :3950), which prints, for every scheduling
+step of every block, `SCHEDDBG PICK clock=<n> picked=<uid> (pri=<n> luid=<n>)`
+followed by the FULL ready-list array with each entry's priority and LUID. That
+is exactly the "instrument schedule_block's ready-list array directly" probe the
+s5 frontier asked for, and it needed no change to `tools/` — s5 only knew about
+`BB2_PRIO_DEBUG` and `BB2_RANK_DEBUG`.
+
+### CONFIRMED — H-F5: the deciding quantity is an adjust_priority()/birthing_insn_p() promotion of the Case3 `la` to LAUNCH_PRIORITY, and it is reachable only by a DEAD staging store into a carrier that has exactly ONE other assignment.
+
+**The measurement.** `tmp/grind/func_80060544/s6/sched_probe.sh` compiles both
+reduced-TU variants (`v_base.c` = our floor-2 candidate, `v_reuse.c` = the
+judge-FAILed score-0 staging form) with `BB2_SCHED_DEBUG=1 -da`. The Case3 arm is
+block 9 in both, 7 insns, and the two blocks map onto each other one-for-one by
+INSN_REF_COUNT (base 136/139/142/145/147/149/151 <-> reuse
+136/142/145/148/150/152/154, the reuse list carrying one extra NOTE at 139):
+
+| role | base uid (luid) | reuse uid (luid) |
+|---|---|---|
+| `la` D_8009B7D0 | 136 (0) | 136 (0) |
+| `sw` p_static   | 139 (1) | 142 (2) |
+| `sw` pad0C      | 142 (2) | 145 (3) |
+| `a0 = fp+24`    | 145 (3) | 148 (4) |
+| `a1 = 0`        | 147 (4) | 150 (5) |
+| `call`          | 149 (5) | 152 (6) |
+| post-call copy  | 151 (6) | 154 (7) |
+
+sched1 schedules the block BACKWARD (first picked = last emitted). Both builds
+pick identically for the first four steps — post-call copy, call, `sw` pad0C,
+`sw` p_static. The divergence is one single step, clock=5:
+
+```
+base : ready was: [ 147(p=1,l=4) 145(p=1,l=3) 136(p=1,l=0) ]          -> picks 147 (a1 = 0)
+reuse: ready was: [ 136(p=2130706433,l=0) 150(p=1,l=5) 148(p=1,l=4) ] -> picks 136 (the la)
+```
+
+`2130706433` is `0x7f000001` = `LAUNCH_PRIORITY` (sched.c:187). So in the winning
+variant the `la` does not win a tie — it is not in the tie at all; it has been
+PROMOTED. The only path to that value for a not-yet-scheduled insn is
+`adjust_priority()` (sched.c:2531-2575), called on each insn as it becomes ready,
+which for `n_deaths == 0` (always, per GCC's own comment at sched.c:2544 —
+REG_DEAD notes are gone by then) does
+`if (birthing_insn_p (PATTERN (prev))) INSN_PRIORITY (prev) = max_priority;`
+where `max_priority` is `MAX (INSN_PRIORITY (ready[0]), INSN_PRIORITY (insn))`
+(sched.c:2601) and `insn` is the just-scheduled insn, which schedule_block has
+temporarily set to LAUNCH_PRIORITY (sched.c:3985). `birthing_insn_p`
+(sched.c:2496) is `bb_live_regs[dest] && reg_n_sets[dest] == 1`.
+
+**Why this closes the s5 frontier.** s5 correctly found that INSN_PRIORITY is a
+universal 1 and that every `rank_for_schedule` comparison inside the block
+reports `cls=3 cls2=3 val=0`. What s5 could not see is that `RANKDBG` prints
+BEFORE the third tiebreak: `rank_for_schedule` then returns
+`INSN_LUID (y) - INSN_LUID (x)`, i.e. HIGHER LUID SORTS FIRST. The a1 set-up is
+emitted by expand_call after the stores, so it always holds the highest LUID of
+the three remaining insns and always wins the tie. The ONLY way the `la` gets
+scheduled before it is the birthing promotion. The frontier's "ready-list arrival
+order / LOG_LINKS edges" hypothesis is therefore also dead: arrival order and
+dependence edges are identical in both builds (same picks for clocks 1-4, same
+ready-set membership at clock 5); the differing quantity is one insn's priority.
+
+**The predicate, measured.** `tmp/grind/func_80060544/s6/carrier_setcount.py`
+stages the Case3 address through nine different existing locals and reports the
+emitted order plus whether the `la` shows up in a ready list with
+LAUNCH_PRIORITY. `others` = number of OTHER assignments that local already has:
+
+```
+carrier    others  order     dest/launch          size
+fresh      0       a1-after  dest=r76 launch=0    asm_lines=117
+end_off    1       A1-FIRST  dest=r77 launch=1    asm_lines=117
+last       1       a1-after  dest=r76 launch=0    asm_lines=117
+new_var3   1       a1-after  dest=r87 launch=0    asm_lines=117
+new_var6   1       a1-after  dest=r82 launch=0    asm_lines=117
+geom       2       a1-after  dest=r74 launch=0    asm_lines=117
+idx        2       a1-after  dest=r81 launch=0    asm_lines=117
+mid_off    2       A1-FIRST  dest=r78 launch=1    asm_lines=113  (semantics broken)
+prev       2       a1-after  dest=r83 launch=0    asm_lines=117
+```
+
+A naive "reg_n_sets == 1" reading is FALSIFIED by this table (`last`,
+`new_var3`, `new_var6` all have exactly one other set and do not fire). The
+model that fits every row is a CONJUNCTION:
+
+  (1) the carrier must be DEAD after the `s.p_static` store — never read again
+      before it is overwritten. Only then do flow/combine delete the copy and
+      RETARGET the `la`'s destination onto the carrier's pseudo (visible in the
+      `.flow` dump: base's `la` sets `reg 75` = `stat`; the `end_off` variant's
+      sets `reg 77` = `end_off`, with the copy's corpse note left behind); and
+  (2) the carrier must have EXACTLY ONE other assignment, so that combine's
+      decrement of `reg_n_sets` on deleting the copy (combine.c:2309/2332) lands
+      on 1 and satisfies birthing_insn_p. A fresh local lands on 0; a
+      twice-assigned local lands on 2.
+
+`last` / `new_var3` / `new_var6` fail (1) — each is genuinely read later, so the
+copy survives. `geom` / `idx` / `prev` fail (2). `mid_off` satisfies both only
+because staging through it destroys the function (the following
+`s.pad0C = mid_off;` then stores the table address; 113 lines). `end_off` is the
+ONLY local in this function satisfying both — which IS s4's H9 carrier
+specificity and s5's H-F4, now explained rather than merely observed.
+
+**The predicate CONFIRMED in both directions**
+(`tmp/grind/func_80060544/s6/predicate_test.py`, diagnostics only):
+
+```
+P0_base                a1-after  dest=r75  launch=0  notes=0  asm_lines=117
+P1_manufactured_dead   A1-FIRST  dest=r75  launch=1  notes=1  asm_lines=117
+P2b_endoff_live_later  a1-after  dest=r77  launch=0  notes=1  asm_lines=117
+```
+
+P1 manufactures a brand-new local with exactly one prologue assignment and no
+later read, and stages through it: it flips, at the SAME instruction count —
+a second, independent route to target's block order, and it is a dead store, so
+it is a DIAGNOSTIC and never a candidate. P2b keeps `end_off` as the carrier but
+gives it a genuine later read (returning through it instead of `new_var6`): the
+copy is then live, the retarget does not happen, and the flip disappears. Both
+predictions of the model were made before the runs and both held.
+
+**The consequence — the important part for the ladder.** The complete case
+analysis for this block is now closed:
+  - INSN_PRIORITY tie: universal 1 (s5), immovable by dependence height (s3).
+  - class tie: universal 3 because every insn on this target has latency 1 (s5).
+  - LUID tiebreak: the a1 set-up always has the highest LUID, because expand_call
+    emits argument set-up at the call and emission order is identical in the
+    winning and losing builds (s5 H-F2). No statement ordering changes this — s2
+    measured all six intra-arm orderings and all five call-argument respellings.
+  - therefore the ONLY remaining lever is the birthing promotion, and the
+    promotion requires a carrier that is DEAD after the store.
+A carrier that is dead after the store IS a dead store. So on the measured
+evidence there is no live-data pure-C spelling of this basic block that
+reproduces target's instruction order; every route to the bytes passes through
+the construct family the Judge already FAILed
+(`rejected/judge-fail-0803-1310.c`). This is the strongest statement yet of why
+every C-level axis has measured flat since s2, and it is the analysis an
+escalation would have to cite — but the driver, not this session, decides
+exhaustion, so s6 returns `progress` with the mechanism banked.
+
+### KILLED — H-F6: the Case3 `la`'s destination can be made a single-set pseudo by giving Case3 its own address local instead of sharing `stat`.
+Mechanism: birthing_insn_p tests `reg_n_sets[dest] == 1`, and the shared `stat`
+carrier is assigned in all three arms (reg 75, 3 sets), so a per-arm local is the
+obvious clean way to satisfy the predicate without any dead store.
+Probe: `tmp/grind/func_80060544/s6/arm_sweep.py`, four forms (Case3-only local;
+all three arms with their own locals; the OTHER two arms with their own locals so
+the shared name becomes Case3-only; Case3-only pointer-typed local), each
+measured for emitted order, `.flow` destination pseudo and its set count,
+LAUNCH_PRIORITY appearance, and function size, with the judge-FAILed staging form
+as a positive control.
+Result: all four DO produce a single-set destination pseudo and NONE fires the
+promotion (launch=0); all four cost +2 to +5 instructions (119/122/122/119 vs the
+base's 117). The s1 H2 shared carrier is load-bearing and cannot be split per
+arm. Banked in `rejected/case3-single-set-carrier-locals.c`.
+Verdict: KILLED.
+
+## THE FRONTIER AFTER s6
+
+State unchanged: `sandbox --disable all` == 2, build_insns == target_insns == 133,
+single non-branch diff hunk = the `move a1,zero` placement in the Case3 arm.
+What s6 adds is a PREDICTIVE, sub-second test for any future candidate: compile
+the reduced TU with `BB2_SCHED_DEBUG=1` and check whether the Case3 `la` appears
+in a ready list with `p=2130706433`. If it does not, the form cannot match, and
+no sandbox run is needed. Four artifacts do this out of the box
+(`sched_probe.sh`, `arm_sweep.py`, `carrier_setcount.py`, `predicate_test.py`).
+
+Remaining ladder rungs are rederive / synthesis. The one C-level question the
+model leaves genuinely open — and it is narrow — is whether some restructuring of
+the FUNCTION (not of the Case3 arm) can make a variable that is genuinely live in
+the original semantics happen to be dead at exactly this point while still
+carrying exactly one other assignment. Every such candidate is now a one-command
+test.
+
+## [s6] The Case3 `move a1,zero` placement is decided by the sched1 ready-list ARRIVAL ORDER / the LOG_LINKS dependence edges built by sched_analyze (the s5 frontier), rather than by any per-insn quantity.
+- mechanism: s5 had shown INSN_PRIORITY is a universal 1 and every rank_for_schedule comparison reports cls=3 cls2=3 val=0, so the sorted ready list looked as if it were determined entirely by its pre-sort contents and order, which are a function of the dependence graph.
+- probe: Ran the instrumented tools/gcc-2.7.2/cc1 with BB2_SCHED_DEBUG=1 -da on both reduced-TU variants (v_base.c = our floor-2 candidate, v_reuse.c = the judge-FAILed score-0 staging form) via tmp/grind/func_80060544/s6/sched_probe.sh, and read the full per-step ready-list arrays for the Case3 block (block 9, 7 insns in both) with tmp/grind/func_80060544/s6/blk.py. BB2_SCHED_DEBUG is a THIRD env-gated hook in sched.c (lines 3691 and 3950) that s3/s5 did not know about; it prints `SCHEDDBG PICK clock=<n> picked=<uid> (pri=<n> luid=<n>)` plus the entire ready array with priorities and LUIDs, so no change to tools/ was needed.
+- result: Clocks 1-4 are IDENTICAL in both builds (post-call copy, call, sw pad0C, sw p_static), so the dependence edges, the ready-set membership and the arrival order are identical. The divergence is a single step, clock=5: base's ready list is [147(p=1,l=4) 145(p=1,l=3) 136(p=1,l=0)] and it picks 147 (the a1 set-up); reuse's is [136(p=2130706433,l=0) 150(p=1,l=5) 148(p=1,l=4)] and it picks 136 (the la). Exactly one insn's PRIORITY FIELD differs; nothing about the graph does.
+- verdict: KILLED
+
+## [s6] H-F5 -- the deciding quantity is a LAUNCH_PRIORITY promotion of the Case3 `la` by adjust_priority()/birthing_insn_p(), and it is reachable only by a staging store into a carrier that is DEAD after the s.p_static store and that has EXACTLY ONE other assignment in the function.
+- mechanism: 2130706433 == 0x7f000001 == LAUNCH_PRIORITY (sched.c:187). schedule_block temporarily sets the just-scheduled insn to LAUNCH_PRIORITY (sched.c:3985); schedule_insn computes max_priority = MAX(INSN_PRIORITY(ready[0]), INSN_PRIORITY(insn)) (sched.c:2601) and calls adjust_priority on each newly-ready insn; adjust_priority (sched.c:2531) always takes its n_deaths==0 branch (GCC's own comment at sched.c:2544: REG_DEAD notes are already gone) and does `if (birthing_insn_p (PATTERN (prev))) INSN_PRIORITY (prev) = max_priority;`. birthing_insn_p (sched.c:2496) is `bb_live_regs[dest] && reg_n_sets[dest] == 1`. A staging copy that is dead lets flow/combine delete the copy and RETARGET the la's destination onto the carrier's pseudo, and combine DECREMENTS reg_n_sets when it deletes a set (combine.c:2309/2332) -- so a carrier with exactly one other assignment lands on the 1 that birthing_insn_p tests.
+- probe: tmp/grind/func_80060544/s6/carrier_setcount.py staged the Case3 address through nine existing locals, reporting emitted order, the la's .flow destination pseudo, whether that UID appears in a ready list with p=2130706433, and the function's asm size. Then tmp/grind/func_80060544/s6/predicate_test.py tested the model in both directions with predictions stated in advance: P1 = a manufactured brand-new local with exactly one prologue assignment and no later read (predicted FLIP); P2b = `end_off` kept as the carrier but given a genuine later read, returning through it instead of new_var6 (predicted NO FLIP). Both are diagnostics, never candidate forms.
+- result: Carrier table (others = pre-existing assignments): fresh/0 inert; end_off/1 FLIPS launch=1 at 117 asm lines; last/1, new_var3/1, new_var6/1 all inert (each is genuinely read later, so the copy survives and the retarget never happens); geom/2, idx/2, prev/2 inert; mid_off/2 flips only by destroying the function (113 lines -- the following s.pad0C = mid_off then stores the table address). A naive `reg_n_sets == 1` model is FALSIFIED by the last/new_var3/new_var6 rows; the conjunction model fits every row. P1 flipped at the same 117-line size (a second, independent route to target's block order -- and still a dead store); P2b stopped flipping. end_off is the ONLY local in this function satisfying both conditions, which is the mechanism behind s4's H9 and s5's H-F4 carrier specificity.
+- verdict: CONFIRMED
+
+## [s6] H-F6 -- the Case3 `la`'s destination can be made a single-set pseudo (satisfying birthing_insn_p) cleanly, by giving Case3 its own address local instead of sharing the `stat` carrier with the other two arms.
+- mechanism: The shared `stat` carrier introduced by s1's H2 is assigned in all three arms (reg 75, three sets), so birthing_insn_p's reg_n_sets test fails. A per-arm local is the obvious pure-C way to reach reg_n_sets == 1 with no dead store anywhere.
+- probe: tmp/grind/func_80060544/s6/arm_sweep.py: four forms measured with the instrumented cc1 -- Case3-only local; all three arms with their own locals; the OTHER two arms with their own locals so the shared name becomes Case3-only; Case3-only pointer-typed local (no casts) -- each reporting emitted order, the .flow destination pseudo and its textual set count, LAUNCH_PRIORITY appearance, and asm size, with the judge-FAILed staging form as the positive control (which registers A1-FIRST / launch=1 / 117 lines, validating the harness).
+- result: All four DO produce a single-set destination pseudo and NONE fires the promotion (launch=0), and all four grow the function: 119, 122, 122, 119 asm lines against the base's 117. Single-set-ness is neither necessary nor sufficient; the s1 H2 shared carrier is load-bearing and cannot be split per arm. Banked in memory/grind/func_80060544/rejected/case3-single-set-carrier-locals.c.
+- verdict: KILLED
+
+## [s6] CORRECTION to s5's reading of rank_for_schedule: `every comparison reports val=0` means the comparator returned 0, so the ready order is decided purely by pre-sort contents.
+- mechanism: s5 inferred a total tie from the RANKDBG output. But the RANKDBG fprintf (sched.c:2436-2446) sits between the class test and the LUID test.
+- probe: Read tools/gcc-2.7.2/sched.c:2399-2456 directly and cross-checked against the measured clock-5 ready arrays, where the a1 set-up consistently sits at position 0 with the highest LUID of the three remaining insns.
+- result: rank_for_schedule falls through to `return INSN_LUID (y) - INSN_LUID (x)`, i.e. the HIGHER LUID sorts FIRST. The a1 set-up, emitted by expand_call after all the stores, always holds the highest LUID at clock 5, so the tie is always resolved in its favour deterministically. This does not overturn any s5 verdict -- it sharpens why they were all dead, and it is what makes the birthing promotion the sole remaining lever.
+- verdict: CONFIRMED

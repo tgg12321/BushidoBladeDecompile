@@ -394,3 +394,124 @@ score masks these. Only non-branch hunks are real.
 - [s5] Permuter campaign C: alt chassis, staging family zeroed, 32,859 iterations / 1,293 s / -j 6, base 60, best find 60, harvested with --stop, zero surviving processes. Artifacts copied into tmp/grind/func_80060544/s5/.
 
 - [s5] The alt chassis itself is banked at memory/grind/func_80060544/rejected/alt-chassis-inert-respelling.c — equal to the candidate (2/133) and strictly more verbose, so it is not a candidate; it is recorded so no session rebuilds it or re-runs a campaign on it.
+
+## Measured facts (session s6, 2026-08-03, modality: forensics)
+
+20. **PROCESS (fifth consecutive occurrence).** `src/text1b.c` was again at the
+    floor-18 session-start form. `python3 tmp/grind/func_80060544/s3/apply_candidate.py`
+    restored it; `sandbox func_80060544 --disable all` re-measured **score 2 /
+    build_insns 133 / target_insns 133** both before and after probing, with the
+    candidate form in place in `src/` at session end. Run apply_candidate.py FIRST,
+    every session.
+
+21. **THE THIRD INSTRUMENT: `BB2_SCHED_DEBUG`.** `tools/gcc-2.7.2/sched.c` carries
+    a third env-gated hook that s3/s5 did not know about (they only used
+    `BB2_PRIO_DEBUG` and `BB2_RANK_DEBUG`): at sched.c:3691 it prints
+    `SCHEDDBG block=<b> n_insns=<n> n_ready=<n>` plus every insn's priority and
+    ref count, and at sched.c:3950 it prints, for EVERY scheduling step,
+    `SCHEDDBG PICK clock=<n> picked=<uid> (pri=<n> luid=<n>)` followed by the FULL
+    ready-list array with each entry's priority and LUID and the current
+    `last_scheduled_insn`. That is the ready-list instrument the s5 frontier asked
+    for, and it required no change to `tools/`. Driver:
+    `tmp/grind/func_80060544/s6/sched_probe.sh` (both variants, `-da`, one command);
+    reader: `tmp/grind/func_80060544/s6/blk.py <variant> <uid>...` prints the whole
+    SCHEDDBG section for whichever block contains those UIDs. NB the file contains
+    the block TWICE — the first occurrence is sched1, the second is sched2 (whose
+    LUIDs are renumbered from the post-sched1 order, which is itself a free check on
+    what sched1 produced).
+
+22. **THE DECIDING QUANTITY IS NAMED: a LAUNCH_PRIORITY promotion of the Case3
+    `la`, via `adjust_priority()` -> `birthing_insn_p()`.** In the losing build the
+    clock-5 ready list is `[147(p=1,l=4) 145(p=1,l=3) 136(p=1,l=0)]` and sched1
+    picks 147 (the `a1 = 0` set-up); in the winning build it is
+    `[136(p=2130706433,l=0) 150(p=1,l=5) 148(p=1,l=4)]` and it picks 136 (the `la`).
+    `2130706433` == `0x7f000001` == `LAUNCH_PRIORITY` (sched.c:187). Clocks 1-4 are
+    identical in both builds, so the dependence graph, the ready-set membership and
+    the arrival order are all identical — exactly ONE insn's priority field differs.
+    Chain of code: schedule_block sets the just-scheduled insn to LAUNCH_PRIORITY
+    (sched.c:3985); schedule_insn computes
+    `max_priority = MAX (INSN_PRIORITY (ready[0]), INSN_PRIORITY (insn))`
+    (sched.c:2601) and calls `adjust_priority` on each newly-ready insn;
+    adjust_priority (sched.c:2531) always takes its `n_deaths == 0` branch (GCC's own
+    comment at sched.c:2544 says REG_DEAD notes are already gone) and does
+    `if (birthing_insn_p (PATTERN (prev))) INSN_PRIORITY (prev) = max_priority;`;
+    `birthing_insn_p` (sched.c:2496) is `bb_live_regs[dest] && reg_n_sets[dest] == 1`.
+
+23. **CORRECTION to the s5 reading of `rank_for_schedule`.** `RANKDBG` prints
+    BEFORE the third tiebreak, so s5's "every comparison reports val=0" does NOT
+    mean the comparator returned 0. `rank_for_schedule` (sched.c:2399) falls through
+    to `return INSN_LUID (y) - INSN_LUID (x)`, i.e. the HIGHER LUID sorts FIRST, and
+    the a1 set-up — emitted by expand_call after all the stores — always holds the
+    highest LUID of the three insns left at clock 5. The tie is therefore always
+    resolved in favour of `a1`, deterministically, and the birthing promotion is the
+    only mechanism that can override it. (This does not overturn any s5 verdict; it
+    sharpens why they were all dead.)
+
+24. **THE PREDICATE, MEASURED — the flip needs a carrier that is (1) DEAD after
+    the p_static store AND (2) has EXACTLY ONE other assignment.**
+    `carrier_setcount.py` staged the Case3 address through nine existing locals:
+    only `end_off` flips at the correct size (117 asm lines), `mid_off` flips only
+    by destroying the function (113 lines, its own later use clobbered), and
+    `fresh` (0 other sets), `last` / `new_var3` / `new_var6` (1 other set but
+    genuinely read later, so the copy survives) and `geom` / `idx` / `prev` (2 other
+    sets) are all inert. Condition (1) is what lets flow/combine delete the copy and
+    RETARGET the `la`'s destination onto the carrier's pseudo (`.flow`: base's `la`
+    sets `reg 75` = `stat`; the `end_off` variant's sets `reg 77` = `end_off`);
+    condition (2) is what makes combine's `reg_n_sets` decrement
+    (combine.c:2309/2332) land on the 1 that birthing_insn_p tests. A naive
+    "reg_n_sets == 1" model is FALSIFIED by the `last`/`new_var3`/`new_var6` rows.
+
+25. **THE MODEL CONFIRMED IN BOTH DIRECTIONS** (`predicate_test.py`, diagnostics
+    only, never candidates): a manufactured brand-new local with exactly one
+    prologue assignment and no later read FLIPS the schedule at the same 117-line
+    size (a second, independent route to target's block order — and still a dead
+    store); and `end_off` given a genuine later read (returning through it instead
+    of `new_var6`) STOPS flipping. Both predictions were stated before the runs.
+
+26. **CONSEQUENCE — the case analysis for this basic block is now complete.**
+    Priority is a universal tie (s5), the ready-list class is a universal tie
+    because every insn has latency 1 (s5), the LUID tiebreak always favours the a1
+    set-up and emission order is identical in the winning and losing builds (s5
+    H-F2, plus s2's six statement orderings and five call-argument respellings), so
+    the birthing promotion is the ONLY lever — and it requires a carrier that is
+    dead after the store, i.e. a dead store. On the measured evidence there is no
+    live-data pure-C spelling of this block that reproduces target's order; every
+    known route passes through the construct family the Judge FAILed. That is the
+    analysis a future escalation would cite; exhaustion remains the driver's call.
+
+27. **A CLEAN per-arm-local route to `reg_n_sets == 1` is KILLED.** `arm_sweep.py`:
+    Case3-only local 119 asm lines, all-three-arms-own-locals 122, other-two-arms-
+    own-locals 122, Case3-only pointer-typed local 119 — versus the base's 117 — and
+    all four have `launch=0`, so they do not even fire the promotion they were built
+    to fire. The s1 H2 shared `stat` carrier is load-bearing and cannot be split.
+    Banked in `rejected/case3-single-set-carrier-locals.c`.
+
+- [s6] NEW FAST GATE for any future candidate form of this function: compile the reduced TU with `BB2_SCHED_DEBUG=1` and grep the ready lists for the Case3 `la`'s UID with `p=2130706433`. If the promotion does not fire, the form CANNOT reach distance 0, and no sandbox run (minutes) is needed — the cc1 compile is sub-second. `arm_sweep.py` / `carrier_setcount.py` / `predicate_test.py` each implement this end-to-end; add a variant function and re-run.
+
+- [s6] GENERALISABLE (worth trying on any queue item whose residual is a single intra-block instruction placement with a matching instruction count): GCC 2.7.2's sched1 resolves an all-tied ready list by LUID, so emission order normally wins; the one thing that overrides it is `adjust_priority`'s `birthing_insn_p` promotion to LAUNCH_PRIORITY, which fires for an insn setting a LIVE pseudo whose `reg_n_sets` is 1. `BB2_SCHED_DEBUG=1` makes this directly visible. Any "one instruction is scheduled one slot late/early inside an otherwise byte-identical block" residual should be checked against this mechanism before any structural C search.
+
+- [s6] The `tools/gcc-2.7.2/cc1` instrumented binary must be run under WSL (Linux ELF; Git Bash reports `Exec format error`) and is NOT `tools/gcc-2.7.2/build/cc1` (which has none of the BB2 hooks — verified this session: 0 occurrences of RANKDBG/SCHEDDBG in build/cc1, 1 and 8 respectively in tools/gcc-2.7.2/cc1).
+
+- [s6] src/text1b.c was AGAIN found at the floor-18 session-start form (fifth consecutive session); tmp/grind/func_80060544/s3/apply_candidate.py restored it and `sandbox func_80060544 --disable all` re-measured score 2 / build_insns 133 / target_insns 133, both before and after probing. The candidate form is in place in src/ at session end, unchanged from s2.
+
+- [s6] THE THIRD INSTRUMENT: tools/gcc-2.7.2/sched.c carries an env-gated BB2_SCHED_DEBUG hook (sched.c:3691 and :3950) that prints, for every scheduling step of every block, `SCHEDDBG PICK clock=<n> picked=<uid> (pri=<n> luid=<n>)` plus the FULL ready-list array with per-entry priority and LUID and the current last_scheduled_insn. s3 and s5 only used BB2_PRIO_DEBUG and BB2_RANK_DEBUG. The dumps contain each block TWICE -- the first occurrence is sched1, the second sched2, whose LUIDs are renumbered from the post-sched1 order and therefore double as a free readout of what sched1 produced.
+
+- [s6] THE DECIDING QUANTITY IS NAMED. Losing build, clock 5: ready = [147(p=1,l=4) 145(p=1,l=3) 136(p=1,l=0)] -> picks 147 (`a1 = 0`). Winning build, clock 5: ready = [136(p=2130706433,l=0) 150(p=1,l=5) 148(p=1,l=4)] -> picks 136 (the `la`). 2130706433 == 0x7f000001 == LAUNCH_PRIORITY (sched.c:187). Clocks 1-4 are identical in both builds, so the dependence graph and ready-set arrival order are identical and exactly one insn's priority field differs.
+
+- [s6] THE CODE PATH: schedule_block sets the just-scheduled insn to LAUNCH_PRIORITY (sched.c:3985); schedule_insn computes max_priority = MAX(INSN_PRIORITY(ready[0]), INSN_PRIORITY(insn)) (sched.c:2601) and calls adjust_priority on each newly-ready insn; adjust_priority (sched.c:2531) always takes its n_deaths==0 branch -- GCC's own comment at sched.c:2544 notes REG_DEAD notes are already gone -- and does `if (birthing_insn_p (PATTERN (prev))) INSN_PRIORITY (prev) = max_priority;`; birthing_insn_p (sched.c:2496) is `bb_live_regs[dest] && reg_n_sets[dest] == 1`.
+
+- [s6] CORRECTION TO s5: RANKDBG prints between the class test and the LUID test, so `val=0` does NOT mean the comparator returned 0. rank_for_schedule (sched.c:2399) falls through to `return INSN_LUID (y) - INSN_LUID (x)` -- HIGHER LUID FIRST -- and the a1 set-up, emitted by expand_call after the stores, always holds the highest LUID among the three insns left at clock 5. The tie is therefore always resolved in a1's favour, deterministically.
+
+- [s6] THE PREDICATE (carrier_setcount.py, nine existing locals staged as the Case3 carrier; `others` = pre-existing assignments): fresh/0 inert; end_off/1 FLIPS (launch=1, 117 asm lines); last/1, new_var3/1, new_var6/1 inert; geom/2, idx/2, prev/2 inert; mid_off/2 flips only by destroying the function (113 lines). The naive `reg_n_sets == 1` model is FALSIFIED. The conjunction that fits every row: the carrier must be (1) DEAD after the s.p_static store, so flow/combine deletes the copy and RETARGETS the la's destination onto the carrier's pseudo (.flow: base's la sets reg 75 = `stat`; the end_off variant's sets reg 77 = `end_off`), and (2) carry EXACTLY ONE other assignment, so combine's reg_n_sets decrement on deleting the copy (combine.c:2309/2332) lands on 1.
+
+- [s6] MODEL CONFIRMED IN BOTH DIRECTIONS (predicate_test.py, diagnostics only, predictions stated before the runs): a manufactured brand-new local with exactly one prologue assignment and no later read FLIPS the schedule at the same 117-line size -- a second, independent route to target's block order, and still a dead store; and `end_off` given a genuine later read (returning through it instead of new_var6) STOPS flipping.
+
+- [s6] CONSEQUENCE -- the case analysis for this basic block is complete: priority is a universal tie (s5), the ready-list class is a universal tie because every insn on this target has latency 1 (s5), the LUID tiebreak always favours the a1 set-up and emission order is identical in the winning and losing builds (s5 H-F2, plus s2's six statement orderings and five call-argument respellings), so the birthing promotion is the ONLY lever -- and it requires a carrier that is dead after the store, i.e. a dead store. On the measured evidence there is no live-data pure-C spelling of this block that reproduces target's instruction order; every known route passes through the construct family the Judge FAILed (rejected/judge-fail-0803-1310.c).
+
+- [s6] THE CLEAN ROUTE TO THE PREDICATE IS KILLED (arm_sweep.py): Case3-only local 119 asm lines, all-three-arms-own-locals 122, other-two-arms-own-locals 122, Case3-only pointer-typed local 119, versus the base's 117 -- and all four have launch=0, so they do not even fire the promotion they were built to fire. The s1 H2 shared `stat` carrier is load-bearing and cannot be split per arm.
+
+- [s6] NEW FAST GATE for any future candidate form of this function: compile the reduced TU with BB2_SCHED_DEBUG=1 and grep the ready lists for the Case3 la's UID with p=2130706433. If the promotion does not fire, the form CANNOT reach distance 0, and no sandbox run (minutes) is needed -- the cc1 compile is sub-second. arm_sweep.py / carrier_setcount.py / predicate_test.py each implement this end to end; add a variant function and re-run.
+
+- [s6] GENERALISABLE to any queue item whose residual is a single intra-block instruction placement with a matching instruction count: GCC 2.7.2's sched1 resolves an all-tied ready list by LUID, so emission order normally wins; the one thing that overrides it is adjust_priority's birthing_insn_p promotion to LAUNCH_PRIORITY, which fires for an insn setting a LIVE pseudo whose reg_n_sets is 1. BB2_SCHED_DEBUG=1 makes this directly visible; check it before any structural C search.
+
+- [s6] HARNESS GOTCHAS re-confirmed: tools/gcc-2.7.2/cc1 is a Linux ELF and must be run under WSL (Git Bash gives `Exec format error`), and it is the instrumented binary -- tools/gcc-2.7.2/build/cc1 contains ZERO occurrences of RANKDBG/SCHEDDBG while tools/gcc-2.7.2/cc1 contains 1 and 8 respectively.
