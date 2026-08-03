@@ -13112,14 +13112,16 @@ typedef struct {
     u8 byte2B;
 } S544;
 s32 func_80060544(s32 arg0, s32 arg1) {
-    s32 new_var;
+    s32 geom;
+    s32 c3;
+    s32 stat;
+    s32 last;
     S544 s;
     s32 end_off;
     s32 mid_off;
     s32 i;
     s32 j;
     s32 idx;
-    s32 new_var4;
     s32 new_var6;
     s32 prev;
     s32 *p0;
@@ -13138,10 +13140,48 @@ s32 func_80060544(s32 arg0, s32 arg1) {
     s.pad24 = 0x100;
     s.height = 0;
     s.width = 0;
+    /* FAKE: dead store.  THE VALUE STORED HERE IS ARBITRARY AND IS NEVER READ —
+     * it is not "the Case3 handle" and it is not the i == 0 table being set up
+     * early; any value would do, and flow.c deletes the store outright, so this
+     * line contributes NO instruction to the output (the build is 133 insns,
+     * exactly target's count).  The line exists solely to give the pseudo an
+     * earlier reference than its real assignment in the Case3 arm, before
+     * loop.c runs: that moves `regno_first_uid[c3]` off the `la`, which makes
+     * `reg_in_basic_block_p` return 0 at loop.c:700 and disqualifies
+     * `c3 = (s32)(&D_8009B7D0);` as a movable (loop.c:693-701 — cases (2) and
+     * (3) are already false for a named local assigned under `maybe_never`), so
+     * the `la D_8009B7D0` is NOT hoisted into loop 1's preheader.  It therefore
+     * reaches sched1 inside the Case3 block as a live pseudo with
+     * reg_n_sets == 1 (this store having been deleted), and
+     * adjust_priority()/birthing_insn_p() promote it to LAUNCH_PRIORITY
+     * (sched.c:2496/2531/2601), which is what puts `addu $a1,$zero,$zero` first
+     * in that block exactly as target has it.
+     * Lever exhaustion: hypotheses.md s1-s8 — every C-level restructuring of the
+     * block (s2/s3), ~97,000 permuter samples across three chassis (s4/s5), the
+     * instrumented-compiler case analysis (s5/s6/s7), the s8 route table
+     * (A/B/C), and the s8b re-measurement showing every LIVE hoist-blocking
+     * mention costs +2/+3 instructions or lands the address in a callee-save.
+     * Family: [[dead-store-fake-exception]]; mechanism family
+     * [[defeat-licm-hoist-var-reuse]]. */
+    c3 = (s32)(&D_8009B7D8);
     i = 0;
+    /* FAKE: constant-holder for the special-cased last index.  It must sit
+     * BETWEEN `i = 0;` and `idx = 0;` — that source position is what reproduces
+     * target's prologue init order `$s0 = 0 / $s5 = 3 / $s1 = 0`
+     * (asm/funcs/func_80060544.s prologue; hypotheses.md s1 H3: a loop.c-hoisted
+     * CSE constant provably cannot land there, because move_movables emits
+     * preheader movables immediately before the loop start, i.e. AFTER both
+     * inits — which is exactly what the literal-3 spelling produced).  It is
+     * read twice (`i == last`, `i != last`), so it is live, but it is still a
+     * constant-holder and therefore carries this annotation per the 13:11 and
+     * 15:57 rulings.  Lever exhaustion: hypotheses.md s1-s8.
+     * Family: [[named-local-fake-exception]]. */
+    last = 3;
     idx = 0;
     do {
-        s.p_geom = (s32 *)(((s32)(&D_8009B770)) + idx);
+        geom = (s32)(&D_8009B770);
+        geom += idx;
+        s.p_geom = (s32 *)geom;
         if (i < 3) {
             if (i > 0) {
                 goto S800;
@@ -13151,22 +13191,25 @@ s32 func_80060544(s32 arg0, s32 arg1) {
             }
             goto Skip;
         }
-        if (i == 3) {
+        if (i == last) {
             goto Case3;
         }
         goto Skip;
     S7D8:
-        s.p_static = &D_8009B7D8;
+        stat = (s32)(&D_8009B7D8);
+        s.p_static = (s32 *)stat;
         goto Skip;
     S800:
-        s.p_static = &D_8009B800;
+        stat = (s32)(&D_8009B800);
+        s.p_static = (s32 *)stat;
         goto Skip;
     Case3:
-        s.p_static = &D_8009B7D0;
+        c3 = (s32)(&D_8009B7D0);
+        s.p_static = (s32 *)c3;
         s.pad0C = mid_off;
         mid_off = func_80073728(&s, 0);
     Skip:
-        if (i != 3) {
+        if (i != last) {
             s.arg1_field = prev;
             prev = func_8007352C(&s);
         }
@@ -13176,12 +13219,10 @@ s32 func_80060544(s32 arg0, s32 arg1) {
     s.p_geom = &D_8009B7A0;
     s.p_static = &D_8009B820;
     s.arg1_field = prev;
-    new_var4 = new_var6;
     new_var2 = &s;
     prev = func_8007352C(new_var2);
     j = 0;
     p1 = &D_8009B840;
-    new_var = arg1;
     p0 = &D_8009B3B0;
     s.byte29 = 0xFF;
     s.byte2B = 0x10;
@@ -13197,10 +13238,10 @@ s32 func_80060544(s32 arg0, s32 arg1) {
         p0 = (s32 *)(((s32)p0) + 0xC);
     } while (j < 2);
     initTexPage(new_var3, 1, 0, saMotionSet((s32)s.p_geom, 0), 0);
-    ot_Link(D_800A374C + (new_var * 4), new_var3);
-    new_var3 = new_var4;
-    return new_var3 - arg0;
+    ot_Link(D_800A374C + (arg1 * 4), new_var3);
+    return new_var6 - arg0;
 }
+
 extern u16 D_800A32B6;
 extern u16 D_800A32B4;
 void func_80060758(void) {

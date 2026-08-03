@@ -617,3 +617,109 @@ score masks these. Only non-branch hunks are real.
 - [s7] HARNESS: s7/reloc_sweep.py and s7/peel_sweep.py extend the s6 gate with two new columns — la_in_loop (was the address hoisted?) and the la's set count read from .combine rather than .flow (combine is the last dump before sched1, so its RTL is what sched1 sees; the two differ exactly when the retarget fires). Both must run under WSL (`bash tools/wsl.sh 'python3 …'`): tools/gcc-2.7.2/cc1 is a Linux ELF and the Windows python3 fails with WinError 193.
 
 - [s7] No build-pipeline file was touched: no edits to regfix.txt / asmfix.txt / .claude/rules / engine / tools / Makefile / *.ld, no queue done, no retire, no commit. The only tracked-file change is src/text1b.c carrying the unchanged s2 candidate form, plus the memory/grind ledger updates.
+
+## Measured facts (session s8b, 2026-08-03, modality: rederive)
+
+33. **PROCESS (seventh consecutive occurrence, plus a NEW failure mode).**
+    `src/text1b.c` was again at the floor-18 session-start form and
+    `apply_candidate.py` restored it.  The new failure mode: **the dispatched
+    ledger digest ended at s7**, while `memory/grind/func_80060544/rejected/`
+    already contained two files written by the earlier s8 session
+    (`c3-foreign-read-longlived.c`, `judge-fail-0803-1556.c`) and
+    `docs/grind/decisions.md` already carried that session's 15:57 Judge ruling.
+    s8b therefore re-derived the loop.c mechanism independently before noticing
+    it.  Lesson for every future session on this function: **read
+    `rejected/*.c` headers and `grep 80060544 docs/grind/decisions.md` FIRST** —
+    they are more current than the digest ([[grinder-stale-digest-uncommitted-ledger]]).
+    The upside is that the re-derivation was independent confirmation of the s8
+    mechanism from a different starting point, plus three facts s8 had not
+    measured (34-36 below).
+
+34. **LEVER BISECTION — s1's lever 2 (the shared `stat` carrier) is the SOLE
+    cause of the `move a1,zero` misplacement the whole grind has been chasing,
+    and it is simultaneously the only reason the `la` keeps `$v0`.**
+    `tmp/grind/func_80060544/s8/mkbodies.py` rebuilds the untouched m2c body from
+    `git show HEAD:src/text1b.c` and re-applies the four levers in every
+    combination; `s8/gate.py` reports the emitted Case3 block, the la's dest
+    pseudo + set count in `.combine`, the LAUNCH_PRIORITY promotion, whether
+    loop.c hoisted the la, and the instruction count:
+    | body | Case3 block order | la | hoist | size |
+    |---|---|---|---|---|
+    | L0 = untouched m2c (three DIRECT `s.p_static = &D_800…;` stores) | **a1-FIRST** | `la $3` | in-loop | 118 |
+    | L1 = + geom split-init | **a1-FIRST** | `la $3` | in-loop | 118 |
+    | L3 = + `last = 3` | **a1-FIRST** | `la $3` | in-loop | 118 |
+    | L4 = + the paired carrier deletion | **a1-FIRST** | `la $22` | HOISTED | 122 |
+    | L2 = + shared `stat` | la-first | `la $2` | in-loop | 118 |
+    | L123 / L124 / L1234 | la-first | `la $2` | in-loop | 118 / 117 / 117 |
+    Every combination WITHOUT L2 emits target's order; every combination WITH L2
+    does not.  This is consistent with the 11 regfix rules the sandbox drops
+    containing NO reorder rule for the Case3 a1 set-up — the pre-s1 form did not
+    have the misplacement.
+
+35. **WHY THE DIRECT-STORE FORM CANNOT SIMPLY BE KEPT: it is a reload SPILL, not
+    an allocation preference.**  With three compiler temps, loop.c hoists all
+    three arm `la`s into loop 1's preheader (visible in `.combine`: insns
+    340/342/344 setting regs 92/93/94 sit BEFORE `NOTE_INSN_LOOP_BEG`), which
+    makes them long-lived pseudos that conflict with hard regs 2/4/5; global_alloc
+    then spills them (`.greg`: `;; 17 regs to allocate …` then `Spilling reg 3.`)
+    and reload REMATERIALISES `la $3` at each use, because each has a REG_EQUAL
+    constant.  So the a1-first order in L0/L1 is an artifact of rematerialisation
+    (the la is not in the block when sched1 runs), and the six `la $3 -> $2`
+    regfix substs the sandbox drops were papering over a spill.  **Target has
+    ZERO `$v1` references in the entire function** (`grep -c v1
+    asm/funcs/func_80060544.s` == 0, vs 45 for `v0`), and reload picks spill regs
+    least-used-first, so target's build cannot have gone through this path: its
+    arm addresses are ordinary in-block pseudos in `$v0`.  This is what forces
+    the shared carrier (or the s8 hoist-block lever) rather than the direct
+    stores.
+
+36. **THE HOIST-BLOCK LEVER IS GENERAL, AND EVERY *LIVE* SPELLING OF IT COSTS
+    INSTRUCTIONS.**  With a Case3-arm address local `c3`, ANY mention of `c3` in
+    a later basic block defeats `reg_in_basic_block_p` (loop.c:1062) and fires
+    the promotion; the receiving variable is irrelevant (contrast the s5
+    carrier-IDENTITY specificity finding, which applies to the in-arm staging
+    route only).  `tmp/grind/func_80060544/s8/mkuses.py` + `gate.py`:
+    | variant | promo | hoist | size |
+    |---|---|---|---|
+    | W0 `c3` with no later mention (control) | launch=0 | HOISTED | 119 |
+    | W1 `mid_off = c3;` after loop 1 | launch=1 | in-loop | **117** |
+    | W2 the same mention in the tail | launch=1 | in-loop | **117** |
+    | W5 `geom = c3;` / W6 `stat = c3;` / W7 `end_off = c3;` after loop 1 | launch=1 | in-loop | **117** |
+    | W3 `p1 = (s32 *)(c3 + 0x70);` (a LIVE use) | launch=1 | in-loop | 119 |
+    | W4 `s.pad0C = c3;` in the `Skip` join (a LIVE use) | launch=1 | in-loop | 120 |
+    117 asm lines == target's 133 instructions.  W2 was sandbox-verified at
+    **score 0 / 133 / 133**.  The pattern is exact: the mention is free only when
+    the value it lands in is DEAD, because flow.c then deletes the copy after
+    loop.c has already refused the hoist; a genuinely live carrier has to survive
+    the loop in a callee-save and costs +2/+3 (which is also why the earlier s8
+    session's dead-store-free route B measured sandbox 11 / 132).  Three
+    independent directions now agree that no live-data spelling of this block
+    reaches target's instruction count.
+    Banked: `rejected/live-hoist-block-uses-and-lever-bisection.c`.
+
+37. **THE JUDGE'S 15:57 REMEDIATION IS DISCHARGED.**  That ruling says "FAIL on
+    one specific, cheap-to-fix defect, not on the new construct.  THE CONSTRUCT
+    ITSELF IS ACCEPTED IN SUBSTANCE … a re-submission with the two comment fixes
+    and no code change will be re-measured identically."  `candidate.c` now
+    carries the byte-proven body with (1) a `/* FAKE: constant-holder … */`
+    annotation on `last = 3;` naming the prologue-init-order mechanism, the
+    lever exhaustion and [[named-local-fake-exception]], and (2) the `c3` FAKE
+    comment rewritten to state plainly that the stored value is arbitrary and
+    never read and that the line exists solely to give the pseudo an earlier
+    reference before loop.c runs.  A comment-stripped line-by-line comparison
+    against `rejected/judge-fail-0803-1556.c`'s body confirms the code is
+    IDENTICAL (96 vs 96 significant lines, no diff), and
+    `sandbox func_80060544 --disable all` re-measured **score 0 / build_insns 133
+    / target_insns 133** with the file in place in `src/text1b.c`.
+
+- [s8b] The dispatched digest ended at s7 while the earlier s8 session's rejected/ files and its 15:57 Judge ruling in docs/grind/decisions.md were already on disk. ALWAYS read rejected/*.c headers and `grep 80060544 docs/grind/decisions.md` before probing; the digest can lag a whole session.
+
+- [s8b] NEW GATE TOOL: tmp/grind/func_80060544/s8/gate.py takes WHOLE-BODY variant files (spliced onto the reduced-TU prelude of tmp/perm_60544/v_base.c) instead of substring mutations, and prints the emitted Case3 call block verbatim (so the a1-vs-la order needs no regex guess), the la's dest pseudo + set count from .combine, the LAUNCH_PRIORITY promotion, whether loop.c hoisted the la, and the instruction count. Sub-second per variant. Companions: mkbodies.py (lever bisection over the git-HEAD m2c body) and mkuses.py (hoist-block spellings).
+
+- [s8b] s1's lever 2 (the shared `stat` carrier) is the SOLE cause of the Case3 a1 misplacement: every lever combination WITHOUT it emits target's a1-first order, every combination WITH it does not. Corroborated by the fact that the 11 regfix rules the sandbox drops contain no reorder rule for that a1 set-up.
+
+- [s8b] But the direct-store form's a1-first order is an artifact of a RELOAD SPILL: loop.c hoists the three compiler-temp `la`s into the preheader (.combine insns 340/342/344 before NOTE_INSN_LOOP_BEG), global_alloc spills them (.greg `Spilling reg 3.`) and reload rematerialises `la $3` at each use. Target has ZERO $v1 references in the whole function and reload spills least-used-first, so target's build never took that path — its arm addresses are in-block pseudos in $v0. The six `la $3 -> $2` regfix substs were papering over a spill.
+
+- [s8b] The hoist-block lever is GENERAL: any mention of the Case3 address local in a later basic block fires the promotion at 117 asm lines, regardless of which variable receives it (mid_off / geom / stat / end_off all measured launch=1 / 117; W2 sandbox-verified at score 0). Every LIVE hoist-blocking mention costs instructions target does not have (p1 init +2, Skip-join read +3, the earlier s8 route B sandbox 11 / 132) — a live carrier must survive the loop in a callee-save, while target's dies two instructions after the la.
+
+- [s8b] candidate.c is the 15:56 byte-proven body with COMMENT-ONLY fixes (verified identical line-by-line after comment stripping) and re-measures sandbox 0 / 133 / 133. The floor-2 fallback is banked at memory/grind/func_80060544/prior-floor2-candidate.c in case the family is rejected after all.

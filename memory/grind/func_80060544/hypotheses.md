@@ -890,3 +890,98 @@ the 117-asm-line size gate and a fresh adversarial cheat-reviewer.
 - probe: tmp/grind/func_80060544/s7/peel_sweep.py — Y1 (loop runs i = 0..2 with the two ordinary arms; the i == 3 iteration written out after the loop with its own address local) and Y2 (the same peel with the peeled arm still using the shared `stat` carrier, as a control isolating the peel's own cost).
 - result: Y1 = A1-FIRST, la destination single-set, launch=1, 112 asm lines. Y2 = a1-after, 3 sets, launch=0, 112 asm lines. Y1 is the FIRST form in this function's history that reproduces target's Case3 block order with no dead store and no coercion — a third, independent and first CLEAN confirmation of the birthing-promotion model. It is dead as a route: the base is 117 asm lines == target's 133 instructions, so the peel is five instructions short, and Y2 shows the -5 is the peel itself. This re-confirms s3's instruction-count finding that the four-way in-loop ladder is the original's block structure, from a completely different direction.
 - verdict: CONFIRMED
+
+## Session s8b (2026-08-03, modality: rederive) — floor 2 -> **0**, and the 15:57 Judge remediation discharged
+
+Dispatched with a digest that ended at s7, this session re-derived the deciding
+pass from the other end of the lever ladder (the untouched m2c body at git HEAD)
+before discovering that the earlier s8 session had already found the loop.c
+route and had been FAILed at 15:57 on TWO COMMENT DEFECTS ONLY.  The
+re-derivation stands as independent confirmation and produced three facts the
+ledger did not have.
+
+### CONFIRMED — H-R5: the a1 misplacement is not intrinsic to the Case3 block; s1's shared-`stat` lever introduced it.
+Probe: `tmp/grind/func_80060544/s8/mkbodies.py` reconstructs the untouched m2c
+body from `git show HEAD:src/text1b.c` and re-applies s1/s2's four levers in
+every combination; `s8/gate.py` measures each.  Result: L0 (untouched m2c, three
+DIRECT `s.p_static = &D_800…;` stores) already emits `move $5,$0` BEFORE the
+`la D_8009B7D0` — target's order — and so does every combination that omits the
+shared carrier (L1, L3, L4, L13, L14, L34, L134).  Every combination that
+includes it (L2, L123, L124, L1234, L234) emits la-first.  Corroboration from
+the rule corpus: the 11 regfix rules the sandbox drops for this function contain
+a prologue reorder, six `la/sw $3 -> $2` substs, a `delete @ 77` and an `sll`
+subst — and NO reorder rule for the Case3 a1 set-up, which is what one would
+expect if the pre-s1 form had the order right.
+
+### CONFIRMED — H-R6: the direct-store form's correct order is a reload-spill artifact, and target's build did not take that path.
+Probe: read the `.combine` and `.greg` dumps of L0/L1 (`s8/g_L1/`).  The three
+arm `la`s are hoisted by loop.c into the preheader (insns 340/342/344 setting
+regs 92/93/94, emitted before `NOTE_INSN_LOOP_BEG`), so they are long-lived
+pseudos; the `.greg` conflict table shows regs 92/93/94 conflicting with hard
+regs 2/4/5, `Spilling reg 3.` is printed twice, and none of the three appears in
+the register dispositions.  Reload then rematerialises `la $3` at each use from
+the REG_EQUAL constant — which is why the la is back inside the arm in the
+emitted asm even though `.combine` has it in the preheader, and why the a1
+set-up (the only real insn left in the block at sched1 besides the store and the
+call) is scheduled first WITHOUT any LAUNCH_PRIORITY promotion.
+KILL for the obvious follow-up: this route cannot be steered to `$v0`.  Reload
+chooses spill registers least-used-first, `$v1` is unused in our build, and
+**target contains zero `$v1` references in the whole function** while using `$v0`
+45 times.  A target build that had spilled would have used `$v1` exactly as ours
+does.  So target's arm addresses are ordinary in-block pseudos allocated `$v0`,
+and the direct-store chassis is dead as a route to 0 — not merely worse.
+
+### CONFIRMED — H-R7: the loop.c hoist-block lever is general in its receiver and free only when the receiver is dead.
+Probe: `s8/mkuses.py` + `gate.py`.  A Case3-arm address local `c3` with NO later
+mention is hoisted (launch=0, 119 lines).  Adding a mention of `c3` in any later
+basic block blocks the hoist and fires the promotion; the receiving variable is
+irrelevant — `mid_off`, `geom`, `stat`, `end_off`, and the tail placement all
+give launch=1 at **117** asm lines (== target's 133 instructions), and the
+`mid_off` tail spelling was sandbox-verified at **score 0 / 133 / 133**.  This
+contrasts sharply with s5's carrier-IDENTITY specificity, which applies only to
+the in-arm staging route.
+The negative half is the important one: every hoist-blocking mention that is
+itself LIVE costs instructions target does not have — `p1 = (s32 *)(c3 + 0x70)`
+= 119, `s.pad0C = c3;` in the `Skip` join = 120, and the earlier s8 session's
+route B (post-loop static-table read) = sandbox 11 / 132.  The reason is
+structural: a live carrier must survive loop 1 in a callee-save, whereas target's
+Case3 address dies two instructions after the la.  With s7's peel result (the
+only other dead-store-free route, five instructions short) this is now the third
+independent direction from which a live-data spelling has been measured
+impossible at target's instruction count.
+
+### THE DISPOSITION
+`candidate.c` is the byte-proven 15:56 body with COMMENT-ONLY fixes, exactly as
+the 15:57 ruling instructed ("a re-submission with the two comment fixes and no
+code change will be re-measured identically"):
+  1. `last = 3;` now carries its own `/* FAKE: constant-holder … */` annotation
+     naming the prologue-init-order mechanism, the lever exhaustion (s1-s8) and
+     [[named-local-fake-exception]];
+  2. the `c3` FAKE comment no longer calls the line "the Case3 static-table
+     handle" — it states that the stored value is arbitrary and never read and
+     that the line exists solely to give the pseudo an earlier reference before
+     loop.c runs, then names loop.c:693-701 / loop.c:1062 and
+     sched.c:2496/2531/2601.
+A comment-stripped comparison against `rejected/judge-fail-0803-1556.c` confirms
+the code is byte-for-byte the same (96 significant lines, no diff), and the
+sandbox re-measured score 0 / 133 / 133 with the file in place.
+
+## THE FRONTIER AFTER s8b
+1. **Nothing structural is open.**  The remaining question is a REVIEW question,
+   not a search question: whether the [[dead-store-fake-exception]] construct
+   passes now that both annotation defects are fixed.  The 15:57 ruling states
+   the construct is accepted in substance and the bytes are not in question, so
+   a fresh Judge pass on this exact file is the next step.
+2. **If the family is rejected after all**, the fallback is
+   `memory/grind/func_80060544/prior-floor2-candidate.c` (the s2 form, distance
+   2 / 133, whose only fake is the annotated `last = 3;`), and the function
+   becomes an endgame-lock/escalation candidate whose analysis is already
+   written (s6 + s7's completed case analysis, plus s8b's H-R6/H-R7 kills).
+   Do NOT re-open the structural search: the direct-store chassis (H-R6), the
+   live-carrier spellings (H-R7), the peel (s7 H-F8), the relocations (s7 H-F9),
+   the permuter (s4/s5, 96,679 samples), and every C-level structural axis
+   (s2/s3) are all measured dead.
+3. **Do NOT re-derive the mechanism a third time.**  Read `rejected/*.c` headers
+   and `grep 80060544 docs/grind/decisions.md` before any probing — the
+   dispatched digest lagged a full session on this function and cost s8b roughly
+   half its turns re-finding loop.c:693-701.
