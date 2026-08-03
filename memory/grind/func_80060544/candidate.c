@@ -162,6 +162,38 @@
  *     96,679 samples, one score-0 point ever, and it is the judge-FAILed dead
  *     store.  The permuter axis is closed for this function.
  *
+ * ------------------------------------------------------------------- s7
+ * s7 (2026-08-03, forensics) did NOT change this form either — re-measured
+ * 2 / 133 / 133 with it in place.  What s7 added is the COMPLETION of the
+ * mechanism, by explaining the one measurement that contradicted s6's model:
+ *   - s6's arm_sweep had four forms whose Case3 `la` sets a SINGLE-SET pseudo
+ *     (exactly what birthing_insn_p wants) and none fired the promotion.  The
+ *     reason is loop.c INVARIANT HOISTING: a dedicated Case3 address local is
+ *     assigned once with a loop-invariant value, so the `la` is hoisted into
+ *     loop 1's preheader (`la $22,D_8009B7D0` at out.s:42, before `.L2`, vs the
+ *     base's `la $2,D_8009B7D0` at out.s:89 inside the arm) and there is no
+ *     insn left in the block to promote.  That is also where those forms' +2
+ *     instructions come from.
+ *   - So the mechanism is a TWO-PASS conjunction that conflicts with itself:
+ *     (R1) keeping the `la` in the block requires a destination pseudo set MORE
+ *     THAN ONCE inside the loop — the shared `stat` — and (R2) reg_n_sets == 1
+ *     at sched1 then requires combine to retarget the `la` onto another pseudo,
+ *     which requires deleting a copy, which requires the copied value never to
+ *     be read.  A never-read copy IS a dead store, by definition rather than by
+ *     policy.  The dead-store requirement is therefore a consequence of the
+ *     pass structure, not of the forms tried so far.
+ *   - PEELING the `i == 3` iteration out of loop 1 dissolves the conflict and
+ *     is the first dead-store-free form ever measured to reproduce target's
+ *     Case3 order (launch=1) — but it costs five instructions (112 asm lines vs
+ *     this form's 117 == target's 133 insns), which independently re-confirms
+ *     s3's finding that the in-loop four-way ladder is the original's structure.
+ *   - The s6 frontier (relocate the carrier's other definition so a
+ *     genuinely-live variable is dead at the store) is KILLED: downstream
+ *     relocation leaves the copy undeleted and kills the promotion; the one
+ *     relocation that does fire costs two instructions on its own.
+ *   All s7 rows are diagnostics, banked in
+ *   rejected/case3-carrier-relocation-and-peel.c.
+ *
  * Re-apply this file with `python3 tmp/grind/func_80060544/s3/apply_candidate.py`
  * (the driver resets src/ between sessions — it has now happened three times).
  */

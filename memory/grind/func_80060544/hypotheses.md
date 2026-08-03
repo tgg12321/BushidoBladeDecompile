@@ -717,3 +717,176 @@ test.
 - probe: Read tools/gcc-2.7.2/sched.c:2399-2456 directly and cross-checked against the measured clock-5 ready arrays, where the a1 set-up consistently sits at position 0 with the highest LUID of the three remaining insns.
 - result: rank_for_schedule falls through to `return INSN_LUID (y) - INSN_LUID (x)`, i.e. the HIGHER LUID sorts FIRST. The a1 set-up, emitted by expand_call after all the stores, always holds the highest LUID at clock 5, so the tie is always resolved in its favour deterministically. This does not overturn any s5 verdict -- it sharpens why they were all dead, and it is what makes the birthing promotion the sole remaining lever.
 - verdict: CONFIRMED
+
+## Session s7 (2026-08-03, modality: forensics) — floor 2 -> 2 (the mechanism is now COMPLETE: two passes, not one)
+
+s7 did what a forensics session is for: it found and explained the one
+measurement in the ledger that CONTRADICTED the standing model, and the
+explanation closes the case analysis rather than merely extending it.
+
+### CONFIRMED — H-F7: the s6 arm_sweep anomaly is loop.c INVARIANT HOISTING. A dedicated single-set address local for the Case3 arm is loop-invariant, so the `la` is hoisted into loop 1's preheader and is not in the Case3 block at all when sched1 runs.
+
+**The contradiction s6 left standing.** s6's model is
+`birthing_insn_p == bb_live_regs[dest] && reg_n_sets[dest] == 1`, and s6's own
+`arm_sweep.py` measured four forms (Case3-only local, all-three-arms-own-locals,
+other-two-arms-own-locals, Case3-only pointer-typed local) that DO give the `la`
+a single-set destination pseudo — and all four reported `launch=0`. Under the
+stated model they should all have fired. s6 recorded the anomaly ("single-set-ness
+is neither necessary nor sufficient") without explaining it.
+
+**Probe.** `tmp/grind/func_80060544/s7/anom.py` re-reads the existing s6 dumps and
+prints the `la`'s uid/destination/set-count from `.flow` AND `.combine` (the last
+dump before sched1); then the emitted `out.s` of `aw_W0_base`, `aw_W1_case3_own`
+and `aw_W4_case3_own_ptr` was checked for the POSITION of the `la` relative to
+loop 1's head label.
+
+**Result.**
+```
+aw_W0_base          la D_8009B7D0 at out.s:89  — INSIDE the loop (block .L12 = Case3)
+aw_W1_case3_own     la D_8009B7D0 at out.s:42  — BEFORE .L2, i.e. in the PREHEADER
+aw_W4_case3_own_ptr la D_8009B7D0 at out.s:42  — same
+```
+The address goes into a callee-save (`la $22,D_8009B7D0`) and lives across the
+whole loop, which is exactly where those forms' +2 instructions come from. There
+is no `la` in the Case3 block for adjust_priority to promote, so `launch=0` is
+not a failure of the predicate — the insn under test has left the building.
+**Verdict: CONFIRMED**, and it converts s6's "neither necessary nor sufficient"
+into a precise two-pass mechanism (below).
+
+### CONFIRMED — H-F8: the promotion is reachable with NO dead store when the Case3 arm is PEELED out of loop 1 — and the peel costs five instructions, so it cannot match.
+
+**Statement.** R1 (the `la` must still be in the Case3 block at sched1) and R2
+(its destination must have `reg_n_sets == 1`) pull against each other only
+BECAUSE the arm is inside a loop. Take the `i == 3` iteration out of the loop and
+a dedicated single-set local is no longer hoistable: both conditions hold at once
+with no staging copy anywhere.
+
+**Probe.** `tmp/grind/func_80060544/s7/peel_sweep.py`. Y1 = loop 1 runs `i = 0..2`
+with the two ordinary arms, and the `i == 3` iteration (geom recompute, its own
+address local `c3`, the `s.pad0C` store and the `func_80073728` call) is written
+out after the loop. Y2 = the same peel with the peeled arm still using the shared
+`stat` carrier, as a control that isolates the peel's own cost.
+
+**Result.**
+```
+Y1_peel_own_local    A1-FIRST  la dest r75/1set   launch=1  asm_lines=112
+Y2_peel_shared_stat  a1-after  la dest r75/3sets  launch=0  asm_lines=112
+```
+Y1 is the FIRST form in this function's history that reproduces target's Case3
+block order with no dead store and no coercion — a third, independent
+confirmation of the birthing-promotion model, and the first CLEAN one. It is
+nevertheless rejected: the peel costs five instructions (112 asm lines against
+the base's 117 == target's 133 insns), and Y2 shows the -5 is the peel's own cost,
+not the local's. s3 had already established by instruction count that the
+four-way in-loop ladder is the original's block structure; Y1/Y2 confirm it from
+a second direction. **Verdict: CONFIRMED (mechanism) / KILLED (as a route).**
+Banked in `rejected/case3-carrier-relocation-and-peel.c`.
+
+### KILLED — H-F9 (the s6 frontier): relocating the carrier's OTHER assignment and its later read can make a genuinely-live variable dead at exactly the `s.p_static` store.
+
+**Probe.** `tmp/grind/func_80060544/s7/reloc_sweep.py`, same sub-second gate:
+```
+X0_base (control)          a1-after  r75/3sets  launch=0  la_in_loop=1  117
+X2_endoff_after_loops      a1-after  r77/2sets  launch=0  la_in_loop=1  117
+X3_endoff_between_loops    A1-FIRST  r77/1sets  launch=1  la_in_loop=1  115
+X4_endoff_after_nostage    a1-after  r75/3sets  launch=0  la_in_loop=1  115
+X5_newvar3_late            a1-after  r87/2sets  launch=0  la_in_loop=1  117
+X9_stage_ctl (judge-FAIL)  A1-FIRST  r77/1sets  launch=1  la_in_loop=1  117
+```
+**Result.** Moving `end_off`'s definition DOWNSTREAM of the store, to just before
+the initTexPage tail (X2), leaves the staging copy undeleted (2-set destination)
+and kills the promotion outright. Doing the same for `new_var3` (X5) likewise.
+Moving `end_off`'s definition to sit between the two loops (X3) does flip — but
+the relocation ITSELF costs two instructions (115; X4 shows the -2 is the
+relocation, not the staging), so it can never reach target's 133 — and its Case3
+statement is still a dead store, i.e. still the judge-FAILed family. There is no
+relocation that makes a genuinely-read variable dead at exactly the p_static
+store while leaving the rest of the function on target's instruction count.
+**Verdict: KILLED.**
+
+### THE COMPLETED CASE ANALYSIS (this is the s7 headline)
+
+Everything the scheduler can do at that step is now enumerated, with the
+mechanism named at each rung:
+  - INSN_PRIORITY: universal 1 inside the block, in the winning build too (s5);
+    immovable by dependence height (s3).
+  - ready-list class: universal 3, because every insn on this target has
+    latency 1 (s5).
+  - LUID tiebreak: `rank_for_schedule` falls through to
+    `INSN_LUID (y) - INSN_LUID (x)`, higher LUID first, and the `a1` set-up —
+    emitted by expand_call after all the stores — always holds the highest LUID
+    of the three insns left at clock 5 (s6). Emission order is identical in the
+    winning and losing builds (s5 H-F2) and is inert to all six intra-arm
+    statement orderings and all five call-argument respellings (s2).
+  - therefore the ONLY override is adjust_priority's birthing promotion of the
+    `la` to LAUNCH_PRIORITY (s6), which needs BOTH:
+      (R1) the `la` still in the Case3 block at sched1 — with the arm inside
+           loop 1 that forces a destination pseudo set MORE THAN ONCE in the
+           loop (the shared `stat`), because a single-set address local is
+           loop-invariant and loop.c hoists it (s7 H-F7); and
+      (R2) `reg_n_sets[dest] == 1` at sched1 — which with a multiply-set `stat`
+           can only arise from combine RETARGETING the `la` onto another pseudo,
+           which requires deleting a copy, which requires the copied value never
+           to be read. **That is a dead store, by definition, not by policy.**
+  - the one shape that dissolves R1-vs-R2 without a dead store is peeling the
+    arm out of the loop, and that costs five instructions (s7 H-F8).
+
+So for this function, with target's loop structure held fixed (and s3 pinned that
+structure by instruction count), reproducing target's Case3 instruction order in
+pure C requires a dead store. This is no longer an induction over failed
+respellings — it is a closed case analysis over the two passes that decide the
+outcome, with a measured positive control at each branch.
+
+## THE FRONTIER AFTER s7
+
+State unchanged: `sandbox --disable all` == 2, build_insns == target_insns == 133,
+single non-branch diff hunk = the `move a1,zero` placement in the Case3 arm.
+
+What is left is NOT another scheduler probe. The remaining rungs are rederive /
+synthesis, and s7 sharpens what they must produce: a reconstruction of the
+ORIGINAL C whose Case3 arm naturally leaves a once-assigned local dead at the
+static-table store. The most plausible reading, given the evidence, is that the
+original's `end_off`-equivalent was a variable the programmer set up in the
+prologue and re-used as a scratch handle in the Case3 arm (an idiom that is a
+dead store to a modern reader but ordinary in 1997 hand-written C). Any such
+reconstruction is one sub-second `BB2_SCHED_DEBUG` run from a verdict via
+`s7/reloc_sweep.py` (add a row) — and if one is found, it still has to clear both
+the 117-asm-line size gate and a fresh adversarial cheat-reviewer.
+
+## [s7] The s6 arm_sweep anomaly — four forms whose Case3 `la` has a single-set destination pseudo, none of which fires the LAUNCH_PRIORITY promotion — is unexplained under the birthing_insn_p model.
+- mechanism: A dedicated (Case3-only or per-arm) address local is assigned exactly once in the whole function, and the assigned value `&D_8009B7D0` is LOOP-INVARIANT. loop.c hoists it into loop 1's preheader, so at sched1 there is no `la` in the Case3 block at all — the promotion has no candidate, which is why `launch=0` despite the predicate being satisfied on paper. The shared `stat` carrier is immune to the hoist precisely because it is set in all three arms (three sets inside the loop).
+- probe: tmp/grind/func_80060544/s7/anom.py re-read the s6 dumps for the la's uid/destination/set-count in .flow and .combine, and the emitted out.s of aw_W0_base / aw_W1_case3_own / aw_W4_case3_own_ptr was inspected for the la's position relative to loop 1's head label.
+- result: base emits `la $2,D_8009B7D0` at out.s:89, inside the Case3 block (.L12); both single-set forms emit `la $22,D_8009B7D0` at out.s:42, BEFORE the loop head .L2 — hoisted into the preheader and held in a callee-save across the whole loop, which is exactly where their +2 instructions come from. The birthing predicate was never the thing that failed.
+- verdict: CONFIRMED
+
+- [s7] The Case3 promotion requires TWO conditions that pull against each other while the arm is inside loop 1: (R1) the `la` must still be in the block at sched1, which forces a destination pseudo set more than once inside the loop (the shared `stat`), because any single-set address local is loop-invariant and loop.c hoists it; and (R2) `reg_n_sets[dest] == 1` at sched1, which with a multiply-set `stat` can only come from combine retargeting the la onto another pseudo, which requires deleting a copy, which requires the copied value never to be read — a dead store by definition.
+
+## [s7] Peeling the `i == 3` iteration out of loop 1 dissolves the R1/R2 conflict: a dedicated single-set address local for the peeled arm is no longer loop-invariant-hoistable, so the promotion can fire with no dead store anywhere.
+- mechanism: loop.c can only hoist out of a loop. With the Case3 body written after the loop, `c3 = (s32)&D_8009B7D0;` stays where it is, keeps `reg_n_sets == 1`, and is live into the following `s.p_static` store — satisfying birthing_insn_p directly.
+- probe: tmp/grind/func_80060544/s7/peel_sweep.py — Y1 (peeled arm with its own local `c3`) and Y2 (peeled arm still using the shared `stat`, as a control isolating the peel's own cost), both measured with the instrumented cc1 gate.
+- result: Y1 = A1-FIRST, la dest single-set, launch=1, 112 asm lines. Y2 = a1-after, la dest 3 sets, launch=0, 112 asm lines. Y1 is the first form ever measured that reproduces target's Case3 block order with NO dead store — a clean, independent confirmation of the birthing model — but the peel costs five instructions against the base's 117 (== target's 133 insns), and Y2 shows the -5 is the peel itself. So the mechanism is confirmed and the route is dead. Banked in rejected/case3-carrier-relocation-and-peel.c.
+- verdict: CONFIRMED (mechanism) / KILLED (as a route to the match)
+
+## [s7] The s6 frontier — some relocation of the carrier's OTHER assignment and its later read can make a variable that is genuinely live in the function's semantics happen to be dead at exactly the s.p_static store, satisfying birthing_insn_p without a dead store.
+- mechanism: The predicate is a conjunction of a liveness property and a set-count property, both of which are function-global; s6 only ever varied WHICH local was staged, never WHERE that local's other definition and its later read sat. Moving the definition downstream of the Case3 store should preserve deadness-at-the-store while keeping the variable genuinely read.
+- probe: tmp/grind/func_80060544/s7/reloc_sweep.py, six variants on the sub-second instrumented-cc1 gate: end_off's definition moved to just before the initTexPage tail with staging kept (X2) and without (X4, cost control); moved to between the two loops (X3); new_var3's definition moved down to just before its own uses with staging through it (X5); base and the judge-FAILed staging form as negative/positive controls.
+- result: X2 leaves the staging copy UNDELETED (la destination still 2 sets) and does not fire — moving the other definition downstream of the store breaks the combine retarget outright. X5 likewise (2 sets, launch=0). X3 fires (1 set, LAUNCH_PRIORITY, A1-FIRST) but the relocation itself costs two instructions (115 asm lines; X4 shows the -2 is the relocation, not the staging), so it cannot reach target's 133 — and its Case3 statement is still a dead store. No relocation makes a genuinely-read variable dead at the store while leaving the function on target's instruction count.
+- verdict: KILLED
+
+## [s7] The s6 arm_sweep anomaly — four forms whose Case3 `la` has a single-set destination pseudo, none of which fires the LAUNCH_PRIORITY promotion — has an explanation, and it is not a failure of birthing_insn_p.
+- mechanism: A dedicated (Case3-only or per-arm) address local is assigned exactly once in the whole function and the value &D_8009B7D0 is LOOP-INVARIANT, so loop.c hoists the la into loop 1's preheader. At sched1 there is no la in the Case3 block at all, so adjust_priority has no candidate to promote. The shared `stat` carrier is immune to the hoist precisely because it is set in all three arms (three sets inside the loop).
+- probe: tmp/grind/func_80060544/s7/anom.py re-read the existing s6 dumps for the la's uid/destination/set count in .flow and .combine; the emitted out.s of aw_W0_base, aw_W1_case3_own and aw_W4_case3_own_ptr was then inspected for the la's position relative to loop 1's head label .L2.
+- result: Base emits `la $2,D_8009B7D0` at out.s:89, inside the Case3 block (.L12). Both single-set forms emit `la $22,D_8009B7D0` at out.s:42 — BEFORE .L2, i.e. hoisted into the preheader and held in a callee-save across the whole loop, which is exactly where their +2 instructions come from. The birthing predicate was never what failed.
+- verdict: CONFIRMED
+
+## [s7] The s6 frontier: relocating the staging carrier's OTHER assignment (and its later read) can make a variable that is genuinely live in the function's semantics happen to be dead at exactly the s.p_static store, satisfying birthing_insn_p without a dead store.
+- mechanism: The predicate is a conjunction of a liveness property and a set-count property, both function-global; s6 only varied WHICH local was staged, never WHERE its other definition and later read sat. Moving the definition downstream of the Case3 store should preserve deadness-at-the-store while keeping the variable genuinely read.
+- probe: tmp/grind/func_80060544/s7/reloc_sweep.py — six variants on the sub-second instrumented-cc1 gate (BB2_SCHED_DEBUG=1, reduced TU tmp/perm_60544/v_base.c), reporting emitted order, the la's destination pseudo and its set count in .combine (the last dump before sched1), LAUNCH_PRIORITY appearance, whether the la is still inside loop 1, and asm line count: end_off's definition moved to just before the initTexPage tail with staging (X2) and without (X4, cost control); moved to between the two loops (X3); new_var3's definition moved down to just before its own uses with staging through it (X5); plus base and the judge-FAILed staging form as negative/positive controls.
+- result: X2 leaves the staging copy UNDELETED (la destination still 2 sets) and does not fire — a downstream definition breaks combine's retarget outright; X5 likewise (2 sets, launch=0). X3 does fire (1 set, LAUNCH_PRIORITY, A1-FIRST) but the relocation itself costs two instructions (115 asm lines; X4, the same relocation without staging, is also 115), so it can never reach target's 133 — and its Case3 statement is still a dead store. No relocation makes a genuinely-read variable dead at exactly the p_static store while leaving the function on target's instruction count.
+- verdict: KILLED
+
+## [s7] Peeling the i == 3 iteration out of loop 1 dissolves the R1/R2 conflict, letting a dedicated single-set address local stay in the Case3 block and fire the promotion with no dead store anywhere.
+- mechanism: loop.c can only hoist out of a loop. With the Case3 body written after the loop, `c3 = (s32)&D_8009B7D0;` stays put, keeps reg_n_sets == 1, and is live into the following s.p_static store — satisfying bb_live_regs[dest] && reg_n_sets[dest] == 1 directly, with no staging copy to delete.
+- probe: tmp/grind/func_80060544/s7/peel_sweep.py — Y1 (loop runs i = 0..2 with the two ordinary arms; the i == 3 iteration written out after the loop with its own address local) and Y2 (the same peel with the peeled arm still using the shared `stat` carrier, as a control isolating the peel's own cost).
+- result: Y1 = A1-FIRST, la destination single-set, launch=1, 112 asm lines. Y2 = a1-after, 3 sets, launch=0, 112 asm lines. Y1 is the FIRST form in this function's history that reproduces target's Case3 block order with no dead store and no coercion — a third, independent and first CLEAN confirmation of the birthing-promotion model. It is dead as a route: the base is 117 asm lines == target's 133 instructions, so the peel is five instructions short, and Y2 shows the -5 is the peel itself. This re-confirms s3's instruction-count finding that the four-way in-loop ladder is the original's block structure, from a completely different direction.
+- verdict: CONFIRMED

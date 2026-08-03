@@ -515,3 +515,105 @@ score masks these. Only non-branch hunks are real.
 - [s6] GENERALISABLE to any queue item whose residual is a single intra-block instruction placement with a matching instruction count: GCC 2.7.2's sched1 resolves an all-tied ready list by LUID, so emission order normally wins; the one thing that overrides it is adjust_priority's birthing_insn_p promotion to LAUNCH_PRIORITY, which fires for an insn setting a LIVE pseudo whose reg_n_sets is 1. BB2_SCHED_DEBUG=1 makes this directly visible; check it before any structural C search.
 
 - [s6] HARNESS GOTCHAS re-confirmed: tools/gcc-2.7.2/cc1 is a Linux ELF and must be run under WSL (Git Bash gives `Exec format error`), and it is the instrumented binary -- tools/gcc-2.7.2/build/cc1 contains ZERO occurrences of RANKDBG/SCHEDDBG while tools/gcc-2.7.2/cc1 contains 1 and 8 respectively.
+
+## Measured facts (session s7, 2026-08-03, modality: forensics)
+
+28. **PROCESS (sixth consecutive occurrence).** `src/text1b.c` was again at the
+    floor-18 session-start form. `python3 tmp/grind/func_80060544/s3/apply_candidate.py`
+    restored it and `sandbox func_80060544 --disable all` re-measured
+    **score 2 / build_insns 133 / target_insns 133** with the candidate form in
+    place in `src/` at session end. Run apply_candidate.py FIRST, every session.
+
+29. **THE s6 ANOMALY IS RESOLVED — it is loop.c invariant hoisting, not a
+    failure of birthing_insn_p.** s6 measured four forms whose Case3 `la` has a
+    single-set destination pseudo (the exact thing birthing_insn_p wants) and
+    recorded that none of them fired the promotion, concluding "single-set-ness
+    is neither necessary nor sufficient". The real reason is that a dedicated
+    address local for the Case3 arm is assigned exactly once with a
+    LOOP-INVARIANT value, so loop.c hoists the `la` into loop 1's preheader:
+    `aw_W0_base` emits `la $2,D_8009B7D0` at `out.s:89` inside the Case3 block,
+    while `aw_W1_case3_own` and `aw_W4_case3_own_ptr` emit
+    `la $22,D_8009B7D0` at `out.s:42`, BEFORE the loop head `.L2`, holding the
+    address in a callee-save across the whole loop (which is where their +2
+    instructions come from). There is no `la` left in the block for
+    adjust_priority to promote. The shared `stat` carrier is immune to the hoist
+    only because it is set in all three arms. Probe:
+    `tmp/grind/func_80060544/s7/anom.py`.
+
+30. **THE MECHANISM IS A TWO-PASS CONJUNCTION (loop.c AND combine), and the two
+    halves pull against each other.** For the promotion to fire, the Case3 `la`
+    must (R1) still be in the block at sched1 — which, with the arm inside
+    loop 1, forces a destination pseudo that is set more than once INSIDE the
+    loop, i.e. the shared `stat`, since any single-set address local is
+    loop-invariant and gets hoisted (fact 29) — and (R2) have
+    `reg_n_sets[dest] == 1` at sched1, which with a multiply-set `stat` can only
+    arise from combine RETARGETING the `la` onto another pseudo, which requires
+    deleting a copy, which requires the copied value never to be read.
+    **A carrier whose copied value is never read is a dead store by definition,
+    not by policy.** This upgrades s6's inductive "every measured route is a dead
+    store" to a closed case analysis over the two passes that decide the outcome.
+
+31. **THE FIRST CLEAN ROUTE EVER MEASURED — and it is five instructions too
+    short.** The one shape that dissolves the R1/R2 conflict is to PEEL the
+    `i == 3` iteration out of loop 1 (loop runs `i = 0..2`; the Case3 body
+    follows the loop with its own address local): there is then no loop to hoist
+    out of, the local stays single-set, and the promotion fires with no staging
+    copy anywhere. `tmp/grind/func_80060544/s7/peel_sweep.py`:
+    `Y1_peel_own_local` = A1-FIRST / la dest single-set / launch=1 /
+    **112 asm lines**; `Y2_peel_shared_stat` (same peel, shared carrier) =
+    a1-after / 3 sets / launch=0 / 112. The base is 117 asm lines == target's 133
+    instructions, so the peel is five instructions off and cannot match; Y2
+    isolates the -5 as the peel's own cost, not the local's. This independently
+    re-confirms s3's finding (from a completely different direction) that the
+    four-way in-loop ladder is the original's block structure.
+
+32. **THE s6 FRONTIER IS KILLED: relocating the carrier's other definition does
+    not produce a live-data route.** `tmp/grind/func_80060544/s7/reloc_sweep.py`
+    (sub-second instrumented-cc1 gate; columns = emitted order, la destination
+    and its .combine set count, LAUNCH_PRIORITY seen, `la` still inside the loop,
+    asm lines):
+    ```
+    X0_base (control)          a1-after  r75/3sets  launch=0  in-loop  117
+    X2_endoff_after_loops      a1-after  r77/2sets  launch=0  in-loop  117
+    X3_endoff_between_loops    A1-FIRST  r77/1sets  launch=1  in-loop  115
+    X4_endoff_after_nostage    a1-after  r75/3sets  launch=0  in-loop  115
+    X5_newvar3_late            a1-after  r87/2sets  launch=0  in-loop  117
+    X9_stage_ctl (judge-FAIL)  A1-FIRST  r77/1sets  launch=1  in-loop  117
+    ```
+    Moving `end_off`'s definition DOWNSTREAM of the store (to just before the
+    initTexPage tail) leaves the staging copy undeleted and kills the promotion;
+    the same for `new_var3`. Moving it to between the two loops does fire, but
+    the relocation itself costs two instructions (X4 is the cost control), so it
+    can never reach target's 133 — and its Case3 statement is still a dead store.
+
+- [s7] Session start: src/text1b.c was AGAIN at the floor-18 session-start form (sixth consecutive session); apply_candidate.py restored it and the sandbox re-measured score 2 / build_insns 133 / target_insns 133. Unchanged at session end — s7 proposed no new candidate form (the floor-2 form from s2 remains the best known).
+
+- [s7] THE s6 ANOMALY IS RESOLVED: the four single-set-destination forms in s6's arm_sweep do not fail birthing_insn_p — their `la` is HOISTED OUT OF THE LOOP by loop.c (a dedicated Case3 address local is assigned once with a loop-invariant value), so there is no `la` in the Case3 block for adjust_priority to promote. Measured directly in the emitted asm: base has `la $2,D_8009B7D0` at out.s:89 inside block .L12; the single-set forms have `la $22,D_8009B7D0` at out.s:42, before the loop head .L2, living in a callee-save across the loop (their +2 instructions). Probe: tmp/grind/func_80060544/s7/anom.py.
+
+- [s7] THE MECHANISM IS TWO PASSES, NOT ONE, and they conflict: (R1) keeping the `la` in the Case3 block requires a destination pseudo set MORE THAN ONCE inside loop 1 (the shared `stat`), because a single-set address local is loop-invariant and loop.c hoists it; (R2) `reg_n_sets[dest] == 1` at sched1 then requires combine to RETARGET the la onto another pseudo, which requires deleting a copy, which requires the copied value never to be read. A copied value that is never read IS a dead store — so the dead-store requirement is a consequence of the pass structure, not an artifact of the forms tried so far.
+
+- [s7] FIRST CLEAN (dead-store-free) ROUTE EVER MEASURED, and it is dead on size: peeling the `i == 3` iteration out of loop 1 removes the loop the hoist happens out of, so a dedicated single-set address local for the peeled arm keeps the la in place and the promotion fires. Y1_peel_own_local = A1-FIRST, la dest single-set, launch=1, 112 asm lines vs the base's 117 (== target's 133 insns); Y2_peel_shared_stat (same peel, shared carrier) = launch=0, also 112, isolating the -5 as the peel's own cost. Independently re-confirms s3's instruction-count finding that the four-way in-loop ladder is the original's block structure. Probe: tmp/grind/func_80060544/s7/peel_sweep.py; banked in rejected/case3-carrier-relocation-and-peel.c.
+
+- [s7] THE s6 FRONTIER IS KILLED (reloc_sweep.py): relocating the staging carrier's OTHER definition downstream of the Case3 store leaves the copy undeleted and kills the promotion (end_off moved to just before the initTexPage tail: 2-set destination, launch=0; new_var3 moved to just before its own uses: 2-set destination, launch=0). Relocating end_off's definition to between the two loops DOES fire (1 set, LAUNCH_PRIORITY) but the relocation itself costs two instructions (115 asm lines; the no-staging control is also 115), so it cannot reach target's 133 — and it is still a dead store. There is no relocation that makes a genuinely-read variable dead at exactly the p_static store while leaving the function on target's instruction count.
+
+- [s7] GENERALISABLE (beyond this function): when a residual is one instruction's placement inside an otherwise byte-identical block, check BOTH passes — loop.c invariant hoisting decides whether the insn is even in the block, and combine's retarget/`reg_n_sets` bookkeeping decides whether sched1's adjust_priority can promote it. A single-set destination pseudo is not automatically a win: if the value is loop-invariant, single-set-ness is exactly what makes loop.c take the insn out of the block. `BB2_SCHED_DEBUG=1` plus a check of the emitted `la`'s position relative to the loop head measures both in one sub-second compile.
+
+- [s7] HARNESS: tmp/grind/func_80060544/s7/reloc_sweep.py and s7/peel_sweep.py extend the s6 gate with two new columns — `la_in_loop` (was the address hoisted out of the loop?) and the la's set count read from `.combine` rather than `.flow` (combine is the last dump before sched1, so its RTL is what sched1 actually sees; the two differ exactly when the retarget fires). Both must be run under WSL (`bash tools/wsl.sh 'python3 …'`) because tools/gcc-2.7.2/cc1 is a Linux ELF; the Windows-side python3 fails with WinError 193.
+
+- [s7] Floor re-measured at session start and end with the s2 candidate form in place in src/text1b.c: sandbox func_80060544 --disable all = score 2, build_insns 133, target_insns 133. s7 proposed no new candidate form; the s2 form remains the best known. (src/text1b.c was AGAIN found at the floor-18 session-start form — sixth consecutive session — and restored with tmp/grind/func_80060544/s3/apply_candidate.py.)
+
+- [s7] THE s6 ANOMALY IS RESOLVED. s6 measured four forms whose Case3 la has a single-set destination pseudo and recorded that none fired the promotion, concluding 'single-set-ness is neither necessary nor sufficient'. The real cause is loop.c invariant hoisting: base emits `la $2,D_8009B7D0` at out.s:89 inside the Case3 block, while aw_W1_case3_own and aw_W4_case3_own_ptr emit `la $22,D_8009B7D0` at out.s:42, before the loop head .L2, holding the address in a callee-save across the whole loop (their +2 instructions). No la in the block means nothing for adjust_priority to promote.
+
+- [s7] THE MECHANISM IS A TWO-PASS CONJUNCTION THAT CONFLICTS WITH ITSELF: (R1) keeping the la in the Case3 block at sched1 requires a destination pseudo set MORE THAN ONCE inside loop 1 — i.e. the shared `stat` carrier — because any single-set address local is loop-invariant and gets hoisted; (R2) reg_n_sets[dest] == 1 at sched1 then requires combine to RETARGET the la onto another pseudo, which requires deleting a copy, which requires the copied value never to be read. A never-read copy is a dead store by definition. The dead-store requirement is therefore a consequence of the pass structure, not an artifact of the forms tried so far — this upgrades s6's inductive statement to a closed case analysis.
+
+- [s7] THE FIRST DEAD-STORE-FREE ROUTE EVER MEASURED, and it is five instructions off: peeling the i == 3 iteration out of loop 1 (Y1_peel_own_local) gives A1-FIRST / single-set la destination / launch=1 at 112 asm lines against the base's 117 (== target's 133 insns). The control Y2 (same peel, shared carrier) is also 112 with launch=0, isolating the -5 as the peel's own cost.
+
+- [s7] RELOCATION TABLE (reloc_sweep.py; columns = order, la destination/set count in .combine, LAUNCH_PRIORITY, la still in loop, asm lines): X0_base a1-after r75/3sets launch=0 in-loop 117; X2_endoff_after_loops a1-after r77/2sets launch=0 in-loop 117; X3_endoff_between_loops A1-FIRST r77/1sets launch=1 in-loop 115; X4_endoff_after_nostage a1-after r75/3sets launch=0 in-loop 115; X5_newvar3_late a1-after r87/2sets launch=0 in-loop 117; X9_stage_ctl (the judge-FAILed form) A1-FIRST r77/1sets launch=1 in-loop 117.
+
+- [s7] THE COMPLETED CASE ANALYSIS for the Case3 block, with each rung's mechanism named: INSN_PRIORITY is a universal 1 in the winning build too and is immovable by dependence height (s5/s3); the ready-list class is a universal 3 because every insn on this target has latency 1 (s5); rank_for_schedule falls through to INSN_LUID(y) - INSN_LUID(x), higher LUID first, and the a1 set-up emitted by expand_call after the stores always holds the highest LUID at clock 5 (s6), with emission order identical in the winning and losing builds (s5) and inert to all six intra-arm statement orderings and all five call-argument respellings (s2); therefore the birthing promotion is the ONLY override, and s7 shows it requires either a dead store (in-loop) or a five-instruction loop peel.
+
+- [s7] GENERALISABLE beyond this function: when a residual is one instruction's placement inside an otherwise byte-identical block, check BOTH passes — loop.c invariant hoisting decides whether the insn is even in the block, and combine's retarget/reg_n_sets bookkeeping decides whether sched1's adjust_priority can promote it. A single-set destination pseudo is not automatically a win: if the value is loop-invariant, single-set-ness is exactly what makes loop.c take the insn OUT of the block. One sub-second instrumented-cc1 compile measures both (BB2_SCHED_DEBUG=1 plus the emitted la's position relative to the loop head).
+
+- [s7] HARNESS: s7/reloc_sweep.py and s7/peel_sweep.py extend the s6 gate with two new columns — la_in_loop (was the address hoisted?) and the la's set count read from .combine rather than .flow (combine is the last dump before sched1, so its RTL is what sched1 sees; the two differ exactly when the retarget fires). Both must run under WSL (`bash tools/wsl.sh 'python3 …'`): tools/gcc-2.7.2/cc1 is a Linux ELF and the Windows python3 fails with WinError 193.
+
+- [s7] No build-pipeline file was touched: no edits to regfix.txt / asmfix.txt / .claude/rules / engine / tools / Makefile / *.ld, no queue done, no retire, no commit. The only tracked-file change is src/text1b.c carrying the unchanged s2 candidate form, plus the memory/grind ledger updates.

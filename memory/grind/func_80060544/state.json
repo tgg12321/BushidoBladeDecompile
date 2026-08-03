@@ -1,7 +1,7 @@
 {
  "func": "func_80060544",
  "file": "text1b",
- "session_count": 6,
+ "session_count": 7,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -39,23 +39,29 @@
    "floor": 2,
    "modality": "forensics",
    "headline": "Forensics NAMED the exact decision: sched1's adjust_priority()/birthing_insn_p() promotes the Case3 `la` to LAUNCH_PRIORITY in the winning build, and it fires only for a carrier that is DEAD after the"
+  },
+  {
+   "session": 7,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "Forensics closed the case analysis: s6's unexplained anomaly is loop.c invariant hoisting, so the Case3 promotion is a TWO-pass conjunction (loop.c keeps the la in the block only for a multiply-set ps"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Some restructuring of the FUNCTION (not of the Case3 arm) can make a variable that is genuinely live in the original semantics happen to be DEAD at exactly the s.p_static store while still carrying exactly one other assignment -- satisfying birthing_insn_p without any dead store.",
-   "mechanism": "s6's confirmed predicate is a conjunction of a liveness property and a set-count property of the carrier. Both are function-global properties, not arm-local ones: the s6 sweep only varied WHICH existing local is staged, never WHERE that local's other assignment and its later reads sit. Moving a variable's single other assignment, or moving its later read to before the loop, changes the same predicate without touching the Case3 arm at all.",
-   "next_probe": "Extend tmp/grind/func_80060544/s6/carrier_setcount.py with variants that keep the same carrier but relocate its OTHER assignment and its later read (e.g. compute end_off/new_var6/new_var3 after the loops instead of in the prologue; move the initTexPage argument computation; return the expression directly instead of through new_var6). For each, report launch and asm size; anything with launch=1 AND asm_lines==117 is then worth a sandbox run and a cheat-reviewer read. The gate is sub-second per variant."
+   "hypothesis": "The original C's Case3 arm naturally left a once-assigned local dead at the static-table store \u2014 i.e. the construct our Judge reads as a dead store is what the 1997 author actually wrote (a scratch handle set up in the prologue and re-used in the arm), and a rederive/synthesis reconstruction should produce it without being a manufactured coercion.",
+   "mechanism": "s7 closes the case analysis: with the in-loop four-way ladder that s3 pinned by instruction count, target's Case3 order is reachable ONLY via combine retargeting the la onto a pseudo whose copy is never read. That is a property of the original's variable usage, not of our spelling \u2014 so if target really is pure C, the original had such a variable. The task is to reconstruct WHY, not to manufacture one.",
+   "next_probe": "A rederive session should start from the variable inventory rather than the asm: which of the function's values would a PsyQ-era programmer plausibly have kept in a scratch local that is written in the Case3 arm and never read from there (e.g. an offset/handle reused as a temporary), and does that reading survive a fresh adversarial cheat-reviewer as ordinary code rather than a fake? Any reconstruction is one row in tmp/grind/func_80060544/s7/reloc_sweep.py away from a sub-second verdict (gate: launch=1 AND asm_lines == 117), then a sandbox run."
   },
   {
-   "hypothesis": "The remaining ladder rungs for func_80060544 are rederive and synthesis, not another structural or permuter pass.",
-   "mechanism": "s2/s3 measured the C-level structural surface flat in every named direction; s4/s5 measured the permuter dry over 96,679 samples from three chassis; s5 named sched1 as the deciding pass; s6 has now named the deciding decision and reduced the whole search to a single predicate on one carrier variable. Nothing in the structural or random-search modalities can address a predicate about liveness and assignment counts of a specific pseudo.",
-   "next_probe": "A rederive/synthesis session should start from the s6 predicate rather than from the asm: ask what ORIGINAL C would naturally leave a once-assigned variable dead at the Case3 static-table store (a plausible reading: the original's `end_off`-equivalent was assigned near its use at the end of the function and something else carried the table address), and reconstruct the function from that shape. Every reconstruction is one sub-second BB2_SCHED_DEBUG check away from a verdict."
+   "hypothesis": "Do NOT re-probe, on top of the s5/s6 list: loop-peeling the Case3 arm, per-arm or Case3-only address locals, or relocating a staging carrier's other definition.",
+   "mechanism": "s7 measured all three dead with mechanism: per-arm/Case3-only locals are loop-invariant and hoisted out of the block by loop.c (+2 insns, launch=0); peeling fires the promotion cleanly but costs five instructions (112 vs 117); downstream relocation of the carrier's definition leaves the copy undeleted (launch=0) and the one relocation that fires costs two instructions on its own. Combined with the s5/s6 do-not-probe list (INSN_PRIORITY, dependence height, ready-list class, LOG_LINKS edges, emission order, statement order, dispatch shape, loop shape, declaration order, carrier type, the call-site cast, and further permuter campaigns), the scheduler-side surface is exhausted.",
+   "next_probe": "None \u2014 this entry exists to stop a future session re-spending itself on axes closed with measurements. Read hypotheses.md s5/s6/s7 first if you believe one is still open."
   },
   {
-   "hypothesis": "Do NOT re-probe INSN_PRIORITY, dependence height, ready-list class, LOG_LINKS/dependence edges, emission order, statement order, dispatch shape, loop shape, declaration order, carrier type, the call-site cast, or another permuter campaign for this function.",
-   "mechanism": "All of these are now measured dead with instrumentation: priority and class are universal ties on a latency-1 target (s5); the dependence graph and ready-list arrival order are identical in the winning and losing builds (s6, clocks 1-4 identical); emission order is identical (s5 H-F2); the C-level structural axes are flat (s2/s3); the permuter's score is quantised with no gradient (s4/s5).",
-   "next_probe": "None -- this entry exists to stop a future session re-spending a full session on an axis that has been closed with measurements. If a session believes one of these is still open, read hypotheses.md s5 and s6 first."
+   "hypothesis": "If a rederive/synthesis session also comes back dry, the function is an endgame-lock candidate whose analysis is already written and does not need re-deriving.",
+   "mechanism": "The complete two-pass case analysis (s6 + s7) is the argument such an escalation would cite: every tiebreak in sched1's ready list is deterministic and favours the a1 set-up; the sole override is adjust_priority's birthing promotion; with target's loop structure held fixed the promotion requires a never-read copy. Exhaustion is the driver's call, not a session's, and the modality ladder still has rederive and synthesis untried.",
+   "next_probe": "None from a forensics session. When the driver assigns `escalation` modality, the entry can be written straight from hypotheses.md s7's 'THE COMPLETED CASE ANALYSIS' section plus the endgame-lock gates (scan_hand_coded tier for canonical-asm; a citable SOTN-master precedent for the dead-store family)."
   }
  ],
  "judge_constraints": [
