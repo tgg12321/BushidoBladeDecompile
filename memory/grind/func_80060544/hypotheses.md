@@ -219,3 +219,127 @@ Next probes, in order — this is now a FORENSICS question, not a structural one
 - probe: Five respellings measured: both arguments hoisted into locals at the top of the arm; only the struct-pointer argument hoisted; the constant argument carried in a named local (a constant-holder, run as a DIAGNOSTIC only and never proposed as a closing form); the call result routed through an extra pseudo; the stored `mid_off` value routed through an extra pseudo. Separately, a function-wide `S544 *sarg = &s;` assigned in the prologue, used for the func_80073728 call alone and for every call.
 - result: All five respellings measure EXACTLY 2 with insns 133 — completely inert, GCC folds every one back to the same RTL. That no-change result is the informative one: the a1 set-up's position is fixed by the call expansion, not by how the argument is spelled. The function-wide named pointer is separately catastrophic (44 and 38, insns 137) because a long-lived pointer pseudo forces a callee-save home for `&s` instead of the per-call `addiu $a0,$sp,0x18` that both target and our baseline emit. Banked in memory/grind/func_80060544/rejected/case3-call-arg-respellings.c.
 - verdict: KILLED
+
+## Session s3 (2026-08-03, modality: structural) — floor 2 -> 2 (no change; two axes killed, one counter-example found)
+
+### KILLED
+
+**H5c — the `move $a1,$zero` placement is reachable by reshaping the CONTROL
+FLOW that creates the Case3 basic block (the dispatch), rather than the arm's
+contents.** KILLED, and informative: every reshape moves the instruction COUNT
+off target's 133. Measured from the floor-2 base: natural if/else-if chain 18
+(insns 126); if/else with the `i == last` arm tested first 22 (122); real
+`switch (i)` with cases 1/2 shared 36 (137); the goto ladder with the
+`i == last` test hoisted to the front 14 (126). The m2c four-way ladder
+(`i<3 / i>0 / i==0 / i==last`, three labelled arms, shared `Skip:` join) is
+therefore not an artifact to be cleaned up — it is the original's block
+structure. Banked in `rejected/case3-dispatch-and-loop-reshapes.c`.
+
+**H5d — the placement is reachable by reshaping the enclosing LOOP, or by
+declaration order / carrier type / the call's cast.** KILLED. `while (i < 4)`
+and swapping the two increments are exactly INERT (2 / 133); `idx` incremented
+at the top of `Skip` gives 4 (132); a `for (i = 0; i < 4; i++)` header gives 6
+(and destroys the s1 `last = 3` prologue lever). `s32 *stat` instead of
+`s32 stat` + casts, `stat` declared first, `stat` declared last, and
+`func_80073728((GameObj *)(&s), 0)` (the spelling every other call site of this
+callee in text1b.c uses) are all exactly INERT at 2 / 133. Same file.
+
+**H5' probe (b) — "if sched1 owns it, raise the dependence height of the
+`sw p_static` inside the block."** KILLED with measurements. `stat += idx;`
+(one extra real insn, 3 / 134) and `stat += idx; stat += prev;` (two, 4 / 135)
+both insert the new chain insns BEFORE the a1 set-up and leave it exactly where
+it was — immediately preceding the `sw` that precedes the `jal`. At chain
+heights 1, 2 and 3 the a1 set-up never migrates to the front of the block; a
+pure INSN_PRIORITY tie would have flipped by height 2. (`stat += i - last;`
+folds away entirely — `i == last` is provable in that arm — so those two probes
+are not evidence.) Diagnostics only, never candidate forms; banked in
+`rejected/sched-height-probes-diagnostic.c`.
+
+### CONFIRMED (new fact, not a closing lever)
+
+**H7 — our own toolchain DOES emit both argument set-ups at the FRONT of a
+`func_80073728` call block; the Case3 block is the exception, not the rule.**
+`func_8005D46C` (src/text1b.c:12718) calls the same callee twice in the same
+shape (a run of struct-field stores, then `ret = func_80073728((GameObj *)(&s),
+0);`). Its cheat-free sandbox object emits `addiu a0,sp,16 / move a1,zero` as
+the first two instructions of the call's basic block, ahead of the entire store
+cluster — which is exactly the order func_80060544's TARGET has and our build
+of func_80060544 does not. Probe: `sandbox func_8005D46C --disable all`, then
+objdump the sandbox object (excerpt in `tmp/grind/func_80060544/s3/results.txt`).
+So the placement is neither a toolchain limitation nor a property of the callee;
+it is a property of this particular basic block. The visible difference is size
+and chain depth — the sibling's block is ~20 insns with several independent
+chains of height >= 4 and nine field stores, the Case3 block is five insns with
+one chain of height 2 — but note that s3 separately measured that *adding*
+chain height to the Case3 block does not reproduce the sibling's behaviour, so
+"make the block bigger" is not by itself the lever.
+
+## THE FRONTIER AFTER s3 — still ONE hypothesis, 2 points, and it is now a FORENSICS question
+
+State unchanged: `sandbox --disable all` == 2, `build_insns` == `target_insns`
+== 133, single non-branch diff hunk = delete/insert of `move a1,zero` in the
+Case3 arm. What s3 adds is that the C-level structural surface is now measured
+flat in EVERY direction anyone has named: intra-arm statement order (s2), call
+argument/result respelling (s2), dispatch shape (s3), loop shape (s3),
+declaration order (s3), carrier type (s3), call-site cast (s3), and
+dependence height (s3). Nothing at the C level moves the insn.
+
+The precise open question, in scheduler terms: GCC 2.7.2's sched.c schedules a
+block BACKWARD from its end. Both builds place `sw p_static` first (it ends up
+immediately before the `jal`). At the NEXT step our build picks the `a1`
+set-up and target's build picks the address chain. `rank_for_schedule`
+(tools/gcc-2.7.2/sched.c:2399) compares (1) INSN_PRIORITY, (2) a three-way
+class relative to `last_scheduled_insn` — data-dependent = 1 (worst),
+anti/output = 2, independent-or-latency-1 = 3 (best) — and (3) INSN_LUID, with
+the HIGHER LUID preferred. The chain insns are data-dependent on the just-placed
+`sw` (class 1) and the a1 set-up is independent (class 3); the a1 set-up is
+emitted by expand_call after the stores, so it also holds the higher LUID. Both
+tiebreaks favour a1. Therefore target's build must have beaten a1 on
+INSN_PRIORITY outright — and s3 measured that adding chain height does NOT
+achieve that, which means the difference is in a1's OWN priority (or in whether
+the a1 set-up is even in the ready list at that step), not in the chain's.
+
+Next probes, in order:
+(a) `cc1 <build-flags> -da` on the sandbox's preprocessed file; read the
+    `.sched` dump for the Case3 block and record the actual INSN_PRIORITY of
+    the a1 set-up and of the address chain. NOTE: `tools/gcc-2.7.2/sched.c`
+    carries env-gated instrumentation — `BB2_RANK_DEBUG=1` makes
+    `rank_for_schedule` print `RANKDBG last=<uid> y=<uid> cls=<n> x=<uid>
+    cls2=<n> val=<n>` for every comparison (sched.c:2436-2446) — so the
+    comparison that decides this is directly observable IF the built binary is
+    the instrumented one (check `strings` for RANKDBG; per
+    [[instrumented-cc1-location]] the instrumented binary is
+    `tools/gcc-2.7.2/cc1`, NOT `tools/gcc-2.7.2/build/cc1`).
+(b) Do the same for the SIBLING `func_8005D46C`, where our build gets the
+    order RIGHT, and diff the two priority/class tables. Two blocks, same
+    callee, same compiler, opposite outcomes — that diff is the answer.
+(c) Only if (a)+(b) show the a1 set-up is emitted late by expand_call rather
+    than chosen late by the scheduler: the question becomes what C statement
+    shape makes expand_call emit the second argument earlier, and the sibling
+    is again the reference.
+(d) A permuter campaign remains cheap and extremely well-seeded (base 2 with a
+    matching instruction count). Follow [[permuter-fresh-seed-discipline]].
+
+## [s3] H5c - the `move $a1,$zero` placement in the Case3 arm is reachable by reshaping the CONTROL FLOW that creates the block (the i-dispatch), rather than the arm's contents.
+- mechanism: The Case3 basic block is created by the m2c goto ladder (i<3 / i>0 / i==0 / i==last with three labelled arms and a shared Skip: join). A different dispatch spelling changes block boundaries, predecessor structure and LUID order, which is what feeds both the scheduler and reorg's delay-slot steal.
+- probe: Four reshapes measured with `sandbox func_80060544 --disable all` from the floor-2 base via tmp/grind/func_80060544/s3/sweep3.py: natural if/else-if chain; if/else with the (i == last) arm tested first; a real `switch (i)` with cases 1/2 shared; the goto ladder with the (i == last) test hoisted to the front.
+- result: 18 (insns 126), 22 (122), 36 (137), 14 (126) respectively - every reshape regresses AND moves the instruction count off target's 133. The goto ladder is the original's block structure, not an m2c artifact to be cleaned up.
+- verdict: KILLED
+
+## [s3] H5d - the placement is reachable by reshaping the enclosing loop, or by declaration order / carrier type / the call-site cast.
+- mechanism: Loop form changes where the increments and the induction-variable inits sit relative to the prologue; declaration order and type change pseudo creation order and LUIDs; the (GameObj *) cast is the spelling every other func_80073728 call site in text1b.c uses.
+- probe: Eight variants measured from the floor-2 base: `while (i < 4)`; increments swapped; `idx` incremented at the top of Skip; `for (i = 0; i < 4; i++)`; `s32 *stat` instead of `s32 stat` plus casts; `stat` declared first; `stat` declared last; `func_80073728((GameObj *)(&s), 0)`.
+- result: while-form 2/133, increments swapped 2/133, stat-as-pointer 2/133, stat declared first 2/133, stat declared last 2/133, GameObj cast 2/133 - all EXACTLY inert; idx-incremented-early 4 (insns 132); for-header 6 (and it destroys the s1 `last = 3` prologue lever, which needs `i = 0;` and `idx = 0;` as separate statements with `last = 3;` between them).
+- verdict: KILLED
+
+## [s3] H5' probe (b) from the s2 frontier - if sched1 owns the placement, raising the dependence height of the `sw p_static` INSIDE the Case3 block will push the a1 set-up to the front (target's order).
+- mechanism: GCC 2.7.2 sched.c schedules a block backward from its end; rank_for_schedule compares INSN_PRIORITY (longest path to block end) first. If the a1 set-up (priority 1) is beating the address chain in a near-tie, lengthening the chain should flip the comparison.
+- probe: Chain height raised with loop-carried values GCC cannot fold: `stat += idx;` (one extra insn) and `stat += idx; stat += prev;` (two). Instruction-level diff read with sweep3.py --dump. Control probes `stat += i - last;` and `stat += (i - last) * 2;` measured 2/133 because i == last is provable in that arm and GCC deletes them - they are not evidence.
+- result: 3 (insns 134) and 4 (insns 135). In BOTH the added chain insns are inserted BEFORE the a1 set-up and the a1 set-up does not move: at chain heights 1, 2 and 3 it stays pinned to the slot immediately preceding the `sw` that precedes the `jal`. A priority tie would have flipped by height 2. Diagnostics only, never candidate forms.
+- verdict: KILLED
+
+## [s3] H7 - our own toolchain can emit both argument set-ups at the FRONT of a func_80073728 call block; the Case3 block is the exception, not a toolchain limitation.
+- mechanism: If a sibling call site with the same callee and the same statement shape (struct-field stores then the call) already schedules args-first in OUR build, then nothing about the compiler or the callee prevents target's order - the decision is block-local.
+- probe: `sandbox func_8005D46C --disable all` (src/text1b.c:12718, two call sites of the same callee), then objdump the cheat-free sandbox object and read the call blocks.
+- result: Our build emits `addiu a0,sp,16 / move a1,zero` as the first two instructions of the call's basic block, ahead of the entire nine-store cluster - exactly the order func_80060544's target has and our func_80060544 build does not. Visible difference: the sibling's block is ~20 insns with several independent chains of height >= 4; the Case3 block is five insns with one chain of height 2 (but s3 separately measured that ADDING chain height to Case3 does not reproduce it, so 'make the block bigger' is not by itself the lever). Excerpts in tmp/grind/func_80060544/s3/results.txt.
+- verdict: CONFIRMED

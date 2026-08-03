@@ -88,6 +88,27 @@
  * with the a1 set-up glued to the call.  s2 measured this to be inert to every
  * structural axis available at the C level (see hypotheses.md H5); the next
  * lever is the RTL sched dump, not another respelling.
+ *
+ * ------------------------------------------------------------------- s3
+ * s3 (2026-08-03, structural) did NOT change this form — it is unchanged from
+ * s2 and still measures 2 / 133.  What s3 added is exhaustion of the last two
+ * C-level axes plus one decisive counter-example:
+ *   - Dispatch shape is settled: every reshape of the `i` ladder (if/else-if
+ *     18, `i == last` first 22, real `switch` 36, ladder-with-hoisted-test 14)
+ *     moves the instruction count off 133.  The m2c goto ladder IS the
+ *     original's block structure; do not "clean it up".
+ *   - Loop shape, declaration order, `stat`'s type, and writing the call as
+ *     `func_80073728((GameObj *)(&s), 0)` are all exactly INERT (2 / 133).
+ *   - Raising the dependence height of the `sw p_static` inside the arm
+ *     (`stat += idx;` = 3/134, `stat += idx; stat += prev;` = 4/135) does NOT
+ *     move the `move a1,zero`: it stays pinned immediately before the `sw` at
+ *     every height.  The s2 frontier's sched1-priority hypothesis is KILLED.
+ *   - COUNTER-EXAMPLE: our own build of func_8005D46C (text1b.c:12718) emits
+ *     `addiu a0,sp,16 / move a1,zero` at the FRONT of its func_80073728 call
+ *     block — the order this function's target wants.  The toolchain can do
+ *     it; this basic block just doesn't get it.
+ * Re-apply this file with `python3 tmp/grind/func_80060544/s3/apply_candidate.py`
+ * (the driver resets src/ between sessions — it has now happened twice).
  */
 s32 func_80060544(s32 arg0, s32 arg1) {
     s32 geom;

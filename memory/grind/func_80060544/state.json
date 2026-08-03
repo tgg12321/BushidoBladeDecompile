@@ -1,7 +1,7 @@
 {
  "func": "func_80060544",
  "file": "text1b",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,13 +15,29 @@
    "floor": 2,
    "modality": "structural",
    "headline": "Floor 4 -> 2 and build_insns 134 -> 133 (== target): H4 CLOSED by deleting the arg1 alias and one hop of the end_off carrier chain TOGETHER; H5 (the Case3 `move a1,zero` placement) killed on every C-l"
+  },
+  {
+   "session": 3,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "Floor held at 2/133; the last three C-level structural axes (dispatch shape, loop shape, dependence height) are KILLED with measurements, and a sibling counter-example proves our own toolchain emits t"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "H5' \u2014 the residual 2 points are the `addu $a1,$zero,$zero` placement inside the Case3 basic block, whose instruction SET is now identical to target's. The open question is WHICH cc1 pass decides it: sched1 (a scheduling tie) or expand_call (an emission-order difference).",
-   "mechanism": "Target's pre-reorg block order puts both argument set-ups adjacent at the front, ahead of the p_static store; ours glues the a1 set-up to the jal. If sched1 owns it, the tie is between `sw p_static` (dependence depth 1 from the block start) and `a1=0` (depth 0), and target picks the store earlier in the backward schedule. If expand_call owns it, no scheduling lever exists and the shape of the original C statement must differ.",
-   "next_probe": "(a) THE decisive probe: `cc1 <build-flags> -da` on the sandbox's preprocessed file, then read the `.sched`/`.sched2` dumps for that block and compare against the `.jump`/`.combine` RTL \u2014 if the a1 set-up is already last before sched1 runs, this is emission order, not scheduling, and every scheduling lever is dead by construction. (b) If it IS sched1: find C that raises the dependence height of the p_static store INSIDE the block (a real computation \u2014 routing the value through a plain copy is already measured inert). (c) If it is emission order: find a matched sibling in the tree that calls a two-argument routine with a constant second argument immediately after a struct-field store, and diff its block order. (d) A permuter campaign is now cheap and extremely well-seeded (base 2 with a matching instruction count); follow [[permuter-fresh-seed-discipline]]."
+   "hypothesis": "The `move a1,zero` placement is decided by rank_for_schedule inside sched1, and the deciding quantity is the a1 set-up's own INSN_PRIORITY (or whether it is in the ready list at that step) - not the address chain's height, which s3 measured dead.",
+   "mechanism": "Backward list scheduling places `sw p_static` first (it ends up immediately before the jal); at the next step ours picks the a1 set-up and target's build picks the address chain. Priority is compared before both tiebreaks, and both tiebreaks favour a1.",
+   "next_probe": "Run cc1 with the build flags plus -da on the sandbox's preprocessed file and read the .sched dump for the Case3 block: record the actual INSN_PRIORITY of the a1 set-up and of the lui/addiu/sw chain. Cheaper still, set BB2_RANK_DEBUG=1 (tools/gcc-2.7.2/cc1 is the instrumented binary) and read the RANKDBG line for that comparison directly."
+  },
+  {
+   "hypothesis": "The sibling func_8005D46C is the control experiment that answers it: same callee, same statement shape, same compiler, and our build gets the args-first order RIGHT there.",
+   "mechanism": "Two blocks that differ only in content, with opposite scheduling outcomes, isolate the deciding quantity without any guessing about C spelling.",
+   "next_probe": "Produce the same .sched / RANKDBG dump for func_8005D46C's first func_80073728 call block and diff the priority/class tables against func_80060544's Case3 block. Whatever differs IS the answer, and it converts directly into the C property to reproduce."
+  },
+  {
+   "hypothesis": "If the dumps show the a1 set-up is emitted late by expand_call rather than chosen late by the scheduler, the question is which C statement shape makes the second argument materialise earlier.",
+   "mechanism": "expand_call emits argument register set-ups after the preceding statements' RTL, fixing their LUIDs; only a different source-level shape can move them, and s2 proved that respelling the argument itself is inert.",
+   "next_probe": "Compare the pre-sched (.jump / .combine) RTL of the Case3 block against the sibling's, then, if they already differ there, use the sibling's C as the template. A permuter campaign is also cheap and extremely well-seeded now (base 2 with a matching instruction count) - follow [[permuter-fresh-seed-discipline]]."
   }
  ],
  "judge_constraints": [],

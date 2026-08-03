@@ -192,3 +192,84 @@ score masks these. Only non-branch hunks are real.
 - [s2] TOOLING: build/src/text1b.o is NOT a durable diff reference (a stale tree can leave it without the symbol). tmp/grind/func_80060544/s2/mkref.sh builds a trustworthy one — it swaps the pristine `git show HEAD:src/text1b.c` in, runs a full `make` (which re-verified the oracle this session: `OK: bb2 matches!`), copies build/src/text1b.o to s2/ref.o, and restores the working tree via an EXIT trap.
 
 - [s2] The `last = 3;` constant-holder local from s1 is unchanged and still un-annotated, pending the Judge's view; it is a live, twice-read local that reads as `index of the last/special-cased element`. If the Judge wants the /* FAKE */ annotation plus documented lever exhaustion, that is a one-comment fix.
+
+## Measured facts (session s3, 2026-08-03, modality: structural)
+
+9. **PROCESS (second occurrence).** `src/text1b.c` was AGAIN found at the
+   floor-18 session-start form; the s2 edits were not persisted. Re-applying
+   `candidate.c` restored score 2 / insns 133 immediately. This is now a
+   reliable feature of the pipeline, not an accident:
+   `tmp/grind/func_80060544/s3/apply_candidate.py` splices candidate.c's
+   function body into `src/text1b.c` in one command — run it FIRST every
+   session (see [[grinder-stale-digest-uncommitted-ledger]]).
+
+10. **The m2c goto-ladder dispatch is not one spelling among many — it is the
+    only dispatch shape that reproduces target's block structure.** Every
+    natural-C reshape of the `i` dispatch changes the instruction COUNT (which
+    had been sitting exactly on target's 133) and regresses hard:
+    if/else-if chain 18 (insns 126), if/else with the `i == last` arm first 22
+    (122), real `switch (i)` 36 (137), goto ladder with the `i == last` test
+    hoisted to the front 14 (126). The four-way `i<3 / i>0 / i==0 / i==last`
+    ladder with three labelled arms and a shared `Skip:` join is what the
+    original compiled to.
+
+11. **The loop shape is likewise settled.** `while (i < 4) { ... }` and
+    swapping the two increments (`idx += 0xC;` before `i += 1;`) are exactly
+    INERT (2 / 133). Moving the `idx` increment to the top of the `Skip` block
+    gives 4 (insns 132) and a `for (i = 0; i < 4; i++)` header gives 6 — the
+    latter also destroys the s1 `last = 3` prologue lever, which requires
+    `i = 0;` and `idx = 0;` to be separate statements with `last = 3;` between
+    them.
+
+12. **Declaration order, carrier type and the call's cast are all INERT
+    (2 / 133).** `s32 *stat` instead of `s32 stat` + casts; `stat` declared
+    first; `stat` declared last; and `func_80073728((GameObj *)(&s), 0)` — the
+    spelling every OTHER call site of this callee in text1b.c uses — all
+    measure exactly the base. Together with s2's five inert call-argument
+    respellings, the C-level surface around this basic block is now measured
+    flat in every direction we can name.
+
+13. **FRONTIER PROBE (b) IS KILLED: the `move a1,zero` placement is NOT a
+    sched1 dependence-height tie.** Raising the height of the chain feeding
+    `sw p_static` inside the arm by one insn (`stat += idx;`, 3 / 134) and by
+    two (`stat += idx; stat += prev;`, 4 / 135) inserts the new insns BEFORE
+    the a1 set-up and does not move it: at chain heights 1, 2 and 3 the a1
+    set-up stays pinned to the slot immediately preceding the `sw` that
+    precedes the `jal`. A priority tie would have flipped by height 2.
+    (`stat += i - last;` and `stat += (i - last) * 2;` measure 2 / 133 because
+    `i == last` is provable inside the arm and GCC folds them away entirely —
+    they are not evidence either way.) Banked in
+    `rejected/sched-height-probes-diagnostic.c`; these forms are diagnostics,
+    never candidates.
+
+14. **THE COUNTER-EXAMPLE — our own build DOES emit args-first for this
+    callee.** `func_8005D46C` (src/text1b.c:12718) calls `func_80073728` twice
+    with the same shape (a run of struct-field stores, then
+    `ret = func_80073728((GameObj *)(&s), 0);`), and the cheat-free sandbox
+    build of THAT function emits `addiu a0,sp,16 / move a1,zero` as the first
+    two insns of the call's basic block, ahead of the whole store cluster —
+    exactly what func_80060544's target does and our build does not. So this
+    is not a toolchain limitation and not a property of the callee: it is a
+    property of THIS basic block. The visible structural difference is size and
+    chain depth: the sibling's block is ~20 insns with several independent
+    chains of height >= 4 and nine field stores; the Case3 block is five insns
+    with one chain of height 2. Full objdump excerpts in
+    `tmp/grind/func_80060544/s3/results.txt`.
+
+- [s3] The exact question for the next (forensics) session is now narrow: in the backward list-scheduling pass, ours picks the `a1` set-up over the address chain's insns at the step right after `sw p_static` is placed, while target's build picks the chain. rank_for_schedule (tools/gcc-2.7.2/sched.c:2399) compares INSN_PRIORITY first, then a 3-way class relative to last_scheduled_insn (data-dependent = 1 worst, anti/output = 2, independent-or-latency-1 = 3 best), then INSN_LUID (higher LUID preferred). The chain insns are DATA-dependent on the just-placed `sw` (class 1); the a1 set-up is independent (class 3) and, being emitted by expand_call after the stores, also has the HIGHER LUID. So both tiebreaks favour a1 — which means target's build must have won on INSN_PRIORITY outright, and s3 measured that raising the chain's height does NOT achieve that. Read the `.sched` dump and the INSN_PRIORITY values for that block; that is the one fact still missing.
+
+- [s3] cc1 in this tree is already instrumented with env-gated scheduler diagnostics: `BB2_RANK_DEBUG` makes rank_for_schedule print `RANKDBG last=<uid> y=<uid> cls=<n> x=<uid> cls2=<n> val=<n>` for every comparison (tools/gcc-2.7.2/sched.c:2436-2446). That is the cheapest possible instrument for the remaining question and it needs no new tooling. NB [[instrumented-cc1-location]]: the instrumented binary is tools/gcc-2.7.2/cc1, not tools/gcc-2.7.2/build/cc1.
+
+- [s3] src/text1b.c was AGAIN found at the floor-18 session-start form (second consecutive session); memory/grind/func_80060544/candidate.c remains the only durable copy. tmp/grind/func_80060544/s3/apply_candidate.py now re-applies it in one command - run it FIRST every session.
+
+- [s3] Base re-established and re-verified at the end of the session: `sandbox func_80060544 --disable all` = score 2, build_insns 133, target_insns 133, with the candidate form in place in src/text1b.c.
+
+- [s3] The single non-branch diff hunk is unchanged: a delete/insert pair for `move a1,zero`. Ours emits [lui, addiu, move a1,zero, sw v0,0x1C(sp), jal, delay sw s2]; target emits [addu a1,zero,zero, lui, addiu, sw, jal, delay sw]. In both builds reorg steals the `addiu a0,sp,0x18` from the top of the block into the predecessor branch's delay slot.
+
+- [s3] C-level structural surface for this block is now measured flat in every named direction: intra-arm statement order (s2), call argument/result respelling (s2), dispatch shape (s3), loop shape (s3), declaration order (s3), carrier type (s3), call-site cast (s3), dependence height (s3).
+
+- [s3] Scheduler mechanics for the remaining question, read from tools/gcc-2.7.2/sched.c:2399 rank_for_schedule: comparison order is (1) INSN_PRIORITY, (2) a three-way class relative to last_scheduled_insn - data-dependent = 1 (worst), anti/output = 2, independent-or-latency-1 = 3 (best), (3) INSN_LUID with the HIGHER LUID preferred. The address-chain insns are data-dependent on the just-placed `sw` (class 1) and the a1 set-up is independent (class 3); the a1 set-up, emitted by expand_call after the stores, also holds the higher LUID. Both tiebreaks favour a1, so target's build must have beaten it on INSN_PRIORITY outright - and s3 measured that raising the CHAIN's height does not achieve that, which points at a1's own priority (or its presence in the ready list) rather than the chain's.
+
+- [s3] tools/gcc-2.7.2/sched.c carries env-gated instrumentation: BB2_RANK_DEBUG=1 makes rank_for_schedule print `RANKDBG last=<uid> y=<uid> cls=<n> x=<uid> cls2=<n> val=<n>` for every comparison (sched.c:2436-2446), and the string is present in the built tools/gcc-2.7.2/cc1 binary (per [[instrumented-cc1-location]], that is the instrumented one, NOT tools/gcc-2.7.2/build/cc1). No new tooling is needed for the next probe.
+
+- [s3] Rejected forms banked this session: memory/grind/func_80060544/rejected/case3-dispatch-and-loop-reshapes.c (dispatch + loop + declaration/type/cast axes, with every measurement) and rejected/sched-height-probes-diagnostic.c (the dependence-height diagnostics, explicitly marked never-candidates).
