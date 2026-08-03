@@ -46,10 +46,57 @@ routing `s.arg2_field` through the carrier (so a single C name is the only reade
 `arg1`) also gave 14. The carrier's LATE source position is load-bearing. See
 `rejected/hoist-new_var-init.c`.
 
+## Session s2 (2026-08-03, modality: structural) — floor 4 -> 2
+
+### CONFIRMED
+
+**H4' (supersedes H4) — the extra `move $s5,$s7` is a droppable param alias AFTER
+ALL, but the deletion must be PAIRED with shortening the neighbouring end_off
+carrier chain.** Mechanism: the `arg1` pseudo and the `end_off` pseudo are in a
+callee-save priority race. Target assigns arg1 -> `$s7` and end_off -> `$s8`.
+Deleting the `new_var` alias alone flips that assignment (arg1 -> `$s8`,
+end_off -> `$s7`) and grows a *different* spurious `move $s5,$s7` — the exact
+measurement s1 recorded as H4a KILLED. The end_off value travelled through FOUR
+pseudos (`end_off -> new_var6 -> new_var4 -> reassignment of new_var3 -> return`);
+removing the `new_var4` hop and the `new_var3` reassignment shortens it to two,
+which drops that allocno's ref count enough to lose the race, so arg1 keeps `$s7`
+and the final `sll $a0,$s7,0x2` matches with no copy at all.
+Probe: a 7-cell lattice over {carrier kept, carrier dropped} x {chain length 4, 3,
+2, 1}, each measured with `sandbox --disable all` (full table in evidence.md §6).
+Result: floor 4 -> 2, and build_insns 134 -> 133 == target_insns. CONFIRMED.
+The chain has an OPTIMUM LENGTH of exactly two pseudos — collapsing it to ONE and
+dropping the carrier gives 6; going straight to `new_var3` gives 12.
+
+### KILLED
+
+**H5a — the `move $a1,$zero` placement in the `Case3` arm is reachable by
+reordering the arm's statements.** KILLED. Every permutation is strictly worse
+than the current order (`stat` / `p_static` store / `pad0C` store / call, = 2):
+pad0C-first 4, p_static-last 4, reversed equality test (`last == i`) 3,
+materialising the `D_8009B7D0` address in the PREDECESSOR block (so the arm holds
+no la at all) 4, and Case3 storing the table address directly instead of through
+the shared `stat` carrier 39 (insns 136 — the shared carrier must cover all three
+arms or none). See `rejected/case3-arm-statement-reorderings.c`.
+
+**H5b — the placement is reachable by hoisting the call's arguments into named
+locals ([[hoist-call-arg-local-flips-jal-delay]]).** KILLED, and the *shape* of
+the kill is the informative part: every respelling measures EXACTLY 2/133,
+unchanged — GCC folds them all back to the same RTL. Probed: both args hoisted
+into arm-top locals; only the struct-pointer hoisted; the constant carried in a
+named local (a constant-holder, measured as a diagnostic only, never proposed);
+the call result via an extra pseudo; the stored `mid_off` value via an extra
+pseudo. A function-wide `S544 *sarg = &s;` is separately catastrophic (44 / 38,
+insns 137 — it forces a callee-save home for `&s` instead of the per-call
+`addiu $a0,$sp,0x18`). See `rejected/case3-call-arg-respellings.c`.
+
 ## Live frontier (for the next session)
 
+**[s2: H4 and H6 below are CLOSED / OBSOLETE — see the s2 section above. H4 was
+closed by the paired m2c-carrier deletion; the live frontier is H5 only, restated
+at the end of this file. The H4 text is kept for provenance.]**
+
 **H4 — the extra `move $s5,$s7` + the consequent `sll $a0,$s5,0x2` (target:
-`sll $a0,$s7,0x2`). 2 of the remaining 4.**
+`sll $a0,$s7,0x2`). 2 of the remaining 4.** — CLOSED in s2.
 What is known: the copy is emitted after loop 1; `new_var` (the `arg1` carrier read by
 the `ot_Link` index) is load-bearing in its current LATE position (H4a/H4b killed both
 the removal and the hoist). So the copy is not a naive redundant alias — target keeps
@@ -82,6 +129,49 @@ function, but the finding generalises: any regfix cluster that is purely
 split-init accumulation / a shared named carrier, and both are sanctioned pure-C forms.
 Worth a `scan-redundant`-style sweep for that rule shape.
 
+## THE FRONTIER AFTER s2 — ONE hypothesis, 2 points, everything else matches
+
+**H5' — target's `Case3` block schedules the `addu $a1,$zero,$zero` call-argument
+set-up at the FRONT of the block (adjacent to the `a0` set-up that reorg then
+steals into the predecessor branch's delay slot), while our build leaves it glued
+to the `jal`. This is decided inside cc1, in a basic block whose instruction SET
+is now identical to target's; no C-level respelling of that block reaches it.**
+
+State: `sandbox --disable all` == 2, `build_insns` == `target_insns` == 133. Every
+register, every store, every delay slot matches. The single non-branch diff hunk
+is a delete/insert pair for `move a1,zero`
+(`tmp/grind/func_80060544/s2/pairs_floor2.txt`).
+
+Pre-reorg block orders (derived in evidence.md §7):
+  target: `[a0=&s, a1=0, la, sw p_static, sw pad0C, jal]`
+  ours:   `[a0=&s, la, sw p_static, a1=0, sw pad0C, jal]`
+
+What s2 eliminated (do NOT re-run): all six statement orderings of the arm, all
+five call-argument/result respellings, the shared-`stat`-carrier removal for this
+arm, and a function-wide named `&s` pointer. See the two `rejected/` files.
+
+Next probes, in order — this is now a FORENSICS question, not a structural one:
+(a) `cc1 <build-flags> -da` on the sandbox's preprocessed file and read the
+    `.sched` / `.sched2` dumps for that basic block: does sched1 even move the
+    insn, or is the difference already present in the `.jump`/`.combine` RTL (i.e.
+    an EMISSION-order difference from `expand_call`, not a scheduling one)? That
+    single fact decides which pass is the target and is the highest-value probe
+    available. `tmp/grind/func_80060544/s2/sweep.py --dump <variant>` gives the
+    instruction-level diff for any candidate cheaply.
+(b) If it IS sched1: the tie is between `sw p_static` (depth 1 from the block
+    start) and `a1=0` (depth 0). Target picks the `sw` earlier in the backward
+    schedule, ours picks `a1`. Find the C shape that changes the dependence
+    height of the p_static store — e.g. making the stored value depend on one
+    more computed pseudo INSIDE the block (note: routing it through a plain copy
+    is already measured inert, so it must be a real computation).
+(c) If it is EMISSION order: look for another BB2 function that calls a
+    two-argument routine with a constant second argument immediately after a
+    struct-field store, and diff its block order against target — a matched
+    sibling settles what the original C looked like.
+(d) A permuter campaign on this function is now cheap and well-seeded: the base is
+    2 points with a matching instruction count, so the search space is tiny.
+    Follow [[permuter-fresh-seed-discipline]].
+
 ## [s1] The $v1-instead-of-$v0 address cluster exists because writing the whole address expression as ONE expression (`s.p_geom = (s32 *)((s32)&D_8009B770 + idx);`) gives cc1 two pseudos - the `la` result and the sum - where target has one.
 - mechanism: local_alloc assigns the short-lived `la` pseudo $v1 and the sum $v0; target's `lui $v0 / addiu $v0 / addu $v0,$s1,$v0` is a single self-updating pseudo. Split-init accumulation (var = a; var += b) collapses them into one pseudo, which then gets $v0.
 - probe: Rewrote as `geom = (s32)(&D_8009B770); geom += idx; s.p_geom = (s32 *)geom;` and ran `sandbox func_80060544 --disable all`.
@@ -110,4 +200,22 @@ Worth a `scan-redundant`-style sweep for that rule shape.
 - mechanism: Coalescing of a copy requires overlapping/adjacent live ranges with no conflict; a carrier initialised in the prologue alongside `prev = arg0;` should merge with the incoming-arg pseudo.
 - probe: Variant A: moved `new_var = arg1;` to just after `prev = arg0;`. Variant B: same, plus routed the struct field through it (`s.arg2_field = new_var;`) so a single C name is the only reader of arg1. Both measured from the floor-8 base.
 - result: Both regressed 8 -> 14. The carrier's LATE source position (between the `p1` and `p0` initialisations) is load-bearing in the opposite direction. Banked in rejected/hoist-new_var-init.c.
+- verdict: KILLED
+
+## [s2] H4' (supersedes s1's H4/H4a) — the extra `move $s5,$s7` and the consequent `sll $a0,$s5,0x2` ARE removable by dropping the `new_var` arg1 alias, but only when PAIRED with shortening the neighbouring end_off carrier chain from four pseudos to two.
+- mechanism: The arg1 pseudo and the end_off pseudo are in a callee-save priority race. Target assigns arg1 -> $s7 and end_off -> $s8. Dropping the alias alone flips that assignment (arg1 -> $s8, end_off -> $s7) and grows a DIFFERENT spurious `move $s5,$s7` — which is exactly the regression s1 measured and recorded as KILLED. end_off travelled through four pseudos (end_off -> new_var6 -> new_var4 -> a reassignment of new_var3 -> return); removing the new_var4 hop and the new_var3 reassignment shortens the chain to two, dropping that allocno's ref count enough to lose the race, so arg1 keeps $s7 and the final shift reads it directly with no copy.
+- probe: A 7-cell lattice over {alias kept, alias dropped} x {end_off chain length 4, 3, 2, 1}, each measured with `sandbox func_80060544 --disable all` via tmp/grind/func_80060544/s2/sweep.py. Results from the floor-4 base: baseline 4/134; drop-alias-only 10/134; collapse-chain-only 13/134; one-hop-only 11/134; end_off-straight-to-new_var3-only 14/134; collapse+drop 6/133; straight+drop 12/133; ONE-HOP+drop 2/133.
+- result: Floor 4 -> 2 with build_insns 134 -> 133, which EQUALS target_insns for the first time in this function's history. The `move $s5,$s7` and the `sll $a0,$s5,0x2` both disappear. The end_off chain has an optimum length of exactly two pseudos — both shorter (6) and longer (12) forms lose. Neither deletion is a coercion: both remove dead m2c plumbing and the resulting C is strictly simpler than the form it replaces.
+- verdict: CONFIRMED
+
+## [s2] H5a — the `addu $a1,$zero,$zero` that target schedules FIRST in the Case3 arm (and our build emits last) can be moved by reordering that arm's statements.
+- mechanism: sched1/emission placement of a call-argument constant inside one basic block; what the pass has available to place depends on the arm's statement order.
+- probe: Six orderings measured with `sandbox --disable all`: baseline (stat / p_static store / pad0C store / call) = 2; pad0C store first = 4; p_static store last = 4; reversed equality test `last == i` = 3; the D_8009B7D0 address materialised in the PREDECESSOR block so the arm holds no la at all = 4; Case3 storing the table address directly instead of through the shared `stat` carrier = 39 (insns 136).
+- result: Every permutation is strictly WORSE than the baseline order; none moves the a1 set-up to the front of the block. The 39/136 result additionally establishes that the s1 shared-`stat` carrier must cover all three arms or none. Banked in memory/grind/func_80060544/rejected/case3-arm-statement-reorderings.c.
+- verdict: KILLED
+
+## [s2] H5b — the placement is reachable by hoisting the call's arguments into named locals, per the [[hoist-call-arg-local-flips-jal-delay]] sibling recipe.
+- mechanism: A named local for a late-materialised call argument changes where the argument set-up is emitted relative to the surrounding stores.
+- probe: Five respellings measured: both arguments hoisted into locals at the top of the arm; only the struct-pointer argument hoisted; the constant argument carried in a named local (a constant-holder, run as a DIAGNOSTIC only and never proposed as a closing form); the call result routed through an extra pseudo; the stored `mid_off` value routed through an extra pseudo. Separately, a function-wide `S544 *sarg = &s;` assigned in the prologue, used for the func_80073728 call alone and for every call.
+- result: All five respellings measure EXACTLY 2 with insns 133 — completely inert, GCC folds every one back to the same RTL. That no-change result is the informative one: the a1 set-up's position is fixed by the call expansion, not by how the argument is spelled. The function-wide named pointer is separately catastrophic (44 and 38, insns 137) because a long-lived pointer pseudo forces a callee-save home for `&s` instead of the per-call `addiu $a0,$sp,0x18` that both target and our baseline emit. Banked in memory/grind/func_80060544/rejected/case3-call-arg-respellings.c.
 - verdict: KILLED

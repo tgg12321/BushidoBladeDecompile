@@ -12,6 +12,8 @@ cheat-free floor is what `sandbox --disable all` prints.
 |---|---|---|---|
 | s1 start | **18** | 134 | 11 regfix rules dropped by the sandbox, 324 cheat-asm insns stripped file-wide |
 | s1 end   | **4**  | 134 | three levers landed; edits in place in `src/text1b.c` |
+| s2 start | **18** | 134 | **the s1 edits were NOT in the tree** — src/text1b.c was at the session-start form. Re-applied `candidate.c` first (back to 4), then probed. |
+| s2 end   | **2**  | **133** | the paired m2c-carrier deletion (H4 closed); build_insns now EQUALS target_insns for the first time |
 
 ## What the function does (shape, from target asm + the C)
 Two sequential loops that fill a 0x28-byte stack struct (`S544 s` at `sp+0x18`) and hand
@@ -95,4 +97,98 @@ score masks these. Only non-branch hunks are real.
 
 - [s1] Generalisable finding: a regfix cluster consisting purely of `subst "la $3,SYM" "la $2,SYM"` renames is a signature for the split-address-pseudo problem, and both fixes (split-init accumulation, one shared named carrier across branch arms) are sanctioned pure-C forms. Worth sweeping the rule corpus for that shape.
 
+## Measured facts (session s2, 2026-08-03, modality: structural)
+
+5. **PROCESS — the s1 edits were not persisted.** `src/text1b.c` was found at the
+   floor-18 session-start form. `memory/grind/func_80060544/candidate.c` is the only
+   copy of the work; re-apply it and re-measure BEFORE probing. (Cost this session
+   ~2 turns; see [[grinder-stale-digest-uncommitted-ledger]] for the sibling failure.)
+
+6. **H4 IS CLOSED. The extra `move $s5,$s7` + `sll $a0,$s5,0x2` disappear when TWO
+   redundant m2c carrier variables are deleted TOGETHER — and only together.**
+   - (a) `new_var` (the `arg1` carrier read by the `ot_Link` index).
+   - (b) `new_var4`, ONE HOP of the *end_off* carrier chain
+     (`end_off -> new_var6 -> new_var4 -> a reassignment of new_var3 -> return`),
+     together with the `new_var3 = new_var4;` reassignment, leaving
+     `end_off -> new_var6` and `return new_var6 - arg0;`.
+   Measured lattice from the floor-4 base (`sandbox --disable all`):
+   | form | score | insns |
+   |---|---|---|
+   | baseline (s1 candidate) | 4 | 134 |
+   | drop `new_var` only | 10 | 134 |
+   | collapse end_off chain to ONE pseudo only | 13 | 134 |
+   | keep one hop (`new_var6`) only | 11 | 134 |
+   | `end_off` straight into `new_var3` only | 14 | 134 |
+   | collapse-to-one + drop `new_var` | 6 | 133 |
+   | `end_off`->`new_var3` + drop `new_var` | 12 | 133 |
+   | **one hop (`new_var6`) + drop `new_var`** | **2** | **133** |
+   Mechanism: the two pseudos are in a callee-save PRIORITY RACE. Target puts arg1
+   in `$s7` and end_off in `$s8`. Dropping `new_var` alone flips them (arg1 -> `$s8`,
+   end_off -> `$s7`) and grows a *different* spurious `move $s5,$s7` — which is
+   exactly why s1 recorded H4a as KILLED. Shortening the end_off chain lowers that
+   allocno's ref count so it loses the race, and arg1 keeps `$s7`. The chain has an
+   OPTIMUM LENGTH of exactly two pseudos: both shorter (6) and longer (12) lose.
+   **Generalisable:** an m2c carrier-variable chain is a TUNABLE, not noise — when a
+   param-alias deletion regresses because of a callee-save flip, the fix is to
+   re-length a *neighbouring* carrier chain, not to put the alias back. This is the
+   correction to the [[drop-param-alias-local]] KILL recorded in s1: that recipe DOES
+   apply here, it just needed the paired edit.
+
+7. **The residual 2 is ONE scheduling placement, and the instruction count now
+   matches.** `target_insns=133 built_insns=133`; the only non-branch hunk is a
+   delete/insert pair for `move a1,zero` in the `Case3` arm.
+   Target's Case3 block (`asm/funcs/func_80060544.s:60-66`):
+   `addu a1,zero,zero / lui v0 / addiu v0 / sw v0,0x1C(sp) / jal / [sw s2,0x24(sp)]`,
+   with `addiu a0,sp,0x18` (the struct-pointer argument) in the delay slot of the
+   PREDECESSOR branch (line 47) — reorg pulls it out of the top of this block in
+   BOTH builds. So target's pre-reorg block order was
+   `[a0=&s, a1=0, la, sw p_static, sw pad0C, jal]` — both argument set-ups adjacent
+   at the FRONT, ahead of the p_static store — while ours is
+   `[a0=&s, la, sw p_static, a1=0, sw pad0C, jal]`, with the a1 set-up glued to the
+   call.
+
+8. **H5 is dead on every C-level structural axis.** Statement reordering inside the
+   arm is strictly worse (pad0C-first 4, p_static-last 4, reversed equality test 3,
+   materialising the la in the predecessor block 4, Case3 storing the table address
+   directly 39/insns 136). Call-argument respelling is completely INERT — hoisting
+   either or both arguments into named locals, routing the call result through an
+   extra pseudo, routing the stored value through an extra pseudo: all measure
+   exactly 2/133, unchanged. A function-wide named `S544 *` for `&s` is catastrophic
+   (44 and 38, insns 137 — it forces a callee-save home for `&s` instead of the
+   per-call `addiu $a0,$sp,0x18`). Banked in `rejected/case3-arm-statement-reorderings.c`
+   and `rejected/case3-call-arg-respellings.c`.
+
+## Tooling notes (s2)
+
+- `tmp/grind/func_80060544/s2/sweep.py` is the session's workhorse: it splices a
+  mutated copy of the function into `src/text1b.c`, runs the sandbox, records the
+  score, and always restores the file. `--dump <variant>` additionally prints the
+  real (non-branch-noise) diff hunks. Variants are (old, new) substring pairs and a
+  stale `old` is a hard error, so a variant can never silently measure the base.
+- **`engine.pipeline.sh` interpolates paths into an UNQUOTED shell string, and this
+  repo's absolute path contains spaces.** Always pass repo-RELATIVE paths to
+  `engine.score` / `engine.diagnose` helpers; an absolute path yields a bogus
+  `KeyError: func not found in <path>`. Cost ~3 turns to diagnose.
+- `build/src/text1b.o` is NOT a durable reference — a stale tree can leave it without
+  the symbol. `tmp/grind/func_80060544/s2/mkref.sh` builds a trustworthy one: it
+  swaps the pristine `git show HEAD:src/text1b.c` in, runs a full `make` (which also
+  re-verifies the oracle: "OK: bb2 matches!"), copies `build/src/text1b.o` to
+  `s2/ref.o`, and restores the working tree via an EXIT trap.
+
 - [s1] Judge note on the surviving `last = 3;`: it is a LIVE, twice-read local (not a dead store), and reads naturally as `index of the last/special-cased element`, but it is a constant-holder and therefore sits in the [[named-local-fake-exception]] family. It is deliberately un-annotated pending a ruling; if the Judge wants the /* FAKE */ annotation plus documented lever exhaustion, that is a one-comment fix.
+
+- [s2] PROCESS: src/text1b.c was found at the floor-18 SESSION-START form at the top of s2 — the s1 edits were not persisted to the tree. memory/grind/func_80060544/candidate.c was the only copy. Re-apply candidate.c and re-measure BEFORE probing; it cost ~2 turns to notice. Sibling failure mode: [[grinder-stale-digest-uncommitted-ledger]].
+
+- [s2] The honest cheat-free floor moved 4 -> 2 this session, and build_insns moved 134 -> 133, which EQUALS target_insns (133). Every register, every store and every delay slot in the function now matches target; the entire residual is one instruction's PLACEMENT.
+
+- [s2] The only non-branch diff hunk at floor 2 is a delete/insert pair for `move a1,zero` in the Case3 arm (tmp/grind/func_80060544/s2/pairs_floor2.txt).
+
+- [s2] Target's Case3 block (asm/funcs/func_80060544.s:60-66) is `addu a1,zero,zero / lui v0 / addiu v0 / sw v0,0x1C(sp) / jal func_80073728 / [sw s2,0x24(sp)]`, and the `addiu a0,sp,0x18` that supplies the struct-pointer argument sits in the DELAY SLOT OF THE PREDECESSOR BRANCH (line 47) — reorg pulls it out of the top of this block in BOTH builds. So target's pre-reorg block order was [a0=&s, a1=0, la, sw p_static, sw pad0C, jal] — both argument set-ups adjacent at the FRONT, ahead of the p_static store — while ours is [a0=&s, la, sw p_static, a1=0, sw pad0C, jal], with the a1 set-up glued to the call.
+
+- [s2] GENERALISABLE FINDING: an m2c carrier-variable chain is a TUNABLE, not noise. When deleting a param-alias local regresses the score because the callee-save assignment FLIPS between two long-lived pseudos, the fix is to re-length a NEIGHBOURING carrier chain (changing that allocno's ref count and hence its priority), not to put the alias back. This is the correction to the [[drop-param-alias-local]] KILL that s1 recorded: the recipe does apply to this function, it just needed the paired edit. Worth trying on any queue item where a clean alias deletion regresses with a register-role swap in the diff.
+
+- [s2] TOOLING GOTCHA (cost ~3 turns): engine.pipeline.sh interpolates paths into an UNQUOTED shell string, and this repo's absolute path contains spaces. Always pass repo-RELATIVE paths to engine.score / engine.diagnose helpers — an absolute path produces a misleading `KeyError: <func> not found in <path>` even when objdump shows the symbol is present.
+
+- [s2] TOOLING: build/src/text1b.o is NOT a durable diff reference (a stale tree can leave it without the symbol). tmp/grind/func_80060544/s2/mkref.sh builds a trustworthy one — it swaps the pristine `git show HEAD:src/text1b.c` in, runs a full `make` (which re-verified the oracle this session: `OK: bb2 matches!`), copies build/src/text1b.o to s2/ref.o, and restores the working tree via an EXIT trap.
+
+- [s2] The `last = 3;` constant-holder local from s1 is unchanged and still un-annotated, pending the Judge's view; it is a live, twice-read local that reads as `index of the last/special-cased element`. If the Judge wants the /* FAKE */ annotation plus documented lever exhaustion, that is a one-comment fix.

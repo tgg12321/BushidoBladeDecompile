@@ -1,31 +1,27 @@
 {
  "func": "func_80060544",
  "file": "text1b",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 4,
    "modality": "recon",
    "headline": "Recon mapped the whole 18-diff gap to 3 mechanisms and closed 14 of them in pure C: floor 18 -> 4 (split-init address accumulation, a shared named static-pointer carrier, and a pre-loop `last = 3` tha"
+  },
+  {
+   "session": 2,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "Floor 4 -> 2 and build_insns 134 -> 133 (== target): H4 CLOSED by deleting the arg1 alias and one hop of the end_off carrier chain TOGETHER; H5 (the Case3 `move a1,zero` placement) killed on every C-l"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "H4 - the extra `move $s5,$s7` after loop 1 (and its consequence `sll $a0,$s5,0x2` vs target `sll $a0,$s7,0x2`) can be removed by changing the SHAPE of the arg1 carrier's consumer rather than by removing or moving the carrier (both already killed).",
-   "mechanism": "Target keeps arg1 in $s7 from the prologue to the final `sll` with no second carrier; our build allocates a second callee-save and copies into it late. Since the carrier is load-bearing in its late position, the copy must come from the carrier pseudo conflicting with the arg1 pseudo - a conflict set, not a liveness gap.",
-   "next_probe": "(a) `cc1 <build-flags> -da` on the preprocessed file, read `;; Register dispositions:` for the carrier pseudo and find what it conflicts with (the [[register-alloc-pure-c]] step-0 diagnosis); (b) vary the consumer expression - pre-scaled `new_var = arg1 * 4;`, an array-index spelling, or a different carrier type - to change the conflict set; (c) move the carrier assignment to the other side of the `s.byte29/2A/2B/28` store group."
-  },
-  {
-   "hypothesis": "H5 - the `move $a1,$zero` that target schedules FIRST in the `Case3` arm (before the D_8009B7D0 la/sw pair) and our build schedules last can be moved by restructuring that arm's statement order.",
-   "mechanism": "sched1 placement of a call-argument constant. What sched1 has available to fill depends on the arm's statement order; currently `s.pad0C = mid_off;` sits immediately before the call, and the `stat` store immediately before that.",
-   "next_probe": "(a) Reorder the arm so `s.pad0C = mid_off;` sits between the `stat` store and the call; (b) hoist the constant argument into a named local assigned at the top of the arm ([[hoist-call-arg-local-flips-jal-delay]] is the sibling recipe); (c) check `func_80073728`'s other call sites - if its second parameter carries a real value elsewhere, a named local is the natural spelling and explains the early materialisation."
-  },
-  {
-   "hypothesis": "H6 - the H1/H2 lever family generalises to other queue items whose regfix cluster is a pure `la $3 -> $2` address-pseudo rename.",
-   "mechanism": "Same root cause: a one-expression address computation, or a multi-arm pointer select written as N direct stores, produces N short-lived address pseudos that local_alloc puts in $v1 while target has a single pseudo in $v0.",
-   "next_probe": "Grep regfix.txt for functions whose rules are dominated by `subst \"la\\s+\\$3,SYM\" \"la\\t$2,SYM\"` and try split-init accumulation / a shared named carrier on the top few; measure with `sandbox --disable all`."
+   "hypothesis": "H5' \u2014 the residual 2 points are the `addu $a1,$zero,$zero` placement inside the Case3 basic block, whose instruction SET is now identical to target's. The open question is WHICH cc1 pass decides it: sched1 (a scheduling tie) or expand_call (an emission-order difference).",
+   "mechanism": "Target's pre-reorg block order puts both argument set-ups adjacent at the front, ahead of the p_static store; ours glues the a1 set-up to the jal. If sched1 owns it, the tie is between `sw p_static` (dependence depth 1 from the block start) and `a1=0` (depth 0), and target picks the store earlier in the backward schedule. If expand_call owns it, no scheduling lever exists and the shape of the original C statement must differ.",
+   "next_probe": "(a) THE decisive probe: `cc1 <build-flags> -da` on the sandbox's preprocessed file, then read the `.sched`/`.sched2` dumps for that block and compare against the `.jump`/`.combine` RTL \u2014 if the a1 set-up is already last before sched1 runs, this is emission order, not scheduling, and every scheduling lever is dead by construction. (b) If it IS sched1: find C that raises the dependence height of the p_static store INSIDE the block (a real computation \u2014 routing the value through a plain copy is already measured inert). (c) If it is emission order: find a matched sibling in the tree that calls a two-argument routine with a constant second argument immediately after a struct-field store, and diff its block order. (d) A permuter campaign is now cheap and extremely well-seeded (base 2 with a matching instruction count); follow [[permuter-fresh-seed-discipline]]."
   }
  ],
  "judge_constraints": [],
