@@ -1,4 +1,40 @@
-/* func_80060E38 — best form as of grind session 4 (permuter, 2026-08-03).
+/* func_80060E38 — best form as of grind session 5 (permuter, 2026-08-03).
+ *
+ * SESSION 5 UPDATE — body unchanged, floor re-measured at 18 (sandbox --disable all:
+ * score 18, target_insns 139 == build_insns 139, 18 rules dropped; no src/ edits).
+ * Session 5's permuter mandate was spent on the ONE neighbourhood sessions 4's two
+ * chassis could not reach, plus a reading of the permuter's own mutation set:
+ *
+ *  (1) NEW MECHANISM FACT (source): function.c:879 allocates an assign_stack_temp slot as
+ *      assign_stack_local(mode, size, mode == BLKmode ? -1 : 0), and function.c:702 computes
+ *      bigend_correction ONLY when `mode != BLKmode`. So a BLKmode (aggregate) slot is the
+ *      one route in function.c that gets the align == -1 treatment (8-byte alignment,
+ *      CEIL_ROUND(size,8)) WITHOUT the +4. Measured: 8 aggregate variants (s5/gen5.py) —
+ *      the aggregate slot really does start at 0 mod 8, confirming the mechanism.
+ *  (2) It still cannot produce target's shape. An aggregate of 4-byte members is accessed
+ *      at stride 4 inside that slot, not target's stride 8; reaching stride 8 needs explicit
+ *      padding members (v_structpad: word slots 0,8,16,… — the forbidden dead-vars /
+ *      frame-coercion family, and 184 insns vs target's 139). And in the mixed shapes
+ *      (v_structfield / v_structfield_at) the aggregate sits at 0 mod 8 while the nine
+ *      SImode reload spills alongside it are STILL at 44,52,…  ≡ 4 (mod 8). The slot-
+ *      creation taxonomy in function.c is now closed: spills (align -1) = stride 8 / +4;
+ *      locals (align 0) = stride 4 / +0; aggregates (BLKmode) = 0 mod 8 base / stride 4.
+ *      No route gives a 4-byte value stride 8 AND congruence 0.
+ *  (3) The permuter owns exactly ONE frame-layout operator, perm_pad_var_decl
+ *      ("Inserts an unused variable to adjust stack offsets", randomizer.py:2247) — i.e. a
+ *      generator of the forbidden dead-vars family, so its output could never be accepted;
+ *      and it is inert anyway, because assign_stack_local CEIL_ROUNDs frame_offset to 8
+ *      before every spill slot, erasing any padding-induced shift. Every other operator is
+ *      expression/statement-level and cannot touch a congruence fixed by GET_MODE_SIZE.
+ *  (4) Two more campaigns, both stopped in-session: "aggregate-chassis" (s5/ws3, base_score
+ *      5133, 2,029 iters — finds only in the 4851-5133 range, none remotely near 72) and
+ *      "decl-type-weighted" (s5/ws4, the near-floor base_score-72 chassis with
+ *      perm_pad_var_decl zeroed and the decl/type/temp operators boosted, 62,904 iters,
+ *      ZERO finds). Running total across s4+s5: ~159,500 mutations, no find below 72.
+ * The permuter axis is closed by construction now, not only by sample size.
+ *
+ * (session-4 header follows)
+ * func_80060E38 — best form as of grind session 4 (permuter, 2026-08-03).
  *
  * SESSION 4 UPDATE — body unchanged, floor re-measured at 18 (sandbox --disable all:
  * score 18, target_insns 139 == build_insns 139, 18 rules dropped; no src/ edits).

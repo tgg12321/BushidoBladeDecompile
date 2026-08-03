@@ -560,3 +560,127 @@ A future session should NOT spend another campaign here.
 - [s4] Both campaigns were stopped inside the session; no permuter process outlives it (registry status confirms both dirs alive:false, registered_active:false).
 
 - [s4] Ledger banked: evidence.md and hypotheses.md carry the full session-4 blocks; candidate.c header updated (body unchanged, still the best form); disproven form saved to memory/grind/func_80060E38/rejected/permuter-94k-mutations-cannot-move-spill-congruence.c.
+
+## Session 5 (permuter, 2026-08-03) — floor 18 (unchanged; re-measured)
+
+Session 5's mandate was again the permuter axis, which session 4 had measured dead with
+~94.5k mutations on two chassis. Rather than re-run that sample, this session asked the two
+questions s4 could not answer from inside its own chassis: **what neighbourhood was the
+permuter structurally unable to reach**, and **does the permuter's mutation set even contain
+an operator that could move a spill-slot congruence?** Both now have answers, and together
+they close the permuter axis by construction rather than by sample size.
+
+### NEW MECHANISM FACT — BLKmode aggregate slots carry NO big-endian correction
+Read at source this session (not inherited):
+
+    function.c:879  p->slot = assign_stack_local (mode, size, mode == BLKmode ? -1 : 0);
+    function.c:702  if (BYTES_BIG_ENDIAN && mode != BLKmode) bigend_correction = size - GET_MODE_SIZE (mode);
+
+An aggregate (BLKmode) temporary therefore takes the SAME `align == -1` path as a reload
+spill — alignment 8, `size = CEIL_ROUND(size, 8)` — but the `mode != BLKmode` guard means the
+`+4` never fires for it. This is the only place in `function.c` where target's two properties
+(8-byte frame behaviour, congruence 0) coexist, and it is precisely the neighbourhood s4's
+two scalar chassis could not enter: the permuter's randomizer never INTRODUCES an aggregate.
+
+### MEASURED — the aggregate route reaches 0 mod 8 but not target's shape (8 variants)
+`tmp/grind/func_80060E38/s5/gen5.py`, all compiled through `s1/run.sh` at real build flags:
+
+| variant | insns | what the frame shows |
+|---|---|---|
+| `v_structinit`, `v_arrinit`, `v_structcopy` | 91 | aggregate slot based at **0** (0 mod 8 — mechanism confirmed), members at stride 4; GCC turns the brace initialiser into a **memcpy from a rodata image**, destroying target's 32 `lui/ori` stream |
+| `v_structfield`, `v_structfield_at` | 161 | aggregate at 0..32 (**0 mod 8**) while the nine SImode reload spills alongside it are **still at 44,52,…,108, every one ≡ 4 (mod 8)** |
+| `v_structsmall` | 144 | word slots 44,52,…,100 — all ≡ 4 |
+| `v_structret` (the genuine `assign_stack_temp` site, `function.c:3736`, struct returned by value) | 85 | no word slot at 0 mod 8; also needs a call, so the function stops being a leaf |
+| `v_structpad` (DIAGNOSTIC ONLY) | 184 | `struct { s32 v; s32 pad; } p[32]` DOES give word slots at 0,8,16,… — target's exact stride and congruence — but only by manufacturing frame padding (the forbidden dead-vars/frame-coercion family) and at 184 insns vs target's 139 |
+
+**The slot-creation taxonomy of `function.c` is now closed end to end:**
+
+| route | stride | congruence |
+|---|---|---|
+| reload spill (`align == -1`, s1/s2/s3) | 8 | **4** |
+| declared local (`align == 0`, s2 `v_locals.c`) | 4 | 0 |
+| aggregate temp (BLKmode, s5) | 4 (members) | 0 (base) |
+
+For a 4-byte value, "stride 8" and "congruence 0" are mutually exclusive in this fork unless
+the C manufactures 8-byte padding (a cheat) or uses 8-byte modes (two-word accesses, killed
+in s3). Target needs BOTH properties on nine single-word slots. Note the sharpest datapoint:
+in `v_structfield` a BLKmode slot at 0 mod 8 and nine SImode spills at 4 mod 8 coexist in one
+frame — the presence of an uncorrected slot does not perturb the corrected ones at all.
+
+### THE PERMUTER CANNOT MOVE THIS BY CONSTRUCTION (not merely by sample)
+`tools/decomp-permuter/src/randomizer.py` exposes 34 `perm_*` operators. Exactly ONE targets
+the frame: `perm_pad_var_decl` (line 2247) — docstring *"Inserts an unused variable to adjust
+stack offsets. Probably only useful with --stack-diffs enabled."* That operator is a generator
+of the forbidden **dead-vars / frame-padding** family, so any find it produced could never be
+accepted; and it is **inert here anyway**, because `assign_stack_local` does
+`frame_offset = CEIL_ROUND (frame_offset, 8)` before every `align == -1` slot, erasing any
+padding-induced shift below 8 bytes (and a multiple-of-8 shift preserves the congruence). Every
+other operator is expression/statement-level and cannot touch an offset fixed by
+`GET_MODE_SIZE` of the spilled pseudo. This is the structural reason s4's 94,554 mutations
+returned zero finds, and it generalizes to any future campaign on this function.
+
+### Two campaigns, both harvested and stopped in-session
+
+| chassis | label | base_score | jobs | elapsed | iterations | finds |
+|---|---|---|---|---|---|---|
+| `s5/ws3` | `aggregate-chassis` (base = `v_structfield`, the aggregate neighbourhood s4 could not reach) | 5133 | 8 | ~2 min | 2,029 | 14 outputs, all in the **4851–5133** band — nowhere near the 72 baseline |
+| `s5/ws4` | `decl-type-weighted` (the near-floor s4 chassis re-seeded with `perm_pad_var_decl = 0` — excluding the cheat operator — and `perm_reorder_decls`/`perm_temp_for_expr`/`perm_randomize_internal_type`/`perm_struct_ref`/`perm_ins_block`/`perm_reorder_stmts` boosted) | **72** | 8 | 1113 s (~19 min, two fresh-seed windows) | **62,904** | **0** |
+
+Running total across s4 + s5: **~159,500 randomized mutations, not one output below 72.**
+Registry confirms both s5 campaigns `alive: false, registered_active: false`; nothing outlives
+the session.
+
+### Directed permuter is not available for this function
+`tools/permuter_annotate.py --list-hints` carries four hint slugs (`register-asm-pins`,
+`shared-end-label`, `loop-rotation-two-shift`, `loop-counter-fills-load-delay`). None applies:
+this function is straight-line, call-free, has no loop, no multi-return, and register pins are
+a cheat family. There is no directed-permuter probe left to run here.
+
+### Artifacts (session 5)
+* `tmp/grind/func_80060E38/s5/gen5.py` + `v_*.c` — the 8 aggregate variants and their offset/word-slot reports
+* `tmp/grind/func_80060E38/s5/mkws3.sh`, `ws3/{base.c,settings.toml,base.txt,tgt.txt,campaign.log,campaign_meta.json}` — the aggregate chassis
+* `tmp/grind/func_80060E38/s5/mkws4.sh`, `ws4/{base.c,settings.toml,campaign.log,campaign_meta.json}` — the re-weighted near-floor chassis
+
+- [s5] Floor re-measured at session start: sandbox func_80060E38 --disable all = score 18, target_insns 139 == build_insns 139, 18 rules dropped. No src/ edits were made this session, so the floor is unchanged from sessions 1-4.
+
+- [s5] NEW MECHANISM FACT: function.c:879 allocates an assign_stack_temp slot with assign_stack_local(mode, size, mode == BLKmode ? -1 : 0), and function.c:702 applies bigend_correction ONLY when mode != BLKmode. A BLKmode aggregate slot therefore gets the align == -1 treatment (alignment 8, size CEIL_ROUNDed to 8) with NO +4 — the only route in function.c combining target's 8-byte frame behaviour with target's 0-mod-8 congruence, and the neighbourhood the permuter's randomizer structurally cannot enter (it never introduces an aggregate).
+
+- [s5] MEASURED (8 aggregate variants, s5/gen5.py, real build flags): the BLKmode slot really does base at 0 mod 8, but its 4-byte members are at stride 4, not target's stride 8. Brace-initialised aggregates (v_structinit/v_arrinit/v_structcopy, 91 insns) become a memcpy from a rodata image, destroying target's 32 lui/ori stream. Field-assigned aggregates (v_structfield/v_structfield_at, 161 insns) keep the lui/ori stream and put the aggregate at 0..32 (0 mod 8) while the nine SImode reload spills alongside it remain at 44,52,...,108 — every one ≡ 4 (mod 8). v_structret (the genuine assign_stack_temp site at function.c:3736) yields no 0-mod-8 word slot and is not a leaf.
+
+- [s5] v_structpad is the diagnostic that closes it: struct { s32 v; s32 pad; } p[32] DOES produce word slots at 0,8,16,... — target's exact stride and congruence — but only by manufacturing frame padding (the forbidden dead-vars/frame-coercion family, score-inert under the cheat-invisible sandbox) and at 184 insns against target's 139. Reaching target's shape legitimately would require an aggregate whose 4-byte members are naturally 8 apart, which does not exist.
+
+- [s5] TAXONOMY CLOSED: all three slot-creation routes in function.c are now measured — reload spill (align -1): stride 8, ≡ 4; declared local (align 0, s2 v_locals.c): stride 4, ≡ 0; aggregate temp (BLKmode, s5): base ≡ 0, members stride 4. For a 4-byte value, stride 8 and congruence 0 are mutually exclusive in this fork unless the C manufactures 8-byte padding (a cheat) or uses 8-byte modes (two-word accesses, killed in s3). Target needs both on nine single-word slots.
+
+- [s5] STRUCTURAL KILL OF THE PERMUTER AXIS: decomp-permuter exposes 34 perm_* operators and exactly one touches the frame — perm_pad_var_decl (randomizer.py:2247, "Inserts an unused variable to adjust stack offsets"). It is a generator of the forbidden dead-vars family, so its finds could never be accepted, AND it is inert here because assign_stack_local CEIL_ROUNDs frame_offset to 8 before every align == -1 slot, erasing any sub-8-byte padding shift (a multiple-of-8 shift preserves the congruence). Every other operator is expression/statement-level and cannot touch an offset fixed by GET_MODE_SIZE. This explains s4's 94,554-mutation zero and generalizes to any future campaign here.
+
+- [s5] Campaign A (label aggregate-chassis, dir tmp/grind/func_80060E38/s5/ws3, base = v_structfield, -j 8, base_score 5133): 2,029 iterations; 14 outputs, all scoring 4851-5133 — a different basin entirely, never within reach of the 72 baseline. Harvested with --stop; registry alive:false.
+
+- [s5] Campaign B (label decl-type-weighted, dir tmp/grind/func_80060E38/s5/ws4, the near-floor s4 chassis re-seeded with perm_pad_var_decl = 0 — the cheat operator excluded — and perm_reorder_decls / perm_temp_for_expr / perm_randomize_internal_type / perm_struct_ref / perm_ins_block / perm_reorder_stmts boosted, -j 8, base_score 72): 62,904 iterations over 1113 s across two fresh-seed windows, finds_total 0, best_new_score null. Harvested with --stop (procs_killed 9); registry alive:false, registered_active:false.
+
+- [s5] Running permuter total for this function across sessions 4 and 5: ~159,500 randomized mutations on four chassis (two scalar, one aggregate, one re-weighted), ZERO outputs below the 72 baseline.
+
+- [s5] Directed permuter is unavailable here: tools/permuter_annotate.py's hint catalog is register-asm-pins / shared-end-label / loop-rotation-two-shift / loop-counter-fills-load-delay, and this function is straight-line, call-free, loop-free, single-return, with register pins being a cheat family. No directed probe remains.
+
+- [s5] Ledger banked: evidence.md and hypotheses.md carry the full session-5 blocks; candidate.c header updated (body unchanged, still the best form); disproven form saved to memory/grind/func_80060E38/rejected/blkmode-aggregate-slot-is-stride-4-not-target-stride-8.c.
+
+- [s5] Floor re-measured at session start: sandbox func_80060E38 --disable all = score 18, target_insns 139 == build_insns 139, 18 rules dropped. No src/ edits were made this session (git status shows only ledger files and engine-generated metrics/events.jsonl), so the floor is unchanged from sessions 1-4.
+
+- [s5] NEW MECHANISM FACT: function.c:879 allocates an assign_stack_temp slot with assign_stack_local(mode, size, mode == BLKmode ? -1 : 0), and function.c:702 applies bigend_correction ONLY when mode != BLKmode. A BLKmode aggregate slot therefore gets the align == -1 treatment (alignment 8, size CEIL_ROUNDed to 8) with NO +4 -- the only route in function.c combining target's 8-byte frame behaviour with target's 0-mod-8 congruence.
+
+- [s5] MEASURED (8 aggregate variants, tmp/grind/func_80060E38/s5/gen5.py, real build flags): the BLKmode slot really does base at 0 mod 8, but its 4-byte members sit at stride 4, not target's stride 8. Brace-initialised aggregates (91 insns) become a memcpy from a rodata image, destroying target's 32 lui/ori stream; field-assigned aggregates (161 insns) keep the stream, put the aggregate at 0..32 (0 mod 8), and STILL leave the nine SImode reload spills at 44,52,...,108, every one 4 mod 8.
+
+- [s5] v_structpad is the diagnostic that closes the route: struct { s32 v; s32 pad; } p[32] DOES produce word slots at 0,8,16,... -- target's exact stride and congruence -- but only by manufacturing frame padding (the forbidden dead-vars/frame-coercion family, score-inert under the cheat-invisible sandbox) and at 184 insns against target's 139.
+
+- [s5] TAXONOMY CLOSED: all three slot-creation routes in function.c are now individually measured -- reload spill (align -1): stride 8, 4 mod 8; declared local (align 0, s2 v_locals.c): stride 4, 0 mod 8; aggregate temp (BLKmode, s5): base 0 mod 8, members stride 4. For a 4-byte value, stride 8 and congruence 0 are mutually exclusive in this fork unless the C manufactures 8-byte padding (a cheat) or uses 8-byte modes (two-word accesses, killed in s3). Target needs both properties on nine single-word slots.
+
+- [s5] STRUCTURAL KILL OF THE PERMUTER AXIS: decomp-permuter exposes 34 perm_* operators and exactly one touches the frame -- perm_pad_var_decl (tools/decomp-permuter/src/randomizer.py:2247, 'Inserts an unused variable to adjust stack offsets'). It generates the forbidden dead-vars family, so its finds could never be accepted, and it is inert here anyway because assign_stack_local CEIL_ROUNDs frame_offset to 8 before every align == -1 slot. This explains session 4's 94,554-mutation zero and generalizes to any future campaign on this function.
+
+- [s5] Campaign A (aggregate-chassis, s5/ws3, base = v_structfield, -j 8, base_score 5133): 2,029 iterations, 14 outputs all scoring 4851-5133, never near the 72 baseline. Harvested with --stop; registry alive:false, registered_active:false.
+
+- [s5] Campaign B (decl-type-weighted, s5/ws4, the near-floor s4 chassis with perm_pad_var_decl zeroed and the decl/type/temp operators boosted, -j 8, base_score 72): 62,904 iterations over 1113 s across two fresh-seed windows, finds_total 0, finds_new 0, best_new_score null. Harvested with --stop (procs_killed 9); registry alive:false, registered_active:false. No campaign outlives this session.
+
+- [s5] Running permuter total for func_80060E38 across sessions 4 and 5: ~159,500 randomized mutations on four chassis (two scalar, one aggregate, one re-weighted), ZERO outputs below the 72 baseline.
+
+- [s5] Directed permuter is unavailable here: tools/permuter_annotate.py's hint catalog (register-asm-pins, shared-end-label, loop-rotation-two-shift, loop-counter-fills-load-delay) has no entry applicable to a straight-line, call-free, loop-free, single-return function, and register pins are a cheat family.
+
+- [s5] Ledger banked: evidence.md and hypotheses.md carry the full session-5 blocks; candidate.c header updated (body unchanged, still the best form); disproven form saved to memory/grind/func_80060E38/rejected/blkmode-aggregate-slot-is-stride-4-not-target-stride-8.c.
