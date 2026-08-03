@@ -467,3 +467,58 @@ The driver has not declared exhaustion, so this must not be escalated yet.
 - probe: tools/permuter_annotate.py --help / --list-hints, read against this function's shape (straight-line, call-free, loop-free, single-return, 32 constant stores plus 2 indirect stores).
 - result: The hint catalog is register-asm-pins, shared-end-label, loop-rotation-two-shift, loop-counter-fills-load-delay. None applies: there is no loop to rotate, no multi-return to merge, no load-delay loop counter, and register pins are a cheat family the sandbox strips anyway. No directed-permuter probe remains for func_80060E38.
 - verdict: KILLED
+
+## [s6] The reload1.c:2363 slot-REUSE path — the only route in alter_reg with no big-endian correction, and the single opening sessions 2/3 left in the closed-form proof — fires SOMEWHERE in Bushido Blade 2, which would mean a 0-mod-8 single-word spill slot is reachable from compiled C in this fork.
+- mechanism: alter_reg has three slot paths. path=1 (from_reg == -1, reload1.c:2352) and path=3 ("allocate a bigger slot", 2369) both call assign_stack_local(..., -1) and are proved by closed form to land a 4-byte value at 4 mod 8. path=2 (2363) instead takes x = spill_stack_slot[from_reg] with adjust == 0 and re-MEMs it at offset 0, inheriting the donor slot's base — so if a wider (8-byte) donor slot ever existed, a reusing SImode pseudo would inherit a 0-mod-8 base. Sessions 3-5 measured this dead for func_80060E38's SHAPE (23 targeted variants + ~159.5k permuter mutations), but the TREE-WIDE question — does the path fire anywhere in real BB2 code, and if so under what construct — was explicitly left open as the last measurement that could surprise.
+- probe: Built an instrumented cc1 in a private copy of the GCC source (tmp/grind/func_80060E38/s6/gcc; tools/ untouched) with two env-gated traces in alter_reg — BB2ALTERREG on every slot allocation (function, pseudo, from_reg, path, mode size, inherent, total, adjust, final offset) and BB2ARCALL on every call with from_reg != -1 (the spill_hard_reg call site at reload1.c:3499) with (renumber, refs, equiv_constant, equiv_memory_loc). Validated codegen-inert: the rebuilt cc1's output on the s1 probe is byte-identical to stock build/cc1. Then swept ALL 31 src/*.c translation units at the Makefile's exact cpp defines and CC_FLAGS, piping stdin->stdout as the Makefile does (with `-o file`, GCC's exit-33 error path deletes the output, which silently truncated a first attempt). Aggregated with s6/agg.py and s6/agg2.py.
+- result: 131 reload spill-slot allocations tree-wide, in 69 distinct functions across 15 TUs. path=1: 131. path=2: ZERO. path=3: ZERO. Every allocation is modesize 4 with inherent == total == 4, adjust == 0, and a final offset === 4 (mod 8); there is not one 4-byte-mode spill slot at any other congruence in the entire game. The complementary trace shows this is not because spill_hard_reg is dormant: it makes 98 alter_reg calls with from_reg != -1 across 51 functions in 10 TUs, but 97 of them have reg_renumber >= 0 (reload found the pseudo a hard register) and the 98th has reg_equiv_memory_loc set, so ZERO reach the slot-allocation block. spill_stack_slot[] is written only in the path=3 branch (reload1.c:2399), which therefore never executes, so path=2 — which reads that array — is unreachable BY CONSTRUCTION in this codebase, not merely unobserved. The congruence class is now closed by direct measurement of the compiler's own decisions as well as by the s2 closed form.
+- verdict: KILLED
+
+## [s6] The isolated s1/s2/s3/s5 probe harness might not be faithful to how func_80060E38 actually compiles inside src/text1b.c, leaving the whole five-session measurement chain resting on an unvalidated proxy.
+- mechanism: Every variant campaign from s1 onward ran on a 45-line extracted reproducer compiled standalone, because src/text1b.c is ~490 KB preprocessed. If the real TU's declaration context changed pseudo numbering, spill count or slot placement, the ledger's conclusions would be about the harness rather than about the function.
+- probe: Compiled the REAL src/text1b.c whole with the instrumented cc1 at build-identical flags and read off every BB2ALTERREG line for fn=func_80060E38.
+- result: Exactly nine slot allocations, pseudos 75-83, all from_reg=-1 path=1 modesize=4 inherent=4 total=4 adjust=0, at offsets 4,12,20,28,36,44,52,60,68 — identical in count, path, mode and offset to the isolated probe's nine. The harness is faithful; sessions 1-5 measured the real thing.
+- verdict: CONFIRMED (the harness-infidelity concern is killed)
+
+## LIVE FRONTIER for session 7 (revised — the forensics axis is now closed too)
+
+Five axes are measured dead: structural (s2, 11 variants), the alter_reg branch analysis
+(s2 closed form + s3's reuse-branch kill, 23 variants), the slot-creation taxonomy in
+function.c (s5's aggregate/BLKmode variants), randomized machine search (s4+s5, ~159.5k
+mutations on four chassis), and now compiler forensics (s6: 131 traced slot allocations
+tree-wide, 100% on the corrected path, and the uncorrected path proved unreachable because
+spill_stack_slot[] is never populated in this codebase). No C-level lever remains and no
+measurement remains that could surprise.
+
+### J1 — synthesis (the one remaining ladder rung before escalation)
+Assemble s1-s6 into a single statement of what an accepted form would have to produce — nine
+single-word spill slots at stride 8 and congruence 0 from a 139-instruction leaf — and check
+it against the sanctioned-technique catalog for any family not yet tried. Do not re-run any
+measured axis; the value is in the cross-check, not in new probes.
+
+### J2 — the class disposition (unchanged, still owner surface, still not yet due)
+29 functions tree-wide have a stride-8 reload-spill block; all are at 0 mod 8, all still carry
+rules, none has ever matched. s6 adds the decisive supporting number: across the ENTIRE
+decompiled tree our fork produced 131 spill slots and every single one is at 4 mod 8, so no
+BB2 function whose target spills can match while this fork compiles it. Whichever session is
+assigned `escalation` modality should file the CLASS in docs/grind/decisions.md citing
+s2/spillscan2.txt, the closed form, the cc1psx counter-exhibit, the s3 reuse kill, the s4+s5
+~159.5k-mutation negative, s5's taxonomy closure, and s6's tree-wide trace — and must NOT
+cite Ruling-2, whose scope limit excludes non-crashing fork divergences.
+
+### J3 — do NOT re-open
+Everything in s5's list, plus: the reload1.c:2363 REUSE path (s6, measured unreachable
+tree-wide), the "allocate a bigger slot" path (s6, zero occurrences tree-wide), and any doubt
+about the isolated harness (s6, validated against the real TU).
+
+## [s6] The reload1.c:2363 slot-REUSE path — the only route in alter_reg with no big-endian correction, and the single opening sessions 2/3 left in the closed-form proof — fires somewhere in Bushido Blade 2, which would mean a 0-mod-8 single-word spill slot is reachable from compiled C in this fork.
+- mechanism: alter_reg has three slot paths. path=1 (from_reg == -1, reload1.c:2352) and path=3 ('allocate a bigger slot', 2369) both call assign_stack_local(..., -1) and are proved by closed form to land a 4-byte value at 4 mod 8. path=2 (2363) instead takes x = spill_stack_slot[from_reg] with adjust == 0 and re-MEMs it at offset 0, inheriting the donor slot's base, so a wider (8-byte) donor slot would hand a reusing SImode pseudo a 0-mod-8 base. Sessions 3-5 measured this dead for this function's SHAPE (23 targeted variants plus ~159.5k permuter mutations); the TREE-WIDE question was explicitly left open as the last measurement that could surprise.
+- probe: Built an instrumented cc1 in a PRIVATE copy of the GCC 2.7.2 source (tmp/grind/func_80060E38/s6/gcc — tools/ untouched) with two env-gated (BB2_ALTERREG_DEBUG) traces in alter_reg: BB2ALTERREG on every spill-slot allocation (function, pseudo, from_reg, path, mode size, inherent, total, adjust, final offset) and BB2ARCALL on every call with from_reg != -1 (the spill_hard_reg call site at reload1.c:3499) with (reg_renumber, refs, equiv_constant, equiv_memory_loc). Validated codegen-inert: the rebuilt cc1's output on the s1 probe is byte-identical (diff -q clean) to stock tools/gcc-2.7.2/build/cc1. Then swept ALL 31 src/*.c translation units at the Makefile's exact cpp defines and CC_FLAGS (GP_FILES and NO_SR_FILES are both empty, so all TUs share flags), piping stdin->stdout the way the Makefile does. Aggregated with s6/agg.py and s6/agg2.py.
+- result: 131 reload spill-slot allocations tree-wide, in 69 distinct functions across 15 TUs. path=1: 131. path=2: ZERO. path=3: ZERO. Every allocation is modesize 4 with inherent == total == 4, adjust == 0, and a final offset === 4 (mod 8) — not one 4-byte-mode spill slot at any other congruence in the entire game. This is not because spill_hard_reg is dormant: it makes 98 alter_reg calls with from_reg != -1 across 51 functions in 10 TUs, but 97 have reg_renumber >= 0 (reload found the pseudo a hard register) and the 98th has reg_equiv_memory_loc set, so ZERO reach the slot-allocation block. spill_stack_slot[] is written only in the path=3 branch (reload1.c:2399), which therefore never executes, so path=2 — which reads that array — is unreachable BY CONSTRUCTION in this codebase, not merely unobserved.
+- verdict: KILLED
+
+## [s6] The isolated probe harness used by sessions 1-5 might not be faithful to how func_80060E38 actually compiles inside src/text1b.c, leaving the whole five-session measurement chain resting on an unvalidated proxy.
+- mechanism: Every variant campaign from s1 onward ran on a 45-line extracted reproducer compiled standalone, because src/text1b.c is ~490 KB preprocessed. If the real TU's declaration context changed pseudo numbering, spill count or slot placement, the ledger's conclusions would describe the harness rather than the function.
+- probe: Compiled the REAL src/text1b.c whole with the instrumented cc1 at build-identical flags and read off every BB2ALTERREG line for fn=func_80060E38.
+- result: Exactly nine slot allocations, pseudos 75-83, all from_reg=-1 path=1 modesize=4 inherent=4 total=4 adjust=0, at offsets 4,12,20,28,36,44,52,60,68 — identical in count, path, mode and offset to the isolated probe's nine. The harness is faithful; sessions 1-5 measured the real thing.
+- verdict: CONFIRMED

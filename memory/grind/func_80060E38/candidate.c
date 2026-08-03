@@ -1,4 +1,19 @@
-/* func_80060E38 — best form as of grind session 5 (permuter, 2026-08-03).
+/* func_80060E38 — best form as of grind session 6 (forensics, 2026-08-03).
+ *
+ * SESSION 6 UPDATE — body unchanged (forensics modality made no src/ edits), floor
+ * re-measured at 18 (sandbox --disable all: score 18, target_insns 139 == build_insns 139,
+ * 18 rules dropped). An instrumented cc1 (private copy of the GCC source at
+ * tmp/grind/func_80060E38/s6/gcc, validated byte-identical to stock build/cc1 on the s1
+ * probe) traced every reload spill-slot allocation across ALL 31 src/*.c translation units:
+ * 131 allocations in 69 functions, 100% on alter_reg's from_reg == -1 path (reload1.c:2352),
+ * ZERO on the REUSE path (2363) and ZERO on the "bigger slot" path (2369), every one SImode
+ * with adjust == 0 and an offset === 4 (mod 8). The REUSE path is unreachable by construction
+ * here: spill_hard_reg makes 98 from_reg != -1 calls tree-wide, but 97 have reg_renumber >= 0
+ * and one has reg_equiv_memory_loc, so none reaches the allocation block that would populate
+ * spill_stack_slot[]. The same sweep confirmed this function's nine slots inside its REAL
+ * TU (src/text1b.c): pseudos 75-83, path=1, offsets 4,12,...,68 — identical to the isolated
+ * probe, so the five-session harness is faithful. The 18-instruction gap is the reload pass's
+ * big-endian slot correction, with no C-level lever.
  *
  * SESSION 5 UPDATE — body unchanged, floor re-measured at 18 (sandbox --disable all:
  * score 18, target_insns 139 == build_insns 139, 18 rules dropped; no src/ edits).
