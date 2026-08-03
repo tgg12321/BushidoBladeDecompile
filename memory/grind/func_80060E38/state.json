@@ -1,31 +1,37 @@
 {
  "func": "func_80060E38",
  "file": "text1b",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 18,
    "modality": "recon",
    "headline": "Gap is 100% frame-layout, not codegen: 139/139 insns identical, only the 9 reload spill slots sit at sp+4 mod 8 vs target's +0 \u2014 traced to cc1's big-endian bigend_correction on 8-rounded spill slots; "
+  },
+  {
+   "session": 2,
+   "floor": 18,
+   "modality": "structural",
+   "headline": "Structural axis measured dead across 11 variants; session 1's func_8006BD28 existence proof was authorized canonical asm, and a tree-wide census plus a cc1psx counter-exhibit show the +4 spill offset "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "func_8006BD28's +0-mod-8 spill slots are reachable because STARTING_FRAME_OFFSET uses the UNPADDED current_function_outgoing_args_size (0x14 -> 0x14+4 = 0x18), which would falsify the 'every spill is 4 mod 8' generalization and name a concrete arg-area lever; the alternative is that its slots are assign_stack_temp / declared-local slots taking the align==0 path (alignment 4, no size rounding, bigend_correction = 4-4 = 0).",
-   "mechanism": "Two distinct assign_stack_local entry paths: align==-1 (reload spills, 8-rounded, bigend_correction 4) vs align==0 (mode alignment 4, unrounded, bigend_correction 0). STARTING_FRAME_OFFSET (mips.h:1651-1653) shifts the whole spill block by the raw outgoing-args size.",
-   "next_probe": "Grep src/*.c for func_8006BD28's body, lift it into the same isolated harness, run tmp/grind/func_80060E38/s1/run.sh on it, confirm it reproduces 0x18/0x20, then read its in.i.lreg (pre-reload stack MEMs present => declared-local/temp path) vs in.i.greg (MEMs only post-reload => alter_reg spill path). Whichever path it takes names the exact construct to transplant into func_80060E38. Estimated 3 turns; DO THIS FIRST."
+   "hypothesis": "The remaining 0-mod-8 route the source proof leaves open is the slot-reuse branch at reload1.c:2384 \u2014 a spill slot allocated in a wider mode and then reused by an SImode pseudo inherits the wider slot's base with NO big-endian correction. If any real BB2 translation unit ever takes that path, the construct that triggers it is the only known C-level lever on the congruence.",
+   "mechanism": "alter_reg's reuse branch (x = spill_stack_slot[from_reg]) skips the bigend_correction entirely and only rebuilds the MEM in the pseudo's own mode at adjust 0. It requires from_reg != -1 (the pseudo was hard-allocated and then spilled by spill_hard_reg, not left unallocated by global alloc) and a prior wider-mode spill from that same hard register.",
+   "next_probe": "Forensics modality: use the instrumented cc1 at tools/gcc-2.7.2/cc1 (NOT build/cc1 \u2014 see [[instrumented-cc1-location]]) to log every alter_reg call with (pseudo, from_reg, mode, total_size, chosen path, final offset) while compiling the real src/*.c translation units, and count how often the 2384 reuse path is taken and with what modes. If it never fires anywhere in BB2, the congruence has no C lever at all and the class is closed; if it fires, the triggering construct is named. Do NOT recompile src/text1b.c whole for this \u2014 instrument on smaller TUs first."
   },
   {
-   "hypothesis": "The shared-spill-slot path at reload1.c:2384 (spill_stack_slot / spill_stack_slot_width reuse across pseudos) has its own adjust arithmetic at 2386-2400 that DOES compensate the big-endian correction, so a C form where spill slots are reused rather than freshly allocated could land at +0.",
-   "mechanism": "reload1.c:2337-2410 has two allocation paths; session 1 traced only the fresh-slot path at 2352. The 2384 path recomputes adjust from GET_MODE_SIZE(mode) - total_size and can rebuild the MEM at a different sub-slot offset.",
-   "next_probe": "Read reload1.c:2360-2410 in full, then vary the reproducer so fewer distinct pseudos spill and slots are reused (shorten the live ranges of the hoisted lui/ori pairs by moving a few global stores earlier in the body), and check via run.sh whether any slot lands congruent to 0 mod 8. Verify any promising form with sandbox --disable all before believing it."
+   "hypothesis": "func_80060E38 is not an isolated hard function but a member of a 29-function class defined by 'target contains a stride-8 reload-spill block', all of which are blocked by the same measured fork property, and the class should be dispositioned as a class rather than ground one function at a time.",
+   "mechanism": "Census: 29 stride-8 spill blocks tree-wide, all at 0 mod 8, all rule-carrying, none ever matched; the offset is === -GET_MODE_SIZE(mode) (mod 8) under our BYTES_BIG_ENDIAN cc1, and cc1psx fed identical input produces target's congruence. Every surface that could change it (the cc1 binary/configuration, the Makefile, prologue_config.json, regfix/asmfix) is outside the grind edit surface, and [[no-compiler-divergence]] forbids the compiler-side fix.",
+   "next_probe": "This is an owner-surface question, not a grind-surface one, and the driver has NOT declared exhaustion for this function \u2014 so it must not be escalated yet. Whichever session is eventually assigned escalation modality should file the class (not just func_80060E38) in docs/grind/decisions.md, citing spillscan2.txt, the closed-form proof, and the cc1psx counter-exhibit \u2014 and must NOT cite Ruling-2, whose scope limit explicitly excludes non-crashing fork divergences."
   },
   {
-   "hypothesis": "Changing the spill COUNT is a diagnostic, not a closing lever.",
-   "mechanism": "The 9 spills exist because GCC hoists all 32 lui/ori constants above all 32 stores, exceeding the register file. Splitting the body reduces spills \u2014 but target ITSELF spills 9 within the same 139-instruction stream, so any form with a different spill count changes the instruction count and moves AWAY from the floor.",
-   "next_probe": "Only use spill-count variants to understand the hoist boundary (how many constants GCC will keep live), never as a candidate closing form; measure every variant with sandbox --disable all and expect the score to rise, not fall."
+   "hypothesis": "A rederived C shape whose 139 instructions match target but whose 9 stack slots are NOT align == -1 reload spills would sidestep the correction entirely.",
+   "mechanism": "The +4 is exclusive to the align == -1 path (8-byte rounding => bigend_correction 4). Slots created by any other route (align == 0 declared locals, assign_stack_temp) carry no correction.",
+   "next_probe": "Partly measured already and looking dead: v_locals.c showed declared locals get stride 4, and target's stride 8 for 4-byte values implies align == -1 implies +4. The only untried sub-case is assign_stack_temp-created slots (compiler temporaries for structure/aggregate copies), which a rederive-modality session could probe by expressing the 32 constants as an aggregate initialisation or a memcpy-shaped construct and reading the emitted slot stride. Expect it to change the instruction count away from 139 \u2014 measure with sandbox --disable all before believing anything."
   }
  ],
  "judge_constraints": [],

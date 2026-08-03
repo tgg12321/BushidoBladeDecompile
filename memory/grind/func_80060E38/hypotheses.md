@@ -129,3 +129,110 @@ Treat F3 as a diagnostic for understanding the hoist, not as a closing lever, an
 - probe: Built probe_call.c — identical body plus a trailing 5-argument call sink5(1,2,3,4,5), so the function is no longer a leaf — and re-ran the same cpp|cc1 harness.
 - result: Outgoing-arg store landed at 16($sp) and the spill block moved from {4,12,...,68} to {28,36,44,52,60,68,76,84,92}: base moved by exactly the outgoing-args area (24), stride stayed 8, the +4 did not move. For our leaf, outgoing_args_size = 0, forcing {4,12,...,68}; target needs {0,8,...,64}.
 - verdict: CONFIRMED
+
+## [s2] func_8006BD28 proves a +0-mod-8 spill block is reachable from compiled C in this tree (session 1's F1).
+- mechanism: Session 1 read func_8006BD28 as CLEAN (zero regfix/asmfix rules, not in engine/queue.json) with caller-save stack slots at 0x18/0x20, stride 8, congruent to 0 mod 8 — an in-tree existence proof that our big-endian cc1 can emit +0 spill slots.
+- probe: Grepped src/*.c for func_8006BD28's body and cross-referenced inline_asm_canonical.txt, which session 1's spillscan.py did not consult.
+- result: src/text1b.c:15814 is __asm__("glabel func_8006BD28\n" ...) — a whole-body canonical-asm authorization recorded at inline_asm_canonical.txt:338 ("wholesale-replaced the inner loop body with literal target instructions ... Not C-form-reachable in this fork. User-authorized 2026-06-07"). Its 0x18/0x20 slots are pasted target bytes, never compiler output. The census was blind to the canonical-asm bucket, so "zero rules + not queued" wrongly read as "compiled and matched".
+- verdict: KILLED
+
+## [s2] Some compiled, byte-matched function in this tree has a stride-8 reload-spill block at 0 mod 8.
+- mechanism: If any clean function had one, the +4 would be a per-function accident rather than a toolchain invariant, and a transplantable C construct would exist.
+- probe: Wrote tmp/grind/func_80060E38/s2/spillscan2.py — a stricter, canonical-asm-aware census. An offset counts as a spill slot only if the target function contains BOTH a caller-save `sw $r,O($sp)` and a caller-save `lw $r2,O($sp)` (arg homes are stored but never reloaded; callee-saves are s0-s8/ra); slots are then grouped into maximal stride-8 runs of length >= 3, and each function is classified CLEAN / RULES / QUEUED / CANONICAL-ASM.
+- result: 29 stride-8 spill blocks across the whole game, in 29 distinct functions. ALL of them are at mod8 == 0 and ALL of them are in functions still carrying regfix/asmfix rules. Zero CLEAN. Zero at mod8 == 4. func_80060E38 is one of the 29 (n=9, [0,8,16,24,32,40,48,56,64]). Every function in Bushido Blade 2 whose target contains a genuine reload-spill block is still unmatched.
+- verdict: KILLED
+
+## [s2] A C-level structural transform (statement order, block scoping, declaration order, spill count, or mode mixing) can move the spill-slot congruence off 4 mod 8.
+- mechanism: The mandated structural axis — the codegen-technique-index levers (block-local splits, declaration order, type narrowing/widening, statement re-association) applied to the 32-store body.
+- probe: tmp/grind/func_80060E38/s2/gen.py generated 10 variants of the s1 reproducer (v_rev full order reversal, v_scope two block scopes, v_argsfirst / v_interleave moving the two indirect stores, v_more 40 stores, v_half 16 stores, v_ll one long long temp, v_llarr three long long temps, v_dbl a double temp, v_dipress 12 simultaneously-live long long products). Each was compiled through tmp/grind/func_80060E38/s1/run.sh (real build flags, cc1 -da) and its N($sp) offsets read off.
+- result: EVERY spill in EVERY variant is congruent to 4 mod 8 (4,12,20,...). v_half and v_dipress produce no spills at all. Statement order, scoping, declaration order, spill count and the presence of 8-byte-mode values are all inert on the congruence.
+- verdict: KILLED
+
+## [s2] An SImode reload spill slot can be placed at an offset congruent to 0 mod 8 by any C input to our cc1.
+- mechanism: reload1.c:2337-2410 (alter_reg) has three slot paths, of which session 1 traced only the fresh-slot line at 2352; the other two (the "allocate a bigger slot" branch and the shared-slot reuse branch at 2384) have their own big-endian adjust arithmetic that session 1 hypothesised might compensate.
+- probe: Read reload1.c:2337-2410 and function.c:666-727 in full and derived the closed-form offset for every branch, then checked the derivation against all 12 compiled probes (s1 probe + probe_call + the 10 s2 variants).
+- result: In both allocating branches the pre-adjust (inherent - total, or GET_MODE_SIZE(mode) - total) is cancelled exactly by the later `if (BYTES_BIG_ENDIAN && inherent_size < total_size) adjust += total_size - inherent_size`, for every total_size. So offset = STARTING_FRAME_OFFSET + 8k + (CEIL_ROUND(total,8) - GET_MODE_SIZE(M)), and since STARTING_FRAME_OFFSET is always a multiple of 8, offset === -GET_MODE_SIZE(M) (mod 8). A 4-byte mode is therefore ALWAYS at 4 mod 8. Only an 8-byte mode (DImode/DFmode) reaches 0 mod 8, and that would make the spill two words instead of the single sw/lw the target uses. The one residual route — the 2384 reuse branch, which returns the wider slot's address with no correction — requires from_reg != -1 (the pseudo hard-allocated then hard-spilled) AND a prior DImode spill from the same hard register; our 9 pseudos have reg_renumber < 0 and take the from_reg == -1 path, and the function has no 8-byte-mode values. Every measured probe agrees.
+- verdict: KILLED
+
+## [s2] The original PsyQ compiler places this function's spill slots at 0,8,...,64 from the same C source we are compiling.
+- mechanism: If the divergence is the big-endian correction, then cc1psx (BYTES_BIG_ENDIAN == 0) fed identical input must produce the target's congruence while our fork produces +4 — a direct measurement of the fork divergence rather than an inference from reading GCC source.
+- probe: tmp/grind/func_80060E38/s2/psx.sh pipes the byte-identical preprocessed input s1/dumps/probe/in.i into tools/cc1psx_wrapper.sh with the equivalent flags (-O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -w), then compares offsets, frame size and instruction count; s2/norm_diff.py does an offset-normalized positional comparison of the two instruction streams.
+- result: cc1psx exits 0 and emits `subu $sp,$sp,112` with slots at 0,8,16,24,32,40,48,56,64 — exactly target's — against our 4,12,...,68 from the same input, with the same 136 cc1-level instructions, the same 0x70 frame and the same callee-save block at 72..104. CONFIRMED. Qualifier: cc1psx does not otherwise reproduce target from this C — the streams agree for 31 instructions and then diverge in ORDER (cc1psx interleaves the global stores earlier; 67 positional mismatches), and it is OUR fork whose schedule and register allocation match target exactly. The counter-exhibit is evidence about slot congruence only.
+- verdict: CONFIRMED
+
+## [s2] The nine stack slots could be DECLARED LOCALS (align == 0 path, bigend_correction 0) instead of reload spills, giving a C-controlled layout at 0 mod 8.
+- mechanism: assign_stack_local's align == 0 branch takes alignment = GET_MODE_ALIGNMENT(SImode)/8 = 4 and does NOT round size, so bigend_correction = 4 - 4 = 0 and the slot lands at +0 — the correction that produces the +4 never fires for ordinary locals. If a C form could hold the nine constants in address-taken locals, the block would start at +0.
+- probe: tmp/grind/func_80060E38/s2/v_locals.c — nine s32 locals initialised to the scratchpad constants, each address-taken (sink(&x)) to force them to memory, then stored to the globals; compiled through s1/run.sh.
+- result: Offsets 16,20,24,28,32,36,40,44,48 — base = outgoing_args_size (16, the function now calls sink), and **stride 4**, not 8. The align == 0 path does place locals without the +4, but it also does not round the slot size, so a block of SImode locals is contiguous at stride 4 with alternating congruence. Target needs nine slots at **stride 8, every one congruent to 0** — the signature of the align == -1 spill path, which is exactly the path that carries the +4. The two properties (stride 8 and congruence 0) are mutually exclusive for 4-byte values under this cc1: stride 8 implies align == -1 implies +4. Reaching stride 8 with locals would require 8-byte-aligned local objects (long long / double), i.e. the forbidden dead-vars-local-array frame-coercion family, and it would also change the stores from single sw to two-word accesses.
+- verdict: KILLED
+
+## LIVE FRONTIER for session 3 (revised — F1/F2/F3 are all closed)
+
+The structural, order, scoping, mode and spill-count axes are measured dead, and the
+mechanism is now proved from the compiler source and confirmed against the original
+compiler. What remains is not a search over C forms for THIS function; it is a class-level
+question about the 29 functions whose targets spill.
+
+### G1 — is the +4 removable at a legitimate, non-cheat, in-tree surface?
+The offset is `CEIL_ROUND(total,8) - GET_MODE_SIZE(M)` from `function.c:702-703`, armed by
+`BYTES_BIG_ENDIAN`. Everything that could change it (the cc1 binary, its configuration, the
+Makefile, prologue_config.json, regfix/asmfix) is outside the grind edit surface, and
+[[no-compiler-divergence]] forbids the compiler-side fix. So this is an operator/owner
+surface, not a grind surface. The honest next step is an OWNER-ESCALATION describing the
+class (29 functions, all spilling, none matched, one measured mechanism) — but note the
+existing carve-out does NOT apply: `.claude/rules/fork-divergence-inline-asm.md` (Ruling-2,
+2026-07-13) requires a cc1 SIGSEGV and explicitly excludes "our fork compiles the faithful
+source but emits different bytes". A fresh ruling would be needed.
+
+### G2 — the remaining untried modalities on the ladder
+`forensics` (instrumented cc1 at tools/gcc-2.7.2/cc1 — see [[instrumented-cc1-location]];
+dump `assign_stack_local` call sites live to see whether any real BB2 translation unit ever
+takes the slot-reuse path at reload1.c:2384 with a wider pre-existing slot — the single
+remaining `=== 0` route the source proof leaves open), `rederive` and `synthesis`. Note the
+obvious rederive question is already answered: `v_locals.c` measured that declared locals
+give stride **4**, not target's stride 8, so "the slots are locals, not spills" is dead
+(stride 8 for a 4-byte value implies the align == -1 path implies the +4).
+
+### G3 — do NOT re-open
+* Register allocation / scheduling (K1, s1) — our stream already matches target exactly.
+* Post-cc1 pipeline stages (K2, s1) — the +4 is pre-maspsx.
+* Declaration order / statement order / scoping / spill count (s2) — 10 measured variants.
+* The func_8006BD28 "existence proof" (s2) — it is authorized canonical asm.
+* Frame-padding locals, dead arrays, register pins to manufacture the offset — the forbidden
+  frame-coercion family, and score-inert under the cheat-invisible sandbox anyway.
+
+## [s2] func_8006BD28 proves a +0-mod-8 spill block is reachable from compiled C in this tree (session 1's decisive frontier item F1).
+- mechanism: Session 1 read func_8006BD28 as CLEAN (zero regfix/asmfix rules, absent from engine/queue.json) with caller-save stack slots at 0x18/0x20, stride 8, both congruent to 0 mod 8 — an in-tree existence proof that our big-endian cc1 can emit +0 spill slots, which would falsify the 'every spill is 4 mod 8' generalization.
+- probe: Grepped src/*.c for func_8006BD28's body and cross-referenced inline_asm_canonical.txt, which session 1's spillscan.py never consulted.
+- result: src/text1b.c:15814 is __asm__("glabel func_8006BD28\n" ...) — a whole-body canonical-asm authorization recorded at inline_asm_canonical.txt:338 ('wholesale-replaced the inner loop body with literal target instructions ... Not C-form-reachable in this fork. User-authorized 2026-06-07'). Its 0x18/0x20 slots are pasted target bytes, never compiler output. The census was blind to the canonical-asm bucket, so 'zero rules + not queued' wrongly read as 'compiled and matched'.
+- verdict: KILLED
+
+## [s2] Some compiled, byte-matched function in this tree has a stride-8 reload-spill block at 0 mod 8.
+- mechanism: If any clean function had one, the +4 would be a per-function accident rather than a toolchain invariant, and a transplantable C construct would exist.
+- probe: tmp/grind/func_80060E38/s2/spillscan2.py — a stricter, canonical-asm-aware census over all asm/funcs/*.s. An offset counts as a spill slot only if the target contains BOTH a caller-save 'sw $r,O($sp)' and a caller-save 'lw $r2,O($sp)' (an outgoing-arg home is stored but never reloaded; callee-saves are s0-s8/ra); slots are grouped into maximal stride-8 runs of length >= 3; each function is classified CLEAN / RULES / QUEUED / CANONICAL-ASM.
+- result: 29 stride-8 spill blocks across the whole game, in 29 distinct functions. ALL are at mod8 == 0 and ALL sit in functions still carrying regfix/asmfix rules. Zero CLEAN, zero at mod8 == 4. func_80060E38 is one of them (n=9, [0,8,16,24,32,40,48,56,64]). Every BB2 function whose target contains a genuine reload-spill block is still unmatched — this is a class-wide blocker, not a func_80060E38 quirk.
+- verdict: KILLED
+
+## [s2] A C-level structural transform (statement order, block scoping, declaration order, spill count, or mode mixing) can move the spill-slot congruence off 4 mod 8.
+- mechanism: The mandated structural axis — the codegen-technique-index levers (block-local splits, declaration order, type narrowing/widening, statement re-association) applied to the 32-store body.
+- probe: tmp/grind/func_80060E38/s2/gen.py generated 10 variants of the s1 reproducer (v_rev full order reversal, v_scope two block scopes, v_argsfirst and v_interleave relocating the two indirect stores, v_more 40 stores, v_half 16 stores, v_ll one long long temp, v_llarr three long long temps, v_dbl a double temp, v_dipress 12 simultaneously-live long long products). Each compiled through tmp/grind/func_80060E38/s1/run.sh at real build flags with cc1 -da; N($sp) offsets read off each output.
+- result: EVERY spill in EVERY variant is congruent to 4 mod 8 (4,12,20,...,68 for the 9-slot forms; 4,12,...,132 for v_more's 17 slots). v_half (16 stores) and v_dipress produce no spills at all. Statement order, scoping, declaration order, spill count and the presence of 8-byte-mode values are all inert on the congruence.
+- verdict: KILLED
+
+## [s2] An SImode reload spill slot can be placed at an offset congruent to 0 mod 8 by some C input to our cc1 (session 1's frontier item F2 — the shared-slot path at reload1.c:2384 compensates the big-endian correction).
+- mechanism: reload1.c:2337-2410 (alter_reg) has three slot paths, of which session 1 traced only the fresh-slot call at 2352; the 'allocate a bigger slot' branch and the shared-slot reuse branch at 2384 have their own adjust arithmetic that session 1 hypothesised might compensate.
+- probe: Read reload1.c:2337-2410 and function.c:666-727 in full, derived the closed-form offset for every branch, and checked the derivation against all 12 compiled probes (s1 probe + probe_call + the 10 s2 variants).
+- result: In both allocating branches the pre-adjust (inherent_size - total_size, or GET_MODE_SIZE(mode) - total_size) is cancelled exactly by the later 'if (BYTES_BIG_ENDIAN && inherent_size < total_size) adjust += total_size - inherent_size', for every total_size. So offset = STARTING_FRAME_OFFSET + 8k + (CEIL_ROUND(total,8) - GET_MODE_SIZE(M)); STARTING_FRAME_OFFSET is always a multiple of 8, hence offset === -GET_MODE_SIZE(M) (mod 8). A 4-byte mode is therefore ALWAYS at 4 mod 8, and only DImode/DFmode reaches 0 — which would make the spill two words instead of the single sw/lw target uses. The one residual route, the 2384 reuse branch (it returns the wider slot's address with no correction), needs from_reg != -1 AND a prior DImode spill from the same hard register; our 9 pseudos have reg_renumber < 0 and take the from_reg == -1 path, and the function has no 8-byte-mode values. Every measured probe agrees with the closed form.
+- verdict: KILLED
+
+## [s2] The nine stack slots could be DECLARED LOCALS (align == 0 path, bigend_correction 0) rather than reload spills, giving a C-controlled layout at 0 mod 8.
+- mechanism: assign_stack_local's align == 0 branch uses alignment = GET_MODE_ALIGNMENT(SImode)/8 = 4 and does NOT round the size, so bigend_correction = 4 - 4 = 0 and the slot lands at +0 — the correction that produces the +4 never fires for ordinary locals.
+- probe: tmp/grind/func_80060E38/s2/v_locals.c — nine s32 locals initialised to the scratchpad constants, each address-taken via sink(&x) to force them to memory, then stored to the globals; compiled through s1/run.sh.
+- result: Offsets 16,20,24,28,32,36,40,44,48: base = outgoing_args_size (16, since the probe now calls sink) and stride 4, NOT stride 8. The same align == 0 path that drops the +4 also drops the size rounding. Target needs nine slots at stride 8, every one congruent to 0 — the signature of the align == -1 spill path, which is exactly the path carrying the +4. For a 4-byte value the two properties are mutually exclusive under this cc1; reaching stride 8 with locals would require 8-byte-aligned local objects (long long / double), i.e. the forbidden dead-vars-local-array frame-coercion family, and would change the stores from single sw to two-word accesses.
+- verdict: KILLED
+
+## [s2] The original PsyQ compiler places this function's spill slots at 0,8,...,64 from the same C source we are compiling — i.e. the divergence is our fork's endianness configuration, measured rather than inferred.
+- mechanism: If the +4 is the big-endian correction, then cc1psx (BYTES_BIG_ENDIAN == 0) fed byte-identical input must produce the target's congruence while our fork produces +4.
+- probe: tmp/grind/func_80060E38/s2/psx.sh pipes the byte-identical preprocessed input s1/dumps/probe/in.i into tools/cc1psx_wrapper.sh with equivalent flags (-O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -w) and compares offsets, frame size and instruction count; s2/norm_diff.py does an offset-normalized positional comparison of the two instruction streams.
+- result: cc1psx exits 0 and emits 'subu $sp,$sp,112' with slots at 0,8,16,24,32,40,48,56,64 — exactly target's — against our 4,12,...,68 from the same input, with the same 136 cc1-level instructions, the same 0x70 frame and the same callee-save block at 72..104. HONEST QUALIFIER: cc1psx does not otherwise reproduce target from this C — the streams agree for 31 instructions then diverge in ORDER (cc1psx interleaves the global stores earlier; 67 positional mismatches, 34 difflib lines), and it is OUR fork whose schedule and register allocation match target exactly. The counter-exhibit is evidence about slot congruence only, not a drop-in that would match this function.
+- verdict: CONFIRMED

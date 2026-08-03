@@ -1,4 +1,18 @@
-/* func_80060E38 — best form as of grind session 1 (recon, 2026-08-03).
+/* func_80060E38 — best form as of grind session 2 (structural, 2026-08-03).
+ *
+ * SESSION 2 UPDATE — this body is unchanged and remains the best form; the floor is
+ * still 18 (re-measured: sandbox --disable all score 18, 139 == 139). Session 2 proved
+ * from the compiler source (reload1.c:2337-2410 + function.c:666-727) that a spilled
+ * pseudo of mode M lands at offset === -GET_MODE_SIZE(M) (mod 8), so every 4-byte
+ * reload spill in this fork is at 4 mod 8 and only DImode/DFmode reaches 0 mod 8.
+ * Ten structural variants (order reversal, block scoping, statement re-association,
+ * spill-count changes, long long / double mixing) all measured 4 mod 8; declared
+ * locals measured stride 4, not target's stride 8. The original PsyQ cc1psx, fed the
+ * byte-identical preprocessed input, emits the target's 0,8,...,64 with the same
+ * 0x70 frame — the divergence is our fork's BYTES_BIG_ENDIAN. Details in evidence.md.
+ *
+ * (original session-1 header follows)
+ * func_80060E38 — best form as of grind session 1 (recon, 2026-08-03).
  *
  * Honest pure-C floor: sandbox --disable all = 18 (unchanged this session; recon
  * modality made no source edits, so this is verbatim src/text1b.c:13562-13597).
