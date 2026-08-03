@@ -1,7 +1,7 @@
 {
  "func": "func_80060544",
  "file": "text1b",
- "session_count": 4,
+ "session_count": 5,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -27,23 +27,29 @@
    "floor": 2,
    "modality": "permuter",
    "headline": "Permuter modality MEASURED DRY: a validated chassis (tmp/perm_60544, base score 60 == sandbox floor 2) plus 63,820 iterations across a directed no-staging campaign and a full-mutation-space campaign f"
+  },
+  {
+   "session": 5,
+   "floor": 2,
+   "modality": "permuter",
+   "headline": "Permuter axis closed on a second chassis (32,859 iters, no find), and the forensics inside the same session NAMED the mechanism: the Case3 `move a1,zero` is decided in sched1 by carrier-pseudo IDENTIT"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The `move a1,zero` placement is decided inside sched1 by the a1 set-up's own INSN_PRIORITY (or by whether it is in the ready list at that step), and the deciding quantity is visible in a cc1 dump. This is s3's frontier and it is STILL UN-RUN \u2014 the permuter session did not touch it.",
-   "mechanism": "rank_for_schedule (tools/gcc-2.7.2/sched.c:2399) compares INSN_PRIORITY first, then a 3-way class relative to last_scheduled_insn, then INSN_LUID. Both tiebreaks favour the a1 set-up in our build, so target's build must have won on INSN_PRIORITY outright; s3 measured that raising the ADDRESS CHAIN's height does not achieve that, which points at a1's own priority.",
-   "next_probe": "Run cc1 with the build flags plus `-da` on tmp/perm_60544/base.c (a small, fast, validated reduced TU \u2014 much cheaper than the full text1b.c TU that s3 would have had to dump) and read the .sched dump for the Case3 block; or set BB2_RANK_DEBUG=1 against tools/gcc-2.7.2/cc1 (the instrumented binary, NOT build/cc1) and read the RANKDBG line for that comparison directly. Record the actual INSN_PRIORITY of the a1 set-up and of the lui/addiu/sw chain."
+   "hypothesis": "The sibling func_8005D46C, whose func_80073728 call block OUR build already emits args-first, differs from the Case3 block in a sched1 quantity that is now cheap to read side by side with the s5 harness \u2014 and whatever that quantity is converts into the C property to reproduce.",
+   "mechanism": "Two blocks, same callee, same compiler, opposite scheduling outcomes. s5 has eliminated priority, class, emission order and corpse notes as explanations, so the remaining candidates are the ready-list construction itself (sched_analyze's dependence edges and the order insns enter the ready list) and the block's boundary/predecessor structure \u2014 all directly readable from a -da dump.",
+   "next_probe": "Build a second reduced-TU chassis for func_8005D46C on the tmp/grind/func_80060544/s4/mkws.sh template (base_src.c plus prototype-less callee decls), dump it with the s5 rank_probe.sh flags, and run blockdump.py/passorder.py on its first func_80073728 call block. Compare the dependence edges (LOG_LINKS / insn_list fields in the .flow dump) and the ready-list evolution against the Case3 block, not the priorities \u2014 those are known-tied."
   },
   {
-   "hypothesis": "The sibling func_8005D46C, whose block our build DOES emit args-first, differs from the Case3 block in a scheduler quantity that is readable side by side now that a fast reduced-TU chassis exists.",
-   "mechanism": "Two blocks with the same callee, same statement shape and the same compiler but opposite scheduling outcomes isolate the deciding quantity without guessing about C spelling.",
-   "next_probe": "Build a second reduced-TU chassis for func_8005D46C on the tmp/grind/func_80060544/s4/mkws.sh template (it is now a two-file recipe: base_src.c plus prototype-less callee decls), dump .sched / RANKDBG for its first func_80073728 call block, and diff the priority/class tables against func_80060544's Case3 block. Whatever differs IS the answer and converts directly into the C property to reproduce."
+   "hypothesis": "The sched1 decision is driven by the ready-list ARRIVAL ORDER (which insn enters the ready list first when the call is scheduled and how qsort's tie behaviour lands on a fully-tied array), which is a function of the LOG_LINKS dependence edges built by sched_analyze \u2014 and one particular pseudo's identity changes an edge.",
+   "mechanism": "With every rank comparison returning 0, the sorted ready list is entirely determined by its pre-sort contents and order, so the only way to change the outcome is to change WHICH insns are ready at that step, i.e. the dependence graph. The `end_off` staging must be adding or removing an edge that `geom` staging does not.",
+   "next_probe": "Diff the LOG_LINKS/insn_list annotations of the Case3 block between rank_base and rank_reuse (blockdump.py already prints them, and the s4 prio dumps carry the PRIODBG insn=/pred= pairs which enumerate the edges). If an edge differs, identify what C-level property creates it; if the edges are identical, instrument schedule_block's ready-list array directly (sched.c has BB2_SCHED_DEBUG at lines 3691/3950 \u2014 check what it prints before adding anything, and remember engine/tools are off-limits to grind sessions, so this would be an owner-side change)."
   },
   {
-   "hypothesis": "A permuter campaign seeded from a STRUCTURALLY DIFFERENT chassis (not the floor-2 candidate) could still reach 0 by a clean route, even though the floor-2 chassis is now measured dry.",
-   "mechanism": "The score is quantised, so the permuter cannot climb toward a match \u2014 it can only stumble onto one. Its hit probability therefore depends entirely on how close the STARTING form already is in mutation-distance to a matching form, i.e. on the chassis, not on the iteration count.",
-   "next_probe": "Only worth doing AFTER the forensics probe names the deciding scheduler quantity: use that to pick a chassis whose Case3 block already differs in the named quantity, then re-launch on the existing tmp/perm_60544 workspace by swapping base.c. Do NOT simply re-run more iterations on the current chassis \u2014 that is measured waste (63,820 samples, zero finds)."
+   "hypothesis": "Modality-level: the permuter axis is now closed for this function on every chassis that can be built from known-inert respellings; the remaining untried ladder rungs are forensics (which s5 has now half-run and left a harness for) and rederive/synthesis.",
+   "mechanism": "Three chassis and 96,679 samples produced exactly one score-0 point, which the Judge FAILed. The score is quantised, so more iterations are uniform random sampling with no gradient; and the s5 mechanism finding shows the property that matters is not in the permuter's mutation space unless the staging family is re-enabled.",
+   "next_probe": "Do not launch another campaign for func_80060544 unless a forensics session first names a NEW C-level property to seed a chassis with. Spend the next session on the sibling-diff probe above."
   }
  ],
  "judge_constraints": [

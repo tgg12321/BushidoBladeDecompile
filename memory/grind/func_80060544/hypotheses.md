@@ -401,3 +401,124 @@ form), not the iteration count — repeating this search is measured waste.
 - probe: Read the campaign base score (60) off both campaign_meta.json files and compared it with the sandbox floor (2), then observed the score distribution of 63,820 sampled forms.
 - result: The score is QUANTISED: the only reachable values are 60 (the one misplacement, unchanged) and 0 (matched). No intermediate score was observed in 63,820 samples because none exists. The permuter therefore degenerates to uniform random sampling of C respellings with no gradient to follow, which is the structural reason this axis is dry.
 - verdict: CONFIRMED
+
+## Session s5 (2026-08-03, modality: permuter) — floor 2 -> 2
+
+### KILLED
+
+**H-F1 (the s3/s4 frontier) — "target's build won the Case3 `move a1,zero`
+placement on INSN_PRIORITY outright; the deciding quantity is the a1 set-up's own
+INSN_PRIORITY (or its presence in the ready list)."**
+Mechanism assumed by s3: `rank_for_schedule` (tools/gcc-2.7.2/sched.c:2399) compares
+INSN_PRIORITY first, then a 3-way class relative to `last_scheduled_insn`, then
+INSN_LUID; s3 argued both tiebreaks favour the a1 set-up in our build, so target must
+have beaten it on priority.
+Probe: ran the INSTRUMENTED `tools/gcc-2.7.2/cc1` (NOT build/cc1) with
+`BB2_PRIO_DEBUG=1 BB2_RANK_DEBUG=1 -da` on BOTH reduced-TU variants — `v_base.c`
+(our floor-2 form, a1 emitted late) and `v_reuse.c` (the judge-FAILed score-0 staging
+form, a1 emitted first). Script `tmp/grind/func_80060544/s5/rank_probe.sh`; dumps in
+`tmp/grind/func_80060544/s5/rank_base/` and `rank_reuse/`.
+Result: **every insn in the Case3 block has `final_pri=1` in BOTH variants**, and
+**every RANKDBG comparison inside that block reports `cls=3 x=... cls2=3 val=0`** —
+i.e. priority is a universal tie and the class test is a universal tie, in the WINNING
+variant as well as the losing one. Mapping the two UID sets onto each other
+(base 136/139/142/145/147/149 <-> reuse 136/142/145/148/150/152) shows the two builds
+perform the SAME four comparisons with the SAME results. Nothing in the priority or
+class data distinguishes them. **Verdict: KILLED.** INSN_PRIORITY is not the lever and
+must not be probed again; GCC 2.7.2's own comment at sched.c:1472 explains why ("when
+all instructions have a latency of 1 ... all instructions will end up with a priority
+of one"), so on this target the whole block is always priority 1.
+
+**H-F2 — "the flip is an EMISSION-order difference (expand_call emitting the second
+argument earlier), not a scheduling one"** (the s2 frontier's alternative (c)).
+Probe: `tmp/grind/func_80060544/s5/passorder.py` prints, for every `-da` dump of both
+variants, the linear order of the `D_8009B7D0` set and the `a1` set inside the Case3
+block. Result: in BOTH variants the order is la-then-a1 through .rtl, .jump, .cse,
+.loop, .cse2, .flow and .combine, and it is only in **.sched (sched1)** that the reuse
+variant flips to a1-then-la; base never flips. **Verdict: KILLED** — emission order is
+identical in both; sched1 owns the decision, exactly one pass, and every later dump
+(.lreg/.greg/.jump2/.sched2/.dbr) merely carries the sched1 order forward.
+
+**H-F3 — "a deleted-insn corpse (NOTE_INSN_DELETED) in the Case3 block is what flips
+sched1."** This was the natural reading of the .flow RTL: base's block is
+label/la/sw/sw/a0/a1/call, and the score-0 reuse variant's block is byte-identical
+except for one extra `(note NOTE_INSN_DELETED)` sitting between the la and the
+`sw p_static` (the corpse of the coalesced staging copy). If a note slot shifts the
+scheduler's bookkeeping, ANY construct leaving a corpse there would flip it — including
+several that are not dead stores.
+Probe: `tmp/grind/func_80060544/s5/note_sweep.py` — nine Case3-arm variants compiled
+with the instrumented cc1, each measured for (a) emitted order of `move $5,$0` vs the
+`la`, (b) NOTE_INSN_DELETED count inside the block at .flow, (c) asm line count.
+Result:
+```
+V0_base              a1-after  notes=0   (control)
+V1_endoff_before     A1-FIRST  notes=1   (the judge-FAILed form; the ONLY flip)
+V2_endoff_after      a1-after  notes=1
+V3_geom_before       a1-after  notes=1
+V5_newlocal_before   a1-after  notes=0
+V6_double_store      a1-after  notes=1
+V7_self_assign       a1-after  notes=0
+V9_regeom_restore    a1-after  notes=0   (118 asm lines — adds a real insn)
+V11_endoff_2hop      a1-after  notes=1
+```
+Four distinct variants produce the corpse note and do NOT flip. **Verdict: KILLED** —
+the note is a side effect, not the cause.
+
+### CONFIRMED (new, and it is the whole s5 finding)
+
+**H-F4 — the flip is specific to the CARRIER IDENTITY and the HOP COUNT, not to any
+structural property of the block.** The only Case3-arm form in the whole measured
+space that flips the schedule is `end_off = stat;` placed IMMEDIATELY before the
+`s.p_static` store with EXACTLY one hop. Staging the same value through the same
+variable one statement LATER (V2), through a different multiply-assigned dead local
+`geom` (V3), through a fresh local (V5), or through `end_off` and then `new_var6` (V11)
+all leave the a1 set-up where it was. This is the mechanism-level explanation of s4's
+H9 carrier-specificity observation, and it is bad news for every remaining C-level
+axis: the property that decides this function's last two points is a sched1 bookkeeping
+difference keyed to one particular pseudo's identity, reachable (so far) only by a
+dead store into an already-consumed local — the exact construct the Judge FAILed.
+
+### The permuter campaign (mandated modality)
+
+**H-P3 — a STRUCTURALLY DIFFERENT chassis (not the floor-2 candidate) reaches 0 by a
+clean route.** Built `tmp/perm_60544_alt` (`tmp/grind/func_80060544/s5/mkalt.sh`):
+pointer-typed `stat` carrier (`s32 *stat` + `s.p_static = stat;`), `while (i < 4)` loop
+head instead of `do/while`, and the `stat` declaration moved to the end of the
+declaration list — three changes s3 measured individually INERT (2/133), so the chassis
+starts at the same floor but with different pseudo numbering, different types and a
+different loop head. Validation gate passed: 133 insns, single `move a1,zero`
+displacement, permuter base score 60. Launched with the staging/extra-assignment
+mutation family ZEROED (a find inside that family would be the judge-FAILed construct
+and therefore worthless).
+Result: see the s5 evidence entries — the campaign is recorded there with its
+iteration count and finds.
+
+## [s5] The s3/s4 frontier: target's build won the Case3 `move a1,zero` placement on INSN_PRIORITY outright, so the deciding quantity is the a1 set-up's own INSN_PRIORITY (or whether it is in the ready list at that step).
+- mechanism: rank_for_schedule (tools/gcc-2.7.2/sched.c:2399) compares INSN_PRIORITY, then a 3-way class relative to last_scheduled_insn, then INSN_LUID. s3 argued both tiebreaks favour the a1 set-up in our build, so target must have beaten it on priority.
+- probe: Ran the INSTRUMENTED tools/gcc-2.7.2/cc1 (not build/cc1) with BB2_PRIO_DEBUG=1 BB2_RANK_DEBUG=1 -da on BOTH reduced-TU variants: v_base.c (our floor-2 form, a1 emitted late) and v_reuse.c (the judge-FAILed score-0 staging form, a1 emitted first). Script tmp/grind/func_80060544/s5/rank_probe.sh; dumps in s5/rank_base/ and s5/rank_reuse/.
+- result: EVERY insn in the Case3 block reports final_pri=1 in BOTH variants, and EVERY rank_for_schedule comparison inside that block reports cls=3 cls2=3 val=0 — a total tie on the priority test and on the class test, in the WINNING variant as well as the losing one. Mapping the UID sets onto each other (base 136/139/142/145/147/149 <-> reuse 136/142/145/148/150/152) shows the two builds perform the SAME four comparisons with the SAME results. GCC 2.7.2's own comment at sched.c:1472 explains it: on a latency-1 target priority()-1 collapses to 1 for the whole block.
+- verdict: KILLED
+
+## [s5] The flip is an EMISSION-order difference (expand_call emitting the second argument earlier), not a scheduling one — the s2 frontier's alternative (c).
+- mechanism: If the a1 set-up's RTL position already differed before sched1, the lever would be the C statement shape that makes expand_call emit the constant argument earlier, and the sibling func_8005D46C would be the reference.
+- probe: tmp/grind/func_80060544/s5/passorder.py prints, for every -da dump of both variants, the linear order of the D_8009B7D0 set and the a1 set inside the Case3 block.
+- result: Both variants emit la-then-a1 through .rtl, .jump, .cse, .loop, .cse2, .flow and .combine; only the score-0 variant flips to a1-then-la in .sched (sched1), and every later dump (.lreg/.greg/.jump2/.sched2/.dbr) carries that order forward. Emission order is identical in the winning and losing builds; sched1 owns the decision, exactly one pass.
+- verdict: KILLED
+
+## [s5] A deleted-insn corpse (NOTE_INSN_DELETED) sitting between the la and the p_static store is what flips sched1 — so ANY construct leaving a corpse there, including several that are not dead stores, would reproduce target's order.
+- mechanism: At .flow the winning and losing RTL are identical except for one (note NOTE_INSN_DELETED) at that position — the corpse of the coalesced staging copy — which would shift the scheduler's per-insn bookkeeping.
+- probe: tmp/grind/func_80060544/s5/note_sweep.py: nine Case3-arm variants compiled with the instrumented cc1, each measured for emitted order of `move $5,$0` vs the `la`, NOTE_INSN_DELETED count inside the block at .flow, and asm length.
+- result: V0 base a1-after notes=0; V1 end_off staged immediately before the store A1-FIRST notes=1 (the only flip, and it is the judge-FAILed form); V2 same staging one statement LATER a1-after notes=1; V3 staging through `geom` a1-after notes=1; V5 staging through a fresh local a1-after notes=0; V6 duplicated s.p_static store a1-after notes=1; V7 self-assignment a1-after notes=0; V9 redundant s.p_geom re-store a1-after notes=0 (adds a real insn, 118 asm lines); V11 two-hop end_off->new_var6 a1-after notes=1. Four distinct variants produce the corpse and do NOT flip.
+- verdict: KILLED
+
+## [s5] The flip is keyed to CARRIER IDENTITY and HOP POSITION — one specific pseudo (`end_off`), staged with exactly one hop, immediately before the p_static store — and not to any structural property of the block.
+- mechanism: sched1 bookkeeping tied to one pseudo's identity. This is the mechanism-level explanation of s4's H9 carrier-specificity observation (only end_off reaches 0; geom, also multiply-set and dead, is inert).
+- probe: Same nine-variant note_sweep.py table read as a carrier/position matrix rather than a corpse-count matrix.
+- result: Only V1 flips. Same variable one statement later (V2), a different multiply-assigned dead local (V3), a fresh local (V5), and two hops through the same variable (V11) are all inert. This is why every C-level structural axis has measured flat since s2, and it is why the only known route to 0 remains the judge-FAILed dead store.
+- verdict: CONFIRMED
+
+## [s5] A permuter campaign seeded from a STRUCTURALLY DIFFERENT chassis (not the floor-2 candidate) can still reach 0 by a clean route — the s4 frontier's third item, and the mandated modality for this session.
+- mechanism: The permuter's score for this function is quantised (60 or 0), so its hit probability depends on the starting form's mutation-distance to a matching form, i.e. on the chassis rather than on iteration count. A chassis built from respellings s3 measured individually inert starts at the same floor with different pseudo numbering, types and loop head.
+- probe: Built tmp/perm_60544_alt via tmp/grind/func_80060544/s5/mkalt.sh — pointer-typed `stat` carrier (s32 *stat, s.p_static = stat, no casts), `while (i < 4)` loop head instead of do/while, `stat` declared last. Validation gate passed: 133 insns, single `move a1,zero` displacement, permuter base score 60. Launched via tools/permuter_campaign.py (label alt-chassis-C, -j 6) with perm_inline plus the whole staging/extra-assignment family zeroed (perm_temp_for_expr, perm_duplicate_assignment, perm_chain_assignment, perm_long_chain_assignment, perm_add_self_assignment), so any find would be outside the judge-FAILed family. Two in-turn wait windows, then harvest --stop.
+- result: 32,859 iterations / 1,293 s. Exactly ONE find, at score 60 (== base), at t+104 s: a do-while(0) wrapper around the goto ladder plus (&s)->p_static instead of s.p_static — the same noise class as s4's two sideways finds. Nothing below base. Campaign stopped inside the session; ps aux confirms zero permuter processes remain. Cumulative across s4+s5: three chassis, 96,679 sampled forms, exactly one score-0 point in the function's whole history, and that point is the judge-FAILed dead store.
+- verdict: KILLED

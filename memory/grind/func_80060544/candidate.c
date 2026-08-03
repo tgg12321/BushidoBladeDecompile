@@ -125,6 +125,35 @@
  *     staging carrier in rejected/judge-fail-0803-1310.c, which the Judge
  *     FAILed.  It must not be re-proposed.
  *
+ * ------------------------------------------------------------------- s5
+ * s5 (2026-08-03, permuter) did NOT change this form either — still 2 / 133,
+ * re-measured with the form in place in src/text1b.c.  What s5 added is the
+ * MECHANISM, read out of the instrumented cc1 rather than guessed:
+ *   - The deciding pass is sched1 and nothing else: both the winning (score-0
+ *     staging) and losing (this) variant emit la-then-a1 through every dump up
+ *     to and including .combine, and only the winner flips in .sched.  So the
+ *     "expand_call emission order" alternative is dead.
+ *   - INSN_PRIORITY is NOT the lever: with BB2_PRIO_DEBUG=1 every insn in the
+ *     Case3 block is `final_pri=1` in BOTH variants, and with BB2_RANK_DEBUG=1
+ *     every rank_for_schedule comparison in that block is a total tie
+ *     (`cls=3 cls2=3 val=0`) in BOTH.  GCC 2.7.2 sched.c:1472 says why — on a
+ *     latency-1 target the whole block collapses to priority 1.  The s3
+ *     frontier is KILLED; do not probe priority or dependence height again.
+ *   - The NOTE_INSN_DELETED corpse left by the coalesced staging copy is a
+ *     side effect, not the cause: four other variants produce the same corpse
+ *     and do not flip (see hypotheses.md s5 H-F3 for the nine-variant table).
+ *   - What DOES flip it is carrier-pseudo IDENTITY plus hop position: only
+ *     `end_off = stat;` immediately before the p_static store, exactly one
+ *     hop.  `geom`, a fresh local, two hops, or the same statement one line
+ *     later are all inert.  That is the mechanism behind s4's H9 and the
+ *     reason every C-level structural axis has measured flat since s2.
+ *   - Permuter campaign C on a structurally different chassis
+ *     (tmp/perm_60544_alt: pointer-typed `stat`, `while (i < 4)` head, `stat`
+ *     declared last — all inert individually) ran 32,859 iterations with the
+ *     staging family zeroed and found nothing below base.  Three chassis,
+ *     96,679 samples, one score-0 point ever, and it is the judge-FAILed dead
+ *     store.  The permuter axis is closed for this function.
+ *
  * Re-apply this file with `python3 tmp/grind/func_80060544/s3/apply_candidate.py`
  * (the driver resets src/ between sessions — it has now happened three times).
  */
