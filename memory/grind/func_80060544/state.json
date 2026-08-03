@@ -40,7 +40,9 @@
    "next_probe": "Compare the pre-sched (.jump / .combine) RTL of the Case3 block against the sibling's, then, if they already differ there, use the sibling's C as the template. A permuter campaign is also cheap and extremely well-seeded now (base 2 with a matching instruction count) - follow [[permuter-fresh-seed-discipline]]."
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "Re-submit the SAME byte-proven form with two comment fixes and no code change: (1) add a `/* FAKE: constant-holder for the special-cased last index; kept as a separate statement between `i = 0;` and `idx = 0;` because that position is the prologue lever \u2014 mechanism <named>, lever-exhaustion hypotheses.md s1/H5d, family [[named-local-fake-exception]] */` annotation at `last`'s declaration or at `last = 3;`, and (2) rewrite the staged-`end_off` FAKE comment so it states the mechanism as PARTIALLY VERIFIED and records the s4 H9 carrier-specificity finding (only `end_off` reaches 0; `geom`, also multiply-set and dead, is inert) instead of asserting the adjust_priority/birthing_insn_p story as fact."
+ ],
  "origin": "queue",
  "created": "2026-08-03T16:26:50.485717+00:00"
 }
