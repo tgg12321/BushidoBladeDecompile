@@ -1,0 +1,34 @@
+{
+ "func": "func_80060E38",
+ "file": "text1b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 18,
+   "modality": "recon",
+   "headline": "Gap is 100% frame-layout, not codegen: 139/139 insns identical, only the 9 reload spill slots sit at sp+4 mod 8 vs target's +0 \u2014 traced to cc1's big-endian bigend_correction on 8-rounded spill slots; "
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "func_8006BD28's +0-mod-8 spill slots are reachable because STARTING_FRAME_OFFSET uses the UNPADDED current_function_outgoing_args_size (0x14 -> 0x14+4 = 0x18), which would falsify the 'every spill is 4 mod 8' generalization and name a concrete arg-area lever; the alternative is that its slots are assign_stack_temp / declared-local slots taking the align==0 path (alignment 4, no size rounding, bigend_correction = 4-4 = 0).",
+   "mechanism": "Two distinct assign_stack_local entry paths: align==-1 (reload spills, 8-rounded, bigend_correction 4) vs align==0 (mode alignment 4, unrounded, bigend_correction 0). STARTING_FRAME_OFFSET (mips.h:1651-1653) shifts the whole spill block by the raw outgoing-args size.",
+   "next_probe": "Grep src/*.c for func_8006BD28's body, lift it into the same isolated harness, run tmp/grind/func_80060E38/s1/run.sh on it, confirm it reproduces 0x18/0x20, then read its in.i.lreg (pre-reload stack MEMs present => declared-local/temp path) vs in.i.greg (MEMs only post-reload => alter_reg spill path). Whichever path it takes names the exact construct to transplant into func_80060E38. Estimated 3 turns; DO THIS FIRST."
+  },
+  {
+   "hypothesis": "The shared-spill-slot path at reload1.c:2384 (spill_stack_slot / spill_stack_slot_width reuse across pseudos) has its own adjust arithmetic at 2386-2400 that DOES compensate the big-endian correction, so a C form where spill slots are reused rather than freshly allocated could land at +0.",
+   "mechanism": "reload1.c:2337-2410 has two allocation paths; session 1 traced only the fresh-slot path at 2352. The 2384 path recomputes adjust from GET_MODE_SIZE(mode) - total_size and can rebuild the MEM at a different sub-slot offset.",
+   "next_probe": "Read reload1.c:2360-2410 in full, then vary the reproducer so fewer distinct pseudos spill and slots are reused (shorten the live ranges of the hoisted lui/ori pairs by moving a few global stores earlier in the body), and check via run.sh whether any slot lands congruent to 0 mod 8. Verify any promising form with sandbox --disable all before believing it."
+  },
+  {
+   "hypothesis": "Changing the spill COUNT is a diagnostic, not a closing lever.",
+   "mechanism": "The 9 spills exist because GCC hoists all 32 lui/ori constants above all 32 stores, exceeding the register file. Splitting the body reduces spills \u2014 but target ITSELF spills 9 within the same 139-instruction stream, so any form with a different spill count changes the instruction count and moves AWAY from the floor.",
+   "next_probe": "Only use spill-count variants to understand the hoist boundary (how many constants GCC will keep live), never as a candidate closing form; measure every variant with sandbox --disable all and expect the score to rise, not fall."
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-08-03T21:34:50.542230+00:00"
+}
