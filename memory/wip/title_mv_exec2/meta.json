@@ -14,16 +14,6 @@
   "sessions": [
     {
       "date": "2026-08-04",
-      "lever": "multi-set scratch local `s32 t` carrying BOTH loop-invariant constants (0x18 and 1) so loop.c move_movables cannot hoist either; retires the two extra callee-saves",
-      "lever_rule": "defeat-licm-hoist-var-reuse",
-      "floor_was": 27,
-      "floor_now": 22,
-      "round": 1,
-      "git_head_at_measurement": "9785ffda",
-      "note": "Entered from the frame census as an `ours-larger delta -8` (inverse-phantom) candidate. THAT PREMISE WAS WRONG and the census notes column already carried the evidence (`vars=64/regs=5/args=16 tgt_saves=3`): both bodies have vars=64 for the real `s32 buf[16]`; the 8 bytes are 5 callee-saves rounding to 24 vs target's 3 rounding to 16. Root cause: loop.c hoisted `li 24` and `li 1` into s3/s2. Routing both through one multi-set scratch defeats the hoist and lands frame 96 / 3 saves / 72 insns — all three exactly target. Residual 22 is a register swap (ours t=$a1, sext=$v1; target t=$v1, sext=$a1) plus `li 24` placement (target inline at use; ours rotated into the loop-back delay slot) and `addiu a0,sp,16` timing. Semantics checked: the pre-loop `li $5,24` is loop rotation with the reload in the `bne` delay slot, not a stale value. cc1psx diagnostic (sanctioned): with the candidate source cc1psx produces the IDENTICAL allocation to our fork (li $5,24 / sext in $3, frame 96, regs=3), so it is not closer; the differential sweep's `ours=31 / psx=15` reading was taken on the OLD (hoisting) source and does not indicate a better allocator here. Seven further levers measured inert (see notes.md). Applying the candidate breaks the oracle (SHA1 31fe8c21) because the 18 regfix rules are calibrated to HEAD's shape; src/main.c reverted and the full build re-verified at 62efab4f."
-    },
-    {
-      "date": "2026-08-04",
       "round": 2,
       "lever": "executed the two avenues round 1 listed as untried: (a) buffer-address named local declared first (hoist-call-arg-local-flips-jal-delay LUID bias), (b) statement order around the saTan1MainJump argument setup",
       "lever_rule": "hoist-call-arg-local-flips-jal-delay / store-before-jal",
@@ -38,6 +28,16 @@
       "round": "ra_solver",
       "git_head_at_measurement": "bb64860a",
       "note": "Ran the ra_solver pipeline on the banked score-22 candidate. Extraction + simulate validate 3/3 against the dump (free regression check on the solver itself). The function has only THREE global allocnos: 75 = t (nrefs 8, livelen 17, -> $a1), 72 = var_s0 (-> $s0), 74 = ff (-> $s1); everything else is local-alloc. hard_conflicts[75] = {2,3,4}, i.e. $v0, $v1 and $a0 are all blocked for t, which is why it lands in $a1 while target wants $v1. perturb.py with spec {75:3}, singles + pairs + greedy: NO sufficient vector in the searched space. That is the structurally correct answer rather than a search failure - the $v1 block on t is pseudo 83, the sign-extended var_s0, which is a LOCAL-alloc quantity, and ra_solver simulates global.c only. Local-alloc runs first and is outside the modeled space, so no global-allocno atom can move t. To reach target, local-alloc must place the sign-extend somewhere other than $v1; it scans ascending, so that needs $v0, $v1 and $a0 all occupied across the sign-extend's live range. $v0 (offset arithmetic) and $a0 (the call argument) are occupied; $v1 is not. In target $v1 holds the 24 - so target's 24 constant is a LOCAL quantity allocated before the sign-extend, while ours is a global allocno. RTL check via tmp/ra/rtl.py: all four references to pseudo 75 sit inside the loop-body block, so the promotion to global is a local-alloc decision, not a cross-block one. NEW MEASURED NEGATIVES this round: t declared at loop-body block scope and the named sign-extend local both produce a register mapping BIT-IDENTICAL to the candidate; the shift-expression-first form changes the shape for the worse (42 differing lines vs 40) without fixing the swap; routing the 1 through the offset variable after the stores gives 74 insns; and t = (s16)var_s0 with buf[0] = 1 << t also gives 74 insns. GENERAL FINDING for the solver: when a residual is decided by local-alloc, ra_solver is structurally blind to it - worth recording as a scope limit of the tool. src/main.c reverted; working tree clean.",
+      "floor_was": 22,
+      "floor_now": 22
+    },
+    {
+      "date": "2026-08-04",
+      "lever": "ra_solver Phase 5: local-alloc is now modelled and reproduces this function EXACTLY (2/2 order, 10/10 assign). The $a1/$v1 swap has a quantified TWO-PART spec: an extra local qty overlapping [6,38) with pri > 22500, AND hard $a0 live across that range. Neither alone works - which is why the call-arg family (part 2 only) was inert at 22.",
+      "lever_rule": "register-alloc-pure-c",
+      "round": "ra_solver",
+      "git_head_at_measurement": "2df5cacd",
+      "note": "Phase 5 of the ra_solver extends the model past global.c to local-alloc.c, and this function is the first payoff because Phase 4 had shown its residual is decided entirely by local-alloc. The new tools (tools/ra_solver/local_extract.py + local_alloc.py) reproduce this function EXACTLY: 2/2 blocks on the qty ordering and 10/10 quantities on the assignment. Block 2, the loop body, in allocation order: qty 2 (refs 18, span [48,60), pri 60000) -> $v0; qty 1 (refs 30, span [10,34), pri 50000) -> $v0; qty 0 (refs 18, span [6,38), pri 22500) -> $v1, this is the sign-extended var_s0; qty 3 (refs 4, span [54,58), pri 20000) -> $v1. find_free_reg scans ascending, so the sign-extend takes $v1 because only $v0 is occupied across its range. Target holds it in $a1, which requires $v0, $v1 AND $a0 all occupied there. Replaying the block (tmp/ra/tmv_local.py) gives a TWO-PART requirement and neither part alone suffices: one extra quantity overlapping [6,38) with priority above 22500 (for instance refs 8 and span 10 or less) moves the sign-extend only as far as $a0; hard $a0 live across [6,38) on its own leaves it in $v1; BOTH together put it in $a1, which is target. This finally explains why the call-argument naming family (s32 *p = buf and its variants, the hoist-call-arg-local-flips-jal-delay LUID lever) was uniformly inert at 22: it only ever addressed part 2. Target supplies part 2 by emitting addiu a0,sp,16 EARLY, before the address arithmetic, so hard $a0 is live across the sign-extend's range, whereas we emit it late. For a future attempt: both parts must land at once, and part 1 needs a short-lived high-reference LOCAL quantity inside the loop body. Note that t has 8 references but is currently a GLOBAL allocno spanning the whole loop body, so it does not qualify as-is; making it short-lived and block-local would satisfy part 1, but the reason it is multi-set in the first place is to defeat loop.c's move_movables hoist, so the two requirements pull against each other. src/main.c reverted.",
       "floor_was": 22,
       "floor_now": 22
     }
@@ -96,5 +96,7 @@
     ".claude/rules/cc1psx-calibration-only.md",
     "memory/wip/_frame_census_2026-08-04.md"
   ],
-  "prior_sessions_summary": []
+  "prior_sessions_summary": [
+    "2026-08-04 round 1: multi-set scratch local `s32 t` carrying BOTH loop-invariant constants (0x18 and 1) so loop.c move_movables cannot hoist either; retires the two extra callee-saves | floor 27 -> 22"
+  ]
 }
