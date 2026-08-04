@@ -875,8 +875,6 @@ hirahira_w_ctrl: subst "\$2,6\(\$19\)" "$2,6($16)" @ 114
 hirahira_w_ctrl: subst "\$19,\$19,104" "$16,$16,104" @ 117
 
 # Stack offset: saved var at sp+28 -> sp+24
-hirahira_w_ctrl: subst "\$8,28\(\$sp\)" "$8,24($sp)" @ 24
-hirahira_w_ctrl: subst "\$8,28\(\$sp\)" "$8,24($sp)" @ 69
 
 # Loop2: out2 s6($22) -> s3($19)
 hirahira_w_ctrl: subst "\$5,\$22,\$zero" "$5,$19,$zero" @ 97
@@ -1729,12 +1727,6 @@ func_800460E4: subst "\$19" "$17" @ 4
 func_800460E4: subst "sw\t\$18,48\(\$sp\)" "sw\t$19,52($sp)" @ 11
 func_800460E4: subst "sw\t\$17,44\(\$sp\)" "sw\t$18,48($sp)" @ 12
 # Stack variable offsets: sp10/sp18/sp20 shifted -4
-func_800460E4: subst "20\(\$sp\)" "16($sp)" @ 87
-func_800460E4: subst "28\(\$sp\)" "24($sp)" @ 94
-func_800460E4: subst "36\(\$sp\)" "32($sp)" @ 97
-func_800460E4: subst "20\(\$sp\)" "16($sp)" @ 200
-func_800460E4: subst "28\(\$sp\)" "24($sp)" @ 203
-func_800460E4: subst "36\(\$sp\)" "32($sp)" @ 206
 # Operand order: addu commuted operands (post-swap patterns)
 func_800460E4: subst "addu\t\$4,\$16,\$5" "addu\t$4,$5,$16" @ 76
 func_800460E4: subst "addu\t\$2,\$17,\$5" "addu\t$2,$5,$17" @ 102
@@ -3001,18 +2993,6 @@ func_80072CD4: reorder 56,63,54,57,58,59,55,60,61,62 @ 54-63
 func_80074B18: $23 <-> $fp @ 12-114
 func_80074B18: $21 <-> $fp @ 12-114
 # Stack offset shifts (-4 on spill area)
-func_80074B18: subst "sw\s+\$4,20\(\$sp\)" "sw	$4,16($sp)" @ 12
-func_80074B18: subst "sw\s+\$5,28\(\$sp\)" "sw	$5,24($sp)" @ 13
-func_80074B18: subst "sw\s+\$6,36\(\$sp\)" "sw	$6,32($sp)" @ 15
-func_80074B18: subst "lw\s+\$7,20\(\$sp\)" "lw	$7,16($sp)" @ 18
-func_80074B18: subst "sw\s+\$3,44\(\$sp\)" "sw	$3,40($sp)" @ 24
-func_80074B18: subst "sw\s+\$7,52\(\$sp\)" "sw	$7,48($sp)" @ 25
-func_80074B18: subst "lw\s+\$7,28\(\$sp\)" "lw	$7,24($sp)" @ 26
-func_80074B18: subst "lw\s+\$7,52\(\$sp\)" "lw	$7,48($sp)" @ 32
-func_80074B18: subst "lw\s+\$7,36\(\$sp\)" "lw	$7,32($sp)" @ 60
-func_80074B18: subst "lw\s+\$7,28\(\$sp\)" "lw	$7,24($sp)" @ 82
-func_80074B18: subst "lw\s+\$7,44\(\$sp\)" "lw	$7,40($sp)" @ 98
-func_80074B18: subst "lw\s+\$7,20\(\$sp\)" "lw	$7,16($sp)" @ 112
 # sltu -> slt for sp30 calc
 func_80074B18: subst "sltu\s+\$7,\$0,\$3" "slt	$7,$0,$3" @ 23
 # var_s6 computation: route through $v0/$2 first
