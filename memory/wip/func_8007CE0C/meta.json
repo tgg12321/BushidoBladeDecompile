@@ -14,16 +14,6 @@
  "sessions": [
   {
    "date": "2026-08-04",
-   "round": 4,
-   "lever": "the named real-s16-quantity family (clamp-limit carriers, clamped-dimension locals, natural w/h idiom)",
-   "lever_rule": "phantom-frame-slots-gcc272 / orphan-USE strand",
-   "floor_was": 47,
-   "floor_now": 47,
-   "git_head_at_measurement": "e7a0b730",
-   "note": "THE NAMED FAMILY DOES NOT DELIVER GROUP A, but the round produced the single most useful fact so far. Six variants, every local REAL (holding a value the body already computes and uses): the two clamp limits as s16 locals used by both the compare and the clamping assignment; the same hoisted to the top of the body; the clamped height as an s16 local feeding both the store and the shift; the natural w/h dimension-local clamp idiom with control flow preserved; and three combinations. All but one hold at exactly 2 orphans / 142 insns / score 47. THE EXCEPTION IS THE HANDLE: `lim_top` (both clamp globals read once into s16 xlim/ylim at the top, used by both compares) gives orphans=1, vars=8, frame=56 AT THE SAME 142 INSTRUCTIONS (score 55), reproduced. That refutes any 'vars is stuck at 16' reading - the strand count DOES move with source shape, just downward so far. Mechanistically, hoisting the load away from its compare REMOVED a strand, so a strand requires the widening to sit where combine cannot fold it into the load; the next session should work that lever in reverse. TWO HARD CONSTRAINTS on any candidate, both derived from target: the multiply must keep RE-READING arg0->x from memory (target splice regfix.txt:3417 is `lh $3,4($17)` ... `mult $3,$2`), and target emits the same two `sll ,0x10` + one `sra ,0x10` we do, so the two extra strands must be widenings combine folds away entirely. DISCIPLINE: no synthetic-strand spelling was tried and none should be - nothing reaches 3 or 4 orphans by any means, real or not, so there is no 'only works with a semantically empty local' trade-off to adjudicate. Banked on measurement, not on a policy call. src/display.c reverted."
-  },
-  {
-   "date": "2026-08-04",
    "round": 5,
    "lever": "reverse-lim_top: RTL census of widening SITES per pass (tmp/widen.py) -- reframes Group A entirely",
    "lever_rule": "phantom-frame-slots-gcc272 / combine added_sets_2",
@@ -41,6 +31,16 @@
    "floor_now": 30,
    "git_head_at_measurement": "e7a0b730",
    "note": "GROUP A CLOSED: 47 -> 30, frame 64 -> 80 (== target 0x50), vars 16 -> 32, orphans 2 -> 4, AND build_insns 142 -> 143 which now MATCHES target exactly. All 16 frame instructions are gone - the aligned diff's first difference is now index 12, and the epilogue matches too. THE MECHANISM, completed from round 7: a widening site costs a phantom slot only when the reg:HI being widened has a SECOND USE AS AN HImode VALUE, which is what makes combine's intermediate multi-use (combine.c:1458 added_sets_2). Mapping the five sites: 96 (arg0->y) and 100 (D_8009BE7A) orphan because each is BOTH compared (widened) AND copied narrow into the 16-bit accumulator a0_tmp; 83 (arg0->x), 89 (D_8009BE78) and 109 (arg0->x re-read) fold cleanly because v1_tmp is s32, so those assignments consume the WIDENED value rather than making a second narrow use. The x and y clamps are the same algorithm and differ ONLY in accumulator width, so narrowing v1_tmp to u16 and mirroring the y side's shape (coord = arg0->x; v1_tmp = coord; if (D_8009BE78 < coord) v1_tmp = D_8009BE78;) converts BOTH x sites: x_u16 and x_s16 both give orphans=4 / vars=32 / frame=80 / 143 insns / score 30. The second consumer is the clamp's own accumulator - a value the algorithm already has - so this is the symmetric real spelling, not a synthetic strand. PARTIAL FORMS CONFIRM THE MECHANISM IS GRADED: narrowing v1_tmp WITHOUT mirroring the shape (x_u16_keep) or with only the coordinate copy (x_u16_coord) gives orphans=3 / vars=24 / frame=72 / 146 insns / score 49 - exactly one converted site. src/display.c reverted; candidate.c re-applied and re-measured at 30 before reverting."
+  },
+  {
+   "date": "2026-08-04",
+   "round": 7,
+   "lever": "Group B: ALLOCDBG table via a new generic single-function isolator; accumulator-signedness and big_size-staging probes",
+   "lever_rule": "register-alloc-pure-c / ALLOCDBG lever sizing",
+   "floor_was": 30,
+   "floor_now": 30,
+   "git_head_at_measurement": "e7a0b730",
+   "note": "NO MOVEMENT; Group B is a plateau at 30 and the numbers say why. NEW INSTRUMENT: tmp/ce0c_allocone.sh isolates func_8007CE0C into its own TU (tmp/allocone.sh is hardcoded to hirahira_w_ctrl). Verified faithful - the isolated compile reports `.frame $sp,80 vars=32`, identical to the in-context measurement - so allocno numbering, nrefs, livelen and pri can be read without block-alignment guesswork. OUR CALLEE-SAVED ALLOCATION (pseudo, nrefs/livelen/pri): s0<-p78 (10/39/7692), s1<-p72 (8/70/3428), s2<-p73 (8/89/2696), s3<-p118 (3/14/2142), s4<-p77 (4/52/1538), s5<-p74 (2/120/166). Target holds big_size in s0 (`sra s0,v1,0x5`) and copies it through v1 into s4; we hold it in s4 = p77 at pri 1538. THE SIZING VERDICT: to move big_size into s0 its allocno must outrank p78 at 7692, i.e. a ~5x lift - NOT a narrow tie like hirahira_w_ctrl's 0.4-15% gaps, where a single extra reference or one insn of live range flipped the order. A 5x lift needs either many more references or a live range cut from 52 to about 10, neither of which any natural spelling supplies. That is a materially different regime and should be stated as such rather than ground at blindly. ROUND-9 PROBES ALL HOLD AT 30 (143 insns, frame 80 throughout): x accumulator s16 instead of u16 (30 - same score, and note candidate-30's u16 is what makes cc1 emit `lhu` for the x load where target has `lh`); y accumulator a0_tmp u16->s16 (36, worse - it is load-bearing as u16); both narrowed (36); big_size staged through a second variable to mirror target's move v1,s0 / move s4,v1 pair (30); x_s16 plus big staging (30). src/display.c reverted."
   }
  ],
  "reviewer": null,
@@ -84,9 +84,10 @@
  ],
  "root_cause": "Three independent causes. (A) The frame is 16 bytes short because cc1 allocates half as many phantom locals temps as the original did (vars 16 vs 32) - not a spill, not a dead array, and not reachable by declaring locals. (B) Register allocation in the clamp and multiply blocks plus three extra/missing moves. (C) One superfluous argument load at the func_8007DC9C call.",
  "next_avenues": [
-  "GROUP B is now the whole residual (~30 insns of register naming). Do it by ALLOCDBG lever-sizing with tmp/allocone.sh, which is now safe to run because the frame is correct and will not re-shuffle under it. Shape from tmp/adiff.py: the multiply/rounding block is pure naming (target a2/v1/v0/s0 vs our a3/v0/v1/s4); target holds big_size in s0 and copies it through v1 into s4 at 53-59; the x-clamp block restructured under the r8 change and needs a fresh read.",
+  "GROUP B is the whole residual (30). The ALLOCDBG sizing says the big_size carrier needs a ~5x priority lift (p77 at 1538 must outrank p78 at 7692) to reach target's s0 - not a narrow tie, so the hirahira-style single-reference levers do not apply here. Before more grinding, re-read the diff: the x-clamp block RESTRUCTURED under the r8 frame fix and its current shape (we emit `lhu` + a different statement order) has not been re-derived; that block, not the allocation, may be the bigger part of the 30.",
+  "Note candidate-30 uses `u16 v1_tmp`, which is why cc1 emits `lhu` for the x load where target has `lh`. `s16 v1_tmp` scores the same 30 and is the sign-extending form - prefer it when re-deriving the clamp block.",
   "Completion gate: 23 regfix rules (the 16 frame ones should now retire outright) + the pin/barrier retire, full build, layer-2 cheat-reviewer, queue done.",
-  "Re-run tmp/widen.py after any Group B change - a shape change can push a site out of the middle row and silently cost the frame again."
+  "Re-run tmp/widen.py after any Group B change - a shape change can push a widening site out of the orphan row and silently cost the frame."
  ],
  "memory_notes": [
   "memory/project/phantom-frame-slots-gcc272.md (the frame equation + the forbidden dead-array inference)",
@@ -97,6 +98,7 @@
  "prior_sessions_summary": [
   "2026-08-04 | orientation: caution discharge, residual decomposition, frame quantifi | progress",
   "2026-08-04 | Group C closed (no-arg call); phantom-slot PRODUCER identified via com | progress",
-  "2026-08-04 | cross-check the phantom-slot producer against the in-tree 3-orphan wit | progress"
+  "2026-08-04 | cross-check the phantom-slot producer against the in-tree 3-orphan wit | progress",
+  "2026-08-04 r4 | the named real-s16-quantity family (clamp-limit carriers, clamped-dime | floor 47->47"
  ]
 }
