@@ -14,15 +14,6 @@
   "sessions": [
     {
       "date": "2026-08-04",
-      "round": 2,
-      "lever": "executed the two avenues round 1 listed as untried: (a) buffer-address named local declared first (hoist-call-arg-local-flips-jal-delay LUID bias), (b) statement order around the saTan1MainJump argument setup",
-      "lever_rule": "hoist-call-arg-local-flips-jal-delay / store-before-jal",
-      "floor_was": 22,
-      "floor_now": 22,
-      "note": "BOTH INERT. 9 forms measured, all score 22 with frame 96 / 3 saves / 72 insns: the buffer-address local 's32 *p = buf;' declared first in a block around the loop body, declared at loop-body top, the 'u8 *p' cast form, and the rule's exact shape (a block wrapping only the last pre-call store plus the call with the arg declared first); plus statement orders shift-before-fields, shift-first-then-offset, offset-after-shift, and pointer-local + shift-first. ONE regression: 's32 *p = buf;' at FUNCTION scope scores 35 (frame 96 but regs=4, 75 insns) because the pointer lives across the loop and takes a callee-save - the same trap as the s16 't' variant, so check the save count, not just the score. store-before-jal does not apply: the pre-call sw into 16(sp) is ALREADY in the jal delay slot in both builds; the only difference is which register holds the value (v0 target / v1 ours), i.e. the same rename. Function is BANKED at 22 with a complete kill-list across the t-placement, idx-local, call-arg-LUID and statement-order families."
-    },
-    {
-      "date": "2026-08-04",
       "lever": "ra_solver round NEGATIVE-DECISIVE: model validated 3/3 against the dump, but perturb (singles+pairs+greedy) finds NO sufficient vector for the t -> $v1 swap. Correct answer, not a search failure: the $v1 block on t comes from a LOCAL-alloc quantity (the sign-extend), and ra_solver models global.c only.",
       "lever_rule": "register-alloc-pure-c",
       "round": "ra_solver",
@@ -38,6 +29,16 @@
       "round": "ra_solver",
       "git_head_at_measurement": "2df5cacd",
       "note": "Phase 5 of the ra_solver extends the model past global.c to local-alloc.c, and this function is the first payoff because Phase 4 had shown its residual is decided entirely by local-alloc. The new tools (tools/ra_solver/local_extract.py + local_alloc.py) reproduce this function EXACTLY: 2/2 blocks on the qty ordering and 10/10 quantities on the assignment. Block 2, the loop body, in allocation order: qty 2 (refs 18, span [48,60), pri 60000) -> $v0; qty 1 (refs 30, span [10,34), pri 50000) -> $v0; qty 0 (refs 18, span [6,38), pri 22500) -> $v1, this is the sign-extended var_s0; qty 3 (refs 4, span [54,58), pri 20000) -> $v1. find_free_reg scans ascending, so the sign-extend takes $v1 because only $v0 is occupied across its range. Target holds it in $a1, which requires $v0, $v1 AND $a0 all occupied there. Replaying the block (tmp/ra/tmv_local.py) gives a TWO-PART requirement and neither part alone suffices: one extra quantity overlapping [6,38) with priority above 22500 (for instance refs 8 and span 10 or less) moves the sign-extend only as far as $a0; hard $a0 live across [6,38) on its own leaves it in $v1; BOTH together put it in $a1, which is target. This finally explains why the call-argument naming family (s32 *p = buf and its variants, the hoist-call-arg-local-flips-jal-delay LUID lever) was uniformly inert at 22: it only ever addressed part 2. Target supplies part 2 by emitting addiu a0,sp,16 EARLY, before the address arithmetic, so hard $a0 is live across the sign-extend's range, whereas we emit it late. For a future attempt: both parts must land at once, and part 1 needs a short-lived high-reference LOCAL quantity inside the loop body. Note that t has 8 references but is currently a GLOBAL allocno spanning the whole loop body, so it does not qualify as-is; making it short-lived and block-local would satisfy part 1, but the reason it is multi-set in the first place is to defeat loop.c's move_movables hoist, so the two requirements pull against each other. src/main.c reverted.",
+      "floor_was": 22,
+      "floor_now": 22
+    },
+    {
+      "date": "2026-08-04",
+      "lever": "Phase 5 stage 2 applied to this function's C: target's own stream census shows how it supplies BOTH parts - part 2 is addiu a0,sp,16 at line 23 (before the address arithmetic), part 1 is li v1,24 at 31 consumed at 34, i.e. the 24 as a 3-instruction local qty in $v1. Restates the problem: target's two constants are separate AND short-lived AND unhoisted, while our anti-hoist lever forces them into one long-lived pseudo. The open question is now why move_movables does not hoist target's single-set constants.",
+      "lever_rule": "register-alloc-pure-c",
+      "round": "ra_solver",
+      "git_head_at_measurement": "d4bbc6b9",
+      "note": "Applied the stage-1 local-alloc model's two-part spec to this function's C, per the team-lead's pointer to check what target's own stream holds in $a0 across the sign-extend's span. Census of target (tmp/r.s): $a0 sites are addiu a0,sp,16 at line 23, li a0,1 at 57 and addiu a0,sp,16 again at 66; $v1 sites are the D_80101BCC load at 3-4 and 61-64, plus li v1,24 at 31 consumed by sh v1,0(at) at 34. So target supplies part 2 by emitting the saTan1MainJump(buf) argument address EARLY, at line 23 before the address arithmetic, leaving hard $a0 live across the sign-extend's range; and it supplies part 1 with the 24 constant as a SHORT-LIVED LOCAL QUANTITY in $v1, three instructions long. Ours emits the call argument late and holds the 24 in a long-lived global allocno in $a1. NEW MEASUREMENTS this round: neither the candidate nor the shift-first reordering supplies part 1. At the qty level shift-first does add a fifth quantity to block 2 (refs 4, span [10,16)) but it is allocated last and lands in $v0, so the sign-extend still takes $v1. RESTATED PROBLEM: target keeps its two loop constants SEPARATE and SHORT-LIVED and UNHOISTED - 24 in $v1 at 31-34, and the 1 in $v0 at li v0,1 / sllv v0,v0,a1 lines 50-51. Our only known anti-hoist lever routes both through ONE multi-set t, which necessarily produces a single long-lived pseudo, and that is exactly what destroys part 1. The question is therefore no longer which register the sign-extend gets but why loop.c's move_movables does not hoist target's single-set loop constants when it hoists ours. Answer that and the 24 becomes a short-lived local qty in $v1 (part 1), the shared t is unnecessary, and part 2 reduces to a placement question the call-argument family already half-explored. src/main.c reverted.",
       "floor_was": 22,
       "floor_now": 22
     }
@@ -97,6 +98,7 @@
     "memory/wip/_frame_census_2026-08-04.md"
   ],
   "prior_sessions_summary": [
-    "2026-08-04 round 1: multi-set scratch local `s32 t` carrying BOTH loop-invariant constants (0x18 and 1) so loop.c move_movables cannot hoist either; retires the two extra callee-saves | floor 27 -> 22"
+    "2026-08-04 round 1: multi-set scratch local `s32 t` carrying BOTH loop-invariant constants (0x18 and 1) so loop.c move_movables cannot hoist either; retires the two extra callee-saves | floor 27 -> 22",
+    "2026-08-04 round 2: executed the two avenues round 1 listed as untried: (a) buffer-address named local declared first (hoist-call-arg-local-flips-jal-delay LUID bias), (b) statement order around the saTan1MainJump argument setup | floor 22 -> 22"
   ]
 }
