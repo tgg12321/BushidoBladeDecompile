@@ -105,14 +105,12 @@ instructions differing is a much better starting basin than saTan4FireDisp had.
 Per [[grinder-permuter-orphan-stop-gate]] it must be supervised and harvested
 inside the same session.
 
-## Sibling
+Instruments: tmp/hw*.py sweeps, tmp/hw_bank.py, tmp/sbs.sh, tmp/frame_probe.sh, tmp/allocdbg.sh, tmp/allocpick.py, tmp/perm_hw workspace.
 
-`hirahira_w_ctrl_2` (`text1a_c`, dist 58, 63 rules, verdict **ASM-SUSPECT**) —
-needs the `canonical` gate before any pure-C work.
+## Permuter rung — CLOSED (2026-08-04, operator-supervised)
 
-## Instruments
-
-`tmp/hw_apply.py` (splice a candidate into src), `tmp/hw3.py`–`tmp/hw16.py`
-(the per-round sweeps; each prints score + the full allocno table),
-**`tmp/allocone.sh`** (single-function ALLOCDBG), `tmp/allocpick2.py`,
-`tmp/allocmatch.py`, `tmp/sbs.sh`, `tmp/frame_probe.sh`.
+Campaign plus1ref on a clean 132/132 offset-0 pair from candidate-5: 62k
+iters, 6 finds, best 120 — all WORSE than the candidate basin (the mutation
+set cannot express the +1-reference lever; it moves whole statements, which
+is the +2 class already killed manually). Stopped in-session, no orphan.
+Ladder fully run. BANKED at 5 — the best floor in the active queue.
