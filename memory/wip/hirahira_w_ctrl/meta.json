@@ -1,0 +1,63 @@
+{
+  "function": "hirahira_w_ctrl",
+  "func": "hirahira_w_ctrl",
+  "file": "text1a",
+  "verdict": "C",
+  "scores": {
+    "head_floor": 27,
+    "candidate_floor": 23,
+    "metric": "sandbox --disable all (masked Levenshtein)",
+    "build_insns": 132,
+    "target_insns": 132,
+    "frame": "ours 72 == target 0x48 (72) - already correct at HEAD"
+  },
+  "sessions": [
+    {
+      "date": "2026-08-04",
+      "round": 1,
+      "lever": "commutative-add destination reuse (`offset = offset + (s32) a2`) + register-pin removal",
+      "lever_rule": "register-alloc-pure-c / inline-asm-policy",
+      "floor_was": 27,
+      "floor_now": 23,
+      "git_head_at_measurement": "ddf6cb64",
+      "note": "CENSUS LINE WAS STALE ON TWO COUNTS: the function is in src/text1a.c (not text1a_c) and the honest distance is 27 (not 16). Frame (72 == target 0x48) and instruction count (132/132) are ALREADY correct at HEAD, so the whole gap is register naming plus commutative-add operand order. TWO FINDINGS. (1) THE REGISTER PIN IS NOT LOAD-BEARING: replacing `register s32 *s7_a4 asm(\"s7\") = a4;` with a plain local scores the same 27, so that cheat-asm retires for free and is worth committing on its own. (2) Target emits `addu s0,s0,s2` (destination reuses the offset register) where we emitted `addu v1,s2,s0`; writing `offset = offset + (s32) a2; p = (u16 *) offset;` instead of `p = (u16 *) (a2 + offset);` matches it, 27 -> 23. Both together = 23 (candidate.c). MEASURED NEGATIVE: the same reuse on the FIRST add regresses to 30 (only the second matches); plain operand-order swaps (offset + a1 / offset + a2 / both) are inert at 27 because GCC canonicalises commutative operands - the destination reuse is what matters; the pin's removal is inert in every combination, consistently confirming it. RESIDUAL 23 is three independent 2-cycle register swaps (s4/s5 across the prologue saves, s6/s7 throughout, s0/s3 in the second loop) - a different shape from saTan4FireDisp's single 3-cycle, so likely three separate allocno ties. src/text1a.c reverted."
+    }
+  ],
+  "reviewer": null,
+  "rules_dropped_if_applied": 0,
+  "cheat_inventory": [
+    "16 regfix rules",
+    "1 tools/prologue_config.json entry",
+    "register pin in source: register s32 *s7_a4 asm(\"s7\") = a4; (src/text1a.c:755) - MEASURED NOT LOAD-BEARING, retires for free",
+    "no asmfix / frame_fix / maspsx-gate entries"
+  ],
+  "rejected_forms": [
+    {
+      "form": "offset destination-reuse applied to the FIRST add (a1 + offset)",
+      "score": 30,
+      "reason": "only the second add matches target"
+    },
+    {
+      "form": "plain operand-order swaps: offset + a1 / offset + a2 / both",
+      "score": 27,
+      "reason": "inert - GCC canonicalises commutative operands"
+    },
+    {
+      "form": "pin removal alone",
+      "score": 27,
+      "reason": "inert, which is the point: the pin is free to retire"
+    }
+  ],
+  "root_cause": "Frame and instruction count already match at HEAD. The gap is register allocation: three independent 2-cycle swaps (s4/s5, s6/s7, s0/s3) plus one commutative-add destination reuse, the latter now fixed.",
+  "next_avenues": [
+    "RA playbook Step-0 on the three swapped pairs: tmp/allocdbg.sh text1a + tmp/allocpick.py (adjust its WANT set to this function's pseudos) gives the allocno priorities directly; the saTan4FireDisp round-10 write-up shows how to turn them into a sized lever.",
+    "Retiring the register pin is worth committing on its own even if the rest stalls - it is measured inert.",
+    "Start from candidate.c (23). Completion gate: 16 regfix rules + the prologue_config entry retire with a full match.",
+    "Sibling hirahira_w_ctrl_2 (text1a_c, dist 58, 63 rules) is verdict ASM-SUSPECT - it needs the `canonical` gate run before any pure-C work, not a diff reading."
+  ],
+  "memory_notes": [
+    ".claude/rules/register-alloc-pure-c.md",
+    ".claude/rules/inline-asm-policy.md",
+    "memory/wip/saTan4FireDisp/notes.md (the ALLOCDBG sizing method)"
+  ]
+}
