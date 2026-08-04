@@ -14,16 +14,6 @@
  "sessions": [
   {
    "date": "2026-08-04",
-   "round": 5,
-   "lever": "reverse-lim_top: RTL census of widening SITES per pass (tmp/widen.py) -- reframes Group A entirely",
-   "lever_rule": "phantom-frame-slots-gcc272 / combine added_sets_2",
-   "floor_was": 47,
-   "floor_now": 47,
-   "git_head_at_measurement": "e7a0b730",
-   "note": "MECHANISM CORRECTION - THE SITE COUNT WAS NEVER THE PROBLEM. tmp/widen.py censuses HImode->SImode widening pairs per pass. The body ALREADY HAS FIVE (flow pass: pseudos 83, 89, 96, 100, 109); combine folds all five and only TWO (96, 100) leave an orphan. So rounds 1-6 were adding and removing SITES, a quantity that was never short, which is exactly why 25 variants moved nothing. There are three outcomes per site and only the middle one buys a frame slot: (a) combine merges cleanly with a single-use intermediate -> no instructions and NO SLOT (base sites 83, 89, 109); (b) combine merges but the intermediate is MULTI-USE so it preserves a (use) insn -> 8-BYTE SLOT (base 96, 100); (c) combine cannot merge -> real sll+sra emitted, no slot (lim_top's 90, 99). That is combine.c:1458 `added_sets_2 = !dead_or_set_p(i3, i2dest)`, the same mechanism packed-multiply-cluster documents. THE REAL SPEC IS THEREFORE: make two of the three cleanly-folding sites (83, 89, 109) MULTI-USE - some `X << 16` must be read by a second consumer besides its own `>> 16` - NOT 'find more s16 quantities'. This also explains lim_top's 2->1: it did not lose a site, it pushed sites 90/99 into outcome (c), which emits real shifts and no slot, hence score 55 at the same 142 instructions. Screening constraint for any candidate: the new multi-use must not push a site into outcome (c), because the visible sll/sll/sra census must stay identical. src/display.c reverted."
-  },
-  {
-   "date": "2026-08-04",
    "round": 6,
    "lever": "GROUP A CLOSED - narrow the x clamp accumulator to u16 and mirror the y side's shape",
    "lever_rule": "phantom-frame-slots-gcc272 / combine added_sets_2 / symmetric-algorithm spelling",
@@ -41,6 +31,16 @@
    "floor_now": 30,
    "git_head_at_measurement": "e7a0b730",
    "note": "NO MOVEMENT; Group B is a plateau at 30 and the numbers say why. NEW INSTRUMENT: tmp/ce0c_allocone.sh isolates func_8007CE0C into its own TU (tmp/allocone.sh is hardcoded to hirahira_w_ctrl). Verified faithful - the isolated compile reports `.frame $sp,80 vars=32`, identical to the in-context measurement - so allocno numbering, nrefs, livelen and pri can be read without block-alignment guesswork. OUR CALLEE-SAVED ALLOCATION (pseudo, nrefs/livelen/pri): s0<-p78 (10/39/7692), s1<-p72 (8/70/3428), s2<-p73 (8/89/2696), s3<-p118 (3/14/2142), s4<-p77 (4/52/1538), s5<-p74 (2/120/166). Target holds big_size in s0 (`sra s0,v1,0x5`) and copies it through v1 into s4; we hold it in s4 = p77 at pri 1538. THE SIZING VERDICT: to move big_size into s0 its allocno must outrank p78 at 7692, i.e. a ~5x lift - NOT a narrow tie like hirahira_w_ctrl's 0.4-15% gaps, where a single extra reference or one insn of live range flipped the order. A 5x lift needs either many more references or a live range cut from 52 to about 10, neither of which any natural spelling supplies. That is a materially different regime and should be stated as such rather than ground at blindly. ROUND-9 PROBES ALL HOLD AT 30 (143 insns, frame 80 throughout): x accumulator s16 instead of u16 (30 - same score, and note candidate-30's u16 is what makes cc1 emit `lhu` for the x load where target has `lh`); y accumulator a0_tmp u16->s16 (36, worse - it is load-bearing as u16); both narrowed (36); big_size staged through a second variable to mirror target's move v1,s0 / move s4,v1 pair (30); x_s16 plus big staging (30). src/display.c reverted."
+  },
+  {
+   "date": "2026-08-04",
+   "round": 8,
+   "lever": "Group B sizing: derive target's implied allocation order, list inversions, compute deltas",
+   "lever_rule": "register-alloc-pure-c / ALLOCDBG lever sizing",
+   "floor_was": 30,
+   "floor_now": 30,
+   "git_head_at_measurement": "e7a0b730",
+   "note": "ENDGAME STATEMENT FOR GROUP B - and the sizing shows the PRIORITY FRAMING IS THE WRONG MODEL, the same way the widening-SITE count was the wrong model for Group A. Sizing as asked: our callee-saved order is s0<-p78 (10/39/7692), s1<-p72 arg0 (8/70/3428), s2<-p73 arg1 (8/89/2696), s3<-p118 (3/14/2142), s4<-p77 big_size (4/52/1538), s5<-p74 var_s5 (2/120/166). Target puts big_size in s0. For our p77 to reach s0 it must outrank p78 at 7692, a 5.0x lift, and the formula gives exactly two routes, BOTH blocked by the algorithm's real structure: nrefs 4 -> 14 at livelen 52 (floor_log2(n)*n must exceed 40; n=13 gives 7500, still short, n=14 gives 8076), or livelen 52 -> <=10 with nrefs 4, which would require the DMA block to sit adjacent to the rounding block. Neither is a hirahira-style +1 gap. BUT THE TARGET ASM SAYS THE INVERSION IS NOT REAL: target line 123 is `bne $s0, $a0` inside the push loop, so target's s0 holds the LOOP value there, exactly as ours does - target does not keep big_size in s0. What target actually does is compute big_size into s0 TRANSIENTLY, copy it out through v1 into s4 (`move v1,s0` / `sll v0,v1,0x4` / `move s4,v1` at indices 53-58), and then reuse s0 for the loop. We compute big_size straight into s4 and use s0 for the loop throughout. So Group B's residual is a MISSING TRANSIENT COPY CHAIN around big_size - a CSE/structure question - not an allocno-priority tie, and no amount of priority lifting addresses it. The round-9 `big_stage` probe (staging big_size through a second variable) was the right instinct but the wrong shape and scored 30. RECOMMENDATION: bank at 30. Group A and C are closed, the frame and instruction count are exact, and the remaining 30 is one well-identified structural question that the priority ladder provably cannot reach."
   }
  ],
  "reviewer": null,
@@ -84,10 +84,10 @@
  ],
  "root_cause": "Three independent causes. (A) The frame is 16 bytes short because cc1 allocates half as many phantom locals temps as the original did (vars 16 vs 32) - not a spill, not a dead array, and not reachable by declaring locals. (B) Register allocation in the clamp and multiply blocks plus three extra/missing moves. (C) One superfluous argument load at the func_8007DC9C call.",
  "next_avenues": [
-  "GROUP B is the whole residual (30). The ALLOCDBG sizing says the big_size carrier needs a ~5x priority lift (p77 at 1538 must outrank p78 at 7692) to reach target's s0 - not a narrow tie, so the hirahira-style single-reference levers do not apply here. Before more grinding, re-read the diff: the x-clamp block RESTRUCTURED under the r8 frame fix and its current shape (we emit `lhu` + a different statement order) has not been re-derived; that block, not the allocation, may be the bigger part of the 30.",
-  "Note candidate-30 uses `u16 v1_tmp`, which is why cc1 emits `lhu` for the x load where target has `lh`. `s16 v1_tmp` scores the same 30 and is the sign-extending form - prefer it when re-deriving the clamp block.",
-  "Completion gate: 23 regfix rules (the 16 frame ones should now retire outright) + the pin/barrier retire, full build, layer-2 cheat-reviewer, queue done.",
-  "Re-run tmp/widen.py after any Group B change - a shape change can push a widening site out of the orphan row and silently cost the frame."
+  "GROUP B (the whole residual, 30) is NOT a priority tie - target computes big_size into s0 transiently, copies it out through v1 into s4, then reuses s0 for the push loop; we compute it straight into s4 and hold s0 for the loop. The open question is what source shape makes cc1 emit that transient + copy chain (indices 53-58: move v1,s0 / sll v0,v1,0x4 / move s4,v1). Round-9's big_stage probe was the right instinct, wrong shape.",
+  "The x-clamp block restructured under the r8 frame fix and has NOT been re-derived; it currently emits `lhu v1,4(s1)` where target has `lh`. Prefer `s16 v1_tmp` (same score 30, sign-extending load) as the base for that re-derivation. That block may be the larger share of the 30.",
+  "Completion gate: 23 regfix rules (the 16 frame ones should retire outright now) + the pin/barrier retire, full build, layer-2 cheat-reviewer, queue done.",
+  "Re-run tmp/widen.py after any Group B change - a shape change can push a widening site out of the orphan row and silently cost the frame back."
  ],
  "memory_notes": [
   "memory/project/phantom-frame-slots-gcc272.md (the frame equation + the forbidden dead-array inference)",
@@ -99,6 +99,7 @@
   "2026-08-04 | orientation: caution discharge, residual decomposition, frame quantifi | progress",
   "2026-08-04 | Group C closed (no-arg call); phantom-slot PRODUCER identified via com | progress",
   "2026-08-04 | cross-check the phantom-slot producer against the in-tree 3-orphan wit | progress",
-  "2026-08-04 r4 | the named real-s16-quantity family (clamp-limit carriers, clamped-dime | floor 47->47"
+  "2026-08-04 r4 | the named real-s16-quantity family (clamp-limit carriers, clamped-dime | floor 47->47",
+  "2026-08-04 r5 | reverse-lim_top: RTL census of widening SITES per pass (tmp/widen.py)  | floor 47->47"
  ]
 }
