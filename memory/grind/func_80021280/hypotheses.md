@@ -52,6 +52,18 @@ everything in the WIP rejected_forms list.
 - result: 19 (72/72) - the $a1/$a2 register swap returns. a1 live across t1's birth adds an a1<->t1 pseudo conflict that flips the allocator low-reg tie. Moving a1=0 to SECOND (after t1=val) restores floor 2 with emitted order exactly textual: t1,a1,t4,t3,t2,mode,t0
 - verdict: KILLED
 
+## [s2] Some t1-set spelling / middle-group ordering / li-typing tolerates a1=0 textually first with correct RA
+- mechanism: s1 conjectured the 19-regression was an a1<->t1 conflict tie-flip steerable by t1's provenance/class
+- probe: a3-reuse-for-mode (target keeps mode in $a3) with a1 first; t1 after the li group; u8 typings of t4/t3/t2
+- result: 19 / 21 / 19. ALLOCDBG then showed the true mechanism is not a conflict at all: global.c allocno_compare priority (floor_log2(nrefs)*nrefs/livelen*10000) — a1-first adds one insn of counter livelen (49->50), dropping counter pri 7346->7200 below the pointer's 7333, so the pointer is allocated first and takes $a1. No spelling of t1 or the li group participates in that ratio.
+- verdict: KILLED (the whole "t1-spelling" frontier axis dies with the mechanism)
+
+## [s2] Lifting counter nrefs by a byte-neutral duplicated statement flips the tie and closes the function
+- mechanism: flow.c counts duplicate refs pre-RA; jump2 cross-jump (post-reload) re-merges identical suffixes; counter 12->15 refs = pri 9000 > pointer 7333, allocation order otherwise unchanged
+- probe: loop tail (a1++; if (a1<3) goto loop2; return;) duplicated into (a) store5 fall-through arm, (b) the if (a0==0) arm; FAKE-annotated
+- result: (a) 2 with build 73 — sched1 hoists the duplicate's addiu into the lhu load-delay slot, partial merge only (arm must contain no loads); (b) sandbox 0, 72/72, byte-exact incl. target's beqz a0 branch sense and the lhu/nop/sh delay nop
+- verdict: CONFIRMED (bytes) — acceptance pending owner ruling: layer-1 cheat-reviewer FAILs the construct as an EXTENSION of [[duplicated-statement-into-arms]] (evidence base = assignments; this duplicates control-transfer statements). Assignment-only duplication is arithmetically insufficient (every counter-ref assignment also refs the pointer; pointer's shorter live range wins at every k).
+
 ## [s1] Splitting a1<<2 into its own named local shifts the scheduling of the preamble (WIP next_avenues item 3)
 - mechanism: Separate statement changes RTL grouping of the rotated loop head
 - probe: s32 sh2 = a1 << 2; u16 nibble = (t1 >> sh2) & 0xF;

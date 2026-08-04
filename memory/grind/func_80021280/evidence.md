@@ -126,3 +126,63 @@ first loop-body statement that triggers the biv scan).
 - [s1] Open forensics question: which pass lifted a1 past the two load pairs in the OLD form (textual 7th -> emitted 5th) while form C is emitted verbatim - answerable by diffing -da dumps of the two forms on a standalone repro
 
 - [s1] Sibling/duplicate scan negative: func_80021280 absent from tmp/duplicates.txt and tmp/duplicates_leads.txt
+
+## s2 (structural, 2026-08-03/04) — BYTES PROVEN TO 0; acceptance pending an owner ruling on construct scope
+
+- Baseline re-confirmed: form C applied to src -> sandbox --disable all = 2 (72/72).
+- NEW STRUCTURAL FACT (from target asm read): target keeps `mode` in $a3 (lui/lh
+  $a3 at 0x21304-08) — the same register as loop1's compare temp. Reusing the C
+  variable `a3` for mode (declared s32 so `a3 = *(u16*)(a2+0x48)` emits lhu and
+  `a3 = D_800A38DC` emits lh) is FLOOR-NEUTRAL: 2 with form-C order, 19 with
+  a1-first order. Same sanctioned variable-reuse family as the a1 reuse; more
+  faithful to the original but does NOT fix the swap. Kept in the candidate.
+- KILL: a1-first + t1 moved after the li group (a1; t4; t3; t2; t1=val; a3; t0)
+  -> 21 (the 19 RA regression + 2 ordering). The regression tracks a1's textual
+  position, not t1's.
+- KILL: a1-first + u8 typings of t4/t3/t2 -> 19. Type class of the li group does
+  not participate in the tie.
+- MECHANISM NAILED (BB2_ALLOC_DEBUG on instrumented tools/gcc-2.7.2/cc1, whole
+  code6cac.c compile, func_80021280 section — tmp/grind/func_80021280/s2/
+  allocdbg_a1first.raw): global.c allocno_compare priority
+  = floor_log2(nrefs)*nrefs/livelen*10000, tie -> lower pseudo number.
+  In the a1-first form: POINTER pseudo 74 nrefs=11 livelen=45 pri=7333 beats
+  COUNTER pseudo 73 nrefs=12 livelen=50 pri=7200, so the pointer is allocated
+  first and takes $a1 (the swap = the 19). In form C the counter's livelen is 49
+  (born one insn later, after move t1,v1) -> pri 7346 > 7333 -> counter wins $a1
+  but the preamble order is then wrong by the adjacent swap. This supersedes the
+  s1 "a1<->t1 conflict" hypothesis: it is a pure live-LENGTH priority artifact;
+  one insn of livelen is the whole margin. nrefs are UNWEIGHTED occurrence
+  counts: counter's 12 and pointer's 11 each map 1:1 to target instructions, so
+  NO natural 13th counter ref exists.
+- Deltas that flip the tie with a1-first: counter nrefs 12->13 (pri 7800) or
+  livelen 50->49; pointer nrefs -1 or livelen +1. None reachable naturally.
+  Assignment-duplication per [[duplicated-statement-into-arms]] is ARITHMETICALLY
+  INSUFFICIENT: every counter-referencing assignment (sh a1,0x88 / sh a1,0x8E)
+  also references the pointer; +1 each -> counter 3*13/50=7800 vs pointer
+  3*12/45=8000 — the pointer gains more from every paired ref because its live
+  range is shorter, at every k. The only counter-pure statements are the loop
+  tail (a1++ / a1<3) and the preamble a1=0 (no arms available).
+- CLOSED TO 0 (construct pending ruling): duplicate the loop tail
+  `a1++; if (a1 < 3) goto loop2_21280; return;` into the `if (a0 == 0)` arm
+  (replacing `goto next_21280`), FAKE-annotated. flow counts +3 counter refs
+  pre-RA (pri 9000 > 7333, allocation order otherwise unchanged since 9000 <
+  the next-higher allocno's 10000); jump2 cross-jump (post-reload) re-merges the
+  identical addiu/slti/bnez suffix; the emitted branch is exactly target's
+  `beqz a0,.L80021388`. sandbox --disable all = 0, 72/72. Full disasm:
+  tmp/grind/func_80021280/s2/final_zero_disasm.txt (byte-exact incl. the
+  lhu/nop/sh load-delay nop and single shared tail).
+- KILL (placement matters): the same tail duplicated into the store5
+  FALL-THROUGH arm -> 2 with build 73: sched1 hoists the duplicate's addiu into
+  the lhu 0x26C load-delay slot, breaking suffix identity, so cross-jump merges
+  only slti/bnez and leaves addiu + an inserted j. The arm must contain no loads
+  for the full-suffix merge. Banked: rejected/tail-dup-store5-arm-sched1-hoist.c.
+- Layer-1 cheat-reviewer verdict on the 0-form: FAIL — (a) s2 evidence was not
+  yet persisted at review time (fixed by this entry), and (b) a REAL scope
+  question: [[duplicated-statement-into-arms]]'s SOTN evidence base is
+  single ASSIGNMENT statements; duplicating a loop-continuation tail
+  (control-transfer: backward goto + return) is an extension the reviewer says
+  needs its own owner ruling. Hence s2 outcome = ruling-request, floor reported
+  2 (last uncontested), bytes-proven-0 form kept in src + candidate.c.
+- Fallback if the ruling refuses: form C (floor 2, no FAKE constructs) is the
+  s1 candidate.c in git history; the only other known lever family for the
+  final swap is the s1 frontier's post-RA-scheduling forensics line.
