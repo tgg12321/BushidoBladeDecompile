@@ -31,34 +31,6 @@ to `func_80048A7C`, so from iteration 2 on it passed the previous `tbl[0]`
 instead of red. **Expected side effect:** the two asmfix rules should become
 unnecessary — verify at the completion gate.
 
-## The frame mechanism + slot kill-list (rounds 3-6)
-
-`tmp/stf_orphan.py` gives the rule: **vars = 8 × (pseudos in greg's allocate
-list that get no hard register)**. HEAD has one → vars 8; target needs three.
-Screen slot ideas with it, **not** the score — intermediate frames read worse
-than both endpoints. Before the structural fix, three slots only came from a
-type narrowing that cost instructions (`s16 r` +6 → 40; one rect coordinate
-+3 → 48; both +6 → 51).
-
-**No slot from** (do not re-run): load-type changes (audited per site — ours
-already match target's `lh`/`lhu` everywhere); 8 pure namings of existing
-sub-expressions; `u16` carriers on the two `lhu` sites; `s16 sent` alone;
-`s16 want`; `s16` on `g`/`b`/`idx`/`outer`/`xoff`/`yoff`; an `s16` carrier for
-the rect constants; named `tbl` element reads. Naming the twice-read
-`D_80094E08[sid]` palette index **removes** a slot (its two reads are
-load-bearing). Call-arg LUID forms (round 8) are inert at 29; moving the rect
-stores after the arg locals regresses to 52. `for(;;)`+`break` gives 131 insns /
-69 — the `while`-with-assignment form is specifically the matching one.
-
-## Round 9 — RA Step-0 (.greg)
-
-Pseudos 75-84 **mutually conflict** (one clique), so each takes the first free
-register in allocno-priority order. Ours allocates `b, yoff, outer`; target's
-order is `outer, b, yoff`. Levers A-C (10 forms) all inert or worse: colour
-birth order `b,r,g` (32) / `g,b,r` (39) / `r,b,g` (29); arm swap (31); `yoff`
-before `xoff` (31); long-form increment (29); an extra `outer` reference per arm
-(29, contrived); `s16 outer` (34); `s16 yoff` (29).
-
 ## Round 10 — ALLOCDBG numbers: the gap is exactly quantified
 
 Instrumented cc1 (`tools/gcc-2.7.2/cc1`, env `BB2_ALLOC_DEBUG=1
@@ -118,3 +90,17 @@ Screen anything touching the frame with `tmp/stf_orphan.py`.
 `tmp/stf*.py` (rounds 1-9), **`tmp/stf_orphan.py`** (unallocated-pseudo
 detector), `tmp/stf_apply.py`, `tmp/rtldump.sh`, `tmp/orphan_probe.py`,
 `tmp/frame_probe.sh`, `tmp/sbs.sh`.
+
+## Permuter rung — CLOSED (2026-08-04, operator-supervised)
+
+Two campaigns on a clean single-function pair (135/135, offset 0):
+rot-cycle3 from candidate-29: 75k iters, 186 finds, best 120 — the find
+introduces new_var2=0xF0 (constant-holder, SOTN new_var convention) + a
+split-shift respelling ((a0<<5)<<7)/255; vettable but nonzero.
+rot-cycle4 reseeded from the 120 find: 76k iters, 5 finds, best 105 — the
+105 find adds an EMPTY duplicated-condition if ((!b)&&(!b)){} = dead-code
+cheat-form; REJECTED per no-new-park-categories (recorded, not surfaced as a
+candidate). Basin flat; campaign stopped inside the session (no orphan).
+The permuter rung is exhausted. BANKED at 29; every ladder rung has run.
+Remaining path per endgame policy: the s2/s3/s4 rotation needs a construct
+nobody has found — or an owner-level disposition.
