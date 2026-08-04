@@ -14,16 +14,6 @@
   "sessions": [
     {
       "date": "2026-08-04",
-      "round": 1,
-      "lever": "phantom-slot producer hunt (folded guard, HImode carriers) + the pc-2 pointer local; 12 forms measured",
-      "lever_rule": "phantom-frame-slots-gcc272",
-      "floor_was": 37,
-      "floor_now": 36,
-      "git_head_at_measurement": "9785ffda",
-      "note": "Census shortlist #4, a TRUE phantom-8 candidate: target opens `addiu $sp,$sp,-0x8` and closes `+0x8` with ZERO ($sp) references and zero callee-saves. Our cc1 emits .frame $sp,0. Two forms reproduce the phantom but each costs more than it buys (hoisting the duplicated v/ofs out of the if/else arms: frame 8 but 123 insns / score 43). A third, `(D_80102808 & ~idx) & 1`, is semantically wrong and discarded. Inert: the `if (i < 16)` guard (i is a constant 0, folds at tree level), an s16 shift-amount local, guard+shift, a no-op relational probe. First missing instruction identified: target precomputes the `pc - 2` pointer outside the loop; a named `s16 *pc2` recovers it (127 -> 128 insns, 37 -> 36)."
-    },
-    {
-      "date": "2026-08-04",
       "round": 2,
       "lever": "full side-by-side walk located the remaining missing instructions: late rematerialisation of &D_8010280C (tail reads the GLOBAL, not *pc) and the RELATIONAL if/else condition that emits target's blez",
       "lever_rule": "phantom-frame-slots-gcc272 / switch-vs-ifchain-branch-sense",
@@ -40,6 +30,16 @@
       "floor_was": 34,
       "floor_now": 34,
       "note": "BANKED at 34. Avenue 2 is closed BY CONSTRUCTION: the function is a leaf with no calls, no aggregate assignments and no address-taken locals, so assign_stack_temp / assign_stack_local can never fire - the only route to a frame slot here is an unallocated pseudo. Avenue 1 does not fire either: orphan_probe.py on a -da dump of main.c with candidate.c applied reports 0 bare-USE insns in EVERY pass (rtl through dbr) and 'greg: 7 regs to allocate; UNALLOCATED: none'. Seven further spellings aimed at giving an s16 value the tslLineG5Init span (an SImode use both before and after a CODE_LABEL) all leave frame 0: an s16 local naming the loaded D_80102808 used by the condition and both arms (129 insns / 41), the same read before the loop (129 / 55), idx typed s32 (35), idx2 typed s32 (35), v typed s32 (34), and a while-form loop so stmt.c duplicates the exit test as a guard (34). The body has no s16 value with a natural post-join use: v dies in the arms, idx dies before the if, idx2 is born after it, and target itself re-reads D_8010280A rather than carrying one variable across. Every phantom producer reachable here either collapses the load-bearing arm duplication or requires dead code."
+    },
+    {
+      "date": "2026-08-04",
+      "lever": "ra_solver round: model validates 7/7; use_only is EMPTY, independently confirming no phantom-slot pseudo exists. NEW: the residual is not only the sp adjusts - after dropping them 52/130 lines still differ (prologue order + a $v0/$v1 arm swap), and perturb finds NO vector for that swap. Frame must be solved before registers.",
+      "lever_rule": "register-alloc-pure-c",
+      "round": "ra_solver",
+      "git_head_at_measurement": "7e1af007",
+      "note": "Ran the ra_solver pipeline on the banked score-34 candidate. Extraction + simulate validate 7/7 against the dump (free regression check on the solver). Seven global allocnos: 78 -> $v0 (pri 20000, explicit hard-$v0 preference), 113 -> $v1, 79 -> $a1, 74 -> $a2, 73 -> $a3, 108 -> $t0, 81 -> $t1. FINDING 1: use_only is EMPTY. The extractor's lreg path independently confirms this body contains no phantom-slot pseudo (the NO_REGS/orphan class), corroborating round 3's tmp/orphan_probe.py result (UNALLOCATED: none) via a different code path. The frame-0 outcome is now double-sourced, which matters because the phantom pseudo is the only route to target's 8 bytes (avenue 2, a genuine stack temp, is closed by construction for a leaf with no calls, no aggregate assignments and no address-taken locals). FINDING 2 (NEW, corrects the prior note): the residual is NOT only the two sp adjusts. tmp/ra/dropsp.py removes target's addiu sp,sp,-8 (line 1) and addiu sp,sp,8 (line 130) and compares the remaining 130 lines against ours - 52 of 130 still differ, in two clusters. (a) Prologue emission order: target emits move a3,zero first, then the lui v1 / addiu v1 / addiu t1,v1,-2 chain, then li t0,1, then the a1/a2 global addresses; ours emits the v1 and a2 chains first and move a3,zero sixth. (b) A $v0/$v1 swap running through both if/else arms: addu v0,v0,v1 vs addu v1,v1,v0, lh v1,0(v1) vs lh v0,0(v0), lhu v0,12(v0) vs lhu v1,12(v1), and the same pattern at the 14(...) arm. The prior note's claim that the stream aligns 1:1 with target from the andi onward is true of instruction KIND AND ORDER but not of registers, and that distinction was hiding roughly 40 percent of the residual. FINDING 3: perturb.py on the $v0/$v1 swap (spec {78:3, 113:2}), singles + pairs + greedy, finds NO sufficient vector. Pseudo 78 carries an explicit hard-$v0 preference and 113 hard-conflicts $v0, so the pair cannot be exchanged inside the modeled space. ORDER OF WORK for whoever resumes: solve the frame first. A phantom (unallocated) pseudo changes the allocno set itself, so any register spec derived from the current frame-0 body is provisional and could be invalidated by the fix. src/main.c reverted.",
+      "floor_was": 34,
+      "floor_now": 34
     }
   ],
   "reviewer": null,
@@ -129,5 +129,8 @@
     "memory/wip/func_8003DBE4/notes.md (the folded-guard producer that closed the sibling case)",
     "memory/wip/func_8003D9A0/notes.md (the combine orphan-USE mechanism write-up)",
     ".claude/rules/no-new-park-categories.md (the dead-conditional-store family)"
+  ],
+  "prior_sessions_summary": [
+    "2026-08-04 round 1: phantom-slot producer hunt (folded guard, HImode carriers) + the pc-2 pointer local; 12 forms measured | floor 37 -> 36"
   ]
 }
