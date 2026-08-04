@@ -70,51 +70,50 @@ object here; no pass elides one and keeps the other.
 **Target has nowhere to put a sixth reference.** Its only instructions touching
 `outer`'s register in the loop region are `move s2,zero` (65), `bnez s2` (66),
 `addiu s2,s2,1` (112), `slti v0,s2,2` (113) — four instructions carrying exactly
-the five refs we have. (`sw`/`move s2,a2`/`sll`/`lw` at 6/7/40/130 belong to the
-blue-channel value sharing the register earlier.) **Byte-neutrality and the extra
-reference are mutually exclusive.**
+the five refs we have. **Byte-neutrality and the extra reference are mutually
+exclusive.**
 
-**Route 2 is new** (`tmp/ra/stf_whatif.py`, a 2-atom solution the single-atom
-search misses): `b` livelen ≈75 **and** `yoff` ≈55 together also give the
-rotation. Not spellable — staging `b` **adds references** (nrefs 7→9, pri 4500),
-and `yoff` cannot be lengthened without a def.
+**Route 2 is new** (`tmp/ra/stf_whatif.py`, a 2-atom solution): `b` livelen ≈75
+**and** `yoff` ≈55 together also give the rotation. Not spellable — staging `b`
+**adds references** (nrefs 7→9, pri 4500), and `yoff` needs a def to lengthen.
 
 **Neither route is what the original did.** Target references `outer` at the same
 four sites with the same span, hence the same priority 2000 — so the original
-reached the rotation with no priority difference at all. Combined with this being
-the one function whose dump carries reload-retry effects, the final allocation is
-most likely decided **post-reload**, outside the modeled path.
+reached the rotation with no priority difference at all.
+
+**And the reload escape is now MEASURED dead for the rotation** (Phase 5,
+`tmp/ra/retry_survey.sh` via `BB2_FINDREG_DEBUG`'s `retry=` field). Retry *does*
+fire here — pseudo 100 shows `calls=3` with **2 `retry=1` blocks**, 106/112 are
+re-entered twice each — but **only on the `$t` trio 100/106/112**, exactly the
+pseudos the simulator already mismatched. The three `$s` roles each show
+`calls=1`, retry 0, so retry explains only the second cluster.
 
 ## Measured negative / inert (do not re-run)
 
-- **Loop respellings (6 forms):** `for`/`while` outer forms (34);
-  `do { … } while (outer < 2)` (34 — wrong permutation `yoff > outer > b`);
-  long-form increment, `switch (outer)`, `if (outer != 2)` loop-back: all leave
-  2000/2333/2325 byte-identical. **Guard inversion**: byte-identical.
+- **Loop respellings (6 forms):** `for`/`while` forms (34); `do…while (outer < 2)`
+  (34 — wrong permutation); long-form increment, `switch (outer)`, `if (outer != 2)`
+  loop-back: all leave 2000/2333/2325 byte-identical. **Guard inversion** too.
 - **Then-arm / outside-arm references** (`idx = outer - outer`, round 9's
   `yoff = 0xF0 + outer`): folded, inert.
 - **[[duplicated-statement-into-arms]] in BOTH arms** (`0xF0 * (outer ± 1)`):
   nrefs 7, pri 2641 — **wrong permutation** (`b`→`$s4`, `yoff`→`$s3`), and it
   perturbs `b`'s livelen 60→63.
-- **Colour staging:** `b = a2; … b = (b << 12)/255;` (nrefs 9, pri 4500); all
-  three channels staged; `b` staged before the early-return guards (livelen 77,
-  pri 3506). All raise `b`'s priority rather than lowering it.
-- **Permuter — CLOSED** (operator-supervised). rot-cycle3: 75k iters, best 120
-  (`new_var2` constant-holder + split-shift); rot-cycle4 reseeded: 76k iters,
-  best 105 — adds an empty `if ((!b)&&(!b)){}`, a dead-code cheat-form, REJECTED
-  per [[no-new-park-categories]]. Basin flat.
+- **Colour staging:** `b = a2; … b = (b << 12)/255;` (nrefs 9, pri 4500), all
+  three channels, and `b` staged before the guards (livelen 77, pri 3506) — all
+  raise `b`'s priority rather than lowering it.
+- **Permuter — CLOSED** (operator-supervised). rot-cycle3: 75k iters, best 120;
+  rot-cycle4 reseeded: 76k iters, best 105 — adds an empty `if ((!b)&&(!b)){}`,
+  a dead-code cheat-form, REJECTED per [[no-new-park-categories]]. Basin flat.
 
 ## Resume here — banked at 29
 
-Start from `candidate.c`. The rotation's mechanism is fully pinned: both modeled
-routes reproduce it in simulation, **neither is byte-neutral by construction**,
-and target's own reference count proves the original used neither. Do not re-run
-loop respellings, the permuter, or any further `outer`-reference spelling — the
-fold/emit dichotomy closes that family. The next legitimate move is extending
-`ra_solver` past reload (this is the known retry case) or an owner disposition.
+Start from `candidate.c`. The rotation is fully pinned: both modeled routes
+reproduce it in simulation, **neither is byte-neutral by construction**, target's
+own reference count proves the original used neither, and **retry is measured not
+to touch the `$s` trio**. Do not re-run loop respellings, the permuter, any
+further `outer`-reference spelling, or a reload extension aimed at the rotation.
+Remaining: an owner disposition (the second cluster, pseudos 100/106/112, is
+where retry actually lives and is the only part a reload model could address).
 
-## Instruments
-
-`tmp/stf*.py`, `tmp/stf_orphan.py`, `tmp/rtldump.sh`, `tmp/frame_probe.sh`;
-`tmp/ra/*` (generic harness) — `prio.sh` (allocdbg rows), `passcensus.sh`
-(per-pass pseudo census), `window.sh` (listing window), `stf_whatif.py`.
+**Instruments:** `tmp/stf*.py`, `tmp/stf_orphan.py`, `tmp/frame_probe.sh`;
+`tmp/ra/*` — `prio.sh`, `passcensus.sh`, `retry_survey.sh`, `stf_whatif.py`.

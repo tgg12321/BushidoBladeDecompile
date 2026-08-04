@@ -50,11 +50,10 @@ whose sole source is a conflict with the `$v1` holder.
 
 **Route 2 is disproven from the bytes.** Liveness starts at a def, so `hi` living
 across the x-clamp needs an instruction writing it there. `tmp/c7a0_v1_census.py`
-over target's own stream: first `$v1` def is insn 39 (`andi v1,a1,0xfff`);
-registers written before it are `a0, a1, a2, a3, sp, v0` — **no `$v1`**. The
-limit-save's range is insn 9→13. So in the *original's own compilation* `hi` and
-the limit-save cannot conflict; round 16's model 9/9 solution is **not** the
-mechanism the original used.
+over target's stream: first `$v1` def is insn 39; registers written before it are
+`a0, a1, a2, a3, sp, v0` — **no `$v1`**. The limit-save's range is insn 9→13, so
+`hi` and the limit-save cannot conflict in the original's own compilation either;
+round 16's model 9/9 solution is **not** the mechanism it used.
 
 **Round 18 — widening the signature does not help.** No prototype exists (the
 definitions at `src/display.c:563`/`:604` follow the call sites at `:333`/`:396`/
@@ -69,24 +68,28 @@ never go live and `set_preference` never sees them; a *read* extra param would
 emit an instruction and break the stream. No member of the family both moves
 allocation and holds the bytes.
 
-Consequence: within the pre-reload allocator the simulator models, target's
-allocation is unreachable from ANY stream-exact leaf body. The one unmodeled path
-is reload's spill-retry (`ra_solver` README's `saTan4FireDisp` divergence) — but
-target's frame is `addiu sp,sp,-16`, vars=16, no spill slots. Mechanism: the
-`$a0` preference originates at `76 = a0` (carrier init) and **propagates** to
-`tx` and `lo` via `global.c:851`'s REG_DEAD-linked copy merge, stopping only if
-the allocnos *conflict*; `find_reg` takes the **lowest** preferred reg. MIPS has
-**no `REG_ALLOC_ORDER`** here, so both allocators scan ascending — free values
-land in `v0/v1/a0`, never `a2/a3`.
+Consequence: target's allocation is unreachable from ANY stream-exact leaf body.
+**The reload escape is now MEASURED dead, not merely inferred** (Phase 5,
+`tmp/ra/retry_survey.sh` via the `BB2_FINDREG_DEBUG` `retry=` field, candidate
+applied): all nine allocnos show `calls=1` with **zero** `retry=1` blocks —
+`find_reg` is entered exactly once each, never re-entered. That matches the
+source: the losers/retry path needs `best_reg < 0`, i.e. all 32 registers
+exhausted, which nine allocnos cannot do. With global alloc searched
+exhaustively, local alloc validated, and retry never firing, **no mechanism in
+this compiler remains**. Mechanism of the residual: the `$a0` preference
+originates at `76 = a0` (carrier init) and **propagates** to `tx` and `lo` via
+`global.c:851`'s REG_DEAD-linked copy merge, stopping only if the allocnos
+*conflict*; `find_reg` takes the **lowest** preferred reg, and MIPS has **no
+`REG_ALLOC_ORDER`** here so both allocators scan ascending.
 
 ## Do NOT re-run (measured negative / inert)
 
 - **Permuter** — ~125k iters, 4 runs (rounds 1, 2, 12, 13); all sub-baseline
   candidates are forbidden families.
 - **Clamp shape / arm ordering / decl order / types / precomputes** — rounds 1-15.
-- **Round 16 inert:** tail-OR left-assoc, `pkt|hi` swap, `pkt` declared first,
-  `u32 pkt`, `lo` before `hi`, `s16`/`s32` named limit locals, a separate
-  sign-extended compare variable, `tx = arg0` (CSEs back to the carrier).
+- **Round 16 inert:** tail-OR left-assoc, `pkt|hi` swap, `pkt` first, `u32 pkt`,
+  `lo` before `hi`, named limit locals, a separate sign-extended compare
+  variable, `tx = arg0` (CSEs back to the carrier).
 - **Round 16 regressions:** const in both arms (50 insns), separate join variable
   (50), `s32 tx` (49), early const local. An `s32 lim` named local *does* put the
   carrier in `a3` but CSEs `lim-1` and loses the limit-save insn (50).
@@ -99,9 +102,9 @@ land in `v0/v1/a0`, never `a2/a3`.
   `c = 0xE3000000`, `pkt = C; pkt |= lo` — GCC coalesces every added copy.
 - **TU re-attribution / rodata reorder** — FAILED by cheat-reviewer 2026-06-05.
 
-**Build gate:** applying any candidate breaks the oracle (the 21 regfix substs are calibrated to
-HEAD's shape); landing one means rewriting/retiring those rules, a
-completion-gate activity. src was reverted after every experiment.
+**Build gate:** applying any candidate breaks the oracle (the 21 regfix substs
+are calibrated to HEAD's shape); landing one means rewriting/retiring those
+rules. src was reverted after every experiment.
 
 ## Resume here
 
@@ -110,10 +113,8 @@ assignment is open, and rounds 17-18 closed the pure-C search space for it,
 including the premise-attacking escapes (wider signature, join-block temps).
 **Do not spend more rounds on C spellings for the allocation** — the next
 legitimate move is a mechanism outside the modeled allocator path, or an owner
-disposition decision. Tooling: `tmp/c7a0_apply.py` (body swap), `c7a0_batch.sh` +
-`c7a0_roles.py` (~12 s/variant, role→register map), `c7a0_model.sh` (extract +
-simulate), `c7a0_what_if.py` (model deltas → allocation), `c7a0_a2_scan.py`
-(exhaustive atom scan), `c7a0_v1_census.py` (dest-register census),
-`c7a0_iso_check.py` (model isomorphism).
-
-Sibling: `memory/wip/func_8007C86C/` — identical pattern and floor.
+disposition decision. Tooling: `tmp/c7a0_apply.py`, `c7a0_batch.sh` +
+`c7a0_roles.py` (~12 s/variant), `c7a0_model.sh`, `c7a0_what_if.py`,
+`c7a0_a2_scan.py` (exhaustive atom scan), `c7a0_v1_census.py`,
+`c7a0_iso_check.py`, `tmp/ra/retry_survey.sh`. Sibling:
+`memory/wip/func_8007C86C/` — identical pattern and floor.
