@@ -1,12 +1,7 @@
 # hirahira_w_ctrl — WIP (opened 2026-08-04)
 
-`src/text1a.c:753` — **not `text1a_c`**, and the honest distance is **27, not
-16**; the brief's census line was stale on both counts. Two loops that walk a
-coordinate table, negate two of each triple into a 3-entry `s16 buf`, and call
-`func_8004A348` / `func_800523E0` / `func_80044DE4` per entry.
-
-**16 regfix rules + 1 `tools/prologue_config.json` entry + a register pin in
-source** (`register s32 *s7_a4 asm("s7") = a4;` at line 755 — cheat-asm).
+`src/text1a.c:753`. **16 regfix rules + 1 `tools/prologue_config.json` entry +
+a register pin in source** (`register s32 *s7_a4 asm("s7") = a4;`) at HEAD.
 No asmfix / frame_fix entries.
 
 ## Where it stands
@@ -14,96 +9,110 @@ No asmfix / frame_fix entries.
 | | score | frame | insns |
 |---|---|---|---|
 | committed HEAD | 27 | 72 | 132 |
-| **`candidate.c`** | **23** | 72 | 132 |
+| r1-r2 candidate | 23 | 72 | 132 |
+| **`candidate.c` (r3-r16)** | **5** | 72 | 132 |
 | target | 0 | 72 (`0x48`) | 132 |
 
-**Frame and instruction count are already correct at HEAD** — the whole gap is
-register naming plus commutative-add operand order.
+Frame, instruction count, the prologue, the whole of loop 1, the schedule and
+the epilogue all match target exactly. `candidate.c` is pure C — no register
+pin, no `__asm__`, no volatile, no dead code.
 
-## Two findings (27 → 23)
+**CORRECTION (operator, 2026-08-04 ~08:20) still stands: the pin retirement is
+NOT a free commit.** It is inert under the honest sandbox but with the 16 regfix
+rules ENABLED the emission shifts and the full build MISMATCHES (measured: SHA1
+8e1160d1). The pin retires only as part of the COMPLETION, when all rules go.
 
-1. **The register pin is NOT load-bearing.** Replacing
-   `register s32 *s7_a4 asm("s7") = a4;` with a plain `s32 *s7_a4 = a4;` scores
-   the **same 27**. That cheat-asm can be retired for free, independently of any
-   further progress — worth doing on its own.
-2. **Reuse `offset` as the pointer carrier for the second address add.** Target
-   emits `addu s0,s0,s2` (destination reuses the offset register) where we
-   emitted `addu v1,s2,s0`. Writing
+## The residual: five instructions, one cluster
 
-   ```c
-   offset = offset + (s32) a2;
-   p = (u16 *) offset;
-   ```
+```
+  72  TGT addiu s3,s7,32     OURS addiu s6,s7,32
+  99  TGT move  a1,s3        OURS move  a1,s6
+ 110  TGT move  a0,s7        OURS move  a1,s6
+ 111  TGT move  a1,s3        OURS move  a2,s8
+ 112  TGT move  a2,s8        OURS lw    a0,88(sp)
+```
 
-   instead of `p = (u16 *) (a2 + offset);` matches it. **27 → 23.**
+Two causes: (a) target gives loop 2 its **own** `a4 + 0x20` register — `s3`,
+shared with the by-then-dead loop1 `stptr` — where we reuse loop 1's `s6`;
+(b) the parameter substitution that bought 17→11 costs a stack reload at
+loop2's `func_800523E0` where target has `move a0,s7`.
 
-Both together: 23. The candidate carries both.
+## Method — ALLOCDBG priority arithmetic drove all of it
 
-## Measured negative
+`pri = floor_log2(nrefs) * nrefs / livelen * 10000` (re-verified here). Tools:
+`tmp/allocone.sh` (isolates the function into its own TU so there is no
+block-alignment guesswork — allocno numbering, nrefs, livelen and pri are all
+per-function, so an isolated compile gives the identical table), plus
+`tmp/allocpick2.py` / `tmp/allocmatch.py` for the in-context log.
 
-- The same reuse applied to the **first** add (`a1 + offset`) regresses to 30 —
-  only the second one matches target.
-- Plain operand-order swaps (`offset + a1`, `offset + a2`, both) are **inert**
-  at 27 — GCC canonicalises commutative operands, so the source order alone does
-  not reach it; the destination reuse is what matters.
-- Dropping the pin combined with any of the above changes nothing versus the
-  same form with the pin — consistently confirming it is inert.
+Allocno table of the 5-point form (all eight callee-saved registers now match
+target):
 
-## Residual (23) — diff shape
+| reg | role | nrefs | livelen | pri |
+|---|---|---|---|---|
+| s1 | a1 | 16 | 100 | 6400 |
+| s2 | a2 | 16 | 100 | 6400 |
+| s3 | stptr (loop1) | 7 | 41 | 3414 |
+| s0 | stptr2 (loop2) | 6 | 47 | 2553 |
+| s4 | i | 8 | 98 | 2448 |
+| s5 | tbl | 4 | 48 | 1666 |
+| s6 | out2 | 6 | 90 | 1333 |
+| s7 | a4 carrier | 5 | 95 | 1052 |
+| s8 | a3 | 4 | 100 | 800 |
 
-`tmp/sbs.sh` on HEAD showed 28 differing lines of 133, all register naming in
-three swapped pairs plus the two adds now addressed:
+## The six levers (27 → 5)
 
-- `s4`/`s5` swapped across the prologue saves (lines 8-12),
-- `s6`/`s7` swapped throughout (lines 22, 24, 54, 58-59, 84, 110),
-- `s0`/`s3` swapped in the second loop (lines 72-73, 78, 114-119).
+1. **destination reuse** `offset = offset + (s32) a2; p = (u16 *) offset;` (r1)
+2. **initialise `i` before `tbl`** — target emits the s4 init pair before the s5
+   pair; identical registers, different emission order. **23 → 19**
+3. **`tbl++` after the first `func_8004A348` call** (not mid-buffer). sched1
+   runs BEFORE register allocation in this toolchain, so schedule changes also
+   move allocno live lengths. **19 → 17**
+4. **loop2's `func_800523E0` takes the parameter `a4`**, not the local carrier.
+   Drops the carrier allocno from nrefs 7 to 5 (pri 1473 → 1052) so `out2`
+   (1333) outranks it: the s6/s7 pair lands target's way and all of loop 1 then
+   matches instruction for instruction. **17 → 11**
+5. **loop2 `stptr` as its own local + SPLIT-INIT on the loop1 `stptr`**
+   (`stptr = base; stptr += 0xFC;`). The split-init raises stptr's nrefs 5 → 7
+   (pri 2439 → 3414) **without changing a single emitted instruction** — that is
+   what lets the loop2 split keep s3/s4 in target's order instead of swapping
+   them. **11 → 6**
+6. **`(s32)` cast on the first add's pointer operand**
+   (`p = (u16 *) (offset + (s32) a1);`). **6 → 5**
 
-That is three independent 2-cycles, not one rotation — a different shape from
-`saTan4FireDisp`'s 3-cycle, and likely three separate allocno ties.
+All are sanctioned families (variable reuse / staged value, statement order,
+split-init accumulation, param-local-alias). Nothing added, removed or
+reordered a machine instruction: every probe held 132/132.
 
-## The operand-order lever does NOT apply here (checked, round 2)
+## Measured negatives — in git history (r16 commit); do not re-run the operand-order, split-init(+2), or alias(0) sweeps
+## Resume here — the number to beat
 
-[[compare-operand-order-register]] is the legitimate surface — flipping a
-**comparison's** operand order (`local > GLOBAL` instead of `GLOBAL < local`) is
-an RTL-emission-order lever with real precedent. **Its precondition is absent in
-this function:** all three comparisons in the body are against **constants** —
-`if (i < 0x12)`, `if (i < 0x14)`, `while (t1 < 4)`. The rule's own "does not
-apply" list excludes constant-RHS comparisons, and `func_8007C7A0` round-13
-re-confirmed that empirically. There is no global-vs-local compare to flip.
+Start from `candidate.c` (5). The task is a two-line spec:
 
-The other axis — permuting operands *within* a commutative `|` / `&` / `+`
-expression — is [[or-tree-shape-shift]], **FORBIDDEN**. It was also measured
-inert here anyway (`offset + a1` / `offset + a2` / both all score 27).
+> Give loop 2 its own `a4 + 0x20` allocno with **pri in (1052, 1666)** — at
+> livelen 42 that needs nrefs 4, and nrefs 4 is only reachable together with a
+> live range of 48–76 — **while restoring `move a0,s7`** at loop2's
+> `func_800523E0` (i.e. finding a different way to hold the carrier's priority
+> below `out2`'s 1333 than the parameter substitution).
 
-Note the kept lever is neither of those: `offset = offset + (s32) a2;
-p = (u16 *) offset;` is a **destination reuse** of an existing live variable
-(the sanctioned variable-reuse family), not an operand permutation. `offset`
-genuinely holds the computed byte address afterwards.
+Alternatively raise `tbl` from 1666 to ~2083 (nrefs 4 → 5) so that a split
+`out2` at nrefs 4 / livelen 42 (1904) lands between `tbl` and `a4`. Both routes
+need a **+1** reference lever; every one found so far moves +2 (split-init) or 0
+(alias, copy-propagated). That is the open question.
 
-## Resume here
-
-Start from `candidate.c` (23), which already carries the pin retirement. The
-residual is purely the three 2-cycle allocno ties, so the next step is RA
-Step-0: `tmp/allocdbg.sh text1a` + `tmp/allocpick.py` (adjust its `WANT` set to
-this function's pseudos) gives the allocno priorities directly, and the
-`saTan4FireDisp` round-10 write-up shows how to turn them into a sized lever
-rather than guessing. Do not re-sweep operand orders — both axes are settled
-above.
-
-**CORRECTION (operator, 2026-08-04 ~08:20): the pin retirement is NOT a free
-commit.** It is inert under the HONEST sandbox metric, but with the 16 regfix
-rules ENABLED the emission shifts and the full build MISMATCHES (measured:
-SHA1 8e1160d1, reverted, oracle re-verified green). Same gate as the display
-twins: rules are calibrated to the pinned emission. The pin retires only as
-part of the COMPLETION (when all rules go with it).
+The directed permuter is the untried rung — 132/132 at offset 0 with only five
+instructions differing is a much better starting basin than saTan4FireDisp had.
+Per [[grinder-permuter-orphan-stop-gate]] it must be supervised and harvested
+inside the same session.
 
 ## Sibling
 
-`hirahira_w_ctrl_2` (`text1a_c`, dist 58, 63 rules, verdict **ASM-SUSPECT**) was
-not examined — the ASM-SUSPECT verdict means it needs the `canonical` gate run
-before any pure-C work, not a diff reading.
+`hirahira_w_ctrl_2` (`text1a_c`, dist 58, 63 rules, verdict **ASM-SUSPECT**) —
+needs the `canonical` gate before any pure-C work.
 
 ## Instruments
 
-`tmp/hw.py`, `tmp/hw2.py` (sweeps), `tmp/hw_bank.py`, `tmp/sbs.sh`,
-`tmp/frame_probe.sh`, `tmp/allocdbg.sh`, `tmp/allocpick.py`.
+`tmp/hw_apply.py` (splice a candidate into src), `tmp/hw3.py`–`tmp/hw16.py`
+(the per-round sweeps; each prints score + the full allocno table),
+**`tmp/allocone.sh`** (single-function ALLOCDBG), `tmp/allocpick2.py`,
+`tmp/allocmatch.py`, `tmp/sbs.sh`, `tmp/frame_probe.sh`.
