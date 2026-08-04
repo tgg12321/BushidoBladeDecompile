@@ -2563,23 +2563,14 @@
       "rules": 1,
       "status": "parked",
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md - '## 2026-08-02 - func_80052B00 (src/text1b.c) - **OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**'"
-    },
-    {
-      "func": "func_80060E38",
-      "file": "text1b",
-      "distance": 18,
-      "verdict": "C",
-      "rules": 18,
-      "status": "parked",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md \u2014 '## 2026-08-03 \u2014 func_80060E38 (src/text1b.c) \u2014 **OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**'"
     }
   ],
   "counts": {
-    "total": 305,
+    "total": 304,
     "active": 268,
     "by_status": {
       "active": 268,
-      "parked": 37
+      "parked": 36
     },
     "by_verdict": {
       "C": 92,

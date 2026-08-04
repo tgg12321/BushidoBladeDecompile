@@ -3485,3 +3485,35 @@ FINAL CALL on func_80068D88 (src/text1b.c). I verified the claims myself rather 
 ## 2026-08-04 00:11 — func_80021280 — ruling: func_80021280 is bytes-proven to sandbox 0 (72/72, this session, edits in src) b — **PASS**
 
 RULING: loop-tail/control-transfer duplication IS within the sanctioned [[duplicated-statement-into-arms]] family when byte-neutral — no new sanction is created by this ruling. Reasoning, verified independently: (1) The family is defined by SHAPE, not statement type. The rule's operative text (.claude/rules/duplicated-statement-into-arms.md, lines 13-23) sanctions 'writing the SAME real statement in two or more control-flow arms — instead of sharing one copy via a label/goto', including when jump2 cross-jump re-merges the copies byte-neutrally and the surviving effect is the reg_n_refs allocno-priority lift, with label placement steering merge direction. The func_80021280 construct matches every clause exactly: the tail (a1++; if (a1<3) goto loop2_21280; return;) exists label-shared at next_21280 and inlined in the a0==0 arm; cross-jump re-merges it; the surviving effect is counter nrefs 12->15 (pri 9000 > pointer 7333, ALLOCDBG-measured, tmp/grind/func_80021280/s2/); placement is load-bearing (store5-arm variant fails, banked in rejected/tail-dup-store5-arm-sched1-hoist.c). (2) The owner's own scoping of the family — the rule's Non-extension section (lines 75-78) — excludes exactly three things: dead stores, CALL duplication (changes bytes), and duplication surviving to final bytes. Control-transfer statements are not excluded, and the rationale behind the exclusions (byte-changing / dead code) does not apply here: I re-ran `sandbox func_80021280 --disable all` myself and confirmed score 0 at 72/72 with cheat-stripping active, and the git diff shows the inlined tail is semantically identical to the goto-next_21280 it replaces (next_21280 does precisely a1++; if(a1<3) goto loop2; then falls off the function end). (3) The evidence base is not assignments-only as the layer-1 reviewer stated: the rule cites 'identical multi-statement blocks across arms' (SOTN doors.c, unk_365FC.c), and the frozen SOTN list independently carries control-transfer-spelled-inline-instead-of-label-shared as committed SOTN style — the mixed-exit-forms sanction (no-new-park-categories § SOTN-accepted: SOTN ships inline `return` vs `goto endK` verbatim in SsVabOpenHeadWithMode, src/main/psxsdk/libsnd/vs_vh.c). Both components of this tail (an increment assignment; a branch/return written inline rather than reached via label) therefore have SOTN-master precedent; the composite is the sanctioned shape, not a generalization. (4) All prerequisites verified against the ledger, not the agent's claim: the statements are REAL on their path (the a0==0 path must increment and continue/exit — same semantics as before); byte-neutrality proven (sandbox 0, disasm banked at s2/final_zero_disasm.txt); exhaustion documented with a named GCC-pass mechanism (hypotheses.md s2: global.c allocno_compare pri = floor_log2(nrefs)*nrefs/livelen*10000, counter loses $a1 by one insn of livelen; assignment-only duplication proven arithmetically incapable because every counter-referencing assignment also references the shorter-lived pointer, which gains more at every duplication count — the loop tail and a1=0 are the only counter-pure statements, so within this family the tail is the only possible carrier); /* FAKE */ annotation present in src at the duplicated copy; this ruling-request itself satisfies the escalation the layer-1 FAIL demanded. (5) The reconstruction-logic clause applies with force: a 1998 programmer writing this goto-shaped loop plausibly wrote the continue-tail inline in that arm — it is idiomatic C — and only that spelling reproduces the target's register allocation pin-free. SCOPE OF THIS RULING: it covers loop-tail/control-transfer duplication ONLY under the family's existing prerequisites — byte-neutral (cross-jump re-merged, verified against the oracle), real on the path, exhaustion-documented, FAKE-annotated, dual-reviewed. It does NOT extend to call-containing tails, byte-surviving duplicates, or any relaxation of the Non-extension list. NOTE ON ACCEPTANCE: this ruling resolves the construct-scope question only. The function still requires the full completion path — retire, full-build SHA1 == oracle on main, and the default-FAIL Judge FINAL CALL — before COMPLETED-C.
+
+## 2026-08-04 — -mel toolchain-configuration adoption (OWNER-DIRECTED) — func_80060E38 → **COMPLETED-C**
+
+**This is an owner action, not a Judge ruling.** Following the 2026-08-03 func_80060E38 terminal
+entry (REFUSED / OWNER-ACCEPTED INCOMPLETE, which recorded the little-endian rebuild as "the only
+condition under which it should be re-queued"), the owner reviewed a controlled diagnostic and
+elected the fix. No compiler rebuild was needed: GCC 2.7.2's `BYTES_BIG_ENDIAN` reads
+`target_flags` at runtime, so `-mel` in canonical `CC_FLAGS` (Makefile + engine/buildconfig.py)
+corrects the big-endian `mips-mips-gnu` triple default for this little-endian game.
+
+Validation chain, in order: (1) isolated git-archive snapshot rebuilt BYTE-IDENTICAL to the oracle
+before any variant ran (harness proof); (2) 4-build experiment (stock/-mel × rules-on/rules-off),
+object-level per-function diff across all ~1,500 src functions — with rules on, -mel diverged in
+only 4 functions; (3) migration recipe iterated in the snapshot to full-build SHA1 ==
+62efab4f73f992798c43e8c730aa43baa10bb4fa; (4) ported to main, clean build MATCH; (5) engine test
+178/178; (6) layer-2 adversarial cheat-reviewer on the whole change set; (7) `queue done
+func_80060E38` re-verified zero rules + zero cheat-asm + oracle SHA1.
+
+The migration's parts: `-mel` added to CC_FLAGS/CC_FLAGS_GP (Makefile + engine/buildconfig.py);
+`fix_lwl` stage retired (it XOR-corrected the BE lwl/lwr artifact; under -mel cc1 emits correct
+offsets natively); OTag (include/gpu.h) restored to PsyQ's ORIGINAL addr-first field order (the
+len-first spelling was itself a documented compensation for the BE misconfiguration — ot_Link,
+ot_Insert, func_8003D330 all byte-match with no body changes); func_80060E38's 18 offset-shift
+regfix rules DELETED (honest distance 18 → 0, COMPLETED-C); decBs0's two slot-20 rules re-fitted
+to the -mel slot (cheat count unchanged, one offset-rewrite reduced to a register-only subst;
+decBs0 remains INCOMPLETE on the queue).
+
+Standing consequences: reload-spill functions are no longer impossible-by-theorem (the s7 result
+was a property of the BE configuration); [[bitfield-direction-divergence]] is RESOLVED (original
+PsyQ field order is now the faithful spelling); the flag set including -mel is frozen per
+[[compiler-flags-canonical]] — this adoption is a configuration-fidelity correction, not a
+flag-hunting precedent.
