@@ -141,14 +141,6 @@
       "status": "active"
     },
     {
-      "func": "func_8003DBE4",
-      "file": "code6cac_c2",
-      "distance": 21,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "pad_ClearAppliBuffer",
       "file": "code6cac_c_mid",
       "distance": 21,
@@ -2553,14 +2545,14 @@
     }
   ],
   "counts": {
-    "total": 303,
-    "active": 266,
+    "total": 302,
+    "active": 265,
     "by_status": {
-      "active": 266,
+      "active": 265,
       "parked": 37
     },
     "by_verdict": {
-      "C": 88,
+      "C": 87,
       "ASM-PARTIAL": 43,
       "ASM-SUSPECT": 109,
       "ASM-STRUCTURAL": 26

@@ -1295,7 +1295,6 @@ void func_8003DBE4(s32 arg0, s32 arg1, s32 *arg2, s32 arg3, s32 arg4) {
     s32 step;
     s32 *colors;
     s32 i;
-    s32 buf[2]; /* dead local: reserves the target's 8 extra frame bytes (see rule dead-vars-local-array) */
 
     colors = arg2;
 
@@ -1313,7 +1312,7 @@ void func_8003DBE4(s32 arg0, s32 arg1, s32 *arg2, s32 arg3, s32 arg4) {
             base_val = 0x6590;
         } else {
             base_val = 0x55F0;
-            step = base_val - arg0; /* redundant: steers base_val into v0 (matches target reg-alloc) */
+            step = base_val - arg0; /* FAKE: steers base_val into v0 to match target reg-alloc */
         }
         step = base_val - arg0;
     }
@@ -1331,7 +1330,7 @@ void func_8003DBE4(s32 arg0, s32 arg1, s32 *arg2, s32 arg3, s32 arg4) {
     i = 0;
     colors = (s32 *)((u8 *)colors + (D_800A36AC & 1) * 24);
 
-    if (limit > 0) {
+    if (i < limit) {
         u32 rgb_mask = 0xFFFFFF;
 
         do {
