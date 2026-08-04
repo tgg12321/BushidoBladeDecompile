@@ -782,3 +782,5 @@
 - 2026-08-03 19:39 func_80060E38 s9 [escalation] STANDING RULING (2026-07-27) applied — OWNER-ACCEPTED INCOMPLETE: Disposition reached: both endgame-lock gates FAIL (scan_hand_coded tier=LOW 0/8; no in-hand SOTN precedent for either closing construct), so the owner's standing 2026-07-27 auto-ruling was applied and a terminal REFUSED / OWNER-ACCEPTED INCOMPLETE entry was filed in docs/grind/decisions.md.
 - 2026-08-03 20:13 func_80068D88 COMPLETED-C after 1 sessions.
 - 2026-08-03 23:44 func_80021280 s1 [recon] floor=2: Recon: floor 2 re-confirmed and diff reduced to ONE adjacent-pair swap (move t1,v1 <-> move a1,zero); real-loop family and a1-first-textual family both killed with mechanisms
+- 2026-08-04 01:03 CIRCUIT-BREAK: 3 consecutive invalid sessions on saEft00Add
+- 2026-08-04 02:00 saEft00Add re-accepted COMPLETED-C (judge 00:47 artifact ruling; operator executed queue done after circuit-break triage; grinder held stopped per owner directive)
