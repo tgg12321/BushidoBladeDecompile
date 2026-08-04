@@ -3,30 +3,30 @@
   "file": "code6cac_c2",
   "verdict": "C",
   "scores": {
-    "head_distance": 19,
-    "candidate_floor": 19
+    "head_distance": 4,
+    "candidate_floor": 4,
+    "prior_head_distance": 19
   },
   "rules_dropped_if_applied": 0,
   "cheat_inventory": [
-    "register s16 *s0 asm(\"s0\") pin (src/code6cac_c2.c:1220)",
-    "register u32 *s1 asm(\"s1\") pin (:1221)",
-    "asm(\"\" : : \"r\"(s1)) liveness barrier (:1225)",
-    "tools/prologue_config.json entry (2 reorders)",
-    "tools/frame_fix_funcs.txt entry forcing frame 56"
+    "tools/prologue_config.json entry (2 reorders) — carries the residual 4 insns",
+    "tools/frame_fix_funcs.txt entry (56) — PROVABLY DEAD: cc1 now emits 56 natively, apply_frame_fix is a no-op, full build still SHA1==oracle"
   ],
   "reviewer": null,
   "rejected_forms": [
-    "A_plain (pins/barrier removed, block-scope s16 v0) -> vars=0 frame 48, score 19",
-    "B v0 at function scope -> vars=0, 19",
-    "C two staged s16 (va=s0[1]; vb=s0[3]) block scope -> vars=0, 19",
-    "D staged pair at function scope -> vars=0, 19",
-    "E u16 pair + s16 v0 -> vars=0, 19"
+    "s16-typed s4/s3 (any variant) -> always an 8th callee-save, regs=8",
+    "s16 initLoadImage prototype -> regs=8",
+    "struct-pointer / per-word / Rect-struct spellings of the Copy24 copy -> vars=0",
+    "compound-assign and no-temp y-advance forms -> vars=0",
+    "8 loop-guard x 5 wrap-test x 4 prologue-shape grid -> vars=0",
+    "counting-up for/while loops -> vars=8 but sltu loop tail (check_dbra_loop cannot reverse: num_mem_sets<=1 required, body has 7 stores)",
+    "all 20 dependence-legal permutations of the 5 pre-loop statements -> score 4 (statement order inert on prologue schedule)",
+    "H_s1_after_guard (s1 = a2 inside the guard) -> score 6"
   ],
-  "root_cause": "Honest diff (60/60 insns) is PROLOGUE-ONLY: (1) target frame 56 vs our 48 - by mips.c compute_frame_size with regs=7 (ALIGN8=32) and args=16 the missing 8 bytes must be vars=8, i.e. a phantom locals slot per [[phantom-frame-slots-gcc272]] (args=24 alternative REFUTED: a 5th outgoing arg would emit an sw at 16(sp) and the body is byte-identical incl. the 4-arg initLoadImage call); (2) target interleaves early body (lh s4/lh s3) into the register-save sequence and puts move s1,a2 BEFORE the beqz where ours drops it in the beqz delay slot - scheduling that plausibly follows once the frame is right, else prologue-order lever; (3) all body bytes incl. sll/sra sign-extend + slti 512 already match. The witness for the phantom slot is IN THIS FILE: tslLineG5Init (COMPLETED-C, vars=8 via two HImode locals feeding (a & ~b) & 1). func_8003D9A0's body has no HImode bitwise op, so the witness's measured minimal trigger is not directly plantable - the slot's origin construct must be found by RTL forensics.",
+  "root_cause": "SOLVED for the frame. The target's vars=8 is a phantom slot: an unallocated pseudo handed 8 frame bytes by reload's alter_reg at zero code cost. Producer here is the loop-guard comparison pseudo that jump/combine fold into a bare branch; spelling the guard as `s2 = a1 - 1; if (s2 != -1)` instead of `if (a1 != 0)` makes cc1 emit .frame 56 / vars=8 natively with an identical instruction stream. Sibling producer (combine.c:10836-10841 distribute_notes orphan-USE) documented in notes.md; in-tree precedent for the guard form is func_800400F8 (config.c:543). Residual 4 = prologue save/move interleave only (target: sw s0/move s0 pair first; ours: sw s1/move s1/sw s2 first).",
   "next_avenues": [
-    "RTL slot-origin forensics: cc1 -da on this TU; find which insn/temp allocates tslLineG5Init's 8-byte slot (assign_stack_temp/assign_stack_local callsites; the instrumented cc1 at tools/gcc-2.7.2/cc1 has BB2_*_DEBUG hooks per [[instrumented-cc1-location]]); then enumerate C constructs reaching the same allocation with func_8003D9A0's fixed body bytes",
-    "Grid HImode/SImode temp-generating spellings that fold away: wide-then-truncate assignment chains, compound-assignment forms of s0[1] += s0[3], comma exprs - measure with tmp/frame_probe.sh (fast vars= gradient, no full build)",
-    "Once vars=8: re-diff; if prologue interleave remains, treat as prologue-order lever (compare tools/prologue_config.json entry being retired - the 2 reorders SHOW the exact target order; find natural scheduling via statement order of the two lh reads vs the early-out check)",
-    "Instruments banked: tmp/frame_probe.sh (per-func .frame line), tmp/fdiff.sh (normalized target-vs-honest diff), tmp/v9a0.py (variant sweep harness, restores src)"
+    "Prologue save/move interleave: read tmp/rtl/base.c.sched for func_8003D9A0, compare sched.c insn priorities for the two parameter-copy insns (move s0,a0 has an in-block consumer lh s4,0(s0); move s1,a2 has none yet schedules first). Compare against a sibling whose prologue order matches.",
+    "Once at 0: delete the tools/prologue_config.json entry AND the tools/frame_fix_funcs.txt line (the latter is already dead), then full-build SHA1 verify -> COMPLETED-C.",
+    "Transfer: sibling func_8003DBE4 (same file, still carries the `s32 buf[2]` dead-array cheat for the SAME 8 bytes) is the next candidate for this phantom-slot lever."
   ]
 }
