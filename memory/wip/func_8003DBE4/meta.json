@@ -1,0 +1,74 @@
+{
+  "function": "func_8003DBE4",
+  "func": "func_8003DBE4",
+  "file": "code6cac_c2",
+  "verdict": "C",
+  "scores": {
+    "head_floor": 0,
+    "head_distance": 0,
+    "candidate_floor": 0,
+    "prior_head_distance": 21,
+    "metric": "sandbox --disable all; build_insns 152, target_insns 152; full build SHA1 == oracle",
+    "build_insns": 133,
+    "target_insns": 133
+  },
+  "sessions": [
+    {
+      "date": "2026-07-06",
+      "lever": "fleet-bw1 backlog worker — objdump + m2c root-cause of the 21-instruction diff; confirmed 100% attributable to an 8-byte (target frame=0x40, clean-C frame=0x38) unused-frame gap, no register-allocation or logic differences anywhere else",
+      "lever_rule": "dead-vars-local-array",
+      "floor_was": 21,
+      "floor_now": 21,
+      "session_id": "fleet-bw1",
+      "conclusion": "POLICY-GRADE, not closable in pure C — REFUTED 2026-08-04, see below"
+    },
+    {
+      "date": "2026-08-04",
+      "lever": "phantom-slot loop-guard respelling: `if (limit > 0)` -> `if (i < limit)`; dead array deleted",
+      "lever_rule": "phantom-frame-slots-gcc272 / folded-guard producer (precedent func_800400F8, func_8003D9A0)",
+      "floor_was": 21,
+      "floor_now": 0,
+      "session_id": "forensics-agent"
+    }
+  ],
+  "reviewer": null,
+  "prior_reviewer": {
+    "verdict": "FAIL",
+    "date": "2026-07-06",
+    "scope": "the OLD committed src form (with `s32 buf[2]`) — that form is now deleted, so this FAIL is resolved by removal, not by override"
+  },
+  "rules_dropped_if_applied": 0,
+  "cheat_inventory": [
+    "RETIRED this session: `s32 buf[2];` dead local array (was src/code6cac_c2.c:1298) — FORBIDDEN family [[dead-vars-local-array]]; it existed solely to reserve the 8 phantom frame bytes",
+    "ZERO regfix.txt / asmfix.txt rules (grep-verified)",
+    "ZERO entries in tools/prologue_config.json, tools/frame_fix_funcs.txt, tools/delay_slot_ra_funcs.txt, maspsx_label_nop_funcs.txt, expand_lb_funcs.txt, multu_funcs.txt (grep-verified)",
+    "REMAINING (pre-existing, sanctioned-family, BOTH measured load-bearing this session): the duplicated `step = base_val - arg0;` in the else-arm ([[duplicated-statement-into-arms]], sanctioned 2026-07-01; removing it -> score 3) and the `tmp = limit - 1;` variable reuse ([[defeat-licm-hoist-var-reuse]], SOTN-accepted 2026-06-02; removing it -> score 15). REVIEWER NOTE: the duplicated-statement rule asks for a `/* FAKE */` annotation; the in-tree comment reads `/* redundant: steers base_val into v0 ... */`. Wording left unchanged deliberately — annotation policy is an owner/reviewer call, not the worker's."
+  ],
+  "rejected_forms": [
+    {"form": "guard_gt0 — `if (limit > 0)` (the committed form minus the dead array)", "vars": 0, "score": 21},
+    {"form": "guard_ge — `if (limit >= 1)`", "vars": 0, "score": 21},
+    {"form": "guard_ne — `if (i != limit)`", "vars": 0, "score": 22},
+    {"form": "for_lt — `for (; i < limit; )`", "vars": 8, "score": 5, "reason": "plain for/while loses the guard+do-while control flow the target has"},
+    {"form": "while_lt — `while (i < limit)`", "vars": 8, "score": 5},
+    {"form": "guard_ilt_dw — `if (i < limit) do {...} while (++i < limit)`", "vars": 8, "score": 24},
+    {"form": "drop the duplicated `step = base_val - arg0;`", "vars": 8, "score": 3},
+    {"form": "drop the `tmp = limit - 1;` reuse", "vars": 8, "score": 15},
+    {"form": "drop both", "vars": 8, "score": 18},
+    {"form": "OLD: committed src with `s32 buf[2]`", "score": "21 honest (sandbox strips the dead array)", "reason": "FORBIDDEN family; deleted 2026-08-04"}
+  ],
+  "root_cause": "SOLVED — honest distance 0, dead array retired. The target's `.frame $sp,64 # vars= 8, regs= 9/0, args= 16` carries an 8-byte PHANTOM SLOT: an unallocated pseudo handed frame space by reload's alter_reg at zero code cost — NOT a declared local. The native producer here is spelling the loop guard as `if (i < limit)` (the counter is already 0 at that point) instead of `if (limit > 0)`: the guard then duplicates the do-while exit test and the folded guard-comparison pseudo survives reg_n_refs accounting. Same producer class as func_8003D9A0's `if (s2 != -1)` guard and the in-tree Judge-ruled precedent func_800400F8 (src/config.c:543, `s0 = 0; if (s2[0] > s0)`, 2026-07-14). Without the frame fix the entire 21-insn gap was the sp adjust plus 9 saves / 9 restores shifted by 8 bytes.",
+  "refutes": "The 2026-07-06 session's conclusion that this function is POLICY-GRADE and not closable in pure C. Its stated proof — 'no instruction touches the 8 bytes, therefore only a declared-but-unreferenced local can produce them' — is invalid: a phantom slot is untouched BY CONSTRUCTION (the pseudo is never allocated, so nothing references it). [[phantom-frame-slots-gcc272]] already warned this inference is unsound. m2c showing 'zero stack-resident locals' is consistent with a phantom slot, not evidence against one.",
+  "next_avenues": [
+    "COMPLETION GATE (main session, not run here): layer-2 cheat-reviewer + queue done. NOTHING to retire — zero regfix/asmfix rules and zero pipeline-config entries; the only cheat was the source-level dead array, already deleted.",
+    "HIGH VALUE — revisit the escalated cluster: AddTbpOfst_80047EE8 / InitHiraRmd_80047FBC (memory/wip/AddTbpOfst_80047EE8, commit 3d7e222d, 2026-06-14) were escalated as a PROJECT-WIDE POLICY request on exactly the reasoning this session refutes (a 32-byte unused-frame gap). 32 bytes = 4 phantom slots; the orphan census (tmp/orphan_census.py) already shows multi-orphan functions (e.g. tslPrintScreen vars=16, func_8007C2A0 vars=32). Re-open before any policy change is made.",
+    "Sweep: `tmp/frame_probe.sh` is a cheap gradient — any queue function whose honest frame is a multiple of 8 short of target is a phantom-slot candidate."
+  ],
+  "memory_notes": [
+    "memory/project/phantom-frame-slots-gcc272.md",
+    "memory/wip/func_8003D9A0/notes.md (the mechanism write-up + combine.c:10836-10841 producer)",
+    ".claude/rules/dead-vars-local-array.md",
+    ".claude/rules/duplicated-statement-into-arms.md",
+    ".claude/rules/defeat-licm-hoist-var-reuse.md",
+    "memory/wip/AddTbpOfst_80047EE8"
+  ]
+}
