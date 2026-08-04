@@ -1,4 +1,37 @@
-/* func_80060E38 — best form as of grind session 6 (forensics, 2026-08-03).
+/* func_80060E38 — best form as of grind session 7 (forensics, 2026-08-03).
+ *
+ * SESSION 7 UPDATE — body unchanged (forensics modality made no src/ edits), floor
+ * re-measured at 18 (sandbox --disable all: score 18, target_insns 139 == build_insns 139,
+ * 18 rules dropped). Session 6 instrumented alter_reg (the CALLER); session 7 instrumented
+ * assign_stack_local itself (the CALLEE, function.c:665-728) in a private GCC copy at
+ * tmp/grind/func_80060E38/s7/gcc, again validated byte-identical to stock build/cc1 on the
+ * s1 probe with the trace both off and on. That closes the two inputs of session 2's closed
+ * form that every prior session ASSUMED rather than measured:
+ *   (A) frame_offset on entry. Declared locals advance the cursor at their natural size
+ *       (stride 4 for s32, 1 for char), so locals totalling an odd multiple of 4 leave the
+ *       cursor at 4 mod 8 before reload allocates the spills — which, if it survived, would
+ *       put the nine spills at 0 mod 8 (target's congruence) under plain C control. It does
+ *       not survive: function.c:692-698 does `frame_offset = CEIL_ROUND (frame_offset,
+ *       alignment)` FIRST, and the spill path's alignment is BIGGEST_ALIGNMENT/8 == 8.
+ *       Measured on 7 leaf probes (1/2/3/4/5/12/20 bytes of address-taken locals): traces
+ *       show fo_in=1 -> fo_rounded=8 and fo_in=3 -> fo_rounded=8, and every spill in every
+ *       probe still lands at 4 mod 8. Tree-wide, only 2 of 317 align==-1 allocations even
+ *       entered non-8-aligned, and both were rounded away.
+ *   (B) STARTING_FRAME_OFFSET. mips.h:1651-1653 uses the RAW
+ *       current_function_outgoing_args_size (the MIPS_STACK_ALIGN padding is separate, at
+ *       mips.c:4466), which is session 1's frontier item F1 sub-question (a) — never
+ *       measured until now. It cannot be 4 mod 8: all three assignment sites (calls.c:1241,
+ *       2388, 2738) round args_size.constant up to STACK_BYTES = STACK_BOUNDARY/8 = 8, then
+ *       MAX it with REG_PARM_STACK_SPACE (16); OUTGOING_REG_PARM_STACK_SPACE is defined so
+ *       no subtraction happens, STACK_POINTER_OFFSET is 0, and -mno-abicalls zeroes the
+ *       ABICALLS term. Measured across all 31 TUs: 1694 assign_stack_local calls, sfo mod 8
+ *       == 0 in 1694/1694, distinct sfo values {0,16,24,32,40}.
+ * Consequence: `offset === -GET_MODE_SIZE(mode) (mod 8)` is now an UNCONDITIONAL theorem for
+ * this fork over all C inputs, not a per-path result — both free variables are pinned. The
+ * tree-wide split confirms it: 131/131 word slots on the spill path at 4 mod 8, while the 43
+ * word slots that DO sit at 0 mod 8 are all align==0 declared locals at stride 4, the shape
+ * s2's v_locals already killed (target needs stride 8 AND congruence 0, mutually exclusive
+ * for a 4-byte value here).
  *
  * SESSION 6 UPDATE — body unchanged (forensics modality made no src/ edits), floor
  * re-measured at 18 (sandbox --disable all: score 18, target_insns 139 == build_insns 139,

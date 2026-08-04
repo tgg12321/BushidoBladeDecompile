@@ -710,3 +710,108 @@ a cheat family. There is no directed-permuter probe left to run here.
 - [s6] Floor re-measured at session end with no src/ edits: sandbox func_80060E38 --disable all = score 18, target_insns 139 == build_insns 139, 18 rules dropped. Unchanged from sessions 1-5; candidate.c keeps the s5 body with an s6 header update.
 
 - [s6] Class-level number for the eventual escalation: across the ENTIRE decompiled tree our fork emitted 131 spill slots and every single one is at 4 mod 8, while all 29 stride-8 spill blocks in the target are at 0 mod 8 — so no BB2 function whose target spills can match while this fork compiles it.
+
+## Session 7 — forensics (2026-08-03): the closed form's two free inputs, measured
+
+Floor unchanged at **18** (`sandbox func_80060E38 --disable all`: score 18, target_insns 139
+== build_insns 139, 18 rules dropped, 324 cheat-asm lines stripped). No `src/` edits — this
+was a compiler-forensics session.
+
+### The instrument
+`tmp/grind/func_80060E38/s7/gcc` is a private copy of the s6 GCC 2.7.2 tree with a second
+env-gated trace added, this time in **`assign_stack_local` itself** (`function.c:665-728`) —
+s6 instrumented its caller `alter_reg`, so s7 measures what that caller actually feeds the
+allocator. `BB2_SLOCAL_DEBUG=1` prints, per call: `align`, `mode`, `GET_MODE_SIZE(mode)`,
+`size` before and after rounding, `frame_offset` on entry and after `CEIL_ROUND`,
+`bigend_correction`, `STARTING_FRAME_OFFSET`, `current_function_outgoing_args_size`, the final
+offset, and `virtuals_instantiated`. Patch: `s7/patch_function.py`; build: `s7/build_instr.sh`.
+
+**Codegen-inertness control (`s7/control.sh`, run first):** the instrumented cc1's asm on the
+s1 probe is byte-IDENTICAL to stock `tools/gcc-2.7.2/build/cc1` with the trace OFF *and* with
+it ON (the trace is stderr-only). The probe's own trace is exactly the nine expected
+allocations: `align=-1 mode=SImode size_in=4 size=8 bigend=4 sfo=0`, finals 4,12,...,68.
+
+### Input A — frame_offset on entry (KILLED)
+Declared locals take the `align == 0` path, which does not round the slot size, so they
+advance the cursor at stride 4 (s32) or 1 (char). Locals totalling an odd multiple of 4 would
+leave the cursor at 4 mod 8 when reload starts, and — if the parity survived — the nine spills
+would land at 0 mod 8, target's congruence, with the frame size unchanged (108 -> 112 == 0x70,
+since the callee-save block already carries 4 bytes of MIPS_STACK_ALIGN slack). It does not
+survive: `function.c:692-698` does `frame_offset = CEIL_ROUND (frame_offset, alignment)`
+*before* using the cursor, and the spill path's alignment is `BIGGEST_ALIGNMENT/8 == 8`.
+
+Measured on seven **leaf** variants of the s1 probe (`s7/gen7.py` -> `s7/probes/p_loc*.c`,
+1/2/3/4/5/12/20 bytes of address-taken locals, each forced to memory by storing its address
+through an absolute pointer so no call is introduced):
+
+| probe | locals | fo_in -> fo_rounded at first spill | spill offsets |
+|---|---|---|---|
+| p_loc1   | 1 byte  | 1 -> 8   | 12,20,...,76 |
+| p_loc2   | 2 bytes | 0 -> 0 (BLKmode, 8-rounded) | 12,20,...,76 |
+| p_loc3x1 | 3 chars | 3 -> 8   | 12,20,...,76 |
+| p_loc4   | 4 bytes | (rounded) | 12,20,...,76 |
+| p_loc12  | 12 bytes| 16 -> 16 | 20,...,84 |
+| p_loc20  | 20 bytes| 24 -> 24 | 28,...,92 |
+
+Every spill in every variant is still at **4 mod 8**.
+
+### Input B — STARTING_FRAME_OFFSET (KILLED)
+`mips.h:1651-1653` uses the **raw** `current_function_outgoing_args_size` (the
+`MIPS_STACK_ALIGN` padding of the args area is separate, at `mips.c:4466`) — session 1's
+frontier item F1 sub-question (a), asserted by every session since but never measured. It
+cannot be 4 mod 8: all three assignment sites (`calls.c:1241`, `2388`, `2738`) round
+`args_size.constant` up to `STACK_BYTES = STACK_BOUNDARY/8 = 64/8 = 8`, then `MAX` it with
+`REG_PARM_STACK_SPACE = MAX_ARGS_IN_REGISTERS*UNITS_PER_WORD - FIRST_PARM_OFFSET = 16`;
+`OUTGOING_REG_PARM_STACK_SPACE` is defined (`mips.h:1830`) so the `-= reg_parm_stack_space`
+branch is compiled out; `STACK_POINTER_OFFSET` is 0 (`mips.h:1295`); `-mno-abicalls` zeroes the
+ABICALLS term. This also retro-explains session 1's `probe_call`: a 5-argument call is 20 raw
+bytes but produced `STARTING_FRAME_OFFSET == 24`.
+
+### Tree-wide census (`s7/sweep7.sh` + `s7/agg7.py` -> `s7/agg7_report.txt`)
+All 31 `src/*.c` TUs compiled with the instrumented cc1 at the Makefile's exact flags —
+**1694 `assign_stack_local` calls** in the whole game:
+
+* `sfo mod 8 == 0` in **1694/1694**; distinct sfo values `{0, 16, 24, 32, 40}`.
+* `align == -1` allocations: 317. Only **2** entered with a non-8-aligned `frame_offset`, and
+  both were rounded to 0 mod 8 — 317/317 allocate from an 8-aligned cursor.
+* 4-byte-mode slots on the **spill** path: **131/131 at 4 mod 8, zero at 0** — an exact,
+  independent match to s6's alter_reg-side count of 131.
+* 4-byte-mode slots on the **declared-local** path: 43 at 0 mod 8, 15 at 4. Locals *can* sit at
+  0 mod 8 — but at stride 4, the shape s2's `v_locals` already killed. Target needs nine slots
+  at stride 8 **and** congruence 0, and for a 4-byte value those are mutually exclusive here
+  (stride 8 implies `align == -1` implies the +4).
+* BLKmode/aggregate slots (`GET_MODE_SIZE == 0`): 186 `align == -1`, 1314 `align == 0`, all at
+  0 mod 8 — consistent with the theorem, and dead as a route per s5's taxonomy (an aggregate
+  slot is one wide object, not nine single-word slots).
+
+### What this establishes
+`offset === -GET_MODE_SIZE(mode) (mod 8)` is now an **unconditional theorem** for this fork
+over all C inputs. Sessions 2-3 proved the `alter_reg` adjust arithmetic cancels on every
+branch, but conditionally on two unmeasured assumptions; both are now pinned, one from the
+definition sites and one from 1694 measurements. Nothing the C source controls — statement
+order, scoping, locals, call shape, argument counts, spill count, type width, mutation search —
+can move a 4-byte reload spill slot off 4 mod 8, because the only surviving variable is the
+spilled value's machine mode.
+
+### Artifacts
+`s7/patch_function.py`, `s7/build_instr.sh`, `s7/control.sh`, `s7/out/probe.trace`,
+`s7/gen7.py`, `s7/run7.sh`, `s7/probes/*.c`, `s7/out/p_loc*.trace`, `s7/sweep7.sh`,
+`s7/sweep7.txt`, `s7/tree/*.trace` (31 TUs), `s7/agg7.py`, `s7/agg7_report.txt`.
+
+- [s7] Floor unchanged at 18 (sandbox func_80060E38 --disable all: score 18, target_insns 139 == build_insns 139, 18 rules dropped, 324 cheat-asm lines stripped). No src/ edits - forensics session.
+
+- [s7] The s7 instrument is one pass deeper than s6: s6 traced alter_reg (the caller, reload1.c), s7 traces assign_stack_local itself (the callee, function.c:665-728), so the two sessions measure which path is taken and what that path feeds the allocator.
+
+- [s7] Codegen-inertness control passed before any measurement: the s7 cc1's asm on the s1 probe is byte-identical to stock tools/gcc-2.7.2/build/cc1 with the trace off AND on (trace is stderr-only).
+
+- [s7] function.c:692-698 rounds the frame cursor before using it (frame_offset = CEIL_ROUND (frame_offset, alignment)), and the spill path has alignment == BIGGEST_ALIGNMENT/8 == 8 - so declared-local parity cannot reach a spill slot. Measured directly: fo_in=1 -> fo_rounded=8, fo_in=3 -> fo_rounded=8.
+
+- [s7] Seven leaf probes with 1/2/3/4/5/12/20 bytes of address-taken locals all keep every spill at 4 mod 8 (12,20,...,76 / 20,...,84 / 28,...,92).
+
+- [s7] STARTING_FRAME_OFFSET cannot be 4 mod 8 in this configuration: args_size.constant is rounded up to STACK_BYTES (8) at all three assignment sites, MAXed with REG_PARM_STACK_SPACE (16), never decremented (OUTGOING_REG_PARM_STACK_SPACE defined), STACK_POINTER_OFFSET is 0, and -mno-abicalls zeroes the ABICALLS term.
+
+- [s7] Tree-wide census of 1694 assign_stack_local calls across all 31 src/*.c TUs: sfo mod 8 == 0 in 1694/1694 (distinct values {0,16,24,32,40}); 317 align == -1 allocations of which only 2 entered non-8-aligned and both were rounded away; 131/131 four-byte-mode spill slots at 4 mod 8.
+
+- [s7] The 43 four-byte-mode slots tree-wide that DO sit at 0 mod 8 are all align == 0 declared locals allocated at stride 4 - target needs stride 8 with congruence 0, which is unreachable for a 4-byte value because stride 8 implies the align == -1 path implies the +4 correction.
+
+- [s7] Net effect: the congruence of a 4-byte reload spill slot in this fork is a function of the spilled value's machine mode and nothing else, for every C input - statement order, scoping, locals, call shape, argument counts, spill count, type width and randomized mutation search are all provably inert, not merely empirically inert.
