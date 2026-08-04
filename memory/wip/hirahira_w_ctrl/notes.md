@@ -60,30 +60,7 @@ target):
 | s7 | a4 carrier | 5 | 95 | 1052 |
 | s8 | a3 | 4 | 100 | 800 |
 
-## The six levers (27 → 5)
-
-1. **destination reuse** `offset = offset + (s32) a2; p = (u16 *) offset;` (r1)
-2. **initialise `i` before `tbl`** — target emits the s4 init pair before the s5
-   pair; identical registers, different emission order. **23 → 19**
-3. **`tbl++` after the first `func_8004A348` call** (not mid-buffer). sched1
-   runs BEFORE register allocation in this toolchain, so schedule changes also
-   move allocno live lengths. **19 → 17**
-4. **loop2's `func_800523E0` takes the parameter `a4`**, not the local carrier.
-   Drops the carrier allocno from nrefs 7 to 5 (pri 1473 → 1052) so `out2`
-   (1333) outranks it: the s6/s7 pair lands target's way and all of loop 1 then
-   matches instruction for instruction. **17 → 11**
-5. **loop2 `stptr` as its own local + SPLIT-INIT on the loop1 `stptr`**
-   (`stptr = base; stptr += 0xFC;`). The split-init raises stptr's nrefs 5 → 7
-   (pri 2439 → 3414) **without changing a single emitted instruction** — that is
-   what lets the loop2 split keep s3/s4 in target's order instead of swapping
-   them. **11 → 6**
-6. **`(s32)` cast on the first add's pointer operand**
-   (`p = (u16 *) (offset + (s32) a1);`). **6 → 5**
-
-All are sanctioned families (variable reuse / staged value, statement order,
-split-init accumulation, param-local-alias). Nothing added, removed or
-reordered a machine instruction: every probe held 132/132.
-
+## The six levers (27→5) — narrative in git history (r16 commit 44ab9f6e)
 ## Measured negatives — in git history (r16 commit); do not re-run the operand-order, split-init(+2), or alias(0) sweeps
 ## Resume here — the number to beat
 
@@ -107,10 +84,22 @@ inside the same session.
 
 Instruments: tmp/hw*.py sweeps, tmp/hw_bank.py, tmp/sbs.sh, tmp/frame_probe.sh, tmp/allocdbg.sh, tmp/allocpick.py, tmp/perm_hw workspace.
 
-## Permuter rung — CLOSED (2026-08-04, operator-supervised)
+## Permuter rung — CLOSED (62k iters, nothing beats candidate-5; details in git history)
+## RA-solver session (2026-08-04 afternoon, tools/ra_solver)
 
-Campaign plus1ref on a clean 132/132 offset-0 pair from candidate-5: 62k
-iters, 6 finds, best 120 — all WORSE than the candidate basin (the mutation
-set cannot express the +1-reference lever; it moves whole statements, which
-is the +2 class already killed manually). Stopped in-session, no orphan.
-Ladder fully run. BANKED at 5 — the best floor in the active queue.
+Candidate-5 model validates 11/11. Solver findings:
+- The 5-insn cluster = out2 (pseudo 86) CONFLICTS with stptr (87) in our
+  spelling (one variable reused across both loops = one pseudo). Removing
+  the conflict in the model gives out2->s3(19) = target.
+- Real split spelling (out2b for loop2): out2b DOES land s3 (model 12/12
+  confirmed) but re-shuffles {loop1-out, a4, saved} into a 3-cycle;
+  sandbox 16 (worse than 5).
+- Solver on the split model, spec {87:19, 86:22, 77:23, 75:30}: NO single
+  atom; sufficient PAIRS include (86 refs+1 & 86 pref+22), (79 refs+1 &
+  86 refs+1), (77 pref->23 & 86 live-8), etc.
+- Tested spelling for 86 refs+1 (split-init the preamble def, sanctioned
+  family): sandbox still 16 — the +1 did not materialize as modeled.
+  NEXT: extract the split2 variant model (tmp/hw_split2.sh --keep, then
+  extract) and compare 86 actual nrefs/pri vs predicted; then realize the
+  next pair from the HIT list. Scripts: tmp/hw_solver.sh, tmp/hw_split*.sh.
+- The candidate-5 form in candidate.c remains the best (apply as base).
