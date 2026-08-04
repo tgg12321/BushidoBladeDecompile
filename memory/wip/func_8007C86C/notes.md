@@ -102,13 +102,17 @@ association GCC otherwise reassociates.
 
 ## Resume here
 
-Start from **`candidate_stream51.c`**. The only open question is the register
-assignment. Do not re-run clamp-shape sweeps or another permuter campaign; that
-space is covered. Round 16 localized the blocker: with no `REG_ALLOC_ORDER` for
-MIPS in this tree both allocators scan ascending, and a 2-param leaf function
-has no hard `$a2`/`$a3`/`$v1` for `set_preference` to key on — so those
-registers are reachable ONLY by exclusion, never by preference. Full mechanism,
-the measured negative list, and the reusable probe tooling are in
+Start from **`candidate_stream51.c`**. The stream is done; only the register
+assignment is open, and round 17 CLOSED the pure-C route to it. An exhaustive
+273-atom scan of the RA model leaves exactly three perturbations that reach the
+gating `$a2` placement, and all three need a copy relationship with hard `$v1`
+or hard `$a2` — registers a two-parameter leaf function never has in scope. The
+one route not needing a new hard reg (`hi` conflicting with the limit-save) is
+disproven from target's own bytes: target writes `$v1` for the first time at
+insn 39 while the limit-save dies at insn 13, so they cannot conflict in the
+original's compilation either. **Do not spend more rounds on C spellings for the
+allocation.** Full mechanism, the measured negative list (including the round-17
+variable-reuse family, 5/5 stream-breaking), and the probe tooling are in
 `memory/wip/func_8007C7A0/notes.md`; per-round narrative for rounds 1-14 is in
 git history for this file.
 
