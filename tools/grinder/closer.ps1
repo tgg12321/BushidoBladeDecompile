@@ -19,7 +19,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)][string]$Mission,
-    [string]$Model = 'claude-opus-5[1m]',
+    [string]$Model = 'claude-fable-5[1m]',
     [int]$TimeoutMin = 240,
     [switch]$KeepSrc
 )

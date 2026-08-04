@@ -7,7 +7,7 @@
   Drill C (live, -WithJudge): the judge MUST FAIL a known-cheat candidate.
 #>
 [CmdletBinding()]
-param([switch]$WithJudge, [string]$JudgeModel = 'claude-opus-5[1m]')
+param([switch]$WithJudge, [string]$JudgeModel = 'claude-fable-5[1m]')
 $ErrorActionPreference = 'Stop'
 $Root = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 Set-Location $Root
