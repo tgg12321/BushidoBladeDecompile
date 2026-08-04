@@ -9,18 +9,17 @@
  * LIBGPU.H's P_TAG (`unsigned addr:24; unsigned len:8;`): next-packet
  * address in the LOW 24 bits, packet word count in the HIGH 8.
  *
- * FIELD ORDER NOTE (probe-verified 2026-06-11): cc1psx (PsyQ GCC
- * 2.7.2.SN) allocates the FIRST-declared bitfield at the LOW bits, so
- * PsyQ's addr-first declaration puts addr low. Our frozen decompals
- * fork allocates the FIRST-declared bitfield at the HIGH bits — the
- * same memory layout therefore requires len declared FIRST here. This
- * is a measured toolchain-divergence compensation, not a layout choice;
- * see .claude/rules/bitfield-direction-divergence.md. User-sanctioned
- * 2026-06-11 (SDK-header provenance + cc1psx cross-probe + 9-spelling
- * mask-family closure). */
+ * FIELD ORDER NOTE (updated 2026-08-04, -mel adoption): cc1psx (PsyQ
+ * GCC 2.7.2.SN) allocates the FIRST-declared bitfield at the LOW bits,
+ * so PsyQ's addr-first declaration puts addr low. Before 2026-08-04 our
+ * fork ran with a big-endian target default and allocated HIGH-first,
+ * which forced a reversed (len-first) declaration as compensation
+ * (probe-verified 2026-06-11). With -mel in CC_FLAGS the fork allocates
+ * LOW-first exactly like cc1psx, so the ORIGINAL PsyQ field order is
+ * restored below; see .claude/rules/bitfield-direction-divergence.md. */
 typedef struct {
-    u32 len : 8;   /* HIGH 8 bits: packet word count */
     u32 addr : 24; /* LOW 24 bits: next-packet address */
+    u32 len : 8;   /* HIGH 8 bits: packet word count */
 } OTag;
 
 /* Named globals */

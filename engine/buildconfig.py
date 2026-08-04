@@ -43,8 +43,8 @@ ASMFIX = "python3 tools/asmfix.py"
 CHEAT_STAGES = ("regfix", "regfix_stage2", "asmfix")
 
 # -- Flags ------------------------------------------------------------------
-CC_FLAGS = "-O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w"
-CC_FLAGS_GP = "-O2 -G8 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w"
+CC_FLAGS = "-O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel"
+CC_FLAGS_GP = "-O2 -G8 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel"
 AS_FLAGS = "-Iinclude -march=r3000 -mtune=r3000 -no-pad-sections -O1 -G0"
 CPP_FLAGS = "-Iinclude -undef -Wall -lang-c -fno-builtin"
 CPP_DEFS = (
@@ -70,7 +70,7 @@ MASPSX_FLAGS_GP = (
 GP_FILES = set()
 EXPAND_LB_FILES = {"code6cac_b"}
 EXPAND_LH_FILES = set()
-FIX_LWL_FILES = {"code6cac", "text1b", "ings"}
+FIX_LWL_FILES = set()  # obsolete since -mel adoption 2026-08-04
 RODATA_ALIGN2_FILES = {
     "code6cac", "code6cac_b", "code6cac_c", "code6cac_c0", "code6cac_c_ab",
     "code6cac_c_mid", "code6cac_c2", "text1a", "text1a_b", "text1a_c",

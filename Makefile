@@ -33,8 +33,8 @@ CPP          := mipsel-linux-gnu-cpp
 # -G8: enable GP-relative for files that need it (uses sdata_syms.txt filtering)
 # -funsigned-char: common PsyQ convention
 # -mcpu=3000: target R3000A
-CC_FLAGS     := -O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w
-CC_FLAGS_GP  := -O2 -G8 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w
+CC_FLAGS     := -O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel
+CC_FLAGS_GP  := -O2 -G8 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel
 AS_FLAGS     := -Iinclude -march=r3000 -mtune=r3000 -no-pad-sections -O1 -G0
 CPP_FLAGS    := -Iinclude -undef -Wall -lang-c -fno-builtin
 CPP_DEFS     := -Dmips -D__GNUC__=2 -D__OPTIMIZE__ -D__mips__ -D__mips -Dpsx -D__psx__ -D__psx \
@@ -110,9 +110,10 @@ EXPAND_LB_FILES := code6cac_b
 EXPAND_LH_FILES :=
 
 # -- Per-file fix_lwl opt-in --
-# GCC 2.7.2 emits lwl/lwr/swl/swr with big-endian offsets; XOR with 3 for little-endian.
-# Only enable for files containing lwl/lwr in maspsx output (without compensating inline asm).
-FIX_LWL_FILES := code6cac text1b ings
+# OBSOLETE since the 2026-08-04 -mel adoption: cc1 now emits little-endian
+# lwl/lwr/swl/swr offsets natively (the stage existed only to XOR-correct the
+# big-endian artifact). List kept empty; tools/fix_lwl.py retained for history.
+FIX_LWL_FILES :=
 
 # -- Per-file rodata alignment fix --
 # GCC 2.7.2 emits .align 3 (8-byte) for switch tables in .rodata.

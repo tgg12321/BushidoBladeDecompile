@@ -960,8 +960,8 @@ decBs0: subst ",32\(" ",44(" @ 124
 decBs0: subst ",28\(" ",36(" @ 125
 decBs0: subst ",24\(" ",32(" @ 126
 # Phase 5: Arg save + else-branch offset
-decBs0: subst "\$5,20\(" "$4,16(" @ 15
-decBs0: subst ",20\(" ",24(" @ 20
+decBs0: subst "\$5,16\(" "$4,16(" @ 15
+decBs0: subst ",16\(" ",24(" @ 20
 # Phase 6: Loop top delay slot → nop (kill dead move a0←fp_ptr)
 decBs0: subst "addu\t\$4,\$fp,\$zero" "nop" @ 19
 # Phase 7: Store block — change v1($3) → v0($2) for GP loads
@@ -2785,25 +2785,6 @@ func_80078654: subst "lw\s+\$17,72" "lw	$17,76" @ 110
 # Reorder epilog loads: mine has s0,s1 but target has s1,s0.
 func_80078654: reorder 110,109 @ 109-110
 
-# func_80060E38: 18-rule stack-offset shift (sp[+4..+68] -> sp[+0..+64])
-func_80060E38: subst "4\(\$sp\)" "0($sp)" @ 3
-func_80060E38: subst "12\(\$sp\)" "8($sp)" @ 6
-func_80060E38: subst "20\(\$sp\)" "16($sp)" @ 9
-func_80060E38: subst "28\(\$sp\)" "24($sp)" @ 12
-func_80060E38: subst "36\(\$sp\)" "32($sp)" @ 15
-func_80060E38: subst "44\(\$sp\)" "40($sp)" @ 18
-func_80060E38: subst "52\(\$sp\)" "48($sp)" @ 21
-func_80060E38: subst "60\(\$sp\)" "56($sp)" @ 24
-func_80060E38: subst "68\(\$sp\)" "64($sp)" @ 71
-func_80060E38: subst "4\(\$sp\)" "0($sp)" @ 74
-func_80060E38: subst "12\(\$sp\)" "8($sp)" @ 77
-func_80060E38: subst "20\(\$sp\)" "16($sp)" @ 80
-func_80060E38: subst "28\(\$sp\)" "24($sp)" @ 83
-func_80060E38: subst "36\(\$sp\)" "32($sp)" @ 86
-func_80060E38: subst "44\(\$sp\)" "40($sp)" @ 89
-func_80060E38: subst "52\(\$sp\)" "48($sp)" @ 92
-func_80060E38: subst "60\(\$sp\)" "56($sp)" @ 95
-func_80060E38: subst "68\(\$sp\)" "64($sp)" @ 98
 # func_80074220: loop label needs to attach to reordered first instruction
 
 # func_80049C24 -- s7/$fp swap + nor reorder + slti + 4 use sites
