@@ -1,17 +1,39 @@
 {
  "func": "func_80021280",
  "file": "code6cac",
- "session_count": 0,
- "current_modality": null,
+ "session_count": 1,
+ "current_modality": "recon",
  "floor_history": [
   {
    "session": 0,
    "floor": 2,
    "modality": "wip-import",
    "headline": "floor imported from memory/wip checkpoint"
+  },
+  {
+   "session": 1,
+   "floor": 2,
+   "modality": "recon",
+   "headline": "Recon: floor 2 re-confirmed and diff reduced to ONE adjacent-pair swap (move t1,v1 <-> move a1,zero); real-loop family and a1-first-textual family both killed with mechanisms"
   }
  ],
- "frontier": [],
+ "frontier": [
+  {
+   "hypothesis": "The pass that lifted a1 in the old form (7th->5th) has a priority rule that can be steered to lift move a1,zero past move t1,v1 in form C without touching RA",
+   "mechanism": "Old sched.c (GCC 2.7.2) block scheduling; a1=0's in-block consumer is the rotated loop head sll v0,a1,2 at block end, giving it nonzero forward priority; if the lift is sched2 (post-RA) it cannot regress the allocation",
+   "next_probe": "Standalone repro of old form vs form C; cc1 -da; diff .greg/.sched/.sched2 dumps to identify the moving pass and its priority/tie-break rule; derive C-visible dependence tweaks from it"
+  },
+  {
+   "hypothesis": "Some t1-set spelling tolerates the a1<->t1 conflict so a1=0 can be textually first with correct RA",
+   "mechanism": "The 19-regression is one specific allocator tie flip; changing t1's pseudo nrefs/class/birth may re-flip it while keeping the conflict",
+   "next_probe": "Grid over t1 provenance/typing and middle-group orderings (a1=0; t4; t3; t2; t1=val; mode; t0 etc.) in the no-init form, sandbox each; known dead: s32 t1 (4), mem-reload t1 (23), fresh counter (19)"
+  },
+  {
+   "hypothesis": "Directed permuter from form C finds the legal C89 preamble spelling that flips the adjacent pair",
+   "mechanism": "Search space is now a single transposition; PERM_* mutations over the seven preamble statements + decl styles",
+   "next_probe": "permuter_campaign.py seeded from candidate.c restricted to the preamble; wait/harvest/stop in-turn per fresh-seed discipline"
+  }
+ ],
  "judge_constraints": [],
  "origin": "queue",
  "created": "2026-08-04T04:20:12.399779+00:00"

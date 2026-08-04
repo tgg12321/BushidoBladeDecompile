@@ -1,5 +1,44 @@
 # Evidence bank — func_80021280
 
+## s1 (recon, 2026-08-03) — floor 2 re-confirmed; diff reduced to one ADJACENT pair
+
+- Baseline: candidate applied to src, `sandbox --disable all` = 2 (72/72), `canonical` = C.
+  The entire distance is the position of `move $a1,$zero` in the loop2 preamble:
+  target has it FIRST (0x800212F0), before `move $t1,$v1 / li $t4,4 / li $t3,3 /
+  li $t2,1 / lui+lh mode / lui+lbu t0`.
+- NEW BEST FORM (form C, still floor 2 but structurally tighter): block-scope
+  no-init decls + assignments `t1=val; a1=0; t4=4; t3=3; t2=1; mode=..; t0=..;`.
+  Emitted order follows source EXACTLY (verified by objdump: t1,a1,t4,t3,t2,mode,t0)
+  — NO pass reorders this block. Remaining diff = swap of the two adjacent moves.
+- KILL: real-loop spellings (do-while both layouts; WIP's `for` at 34 consistent).
+  Loop notes → loop.c hoists the bare constant 5 (`li 5`) into the preamble and
+  scrambles RA; target keeps `addiu $v0,$zero,5` INSIDE the loop (0x8002134C).
+  Also measured: mode/t0 GLOBAL loads do NOT hoist even with notes (invariant_p
+  rejects MEMs vs the sh-through-a2 loop stores; no alias analysis in 2.7.2).
+  ⇒ original loop2 compiled WITHOUT loop.c ⇒ goto-shaped loop is the right family.
+- SUPERSEDES WIP root_cause: the banked "loop.c biv-init vs move_movables
+  relocation" mechanism cannot apply to the in-context build — goto loops carry
+  no NOTE_INSN_LOOP_BEG, so loop.c never runs on them. (The WIP standalone repro
+  presumably used a real loop.) The a1-placement question is a straight
+  scheduling/RA question, not a loop.c one.
+- KILL: no-init decls with `a1 = 0;` FIRST (target statement order) → 19.
+  Mechanism: a1 live across `t1 = val;` adds an a1<->t1 pseudo conflict which
+  flips the allocator low-reg tie → the $a1/$a2 swap returns. Boundary measured
+  precisely: a1=0 at position 1 → 19; at position 2 (after t1=val) → 2.
+  So the final flip must NOT add that conflict at RA time → points at a
+  post-RA reorder (sched2-level) or a t1-set spelling RA tolerates.
+- Neutral: splitting `a1 << 2` into `s32 sh2 = a1 << 2;` — floor 2 unchanged,
+  identical bytes (WIP avenue 3 measured dead).
+- Sibling scan: no near-duplicate leads for func_80021280 (tmp/duplicates.txt,
+  tmp/duplicates_leads.txt both negative).
+- Open mechanism question for forensics: in the OLD floor-2 form (a1=0 textually
+  LAST), emitted order was t1,t4,t3,t2,a1,mode,t0 — some pass lifted a1 past the
+  two load pairs but not past the li's; in form C nothing moves at all. Diffing
+  `-da` dumps (.sched/.greg/.sched2) of the two forms on a standalone repro will
+  identify the pass and its priority rule — that rule is the lever that could
+  lift `move a1,zero` past `move t1,v1` post-RA.
+- Artifact: tmp/grind/func_80021280/s1/formC_floor2_disasm.txt (form-C objdump).
+
 - WIP rejected_form: shadow-redeclare a1 inside inner block (s32 a1 = 0; shadowing outer) -> new pseudo, no priority boost, floor back to 19
 
 - WIP rejected_form: hoist t1/t4/t3/t2/mode/t0 to function-scope decls-without-initializer + plain assignments (to legalize a1=0 first) -> floor 19 (loses the nrefs-priority merge benefit)
@@ -69,3 +108,21 @@ first loop-body statement that triggers the biv scan).
    (already have one for the current candidate.c form — get a FRESH one if the
    final closing form differs), then delete this WIP dir.
 
+
+- [s1] Baseline this session: sandbox --disable all = 2 (72/72 insns), canonical = C, on the WIP candidate applied to src/code6cac.c
+
+- [s1] The entire distance-2 is the position of move $a1,$zero in the loop2 preamble: target 0x800212F0 has it FIRST, ours had it 5th (old form) / 2nd (new form C)
+
+- [s1] Target materializes the constant 5 INSIDE the loop (addiu $v0,$zero,5 at 0x8002134C) and loads mode/t0 exactly once in the preamble => original loop2 was compiled WITHOUT loop.c LICM => goto-shaped loop is the correct family; every note-carrying spelling (for/while/do) is dead
+
+- [s1] GCC 2.7.2 loop.c will NOT hoist the mode/t0 global loads even with notes: invariant_p rejects MEMs against the sh-through-pointer loop stores (no alias analysis) - measured directly, confirms WIP floor-41 datum
+
+- [s1] SUPERSEDES WIP root_cause: the loop.c biv-init-relocation mechanism cannot apply to the in-context goto-loop build (no loop notes => loop.c never runs); a1 placement is a scheduling/RA question
+
+- [s1] RA boundary measured: a1=0 textually before t1=val => a1<->t1 conflict => swap returns (19); after t1=val => RA correct (2). The final flip must not add that conflict pre-RA => post-RA reorder (sched2) or a conflict-tolerant t1 spelling
+
+- [s1] NEW BEST FORM banked (form C, candidate.c): no-init decls + t1=val; a1=0; t4=4; t3=3; t2=1; mode=..; t0=..; emitted order exactly textual, diff = one adjacent transposition
+
+- [s1] Open forensics question: which pass lifted a1 past the two load pairs in the OLD form (textual 7th -> emitted 5th) while form C is emitted verbatim - answerable by diffing -da dumps of the two forms on a standalone repro
+
+- [s1] Sibling/duplicate scan negative: func_80021280 absent from tmp/duplicates.txt and tmp/duplicates_leads.txt
