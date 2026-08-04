@@ -1,0 +1,53 @@
+{
+  "function": "title_mv_exec2",
+  "func": "title_mv_exec2",
+  "file": "main",
+  "verdict": "C",
+  "scores": {
+    "head_floor": 27,
+    "candidate_floor": 22,
+    "metric": "sandbox --disable all (masked Levenshtein)",
+    "build_insns": 72,
+    "target_insns": 72,
+    "frame": "candidate 96 == target 96; saves 3 == target 3 (HEAD was 104 / 5 / 76 insns)"
+  },
+  "sessions": [
+    {
+      "date": "2026-08-04",
+      "lever": "multi-set scratch local `s32 t` carrying BOTH loop-invariant constants (0x18 and 1) so loop.c move_movables cannot hoist either; retires the two extra callee-saves",
+      "lever_rule": "defeat-licm-hoist-var-reuse",
+      "floor_was": 27,
+      "floor_now": 22,
+      "round": 1,
+      "git_head_at_measurement": "9785ffda",
+      "note": "Entered from the frame census as an `ours-larger delta -8` (inverse-phantom) candidate. THAT PREMISE WAS WRONG and the census notes column already carried the evidence (`vars=64/regs=5/args=16 tgt_saves=3`): both bodies have vars=64 for the real `s32 buf[16]`; the 8 bytes are 5 callee-saves rounding to 24 vs target's 3 rounding to 16. Root cause: loop.c hoisted `li 24` and `li 1` into s3/s2. Routing both through one multi-set scratch defeats the hoist and lands frame 96 / 3 saves / 72 insns — all three exactly target. Residual 22 is a register swap (ours t=$a1, sext=$v1; target t=$v1, sext=$a1) plus `li 24` placement (target inline at use; ours rotated into the loop-back delay slot) and `addiu a0,sp,16` timing. Semantics checked: the pre-loop `li $5,24` is loop rotation with the reload in the `bne` delay slot, not a stale value. cc1psx diagnostic (sanctioned): with the candidate source cc1psx produces the IDENTICAL allocation to our fork (li $5,24 / sext in $3, frame 96, regs=3), so it is not closer; the differential sweep's `ours=31 / psx=15` reading was taken on the OLD (hoisting) source and does not indicate a better allocator here. Seven further levers measured inert (see notes.md). Applying the candidate breaks the oracle (SHA1 31fe8c21) because the 18 regfix rules are calibrated to HEAD's shape; src/main.c reverted and the full build re-verified at 62efab4f."
+    }
+  ],
+  "reviewer": null,
+  "rules_dropped_if_applied": 0,
+  "cheat_inventory": [
+    "18 regfix rules (calibrated to the HEAD emission shape; not retired by the candidate)",
+    "0 asmfix rules; no entries in tools/prologue_config.json, tools/frame_fix_funcs.txt, or any maspsx gate list (grep-verified)",
+    "candidate.c introduces ONE construct needing review: the multi-set scratch `s32 t` per [[defeat-licm-hoist-var-reuse]] (SOTN-accepted 2026-06-02 variable-reuse family; same shape already shipping in func_8003DBE4). It is genuinely live — it holds each value being stored/shifted — and no dead store is involved."
+  ],
+  "rejected_forms": [
+    {"form": "t for the 0x18 only", "score": 27, "reason": "stays single-set, still hoisted"},
+    {"form": "t for the 1 only", "score": 27, "reason": "stays single-set, still hoisted"},
+    {"form": "reuse the existing `offset` variable for the 1", "score": 20, "reason": "frame 96 but regs=4, insns=74"},
+    {"form": "offset reuse for 1 + t for 0x18", "score": 20, "reason": "regs=4, insns=74"},
+    {"form": "s16 t instead of s32 t", "score": 16, "reason": "better metric but structurally worse: regs=4, insns=74. Not the resume base."},
+    {"form": "named sign-extend local (s32 idx / s16 idx) reused as the shift amount", "score": 22, "reason": "inert"},
+    {"form": "t placement: loop top / immediately before each use / 0x18 store last / shift before stores / idx+shift-first", "score": 22, "reason": "all inert"}
+  ],
+  "root_cause": "NOT a phantom-frame case. Target frame 96 = args 16 + vars 64 + 3 callee-saves (16 aligned); HEAD emitted 5 callee-saves (24 aligned) because loop.c's move_movables hoisted the two loop-invariant constants 0x18 and 1 out of the loop into s3/s2. A single multi-set scratch local defeats the hoist (a movable must be set once in the loop), retiring both saves. What remains is a register-naming swap plus two scheduling placements.",
+  "next_avenues": [
+    "The $a1/$v1 swap and the `li 24` placement are the only open questions. Untried: statement order around the `saTan1MainJump(buf)` argument setup (target schedules `addiu a0,sp,16` early, ours late), and naming the buffer address in a local to change a0's timing.",
+    "Do NOT re-run the t-placement or idx-local sweeps (7 forms, all inert), and do not re-open the compiler-divergence question — the cc1psx diagnostic in sessions[0] settles it.",
+    "Completion gate (main session, not run here): the 18 regfix rules must be rewritten or retired for any candidate shape; a layer-2 cheat-reviewer should vet the multi-set scratch against [[defeat-licm-hoist-var-reuse]]'s prerequisites."
+  ],
+  "memory_notes": [
+    ".claude/rules/defeat-licm-hoist-var-reuse.md",
+    ".claude/rules/cc1psx-calibration-only.md",
+    "memory/wip/_frame_census_2026-08-04.md"
+  ]
+}
