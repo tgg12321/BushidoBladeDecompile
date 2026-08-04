@@ -1,3 +1,31 @@
+/* func_80060E38 - best form as of grind session 9 (escalation, 2026-08-03).
+ *
+ * SESSION 9 (DISPOSITION) - body unchanged; floor re-measured at 18 (sandbox
+ * --disable all: score 18, target_insns 139 == build_insns 139, 18 rules dropped).
+ * The driver declared exhaustion (flat floor across 9 sessions / 6 distinct
+ * modalities: recon, structural x2, permuter x2, forensics x2, rederive, escalation)
+ * and session 9 evaluated the two endgame-lock AND-gates. BOTH FAIL:
+ *   (a) tools/scan_hand_coded.py --single func_80060E38 -> tier=LOW score=0/8,
+ *       zero signals, none of the STRONG tier (S1/S2/S6). Canonical-asm
+ *       authorization is unavailable; this is plainly compiled C.
+ *   (b) No in-hand SOTN-master precedent exists for either closing construct.
+ *       The only two are (i) literal-offset inline asm for the nine spill sw/lw
+ *       pairs - hardcoded-$N injection, the forbidden family in
+ *       .claude/rules/inline-asm-injection.md, and score-inert anyway; and
+ *       (ii) rebuilding tools/gcc-2.7.2 little-endian, forbidden by
+ *       [[no-compiler-divergence]] and off the grind edit surface entirely.
+ * The byte-match is held by 18 regfix subst rules at regfix.txt:2788-2806
+ * (a pure mechanical sp[+4..+68] -> sp[+0..+64] offset shift); there is NO
+ * cheat-asm in this function's body.
+ * Per the owner's standing 2026-07-27 both-gates-fail auto-ruling, session 9
+ * filed docs/grind/decisions.md 2026-08-03 func_80060E38 as
+ * REFUSED / OWNER-ACCEPTED INCOMPLETE (terminal; nothing pending on the owner)
+ * and returned owner-gated. This C body remains the best form: it is the one
+ * that produces 139/139 instructions with target's exact register allocation,
+ * scheduling and delay slots, differing only in the nine spill-slot immediates.
+ * If the owner ever elects the little-endian cc1 rebuild, THIS body closes the
+ * function with no further C work.
+ */
 /* func_80060E38 — best form as of grind session 8 (rederive, 2026-08-03).
  *
  * SESSION 8 UPDATE — body unchanged (the rederive instruments produced nothing worth

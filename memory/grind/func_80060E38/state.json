@@ -1,8 +1,8 @@
 {
  "func": "func_80060E38",
  "file": "text1b",
- "session_count": 8,
- "current_modality": "rederive",
+ "session_count": 9,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 1,
@@ -51,23 +51,24 @@
    "floor": 18,
    "modality": "rederive",
    "headline": "Rederive axis KILLED on all three instruments (m2c, decomp.me corpus, transplant) and the root cause is now named and measured: tools/gcc-2.7.2/Makefile:168 configures our cc1 as BIG-ENDIAN (target=mi"
+  },
+  {
+   "session": 9,
+   "floor": 18,
+   "modality": "escalation",
+   "headline": "Disposition reached: both endgame-lock gates FAIL (scan_hand_coded tier=LOW 0/8; no in-hand SOTN precedent for either closing construct), so the owner's standing 2026-07-27 auto-ruling was applied and"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The class disposition is unchanged in substance but now has a named, measured root cause, which turns the eventual escalation from 'frozen toolchain, no lever' into a specific operator/owner toolchain question with a known cost.",
-   "mechanism": "tools/gcc-2.7.2/Makefile:168 (target=mips-mips-gnu) is the single configure fact behind the +4; it is corroborated in-tree (s6: 131 allocations, 100% on the corrected path; s7: 1,694 assign_stack_local calls, both free inputs pinned to multiples of 8) and now out-of-tree (s8: 1,745 foreign matching sources, 300/300 slots at 4 mod 8, and 29 of 30 comparable slots +4 above community-matched references across 3 compiler packages). The C side is closed by s2 (11 variants + closed form), s3 (23 variants + counting argument), s4+s5 (~159.5k permuter mutations + the slot-creation taxonomy) and s8 (m2c + corpus + transplant).",
-   "next_probe": "Whichever session is assigned `escalation` modality files the CLASS in docs/grind/decisions.md citing, in order: the configure line; s6 and s7's in-tree censuses; s8's out-of-tree census and the +4 comparison against community-MATCHED targets; the s2 cc1psx counter-exhibit; and the s2/s3/s4/s5 C-side kills. It must NOT cite Ruling-2 (fork-divergence-inline-asm), whose scope limit excludes non-crashing fork divergences, and it must state the honest cost of the toolchain fix rather than present it as free. It must also state '29' as an upper bound (see the s8 signature caveat). The driver has NOT declared exhaustion, so this must not be escalated before that modality is assigned."
+   "hypothesis": "func_80060E38 is closable, and so are the other 28 functions in the tree-wide stride-8 reload-spill class, if and only if the owner elects to rebuild tools/gcc-2.7.2 with a little-endian target triple.",
+   "mechanism": "tools/gcc-2.7.2/Makefile:168 (target=mips-mips-gnu) sets BYTES_BIG_ENDIAN == 1, which arms function.c:702-703's bigend_correction = CEIL_ROUND(size,8) - GET_MODE_SIZE(mode) = 4 on every align == -1 reload spill slot. With BYTES_BIG_ENDIAN == 0 the correction is 0 and the slots land at 0,8,...,64 - exactly what the s2 cc1psx counter-exhibit demonstrates from byte-identical input. The existing candidate.c body would then close the function with no further C work, since it already reproduces target's instruction stream, order, register allocation, scheduling and delay slots exactly.",
+   "next_probe": "NONE for a grind session - this is an owner/operator toolchain decision, not a grind surface, and no-compiler-divergence forbids the grind path from touching it. Do NOT re-dispatch func_80060E38 unless the owner elects the rebuild; re-dispatching would re-derive measurements sessions 1-9 have already banked. If the rebuild ever happens, the operator's step is: rebuild cc1, re-run the oracle full build, then retire the 18 regfix rules at regfix.txt:2788-2806 and re-verify - with an explicit regression watch on functions relying on the same configure fact (bitfield-direction-divergence: our fork allocates bitfields HIGH-first)."
   },
   {
-   "hypothesis": "`synthesis` is the one modality left on the ladder, and its job is a catalog cross-check, not another probe.",
-   "mechanism": "recon (s1), structural (s2, s3), permuter (s4, s5), forensics (s6, s7) and rederive (s8) are all spent, each with measurements banked. s8 removes two more families from the catalog for good: transplant (1,745 foreign sources, 300 slots, none escaped 4 mod 8) and re-derivation (m2c reproduces the accepted body plus dead spill-shaped locals).",
-   "next_probe": "State the acceptance condition in one place - nine single-word spill slots at stride 8 AND congruence 0, from a 139-instruction leaf whose instruction stream already matches target exactly - and walk the sanctioned-technique catalog for any family not yet tried, re-running nothing that is already measured dead."
-  },
-  {
-   "hypothesis": "The s7 instrumented GCC tree is now also validated as a CROSS-PROJECT instrument, not just a BB2 one.",
-   "mechanism": "tmp/grind/func_80060E38/s7/gcc carries both env-gated traces (BB2_ALTERREG_DEBUG, BB2_SLOCAL_DEBUG) and is byte-identical to stock build/cc1 with traces off and on. s8 drove it over 1,745 foreign translation units from tmp/decomp_me_corpus/ via tmp/grind/func_80060E38/s8/dmcross.py, which handles cpp, flag mapping from a scratch's compiler_flags, trace parsing and target-side spill-signature comparison.",
-   "next_probe": "Any future question of the form 'does our cc1 diverge from the community reference on X' can reuse s8/dmcross.py directly - swap the trace filter and the target-side predicate. Keep the s7/control.sh byte-identity control as step one if the GCC tree is patched further."
+   "hypothesis": "The s7 instrumented GCC tree plus s8's dmcross.py remain a reusable CROSS-PROJECT instrument for any future 'does our cc1 diverge from the community reference on X' question.",
+   "mechanism": "tmp/grind/func_80060E38/s7/gcc carries env-gated traces (BB2_ALTERREG_DEBUG, BB2_SLOCAL_DEBUG) and is byte-identical to stock build/cc1 with traces off and on; tmp/grind/func_80060E38/s8/dmcross.py drove it over 1,745 foreign translation units from tmp/decomp_me_corpus/, handling cpp, flag mapping from each scratch's compiler_flags, trace parsing and target-side spill-signature comparison.",
+   "next_probe": "Reuse directly for an unrelated divergence question by swapping the trace filter and the target-side predicate; keep the s7/control.sh byte-identity control as step one if the GCC tree is patched further. This is infrastructure worth preserving, not a probe for this function."
   }
  ],
  "judge_constraints": [],

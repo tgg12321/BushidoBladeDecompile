@@ -855,3 +855,97 @@ spilled value's machine mode.
 - [s8] The fix (reconfigure/rebuild tools/gcc-2.7.2 for mipsel) is off the grind edit surface, forbidden by no-compiler-divergence, and not free for the operator either: flipping BYTES_BIG_ENDIAN also flips bitfield direction tree-wide and would break the ~1,400 functions already matched against current behaviour.
 
 - [s8] CAVEAT for future sessions: s2's tree-wide census of '29 stride-8 spill blocks all at 0 mod 8' used the same over-inclusive signature s8 just showed also matches stride-8 declared struct locals, so 29 is an UPPER BOUND on the class. func_80060E38's own nine slots are unaffected - the s6/s7 instrumented-cc1 traces confirm them as genuine reload spills inside the real src/text1b.c TU.
+
+## Session 9 (escalation, 2026-08-03) - floor 18 (unchanged; re-measured) - DISPOSITION FILED
+
+Session 9 was a DISPOSITION session: the driver declared exhaustion after the honest floor
+stayed flat at 18 across nine sessions and six distinct modalities (recon s1; structural s2,
+s3; permuter s4, s5; forensics s6, s7; rederive s8; escalation s9). Its job was to reach a
+disposition, not to grind another variant, and it ran no new C probes - by design, since the
+C-side search space is closed by closed-form proof (s2, s3), ~159.5k permuter mutations
+(s4, s5), two in-tree instrumented censuses (s6: 131/131 spill allocations on the corrected
+path; s7: 1,694 assign_stack_local calls with both free inputs pinned to multiples of 8) and
+an out-of-tree census over 1,745 foreign matching translation units (s8: 300/300 slots at
+4 mod 8).
+
+- [s9] Floor re-measured: sandbox func_80060E38 --disable all = score 18, target_insns 139 ==
+  build_insns 139, rules_dropped 18. No src/ edits were made this session, so the floor is
+  unchanged from sessions 1-8.
+
+- [s9] GATE (a) CANONICAL-ASM - FAIL. `python3 tools/scan_hand_coded.py --single func_80060E38`
+  reports `HAND_CODED: tier=LOW score=0/8 (func_80060E38, 139 insns)`, "no strong hand-coded
+  indicators", with every one of S1-S8 unchecked - including all three STRONG-tier signals
+  (S1 multu pacing: 0 multu/mflo pairs; S2 empty branch: none; S6 BIOS jumptable: no pattern).
+  S3 explicitly notes "139 insns, 18 spills, 24 distinct regs". Canonical-asm authorization is
+  therefore unavailable for this function, and correctly so: 139 instructions of lui/ori plus
+  %gp_rel stores is compiled C by inspection.
+
+- [s9] GATE (b) WHAT HOLDS THE BYTE-MATCH - confirmed at source. `regfix.txt:2788-2806`, headed
+  "# func_80060E38: 18-rule stack-offset shift (sp[+4..+68] -> sp[+0..+64])", is 18 `subst`
+  rules, each a pure mechanical immediate rewrite (e.g. `subst "4\(\$sp\)" "0($sp)" @ 3`).
+  There is NO cheat-asm in this function's body - the sandbox's `cheat_asm_stripped: 324` is a
+  file-wide src/text1b.c count, not a func_80060E38 count. The lock is exactly 18 offset-shift
+  regfix rules and nothing else.
+
+- [s9] GATE (c) SOTN-MASTER PRECEDENT - FAIL, and this is a NEGATIVE RESULT, not an open
+  question. Only two constructs could close this function, and neither has a citable
+  file+line/commit precedent: (i) literal-offset inline asm for the nine spill sw/lw pairs,
+  which is hardcoded-$N asm injection with no %N placeholders - the exact pattern
+  .claude/rules/inline-asm-injection.md names as "the same cheat in a different file", and
+  score-inert under the cheat-invisible sandbox besides; (ii) rebuilding tools/gcc-2.7.2 with a
+  little-endian target triple, which is forbidden by [[no-compiler-divergence]], is entirely off
+  the grind edit surface, and has no SOTN analogue at all because SOTN's toolchain is configured
+  little-endian to begin with - there is no SOTN commit "fixing" a big-endian spill correction,
+  so there is nothing to cite. No precedent was found this session and none has been cited in
+  any of the nine sessions on this function.
+
+- [s9] Ruling-2 (.claude/rules/fork-divergence-inline-asm.md, owner 2026-07-13) was deliberately
+  NOT cited as authority in the escalation entry, per the s8 frontier's explicit instruction: it
+  requires a reproducible cc1 SIGSEGV on the faithful source (Gate 1) and its scope limit names
+  "our fork compiles the faithful source but emits different bytes" as an ordinary Grinder item.
+  Our cc1 compiles this source cleanly.
+
+- [s9] The escalation entry states the honest cost of the ONE real fix rather than presenting it
+  as free: rebuilding tools/gcc-2.7.2 little-endian would change a load-bearing substrate
+  component that all ~1,400 functions compile through, would require re-verifying the oracle SHA1
+  from scratch, and could regress any function currently matching because of a big-endian-flavoured
+  artifact - notably [[bitfield-direction-divergence]] ("our fork allocates bitfields HIGH-first"),
+  which is the SAME configuration fact and is relied on by existing matched code and rule
+  documentation. The upside is bounded at up to 29 functions in the spill class, and 29 is stated
+  as an UPPER BOUND per the s8 signature caveat.
+
+- [s9] DISPOSITION: both AND-gates FAIL, which is the common case the owner pre-decided. Session 9
+  appended
+  `## 2026-08-03 - func_80060E38 (src/text1b.c) - **OWNER-ESCALATION - RESOLVED BY STANDING
+  RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**` to docs/grind/decisions.md and
+  returned result=owner-gated with escalation_ref citing it. This is TERMINAL: nothing is pending
+  on the owner, the driver parks func_80060E38, and the queue advances. The function remains
+  INCOMPLETE carrying its 18 regfix offset-shift rules. The only condition under which it should
+  ever be re-queued is the owner electing the little-endian cc1 rebuild, at which point this
+  function and the other 28 in the class become mechanically closable in one stroke using the
+  existing candidate.c body unchanged.
+
+### Artifacts (session 9)
+* `tmp/grind/func_80060E38/s9/entry.md` - the exact text appended to docs/grind/decisions.md
+* `tmp/grind/func_80060E38/s9/scan_hand_coded.txt` - the gate (a) scanner output
+* `tmp/grind/func_80060E38/s9/sandbox.txt` - the re-measured floor
+* `tmp/grind/func_80060E38/s9/regfix_rules.txt` - regfix.txt:2786-2808, the gate (b) lock
+* `tmp/grind/func_80060E38/s9/bank.py` - the ledger/candidate banking script
+
+- [s9] [s9] Floor re-measured this session: sandbox func_80060E38 --disable all = score 18, target_insns 139 == build_insns 139, rules_dropped 18. No src/ edits were made, so the floor is unchanged from sessions 1-8 (flat at 18 across nine sessions and six distinct modalities: recon, structural x2, permuter x2, forensics x2, rederive, escalation).
+
+- [s9] [s9] GATE (a) canonical-asm FAILS: `python3 tools/scan_hand_coded.py --single func_80060E38` reports tier=LOW score=0/8, 'no strong hand-coded indicators', every one of S1-S8 unchecked. All three STRONG-tier signals are absent (S1 multu pacing: 0 multu/mflo pairs; S2 empty branch: none; S6 BIOS jumptable: no pattern). S3 notes '139 insns, 18 spills, 24 distinct regs'. Canonical-asm authorization is unavailable, and correctly so: 139 instructions of lui/ori plus %gp_rel stores is compiled C by inspection.
+
+- [s9] [s9] GATE (b) what holds the byte-match, confirmed at source: regfix.txt:2788-2806, headed '# func_80060E38: 18-rule stack-offset shift (sp[+4..+68] -> sp[+0..+64])', is 18 `subst` rules, each a purely mechanical immediate rewrite. There is NO cheat-asm in this function's body - the sandbox's cheat_asm_stripped: 324 is a file-wide src/text1b.c count, not a func_80060E38 count. The lock is exactly 18 offset-shift regfix rules and nothing else.
+
+- [s9] [s9] GATE (c) SOTN-master precedent FAILS as a NEGATIVE RESULT, not an open question. Only two constructs could close this function and neither has a file+line or commit precedent: literal-offset inline asm for the nine spill sw/lw pairs (hardcoded-$N injection, the forbidden family in .claude/rules/inline-asm-injection.md, and score-inert), or a little-endian rebuild of tools/gcc-2.7.2 (forbidden by no-compiler-divergence, off the grind edit surface, and with no SOTN analogue since SOTN's toolchain is little-endian by configuration). No precedent was found this session and none has been cited in any of the nine sessions on this function.
+
+- [s9] [s9] The escalation entry states the honest cost of the one real fix rather than presenting it as free: rebuilding tools/gcc-2.7.2 little-endian changes a load-bearing substrate component that all ~1,400 functions compile through, would require re-verifying the oracle SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa from scratch, and could regress any function currently matching because of a big-endian-flavoured artifact - notably bitfield-direction-divergence ('our fork allocates bitfields HIGH-first'), which is the SAME configure fact and is relied on by existing matched code and rule docs. The upside is bounded at up to 29 functions in the tree-wide spill class, and 29 is stated as an UPPER BOUND per the s8 signature caveat.
+
+- [s9] [s9] The root cause carried forward from s1-s8 and restated in the entry: tools/gcc-2.7.2/Makefile:168 configures our cc1 big-endian (target=mips-mips-gnu), so BYTES_BIG_ENDIAN == 1 and function.c:702-703 computes bigend_correction = CEIL_ROUND(4,8) - 4 = 4 on every align == -1 reload spill slot (reload1.c:2352). Closed form: offset = STARTING_FRAME_OFFSET + 8k + (CEIL_ROUND(total_size,8) - GET_MODE_SIZE(M)), hence offset === -GET_MODE_SIZE(M) (mod 8). Target needs nine single-word slots at stride 8 AND congruence 0; under this configuration those two properties are mutually exclusive for a 4-byte value.
+
+- [s9] [s9] The C side was already closed before this session and was not re-probed (correctly, per the disposition mandate): closed-form proof over all three alter_reg branches (s2, independently re-derived s3), 34 measured C variants (s2: 11, s3: 23), ~159.5k permuter mutations with the only frame-touching operator shown arithmetically inert (s4, s5), two in-tree instrumented censuses (s6: 131/131 spill allocations on the corrected path; s7: 1,694 assign_stack_local calls with both free inputs pinned to multiples of 8), and an out-of-tree census over 1,745 foreign matching translation units (s8: 300/300 slots at 4 mod 8). The cc1psx counter-exhibit (s2) shows the original PsyQ compiler emitting target's 0,8,...,64 from byte-identical input.
+
+- [s9] [s9] DISPOSITION FILED: appended '## 2026-08-03 - func_80060E38 (src/text1b.c) - **OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**' to docs/grind/decisions.md. This is TERMINAL - nothing is pending on the owner, the driver parks func_80060E38, and the queue advances. The function remains INCOMPLETE carrying its 18 regfix offset-shift rules.
+
+- [s9] [s9] Ledger banked: evidence.md and hypotheses.md carry the full session-9 blocks including a FINAL DISPOSITION section and a cumulative do-NOT-re-open list; candidate.c header updated with the session-9 disposition (body unchanged - it is still the best form, producing 139/139 instructions with target's exact RA, scheduling and delay slots, differing only in the nine spill-slot immediates). No new rejected form was banked because no new form was proposed or disproven this session; the seven existing rejected/ entries already cover every measured-dead family.

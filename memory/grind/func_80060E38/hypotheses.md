@@ -712,3 +712,60 @@ an upper bound on the class, and an escalation entry should say so rather than a
 - probe: Read the configure record of the local build: tools/gcc-2.7.2/Makefile:168.
 - result: target=mips-mips-gnu - big-endian MIPS - while Bushido Blade 2 is little-endian (mipsel), and tools/setup_wsl.sh builds this from decompals/mips-gcc-2.7.2 alongside mips-linux-gnu binutils. This one configure choice is the cause of BOTH divergences the project has documented: the spill bigend_correction and the HIGH-first bitfield extraction of bitfield-direction-divergence. Everything else still byte-matches because cc1 emits assembly TEXT and mipsel-linux-gnu-as does the byte ordering, so only codegen decisions that read BYTES_BIG_ENDIAN diverge. This is a DIAGNOSIS, not a lever: rebuilding cc1 for mipsel is outside the grind edit surface, forbidden by no-compiler-divergence, and not free even for the operator, since flipping BYTES_BIG_ENDIAN also flips bitfield direction tree-wide and would break the ~1,400 functions already matched against current behaviour. Whether to make that trade is an owner decision, not an agent decision.
 - verdict: CONFIRMED
+
+## [s9] func_80060E38 qualifies for a gate-PASSING escalation - i.e. either the target function was hand-written asm (canonical-asm route) or an in-hand SOTN-master precedent exists for the construct that would close it.
+- mechanism: The owner's standing 2026-07-27 endgame-lock ruling gates a non-pure-C disposition on two AND-gates: (1) tools/scan_hand_coded.py must report STRONG signals (S1 multu pacing / S2 empty-body branch / S6 BIOS jumptable) for canonical-asm authorization; (2) a coercion or spelling family needs a citable file+line or commit precedent from an accepted SOTN-master decomp. "Same spirit", "only lever left", "measured to work" and elimination arguments do not qualify, and a census that comes back negative is a FAILED gate rather than an open question.
+- probe: Ran `python3 tools/scan_hand_coded.py --single func_80060E38` for gate 1. For gate 2, enumerated the complete set of constructs capable of closing the 18-instruction gap (which is 100% spill-slot frame layout, 0% codegen - s1 established 139/139 identical instructions, order, RA, scheduling, delay slots, save block and frame size) and checked each against the precedent standard. Also re-confirmed at source what holds the byte-match today (regfix.txt:2786-2808) and re-measured the honest floor.
+- result: GATE 1 FAIL - `HAND_CODED: tier=LOW score=0/8`, "no strong hand-coded indicators", all eight signals unchecked including all three STRONG-tier ones. GATE 2 FAIL - exactly two closing constructs exist and neither has a precedent: (i) literal-offset inline asm for the nine spill sw/lw pairs is hardcoded-$N injection with no %N placeholders, the forbidden family named in .claude/rules/inline-asm-injection.md, and score-inert under the cheat-invisible sandbox; (ii) rebuilding tools/gcc-2.7.2 with a little-endian target triple is forbidden by [[no-compiler-divergence]], is off the grind edit surface, and has no SOTN analogue because SOTN's toolchain is little-endian by configuration - there is no commit to cite. Floor re-measured at 18 (139 == 139, 18 rules dropped); the lock is 18 pure mechanical `subst` offset-shift rules at regfix.txt:2788-2806 with no cheat-asm in the body. Ruling-2 remains unavailable (it requires a cc1 SIGSEGV; ours compiles cleanly).
+- verdict: KILLED
+
+## FINAL DISPOSITION (session 9, escalation) - TERMINAL, nothing pending on the owner
+
+Both endgame-lock AND-gates fail, which is the case the owner pre-decided on 2026-07-27.
+Session 9 appended `## 2026-08-03 - func_80060E38 (src/text1b.c) - **OWNER-ESCALATION -
+RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**` to
+docs/grind/decisions.md and returned result=owner-gated citing it. The driver parks
+func_80060E38 and the queue advances. The function stays INCOMPLETE carrying its 18 regfix
+offset-shift rules.
+
+### Why there is no live frontier left (this is not a pause; it is a close)
+The gap is entirely `bigend_correction` on `align == -1` reload spill slots, armed by
+`tools/gcc-2.7.2/Makefile:168` configuring our cc1 big-endian (`target=mips-mips-gnu`). The
+closed form `offset = STARTING_FRAME_OFFSET + 8k + (CEIL_ROUND(total_size,8) - GET_MODE_SIZE(M))`
+forces every 4-byte reload spill to `≡ 4 (mod 8)`; target needs nine single-word slots at
+`≡ 0 (mod 8)` with stride 8, and under this configuration stride 8 and congruence 0 are mutually
+exclusive for a 4-byte value. That is proved from source (s2), re-derived independently across
+all three `alter_reg` branches (s3), measured in-tree twice (s6: 131/131 allocations on the
+corrected path; s7: 1,694 `assign_stack_local` calls with both free inputs pinned to multiples
+of 8), measured out-of-tree over 1,745 foreign matching TUs (s8: 300/300 at 4 mod 8), searched
+by ~159.5k permuter mutations with the only frame-touching operator shown arithmetically inert
+(s4, s5), and contrasted against the original cc1psx, which emits target's `0,8,...,64` from the
+byte-identical input (s2).
+
+### Re-queue condition (the ONLY one)
+If the owner elects to rebuild `tools/gcc-2.7.2` with a little-endian target triple, this
+function - and the other 28 in the tree-wide spill class, 29 being an upper bound per the s8
+signature caveat - become mechanically closable in one stroke, using the existing
+`memory/grind/func_80060E38/candidate.c` body unchanged. Absent that, there is nothing further
+for a grind session to do here, and re-dispatching this function would re-derive measurements
+that sessions 1-9 have already banked.
+
+### Do NOT re-open (cumulative)
+* Register allocation / scheduling (s1) - our stream already matches target exactly, 139/139.
+* Post-cc1 pipeline stages (s1) - the +4 is emitted by cc1, pre-prologue_fix/maspsx/regfix.
+* Statement order / block scoping / declaration order / spill count / mode mixing (s2: 11
+  variants; s3: 23 more) - measured dead twice from two angles.
+* The `func_8006BD28` "existence proof" (s2) - it is authorized whole-body canonical asm.
+* `alter_reg`'s slot-REUSE branch (s3) - measured dead across 23 variants AND arithmetically
+  incapable of supplying nine word slots.
+* The permuter axis (s4, s5) - ~159.5k mutations, and closed by construction.
+* Declared locals / BLKmode aggregate temps (s2, s8) - stride 4, not target's stride 8.
+* m2c re-derivation and cross-project transplant (s8) - both dead, with censuses banked.
+* Frame-padding locals, dead arrays, register pins, literal-offset inline asm - the forbidden
+  frame-coercion / asm-injection families, and score-inert under the cheat-invisible sandbox.
+
+## [s9] func_80060E38 qualifies for a gate-PASSING escalation - i.e. either the original function was hand-written asm (canonical-asm route) or an in-hand SOTN-master precedent exists for the construct that would close it.
+- mechanism: The owner's standing 2026-07-27 endgame-lock ruling gates a non-pure-C disposition on two AND-gates: (1) tools/scan_hand_coded.py must report STRONG signals (S1 multu pacing / S2 empty-body branch / S6 BIOS jumptable) for canonical-asm authorization; (2) a coercion or spelling family needs a citable file+line or commit precedent from an accepted SOTN-master decomp. 'Same spirit', 'only lever left', 'measured to work' and elimination arguments do not qualify, and a negative census is a FAILED gate rather than an open question.
+- probe: Ran `python3 tools/scan_hand_coded.py --single func_80060E38` for gate 1. For gate 2, enumerated the complete set of constructs capable of closing the 18-instruction gap - which is 100% spill-slot frame layout and 0% codegen (s1 established 139/139 identical instructions, order, register allocation, scheduling, delay slots, save block and frame size) - and checked each against the precedent standard. Re-confirmed at source what holds the byte-match today (regfix.txt:2786-2808) and re-measured the honest floor with `sandbox --disable all`.
+- result: GATE 1 FAIL: `HAND_CODED: tier=LOW score=0/8 (func_80060E38, 139 insns)`, reason 'no strong hand-coded indicators', with all eight signals unchecked including all three STRONG-tier ones (S1: 0 multu/mflo pairs; S2: no empty-body branches; S6: no BIOS jumptable pattern). GATE 2 FAIL: exactly two closing constructs exist and neither has a citable precedent - (i) literal-offset inline asm for the nine spill sw/lw pairs is hardcoded-$N injection with no %N placeholders, the forbidden family named in .claude/rules/inline-asm-injection.md, and score-inert under the cheat-invisible sandbox anyway; (ii) rebuilding tools/gcc-2.7.2 with a little-endian target triple is forbidden by no-compiler-divergence, is off the grind edit surface, and has no SOTN analogue because SOTN's toolchain is little-endian by configuration, so there is no commit to cite. Floor re-measured at 18 (target_insns 139 == build_insns 139, rules_dropped 18); the lock is 18 pure mechanical `subst` offset-shift rules at regfix.txt:2788-2806 with no cheat-asm in the function body. Ruling-2 (fork-divergence-inline-asm) remains unavailable and was deliberately not cited: it requires a reproducible cc1 SIGSEGV and its scope limit excludes non-crashing fork divergences; our cc1 compiles this source cleanly.
+- verdict: KILLED
