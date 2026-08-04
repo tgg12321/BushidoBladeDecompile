@@ -69,22 +69,44 @@ frame 0. Every producer found so far is disqualified:
 - `pc2 = pc - 1` spelling (inert vs the byte-offset form); `pc2` set at its
   original position rather than right after `pc` (inert).
 
-## Resume here
+## Round 3 — both open avenues run; BANKED at 34
 
-The only open question is a phantom producer that neither collapses the arm
-duplication nor inserts dead code. Untried:
+**Avenue 2 (a genuine stack temp) is closed BY CONSTRUCTION.** This function is
+a leaf with no calls, no aggregate assignments and no address-taken locals, so
+`assign_stack_temp` / `assign_stack_local` can never fire. The only route to a
+frame slot here is an unallocated pseudo — nothing else can produce those 8
+bytes.
 
-1. **The combine orphan-USE route** (`combine.c:10836-10841`) — a HImode
-   sign-extend whose intermediate strands at a `CODE_LABEL`. This body has s16
-   locals (`v`, `idx`, `idx2`) and a label-rich if/else, so the
-   `tslLineG5Init` shape may be reachable. Confirm with `tmp/usehunt.py` on a
-   `-da` dump of main.c before hand-sweeping: check whether any near-miss form
-   already produces a bare `(use (reg N))` in the combine dump.
-2. Whether the two `sp` adjusts could come from something other than a phantom
-   pseudo — e.g. a genuine temp GCC allocates and then register-allocates away.
+**Avenue 1 (combine orphan-USE) does not fire.** `tmp/orphan_probe.py` on a
+`-da` dump of main.c with `candidate.c` applied reports **0 bare-USE insns in
+every pass** (rtl → dbr) and `greg: 7 regs to allocate; UNALLOCATED: none`.
+Seven further spellings aimed at giving an s16 value the tslLineG5Init span (an
+SImode use both before and after a `CODE_LABEL`) all leave frame 0:
 
-Start from `candidate.c` (34), not HEAD. Do not re-run the probes listed above
-and do not resurrect either rejected producer.
+| form | insns | score |
+|---|---|---|
+| `s16 st` naming the loaded `D_80102808`, used by condition and both arms | 129 | 41 |
+| same, read before the loop so it spans the loop label too | 129 | 55 |
+| `idx` typed s32 | 130 | 35 |
+| `idx2` typed s32 | 130 | 35 |
+| `v` typed s32 | 130 | 34 |
+| `while (i < 16)` form (stmt.c guard duplication) | 130 | 34 |
+
+The body simply has no s16 value with a natural post-join use: `v` dies in the
+arms, `idx` dies before the `if`, `idx2` is born after it, and target itself
+re-reads `D_8010280A` rather than carrying one variable across.
+
+**Conclusion:** every phantom producer reachable here either collapses the
+load-bearing if/else arm duplication (costing 4+ instructions) or requires dead
+code. Banked at 34.
+
+## Resume here — BANKED at 34, do not force
+
+Start from `candidate.c` (34), not HEAD. The three instruction-count findings
+are solid and worth keeping regardless. The last 2 instructions are the phantom
+slot's `sp` adjusts and need a producer nobody has found — not another
+placement or type sweep, both of which are now exhausted. Do not re-run any
+probe listed above and do not resurrect either rejected producer.
 
 ## Instruments
 

@@ -31,6 +31,15 @@
       "floor_now": 34,
       "git_head_at_measurement": "da871b79",
       "note": "Two further legitimate findings. (a) Target rematerialises &D_8010280C late (`lui a1 / addiu a1`) rather than keeping our `pc` live across the function; writing `D_8010280C` instead of `*pc` in the last two stores recovers both instructions (128 -> 130 insns, 36 -> 35). (b) Target branches `blez v0` on the `andi v0,v1,1` result, so the original condition was RELATIONAL; `if ((s16)(D_80102808 & 1) > 0)` emits target's blez exactly (-> 34). The `(s16)` cast is load-bearing: `> 0` and `>= 1` without it are inert at 36/35. With all three findings the instruction stream aligns 1:1 with target from the `andi` onward and the ONLY remaining structural gap is the two `addiu $sp` adjusts of the phantom slot (130 vs 132). PHANTOM STILL OPEN: the one new producer found this round, `if (idx2 > idx) { idx = idx2; }` in the tail, does reach frame 8 / 133 insns / score 34 but is REJECTED AS A CHEAT - idx is dead after that point, making it a dead conditional store, the exact forbidden family in no-new-park-categories (the func_8007B844 confirmed example). Recorded so it is not re-derived. Further inert probes this round: s16 ofs (38), u16 v (34), splitting `v = v - 1` into its own statement (51), indexing the last store by idx instead of D_8010280A (46), reusing idx2 as the loop shift carrier (34). src/main.c reverted; candidate banked to candidate.c."
+    },
+    {
+      "date": "2026-08-04",
+      "round": 3,
+      "lever": "ran both remaining avenues: the combine orphan-USE route (RTL -da + orphan_probe) and the genuine-stack-temp question",
+      "lever_rule": "phantom-frame-slots-gcc272",
+      "floor_was": 34,
+      "floor_now": 34,
+      "note": "BANKED at 34. Avenue 2 is closed BY CONSTRUCTION: the function is a leaf with no calls, no aggregate assignments and no address-taken locals, so assign_stack_temp / assign_stack_local can never fire - the only route to a frame slot here is an unallocated pseudo. Avenue 1 does not fire either: orphan_probe.py on a -da dump of main.c with candidate.c applied reports 0 bare-USE insns in EVERY pass (rtl through dbr) and 'greg: 7 regs to allocate; UNALLOCATED: none'. Seven further spellings aimed at giving an s16 value the tslLineG5Init span (an SImode use both before and after a CODE_LABEL) all leave frame 0: an s16 local naming the loaded D_80102808 used by the condition and both arms (129 insns / 41), the same read before the loop (129 / 55), idx typed s32 (35), idx2 typed s32 (35), v typed s32 (34), and a while-form loop so stmt.c duplicates the exit test as a guard (34). The body has no s16 value with a natural post-join use: v dies in the arms, idx dies before the if, idx2 is born after it, and target itself re-reads D_8010280A rather than carrying one variable across. Every phantom producer reachable here either collapses the load-bearing arm duplication or requires dead code."
     }
   ],
   "reviewer": null,
@@ -41,25 +50,78 @@
     "candidate.c introduces no cheat constructs: a named pointer local, a direct global read, and a relational comparison"
   ],
   "rejected_forms": [
-    {"form": "if (idx2 > idx) { idx = idx2; } in the tail", "score": 34, "frame": 8, "reason": "CHEAT - idx is dead after this point, so it is a dead conditional store (forbidden family, func_8007B844 precedent). Do not resurrect."},
-    {"form": "(D_80102808 & ~idx) & 1", "score": 41, "frame": 8, "reason": "CHEAT - changes the condition's semantics. Probe only."},
-    {"form": "hoist the duplicated v/ofs out of both if/else arms", "score": 43, "frame": 8, "reason": "reaches the phantom but loses 4 insns (123 vs target 132); the arm duplication is load-bearing"},
-    {"form": "pc2 pointer + hoisted v/ofs", "score": 44, "reason": "frame 8, 124 insns"},
-    {"form": "if (i < 16) guard around the do/while", "score": 37, "reason": "inert - i is a constant 0, the compare folds at tree level"},
-    {"form": "s16 local for the loop shift amount / guard + shift local", "score": 37, "reason": "inert"},
-    {"form": "no-op if (idx2 >= idx) relational probe", "score": 37, "reason": "inert"},
-    {"form": "s16 ofs instead of s32", "score": 38, "reason": "+2 insns, worse"},
-    {"form": "u16 v; reusing idx2 as the loop shift carrier", "score": 34, "reason": "inert on the candidate base"},
-    {"form": "splitting v = v - 1 into its own statement", "score": 51, "reason": "severe regression"},
-    {"form": "indexing the last store by idx instead of D_8010280A", "score": 46, "reason": "regression"},
-    {"form": "> 0 or >= 1 without the (s16) cast", "score": "36 / 35", "reason": "the cast is load-bearing for the blez"},
-    {"form": "pc2 = pc - 1 spelling; pc2 set later than immediately after pc", "score": 37, "reason": "inert"}
+    {
+      "form": "if (idx2 > idx) { idx = idx2; } in the tail",
+      "score": 34,
+      "frame": 8,
+      "reason": "CHEAT - idx is dead after this point, so it is a dead conditional store (forbidden family, func_8007B844 precedent). Do not resurrect."
+    },
+    {
+      "form": "(D_80102808 & ~idx) & 1",
+      "score": 41,
+      "frame": 8,
+      "reason": "CHEAT - changes the condition's semantics. Probe only."
+    },
+    {
+      "form": "hoist the duplicated v/ofs out of both if/else arms",
+      "score": 43,
+      "frame": 8,
+      "reason": "reaches the phantom but loses 4 insns (123 vs target 132); the arm duplication is load-bearing"
+    },
+    {
+      "form": "pc2 pointer + hoisted v/ofs",
+      "score": 44,
+      "reason": "frame 8, 124 insns"
+    },
+    {
+      "form": "if (i < 16) guard around the do/while",
+      "score": 37,
+      "reason": "inert - i is a constant 0, the compare folds at tree level"
+    },
+    {
+      "form": "s16 local for the loop shift amount / guard + shift local",
+      "score": 37,
+      "reason": "inert"
+    },
+    {
+      "form": "no-op if (idx2 >= idx) relational probe",
+      "score": 37,
+      "reason": "inert"
+    },
+    {
+      "form": "s16 ofs instead of s32",
+      "score": 38,
+      "reason": "+2 insns, worse"
+    },
+    {
+      "form": "u16 v; reusing idx2 as the loop shift carrier",
+      "score": 34,
+      "reason": "inert on the candidate base"
+    },
+    {
+      "form": "splitting v = v - 1 into its own statement",
+      "score": 51,
+      "reason": "severe regression"
+    },
+    {
+      "form": "indexing the last store by idx instead of D_8010280A",
+      "score": 46,
+      "reason": "regression"
+    },
+    {
+      "form": "> 0 or >= 1 without the (s16) cast",
+      "score": "36 / 35",
+      "reason": "the cast is load-bearing for the blez"
+    },
+    {
+      "form": "pc2 = pc - 1 spelling; pc2 set later than immediately after pc",
+      "score": 37,
+      "reason": "inert"
+    }
   ],
   "root_cause": "Two gaps, one now closed. (1) INSTRUCTION COUNT: we were 5 short; four are recovered by three ordinary-C findings (named pc2 pointer, global-read tail, relational (s16)(x & 1) > 0 condition) and the stream now aligns 1:1 from the andi onward. (2) FRAME: target reserves an 8-byte phantom slot (unallocated pseudo given frame space by reload's alter_reg) and we emit frame 0 -- the last two instructions. Every producer found either collapses the load-bearing if/else arm duplication or is a forbidden dead conditional store.",
   "next_avenues": [
-    "The combine orphan-USE route (combine.c:10836-10841) is the untried producer: a HImode sign-extend whose intermediate strands at a CODE_LABEL. This body has s16 locals (v, idx, idx2) and a label-rich if/else. Run tmp/usehunt.py on a -da dump of main.c first to see whether any near-miss form already yields a bare (use (reg N)) before hand-sweeping.",
-    "Consider whether the two sp adjusts could come from something other than a phantom pseudo - e.g. a genuine temp GCC allocates then register-allocates away.",
-    "Start from candidate.c (34), not HEAD. Do not re-run the listed probes; do not resurrect either rejected producer.",
+    "BANKED at 34 - do not force. The three instruction-count findings (pc2 pointer, global-read tail, relational (s16)(x & 1) > 0 condition) are solid and worth keeping. The last 2 instructions are the phantom slot's sp adjusts and need a producer nobody has found; placement and type sweeps are exhausted, and the orphan-USE route is measured absent in every RTL pass.",
     "Completion gate (main session): the 30 regfix rules must be rewritten or retired for any candidate shape."
   ],
   "memory_notes": [
