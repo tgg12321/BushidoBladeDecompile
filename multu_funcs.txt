@@ -7,6 +7,8 @@
 #
 # Wired in tools/maspsx/maspsx.py via --multu-funcs=multu_funcs.txt.
 # One function name per line; lines starting with # are ignored.
-
-func_8007FA1C
-func_8007F87C
+#
+# (2026-08-03 idle-window cleanup: the vestigial func_8007FA1C /
+# func_8007F87C entries were deleted — canonical-asm glabel bodies never
+# set maspsx current_func, so the gate never fired for them; flagged by
+# tools/check_completion_integrity.py.)
