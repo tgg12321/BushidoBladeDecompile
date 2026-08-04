@@ -1,0 +1,58 @@
+{
+  "function": "func_8007CE0C",
+  "func": "func_8007CE0C",
+  "file": "display",
+  "verdict": "C",
+  "scores": {
+    "head_floor": 48,
+    "candidate_floor": 48,
+    "metric": "sandbox --disable all (masked Levenshtein)",
+    "build_insns": 142,
+    "target_insns": 143,
+    "frame": "ours 64 (vars=16, args=16, regs=28) vs target 80 (vars=32) - 16 of the 48 differing instructions are pure frame-offset drift"
+  },
+  "sessions": [
+    {
+      "date": "2026-08-04",
+      "round": 1,
+      "lever": "orientation: caution discharge, residual decomposition, frame quantification",
+      "lever_rule": "global-label-drift-sibling-cheat / phantom-frame-slots-gcc272",
+      "floor_was": 48,
+      "floor_now": 48,
+      "git_head_at_measurement": "e7a0b730",
+      "note": "BOTH ENTRY CAUTIONS DISCHARGED BY MEASUREMENT. (1) No sibling label landmine: tmp/ce0c_landmines.py resolves every regfix/asmfix rule hardcoding an absolute .L<N> to its owning function+file; all nine holders are in OTHER translation units, and cc1's .L counter is per-TU, so a label-count change in func_8007CE0C cannot drift any of them. CE0C's own splices already use {lbl#N}. Restructure freely. (2) Not GTE: the body is a GPU packet/DMA routine (g_gpu_stat_reg, g_gpu_data_reg, dma madr/bcr/chcr), zero cop2, so gte-3x3 / scratchpad-gte / packed-multiply do not apply. RESIDUAL DECOMPOSES INTO THREE INDEPENDENT GROUPS: A = 16 instructions of pure frame-offset drift (exactly the 16 frame regfix rules at regfix.txt:3419-3434, so fixing the frame retires 16 of the 23 rules in one move); B = ~31 instructions of register naming plus three extra/missing moves in the clamp and multiply blocks; C = 1 instruction (idx 66, target `nop` vs our `lui a0,0xa000` - our func_8007DC9C call passes an argument the target does not). FRAME QUANTIFIED: target reserves 48 bytes below its register saves and touches NONE of it (the only sp-relative accesses in the target asm are the 7 saves and 7 restores), and both calls take at most one argument so args is the 16-byte o32 minimum on both sides; therefore target vars=32 against our vars=16 and the spec is to raise vars into [25,32]. THE CHEAT-ASM IS SCORE-INERT: replacing the s5 pin with a plain local and deleting the barrier scores the same 48, so the next session should start from the pin-free base. NEGATIVE RESULT: vars did not move off 16 for any of 13 variants - hoisting the block-scope temps, explicit clamp-result locals, s16 coordinate locals, packet-word locals, s16 locals holding the two clamp globals (the memory's own minimal HImode trigger), and s16 struct-field temps feeding the multiply all leave vars=16; a region bisect shows the 16 bytes are not attributable to any single region (deleting the loop or the DMA drops the frame to 56 via gp_regs 7->6, not via vars). src/display.c reverted."
+    }
+  ],
+  "reviewer": null,
+  "rules_dropped_if_applied": 0,
+  "cheat_inventory": [
+    "23 regfix rules: 16 frame prologue/epilogue rewrites (64->80) + 5 body splice/subst + 1 subst @63 (lui->nop) + 1 subst @24",
+    "cheat-asm in source: register s32 var_s5 asm(\"s5\") pin + __asm__ volatile(\"\" : \"=r\"(var_s5) : \"0\"(var_s5)) barrier - MEASURED score-inert (48 with and without)",
+    "no asmfix / prologue_config / inline_asm_canonical entries"
+  ],
+  "rejected_forms": [
+    {
+      "form": "raise the frame by declaring more locals (13 variants: hoisted block temps, x_clamped/y_clamped, s16 xc/yc, packet-word locals, s16 xlim/ylim, s16 struct-field multiply temps)",
+      "score": 48,
+      "reason": "all register-allocated, vars stays 16 - 'declare more locals' is a closed door; the phantom bytes come from computations cc1 assigns a stack slot and then register-allocates away, so the lever is a computation SHAPE, not a declaration"
+    },
+    {
+      "form": "region bisect to attribute the current 16 bytes (delete rounding block / push loop / DMA block / x-clamp)",
+      "score": 52,
+      "reason": "all leave vars=16; deleting the loop or DMA drops the frame to 56 but through gp_regs (7 saved regs -> 6), not vars"
+    }
+  ],
+  "root_cause": "Three independent causes. (A) The frame is 16 bytes short because cc1 allocates half as many phantom locals temps as the original did (vars 16 vs 32) - not a spill, not a dead array, and not reachable by declaring locals. (B) Register allocation in the clamp and multiply blocks plus three extra/missing moves. (C) One superfluous argument load at the func_8007DC9C call.",
+  "next_avenues": [
+    "Group A first: 16 of the 48 instructions, mechanically independent of B, and it has a direct cheap gradient - `bash tmp/frame_probe.sh func_8007CE0C display` prints cc1's `vars=` (which IS get_frame_size) without running the pipeline. Find the computation shape that makes cc1 call assign_stack_local twice as often; declarations do not do it.",
+    "Group C is one instruction and source-level: try func_8007DC9C() with no argument at the first call site (the second already passes none).",
+    "Group B last, with ALLOCDBG lever-sizing (tmp/allocone.sh generalises to any function) - do it AFTER the frame is right, since a frame change re-shuffles the allocation anyway.",
+    "Completion gate: 23 regfix rules + the pin/barrier retire, full build, layer-2 cheat-reviewer, queue done."
+  ],
+  "memory_notes": [
+    "memory/project/phantom-frame-slots-gcc272.md (the frame equation + the forbidden dead-array inference)",
+    ".claude/rules/global-label-drift-sibling-cheat.md (discharged here - no same-TU absolute-label siblings)",
+    ".claude/rules/dead-vars-local-array.md (the forbidden family)",
+    "memory/wip/hirahira_w_ctrl/notes.md (the ALLOCDBG lever-sizing method for group B)"
+  ]
+}
