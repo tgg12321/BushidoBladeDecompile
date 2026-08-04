@@ -18,41 +18,22 @@ No prior WIP.
 | **`candidate.c`** | **40** | **88** | **24** | 141 |
 | target | 0 | 88 | 24 | 135 |
 
-**Instruction counts already match (135/135).** The whole 41 is the
-sp-offset cascade plus register naming.
+HEAD's instruction count already matches target. Target frame 88 = args 24 +
+regs 40 (10 saves at `0x30`-`0x54`) + vars 24, and only `0x18`-`0x1F` of vars is
+ever touched (the real `s16 rect[4]`, which we also have). `0x20`-`0x2F` is
+never referenced: **two untouched phantom slots**. Since the saves sit above
+vars, being at vars=8 shifts all 10 save/restore offsets and both `sp` adjusts.
 
-## The frame: 16 bytes = TWO phantom slots
+`s16 sid` (naming the thrice-read `*(((s16 *) fp_ptr) + 4)`) moves vars 8 → 16
+at **zero instruction cost**. **41 → 47 on such forms is NOT a regression:** at
+vars=16 the offsets are shifted 8 from HEAD but still 8 short of target, so
+intermediate scores are uninformative.
 
-Target frame 88 = args 24 + regs 40 (10 saves at `0x30`-`0x54`) + vars 24.
-Only `0x18`-`0x1F` of the vars area is ever touched — that is the real
-`s16 rect[4]`, which we also have. `0x20`-`0x2F` is **never referenced**:
-two untouched phantom slots.
-
-Because the saves sit above vars, being at vars=8 instead of 24 shifts every
-one of the 10 save/restore offsets and both `sp` adjusts. That is why the score
-is 41 despite a matching instruction count — and why a *partial* frame fix
-reads as a regression rather than progress (see below).
-
-## Round 1-2 findings
-
-Naming the thrice-read `*(((s16 *) fp_ptr) + 4)` field in an `s16 sid` local
-moves vars 8 → 16 **at zero instruction cost**. Several variants give the same
-free +8 (`sid` alone; `sid` + an s16 for the sentinel read; `sid` + s16
-`xoff`/`yoff`; `sid` + a named comparand) — all score 47.
-
-**41 → 47 on those forms is NOT a regression signal.** At vars=16 the offsets
-are shifted 8 from HEAD but still 8 short of target, so they are wrong in a
-different way. Only vars=24 can align them.
-
-## Rounds 3-4: the mechanism is now measured, and the frame is reachable
+## Rounds 3-4: the mechanism, measured
 
 `tmp/stf_orphan.py` (RTL `-da` dump + greg unallocated-pseudo report per
-variant) established the rule directly:
-
-> **vars = 8 × (number of pseudos in greg's allocate list that receive no hard
-> register).**
-
-HEAD has one such pseudo (80) → vars 8. Target needs **three** → vars 24.
+variant) gives the rule directly: **vars = 8 × (pseudos in greg's allocate list
+that receive no hard register)**. HEAD has one (80) → vars 8; target needs three.
 
 | form | unallocated | vars | insns | score |
 |---|---|---|---|---|
@@ -70,42 +51,64 @@ was the dominant term.
 
 ## The third slot is the whole remaining problem
 
-`sid` supplies slot 2 for free. Every producer found for slot 3 costs
-instructions:
+`sid` supplies slot 2 free. Every slot-3 producer found costs instructions:
+`s16 r` +6 (score 40, the candidate); naming one rect coordinate while keeping
+the other re-read +3 (48); `rect_s16` both coordinates +6 (51). An explicit
+`(s32)` cast at the call or leaving the sentinel read alone is inert (still 40);
+`u16 r` with an `(s16)` test cast gives only 2 slots (46).
 
-- `s16 r` (the candidate): +6, score 40.
-- naming one rect coordinate (`rx` **or** `ry`, keeping the other re-read):
-  vars 24, +3 insns, score 48 — cheaper in instructions than `s16 r` but worse
-  overall.
-- `rect_s16` (both coordinates): vars 24, +6, score 51.
-- `s16 r` with an explicit `(s32)` cast at the call, or with the sentinel read
-  left alone: identical at 40 (the cast is inert).
-- `u16 r` with a `(s16)` cast at the test: only 2 slots, 136 insns, 46.
+Adding **no** slot: `s16` on `g`, `b`, `g`+`b`, `idx`, `outer`, `xoff`, `yoff`;
+a named `sent`; an `s16` carrier for the `0x10`/`1` rect constants; named `tbl`
+element reads. Naming the twice-read `D_80094E08[sid]` palette index *removes* a
+slot — its two separate reads are load-bearing.
 
-Slot-3 probes that do **not** add a slot at all: `s16` on `g`, `b`, `g`+`b`,
-`idx`, `outer`, `xoff`, `yoff`, a named `sent` for the sentinel read, an `s16`
-carrier for the `0x10`/`1` rect constants, named `tbl` element reads. Naming
-the twice-read `D_80094E08[sid]` palette index actually *removes* a slot
-(back to vars 8) — its two separate reads are load-bearing.
+## Diff shape
 
-## Diff shape (why this is frame-dominated)
+`tmp/sbs.sh` on HEAD: the instruction streams are **already 1:1** across the
+whole prologue and body. The only differences are sp offsets (uniformly 16
+apart) and one register rotation — target holds `fp_ptr` in `$s8`, we use `$s7`,
+though both save the same ten registers. So the 41 is ~22 offset diffs (10
+saves + 10 restores + 2 `sp` adjusts) plus that rotation.
 
-`tmp/sbs.sh` on HEAD: the instruction streams are **already 1:1** for the whole
-prologue and body. The only differences are the sp offsets (uniformly 16 apart)
-and one register rotation — target holds `fp_ptr` in `$s8` where we use `$s7`,
-though both builds save the same ten registers. So the 41 decomposes as ~22
-offset diffs (10 saves + 10 restores + 2 `sp` adjusts) plus the rotation
-cascade.
+## Rounds 5-6: the free third slot resists (17 more forms)
+
+Target's load types were checked per site and **ours already match all of
+them**: `lh 0x8($fp)` ×2 (the `sid` field), `lh D_800A9A20`, `lhu 0x0/0x2($s0)`
+(the `tbl` pair), `lh 0x18/0x1A($sp)` (the `rect` read-back for
+`func_80048A7C`), `lh 0x0($s0)` (the sentinel). So there is no type-correction
+lever here — the `u16`/`s16` choices in the source are already right.
+
+Screened by **unallocated-pseudo count** rather than score. Every form below
+stays at exactly **two** slots (vars 16) at 135 insns:
+
+- *pure namings of existing sub-expressions* (no type change): rect base
+  pointer, `(s32)rect` call argument, the image source address, the palette
+  table pointer, a second `sid` copy, the loop shift amount, an `s16` outer
+  selector, the `func_8004881C` result chain — 8 forms, all `['80', '88/89']`.
+- *`u16` carriers on the two `lhu` sites*: both together (53), `t0` only (47),
+  `t1` only (47), a `u16 *` walker (47).
+- *other memory carriers*: an `s16 sent` for the sentinel read (47), an
+  `s16 want` for the `D_800A9A20` comparand (47), `u16` pair + sentinel (53).
+
+**Why `s16 r` costs 6 and nothing else buys a slot free:** `sid` is free because
+it names an s16 value that already arrives sign-extended from an `lh` and is
+used where that form is wanted. `r` holds a *computed* s32 (`(a0 << 12) / 255`),
+so narrowing it forces a truncate plus a re-extension — the diff shows target
+passing it as `move a0,s7` where we emit `sll a0,s0,0x10 / sra a0,a0,0x10` plus
+an extra `move`. Naming alone never adds a slot; only a narrowing does, and
+every narrowing in this body sits on a computed value.
 
 ## Resume here
 
-Find a **free** third slot — one that adds an unallocated pseudo without adding
-instructions, the way `sid` does. `tmp/stf_orphan.py` is the detector: it prints
-the unallocated set per variant, so candidates can be screened without reading
-scores. Once at 3 slots / 135 insns the remaining gap should be only the
-`$s7`/`$s8` rotation.
+`candidate.c` (40) is the base; the frame is already exactly target's. The open
+question is unchanged and now well-bounded: **a third unallocated pseudo at 135
+instructions.** ~35 forms across six rounds say it is not reachable by naming or
+by any type choice that matches target's load widths.
 
-Start from `candidate.c` (40), not HEAD.
+Untried and worth a fresh eye: whether the third slot in target comes from
+something structural rather than a local — e.g. the `goto`/label shape around
+`inner_check`, which the two asmfix rules already manipulate. Screen any idea
+with `tmp/stf_orphan.py` (unallocated set), not with the score.
 
 ## Instruments
 
