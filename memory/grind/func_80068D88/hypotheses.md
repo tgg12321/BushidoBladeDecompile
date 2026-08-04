@@ -77,3 +77,39 @@ round-trip" with no output difference) is factually contradicted by the target
 bytes — target insns 52/53 ARE `lw a0,0(gp)` / `lw v1,0(gp)`, i.e. the original
 code really does re-read both globals after publishing them. See evidence.md
 for the full exchange and the final verdict.
+
+## s2 (2026-08-03, recon modality)
+
+### H2 — CONFIRMED (function closed at the honest floor)
+**Statement.** Session 1's H1 closing form is not merely reproducible but is
+now sanctioned: with the owner/Judge ruling PASS in hand, applying
+`memory/grind/func_80068D88/candidate.c` to `src/text1b.c` yields honest
+pure-C distance 0 with zero cheats of any spelling.
+
+**Mechanism.** Unchanged from H1 — GCC 2.7.2 numbers local pseudos in
+declaration order; `global.c`'s `allocno_compare` ties on two symmetric
+allocnos and falls through to `return *v1 - *v2;`, so the lower-numbered
+allocno allocates first and `find_reg` gives it the lower free hard reg.
+Declaring `cur_init` first puts it in $a1, which is what target wants.
+Layered on session 0's `p_a2` live-range split, which had already closed all
+structural diff in the loop body.
+
+**Probe + measurement.** Replaced the score-18 pinned body still sitting in
+`src/text1b.c` (four `register ... asm("$N")` pins + two
+`__asm__ volatile("" ::: "memory")` barriers + the `cur_loc`/`prev_loc` reload
+locals) with `candidate.c` verbatim, then
+`& tools/wteng.ps1 main sandbox func_80068D88 --disable all`:
+`score 0`, 81 target insns / 81 build insns, `rules_dropped: 0`.
+
+**Result.** VERDICT: **CONFIRMED**. Floor 5 -> 0, edits in place in `src/`.
+Outcome returned as `candidate-ready`. Remaining gates are outside this
+session's surface: full-build SHA1 == oracle (the driver re-verifies) and the
+fresh layer-2 `cheat-reviewer` pass the ruling requires.
+
+### Frontier
+Empty by design — the honest floor is 0 and the closing construct is ruled
+PASS. If the driver's byte re-verification or the layer-2 review were to
+overturn this, the next lever named by session 1 remains open: `allocno_compare`'s
+PRIORITY term (`floor_log2(n_refs)*n_refs/live_length`) rather than its index
+tie-break, reachable by changing how many times each of the two values is
+referenced rather than where it is declared.

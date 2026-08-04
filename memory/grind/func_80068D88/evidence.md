@@ -165,3 +165,54 @@ register assignments.
 4. Do NOT reintroduce `register ... asm(...)` pins or `__asm__` barriers — both
    are stripped by the sandbox and were the root cause of the score-18 illusion.
 
+
+## Session 2 (2026-08-03, recon modality) — RULING RECEIVED, CANDIDATE APPLIED, FLOOR 0
+
+- **The owner/Judge ruling on session 1's contested construct came back PASS.**
+  `docs/grind/decisions.md`, entry `2026-08-03 20:05 — func_80068D88 — ruling:
+  func_80068D88 reaches honest pure-C distance 0 (bytes verified against the
+  oracl — **PASS**`. The Judge stated it verified the diff itself rather than
+  crediting session 1's summary: the entire difference between the score-5 body
+  and `candidate.c` is two adjacent declaration lines (`s32 prev_init;` /
+  `s32 cur_init;`) swapping places — nothing added, deleted, renamed, rescoped,
+  retyped, and no statement moved. The BINDING scope of the PASS, verbatim:
+  "PASS is scoped to reordering pre-existing, real-valued, load-bearing local
+  declarations within their existing scope; adding, renaming, or rescoping a
+  local to create an ordering slot remains forbidden, and completion still
+  requires full-build SHA1 == oracle plus layer-2 review." This body is inside
+  that scope on every clause. Session 1's ruling request is therefore CLOSED;
+  the `param-local-alias-prologue-pair-flip` narrowing clause that the layer-1
+  reviewer cited does NOT reach a transposition of two pre-existing
+  real-valued locals.
+
+- **`src/text1b.c` was NOT at the score-5 form when this session started — it
+  was at HEAD's score-18 CHEAT form.** Session 1 reverted to the
+  reviewer-cleared score-5 body but that revert was never committed, so the
+  tree the driver handed session 2 still carried, at text1b.c:15068/15073/
+  15096/15097, `register s32 prev_init asm("$7")`, `register s32 cur_init
+  asm("$5")`, `register s32 *p_a asm("$4")`, `register s32 *p_b asm("$5")`,
+  plus two `__asm__ volatile("" ::: "memory")` scheduling barriers with their
+  `cur_loc`/`prev_loc` reload locals. A session inheriting this function must
+  APPLY `candidate.c` rather than assume the tree holds the banked floor — the
+  ledger digest's "floor=5" describes the banked candidate, not `src/`.
+
+- **Applying `candidate.c` verbatim to `src/text1b.c` measures score 0.**
+  `& tools/wteng.ps1 main sandbox func_80068D88 --disable all` printed
+  `"score": 0, "target_insns": 81, "build_insns": 81, "scorable": true,
+  "rules_dropped": 0`. (`cheat_asm_stripped: 314` is a FILE-wide count for
+  text1b.c's other functions, not this one — the applied body contains zero
+  pins, zero `__asm__`, zero volatile coercion, zero alias renames, zero dead
+  stores, zero unused locals.) `git diff --stat src/text1b.c` is
+  `10 insertions(+), 14 deletions(-)`, confined to this one function; `file
+  src/text1b.c` reports plain UTF-8 with no CRLF, so the LF invariant holds.
+
+- **Net effect of applying it: the tree LOST four register pins and two
+  scheduling barriers while GAINING a byte match.** That is the direct
+  demonstration of the engine's cheat-inertness claim on this function — the
+  cheats were never buying the match, they were masking a 5-instruction
+  register-rename residual that one declaration transposition closes.
+
+- **Remaining gates before COMPLETED-C** (neither is this session's to run):
+  full-build SHA1 == `62efab4f73f992798c43e8c730aa43baa10bb4fa`, and the
+  fresh layer-2 `cheat-reviewer` pass the ruling explicitly still requires.
+  The driver performs the byte re-verification itself.
