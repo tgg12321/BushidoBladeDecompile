@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80021280",
-      "file": "code6cac",
-      "distance": 19,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active"
-    },
-    {
       "func": "func_8003D9A0",
       "file": "code6cac_c2",
       "distance": 19,
@@ -2558,17 +2550,26 @@
       "rules": 1,
       "status": "parked",
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md - '## 2026-08-02 - func_80052B00 (src/text1b.c) - **OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**'"
+    },
+    {
+      "func": "func_80021280",
+      "file": "code6cac",
+      "distance": 19,
+      "verdict": "C",
+      "rules": 1,
+      "status": "parked",
+      "park_reason": "OWNER-PENDING: Judge PASS (00:11) vs layer-2 FAIL conflict on loop-tail-duplication family scope - see decisions.md 2026-08-04 OWNER-PENDING entry; bytes-proven 0-form banked in ledger candidate.c"
     }
   ],
   "counts": {
     "total": 304,
-    "active": 268,
+    "active": 267,
     "by_status": {
-      "active": 268,
-      "parked": 36
+      "active": 267,
+      "parked": 37
     },
     "by_verdict": {
-      "C": 90,
+      "C": 89,
       "ASM-PARTIAL": 43,
       "ASM-SUSPECT": 109,
       "ASM-STRUCTURAL": 26

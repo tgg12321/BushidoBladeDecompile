@@ -3521,3 +3521,43 @@ flag-hunting precedent.
 ## 2026-08-04 00:47 — saEft00Add — ruling: saEft00Add's sandbox distance 1 is proven to be a cross-function metric artifact — **PASS**
 
 RULING REQUEST: is the evidence sufficient to stop grinding saEft00Add and treat the sandbox distance 1 as a cross-function metric artifact? YES — disposition (a), done-pending-siblings. I re-verified every load-bearing claim myself rather than crediting the session's word. (1) `sandbox saEft00Add --disable all` scores 1 with rules_dropped=0 — the function carries ZERO regfix/asmfix rules (the regfix.txt hits are comment lines only). (2) The control `--disable all --keep-cheat-asm` scores 0 at 133/133 — with sibling cheat-asm left in place, every instruction saEft00Add emits is identical to the original EXE. (3) The stripped-sandbox source diff vs src/system.c touches ONLY sibling functions (register pins in func_80080258/func_80080390/marionation_Exec and one volatile alias) — zero edits inside saEft00Add, so it contains no cheat-asm of its own. (4) I re-ran the ledger's normalized-insn diff (tmp/grind/saEft00Add/s2/ndiff.py): exactly one mismatch in 133, instruction 93, `addiu a0,a0,8132` vs `5668` — a delta of exactly 2464 (0x9A0). That instruction is the %lo half of loading &D_80082050, the CD-IRQ callback passed to cdrom_SetCallbackB at src/system.c:1146. D_80082050 is declared `static` (src/system.c:954), so its relocation addend is its offset within the section — a number determined entirely by how much code precedes it in the file. Stripping the SIBLINGS' cheat-asm shrinks that preceding code by 0x9A0 bytes, which shifts the addend; the masked score does not (and arguably should not) mask local-symbol addends, so the honest score reads 1. In plain English: the '1' is the neighbors' cheat debt showing through a shared address, not anything wrong in saEft00Add's C. (5) The function was already accepted COMPLETED-C at commit c7114628 (2026-07-11) through the full gate — 0 rules, 0 cheat-asm, full-build SHA1 == oracle — and its C content passed cheat review then; the body is unchanged. It re-entered the queue only because the post--mel regen keys on sandbox distance. No saEft00Add-local edit can move the addend, and the only spellings that could dodge it (de-static-ing D_80082050, or dropping the callback reference) would falsify the census-verified Sony source — cheats by spelling, correctly rejected without measuring. Further grind sessions on this function are provably zero-yield. On option (b): I do NOT endorse the grind session (or anyone) blanket-masking local-symbol reloc addends in engine/score.py — local addends carry real signal (a wrong static or wrong offset would otherwise become invisible). The narrower fix — scoping cheat-asm stripping to the function under test so sibling debt is measured on the siblings' own queue items — is plausibly correct but is an owner decision on engine/ code, gated by `engine test`; it is recommended for owner review, not required for this disposition. One immaterial discrepancy for the record: the evidence bank names the shrinking siblings as func_80080828/tslTm2LoadImage while the strip diff's textual edits sit in func_80080258/func_80080390; the size accounting and the exact 0x9A0 addend delta make the causal chain airtight either way. Disposition: re-accept via `queue done saEft00Add` (its gate checks rules/cheat-asm/oracle, all genuinely clean — the same basis as c7114628, which accepted through an identical reloc-addend artifact); if the gate or a future regen resurrects it on the distance key, park it citing this ruling until func_80080828, tslTm2LoadImage and marionation_Exec reach COMPLETED-C, at which point the sandbox reads 0 with the body untouched. This is not deferral of work — the work is done and was gated; it is refusing to burn sessions on a number this function's C cannot move.
+
+## 2026-08-04 — func_80021280 — **OWNER-PENDING: Judge PASS vs layer-2 FAIL on loop-tail duplication scope**
+
+Filed by the operator session (owner away). Nothing is accepted; the tree is reverted to the
+oracle-green HEAD state (rule restored). The function is PARKED awaiting exactly one owner call.
+
+THE QUESTION: does [[duplicated-statement-into-arms]] (owner ruling 2026-07-01) cover duplicating a
+loop-tail CONTROL STRUCTURE — `a1++; if (a1 < 3) goto loop2_21280;` + implicit return — into the
+`if (a0 == 0)` arm (replacing `goto next_21280;`), when byte-neutral (cross-jump re-merges;
+sandbox --disable all == 0 at 72/72; full-build SHA1 == oracle re-proven this session)?
+
+FOR (the Judge's 00:11 PASS, decisions.md 3485): the rule's own evidence section cites "identical
+multi-statement blocks across arms (src/boss/bo4/doors.c, unk_365FC.c)"; the Non-extension list
+excludes only dead stores / CALL duplication / byte-surviving copies; both components (an increment
+assignment; an inline control-transfer spelling vs label-shared) have SOTN precedent separately
+(assignment duplication; mixed-exit-forms in SsVabOpenHeadWithMode); exhaustion is documented
+(assignment-only duplication proven arithmetically insufficient — every counter-referencing
+assignment also references the shorter-lived pointer, which gains more at every k; the loop tail is
+the ONLY counter-pure multi-ref carrier); FAKE-annotated; placement load-bearing.
+
+AGAINST (the layer-2 reviewer's FAIL, fresh default-FAIL agent): the SOTN base instances are
+assignments/stores; extending to control-transfer duplication is a NEW spelling that
+no-new-park-categories requires its own direct SOTN evidence for ("multi-statement blocks" in
+doors.c/unk_365FC.c would need to be shown to include control transfer — unverified); the natural
+1998 source is a `continue`-equivalent shared tail, so the human-programmer test fails; the sole
+justification is allocno-priority arithmetic (coercion signature).
+
+DISPOSITION OPTIONS (owner picks one):
+(a) UPHOLD the Judge — control-transfer tail duplication is within the family when byte-neutral +
+    exhausted + annotated. Then: re-apply memory/grind/func_80021280/candidate.c, retire the rule,
+    queue done (the full completion path was already proven green this session), and amend the rule
+    doc's Non-extension section to record the clarified scope.
+(b) UPHOLD the reviewer — the family stays assignments-only absent direct SOTN evidence of
+    control-transfer duplication. Then: the 0-form is rejected (banked in candidate.c +
+    rejected/), and the function resumes grinding on the s1 frontier (post-RA scheduling forensics
+    on the one remaining adjacent-pair swap at floor 2).
+(c) DIRECT an SOTN evidence pass on doors.c / unk_365FC.c "identical multi-statement blocks" to
+    settle whether control transfer appears in the family's actual base, and rule afterward.
+
+The operator takes no further action on this function pending the call. [skip-park-src-guard]

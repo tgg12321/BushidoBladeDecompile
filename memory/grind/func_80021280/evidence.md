@@ -186,3 +186,28 @@ first loop-body statement that triggers the biv scan).
 - Fallback if the ruling refuses: form C (floor 2, no FAKE constructs) is the
   s1 candidate.c in git history; the only other known lever family for the
   final swap is the s1 frontier's post-RA-scheduling forensics line.
+
+## s2-post (operator, 2026-08-04 ~02:30) — ACCEPTANCE CONFLICT, owner-gated
+
+The 00:11 Judge construct-scope ruling PASSed the loop-tail duplication
+(docs/grind/decisions.md 3485). The operator then ran the completion path:
+candidate applied to src, sandbox --disable all = 0 (72/72), retire dropped
+the $5<->$6 rule, full clean build SHA1 == oracle. The MANDATORY layer-2
+fresh cheat-reviewer then returned **FAIL** (default-FAIL, fresh agent):
+- test-5: [[duplicated-statement-into-arms]]'s SOTN base is assignment/store
+  duplication; a loop-continuation control structure (increment + backward
+  conditional branch + implicit return) into an unrelated arm is an
+  UN-PRECEDENTED extension needing its own SOTN evidence; the Judge's
+  mixed-exit-forms bridge is the "different spelling of the same intent"
+  loophole no-new-park-categories forbids.
+- test-2: `if (a0==0) goto next_21280;` is what a real `continue` compiles
+  to; no 1998 programmer re-types the loop tail inline into one arm.
+- test-3: the load-bearing justification is global.c allocno_compare
+  priority arithmetic — a coercion signature.
+Per review-discipline-before-commit (no override of layer-2 FAIL; no
+self-resolved conflicts), the operator reverted src+regfix to HEAD (rule
+restored, oracle green) and parked the function OWNER-PENDING. The
+bytes-proven 0-form remains candidate.c; the factual crux for the owner is
+recorded in decisions.md (OWNER-PENDING entry, 2026-08-04). Nothing else in
+the 0-form was flagged (preamble reorder, a3 s32 widening, decl order all
+cleared by the reviewer).
