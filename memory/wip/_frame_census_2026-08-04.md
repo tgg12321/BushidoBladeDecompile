@@ -43,10 +43,8 @@ so the phantom-slot lever is not the bottleneck there.
 
 Ranked by honest distance among items with a real frame delta and a real C body.
 
-1. **`func_8007C7A0` + `func_8007C86C`** (display) — dist **20** each, 21 rules
-   each, delta **-8** (ours 24, target 16), `orphan=2` already present.
-   *Inverse* case: we allocate one phantom slot too many. Twins with identical
-   shape, so one fix closes two. Best active lead in the tree.
+1. ~~**`func_8007C7A0` + `func_8007C86C`** (display)~~ — **WORKED 2026-08-04,
+   see the correction below. Not a frame problem.**
 2. `title_mv_exec2` (main) — dist 27, 18 rules, delta -8.
 3. `InitHiraRmd_800480C0` (text1b) — dist 36, 33 rules, delta **+32** — the only
    ACTIVE member of the 32-byte dead-vars cluster below.
@@ -90,3 +88,28 @@ is now empty (only comments) — nothing else coerces a frame.
 `.frame` gradient), `tmp/orphan_census.py` (combine orphan-USE producers),
 `tmp/fdiff.sh`. The `deadarr` note-flag in the census under-fires when a
 function's comments mention the array name — use grep, not that column.
+
+
+## Correction (2026-08-04, after working shortlist #1)
+
+The shortlist ranked the display twins `func_8007C7A0` / `func_8007C86C` first
+on a delta of -8 (ours 24 vs target 16). **That delta is real but it measures
+the COMMITTED HEAD body, not the state of the work.** Both functions have a
+14-round WIP ledger whose `candidate.c` already emits frame=16 / vars=16 — the
+correct frame — via `s16` clamp locals. There was no inverse-phantom problem to
+solve; the frame was solved in round 4 of that campaign and the HEAD body is
+simply an older, worse shape.
+
+**Methodological lesson for the rest of the shortlist:** `our_frame` in
+`tmp/frame_census.csv` is cc1's frame for the COMMITTED source. For any
+function with a `memory/wip/<func>/` entry, read that ledger and measure its
+candidate BEFORE treating the census delta as an open problem. Items 2, 3, 7
+and 8 on the shortlist (`title_mv_exec2`, `InitHiraRmd_800480C0`,
+`hirahira_w_ctrl_2`, `decBs0`) should each get that check first — a census
+delta may already be closed in a candidate.
+
+Round-15 outcome for the twins: the park-insn line item of their documented
+structural gap is now closed (`candidate_frame51.c`, 51/51 instructions, stream
+1:1 with target), leaving only the $a2/$a3 register-name cascade that round
+11's ALLOCDBG diagnosis proved needs forbidden chain-extension. Details in
+`memory/wip/func_8007C7A0/notes.md`.

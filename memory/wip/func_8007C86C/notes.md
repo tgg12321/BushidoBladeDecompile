@@ -1,192 +1,99 @@
-# func_8007C86C — WIP resume notes
+# func_8007C86C — WIP (current state 2026-08-04, round 15)
 
-## TL;DR
+GP0 drawing-area packet builder (`0xE4000000`): clamps x to `[0, D_8009BE78-1]`
+and y to `[0, D_8009BE7A-1]`, then packs them into a GP0 word at 10/10 or 12/12
+bits depending on `D_8009BE74`. Twin of `func_8007C7A0` (`0xE3000000`, constant
+differs only) — solve one, apply to both. 21 regfix substs at
+`regfix.txt:3050-3071`; 0 asmfix; no prologue_config / frame_fix entries.
 
-- **Floor 12** (HEAD floor 20). Identical structural shape to the sibling
-  `func_8007C7A0` (constant 0xE4 vs 0xE3 differs).
-- 4-session lever stack: clean v8 base + r_e4 named const + drop padding +
-  **SOTN duplicate-read precompute (Y wide-mask)** (the last is the
-  2026-06-02 SOTN-aligned policy unlock).
-- Candidate body in `candidate.c`. Apply to `src/display.c`. Verify with
-  `sandbox func_8007C86C --disable all` → expect score 12.
-- Remaining gap: same `$a2`-vs-`$a3` X-preserve cascade as C7A0.
-- Cheat-reviewer NOT yet invoked. Worker self-audit PASS; independent
-  verdict owed.
+## Where it stands
 
-## Joint progress with C7A0
+| body | score | build_insns | stream vs target (51) |
+|---|---|---|---|
+| committed HEAD | 20 | 50 | frame wrong (vars=24 vs 16) |
+| `candidate.c` (rounds 1-14) | **12** | 50 | park insn MISSING |
+| `candidate_frame51.c` (round 15) | 13 | **51** | **1:1 in kind and order** |
 
-This function and `func_8007C7A0` are siblings with identical 21-rule
-patterns differing only in the GPU command word constant. The SOTN
-duplicate-read lever that lowered C7A0's floor 16 → 12 ports directly here
-and lowers this function's floor 20 → 12 with the same result. A lever
-that closes one is highly likely to close the other; iterate them together.
+`candidate_frame51.c` is the structurally closest form in 15 rounds: all 51
+instructions match target in kind and order, and **every remaining difference
+is a register NAME** — ours→target: carrier `a0`→`a3`, limit-save `v1`→`a2`,
+arm temp `a0`→`v0`, tail constant `v0`→`a0`. It costs +1 on the masked-
+Levenshtein metric (13 vs 12) only because that metric counts renames.
 
-See `memory/wip/func_8007C7A0/notes.md` for the structural cascade table.
+The lever that closed the long-standing "MISSING park insn" gap is a staged
+carrier plus a join copy:
 
-## Sessions ledger
+```c
+s32 x = arg0;            /* carrier, live across the clamp */
+s16 tx;
+if (arg0 >= 0) {
+    if ((D_8009BE78 - 1) < arg0) tx = D_8009BE78 - 1; else tx = x;
+} else tx = 0;
+x = tx;                  /* the join copy = target's `move a3,v0` */
+```
 
-The full session-by-session evidence (~210 lines, all rejected variants,
-mechanism explanation) is at:
+## Frame is NOT an open problem (correction, 2026-08-04)
 
-- `memory/project/func-8007c86c-sotn-duplicate-read-lever.md` (session 4)
-- `memory/project/func-8007c86c-clean-form-floor.md` (session 2 baseline)
-- `memory/project/func-8007c86c-permuter-ub-cheat-findings.md` (session 3:
-  ~5400 directed-permuter iters found only UB-conditional-init cheats — DO
-  NOT re-run from the score-17 base; if running permuter, start from the
-  score-12 base instead)
+The frame-mismatch census flagged this function as reserving 8 bytes too many
+(delta −8). That measured the **committed HEAD body**. `candidate.c` already
+emits `frame=16 / vars=16` — correct — via its `s16 var_v0_2 / s16 var_a1`
+locals. There was never an inverse-phantom problem here; HEAD is just an older,
+worse shape. Correction recorded in `memory/wip/_frame_census_2026-08-04.md`.
 
-## How to resume in one read
+## The remaining gap — mechanism (round 11, instrumented cc1)
 
-1. Read `meta.json` — sessions[], reviewer verdict, rejected_forms,
-   next_hypotheses.
-2. Apply `candidate.c`'s body to `src/display.c`, replacing the existing
-   func_8007C86C body.
-3. `& tools/eng.ps1 sandbox func_8007C86C --disable all` → confirm score 12.
-4. Pick a next_hypothesis. Consider iterating with C7A0 together since they
-   share the structural ceiling.
+`$a2`-vs-`$a3` X-preserve tiebreaker. ALLOCDBG on the candidate body: pseudo 72
+(the X-preserve backup) has priority **1818**, the LOWEST in the 11-pseudo
+allocno sort (nrefs=2, livelen=11). Allocation walks ascending and stops at the
+first free register, so it lands in `$a2`; target has it in `$a3`. Flipping it
+requires some other pseudo to own `$a2` across pseudo 72's live range with
+higher priority — the **chain-extension** mechanism, FORBIDDEN per
+[[register-alloc-pure-c]] §6. Corroborated empirically by every round since.
 
-## Session 2026-06-02 (workflow round 1)
+## Do NOT re-run (measured negative / inert)
 
-7 fresh structural variants from the score-12 base + var_a1=arg1 preload
-position-shift + OR-chain associativity reorderings. All confirm the score-12
-floor (perturbations either match or regress). Direct disassembly diff vs
-target re-confirms the structural-ceiling claim: idx 0 `move a2,a0` (mine) vs
-`move a3,a0` (target), cascading through ~12 register-rotation diffs including
-the missing idx-16 park-merge. cc1 ascending-allocator picks $a2; only UB or
-literal-rename forms flip to $a3 in the explored space. New top next_hypothesis:
-joint BB2_ALLOC_DEBUG dump on C86C + sibling C748 (3-arg matched) to compare
-the pseudo's livelen/refs profile.
+- **Permuter** — ~125k cumulative iters across 4 independent runs (rounds 1, 2,
+  12 random; round 13 directed PERM_GENERAL with 5 hand-authored spots). Every
+  sub-baseline candidate is a forbidden family: dead-conditional-store,
+  semantic change (zeroing Y on the arg0<0 path), UB (uninitialized `var_a1` /
+  `var_v1` reads), synthetic shared-zero routing, named-intermediate-for-bool.
+- **Clamp shape** — if/else, ternary, assign-first, nested, goto-form, switch
+  dispatch, unsigned single-compare, `arg0 >= D` compare: 14-27.
+- **Arm ordering** — `<0`-first regresses to 16-28 (rounds 4, 6, 15).
+- **Carrier / param forms** — SOTN param-reassignment (16-28), local copy of y
+  (+4 over param-in-place), staged-temp sourced from `arg0` instead of the
+  carrier (20), s32 signature widening (24).
+- **Types** — u16/u32 on the clamp locals and casts at mask sites: inert
+  (combine erases the distinction under the 0x3FF/0xFFF masks). s32 widening
+  of `var_v0_2`: 17.
+- **Named intermediates** — un-decremented limit local (inert), `mode_m1`
+  hoist (23), `arg1_neg` sign hoist (28), limits-pointer share (18).
+- **Declaration order** — all permutations inert (pseudo numbers for autos do
+  not track decl order).
+- **Tail OR association** — `hi|(lo|C)`, staged `lo|C`, `(lo|C)|hi`: inert or +1.
+- **Precomputes** — narrow-mask X precompute (18), identity precompute (22),
+  single-expression return (22-24).
+- **TU re-attribution / rodata reorder** — independently FAILED by
+  cheat-reviewer 2026-06-05 (commit `2e5098e9`): all four
+  [[no-new-park-categories]] evidence criteria unmet; the globals are already
+  display.c-exclusive and the 21 rules are a codegen signature, not a layout one.
 
-## Session 2026-06-02 (workflow round 2)
+## Build gate
 
-**Floor unchanged at 12, but MECHANISM FULLY CHARACTERIZED via BB2_ALLOC_DEBUG.**
+Applying either candidate breaks the oracle (score-13 form → SHA1 `b4122d17`)
+because the 21 regfix substs are calibrated to HEAD's emission shape. Landing
+one requires rewriting or retiring those rules — a completion-gate activity,
+not a worker one. src was reverted after every experiment and the full build
+re-verified at `62efab4f73f992798c43e8c730aa43baa10bb4fa`.
 
-Ran instrumented cc1 (tmp/gccdbg/cc1) on the score-12 form + matched siblings
-C748 (3-arg) and C938 (2-arg dispatch). Tested 13 fresh structural variants.
+## Resume here
 
-**KEY FINDING — variant v6 (`s32 lim_x = D_8009BE78` block-local) is the FIRST
-KNOWN LEVER that flips the C86C X-preserve pseudo to target's $a3:**
+Start from **`candidate_frame51.c`**, not `candidate.c` — it is structurally
+exact, so the only open question is the register-name cascade. Do not re-run
+clamp-shape sweeps or another permuter campaign; that space is covered. The
+honest position is that the cascade needs a lever nobody has found, and the
+ALLOCDBG diagnosis says any lever that manufactures `$a2` occupancy is a
+forbidden chain-extender. Per-round narrative for rounds 1-14 is in git history
+for this file; one-line summaries are in `meta.json` `prior_sessions_summary[]`.
 
-- Score-12 candidate: pseudo #72 (nrefs=2 livelen=11 pri=1818, ord=10 LAST) → $a2
-- v6: new pseudo #91 (nrefs=3 livelen=7 pri=4285) → $a2 at ord=6; pseudo #76
-  (X-preserve role, ord=8) flips to $a3 — **TARGET'S ALLOCATION ACHIEVED**
-- v6 also produces target's missing idx-16 `move a3, v0` park-merge
-
-BUT v6 scores 18 (regression) because lim_x's lifetime forces:
-- (a) extra early `move $3, $4` preserve at idx 0 (lim_x's load forces arg0
-  preservation earlier)
-- (b) pseudo #77 shift from $a2 (target) to $a1
-- Net: +6 cascade diffs
-
-This is the score-12 → $a3-allocation pathway's existence proof. The mechanism
-for flipping X-preserve to $a3 is now characterized: **introduce a pseudo with
-priority > pseudo-72 but lifetime/refs that DON'T also bias pseudo 76/77's
-allocation.**
-
-**Sibling ALLOCDBG corroboration:**
-- C748 has only 5 pseudos; args take $a0/$a1/$a2 naturally — fundamentally
-  different shape
-- C938 has only 4 pseudos and uses `new_var2 = arg0` as SOTN-allowed
-  named-intermediate (works because no X-clamp clobbers $a0)
-- C86C's X-preserve is structurally necessary: target's idx-12-14 reuses $a0
-  for `lim_x - 1` then re-reads preserve in branch delay slot at idx 14
-  `addu v0, a3, $zero`
-
-New top next_hypothesis: PERMUTER FROM v6 BASE (score-18 lim_x form) with
-PERM_GENERAL directed on the prologue region, ~30k iters. Vet output strictly
-against the cheat catalog. Alternatively, micro-variant sweep on lim_x SHAPE
-(outer-scope, s16 retype, explicit cast, lim_x-1 directly, lim_x read-once for
-comparison only). Joint with C7A0: v6 lever should produce the same ALLOCDBG
-flip there (constant 0xE3 vs 0xE4 is the only difference).
-
-## Session 2026-06-05 (workflow round 11 — cc1 dump diagnostic)
-
-**Floor unchanged at 12.** Full BB2_ALLOC_DEBUG + BB2_SCHED_DEBUG +
-BB2_PRIO_DEBUG dump on the score-12 candidate baseline (first time
-PRIODBG/SCHEDDBG fully captured for C86C — round 2 had only ALLOCDBG).
-
-ALLOCDBG reproduces round 2 exactly: pseudo 72 X-preserve, ord=10
-pri=1818 → reg 6 ($a2); target wants $a3. Pseudo identities mapped via
-`base.c.greg`: 72=X-preserve, 76=var_v0_2, 77=var_a1, 79=var_v1,
-91=var_v1 SOTN-precompute.
-
-**NEW slice — PRIODBG/SCHEDDBG on block 0 (X-clamp prologue):** insn 6
-(X-preserve store) has only 1 predecessor in LOG_LINKS (insn 4 arg0
-incoming via REG_DEP_TRUE), final_pri=1. SCHEDDBG block=0: all 5 insns
-share pri=2130706433 — LUID-tiebreaker decides emission order. **The
-gap is purely allocation-side; no schedule-priority lever applies.**
-
-Three Lever A/B/C candidates derived from the dump, all self-vetted
-FAIL on cheat-reviewer 6-test checklist:
-- var_v1 hoist to function top (extends livelen to overlap pseudo 72) —
-  no semantic purpose, breaks dispatch invariant; FORBIDDEN family.
-- u16 var_v0_2 (signedness narrow) — not a real Lever B per
-  register-alloc-pure-c.md ("lever is narrow WIDTH, not signedness").
-- block-local `s16 var_v0_2_inner` per dispatch arm — matches round-2
-  v10/v15 (flat 12); no new behaviour.
-
-Full diagnosis in `tmp/gccdbg_func_8007C86C/diagnosis.md` (gitignored).
-Oracle preserved (HEAD `6e96eceb` unchanged).
-
-## Session 2026-06-03 (workflow round 3)
-
-**Floor unchanged at 12.** Executed the round-2 top hypothesis: 12-variant
-micro-sweep on lim_x form (v18-v29) covering all six suggested categories
-(outer-scope, s16/s32 type, explicit cast, pre-subtract, compare-only-with-
-re-read, symmetric lim_x+lim_y) plus structural variants (var_a1 deferred,
-separate lim_x_m1, inverted-if, flipped branch sense). All measured:
-
-- v23 (s16 lim_x) — score 12 (combine folds back to candidate's form)
-- v19, v20, v21, v22, v26, v28 — score 18 (all match v6's cost; introducing
-  any separate pseudo for lim_x with s32 width incurs the +6 cascade)
-- v18 — score 14 (combine drops one read but allocation worse)
-- v24 — score 21 (symmetric lim_y compounds cascade)
-- v27 — score 20 (flipped compare drops a sign-compare but layout wrong)
-- v25 — score 22 (unconditional load extends lifetime function-wide)
-- v29 — score 22 (inverted-if disturbs scheduling)
-
-**Conclusion:** every variant that introduces a separate pseudo for lim_x
-(s32-width, livelen > 0) emits the v6 cost (+6 cascade). Every variant that
-folds back to no-separate-pseudo matches candidate's score 12. There is no
-middle ground in the explored shape space. This is exactly the lever-class
-structural ceiling documented for cpu_side_move_dir_4 / marionation_Exec
-siblings in register-alloc-pure-c sessions 7-10.
-
-**Environment note:** `--keep-cheat-asm` flag is the workaround for the
-sandbox truncation error that blocked round-2 C97C/CBB0 workers — the
-`cheat_asm_stripped: 383` blocks throughout display.c break sibling reorder
-rules; keeping cheat-asm (since this function has none in the body) preserves
-indices and yields the masked-distance score normally. Add to round-N hint
-docs going forward.
-
-New top next_hypothesis: BB2_PRIO_DEBUG instrumented cc1 on candidate vs v6
-to identify the dependency edges that create v6's extra `move $3,$4` preserve
-at idx 0; OR diagnostic-only `register asm("$a3") = arg0` PIN on candidate to
-test whether the cascade is structural; OR escalation to user for canonical-
-asm authorization OR global rodata reorder cluster decision.
-
-## Session 2026-06-08 (workflow round 15)
-
-**Floor unchanged at 12.** 6 NEW manual variants (V_A through V_F) untested in
-rejected_forms across rounds 1-14, all NEGATIVE (V_A=22, V_B=24, V_C=18,
-V_D=12 flat, V_E=24, V_F=18). Plus 2nd directly-targeted DIRECTED permuter
-campaign on a DISTINCT macro surface from round 14: var_a1 init + X-clamp
-inner statements + Y-clamp inner statements + mask-shift inner statements
-(NO dispatch+arm-body or return-form alternatives). 20min wallclock, 6-worker,
-~43,890 iters, 5 saved outputs (90/125/165-1/165-2/175) — ALL forbidden cheat-
-by-spelling (semantic-change in var_a1 or var_v0_2, UB-conditional-init reads
-of var_a1/new_var, identity-op `^ 0`, dummy_label dead-goto pad, `if (1)` dead
-wrapper). Same convergent attractor families as round 14 + C7A0 round-13.
-
-**Cluster ceiling now proven against THREE distinct directed-permuter macro
-surfaces** (round 14 dispatch+arm+return; C7A0 round-13 var_a1+X+Y+Y-mask+return;
-round 15 var_a1+X+Y+mask-shift-inner). Total directed-permuter iters across
-C86C+C7A0: ~100k+ on disjoint mutation spaces. Zero legitimate sub-baseline
-candidates ever surfaced.
-
-Rejection corpus is now 42 manual variants + ~100k+ directed-permuter iters.
-Source reverted; oracle preserved (HEAD `49e869c0`). The PARK_CANDIDATE
-escalation reinforced for a 5th consecutive round (5/6/7/10/14/15) — all three
-round 14 next_hypotheses (BB2_PRIO_DEBUG on dispatch region, cross-TU
-allocation probe in full display.c, joint-cluster permuter from C7A0 base)
-remain UNTRIED and concrete.
+Sibling: `memory/wip/func_8007C7A0/` — identical pattern and floor.
