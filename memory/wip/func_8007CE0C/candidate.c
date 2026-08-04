@@ -1,15 +1,19 @@
-/* func_8007CE0C - WIP candidate. sandbox --disable all == 47 (HEAD == 48).
- * Pure C: the committed `register s32 var_s5 asm("s5")` pin and its
- * `__asm__ volatile("" : "=r"(var_s5) : "0"(var_s5))` barrier are GONE
- * (measured score-inert: the pin-free body also scores 48).
+/* func_8007CE0C - WIP candidate. sandbox --disable all == 30
+ * (HEAD == 48, r6 candidate == 47). 143/143 insns AND frame 80 == target 0x50.
+ * Pure C: the committed asm("s5") pin and its __asm__ barrier are gone.
  *
- * Group C closed: func_8007DC9C() takes no argument here. The committed source
- * passed (u32 *)0xA0000000, which emitted `lui a0,0xa000` where target has a
- * `nop` (idx 66) -- exactly what the regfix rule `subst "lui\s+\$4,..." "nop"
- * @ 63` was papering over. 48 -> 47.
+ * GROUP A CLOSED (r8) - all 16 frame instructions now match.
+ * A widening site costs an 8-byte phantom frame slot only when the reg:HI being
+ * widened has a SECOND use AS AN HImode VALUE (combine then keeps the dead
+ * intermediate: combine.c:1458 added_sets_2). The y clamp had two such sites
+ * because its accumulator a0_tmp is 16-bit; the x clamp had none because
+ * v1_tmp was s32, so its assignments consumed the WIDENED value instead.
+ * Narrowing the x accumulator to u16 and mirroring the y side's shape - the
+ * symmetric spelling of the same algorithm - converts both x sites:
+ * orphans 2 -> 4, vars 16 -> 32, frame 64 -> 80. 47 -> 30.
  *
- * Still open: Group A (16 insns of frame drift, needs vars 16 -> 32) and
- * Group B (~30 insns of register naming). See notes.md.
+ * GROUP C CLOSED (r6): func_8007DC9C() takes no argument.
+ * Group B (the ~30-insn register-naming residual) is next, by ALLOCDBG sizing.
  */
 s32 func_8007CE0C(_GpuChunkHdr_CE0C *arg0, s32 *arg1) {
     s32 var_s5;
@@ -17,15 +21,16 @@ s32 func_8007CE0C(_GpuChunkHdr_CE0C *arg0, s32 *arg1) {
     s32 half_size;
     s32 big_size;
     s32 remainder;
-    s32 v1_tmp;
+    u16 v1_tmp;
     u16 a0_tmp;
     s32 v0_ext;
 
     motion_LoadPreCalcData_8007DC68();
 
-    coord = (v1_tmp = arg0->x);
+    coord = arg0->x;
     var_s5 = 0;
     if (coord < 0) goto x_neg;
+    v1_tmp = coord;
     if (D_8009BE78 < coord) {
         v1_tmp = D_8009BE78;
     }

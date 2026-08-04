@@ -5,23 +5,13 @@
  "verdict": "C",
  "scores": {
   "head_floor": 48,
-  "candidate_floor": 47,
+  "candidate_floor": 30,
   "metric": "sandbox --disable all (masked Levenshtein)",
-  "build_insns": 142,
+  "build_insns": 143,
   "target_insns": 143,
-  "frame": "ours 64 (vars=16, args=16, regs=28) vs target 80 (vars=32) - 16 of the 48 differing instructions are pure frame-offset drift"
+  "frame": "candidate frame 80 == target 0x50 (vars=32) - GROUP A CLOSED r8; HEAD was 64/vars=16"
  },
  "sessions": [
-  {
-   "date": "2026-08-04",
-   "round": 3,
-   "lever": "cross-check the phantom-slot producer against the in-tree 3-orphan witness; sweep distinct/split/retyped s16 locals",
-   "lever_rule": "phantom-frame-slots-gcc272 / orphan-USE strand",
-   "floor_was": 47,
-   "floor_now": 47,
-   "git_head_at_measurement": "e7a0b730",
-   "note": "NO SCORE MOVEMENT; the round bought a sharper spec and closed six more spellings. CROSS-CHECK: func_8007C2A0 (display.c:376, vars=32, UNALLOCATED ['128','137','140']) uses the SAME producer - tmp/rtlseg.py shows all three of its orphans are ashift/ashiftrt subreg pairs, not some other family - and its source carries exactly three distinct multi-use s16 locals (var_v0, var_v0_2, new_var). So the count is ONE STRAND PER HImode->SImode WIDENING SITE, and our body has two sites; the Group A spec is therefore 'the arithmetic must contain four widening sites', not 'declare more locals'. NEGATIVE (round 5, 6 variants, all still exactly 2 orphans and vars=16): splitting the reused `coord` into distinct cx/cy does NOT add a site because their live ranges are disjoint so GCC still makes one HI pseudo; retyping a0_tmp u16->s16 scores 50; carrying the clamped x as a distinct multi-use s16 xres costs 2 insns (144) and scores 63; the three pairwise combinations likewise. Cumulative across rounds 1/2/3/5 that is 19 variants with vars never leaving 16. TOOLING BUG FOUND AND FIXED: tmp/ce0c_rtl.py silently scanned the WRONG function when its section lookup missed (it printed func_8007CE0C's insns for a func_8007C2A0 query, which briefly suggested a bogus 'volatile MMIO store' producer family); tmp/rtlseg.py replaces it and reports a miss instead of falling through. src/display.c reverted."
-  },
   {
    "date": "2026-08-04",
    "round": 4,
@@ -41,6 +31,16 @@
    "floor_now": 47,
    "git_head_at_measurement": "e7a0b730",
    "note": "MECHANISM CORRECTION - THE SITE COUNT WAS NEVER THE PROBLEM. tmp/widen.py censuses HImode->SImode widening pairs per pass. The body ALREADY HAS FIVE (flow pass: pseudos 83, 89, 96, 100, 109); combine folds all five and only TWO (96, 100) leave an orphan. So rounds 1-6 were adding and removing SITES, a quantity that was never short, which is exactly why 25 variants moved nothing. There are three outcomes per site and only the middle one buys a frame slot: (a) combine merges cleanly with a single-use intermediate -> no instructions and NO SLOT (base sites 83, 89, 109); (b) combine merges but the intermediate is MULTI-USE so it preserves a (use) insn -> 8-BYTE SLOT (base 96, 100); (c) combine cannot merge -> real sll+sra emitted, no slot (lim_top's 90, 99). That is combine.c:1458 `added_sets_2 = !dead_or_set_p(i3, i2dest)`, the same mechanism packed-multiply-cluster documents. THE REAL SPEC IS THEREFORE: make two of the three cleanly-folding sites (83, 89, 109) MULTI-USE - some `X << 16` must be read by a second consumer besides its own `>> 16` - NOT 'find more s16 quantities'. This also explains lim_top's 2->1: it did not lose a site, it pushed sites 90/99 into outcome (c), which emits real shifts and no slot, hence score 55 at the same 142 instructions. Screening constraint for any candidate: the new multi-use must not push a site into outcome (c), because the visible sll/sll/sra census must stay identical. src/display.c reverted."
+  },
+  {
+   "date": "2026-08-04",
+   "round": 6,
+   "lever": "GROUP A CLOSED - narrow the x clamp accumulator to u16 and mirror the y side's shape",
+   "lever_rule": "phantom-frame-slots-gcc272 / combine added_sets_2 / symmetric-algorithm spelling",
+   "floor_was": 47,
+   "floor_now": 30,
+   "git_head_at_measurement": "e7a0b730",
+   "note": "GROUP A CLOSED: 47 -> 30, frame 64 -> 80 (== target 0x50), vars 16 -> 32, orphans 2 -> 4, AND build_insns 142 -> 143 which now MATCHES target exactly. All 16 frame instructions are gone - the aligned diff's first difference is now index 12, and the epilogue matches too. THE MECHANISM, completed from round 7: a widening site costs a phantom slot only when the reg:HI being widened has a SECOND USE AS AN HImode VALUE, which is what makes combine's intermediate multi-use (combine.c:1458 added_sets_2). Mapping the five sites: 96 (arg0->y) and 100 (D_8009BE7A) orphan because each is BOTH compared (widened) AND copied narrow into the 16-bit accumulator a0_tmp; 83 (arg0->x), 89 (D_8009BE78) and 109 (arg0->x re-read) fold cleanly because v1_tmp is s32, so those assignments consume the WIDENED value rather than making a second narrow use. The x and y clamps are the same algorithm and differ ONLY in accumulator width, so narrowing v1_tmp to u16 and mirroring the y side's shape (coord = arg0->x; v1_tmp = coord; if (D_8009BE78 < coord) v1_tmp = D_8009BE78;) converts BOTH x sites: x_u16 and x_s16 both give orphans=4 / vars=32 / frame=80 / 143 insns / score 30. The second consumer is the clamp's own accumulator - a value the algorithm already has - so this is the symmetric real spelling, not a synthetic strand. PARTIAL FORMS CONFIRM THE MECHANISM IS GRADED: narrowing v1_tmp WITHOUT mirroring the shape (x_u16_keep) or with only the coordinate copy (x_u16_coord) gives orphans=3 / vars=24 / frame=72 / 146 insns / score 49 - exactly one converted site. src/display.c reverted; candidate.c re-applied and re-measured at 30 before reverting."
   }
  ],
  "reviewer": null,
@@ -75,13 +75,18 @@
    "form": "real-s16-quantity family: clamp-limit carriers with a genuine post-compare use, clamped-dimension s16 locals, natural w/h clamp idiom (round 6, 6 variants)",
    "score": 47,
    "reason": "all hold at exactly 2 orphans / vars=16 / 142 insns. The one that moved, lim_top (limits hoisted to the top), moved the WRONG way: 1 orphan, vars=8, frame=56, score 55 - valuable because it proves the count is controllable."
+  },
+  {
+   "form": "partial x-side narrowing (u16 accumulator without mirroring the y shape, or with only the coordinate copy)",
+   "score": 49,
+   "reason": "converts exactly ONE of the two x sites: orphans=3, vars=24, frame=72, and costs 3 insns (146). Both the coordinate copy AND the limit copy must be narrow to convert both sites."
   }
  ],
  "root_cause": "Three independent causes. (A) The frame is 16 bytes short because cc1 allocates half as many phantom locals temps as the original did (vars 16 vs 32) - not a spill, not a dead array, and not reachable by declaring locals. (B) Register allocation in the clamp and multiply blocks plus three extra/missing moves. (C) One superfluous argument load at the func_8007DC9C call.",
  "next_avenues": [
-  "GROUP A (16 insns, 16 rules) NEW SPEC as of round 7: make two of the three cleanly-folding widening sites (flow pseudos 83, 89, 109) MULTI-USE so combine's added_sets_2 preserves their intermediate as an orphan (use). Concretely some `X << 16` in the body must be read by a second consumer besides its own `>> 16`. The site count is already 5 and was never the constraint - do NOT resume adding s16 quantities, that search is closed by 25 measured variants. Screen with tmp/widen.py (per-pass site census + fold-vs-orphan classification) then tmp/ce0c6.py. Constraints: the multiply keeps re-reading arg0->x from memory (regfix.txt:3417), and the new multi-use must not push a site into the unmergeable outcome (that is what lim_top did: real shifts emitted, score 55).",
-  "GROUP B (~30 insns): ALLOCDBG lever-sizing via tmp/allocone.sh, AFTER the frame is right (a frame change re-shuffles the allocation).",
-  "Completion gate: 23 regfix rules + the pin/barrier retire, full build, layer-2 cheat-reviewer, queue done."
+  "GROUP B is now the whole residual (~30 insns of register naming). Do it by ALLOCDBG lever-sizing with tmp/allocone.sh, which is now safe to run because the frame is correct and will not re-shuffle under it. Shape from tmp/adiff.py: the multiply/rounding block is pure naming (target a2/v1/v0/s0 vs our a3/v0/v1/s4); target holds big_size in s0 and copies it through v1 into s4 at 53-59; the x-clamp block restructured under the r8 change and needs a fresh read.",
+  "Completion gate: 23 regfix rules (the 16 frame ones should now retire outright) + the pin/barrier retire, full build, layer-2 cheat-reviewer, queue done.",
+  "Re-run tmp/widen.py after any Group B change - a shape change can push a site out of the middle row and silently cost the frame again."
  ],
  "memory_notes": [
   "memory/project/phantom-frame-slots-gcc272.md (the frame equation + the forbidden dead-array inference)",
@@ -91,6 +96,7 @@
  ],
  "prior_sessions_summary": [
   "2026-08-04 | orientation: caution discharge, residual decomposition, frame quantifi | progress",
-  "2026-08-04 | Group C closed (no-arg call); phantom-slot PRODUCER identified via com | progress"
+  "2026-08-04 | Group C closed (no-arg call); phantom-slot PRODUCER identified via com | progress",
+  "2026-08-04 | cross-check the phantom-slot producer against the in-tree 3-orphan wit | progress"
  ]
 }
