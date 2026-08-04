@@ -1,8 +1,16 @@
 {
-  "generated_at": "2026-07-19T23:40:49",
+  "generated_at": "2026-08-04T00:31:05",
   "oracle_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
   "build_failures": [],
   "items": [
+    {
+      "func": "saEft00Add",
+      "file": "system",
+      "distance": 1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
     {
       "func": "func_80021280",
       "file": "code6cac",
@@ -17,7 +25,8 @@
       "distance": 19,
       "verdict": "C",
       "rules": 0,
-      "status": "active"
+      "status": "active",
+      "prologue_fix": 2
     },
     {
       "func": "func_80044CCC",
@@ -66,8 +75,7 @@
       "distance": 20,
       "verdict": "C",
       "rules": 21,
-      "status": "active",
-      "scorable": false
+      "status": "active"
     },
     {
       "func": "func_8007C86C",
@@ -75,8 +83,7 @@
       "distance": 20,
       "verdict": "C",
       "rules": 21,
-      "status": "active",
-      "scorable": false
+      "status": "active"
     },
     {
       "func": "cpu_set_move_command_and_dir_for_no_action_2",
@@ -84,6 +91,14 @@
       "distance": 20,
       "verdict": "C",
       "rules": 25,
+      "status": "active"
+    },
+    {
+      "func": "func_80089F3C",
+      "file": "main",
+      "distance": 20,
+      "verdict": "C",
+      "rules": 1,
       "status": "active"
     },
     {
@@ -172,8 +187,7 @@
       "distance": 21,
       "verdict": "C",
       "rules": 19,
-      "status": "active",
-      "scorable": false
+      "status": "active"
     },
     {
       "func": "motion_Close",
@@ -237,14 +251,6 @@
       "distance": 23,
       "verdict": "C",
       "rules": 9,
-      "status": "active"
-    },
-    {
-      "func": "func_80089F3C",
-      "file": "main",
-      "distance": 23,
-      "verdict": "C",
-      "rules": 1,
       "status": "active"
     },
     {
@@ -395,6 +401,15 @@
       "status": "active"
     },
     {
+      "func": "hirahira_w_ctrl",
+      "file": "text1a",
+      "distance": 27,
+      "verdict": "C",
+      "rules": 18,
+      "status": "active",
+      "prologue_fix": 1
+    },
+    {
       "func": "cpu_check_tubazeri",
       "file": "code6cac_b",
       "distance": 28,
@@ -432,15 +447,6 @@
       "distance": 29,
       "verdict": "C",
       "rules": 16,
-      "status": "active",
-      "prologue_fix": 1
-    },
-    {
-      "func": "hirahira_w_ctrl",
-      "file": "text1a",
-      "distance": 29,
-      "verdict": "C",
-      "rules": 18,
       "status": "active",
       "prologue_fix": 1
     },
@@ -578,6 +584,14 @@
       "distance": 35,
       "verdict": "C",
       "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_800460E4",
+      "file": "text1a_c2",
+      "distance": 35,
+      "verdict": "C",
+      "rules": 16,
       "status": "active"
     },
     {
@@ -749,14 +763,6 @@
       "status": "active"
     },
     {
-      "func": "func_800460E4",
-      "file": "text1a_c2",
-      "distance": 41,
-      "verdict": "C",
-      "rules": 16,
-      "status": "active"
-    },
-    {
       "func": "single_game_VoiceContorol",
       "file": "code6cac",
       "distance": 42,
@@ -826,8 +832,7 @@
       "distance": 48,
       "verdict": "C",
       "rules": 23,
-      "status": "active",
-      "scorable": false
+      "status": "active"
     },
     {
       "func": "func_8007526C",
@@ -991,19 +996,19 @@
       "status": "active"
     },
     {
+      "func": "func_80074B18",
+      "file": "text1b",
+      "distance": 79,
+      "verdict": "ASM-SUSPECT",
+      "rules": 41,
+      "status": "active"
+    },
+    {
       "func": "func_80017848",
       "file": "ings",
       "distance": 84,
       "verdict": "ASM-SUSPECT",
       "rules": 2,
-      "status": "active"
-    },
-    {
-      "func": "func_80074B18",
-      "file": "text1b",
-      "distance": 87,
-      "verdict": "ASM-SUSPECT",
-      "rules": 41,
       "status": "active"
     },
     {
@@ -1146,10 +1151,9 @@
       "func": "func_8007CBB0",
       "file": "display",
       "distance": 149,
-      "verdict": "C",
+      "verdict": "ASM-SUSPECT",
       "rules": 1,
-      "status": "active",
-      "scorable": false
+      "status": "active"
     },
     {
       "func": "func_80054604",
@@ -1178,7 +1182,7 @@
     {
       "func": "func_80048FFC",
       "file": "text1b",
-      "distance": 164,
+      "distance": 163,
       "verdict": "ASM-SUSPECT",
       "rules": 1,
       "status": "active"
@@ -1603,10 +1607,9 @@
       "func": "func_8007BC08",
       "file": "display",
       "distance": 296,
-      "verdict": "C",
+      "verdict": "ASM-SUSPECT",
       "rules": 1,
-      "status": "active",
-      "scorable": false
+      "status": "active"
     },
     {
       "func": "func_8002F770",
@@ -2566,16 +2569,16 @@
     }
   ],
   "counts": {
-    "total": 304,
-    "active": 268,
+    "total": 305,
+    "active": 269,
     "by_status": {
-      "active": 268,
+      "active": 269,
       "parked": 36
     },
     "by_verdict": {
-      "C": 92,
+      "C": 91,
       "ASM-PARTIAL": 43,
-      "ASM-SUSPECT": 107,
+      "ASM-SUSPECT": 109,
       "ASM-STRUCTURAL": 26
     }
   }
