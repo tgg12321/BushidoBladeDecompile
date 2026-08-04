@@ -1,161 +1,184 @@
 {
-  "function": "saTan4FireDisp",
-  "func": "saTan4FireDisp",
-  "file": "text1a",
-  "verdict": "C",
-  "scores": {
-    "head_floor": 41,
-    "candidate_floor": 40,
-    "metric": "sandbox --disable all (masked Levenshtein)",
-    "build_insns": 135,
-    "target_insns": 135,
-    "frame": "ours 72 (vars 8) / target 88 (vars 24). Target's vars area is touched only at 0x18-0x1F (the real s16 rect[4]); 0x20-0x2F is never referenced = TWO phantom slots.",
-    "candidate_note": "candidate.c = sid + s16 r: score 40, frame EXACTLY target's (88 / vars 24 / regs 10 / args 24), but 141 insns vs target 135 (+6 from the s16 r sign-extends). The score still improves over HEAD's 41 because the sp-offset cascade collapses once the frame is right."
+ "function": "saTan4FireDisp",
+ "func": "saTan4FireDisp",
+ "file": "text1a",
+ "verdict": "C",
+ "scores": {
+  "head_floor": 41,
+  "candidate_floor": 29,
+  "metric": "sandbox --disable all (masked Levenshtein)",
+  "build_insns": 135,
+  "target_insns": 135,
+  "frame": "ours 72 (vars 8) / target 88 (vars 24). Target's vars area is touched only at 0x18-0x1F (the real s16 rect[4]); 0x20-0x2F is never referenced = TWO phantom slots.",
+  "candidate_note": "candidate.c = the corrected loop shape: frame AND instruction count both exactly target's (88 / vars 24 / regs 10 / args 24, 135 insns). Residual 29 is a 3-cycle callee-save rotation (ours s2/s3/s4 vs target s3/s4/s2) plus the scheduling on it."
+ },
+ "sessions": [
+  {
+   "date": "2026-08-04",
+   "round": 2,
+   "lever": "RTL -da + greg unallocated-pseudo instrumentation (tmp/stf_orphan.py); established the frame mechanism and reached target's exact frame",
+   "lever_rule": "phantom-frame-slots-gcc272",
+   "floor_was": 41,
+   "floor_now": 40,
+   "git_head_at_measurement": "e962b091",
+   "note": "MECHANISM MEASURED: vars = 8 x (number of pseudos in greg's allocate list that receive no hard register). HEAD has one (pseudo 80) -> vars 8; target needs three -> vars 24. Per-variant unallocated sets: HEAD [80]; sid [80,88] (vars 16, 135 insns); rect_s16 [75,80,81] (vars 24, 141 insns, 51); sid+rect_s16 four slots (vars 32, 78). CANDIDATE: sid + `s16 r` gives three slots -> frame 88 / vars 24 / regs 10 / args 24, EXACTLY target, at score 40 (beats HEAD's 41) with 141 insns (+6 from the s16 r sign-extends). This confirms the frame was the dominant term. THE THIRD SLOT IS THE WHOLE REMAINING PROBLEM: sid supplies slot 2 free, but every slot-3 producer costs instructions - s16 r (+6, 40), naming one rect coordinate rx or ry while keeping the other re-read (+3, 48), rect_s16 both coordinates (+6, 51). An explicit (s32) cast at the call or leaving the sentinel read alone is inert (still 40); u16 r with an (s16) test cast gives only 2 slots (136 insns, 46). NO SLOT ADDED AT ALL by: s16 on g, b, g+b, idx, outer, xoff, yoff; a named sent for the sentinel read; an s16 carrier for the 0x10/1 rect constants; named tbl element reads. Naming the twice-read D_80094E08[sid] palette index REMOVES a slot (its two separate reads are load-bearing). DIFF SHAPE: tmp/sbs.sh shows the instruction streams are already 1:1 across the whole prologue and body; the only differences are sp offsets (uniformly 16 apart) and one register rotation (target holds fp_ptr in $s8, we use $s7, though both save the same ten registers). src/text1a.c reverted; candidate banked to candidate.c."
   },
-  "sessions": [
-    {
-      "date": "2026-08-04",
-      "round": 1,
-      "lever": "phantom-slot producer hunt via s16 carriers (13 forms across two sweeps)",
-      "lever_rule": "phantom-frame-slots-gcc272",
-      "floor_was": 41,
-      "floor_now": 41,
-      "git_head_at_measurement": "da871b79",
-      "note": "Census shortlist #5. Instruction counts ALREADY match (135/135), so the whole 41 is the sp-offset cascade plus register naming: target's 10 register saves sit above the vars area, so being at vars=8 instead of 24 shifts every save/restore offset and both sp adjusts. ONE FREE SLOT FOUND: naming the thrice-read *(((s16 *) fp_ptr) + 4) field in an `s16 sid` local moves vars 8 -> 16 at ZERO instruction cost (135 insns). Several variants give the same +8-at-no-cost (sid alone; sid + an s16 for the loop-sentinel read; sid + s16 xoff/yoff; sid + a named comparand) - all score 47. IMPORTANT: 41 -> 47 is NOT a regression signal; at vars=16 the offsets are shifted 8 from HEAD but still 8 short of target, so they are wrong in a different way. Only vars=24 can align them. THE EXACT TARGET FRAME IS REACHABLE BUT NOT FREE: naming the two rect coordinates in s16 locals and passing those to func_80048A7C instead of re-reading rect[0]/rect[1] gives frame 88 / vars 24 exactly, but adds 6 instructions (141) and scores 51. Second-slot probes that failed: naming the twice-read D_80094E08[sid] palette index (s16/u8/s32) REMOVES the phantom (back to vars=8) and drops 5-6 insns - the two separate reads are load-bearing; sid + named tbl element reads (vars 16, score 53); s16 loop sentinel (vars 16, +7 insns); s16 xoff/yoff alone (inert). src/text1a.c reverted; nothing beat 41 so no candidate is banked."
-    },
-    {
-      "date": "2026-08-04",
-      "round": 2,
-      "lever": "RTL -da + greg unallocated-pseudo instrumentation (tmp/stf_orphan.py); established the frame mechanism and reached target's exact frame",
-      "lever_rule": "phantom-frame-slots-gcc272",
-      "floor_was": 41,
-      "floor_now": 40,
-      "git_head_at_measurement": "e962b091",
-      "note": "MECHANISM MEASURED: vars = 8 x (number of pseudos in greg's allocate list that receive no hard register). HEAD has one (pseudo 80) -> vars 8; target needs three -> vars 24. Per-variant unallocated sets: HEAD [80]; sid [80,88] (vars 16, 135 insns); rect_s16 [75,80,81] (vars 24, 141 insns, 51); sid+rect_s16 four slots (vars 32, 78). CANDIDATE: sid + `s16 r` gives three slots -> frame 88 / vars 24 / regs 10 / args 24, EXACTLY target, at score 40 (beats HEAD's 41) with 141 insns (+6 from the s16 r sign-extends). This confirms the frame was the dominant term. THE THIRD SLOT IS THE WHOLE REMAINING PROBLEM: sid supplies slot 2 free, but every slot-3 producer costs instructions - s16 r (+6, 40), naming one rect coordinate rx or ry while keeping the other re-read (+3, 48), rect_s16 both coordinates (+6, 51). An explicit (s32) cast at the call or leaving the sentinel read alone is inert (still 40); u16 r with an (s16) test cast gives only 2 slots (136 insns, 46). NO SLOT ADDED AT ALL by: s16 on g, b, g+b, idx, outer, xoff, yoff; a named sent for the sentinel read; an s16 carrier for the 0x10/1 rect constants; named tbl element reads. Naming the twice-read D_80094E08[sid] palette index REMOVES a slot (its two separate reads are load-bearing). DIFF SHAPE: tmp/sbs.sh shows the instruction streams are already 1:1 across the whole prologue and body; the only differences are sp offsets (uniformly 16 apart) and one register rotation (target holds fp_ptr in $s8, we use $s7, though both save the same ten registers). src/text1a.c reverted; candidate banked to candidate.c."
-    },
-    {
-      "date": "2026-08-04",
-      "round": 3,
-      "lever": "per-site load-type audit against target + 17 further slot-3 candidates screened by unallocated-pseudo count",
-      "lever_rule": "phantom-frame-slots-gcc272",
-      "floor_was": 40,
-      "floor_now": 40,
-      "git_head_at_measurement": "(post e962b091 checkpoint)",
-      "note": "NO PROGRESS on the third slot; candidate stays at 40 with the exact target frame. Target's load types audited per site and OURS ALREADY MATCH ALL OF THEM: lh 0x8($fp) x2 (the sid field), lh D_800A9A20, lhu 0x0/0x2($s0) (the tbl pair), lh 0x18/0x1A($sp) (the rect read-back for func_80048A7C), lh 0x0($s0) (the sentinel). There is no type-correction lever. 17 further forms screened by UNALLOCATED-PSEUDO COUNT rather than score - all stay at exactly two slots (vars 16) at 135 insns: eight pure namings of existing sub-expressions (rect base pointer, (s32)rect call argument, image source address, palette table pointer, a second sid copy, the loop shift amount, an s16 outer selector, the func_8004881C result chain); u16 carriers on both lhu sites (together 53, t0 only 47, t1 only 47, a u16* walker 47); an s16 sent for the sentinel read (47); an s16 want for the D_800A9A20 comparand (47); u16 pair + sentinel (53). MECHANISM REFINED: sid is free because it names an s16 value that already arrives sign-extended from an lh and is used where that form is wanted; r holds a COMPUTED s32 ((a0 << 12) / 255), so narrowing it forces a truncate plus re-extension - the diff shows target passing it as `move a0,s7` where we emit sll/sra plus an extra move. Naming alone never adds a slot; only a narrowing does, and every narrowing in this body sits on a computed value. Two process notes: a stale apply of candidate.c left src/text1a.c dirty and made one screening run measure 'candidate + X' instead of 'HEAD + X' - caught, src restored from git, run repeated; the same trap bit tgm5.py on the previous function, so any sweep script that snapshots `orig` at import time must be run against a clean tree."
-    }
-  ],
-  "reviewer": null,
-  "rules_dropped_if_applied": 0,
-  "cheat_inventory": [
-    "33 regfix rules",
-    "2 asmfix rules moving a {lbl#6} label before an lh/lhu (jump-target fix for the inner_check goto)",
-    "no prologue_config / frame_fix / maspsx-gate entries",
-    "pre-existing in the body and NOT yet vetted: `int new_var = 5;` used as a shift count (constant-holder local family) and `do { yoff = 0; } while (0);` (the sanctioned do-while-zero wrapper). Both predate this session."
-  ],
-  "rejected_forms": [
-    {
-      "form": "rect coordinates named in s16 locals, passed to func_80048A7C instead of re-reading rect[0]/rect[1]",
-      "frame": 88,
-      "vars": 24,
-      "score": 51,
-      "reason": "hits the EXACT target frame but adds 6 instructions (141 vs 135)"
-    },
-    {
-      "form": "name the twice-read D_80094E08[sid] palette index (s16 / u8 / s32)",
-      "frame": 72,
-      "score": 48,
-      "reason": "REMOVES the phantom and drops 5-6 insns - the two separate reads are load-bearing"
-    },
-    {
-      "form": "sid + named tbl element reads",
-      "vars": 16,
-      "score": 53,
-      "reason": "worse than sid alone"
-    },
-    {
-      "form": "s16 loop sentinel r",
-      "vars": 16,
-      "score": 56,
-      "reason": "+7 insns"
-    },
-    {
-      "form": "s16 xoff / yoff alone",
-      "vars": 8,
-      "score": 41,
-      "reason": "inert"
-    },
-    {
-      "form": "sid + rect_s16 combined",
-      "vars": 32,
-      "score": 78,
-      "reason": "overshoots to three slots"
-    },
-    {
-      "form": "sid + s16 g / s16 b / both",
-      "vars": 16,
-      "score": "55 / 61 / 61",
-      "reason": "no extra slot, +4 to +9 insns"
-    },
-    {
-      "form": "sid + s16 idx / s16 outer",
-      "vars": 16,
-      "score": "51 / 55",
-      "reason": "no extra slot"
-    },
-    {
-      "form": "sid + s16 xoff / s16 yoff / named sent / s16 rect-constant carrier",
-      "vars": 16,
-      "score": "47 / 47 / 47 / 54",
-      "reason": "no extra slot"
-    },
-    {
-      "form": "sid + named rect coordinate (rx or ry only)",
-      "vars": 24,
-      "score": 48,
-      "reason": "reaches 3 slots at +3 insns but scores worse than s16 r"
-    },
-    {
-      "form": "sid + u16 r with (s16) test cast",
-      "vars": 16,
-      "score": 46,
-      "reason": "only 2 slots"
-    },
-    {
-      "form": "sid + s16 r + explicit (s32) at the call / sentinel untouched",
-      "vars": 24,
-      "score": 40,
-      "reason": "inert vs the candidate"
-    },
-    {
-      "form": "8 pure namings of existing sub-expressions (rect base ptr, (s32)rect arg, image src addr, palette table ptr, second sid copy, loop shift amount, s16 outer selector, func_8004881C result chain)",
-      "vars": 16,
-      "score": 47,
-      "reason": "naming alone never adds a slot"
-    },
-    {
-      "form": "u16 carriers on the two lhu tbl sites (pair / t0 only / t1 only / u16* walker)",
-      "vars": 16,
-      "score": "53 / 47 / 47 / 47",
-      "reason": "no third slot"
-    },
-    {
-      "form": "s16 sent for the sentinel read; s16 want for the D_800A9A20 comparand; u16 pair + sentinel",
-      "vars": 16,
-      "score": "47 / 47 / 53",
-      "reason": "no third slot"
-    }
-  ],
-  "root_cause": "Frame-only gap: target reserves 24 bytes of vars where only 8 are real (the s16 rect[4]); the other 16 are two phantom slots. Instruction counts already match, so closing the frame should collapse most of the 41. One phantom slot is obtainable for free (an s16 local naming the thrice-read fp_ptr field); the second has not been found without an instruction cost.",
-  "next_avenues": [
-    "The open question is well-bounded: a THIRD unallocated pseudo at 135 instructions. ~35 forms across six rounds say it is not reachable by naming or by any type choice that matches target's load widths.",
-    "Untried and worth a fresh eye: whether target's third slot comes from something structural rather than a local - e.g. the goto/label shape around inner_check, which the two asmfix rules already manipulate.",
-    "Screen any new idea with tmp/stf_orphan.py (unallocated set), not with the score - intermediate frames score worse than both endpoints.",
-    "Start from candidate.c (40). Completion gate (main session): 33 regfix + 2 asmfix rules must be rewritten or retired for any candidate shape."
-  ],
-  "memory_notes": [
-    "memory/project/phantom-frame-slots-gcc272.md",
-    "memory/wip/func_8003DBE4/notes.md",
-    "memory/wip/func_8003D9A0/notes.md (the combine orphan-USE mechanism)",
-    "memory/wip/_frame_census_2026-08-04.md"
-  ]
+  {
+   "date": "2026-08-04",
+   "round": 3,
+   "lever": "per-site load-type audit against target + 17 further slot-3 candidates screened by unallocated-pseudo count",
+   "lever_rule": "phantom-frame-slots-gcc272",
+   "floor_was": 40,
+   "floor_now": 40,
+   "git_head_at_measurement": "(post e962b091 checkpoint)",
+   "note": "NO PROGRESS on the third slot; candidate stays at 40 with the exact target frame. Target's load types audited per site and OURS ALREADY MATCH ALL OF THEM: lh 0x8($fp) x2 (the sid field), lh D_800A9A20, lhu 0x0/0x2($s0) (the tbl pair), lh 0x18/0x1A($sp) (the rect read-back for func_80048A7C), lh 0x0($s0) (the sentinel). There is no type-correction lever. 17 further forms screened by UNALLOCATED-PSEUDO COUNT rather than score - all stay at exactly two slots (vars 16) at 135 insns: eight pure namings of existing sub-expressions (rect base pointer, (s32)rect call argument, image source address, palette table pointer, a second sid copy, the loop shift amount, an s16 outer selector, the func_8004881C result chain); u16 carriers on both lhu sites (together 53, t0 only 47, t1 only 47, a u16* walker 47); an s16 sent for the sentinel read (47); an s16 want for the D_800A9A20 comparand (47); u16 pair + sentinel (53). MECHANISM REFINED: sid is free because it names an s16 value that already arrives sign-extended from an lh and is used where that form is wanted; r holds a COMPUTED s32 ((a0 << 12) / 255), so narrowing it forces a truncate plus re-extension - the diff shows target passing it as `move a0,s7` where we emit sll/sra plus an extra move. Naming alone never adds a slot; only a narrowing does, and every narrowing in this body sits on a computed value. Two process notes: a stale apply of candidate.c left src/text1a.c dirty and made one screening run measure 'candidate + X' instead of 'HEAD + X' - caught, src restored from git, run repeated; the same trap bit tgm5.py on the previous function, so any sweep script that snapshots `orig` at import time must be run against a clean tree."
+  },
+  {
+   "date": "2026-08-04",
+   "round": 4,
+   "lever": "STRUCTURAL: separate the loop sentinel from the red channel and write the loop as `while ((sent = tbl[0]) >= 0)`",
+   "lever_rule": "phantom-frame-slots-gcc272 / register-alloc-pure-c",
+   "floor_was": 40,
+   "floor_now": 29,
+   "git_head_at_measurement": "(post saTan4FireDisp checkpoint)",
+   "note": "THE WIN. Reading target around the inner_check label showed two things the m2c-shaped body got wrong: (a) target keeps the RED CHANNEL and the LOOP SENTINEL in DIFFERENT registers - the body's colour args come from $s7/$s6/$s3 while the sentinel lives in $v0; (b) at the label target reads tbl[0] TWICE, `lh $v0,0($s0)` for the test and `lhu $v1,0($s0)` for the next rect[0]. Our body conflated both into one `r`, which put the label in the wrong place - exactly what the two asmfix rules were compensating for. Giving the sentinel its own variable and writing `while ((sent = tbl[0]) >= 0)` puts the read at the label as target does, supplies the missing THIRD phantom slot, and holds the instruction count at 135: score 41 (HEAD) / 40 (previous candidate) -> 29, with frame 88 / vars 24 / regs 10 / args 24 and 135 insns all exactly target. This is also a SEMANTIC CORRECTION - the old body passed `r` to func_80048A7C, so from the second iteration onward it passed the previous tbl[0] instead of the red channel; target always passes $s7. EXPECTED SIDE EFFECT: the two asmfix rules for this function should become unnecessary; verify at the completion gate. Round 8 then tested the call-arg LUID lever (hoist-call-arg-local-flips-jal-delay) on the remaining scheduling cluster where target computes gpu_LoadImage's args early: naming both args first in the loop block, only the source address, or only the rect pointer are ALL INERT at 29; moving the rect stores after the arg locals regresses to 52 (loses the frame). Also measured: for(;;) forms with an explicit break give 131 insns / 69 - the while-with-assignment form is the one that matches; `sid` combined with the corrected loop overshoots to four slots (vars 32). src/text1a.c reverted; candidate.c updated."
+  }
+ ],
+ "reviewer": null,
+ "rules_dropped_if_applied": 0,
+ "cheat_inventory": [
+  "33 regfix rules",
+  "2 asmfix rules moving a {lbl#6} label before an lh/lhu (jump-target fix for the inner_check goto)",
+  "no prologue_config / frame_fix / maspsx-gate entries",
+  "pre-existing in the body and NOT yet vetted: `int new_var = 5;` used as a shift count (constant-holder local family) and `do { yoff = 0; } while (0);` (the sanctioned do-while-zero wrapper). Both predate this session."
+ ],
+ "rejected_forms": [
+  {
+   "form": "rect coordinates named in s16 locals, passed to func_80048A7C instead of re-reading rect[0]/rect[1]",
+   "frame": 88,
+   "vars": 24,
+   "score": 51,
+   "reason": "hits the EXACT target frame but adds 6 instructions (141 vs 135)"
+  },
+  {
+   "form": "name the twice-read D_80094E08[sid] palette index (s16 / u8 / s32)",
+   "frame": 72,
+   "score": 48,
+   "reason": "REMOVES the phantom and drops 5-6 insns - the two separate reads are load-bearing"
+  },
+  {
+   "form": "sid + named tbl element reads",
+   "vars": 16,
+   "score": 53,
+   "reason": "worse than sid alone"
+  },
+  {
+   "form": "s16 loop sentinel r",
+   "vars": 16,
+   "score": 56,
+   "reason": "+7 insns"
+  },
+  {
+   "form": "s16 xoff / yoff alone",
+   "vars": 8,
+   "score": 41,
+   "reason": "inert"
+  },
+  {
+   "form": "sid + rect_s16 combined",
+   "vars": 32,
+   "score": 78,
+   "reason": "overshoots to three slots"
+  },
+  {
+   "form": "sid + s16 g / s16 b / both",
+   "vars": 16,
+   "score": "55 / 61 / 61",
+   "reason": "no extra slot, +4 to +9 insns"
+  },
+  {
+   "form": "sid + s16 idx / s16 outer",
+   "vars": 16,
+   "score": "51 / 55",
+   "reason": "no extra slot"
+  },
+  {
+   "form": "sid + s16 xoff / s16 yoff / named sent / s16 rect-constant carrier",
+   "vars": 16,
+   "score": "47 / 47 / 47 / 54",
+   "reason": "no extra slot"
+  },
+  {
+   "form": "sid + named rect coordinate (rx or ry only)",
+   "vars": 24,
+   "score": 48,
+   "reason": "reaches 3 slots at +3 insns but scores worse than s16 r"
+  },
+  {
+   "form": "sid + u16 r with (s16) test cast",
+   "vars": 16,
+   "score": 46,
+   "reason": "only 2 slots"
+  },
+  {
+   "form": "sid + s16 r + explicit (s32) at the call / sentinel untouched",
+   "vars": 24,
+   "score": 40,
+   "reason": "inert vs the candidate"
+  },
+  {
+   "form": "8 pure namings of existing sub-expressions (rect base ptr, (s32)rect arg, image src addr, palette table ptr, second sid copy, loop shift amount, s16 outer selector, func_8004881C result chain)",
+   "vars": 16,
+   "score": 47,
+   "reason": "naming alone never adds a slot"
+  },
+  {
+   "form": "u16 carriers on the two lhu tbl sites (pair / t0 only / t1 only / u16* walker)",
+   "vars": 16,
+   "score": "53 / 47 / 47 / 47",
+   "reason": "no third slot"
+  },
+  {
+   "form": "s16 sent for the sentinel read; s16 want for the D_800A9A20 comparand; u16 pair + sentinel",
+   "vars": 16,
+   "score": "47 / 47 / 53",
+   "reason": "no third slot"
+  },
+  {
+   "form": "call-arg LUID: name both gpu_LoadImage args first in the loop block / only the source address / only the rect pointer",
+   "score": 29,
+   "reason": "all inert on the corrected base"
+  },
+  {
+   "form": "arg locals first + rect stores moved after them",
+   "score": 52,
+   "reason": "loses the frame (vars back to 8)"
+  },
+  {
+   "form": "for (;;) { sent = tbl[0]; if (sent < 0) break; ... } (s32 and s16 sentinel)",
+   "score": 69,
+   "reason": "131 insns; the while-with-assignment form is the matching one"
+  },
+  {
+   "form": "sid + the corrected loop",
+   "vars": 32,
+   "score": 64,
+   "reason": "overshoots to four slots"
+  }
+ ],
+ "root_cause": "Frame-only gap: target reserves 24 bytes of vars where only 8 are real (the s16 rect[4]); the other 16 are two phantom slots. Instruction counts already match, so closing the frame should collapse most of the 41. One phantom slot is obtainable for free (an s16 local naming the thrice-read fp_ptr field); the second has not been found without an instruction cost.",
+ "next_avenues": [
+  "Start from candidate.c (29). The only open question is the 3-cycle callee-save rotation s2/s3/s4 -> s3/s4/s2 - a register-allocation tie of the kind register-alloc-pure-c covers. Frame and instruction count are settled; nothing structural remains.",
+  "Screen any idea that touches the frame with tmp/stf_orphan.py (unallocated-pseudo set), not with the score.",
+  "Completion gate (main session): 33 regfix rules must be rewritten or retired, and the 2 asmfix label rules should be checked for redundancy - the corrected loop shape is expected to make them unnecessary."
+ ],
+ "memory_notes": [
+  "memory/project/phantom-frame-slots-gcc272.md",
+  "memory/wip/func_8003DBE4/notes.md",
+  "memory/wip/func_8003D9A0/notes.md (the combine orphan-USE mechanism)",
+  "memory/wip/_frame_census_2026-08-04.md"
+ ],
+ "prior_sessions_summary": [
+  "2026-08-04 | phantom-slot producer hunt via s16 carriers (13 forms across two sweeps) | floor ? | progress"
+ ]
 }

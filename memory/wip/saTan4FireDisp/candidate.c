@@ -1,20 +1,31 @@
-/* saTan4FireDisp - WIP candidate. sandbox --disable all == 40 (HEAD == 41).
- * Reaches target's EXACT frame: 88 / vars=24 / regs=10 / args=24.
- * Cost: 141 insns vs target 135 (+6) - the `s16 r` conversion adds
- * sign-extends. Net -1 on the metric because the sp-offset cascade
- * collapses when the frame is right.
+/* saTan4FireDisp - WIP candidate. sandbox --disable all == 29 (HEAD == 41).
+ * Frame AND instruction count are both EXACTLY target's:
+ *   frame 88 / vars 24 / regs 10 / args 24, 135 insns.
+ * Residual 29 = a 3-cycle callee-save rotation (ours s2/s3/s4 vs target
+ * s3/s4/s2) plus the scheduling that rides on it.
  *
- * Mechanism (measured): vars = 8 x (number of pseudos in greg's allocate
- * list that receive no hard register). HEAD has 1, this form has 3.
- *   slot 1: pre-existing (pseudo 80)
- *   slot 2: `s16 sid` naming the thrice-read *((s16 *)fp_ptr + 4) - FREE
- *   slot 3: `s16 r` - costs the +6
- * See notes.md; tmp/stf_orphan.py is the detector.
+ * THE STRUCTURAL FIX (round 7): target keeps the RED CHANNEL and the LOOP
+ * SENTINEL in DIFFERENT registers - the body's colour args come from
+ * $s7/$s6/$s3 while the sentinel lives in $v0, and at the loop label target
+ * reads tbl[0] TWICE (`lh $v0,0($s0)` for the test, `lhu $v1,0($s0)` for the
+ * next rect[0]). The previous m2c-shaped body conflated them into one `r`,
+ * which put the label in the wrong place - that is what the two asmfix
+ * rules were compensating for. Giving the sentinel its own variable and
+ * writing the loop as `while ((sent = tbl[0]) >= 0)` puts the read at the
+ * label exactly as target does, supplies the third phantom slot, and keeps
+ * the instruction count at 135.
+ *
+ * NB this is also a SEMANTIC correction: the old body passed `r` to
+ * func_80048A7C, so from the second iteration onward it passed the previous
+ * tbl[0] instead of the red channel. Target always passes $s7 (red).
+ *
+ * If this lands, the two asmfix rules for this function should become
+ * unnecessary - verify at the completion gate.
  */
 void saTan4FireDisp(s32 a0, s32 a1, s32 a2)
 {
   s32 *fp_ptr;
-  s16 r;
+  s32 r;
   s32 g;
   s32 b;
   s32 outer;
@@ -22,15 +33,14 @@ void saTan4FireDisp(s32 a0, s32 a1, s32 a2)
   s32 xoff;
   s32 yoff;
   s16 *tbl;
-  s16 sid;
   s32 idx;
+  s32 sent;
   s16 rect[4];
   extern s32 func_800486FC(void);
   fp_ptr = (s32 *)func_8004153C(1);
   if (fp_ptr == 0) { return; }
-  sid = *(((s16 *) fp_ptr) + 4);
-  if (sid != D_800A9A20) { return; }
-  if (D_80094E08[sid] == 0xFF) { return; }
+  if ((*(((s16 *) fp_ptr) + 4)) != D_800A9A20) { return; }
+  if (D_80094E08[*(((s16 *) fp_ptr) + 4)] == 0xFF) { return; }
   new_var = 5;
   r = (a0 << 12) / 255;
   g = (a1 << 12) / 255;
@@ -49,10 +59,9 @@ void saTan4FireDisp(s32 a0, s32 a1, s32 a2)
     xoff = 0x80;
     do { yoff = 0; } while (0);
   }
-  tbl = (s16 *) D_80094DF0[D_80094E08[sid]];
+  tbl = (s16 *) D_80094DF0[D_80094E08[*(((s16 *) fp_ptr) + 4)]];
   idx = 0;
-  goto inner_check;
-  inner_body:
+  while ((sent = tbl[0]) >= 0)
   {
     s32 off = idx << new_var;
     idx++;
@@ -65,9 +74,6 @@ void saTan4FireDisp(s32 a0, s32 a1, s32 a2)
     gpu_DrawSync(0);
     func_80048A7C(rect[0], rect[1], 0x10, r, g, b);
   }
-  r = tbl[0];
-  inner_check:
-  if (r >= 0) { goto inner_body; }
   outer++;
   if (outer < 2) { goto loop_outer; }
   if (single_game_SetStageId() == 1) { func_8003E120(); }
