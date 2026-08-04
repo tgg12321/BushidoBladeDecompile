@@ -97,3 +97,18 @@ forbidden chain-extender. Per-round narrative for rounds 1-14 is in git history
 for this file; one-line summaries are in `meta.json` `prior_sessions_summary[]`.
 
 Sibling: `memory/wip/func_8007C86C/` — identical pattern and floor.
+
+## RA-solver vectors (2026-08-04, tools/ra_solver Phase 2)
+
+Solver-derived sufficient perturbation set for the frame51 4-role cascade
+(model validated 10/10 vs ground truth; greedy atom stack):
+- 78 (tail const, now v0): pref REROUTE {2,4}->{4} — the constant must flow
+  through an a0 relationship (arg position), not v0.
+- 79 (limit save, now v1): pref ADD +r6 — a copy relationship with a2.
+- 80 (carrier, now a0): pref REROUTE ->{7} — copy relationship with a3.
+- 76 (arm temp, now a0): BLOCKED by hard_conf [2] — its live range crosses a
+  $v0 write (call return); target spelling must define/consume it OUTSIDE
+  that span, then reg 2 becomes reachable.
+Coherent reading: all four values sit in ARGUMENT/call dataflow in the
+original (arg-register residency), not local-temp flow. Next session:
+find the C spelling realizing each vector (Phase 3 catalog).
