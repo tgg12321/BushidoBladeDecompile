@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "saEft00Add",
-      "file": "system",
-      "distance": 1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_80021280",
       "file": "code6cac",
       "distance": 19,
@@ -2569,14 +2561,14 @@
     }
   ],
   "counts": {
-    "total": 305,
-    "active": 269,
+    "total": 304,
+    "active": 268,
     "by_status": {
-      "active": 269,
+      "active": 268,
       "parked": 36
     },
     "by_verdict": {
-      "C": 91,
+      "C": 90,
       "ASM-PARTIAL": 43,
       "ASM-SUSPECT": 109,
       "ASM-STRUCTURAL": 26
