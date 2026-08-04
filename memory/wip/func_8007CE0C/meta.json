@@ -5,7 +5,7 @@
   "verdict": "C",
   "scores": {
     "head_floor": 48,
-    "candidate_floor": 48,
+    "candidate_floor": 47,
     "metric": "sandbox --disable all (masked Levenshtein)",
     "build_insns": 142,
     "target_insns": 143,
@@ -21,6 +21,16 @@
       "floor_now": 48,
       "git_head_at_measurement": "e7a0b730",
       "note": "BOTH ENTRY CAUTIONS DISCHARGED BY MEASUREMENT. (1) No sibling label landmine: tmp/ce0c_landmines.py resolves every regfix/asmfix rule hardcoding an absolute .L<N> to its owning function+file; all nine holders are in OTHER translation units, and cc1's .L counter is per-TU, so a label-count change in func_8007CE0C cannot drift any of them. CE0C's own splices already use {lbl#N}. Restructure freely. (2) Not GTE: the body is a GPU packet/DMA routine (g_gpu_stat_reg, g_gpu_data_reg, dma madr/bcr/chcr), zero cop2, so gte-3x3 / scratchpad-gte / packed-multiply do not apply. RESIDUAL DECOMPOSES INTO THREE INDEPENDENT GROUPS: A = 16 instructions of pure frame-offset drift (exactly the 16 frame regfix rules at regfix.txt:3419-3434, so fixing the frame retires 16 of the 23 rules in one move); B = ~31 instructions of register naming plus three extra/missing moves in the clamp and multiply blocks; C = 1 instruction (idx 66, target `nop` vs our `lui a0,0xa000` - our func_8007DC9C call passes an argument the target does not). FRAME QUANTIFIED: target reserves 48 bytes below its register saves and touches NONE of it (the only sp-relative accesses in the target asm are the 7 saves and 7 restores), and both calls take at most one argument so args is the 16-byte o32 minimum on both sides; therefore target vars=32 against our vars=16 and the spec is to raise vars into [25,32]. THE CHEAT-ASM IS SCORE-INERT: replacing the s5 pin with a plain local and deleting the barrier scores the same 48, so the next session should start from the pin-free base. NEGATIVE RESULT: vars did not move off 16 for any of 13 variants - hoisting the block-scope temps, explicit clamp-result locals, s16 coordinate locals, packet-word locals, s16 locals holding the two clamp globals (the memory's own minimal HImode trigger), and s16 struct-field temps feeding the multiply all leave vars=16; a region bisect shows the 16 bytes are not attributable to any single region (deleting the loop or the DMA drops the frame to 56 via gp_regs 7->6, not via vars). src/display.c reverted."
+    },
+    {
+      "date": "2026-08-04",
+      "round": 2,
+      "lever": "Group C closed (no-arg call); phantom-slot PRODUCER identified via combine orphan-USE RTL",
+      "lever_rule": "phantom-frame-slots-gcc272 / orphan-USE strand",
+      "floor_was": 48,
+      "floor_now": 47,
+      "git_head_at_measurement": "e7a0b730",
+      "note": "GROUP C CLOSED 48->47: func_8007DC9C() takes NO argument. The committed source passed (u32 *)0xA0000000, emitting `lui a0,0xa000` where target has a nop at idx 66 - exactly what the rule `subst \"lui\\s+\\$4,...\" \"nop\" @ 63` papered over. func_8007DC9C(0) and (u32 *)0 both stay at 48, so it must be no argument at all rather than a null one. GROUP A PRODUCER IDENTIFIED EXACTLY: each phantom frame slot is one combine orphan-USE pseudo, and the producer is an s16->s32 sign-extension of a value ALREADY IN A REGISTER. GCC expands it as (set (reg:SI 96) (ashift:SI (subreg:SI (reg/v:HI 75) 0) 16)) + (set (reg:SI 95) (ashiftrt:SI (reg:SI 96) 16)); combine merges the pair into one sign_extend, killing 96's def but leaving (use (reg:SI 96)) orphaned, and greg reports it UNALLOCATED so it takes an 8-byte slot. tmp/orphan_probe.py on our body reports UNALLOCATED ['96','100'] - exactly two strands, exactly vars=16. A value loaded straight from memory does NOT count because lh sign-extends in the load. So the Group A spec is: go from 2 orphan strands to 4. NEGATIVE: extra s16 casts do NOT create strands - six spellings (s16 xf=arg0->x with (s32)xf, s16 yf=(s16)(v0_ext>>16) with (s32)yf, both, the clamped x as s16 xc, both clamp limits as s16 with explicit (s32) widening) ALL still report exactly 2 unallocated pseudos and vars=16, because re-casting an already-s16 value is a no-op GCC folds; three of them also collapsed the multiply to 131 insns. src/display.c reverted; candidate.c carries the Group-C fix plus the cheat-asm removal."
     }
   ],
   "reviewer": null,
@@ -40,13 +50,17 @@
       "form": "region bisect to attribute the current 16 bytes (delete rounding block / push loop / DMA block / x-clamp)",
       "score": 52,
       "reason": "all leave vars=16; deleting the loop or DMA drops the frame to 56 but through gp_regs (7 saved regs -> 6), not vars"
+    },
+    {
+      "form": "extra s16 sign-extension casts to manufacture orphan strands (6 spellings)",
+      "score": 48,
+      "reason": "re-casting a value that is already s16 is a no-op GCC folds; all six still report exactly 2 unallocated pseudos and vars=16. Only a genuinely DISTINCT HImode value that must be widened emits the ashift/ashiftrt pair combine turns into an orphan."
     }
   ],
   "root_cause": "Three independent causes. (A) The frame is 16 bytes short because cc1 allocates half as many phantom locals temps as the original did (vars 16 vs 32) - not a spill, not a dead array, and not reachable by declaring locals. (B) Register allocation in the clamp and multiply blocks plus three extra/missing moves. (C) One superfluous argument load at the func_8007DC9C call.",
   "next_avenues": [
-    "Group A first: 16 of the 48 instructions, mechanically independent of B, and it has a direct cheap gradient - `bash tmp/frame_probe.sh func_8007CE0C display` prints cc1's `vars=` (which IS get_frame_size) without running the pipeline. Find the computation shape that makes cc1 call assign_stack_local twice as often; declarations do not do it.",
-    "Group C is one instruction and source-level: try func_8007DC9C() with no argument at the first call site (the second already passes none).",
-    "Group B last, with ALLOCDBG lever-sizing (tmp/allocone.sh generalises to any function) - do it AFTER the frame is right, since a frame change re-shuffles the allocation anyway.",
+    "GROUP A (16 insns, 16 rules): find two more genuinely-distinct HImode values that must be widened to SImode - the spec is orphan strands 2 -> 4. Gradient: tmp/ce0c3.py prints the greg UNALLOCATED set per variant. Re-casting existing values is proven closed; it needs a different decomposition of the clamp/multiply arithmetic. Target emits two `sll ,0x10` and one `sra ,0x10` exactly as we do, so the extra strands are merged (invisible) ones, not extra emitted shifts.",
+    "GROUP B (~30 insns): ALLOCDBG lever-sizing via tmp/allocone.sh, AFTER the frame is right (a frame change re-shuffles the allocation).",
     "Completion gate: 23 regfix rules + the pin/barrier retire, full build, layer-2 cheat-reviewer, queue done."
   ],
   "memory_notes": [
