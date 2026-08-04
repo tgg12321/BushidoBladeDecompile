@@ -56,17 +56,14 @@ over target's stream: first `$v1` def is insn 39; registers written before it ar
 round 16's model 9/9 solution is **not** the mechanism it used.
 
 **Round 18 — widening the signature does not help.** No prototype exists (the
-definitions at `src/display.c:563`/`:604` follow the call sites at `:333`/`:396`/
-`:472`), so the definition can be widened alone. 3- and 4-param forms with the
-extras unread, `s16` and `s32`: **all four bit-identical to the 2-param
-baseline.** `tmp/c7a0_iso_check.py` proves it at model level — holding the param
-pseudos fixed and shifting body pseudos `+2`, the 4-param model is **ISOMORPHIC
-in every field** (order, prefs, full/copy_prefs, conflicts, hard_conflicts,
-modes, use_only, seed_used, dispositions, nrefs/livelen/pri). An unread param's
-prologue copy is dead and deleted before `global_conflicts`, so hard `$a2`/`$a3`
-never go live and `set_preference` never sees them; a *read* extra param would
-emit an instruction and break the stream. No member of the family both moves
-allocation and holds the bytes.
+definitions at `src/display.c:563`/`:604` follow the call sites), so it can be
+widened alone. 3- and 4-param forms with the extras unread, `s16` and `s32`:
+**all four bit-identical to the 2-param baseline**, and `tmp/c7a0_iso_check.py`
+proves it at model level — holding the param pseudos fixed and shifting body
+pseudos `+2`, the 4-param model is **ISOMORPHIC in every field**. An unread
+param's prologue copy is dead and deleted before `global_conflicts`, so hard
+`$a2`/`$a3` never go live; a *read* extra param would emit an instruction and
+break the stream.
 
 Consequence: target's allocation is unreachable from ANY stream-exact leaf body.
 **The reload escape is now MEASURED dead, not merely inferred** (Phase 5,
@@ -74,9 +71,12 @@ Consequence: target's allocation is unreachable from ANY stream-exact leaf body.
 applied): all nine allocnos show `calls=1` with **zero** `retry=1` blocks —
 `find_reg` is entered exactly once each, never re-entered. That matches the
 source: the losers/retry path needs `best_reg < 0`, i.e. all 32 registers
-exhausted, which nine allocnos cannot do. With global alloc searched
-exhaustively, local alloc validated, and retry never firing, **no mechanism in
-this compiler remains**. Mechanism of the residual: the `$a0` preference
+exhausted, which nine allocnos cannot do. **And the compiler-identity premise is
+tested and survives**: `tools/cc1psx_wrapper.sh` (the ORIGINAL PsyQ cc1psx) on
+this exact body emits output **byte-identical to the fork**, 0/45 differing
+insns after label normalisation. With global alloc searched exhaustively, local
+alloc validated, retry never firing and the original compiler agreeing, **no
+mechanism remains**. Mechanism of the residual: the `$a0` preference
 originates at `76 = a0` (carrier init) and **propagates** to `tx` and `lo` via
 `global.c:851`'s REG_DEAD-linked copy merge, stopping only if the allocnos
 *conflict*; `find_reg` takes the **lowest** preferred reg, and MIPS has **no
