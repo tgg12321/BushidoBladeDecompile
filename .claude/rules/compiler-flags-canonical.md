@@ -30,13 +30,29 @@ merging — see [[cross-jump-call-merge]]), never in flags.
 4. Therefore the bridged/cheated functions share their file's flags (`-O2`); no
    alternative flag can change their canonical output.
 
+## `-mel` (2026-08-04) — part of the canonical flag set, not a flag-hunt precedent
+
+`-mel` was added to `CC_FLAGS`/`CC_FLAGS_GP` (Makefile + engine/buildconfig.py)
+by owner election on 2026-08-04. It is a CONFIGURATION-FIDELITY correction, not
+a tuning flag: the cc1 build's `mips-mips-gnu` triple defaulted to big-endian for
+a little-endian game, which (a) shifted every 4-byte reload spill slot to
+4 mod 8 where the original compiler provably emitted 0 mod 8 (func_80060E38
+nine-session evidence chain, docs/grind/decisions.md 2026-08-03), (b) reversed
+struct bitfield allocation ([[bitfield-direction-divergence]] — now resolved),
+and (c) emitted big-endian lwl/lwr offsets (the reason the now-retired
+`fix_lwl` pipeline stage existed). A 4-build controlled experiment validated
+the switch: full-build SHA1 == oracle, func_80060E38 COMPLETED-C with zero
+rules, zero regressions after the OTag field-order restore + a 2-rule decBs0
+re-fit. This does NOT reopen flag-hunting: the flag set (now including -mel)
+remains frozen and the walls remain source-structure.
+
 ## The only real per-file flag variation (already encoded)
 
 | Mechanism (Makefile) | Flag | Why |
 |---|---|---|
 | `GP_FILES` | `-G8` instead of `-G0` | small-data threshold for GP-relative files |
 | `NO_SR_FILES` | `-fno-strength-reduce` | files where strength-reduction diverges |
-| `FIX_LWL_FILES` | (maspsx `fix_lwl` pass, not a cc1 flag) | lwl/lwr handling |
+| `FIX_LWL_FILES` | RETIRED 2026-08-04 (empty) | fix_lwl XOR-corrected big-endian lwl/lwr offsets; obsolete under -mel |
 
 These ARE the per-file flag variation the original build used. Nothing else.
 If a file isn't on these lists, it is plain `-O2 -G0`.

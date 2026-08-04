@@ -7,6 +7,17 @@ paths: [".claude/rules/bitfield-direction-divergence.md"]
 
 # Bitfield allocation direction DIVERGES between our fork and cc1psx
 
+> **RESOLVED 2026-08-04 (-mel adoption).** The divergence below was a
+> CONFIGURATION artifact, not a compiler-code difference: our cc1 was
+> built with a big-endian target default (`target=mips-mips-gnu`), and
+> GCC 2.7.2 allocates bitfields HIGH-first iff `BYTES_BIG_ENDIAN` — a
+> RUNTIME flag. With `-mel` now in canonical `CC_FLAGS` (owner-elected
+> after the func_80060E38 evidence chain + a 4-build controlled
+> experiment, full-build SHA1 == oracle), our fork allocates LOW-first
+> exactly like cc1psx. SDK bitfield structs are now declared in the
+> ORIGINAL PsyQ field order (OTag reverted 2026-08-04); the flipped-order
+> compensation below is HISTORICAL and must not be reintroduced.
+
 ## The measured fact (probes preserved: tmp/bitfield_probe.sh, tmp/bf_probe_psx.sh)
 
 | Compiler | `struct {u32 addr:24; u32 len:8;}` → `p->addr` | First-declared field |

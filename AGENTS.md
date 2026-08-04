@@ -116,6 +116,13 @@ agents should follow it by convention.
 mipsel-linux-gnu-cpp | cc1 (GCC 2.7.2) | maspsx (--aspsx-version=2.34) | mipsel-linux-gnu-as → .o
 ```
 
+Since 2026-08-04 cc1 runs with `-mel` in `CC_FLAGS`: the prebuilt cc1's
+`mips-mips-gnu` target triple defaults to BIG-endian, and `-mel` flips the
+runtime `BYTES_BIG_ENDIAN` to match the little-endian PS1 (spill-slot layout,
+bitfield direction, lwl/lwr offsets). The former `fix_lwl` pipeline stage is
+retired (empty `FIX_LWL_FILES`); do not re-enable it and do not remove `-mel`
+— both are load-bearing for the oracle match.
+
 All objects linked with `mipsel-linux-gnu-ld`, stripped to binary via `objcopy`, then `make_psexe.py` prepends the original 0x800-byte PS-EXE header. Final SHA1 compared against original.
 
 ### Environment setup
