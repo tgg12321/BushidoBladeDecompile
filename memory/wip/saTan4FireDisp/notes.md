@@ -1,12 +1,9 @@
 # saTan4FireDisp — WIP (current state 2026-08-04, round 8)
 
-`src/text1a.c:1176`. Draws a fire effect: validates a stage/player id, converts
-three colour channels to Q12, then runs a two-pass outer loop over a coordinate
-table, uploading 16x1 image strips via `gpu_LoadImage` and calling
-`func_80048A7C` per strip.
-
-33 regfix rules + 2 asmfix rules (the asmfix pair moves a `{lbl#6}` label before
-an `lh`/`lhu`). No prologue_config / frame_fix entries.
+`src/text1a.c:1176`. Fire effect: validates a stage/player id, converts three
+colour channels to Q12, then a two-pass outer loop over a coordinate table
+uploading 16x1 strips via `gpu_LoadImage` + `func_80048A7C`. 33 regfix + 2
+asmfix rules (the asmfix pair moves a `{lbl#6}` label before an `lh`/`lhu`).
 
 ## Where it stands
 
@@ -23,83 +20,99 @@ an `lh`/`lhu`). No prologue_config / frame_fix entries.
 ## The structural fix (round 7) — the whole win
 
 Target keeps the **red channel** and the **loop sentinel** in *different*
-registers: the body's colour args come from `$s7`/`$s6`/`$s3` while the sentinel
-lives in `$v0`, and at the loop label target reads `tbl[0]` **twice** —
-`lh $v0,0($s0)` for the test and `lhu $v1,0($s0)` for the next `rect[0]`.
+registers (colour args from `$s7`/`$s6`/`$s3`, sentinel in `$v0`), and at the
+loop label reads `tbl[0]` **twice**: `lh $v0,0($s0)` for the test, `lhu
+$v1,0($s0)` for the next `rect[0]`. The m2c-shaped body conflated both into one
+`r`, which put the label in the wrong place — exactly what the two asmfix rules
+compensate for. Giving the sentinel its own variable and writing
+`while ((sent = tbl[0]) >= 0)` puts the read at the label as target does,
+supplies the missing third phantom slot, and holds 135 insns. **41 → 29.**
 
-The m2c-shaped body conflated the two into a single `r`, which is what put the
-label in the wrong place — and that is precisely what the two asmfix rules were
-compensating for. Giving the sentinel its own variable and writing the loop as a
-`while` with the assignment in the condition:
+Also a **semantic correction**: the old body passed `r` to `func_80048A7C`, so
+from the second iteration onward it passed the previous `tbl[0]` instead of the
+red channel. Target always passes `$s7`.
 
-```c
-s32 sent;
-...
-idx = 0;
-while ((sent = tbl[0]) >= 0) {
-    ... body, colours still r/g/b ...
-}
-```
-
-puts the read at the label exactly as target does, supplies the missing third
-phantom slot, and keeps the instruction count at 135. **41 → 29.**
-
-This is also a **semantic correction**: the old body passed `r` to
-`func_80048A7C`, so from the second iteration onward it passed the previous
-`tbl[0]` instead of the red channel. Target always passes `$s7` (red).
-
-**Expected side effect:** if this lands, the two asmfix rules for this function
-should become unnecessary. Verify at the completion gate.
+**Expected side effect:** the two asmfix rules should become unnecessary —
+verify at the completion gate.
 
 ## The frame mechanism (rounds 3-6)
 
-`tmp/stf_orphan.py` (RTL `-da` dump + greg unallocated-pseudo report per
-variant) gives the rule directly: **vars = 8 × (pseudos in greg's allocate list
-that receive no hard register)**. HEAD has one (80) → vars 8; target needs
-three. Screen slot candidates with this, **not** with the score — intermediate
-frames score worse than both endpoints (a vars=16 form reads as 47 vs HEAD's 41
-purely because the offsets are shifted 8 but still 8 short).
-
-Before the structural fix, the only route to three slots was a type narrowing
-that cost instructions: `s16 r` (+6, score 40 — the previous candidate), naming
-one rect coordinate (+3, 48), both coordinates (+6, 51). `sid` (naming the
-thrice-read `*(((s16 *) fp_ptr) + 4)`) is free because it names an s16 value
-that already arrives sign-extended from an `lh`, whereas `r` holds a *computed*
-s32, so narrowing it forces a truncate plus re-extension.
+`tmp/stf_orphan.py` gives the rule: **vars = 8 × (pseudos in greg's allocate
+list that get no hard register)**. HEAD has one → vars 8; target needs three.
+Screen slot ideas with it, **not** the score — intermediate frames read worse
+than both endpoints (a vars=16 form scores 47 vs HEAD's 41 purely because the
+offsets are shifted 8 but still 8 short). Before the structural fix, three slots
+only came from a type narrowing that cost instructions (`s16 r` +6 → 40; one
+rect coordinate +3 → 48; both +6 → 51).
 
 ## Measured negative / inert (do not re-run)
 
-- **Load types**: audited per site against target — `lh 0x8($fp)` ×2,
-  `lh D_800A9A20`, `lhu 0x0/0x2($s0)`, `lh 0x18/0x1A($sp)`, `lh 0x0($s0)` — ours
-  already match all of them. No type-correction lever exists.
-- **Pure namings** (8 forms: rect base pointer, `(s32)rect` argument, image
-  source address, palette table pointer, second `sid` copy, loop shift amount,
-  `s16` outer selector, `func_8004881C` result chain) — never add a slot.
-- **`u16` carriers on the two `lhu` sites** (pair / `t0` / `t1` / `u16 *`
-  walker), `s16 sent` alone, `s16 want` for the comparand — no third slot.
-- **`s16` on** `g`, `b`, `g`+`b`, `idx`, `outer`, `xoff`, `yoff`; an `s16`
-  carrier for the `0x10`/`1` rect constants; named `tbl` element reads — no slot.
-- Naming the twice-read `D_80094E08[sid]` palette index **removes** a slot; its
+- **Load types** audited per site against target (`lh 0x8($fp)` ×2,
+  `lh D_800A9A20`, `lhu 0x0/0x2($s0)`, `lh 0x18/0x1A($sp)`, `lh 0x0($s0)`) —
+  ours already match all of them; no type-correction lever exists.
+- **Pure namings never add a slot** (8 forms: rect base pointer, `(s32)rect`
+  argument, image source address, palette table pointer, second `sid` copy, loop
+  shift amount, `s16` outer selector, `func_8004881C` result chain).
+- **No third slot** from: `u16` carriers on the two `lhu` sites (pair / `t0` /
+  `t1` / `u16 *` walker); `s16 sent` alone; `s16 want` for the comparand; `s16`
+  on `g`, `b`, `g`+`b`, `idx`, `outer`, `xoff`, `yoff`; an `s16` carrier for the
+  `0x10`/`1` rect constants; named `tbl` element reads.
+- Naming the twice-read `D_80094E08[sid]` palette index **removes** a slot — its
   two separate reads are load-bearing.
-- **Round 8, call-arg LUID** ([[hoist-call-arg-local-flips-jal-delay]]): naming
-  both `gpu_LoadImage` args first in the loop block, or only the source address,
-  or only the rect pointer — **all inert at 29**. Moving the rect stores after
-  the arg locals regresses to 52 (loses the frame). Target computes those args
-  early and we compute them late, but no C-visible lever moves it.
-- `for (;;) { sent = tbl[0]; if (sent < 0) break; … }` forms: 131 insns, 69 —
-  the `while`-with-assignment form is the one that matches.
-- `sid` combined with the corrected loop: overshoots to four slots (vars 32).
+- **Call-arg LUID** ([[hoist-call-arg-local-flips-jal-delay]], round 8): naming
+  both `gpu_LoadImage` args first in the loop block, or either one alone — all
+  inert at 29; moving the rect stores after the arg locals regresses to 52.
+- `for (;;) { sent = tbl[0]; if (sent < 0) break; … }`: 131 insns, 69 — the
+  `while`-with-assignment form is specifically the matching one.
+- `sid` combined with the corrected loop overshoots to four slots (vars 32).
 
-## Resume here
+## Round 9 — RA Step-0 diagnosis + Levers A-C, no movement
 
-Start from `candidate.c` (29). The only open question is the 3-cycle callee-save
-rotation `s2`/`s3`/`s4` → `s3`/`s4`/`s2` — a register-allocation tie of the kind
-[[register-alloc-pure-c]] covers. The frame and instruction count are settled, so
-nothing structural remains. Screen with `tmp/stf_orphan.py` if any idea touches
-the frame.
+**Step-0 (`.greg`, candidate applied).** The rotating values are:
+
+| pseudo | value | ours | target |
+|---|---|---|---|
+| 76 | `r` (red) | `$s7` (23) | `$s7` ✓ |
+| 77 | `g` | `$s6` (22) | `$s6` ✓ |
+| 78 | `b` | `$s2` (18) | **`$s3`** |
+| 82 | `yoff` | `$s3` (19) | **`$s4`** |
+| 79 | `outer` | `$s4` (20) | **`$s2`** |
+
+Pseudos 75-84 **mutually conflict** — one clique — so each simply takes the
+first free register in allocno-priority order. Ours allocates in the order
+`b, yoff, outer`; target's order must be `outer, b, yoff`. So the whole residual
+is one permutation of three allocno priorities, and any lever must raise
+`outer` above `b` and push `yoff` last.
+
+**Levers A-C measured (10 forms), none flips it:** colour birth order `b,r,g`
+(32) / `g,b,r` (39) / `r,b,g` (29); outer if/else arm swap (31); `yoff` before
+`xoff` in both arms (31); `outer = outer + 1` long form (29, inert); an extra
+`outer` reference in each arm (29, inert and contrived — not a form to keep);
+`s16 outer` (34, +4 insns); `s16 yoff` (29, inert). Frame and instruction count
+stay exact (24 / 135) throughout — none regress the structure, they just do not
+move the priority order.
+
+## Resume here — banked at 29
+
+Start from `candidate.c` (29). One question remains: the 3-cycle allocno-priority
+permutation above. What has **not** been run is the rest of the
+[[register-alloc-pure-c]] ladder:
+
+1. **ALLOCDBG numbers.** The instrumented cc1 (`tools/gcc-2.7.2/cc1`, per
+   [[instrumented-cc1-location]]) prints the allocno-sort table with the actual
+   `floor_log2(nrefs)*nrefs/livelen*10000` priorities. Get the three numbers
+   before trying another lever — this round's 10 forms were aimed at the right
+   pseudos but without knowing how far apart their priorities are.
+2. **Sanctioned ref-lift** ([[duplicated-statement-into-arms]]) on `outer`, with
+   byte-neutrality verified and a FAKE annotation, once (1) shows how much lift
+   is needed.
+3. **Permuter**, clean single-function target at offset 0, directed `PERM_*`,
+   fresh-seed discipline — not yet attempted for this function.
+
+Screen anything touching the frame with `tmp/stf_orphan.py`.
 
 ## Instruments
 
-`tmp/stf.py` … `tmp/stf8.py` (rounds 1-8), **`tmp/stf_orphan.py`** (the
-unallocated-pseudo detector), `tmp/stf_bank2.py`, `tmp/stf_apply.py`,
-`tmp/rtldump.sh`, `tmp/orphan_probe.py`, `tmp/frame_probe.sh`, `tmp/sbs.sh`.
+`tmp/stf*.py` (rounds 1-9), **`tmp/stf_orphan.py`** (unallocated-pseudo
+detector), `tmp/stf_apply.py`, `tmp/rtldump.sh`, `tmp/orphan_probe.py`,
+`tmp/frame_probe.sh`, `tmp/sbs.sh`.
