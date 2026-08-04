@@ -5,10 +5,10 @@ insns / ours 142. **23 regfix rules**, 0 asmfix, 0 prologue_config. HEAD carries
 cheat-asm (an `asm("s5")` pin + an `__asm__ volatile("" : "=r"…)` barrier) —
 both **measured score-inert** and dropped in `candidate.c`.
 
-## Both entry cautions discharged — measured, not assumed
-
-1. **No sibling label landmine.** `tmp/ce0c_landmines.py` resolves every rule
-2. **Not GTE.** GPU packet/DMA routine, zero cop2. gte-3x3 / scratchpad-gte /
+**Entry cautions discharged (measured).** No sibling label landmine:
+`tmp/ce0c_landmines.py` resolves every absolute-`.L<N>` rule to its owner; all
+nine holders are in **other** TUs, cc1's `.L` counter is per-TU, and CE0C's own
+splices use `{lbl#N}` — restructure freely. Not GTE: GPU packet/DMA, zero cop2.
 
 ## The 48 splits three ways
 
@@ -21,11 +21,9 @@ both **measured score-inert** and dropped in `candidate.c`.
 Group A is exactly the 16 frame rules (`regfix.txt:3419-3434`), so fixing the
 frame retires 16 of the 23 rules in one move.
 
-## Group C — CLOSED
-
-Target idx 66 is a `nop` where we emitted `lui a0,0xa000`: the committed source
-passed `(u32 *)0xA0000000` to `func_8007DC9C`, which the rule
-`subst "lui\s+\$4,…" "nop" @ 63` papered over. **`func_8007DC9C()` with no
+**Group C — CLOSED.** Target idx 66 is a `nop` where we emitted `lui a0,0xa000`:
+the committed source passed `(u32 *)0xA0000000` to `func_8007DC9C`, which the
+rule `subst "lui\s+\$4,…" "nop" @ 63` papered over. **`func_8007DC9C()` with no
 argument → 47.** (`func_8007DC9C(0)` and `(u32 *)0` both stay at 48 — no
 argument at all, not a null one.)
 
@@ -59,50 +57,53 @@ producer — `tmp/rtlseg.py tmp/rtl_disp func_8007C2A0 flow` shows all three are
 `ashift`/`ashiftrt` subreg pairs — and its source has exactly three distinct
 multi-use `s16` locals. So it is **one strand per HImode→SImode WIDENING SITE**.
 
-## Measured negatives — 19 variants, `vars` never left 16
+## Measured negatives — 25 variants, `vars` never rose above 16
 
-- **Extra s16 casts do not create strands** (round 3, 6 variants): `s16 xf =
-  Re-casting an already-s16 value is a no-op GCC folds; three also collapsed the
-  multiply (142→131, score 59).
-- **Splitting/retyping existing s16 locals does not either** (round 5, 6
-  variants): `coord` split into `cx`/`cy` leaves ONE HI pseudo (disjoint live
-  ranges merge); `a0_tmp` `u16`→`s16` = 50; clamped x as a multi-use `s16 xres`
-  = 144 insns / 63; plus the pairwise combinations.
-- **More locals of any kind do nothing** (round 1, 6 variants); **region
-  bisect** (round 2): deleting the rounding block, push loop, DMA block or
-  x-clamp all leave `vars=16` — deleting the loop or DMA drops the frame to 56
-  via `gp_regs` (7 regs → 6), not `vars`.
+- **Extra s16 casts** (r3, 6 variants): `s16 xf = arg0->x` + `(s32)xf`, `s16 yf
+- **Splitting/retyping existing s16 locals** (r5, 6 variants): `coord` split
+- **More locals of any kind** (r1, 6 variants); **region bisect** (r2): deleting
+- **The real-s16-quantity family** (r6, 6 variants — clamp limits as real `s16`
+
+### `vars` IS controllable — proven, but so far only DOWNWARD
+
+`lim_top` (both clamp globals read once into `s16 xlim`/`ylim` at the top, used
+by both compares) gives **orphans=1, vars=8, frame=56 at the same 142 insns**
+(score 55). Reproduced. It refutes any "the frame is stuck at 16" reading — the
+count moves with source shape. Hoisting the load AWAY from its compare *removed*
+a strand, so a strand needs the widening where combine cannot fold it into the
+load. Nothing yet pushes the count upward.
 
 ## Group B — shape (from `tmp/adiff.py`)
 
-- **x-clamp (tgt 11-19):** target loads `lh a1,4(s1)` once and uses `a1` for
-  both the `bltz` and the `slt`, threading `move v1,a1` into the branch delay
-  slot; we emit `lh v1` + a load-delay `nop` + `move v0,v1` with the `slt`
-  operands swapped. The `coord = (v1_tmp = arg0->x);` double-assign is the
-  likely cause. **y-clamp (25-41):** same one register over, plus an extra
-  `move a0,v0`.
-- **multiply/rounding (44-50):** pure register naming (target `a2/v1/v0/s0` vs
-  our `a3/v0/v1/s4`) — the ALLOCDBG lever-sizing case. **53-59:** target holds
-  `big_size` in `s0` and copies it through `v1` into `s4`; we keep it in `s4`.
+**x-clamp (tgt 11-19):** target loads `lh a1,4(s1)` once and uses `a1` for both
+the `bltz` and the `slt`, threading `move v1,a1` into the branch delay slot; we
+emit `lh v1` + a load-delay `nop` + `move v0,v1` with the `slt` operands
+swapped — the `coord = (v1_tmp = arg0->x);` double-assign is the likely cause.
+**y-clamp (25-41):** same one register over, plus an extra `move a0,v0`.
+**multiply/rounding (44-50):** pure register naming (target `a2/v1/v0/s0` vs our
+`a3/v0/v1/s4`) — the ALLOCDBG lever-sizing case. **53-59:** target holds
+`big_size` in `s0` and copies it through `v1` into `s4`; we keep it in `s4`.
 
 ## Resume here
 
-Group A is the big prize (16 insns, 16 rules) and the spec is exact: **the body
-needs FOUR HImode→SImode widening sites; it has two.** 19 variants across three
-rounds show the count is a property of the *arithmetic*, not the declarations —
-re-casting, splitting and retyping existing s16 values all fail, because GCC
-folds a re-cast of an already-s16 value and merges disjoint live ranges into one
-HI pseudo.
+Group A is the big prize (16 insns, 16 rules): **the body needs FOUR
+HImode→SImode widening sites; it has two.** 25 variants across five rounds show
+the count is a property of the *arithmetic*, not the declarations. The named
+real-s16-quantity family is now measured and does not deliver it.
 
-NOT yet tried: a decomposition in which two genuinely new s16 quantities exist
-and are each needed in SImode — e.g. carrying the clamp globals
-(`D_8009BE78`/`D_8009BE7A`) through s16 locals ALSO used after the clamp, or an
-s16 intermediate in the `half_size`/`big_size` rounding chain. Target emits two
-`sll …,0x10` and one `sra …,0x10` exactly as we do, so the two extra strands are
-merged (invisible) ones — the widening must be one combine folds away entirely.
+**The live handle is `lim_top`**: it proves the count moves (2→1, `vars` 16→8,
+same 142 insns). Work that lever in reverse — find the placement that makes a
+widening un-foldable into its load. Two hard constraints on any candidate: the
+multiply must keep re-reading `arg0->x` from memory (target splice
+`regfix.txt:3417` is `lh $3,4($17)` … `mult $3,$2`), and target emits the same
+two `sll …,0x10` + one `sra …,0x10` we do, so the extra strands must be
+widenings combine folds away entirely.
 
-Then Group B by ALLOCDBG sizing — **after** the frame is right, since a frame
-change re-shuffles the allocation.
+**Discipline note:** no synthetic-strand spelling was tried and none should be.
+Nothing reaches 3 or 4 orphans by *any* means, real or not, so there is no "only
+works with a semantically empty local" trade-off to adjudicate — banked on
+measurement, not a policy call. Then Group B by ALLOCDBG sizing, **after** the
+frame is right (a frame change re-shuffles the allocation).
 
 `src/display.c` is at HEAD; `candidate.c` (47) carries the Group-C fix and the
 cheat-asm removal. Neither is independently committable: with the 23 rules
@@ -110,9 +111,8 @@ ENABLED the emission shifts (same gate as hirahira_w_ctrl).
 
 ## Instruments
 
-`tmp/ce0c{,2,3,4,5}.py` (sweeps; ce0c3/ce0c5 print the greg UNALLOCATED set =
-the direct Group-A gradient), **`tmp/rtlseg.py`** (section-safe RTL reader —
-its predecessor `tmp/ce0c_rtl.py` silently scanned the WRONG function when its
-name lookup missed, which briefly suggested a bogus producer family; prefer
-rtlseg), `tmp/ce0c_apply.py`, `tmp/ce0c_landmines.py`, `tmp/adiff.py`,
-`tmp/orphan_probe.py`, `tmp/rtldump.sh`, `tmp/frame_probe.sh`, `tmp/allocone.sh`.
+`tmp/ce0c{,2,3,4,5,6}.py` (sweeps; ce0c3/5/6 print the greg UNALLOCATED set =
+the direct Group-A gradient), **`tmp/rtlseg.py`** (section-safe RTL reader — its
+predecessor `tmp/ce0c_rtl.py` silently scanned the WRONG function on a name-
+lookup miss; prefer rtlseg), `tmp/ce0c_apply.py`, `tmp/ce0c_landmines.py`,
+`tmp/adiff.py`, `tmp/orphan_probe.py`, `tmp/rtldump.sh`, `tmp/frame_probe.sh`.
