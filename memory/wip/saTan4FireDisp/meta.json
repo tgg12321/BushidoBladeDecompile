@@ -15,16 +15,6 @@
   "sessions": [
     {
       "date": "2026-08-04",
-      "round": 3,
-      "lever": "per-site load-type audit against target + 17 further slot-3 candidates screened by unallocated-pseudo count",
-      "lever_rule": "phantom-frame-slots-gcc272",
-      "floor_was": 40,
-      "floor_now": 40,
-      "git_head_at_measurement": "(post e962b091 checkpoint)",
-      "note": "NO PROGRESS on the third slot; candidate stays at 40 with the exact target frame. Target's load types audited per site and OURS ALREADY MATCH ALL OF THEM: lh 0x8($fp) x2 (the sid field), lh D_800A9A20, lhu 0x0/0x2($s0) (the tbl pair), lh 0x18/0x1A($sp) (the rect read-back for func_80048A7C), lh 0x0($s0) (the sentinel). There is no type-correction lever. 17 further forms screened by UNALLOCATED-PSEUDO COUNT rather than score - all stay at exactly two slots (vars 16) at 135 insns: eight pure namings of existing sub-expressions (rect base pointer, (s32)rect call argument, image source address, palette table pointer, a second sid copy, the loop shift amount, an s16 outer selector, the func_8004881C result chain); u16 carriers on both lhu sites (together 53, t0 only 47, t1 only 47, a u16* walker 47); an s16 sent for the sentinel read (47); an s16 want for the D_800A9A20 comparand (47); u16 pair + sentinel (53). MECHANISM REFINED: sid is free because it names an s16 value that already arrives sign-extended from an lh and is used where that form is wanted; r holds a COMPUTED s32 ((a0 << 12) / 255), so narrowing it forces a truncate plus re-extension - the diff shows target passing it as `move a0,s7` where we emit sll/sra plus an extra move. Naming alone never adds a slot; only a narrowing does, and every narrowing in this body sits on a computed value. Two process notes: a stale apply of candidate.c left src/text1a.c dirty and made one screening run measure 'candidate + X' instead of 'HEAD + X' - caught, src restored from git, run repeated; the same trap bit tgm5.py on the previous function, so any sweep script that snapshots `orig` at import time must be run against a clean tree."
-    },
-    {
-      "date": "2026-08-04",
       "round": 4,
       "lever": "STRUCTURAL: separate the loop sentinel from the red channel and write the loop as `while ((sent = tbl[0]) >= 0)`",
       "lever_rule": "phantom-frame-slots-gcc272 / register-alloc-pure-c",
@@ -41,6 +31,15 @@
       "floor_was": 29,
       "floor_now": 29,
       "note": "NO MOVEMENT; banked at 29. STEP-0 RESULT (the valuable part): the rotating values are pseudo 76 = r -> $s7 (matches target), 77 = g -> $s6 (matches), 78 = b -> $s2 (target wants $s3), 82 = yoff -> $s3 (wants $s4), 79 = outer -> $s4 (wants $s2). Pseudos 75-84 MUTUALLY CONFLICT - a single clique - so each takes the first free register in allocno-priority order. Ours allocates b, yoff, outer; target's order must be outer, b, yoff. The entire residual is therefore ONE PERMUTATION OF THREE ALLOCNO PRIORITIES, and any lever has to raise `outer` above `b` and push `yoff` last. LEVERS A-C, 10 forms, none flips it: colour birth order b,r,g (32) / g,b,r (39) / r,b,g (29); outer if/else arm swap (31); yoff assigned before xoff in both arms (31); `outer = outer + 1` long form (29 inert); an extra `outer` reference in each arm (29 inert, and contrived - not a form to keep); s16 outer (34, +4 insns); s16 yoff (29 inert). Frame and instruction count stay exact (vars 24 / 135 insns) throughout, so none of these regress the structure - they just do not move the priority order. NOT YET RUN: the ALLOCDBG numbers from the instrumented cc1 (tools/gcc-2.7.2/cc1) which would give the three actual priorities; the sanctioned duplicated-statement-into-arms ref-lift on `outer` sized against those numbers; and a permuter campaign (clean single-function target, directed PERM_*). src/text1a.c reverted."
+    },
+    {
+      "date": "2026-08-04",
+      "round": 6,
+      "lever": "ALLOCDBG allocno-sort numbers from the instrumented cc1, then 6 sized loop respellings",
+      "lever_rule": "register-alloc-pure-c",
+      "floor_was": 29,
+      "floor_now": 29,
+      "note": "THE GAP IS NOW EXACTLY QUANTIFIED. Instrumented cc1 (tools/gcc-2.7.2/cc1, env BB2_ALLOC_DEBUG=1 BB2_PRIO_DEBUG=1; driver tmp/allocdbg.sh, extractor tmp/allocpick.py) with the candidate applied gives: b = pseudo 78, $s2, nrefs 7, livelen 60, pri 2333; yoff = pseudo 82, $s3, nrefs 5, livelen 43, pri 2325; outer = pseudo 79, $s4, nrefs 5, livelen 50, pri 2000. pri = floor_log2(nrefs)*nrefs/livelen*10000 verified against all three. b > yoff ALREADY HOLDS, so the ONLY requirement is outer > 2333: at livelen 50 that needs floor_log2(n)*n > 11.67, i.e. nrefs 6 -> 2*6/50*10000 = 2400 (one extra reference is exactly enough), or livelen <= 42 at nrefs 5 -> 2380. A ~17% lift. SIX loop respellings measured, none delivers it: for-loop and while-loop forms (34, and the pseudo numbering shifts); do/while form (34 - it DOES move the priorities to outer 5192 / b 3870 / yoff 5853 but into the WRONG permutation yoff > outer > b); `outer = outer + 1` long form, `switch (outer)` arm selection, and `if (outer != 2)` loop-back all leave the three priorities byte-identical at 2000 / 2333 / 2325. WHY THE SANCTIONED REF-LIFT CANNOT REACH IT: duplicated-statement-into-arms needs a real statement mentioning `outer` duplicated into both arms, but the arms are guarded by `outer == 0` so GCC folds `outer` to a constant in the then-arm and the reference never reaches reg_n_refs - which is exactly why round 9's `yoff = 0xF0 + outer` / `0 * outer` probe was inert. No byte-neutral construct in this body adds an unfoldable sixth reference. NEXT RUNG is the directed permuter; NOT started because a detached campaign must be waited on and harvested in-session (grinder-permuter-orphan-stop-gate) and there was not enough session left to supervise ~20-30k iters. src/text1a.c reverted."
     }
   ],
   "reviewer": null,
@@ -183,13 +182,27 @@
       "form": "s16 outer / s16 yoff",
       "score": "34 / 29",
       "reason": "s16 outer costs 4 insns; s16 yoff inert"
+    },
+    {
+      "form": "for / while outer-loop spellings",
+      "score": 34,
+      "reason": "pseudo numbering shifts; worse"
+    },
+    {
+      "form": "do { ... } while (outer < 2)",
+      "score": 34,
+      "reason": "moves priorities (5192/3870/5853) but into the wrong permutation yoff > outer > b"
+    },
+    {
+      "form": "outer = outer + 1 long form; switch (outer) arm selection; if (outer != 2) loop-back",
+      "score": "29 / 29 / 30",
+      "reason": "priorities byte-identical at 2000/2333/2325"
     }
   ],
   "root_cause": "Frame-only gap: target reserves 24 bytes of vars where only 8 are real (the s16 rect[4]); the other 16 are two phantom slots. Instruction counts already match, so closing the frame should collapse most of the 41. One phantom slot is obtainable for free (an s16 local naming the thrice-read fp_ptr field); the second has not been found without an instruction cost.",
   "next_avenues": [
-    "Get the ALLOCDBG allocno-sort numbers first (instrumented cc1 at tools/gcc-2.7.2/cc1): the three priorities for pseudos 78 (b), 79 (outer), 82 (yoff). Round 9's forms targeted the right pseudos but without knowing how far apart the priorities are.",
-    "Then the sanctioned ref-lift (duplicated-statement-into-arms) on `outer`, byte-neutrality verified and FAKE-annotated, sized against those numbers.",
-    "Then permuter: clean single-function target at offset 0, directed PERM_*, fresh-seed discipline. Not yet attempted for this function.",
+    "ONE-LINE SPEC: raise pseudo 79 (`outer`) from pri 2000 to >= 2334 - one more UNFOLDABLE reference at livelen ~50, or a live range shortened to <= 42 - without disturbing b (2333) or yoff (2325).",
+    "Next rung: directed permuter (register-alloc-pure-c step 3) - clean single-function target at offset 0, PERM_* directed mode, tools/permuter_campaign.py for telemetry and the fresh-seed stopping rule (~20-30k iters). Budget a session that can wait on and harvest the campaign in-session per grinder-permuter-orphan-stop-gate.",
     "Start from candidate.c (29). Completion gate: 33 regfix rules retire with it, and the 2 asmfix label rules are expected to become unnecessary - verify."
   ],
   "memory_notes": [
@@ -200,7 +213,8 @@
   ],
   "prior_sessions_summary": [
     "2026-08-04 | phantom-slot producer hunt via s16 carriers (13 forms across two sweeps) | floor ? | progress",
-    "2026-08-04 | round 2 | RTL -da + greg unallocated-pseudo instrumentation (tmp/stf_orphan.py); established the frame mechanism and reached targe | floor 41->40 | MECHANISM MEASURED: vars = 8 x (number of pseudos in greg's allocate list that receive no hard register). HEAD has one (pseudo 80) -> vars 8; target needs three -> vars 24. Per-variant unallocated sets: HEAD [80]; sid [8"
+    "2026-08-04 | round 2 | RTL -da + greg unallocated-pseudo instrumentation (tmp/stf_orphan.py); established the frame mechanism and reached targe | floor 41->40 | MECHANISM MEASURED: vars = 8 x (number of pseudos in greg's allocate list that receive no hard register). HEAD has one (pseudo 80) -> vars 8; target needs three -> vars 24. Per-variant unallocated sets: HEAD [80]; sid [8",
+    "2026-08-04 | round 3 | per-site load-type audit against target + 17 further slot-3 candidates screened by unallocated-pseudo count | floor 40->40 | NO PROGRESS on the third slot; candidate stays at 40 with the exact target frame. Target's load types audited per site and OURS ALREADY MATCH ALL OF THEM: lh 0x8($fp) x2 (the sid field), lh D_800A9A20, lhu 0x0/0x2($s0) ("
   ],
   "history_note": "sessions[] holds the last 3 verbatim; older rounds are one-lined in prior_sessions_summary[]. Full narrative in git history and notes.md."
 }
