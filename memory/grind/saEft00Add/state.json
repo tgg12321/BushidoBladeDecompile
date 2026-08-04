@@ -28,7 +28,9 @@
    "next_probe": "Reconstruct V2b+inline_ret_mode from the deep-dive snippet, build single-function target.o (asm/funcs/saEft00Add.s + prelude.inc, drop .set gp=64), run rich passes --stop-on-zero with a watcher auto-triaging sub-200 finds; vet any closer against the volatile/semantic-lie bans before integrating"
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "No further grind sessions on saEft00Add: do not restructure the committed body, do not de-static or drop the D_80082050 reference; re-accept via queue done (or park citing judge ruling 2026-08-04) until func_80080828/tslTm2LoadImage/marionation_Exec retire their cheat-asm, and leave engine/score.py untouched pending owner review."
+ ],
  "origin": "queue",
  "created": "2026-07-07T15:21:45.079199+00:00"
 }
