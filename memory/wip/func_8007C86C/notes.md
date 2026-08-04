@@ -86,14 +86,30 @@ one requires rewriting or retiring those rules — a completion-gate activity,
 not a worker one. src was reverted after every experiment and the full build
 re-verified at `62efab4f73f992798c43e8c730aa43baa10bb4fa`.
 
+## Round 16 (2026-08-04) — stream-exact form, verified on this twin
+
+`candidate_stream51.c` (banked here, twin-adapted from C7A0) is the first body
+whose 51 instructions match target one-for-one in opcode, operand shape and
+order. Measured on THIS function: 51/51 insns, `sandbox --disable all` score 15
+— identical to C7A0, confirming the twins move in lock-step. The score is higher
+than the old 12/13 only because masked Levenshtein counts renames; those forms
+carried real structural errors and this one does not.
+
+Two levers: an **`s16` carrier** (target's `move a3,a0` copies the raw halfword
+before sign-extension, and the join copy carries no extension) and a **named
+tail temp** (`pkt = lo | 0xE4000000; return hi | pkt;`) to pin the OR
+association GCC otherwise reassociates.
+
 ## Resume here
 
-Start from **`candidate_frame51.c`**, not `candidate.c` — it is structurally
-exact, so the only open question is the register-name cascade. Do not re-run
-clamp-shape sweeps or another permuter campaign; that space is covered. The
-honest position is that the cascade needs a lever nobody has found, and the
-ALLOCDBG diagnosis says any lever that manufactures `$a2` occupancy is a
-forbidden chain-extender. Per-round narrative for rounds 1-14 is in git history
-for this file; one-line summaries are in `meta.json` `prior_sessions_summary[]`.
+Start from **`candidate_stream51.c`**. The only open question is the register
+assignment. Do not re-run clamp-shape sweeps or another permuter campaign; that
+space is covered. Round 16 localized the blocker: with no `REG_ALLOC_ORDER` for
+MIPS in this tree both allocators scan ascending, and a 2-param leaf function
+has no hard `$a2`/`$a3`/`$v1` for `set_preference` to key on — so those
+registers are reachable ONLY by exclusion, never by preference. Full mechanism,
+the measured negative list, and the reusable probe tooling are in
+`memory/wip/func_8007C7A0/notes.md`; per-round narrative for rounds 1-14 is in
+git history for this file.
 
 Sibling: `memory/wip/func_8007C7A0/` — identical pattern and floor.
