@@ -1,8 +1,8 @@
 {
  "func": "func_80060E38",
  "file": "text1b",
- "session_count": 7,
- "current_modality": "forensics",
+ "session_count": 8,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -45,23 +45,29 @@
    "floor": 18,
    "modality": "forensics",
    "headline": "Forensics one level deeper than s6: instrumented assign_stack_local itself and measured the two inputs of the closed form that every prior session assumed - frame-offset parity from declared locals (C"
+  },
+  {
+   "session": 8,
+   "floor": 18,
+   "modality": "rederive",
+   "headline": "Rederive axis KILLED on all three instruments (m2c, decomp.me corpus, transplant) and the root cause is now named and measured: tools/gcc-2.7.2/Makefile:168 configures our cc1 as BIG-ENDIAN (target=mi"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Nothing about func_80060E38 is still a search; six measured axes are dead and the remaining ladder rung is synthesis, not another probe.",
-   "mechanism": "Structural (s2, 11 variants), alter_reg branch analysis (s2 closed form + s3's 23-variant reuse kill), the function.c slot-creation taxonomy (s5), randomized machine search (s4+s5, ~159.5k mutations on four chassis), the alter_reg path census (s6, 131 allocations tree-wide) and the closed form's two free inputs (s7, 1694 allocations tree-wide plus 7 parity probes) are all measured dead. The offset is now an unconditional theorem in the spilled value's mode.",
-   "next_probe": "A synthesis session should state the acceptance condition in one place - nine single-word spill slots at stride 8 AND congruence 0 from a 139-instruction leaf whose instruction stream already matches target exactly - and cross-check that statement against the sanctioned-technique catalog for any family not yet tried. Do not re-run any measured axis."
+   "hypothesis": "The class disposition is unchanged in substance but now has a named, measured root cause, which turns the eventual escalation from 'frozen toolchain, no lever' into a specific operator/owner toolchain question with a known cost.",
+   "mechanism": "tools/gcc-2.7.2/Makefile:168 (target=mips-mips-gnu) is the single configure fact behind the +4; it is corroborated in-tree (s6: 131 allocations, 100% on the corrected path; s7: 1,694 assign_stack_local calls, both free inputs pinned to multiples of 8) and now out-of-tree (s8: 1,745 foreign matching sources, 300/300 slots at 4 mod 8, and 29 of 30 comparable slots +4 above community-matched references across 3 compiler packages). The C side is closed by s2 (11 variants + closed form), s3 (23 variants + counting argument), s4+s5 (~159.5k permuter mutations + the slot-creation taxonomy) and s8 (m2c + corpus + transplant).",
+   "next_probe": "Whichever session is assigned `escalation` modality files the CLASS in docs/grind/decisions.md citing, in order: the configure line; s6 and s7's in-tree censuses; s8's out-of-tree census and the +4 comparison against community-MATCHED targets; the s2 cc1psx counter-exhibit; and the s2/s3/s4/s5 C-side kills. It must NOT cite Ruling-2 (fork-divergence-inline-asm), whose scope limit excludes non-crashing fork divergences, and it must state the honest cost of the toolchain fix rather than present it as free. It must also state '29' as an upper bound (see the s8 signature caveat). The driver has NOT declared exhaustion, so this must not be escalated before that modality is assigned."
   },
   {
-   "hypothesis": "func_80060E38 is a member of a 29-function class defined by 'target contains a stride-8 reload-spill block', all blocked by the same measured fork property, and should be dispositioned as a class rather than ground one function at a time.",
-   "mechanism": "Census (s2/spillscan2.txt): 29 stride-8 spill blocks tree-wide, all at 0 mod 8, all rule-carrying, none ever matched. s6 and s7 supply the complementary halves: our fork allocates 131 four-byte spill slots tree-wide and every one is at 4 mod 8, because the offset is congruent to -GET_MODE_SIZE(mode) (mod 8) under BYTES_BIG_ENDIAN with both free inputs proved to be multiples of 8 (1694/1694 measured), and the only uncorrected path never executes. cc1psx fed identical input produces target's congruence. Every surface that could change it (the cc1 binary/configuration, the Makefile, prologue_config.json, regfix/asmfix) is outside the grind edit surface, and no-compiler-divergence forbids the compiler-side fix.",
-   "next_probe": "Still an owner-surface question and the driver has NOT declared exhaustion, so it must not be escalated yet. Whichever session is assigned escalation modality should file the CLASS in docs/grind/decisions.md citing s2/spillscan2.txt, the closed form, the cc1psx counter-exhibit, the s3 reuse-branch kill, the s4+s5 ~159.5k-mutation negative, s5's taxonomy closure, s6's tree-wide path census and s7's tree-wide input census - and must NOT cite Ruling-2, whose scope limit excludes non-crashing fork divergences."
+   "hypothesis": "`synthesis` is the one modality left on the ladder, and its job is a catalog cross-check, not another probe.",
+   "mechanism": "recon (s1), structural (s2, s3), permuter (s4, s5), forensics (s6, s7) and rederive (s8) are all spent, each with measurements banked. s8 removes two more families from the catalog for good: transplant (1,745 foreign sources, 300 slots, none escaped 4 mod 8) and re-derivation (m2c reproduces the accepted body plus dead spill-shaped locals).",
+   "next_probe": "State the acceptance condition in one place - nine single-word spill slots at stride 8 AND congruence 0, from a 139-instruction leaf whose instruction stream already matches target exactly - and walk the sanctioned-technique catalog for any family not yet tried, re-running nothing that is already measured dead."
   },
   {
-   "hypothesis": "The instrument is now two passes deep and answers pass-level questions for any function in the tree without rebuilding anything.",
-   "mechanism": "tmp/grind/func_80060E38/s7/gcc is a complete private GCC 2.7.2 tree carrying BOTH env-gated traces (BB2_ALTERREG_DEBUG from s6, BB2_SLOCAL_DEBUG from s7), validated byte-identical to stock build/cc1 on real input with the traces off and on. s7/sweep7.sh drives all 31 TUs at build-identical flags and s7/agg7.py aggregates 1694 records.",
-   "next_probe": "If a later session (this function or another) needs a named pass/decision, patch s7/gcc rather than tools/, reuse s7/sweep7.sh + s7/agg7.py, and keep the byte-identity control (s7/control.sh) as the first step - it is one file edit plus `make cc1`, about a minute."
+   "hypothesis": "The s7 instrumented GCC tree is now also validated as a CROSS-PROJECT instrument, not just a BB2 one.",
+   "mechanism": "tmp/grind/func_80060E38/s7/gcc carries both env-gated traces (BB2_ALTERREG_DEBUG, BB2_SLOCAL_DEBUG) and is byte-identical to stock build/cc1 with traces off and on. s8 drove it over 1,745 foreign translation units from tmp/decomp_me_corpus/ via tmp/grind/func_80060E38/s8/dmcross.py, which handles cpp, flag mapping from a scratch's compiler_flags, trace parsing and target-side spill-signature comparison.",
+   "next_probe": "Any future question of the form 'does our cc1 diverge from the community reference on X' can reuse s8/dmcross.py directly - swap the trace filter and the target-side predicate. Keep the s7/control.sh byte-identity control as step one if the GCC tree is patched further."
   }
  ],
  "judge_constraints": [],

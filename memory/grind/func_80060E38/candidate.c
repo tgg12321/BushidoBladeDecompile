@@ -1,4 +1,40 @@
-/* func_80060E38 — best form as of grind session 7 (forensics, 2026-08-03).
+/* func_80060E38 — best form as of grind session 8 (rederive, 2026-08-03).
+ *
+ * SESSION 8 UPDATE — body unchanged (the rederive instruments produced nothing worth
+ * compiling into the tree), floor re-measured at 18 (sandbox --disable all: score 18,
+ * target_insns 139 == build_insns 139, 18 rules dropped). Session 8 ran the three
+ * rederive instruments and named the root cause:
+ *   (1) FRESH m2c RE-DERIVATION (tools/m2c, --target mipsel-gcc-c) reconstructs the
+ *       accepted body verbatim plus nine dead s32 locals named for the TARGET's own
+ *       slot offsets (sp0, sp8, …, sp40) and one statement reorder. Both parts are
+ *       already measured dead — declared locals take the align==0 path and give
+ *       stride 4 (s2), reordering was killed by 11 variants (s2) and ~159.5k permuter
+ *       mutations (s4+s5) — and the dead-locals part is the forbidden frame-coercion
+ *       family besides. Banked as
+ *       rejected/m2c-rederive-yields-dead-spill-locals-already-killed.c.
+ *   (2) decomp.me CORPUS (3,754 cached scratches on the three BB2-class GCC 2.7.2 PS1
+ *       compilers). No matching scratch has a genuine 0-mod-8 word reload spill: the 6
+ *       apparent hits are blocks of stride-8 DECLARED STRUCT LOCALS (frame address-taken,
+ *       same offsets also read with lhu), not spills. No existence proof, no transplant.
+ *   (3) CROSS-PROJECT MEASUREMENT — the decisive one. All 1,751 MATCHING, non-override
+ *       scratches were recompiled through OUR cc1 (the s7 instrumented build) from their
+ *       own context+source at their own flags. 1,745 compiled; our cc1 allocated 300
+ *       four-byte reload spill slots and 300/300 landed at 4 mod 8. Of the 30 comparable
+ *       against the community-MATCHED target's own spill-shaped offsets, 29 sit exactly
+ *       4 bytes ABOVE the reference compiler's slot and 1 is ambiguous; ZERO unambiguous
+ *       agreements, across 7 scratches, 3 compiler packages and several flag families.
+ *       This also closes the transplant leg: 1,745 foreign C bodies, no escape.
+ *   (4) ROOT CAUSE, MEASURED: tools/gcc-2.7.2/Makefile:168 says `target=mips-mips-gnu`.
+ *       Our cc1 is configured BIG-ENDIAN for a little-endian game, which is what arms
+ *       BYTES_BIG_ENDIAN and the function.c:702-703 correction — and it is the same
+ *       one-bit cause behind the documented [[bitfield-direction-divergence]]. This is a
+ *       diagnosis, NOT a lever: rebuilding cc1 for mipsel is off the grind edit surface,
+ *       forbidden by [[no-compiler-divergence]], and not free even for the operator,
+ *       since flipping the bit also flips bitfield direction tree-wide and would break
+ *       the ~1,400 functions already matched against current behaviour. Owner's call.
+ *
+ * (session-7 header follows)
+ * func_80060E38 — best form as of grind session 7 (forensics, 2026-08-03).
  *
  * SESSION 7 UPDATE — body unchanged (forensics modality made no src/ edits), floor
  * re-measured at 18 (sandbox --disable all: score 18, target_insns 139 == build_insns 139,

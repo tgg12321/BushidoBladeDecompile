@@ -601,3 +601,114 @@ edit plus `make cc1` (~1 min). Keep the byte-identity control (s7/control.sh) as
 - probe: The same 31-TU sweep, split by GET_MODE_SIZE and align class (s7/agg7_report.txt).
 - result: Confirmed. 4-byte-mode slots on the spill path (align == -1): 131/131 at 4 mod 8, zero at 0 - an exact independent match to s6's alter_reg-side count of 131. 4-byte-mode slots on the declared-local path (align == 0): 43 at 0 mod 8 and 15 at 4, i.e. locals CAN sit at 0 mod 8 but at stride 4, the shape s2's v_locals already killed (target needs nine slots at stride 8 AND congruence 0, mutually exclusive for a 4-byte value here since stride 8 implies align == -1 implies the +4). BLKmode/aggregate slots (GET_MODE_SIZE 0): 186 align == -1 and 1314 align == 0, all at 0 mod 8, consistent with the theorem and already dead per s5's taxonomy (one wide object, not nine single-word slots).
 - verdict: CONFIRMED
+
+## [s8] A fresh m2c re-derivation of the target produces a structurally different C shape with a codegen lever the hand-written body lacks.
+- mechanism: The mandated rederive instrument. Sessions 1-7 all worked from one hand-written body; m2c reads the TARGET assembly directly and reconstructs C from it, so if the original source used a shape nobody guessed (an aggregate, a pointer walk, explicit temporaries) m2c would surface it.
+- probe: `cd tools/m2c && python3 -m m2c.main --target mipsel-gcc-c --valid-syntax asm/funcs/func_80060E38.s` (artifact tmp/grind/func_80060E38/s8/m2c_out.c, 88 lines).
+- result: m2c reproduces the accepted body's 32 global stores and two indirect scratchpad stores verbatim, and adds exactly two things. (1) Nine dead s32 locals named for the target's own slot offsets — sp0, sp8, sp10, sp18, sp20, sp28, sp30, sp38, sp40 — each written once and never read. That is m2c transcribing the spill slots it saw in the asm, not a source-level construct; it is the forbidden dead-vars/frame-coercion family, it is score-inert under the cheat-invisible sandbox, and the shape was already MEASURED dead in s2 (declared s32 locals take assign_stack_local's align == 0 path, giving stride 4, not target's stride 8). (2) One statement reorder, `D_800A34A0 = 0x1F800064;` emitted late between the two indirect stores — pure reordering, killed in s2 (11 variants) and again in s4+s5 (~159.5k permuter mutations), and worthless here anyway since the accepted body already matches target's instruction stream 139/139. Banked as rejected/m2c-rederive-yields-dead-spill-locals-already-killed.c.
+- verdict: KILLED
+
+## [s8] The decomp.me corpus contains a MATCHING scratch, compiled by a BB2-class GCC 2.7.2 PS1 compiler, whose target has a stride-8 single-word reload-spill block at 0 mod 8 — an out-of-tree existence proof and a transplantable construct.
+- mechanism: The mandated corpus instrument. Sessions 2-7 proved the 4-mod-8 congruence from OUR compiler's source and OUR tree; a matching scratch on a community-hosted GCC 2.7.2 PS1 compiler with target's slot shape would falsify the theorem from outside the project and hand over the C that produces it.
+- probe: tmp/grind/func_80060E38/s8/dmscan.py applied s2/spillscan2.py's spill signature (caller-save sw AND lw at the same sp offset, grouped into maximal stride-8 runs) to the `target_assembly` of all 3,754 cached scratches, split by compiler and by is_matching; then each apparent hit was read line by line with s8/dump.py.
+- result: The scan reported 6 blocks in matching gcc2.7.2-psx scratches at 0 mod 8 (73BdG, YgXC2, GGhAe, ePDOy) — all FALSE POSITIVES. 73BdG's 0x28/0x30/0x38/0x40/0x48 run is a block of stride-8 declared struct locals: the frame is address-taken (`addiu $a0,$sp,0x18`) and the same offsets are also accessed with `lhu`, which no SImode reload spill does. No matching scratch in the corpus supplies a genuine 0-mod-8 word reload spill, so the corpus offers no existence proof and no transplant. (Recorded as a caveat on s2's tree-wide 29-block census, which used the same over-inclusive signature — func_80060E38's own nine slots are nevertheless confirmed genuine spills by the s6/s7 instrumented-cc1 traces.)
+- verdict: KILLED
+
+## [s8] Some foreign C body — from any project, written by anyone — reaches a 0-mod-8 four-byte reload spill slot when compiled by OUR cc1.
+- mechanism: The transplant leg of the rederive mandate, run at corpus scale instead of one sibling at a time. If the congruence had ANY dependence on source shape, 1,751 independent C bodies written for other games by other authors are the widest possible net.
+- probe: tmp/grind/func_80060E38/s8/dmcross.py recompiled every MATCHING, non-override scratch on gcc2.7.2-psx / gcc2.7.2-cdk / psyq3.5 (1,751 of them) from its own `context + source_code` through OUR cc1 — the s7 instrumented build, which prints every assign_stack_local call — using the scratch's own -O level, -G value and -msoft-float. Every `align == -1, msize == 4` allocation and its final offset was recorded. Report: s8/dmcross_sharp.txt (earlier passes s8/dmcross_psx.txt, s8/dmcross_all.txt).
+- result: 1,745 compiled (6 cc1 failures). 300 four-byte reload spill slots allocated across 130 of them. 300/300 at 4 mod 8; ZERO at 0 mod 8. The congruence theorem now has an out-of-tree empirical base of 1,745 foreign sources on top of s6's 131 in-tree allocations and s7's 1,694 assign_stack_local calls.
+- verdict: KILLED
+
+## [s8] Our cc1 agrees with the community-verified GCC 2.7.2 PS1 compilers on reload-spill placement, so the +4 is a property of GCC 2.7.2 rather than of our particular build.
+- mechanism: Every scratch in the probe above is MATCHING with match_override == false, so its target assembly IS what the reference compiler emitted for that exact source. Comparing our slot offsets against the reference's is a direct fork-vs-reference measurement, and unlike s2's single cc1psx counter-exhibit it is repeated across projects, flag sets and compiler packages.
+- probe: Same run. For each of our slots at offset F, the target was tested with the strict spill signature (a caller-save `sw` AND a caller-save `lw` at the same sp offset) at F and at F-4 — a bare `$sp` reference from a struct local, an argument home or a callee save is not allowed to score an agreement, which is what an earlier loose pass of this probe wrongly did (67 spurious "agreements" collapsed to 1 ambiguous one under the strict test).
+- result: 30 of our 300 slots are comparable. 29 sit exactly 4 bytes ABOVE the reference's slot (target has a spill-shaped offset at F-4 and none at F); 1 (EQa3U off=44) is ambiguous because that target has spill offsets at both 40 and 44. ZERO unambiguous agreements. The 29 come from 7 different scratches: 73BdG and YgXC2 (13 slots each, -gcoff -msoft-float -O2 --aspsx-version=2.56), GGhAe (3, -O3 -G128), 5q1aF (2, -O2 -G0 --aspsx-version=2.34), MfUHg (1), SQTbz (1, -O2 -G0 -fsigned-char). The remaining 270 are non-comparable (our flag mapping is not the scratch's exact preset, so our cc1 spills where the reference did not). The hypothesis is refuted: our build does NOT agree with the reference compilers — it is uniformly +4, out of tree, across projects.
+- verdict: KILLED
+
+## [s8] The +4 traces to a single named, MEASURED configuration fact about our local toolchain: cc1 is configured for big-endian MIPS.
+- mechanism: BYTES_BIG_ENDIAN is TARGET_BIG_ENDIAN, which GCC 2.7.2's mips configuration derives from the configure target triple; it arms the bigend_correction at function.c:702-703 that sessions 1-7 traced. Session 1 established the behaviour (two codegen probes) but not its origin, and cc1 rejects -EL/-EB so the setting is compiled in.
+- probe: Read the configure record of the local build: tools/gcc-2.7.2/Makefile:168.
+- result: `target=mips-mips-gnu` — big-endian MIPS — while Bushido Blade 2 is little-endian (mipsel), and tools/setup_wsl.sh builds this from decompals/mips-gcc-2.7.2 alongside mips-linux-gnu binutils. This is the one-bit cause of BOTH divergences the project has documented: the spill bigend_correction and the HIGH-first bitfield extraction of [[bitfield-direction-divergence]]. Everything else still byte-matches because cc1 emits assembly TEXT and mipsel-linux-gnu-as does the byte ordering; only codegen decisions that read BYTES_BIG_ENDIAN diverge. NOTE this is a diagnosis, not a lever: rebuilding cc1 for mipsel is outside the grind edit surface, is forbidden by [[no-compiler-divergence]], and is not free even for the operator, since flipping BYTES_BIG_ENDIAN also flips bitfield direction tree-wide and would break the ~1,400 functions already matched against the current behaviour. Whether to make that trade is an owner decision.
+- verdict: CONFIRMED
+
+## LIVE FRONTIER for session 9
+
+### I1 — the class disposition, now with a named root cause (supersedes H1/G1)
+Unchanged in substance, sharper in wording. 29 functions tree-wide have a stride-8
+reload-spill block; none has ever matched. The cause is no longer "a frozen toolchain
+property with no C lever" but a specific, measured configuration fact:
+`tools/gcc-2.7.2/Makefile:168` says `target=mips-mips-gnu`, so our cc1 is a BIG-ENDIAN
+build compiling for a little-endian game, and BYTES_BIG_ENDIAN arms the +4 on every
+four-byte reload spill slot. Whichever session is assigned `escalation` modality should
+file the CLASS in docs/grind/decisions.md citing, in this order: the configure line;
+s6's 131-allocation and s7's 1,694-call in-tree censuses; s8's 1,745-foreign-source /
+300-slot out-of-tree census with 300/300 at 4 mod 8; s8's 29-of-30 comparable slots
+sitting +4 above community-MATCHED targets across 7 scratches and 3 compiler packages;
+the s2 cc1psx counter-exhibit; and the s2/s3/s4/s5 C-side kills. It must NOT cite
+Ruling-2 (fork-divergence-inline-asm), whose scope limit excludes non-crashing fork
+divergences. It should be framed as an OPERATOR/OWNER toolchain question with the
+honest cost attached — flipping the endianness also flips bitfield direction tree-wide
+and would break the ~1,400 already-matched functions — not as an endgame lock.
+The driver has NOT declared exhaustion, so this must not be escalated before that
+modality is assigned.
+
+### I2 — the one modality left on the ladder is `synthesis`
+recon, structural, permuter, forensics (x2) and rederive are all spent. A synthesis
+session's job is NOT another probe: it is to state the acceptance condition in one
+place — nine single-word spill slots at stride 8 AND congruence 0, from a
+139-instruction leaf whose instruction stream already matches target exactly — and
+cross-check that statement against the sanctioned-technique catalog for any family not
+yet tried. s8 removes two families from that catalog for good: transplant (1,745 foreign
+sources, 300 slots, none escaped) and re-derivation (m2c reproduces the accepted body
+plus dead locals).
+
+### I3 — do NOT re-open (extends H4)
+* Everything in H4 (RA/scheduling, post-cc1 stages, order/scoping/spill count/mode
+  mixing, the func_8006BD28 "existence proof", reuse-branch mode mixing, frame-padding
+  locals).
+* The decomp.me corpus as a source of an existence proof or a transplant (s8) — scanned
+  in full, 3,754 scratches; the 6 apparent 0-mod-8 hits are stride-8 declared struct
+  locals, not spills.
+* m2c re-derivation (s8) — produces the accepted body plus nine dead spill-shaped
+  locals, both already measured dead.
+* Any probe premised on the +4 being source-dependent. It is not: 300 spill slots from
+  1,745 unrelated C bodies, all at 4 mod 8.
+
+### I4 — caveat future sessions must carry
+s2's tree-wide census of "29 stride-8 spill blocks, all at 0 mod 8" used a signature
+(caller-save sw + lw at one offset, stride-8 runs) that s8 proved over-inclusive: it also
+matches blocks of stride-8 declared struct locals. func_80060E38's own nine slots ARE
+genuine reload spills (confirmed by the s6/s7 instrumented-cc1 traces inside the real
+src/text1b.c TU), so nothing about this function changes — but the exact figure "29" is
+an upper bound on the class, and an escalation entry should say so rather than assert it.
+
+## [s8] A fresh m2c re-derivation of the target produces a structurally different C shape with a codegen lever the hand-written body lacks.
+- mechanism: The mandated rederive instrument. Sessions 1-7 all worked from one hand-written body; m2c reads the TARGET assembly directly and reconstructs C from it, so if the original source used a shape nobody guessed (an aggregate, a pointer walk, explicit temporaries) m2c would surface it.
+- probe: cd tools/m2c && python3 -m m2c.main --target mipsel-gcc-c --valid-syntax asm/funcs/func_80060E38.s (artifact tmp/grind/func_80060E38/s8/m2c_out.c, 88 lines).
+- result: m2c reproduces the accepted body's 32 global stores and two indirect scratchpad stores verbatim and adds exactly two things: (1) nine dead s32 locals named for the target's own slot offsets (sp0, sp8, sp10, sp18, sp20, sp28, sp30, sp38, sp40 = 0,8,...,64), each written once and never read - m2c transcribing the spill slots it saw in the asm, which is the forbidden dead-vars/frame-coercion family, score-inert under the cheat-invisible sandbox, and already MEASURED dead in s2 (declared s32 locals take assign_stack_local's align==0 path and land at stride 4, not target's stride 8); and (2) one statement reorder, D_800A34A0 emitted late between the two indirect stores - killed in s2 (11 variants) and s4+s5 (~159.5k permuter mutations), and worthless anyway since the accepted body already matches target's stream 139/139. Banked as rejected/m2c-rederive-yields-dead-spill-locals-already-killed.c.
+- verdict: KILLED
+
+## [s8] The decomp.me corpus contains a MATCHING scratch, compiled by a BB2-class GCC 2.7.2 PS1 compiler, whose target has a stride-8 single-word reload-spill block at 0 mod 8 - an out-of-tree existence proof and a transplantable construct.
+- mechanism: The mandated corpus instrument. Sessions 2-7 proved the 4-mod-8 congruence from OUR compiler's source and OUR tree; a matching scratch on a community-hosted GCC 2.7.2 PS1 compiler with target's slot shape would falsify the theorem from outside the project and hand over the C that produces it.
+- probe: tmp/grind/func_80060E38/s8/dmscan.py applied s2/spillscan2.py's spill signature (caller-save sw AND lw at the same sp offset, grouped into maximal stride-8 runs) to the target_assembly of all 3,754 cached scratches (gcc2.7.2-psx 1,554; psyq3.5 1,293; gcc2.7.2-cdk 907), split by compiler and is_matching; each apparent hit was then read line by line with s8/dump.py.
+- result: The scan reported 6 blocks at 0 mod 8 in matching gcc2.7.2-psx scratches (73BdG, YgXC2, GGhAe, ePDOy) - all FALSE POSITIVES. 73BdG's 0x28/0x30/0x38/0x40/0x48 run is a block of stride-8 DECLARED STRUCT LOCALS: the frame is address-taken (addiu $a0,$sp,0x18) and the same offsets are also accessed with lhu, which no SImode reload spill does. No matching scratch in the corpus supplies a genuine 0-mod-8 word reload spill; the corpus offers no existence proof and no transplant. Carried forward as a caveat on s2's tree-wide '29 blocks' census, which used the same over-inclusive signature - func_80060E38's own nine slots are nevertheless confirmed genuine spills by the s6/s7 instrumented-cc1 traces.
+- verdict: KILLED
+
+## [s8] Some foreign C body - from any project, written by anyone - reaches a 0-mod-8 four-byte reload spill slot when compiled by OUR cc1.
+- mechanism: The transplant leg of the rederive mandate, run at corpus scale instead of one sibling at a time. If the congruence had ANY dependence on source shape, 1,751 independent C bodies written for other games by other authors are the widest possible net.
+- probe: tmp/grind/func_80060E38/s8/dmcross.py recompiled every MATCHING, non-override scratch on gcc2.7.2-psx / gcc2.7.2-cdk / psyq3.5 (1,751) from its own context+source_code through OUR cc1 - the s7 instrumented build, which prints every assign_stack_local call - at the scratch's own -O level, -G value and -msoft-float. Every align==-1, msize==4 allocation and its final offset was recorded. Report: s8/dmcross_sharp.txt (earlier passes s8/dmcross_psx.txt, s8/dmcross_all.txt).
+- result: 1,745 compiled (6 cc1 failures). 300 four-byte reload spill slots allocated across 130 of them; 300/300 at 4 mod 8, ZERO at 0 mod 8. The congruence theorem now carries an out-of-tree empirical base of 1,745 foreign sources on top of s6's 131 in-tree allocations and s7's 1,694 assign_stack_local calls. Transplant is dead by construction, not by sample: the congruence does not depend on the C at all.
+- verdict: KILLED
+
+## [s8] Our cc1 agrees with the community-verified GCC 2.7.2 PS1 compilers on reload-spill placement, so the +4 is a property of GCC 2.7.2 rather than of our particular build.
+- mechanism: Every scratch in the probe above is MATCHING with match_override == false, so its target assembly IS what the reference compiler emitted for that exact source. Comparing our slot offsets against the reference's is a direct fork-vs-reference measurement - and unlike s2's single cc1psx counter-exhibit it repeats across projects, flag sets and compiler packages.
+- probe: Same run. For each of our slots at offset F the target was tested with the STRICT spill signature (a caller-save sw AND a caller-save lw at the same sp offset) at F and at F-4, so that a bare $sp reference from a struct local, an argument home or a callee save cannot score an agreement - which is what an earlier loose pass of this probe wrongly did (67 spurious 'agreements' collapsed to 1 ambiguous one under the strict test).
+- result: 30 of our 300 slots are comparable. 29 sit exactly 4 bytes ABOVE the reference's slot (target has a spill-shaped offset at F-4 and none at F); 1 (EQa3U off=44) is ambiguous because that target has spill offsets at both 40 and 44. ZERO unambiguous agreements. The 29 come from 7 distinct scratches in different projects and flag families: 73BdG and YgXC2 (13 slots each, -gcoff -msoft-float -O2 --aspsx-version=2.56), GGhAe (3, -O3 -G128), 5q1aF (2, -O2 -G0 --aspsx-version=2.34), MfUHg (1), SQTbz (1, -O2 -G0 -fsigned-char). The other 270 slots are non-comparable (our flag mapping is not the scratch's exact preset, so our cc1 spills where the reference did not). Hypothesis refuted: our build does not agree with the reference compilers, it is uniformly +4, out of tree, across projects.
+- verdict: KILLED
+
+## [s8] The +4 traces to a single named, MEASURED configuration fact about our local toolchain: cc1 is configured for big-endian MIPS.
+- mechanism: BYTES_BIG_ENDIAN is TARGET_BIG_ENDIAN, which GCC 2.7.2's mips configuration derives from the configure target triple; it arms the bigend_correction at function.c:702-703 that sessions 1-7 traced. Session 1 established the BEHAVIOUR with two codegen probes but never its ORIGIN, and cc1 rejects -EL/-EB so the setting is compiled in.
+- probe: Read the configure record of the local build: tools/gcc-2.7.2/Makefile:168.
+- result: target=mips-mips-gnu - big-endian MIPS - while Bushido Blade 2 is little-endian (mipsel), and tools/setup_wsl.sh builds this from decompals/mips-gcc-2.7.2 alongside mips-linux-gnu binutils. This one configure choice is the cause of BOTH divergences the project has documented: the spill bigend_correction and the HIGH-first bitfield extraction of bitfield-direction-divergence. Everything else still byte-matches because cc1 emits assembly TEXT and mipsel-linux-gnu-as does the byte ordering, so only codegen decisions that read BYTES_BIG_ENDIAN diverge. This is a DIAGNOSIS, not a lever: rebuilding cc1 for mipsel is outside the grind edit surface, forbidden by no-compiler-divergence, and not free even for the operator, since flipping BYTES_BIG_ENDIAN also flips bitfield direction tree-wide and would break the ~1,400 functions already matched against current behaviour. Whether to make that trade is an owner decision, not an agent decision.
+- verdict: CONFIRMED
