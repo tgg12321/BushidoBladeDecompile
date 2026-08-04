@@ -21,6 +21,15 @@
       "floor_now": 23,
       "git_head_at_measurement": "ddf6cb64",
       "note": "CENSUS LINE WAS STALE ON TWO COUNTS: the function is in src/text1a.c (not text1a_c) and the honest distance is 27 (not 16). Frame (72 == target 0x48) and instruction count (132/132) are ALREADY correct at HEAD, so the whole gap is register naming plus commutative-add operand order. TWO FINDINGS. (1) THE REGISTER PIN IS NOT LOAD-BEARING: replacing `register s32 *s7_a4 asm(\"s7\") = a4;` with a plain local scores the same 27, so that cheat-asm retires for free and is worth committing on its own. (2) Target emits `addu s0,s0,s2` (destination reuses the offset register) where we emitted `addu v1,s2,s0`; writing `offset = offset + (s32) a2; p = (u16 *) offset;` instead of `p = (u16 *) (a2 + offset);` matches it, 27 -> 23. Both together = 23 (candidate.c). MEASURED NEGATIVE: the same reuse on the FIRST add regresses to 30 (only the second matches); plain operand-order swaps (offset + a1 / offset + a2 / both) are inert at 27 because GCC canonicalises commutative operands - the destination reuse is what matters; the pin's removal is inert in every combination, consistently confirming it. RESIDUAL 23 is three independent 2-cycle register swaps (s4/s5 across the prologue saves, s6/s7 throughout, s0/s3 in the second loop) - a different shape from saTan4FireDisp's single 3-cycle, so likely three separate allocno ties. src/text1a.c reverted."
+    },
+    {
+      "date": "2026-08-04",
+      "round": 2,
+      "lever": "boundary check on the two operand-order rules before sweeping",
+      "lever_rule": "compare-operand-order-register / or-tree-shape-shift",
+      "floor_was": 23,
+      "floor_now": 23,
+      "note": "NO SWEEP RUN - the legitimate lever's PRECONDITION IS ABSENT. compare-operand-order-register (the allowed surface) applies to COMPARISONS with a global or variable RHS; all three comparisons in this body are against CONSTANTS: `if (i < 0x12)`, `if (i < 0x14)`, `while (t1 < 4)`. The rule's own 'does not apply' list excludes constant-RHS comparisons and func_8007C7A0 round-13 re-confirmed that empirically, so there is no global-vs-local compare to flip here. The other axis - permuting operands WITHIN a commutative | / & / + expression - is or-tree-shape-shift and is FORBIDDEN; it was also measured inert in round 1 (offset + a1 / offset + a2 / both all score 27), so nothing was gained or lost by it. For the record the KEPT lever is neither axis: `offset = offset + (s32) a2; p = (u16 *) offset;` is a DESTINATION REUSE of an existing live variable (the sanctioned variable-reuse family) - offset genuinely holds the computed byte address afterwards - not an operand permutation. Residual 23 is therefore purely the three 2-cycle allocno ties; next step is RA Step-0 with tmp/allocdbg.sh + tmp/allocpick.py. The pin retirement is already carried in candidate.c and is a free cheat-asm removal on its own."
     }
   ],
   "reviewer": null,
@@ -50,10 +59,11 @@
   ],
   "root_cause": "Frame and instruction count already match at HEAD. The gap is register allocation: three independent 2-cycle swaps (s4/s5, s6/s7, s0/s3) plus one commutative-add destination reuse, the latter now fixed.",
   "next_avenues": [
-    "RA playbook Step-0 on the three swapped pairs: tmp/allocdbg.sh text1a + tmp/allocpick.py (adjust its WANT set to this function's pseudos) gives the allocno priorities directly; the saTan4FireDisp round-10 write-up shows how to turn them into a sized lever.",
-    "Retiring the register pin is worth committing on its own even if the rest stalls - it is measured inert.",
-    "Start from candidate.c (23). Completion gate: 16 regfix rules + the prologue_config entry retire with a full match.",
-    "Sibling hirahira_w_ctrl_2 (text1a_c, dist 58, 63 rules) is verdict ASM-SUSPECT - it needs the `canonical` gate run before any pure-C work, not a diff reading."
+    "RA Step-0 on the three 2-cycle swaps (s4/s5, s6/s7, s0/s3): tmp/allocdbg.sh text1a + tmp/allocpick.py with the WANT set adjusted to this function's pseudos; size a lever against the priorities the way saTan4FireDisp round 10 does.",
+    "Do NOT re-sweep operand orders - the comparison axis has no precondition here (constant RHS everywhere) and the commutative-expression axis is forbidden.",
+    "Retiring the register pin is worth committing on its own - measured inert.",
+    "Start from candidate.c (23). Completion gate: 16 regfix rules + the prologue_config entry + the pin retire with a full match.",
+    "Sibling hirahira_w_ctrl_2 (text1a_c, dist 58, 63 rules) is verdict ASM-SUSPECT - needs the `canonical` gate before any pure-C work."
   ],
   "memory_notes": [
     ".claude/rules/register-alloc-pure-c.md",

@@ -61,13 +61,41 @@ three swapped pairs plus the two adds now addressed:
 That is three independent 2-cycles, not one rotation — a different shape from
 `saTan4FireDisp`'s 3-cycle, and likely three separate allocno ties.
 
+## The operand-order lever does NOT apply here (checked, round 2)
+
+[[compare-operand-order-register]] is the legitimate surface — flipping a
+**comparison's** operand order (`local > GLOBAL` instead of `GLOBAL < local`) is
+an RTL-emission-order lever with real precedent. **Its precondition is absent in
+this function:** all three comparisons in the body are against **constants** —
+`if (i < 0x12)`, `if (i < 0x14)`, `while (t1 < 4)`. The rule's own "does not
+apply" list excludes constant-RHS comparisons, and `func_8007C7A0` round-13
+re-confirmed that empirically. There is no global-vs-local compare to flip.
+
+The other axis — permuting operands *within* a commutative `|` / `&` / `+`
+expression — is [[or-tree-shape-shift]], **FORBIDDEN**. It was also measured
+inert here anyway (`offset + a1` / `offset + a2` / both all score 27).
+
+Note the kept lever is neither of those: `offset = offset + (s32) a2;
+p = (u16 *) offset;` is a **destination reuse** of an existing live variable
+(the sanctioned variable-reuse family), not an operand permutation. `offset`
+genuinely holds the computed byte address afterwards.
+
 ## Resume here
 
-Start from `candidate.c` (23). Next step is the RA playbook Step-0 on the three
-swapped pairs: `tmp/allocdbg.sh text1a` + `tmp/allocpick.py` (adjust its `WANT`
-set to this function's pseudos) gives the allocno priorities directly, and the
-`saTan4FireDisp` round-10 write-up shows how to turn them into a sized lever.
-Retiring the pin is worth committing on its own even if the rest stalls.
+Start from `candidate.c` (23), which already carries the pin retirement. The
+residual is purely the three 2-cycle allocno ties, so the next step is RA
+Step-0: `tmp/allocdbg.sh text1a` + `tmp/allocpick.py` (adjust its `WANT` set to
+this function's pseudos) gives the allocno priorities directly, and the
+`saTan4FireDisp` round-10 write-up shows how to turn them into a sized lever
+rather than guessing. Do not re-sweep operand orders — both axes are settled
+above.
+
+**CORRECTION (operator, 2026-08-04 ~08:20): the pin retirement is NOT a free
+commit.** It is inert under the HONEST sandbox metric, but with the 16 regfix
+rules ENABLED the emission shifts and the full build MISMATCHES (measured:
+SHA1 8e1160d1, reverted, oracle re-verified green). Same gate as the display
+twins: rules are calibrated to the pinned emission. The pin retires only as
+part of the COMPLETION (when all rules go with it).
 
 ## Sibling
 
