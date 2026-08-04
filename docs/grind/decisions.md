@@ -3336,3 +3336,144 @@ standing 2026-07-27 both-gates-fail auto-ruling (`.claude/rules/endgame-lock-dis
 `[[no-compiler-divergence]]` (the cc1 configuration is cited as measured root cause and as an
 owner-only decision with stated cost, NOT as a request to patch the toolchain). This entry names
 **func_80060E38** directly.
+
+---
+
+## 2026-08-03 — func_80068D88 (src/text1b.c) — **RULING REQUEST — DISTANCE-0 PURE-C FORM, CLOSING CONSTRUCT CONTESTED**
+
+**Nothing is being disposed of here. This is not an exhaustion escalation and not an owner-gated
+park.** The function is SOLVED to honest distance 0 in pure C; the single open question is whether
+the construct that closes it is acceptable, and it is a question of the SCOPE of an existing owner
+ruling, which this session declined to answer for itself.
+
+### What was achieved (grind session 1, `recon` modality)
+
+Honest floor moved **5 -> 0**. `& tools/wteng.ps1 main sandbox func_80068D88 --disable all` printed
+`"score": 0`, 81 target insns / 81 build insns, 0 rules dropped. An unmasked instruction-level diff
+against the oracle-matching reference object `build/src/text1b.o` shows every opcode and every
+register identical; the only differing entries are four branch/jump TARGET ADDRESSES that differ
+solely because the sandbox object places the function at a different offset — precisely the entries
+`engine.score.normalized_insns` masks. The form carries zero regfix rules, zero asmfix rules, zero
+`register ... asm("$N")` pins, zero `__asm__`, zero volatile, zero alias renames, zero dead stores
+and zero unused locals. (HEAD's committed body carried four register pins and two
+`__asm__ volatile("" ::: "memory")` scheduling barriers; all are gone.)
+
+### The mechanism, measured
+
+`cc1 -da` dump at `tmp/grind/func_80068D88/s1/dump/text1b.i.greg` (function at line 41917):
+
+    ;; 10 regs to allocate: 74 77 116 75 79 80 113 76 82 78
+    ;; 79 conflicts: 74 75 76 77 78 79 80 2 3 29
+    ;; 80 conflicts: 74 75 76 77 78 79 80 2 3 29     <- byte-identical to 79's
+    ;; Register dispositions: ... 79 in 5   80 in 7 ...
+
+Pseudo->local map, each confirmed independently by the `addiu` displacement its register holds:
+74=outer(a0), 75=p_idx(t0,+0x6E), 76=p_prev(t2,+0x7C), 77=p_cur(a2,+0x80), 78=p_matrix(t4,+0x8C),
+79=prev_init(a1), 80=cur_init(a3) — i.e. exactly the source declaration order, which is the direct
+confirmation that GCC numbers a local's pseudo when its declaration is expanded.
+
+Because 79 and 80 have identical conflict sets and equal priority, `tools/gcc-2.7.2/global.c`'s
+`allocno_compare` reaches its final tie-break `return *v1 - *v2;` (lower allocno first), and
+`find_reg` then hands the first-allocated of the two symmetric allocnos the lower free hard register
+$a1. Target wants `cur_init` in $a1 and `prev_init` in $a3. The entire five-instruction residual
+(idx 1/7/9/22/24, all register-name-only) is that one tie-break.
+
+**The closing change is therefore the transposition of two adjacent, same-type local declarations —
+`s32 cur_init;` above `s32 prev_init;` — with no other change of any kind.** Nothing is added,
+nothing is removed, no statement/expression/type/cast/wrapper/annotation changes. Both variables are
+ordinary, fully live, real-valued locals used in real arithmetic and real stores; neither exists for
+a codegen purpose.
+
+This also CORRECTS the session-0 ledger, whose recorded mechanism ("global.c processes pseudos in
+conflict-degree order; prev_init's live range is longer, giving it a higher conflict degree") is
+wrong in its direction — the two conflict sets are identical, so conflict degree cannot discriminate
+them. That is why every session-0 lever aimed at live range measured as an exact no-op.
+
+### The layer-1 review exchange
+
+The in-session `cheat-reviewer` returned FAIL on two grounds, was given new facts, and split:
+
+- **Ground 2 — RETRACTED by the reviewer, now PASS.** It had held that the inherited nested-scope
+  `s32 *p_a2 = (s32 *)D_800A34E4;` was a redundant global round-trip with no output difference. It
+  is not: the target's own loop body publishes both globals (idx 42 `sw a0,0(gp)`, idx 45
+  `sw a1,0(gp)`) and then RE-READS both for the second read-modify-write (idx 52 `lw a0,0(gp)`,
+  idx 53 `lw v1,0(gp)`). Reusing the live locals would delete two instructions the shipped retail
+  binary contains. The reviewer reproduced this against `build/src/text1b.o` and reversed itself.
+- **Ground 1 — STANDS (reviewer FAIL).** It holds that the declaration transposition falls under the
+  narrowing clause of the **2026-07-17 owner ruling** in
+  `.claude/rules/param-local-alias-prologue-pair-flip.md`: *"literal param renames declared in
+  target's pair order ... The declaration order is a freely tunable prologue-ordering knob; no
+  exhaustion dossier can sanction it."* Its argument: same category of move (a semantically
+  interchangeable source ordering selected because it makes a GCC internal break target's way),
+  differing only in which pass is involved (`global.c`'s `allocno_compare` fallthrough here vs
+  `expand_function_start`'s LUID pairing there).
+
+### THE QUESTION FOR THE OWNER
+
+**Does the 2026-07-17 "declaration order is a freely tunable knob" holding extend to the order of
+two ordinary, fully-live, real-valued local declarations where NOTHING is added — or is it scoped to
+the construct that ruling actually archives, namely ADDED literal-rename alias locals
+(`Rect *_r = r; s32 *_out = out;`) that convey no information and exist only to be ordered?**
+
+The session's reading, offered as argument and not as a self-approval — the rule's own text
+repeatedly locates the defect in the ADDED alias, not in ordering per se:
+- L66: *"`_r` and `_out` are literal renames of `r` and `out` — identical lvalues, identical types,
+  no extra information conveyed."*
+- L83-85: *"They would not introduce same-typed locals with leading-underscore names to capture
+  parameters in a specific order."*
+- L101-105 (the rule's own legitimate/forbidden line): *"Local variables that carry NEW semantic
+  information are legitimate ... Local variables that are literal renames of params with leading
+  underscores, declared in a specific order to bend prologue scheduling, are not."*
+
+Under that reading the forbidden ingredient — a no-information construct introduced to be ordered —
+is simply absent here, and what remains is not a "construct" at all but the order of two load-bearing
+declarations. A further consideration the owner may weigh: **every pure-C decompilation of this
+function must choose one of the two orders**, and one of them is the original author's; a holding
+that the order may never be corrected once guessed wrong would make the function unmatchable in pure
+C for a reason unrelated to any cheat family. Against that, the reviewer's point is real: the order
+was in fact SELECTED by reading a `-da` dump and the `allocno_compare` fallthrough, after six other
+structural forms failed — which is the "exhaust, then reach for the free knob" shape the 2026-07-17
+clause names.
+
+### Disposition requested
+
+- **If the owner rules the transposition ACCEPTABLE:** apply
+  `memory/grind/func_80068D88/candidate.c` verbatim to `src/text1b.c` (it is one Edit away from the
+  current tree — transpose the two declaration lines), run the mandatory fresh layer-2
+  `cheat-reviewer`, then `retire` / `verify-oracle` / `queue done`. The function reaches COMPLETED-C
+  with zero rules and zero cheat-asm. A `.claude/rules/` technique entry should follow separately
+  (never in the match commit, per `review-discipline-before-commit`), because this tie-break lever is
+  plausibly general across the queue's large "register-rename-only plateau" class.
+- **If the owner rules it a FORBIDDEN spelling:** record it so no future session re-derives it, and
+  the function continues at the reviewer-cleared floor of 5 with the frontier hypothesis in the
+  ledger (break the tie on `allocno_compare`'s PRIORITY term — `n_refs` / `live_length` — rather than
+  on the allocno-index term, which session 0 never probed with the dump in hand).
+
+### Current tree state
+
+`src/text1b.c` holds the **score-5, reviewer-PASSED** body: the register pins and the two
+`__asm__` scheduling barriers are removed, the `p_a2` split is in, and `prev_init` is declared before
+`cur_init`. The distance-0 form is banked, unapplied and clearly marked CONTESTED, in
+`memory/grind/func_80068D88/candidate.c`. This session did **not** self-approve the contested
+construct, did not commit, and touched no build-pipeline or policy file.
+
+**Filed under authority of:** task-brief contract (grind session 1, `recon` modality — the
+`ruling-request` outcome is defined as "a construct you cannot classify: sanctioned family vs
+cheat"); `[[review-discipline-before-commit]]` (no self-resolved reviewer verdicts; layer-2 accepts,
+not the author); `[[two-layer-adversarial-acceptance]]`. This entry names **func_80068D88** directly.
+
+## 2026-08-03 20:05 — func_80068D88 — ruling: func_80068D88 reaches honest pure-C distance 0 (bytes verified against the oracl — **PASS**
+
+RULING REQUEST (construct legitimacy only; bytes are NOT yet proven on main, so this is not a completion sign-off). QUESTION: does the narrowing clause of the 2026-07-17 owner ruling in .claude/rules/param-local-alias-prologue-pair-flip.md L17-20 ('literal param renames declared in target's pair order ... The declaration order is a freely tunable prologue-ordering knob; no exhaustion dossier can sanction it') forbid transposing the order of two ordinary local declarations? ANSWER: NO. That clause is scoped to the construct the rule archives, and does not reach this change.
+
+WHAT I VERIFIED MYSELF, not taking the session's word for it. I diffed the body now in src/text1b.c (lines 15060-15115) against memory/grind/func_80068D88/candidate.c line-by-line. The entire difference is two adjacent lines swapping places: 's32 prev_init;' and 's32 cur_init;'. Nothing is added, nothing is deleted, no variable is renamed, no statement moves, no scope changes, no type changes. I also confirmed against git diff that the score-5 form currently in the tree is itself already clean of the old cheats HEAD carried (the register asm("$7")/asm("$5") pins and the two __asm__ volatile memory barriers are gone, not respelled), and I read candidate.c in full: zero regfix/asmfix rules, zero register pins, zero __asm__, zero volatile coercion, zero alias renames, zero dead stores, zero unused locals.
+
+WHY THIS IS NOT THE FORBIDDEN CONSTRUCT. The technique that rule archives is the introduction of alias locals -- 'Rect *_r = r; s32 *_out = out;' -- which are literal renames of parameters. The rule's own reasoning (L61-72, L99-105) turns entirely on that fact: the aliases convey no information, the function behaves identically with or without them, and they exist ONLY so that there is something to put in a chosen order. The narrowing clause says no dossier can rescue that, and it is right: an exhaustion dossier cannot make a fabricated variable real. Here there is no fabricated variable to rescue. 'cur_init' holds the value read from *p_cur and 'prev_init' holds the value read from D_800A37D4; both are consumed by the strength_red arithmetic and both are written back out through the *p_cur / *p_prev store pair. They are exactly what the rule's L101-105 calls legitimate: locals carrying real, distinct, load-bearing values. The forbidden shape requires first inventing the things being ordered; this change orders things the function cannot be written without.
+
+WHY IT ALSO PASSES ON ITS OWN MERITS (the 6-test cheat checklist). (1) Semantic purpose: yes, both locals hold real values used in real arithmetic and real stores. (2) Human-writable from spec: yes -- every human writing this function declares these two locals in one order or the other; both orders are ordinary C. (3) GCC-steering as the sole function: no construct is present whose sole function is steering. There is no construct at all; the source delta is empty of code. (4) Annotation: none required -- /* FAKE */ marks constructs with no semantic purpose, and there is no such construct here. (5) Sanctioned family: the frozen SOTN-accepted list in .claude/rules/no-new-park-categories.md already sanctions 'Named-intermediate declaration order -- declare a sub-expression as a separately-named local to bias LUID' (SOTN's randy chain, src/weapon/w_037.c). That sanctions the strictly STRONGER act of ADDING a named local in a chosen position. Merely choosing between two orders for locals that already exist and already carry real values sits inside that family with room to spare. (6) Intent-announcing names: no -- 'cur_init'/'prev_init' name their values; there is no pad/dummy/spill/_tmp naming.
+
+THE POINT THAT DECIDES IT FOR ME, and the one the owner should see. Declaration order is not an optional construct that can be declined. Every pure-C form of this function must put one of these two declarations first, and exactly one of the two orders is the one the original 1998 author wrote. A holding that the order may never be revisited once first guessed would mean the correct original source is unreachable by rule whenever the first guess was wrong -- and it would do so on a function that carries no cheat of any kind. That is not a cheat-family boundary, it is an accident of which line the earlier session typed first. Recovering the author's spelling IS the work of a matching decompilation; the anti-cheat policy governs what code exists in the source, not the sequence in which two required declarations are written. The measured mechanism the session gives (global.c allocno_compare falling through to 'return *v1 - *v2;' because the two pseudos have byte-identical conflict sets, so the lower-numbered allocno takes the lower free hard register) is an explanation of WHY the author's order is recoverable, not a justification for a construct -- there is no construct to justify.
+
+WHAT THIS RULING DOES NOT SANCTION. It does not touch the forbidden alias-rename family: adding a local in order to have something to order remains forbidden regardless of any dossier, exactly as the 2026-07-17 clause says. It does not sanction moving a declaration out of its natural scope, splitting a declaration to gain an ordering slot, or introducing a local that carries no new value. And it does not sanction anything about this function beyond the transposition itself: the rest of the body was cleared separately (the layer-1 reviewer's second objection, that the p_a2 re-read of D_800A34E4 was a redundant global round-trip, is factually wrong and the reviewer retracted it -- I confirmed the target genuinely re-reads both globals at insns 52/53, so removing the re-read would DELETE two instructions the shipped binary contains).
+
+DISPOSITION. The grind session may apply candidate.c to src/text1b.c. This ruling clears the construct only. Completion still requires the ordinary gate with nothing waived: retire, full clean build, SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa, queue done, and layer-2 fresh cheat-reviewer acceptance. If the full-build SHA1 does not land, this PASS is void and the function returns to the queue.
