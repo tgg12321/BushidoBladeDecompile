@@ -14,16 +14,6 @@
  "sessions": [
   {
    "date": "2026-08-04",
-   "round": 2,
-   "lever": "Group C closed (no-arg call); phantom-slot PRODUCER identified via combine orphan-USE RTL",
-   "lever_rule": "phantom-frame-slots-gcc272 / orphan-USE strand",
-   "floor_was": 48,
-   "floor_now": 47,
-   "git_head_at_measurement": "e7a0b730",
-   "note": "GROUP C CLOSED 48->47: func_8007DC9C() takes NO argument. The committed source passed (u32 *)0xA0000000, emitting `lui a0,0xa000` where target has a nop at idx 66 - exactly what the rule `subst \"lui\\s+\\$4,...\" \"nop\" @ 63` papered over. func_8007DC9C(0) and (u32 *)0 both stay at 48, so it must be no argument at all rather than a null one. GROUP A PRODUCER IDENTIFIED EXACTLY: each phantom frame slot is one combine orphan-USE pseudo, and the producer is an s16->s32 sign-extension of a value ALREADY IN A REGISTER. GCC expands it as (set (reg:SI 96) (ashift:SI (subreg:SI (reg/v:HI 75) 0) 16)) + (set (reg:SI 95) (ashiftrt:SI (reg:SI 96) 16)); combine merges the pair into one sign_extend, killing 96's def but leaving (use (reg:SI 96)) orphaned, and greg reports it UNALLOCATED so it takes an 8-byte slot. tmp/orphan_probe.py on our body reports UNALLOCATED ['96','100'] - exactly two strands, exactly vars=16. A value loaded straight from memory does NOT count because lh sign-extends in the load. So the Group A spec is: go from 2 orphan strands to 4. NEGATIVE: extra s16 casts do NOT create strands - six spellings (s16 xf=arg0->x with (s32)xf, s16 yf=(s16)(v0_ext>>16) with (s32)yf, both, the clamped x as s16 xc, both clamp limits as s16 with explicit (s32) widening) ALL still report exactly 2 unallocated pseudos and vars=16, because re-casting an already-s16 value is a no-op GCC folds; three of them also collapsed the multiply to 131 insns. src/display.c reverted; candidate.c carries the Group-C fix plus the cheat-asm removal."
-  },
-  {
-   "date": "2026-08-04",
    "round": 3,
    "lever": "cross-check the phantom-slot producer against the in-tree 3-orphan witness; sweep distinct/split/retyped s16 locals",
    "lever_rule": "phantom-frame-slots-gcc272 / orphan-USE strand",
@@ -41,6 +31,16 @@
    "floor_now": 47,
    "git_head_at_measurement": "e7a0b730",
    "note": "THE NAMED FAMILY DOES NOT DELIVER GROUP A, but the round produced the single most useful fact so far. Six variants, every local REAL (holding a value the body already computes and uses): the two clamp limits as s16 locals used by both the compare and the clamping assignment; the same hoisted to the top of the body; the clamped height as an s16 local feeding both the store and the shift; the natural w/h dimension-local clamp idiom with control flow preserved; and three combinations. All but one hold at exactly 2 orphans / 142 insns / score 47. THE EXCEPTION IS THE HANDLE: `lim_top` (both clamp globals read once into s16 xlim/ylim at the top, used by both compares) gives orphans=1, vars=8, frame=56 AT THE SAME 142 INSTRUCTIONS (score 55), reproduced. That refutes any 'vars is stuck at 16' reading - the strand count DOES move with source shape, just downward so far. Mechanistically, hoisting the load away from its compare REMOVED a strand, so a strand requires the widening to sit where combine cannot fold it into the load; the next session should work that lever in reverse. TWO HARD CONSTRAINTS on any candidate, both derived from target: the multiply must keep RE-READING arg0->x from memory (target splice regfix.txt:3417 is `lh $3,4($17)` ... `mult $3,$2`), and target emits the same two `sll ,0x10` + one `sra ,0x10` we do, so the two extra strands must be widenings combine folds away entirely. DISCIPLINE: no synthetic-strand spelling was tried and none should be - nothing reaches 3 or 4 orphans by any means, real or not, so there is no 'only works with a semantically empty local' trade-off to adjudicate. Banked on measurement, not on a policy call. src/display.c reverted."
+  },
+  {
+   "date": "2026-08-04",
+   "round": 5,
+   "lever": "reverse-lim_top: RTL census of widening SITES per pass (tmp/widen.py) -- reframes Group A entirely",
+   "lever_rule": "phantom-frame-slots-gcc272 / combine added_sets_2",
+   "floor_was": 47,
+   "floor_now": 47,
+   "git_head_at_measurement": "e7a0b730",
+   "note": "MECHANISM CORRECTION - THE SITE COUNT WAS NEVER THE PROBLEM. tmp/widen.py censuses HImode->SImode widening pairs per pass. The body ALREADY HAS FIVE (flow pass: pseudos 83, 89, 96, 100, 109); combine folds all five and only TWO (96, 100) leave an orphan. So rounds 1-6 were adding and removing SITES, a quantity that was never short, which is exactly why 25 variants moved nothing. There are three outcomes per site and only the middle one buys a frame slot: (a) combine merges cleanly with a single-use intermediate -> no instructions and NO SLOT (base sites 83, 89, 109); (b) combine merges but the intermediate is MULTI-USE so it preserves a (use) insn -> 8-BYTE SLOT (base 96, 100); (c) combine cannot merge -> real sll+sra emitted, no slot (lim_top's 90, 99). That is combine.c:1458 `added_sets_2 = !dead_or_set_p(i3, i2dest)`, the same mechanism packed-multiply-cluster documents. THE REAL SPEC IS THEREFORE: make two of the three cleanly-folding sites (83, 89, 109) MULTI-USE - some `X << 16` must be read by a second consumer besides its own `>> 16` - NOT 'find more s16 quantities'. This also explains lim_top's 2->1: it did not lose a site, it pushed sites 90/99 into outcome (c), which emits real shifts and no slot, hence score 55 at the same 142 instructions. Screening constraint for any candidate: the new multi-use must not push a site into outcome (c), because the visible sll/sll/sra census must stay identical. src/display.c reverted."
   }
  ],
  "reviewer": null,
@@ -79,7 +79,7 @@
  ],
  "root_cause": "Three independent causes. (A) The frame is 16 bytes short because cc1 allocates half as many phantom locals temps as the original did (vars 16 vs 32) - not a spill, not a dead array, and not reachable by declaring locals. (B) Register allocation in the clamp and multiply blocks plus three extra/missing moves. (C) One superfluous argument load at the func_8007DC9C call.",
  "next_avenues": [
-  "GROUP A (16 insns, 16 rules): the body needs FOUR HImode->SImode widening sites and has two; 25 variants across five rounds have not added one. THE LIVE HANDLE is `lim_top` in tmp/ce0c6.py, which moves the count 2->1 (vars 16->8) at the same 142 instructions - proof the count responds to source shape. Work it in reverse: a strand requires the widening to sit where combine CANNOT fold it into the load, so hoisting a load away from its compare removes one. Constraints: the multiply must keep re-reading arg0->x from memory (target splice regfix.txt:3417), and target emits the same two `sll ,0x10` + one `sra ,0x10` we do, so the extra strands must be widenings combine folds away entirely. Gradient: tmp/ce0c6.py prints the orphan count directly.",
+  "GROUP A (16 insns, 16 rules) NEW SPEC as of round 7: make two of the three cleanly-folding widening sites (flow pseudos 83, 89, 109) MULTI-USE so combine's added_sets_2 preserves their intermediate as an orphan (use). Concretely some `X << 16` in the body must be read by a second consumer besides its own `>> 16`. The site count is already 5 and was never the constraint - do NOT resume adding s16 quantities, that search is closed by 25 measured variants. Screen with tmp/widen.py (per-pass site census + fold-vs-orphan classification) then tmp/ce0c6.py. Constraints: the multiply keeps re-reading arg0->x from memory (regfix.txt:3417), and the new multi-use must not push a site into the unmergeable outcome (that is what lim_top did: real shifts emitted, score 55).",
   "GROUP B (~30 insns): ALLOCDBG lever-sizing via tmp/allocone.sh, AFTER the frame is right (a frame change re-shuffles the allocation).",
   "Completion gate: 23 regfix rules + the pin/barrier retire, full build, layer-2 cheat-reviewer, queue done."
  ],
@@ -90,6 +90,7 @@
   "memory/wip/hirahira_w_ctrl/notes.md (the ALLOCDBG lever-sizing method for group B)"
  ],
  "prior_sessions_summary": [
-  "2026-08-04 | orientation: caution discharge, residual decomposition, frame quantifi | progress"
+  "2026-08-04 | orientation: caution discharge, residual decomposition, frame quantifi | progress",
+  "2026-08-04 | Group C closed (no-arg call); phantom-slot PRODUCER identified via com | progress"
  ]
 }

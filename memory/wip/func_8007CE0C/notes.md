@@ -24,54 +24,45 @@ frame retires 16 of the 23 rules in one move.
 **Group C — CLOSED.** Target idx 66 is a `nop` where we emitted `lui a0,0xa000`:
 the committed source passed `(u32 *)0xA0000000` to `func_8007DC9C`, which the
 rule `subst "lui\s+\$4,…" "nop" @ 63` papered over. **`func_8007DC9C()` with no
-argument → 47.** (`func_8007DC9C(0)` and `(u32 *)0` both stay at 48 — no
-argument at all, not a null one.)
+argument → 47.** (`func_8007DC9C(0)` and `(u32 *)0` both stay at 48.)
 
-## Group A — the phantom-slot PRODUCER is identified exactly
+## Group A — the frame arithmetic
 
 Target reserves `0x00..0x2F` (48 B) below its saves and **touches none of it**;
 both calls take ≤1 arg so `args` is the o32 minimum 16 on both sides. With
 `frame = ALIGN8(vars)+ALIGN8(args)+ALIGN8(gp_regs)` and 7 saved regs (28→32):
-ours `vars=16` → 64, target `vars=32` → 80.
+ours `vars=16` → 64, target `vars=32` → 80. Each 8-byte slot is one combine
+orphan-USE pseudo; `tmp/orphan_probe.py` reports `['96','100']` for our body.
 
-**Each phantom slot is one combine orphan-USE pseudo, and the producer is an
-s16→s32 sign-extension of a value ALREADY IN A REGISTER**, which GCC expands as
-a shift pair (flow dump):
+## Group A — MECHANISM (round 7; supersedes the round-2..6 framing)
+
+The producer is an s16→s32 widening of a register-resident value, which GCC
+expands as a shift pair and combine then merges:
 
 ```
 (set (reg:SI 96) (ashift:SI (subreg:SI (reg/v:HI 75) 0) (const_int 16)))
 (set (reg:SI 95) (ashiftrt:SI (reg:SI 96) (const_int 16)))
 ```
 
-combine merges the pair into one `sign_extend`, killing 96's def but leaving
-`(use (reg:SI 96))` orphaned; greg reports it UNALLOCATED and it takes an 8-byte
-slot. `tmp/orphan_probe.py`: `UNALLOCATED: ['96','100']` — two strands, exactly
-`vars=16`. **A value loaded straight from memory does NOT count**: `lh`
-sign-extends in the load, so there is no pair to merge.
+**But the SITE COUNT was never the problem.** `tmp/widen.py` censuses sites per
+pass: the body already has **five** (flow pseudos 83, 89, 96, 100, 109). combine
+folds all five and only **two** leave an orphan. Rounds 1-6 were adding and
+removing sites — a quantity that was never short, which is exactly why 25
+variants moved nothing.
 
-**So the spec is: go from 2 orphan strands to 4.**
+Three outcomes per site; only the middle one buys a frame slot:
 
-**Cross-checked against the in-tree 3-orphan witness.** `func_8007C2A0`
-(display.c:376, `vars=32`, `UNALLOCATED ['128','137','140']`) uses the **same**
-producer — `tmp/rtlseg.py tmp/rtl_disp func_8007C2A0 flow` shows all three are
-`ashift`/`ashiftrt` subreg pairs — and its source has exactly three distinct
-multi-use `s16` locals. So it is **one strand per HImode→SImode WIDENING SITE**.
+| combine does | result | example |
+|---|---|---|
+| merges, intermediate single-use | no insns, **no slot** | base 83, 89, 109 |
+| merges, intermediate MULTI-use → keeps a `(use)` | **8-byte slot** | base 96, 100 |
+| cannot merge | real `sll`+`sra` emitted, no slot | `lim_top` 90, 99 |
 
-## Measured negatives — 25 variants, `vars` never rose above 16
+That is `combine.c:1458` `added_sets_2 = !dead_or_set_p(i3, i2dest)` — the same
+mechanism [[packed-multiply-cluster]] documents: combine preserves the dead
+(full mechanism prose in git history: r7/r8 commits)
 
-- **Extra s16 casts** (r3, 6 variants): `s16 xf = arg0->x` + `(s32)xf`, `s16 yf
-- **Splitting/retyping existing s16 locals** (r5, 6 variants): `coord` split
-- **More locals of any kind** (r1, 6 variants); **region bisect** (r2): deleting
-- **The real-s16-quantity family** (r6, 6 variants — clamp limits as real `s16`
-
-### `vars` IS controllable — proven, but so far only DOWNWARD
-
-`lim_top` (both clamp globals read once into `s16 xlim`/`ylim` at the top, used
-by both compares) gives **orphans=1, vars=8, frame=56 at the same 142 insns**
-(score 55). Reproduced. It refutes any "the frame is stuck at 16" reading — the
-count moves with source shape. Hoisting the load AWAY from its compare *removed*
-a strand, so a strand needs the widening where combine cannot fold it into the
-load. Nothing yet pushes the count upward.
+## Measured negatives — 25 variants, all aimed at the WRONG quantity
 
 ## Group B — shape (from `tmp/adiff.py`)
 
@@ -86,24 +77,22 @@ swapped — the `coord = (v1_tmp = arg0->x);` double-assign is the likely cause.
 
 ## Resume here
 
-Group A is the big prize (16 insns, 16 rules): **the body needs FOUR
-HImode→SImode widening sites; it has two.** 25 variants across five rounds show
-the count is a property of the *arithmetic*, not the declarations. The named
-real-s16-quantity family is now measured and does not deliver it.
+Group A's spec is now **make two of the three cleanly-folding widening sites
+(flow pseudos 83, 89, 109) multi-use**, so combine's `added_sets_2` preserves
+each intermediate as an orphan `(use)`. The site count is already 5 and was
+never the constraint — do NOT resume adding s16 quantities, that search is
+closed by 25 measured variants.
 
-**The live handle is `lim_top`**: it proves the count moves (2→1, `vars` 16→8,
-same 142 insns). Work that lever in reverse — find the placement that makes a
-widening un-foldable into its load. Two hard constraints on any candidate: the
-multiply must keep re-reading `arg0->x` from memory (target splice
-`regfix.txt:3417` is `lh $3,4($17)` … `mult $3,$2`), and target emits the same
-two `sll …,0x10` + one `sra …,0x10` we do, so the extra strands must be
-widenings combine folds away entirely.
+Screen with `tmp/widen.py tmp/rtl_disp func_8007CE0C` (per-pass site census,
+fold vs orphan), then `tmp/ce0c6.py` for orphan count + score. Two hard
+constraints: the multiply must keep re-reading `arg0->x` from memory (target
+splice `regfix.txt:3417` is `lh $3,4($17)` … `mult $3,$2`), and the visible
+`sll`/`sll`/`sra` census must stay identical — a new multi-use must NOT push a
+site into the unmergeable row (what `lim_top` did: real shifts, score 55).
 
-**Discipline note:** no synthetic-strand spelling was tried and none should be.
-Nothing reaches 3 or 4 orphans by *any* means, real or not, so there is no "only
-works with a semantically empty local" trade-off to adjudicate — banked on
-measurement, not a policy call. Then Group B by ALLOCDBG sizing, **after** the
-frame is right (a frame change re-shuffles the allocation).
+**Discipline note:** no synthetic-strand spelling has been tried and none should
+be. Everything banked here is on measurement, not a policy call. Group B by
+ALLOCDBG sizing **after** the frame lands.
 
 `src/display.c` is at HEAD; `candidate.c` (47) carries the Group-C fix and the
 cheat-asm removal. Neither is independently committable: with the 23 rules
@@ -111,8 +100,12 @@ ENABLED the emission shifts (same gate as hirahira_w_ctrl).
 
 ## Instruments
 
-`tmp/ce0c{,2,3,4,5,6}.py` (sweeps; ce0c3/5/6 print the greg UNALLOCATED set =
-the direct Group-A gradient), **`tmp/rtlseg.py`** (section-safe RTL reader — its
-predecessor `tmp/ce0c_rtl.py` silently scanned the WRONG function on a name-
-lookup miss; prefer rtlseg), `tmp/ce0c_apply.py`, `tmp/ce0c_landmines.py`,
-`tmp/adiff.py`, `tmp/orphan_probe.py`, `tmp/rtldump.sh`, `tmp/frame_probe.sh`.
+`tmp/ce0c{,2,3,4,5,6}.py` (sweeps; ce0c3/5/6 print the greg UNALLOCATED set),
+**`tmp/widen.py`** (per-pass widening-site census — the Group-A gradient that
+matters), **`tmp/rtlseg.py`** (section-safe RTL reader; its predecessor
+`tmp/ce0c_rtl.py` silently scanned the WRONG function on a name-lookup miss),
+`tmp/ce0c_apply.py`, `tmp/ce0c_landmines.py`, `tmp/adiff.py`,
+`tmp/orphan_probe.py`, `tmp/rtldump.sh`, `tmp/frame_probe.sh`.
+
+**Do not run `sed -i` on this file** — it silently dropped bullet continuation
+lines twice (r6, r7). Use the editor.
