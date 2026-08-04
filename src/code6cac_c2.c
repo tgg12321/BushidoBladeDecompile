@@ -1217,25 +1217,24 @@ void func_8003D91C(void) {
 }
 typedef struct { s32 w[6]; } Copy24;
 void func_8003D9A0(s16 *a0, s32 a1, u32 *a2) {
-    s16 *s0 = a0;
     u32 *s1 = a2;
     s32 s4, s3;
     s32 s2;
 
-    s4 = s0[0];
-    s3 = s0[1];
+    s4 = a0[0];
+    s3 = a0[1];
 
     s2 = a1 - 1;
     if (s2 != -1) {
         do {
             s16 v0;
-            v0 = (u16)s0[1] + (u16)s0[3];
-            s0[1] = v0;
+            v0 = (u16)a0[1] + (u16)a0[3];
+            a0[1] = v0;
             if (v0 >= 0x200) {
-                s0[1] = s3;
-                s0[0] = (u16)s0[0] + (u16)s0[2];
+                a0[1] = s3;
+                a0[0] = (u16)a0[0] + (u16)a0[2];
             }
-            initLoadImage(s1, s0, s4, s3);
+            initLoadImage(s1, a0, s4, s3);
             *(Copy24 *)((u8 *)s1 + 0x18) = *(Copy24 *)s1;
             s1 = (u32 *)((u8 *)s1 + 0x30);
         } while (--s2 != -1);

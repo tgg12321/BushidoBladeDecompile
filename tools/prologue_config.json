@@ -63,22 +63,6 @@
     "beqz\t$v0, .L80038210",
     "nop"
   ],
-  "func_8003D9A0": [
-    "addiu\t$sp, $sp, -0x38",
-    "sw\t$s0, 0x18($sp)",
-    "addu\t$s0, $a0, $zero",
-    "sw\t$s1, 0x1C($sp)",
-    "addu\t$s1, $a2, $zero",
-    "sw\t$s2, 0x20($sp)",
-    "sw\t$ra, 0x30($sp)",
-    "sw\t$s5, 0x2C($sp)",
-    "sw\t$s4, 0x28($sp)",
-    "sw\t$s3, 0x24($sp)",
-    "lh\t$s4, 0x0($s0)",
-    "lh\t$s3, 0x2($s0)",
-    "beqz\t$a1, .L8003DA64",
-    "addiu\t$s2, $a1, -0x1"
-  ],
   "func_80084A7C": [
     "addiu\t$sp, $sp, -0x20",
     "sll\t$v0, $a0, 16",

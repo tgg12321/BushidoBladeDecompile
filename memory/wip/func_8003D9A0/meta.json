@@ -3,30 +3,27 @@
   "file": "code6cac_c2",
   "verdict": "C",
   "scores": {
-    "head_distance": 4,
-    "candidate_floor": 4,
+    "head_distance": 0,
+    "candidate_floor": 0,
     "prior_head_distance": 19
   },
   "rules_dropped_if_applied": 0,
   "cheat_inventory": [
-    "tools/prologue_config.json entry (2 reorders) — carries the residual 4 insns",
-    "tools/frame_fix_funcs.txt entry (56) — PROVABLY DEAD: cc1 now emits 56 natively, apply_frame_fix is a no-op, full build still SHA1==oracle"
+    "tools/prologue_config.json entry (2 reorders) — now INERT: full build matches with it present while the honest rule-free output is byte-perfect. Delete at completion.",
+    "tools/frame_fix_funcs.txt entry (56) — INERT: cc1 emits 56 natively. Delete at completion."
   ],
   "reviewer": null,
   "rejected_forms": [
-    "s16-typed s4/s3 (any variant) -> always an 8th callee-save, regs=8",
-    "s16 initLoadImage prototype -> regs=8",
-    "struct-pointer / per-word / Rect-struct spellings of the Copy24 copy -> vars=0",
-    "compound-assign and no-temp y-advance forms -> vars=0",
-    "8 loop-guard x 5 wrap-test x 4 prologue-shape grid -> vars=0",
-    "counting-up for/while loops -> vars=8 but sltu loop tail (check_dbra_loop cannot reverse: num_mem_sets<=1 required, body has 7 stores)",
-    "all 20 dependence-legal permutations of the 5 pre-loop statements -> score 4 (statement order inert on prologue schedule)",
-    "H_s1_after_guard (s1 = a2 inside the guard) -> score 6"
+    "session 1 (~90 forms): s16-typed s4/s3, s16 initLoadImage prototype, struct-pointer/per-word/Rect Copy24 spellings, compound-assign and no-temp y-advance, 8 guard x 5 wrap x 4 prologue grid, counting-up for/while -> vars=0 or extra regs",
+    "all 20 dependence-legal pre-loop statement permutations -> score 4",
+    "14 further phantom-producing guard spellings (s2>=0, s2>-1, !(s2<0), (u32)s2!=0xFFFFFFFF, s2!=~0, -1!=s2, u32 counter, --s2>=0 / >-1 tails, s2--!=0) -> ALL score 4 with the identical wrong prologue interleave; the guard is not the interleave lever",
+    "read-shape variants (*s0, *(s0+1), byte-offset casts, walking pointer *p++, reads from a0 with s0 still declared, y-before-x) -> 4 (GCC copy-propagates the alias back)",
+    "s0 and/or s1 declared inside the guard block -> 6 / 6 / 10",
+    "drop_s1 alone (keep the s0 alias) -> 4, isolating s0 as the sole culprit"
   ],
-  "root_cause": "SOLVED for the frame. The target's vars=8 is a phantom slot: an unallocated pseudo handed 8 frame bytes by reload's alter_reg at zero code cost. Producer here is the loop-guard comparison pseudo that jump/combine fold into a bare branch; spelling the guard as `s2 = a1 - 1; if (s2 != -1)` instead of `if (a1 != 0)` makes cc1 emit .frame 56 / vars=8 natively with an identical instruction stream. Sibling producer (combine.c:10836-10841 distribute_notes orphan-USE) documented in notes.md; in-tree precedent for the guard form is func_800400F8 (config.c:543). Residual 4 = prologue save/move interleave only (target: sw s0/move s0 pair first; ours: sw s1/move s1/sw s2 first).",
+  "root_cause": "SOLVED — honest distance 0. Two levers: (1) guard respelling `s2 = a1 - 1; if (s2 != -1)` makes cc1 emit .frame 56 / vars=8 natively (phantom slot = unallocated pseudo given frame space by reload's alter_reg; producers are combine.c:10836-10841 distribute_notes orphan-USE and folded loop-guard compares; in-tree precedent func_800400F8). (2) dropping the `s16 *s0 = a0;` param alias per [[drop-param-alias-local]] removes the second pseudo whose coalesced `move s0,a0` fed the two block-ending lh loads; that dependence made the target prologue interleave unreachable because all block-0 INSN_PRIORITYs are 1 and sched2 orders purely by ready-list entry time.",
   "next_avenues": [
-    "Prologue save/move interleave: read tmp/rtl/base.c.sched for func_8003D9A0, compare sched.c insn priorities for the two parameter-copy insns (move s0,a0 has an in-block consumer lh s4,0(s0); move s1,a2 has none yet schedules first). Compare against a sibling whose prologue order matches.",
-    "Once at 0: delete the tools/prologue_config.json entry AND the tools/frame_fix_funcs.txt line (the latter is already dead), then full-build SHA1 verify -> COMPLETED-C.",
-    "Transfer: sibling func_8003DBE4 (same file, still carries the `s32 buf[2]` dead-array cheat for the SAME 8 bytes) is the next candidate for this phantom-slot lever."
+    "COMPLETION GATE (main session, not run here): delete the tools/prologue_config.json entry + the tools/frame_fix_funcs.txt line (both already inert), then retire + full-build SHA1 verify + layer-2 cheat-reviewer + queue done.",
+    "Transfer: sibling func_8003DBE4 (same file) still carries a `s32 buf[2]` dead-array cheat for the SAME 8 phantom bytes — replace it with the folded-guard phantom-slot producer."
   ]
 }
