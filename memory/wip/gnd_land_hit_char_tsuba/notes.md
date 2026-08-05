@@ -51,17 +51,9 @@ Target folds each `rN - K` into an accumulator held across the call
 a2_offset = (s32)r4 - 0x19;
 a2_offset += ((u32)(D_800A3418 * 0x32) >> 0xF);
 ```
-Measured sweep (`tmp/csz/gn_split.py <variant>`, driver `tmp/csz/gn_sweep.sh`):
-
-| variant | score | insns |
-|---|---|---|
-| none (candidate_56) | 56 | 178 |
-| 2nd-half a2 only | 49 | 178 |
-| 2nd-half a0 only | 51 | 177 |
-| 2nd-half both | 44 | 177 |
-| 1st-half a2 + 2nd-half both | 43 | 177 |
-| 1st-half a0 + 2nd-half both | 41 | 176 |
-| **all four** | **40** | **176** |
+Measured sweep (`tmp/csz/gn_split.py <variant>`, driver `tmp/csz/gn_sweep.sh`) — monotone in
+the number of statements split: none 56/178, 2nd-half a2 only 49/178, 2nd-half a0 only 51/177,
+2nd-half both 44/177, +1st-half a2 43/177, +1st-half a0 41/176, **all four 40/176**.
 
 **This supersedes the round-4 negative** ("splitting all four → score 68, 178 insns"), which
 was measured on the PRE-round-5 source. On the round-5 spelling it is the best form found.
@@ -93,11 +85,35 @@ The epilogue shift IS the +8; the rename and the moved pair follow from it.
   splitting `a0_offset`/`a2_offset` per call-half is inert — GCC coalesces the split because
   the two ranges do not overlap.
 
+## Round 7 — phantom producer #1 via the entry guard is a MEASURED NEGATIVE
+
+Hypothesis was [[phantom-slot-frame-lever]] producer #1 (a folded guard-compare pseudo left
+ref'd-but-dead, paid a free slot by reload's `alter_reg`) applied to the entry guard
+`((D_800A326C + 1) * 2) > 0`. Three spellings on top of `candidate_40`
+(`tmp/csz/gn_phantom.py`, driver `tmp/csz/gn_ph_run.sh`) — name the whole guard value; name
+only the `+1`; name it as a `count` — are **all completely inert**: score 40, 176 insns,
+`vars` 56 in every case.
+
+**Why, from the target asm** (`asm/funcs/gnd_land_hit_char_tsuba.s`): the entry guard compiles
+to a **bare `blez $v1, .L8005D7D0`** (line 53) and the loop condition to
+`slt $v1,$s2,$v1; bnez` (161-162). A `blez` needs no compare pseudo at all, so there is
+nothing for a named local to strand — the compare folds identically whether or not the value
+has a C name. Producer #1 is not reachable through this guard.
+
+Target's `D_800A326C` traffic for reference: read in the prologue (line 2), stored at 22,
+re-read for the entry guard at 49, re-read for the loop condition at 157, re-read + stored for
+the trailing `+= 1` at 165/168. Our C already matches that shape — both the guard and the loop
+condition recompute `(D_800A326C + 1) * 2` from a fresh read.
+
 ## Next
 
-1. **The remaining +8 is the phantom class, not a spill** — run the recipe's orphan detector
-   (unallocated pseudos in the `-da` greg dump / bare `(use (reg N))` in the combine dump)
-   rather than hunting more live values. Producer #1 (folded loop-guard compare) is the likely
-   shape: the guard here is `((D_800A326C + 1) * 2)`, recomputed in the `do/while` condition —
-   a comparison over a real variable, exactly the documented producer.
-2. **Do NOT commit.** The owner runs the gate.
+1. **The remaining +8 is still the phantom class**, but producer #1 is ruled out (above). Try
+   the other two documented producers: **#3 live named locals on multi-read values** (the
+   obvious candidate is `D_800A3418`, read repeatedly as `(u32)(D_800A3418 * K) >> 0xF` and
+   `(D_800A3418 & 1) * 0xC` between its `^=` updates), and **#2 combine orphan-USE** (needs an
+   HImode intermediate with a second genuinely-narrow use — less likely here, the arithmetic
+   is all s32/u32).
+2. Run the recipe's orphan detector on our own build first (`-da` greg dump unallocated set /
+   bare `(use (reg N))` in the combine dump) to see how many orphans we already carry — that
+   bounds how many more are needed and what shape they take here.
+3. **Do NOT commit.** The owner runs the gate.
