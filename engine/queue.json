@@ -907,6 +907,14 @@
       "status": "active"
     },
     {
+      "func": "decBs0",
+      "file": "text1a",
+      "distance": 58,
+      "verdict": "ASM-SUSPECT",
+      "rules": 39,
+      "status": "active"
+    },
+    {
       "func": "hirahira_w_ctrl_2",
       "file": "text1a_c",
       "distance": 58,
@@ -2537,16 +2545,16 @@
     }
   ],
   "counts": {
-    "total": 301,
-    "active": 264,
+    "total": 302,
+    "active": 265,
     "by_status": {
-      "active": 264,
+      "active": 265,
       "parked": 37
     },
     "by_verdict": {
       "C": 87,
       "ASM-PARTIAL": 43,
-      "ASM-SUSPECT": 108,
+      "ASM-SUSPECT": 109,
       "ASM-STRUCTURAL": 26
     }
   }
