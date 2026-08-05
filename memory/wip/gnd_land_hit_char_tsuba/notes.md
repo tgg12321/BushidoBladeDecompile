@@ -64,6 +64,26 @@ Both create the SAME single spill slot. The mechanism is confirmed (pressure →
 `vars` grows in 8-byte steps) but neither spelling is free: each costs 1-2 instructions
 where target has none, so neither is the original's wording.
 
+## Round 3 (2026-08-05) — the exec_game identity/holder levers do NOT transfer
+
+After exec_game closed 70 → 30 purely on reused-local splitting plus deleting its
+constant-holder locals, both levers were measured here. Neither applies; the frame
+stayed `vars= 48` in every variant (`wsl bash tmp/csz/gn_score.sh`, driver
+`tmp/csz/gn_var.py`):
+
+| variant | score | vars |
+|---|---|---|
+| baseline | 65 | 48 |
+| inline `c100`/`c1` as literals (drop the holders) | **67** | 48 |
+| `a0_offset`/`a2_offset` split per call-half | 65 (inert) | 48 |
+| both | 67 | 48 |
+
+So unlike exec_game's, **this function's `c100`/`c1` holders are load-bearing**
+(+2 without them) and the offset locals are genuinely one live range per half —
+GCC coalesces the split because the two ranges do not overlap. `ra_solver`
+`simulate.py` reproduces our allocation 16/16 exactly, so the model is trustworthy
+for the perturb step whenever the frame question is settled.
+
 ## Next
 
 1. **The second +8 is the phantom class, not a spill** — run the recipe's orphan detector
