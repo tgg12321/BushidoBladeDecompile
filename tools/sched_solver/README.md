@@ -44,6 +44,8 @@ every `BLOCKAGE` hook observation: **351/351 exact** (`validate.py --blockage`).
 | `extract.py <stem>` | run cpp + the instrumented `tools/gcc-2.7.2/cc1` (`BB2_SCHED_DEBUG=1`, `-da`), parse the SCHEDDBG stream into `tmp/sched_solver_work/<stem>.sched.json`. Byte-parity-checks instrumented cc1 vs `build/cc1` on the TU first and records the verdict |
 | `simulate.py <model.json>` | replay `schedule_block` per basic block; score order-exact / clock-exact |
 | `validate.py [stems...]` | batch ground-truth table (above). `--blockage` runs the independent machine-model check; `--funcs a,b` details named functions |
+| `mkasm.sh <stem>` | emit the three aligned asm texts the goal mapper needs: `<stem>.cc1.s` (raw cc1), `.hon.s` (+ prologue_fix\|maspsx\|multu_pad — OURS, honest), `.tgt.s` (+ regfix\|asmfix — TARGET bytes) into `tmp/sched_map/` |
+| `goalmap.py <root> <stem> <func>` | express TARGET's instruction order in our RTL insn UIDs (the piece the "What is still missing" section below used to describe) |
 
 Run from the repo root (or a `git archive` snapshot) under WSL with the venv
 active. The tools are read-only with respect to the tree.
@@ -192,16 +194,75 @@ writes a location that 157 reads or writes, so the two must be ordered).
 * **Unit/cost change** = instruction selection (a load vs a move), reachable
   by type and addressing-mode changes.
 
-### What is still missing to apply it to a real function
+### The goal mapper (`goalmap.py`, `mkasm.sh`) — BUILT 2026-08-05
 
-`perturb.py` needs the TARGET's order expressed in RTL insn UIDs, and nothing
-yet maps target's asm instructions back to UIDs. That mapping is the next
-piece of work: our own `.s` output and the sched2 pick order are index-alignable
-(sched2 is the last pass before `reorg.c`), so the route is our asm line ->
-our UID, then target asm line -> our asm line via the objdump diff. Until that
-exists, goals must be written by hand from a read of the two listings.
+`perturb.py --goal-from-target <stem>` now derives the goal from the target
+binary itself, per block, for every block of a function at once. The chain:
 
-The one caveat to carry into that work: the stale-order (`no sort`) case means
-two input states that differ only in *when* an insn entered the ready list can
-schedule differently. Perturbations must be applied to the block inputs and
-replayed, never patched onto an output order.
+```
+target .s  --difflib+move-pairing-->  honest .s  --difflib-->  cc1 .s  --index-->  .dbr UIDs
+```
+
+* **`.tgt.s` really is target.** The tree builds SHA1-identical to the original
+  EXE, so running the honest stream through `regfix | regfix_stage2 | asmfix`
+  produces target's byte order *as text*, at the same granularity as our own
+  output. That removes the objdump/macro-expansion hop entirely — no collapsing
+  of `lui`/`addiu` pairs, no nop bookkeeping.
+* **`.dbr` index-aligns 1:1 with the cc1 `.s` body.** The post-reorg RTL dump
+  lists exactly the body instructions in emission order; the epilogue is a
+  UID-less suffix (GCC emits it from `function_epilogue`, not from RTL).
+* **difflib alone is not enough.** `SequenceMatcher` only ever produces
+  *monotone* alignments, so a MOVED instruction is reported as a delete plus an
+  insert — and a monotone map is exactly what a scheduling difference is not.
+  Without the second move-pairing pass the mapper reports every block as
+  already matching. Pairing is exact text first, then operand skeleton.
+* **reorg.c cancels rather than being modelled.** Delay-slot filling runs after
+  sched2, so both sides are compared in POST-reorg space and the result is
+  carried back through our own known reorg permutation
+  (`goal_pre[i] = T[sigma(i)]`). Guessing the un-fill directly is wrong: reorg
+  often lifts an insn from several positions back, not just from before the
+  branch.
+* **Goals are validity-checked.** A goal must be a topological order of the
+  block's `LOG_LINKS`. When the same instruction text occurs in two blocks (the
+  usual `la SYM` / `addu r,1100` cluster) the move-pairer can cross-pair them;
+  the topo check catches it and the block is skipped rather than searched
+  against an impossible goal.
+
+Caveat: regenerate `mkasm.sh` output whenever `src/` changes, and treat
+`.tgt.s` as valid **only at HEAD** — regfix rules are calibrated to HEAD's
+instruction indices, so after a source edit the "target" stream is fiction.
+
+### `ready0` was not being re-sorted — fixed 2026-08-05
+
+`extract.py` harvests `ready0` **already sorted** by the compiler, and
+`perturb.py` never touched it. But `schedule_block` sorts that list with
+`rank_for_schedule` before the loop, so any LUID or priority change moves it —
+and because SCHED_SORT does nothing on a cycle where no insn was added, the
+harvested order survived the opening cycles verbatim. The effect: **every LUID
+atom was inert for exactly the picks it should decide**, and the search
+reported "no vector" for goals that are one ordinary source-order edit away.
+All three banked residuals hit this.
+
+`apply_priorities` now ends with `resort_ready0`. The falsification test is
+`perturb.py <model> --verify-resort`: re-sorting an *unperturbed* block must
+reproduce the compiler's own order, and it does — **8664/8664 blocks across all
+seven TUs, ready0 unchanged and still order-exact**.
+
+Because of this, the `add_dep 157 <- 44` worked example above was found under
+the old (inert-LUID) atom set and should be re-derived before being relied on.
+
+### New atom: `luid_move`
+
+A pairwise LUID swap says "exchange two statements". It cannot say "move this
+statement to there" — one insn travelling several positions while the rest
+close up behind it — which is both the cheaper C edit and the shape the banked
+residuals actually have. `luid_move a -> b` renumbers the block so A sits
+immediately before B, others keeping their relative order and the block keeping
+its LUID value multiset.
+
+### The standing caveat
+
+The stale-order (`no sort`) case means two input states that differ only in
+*when* an insn entered the ready list can schedule differently. Perturbations
+must be applied to the block inputs and replayed, never patched onto an output
+order.
