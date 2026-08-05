@@ -1,0 +1,29 @@
+diff --git a/src/text1b.c b/src/text1b.c
+index 88b00286..d3ade720 100644
+--- a/src/text1b.c
++++ b/src/text1b.c
+@@ -12768,6 +12768,7 @@ s32 gnd_land_hit_char_tsuba(s32 arg0, s32 arg1) {
+     s32 c100;
+     s32 c1;
+     s32 *p_b388;
++    s32 *p_b390;
+     u8 *p_b2e0;
+     s32 *base_offset;
+ 
+@@ -12792,6 +12793,7 @@ s32 gnd_land_hit_char_tsuba(s32 arg0, s32 arg1) {
+         p_b2e0 = (u8 *)&D_8009B2E0;
+         base_offset = (s32 *)(p_b2e0 + stride + 0xC);
+         p_b388 = &D_8009B388;
++        p_b390 = p_b388 + 2;
+         do {
+             s.byte28 = 0;
+             s.p0 = (void *)(p_b2e0 + stride);
+@@ -12814,7 +12816,7 @@ s32 gnd_land_hit_char_tsuba(s32 arg0, s32 arg1) {
+             s.byte28 = 0;
+             s.c24 = c100;
+             s.c20 = c100;
+-            s.p1 = &D_8009B390;
++            s.p1 = p_b390;
+             s.p0 = (void *)((u8 *)base_offset + (D_800A3418 & 1) * 0xC);
+             D_800A3418 ^= func_80079154();
+             a0_offset = (s32)r5 - 0x32 + ((u32)(D_800A3418 * 0x64) >> 0xF);
