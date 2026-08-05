@@ -32,21 +32,47 @@ Layout, read off the stores (both sides agree on every field offset):
   to mirror target's `(SYM+12)+stride` operand order — **inert, 65 → 65**. GCC canonicalizes
   the pointer PLUS chain, so source-level association is not the lever for that pair.
 
-## Next (the documented recipe, not yet run here)
+## Round 2 — struct-size hypothesis KILLED; pressure mechanism CONFIRMED
 
-1. **Frame gradient first, score second** — `tmp/frame_probe.sh` pattern: cpp | project cc1
-   | read `# vars=` for the function. Separates "wrong frame" from "wrong codegen"; the
-   score is a poor instrument for a 16-byte delta.
-2. **Orphan detector** on the `-da` greg dump: which pseudos are unallocated in TARGET's
-   shape but allocated in ours. 12 bytes = 3 phantom words; producer #1 (folded loop-guard
-   compare) is the likeliest — the loop guard here is `((D_800A326C + 1) * 2)`, recomputed
-   in the `do/while` condition, which is exactly the "guard comparison involving a real
-   variable" shape.
-3. The 4th word is the `base_offset` spill at 64(sp). Register pressure is already maximal
-   (all of s0-s8 live); the question is what makes TARGET need one more simultaneously-live
-   value. Note ours holds `p_b2e0` in `$s7` across the loop where target rematerialises
-   `lui/addiu` per use (align idx 66-67, 106-107) — dropping the `p_b2e0` local so the
-   symbol is re-materialised may free the register AND force the spill. **Untried.**
+Frame gradient (`wsl bash tmp/csz/frame.sh gnd_land_hit_char_tsuba text1b`):
+`ours[.frame $sp,104 # vars= 48, regs= 10/0, args= 16]` vs target 120 ⇒ **vars 48 → 64**.
 
-Instruments: `wsl bash tmp/csz/d.sh gnd_land_hit_char_tsuba text1b` then
-`python tmp/csz/align.py gnd_land_hit_char_tsuba` (28 RENAME + 49 MOVED/FRAME).
+**The attractive hypothesis — that `S46C` is under-sized (44→60 would give +16 with every
+field offset unchanged) — is decisively FALSE.** `S46C` has three users in text1b.c, and
+the other two match the oracle exactly today with `vars= 48` and **zero rules**:
+
+| function | ours | target | rules |
+|---|---|---|---|
+| func_8005D46C | `.frame $sp,88 # vars= 48, regs= 5/0, args= 16` | `addiu sp,sp,-88` | 0 |
+| func_8005FA98 | `.frame $sp,80 # vars= 48, regs= 4/0, args= 16` | `addiu sp,sp,-80` | 0 |
+| gnd_land_hit_char_tsuba | `.frame $sp,104 # vars= 48, regs= 10/0, args= 16` | `addiu sp,sp,-120` | 88 |
+
+Growing the struct would break two matched functions. The +16 is **register pressure**,
+local to this function: target holds one more simultaneously-live value than it has
+callee-saves (both sides already use all of s0-s8 + ra), so one pseudo spills to `64(sp)`.
+
+### Two independent producers of the first +8, both measured, NOT additive
+
+| change | vars | score | insns |
+|---|---|---|---|
+| baseline | 48 | 65 | 176 |
+| `s.p1 = p_b388 + 2;` instead of `&D_8009B390` (forces `p_b388` live across the loop instead of being rematerialised as `lui`/`addiu`) | **56** | 65 | 177 |
+| all four `(s32)rN - K + (rand term)` split into `x = rN - K; <call>; x += …` ([[split-init-accumulation-sanctioned]]) — this is target's shape: it hoists `addiu $a0,$s5,-25` / `addiu $a2,$s4,-12` / `-50` / `-25` ABOVE their calls, we compute them after | **56** | 68 | 178 |
+| both together | **56** | 68 | 178 |
+
+Both create the SAME single spill slot. The mechanism is confirmed (pressure → spill →
+`vars` grows in 8-byte steps) but neither spelling is free: each costs 1-2 instructions
+where target has none, so neither is the original's wording.
+
+## Next
+
+1. **The second +8 is the phantom class, not a spill** — run the recipe's orphan detector
+   (unallocated pseudos in the `-da` greg dump / bare `(use (reg N))` in the combine dump)
+   rather than hunting more live values. Producer #1 (folded loop-guard compare) is the
+   likely shape: the guard here is `((D_800A326C + 1) * 2)`, recomputed in the `do/while`
+   condition — a comparison over a real variable, exactly the documented producer.
+2. **The first +8 needs a zero-instruction spelling.** Target rematerialises
+   `&D_8009B390` (`lui`/`addiu`, align idx 106-107) so it is NOT derived from `p_b388`;
+   the extra live value target carries is something else. Diff the two sides' callee-save
+   assignments (ours: `&D_8009B2E0`→$s7 and `p_b388` rematerialised; target: `&D_8009B2E0`
+   →$s8 and $s7 holding a value we do not keep) to identify it.
