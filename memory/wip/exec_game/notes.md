@@ -1,104 +1,113 @@
-# exec_game — WIP checkpoint (current state 2026-08-05)
+# exec_game — WIP checkpoint (current state 2026-08-05, session 3)
 
-**Honest pure-C distance 121 → 70.** Candidate: `candidate.diff` (apply to `src/main.c`).
-NOT applied to the tree — the 104 regfix rules no longer repair the new codegen, so the
-full build would break. Verdict ASM-SUSPECT, frame-less both sides (`.frame $sp,0` — no
-frame lever exists here). Instruments: `wsl bash tmp/csz/d.sh exec_game main`, then
-`python tmp/csz/align.py exec_game`.
+**Honest pure-C distance 70 → 30, and the insn stream is structurally exact
+(194 target / 193-194 ours).** Candidate: `candidate.diff` (apply to `src/main.c`);
+also banked verbatim as `tmp/csz/main.c.s30`. NOT applied to the tree — the 104
+regfix rules no longer repair the new codegen. Verdict ASM-SUSPECT, frame-less both
+sides (`.frame $sp,0`, no frame lever). Instruments: `wsl bash tmp/csz/d.sh exec_game main`,
+`python tmp/csz/align.py exec_game`, `wsl bash tmp/csz/eg_grid.sh` (quiet score).
 
-## Root cause: `MEM_IN_STRUCT_P` made our stores provably non-aliasing
+## The session's finding: VARIABLE IDENTITY was the whole residual
 
-`true_dependence` (`tools/gcc-2.7.2/sched.c:817`) disambiguates:
-
-```c
-&& ! (MEM_IN_STRUCT_P (mem) && rtx_addr_varies_p (mem) && GET_MODE (mem) != QImode
-      && ! MEM_IN_STRUCT_P (x) && ! rtx_addr_varies_p (x))
-```
-
-A **struct-member store at a varying address** cannot alias a **non-struct load at a fixed
-address**. Our `typedef struct Entry { s32 w0, w1; }` model set that flag on every store,
-so `loop.c invariant_p` (line 2779) found `D_800A2D3C` loop-invariant and LICM hoisted the
-count out of all five phases — precisely what the six `subst_multi` rules re-create.
-Scalar `s32 *` indexing is an `INDIRECT_REF` of a scalar (`MEM_IN_STRUCT_P == 0`), the
-store conflicts, the count stays in the loop. The struct was our invention, not evidence
-([[splat-symbol-names-are-not-evidence]]): the list is an array of `s32` pairs, stride 8.
-
-## The ladder (each step measured independently)
+Session 2 closed at 70 with "60 RENAME + 12 MOVED, 0 structural — next: ra_solver on
+the preheader allocnos." The solver's first output settled it: `simulate.py` reproduced
+our allocation 28/28 exactly, so the model was trustworthy, and the role map
+(`tmp/csz/eg_roles.py` → `.lreg`/`.greg` insn pairing) showed our `base` was ONE pseudo
+(#74, livelen 103, `$t3` in every phase) while target used a DIFFERENT register per
+phase. Target's per-phase registers are only reachable if the original had per-phase
+variables. Applying the catalog law *conflict edges = variable identity* to every reused
+local produced the whole drop.
 
 | # | change | score | insns |
 |---|---|---|---|
-| 0 | HEAD | 121 | 197 |
-| 1 | `Entry *` → `s32 *`, `[0]`/`[1]`, stride 2 (whole function) | 116 | 201 |
-| 2 | phase 1: walking `cur` → `base[i * 2]` / `base[i * 2 + 1]` indexing | 109 | 199 |
-| 3 | phases 3 + 5: same index form for `outer` / `inner` / `p` | 101 | 192 |
-| 4 | phase 3 outer loop: re-read `cnt = D_800A2D3C;` at the bottom, condition `cnt >= i` | 92 | **194** |
-| 5 | phase 1: post-scan pointer gets its own variable `q` | 77 | 194 |
-| 6 | per-phase named locals holding the bit constants, assigned BEFORE `base = …` | **70** | 195 |
+| 0 | session-2 bank (levers 1-6) | 70 | 195 |
+| 1 | `base` → `base1/base3/base4/base5` | 73 | 195 |
+| 2 | `p` → `p1/p2/p4` | 67 | 195 |
+| 3 | **constant-holder locals DELETED, literals inline** | **60** | 195 |
+| 4 | `cnt` → `cnt2/cnt3/cnt4/cnt5` | **36** | 196 |
+| 5 | `v` → `v2/v5` | 33 | 196 |
+| 6 | `i = 0;` hoisted ABOVE the phase-1 and phase-3 guards | **31** | **194** |
+| 7 | same hoist for phase 2 | **30** | 193 |
 
-Lever 1 is the root-cause fix. Levers 2-3 are the induction-variable fix: with a walking
-pointer, `cur` is a biv and `cur[1]` becomes a *second* DEST_ADDR giv (`addiu $aN,$base,4`
-plus a second `addiu $aN,$aN,8` per loop). Index form makes both accesses givs of `i`;
-`combine_givs` merges them (constant difference) and one walking pointer with `0(reg)` /
-`4(reg)` displacements falls out — target's shape. Lever 2 also produces target's
-`move $t0,$t2` in the phase-3 inner preheader (LICM copying the now-invariant outer
-element pointer). Lever 4 mirrors phase 4, which already matched. Lever 5 reproduces
-target's two-register shape ($v1 scan pointer, $a1 recomputed) where we coalesced both;
-RENAME 65 → 49. Lever 6 fixes the largest MOVED group: every phase's `lui/lw D_800A2D40`
-pair sat before the loop's bit constants instead of after; MOVED 33 → 12 lines.
+Step 1 alone is worse (73) — the split only pays once `p` is split too, because target's
+phase-2 `p` and phase-4 `base` are different registers and ours shared pseudo #78.
 
-## Lever 6's spelling is FLAGGED, not assumed
+## Lever 6's FLAGGED spelling is RETIRED — do not reinstate it
 
-The holders are LIVE — every value is a real operand in the emitted AND / store, so no
-instruction is manufactured — and the tree already ships the idiom in
-`gnd_land_hit_char_tsuba` (`c100 = 0x100; c1 = 1;`). **But it currently costs 11 distinct
-per-phase locals** (`flagbit1`, `sentinel1`, `addrmask1`, `sentinel2`, …): sharing one
-holder across phases lets CSE delete the later re-assignments and the gain collapses
-(shared names 87 @ 195, distinct 70 @ 195). Eleven holders for what a programmer would
-write as literals is exactly the shape [[named-local-fake-exception]] governs. **Layer-2
-must rule before this can land.** The 92 state (levers 1-5) is the uncontroversial
-fallback.
+Session 2 banked 11 per-phase constant-holder locals (`flagbit1`, `sentinel1`,
+`addrmask1`, …) as the largest MOVED fix and flagged them for layer-2 under
+[[named-local-fake-exception]]. **They were an artifact of the un-split `base`/`p`.**
+Once steps 1-2 land, deleting all 11 and writing the literals inline scores 60 vs 67
+— strictly better AND uncontroversial. The candidate contains no holders, no FAKE
+annotations, no dead code: just per-phase locals and literals. The layer-2 question
+session 2 raised is moot.
 
-## Measured kills
+## Step 6/7: the two extra insns were unfilled `bltz` delay slots
 
-- **Goto-form loop** (phase 1 `do/while` → `p1_top:` + `if (…) goto p1_top;`) — 148 @ 194.
-  Dropping the LOOP notes stops the LICM hoist but also stops the *constant* hoisting the
-  target HAS. Target's loop is a real loop; only the memory ref must be non-invariant.
-- **Dropping the `base` local**, indexing `((s32 *)D_800A2D40)[…]` — 98 @ 205. Re-confirms
-  session 1's round-1 kill (121→127): the `base` local is correct.
-- **`p = (j) * 2 + base`** (source operand order, to mirror target's `addu $v1,$v0,$t0`
-  where we emit `addu $a1,$t3,$v0`) — inert at 77. GCC canonicalizes the pointer PLUS
-  chain, so the `subst "addu $3,$8,$2" "addu $3,$2,$8"` rules @19/@27 are **not**
-  source-reachable.
-- Scan loop as a real `while (p[0] == sentinel1) { … }` — 76 @ 198.
-- Swapping `j++` / `p += 2` in the scan body (to steer reorg's `bne` delay-slot fill) — 71.
-- Dropping phase 2's `v`/`cnt` split (target has the `move $a0,$v0` copy) — 71.
-- Removing the dead `outer` / `inner` decls — inert; removed anyway.
+At 33 our stream carried 2 instructions target does not have, both a `nop` in a phase
+guard's `bltz` delay slot (align idx 4 and 78) where target fills the slot with
+`move t1,zero` = `i = 0;`. reorg can only pull the initializer into the slot from the
+block BEFORE the branch, so writing
 
-## The residual 70 — all RA/scheduling, zero structure
+```c
+i = 0;
+if (D_800A2D3C >= 0) { base1 = (s32 *)D_800A2D40; do { … } while (…); }
+```
 
-Streams align 1:1: **60 RENAME + 12 MOVED, 0 structural**, 195 vs 194 insns. The MOVED set
-is six ±1-slot scheduling pairs:
+instead of putting `i = 0;` inside the guard fills both slots. Insn count became exact
+(194/194) at 31. `i` stays a single shared pseudo — splitting `i` per phase is a
+measured KILL (74), consistent with target keeping one `i` across `D_800A2D3C = i`
+in phases 4 and 5. Hoisting phase 2's `i = 0` as well gives 30 at 193 insns (one
+short) — 30 is the better honest score but 31 is the insn-exact state; both banked
+(`main.c.s31`, `main.c.s30`).
 
-- Phase 1: our `sll $v0,$a2,3` fills the scan loop's `bne` delay slot; target uses
-  `addiu $v1,$v1,8`. Two source orderings tried, both worse.
-- Phase 2: our `cnt = v` copy takes the `bltz` delay slot; target puts `i = 0` there.
-- Phase 3: `move $t0,$t2` one slot early. Phase 4: `addiu $t1,$t1,1` one slot off.
-- Phase 5: our `lw $v1,4($a0)` one slot above target's, across the `sw D_800A2D3C`.
+## Measured kills this session
 
-The 60 renames are a coherent permutation of the preheader registers (birth order in the
-preheader block). **Next: `tools/ra_solver` on the preheader allocnos** — the structure is
-settled and the streams align 1:1 — and `tools/sched_solver` on the six pairs.
+- Split `i` per phase: 74. Split `j` per phase: 58. Both much worse — genuinely shared.
+- Phase-1 equality operand swap (`(base&mask)+w1 == q[0]&mask`): 67 (from 60).
+- Phase-1 scan loop as a real `while`: 37. `q = p1;` instead of recomputing: 38.
+  `0x2FFFFFFF == p1[0]`: inert. `q[0] = …` after the accumulate: 41.
+  `p1 = (j)*2 + base1;` (source operand order): inert — re-confirms GCC canonicalizes
+  the pointer PLUS chain, so the `subst "addu $3,$8,$2"` rules are not source-reachable.
+- Moving `i = 0;` to AFTER `base = …` inside the guard: inert (33). It is the
+  before-the-branch position that matters, not the statement order.
+- Hoisting phase 4's `i = 0`: inert (31 → 31).
+
+## The residual 30 — four small RA/scheduling clusters, all located
+
+1. **Phase 1, 6 lines**: `0x2FFFFFFF` and `0x0FFFFFFF` are register-SWAPPED
+   (target sentinel `$t2` / mask `$t3`; ours reversed). `perturb.py` on the current
+   model gives single-atom solutions — pseudo 100 (sentinel) `refs+1` or `live-2/-4/-8`;
+   pseudo 108 (mask) `refs-1`, `live+2/+4`, or `pref+r11`. Reproduce with
+   `wsl bash tmp/csz/eg_perturb.sh '{"100": 10, "108": 11}'` (pseudo numbers from
+   `tmp/csz/eg_ps.py`; re-derive after any source change). No natural spelling found
+   yet that supplies one of those atoms — target also uses the mask twice, so `refs-1`
+   is not honest; the live-range atoms are the untried surface.
+2. **Phase 2, 5 lines**: `$a0`/`$a1` swapped on `cnt2 = v2`, plus target materializes
+   the `0x2FFFFFFF` pair BEFORE `move a0,v0` while ours emits it after. Per session 2's
+   finding #2 (LICM places hoisted invariants only AFTER the preheader's source
+   statements) that ordering means phase 2's constant WAS source-level in the original —
+   i.e. phase 2, unlike phases 1/3/5, may genuinely have had a named holder. Worth one
+   targeted test (phase 2 only), and it would need layer-2 as a named-local.
+3. **Phase 3, 1 pair**: `move t0,t2` sits 3 slots late.
+4. **Phase 4, 4 lines**: the `D_800A2D40` load is 2 slots early, `move a0,a2` is
+   reversed, `addu v0,v0,a2` operand order, `addiu t1,t1,1` 2 slots late.
+
+`tools/sched_solver` has not been run on clusters 3/4 yet — that is the next step
+alongside the phase-1 live-range atoms.
 
 ## Reusable findings (rule-worthy; layer-2 + owner sign-off before registering)
 
-1. *Struct-vs-scalar pointer typing is an ALIASING lever.* When a regfix cluster re-creates
-   loads of a **global** that our build caches across a loop, and the loop stores through a
-   **struct pointer**, the struct typing is what proves non-aliasing under
-   `true_dependence`. Retyping to the scalar pointer the data actually is restores the
-   reload. Sibling of [[store-const-reload-cse]] (there: *where* the read happens; here:
-   what the store's *type* lets GCC prove).
-2. *LICM can only place hoisted invariants AFTER the preheader's source statements*
-   (`move_movables` → `emit_insn_before (…, loop_start)`). So whenever target's preheader
-   shows a loop-invariant constant BEFORE a value the source assigns, that constant was
-   source-level in the original, not hoisted. A cheap mechanical read of any preheader
-   ordering diff.
+1. *Reused-local splitting is the primary RA lever when target varies a register
+   across regions the source shares.* Read it off the role map, not the score: one
+   pseudo with a long livelen holding one register everywhere, against a target that
+   rotates. Splitting is free of any FAKE construct — it is ordinary C — and here it
+   was worth 40 points where six sessions of spelling search had been worth 51.
+2. *Constant-holder locals can be an ARTIFACT of an unsplit pointer.* Before flagging
+   named-local holders for layer-2, re-test them after every identity split; here they
+   inverted from +17 to −7.
+3. *An unfilled conditional-branch delay slot where target holds a loop-counter init
+   means the init was OUTSIDE the guard in the original.* reorg fills from the block
+   before the branch only.
+4. Session 2's finding 1 (struct-vs-scalar typing is an aliasing lever) and finding 2
+   (LICM preheader placement) both still stand and are still cited above.
