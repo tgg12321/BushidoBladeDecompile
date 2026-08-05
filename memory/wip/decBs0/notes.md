@@ -96,3 +96,25 @@ contiguous `s32 args[2]` array - an array spelling would land them at 0x10/0x14.
    `dead-vars-local-array` is forbidden and an array spelling gives the wrong
    offsets anyway.
 3. Only then look at RENAME (13 lines) - the base-reg RA the triage flagged.
+
+## LAYER-2 FAIL + REVERT (2026-08-05, commit a6a83d99)
+
+The self-committed Match (84054db1) was REVERTED on layer-2 review. The FAIL
+is SPECIFIC and partial:
+- REJECTED: the stride-3 pointer walk over tbl[29]/[32]/[35] (three unrelated
+  one-off stores) — mechanism-motivated MEM_IN_STRUCT_P coercion outside
+  [[walking-pointer-serializes-parallel-loads]]'s own scope section (that rule
+  covers parallel-array element writes previously cheated with barriers/pins;
+  this cluster's prior cheat was u16-coercion casts — different family). A
+  human writes plain indexed stores here. New-spelling-of-same-intent per the
+  open catalog; would need fresh SOTN evidence + an owner ruling.
+- LOOKS LEGITIMATE, re-derive standalone: (a) the real `do {} while (outer<2)`
+  loop rewrite (flow.c loop-depth ref weighting lifts fp_ptr 182→487 — the
+  frame/RA fix, exactly one perturb atom), (b) the fp_ptr pin removal,
+  (c) possibly the tbl+4 sequential-triple walk (genuinely sequential — but
+  re-justify against the rule's scope on its own, without the stride-3 half).
+- Resume: rebuild the candidate with plain indexed stores for the 29/32/35
+  cluster; if the last 2 nops don't come back, the intervention point may be
+  the LOADS (the three color lhu batching), not the stores — search there
+  with sched_solver; document exhaustion honestly if no clean lever exists.
+- Cleanup on next landing: stray comment at regfix.txt:927.
