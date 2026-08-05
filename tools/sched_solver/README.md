@@ -7,8 +7,13 @@ the minimal input perturbation that produces the TARGET's instruction order.
 
 Where `ra_solver` answers *"which register"*, this answers **"which order"** —
 the residual class that shows up as "our instructions are right but two of
-them are swapped", including the scheduling residuals banked on
-`tslGlobalMemFree_800861BC`, `func_8002C61C` and `title_mv_exec2`.
+them are swapped".
+
+**Application round complete (2026-08-05).** All three banked scheduling
+residuals are resolved: `title_mv_exec2` and `func_8002C61C` are **closed** by
+ordinary statement moves, and `tslGlobalMemFree_800861BC`'s is **proven
+unreachable** by statement order. See "What this toolkit can and cannot
+answer" at the end.
 
 ## Status: the model is exact
 
@@ -21,6 +26,7 @@ them are swapped", including the scheduling residuals banked on
 | text1a | 528 | 528 (100%) | 528 (100%) | 264/264 | 264/264 |
 | text1b | 2068 | 2068 (100%) | 2068 (100%) | 1034/1034 | 1034/1034 |
 | **TOTAL** | **6978** | **6978 (100%)** | **6978 (100%)** | | |
+| code6cac_b | 1686 | 1684 (99.9%) | 1684 (99.9%) | 842/844 | 842/844 |
 
 1234/1234 function-passes fully exact; 42,943 instructions scheduled; largest
 block 125 insns; all 413 blocks of ≥20 insns and all 44 of ≥50 insns exact.
@@ -28,14 +34,23 @@ The simulator reproduces not just the order but the **virtual clock of every
 pick**, which is the stronger claim (it means the queue, the stall search and
 the function-unit state are all right, not merely the tie-breaks).
 
+`code6cac_b` was added for the application round and is listed separately
+because it is the one TU where **`extract.py` reports `parity=False`**: the
+instrumented cc1 differs from `build/cc1` by exactly one instruction
+(`or $4,$4,$2` vs `addu $4,$4,$2`, line 9204) inside `func_80030900` — which is
+also the only function whose blocks miss (2/1686). Every other function in the
+TU, `func_8002C61C` included (74/74), is unaffected.
+
 Named functions, all blocks exact in both passes: `tslGlobalMemFree_800861BC`
 (6), `title_mv_exec2` (3), `func_8007C7A0`/`func_8007C86C` (13 each),
 `func_8007CE0C` (25), `saTan4FireDisp` (15), `hirahira_w_ctrl` (4),
-`camera_set_zoom` (49), `exec_game` (36). `func_8002C61C` lives in
-`code6cac.c`, exact as part of that TU's 1470/1470.
+`camera_set_zoom` (49), `exec_game` (36), `func_8002C61C` (74, in
+**`code6cac_b.c`** — not `code6cac.c`, where it is only declared `extern`).
 
 Separately, the function-unit blockage model is checked in isolation against
-every `BLOCKAGE` hook observation: **351/351 exact** (`validate.py --blockage`).
+every `BLOCKAGE` hook observation: **15497/15497 exact**
+(`validate.py --blockage`). The figure grows with the extracted corpus — it was
+351/351 when only `config` had been extracted.
 
 ## Tools
 
@@ -45,10 +60,30 @@ every `BLOCKAGE` hook observation: **351/351 exact** (`validate.py --blockage`).
 | `simulate.py <model.json>` | replay `schedule_block` per basic block; score order-exact / clock-exact |
 | `validate.py [stems...]` | batch ground-truth table (above). `--blockage` runs the independent machine-model check; `--funcs a,b` details named functions |
 | `mkasm.sh <stem>` | emit the three aligned asm texts the goal mapper needs: `<stem>.cc1.s` (raw cc1), `.hon.s` (+ prologue_fix\|maspsx\|multu_pad — OURS, honest), `.tgt.s` (+ regfix\|asmfix — TARGET bytes) into `tmp/sched_map/` |
-| `goalmap.py <root> <stem> <func>` | express TARGET's instruction order in our RTL insn UIDs (the piece the "What is still missing" section below used to describe) |
+| `goalmap.py <root> <stem> <func>` | express TARGET's instruction order in our RTL insn UIDs; `--model` prints per-block goal-vs-ours, `--target` pins the target stream |
+| `perturb.py <model.json>` | the search. `--goal-from-target <stem>` derives goals automatically; `--atoms`, `--target`, `--self-check`, `--verify-resort` |
 
 Run from the repo root (or a `git archive` snapshot) under WSL with the venv
-active. The tools are read-only with respect to the tree.
+active. `extract.py`, `simulate.py` and `validate.py` are read-only with respect
+to the tree; `mkasm.sh` writes only under `tmp/sched_map/`.
+
+### The whole loop, in order
+
+```bash
+python3 tools/sched_solver/extract.py <stem>          # model (re-run per edit)
+bash    tools/sched_solver/mkasm.sh   <stem>          # cc1 / honest / target asm
+cp tmp/sched_map/<stem>.tgt.s tmp/sched_map/<stem>.tgt.head.s   # pin target ONCE
+
+python3 tools/sched_solver/perturb.py \
+    tmp/sched_solver_work/<stem>.sched.json \
+    --func <FUNC> --pass 2 --goal-from-target <stem> \
+    --target tmp/sched_map/<stem>.tgt.head.s \
+    --atoms luid,luid_move --depth 2
+```
+
+Blocks already matching print nothing; each differing block prints its goal and
+any vectors found. Then spell a vector in C, **recompile, and re-run the whole
+loop** — a vector is a hypothesis, not a result.
 
 ## Which passes shape the final order
 
@@ -222,11 +257,16 @@ target .s  --difflib+move-pairing-->  honest .s  --difflib-->  cc1 .s  --index--
   (`goal_pre[i] = T[sigma(i)]`). Guessing the un-fill directly is wrong: reorg
   often lifts an insn from several positions back, not just from before the
   branch.
-* **Goals are validity-checked.** A goal must be a topological order of the
-  block's `LOG_LINKS`. When the same instruction text occurs in two blocks (the
-  usual `la SYM` / `addu r,1100` cluster) the move-pairer can cross-pair them;
-  the topo check catches it and the block is skipped rather than searched
-  against an impossible goal.
+* **Goals are validity-checked, with a fallback.** A goal must be a topological
+  order of the block's `LOG_LINKS`. The σ composition above assumes reorg applied
+  the *same* positional permutation to both sides; when it did not — our reorg
+  pulls an insn into a delay slot and target's leaves it alone — the composition
+  scrambles the goal. `goal_for_block` detects that and falls back to target's
+  own post-reorg order, which needs no assumption about reorg at all. Only if
+  *that* is also non-topological is the block skipped. (`func_8002C61C` block 31
+  was unusable until this fallback existed; the first diagnosis, that duplicate
+  instruction text had been cross-paired, was wrong — capping the pairing
+  distance from 8 to 999 changed nothing.)
 
 Caveat: regenerate `mkasm.sh` output whenever `src/` changes, and treat
 `.tgt.s` as valid **only at HEAD** — regfix rules are calibrated to HEAD's
@@ -248,8 +288,18 @@ All three banked residuals hit this.
 reproduce the compiler's own order, and it does — **8664/8664 blocks across all
 seven TUs, ready0 unchanged and still order-exact**.
 
-Because of this, the `add_dep 157 <- 44` worked example above was found under
-the old (inert-LUID) atom set and should be re-derived before being relied on.
+**What it invalidated, and the status of each.** Any *scheduling* "no vector"
+result from before 2026-08-05 was searched under this defect. That is:
+
+* the `add_dep 157 <- 44` worked example below — **still not re-derived**; treat
+  it as illustrative of the atom vocabulary, not as a current finding;
+* the first-pass "no single-atom vector" on all three application functions —
+  **re-run**, and they remain true negatives at depth 1;
+* the first-pass depth-2 families that reported an unspellable `add_dep` half —
+  **re-run**, and superseded: with `--atoms luid,luid_move` two of the three
+  functions turned out to have fully spellable pairs.
+
+It does **not** touch anything from `ra_solver`, which has no `ready0`.
 
 ### Search spellable atoms FIRST (`--atoms luid,luid_move`)
 
@@ -310,3 +360,41 @@ The stale-order (`no sort`) case means two input states that differ only in
 *when* an insn entered the ready list can schedule differently. Perturbations
 must be applied to the block inputs and replayed, never patched onto an output
 order.
+
+## What this toolkit can and cannot answer
+
+**Can:**
+
+* *Is any part of this function's residual a scheduling problem at all?* This is
+  the highest-value question and it is answered cheaply and definitively — every
+  block reports goal == identity or not. On the application round it removed
+  scheduling from consideration for 5 of 6 `tslGlobalMemFree` blocks and both
+  `title_mv_exec2` loop blocks, redirecting that work to register allocation.
+* *Which minimal input change produces target's order?* Restricted to
+  `--atoms luid,luid_move`, any vector returned is spellable as a statement move.
+* *Is a proposed order even possible?* The topological check rejects goals no
+  compiler could emit.
+
+**Cannot:**
+
+* *Which register.* That is `ra_solver`. Order and allocation are separate axes,
+  and fixing order can make the register diff slightly worse (`func_8002C61C`:
+  `replace` 26 → 28 while the order went fully correct). Never judge a
+  scheduling edit by the whole-function differing count.
+* *Anything after sched2.* `reorg.c`'s delay-slot filling and maspsx's own
+  reordering are downstream. The mapper cancels reorg rather than modelling it,
+  and falls back to target's own order when the two sides' reorg permutations
+  disagree — a slightly weaker claim, and the reason a closed function can still
+  show one `moved` in the alignment.
+* *Whether a vector is spellable.* The model can only say which LUID would do
+  it. Whether C controls that LUID is a separate question with a measured
+  answer: **stores yes, address materialisations and hoisted constants usually
+  no** (see above). Always recompile and re-run the loop.
+* *Frame size, instruction count, or phantom slots.* Out of scope entirely.
+
+**Application results (2026-08-05).** `title_mv_exec2`: closed, two statement
+moves, 19 → 14 differing, all 3 blocks identity. `func_8002C61C`: closed, the
+`t1 = 0` hoist in **both** copy loops, all blocks identity (whole-function count
+only 34 → 33 — the residual there is the OFFSET/RA families). 
+`tslGlobalMemFree_800861BC`: not closed and not closable this way — all six
+permutations of its three leading statements emit bit-identically.

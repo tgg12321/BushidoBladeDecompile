@@ -244,7 +244,7 @@ def build_map(root: Path, stem: str, func: str, verbose=False, target=None):
 
 
 # --------------------------------------------------------------------------
-def goal_for_block(m, block_uids, ours=None):
+def goal_for_block(m, block_uids, ours=None, blk=None):
     """Order BLOCK_UIDS as sched.c's PICK order for target's emission order.
 
     schedule_block builds each block backwards and PREPENDS every pick, so the
@@ -253,6 +253,8 @@ def goal_for_block(m, block_uids, ours=None):
 
     reorg duplicates delay-slot insns, so a UID can occupy two cc1 slots; the
     occurrence inside this block's own index range is the right one."""
+    if blk is not None:
+        m = dict(m, _deps=blk["deps"])
     idxs = {}
     unresolved = []
     singles = [m["uid_idx"][u][0] for u in block_uids
@@ -284,6 +286,19 @@ def goal_for_block(m, block_uids, ours=None):
     P = [u for u in reversed(ours or O) if u in idxs]
     opos = {u: i for i, u in enumerate(O)}
     goal_pre = [T[opos[u]] for u in P]
+
+    # The sigma composition assumes reorg applied the SAME positional
+    # permutation to both sides.  That holds when both filled the same delay
+    # slot from the same place, and breaks when they did not -- e.g. our reorg
+    # pulls an insn several positions forward into a slot and target's leaves it
+    # alone.  The composition then scrambles the goal into something that is not
+    # even a topological order.  Detect that and fall back to target's own
+    # post-reorg order, which needs no assumption about reorg at all; it is only
+    # a slightly weaker claim (it keeps target's delay-slot placement).
+    if _violates(m, idxs, goal_pre):
+        direct = list(T)
+        if not _violates(m, idxs, direct):
+            goal_pre = direct
     order = list(reversed(goal_pre))
 
     # A UID with no emitted instruction (USE / CLOBBER) still occupies a slot in
@@ -295,6 +310,25 @@ def goal_for_block(m, block_uids, ours=None):
             nxt = next((v for v in ours[i + 1:] if v in order), None)
             order.insert(order.index(nxt) if nxt in order else len(order), u)
     return order, unresolved, interp
+
+
+def _violates(m, idxs, emit):
+    """Does EMIT (emission order) break a LOG_LINKS dependence? Needs the deps,
+    which goal_for_block does not carry, so this uses the block passed via
+    m['_deps'] when available and otherwise reports False (the caller's
+    topo_violations check still gates the result)."""
+    deps = m.get("_deps")
+    if not deps:
+        return False
+    pos = {u: i for i, u in enumerate(emit)}
+    for k, preds in deps.items():
+        u = int(k)
+        if u not in pos:
+            continue
+        for pred, _kind in preds:
+            if pred in pos and pos[pred] > pos[u]:
+                return True
+    return False
 
 
 def topo_violations(blk, goal):
@@ -351,7 +385,7 @@ def main():
                 bu = [int(k) for k, n in blk["nodes"].items()
                       if not n.get("extern")]
                 ours = [p["insn"] for p in blk["picks"]]
-                goal, un, interp = goal_for_block(m, bu, ours)
+                goal, un, interp = goal_for_block(m, bu, ours, blk)
                 same = goal == ours
                 ndiff = sum(1 for x, y in zip(goal, ours) if x != y)
                 print(f"\nblock {blk['b']}: {blk['n_insns']} insns "

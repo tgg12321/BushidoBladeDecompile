@@ -57,20 +57,26 @@ Scored against target on the honest stream: **34 → 33 differing (-1)**, body
 254 → 255 insns (target has one more instruction in that cluster than we did,
 so the direction is right).
 
-**Re-goaled from the hoisted form against a PINNED HEAD target (round 2): block
-28 is now goal == identity.** Only block 31 is still reported, and only as
-dependence-invalid — so the *reachable* scheduling component of this function is
-closed by that one edit. `hon→tgt` goes `equal 220 / moved 4` → `equal 221 /
-moved 3`.
+The **`D_801020FC` loop immediately after is structurally identical** and needs
+**the same edit**. Its block (31) initially had no usable goal — the mapper's
+reorg-permutation step produced a non-topological order, because our reorg pulls
+`move $9,$0` into a delay slot and target's does not. With the topology fallback
+added to `goal_for_block` (round 4), block 31 gets a valid goal and returns three
+spellable vectors, cleanest `luid_move 594 -> before 379` — the same hoist.
 
-The **`D_801020FC` loop immediately after is structurally identical** and shows
-the same `shape.txt` pattern at 164–171, and the same edit moves its `move
-$9,$0` too — **but it is metric-NEUTRAL (+0), alone or combined.** Do not treat
-the second hoist as justified: block 31 (that loop's block) is reported by the
-mapper only as **dependence-invalid** — its `la SYM`/`addu r,1100` text is
-identical to block 28's, so the move-pairer cross-paired them and no reliable
-target order was ever derived for it. The D8 loop is the measured win; the FC
-loop rests on structural analogy alone.
+**SCHEDULING CLASS CLOSED.** Re-goaled from the hoisted form against a pinned
+HEAD target: with the D8 loop alone, block 31 still differs; with **both** loops
+hoisted, **every block is goal == identity**, and `hon→tgt` `moved` drops
+**4 → 1**.
+
+Note the whole-function differing count barely moves (34 → 33) because this
+function's residual is dominated by the OFFSET and RA families below — order and
+register allocation are separate axes, and `replace` actually rises 26 → 28 as
+the order corrects. Judge the sched axis by the mapper, not by that count.
+(Supersedes the round-3 note that called the FC hoist unjustified: that was true
+only while block 31 had no valid goal.)
+
+Apply BOTH hoists — the D8 one alone leaves block 31 open.
 
 ## Not a completion candidate
 

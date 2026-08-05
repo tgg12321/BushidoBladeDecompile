@@ -325,7 +325,7 @@ def main():
                 ours = [p["insn"] for p in blk["picks"]]
                 bu = [int(k) for k, n in blk["nodes"].items()
                       if not n.get("extern")]
-                goal, unres, interp = goalmap.goal_for_block(gm, bu, ours)
+                goal, unres, interp = goalmap.goal_for_block(gm, bu, ours, blk)
                 if goal == ours:
                     continue
                 bad = goalmap.topo_violations(blk, goal)
