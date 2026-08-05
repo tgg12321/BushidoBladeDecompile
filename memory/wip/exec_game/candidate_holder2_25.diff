@@ -1,0 +1,228 @@
+diff --git a/src/main.c b/src/main.c
+index e9a8c152..2d321326 100644
+--- a/src/main.c
++++ b/src/main.c
+@@ -2037,51 +2037,56 @@ s32 coli_HitPauseKatana(s32 size) {
+     return -1;
+ }
+ /* kengo:HIGH  |  is_coli/coli_HitPauseKatana  |  178i  |  x2 size collision */
+-typedef struct Entry { s32 w0; s32 w1; } Entry;
+ extern s32 D_800A2D3C;
+ extern s32 D_800A2D40;
+ void exec_game(void) {
+     s32 i;
+     s32 j;
+-    Entry *base;
+-    Entry *cur;
+-    Entry *p;
+-    Entry *outer;
+-    Entry *inner;
+-    Entry *e;
++    s32 *base1;
++    s32 *base3;
++    s32 *base4;
++    s32 *base5;
++    s32 *p1;
++    s32 *p2;
++    s32 *p4;
++    s32 *q;
++    s32 *e;
+     s32 ival;
+     s32 ov0;
+     s32 in1;
+     s32 ou1;
+-    s32 v;
+-    s32 cnt;
++    s32 v2;
++    s32 v5;
++    s32 cnt2;
++    s32 cnt3;
++    s32 cnt4;
++    s32 cnt5;
+     s32 icnt;
++    s32 sentinel2;
+ 
+     /* Phase 1: merge each flagged entry with the next matching flagged one */
++    i = 0;
+     if (D_800A2D3C >= 0) {
+-        i = 0;
+-        base = (Entry *)D_800A2D40;
+-        cur = base;
++        base1 = (s32 *)D_800A2D40;
+         do {
+-            if (cur->w0 & 0x80000000) {
++            if (base1[i * 2] & 0x80000000) {
+                 j = i + 1;
+-                p = base + j;
++                p1 = base1 + (j) * 2;
+             p1_scan:
+-                if (p->w0 == 0x2FFFFFFF) {
+-                    p++;
++                if (p1[0] == 0x2FFFFFFF) {
++                    p1 += 2;
+                     j++;
+                     goto p1_scan;
+                 }
+-                p = base + j;
+-                if (p->w0 & 0x80000000) {
+-                    if ((p->w0 & 0x0FFFFFFF) == ((cur->w0 & 0x0FFFFFFF) + cur->w1)) {
+-                        p->w0 = 0x2FFFFFFF;
+-                        cur->w1 = cur->w1 + p->w1;
++                q = base1 + (j) * 2;
++                if (q[0] & 0x80000000) {
++                    if ((q[0] & 0x0FFFFFFF) == ((base1[i * 2] & 0x0FFFFFFF) + base1[i * 2 + 1])) {
++                        q[0] = 0x2FFFFFFF;
++                        base1[i * 2 + 1] = base1[i * 2 + 1] + q[1];
+                         goto p1_cont;
+                     }
+                 }
+             }
+-            cur++;
+             i++;
+         p1_cont:
+             ;
+@@ -2089,80 +2094,79 @@ void exec_game(void) {
+     }
+ 
+     /* Phase 2: mark zero-value entries as sentinels */
+-    cnt = D_800A2D3C;
+-    if (cnt >= 0) {
++    v2 = D_800A2D3C;
++    if (v2 >= 0) {
+         i = 0;
+-        p = (Entry *)D_800A2D40;
++        sentinel2 = 0x2FFFFFFF;
++        cnt2 = v2;
++        p2 = (s32 *)D_800A2D40;
+         do {
+-            if (p->w1 == 0) {
+-                p->w0 = 0x2FFFFFFF;
++            if (p2[1] == 0) {
++                p2[0] = sentinel2;
+             }
+             i++;
+-            p++;
+-        } while (cnt >= i);
++            p2 += 2;
++        } while (cnt2 >= i);
+     }
+ 
+     /* Phase 3: selection sort by (w0 & 0x0FFFFFFF), skipping flagged */
+-    cnt = D_800A2D3C;
+-    if (cnt >= 0) {
+-        i = 0;
+-        base = (Entry *)D_800A2D40;
+-        outer = base;
++    cnt3 = D_800A2D3C;
++    i = 0;
++    if (cnt3 >= 0) {
++        base3 = (s32 *)D_800A2D40;
+         do {
+-            if (outer->w0 & 0x40000000) {
++            if (base3[i * 2] & 0x40000000) {
+                 goto p3_done;
+             }
+             j = i + 1;
+-            if (cnt >= j) {
++            if (cnt3 >= j) {
+                 icnt = D_800A2D3C;
+-                inner = base + j;
+                 do {
+-                    ival = inner->w0;
++                    ival = base3[j * 2];
+                     if (ival & 0x40000000) {
+                         goto p3_next;
+                     }
+-                    ov0 = outer->w0;
++                    ov0 = base3[i * 2];
+                     if ((u32)(ival & 0x0FFFFFFF) < (u32)(ov0 & 0x0FFFFFFF)) {
+-                        outer->w0 = ival;
+-                        in1 = inner->w1;
+-                        ou1 = outer->w1;
+-                        outer->w1 = in1;
+-                        inner->w0 = ov0;
+-                        inner->w1 = ou1;
++                        base3[i * 2] = ival;
++                        in1 = base3[j * 2 + 1];
++                        ou1 = base3[i * 2 + 1];
++                        base3[i * 2 + 1] = in1;
++                        base3[j * 2] = ov0;
++                        base3[j * 2 + 1] = ou1;
+                     }
+                     j++;
+-                    inner++;
+                 } while (icnt >= j);
+             }
+         p3_next:
+             i++;
+-            outer++;
+-        } while (D_800A2D3C >= i);
++            cnt3 = D_800A2D3C;
++        } while (cnt3 >= i);
+     }
+ p3_done:
+     ;
+ 
+-    /* Phase 4: compact - replace first sentinel with base[count], shrink */
+-    cnt = D_800A2D3C;
+-    if (cnt >= 0) {
++    /* Phase 4: compact - replace first 0x2FFFFFFF with base4[cnt4], shrink */
++    cnt4 = D_800A2D3C;
++    if (cnt4 >= 0) {
+         i = 0;
+-        base = (Entry *)D_800A2D40;
+-        p = base;
++        base4 = (s32 *)D_800A2D40;
++        p4 = base4;
+         do {
+-            if (p->w0 & 0x40000000) {
++            if (p4[0] & 0x40000000) {
+                 goto p4_done;
+             }
+-            if (p->w0 == 0x2FFFFFFF) {
+-                e = base + cnt;
+-                p->w0 = e->w0;
++            if (p4[0] == 0x2FFFFFFF) {
++                e = base4 + (cnt4) * 2;
++                p4[0] = e[0];
+                 D_800A2D3C = i;
+-                p->w1 = e->w1;
++                p4[1] = e[1];
+                 goto p4_done;
+             }
+             i++;
+-            p++;
+-            cnt = D_800A2D3C;
+-        } while (cnt >= i);
++            p4 += 2;
++            cnt4 = D_800A2D3C;
++        } while (cnt4 >= i);
+     }
+ p4_done:
+     ;
+@@ -2170,19 +2174,17 @@ p4_done:
+     /* Phase 5: finalize backward - re-flag entries, fold in counts */
+     i = D_800A2D3C - 1;
+     if (i >= 0) {
+-        base = (Entry *)D_800A2D40;
+-        p = base + i;
++        base5 = (s32 *)D_800A2D40;
+         do {
+-            v = p->w0;
+-            if (!(v & 0x80000000)) {
++            v5 = base5[i * 2];
++            if (!(v5 & 0x80000000)) {
+                 goto p5_done;
+             }
+-            cnt = D_800A2D3C;
+-            p->w0 = (v & 0x0FFFFFFF) | 0x40000000;
++            cnt5 = D_800A2D3C;
++            base5[i * 2] = (v5 & 0x0FFFFFFF) | 0x40000000;
+             D_800A2D3C = i;
+-            p->w1 = p->w1 + base[cnt].w1;
++            base5[i * 2 + 1] = base5[i * 2 + 1] + base5[(cnt5) * 2 + 1];
+             i--;
+-            p--;
+         } while (i >= 0);
+     }
+ p5_done:
