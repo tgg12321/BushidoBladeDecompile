@@ -69,7 +69,36 @@ the pointer then overlaps it and falls to `$v1`.
 Condition 1 is the natural one — it means the original C emitted the stored value into a
 register **before** computing the destination address. Every C spelling tried so far for
 that gets constant-folded, since GCC's `expand_assignment` always evaluates a MEM
-destination's address first. Next avenues: a stored value GCC cannot fold to a literal
-but which still compiles to a single `li` (i.e. born in this block, not an earlier one);
-or a `qty_size`-based route — the hook does not yet print `qty_size`, which is the known
-Phase-5 gap.
+destination's address first.
+
+## Session 2 (2026-08-05) — three more measured negatives; the birth-order spec is REFUTED
+
+Tree at HEAD `e48a992f`; candidate re-applied, baseline re-confirmed **3** (219/219).
+
+| variant | change | score | insns | reading |
+|---|---|---|---|---|
+| A | hoist `u8 *owner = *(u8**)arg0;` to the top of the outer-if block | **6** | 217 | the `lw` moves above the if/else and the pointer becomes a CROSS-BLOCK pseudo → `global_alloc`, which still gives it **`$v1`**: `$v0` is occupied across the arms by the else-arm's `li $v0,1`. Also loses 2 insns (branch-sense change). Kills the "make it a global pseudo" route. |
+| B | duplicate `*(s16*)(*(u8**)arg0+0x286) = 2;` into BOTH arms ([[duplicated-statement-into-arms]]) | **9** | 222 | jump2 does NOT re-merge the tails (+3 insns). Per-arm the block emits `li $v0,2` **before** `lw $v1,0($s0)` — i.e. the constant is born FIRST in the final stream — and the constant **still takes `$v0`**. |
+| — | (session 1 kills retained: named owner pointer, `s32 mode; mode = 2;`) | 3 | 219 | |
+
+**Variant B is the load-bearing negative.** The banked spec said "get the constant's def
+emitted before the pointer's and the pointer wins on priority". B produces exactly that
+emission order and the assignment does NOT flip. So either the final stream order is not
+the `local_alloc`-time order (sched2 reordering), or the residual is not decided by the
+two qtys' relative priority alone. The `local_alloc` two-part spec should be treated as
+**necessary-not-sufficient** until re-derived from a QTYDBG dump of variant B itself.
+
+Within the fixed 4-insn block (`lw`, `li`, `j`, `sh`-in-delay) the model's only free
+parameters — refs, live span, birth order — are all pinned by the instruction stream:
+raising the pointer's refs to 4 (the other sufficient condition) requires 2 more
+instructions the target does not have. Every remaining avenue needs an instrument that
+does not exist yet:
+- **QTYDBG on variant B** — settle whether alloc-time order differs from stream order.
+- **`qty_size` in the QTYDBG line** — the known Phase-5 hook gap.
+- **The suggested-register pass** (`QTYDBG-SUGG`, `qty_phys_copy_sugg`) — currently
+  reported-not-scored; a `$v0` suggestion on the pointer would pre-empt the main pass
+  entirely. This is the one untested MECHANISM, not just an untested spelling.
+
+**Disposition: banked at 3.** 48 → 3 stands; the candidate is NOT applied (at distance 3
+the 47 regfix rules no longer repair the new codegen, so the full build would break).
+Resume from the suggested-register-pass avenue, with the hook extension first.
