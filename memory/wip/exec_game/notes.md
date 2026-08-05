@@ -104,7 +104,11 @@ Block 20 is phase 3's inner preheader (goal `[644,642,270,663]`; 270 =
 1. Phase 1 needs a mask-lengthening spelling that does NOT create a named value
    later phases can CSE-share (that sharing costs the 2 insns). The one untried
    perturb atom is `112: pref+r11` - a copy relationship toward `$t3`.
-2. Cluster 4: bounded, unsolved. Block 1 is the last skipped sched block.
+2. Cluster 4: bounded, unsolved; block 20's vectors are spent. Block 1 still
+   skips - goalmap's move-pass is ALREADY position-based (`min(abs(x-i))`), so
+   the mis-pair comes from difflib's equal/replace phase and needs
+   neighbour-context disambiguation: a real change to a validated core
+   (6978/6978 blocks), not a quick fix.
 3. A normalised `asm/funcs` goal source would make `sched_solver` robust against
    source drift for every function, not just this one.
 
