@@ -180,8 +180,15 @@ def reachable(deps, src, dst, seen=None):
     return False
 
 
-def enumerate_atoms(blk, kinds=(0, 14)):
-    """All single-atom perturbations that keep the graph acyclic."""
+def enumerate_atoms(blk, kinds=(0, 14), only=None):
+    """All single-atom perturbations that keep the graph acyclic.
+
+    ONLY restricts the atom classes searched.  `only={"luid","luid_move"}` is
+    the useful one: those are the two atoms that correspond to an ordinary
+    source-statement move, so a vector built purely from them is SPELLABLE,
+    while an `add_dep` half often is not.  Because the full enumeration lists
+    add_dep first, a `--max`-truncated depth-2 run can report only unspellable
+    families and never reach a spellable pair that exists."""
     out = []
     us = uids(blk)
     for a in us:
@@ -212,6 +219,8 @@ def enumerate_atoms(blk, kinds=(0, 14)):
         for c in (1, 2, 3, 12):
             if c != n["icost"]:
                 out.append(("cost", a, c, None))
+    if only:
+        out = [x for x in out if x[0] in only]
     return out
 
 
@@ -288,7 +297,10 @@ def main():
                     help="derive the goal from the TARGET binary's own order "
                          "via goalmap (needs tools/sched_solver/mkasm.sh <STEM>)")
     ap.add_argument("--root", default=".")
+    ap.add_argument("--atoms", help="restrict atom classes, comma-separated "
+                                    "(e.g. 'luid,luid_move' = spellable-only)")
     a = ap.parse_args()
+    only = set(a.atoms.split(",")) if a.atoms else None
 
     model = json.loads(Path(a.model).read_text())
     if a.self_check:
@@ -321,7 +333,8 @@ def main():
                           f"({len(bad)} violations): the target alignment "
                           f"mis-paired duplicate instruction text here")
                     continue
-                rc |= search(blk, a.passno, make_goal(goal, []), a.depth, a.max)
+                rc |= search(blk, a.passno, make_goal(goal, []), a.depth,
+                             a.max, only)
         return rc
 
     blk = fn = None
@@ -352,11 +365,11 @@ def main():
         print("  baseline ALREADY satisfies the goal")
         return 0
 
-    return search(blk, a.passno, goal, a.depth, a.max)
+    return search(blk, a.passno, goal, a.depth, a.max, only)
 
 
-def search(blk, passno, goal, depth, maxhits):
-    atoms = enumerate_atoms(blk)
+def search(blk, passno, goal, depth, maxhits, only=None):
+    atoms = enumerate_atoms(blk, only=only)
     print(f"  searching {len(atoms)} single atoms"
           + (f" + pairs (depth {depth})" if depth > 1 else ""))
     hits = []

@@ -251,6 +251,27 @@ seven TUs, ready0 unchanged and still order-exact**.
 Because of this, the `add_dep 157 <- 44` worked example above was found under
 the old (inert-LUID) atom set and should be re-derived before being relied on.
 
+### Search spellable atoms FIRST (`--atoms luid,luid_move`)
+
+The full enumeration lists `add_dep` atoms before the LUID ones, so a depth-2
+run that stops at `--max N` can report only families whose halves are
+dependence edges — several of which have no C spelling at all — while a
+**fully spellable** pair sits further down the list, never reached. This
+happened on both `tslGlobalMemFree_800861BC` and `title_mv_exec2`: the first
+report for each was "one half has no natural C form", and restricting to
+`--atoms luid,luid_move` found pure statement-order pairs for both.
+
+Run the restricted search first. It is also far cheaper.
+
+**But model-spellable is not C-spellable.** A LUID atom is only spellable when
+the insn belongs to a statement whose position you can actually move.
+`tslGlobalMemFree`'s spellable pair needs `luid swap 9 <-> 290`, where 290 is a
+**LICM-hoisted constant** lifted out of the loop body — no source statement
+controls its LUID, and every tested placement of the other statement left the
+emission bit-identical. `title_mv_exec2`'s pair, whose two atoms are both real
+stores, worked: 19 → 14 differing instructions against target. Always compile
+the TU and measure; the model proposes, the compiler disposes.
+
 ### New atom: `luid_move`
 
 A pairwise LUID swap says "exchange two statements". It cannot say "move this

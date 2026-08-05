@@ -53,16 +53,18 @@ sp_src  = (Vec3i *)0x1F800000;
 
 **Verified by compiling the TU** (snapshot, `tools/sched_solver/mkasm.sh`):
 `move $9,$0` moves ahead of the `la $7,D_801020D8` cluster, target's order.
+Scored against target on the honest stream: **34 → 33 differing (-1)**, body
+254 → 255 insns (target has one more instruction in that cluster than we did,
+so the direction is right).
 
 The **`D_801020FC` loop immediately after is structurally identical** and shows
-the same `shape.txt` pattern at 164–171. Applying the same edit to both moves
-both clusters to target's order (verified together; body 239 → 240 insns, and
-target is +1 per loop over ours there, so the direction is right).
-
-Block 31 (the `D_801020FC` loop's own block) is reported by the mapper but
-**skipped as dependence-invalid** — its `la SYM`/`addu r,1100` text is identical
-to block 28's, so the alignment's move-pairer cross-paired them. The structural
-argument above, not the mapper, is what carries that second loop.
+the same `shape.txt` pattern at 164–171, and the same edit moves its `move
+$9,$0` too — **but it is metric-NEUTRAL (+0), alone or combined.** Do not treat
+the second hoist as justified: block 31 (that loop's block) is reported by the
+mapper only as **dependence-invalid** — its `la SYM`/`addu r,1100` text is
+identical to block 28's, so the move-pairer cross-paired them and no reliable
+target order was ever derived for it. The D8 loop is the measured win; the FC
+loop rests on structural analogy alone.
 
 ## Not a completion candidate
 
