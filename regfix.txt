@@ -931,61 +931,22 @@ saTan4FireDisp: insert_after "lhu $3,0($16)" @ 105
 #   reorders (post-all-inserts idx)
 #
 # Phase 1: Register swap s2($18) ↔ s3($19) [global]
-decBs0: $18 <-> $19
 # Phase 2: Frame size 64→72 (prologue + epilogue)
-decBs0: subst "\$sp,64" "$sp,72" @ 0
-decBs0: subst "\$sp,64" "$sp,72" @ 127
 # Phase 3: Prologue stack offsets (+8 for frame expansion)
-decBs0: subst ",56\(" ",64(" @ 1
-decBs0: subst ",48\(" ",56(" @ 4
-decBs0: subst ",52\(" ",60(" @ 6
-decBs0: subst ",60\(" ",68(" @ 8
-decBs0: subst ",44\(" ",52(" @ 9
-decBs0: subst ",40\(" ",48(" @ 10
-decBs0: subst ",36\(" ",40(" @ 11
-decBs0: subst ",32\(" ",44(" @ 12
-decBs0: subst ",28\(" ",36(" @ 13
-decBs0: subst ",24\(" ",32(" @ 14
 # Phase 4: Epilogue stack offsets
-decBs0: subst ",60\(" ",68(" @ 117
-decBs0: subst ",56\(" ",64(" @ 118
-decBs0: subst ",52\(" ",60(" @ 119
-decBs0: subst ",48\(" ",56(" @ 120
-decBs0: subst ",44\(" ",52(" @ 121
-decBs0: subst ",40\(" ",48(" @ 122
-decBs0: subst ",36\(" ",40(" @ 123
-decBs0: subst ",32\(" ",44(" @ 124
-decBs0: subst ",28\(" ",36(" @ 125
-decBs0: subst ",24\(" ",32(" @ 126
 # Phase 5: Arg save + else-branch offset
-decBs0: subst "\$5,16\(" "$4,16(" @ 15
-decBs0: subst ",16\(" ",24(" @ 20
 # Phase 6: Loop top delay slot → nop (kill dead move a0←fp_ptr)
-decBs0: subst "addu\t\$4,\$fp,\$zero" "nop" @ 19
 # Phase 7: Store block — change v1($3) → v0($2) for GP loads
-decBs0: subst "\$3," "$2," @ 94
-decBs0: subst "\$3," "$2," @ 96
-decBs0: subst "\$3," "$2," @ 97
-decBs0: subst "\$3," "$2," @ 100
-decBs0: subst "\$3," "$2," @ 101
-decBs0: subst "\$3," "$2," @ 106
 # Phase 8: Delete dead move $fp,$a0 (ORIGINAL index 2)
-decBs0: delete @ 2
 # Phase 9: Inserts (POST-DELETE indices, processed descending)
 # 9a: Load-delay nop in store block (orig 103 → post-delete 102)
-decBs0: insert "nop" @ 102
 # 9b: lw a0 from stack at loop top (orig 18 j .L226 → post-delete 17)
-decBs0: insert "lw $4,16($sp)" @ 17
 # Phase 10: Insert_after (POST-INSERT index)
 # sw a1 after a0 save (post-insert 14 = sw $4,16($sp))
-decBs0: insert_after "sw $5,24($sp)" @ 14
 # Phase 11: Reorders (POST-ALL-INSERTS indices)
 # 11a: Prologue s3/s2 pair
-decBs0: reorder 11,10 @ 10-11
 # 11b: Epilogue s3/s2 pair
-decBs0: reorder 126,125 @ 125-126
 # 11c: Store block — negu/sh/li group first, then GP load/nop/sh groups
-decBs0: reorder 99,100,103,105,106,95,96,97,98,104,101,102,107,108 @ 95-108
 
 # AllocRobRmd: load-delay nop at .L52 merge point (maspsx skips nop after label)
 # insert BEFORE T019 (lw $16,0($17)) so nop lands AFTER .L52: label

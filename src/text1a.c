@@ -1251,7 +1251,7 @@ extern s16 D_800F62E0[];
 extern s16 D_800F6340[];
 void decBs0(s32 a0, s32 a1)
 {
-    register s16 *fp_ptr asm("fp");
+    s16 *fp_ptr;
     s32 outer;
     s32 *cam;
     s16 *tbl;
@@ -1266,64 +1266,68 @@ void decBs0(s32 a0, s32 a1)
     outer = 0;
     cam = (s32 *)&D_800A9B28;
 
-loop_outer:
-    tbl = fp_ptr;
-    if (outer == 0) {
-        ptr = (s32 *)a0;
-    } else {
-        ptr = (s32 *)a1;
-        tbl = D_800F6340;
-    }
+    do {
+        tbl = fp_ptr;
+        if (outer == 0) {
+            ptr = (s32 *)a0;
+        } else {
+            ptr = (s32 *)a1;
+            tbl = D_800F6340;
+        }
 
-    if (ptr == 0) { goto skip; }
-    if (g_anim_select < 0) { goto skip; }
+        if (ptr == 0) { goto skip; }
+        if (g_anim_select < 0) { goto skip; }
 
-    dx = ptr[0] - cam[0];
-    dy = ptr[1] - cam[1];
-    dz = ptr[2] - cam[2];
+        dx = ptr[0] - cam[0];
+        dy = ptr[1] - cam[1];
+        dz = ptr[2] - cam[2];
 
-    if (dx < 0) goto neg_dx;
-    if (dx < 0x7000) goto check_dy;
-    goto calc;
-neg_dx:
-    if (-dx >= 0x7000) goto calc;
-check_dy:
-    if (dy < 0) goto neg_dy;
-    if (dy < 0x7000) goto check_dz;
-    goto calc;
-neg_dy:
-    if (-dy >= 0x7000) goto calc;
-check_dz:
-    if (dz < 0) goto neg_dz;
-    if (dz < 0x7000) goto dist_check;
-    goto calc;
-neg_dz:
-    if (-dz >= 0x7000) goto calc;
+        if (dx < 0) goto neg_dx;
+        if (dx < 0x7000) goto check_dy;
+        goto calc;
+    neg_dx:
+        if (-dx >= 0x7000) goto calc;
+    check_dy:
+        if (dy < 0) goto neg_dy;
+        if (dy < 0x7000) goto check_dz;
+        goto calc;
+    neg_dy:
+        if (-dy >= 0x7000) goto calc;
+    check_dz:
+        if (dz < 0) goto neg_dz;
+        if (dz < 0x7000) goto dist_check;
+        goto calc;
+    neg_dz:
+        if (-dz >= 0x7000) goto calc;
 
-dist_check:
-    if (func_80052754(dx, dy, dz) > 0x17D7840) { goto skip; }
+    dist_check:
+        if (func_80052754(dx, dy, dz) > 0x17D7840) { goto skip; }
 
-calc:
-    angle = single_game_getEnemyCharId(dx, dz);
-    cos_val = math_Cos(angle);
-    {
-        s32 sin_val = math_Sin(angle);
-        s32 cross = (cos_val * dz + sin_val * dx) >> 12;
-        tbl[4] = (s16)-single_game_getEnemyCharId(dy, cross);
-    }
-    tbl[5] = (s16)angle;
-    tbl[6] = 1;
-    *(u16 *)&tbl[29] = *(u16 *)&g_anim_select;
-    *(u16 *)&tbl[32] = *(u16 *)&D_800A323A;
-    *(u16 *)&tbl[35] = *(u16 *)&D_800A323C;
-    goto end_loop;
+    calc:
+        angle = single_game_getEnemyCharId(dx, dz);
+        cos_val = math_Cos(angle);
+        {
+            s16 *p = tbl + 4;
+            s32 sin_val = math_Sin(angle);
+            s32 cross = (cos_val * dz + sin_val * dx) >> 12;
+            *p++ = (s16)-single_game_getEnemyCharId(dy, cross);
+            *p++ = (s16)angle;
+            *p = 1;
+            p = tbl + 29;
+            *p = g_anim_select;
+            p += 3;
+            *p = D_800A323A;
+            p += 3;
+            *p = D_800A323C;
+        }
+        goto end_loop;
 
-skip:
-    tbl[6] = 0;
+    skip:
+        tbl[6] = 0;
 
-end_loop:
-    outer++;
-    if (outer < 2) { goto loop_outer; }
+    end_loop:
+        outer++;
+    } while (outer < 2);
 
     func_8004A1FC((s32)fp_ptr);
     func_8004A1FC((s32)D_800F6340);
