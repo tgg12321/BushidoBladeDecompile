@@ -1,120 +1,87 @@
-# decBs0 - WIP seed (2026-08-05)
+# decBs0 — WIP (current state 2026-08-05, post-revert re-derivation)
 
-**Baseline: honest pure-C distance 58; 132 insns against target's 134; frame 64
-against target's 72.** `src/text1a.c:1252`. 39 regfix rules, 0 asmfix.
-Measure with `wsl bash tmp/csz/d.sh decBs0 text1a` and
-`wsl bash tmp/csz/frame.sh decBs0 text1a`.
+`src/text1a.c:1252`. HEAD baseline: honest pure-C distance **58**, 39 regfix rules, plus a
+`register s16 *fp_ptr asm("fp")` pin (cheat-asm — the sandbox strips it, which is why the
+honest score is 58 while `--keep-cheat-asm` reads 52). Measure with
+`wsl bash tmp/csz/d.sh decBs0 text1a` and `wsl bash tmp/csz/frame.sh decBs0 text1a`.
 
-## A register pin must be retired
+## LAYER-2 FAIL + REVERT (commit a6a83d99, reverting the self-committed 84054db1)
 
-```c
-register s16 *fp_ptr asm("fp");   /* CHEAT - forbidden, must go */
-```
+The FAIL is SPECIFIC and partial:
+- **REJECTED**: the stride-3 pointer walk over `tbl[29]/[32]/[35]` (three unrelated one-off
+  stores) — mechanism-motivated `MEM_IN_STRUCT_P` coercion outside
+  [[walking-pointer-serializes-parallel-loads]]'s own scope section (that rule covers
+  parallel-array element writes previously cheated with barriers/pins; this cluster's prior
+  cheat was u16-coercion casts — different family). A human writes plain indexed stores
+  here. Would need fresh SOTN evidence + an owner ruling.
+- **CLEARED for standalone re-derivation**: the real `do {} while (outer < 2)` rewrite and
+  the `fp_ptr` pin removal.
+- Cleanup on next landing: stray comment at `regfix.txt:927`.
 
-`fp_ptr` holds `D_800F62E0` across the whole body including five calls. The pin
-is cheat-asm ([[inline-asm-policy]]), so the function cannot complete while it
-stands; the sandbox already strips it, which is why the honest score is 58 while
-`--keep-cheat-asm` reads 52. The 6-point difference is the pin's whole value.
+## Re-derived candidate — 58 → 11, UNCOMMITTED in `src/text1a.c`
 
-## Single root cause: target spills ONE pseudo that we keep in a register
+Cleared subset only: **pin removal + real `do`-loop + PLAIN indexed stores** (the three
+`*(u16 *)&tbl[N] = *(u16 *)&GLOBAL;` casts dropped to `tbl[N] = GLOBAL;` — strictly better,
+11 vs 13 with the casts, and anti-cheat: an HImode→HImode copy emits `lhu` either way, so
+the casts were inert coercion). **Frame and register allocation are now EXACT** (72,
+`vars=16`, both params homed at 0x10/0x18, `$fp`=fp_ptr, `$s3`=tbl). 132 insns vs 134.
 
-Three independent numbers agree:
+### Why the loop rewrite is the frame/RA fix (measured, not inferred)
 
-| | ours | target | delta |
-|---|---|---|---|
-| frame | 64 (`vars= 8`, regs 10/0, args 16) | 72 | **+8** |
-| insns | 132 | 134 | **+2** |
-| triage buckets | FRAME 21, RENAME 13 | | |
+`flow.c` accumulates `reg_n_refs[regno] += loop_depth` (flow.c:2081/2329/2515/2725), and
+`loop_depth` comes from `NOTE_INSN_LOOP_BEG/END` notes (flow.c:440-471, 1385-1449), which
+the front end emits only for real loop statements — never for a backward `goto`. So the
+`goto` form counted fp_ptr's in-loop use as 1 ref instead of 2. As a real loop, fp_ptr's
+allocno priority goes 182 → **487** (`floor_log2(refs)*refs*size/livelen*10000`), past both
+incoming-param pseudos at 246; fp_ptr takes the last callee-save `$fp` and BOTH params
+spill — target's frame exactly. `ra_solver/perturb.py` independently returned exactly ONE
+single-atom solution for "pseudo 74 → hardreg 30": `refs+1`.
 
-+8 bytes of locals is exactly one 4-byte slot rounded to alignment, and +2
-instructions is exactly the `sw`/`lw` pair of one spill. So the whole FRAME
-bucket (21 of the diff lines, per the heavy-12 triage) collapses to one
-question: **which pseudo does target spill, and what makes it spill?**
+NB the earlier "ra_solver is not exact here (9/11)" caveat is **not disqualifying**: the two
+misses (pseudos 107/108) are caller-save-class allocnos; the tail cluster that decides `$fp`
+(72/73/74) simulates exactly, and the prediction was confirmed empirically.
 
-This is the same shape as `gnd_land_hit_char_tsuba` (+16 = one spill plus 12
-phantom bytes), so read that entry's round-2 notes before hunting: there the
-pressure mechanism was confirmed but every spelling that produced the spill also
-cost 1-2 instructions. Here the instruction budget says the right spelling costs
-NOTHING - we are 2 insns short, and a spill is worth exactly 2.
-
-## Model status: ra_solver is NOT exact here (9/11)
-
-`simulate.py` sort order MATCHES but two allocnos miss:
-
-```
-XX pseudo 108: sim=65 dump=8  pri=6666
-XX pseudo 107: sim=65 dump=3  pri=5000
-```
-
-The simulator puts both in the no-hard-reg state while real cc1 gives them `$t0`
-and `$v1`. That is the opposite direction from the residual (the model over-
-predicts spilling), so **do not drive a spec off this model until the gap is
-understood** - most likely the reload/retry path the ra_solver README flags as
-unmodelled (Phase 5 stage 2). `perturb.py` output would be unreliable here.
-
-## Structure notes for the hunt
-
-Two-iteration `goto` loop (`outer` 0 then 1) selecting `ptr` from `a0`/`a1` and
-`tbl` from `fp_ptr`/`D_800F6340`; a dx/dy/dz range-check ladder; then a call
-cluster (`single_game_getEnemyCharId`, `math_Cos`, `math_Sin`, a second
-`single_game_getEnemyCharId`) whose results feed `tbl[4]`/`tbl[5]`. The values
-live across that call cluster are the spill candidates - `angle`, `cos_val`,
-`dx`, `dy`, `dz`, `tbl`, and `fp_ptr` itself.
-
-The exec_game identity-split lever does NOT obviously apply: the reused locals
-here are loop-carried across the two iterations, so splitting them changes
-semantics rather than just identity.
-
-## The spilled values are IDENTIFIED: both incoming params
-
-`asm/funcs/decBs0.s` (rule-independent truth) homes BOTH parameters and reloads
-them one per loop iteration:
+## The whole remaining residual: the three colour LOADS batch (exactly 2 nops)
 
 ```
-sw  $a0, 0x10($sp)      sw  $a1, 0x18($sp)
-lw  $a0, 0x10($sp)      lw  $a0, 0x18($sp)
+target:  lhu v0,g_anim_select ; nop ; sh v0,58(s3) ; lhu v0,D_800A323A ; nop ;
+         sh v0,64(s3) ; lhu v0,D_800A323C ; sh v0,70(s3)          (8 insns)
+ours:    lhu v1 ; lhu a0 ; lhu a1 ; sh v1,58 ; sh a0,64 ; sh a1,70 (6 insns)
 ```
+Ours batches the three independent loads into three registers; target serialises them into
+load/store pairs, paying 2 load-delay nops. Everything else in the function matches.
 
-Callee-saves occupy 0x20-0x47 (s0-s7, fp, ra = 40 bytes) and the outgoing-args
-area is 0x00-0x0F, so 0x10-0x1F is target's 16-byte `vars` block holding exactly
-these two 4-byte locals. Ours has `vars= 8` - **we home only one of the two
-params**, and the other stays in a register. That is the entire +8 frame and the
-entire 2-instruction shortfall (`sw` + `lw`).
+**Mechanism (confirmed by RTL dump, not theory).** `sched.c:true_dependence` (815-838) drops
+a store→load dependence when the store is `MEM_IN_STRUCT_P` at a varying address and the
+load is non-in-struct at a fixed address. `expr.c:4567-4577` sets `MEM_IN_STRUCT_P` on an
+`INDIRECT_REF` whose address tree is a `PLUS_EXPR`, and `c-typeck:build_array_ref` lowers
+`tbl[N]` on a pointer base to exactly that. Dump confirms: every `tbl[N]` store is `mem/s`,
+every colour load is bare `mem` at a `symbol_ref`. So the exclusion fires and the loads are
+free to hoist. **To restore the dependence the LOAD must become in-struct OR address-varying**
+(the store side is now off the table per the FAIL).
 
-The two reloads are the `ptr = (s32 *)a0;` / `ptr = (s32 *)a1;` arms of the
-two-iteration loop. Note the slots are 8 apart, not 4, so this is NOT a
-contiguous `s32 args[2]` array - an array spelling would land them at 0x10/0x14.
+### Measured on the load side
+
+- **`extern s16 g_anim_select[3]` (one array for the consecutive triple 0x800A3238/A/C):**
+  the loads become `ARRAY_REF`s, the dependence returns and **the block order matches target
+  exactly** — but GCC then CSEs the shared base into a callee-save (`$s7`), which displaces
+  fp_ptr back to rematerialisation. Score **16**, 138 insns, frame still correct (72/16).
+  So the array is right for the *scheduling* and wrong for the *RA*. Three separate symbols
+  can't CSE a base, which is why the current form doesn't pay that cost.
+- Note the use sites do support the triple being ONE object: `func_80041E10` writes all
+  three as R/G/B from one packed colour, `func_800420D0` sets `[0] = -1` as a sentinel, and
+  decBs0 copies them into a 3-halfword-stride matrix column (`tbl[29]/[32]/[35]`).
 
 ## Next
 
-1. Retire the pin first and re-measure - the honest baseline is already pin-free
-   but the committed source is not, and the pin constrains `$fp`, which is one of
-   the ten callee-saves whose pressure decides whether a param stays in a reg.
-2. Find the C spelling that makes BOTH params stack-resident and re-read per
-   iteration, at the 0x10/0x18 offsets. The instruction budget says the right
-   spelling is free (we are exactly 2 short). Do NOT reach for frame coercion:
-   `dead-vars-local-array` is forbidden and an array spelling gives the wrong
-   offsets anyway.
-3. Only then look at RENAME (13 lines) - the base-reg RA the triage flagged.
-
-## LAYER-2 FAIL + REVERT (2026-08-05, commit a6a83d99)
-
-The self-committed Match (84054db1) was REVERTED on layer-2 review. The FAIL
-is SPECIFIC and partial:
-- REJECTED: the stride-3 pointer walk over tbl[29]/[32]/[35] (three unrelated
-  one-off stores) — mechanism-motivated MEM_IN_STRUCT_P coercion outside
-  [[walking-pointer-serializes-parallel-loads]]'s own scope section (that rule
-  covers parallel-array element writes previously cheated with barriers/pins;
-  this cluster's prior cheat was u16-coercion casts — different family). A
-  human writes plain indexed stores here. New-spelling-of-same-intent per the
-  open catalog; would need fresh SOTN evidence + an owner ruling.
-- LOOKS LEGITIMATE, re-derive standalone: (a) the real `do {} while (outer<2)`
-  loop rewrite (flow.c loop-depth ref weighting lifts fp_ptr 182→487 — the
-  frame/RA fix, exactly one perturb atom), (b) the fp_ptr pin removal,
-  (c) possibly the tbl+4 sequential-triple walk (genuinely sequential — but
-  re-justify against the rule's scope on its own, without the stride-3 half).
-- Resume: rebuild the candidate with plain indexed stores for the 29/32/35
-  cluster; if the last 2 nops don't come back, the intervention point may be
-  the LOADS (the three color lhu batching), not the stores — search there
-  with sched_solver; document exhaustion honestly if no clean lever exists.
-- Cleanup on next landing: stray comment at regfix.txt:927.
+1. **Search the load side with `sched_solver`** (`extract.py text1a` → `mkasm.sh` →
+   `perturb.py --func decBs0 --pass 1 --goal-from-target text1a --atoms luid,luid_move`).
+   A prior run flagged the block as "goal is not a topological order (5 violations)", but it
+   also reported the target alignment mis-paired duplicate instruction text there, so that
+   verdict is unreliable — redo it against this score-11 source before trusting it.
+2. **If a dependence is genuinely required**, the only load-side spellings that create one
+   are in-struct (aggregate declaration) or address-varying (read through a pointer). The
+   aggregate is measured above and costs the base CSE; a pointer read would likely be folded
+   back to a direct symbol access by cse. If neither lands clean, document exhaustion
+   honestly rather than reaching for a store-side respelling — that door is closed.
+3. **Do NOT commit.** At 0, stop and report; the owner runs the gate.
