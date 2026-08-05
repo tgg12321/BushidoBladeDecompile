@@ -46,12 +46,11 @@ offset):
   load-bearing here, unlike exec_game's), and splitting `a0_offset`/`a2_offset` per
   call-half is inert — GCC coalesces the split because the two ranges do not overlap.
 
-## Round 4 — the first +8 is now an exact RA spec: `refs+1` on pseudo 85
+## Round 4 — the first +8 reduced to an exact RA spec: `refs+1` on pseudo 85
 
-Carried over from decBs0, which closed 58 → 0 the same day on this same atom.
+Atom carried over from decBs0, which closed 58 → 0 the same day on it.
 `tools/ra_solver/extract.py gnd_land_hit_char_tsuba text1b` gives 16 allocnos and
-`simulate.py` reproduces our allocation **16/16 exactly**, so the model is trustworthy
-here. The table ends:
+`simulate.py` reproduces our allocation **16/16 exactly**. The table ends:
 
 | ord | pseudo | hardreg | nrefs | livelen | pri |
 |---|---|---|---|---|---|
@@ -60,37 +59,54 @@ here. The table ends:
 | 14 | 87 | 30 ($fp) | 3 | 95 | 315 |
 | 15 | **85** | **none** | 3 | 188 | **159** |
 
-Pseudo 85 is the only unallocated one, and it costs no stack slot today because it has a
-`reg_equiv_constant` — this is the `lui`/`addiu` rematerialisation the earlier rounds
-observed (almost certainly `p_b388` / `&D_8009B390`; **CONFIRM against the `.lreg`/`.greg`
-dump before spelling anything**).
+Pseudo 85 is the only unallocated one and costs no stack slot today (it has a
+`reg_equiv_constant` — the `lui`/`addiu` rematerialisation earlier rounds observed).
+Priority is `floor_log2(refs)*refs*size/livelen*10000`, so **one more reference** takes 85
+from 159 to **425**, past 86 (412) and 87 (315). Simulated (`tmp/csz/gn_refs.py`,
+`tmp/csz/gn_atoms.py`): `85: none -> $s7`, `86: -> $fp`, `87: -> NONE`. 87 has no constant
+equivalence, so it takes a **real spill slot** — the `64(sp)` local, i.e. the first +8.
+Rounds 2-3 all bought the spill by adding a live *value* (costing instructions); this atom
+adds a *reference to a value that already exists*.
 
-**Give pseudo 85 exactly ONE more real reference and the frame becomes target's.**
-Priority is `floor_log2(refs)*refs*size/livelen*10000`, so 3 → 4 refs takes 85 from 159 to
-**425**, past 86 (412) and 87 (315). Simulated (`tmp/csz/gn_refs.py`):
+## Round 5 — identities confirmed, spec is UNIQUE, and the +8 has been LANDED (score 65 → 56)
 
+**Identities** (`tmp/csz/findpseudo.py <dump> <func> <pseudo>` against `text1b.i.lreg`):
+85 = `p_b388` (`REG_EQUIV symbol_ref D_8009B388` — hence the free rematerialisation);
+86 = `p_b2e0`; 87 = `base_offset` (`plus reg121, 12`); 84 = `c1`. All three refs+1
+predictions match the target's documented assignment: `p_b2e0`→$s8, `base_offset` evicted
+to a real slot, and $s7 taking `p_b388` — "the value we do not keep".
+
+**The ref arithmetic is confirmed on this function** (def at depth 1 + each in-loop use at
+depth 2): `c1` 1+2+2=5 ✓, `p_b2e0` 1+1+2=4 ✓, `base_offset` 1+2=3 ✓, `p_b388` 1+2=3 ✓.
+**So an in-loop use adds 2 — the needed +1 must land at loop depth 1.** That is why the
+round-2 `s.p1 = p_b388 + 2` (in-loop, = refs+2) was wrong: refs+2 rotates `c1` into $s7,
+which target keeps. `perturb.py` over 157 single atoms returns **`pseudo 85: refs+1` as the
+ONLY solution** — no live/birth/conf/pref alternative exists.
+
+**Measured negative:** moving `p_b388 = &D_8009B388;` INSIDE the `do/while` to buy the
+depth-2 def is **inert** — `loop.c` hoists the invariant back to the preheader, and the
+extracted model comes back byte-identical (nrefs still 3). Def placement cannot buy refs.
+
+**The landing spelling (UNCOMMITTED, sitting in `src/text1b.c` — see caveat below):**
+precompute half 2's pointer outside the loop, which is a depth-1 reference to `p_b388`:
+```c
+p_b388 = &D_8009B388;
+p_b390 = p_b388 + 2;      /* depth-1 ref -> nrefs 3 -> 4, pri 159 -> 425 */
+do { ... s.p1 = p_b388; ... s.p1 = p_b390; ... }
 ```
-85: none -> 23 ($s7)      86: 23 -> 30 ($fp)      87: 30 -> NONE
-```
+Result: **score 65 → 56 (best yet), `vars` 48 → 56 (+8, the spill LANDED), frame 104 → 112.**
 
-87 is then the evicted pseudo. Unlike 85 it is expected to be a computed value with no
-constant equivalence, so it takes a **real spill slot** — the `64(sp)` local above, i.e.
-the first +8. `refs+2` works too but rotates $s6 as well, so **refs+1 is the minimal one
-to aim for**.
-
-Why this beats rounds 2-3: every spelling tried there bought the spill by adding a live
-*value*, which costs instructions. This atom adds a *reference to a value that already
-exists* — which is exactly what "zero-instruction spelling" means.
+**Residual: +2 instructions (178 vs 176) and the frame is still 8 short of 120.** The new
+`p_b390` pseudo (88) does NOT inherit a constant equivalence cleanly — it and `p_b2e0` both
+end unallocated, so something is materialised where target rematerialises. Next round should
+either find a depth-1 `p_b388` reference that does NOT introduce a new pseudo, or check
+whether `p_b390` can be made to fold to `REG_EQUIV symbol_ref D_8009B390` (target
+rematerialises `&D_8009B390` as `lui`/`addiu`, align idx 106-107).
 
 ## Next
 
-1. **Realize `refs+1` on pseudo 85 at zero instruction cost.** First identify 85 exactly
-   (`.lreg`/`.greg` dump → which C variable), then find a reading of the body where that
-   value is genuinely referenced once more. NOTE the decBs0 realizer: a `goto` loop carries
-   no `NOTE_INSN_LOOP_BEG`, and `flow.c` weights `reg_n_refs += loop_depth` (flow.c:2081/
-   2329/2515/2725), so a use that sits *inside* a real loop is worth 2 refs, not 1. This
-   function's main loop is ALREADY a `do/while`, so the free +1 must come from moving a use
-   into that loop (or a second real loop) — not from a loop-form change.
+1. **Kill the +2 insns from the round-5 spelling** (above) — that is now the whole first-half
+   residual; the RA spec itself is satisfied.
 2. **The second +8 is the phantom class, not a spill** — run the recipe's orphan detector
    (unallocated pseudos in the `-da` greg dump / bare `(use (reg N))` in the combine dump)
    rather than hunting more live values. Producer #1 (folded loop-guard compare) is the
