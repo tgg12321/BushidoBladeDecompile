@@ -299,6 +299,9 @@ def main():
     ap.add_argument("--root", default=".")
     ap.add_argument("--atoms", help="restrict atom classes, comma-separated "
                                     "(e.g. 'luid,luid_move' = spellable-only)")
+    ap.add_argument("--target", help="pin the target stream to this .s file "
+                                     "(REQUIRED once the source is edited: "
+                                     "regfix is indexed to HEAD's positions)")
     a = ap.parse_args()
     only = set(a.atoms.split(",")) if a.atoms else None
 
@@ -311,7 +314,7 @@ def main():
     if a.goal_from_target:
         import goalmap
         gm = goalmap.build_map(Path(a.root), a.goal_from_target, a.func,
-                               verbose=True)
+                               verbose=True, target=a.target)
         rc = 0
         for f in model["funcs"]:
             if f["func"] != a.func or f["pass"] != a.passno:

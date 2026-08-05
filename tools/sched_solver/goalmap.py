@@ -165,12 +165,21 @@ def align(a, b, label="", verbose=False):
 
 
 # --------------------------------------------------------------------------
-def build_map(root: Path, stem: str, func: str, verbose=False):
-    """-> dict with uid->target-position and the intermediate streams."""
+def build_map(root: Path, stem: str, func: str, verbose=False, target=None):
+    """-> dict with uid->target-position and the intermediate streams.
+
+    TARGET pins the target stream to a specific file.  This matters as soon as
+    you iterate: regfix rules are indexed to HEAD's instruction positions, so
+    regenerating `<stem>.tgt.s` from an EDITED source produces fiction.  Capture
+    it once from clean HEAD (`<stem>.tgt.head.s`) and pass it on every later
+    round -- target is the original binary and does not change with our edits."""
     S = root / "tmp" / "sched_map"
     cc1 = [t for t, _ in asm_body(S / f"{stem}.cc1.s", func)]
     hon = [t for t, _ in asm_body(S / f"{stem}.hon.s", func)]
-    tgt = [t for t, _ in asm_body(S / f"{stem}.tgt.s", func)]
+    tpath = Path(target) if target else S / f"{stem}.tgt.s"
+    tgt = [t for t, _ in asm_body(tpath, func)]
+    if verbose and target:
+        print(f"  target pinned to {tpath}")
     uids, seqs = dbr_uids(root, stem, func)
 
     if verbose:
@@ -318,9 +327,11 @@ def main():
     ap.add_argument("--model")
     ap.add_argument("--pass", dest="passno", type=int, default=2)
     ap.add_argument("--show", action="store_true")
+    ap.add_argument("--target", help="pin the target stream to this .s file "
+                                     "(REQUIRED once the source is edited)")
     a = ap.parse_args()
     root = Path(a.root)
-    m = build_map(root, a.stem, a.func, verbose=True)
+    m = build_map(root, a.stem, a.func, verbose=True, target=a.target)
 
     if a.show:
         print("\n idx  uid | cc1                              | honest -> target")

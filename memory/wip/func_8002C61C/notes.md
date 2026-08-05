@@ -57,6 +57,12 @@ Scored against target on the honest stream: **34 → 33 differing (-1)**, body
 254 → 255 insns (target has one more instruction in that cluster than we did,
 so the direction is right).
 
+**Re-goaled from the hoisted form against a PINNED HEAD target (round 2): block
+28 is now goal == identity.** Only block 31 is still reported, and only as
+dependence-invalid — so the *reachable* scheduling component of this function is
+closed by that one edit. `hon→tgt` goes `equal 220 / moved 4` → `equal 221 /
+moved 3`.
+
 The **`D_801020FC` loop immediately after is structurally identical** and shows
 the same `shape.txt` pattern at 164–171, and the same edit moves its `move
 $9,$0` too — **but it is metric-NEUTRAL (+0), alone or combined.** Do not treat

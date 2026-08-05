@@ -263,14 +263,37 @@ report for each was "one half has no natural C form", and restricting to
 
 Run the restricted search first. It is also far cheaper.
 
-**But model-spellable is not C-spellable.** A LUID atom is only spellable when
-the insn belongs to a statement whose position you can actually move.
-`tslGlobalMemFree`'s spellable pair needs `luid swap 9 <-> 290`, where 290 is a
-**LICM-hoisted constant** lifted out of the loop body — no source statement
-controls its LUID, and every tested placement of the other statement left the
-emission bit-identical. `title_mv_exec2`'s pair, whose two atoms are both real
-stores, worked: 19 → 14 differing instructions against target. Always compile
-the TU and measure; the model proposes, the compiler disposes.
+**But model-spellable is not C-spellable**, and the dividing line is now
+measured:
+
+* **Stores are spellable.** `title_mv_exec2`'s pair is two real stores; moving
+  them worked, 19 → 14 differing instructions, and re-goaling from the new form
+  shows all three blocks at goal == identity — the scheduling class closed.
+* **Address materialisations and hoisted constants are usually inert.**
+  `tslGlobalMemFree`'s pair needs `luid swap 9 <-> 290`, where 9/12/18 are
+  `x = &GLOBAL;` statements and 290 is a **LICM-hoisted constant**. All six
+  permutations of those three statements, with and without the loop counter
+  hoisted, emit **bit-identically**. GCC's earlier passes re-derive where an
+  address materialisation lands, so its LUID does not follow source order.
+
+Always compile the TU and measure. The model proposes, the compiler disposes.
+
+### Iterating: PIN THE TARGET (`--target`)
+
+regfix rules are indexed to HEAD's instruction positions, so regenerating
+`<stem>.tgt.s` from an EDITED source produces fiction — and it looks like
+progress, because the rules land on whatever now sits at those indices. Capture
+target once from clean HEAD:
+
+```
+git show HEAD:src/<stem>.c > src/<stem>.c
+bash tools/sched_solver/mkasm.sh <stem>
+cp tmp/sched_map/<stem>.tgt.s tmp/sched_map/<stem>.tgt.head.s
+```
+
+then pass `--target tmp/sched_map/<stem>.tgt.head.s` on every later round.
+Target is the original binary; it does not change when we edit. Re-run
+`extract.py <stem>` after each edit though — the RTL UIDs do change.
 
 ### New atom: `luid_move`
 

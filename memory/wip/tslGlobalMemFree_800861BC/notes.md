@@ -29,9 +29,8 @@ All three are ordinary C.
 
 Model extracted; simulate matches the dump **7/7**. Seven global allocnos:
 78→`$v0` (pri 20000, pref `{v0}`), 113→`$v1`, 79→`$a1`, 74→`$a2`, 73→`$a3`,
-108→`$t0`, 81→`$t1`. **`use_only` is EMPTY** — mechanical confirmation, from the
-extractor's independent lreg path, of **no phantom-slot pseudo** (NO_REGS/orphan
-class), corroborating round 3's `tmp/orphan_probe.py` (`UNALLOCATED: none`).
+108→`$t0`, 81→`$t1`. **`use_only` is EMPTY** — independent confirmation of **no
+phantom-slot pseudo**, corroborating round 3's `tmp/orphan_probe.py`.
 
 **The residual is not only the `sp` adjusts.** `tmp/ra/dropsp.py` drops target's
 `addiu sp,sp,±8` and compares the remaining 130 lines to ours: **52 still
@@ -59,19 +58,20 @@ listings** by a different code path. Emission slots 0–4: ours 12
 `{a3 = 0, &D_8010280C, &D_80107898}`. (Round 3 counted the `move a3,zero` as
 "sixth" in the objdump stream, where each `la` is two lines — same claim.)
 
-No single-atom vector (950 atoms, post-`ready0`-fix). Depth 2 restricted to
-spellable atoms (`--atoms luid,luid_move`) DOES return pairs — `luid swap
-9 <-> 290` + `luid swap 12 <-> 30/31/35`. **But they are not C-reachable, and
-this was tested:** every placement of `p = &D_80107898[0];` (after the
-`D_8010280E` store, after the `0x7FFF` store, either side of `i = 0;`, with
-`pc`/`p` swapped) leaves honest-vs-target differing at **30, exactly HEAD** —
-bit-identical emission — except `p` right after `i = 0;`, giving **29 (-1)**.
+No single-atom vector (950 atoms, post-`ready0`-fix). Depth 2 on spellable atoms
+(`--atoms luid,luid_move`) DOES return pairs — `luid swap 9 <-> 290` + `luid
+swap 12 <-> 30/31/35`. **Not C-reachable, and now settled EXHAUSTIVELY:** all
+**six permutations** of the three leading statements (`pc = &D_8010280C;`,
+`p = &D_80107898[0];`, `idx = D_8010280A;`), each with and without `i = 0;`
+hoisted to the top, emit **bit-identically at 30 differing** — except the
+`i = 0;` hoist alone, which gives **29 (-1)**, putting `move $7,$0` in slot 0.
 
-**Why it does not survive contact with C:** the other half is uid 290, the
-**LICM-hoisted constant `1`** from `1 << (*(pc-2))` inside the loop. No source
-statement controls that insn's LUID, so `swap 9 <-> 290` is unspellable however
-the surrounding statements move. General rule: a LUID atom is spellable only
-when its insn belongs to a statement you can move.
+**Why, and the rule this establishes:** those three are pure **address
+materialisations**, whose placement GCC's earlier passes re-derive, so their
+LUIDs do not follow source order. The fourth insn the vector needs, uid 290, is
+the **LICM-hoisted constant `1`** from `1 << (*(pc-2))` — no statement controls
+it either. Contrast `title_mv_exec2`, where the same class of vector DID work
+because its atoms were real **stores**, whose order GCC keeps.
 
 **Tooling correction:** `sched_solver/perturb.py` never re-sorted `ready0`, so
 every LUID atom was inert for exactly the opening picks it should decide; any

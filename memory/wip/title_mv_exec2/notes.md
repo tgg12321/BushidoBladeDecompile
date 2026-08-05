@@ -54,13 +54,9 @@ the whole loop body's instruction ORDER already matches target;** only block 0
 (the prologue) differs, so the banked "one placement" (`addiu a0,sp,16` early)
 is not a scheduling question.
 
-Block 0, emission slots 1–5: ours 172 `sw $16,80($sp)`, 9 `move $16,$0`, 157
-`li $2,0x00060000`, 44 `lbu $3,D_80101BCC`, 158 `ori $2,$2,0x0093`; target 157,
-44, 158, 172, 9. Slots 18–20: ours 34, 37, 40; target 37, 40, 34.
-
-No single-atom vector (1460 atoms, post-`ready0`-fix). Depth 2 restricted to
-**spellable atoms only** (`--atoms luid,luid_move`) returns a **fully spellable
-pair** — two ordinary statement moves, no dependence surgery:
+Block 0 differed in two clusters (slots 1–5 and 18–20). No single-atom vector;
+depth 2 restricted to **spellable atoms** (`--atoms luid,luid_move`) returns a
+**fully spellable pair** — two ordinary statement moves, no dependence surgery:
 
 | | edit |
 |---|---|
@@ -68,9 +64,13 @@ pair** — two ordinary statement moves, no dependence surgery:
 | **B** (`luid swap 34 <-> 46`) | move `*(s16 *)((u8 *)buf + 0x3C) = 0x4000;` to the **end** of the init block |
 
 **Both tested by compiling the TU.** Honest-stream insns differing from target:
-HEAD **19** → A **17** → B **16** → **A+B 14**; the halves compose. Block 0's
-leading emission order goes 13/22 → **20/22**, the last two differing only by
-which insn `reorg.c` puts in the branch delay slot (downstream of sched2).
+HEAD **19** → A **17** → B **16** → **A+B 14**; the halves compose.
+
+**Re-goaled from the A+B form against a PINNED HEAD target: all three blocks are
+now goal == identity — the scheduling class is CLOSED here.** `hon→tgt` goes
+`equal 38 / moved 6` → `equal 43 / moved 1`. What is left is `replace 12`
+(register naming) and `delete 5 / insert 1` (61 insns to target's 57) — the
+extra callee-saves, i.e. the `move_movables` question below.
 
 Note uid 172 is a *reload-generated callee-save store*, so a vector moving it is
 evidence about reload's save placement (frame/RA), not statement order.
