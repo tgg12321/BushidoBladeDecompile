@@ -1,87 +1,109 @@
-# decBs0 — WIP (current state 2026-08-05, post-revert re-derivation)
+# decBs0 — WIP (current state 2026-08-05)
 
 `src/text1a.c:1252`. HEAD baseline: honest pure-C distance **58**, 39 regfix rules, plus a
-`register s16 *fp_ptr asm("fp")` pin (cheat-asm — the sandbox strips it, which is why the
-honest score is 58 while `--keep-cheat-asm` reads 52). Measure with
-`wsl bash tmp/csz/d.sh decBs0 text1a` and `wsl bash tmp/csz/frame.sh decBs0 text1a`.
+`register s16 *fp_ptr asm("fp")` pin (cheat-asm — the sandbox strips it, hence honest 58 vs
+`--keep-cheat-asm` 52). Measure: `wsl bash tmp/csz/d.sh decBs0 text1a` /
+`wsl bash tmp/csz/frame.sh decBs0 text1a`.
 
-## LAYER-2 FAIL + REVERT (commit a6a83d99, reverting the self-committed 84054db1)
+**Status: owner-blocked on a per-file `-G8` ruling.** The residual mechanism is proven and the
+C form that closes it is known; only the build-flag question remains.
 
-The FAIL is SPECIFIC and partial:
-- **REJECTED**: the stride-3 pointer walk over `tbl[29]/[32]/[35]` (three unrelated one-off
-  stores) — mechanism-motivated `MEM_IN_STRUCT_P` coercion outside
-  [[walking-pointer-serializes-parallel-loads]]'s own scope section (that rule covers
-  parallel-array element writes previously cheated with barriers/pins; this cluster's prior
-  cheat was u16-coercion casts — different family). A human writes plain indexed stores
-  here. Would need fresh SOTN evidence + an owner ruling.
-- **CLEARED for standalone re-derivation**: the real `do {} while (outer < 2)` rewrite and
-  the `fp_ptr` pin removal.
-- Cleanup on next landing: stray comment at `regfix.txt:927`.
+## Standing constraint from the layer-2 FAIL (commit a6a83d99)
 
-## Re-derived candidate — 58 → 11, UNCOMMITTED in `src/text1a.c`
+The stride-3 pointer walk over `tbl[29]/[32]/[35]` was REJECTED — mechanism-motivated
+`MEM_IN_STRUCT_P` coercion outside [[walking-pointer-serializes-parallel-loads]]'s scope.
+**The whole store side stays closed**; reopening it needs fresh SOTN evidence + an owner
+ruling. Cleared and now in use: the real `do {} while (outer < 2)` rewrite and the pin removal.
+Cleanup on any landing: stray comment at `regfix.txt:927`.
 
-Cleared subset only: **pin removal + real `do`-loop + PLAIN indexed stores** (the three
-`*(u16 *)&tbl[N] = *(u16 *)&GLOBAL;` casts dropped to `tbl[N] = GLOBAL;` — strictly better,
-11 vs 13 with the casts, and anti-cheat: an HImode→HImode copy emits `lhu` either way, so
-the casts were inert coercion). **Frame and register allocation are now EXACT** (72,
-`vars=16`, both params homed at 0x10/0x18, `$fp`=fp_ptr, `$s3`=tbl). 132 insns vs 134.
+## Candidates (banked as diffs; tree left clean)
 
-### Why the loop rewrite is the frame/RA fix (measured, not inferred)
+| file | score | insns | notes |
+|---|---|---|---|
+| `candidate_11.diff` | 11 | 132 vs 134 | pin removal + real `do`-loop + plain indexed stores. Frame/RA EXACT (72, `vars=16`, `$fp`=fp_ptr, `$s3`=tbl). |
+| `candidate_g8_array.diff` | **2** at -G8 / 16 at -G0 | **134 vs 134** | candidate_11 + colour triple as `extern s16 g_anim_select[3]`. Frame exact at -G8. |
 
-`flow.c` accumulates `reg_n_refs[regno] += loop_depth` (flow.c:2081/2329/2515/2725), and
-`loop_depth` comes from `NOTE_INSN_LOOP_BEG/END` notes (flow.c:440-471, 1385-1449), which
-the front end emits only for real loop statements — never for a backward `goto`. So the
-`goto` form counted fp_ptr's in-loop use as 1 ref instead of 2. As a real loop, fp_ptr's
-allocno priority goes 182 → **487** (`floor_log2(refs)*refs*size/livelen*10000`), past both
-incoming-param pseudos at 246; fp_ptr takes the last callee-save `$fp` and BOTH params
-spill — target's frame exactly. `ra_solver/perturb.py` independently returned exactly ONE
-single-atom solution for "pseudo 74 → hardreg 30": `refs+1`.
+## The residual is a memory-dependence problem — PROVEN
 
-NB the earlier "ra_solver is not exact here (9/11)" caveat is **not disqualifying**: the two
-misses (pseudos 107/108) are caller-save-class allocnos; the tail cluster that decides `$fp`
-(72/73/74) simulates exactly, and the prediction was confirmed empirically.
+`sched_solver` (model exact for text1a, 528/528 blocks) localises the entire residual to
+**block 19**; every other block is goal == identity in both passes.
 
-## The whole remaining residual: the three colour LOADS batch (exactly 2 nops)
+**Do NOT trust `--goal-from-target` here.** It reports `GOAL INVALID (2 dependence violations)`
+and blames duplicate text; the real cause is that target's three `lhu $2,SYM` share an operand
+skeleton and mis-pair. Both streams hold the same 14 insns — only the `lhu`s move. Hand-derived
+pass-2 goal (pick order):
+`257,255,253,250,248,245,243,240,235,238,230,228,223,221,215,306,219,213,303,211,206,200,204,198,196,193,191,189,187`
 
-```
-target:  lhu v0,g_anim_select ; nop ; sh v0,58(s3) ; lhu v0,D_800A323A ; nop ;
-         sh v0,64(s3) ; lhu v0,D_800A323C ; sh v0,70(s3)          (8 insns)
-ours:    lhu v1 ; lhu a0 ; lhu a1 ; sh v1,58 ; sh a0,64 ; sh a1,70 (6 insns)
-```
-Ours batches the three independent loads into three registers; target serialises them into
-load/store pairs, paying 2 load-delay nops. Everything else in the function matches.
+Searches against that goal (`tmp/csz/bs0_perturb*.sh`): depth 1 `--atoms luid,luid_move` → **no
+vector**; depth 1 ALL atoms (2163 pass-2 / 1906 pass-1) → **no vector**. Applying the
+hypothesised edges by hand (`tmp/csz/bs0_edges.py`): **each colour load depending on EVERY
+preceding `tbl[]` store — 12 edges — reproduces target's pass-2 order EXACTLY**; the minimal
+one-edge-per-pair version does not. A 12-edge change is why no depth-1/2 atom search could
+ever find it.
 
-**Mechanism (confirmed by RTL dump, not theory).** `sched.c:true_dependence` (815-838) drops
-a store→load dependence when the store is `MEM_IN_STRUCT_P` at a varying address and the
-load is non-in-struct at a fixed address. `expr.c:4567-4577` sets `MEM_IN_STRUCT_P` on an
-`INDIRECT_REF` whose address tree is a `PLUS_EXPR`, and `c-typeck:build_array_ref` lowers
-`tbl[N]` on a pointer base to exactly that. Dump confirms: every `tbl[N]` store is `mem/s`,
-every colour load is bare `mem` at a `symbol_ref`. So the exclusion fires and the loads are
-free to hoist. **To restore the dependence the LOAD must become in-struct OR address-varying**
-(the store side is now off the table per the FAIL).
+## Why the aggregate is the fix (mechanism, measured)
 
-### Measured on the load side
+`sched.c:true_dependence` (821-838) drops the edge via exclusion #1, which requires
+`!MEM_IN_STRUCT_P(load) && !rtx_addr_varies_p(load)`. **An in-struct load at a FIXED address
+defeats exclusion #1 without triggering exclusion #2** (which needs a *varying* in-struct
+load). Per `expr.c:4589-4700`, a **constant-index** `ARRAY_REF` falls through to the shared
+handler at `expr.c:4888`, which sets `MEM_IN_STRUCT_P = 1` on a `plus_constant(symbol, off)` —
+in-struct, fixed. Exactly the shape needed.
 
-- **`extern s16 g_anim_select[3]` (one array for the consecutive triple 0x800A3238/A/C):**
-  the loads become `ARRAY_REF`s, the dependence returns and **the block order matches target
-  exactly** — but GCC then CSEs the shared base into a callee-save (`$s7`), which displaces
-  fp_ptr back to rematerialisation. Score **16**, 138 insns, frame still correct (72/16).
-  So the array is right for the *scheduling* and wrong for the *RA*. Three separate symbols
-  can't CSE a base, which is why the current form doesn't pay that cost.
-- Note the use sites do support the triple being ONE object: `func_80041E10` writes all
-  three as R/G/B from one packed colour, `func_800420D0` sets `[0] = -1` as a sentinel, and
-  decBs0 copies them into a 3-halfword-stride matrix column (`tbl[29]/[32]/[35]`).
+Use-site evidence for the aggregate: `func_80041E10` writes all three as R/G/B from one packed
+colour, `func_800420D0` sets `[0] = -1` as a sentinel, decBs0 copies them into a
+3-halfword-stride matrix column.
+
+With `extern s16 g_anim_select[3]` the block order becomes **target's, exactly**
+(`negu/sh 8/li 1/sh 10/sh 12/lhu/nop/sh 58/lhu/nop/sh 64/lhu/j/sh 70`). The scheduling class
+is CLOSED. At `-G0` the cost is a base register (`la $23,g_anim_select` in the *prologue*,
+above loop head `.L285`, addressed `0/2/4($23)`) which burns `$s7` + save/restore and displaces
+fp_ptr → 16, 138 insns. At `-G8` the hoist disappears, loads become direct
+`lhu $2,g_anim_select / +2 / +4` → **2, 134 vs 134, frame exact**. The leftover 2 is a
+*relocation-form* artifact only (ours `lhu v0,2(gp)` + `GPREL16 g_anim_select`; target
+`lhu v0,0(gp)` + `GPREL16 D_800A323A`) — same address, same linked bytes. Full-build SHA1 is
+the only way to settle it.
+
+## Path 2 (defeat the -G0 hoist in pure C) — EXHAUSTED; it is a cost-model decision
+
+1. **Target really is gp-relative** (`asm/funcs/decBs0.s:116-122`):
+   `lhu $v0, %gp_rel(D_800A3238/A/C)($gp)`, three direct loads, no base register. Target's
+   `$s7` holds `D_800A9B28` and `$fp` holds `D_800F62E0` — **no spare callee-save** exists.
+2. **sdata_syms.txt + maspsx cannot dissolve it.** They run strictly downstream of cc1 (the
+   Makefile passes `--sdata-syms`/`--sdata-funcs`/`--sdata-exclude` to **maspsx only**; cc1
+   always gets `-G0`). Measured: maspsx rewrites every direct reference
+   (`sh $2,g_anim_select+2` → `%gp_rel(g_anim_select+2)($gp)`) but leaves **`la $23,...`
+   untouched** — by then cc1 has already spent the register and the RA cascade.
+3. **Spelling is not the lever.** A struct (`{ s16 r, g, b; }`, `.r/.g/.b`) measures
+   **identically: 16, 138 insns** — `ARRAY_REF` and `COMPONENT_REF` share the `expr.c:4888`
+   path. [[defeat-licm-hoist-var-reuse]] does not apply: its lever is a *C variable's* pseudo
+   going multi-set, and no C variable holds this address — cc1 invents the pseudo itself.
+4. **Target's loads are fixed-address in RTL, so they must be `MEM_IN_STRUCT_P` for target's
+   dependence to exist** — the original source DID use an aggregate. `-G8` is the only measured
+   config where cc1 both treats the load as in-struct and declines to CSE a base: positive
+   evidence the original TU was built with small data enabled.
+5. So at `-G0` the base register is chosen by the **address-cost model**, not the source shape
+   (3 refs × 2 insns beats `la` + 3 × 1 insn). Every remaining `-G0` lever is a coercion —
+   volatile, barriers, or `extern s16 X[1]` one-element arrays.
+
+## The ruling needed
+
+`Makefile:104` has `GP_FILES :=` empty, with `cc_flags_for`/`maspsx_flags_for` already wired to
+switch a listed file to `CC_FLAGS_GP` + `MASPSX_FLAGS_GP`. Mechanism exists and is documented,
+but unused, and [[compiler-flags-canonical]] settled flags project-wide. Measured blast radius:
+
+- Full build, HEAD source + `GP_FILES := text1a`: **MISMATCH, −24 bytes**.
+- cc1-level `-G0` vs `-G8` across the TU's 37 functions: only **2 change** —
+  `gnd_land_hit_char_die_main` (−2) and `func_80040D48` (−1). decBs0 itself unchanged at HEAD
+  source. Total cc1 delta −3.
+- The other −3 is likely `MASPSX_FLAGS_GP` (`Makefile:22`) being a *reduced* flag set: it omits
+  `--expand-lb`, `--expand-lb-funcs`, `--multu-funcs`, `--expand-dest-funcs`,
+  `--label-nop-funcs`, `--sdata-funcs`, `--sdata-exclude`. Looks like an infrastructure gap.
 
 ## Next
 
-1. **Search the load side with `sched_solver`** (`extract.py text1a` → `mkasm.sh` →
-   `perturb.py --func decBs0 --pass 1 --goal-from-target text1a --atoms luid,luid_move`).
-   A prior run flagged the block as "goal is not a topological order (5 violations)", but it
-   also reported the target alignment mis-paired duplicate instruction text there, so that
-   verdict is unreliable — redo it against this score-11 source before trusting it.
-2. **If a dependence is genuinely required**, the only load-side spellings that create one
-   are in-struct (aggregate declaration) or address-varying (read through a pointer). The
-   aggregate is measured above and costs the base CSE; a pointer read would likely be folded
-   back to a direct symbol access by cse. If neither lands clean, document exhaustion
-   honestly rather than reaching for a store-side respelling — that door is closed.
-3. **Do NOT commit.** At 0, stop and report; the owner runs the gate.
+1. **Ruling YES**: bring `MASPSX_FLAGS_GP` to parity, apply `candidate_g8_array.diff`, retire
+   the 39 rules + pin, re-match the 2 perturbed siblings, full-build SHA1.
+2. **Ruling NO**: path 2 is exhausted; anything further at `-G0` is a coercion, and the store
+   side stays closed.
+3. **Do NOT commit a completion.** The owner runs the gate.
