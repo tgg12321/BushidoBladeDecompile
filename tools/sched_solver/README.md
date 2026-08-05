@@ -145,11 +145,33 @@ the compiler instead of derived, because no dump carries what they depend on:
 Both are per-block in the model, so a perturbation layer that wants to move
 them must state the change explicitly rather than get it for free.
 
-## Next stage — the perturbation layer (NOT STARTED)
+## The perturbation layer (`perturb.py`)
 
-The model is exact, so the solver's question can now be asked in reverse: what
-minimal change to the *inputs* produces TARGET's order? The atoms, and their
-C-level meanings:
+The model being exact means the question can be asked in reverse: what minimal
+change to a block's *inputs* produces TARGET's order?
+
+**Priorities are never perturbed directly.** `priority()` is a pure function of
+the dependence graph and the instruction costs, so `perturb.py` *recomputes*
+it after every atom (`recompute_priorities`). Perturbing a priority on its own
+would model a change no C edit can make in isolation. The recomputation is
+validated against every dumped `INSN_PRIORITY`: **21,828/21,828 exact** across
+config/main/code6cac/text1a (`perturb.py <model> --self-check`).
+
+Goals are stated over the output order — `--goal-order u1,u2,...` for an exact
+sequence, or the usually more practical `--goal-before A:B` (repeatable) when
+the residual is "these two are the wrong way round". `--depth 2` searches
+pairs when no single atom suffices.
+
+Worked example — forcing insns 44 and 157 to swap in `title_mv_exec2` pass 2
+block 0 (22 insns, 998 single atoms searched) returns six vectors, of which
+
+    add_dep 157 <- 44 (anti-output)
+
+reproduces our order with *only* those two exchanged and nothing else moved:
+the cleanest possible answer, and one that maps to a specific C claim (insn 44
+writes a location that 157 reads or writes, so the two must be ordered).
+
+### The atoms, and their C-level meanings
 
 * **Added dependence edge (pred, insn, kind).** The most direct atom: a true
   dependence is a value flowing between two statements, an anti/output
@@ -170,11 +192,14 @@ C-level meanings:
 * **Unit/cost change** = instruction selection (a load vs a move), reachable
   by type and addressing-mode changes.
 
-Suggested shape, mirroring `ra_solver/perturb.py`: enumerate single-atom
-perturbations, re-run `simulate.py` on the perturbed block, keep the vectors
-that reproduce target's order, and report them ranked by how directly they map
-to a C edit. The target order itself comes from the objdump diff of the
-function under test.
+### What is still missing to apply it to a real function
+
+`perturb.py` needs the TARGET's order expressed in RTL insn UIDs, and nothing
+yet maps target's asm instructions back to UIDs. That mapping is the next
+piece of work: our own `.s` output and the sched2 pick order are index-alignable
+(sched2 is the last pass before `reorg.c`), so the route is our asm line ->
+our UID, then target asm line -> our asm line via the objdump diff. Until that
+exists, goals must be written by hand from a read of the two listings.
 
 The one caveat to carry into that work: the stale-order (`no sort`) case means
 two input states that differ only in *when* an insn entered the ready list can
