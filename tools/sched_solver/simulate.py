@@ -143,13 +143,30 @@ class Sim:
         # d == 0: no sort at all -- the order carried over from last cycle
 
     # --- function units ---------------------------------------------------
-    def blockage(self, exec_uid, last_uid):
-        """function_units[unit].blockage_function(insn, unit_last_insn).
+    def blockage(self, unit, exec_uid, last_uid):
+        """function_units[unit].blockage_function (insn, unit_last_insn).
 
-        Measured against the instrumented compiler: the value equals the
-        READY COST of the unit's last insn (memory: load 2 / store 1;
-        imuldiv: imul 12 / idiv 35 / hilo 3 on r3000)."""
-        return max(self.B.icost(last_uid), 1)
+        insn-attrtab.c generates these from mips.md; rather than re-derive the
+        generated expression, the value was MEASURED off the BB2_SCHED_DEBUG
+        BLOCKAGE hook (which prints raw_tick / adj_tick / max_blockage, so
+        blockage = adj_tick + max_blockage - raw_tick) and fitted:
+
+          memory  (unit 0): max (1, bmax(last) - bmax(exec) + 1)
+                            -- exactly reproduces all four observed
+                            (exec.bmax, last.bmax) combinations
+          imuldiv (unit 1): the executing insn's own issue delay: its ready
+                            cost when that exceeds 1 (imul 12, idiv 35 on
+                            r3000), else 3 (the hilo issue delay)
+
+        validate.py --blockage re-checks this against every hook row, so the
+        fit is falsifiable rather than assumed."""
+        ex, la = self.B.nodes[exec_uid], self.B.nodes[last_uid]
+        if unit == 0:
+            return max(1, la.get("bmax", 1) - ex.get("bmax", 1) + 1)
+        if unit == 1:
+            c = self.B.icost(exec_uid)
+            return c if c > 1 else 3
+        return max(self.B.icost(exec_uid), 1)
 
     def actual_hazard(self, unit, uid, clock, cost):
         if unit < 0:
@@ -158,7 +175,7 @@ class Sim:
         if tick - clock > cost:
             last = self.unit_last.get(unit)
             if last is not None:
-                tick += self.blockage(uid, last) - MAX_BLOCKAGE_OF.get(unit, 1)
+                tick += self.blockage(unit, uid, last) - MAX_BLOCKAGE_OF.get(unit, 1)
             if tick - clock > cost:
                 cost = tick - clock
         return cost

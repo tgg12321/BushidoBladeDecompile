@@ -1,0 +1,182 @@
+# sched_solver — reverse instruction-scheduling solver (GCC 2.7.2 / MIPS)
+
+Phase 6 of the codegen-modelling campaign, built in the `tools/ra_solver`
+style: extract the exact scheduler inputs from an instrumented cc1, replicate
+`sched.c` faithfully in Python, validate against ground truth, then search for
+the minimal input perturbation that produces the TARGET's instruction order.
+
+Where `ra_solver` answers *"which register"*, this answers **"which order"** —
+the residual class that shows up as "our instructions are right but two of
+them are swapped", including the scheduling residuals banked on
+`tslGlobalMemFree_800861BC`, `func_8002C61C` and `title_mv_exec2`.
+
+## Status: the model is exact
+
+| TU | blocks | order-exact | clock-exact | sched1 | sched2 |
+|---|---|---|---|---|---|
+| config | 230 | 230 (100%) | 230 (100%) | 115/115 | 115/115 |
+| main | 1992 | 1992 (100%) | 1992 (100%) | 996/996 | 996/996 |
+| code6cac | 1470 | 1470 (100%) | 1470 (100%) | 735/735 | 735/735 |
+| display | 690 | 690 (100%) | 690 (100%) | 345/345 | 345/345 |
+| text1a | 528 | 528 (100%) | 528 (100%) | 264/264 | 264/264 |
+| text1b | 2068 | 2068 (100%) | 2068 (100%) | 1034/1034 | 1034/1034 |
+| **TOTAL** | **6978** | **6978 (100%)** | **6978 (100%)** | | |
+
+1234/1234 function-passes fully exact; 42,943 instructions scheduled; largest
+block 125 insns; all 413 blocks of ≥20 insns and all 44 of ≥50 insns exact.
+The simulator reproduces not just the order but the **virtual clock of every
+pick**, which is the stronger claim (it means the queue, the stall search and
+the function-unit state are all right, not merely the tie-breaks).
+
+Named functions, all blocks exact in both passes: `tslGlobalMemFree_800861BC`
+(6), `title_mv_exec2` (3), `func_8007C7A0`/`func_8007C86C` (13 each),
+`func_8007CE0C` (25), `saTan4FireDisp` (15), `hirahira_w_ctrl` (4),
+`camera_set_zoom` (49), `exec_game` (36). `func_8002C61C` lives in
+`code6cac.c`, exact as part of that TU's 1470/1470.
+
+Separately, the function-unit blockage model is checked in isolation against
+every `BLOCKAGE` hook observation: **351/351 exact** (`validate.py --blockage`).
+
+## Tools
+
+| file | role |
+|---|---|
+| `extract.py <stem>` | run cpp + the instrumented `tools/gcc-2.7.2/cc1` (`BB2_SCHED_DEBUG=1`, `-da`), parse the SCHEDDBG stream into `tmp/sched_solver_work/<stem>.sched.json`. Byte-parity-checks instrumented cc1 vs `build/cc1` on the TU first and records the verdict |
+| `simulate.py <model.json>` | replay `schedule_block` per basic block; score order-exact / clock-exact |
+| `validate.py [stems...]` | batch ground-truth table (above). `--blockage` runs the independent machine-model check; `--funcs a,b` details named functions |
+
+Run from the repo root (or a `git archive` snapshot) under WSL with the venv
+active. The tools are read-only with respect to the tree.
+
+## Which passes shape the final order
+
+Both. `toplev.c` sets `flag_schedule_insns` **and**
+`flag_schedule_insns_after_reload` at `optimize >= 2`, and MIPS defines
+`INSN_SCHEDULING`, so at this build's `-O2` every function is scheduled twice:
+**sched1** before register allocation (dump `.sched`, `reload_completed == 0`)
+and **sched2** after reload (dump `.sched2`). They differ in two modelled
+ways: `adjust_priority` is a no-op in sched2, and sched1 additionally
+maintains the live-range bookkeeping that feeds `global_alloc`. Models are
+tagged `pass=1` / `pass=2`; validate scores them separately.
+
+Everything after sched2 (delayed-branch scheduling in `reorg.c`, and maspsx's
+own reordering) is downstream of this model and out of its scope.
+
+## The algorithm, as replicated
+
+`schedule_block` builds each basic block **backwards**: the ready list starts
+from the insns with no successors (`INSN_REF_COUNT == 0`, i.e. the block tail)
+and each pick is *prepended* to the output. So a high priority means
+"schedule me late". Confusions this resolves: `INSN_PRIORITY` is the longest
+dependence chain *from the block head*, and `LOG_LINKS(insn)` are the insns
+`insn` depends on, released when `insn` is picked.
+
+* **Priorities.** `priority(insn) = max over preds of (priority(pred) +
+  insn_cost(pred, link, insn) - 1)`, floor 1. The trailing run of
+  CALL/JUMP/USE/cc0-setter insns is pinned in place: the last gets
+  `TAIL_PRIORITY - i` (0x7ffffffe - i) and each earlier one an anti-dependence
+  on its successor. Harvested from the dump rather than recomputed — the
+  critical path is an *input* to the pick order, not part of it.
+* **`insn_cost`.** `INSN_COST(pred)` (the machine description's ready cost),
+  except that MIPS's `ADJUST_COST` zeroes the cost of any anti/output
+  dependence — so **only true data dependences (kind 0) can carry latency
+  above 1** — and a `USE` consumer never forces a wait.
+* **`rank_for_schedule`.** Priority descending; then dependence class relative
+  to `last_scheduled_insn` (3 = independent or latency-1, 2 = anti/output,
+  1 = data — highest class wins, i.e. *prefer the insn least entangled with
+  what was just placed*); then `INSN_LUID` **descending**.
+* **`SCHED_SORT`.** `swap_sort` (insertion of the single new element) when
+  exactly one insn was added since last cycle, `qsort` when more than one, and
+  **nothing at all when none were added**. That third case is load-bearing:
+  the ready list can carry a stale order across a cycle, so the scheduler is
+  not a pure function of the current priorities — it has history.
+* **The sliding window.** C consumes the chosen insn with `ready += 1`, so the
+  scheduled insn is not removed from the array, the base just advances; new
+  insns are appended at `n_ready`, overwriting whatever stale entries sit
+  there. Python models this as a list with `pop(0)` / `append`.
+* **`schedule_select`** (runs because `MAX_BLOCKAGE` is 112 > 1). Walking the
+  ready list in equal-priority groups: queue every insn currently blocked by a
+  function-unit hazard (`actual_hazard`), and if more than one survives the
+  group, promote the one with the largest `potential_hazard` to the front.
+  `potential_hazard = (minb * 0x40 + maxb) * ((unit_n_insns[unit] - 1) * 0x1000 +
+  unit)` — note the multiply: a unit with only one insn in the block scores 0,
+  so this term only ever breaks ties on a *contended* unit.
+* **`schedule_insn`.** Occupy the function unit, then release predecessors: on
+  the last unsatisfied requirement, either make the pred ready (cost ≤ 1) or
+  queue it `cost` cycles out in a 128-slot circular `insn_queue`. `INSN_TICK`
+  carries the earliest-fire time across partial releases.
+* **The clock.** One tick per loop iteration; when nothing is ready, the stall
+  search scans forward through the queue and jumps the clock to the first
+  non-empty slot.
+
+## Machine model (MIPS r3000)
+
+From `config/mips/mips.md` + `insn-attrtab.c`. Only two units are reachable in
+this build: **memory** (unit 0, `max_blockage` 3; load ready 2, store 1, xfer
+2 on r3000) and **imuldiv** (unit 1, `max_blockage` 69; hilo ready 1 issue 3,
+imul 12, idiv 35). Units 2–4 are FP and unused. `unit == -1` means the insn
+occupies no unit at all.
+
+The generated `*_unit_blockage` pairwise functions were **measured, not
+re-derived** — the `BLOCKAGE` hook prints `raw_tick`, `adj_tick` and
+`max_blockage`, so the compiler's own value is exactly
+`adj_tick + max_blockage - raw_tick`. The fit:
+
+* memory: `max (1, bmax(last) - bmax(exec) + 1)`
+* imuldiv: the executing insn's own issue delay — its ready cost when > 1,
+  else 3
+
+`validate.py --blockage` re-checks this against every observation, so it stays
+falsifiable. This was the *entire* residual: before it, config.c sat at
+93.0% blocks exact; with it, 100%.
+
+## Two harvested inputs
+
+Consistent with `ra_solver` harvesting `seed_used`, two values are read from
+the compiler instead of derived, because no dump carries what they depend on:
+
+1. **`INSN_PRIORITY` after `priority()`** — deliberate. The critical-path
+   computation is an input to the search, not a thing the search reasons about.
+2. **`adjust_priority`'s `birthing_insn_p` flag** (pass 1 only) — it reads
+   `bb_live_regs` and `reg_n_sets`, i.e. liveness state the dump does not
+   carry. `n_deaths` is always 0 (sched.c notes REG_DEAD notes are already
+   gone), so only the birthing branch can fire.
+
+Both are per-block in the model, so a perturbation layer that wants to move
+them must state the change explicitly rather than get it for free.
+
+## Next stage — the perturbation layer (NOT STARTED)
+
+The model is exact, so the solver's question can now be asked in reverse: what
+minimal change to the *inputs* produces TARGET's order? The atoms, and their
+C-level meanings:
+
+* **Added dependence edge (pred, insn, kind).** The most direct atom: a true
+  dependence is a value flowing between two statements, an anti/output
+  dependence is a write ordered against a read/write of the same location.
+  C-controllable via aliasing, via splitting or merging expressions, and via
+  memory-access ordering. Note the asymmetry the model makes explicit: an
+  anti/output edge costs 1 cycle and only constrains order, while a true edge
+  carries the unit's real latency.
+* **Removed dependence edge** — the same lever pulled the other way (the
+  classic being a memory dependence that a `restrict`-shaped rewrite drops).
+* **Priority change.** Because priority is longest-chain-to-here, it moves
+  when the chain moves: lengthening or shortening the dependence path, not by
+  local edits. Worth searching as `delta on one insn` first, then asking which
+  chain edit realises it.
+* **LUID change** = source order of the two insns' generating statements —
+  the cheapest atom to spell in C, and the final tie-break, so it decides
+  every case where priority and dependence class tie.
+* **Unit/cost change** = instruction selection (a load vs a move), reachable
+  by type and addressing-mode changes.
+
+Suggested shape, mirroring `ra_solver/perturb.py`: enumerate single-atom
+perturbations, re-run `simulate.py` on the perturbed block, keep the vectors
+that reproduce target's order, and report them ranked by how directly they map
+to a C edit. The target order itself comes from the objdump diff of the
+function under test.
+
+The one caveat to carry into that work: the stale-order (`no sort`) case means
+two input states that differ only in *when* an insn entered the ready list can
+schedule differently. Perturbations must be applied to the block inputs and
+replayed, never patched onto an output order.
