@@ -1,8 +1,8 @@
 diff --git a/src/main.c b/src/main.c
-index e9a8c152..2d321326 100644
+index e9a8c152..580d1770 100644
 --- a/src/main.c
 +++ b/src/main.c
-@@ -2037,51 +2037,56 @@ s32 coli_HitPauseKatana(s32 size) {
+@@ -2037,51 +2037,55 @@ s32 coli_HitPauseKatana(s32 size) {
      return -1;
  }
  /* kengo:HIGH  |  is_coli/coli_HitPauseKatana  |  178i  |  x2 size collision */
@@ -40,7 +40,6 @@ index e9a8c152..2d321326 100644
 +    s32 cnt4;
 +    s32 cnt5;
      s32 icnt;
-+    s32 sentinel2;
  
      /* Phase 1: merge each flagged entry with the next matching flagged one */
 +    i = 0;
@@ -81,7 +80,7 @@ index e9a8c152..2d321326 100644
              i++;
          p1_cont:
              ;
-@@ -2089,80 +2094,79 @@ void exec_game(void) {
+@@ -2089,80 +2093,78 @@ void exec_game(void) {
      }
  
      /* Phase 2: mark zero-value entries as sentinels */
@@ -91,14 +90,13 @@ index e9a8c152..2d321326 100644
 +    if (v2 >= 0) {
          i = 0;
 -        p = (Entry *)D_800A2D40;
-+        sentinel2 = 0x2FFFFFFF;
 +        cnt2 = v2;
 +        p2 = (s32 *)D_800A2D40;
          do {
 -            if (p->w1 == 0) {
 -                p->w0 = 0x2FFFFFFF;
 +            if (p2[1] == 0) {
-+                p2[0] = sentinel2;
++                p2[0] = 0x2FFFFFFF;
              }
              i++;
 -            p++;
@@ -200,7 +198,7 @@ index e9a8c152..2d321326 100644
      }
  p4_done:
      ;
-@@ -2170,19 +2174,17 @@ p4_done:
+@@ -2170,19 +2172,17 @@ p4_done:
      /* Phase 5: finalize backward - re-flag entries, fold in counts */
      i = D_800A2D3C - 1;
      if (i >= 0) {
