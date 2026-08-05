@@ -1,0 +1,111 @@
+diff --git a/src/code6cac.c b/src/code6cac.c
+index aa33859a..035ebca1 100644
+--- a/src/code6cac.c
++++ b/src/code6cac.c
+@@ -3098,7 +3098,7 @@ void func_80023648(u8 *arg0) {
+         }
+     }
+ }
+-int camera_set_zoom(u8 *arg0)
++void camera_set_zoom(u8 *arg0)
+ {
+     s32 src[4];
+     s32 dst[4];
+@@ -3108,6 +3108,8 @@ int camera_set_zoom(u8 *arg0)
+     s32 s1;
+     s32 dx_delta;
+     s32 dz_delta;
++    s32 dx_final;
++    s32 dz_final;
+     s32 scratchpad;
+     s32 ok;
+     if ((*((s32 *) (arg0 + 0x108))) <= 0) {
+@@ -3153,16 +3155,18 @@ int camera_set_zoom(u8 *arg0)
+         }
+         {
+             s32 tmp;
++            s32 tmp2;
+             tmp = offsets[0];
+             if (tmp < 0) {
+                 tmp += 7;
+             }
+-            dst[0] += tmp >> 3;
+-            tmp = offsets[2];
+-            if (tmp < 0) {
+-                tmp += 7;
++            tmp >>= 3;
++            dst[0] += tmp;
++            tmp2 = offsets[2];
++            if (tmp2 < 0) {
++                tmp2 += 7;
+             }
+-            dst[2] += tmp >> 3;
++            dst[2] += tmp2 >> 3;
+             ok = camera_check_inside_screen_rob_dpos(src, dst, out, (s32 *) offsets2, scratchpad) == 0;
+             goto ok_check;
+         }
+@@ -3176,7 +3180,8 @@ int camera_set_zoom(u8 *arg0)
+     }
+     if (s1 == 0)
+     {
+-        dx_delta = (*((s32 *) (arg0 + 0xB8))) - (*((s32 *) (arg0 + 0xC8)));
++        dx_delta = *((s32 *) (arg0 + 0xB8));
++        dx_delta -= *((s32 *) (arg0 + 0xC8));
+         offsets[0] = dx_delta;
+         dx_delta = (s16) dx_delta;
+         offsets[2] = (*((s32 *) (arg0 + 0xC0))) - (*((s32 *) (arg0 + 0xD0)));
+@@ -3193,21 +3198,22 @@ int camera_set_zoom(u8 *arg0)
+         else if (dz_delta >= 0x41) {
+             offsets[2] = 0x40;
+         }
+-        dx_delta = offsets[0];
+-        dz_delta = offsets[2];
++        dx_final = offsets[0];
++        dz_final = offsets[2];
+     }
+     else
+     {
+-        dx_delta = offsets[0];
+-        if (dx_delta < 0) {
+-            dx_delta += 0x3F;
++        s32 dx_shift;
++        dx_shift = offsets[0];
++        if (dx_shift < 0) {
++            dx_shift += 0x3F;
+         }
+         dz_delta = offsets[2];
+-        dx_delta >>= 6;
++        dx_final = dx_shift >> 6;
+         if (dz_delta < 0) {
+             dz_delta += 0x3F;
+         }
+-        dz_delta >>= 6;
++        dz_final = dz_delta >> 6;
+     }
+     {
+         s32 kind;
+@@ -3230,8 +3236,11 @@ int camera_set_zoom(u8 *arg0)
+         }
+         else if ((kind & 0xFFFF) == 0x11)
+         {
+-            D_800A3769 = s1 < 0x400;
+-            D_800A3758 = *((u16 *) (arg0 + 4));
++            {
++                s32 id = *((u16 *) (arg0 + 4));
++                D_800A3769 = s1 < 0x400;
++                D_800A3758 = id;
++            }
+             goto skip_74;
+         }
+         else if (s1 < 0x400)
+@@ -3247,8 +3256,8 @@ int camera_set_zoom(u8 *arg0)
+         *((s32 *) (arg0 + 0x74)) = *((s32 *) (arg0 + 0xBC));
+     }
+     skip_74:
+-    *((s32 *) (arg0 + 0x104)) += dx_delta;
+-    *((s32 *) (arg0 + 0x10C)) += dz_delta;
++    *((s32 *) (arg0 + 0x104)) += dx_final;
++    *((s32 *) (arg0 + 0x10C)) += dz_final;
+ }
+ /* kengo:HIGH  |  nm_camera/camera_set_zoom  |  219i */
+ void func_80023C30(s32 arg0, s32 arg1, s32 arg2, s16 *arg3) {
