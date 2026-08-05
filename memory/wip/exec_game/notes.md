@@ -10,34 +10,26 @@
 
 NOT applied to the tree - the 104 regfix rules no longer repair this codegen.
 ASM-SUSPECT, frame-less both sides (`.frame $sp,0`, no frame lever). Instruments
-in `tmp/csz/`: `d.sh exec_game main`, `align.py`, `eg_grid.sh` (quiet score),
-`eg_ps.py` + `eg_pair.py` (pseudo <-> role <-> hard reg), `eg_state.py` (the
-three residual pairs), `eg_probe.sh <driver> <variant>` (score AND pairs
-together - a variant can flip a pair while the score moves for other reasons),
-`eg_perturb.sh <spec>`. `--pairs --greedy` on the combined six-entry spec locks
-5/6 via a five-atom stack and stalls on 104: direction, not a spelling.
+in `tmp/csz/`: `d.sh`, `align.py`, `eg_grid.sh` (quiet score), `eg_ps.py` +
+`eg_pair.py` (pseudo <-> role <-> hard reg), `eg_state.py` (the three residual
+pairs), `eg_probe.sh <driver> <variant>` (score AND pairs together - a variant
+can flip a pair while the score moves for other reasons), `eg_perturb.sh`.
+`--pairs --greedy` on the six-entry spec locks 5/6 then stalls on 104.
 
 ## What carried it: VARIABLE IDENTITY, not spelling
 
 `simulate.py` reproduced our allocation exactly (28/28, later 36/36), so the model
 was trustworthy; the role map then showed our `base` was ONE pseudo (livelen 103,
-`$t3` in every phase) against a target using a different register per phase - only
-reachable if the original had per-phase variables. Applying the catalog law
-*conflict edges = variable identity* to every reused local produced the drop:
+`$t3` everywhere) against a target using a different register per phase - only
+reachable if the original had per-phase variables. Applying *conflict edges =
+variable identity* to every reused local produced the drop:
+`base` -> `base1/3/4/5` 73, `p` -> `p1/p2/p4` 67, deleting the 11 constant-holder
+locals for literals **60**, `cnt` -> `cnt2/3/4/5` **36**, `v` -> `v2/v5` 33,
+`i = 0;` hoisted above the phase-1/3 guards **31 at 194/194**, above phase 2's
+30 (193). (Session-2 bank: 70 at 195.)
 
-| change | score | insns |
-|---|---|---|
-| session-2 bank | 70 | 195 |
-| `base` -> `base1/3/4/5` | 73 | 195 |
-| `p` -> `p1/p2/p4` | 67 | 195 |
-| **delete the 11 constant-holder locals, literals inline** | **60** | 195 |
-| `cnt` -> `cnt2/3/4/5` | **36** | 196 |
-| `v` -> `v2/v5` | 33 | 196 |
-| `i = 0;` hoisted ABOVE the phase-1 and phase-3 guards | **31** | **194** |
-| same hoist for phase 2 | 30 | 193 |
-
-Splitting `base` alone is worse (73); it only pays once `p` splits too. Splitting
-`i` (74) and `j` (58) are KILLS - genuinely shared, matching target's single `i`
+Splitting `base` alone is worse; it pays only once `p` splits too. Splitting `i`
+(74) and `j` (58) are KILLS - genuinely shared, matching target's single `i`
 across `D_800A2D3C = i` in phases 4/5. The `i = 0;` hoists fill `bltz` delay
 slots we left as `nop`: reorg fills only from the block BEFORE the branch.
 
@@ -49,51 +41,57 @@ slots we left as `nop`: reorg fills only from the block BEFORE the branch.
 | 2 | 89 cnt2 `$a1`->`$a0`, 140 sentinel2 `$a0`->`$a1` | 3, 3 | **10, 8** | 1 atom |
 | 4 | 76 `$a2`->`$a0`, 80 `$a0`->`$a2` | 3, **12** | 14, 21 | **none** |
 
-Refs are equal in clusters 1 and 2, so `allocno_compare` is decided by live
-length alone and the shorter-lived value picks first (35 beats 36 by ONE slot).
-Cluster 4 is out of perturb's space - pseudo 80's 12 refs win by a wide margin,
-and target emits that copy in the opposite direction, so `base4`/`p4` are
-decomposed differently in the original.
-
+With refs equal, `allocno_compare` is decided by live length alone and the
+shorter-lived value picks first - 35 beats 36 by ONE slot. Cluster 4 is out of
+perturb's space (pseudo 80's 12 refs win big); round 6 bounds it.
 ## Round 5: both near-ties SOLVED by the LICM preheader-placement law
 
 A hoisted invariant lands only AFTER the preheader's source statements, so it is
 born late and lives short; making it source-level moves its birth earlier,
-lengthening it and demoting the value it was beating:
-
-| state | change | score | insns | pair result |
-|---|---|---|---|---|
-| s31 | clean baseline | 31 | 194 | all three wrong |
-| **s25** | phase-2 sentinel holder, assigned BEFORE `cnt2 = v2` | **25** | **194** | phase 2 MATCHES (`a0 <- v0`) |
-| s20 | + phase-1 addrmask holder | 20 | **192** | phase-1 constants MATCH |
+lengthening it and demoting the value it was beating. From s31 (31 @ 194, all
+three pairs wrong): a phase-2 sentinel holder assigned BEFORE `cnt2 = v2` gives
+**s25 = 25 @ 194 with phase 2 MATCHING** (`a0 <- v0`); adding a phase-1 addrmask
+holder gives s20 = 20 but at 192 insns, with phase 1's constants matching.
 
 Placement proves the mechanism: the same holder assigned AFTER `cnt2 = v2` is
-inert (30). **s20 is NOT a landing candidate**: the phase-1 mask holder costs the mask's own
-`lui`/`ori` materialisation, leaving 192 insns against 194 (align idx 7-8).
-Score can prefer a shorter mis-aligned stream; insn-exactness is harder. s25 is
-the best insn-exact state.
+inert (30). **s20 is NOT a landing candidate** - the phase-1 mask holder costs
+the mask's own `lui`/`ori`, leaving 192 insns against 194; score can prefer a
+shorter mis-aligned stream, insn-exactness is harder.
 
 **Both holders are the [[named-local-fake-exception]] construct and NEITHER is
 committed.** Layer-2's question: *is a phase-2-only constant holder acceptable,
 given target's `move a0,v0` cannot coexist with a late-born constant under the
-LICM law?* `dropv2`/`guardcnt` both DELETE that copy, so dropping the `v2`/`cnt2`
-split is not an escape.
+LICM law?* `dropv2`/`guardcnt` both DELETE that copy - not an escape.
+
+## Round 6: cluster 4 bounded; sched_solver's goal mapper is UNUSABLE here
+
+Phase 4 uses the SAME registers on both sides - walker `$a0`, base `$a2`. The
+residual is only the copy DIRECTION (target `move a0,a2`: the load defines the
+BASE, the walker is the copy; ours is the reverse), `addu v0,v0,a2` operand
+order, and the `D_800A2D40` load 2 slots early. Four decompositions are ALL
+inert at 25: `p4 = load; base4 = p4;`, two independent loads (CSE re-merges
+them), swapping which variable walks, `e = (cnt4)*2 + base4` - GCC canonicalizes
+the copy direction, so it is not source-reachable by naming. Target's constants
+precede the load but this is NOT the LICM law: phase-4 holders are worse and
+delete insns (`d4` 26@193, `s4`/`d4+s4` 28@192). It is scheduling.
+
+**`sched_solver` cannot adjudicate it.** The model is fine (36 blocks exact,
+parity=True) and only 2 differ, but `--goal-from-target` reconstructs the target
+by applying `regfix`/`asmfix` to OUR asm - and these 104 rules were written
+against the pre-split source, so the goal is invalid (`hon->tgt` 16 replace / 16
+delete) and both blocks are SKIPPED as "not a topological order".
 
 ## Measured kills
 
-- Phase 1: equality operand swap (67), scan as a real `while` (37), `q = p1;`
-  (38), `0x2FFFFFFF == p1[0]` (inert), store-after-accumulate (41), key hoisted
-  above/after the scan loop (54/46), masked `ival` in the outer test (59) - each
-  hoist carries a value live across the scan loop that target does not; five
-  named-intermediate spellings of the merge condition 42-48, none flips the pair.
-  `p1 = (j)*2 + base1;` inert - GCC canonicalizes the pointer PLUS chain, so the
-  `subst "addu $3,$8,$2"` rules are NOT source-reachable.
-- Phase 2, five spellings, none moves the pair: drop `v2` / guard on `cnt2`;
-  `p2 = ...` before `cnt2 = v2` (32); `i <= cnt2`; `p2 += 2; i++;`; `cnt2 = v2`
-  above the guard. `i = 0;` after `base = ...` but inside the guard: inert - the
-  before-the-branch position is what matters, not statement order.
-- Per-phase holders individually from s25: `s1` 25, `f1` 26, `m1+s1` 22, `m1+f1`
-  25, `m1+m3` 31, `m1+d3` 21. Only `m1` (20) flips phase 1.
+- Phase 1: equality operand swap (67), scan as `while` (37), `q = p1;` (38),
+  store-after-accumulate (41), key hoisted above/after the scan loop (54/46),
+  masked `ival` in the outer test (59) - every hoist carries a value live across
+  the scan loop that target does not; five named-intermediate merge-condition
+  spellings 42-48, none flips the pair. `p1 = (j)*2 + base1;` inert - GCC
+  canonicalizes the pointer PLUS chain, so the `subst "addu $3,$8,$2"` rules are
+  NOT source-reachable.
+- Per-phase holders from s25: `s1` 25, `f1` 26, `m1+s1` 22, `m1+f1` 25, `m1+m3`
+  31, `m1+d3` 21; only `m1` (20) flips phase 1.
 
 ## Resume here
 
@@ -101,9 +99,8 @@ split is not an escape.
    `move a0,v0`, insn-exact, worth 6 points.
 2. Phase 1 needs a mask-lengthening spelling that does NOT delete the mask's
    materialisation (the holder does, -2 insns).
-3. `tools/sched_solver` is unrun on the MOVED pairs (phase 3's `move t0,t2` 3
-   slots late; phase 4's load 2 early, `addiu t1,t1,1` 2 late).
-4. Cluster 4 needs a different `base4`/`p4` decomposition, not a perturbation.
+3. Cluster 4 is UNSOLVED but bounded (round 6); the MOVED pairs need a
+   rule-independent goal source before `sched_solver` can help.
 
 ## Reusable findings (rule-worthy; layer-2 + owner sign-off before registering)
 
@@ -116,5 +113,8 @@ split is not an escape.
 3. *An unfilled conditional-branch delay slot where target holds a loop-counter
    init means that init was OUTSIDE the guard in the original.*
 4. *The LICM preheader-placement law is a two-way instrument* - making a constant
-   source-level is the LEVER that lengthens its live range and flips an
-   equal-refs allocno tie. Check the cost: it can delete its own materialisation.
+   source-level LENGTHENS its live range and flips an equal-refs allocno tie.
+   Cost check: it can delete its own materialisation.
+5. *`sched_solver --goal-from-target` is only valid while a function's regfix
+   rules still describe its current source* - after a restructuring they
+   reconstruct a bogus target and every block is skipped.
