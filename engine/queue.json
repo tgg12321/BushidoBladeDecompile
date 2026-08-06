@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-06T16:10:48",
+  "generated_at": "2026-08-06T18:19:00",
   "oracle_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
   "build_failures": [],
   "items": [
@@ -93,27 +93,11 @@
       "status": "active"
     },
     {
-      "func": "func_80052B7C",
-      "file": "text1b",
-      "distance": 20,
-      "verdict": "ASM-PARTIAL",
-      "rules": 1,
-      "status": "active"
-    },
-    {
       "func": "func_80075670",
       "file": "text1b",
       "distance": 20,
       "verdict": "C",
       "rules": 9,
-      "status": "active"
-    },
-    {
-      "func": "game_2d_CheckLifeGaugeNoDisp",
-      "file": "text1b",
-      "distance": 20,
-      "verdict": "ASM-PARTIAL",
-      "rules": 1,
       "status": "active"
     },
     {
@@ -230,14 +214,6 @@
       "prologue_fix": 1
     },
     {
-      "func": "func_80052788",
-      "file": "text1b",
-      "distance": 23,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_8006288C",
       "file": "text1b",
       "distance": 23,
@@ -293,14 +269,6 @@
       "rules": 3,
       "status": "active",
       "prologue_fix": 1
-    },
-    {
-      "func": "func_80052A88",
-      "file": "text1b",
-      "distance": 25,
-      "verdict": "ASM-PARTIAL",
-      "rules": 1,
-      "status": "active"
     },
     {
       "func": "func_80084A7C",
@@ -416,14 +384,6 @@
       "rules": 16,
       "status": "active",
       "prologue_fix": 1
-    },
-    {
-      "func": "func_8004C388",
-      "file": "text1b",
-      "distance": 29,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
     },
     {
       "func": "func_80023648",
@@ -823,14 +783,6 @@
       "distance": 50,
       "verdict": "C",
       "rules": 9,
-      "status": "active"
-    },
-    {
-      "func": "ang_hosei",
-      "file": "ings2",
-      "distance": 51,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
       "status": "active"
     },
     {
@@ -2516,27 +2468,18 @@
       "rules": 15,
       "status": "parked",
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:2789 \u2014 '2026-08-01 \u2014 saEft01Init (src/system.c) \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE'"
-    },
-    {
-      "func": "func_80052B00",
-      "file": "text1b",
-      "distance": 18,
-      "verdict": "ASM-PARTIAL",
-      "rules": 1,
-      "status": "parked",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md - '## 2026-08-02 - func_80052B00 (src/text1b.c) - **OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**'"
     }
   ],
   "counts": {
-    "total": 300,
-    "active": 264,
+    "total": 293,
+    "active": 258,
     "by_status": {
-      "active": 264,
-      "parked": 36
+      "active": 258,
+      "parked": 35
     },
     "by_verdict": {
       "C": 172,
-      "ASM-PARTIAL": 45,
+      "ASM-PARTIAL": 39,
       "ASM-SUSPECT": 21,
       "ASM-STRUCTURAL": 26
     }
